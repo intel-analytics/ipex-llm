@@ -118,11 +118,20 @@ class CorrectnessSpec extends FlatSpec with Matchers with BeforeAndAfter with De
       logger.info(s"Got similar result: ${cnt}/${fGBoostResult.length}")
       require(cnt > 900, s"Should get over 900 results similar with XGBoost, but got only: $cnt")
     } catch {
-      case _ =>
+      case e: Exception => throw e
     } finally {
       flServer.stop()
     }
-
+    //     uncomment following code if want to save to file (to make a submission maybe)
+    //    val file = new File("filePath")
+    //    val bw = new BufferedWriter(new FileWriter(file))
+    //    bw.write("Id,SalePrice\n")
+    //    val testOriginWithHeader = Source.fromFile(testPath, "utf-8").getLines().map(_.split(",").map(_.trim)).toArray
+    //    val testOrigin = testOriginWithHeader.slice(1, testOriginWithHeader.length)
+    //    xGBoostResults.zip(testOrigin).foreach{r =>
+    //      bw.write(s"${r._2(0)},${r._1}\n")
+    //    }
+    //    bw.close()
 
   }
 
@@ -163,24 +172,69 @@ class CorrectnessSpec extends FlatSpec with Matchers with BeforeAndAfter with De
         val diffAllow = math.min(fGBoostResult(i), xGBoostResults(i)) * 0.05
         if (math.abs(fGBoostResult(i) - xGBoostResults(i)) < diffAllow) cnt += 1
       })
+      val fgBoostTreeInFormat = fGBoostRegression.trees.toArray.map(
+        fTree => XGBoostFormatSerializer(fTree))
+      // The tree structure validation
+      XGBoostFormatValidator(fgBoostTreeInFormat, xgBoostFormatNodes)
       logger.info(s"Got similar result: ${cnt}/${fGBoostResult.length}")
       require(cnt > 900, s"Should get over 900 results similar with XGBoost, but got only: $cnt")
     } catch {
           // TODO: sometimes this UT (random fail) throws IndexOutOfRange Exception, need to check
-      case e: Exception => e.printStackTrace()
+      case e: Exception => throw e
     } finally {
       flServer.stop()
     }
+  }
+  "FGBoost Correctness three parties" should "work" in {
+    val flServer = new FLServer()
+    try {
+      val rowkeyName = "Id"
+      val labelName = "SalePrice"
+      val dataPath = getClass.getClassLoader.getResource("three-party/house-prices-train-0.csv").getPath
+      val testPath = getClass.getClassLoader.getResource("three-party/house-prices-test-0.csv").getPath
+      val sources = Source.fromFile(dataPath, "utf-8").getLines()
+      val testSources = Source.fromFile(testPath, "utf-8").getLines()
+      val (trainFeatures, testFeatures, trainLabels) =
+        TmpUtils.preprocessing(sources, testSources, rowkeyName, labelName)
 
-//     uncomment following code if want to save to file (to make a submission maybe)
-//    val file = new File("filePath")
-//    val bw = new BufferedWriter(new FileWriter(file))
-//    bw.write("Id,SalePrice\n")
-//    val testOriginWithHeader = Source.fromFile(testPath, "utf-8").getLines().map(_.split(",").map(_.trim)).toArray
-//    val testOrigin = testOriginWithHeader.slice(1, testOriginWithHeader.length)
-//    xGBoostResults.zip(testOrigin).foreach{r =>
-//      bw.write(s"${r._2(0)},${r._1}\n")
-//    }
-//    bw.close()
+      flServer.setClientNum(3)
+      flServer.build()
+      flServer.start()
+      FLContext.initFLContext()
+      val mockClient2 = new MockClient(
+        dataPath = getClass.getClassLoader.getResource("three-party/house-prices-train-1.csv").getPath,
+        testPath = getClass.getClassLoader.getResource("three-party/house-prices-test-1.csv").getPath,
+        rowKeyName = "Id", labelName = "SalePrice", dataFormat = "raw")
+      mockClient2.start()
+      val mockClient3 = new MockClient(
+        dataPath = getClass.getClassLoader.getResource("three-party/house-prices-train-2.csv").getPath,
+        testPath = getClass.getClassLoader.getResource("three-party/house-prices-test-2.csv").getPath,
+        rowKeyName = "Id", labelName = "SalePrice", dataFormat = "raw")
+      mockClient3.start()
+
+
+      val fGBoostRegression = new FGBoostRegression(
+        learningRate = 0.1f, maxDepth = 7, minChildSize = 5)
+      logger.debug(s"Client1 calling fit...")
+      fGBoostRegression.fit(trainFeatures, trainLabels, 100)
+      val fGBoostResult = fGBoostRegression.predict(testFeatures).map(tensor => tensor.value())
+        .map(math.exp(_))
+      var cnt = 0
+      fGBoostResult.indices.foreach(i => {
+        val diffAllow = math.min(fGBoostResult(i), xGBoostResults(i)) * 0.05
+        if (math.abs(fGBoostResult(i) - xGBoostResults(i)) < diffAllow) cnt += 1
+      })
+      val fgBoostTreeInFormat = fGBoostRegression.trees.toArray.map(
+        fTree => XGBoostFormatSerializer(fTree))
+      // The tree structure validation
+      XGBoostFormatValidator(fgBoostTreeInFormat, xgBoostFormatNodes)
+      logger.info(s"Got similar result: ${cnt}/${fGBoostResult.length}")
+      require(cnt > 900, s"Should get over 900 results similar with XGBoost, but got only: $cnt")
+    } catch {
+      // TODO: sometimes this UT (random fail) throws IndexOutOfRange Exception, need to check
+      case e: Exception => throw e
+    } finally {
+      flServer.stop()
+    }
   }
 }

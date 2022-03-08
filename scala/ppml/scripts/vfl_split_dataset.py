@@ -15,34 +15,38 @@
 #
 
 from csv import reader, writer
+from email.policy import default
 import numpy as np
+from pyparsing import col
 import click
 
 """
-This script could split a dataset of csv to 2 parts. The odd columns, e.g. 1th, 3th, 5th, ...
-would be split to one file and the even, e.g. 2th, 4th, 6th, ... would be split to another
+This script could split a dataset of csv to N parts with same size.
 This script is for Vertical Federated Learning functionality test, we could split the data
-into two parts and mock the 2 client (parties) holding data of different features.
+into two parts and mock the Nclient (parties) holding data of different features.
 """
 @click.command()
-@click.argument('file_name', '-f')
-def vfl_split_dataset(file_name):
+@click.argument('file_name')
+@click.argument('num_pieces', type=int, default=2)
+def vfl_split_dataset(file_name, num_pieces):
     with open(file_name, "r") as read_obj:
         f = open(file_name, "r")
         sample = f.readline().split(",")
         f.close()
         print(f"data has {len(sample)} columns")
         csv_reader = reader(read_obj)
-        part1_col_idx = [0] + [i for i in range(1, len(sample), 2)]
-        part2_col_idx = [0] + [i for i in range(2, len(sample), 2)]
-        with open(f"{file_name}-1.csv", "w") as write_obj_1:
-            with open(f"{file_name}-2.csv", "w") as write_obj_2:
-                csv_writer_1 = writer(write_obj_1, delimiter=',')
-                csv_writer_2 = writer(write_obj_2, delimiter=',')
-                for i, row in enumerate(csv_reader):
-                    row = np.array(row)
-                    csv_writer_1.writerow(row[np.array(part1_col_idx)])
-                    csv_writer_2.writerow(row[np.array(part2_col_idx)])
+        col_indices_list = []
+        writer_list = []
+        file_name = file_name.split('/')[-1].split(".")[-2]
+        for i in range(num_pieces):
+            col_indices_list.append([0] + [j for j in range(1 + i, len(sample), num_pieces)])
+            writer_obj = open(f"{file_name}-{i}.csv", "w")
+            writer_list.append(writer(writer_obj, delimiter=','))
+
+        for i, row in enumerate(csv_reader):
+            row = np.array(row)
+            for j in range(num_pieces):
+                writer_list[j].writerow(row[np.array(np.array(col_indices_list[j]))])
 
 
 if __name__ == "__main__":

@@ -1,0 +1,1460 @@
+Id,LotFrontage,Alley,Utilities,Neighborhood,BldgType,OverallCond,RoofStyle,Exterior2nd,ExterQual,BsmtQual,BsmtFinType1,BsmtFinSF2,Heating,Electrical,LowQualFinSF,BsmtHalfBath,BedroomAbvGr,TotRmsAbvGrd,FireplaceQu,GarageFinish,GarageQual,WoodDeckSF,3SsnPorch,PoolQC,MiscVal,SaleType
+1461,80,NA,AllPub,NAmes,1Fam,6,Gable,VinylSd,TA,TA,Rec,144,GasA,SBrkr,0,0,2,5,NA,Unf,TA,140,0,NA,0,WD
+1462,81,NA,AllPub,NAmes,1Fam,6,Hip,Wd Sdng,TA,TA,ALQ,0,GasA,SBrkr,0,0,3,6,NA,Unf,TA,393,0,NA,12500,WD
+1463,74,NA,AllPub,Gilbert,1Fam,5,Gable,VinylSd,TA,Gd,GLQ,0,GasA,SBrkr,0,0,3,6,TA,Fin,TA,212,0,NA,0,WD
+1464,78,NA,AllPub,Gilbert,1Fam,6,Gable,VinylSd,TA,TA,GLQ,0,GasA,SBrkr,0,0,3,7,Gd,Fin,TA,360,0,NA,0,WD
+1465,43,NA,AllPub,StoneBr,TwnhsE,5,Gable,HdBoard,Gd,Gd,ALQ,0,GasA,SBrkr,0,0,2,5,NA,RFn,TA,0,0,NA,0,WD
+1466,75,NA,AllPub,Gilbert,1Fam,5,Gable,HdBoard,TA,Gd,Unf,0,GasA,SBrkr,0,0,3,7,TA,Fin,TA,157,0,NA,0,WD
+1467,NA,NA,AllPub,Gilbert,1Fam,7,Gable,HdBoard,TA,Gd,ALQ,0,GasA,SBrkr,0,0,3,6,NA,Fin,TA,483,0,NA,500,WD
+1468,63,NA,AllPub,Gilbert,1Fam,5,Gable,VinylSd,TA,Gd,Unf,0,GasA,SBrkr,0,0,3,7,Gd,Fin,TA,0,0,NA,0,WD
+1469,85,NA,AllPub,Gilbert,1Fam,5,Gable,HdBoard,TA,Gd,GLQ,0,GasA,SBrkr,0,0,2,5,Po,Unf,TA,192,0,NA,0,WD
+1470,70,NA,AllPub,NAmes,1Fam,5,Gable,Plywood,TA,TA,ALQ,78,GasA,SBrkr,0,0,2,4,NA,Fin,TA,240,0,NA,0,WD
+1471,26,NA,AllPub,NAmes,TwnhsE,5,Gable,MetalSd,Gd,Gd,GLQ,0,GasA,SBrkr,0,0,2,5,Fa,Fin,TA,203,0,NA,0,WD
+1472,21,NA,AllPub,BrDale,Twnhs,5,Gable,HdBoard,TA,TA,Rec,0,GasA,SBrkr,0,0,2,5,NA,Unf,TA,275,0,NA,0,COD
+1473,21,NA,AllPub,BrDale,Twnhs,5,Gable,HdBoard,TA,TA,Rec,0,GasA,SBrkr,0,0,3,6,NA,Unf,TA,0,0,NA,0,WD
+1474,24,NA,AllPub,NPkVill,Twnhs,6,Gable,Brk Cmn,TA,TA,ALQ,0,GasA,SBrkr,0,0,3,6,TA,Unf,TA,173,0,NA,0,WD
+1475,24,NA,AllPub,NPkVill,Twnhs,6,Gable,Brk Cmn,TA,Gd,Unf,0,GasA,SBrkr,0,0,2,4,NA,Unf,TA,0,0,NA,0,WD
+1476,102,NA,AllPub,NridgHt,1Fam,5,Gable,VinylSd,Ex,Ex,Unf,0,GasA,SBrkr,0,0,3,10,Gd,Fin,TA,144,0,NA,0,New
+1477,94,NA,AllPub,NridgHt,1Fam,5,Gable,VinylSd,Gd,Gd,Unf,0,GasA,SBrkr,0,0,3,7,NA,RFn,TA,0,0,NA,0,New
+1478,90,NA,AllPub,NridgHt,1Fam,5,Hip,VinylSd,Gd,Ex,GLQ,0,GasA,SBrkr,0,0,3,7,Gd,Fin,TA,192,0,NA,0,WD
+1479,79,NA,AllPub,NridgHt,1Fam,5,Hip,CmentBd,Gd,Ex,GLQ,0,GasA,SBrkr,0,0,3,8,Gd,RFn,TA,0,0,NA,0,WD
+1480,110,NA,AllPub,NridgHt,1Fam,5,Hip,VinylSd,Ex,Ex,GLQ,0,GasA,SBrkr,0,0,3,10,Gd,Fin,TA,220,0,NA,0,WD
+1481,105,NA,AllPub,NridgHt,1Fam,5,Gable,VinylSd,Gd,Gd,GLQ,0,GasA,SBrkr,0,0,3,7,Ex,Fin,TA,238,0,NA,0,WD
+1482,41,NA,AllPub,NridgHt,TwnhsE,5,Gable,VinylSd,Gd,Gd,GLQ,0,GasA,SBrkr,0,0,2,6,Gd,RFn,TA,120,0,NA,0,WD
+1483,100,NA,AllPub,Gilbert,1Fam,5,Gable,VinylSd,Gd,Gd,Unf,0,GasA,SBrkr,0,0,3,6,NA,Fin,TA,36,0,NA,0,WD
+1484,43,NA,AllPub,Blmngtn,TwnhsE,5,Gable,VinylSd,Gd,Gd,GLQ,0,GasA,SBrkr,0,0,2,6,NA,Fin,TA,100,0,NA,0,WD
+1485,67,NA,AllPub,Gilbert,1Fam,5,Gable,VinylSd,Gd,Gd,GLQ,0,GasA,SBrkr,0,0,3,7,Gd,Fin,TA,100,0,NA,0,WD
+1486,63,NA,AllPub,Gilbert,1Fam,5,Gable,VinylSd,Gd,Gd,Unf,0,GasA,SBrkr,0,0,3,7,Gd,Fin,TA,144,0,NA,0,WD
+1487,60,NA,AllPub,NoRidge,1Fam,5,Hip,VinylSd,Gd,Ex,Unf,0,GasA,SBrkr,0,0,4,7,TA,Fin,TA,23,0,NA,0,WD
+1488,73,NA,AllPub,Somerst,1Fam,5,Gable,VinylSd,Gd,Gd,Unf,0,GasA,SBrkr,0,0,2,6,Gd,RFn,TA,144,0,NA,0,WD
+1489,92,NA,AllPub,Somerst,1Fam,5,Hip,VinylSd,Gd,Gd,Unf,0,GasA,SBrkr,0,0,2,4,NA,RFn,TA,0,0,NA,0,New
+1490,84,NA,AllPub,Somerst,1Fam,5,Gable,VinylSd,Gd,Ex,GLQ,0,GasA,SBrkr,0,0,2,6,Gd,Fin,TA,0,0,NA,0,WD
+1491,70,NA,AllPub,SawyerW,1Fam,5,Gable,VinylSd,Gd,Gd,Unf,0,GasA,SBrkr,0,0,3,8,NA,RFn,TA,144,0,NA,0,WD
+1492,70,NA,AllPub,SawyerW,1Fam,5,Gable,Wd Sdng,TA,TA,Unf,0,GasA,FuseA,0,0,2,5,NA,Unf,TA,121,0,NA,0,WD
+1493,39,NA,AllPub,Sawyer,1Fam,6,Hip,Plywood,TA,TA,BLQ,859,GasA,SBrkr,0,0,3,7,Fa,Fin,TA,296,0,NA,0,WD
+1494,85,NA,AllPub,NoRidge,1Fam,5,Gable,ImStucc,Gd,Gd,LwQ,981,GasA,SBrkr,0,0,4,9,TA,RFn,TA,32,0,NA,0,WD
+1495,88,NA,AllPub,NoRidge,1Fam,5,Gable,HdBoard,Gd,Gd,GLQ,0,GasA,SBrkr,0,0,4,7,TA,RFn,TA,198,0,NA,0,WD
+1496,25,NA,AllPub,Somerst,TwnhsE,5,Gable,MetalSd,Gd,Ex,GLQ,0,GasA,SBrkr,0,0,2,6,Gd,Fin,TA,168,0,NA,0,WD
+1497,39,Pave,AllPub,Somerst,TwnhsE,5,Gable,VinylSd,Gd,Gd,Unf,0,GasA,SBrkr,0,0,2,3,NA,RFn,TA,0,0,NA,0,WD
+1498,30,Pave,AllPub,Somerst,TwnhsE,5,Gable,MetalSd,Gd,Gd,GLQ,0,GasA,SBrkr,0,0,2,4,NA,RFn,TA,0,0,NA,0,ConLD
+1499,24,Pave,AllPub,Somerst,Twnhs,5,Gable,MetalSd,Gd,Gd,GLQ,42,GasA,SBrkr,0,0,2,4,NA,RFn,TA,0,0,NA,0,WD
+1500,24,Pave,AllPub,Somerst,Twnhs,5,Gable,VinylSd,Gd,Gd,GLQ,0,GasA,SBrkr,0,0,2,4,NA,RFn,TA,0,0,NA,0,WD
+1501,NA,NA,AllPub,Somerst,TwnhsE,5,Gable,MetalSd,Gd,Gd,GLQ,0,GasA,SBrkr,0,0,2,5,NA,Unf,TA,0,0,NA,0,WD
+1502,NA,NA,AllPub,Somerst,TwnhsE,5,Gable,VinylSd,Gd,Gd,GLQ,0,GasA,SBrkr,0,0,2,4,NA,RFn,TA,0,0,NA,0,WD
+1503,57,Pave,AllPub,Somerst,1Fam,5,Gable,CmentBd,Gd,Ex,GLQ,0,GasA,SBrkr,0,0,1,6,Gd,RFn,TA,160,224,NA,0,New
+1504,68,NA,AllPub,Somerst,1Fam,5,Gable,VinylSd,Gd,Gd,GLQ,0,GasA,SBrkr,0,0,3,7,TA,RFn,TA,280,0,NA,0,WD
+1505,80,NA,AllPub,Somerst,1Fam,5,Gable,VinylSd,Gd,Gd,GLQ,0,GasA,SBrkr,0,0,3,6,Gd,RFn,TA,277,0,NA,0,WD
+1506,NA,NA,AllPub,NWAmes,1Fam,6,Hip,HdBoard,TA,TA,GLQ,0,GasA,SBrkr,0,0,4,8,NA,RFn,TA,0,0,NA,0,WD
+1507,80,NA,AllPub,NWAmes,1Fam,5,Gable,MetalSd,TA,Gd,GLQ,0,GasA,SBrkr,0,0,4,9,TA,Unf,TA,224,0,NA,0,WD
+1508,NA,NA,AllPub,NWAmes,1Fam,5,Gable,MetalSd,TA,Gd,ALQ,46,GasA,SBrkr,0,1,3,7,TA,RFn,TA,0,0,NA,0,WD
+1509,80,NA,AllPub,NWAmes,1Fam,6,Gable,MetalSd,TA,TA,ALQ,0,GasA,SBrkr,0,0,4,7,NA,RFn,TA,0,0,NA,0,WD
+1510,80,NA,AllPub,NAmes,1Fam,5,Hip,VinylSd,TA,TA,Rec,0,GasA,SBrkr,0,0,3,6,NA,RFn,TA,0,0,NA,0,WD
+1511,90,NA,AllPub,NAmes,1Fam,5,Hip,HdBoard,TA,Gd,BLQ,0,GasA,SBrkr,0,0,3,6,NA,RFn,TA,0,0,NA,0,ConLD
+1512,88,NA,AllPub,NAmes,1Fam,6,Gable,Plywood,TA,TA,BLQ,0,GasA,SBrkr,0,0,3,6,NA,RFn,TA,0,0,NA,0,WD
+1513,NA,Pave,AllPub,NAmes,1Fam,5,Gable,HdBoard,TA,TA,Unf,0,GasA,SBrkr,0,0,3,8,NA,Unf,TA,0,0,NA,0,COD
+1514,98,NA,AllPub,NAmes,Duplex,6,Hip,HdBoard,TA,TA,BLQ,0,GasA,SBrkr,0,0,6,10,NA,NA,NA,0,0,NA,0,Oth
+1515,68,NA,AllPub,NAmes,1Fam,7,Gable,MetalSd,Gd,TA,LwQ,0,GasA,SBrkr,0,0,3,7,Gd,Unf,TA,0,0,NA,0,WD
+1516,120,NA,AllPub,NAmes,1Fam,6,Gable,MetalSd,TA,TA,Rec,0,GasA,SBrkr,0,0,3,6,Gd,Unf,TA,0,0,NA,0,WD
+1517,75,NA,AllPub,NAmes,1Fam,8,Gable,HdBoard,TA,TA,GLQ,0,GasA,SBrkr,0,0,2,5,Gd,Unf,TA,238,0,NA,1500,WD
+1518,70,NA,AllPub,NAmes,Duplex,5,Gable,HdBoard,TA,TA,Unf,0,GasA,SBrkr,0,0,4,8,NA,Unf,TA,42,0,NA,0,WD
+1519,70,NA,AllPub,NAmes,1Fam,5,Gable,VinylSd,Gd,Gd,GLQ,0,GasA,SBrkr,0,0,3,7,NA,RFn,TA,252,0,NA,300,WD
+1520,NA,NA,AllPub,NAmes,1Fam,5,Hip,MetalSd,TA,TA,BLQ,162,GasA,SBrkr,0,0,3,6,NA,RFn,TA,0,0,NA,0,WD
+1521,87,NA,AllPub,NAmes,1Fam,5,Hip,MetalSd,TA,TA,Rec,0,GasA,SBrkr,0,0,3,6,NA,RFn,TA,0,0,NA,0,WD
+1522,80,NA,AllPub,NAmes,1Fam,5,Gable,Wd Sdng,TA,TA,Rec,0,GasA,SBrkr,0,0,3,6,Gd,Unf,TA,0,0,NA,0,WD
+1523,60,NA,AllPub,NAmes,1Fam,5,Gable,MetalSd,TA,TA,Unf,0,GasA,FuseA,0,0,3,5,NA,Unf,TA,0,0,NA,0,WD
+1524,60,NA,AllPub,NAmes,1Fam,7,Gable,Wd Shng,TA,TA,BLQ,0,GasA,SBrkr,0,1,2,4,NA,Unf,TA,0,0,NA,0,WD
+1525,119,NA,AllPub,NAmes,1Fam,6,Gable,MetalSd,TA,TA,Rec,0,GasA,SBrkr,0,0,3,5,NA,Unf,TA,0,0,NA,0,WD
+1526,70,NA,AllPub,NAmes,2fmCon,5,Gable,MetalSd,TA,TA,Rec,0,GasA,SBrkr,0,0,2,5,NA,Unf,TA,0,0,NA,0,WD
+1527,65,NA,AllPub,NAmes,1Fam,7,Gable,MetalSd,TA,TA,Unf,0,GasA,SBrkr,0,1,2,4,NA,Unf,TA,0,0,NA,0,WD
+1528,60,NA,AllPub,NAmes,1Fam,8,Gable,Wd Shng,TA,TA,ALQ,174,GasA,SBrkr,0,0,3,5,NA,Unf,TA,414,0,NA,0,WD
+1529,81,NA,AllPub,NAmes,1Fam,6,Gable,Wd Sdng,TA,TA,Rec,350,GasA,SBrkr,0,0,3,6,NA,RFn,TA,0,0,NA,0,WD
+1530,80,NA,AllPub,NAmes,1Fam,7,Hip,Wd Sdng,TA,TA,BLQ,263,GasA,SBrkr,0,0,2,7,TA,RFn,TA,657,0,NA,0,WD
+1531,60,NA,AllPub,OldTown,1Fam,5,Hip,Wd Sdng,TA,TA,ALQ,0,GasA,SBrkr,0,0,3,9,Gd,Unf,TA,84,0,NA,0,COD
+1532,56,Grvl,AllPub,OldTown,1Fam,7,Gable,Wd Sdng,TA,TA,BLQ,0,GasA,SBrkr,0,0,2,5,Gd,NA,NA,51,0,NA,0,WD
+1533,69,Grvl,AllPub,OldTown,1Fam,7,Hip,MetalSd,TA,TA,BLQ,1073,GasA,SBrkr,0,1,3,6,NA,Unf,TA,0,0,NA,0,WD
+1534,50,NA,AllPub,OldTown,1Fam,7,Gable,MetalSd,TA,Gd,Unf,0,GasA,SBrkr,0,0,3,6,NA,Unf,Fa,0,0,NA,0,WD
+1535,69,NA,AllPub,OldTown,1Fam,7,Gable,VinylSd,TA,TA,BLQ,0,GasA,SBrkr,0,0,3,7,Gd,Unf,TA,0,0,NA,0,WD
+1536,NA,NA,AllPub,OldTown,1Fam,6,Gable,MetalSd,TA,TA,Rec,0,GasA,SBrkr,0,0,3,6,NA,Unf,TA,0,0,NA,0,WD
+1537,68,NA,AllPub,OldTown,1Fam,2,Gable,AsbShng,TA,Fa,Unf,0,GasA,SBrkr,0,0,2,5,Gd,Unf,Fa,0,0,NA,0,WD
+1538,60,Grvl,AllPub,OldTown,1Fam,9,Gable,Wd Sdng,Gd,TA,Unf,0,GasW,SBrkr,0,0,3,7,NA,Unf,TA,54,0,NA,0,WD
+1539,50,Grvl,AllPub,OldTown,1Fam,9,Gable,Wd Sdng,Gd,Fa,Unf,0,GasA,SBrkr,0,0,3,7,NA,Unf,TA,0,0,NA,0,WD
+1540,100,NA,AllPub,OldTown,2fmCon,3,Gable,MetalSd,TA,TA,Unf,0,Grav,FuseF,0,0,4,12,NA,NA,NA,0,0,NA,0,WD
+1541,60,NA,AllPub,OldTown,1Fam,7,Gable,Wd Sdng,TA,Fa,Rec,0,GasA,SBrkr,0,0,2,6,NA,Unf,TA,0,0,NA,0,WD
+1542,53,NA,AllPub,BrkSide,1Fam,6,Gable,MetalSd,TA,TA,Rec,0,GasA,SBrkr,0,0,3,7,NA,Unf,TA,0,0,NA,0,WD
+1543,NA,NA,AllPub,BrkSide,1Fam,7,Gable,Wd Sdng,TA,Gd,BLQ,0,GasA,FuseA,0,0,3,8,Gd,Unf,TA,0,0,NA,0,WD
+1544,50,NA,AllPub,BrkSide,1Fam,7,Gable,MetalSd,TA,TA,Rec,0,GasA,FuseF,0,0,2,4,NA,Unf,Fa,135,0,NA,0,WD
+1545,50,NA,AllPub,BrkSide,1Fam,7,Gable,MetalSd,TA,TA,BLQ,12,GasA,SBrkr,0,0,2,5,NA,Unf,TA,0,0,NA,0,WD
+1546,50,NA,AllPub,BrkSide,1Fam,6,Gable,MetalSd,TA,TA,LwQ,0,GasA,FuseA,0,1,3,6,Gd,Unf,TA,0,0,NA,0,WD
+1547,53,NA,AllPub,BrkSide,1Fam,6,Gable,MetalSd,TA,TA,Rec,159,GasA,FuseA,0,0,3,7,Fa,Unf,TA,0,0,NA,0,WD
+1548,50,NA,AllPub,BrkSide,1Fam,7,Gable,Wd Sdng,TA,TA,Rec,0,GasA,SBrkr,0,0,3,6,NA,Unf,TA,221,0,NA,0,WD
+1549,52,NA,AllPub,BrkSide,1Fam,7,Gable,VinylSd,TA,TA,Rec,0,GasA,SBrkr,0,0,2,5,NA,Fin,TA,306,0,NA,0,WD
+1550,52,NA,AllPub,BrkSide,1Fam,5,Gable,MetalSd,TA,TA,LwQ,0,GasA,FuseF,0,0,4,7,Gd,Unf,TA,0,0,NA,0,WD
+1551,51,NA,AllPub,OldTown,1Fam,5,Gable,Wd Sdng,TA,Fa,ALQ,0,GasA,SBrkr,0,0,2,5,Gd,Unf,TA,0,0,NA,0,WD
+1552,57,Grvl,AllPub,OldTown,1Fam,5,Gable,MetalSd,TA,TA,Unf,0,GasA,SBrkr,0,0,4,9,TA,Unf,TA,160,0,NA,0,WD
+1553,60,Grvl,AllPub,OldTown,1Fam,8,Gable,Wd Sdng,Gd,TA,Unf,0,GasA,SBrkr,0,0,3,7,NA,NA,NA,344,0,NA,0,WD
+1554,52,Grvl,AllPub,OldTown,1Fam,8,Gable,VinylSd,TA,TA,Unf,0,GasA,SBrkr,0,1,3,6,NA,Unf,TA,0,0,NA,0,WD
+1555,100,NA,AllPub,ClearCr,1Fam,5,Gable,HdBoard,TA,Gd,Rec,0,GasA,SBrkr,0,0,3,8,Gd,Unf,TA,0,0,NA,0,WD
+1556,72,NA,AllPub,ClearCr,1Fam,3,Gable,Wd Sdng,TA,Gd,Unf,0,GasA,SBrkr,0,0,3,6,NA,Unf,Fa,0,0,NA,0,COD
+1557,60,NA,AllPub,SWISU,2fmCon,4,Gable,Wd Shng,Fa,TA,Rec,0,GasA,SBrkr,0,0,3,6,NA,NA,NA,0,0,NA,0,ConLD
+1558,65,NA,AllPub,SWISU,1Fam,5,Gable,VinylSd,TA,Fa,LwQ,0,GasA,SBrkr,0,0,3,5,NA,Unf,TA,0,0,NA,0,WD
+1559,NA,NA,AllPub,SWISU,1Fam,1,Gambrel,Stucco,TA,TA,Rec,0,GasW,SBrkr,0,0,4,7,NA,NA,NA,0,0,NA,0,WD
+1560,60,NA,AllPub,SWISU,2fmCon,7,Gable,Wd Sdng,TA,TA,LwQ,0,GasA,SBrkr,0,0,2,7,Gd,Unf,TA,56,0,NA,0,COD
+1561,72,NA,AllPub,Sawyer,Duplex,3,Gable,Plywood,Fa,TA,ALQ,0,GasA,SBrkr,0,0,4,8,NA,NA,NA,0,0,NA,0,WD
+1562,65,NA,AllPub,Sawyer,1Fam,7,Hip,HdBoard,TA,TA,BLQ,474,GasA,SBrkr,0,0,3,5,NA,Unf,TA,0,0,NA,0,WD
+1563,65,NA,AllPub,Sawyer,1Fam,5,Hip,HdBoard,TA,TA,GLQ,0,GasA,SBrkr,0,0,2,4,NA,Unf,TA,226,0,NA,0,WD
+1564,NA,NA,AllPub,Sawyer,Duplex,5,Gable,Plywood,TA,Gd,GLQ,0,GasA,SBrkr,0,0,3,5,TA,Fin,TA,0,0,NA,0,WD
+1565,86,NA,AllPub,Sawyer,1Fam,5,Gable,HdBoard,TA,TA,Rec,453,GasA,SBrkr,0,0,4,7,TA,Unf,TA,192,0,NA,0,WD
+1566,NA,NA,AllPub,ClearCr,1Fam,7,Hip,Wd Sdng,Gd,Gd,ALQ,0,GasA,SBrkr,0,0,1,4,TA,RFn,TA,496,0,NA,0,WD
+1567,94,NA,AllPub,Sawyer,1Fam,4,Gable,Wd Sdng,TA,Fa,Unf,0,GasA,SBrkr,0,0,2,4,NA,Unf,TA,80,0,NA,0,WD
+1568,NA,NA,AllPub,ClearCr,1Fam,5,Gable,VinylSd,TA,Gd,ALQ,0,GasA,SBrkr,0,0,4,8,TA,Fin,TA,336,0,NA,0,WD
+1569,124,NA,AllPub,Edwards,1Fam,4,Gable,Wd Sdng,TA,TA,BLQ,684,GasA,FuseA,0,1,4,8,Gd,RFn,TA,0,0,NA,450,WD
+1570,65,NA,AllPub,Edwards,1Fam,7,Gable,Plywood,TA,TA,GLQ,387,GasA,SBrkr,0,0,3,6,TA,Unf,TA,0,0,NA,0,WD
+1571,50,NA,AllPub,Edwards,1Fam,6,Gable,Wd Shng,TA,TA,LwQ,0,GasA,SBrkr,362,0,3,8,TA,Unf,Fa,0,0,NA,0,WD
+1572,75,NA,AllPub,Edwards,1Fam,7,Gable,Wd Shng,TA,TA,BLQ,0,GasA,SBrkr,0,0,3,5,NA,Fin,TA,240,0,NA,0,WD
+1573,44,NA,AllPub,Edwards,1Fam,5,Gable,VinylSd,Gd,Gd,GLQ,0,GasA,SBrkr,0,0,1,5,TA,RFn,TA,0,0,NA,0,Con
+1574,NA,NA,AllPub,Edwards,1Fam,3,Gable,Wd Sdng,TA,TA,Unf,0,GasA,SBrkr,0,0,3,5,NA,Unf,TA,0,0,NA,0,COD
+1575,83,NA,AllPub,SawyerW,1Fam,5,Gable,Plywood,Gd,Gd,GLQ,0,GasA,SBrkr,0,0,1,4,TA,RFn,Gd,0,0,NA,0,WD
+1576,87,NA,AllPub,SawyerW,1Fam,7,Gable,VinylSd,Gd,Gd,GLQ,0,GasA,SBrkr,0,1,3,8,Gd,RFn,TA,450,0,NA,0,WD
+1577,64,NA,AllPub,CollgCr,1Fam,5,Gable,VinylSd,Gd,Gd,GLQ,0,GasA,SBrkr,0,0,2,6,NA,RFn,TA,0,0,NA,0,WD
+1578,82,NA,AllPub,SawyerW,1Fam,8,Gable,Plywood,TA,Fa,Unf,0,GasA,SBrkr,0,0,3,6,NA,Unf,TA,0,0,NA,0,WD
+1579,82,NA,AllPub,CollgCr,1Fam,5,Gable,VinylSd,TA,Gd,GLQ,0,GasA,SBrkr,0,0,2,4,NA,Unf,Gd,71,0,NA,0,WD
+1580,NA,NA,AllPub,CollgCr,1Fam,5,Gable,VinylSd,TA,Gd,ALQ,0,GasA,SBrkr,0,0,3,8,TA,RFn,TA,0,0,NA,0,WD
+1581,38,NA,AllPub,CollgCr,1Fam,8,Gable,CmentBd,Gd,Gd,GLQ,688,GasA,SBrkr,0,0,3,5,NA,Unf,TA,316,0,NA,0,WD
+1582,68,NA,AllPub,CollgCr,1Fam,6,Gable,Wd Sdng,TA,TA,ALQ,0,GasA,SBrkr,0,0,3,5,NA,Unf,TA,0,0,NA,0,WD
+1583,80,NA,AllPub,CollgCr,1Fam,5,Hip,CmentBd,Gd,Gd,GLQ,0,GasA,SBrkr,0,0,3,8,Gd,RFn,TA,188,0,NA,0,WD
+1584,75,NA,AllPub,CollgCr,1Fam,5,Gable,VinylSd,Gd,Gd,Unf,0,GasA,SBrkr,0,0,4,9,TA,Fin,TA,331,0,NA,0,WD
+1585,NA,NA,AllPub,CollgCr,TwnhsE,5,Gable,VinylSd,Gd,Gd,GLQ,0,GasA,SBrkr,0,0,1,4,NA,Fin,TA,140,0,NA,0,WD
+1586,67,NA,AllPub,Edwards,1Fam,6,Gable,VinylSd,TA,NA,NA,0,GasA,SBrkr,0,0,2,5,NA,Unf,TA,0,0,NA,0,ConLD
+1587,68,NA,AllPub,Edwards,1Fam,6,Gable,VinylSd,TA,Fa,Unf,0,GasA,SBrkr,0,0,3,6,NA,Unf,TA,60,0,NA,0,Oth
+1588,60,NA,AllPub,Edwards,1Fam,6,Gable,MetalSd,TA,Gd,ALQ,0,GasA,SBrkr,0,0,3,6,NA,RFn,TA,257,0,NA,0,WD
+1589,89,NA,AllPub,Edwards,1Fam,5,Gable,VinylSd,TA,TA,Unf,0,GasA,FuseF,0,0,2,5,NA,Unf,TA,0,0,NA,0,WD
+1590,65,NA,AllPub,Edwards,1Fam,6,Gable,Plywood,TA,TA,ALQ,0,GasA,SBrkr,0,0,3,5,Fa,Unf,TA,0,0,NA,0,WD
+1591,64,NA,AllPub,Edwards,1Fam,5,Hip,Wd Shng,TA,TA,Unf,0,GasA,SBrkr,0,0,3,5,NA,NA,NA,0,0,NA,0,WD
+1592,67,NA,AllPub,SWISU,1Fam,6,Gable,VinylSd,TA,TA,Rec,0,GasA,FuseA,0,0,2,5,Gd,Unf,TA,0,0,NA,0,WD
+1593,NA,NA,AllPub,SWISU,1Fam,6,Gable,Wd Sdng,TA,TA,Rec,0,GasA,SBrkr,0,0,2,4,Gd,Unf,TA,0,0,NA,0,WD
+1594,60,Pave,AllPub,SWISU,Duplex,6,Flat,CBlock,TA,NA,NA,0,GasA,SBrkr,0,0,6,10,NA,NA,NA,0,0,NA,500,WD
+1595,51,NA,AllPub,SWISU,1Fam,2,Gable,VinylSd,TA,TA,Unf,0,GasA,SBrkr,0,0,3,7,Gd,NA,NA,0,0,NA,0,WD
+1596,78,NA,AllPub,Crawfor,1Fam,6,Gable,Wd Sdng,Gd,Gd,ALQ,252,GasA,SBrkr,0,0,4,8,TA,Unf,TA,0,0,NA,0,WD
+1597,78,NA,AllPub,Crawfor,Duplex,6,Gable,VinylSd,TA,TA,ALQ,0,GasA,SBrkr,0,0,5,11,NA,Unf,TA,0,0,NA,0,WD
+1598,85,NA,AllPub,Crawfor,1Fam,6,Gable,VinylSd,TA,Gd,GLQ,0,GasA,SBrkr,0,0,3,6,NA,RFn,TA,0,0,NA,0,WD
+1599,35,NA,AllPub,Blueste,TwnhsE,6,Gable,HdBoard,Gd,Gd,GLQ,0,GasA,SBrkr,0,0,1,4,TA,Fin,TA,141,0,NA,0,WD
+1600,35,NA,AllPub,Blueste,TwnhsE,5,Gable,HdBoard,Gd,Gd,GLQ,0,GasA,SBrkr,0,0,2,5,TA,Unf,TA,112,0,NA,0,WD
+1601,58,NA,AllPub,IDOTRR,1Fam,5,Gable,Wd Sdng,TA,TA,BLQ,0,GasA,SBrkr,0,0,1,4,NA,Unf,Fa,0,0,NA,0,ConLw
+1602,50,NA,AllPub,IDOTRR,1Fam,5,Gable,Wd Sdng,TA,TA,BLQ,0,GasA,SBrkr,0,0,2,5,NA,Unf,TA,0,0,NA,0,COD
+1603,66,NA,AllPub,IDOTRR,1Fam,7,Hip,Wd Sdng,Fa,TA,Unf,0,GasA,SBrkr,0,0,3,5,NA,RFn,TA,0,0,NA,0,WD
+1604,44,NA,AllPub,Crawfor,TwnhsE,5,Hip,CmentBd,Gd,Ex,GLQ,0,GasA,SBrkr,0,1,2,5,Gd,Fin,TA,128,0,NA,0,WD
+1605,85,NA,AllPub,Mitchel,1Fam,5,Gable,VinylSd,Gd,Gd,GLQ,0,GasA,SBrkr,0,0,3,8,TA,Unf,TA,0,0,NA,0,WD
+1606,74,NA,AllPub,Mitchel,1Fam,7,Gable,Plywood,TA,TA,ALQ,0,GasA,SBrkr,0,1,3,6,Fa,Unf,TA,375,0,NA,80,WD
+1607,NA,NA,AllPub,Mitchel,Duplex,5,Gable,Plywood,TA,TA,Unf,0,GasA,SBrkr,0,0,5,9,NA,Unf,TA,0,0,NA,0,ConLD
+1608,88,NA,AllPub,Timber,1Fam,5,Gable,VinylSd,Gd,Gd,GLQ,0,GasA,SBrkr,0,0,3,6,TA,Fin,TA,100,0,NA,0,WD
+1609,73,NA,AllPub,Timber,1Fam,5,Gable,VinylSd,Gd,Gd,Unf,0,GasA,SBrkr,0,0,2,6,NA,RFn,TA,0,0,NA,0,New
+1610,73,NA,AllPub,Timber,1Fam,5,Gable,VinylSd,TA,Gd,Unf,0,GasA,SBrkr,0,0,3,7,NA,Fin,TA,100,0,NA,0,WD
+1611,85,NA,AllPub,Mitchel,1Fam,5,Hip,HdBoard,TA,TA,Rec,0,GasA,SBrkr,0,0,2,7,TA,Unf,TA,0,0,NA,0,WD
+1612,93,NA,AllPub,Mitchel,1Fam,5,Gable,VinylSd,TA,Ex,Unf,0,GasA,SBrkr,0,0,3,7,NA,RFn,TA,0,0,NA,0,WD
+1613,NA,NA,AllPub,Mitchel,1Fam,5,Gable,VinylSd,TA,Gd,Unf,0,GasA,SBrkr,0,0,3,7,Gd,Unf,TA,328,0,NA,0,WD
+1614,31,NA,AllPub,MeadowV,Twnhs,6,Gable,CmentBd,TA,Gd,GLQ,0,GasA,SBrkr,0,1,2,5,Po,RFn,TA,174,0,NA,0,WD
+1615,21,NA,AllPub,MeadowV,Twnhs,7,Gable,CmentBd,TA,TA,GLQ,0,GasA,SBrkr,0,0,3,5,NA,NA,NA,200,0,NA,0,WD
+1616,21,NA,AllPub,MeadowV,TwnhsE,4,Gable,CmentBd,TA,TA,Unf,0,GasA,SBrkr,0,0,3,5,NA,NA,NA,0,0,NA,0,WD
+1617,21,NA,AllPub,MeadowV,TwnhsE,6,Gable,CmentBd,TA,TA,Rec,0,GasA,SBrkr,0,0,3,5,NA,Unf,TA,0,0,NA,0,WD
+1618,50,NA,AllPub,Mitchel,1Fam,7,Gable,VinylSd,TA,TA,ALQ,0,GasA,SBrkr,0,0,3,5,NA,Unf,TA,0,0,NA,0,ConLD
+1619,76,NA,AllPub,Mitchel,1Fam,7,Gable,VinylSd,TA,Gd,Rec,590,GasA,SBrkr,0,0,2,5,NA,Unf,TA,431,0,NA,0,WD
+1620,70,NA,AllPub,Mitchel,Duplex,2,Gable,HdBoard,TA,TA,Unf,0,GasA,SBrkr,0,0,4,10,NA,Unf,TA,200,0,NA,600,WD
+1621,63,NA,AllPub,Mitchel,1Fam,5,Gable,HdBoard,TA,Gd,Rec,0,GasA,SBrkr,0,0,3,6,NA,Unf,TA,22,0,NA,0,WD
+1622,68,NA,AllPub,Mitchel,1Fam,5,Gable,HdBoard,TA,TA,BLQ,0,GasA,SBrkr,0,0,5,8,NA,Fin,TA,287,0,NA,0,WD
+1623,76,NA,AllPub,Mitchel,1Fam,5,Hip,VinylSd,Gd,Gd,GLQ,284,GasA,SBrkr,0,1,3,6,TA,Unf,TA,129,0,NA,0,WD
+1624,74,NA,AllPub,Mitchel,1Fam,5,Gable,VinylSd,Gd,Gd,GLQ,0,GasA,SBrkr,0,0,3,7,Fa,Fin,TA,162,0,NA,0,WD
+1625,74,NA,AllPub,NAmes,1Fam,5,Gable,MetalSd,TA,Fa,Rec,0,GasA,SBrkr,0,0,2,5,NA,Unf,TA,0,0,NA,0,WD
+1626,85,NA,AllPub,NAmes,1Fam,5,Hip,Plywood,TA,TA,LwQ,0,GasA,SBrkr,0,0,4,7,Gd,RFn,TA,80,0,NA,0,WD
+1627,88,NA,AllPub,Gilbert,1Fam,5,Gable,VinylSd,TA,Gd,ALQ,0,GasA,SBrkr,0,0,3,7,TA,Fin,TA,252,0,NA,0,WD
+1628,NA,NA,AllPub,Gilbert,1Fam,5,Gable,VinylSd,Gd,Gd,GLQ,0,GasA,SBrkr,0,0,4,9,Gd,Fin,TA,120,0,NA,0,WD
+1629,60,NA,AllPub,Gilbert,1Fam,5,Gable,HdBoard,TA,Gd,GLQ,0,GasA,SBrkr,0,0,3,7,TA,Fin,TA,48,0,NA,490,WD
+1630,28,NA,AllPub,StoneBr,TwnhsE,5,Gable,CmentBd,Gd,Ex,GLQ,0,GasA,SBrkr,0,0,1,8,Gd,Fin,TA,182,0,NA,0,WD
+1631,61,NA,AllPub,StoneBr,1Fam,5,Gable,CmentBd,TA,Gd,GLQ,0,GasA,SBrkr,0,0,2,5,NA,Fin,TA,168,0,NA,0,WD
+1632,57,NA,AllPub,StoneBr,TwnhsE,5,Gable,CmentBd,Gd,Gd,GLQ,0,GasA,SBrkr,0,0,2,6,NA,RFn,TA,52,0,NA,0,WD
+1633,57,NA,AllPub,Gilbert,1Fam,5,Gable,VinylSd,Gd,Gd,GLQ,0,GasA,SBrkr,0,0,3,7,TA,Fin,TA,256,0,NA,0,WD
+1634,60,NA,AllPub,Gilbert,1Fam,5,Gable,VinylSd,Gd,Gd,GLQ,0,GasA,SBrkr,0,0,3,7,TA,Fin,TA,0,0,NA,0,WD
+1635,NA,NA,AllPub,Gilbert,1Fam,5,Gable,HdBoard,TA,Gd,GLQ,0,GasA,SBrkr,0,0,3,7,TA,Fin,TA,0,0,NA,0,WD
+1636,58,NA,AllPub,Gilbert,1Fam,5,Gable,HdBoard,TA,Gd,Unf,0,GasA,SBrkr,0,0,3,6,TA,Unf,TA,0,0,NA,0,WD
+1637,85,NA,AllPub,Gilbert,1Fam,6,Gable,Wd Sdng,TA,Gd,ALQ,0,GasA,SBrkr,0,0,3,6,TA,Unf,TA,0,0,NA,0,WD
+1638,NA,NA,AllPub,NWAmes,1Fam,6,Gable,HdBoard,TA,Gd,Unf,0,GasA,SBrkr,0,0,4,8,TA,RFn,TA,192,0,NA,0,WD
+1639,80,NA,AllPub,NWAmes,1Fam,6,Gable,VinylSd,TA,TA,LwQ,0,GasA,SBrkr,0,0,3,7,TA,RFn,TA,252,0,NA,0,WD
+1640,NA,NA,AllPub,NWAmes,1Fam,7,Gable,Plywood,TA,Gd,ALQ,0,GasA,SBrkr,0,0,4,9,TA,RFn,TA,178,0,NA,0,WD
+1641,80,NA,AllPub,NWAmes,1Fam,5,Gable,HdBoard,TA,TA,ALQ,0,GasA,SBrkr,0,0,3,7,TA,Fin,TA,0,0,NA,0,WD
+1642,70,NA,AllPub,Somerst,1Fam,5,Gable,CmentBd,Gd,Gd,GLQ,0,GasA,SBrkr,0,0,3,7,Ex,RFn,TA,0,0,NA,0,WD
+1643,NA,NA,AllPub,Somerst,1Fam,5,Gable,VinylSd,Gd,Gd,Unf,0,GasA,SBrkr,0,0,3,7,TA,Fin,TA,0,0,NA,0,WD
+1644,NA,NA,AllPub,Somerst,1Fam,5,Gable,VinylSd,Gd,Gd,GLQ,276,GasA,SBrkr,0,0,3,7,Gd,RFn,TA,225,0,NA,0,WD
+1645,NA,NA,AllPub,NWAmes,1Fam,7,Gable,HdBoard,TA,Gd,ALQ,168,GasA,SBrkr,0,0,3,7,Fa,RFn,TA,0,0,NA,0,WD
+1646,78,NA,AllPub,NWAmes,1Fam,6,Hip,Plywood,TA,TA,ALQ,0,GasA,SBrkr,0,0,3,6,TA,RFn,TA,0,0,NA,0,WD
+1647,85,NA,AllPub,NWAmes,1Fam,5,Gable,Plywood,TA,TA,ALQ,0,GasA,SBrkr,0,0,3,5,TA,Unf,TA,40,0,NA,0,WD
+1648,NA,NA,AllPub,NAmes,1Fam,5,Gable,HdBoard,TA,TA,Unf,0,GasA,SBrkr,0,0,2,6,NA,RFn,TA,0,0,NA,0,COD
+1649,NA,NA,AllPub,NAmes,1Fam,7,Gable,Plywood,TA,Gd,ALQ,0,GasA,SBrkr,0,0,3,6,NA,Unf,TA,0,0,NA,0,WD
+1650,60,NA,AllPub,NAmes,1Fam,6,Gable,VinylSd,TA,TA,ALQ,0,GasA,SBrkr,0,0,3,5,NA,Unf,TA,210,0,NA,0,WD
+1651,60,NA,AllPub,NAmes,1Fam,7,Gable,VinylSd,TA,TA,ALQ,0,GasA,SBrkr,0,0,3,5,NA,Unf,TA,200,0,NA,0,WD
+1652,21,NA,AllPub,BrDale,Twnhs,5,Gable,HdBoard,TA,TA,BLQ,0,GasA,SBrkr,0,0,2,5,NA,Unf,TA,0,0,NA,0,WD
+1653,21,NA,AllPub,BrDale,Twnhs,6,Gable,HdBoard,TA,TA,Rec,294,GasA,SBrkr,0,0,2,5,NA,Unf,TA,0,0,NA,0,WD
+1654,24,NA,AllPub,NPkVill,TwnhsE,5,Gable,Brk Cmn,TA,Gd,ALQ,0,GasA,SBrkr,0,0,3,7,TA,RFn,TA,108,0,NA,0,WD
+1655,24,NA,AllPub,NPkVill,Twnhs,5,Gable,Brk Cmn,TA,Gd,ALQ,622,GasA,SBrkr,0,1,2,4,Fa,RFn,TA,0,0,NA,0,WD
+1656,24,NA,AllPub,NPkVill,Twnhs,5,Gable,Brk Cmn,TA,Gd,ALQ,0,GasA,SBrkr,0,0,3,6,TA,Unf,TA,0,0,NA,0,WD
+1657,24,NA,AllPub,NPkVill,TwnhsE,5,Gable,Brk Cmn,TA,Gd,ALQ,0,GasA,SBrkr,0,1,3,7,TA,Unf,TA,108,0,NA,0,WD
+1658,24,NA,AllPub,NPkVill,TwnhsE,5,Gable,Brk Cmn,Gd,Gd,ALQ,0,GasA,SBrkr,0,0,3,6,TA,Fin,TA,147,0,NA,0,WD
+1659,24,NA,AllPub,NPkVill,TwnhsE,6,Gable,Brk Cmn,TA,TA,ALQ,0,GasA,SBrkr,0,1,2,5,NA,Unf,TA,150,0,NA,0,WD
+1660,NA,NA,AllPub,NAmes,1Fam,7,Hip,HdBoard,Gd,TA,BLQ,0,GasA,SBrkr,0,1,3,5,TA,RFn,TA,0,0,NA,1200,WD
+1661,110,NA,AllPub,NridgHt,1Fam,5,Hip,VinylSd,Ex,Ex,GLQ,0,GasA,SBrkr,0,0,4,10,Gd,Fin,TA,135,0,NA,0,WD
+1662,95,NA,AllPub,NridgHt,1Fam,5,Gable,VinylSd,Gd,Ex,GLQ,0,GasA,SBrkr,0,0,3,8,Gd,RFn,TA,0,0,NA,0,New
+1663,95,NA,AllPub,NridgHt,1Fam,5,Hip,VinylSd,Ex,Ex,GLQ,0,GasA,SBrkr,0,0,3,7,Gd,RFn,TA,192,0,NA,0,WD
+1664,105,NA,AllPub,NridgHt,1Fam,5,Hip,VinylSd,Ex,Ex,GLQ,0,GasA,SBrkr,0,0,2,8,Gd,Fin,TA,360,0,NA,0,WD
+1665,95,NA,AllPub,NridgHt,1Fam,5,Gable,VinylSd,Ex,Ex,Unf,0,GasA,SBrkr,0,0,3,7,Gd,RFn,TA,319,0,NA,0,WD
+1666,129,NA,AllPub,NridgHt,1Fam,5,Hip,VinylSd,Gd,Ex,GLQ,0,GasA,SBrkr,0,0,3,7,Gd,Fin,TA,99,0,NA,0,WD
+1667,59,NA,AllPub,NridgHt,1Fam,5,Gable,VinylSd,Gd,Ex,GLQ,0,GasA,SBrkr,0,0,5,10,Gd,Fin,TA,192,0,NA,0,WD
+1668,87,NA,AllPub,NridgHt,1Fam,5,Hip,VinylSd,Ex,Ex,GLQ,0,GasA,SBrkr,0,0,3,8,Gd,RFn,TA,168,0,NA,0,ConLI
+1669,77,NA,AllPub,NridgHt,1Fam,5,Gable,VinylSd,Gd,Ex,GLQ,0,GasA,SBrkr,0,0,2,6,Gd,Fin,TA,184,0,NA,0,WD
+1670,102,NA,AllPub,NridgHt,1Fam,5,Hip,VinylSd,Ex,Ex,GLQ,0,GasA,SBrkr,0,0,3,7,Gd,Fin,TA,200,0,NA,0,WD
+1671,90,NA,AllPub,NridgHt,1Fam,5,Hip,VinylSd,Gd,Gd,ALQ,0,GasA,SBrkr,0,0,3,8,Gd,Fin,TA,165,0,NA,0,WD
+1672,110,NA,AllPub,NridgHt,1Fam,5,Hip,VinylSd,Gd,Ex,GLQ,0,GasA,SBrkr,0,0,3,10,Gd,Fin,TA,0,0,NA,0,WD
+1673,96,NA,AllPub,NridgHt,1Fam,5,Gable,VinylSd,Gd,Gd,Unf,0,GasA,SBrkr,0,0,4,10,Gd,Fin,TA,114,0,NA,0,WD
+1674,70,NA,AllPub,NridgHt,1Fam,5,Gable,VinylSd,Gd,Gd,Unf,0,GasA,SBrkr,0,0,3,6,Gd,RFn,TA,230,0,NA,0,WD
+1675,47,NA,AllPub,NridgHt,TwnhsE,5,Gable,VinylSd,Gd,Gd,ALQ,0,GasA,SBrkr,0,0,2,6,Gd,RFn,TA,192,0,NA,0,WD
+1676,34,NA,AllPub,NridgHt,Twnhs,5,Gable,VinylSd,Gd,Gd,GLQ,0,GasA,SBrkr,0,0,1,5,Gd,RFn,TA,170,0,NA,0,WD
+1677,80,NA,AllPub,NridgHt,TwnhsE,5,Gable,VinylSd,Gd,Gd,GLQ,0,GasA,SBrkr,0,0,2,6,Gd,RFn,TA,192,0,NA,0,WD
+1678,100,NA,AllPub,NridgHt,1Fam,5,Hip,CmentBd,Ex,Ex,GLQ,0,GasA,SBrkr,0,0,2,8,Ex,Fin,TA,226,0,NA,0,WD
+1679,117,NA,AllPub,NridgHt,1Fam,5,Hip,VinylSd,Gd,Ex,GLQ,0,GasA,SBrkr,0,0,3,8,Gd,Fin,TA,208,0,NA,0,WD
+1680,44,NA,AllPub,NridgHt,TwnhsE,5,Hip,MetalSd,Ex,Ex,GLQ,0,GasA,SBrkr,0,0,2,6,Gd,Fin,TA,231,0,NA,0,New
+1681,48,NA,AllPub,NridgHt,TwnhsE,5,Hip,VinylSd,Ex,Ex,Unf,0,GasA,SBrkr,0,0,2,6,Gd,RFn,TA,192,0,NA,0,WD
+1682,129,NA,AllPub,NridgHt,1Fam,5,Hip,VinylSd,Gd,Ex,GLQ,0,GasA,SBrkr,0,0,3,8,Gd,RFn,TA,218,0,NA,0,WD
+1683,48,NA,AllPub,NridgHt,TwnhsE,5,Gable,VinylSd,Gd,Gd,Unf,0,GasA,SBrkr,0,0,2,6,TA,RFn,TA,148,0,NA,0,WD
+1684,63,NA,AllPub,Gilbert,1Fam,5,Gable,VinylSd,Gd,Gd,Unf,0,GasA,SBrkr,0,0,3,8,Gd,Fin,TA,100,0,NA,0,WD
+1685,57,NA,AllPub,Gilbert,1Fam,5,Gable,VinylSd,Gd,Gd,Unf,0,GasA,SBrkr,0,0,3,7,Gd,Fin,TA,36,0,NA,0,WD
+1686,43,NA,AllPub,Blmngtn,TwnhsE,5,Gable,VinylSd,Gd,Gd,GLQ,0,GasA,SBrkr,0,0,2,5,Gd,Fin,TA,100,0,NA,0,WD
+1687,59,NA,AllPub,Gilbert,1Fam,5,Gable,Wd Shng,Gd,Gd,Unf,0,GasA,SBrkr,0,0,3,6,Gd,Fin,TA,100,0,NA,0,WD
+1688,62,NA,AllPub,Gilbert,1Fam,5,Gable,VinylSd,Gd,Gd,Unf,0,GasA,SBrkr,0,0,3,7,Gd,Fin,TA,120,0,NA,0,WD
+1689,61,NA,AllPub,Gilbert,1Fam,5,Gable,VinylSd,Gd,Gd,Unf,0,GasA,SBrkr,0,0,3,7,Gd,Fin,TA,300,0,NA,0,WD
+1690,NA,NA,AllPub,Gilbert,1Fam,5,Gable,VinylSd,Gd,Gd,GLQ,0,GasA,SBrkr,0,0,3,8,Gd,Fin,TA,0,0,NA,0,WD
+1691,NA,NA,AllPub,Gilbert,1Fam,5,Gable,VinylSd,Gd,Gd,GLQ,0,GasA,SBrkr,0,0,3,7,TA,Fin,TA,100,0,NA,0,WD
+1692,NA,NA,AllPub,Gilbert,1Fam,5,Gable,VinylSd,Gd,Ex,GLQ,0,GasA,SBrkr,0,0,4,8,Gd,Fin,TA,0,0,NA,0,WD
+1693,61,NA,AllPub,Gilbert,1Fam,5,Gable,VinylSd,Gd,Gd,GLQ,113,GasA,SBrkr,0,0,3,7,NA,Fin,TA,0,0,NA,0,WD
+1694,42,NA,AllPub,Gilbert,1Fam,5,Gable,VinylSd,TA,Gd,GLQ,0,GasA,SBrkr,0,0,3,7,TA,Fin,TA,0,0,NA,0,WD
+1695,62,NA,AllPub,Gilbert,1Fam,5,Gable,VinylSd,TA,Gd,Unf,0,GasA,SBrkr,0,0,3,7,TA,RFn,TA,0,0,NA,0,WD
+1696,NA,NA,AllPub,Gilbert,1Fam,5,Gable,VinylSd,Gd,Gd,ALQ,0,GasA,SBrkr,0,0,4,8,TA,Fin,TA,298,0,NA,0,WD
+1697,64,NA,AllPub,Gilbert,1Fam,6,Gable,VinylSd,TA,TA,Unf,0,GasA,SBrkr,0,0,3,7,TA,Fin,TA,0,0,NA,0,WD
+1698,106,NA,AllPub,NoRidge,1Fam,5,Gable,VinylSd,Gd,Gd,GLQ,0,GasA,SBrkr,0,0,4,10,TA,RFn,TA,252,0,NA,0,WD
+1699,NA,NA,AllPub,NoRidge,1Fam,5,Hip,Wd Sdng,Gd,Gd,BLQ,1526,GasA,SBrkr,0,0,3,7,Gd,Fin,TA,182,0,NA,0,WD
+1700,79,NA,AllPub,NoRidge,1Fam,5,Gable,VinylSd,Gd,Gd,GLQ,0,GasA,SBrkr,0,0,3,7,TA,Fin,TA,296,0,NA,0,WD
+1701,NA,NA,AllPub,NoRidge,1Fam,5,Gable,HdBoard,Gd,Gd,GLQ,0,GasA,SBrkr,0,0,3,8,TA,RFn,TA,173,0,NA,0,WD
+1702,86,NA,AllPub,Somerst,1Fam,5,Gable,VinylSd,Gd,Gd,Unf,0,GasA,SBrkr,0,0,3,7,NA,RFn,TA,120,0,NA,0,WD
+1703,78,NA,AllPub,Somerst,1Fam,5,Gable,VinylSd,Gd,Gd,Unf,0,GasA,SBrkr,0,0,3,7,Gd,Fin,TA,144,0,NA,0,WD
+1704,85,NA,AllPub,Somerst,1Fam,5,Gable,VinylSd,Gd,Gd,GLQ,0,GasA,SBrkr,0,0,3,7,Gd,RFn,TA,0,0,NA,0,WD
+1705,76,NA,AllPub,Somerst,1Fam,5,Hip,VinylSd,Gd,Ex,GLQ,0,GasA,SBrkr,0,0,3,7,Gd,Fin,TA,297,0,NA,0,WD
+1706,85,NA,AllPub,Somerst,1Fam,5,Hip,VinylSd,Ex,Ex,GLQ,0,GasA,SBrkr,0,0,2,9,Gd,Fin,TA,70,0,NA,0,WD
+1707,90,NA,AllPub,Somerst,1Fam,5,Gable,VinylSd,Gd,Ex,Unf,0,GasA,SBrkr,0,0,3,6,NA,Fin,TA,0,0,NA,0,New
+1708,72,NA,AllPub,Somerst,1Fam,5,Hip,VinylSd,Gd,Gd,Unf,0,GasA,SBrkr,0,0,3,7,NA,RFn,TA,205,0,NA,0,WD
+1709,112,NA,AllPub,Somerst,1Fam,5,Gable,VinylSd,Gd,Gd,Unf,0,GasA,SBrkr,0,0,3,7,Gd,RFn,TA,212,0,NA,0,WD
+1710,75,NA,AllPub,Somerst,1Fam,5,Gable,VinylSd,Gd,Gd,GLQ,0,GasA,SBrkr,0,0,2,6,Gd,RFn,TA,0,0,NA,0,WD
+1711,84,NA,AllPub,Somerst,1Fam,5,Hip,VinylSd,Gd,Ex,GLQ,0,GasA,SBrkr,0,0,3,8,Gd,Fin,TA,168,0,NA,0,WD
+1712,65,NA,AllPub,Somerst,1Fam,5,Hip,VinylSd,Gd,Gd,Unf,0,GasA,SBrkr,0,0,3,8,Gd,Fin,TA,0,0,NA,0,New
+1713,85,NA,AllPub,Somerst,1Fam,5,Gable,VinylSd,Gd,Gd,GLQ,0,GasA,SBrkr,0,0,3,8,Gd,RFn,TA,168,0,NA,0,WD
+1714,68,NA,AllPub,Somerst,1Fam,5,Gable,Wd Shng,Gd,Gd,GLQ,360,GasA,SBrkr,0,0,3,6,NA,RFn,TA,192,0,NA,0,WD
+1715,65,NA,AllPub,Somerst,1Fam,5,Gable,VinylSd,Gd,Gd,GLQ,0,GasA,SBrkr,0,0,3,6,NA,RFn,TA,0,0,NA,0,WD
+1716,80,NA,AllPub,SawyerW,1Fam,6,Gable,VinylSd,Gd,Gd,Unf,0,GasA,SBrkr,0,0,3,6,NA,RFn,TA,0,0,NA,0,WD
+1717,63,NA,AllPub,SawyerW,1Fam,5,Gable,VinylSd,Gd,Gd,GLQ,0,GasA,SBrkr,0,0,3,6,NA,RFn,TA,182,0,NA,0,WD
+1718,63,NA,AllPub,SawyerW,1Fam,5,Gable,VinylSd,TA,Gd,Unf,0,GasA,SBrkr,0,0,3,5,NA,NA,NA,0,0,NA,0,WD
+1719,96,NA,AllPub,SawyerW,1Fam,5,Gable,VinylSd,Gd,Gd,Unf,0,GasA,SBrkr,0,0,3,8,NA,RFn,TA,146,0,NA,0,WD
+1720,76,NA,AllPub,SawyerW,1Fam,5,Gable,VinylSd,Gd,Gd,BLQ,774,GasA,SBrkr,0,0,3,6,NA,RFn,TA,210,0,NA,0,WD
+1721,63,NA,AllPub,SawyerW,1Fam,5,Gable,VinylSd,Gd,Gd,Unf,0,GasA,SBrkr,0,0,3,6,NA,Unf,TA,248,0,NA,0,WD
+1722,63,NA,AllPub,SawyerW,1Fam,5,Gable,VinylSd,TA,Gd,Unf,0,GasA,SBrkr,0,0,3,6,NA,NA,NA,0,0,NA,0,WD
+1723,60,NA,AllPub,SawyerW,1Fam,5,Gable,VinylSd,TA,Gd,GLQ,0,GasA,SBrkr,0,0,3,6,NA,Unf,TA,0,0,NA,0,WD
+1724,61,NA,AllPub,SawyerW,1Fam,5,Gable,VinylSd,Gd,Gd,Unf,0,GasA,SBrkr,0,0,2,6,NA,RFn,TA,0,0,NA,0,New
+1725,43,NA,AllPub,SawyerW,1Fam,5,Gable,VinylSd,Gd,Gd,GLQ,0,GasA,SBrkr,0,0,4,8,TA,RFn,TA,0,0,NA,0,WD
+1726,70,NA,AllPub,SawyerW,1Fam,6,Gable,HdBoard,Gd,Gd,GLQ,364,GasA,SBrkr,0,0,3,6,NA,RFn,TA,0,0,NA,0,WD
+1727,50,NA,AllPub,SawyerW,TwnhsE,5,Gable,ImStucc,Gd,Gd,Unf,0,GasA,SBrkr,0,0,2,5,NA,RFn,TA,0,0,NA,0,WD
+1728,70,NA,AllPub,SawyerW,1Fam,5,Gable,VinylSd,Gd,Gd,LwQ,596,GasA,SBrkr,0,0,3,6,NA,RFn,TA,140,0,NA,0,WD
+1729,NA,NA,AllPub,SawyerW,1Fam,7,Gable,VinylSd,TA,Gd,Rec,0,GasA,SBrkr,0,0,3,6,NA,RFn,TA,0,0,NA,0,WD
+1730,75,NA,AllPub,SawyerW,Duplex,7,Gable,Wd Shng,TA,NA,NA,0,GasA,SBrkr,0,0,4,8,TA,Unf,TA,0,0,NA,0,WD
+1731,63,NA,AllPub,Sawyer,1Fam,5,Hip,Plywood,TA,TA,LwQ,884,GasA,SBrkr,0,0,3,5,NA,Unf,TA,0,0,NA,0,WD
+1732,NA,NA,AllPub,Sawyer,1Fam,6,Gable,MetalSd,TA,TA,GLQ,0,GasA,SBrkr,0,0,3,5,NA,Unf,TA,0,0,NA,0,WD
+1733,NA,NA,AllPub,Sawyer,1Fam,5,Gable,Plywood,TA,TA,BLQ,0,GasA,SBrkr,0,0,2,5,NA,Unf,TA,158,0,NA,0,WD
+1734,NA,NA,AllPub,Sawyer,1Fam,5,Gable,Plywood,TA,TA,Rec,0,GasA,SBrkr,0,0,3,5,NA,Unf,TA,171,0,NA,0,Oth
+1735,NA,NA,AllPub,Sawyer,1Fam,8,Gable,Plywood,Gd,TA,ALQ,0,GasA,SBrkr,0,0,3,6,NA,RFn,TA,0,0,NA,0,WD
+1736,65,NA,AllPub,Sawyer,1Fam,6,Gable,VinylSd,TA,TA,LwQ,590,GasA,SBrkr,0,1,3,6,NA,Unf,TA,0,0,NA,0,WD
+1737,NA,NA,AllPub,Veenker,1Fam,8,Gable,VinylSd,Gd,Gd,ALQ,92,GasA,SBrkr,0,0,2,6,Gd,RFn,TA,462,255,NA,0,WD
+1738,NA,NA,AllPub,NoRidge,1Fam,8,Gable,VinylSd,Gd,Gd,GLQ,216,GasA,SBrkr,0,1,3,7,TA,Unf,TA,502,0,NA,0,WD
+1739,32,Pave,AllPub,Somerst,Twnhs,5,Gable,MetalSd,Gd,Gd,Unf,0,GasA,SBrkr,0,0,3,9,TA,Fin,TA,0,0,NA,0,WD
+1740,NA,Pave,AllPub,Somerst,TwnhsE,5,Gable,VinylSd,Gd,Gd,Unf,0,GasA,SBrkr,0,0,2,6,Gd,Fin,TA,0,0,NA,0,New
+1741,NA,Pave,AllPub,Somerst,TwnhsE,5,Gable,VinylSd,Gd,Gd,GLQ,0,GasA,SBrkr,0,0,1,5,Gd,Fin,TA,0,0,NA,0,WD
+1742,34,NA,AllPub,Somerst,TwnhsE,5,Gable,MetalSd,Gd,Gd,GLQ,0,GasA,SBrkr,0,0,2,4,NA,Unf,TA,0,0,NA,0,WD
+1743,35,NA,AllPub,Somerst,TwnhsE,5,Hip,MetalSd,Gd,Gd,GLQ,0,GasA,SBrkr,0,0,3,6,NA,Unf,TA,0,0,NA,0,WD
+1744,NA,NA,AllPub,Veenker,1Fam,9,Gable,MetalSd,Ex,Gd,GLQ,136,GasA,SBrkr,0,0,2,5,Gd,Fin,TA,501,225,NA,0,WD
+1745,110,NA,AllPub,Veenker,1Fam,5,Gable,BrkFace,Gd,Gd,LwQ,0,GasA,SBrkr,0,0,2,7,NA,RFn,TA,228,0,NA,0,WD
+1746,80,NA,AllPub,Veenker,1Fam,5,Gable,Plywood,Gd,TA,Unf,0,GasA,SBrkr,0,0,4,5,Gd,Unf,TA,0,0,NA,0,WD
+1747,NA,NA,AllPub,NWAmes,1Fam,6,Gable,VinylSd,TA,TA,GLQ,42,GasA,SBrkr,0,0,3,7,TA,RFn,TA,297,0,NA,0,WD
+1748,80,NA,AllPub,NWAmes,1Fam,7,Gable,MetalSd,TA,TA,Unf,0,GasA,SBrkr,0,0,5,8,TA,RFn,TA,0,0,NA,0,WD
+1749,80,NA,AllPub,NWAmes,1Fam,5,Gable,HdBoard,TA,Gd,ALQ,147,GasA,SBrkr,0,1,3,6,Fa,RFn,TA,312,0,NA,650,WD
+1750,75,NA,AllPub,NWAmes,1Fam,5,Gable,HdBoard,TA,TA,BLQ,0,GasA,SBrkr,0,0,3,5,NA,Unf,TA,0,0,NA,0,WD
+1751,NA,NA,AllPub,NWAmes,1Fam,7,Hip,HdBoard,TA,Gd,GLQ,0,GasA,SBrkr,0,0,4,8,TA,RFn,TA,321,0,NA,0,WD
+1752,62,NA,AllPub,NAmes,1Fam,6,Gable,HdBoard,TA,TA,BLQ,0,GasA,SBrkr,0,1,2,5,NA,Fin,TA,0,0,NA,0,WD
+1753,80,NA,AllPub,NAmes,1Fam,5,Hip,HdBoard,TA,TA,Unf,0,GasA,SBrkr,0,0,3,7,NA,Unf,TA,160,0,NA,0,COD
+1754,80,NA,AllPub,NWAmes,1Fam,5,Gable,Plywood,TA,TA,ALQ,0,GasA,SBrkr,0,1,4,8,TA,RFn,TA,0,0,NA,0,COD
+1755,NA,NA,AllPub,NWAmes,1Fam,5,Hip,HdBoard,TA,Gd,GLQ,0,GasA,SBrkr,0,1,3,5,Gd,RFn,TA,0,0,NA,0,WD
+1756,60,NA,AllPub,NAmes,1Fam,7,Gable,VinylSd,TA,TA,ALQ,0,GasA,SBrkr,0,0,2,5,Po,Unf,TA,0,360,NA,0,WD
+1757,65,NA,AllPub,NAmes,1Fam,7,Hip,MetalSd,TA,TA,BLQ,0,GasA,SBrkr,0,0,3,5,NA,Unf,TA,0,0,NA,0,WD
+1758,NA,NA,AllPub,NAmes,1Fam,5,Gable,Wd Sdng,TA,TA,BLQ,0,GasA,SBrkr,0,0,3,6,Gd,RFn,TA,0,0,NA,0,WD
+1759,NA,NA,AllPub,NAmes,1Fam,6,Gable,Wd Sdng,TA,TA,BLQ,201,GasA,SBrkr,0,0,3,7,Gd,Unf,TA,0,0,NA,0,WD
+1760,85,NA,AllPub,NAmes,1Fam,6,Gable,Wd Sdng,TA,TA,ALQ,512,GasA,SBrkr,0,0,3,6,TA,RFn,TA,172,0,NA,0,WD
+1761,115,NA,AllPub,NAmes,1Fam,5,Gable,HdBoard,TA,TA,LwQ,0,GasA,SBrkr,0,0,3,6,Gd,Unf,TA,0,0,NA,0,COD
+1762,NA,NA,AllPub,NAmes,1Fam,6,Gable,MetalSd,TA,TA,ALQ,0,GasA,SBrkr,0,0,4,7,TA,Fin,TA,0,0,NA,0,WD
+1763,85,NA,AllPub,NAmes,1Fam,6,Hip,HdBoard,TA,TA,ALQ,0,GasA,SBrkr,0,0,4,7,Po,Fin,TA,85,0,NA,0,WD
+1764,68,NA,AllPub,NAmes,1Fam,5,Gable,Wd Sdng,TA,TA,Rec,247,GasA,SBrkr,0,0,2,5,NA,RFn,TA,0,0,NA,0,WD
+1765,90,NA,AllPub,NAmes,1Fam,5,Gable,Brk Cmn,Gd,TA,Rec,0,GasA,SBrkr,0,0,2,5,NA,Unf,Gd,0,0,NA,0,WD
+1766,92,NA,AllPub,NAmes,1Fam,6,Hip,MetalSd,TA,TA,Rec,0,GasA,SBrkr,0,0,3,6,TA,RFn,TA,0,0,NA,0,WD
+1767,80,NA,AllPub,NAmes,1Fam,8,Gable,MetalSd,TA,TA,ALQ,0,GasA,SBrkr,0,0,2,5,Gd,Unf,TA,0,0,NA,0,WD
+1768,73,NA,AllPub,NAmes,1Fam,7,Gable,Wd Sdng,Gd,TA,ALQ,0,GasA,SBrkr,0,0,3,6,NA,RFn,TA,257,0,NA,0,WD
+1769,NA,NA,AllPub,NAmes,1Fam,6,Gable,Plywood,TA,TA,BLQ,0,GasA,SBrkr,0,0,3,5,Gd,Unf,TA,0,0,NA,0,WD
+1770,66,NA,AllPub,NAmes,1Fam,8,Hip,MetalSd,Gd,TA,ALQ,0,GasA,SBrkr,0,0,3,6,NA,Unf,TA,156,0,NA,0,WD
+1771,70,NA,AllPub,NAmes,1Fam,5,Gable,BrkFace,TA,TA,Rec,202,GasA,SBrkr,0,1,3,6,NA,RFn,TA,0,0,NA,0,COD
+1772,70,NA,AllPub,NAmes,1Fam,5,Gable,AsbShng,TA,TA,Rec,483,GasA,FuseA,0,1,3,6,NA,Unf,TA,280,0,NA,0,WD
+1773,80,NA,AllPub,NAmes,1Fam,5,Gable,Plywood,TA,TA,Rec,750,GasA,SBrkr,0,0,3,6,Gd,Unf,TA,0,0,NA,0,WD
+1774,76,NA,AllPub,NAmes,Duplex,4,Hip,Wd Sdng,TA,TA,Unf,0,GasA,SBrkr,0,0,4,8,NA,Unf,TA,0,0,NA,0,WD
+1775,53,NA,AllPub,NAmes,1Fam,7,Hip,MetalSd,TA,TA,ALQ,0,GasA,SBrkr,0,0,3,6,NA,Unf,TA,0,0,NA,0,WD
+1776,67,NA,AllPub,NAmes,1Fam,5,Hip,MetalSd,TA,TA,Rec,0,GasA,FuseA,0,0,2,5,NA,Unf,TA,0,0,NA,0,WD
+1777,80,NA,AllPub,NAmes,1Fam,6,Gable,MetalSd,TA,TA,BLQ,0,GasA,SBrkr,0,0,2,4,NA,Unf,TA,0,0,NA,0,WD
+1778,60,NA,AllPub,NAmes,1Fam,8,Hip,Wd Sdng,Gd,TA,GLQ,0,GasA,SBrkr,0,0,2,5,NA,Unf,TA,0,0,NA,0,WD
+1779,75,NA,AllPub,NAmes,1Fam,5,Hip,Wd Sdng,TA,NA,NA,0,GasA,FuseA,0,0,2,7,NA,Fin,TA,208,0,NA,0,ConLD
+1780,78,NA,AllPub,NAmes,1Fam,7,Gable,Wd Shng,TA,TA,ALQ,0,GasA,FuseA,0,0,3,6,Gd,Unf,TA,0,0,NA,0,WD
+1781,60,NA,AllPub,NAmes,1Fam,6,Gable,Wd Sdng,TA,TA,BLQ,0,GasA,SBrkr,0,0,3,6,NA,Fin,TA,126,0,NA,0,WD
+1782,53,NA,AllPub,OldTown,1Fam,5,Gable,MetalSd,TA,TA,Unf,0,GasA,FuseA,0,0,2,4,NA,Unf,Fa,0,0,NA,0,WD
+1783,60,NA,AllPub,OldTown,1Fam,7,Gable,VinylSd,TA,TA,Unf,0,GasA,SBrkr,0,1,4,7,NA,Unf,TA,187,0,NA,0,WD
+1784,80,NA,AllPub,OldTown,1Fam,8,Gable,MetalSd,Gd,Fa,Unf,0,GasA,SBrkr,0,0,2,6,NA,Unf,TA,0,0,NA,0,WD
+1785,60,Grvl,AllPub,OldTown,1Fam,7,Gable,MetalSd,TA,TA,Unf,0,GasA,SBrkr,0,0,3,6,NA,Unf,TA,0,0,NA,0,WD
+1786,60,Grvl,AllPub,OldTown,1Fam,5,Gable,MetalSd,TA,TA,Unf,0,GasA,SBrkr,1064,0,3,8,TA,Unf,TA,0,0,NA,0,WD
+1787,60,NA,AllPub,OldTown,1Fam,9,Gable,VinylSd,Gd,TA,Unf,0,GasA,SBrkr,0,0,4,5,NA,Unf,TA,0,0,NA,0,WD
+1788,90,NA,AllPub,OldTown,1Fam,5,Gable,Stucco,Fa,Fa,Unf,0,GasA,FuseA,0,0,2,4,NA,NA,NA,0,0,NA,0,WD
+1789,60,Grvl,AllPub,OldTown,1Fam,7,Gable,Wd Sdng,TA,TA,Unf,0,GasA,SBrkr,0,0,2,4,NA,Fin,TA,0,0,NA,0,WD
+1790,60,Grvl,AllPub,OldTown,1Fam,5,Gable,VinylSd,TA,TA,Unf,0,GasA,FuseA,0,0,1,4,NA,Unf,TA,0,0,NA,0,WD
+1791,81,NA,AllPub,NAmes,Duplex,5,Gable,MetalSd,TA,TA,Unf,0,GasA,SBrkr,0,0,6,12,NA,RFn,TA,0,0,NA,0,WD
+1792,83,NA,AllPub,NAmes,1Fam,7,Gable,HdBoard,TA,TA,Rec,0,GasA,SBrkr,0,0,3,6,NA,Unf,TA,0,0,NA,0,WD
+1793,77,NA,AllPub,NAmes,1Fam,4,Gable,HdBoard,Fa,TA,BLQ,60,GasA,SBrkr,0,0,3,6,Po,RFn,TA,0,0,NA,0,WD
+1794,62,NA,AllPub,NAmes,1Fam,9,Hip,Wd Sdng,Gd,TA,GLQ,0,GasA,SBrkr,0,0,2,6,NA,Unf,TA,0,0,NA,450,WD
+1795,90,NA,AllPub,NAmes,1Fam,6,Hip,Plywood,TA,TA,Rec,0,GasA,FuseA,0,0,3,5,NA,Unf,TA,0,0,NA,0,WD
+1796,80,NA,AllPub,NAmes,1Fam,6,Flat,Wd Sdng,TA,Gd,Unf,0,GasA,SBrkr,0,0,2,5,Gd,RFn,TA,0,0,NA,0,WD
+1797,60,NA,AllPub,NAmes,1Fam,5,Gable,Wd Sdng,TA,TA,Rec,0,GasA,SBrkr,0,0,3,5,NA,Unf,TA,0,0,NA,0,COD
+1798,71,NA,AllPub,NAmes,1Fam,6,Hip,BrkFace,TA,TA,Unf,0,GasA,SBrkr,0,0,3,6,NA,RFn,TA,0,0,NA,0,WD
+1799,60,NA,AllPub,NAmes,1Fam,7,Gable,MetalSd,TA,TA,ALQ,102,GasA,SBrkr,0,0,2,4,NA,Unf,TA,0,0,NA,0,WD
+1800,80,NA,AllPub,NAmes,1Fam,5,Gable,Plywood,TA,Gd,GLQ,95,GasA,SBrkr,0,0,3,6,NA,RFn,TA,0,0,NA,0,WD
+1801,60,NA,AllPub,NAmes,1Fam,7,Gable,MetalSd,TA,TA,Unf,0,GasA,FuseF,0,0,4,6,NA,Unf,TA,0,0,NA,0,WD
+1802,60,NA,AllPub,NAmes,1Fam,7,Gable,MetalSd,TA,TA,LwQ,0,GasA,SBrkr,431,0,3,6,NA,Unf,TA,180,0,NA,0,COD
+1803,76,NA,AllPub,NAmes,1Fam,5,Gable,HdBoard,TA,TA,Unf,0,GasA,SBrkr,0,0,4,8,NA,Unf,TA,0,0,NA,0,WD
+1804,75,NA,AllPub,NAmes,Duplex,7,Gable,Plywood,TA,Gd,GLQ,0,GasA,SBrkr,0,0,2,4,NA,Unf,TA,0,0,NA,0,WD
+1805,80,NA,AllPub,NAmes,1Fam,6,Hip,HdBoard,TA,TA,BLQ,0,GasA,SBrkr,0,0,3,6,Fa,RFn,TA,0,0,NA,0,WD
+1806,68,Grvl,AllPub,OldTown,1Fam,8,Gable,Wd Sdng,TA,TA,Unf,0,GasA,SBrkr,0,0,3,6,NA,Unf,Fa,54,0,NA,0,WD
+1807,57,Grvl,AllPub,OldTown,Duplex,5,Gable,Wd Sdng,TA,TA,LwQ,0,GasA,FuseA,0,0,4,12,NA,Unf,Fa,0,0,NA,0,WD
+1808,90,NA,AllPub,OldTown,1Fam,8,Gable,VinylSd,TA,TA,Unf,0,GasA,SBrkr,0,0,3,6,NA,Unf,Fa,0,0,NA,0,WD
+1809,90,NA,AllPub,OldTown,1Fam,8,Gable,VinylSd,Gd,TA,Unf,0,GasA,SBrkr,0,0,3,7,NA,NA,NA,0,0,NA,0,WD
+1810,57,Grvl,AllPub,OldTown,1Fam,6,Gable,Wd Sdng,TA,TA,ALQ,0,GasA,FuseA,0,0,3,7,Gd,Unf,TA,0,0,NA,0,WD
+1811,63,NA,AllPub,OldTown,2fmCon,6,Gable,AsbShng,Fa,Fa,Unf,0,GasA,SBrkr,0,0,4,8,NA,NA,NA,0,0,NA,0,WD
+1812,56,Grvl,AllPub,OldTown,1Fam,5,Gable,MetalSd,TA,Fa,Unf,0,GasA,SBrkr,0,0,3,6,NA,NA,NA,80,0,NA,0,WD
+1813,50,NA,AllPub,OldTown,1Fam,7,Gable,Wd Sdng,TA,TA,BLQ,0,GasA,FuseA,0,0,3,6,NA,Unf,TA,0,0,NA,0,WD
+1814,62,NA,AllPub,OldTown,1Fam,6,Gable,MetalSd,TA,Fa,Unf,0,GasA,SBrkr,0,0,2,5,NA,Unf,TA,0,0,NA,0,Oth
+1815,50,NA,AllPub,OldTown,1Fam,4,Gable,MetalSd,TA,NA,NA,0,GasA,FuseA,0,0,1,4,NA,Unf,TA,0,0,NA,0,WD
+1816,60,NA,AllPub,OldTown,1Fam,8,Gable,Stucco,Gd,Fa,Unf,0,GasA,SBrkr,0,0,2,5,NA,Unf,TA,0,0,NA,0,WD
+1817,60,NA,AllPub,OldTown,1Fam,4,Gable,VinylSd,Gd,Fa,Unf,0,GasA,SBrkr,0,0,3,7,NA,Unf,TA,0,0,NA,0,WD
+1818,70,NA,AllPub,OldTown,1Fam,7,Gable,BrkFace,TA,Fa,Unf,0,GasA,FuseA,0,0,3,8,NA,Unf,TA,0,0,NA,0,WD
+1819,60,Grvl,AllPub,OldTown,1Fam,7,Gable,Stucco,TA,TA,Unf,0,GasA,SBrkr,0,0,3,5,Gd,Unf,TA,0,0,NA,0,WD
+1820,NA,NA,AllPub,OldTown,1Fam,3,Gable,Stucco,TA,TA,Unf,0,GasA,SBrkr,0,0,2,5,Gd,NA,NA,0,0,NA,0,WD
+1821,60,NA,AllPub,OldTown,1Fam,6,Gable,MetalSd,Fa,TA,Unf,0,GasA,SBrkr,436,0,3,6,NA,Unf,Fa,0,0,NA,0,ConLI
+1822,60,Grvl,AllPub,OldTown,1Fam,7,Gable,MetalSd,TA,TA,Unf,0,GasA,SBrkr,0,0,4,8,NA,Unf,TA,0,0,NA,0,WD
+1823,72,NA,AllPub,IDOTRR,1Fam,3,Mansard,AsbShng,TA,Fa,Unf,0,GasA,SBrkr,0,0,2,5,NA,NA,NA,0,0,NA,0,WD
+1824,NA,NA,AllPub,BrkSide,1Fam,6,Gable,MetalSd,TA,TA,Unf,0,GasA,FuseA,0,0,3,6,Gd,Unf,Fa,266,0,NA,0,WD
+1825,50,NA,AllPub,BrkSide,1Fam,7,Gable,Wd Shng,TA,TA,Unf,0,GasA,SBrkr,0,0,3,7,Gd,Unf,TA,244,0,NA,0,WD
+1826,60,NA,AllPub,BrkSide,1Fam,5,Gable,Stucco,TA,TA,Rec,0,GasA,SBrkr,0,0,3,6,NA,Fin,TA,0,0,NA,0,WD
+1827,51,NA,AllPub,BrkSide,1Fam,6,Gable,MetalSd,TA,TA,Unf,0,GasA,SBrkr,0,0,2,5,NA,Unf,TA,0,0,NA,0,WD
+1828,51,NA,AllPub,BrkSide,1Fam,6,Gable,Wd Sdng,TA,TA,LwQ,0,GasA,FuseA,0,0,3,6,Gd,Unf,Fa,189,150,NA,0,WD
+1829,50,NA,AllPub,BrkSide,1Fam,5,Hip,Wd Sdng,TA,TA,LwQ,0,GasA,SBrkr,0,0,2,5,NA,Unf,Fa,0,0,NA,0,WD
+1830,57,Grvl,AllPub,OldTown,1Fam,6,Gable,MetalSd,TA,TA,Unf,0,GasA,FuseA,0,0,3,8,NA,Unf,Fa,0,0,NA,0,WD
+1831,68,Grvl,AllPub,OldTown,1Fam,8,Gable,Wd Sdng,TA,TA,Unf,0,GasA,SBrkr,0,0,3,8,NA,Unf,TA,24,0,NA,400,WD
+1832,50,Grvl,AllPub,OldTown,Duplex,1,Hip,MetalSd,TA,TA,Unf,0,GasA,SBrkr,0,0,4,11,NA,NA,NA,0,0,NA,0,WD
+1833,57,NA,AllPub,IDOTRR,1Fam,5,Gable,Plywood,TA,TA,BLQ,0,GasA,SBrkr,0,0,4,8,NA,Unf,TA,0,0,NA,0,WD
+1834,NA,NA,AllPub,OldTown,1Fam,7,Gable,Wd Sdng,TA,TA,Unf,0,GasA,SBrkr,0,0,3,7,NA,Unf,TA,0,0,NA,0,WD
+1835,41,NA,AllPub,OldTown,2fmCon,5,Gable,MetalSd,TA,TA,Rec,0,GasA,FuseF,0,0,6,9,NA,NA,NA,0,0,NA,0,WD
+1836,60,NA,AllPub,IDOTRR,1Fam,6,Gable,MetalSd,TA,TA,Unf,0,GasA,FuseA,0,0,3,4,NA,Unf,Fa,0,0,NA,0,WD
+1837,86,Grvl,AllPub,IDOTRR,1Fam,6,Hip,MetalSd,TA,Gd,BLQ,63,GasA,SBrkr,0,0,1,5,NA,NA,NA,0,0,NA,0,COD
+1838,60,Grvl,AllPub,IDOTRR,2fmCon,7,Gable,MetalSd,TA,TA,Rec,262,GasA,FuseF,0,0,3,7,NA,Unf,TA,0,0,NA,0,WD
+1839,50,NA,AllPub,Sawyer,1Fam,9,Gable,MetalSd,TA,Fa,Unf,0,GasA,FuseA,0,1,2,4,NA,Unf,TA,0,0,NA,0,WD
+1840,60,NA,AllPub,Edwards,Duplex,5,Gable,Plywood,TA,Gd,GLQ,0,GasA,SBrkr,0,0,3,5,NA,NA,NA,120,0,NA,0,WD
+1841,NA,NA,AllPub,Edwards,Duplex,5,Gable,Plywood,TA,Gd,GLQ,0,GasA,SBrkr,0,0,2,6,NA,Unf,TA,0,0,NA,0,WD
+1842,60,NA,AllPub,Edwards,1Fam,3,Gable,MetalSd,TA,TA,Unf,0,GasA,FuseA,0,0,4,6,NA,Unf,Po,0,0,NA,0,WD
+1843,75,NA,AllPub,Sawyer,1Fam,6,Hip,HdBoard,TA,TA,BLQ,0,GasA,SBrkr,0,0,3,6,Po,Fin,TA,0,0,NA,0,WD
+1844,NA,NA,AllPub,Sawyer,1Fam,5,Gable,HdBoard,TA,Gd,GLQ,0,GasA,SBrkr,0,1,3,5,Fa,Fin,TA,0,0,NA,0,WD
+1845,88,NA,AllPub,Sawyer,1Fam,5,Hip,HdBoard,TA,TA,Unf,0,GasA,SBrkr,259,0,4,8,TA,Unf,TA,290,0,NA,0,WD
+1846,88,NA,AllPub,Sawyer,1Fam,5,Hip,Wd Sdng,TA,TA,BLQ,0,GasA,SBrkr,0,1,3,6,TA,RFn,TA,0,0,NA,0,COD
+1847,NA,NA,AllPub,ClearCr,1Fam,5,Hip,Wd Sdng,TA,TA,Unf,0,GasA,SBrkr,0,1,4,9,TA,Unf,TA,131,0,NA,0,WD
+1848,NA,NA,AllPub,Sawyer,1Fam,2,Gable,Wd Sdng,TA,NA,NA,0,GasA,SBrkr,0,0,2,5,NA,NA,NA,0,0,NA,0,WD
+1849,NA,NA,AllPub,Edwards,1Fam,5,Gable,VinylSd,TA,NA,NA,0,GasA,SBrkr,0,0,2,6,NA,Unf,Fa,0,0,NA,0,WD
+1850,68,NA,AllPub,Edwards,1Fam,5,Hip,MetalSd,TA,TA,Rec,0,GasA,FuseA,0,0,2,5,NA,Unf,TA,0,0,NA,0,WD
+1851,50,NA,AllPub,Edwards,1Fam,7,Hip,MetalSd,TA,TA,BLQ,0,GasA,SBrkr,0,0,3,6,Gd,Unf,TA,0,0,NA,0,WD
+1852,62,NA,AllPub,Edwards,1Fam,6,Gable,Wd Sdng,TA,Gd,BLQ,0,GasW,SBrkr,0,0,3,5,Gd,RFn,TA,328,0,NA,0,WD
+1853,42,NA,AllPub,Edwards,TwnhsE,5,Gable,HdBoard,Gd,Gd,GLQ,393,GasA,SBrkr,0,0,2,5,NA,Fin,TA,0,0,NA,0,WD
+1854,74,NA,AllPub,SawyerW,1Fam,6,Gable,HdBoard,Gd,Gd,GLQ,286,GasA,SBrkr,0,0,1,4,NA,Unf,TA,114,0,NA,0,WD
+1855,66,NA,AllPub,SawyerW,1Fam,5,Gable,Wd Sdng,Gd,Gd,Rec,450,GasA,SBrkr,0,0,2,5,Po,Unf,TA,0,0,NA,600,WD
+1856,85,NA,AllPub,SawyerW,1Fam,5,Gable,VinylSd,Gd,Gd,GLQ,0,GasA,SBrkr,0,0,3,8,TA,RFn,TA,400,0,NA,0,WD
+1857,120,NA,AllPub,SawyerW,1Fam,7,Gable,HdBoard,Gd,NA,NA,0,GasA,SBrkr,0,0,4,7,TA,Unf,TA,0,0,NA,0,WD
+1858,64,NA,AllPub,SawyerW,Duplex,5,Gable,HdBoard,TA,NA,NA,0,GasA,SBrkr,0,0,6,8,NA,Unf,TA,73,0,NA,0,WD
+1859,64,NA,AllPub,SawyerW,Duplex,5,Gable,HdBoard,TA,NA,NA,0,GasA,SBrkr,0,0,4,8,NA,Unf,TA,0,0,NA,0,WD
+1860,64,NA,AllPub,SawyerW,Duplex,5,Gable,Plywood,TA,Gd,GLQ,0,GasA,SBrkr,0,0,2,6,TA,Unf,TA,120,0,NA,0,WD
+1861,64,NA,AllPub,SawyerW,Duplex,5,Gable,HdBoard,TA,NA,NA,0,GasA,SBrkr,0,0,4,8,NA,Unf,TA,0,0,NA,0,WD
+1862,NA,NA,AllPub,SawyerW,Duplex,5,Hip,VinylSd,TA,Ex,GLQ,0,GasA,SBrkr,0,0,6,8,TA,Fin,TA,312,0,NA,0,WD
+1863,NA,NA,AllPub,SawyerW,Duplex,5,Hip,VinylSd,TA,Ex,GLQ,0,GasA,SBrkr,0,0,6,8,TA,Fin,TA,312,0,NA,0,WD
+1864,NA,NA,AllPub,SawyerW,Duplex,5,Hip,VinylSd,TA,Ex,GLQ,0,GasA,SBrkr,0,0,6,8,TA,Fin,TA,312,0,NA,0,WD
+1865,84,NA,AllPub,CollgCr,1Fam,5,Hip,VinylSd,Ex,Ex,GLQ,0,GasA,SBrkr,0,0,1,8,Gd,Fin,TA,185,0,NA,0,New
+1866,65,NA,AllPub,CollgCr,1Fam,5,Gable,VinylSd,Ex,Ex,GLQ,0,GasA,SBrkr,0,0,3,8,Gd,RFn,TA,208,0,NA,0,WD
+1867,71,NA,AllPub,CollgCr,1Fam,5,Gable,VinylSd,Gd,Gd,Unf,0,GasA,SBrkr,0,0,3,6,Gd,RFn,TA,192,0,NA,0,WD
+1868,77,NA,AllPub,CollgCr,1Fam,5,Hip,VinylSd,Gd,Ex,GLQ,0,GasA,SBrkr,0,0,3,7,Gd,RFn,TA,154,0,NA,0,WD
+1869,64,NA,AllPub,CollgCr,1Fam,5,Gable,VinylSd,Gd,Gd,GLQ,0,GasA,SBrkr,0,0,2,6,Gd,RFn,TA,168,0,NA,0,WD
+1870,95,NA,AllPub,CollgCr,1Fam,5,Gable,VinylSd,Gd,Gd,GLQ,0,GasA,SBrkr,0,0,2,5,NA,RFn,TA,168,0,NA,0,WD
+1871,78,NA,AllPub,CollgCr,1Fam,5,Gable,VinylSd,Gd,Ex,GLQ,0,GasA,SBrkr,0,0,3,7,Gd,Fin,TA,144,0,NA,0,WD
+1872,79,NA,AllPub,CollgCr,1Fam,5,Gable,VinylSd,Gd,Gd,Unf,0,GasA,SBrkr,0,0,3,7,Gd,Fin,TA,36,0,NA,0,WD
+1873,NA,NA,AllPub,ClearCr,1Fam,5,Gable,VinylSd,Gd,Gd,GLQ,0,GasA,SBrkr,0,0,3,7,TA,Unf,TA,150,0,NA,0,WD
+1874,65,NA,AllPub,CollgCr,1Fam,7,Gable,VinylSd,TA,TA,ALQ,0,GasA,SBrkr,0,0,3,5,NA,RFn,TA,66,0,NA,0,WD
+1875,65,NA,AllPub,CollgCr,1Fam,5,Gable,VinylSd,TA,Gd,GLQ,0,GasA,SBrkr,0,0,3,5,NA,Fin,TA,0,0,NA,0,WD
+1876,70,NA,AllPub,CollgCr,1Fam,5,Gable,VinylSd,TA,Gd,GLQ,0,GasA,SBrkr,0,0,3,7,TA,RFn,TA,150,0,NA,0,WD
+1877,65,NA,AllPub,CollgCr,1Fam,5,Gable,VinylSd,Gd,Gd,GLQ,0,GasA,SBrkr,0,0,3,6,NA,RFn,TA,144,0,NA,0,WD
+1878,75,NA,AllPub,CollgCr,1Fam,5,Gable,VinylSd,Gd,Gd,GLQ,0,GasA,SBrkr,0,0,3,6,TA,RFn,TA,0,0,NA,0,WD
+1879,NA,NA,AllPub,CollgCr,1Fam,5,Gable,MetalSd,TA,Gd,GLQ,0,GasA,SBrkr,0,0,3,5,NA,Unf,TA,72,0,NA,0,WD
+1880,76,NA,AllPub,CollgCr,1Fam,7,Gable,HdBoard,TA,TA,ALQ,72,GasA,SBrkr,0,0,2,5,NA,Unf,TA,0,0,NA,0,WD
+1881,90,NA,AllPub,CollgCr,1Fam,5,Hip,VinylSd,Gd,Gd,GLQ,0,GasA,SBrkr,0,0,3,6,NA,RFn,TA,262,0,NA,0,WD
+1882,NA,NA,AllPub,CollgCr,1Fam,5,Gable,VinylSd,Gd,Gd,Unf,0,GasA,SBrkr,0,0,4,8,Gd,RFn,TA,192,0,NA,0,WD
+1883,70,NA,AllPub,CollgCr,1Fam,5,Gable,VinylSd,Gd,Gd,Unf,0,GasA,SBrkr,0,0,3,6,NA,RFn,TA,0,0,NA,0,WD
+1884,NA,NA,AllPub,CollgCr,1Fam,5,Gable,VinylSd,Gd,Gd,Unf,0,GasA,SBrkr,0,0,3,6,NA,RFn,TA,256,0,NA,0,WD
+1885,90,NA,AllPub,CollgCr,1Fam,5,Gable,VinylSd,Gd,Gd,GLQ,0,GasA,SBrkr,0,0,2,5,TA,Fin,TA,135,0,NA,0,WD
+1886,NA,NA,AllPub,CollgCr,1Fam,5,Hip,HdBoard,Gd,Ex,GLQ,0,GasA,SBrkr,0,0,3,7,Gd,Fin,TA,194,0,NA,0,WD
+1887,70,NA,AllPub,CollgCr,1Fam,5,Gable,VinylSd,Gd,Gd,GLQ,0,GasA,SBrkr,0,0,3,7,TA,Unf,TA,60,0,NA,0,WD
+1888,85,NA,AllPub,CollgCr,1Fam,5,Gable,VinylSd,Gd,Gd,GLQ,0,GasA,SBrkr,0,0,3,7,Gd,RFn,TA,0,0,NA,0,WD
+1889,85,NA,AllPub,CollgCr,1Fam,5,Gable,VinylSd,Gd,Gd,Unf,0,GasA,SBrkr,0,0,3,6,Gd,Fin,TA,100,0,NA,0,WD
+1890,80,NA,AllPub,Edwards,1Fam,6,Gable,HdBoard,TA,TA,GLQ,0,GasA,SBrkr,0,0,3,7,NA,Fin,TA,0,0,NA,0,WD
+1891,35,NA,AllPub,Edwards,TwnhsE,5,Gable,VinylSd,TA,Gd,GLQ,0,GasA,SBrkr,0,0,2,5,NA,Fin,TA,0,0,NA,0,WD
+1892,64,NA,AllPub,Edwards,1Fam,5,Gable,AsbShng,TA,TA,LwQ,243,GasA,FuseA,0,0,3,5,NA,Unf,TA,0,0,NA,0,WD
+1893,70,NA,AllPub,Edwards,1Fam,5,Gable,MetalSd,TA,Fa,Rec,0,GasA,FuseA,0,0,3,6,NA,RFn,TA,0,0,NA,900,WD
+1894,65,NA,AllPub,Edwards,Duplex,5,Hip,VinylSd,TA,TA,Unf,0,GasA,SBrkr,0,0,6,10,NA,NA,NA,0,0,NA,0,WD
+1895,70,NA,AllPub,Edwards,1Fam,5,Hip,HdBoard,TA,TA,Rec,0,GasA,SBrkr,0,0,2,7,TA,Unf,TA,0,0,NA,0,WD
+1896,45,Grvl,AllPub,Edwards,1Fam,6,Gable,Wd Sdng,TA,TA,Rec,0,GasA,SBrkr,0,0,3,6,Gd,Unf,TA,84,0,NA,0,WD
+1897,70,Pave,AllPub,SWISU,1Fam,4,Gable,MetalSd,TA,TA,LwQ,0,GasA,SBrkr,0,0,3,7,Gd,Unf,TA,0,0,NA,0,WD
+1898,43,NA,AllPub,SWISU,1Fam,6,Gable,Wd Sdng,TA,TA,Unf,0,GasA,FuseF,0,0,3,6,Gd,Unf,Fa,329,0,NA,0,WD
+1899,64,NA,AllPub,Crawfor,1Fam,8,Gable,Stucco,Gd,TA,Unf,0,GasA,SBrkr,0,0,3,6,Gd,Unf,TA,0,0,NA,0,WD
+1900,53,NA,AllPub,Crawfor,1Fam,8,Gambrel,Wd Sdng,TA,TA,Unf,0,GasA,SBrkr,0,0,3,6,Gd,Unf,Fa,0,0,NA,0,WD
+1901,60,NA,AllPub,Crawfor,1Fam,6,Gable,Wd Sdng,TA,TA,ALQ,0,GasA,SBrkr,0,0,2,6,TA,Unf,TA,0,0,NA,0,WD
+1902,80,Grvl,AllPub,Crawfor,1Fam,4,Gable,MetalSd,TA,TA,Rec,0,GasA,SBrkr,0,0,2,5,NA,Unf,TA,483,0,NA,0,WD
+1903,NA,NA,AllPub,Crawfor,Duplex,6,Gable,Wd Sdng,TA,TA,LwQ,0,GasA,SBrkr,0,0,5,13,Gd,Unf,TA,0,0,NA,0,WD
+1904,70,NA,AllPub,Crawfor,1Fam,6,Gable,BrkFace,TA,TA,Rec,694,GasA,SBrkr,0,0,2,6,Gd,Unf,TA,0,0,NA,0,WD
+1905,90,NA,AllPub,Crawfor,1Fam,6,Gable,Plywood,TA,TA,LwQ,875,GasA,SBrkr,0,0,3,6,Gd,Fin,TA,0,0,NA,0,WD
+1906,78,NA,AllPub,Crawfor,1Fam,7,Gable,Brk Cmn,TA,TA,BLQ,507,GasW,SBrkr,0,0,3,7,TA,Unf,TA,0,0,NA,0,WD
+1907,100,NA,AllPub,Crawfor,1Fam,5,Gable,HdBoard,TA,TA,LwQ,435,GasA,SBrkr,0,0,3,6,Gd,Unf,TA,0,0,NA,0,WD
+1908,24,NA,AllPub,Blueste,Twnhs,6,Gable,MetalSd,TA,TA,Unf,0,GasA,SBrkr,0,0,2,5,TA,Unf,TA,279,0,NA,0,WD
+1909,24,NA,AllPub,Blueste,TwnhsE,6,Gable,MetalSd,TA,Gd,ALQ,0,GasA,SBrkr,0,0,2,5,TA,Fin,TA,176,0,NA,0,WD
+1910,24,NA,AllPub,Blueste,Twnhs,6,Gable,MetalSd,TA,Gd,Unf,0,GasA,SBrkr,0,0,2,5,TA,Fin,TA,154,0,NA,0,WD
+1911,NA,NA,AllPub,Crawfor,1Fam,6,Gable,VinylSd,TA,TA,ALQ,0,GasA,SBrkr,0,0,3,6,TA,Fin,TA,400,0,NA,1500,WD
+1912,NA,NA,AllPub,Crawfor,1Fam,9,Hip,BrkFace,Gd,Gd,GLQ,419,GasA,SBrkr,0,0,3,7,Gd,Fin,TA,200,0,NA,0,WD
+1913,50,NA,AllPub,IDOTRR,1Fam,6,Gambrel,AsbShng,TA,TA,Unf,0,GasA,SBrkr,312,0,5,11,NA,Unf,TA,467,0,NA,0,WD
+1914,60,Grvl,AllPub,IDOTRR,1Fam,6,Gable,MetalSd,TA,TA,Unf,0,GasA,FuseP,0,0,2,4,NA,Unf,TA,0,0,NA,0,WD
+1915,44,NA,AllPub,Crawfor,TwnhsE,5,Hip,CmentBd,Ex,Ex,GLQ,0,GasA,SBrkr,0,1,2,5,Gd,Fin,TA,162,153,NA,0,New
+1916,109,NA,NA,IDOTRR,1Fam,4,Gable,Wd Sdng,Fa,NA,NA,0,GasA,FuseA,0,0,1,4,NA,Unf,TA,119,0,NA,0,ConLD
+1917,75,NA,AllPub,Mitchel,1Fam,5,Gable,CmentBd,Gd,Gd,ALQ,250,GasA,SBrkr,0,0,3,7,TA,Fin,TA,210,0,NA,0,WD
+1918,75,NA,AllPub,Mitchel,1Fam,6,Gable,Plywood,TA,TA,ALQ,0,GasA,SBrkr,0,0,2,5,TA,Unf,TA,319,0,NA,0,WD
+1919,72,NA,AllPub,Mitchel,1Fam,7,Gable,Plywood,TA,Gd,GLQ,116,GasA,SBrkr,0,0,2,5,Fa,RFn,TA,302,0,NA,0,WD
+1920,82,NA,AllPub,Mitchel,1Fam,5,Gable,HdBoard,TA,Gd,BLQ,0,GasA,SBrkr,0,0,2,5,NA,Unf,TA,0,0,NA,0,COD
+1921,113,NA,AllPub,Timber,1Fam,5,Gable,CmentBd,Ex,Ex,GLQ,0,GasA,SBrkr,0,0,3,9,Ex,Fin,TA,90,0,NA,0,WD
+1922,79,NA,AllPub,Timber,1Fam,5,Gable,CmentBd,Ex,Ex,GLQ,0,GasA,SBrkr,0,0,3,7,NA,Fin,TA,0,0,NA,0,WD
+1923,NA,NA,AllPub,Timber,1Fam,8,Gable,MetalSd,TA,Gd,ALQ,0,GasA,SBrkr,0,0,3,7,TA,Fin,TA,305,0,NA,2500,WD
+1924,125,NA,AllPub,Timber,1Fam,5,Hip,Plywood,TA,Gd,GLQ,624,GasA,SBrkr,0,0,3,7,Fa,Fin,TA,224,0,NA,0,WD
+1925,75,NA,AllPub,Timber,1Fam,5,Gable,VinylSd,Gd,Gd,Unf,0,GasA,SBrkr,0,0,3,9,NA,Fin,TA,124,0,NA,0,WD
+1926,85,NA,AllPub,Timber,1Fam,5,Hip,CmentBd,Ex,Ex,GLQ,0,GasA,SBrkr,0,0,2,7,Gd,Fin,TA,308,0,NA,0,WD
+1927,75,NA,AllPub,Mitchel,1Fam,7,Gable,HdBoard,TA,TA,ALQ,0,GasA,SBrkr,0,0,3,6,NA,Unf,TA,144,0,NA,0,WD
+1928,83,NA,AllPub,Mitchel,1Fam,5,Hip,HdBoard,TA,TA,BLQ,0,GasA,SBrkr,0,0,3,7,Po,Unf,TA,0,0,NA,0,WD
+1929,50,NA,AllPub,Mitchel,1Fam,8,Gable,MetalSd,TA,Gd,GLQ,76,GasA,SBrkr,0,1,2,4,NA,Unf,TA,138,0,NA,0,WD
+1930,62,NA,AllPub,Mitchel,1Fam,5,Gable,HdBoard,TA,Gd,Rec,270,GasA,SBrkr,0,1,2,5,NA,Fin,TA,280,0,NA,700,WD
+1931,70,NA,AllPub,Mitchel,1Fam,6,Gable,Wd Shng,TA,Gd,GLQ,110,GasA,SBrkr,0,0,2,5,Fa,Unf,TA,100,0,NA,0,WD
+1932,62,NA,AllPub,Mitchel,1Fam,5,Gable,Wd Shng,TA,Gd,ALQ,0,GasA,SBrkr,0,0,3,6,NA,Unf,TA,150,0,NA,0,WD
+1933,70,NA,AllPub,Mitchel,1Fam,7,Gable,VinylSd,Gd,TA,BLQ,288,GasA,SBrkr,0,0,4,7,TA,RFn,TA,0,0,NA,0,WD
+1934,72,NA,AllPub,Gilbert,1Fam,5,Gable,VinylSd,TA,TA,BLQ,0,GasA,SBrkr,0,0,3,7,TA,Fin,TA,0,0,NA,0,WD
+1935,65,NA,AllPub,Gilbert,1Fam,5,Gable,VinylSd,TA,Gd,ALQ,0,GasA,SBrkr,0,0,3,7,TA,Fin,TA,192,0,NA,0,WD
+1936,59,NA,AllPub,Gilbert,1Fam,5,Gable,VinylSd,TA,Gd,GLQ,0,GasA,SBrkr,0,0,3,7,NA,Fin,TA,100,0,NA,0,WD
+1937,NA,NA,AllPub,Gilbert,1Fam,5,Gable,HdBoard,TA,Gd,Rec,0,GasA,SBrkr,0,0,3,7,TA,Fin,TA,168,0,NA,0,WD
+1938,53,NA,AllPub,Gilbert,1Fam,5,Gable,HdBoard,Gd,Gd,GLQ,0,GasA,SBrkr,0,0,3,7,NA,Unf,TA,0,0,NA,0,WD
+1939,45,NA,AllPub,StoneBr,1Fam,5,Gable,CmentBd,Gd,Ex,GLQ,0,GasA,SBrkr,0,0,1,6,TA,Fin,TA,0,0,NA,0,WD
+1940,39,NA,AllPub,StoneBr,TwnhsE,5,Gable,HdBoard,Gd,Gd,Unf,0,GasA,SBrkr,0,0,2,5,NA,RFn,TA,0,0,NA,0,WD
+1941,73,NA,AllPub,Gilbert,1Fam,5,Gable,VinylSd,TA,Gd,Unf,0,GasA,SBrkr,0,0,3,7,TA,Fin,TA,0,0,NA,0,WD
+1942,NA,NA,AllPub,Gilbert,1Fam,5,Gable,HdBoard,TA,Gd,ALQ,0,GasA,SBrkr,0,0,3,7,NA,Fin,TA,0,0,NA,0,WD
+1943,65,NA,AllPub,StoneBr,TwnhsE,5,Gable,HdBoard,Gd,Gd,GLQ,0,GasA,SBrkr,0,0,2,5,TA,RFn,TA,0,0,NA,0,WD
+1944,101,NA,AllPub,StoneBr,1Fam,5,Gable,VinylSd,Gd,Ex,GLQ,0,GasA,SBrkr,0,0,5,9,Gd,Fin,TA,192,0,NA,0,WD
+1945,53,NA,AllPub,StoneBr,1Fam,5,Hip,VinylSd,Ex,Ex,GLQ,0,GasA,SBrkr,0,0,2,7,Gd,Fin,TA,214,0,NA,0,WD
+1946,NA,NA,NA,Gilbert,1Fam,2,Hip,BrkFace,TA,TA,Unf,0,GasA,FuseA,0,0,3,7,Gd,Unf,TA,0,0,NA,750,WD
+1947,60,NA,AllPub,StoneBr,TwnhsE,5,Hip,MetalSd,Ex,Ex,GLQ,0,GasA,SBrkr,0,0,2,6,Gd,RFn,TA,156,0,NA,0,WD
+1948,NA,NA,AllPub,Gilbert,1Fam,5,Hip,AsbShng,TA,TA,Unf,0,GasA,SBrkr,0,0,3,6,TA,RFn,TA,0,0,NA,0,WD
+1949,63,NA,AllPub,NWAmes,1Fam,6,Gable,Wd Sdng,Gd,Gd,GLQ,0,GasA,SBrkr,0,0,2,6,Ex,RFn,TA,0,0,NA,0,WD
+1950,NA,NA,AllPub,NWAmes,1Fam,7,Gable,Plywood,Gd,Gd,GLQ,0,GasA,SBrkr,0,0,3,6,NA,Unf,TA,152,0,NA,0,WD
+1951,56,NA,AllPub,NWAmes,1Fam,5,Hip,Plywood,Gd,Gd,GLQ,186,GasA,SBrkr,0,0,3,7,Fa,Fin,TA,200,0,NA,0,WD
+1952,85,NA,AllPub,NWAmes,1Fam,5,Hip,Plywood,Gd,Gd,ALQ,449,GasA,SBrkr,0,1,3,6,TA,Fin,TA,467,0,NA,0,WD
+1953,90,NA,AllPub,NWAmes,1Fam,5,Hip,HdBoard,TA,Gd,ALQ,48,GasA,SBrkr,0,0,3,6,Po,Fin,TA,0,174,NA,0,WD
+1954,80,NA,AllPub,NWAmes,1Fam,6,Gable,HdBoard,TA,Gd,Unf,0,GasA,SBrkr,0,0,3,7,TA,Unf,TA,28,0,NA,0,WD
+1955,75,NA,AllPub,NWAmes,1Fam,6,Gable,VinylSd,TA,TA,BLQ,0,GasA,SBrkr,0,0,3,7,NA,Unf,TA,0,0,NA,0,WD
+1956,NA,NA,AllPub,NWAmes,1Fam,7,Mansard,Plywood,Gd,Gd,ALQ,0,GasA,SBrkr,0,1,4,8,Gd,Fin,TA,0,0,NA,0,WD
+1957,80,NA,AllPub,NWAmes,1Fam,5,Gable,HdBoard,TA,TA,Unf,0,GasA,SBrkr,0,0,2,5,Gd,Unf,TA,0,0,NA,0,WD
+1958,NA,NA,AllPub,NWAmes,1Fam,5,Gable,VinylSd,Gd,Gd,GLQ,0,GasA,SBrkr,0,0,4,9,Gd,RFn,TA,192,0,NA,0,WD
+1959,60,NA,AllPub,NAmes,Duplex,5,Gable,VinylSd,TA,Gd,Unf,0,GasA,SBrkr,0,0,4,8,NA,Unf,TA,0,0,NA,0,WD
+1960,68,NA,AllPub,NAmes,1Fam,6,Gable,HdBoard,TA,Gd,Rec,0,GasA,SBrkr,0,0,2,4,NA,Unf,TA,16,0,NA,0,COD
+1961,63,NA,AllPub,NAmes,1Fam,5,Hip,MetalSd,TA,Gd,Rec,613,GasA,SBrkr,0,0,3,5,NA,Unf,TA,0,0,NA,0,WD
+1962,21,NA,AllPub,BrDale,Twnhs,5,Gable,HdBoard,TA,TA,LwQ,0,GasA,SBrkr,0,1,2,5,NA,Unf,TA,52,0,NA,0,WD
+1963,21,NA,AllPub,BrDale,Twnhs,6,Gable,HdBoard,TA,TA,LwQ,0,GasA,SBrkr,0,0,2,5,NA,Unf,TA,411,0,NA,0,WD
+1964,21,NA,AllPub,BrDale,Twnhs,5,Gable,HdBoard,TA,TA,Rec,0,GasA,SBrkr,0,0,3,6,NA,Unf,TA,0,0,NA,0,WD
+1965,24,NA,AllPub,NPkVill,TwnhsE,6,Gable,Brk Cmn,TA,Gd,ALQ,294,GasA,SBrkr,0,0,4,7,NA,RFn,TA,0,0,NA,0,WD
+1966,24,NA,AllPub,NPkVill,Twnhs,6,Gable,Brk Cmn,TA,Gd,ALQ,0,GasA,SBrkr,0,0,2,4,NA,Unf,TA,0,0,NA,0,WD
+1967,98,NA,AllPub,NridgHt,1Fam,5,Hip,VinylSd,Gd,Ex,GLQ,0,GasA,SBrkr,0,0,3,7,NA,Fin,TA,209,0,NA,0,New
+1968,105,NA,AllPub,NridgHt,1Fam,5,Hip,VinylSd,Gd,Ex,GLQ,495,GasA,SBrkr,0,0,4,9,Ex,Fin,TA,358,0,NA,0,WD
+1969,104,NA,AllPub,NridgHt,1Fam,5,Hip,VinylSd,Ex,Ex,GLQ,0,GasA,SBrkr,0,0,2,7,Gd,Fin,TA,156,0,NA,0,WD
+1970,108,NA,AllPub,NridgHt,1Fam,5,Hip,VinylSd,Gd,Ex,GLQ,0,GasA,SBrkr,0,0,4,9,Gd,Fin,TA,212,0,NA,0,WD
+1971,96,NA,AllPub,NridgHt,1Fam,5,Hip,CmentBd,Ex,Ex,GLQ,0,GasA,SBrkr,0,0,4,10,Ex,Fin,TA,30,0,NA,0,WD
+1972,102,NA,AllPub,NridgHt,1Fam,5,Gable,CmentBd,Gd,Ex,GLQ,0,GasA,SBrkr,0,0,3,9,Gd,Fin,TA,192,0,NA,0,WD
+1973,74,NA,AllPub,NridgHt,1Fam,5,Hip,VinylSd,Ex,Gd,GLQ,0,GasA,SBrkr,0,0,4,10,Gd,Fin,TA,100,0,NA,0,WD
+1974,85,NA,AllPub,NridgHt,1Fam,5,Gable,VinylSd,Gd,Ex,GLQ,0,GasA,SBrkr,0,0,4,9,Gd,Fin,TA,224,0,NA,0,WD
+1975,106,NA,AllPub,NridgHt,1Fam,5,Hip,MetalSd,Ex,Ex,GLQ,0,GasA,SBrkr,0,0,1,7,Gd,Fin,TA,154,0,Ex,0,WD
+1976,92,NA,AllPub,NridgHt,1Fam,5,Gable,VinylSd,Gd,Gd,GLQ,0,GasA,SBrkr,0,0,2,7,TA,Fin,TA,216,0,NA,0,WD
+1977,130,NA,AllPub,NridgHt,1Fam,5,Gable,VinylSd,Gd,Ex,GLQ,0,GasA,SBrkr,0,0,4,10,TA,Fin,TA,0,0,NA,0,WD
+1978,112,NA,AllPub,NridgHt,1Fam,5,Gable,VinylSd,Gd,Ex,Unf,0,GasA,SBrkr,0,0,4,9,Gd,Fin,TA,268,0,NA,0,WD
+1979,58,NA,AllPub,NridgHt,TwnhsE,5,Hip,MetalSd,Ex,Gd,GLQ,0,GasA,SBrkr,0,0,2,7,Gd,Fin,TA,0,0,NA,0,New
+1980,135,NA,AllPub,NridgHt,TwnhsE,5,Gable,VinylSd,Gd,Gd,GLQ,0,GasA,SBrkr,0,0,2,6,Gd,RFn,TA,0,0,NA,0,WD
+1981,89,NA,AllPub,NridgHt,TwnhsE,5,Hip,MetalSd,Ex,Ex,GLQ,0,GasA,SBrkr,0,0,2,6,Gd,RFn,TA,210,0,NA,0,New
+1982,48,NA,AllPub,NridgHt,TwnhsE,5,Hip,MetalSd,Gd,Gd,GLQ,0,GasA,SBrkr,0,0,2,6,Gd,Fin,TA,0,0,NA,0,WD
+1983,48,NA,AllPub,NridgHt,TwnhsE,5,Hip,MetalSd,Gd,Gd,GLQ,0,GasA,SBrkr,0,0,2,6,Gd,RFn,TA,0,0,NA,0,WD
+1984,36,NA,AllPub,NridgHt,Twnhs,5,Gable,Wd Shng,Gd,Gd,Unf,0,GasA,SBrkr,0,0,2,6,NA,RFn,TA,0,0,NA,0,WD
+1985,NA,NA,AllPub,Blmngtn,TwnhsE,5,Gable,VinylSd,Gd,Gd,GLQ,0,GasA,SBrkr,0,0,2,6,TA,Fin,TA,156,0,NA,0,WD
+1986,NA,NA,AllPub,Blmngtn,TwnhsE,5,Hip,VinylSd,Gd,Gd,GLQ,0,GasA,SBrkr,0,0,2,7,TA,RFn,TA,143,0,NA,0,WD
+1987,53,NA,AllPub,Blmngtn,1Fam,5,Gable,Wd Shng,Gd,Gd,Unf,0,GasA,SBrkr,0,0,2,5,Gd,Fin,TA,100,0,NA,0,New
+1988,80,NA,AllPub,Gilbert,1Fam,5,Gable,VinylSd,Gd,Gd,Unf,0,GasA,SBrkr,0,0,3,8,Gd,Fin,TA,0,0,NA,0,WD
+1989,NA,NA,AllPub,Gilbert,1Fam,5,Gable,VinylSd,Gd,Gd,Unf,0,GasA,SBrkr,0,0,3,7,Gd,Fin,TA,138,0,NA,0,WD
+1990,NA,NA,AllPub,Gilbert,1Fam,5,Gable,VinylSd,Gd,Gd,Unf,0,GasA,SBrkr,0,0,4,9,Gd,Fin,TA,120,0,NA,0,WD
+1991,55,NA,AllPub,NridgHt,TwnhsE,6,Gable,VinylSd,Gd,Gd,GLQ,0,GasA,SBrkr,0,0,2,6,Gd,RFn,TA,192,0,NA,0,New
+1992,71,NA,AllPub,Gilbert,1Fam,5,Gable,VinylSd,Gd,Gd,GLQ,0,GasA,SBrkr,0,0,3,8,TA,RFn,TA,108,0,NA,0,WD
+1993,NA,NA,AllPub,Gilbert,1Fam,5,Gable,VinylSd,Gd,Gd,Unf,0,GasA,SBrkr,0,0,3,6,Gd,Fin,TA,100,0,NA,0,WD
+1994,41,NA,AllPub,Gilbert,1Fam,5,Gable,VinylSd,Gd,Gd,GLQ,0,GasA,SBrkr,0,0,4,8,TA,Fin,TA,144,0,NA,0,WD
+1995,77,NA,AllPub,Gilbert,1Fam,5,Gable,VinylSd,TA,Gd,Unf,0,GasA,SBrkr,0,0,3,7,TA,Fin,TA,0,0,NA,0,WD
+1996,84,NA,AllPub,NoRidge,1Fam,5,Hip,HdBoard,Gd,Gd,Unf,0,GasA,SBrkr,0,0,3,9,TA,Fin,TA,0,0,NA,0,WD
+1997,NA,NA,AllPub,NoRidge,1Fam,5,Hip,VinylSd,Gd,Ex,Unf,0,GasA,SBrkr,0,0,4,8,TA,RFn,TA,162,0,NA,0,WD
+1998,136,NA,AllPub,NoRidge,1Fam,5,Gable,VinylSd,Gd,Gd,GLQ,0,GasA,SBrkr,0,0,2,5,TA,Fin,TA,144,0,NA,0,WD
+1999,97,NA,AllPub,NoRidge,1Fam,5,Gable,VinylSd,Gd,Ex,GLQ,0,GasA,SBrkr,0,0,4,12,TA,RFn,TA,168,0,NA,0,WD
+2000,NA,NA,AllPub,NoRidge,1Fam,7,Gable,VinylSd,Gd,Gd,Unf,0,GasA,SBrkr,0,0,4,9,TA,RFn,TA,192,0,NA,0,WD
+2001,91,NA,AllPub,NoRidge,1Fam,5,Hip,VinylSd,Gd,Gd,BLQ,852,GasA,SBrkr,0,0,4,9,Gd,Fin,TA,385,0,NA,0,WD
+2002,74,NA,AllPub,Somerst,1Fam,5,Gable,VinylSd,Gd,Ex,GLQ,0,GasA,SBrkr,0,0,3,7,Gd,Unf,TA,0,0,NA,0,WD
+2003,73,NA,AllPub,Somerst,1Fam,5,Gable,VinylSd,Gd,Gd,Unf,0,GasA,SBrkr,0,0,3,7,Gd,RFn,TA,144,0,NA,0,WD
+2004,80,NA,AllPub,Somerst,1Fam,5,Hip,VinylSd,Gd,Gd,GLQ,0,GasA,SBrkr,0,0,3,8,Gd,Fin,TA,168,0,NA,0,New
+2005,87,NA,AllPub,Somerst,1Fam,5,Hip,VinylSd,Gd,Ex,GLQ,0,GasA,SBrkr,0,0,3,6,Gd,Fin,TA,0,0,NA,0,WD
+2006,72,NA,AllPub,Somerst,1Fam,5,Gable,VinylSd,Gd,Gd,GLQ,0,GasA,SBrkr,0,0,3,6,NA,RFn,TA,192,0,NA,0,New
+2007,85,NA,AllPub,Somerst,1Fam,5,Gable,VinylSd,Gd,Gd,Unf,0,GasA,SBrkr,0,0,3,7,Gd,Fin,TA,133,0,NA,0,WD
+2008,62,Pave,AllPub,Somerst,1Fam,5,Gable,CmentBd,Gd,Gd,GLQ,0,GasA,SBrkr,0,0,2,6,NA,Fin,TA,168,0,NA,0,New
+2009,68,NA,AllPub,SawyerW,1Fam,5,Gable,VinylSd,Gd,Gd,GLQ,555,GasA,SBrkr,0,0,3,7,NA,RFn,TA,143,0,NA,0,WD
+2010,67,NA,AllPub,SawyerW,1Fam,5,Gable,VinylSd,Gd,Gd,Unf,0,GasA,SBrkr,0,0,3,8,NA,RFn,TA,168,0,NA,0,WD
+2011,63,NA,AllPub,SawyerW,1Fam,5,Gable,VinylSd,TA,Gd,GLQ,0,GasA,SBrkr,0,0,3,6,NA,NA,NA,0,0,NA,0,WD
+2012,81,NA,AllPub,SawyerW,1Fam,5,Gable,VinylSd,Gd,Gd,Unf,0,GasA,SBrkr,0,0,3,6,NA,Fin,TA,0,0,NA,0,WD
+2013,65,NA,AllPub,SawyerW,1Fam,5,Gable,VinylSd,Gd,Gd,GLQ,0,GasA,SBrkr,0,0,3,6,NA,RFn,TA,0,0,NA,0,WD
+2014,50,NA,AllPub,SawyerW,1Fam,5,Gable,HdBoard,Gd,Gd,GLQ,0,GasA,SBrkr,0,1,3,7,NA,RFn,TA,144,0,NA,0,WD
+2015,43,NA,AllPub,SawyerW,1Fam,5,Gable,VinylSd,Gd,Gd,GLQ,0,GasA,SBrkr,0,0,3,6,NA,RFn,TA,144,0,NA,2000,WD
+2016,65,NA,AllPub,SawyerW,1Fam,5,Gable,VinylSd,Gd,Gd,GLQ,0,GasA,SBrkr,0,0,3,7,NA,RFn,TA,0,0,NA,0,WD
+2017,75,NA,AllPub,SawyerW,1Fam,5,Gable,HdBoard,Gd,Gd,GLQ,0,GasA,SBrkr,0,1,3,7,NA,Fin,TA,192,0,NA,0,WD
+2018,70,NA,AllPub,Sawyer,1Fam,5,Hip,Wd Sdng,TA,TA,BLQ,799,GasA,SBrkr,0,0,3,5,TA,RFn,TA,145,0,NA,400,WD
+2019,75,NA,AllPub,Sawyer,1Fam,8,Gable,Wd Sdng,TA,TA,ALQ,0,GasA,SBrkr,0,0,3,5,TA,Unf,TA,132,0,NA,0,WD
+2020,65,NA,AllPub,Sawyer,2fmCon,5,Gable,HdBoard,TA,TA,ALQ,0,GasA,SBrkr,0,0,3,5,NA,Unf,TA,0,0,NA,0,WD
+2021,60,NA,AllPub,Sawyer,1Fam,5,Hip,HdBoard,TA,Gd,ALQ,0,GasA,SBrkr,0,0,3,5,NA,Unf,TA,0,0,NA,650,COD
+2022,95,NA,AllPub,Veenker,1Fam,5,Gable,ImStucc,TA,TA,ALQ,0,GasA,SBrkr,0,1,3,6,TA,Unf,TA,117,0,NA,0,WD
+2023,70,NA,AllPub,Sawyer,1Fam,4,Gable,HdBoard,TA,Gd,LwQ,811,GasA,SBrkr,0,0,4,5,Gd,Unf,TA,0,0,NA,0,WD
+2024,NA,NA,AllPub,NoRidge,1Fam,5,Hip,HdBoard,Gd,Gd,ALQ,0,GasA,SBrkr,0,0,4,9,Gd,RFn,TA,237,0,NA,0,WD
+2025,105,NA,AllPub,NoRidge,1Fam,5,Hip,Wd Sdng,Gd,Gd,BLQ,0,GasA,SBrkr,0,0,4,10,Ex,Fin,TA,294,0,NA,0,WD
+2026,37,Pave,AllPub,Somerst,TwnhsE,5,Gable,MetalSd,Gd,Gd,GLQ,0,GasA,SBrkr,0,0,1,5,NA,RFn,TA,0,0,NA,0,WD
+2027,30,Pave,AllPub,Somerst,TwnhsE,5,Gable,MetalSd,Gd,Gd,GLQ,0,GasA,SBrkr,0,0,2,5,NA,RFn,TA,0,0,NA,0,WD
+2028,30,Pave,AllPub,Somerst,TwnhsE,5,Gable,VinylSd,Gd,Gd,Unf,0,GasA,SBrkr,0,0,2,5,NA,Unf,TA,0,0,NA,0,WD
+2029,24,Pave,AllPub,Somerst,Twnhs,5,Gable,MetalSd,TA,Gd,GLQ,0,GasA,SBrkr,0,0,3,6,NA,Unf,TA,0,0,NA,0,WD
+2030,NA,NA,AllPub,Somerst,TwnhsE,5,Hip,MetalSd,Gd,Gd,GLQ,0,GasA,SBrkr,0,0,2,5,TA,Fin,TA,230,0,NA,0,WD
+2031,NA,NA,AllPub,Somerst,TwnhsE,5,Gable,VinylSd,Gd,Ex,GLQ,0,GasA,SBrkr,0,0,1,5,TA,RFn,TA,277,0,NA,0,WD
+2032,42,NA,AllPub,Somerst,TwnhsE,5,Gable,VinylSd,Gd,Ex,GLQ,0,GasA,SBrkr,0,0,2,5,TA,Fin,TA,155,0,NA,0,WD
+2033,35,NA,AllPub,Somerst,TwnhsE,5,Gable,VinylSd,Gd,Gd,GLQ,0,GasA,SBrkr,0,0,2,5,TA,RFn,TA,124,0,NA,0,WD
+2034,24,Pave,AllPub,Somerst,Twnhs,5,Gable,VinylSd,Gd,Gd,GLQ,0,GasA,SBrkr,0,0,3,5,NA,Unf,TA,20,0,NA,0,WD
+2035,79,NA,AllPub,Somerst,1Fam,5,Gable,VinylSd,TA,TA,GLQ,0,GasA,SBrkr,0,0,3,7,TA,Fin,TA,0,0,NA,0,WD
+2036,24,Pave,AllPub,Somerst,Twnhs,5,Gable,MetalSd,Gd,Gd,GLQ,0,GasA,SBrkr,0,0,3,7,NA,Unf,TA,169,0,NA,0,WD
+2037,24,Pave,AllPub,Somerst,Twnhs,5,Gable,MetalSd,Gd,Gd,GLQ,0,GasA,SBrkr,0,0,3,7,NA,Unf,TA,169,0,NA,0,ConLD
+2038,36,Pave,AllPub,Somerst,TwnhsE,5,Gable,MetalSd,Ex,Gd,BLQ,842,GasA,SBrkr,0,0,2,7,TA,Fin,TA,0,0,NA,0,WD
+2039,22,NA,AllPub,Veenker,TwnhsE,5,Hip,BrkFace,Gd,Gd,LwQ,670,GasA,SBrkr,0,0,1,4,Fa,Fin,TA,172,0,NA,0,WD
+2040,NA,NA,AllPub,Veenker,1Fam,3,Mansard,Wd Sdng,Gd,Gd,GLQ,0,GasA,SBrkr,0,0,3,9,Gd,RFn,TA,140,0,NA,0,WD
+2041,103,NA,AllPub,Veenker,1Fam,9,Gable,VinylSd,Ex,Gd,GLQ,382,GasA,SBrkr,0,0,3,6,Gd,RFn,TA,280,0,NA,0,WD
+2042,NA,NA,AllPub,Somerst,1Fam,5,Gable,VinylSd,Gd,Gd,Unf,0,GasA,SBrkr,0,0,3,7,TA,RFn,TA,144,0,NA,0,WD
+2043,NA,NA,AllPub,NWAmes,1Fam,6,Gable,MetalSd,TA,TA,GLQ,0,GasA,SBrkr,0,1,4,7,NA,RFn,TA,0,0,NA,0,WD
+2044,85,NA,AllPub,NWAmes,1Fam,5,Gable,HdBoard,TA,TA,Rec,0,GasA,SBrkr,0,0,4,8,TA,RFn,TA,25,0,NA,0,WD
+2045,NA,NA,AllPub,NWAmes,1Fam,7,Gable,Plywood,TA,TA,ALQ,294,GasA,SBrkr,0,0,4,8,Gd,Unf,TA,0,0,NA,450,WD
+2046,75,NA,AllPub,NWAmes,Duplex,6,Gable,MetalSd,TA,TA,Unf,0,GasA,SBrkr,0,0,4,8,NA,Unf,TA,0,0,NA,0,ConLD
+2047,73,NA,AllPub,NAmes,1Fam,6,Gable,MetalSd,TA,TA,LwQ,0,GasA,SBrkr,0,0,4,7,NA,Unf,TA,0,0,NA,0,WD
+2048,65,NA,AllPub,NAmes,1Fam,7,Hip,HdBoard,Gd,TA,ALQ,456,GasA,SBrkr,0,0,3,5,NA,Unf,TA,233,0,NA,0,WD
+2049,72,NA,AllPub,NAmes,Duplex,5,Gable,HdBoard,TA,TA,Unf,0,GasA,SBrkr,0,0,6,10,NA,Unf,TA,0,0,NA,0,WD
+2050,NA,NA,AllPub,NWAmes,1Fam,6,Gable,HdBoard,TA,Gd,ALQ,0,GasA,SBrkr,0,0,4,7,NA,Fin,TA,0,0,NA,0,WD
+2051,74,NA,AllPub,NAmes,1Fam,5,Gable,HdBoard,TA,NA,NA,0,GasA,SBrkr,0,0,2,6,NA,RFn,TA,0,0,NA,0,WD
+2052,90,NA,AllPub,NAmes,1Fam,5,Gable,Plywood,TA,TA,Unf,0,GasA,SBrkr,0,0,3,5,NA,RFn,TA,0,0,NA,0,COD
+2053,NA,NA,AllPub,NAmes,1Fam,7,Gable,Wd Sdng,TA,TA,BLQ,0,GasA,SBrkr,0,0,3,6,NA,RFn,TA,290,0,NA,0,WD
+2054,50,NA,AllPub,BrkSide,1Fam,7,Gable,MetalSd,TA,TA,Rec,0,GasA,SBrkr,0,0,2,5,NA,Unf,Fa,0,0,NA,0,WD
+2055,80,NA,AllPub,NAmes,1Fam,6,Gable,MetalSd,Fa,TA,Rec,0,GasA,SBrkr,0,0,3,6,NA,RFn,TA,0,0,NA,0,WD
+2056,80,NA,AllPub,NAmes,1Fam,8,Gable,HdBoard,TA,TA,BLQ,308,GasA,SBrkr,0,0,3,7,Gd,RFn,TA,0,0,NA,0,WD
+2057,63,NA,AllPub,NAmes,1Fam,5,Hip,Wd Sdng,TA,TA,LwQ,0,GasA,SBrkr,0,0,3,5,NA,RFn,TA,120,0,NA,0,WD
+2058,90,NA,AllPub,NAmes,1Fam,7,Gable,VinylSd,Gd,TA,BLQ,0,GasA,SBrkr,0,0,4,9,Gd,RFn,TA,0,0,NA,0,WD
+2059,74,NA,AllPub,NAmes,1Fam,4,Gable,Wd Sdng,TA,TA,ALQ,52,GasA,SBrkr,0,0,3,6,Gd,RFn,TA,0,0,NA,0,WD
+2060,82,NA,AllPub,NAmes,1Fam,7,Gable,HdBoard,TA,TA,ALQ,0,GasA,SBrkr,0,0,2,7,NA,RFn,TA,150,0,NA,0,WD
+2061,90,NA,AllPub,NAmes,1Fam,6,Gable,Wd Sdng,TA,TA,LwQ,0,GasA,SBrkr,0,0,3,5,TA,RFn,TA,490,0,NA,0,WD
+2062,75,NA,AllPub,NAmes,1Fam,5,Gable,MetalSd,TA,TA,Rec,0,GasA,SBrkr,0,0,3,5,NA,RFn,TA,0,0,NA,0,WD
+2063,60,NA,AllPub,NAmes,1Fam,6,Gable,MetalSd,TA,TA,Rec,0,GasA,FuseA,0,0,2,4,NA,Unf,TA,0,0,NA,0,WD
+2064,102,NA,AllPub,NAmes,1Fam,6,Gable,MetalSd,TA,TA,Rec,196,GasA,SBrkr,0,0,3,6,NA,Unf,TA,0,0,NA,0,WD
+2065,NA,NA,AllPub,NAmes,1Fam,5,Hip,MetalSd,TA,TA,BLQ,128,GasW,SBrkr,0,0,2,5,NA,Unf,TA,0,0,NA,0,WD
+2066,95,NA,AllPub,NAmes,1Fam,5,Gable,Plywood,TA,TA,Unf,0,GasA,SBrkr,0,0,3,6,Gd,Fin,TA,0,0,NA,1500,WD
+2067,71,NA,AllPub,NAmes,1Fam,3,Gable,MetalSd,TA,NA,NA,0,GasA,SBrkr,0,0,4,7,TA,Fin,TA,0,0,NA,0,WD
+2068,76,NA,AllPub,NAmes,Duplex,5,Gable,Wd Sdng,TA,TA,Unf,0,GasA,FuseA,0,0,5,9,NA,Unf,TA,0,0,NA,0,WD
+2069,60,NA,AllPub,OldTown,1Fam,6,Gable,MetalSd,TA,NA,NA,0,GasA,SBrkr,0,0,1,3,NA,Unf,Fa,0,0,NA,0,WD
+2070,45,NA,AllPub,OldTown,1Fam,8,Gable,VinylSd,TA,TA,Unf,0,GasA,SBrkr,0,0,3,5,NA,Unf,Fa,84,0,NA,0,WD
+2071,60,NA,AllPub,OldTown,1Fam,7,Gambrel,VinylSd,Gd,TA,Unf,0,GasA,SBrkr,0,0,2,4,NA,Unf,TA,88,0,NA,0,WD
+2072,60,Grvl,AllPub,OldTown,1Fam,5,Gable,Wd Sdng,TA,TA,Unf,0,GasA,SBrkr,0,1,3,7,Gd,Unf,Fa,0,0,NA,0,WD
+2073,78,NA,AllPub,NAmes,1Fam,6,Gable,Plywood,TA,TA,Rec,0,GasA,SBrkr,0,1,3,5,Fa,Fin,TA,200,0,NA,450,WD
+2074,76,NA,AllPub,NAmes,1Fam,7,Gable,HdBoard,TA,TA,BLQ,0,GasA,SBrkr,0,0,3,6,Gd,RFn,TA,0,0,NA,6500,WD
+2075,NA,NA,AllPub,NAmes,1Fam,6,Gable,Wd Sdng,TA,TA,GLQ,0,GasA,SBrkr,0,0,3,5,NA,Unf,TA,36,0,NA,0,WD
+2076,60,NA,AllPub,NAmes,1Fam,7,Gable,MetalSd,TA,Fa,LwQ,0,GasA,SBrkr,0,0,2,5,TA,Unf,TA,0,0,NA,0,WD
+2077,80,NA,AllPub,NAmes,1Fam,6,Gable,Wd Sdng,TA,TA,BLQ,488,GasA,FuseA,0,0,3,6,NA,RFn,TA,0,0,NA,0,WD
+2078,80,NA,AllPub,NAmes,1Fam,5,Gable,MetalSd,TA,TA,BLQ,319,GasA,SBrkr,0,1,3,6,NA,Unf,TA,0,0,NA,0,WD
+2079,60,NA,AllPub,NAmes,1Fam,6,Gable,Wd Sdng,TA,TA,ALQ,0,GasA,SBrkr,0,0,3,5,NA,Unf,TA,108,0,NA,0,WD
+2080,64,NA,AllPub,NAmes,1Fam,7,Gable,MetalSd,TA,TA,Unf,0,GasA,FuseA,0,0,2,4,NA,Unf,TA,0,0,NA,0,WD
+2081,60,NA,AllPub,NAmes,1Fam,5,Gable,MetalSd,TA,TA,Rec,0,GasA,FuseA,0,0,4,6,NA,Unf,TA,0,0,NA,0,WD
+2082,113,NA,AllPub,NAmes,Duplex,5,Gable,Wd Sdng,TA,TA,Unf,0,GasA,SBrkr,0,0,6,10,NA,NA,NA,0,0,NA,0,WD
+2083,60,NA,AllPub,NAmes,1Fam,6,Gable,MetalSd,TA,TA,GLQ,0,GasA,SBrkr,0,0,3,6,NA,Unf,TA,0,0,NA,0,WD
+2084,60,NA,AllPub,NAmes,1Fam,7,Gable,MetalSd,TA,TA,Unf,0,GasA,FuseA,0,1,2,4,NA,Unf,TA,0,0,NA,0,WD
+2085,69,NA,AllPub,NAmes,1Fam,5,Gable,Wd Sdng,TA,TA,Unf,0,GasA,SBrkr,0,0,3,6,NA,Unf,TA,0,0,NA,0,COD
+2086,56,Grvl,AllPub,OldTown,1Fam,5,Gable,VinylSd,TA,TA,GLQ,0,GasA,SBrkr,0,0,3,7,NA,Unf,TA,0,0,NA,0,WD
+2087,57,Grvl,AllPub,OldTown,1Fam,7,Gable,Wd Shng,TA,TA,Unf,0,GasA,SBrkr,0,0,3,6,NA,Unf,TA,0,0,NA,0,WD
+2088,80,Grvl,AllPub,OldTown,1Fam,5,Gable,AsbShng,TA,TA,Unf,0,GasA,SBrkr,0,0,2,6,NA,Unf,Fa,192,0,NA,0,WD
+2089,60,NA,AllPub,OldTown,1Fam,4,Gable,MetalSd,TA,Fa,Unf,0,GasA,SBrkr,0,0,2,4,NA,Unf,TA,0,0,NA,0,WD
+2090,60,NA,AllPub,OldTown,1Fam,7,Gable,Wd Sdng,Gd,TA,Unf,0,GasA,SBrkr,0,0,4,7,NA,Unf,Fa,0,0,NA,0,WD
+2091,63,Grvl,AllPub,OldTown,2fmCon,6,Gable,Wd Sdng,TA,TA,Unf,0,GasA,FuseA,108,0,3,9,NA,NA,NA,0,0,NA,0,WD
+2092,63,NA,AllPub,OldTown,1Fam,6,Gable,MetalSd,TA,TA,Unf,0,GasA,FuseA,0,0,2,8,NA,Unf,TA,187,0,NA,0,WD
+2093,81,NA,AllPub,OldTown,1Fam,5,Gable,Wd Shng,Fa,TA,Rec,0,GasA,FuseA,0,0,2,6,Gd,Unf,Fa,0,0,NA,0,WD
+2094,60,NA,AllPub,OldTown,1Fam,6,Gable,Stucco,Gd,TA,Unf,0,GasA,SBrkr,0,1,2,5,TA,NA,NA,0,0,NA,0,WD
+2095,60,Grvl,AllPub,OldTown,2fmCon,6,Gable,Wd Sdng,TA,TA,BLQ,0,GasA,SBrkr,0,0,3,8,Gd,Unf,TA,0,0,NA,0,Con
+2096,60,NA,AllPub,OldTown,1Fam,6,Mansard,MetalSd,TA,TA,Unf,0,GasA,FuseA,0,0,2,5,NA,Unf,Fa,0,0,NA,0,WD
+2097,44,Grvl,AllPub,OldTown,1Fam,9,Gable,HdBoard,TA,Fa,Unf,0,GasA,SBrkr,0,0,3,5,NA,NA,NA,0,0,NA,0,WD
+2098,75,NA,AllPub,OldTown,1Fam,6,Gable,MetalSd,TA,TA,Rec,0,GasA,FuseA,0,0,3,5,Po,Unf,TA,0,0,NA,0,WD
+2099,62,NA,AllPub,OldTown,1Fam,5,Gable,VinylSd,TA,TA,Unf,0,GasA,FuseA,0,0,1,3,NA,Unf,Fa,76,0,NA,0,WD
+2100,103,NA,AllPub,OldTown,1Fam,1,Gable,MetalSd,TA,Fa,Unf,0,GasA,SBrkr,0,0,5,6,NA,NA,NA,0,0,NA,0,WD
+2101,69,NA,AllPub,OldTown,2fmCon,5,Gable,MetalSd,TA,Fa,Unf,0,GasA,FuseA,0,0,4,10,NA,Unf,Fa,192,0,NA,0,WD
+2102,53,NA,AllPub,OldTown,1Fam,8,Gable,Wd Shng,TA,TA,BLQ,0,GasA,SBrkr,0,0,3,7,NA,Unf,TA,0,0,NA,0,WD
+2103,69,Grvl,AllPub,OldTown,1Fam,7,Gable,VinylSd,TA,TA,Unf,0,GasA,SBrkr,0,0,2,5,NA,Unf,TA,0,0,NA,0,WD
+2104,60,Grvl,AllPub,OldTown,2fmCon,5,Gable,AsbShng,TA,TA,Rec,0,GasA,FuseP,0,0,4,10,NA,Unf,TA,0,0,NA,0,WD
+2105,60,Grvl,AllPub,OldTown,1Fam,9,Gable,MetalSd,Gd,Fa,Unf,0,GasA,SBrkr,0,0,3,7,NA,NA,NA,240,0,NA,0,WD
+2106,60,NA,AllPub,OldTown,1Fam,1,Gable,AsbShng,Fa,Fa,Unf,0,GasA,SBrkr,0,0,2,5,NA,Unf,Fa,0,0,NA,0,ConLD
+2107,60,NA,AllPub,OldTown,1Fam,7,Gable,Wd Shng,TA,TA,Unf,0,GasW,SBrkr,0,0,5,10,Gd,Unf,TA,0,0,NA,0,WD
+2108,65,NA,AllPub,OldTown,1Fam,6,Gable,MetalSd,TA,TA,Rec,0,GasA,SBrkr,0,0,2,5,NA,Unf,TA,0,0,NA,0,WD
+2109,52,NA,AllPub,OldTown,1Fam,6,Gable,MetalSd,TA,TA,Unf,0,GasA,SBrkr,0,0,2,5,NA,Unf,TA,0,0,NA,0,WD
+2110,55,NA,AllPub,BrkSide,1Fam,7,Gable,Wd Shng,Gd,TA,LwQ,273,GasA,SBrkr,0,0,2,5,Po,Unf,TA,265,0,NA,0,WD
+2111,NA,NA,AllPub,BrkSide,1Fam,7,Gable,Wd Sdng,TA,TA,Unf,0,GasA,SBrkr,0,0,3,8,NA,Unf,TA,210,0,NA,0,WD
+2112,NA,NA,AllPub,BrkSide,1Fam,5,Gable,Wd Sdng,TA,TA,Rec,0,GasA,SBrkr,0,0,3,6,Gd,Unf,TA,0,0,NA,0,WD
+2113,50,NA,AllPub,BrkSide,1Fam,7,Gable,Wd Sdng,TA,TA,ALQ,0,GasA,SBrkr,0,0,3,6,NA,Unf,TA,0,0,NA,0,WD
+2114,59,NA,AllPub,BrkSide,1Fam,9,Gable,HdBoard,TA,TA,Unf,0,GasA,SBrkr,0,0,3,6,NA,Unf,Fa,38,0,NA,400,WD
+2115,50,NA,AllPub,BrkSide,1Fam,7,Gable,Wd Sdng,TA,TA,ALQ,0,GasA,SBrkr,0,0,3,6,Gd,Unf,TA,0,0,NA,0,WD
+2116,50,NA,AllPub,BrkSide,1Fam,7,Gable,Wd Sdng,TA,TA,Unf,0,GasA,SBrkr,0,0,2,5,Fa,Unf,TA,0,0,NA,0,WD
+2117,50,NA,AllPub,BrkSide,1Fam,7,Gable,Wd Sdng,TA,TA,Rec,162,GasA,SBrkr,0,0,3,5,NA,Unf,TA,272,0,NA,0,WD
+2118,50,NA,AllPub,BrkSide,1Fam,5,Gable,Wd Sdng,TA,TA,LwQ,0,GasA,SBrkr,0,0,2,7,Gd,Unf,TA,0,0,NA,0,WD
+2119,50,NA,AllPub,BrkSide,1Fam,7,Gable,MetalSd,TA,TA,Unf,0,GasA,SBrkr,0,0,3,6,NA,Unf,Fa,0,0,NA,0,WD
+2120,60,NA,AllPub,BrkSide,1Fam,7,Gable,AsbShng,TA,TA,ALQ,0,GasA,SBrkr,0,0,3,6,Gd,RFn,Fa,0,0,NA,0,WD
+2121,99,NA,AllPub,BrkSide,1Fam,7,Gable,CBlock,TA,NA,NA,NA,GasA,FuseA,0,NA,2,4,NA,Unf,TA,0,0,NA,0,ConLD
+2122,52,NA,AllPub,BrkSide,1Fam,7,Gable,MetalSd,TA,TA,BLQ,0,GasA,SBrkr,0,1,2,6,NA,Unf,TA,0,0,NA,0,WD
+2123,NA,NA,AllPub,BrkSide,1Fam,6,Gable,Plywood,TA,NA,NA,0,GasA,SBrkr,0,0,1,6,NA,Unf,TA,0,0,NA,0,WD
+2124,52,NA,AllPub,BrkSide,1Fam,5,Gable,Wd Sdng,TA,TA,Rec,240,GasA,SBrkr,0,0,4,7,Gd,Unf,TA,0,0,NA,0,WD
+2125,51,NA,AllPub,OldTown,1Fam,5,Gambrel,Wd Sdng,TA,TA,LwQ,0,GasA,SBrkr,0,0,4,7,NA,Unf,TA,0,0,NA,0,WD
+2126,60,Pave,AllPub,BrkSide,1Fam,4,Gable,VinylSd,TA,TA,Unf,0,GasA,SBrkr,0,0,4,8,NA,Unf,TA,0,0,NA,0,WD
+2127,57,Grvl,AllPub,OldTown,2fmCon,8,Gable,Wd Sdng,TA,TA,Rec,0,GasA,SBrkr,0,0,5,8,NA,NA,NA,64,0,NA,1000,WD
+2128,63,NA,AllPub,OldTown,1Fam,8,Gambrel,MetalSd,Gd,Gd,Unf,0,GasA,SBrkr,0,0,3,7,NA,Unf,Fa,0,0,NA,0,WD
+2129,NA,NA,AllPub,IDOTRR,1Fam,6,Gable,Wd Shng,Gd,TA,Unf,0,GasA,SBrkr,0,0,1,4,NA,Unf,TA,0,0,NA,0,WD
+2130,60,NA,AllPub,IDOTRR,1Fam,6,Gable,MetalSd,TA,TA,Rec,0,GasA,FuseA,0,0,4,7,NA,Unf,TA,0,0,NA,0,COD
+2131,60,NA,AllPub,IDOTRR,1Fam,6,Gable,Wd Sdng,TA,TA,Unf,0,GasA,SBrkr,697,0,4,9,Gd,Unf,TA,0,0,NA,0,COD
+2132,NA,Grvl,AllPub,IDOTRR,1Fam,6,Gable,HdBoard,TA,TA,Unf,0,GasA,SBrkr,0,0,2,6,NA,Unf,Fa,0,0,NA,0,WD
+2133,60,NA,AllPub,IDOTRR,1Fam,7,Gable,VinylSd,TA,TA,Unf,0,GasA,SBrkr,0,0,2,5,NA,Unf,TA,0,0,NA,0,WD
+2134,62,NA,AllPub,IDOTRR,1Fam,6,Gable,Stucco,TA,TA,Rec,0,GasA,SBrkr,0,0,3,6,Gd,Unf,TA,0,0,NA,0,WD
+2135,60,NA,AllPub,IDOTRR,1Fam,8,Gable,Wd Sdng,TA,Fa,Unf,0,GasA,SBrkr,0,0,1,5,NA,Unf,TA,40,0,NA,0,ConLD
+2136,60,Grvl,AllPub,IDOTRR,2fmCon,3,Gable,AsphShn,Fa,TA,Unf,0,GasA,FuseF,0,0,3,8,NA,NA,NA,42,0,NA,0,WD
+2137,82,NA,AllPub,Sawyer,1Fam,6,Gable,VinylSd,Gd,TA,Unf,0,GasA,SBrkr,0,0,3,6,NA,Unf,TA,0,0,NA,0,WD
+2138,NA,NA,AllPub,Sawyer,1Fam,6,Gable,Wd Sdng,TA,Gd,ALQ,0,GasA,SBrkr,0,0,3,6,NA,Unf,TA,64,0,NA,0,WD
+2139,80,NA,AllPub,Sawyer,1Fam,5,Gable,Plywood,TA,TA,ALQ,0,GasA,SBrkr,0,0,3,6,Fa,Unf,TA,168,0,NA,0,WD
+2140,68,NA,AllPub,Sawyer,1Fam,7,Gable,HdBoard,TA,TA,ALQ,0,GasA,SBrkr,0,0,3,6,NA,RFn,TA,204,0,NA,600,WD
+2141,NA,NA,AllPub,Sawyer,1Fam,8,Gable,HdBoard,TA,Gd,ALQ,0,GasA,SBrkr,0,1,3,6,Po,Fin,TA,311,0,NA,0,WD
+2142,NA,NA,AllPub,Sawyer,1Fam,5,Gable,MetalSd,TA,TA,BLQ,0,GasA,SBrkr,0,0,3,6,NA,RFn,TA,0,0,NA,0,WD
+2143,NA,NA,AllPub,Sawyer,1Fam,5,Gable,VinylSd,TA,Gd,LwQ,956,GasA,SBrkr,0,0,2,5,NA,Unf,TA,178,0,NA,0,WD
+2144,60,NA,AllPub,Sawyer,2fmCon,4,Gable,Stucco,TA,TA,BLQ,0,GasA,SBrkr,0,0,3,6,NA,Unf,TA,0,0,NA,0,WD
+2145,94,NA,AllPub,Sawyer,1Fam,8,Gable,VinylSd,TA,TA,GLQ,0,GasA,SBrkr,0,0,3,6,NA,Fin,TA,168,0,NA,0,WD
+2146,88,NA,AllPub,Sawyer,1Fam,8,Gable,HdBoard,TA,TA,GLQ,0,GasA,FuseA,0,0,1,4,TA,Unf,TA,102,0,NA,0,WD
+2147,NA,NA,AllPub,ClearCr,1Fam,3,Flat,Plywood,TA,TA,Rec,0,GasA,SBrkr,0,0,3,7,TA,Unf,TA,50,0,NA,0,WD
+2148,63,NA,AllPub,Sawyer,1Fam,7,Gable,Wd Sdng,TA,TA,ALQ,0,GasA,SBrkr,0,0,2,6,NA,Unf,TA,0,0,NA,0,WD
+2149,NA,NA,AllPub,Sawyer,1Fam,8,Hip,HdBoard,TA,Gd,ALQ,0,GasA,SBrkr,0,0,3,5,NA,Unf,TA,143,0,NA,0,WD
+2150,82,NA,AllPub,ClearCr,1Fam,6,Gable,Plywood,TA,Gd,GLQ,0,GasA,SBrkr,0,0,3,7,Gd,Fin,TA,140,0,NA,0,WD
+2151,50,NA,AllPub,Edwards,1Fam,5,Gable,Plywood,TA,TA,Unf,0,GasA,SBrkr,0,0,2,5,Gd,Unf,TA,135,0,NA,0,WD
+2152,85,NA,AllPub,Edwards,1Fam,7,Flat,NA,TA,TA,ALQ,0,GasA,SBrkr,0,0,2,5,Gd,NA,NA,0,0,NA,0,WD
+2153,68,NA,AllPub,Edwards,1Fam,6,Hip,Wd Sdng,TA,TA,Rec,0,GasA,FuseA,0,0,3,6,TA,Unf,TA,158,0,NA,0,WD
+2154,50,NA,AllPub,Edwards,Duplex,5,Gable,HdBoard,TA,Gd,GLQ,0,GasA,SBrkr,0,0,2,4,NA,NA,NA,0,0,NA,0,WD
+2155,50,NA,AllPub,Edwards,1Fam,8,Gable,VinylSd,Gd,TA,Rec,0,GasA,SBrkr,0,0,3,7,NA,Unf,TA,0,0,NA,0,WD
+2156,NA,NA,AllPub,SawyerW,1Fam,5,Gable,HdBoard,Gd,Gd,LwQ,0,GasA,SBrkr,0,1,4,9,TA,Fin,TA,48,0,NA,0,WD
+2157,80,NA,AllPub,SawyerW,1Fam,5,Gable,HdBoard,Gd,Gd,GLQ,0,GasA,SBrkr,0,0,3,7,TA,RFn,TA,424,0,NA,0,WD
+2158,NA,NA,AllPub,SawyerW,1Fam,5,Gable,VinylSd,Gd,Gd,GLQ,0,GasA,SBrkr,0,0,4,9,TA,RFn,TA,168,0,NA,0,WD
+2159,85,NA,AllPub,SawyerW,1Fam,5,Gable,VinylSd,Gd,Gd,Unf,0,GasA,SBrkr,0,0,3,8,TA,Fin,TA,100,0,NA,0,WD
+2160,65,NA,AllPub,CollgCr,1Fam,5,Gable,VinylSd,Gd,Gd,Unf,0,GasA,SBrkr,0,0,3,6,Gd,Fin,TA,100,0,NA,0,New
+2161,65,NA,AllPub,CollgCr,1Fam,5,Gable,VinylSd,Gd,Gd,Unf,0,GasA,SBrkr,0,0,3,7,Gd,RFn,TA,168,0,NA,0,WD
+2162,91,NA,AllPub,CollgCr,1Fam,5,Hip,VinylSd,Gd,Gd,GLQ,0,GasA,SBrkr,0,0,3,7,Gd,RFn,Gd,0,0,NA,0,WD
+2163,91,NA,AllPub,CollgCr,1Fam,5,Hip,VinylSd,Ex,Ex,GLQ,0,GasA,SBrkr,0,0,3,8,Gd,Fin,TA,216,0,NA,0,New
+2164,NA,NA,AllPub,SawyerW,1Fam,5,Gable,VinylSd,Gd,Gd,GLQ,0,GasA,SBrkr,0,0,3,6,Fa,Fin,TA,168,0,NA,0,WD
+2165,NA,NA,AllPub,ClearCr,1Fam,6,Flat,Plywood,TA,Gd,LwQ,723,GasA,SBrkr,0,0,2,6,Gd,Unf,TA,339,0,NA,0,WD
+2166,65,NA,AllPub,CollgCr,1Fam,7,Gable,VinylSd,TA,Gd,GLQ,0,GasA,SBrkr,0,0,3,5,NA,Unf,TA,168,0,NA,0,WD
+2167,NA,NA,AllPub,CollgCr,1Fam,5,Gable,VinylSd,TA,Gd,GLQ,0,GasA,SBrkr,0,0,3,5,TA,RFn,TA,208,0,NA,0,WD
+2168,NA,NA,AllPub,CollgCr,1Fam,5,Gable,VinylSd,TA,Gd,GLQ,0,GasA,SBrkr,0,0,3,6,NA,RFn,TA,0,0,NA,0,WD
+2169,68,NA,AllPub,CollgCr,1Fam,5,Gable,VinylSd,Gd,Gd,GLQ,0,GasA,SBrkr,0,0,3,6,NA,RFn,TA,0,0,NA,0,WD
+2170,75,NA,AllPub,CollgCr,1Fam,5,Gable,VinylSd,Gd,Gd,GLQ,0,GasA,SBrkr,0,0,3,6,NA,RFn,TA,192,0,NA,4500,WD
+2171,NA,NA,AllPub,CollgCr,1Fam,6,Gable,HdBoard,TA,Gd,ALQ,0,GasA,SBrkr,0,0,3,5,NA,Unf,TA,211,0,NA,0,WD
+2172,NA,NA,AllPub,CollgCr,1Fam,6,Gable,HdBoard,TA,TA,ALQ,0,GasA,SBrkr,0,0,3,5,Fa,Unf,TA,0,0,NA,0,WD
+2173,40,NA,AllPub,CollgCr,1Fam,6,Gable,Wd Sdng,TA,TA,Rec,596,GasA,SBrkr,0,0,2,5,NA,Fin,TA,140,0,NA,0,WD
+2174,NA,NA,AllPub,CollgCr,1Fam,5,Gable,VinylSd,Gd,Gd,Unf,0,GasA,SBrkr,0,0,3,8,TA,RFn,TA,0,0,NA,0,WD
+2175,NA,NA,AllPub,CollgCr,1Fam,5,Gable,VinylSd,Gd,Gd,GLQ,0,GasA,SBrkr,0,0,3,7,TA,Fin,TA,168,0,NA,0,WD
+2176,NA,NA,AllPub,CollgCr,1Fam,5,Hip,VinylSd,Gd,Ex,GLQ,0,GasA,SBrkr,0,0,3,6,Gd,RFn,TA,182,0,NA,0,WD
+2177,41,NA,AllPub,CollgCr,1Fam,5,Gable,VinylSd,Gd,Gd,Unf,0,GasA,SBrkr,0,0,4,9,Gd,RFn,TA,0,0,NA,0,WD
+2178,96,NA,AllPub,CollgCr,1Fam,5,Gable,VinylSd,Gd,Gd,Unf,0,GasA,SBrkr,0,0,3,7,TA,Unf,TA,120,0,NA,0,WD
+2179,NA,NA,AllPub,CollgCr,TwnhsE,5,Gable,VinylSd,Gd,Gd,GLQ,0,GasA,SBrkr,0,0,1,3,NA,RFn,TA,140,0,NA,0,WD
+2180,83,NA,AllPub,CollgCr,Duplex,5,Gable,VinylSd,TA,Gd,GLQ,162,GasA,SBrkr,0,0,2,8,NA,Unf,TA,160,0,NA,0,WD
+2181,75,NA,AllPub,CollgCr,1Fam,5,Gable,VinylSd,Gd,Gd,GLQ,0,GasA,SBrkr,0,0,3,6,NA,Unf,TA,0,0,NA,0,WD
+2182,85,NA,AllPub,CollgCr,1Fam,6,Gable,VinylSd,Gd,Gd,GLQ,0,GasA,SBrkr,0,0,3,6,NA,RFn,TA,0,0,NA,0,WD
+2183,74,NA,AllPub,CollgCr,1Fam,5,Gable,VinylSd,Gd,Gd,GLQ,0,GasA,SBrkr,0,0,3,6,NA,RFn,TA,0,0,NA,0,WD
+2184,75,NA,AllPub,Edwards,1Fam,5,Hip,HdBoard,TA,TA,Rec,0,GasA,SBrkr,0,0,3,6,NA,Unf,TA,259,0,NA,0,COD
+2185,64,NA,AllPub,Edwards,1Fam,5,Gable,Plywood,TA,Gd,ALQ,0,GasA,SBrkr,0,1,3,6,NA,RFn,Fa,224,0,NA,0,WD
+2186,65,NA,AllPub,Edwards,1Fam,6,Hip,Plywood,TA,TA,BLQ,0,GasA,SBrkr,0,1,3,6,Po,Unf,TA,0,0,NA,0,WD
+2187,NA,NA,AllPub,Edwards,1Fam,6,Hip,Plywood,TA,TA,ALQ,120,GasA,SBrkr,0,0,3,6,Fa,RFn,TA,292,0,NA,0,WD
+2188,72,NA,AllPub,Edwards,1Fam,7,Hip,Plywood,TA,TA,ALQ,0,GasA,SBrkr,0,0,3,6,TA,Fin,TA,0,0,NA,0,WD
+2189,123,NA,AllPub,Edwards,1Fam,7,Gable,Plywood,TA,NA,NA,0,GasA,SBrkr,0,NA,5,11,Gd,Unf,TA,0,0,NA,0,WD
+2190,65,NA,AllPub,Edwards,Duplex,5,Gable,Plywood,TA,NA,NA,0,GasA,SBrkr,0,0,2,6,NA,NA,NA,0,0,NA,0,WD
+2191,74,NA,AllPub,Edwards,Duplex,5,Gable,Wd Shng,TA,NA,NA,0,GasA,FuseF,0,0,2,6,NA,NA,NA,0,0,NA,0,WD
+2192,56,NA,AllPub,Edwards,2fmCon,5,Hip,Wd Sdng,TA,TA,ALQ,0,GasA,FuseP,0,0,2,4,NA,NA,NA,112,0,NA,0,WD
+2193,60,NA,AllPub,Edwards,1Fam,7,Gable,Wd Sdng,TA,TA,Unf,0,GasA,FuseF,0,0,2,5,NA,NA,NA,42,0,NA,0,WD
+2194,57,NA,AllPub,Edwards,1Fam,8,Gable,MetalSd,TA,NA,NA,0,GasA,SBrkr,0,0,4,8,NA,NA,NA,0,0,NA,0,WD
+2195,68,NA,AllPub,Edwards,1Fam,5,Gable,MetalSd,TA,Gd,Rec,0,GasA,SBrkr,0,0,2,5,NA,RFn,TA,134,0,NA,3000,WD
+2196,62,NA,AllPub,Edwards,1Fam,6,Gable,Wd Sdng,TA,Ex,Unf,0,GasA,FuseA,0,0,3,6,NA,Unf,TA,0,0,NA,0,WD
+2197,67,NA,AllPub,Edwards,1Fam,7,Gable,Wd Sdng,TA,TA,ALQ,0,GasA,SBrkr,0,0,3,6,NA,Unf,TA,0,0,NA,0,WD
+2198,60,NA,AllPub,SWISU,1Fam,8,Gable,Wd Shng,TA,TA,Unf,0,GasA,SBrkr,0,0,2,7,Gd,Unf,TA,0,0,NA,0,WD
+2199,64,NA,AllPub,SWISU,Duplex,7,Gable,Stucco,TA,TA,ALQ,679,GasA,SBrkr,0,0,4,10,Gd,Unf,TA,248,0,NA,0,WD
+2200,66,NA,AllPub,Crawfor,1Fam,6,Gambrel,Wd Sdng,TA,TA,BLQ,0,GasA,SBrkr,0,0,2,6,Gd,Unf,TA,0,0,NA,0,WD
+2201,63,NA,AllPub,Crawfor,1Fam,6,Gable,Wd Shng,TA,Gd,Unf,0,GasA,SBrkr,0,0,3,6,NA,Unf,TA,424,0,NA,400,WD
+2202,54,NA,AllPub,Crawfor,1Fam,9,Gable,Stucco,Gd,Fa,ALQ,0,GasA,SBrkr,0,0,3,7,Gd,Unf,TA,85,0,NA,0,WD
+2203,NA,NA,AllPub,Crawfor,1Fam,3,Hip,Plywood,TA,TA,Unf,0,GasA,SBrkr,0,0,4,7,Gd,Unf,TA,0,0,NA,0,WD
+2204,NA,Grvl,AllPub,Crawfor,1Fam,6,Gable,Wd Shng,TA,TA,BLQ,0,GasA,SBrkr,0,0,4,7,Gd,Unf,TA,0,0,NA,0,WD
+2205,NA,Grvl,AllPub,Crawfor,1Fam,4,Gable,Wd Sdng,TA,TA,Unf,0,GasA,FuseF,0,0,3,6,NA,Unf,TA,64,0,NA,0,WD
+2206,79,NA,AllPub,Crawfor,1Fam,5,Hip,Plywood,TA,TA,Rec,0,GasA,FuseA,0,1,2,5,TA,Fin,TA,66,0,NA,0,WD
+2207,100,NA,AllPub,Crawfor,1Fam,6,Gable,Stucco,TA,TA,LwQ,0,GasA,SBrkr,0,0,4,9,Gd,Fin,Fa,0,0,NA,0,WD
+2208,70,NA,AllPub,Crawfor,1Fam,9,Gable,VinylSd,TA,TA,GLQ,0,GasA,SBrkr,0,0,3,8,TA,Fin,TA,0,0,NA,0,WD
+2209,56,NA,AllPub,Crawfor,1Fam,5,Gable,MetalSd,TA,TA,Rec,0,GasA,FuseA,0,0,3,7,TA,Unf,TA,0,0,NA,0,WD
+2210,24,NA,AllPub,Blueste,Twnhs,6,Gable,MetalSd,TA,Gd,GLQ,0,GasA,SBrkr,0,0,2,5,TA,Unf,TA,213,0,NA,0,WD
+2211,50,NA,AllPub,IDOTRR,1Fam,8,Gable,VinylSd,TA,TA,Rec,40,GasA,SBrkr,0,0,2,5,NA,Unf,TA,0,0,NA,0,WD
+2212,60,NA,AllPub,IDOTRR,1Fam,8,Gable,VinylSd,TA,Fa,Unf,0,GasA,SBrkr,0,0,3,5,NA,Unf,TA,0,0,NA,0,WD
+2213,58,NA,AllPub,IDOTRR,1Fam,7,Gable,Wd Sdng,TA,Gd,Unf,0,GasA,FuseA,0,0,4,7,NA,NA,NA,0,0,NA,0,WD
+2214,75,NA,AllPub,IDOTRR,1Fam,5,Hip,Plywood,Fa,Gd,Rec,0,GasA,SBrkr,0,0,3,7,Po,Unf,TA,0,0,NA,0,WD
+2215,60,NA,AllPub,IDOTRR,1Fam,7,Gable,Wd Sdng,TA,TA,Unf,0,GasA,FuseA,0,0,2,5,NA,RFn,TA,0,0,NA,0,WD
+2216,75,NA,AllPub,IDOTRR,1Fam,5,Gable,Wd Shng,TA,TA,ALQ,0,GasA,FuseA,0,0,4,7,NA,Fin,TA,0,0,NA,0,WD
+2217,80,NA,AllPub,IDOTRR,1Fam,5,Gable,VinylSd,Fa,NA,NA,0,Wall,FuseA,0,0,2,4,NA,Unf,Fa,0,0,NA,0,WD
+2218,60,NA,AllPub,IDOTRR,1Fam,7,Gable,Wd Sdng,TA,NA,Unf,0,GasA,SBrkr,0,0,2,6,NA,Unf,Fa,0,0,NA,0,WD
+2219,52,NA,AllPub,IDOTRR,1Fam,7,Gable,Plywood,TA,NA,Unf,0,GasA,FuseA,0,0,2,5,NA,Unf,Po,0,0,NA,0,WD
+2220,60,NA,AllPub,IDOTRR,1Fam,6,Gable,MetalSd,TA,Fa,Unf,0,GasA,SBrkr,0,0,3,5,NA,Unf,Fa,0,0,NA,0,WD
+2221,44,NA,AllPub,Crawfor,TwnhsE,5,Hip,CmentBd,Ex,Ex,GLQ,0,GasA,SBrkr,0,1,2,5,Gd,Fin,TA,162,153,NA,0,New
+2222,44,NA,AllPub,Crawfor,TwnhsE,5,Hip,CmentBd,Gd,Ex,GLQ,0,GasA,SBrkr,0,1,2,5,Gd,Fin,TA,128,0,NA,0,WD
+2223,NA,NA,AllPub,Mitchel,1Fam,5,Gable,MetalSd,Gd,Ex,GLQ,0,GasA,SBrkr,0,0,3,7,NA,Fin,TA,0,0,NA,0,WD
+2224,NA,NA,AllPub,Mitchel,1Fam,5,Gable,VinylSd,TA,Gd,Unf,0,GasA,SBrkr,0,0,3,8,TA,Unf,TA,318,0,NA,0,WD
+2225,76,NA,AllPub,Mitchel,Duplex,4,Gable,Plywood,TA,NA,NA,0,GasA,SBrkr,0,0,4,8,NA,Unf,TA,0,0,NA,0,WD
+2226,74,NA,AllPub,Mitchel,1Fam,5,Gable,HdBoard,TA,Gd,ALQ,0,GasA,SBrkr,0,0,3,6,TA,Unf,TA,428,0,NA,0,WD
+2227,42,NA,AllPub,Timber,TwnhsE,6,Gable,VinylSd,Gd,Gd,GLQ,0,GasA,SBrkr,0,0,2,6,TA,Fin,TA,240,0,NA,0,WD
+2228,74,NA,AllPub,Timber,1Fam,5,Hip,VinylSd,Gd,Ex,GLQ,0,GasA,SBrkr,0,0,3,8,NA,Fin,TA,0,0,NA,0,WD
+2229,107,NA,AllPub,Timber,1Fam,5,Gable,VinylSd,Gd,Gd,GLQ,0,GasA,SBrkr,0,0,3,6,Gd,Fin,TA,0,0,NA,0,New
+2230,73,NA,AllPub,Timber,1Fam,5,Gable,VinylSd,TA,Gd,Unf,0,GasA,SBrkr,0,0,3,6,NA,Fin,TA,100,0,NA,0,WD
+2231,81,NA,AllPub,Timber,1Fam,5,Gable,VinylSd,Gd,Gd,Unf,0,GasA,SBrkr,0,0,3,6,NA,Fin,TA,0,0,NA,0,New
+2232,75,NA,AllPub,Timber,1Fam,5,Gable,Wd Sdng,TA,Gd,Unf,0,GasA,SBrkr,0,0,3,8,TA,Unf,TA,252,0,NA,0,WD
+2233,93,NA,AllPub,Timber,1Fam,5,Gable,HdBoard,Gd,Gd,GLQ,60,GasA,SBrkr,0,0,3,6,Fa,Unf,TA,282,0,NA,0,WD
+2234,82,NA,AllPub,Timber,1Fam,5,Hip,VinylSd,Gd,Ex,GLQ,0,GasA,SBrkr,0,0,3,7,TA,Fin,TA,185,0,NA,0,WD
+2235,NA,NA,AllPub,Timber,1Fam,5,Hip,VinylSd,Gd,Ex,GLQ,0,GasA,SBrkr,0,0,3,6,NA,RFn,TA,165,0,NA,0,WD
+2236,79,NA,AllPub,Timber,1Fam,5,Gable,VinylSd,Gd,Gd,GLQ,0,GasA,SBrkr,0,0,3,7,Gd,Fin,TA,0,0,NA,0,WD
+2237,85,NA,AllPub,Timber,1Fam,5,Gable,VinylSd,Gd,Ex,GLQ,0,GasA,SBrkr,0,0,3,7,Gd,Fin,TA,0,0,NA,0,WD
+2238,97,NA,AllPub,Mitchel,Duplex,5,Gable,VinylSd,TA,Gd,GLQ,0,GasA,SBrkr,0,0,2,8,NA,Fin,TA,0,0,NA,0,WD
+2239,77,NA,AllPub,Mitchel,1Fam,5,Gable,VinylSd,TA,Gd,Unf,0,GasA,SBrkr,0,0,2,5,NA,NA,NA,0,0,NA,0,WD
+2240,32,NA,AllPub,Mitchel,TwnhsE,5,Hip,VinylSd,TA,Ex,GLQ,0,GasA,SBrkr,0,0,2,4,NA,RFn,TA,0,0,NA,0,WD
+2241,150,NA,AllPub,Mitchel,1Fam,5,Gable,HdBoard,TA,Gd,ALQ,247,GasA,SBrkr,0,0,3,6,NA,Fin,TA,0,0,NA,0,ConLD
+2242,NA,NA,AllPub,MeadowV,TwnhsE,6,Gable,CmentBd,TA,Gd,GLQ,0,GasA,SBrkr,0,0,3,6,NA,Unf,TA,0,0,NA,0,WD
+2243,41,NA,AllPub,MeadowV,TwnhsE,7,Gable,CmentBd,TA,Gd,ALQ,0,GasA,SBrkr,0,0,4,6,TA,Unf,TA,92,0,NA,0,WD
+2244,21,NA,AllPub,MeadowV,Twnhs,7,Gable,CmentBd,TA,Gd,GLQ,0,GasA,SBrkr,0,0,2,5,NA,RFn,TA,120,0,NA,0,WD
+2245,21,NA,AllPub,MeadowV,Twnhs,6,Gable,CmentBd,TA,Gd,GLQ,0,GasA,SBrkr,0,0,1,4,Po,RFn,TA,0,120,NA,0,WD
+2246,NA,NA,AllPub,Mitchel,1Fam,6,Gable,Plywood,TA,TA,ALQ,0,GasA,SBrkr,0,0,3,6,NA,Unf,TA,81,0,NA,500,WD
+2247,21,NA,AllPub,MeadowV,Twnhs,9,Gable,CmentBd,TA,TA,GLQ,0,GasA,SBrkr,0,0,3,6,NA,NA,NA,187,0,NA,0,WD
+2248,59,NA,AllPub,Mitchel,1Fam,7,Gable,VinylSd,TA,TA,GLQ,0,GasA,SBrkr,0,1,2,4,NA,Unf,TA,315,0,NA,0,WD
+2249,60,NA,AllPub,Mitchel,1Fam,6,Gable,Plywood,TA,TA,GLQ,0,GasA,SBrkr,0,0,3,6,NA,Unf,TA,0,0,NA,0,WD
+2250,74,NA,AllPub,Mitchel,1Fam,6,Gable,Plywood,TA,TA,ALQ,0,GasA,SBrkr,0,0,3,6,NA,Unf,TA,0,0,NA,0,WD
+2251,NA,NA,AllPub,IDOTRR,1Fam,1,Hip,Wd Sdng,TA,TA,Unf,0,GasA,SBrkr,0,0,4,7,NA,Unf,TA,0,0,NA,0,WD
+2252,85,NA,AllPub,NAmes,1Fam,6,Gable,MetalSd,TA,TA,BLQ,0,GasA,SBrkr,0,0,3,7,Gd,Unf,TA,0,0,NA,0,WD
+2253,56,NA,AllPub,Gilbert,1Fam,5,Gable,VinylSd,TA,Gd,Unf,0,GasA,SBrkr,0,0,3,7,TA,Fin,TA,0,0,NA,0,WD
+2254,NA,NA,AllPub,Gilbert,1Fam,5,Gable,HdBoard,TA,Gd,LwQ,0,GasA,SBrkr,0,0,3,7,TA,Fin,TA,256,0,NA,0,WD
+2255,NA,NA,AllPub,Gilbert,1Fam,5,Gable,VinylSd,TA,Gd,ALQ,0,GasA,SBrkr,0,0,3,7,TA,Fin,TA,256,0,NA,0,WD
+2256,63,NA,AllPub,Gilbert,1Fam,5,Gable,HdBoard,Gd,Gd,Rec,0,GasA,SBrkr,0,0,3,6,NA,Fin,TA,0,0,NA,0,WD
+2257,60,NA,AllPub,Gilbert,1Fam,5,Gable,VinylSd,TA,Gd,Unf,0,GasA,SBrkr,0,0,5,7,TA,Fin,TA,188,0,NA,0,WD
+2258,NA,NA,AllPub,Gilbert,1Fam,5,Gable,HdBoard,TA,Gd,Unf,0,GasA,SBrkr,0,0,3,6,NA,RFn,TA,0,0,NA,0,WD
+2259,NA,NA,AllPub,Gilbert,1Fam,5,Gable,HdBoard,TA,Gd,Unf,0,GasA,SBrkr,0,0,3,7,TA,RFn,TA,290,0,NA,0,WD
+2260,160,NA,AllPub,Gilbert,1Fam,6,Gable,HdBoard,TA,TA,BLQ,0,GasA,SBrkr,0,0,3,6,TA,Unf,TA,0,0,NA,0,WD
+2261,38,NA,AllPub,StoneBr,TwnhsE,5,Gable,CmentBd,Gd,Gd,GLQ,0,GasA,SBrkr,0,0,2,5,NA,RFn,TA,0,0,NA,0,WD
+2262,35,NA,AllPub,StoneBr,TwnhsE,5,Gable,CmentBd,Gd,Gd,GLQ,0,GasA,SBrkr,0,0,1,4,TA,RFn,TA,0,0,NA,0,WD
+2263,98,NA,AllPub,StoneBr,1Fam,5,Hip,VinylSd,Gd,Ex,GLQ,0,GasA,SBrkr,0,0,4,10,Gd,Fin,TA,120,0,NA,0,WD
+2264,52,NA,AllPub,StoneBr,1Fam,5,Hip,VinylSd,Ex,Ex,GLQ,0,GasA,SBrkr,0,0,4,8,Gd,Fin,Gd,0,0,NA,0,New
+2265,195,NA,AllPub,Gilbert,2fmCon,5,Gable,HdBoard,TA,Gd,ALQ,0,GasW,SBrkr,0,0,3,7,NA,Unf,TA,144,0,NA,0,WD
+2266,61,NA,AllPub,StoneBr,TwnhsE,5,Gable,MetalSd,Gd,Ex,GLQ,0,GasA,SBrkr,0,0,2,6,Gd,Fin,TA,0,0,NA,0,WD
+2267,85,NA,AllPub,StoneBr,1Fam,5,Hip,VinylSd,Gd,Ex,GLQ,0,GasA,SBrkr,0,0,1,7,Gd,RFn,TA,390,0,NA,0,WD
+2268,81,NA,AllPub,StoneBr,1Fam,5,Hip,CmentBd,Ex,Ex,GLQ,0,GasA,SBrkr,0,0,3,8,Gd,Fin,TA,240,0,NA,0,New
+2269,NA,NA,AllPub,NWAmes,1Fam,5,Hip,HdBoard,TA,Gd,GLQ,0,GasA,SBrkr,0,0,3,5,NA,Unf,TA,0,0,NA,0,COD
+2270,78,NA,AllPub,NWAmes,1Fam,7,Gable,MetalSd,Gd,Gd,ALQ,0,GasA,SBrkr,0,0,3,6,TA,RFn,TA,167,0,NA,0,WD
+2271,93,NA,AllPub,NWAmes,1Fam,6,Gable,Plywood,TA,Gd,GLQ,0,GasA,SBrkr,0,0,3,7,TA,Fin,TA,0,0,NA,0,WD
+2272,61,NA,AllPub,NWAmes,1Fam,5,Hip,Plywood,TA,Gd,ALQ,0,GasA,SBrkr,0,0,4,9,TA,Fin,TA,192,0,NA,0,WD
+2273,79,NA,AllPub,NWAmes,1Fam,6,Gable,Plywood,TA,Gd,ALQ,0,GasA,SBrkr,0,0,3,6,NA,Fin,TA,204,0,NA,0,WD
+2274,80,NA,AllPub,NWAmes,1Fam,5,Gable,MetalSd,TA,Gd,GLQ,0,GasA,SBrkr,0,0,2,5,TA,RFn,TA,240,0,NA,0,WD
+2275,128,NA,AllPub,NWAmes,1Fam,5,Hip,HdBoard,TA,TA,ALQ,121,GasA,SBrkr,0,1,2,6,TA,Unf,TA,0,0,NA,0,WD
+2276,64,NA,AllPub,NWAmes,1Fam,6,Gable,Plywood,TA,Gd,GLQ,604,GasA,SBrkr,0,1,3,5,Fa,Fin,TA,407,0,NA,0,WD
+2277,80,NA,AllPub,NWAmes,1Fam,6,Gable,HdBoard,TA,TA,ALQ,153,GasA,SBrkr,0,0,4,8,TA,Unf,TA,0,0,NA,0,WD
+2278,63,NA,AllPub,NAmes,1Fam,6,Gable,MetalSd,TA,TA,ALQ,0,GasA,SBrkr,0,0,3,7,NA,Unf,TA,252,0,NA,0,WD
+2279,66,NA,AllPub,NAmes,1Fam,5,Gable,HdBoard,TA,TA,ALQ,619,GasA,SBrkr,0,0,3,5,NA,RFn,TA,120,0,NA,0,WD
+2280,NA,NA,AllPub,NAmes,1Fam,7,Gable,MetalSd,TA,TA,ALQ,0,GasA,SBrkr,0,0,2,4,NA,Unf,Fa,140,0,NA,0,WD
+2281,33,NA,AllPub,NAmes,TwnhsE,5,Gable,MetalSd,Gd,Gd,Unf,0,GasA,SBrkr,0,0,2,5,TA,Fin,TA,136,0,NA,0,WD
+2282,26,NA,AllPub,NAmes,TwnhsE,5,Gable,MetalSd,Gd,Gd,GLQ,0,GasA,SBrkr,0,0,2,5,TA,Fin,TA,0,0,NA,0,WD
+2283,21,NA,AllPub,BrDale,Twnhs,6,Gable,HdBoard,TA,TA,ALQ,0,GasA,SBrkr,0,0,3,6,NA,Unf,TA,144,0,NA,0,WD
+2284,21,NA,AllPub,BrDale,Twnhs,5,Gable,HdBoard,TA,TA,Unf,0,GasA,SBrkr,0,0,4,7,NA,Unf,TA,0,0,NA,0,WD
+2285,24,NA,AllPub,NPkVill,Twnhs,7,Gable,Brk Cmn,TA,Gd,GLQ,6,GasA,SBrkr,0,0,2,4,NA,Unf,TA,108,0,NA,0,WD
+2286,65,NA,AllPub,NAmes,1Fam,6,Hip,HdBoard,TA,TA,BLQ,0,GasA,SBrkr,0,0,3,5,NA,Unf,TA,0,0,NA,0,WD
+2287,96,NA,AllPub,NridgHt,1Fam,5,Hip,VinylSd,Ex,Ex,GLQ,0,GasA,SBrkr,0,0,3,7,Gd,Fin,TA,186,0,NA,0,New
+2288,91,NA,AllPub,NridgHt,1Fam,5,Gable,CmentBd,Gd,Ex,Unf,0,GasA,SBrkr,0,0,3,7,Gd,RFn,TA,0,0,NA,0,New
+2289,110,NA,AllPub,NridgHt,1Fam,5,Gable,VinylSd,Gd,Gd,GLQ,0,GasA,SBrkr,0,0,2,7,Ex,Fin,TA,130,0,NA,0,New
+2290,107,NA,AllPub,NridgHt,1Fam,5,Hip,CmentBd,Ex,Ex,GLQ,0,GasA,SBrkr,0,0,3,8,Gd,RFn,TA,268,0,NA,0,New
+2291,110,NA,AllPub,NridgHt,1Fam,5,Hip,VinylSd,Gd,Ex,Unf,0,GasA,SBrkr,0,0,4,11,Gd,Fin,TA,120,0,NA,0,New
+2292,105,NA,AllPub,NridgHt,1Fam,5,Hip,VinylSd,Ex,Ex,GLQ,0,GasA,SBrkr,0,0,2,7,Gd,Fin,TA,188,0,NA,0,WD
+2293,107,NA,AllPub,NridgHt,1Fam,5,Hip,VinylSd,Ex,Ex,GLQ,0,GasA,SBrkr,0,0,3,8,Ex,Fin,TA,130,0,NA,0,New
+2294,118,NA,AllPub,NridgHt,1Fam,5,Gable,MetalSd,Gd,Ex,Unf,0,GasA,SBrkr,0,0,4,9,Ex,Fin,TA,282,0,NA,0,WD
+2295,59,NA,AllPub,NridgHt,1Fam,5,Hip,CmentBd,Ex,Ex,GLQ,0,GasA,SBrkr,0,0,2,7,Gd,Fin,TA,192,0,NA,0,New
+2296,134,NA,AllPub,NridgHt,1Fam,5,Gable,VinylSd,Gd,Gd,Unf,0,GasA,SBrkr,0,0,3,7,Gd,Unf,TA,0,0,NA,0,New
+2297,82,NA,AllPub,NridgHt,1Fam,5,Gable,VinylSd,Ex,Ex,GLQ,0,GasA,SBrkr,0,0,3,8,Gd,Fin,TA,172,0,NA,0,New
+2298,94,NA,AllPub,NridgHt,1Fam,5,Hip,MetalSd,Ex,Ex,Unf,0,GasA,SBrkr,0,0,3,7,Gd,Fin,TA,158,0,NA,0,WD
+2299,99,NA,AllPub,NridgHt,1Fam,5,Gable,VinylSd,Gd,Gd,Unf,0,GasA,SBrkr,0,0,5,11,Ex,RFn,TA,194,0,NA,0,WD
+2300,110,NA,AllPub,NridgHt,1Fam,5,Gable,VinylSd,Gd,Ex,GLQ,0,GasA,SBrkr,0,0,3,7,Gd,Fin,TA,192,0,NA,0,WD
+2301,NA,NA,AllPub,NridgHt,1Fam,5,Hip,VinylSd,Gd,Ex,GLQ,0,GasA,SBrkr,0,0,3,8,Gd,Fin,TA,196,0,NA,0,New
+2302,70,NA,AllPub,NridgHt,1Fam,5,Gable,VinylSd,Gd,Gd,GLQ,0,GasA,SBrkr,0,0,3,7,NA,RFn,TA,100,0,NA,0,WD
+2303,71,NA,AllPub,NridgHt,1Fam,5,Gable,VinylSd,Gd,Gd,GLQ,0,GasA,SBrkr,0,0,3,7,NA,RFn,TA,168,0,NA,0,WD
+2304,92,NA,AllPub,NridgHt,1Fam,5,Gable,VinylSd,Gd,Gd,Unf,0,GasA,SBrkr,0,0,3,7,NA,RFn,TA,0,0,NA,0,New
+2305,34,NA,AllPub,NridgHt,Twnhs,5,Gable,VinylSd,Gd,Gd,ALQ,0,GasA,SBrkr,0,0,1,5,Gd,RFn,TA,110,0,NA,0,New
+2306,34,NA,AllPub,NridgHt,Twnhs,5,Gable,VinylSd,Gd,Gd,ALQ,0,GasA,SBrkr,0,0,1,5,Gd,RFn,TA,110,0,NA,0,WD
+2307,41,NA,AllPub,NridgHt,TwnhsE,5,Gable,VinylSd,Gd,Gd,ALQ,0,GasA,SBrkr,0,0,2,6,Gd,RFn,TA,192,0,NA,0,WD
+2308,34,NA,AllPub,NridgHt,Twnhs,5,Gable,VinylSd,Gd,Gd,GLQ,0,GasA,SBrkr,0,0,2,6,Gd,RFn,TA,156,0,NA,0,CWD
+2309,48,NA,AllPub,NridgHt,TwnhsE,5,Hip,MetalSd,Ex,Ex,GLQ,0,GasA,SBrkr,0,0,2,6,Gd,RFn,TA,203,0,NA,0,WD
+2310,48,NA,AllPub,NridgHt,TwnhsE,5,Hip,MetalSd,Gd,Gd,GLQ,0,GasA,SBrkr,0,0,2,6,Gd,Fin,TA,0,0,NA,0,New
+2311,48,NA,AllPub,NridgHt,TwnhsE,5,Gable,Wd Shng,Gd,Gd,GLQ,0,GasA,SBrkr,0,0,2,6,Gd,RFn,TA,136,0,NA,0,WD
+2312,59,NA,AllPub,Gilbert,1Fam,5,Gable,VinylSd,Gd,Gd,Unf,0,GasA,SBrkr,0,0,3,7,NA,Unf,TA,100,0,NA,0,New
+2313,65,NA,AllPub,Gilbert,1Fam,5,Gable,VinylSd,Gd,Gd,Unf,0,GasA,SBrkr,0,0,3,6,Gd,Fin,TA,100,0,NA,0,WD
+2314,58,NA,AllPub,Gilbert,1Fam,5,Gable,VinylSd,TA,Gd,Unf,0,GasA,SBrkr,0,0,3,6,NA,Fin,TA,100,0,NA,0,New
+2315,62,NA,AllPub,Gilbert,1Fam,5,Gable,VinylSd,Gd,Gd,Unf,0,GasA,SBrkr,0,0,3,7,Gd,RFn,TA,100,0,NA,0,New
+2316,63,NA,AllPub,Gilbert,1Fam,5,Gable,VinylSd,Gd,Gd,Unf,0,GasA,SBrkr,0,0,3,6,Gd,Unf,TA,0,0,NA,0,New
+2317,88,NA,AllPub,Gilbert,1Fam,5,Gable,VinylSd,TA,Gd,GLQ,0,GasA,SBrkr,0,0,3,6,NA,Fin,TA,120,0,NA,2000,WD
+2318,72,NA,AllPub,Gilbert,1Fam,5,Gable,VinylSd,Gd,Gd,Unf,0,GasA,SBrkr,0,0,3,6,NA,Fin,TA,100,0,NA,0,New
+2319,64,NA,AllPub,Gilbert,1Fam,5,Gable,VinylSd,Gd,Gd,Unf,0,GasA,SBrkr,0,0,3,7,NA,Fin,TA,100,0,NA,0,New
+2320,64,NA,AllPub,Gilbert,1Fam,6,Gable,VinylSd,Gd,Gd,Unf,0,GasA,SBrkr,0,0,3,6,NA,RFn,TA,0,0,NA,0,New
+2321,NA,NA,AllPub,Blmngtn,TwnhsE,5,Hip,VinylSd,Gd,Gd,GLQ,0,GasA,SBrkr,0,0,2,7,TA,Fin,TA,143,0,NA,0,WD
+2322,53,NA,AllPub,Blmngtn,1Fam,5,Gable,VinylSd,Gd,Gd,Unf,0,GasA,SBrkr,0,0,2,6,Gd,Fin,TA,100,0,NA,0,New
+2323,65,NA,AllPub,Gilbert,1Fam,5,Gable,VinylSd,Gd,Gd,GLQ,0,GasA,SBrkr,0,0,2,5,NA,Fin,TA,100,0,NA,0,WD
+2324,87,NA,AllPub,Gilbert,1Fam,5,Gable,VinylSd,Gd,Gd,GLQ,0,GasA,SBrkr,0,0,3,8,Gd,Fin,TA,100,0,NA,0,WD
+2325,59,NA,AllPub,Gilbert,1Fam,5,Gable,VinylSd,Gd,Gd,Unf,0,GasA,SBrkr,0,0,3,6,Gd,RFn,TA,100,0,NA,0,New
+2326,NA,NA,AllPub,Gilbert,1Fam,5,Gable,VinylSd,Gd,Gd,Unf,0,GasA,SBrkr,0,0,3,7,TA,Fin,TA,100,0,NA,0,WD
+2327,63,NA,AllPub,Gilbert,1Fam,5,Gable,VinylSd,Gd,Gd,Unf,0,GasA,SBrkr,0,0,4,8,Gd,Fin,TA,0,0,NA,0,WD
+2328,NA,NA,AllPub,Gilbert,1Fam,5,Gable,VinylSd,Gd,Gd,GLQ,0,GasA,SBrkr,0,0,4,8,Gd,Fin,TA,264,0,NA,0,WD
+2329,58,NA,AllPub,Gilbert,1Fam,5,Gable,VinylSd,TA,Gd,GLQ,0,GasA,SBrkr,0,0,3,7,TA,RFn,TA,0,0,NA,0,WD
+2330,59,NA,AllPub,Gilbert,1Fam,5,Gable,VinylSd,TA,Gd,Unf,0,GasA,SBrkr,0,0,3,7,TA,RFn,TA,460,0,NA,0,WD
+2331,100,NA,AllPub,NoRidge,1Fam,5,Hip,VinylSd,Gd,Gd,GLQ,0,GasA,SBrkr,0,0,4,8,TA,Fin,TA,76,0,NA,0,WD
+2332,89,NA,AllPub,NoRidge,1Fam,5,Gable,MetalSd,Gd,Ex,GLQ,0,GasA,SBrkr,0,0,4,9,TA,Fin,TA,108,0,NA,0,WD
+2333,74,NA,AllPub,NoRidge,1Fam,5,Gable,VinylSd,Gd,Gd,GLQ,0,GasA,SBrkr,0,0,4,9,TA,Fin,TA,286,0,NA,0,WD
+2334,83,NA,AllPub,NoRidge,1Fam,5,Gable,VinylSd,Gd,Gd,Unf,0,GasA,SBrkr,0,0,4,8,TA,Fin,TA,120,0,NA,0,WD
+2335,88,NA,AllPub,NoRidge,1Fam,5,Gable,VinylSd,Gd,Ex,GLQ,0,GasA,SBrkr,0,0,4,9,TA,RFn,TA,0,0,NA,0,WD
+2336,82,NA,AllPub,NoRidge,1Fam,5,Gable,VinylSd,Gd,Gd,GLQ,0,GasA,SBrkr,0,0,4,8,TA,RFn,TA,198,0,NA,0,WD
+2337,75,NA,AllPub,Somerst,1Fam,6,Gable,VinylSd,Gd,Gd,Unf,0,GasA,SBrkr,0,0,3,5,NA,Unf,TA,0,0,NA,0,New
+2338,91,NA,AllPub,Somerst,1Fam,5,Gable,VinylSd,Gd,Gd,GLQ,0,GasA,SBrkr,0,0,3,6,Gd,Unf,TA,168,0,NA,0,New
+2339,76,NA,AllPub,Somerst,1Fam,5,Gable,VinylSd,Gd,Gd,GLQ,0,GasA,SBrkr,0,0,3,7,Gd,Fin,TA,168,0,NA,0,WD
+2340,98,NA,AllPub,Somerst,1Fam,5,Hip,CmentBd,Ex,Ex,GLQ,0,GasA,SBrkr,0,0,1,6,Gd,Fin,TA,76,0,NA,0,New
+2341,85,NA,AllPub,Somerst,1Fam,5,Gable,VinylSd,Gd,Gd,Unf,0,GasA,SBrkr,0,0,3,6,TA,Unf,TA,0,0,NA,0,New
+2342,74,NA,AllPub,Somerst,1Fam,5,Gable,VinylSd,Gd,Gd,GLQ,0,GasA,SBrkr,0,0,3,7,NA,RFn,TA,146,0,NA,0,WD
+2343,70,NA,AllPub,Somerst,1Fam,5,Gable,VinylSd,Gd,Gd,GLQ,0,GasA,SBrkr,0,0,3,7,Gd,RFn,TA,192,0,NA,0,WD
+2344,70,NA,AllPub,Somerst,1Fam,5,Gable,VinylSd,Gd,Gd,Unf,0,GasA,SBrkr,0,0,3,7,NA,RFn,TA,240,0,NA,0,WD
+2345,75,NA,AllPub,Somerst,1Fam,5,Gable,VinylSd,Gd,Gd,Unf,0,GasA,SBrkr,0,0,3,7,NA,RFn,TA,0,0,NA,0,WD
+2346,72,NA,AllPub,Somerst,1Fam,5,Gable,VinylSd,Gd,Gd,GLQ,0,GasA,SBrkr,0,0,3,6,NA,RFn,TA,0,0,NA,0,New
+2347,75,NA,AllPub,Somerst,1Fam,5,Gable,VinylSd,Gd,Gd,Unf,0,GasA,SBrkr,0,0,3,6,NA,RFn,TA,0,0,NA,0,New
+2348,72,NA,AllPub,Somerst,1Fam,5,Gable,VinylSd,Gd,Gd,GLQ,0,GasA,SBrkr,0,0,3,8,NA,Fin,TA,184,0,NA,0,New
+2349,81,NA,AllPub,Somerst,1Fam,5,Gable,VinylSd,Gd,Gd,Unf,0,GasA,SBrkr,0,0,3,8,NA,Unf,TA,0,0,NA,0,New
+2350,112,NA,AllPub,Somerst,1Fam,5,Hip,Wd Shng,Gd,Ex,GLQ,0,GasA,SBrkr,0,0,3,8,Gd,Fin,TA,168,0,NA,0,New
+2351,84,NA,AllPub,Somerst,1Fam,5,Gable,CmentBd,Ex,Gd,Unf,0,GasA,SBrkr,0,0,2,6,Gd,Fin,TA,0,0,NA,0,New
+2352,100,NA,AllPub,Somerst,1Fam,5,Gable,VinylSd,Gd,Gd,Unf,0,GasA,SBrkr,0,0,2,5,Gd,Fin,TA,112,0,NA,0,WD
+2353,85,NA,AllPub,Somerst,1Fam,5,Gable,VinylSd,Gd,Gd,Unf,0,GasA,SBrkr,0,0,4,9,Gd,RFn,TA,193,0,NA,0,WD
+2354,63,NA,AllPub,SawyerW,1Fam,5,Gable,VinylSd,TA,Gd,Unf,0,GasA,SBrkr,0,0,3,6,NA,NA,NA,0,0,NA,0,New
+2355,63,NA,AllPub,SawyerW,1Fam,5,Gable,VinylSd,Gd,Gd,Unf,0,GasA,SBrkr,0,0,3,5,NA,NA,NA,0,0,NA,0,WD
+2356,60,NA,AllPub,SawyerW,1Fam,5,Gable,VinylSd,Gd,Gd,GLQ,0,GasA,SBrkr,0,0,3,6,NA,Unf,TA,0,0,NA,0,WD
+2357,65,NA,AllPub,SawyerW,1Fam,5,Gable,VinylSd,Gd,Gd,Unf,0,GasA,SBrkr,0,0,3,7,NA,RFn,TA,0,0,NA,0,WD
+2358,NA,NA,AllPub,SawyerW,1Fam,5,Gable,VinylSd,Gd,Gd,ALQ,0,GasA,SBrkr,0,0,3,7,NA,RFn,TA,144,0,NA,0,WD
+2359,50,NA,AllPub,SawyerW,TwnhsE,5,Gable,Plywood,TA,TA,Unf,0,GasA,SBrkr,0,0,2,5,TA,RFn,TA,340,0,NA,0,WD
+2360,64,NA,AllPub,Sawyer,1Fam,5,Gable,Plywood,TA,Gd,LwQ,351,GasA,SBrkr,0,0,2,5,NA,Unf,TA,192,0,NA,0,WD
+2361,84,NA,AllPub,Sawyer,1Fam,7,Gable,HdBoard,TA,TA,Rec,0,GasA,SBrkr,0,0,3,5,NA,Fin,TA,188,0,NA,0,WD
+2362,NA,NA,AllPub,Veenker,1Fam,5,Gable,HdBoard,Gd,Gd,GLQ,0,GasA,SBrkr,0,0,3,7,TA,RFn,TA,0,0,NA,0,WD
+2363,44,NA,AllPub,Sawyer,1Fam,5,Gable,Plywood,TA,Fa,ALQ,0,GasA,SBrkr,0,0,2,5,NA,RFn,TA,136,0,NA,0,WD
+2364,43,NA,AllPub,Sawyer,1Fam,7,Gable,CmentBd,TA,Gd,ALQ,0,GasA,SBrkr,0,0,2,5,TA,RFn,TA,455,0,NA,0,WD
+2365,45,NA,AllPub,Somerst,TwnhsE,5,Gable,MetalSd,Gd,Gd,GLQ,0,GasA,SBrkr,0,0,2,6,Gd,Fin,TA,160,0,NA,0,WD
+2366,80,Pave,AllPub,Somerst,TwnhsE,5,Gable,VinylSd,Gd,Gd,GLQ,0,GasA,SBrkr,0,0,2,5,NA,Fin,TA,0,0,NA,0,New
+2367,32,Pave,AllPub,Somerst,TwnhsE,5,Gable,VinylSd,Gd,Gd,GLQ,0,GasA,SBrkr,0,0,2,5,NA,Fin,TA,0,0,NA,0,New
+2368,40,Pave,AllPub,Somerst,TwnhsE,5,Gable,VinylSd,Gd,Ex,GLQ,0,GasA,SBrkr,0,0,2,5,Gd,RFn,TA,0,0,NA,0,New
+2369,30,Pave,AllPub,Somerst,TwnhsE,5,Gable,VinylSd,Gd,Gd,Unf,0,GasA,SBrkr,0,0,2,5,NA,Fin,TA,0,0,NA,0,New
+2370,24,Pave,AllPub,Somerst,Twnhs,5,Gable,MetalSd,TA,Gd,GLQ,0,GasA,SBrkr,0,0,3,6,TA,Unf,TA,0,0,NA,0,WD
+2371,24,NA,AllPub,Somerst,Twnhs,5,Gable,MetalSd,Gd,Gd,GLQ,0,GasA,SBrkr,0,0,3,4,NA,Unf,TA,0,0,NA,0,WD
+2372,73,Pave,AllPub,Somerst,1Fam,5,Gable,CmentBd,Gd,Gd,Unf,0,GasA,SBrkr,0,0,3,5,NA,Unf,TA,176,0,NA,0,COD
+2373,NA,Pave,AllPub,Somerst,1Fam,5,Hip,CmentBd,Gd,Ex,GLQ,0,GasA,SBrkr,0,0,3,8,Gd,Unf,TA,0,0,NA,0,WD
+2374,106,NA,AllPub,Somerst,1Fam,5,Gable,VinylSd,Gd,Ex,GLQ,0,GasA,SBrkr,0,0,3,8,TA,RFn,Gd,147,0,NA,0,WD
+2375,50,NA,AllPub,Veenker,TwnhsE,5,Gable,BrkFace,Gd,Gd,LwQ,1037,GasA,SBrkr,0,0,1,5,Gd,Fin,TA,0,0,NA,0,WD
+2376,80,NA,AllPub,Veenker,1Fam,6,Hip,MetalSd,Gd,Gd,GLQ,0,GasA,SBrkr,0,0,3,8,TA,RFn,Gd,180,0,NA,0,WD
+2377,94,NA,AllPub,Veenker,1Fam,5,Hip,BrkFace,Gd,Gd,ALQ,829,GasA,SBrkr,0,0,2,7,Gd,RFn,TA,266,0,NA,0,WD
+2378,78,NA,AllPub,NWAmes,1Fam,6,Gable,MetalSd,TA,TA,Unf,0,GasA,SBrkr,0,0,3,7,NA,RFn,TA,0,0,NA,0,CWD
+2379,80,NA,AllPub,NWAmes,1Fam,6,Gable,VinylSd,TA,TA,Rec,0,GasA,SBrkr,0,0,4,8,Po,RFn,TA,0,0,NA,0,WD
+2380,NA,NA,AllPub,NWAmes,1Fam,6,Gable,HdBoard,TA,Gd,BLQ,0,GasA,SBrkr,0,0,3,6,NA,Unf,TA,160,0,NA,0,WD
+2381,130,NA,AllPub,NWAmes,1Fam,5,Gable,HdBoard,TA,Gd,ALQ,0,GasA,SBrkr,0,0,3,6,NA,Fin,TA,0,0,NA,0,WD
+2382,108,NA,AllPub,NWAmes,1Fam,7,Hip,Wd Sdng,TA,TA,BLQ,0,GasA,SBrkr,0,0,3,8,TA,RFn,TA,202,0,NA,0,WD
+2383,80,NA,AllPub,NWAmes,1Fam,6,Gable,VinylSd,TA,Gd,Unf,0,GasA,SBrkr,0,0,2,6,TA,RFn,TA,190,0,NA,0,WD
+2384,78,NA,AllPub,NWAmes,1Fam,6,Gable,MetalSd,Gd,Gd,GLQ,0,GasA,SBrkr,0,0,3,8,Gd,Unf,TA,235,0,NA,0,WD
+2385,88,NA,AllPub,NWAmes,1Fam,7,Hip,HdBoard,TA,TA,ALQ,0,GasA,SBrkr,0,0,3,6,Fa,RFn,TA,224,0,NA,400,WD
+2386,80,NA,AllPub,NWAmes,1Fam,5,Gable,HdBoard,TA,TA,BLQ,264,GasA,SBrkr,0,0,3,6,NA,Fin,TA,0,0,NA,0,COD
+2387,70,NA,AllPub,NAmes,1Fam,6,Gable,MetalSd,TA,TA,ALQ,38,GasA,SBrkr,0,0,3,5,NA,RFn,TA,88,0,NA,0,WD
+2388,NA,NA,AllPub,NAmes,Duplex,5,Gable,HdBoard,TA,NA,NA,0,GasA,SBrkr,0,0,2,8,NA,Unf,TA,0,0,NA,0,WD
+2389,74,NA,AllPub,NAmes,1Fam,5,Hip,Wd Sdng,TA,TA,Rec,206,GasA,SBrkr,0,0,2,6,Gd,Unf,TA,0,0,NA,0,WD
+2390,NA,NA,AllPub,NAmes,1Fam,5,Hip,Wd Sdng,TA,TA,ALQ,167,GasA,SBrkr,0,0,2,6,TA,RFn,TA,128,0,NA,0,CWD
+2391,76,NA,AllPub,NAmes,1Fam,7,Gable,VinylSd,TA,TA,ALQ,0,GasA,SBrkr,0,0,3,5,Fa,Fin,TA,170,0,NA,0,WD
+2392,70,NA,AllPub,NAmes,1Fam,7,Hip,CmentBd,TA,TA,Unf,0,GasA,SBrkr,0,0,3,5,NA,Unf,TA,0,0,NA,0,WD
+2393,80,NA,AllPub,NAmes,1Fam,6,Hip,Plywood,TA,TA,BLQ,0,GasA,SBrkr,0,1,3,6,TA,RFn,TA,0,0,NA,0,CWD
+2394,80,NA,AllPub,NAmes,1Fam,5,Gable,HdBoard,TA,TA,GLQ,0,GasA,SBrkr,0,0,3,5,NA,RFn,TA,192,0,NA,0,WD
+2395,80,NA,AllPub,NAmes,1Fam,7,Gable,MetalSd,TA,TA,ALQ,0,GasA,SBrkr,0,0,5,8,Gd,RFn,TA,0,0,NA,0,WD
+2396,NA,NA,AllPub,NAmes,1Fam,5,Gable,Plywood,TA,TA,ALQ,543,GasA,SBrkr,0,1,3,7,TA,RFn,TA,0,0,NA,0,WD
+2397,NA,NA,AllPub,NAmes,1Fam,7,Gable,MetalSd,TA,TA,ALQ,0,GasA,SBrkr,0,0,3,6,Gd,RFn,TA,0,0,NA,0,WD
+2398,85,NA,AllPub,NAmes,1Fam,7,Gable,HdBoard,TA,TA,LwQ,259,GasA,SBrkr,0,0,2,4,NA,Unf,TA,284,0,NA,0,WD
+2399,50,NA,AllPub,BrkSide,1Fam,3,Gable,Wd Shng,Fa,Fa,LwQ,0,GasA,SBrkr,0,1,2,4,NA,NA,NA,0,0,NA,0,WD
+2400,51,NA,AllPub,BrkSide,1Fam,5,Gable,MetalSd,TA,TA,LwQ,0,GasA,FuseA,0,0,2,4,NA,NA,NA,0,0,NA,2000,WD
+2401,50,NA,AllPub,BrkSide,1Fam,8,Gable,VinylSd,TA,TA,BLQ,404,GasA,SBrkr,0,0,2,5,NA,Unf,TA,143,0,NA,0,COD
+2402,80,NA,AllPub,NAmes,1Fam,6,Hip,HdBoard,TA,TA,BLQ,0,GasA,SBrkr,0,0,2,6,NA,Fin,TA,0,0,NA,0,WD
+2403,63,NA,AllPub,NAmes,Duplex,5,Gable,MetalSd,TA,TA,Unf,0,GasA,SBrkr,0,0,4,8,NA,Unf,TA,0,0,NA,0,WD
+2404,NA,NA,AllPub,NAmes,1Fam,6,Gable,HdBoard,TA,TA,GLQ,0,GasA,SBrkr,0,1,3,6,TA,Fin,TA,140,0,NA,0,WD
+2405,100,NA,AllPub,NAmes,1Fam,5,Hip,Wd Shng,TA,TA,ALQ,0,GasA,SBrkr,0,0,3,6,Gd,RFn,TA,0,0,NA,0,WD
+2406,73,NA,AllPub,NAmes,1Fam,7,Gable,VinylSd,TA,TA,ALQ,0,GasA,SBrkr,0,0,2,4,NA,RFn,TA,0,219,NA,0,WD
+2407,65,NA,AllPub,NAmes,1Fam,6,Gable,Wd Sdng,TA,TA,GLQ,0,GasA,SBrkr,0,0,3,6,NA,Unf,TA,0,0,NA,0,WD
+2408,60,NA,AllPub,NAmes,1Fam,7,Gable,MetalSd,TA,TA,ALQ,0,GasA,SBrkr,0,0,3,6,NA,RFn,TA,240,0,NA,0,WD
+2409,70,NA,AllPub,NAmes,1Fam,5,Hip,HdBoard,TA,TA,Unf,0,GasA,SBrkr,0,0,3,6,Gd,RFn,TA,0,0,NA,0,WD
+2410,80,NA,AllPub,NAmes,1Fam,6,Gable,Wd Sdng,TA,TA,BLQ,138,GasA,SBrkr,0,0,4,8,TA,Unf,TA,0,0,NA,0,WD
+2411,72,NA,AllPub,NAmes,1Fam,5,Gable,Wd Sdng,TA,TA,Rec,0,GasA,FuseA,0,0,2,5,NA,Unf,TA,0,0,NA,0,WD
+2412,70,NA,AllPub,NAmes,1Fam,6,Gable,VinylSd,TA,TA,Rec,0,GasA,SBrkr,0,0,3,7,TA,RFn,TA,278,0,NA,0,COD
+2413,75,NA,AllPub,NAmes,1Fam,5,Hip,MetalSd,TA,TA,Rec,0,GasA,SBrkr,0,0,3,5,NA,RFn,TA,0,0,NA,0,WD
+2414,60,NA,AllPub,NAmes,1Fam,9,Gable,MetalSd,TA,TA,BLQ,0,GasA,SBrkr,0,0,3,6,NA,Unf,TA,63,0,NA,0,WD
+2415,70,NA,AllPub,NAmes,Duplex,5,Hip,Wd Sdng,TA,TA,Unf,0,GasA,SBrkr,0,0,4,8,NA,Unf,TA,0,0,NA,0,WD
+2416,60,NA,AllPub,NAmes,1Fam,6,Hip,Wd Sdng,TA,TA,ALQ,0,GasA,SBrkr,0,0,2,5,NA,Unf,TA,0,0,NA,0,WD
+2417,68,NA,AllPub,NAmes,1Fam,7,Hip,Wd Sdng,TA,TA,Rec,955,GasA,FuseF,0,1,3,6,NA,Fin,TA,0,0,NA,0,WD
+2418,71,NA,AllPub,NAmes,1Fam,8,Gable,VinylSd,TA,TA,Rec,691,GasA,SBrkr,0,0,3,5,NA,Unf,TA,152,0,NA,0,WD
+2419,55,NA,AllPub,NAmes,1Fam,4,Gable,MetalSd,TA,TA,Rec,0,GasA,SBrkr,0,0,4,7,NA,Unf,TA,0,0,NA,0,WD
+2420,70,NA,AllPub,NAmes,1Fam,5,Gable,MetalSd,TA,TA,BLQ,0,GasA,SBrkr,0,0,3,5,TA,Unf,TA,81,0,NA,0,WD
+2421,75,NA,AllPub,NAmes,1Fam,6,Gable,VinylSd,TA,TA,BLQ,354,GasA,SBrkr,0,0,3,6,Fa,Fin,TA,225,0,NA,0,WD
+2422,NA,NA,AllPub,OldTown,1Fam,5,Gable,Wd Sdng,TA,TA,Rec,0,GasA,SBrkr,0,0,2,6,NA,Unf,TA,0,0,NA,400,WD
+2423,60,NA,AllPub,OldTown,1Fam,7,Gable,VinylSd,Gd,Fa,Unf,0,GasA,SBrkr,0,0,3,7,NA,NA,NA,231,0,NA,0,WD
+2424,NA,NA,AllPub,NAmes,1Fam,6,Gable,MetalSd,TA,TA,LwQ,0,GasA,SBrkr,512,0,3,7,Gd,Unf,TA,200,0,NA,0,WD
+2425,113,NA,AllPub,NAmes,1Fam,4,Gable,MetalSd,TA,TA,Unf,0,GasA,SBrkr,0,0,4,9,NA,Unf,TA,0,0,NA,0,WD
+2426,60,NA,AllPub,OldTown,1Fam,7,Gable,MetalSd,TA,TA,ALQ,66,GasA,SBrkr,0,0,1,6,NA,Unf,TA,0,0,NA,0,WD
+2427,60,Grvl,AllPub,OldTown,1Fam,9,Gable,HdBoard,TA,Gd,Unf,0,GasA,SBrkr,0,0,3,6,NA,NA,NA,0,0,NA,0,WD
+2428,93,NA,AllPub,NAmes,1Fam,5,Gable,Plywood,TA,TA,Rec,483,GasA,SBrkr,0,1,4,6,TA,Unf,TA,460,0,NA,0,WD
+2429,75,NA,AllPub,NAmes,1Fam,7,Gable,HdBoard,TA,TA,ALQ,0,GasA,SBrkr,0,1,3,5,NA,Unf,TA,0,0,NA,0,COD
+2430,66,NA,AllPub,NAmes,1Fam,6,Gable,Wd Sdng,TA,TA,Rec,0,GasA,SBrkr,0,0,3,5,NA,Unf,TA,0,0,NA,0,WD
+2431,60,NA,AllPub,NAmes,1Fam,3,Gable,Wd Shng,TA,TA,LwQ,0,GasA,FuseA,0,0,3,6,TA,Unf,TA,0,0,NA,0,WD
+2432,NA,NA,AllPub,NAmes,1Fam,7,Hip,BrkFace,TA,TA,GLQ,0,GasA,SBrkr,0,0,3,6,NA,RFn,TA,0,0,NA,0,WD
+2433,70,NA,AllPub,NAmes,1Fam,6,Hip,BrkFace,TA,TA,Rec,0,GasA,SBrkr,0,1,3,6,TA,RFn,TA,0,0,NA,0,WD
+2434,70,NA,AllPub,NAmes,1Fam,5,Hip,BrkFace,TA,TA,Rec,0,GasA,FuseA,0,0,3,6,NA,RFn,TA,0,0,NA,0,WD
+2435,80,NA,AllPub,NAmes,1Fam,5,Hip,BrkFace,TA,TA,BLQ,154,GasA,SBrkr,0,0,3,6,TA,Unf,TA,0,0,NA,0,WD
+2436,70,NA,AllPub,NAmes,1Fam,6,Gable,Wd Sdng,TA,NA,NA,0,GasA,SBrkr,0,0,3,7,NA,Fin,TA,0,0,NA,0,WD
+2437,60,NA,AllPub,NAmes,1Fam,5,Hip,Wd Sdng,TA,TA,ALQ,442,GasA,SBrkr,0,0,2,5,NA,Unf,TA,58,0,NA,0,WD
+2438,66,NA,AllPub,NAmes,1Fam,5,Gable,HdBoard,TA,TA,ALQ,0,GasA,SBrkr,0,0,3,6,Po,RFn,TA,24,0,NA,0,WD
+2439,60,NA,AllPub,OldTown,1Fam,7,Gable,MetalSd,Gd,TA,Unf,0,GasA,SBrkr,0,0,2,5,NA,RFn,TA,0,0,NA,0,WD
+2440,50,Grvl,AllPub,OldTown,1Fam,6,Gable,MetalSd,TA,TA,Rec,0,GasA,SBrkr,0,0,3,6,NA,Unf,TA,0,0,NA,0,WD
+2441,56,NA,AllPub,OldTown,1Fam,5,Gable,AsbShng,TA,Fa,LwQ,0,GasA,FuseF,0,0,2,4,Gd,Unf,TA,0,0,NA,0,WD
+2442,56,Grvl,AllPub,OldTown,1Fam,6,Gable,MetalSd,TA,TA,Unf,0,GasA,SBrkr,0,0,2,5,Gd,Unf,Fa,0,0,NA,0,WD
+2443,60,NA,AllPub,OldTown,1Fam,8,Gable,VinylSd,TA,TA,Unf,0,GasA,SBrkr,0,0,2,5,Gd,Unf,TA,0,0,NA,0,WD
+2444,120,NA,AllPub,OldTown,1Fam,8,Gable,Stucco,TA,TA,BLQ,0,GasA,SBrkr,0,0,2,6,Gd,Unf,TA,116,0,NA,0,WD
+2445,50,NA,AllPub,OldTown,1Fam,6,Gable,MetalSd,TA,Fa,LwQ,448,GasA,SBrkr,0,0,3,6,NA,Unf,Fa,0,0,NA,0,ConLw
+2446,57,NA,AllPub,OldTown,1Fam,8,Gable,MetalSd,TA,TA,Unf,0,GasA,SBrkr,0,0,4,7,NA,Unf,TA,0,0,NA,0,WD
+2447,NA,Pave,AllPub,OldTown,1Fam,9,Hip,VinylSd,Gd,TA,Unf,0,GasA,SBrkr,0,0,3,7,NA,Unf,TA,0,0,NA,0,WD
+2448,53,Pave,AllPub,OldTown,1Fam,6,Gambrel,Wd Sdng,TA,TA,LwQ,210,GasA,SBrkr,0,1,4,9,Gd,Unf,TA,0,0,NA,0,WD
+2449,35,Grvl,AllPub,OldTown,1Fam,7,Gable,MetalSd,TA,TA,BLQ,0,GasA,SBrkr,0,0,3,6,NA,Unf,Fa,280,0,NA,0,WD
+2450,56,Grvl,AllPub,OldTown,1Fam,8,Gable,Wd Sdng,TA,Gd,BLQ,0,GasA,SBrkr,0,0,3,6,NA,Unf,TA,128,0,NA,0,WD
+2451,60,Grvl,AllPub,OldTown,1Fam,7,Gambrel,VinylSd,TA,TA,Rec,0,GasA,SBrkr,0,0,3,6,Gd,Unf,TA,0,0,NA,0,WD
+2452,75,Grvl,AllPub,OldTown,1Fam,8,Gable,Wd Sdng,TA,TA,Unf,0,GasA,FuseA,0,0,3,8,Gd,Unf,TA,0,0,NA,0,WD
+2453,52,NA,AllPub,OldTown,1Fam,6,Gable,MetalSd,TA,NA,NA,0,GasA,SBrkr,0,0,2,5,NA,Unf,Fa,0,0,NA,0,WD
+2454,76,NA,AllPub,OldTown,1Fam,7,Gable,Wd Sdng,TA,NA,NA,0,GasA,SBrkr,0,0,1,6,TA,RFn,TA,0,0,NA,0,WD
+2455,55,NA,AllPub,BrkSide,1Fam,7,Gable,MetalSd,TA,TA,LwQ,227,GasA,FuseA,0,0,1,6,Gd,Unf,Fa,0,0,NA,0,WD
+2456,55,NA,AllPub,BrkSide,1Fam,6,Gable,MetalSd,TA,Fa,Rec,0,GasA,SBrkr,0,0,3,6,NA,Unf,TA,0,0,NA,0,WD
+2457,50,NA,AllPub,BrkSide,1Fam,7,Gable,MetalSd,TA,TA,Rec,0,GasA,SBrkr,0,0,3,6,NA,Unf,Fa,0,0,NA,0,CWD
+2458,50,NA,AllPub,BrkSide,1Fam,6,Gable,VinylSd,TA,TA,Rec,0,GasA,SBrkr,0,0,3,6,TA,Unf,TA,0,0,NA,0,WD
+2459,51,NA,AllPub,BrkSide,1Fam,7,Gable,AsbShng,Gd,TA,Unf,0,GasA,SBrkr,0,0,2,5,NA,Unf,TA,0,0,NA,0,WD
+2460,NA,NA,AllPub,BrkSide,1Fam,5,Gable,VinylSd,TA,TA,LwQ,0,GasA,SBrkr,0,0,3,6,Gd,Unf,TA,225,0,NA,0,WD
+2461,52,NA,AllPub,BrkSide,1Fam,8,Gable,Wd Sdng,TA,TA,Rec,0,GasA,SBrkr,0,0,4,7,NA,Unf,TA,0,0,NA,0,WD
+2462,52,NA,AllPub,BrkSide,1Fam,7,Gable,Wd Sdng,TA,TA,Unf,0,GasA,SBrkr,0,0,3,6,Gd,Unf,Fa,174,0,NA,0,WD
+2463,51,NA,AllPub,BrkSide,1Fam,6,Gable,Wd Sdng,TA,TA,ALQ,0,GasA,FuseA,0,0,2,6,NA,Unf,TA,25,0,NA,0,WD
+2464,47,NA,AllPub,OldTown,1Fam,8,Gable,Wd Sdng,TA,TA,Unf,0,GasA,FuseA,0,0,4,8,NA,Unf,TA,0,0,NA,0,WD
+2465,60,Pave,AllPub,BrkSide,1Fam,7,Gable,Wd Shng,TA,TA,Unf,0,GasA,SBrkr,0,0,3,7,NA,Unf,TA,0,0,NA,0,WD
+2466,60,NA,AllPub,BrkSide,1Fam,5,Gable,HdBoard,TA,Fa,Unf,0,GasA,SBrkr,0,0,4,7,NA,Unf,TA,0,0,NA,0,ConLw
+2467,NA,NA,AllPub,OldTown,1Fam,6,Gable,Wd Shng,TA,TA,Rec,0,GasA,FuseA,0,0,3,6,Gd,Unf,TA,0,0,NA,0,WD
+2468,40,Grvl,AllPub,OldTown,1Fam,4,Gable,AsbShng,TA,TA,Unf,0,GasA,FuseA,0,0,3,7,NA,Unf,TA,0,0,NA,0,WD
+2469,40,Grvl,AllPub,OldTown,1Fam,3,Gable,AsbShng,TA,TA,Unf,0,GasA,FuseA,0,0,2,6,NA,Unf,TA,0,0,NA,0,WD
+2470,120,NA,AllPub,IDOTRR,1Fam,6,Gable,HdBoard,TA,TA,BLQ,0,GasA,SBrkr,0,0,5,9,Gd,Unf,TA,0,0,NA,0,WD
+2471,60,Grvl,AllPub,IDOTRR,1Fam,9,Gable,VinylSd,TA,TA,LwQ,398,GasA,SBrkr,0,0,4,8,TA,Fin,TA,285,0,NA,0,WD
+2472,60,Grvl,AllPub,IDOTRR,1Fam,5,Gable,MetalSd,TA,TA,LwQ,0,GasA,SBrkr,0,0,3,7,Gd,Unf,TA,0,0,NA,0,WD
+2473,52,Grvl,AllPub,IDOTRR,2fmCon,6,Gable,MetalSd,TA,Fa,Rec,127,GasA,SBrkr,0,0,3,5,NA,RFn,TA,0,0,NA,0,COD
+2474,60,Grvl,AllPub,IDOTRR,1Fam,1,Gable,Wd Sdng,Fa,TA,Unf,0,GasA,SBrkr,114,0,3,6,NA,Unf,TA,14,0,NA,0,COD
+2475,107,NA,AllPub,Sawyer,1Fam,8,Gable,Wd Sdng,TA,TA,ALQ,0,GasA,SBrkr,0,0,3,7,Gd,Fin,TA,521,0,NA,0,WD
+2476,59,NA,AllPub,SWISU,2fmCon,6,Gable,Plywood,TA,TA,ALQ,0,GasA,SBrkr,0,0,2,4,NA,Unf,TA,0,0,NA,0,WD
+2477,75,NA,AllPub,Sawyer,2fmCon,5,Gable,HdBoard,TA,Gd,ALQ,0,GasA,SBrkr,0,0,3,6,NA,Unf,TA,40,0,NA,0,WD
+2478,75,NA,AllPub,Sawyer,1Fam,5,Gable,HdBoard,TA,Gd,BLQ,0,GasA,SBrkr,0,0,2,6,TA,Unf,TA,92,0,NA,0,WD
+2479,62,NA,AllPub,Sawyer,1Fam,3,Gable,HdBoard,TA,TA,Rec,144,GasA,SBrkr,0,0,3,5,NA,Unf,TA,0,0,NA,0,WD
+2480,65,NA,AllPub,Sawyer,1Fam,8,Hip,HdBoard,Gd,TA,LwQ,722,GasA,SBrkr,0,1,3,5,Po,Unf,TA,0,0,NA,0,WD
+2481,NA,NA,AllPub,Sawyer,1Fam,4,Gable,HdBoard,TA,TA,Rec,761,GasA,SBrkr,0,0,3,6,NA,RFn,TA,0,0,NA,0,WD
+2482,70,NA,AllPub,Sawyer,2fmCon,6,Gable,HdBoard,TA,Gd,GLQ,0,GasA,SBrkr,0,0,2,6,NA,Unf,TA,138,0,NA,0,WD
+2483,86,NA,AllPub,Sawyer,1Fam,5,Gable,HdBoard,TA,TA,Rec,288,GasA,SBrkr,0,0,3,5,NA,RFn,TA,0,0,NA,0,WD
+2484,NA,NA,AllPub,Sawyer,1Fam,5,Gable,MetalSd,TA,TA,LwQ,529,GasA,SBrkr,0,0,2,5,NA,Unf,TA,132,0,NA,0,WD
+2485,NA,NA,AllPub,Sawyer,1Fam,7,Gable,Plywood,TA,TA,Rec,435,GasA,SBrkr,0,0,3,6,NA,Unf,TA,204,0,NA,0,WD
+2486,81,NA,AllPub,Sawyer,1Fam,5,Hip,BrkFace,TA,TA,Rec,522,GasA,SBrkr,0,0,3,6,Gd,Unf,TA,0,0,NA,0,WD
+2487,99,NA,AllPub,Sawyer,1Fam,4,Gable,Wd Sdng,TA,Gd,BLQ,0,GasA,SBrkr,0,0,4,11,Gd,Unf,TA,128,0,NA,500,WD
+2488,70,NA,AllPub,Sawyer,1Fam,8,Gable,Wd Sdng,TA,TA,ALQ,0,GasA,FuseA,0,0,2,6,Gd,Unf,TA,0,0,NA,0,WD
+2489,91,NA,AllPub,Sawyer,1Fam,5,Gable,VinylSd,TA,TA,Rec,0,GasA,SBrkr,0,0,3,6,TA,Unf,TA,81,0,NA,0,WD
+2490,85,NA,AllPub,Sawyer,1Fam,6,Gable,Plywood,TA,TA,Rec,873,GasA,SBrkr,0,0,3,6,Gd,Unf,TA,0,0,NA,0,NA
+2491,NA,NA,AllPub,Sawyer,1Fam,7,Gable,Wd Sdng,Fa,NA,NA,0,GasA,FuseA,0,0,3,5,NA,Unf,Fa,0,0,NA,0,WD
+2492,NA,NA,AllPub,ClearCr,1Fam,5,Hip,Wd Sdng,TA,Gd,BLQ,891,GasA,SBrkr,0,0,3,7,TA,Fin,TA,0,0,NA,0,WD
+2493,NA,NA,AllPub,Edwards,1Fam,7,Hip,Wd Sdng,TA,TA,BLQ,0,GasA,SBrkr,0,0,3,6,TA,Unf,TA,0,0,NA,0,WD
+2494,NA,NA,AllPub,Edwards,1Fam,5,Gable,MetalSd,TA,TA,Rec,0,GasA,SBrkr,0,0,3,6,TA,Unf,TA,0,0,NA,0,COD
+2495,84,NA,AllPub,Edwards,1Fam,5,Gable,Wd Sdng,TA,TA,Unf,0,GasA,SBrkr,0,0,2,4,NA,Unf,TA,0,0,NA,0,WD
+2496,102,NA,AllPub,ClearCr,1Fam,7,Hip,MetalSd,TA,Gd,LwQ,0,GasA,SBrkr,0,0,4,6,Gd,Fin,TA,0,0,NA,0,WD
+2497,70,NA,AllPub,Edwards,1Fam,6,Gable,Wd Sdng,TA,TA,BLQ,0,GasA,SBrkr,0,0,3,6,NA,Unf,TA,366,0,NA,0,WD
+2498,60,NA,AllPub,SWISU,1Fam,5,Gable,MetalSd,TA,TA,Rec,0,GasA,SBrkr,0,1,3,6,NA,Unf,TA,0,0,NA,0,WD
+2499,NA,NA,AllPub,Edwards,1Fam,5,Gable,HdBoard,TA,NA,NA,0,GasA,SBrkr,0,0,3,5,NA,Unf,TA,0,0,NA,0,WD
+2500,39,NA,AllPub,Edwards,TwnhsE,6,Gable,Wd Sdng,Gd,TA,LwQ,755,GasA,SBrkr,0,0,2,5,NA,RFn,TA,0,0,NA,0,WD
+2501,58,NA,AllPub,Edwards,1Fam,6,Gable,Wd Sdng,TA,Fa,ALQ,0,GasA,SBrkr,0,0,4,7,NA,Unf,TA,0,0,NA,0,WD
+2502,60,NA,AllPub,Edwards,1Fam,6,Gable,Wd Sdng,TA,TA,LwQ,0,GasA,SBrkr,0,0,4,7,Gd,Unf,TA,0,0,NA,0,WD
+2503,50,NA,AllPub,Edwards,1Fam,5,Gambrel,MetalSd,Fa,TA,Unf,0,GasW,SBrkr,0,0,4,7,NA,Unf,Fa,0,0,NA,0,WD
+2504,104,NA,AllPub,SawyerW,1Fam,5,Gable,Wd Sdng,TA,TA,Unf,0,GasA,SBrkr,0,0,4,7,Po,Unf,TA,0,0,NA,0,WD
+2505,75,NA,AllPub,SawyerW,1Fam,5,Gable,VinylSd,Gd,Gd,GLQ,0,GasA,SBrkr,0,0,3,7,TA,RFn,TA,202,0,NA,0,CWD
+2506,71,NA,AllPub,CollgCr,1Fam,5,Gable,VinylSd,Gd,Gd,Unf,0,GasA,SBrkr,0,0,3,7,Gd,Fin,TA,204,0,NA,0,New
+2507,93,NA,AllPub,CollgCr,1Fam,5,Hip,CmentBd,Gd,Gd,Unf,0,GasA,SBrkr,0,0,3,8,NA,Fin,TA,136,0,NA,0,New
+2508,66,NA,AllPub,CollgCr,1Fam,5,Gable,VinylSd,Gd,Gd,Unf,0,GasA,SBrkr,0,0,3,7,Gd,RFn,TA,192,0,NA,0,New
+2509,75,NA,AllPub,CollgCr,1Fam,5,Gable,VinylSd,Gd,Gd,GLQ,0,GasA,SBrkr,0,0,3,7,NA,RFn,TA,144,0,NA,0,WD
+2510,73,NA,AllPub,CollgCr,1Fam,5,Gable,VinylSd,Gd,Gd,GLQ,0,GasA,SBrkr,0,0,3,7,Gd,RFn,TA,144,0,NA,0,WD
+2511,64,NA,AllPub,CollgCr,1Fam,5,Gable,VinylSd,Gd,Gd,Unf,0,GasA,SBrkr,0,0,2,6,NA,RFn,TA,0,0,NA,0,WD
+2512,78,NA,AllPub,CollgCr,1Fam,5,Gable,VinylSd,Gd,Gd,Unf,0,GasA,SBrkr,0,0,3,7,NA,RFn,TA,164,0,NA,0,WD
+2513,NA,NA,AllPub,SawyerW,1Fam,5,Gable,HdBoard,Gd,Gd,GLQ,321,GasA,SBrkr,0,0,3,7,TA,RFn,TA,108,0,NA,0,WD
+2514,155,NA,AllPub,ClearCr,1Fam,6,Shed,Wd Sdng,Gd,Gd,LwQ,915,GasA,SBrkr,0,0,0,5,Fa,Fin,TA,646,0,NA,0,WD
+2515,NA,NA,AllPub,CollgCr,1Fam,5,Gable,VinylSd,TA,Gd,ALQ,0,GasA,SBrkr,0,1,3,6,NA,Unf,TA,0,0,NA,0,WD
+2516,57,NA,AllPub,CollgCr,1Fam,6,Gable,VinylSd,TA,Gd,GLQ,0,GasA,SBrkr,0,0,3,6,NA,RFn,TA,142,0,NA,0,WD
+2517,60,NA,AllPub,CollgCr,1Fam,7,Gable,VinylSd,TA,Gd,GLQ,0,GasA,SBrkr,0,0,3,5,NA,Unf,TA,256,0,NA,0,WD
+2518,70,NA,AllPub,CollgCr,1Fam,5,Gable,VinylSd,TA,Gd,ALQ,0,GasA,SBrkr,0,0,3,6,NA,Unf,TA,306,0,NA,0,WD
+2519,47,NA,AllPub,CollgCr,1Fam,5,Gable,VinylSd,Gd,Gd,GLQ,0,GasA,SBrkr,0,0,3,7,TA,RFn,TA,202,0,NA,0,WD
+2520,43,NA,AllPub,CollgCr,1Fam,5,Gable,VinylSd,Gd,Gd,GLQ,0,GasA,SBrkr,0,0,3,7,Fa,RFn,TA,0,0,NA,0,WD
+2521,68,NA,AllPub,CollgCr,1Fam,5,Gable,VinylSd,Gd,Gd,Unf,0,GasA,SBrkr,0,0,3,7,NA,RFn,TA,0,0,NA,0,WD
+2522,NA,NA,AllPub,CollgCr,1Fam,5,Gable,VinylSd,Gd,Gd,GLQ,0,GasA,SBrkr,0,0,3,7,TA,Fin,TA,193,0,NA,0,WD
+2523,97,NA,AllPub,CollgCr,1Fam,5,Gable,HdBoard,TA,Gd,BLQ,0,GasA,SBrkr,0,0,3,5,NA,Unf,TA,0,0,NA,0,WD
+2524,59,NA,AllPub,CollgCr,1Fam,5,Gable,VinylSd,TA,Gd,GLQ,0,GasA,SBrkr,0,0,3,6,Fa,Unf,TA,127,0,NA,0,WD
+2525,72,NA,AllPub,CollgCr,1Fam,7,Gable,VinylSd,TA,TA,ALQ,0,GasA,SBrkr,0,0,3,6,Fa,Unf,TA,0,0,NA,0,WD
+2526,45,NA,AllPub,CollgCr,1Fam,5,Gable,CmentBd,TA,Gd,ALQ,0,GasA,SBrkr,0,0,3,5,NA,Unf,TA,0,0,NA,0,WD
+2527,39,NA,AllPub,CollgCr,1Fam,4,Gable,HdBoard,TA,Gd,Rec,417,GasA,SBrkr,0,0,3,5,NA,RFn,TA,0,0,NA,0,WD
+2528,75,NA,AllPub,CollgCr,1Fam,6,Hip,HdBoard,TA,TA,BLQ,432,GasA,SBrkr,0,0,3,5,NA,Unf,TA,0,0,NA,0,Con
+2529,60,NA,AllPub,CollgCr,1Fam,5,Gable,VinylSd,TA,TA,ALQ,0,GasA,SBrkr,0,0,3,5,NA,Fin,Gd,155,0,NA,0,WD
+2530,60,NA,AllPub,CollgCr,1Fam,8,Gable,Plywood,TA,TA,Rec,0,GasA,SBrkr,0,0,3,5,NA,Unf,TA,352,0,NA,0,WD
+2531,NA,NA,AllPub,CollgCr,1Fam,5,Gable,VinylSd,Gd,TA,GLQ,0,GasA,SBrkr,0,0,3,7,TA,RFn,TA,306,0,NA,0,WD
+2532,70,NA,AllPub,CollgCr,1Fam,5,Gable,VinylSd,Gd,Gd,GLQ,0,GasA,SBrkr,0,0,3,7,Gd,RFn,TA,0,0,NA,0,WD
+2533,65,NA,AllPub,CollgCr,1Fam,5,Gable,VinylSd,Gd,Gd,Unf,0,GasA,SBrkr,0,0,3,7,NA,Fin,TA,386,0,NA,0,WD
+2534,73,NA,AllPub,CollgCr,1Fam,5,Hip,HdBoard,Gd,Gd,BLQ,465,GasA,SBrkr,0,0,3,7,TA,Fin,TA,120,0,NA,0,WD
+2535,NA,NA,AllPub,CollgCr,1Fam,5,Gable,VinylSd,Gd,Gd,GLQ,0,GasA,SBrkr,0,0,4,7,TA,Fin,TA,184,0,NA,0,WD
+2536,NA,NA,AllPub,CollgCr,1Fam,5,Gable,VinylSd,Gd,Gd,GLQ,0,GasA,SBrkr,0,0,3,7,TA,RFn,TA,225,0,NA,0,WD
+2537,73,NA,AllPub,CollgCr,1Fam,5,Gable,VinylSd,Gd,Gd,GLQ,0,GasA,SBrkr,0,0,1,5,TA,RFn,TA,240,0,NA,0,WD
+2538,70,NA,AllPub,CollgCr,1Fam,5,Gable,VinylSd,Gd,Gd,Unf,0,GasA,SBrkr,0,0,3,7,NA,RFn,TA,0,0,NA,0,New
+2539,65,NA,AllPub,CollgCr,1Fam,5,Gable,VinylSd,Gd,Gd,GLQ,0,GasA,SBrkr,0,0,2,5,NA,RFn,TA,100,0,NA,0,WD
+2540,64,NA,AllPub,CollgCr,1Fam,5,Gable,VinylSd,Gd,Gd,Unf,0,GasA,SBrkr,0,0,3,6,Gd,Fin,TA,0,0,NA,0,New
+2541,64,NA,AllPub,CollgCr,1Fam,5,Gable,VinylSd,Gd,Gd,Unf,0,GasA,SBrkr,0,0,3,7,Gd,RFn,TA,100,0,NA,0,WD
+2542,64,NA,AllPub,CollgCr,1Fam,5,Gable,VinylSd,Gd,Gd,Unf,0,GasA,SBrkr,0,0,3,6,NA,Fin,TA,0,0,NA,0,WD
+2543,75,NA,AllPub,Edwards,1Fam,5,Gable,HdBoard,TA,Gd,ALQ,0,GasA,SBrkr,0,0,2,4,Fa,Unf,TA,405,0,NA,450,WD
+2544,67,NA,AllPub,Edwards,1Fam,6,Gable,VinylSd,TA,TA,BLQ,841,GasA,SBrkr,0,0,2,4,NA,Unf,TA,0,0,NA,0,COD
+2545,74,NA,AllPub,Edwards,1Fam,6,Gable,VinylSd,TA,TA,ALQ,105,GasA,SBrkr,0,0,3,7,Gd,Unf,TA,0,0,NA,0,WD
+2546,80,NA,AllPub,Edwards,1Fam,6,Hip,HdBoard,TA,TA,Unf,0,GasA,SBrkr,0,0,2,5,NA,Fin,TA,0,0,NA,0,WD
+2547,65,NA,AllPub,Edwards,1Fam,6,Gable,Plywood,TA,TA,GLQ,0,GasA,SBrkr,0,0,3,7,Fa,Unf,TA,228,0,NA,0,WD
+2548,NA,NA,AllPub,Edwards,Duplex,6,Gable,Plywood,TA,NA,NA,0,GasA,SBrkr,0,0,5,11,NA,Fin,TA,0,0,NA,0,WD
+2549,60,NA,AllPub,Edwards,1Fam,5,Gable,VinylSd,TA,Gd,GLQ,0,GasA,SBrkr,0,0,3,6,NA,Fin,TA,0,0,NA,0,WD
+2550,128,NA,AllPub,Edwards,1Fam,5,Hip,CmentBd,Ex,Ex,GLQ,0,GasA,SBrkr,0,1,2,15,Gd,Fin,TA,546,0,NA,17000,New
+2551,35,NA,AllPub,Edwards,TwnhsE,5,Gable,VinylSd,TA,Gd,GLQ,0,GasA,SBrkr,0,0,2,5,NA,Fin,TA,0,0,NA,0,WD
+2552,64,NA,AllPub,Edwards,1Fam,7,Gable,Wd Shng,TA,TA,Rec,831,GasA,SBrkr,0,0,2,4,NA,Unf,TA,144,0,NA,0,WD
+2553,74,NA,AllPub,Edwards,Duplex,3,Gable,Plywood,TA,NA,NA,0,GasA,SBrkr,0,0,2,6,NA,NA,NA,0,0,NA,0,WD
+2554,52,NA,AllPub,Edwards,Duplex,6,Gable,Plywood,TA,TA,Unf,0,GasA,SBrkr,0,0,4,8,NA,NA,NA,118,0,NA,0,WD
+2555,62,NA,AllPub,Edwards,1Fam,8,Gable,Wd Sdng,TA,TA,LwQ,278,GasA,SBrkr,0,0,2,4,Gd,Unf,TA,0,0,NA,0,WD
+2556,60,NA,AllPub,Edwards,1Fam,5,Gable,MetalSd,TA,TA,BLQ,0,GasA,SBrkr,0,0,2,4,Fa,Unf,TA,0,0,NA,0,WD
+2557,60,NA,AllPub,Edwards,1Fam,5,Gable,Plywood,TA,TA,ALQ,0,GasA,SBrkr,0,0,3,5,NA,Unf,TA,196,0,NA,0,COD
+2558,60,NA,AllPub,SWISU,Duplex,6,Hip,Plywood,TA,TA,Rec,0,Grav,FuseA,0,0,6,12,NA,NA,NA,0,0,NA,1512,WD
+2559,54,NA,AllPub,Crawfor,1Fam,5,Hip,Plywood,TA,TA,BLQ,0,GasA,SBrkr,0,0,3,6,NA,Unf,TA,0,0,NA,0,WD
+2560,51,NA,AllPub,Crawfor,1Fam,7,Gable,Wd Sdng,TA,TA,BLQ,0,GasA,SBrkr,0,0,2,8,Gd,Unf,TA,216,0,NA,0,WD
+2561,63,NA,AllPub,Crawfor,1Fam,8,Gable,Wd Sdng,TA,Gd,GLQ,0,GasA,SBrkr,0,0,2,5,Gd,Unf,TA,0,0,NA,0,WD
+2562,53,NA,AllPub,Crawfor,1Fam,7,Gable,VinylSd,TA,TA,Unf,0,GasA,SBrkr,0,0,3,7,Gd,Unf,TA,184,0,NA,0,CWD
+2563,53,NA,AllPub,Crawfor,1Fam,8,Gable,Wd Sdng,TA,TA,Unf,0,GasA,SBrkr,0,0,3,6,Gd,Unf,TA,0,0,NA,0,WD
+2564,60,NA,AllPub,Crawfor,1Fam,7,Gable,VinylSd,TA,TA,Unf,0,GasA,SBrkr,0,0,4,8,TA,Unf,TA,291,0,NA,0,WD
+2565,126,NA,AllPub,Crawfor,1Fam,5,Gable,Wd Sdng,TA,NA,NA,0,GasA,SBrkr,0,0,2,7,Gd,Fin,TA,174,0,NA,0,WD
+2566,110,NA,AllPub,Crawfor,1Fam,6,Gable,CmentBd,TA,TA,GLQ,0,GasA,SBrkr,0,0,4,7,TA,Unf,Fa,0,0,NA,0,WD
+2567,79,NA,AllPub,Crawfor,2fmCon,5,Gable,VinylSd,TA,TA,LwQ,0,GasA,SBrkr,0,0,3,5,NA,Unf,TA,0,0,NA,0,WD
+2568,NA,NA,AllPub,Crawfor,1Fam,4,Gable,MetalSd,TA,TA,LwQ,1020,GasA,SBrkr,0,0,3,6,TA,RFn,TA,0,0,NA,0,WD
+2569,NA,NA,AllPub,Crawfor,1Fam,6,Hip,BrkFace,TA,Gd,BLQ,0,GasA,SBrkr,0,1,3,7,Gd,RFn,TA,0,0,NA,0,CWD
+2570,24,NA,AllPub,Blueste,Twnhs,6,Gable,MetalSd,TA,Gd,GLQ,0,GasA,SBrkr,0,0,2,5,TA,Unf,TA,180,0,NA,0,WD
+2571,NA,NA,AllPub,Crawfor,1Fam,5,Gable,VinylSd,TA,Gd,Unf,0,GasA,SBrkr,0,0,4,7,NA,Unf,TA,152,0,NA,0,WD
+2572,35,NA,AllPub,Blueste,TwnhsE,5,Gable,HdBoard,TA,Gd,GLQ,0,GasA,SBrkr,0,0,1,4,NA,Unf,TA,135,0,NA,0,WD
+2573,NA,NA,AllPub,Crawfor,1Fam,5,Gable,Plywood,TA,Gd,Rec,0,GasA,SBrkr,0,0,3,7,TA,Fin,TA,0,0,NA,0,WD
+2574,70,NA,AllPub,Crawfor,1Fam,5,Gable,Plywood,Gd,Gd,Unf,0,GasA,SBrkr,0,0,2,6,Gd,Fin,Gd,216,0,Ex,0,WD
+2575,50,NA,AllPub,IDOTRR,1Fam,7,Gable,Wd Sdng,TA,TA,ALQ,0,GasA,FuseA,0,0,3,6,NA,Fin,TA,0,0,NA,0,WD
+2576,50,NA,AllPub,IDOTRR,1Fam,7,Gable,VinylSd,Gd,TA,Unf,0,GasA,SBrkr,0,0,3,6,NA,NA,NA,0,176,NA,0,WD
+2577,50,NA,AllPub,IDOTRR,1Fam,6,Gable,Plywood,TA,Gd,ALQ,0,GasA,SBrkr,0,0,3,6,NA,NA,NA,174,0,NA,0,WD
+2578,46,NA,AllPub,IDOTRR,1Fam,7,Gable,Stucco,TA,TA,Unf,0,GasA,SBrkr,0,0,2,5,NA,Unf,Fa,0,0,NA,0,WD
+2579,64,NA,AllPub,IDOTRR,1Fam,4,Gable,MetalSd,TA,NA,NA,0,GasA,SBrkr,205,0,1,4,NA,Unf,TA,48,0,NA,0,WD
+2580,75,NA,AllPub,IDOTRR,2fmCon,6,Gable,VinylSd,TA,TA,Unf,0,GasA,SBrkr,0,0,4,9,NA,NA,NA,0,0,NA,0,WD
+2581,65,NA,AllPub,IDOTRR,1Fam,6,Gable,MetalSd,TA,TA,GLQ,0,GasA,FuseA,0,0,3,6,NA,Unf,TA,0,0,NA,0,WD
+2582,60,NA,AllPub,IDOTRR,1Fam,9,Hip,MetalSd,Gd,TA,ALQ,0,GasA,SBrkr,0,0,2,5,NA,Unf,TA,154,86,NA,0,WD
+2583,59,NA,AllPub,Crawfor,TwnhsE,5,Hip,CmentBd,Gd,Gd,GLQ,0,GasA,SBrkr,0,1,2,5,Gd,Fin,TA,123,0,NA,0,New
+2584,NA,NA,AllPub,Mitchel,1Fam,6,Gable,Wd Shng,TA,Gd,GLQ,0,GasA,SBrkr,0,0,2,5,Po,RFn,TA,84,0,NA,0,WD
+2585,80,NA,AllPub,Mitchel,1Fam,5,Gable,VinylSd,Gd,Gd,GLQ,0,GasA,SBrkr,0,0,3,6,Gd,Fin,TA,168,0,NA,0,WD
+2586,44,NA,AllPub,Mitchel,1Fam,5,Gable,VinylSd,Gd,Gd,GLQ,0,GasA,SBrkr,0,0,1,4,Gd,RFn,TA,0,0,NA,0,WD
+2587,NA,NA,AllPub,Mitchel,1Fam,5,Gable,HdBoard,TA,Gd,GLQ,0,GasA,SBrkr,0,0,3,6,TA,Unf,TA,114,0,NA,0,WD
+2588,NA,NA,AllPub,Mitchel,1Fam,6,Gable,Plywood,TA,TA,Rec,530,GasA,SBrkr,0,1,3,4,NA,Unf,TA,192,0,NA,0,WD
+2589,82,NA,AllPub,Mitchel,1Fam,6,Gable,Plywood,TA,Gd,ALQ,0,GasA,SBrkr,0,0,2,5,Po,Unf,TA,193,0,NA,0,WD
+2590,46,NA,AllPub,Timber,TwnhsE,6,Gable,VinylSd,Gd,Gd,GLQ,0,GasA,SBrkr,0,0,2,5,TA,Fin,TA,240,0,NA,0,WD
+2591,149,NA,AllPub,Timber,1Fam,8,Hip,HdBoard,TA,TA,Unf,0,GasA,SBrkr,0,0,4,7,Gd,RFn,TA,274,0,NA,0,WD
+2592,67,NA,AllPub,Timber,1Fam,5,Gable,VinylSd,Gd,Gd,Unf,0,GasA,SBrkr,0,0,3,7,NA,Fin,TA,100,0,NA,0,New
+2593,68,NA,AllPub,Timber,1Fam,5,Hip,VinylSd,Gd,Gd,GLQ,0,GasA,SBrkr,0,0,2,6,Gd,RFn,TA,132,0,NA,0,New
+2594,42,NA,AllPub,Timber,1Fam,7,Gable,Plywood,TA,Gd,ALQ,80,GasA,SBrkr,0,1,3,6,NA,Unf,TA,232,0,NA,0,WD
+2595,NA,NA,AllPub,Timber,1Fam,5,Gable,VinylSd,Gd,Ex,GLQ,0,GasA,SBrkr,0,0,2,5,NA,Unf,TA,256,0,NA,0,WD
+2596,80,NA,AllPub,Timber,1Fam,5,Hip,VinylSd,Gd,Gd,GLQ,0,GasA,SBrkr,0,0,2,6,Ex,Fin,TA,201,0,NA,0,WD
+2597,NA,NA,AllPub,Timber,1Fam,5,Gable,VinylSd,Gd,Ex,Unf,0,GasA,SBrkr,0,0,3,7,TA,Fin,TA,0,0,NA,0,WD
+2598,NA,NA,AllPub,Timber,1Fam,5,Gable,VinylSd,Gd,Gd,GLQ,0,GasA,SBrkr,0,0,5,10,Gd,Fin,TA,143,0,NA,0,WD
+2599,85,NA,AllPub,Timber,1Fam,5,Hip,MetalSd,Ex,Ex,Unf,0,GasA,SBrkr,0,0,3,8,Gd,Fin,TA,160,0,NA,0,New
+2600,200,NA,AllPub,Mitchel,1Fam,5,Gable,MetalSd,TA,NA,NA,0,GasA,SBrkr,0,0,2,9,NA,RFn,TA,483,0,NA,0,WD
+2601,62,NA,AllPub,Mitchel,TwnhsE,5,Gable,VinylSd,TA,Ex,Rec,904,GasA,SBrkr,0,0,0,3,NA,Fin,TA,0,0,NA,0,WD
+2602,21,NA,AllPub,MeadowV,Twnhs,4,Gable,CmentBd,TA,TA,BLQ,0,GasA,SBrkr,0,0,3,5,NA,Unf,TA,0,0,NA,0,WD
+2603,NA,NA,AllPub,MeadowV,Twnhs,5,Gable,CmentBd,TA,Gd,GLQ,0,GasA,SBrkr,0,0,2,4,NA,Fin,TA,112,0,NA,0,WD
+2604,21,NA,AllPub,MeadowV,TwnhsE,6,Gable,CmentBd,TA,TA,ALQ,0,GasA,SBrkr,0,0,3,5,NA,NA,NA,0,0,NA,0,WD
+2605,21,NA,AllPub,MeadowV,Twnhs,3,Gable,CmentBd,TA,TA,Unf,0,GasA,SBrkr,0,0,3,6,NA,Unf,TA,0,0,NA,0,COD
+2606,72,NA,AllPub,Mitchel,1Fam,5,Gable,Plywood,TA,Gd,GLQ,0,GasA,SBrkr,0,0,1,4,Fa,Fin,TA,201,0,NA,0,WD
+2607,NA,NA,AllPub,Mitchel,1Fam,6,Gable,Plywood,TA,Gd,GLQ,0,GasA,SBrkr,0,0,3,6,TA,Fin,TA,1424,0,NA,0,WD
+2608,61,NA,AllPub,Mitchel,1Fam,6,Gable,Plywood,TA,TA,ALQ,0,GasA,SBrkr,0,0,3,6,TA,RFn,TA,690,0,NA,0,WD
+2609,68,NA,AllPub,Mitchel,1Fam,7,Gable,Plywood,TA,Gd,Rec,0,GasA,SBrkr,0,0,3,6,Gd,Fin,TA,0,0,NA,0,WD
+2610,50,NA,AllPub,Mitchel,1Fam,7,Gable,HdBoard,TA,Gd,GLQ,0,GasA,SBrkr,0,1,2,5,NA,NA,NA,129,0,NA,0,WD
+2611,124,NA,AllPub,Mitchel,1Fam,3,Shed,Plywood,TA,TA,BLQ,0,GasA,SBrkr,0,0,3,6,NA,Unf,TA,152,0,NA,0,COD
+2612,NA,NA,AllPub,Mitchel,1Fam,6,Gable,Plywood,TA,Gd,LwQ,0,GasA,SBrkr,0,0,3,6,NA,Unf,TA,0,0,NA,0,WD
+2613,65,NA,AllPub,Mitchel,1Fam,7,Gable,HdBoard,TA,Gd,ALQ,0,GasA,SBrkr,0,0,2,4,NA,Fin,TA,330,0,NA,0,WD
+2614,62,NA,AllPub,Mitchel,1Fam,6,Gable,HdBoard,TA,TA,ALQ,0,GasA,SBrkr,0,1,3,5,NA,RFn,TA,140,0,NA,0,WD
+2615,NA,NA,AllPub,NAmes,1Fam,5,Hip,Wd Sdng,TA,TA,BLQ,539,GasA,SBrkr,0,0,2,5,NA,RFn,TA,280,0,NA,0,WD
+2616,85,NA,AllPub,NAmes,1Fam,6,Hip,VinylSd,TA,TA,Rec,0,GasA,SBrkr,0,0,2,5,TA,Unf,TA,0,0,NA,0,WD
+2617,NA,NA,AllPub,NAmes,1Fam,5,Gable,Wd Sdng,TA,TA,Rec,0,GasA,SBrkr,0,0,3,7,TA,Unf,TA,0,0,NA,0,WD
+2618,NA,NA,AllPub,NAmes,1Fam,6,Gable,Wd Sdng,TA,Gd,ALQ,0,GasA,SBrkr,0,0,1,4,Gd,Unf,TA,0,0,NA,0,WD
+2619,90,NA,AllPub,NAmes,1Fam,6,Gable,HdBoard,TA,TA,Unf,0,GasA,SBrkr,0,0,3,8,TA,Fin,TA,0,0,NA,0,WD
+2620,60,NA,AllPub,Gilbert,1Fam,5,Gable,VinylSd,TA,TA,GLQ,0,GasA,SBrkr,0,0,3,6,TA,Fin,TA,421,0,NA,0,WD
+2621,NA,NA,AllPub,Gilbert,1Fam,5,Gable,HdBoard,TA,Gd,Unf,0,GasA,SBrkr,0,0,3,7,TA,Fin,TA,0,0,NA,0,WD
+2622,54,NA,AllPub,Gilbert,1Fam,5,Gable,HdBoard,TA,Gd,Unf,0,GasA,SBrkr,0,0,3,7,TA,Fin,TA,286,0,NA,0,WD
+2623,50,NA,AllPub,Gilbert,1Fam,5,Gable,VinylSd,Gd,Gd,Unf,0,GasA,SBrkr,0,0,4,7,Gd,Fin,TA,0,0,NA,0,WD
+2624,42,NA,AllPub,Gilbert,1Fam,5,Gable,VinylSd,Gd,Gd,GLQ,0,GasA,SBrkr,0,0,3,9,Gd,Fin,TA,237,0,NA,0,New
+2625,68,NA,AllPub,StoneBr,1Fam,5,Gable,CmentBd,Gd,Gd,Unf,0,GasA,SBrkr,0,0,4,9,NA,Fin,TA,168,0,NA,0,WD
+2626,NA,NA,AllPub,Gilbert,1Fam,6,Gable,HdBoard,TA,Gd,GLQ,0,GasA,SBrkr,0,1,3,6,TA,Fin,TA,0,0,NA,0,WD
+2627,30,NA,AllPub,StoneBr,TwnhsE,5,Gable,HdBoard,TA,Gd,Unf,0,GasA,SBrkr,0,0,2,5,NA,RFn,TA,120,0,NA,0,WD
+2628,59,NA,AllPub,StoneBr,1Fam,5,Hip,VinylSd,Gd,Ex,GLQ,0,GasA,SBrkr,0,0,3,11,Gd,Fin,TA,182,0,NA,0,New
+2629,60,NA,AllPub,StoneBr,1Fam,5,Hip,CmentBd,Ex,Ex,Unf,0,GasA,SBrkr,0,0,5,10,Ex,Fin,TA,204,0,NA,0,New
+2630,63,NA,AllPub,StoneBr,1Fam,5,Hip,VinylSd,Gd,Ex,GLQ,0,GasA,SBrkr,0,0,4,11,Gd,Fin,TA,246,0,NA,0,New
+2631,82,NA,AllPub,StoneBr,1Fam,5,Hip,VinylSd,Ex,Ex,GLQ,0,GasA,SBrkr,0,0,4,11,Gd,RFn,TA,250,0,NA,0,New
+2632,92,NA,AllPub,StoneBr,1Fam,5,Hip,VinylSd,Gd,Ex,Unf,0,GasA,SBrkr,0,0,4,10,Gd,Fin,TA,272,0,NA,0,New
+2633,60,NA,AllPub,StoneBr,TwnhsE,5,Hip,MetalSd,Gd,Ex,GLQ,0,GasA,SBrkr,0,0,2,7,Gd,Fin,TA,156,0,NA,0,WD
+2634,90,NA,AllPub,StoneBr,1Fam,5,Hip,VinylSd,Ex,Ex,GLQ,0,GasA,SBrkr,0,0,3,8,Gd,Unf,TA,351,0,NA,0,WD
+2635,NA,NA,AllPub,NWAmes,1Fam,6,Gable,HdBoard,TA,Gd,GLQ,0,GasA,SBrkr,0,0,2,5,TA,RFn,TA,140,0,NA,0,WD
+2636,81,NA,AllPub,NWAmes,1Fam,5,Gable,Plywood,TA,TA,Unf,0,GasA,SBrkr,0,0,4,8,TA,RFn,TA,400,0,NA,0,WD
+2637,NA,NA,AllPub,NWAmes,1Fam,5,Gable,Wd Shng,Gd,Ex,GLQ,0,GasA,SBrkr,0,0,2,5,Fa,RFn,TA,444,0,NA,0,WD
+2638,75,NA,AllPub,Somerst,1Fam,5,Gable,VinylSd,Gd,Gd,ALQ,0,GasA,SBrkr,0,0,3,8,Ex,Fin,TA,0,0,NA,0,New
+2639,81,NA,AllPub,NWAmes,1Fam,6,Gable,Plywood,TA,TA,ALQ,0,GasA,SBrkr,0,0,3,8,TA,RFn,TA,48,0,NA,0,WD
+2640,80,NA,AllPub,NWAmes,1Fam,6,Gable,Plywood,TA,TA,ALQ,0,GasA,SBrkr,0,0,3,6,NA,Unf,TA,295,0,NA,0,WD
+2641,60,NA,AllPub,NAmes,1Fam,4,Gable,HdBoard,TA,TA,Rec,620,GasA,SBrkr,0,1,3,5,NA,Unf,TA,63,0,NA,0,WD
+2642,26,NA,AllPub,NAmes,TwnhsE,5,Gable,MetalSd,Gd,Gd,GLQ,0,GasA,SBrkr,0,0,2,4,NA,Fin,TA,196,0,NA,0,WD
+2643,24,NA,AllPub,BrDale,TwnhsE,5,Gable,HdBoard,TA,TA,Unf,0,GasA,SBrkr,0,0,3,6,NA,Unf,TA,0,0,NA,0,WD
+2644,24,NA,AllPub,BrDale,TwnhsE,6,Gable,HdBoard,TA,TA,LwQ,0,GasA,SBrkr,0,0,3,7,Fa,Unf,TA,0,0,NA,0,WD
+2645,21,NA,AllPub,BrDale,Twnhs,7,Gable,HdBoard,TA,TA,ALQ,0,GasA,SBrkr,0,0,3,6,NA,Unf,TA,0,0,NA,0,WD
+2646,21,NA,AllPub,BrDale,Twnhs,5,Gable,HdBoard,TA,TA,ALQ,0,GasA,SBrkr,0,0,2,5,NA,Unf,TA,0,0,NA,0,WD
+2647,21,NA,AllPub,BrDale,Twnhs,5,Gable,HdBoard,TA,TA,BLQ,0,GasA,SBrkr,0,0,3,6,NA,Unf,TA,352,0,NA,0,WD
+2648,53,NA,AllPub,NPkVill,TwnhsE,5,Gable,Plywood,TA,Gd,ALQ,156,GasA,SBrkr,0,1,2,4,Po,RFn,TA,0,0,NA,0,WD
+2649,65,NA,AllPub,NAmes,1Fam,7,Hip,MetalSd,TA,TA,ALQ,108,GasA,SBrkr,0,0,3,6,TA,RFn,TA,0,0,NA,0,WD
+2650,24,NA,AllPub,NPkVill,Twnhs,7,Gable,Brk Cmn,TA,TA,ALQ,492,GasA,SBrkr,0,0,2,4,NA,Unf,TA,0,0,NA,0,WD
+2651,24,NA,AllPub,NPkVill,Twnhs,5,Gable,Brk Cmn,TA,Gd,ALQ,0,GasA,SBrkr,0,0,3,6,TA,RFn,TA,0,0,NA,0,WD
+2652,72,NA,AllPub,NridgHt,1Fam,5,Hip,VinylSd,Gd,Ex,GLQ,0,GasA,SBrkr,0,0,4,11,Gd,RFn,TA,0,0,NA,0,New
+2653,110,NA,AllPub,NridgHt,1Fam,5,Gable,VinylSd,Gd,Gd,Unf,0,GasA,SBrkr,0,0,2,6,Gd,Fin,TA,0,0,NA,0,WD
+2654,108,NA,AllPub,NridgHt,1Fam,5,Hip,VinylSd,Gd,Ex,Unf,0,GasA,SBrkr,0,0,4,8,NA,RFn,TA,0,0,NA,0,New
+2655,120,NA,AllPub,NridgHt,1Fam,5,Hip,VinylSd,Ex,Ex,GLQ,0,GasA,SBrkr,0,0,2,7,Gd,Fin,TA,354,0,NA,0,WD
+2656,120,NA,AllPub,NridgHt,1Fam,5,Hip,VinylSd,Gd,Gd,Unf,0,GasA,SBrkr,0,0,4,10,Gd,Fin,TA,148,0,NA,0,New
+2657,82,NA,AllPub,NridgHt,1Fam,5,Gable,MetalSd,Ex,Ex,GLQ,0,GasA,SBrkr,0,0,3,8,Gd,RFn,TA,194,0,NA,0,New
+2658,103,NA,AllPub,NridgHt,1Fam,5,Gable,CmentBd,Gd,Ex,Unf,0,GasA,SBrkr,0,0,3,8,Gd,Fin,TA,243,0,NA,0,New
+2659,82,NA,AllPub,NridgHt,1Fam,5,Gable,VinylSd,Gd,Ex,Unf,0,GasA,SBrkr,0,0,4,10,Gd,Fin,TA,176,0,NA,0,New
+2660,82,NA,AllPub,NridgHt,1Fam,5,Hip,MetalSd,Gd,Ex,GLQ,0,GasA,SBrkr,0,0,4,10,Gd,Fin,TA,120,0,NA,0,New
+2661,121,NA,AllPub,NridgHt,1Fam,5,Gable,VinylSd,Ex,Ex,GLQ,0,GasA,SBrkr,0,0,2,6,Gd,RFn,TA,204,0,NA,0,New
+2662,131,NA,AllPub,NridgHt,1Fam,5,Hip,MetalSd,Ex,Ex,GLQ,0,GasA,SBrkr,0,0,2,7,Gd,Fin,TA,144,0,NA,0,WD
+2663,NA,NA,AllPub,NridgHt,1Fam,5,Gable,VinylSd,Gd,Gd,GLQ,0,GasA,SBrkr,0,0,3,9,TA,RFn,TA,168,0,NA,0,WD
+2664,48,NA,AllPub,NridgHt,TwnhsE,5,Hip,MetalSd,Ex,Ex,GLQ,0,GasA,SBrkr,0,0,2,6,Gd,RFn,TA,196,0,NA,0,WD
+2665,61,NA,AllPub,NridgHt,TwnhsE,5,Hip,MetalSd,Gd,Ex,GLQ,0,GasA,SBrkr,0,0,1,6,Gd,Fin,TA,266,0,NA,0,New
+2666,48,NA,AllPub,NridgHt,TwnhsE,5,Hip,MetalSd,Ex,Ex,GLQ,0,GasA,SBrkr,0,0,2,6,Gd,RFn,TA,228,0,NA,0,New
+2667,65,NA,AllPub,Gilbert,1Fam,5,Gable,VinylSd,Gd,Gd,Unf,0,GasA,SBrkr,0,0,3,8,Gd,Fin,TA,0,0,NA,0,New
+2668,65,NA,AllPub,Gilbert,1Fam,5,Gable,VinylSd,Gd,Gd,Unf,0,GasA,SBrkr,0,0,3,8,NA,Fin,TA,0,0,NA,0,New
+2669,102,NA,AllPub,Gilbert,1Fam,5,Gable,VinylSd,Gd,Gd,Unf,0,GasA,SBrkr,0,0,3,6,NA,Fin,TA,100,0,NA,0,New
+2670,96,NA,AllPub,Gilbert,1Fam,5,Gable,VinylSd,Gd,Gd,Unf,0,GasA,SBrkr,0,0,4,9,Gd,Fin,TA,120,0,NA,0,New
+2671,75,NA,AllPub,Gilbert,1Fam,5,Gable,VinylSd,Gd,Gd,Unf,0,GasA,SBrkr,0,0,3,8,NA,Fin,TA,100,0,NA,0,New
+2672,43,NA,AllPub,Blmngtn,TwnhsE,5,Gable,VinylSd,Gd,Gd,GLQ,0,GasA,SBrkr,0,0,2,6,Gd,Fin,TA,100,0,NA,0,New
+2673,NA,NA,AllPub,Blmngtn,TwnhsE,5,Gable,VinylSd,Gd,Gd,GLQ,0,GasA,SBrkr,0,0,2,5,TA,Fin,TA,130,0,NA,0,WD
+2674,NA,NA,AllPub,Blmngtn,TwnhsE,5,Hip,VinylSd,Gd,Gd,GLQ,0,GasA,SBrkr,0,0,2,7,TA,Fin,TA,143,0,NA,0,WD
+2675,43,NA,AllPub,Blmngtn,TwnhsE,5,Gable,VinylSd,Gd,Gd,GLQ,0,GasA,SBrkr,0,0,2,6,NA,Fin,TA,90,0,NA,0,New
+2676,59,NA,AllPub,Gilbert,1Fam,5,Gable,VinylSd,Gd,Gd,Unf,0,GasA,SBrkr,0,0,3,7,Gd,Fin,TA,100,0,NA,0,WD
+2677,NA,NA,AllPub,Gilbert,1Fam,5,Gable,VinylSd,TA,Gd,ALQ,0,GasA,SBrkr,0,0,3,9,TA,Fin,TA,0,0,NA,0,WD
+2678,NA,NA,AllPub,Gilbert,1Fam,5,Gable,VinylSd,Gd,Gd,Unf,0,GasA,SBrkr,0,0,4,8,NA,RFn,TA,400,0,NA,0,New
+2679,84,NA,AllPub,NoRidge,1Fam,5,Gable,VinylSd,Gd,Gd,GLQ,0,GasA,SBrkr,0,0,3,7,Ex,Fin,TA,210,0,NA,0,WD
+2680,83,NA,AllPub,NoRidge,1Fam,5,Gable,VinylSd,Gd,Gd,GLQ,0,GasA,SBrkr,0,0,3,7,TA,RFn,TA,0,0,NA,0,WD
+2681,NA,NA,AllPub,NoRidge,1Fam,5,Gable,VinylSd,Gd,Ex,GLQ,0,GasA,SBrkr,0,0,4,9,TA,RFn,TA,247,0,NA,0,WD
+2682,83,NA,AllPub,NoRidge,1Fam,5,Hip,VinylSd,Gd,Gd,ALQ,0,GasA,SBrkr,0,0,4,9,Ex,RFn,TA,307,0,NA,0,WD
+2683,114,NA,AllPub,NoRidge,1Fam,5,Hip,MetalSd,Gd,Ex,Rec,1393,GasA,SBrkr,0,0,4,11,TA,RFn,TA,870,0,NA,0,WD
+2684,NA,NA,AllPub,NoRidge,1Fam,5,Gable,VinylSd,Gd,Gd,GLQ,168,GasA,SBrkr,0,0,4,9,TA,Fin,TA,200,0,NA,0,WD
+2685,NA,NA,AllPub,NoRidge,1Fam,5,Gable,ImStucc,Gd,Gd,LwQ,1039,GasA,SBrkr,0,0,3,8,TA,Fin,TA,432,0,NA,0,WD
+2686,75,NA,AllPub,Somerst,1Fam,5,Gable,CmentBd,Gd,Gd,Unf,0,GasA,SBrkr,0,0,3,8,Gd,Fin,TA,200,0,NA,0,New
+2687,49,NA,AllPub,Somerst,1Fam,5,Gable,VinylSd,Gd,Ex,GLQ,0,GasA,SBrkr,0,0,2,6,Gd,RFn,TA,0,0,NA,0,New
+2688,85,NA,AllPub,Somerst,1Fam,5,Gable,VinylSd,Gd,Gd,Unf,0,GasA,SBrkr,0,0,3,7,NA,Fin,TA,144,0,NA,0,New
+2689,72,NA,AllPub,Somerst,1Fam,5,Gable,VinylSd,Gd,Gd,GLQ,0,GasA,SBrkr,0,0,2,5,NA,RFn,TA,0,0,NA,0,New
+2690,100,NA,AllPub,Somerst,1Fam,5,Gable,VinylSd,Gd,Ex,GLQ,0,GasA,SBrkr,0,0,3,11,Gd,RFn,TA,0,0,NA,0,New
+2691,65,NA,AllPub,Somerst,1Fam,5,Gable,VinylSd,Gd,Gd,Unf,0,GasA,SBrkr,0,0,3,7,NA,RFn,TA,0,0,NA,0,WD
+2692,74,NA,AllPub,SawyerW,1Fam,5,Gable,VinylSd,TA,TA,GLQ,0,GasA,SBrkr,0,0,3,5,NA,NA,NA,4,0,NA,0,WD
+2693,91,NA,AllPub,SawyerW,1Fam,5,Gable,VinylSd,Gd,Gd,Unf,0,GasA,SBrkr,0,0,3,6,NA,RFn,TA,144,0,NA,0,New
+2694,63,NA,AllPub,SawyerW,1Fam,5,Gable,VinylSd,TA,Gd,Unf,0,GasA,SBrkr,0,0,3,6,NA,NA,NA,0,0,NA,0,New
+2695,65,NA,AllPub,SawyerW,1Fam,5,Gable,VinylSd,Gd,Gd,Unf,0,GasA,SBrkr,0,0,3,8,NA,Fin,TA,144,0,NA,0,WD
+2696,74,NA,AllPub,SawyerW,1Fam,5,Gable,VinylSd,Gd,Gd,Unf,0,GasA,SBrkr,0,0,3,7,NA,RFn,TA,100,0,NA,0,WD
+2697,70,NA,AllPub,SawyerW,1Fam,5,Gable,VinylSd,TA,Gd,Unf,0,GasA,SBrkr,0,0,3,7,NA,RFn,TA,150,0,NA,0,WD
+2698,70,NA,AllPub,SawyerW,1Fam,5,Gable,HdBoard,Gd,Gd,ALQ,0,GasA,SBrkr,0,0,3,7,NA,RFn,TA,307,0,NA,3000,WD
+2699,50,NA,AllPub,SawyerW,TwnhsE,5,Gable,Plywood,Gd,Gd,GLQ,0,GasA,SBrkr,0,0,2,5,NA,RFn,TA,0,0,NA,0,WD
+2700,50,NA,AllPub,SawyerW,TwnhsE,5,Gable,Plywood,Gd,Gd,GLQ,0,GasA,SBrkr,0,0,2,5,NA,RFn,TA,0,0,NA,0,WD
+2701,NA,NA,AllPub,SawyerW,1Fam,5,Gable,VinylSd,TA,Gd,ALQ,0,GasA,SBrkr,0,0,3,6,NA,Fin,TA,0,0,NA,0,WD
+2702,70,NA,AllPub,Sawyer,1Fam,4,Hip,Wd Sdng,TA,TA,LwQ,0,GasA,SBrkr,0,0,3,6,NA,Unf,TA,0,0,NA,0,WD
+2703,68,NA,AllPub,Sawyer,Duplex,6,Gable,VinylSd,TA,NA,NA,0,GasA,SBrkr,0,0,4,10,NA,RFn,TA,0,0,NA,0,WD
+2704,NA,NA,AllPub,Sawyer,1Fam,6,Hip,HdBoard,TA,TA,BLQ,0,GasA,SBrkr,0,0,2,6,TA,Unf,TA,161,0,NA,0,WD
+2705,NA,NA,AllPub,Sawyer,1Fam,5,Gable,HdBoard,TA,TA,Rec,0,GasA,SBrkr,0,0,3,5,NA,Unf,TA,0,0,NA,0,WD
+2706,65,NA,AllPub,Sawyer,1Fam,6,Gable,Plywood,TA,TA,BLQ,270,GasA,SBrkr,0,0,3,5,NA,Unf,TA,0,0,NA,0,COD
+2707,NA,NA,AllPub,Sawyer,1Fam,6,Gable,HdBoard,TA,TA,ALQ,0,GasA,SBrkr,0,0,2,5,NA,Unf,TA,203,0,NA,0,WD
+2708,NA,NA,AllPub,Sawyer,1Fam,6,Gable,HdBoard,TA,TA,Rec,0,GasA,SBrkr,0,0,3,5,NA,Unf,TA,0,0,NA,0,WD
+2709,NA,NA,AllPub,Sawyer,1Fam,6,Gable,HdBoard,TA,TA,ALQ,0,GasA,SBrkr,0,0,3,6,NA,NA,NA,0,0,NA,0,WD
+2710,NA,NA,AllPub,Sawyer,1Fam,6,Gable,VinylSd,TA,TA,Rec,0,GasA,SBrkr,0,0,3,6,Po,Unf,TA,64,0,NA,0,WD
+2711,100,NA,AllPub,Veenker,1Fam,4,Gable,Wd Sdng,Gd,Gd,ALQ,497,GasA,SBrkr,0,2,3,9,TA,RFn,TA,641,0,Gd,0,WD
+2712,105,NA,AllPub,NoRidge,1Fam,5,Gable,ImStucc,Gd,Ex,GLQ,0,GasA,SBrkr,0,0,3,9,TA,RFn,TA,177,0,NA,0,WD
+2713,34,Pave,AllPub,Somerst,TwnhsE,5,Gable,MetalSd,Gd,Gd,Unf,0,GasA,SBrkr,0,0,1,5,Gd,RFn,TA,0,0,NA,0,WD
+2714,24,Pave,AllPub,Somerst,Twnhs,5,Gable,MetalSd,Gd,Gd,Unf,0,GasA,SBrkr,80,0,2,4,NA,RFn,TA,0,0,NA,0,WD
+2715,NA,NA,AllPub,Somerst,TwnhsE,5,Gable,MetalSd,Gd,Gd,GLQ,0,GasA,SBrkr,0,0,2,4,NA,Unf,TA,0,0,NA,0,WD
+2716,NA,NA,AllPub,Somerst,TwnhsE,5,Gable,VinylSd,Gd,Gd,Unf,0,GasA,SBrkr,0,0,2,4,NA,RFn,TA,0,0,NA,0,WD
+2717,114,Pave,AllPub,Somerst,1Fam,5,Hip,Wd Sdng,Gd,Gd,Unf,0,GasA,SBrkr,0,0,3,6,TA,Unf,TA,0,0,NA,0,WD
+2718,60,Pave,AllPub,Somerst,1Fam,5,Gable,CmentBd,Gd,Gd,Unf,0,GasA,SBrkr,0,0,3,6,TA,RFn,TA,0,0,NA,0,WD
+2719,79,NA,AllPub,NWAmes,2fmCon,6,Gable,Plywood,TA,Gd,GLQ,0,GasA,SBrkr,0,0,2,6,NA,Fin,TA,140,0,NA,0,WD
+2720,78,NA,AllPub,NWAmes,1Fam,6,Hip,HdBoard,TA,TA,BLQ,68,GasA,SBrkr,0,0,3,7,NA,RFn,TA,0,0,NA,0,WD
+2721,80,NA,AllPub,NAmes,1Fam,5,Gable,MetalSd,TA,TA,ALQ,0,GasA,SBrkr,0,0,3,6,NA,RFn,TA,0,0,NA,0,WD
+2722,72,NA,AllPub,NAmes,1Fam,5,Gable,HdBoard,TA,Gd,ALQ,483,GasA,SBrkr,0,0,4,7,NA,RFn,TA,0,0,NA,455,WD
+2723,78,NA,AllPub,NAmes,1Fam,7,Hip,HdBoard,TA,TA,ALQ,0,GasA,SBrkr,0,0,2,4,Fa,RFn,TA,94,0,NA,0,WD
+2724,70,NA,AllPub,NAmes,1Fam,6,Gable,HdBoard,TA,Gd,GLQ,0,GasA,SBrkr,0,0,3,6,NA,RFn,TA,143,0,NA,0,WD
+2725,NA,NA,AllPub,NAmes,1Fam,5,Gable,Plywood,TA,TA,BLQ,0,GasA,SBrkr,0,0,3,6,NA,RFn,TA,182,0,NA,0,WD
+2726,80,NA,AllPub,NAmes,1Fam,7,Gable,MetalSd,TA,TA,ALQ,402,GasA,SBrkr,0,0,3,6,NA,Unf,TA,0,0,NA,0,WD
+2727,80,NA,AllPub,NAmes,2fmCon,7,Hip,VinylSd,TA,TA,ALQ,252,GasA,SBrkr,0,0,3,7,TA,RFn,TA,200,0,NA,460,WD
+2728,NA,NA,AllPub,NAmes,1Fam,6,Hip,HdBoard,TA,TA,ALQ,748,GasA,SBrkr,0,0,3,7,Gd,Fin,TA,154,0,NA,0,WD
+2729,85,NA,AllPub,NAmes,1Fam,6,Gable,HdBoard,TA,TA,ALQ,0,GasA,SBrkr,0,0,4,7,Po,Fin,TA,0,0,NA,0,WD
+2730,80,NA,AllPub,NAmes,1Fam,7,Hip,Wd Sdng,TA,TA,ALQ,0,GasA,SBrkr,0,0,3,6,NA,Unf,TA,0,0,NA,0,WD
+2731,60,NA,AllPub,NAmes,1Fam,8,Gable,MetalSd,TA,TA,BLQ,0,GasA,SBrkr,0,0,2,4,Fa,Unf,TA,228,0,NA,0,WD
+2732,68,NA,AllPub,NAmes,1Fam,7,Hip,BrkFace,TA,TA,Unf,0,GasA,SBrkr,0,0,2,5,Gd,Unf,TA,125,0,NA,0,WD
+2733,80,NA,AllPub,NAmes,1Fam,6,Gable,Wd Shng,TA,TA,BLQ,0,GasA,SBrkr,0,0,3,7,Gd,Unf,TA,144,0,NA,0,WD
+2734,89,NA,AllPub,NAmes,1Fam,6,Gable,Plywood,TA,TA,LwQ,0,GasA,SBrkr,0,0,2,6,Gd,RFn,TA,0,0,NA,0,WD
+2735,80,NA,AllPub,NAmes,1Fam,5,Gable,HdBoard,TA,TA,ALQ,0,GasA,FuseA,0,0,3,7,NA,RFn,TA,0,0,NA,0,WD
+2736,79,NA,AllPub,NAmes,1Fam,6,Gable,Wd Sdng,TA,TA,Unf,0,GasA,FuseA,0,0,3,7,Gd,Unf,TA,245,0,NA,0,WD
+2737,82,NA,AllPub,NAmes,1Fam,6,Gable,MetalSd,TA,TA,BLQ,0,GasA,FuseA,0,0,2,5,NA,Unf,TA,0,0,NA,0,WD
+2738,NA,NA,AllPub,NAmes,Duplex,5,Gable,Plywood,TA,TA,Unf,0,GasA,SBrkr,0,0,4,8,NA,Unf,TA,0,0,NA,0,WD
+2739,NA,NA,AllPub,NAmes,1Fam,5,Gable,HdBoard,TA,TA,ALQ,0,GasA,SBrkr,0,0,3,6,Gd,RFn,TA,0,0,NA,0,WD
+2740,109,NA,AllPub,NAmes,1Fam,7,Hip,MetalSd,TA,TA,Unf,0,GasA,SBrkr,0,0,2,5,NA,RFn,TA,0,0,NA,0,WD
+2741,70,NA,AllPub,NAmes,1Fam,5,Gable,BrkFace,TA,Fa,BLQ,0,GasA,SBrkr,0,0,3,6,Gd,RFn,TA,0,0,NA,0,WD
+2742,NA,NA,AllPub,NAmes,1Fam,6,Hip,Wd Sdng,TA,TA,Rec,0,GasA,FuseA,0,0,3,7,TA,RFn,TA,80,0,NA,0,WD
+2743,125,NA,AllPub,NAmes,1Fam,6,Hip,Wd Sdng,TA,TA,BLQ,281,GasA,SBrkr,0,0,3,6,TA,RFn,TA,191,0,NA,0,WD
+2744,72,NA,AllPub,NAmes,1Fam,6,Gable,Wd Sdng,TA,TA,BLQ,0,GasA,SBrkr,0,0,3,6,TA,Fin,TA,0,0,NA,0,WD
+2745,70,NA,AllPub,NAmes,1Fam,8,Hip,Wd Sdng,TA,TA,ALQ,0,GasA,SBrkr,0,0,3,6,NA,RFn,TA,0,0,NA,0,WD
+2746,66,NA,AllPub,NAmes,1Fam,6,Gable,MetalSd,TA,TA,GLQ,0,GasA,FuseA,0,0,2,4,NA,RFn,TA,0,0,NA,0,WD
+2747,75,NA,AllPub,NAmes,1Fam,6,Hip,Wd Sdng,TA,TA,Unf,0,GasA,SBrkr,0,0,2,5,Gd,Unf,TA,0,0,NA,0,WD
+2748,55,NA,AllPub,NAmes,1Fam,7,Gable,VinylSd,TA,Gd,BLQ,0,GasA,FuseA,0,0,3,6,NA,Unf,TA,0,0,NA,0,WD
+2749,65,NA,AllPub,NAmes,1Fam,5,Hip,Wd Sdng,TA,TA,LwQ,0,GasA,SBrkr,0,0,2,6,TA,Unf,TA,0,0,NA,0,WD
+2750,80,NA,AllPub,NAmes,1Fam,6,Gable,HdBoard,TA,TA,Rec,912,GasA,SBrkr,0,0,3,6,NA,Fin,TA,0,0,NA,650,WD
+2751,85,NA,AllPub,NAmes,1Fam,6,Hip,MetalSd,TA,TA,Rec,0,GasA,SBrkr,0,0,2,4,NA,Fin,TA,0,0,NA,0,WD
+2752,118,NA,AllPub,NAmes,1Fam,5,Hip,BrkFace,Gd,TA,Unf,0,GasA,SBrkr,0,0,3,7,Gd,Unf,TA,0,0,NA,0,COD
+2753,70,NA,AllPub,NAmes,1Fam,5,Hip,VinylSd,TA,TA,Rec,0,GasA,SBrkr,0,0,2,6,NA,Unf,TA,75,323,NA,400,WD
+2754,94,NA,AllPub,OldTown,2fmCon,5,Gable,MetalSd,TA,TA,GLQ,0,GasA,SBrkr,0,0,5,10,Gd,RFn,TA,631,0,NA,0,WD
+2755,50,NA,AllPub,NAmes,1Fam,6,Gable,VinylSd,TA,TA,Unf,0,GasA,FuseA,0,0,3,6,NA,Unf,TA,0,0,NA,0,WD
+2756,60,Grvl,AllPub,OldTown,1Fam,8,Gable,VinylSd,TA,TA,Unf,0,GasA,SBrkr,0,0,2,5,NA,Unf,Fa,0,0,NA,0,WD
+2757,60,Grvl,AllPub,NAmes,1Fam,3,Hip,Wd Sdng,TA,TA,Unf,0,GasA,FuseP,0,0,2,4,NA,Unf,Fa,0,0,NA,0,WD
+2758,60,NA,AllPub,OldTown,1Fam,8,Gable,MetalSd,TA,Fa,Unf,0,GasA,SBrkr,0,0,1,5,NA,Unf,Fa,0,0,NA,0,WD
+2759,60,Grvl,AllPub,OldTown,1Fam,8,Gable,MetalSd,TA,TA,Rec,0,GasA,SBrkr,0,0,3,7,Gd,Unf,TA,49,0,NA,0,WD
+2760,60,Grvl,AllPub,OldTown,1Fam,4,Gable,VinylSd,TA,Fa,Unf,0,GasA,FuseA,0,0,4,7,TA,Unf,Fa,120,0,NA,0,COD
+2761,83,NA,AllPub,NAmes,1Fam,5,Gable,HdBoard,TA,TA,ALQ,0,GasA,SBrkr,0,1,3,6,Gd,Unf,TA,345,0,NA,0,WD
+2762,77,NA,AllPub,NAmes,1Fam,5,Gable,HdBoard,TA,TA,ALQ,0,GasA,SBrkr,0,0,3,6,NA,RFn,TA,0,0,NA,0,WD
+2763,80,NA,AllPub,NAmes,1Fam,6,Gable,HdBoard,TA,TA,Rec,0,GasA,SBrkr,0,0,3,6,TA,RFn,TA,355,0,NA,0,WD
+2764,86,NA,AllPub,NAmes,1Fam,5,Hip,Plywood,TA,NA,NA,0,GasA,FuseA,0,0,2,5,Gd,Unf,TA,0,0,NA,0,WD
+2765,NA,NA,AllPub,NAmes,1Fam,8,Gable,Plywood,TA,TA,ALQ,0,GasA,SBrkr,0,0,3,9,Gd,RFn,TA,520,0,NA,0,WD
+2766,60,NA,AllPub,NAmes,1Fam,6,Gable,Wd Sdng,TA,TA,Rec,0,GasA,SBrkr,0,0,3,6,NA,Unf,Fa,199,0,NA,0,WD
+2767,60,NA,AllPub,NAmes,Duplex,4,Gable,Stone,TA,NA,NA,0,Wall,FuseF,0,0,2,6,NA,Unf,TA,0,0,NA,0,WD
+2768,75,NA,AllPub,NAmes,Duplex,5,Hip,BrkFace,TA,TA,Unf,0,GasA,SBrkr,0,0,4,8,NA,NA,NA,0,0,NA,0,WD
+2769,70,NA,AllPub,NAmes,1Fam,4,Hip,BrkFace,TA,TA,GLQ,0,GasA,SBrkr,0,0,3,6,NA,RFn,TA,0,0,NA,0,WD
+2770,74,NA,AllPub,NAmes,1Fam,6,Gable,Wd Sdng,TA,TA,LwQ,0,GasA,SBrkr,0,0,3,6,NA,Unf,TA,0,0,NA,0,WD
+2771,70,NA,AllPub,NAmes,1Fam,6,Gable,Wd Sdng,TA,TA,BLQ,0,GasA,SBrkr,0,1,3,5,NA,Unf,TA,0,0,NA,0,WD
+2772,70,NA,AllPub,NAmes,2fmCon,5,Gable,MetalSd,TA,TA,ALQ,0,GasA,SBrkr,0,0,3,6,NA,NA,NA,96,0,NA,0,WD
+2773,62,Grvl,AllPub,OldTown,1Fam,8,Hip,CmentBd,Gd,Fa,Unf,0,GasA,FuseA,0,0,5,8,NA,Unf,TA,0,0,NA,0,WD
+2774,60,Grvl,AllPub,OldTown,1Fam,6,Gable,MetalSd,TA,TA,Rec,0,GasA,FuseA,0,0,3,6,NA,Unf,TA,0,0,NA,0,WD
+2775,60,NA,AllPub,OldTown,1Fam,6,Gable,Wd Sdng,TA,TA,LwQ,0,GasA,SBrkr,0,0,4,9,TA,Unf,Fa,0,0,NA,0,WD
+2776,60,Grvl,AllPub,OldTown,1Fam,8,Gable,Wd Sdng,TA,TA,Rec,0,GasA,SBrkr,0,1,3,7,NA,Unf,TA,0,0,NA,0,WD
+2777,58,Grvl,AllPub,OldTown,1Fam,7,Gable,Wd Sdng,TA,TA,Rec,0,GasA,SBrkr,0,0,4,7,NA,Fin,TA,264,0,NA,0,WD
+2778,66,Grvl,AllPub,OldTown,1Fam,8,Gable,Wd Sdng,TA,TA,Unf,0,GasA,SBrkr,0,0,2,5,Po,Unf,Fa,280,0,NA,0,WD
+2779,56,Grvl,AllPub,OldTown,2fmCon,6,Gable,MetalSd,Gd,TA,Unf,0,GasA,SBrkr,0,0,4,9,NA,Unf,TA,0,0,NA,0,WD
+2780,56,Grvl,AllPub,OldTown,1Fam,5,Gable,MetalSd,TA,TA,BLQ,72,GasA,FuseA,0,0,2,5,NA,Unf,TA,0,0,NA,0,COD
+2781,50,Pave,AllPub,OldTown,1Fam,7,Gable,Stucco,TA,TA,Unf,0,GasA,SBrkr,0,0,2,5,NA,Unf,TA,50,0,NA,0,WD
+2782,60,Grvl,AllPub,OldTown,1Fam,5,Gable,MetalSd,TA,TA,Unf,0,GasA,SBrkr,0,0,2,5,NA,RFn,TA,0,0,NA,0,COD
+2783,42,Grvl,AllPub,OldTown,1Fam,5,Gable,MetalSd,TA,TA,Unf,0,GasA,FuseA,0,0,2,7,NA,Unf,TA,0,0,NA,0,WD
+2784,50,NA,AllPub,OldTown,2fmCon,7,Hip,Wd Sdng,TA,TA,GLQ,0,GasA,FuseA,0,0,3,5,NA,Unf,TA,0,0,NA,0,WD
+2785,50,NA,AllPub,OldTown,1Fam,7,Gable,MetalSd,TA,TA,Unf,0,GasA,SBrkr,0,0,5,7,NA,Unf,TA,24,0,NA,0,WD
+2786,52,NA,AllPub,OldTown,1Fam,5,Gable,AsbShng,TA,Fa,LwQ,0,GasA,SBrkr,0,0,1,3,NA,Unf,Fa,0,0,NA,0,WD
+2787,56,NA,AllPub,OldTown,1Fam,7,Gable,VinylSd,TA,Fa,Rec,0,GasA,SBrkr,0,0,3,5,NA,Unf,Fa,0,0,NA,0,WD
+2788,48,NA,AllPub,OldTown,1Fam,4,Gable,Wd Sdng,TA,TA,Unf,0,GasA,SBrkr,0,0,2,5,NA,Unf,TA,112,0,NA,0,WD
+2789,70,NA,AllPub,OldTown,1Fam,6,Gable,Wd Sdng,TA,TA,Unf,0,GasA,SBrkr,0,0,5,9,NA,Unf,Fa,0,0,NA,0,WD
+2790,33,NA,AllPub,OldTown,Duplex,7,Hip,Wd Sdng,TA,TA,Unf,0,GasA,FuseA,0,0,2,8,NA,NA,NA,0,0,NA,0,WD
+2791,65,Grvl,AllPub,OldTown,1Fam,5,Hip,HdBoard,TA,TA,Unf,0,GasA,SBrkr,0,0,3,5,NA,Unf,TA,0,0,NA,4500,WD
+2792,63,NA,AllPub,IDOTRR,1Fam,3,Gable,Wd Sdng,Fa,TA,Unf,0,GasA,FuseP,0,0,2,5,NA,NA,NA,0,0,NA,0,ConLD
+2793,69,NA,AllPub,BrkSide,1Fam,7,Gambrel,Stucco,TA,TA,Unf,0,GasW,SBrkr,0,0,2,9,Gd,Unf,Fa,27,0,NA,0,WD
+2794,51,NA,AllPub,BrkSide,1Fam,5,Gable,AsbShng,Gd,TA,Rec,0,GasA,SBrkr,0,0,3,6,NA,Unf,Fa,0,0,NA,0,ConLI
+2795,51,NA,AllPub,BrkSide,1Fam,7,Gable,MetalSd,TA,TA,Unf,0,GasA,SBrkr,0,0,3,7,NA,Unf,Fa,0,0,NA,0,WD
+2796,50,Pave,AllPub,BrkSide,1Fam,5,Gable,MetalSd,TA,TA,Unf,0,GasA,FuseA,0,0,2,4,NA,Unf,Fa,168,0,NA,0,WD
+2797,90,NA,AllPub,OldTown,1Fam,5,Gable,Wd Sdng,TA,TA,Unf,0,GasA,SBrkr,0,0,5,8,Gd,Unf,TA,0,0,NA,0,WD
+2798,60,Grvl,AllPub,IDOTRR,1Fam,5,Gable,MetalSd,TA,TA,Unf,0,GasA,FuseF,0,0,3,7,NA,Unf,Fa,218,0,NA,0,WD
+2799,60,NA,AllPub,IDOTRR,1Fam,8,Gable,Plywood,Fa,Fa,Unf,0,GasA,SBrkr,0,0,3,7,NA,Unf,TA,0,0,NA,0,WD
+2800,50,NA,AllPub,IDOTRR,1Fam,4,Gable,Wd Sdng,TA,TA,Unf,0,GasA,FuseA,0,0,2,4,NA,NA,NA,0,0,NA,0,WD
+2801,60,NA,AllPub,IDOTRR,1Fam,6,Gable,VinylSd,TA,TA,LwQ,0,GasA,FuseF,0,0,3,6,NA,Unf,TA,0,0,NA,0,ConLI
+2802,82,NA,AllPub,Sawyer,1Fam,5,Gable,HdBoard,TA,TA,BLQ,0,GasA,SBrkr,0,0,3,7,TA,Unf,TA,0,0,NA,0,WD
+2803,120,NA,AllPub,Sawyer,Duplex,5,Gable,BrkFace,TA,TA,Unf,0,GasA,SBrkr,0,0,4,8,NA,Unf,TA,0,0,NA,0,WD
+2804,100,NA,AllPub,Sawyer,1Fam,5,Gable,MetalSd,TA,NA,NA,0,GasA,FuseA,0,0,3,7,Gd,RFn,TA,0,0,NA,600,WD
+2805,55,NA,AllPub,Edwards,1Fam,7,Gable,Wd Sdng,TA,NA,NA,0,GasA,SBrkr,0,0,2,6,TA,Unf,TA,0,0,NA,0,WD
+2806,50,NA,AllPub,SWISU,1Fam,3,Gable,Wd Shng,TA,TA,Unf,0,GasA,SBrkr,0,0,2,4,NA,Unf,TA,0,0,NA,0,WD
+2807,50,NA,AllPub,SWISU,1Fam,5,Shed,VinylSd,TA,Gd,GLQ,373,GasA,SBrkr,0,0,2,4,NA,Unf,TA,0,0,NA,0,WD
+2808,NA,NA,AllPub,Sawyer,1Fam,6,Hip,HdBoard,TA,TA,ALQ,0,GasA,SBrkr,0,1,3,6,TA,Unf,TA,314,0,NA,0,WD
+2809,80,NA,AllPub,Sawyer,1Fam,7,Gable,Plywood,TA,TA,GLQ,0,GasA,SBrkr,0,1,2,4,NA,Unf,TA,77,0,NA,500,WD
+2810,75,NA,AllPub,Sawyer,1Fam,6,Gable,Plywood,TA,TA,ALQ,0,GasA,SBrkr,0,0,3,6,NA,Fin,TA,0,0,NA,0,WD
+2811,NA,NA,AllPub,Sawyer,1Fam,5,Gable,HdBoard,TA,TA,BLQ,982,GasA,SBrkr,0,0,3,7,TA,Unf,TA,284,0,NA,0,WD
+2812,NA,NA,AllPub,Sawyer,1Fam,6,Gable,HdBoard,TA,TA,GLQ,0,GasA,SBrkr,0,0,3,6,Fa,Unf,TA,131,0,NA,0,WD
+2813,NA,NA,AllPub,Sawyer,Duplex,4,Gable,Plywood,TA,Gd,Unf,0,GasA,SBrkr,0,0,6,10,NA,Fin,TA,170,0,NA,0,WD
+2814,75,NA,AllPub,Sawyer,Duplex,4,Gable,Plywood,TA,TA,Rec,0,GasA,SBrkr,0,0,6,10,NA,RFn,TA,32,0,NA,0,WD
+2815,NA,NA,AllPub,Sawyer,1Fam,5,Gable,Wd Sdng,TA,TA,Unf,0,GasA,FuseF,0,0,2,5,Gd,Unf,Fa,0,0,NA,0,WD
+2816,NA,NA,AllPub,ClearCr,1Fam,6,Gable,Plywood,TA,Gd,Rec,826,GasA,SBrkr,0,0,2,6,Gd,Unf,TA,0,0,NA,0,WD
+2817,87,NA,AllPub,ClearCr,1Fam,6,Flat,Wd Shng,TA,Gd,Rec,850,GasA,SBrkr,0,0,1,4,TA,Unf,TA,238,0,NA,0,WD
+2818,72,NA,AllPub,Sawyer,1Fam,7,Gable,HdBoard,TA,Gd,GLQ,159,GasA,SBrkr,0,0,2,4,NA,Unf,TA,0,0,NA,0,WD
+2819,NA,NA,AllPub,ClearCr,Twnhs,5,Gable,VinylSd,Gd,Gd,GLQ,0,GasA,SBrkr,140,0,2,7,NA,Fin,Gd,188,0,NA,0,WD
+2820,75,NA,AllPub,Edwards,1Fam,5,Gable,MetalSd,TA,TA,Rec,0,GasA,SBrkr,0,0,3,6,Gd,RFn,TA,237,0,NA,0,WD
+2821,62,NA,AllPub,Edwards,1Fam,5,Gable,Wd Sdng,TA,TA,LwQ,0,GasA,FuseA,0,0,3,6,TA,Unf,TA,264,0,NA,0,WD
+2822,114,NA,AllPub,Edwards,1Fam,7,Gable,Plywood,TA,TA,Unf,0,GasA,SBrkr,0,0,4,8,Gd,Unf,TA,0,0,NA,0,WD
+2823,60,NA,AllPub,Edwards,1Fam,8,Gable,Wd Sdng,TA,TA,Rec,0,GasA,SBrkr,0,0,5,7,Gd,Unf,TA,684,0,NA,0,WD
+2824,78,NA,AllPub,Edwards,1Fam,5,Gable,Plywood,TA,TA,ALQ,1164,GasA,SBrkr,0,1,3,6,Fa,Fin,TA,453,0,NA,0,WD
+2825,80,NA,AllPub,Edwards,1Fam,6,Gable,Wd Sdng,TA,NA,NA,0,GasA,SBrkr,0,0,3,7,Ex,RFn,TA,0,0,NA,0,WD
+2826,70,NA,AllPub,Edwards,1Fam,8,Hip,MetalSd,TA,TA,Unf,0,GasA,SBrkr,0,1,3,6,NA,Unf,TA,0,0,NA,0,WD
+2827,75,NA,AllPub,Edwards,1Fam,5,Gable,MetalSd,TA,TA,LwQ,0,GasA,SBrkr,0,0,5,7,NA,Unf,Fa,0,0,NA,0,WD
+2828,88,NA,AllPub,SawyerW,1Fam,4,Gable,HdBoard,Gd,Gd,ALQ,0,GasA,SBrkr,0,0,4,9,TA,RFn,TA,0,0,NA,0,WD
+2829,73,NA,AllPub,SawyerW,Duplex,8,Gable,HdBoard,Gd,Gd,LwQ,1083,GasA,SBrkr,0,0,2,8,NA,Unf,TA,288,0,NA,0,WD
+2830,133,NA,AllPub,CollgCr,1Fam,5,Gable,VinylSd,Gd,Gd,Unf,0,GasA,SBrkr,0,0,3,7,NA,RFn,TA,0,0,NA,0,New
+2831,64,NA,AllPub,CollgCr,1Fam,5,Gable,VinylSd,Gd,Gd,GLQ,0,GasA,SBrkr,0,0,2,6,NA,RFn,TA,105,0,NA,0,WD
+2832,90,NA,AllPub,CollgCr,1Fam,5,Hip,VinylSd,Gd,Gd,GLQ,0,GasA,SBrkr,0,0,3,7,Gd,RFn,TA,0,0,NA,0,New
+2833,78,NA,AllPub,CollgCr,1Fam,5,Hip,VinylSd,Gd,Ex,GLQ,0,GasA,SBrkr,0,0,2,6,NA,Fin,TA,176,0,NA,0,New
+2834,91,NA,AllPub,CollgCr,1Fam,5,Gable,VinylSd,Gd,Gd,Unf,0,GasA,SBrkr,0,0,3,8,NA,RFn,TA,144,0,NA,0,New
+2835,78,NA,AllPub,CollgCr,1Fam,5,Gable,VinylSd,Gd,Gd,GLQ,0,GasA,SBrkr,0,0,3,7,Gd,Fin,TA,100,0,NA,0,WD
+2836,78,NA,AllPub,CollgCr,1Fam,5,Gable,VinylSd,Gd,Gd,Unf,0,GasA,SBrkr,0,0,3,6,NA,RFn,TA,144,0,NA,0,WD
+2837,80,NA,AllPub,ClearCr,1Fam,5,Gable,Plywood,TA,Gd,LwQ,0,GasA,SBrkr,0,0,3,6,Po,RFn,TA,0,0,NA,0,COD
+2838,95,NA,AllPub,CollgCr,1Fam,6,Gable,VinylSd,TA,Gd,Unf,0,GasA,SBrkr,0,0,3,5,NA,RFn,TA,0,0,NA,0,WD
+2839,65,NA,AllPub,CollgCr,1Fam,5,Gable,VinylSd,Gd,Gd,Unf,0,GasA,SBrkr,0,0,3,6,TA,RFn,TA,413,0,NA,0,WD
+2840,NA,NA,AllPub,CollgCr,1Fam,5,Gable,VinylSd,TA,Gd,GLQ,0,GasA,SBrkr,0,0,3,5,NA,RFn,TA,0,0,NA,0,WD
+2841,68,NA,AllPub,CollgCr,1Fam,5,Gable,VinylSd,Gd,Gd,GLQ,0,GasA,SBrkr,0,0,3,7,NA,RFn,TA,140,0,NA,0,WD
+2842,72,NA,AllPub,CollgCr,1Fam,5,Gable,VinylSd,Gd,Gd,GLQ,0,GasA,SBrkr,0,0,3,7,TA,Fin,TA,208,0,NA,0,WD
+2843,50,NA,AllPub,CollgCr,1Fam,6,Gable,Plywood,TA,Gd,GLQ,0,GasA,SBrkr,0,0,3,6,NA,Unf,TA,406,0,NA,0,WD
+2844,42,NA,AllPub,CollgCr,1Fam,6,Gable,HdBoard,TA,TA,ALQ,400,GasA,SBrkr,0,1,3,6,NA,Unf,Fa,386,0,NA,0,WD
+2845,60,NA,AllPub,CollgCr,1Fam,8,Gable,VinylSd,TA,TA,BLQ,0,GasA,SBrkr,0,0,3,5,NA,Unf,TA,0,0,NA,0,WD
+2846,NA,NA,AllPub,CollgCr,1Fam,5,Gable,VinylSd,Gd,Gd,GLQ,0,GasA,SBrkr,0,0,3,6,NA,Fin,TA,320,0,NA,0,WD
+2847,45,NA,AllPub,CollgCr,1Fam,5,Gable,VinylSd,TA,Gd,GLQ,0,GasA,SBrkr,0,0,3,7,TA,RFn,TA,176,0,NA,0,WD
+2848,NA,NA,AllPub,CollgCr,1Fam,5,Hip,Stucco,Gd,Gd,GLQ,0,GasA,SBrkr,0,0,1,5,TA,Unf,TA,68,0,NA,0,WD
+2849,70,NA,AllPub,CollgCr,1Fam,5,Gable,VinylSd,Gd,Gd,Unf,0,GasA,SBrkr,0,0,4,8,NA,RFn,TA,0,0,NA,0,WD
+2850,67,NA,AllPub,CollgCr,1Fam,5,Gable,VinylSd,Gd,Gd,GLQ,0,GasA,SBrkr,0,0,3,8,TA,Fin,TA,197,0,NA,0,WD
+2851,NA,NA,AllPub,CollgCr,1Fam,5,Gable,VinylSd,Gd,Gd,Unf,0,GasA,SBrkr,0,0,4,9,TA,Unf,TA,120,0,NA,0,WD
+2852,90,NA,AllPub,CollgCr,1Fam,5,Gable,VinylSd,TA,Gd,ALQ,0,GasA,SBrkr,0,1,3,8,TA,RFn,TA,128,0,NA,0,WD
+2853,90,NA,AllPub,CollgCr,1Fam,5,Gable,VinylSd,Gd,Gd,GLQ,0,GasA,SBrkr,0,0,4,8,TA,RFn,TA,275,0,NA,0,WD
+2854,37,NA,AllPub,CollgCr,TwnhsE,5,Gable,VinylSd,Gd,Gd,GLQ,0,GasA,SBrkr,0,0,1,4,NA,Fin,TA,140,0,NA,0,WD
+2855,70,NA,AllPub,CollgCr,1Fam,5,Gable,VinylSd,Gd,Gd,GLQ,0,GasA,SBrkr,0,0,3,7,NA,RFn,TA,0,0,NA,0,WD
+2856,74,NA,AllPub,CollgCr,1Fam,5,Gable,VinylSd,Gd,Gd,Unf,0,GasA,SBrkr,0,0,3,7,NA,RFn,TA,0,0,NA,0,New
+2857,70,NA,AllPub,CollgCr,1Fam,5,Gable,VinylSd,Gd,Gd,Unf,0,GasA,SBrkr,0,0,3,6,NA,RFn,TA,144,0,NA,0,WD
+2858,65,NA,AllPub,CollgCr,1Fam,5,Gable,VinylSd,Gd,Gd,GLQ,0,GasA,SBrkr,0,0,3,6,NA,Unf,TA,136,0,NA,0,New
+2859,67,NA,AllPub,Edwards,1Fam,6,Gable,Plywood,TA,Gd,Rec,337,GasA,SBrkr,0,0,3,6,NA,Unf,TA,147,0,NA,420,WD
+2860,38,NA,AllPub,Edwards,Duplex,5,Flat,Wd Shng,TA,Gd,GLQ,0,GasA,SBrkr,0,2,4,4,NA,NA,NA,0,0,NA,0,WD
+2861,73,NA,AllPub,Edwards,1Fam,4,Gable,Plywood,TA,Gd,ALQ,0,GasA,SBrkr,0,0,2,5,NA,Unf,TA,0,0,NA,0,WD
+2862,62,NA,AllPub,Edwards,1Fam,5,Hip,Stucco,Gd,Gd,Unf,0,GasA,SBrkr,0,0,3,8,Gd,Fin,TA,168,0,NA,0,WD
+2863,75,NA,AllPub,Edwards,1Fam,5,Gable,VinylSd,TA,Gd,GLQ,297,GasA,SBrkr,0,0,2,4,NA,NA,NA,32,0,NA,0,WD
+2864,90,NA,AllPub,Edwards,1Fam,5,Gable,VinylSd,Gd,Ex,Unf,0,GasA,SBrkr,0,0,3,9,Ex,Fin,TA,0,0,NA,0,ConLD
+2865,35,NA,AllPub,Edwards,TwnhsE,5,Gable,VinylSd,TA,Gd,GLQ,0,GasA,SBrkr,0,0,2,5,NA,Fin,TA,0,0,NA,0,New
+2866,24,NA,AllPub,Edwards,Twnhs,5,Gable,VinylSd,Gd,Gd,Unf,0,GasA,SBrkr,0,0,3,7,NA,Unf,TA,0,0,NA,0,WD
+2867,56,NA,AllPub,Edwards,1Fam,7,Gable,VinylSd,TA,Fa,Unf,0,GasA,SBrkr,0,0,3,5,NA,Unf,TA,0,0,NA,0,WD
+2868,72,NA,AllPub,Edwards,1Fam,3,Gable,AsbShng,TA,Fa,Unf,0,GasA,FuseF,0,0,3,7,NA,Unf,TA,0,0,NA,0,WD
+2869,62,NA,AllPub,Edwards,1Fam,5,Gable,Wd Sdng,TA,TA,Unf,0,GasA,FuseF,0,0,4,9,NA,Unf,Fa,0,0,NA,0,WD
+2870,60,NA,AllPub,Edwards,1Fam,4,Hip,Wd Sdng,TA,TA,Rec,0,GasA,SBrkr,0,1,3,6,Gd,Unf,TA,0,0,NA,0,WD
+2871,45,Grvl,AllPub,Edwards,1Fam,4,Gable,Wd Sdng,TA,TA,Unf,0,GasA,SBrkr,450,0,3,8,Gd,NA,NA,0,0,NA,0,COD
+2872,60,Grvl,AllPub,Edwards,1Fam,3,Gable,MetalSd,TA,TA,Unf,0,GasA,FuseF,0,0,1,3,NA,Unf,Fa,0,0,NA,0,ConLD
+2873,76,NA,AllPub,Edwards,1Fam,7,Gable,Wd Sdng,TA,TA,Unf,0,GasA,SBrkr,0,0,3,5,NA,Unf,TA,212,0,NA,0,WD
+2874,60,NA,AllPub,SWISU,1Fam,5,Gable,MetalSd,TA,Fa,LwQ,0,GasA,SBrkr,0,0,3,6,NA,Unf,Fa,0,0,NA,0,WD
+2875,58,NA,AllPub,SWISU,2fmCon,6,Gable,Wd Sdng,TA,TA,BLQ,0,GasA,FuseF,0,0,3,6,NA,Unf,TA,0,0,NA,0,WD
+2876,43,NA,AllPub,SWISU,1Fam,8,Gable,Stucco,TA,TA,ALQ,0,GasA,SBrkr,0,0,3,6,Gd,Unf,TA,530,0,NA,0,WD
+2877,69,NA,AllPub,SWISU,1Fam,8,Gable,MetalSd,TA,TA,BLQ,0,GasA,SBrkr,0,0,3,6,NA,Unf,TA,0,0,NA,0,WD
+2878,54,NA,AllPub,Crawfor,1Fam,8,Gable,Stucco,TA,TA,Unf,0,GasA,SBrkr,0,0,4,7,Gd,Unf,Fa,0,0,NA,0,WD
+2879,84,NA,AllPub,SWISU,1Fam,5,Gable,VinylSd,TA,TA,LwQ,0,GasA,SBrkr,0,0,3,6,TA,Unf,TA,0,0,NA,0,WD
+2880,51,NA,AllPub,SWISU,1Fam,4,Gable,Wd Sdng,TA,Fa,LwQ,0,GasA,SBrkr,0,0,4,6,NA,Unf,TA,0,0,NA,0,WD
+2881,66,NA,AllPub,Crawfor,1Fam,5,Gable,Wd Shng,TA,TA,Unf,0,GasA,FuseF,0,0,3,7,TA,Unf,TA,0,0,NA,0,WD
+2882,80,NA,AllPub,Crawfor,1Fam,6,Gable,Wd Sdng,TA,Gd,BLQ,0,GasA,SBrkr,0,0,2,7,Gd,Unf,TA,0,0,NA,0,WD
+2883,81,NA,AllPub,Crawfor,1Fam,7,Gable,Wd Sdng,Gd,TA,ALQ,0,GasA,FuseA,0,0,4,7,Gd,Unf,TA,0,0,NA,0,WD
+2884,70,NA,AllPub,Crawfor,1Fam,7,Gable,Wd Sdng,TA,TA,Unf,0,GasA,SBrkr,0,0,3,8,Gd,Unf,TA,0,0,NA,0,WD
+2885,70,NA,AllPub,Crawfor,1Fam,7,Gable,Wd Sdng,TA,TA,Unf,0,GasA,SBrkr,0,0,3,8,Gd,Unf,Fa,0,0,NA,0,WD
+2886,78,NA,AllPub,Crawfor,1Fam,7,Gable,Wd Sdng,TA,Gd,GLQ,0,GasA,SBrkr,0,0,4,9,Gd,Fin,TA,0,0,NA,0,WD
+2887,50,NA,AllPub,IDOTRR,1Fam,6,Gable,MetalSd,TA,TA,Rec,0,GasA,SBrkr,0,0,2,5,NA,Unf,TA,160,0,NA,0,WD
+2888,50,NA,AllPub,IDOTRR,1Fam,7,Hip,MetalSd,TA,TA,ALQ,0,GasA,SBrkr,0,1,3,6,NA,Fin,TA,96,0,NA,0,WD
+2889,61,NA,AllPub,IDOTRR,1Fam,4,Gable,Wd Sdng,TA,Fa,Unf,0,GasA,FuseA,0,0,2,4,NA,NA,NA,0,0,NA,0,WD
+2890,50,NA,AllPub,IDOTRR,1Fam,6,Gable,MetalSd,TA,TA,Unf,0,GasA,SBrkr,0,0,2,4,NA,Unf,TA,184,0,NA,0,WD
+2891,75,NA,AllPub,IDOTRR,1Fam,5,Gable,MetalSd,TA,TA,Unf,0,GasA,SBrkr,0,0,4,6,NA,Unf,TA,0,0,NA,0,WD
+2892,69,NA,AllPub,IDOTRR,1Fam,5,Gable,Wd Sdng,TA,NA,NA,0,GasA,SBrkr,0,0,2,5,NA,NA,NA,0,0,NA,0,WD
+2893,50,NA,AllPub,IDOTRR,2fmCon,6,Gable,Wd Shng,Fa,TA,Unf,0,GasA,SBrkr,0,0,4,8,NA,NA,NA,0,0,NA,0,WD
+2894,60,NA,AllPub,IDOTRR,1Fam,5,Gable,MetalSd,TA,Fa,Unf,0,GasA,SBrkr,0,0,2,6,NA,NA,NA,0,0,NA,0,WD
+2895,41,NA,AllPub,Crawfor,TwnhsE,5,Hip,CmentBd,Gd,Ex,GLQ,0,GasA,SBrkr,0,0,2,5,Gd,Fin,TA,123,0,NA,0,New
+2896,44,NA,AllPub,Crawfor,TwnhsE,5,Hip,CmentBd,Gd,Ex,GLQ,0,GasA,SBrkr,0,1,2,5,Gd,Fin,TA,128,0,NA,0,WD
+2897,69,NA,AllPub,Mitchel,1Fam,6,Gable,Plywood,TA,Gd,GLQ,0,GasA,SBrkr,0,1,3,6,TA,Fin,TA,136,0,NA,0,WD
+2898,65,NA,AllPub,Mitchel,Duplex,5,Gable,Plywood,TA,TA,Unf,0,GasA,SBrkr,0,0,4,10,NA,Unf,TA,0,0,NA,0,WD
+2899,70,NA,AllPub,Mitchel,1Fam,5,Hip,VinylSd,Gd,Ex,Unf,0,GasA,SBrkr,0,0,3,7,NA,RFn,TA,120,0,NA,0,WD
+2900,140,NA,AllPub,Mitchel,1Fam,6,Gable,Plywood,TA,TA,GLQ,0,GasA,SBrkr,0,0,3,6,NA,Unf,TA,0,0,NA,0,WD
+2901,NA,NA,AllPub,Timber,1Fam,5,Gable,Plywood,TA,Gd,BLQ,0,GasA,SBrkr,0,0,2,6,Gd,Unf,TA,0,0,NA,0,WD
+2902,NA,NA,AllPub,Timber,1Fam,5,Gable,VinylSd,Gd,Gd,GLQ,116,GasA,SBrkr,0,0,2,5,NA,Unf,TA,0,0,NA,0,WD
+2903,95,NA,AllPub,Timber,1Fam,5,Gable,VinylSd,Gd,Ex,GLQ,0,GasA,SBrkr,0,0,3,8,Gd,Fin,TA,172,0,NA,0,New
+2904,88,NA,AllPub,Timber,1Fam,5,Hip,VinylSd,Ex,Gd,GLQ,0,GasA,SBrkr,0,0,3,9,Gd,Fin,TA,161,0,NA,0,New
+2905,125,NA,AllPub,Mitchel,1Fam,3,Gable,VinylSd,TA,NA,NA,0,GasA,FuseA,0,0,3,6,NA,Unf,Fa,0,0,NA,0,WD
+2906,78,NA,AllPub,Mitchel,Duplex,5,Gable,MetalSd,TA,Gd,GLQ,0,GasA,SBrkr,0,0,2,8,NA,Fin,TA,0,0,NA,0,WD
+2907,41,NA,AllPub,MeadowV,TwnhsE,6,Gable,CmentBd,TA,Gd,Unf,0,GasA,SBrkr,0,0,3,5,TA,RFn,TA,141,0,NA,0,WD
+2908,58,NA,AllPub,Mitchel,1Fam,7,Gable,Plywood,TA,TA,ALQ,0,GasA,SBrkr,0,0,3,5,NA,RFn,TA,0,0,NA,0,WD
+2909,NA,NA,AllPub,Mitchel,Duplex,5,Gable,Plywood,TA,TA,BLQ,0,GasA,SBrkr,0,0,4,8,NA,Unf,TA,0,0,NA,0,WD
+2910,21,NA,AllPub,MeadowV,Twnhs,6,Gable,CmentBd,TA,Gd,GLQ,0,GasA,SBrkr,0,0,1,3,NA,NA,NA,0,0,NA,0,WD
+2911,21,NA,AllPub,MeadowV,TwnhsE,4,Gable,CmentBd,TA,TA,Rec,0,GasA,SBrkr,0,0,3,5,NA,Unf,TA,0,0,NA,0,WD
+2912,80,NA,AllPub,Mitchel,1Fam,5,Gable,Plywood,TA,TA,Rec,344,GasA,SBrkr,0,0,3,8,TA,RFn,TA,160,0,NA,0,WD
+2913,21,NA,AllPub,MeadowV,Twnhs,5,Gable,CmentBd,TA,TA,Rec,0,GasA,SBrkr,0,0,3,5,NA,Unf,TA,0,0,NA,0,WD
+2914,21,NA,AllPub,MeadowV,Twnhs,5,Gable,CmentBd,TA,TA,Unf,0,GasA,SBrkr,0,0,3,5,NA,NA,NA,0,0,NA,0,WD
+2915,21,NA,AllPub,MeadowV,Twnhs,7,Gable,CmentBd,TA,TA,Unf,0,GasA,SBrkr,0,0,3,5,NA,NA,NA,0,0,NA,0,WD
+2916,21,NA,AllPub,MeadowV,TwnhsE,5,Gable,CmentBd,TA,TA,Rec,0,GasA,SBrkr,0,0,3,6,NA,Unf,TA,0,0,NA,0,WD
+2917,160,NA,AllPub,Mitchel,1Fam,7,Gable,VinylSd,TA,TA,ALQ,0,GasA,SBrkr,0,0,4,7,TA,Unf,TA,474,0,NA,0,WD
+2918,62,NA,AllPub,Mitchel,1Fam,5,Gable,Wd Shng,TA,Gd,GLQ,0,GasA,SBrkr,0,1,3,6,NA,NA,NA,80,0,NA,700,WD
+2919,74,NA,AllPub,Mitchel,1Fam,5,Gable,HdBoard,TA,Gd,LwQ,0,GasA,SBrkr,0,0,3,9,TA,Fin,TA,190,0,NA,0,WD
