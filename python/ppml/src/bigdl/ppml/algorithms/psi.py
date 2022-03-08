@@ -14,22 +14,19 @@
 # limitations under the License.
 #
 
-
-from bigdl.ppml import *
-
 from bigdl.dllib.utils.common import JavaValue
 
 
 class PSI(JavaValue):
-    def __init__(self, jvalue=None, *args):
-        self.bigdl_type = "float"
-        super().__init__(jvalue, self.bigdl_type, *args)
+    def __init__(self, jvalue, *args):
+        bigdl_type = "float"
+        super(JavaValue, self).__init__(jvalue, bigdl_type, *args)
 
-    def get_salt(self, secure_code=""):
-        return callBigDlFunc(self.bigdl_type, "psiGetSalt", self.value, secure_code)
+    def get_salt(self):
+        pass
 
     def upload_set(self, ids, salt):
-        callBigDlFunc(self.bigdl_type, "psiUploadSet", self.value, ids, salt)
+        pass
 
     def download_intersection(self, max_try=100, retry=3):
-        return callBigDlFunc(self.bigdl_type, "psiDownloadIntersection", self.value, max_try, retry)
+        pass
