@@ -72,6 +72,7 @@ class TemporalConvNet(tf.keras.Model):
                  kernel_size=3, 
 				 dropout=0.1, 
 				 repo_initialization=True):
+
         # num_channels is a list contains hidden sizes of Conv1D
         super(TemporalConvNet, self).__init__()
         num_channels.append(output_feature_num)
