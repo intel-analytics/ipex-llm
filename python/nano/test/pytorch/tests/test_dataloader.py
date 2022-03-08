@@ -90,7 +90,7 @@ class TestDataloader(TestCase):
         model = trainer.compile(model)
         with pytest.raises(ValueError, match="A legal Dataloader should yield data *"):
             trainer.fit(model, dataloader)
-        trainer.reset_train_dataloader(model)
+
         with pytest.raises(ValueError, match="A legal Dataloader should yield data *"):
             trainer.validate(model, dataloader)
 
