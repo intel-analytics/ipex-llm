@@ -21,28 +21,42 @@ def _check_data_type(data):
         return
     else:
         for x in data:
-            assert isinstance(x, torch.Tensor), ValueError
+            if not isinstance(x, torch.Tensor):
+                raise ValueError
 
 
-def _check_loader(loader):
+def _check_loader(model, loader):
     if loader is None:
         return
     sample = next(iter(loader))
     try:
-        x, y = sample
-        _check_data_type(x)
-        _check_data_type(y)
-    except ValueError:
+        if len(sample) == 2:
+            x, y = sample
+            _check_data_type(x)
+            _check_data_type(y)
+            if isinstance(x, torch.Tensor):
+                model(x)
+            else:
+                model(*x)
+        else:
+            # If sample is not tuple of length 2, then it should be (x1, x2, x3, ...).
+            # Each one must be of torch.Tensor
+            _check_data_type(sample)
+            # check if datalader yields data complied with what model requires
+            # TypeError will be raised if it fails
+            model(*sample)
+    except (ValueError, TypeError):
         raise ValueError(
             "Dataloader for quantization in INC should yield data in format below:\n"
-            "- torch.Tensor, torch.Tensor\n"
-            "- Tuple(torch.Tensor), Tuple(torch.Tensor)\n"
+            "- (tuple or Tensor, tuple or Tensor)\n"
+            "- (Tensor, Tensor, ..., Tensor). \n"
+            "please confirm number of inputs comply with model.forward."
         )
 
 
-def check_loaders(loaders):
+def check_loaders(model, loaders):
     if isinstance(loaders, list):
         for loader in loaders:
-            _check_loader(loader)
+            _check_loader(model, loader)
     else:
-        _check_loader(loaders)
+        _check_loader(model, loaders)

@@ -237,7 +237,7 @@ class Trainer(pl.Trainer):
                 check_loaders
 
             # check if dataloader is of legal format
-            check_loaders([calib_dataloader, val_dataloader])
+            check_loaders(pl_model, [calib_dataloader, val_dataloader])
 
             if approach not in ['static', 'dynamic']:
                 raise ValueError("Approach should be 'static' or 'dynamic', "
