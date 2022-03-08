@@ -15,22 +15,25 @@
 #
 
 import unittest
-import pandas as pd
-from bigdl.ppml.data_utils import *
+import numpy as np
+
+from bigdl.ppml import FLServer
+from bigdl.ppml.algorithms.fgboost_regression import FGBoostRegression
+from bigdl.ppml.utils import init_fl_context
 
 
-class TestDataUtils(unittest.TestCase):
-    def test_pandas_api(self):
-        df = pd.DataFrame({"f1": [1, 2], "f2": [3, 4]})
-        array, _ = convert_to_jtensor(df, feature_columns=["f1"])
-        self.assert_(isinstance(array, JTensor))
-        self.assertEqual(array.storage.shape, (2, 2))
+class TestVflLinearRegression(unittest.TestCase):
+    def setUp(self) -> None:
+        self.fl_server = FLServer()
+        self.fl_server.build()
+        self.fl_server.start()
+        init_fl_context()
 
-    def test_numpy_api(self):
-        array = np.array([[1, 2], [3, 4]])
-        array, _ = convert_to_jtensor(array)
-        self.assert_(isinstance(array, JTensor))
-        self.assertEqual(array.storage.shape, (2, 2))
+    def tearDown(self) -> None:
+        self.fl_server.stop()
+
+    def test_dummy_data(self):
+        x, y = np.ones([2, 3]), np.ones([2])
 
 
 if __name__ == '__main__':
