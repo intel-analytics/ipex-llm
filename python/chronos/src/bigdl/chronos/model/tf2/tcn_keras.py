@@ -21,7 +21,7 @@ layers = tf.keras.layers
 
 class TemporalBlock(tf.keras.Model):
     def __init__(self, dilation_rate, nb_filters, kernel_size=1, strides=1,
-				       padding='same', dropout_rate=0.0, repo_initialization=True):
+        padding='same', dropout_rate=0.0, repo_initialization=True):
         super(TemporalBlock, self).__init__()
         if repo_initialization:
             init = tf.keras.initializers.RandomNormal(mean=0.0, stddev=0.01)
@@ -72,7 +72,7 @@ class TemporalConvNet(tf.keras.Model):
 				 kernel_size=3,
 				 dropout=0.1,
 				 repo_initialization=True):
-    	# num_channels is a list contains hidden sizes of Conv1D
+        # num_channels is a list contains hidden sizes of Conv1D
         super(TemporalConvNet, self).__init__()
         num_channels.append(output_feature_num)
 
