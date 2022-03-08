@@ -54,7 +54,6 @@ class IPEXAccelerator(Accelerator):
             # Automatically mix precision
             ipex.enable_auto_mixed_precision(mixed_dtype=torch.bfloat16)
 
-
         super().__init__(precision_plugin=precision_plugin,
                          training_type_plugin=training_type_plugin)
 
