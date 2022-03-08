@@ -14,7 +14,6 @@
 # limitations under the License.
 #
 import torch
-from pytorch_lightning import Callback
 
 
 def _check_data_type(data):
