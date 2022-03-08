@@ -69,14 +69,15 @@ class IPEXAccelerator(Accelerator):
                 "amp is not supported in bigdl-nano.")
 
         return super().setup(trainer, model)
-    
+
     def setup_precision_plugin(self) -> None:
         """Attaches the precision plugin to the accelerator."""
-        model, optimizers, schedulers = self.precision_plugin.connect(self.model, self.optimizers, self.lr_schedulers)
+        model, optimizers, schedulers = self.precision_plugin.connect(self.model, self.optimizers,
+                                                                      self.lr_schedulers)
         model, optimizer = ipex.optimize(model, optimizer=optimizers[0])
 
         self.model = model
-        self.optimizers =[optimizer]
+        self.optimizers = [optimizer]
         self.lr_schedulers = schedulers
 
     def training_step_end(self, output: _STEP_OUTPUT_TYPE) -> _STEP_OUTPUT_TYPE:
