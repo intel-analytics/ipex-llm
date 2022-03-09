@@ -350,8 +350,8 @@ class PyTorchRayEstimator(OrcaRayEstimator):
         Calls `TrainingOperator.validate()` on N parallel workers simultaneously
         underneath the hood.
 
-        :param data: An instance of SparkXShards, a Spark DataFrame or a function that
-               takes config and batch_size as argument and returns a PyTorch DataLoader for
+        :param data: An instance of SparkXShards, a Spark DataFrame, a Ray Dataset or a function
+               that takes config and batch_size as argument and returns a PyTorch DataLoader for
                validation.
         :param batch_size: The number of samples per batch for each worker. Default is 32.
                The total batch size would be workers_per_node*num_nodes.
@@ -363,8 +363,8 @@ class PyTorchRayEstimator(OrcaRayEstimator):
                Default is False.
         :param info: An optional dictionary that can be passed to the TrainingOperator
                for validate.
-        :param feature_cols: feature column names if train data is Spark DataFrame.
-        :param label_cols: label column names if train data is Spark DataFrame.
+        :param feature_cols: feature column names if train data is Spark DataFrame or Ray Dataset.
+        :param label_cols: label column names if train data is Spark DataFrame or Ray Dataset.
 
         :return: A dictionary of metrics for the given data, including validation accuracy and loss.
                 You can also provide custom metrics by passing in a custom training_operator_cls
