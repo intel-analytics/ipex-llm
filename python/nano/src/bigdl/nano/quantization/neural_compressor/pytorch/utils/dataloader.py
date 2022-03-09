@@ -47,10 +47,10 @@ def _check_loader(model, loader):
             model(*sample)
     except (ValueError, TypeError):
         raise ValueError(
-            "Dataloader for quantization in INC should yield data in format below:\n"
+            "Dataloader for quantization should yield data in format below:\n"
             "- (tuple or Tensor, tuple or Tensor)\n"
             "- (Tensor, Tensor, ..., Tensor). \n"
-            "please confirm number of inputs comply with model.forward."
+            "Please confirm number of inputs comply with model.forward."
         )
 
 
