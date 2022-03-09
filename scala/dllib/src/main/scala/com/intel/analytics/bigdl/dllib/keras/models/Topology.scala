@@ -581,7 +581,11 @@ abstract class KerasNet[T](implicit val tag: ClassTag[T], implicit val ev: Tenso
    transform: ImageProcessing,
    valX: DataFrame)(implicit ev: TensorNumeric[T]): Unit = {
     val trainData = df2ImageSet(x, labelCols, transform)
-    val targetKeys = (0 until labelCols.size).toList.map("l" + _).toArray
+    val targetKeys = if (labelCols.length > 1) {
+      (0 until labelCols.size).toList.map("l" + _).toArray
+    } else {
+      Array(ImageFeature.label)
+    }
 
     val transformer2 = ImageMatToTensor[Float]() ->
       ImageSetToSample[Float](targetKeys = targetKeys)
@@ -680,7 +684,11 @@ abstract class KerasNet[T](implicit val tag: ClassTag[T], implicit val ev: Tenso
     batchSize: Int)
   (implicit ev: TensorNumeric[T]): Array[(ValidationResult, ValidationMethod[T])] = {
     val rdd = df2ImageSet(x, labelCols, transform)
-    val targetKeys = (0 until labelCols.size).toList.map("l" + _).toArray
+    val targetKeys = if (labelCols.length > 1) {
+      (0 until labelCols.size).toList.map("l" + _).toArray
+    } else {
+      Array(ImageFeature.label)
+    }
 
     val transformer2 = ImageMatToTensor[Float]() ->
       ImageSetToSample[Float](targetKeys = targetKeys)
