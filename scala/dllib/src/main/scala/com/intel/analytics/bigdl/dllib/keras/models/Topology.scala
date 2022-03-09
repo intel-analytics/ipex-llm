@@ -707,7 +707,7 @@ abstract class KerasNet[T](implicit val tag: ClassTag[T], implicit val ev: Tenso
      x: DataFrame,
      batchSize: Int,
      featureCols: Array[String],
-     labelCols: Array[String])(implicit ev: TensorNumeric[T]): Unit = {
+     labelCols: Array[String]): Array[(ValidationResult, ValidationMethod[T])] = {
     require(this.vMethods != null, "Evaluation metrics haven't been set yet")
     val valX = getDataSet(x, batchSize, featureCols, labelCols).toDataSet()
     val xRDD = valX.toDistributed().data(false)

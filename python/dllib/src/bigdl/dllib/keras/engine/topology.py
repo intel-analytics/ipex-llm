@@ -198,12 +198,13 @@ class KerasNet(ZooKerasLayer):
         return self
 
     def fit(self, x, y=None, batch_size=32, nb_epoch=10,
-            validation_split=0, validation_data=None, distributed=True):
+            validation_split=0, validation_data=None, distributed=True,
+            feature_cols=None, label_cols=None, transform=None):
         """
         Train a model for a fixed number of epochs on a DataSet.
 
         # Arguments
-        x: Input data. A Numpy array or RDD of Sample, ImageSet or TextSet.
+        x: Input data. A Numpy array or RDD of Sample, ImageSet or TextSet or Spark DataFrame.
         y: Labels. A Numpy array. Default is None if x is already Sample RDD or ImageSet or TextSet.
         batch_size: Number of samples per gradient update. Default is 32.
         nb_epoch: Number of epochs to train.
@@ -212,6 +213,8 @@ class KerasNet(ZooKerasLayer):
                          Default is None if no validation is involved.
         distributed: Boolean. Whether to train the model in distributed mode or local mode.
                      Default is True. In local mode, x and y must both be Numpy arrays.
+        feature_cols: List of String, must be set if x is Spark DataFrame
+        label_cols: List of String, must be set if x is Spark DataFrame
         """
 
         if distributed:
@@ -229,6 +232,32 @@ class KerasNet(ZooKerasLayer):
             elif (isinstance(x, RDD) or isinstance(x, ImageSet) or isinstance(x, TextSet)) \
                     or isinstance(x, FeatureSet) and not y:
                 training_data = x
+            elif isinstance(x, DataFrame):
+                if not label_cols:
+                    raise TypeError("Please set label_cols")
+                if "image" not in x.columns:
+                    if not feature_cols:
+                        raise TypeError("Please set feature_cols")
+                    callBigDlFunc(self.bigdl_type, "zooFit",
+                                  self.value,
+                                  x,
+                                  batch_size,
+                                  nb_epoch,
+                                  feature_cols,
+                                  label_cols,
+                                  validation_data)
+                    return
+                else:
+                    callBigDlFunc(self.bigdl_type, "zooFitImage",
+                                  self.value,
+                                  x,
+                                  batch_size,
+                                  nb_epoch,
+                                  label_cols,
+                                  transform,
+                                  validation_data
+                                  )
+                    return
             else:
                 raise TypeError("Unsupported training data type: %s" % type(x))
             callZooFunc(self.bigdl_type, "zooFit",
@@ -252,7 +281,8 @@ class KerasNet(ZooKerasLayer):
                         val_x,
                         val_y)
 
-    def evaluate(self, x, y=None, batch_size=32):
+    def evaluate(self, x, y=None, batch_size=32, feature_cols=None,
+                 label_cols=None, transform=None):
         """
         Evaluate a model on a given dataset in distributed mode.
 
@@ -261,11 +291,32 @@ class KerasNet(ZooKerasLayer):
         y: Labels. A Numpy array.
            Default is None if x is already Sample RDD or ImageSet or TextSet.
         batch_size: Number of samples per batch. Default is 32.
+        feature_cols: List of String, must be set if x is Spark DataFrame
+        label_cols: List of String, must be set if x is Spark DataFrame
         """
         if isinstance(x, np.ndarray) and isinstance(y, np.ndarray):
             data = to_sample_rdd(x, y)
         elif (isinstance(x, RDD) or isinstance(x, ImageSet) or isinstance(x, TextSet)) and not y:
             data = x
+        elif isinstance(x, DataFrame):
+            if not label_cols:
+                raise TypeError("Please set label_cols")
+            if "image" not in x.columns:
+                if not feature_cols:
+                    raise TypeError("Please set feature_cols")
+                return callBigDlFunc(self.bigdl_type, "zooEvaluate",
+                                     self.value,
+                                     x,
+                                     batch_size,
+                                     feature_cols,
+                                     label_cols)
+            else:
+                return callBigDlFunc(self.bigdl_type, "zooEvaluateImage",
+                                     self.value,
+                                     x,
+                                     label_cols,
+                                     transform,
+                                     batch_size)
         else:
             raise TypeError("Unsupported evaluation data type: %s" % type(x))
         return callZooFunc(self.bigdl_type, "zooEvaluate",
@@ -298,7 +349,8 @@ class KerasNet(ZooKerasLayer):
         else:
             return [KerasNet.convert_output(x) for x in output]
 
-    def predict(self, x, batch_per_thread=4, distributed=True):
+    def predict(self, x, batch_per_thread=4, distributed=True, feature_cols=None,
+                prediction_col=None, transform=None):
         """
         Use a model to do prediction.
 
@@ -310,6 +362,8 @@ class KerasNet(ZooKerasLayer):
           When distributed is False the total batch size is batch_per_thread * numOfCores.
         distributed: Boolean. Whether to do prediction in distributed mode or local mode.
                      Default is True. In local mode, x must be a Numpy array.
+        feature_cols: List of String, must be set if x is Spark DataFrame
+        prediction_col: String, must be set if x is Spark DataFrame
         """
         if isinstance(x, ImageSet) or isinstance(x, TextSet):
             results = callZooFunc(self.bigdl_type, "zooPredict",
@@ -317,6 +371,26 @@ class KerasNet(ZooKerasLayer):
                                   x,
                                   batch_per_thread)
             return ImageSet(results) if isinstance(x, ImageSet) else TextSet(results)
+        if isinstance(x, DataFrame):
+            if not prediction_col:
+                raise TypeError("Please set prediction_col")
+            if "image" not in x.columns:
+                results = callZooFunc(self.bigdl_type, "zooPredict",
+                                      self.value,
+                                      x,
+                                      feature_cols,
+                                      prediction_col,
+                                      batch_per_thread
+                                      )
+            else:
+                results = callZooFunc(self.bigdl_type, "zooPredictImage",
+                                      self.value,
+                                      x,
+                                      prediction_col,
+                                      transform,
+                                      batch_per_thread
+                                      )
+            return results
         if distributed:
             if isinstance(x, np.ndarray):
                 data_rdd = to_sample_rdd(x, np.zeros([x.shape[0]]))

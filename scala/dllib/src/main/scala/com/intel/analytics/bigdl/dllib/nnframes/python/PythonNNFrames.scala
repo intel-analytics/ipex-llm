@@ -27,7 +27,7 @@ import com.intel.analytics.bigdl.dllib.visualization.{TrainSummary, ValidationSu
 import com.intel.analytics.bigdl.{Criterion, Module}
 import com.intel.analytics.bigdl.dllib.common.PythonZoo
 import com.intel.analytics.bigdl.dllib.feature.common._
-import com.intel.analytics.bigdl.dllib.feature.image.RowToImageFeature
+import com.intel.analytics.bigdl.dllib.feature.image.{ImageProcessing, RowToImageFeature}
 
 import scala.collection.mutable
 // import com.intel.analytics.bigdl.dllib.feature.pmem._
@@ -137,6 +137,12 @@ class PythonNNFrames[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonZ
   def createChainedPreprocessing(list: JList[Preprocessing[Any, Any]]): Preprocessing[Any, Any] = {
     var cur = list.get(0)
     (1 until list.size()).foreach(t => cur = cur -> list.get(t))
+    cur
+  }
+
+  def createCompose(list: JList[ImageProcessing]): ImageProcessing = {
+    import com.intel.analytics.bigdl.dllib.feature.image.transforms.Compose
+    val cur = Compose(list.asScala.toArray)
     cur
   }
 
