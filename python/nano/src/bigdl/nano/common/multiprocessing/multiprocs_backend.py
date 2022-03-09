@@ -41,15 +41,16 @@ class MultiprocessingBackend(Backend):
         return self.run_subprocess(target, args=args, nprocs=nprocs, envs=envs)
 
     def run_subprocess(self, target, args=..., nprocs=1, envs=None) -> Any:
+        import cloudpickle
         import pickle
         import subprocess
         import sys
 
         with TemporaryDirectory() as temp_dir:
             with open(os.path.join(temp_dir, "args.pkl"), 'wb') as f:
-                pickle.dump(args, f)
+                cloudpickle.dump(args, f)
             with open(os.path.join(temp_dir, "target.pkl"), 'wb') as f:
-                pickle.dump(target, f)
+                cloudpickle.dump(target, f)
 
             ex_list = []
             cwd_path = os.path.split(os.path.realpath(__file__))[0]
