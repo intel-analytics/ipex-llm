@@ -1,6 +1,6 @@
 # Release Download
 
-- **Release 0.14.0 nightly build**
+- **Release 2.0.0**
 <table border="1"
 cellpadding="10"
 >
@@ -11,13 +11,11 @@ cellpadding="10"
     </tr>
     <tr>
        <td>Spark 2.4.6 </td>
-       <td><a href="https://oss.sonatype.org/content/repositories/snapshots/com/intel/analytics/bigdl/bigdl-assembly-spark_2.4.6/0.14.0-SNAPSHOT/">download</a></td>
-       <td><a href="https://oss.sonatype.org/content/repositories/snapshots/com/intel/analytics/bigdl/bigdl-dllib-spark_2.4.6/0.14.0-SNAPSHOT/">download</a></td> 
+       <td><a href="https://repo1.maven.org/maven2/com/intel/analytics/bigdl/bigdl-assembly-spark_2.4.6/2.0.0/bigdl-assembly-spark_2.4.6-2.0.0.zip">download</a></td>
     </tr>
     <tr>
        <td>Spark 3.1.2 </td>
-       <td><a href="https://oss.sonatype.org/content/repositories/snapshots/com/intel/analytics/bigdl/bigdl-assembly-spark_3.1.2/0.14.0-SNAPSHOT/">download</a></td> 
-       <td><a href="https://oss.sonatype.org/content/repositories/snapshots/com/intel/analytics/bigdl/bigdl-dllib-spark_3.1.2/0.14.0-SNAPSHOT/">download</a></td> 
+       <td><a href="https://repo1.maven.org/maven2/com/intel/analytics/bigdl/bigdl-assembly-spark_3.1.2/2.0.0/bigdl-assembly-spark_3.1.2-2.0.0.zip">download</a></td> 
     </tr>
 </table>
 <br>
