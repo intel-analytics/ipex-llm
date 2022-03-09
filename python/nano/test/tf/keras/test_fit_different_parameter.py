@@ -19,8 +19,7 @@ import tensorflow as tf
 from tensorflow.keras import layers
 from bigdl.nano.tf.keras import Sequential
 
-
-batch_size, img_height, img_width = 32, 180, 180
+BATCH_SIZE, IMG_HEIGHT, IMG_WIDTH = 32, 180, 180
 
 
 def dataset_generation():
@@ -33,16 +32,16 @@ def dataset_generation():
         validation_split=0.2,
         subset="training",
         seed=123,
-        image_size=(img_height, img_width),
-        batch_size=batch_size)
+        image_size=(IMG_HEIGHT, IMG_WIDTH),
+        batch_size=BATCH_SIZE)
 
     val_ds = tf.keras.utils.image_dataset_from_directory(
         data_dir,
         validation_split=0.2,
         subset="validation",
         seed=123,
-        image_size=(img_height, img_width),
-        batch_size=batch_size)
+        image_size=(IMG_HEIGHT, IMG_WIDTH),
+        batch_size=BATCH_SIZE)
 
     class_names = train_ds.class_names
 
@@ -57,7 +56,7 @@ def dataset_generation():
 
 def model_init(num_classes):
     model = Sequential([
-        layers.Rescaling(1. / 255, input_shape=(img_height, img_width, 3)),
+        layers.Rescaling(1. / 255, input_shape=(IMG_HEIGHT, IMG_WIDTH, 3)),
         layers.Conv2D(16, 3, padding='same', activation='relu'),
         layers.MaxPooling2D(),
         layers.Conv2D(32, 3, padding='same', activation='relu'),
@@ -78,7 +77,7 @@ def model_init(num_classes):
 
 def generate_data_label():
     num_classes = 3
-    train_examples = np.random.random((96, img_height, img_width, 3))
+    train_examples = np.random.random((96, IMG_HEIGHT, IMG_WIDTH, 3))
     train_labels = np.random.randint(0, num_classes, size=(96,))
     return num_classes, train_examples, train_labels
 
@@ -122,8 +121,15 @@ def test_verbose():
 
 
 def test_callbacks():
+    class myCallback(tf.keras.callbacks.Callback):
+        def on_epoch_end(self, epoch, logs={}):
+            if logs.get('loss') < 0.4:
+                self.model.stop_training = True
+
     num_classes, train_ds, val_ds = dataset_generation()
-    pass
+    model_multiprocess = model_init(num_classes)
+    history_multiprocess = model_multiprocess.fit(train_ds, epochs=3, validation_data=val_ds,
+                                                  callbacks=myCallback(), nprocs=2)
 
 
 def test_validation_split():
