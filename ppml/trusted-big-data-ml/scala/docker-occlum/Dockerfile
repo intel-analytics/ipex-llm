@@ -70,7 +70,6 @@ RUN cd /opt && \
     rm v$SPARK_VERSION.zip && \
     mv /opt/spark-$SPARK_VERSION /opt/spark-source && \
     cp -r /opt/spark/bin /opt/spark-source && \
-    ls /opt/spark-source && \
     cd /opt/spark && \
     mkdir /opt/spark/test-jars && \
     cd /opt/spark/test-jars && \
@@ -211,6 +210,7 @@ RUN apt-get update && \
 # prepare Spark
 COPY --from=bigdl /opt/spark /opt/spark
 COPY --from=bigdl /opt/libhadoop.so /opt/libhadoop.so
+COPY --from=bigdl /opt/spark-source /opt/spark-source
 
 # Prepare BigDL
 RUN cd /opt && \
