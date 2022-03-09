@@ -391,6 +391,21 @@ class PyTorchRayEstimator(OrcaRayEstimator):
 
             worker_stats = ray_xshards.reduce_partitions_for_actors(self.remote_workers,
                                                                     transform_func)
+        elif isinstance(data, ray.data.Dataset):
+            shards = data.split(n=self.num_workers, locality_hints=self.remote_workers)
+
+            def data_creator(config, batch_size):
+                torch_datashard = shard.to_torch(label_column=label_cols,
+                                                 feature_columns=feature_cols,
+                                                 batch_size=batch_size)
+                return torch_datashard
+
+            remote_worker_stats = []
+            for shard, worker in zip(shards, self.remote_workers):
+                stats = worker.validate.remote(
+                    data_creator, batch_size, num_steps, profile, info, False)
+                remote_worker_stats.append(stats)
+            worker_stats = ray.get(remote_worker_stats)
         else:
             assert isinstance(data, types.FunctionType), \
                 "data should be either an instance of SparkXShards or a callable function, but " \
