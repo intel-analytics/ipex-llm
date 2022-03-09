@@ -211,6 +211,7 @@ RUN apt-get update && \
 # prepare Spark
 COPY --from=bigdl /opt/spark /opt/spark
 COPY --from=bigdl /opt/libhadoop.so /opt/libhadoop.so
+COPY --from=bigdl /opt/spark-source /opt/spark-source
 
 # Prepare BigDL
 RUN cd /opt && \
