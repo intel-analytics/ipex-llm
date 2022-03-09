@@ -130,7 +130,7 @@ class ZooClassNLLCriterion[@specialized(Float, Double) T: ClassTag]
     gradInput.zero()
 
     if (input.dim() == 1) {
-      Log4Error.invalidInputErrorLog4Error.invalidInputErrorLog4Error.invalidInputError(input.dim() == target.dim(),
+      Log4Error.invalidInputError(input.dim() == target.dim(),
         "InternalClassNLLCriterion: " + ErrorInfo.constrainInputDimSameAsTarget +
           s" Input dimension is: ${ input.dim() } , target dimension is: ${ target.dim() }")
       val curTarget = ev.toType[Int](target.valueAt(1))
