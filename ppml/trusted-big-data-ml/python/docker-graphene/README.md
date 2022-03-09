@@ -229,7 +229,7 @@ Run the example with SGX spark local mode with the following command in the term
 
 ```bash
 SGX=1 ./pal_loader bash -c "/opt/jdk8/bin/java -cp \
-  '/ppml/trusted-big-data-ml/work/bigdl-2.0.0-SNAPSHOT/jars/*:/ppml/trusted-big-data-ml/work/spark-3.1.2/conf/:/ppml/trusted-big-data-ml/work/spark-3.1.2/jars/*' \
+  '/ppml/trusted-big-data-ml/work/bigdl-2.0.0/jars/*:/ppml/trusted-big-data-ml/work/spark-3.1.2/conf/:/ppml/trusted-big-data-ml/work/spark-3.1.2/jars/*' \
   -Xmx2g \
   org.apache.spark.deploy.SparkSubmit \
   --master 'local[4]' \
@@ -239,13 +239,13 @@ SGX=1 ./pal_loader bash -c "/opt/jdk8/bin/java -cp \
   --conf spark.rpc.message.maxSize=190 \
   --conf spark.network.timeout=10000000 \
   --conf spark.executor.heartbeatInterval=10000000 \
-  --properties-file /ppml/trusted-big-data-ml/work/bigdl-2.0.0-SNAPSHOT/conf/spark-bigdl.conf \
-  --py-files /ppml/trusted-big-data-ml/work/bigdl-2.0.0-SNAPSHOT/python/bigdl-orca-spark_3.1.2-2.0.0-SNAPSHOT-python-api.zip,/ppml/trusted-big-data-ml/work/bigdl-2.0.0-SNAPSHOT/python/bigdl-dllib-spark_3.1.2-2.0.0-SNAPSHOT-python-api.zip,/ppml/trusted-big-data-ml/work/bigdl-2.0.0-SNAPSHOT/examples/dllib/lenet/lenet.py \
+  --properties-file /ppml/trusted-big-data-ml/work/bigdl-2.0.0/conf/spark-bigdl.conf \
+  --py-files /ppml/trusted-big-data-ml/work/bigdl-2.0.0/python/bigdl-orca-spark_3.1.2-2.0.0-python-api.zip,/ppml/trusted-big-data-ml/work/bigdl-2.0.0/python/bigdl-dllib-spark_3.1.2-2.0.0-python-api.zip,/ppml/trusted-big-data-ml/work/bigdl-2.0.0/examples/dllib/lenet/lenet.py \
   --driver-cores 2 \
   --total-executor-cores 2 \
   --executor-cores 2 \
   --executor-memory 8g \
-  /ppml/trusted-big-data-ml/work/bigdl-2.0.0-SNAPSHOT/examples/dllib/lenet/lenet.py \
+  /ppml/trusted-big-data-ml/work/bigdl-2.0.0/examples/dllib/lenet/lenet.py \
   --dataPath /ppml/trusted-big-data-ml/work/data/mnist \
   --maxEpoch 2" 2>&1 | tee test-bigdl-lenet-sgx.log
 ```
