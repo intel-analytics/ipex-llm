@@ -206,8 +206,8 @@ class PyTorchRayEstimator(OrcaRayEstimator):
         Calls `TrainingOperator.train_epoch()` on N parallel workers simultaneously
         underneath the hood.
 
-        :param data: An instance of SparkXShards, a Spark DataFrame or a function that
-               takes config and batch_size as argument and returns a PyTorch DataLoader for
+        :param data: An instance of SparkXShards, a Ray Dataset, a Spark DataFrame or a function
+               that takes config and batch_size as argument and returns a PyTorch DataLoader for
                training.
         :param epochs: The number of epochs to train the model. Default is 1.
         :param batch_size: The number of samples per batch for each worker. Default is 32.
@@ -223,8 +223,8 @@ class PyTorchRayEstimator(OrcaRayEstimator):
                Default is True.
         :param info: An optional dictionary that can be passed to the TrainingOperator for
                train_epoch and train_batch.
-        :param feature_cols: feature column names if data is Spark DataFrame.
-        :param label_cols: label column names if data is Spark DataFrame.
+        :param feature_cols: feature column names if data is Spark DataFrame or Ray Dataset.
+        :param label_cols: label column names if data is Spark DataFrame or Ray Dataset.
         :param callbacks: A list for all callbacks.
 
         :return: A list of dictionary of metrics for every training epoch. If reduce_results is
@@ -234,6 +234,7 @@ class PyTorchRayEstimator(OrcaRayEstimator):
                 when creating the Estimator.
         """
         from bigdl.orca.data import SparkXShards
+        from ray.data import Dataset
 
         data, _ = maybe_dataframe_to_xshards(data,
                                              validation_data=None,
@@ -256,10 +257,29 @@ class PyTorchRayEstimator(OrcaRayEstimator):
 
             worker_stats = ray_xshards.reduce_partitions_for_actors(self.remote_workers,
                                                                     transform_func)
+        elif isinstance(data, Dataset):
+            shards = data.split(n=self.num_workers, locality_hints=self.remote_workers)
+
+            def data_creator(config, batch_size):
+                torch_datashard = shard.to_torch(label_column=label_cols,
+                                                 feature_columns=feature_cols,
+                                                 batch_size=batch_size)
+                return torch_datashard
+
+            remote_worker_stats = []
+            for shard, worker in zip(shards, self.remote_workers):
+                stats = worker.train_epochs.remote(data_creator, epochs, batch_size, profile,
+                                                   info, False, callbacks)
+                remote_worker_stats.append(stats)
+            success = check_for_failure(remote_worker_stats)
+            if success:
+                worker_stats = ray.get(remote_worker_stats)
+            else:
+                worker_stats = None
         else:
             assert isinstance(data, types.FunctionType), \
-                "data should be either an instance of SparkXShards or a callable function, but " \
-                "got type: {}".format(type(data))
+                "data should be either an instance of SparkXShards, Ray Dataset " \
+                "or a callable function, but got type: {}".format(type(data))
 
             success, worker_stats = self._train_epochs(data,
                                                        epochs=epochs,
