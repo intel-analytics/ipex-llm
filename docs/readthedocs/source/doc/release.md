@@ -12,10 +12,12 @@ cellpadding="10"
     <tr>
        <td>Spark 2.4.6 </td>
        <td><a href="https://repo1.maven.org/maven2/com/intel/analytics/bigdl/bigdl-assembly-spark_2.4.6/2.0.0/bigdl-assembly-spark_2.4.6-2.0.0.zip">download</a></td>
+       <td><a href="https://repo1.maven.org/maven2/com/intel/analytics/bigdl/bigdl-dllib-spark_2.4.6/2.0.0/">download</a></td>
     </tr>
     <tr>
        <td>Spark 3.1.2 </td>
        <td><a href="https://repo1.maven.org/maven2/com/intel/analytics/bigdl/bigdl-assembly-spark_3.1.2/2.0.0/bigdl-assembly-spark_3.1.2-2.0.0.zip">download</a></td> 
+       <td><a href="https://repo1.maven.org/maven2/com/intel/analytics/bigdl/bigdl-dllib-spark_3.1.2/2.0.0/">download</a></td>
     </tr>
 </table>
 <br>
