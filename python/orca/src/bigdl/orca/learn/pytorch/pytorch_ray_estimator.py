@@ -305,12 +305,14 @@ class PyTorchRayEstimator(OrcaRayEstimator):
         """
         Using this PyTorch model to make predictions on the data.
 
-        :param data: An instance of SparkXShards or a Spark DataFrame
+        :param data: An instance of SparkXShards, a Ray Dataset or a Spark DataFrame
         :param batch_size: The number of samples per batch for each worker. Default is 32.
         :param profile: Boolean. Whether to return time stats for the training procedure.
                Default is False.
-        :param feature_cols: feature column names if data is a Spark DataFrame.
-        :return: A SparkXShards that contains the predictions with key "prediction" in each shard
+        :param feature_cols: feature column names if data is a Spark DataFrame or a Ray Dataset.
+        :param feature_cols: feature column names if data is a Spark DataFrame or a Ray Dataset.
+        :return: A SparkXShards or Ray Shard that contains the predictions with key "prediction" 
+               in each shard
         """
         from bigdl.orca.data import SparkXShards
         param = dict(
