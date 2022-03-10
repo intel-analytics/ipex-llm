@@ -37,6 +37,7 @@ import io
 import itertools
 import os
 import tempfile
+import ray
 import torch
 import torch.nn as nn
 from torch.utils.data import DataLoader
@@ -342,7 +343,7 @@ class TorchRunner:
             validation_stats.update(profile=self.timers.stats())
         return validation_stats
 
-    def predict(self, partition, batch_size=32, profile=False):
+    def predict(self, partition, batch_size=32, profile=False, label_cols=None):
         """Evaluates the model on the validation data set."""
         config = self.config.copy()
         self._toggle_profiling(profile=profile)
@@ -355,18 +356,25 @@ class TorchRunner:
                 params[arg] = config[arg]
 
         def predict_fn(shard):
-            if isinstance(shard["x"], tuple) or isinstance(shard["x"], list):
-                tensors = [torch.from_numpy(arr) for arr in shard["x"]]
+            if isinstance(partition, ray.data.Dataset):
+                y = self.training_operator.predict(shard)
             else:
-                tensors = [torch.from_numpy(shard["x"])]
-            dataset = torch.utils.data.TensorDataset(*tensors)
-            data_loader = DataLoader(dataset, **params)
-            y = self.training_operator.predict(iter(data_loader))
-
+                if isinstance(shard["x"], tuple) or isinstance(shard["x"], list):
+                    tensors = [torch.from_numpy(arr) for arr in shard["x"]]
+                else:
+                    tensors = [torch.from_numpy(shard["x"])]
+                dataset = torch.utils.data.TensorDataset(*tensors)
+                data_loader = DataLoader(dataset, **params)
+                y = self.training_operator.predict(iter(data_loader))
             return {"prediction": y}
-
+        
         with self.timers.record("predict"):
-            new_part = [predict_fn(shard) for shard in partition]
+            if isinstance(partition, ray.data.Dataset):
+                torch_dataset = partition.to_torch(label_column=label_cols,
+                                                   batch_size=batch_size)
+                new_part = [predict_fn(shard) for shard in torch_dataset]
+            else:
+                new_part = [predict_fn(shard) for shard in partition]
         return new_part
 
     def _toggle_profiling(self, profile=False):
