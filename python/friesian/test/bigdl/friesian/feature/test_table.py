@@ -726,7 +726,7 @@ class TestTable(TestCase):
         tbl.write_csv(directory, mode="overwrite", header=True, num_partitions=1,
                       delimiter="\t")
         assert os.path.exists("write.csv"), "files not write"
-        result = FeatureTable(spark.read.csv(directory, header=True))
+        result = FeatureTable(spark.read.csv(directory, header=True, sep="\t"))
         assert isinstance(result, FeatureTable)
         assert result.size() == 3, "the size of result should be 3"
         assert result.filter("age == 23").size() == 1, "wrong age"
