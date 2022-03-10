@@ -299,6 +299,7 @@ class PyTorchRayEstimator(OrcaRayEstimator):
     def predict(self,
                 data,
                 batch_size=32,
+                label_cols=None,
                 feature_cols=None,
                 profile=False):
         """
@@ -330,6 +331,19 @@ class PyTorchRayEstimator(OrcaRayEstimator):
                 data = process_xshards_of_pandas_dataframe(data, feature_cols)
             pred_shards = self._predict_spark_xshards(data, param)
             result = update_predict_xshards(data, pred_shards)
+        elif isinstance(data, ray.data.Dataset):
+            shards = data.split(n=self.num_workers, locality_hints=self.remote_workers)
+
+            data_creator = lambda config, batch_size: shard
+
+            remote_worker_stats = []
+            for shard, worker in zip(shards, self.remote_workers):
+                worker_stats = worker.predict.remote(data_creator, batch_size, profile, label_cols)
+                pred_stats = ray.get(worker_stats)
+                for stat in pred_stats:
+                    stat.update(stat)
+                remote_worker_stats.append(stat)
+            result = remote_worker_stats
         else:
             raise ValueError("Only xshards or Spark DataFrame is supported for predict")
 
