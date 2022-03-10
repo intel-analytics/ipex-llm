@@ -563,7 +563,8 @@ class Table:
         :param num_partitions: positive int. The number of files to write.
         """
         if num_partitions:
-            self.df.repartition(num_partitions).write.csv(path=path, mode=mode, header=header, sep=delimiter)
+            self.df.repartition(num_partitions).write.csv(
+                path=path, mode=mode, header=header, sep=delimiter)
         else:
             self.df.write.csv(path=path, mode=mode, header=header, sep=delimiter)
 
@@ -871,6 +872,7 @@ class FeatureTable(Table):
                         .agg(F.collect_list(F.col("id")).alias("id"))
                 data_df = data_df.join(tmp_df, 'row_id', 'left') \
                     .drop('row_id').drop(col_name).withColumnRenamed("id", col_name)
+
         return FeatureTable(data_df)
 
     def filter_by_frequency(self, columns, min_freq=2):
