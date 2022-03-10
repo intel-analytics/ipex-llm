@@ -547,24 +547,25 @@ class Table:
             df_cast.df = df_cast.df.withColumn(i, pyspark_col(i).cast(dtype))
         return df_cast
 
-    def write_csv(self, path, mode="overwrite", header=True, num_partitions=None):
+    def write_csv(self, path, delimiter=",", mode="overwrite", header=True, num_partitions=None):
         """
         Write the Table to csv file.
 
         :param path: str, the path to the csv file.
+        :param delimiter: str, the delimiter to use for separating fields. Default is ",".
         :param mode: str. One of "append", "overwrite", "error" or "ignore".
                append: Append the contents of this StringIndex to the existing data.
                overwrite: Overwrite the existing data.
                error: Throw an exception if the data already exists.
                ignore: Silently ignore this operation if the data already exists.
         :param header: boolean, whether to include the schema at the first line of the csv file.
-               Default is False.
+               Default is True.
         :param num_partitions: positive int. The number of files to write.
         """
         if num_partitions:
-            self.df.repartition(num_partitions).write.csv(path=path, mode=mode, header=header)
+            self.df.repartition(num_partitions).write.csv(path=path, mode=mode, header=header, sep=delimiter)
         else:
-            self.df.write.csv(path=path, mode=mode, header=header)
+            self.df.write.csv(path=path, mode=mode, header=header, sep=delimiter)
 
     def _concat(self, join="outer"):
         def concat_inner(self, df2):
@@ -760,7 +761,7 @@ class FeatureTable(Table):
         Loads csv files as a FeatureTable.
 
         :param paths: str or a list of str, the path(s) to the csv file(s).
-        :param delimiter: str, delimiter to use for parsing the csv file(s). Default is ",".
+        :param delimiter: str, the delimiter to use for parsing the csv file(s). Default is ",".
         :param header: boolean, whether the first line of the csv file(s) will be treated
                as the header for column names. Default is False.
         :param names: str or a list of str, the column names for the csv file(s). You need to

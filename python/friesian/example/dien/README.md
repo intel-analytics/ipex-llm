@@ -57,16 +57,16 @@ python dien_preprocessing.py \
 ```
 
 __Options:__
-* `cluster_mode`: The cluster mode to run the data preprocessing, one of local, yarn, standalone or spark-submit. Default to be local.
-* `master`: The master URL, only used when cluster_mode is standalone.
-* `executor_cores`: The number of cores to use on each node. 
-* `executor_memory`: The amount of memory to allocate on each node. 
-* `num_executors`: The number of nodes to use in the cluster. 
-* `driver_cores`: The number of cores to use for the driver. 
-* `driver_memory`: The amount of memory to allocate for the driver.
 * `input_meta`: __Required.__ The path to `meta_Books.csv`, either a local path or an HDFS path.
 * `input_transaction`: __Required.__ The path to `reviews_Books.json`, either a local path or an HDFS path.
-* `output`: The path to save the preprocessed data to parquet files. HDFS path is recommended.
+* `cluster_mode`: The cluster mode to run the data preprocessing, one of local, yarn, standalone or spark-submit. Default to be local.
+* `master`: The master URL, only used when cluster_mode is standalone.
+* `executor_cores`: The number of cores to use on each node. Default to be 48.
+* `executor_memory`: The amount of memory to allocate on each node. Default to be 160g.
+* `num_executors`: The number of nodes to use in the cluster. Default to be 8.
+* `driver_cores`: The number of cores to use for the driver. Default to be 4.
+* `driver_memory`: The amount of memory to allocate for the driver. Default to be 36g.
+* `output`: The path to save the preprocessed data to parquet files. HDFS path is recommended. Default to be the current working directory.
 
 ## Train DIEN
 * Spark local:
