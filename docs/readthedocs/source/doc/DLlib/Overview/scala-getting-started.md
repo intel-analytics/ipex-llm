@@ -60,22 +60,44 @@ the input/output of the distributed inference. Consequently, the user can easily
 process large-scale dataset using Apache Spark, and directly apply AI models on
 the distributed (and possibly in-memory) Dataframes without data conversion or serialization
 
-We used [Pima Indians onset of diabetes](https://raw.githubusercontent.com/jbrownlee/Datasets/master/pima-indians-diabetes.data.csv) as dataset for the demo. It's a standard machine learning dataset from the UCI Machine Learning repository. It describes patient medical record data for Pima Indians and whether they had an onset of diabetes within five years.
-The dataset can be download with:
-```
-wget https://raw.githubusercontent.com/jbrownlee/Datasets/master/pima-indians-diabetes.data.csv
-```
-
 We create Spark session so we can use Spark API to load and process the data
 ```
 val spark = new SQLContext(sc)
 ```
 
-Load the data into Spark DataFrame
+1. We can use Spark API to load the data into Spark DataFrame, eg. read csv file into Spark DataFrame
 ```
 val path = "pima-indians-diabetes.data.csv"
 val df = spark.read.options(Map("inferSchema"->"true","delimiter"->",")).csv(path)
       .toDF("num_times_pregrant", "plasma_glucose", "blood_pressure", "skin_fold_thickness", "2-hour_insulin", "body_mass_index", "diabetes_pedigree_function", "age", "class")
+```
+
+If the feature column for the model is a Spark ML Vector. Please assemble related columns into a Vector and pass it to the model. eg.
+```
+val assembler = new VectorAssembler()
+  .setInputCols(Array("num_times_pregrant", "plasma_glucose", "blood_pressure", "skin_fold_thickness", "2-hour_insulin", "body_mass_index", "diabetes_pedigree_function", "age"))
+  .setOutputCol("features")
+val assembleredDF = assembler.transform(df)
+val df2 = assembleredDF.withColumn("label",col("class").cast(DoubleType) + lit(1))
+```
+
+2. If the training data is image, we can use DLLib api to load image into Spark DataFrame. Eg.
+```
+val createLabel = udf { row: Row =>
+if (new Path(row.getString(0)).getName.contains("cat")) 1 else 2
+}
+val imagePath = "cats_dogs/"
+val imgDF = NNImageReader.readImages(imagePath, sc)
+```
+
+It will load the images and generate feature tensors automatically. Also we need generate labels ourselves. eg:
+```
+val df = imgDF.withColumn("label", createLabel(col("image")))
+```
+
+Then split the Spark DataFrame into traing part and validation part
+```
+val Array(trainDF, valDF) = df.randomSplit(Array(0.8, 0.2))
 ```
 
 ## 4. Model Definition
@@ -95,35 +117,25 @@ After creating the model, you will have to decide which loss function to use in 
 
 Now you can use `compile` function of the model to set the loss function, optimization method.
 ```
-dmodel.compile(optimizer = new Adam(),
-  loss = ClassNLLCriterion())
+dmodel.compile(optimizer = new Adam(), loss = ClassNLLCriterion())
 ```
 
 Now the model is built and ready to train.
 
 ## 5. Distributed Model Training
-Now you can use 'fit' begin the training, please set the feature columns and label columns. Model Evaluation can be performed periodically during a training.
-If the model accepts single input(eg. column `feature1`) and single output(eg. column `label`), please set the feature columns of the model as :
+Now you can use 'fit' begin the training, please set the label columns. Model Evaluation can be performed periodically during a training.
+1. If the dataframe is generated using Spark apis, you also need set the feature columns. eg.
 ```
-model.fit(x=dataframe, batchSize=4, nbEpoch = 2,
-  featureCols = Array("feature1"), labelCols = Array("label"))
+model.fit(x=trainDF, batchSize=4, nbEpoch = 2,
+  featureCols = Array("feature1"), labelCols = Array("label"), valX=valDF)
 ```
-
-If the feature column for the model is a Spark ML Vector. Please assemble related columns into a Vector and pass it to the model. eg.
-```
-val assembler = new VectorAssembler()
-  .setInputCols(Array("num_times_pregrant", "plasma_glucose", "blood_pressure", "skin_fold_thickness", "2-hour_insulin", "body_mass_index", "diabetes_pedigree_function", "age"))
-  .setOutputCol("features")
-val assembleredDF = assembler.transform(df)
-val df2 = assembleredDF.withColumn("label",col("class").cast(DoubleType) + lit(1))
-```
+Note: Above model accepts single input(column `feature1`) and single output(column `label`).
 
 If your model accepts multiple inputs(eg. column `f1`, `f2`, `f3`), please set the features as below:
 ```
 model.fit(x=dataframe, batchSize=4, nbEpoch = 2,
   featureCols = Array("f1", "f2", "f3"), labelCols = Array("label"))
 ```
-If one of the inputs is a Spark ML Vector, please assemble it before pass the data to the model.
 
 Similarly, if the model accepts multiple outputs(eg. column `label1`, `label2`), please set the label columns as below:
 ```
@@ -131,17 +143,14 @@ model.fit(x=dataframe, batchSize=4, nbEpoch = 2,
   featureCols = Array("f1", "f2", "f3"), labelCols = Array("label1", "label2"))
 ```
 
-Then split it into traing part and validation part
+2. If the dataframe is generated using DLLib `NNImageReader`, we don't need set `featureCols`, we can set `transform` to config how to process the images before training. Eg.
 ```
-val Array(trainDF, valDF) = df2.randomSplit(Array(0.8, 0.2))
+val transformers = transforms.Compose(Array(ImageResize(50, 50),
+  ImageMirror()))
+model.fit(x=dataframe, batchSize=4, nbEpoch = 2,
+  labelCols = Array("label"), transform = transformers)
 ```
-
-The model is ready to train.
-```
-dmodel.fit(x=trainDF, batchSize=4, nbEpoch = 2,
-  featureCols = Array("features"), labelCols = Array("label"), valX = valDF
-)
-```
+For more details about how to use DLLib keras api to train image data, you may want to refer [ImageClassification](https://github.com/intel-analytics/BigDL/blob/main/scala/dllib/src/main/scala/com/intel/analytics/bigdl/dllib/example/keras/ImageClassification.scala)
 
 ## 6. Model saving and loading
 When training is finished, you may need to save the final model for later use.
@@ -166,14 +175,25 @@ You may want to refer [Save/Load](https://bigdl.readthedocs.io/en/latest/doc/DLl
 After training finishes, you can then use the trained model for prediction or evaluation.
 
 - **inference**
+1. For dataframe generated by Spark API, please set `featureCols`
 ```
 dmodel.predict(trainDF, featureCols = Array("features"), predictionCol = "predict")
 ```
+2. For dataframe generated by `NNImageReader`, no need to set `featureCols` and you can set `transform` if needed
+```
+model.predict(imgDF, predictionCol = "predict", transform = transformers)
+```
 
 - **evaluation**
+Similary for dataframe generated by Spark API, the code is as below:
 ```
 dmodel.evaluate(trainDF, batchSize = 4, featureCols = Array("features"),
   labelCols = Array("label"))
+```
+
+For dataframe generated by `NNImageReader`:
+```
+model.evaluate(imgDF, batchSize = 1, labelCols = Array("label"), transform = transformers)
 ```
 
 ## 8. Checkpointing and resuming training

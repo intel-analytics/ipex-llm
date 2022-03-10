@@ -155,6 +155,34 @@ class KerasNet(ZooKerasLayer):
                     path,
                     over_write)
 
+    def freeze(self, names=None):
+        """
+        Config layers that needed to be freeze
+
+        # Arguments
+        names: Layers to freeze.
+        """
+        freeze_names = names if names else None
+        if isinstance(freeze_names, six.string_types):
+            freeze_names = [freeze_names]
+        callZooFunc(self.bigdl_type, "zooFreeze",
+                    self.value,
+                    freeze_names)
+
+    def unfreeze(self, names=None):
+        """
+        Config layers that needed to be unfreeze
+
+        # Arguments
+        names: Layers to unfreeze.
+        """
+        unfreeze_names = names if names else None
+        if isinstance(unfreeze_names, six.string_types):
+            unfreeze_names = [unfreeze_names]
+        callZooFunc(self.bigdl_type, "zoounFreeze",
+                    self.value,
+                    unfreeze_names)
+
     def clear_gradient_clipping(self):
         """
         Clear gradient clipping parameters. In this case, gradient clipping will not be applied.

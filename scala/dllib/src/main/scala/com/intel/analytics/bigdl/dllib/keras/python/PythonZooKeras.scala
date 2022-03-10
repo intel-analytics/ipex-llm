@@ -268,6 +268,26 @@ class PythonZooKeras[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonZ
     module.setCheckpoint(path, overWrite)
   }
 
+  def zooFreeze(
+    module: KerasNet[T],
+    names: JList[String] = null): Unit = {
+    if (names == null) {
+      module.freeze()
+      return
+    }
+    module.freeze(names.asScala.toArray: _*)
+  }
+
+  def zoounFreeze(
+     module: KerasNet[T],
+     names: JList[String] = null): Unit = {
+    if (names == null) {
+      module.unFreeze()
+      return
+    }
+    module.unFreeze(names.asScala.toArray: _*)
+  }
+
   def zooSaveGraphTopology(
       module: Model[T],
       logPath: String,
