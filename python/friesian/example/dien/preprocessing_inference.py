@@ -95,6 +95,18 @@ if __name__ == "__main__":
         .dropna(columns=['user', 'item'])
     transaction_tbl.cache()
 
+    # def process_single_meta(row):
+    #     obj = eval(row)
+    #     cat = obj['categories'][0][-1]
+    #     if not cat:
+    #         cat = "default"
+    #     return [obj['asin'], cat.lower()]
+
+    # item_tbl = FeatureTable.read_text(args.input_meta)\
+    #     .apply("value", "value", process_single_meta, dtype="array<string>")\
+    #     .apply("value", "item", lambda x: x[0])\
+    #     .apply("value", "category", lambda x: x[1])\
+    #     .drop("value")
     item_tbl = FeatureTable.read_csv(args.input_meta, delimiter="\t", names=['item', 'category'])\
         .apply("category", "category", lambda x: x.lower() if x is not None else "default")
 

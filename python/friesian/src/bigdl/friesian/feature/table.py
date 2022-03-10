@@ -372,7 +372,7 @@ class Table:
                 aggr_strs = aggr
             elif isinstance(aggr, dict):
                 if column not in aggr:
-                    raise ValueError("aggregate funtion not defined for the column {}.".
+                    raise ValueError("aggregate function not defined for the column {}.".
                                      format(column))
                 aggr_strs = aggr[column]
             else:
@@ -780,21 +780,40 @@ class FeatureTable(Table):
         """
         return cls(Table._read_csv(paths, delimiter, header, names, dtype))
 
+    @classmethod
+    def read_text(cls, paths, col_name="value"):
+        """
+        Loads text files as a FeatureTable.
+
+        :param paths: str or a list of str, the path(s) to the text file(s).
+        :param col_name: the column name of the text. Default is "value".
+
+        :return: A FeatureTable for recommendation data.
+        """
+        spark = OrcaContext.get_spark_session()
+        tbl = cls(spark.read.text(paths))
+        if col_name != "value":
+            tbl = tbl.rename({"value": col_name})
+        return tbl
+
     @staticmethod
     def from_pandas(pandas_df):
         """
-        Returns the contents of this :class:`pandas.DataFrame` as Table
-        :param pandas_df: pandas dataframe
+        Returns the contents of of a pandas DataFrame as FeatureTable.
+
+        :param pandas_df: a pandas DataFrame.
+
+        :return: A FeatureTable for recommendation data.
         """
         spark = OrcaContext.get_spark_session()
         sparkDF = spark.createDataFrame(pandas_df)
         return FeatureTable(sparkDF)
 
-    def encode_string(self, columns, indices, broadcast=True,
-                      do_split=False, sep=',', sort_for_array=False, keep_most_frequent=False
-                      ):
+    def encode_string(self, columns, indices, broadcast=True, do_split=False,
+                      sep=',', sort_for_array=False, keep_most_frequent=False):
         """
-        Encode columns with provided list of StringIndex.
+        Encode columns with provided list of StringIndex. Unknown string will be
+        encoded to 0.
 
         :param columns: str or a list of str, the target columns to be encoded.
         :param indices: StringIndex or a list of StringIndex, StringIndexes of target columns.
@@ -804,14 +823,14 @@ class FeatureTable(Table):
                the keys of the dict should be within the categorical column
                and the values are the target ids to be encoded.
         :param broadcast: bool, whether need to broadcast index when encode string.
-        Default is True.
+               Default is True.
         :param do_split: bool, whether need to split column value to array to encode string.
-        Default is False.
+               Default is False.
         :param sep: str, a string representing a regular expression to split a column value.
-        Default is ','.
+               Default is ','.
         :param sort_for_array: bool, whether need to sort array columns. Default is False.
         :param keep_most_frequent: bool, whether need to keep most frequent value as the
-        column value. Default is False.
+               column value. Default is False.
 
         :return: A new FeatureTable which transforms categorical features into unique integer
                  values with provided StringIndexes.
@@ -833,6 +852,7 @@ class FeatureTable(Table):
             if not do_split:
                 data_df = data_df.join(index_tbl.df, col_name, how="left") \
                     .drop(col_name).withColumnRenamed("id", col_name)
+                return FeatureTable(data_df).fillna(0, col_name)
             else:
                 data_df = data_df.withColumn('row_id', F.monotonically_increasing_id())
                 tmp_df = data_df.select('row_id', col_name) \
@@ -852,8 +872,7 @@ class FeatureTable(Table):
                         .agg(F.collect_list(F.col("id")).alias("id"))
                 data_df = data_df.join(tmp_df, 'row_id', 'left') \
                     .drop('row_id').drop(col_name).withColumnRenamed("id", col_name)
-
-        return FeatureTable(data_df)
+                return FeatureTable(data_df)
 
     def filter_by_frequency(self, columns, min_freq=2):
         """
@@ -938,14 +957,14 @@ class FeatureTable(Table):
                to values with more frequencies. Default is False and in this case frequency order
                may not be preserved when assigning indices.
         :param do_split: bool, whether need to split column value to array to encode string.
-        Default is False.
+               Default is False.
         :param sep: str, a string representing a regular expression to split a column value.
-        Default is ','.
+               Default is ','.
         :param sort_for_array: bool, whether need to sort array columns. Default is False.
         :param keep_most_frequent: bool, whether need to keep most frequent value as the
-        column value. Default is False.
+               column value. Default is False.
         :param broadcast: bool, whether need to broadcast index when encode string.
-        Default is True.
+               Default is True.
 
         :return: A tuple of a new FeatureTable which transforms categorical features into unique
                  integer values, and a list of StringIndex for the mapping.
@@ -2045,9 +2064,6 @@ class StringIndex(Table):
         for row in rows:
             res_dict[row[col_id]] = row[index_id]
         return res_dict
-
-    def _clone(self, df):
-        return StringIndex(df, self.col_name)
 
     def write_parquet(self, path, mode="overwrite"):
         """

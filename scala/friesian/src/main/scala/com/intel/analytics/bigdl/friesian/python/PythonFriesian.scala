@@ -298,7 +298,7 @@ class PythonFriesian[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonZ
   def addValueFeatures(df: DataFrame, cols: JList[String], dictDF: DataFrame,
                        key: String, value: String): DataFrame = {
 
-    val mapScala = dictDF.rdd.map(r => (r.getInt(0), r.getInt(1))).collect().toMap
+    val mapScala = dictDF.na.drop().rdd.map(r => (r.getInt(0), r.getInt(1))).collect().toMap
     val sc = df.sparkSession.sparkContext
     val mapBr: Broadcast[Map[Int, Int]] = sc.broadcast(mapScala)
 
