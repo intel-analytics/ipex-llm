@@ -350,8 +350,8 @@ class PyTorchRayEstimator(OrcaRayEstimator):
         Calls `TrainingOperator.validate()` on N parallel workers simultaneously
         underneath the hood.
 
-        :param data: An instance of SparkXShards, a Spark DataFrame or a function that
-               takes config and batch_size as argument and returns a PyTorch DataLoader for
+        :param data: An instance of SparkXShards, a Spark DataFrame, a Ray Dataset or a function
+               that takes config and batch_size as argument and returns a PyTorch DataLoader for
                validation.
         :param batch_size: The number of samples per batch for each worker. Default is 32.
                The total batch size would be workers_per_node*num_nodes.
@@ -363,8 +363,8 @@ class PyTorchRayEstimator(OrcaRayEstimator):
                Default is False.
         :param info: An optional dictionary that can be passed to the TrainingOperator
                for validate.
-        :param feature_cols: feature column names if train data is Spark DataFrame.
-        :param label_cols: label column names if train data is Spark DataFrame.
+        :param feature_cols: feature column names if train data is Spark DataFrame or Ray Dataset.
+        :param label_cols: label column names if train data is Spark DataFrame or Ray Dataset.
 
         :return: A dictionary of metrics for the given data, including validation accuracy and loss.
                 You can also provide custom metrics by passing in a custom training_operator_cls
@@ -391,6 +391,21 @@ class PyTorchRayEstimator(OrcaRayEstimator):
 
             worker_stats = ray_xshards.reduce_partitions_for_actors(self.remote_workers,
                                                                     transform_func)
+        elif isinstance(data, ray.data.Dataset):
+            shards = data.split(n=self.num_workers, locality_hints=self.remote_workers)
+
+            def data_creator(config, batch_size):
+                torch_datashard = shard.to_torch(label_column=label_cols,
+                                                 feature_columns=feature_cols,
+                                                 batch_size=batch_size)
+                return torch_datashard
+
+            remote_worker_stats = []
+            for shard, worker in zip(shards, self.remote_workers):
+                stats = worker.validate.remote(
+                    data_creator, batch_size, num_steps, profile, info, False)
+                remote_worker_stats.append(stats)
+            worker_stats = ray.get(remote_worker_stats)
         else:
             assert isinstance(data, types.FunctionType), \
                 "data should be either an instance of SparkXShards or a callable function, but " \
