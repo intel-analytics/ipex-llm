@@ -814,7 +814,7 @@ class FeatureTable(Table):
                       sep=',', sort_for_array=False, keep_most_frequent=False):
         """
         Encode columns with provided list of StringIndex. Unknown string will be
-        encoded to 0.
+        None after the encoding and you may need to fillna with 0.
 
         :param columns: str or a list of str, the target columns to be encoded.
         :param indices: StringIndex or a list of StringIndex, StringIndexes of target columns.
