@@ -14,8 +14,8 @@
 # limitations under the License.
 #
 
-from bigdl.nano.tf.keras.distributed_utils import distributed_train_keras
 import tensorflow as tf
+
 
 class TrainingUtils:
     def fit(self,
