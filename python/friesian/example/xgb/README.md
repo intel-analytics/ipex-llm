@@ -45,7 +45,7 @@ __Options:__
 * `data_dir`: The input data directory as well as output of embedding reindex tables.
 * `model_dir`: The output, including model for trained models and stats to stroage reindex dicts and min_max.pkl
 
-## Results:
+## Results
 Best results we obtained from the full Twitter dataset:
 ```
 AUC: 76.77
