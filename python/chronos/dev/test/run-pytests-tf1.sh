@@ -30,6 +30,8 @@ ray stop -f
 echo "Running chronos tests TF1 and Deprecated API"
 python -m pytest -v test/bigdl/chronos/forecaster/test_mtnet_forecaster.py \
                     test/bigdl/chronos/model/test_mtnet.py \
+                    test/bigdl/chronos/model/test_Seq2Seq.py \
+                    test/bigdl/chronos/model/test_VanillaLSTM.py \
                     test/bigdl/chronos/autots/deprecated
 
 exit_status_0=$?
@@ -37,3 +39,5 @@ if [ $exit_status_0 -ne 0 ];
 then
     exit $exit_status_0
 fi
+
+ray stop -f
