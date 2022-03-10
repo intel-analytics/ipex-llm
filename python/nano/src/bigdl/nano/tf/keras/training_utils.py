@@ -17,7 +17,6 @@
 from bigdl.nano.tf.keras.distributed_utils import distributed_train_keras
 import tensorflow as tf
 
-
 class TrainingUtils:
     def fit(self,
             x=None,
@@ -71,20 +70,32 @@ class TrainingUtils:
             msg = "x must be a tf.data.Dataset for multi-process training"
             assert isinstance(x, (tf.compat.v1.data.Dataset, tf.data.Dataset)), msg
 
-            if backend == "multiprocessing":
-                from bigdl.nano.common.multiprocessing.multiprocs_backend \
-                    import MultiprocessingBackend
-                _backend = MultiprocessingBackend()
-            elif backend == "ray":
-                from bigdl.nano.common.multiprocessing.ray_backend import RayBackend
-                _backend = RayBackend()
-            else:
-                raise NotImplementedError("Backend {} is not implemented.".format(backend))
+            if backend == "horovod":
+                from bigdl.nano.common.multiprocessing.multiprocs_backend import HorovodBackend
+                _backend = HorovodBackend()
+                from bigdl.nano.tf.keras.distributed_utils_horovod import distributed_train_keras
+                history = distributed_train_keras(_backend,
+                                                  model=self,
+                                                  nprocs=nprocs,
+                                                  fit_kwargs=fit_kwargs)
+                return history
 
-            history = distributed_train_keras(_backend,
-                                              model=self,
-                                              nprocs=nprocs,
-                                              fit_kwargs=fit_kwargs)
-            return history
+            else:
+
+                if backend == "multiprocessing":
+                    from bigdl.nano.common.multiprocessing.multiprocs_backend \
+                        import MultiprocessingBackend
+                    _backend = MultiprocessingBackend()
+                elif backend == "ray":
+                    from bigdl.nano.common.multiprocessing.ray_backend import RayBackend
+                    _backend = RayBackend()
+                else:
+                    raise NotImplementedError("Backend {} is not implemented.".format(backend))
+                from bigdl.nano.tf.keras.distributed_utils import distributed_train_keras
+                history = distributed_train_keras(_backend,
+                                                  model=self,
+                                                  nprocs=nprocs,
+                                                  fit_kwargs=fit_kwargs)
+                return history
         else:
             return super().fit(**fit_kwargs)
