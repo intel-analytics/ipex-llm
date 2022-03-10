@@ -69,5 +69,5 @@ model.compile(optimizer='adam',
               loss=tf.keras.losses.SparseCategoricalCrossentropy(from_logits=True),
               metrics=['accuracy'])
 
-model.fit(train_ds, epochs=3, validation_data=val_ds, nprocs=2, backend="horovod")
+model.fit(train_ds, epochs=3, validation_data=val_ds, nprocs=2, backend="multiprocessing")
 model.evaluate(val_ds)
