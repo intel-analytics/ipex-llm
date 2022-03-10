@@ -372,7 +372,7 @@ class Table:
                 aggr_strs = aggr
             elif isinstance(aggr, dict):
                 if column not in aggr:
-                    raise ValueError("aggregate funtion not defined for the column {}.".
+                    raise ValueError("aggregate function not defined for the column {}.".
                                      format(column))
                 aggr_strs = aggr[column]
             else:
@@ -547,24 +547,26 @@ class Table:
             df_cast.df = df_cast.df.withColumn(i, pyspark_col(i).cast(dtype))
         return df_cast
 
-    def write_csv(self, path, mode="overwrite", header=True, num_partitions=None):
+    def write_csv(self, path, delimiter=",", mode="overwrite", header=True, num_partitions=None):
         """
         Write the Table to csv file.
 
         :param path: str, the path to the csv file.
+        :param delimiter: str, the delimiter to use for separating fields. Default is ",".
         :param mode: str. One of "append", "overwrite", "error" or "ignore".
                append: Append the contents of this StringIndex to the existing data.
                overwrite: Overwrite the existing data.
                error: Throw an exception if the data already exists.
                ignore: Silently ignore this operation if the data already exists.
         :param header: boolean, whether to include the schema at the first line of the csv file.
-               Default is False.
+               Default is True.
         :param num_partitions: positive int. The number of files to write.
         """
         if num_partitions:
-            self.df.repartition(num_partitions).write.csv(path=path, mode=mode, header=header)
+            self.df.repartition(num_partitions).write.csv(
+                path=path, mode=mode, header=header, sep=delimiter)
         else:
-            self.df.write.csv(path=path, mode=mode, header=header)
+            self.df.write.csv(path=path, mode=mode, header=header, sep=delimiter)
 
     def _concat(self, join="outer"):
         def concat_inner(self, df2):
@@ -760,7 +762,7 @@ class FeatureTable(Table):
         Loads csv files as a FeatureTable.
 
         :param paths: str or a list of str, the path(s) to the csv file(s).
-        :param delimiter: str, delimiter to use for parsing the csv file(s). Default is ",".
+        :param delimiter: str, the delimiter to use for parsing the csv file(s). Default is ",".
         :param header: boolean, whether the first line of the csv file(s) will be treated
                as the header for column names. Default is False.
         :param names: str or a list of str, the column names for the csv file(s). You need to
@@ -779,21 +781,40 @@ class FeatureTable(Table):
         """
         return cls(Table._read_csv(paths, delimiter, header, names, dtype))
 
+    @classmethod
+    def read_text(cls, paths, col_name="value"):
+        """
+        Loads text files as a FeatureTable.
+
+        :param paths: str or a list of str, the path(s) to the text file(s).
+        :param col_name: the column name of the text. Default is "value".
+
+        :return: A FeatureTable for recommendation data.
+        """
+        spark = OrcaContext.get_spark_session()
+        tbl = cls(spark.read.text(paths))
+        if col_name != "value":
+            tbl = tbl.rename({"value": col_name})
+        return tbl
+
     @staticmethod
     def from_pandas(pandas_df):
         """
-        Returns the contents of this :class:`pandas.DataFrame` as Table
-        :param pandas_df: pandas dataframe
+        Returns the contents of of a pandas DataFrame as FeatureTable.
+
+        :param pandas_df: a pandas DataFrame.
+
+        :return: A FeatureTable for recommendation data.
         """
         spark = OrcaContext.get_spark_session()
         sparkDF = spark.createDataFrame(pandas_df)
         return FeatureTable(sparkDF)
 
-    def encode_string(self, columns, indices, broadcast=True,
-                      do_split=False, sep=',', sort_for_array=False, keep_most_frequent=False
-                      ):
+    def encode_string(self, columns, indices, broadcast=True, do_split=False,
+                      sep=',', sort_for_array=False, keep_most_frequent=False):
         """
-        Encode columns with provided list of StringIndex.
+        Encode columns with provided list of StringIndex. Unknown string will be
+        None after the encoding and you may need to fillna with 0.
 
         :param columns: str or a list of str, the target columns to be encoded.
         :param indices: StringIndex or a list of StringIndex, StringIndexes of target columns.
@@ -803,14 +824,14 @@ class FeatureTable(Table):
                the keys of the dict should be within the categorical column
                and the values are the target ids to be encoded.
         :param broadcast: bool, whether need to broadcast index when encode string.
-        Default is True.
+               Default is True.
         :param do_split: bool, whether need to split column value to array to encode string.
-        Default is False.
+               Default is False.
         :param sep: str, a string representing a regular expression to split a column value.
-        Default is ','.
+               Default is ','.
         :param sort_for_array: bool, whether need to sort array columns. Default is False.
         :param keep_most_frequent: bool, whether need to keep most frequent value as the
-        column value. Default is False.
+               column value. Default is False.
 
         :return: A new FeatureTable which transforms categorical features into unique integer
                  values with provided StringIndexes.
@@ -937,14 +958,14 @@ class FeatureTable(Table):
                to values with more frequencies. Default is False and in this case frequency order
                may not be preserved when assigning indices.
         :param do_split: bool, whether need to split column value to array to encode string.
-        Default is False.
+               Default is False.
         :param sep: str, a string representing a regular expression to split a column value.
-        Default is ','.
+               Default is ','.
         :param sort_for_array: bool, whether need to sort array columns. Default is False.
         :param keep_most_frequent: bool, whether need to keep most frequent value as the
-        column value. Default is False.
+               column value. Default is False.
         :param broadcast: bool, whether need to broadcast index when encode string.
-        Default is True.
+               Default is True.
 
         :return: A tuple of a new FeatureTable which transforms categorical features into unique
                  integer values, and a list of StringIndex for the mapping.
@@ -2044,9 +2065,6 @@ class StringIndex(Table):
         for row in rows:
             res_dict[row[col_id]] = row[index_id]
         return res_dict
-
-    def _clone(self, df):
-        return StringIndex(df, self.col_name)
 
     def write_parquet(self, path, mode="overwrite"):
         """

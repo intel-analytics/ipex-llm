@@ -262,16 +262,20 @@ private[friesian] object Utils {
                         key: String, value: String): DataFrame = {
 
     val colTypes = df.schema.fields.filter(x => x.name.equalsIgnoreCase(colName))
-    val lookup = mapBr.value
     if(colTypes.length > 0) {
       val colType = colTypes(0)
       val replaceUdf = colType.dataType match {
-        case IntegerType => udf((x: Int) => lookup.getOrElse(x, 0))
+        case IntegerType => udf((x: Int) => mapBr.value.getOrElse(x, 0))
         case ArrayType(IntegerType, _) =>
-          udf((arr: WrappedArray[Int]) => arr.map(x => lookup.getOrElse(x, 0)))
+          udf((arr: WrappedArray[Int]) => {
+            val lookup = mapBr.value
+            arr.map(x => lookup.getOrElse(x, 0))
+          })
         case ArrayType(ArrayType(IntegerType, _), _) =>
-          udf((mat: WrappedArray[WrappedArray[Int]]) =>
-            mat.map(arr => arr.map(x => lookup.getOrElse(x, 0))))
+          udf((mat: WrappedArray[WrappedArray[Int]]) => {
+            val lookup = mapBr.value
+            mat.map(arr => arr.map(x => lookup.getOrElse(x, 0)))
+          })
         case _ => throw new IllegalArgumentException(
           s"Unsupported data type ${colType.dataType.typeName} " +
             s"of column ${colType.name} in addValueFeatures")
