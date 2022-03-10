@@ -852,7 +852,6 @@ class FeatureTable(Table):
             if not do_split:
                 data_df = data_df.join(index_tbl.df, col_name, how="left") \
                     .drop(col_name).withColumnRenamed("id", col_name)
-                return FeatureTable(data_df).fillna(0, col_name)
             else:
                 data_df = data_df.withColumn('row_id', F.monotonically_increasing_id())
                 tmp_df = data_df.select('row_id', col_name) \
@@ -872,7 +871,7 @@ class FeatureTable(Table):
                         .agg(F.collect_list(F.col("id")).alias("id"))
                 data_df = data_df.join(tmp_df, 'row_id', 'left') \
                     .drop('row_id').drop(col_name).withColumnRenamed("id", col_name)
-                return FeatureTable(data_df)
+        return FeatureTable(data_df)
 
     def filter_by_frequency(self, columns, min_freq=2):
         """
