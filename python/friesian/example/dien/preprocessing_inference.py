@@ -132,8 +132,10 @@ if __name__ == "__main__":
         return "\x02".join(items)
 
     # write to csv doesn't support array of int, need to change to string
-    full_tbl = full_tbl.apply("item_hist_seq", "item_hist_seq", list_to_string)\
-        .apply("category_hist_seq", "category_hist_seq", list_to_string)
+    full_tbl = full_tbl.apply("item_hist_seq", "item_history", list_to_string)\
+        .apply("category_hist_seq", "cat_history", list_to_string) \
+        .drop("item_hist_seq", "category_hist_seq")\
+        .rename({"label": "pos", "category": "cat"})
 
     # write out
     meta_dict = item_tbl.to_pandas().to_dict(orient='list')

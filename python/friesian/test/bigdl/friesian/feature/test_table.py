@@ -723,7 +723,8 @@ class TestTable(TestCase):
         directory = "write.csv"
         if os.path.exists("write.csv"):
             shutil.rmtree("write.csv")
-        tbl.write_csv(directory, mode="overwrite", header=True, num_partitions=1)
+        tbl.write_csv(directory, mode="overwrite", header=True, num_partitions=1,
+                      delimiter="\t")
         assert os.path.exists("write.csv"), "files not write"
         result = FeatureTable(spark.read.csv(directory, header=True))
         assert isinstance(result, FeatureTable)
