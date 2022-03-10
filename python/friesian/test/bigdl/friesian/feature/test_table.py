@@ -1142,6 +1142,16 @@ class TestTable(TestCase):
         assert isinstance(records3[0][0], int)
         assert isinstance(records3[0][1], str) and isinstance(records3[0][1], str)
 
+    def test_read_text(self):
+        file_path = os.path.join(self.resource_path, "data.csv")
+        feature_tbl = FeatureTable.read_text(file_path, col_name="line")
+        assert feature_tbl.size() == 5
+        columns = feature_tbl.columns
+        assert columns == ["line"]
+        rows = feature_tbl.df.collect()
+        assert rows[0][0] == "col1,col2,col3"  # when read as text, header will be treated as the first row
+        assert rows[3][0] == "4.0,x,aaa"
+
     def test_category_encode_and_one_hot_encode(self):
         file_path = os.path.join(self.resource_path, "data.csv")
         feature_tbl = FeatureTable.read_csv(file_path, header=True)
