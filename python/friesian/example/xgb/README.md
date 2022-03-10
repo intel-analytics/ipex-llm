@@ -1,4 +1,4 @@
-# Train an XGBoost model using recsys data
+# Train an XGBoost model using Twitter dataset
 This example demonstrates how to train an [XGBoost](https://xgboost.readthedocs.io/en/stable/) classification model in a distributed way using [Twitter Recsys Challenge 2021 data](https://recsys-twitter.com/data/show-downloads#).
 
 ## Prepare the environment
