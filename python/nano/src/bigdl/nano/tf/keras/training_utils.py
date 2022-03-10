@@ -16,7 +16,6 @@
 
 import tensorflow as tf
 
-
 class TrainingUtils:
     def fit(self,
             x=None,
