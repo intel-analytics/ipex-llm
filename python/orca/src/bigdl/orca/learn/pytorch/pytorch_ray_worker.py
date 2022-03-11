@@ -122,7 +122,7 @@ class PytorchRayWorker(TorchRunner):
             partition = shards_ref
         else:
             if not isinstance(shards_ref, ray.ObjectID):
-                raise ValueError("Only xshards is supported for predict")
+                raise ValueError("Only xshards and Ray Dataset is supported for predict")
             partition = ray.get(shards_ref)
         return super().predict(partition=partition, batch_size=batch_size, profile=profile,
                                label_cols=label_cols)
