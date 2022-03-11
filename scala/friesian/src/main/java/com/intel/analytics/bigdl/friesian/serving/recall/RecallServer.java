@@ -24,9 +24,6 @@ import com.intel.analytics.bigdl.friesian.serving.grpc.generated.recall.RecallGr
 import com.intel.analytics.bigdl.friesian.serving.grpc.generated.recall.RecallProto.*;
 import com.intel.analytics.bigdl.grpc.JacksonJsonSerializer;
 import com.intel.analytics.bigdl.grpc.GrpcServerBase;
-import com.intel.analytics.bigdl.friesian.serving.recall.faiss.swighnswlib.floatArray;
-import com.intel.analytics.bigdl.friesian.serving.grpc.generated.feature.FeatureProto.Features;
-import com.intel.analytics.bigdl.friesian.serving.grpc.generated.feature.FeatureProto.IDs;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 import io.grpc.ServerInterceptors;
@@ -39,9 +36,7 @@ import me.dinowernli.grpc.prometheus.MonitoringServerInterceptor;
 import com.intel.analytics.bigdl.friesian.serving.utils.TimerMetrics;
 import com.intel.analytics.bigdl.friesian.serving.utils.TimerMetrics$;
 import com.intel.analytics.bigdl.friesian.serving.utils.Utils;
-import com.intel.analytics.bigdl.friesian.serving.utils.feature.FeatureUtils;
 import com.intel.analytics.bigdl.friesian.serving.utils.gRPCHelper;
-import com.intel.analytics.bigdl.friesian.serving.utils.recall.RecallUtils;
 import org.apache.commons.cli.Option;
 import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
@@ -102,23 +97,21 @@ public class RecallServer extends GrpcServerBase {
     }
 
     private static class RecallService extends RecallGrpc.RecallImplBase {
-        private IndexService indexService;
         private FeatureGrpc.FeatureBlockingStub featureServiceStub;
-        MetricRegistry metrics = new MetricRegistry();
+        private RecallSearcher recallSearcher;
+
+        private MetricRegistry metrics = new MetricRegistry();
         Timer overallTimer = metrics.timer("indexing.overall");
         Timer predictTimer = metrics.timer("indexing.predict");
         Timer faissTimer = metrics.timer("indexing.faiss");
+
 
         RecallService() {
             ManagedChannel featureServiceChannel =
                     ManagedChannelBuilder.forTarget(Utils.helper().getFeatureServiceURL())
                             .usePlaintext().build();
             featureServiceStub = FeatureGrpc.newBlockingStub(featureServiceChannel);
-            // load faiss index
-            indexService = new IndexService(Utils.helper().indexDim());
-            assert(Utils.helper().getIndexPath() != null): "indexPath must be provided";
-            indexService.load(Utils.helper().getIndexPath());
-            System.out.printf("Index service nTotal = %d\n", this.indexService.getNTotal());
+            recallSearcher = new RecallSearcher(featureServiceStub,overallTimer,predictTimer,faissTimer);
         }
 
         @Override
@@ -126,7 +119,55 @@ public class RecallServer extends GrpcServerBase {
                                      StreamObserver<Candidates> responseObserver) {
             Candidates candidates;
             try {
-                candidates = search(request);
+                candidates = recallSearcher.SearchByEmbbed(request);
+            } catch (Exception e) {
+                e.printStackTrace();
+                logger.warn(e.getMessage());
+                responseObserver.onError(Status.INTERNAL.withDescription(e.getMessage())
+                        .asRuntimeException());
+                return;
+            }
+            responseObserver.onNext(candidates);
+            responseObserver.onCompleted();
+        }
+
+        @Override
+        public void searchByItemId(ItemQuery request, StreamObserver<Candidates> responseObserver) {
+            Candidates candidates;
+            try {
+                candidates = recallSearcher.SearchByItemId(request);
+            } catch (Exception e) {
+                e.printStackTrace();
+                logger.warn(e.getMessage());
+                responseObserver.onError(Status.INTERNAL.withDescription(e.getMessage())
+                        .asRuntimeException());
+                return;
+            }
+            responseObserver.onNext(candidates);
+            responseObserver.onCompleted();
+        }
+
+        @Override
+        public void searchByCategory(CategoryQuery request, StreamObserver<Candidates> responseObserver) {
+            Candidates candidates;
+            try {
+                candidates = recallSearcher.SearchByCategory(request);
+            } catch (Exception e) {
+                e.printStackTrace();
+                logger.warn(e.getMessage());
+                responseObserver.onError(Status.INTERNAL.withDescription(e.getMessage())
+                        .asRuntimeException());
+                return;
+            }
+            responseObserver.onNext(candidates);
+            responseObserver.onCompleted();
+        }
+
+        @Override
+        public void searchByEmbbed(Query request, StreamObserver<Candidates> responseObserver) {
+            Candidates candidates;
+            try {
+                candidates = recallSearcher.search(request);
             } catch (Exception e) {
                 e.printStackTrace();
                 logger.warn(e.getMessage());
@@ -141,7 +182,7 @@ public class RecallServer extends GrpcServerBase {
         @Override
         public void addItem(Item request,
                             StreamObserver<Empty> responseObserver) {
-            responseObserver.onNext(addItemToIndex(request));
+            responseObserver.onNext(recallSearcher.addItemToIndex(request));
             responseObserver.onCompleted();
         }
 
@@ -162,47 +203,10 @@ public class RecallServer extends GrpcServerBase {
             responseObserver.onCompleted();
         }
 
-        private Candidates search(Query msg) throws Exception {
-            Timer.Context overallContext = overallTimer.time();
-            int userId = msg.getUserID();
-            int k = msg.getK();
-            Timer.Context predictContext = predictTimer.time();
-            float[] userFeatureList;
-            IDs userIds = IDs.newBuilder().addID(userId).build();
-            Features feature = featureServiceStub.getUserFeatures(userIds);
-            Object[][] featureList = FeatureUtils.getFeatures(feature);
-            if (featureList[0] == null) {
-                throw new Exception("Can't get user feature from feature service");
-            }
-            userFeatureList = RecallUtils.featureObjToFloatArr(featureList[0]);
-            predictContext.stop();
-            Timer.Context faissContext = faissTimer.time();
-            int[] candidates =
-                    indexService.search(IndexService.vectorToFloatArray(userFeatureList), k);
-            faissContext.stop();
-            Candidates.Builder result = Candidates.newBuilder();
-            // TODO: length < k
-            for (int i = 0; i < k; i ++) {
-                result.addCandidate(candidates[i]);
-            }
-            overallContext.stop();
-            return result.build();
-        }
-
-        private Empty addItemToIndex(Item msg) {
-            // TODO: multi server synchronize
-            System.out.printf("Index service nTotal before = %d\n", this.indexService.getNTotal());
-            System.out.printf("Index service nTotal after = %d\n", this.indexService.getNTotal());
-            return Empty.newBuilder().build();
-        }
-
-        private void addToIndex(int targetId, float[] vector) {
-            floatArray fa = IndexService.vectorToFloatArray(vector);
-            this.indexService.add(targetId, fa);
-        }
 
         private ServerMessage getMetrics() {
             JacksonJsonSerializer jacksonJsonSerializer = new JacksonJsonSerializer();
+
             Set<String> keys = metrics.getTimers().keySet();
             List<TimerMetrics> timerMetrics = keys.stream()
                     .map(key ->
