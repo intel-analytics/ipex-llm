@@ -16,8 +16,8 @@ sudo docker run -itd \
     -e LOCAL_IP=$LOCAL_IP \
     -e CORE_NUM=4 \
     -e SGX_THREAD=256 \
-	-e SGX_HEAP=128MB \
-	-e SGX_KERNEL_HEAP=512MB \
-	-e SGX_MMAP=26000MB \
+    -e SGX_HEAP=128MB \
+    -e SGX_KERNEL_HEAP=512MB \
+    -e SGX_MMAP=26000MB \
     intelanalytics/bigdl-ppml-trusted-realtime-ml-scala-occlum:2.1.0-SNAPSHOT \
     bash -c "export PATH=/opt/occlum/build/bin:$PATH && cd /opt/ && ./start-all.sh && tail -f /dev/null"
