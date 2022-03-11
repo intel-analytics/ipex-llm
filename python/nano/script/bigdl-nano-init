@@ -110,9 +110,9 @@ fi
 echo "conda dir found: $BASE_DIR"
 LIB_DIR=$BASE_DIR/lib
 
-PYTHON_VERSION=$($BASE_DIR/bin/python -c "import platform; major, mnior, patch = platform.python_version_tuple();print(major+'.'+mnior)")
+PYTHON_VERSION=$(python3 -c "import platform; major, mnior, patch = platform.python_version_tuple();print(major+'.'+mnior)")
 
-NANO_DIR="${LIB_DIR}/python${PYTHON_VERSION}/site-packages/bigdl/nano/"
+NANO_DIR="$(dirname "$(python3 -c "import bigdl; print(bigdl.__file__)")")/nano/"
 
 
 # Detect Intel openMP library
