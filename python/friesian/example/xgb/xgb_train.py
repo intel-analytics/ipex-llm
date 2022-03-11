@@ -34,7 +34,7 @@ spark_conf = {"spark.network.timeout": "10000000",
               "spark.task.cpus": "4",
               "spark.executor.heartbeatInterval": "200s",
               "spark.driver.maxResultSize": "40G",
-              "spark.eventLog.enabled": "true",
+              "spark.eventLog.enabled": "false",
               "spark.app.name": "recsys-xgb"}
 
 if __name__ == '__main__':

@@ -7,7 +7,7 @@ Please pay attention to IP and path etc.. They should be changed to your own ser
 Pull image from Dockerhub
 
 ```bash
-docker pull intelanalytics/bigdl-ppml-trusted-realtime-ml-scala-occlum:0.14.0-SNAPSHOT
+docker pull intelanalytics/bigdl-ppml-trusted-realtime-ml-scala-occlum:2.0.0
 ```
 
 If Dockerhub is not accessable, we can build docker image with Dockerfile. Please modify the paths in `build-docker-image.sh`, then build docker image by running this command:

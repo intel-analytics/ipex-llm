@@ -15,5 +15,5 @@ sudo docker run -itd \
     --name=trusted-cluster-serving-local \
     -e LOCAL_IP=$LOCAL_IP \
     -e CORE_NUM=4 \
-    intelanalytics/bigdl-ppml-trusted-realtime-ml-scala-occlum:0.14.0-SNAPSHOT \
+    intelanalytics/bigdl-ppml-trusted-realtime-ml-scala-occlum:2.0.0 \
     bash -c "export PATH=/opt/occlum/build/bin:$PATH && cd /opt/ && ./start-all.sh && tail -f /dev/null"
