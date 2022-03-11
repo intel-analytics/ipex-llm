@@ -102,7 +102,12 @@ case "$SPARK_K8S_CMD" in
     if [ "$SGX_ENABLED" == "false" ]; then
         $SPARK_HOME/bin/spark-submit --conf spark.driver.bindAddress=$SPARK_DRIVER_BIND_ADDRESS --deploy-mode client "$@"
     elif [ "$SGX_ENABLED" == "true" ]; then
-        $SPARK_HOME/bin/spark-submit --conf spark.driver.bindAddress=$SPARK_DRIVER_BIND_ADDRESS --deploy-mode client "$@"
+        ./init.sh && \
+        export spark_commnd="/opt/jdk8/bin/java -Xms$SGX_JVM_MEM_SIZE -Xmx$SGX_JVM_MEM_SIZE -cp "$SPARK_CLASSPATH" org.apache.spark.deploy.SparkSubmit --conf spark.driver.bindAddress=$SPARK_DRIVER_BIND_ADDRESS --deploy-mode client "$@"" && \
+        echo $spark_commnd && \
+        SGX=1 ./pal_loader bash -c "export TF_MKL_ALLOC_MAX_BYTES=10737418240 && \
+            export _SPARK_AUTH_SECRET=$_SPARK_AUTH_SECRET && \
+            $spark_commnd" 1>&2
     fi
     ;;
   driver-py)
