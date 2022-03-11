@@ -34,7 +34,6 @@ def construct_url(ip, port, action):
 def post_request(ip, port, action, payload):
     url = construct_url(ip, port, action)
     params = request_params(payload)
-    print("request params is: ", params)
     create_resp = requests.post(url=url, data=json.dumps(params), headers=headers, timeout=100)
     result = json.loads(create_resp.text)['result']
     return result
