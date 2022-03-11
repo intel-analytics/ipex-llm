@@ -30,3 +30,7 @@ class FLServer(JavaValue):
 
     def stop(self):
         callBigDlFunc(self.bigdl_type, "flServerStop", self.value)
+
+    def set_client_num(self, client_num):
+        callBigDlFunc(self.bigdl_type, "flServerSetClientNum", self.value, client_num)
+

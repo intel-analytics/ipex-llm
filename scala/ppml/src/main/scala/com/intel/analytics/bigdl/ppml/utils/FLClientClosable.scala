@@ -17,11 +17,14 @@
 package com.intel.analytics.bigdl.ppml.utils
 
 import java.util.concurrent.TimeUnit
-
-import com.intel.analytics.bigdl.ppml.FLContext
+import com.intel.analytics.bigdl.ppml.{FLClient, FLContext}
 
 trait FLClientClosable {
-  val flClient = FLContext.getClient()
+  protected var flClient = FLContext.getClient()
+  def setFlClient(flClient: FLClient) = {
+    this.flClient = flClient
+    this
+  }
   def close() = {
     flClient.getChannel.shutdownNow.awaitTermination(5, TimeUnit.SECONDS)
   }

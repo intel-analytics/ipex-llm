@@ -36,8 +36,7 @@ class FGBoostClassification(nLabel: Int = 1,
     learningRate = learningRate,
     maxDepth = maxDepth,
     minChildSize = minChildSize,
-    validationMethods = Array(new Top1Accuracy[Float]()),
-    flattenHeaders = flattenHeaders) {
+    validationMethods = Array(new Top1Accuracy[Float]())) {
 
 }
 

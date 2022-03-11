@@ -37,8 +37,7 @@ class RegressionTree(
                       val minInstancesPerNode: Int = 8,
                       val numFeaturesPerNode: Int = 1,
                       val minInfoGain: Float = 0,
-                      val lambda: Float = 1f,
-                      val flattenHeaders: Array[String] = null
+                      val lambda: Float = 1f
                     ) extends Serializable {
 
 
@@ -125,9 +124,9 @@ class RegressionTree(
           rEndIndex += 1
         }
       }
-      (fBestGain, fIndex, rBestIndex, sortedFeatureIndex, flattenHeaders(fIndex))
+      (fBestGain, fIndex, rBestIndex, sortedFeatureIndex)
     }
-    val (bestGain, fIndex, rIndex, sortedFeatureIndex, featureName) = bestGainByFeature.maxBy(_._1)
+    val (bestGain, fIndex, rIndex, sortedFeatureIndex) = bestGainByFeature.maxBy(_._1)
     if (bestGain > minInfoGain) {
       require(rIndex > 0, s"best rIndex should greater than 0, but got ${rIndex}.")
       val leftSet = sortedFeatureIndex.slice(0, rIndex)
@@ -142,9 +141,8 @@ class RegressionTree(
         bestGain,
         leftSet.map(int2Integer).toList.asJava
       )
-      bestS.setFeatureName(featureName)
 //      bestS.setFeatureName(flattenHeaders(fIndex))
-      logger.info(s"Best local split: ${flattenHeaders(fIndex)}" + " => " + bestS.toString)
+      logger.info(s"Best local split: bestS.toString")
       bestS
     } else {
       logger.info("Failed to find local split on node " + treeNode.nodeID)
@@ -259,8 +257,7 @@ object RegressionTree {
             grads: Array[Array[Float]],
             treeID: String,
             flattenHeaders: Array[String] = null): RegressionTree = {
-    new RegressionTree(dataset,
-      sortedIndex, grads, treeID, flattenHeaders = flattenHeaders)
+    new RegressionTree(dataset, sortedIndex, grads, treeID)
   }
 
 }

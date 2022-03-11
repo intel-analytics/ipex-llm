@@ -1,32 +1,22 @@
-/*
- * Copyright 2021 The BigDL Authors.
- *
- * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
- * You may obtain a copy of the License at
- *
- *     http://www.apache.org/licenses/LICENSE-2.0
- *
- * Unless required by applicable law or agreed to in writing, software
- * distributed under the License is distributed on an "AS IS" BASIS,
- * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
- * See the License for the specific language governing permissions and
- * limitations under the License.
- */
-
-package com.intel.analytics.bigdl.ppml.utils
+package com.intel.analytics.bigdl.ppml.data
 
 import com.intel.analytics.bigdl.dllib.tensor.{Storage, Tensor}
 
+import java.io.{BufferedWriter, File, FileWriter}
 import scala.collection.mutable.ArrayBuffer
+import scala.io.Source
 
-// TODO: would be removed if only Spark DataFrame API is needed
-object TmpUtils {
-  def preprocessing(
-                     sources: Iterator[String],
-                     testSources: Iterator[String],
-                     rowkeyName: String,
-                     labelName: String) = {
+/**
+ * This util is used to process the origin csv files with String type features
+ * to numerical features. It is currently used in FGBoost scala and python validation.
+ * Because process library may vary from Scala and Python so that the results could not
+ * be guaranteed to be consistent. This util will preprocess data and write them to file.
+ */
+object PreprocessUtil {
+  def preprocessing(sources: Iterator[String],
+                    testSources: Iterator[String],
+                    rowkeyName: String,
+                    labelName: String) = {
     val headers = sources.next().split(",").map(_.trim)
     val trainHeaders = headers.toBuffer
     val testHeaders = testSources.next()
@@ -184,5 +174,39 @@ object TmpUtils {
       Tensor[Float](Storage[Float](f))
     }.toArray
     (trainFeatures, testFeatures, trainLabels, flattenHeader.toArray)
+  }
+  def writePreprocessed(dataPathTrain: String,
+                        dataPathTest: String,
+                        rowkeyName: String = "Id",
+                        labelName: String = "Label") = {
+    val sources = Source.fromFile(dataPathTrain, "utf-8").getLines()
+    val testSources = Source.fromFile(dataPathTest, "utf-8").getLines()
+
+    val (trainFeatures, testFeatures, trainLabels, flattenHeader) =
+      preprocessing(sources, testSources, rowkeyName, labelName)
+
+    val fileTrain = new File(s"${dataPathTrain.split("\\.").head}-preprocessed.csv")
+    val bwTrain = new BufferedWriter(new FileWriter(fileTrain))
+
+    bwTrain.write(s"${flattenHeader.mkString(",")},$labelName\n")
+    trainFeatures.indices.foreach(i => {
+      bwTrain.write(s"${trainFeatures(i).storage().array().mkString(",")},${trainLabels(i)}\n")
+    })
+    bwTrain.close()
+
+    val fileTest = new File(s"${dataPathTest.split("\\.").head}-preprocessed.csv")
+    val bwTest = new BufferedWriter(new FileWriter(fileTest))
+    bwTest.write(s"${flattenHeader.mkString(",")}\n")
+    testFeatures.foreach(row => {
+      bwTest.write(s"${row.storage().array().mkString(",")}\n")
+    })
+    bwTest.close()
+  }
+
+  def main(args: Array[String]): Unit = {
+    writePreprocessed(getClass.getClassLoader.getResource("house-prices-train.csv").getPath,
+      getClass.getClassLoader.getResource("house-prices-test.csv").getPath,
+      rowkeyName = "Id",
+      labelName = "SalePrice")
   }
 }
