@@ -347,7 +347,8 @@ class PyTorchRayEstimator(OrcaRayEstimator):
                 remote_worker_stats.append(stat)
             result = remote_worker_stats
         else:
-            raise ValueError("Only xshards, Spark DataFrame or Ray Dataset is supported for predict")
+            raise ValueError("Only xshards, Spark DataFrame or Ray Dataset"
+                             " is supported for predict")
 
         return result
 
