@@ -10,20 +10,22 @@ from collections import OrderedDict
 import urllib.parse
 
 # default app auth conf
-appid = '202112101919'
-appkey = '202112345678'
+appid = '33b7e68b-02f7-4393-b373-f2442350f11e'
+apikey = 'PyXugvK3Eq5Sn7EgCQj3Eat1psE8HRXe'
 headers = {"Content-Type":"application/json"}
 
 def request_params(payload):
     params = OrderedDict()
-    params["appid"] = appid
-    params["nonce"] = str(int.from_bytes(os.urandom(16), "big"))
-    params["timestamp"] = int(time.time())
-    query_string = urllib.parse.urlencode(params)
-    query_string += '&app_key=' + appkey
-    sign = str(base64.b64encode(hmac.new(appkey.encode('utf-8'), query_string.encode('utf-8'), digestmod=sha256).digest()),'utf-8')
+    params["appid"] = appid    
+    ord_payload = OrderedDict(sorted(payload.items(), key=lambda k: k[0]))
+    params["payload"] = urllib.parse.unquote(urllib.parse.urlencode(ord_payload))
+    params["timestamp"] = str(int(time.time()*1000))
+    sign_string = urllib.parse.unquote(urllib.parse.urlencode(params))
+    print(sign_string.encode('utf-8'))
+    print(apikey.encode('utf-8'))
+    sign = str(base64.b64encode(hmac.new(apikey.encode('utf-8'), sign_string.encode('utf-8'), digestmod=sha256).digest()),'utf-8').upper()
+    params["payload"] = ord_payload
     params["sign"] = sign
-    params["payload"] = payload
     return params
 
 def construct_url(ip, port, action):
@@ -32,8 +34,12 @@ def construct_url(ip, port, action):
 def post_request(ip, port, action, payload):
     url = construct_url(ip, port, action)
     params = request_params(payload)
+    print("request params is: ", params)
     create_resp = requests.post(url=url, data=json.dumps(params), headers=headers, timeout=100)
-    result = json.loads(create_resp.text)['result']
+    resp = json.loads(create_resp.text)
+    print("response is: ", resp)
+    result = resp['result']
+    #result = json.loads(create_resp.text)['result']
     return result
 
 def request_parimary_key_ciphertext(ip, port):
@@ -42,25 +48,30 @@ def request_parimary_key_ciphertext(ip, port):
         "keyspec":"EH_AES_GCM_128",
         "origin":"EH_INTERNAL_KEY"
     }
-    primary_key_ciphertext = post_request(ip, port, action, payload)['cmk_base64']
+    result = post_request(ip, port, action, payload)
+    print("result is: ", result)
+    primary_key_ciphertext = result['keyid']
+
+    #primary_key_ciphertext = post_request(ip, port, action, payload)['cmk_base64']
     return primary_key_ciphertext
 
 def request_data_key_ciphertext(ip, port, encrypted_primary_key):
     action = "GenerateDataKeyWithoutPlaintext"
     payload = {
-        "cmk_base64":encrypted_primary_key,
+        "keyid":encrypted_primary_key,
         "keylen": 32,
         "aad": "test",
     }
-    data_key_ciphertext = post_request(ip, port, action, payload)['ciphertext_base64']
+    result = post_request(ip, port, action, payload)
+    data_key_ciphertext = result['ciphertext']
     return data_key_ciphertext
 
 def request_data_key_plaintext(ip, port, encrypted_primary_key, encrypted_data_key):
     action = "Decrypt"
     payload = {
-        "cmk_base64":encrypted_primary_key,
+        "keyid":encrypted_primary_key,
         "ciphertext":encrypted_data_key,
         "aad":"test",
     }
-    data_key_plaintext = post_request(ip, port, action, payload)['plaintext_base64']
+    data_key_plaintext = post_request(ip, port, action, payload)['plaintext']
     return data_key_plaintext
