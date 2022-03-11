@@ -17,6 +17,17 @@ spec:
       mountPath: /opt/occlum_spark/data
     securityContext:
       privileged: true
+    env:
+    - name: SGX_MEM_SIZE
+      value: "20GB"
+    - name: SGX_THREAD
+      value: "512"
+    - name: SGX_HEAP
+      value: "512MB"
+    - name: SGX_KERNEL_HEAP
+      value: "1GB"
+    - name: SGX_MMAP
+      value: "10GB"
   volumes:
   - name: sgx-enclave
     hostPath:
