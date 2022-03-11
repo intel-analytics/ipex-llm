@@ -311,7 +311,7 @@ class PyTorchRayEstimator(OrcaRayEstimator):
                Default is False.
         :param feature_cols: feature column names if data is a Spark DataFrame or a Ray Dataset.
         :param feature_cols: feature column names if data is a Spark DataFrame or a Ray Dataset.
-        :return: A SparkXShards or Ray Shard that contains the predictions with key "prediction" 
+        :return: A SparkXShards or Ray Shard that contains the predictions with key "prediction"
                in each shard
         """
         from bigdl.orca.data import SparkXShards

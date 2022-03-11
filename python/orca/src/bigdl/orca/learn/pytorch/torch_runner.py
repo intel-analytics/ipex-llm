@@ -367,7 +367,7 @@ class TorchRunner:
                 data_loader = DataLoader(dataset, **params)
                 y = self.training_operator.predict(iter(data_loader))
             return {"prediction": y}
-        
+
         with self.timers.record("predict"):
             if isinstance(partition, ray.data.Dataset):
                 torch_dataset = partition.to_torch(label_column=label_cols,
