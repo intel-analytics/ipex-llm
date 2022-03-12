@@ -30,4 +30,4 @@ SGX=1 ./pal_loader bash -c "\
   --class $SPARK_JOB_MAIN_CLASS \
   $SPARK_EXTRA_JAR_PATH \
   $INPUT_FILE_PATH \
-  $KMS_TYPE" 2>&1 | tee simple-local-cryptos-example.log
+  $KMS_TYPE" 2>&1 | tee simple-local-cryptos-example-.log
