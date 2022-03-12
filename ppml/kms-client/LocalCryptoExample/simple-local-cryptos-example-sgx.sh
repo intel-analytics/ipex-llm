@@ -7,6 +7,7 @@ LOCAL_IP=$2
 
 secure_password=`openssl rsautl -inkey /ppml/trusted-big-data-ml/work/password/key.txt -decrypt </ppml/trusted-big-data-ml/work/password/output.bin`
 
+SGX=1 ./pal_loader bash -c "\
 /opt/jdk8/bin/java \
   -cp '/ppml/trusted-big-data-ml/work/spark-3.1.2/conf/:/ppml/trusted-big-data-ml/work/spark-3.1.2/jars/*:/ppml/trusted-big-data-ml/work/spark-3.1.2/examples/jars/spark-example-sql-e2e.jar' \
   -Xmx12g \
@@ -29,4 +30,4 @@ secure_password=`openssl rsautl -inkey /ppml/trusted-big-data-ml/work/password/k
   --class $SPARK_JOB_MAIN_CLASS \
   $SPARK_EXTRA_JAR_PATH \
   $INPUT_FILE_PATH \
-  $KMS_TYPE 2>&1 | tee ehsm-local-cryptos-example.log
+  $KMS_TYPE" 2>&1 | tee simple-local-cryptos-example.log
