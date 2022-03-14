@@ -17,7 +17,7 @@
 package com.intel.analytics.bigdl.friesian.nearline.feature
 
 import com.intel.analytics.bigdl.friesian.nearline.utils.NearlineUtils
-import com.intel.analytics.bigdl.friesian.serving.feature.utils.RedisUtils
+import com.intel.analytics.bigdl.friesian.serving.feature.utils.{LettuceUtils, RedisUtils}
 import com.intel.analytics.bigdl.friesian.serving.utils.EncodeUtils.objToBytes
 import org.apache.logging.log4j.{LogManager, Logger}
 

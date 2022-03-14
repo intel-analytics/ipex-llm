@@ -16,6 +16,8 @@
 
 package com.intel.analytics.bigdl.friesian.serving.recall;
 
+import com.codahale.metrics.ConsoleReporter;
+import com.codahale.metrics.MetricAttribute;
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.Timer;
 import com.google.protobuf.Empty;
@@ -50,6 +52,7 @@ import org.apache.logging.log4j.core.config.Configurator;
 
 import java.io.IOException;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 public class RecallServer extends GrpcServerBase {
@@ -106,7 +109,8 @@ public class RecallServer extends GrpcServerBase {
         private FeatureGrpc.FeatureBlockingStub featureServiceStub;
         MetricRegistry metrics = new MetricRegistry();
         Timer overallTimer = metrics.timer("indexing.overall");
-        Timer predictTimer = metrics.timer("indexing.predict");
+        Timer featureTimer = metrics.timer("indexing.feature");
+        Timer decodeTimer = metrics.timer("indexing.decode");
         Timer faissTimer = metrics.timer("indexing.faiss");
 
         RecallService() {
@@ -119,6 +123,17 @@ public class RecallServer extends GrpcServerBase {
             assert(Utils.helper().getIndexPath() != null): "indexPath must be provided";
             indexService.load(Utils.helper().getIndexPath());
             System.out.printf("Index service nTotal = %d\n", this.indexService.getNTotal());
+            if (Utils.helper().logInterval() > 0) {
+                MetricAttribute[] disAttr = {MetricAttribute.STDDEV, MetricAttribute.P75,
+                        MetricAttribute.P999, MetricAttribute.P98, MetricAttribute.M5_RATE,
+                        MetricAttribute.M15_RATE};
+                ConsoleReporter reporter = ConsoleReporter.forRegistry(metrics)
+                        .convertRatesTo(TimeUnit.SECONDS)
+                        .convertDurationsTo(TimeUnit.MILLISECONDS)
+                        .disabledMetricAttributes(new HashSet<>(Arrays.asList(disAttr)))
+                        .build();
+                reporter.start(Utils.helper().logInterval(), TimeUnit.MINUTES);
+            }
         }
 
         @Override
@@ -156,8 +171,9 @@ public class RecallServer extends GrpcServerBase {
         public void resetMetrics(Empty request, StreamObserver<Empty> responseObserver) {
             metrics = new MetricRegistry();
             overallTimer = metrics.timer("indexing.overall");
-            predictTimer = metrics.timer("indexing.predict");
+            featureTimer = metrics.timer("indexing.feature");
             faissTimer = metrics.timer("indexing.faiss");
+            decodeTimer = metrics.timer("indexing.decode");
             responseObserver.onNext(Empty.newBuilder().build());
             responseObserver.onCompleted();
         }
@@ -166,16 +182,18 @@ public class RecallServer extends GrpcServerBase {
             Timer.Context overallContext = overallTimer.time();
             int userId = msg.getUserID();
             int k = msg.getK();
-            Timer.Context predictContext = predictTimer.time();
+            Timer.Context featureContext = featureTimer.time();
             float[] userFeatureList;
             IDs userIds = IDs.newBuilder().addID(userId).build();
             Features feature = featureServiceStub.getUserFeatures(userIds);
+            featureContext.stop();
+            Timer.Context decodeContext = decodeTimer.time();
             Object[][] featureList = FeatureUtils.getFeatures(feature);
             if (featureList[0] == null) {
                 throw new Exception("Can't get user feature from feature service");
             }
             userFeatureList = RecallUtils.featureObjToFloatArr(featureList[0]);
-            predictContext.stop();
+            decodeContext.stop();
             Timer.Context faissContext = faissTimer.time();
             int[] candidates =
                     indexService.search(IndexService.vectorToFloatArray(userFeatureList), k);

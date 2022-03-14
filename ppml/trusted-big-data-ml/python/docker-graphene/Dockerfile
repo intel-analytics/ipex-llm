@@ -304,6 +304,7 @@ RUN zip -u ${BIGDL_HOME}/jars/bigdl-dllib-spark_${SPARK_VERSION}-${BIGDL_VERSION
 
 # kuberenetes support
 ADD ./spark-executor-template.yaml /ppml/trusted-big-data-ml/spark-executor-template.yaml
+ADD ./spark-driver-template.yaml /ppml/trusted-big-data-ml/spark-driver-template.yaml
 ADD ./entrypoint.sh /opt/entrypoint.sh
 ADD https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini /sbin/tini
 RUN rm $SPARK_HOME/jars/okhttp-*.jar && \
