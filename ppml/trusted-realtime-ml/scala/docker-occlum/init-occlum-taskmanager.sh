@@ -28,9 +28,9 @@ init_instance() {
     fi
 
     if [[ -z "$SGX_THREAD" ]]; then
-        sed -i "s/SGX_THREAD/256/g" Occlum.json
+        sed -i "s/\"SGX_THREAD\"/256/g" Occlum.json
     else
-        sed -i "s/SGX_THREAD/${SGX_THREAD}/g" Occlum.json
+        sed -i "s/\"SGX_THREAD\"/${SGX_THREAD}/g" Occlum.json
     fi
 
     if [[ -z "$SGX_HEAP" ]]; then
