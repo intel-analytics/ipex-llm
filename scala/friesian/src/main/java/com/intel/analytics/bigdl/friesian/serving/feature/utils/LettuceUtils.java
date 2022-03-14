@@ -113,6 +113,9 @@ public class LettuceUtils {
             if (standaloneConn != null) {
                 standaloneConn.close();
             }
+            if (clusterConn != null) {
+                clusterConn.close();
+            }
             if (redisClient != null) {
                 redisClient.shutdown();
             }
