@@ -8,7 +8,7 @@ You can download nightly-build jar
 ```
 NIGHTLY_VERSION=$(echo $(echo `wget -qO - https://oss.sonatype.org/content/repositories/snapshots/com/intel/analytics/bigdl/bigdl-ppml-spark_3.1.2/2.1.0-SNAPSHOT/maven-metadata.xml \
     | sed -n '/<value>[0-9]*\.[0-9]*\.[0-9]*-[0-9][0-9]*\.[0-9][0-9]*-[0-9][0-9]*.*value>/p' | head -n1 | awk -F'>' '{print $2}' | tr '</value' ' '`)) && \
-    wget https://oss.sonatype.org/content/repositories/snapshots/com/intel/analytics/bigdl/bigdl-ppml-spark_3.1.2/2.1.0-SNAPSHOT/bigdl-ppml-spark_3.1.2-$NIGHTLY_VERSION-jar-with-dependencies.jar -O ./bigdl-ppml-3.1.2-2.1.0-SNAPSHOT-jar-with-dependencies.jar
+    wget https://oss.sonatype.org/content/repositories/snapshots/com/intel/analytics/bigdl/bigdl-ppml-spark_3.1.2/2.1.0-SNAPSHOT/bigdl-ppml-spark_3.1.2-$NIGHTLY_VERSION-jar-with-dependencies.jar -O ./bigdl-ppml-spark_3.1.2-2.1.0-SNAPSHOT-jar-with-dependencies.jar
 ```
 
 or build from source
