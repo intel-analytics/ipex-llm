@@ -218,7 +218,10 @@ def arrays2dict(iter, feature_cols, label_cols, shard_size=None):
             results[i].append(arr)
 
     def merge_rows(results):
-        result_arrs = [np.stack(l) for l in results]
+        # Use np.array instead of np.stack to handle data of variable lengths.
+        # For data of variable length, np.array will be of dtype object and
+        # each piece of data will have its original dtype.
+        result_arrs = [np.array(l) for l in results]
         if len(result_arrs) == 1:
             result_arrs = result_arrs[0]
         else:

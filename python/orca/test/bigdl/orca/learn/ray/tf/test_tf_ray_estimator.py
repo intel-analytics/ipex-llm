@@ -347,6 +347,38 @@ class TestTFRayEstimator(TestCase):
                          label_cols=["label"])
         trainer.predict(df, feature_cols=["feature"]).collect()
 
+    def test_dataframe_variable_length(self):
+
+        sc = init_nncontext()
+        rdd = sc.range(0, 10)
+        from pyspark.sql import SparkSession
+        spark = SparkSession(sc)
+        from pyspark.ml.linalg import DenseVector
+        df = rdd.map(lambda x: ([1]*(x+1), 0)).toDF(["feature", "label"])
+
+        config = {
+            "lr": 0.8
+        }
+
+        def ragged_model(config):
+            import tensorflow as tf
+            model = tf.keras.models.Sequential([tf.keras.layers.Input(shape=(None, ), dtype=tf.float32, ragged=True),
+                                                tf.keras.layers.Lambda(lambda x: tf.expand_dims(tf.keras.backend.sum(x, axis=-1), axis=1)),
+                                                tf.keras.layers.Dense(10),
+                                                tf.keras.layers.Dense(1)])
+            model.compile(**compile_args(config))
+            return model
+
+        trainer = Estimator.from_keras(
+            model_creator=ragged_model,
+            verbose=True,
+            config=config,
+            workers_per_node=2)
+
+        trainer.fit(df, epochs=1, batch_size=4, steps_per_epoch=25,
+                    feature_cols=["feature"],
+                    label_cols=["label"])
+
     def test_dataframe_with_empty_partition(self):
         from bigdl.orca import OrcaContext
         sc = OrcaContext.get_spark_context()
@@ -651,7 +683,7 @@ class TestTFRayEstimator(TestCase):
             StructField("id", IntegerType(), True),
             StructField("input", ArrayType(StringType(), True), True)
         ])
-        input_data = [(0, ["foo", "qux", "bar"]), (1, ["qux", "baz", "baz"])]
+        input_data = [(0, ["foo", "qux"]), (1, ["qux", "baz", "baz"])]
         input_df = spark.createDataFrame(input_data, schema)
         string_data = [row["input"] for row in input_df.select("input").distinct().collect()]
         vocabulary = list(set(itertools.chain(*string_data)))

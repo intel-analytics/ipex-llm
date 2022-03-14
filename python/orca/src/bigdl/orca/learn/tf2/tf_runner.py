@@ -178,7 +178,9 @@ class TFDistributedDatasetHandler(DatasetHandler):
                                                     allow_list=False)
 
         def dataset_fn(input_context):
-            dataset = tf.data.Dataset.from_tensor_slices((data, label))
+            print(data)
+            # data = tf.ragged.constant(data)
+            dataset = tf.data.Dataset.from_tensor_slices((tf.ragged.constant(data), label))
             options = tf.data.Options()
             options.experimental_distribute.auto_shard_policy = \
                 tf.data.experimental.AutoShardPolicy.OFF

@@ -144,20 +144,43 @@ def flatten_xy(allow_tuple=True, allow_list=True):
     return _flatten_xy
 
 
-def combine(data_list):
+def ragged_concat(np_list):
+    # Each subpartition is of shape (num_records_i, ...)
+    # np_ragged should be of shape (sum of num_records_i, ...)
+    num_records = [data.shape[0] for data in np_list]
+    records = []
+    for i in range(len(np_list)):
+        data = np_list[i]
+        for j in range(num_records[i]):
+            records.append(data[j])
+    # Each record in records is without batch
+    np_ragged = np.array(records)
+    return np_ragged
+
+def combine(data_list, ragged=True):
+    # print(data_list)
     item = data_list[0]
     if isinstance(item, dict):
         res = {}
         for k, v in item.items():
-            res[k] = np.concatenate([data[k] for data in data_list], axis=0)
+            if ragged:
+                res[k] = ragged_concat([data[k] for data in data_list])
+            else:
+                res[k] = np.concatenate([data[k] for data in data_list], axis=0)
     elif isinstance(item, list) or isinstance(item, tuple):
         res = []
         for i in range(len(data_list[0])):
-            res.append(np.concatenate([data[i] for data in data_list], axis=0))
+            if ragged:
+                res.append(ragged_concat([data[i] for data in data_list]))
+            else:
+                res.append(np.concatenate([data[i] for data in data_list], axis=0))
         if isinstance(item, tuple):
             res = tuple(res)
     elif isinstance(data_list[0], np.ndarray):
-        res = np.concatenate(data_list, axis=0)
+        if ragged:
+            res = ragged_concat(data_list)
+        else:
+            res = np.concatenate(data_list, axis=0)
     else:
         raise ValueError(
             "value of x and y should be an ndarray, a dict of ndarrays, a tuple of ndarrays"

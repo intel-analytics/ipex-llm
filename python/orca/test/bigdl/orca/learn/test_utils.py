@@ -18,6 +18,7 @@
 from unittest import TestCase
 
 import os
+import random
 import pytest
 import numpy as np
 from pyspark.sql.types import ArrayType, DoubleType
@@ -212,6 +213,21 @@ class TestUtil(TestCase):
         num_shards = shards.rdd.count()
         assert num_shards == df.rdd.count()
         OrcaContext._shard_size = None
+
+    def test_dataframe_to_xshards_variable_length(self):
+        rdd = self.sc.range(0, 100)
+        df = rdd.map(lambda x: ([float(x)] * random.randint(2, 20),
+                                [int(np.random.randint(0, 2, size=()))])
+                     ).toDF(["feature", "label"])
+        num_partitions = df.rdd.getNumPartitions()
+        shards = _dataframe_to_xshards(df, feature_cols=["feature"], label_cols=["label"])
+        num_shards = shards.rdd.count()
+        assert num_shards == num_partitions
+
+        result = shards.rdd.collect()[0]["x"]
+        assert result.dtype == object
+        for record in result:
+            assert record.dtype == np.float32
 
 
 if __name__ == "__main__":
