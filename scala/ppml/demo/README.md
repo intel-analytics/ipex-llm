@@ -6,9 +6,7 @@ You need to download `spark-3.1.2-bin-hadoop2.7`. Then delete `$SPARK_HOME/jars/
 ### Get jar ready
 You can download pre-built jar
 ```
-NIGHTLY_VERSION=$(echo $(echo `wget -qO - https://oss.sonatype.org/content/repositories/snapshots/com/intel/analytics/bigdl/bigdl-ppml-spark_3.1.2/2.0.0-SNAPSHOT/maven-metadata.xml \
-    | sed -n '/<value>[0-9]*\.[0-9]*\.[0-9]*-[0-9][0-9]*\.[0-9][0-9]*-[0-9][0-9]*.*value>/p' | head -n1 | awk -F'>' '{print $2}' | tr '</value' ' '`)) && \
-    wget https://oss.sonatype.org/content/repositories/snapshots/com/intel/analytics/bigdl/bigdl-ppml-spark_3.1.2/2.0.0-SNAPSHOT/bigdl-ppml-spark_3.1.2-$NIGHTLY_VERSION-jar-with-dependencies.jar -O ./bigdl-ppml-spark_3.1.2-2.0.0-jar-with-dependencies.jar
+wget https://repo1.maven.org/maven2/com/intel/analytics/bigdl/bigdl-ppml-spark_3.1.2/2.0.0/bigdl-ppml-spark_3.1.2-2.0.0-jar-with-dependencies.jar -O ./bigdl-ppml-spark_3.1.2-2.0.0-jar-with-dependencies.jar
 ```
 
 Or build from source code
