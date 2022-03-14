@@ -62,11 +62,11 @@ if __name__ == "__main__":
     port = args.port
 
     if os.getenv('APPID') is None:
-        print("Please set appid to environment variable of APPID")
+        print("Please set appid to environment variable APPID")
         exit(1)
 
     if os.getenv('APIKEY') is None:
-        print("Please set apikey to environment variable of APIKEY")
+        print("Please set apikey to environment variable APIKEY")
         exit(1)
 
     if api == 'encrypt_file_without_key':
