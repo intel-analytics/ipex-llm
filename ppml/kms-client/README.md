@@ -46,14 +46,16 @@ Then, you are allowed to generate primary and data keys, and use them to encrypt
 ```bash
 export INPUT_DIR_PATH=YOUR_DATA_FILE_DIRECTORY_PATH # For example, multiple CSV files are in this directory
 export KMS_SERVER_IP=YOUR_KMS_SERVER_IP # IP address of node where the previous KMS server is deployed
+export APP_ID=YOUR_APP_ID
+export APP_KEY=YOUR_APP_KEY
 
 # Step 1. Generate Primary Key And Data Key
 # Keys in ciphertext are saved at current path as default
-python ./KMS_Client.py --api generate_primary_key --ip $KMS_SERVER_IP
-python ./KMS_Client.py --api generate_data_key --ip $KMS_SERVER_IP --pkp ./encrypted_primary_key
+python ./KMS_Client.py --api generate_primary_key --ip $KMS_SERVER_IP --appid $APP_ID --appkey $APP_KEY
+python ./KMS_Client.py --api generate_data_key --ip $KMS_SERVER_IP --pkp ./encrypted_primary_key --appid $APP_ID --appkey $APP_KEY
 
 # Step 2. Encyypt The Input Directory Outside SGX With KMS
-python ./KMS_Client.py --api encrypt_directory_with_key --ip $KMS_SERVER_IP  --dir $INPUT_DIR_PATH --pkp ./encrypted_primary_key --dkp ./encrypted_data_key
+python ./KMS_Client.py --api encrypt_directory_with_key --ip $KMS_SERVER_IP  --dir $INPUT_DIR_PATH --pkp ./encrypted_primary_key --dkp ./encrypted_data_key --appid $APP_ID --appkey $APP_KEY
 encrypted_path=$INPUT_DIR_PATH.encrypted
 echo "[INFO] The Output Path is $encrypted_path"
 ```
@@ -96,11 +98,11 @@ cd /ppml/trusted-big-data-ml
 
 # Step 1. Generate Primary Key And Data Key
 # Keys in ciphertext are saved at current path as default
-python ./work/kms-client/KMS_Client.py --api generate_primary_key --ip $KMS_SERVER_IP
-python ./work/kms-client/KMS_Client.py --api generate_data_key --ip $KMS_SERVER_IP --pkp ./encrypted_primary_key
+python ./work/kms-client/KMS_Client.py --api generate_primary_key --ip $KMS_SERVER_IP --appid $APP_ID --appkey $APP_KEY
+python ./work/kms-client/KMS_Client.py --api generate_data_key --ip $KMS_SERVER_IP --pkp ./encrypted_primary_key --appid $APP_ID --appkey $APP_KEY
 
 # Step 2. Encyypt The Input Directory Outside SGX With KMS
-python ./work/kms-client/KMS_Client.py --api encrypt_directory_with_key --ip $KMS_SERVER_IP  --dir /ppml/trusted-big-data-ml/work/input --pkp ./encrypted_primary_key --dkp ./encrypted_data_key
+python ./work/kms-client/KMS_Client.py --api encrypt_directory_with_key --ip $KMS_SERVER_IP  --dir /ppml/trusted-big-data-ml/work/input --pkp ./encrypted_primary_key --dkp ./encrypted_data_key --appid $APP_ID --appkey $APP_KEY
 ```
 
 ## 3. Run BigDL PPML with KMS Client at Spark Local Mode
@@ -174,7 +176,9 @@ Enter the client container deployed in the previous step and run the below comma
   bash ./work/kms-client/submit-spark-job-with-kms-local.sh $INPUT_DIR_PATH $ENCRYPT_KEYS_PATH $OUT_DIR_PATH $KMS_SERVER_IP $KMS_SERVER_PORT $LOCAL_IP
   
   # Step 2. Decrypt The colums And Ouput With KMS API
-  python /ppml/trusted-big-data-ml/work/kms-client/KMS_Client.py --api decrypt_csv_columns --ip $KMS_SERVER_IP --dir $OUT_DIR_PATH --pkp $ENCRYPT_KEYS_PATH/encrypted_primary_key --dkp $ENCRYPT_KEYS_PATH/encrypted_data_key
+  export APP_ID=YOUR_APP_ID
+  export APP_KEY=YOUR_APP_KEY
+  python /ppml/trusted-big-data-ml/work/kms-client/KMS_Client.py --api decrypt_csv_columns --ip $KMS_SERVER_IP --dir $OUT_DIR_PATH --pkp $ENCRYPT_KEYS_PATH/encrypted_primary_key --dkp $ENCRYPT_KEYS_PATH/encrypted_data_key --appid $APP_ID --appkey $APP_KEY
   ```
 
   Then it takes a little time to operate in SGX, and you are expected to get output files under directory `$output_path`. You will get screen output similar to below:
@@ -211,52 +215,52 @@ You can do below operations supported by BigDL PPML with KMS Client APIs. Please
 - Request a primary key and save it locally in ciphertext:
 
   ```bash
-  python ./work/kms-client/KMS_Client.py -api generate_primary_key -ip <KMS_SERVER_IP> [-port <KMS_SERVER_PORT>]
+  python ./work/kms-client/KMS_Client.py -api generate_primary_key -ip <KMS_SERVER_IP> [-port <KMS_SERVER_PORT>] -appid <APP_ID> -appkey <APP_KEY>
   ```
 
 - Request a data key with prepared primary key and save it locally in ciphertext:
 
   ```bash
-  python ./work/kms-client/KMS_Client.py -api generate_primary_key -ip <KMS_SERVER_IP> [-port <KMS_SERVER_PORT>] -pkp <PRIMARYED_KEY_PATH>
+  python ./work/kms-client/KMS_Client.py -api generate_primary_key -ip <KMS_SERVER_IP> [-port <KMS_SERVER_PORT>] -pkp <PRIMARYED_KEY_PATH> -appid <APP_ID> -appkey <APP_KEY>
   ```
 
 - Encrypt a file without holding keys (keys will be generated automatically):
 
   ```bash
-  python ./work/kms-client/KMS_Client.py -api encrypt_file_without_key -ip <KMS_SERVER_IP> [-port <KMS_SERVER_PORT>] -dfp <DATA_FILE_PATH>
+  python ./work/kms-client/KMS_Client.py -api encrypt_file_without_key -ip <KMS_SERVER_IP> [-port <KMS_SERVER_PORT>] -dfp <DATA_FILE_PATH> -appid <APP_ID> -appkey <APP_KEY>
   ```
 
 - Encrypt a file with specified keys (if you have generated keys before, you will find encrypted key files named `encrypted_primary_key` and `encyrpted_data_key`, and you can use them again in the following):
 
   ```bash
-  python ./work/kms-client/KMS_Client.py -api encrypt_file_with_key -ip <KMS_SERVER_IP> [-port <KMS_SERVER_PORT>] -pkp <PRIMARYED_KEY_PATH> -dkp <DATA_KEY_PATH> -dfp <DATA_FILE_PATH>
+  python ./work/kms-client/KMS_Client.py -api encrypt_file_with_key -ip <KMS_SERVER_IP> [-port <KMS_SERVER_PORT>] -pkp <PRIMARYED_KEY_PATH> -dkp <DATA_KEY_PATH> -dfp <DATA_FILE_PATH> -appid <APP_ID> -appkey <APP_KEY>
   ```
 
 - Decrypted a file with according keys:
 
   ```bash
-  python ./work/kms-client/KMS_Client.py -api decrypt_file -ip <KMS_SERVER_IP> [-port <KMS_SERVER_PORT>] -pkp <PRIMARYED_KEY_PATH> -dkp <DATA_KEY_PATH> -dfp <ENCYRPTED_DATA_FILE_PATH>
+  python ./work/kms-client/KMS_Client.py -api decrypt_file -ip <KMS_SERVER_IP> [-port <KMS_SERVER_PORT>] -pkp <PRIMARYED_KEY_PATH> -dkp <DATA_KEY_PATH> -dfp <ENCYRPTED_DATA_FILE_PATH> -appid <APP_ID> -appkey <APP_KEY>
   ```
 
 - Automatically generate keys and encrypt all files under a directory:
 
   ```bash
-  python ./work/kms-client/KMS_Client.py -api encrypt_directory_without_key -ip <KMS_SERVER_IP> [-port <KMS_SERVER_PORT>] -dir <DIRECTORY_TO_BE_ENCRYPTED> [-sdp <SAVE_DIRECTORY_PATH>]
+  python ./work/kms-client/KMS_Client.py -api encrypt_directory_without_key -ip <KMS_SERVER_IP> [-port <KMS_SERVER_PORT>] -dir <DIRECTORY_TO_BE_ENCRYPTED> [-sdp <SAVE_DIRECTORY_PATH>] -appid <APP_ID> -appkey <APP_KEY>
   ```
 - Encrypt all files under a directory with existing keys:
 
   ```bash
-  python ./work/kms-client/KMS_Client.py -api encrypt_directory_with_key -ip <KMS_SERVER_IP> [-port <KMS_SERVER_PORT>] -dir <DIRECTORY_TO_BE_ENCRYPTED> -pkp <PRIMARYED_KEY_PATH> -dkp <DATA_KEY_PATH> [-sdp <SAVE_DIRECTORY_PATH>]
+  python ./work/kms-client/KMS_Client.py -api encrypt_directory_with_key -ip <KMS_SERVER_IP> [-port <KMS_SERVER_PORT>] -dir <DIRECTORY_TO_BE_ENCRYPTED> -pkp <PRIMARYED_KEY_PATH> -dkp <DATA_KEY_PATH> [-sdp <SAVE_DIRECTORY_PATH>] -appid <APP_ID> -appkey <APP_KEY>
 
 - Get plaintext data key from a `encyrpted_data_key`:
 
   ```bash
-  python ./work/kms-client/KMS_Client.py -api get_data_key_plaintext -ip <KMS_SERVER_IP> [-port <KMS_SERVER_PORT>] -pkp <PRIMARYED_KEY_PATH> -dkp <DATA_KEY_PATH>
+  python ./work/kms-client/KMS_Client.py -api get_data_key_plaintext -ip <KMS_SERVER_IP> [-port <KMS_SERVER_PORT>] -pkp <PRIMARYED_KEY_PATH> -dkp <DATA_KEY_PATH> -appid <APP_ID> -appkey <APP_KEY>
   ```
 
 - Decrypt columns of CSVs under a directory:
 
   ```bash
-  python ./work/kms-client/KMS_Client.py -api decrypt_csv_columns -ip <KMS_SERVER_IP> [-port <KMS_SERVER_PORT>] -pkp <PRIMARYED_KEY_PATH> -dkp <DATA_KEY_PATH> -dir <DIRECTORY_TO_BE_ENCRYPTED>
+  python ./work/kms-client/KMS_Client.py -api decrypt_csv_columns -ip <KMS_SERVER_IP> [-port <KMS_SERVER_PORT>] -pkp <PRIMARYED_KEY_PATH> -dkp <DATA_KEY_PATH> -dir <DIRECTORY_TO_BE_ENCRYPTED> -appid <APP_ID> -appkey <APP_KEY>
   ```
 
