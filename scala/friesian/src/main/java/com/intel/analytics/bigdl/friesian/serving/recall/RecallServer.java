@@ -164,7 +164,7 @@ public class RecallServer extends GrpcServerBase {
         }
 
         @Override
-        public void searchByEmbbed(Query request, StreamObserver<Candidates> responseObserver) {
+        public void searchByEmbed(Query request, StreamObserver<Candidates> responseObserver) {
             Candidates candidates;
             try {
                 candidates = recallSearcher.search(request);

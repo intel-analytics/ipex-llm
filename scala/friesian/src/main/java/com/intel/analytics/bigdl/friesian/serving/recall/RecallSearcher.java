@@ -80,7 +80,7 @@ public class RecallSearcher {
         return search(query);
     }
 
-    private RecallProto.Candidates search(RecallProto.Query msg) throws Exception {
+    public RecallProto.Candidates search(RecallProto.Query msg) throws Exception {
         Timer.Context overallContext = overallTimer.time();
         int userId = msg.getUserID();
         int k = msg.getK();

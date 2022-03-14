@@ -17,7 +17,6 @@ import "google/protobuf/empty.proto";
 // Interface exported by the server.
 service Recall {
     rpc searchCandidates(Query) returns (Candidates) {}
-    rpc searchByItemId(ItemQuery) returns (Candidates) {}
     rpc searchByCategory(CategoryQuery) returns (Candidates) {}
     rpc searchByItemId(ItemQuery) returns (Candidates) {}
     rpc searchByEmbed(Query) returns (Candidates) {}
@@ -37,9 +36,9 @@ message ItemQuery {
 }
 
 message CategoryQuery {
-    string name = 1;
+    string catName = 1;
     int32 catID = 2;
-    int32 k = 2;
+    int32 k = 3;
 }
 
 message Candidates {
