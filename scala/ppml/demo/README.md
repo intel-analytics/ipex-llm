@@ -4,6 +4,11 @@
 ### Spark
 You need to download `spark-3.1.2-bin-hadoop2.7`. Then delete `$SPARK_HOME/jars/guava-14.0.1.jar`.
 ### Get jar ready
+#### Download Pre-built Jar
+```
+wget https://repo1.maven.org/maven2/com/intel/analytics/bigdl/bigdl-ppml-spark_3.1.2/2.0.0/bigdl-ppml-spark_3.1.2-2.0.0.jar -O ./bigdl-ppml-spark_3.1.2-2.0.0-jar-with-dependencies.jar
+```
+
 #### Build from source
 ```bash
 git clone https://github.com/intel-analytics/BigDL.git
@@ -31,23 +36,23 @@ If you don't want to build the TLS channel with the certificate, just delete the
 ### Start Federated Learning(FL) Server
 ```bash
 cd ppml/demo
-java -cp $SPARK_HOME/jars/*:../target/bigdl-ppml-spark_3.1.2-0.14.0-SNAPSHOT-jar-with-dependencies.jar com.intel.analytics.bigdl.ppml.FLServer
+java -cp $SPARK_HOME/jars/*:../target/bigdl-ppml-spark_3.1.2-2.0.0-jar-with-dependencies.jar com.intel.analytics.bigdl.ppml.FLServer
 ```
 ## Horizontal Federated Learning (HFL) Logistic Regression
 ```bash
 # client 1
-java -cp $SPARK_HOME/jars/*:../target/bigdl-ppml-spark_3.1.2-0.14.0-SNAPSHOT-jar-with-dependencies.jar com.intel.analytics.bigdl.ppml.example.HflLogisticRegression -d data/diabetes-hfl-1.csv
+java -cp $SPARK_HOME/jars/*:../target/bigdl-ppml-spark_3.1.2-2.0.0-jar-with-dependencies.jar com.intel.analytics.bigdl.ppml.example.HflLogisticRegression -d data/diabetes-hfl-1.csv
 
 # client 2
-java -cp $SPARK_HOME/jars/*:../target/bigdl-ppml-spark_3.1.2-0.14.0-SNAPSHOT-jar-with-dependencies.jar com.intel.analytics.bigdl.ppml.example.HflLogisticRegression -d data/diabetes-hfl-2.csv
+java -cp $SPARK_HOME/jars/*:../target/bigdl-ppml-spark_3.1.2-2.0.0-jar-with-dependencies.jar com.intel.analytics.bigdl.ppml.example.HflLogisticRegression -d data/diabetes-hfl-2.csv
 ```
 ## Vertical Federated Learning (VFL) Logistic Regression
 ```bash
 # client 1
-java -cp $SPARK_HOME/jars/*:../target/bigdl-ppml-spark_3.1.2-0.14.0-SNAPSHOT-jar-with-dependencies.jar com.intel.analytics.bigdl.ppml.example.VflLogisticRegression -d data/diabetes-vfl-1.csv
+java -cp $SPARK_HOME/jars/*:../target/bigdl-ppml-spark_3.1.2-2.0.0-jar-with-dependencies.jar com.intel.analytics.bigdl.ppml.example.VflLogisticRegression -d data/diabetes-vfl-1.csv
 
 # client 2
-java -cp $SPARK_HOME/jars/*:../target/bigdl-ppml-spark_3.1.2-0.14.0-SNAPSHOT-jar-with-dependencies.jar com.intel.analytics.bigdl.ppml.example.VflLogisticRegression -d data/diabetes-vfl-2.csv
+java -cp $SPARK_HOME/jars/*:../target/bigdl-ppml-spark_3.1.2-2.0.0-jar-with-dependencies.jar com.intel.analytics.bigdl.ppml.example.VflLogisticRegression -d data/diabetes-vfl-2.csv
 ```
 
 
@@ -59,7 +64,7 @@ java -cp $SPARK_HOME/jars/*:../target/bigdl-ppml-spark_3.1.2-0.14.0-SNAPSHOT-jar
 Pull image from dockerhub.
 
 ```bash
-docker pull intelanalytics/bigdl-ppml-trusted-fl-graphene:0.14.0-SNAPSHOT
+docker pull intelanalytics/bigdl-ppml-trusted-fl-graphene:2.0.0
 ```
 
 Also, you can build image with `build-image.sh`. Configure environment variables in `build-image.sh`.
