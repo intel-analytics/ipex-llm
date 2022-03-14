@@ -1,4 +1,5 @@
 import argparse
+import os
 import FileOperator, KeyManager
 
 def generate_primary_key(ip, port):
@@ -59,6 +60,14 @@ if __name__ == "__main__":
     ip = args.ip
     port = args.port
 
+    if os.getenv('APPID') is None:
+        print("Please set appid to environment variable APPID")
+        exit(1)
+
+    if os.getenv('APIKEY') is None:
+        print("Please set apikey to environment variable APIKEY")
+        exit(1)
+
     if api == 'encrypt_file_without_key':
         data_file_path = args.dfp
         encrypt_file_without_key(data_file_path, ip, port)
@@ -80,7 +89,7 @@ if __name__ == "__main__":
     elif api == 'encrypt_directory_without_key':
         dir_path = args.dir
         save_path = args.sdp
-        encrypt_directory(dir_path, ip, port, save_path)
+        encrypt_directory_without_key(dir_path, ip, port, save_path)
     elif api == 'encrypt_directory_with_key':
         dir_path = args.dir
         encrypted_primary_key_path = args.pkp
