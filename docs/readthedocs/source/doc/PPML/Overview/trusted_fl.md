@@ -63,18 +63,10 @@ Please ensure SGX is properly enabled, and SGX driver is installed. If not, plea
 Pull image from Dockerhub
 
 ```bash
-docker pull intelanalytics/bigdl-ppml-trusted-fl-graphene:0.14.0-SNAPSHOT
+docker pull intelanalytics/bigdl-ppml-trusted-fl-graphene:2.0.0
 ```
 
-If Dockerhub is not accessible, you can build docker image from BigDL source code
-
-```bash
-cd BigDL/scala && bash make-dist.sh -DskipTests -Pspark_3.x
-mv ppml/target/bigdl-ppml-spark_3.1.2-0.14.0-SNAPSHOT-jar-with-dependencies.jar ppml/demo
-cd ppml/demo
-```
-
-Modify your `http_proxy` in `build-image.sh` then run:
+If Dockerhub is not accessible, you can build docker image. Modify your `http_proxy` in `build-image.sh` then run:
 
 ```bash
 ./build-image.sh
