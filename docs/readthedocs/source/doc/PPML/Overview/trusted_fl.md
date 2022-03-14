@@ -66,15 +66,7 @@ Pull image from Dockerhub
 docker pull intelanalytics/bigdl-ppml-trusted-fl-graphene:2.1.0-SNAPSHOT
 ```
 
-If Dockerhub is not accessible, you can build docker image from BigDL source code
-
-```bash
-cd BigDL/scala && bash make-dist.sh -DskipTests -Pspark_3.x
-mv ppml/target/bigdl-ppml-spark_3.1.2-2.1.0-SNAPSHOT-jar-with-dependencies.jar ppml/demo
-cd ppml/demo
-```
-
-Modify your `http_proxy` in `build-image.sh` then run:
+If Dockerhub is not accessible, you can build docker image. Modify your `http_proxy` in `build-image.sh` then run:
 
 ```bash
 ./build-image.sh
