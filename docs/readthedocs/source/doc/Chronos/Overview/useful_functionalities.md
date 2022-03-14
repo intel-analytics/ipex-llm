@@ -95,7 +95,7 @@ Quantization refers to processes that enable lower precision inference. In Chron
 ```eval_rst
 .. note:: 
     **Additional Dependencies**:
-    You need to install `neural-compressor` to enable this built-in model.
+    You need to install `neural-compressor` to enable quantization related methods.
 
     ``pip install neural-compressor==1.8.1``
 ```
