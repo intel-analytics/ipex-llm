@@ -10,8 +10,8 @@ from collections import OrderedDict
 import urllib.parse
 
 # default app auth conf
-appid = os.getenv['APPID']
-apikey = os.getenv['APIKEY']
+appid = os.getenv('APPID')
+apikey = os.getenv('APIKEY')
 headers = {"Content-Type":"application/json"}
 
 def request_params(payload):
