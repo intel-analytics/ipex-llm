@@ -54,8 +54,6 @@ if __name__ == "__main__":
     parser.add_argument('-dfp', '--dfp', type=str, help='path of the data file to encrypt', required=False)
     parser.add_argument('-dir', '--dir', type=str, help='path of the directory containing column-encrypted CSVs or the directory to be encrypted', required=False)
     parser.add_argument('-sdp', '--sdp', type=str, help='path of the save directory output to',required=False)
-    parser.add_argument('-appid', '--appid', type=str, help='appid for this application',required=False)
-    parser.add_argument('-apikey', '--apikey', type=str, help='apikey for this application',required=False)
 
     args = parser.parse_args()
 
@@ -63,16 +61,12 @@ if __name__ == "__main__":
     ip = args.ip
     port = args.port
 
-    if args.appid:
-        os.environ['APPID'] = args.appid
     if os.getenv('APPID') is None:
-        print("Please set appid through -appid option or set to environment variable of APPID")
+        print("Please set appid to environment variable APPID")
         exit(1)
 
-    if args.apikey:
-        os.environ['APIKEY'] = args.apikey
     if os.getenv('APIKEY') is None:
-        print("Please set apikey through -apikey option or set to environment variable of APIKEY")
+        print("Please set apikey to environment variable APIKEY")
         exit(1)
 
     if api == 'encrypt_file_without_key':
@@ -96,7 +90,7 @@ if __name__ == "__main__":
     elif api == 'encrypt_directory_without_key':
         dir_path = args.dir
         save_path = args.sdp
-        encrypt_directory(dir_path, ip, port, save_path)
+        encrypt_directory_without_key(dir_path, ip, port, save_path)
     elif api == 'encrypt_directory_with_key':
         dir_path = args.dir
         encrypted_primary_key_path = args.pkp
