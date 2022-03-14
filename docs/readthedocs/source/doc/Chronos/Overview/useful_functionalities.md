@@ -92,6 +92,13 @@ f.predict(test_tsdata_xshards, ...)
 ```
 #### **5. Quantization**
 Quantization refers to processes that enable lower precision inference. In Chronos, post-training quantization is supported relied on [Intel® Neural Compressor](https://intel.github.io/neural-compressor/README.html).
+```eval_rst
+.. note:: 
+    **Additional Dependencies**:
+    You need to install `neural-compressor` to enable this built-in model.
+
+    ``pip install neural-compressor==1.8.1``
+```
 ```python
 # init
 f = Forecaster(...)

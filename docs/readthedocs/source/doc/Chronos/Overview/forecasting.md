@@ -198,9 +198,9 @@ View Network Traffic multivariate multistep Prediction [notebook][network_traffi
 ```eval_rst
 .. note:: 
     **Additional Dependencies**:
-You need to install tensorflow to enable this built-in model.
+    You need to install `tensorflow` to enable this built-in model.
 
-``pip install tensorflow==1.15.0``
+    ``pip install tensorflow==1.15.0``
 ```
 
 MTNetForecaster wraps a MTNet model. The model architecture mostly follows the [MTNet paper](https://arxiv.org/abs/1809.02105) with slight modifications, and is suitable for multivariate time series forecasting.
@@ -220,9 +220,9 @@ View High-dimensional Electricity Data Forecasting [example][run_electricity] an
 ```eval_rst
 .. note:: 
     **Additional Dependencies**:
-You need to install tensorflow to enable this built-in model.
+    You need to install `pmdarima` to enable this built-in model.
 
-``pip install pmdarima==1.8.2``
+    ``pip install pmdarima==1.8.2``
 ```
 
 ARIMAForecaster wraps a ARIMA model and is suitable for univariate time series forecasting. It works best with data that show evidence of non-stationarity in the sense of mean (and an initial differencing step (corresponding to the "I, integrated" part of the model) can be applied one or more times to eliminate the non-stationarity of the mean function.
@@ -235,9 +235,9 @@ View [ARIMAForecaster API Doc](../../PythonAPI/Chronos/forecasters.html#arimafor
 ```eval_rst
 .. note:: 
     **Additional Dependencies**:
-You need to install tensorflow to enable this built-in model.
+    You need to install `prophet` to enable this built-in model.
 
-``pip install prophet==1.0.1``
+    ``pip install prophet==1.0.1``
 ```
 
 ProphetForecaster wraps the Prophet model ([site](https://github.com/facebook/prophet)) which is an additive model where non-linear trends are fit with yearly, weekly, and daily seasonality, plus holiday effects and is suitable for univariate time series forecasting. It works best with time series that have strong seasonal effects and several seasons of historical data and is robust to missing data and shifts in the trend, and typically handles outliers well.

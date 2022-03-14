@@ -34,6 +34,7 @@ pip install tsfresh==0.17.0
 pip install tensorflow==1.15.0
 pip install pmdarima==1.8.2
 pip install prophet==1.0.1
+pip install neural-compressor==1.8.1
 ```
 ```eval_rst
 .. note:: 
@@ -80,7 +81,7 @@ python script.py
 ```
 ```eval_rst
 .. note:: 
-    **Write your script under ``if __name__=="__main__":``**:
+    **Write your script under** ``if __name__=="__main__":``:
 
      Chronos will automatically utilize the computation resources on the hardware. This includes multi-process training on a single node. Use this header will prevent many strange behavior.
 ```
