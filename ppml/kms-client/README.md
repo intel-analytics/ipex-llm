@@ -120,7 +120,7 @@ export SPARK_KEY_PATH=YOUR_SPARK_KEY_PATH
 export SECURE_PASSWORD_PATH=YOUR_SECURE_PASSWORD_PATH
 export ENCRYPT_PRIMARY_KEY=YOUR_ENCRYPT_PRIMARY_KEY # The encrypt_primary_key generated in the previous step
 export ENCRYPT_DATA_KEY=YOUR_ENCRYPT_DATA_KEY # The encrypt_data_key generated in the previous step
-export DOCKER_IMAGE=intelanalytics/bigdl-ppml-trusted-big-data-ml-python-graphene:0.14.0-SNAPSHOT
+export DOCKER_IMAGE=intelanalytics/bigdl-ppml-trusted-big-data-ml-python-graphene:2.0.0
 
 sudo docker pull $DOCKER_IMAGE
 sudo docker run -itd \
