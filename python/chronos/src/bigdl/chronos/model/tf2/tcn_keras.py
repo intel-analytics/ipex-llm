@@ -14,13 +14,15 @@
 # limitations under the License.
 #
 
+from tokenize import group
 import numpy as np
 import tensorflow as tf
+from bigdl.nano.tf.keras import Model
 
 layers = tf.keras.layers
 
 
-class TemporalBlock(tf.keras.Model):
+class TemporalBlock(Model):
     def __init__(self, dilation_rate, nb_filters, kernel_size=1, strides=1,
                  padding='same', dropout_rate=0.0, repo_initialization=True):
         super(TemporalBlock, self).__init__()
@@ -67,11 +69,11 @@ class TemporalBlock(tf.keras.Model):
         return self.ac3(prev_x + x)            # skip connection
 
 
-class TemporalConvNet(tf.keras.Model):
+class TemporalConvNet(Model):
     def __init__(self,
                  future_seq_len,
                  output_feature_num,
-                 num_channels,
+                 num_channels=[30]*8,
                  kernel_size=3,
                  dropout=0.1,
                  repo_initialization=True):
@@ -79,6 +81,13 @@ class TemporalConvNet(tf.keras.Model):
         # num_channels is a list contains hidden sizes of Conv1D
         super(TemporalConvNet, self).__init__()
         num_channels.append(output_feature_num)
+
+        self.future_seq_len = future_seq_len
+        self.output_feature_num = output_feature_num
+        self.kernel_size = kernel_size
+        self.num_channels = num_channels
+        self.dropout = dropout
+        self.repo_initialization = repo_initialization
 
         if repo_initialization:
             init = tf.keras.initializers.RandomNormal(mean=0.0, stddev=0.01)
@@ -105,3 +114,26 @@ class TemporalConvNet(tf.keras.Model):
         y = self.linear(y)
         y = self.permute(y)
         return y
+
+    def get_config(self):
+        return {"future_seq_len": self.future_seq_len,
+                "output_feature_num": self.output_feature_num,
+                "kernel_size": self.kernel_size,
+                "num_channels": self.num_channels,
+                "dropout": self.dropout,
+                "repo_initialization": self.repo_initialization}
+
+
+def model_creator(config):
+    model = TemporalConvNet(future_seq_len=config["future_seq_len"],
+                            output_feature_num=config["output_feature_num"],
+                            num_channels=config.get("num_channels", [30] * 8),
+                            kernel_size=config.get("kernel_size", 7),
+                            dropout=config.get("dropout", 0.2),
+                            repo_initialization=config.get("repo_initialization", True))
+    learning_rate = config.get('lr', 1e-3)
+    model.compile(optimizer=getattr(tf.keras.optimizers,
+                                    config.get("optim", "Adam"))(learning_rate),
+                  loss=config.get("loss", "mse"),
+                  metrics=[config.get("metics", "mse")])
+    return model
