@@ -30,12 +30,10 @@ import com.intel.analytics.bigdl.ppml.fgboost.FGBoostModel
  */
 class FGBoostRegression(learningRate: Float = 0.005f,
                         maxDepth: Int = 6,
-                        minChildSize: Int = 1,
-                        flattenHeaders: Array[String] = null)
+                        minChildSize: Int = 1)
   extends FGBoostModel(continuous = true,
     learningRate = learningRate,
     maxDepth = maxDepth,
     minChildSize = minChildSize,
-    validationMethods = Array(new MAE()),
-    flattenHeaders = flattenHeaders) {
+    validationMethods = Array(new MAE())) {
 }

@@ -17,6 +17,7 @@
 package com.intel.analytics.bigdl.ppml
 
 import com.intel.analytics.bigdl.dllib.utils.Engine
+import org.apache.log4j.LogManager
 import org.apache.spark.SparkConf
 import org.apache.spark.sql.SparkSession
 
@@ -25,22 +26,26 @@ import org.apache.spark.sql.SparkSession
  * For multiple vfl usage of an application, only one FLClient exists thus avoiding Channel cost
  */
 object FLContext {
+  val logger = LogManager.getLogger(getClass)
   var flClient: FLClient = null
   var sparkSession: SparkSession = null
   def initFLContext(target: String = null) = {
     createSparkSession()
     Engine.init
-    this.synchronized {
-      if (flClient == null) {
-        this.synchronized {
+
+    if (flClient == null) {
+      this.synchronized {
+        if (flClient == null) {
           flClient = new FLClient()
           if (target != null) {
             flClient.setTarget(target)
           }
           flClient.build()
+          logger.info(s"Created FlClient for FlContext with ID: ${flClient.getClientUUID}")
         }
       }
     }
+
   }
   def getClient(): FLClient = {
     flClient

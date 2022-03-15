@@ -38,7 +38,7 @@ def convert_to_jtensor(x, y=None, feature_columns=None, label_columns=None):
         if feature_columns is None or (y is not None and label_columns is None):
             raise ValueError("Input DataFrame type must have feature_columns and label_columns")
         x = x.to_numpy()
-        y = y.to_numpy() if y else None
+        y = y.to_numpy() if y is not None else None
     return JTensor.from_ndarray(x), JTensor.from_ndarray(y)
 
 

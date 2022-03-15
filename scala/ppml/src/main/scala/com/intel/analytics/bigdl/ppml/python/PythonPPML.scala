@@ -6,12 +6,12 @@ import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.dllib.utils.python.api.{JTensor, PythonBigDL}
 import com.intel.analytics.bigdl.ppml.algorithms.PSI
 import com.intel.analytics.bigdl.ppml.algorithms.vfl.FGBoostRegression
-import com.intel.analytics.bigdl.ppml.{FLContext, FLModel, FLServer}
+import com.intel.analytics.bigdl.ppml.{FLClient, FLContext, FLModel, FLServer}
 import com.intel.analytics.bigdl.ppml.fgboost.FGBoostModel
+import com.intel.analytics.bigdl.ppml.utils.FLClientClosable
 
 import java.util.{List => JList}
 import scala.collection.JavaConverters._
-
 import scala.reflect.ClassTag
 
 
@@ -63,6 +63,20 @@ class PythonPPML[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonBigDL
   def flServerSetClientNum(flServer: FLServer, clientNum: Int) = {
     flServer.setClientNum(clientNum)
   }
+
+  /**
+   * FlClient is not exposed to users API, the Python API for this only locates in test
+   * @param target the FlClient target Url
+   * @return
+   */
+  def createFLClient(target: String) = {
+    val flClient = new FLClient()
+    if (target != null) flClient.setTarget(target)
+    flClient
+  }
+  def flClientClosableSetFLClient(flClientClosable: FLClientClosable, flClient: FLClient) = {
+    flClientClosable.setFlClient(flClient)
+  }
   def createPSI() = {
     new PSI()
   }
@@ -84,12 +98,12 @@ class PythonPPML[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonBigDL
   }
   def fgBoostFit(model: FGBoostModel, feature: JTensor, label: JTensor, boostRound: Int) = {
     val tensorArray = jTensorToTensorArray(feature)
-    val labelArray = label.storage
+    val labelArray = if (label != null) label.storage else null
     model.fit(tensorArray, labelArray, boostRound)
   }
   def fgBoostEvaluate(model: FGBoostModel, feature: JTensor, label: JTensor) = {
     val tensorArray = jTensorToTensorArray(feature)
-    val labelArray = label.storage
+    val labelArray = if (label != null) label.storage else null
     model.evaluate(tensorArray, labelArray)
   }
   def fgBoostPredict(model: FGBoostModel, feature: JTensor) = {
