@@ -16,13 +16,13 @@ Proxy_Modified="sudo docker build \
     --build-arg JDK_VERSION=8u192 \
     --build-arg JDK_URL=${JDK_URL} \
     --build-arg no_proxy=x.x.x.x \
-    -t intelanalytics/analytics-zoo-ppml-trusted-big-data-ml-python-graphene:0.11-SNAPSHOT -f ./Dockerfile ."
+    -t intelanalytics/analytics-zoo-ppml-trusted-big-data-ml-python-graphene:2.0.0 -f ./Dockerfile ."
 
 No_Proxy_Modified="sudo docker build \
     --build-arg JDK_VERSION=8u192 \
     --build-arg JDK_URL=${JDK_URL} \
     --build-arg no_proxy=x.x.x.x \
-    -t intelanalytics/analytics-zoo-ppml-trusted-big-data-ml-python-graphene:0.11-SNAPSHOT -f ./Dockerfile ."
+    -t intelanalytics/analytics-zoo-ppml-trusted-big-data-ml-python-graphene:2.0.0 -f ./Dockerfile ."
 
 if [ "$JDK_URL" == "http://your-http-url-to-download-jdk" ]
 then
