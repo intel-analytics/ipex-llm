@@ -112,17 +112,16 @@ class PytorchRayWorker(TorchRunner):
         self._create_schedulers_if_available()
         self._create_loss()
 
-    def predict(self, data_creator, batch_size=32, profile=False, label_cols=None):
+    def predict(self, data_creator, batch_size=32, profile=False):
         """Evaluates the model on the validation data set."""
         config = self.config.copy()
         self._toggle_profiling(profile=profile)
 
         shards_ref = data_creator(config, batch_size)
-        if isinstance(shards_ref, ray.data.Dataset):
+        if isinstance(shards_ref, Iterable):
             partition = shards_ref
         else:
             if not isinstance(shards_ref, ray.ObjectID):
                 raise ValueError("Only xshards and Ray Dataset is supported for predict")
             partition = ray.get(shards_ref)
-        return super().predict(partition=partition, batch_size=batch_size, profile=profile,
-                               label_cols=label_cols)
+        return super().predict(partition=partition, batch_size=batch_size, profile=profile)

@@ -309,8 +309,8 @@ class PyTorchRayEstimator(OrcaRayEstimator):
         :param batch_size: The number of samples per batch for each worker. Default is 32.
         :param profile: Boolean. Whether to return time stats for the training procedure.
                Default is False.
-        :param feature_cols: feature column names if data is a Spark DataFrame or a Ray Dataset.
-        :param feature_cols: feature column names if data is a Spark DataFrame or a Ray Dataset.
+        :param label_cols: label column names if data is a Spark DataFrame or Ray Dataset.
+        :param feature_cols: feature column names if data is a Spark DataFrame or Ray Dataset.
         :return: A SparkXShards or a list that contains the predictions with key "prediction"
                in each shard
         """
@@ -336,11 +336,15 @@ class PyTorchRayEstimator(OrcaRayEstimator):
         elif isinstance(data, ray.data.Dataset):
             shards = data.split(n=self.num_workers, locality_hints=self.remote_workers)
 
-            data_creator = lambda config, batch_size: shard
+            def data_creator(config, batch_size):
+                torch_datashard = shard.to_torch(label_column=label_cols,
+                                                 feature_columns=feature_cols,
+                                                 batch_size=batch_size)
+                return torch_datashard
 
             remote_worker_stats = []
             for shard, worker in zip(shards, self.remote_workers):
-                worker_stats = worker.predict.remote(data_creator, batch_size, profile, label_cols)
+                worker_stats = worker.predict.remote(data_creator, batch_size, profile)
                 pred_stats = ray.get(worker_stats)
                 for stat in pred_stats:
                     stat.update(stat)
