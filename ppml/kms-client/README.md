@@ -46,6 +46,8 @@ Then, you are allowed to generate primary and data keys, and use them to encrypt
 ```bash
 export INPUT_DIR_PATH=YOUR_DATA_FILE_DIRECTORY_PATH # For example, multiple CSV files are in this directory
 export KMS_SERVER_IP=YOUR_KMS_SERVER_IP # IP address of node where the previous KMS server is deployed
+export APPID=YOUR_APPID
+export APPKEY=YOUR_APPKEY
 
 # Step 1. Generate Primary Key And Data Key
 # Keys in ciphertext are saved at current path as default
@@ -96,6 +98,8 @@ cd /ppml/trusted-big-data-ml
 
 # Step 1. Generate Primary Key And Data Key
 # Keys in ciphertext are saved at current path as default
+export APPID=YOUR_APP_ID
+export APPKEY=YOUR_APP_KEY
 python ./work/kms-client/KMS_Client.py --api generate_primary_key --ip $KMS_SERVER_IP
 python ./work/kms-client/KMS_Client.py --api generate_data_key --ip $KMS_SERVER_IP --pkp ./encrypted_primary_key
 
@@ -174,6 +178,8 @@ Enter the client container deployed in the previous step and run the below comma
   bash ./work/kms-client/submit-spark-job-with-kms-local.sh $INPUT_DIR_PATH $ENCRYPT_KEYS_PATH $OUT_DIR_PATH $KMS_SERVER_IP $KMS_SERVER_PORT $LOCAL_IP
   
   # Step 2. Decrypt The colums And Ouput With KMS API
+  export APPID=YOUR_APP_ID
+  export APPKEY=YOUR_APP_KEY
   python /ppml/trusted-big-data-ml/work/kms-client/KMS_Client.py --api decrypt_csv_columns --ip $KMS_SERVER_IP --dir $OUT_DIR_PATH --pkp $ENCRYPT_KEYS_PATH/encrypted_primary_key --dkp $ENCRYPT_KEYS_PATH/encrypted_data_key
   ```
 
