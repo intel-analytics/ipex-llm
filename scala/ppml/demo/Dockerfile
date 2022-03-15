@@ -1,4 +1,4 @@
-FROM intelanalytics/bigdl-ppml-trusted-big-data-ml-python-graphene:2.1.0
+FROM intelanalytics/bigdl-ppml-trusted-big-data-ml-python-graphene:2.0.0
 
 RUN wget https://repo1.maven.org/maven2/com/intel/analytics/bigdl/bigdl-ppml-spark_$SPARK_VERSION/$BIGDL_VERSION/bigdl-ppml-spark_$SPARK_VERSION-$BIGDL_VERSION-jar-with-dependencies.jar -O $BIGDL_HOME/jars/bigdl-ppml-spark_$SPARK_VERSION-$BIGDL_VERSION-jar-with-dependencies.jar
 
