@@ -71,7 +71,7 @@ Pay attention to the variables and set them to correct values according to your 
 ```bash
 export INPUT_DIR_PATH=YOUR_DATA_FILE_DIRECTORY_PATH # For example, multiple CSV files are in this directory
 export KMS_SERVER_IP=YOUR_KMS_SERVER_IP # IP address of node where the previous KMS server is deployed
-export DOCKER_IMAGE=intelanalytics/bigdl-ppml-trusted-big-data-ml-python-graphene:2.1.0
+export DOCKER_IMAGE=intelanalytics/bigdl-ppml-trusted-big-data-ml-python-graphene:2.0.0
 
 sudo docker pull $DOCKER_IMAGE
 
