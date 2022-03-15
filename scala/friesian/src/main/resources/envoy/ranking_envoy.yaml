@@ -67,6 +67,8 @@ static_resources:
           interval_jitter: 1s
           unhealthy_threshold: 4
           healthy_threshold: 1
+          no_traffic_interval: 300s
+          always_log_health_check_failures: true
           grpc_health_check:
             service_name: ""
 #admin:

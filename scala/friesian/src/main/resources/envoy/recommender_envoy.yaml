@@ -72,13 +72,12 @@ static_resources:
         - timeout: 1s
           interval: 60s
           interval_jitter: 1s
-          unhealthy_threshold: 2
+          unhealthy_threshold: 4
           healthy_threshold: 1
           no_traffic_interval: 300s
-          # event_log_path: "/var/health.log"
           always_log_health_check_failures: true
           grpc_health_check:
             service_name: ""
-admin:
-  address:
-    socket_address: { address: 0.0.0.0, port_value: 9090 }
+# admin:
+#   address:
+#     socket_address: { address: 0.0.0.0, port_value: 9090 }
