@@ -41,9 +41,13 @@ jobs:
         env:
             ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
 
-      - name: Release nano dependency
+      - name: Nano type checking
         run: |
              bash python/nano/dev/release_default_linux.sh default false
+             whl_name=`ls python/nano/src/dist/`
+             pip install python/nano/src/dist/$whl_name[pytorch]
+             pip uninstall bigdl-nano -y
+             rm -rf python/nano/src/build python/nano/src/dist python/nano/src/*egg-info
              bash python/nano/test/run-nano-type-test.sh
         env:
             ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
