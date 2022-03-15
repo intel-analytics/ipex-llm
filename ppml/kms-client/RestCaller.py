@@ -10,20 +10,22 @@ from collections import OrderedDict
 import urllib.parse
 
 # default app auth conf
-appid = '202112101919'
-appkey = '202112345678'
+appid = os.getenv('APPID')
+apikey = os.getenv('APIKEY')
 headers = {"Content-Type":"application/json"}
 
 def request_params(payload):
     params = OrderedDict()
     params["appid"] = appid
-    params["nonce"] = str(int.from_bytes(os.urandom(16), "big"))
-    params["timestamp"] = int(time.time())
-    query_string = urllib.parse.urlencode(params)
-    query_string += '&app_key=' + appkey
-    sign = str(base64.b64encode(hmac.new(appkey.encode('utf-8'), query_string.encode('utf-8'), digestmod=sha256).digest()),'utf-8')
+    ord_payload = OrderedDict(sorted(payload.items(), key=lambda k: k[0]))
+    params["payload"] = urllib.parse.unquote(urllib.parse.urlencode(ord_payload))
+    params["timestamp"] = str(int(time.time()*1000))
+    sign_string = urllib.parse.unquote(urllib.parse.urlencode(params))
+    sign = str(base64.b64encode(hmac.new(apikey.encode('utf-8'),
+                                         sign_string.encode('utf-8'),
+                                         digestmod=sha256).digest()),'utf-8').upper()
+    params["payload"] = ord_payload
     params["sign"] = sign
-    params["payload"] = payload
     return params
 
 def construct_url(ip, port, action):
