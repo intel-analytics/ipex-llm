@@ -63,7 +63,7 @@ Please ensure SGX is properly enabled, and SGX driver is installed. If not, plea
 Pull image from Dockerhub
 
 ```bash
-docker pull intelanalytics/bigdl-ppml-trusted-fl-graphene:2.1.0
+docker pull intelanalytics/bigdl-ppml-trusted-fl-graphene:2.0.0
 ```
 
 If Dockerhub is not accessible, you can build docker image. Modify your `http_proxy` in `build-image.sh` then run:
