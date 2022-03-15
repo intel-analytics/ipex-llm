@@ -41,7 +41,8 @@ jobs:
             ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
 
       - name: Nano type checking
-        run: bash python/nano/test/run-nano-type-test.sh
+        run: bash python/nano/dev/release_default_linux.sh default false
+             bash python/nano/test/run-nano-type-test.sh
         env:
             ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
       
