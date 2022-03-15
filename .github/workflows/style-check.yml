@@ -53,14 +53,14 @@ jobs:
             ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
 
       - name: Nano type checking [tensorflow]
-          run: |
+        run: |
             bash python/nano/dev/release_default_linux.sh default false
             whl_name=`ls python/nano/src/dist/`
             pip install python/nano/src/dist/$whl_name[tensorflow]
             pip uninstall bigdl-nano -y
             rm -rf python/nano/src/build python/nano/src/dist python/nano/src/*egg-info
             bash python/nano/test/run-nano-type-test.sh
-          env:
+        env:
             ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
 
       - name: Dllib style checking
