@@ -1,30 +1,39 @@
+# MIT License
 #
-# Copyright 2016 The BigDL Authors.
+# Copyright (c) 2018 CMU Locus Lab
 #
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
 #
-#     http://www.apache.org/licenses/LICENSE-2.0
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
 #
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
+
+# This file is adapted from
+# https://github.com/locuslab/TCN/blob/master/TCN/tcn.py
+# https://github.com/locuslab/TCN/blob/master/TCN/adding_problem/add_test.py
 
 from tokenize import group
 import numpy as np
 import tensorflow as tf
 from bigdl.nano.tf.keras import Model
-
-layers = tf.keras.layers
+from tensorflow.keras.layers import Conv1D, BatchNormalization, Activation, Dropout
 
 
 class TemporalBlock(Model):
     def __init__(self, dilation_rate, nb_filters, kernel_size=1, strides=1,
-                 padding='same', dropout_rate=0.0, repo_initialization=True):
+                 padding='casual', dropout_rate=0.0, repo_initialization=True):
         super(TemporalBlock, self).__init__()
         if repo_initialization:
             init = tf.keras.initializers.RandomNormal(mean=0.0, stddev=0.01)
@@ -32,41 +41,41 @@ class TemporalBlock(Model):
             init = tf.keras.initializers.HeUniform()
 
         # block1
-        self.conv1 = layers.Conv1D(filters=nb_filters, kernel_size=kernel_size, strides=strides,
-                                   dilation_rate=dilation_rate, padding=padding,
-                                   kernel_initializer=init)
-        self.batch1 = layers.BatchNormalization(axis=-1)
-        self.ac1 = layers.Activation('relu')
-        self.drop1 = layers.Dropout(rate=dropout_rate)
+        self.conv1 = Conv1D(filters=nb_filters, kernel_size=kernel_size, strides=strides,
+                            dilation_rate=dilation_rate, padding=padding,
+                            kernel_initializer=init)
+        self.batch1 = BatchNormalization(axis=-1)
+        self.ac1 = Activation('relu')
+        self.drop1 = Dropout(rate=dropout_rate)
 
         # block2
-        self.conv2 = layers.Conv1D(filters=nb_filters, kernel_size=kernel_size, strides=strides,
-                                   dilation_rate=dilation_rate, padding=padding,
-                                   kernel_initializer=init)
-        self.batch2 = layers.BatchNormalization(axis=-1)
-        self.ac2 = layers.Activation('relu')
-        self.drop2 = layers.Dropout(rate=dropout_rate)
+        self.conv2 = Conv1D(filters=nb_filters, kernel_size=kernel_size, strides=strides,
+                            dilation_rate=dilation_rate, padding=padding,
+                            kernel_initializer=init)
+        self.batch2 = BatchNormalization(axis=-1)
+        self.ac2 = Activation('relu')
+        self.drop2 = Dropout(rate=dropout_rate)
 
-        self.downsample = layers.Conv1D(filters=nb_filters, kernel_size=1,
-                                        padding='same', kernel_initializer=init)
-        self.ac3 = layers.Activation('relu')
+        self.downsample = Conv1D(filters=nb_filters, kernel_size=1,
+                                 padding='same', kernel_initializer=init)
+        self.ac3 = Activation('relu')
 
     def call(self, x, training):
         prev_x = x
-        x = self.conv1(x)
-        x = self.batch1(x)
-        x = self.ac1(x)
-        x = self.drop1(x) if training else x
+        out = self.conv1(x)
+        out = self.batch1(out)
+        out = self.ac1(out)
+        out = self.drop1(out) if training else out
 
-        x = self.conv2(x)
-        x = self.batch2(x)
-        x = self.ac2(x)
-        x = self.drop2(x) if training else x
+        out = self.conv2(out)
+        out = self.batch2(out)
+        out = self.ac2(out)
+        out = self.drop2(out) if training else out
 
-        if prev_x.shape[-1] != x.shape[-1]:    # match the dimention
+        if prev_x.shape[-1] != out.shape[-1]:    # match the dimention
             prev_x = self.downsample(prev_x)
 
-        return self.ac3(prev_x + x)            # skip connection
+        return self.ac3(prev_x + out)            # skip connection
 
 
 class TemporalConvNet(Model):
