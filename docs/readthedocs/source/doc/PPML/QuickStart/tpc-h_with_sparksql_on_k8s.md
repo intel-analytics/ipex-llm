@@ -38,7 +38,7 @@ export DATA_PATH=/root/zoo-tutorials/tpch-spark
 export KEYS_PATH=/root/keys
 export KUBERCONFIG_PATH=/root/kuberconfig
 export LOCAL_IP=$local_ip
-export DOCKER_IMAGE=intelanalytics/bigdl-ppml-trusted-big-data-ml-python-graphene:2.0.0-SNAPSHOT
+export DOCKER_IMAGE=intelanalytics/bigdl-ppml-trusted-big-data-ml-python-graphene:2.0.0
 sudo docker run -itd \
         --privileged \
         --net=host \
