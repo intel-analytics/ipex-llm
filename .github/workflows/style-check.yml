@@ -30,6 +30,7 @@ jobs:
       - name: Install dependencies
         run: pip install pycodestyle
              pip install mypy
+             pip install wheel
 
       # Runs a single command using the runners shell
       - name: License checking
