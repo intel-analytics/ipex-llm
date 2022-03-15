@@ -69,20 +69,20 @@ def _parse_args():
 if __name__ == "__main__":
     args = _parse_args()
     if args.cluster_mode == "local":
-        init_orca_context("local", cores=args.executor_cores, memory=args.executor_memory)
+        sc = init_orca_context("local", cores=args.executor_cores, memory=args.executor_memory)
     elif args.cluster_mode == "standalone":
-        init_orca_context("standalone", master=args.master,
-                          cores=args.executor_cores, num_nodes=args.num_executors,
-                          memory=args.executor_memory,
-                          driver_cores=args.driver_cores,
-                          driver_memory=args.driver_memory, conf=conf)
+        sc = init_orca_context("standalone", master=args.master,
+                               cores=args.executor_cores, num_nodes=args.num_executors,
+                               memory=args.executor_memory,
+                               driver_cores=args.driver_cores,
+                               driver_memory=args.driver_memory, conf=conf)
     elif args.cluster_mode == "yarn":
-        init_orca_context("yarn-client", cores=args.executor_cores,
-                          num_nodes=args.num_executors, memory=args.executor_memory,
-                          driver_cores=args.driver_cores, driver_memory=args.driver_memory,
-                          conf=conf)
+        sc = init_orca_context("yarn-client", cores=args.executor_cores,
+                               num_nodes=args.num_executors, memory=args.executor_memory,
+                               driver_cores=args.driver_cores, driver_memory=args.driver_memory,
+                               conf=conf)
     elif args.cluster_mode == "spark-submit":
-        init_orca_context("spark-submit")
+        sc = init_orca_context("spark-submit")
     else:
         raise ValueError(
             "cluster_mode should be one of 'local', 'yarn', 'standalone' and 'spark-submit'"
@@ -110,17 +110,32 @@ if __name__ == "__main__":
     item_tbl = FeatureTable.read_csv(args.input_meta, delimiter="\t", names=['item', 'category'])\
         .apply("category", "category", lambda x: x.lower() if x is not None else "default")
 
-    user_index = StringIndex.read_parquet(args.index_folder + "user.parquet")
-    item_index = StringIndex.read_parquet(args.index_folder + "item.parquet")
-    category_index = StringIndex.read_parquet(args.index_folder + "category.parquet")
+    with open(args.index_folder + "vocs/cat_voc.pkl", 'rb') as f:
+        categories = FeatureTable(sc.parallelize(list(pickle.load(f).items())).toDF(["category", "id"]))
+        categories = categories.cast("id", "int")
+        category_index = StringIndex(categories.df, "category")
+    with open(args.index_folder + "vocs/mid_voc.pkl", 'rb') as f:
+        # Add negative samples doesn't support long for item id?
+        items = FeatureTable(sc.parallelize(list(pickle.load(f).items())).toDF(["item", "id"]))
+        items = items.cast("id", "int")
+        item_index = StringIndex(items.df, "item")
+    with open(args.index_folder + "vocs/uid_voc.pkl", 'rb') as f:
+        users = FeatureTable(sc.parallelize(list(pickle.load(f).items())).toDF(["user", "id"]))
+        users = users.cast("id", "int")
+        user_index = StringIndex(users.df, "user")
+    # user_index = StringIndex.read_parquet(args.index_folder + "user.parquet")
+    # item_index = StringIndex.read_parquet(args.index_folder + "item.parquet")
+    # category_index = StringIndex.read_parquet(args.index_folder + "category.parquet")
     item_size = item_index.size()
 
     item_tbl = item_tbl\
-        .encode_string(["item", "category"], [item_index, category_index])
+        .encode_string(["item", "category"], [item_index, category_index])\
+        .fillna(0, ["item", "category"])
     item_tbl.cache()
 
     full_tbl = transaction_tbl\
-        .encode_string(['user', 'item'], [user_index, item_index])\
+        .encode_string(['user', 'item'], [user_index, item_index]) \
+        .fillna(0, ["user", "item"])\
         .add_hist_seq(cols=['item'], user_col="user",
                       sort_col='time', min_len=2, max_len=100, num_seqs=1)\
         .add_negative_samples(item_size, item_col='item', neg_num=1)\
