@@ -98,11 +98,11 @@ cd /ppml/trusted-big-data-ml
 
 # Step 1. Generate Primary Key And Data Key
 # Keys in ciphertext are saved at current path as default
-python ./work/kms-client/KMS_Client.py --api generate_primary_key --ip $KMS_SERVER_IP --appid $APP_ID --appkey $APP_KEY
-python ./work/kms-client/KMS_Client.py --api generate_data_key --ip $KMS_SERVER_IP --pkp ./encrypted_primary_key --appid $APP_ID --appkey $APP_KEY
+python ./work/kms-client/KMS_Client.py --api generate_primary_key --ip $KMS_SERVER_IP
+python ./work/kms-client/KMS_Client.py --api generate_data_key --ip $KMS_SERVER_IP --pkp ./encrypted_primary_key
 
 # Step 2. Encyypt The Input Directory Outside SGX With KMS
-python ./work/kms-client/KMS_Client.py --api encrypt_directory_with_key --ip $KMS_SERVER_IP  --dir /ppml/trusted-big-data-ml/work/input --pkp ./encrypted_primary_key --dkp ./encrypted_data_key --appid $APP_ID --appkey $APP_KEY
+python ./work/kms-client/KMS_Client.py --api encrypt_directory_with_key --ip $KMS_SERVER_IP  --dir /ppml/trusted-big-data-ml/work/input --pkp ./encrypted_primary_key --dkp ./encrypted_data_key
 ```
 
 ## 3. Run BigDL PPML with KMS Client at Spark Local Mode
