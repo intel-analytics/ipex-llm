@@ -1,6 +1,6 @@
 name: code style checking
 
-# Controls when the action will run. 
+# Controls when the action will run.
 on:
   push:
     branches: [ main ]
@@ -21,7 +21,7 @@ jobs:
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v2
-      
+
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v2
         with:
@@ -29,13 +29,19 @@ jobs:
 
       - name: Install dependencies
         run: pip install pycodestyle
-      
+             pip install mypy
+
       # Runs a single command using the runners shell
       - name: License checking
         run: bash python/dev/check-license
 
       - name: Nano style checking
         run: bash python/nano/test/run-nano-codestyle-test.sh
+        env:
+            ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
+
+      - name: Nano type checking
+        run: bash python/nano/test/run-nano-type-test.sh
         env:
             ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
       
