@@ -15,7 +15,7 @@ SGX=1 ./pal_loader bash -c "\
   --master local[2] \
   --conf spark.driver.host=$LOCAL_IP \
   --conf spark.driver.memory=16g \
-  --num-executors 10 \
+  --num-executors 2 \
   --executor-cores 8 \
   --executor-memory 16g \
   --conf spark.ssl.enabled=true \
