@@ -64,7 +64,7 @@ java -cp $SPARK_HOME/jars/*:../target/bigdl-ppml-spark_3.1.2-2.0.0-jar-with-depe
 Pull image from dockerhub.
 
 ```bash
-docker pull intelanalytics/bigdl-ppml-trusted-fl-graphene:2.1.0
+docker pull intelanalytics/bigdl-ppml-trusted-fl-graphene:2.0.0
 ```
 
 Also, you can build image with `build-image.sh`. Configure environment variables in `build-image.sh`.
