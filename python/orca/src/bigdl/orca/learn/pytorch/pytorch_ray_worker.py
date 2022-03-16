@@ -32,6 +32,7 @@ import ray
 from bigdl.orca.learn.pytorch.utils import find_free_port
 from bigdl.orca.learn.pytorch.torch_runner import TorchRunner
 import torch.nn as nn
+from torch.utils.data import IterableDataset
 
 
 import logging
@@ -118,7 +119,7 @@ class PytorchRayWorker(TorchRunner):
         self._toggle_profiling(profile=profile)
 
         shards_ref = data_creator(config, batch_size)
-        if isinstance(shards_ref, Iterable):
+        if isinstance(shards_ref, IterableDataset):
             pred_stats = super().predict(partition=shards_ref, batch_size=batch_size,
                                          profile=profile)
             for pred_stat in pred_stats:
