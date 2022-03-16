@@ -52,6 +52,7 @@ def create_data():
     return tsdata_train, tsdata_test
 
 
+@pytest.mark.skipif(tf.__version__ > '2.0.0', reason="Run only when tf==1.15.0.")
 class TestMTNetKeras(ZooTestCase):
 
     def setup_method(self, method):

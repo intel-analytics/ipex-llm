@@ -22,8 +22,10 @@ from bigdl.orca.test_zoo_utils import ZooTestCase
 from bigdl.chronos.autots.deprecated.feature.time_sequence import TimeSequenceFeatureTransformer
 from bigdl.chronos.autots.deprecated.preprocessing.impute.LastFill import LastFill
 from bigdl.chronos.autots.deprecated.preprocessing.impute import FillZeroImpute
+from .. import skip_method
 
 
+@skip_method
 class TestDataImputation(ZooTestCase):
 
     def setup_method(self, method):

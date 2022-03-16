@@ -13,8 +13,3 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-import tensorflow as tf
-import pytest
-
-
-skip_method = pytest.mark.skipif(tf.__version__ > '2.0.0', reason="Run only when tf==1.15.0")

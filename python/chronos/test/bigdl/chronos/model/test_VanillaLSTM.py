@@ -20,6 +20,7 @@ from bigdl.chronos.model.VanillaLSTM import VanillaLSTM
 import numpy as np
 import tempfile
 import os
+import tensorflow as tf
 
 
 def create_data():
@@ -40,7 +41,7 @@ def create_data():
     test_data = get_x_y(num_test_samples)
     return train_data, val_data, test_data
 
-
+@pytest.mark.skipif(tf.__version__ > '2.0.0', reason="Run only when tf==1.15.0.")
 class TestVanillaLSTM(TestCase):
     train_data, val_data, test_data = create_data()
     model = VanillaLSTM()
