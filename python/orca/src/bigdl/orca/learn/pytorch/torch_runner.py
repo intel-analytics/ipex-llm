@@ -39,7 +39,7 @@ import os
 import tempfile
 import torch
 import torch.nn as nn
-from torch.utils.data import DataLoader
+from torch.utils.data import DataLoader, IterableDataset
 from torch.utils.data.distributed import DistributedSampler
 from bigdl.orca import OrcaContext
 from bigdl.orca.learn.pytorch.constants import SCHEDULER_STEP, NUM_STEPS
@@ -355,7 +355,7 @@ class TorchRunner:
                 params[arg] = config[arg]
 
         def predict_fn(shard):
-            if isinstance(shard, Iterable):
+            if isinstance(partition, IterableDataset):
                 y = self.training_operator.predict(shard)
             else:
                 if isinstance(shard["x"], tuple) or isinstance(shard["x"], list):
@@ -368,7 +368,7 @@ class TorchRunner:
             return {"prediction": y}
 
         with self.timers.record("predict"):
-            if isinstance(partition, Iterable):
+            if isinstance(partition, IterableDataset):
                 new_part = [predict_fn(shard) for shard, shard_idx in partition]
             else:
                 new_part = [predict_fn(shard) for shard in partition]
