@@ -1,8 +1,8 @@
 # Building Linux Kernel from Source with SGX Enabled
 
-SGX driver is merged to Linux Kernel from 5.11. After enable SGX feature during kernel building, we don't have to install SGX driver anymore.
+SGX driver is merged to Linux Kernel from 5.11+. After enable SGX feature during kernel building, we don't have to install SGX driver anymore.
 
-In this guide, we show how to build Kernel 5.14 from souce and enable SGX feature on Ubuntu 18.04.
+In this guide, we show how to build Kernel 5.14 from souce and enable SGX feature on Ubuntu 18.04. You can change kernel version, i.e., 5.14 if necessary.
 
 
 ## Prerequisite
@@ -66,3 +66,4 @@ sudo reboot
 
 * Building on Ubuntu 5.4.X may encounter "make[2]: *** No rule to make target 'debian/certs/benh@debian.org.cert.pem', needed by 'certs/x509_certificate_list'.  Stop.". Pls refer to [CONFIG_SYSTEM_TRUSTED_KEYS](https://askubuntu.com/questions/1329538/compiling-the-kernel-5-11-11).
 * In some kernels, SGX option is `CONFIG_INTEL_SGX`.
+* 5.13 Kernel may encounter nfs problem [Can't mount NFS-shares from Linux-5.13.0](https://forums.gentoo.org/viewtopic-p-8629887.html?sid=f7359b869fb71849d64f3e69bb48503a)
