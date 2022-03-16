@@ -119,9 +119,15 @@ class PytorchRayWorker(TorchRunner):
 
         shards_ref = data_creator(config, batch_size)
         if isinstance(shards_ref, Iterable):
-            partition = shards_ref
+            pred_stats = super().predict(partition=shards_ref, batch_size=batch_size,
+                                         profile=profile)
+            for pred_stat in pred_stats:
+                pred_stat.update(pred_stat)
+                pred_data = pred_stat["prediction"]
+            result = pred_data
         else:
             if not isinstance(shards_ref, ray.ObjectID):
                 raise ValueError("Only xshards and Ray Dataset is supported for predict")
             partition = ray.get(shards_ref)
-        return super().predict(partition=partition, batch_size=batch_size, profile=profile)
+            result = super().predict(partition=partition, batch_size=batch_size, profile=profile)
+        return result
