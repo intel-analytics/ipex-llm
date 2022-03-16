@@ -136,7 +136,7 @@ export OUTPUT_DIR=hdfs://$HDFS_HOST:$HDFS_PORT/tpc-h/output \
     --executor-cores 8 \
     --total-executor-cores 192 \
     --executor-memory 16G \
-    --properties-file /ppml/trusted-big-data-ml/work/bigdl-0.14.0-SNAPSHOT/conf/spark-bigdl.conf \
+    --properties-file /ppml/trusted-big-data-ml/work/bigdl-2.0.0/conf/spark-bigdl.conf \
     --conf spark.kubernetes.authenticate.serviceAccountName=spark \
     --conf spark.kubernetes.container.image=$RUNTIME_K8S_SPARK_IMAGE \
     --conf spark.kubernetes.executor.podTemplateFile=/ppml/trusted-big-data-ml/spark-executor-template.yaml \
