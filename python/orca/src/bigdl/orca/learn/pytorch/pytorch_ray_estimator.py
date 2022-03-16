@@ -343,8 +343,8 @@ class PyTorchRayEstimator(OrcaRayEstimator):
             for shard, worker in zip(shards, self.remote_workers):
                 worker_stats = worker.predict.remote(data_creator, batch_size, profile)
                 remote_worker_stats.append(worker_stats)
-            result = ray.data.from_numpy(remote_worker_stats).\
-                     map(lambda r: {"prediction_result": r["value"]})
+            result = ray.data.from_numpy(remote_worker_stats).map(
+                     lambda r: {"prediction_result": r["value"]})
         else:
             raise ValueError("Only xshards, Spark DataFrame or Ray Dataset"
                              " is supported for predict")
