@@ -46,8 +46,8 @@ def create_data():
 class TestVanillaLSTM(TestCase):
     train_data, val_data, test_data = create_data()
     model = model_creator(config={
-        'input_dim': 4,
-        'output_dim': test_data[-1].shape[-1]
+        'input_feature_num': 4,
+        'output_feature_num': test_data[-1].shape[-1]
     })
 
     def test_lstm_fit_predict_evaluate(self):
