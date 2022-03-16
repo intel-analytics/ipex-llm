@@ -368,7 +368,10 @@ class TorchRunner:
             return {"prediction": y}
 
         with self.timers.record("predict"):
-            new_part = [predict_fn(shard) for shard in partition]
+            if isinstance(partition, Iterable):
+                new_part = [predict_fn(shard) for shard, shard_idx in partition]
+            else:
+                new_part = [predict_fn(shard) for shard in partition]
         return new_part
 
     def _toggle_profiling(self, profile=False):
