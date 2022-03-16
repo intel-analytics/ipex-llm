@@ -293,7 +293,7 @@ class TransferLearningModel(pl.LightningModule):
 
 
 class MyLightningCLI(LightningCLI):
-    # Jupyter notebook
+    # add this while using jupyter notebook
     # def parse_arguments(self):
     #     self.config = self.parser.parse_args(args=[])
 
