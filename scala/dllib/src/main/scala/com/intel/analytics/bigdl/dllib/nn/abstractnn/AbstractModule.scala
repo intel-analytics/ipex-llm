@@ -285,8 +285,10 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, 
       case l: LayerException =>
         l.layerMsg = this.toString() + "/" + l.layerMsg
         throw l
-      case e: Throwable =>
-        throw new LayerException(this.toString(), e)
+//      case e: Throwable =>
+//        throw new LayerException(this.toString(), e)
+        case e: Throwable =>
+          throw e
     }
     forwardTime += System.nanoTime() - before
 

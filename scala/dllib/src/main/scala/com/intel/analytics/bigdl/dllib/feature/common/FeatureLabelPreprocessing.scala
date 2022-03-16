@@ -18,6 +18,7 @@ package com.intel.analytics.bigdl.dllib.feature.common
 import com.intel.analytics.bigdl.dllib.feature.dataset.Sample
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.dllib.utils.Log4Error
 
 import scala.reflect.ClassTag
 
@@ -57,8 +58,12 @@ class FeatureLabelPreprocessing[F, X, L, T: ClassTag] private[bigdl] (
               Sample[T](fat)
           }
         case _ =>
-          throw new UnsupportedOperationException(
-            s"FeatureLabelPreprocessing expects table or tensor, but got $featureTensors")
+          Log4Error.invalidOperationError(true, s"FeatureLabelPreprocessing expects table" +
+            s" or tensor, but got $featureTensors", "Please pass table or tensor" +
+            " to FeatureLabelPreprocessing")
+          return null
+//          throw new UnsupportedOperationException(
+//            s"FeatureLabelPreprocessing expects table or tensor, but got $featureTensors")
       }
     }
   }

@@ -23,8 +23,23 @@ object Log4Error {
 
   def invalidInputError(condition: Boolean, msg: String): Unit = {
     if (!condition) {
-      logger.error("Oops! User input error." + msg)
+      logger.error(s"*************************Usage Error: Input invalid parameter*********************\n"
+        + msg)
       System.exit(0)
     }
   }
+
+  def invalidOperationError(condition: Boolean, errmsg: String, fixmsg: String): Unit = {
+    if (!condition) {
+      logger.error(s"\n*************************Usage Error: Invalid operations*********************\n"
+        + errmsg)
+      logger.error(s"\n*************************How to fix*********************\n"
+        + fixmsg)
+      throw new InvalidOperationException(errmsg)
+    }
+  }
+}
+
+class InvalidOperationException(message: String)
+  extends Exception(message) {
 }

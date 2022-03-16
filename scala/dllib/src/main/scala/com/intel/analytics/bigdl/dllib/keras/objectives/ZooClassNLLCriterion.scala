@@ -57,8 +57,10 @@ class ZooClassNLLCriterion[@specialized(Float, Double) T: ClassTag]
         "ClassNLLCriterion: " + ErrorInfo.constrainInputDimSameAsTarget +
           s" Input dimension is: ${ input.dim() } , target dimension is: ${ target.dim() }")
       val curTarget = ev.toType[Int](target.valueAt(1))
-      assert(curTarget >= 1 && curTarget <= nClasses || curTarget == paddingValue,
-        s"curTarget ${curTarget} is out of range, should be 1 to ${nClasses}")
+      Log4Error.invalidOperationError(curTarget >= 1 && curTarget <= nClasses
+        || curTarget == paddingValue, s"curTarget ${curTarget} is out of range," +
+        s"should be 1 to ${nClasses}", s"Please make sure the label is 1 based and" +
+        s" the range is [1, ${nClasses}]")
       total_weight = if (weights != null) weights(Array(curTarget)) else ev.fromType[Int](1)
       output = if (curTarget == paddingValue) ev.zero
       else {
@@ -89,8 +91,12 @@ class ZooClassNLLCriterion[@specialized(Float, Double) T: ClassTag]
         val _i = i
         results(_i - 1) = Engine.model.invoke( () => {
           val curTarget = ev.toType[Int](target.valueAt(_i))
-          assert(curTarget >= 1 && curTarget <= nClasses || curTarget == paddingValue,
-            s"curTarget ${curTarget} is out of range 1 to ${nClasses}")
+          Log4Error.invalidOperationError(curTarget >= 1 && curTarget <= nClasses
+            || curTarget == paddingValue, s"curTarget ${curTarget} is out of range, " +
+            s"should be 1 to ${nClasses}", s"Please make sure the label is 1 based and" +
+            s" the range should be [1, ${nClasses}]")
+//          assert(curTarget >= 1 && curTarget <= nClasses || curTarget == paddingValue,
+//            s"curTarget ${curTarget} is out of range 1 to ${nClasses}")
           if (curTarget == paddingValue) (ev.zero, ev.zero)
           else {
             val curWeight = if (weights != null) weights.valueAt(curTarget) else ev.fromType[Int](1)

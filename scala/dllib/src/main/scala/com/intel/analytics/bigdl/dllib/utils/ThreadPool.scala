@@ -221,7 +221,7 @@ class ThreadPool(private var poolSize: Int) {
         task()
       } catch {
         case t : Throwable =>
-          logger.error("Error: " + ExceptionUtils.getStackTrace(t))
+//          logger.error("Error: " + ExceptionUtils.getStackTrace(t))
           throw t
       }
     }(context)

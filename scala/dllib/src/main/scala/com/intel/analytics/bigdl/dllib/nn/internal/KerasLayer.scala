@@ -26,7 +26,7 @@ import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.dllib.utils.serializer._
 import com.intel.analytics.bigdl.dllib.utils.serializer.converters.DataConverter
-import com.intel.analytics.bigdl.dllib.utils.{MultiShape, Shape, SingleShape}
+import com.intel.analytics.bigdl.dllib.utils.{Log4Error, MultiShape, Shape, SingleShape}
 
 import scala.collection.JavaConverters._
 import scala.collection.mutable.ArrayBuffer
@@ -255,9 +255,11 @@ abstract class KerasLayer[A <: Activity: ClassTag, B <: Activity: ClassTag, T: C
   }
 
   def labor: AbstractModule[A, B, T] = {
-    if (this.modules.isEmpty) {
-      throw new RuntimeException("This Layer hasn't been built")
-    }
+//    if (this.modules.isEmpty) {
+//      throw new RuntimeException("This Layer hasn't been built")
+//    }
+    Log4Error.invalidOperationError(!this.modules.isEmpty, "This Layer hasn't been built",
+    "Please add this layer into a Sequential before use")
     require(modules.length == 1,
       s"modules should only contain 1 element instead of ${modules.length}")
     modules(0).asInstanceOf[AbstractModule[A, B, T]]
