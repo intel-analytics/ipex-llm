@@ -335,8 +335,7 @@ class PyTorchRayEstimator(OrcaRayEstimator):
             shards = data.split(n=self.num_workers, locality_hints=self.remote_workers)
 
             def data_creator(config, batch_size):
-                torch_datashard = shard.to_torch(label_column=None,
-                                                 feature_columns=feature_cols,
+                torch_datashard = shard.to_torch(feature_columns=feature_cols,
                                                  batch_size=batch_size)
                 return torch_datashard
 
