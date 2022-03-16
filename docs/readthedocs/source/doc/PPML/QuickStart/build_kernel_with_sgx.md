@@ -2,7 +2,7 @@
 
 SGX driver is merged to Linux Kernel from 5.11. After enable SGX feature during kernel building, we don't have to install SGX driver anymore.
 
-In this guide, we show how to build Kernel 5.13 from souce and enable SGX feature on Ubuntu 18.04.
+In this guide, we show how to build Kernel 5.14 from souce and enable SGX feature on Ubuntu 18.04.
 
 
 ## Prerequisite
@@ -24,7 +24,7 @@ mkdir kernel && cd kernel
 git clone https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git
 cd linux
 # You can change this version
-git checkout v5.13
+git checkout v5.14
 ```
 
 Build Kernel from source code with SGX enabled.
@@ -42,7 +42,7 @@ Install kernel from deb and reboot
 
 ```
 cd ..
-sudo dpkg -i linux-headers-5.13.0_5.13.0-1_amd64.deb linux-image-5.13.0_5.13.0-1_amd64.deb
+sudo dpkg -i linux-headers-5.14.0_5.14.0-1_amd64.deb linux-image-5.14.0_5.14.0-1_amd64.deb
 sudo reboot
 ```
 
@@ -58,7 +58,7 @@ $ ls -l /dev/ | grep sgx
 Uninstall kernel with dpkg (if you want to change back to previous kernel)
 
 ```bash
-sudo dpkg --purge linux-image-5.13.0 linux-headers-5.13.0
+sudo dpkg --purge linux-image-5.14.0 linux-headers-5.14.0
 sudo reboot
 ```
 
