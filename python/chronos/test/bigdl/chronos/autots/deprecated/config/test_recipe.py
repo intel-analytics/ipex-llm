@@ -18,8 +18,10 @@ import pytest
 
 from bigdl.orca.test_zoo_utils import ZooTestCase
 from bigdl.chronos.autots.deprecated.config.recipe import *
+from .. import skip_method
 
 
+@skip_method
 class TestTimeSequencePredictor(ZooTestCase):
 
     def setup_method(self, method):

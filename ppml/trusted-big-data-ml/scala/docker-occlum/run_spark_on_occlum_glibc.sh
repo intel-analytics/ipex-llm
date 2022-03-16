@@ -15,12 +15,12 @@ init_instance() {
     cd occlum_spark
     occlum init
     new_json="$(jq '.resource_limits.user_space_size = "SGX_MEM_SIZE" |
-        .resource_limits.max_num_of_threads = 512 |
-        .process.default_heap_size = "512MB" |
-        .resource_limits.kernel_space_heap_size="1024MB" |
-        .process.default_mmap_size = "28000MB" |
+        .resource_limits.max_num_of_threads = "SGX_THREAD" |
+        .process.default_heap_size = "SGX_HEAP" |
+        .resource_limits.kernel_space_heap_size="SGX_KERNEL_HEAP" |
+        .process.default_mmap_size = "SGX_MMAP" |
         .entry_points = [ "/usr/lib/jvm/java-11-openjdk-amd64/bin" ] |
-        .env.untrusted = [ "DMLC_TRACKER_URI", "SPARK_DRIVER_URL" ] |
+        .env.untrusted = [ "DMLC_TRACKER_URI", "SPARK_DRIVER_URL", "SPARK_TESTING" ] |
         .env.default = [ "LD_LIBRARY_PATH=/usr/lib/jvm/java-11-openjdk-amd64/lib/server:/usr/lib/jvm/java-11-openjdk-amd64/lib:/usr/lib/jvm/java-11-openjdk-amd64/../lib:/lib","SPARK_CONF_DIR=/bin/conf","SPARK_ENV_LOADED=1","PYTHONHASHSEED=0","SPARK_HOME=/bin","SPARK_SCALA_VERSION=2.12","SPARK_JARS_DIR=/bin/jars","LAUNCH_CLASSPATH=/bin/jars/*",""]' Occlum.json)" && \
     echo "${new_json}" > Occlum.json
     echo "SGX_MEM_SIZE ${SGX_MEM_SIZE}"
@@ -28,6 +28,30 @@ init_instance() {
         sed -i "s/SGX_MEM_SIZE/20GB/g" Occlum.json
     else
         sed -i "s/SGX_MEM_SIZE/${SGX_MEM_SIZE}/g" Occlum.json
+    fi
+
+    if [[ -z "$SGX_THREAD" ]]; then
+        sed -i "s/\"SGX_THREAD\"/512/g" Occlum.json
+    else
+        sed -i "s/\"SGX_THREAD\"/${SGX_THREAD}/g" Occlum.json
+    fi
+    
+    if [[ -z "$SGX_HEAP" ]]; then
+        sed -i "s/SGX_HEAP/512MB/g" Occlum.json
+    else
+        sed -i "s/SGX_HEAP/${SGX_HEAP}/g" Occlum.json
+    fi
+    
+    if [[ -z "$SGX_KERNEL_HEAP" ]]; then
+        sed -i "s/SGX_KERNEL_HEAP/1GB/g" Occlum.json
+    else
+        sed -i "s/SGX_KERNEL_HEAP/${SGX_KERNEL_HEAP}/g" Occlum.json
+    fi
+    
+    if [[ -z "$SGX_MMAP" ]]; then
+        sed -i "s/SGX_MMAP/10GB/g" Occlum.json
+    else
+        sed -i "s/SGX_MMAP/${SGX_MMAP}/g" Occlum.json
     fi
 }
 
@@ -69,6 +93,7 @@ build_spark() {
     # Prepare BigDL
     mkdir -p image/bin/jars
     cp -f $BIGDL_HOME/jars/* image/bin/jars
+    cp -rf /opt/spark-source image/opt/
     occlum build
 }
 
@@ -95,6 +120,7 @@ run_spark_unittest() {
 }
 
 run_spark_unittest_only() {
+    export SPARK_TESTING=1
     cd /opt/occlum_spark
     mkdir -p data/olog
     echo -e "${BLUE}occlum run spark unit test only ${NC}"
@@ -106,16 +132,16 @@ run_spark_unittest_only() {
 		-Djdk.lang.Process.launchMechanism=posix_spawn \
 		-XX:MaxMetaspaceSize=256m \
 	        -Dspark.testing=true \
-	        -Dspark.test.home=/ppml/trusted-big-data-ml/work/spark-branch-3.1.2 \
-	        -Dspark.sql.warehouse.dir=hdfs://localhost:9000/111-spark-warehouse \
+	        -Dspark.test.home=/opt/spark-source \
 	        -Dspark.python.use.daemon=false \
 	        -Dspark.python.worker.reuse=false \
-	        -Dspark.driver.host=192.168.0.111 \
-	        -cp "$SPARK_HOME/conf/:$SPARK_HOME/jars/*:$SPARK_HOME/test-jars/*"  \
+	        -Dspark.driver.host=127.0.0.1 \
+	        -cp "$SPARK_HOME/conf/:$SPARK_HOME/jars/*:$SPARK_HOME/test-jars/*:$SPARK_HOME/test-classes/"  \
 	        org.scalatest.tools.Runner \
 	        -s ${suite} \
 	        -fF /host/data/olog/${suite}.txt
     done
+	        #-Dspark.sql.warehouse.dir=hdfs://localhost:9000/111-spark-warehouse \
     occlum stop
 }
 
@@ -233,7 +259,7 @@ run_spark_xgboost() {
                 --executor-cores 2 \
                 --executor-memory 9G \
                 --driver-memory 2G \
-                /bin/jars/bigdl-dllib-spark_3.1.2-0.14.0-SNAPSHOT.jar \
+                /bin/jars/bigdl-dllib-spark_3.1.2-2.1.0-SNAPSHOT.jar \
                 /host/data /host/data/model 2 100 2
 }
 
@@ -275,4 +301,3 @@ case "$arg" in
         cd ../
         ;;
 esac
-

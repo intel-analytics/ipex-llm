@@ -1,4 +1,5 @@
 import argparse
+import os
 import FileOperator, KeyManager
 
 def generate_primary_key(ip, port):
@@ -53,11 +54,20 @@ if __name__ == "__main__":
     parser.add_argument('-dfp', '--dfp', type=str, help='path of the data file to encrypt', required=False)
     parser.add_argument('-dir', '--dir', type=str, help='path of the directory containing column-encrypted CSVs or the directory to be encrypted', required=False)
     parser.add_argument('-sdp', '--sdp', type=str, help='path of the save directory output to',required=False)
+
     args = parser.parse_args()
 
     api = args.api
     ip = args.ip
     port = args.port
+
+    if os.getenv('APPID') is None:
+        print("Please set appid to environment variable APPID")
+        exit(1)
+
+    if os.getenv('APIKEY') is None:
+        print("Please set apikey to environment variable APIKEY")
+        exit(1)
 
     if api == 'encrypt_file_without_key':
         data_file_path = args.dfp
@@ -80,7 +90,7 @@ if __name__ == "__main__":
     elif api == 'encrypt_directory_without_key':
         dir_path = args.dir
         save_path = args.sdp
-        encrypt_directory(dir_path, ip, port, save_path)
+        encrypt_directory_without_key(dir_path, ip, port, save_path)
     elif api == 'encrypt_directory_with_key':
         dir_path = args.dir
         encrypted_primary_key_path = args.pkp

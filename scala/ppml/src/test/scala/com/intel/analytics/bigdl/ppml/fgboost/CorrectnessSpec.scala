@@ -17,14 +17,16 @@
 package com.intel.analytics.bigdl.ppml.fgboost
 
 import com.intel.analytics.bigdl.ppml.algorithms.vfl.FGBoostRegression
+import com.intel.analytics.bigdl.ppml.data.PreprocessUtil
 import com.intel.analytics.bigdl.ppml.example.DebugLogger
 import com.intel.analytics.bigdl.ppml.fgboost.common.{XGBoostFormatNode, XGBoostFormatSerializer, XGBoostFormatValidator}
-import com.intel.analytics.bigdl.ppml.utils.{MockClient, TmpUtils}
+import com.intel.analytics.bigdl.ppml.utils.MockClient
 import com.intel.analytics.bigdl.ppml.{FLContext, FLServer}
 import ml.dmlc.xgboost4j.scala.{DMatrix, XGBoost}
 import org.apache.log4j.LogManager
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
+import java.io.File
 import scala.io.Source
 
 class CorrectnessSpec extends FlatSpec with Matchers with BeforeAndAfter with DebugLogger {
@@ -40,8 +42,9 @@ class CorrectnessSpec extends FlatSpec with Matchers with BeforeAndAfter with De
     val rowkeyName = "Id"
     val labelName = "SalePrice"
     val (trainFeatures, testFeatures, trainLabels, flattenHeaders) = {
-      TmpUtils.preprocessing(sources, testSources, rowkeyName, labelName)
+      PreprocessUtil.preprocessing(sources, testSources, rowkeyName, labelName)
     }
+
     XGBoostFormatValidator.setXGBoostHeaders(flattenHeaders)
     val trainFeatureArray = trainFeatures.map(tensor => tensor.toArray()).flatten
     val testFeatureArray = testFeatures.map(tensor => tensor.toArray()).flatten
@@ -98,14 +101,14 @@ class CorrectnessSpec extends FlatSpec with Matchers with BeforeAndAfter with De
       val testPath = getClass.getClassLoader.getResource("house-prices-test.csv").getPath
       val sources = Source.fromFile(dataPath, "utf-8").getLines()
       val testSources = Source.fromFile(testPath, "utf-8").getLines()
-      val (trainFeatures, testFeatures, trainLabels, flattenHeaders) = TmpUtils.preprocessing(sources, testSources, rowkeyName, labelName)
+      val (trainFeatures, testFeatures, trainLabels, flattenHeaders) = PreprocessUtil.preprocessing(sources, testSources, rowkeyName, labelName)
       XGBoostFormatValidator.clearHeaders()
       XGBoostFormatValidator.addHeaders(flattenHeaders)
       flServer.build()
       flServer.start()
       FLContext.initFLContext()
       val fGBoostRegression = new FGBoostRegression(
-        learningRate = 0.1f, maxDepth = 7, minChildSize = 5, flattenHeaders)
+        learningRate = 0.1f, maxDepth = 7, minChildSize = 5)
       fGBoostRegression.fit(trainFeatures, trainLabels, 15)
       val fGBoostResult = fGBoostRegression.predict(testFeatures).map(tensor => tensor.value())
         .map(math.exp(_))
@@ -126,7 +129,16 @@ class CorrectnessSpec extends FlatSpec with Matchers with BeforeAndAfter with De
     } finally {
       flServer.stop()
     }
-
+    //     uncomment following code if want to save to file (to make a submission maybe)
+    //    val file = new File("filePath")
+    //    val bw = new BufferedWriter(new FileWriter(file))
+    //    bw.write("Id,SalePrice\n")
+    //    val testOriginWithHeader = Source.fromFile(testPath, "utf-8").getLines().map(_.split(",").map(_.trim)).toArray
+    //    val testOrigin = testOriginWithHeader.slice(1, testOriginWithHeader.length)
+    //    xGBoostResults.zip(testOrigin).foreach{r =>
+    //      bw.write(s"${r._2(0)},${r._1}\n")
+    //    }
+    //    bw.close()
 
   }
 
@@ -141,20 +153,20 @@ class CorrectnessSpec extends FlatSpec with Matchers with BeforeAndAfter with De
       XGBoostFormatValidator.clearHeaders()
       val rowkeyName = "Id"
       val labelName = "SalePrice"
-      val dataPath = getClass.getClassLoader.getResource("house-prices-train.csv-1.csv").getPath
-      val testPath = getClass.getClassLoader.getResource("house-prices-test.csv-1.csv").getPath
+      val dataPath = getClass.getClassLoader.getResource("two-party/house-prices-train-1.csv").getPath
+      val testPath = getClass.getClassLoader.getResource("two-party/house-prices-test-1.csv").getPath
       val sources = Source.fromFile(dataPath, "utf-8").getLines()
       val testSources = Source.fromFile(testPath, "utf-8").getLines()
       val (trainFeatures, testFeatures, trainLabels, flattenHeaders1) =
-        TmpUtils.preprocessing(sources, testSources, rowkeyName, labelName)
+        PreprocessUtil.preprocessing(sources, testSources, rowkeyName, labelName)
 
       XGBoostFormatValidator.addHeaders(flattenHeaders1)
-      val dataPath2 = getClass.getClassLoader.getResource("house-prices-train.csv-2.csv").getPath
-      val testPath2 = getClass.getClassLoader.getResource("house-prices-test.csv-2.csv").getPath
+      val dataPath2 = getClass.getClassLoader.getResource("two-party/house-prices-train-2.csv").getPath
+      val testPath2 = getClass.getClassLoader.getResource("two-party/house-prices-test-2.csv").getPath
       val sources2 = Source.fromFile(dataPath2, "utf-8").getLines()
       val testSources2 = Source.fromFile(testPath2, "utf-8").getLines()
       val (_, _, _, flattenHeaders2) = {
-        TmpUtils.preprocessing(sources2, testSources2, rowkeyName, labelName)
+        PreprocessUtil.preprocessing(sources2, testSources2, rowkeyName, labelName)
       }
 
       XGBoostFormatValidator.addHeaders(flattenHeaders2)
@@ -163,12 +175,12 @@ class CorrectnessSpec extends FlatSpec with Matchers with BeforeAndAfter with De
       flServer.start()
       FLContext.initFLContext()
       val mockClient = new MockClient(
-        dataPath = getClass.getClassLoader.getResource("house-prices-train.csv-2.csv").getPath,
-        testPath = getClass.getClassLoader.getResource("house-prices-test.csv-2.csv").getPath,
+        dataPath = getClass.getClassLoader.getResource("two-party/house-prices-train-2.csv").getPath,
+        testPath = getClass.getClassLoader.getResource("two-party/house-prices-test-2.csv").getPath,
         rowKeyName = "Id", labelName = "SalePrice", dataFormat = "raw")
       mockClient.start()
       val fGBoostRegression = new FGBoostRegression(
-        learningRate = 0.1f, maxDepth = 7, minChildSize = 5, flattenHeaders1)
+        learningRate = 0.1f, maxDepth = 7, minChildSize = 5)
       logger.debug(s"Client1 calling fit...")
       fGBoostRegression.fit(trainFeatures, trainLabels, 15)
       val fGBoostResult = fGBoostRegression.predict(testFeatures).map(tensor => tensor.value())
@@ -190,16 +202,74 @@ class CorrectnessSpec extends FlatSpec with Matchers with BeforeAndAfter with De
     } finally {
       flServer.stop()
     }
+  }
+  "FGBoost Correctness three parties" should "work" in {
+    val flServer = new FLServer()
+    try {
+      val rowkeyName = "Id"
+      val labelName = "SalePrice"
+      val dataPath = getClass.getClassLoader.getResource("three-party/house-prices-train-0.csv").getPath
+      val testPath = getClass.getClassLoader.getResource("three-party/house-prices-test-0.csv").getPath
+      val sources = Source.fromFile(dataPath, "utf-8").getLines()
+      val testSources = Source.fromFile(testPath, "utf-8").getLines()
+      val (trainFeatures, testFeatures, trainLabels, flattenHeaders1) =
+        PreprocessUtil.preprocessing(sources, testSources, rowkeyName, labelName)
 
-//     uncomment following code if want to save to file (to make a submission maybe)
-//    val file = new File("filePath")
-//    val bw = new BufferedWriter(new FileWriter(file))
-//    bw.write("Id,SalePrice\n")
-//    val testOriginWithHeader = Source.fromFile(testPath, "utf-8").getLines().map(_.split(",").map(_.trim)).toArray
-//    val testOrigin = testOriginWithHeader.slice(1, testOriginWithHeader.length)
-//    xGBoostResults.zip(testOrigin).foreach{r =>
-//      bw.write(s"${r._2(0)},${r._1}\n")
-//    }
-//    bw.close()
+      XGBoostFormatValidator.addHeaders(flattenHeaders1)
+      val dataPath2 = getClass.getClassLoader.getResource("three-party/house-prices-train-1.csv").getPath
+      val testPath2 = getClass.getClassLoader.getResource("three-party/house-prices-test-1.csv").getPath
+      val sources2 = Source.fromFile(dataPath2, "utf-8").getLines()
+      val testSources2 = Source.fromFile(testPath2, "utf-8").getLines()
+      val (_, _, _, flattenHeaders2) = {
+        PreprocessUtil.preprocessing(sources2, testSources2, rowkeyName, labelName)
+      }
+      XGBoostFormatValidator.addHeaders(flattenHeaders2)
+      val dataPath3 = getClass.getClassLoader.getResource("three-party/house-prices-train-2.csv").getPath
+      val testPath3 = getClass.getClassLoader.getResource("three-party/house-prices-test-2.csv").getPath
+      val sources3 = Source.fromFile(dataPath3, "utf-8").getLines()
+      val testSources3 = Source.fromFile(testPath3, "utf-8").getLines()
+      val (_, _, _, flattenHeaders3) = {
+        PreprocessUtil.preprocessing(sources3, testSources3, rowkeyName, labelName)
+      }
+      XGBoostFormatValidator.addHeaders(flattenHeaders3)
+      flServer.setClientNum(3)
+      flServer.build()
+      flServer.start()
+      FLContext.initFLContext()
+      val mockClient2 = new MockClient(
+        dataPath = getClass.getClassLoader.getResource("three-party/house-prices-train-1.csv").getPath,
+        testPath = getClass.getClassLoader.getResource("three-party/house-prices-test-1.csv").getPath,
+        rowKeyName = "Id", labelName = "SalePrice", dataFormat = "raw")
+      mockClient2.start()
+      val mockClient3 = new MockClient(
+        dataPath = getClass.getClassLoader.getResource("three-party/house-prices-train-2.csv").getPath,
+        testPath = getClass.getClassLoader.getResource("three-party/house-prices-test-2.csv").getPath,
+        rowKeyName = "Id", labelName = "SalePrice", dataFormat = "raw")
+      mockClient3.start()
+
+
+      val fGBoostRegression = new FGBoostRegression(
+        learningRate = 0.1f, maxDepth = 7, minChildSize = 5)
+      logger.debug(s"Client1 calling fit...")
+      fGBoostRegression.fit(trainFeatures, trainLabels, 15)
+      val fGBoostResult = fGBoostRegression.predict(testFeatures).map(tensor => tensor.value())
+        .map(math.exp(_))
+      var cnt = 0
+      fGBoostResult.indices.foreach(i => {
+        val diffAllow = math.min(fGBoostResult(i), xGBoostResults(i)) * 0.05
+        if (math.abs(fGBoostResult(i) - xGBoostResults(i)) < diffAllow) cnt += 1
+      })
+      val fgBoostTreeInFormat = fGBoostRegression.trees.toArray.map(
+        fTree => XGBoostFormatSerializer(fTree))
+      // The tree structure validation
+      XGBoostFormatValidator(xgBoostFormatNodes, fgBoostTreeInFormat)
+      logger.info(s"Got similar result: ${cnt}/${fGBoostResult.length}")
+      require(cnt > 900, s"Should get over 900 results similar with XGBoost, but got only: $cnt")
+    } catch {
+      // TODO: sometimes this UT (random fail) throws IndexOutOfRange Exception, need to check
+      case e: Exception => throw e
+    } finally {
+      flServer.stop()
+    }
   }
 }

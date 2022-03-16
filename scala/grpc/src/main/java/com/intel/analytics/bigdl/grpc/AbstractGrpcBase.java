@@ -55,7 +55,7 @@ public abstract class AbstractGrpcBase {
             try {
                 return ConfigParser.loadConfigFromPath(configPath, valueType);
             } catch (IOException e) {
-                logger.info("Config file does not exist in path, using default");
+                logger.error(e.getMessage());
                 return null;
             }
 
