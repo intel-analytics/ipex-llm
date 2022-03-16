@@ -134,12 +134,10 @@ class TestPytorchEstimator(TestCase):
         orca_estimator = get_estimator(workers_per_node=2)
         train_dataset = train_data_creator()
         result_shards = orca_estimator.predict(data=train_dataset,
-                                               label_cols="x",
                                                feature_cols=["y"])
         print('Finished Training:', result_shards)
-
-        result = np.concatenate([shard["prediction"] for shard in result_shards])
-        print(result)
+        result_shards.show()
+        assert isinstance(result_shards, ray.data.Dataset)
 
 if __name__ == "__main__":
     pytest.main([__file__])
