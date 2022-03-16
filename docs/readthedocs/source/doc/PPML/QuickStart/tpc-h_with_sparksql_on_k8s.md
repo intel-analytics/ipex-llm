@@ -2,7 +2,7 @@
 
 ### Prerequisites ###
 - Hardware that supports SGX
-- A fully configured Kubernetes cluster 
+- A fully configured Kubernetes cluster
 - Intel SGX Device Plugin to use SGX in K8S cluster (install following instructions [here](https://bigdl.readthedocs.io/en/latest/doc/PPML/QuickStart/deploy_intel_sgx_device_plugin_for_kubernetes.html "here"))
 
 ### Prepare TPC-H kit and data ###
@@ -136,7 +136,7 @@ export OUTPUT_DIR=hdfs://$HDFS_HOST:$HDFS_PORT/tpc-h/output \
     --executor-cores 8 \
     --total-executor-cores 192 \
     --executor-memory 16G \
-    --properties-file /ppml/trusted-big-data-ml/work/bigdl-0.14.0-SNAPSHOT/conf/spark-bigdl.conf \
+    --properties-file /ppml/trusted-big-data-ml/work/bigdl-2.1.0-SNAPSHOT/conf/spark-bigdl.conf \
     --conf spark.kubernetes.authenticate.serviceAccountName=spark \
     --conf spark.kubernetes.container.image=$RUNTIME_K8S_SPARK_IMAGE \
     --conf spark.kubernetes.executor.podTemplateFile=/ppml/trusted-big-data-ml/spark-executor-template.yaml \

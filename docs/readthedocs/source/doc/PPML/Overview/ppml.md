@@ -87,7 +87,7 @@ cd BigDL/ppml/
 
 Pull Docker image from Dockerhub
 ```bash
-docker pull intelanalytics/bigdl-ppml-trusted-big-data-ml-scala-graphene:0.14.0-SNAPSHOT
+docker pull intelanalytics/bigdl-ppml-trusted-big-data-ml-scala-graphene:2.1.0-SNAPSHOT
 ```
 
 Alternatively, you can build Docker image from Dockerfile (this will take some time):
@@ -263,7 +263,7 @@ Then stop the service:
 Pull Docker image from Dockerhub
 
 ```bash
-docker pull intelanalytics/bigdl-ppml-trusted-big-data-ml-python-graphene:0.14-SNAPSHOT
+docker pull intelanalytics/bigdl-ppml-trusted-big-data-ml-python-graphene:2.1.0-SNAPSHOT
 ```
 
 Alternatively, you can build Docker image from Dockerfile (this will take some time):
@@ -697,12 +697,12 @@ Pull Docker image from Dockerhub
 
 ```bash
 # For Graphene
-docker pull intelanalytics/bigdl-ppml-trusted-realtime-ml-scala-graphene:0.14.0-SNAPSHOT
+docker pull intelanalytics/bigdl-ppml-trusted-realtime-ml-scala-graphene:2.1.0-SNAPSHOT
 ```
 
 ```bash
 # For Occlum
-docker pull intelanalytics/bigdl-ppml-trusted-realtime-ml-scala-occlum:0.14.0-SNAPSHOT
+docker pull intelanalytics/bigdl-ppml-trusted-realtime-ml-scala-occlum:2.1.0-SNAPSHOT
 ```
 
 Also, you can build Docker image from Dockerfile (this will take some time).
