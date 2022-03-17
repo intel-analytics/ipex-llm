@@ -14,7 +14,9 @@
 # limitations under the License.
 #
 
+from bigdl.nano.automl import hpo
+import tensorflow as tf
 
-from .Sequential import Sequential
-from .Model import Model
-from .Input import Input
+@hpo.func()
+def Input(*args, **kwargs):
+    return tf.keras.Input(*args, **kwargs)

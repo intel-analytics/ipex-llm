@@ -27,6 +27,7 @@ import logging
 import argparse
 import functools
 from collections import OrderedDict
+from grpc import Call
 import numpy as np
 import multiprocessing as mp
 import ConfigSpace as CS
@@ -38,7 +39,7 @@ from .space import _add_hp, _add_cs, _rm_hp, _strip_config_space, SPLITTER
 
 from .mixin import HPOMixin
 
-from .callgraph import update_callgraph
+from .callgraph import CallCache, CallGraph, CALLTYPE
 from bigdl.nano.automl.utils import EasyDict as ezdict
 from bigdl.nano.automl.utils import proxy_methods
 
@@ -181,6 +182,7 @@ def args(default=None, **kwvars):
     return registered_func
 
 
+
 def func(**kwvars):
     """Decorator for a function that registers its arguments as hyperparameters.
        Each hyperparameter may take a fixed value or be a searchable space (hpo.space).
@@ -194,41 +196,80 @@ def func(**kwvars):
     --------
     >>>
     """
-    def _automl_kwargs_func(**kwvars):
-        def registered_func(func):
-            kwspaces = OrderedDict()
+    # def _automl_kwargs_func(**kwvars):
+    #     def registered_func(func):
+    #         kwspaces = OrderedDict()
 
-            @functools.wraps(func)
-            def wrapper_call(*args, **kwargs):
-                _kwvars = copy.deepcopy(kwvars)
-                _kwvars.update(kwargs)
-                for k, v in _kwvars.items():
-                    if isinstance(v, NestedSpace):
-                        kwspaces[k] = v
-                        kwargs[k] = v
-                    elif isinstance(v, Space):
-                        kwspaces[k] = v
-                        hp = v.get_hp(name=k)
-                        kwargs[k] = hp.default_value
-                    else:
-                        kwargs[k] = v
-                return func(*args, **kwargs)
-            wrapper_call.kwspaces = kwspaces
-            return wrapper_call
-        return registered_func
+    #         @functools.wraps(func)
+    #         def wrapper_call(*args, **kwargs):
+    #             _kwvars = copy.deepcopy(kwvars)
+    #             _kwvars.update(kwargs)
+    #             for k, v in _kwvars.items():
+    #                 if isinstance(v, NestedSpace):
+    #                     kwspaces[k] = v
+    #                     kwargs[k] = v
+    #                 elif isinstance(v, Space):
+    #                     kwspaces[k] = v
+    #                     hp = v.get_hp(name=k)
+    #                     kwargs[k] = hp.default_value
+    #                 else:
+    #                     kwargs[k] = v
+    #             return func(*args, **kwargs)
+    #         wrapper_call.kwspaces = kwspaces
+    #         return wrapper_call
+    #     return registered_func
 
     def registered_func(func):
-        class automlobject(AutoObject):
-            @_automl_kwargs_func(**kwvars)
+        class AutoSlice(AutoObject):
+            def __init__(self, source, slice_arguments):
+                self.source = source
+                self.slice_arguments = slice_arguments
+                self._callgraph = CallCache.update(
+                    (self.source, self.slice_arguments),
+                    self,
+                    type=CALLTYPE.FUNC_SLICE)
+
+            def sample(self, **config):
+                slice_args, slice_kwargs = self.slice_arguments
+                return self.source.__getitem__(*slice_args, **slice_kwargs)
+
+            @property
+            def kwspaces(self):
+                return {}
+
+            def __repr__(self):
+                return 'AutoSlice -- [] ' + str(id(self))
+
+        class AutoFunc(AutoObject):
+            #@_automl_kwargs_func(**kwvars)
             def __init__(self, *args, **kwargs):
                 self.func = func
                 self.args = args
                 self.kwargs = kwargs
                 self._inited = False
 
+                self.slice_args = None
+                self.slice_kwargs = None
+
+                self.kwspaces_ = OrderedDict()
+                self.kwvars = dict()
+                self._update_kw()
+
+                self._callgraph = None  # keep a reference to the call graph
+                self._callgraph = CallCache.update(
+                    (self.args, self.kwargs),
+                    self,
+                    type=CALLTYPE.FUNC_CALL)
+
+            def __getitem__(self, *args, **kwargs):
+                self.slice_args = args
+                self.slice_kwargs = kwargs
+                return AutoSlice(self, (self.slice_args, self.slice_kwargs))
+
             def sample(self, **config):
                 kwargs = copy.deepcopy(self.kwargs)
-                kwspaces = copy.deepcopy(automlobject.kwspaces)
+                #kwspaces = copy.deepcopy(AutoFunc.kwspaces)
+                kwspaces = copy.deepcopy(self.kwspaces_)
                 for k, v in kwargs.items():
                     if k in kwspaces and isinstance(kwspaces[k], NestedSpace):
                         sub_config = _strip_config_space(config, prefix=k)
@@ -238,11 +279,31 @@ def func(**kwvars):
 
                 return self.func(*self.args, **kwargs)
 
+            @property
+            def kwspaces(self):
+                return self.kwspaces_
+
+            def _update_kw(self):
+                self.kwvars.update(self.kwargs)
+                for k, v in self.kwvars.items():
+                    if isinstance(v, NestedSpace):
+                        self.kwspaces_[k] = v
+                        self.kwargs[k] = v
+                    elif isinstance(v, Space):
+                        self.kwspaces_[k] = v
+                        hp = v.get_hp(name=k)
+                        self.kwargs[k] = hp.default_value
+                    else:
+                        self.kwargs[k] = v
+
+            def __repr__(self):
+                return 'AutoFunc -- ' + self.func.__name__ + ' ' + str(id(self))
+
         @functools.wraps(func)
         def wrapper_call(*args, **kwargs):
             _kwvars = copy.deepcopy(kwvars)
             _kwvars.update(kwargs)
-            agobj = automlobject(*args, **kwargs)
+            agobj = AutoFunc(*args, **kwargs)
             agobj.kwvars = _kwvars
             return agobj
         return wrapper_call
@@ -285,7 +346,7 @@ def obj(**kwvars):
     #     return registered_func
 
     def registered_class(Cls):
-        class automlobject(AutoObject):
+        class AutoCls(AutoObject):
             #@_automl_kwargs_obj(**kwvars)
             def __init__(self, *args, **kwargs):
                 self.args = args
@@ -328,9 +389,10 @@ def obj(**kwvars):
                         self.kwargs[k] = v
 
             def __repr__(self):
-                return 'AutoObject -- ' + Cls.__name__
+                return 'AutoCls -- ' + Cls.__name__ + str(id(self))
 
             def __call__(self, *args, **kwargs):
+
                 #super.__call__(*args, **kwargs)
                 # this is to handle functional API of layers
                 self._call_args = args
@@ -340,13 +402,13 @@ def obj(**kwvars):
                     inputs = kwargs['inputs']
                 else:
                     inputs = args[0]
-                self._callgraph = update_callgraph(inputs, self)
+                self._callgraph = CallCache.update(inputs, self)
                 return self
 
         #automlobject.kwvars = automlobject.__init__.kwvars
-        automlobject.__doc__ = Cls.__doc__
-        automlobject.__name__ = Cls.__name__
-        return automlobject
+        AutoCls.__doc__ = Cls.__doc__
+        AutoCls.__name__ = Cls.__name__
+        return AutoCls
 
     return registered_class
 
@@ -368,7 +430,7 @@ def model(**kwvars):
         objCls = obj(**kwvars)(Cls)
 
         @proxy_methods
-        class AutomlModel(HPOMixin, Cls):
+        class AutoMdl(HPOMixin, Cls):
             def __init__(self, **kwargs):
                 self.kwargs = kwargs
                 self._lazyobj = objCls(**kwargs)
@@ -385,6 +447,9 @@ def model(**kwvars):
                         super_kwargs[k] = default_config[k]
                 super().__init__(**super_kwargs)
 
+            def __repr__(self):
+                return 'AutoMdl -- ' + Cls.__name__
+
             def _model_build(self, trial):
                 # override _model_build to build
                 # the model directly instead of using
@@ -393,6 +458,6 @@ def model(**kwvars):
                 self._model_compile(model, trial)
                 return model
 
-        return AutomlModel
+        return AutoMdl
 
     return registered_class

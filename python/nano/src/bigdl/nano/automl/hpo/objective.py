@@ -50,6 +50,7 @@ class Objective(object):
         self.model_ = model
         self.target_metric = target_metric
         self.kwargs = kwargs
+        self.kwargs['verbose'] = False
 
     def __call__(self, trial):
         # Clear clutter from previous Keras session graphs.
@@ -66,23 +67,44 @@ class Objective(object):
         # fit
         hist = model.fit(**self.kwargs)
 
-        # evaluate
-        (x_valid, y_valid) = self.kwargs.get('validation_data', (None, None))
-        if x_valid is not None:
-            scores = model.evaluate(x_valid, y_valid, verbose=0)
-        else:
-            x_train = self.kwargs.get('x')
-            y_train = self.kwargs.get('y')
-            scores = model.evaluate(x_train, y_train, verbose=0)
-            # return max(hist.history[self.target_metric])
-        if self.target_metric is not None:
-            try:
-                metric_index = model.metrics_names.index(self.target_metric)
-            except ValueError:
-                raise ValueError("Target_metric should be one of the metrics \
-                                specified in the compile metrics")
-            score = scores[metric_index]
-        else:
-            score = scores[1]  # the first metric specified in compile
 
+        # evaluate
+        # (x_valid, y_valid) = self.kwargs.get('validation_data', (None, None))
+
+        #validation_data = self.kwargs.get('validation_data', None)
+        #steps_per_epoch = self.kwargs.get('steps_per_epoch', None)
+        #steps = self.kwargs.get('steps', None)
+        #steps = steps_per_epoch
+
+        # if validation_data is not None:
+        #     scores = model.evaluate(validation_data, **self.kwargs)
+        # else:
+        #     x_train = self.kwargs.get('x')
+        #     y_train = self.kwargs.get('y')
+        #     scores = model.evaluate(x_train, y_train, verbose=0, **self.kwargs)
+            # return max(hist.history[self.target_metric])
+
+        # if self.target_metric is not None:
+        #     try:
+        #         metric_index = model.metrics_names.index(self.target_metric)
+        #     except ValueError:
+        #         raise ValueError("Target_metric should be one of the metrics \
+        #                         specified in the compile metrics")
+        #     score = scores[metric_index]
+        # else:
+        #     score = scores[1]  # the first metric specified in compile
+
+        if self.target_metric is not None:
+            score = hist.history.get(self.target_metric, None)
+            if score is not None:
+                if isinstance(score, list):
+                    score = score[-1]
+                return score
+
+        print("Warn: target_metric is not evaluated")
+        score = hist.history.get('val_loss', None)
+        if score is None:
+            score = hist.history.get('loss')[-1]
+        elif isinstance(score, list):
+            score = score[-1]
         return score

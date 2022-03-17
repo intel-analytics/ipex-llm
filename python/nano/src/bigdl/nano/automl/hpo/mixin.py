@@ -16,7 +16,8 @@
 
 from .objective import Objective
 import optuna
-
+import tensorflow as tf
+import copy
 
 class HPOMixin:
 
@@ -138,7 +139,9 @@ class HPOMixin:
         # for lazy model compile
         # TODO support searable compile args
         # config = OptunaBackend.sample_config(trial, kwspaces)
-        model.compile(*self.compile_args, **self.compile_kwargs)
+        compile_args = copy.deepcopy(self.compile_args)
+        compile_kwargs = copy.deepcopy(self.compile_kwargs)
+        model.compile(*compile_args, **compile_kwargs)
 
     def _model_build(self, trial):
         # for lazy model build
@@ -147,8 +150,10 @@ class HPOMixin:
         # super().__init__(**self._model_init_args(trial))
         # self._model_compile(super(), trial)
         # use composition instead of inherited
-        modelcls = self.__class__.__bases__[1]
+        #modelcls = self.__class__.__bases__[1]
+        modelcls = self.model_class
         model = modelcls(**self._model_init_args(trial))
+        #model = tf.keras.Model(**self._model_init_args(trial))
         self._model_compile(model, trial)
         return model
 

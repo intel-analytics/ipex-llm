@@ -19,7 +19,7 @@ import tensorflow as tf
 
 from bigdl.nano.automl.utils import proxy_methods
 from bigdl.nano.automl.hpo.mixin import HPOMixin
-from bigdl.nano.automl.hpo.callgraph import exec_callgraph
+from bigdl.nano.automl.hpo.callgraph import CallCache,CallGraph
 
 
 @proxy_methods
@@ -28,7 +28,9 @@ class Model(HPOMixin, tf.keras.Model):
     def __init__(self, **kwargs):
         # we only take keyword arguments for now
         # TODO check how args is used
+        # TODO check why base class is keras.engine.training_v1.Model
         super().__init__()
+        self.model_class = tf.keras.Model
         self.kwargs = kwargs
         self.lazyinputs_ = kwargs.get('inputs', None)
         self.lazyoutputs_ = kwargs.get('outputs', None)
@@ -37,7 +39,10 @@ class Model(HPOMixin, tf.keras.Model):
         # for lazy model init
         # use backend to sample model init args
         # and construct the actual layers
-        out_t = exec_callgraph(self.lazyinputs_, self.lazyoutputs_, trial)
-        self.kwargs['inputs'] = self.lazyinputs_
-        self.kwargs['outputs'] = out_t
+        in_tensors, out_tensors = CallCache.execute(
+            self.lazyinputs_,
+            self.lazyoutputs_,
+            trial)
+        self.kwargs['inputs'] = in_tensors
+        self.kwargs['outputs'] = out_tensors
         return self.kwargs

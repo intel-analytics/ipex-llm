@@ -31,6 +31,7 @@ class Sequential(HPOMixin, tf.keras.Sequential):
         # TODO add more flexibility for args parsing
         # self.init_args = args
         # self.init_kwargs = kwargs
+        self.model_class = tf.keras.Sequential
         self.name_ = name
         self.lazylayers_ = layers if layers is not None else []
 

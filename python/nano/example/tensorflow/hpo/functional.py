@@ -1,22 +1,24 @@
 
+from ast import Call
 import tensorflow as tf
 from tensorflow import keras
 from bigdl.nano.tf.keras.layers import Dense
-from bigdl.nano.automl.tf.keras import Model
+from bigdl.nano.automl.tf.keras import Model, Input
 import bigdl.nano.automl.hpo.space as space
+from time import time
 
 
-inputs = keras.Input(shape=(784,))
+inputs = Input(shape=(784,))
 
 # Just for demonstration purposes.
-img_inputs = keras.Input(shape=(32, 32, 3))
+img_inputs = Input(shape=(32, 32, 3))
 
 x = Dense(units=space.Categorical(8,16), activation="relu")(inputs)
 x = Dense(units=space.Categorical(32,64), activation="relu")(x)
 outputs = Dense(units=10)(x)
 
-from bigdl.nano.automl.hpo.callgraph import plot_callgraph
-plot_callgraph(outputs._callgraph)
+from bigdl.nano.automl.hpo.callgraph import CallCache
+CallCache.plot(outputs._callgraph)
 
 model = Model(inputs=inputs, outputs=outputs, name="mnist_model")
 
@@ -32,6 +34,9 @@ model.compile(
     metrics=["accuracy"],
 )
 
+
+t1 = time()
+
 model.search(
     n_trails=2,
     target_metric='accuracy',
@@ -39,13 +44,17 @@ model.search(
     x=x_train,
     y=y_train,
     batch_size=128,
-    epochs=1,
+    epochs=2,
     validation_split=0.2,
     verbose=False,
 )
 
+t2 = time()
+
+print("search took", (t2-t1), "secs")
+
 history = model.fit(x_train, y_train,
-                    batch_size=128, epochs=1, validation_split=0.2)
+                    batch_size=128, epochs=2, validation_split=0.2)
 
 test_scores = model.evaluate(x_test, y_test, verbose=2)
 print("Test loss:", test_scores[0])
