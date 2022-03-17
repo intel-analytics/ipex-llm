@@ -52,8 +52,22 @@ from pytorch_lightning.utilities.seed import reset_seed
 
 from bigdl.nano.common.cpu_schedule import schedule_workers
 from bigdl.nano.pytorch.plugins.ddp_spawn import DDPSpawnPlugin
+
 import logging
 log = logging.getLogger(__name__)
+
+
+def queue_dumper(q):
+    q_list = []
+    while not q.empty():
+        q_list.append(q.get())
+    return q_list
+
+def queue_loader(q_list):
+    q = multiprocessing.SimpleQueue()
+    for item in q_list:
+        q.put(item)
+    return q
 
 
 class DDPSubprocessPlugin(DDPSpawnPlugin):
@@ -93,7 +107,7 @@ class DDPSubprocessPlugin(DDPSpawnPlugin):
                 "KMP_AFFINITY": f"granularity=fine,proclist"
                                 f"=[{','.join([str(i) for i in cpu_procs[i]])}],explicit",
                 "OMP_NUM_THREADS": str(len(cpu_procs[i])),
-                "process_idx": i
+                "process_idx": str(i)
             }
             processes.append(subprocess.Popen([sys.executable, f"{cwd_path}/worker.py",
                                                tmpdir], env=env))
@@ -103,7 +117,7 @@ class DDPSubprocessPlugin(DDPSpawnPlugin):
     def start_training(self, trainer):
         # reset ortsess, since InferenceSession can not be pickled
         self.model._ortsess = None
-        self._run_subprocess(self.new_process, **self.mp_spawn_kwargs)
+        self.execution_loop(trainer)
         # reset optimizers, since main process is never used for training
         # and thus does not have a valid optim state
         trainer.optimizers = []
@@ -116,56 +130,17 @@ class DDPSubprocessPlugin(DDPSpawnPlugin):
         print("predict")
         self._run_subprocess(**self.mp_spawn_kwargs)
 
-    def new_process(self, process_idx, trainer, mp_queue):
-        self.mp_queue = mp_queue
-
-        reset_seed()
-
-        self.set_world_ranks(process_idx)
-
-        # set warning rank
-        rank_zero_only.rank = self.global_rank
-
-        # set up server using proc 0's ip address
-        # try to init for 20 times at max in case ports are taken
-        # where to store ip_table
-        self.init_ddp_connection(self.global_rank, self.world_size)
-
-        # TODO: we moved it to the trainer.fit after calling pre_dispatch
-        #   ... need to double check that it is the correct place
-        # self.trainer.call_setup_hook(self.model)
-
-        # on world_size=0 let everyone know training is starting
+    def execution_loop(self, trainer):
         if self.is_global_zero and not torch.distributed.is_initialized():
             log.info("-" * 100)
             log.info(f"distributed_backend={self.distributed_backend}")
             log.info(f"All DDP processes registered. Starting ddp with {self.world_size} processes")
             log.info("-" * 100)
 
-        # set the ranks and devices
-        self.dist.rank = self.global_rank
-        self.dist.device = self.root_device
-
-        if self.sync_batchnorm:
-            self.model = self.configure_sync_batchnorm(self.model)
-
-        self.configure_ddp()
-
-        # Move this line here so that we can temporarily use cpu while configuring ddp
-        # and use ipex.DEVICE later on
-        # move the model to the correct device
-        self.model_to_device()
-
-        self.barrier()
-        results = trainer.run_stage()
-
-        # persist info in ddp_spawn
-        self.transfer_distrib_spawn_state_on_fit_end(results)
-
-    def execution_loop(self, trainer, tune_enabled: bool = True):
         with TemporaryDirectory() as temp_dir:
             with open(os.path.join(temp_dir, "args.pkl"), 'wb') as f:
-                args = self, self.lightning_module.trainer, self.mp_queue
+                queue_list = queue_dumper(self.mp_queue)
+                args = [self, queue_list]
                 cloudpickle.dump(args, f)
 
             processes = self._run_subprocess(temp_dir)
@@ -173,5 +148,6 @@ class DDPSubprocessPlugin(DDPSpawnPlugin):
             for _, process in enumerate(processes):
                 process.wait()
 
-            with open(os.path.join(temp_dir, "results.pickl"), "rb") as f:
-                self.mp_queue = cloudpickle.load(f)
+            with open(os.path.join(temp_dir, "results.pkl"), "rb") as f:
+                queue_list = cloudpickle.load(f)
+                self.mp_queue = queue_loader(queue_list)
