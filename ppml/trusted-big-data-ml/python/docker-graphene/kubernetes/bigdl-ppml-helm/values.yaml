@@ -1,6 +1,5 @@
 enclaveKeysPath: path_to_enclave-key.pem_on_host
 dataPath: path_to_your_data_on_host
-kubeconfigPath: path_to_kubeconfig_on_host
 image: your_ppml_image
 k8sMaster: k8s://https://master_ip:master_port
 pvc: your_pvc
