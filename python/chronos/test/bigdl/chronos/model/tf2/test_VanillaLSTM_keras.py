@@ -16,7 +16,7 @@
 
 import pytest
 from unittest import TestCase
-from bigdl.chronos.model.tf2.VanillaLSTM_keras import model_creator, LSTMModel
+from bigdl.chronos.model.tf2.VanillaLSTM_keras import LSTMModel, model_creator
 import keras
 import numpy as np
 import tempfile
@@ -66,11 +66,11 @@ class TestVanillaLSTM(TestCase):
                        epochs=2,
                        validation_data=self.val_data)
         self.model.save(checkpoint_file)
-        load_model = keras.models.load_model(checkpoint_file)
+        restore_model = keras.models.load_model(checkpoint_file, custom_objects={"LSTMModel": LSTMModel})
         model_res = self.model.evaluate(self.test_data[0], self.test_data[1])
-        load_model_res = load_model.evaluate(self.test_data[0], self.test_data[1])
-        np.testing.assert_almost_equal(model_res, load_model_res, decimal=5)        
-
+        restore_model_res = restore_model.evaluate(self.test_data[0], self.test_data[1])
+        np.testing.assert_almost_equal(model_res, restore_model_res, decimal=5)        
+        assert isinstance(restore_model, LSTMModel)
 
 if __name__ == '__main__':
     pytest.main([__file__])

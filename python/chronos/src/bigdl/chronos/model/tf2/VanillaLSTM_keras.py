@@ -16,7 +16,7 @@
 
 import tensorflow as tf
 from bigdl.nano.tf.keras import Sequential, Model
-from keras.layers import LSTM, Reshape, Dense, Input
+from tensorflow.keras.layers import LSTM, Reshape, Dense, Input
 
 
 class LSTMModel(Model):

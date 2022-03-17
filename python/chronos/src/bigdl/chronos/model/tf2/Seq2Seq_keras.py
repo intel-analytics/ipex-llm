@@ -15,9 +15,9 @@
 #
 
 import tensorflow as tf
-from keras import backend as K
+from tensorflow.keras import backend as K
 from bigdl.nano.tf.keras import Model
-from keras.layers import LSTM, Dense, Lambda, Reshape
+from tensorflow.keras.layers import LSTM, Dense, Lambda, Reshape
 
 
 class LSTMSeq2Seq(Model):

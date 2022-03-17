@@ -18,7 +18,7 @@ import tensorflow as tf
 import pytest
 
 from bigdl.orca.test_zoo_utils import ZooTestCase
-from bigdl.chronos.model.Seq2Seq_keras import LSTMSeq2Seq
+from bigdl.chronos.model.tf1.Seq2Seq_keras import LSTMSeq2Seq
 from bigdl.chronos.autots.deprecated.feature.time_sequence import TimeSequenceFeatureTransformer
 from numpy.testing import assert_array_almost_equal
 import pandas as pd
