@@ -5,6 +5,7 @@ metadata:
 spec:
   template:
     spec:
+      serviceAccountName: spark
       restartPolicy: Never
       hostNetwork: true
       containers:
@@ -13,9 +14,7 @@ spec:
         imagePullPolicy: Never
         command: ["/bin/sh","-c"]
         args: ["sed -i \"s@/home/sdp/glorysdj/enclave-key.pem@$OUTSIDE_ENCLAVE_KEY_PATH@g\" spark-executor-template.yaml;
-                sed -i \"s@/home/sdp/glorysdj/kubernetes/kubeconfig@$OUTSIDE_KUBECONFIG_PATH@g\" spark-executor-template.yaml;
                 sed -i \"s@/home/sdp/glorysdj/data@$OUTSIDE_DATA_PATH@g\" spark-executor-template.yaml;
-                cp mounts/kubeconfig /root/.kube/config;
                 cp mounts/enclave-key.pem /graphene/Pal/src/host/Linux-SGX/signer;
                 export RUNTIME_DRIVER_HOST=$( hostname -I | awk '{print $1}' );
                 export LOCAL_IP=$( hostname -I | awk '{print $1}' );
@@ -27,8 +26,6 @@ spec:
         env:
           - name: OUTSIDE_ENCLAVE_KEY_PATH
             value: {{ .Values.enclaveKeysPath }}
-          - name: OUTSIDE_KUBECONFIG_PATH
-            value: {{ .Values.kubeconfigPath }}
           - name: OUTSIDE_DATA_PATH
             value: {{ .Values.dataPath }}
           - name: RUNTIME_SPARK_MASTER
