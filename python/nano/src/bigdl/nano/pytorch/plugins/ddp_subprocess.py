@@ -30,27 +30,17 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
-
+import cloudpickle
+import multiprocessing
 import os
 import subprocess
 import sys
 from tempfile import TemporaryDirectory
 from typing import Any, List, Optional, Callable
 
-import cloudpickle
-import multiprocessing
 import torch
-from torch.nn.parallel.distributed import DistributedDataParallel
-from torch.multiprocessing.spawn import _wrap, ProcessContext
-
-import pytorch_lightning as pl
-from pytorch_lightning.overrides import LightningDistributedModule
 from pytorch_lightning.plugins.environments.cluster_environment import ClusterEnvironment
-from pytorch_lightning.utilities.distributed import rank_zero_only
-from pytorch_lightning.utilities.seed import reset_seed
 
-from bigdl.nano.common.cpu_schedule import schedule_workers
 from bigdl.nano.pytorch.plugins.ddp_spawn import DDPSpawnPlugin
 
 import logging
@@ -63,6 +53,7 @@ def queue_dumper(q):
         q_list.append(q.get())
     return q_list
 
+
 def queue_loader(q_list):
     q = multiprocessing.SimpleQueue()
     for item in q_list:
@@ -72,28 +63,6 @@ def queue_loader(q_list):
 
 class DDPSubprocessPlugin(DDPSpawnPlugin):
     distributed_backend = "ddp_subprocess"
-
-    def __init__(
-        self,
-        parallel_devices: Optional[List[torch.device]] = None,
-        num_nodes: int = 1,
-        cluster_environment: ClusterEnvironment = None,
-        sync_batchnorm: bool = False,
-        ddp_comm_state: Optional[object] = None,
-        ddp_comm_hook: Optional[Callable] = None,
-        ddp_comm_wrapper: Optional[Callable] = None,
-        cpu_for_each_process: Optional[List[List[int]]] = None,
-        **kwargs: Any,
-    ):
-        super().__init__(parallel_devices,
-                         num_nodes,
-                         cluster_environment,
-                         sync_batchnorm,
-                         ddp_comm_state,
-                         ddp_comm_hook,
-                         ddp_comm_wrapper,
-                         cpu_for_each_process,
-                         **kwargs)
 
     def _run_subprocess(self, tmpdir):
         from bigdl.nano.common.cpu_schedule import schedule_workers
@@ -115,11 +84,8 @@ class DDPSubprocessPlugin(DDPSpawnPlugin):
         return processes
 
     def start_training(self, trainer):
-        # reset ortsess, since InferenceSession can not be pickled
         self.model._ortsess = None
         self.execution_loop(trainer)
-        # reset optimizers, since main process is never used for training
-        # and thus does not have a valid optim state
         trainer.optimizers = []
 
     def start_evaluating(self, trainer):
