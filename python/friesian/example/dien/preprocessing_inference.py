@@ -90,34 +90,34 @@ if __name__ == "__main__":
 
     begin = time.time()
     transaction_tbl = FeatureTable.read_json(args.input_transaction).select(
-        ['reviewerID', 'asin', 'unixReviewTime']) \
-        .rename({'reviewerID': 'user', 'asin': 'item', 'unixReviewTime': 'time'}) \
-        .dropna(columns=['user', 'item'])
+        ["reviewerID", "asin", "unixReviewTime"]) \
+        .rename({"reviewerID": "user", "asin": "item", "unixReviewTime": "time"}) \
+        .dropna(columns=["user", "item"])
     transaction_tbl.cache()
 
-    # def process_single_meta(row):
-    #     obj = eval(row)
-    #     cat = obj['categories'][0][-1]
-    #     return [obj['asin'], cat]
-    #
-    # item_tbl = FeatureTable.read_text(args.input_meta)\
-    #     .apply("value", "value", process_single_meta, dtype="array<string>")\
-    #     .apply("value", "item", lambda x: x[0])\
-    #     .apply("value", "category", lambda x: x[1])\
-    #     .drop("value")
+    def process_single_meta(row):
+        obj = eval(row)
+        cat = obj["categories"][0][-1]
+        return [obj["asin"], cat]
 
-    item_tbl = FeatureTable.read_csv(args.input_meta, delimiter="\t", names=['item', 'category'])
+    item_tbl = FeatureTable.read_text(args.input_meta)\
+        .apply("value", "value", process_single_meta, dtype="array<string>")\
+        .apply("value", "item", lambda x: x[0])\
+        .apply("value", "category", lambda x: x[1])\
+        .drop("value")
+
+    # item_tbl = FeatureTable.read_csv(args.input_meta, delimiter="\t", names=["item", "category"])
 
     # Currently long id is not supported for add_negative_samples and add_value_features, cast to int.
-    with open(args.index_folder + "vocs/cat_voc.pkl", 'rb') as f:
+    with open(args.index_folder + "vocs/cat_voc.pkl", "rb") as f:
         categories = FeatureTable(sc.parallelize(list(pickle.load(f).items())).toDF(["category", "id"]))
         categories = categories.cast("id", "int")
         category_index = StringIndex(categories.df, "category")
-    with open(args.index_folder + "vocs/mid_voc.pkl", 'rb') as f:
+    with open(args.index_folder + "vocs/mid_voc.pkl", "rb") as f:
         items = FeatureTable(sc.parallelize(list(pickle.load(f).items())).toDF(["item", "id"]))
         items = items.cast("id", "int")
         item_index = StringIndex(items.df, "item")
-    with open(args.index_folder + "vocs/uid_voc.pkl", 'rb') as f:
+    with open(args.index_folder + "vocs/uid_voc.pkl", "rb") as f:
         users = FeatureTable(sc.parallelize(list(pickle.load(f).items())).toDF(["user", "id"]))
         users = users.cast("id", "int")
         user_index = StringIndex(users.df, "user")
@@ -131,14 +131,18 @@ if __name__ == "__main__":
         .fillna(0, ["item", "category"])
     item_tbl.cache()
 
+    # Encode users should be performed after generating history sequence.
+    # Otherwise unknown users will be all merged to user 0.
     full_tbl = transaction_tbl\
-        .encode_string(['user', 'item'], [user_index, item_index]) \
-        .fillna(0, ["user", "item"])\
-        .add_hist_seq(cols=['item'], user_col="user",
-                      sort_col='time', min_len=2, max_len=100, num_seqs=1)\
-        .add_negative_samples(item_size, item_col='item', neg_num=1)\
+        .encode_string(["item"], [item_index]) \
+        .fillna(0, ["item"])\
+        .add_hist_seq(cols=["item"], user_col="user",
+                      sort_col="time", min_len=2, max_len=100, num_seqs=1)\
+        .add_negative_samples(item_size, item_col="item", neg_num=1)\
         .add_value_features(columns=["item", "item_hist_seq"],
-                            dict_tbl=item_tbl, key="item", value="category")
+                            dict_tbl=item_tbl, key="item", value="category")\
+        .encode_string(["user"], [user_index]) \
+        .fillna(0, ["user"])
 
     def list_to_string(items):
         items = [str(item) for item in items]
@@ -151,7 +155,7 @@ if __name__ == "__main__":
         .rename({"label": "pos", "category": "cat"})
 
     # write out
-    meta_dict = item_tbl.to_pandas().to_dict(orient='list')
+    meta_dict = item_tbl.to_pandas().to_dict(orient="list")
     pickle.dump(meta_dict,
                 open(args.output + "encoded_item_tuple_list.pkl", "wb"),
                 protocol=pickle.HIGHEST_PROTOCOL)
