@@ -14,12 +14,9 @@
 # limitations under the License.
 #
 import cloudpickle
-import multiprocessing
 import os
 import sys
-sys.path.append("/home/lwf/nano_popen/src")
 
-import torch
 from pytorch_lightning.utilities.distributed import rank_zero_only
 from pytorch_lightning.utilities.seed import reset_seed
 
@@ -51,15 +48,11 @@ if __name__ == '__main__':
 
     plugin.configure_ddp()
 
-    # Move this line here so that we can temporarily use cpu while configuring ddp
-    # and use ipex.DEVICE later on
-    # move the model to the correct device
     plugin.model_to_device()
 
     plugin.barrier()
     results = trainer.run_stage()
 
-    # persist info in ddp_spawn
     plugin.transfer_distrib_spawn_state_on_fit_end(results)
     if plugin.global_rank == 0:
         with open(os.path.join(temp_dir,
