@@ -8,8 +8,6 @@ spec:
     volumeMounts:
       - name: enclave-key
         mountPath: /graphene/Pal/src/host/Linux-SGX/signer/enclave-key.pem
-      - name: dev-gsgx
-        mountPath: /dev/gsgx
       - name: device-plugin
         mountPath: /var/lib/kubelet/device-plugins
       - name: aesm-socket
@@ -34,10 +32,7 @@ spec:
   volumes:
     - name: enclave-key
       hostPath:
-        path:  /home/sdp/glorysdj/enclave-key.pem
-    - name: dev-gsgx
-      hostPath:
-        path: /dev/gsgx
+        path:  /home/icx/glorysdj/enclave-key.pem
     - name: device-plugin
       hostPath:
         path: /var/lib/kubelet/device-plugins
@@ -46,7 +41,7 @@ spec:
         path: /var/run/aesmd/aesm.socket
     - name: data
       hostPath:
-        path: /home/sdp/glorysdj/data
+        path: /home/icx/glorysdj/data
     - name: kubeconf
       hostPath:
-        path: /home/sdp/glorysdj/kubernetes/kuberconfig
+        path: /home/icx/glorysdj/kuberconfig
