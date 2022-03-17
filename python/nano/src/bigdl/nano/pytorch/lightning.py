@@ -52,6 +52,10 @@ class LightningModuleFromTorch(LightningModule):
         nargs = self.model.forward.__code__.co_argcount
         return self(*(batch[:nargs - 1]))
 
+    def on_train_start(self) -> None:
+        assert self.loss, "Loss must not be None for training."
+        return super().on_train_start()
+
     def training_step(self, batch, batch_idx):
         y_hat = self._forward(batch)
         loss = self.loss(y_hat, batch[-1])  # use last output as target
@@ -65,14 +69,14 @@ class LightningModuleFromTorch(LightningModule):
             self.log("val/loss", loss, on_epoch=True,
                      prog_bar=True, logger=True)
         if self.metrics:
-            acc = {"val/" + type(metric).__name__: metric(y_hat, batch[-1])
+            acc = {"val/{}_{}".format(type(metric).__name__, i): metric(y_hat, batch[-1])
                    for i, metric in enumerate(self.metrics)}
             self.log_dict(acc, on_epoch=True, prog_bar=True, logger=True)
 
     def test_step(self, batch, batch_idx):
         y_hat = self._forward(batch)
         if self.metrics:
-            acc = {"test/" + type(metric).__name__: metric(y_hat, batch[-1])
+            acc = {"test/{}_{}".format(type(metric).__name__, i): metric(y_hat, batch[-1])
                    for i, metric in enumerate(self.metrics)}
             self.log_dict(acc, on_epoch=True, prog_bar=True, logger=True)
 
