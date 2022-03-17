@@ -21,10 +21,12 @@ from pytorch_lightning import LightningModule
 from torch import nn, Tensor
 from torch.nn.modules.loss import _Loss
 from torch.optim import Optimizer
+from torch.optim.lr_scheduler import _LRScheduler
 
 
 class LightningModuleFromTorch(LightningModule):
     def __init__(self, model: nn.Module, loss: _Loss = None, optimizer: Optimizer = None,
+                 scheduler: _LRScheduler = None,
                  metrics: List[Metric] = None):
         """
         Integrate pytorch modules, loss, optimizer to pytorch-lightning model.
@@ -32,12 +34,14 @@ class LightningModuleFromTorch(LightningModule):
         :param model:       Pytorch model to be converted.
         :param loss:        A torch loss function.
         :param optimizer:   A torch optimizer.
+        :param scheduler:   A torch scheduler.
         :param metrics:     A list of metrics to calculate accuracy of the model.
         """
         super().__init__()
         self.model = model
         self.loss = loss
         self.optimizer = optimizer
+        self.scheduler = scheduler
         self.metrics = metrics
 
     def forward(self, *args, **kwargs):
@@ -56,30 +60,24 @@ class LightningModuleFromTorch(LightningModule):
 
     def validation_step(self, batch, batch_idx):
         y_hat = self._forward(batch)
-        loss = self.loss(y_hat, batch[-1])  # use last output as target
-        self.log("val/loss", loss, on_epoch=True, prog_bar=True, logger=True)
+        if self.loss:
+            loss = self.loss(y_hat, batch[-1])  # use last output as target
+            self.log("val/loss", loss, on_epoch=True,
+                     prog_bar=True, logger=True)
         if self.metrics:
             acc = {"val/" + type(metric).__name__: metric(y_hat, batch[-1])
                    for i, metric in enumerate(self.metrics)}
             self.log_dict(acc, on_epoch=True, prog_bar=True, logger=True)
-        else:
-            acc = None
-        return loss, acc
 
     def test_step(self, batch, batch_idx):
         y_hat = self._forward(batch)
-        loss = self.loss(y_hat, batch[-1])  # use last output as target
-        self.log("test/loss", loss, on_epoch=True, prog_bar=True, logger=True)
         if self.metrics:
             acc = {"test/" + type(metric).__name__: metric(y_hat, batch[-1])
                    for i, metric in enumerate(self.metrics)}
             self.log_dict(acc, on_epoch=True, prog_bar=True, logger=True)
-        else:
-            acc = None
-        return loss, acc
 
     def configure_optimizers(self):
-        return self.optimizer
+        return [self.optimizer], [self.scheduler]
 
     def load_state_dict(self, state_dict: 'OrderedDict[str, Tensor]',
                         strict: bool = True):
