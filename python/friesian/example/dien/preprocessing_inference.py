@@ -98,24 +98,22 @@ if __name__ == "__main__":
     # def process_single_meta(row):
     #     obj = eval(row)
     #     cat = obj['categories'][0][-1]
-    #     if not cat:
-    #         cat = "default"
-    #     return [obj['asin'], cat.lower()]
-
+    #     return [obj['asin'], cat]
+    #
     # item_tbl = FeatureTable.read_text(args.input_meta)\
     #     .apply("value", "value", process_single_meta, dtype="array<string>")\
     #     .apply("value", "item", lambda x: x[0])\
     #     .apply("value", "category", lambda x: x[1])\
     #     .drop("value")
-    item_tbl = FeatureTable.read_csv(args.input_meta, delimiter="\t", names=['item', 'category'])\
-        .apply("category", "category", lambda x: x.lower() if x is not None else "default")
 
+    item_tbl = FeatureTable.read_csv(args.input_meta, delimiter="\t", names=['item', 'category'])
+
+    # Currently long id is not supported for add_negative_samples and add_value_features, cast to int.
     with open(args.index_folder + "vocs/cat_voc.pkl", 'rb') as f:
         categories = FeatureTable(sc.parallelize(list(pickle.load(f).items())).toDF(["category", "id"]))
         categories = categories.cast("id", "int")
         category_index = StringIndex(categories.df, "category")
     with open(args.index_folder + "vocs/mid_voc.pkl", 'rb') as f:
-        # Add negative samples doesn't support long for item id?
         items = FeatureTable(sc.parallelize(list(pickle.load(f).items())).toDF(["item", "id"]))
         items = items.cast("id", "int")
         item_index = StringIndex(items.df, "item")
@@ -163,4 +161,5 @@ if __name__ == "__main__":
     end = time.time()
     print(f"DIEN preprocessing time: {(end - begin):.2f}s")
     full_tbl.show(5)
+    print("Total number of processed records: {}".format(full_tbl.size()))
     stop_orca_context()
