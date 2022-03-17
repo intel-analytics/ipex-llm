@@ -1,6 +1,6 @@
 name: code style checking
 
-# Controls when the action will run. 
+# Controls when the action will run.
 on:
   push:
     branches: [ main ]
@@ -21,7 +21,7 @@ jobs:
     steps:
       # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v2
-      
+
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v2
         with:
@@ -29,7 +29,9 @@ jobs:
 
       - name: Install dependencies
         run: pip install pycodestyle
-      
+             pip install mypy
+             pip install wheel
+
       # Runs a single command using the runners shell
       - name: License checking
         run: bash python/dev/check-license
@@ -38,7 +40,29 @@ jobs:
         run: bash python/nano/test/run-nano-codestyle-test.sh
         env:
             ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
-      
+
+      - name: Nano type checking [pytorch]
+        run: |
+             bash python/nano/dev/release_default_linux.sh default false
+             whl_name=`ls python/nano/src/dist/`
+             pip install python/nano/src/dist/$whl_name[pytorch]
+             pip uninstall bigdl-nano -y
+             rm -rf python/nano/src/build python/nano/src/dist python/nano/src/*egg-info
+             bash python/nano/test/run-nano-type-test.sh
+        env:
+            ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
+
+      - name: Nano type checking [tensorflow]
+        run: |
+            bash python/nano/dev/release_default_linux.sh default false
+            whl_name=`ls python/nano/src/dist/`
+            pip install python/nano/src/dist/$whl_name[tensorflow]
+            pip uninstall bigdl-nano -y
+            rm -rf python/nano/src/build python/nano/src/dist python/nano/src/*egg-info
+            bash python/nano/test/run-nano-type-test.sh
+        env:
+            ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
+
       - name: Dllib style checking
         run: bash python/dllib/dev/lint-python
 
