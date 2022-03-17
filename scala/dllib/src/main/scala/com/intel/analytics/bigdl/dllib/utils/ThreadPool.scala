@@ -133,7 +133,7 @@ class ThreadPool(private var poolSize: Int) {
         task()
       } catch {
         case t : Throwable =>
-          logger.error("Error: " + ExceptionUtils.getStackTrace(t))
+//          logger.error("Error: " + ExceptionUtils.getStackTrace(t))
           throw t
       }
     }(context)).map(future => {
@@ -186,7 +186,7 @@ class ThreadPool(private var poolSize: Int) {
           task()
         } catch {
           case t : Throwable =>
-            logger.error("Error: " + ExceptionUtils.getStackTrace(t))
+//            logger.error("Error: " + ExceptionUtils.getStackTrace(t))
             throw t
         }
       }
@@ -204,7 +204,7 @@ class ThreadPool(private var poolSize: Int) {
         task()
       } catch {
         case t : Throwable =>
-          logger.error("Error: " + ExceptionUtils.getStackTrace(t))
+//          logger.error("Error: " + ExceptionUtils.getStackTrace(t))
           throw t
       }
     }(context))

@@ -119,12 +119,16 @@ def convert_exception(e: Py4JJavaError) -> CapturedException:
         return IllegalArgumentException(origin=e)
 
     c: Py4JJavaError = e.getCause()
+    if is_instance_of(gw, c, "com.intel.analytics.bigdl.dllib.utils.InvalidOperationException"):
+        return InvalidOperationException(origin=c)
+    elif is_instance_of(gw, c, "java.lang.IllegalArgumentException"):
+        return IllegalArgumentException(origin=c)
     stacktrace: str = jvm.org.apache.spark.util.Utils.exceptionString(e)
 
     return UnknownException(desc=e.toString(), stackTrace=stacktrace, cause=c)
 
 
-def capture_sql_exception(f: Callable[..., Any]) -> Callable[..., Any]:
+def capture_exception(f: Callable[..., Any]) -> Callable[..., Any]:
     def deco(*a: Any, **kw: Any) -> Any:
         try:
             return f(*a, **kw)
@@ -153,7 +157,7 @@ def install_exception_handler() -> None:
     """
     original = py4j.protocol.get_return_value
     # The original `get_return_value` is not patched, it's idempotent.
-    patched = capture_sql_exception(original)
+    patched = capture_exception(original)
     # only patch the one used in py4j.java_gateway (call Java API)
     py4j.java_gateway.get_return_value = patched
 

@@ -623,7 +623,15 @@ def callBigDlFunc(bigdl_type, name, *args):
         except Exception as e:
             error = e
             if "does not exist" not in str(e):
-                raise e
+                from bigdl.dllib.utils.errorutils import convert_exception, UnknownException
+                converted = convert_exception(e.java_exception)
+                if not isinstance(converted, UnknownException):
+                    # Hide where the exception came from that shows a non-Pythonic
+                    # JVM exception message.
+                    raise converted from None
+                else:
+                    raise e
+                # raise e
         else:
             return result
     raise error

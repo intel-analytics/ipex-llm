@@ -169,6 +169,8 @@ class Convolution2D(ZooKerasLayer):
                  border_mode="valid", subsample=(1, 1), dim_ordering="th",
                  W_regularizer=None, b_regularizer=None, bias=True,
                  input_shape=None, pads=None,  **kwargs):
+        if dim_ordering not in ("tf", "th"):
+            sys.exit("User Error: Dim ordering must be either tf or th, but got %s" %dim_ordering)
         super(Convolution2D, self).__init__(None,
                                             nb_filter,
                                             nb_row,

@@ -25,6 +25,8 @@ object Log4Error {
     if (!condition) {
       logger.error(s"*************************Usage Error: Input invalid parameter*********************\n"
         + msg)
+
+      logger.info(s"*************************System exit*********************")
       System.exit(0)
     }
   }
@@ -38,8 +40,28 @@ object Log4Error {
       throw new InvalidOperationException(errmsg)
     }
   }
+
+  def unKnowExceptionError(condition: Boolean, errmsg: String = null, fixmsg: String = null): Unit = {
+    if (!condition) {
+      if (errmsg != null) {
+        logger.error(s"\n************************* Error *********************\n"
+          + errmsg)
+      }
+      if (fixmsg != null) {
+        logger.error(s"\n*************************How to fix*********************\n"
+          + fixmsg)
+      }
+      throw new UnKnownException(errmsg)
+    }
+  }
+
+
 }
 
 class InvalidOperationException(message: String)
+  extends Exception(message) {
+}
+
+class UnKnownException(message: String)
   extends Exception(message) {
 }

@@ -24,7 +24,7 @@ import com.intel.analytics.bigdl.dllib.nn.abstractnn.{AbstractModule, Activity, 
 import com.intel.analytics.bigdl.dllib.optim._
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.dllib.utils.{MultiShape, Shape, SingleShape}
+import com.intel.analytics.bigdl.dllib.utils.{Log4Error, MultiShape, Shape, SingleShape}
 import com.intel.analytics.bigdl.dllib.keras.Net
 import com.intel.analytics.bigdl.dllib.keras.metrics.{AUC, Accuracy, BinaryAccuracy, CategoricalAccuracy, SparseCategoricalAccuracy, Top5Accuracy => ZooTop5Accuracy}
 import com.intel.analytics.bigdl.dllib.keras.models.KerasNet
@@ -160,8 +160,10 @@ object KerasUtils {
   }
 
   def toBigDLFormat(dimOrdering: String): DataFormat = {
-    require(dimOrdering.toLowerCase() == "tf" || dimOrdering.toLowerCase() == "th",
+    Log4Error.invalidInputError(dimOrdering.toLowerCase() == "tf" || dimOrdering.toLowerCase() == "th",
       s"Dim ordering must be either tf or th, but got ${dimOrdering.toLowerCase()}")
+//    require(dimOrdering.toLowerCase() == "tf" || dimOrdering.toLowerCase() == "th",
+//      s"Dim ordering must be either tf or th, but got ${dimOrdering.toLowerCase()}")
     dimOrdering.toLowerCase() match {
       case "tf" => DataFormat.NHWC
       case "th" => DataFormat.NCHW

@@ -81,10 +81,14 @@ class Reshape[T: ClassTag](
       targetShape(inferIndex) = nElements / resizeElements
     }
     else {
-      assert(targetShape.product == nonBatchInput.product,
+      Log4Error.unKnowExceptionError(targetShape.product == nonBatchInput.product,
         s"Total size after reshape must be unchanged. But in ${this.getName()}: " +
           s"input size is: ${nonBatchInput.product}, " +
           s"while reshape size is: ${targetShape.product}")
+//      require(targetShape.product == nonBatchInput.product,
+//        s"Total size after reshape must be unchanged. But in ${this.getName()}: " +
+//          s"input size is: ${nonBatchInput.product}, " +
+//          s"while reshape size is: ${targetShape.product}")
     }
     Shape(Array(input(0)) ++ targetShape)
   }
