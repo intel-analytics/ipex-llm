@@ -23,8 +23,6 @@ spec:
         securityContext:
           privileged: true
         env:
-          - name: OUTSIDE_ENCLAVE_KEY_PATH
-            value: {{ .Values.enclaveKeysPath }}
           - name: OUTSIDE_DATA_PATH
             value: {{ .Values.dataPath }}
           - name: RUNTIME_SPARK_MASTER
