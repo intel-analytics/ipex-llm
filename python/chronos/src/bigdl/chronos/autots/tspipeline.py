@@ -362,7 +362,7 @@ class TSPipeline:
 
     def _check_mixed_data_type_usage(self):
         for key in ("past_seq_len", "future_seq_len", "selected_features"):
-            if not key in self._best_config:
+            if key not in self._best_config:
                 raise TypeError("You use a data creator to fit your AutoTSEstimator, "
                                 "and use a TSDataset to predict/evaluate/fit on the TSPipeline. "
                                 "Please stick to the same data type.")
