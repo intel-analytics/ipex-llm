@@ -13,9 +13,8 @@ spec:
         image:  {{ .Values.image }}
         imagePullPolicy: Never
         command: ["/bin/sh","-c"]
-        args: ["sed -i \"s@/home/sdp/glorysdj/enclave-key.pem@$OUTSIDE_ENCLAVE_KEY_PATH@g\" spark-executor-template.yaml;
+        args: ["
                 sed -i \"s@/home/sdp/glorysdj/data@$OUTSIDE_DATA_PATH@g\" spark-executor-template.yaml;
-                cp mounts/enclave-key.pem /graphene/Pal/src/host/Linux-SGX/signer;
                 export RUNTIME_DRIVER_HOST=$( hostname -I | awk '{print $1}' );
                 export LOCAL_IP=$( hostname -I | awk '{print $1}' );
                 bash ./init.sh;
@@ -64,6 +63,9 @@ spec:
             mountPath: /dev/gsgx
           - name: aesm-socket
             mountPath: /var/run/aesmd/aesm.socket
+          - name: enclave-key
+            mountPath: /graphene/Pal/src/host/Linux-SGX/signer/enclave-key.pem
+            subPath: enclave-key.pem
           - name: secure-keys
             mountPath: /ppml/trusted-big-data-ml/work/keys
           - name: secure-password
@@ -80,6 +82,9 @@ spec:
       - name: aesm-socket
         hostPath:
           path: /var/run/aesmd/aesm.socket
+      - name: enclave-key
+        secret:
+          secretName: enclave-key
       - name: secure-keys
         secret:
           secretName: ssl-keys

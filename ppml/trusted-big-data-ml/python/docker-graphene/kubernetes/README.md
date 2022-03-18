@@ -15,7 +15,7 @@ In `bigdl-ppml-helm/values.yaml`, configure the full values for all items listed
 - `k8sMaster`: Run `kubectl cluster-info`. The output should be like `Kubernetes control plane is running at https://master_ip:master_port`. Fill in the master ip and port.
 - `pvc`: The name of the Persistent Volume Claim (PVC) of your Network File System (NFS). We assume you have a working NFS configured for your Kubernetes cluster. Please also put the `enclave-key.pem` file as well as the script used to submit your Spark job (defaulted to `./submit-spark-k8s.sh`) in the NFS so they can be discovered by all the nodes.
 
-### 2.2 Secure keys and password 
+### 2.2 Secure keys, password, and the enclave key
 
 You need to [generate secure keys and password][keysNpassword]. Run
 ``` bash
@@ -24,6 +24,8 @@ bash ../../../../scripts/generate-password.sh YOUR_PASSWORD
 kubectl apply -f keys/keys.yaml
 kubectl apply -f password/password.yaml
 ```
+
+Run `bash enclave-key-to-secret.sh` to generate your enclave key and add it to your Kubernetes cluster as a secret.
 
 ### 2.3 Create the RBAC
 ```bash
