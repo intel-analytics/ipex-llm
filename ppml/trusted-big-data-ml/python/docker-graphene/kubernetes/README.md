@@ -28,14 +28,14 @@ Run `bash enclave-key-to-secret.sh` to generate your enclave key and add it to y
 
 ### 2.3 Create the RBAC
 ```bash
-kubectl create serviceaccount spark
-kubectl create clusterrolebinding spark-role --clusterrole=edit --serviceaccount=default:spark --namespace=default
+sudo kubectl create serviceaccount spark
+sudo kubectl create clusterrolebinding spark-role --clusterrole=edit --serviceaccount=default:spark --namespace=default
 ```
 
 ### 2.4 Create k8s secret 
 
 ``` bash
-kubectl create secret generic spark-secret --from-literal secret=YOUR_SECRET
+sudo kubectl create secret generic spark-secret --from-literal secret=YOUR_SECRET
 ```
 **The secret created should be the same as `YOUR_PASSWORD` in section 2.2**. 
 
@@ -66,7 +66,11 @@ To uninstall the helm chart, run
 helm uninstall <name>
 ```
 
-Note that the `<name>` must be the same as the one you set in section 2.5. Helm does not delete the executors that are run by the driver, so for now we can only delete them manually. 
+Note that the `<name>` must be the same as the one you set in section 2.5. Helm does not delete the executors that are run by the driver, so for now we can only delete them manually: 
+``` bash
+sudo kubectl get pod | grep -o "spark-pi-.*-exec-[0-9]*" | xargs sudo kubectl delete pod
+```
+
 
 [devicePluginK8sQuickStart]: https://bigdl.readthedocs.io/en/latest/doc/PPML/QuickStart/deploy_intel_sgx_device_plugin_for_kubernetes.html
 [keysNpassword]: https://github.com/intel-analytics/BigDL/tree/main/ppml/trusted-big-data-ml/python/docker-graphene#2-prepare-data-key-and-password
