@@ -338,6 +338,91 @@ class TSPipeline:
                           best_config=best_config,
                           **data_process)
 
+    def quantize(self,
+                 calib_data,
+                 val_data=None,
+                 metric=None,
+                 conf=None,
+                 framework='pytorch_fx',
+                 approach='static',
+                 tuning_strategy='bayesian',
+                 relative_drop=None,
+                 absolute_drop=None,
+                 timeout=0,
+                 max_trials=1):
+        """
+        Quantization TSPipeline.
+        :param calib_data: A torch.utils.data.dataloader.DataLoader object for calibration.
+               Required for static quantization.
+        :param val_data: A torch.utils.data.dataloader.DataLoader object for evaluation.
+        :param metric: A str represent the metrics for tunning the quality of
+               quantization. You may choose from "mse", "mae", "rmse", "r2", "mape", "smape".
+        :param conf: A path to conf yaml file for quantization. Default to None,
+               using default config.
+        :param framework: string or list, [{'pytorch'|'pytorch_fx'|'pytorch_ipex'},
+               {'onnxrt_integerops'|'onnxrt_qlinearops'}]. Default: 'pytorch_fx'.
+               Consistent with Intel Neural Compressor.
+        :param approach: str, 'static' or 'dynamic'. Default to 'static'.
+        :param tuning_strategy: str, 'bayesian', 'basic', 'mse' or 'sigopt'. Default to 'bayesian'.
+        :param relative_drop: Float, tolerable ralative accuracy drop. Default to None,
+               e.g. set to 0.1 means that we accept a 10% increase in the metrics error.
+        :param absolute_drop: Float, tolerable ralative accuracy drop. Default to None,
+               e.g. set to 5 means that we can only accept metrics smaller than 5.
+        :param timeout: Tuning timeout (seconds). Default to 0, which means early stop.
+               Combine with max_trials field to decide when to exit.
+        :param max_trials: Max tune times. Default to 1. Combine with timeout field to
+               decide when to exit. "timeout=0, max_trials=1" means it will try quantization
+               only once and return satisfying best model.
+        """
+        from torch.utils.data import DataLoader, TensorDataset
+        # check model support for quantization
+        from bigdl.chronos.autots.utils import check_quantize_available
+        check_quantize_available(self._best_model.model)
+        # calib data should be set if the forecaster is just loaded
+        assert calib_data is not None, "You must set a `calib_data` for quantization." 
+        # change data tuple to dataloader
+        if isinstance(calib_data, tuple):
+            calib_data = DataLoader(TensorDataset(torch.from_numpy(calib_data[0]),
+                                                  torch.from_numpy(calib_data[1])))
+        if isinstance(val_data, tuple):
+            val_data = DataLoader(TensorDataset(torch.from_numpy(val_data[0]),
+                                                torch.from_numpy(val_data[1])))
+
+        # map metric str to function
+        from bigdl.chronos.metric.forecast_metrics import TORCHMETRICS_REGRESSION_MAP
+        if isinstance(metric, str):
+            metric = TORCHMETRICS_REGRESSION_MAP[metric]
+
+        # init acc criterion
+        accuracy_criterion = None
+        if relative_drop and absolute_drop:
+            raise ValueError("Please unset either `relative_drop` or `absolute_drop`.")
+        if relative_drop:
+            accuracy_criterion = {'relative': relative_drop, 'higher_is_better': False}
+        if absolute_drop:
+            accuracy_criterion = {'absolute': absolute_drop, 'higher_is_better': False}
+
+        from bigdl.nano.pytorch.trainer import Trainer
+        num_processes = max(1, torch.get_num_threads()//2)
+        self._trainer = Trainer(logger=False, max_epochs=1,
+                                checkpoint_callback=False,
+                                num_processes=num_processes,
+                                use_ipex=False)
+
+        # quantize
+        self._best_model = self._trainer.quantize(self._best_model,
+                                                  calib_dataloader=calib_data,
+                                                  val_dataloader=val_data,
+                                                  metric=metric,
+                                                  conf=conf,
+                                                  framework=framework,
+                                                  approach=approach,
+                                                  tuning_strategy=tuning_strategy,
+                                                  accuracy_criterion=accuracy_criterion,
+                                                  timeout=timeout,
+                                                  max_trials=max_trials,
+                                                  return_pl=True)
+
     def _tsdataset_to_loader(self, data, is_predict=False, batch_size=32):
         self._check_mixed_data_type_usage()
         lookback = self._best_config["past_seq_len"]
