@@ -339,6 +339,7 @@ class TSPipeline:
                           **data_process)
 
     def _tsdataset_to_loader(self, data, is_predict=False, batch_size=32):
+        self._check_mixed_data_type_usage()
         lookback = self._best_config["past_seq_len"]
         horizon = 0 if is_predict else self._best_config["future_seq_len"]
         selected_features = self._best_config["selected_features"]
@@ -350,6 +351,7 @@ class TSPipeline:
         return data_loader
 
     def _tsdataset_to_numpy(self, data, is_predict=False):
+        self._check_mixed_data_type_usage()
         lookback = self._best_config["past_seq_len"]
         horizon = 0 if is_predict else self._best_config["future_seq_len"]
         selected_features = self._best_config["selected_features"]
@@ -357,6 +359,13 @@ class TSPipeline:
                   horizon=horizon,
                   feature_col=selected_features)
         return data.to_numpy()
+
+    def _check_mixed_data_type_usage(self):
+        for key in ("past_seq_len", "future_seq_len", "selected_features"):
+            if not key in self._best_config:
+                raise TypeError("You use a data creator to fit your AutoTSEstimator, "
+                                "and use a TSDataset to predict/evaluate/fit on the TSPipeline. "
+                                "Please stick to the same data type.")
 
     def _tsdataset_unscale(self, y):
         if self._scaler:
