@@ -217,6 +217,9 @@ abstract class FGBoostModel(continuous: Boolean,
       gradData.putTensors("label", toFloatTensor(label))
     }
     // Upload
+    if (flClient == null) {
+      throw new IllegalArgumentException("FLClient not initialized.")
+    }
     flClient.fgbostStub.uploadLabel(gradData.build)
   }
 

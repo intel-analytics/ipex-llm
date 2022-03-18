@@ -142,7 +142,7 @@ class RegressionTree(
         leftSet.map(int2Integer).toList.asJava
       )
 //      bestS.setFeatureName(flattenHeaders(fIndex))
-      logger.info(s"Best local split: bestS.toString")
+      logger.info(s"Best local split: ${bestS.toString}")
       bestS
     } else {
       logger.info("Failed to find local split on node " + treeNode.nodeID)
