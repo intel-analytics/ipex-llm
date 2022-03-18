@@ -80,6 +80,9 @@ class LightningModuleFromTorch(LightningModule):
                    for i, metric in enumerate(self.metrics)}
             self.log_dict(acc, on_epoch=True, prog_bar=True, logger=True)
 
+    def predict_step(self, batch, batch_idx):
+        return self(*batch)
+
     def configure_optimizers(self):
         return [self.optimizer], [self.scheduler]
 
