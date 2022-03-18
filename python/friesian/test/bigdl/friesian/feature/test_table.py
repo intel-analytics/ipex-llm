@@ -676,6 +676,9 @@ class TestTable(TestCase):
         assert 'id' in tbl.df.columns, "id should be one column in the stringindex"
         assert 'letter' in tbl.df.columns, "letter should be one column in the stringindex"
         assert tbl.size() == 3, "the StringIndex should have three rows"
+        cast_tbl = tbl.cast("id", "long")
+        assert isinstance(cast_tbl, StringIndex), \
+            "cast on stringindex should result in stringindex"
         with self.assertRaises(Exception) as context:
             StringIndex.from_dict(indices, None)
         self.assertTrue("col_name should be str, but get None"

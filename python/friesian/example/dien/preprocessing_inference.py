@@ -110,17 +110,14 @@ if __name__ == "__main__":
 
     # Currently long id is not supported for add_negative_samples and add_value_features, cast to int.
     with open(args.index_folder + "vocs/cat_voc.pkl", "rb") as f:
-        categories = FeatureTable(sc.parallelize(list(pickle.load(f).items())).toDF(["category", "id"]))
-        categories = categories.cast("id", "int")
-        category_index = StringIndex(categories.df, "category")
+        category_df = sc.parallelize(list(pickle.load(f).items())).toDF(["category", "id"])
+        category_index = StringIndex(category_df, "category").cast("id", "int")
     with open(args.index_folder + "vocs/mid_voc.pkl", "rb") as f:
-        items = FeatureTable(sc.parallelize(list(pickle.load(f).items())).toDF(["item", "id"]))
-        items = items.cast("id", "int")
-        item_index = StringIndex(items.df, "item")
+        item_df = sc.parallelize(list(pickle.load(f).items())).toDF(["item", "id"])
+        item_index = StringIndex(item_df, "item").cast("id", "int")
     with open(args.index_folder + "vocs/uid_voc.pkl", "rb") as f:
-        users = FeatureTable(sc.parallelize(list(pickle.load(f).items())).toDF(["user", "id"]))
-        users = users.cast("id", "int")
-        user_index = StringIndex(users.df, "user")
+        user_df = sc.parallelize(list(pickle.load(f).items())).toDF(["user", "id"])
+        user_index = StringIndex(user_df, "user").cast("id", "int")
     # user_index = StringIndex.read_parquet(args.index_folder + "user.parquet")
     # item_index = StringIndex.read_parquet(args.index_folder + "item.parquet")
     # category_index = StringIndex.read_parquet(args.index_folder + "category.parquet")

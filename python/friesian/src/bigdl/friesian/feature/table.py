@@ -2081,6 +2081,10 @@ class StringIndex(Table):
         path = path + "/" + self.col_name + ".parquet"
         write_parquet(self.df, path, mode)
 
+    def cast(self, columns, dtype):
+        df_cast = super().cast(columns, dtype)
+        return StringIndex(df_cast.df, self.col_name)
+
 
 class TargetCode(Table):
     def __init__(self, df, cat_col, out_target_mean):
