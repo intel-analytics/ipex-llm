@@ -129,7 +129,8 @@ if __name__ == "__main__":
     item_tbl.cache()
 
     # Encode users should be performed after generating history sequence.
-    # Otherwise unknown users will be all merged to user 0.
+    # Otherwise unknown users will be all merged to user 0, resulting in data loss
+    # and also the task for user 0 might be OOM.
     full_tbl = transaction_tbl\
         .encode_string(["item"], [item_index]) \
         .fillna(0, ["item"])\
