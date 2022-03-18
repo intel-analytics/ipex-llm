@@ -69,20 +69,20 @@ def _parse_args():
 if __name__ == "__main__":
     args = _parse_args()
     if args.cluster_mode == "local":
-        init_orca_context("local", cores=args.executor_cores, memory=args.executor_memory)
+        sc = init_orca_context("local", cores=args.executor_cores, memory=args.executor_memory)
     elif args.cluster_mode == "standalone":
-        init_orca_context("standalone", master=args.master,
-                          cores=args.executor_cores, num_nodes=args.num_executors,
-                          memory=args.executor_memory,
-                          driver_cores=args.driver_cores,
-                          driver_memory=args.driver_memory, conf=conf)
+        sc = init_orca_context("standalone", master=args.master,
+                               cores=args.executor_cores, num_nodes=args.num_executors,
+                               memory=args.executor_memory,
+                               driver_cores=args.driver_cores,
+                               driver_memory=args.driver_memory, conf=conf)
     elif args.cluster_mode == "yarn":
-        init_orca_context("yarn-client", cores=args.executor_cores,
-                          num_nodes=args.num_executors, memory=args.executor_memory,
-                          driver_cores=args.driver_cores, driver_memory=args.driver_memory,
-                          conf=conf)
+        sc = init_orca_context("yarn-client", cores=args.executor_cores,
+                               num_nodes=args.num_executors, memory=args.executor_memory,
+                               driver_cores=args.driver_cores, driver_memory=args.driver_memory,
+                               conf=conf)
     elif args.cluster_mode == "spark-submit":
-        init_orca_context("spark-submit")
+        sc = init_orca_context("spark-submit")
     else:
         raise ValueError(
             "cluster_mode should be one of 'local', 'yarn', 'standalone' and 'spark-submit'"
@@ -90,42 +90,57 @@ if __name__ == "__main__":
 
     begin = time.time()
     transaction_tbl = FeatureTable.read_json(args.input_transaction).select(
-        ['reviewerID', 'asin', 'unixReviewTime']) \
-        .rename({'reviewerID': 'user', 'asin': 'item', 'unixReviewTime': 'time'}) \
-        .dropna(columns=['user', 'item'])
+        ["reviewerID", "asin", "unixReviewTime"]) \
+        .rename({"reviewerID": "user", "asin": "item", "unixReviewTime": "time"}) \
+        .dropna(columns=["user", "item"])
     transaction_tbl.cache()
 
-    # def process_single_meta(row):
-    #     obj = eval(row)
-    #     cat = obj['categories'][0][-1]
-    #     if not cat:
-    #         cat = "default"
-    #     return [obj['asin'], cat.lower()]
+    def process_single_meta(row):
+        obj = eval(row)
+        cat = obj["categories"][0][-1]
+        return [obj["asin"], cat]
 
-    # item_tbl = FeatureTable.read_text(args.input_meta)\
-    #     .apply("value", "value", process_single_meta, dtype="array<string>")\
-    #     .apply("value", "item", lambda x: x[0])\
-    #     .apply("value", "category", lambda x: x[1])\
-    #     .drop("value")
-    item_tbl = FeatureTable.read_csv(args.input_meta, delimiter="\t", names=['item', 'category'])\
-        .apply("category", "category", lambda x: x.lower() if x is not None else "default")
+    item_tbl = FeatureTable.read_text(args.input_meta)\
+        .apply("value", "value", process_single_meta, dtype="array<string>")\
+        .apply("value", "item", lambda x: x[0])\
+        .apply("value", "category", lambda x: x[1])\
+        .drop("value")
 
-    user_index = StringIndex.read_parquet(args.index_folder + "user.parquet")
-    item_index = StringIndex.read_parquet(args.index_folder + "item.parquet")
-    category_index = StringIndex.read_parquet(args.index_folder + "category.parquet")
+    # item_tbl = FeatureTable.read_csv(args.input_meta, delimiter="\t", names=["item", "category"])
+
+    # Currently long id is not supported for add_negative_samples and add_value_features, cast to int.
+    with open(args.index_folder + "vocs/cat_voc.pkl", "rb") as f:
+        category_df = sc.parallelize(list(pickle.load(f).items())).toDF(["category", "id"])
+        category_index = StringIndex(category_df, "category").cast("id", "int")
+    with open(args.index_folder + "vocs/mid_voc.pkl", "rb") as f:
+        item_df = sc.parallelize(list(pickle.load(f).items())).toDF(["item", "id"])
+        item_index = StringIndex(item_df, "item").cast("id", "int")
+    with open(args.index_folder + "vocs/uid_voc.pkl", "rb") as f:
+        user_df = sc.parallelize(list(pickle.load(f).items())).toDF(["user", "id"])
+        user_index = StringIndex(user_df, "user").cast("id", "int")
+    # user_index = StringIndex.read_parquet(args.index_folder + "user.parquet")
+    # item_index = StringIndex.read_parquet(args.index_folder + "item.parquet")
+    # category_index = StringIndex.read_parquet(args.index_folder + "category.parquet")
     item_size = item_index.size()
 
     item_tbl = item_tbl\
-        .encode_string(["item", "category"], [item_index, category_index])
+        .encode_string(["item", "category"], [item_index, category_index])\
+        .fillna(0, ["item", "category"])
     item_tbl.cache()
 
+    # Encode users should be performed after generating history sequence.
+    # Otherwise unknown users will be all merged to user 0, resulting in data loss
+    # and also the task for user 0 might be OOM.
     full_tbl = transaction_tbl\
-        .encode_string(['user', 'item'], [user_index, item_index])\
-        .add_hist_seq(cols=['item'], user_col="user",
-                      sort_col='time', min_len=2, max_len=100, num_seqs=1)\
-        .add_negative_samples(item_size, item_col='item', neg_num=1)\
+        .encode_string(["item"], [item_index]) \
+        .fillna(0, ["item"])\
+        .add_hist_seq(cols=["item"], user_col="user",
+                      sort_col="time", min_len=2, max_len=100, num_seqs=1)\
+        .add_negative_samples(item_size, item_col="item", neg_num=1)\
         .add_value_features(columns=["item", "item_hist_seq"],
-                            dict_tbl=item_tbl, key="item", value="category")
+                            dict_tbl=item_tbl, key="item", value="category")\
+        .encode_string(["user"], [user_index]) \
+        .fillna(0, ["user"])
 
     def list_to_string(items):
         items = [str(item) for item in items]
@@ -138,7 +153,7 @@ if __name__ == "__main__":
         .rename({"label": "pos", "category": "cat"})
 
     # write out
-    meta_dict = item_tbl.to_pandas().to_dict(orient='list')
+    meta_dict = item_tbl.to_pandas().to_dict(orient="list")
     pickle.dump(meta_dict,
                 open(args.output + "encoded_item_tuple_list.pkl", "wb"),
                 protocol=pickle.HIGHEST_PROTOCOL)
@@ -148,4 +163,5 @@ if __name__ == "__main__":
     end = time.time()
     print(f"DIEN preprocessing time: {(end - begin):.2f}s")
     full_tbl.show(5)
+    print("Total number of processed records: {}".format(full_tbl.size()))
     stop_orca_context()
