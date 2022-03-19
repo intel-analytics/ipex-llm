@@ -16,8 +16,5 @@
 
 package com.intel.analytics.bigdl.ppml.attestation
 
-abstract class QuoteGenerator {
-
-  def getQuote(userReport: Array[Byte]): Array[Byte]
-
+class AttestationRuntimeException(message: String, cause: Throwable = null) extends Exception(message, cause) {
 }
