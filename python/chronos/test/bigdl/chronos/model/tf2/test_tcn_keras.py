@@ -21,7 +21,7 @@ import pytest
 
 from bigdl.orca.test_zoo_utils import ZooTestCase
 
-from bigdl.chronos.model.tf2.tcn_keras import model_creator
+from bigdl.chronos.model.tf2.tcn_keras import model_creator, TemporalConvNet
 import numpy as np
 
 
@@ -61,11 +61,16 @@ class TestTcn(ZooTestCase):
 
     def test_seq2seq_save_load(self):
         checkpoint_file = tempfile.TemporaryDirectory().name
+        self.model.fit(self.train_data[0],
+                       self.train_data[1],
+                       epochs=2,
+                       validation_data=self.test_data)
         self.model.save(checkpoint_file)
-        restore_model = keras.models.load_model(checkpoint_file)
+        restore_model = keras.models.load_model(checkpoint_file,  custom_objects={"TemporalConvNet": TemporalConvNet})
         model_res = self.model.evaluate(self.test_data[0], self.test_data[1])
         restore_model_res = restore_model.evaluate(self.test_data[0], self.test_data[1])
         np.testing.assert_almost_equal(model_res, restore_model_res, decimal=5)
+        assert isinstance(restore_model, TemporalConvNet)
 
 
 if __name__ == '__main__':

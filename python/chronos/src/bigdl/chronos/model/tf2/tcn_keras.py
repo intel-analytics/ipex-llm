@@ -147,6 +147,10 @@ class TemporalConvNet(Model):
                 "dropout": self.dropout,
                 "repo_initialization": self.repo_initialization}
 
+    @classmethod
+    def from_config(cls, config):
+        return cls(**config)
+
 
 def model_creator(config):
     model = TemporalConvNet(future_seq_len=config["future_seq_len"],
