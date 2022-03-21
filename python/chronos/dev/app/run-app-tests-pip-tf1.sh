@@ -80,7 +80,7 @@ then
 fi
 now=$(date "+%s")
 time2=$((now-start))
-echo "#2 chronos-network-traffic-model-forecasting time used:$time1 seconds"
+echo "#2 chronos-network-traffic-model-forecasting time used:$time2 seconds"
 
 # This should be done at the very end after all tests finish.
 clear_up
