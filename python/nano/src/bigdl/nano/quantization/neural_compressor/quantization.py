@@ -88,8 +88,6 @@ class QuantizationINC(Quantization):
                 y = torch.stack(y, dim=0).numpy()
             return x, y
         if calib_dataloader:
-            self.cfg.quantization.calibration.sampling_size = len(
-                calib_dataloader.dataset)
             if "pytorch" in self.cfg.model.framework or "tensorflow" in self.cfg.model.framework:
                 self.calib_dataloader = calib_dataloader
             if "onnx" in self.cfg.model.framework:
