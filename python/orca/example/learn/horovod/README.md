@@ -21,7 +21,7 @@ conda install -y cmake==3.16.0 -c conda-forge
 conda install cxx-compiler==1.0 -c conda-forge
 conda install openmpi
 HOROVOD_WITH_PYTORCH=1; HOROVOD_WITH_GLOO=1; pip install --no-cache-dir horovod==0.19.1
-pip install analytics-zoo[ray]
+pip install bigdl-orca[ray]
 ```
 
 ## Run on local after pip install
