@@ -9,13 +9,12 @@ Please refer to the document [here][devicePluginK8sQuickStart].
 ### 2.1 Configurables (This part is going under changes)
 
 In `bigdl-ppml-helm/values.yaml`, configure the full values for all items listed: 
-- `enclaveKeysPath`: Generate your enclave key with `openssl genrsa -3 -out enclave-key.pem 3072`, and provide the full path to the enclave key here. 
 - `dataPath`: Provide the full path to your data on your host machine.
 - `image`: The PPML image you want to use.
 - `k8sMaster`: Run `kubectl cluster-info`. The output should be like `Kubernetes control plane is running at https://master_ip:master_port`. Fill in the master ip and port.
-- `pvc`: The name of the Persistent Volume Claim (PVC) of your Network File System (NFS). We assume you have a working NFS configured for your Kubernetes cluster. Please also put the `enclave-key.pem` file as well as the script used to submit your Spark job (defaulted to `./submit-spark-k8s.sh`) in the NFS so they can be discovered by all the nodes.
+- `pvc`: The name of the Persistent Volume Claim (PVC) of your Network File System (NFS). We assume you have a working NFS configured for your Kubernetes cluster. Please also put the script used to submit your Spark job (defaulted to `./submit-spark-k8s.sh`) in the NFS so it can be discovered by all the nodes.
 
-### 2.2 Secure keys and password 
+### 2.2 Secure keys, password, and the enclave key
 
 You need to [generate secure keys and password][keysNpassword]. Run
 ``` bash
@@ -25,16 +24,18 @@ kubectl apply -f keys/keys.yaml
 kubectl apply -f password/password.yaml
 ```
 
+Run `bash enclave-key-to-secret.sh` to generate your enclave key and add it to your Kubernetes cluster as a secret.
+
 ### 2.3 Create the RBAC
 ```bash
-kubectl create serviceaccount spark
-kubectl create clusterrolebinding spark-role --clusterrole=edit --serviceaccount=default:spark --namespace=default
+sudo kubectl create serviceaccount spark
+sudo kubectl create clusterrolebinding spark-role --clusterrole=edit --serviceaccount=default:spark --namespace=default
 ```
 
 ### 2.4 Create k8s secret 
 
 ``` bash
-kubectl create secret generic spark-secret --from-literal secret=YOUR_SECRET
+sudo kubectl create secret generic spark-secret --from-literal secret=YOUR_SECRET
 ```
 **The secret created should be the same as `YOUR_PASSWORD` in section 2.2**. 
 
@@ -65,7 +66,11 @@ To uninstall the helm chart, run
 helm uninstall <name>
 ```
 
-Note that the `<name>` must be the same as the one you set in section 2.5. Helm does not delete the executors that are run by the driver, so for now we can only delete them manually. 
+Note that the `<name>` must be the same as the one you set in section 2.5. Helm does not delete the executors that are run by the driver, so for now we can only delete them manually: 
+``` bash
+sudo kubectl get pod | grep -o "spark-pi-.*-exec-[0-9]*" | xargs sudo kubectl delete pod
+```
+
 
 [devicePluginK8sQuickStart]: https://bigdl.readthedocs.io/en/latest/doc/PPML/QuickStart/deploy_intel_sgx_device_plugin_for_kubernetes.html
 [keysNpassword]: https://github.com/intel-analytics/BigDL/tree/main/ppml/trusted-big-data-ml/python/docker-graphene#2-prepare-data-key-and-password
