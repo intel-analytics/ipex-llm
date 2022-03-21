@@ -12,43 +12,6 @@ chmod +x ${BIGDL_ROOT}/python/chronos/dev/app/ipynb2py.sh
 
 set -e
 
-echo "#4 start app test for chronos-anomaly-detect-unsupervised-forecast-based"
-#timer
-start=$(date "+%s")
-${BIGDL_ROOT}/python/chronos/dev/app/ipynb2py.sh ${BIGDL_ROOT}/python/chronos/use-case/AIOps/AIOps_anomaly_detect_unsupervised_forecast_based
-
-wget $FTP_URI/analytics-zoo-data/chronos-aiops/m_1932.csv -O ${BIGDL_ROOT}/python/chronos/use-case/AIOps/m_1932.csv
-echo "Finished downloading AIOps data"
-#FILENAME="${BIGDL_ROOT}/python/chronos/use-case/AIOps/m_1932.csv"
-#if [ -f "$FILENAME" ]
-#then
-#   echo "$FILENAME already exists."
-#else
-#   echo "Downloading AIOps data"
-#
-#   wget $FTP_URI/analytics-zoo-data/chronos-aiops/m_1932.csv -P ${BIGDL_ROOT}/python/chronos/use-case/AIOps
-#
-#   echo "Finished downloading AIOps data"
-#fi
-
-sed -i '/get_ipython()/d; /plot[.]/d; /plt[.]/d; /axs[.]/d' ${BIGDL_ROOT}/python/chronos/use-case/AIOps/AIOps_anomaly_detect_unsupervised_forecast_based.py
-sed -i "s/epochs=20/epochs=2/g" ${BIGDL_ROOT}/python/chronos/use-case/AIOps/AIOps_anomaly_detect_unsupervised_forecast_based.py
-cd ${BIGDL_ROOT}/python/chronos/use-case/AIOps/
-
-python ${BIGDL_ROOT}/python/chronos/use-case/AIOps/AIOps_anomaly_detect_unsupervised_forecast_based.py
-cd -
-
-exit_status=$?
-if [ $exit_status -ne 0 ];
-then
-    clear_up
-    echo "chronos-anomaly-detect-unsupervised-forecast-based failed"
-    exit $exit_status
-fi
-now=$(date "+%s")
-time4=$((now-start))
-echo "#4 chronos-anomaly-detect-unsupervised-forecast-based time used:$time4 seconds"
-
 echo "#5 start app test for chronos-anomaly-detect-unsupervised"
 #timer
 start=$(date "+%s")
