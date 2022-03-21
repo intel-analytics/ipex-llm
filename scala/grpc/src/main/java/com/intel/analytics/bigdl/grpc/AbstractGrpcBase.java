@@ -55,7 +55,7 @@ public abstract class AbstractGrpcBase {
             try {
                 return ConfigParser.loadConfigFromPath(configPath, valueType);
             } catch (IOException e) {
-                logger.error(e.getMessage());
+                logger.warn(e.getMessage());
                 return null;
             }
 
