@@ -84,7 +84,11 @@ class LightningModuleFromTorch(LightningModule):
         return self(*batch)
 
     def configure_optimizers(self):
-        return [self.optimizer], [self.scheduler]
+        optimizers = [self.optimizer]
+        schedulers = []
+        if self.scheduler:
+            schedulers.append(self.scheduler)
+        return optimizers, schedulers
 
     def load_state_dict(self, state_dict: 'OrderedDict[str, Tensor]',
                         strict: bool = True):
