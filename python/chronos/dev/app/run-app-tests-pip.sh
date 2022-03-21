@@ -103,7 +103,7 @@ then
 else
     echo "Downloading network traffic data"
 
-    wget $FTP_URI/analytics-zoo-data/network_traffic/data/data.csv -P ${BIGDL_ROOT}/python/chronos/use-case/network_traffic/data
+    wget $FTP_URI/analytics-zoo-data/network-traffic/data/data.csv -P ${BIGDL_ROOT}/python/chronos/use-case/network_traffic/data
 
     echo "Finished downloading network traffic data"
 fi
