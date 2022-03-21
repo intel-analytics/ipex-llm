@@ -16,6 +16,7 @@
 
 import tempfile
 import keras
+import tensorflow as tf
 
 import pytest
 
@@ -41,6 +42,7 @@ def create_data():
     return train_data, test_data
 
 
+@pytest.mark.skipif(tf.__version__ < '2.0.0', reason="Run only when tf>2.0.0.")
 class TestSeq2Seq(ZooTestCase):
 
     train_data, test_data = create_data()
