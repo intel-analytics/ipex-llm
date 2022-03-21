@@ -34,3 +34,11 @@ python simple_horovod_pytorch.py
 export HADOOP_CONF_DIR=path to your hadoop conf directory
 python simple_horovod_pytorch.py --cluster_mode yarn-client 
 ```
+
+## Run on K8s cluster for k8s-client mode after pip install
+```
+python pytorch_estimator.py \
+--cluster_mode k8s
+--k8s_master "k8s://https://127.0.0.1:8443"
+--container_image "intelanalytics/bigdl-k8s:latest"
+```
