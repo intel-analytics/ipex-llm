@@ -71,12 +71,14 @@ class DDPSubprocessPlugin(DDPSpawnPlugin):
 
         processes = []
         cwd_path = os.path.split(os.path.realpath(__file__))[0]
+        print(os.environ["PYTHONPATH"])
         for i in range(self.num_processes):
             env = {
                 "KMP_AFFINITY": f"granularity=fine,proclist"
                                 f"=[{','.join([str(i) for i in cpu_procs[i]])}],explicit",
                 "OMP_NUM_THREADS": str(len(cpu_procs[i])),
-                "process_idx": str(i)
+                "PROCESS_IDX": str(i),
+                "WORKER": os.environ["WORKER"]
             }
             processes.append(subprocess.Popen([sys.executable, f"{cwd_path}/worker.py",
                                                tmpdir], env=env))

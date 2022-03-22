@@ -24,14 +24,15 @@ from bigdl.nano.pytorch.plugins.ddp_subprocess import queue_dumper, queue_loader
 
 if __name__ == '__main__':
     temp_dir = sys.argv[1]
-
+    sys.path.append(os.environ["WORKER"])
+    print(os.environ["WORKER"])
     with open(os.path.join(temp_dir, "args.pkl"), 'rb') as f:
         args = cloudpickle.load(f)
 
     plugin, queue_list = args
     trainer = plugin.lightning_module.trainer
     plugin.mp_queue = queue_loader(queue_list)
-    process_idx = int(os.environ["process_idx"])
+    process_idx = int(os.environ["PROCESS_IDX"])
 
     reset_seed()
     plugin.set_world_ranks(process_idx)
