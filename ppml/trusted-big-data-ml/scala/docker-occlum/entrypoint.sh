@@ -39,8 +39,6 @@ if [ -n "$SPARK_EXTRA_CLASSPATH" ]; then
   SPARK_CLASSPATH="$SPARK_CLASSPATH:$SPARK_EXTRA_CLASSPATH"
 fi
 
-
-/opt/occlum/start_aesm.sh
 case "$SPARK_K8S_CMD" in
   driver)
     echo "SGX Mem $SGX_MEM_SIZE"

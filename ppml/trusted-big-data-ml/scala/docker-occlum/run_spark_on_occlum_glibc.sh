@@ -7,12 +7,39 @@ occlum_glibc=/opt/occlum/glibc/lib
 # occlum-node IP
 HOST_IP=`cat /etc/hosts | grep $HOSTNAME | awk '{print $1}'`
 
+check_sgx_dev() {
+    if [ -c "/dev/sgx/enclave" ]; then
+        echo "/dev/sgx/enclave is ready"
+    elif [ -c "/dev/sgx_enclave" ]; then
+        echo "/dev/sgx/enclave not ready, try to link to /dev/sgx_enclave"
+        mkdir -p /dev/sgx
+        ln -s /dev/sgx_enclave /dev/sgx/enclave
+    else
+        echo "both /dev/sgx/enclave /dev/sgx_enclave are not ready, please check the kernel and driver"
+    fi
+
+    if [ -c "/dev/sgx/provision" ]; then
+        echo "/dev/sgx/provision is ready"
+    elif [ -c "/dev/sgx_provision" ]; then
+        echo "/dev/sgx/provision not ready, try to link to /dev/sgx_provision"
+        mkdir -p /dev/sgx
+        ln -s /dev/sgx_provision /dev/sgx/provision
+    else
+        echo "both /dev/sgx/provision /dev/sgx_provision are not ready, please check the kernel and driver"
+    fi
+
+    ls -al /dev/sgx
+}
+
 init_instance() {
+    # check and fix sgx device
+    check_sgx_dev
     # Init Occlum instance
     cd /opt
     # check if occlum_spark exists
     [[ -d occlum_spark ]] || mkdir occlum_spark
     cd occlum_spark
+    /opt/occlum/start_aesm.sh
     occlum init
     new_json="$(jq '.resource_limits.user_space_size = "SGX_MEM_SIZE" |
         .resource_limits.max_num_of_threads = "SGX_THREAD" |
