@@ -17,14 +17,60 @@
 package com.intel.analytics.bigdl.ppml.attestation
 
 import org.apache.logging.log4j.LogManager
+import java.io.BufferedOutputStream;
+import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 
 class GramineQuoteGeneratorImpl extends QuoteGenerator {
 
   val logger = LogManager.getLogger(getClass)
 
-  override def getQuote(): Unit = {
-    // TODO Gramine Quote https://graphene.readthedocs.io/en/latest/attestation.html
-    logger.debug("Write user report to /dev/attestation/user_report_data")
-    logger.debug("Read quote from /dev/attestation/quote")
+  val userReportPath = "/dev/attestation/user_report_data"
+  val quotePath = "/dev/attestation/quote"
+
+  @throws(classOf[AttestationRuntimeException])
+  override def getQuote(userReportData: Array[Byte]): Array[Byte] = {
+
+    if (userReportData.length == 0 || userReportData.length > 32) {
+      logger.error("Incorrect userReport size!")
+      throw new AttestationRuntimeException("Incorrect userReportData size!")
+    }
+
+    try {
+      // write userReport 
+      val out = new BufferedOutputStream(new FileOutputStream(userReportPath))
+      out.write(userReportData)
+      out.close()
+    } catch {
+      case e: Exception => {
+        logger.error(s"Failed to write user report, ${e}")
+        throw new AttestationRuntimeException("Failed to persist user report data to Gramine!", e)
+      }
+    }
+
+    try {
+      // read quote
+      val quoteFile = new File(quotePath)
+      if (quoteFile.length == 0) {
+        logger.error("Invalid quote file length.")
+        throw new AttestationRuntimeException("Retrieving Gramine quote returned Invalid file length!")
+        return null
+      }
+      val in = new FileInputStream(quoteFile)
+      val quote = new Array[Byte](quoteFile.length.toInt)
+      in.read(quote)
+      in.close()
+      return quote
+    } catch {
+      case e: Exception => {
+        logger.error(s"Failed to get quote. ${e}")
+        throw new AttestationRuntimeException("Failed to obtain quote content from file to buffer!", e)
+        return null
+      }
+    }
+
+    throw new AttestationRuntimeException("Unexpected workflow when generating Gramine Quote!")
+    return null
   }
 }
