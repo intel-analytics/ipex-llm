@@ -25,7 +25,7 @@ from torch.fx.graph_module import GraphModule
 from torch.nn.modules.loss import _Loss
 from torch.utils.data import DataLoader
 from torchmetrics.metric import Metric
-
+from torch.optim.lr_scheduler import _LRScheduler
 from bigdl.nano.common import check_avx512
 from bigdl.nano.pytorch.lightning import LightningModuleFromTorch
 from bigdl.nano.pytorch.plugins.ddp_spawn import DDPSpawnPlugin
@@ -116,6 +116,7 @@ class Trainer(pl.Trainer):
     def compile(model: nn.Module,
                 loss: _Loss = None,
                 optimizer: torch.optim.Optimizer = None,
+                scheduler: _LRScheduler = None,
                 metrics: List[Metric] = None,
                 onnx: bool = False,
                 quantize: bool = True):
@@ -145,7 +146,7 @@ class Trainer(pl.Trainer):
                 "Loss and optimizer should be None if model is a pytorch-lightning model."
             pl_model = model
         else:
-            pl_model = LightningModuleFromTorch(model, loss, optimizer, metrics)
+            pl_model = LightningModuleFromTorch(model, loss, optimizer, scheduler, metrics)
 
         if onnx:
             try:
