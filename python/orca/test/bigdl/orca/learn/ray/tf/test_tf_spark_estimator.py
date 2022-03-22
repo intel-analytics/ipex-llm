@@ -164,8 +164,8 @@ class TestTFEstimator(TestCase):
         resource_path = os.path.join(os.path.split(__file__)[0], "../../../resources")
         file_path = os.path.join(resource_path, "orca/learn/ncf.csv")
 
-        data_xshards = read_csv(file_path, usecols=[0, 1, 2], dtype={0: np.float32, 1: np.float32,
-                                                           2: np.float32})
+        xshards = read_csv(file_path, usecols=[0, 1, 2], dtype={0: np.float32, 1: np.float32,
+                                                                2: np.float32})
         
         config = {
             "lr": 0.2
@@ -182,9 +182,15 @@ class TestTFEstimator(TestCase):
                 backend="spark",
                 model_dir=temp_dir)
 
-            res = trainer.fit(data=data_xshards,
-                              epochs=5, batch_size=4, steps_per_epoch=25,
+            res = trainer.fit(data=xshards, epochs=5, batch_size=4, steps_per_epoch=25,
                               feature_cols=["user", "item"], label_cols=["label"])
+
+            print("start saving")
+            trainer.save_weights(os.path.join(temp_dir, "cifar10_keras.h5"))
+            trainer.load_weights(os.path.join(temp_dir, "cifar10_keras.h5"))
+            res = trainer.evaluate(data=xshards, num_steps=25, batch_size=4,
+                                   feature_cols=["user", "item"], label_cols=["label"])
+            print("validation result: ", res)
         finally:
             shutil.rmtree(temp_dir)
 
