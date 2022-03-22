@@ -69,8 +69,10 @@ def train_with_linear_top_layer(model_without_top, batch_size, num_workers, data
 
 def train_torch_lightning(model, batch_size, num_workers, data_dir, accelerator=None,
                           use_orca_lite_trainer=False):
-    orig_parameters = deepcopy(list(model.named_parameters()))
-
+    orig_parameters = deepcopy(model.state_dict())
+    # list to store the right key of dict
+    orig_parameters_list = deepcopy(list(model.named_parameters()))
+    
     train_loader = create_data_loader(
         data_dir, batch_size, num_workers, data_transform)
 
@@ -83,20 +85,23 @@ def train_torch_lightning(model, batch_size, num_workers, data_dir, accelerator=
 
     trainer.fit(model, train_loader)
 
-    trained_parameters = list(model.named_parameters())
+    trained_parameters = model.state_dict()
+    trained_parameters_list = list(model.named_parameters())
 
     # Check if the training and the freeze operation is successful
-    for i in range(len(orig_parameters)):
-        name1, para1 = orig_parameters[i]
-        name2, para2 = trained_parameters[i]
-        if name1 == "model.1.bias" or name1 == "model.1.weight" or \
-                name1 == "new_classifier.1.bias" or name1 == "new_classifier.1.weight":
+    for i in range(len(orig_parameters_list)):
+        name, para= orig_parameters_list[i]
+        para1 = orig_parameters[name]
+        para2 = trained_parameters[name]
+
+        if name == "model.1.bias" or name == "model.1.weight" or \
+                name == "new_classifier.1.bias" or name == "new_classifier.1.weight":
             # Top layer is trained
             if torch.all(torch.eq(para1, para2)):
-                raise Exception("Parameter " + name1 +
+                raise Exception("Parameter " + name +
                                 " remains the same after training.")
         else:
             # Frozen parameters should not change
             if not torch.all(torch.eq(para1, para2)):
-                raise Exception(name1 + " freeze failed.")
+                raise Exception(name+ " freeze failed.")
     print("pass")
