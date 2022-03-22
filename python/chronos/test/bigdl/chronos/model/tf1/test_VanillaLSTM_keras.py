@@ -16,7 +16,7 @@
 
 import pytest
 from unittest import TestCase
-from bigdl.chronos.model.VanillaLSTM import VanillaLSTM
+from bigdl.chronos.model.tf1.VanillaLSTM_keras import VanillaLSTM
 import numpy as np
 import tempfile
 import os
