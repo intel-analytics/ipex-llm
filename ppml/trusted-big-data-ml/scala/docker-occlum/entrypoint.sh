@@ -42,6 +42,12 @@ fi
 case "$SPARK_K8S_CMD" in
   driver)
     echo "SGX Mem $SGX_MEM_SIZE"
+    if [[ -z "$DRIVER_MEMORY" ]]; then
+        echo "DRIVER_MEMORY not set, using default value 10g"
+        DRIVER_MEMORY=10g
+    else
+        echo "DRIVER_MEMORY=$DRIVER_MEMORY"
+    fi
     /opt/run_spark_on_occlum_glibc.sh init
     cd /opt/occlum_spark
     DMLC_TRACKER_URI=$SPARK_DRIVER_BIND_ADDRESS
@@ -53,8 +59,7 @@ case "$SPARK_K8S_CMD" in
         -XX:MaxMetaspaceSize=256m \
         -Djdk.lang.Process.launchMechanism=posix_spawn \
         -cp "$SPARK_CLASSPATH" \
-        -Xms$SGX_HEAP \
-        -Xmx$SGX_HEAP \
+        -Xmx$DRIVER_MEMORY \
         -XX:ActiveProcessorCount=4 \
         -Dio.netty.availableProcessors=64 \
         org.apache.spark.deploy.SparkSubmit \
