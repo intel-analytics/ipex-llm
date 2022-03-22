@@ -26,6 +26,7 @@ from test.pytorch.utils._train_torch_lightning import train_with_linear_top_laye
 from torch import nn
 import torchmetrics
 
+from bigdl.nano.pytorch.lightning import LightningModuleFromTorch
 from bigdl.nano.pytorch.trainer import Trainer
 from bigdl.nano.pytorch.vision.models import vision
 
@@ -130,6 +131,12 @@ class TestTrainer(TestCase):
         assert qmodel
         out = qmodel(next(train_loader_iter)[0])
         assert out.shape == torch.Size([256, 10])
+
+    def test_trainer_subprocess_plugin(self):
+        pl_model = LightningModuleFromTorch(self.model, self.loss, self.optimizer)
+        trainer = Trainer(num_processes=2, distributed_backend="subprocess", max_epochs=4)
+        trainer.fit(pl_model, self.train_loader)
+        trainer.test(pl_model, self.train_loader)
 
 
 if __name__ == '__main__':
