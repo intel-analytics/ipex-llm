@@ -15,7 +15,6 @@
 #
 
 import tempfile
-import keras
 import tensorflow as tf
 
 import pytest
@@ -69,6 +68,7 @@ class TestSeq2Seq(ZooTestCase):
                        epochs=2,
                        validation_data=self.test_data)
         self.model.save(checkpoint_file)
+        import keras
         restore_model = keras.models.load_model(checkpoint_file, custom_objects={"LSTMSeq2Seq": LSTMSeq2Seq})
         model_res = self.model.evaluate(self.test_data[0], self.test_data[1])
         restore_model_res = restore_model.evaluate(self.test_data[0], self.test_data[1])

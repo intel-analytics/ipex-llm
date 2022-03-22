@@ -17,7 +17,6 @@
 import pytest
 from unittest import TestCase
 from bigdl.chronos.model.tf2.VanillaLSTM_keras import LSTMModel, model_creator
-import keras
 import tensorflow as tf
 import numpy as np
 import tempfile
@@ -68,6 +67,7 @@ class TestVanillaLSTM(TestCase):
                        epochs=2,
                        validation_data=self.val_data)
         self.model.save(checkpoint_file)
+        import keras
         restore_model = keras.models.load_model(checkpoint_file, custom_objects={"LSTMModel": LSTMModel})
         model_res = self.model.evaluate(self.test_data[0], self.test_data[1])
         restore_model_res = restore_model.evaluate(self.test_data[0], self.test_data[1])
