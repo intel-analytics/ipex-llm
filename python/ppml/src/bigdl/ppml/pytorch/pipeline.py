@@ -24,6 +24,12 @@ class Pipeline:
         self.loss_fn = loss_fn
         self.optimizer = optimizer
 
+    def get_loss_from_fl_server(self):
+        """
+        Get the loss data from FLServer and construct the identical Pytorch Tensor
+        """
+        pass
+
     def train(self, x, y, epoch=2):
         self.model.train()
         pred = self.model(x)
@@ -31,7 +37,9 @@ class Pipeline:
         # when local loss_fn is called, return is a Pytorch Tensor
         # so get the tensor from FLServer, and transform to Pytorch Tensor
         # TODO: get and transform
+        server_loss = self.get_loss_from_fl_server()
         loss = self.loss_fn(pred, y)
+        loss.data = server_loss
         # back propagation
         self.optimizer.zero_grad()
         loss.backward()
