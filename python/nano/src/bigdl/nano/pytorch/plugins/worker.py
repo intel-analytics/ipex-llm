@@ -13,15 +13,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-import cloudpickle
 import os
 import sys
 
-from pytorch_lightning.utilities.distributed import rank_zero_only
+import cloudpickle
+
 from pytorch_lightning.utilities.seed import reset_seed
 
 from bigdl.nano.pytorch.plugins.ddp_subprocess import queue_dumper, queue_loader
-
 
 if __name__ == '__main__':
     temp_dir = sys.argv[1]
@@ -36,7 +35,7 @@ if __name__ == '__main__':
 
     reset_seed()
     plugin.set_world_ranks(process_idx)
-    rank_zero_only.rank = plugin.global_rank
+    # rank_zero_only.rank = plugin.global_rank
 
     plugin.init_ddp_connection(plugin.global_rank, plugin.world_size)
 

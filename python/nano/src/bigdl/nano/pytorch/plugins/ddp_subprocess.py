@@ -85,18 +85,18 @@ class DDPSubprocessPlugin(DDPSpawnPlugin):
 
     def start_training(self, trainer):
         self.model._ortsess = None
-        self.execution_loop(trainer)
+        self.execution_loop()
         trainer.optimizers = []
 
     def start_evaluating(self, trainer):
         print("evaluate")
-        self._run_subprocess(**self.mp_spawn_kwargs)
+        self.execution_loop()
 
     def start_predicting(self, trainer):
         print("predict")
-        self._run_subprocess(**self.mp_spawn_kwargs)
+        self.execution_loop()
 
-    def execution_loop(self, trainer):
+    def execution_loop(self):
         if self.is_global_zero and not torch.distributed.is_initialized():
             log.info("-" * 100)
             log.info(f"distributed_backend={self.distributed_backend}")

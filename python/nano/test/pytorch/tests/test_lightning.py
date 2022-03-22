@@ -72,3 +72,14 @@ class TestLightningModuleFromTorch(TestCase):
         torch.save(pl_model.state_dict(), "lightning_resnet18_test.pth")
         state_dict = torch.load("lightning_resnet18_test.pth")
         pl_model.load_state_dict(state_dict)
+
+    def test_subporcess_plugin(self):
+        # Test if subprocess plugin works
+        pl_model = LightningModuleFromTorch(
+            model, loss, optimizer,
+            [torchmetrics.F1(num_classes), torchmetrics.Accuracy(num_classes=10)]
+        )
+        data_loader = create_data_loader(data_dir, batch_size, num_workers, data_transform)
+        trainer = Trainer(num_processes=2, distributed_backend="subprocess", max_epochs=4)
+        trainer.fit(pl_model, data_loader, data_loader)
+        trainer.test(pl_model, data_loader)
