@@ -15,7 +15,7 @@
 #
 
 from bigdl.chronos.forecaster.tf.base_forecaster import BaseTF2Forecaster
-from bigdl.chronos.model.VanillaLSTM_keras import model_creator
+from bigdl.chronos.model.tf2.VanillaLSTM_keras import model_creator
 
 
 class LSTMForecaster(BaseTF2Forecaster):

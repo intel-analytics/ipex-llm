@@ -15,7 +15,7 @@
 #
 
 from bigdl.chronos.forecaster.tf.base_forecaster import BaseTF2Forecaster
-from bigdl.chronos.model.Seq2Seq_keras import model_creator
+from bigdl.chronos.model.tf2.Seq2Seq_keras import model_creator
 
 
 class Seq2SeqForecaster(BaseTF2Forecaster):

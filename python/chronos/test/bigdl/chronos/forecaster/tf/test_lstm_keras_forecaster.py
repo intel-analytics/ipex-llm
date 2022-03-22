@@ -18,7 +18,6 @@ import pytest
 import tempfile
 
 from bigdl.chronos.forecaster.tf.lstm_forecaster import LSTMForecaster
-from bigdl.nano.tf.keras import Model
 from unittest import TestCase
 import numpy as np
 
@@ -73,7 +72,8 @@ class TestLSTMForecaster(TestCase):
         with tempfile.TemporaryDirectory() as checkpoint_file:
             forecaster.save(checkpoint_file)
             forecaster.load(checkpoint_file)
-            assert isinstance(forecaster.internal, Model)
+            from bigdl.chronos.model.tf2.VanillaLSTM_keras import LSTMModel
+            assert isinstance(forecaster.internal, LSTMModel)
         load_model_yhat = forecaster.predict(test_data[0])
         assert yhat.shape == (400, 1, 2)
         np.testing.assert_almost_equal(yhat, load_model_yhat, decimal=5)

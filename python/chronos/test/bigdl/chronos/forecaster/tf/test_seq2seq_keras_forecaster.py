@@ -17,7 +17,6 @@ import pytest
 import tempfile
 
 from bigdl.chronos.forecaster.tf.seq2seq_forecaster import Seq2SeqForecaster
-from bigdl.nano.tf.keras import Model
 from unittest import TestCase
 import numpy as np
 
@@ -75,7 +74,8 @@ class TestSeq2SeqModel(TestCase):
         with tempfile.TemporaryDirectory() as checkpoint_file:
             forecaster.save(checkpoint_file)
             forecaster.load(checkpoint_file)
-            assert isinstance(forecaster.internal, Model)
+            from bigdl.chronos.model.tf2.Seq2Seq_keras import LSTMSeq2Seq
+            assert isinstance(forecaster.internal, LSTMSeq2Seq)
         load_model_yhat = forecaster.predict(test_data[0])
         assert yhat.shape == (400, 2, 2)
         np.testing.assert_almost_equal(yhat, load_model_yhat, decimal=5)
