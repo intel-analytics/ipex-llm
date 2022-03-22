@@ -44,7 +44,7 @@ case "$SPARK_K8S_CMD" in
     echo "SGX Mem $SGX_MEM_SIZE"
     if [[ -z "$DRIVER_MEMORY" ]]; then
         echo "DRIVER_MEMORY not set, using default value 10g"
-        DRIVER_MEMORY="10g"
+        DRIVER_MEMORY=10g
     else
         echo "DRIVER_MEMORY=$DRIVER_MEMORY"
     fi
