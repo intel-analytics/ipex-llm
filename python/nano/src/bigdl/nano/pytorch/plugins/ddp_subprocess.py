@@ -71,7 +71,6 @@ class DDPSubprocessPlugin(DDPSpawnPlugin):
 
         processes = []
         cwd_path = os.path.split(os.path.realpath(__file__))[0]
-        print(os.environ["PYTHONPATH"])
         for i in range(self.num_processes):
             env = {
                 "KMP_AFFINITY": f"granularity=fine,proclist"
