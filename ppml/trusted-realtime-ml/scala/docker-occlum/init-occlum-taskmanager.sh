@@ -15,7 +15,6 @@ init_instance() {
                 .resource_limits.kernel_space_heap_size="SGX_KERNEL_HEAP" |
                 .resource_limits.max_num_of_threads = "SGX_THREAD"  |
                 .process.default_heap_size = "SGX_HEAP" |
-                .process.default_mmap_size = "SGX_MMAP" |
                 .entry_points = [ "/usr/lib/jvm/java-11-openjdk-amd64/bin" ] |
                 .env.default = [ "LD_LIBRARY_PATH=/usr/lib/jvm/java-11-openjdk-amd64/lib/server:/usr/lib/jvm/java-11-openjdk-amd64/lib:/lib:/opt/occlum/glibc/lib/", "OMP_NUM_THREADS=4", "KMP_AFFINITY=verbose,granularity=fine,compact,1,0", "KMP_BLOCKTIME=20" ]' Occlum.json)" && \
     echo "${new_json}" > Occlum.json
@@ -44,13 +43,7 @@ init_instance() {
     else
         sed -i "s/SGX_KERNEL_HEAP/${SGX_KERNEL_HEAP}/g" Occlum.json
     fi
-
-    if [[ -z "$SGX_MMAP" ]]; then
-        sed -i "s/SGX_MMAP/26000MB/g" Occlum.json
-    else
-        sed -i "s/SGX_MMAP/${SGX_MMAP}/g" Occlum.json
-    fi
-   }
+}
 
 build_flink() {
     # Copy JVM and class file into Occlum instance and build
