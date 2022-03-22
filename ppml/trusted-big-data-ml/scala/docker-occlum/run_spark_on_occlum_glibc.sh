@@ -7,18 +7,44 @@ occlum_glibc=/opt/occlum/glibc/lib
 # occlum-node IP
 HOST_IP=`cat /etc/hosts | grep $HOSTNAME | awk '{print $1}'`
 
+check_sgx_dev() {
+    if [ -c "/dev/sgx/enclave" ]; then
+        echo "/dev/sgx/enclave is ready"
+    elif [ -c "/dev/sgx_enclave" ]; then
+        echo "/dev/sgx/enclave not ready, try to link to /dev/sgx_enclave"
+        mkdir -p /dev/sgx
+        ln -s /dev/sgx_enclave /dev/sgx/enclave
+    else
+        echo "both /dev/sgx/enclave /dev/sgx_enclave are not ready, please check the kernel and driver"
+    fi
+
+    if [ -c "/dev/sgx/provision" ]; then
+        echo "/dev/sgx/provision is ready"
+    elif [ -c "/dev/sgx_provision" ]; then
+        echo "/dev/sgx/provision not ready, try to link to /dev/sgx_provision"
+        mkdir -p /dev/sgx
+        ln -s /dev/sgx_provision /dev/sgx/provision
+    else
+        echo "both /dev/sgx/provision /dev/sgx_provision are not ready, please check the kernel and driver"
+    fi
+
+    ls -al /dev/sgx
+}
+
 init_instance() {
+    # check and fix sgx device
+    check_sgx_dev
     # Init Occlum instance
     cd /opt
     # check if occlum_spark exists
     [[ -d occlum_spark ]] || mkdir occlum_spark
     cd occlum_spark
+    /opt/occlum/start_aesm.sh
     occlum init
     new_json="$(jq '.resource_limits.user_space_size = "SGX_MEM_SIZE" |
         .resource_limits.max_num_of_threads = "SGX_THREAD" |
         .process.default_heap_size = "SGX_HEAP" |
         .resource_limits.kernel_space_heap_size="SGX_KERNEL_HEAP" |
-        .process.default_mmap_size = "SGX_MMAP" |
         .entry_points = [ "/usr/lib/jvm/java-11-openjdk-amd64/bin" ] |
         .env.untrusted = [ "DMLC_TRACKER_URI", "SPARK_DRIVER_URL", "SPARK_TESTING" ] |
         .env.default = [ "LD_LIBRARY_PATH=/usr/lib/jvm/java-11-openjdk-amd64/lib/server:/usr/lib/jvm/java-11-openjdk-amd64/lib:/usr/lib/jvm/java-11-openjdk-amd64/../lib:/lib","SPARK_CONF_DIR=/bin/conf","SPARK_ENV_LOADED=1","PYTHONHASHSEED=0","SPARK_HOME=/bin","SPARK_SCALA_VERSION=2.12","SPARK_JARS_DIR=/bin/jars","LAUNCH_CLASSPATH=/bin/jars/*",""]' Occlum.json)" && \
@@ -46,12 +72,6 @@ init_instance() {
         sed -i "s/SGX_KERNEL_HEAP/1GB/g" Occlum.json
     else
         sed -i "s/SGX_KERNEL_HEAP/${SGX_KERNEL_HEAP}/g" Occlum.json
-    fi
-    
-    if [[ -z "$SGX_MMAP" ]]; then
-        sed -i "s/SGX_MMAP/10GB/g" Occlum.json
-    else
-        sed -i "s/SGX_MMAP/${SGX_MMAP}/g" Occlum.json
     fi
 }
 
