@@ -283,6 +283,8 @@ class SparkTFEstimator():
         )
 
         if isinstance(data, SparkXShards):
+            if data._get_class_name() == 'pandas.core.frame.DataFrame':
+                data = process_xshards_of_pandas_dataframe(data, feature_cols, label_cols)
             # set train/validation data
             def transform_func(iter, init_param, param):
                 partition_data = list(iter)
