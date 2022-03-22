@@ -115,7 +115,6 @@ class BaseTF2Forecaster(Forecaster):
 
         :params checkpoint_file: The checkpoint file location you want to load the forecaster.
         """
-        _load_config = {f"{self.internal.__class__.__name__}": self.internal.__class__}
         self.internal = keras.models.load_model(checkpoint_file,
-                                                custom_objects=_load_config)
+                                                custom_objects=self.custom_objects_config)
         self.fitted = True

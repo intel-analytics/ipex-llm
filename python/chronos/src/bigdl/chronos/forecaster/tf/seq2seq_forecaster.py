@@ -15,7 +15,7 @@
 #
 
 from bigdl.chronos.forecaster.tf.base_forecaster import BaseTF2Forecaster
-from bigdl.chronos.model.tf2.Seq2Seq_keras import model_creator
+from bigdl.chronos.model.tf2.Seq2Seq_keras import model_creator, LSTMSeq2Seq
 
 
 class Seq2SeqForecaster(BaseTF2Forecaster):
@@ -108,6 +108,7 @@ class Seq2SeqForecaster(BaseTF2Forecaster):
 
         # model creator settings
         self.model_creator = model_creator
+        self.custom_objects_config = {"LSTMSeq2Seq": LSTMSeq2Seq}
 
         # distributed settings
         # self.distributed = distributed

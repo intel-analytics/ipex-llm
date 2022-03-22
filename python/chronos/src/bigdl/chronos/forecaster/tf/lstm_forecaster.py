@@ -15,7 +15,7 @@
 #
 
 from bigdl.chronos.forecaster.tf.base_forecaster import BaseTF2Forecaster
-from bigdl.chronos.model.tf2.VanillaLSTM_keras import model_creator
+from bigdl.chronos.model.tf2.VanillaLSTM_keras import model_creator, LSTMModel
 
 
 class LSTMForecaster(BaseTF2Forecaster):
@@ -96,6 +96,7 @@ class LSTMForecaster(BaseTF2Forecaster):
 
         # model creator settings
         self.model_creator = model_creator
+        self.custom_objects_config = {"LSTMModel": LSTMModel}
 
         # distributed settings
         # self.distributed = distributed
