@@ -37,7 +37,7 @@ from bigdl.orca.learn.tf2.spark_runner import SparkRunner
 from bigdl.orca.learn.utils import find_free_port, find_ip_and_free_port
 from bigdl.orca.learn.utils import maybe_dataframe_to_xshards, dataframe_to_xshards, \
     convert_predict_xshards_to_dataframe, make_data_creator, load_model, \
-    save_model
+    save_model, process_xshards_of_pandas_dataframe
 from bigdl.orca.learn.log_monitor import start_log_server
 from bigdl.orca.data.shard import SparkXShards
 from bigdl.orca import OrcaContext
@@ -97,7 +97,7 @@ class SparkTFEstimator():
     def _get_cluster_info(self, sc):
         cluster_info = self.workerRDD.barrier().mapPartitions(find_ip_and_free_port).collect()
         return cluster_info
-
+    
     def fit(self, data, epochs=1, batch_size=32, verbose=1,
             callbacks=None, validation_data=None, class_weight=None, initial_epoch=0,
             steps_per_epoch=None, validation_steps=None, validation_freq=1,
@@ -166,6 +166,12 @@ class SparkTFEstimator():
         )
 
         if isinstance(data, SparkXShards):
+            if data._get_class_name() == 'pandas.core.frame.DataFrame':
+                data, validation_data = process_xshards_of_pandas_dataframe(data,
+                                                                            feature_cols,
+                                                                            label_cols,
+                                                                            validation_data,
+                                                                            "fit")
             # set train/validation data
             if validation_data is None:
                 def transform_func(iter, init_param, param):
