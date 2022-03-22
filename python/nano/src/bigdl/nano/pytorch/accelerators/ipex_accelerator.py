@@ -80,8 +80,8 @@ class IPEXAccelerator(Accelerator):
     '''
     def setup_precision_plugin(self) -> None:
         """Attaches the precision plugin to the accelerator."""
-        model, optimizers, schedulers = self.precision_plugin.connect(self.model,
-                                                                      self.optimizers, self.lr_schedulers)
+        model, optimizers, schedulers = self.precision_plugin.connect(
+            self.model, self.optimizers, self.lr_schedulers)
         model, optimizer = ipex.optimize(model,
                                          optimizer=optimizers[0], inplace=True)
         self.model = model
