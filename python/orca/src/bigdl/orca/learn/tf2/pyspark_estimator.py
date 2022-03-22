@@ -97,7 +97,7 @@ class SparkTFEstimator():
     def _get_cluster_info(self, sc):
         cluster_info = self.workerRDD.barrier().mapPartitions(find_ip_and_free_port).collect()
         return cluster_info
-    
+
     def fit(self, data, epochs=1, batch_size=32, verbose=1,
             callbacks=None, validation_data=None, class_weight=None, initial_epoch=0,
             steps_per_epoch=None, validation_steps=None, validation_freq=1,
@@ -166,13 +166,13 @@ class SparkTFEstimator():
         )
 
         if isinstance(data, SparkXShards):
+            # set train/validation data
             if data._get_class_name() == 'pandas.core.frame.DataFrame':
                 data, validation_data = process_xshards_of_pandas_dataframe(data,
                                                                             feature_cols,
                                                                             label_cols,
                                                                             validation_data,
                                                                             "fit")
-            # set train/validation data
             if validation_data is None:
                 def transform_func(iter, init_param, param):
                     partition_data = list(iter)
@@ -283,9 +283,10 @@ class SparkTFEstimator():
         )
 
         if isinstance(data, SparkXShards):
+            # set train/validation data
             if data._get_class_name() == 'pandas.core.frame.DataFrame':
                 data = process_xshards_of_pandas_dataframe(data, feature_cols, label_cols)
-            # set train/validation data
+
             def transform_func(iter, init_param, param):
                 partition_data = list(iter)
                 param["data_creator"] = make_data_creator(partition_data)
