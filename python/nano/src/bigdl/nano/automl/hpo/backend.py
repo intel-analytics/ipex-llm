@@ -31,26 +31,28 @@ class OptunaBackend(object):
         config = {}
         for hp in hp_ordering:
             hp_obj = configspace.get_hyperparameter(hp)
+            hp_prefix = hp_obj.meta.setdefault('prefix',None)
+            hp_name = hp_prefix+':'+hp if hp_prefix else hp
             hp_type = str(type(hp_obj)).lower()  # type of hyperparam
             if 'integer' in hp_type:
                 hp_dimension = trial.suggest_int(
-                    name=hp, low=int(hp_obj.lower), high=int(hp_obj.upper))
+                    name=hp_name, low=int(hp_obj.lower), high=int(hp_obj.upper))
             elif 'float' in hp_type:
                 if hp_obj.log:  # log10-scale hyperparmeter
                     hp_dimension = trial.suggest_loguniform(
-                        name=hp, low=float(hp_obj.lower), high=float(hp_obj.upper))
+                        name=hp_name, low=float(hp_obj.lower), high=float(hp_obj.upper))
                 else:
                     hp_dimension = trial.suggest_float(
-                        name=hp, low=float(hp_obj.lower), high=float(hp_obj.upper))
+                        name=hp_name, low=float(hp_obj.lower), high=float(hp_obj.upper))
             elif 'categorical' in hp_type:
                 hp_dimension = trial.suggest_categorical(
-                    name=hp, choices=hp_obj.choices)
+                    name=hp_name, choices=hp_obj.choices)
             elif 'ordinal' in hp_type:
                 hp_dimension = trial.suggest_categorical(
-                    name=hp, choices=hp_obj.sequence)
+                    name=hp_name, choices=hp_obj.sequence)
             else:
                 raise ValueError("unknown hyperparameter type: %s" % hp)
-            config[hp] = hp_dimension
+            config[hp_name] = hp_dimension
         return config
 
     @staticmethod

@@ -74,6 +74,22 @@ class SimpleSpace(Space):
         return self.get_hp(name='')
 
     @property
+    def prefix(self):
+        """Set default value for hyperparameter corresponding to
+           this search space. The default value is always tried
+           in the first trial of HPO.
+        """
+        return self.hp.meta.setdefault('prefix',None)
+
+    @prefix.setter
+    def prefix(self, value):
+        """Set default value for hyperparameter corresponding to
+           this search space. The default value is always tried
+           in the first trial of HPO.
+        """
+        self.hp.meta['prefix'] = value
+
+    @property
     def default(self):
         """Return default value of hyperparameter corresponding to
            this search space. This value is tried first during
@@ -114,6 +130,22 @@ class NestedSpace(Space):
         """ ConfigSpace representation of this search space.
         """
         raise NotImplementedError
+
+    @property
+    def prefix(self):
+        """Set default value for hyperparameter corresponding to
+           this search space. The default value is always tried
+           in the first trial of HPO.
+        """
+        return self.cs.meta.setdefault('prefix', None)
+
+    @prefix.setter
+    def prefix(self, value):
+        """Set default value for hyperparameter corresponding to
+           this search space. The default value is always tried
+           in the first trial of HPO.
+        """
+        self.cs.meta['prefix'] = value
 
     @property
     def kwspaces(self):
@@ -403,8 +435,9 @@ class Categorical(NestedSpace):
     b = ag.space.Categorical('resnet50', AutoObj())
     """
 
-    def __init__(self, *data):
+    def __init__(self, *data, prefix=None):
         self.data = [*data]
+        self._prefix = prefix
 
     def __iter__(self):
         for elem in self.data:
@@ -423,11 +456,12 @@ class Categorical(NestedSpace):
     def cs(self):
         """ ConfigSpace representation of this search space.
         """
-        cs = CS.ConfigurationSpace()
+        cs = CS.ConfigurationSpace(meta={'prefix':self._prefix})
         if len(self.data) == 0:
-            return CS.ConfigurationSpace()
+            return CS.ConfigurationSpace(meta={'prefix':self._prefix})
         hp = CSH.CategoricalHyperparameter(
-            name='choice', choices=range(len(self.data)))
+            name='choice', choices=range(len(self.data)),
+            meta={})
         _add_hp(cs, hp)
         for i, v in enumerate(self.data):
             if isinstance(v, NestedSpace):
@@ -485,11 +519,12 @@ class Real(SimpleSpace):
     >>> learning_rate = ag.Real(0.01, 0.1, log=True)
     """
 
-    def __init__(self, lower, upper, default=None, log=False):
+    def __init__(self, lower, upper, default=None, log=False, prefix=None):
         self.lower = lower
         self.upper = upper
         self.log = log
         self._default = default
+        self._prefix = prefix
 
     def get_hp(self, name):
 
@@ -498,7 +533,8 @@ class Real(SimpleSpace):
             lower=self.lower,
             upper=self.upper,
             default_value=self._default,
-            log=self.log)
+            log=self.log,
+            meta={'prefix':self._prefix})
 
 
 class Int(SimpleSpace):
@@ -521,17 +557,19 @@ class Int(SimpleSpace):
     >>> range = ag.space.Int(0, 100)
     """
 
-    def __init__(self, lower, upper, default=None):
+    def __init__(self, lower, upper, default=None,prefix=None):
         self.lower = lower
         self.upper = upper
         self._default = default
+        self._prefix = prefix
 
     def get_hp(self, name):
         return CSH.UniformIntegerHyperparameter(
             name=name,
             lower=self.lower,
             upper=self.upper,
-            default_value=self._default)
+            default_value=self._default,
+            meta={'prefix':self._prefix})
 
 
 class Bool(Int):

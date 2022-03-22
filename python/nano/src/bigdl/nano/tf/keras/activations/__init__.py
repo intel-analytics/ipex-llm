@@ -14,7 +14,6 @@
 # limitations under the License.
 #
 
-from bigdl.nano.tf.keras.layers.embeddings import Embedding
 
-from bigdl.nano.automl.utils.register_modules import register_layers
-register_layers(globals())
+from bigdl.nano.automl.utils.register_modules import register_activations
+register_activations(globals())

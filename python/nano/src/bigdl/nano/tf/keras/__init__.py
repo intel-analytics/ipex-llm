@@ -20,5 +20,7 @@ try:
     tf.keras.Model.quantize = quantize
 except ImportError:
     print("Warning: Intel Neural Compressor should be installed if you need quantization.")
+
 from .Sequential import Sequential
 from .Model import Model
+from .Input import Input

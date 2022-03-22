@@ -31,3 +31,8 @@ if platform.system() != "Darwin":
                       "please run `source bigdl-nano-init`")
 
     tf.config.set_soft_device_placement(enabled=True)
+
+
+
+from bigdl.nano.automl.utils.register_modules import register_tf_funcs
+register_tf_funcs(globals())

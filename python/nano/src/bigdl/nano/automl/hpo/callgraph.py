@@ -14,6 +14,7 @@
 # limitations under the License.
 #
 
+from ast import Call
 import networkx as nx
 import tensorflow as tf
 from .space import AutoObject
@@ -157,12 +158,9 @@ class CallCache():
         return cache
 
     @staticmethod
-    def update(arguments, current, type=CALLTYPE.LAYER_CALL):
+    def update(arguments, current, ctype=CALLTYPE.LAYER_CALL):
         def update_cache_from_input(cache, inp):
-            if tf.is_tensor(inp):
-                return
-                #cache.tensors[inp.ref()] = inp
-            elif isinstance(inp, AutoObject):
+            if isinstance(inp, AutoObject):
                 assert(inp._callgraph is not None)
                 input_callgraph = inp._callgraph
                 # merge call graph from the input
@@ -170,58 +168,92 @@ class CallCache():
                     cache.update_tensors(input_callgraph)
                     cache.update_calls(input_callgraph)
                     input_callgraph.skip = True
+            elif isinstance(inp, list) or isinstance(inp, tuple):
+                for item in inp:
+                    update_cache_from_input(cache,item)
+            elif isinstance(inp, dict):
+                for _, item in inp.items():
+                    update_cache_from_input(cache,item)
+            else:
+                # ignore other arguments
+                pass
 
         #print((current, arguments))
         cur_cache = CallCache.create()
 
-        if type == CALLTYPE.LAYER_CALL:
-            if isinstance(arguments, list):
-                for inp in arguments:
-                    update_cache_from_input(cur_cache,inp)
-            else:
-                update_cache_from_input(cur_cache,arguments)
-            cur_cache.append_call(current, arguments, CALLTYPE.LAYER_CALL)
-        elif type == CALLTYPE.FUNC_SLICE:
+        if ctype == CALLTYPE.LAYER_CALL or ctype == CALLTYPE.FUNC_CALL:
+            # loop over all arguments to find any autoobjects in input
+            # and merge down the callcache
+            # if isinstance(arguments, list) or isinstance(arguments,tuple):
+            #     for inp in arguments:
+            #         update_cache_from_input(cur_cache,inp)
+            # elif isinstance(arguments, dict):
+            #     for _, inp in arguments.items():
+            #         update_cache_from_input(cur_cache,inp)
+            # else:
+            #     update_cache_from_input(cur_cache,arguments)
+            update_cache_from_input(cur_cache,arguments)
+            cur_cache.append_call(current, arguments, ctype)
+        elif ctype == CALLTYPE.FUNC_SLICE:
             (source, slice_args) = arguments
             update_cache_from_input(cur_cache, source)
             cur_cache.append_call(current,
                                   arguments,
                                   CALLTYPE.FUNC_SLICE)
-        elif type == CALLTYPE.FUNC_CALL:
-            cur_cache.append_call(current, arguments, CALLTYPE.FUNC_CALL)
         else:
-            raise ValueError("Unexpected CallType: %s" % type)
+            raise ValueError("Unexpected CallType: %s" % ctype)
 
         return cur_cache
 
 
     @staticmethod
     def execute(inputs, outputs, trial):
-        def process_node(n, cache):
-            if tf.is_tensor(n):
-                tensor = n
+        def _replace_autoobj(n, cache):
+            if isinstance(n, AutoObject):
+                new_n = cache.get_tensor(n)
             else:
-                tensor = cache.get_tensor(n)
-            return tensor
+                new_n = n
+            return new_n
+        # def _process_arguments_simple(arguments, cache, processor):
+        #     if isinstance(arguments, list) :
+        #         new_arguments = [processor(arg, cache)
+        #                             for arg in arguments]
+
+        #     else:
+        #         new_arguments = processor(arguments, cache)
+        #     return new_arguments
+        def _process_arguments(arguments, cache):
+            # TODO refactor
+            if isinstance(arguments, list) :
+                new_arguments = [_process_arguments(
+                    arg, cache) for arg in arguments]
+            elif isinstance(arguments, tuple):
+                lst = [_process_arguments(
+                    arg, cache) for arg in arguments]
+                new_arguments=tuple(lst)
+            elif isinstance(arguments, dict):
+                new_arguments = arguments.copy()
+                for name,arg in new_arguments.items():
+                    new_arg = _process_arguments(
+                        arg, cache)
+                    new_arguments[name] = new_arg
+            else:
+                new_arguments = _replace_autoobj(arguments, cache)
+            return new_arguments
 
         out_cache = outputs._callgraph
-        #for autolayer, parent in sorted_nodes:
-
         # get output tensors
         for call_type, caller, arguments in out_cache.calls:
             if call_type == CALLTYPE.LAYER_CALL:
-                inp = arguments
-                if isinstance(arguments, list):
-                    in_tensors = [ process_node(p, out_cache) for p in inp]
-                else:
-                    in_tensors = process_node(inp, out_cache)
+                new_arguments = _process_arguments(
+                    arguments, out_cache)
+                # new_arguments = CallCache._process_arguments_simple(
+                #      arguments, out_cache, replace_autoobj)
                 # layer is an auto object
-                if isinstance(caller, AutoObject):
-                    instance = OptunaBackend.instantiate(trial, caller)
-                else:
-                    instance = caller
+                assert(isinstance(caller, AutoObject))
+                instance = OptunaBackend.instantiate(trial, caller)
                 # the actual excution of the functional API
-                out_tensor = instance(in_tensors)
+                out_tensor = instance(new_arguments)
             elif call_type == CALLTYPE.FUNC_SLICE:
                 source, slice_args = arguments
                 slice_args, slice_kwargs =slice_args
@@ -229,7 +261,14 @@ class CallCache():
                 # the actual excution of the functional API
                 out_tensor = source_tensor.__getitem__(*slice_args, **slice_kwargs)
             elif call_type == CALLTYPE.FUNC_CALL:
-                # we disable search spaces in func arguments for now
+                # out_tensor = OptunaBackend.instantiate(trial, caller)
+                new_arguments = _process_arguments(
+                    arguments, out_cache)
+                assert(isinstance(caller, AutoObject))
+                # assume tensors does not exist in kwargs
+                # replace only the non-kwargs with new_arguments
+                # TODO revisit to validate the parent tensors in kwargs
+                caller.args, caller.kwargs = new_arguments
                 out_tensor = OptunaBackend.instantiate(trial, caller)
             else:
                 raise ValueError("Unexpected CallType: %s" % type)

@@ -227,7 +227,7 @@ def func(**kwvars):
                 self._callgraph = CallCache.update(
                     (self.source, self.slice_arguments),
                     self,
-                    type=CALLTYPE.FUNC_SLICE)
+                    ctype=CALLTYPE.FUNC_SLICE)
 
             def sample(self, **config):
                 slice_args, slice_kwargs = self.slice_arguments
@@ -259,7 +259,7 @@ def func(**kwvars):
                 self._callgraph = CallCache.update(
                     (self.args, self.kwargs),
                     self,
-                    type=CALLTYPE.FUNC_CALL)
+                    ctype=CALLTYPE.FUNC_CALL)
 
             def __getitem__(self, *args, **kwargs):
                 self.slice_args = args
