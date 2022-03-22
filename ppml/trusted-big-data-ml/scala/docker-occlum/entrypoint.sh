@@ -38,13 +38,13 @@ readarray -t SPARK_EXECUTOR_JAVA_OPTS < /tmp/java_opts.txt
 if [ -n "$SPARK_EXTRA_CLASSPATH" ]; then
   SPARK_CLASSPATH="$SPARK_CLASSPATH:$SPARK_EXTRA_CLASSPATH"
 fi
-j
+
 case "$SPARK_K8S_CMD" in
   driver)
     echo "SGX Mem $SGX_MEM_SIZE"
     if [[ -z "$DRIVER_MEMORY" ]]; then
         echo "DRIVER_MEMORY not set, using default value 10g"
-        DRIVER_MEMORY=10g
+        DRIVER_MEMORY="10g"
     else
         echo "DRIVER_MEMORY=$DRIVER_MEMORY"
     fi
