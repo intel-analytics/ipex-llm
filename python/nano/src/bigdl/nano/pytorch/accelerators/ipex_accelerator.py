@@ -68,18 +68,20 @@ class IPEXAccelerator(Accelerator):
         if isinstance(self.precision_plugin, MixedPrecisionPlugin):
             raise MisconfigurationException(
                 "amp is not supported in bigdl-nano.")
-        
+
         return super().setup(trainer, model)
 
     def setup_ipex_plugin(self) -> None:
         """Attaches the ipex plugin to the accelerator."""
-        self.model, self.optimizer = ipex.optimize(self.model, optimizer=self.optimizers[0], inplace=True) 
+        self.model, self.optimizer = ipex.optimize(self.model,
+                                                   optimizer=self.optimizers[0], inplace=True)
         self.optimizers = [self.optimizer]
 
     '''
     def setup_precision_plugin(self) -> None:
         """Attaches the precision plugin to the accelerator."""
-        model, optimizers, schedulers = self.precision_plugin.connect(self.model, self.optimizers, self.lr_schedulers)
+        model, optimizers, schedulers = self.precision_plugin.connect(self.model, 
+                                                                      self.optimizers, self.lr_schedulers)
         model, optimizer = ipex.optimize(model, optimizer=optimizers[0], inplace=True)
         self.model = model
         self.optimizers = [optimizer]
