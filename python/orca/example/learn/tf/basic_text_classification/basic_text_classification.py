@@ -69,6 +69,12 @@ parser.add_argument('--cluster_mode', type=str, default="local",
 parser.add_argument('--epochs', type=int, default=2, help='number of epochs to train for')
 parser.add_argument('--download', type=bool, default=True, help='download dataset or not')
 parser.add_argument('--data_dir', type=str, default="./dataset", help='The path of datesets where includes imdb.npz.')
+parser.add_argument("--container_image", type=str, default="", help="The runtime k8s image. "
+                    "You can change it with your k8s image.")
+parser.add_argument('--k8s_master', type=str, default="",
+                        help="The k8s master. "
+                             "It should be k8s://https://<k8s-apiserver-host>: "
+                             "<k8s-apiserver-port>.")
 args = parser.parse_args()
 cluster_mode = args.cluster_mode
 download = args.download
@@ -76,6 +82,10 @@ if cluster_mode == "local":
     init_orca_context(cluster_mode="local", cores=4, memory="3g")
 elif cluster_mode.startswith("yarn"):
     init_orca_context(cluster_mode=cluster_mode, num_nodes=2, cores=2, driver_memory="3g")
+elif cluster_mode == "k8s":
+    init_orca_context(cluster_mode="k8s", master=args.k8s_master,
+                      container_image=args.container_image,
+                      num_nodes=2, cores=4, driver_memory="3g")
 elif cluster_mode == "spark-submit":
     init_orca_context(cluster_mode="spark-submit")
 else:
