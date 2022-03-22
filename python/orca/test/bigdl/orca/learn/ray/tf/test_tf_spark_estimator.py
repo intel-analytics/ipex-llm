@@ -146,6 +146,47 @@ class TestTFEstimator(TestCase):
             print("predict result: ", res)
         finally:
             shutil.rmtree(temp_dir)
+    
+    def test_xshards_pandas_dataframe(self):
+        from bigdl.orca.data.pandas import read_csv
+        sc = OrcaContext.get_spark_context()
+
+        def model_creator(config):
+            import tensorflow as tf
+            input1 = tf.keras.layers.Input(shape=(1,))
+            input2 = tf.keras.layers.Input(shape=(1,))
+            concatenation = tf.concat([input1, input2], axis=-1)
+            outputs = tf.keras.layers.Dense(units=1, activation='softmax')(concatenation)
+            model = tf.keras.Model(inputs=[input1, input2], outputs=outputs)
+            model.compile(**compile_args(config))
+            return model
+        
+        resource_path = os.path.join(os.path.split(__file__)[0], "../../../resources")
+        file_path = os.path.join(resource_path, "orca/learn/ncf.csv")
+
+        data_xshards = read_csv(file_path, usecols=[0, 1, 2], dtype={0: np.float32, 1: np.float32,
+                                                           2: np.float32})
+        
+        config = {
+            "lr": 0.2
+        }
+        
+        try:
+            temp_dir = tempfile.mkdtemp()
+
+            trainer = Estimator.from_keras(
+                model_creator=model_creator,
+                verbose=True,
+                config=config,
+                workers_per_node=1,
+                backend="spark",
+                model_dir=temp_dir)
+
+            res = trainer.fit(data=data_xshards,
+                              epochs=5, batch_size=4, steps_per_epoch=25,
+                              feature_cols=["user", "item"], label_cols=["label"])
+        finally:
+            shutil.rmtree(temp_dir)
 
     def test_checkpoint_weights(self):
         sc = OrcaContext.get_spark_context()
