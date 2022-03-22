@@ -1,0 +1,22 @@
+######## Feature Service
+
+### Basic setting
+
+# Default: 8082, which port to create the server
+servicePort: 8082
+
+# Default: null, open a port for prometheus monitoring tool, if set, user can check the
+# performance using prometheus
+# monitorPort: 1235
+
+# 'kv', 'inference' or 'kv, inference' default: kv
+serviceType: kv
+
+# default: "", prefix for redis key
+redisKeyPrefix:
+
+# default: 0, item slot type on redis cluster. 0 means slot number use the default value 16384, 1 means all keys save to same slot, 2 means use the last character of id as hash tag.
+# redisClusterItemSlotType: 2
+
+# default: null, if serviceType='kv,inference', similarIDsColumn must be provided
+# itemNeighborColumn: neighbor

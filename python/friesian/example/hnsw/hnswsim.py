@@ -51,7 +51,7 @@ if __name__ == '__main__':
                         help='The executor memory.')
     parser.add_argument('--num_executor', type=int, default=8,
                         help='The number of executor.')
-    parser.add_argument('--driver_cores', type=int, default=4,
+    parser.add_argument('--driver_cores', type=int, default=8,
                         help='The driver core number.')
     parser.add_argument('--driver_memory', type=str, default="36g",
                         help='The driver memory.')
@@ -78,32 +78,37 @@ if __name__ == '__main__':
             "cluster_mode should be one of 'local', 'yarn', 'standalone' and 'spark-submit'"
             ", but got " + args.cluster_mode)
 
-    item_data = FeatureTable.read_parquet(args.data_dir)\
-        .rename({"tweet_id": "id", "prediction": "features"})\
-        .apply("id", "partition", lambda x: x/100)\
+    item_data = FeatureTable.read_parquet(args.data_dir + "/item_ebd.parquet")\
+        .rename({"prediction": "features"})\
+        .apply("tweet_id", "partition", lambda x: x/100)\
         .cast("partition", "int") \
         .apply("features", "features", lambda x: DenseVector(x), VectorUDT())
 
     normalizer = Normalizer(inputCol='features', outputCol='normalized_features')
 
-    hnsw = HnswSimilarity(identifierCol='id', queryIdentifierCol='id',
+    hnsw = HnswSimilarity(identifierCol='tweet_id', queryIdentifierCol='tweet_id',
                           featuresCol='features', distanceFunction='inner-product', m=48,
-                          ef=5, k=200,
-                          efConstruction=200, numPartitions=2, excludeSelf=True,
-                          similarityThreshold=0.4, predictionCol='approximate')
+                          ef=5, k=10,
+                          efConstruction=200, numPartitions=11, excludeSelf=True,
+                          similarityThreshold=0.1, predictionCol='approximate')
 
-    brute_force = BruteForceSimilarity(identifierCol='id', queryIdentifierCol='id',
+    brute_force = BruteForceSimilarity(identifierCol='tweet_id', queryIdentifierCol='tweet_id',
                                        featuresCol='normalized_features',
                                        distanceFunction='inner-product',
-                                       k=200, numPartitions=2, excludeSelf=True,
-                                       similarityThreshold=0.4, predictionCol='exact')
+                                       k=10, numPartitions=11, excludeSelf=True,
+                                       similarityThreshold=0.1, predictionCol='exact')
 
     pipeline = Pipeline(stages=[normalizer, hnsw, brute_force])
 
     model = pipeline.fit(item_data.df)
 
-    query_items = item_data.sample(0.01)
-    output = model.transform(query_items)
+    query_items = item_data.sample(0.10)
+    output = model.transform(query_items.df)
     evaluator = KnnSimilarityEvaluator(approximateNeighborsCol='approximate', exactNeighborsCol='exact')
     accuracy = evaluator.evaluate(output)
+    outtbl = FeatureTable(output.select("tweet_id", "exact.neighbor"))\
+        .apply("neighbor", "neighbor", lambda s: ' '.join([str(elem) for elem in s]))
+    outtbl.show(10, False)
+    outtbl.df. printSchema()
     print(accuracy)
+    outtbl.write_parquet(args.data_dir + "/item_neighbors.parquet")

@@ -60,6 +60,21 @@ object FeatureNearlineUtils {
     logger.info(s"Insert finished")
   }
 
+  def loadItemNeighborRDD(spark: SparkSession, redis: RedisUtils): Unit = {
+    assert(NearlineUtils.helper.initialItemNeighborPath != null, "initialSimilarItemsPath " +
+      "should be provided if loadInitialSimilarData is true")
+    if (NearlineUtils.helper.initialItemNeighborPath != null) {
+      assert(NearlineUtils.helper.itemIDColumn != null)
+      assert(NearlineUtils.helper.itemNeighborColumn != null)
+      logger.info("Start loading similar items...")
+      redis.setSchema("item", NearlineUtils.helper.itemNeighborColumn)
+      val neighborCOlumns = Array[String](NearlineUtils.helper.itemIDColumn,
+        NearlineUtils.helper.itemNeighborColumn)
+      divideFileAndLoad(spark, NearlineUtils.helper.initialItemDataPath, neighborCOlumns,
+        "item")
+    }
+    logger.info(s"Insert finished")
+  }
   def divideFileAndLoad(spark: SparkSession, dataDir: String, featureCols: Array[String],
                         keyPrefix: String): Unit = {
     var totalCnt: Long = 0

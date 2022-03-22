@@ -29,6 +29,10 @@ class NearlineHelper extends Serializable {
   @BeanProperty var redisClusterItemSlotType = 0
   @BeanProperty var redisUrl = "localhost:6379"
 
+  // item similarity service atributes
+  @BeanProperty var initialItemNeighborPath: String = _
+  @BeanProperty var itemNeighborColumn: String = _
+
   // recall service attributes
   @BeanProperty var indexPath: String = _
   @BeanProperty var initialDataPath: String = _

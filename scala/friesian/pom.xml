@@ -250,10 +250,9 @@
             <version>${log4j.version}</version>
         </dependency>
 
-        <!-- https://mvnrepository.com/artifact/com.github.jelmerk/hnswlib-spark -->
         <dependency>
             <groupId>com.github.jelmerk</groupId>
-            <artifactId>hnswlib-spark_2.3_${scala.major.version}</artifactId>
+            <artifactId>hnswlib-spark_2.4_${scala.major.version}</artifactId>
             <version>1.0.0</version>
         </dependency>
 
