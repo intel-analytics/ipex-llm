@@ -55,7 +55,7 @@ public abstract class AbstractGrpcBase {
             try {
                 return ConfigParser.loadConfigFromPath(configPath, valueType);
             } catch (IOException e) {
-                logger.warn(e.getMessage());
+                logger.warn("loading default config file failed: " + e.getMessage());
                 return null;
             }
 
