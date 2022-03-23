@@ -119,7 +119,8 @@ class Trainer(pl.Trainer):
                 scheduler: _LRScheduler = None,
                 metrics: List[Metric] = None,
                 onnx: bool = False,
-                quantize: bool = True):
+                quantize: bool = True,
+                openvino: bool = False):
         """
         Construct a pytorch-lightning model. If model is already a pytorch-lightning model,
         return model. If model is pytorch model, construct a new pytorch-lightning module
@@ -166,6 +167,13 @@ class Trainer(pl.Trainer):
                 bind_base_inference_rt_methods
             pl_model = bind_quantize_methods(bind_base_inference_rt_methods(pl_model), None)
 
+        if openvino:
+            from bigdl.nano.pytorch.runtime_binding.openvino_inference import\
+                    bind_openvino_methods
+            from bigdl.nano.pytorch.runtime_binding.base_inference import\
+                bind_base_inference_rt_methods
+            pl_model = bind_openvino_methods(
+                bind_base_inference_rt_methods(pl_model))
         return bind_base_inference_rt_methods(pl_model)
 
     def quantize(self, pl_model: LightningModule,
