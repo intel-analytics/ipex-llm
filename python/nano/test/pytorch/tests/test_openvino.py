@@ -37,7 +37,18 @@ class TestOpenVINO(TestCase):
 
         pl_model.exit_openvino()
         assert pl_model.forward == pl_model._torch_forward
-    
+
+        pl_model.eval_openvino()
+        assert pl_model.forward != pl_model._torch_forward
+        pl_model.eval()
+        assert pl_model.forward == pl_model._torch_forward
+
+        # Test if correctly fall back to pytorch backend
+        pl_model.eval_openvino()
+        assert pl_model.forward != pl_model._torch_forward
+        pl_model.train()
+        assert pl_model.forward == pl_model._torch_forward  
+
     def test_openvino_inputsample_from_trainloader(self):
         trainer = Trainer(max_epochs=1)
         model = mobilenet_v3_small(num_classes=10)
@@ -51,12 +62,18 @@ class TestOpenVINO(TestCase):
         dataloader = DataLoader(ds, batch_size=10)
         trainer.fit(pl_model, dataloader)
 
+        # Test if eval_openvino() and exit_openvino() work
         pl_model.eval_openvino()
         assert pl_model.ir_up_to_date and pl_model.ir_model
         assert pl_model.forward != pl_model._torch_forward
-        y = pl_model(x)
         y = pl_model(x)
         assert y.shape == (10, 10) 
         
         pl_model.exit_openvino()
         assert pl_model.forward == pl_model._torch_forward
+
+        # Test if correctly fall back to training mode
+        pl_model.eval_openvino()
+        assert pl_model.forward != pl_model._torch_forward
+        trainer.fit(pl_model, dataloader)
+        assert pl_model.forward == pl_model._torch_forward and pl_model.ir_up_to_date == False
