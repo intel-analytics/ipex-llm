@@ -43,7 +43,7 @@ class TestPlugin(TestCase):
         project_test_dir = os.path.abspath(
             os.path.join(os.path.join(os.path.join(test_dir, ".."), ".."), "..")
         )
-        os.environ['PYTHONPATH'] = os.environ["PYTHONPATH"] + ":" + project_test_dir
+        os.environ['PYTHONPATH'] = project_test_dir
 
     def test_trainer_subprocess_plugin(self):
         pl_model = LightningModuleFromTorch(self.model, self.loss, self.optimizer)
