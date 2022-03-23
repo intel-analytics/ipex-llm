@@ -14,9 +14,9 @@
 # limitations under the License.
 #
 
+import cloudpickle
 import os
 import sys
-import pickle
 
 from pytorch_lightning.utilities.seed import reset_seed
 
@@ -26,7 +26,7 @@ if __name__ == '__main__':
     temp_dir = sys.argv[1]
 
     with open(os.path.join(temp_dir, "args.pkl"), 'rb') as f:
-        args = pickle.load(f)
+        args = cloudpickle.load(f)
 
     plugin, queue_list = args
     trainer = plugin.lightning_module.trainer
@@ -57,4 +57,4 @@ if __name__ == '__main__':
         with open(os.path.join(temp_dir,
                                "results.pkl"), "wb") as f:
             results = queue_dumper(plugin.mp_queue)
-            pickle.dump(results, f)
+            cloudpickle.dump(results, f)
