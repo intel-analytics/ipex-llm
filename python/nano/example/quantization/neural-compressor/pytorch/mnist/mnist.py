@@ -141,9 +141,9 @@ def main():
     pl_model = trainer.compile(model, loss=loss, optimizer=optimizer,
                                scheduler=scheduler, metrics=[Accuracy()])
     trainer.fit(pl_model, train_loader)
-    test_out = trainer.test(pl_model, test_loader)
+    test_out = trainer.validate(pl_model, test_loader)  # only validate logs loss
     print('\nTest set: Average loss: {:.4f}, Accuracy: {:.2f}%\n'.format(
-        test_out[0]['test/loss'], test_out[0]['test/Accuracy']*100))
+        test_out[0]['val/loss'], test_out[0]['val/Accuracy_0']*100))
 
     if args.save_model:
         torch.save(model.state_dict(), "mnist_cnn.pt")
