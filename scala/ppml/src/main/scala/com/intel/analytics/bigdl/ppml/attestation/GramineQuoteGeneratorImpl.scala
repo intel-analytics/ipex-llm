@@ -22,6 +22,9 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 
+/**
+ * QuoteGenerator for Gramine (https://github.com/gramineproject/gramine)
+ */
 class GramineQuoteGeneratorImpl extends QuoteGenerator {
 
   val logger = LogManager.getLogger(getClass)
@@ -38,15 +41,15 @@ class GramineQuoteGeneratorImpl extends QuoteGenerator {
     }
 
     try {
-      // write userReport 
+      // write userReport
       val out = new BufferedOutputStream(new FileOutputStream(userReportPath))
       out.write(userReportData)
       out.close()
     } catch {
-      case e: Exception => {
+      case e: Exception =>
         logger.error(s"Failed to write user report, ${e}")
-        throw new AttestationRuntimeException("Failed to persist user report data to Gramine!", e)
-      }
+        throw new AttestationRuntimeException("Failed " +
+        "to persist user report data to Gramine!", e)
     }
 
     try {
@@ -54,8 +57,8 @@ class GramineQuoteGeneratorImpl extends QuoteGenerator {
       val quoteFile = new File(quotePath)
       if (quoteFile.length == 0) {
         logger.error("Invalid quote file length.")
-        throw new AttestationRuntimeException("Retrieving Gramine quote returned Invalid file length!")
-        return null
+        throw new AttestationRuntimeException("Retrieving Gramine quote " +
+          "returned Invalid file length!")
       }
       val in = new FileInputStream(quoteFile)
       val quote = new Array[Byte](quoteFile.length.toInt)
@@ -63,14 +66,12 @@ class GramineQuoteGeneratorImpl extends QuoteGenerator {
       in.close()
       return quote
     } catch {
-      case e: Exception => {
-        logger.error(s"Failed to get quote. ${e}")
-        throw new AttestationRuntimeException("Failed to obtain quote content from file to buffer!", e)
-        return null
-      }
+      case e: Exception =>
+        logger.error("Failed to get quote.")
+        throw new AttestationRuntimeException("Failed to obtain quote " +
+          "content from file to buffer!", e)
     }
 
     throw new AttestationRuntimeException("Unexpected workflow when generating Gramine Quote!")
-    return null
   }
 }

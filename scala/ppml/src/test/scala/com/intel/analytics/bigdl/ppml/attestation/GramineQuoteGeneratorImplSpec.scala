@@ -16,6 +16,11 @@
 
 package com.intel.analytics.bigdl.ppml.attestation
 
-class AttestationRuntimeException(message: String, cause: Throwable = null)
-  extends Exception(message, cause) {
+import org.scalatest.{FlatSpec, Matchers}
+
+class GramineQuoteGeneratorImplSpec  extends FlatSpec with Matchers {
+
+  // TODO  GramineQuoteGeneratorImplSpec
+  "Gramine get Quote " should "work" in {
+  }
 }
