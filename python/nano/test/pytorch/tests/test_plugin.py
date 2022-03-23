@@ -19,7 +19,6 @@ import pytest
 from unittest import TestCase
 
 import torch
-import torchmetrics
 from torch import nn
 
 from bigdl.nano.pytorch.lightning import LightningModuleFromTorch
@@ -48,10 +47,7 @@ class TestPlugin(TestCase):
         os.environ['PYTHONPATH'] = project_test_dir
 
     def test_trainer_subprocess_plugin(self):
-        pl_model = LightningModuleFromTorch(
-            self.model, self.loss, self.optimizer,
-            [torchmetrics.F1(num_classes), torchmetrics.Accuracy(num_classes=num_classes)]
-        )
+        pl_model = LightningModuleFromTorch(self.model, self.loss, self.optimizer)
         trainer = Trainer(num_processes=2, distributed_backend="spawn",
                           max_epochs=4)
         trainer.fit(pl_model, self.data_loader, self.data_loader)
