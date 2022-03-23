@@ -83,18 +83,10 @@ def _build_ir_model(self,
     self.ir_up_to_date = True
 
 
-# on_fit_start (LightningModule method overwrite)
-def _openvino_on_fit_start(self):
-    self.ir_up_to_date = False
-    self.ir_model = None
-    self.exit_openvino()
-
-
 def _openvino_on_train(self, mode=True):
     self.exit_openvino()
     self.ir_up_to_date = False
     self.ir_model = None
-    self.exit_openvino()
 
 def forward_batch_start(*args):
     ort_inputs = []
@@ -134,9 +126,7 @@ def eval_openvino(self, input_sample=None, file_path="model.xml", quantize=False
     '''
     # change to eval mode
     self.eval()
-    if self.ir_up_to_date:
-        return 
-    else:
+    if not self.ir_up_to_date:
         # get input_sample
         if isinstance(input_sample, DataLoader):
             input_sample = tuple(next(iter(input_sample))[:-1])
@@ -178,7 +168,6 @@ def bind_openvino_methods(pl_model: LightningModule):
         pl_model._forward_args = inspect.getfullargspec(pl_model.forward).args[1:]
 
     # additional methods
-    pl_model._openvino_on_fit_start = partial(_openvino_on_fit_start, pl_model)
     pl_model.eval_openvino = partial(eval_openvino, pl_model)
     pl_model.exit_openvino = partial(exit_openvino, pl_model)
     pl_model._openvino_on_train = partial(_openvino_on_train, pl_model)
