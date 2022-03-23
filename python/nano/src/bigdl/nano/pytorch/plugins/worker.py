@@ -14,9 +14,10 @@
 # limitations under the License.
 #
 
-import cloudpickle
 import os
 import sys
+
+import cloudpickle
 
 from pytorch_lightning.utilities.seed import reset_seed
 
