@@ -63,6 +63,9 @@ class PythonPPML[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonBigDL
   def flServerSetClientNum(flServer: FLServer, clientNum: Int) = {
     flServer.setClientNum(clientNum)
   }
+  def flServerBlockUntilShutdown(flServer: FLServer) = {
+    flServer.blockUntilShutdown()
+  }
 
   /**
    * FlClient is not exposed to users API, the Python API for this only locates in test
