@@ -52,7 +52,8 @@ class TestPlugin(TestCase):
             self.model, self.loss, self.optimizer,
             [torchmetrics.F1(num_classes), torchmetrics.Accuracy(num_classes=num_classes)]
         )
-        trainer = Trainer(max_epochs=4, log_every_n_steps=1)
+        trainer = Trainer(num_processes=2, distributed_backend="spawn",
+                          max_epochs=4)
         trainer.fit(pl_model, self.data_loader, self.data_loader)
         trainer.test(pl_model, self.data_loader)
 
