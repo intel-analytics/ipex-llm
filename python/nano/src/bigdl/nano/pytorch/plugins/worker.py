@@ -13,10 +13,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+
 import os
 import sys
-
-import cloudpickle
+import pickle
 
 from pytorch_lightning.utilities.seed import reset_seed
 
@@ -24,10 +24,9 @@ from bigdl.nano.pytorch.plugins.ddp_subprocess import queue_dumper, queue_loader
 
 if __name__ == '__main__':
     temp_dir = sys.argv[1]
-    sys.path.append(os.environ["WORKER"])
-    print(os.environ["WORKER"])
+
     with open(os.path.join(temp_dir, "args.pkl"), 'rb') as f:
-        args = cloudpickle.load(f)
+        args = pickle.load(f)
 
     plugin, queue_list = args
     trainer = plugin.lightning_module.trainer
@@ -58,4 +57,4 @@ if __name__ == '__main__':
         with open(os.path.join(temp_dir,
                                "results.pkl"), "wb") as f:
             results = queue_dumper(plugin.mp_queue)
-            cloudpickle.dump(results, f)
+            pickle.dump(results, f)

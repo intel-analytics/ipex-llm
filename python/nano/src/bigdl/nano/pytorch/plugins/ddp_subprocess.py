@@ -30,16 +30,15 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
+
 import cloudpickle
 import multiprocessing
 import os
 import subprocess
 import sys
 from tempfile import TemporaryDirectory
-from typing import Any, List, Optional, Callable
 
 import torch
-from pytorch_lightning.plugins.environments.cluster_environment import ClusterEnvironment
 
 from bigdl.nano.pytorch.plugins.ddp_spawn import DDPSpawnPlugin
 
@@ -77,7 +76,7 @@ class DDPSubprocessPlugin(DDPSpawnPlugin):
                                 f"=[{','.join([str(i) for i in cpu_procs[i]])}],explicit",
                 "OMP_NUM_THREADS": str(len(cpu_procs[i])),
                 "PROCESS_IDX": str(i),
-                "WORKER": os.environ["WORKER"]
+                "PYTHONPATH": os.environ["PYTHONPATH"]
             }
             processes.append(subprocess.Popen([sys.executable, f"{cwd_path}/worker.py",
                                                tmpdir], env=env))
