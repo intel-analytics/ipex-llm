@@ -26,14 +26,7 @@ import inspect
 from openvino.inference_engine import IECore
 
 
-OPENVINO_BINDED_COMPONENTS = ['_ortsess_up_to_date',
-                            '_ortsess',
-                            '_onnx_graph',
-                            '_build_ortsess',
-                            'update_ortsess',
-                            '_forward_onnx',
-                            'to_quantized_onnx'
-                            ]
+OPENVINO_BINDED_COMPONENTS = ['ir_up_to_date', 'ir_model']
 
 
 # internal function to build an ortsess
@@ -103,7 +96,7 @@ def _openvino_on_train(self, mode=True):
     self.ir_model = None
     self.exit_openvino()
 
-def forward_batch_start(args):
+def forward_batch_start(*args):
     ort_inputs = []
     for ort_input_item in args:
         if isinstance(ort_input_item, torch.Tensor):
@@ -111,13 +104,13 @@ def forward_batch_start(args):
         ort_inputs.append(ort_input_item)
     return ort_inputs
 
-def forward_batch_end(outputs):
-    return torch.from_numpy(list(outputs.values())[0])
+def forward_batch_end(*outputs):
+    return torch.from_numpy(outputs[0])
 
 def forward(self, *args):
     args = forward_batch_start(*args)
-    outputs = self._forward_openvino(*args)
-    return forward_batch_end(*outputs)
+    outputs = _forward_openvino(self, *args)
+    return forward_batch_end(*outputs.values())
 
 
 def _forward_openvino(self, *args):
@@ -139,7 +132,6 @@ def eval_openvino(self, input_sample=None, file_path="model.xml", quantize=False
     :param quantize: Bool, state if we need to use quantized openvino session.
     :param **kwargs: (optional) will be passed to torch.onnx.export function.
     '''
-    self.forward = self._forward_openvino
     # change to eval mode
     self.eval()
     if self.ir_up_to_date:
@@ -158,8 +150,8 @@ def eval_openvino(self, input_sample=None, file_path="model.xml", quantize=False
                 input_sample = tuple(next(iter(self.train_dataloader()))[:-1])
         assert input_sample is not None,\
             "You must state an input_sample or fit on the model to use `eval_onnx`."
-        self._build_ir_model(input_sample=input_sample, file_path=file_path,
-                             **kwargs)
+        _build_ir_model(self, input_sample=input_sample, file_path=file_path, **kwargs)
+    self.forward = partial(forward, self)
 
 def exit_openvino(self):
     self.forward = self._torch_forward
@@ -190,7 +182,5 @@ def bind_openvino_methods(pl_model: LightningModule):
     pl_model.eval_openvino = partial(eval_openvino, pl_model)
     pl_model.exit_openvino = partial(exit_openvino, pl_model)
     pl_model._openvino_on_train = partial(_openvino_on_train, pl_model)
-    pl_model._forward_openvino = partial(_forward_openvino, pl_model)
-    pl_model._build_ir_model = partial(_build_ir_model, pl_model)
 
     return pl_model

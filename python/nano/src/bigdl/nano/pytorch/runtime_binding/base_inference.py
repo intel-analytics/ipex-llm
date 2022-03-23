@@ -29,6 +29,8 @@ BASE_BINDED_COMPONENTS = ['_train_old',
 
 
 def on_fit_start(self):
+    if "_openvino_on_fit_start" in self.__dict__:
+        self._openvino_on_fit_start()
     if "_onnx_on_fit_start" in self.__dict__:
         self._onnx_on_fit_start()
     if "_fx_quantize_on_fit_start" in self.__dict__:
@@ -38,6 +40,8 @@ def on_fit_start(self):
 
 def train(self, mode=True):
     if mode:
+        if "_openvino_on_train" in self.__dict__:
+            self._openvino_on_train(mode)
         if "_onnx_on_train" in self.__dict__:
             self._onnx_on_train(mode)
         if "_fx_quantize_on_train" in self.__dict__:
@@ -56,6 +60,9 @@ def eval(self, quantize=None):
     if "_fx_quantize_eval" in self.__dict__:
         quantize = self._default_inference_quantize if quantize is None else quantize
         self._fx_quantize_eval(quantize)
+    # 4. recover from openvino
+    if "exit_openvino" in self.__dict__:
+        self.exit_openvino()
 
 
 # inference (new API to unifying users' inference method)
