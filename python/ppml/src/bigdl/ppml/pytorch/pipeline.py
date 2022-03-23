@@ -16,28 +16,37 @@
 
 import torch
 from torch import nn
+from bigdl.dllib.utils.common import callBigDlFunc
+
+from bigdl.ppml.utils import FLClientClosable
 
 
-class Pipeline:
-    def __init__(self, model: nn.Module, loss_fn, optimizer: torch.optim.Optimizer):
+class Pipeline(FLClientClosable):
+    def __init__(self, model: nn.Module, loss_fn, optimizer: torch.optim.Optimizer, algorithm):
         self.model = model
         self.loss_fn = loss_fn
         self.optimizer = optimizer
+        self.version = 0
+        self.algorithm = algorithm
 
-    def get_loss_from_fl_server(self):
+    def server_train_step(self, y_pred, y_true):
         """
         Get the loss data from FLServer and construct the identical Pytorch Tensor
         """
-        pass
+        callBigDlFunc(self.bigdl_type, "pytorchTrainStep", self.value,
+            y_pred, y_true, self.version, self.algorithm)
 
-    def train(self, x, y, epoch=2):
+    def fit(self, x, y, epoch=2):
+        for e in range(epoch):
+            self.train_step(x[e], y[e])
+
+    def train_step(self, x, y):
         self.model.train()
         pred = self.model(x)
         # In this step, loss is calculated from FLServer instead of local
         # when local loss_fn is called, return is a Pytorch Tensor
         # so get the tensor from FLServer, and transform to Pytorch Tensor
-        # TODO: get and transform
-        server_loss = self.get_loss_from_fl_server()
+        server_loss = self.server_train_step(pred, y)
         loss = self.loss_fn(pred, y)
         loss.data = server_loss
         # back propagation

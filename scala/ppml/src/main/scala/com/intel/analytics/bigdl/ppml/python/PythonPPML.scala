@@ -1,3 +1,19 @@
+/*
+ * Copyright 2021 The BigDL Authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package com.intel.analytics.bigdl.ppml.python
 
 
@@ -8,6 +24,7 @@ import com.intel.analytics.bigdl.ppml.algorithms.PSI
 import com.intel.analytics.bigdl.ppml.algorithms.vfl.FGBoostRegression
 import com.intel.analytics.bigdl.ppml.{FLClient, FLContext, FLModel, FLServer}
 import com.intel.analytics.bigdl.ppml.fgboost.FGBoostModel
+import com.intel.analytics.bigdl.ppml.pytorch.PytorchSuite
 import com.intel.analytics.bigdl.ppml.utils.FLClientClosable
 
 import java.util.{List => JList}
@@ -119,5 +136,16 @@ class PythonPPML[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonBigDL
   }
   def nnPredict(model: FLModel) = {
 
+  }
+
+  // Pytorch support
+  def pytorchTrainStep(pred: JTensor, target: JTensor, version: Int, algorithm: String) = {
+    PytorchSuite.trainStep(pred, target, version, algorithm)
+  }
+  def pytorchEvaluateStep() = {
+    // TODO
+  }
+  def pytorchPredictStep() = {
+    // TODO
   }
 }
