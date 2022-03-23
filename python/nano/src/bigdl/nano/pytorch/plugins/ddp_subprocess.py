@@ -76,8 +76,10 @@ class DDPSubprocessPlugin(DDPSpawnPlugin):
                                 f"=[{','.join([str(i) for i in cpu_procs[i]])}],explicit",
                 "OMP_NUM_THREADS": str(len(cpu_procs[i])),
                 "PROCESS_IDX": str(i),
-                "PYTHONPATH": os.environ["PYTHONPATH"]
             }
+            if "PYTHONPATH" in os.environ.keys():
+                env["PYTHONPATH"] = os.environ["PYTHONPATH"]
+            print(env["PYTHONPATH"])
             processes.append(subprocess.Popen([sys.executable, f"{cwd_path}/worker.py",
                                                tmpdir], env=env))
 
