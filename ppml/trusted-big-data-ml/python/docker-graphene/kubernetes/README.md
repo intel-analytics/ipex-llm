@@ -13,6 +13,7 @@ In `bigdl-ppml-helm/values.yaml`, configure the full values for all items listed
 - `image`: The PPML image you want to use.
 - `k8sMaster`: Run `kubectl cluster-info`. The output should be like `Kubernetes control plane is running at https://master_ip:master_port`. Fill in the master ip and port.
 - `pvc`: The name of the Persistent Volume Claim (PVC) of your Network File System (NFS). We assume you have a working NFS configured for your Kubernetes cluster. Please also put the script used to submit your Spark job (defaulted to `./submit-spark-k8s.sh`) in the NFS so it can be discovered by all the nodes.
+The other values have self-explanatory names and can be left alone.
 
 ### 2.2 Secure keys, password, and the enclave key
 
@@ -49,9 +50,14 @@ where `<name>` is a name you give for this installation.
 
 ### 2.6 Debugging
 
-To check the logs of the driver, run
+To check the logs of the Kubernetes job, run
 ``` bash
 sudo kubectl logs $( sudo kubectl get pod | grep spark-pi-job | cut -d " " -f1 )
+```
+
+To check the logs of the driver, run
+``` bash
+sudo kubectl logs $( sudo kubectl get pod | grep "spark-pi-sgx.*-driver" -m 1 | cut -d " " -f1 )
 ```
 
 To check the logs of an executor, run
@@ -66,9 +72,10 @@ To uninstall the helm chart, run
 helm uninstall <name>
 ```
 
-Note that the `<name>` must be the same as the one you set in section 2.5. Helm does not delete the executors that are run by the driver, so for now we can only delete them manually: 
+Note that the `<name>` must be the same as the one you set in section 2.5. Helm does not delete the driver and executors that are run by the Kubernetes Job, so for now we can only delete them manually: 
 ``` bash
 sudo kubectl get pod | grep -o "spark-pi-.*-exec-[0-9]*" | xargs sudo kubectl delete pod
+sudo kubectl get pod | grep -o "spark-pi-sgx.*-driver" | xargs sudo kubectl delete pod
 ```
 
 

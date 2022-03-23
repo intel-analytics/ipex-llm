@@ -2,3 +2,16 @@ dataPath: path_to_your_data_on_host
 image: your_ppml_image
 k8sMaster: k8s://https://master_ip:master_port
 pvc: your_pvc
+
+sparkMode: client
+execMem: "1g"
+driverMem: "1g"
+sgxLog: "error"
+sgx: "true"
+execCores: "8"
+driverCores: "1"
+execInstances: "2"
+sgxDriverMem: "32g"
+sgxDriverJvmMem: "8g"
+sgxExecMem: "32g"
+sgxExecJvmMem: "12g"
