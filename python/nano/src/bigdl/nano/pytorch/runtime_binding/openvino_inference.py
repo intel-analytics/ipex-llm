@@ -82,7 +82,7 @@ def _build_ir_model(self, input_sample=None, file_path="model.xml", **kwargs):
 
 def train(self, mode=True):
     self.exit_openvino()
-    if mode == True:
+    if mode:
         self.ir_up_to_date = False
         self.ir_model = None
     assert self.train == self._torch_train
@@ -97,8 +97,10 @@ def forward_batch_start(*args):
         ort_inputs.append(ort_input_item)
     return ort_inputs
 
+
 def forward_batch_end(*outputs):
     return torch.from_numpy(outputs[0])
+
 
 def forward(self, *args):
     args = forward_batch_start(*args)
@@ -136,7 +138,7 @@ def eval_openvino(self, input_sample=None, file_path="model.xml", quantize=False
                 input_sample = self.example_input_array
             if self.trainer is None:
                 raise RuntimeError("You must specify an input_sample or call `Trainer.fit` "
-                                    "on the model first to use `eval_openvino`")
+                                   "on the model first to use `eval_openvino`")
             if self.train_dataloader:
                 input_sample = tuple(next(iter(self.train_dataloader()))[:-1])
         assert input_sample is not None,\
@@ -146,6 +148,7 @@ def eval_openvino(self, input_sample=None, file_path="model.xml", quantize=False
     self._torch_eval = self.eval
     self.train = partial(train, self)
     self.forward = partial(forward, self)
+
 
 def exit_openvino(self):
     self.train = self._torch_train
