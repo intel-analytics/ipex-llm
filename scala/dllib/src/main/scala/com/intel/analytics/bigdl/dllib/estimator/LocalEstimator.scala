@@ -44,7 +44,8 @@
 
   val logger = LoggerFactory.getLogger(getClass)
 
-  require(threadNum >= 1, "the number of threads should >= 1")
+  Log4Error.invalidInputError(threadNum >= 1, s"the number of threads should >= 1," +
+    s"actural is $threadNum", "Please set threadNum > 1")
   @volatile private var defaultThreadPool: ThreadPool = new ThreadPool(threadNum)
 
   model.training()

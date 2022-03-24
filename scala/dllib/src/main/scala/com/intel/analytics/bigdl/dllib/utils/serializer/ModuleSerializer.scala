@@ -7,7 +7,7 @@
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
+ * Unless Log4Error.invalidOperationErrord by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
@@ -25,7 +25,7 @@ import com.intel.analytics.bigdl.dllib.nn.tf.{DecodeRawSerializer, ParseExample,
 import com.intel.analytics.bigdl.dllib.optim.Regularizer
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.dllib.utils.ReflectionUtils
+import com.intel.analytics.bigdl.dllib.utils.{Log4Error, ReflectionUtils}
 import com.intel.analytics.bigdl.dllib.utils.serializer.converters.DataConverter
 
 import scala.collection.mutable
@@ -129,7 +129,7 @@ object ModuleSerializer extends ModuleSerializable{
           val groupTypeAttr = attrMap.get(SerConst.GROUP_TYPE)
           val groupType = DataConverter.getAttributeValue(context, groupTypeAttr).
             asInstanceOf[String]
-          require(groupSerializerMaps.contains(groupType), s" Group serializer does" +
+          Log4Error.invalidOperationError(groupSerializerMaps.contains(groupType), s" Group serializer does" +
             s" not exist for $groupType")
           groupSerializerMaps(groupType)
         } else {
@@ -162,8 +162,10 @@ object ModuleSerializer extends ModuleSerializable{
    * @param serializer serialzable implementation for this module
    */
   def registerModule(moduleType : String, serializer : ModuleSerializable) : Unit = {
-    require(!serializerMaps.contains(moduleType), s"$moduleType already registered!")
-    require(!groupSerializerMaps.contains(moduleType), s"$moduleType already " +
+    Log4Error.invalidOperationError(!serializerMaps.contains(moduleType),
+      s"$moduleType already registered!")
+    Log4Error.invalidOperationError(!groupSerializerMaps.contains(moduleType),
+      s"$moduleType already " +
       s"registered with group serializer!")
     serializerMaps(moduleType) = serializer
   }
@@ -176,9 +178,9 @@ object ModuleSerializer extends ModuleSerializable{
    */
   def registerGroupModules(superModuleType : String, groupSerializer :
     ModuleSerializable) : Unit = {
-    require(!serializerMaps.contains(superModuleType), s"$moduleType already " +
+    Log4Error.invalidOperationError(!serializerMaps.contains(superModuleType), s"$moduleType already " +
       s"registered with single serializer!")
-    require(!groupSerializerMaps.contains(superModuleType), s"$moduleType already " +
+    Log4Error.invalidOperationError(!groupSerializerMaps.contains(superModuleType), s"$moduleType already " +
       s"registered with group serializer!")
     groupSerializerMaps(superModuleType) = groupSerializer
   }

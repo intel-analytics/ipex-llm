@@ -17,6 +17,7 @@
 package com.intel.analytics.bigdl.dllib.optim
 
 import com.google.common.util.concurrent.AtomicDouble
+import com.intel.analytics.bigdl.dllib.utils.Log4Error
 import org.apache.spark.SparkContext
 import org.apache.spark.util.{AccumulatorV2, DoubleAccumulator}
 
@@ -35,8 +36,9 @@ class Metrics extends Serializable {
   private val distributeMetricsMap: Map[String, DistributeMetricsEntry] = Map()
 
   def add(name: String, value: Double): this.type = {
-    require(localMetricsMap.contains(name) || aggregateDistributeMetricsMap.contains(name) ||
-      distributeMetricsMap.contains(name))
+    Log4Error.invalidOperationError(localMetricsMap.contains(name)
+      || aggregateDistributeMetricsMap.contains(name) ||
+      distributeMetricsMap.contains(name), s"expect name $name in predefined map")
     if (localMetricsMap.contains(name)) {
       localMetricsMap(name).value.addAndGet(value)
     }
@@ -53,8 +55,10 @@ class Metrics extends Serializable {
   }
 
   def set(name: String, value: Double, parallel: Int = 1): this.type = {
-    require(!aggregateDistributeMetricsMap.contains(name), "duplicated distribute metric")
-    require(!distributeMetricsMap.contains(name), "duplicated distribute metric2")
+    Log4Error.invalidOperationError(!aggregateDistributeMetricsMap.contains(name),
+      "duplicated distribute metric")
+    Log4Error.invalidOperationError(!distributeMetricsMap.contains(name),
+      "duplicated distribute metric2")
     if (localMetricsMap.contains(name)) {
       localMetricsMap(name).value.set(value)
       localMetricsMap(name).parallel = parallel
@@ -65,7 +69,7 @@ class Metrics extends Serializable {
   }
 
   def set(name: String, value: Double, sc: SparkContext, parallel: Int): this.type = {
-    require(!localMetricsMap.contains(name), "duplicated local metric")
+    Log4Error.invalidOperationError(!localMetricsMap.contains(name), "duplicated local metric")
     if (aggregateDistributeMetricsMap.contains(name)) {
       aggregateDistributeMetricsMap(name).value.reset()
       aggregateDistributeMetricsMap(name).value.add(value)
@@ -79,8 +83,8 @@ class Metrics extends Serializable {
   }
 
   def set(name: String, value: ArrayBuffer[Double], sc: SparkContext): this.type = {
-    require(!localMetricsMap.contains(name), "duplicated local metric")
-    require(!aggregateDistributeMetricsMap.contains(name), "duplicated distribute metric")
+    Log4Error.invalidOperationError(!localMetricsMap.contains(name), "duplicated local metric")
+    Log4Error.invalidOperationError(!aggregateDistributeMetricsMap.contains(name), "duplicated distribute metric")
     if (distributeMetricsMap.contains(name)) {
       distributeMetricsMap(name).value.reset()
       distributeMetricsMap(name).value.add(value)
@@ -94,7 +98,8 @@ class Metrics extends Serializable {
   }
 
   def get(name: String): (Double, Int) = {
-    require(localMetricsMap.contains(name) || aggregateDistributeMetricsMap.contains(name))
+    Log4Error.invalidOperationError(localMetricsMap.contains(name) || aggregateDistributeMetricsMap.contains(name),
+    "expect name in predefined map")
     if (localMetricsMap.contains(name)) {
       (localMetricsMap(name).value.get(), localMetricsMap(name).parallel)
     } else {
@@ -104,7 +109,7 @@ class Metrics extends Serializable {
   }
 
   def get(name: String, number: Int): Array[Double] = {
-    require(distributeMetricsMap.contains(name))
+    Log4Error.invalidOperationError(distributeMetricsMap.contains(name), "expect name in predefined map")
     distributeMetricsMap(name).value.value.toArray.dropRight(number)
   }
 

@@ -109,8 +109,9 @@ private[layers] class TransformerLayer[T: ClassTag](
 
   // return (extenedAttentionMask, embeddingInputs, inputs)
   def buildInput(inputShape: Shape): (Variable[T], List[Variable[T]], List[Variable[T]]) = {
-    Log4Error.invalidInputError(inputShape.isInstanceOf[MultiShape], "TransformerLayer input must be" +
-      " a list of tensors (consisting of input sequence, sequence positions, etc.)")
+    Log4Error.invalidInputError(inputShape.isInstanceOf[MultiShape],
+      "TransformerLayer input must be a list of tensors (consisting of input sequence," +
+        " sequence positions, etc.)")
     val _inputShape = KerasUtils.removeBatch(inputShape).toMulti()
     seqLen = _inputShape.head.toSingle().head
 

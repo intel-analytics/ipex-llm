@@ -20,7 +20,7 @@ import com.intel.analytics.bigdl.dllib.nn.Graph.ModuleNode
 import com.intel.analytics.bigdl.dllib.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.dllib.utils.Engine
+import com.intel.analytics.bigdl.dllib.utils.{Engine, Log4Error}
 
 import scala.collection.mutable.ArrayBuffer
 import scala.concurrent.Future
@@ -62,14 +62,14 @@ class Concat[T: ClassTag](val dimension: Int)(
       if (i == 0) {
         this.size = currentOutput.size()
       } else {
-        require(this.size.length == currentOutput.size.length,
+        Log4Error.invalidInputError(this.size.length == currentOutput.size.length,
         s"${this.modules(i).getName} output size mismatch, expected : ${this.size.length}," +
           s"actual ${currentOutput.size.length}")
         var index = 0
         val ssize = this.size.length
         while (index < ssize) {
           if (index != dimension - 1) {
-            require(this.size(index) == currentOutput.size(index + 1),
+            Log4Error.invalidInputError(this.size(index) == currentOutput.size(index + 1),
               s"${this.modules(i).getName} output size at dimension ${index + 1} mismatch," +
                 s"expected ${this.size(index)}, actual : ${currentOutput.size(index + 1)}")
           }
@@ -102,8 +102,8 @@ class Concat[T: ClassTag](val dimension: Int)(
           while (f <= target.size(1)) {
             val curFrame = target.select(1, f)
             val outputFrame = currentOutput.select(1, f)
-            require(curFrame.isContiguous())
-            require(outputFrame.isContiguous())
+            Log4Error.invalidInputError(curFrame.isContiguous(), "curFrame needs to be contiguous")
+            Log4Error.invalidInputError(outputFrame.isContiguous(), "curFrame needs to be contiguous")
             curFrame.copy(outputFrame)
             f += 1
           }
@@ -160,8 +160,10 @@ class Concat[T: ClassTag](val dimension: Int)(
 
       if (currentGradInput != null) {
         if (i == 0) {
-          require(this.gradInput.isContiguous())
-          require(currentGradInput.isContiguous())
+          Log4Error.invalidInputError(this.gradInput.isContiguous(),
+            "curFrame needs to be contiguous")
+          Log4Error.invalidInputError(currentGradInput.isContiguous(),
+            "curFrame needs to be contiguous")
           this.gradInput.copy(currentGradInput)
         } else {
           this.gradInput.add(currentGradInput)
@@ -231,8 +233,10 @@ class Concat[T: ClassTag](val dimension: Int)(
 
       if (currentGradInput != null) {
         if (i == 0) {
-          require(this.gradInput.isContiguous())
-          require(currentGradInput.isContiguous())
+          Log4Error.invalidInputError(this.gradInput.isContiguous(),
+            "curFrame needs to be contiguous")
+          Log4Error.invalidInputError(currentGradInput.isContiguous(),
+            "curFrame needs to be contiguous")
           this.gradInput.copy(currentGradInput)
         } else {
           this.gradInput.add(currentGradInput)

@@ -21,9 +21,8 @@ import com.intel.analytics.bigdl.dllib.optim.Regularizer
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.dllib.tensor.{DoubleType, FloatType, Tensor}
 import com.intel.analytics.bigdl.dllib.utils.RandomGenerator._
-import com.intel.analytics.bigdl.dllib.utils.{T, Table}
+import com.intel.analytics.bigdl.dllib.utils.{Log4Error, Shape, T, Table}
 import org.apache.spark.sql.catalyst.optimizer.OptimizeIn
-import com.intel.analytics.bigdl.dllib.utils.Shape
 
 import scala.reflect.ClassTag
 
@@ -58,9 +57,11 @@ class VolumetricConvolution[T: ClassTag](
   var bRegularizer: Regularizer[T] = null
 )(implicit ev: TensorNumeric[T]) extends TensorModule[T] with Initializable {
 
-  require(kT > 0 && kW > 0 && kH > 0, "kernel size should be greater than zero," +
+  Log4Error.invalidInputError(kT > 0 && kW > 0 && kH > 0,
+    "kernel size should be greater than zero," +
     s" but got kT: $kT kH: $kH kW: $kW")
-  require(dT > 0 && dW > 0 && dH > 0, "stride should be greater than zero," +
+  Log4Error.invalidInputError(dT > 0 && dW > 0 && dH > 0,
+    "stride should be greater than zero," +
     s" but got dT: $dT dH: $dH dW: $dW")
 
   val weight: Tensor[T] = Tensor[T](nOutputPlane, nInputPlane, kT, kH, kW)
@@ -108,9 +109,9 @@ class VolumetricConvolution[T: ClassTag](
 
   override def computeOutputShape(inputShape: Shape): Shape = {
     val input = inputShape.toSingle().toArray
-    require(input.length == 5,
+    Log4Error.invalidInputError(input.length == 5,
       s"Convolution3D requires 5D input, but got input dim ${input.length}")
-    require(input(1) == nInputPlane, s"input.size(1) should be equal to nInputPlane. " +
+    Log4Error.invalidInputError(input(1) == nInputPlane, s"input.size(1) should be equal to nInputPlane. " +
       s"But In ${this.getName()} : input.size(1) is: ${ input(1) } ," +
       s" nInputPlane is: ${ nInputPlane }")
     val inputWidth = input(4)
@@ -127,7 +128,7 @@ class VolumetricConvolution[T: ClassTag](
     val outputDepth = sizes(6)
     val outputHeight = sizes(7)
     val outputWidth = sizes(8)
-    require(outputWidth >= 1 && outputDepth >= 1 && outputHeight >= 1,
+    Log4Error.invalidInputError(outputWidth >= 1 && outputDepth >= 1 && outputHeight >= 1,
       s"Given input size: (${ input.mkString("x") })." +
         s" Calculated output size:" +
         s" (${ nOutputPlane }x${ outputDepth }x${ outputHeight }x${ outputWidth })." +
@@ -142,20 +143,20 @@ class VolumetricConvolution[T: ClassTag](
    * @return
    */
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
-    require(input.isContiguous(), "input should be contiguous")
-    require(input.dim() == 4 || input.dim() == 5,
+    Log4Error.invalidInputError(input.isContiguous(), "input should be contiguous")
+    Log4Error.invalidInputError(input.dim() == 4 || input.dim() == 5,
       s"4D or 5D (batch mode) tensor expected for input, but got: ${ input.dim() }d")
 
     if (weightMM == null || weightMM.storage().isEmpty) {
       weightMM = weight.view(nOutputPlane, nInputPlane * kT * kH * kW)
     }
 
-    require(weight.dim() == 2 || weight.dim() == 5,
+    Log4Error.invalidInputError(weight.dim() == 2 || weight.dim() == 5,
       s"weight tensor should be 2D or 5D - got ${ weight.dim() }")
 
 
     if (input.dim() == 4) {
-      require(input.size(1) == nInputPlane, s"input.size(1) should be equal to nInputPlane. " +
+      Log4Error.invalidInputError(input.size(1) == nInputPlane, s"input.size(1) should be equal to nInputPlane. " +
         s"But In ${this.getName()} : input.size(1) is: ${ input.size(1) } ," +
         s" nInputPlane is: ${ nInputPlane }")
     }
@@ -173,7 +174,7 @@ class VolumetricConvolution[T: ClassTag](
    * @return
    */
   override def updateGradInput(input: Tensor[T], gradOutput: Tensor[T]): Tensor[T] = {
-    require(input.dim() == 4 || input.dim() == 5,
+    Log4Error.invalidInputError(input.dim() == 4 || input.dim() == 5,
       s"4D or 5D (batch mode) tensor expected for input, but got: ${ input.dim() }d")
 
     VolumetricConvolution.conv3DBackpropInput(input, gradInput, gradOutput, weightMM,
@@ -182,7 +183,7 @@ class VolumetricConvolution[T: ClassTag](
   }
 
   override def accGradParameters(input: Tensor[T], gradOutput: Tensor[T]): Unit = {
-    require(gradOutput.isContiguous(), "gradOutput should be contiguous")
+    Log4Error.invalidInputError(gradOutput.isContiguous(), "gradOutput should be contiguous")
     if (gradWeightMM == null || gradWeightMM.storage().isEmpty) {
       gradWeightMM = gradWeight.view(nOutputPlane, nInputPlane * kT * kH * kW)
     }
@@ -256,7 +257,7 @@ object VolumetricConvolution {
     val outputHeight = sizes(7)
     val outputWidth = sizes(8)
 
-    require(outputWidth >= 1 && outputDepth >= 1 && outputHeight >= 1,
+    Log4Error.invalidInputError(outputWidth >= 1 && outputDepth >= 1 && outputHeight >= 1,
       s"Given input size: (${ input.size().mkString("x") })." +
         s" Calculated output size:" +
         s" (${ nOutputPlane }x${ outputDepth }x${ outputHeight }x${ outputWidth })." +
@@ -370,7 +371,7 @@ object VolumetricConvolution {
 
     if (inputSize.length == 4) {
       fGradInput.resize(kT * kW * kH * nInputPlane, outputDepth * outputHeight * outputWidth)
-      require(gradOutput.isContiguous(), "gradOutput should be contiguous")
+      Log4Error.invalidInputError(gradOutput.isContiguous(), "gradOutput should be contiguous")
       updateGradInputFrame(gradInput, gradOutput, weightMM.transpose(1, 2), fGradInput,
         kT, kW, kH,
         dT, dW, dH,
@@ -384,7 +385,7 @@ object VolumetricConvolution {
         val gradInputT = gradInput.select(1, t)
         val gradOutputT = gradOutput.select(1, t)
         val fGradInputT = fGradInput.select(1, t)
-        require(gradOutputT.isContiguous(), "each batch of gradOutput should be contiguous")
+        Log4Error.invalidInputError(gradOutputT.isContiguous(), "each batch of gradOutput should be contiguous")
         updateGradInputFrame(gradInputT, gradOutputT, weightMM.transpose(1, 2), fGradInputT,
           kT, kW, kH,
           dT, dW, dH,
@@ -472,7 +473,7 @@ object VolumetricConvolution {
     val outputHeight = sizes(7)
     val outputWidth = sizes(8)
 
-    require(outputWidth >= 1 && outputDepth >= 1 && outputHeight >= 1,
+    Log4Error.invalidInputError(outputWidth >= 1 && outputDepth >= 1 && outputHeight >= 1,
       s"Given input size: (${ input.size().mkString("x") })." +
         s" Calculated output size:" +
         s" (${ nOutputPlane }x${ outputDepth }x${ outputHeight }x${ outputWidth })." +

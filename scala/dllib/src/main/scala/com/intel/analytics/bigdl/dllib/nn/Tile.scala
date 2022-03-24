@@ -18,6 +18,7 @@ package com.intel.analytics.bigdl.dllib.nn
 import com.intel.analytics.bigdl.dllib.nn.abstractnn.TensorModule
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.dllib.utils.Log4Error
 
 import scala.reflect.ClassTag
 
@@ -35,11 +36,12 @@ class Tile[T: ClassTag](
   val copies : Int = 2)
     (implicit ev: TensorNumeric[T]) extends TensorModule[T] {
 
-  require(dim > 0, "Can only replicate across positive integer dimensions.")
-  require(copies >= 2, "copies should be at least 2")
+  Log4Error.invalidInputError(dim > 0,
+    "Can only replicate across positive integer dimensions.")
+  Log4Error.invalidInputError(copies >= 2, "copies should be at least 2")
 
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
-    require(dim <= input.dim() + 1,
+    Log4Error.invalidInputError(dim <= input.dim() + 1,
       s"Not enough input dimensions to replicate along dimension $dim.")
 
     val sizes = new Array[Int](input.size().length)

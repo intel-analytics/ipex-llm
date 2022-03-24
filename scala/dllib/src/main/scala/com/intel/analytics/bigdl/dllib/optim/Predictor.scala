@@ -63,7 +63,8 @@ object Predictor {
       localModel
     } else {
       val ol = localModel(outputLayer)
-      require(ol.isDefined, s"cannot find layer that map name $outputLayer")
+      Log4Error.invalidOperationError(ol.isDefined,
+        s"cannot find layer that map name $outputLayer")
       ol.get
     }
     localToBatch(samples.toIterator).flatMap(batch => {
@@ -154,8 +155,9 @@ object Predictor {
     featurePaddingParam: Option[PaddingParam[T]])(implicit ev: TensorNumeric[T]): RDD[Activity] = {
     val partitionNum = dataSet.partitions.length
     val totalBatch = if (batchSize > 0) {
-      Log4Error.invalidInputError(batchSize % partitionNum == 0, s"Predictor.predict: total batch size $batchSize " +
-        s"should be divided by partitionNum ${partitionNum}")
+      Log4Error.invalidInputError(batchSize % partitionNum == 0,
+        s"Predictor.predict: total batch size $batchSize should be" +
+          s" divided by partitionNum ${partitionNum}")
       batchSize
     } else {
       batchPerPartition * partitionNum

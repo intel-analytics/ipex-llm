@@ -23,9 +23,9 @@ import com.intel.analytics.bigdl.dllib.nn
 import com.intel.analytics.bigdl.dllib.nn.Graph.ModuleNode
 import com.intel.analytics.bigdl.dllib.nn.abstractnn.{AbstractModule, Activity, DataFormat}
 import com.intel.analytics.bigdl.dllib.nn.tf.{ControlDependency, WithoutInput}
-import com.intel.analytics.bigdl.dllib.nn.{Graph, mkldnn, MklInt8Convertible}
+import com.intel.analytics.bigdl.dllib.nn.{Graph, MklInt8Convertible, mkldnn}
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
-import com.intel.analytics.bigdl.dllib.utils.{Node, T}
+import com.intel.analytics.bigdl.dllib.utils.{Log4Error, Node, T}
 
 import scala.collection.mutable
 
@@ -57,7 +57,8 @@ class DnnGraph(
       // for grey image, input should be 3 dims and the first dim should be batch size
       // for non grey image, input should be 4 dims and the first dim should be batch size
       // for rnn model, input should be 2 dims and the first dim should be batch size
-      require(in.nDimension() == 4 || in.nDimension() == 3 || in.nDimension() == 2,
+      Log4Error.invalidInputError(in.nDimension() == 4
+        || in.nDimension() == 3 || in.nDimension() == 2,
         s"only support input with 4 dimension or 3 dimension, but get ${in.nDimension()}")
       if (in.size(1) != out.size(1)) out.narrow(1, 1, in.size(1)) else output
     } else output
@@ -158,7 +159,7 @@ class DnnGraph(
             forwardExecution(j).element = toDnnIdentity(e.asInstanceOf[nn.Identity[Float]])
             backwardExecution(i).element = forwardExecution(j).element
           } else {
-            require(e.isInstanceOf[MklDnnModule], s"DnnGraph should only contain dnn layers," +
+            Log4Error.invalidInputError(e.isInstanceOf[MklDnnModule], s"DnnGraph should only contain dnn layers," +
                 s"but find ${forwardExecution(j).element.getName()} is not a mkldnn layer")
           }
           backId2ForwardId(i) = j
@@ -166,7 +167,7 @@ class DnnGraph(
         }
         j += 1
       }
-      require(find, "Cannot find backward layer in forward executions")
+      Log4Error.invalidInputError(find, "Cannot find backward layer in forward executions")
       i += 1
     }
     this
@@ -343,11 +344,11 @@ class DnnGraph(
     : Array[MemoryData] = {
     // the model may contain two inputs and all of them is Input.
     if (inputs.length == 1 || memoryData.isEmpty) {
-      require(inputs.contains(node), "input node must be in the input list")
+      Log4Error.invalidInputError(inputs.contains(node), "input node must be in the input list")
       memoryData
     } else {
       val i = inputs.indexOf(node)
-      require(i != -1, "input node is not in the input list")
+      Log4Error.invalidInputError(i != -1, "input node is not in the input list")
       Array(memoryData(i))
     }
   }
@@ -449,7 +450,7 @@ class DnnGraph(
       if (heapFormat == -1) {
         heapFormat = format
       } else if (format != -1) {
-        require(heapFormat == format,
+        Log4Error.invalidInputError(heapFormat == format,
           s"layer ${m} should use format ${heapFormat}, but get ${format}")
       }
     }

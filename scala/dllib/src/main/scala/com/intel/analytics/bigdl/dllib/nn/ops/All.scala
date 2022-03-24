@@ -18,7 +18,7 @@ package com.intel.analytics.bigdl.dllib.nn.ops
 import com.intel.analytics.bigdl.dllib.nn.abstractnn.Activity
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.dllib.utils.Table
+import com.intel.analytics.bigdl.dllib.utils.{Log4Error, Table}
 
 import scala.collection.mutable.ArrayBuffer
 import scala.reflect.ClassTag
@@ -34,7 +34,7 @@ class All[T: ClassTag](keepDim : Boolean = false, startFromZero : Boolean = fals
   override def updateOutput(input: Table): Tensor[Boolean] = {
     val data = input[Tensor[Boolean]](1)
     val indices = input[Tensor[Int]](2)
-    require(indices.nDimension() == 1 || indices.isScalar, "indices must be 1D tensor or scala")
+    Log4Error.invalidInputError(indices.nDimension() == 1 || indices.isScalar, "indices must be 1D tensor or scala")
     output.resizeAs(data)
     buffer.resizeAs(data).copy(data)
     val reduceDims = new ArrayBuffer[Int]()

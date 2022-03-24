@@ -116,7 +116,8 @@ class Attention[T: ClassTag](val hiddenSize: Int, val numHeads: Int, val attenti
 
 
   private def updateOutputCache(input: Activity): Activity = {
-    require(!this.isTraining(), "Only support input cache for model inference")
+    Log4Error.invalidInputError(!this.isTraining(),
+      "Only support input cache for model inference")
     val inputTable = input.toTable
     val inputX = inputTable[Tensor[T]](1)
     val inputY = inputTable[Tensor[T]](2)

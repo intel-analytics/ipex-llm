@@ -18,7 +18,7 @@ package com.intel.analytics.bigdl.dllib.nn
 import com.intel.analytics.bigdl.dllib.nn.abstractnn.{AbstractModule, TensorModule}
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.dllib.tensor._
-import com.intel.analytics.bigdl.dllib.utils.Engine
+import com.intel.analytics.bigdl.dllib.utils.{Engine, Log4Error}
 
 import scala.concurrent.Future
 import scala.reflect.ClassTag
@@ -40,7 +40,8 @@ class HardTanh[T: ClassTag](
   val inplace: Boolean = false
 )(implicit ev: TensorNumeric[T])
   extends TensorModule[T] {
-  require(maxValue > minValue, "maxValue must be larger than minValue, " +
+  Log4Error.invalidInputError(maxValue > minValue,
+    "maxValue must be larger than minValue, " +
     s"maxValue ${maxValue}, " +
     s"minValue ${minValue}")
 
@@ -117,7 +118,7 @@ class HardTanh[T: ClassTag](
 
 
   override def updateGradInput(input: Tensor[T], gradOutput: Tensor[T]): Tensor[T] = {
-    require(input.nElement() == gradOutput.nElement(),
+    Log4Error.invalidInputError(input.nElement() == gradOutput.nElement(),
       s"the number of input element (${input.nElement()}) " +
         s"should equal the number of " +
         s"gradOutput element (${gradOutput.nElement()}), ")

@@ -7,7 +7,7 @@
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
+ * Unless Log4Error.invalidInputErrord by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
@@ -226,7 +226,7 @@ class RandomGenerator private[bigdl]() {
   }
 
   def normal(mean: Double, stdv: Double): Double = {
-    require(stdv > 0, "standard deviation must be strictly positive")
+    Log4Error.invalidInputError(stdv > 0, "standard deviation must be strictly positive")
 
     /* This is known as the Box-Muller method */
     if (!this.normalIsValid) {
@@ -256,17 +256,17 @@ class RandomGenerator private[bigdl]() {
   def logNormal(mean: Double, stdv: Double): Double = {
     val zm = mean * mean
     val zs = stdv * stdv
-    require(stdv > 0, "standard deviation must be strictly positive")
+    Log4Error.invalidInputError(stdv > 0, "standard deviation must be strictly positive")
     Math.exp(normal(Math.log(zm / Math.sqrt(zs + zm)), Math.sqrt(Math.log(zs / zm + 1))))
   }
 
   def geometric(p: Double): Int = {
-    require(p >= 0 && p <= 1, "must be >= 0 and <= 1")
+    Log4Error.invalidInputError(p >= 0 && p <= 1, "must be >= 0 and <= 1")
     ((Math.log(1 - this.basicUniform()) / Math.log(p)) + 1).toInt
   }
 
   def bernoulli(p: Double): Boolean = {
-    require(p >= 0 && p <= 1, "must be >= 0 and <= 1")
+    Log4Error.invalidInputError(p >= 0 && p <= 1, "must be >= 0 and <= 1")
     this.basicUniform() <= p
   }
 }

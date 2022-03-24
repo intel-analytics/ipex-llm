@@ -48,7 +48,7 @@ trait InferShape {
    * Return the inputShape for the current Layer and the first dim is batch.
    */
   final def getInputShape(): Shape = {
-    require(this.isKerasStyle(),
+    Log4Error.invalidInputError(this.isKerasStyle(),
       "Torch style definition doesn't support getInputShape for now.")
     _inputShapeValue
   }
@@ -57,9 +57,9 @@ trait InferShape {
    * Return the outputShape for the current Layer and the first dim is batch.
    */
   final def getOutputShape(): Shape = {
-//    require(this.isKerasStyle(),
+//    Log4Error.invalidInputError(this.isKerasStyle(),
 //      "Torch style definition doesn't support getOutputShape for now.")
-//    require(this.isBuilt(), "This module hasn't been built.")
+//    Log4Error.invalidInputError(this.isBuilt(), "This module hasn't been built.")
     Log4Error.invalidOperationError(this.isKerasStyle(),
       "Torch style definition doesn't support getOutputShape for now.",
     "Please use keras style api")
@@ -108,7 +108,7 @@ trait InferShape {
 
   private[bigdl] def validateInput[T: ClassTag](modules : Seq[AbstractModule[_, _, T]]): Unit = {
     if (this.isKerasStyle()) {
-      require(modules != null && !modules.isEmpty, "Empty input is not allowed")
+      Log4Error.invalidInputError(modules != null && !modules.isEmpty, "Empty input is not allowed")
     }
     excludeInvalidLayers(modules)
   }

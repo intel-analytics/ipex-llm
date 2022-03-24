@@ -22,8 +22,7 @@ import com.intel.analytics.bigdl.mkl.MKL
 import com.intel.analytics.bigdl.dllib.nn.abstractnn.TensorModule
 import com.intel.analytics.bigdl.dllib.tensor.{DoubleType, FloatType, Storage, Tensor}
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.dllib.utils.Engine
-import com.intel.analytics.bigdl.dllib.utils.Shape
+import com.intel.analytics.bigdl.dllib.utils.{Engine, Log4Error, Shape}
 
 import scala.concurrent.Future
 import scala.math.exp
@@ -48,7 +47,7 @@ class LogSoftMax[T: ClassTag](
 
 
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
-    require(input.dim() == 1 || input.dim() == 2,
+    Log4Error.invalidInputError(input.dim() == 1 || input.dim() == 2,
       "LogSoftMax: " + ErrorInfo.constrainInputAsVectorOrBatch +
       s"input dim ${input.dim()}")
     output.resizeAs(input).copy(input)
@@ -94,8 +93,8 @@ class LogSoftMax[T: ClassTag](
   }
 
   override def updateGradInput(input: Tensor[T], gradOutput: Tensor[T]): Tensor[T] = {
-    require(output.nDimension() == 1 || output.nDimension() == 2, "vector or matrix expected")
-    require(gradOutput.dim() == input.dim(), "LogSoftMax: input and gradOutput shapes do not " +
+    Log4Error.invalidInputError(output.nDimension() == 1 || output.nDimension() == 2, "vector or matrix expected")
+    Log4Error.invalidInputError(gradOutput.dim() == input.dim(), "LogSoftMax: input and gradOutput shapes do not " +
       "match, input_dim: " + input.dim() + ", gradOutput_dim: " + gradOutput.dim())
     gradInput.resizeAs(input).copy(gradOutput)
     val (nframe, dim) =

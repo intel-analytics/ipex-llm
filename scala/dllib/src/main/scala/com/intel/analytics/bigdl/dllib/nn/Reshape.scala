@@ -61,7 +61,8 @@ class Reshape[T: ClassTag](
 
     if ((batchMode.nonEmpty && !batchMode.get) ||
           (input.nElement() == nElement && batchMode.isEmpty && input.size(1) != 1)) {
-      Log4Error.invalidInputError(input.nElement() == nElement, s"element number must match Reshape size. " +
+      Log4Error.unKnowExceptionError(input.nElement() == nElement,
+        s"element number must match Reshape size. " +
         s"But In ${this.getName()} : element number is: ${ input.nElement() } , " +
         s"reshape size is: ${nElement}")
       if (input.isContiguous()) output =

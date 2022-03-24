@@ -17,7 +17,7 @@ package com.intel.analytics.bigdl.dllib.nn.ops
 
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.dllib.utils.{T, Table}
+import com.intel.analytics.bigdl.dllib.utils.{Log4Error, T, Table}
 
 import scala.reflect.ClassTag
 
@@ -43,11 +43,13 @@ class BatchMatMul[T: ClassTag, D: ClassTag](
     var x: Tensor[D] = input(1)
     var y: Tensor[D] = input(2)
 
-    require(x.dim() == y.dim(), "tensor x and tensor y must have the same number of dims")
-    require(x.dim() >= 2, "tensor dim num must be at least 2")
+    Log4Error.invalidInputError(x.dim() == y.dim(),
+      "tensor x and tensor y must have the same number of dims")
+    Log4Error.invalidInputError(x.dim() >= 2,
+      "tensor dim num must be at least 2")
 
     if (x.dim() == 2) {
-      require(y.dim() == 2, "second input tensor must be 2D" +
+      Log4Error.invalidInputError(y.dim() == 2, "second input tensor must be 2D" +
         s"second input dim ${y.dim()}")
 
       if (adjX) {
@@ -56,14 +58,14 @@ class BatchMatMul[T: ClassTag, D: ClassTag](
       if (adjY) {
         y = y.t()
       }
-      require(x.size(2) == y.size(1), "matrix sizes do not match" +
+      Log4Error.invalidInputError(x.size(2) == y.size(1), "matrix sizes do not match" +
         s"The sizes are ${x.size(2)} and ${y.size(1)}")
 
       output.resize(x.size(1), y.size(2))
       output.mm(x, y)
     } else {
 
-      require(x.size(1) == y.size(1), "inputs must contain the same number of minibatches" +
+      Log4Error.invalidInputError(x.size(1) == y.size(1), "inputs must contain the same number of minibatches" +
         s"The minibatces of each are ${x.size(1)} and ${y.size(1)}")
 
       val dimNum = x.dim()
@@ -79,7 +81,7 @@ class BatchMatMul[T: ClassTag, D: ClassTag](
       if (adjY) {
         reshapedY = reshapedY.transpose(2, 3)
       }
-      require(reshapedX.size(3) == reshapedY.size(2), "matrix sizes do not match" +
+      Log4Error.invalidInputError(reshapedX.size(3) == reshapedY.size(2), "matrix sizes do not match" +
         s"the matrix sizes are ${reshapedX.size(2)} and ${reshapedY.size(3)}")
 
       output.resize(batchSize, reshapedX.size(2), reshapedY.size(3))

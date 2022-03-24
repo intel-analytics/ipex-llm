@@ -17,7 +17,9 @@ package com.intel.analytics.bigdl.dllib.feature.image3d
 
 
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.dllib.tensor.{DoubleType, FloatType, Tensor, Storage}
+import com.intel.analytics.bigdl.dllib.tensor.{DoubleType, FloatType, Storage, Tensor}
+import com.intel.analytics.bigdl.dllib.utils.Log4Error
+
 import scala.reflect.ClassTag
 
 object Rotate3D {
@@ -59,7 +61,7 @@ class Rotate3D(rotationAngles: Array[Double])
   private val rotationTensor = yawDataTensor * pitchDataTensor * rollDataTensor
 
   override def transformTensor(tensor: Tensor[Float]): Tensor[Float] = {
-    require(tensor.dim >=3 && tensor.size(4) == 1,
+    Log4Error.invalidInputError(tensor.dim >=3 && tensor.size(4) == 1,
       "Currently 3D rotation only supports 1 channel 3D image.")
     val originSize = tensor.size
     val src = tensor.squeeze(4)

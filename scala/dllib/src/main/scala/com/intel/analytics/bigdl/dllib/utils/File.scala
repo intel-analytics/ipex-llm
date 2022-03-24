@@ -7,7 +7,7 @@
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
+ * Unless Log4Error.invalidInputErrord by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
@@ -99,7 +99,7 @@ object File {
   private[bigdl] def getFileSystem(fileName: String): org.apache.hadoop.fs.FileSystem = {
     val src = new Path(fileName)
     val fs = src.getFileSystem(File.getConfiguration(fileName))
-    require(fs.exists(src), src + " does not exists")
+    Log4Error.invalidInputError(fs.exists(src), src + " does not exists")
     fs
   }
 
@@ -118,7 +118,7 @@ object File {
    * @param overwrite
    */
   def saveToHdfs(obj: Serializable, fileName: String, overwrite: Boolean): Unit = {
-    require(fileName.startsWith(File.hdfsPrefix),
+    Log4Error.invalidInputError(fileName.startsWith(File.hdfsPrefix),
       s"hdfs path ${fileName} should have prefix 'hdfs:'")
     val dest = new Path(fileName)
     var fs: FileSystem = null
@@ -244,8 +244,8 @@ private[bigdl] class FileReader(fileName: String) {
    * @return
    */
   def open(): InputStream = {
-    require(inputStream == null, s"File $fileName has been opened already.")
-    require(fs.exists(path), s"$fileName is empty!")
+    Log4Error.invalidInputError(inputStream == null, s"File $fileName has been opened already.")
+    Log4Error.invalidInputError(fs.exists(path), s"$fileName is empty!")
     inputStream = fs.open(path)
     inputStream
   }
@@ -281,9 +281,9 @@ private[bigdl] class FileWriter(fileName: String) {
    * @return
    */
   def create(overwrite: Boolean = false): OutputStream = {
-    require(outputStream == null, s"File $fileName has been created already.")
+    Log4Error.invalidInputError(outputStream == null, s"File $fileName has been created already.")
     if (!overwrite) {
-      require(!fs.exists(path), s"$fileName already exists!")
+      Log4Error.invalidInputError(!fs.exists(path), s"$fileName already exists!")
     }
     outputStream = fs.create(path, overwrite)
     outputStream

@@ -7,7 +7,7 @@
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
+ * Unless Log4Error.invalidInputErrord by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
@@ -18,6 +18,7 @@ package com.intel.analytics.bigdl.dllib.nn
 import com.intel.analytics.bigdl.dllib.nn.abstractnn.TensorCriterion
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.dllib.utils.Log4Error
 
 import scala.reflect.ClassTag
 
@@ -50,7 +51,8 @@ class AbsCriterion[@specialized(Float, Double) T: ClassTag](val sizeAverage: Boo
     }
     gradInput.mul(input, ev.fromType[Int](-1)).add(target)
 
-    require(gradInput.isContiguous(), "AbsCriterion: gradInput should be contiguous")
+    Log4Error.invalidInputError(gradInput.isContiguous(),
+      "AbsCriterion: gradInput should be contiguous")
     val bufferArray = gradInput.storage().array()
     val bufferOffset = gradInput.storageOffset() - 1
     var i = 0

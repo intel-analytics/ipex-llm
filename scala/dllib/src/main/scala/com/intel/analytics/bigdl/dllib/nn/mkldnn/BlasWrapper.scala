@@ -39,7 +39,7 @@ import org.apache.logging.log4j.LogManager
 private[bigdl] class BlasWrapper(val module: AbstractModule[Activity, Activity, Float])
   extends MklDnnLayer {
 
-  require(!module.isInstanceOf[MklDnnModule], "Only support wrapper blas layer to dnn layer")
+  Log4Error.invalidInputError(!module.isInstanceOf[MklDnnModule], "Only support wrapper blas layer to dnn layer")
 
   output = module.output
   gradInput = module.gradInput

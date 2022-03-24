@@ -265,7 +265,8 @@ object ImageSet {
       }.toMap
       val images = sc.binaryFiles(newPathsString, minPartitions).map { case (p, stream) =>
         val rawFilePath = new Path(p).toUri.getRawPath
-        Log4Error.invalidInputError(rawFilePath.startsWith(dirPath), s"directory path: $dirPath does not match file path" +
+        Log4Error.invalidInputError(rawFilePath.startsWith(dirPath),
+          s"directory path: $dirPath does not match file path" +
             s" $rawFilePath")
 
         val classStr = rawFilePath

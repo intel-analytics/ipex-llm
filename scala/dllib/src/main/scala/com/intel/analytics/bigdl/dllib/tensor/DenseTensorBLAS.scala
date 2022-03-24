@@ -16,6 +16,7 @@
 
 package com.intel.analytics.bigdl.dllib.tensor
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath._
+import com.intel.analytics.bigdl.dllib.utils.Log4Error
 
 object DenseTensorBLAS {
   var time = 0L
@@ -221,8 +222,10 @@ object DenseTensorBLAS {
    */
   def gemv[@specialized(Float, Double) T](alpha: T, matrix: Tensor[T], vector: Tensor[T],
     beta: T, r: Tensor[T])(implicit ev: TensorNumeric[T]): Unit = {
-    require(matrix.size(2) == vector.size(1), "matrix vector size doesn't match")
-    require(matrix.size(1) == r.size(1), "matrix result size doesn't match")
+    Log4Error.unKnowExceptionError(matrix.size(2) == vector.size(1),
+      "matrix vector size doesn't match")
+    Log4Error.unKnowExceptionError(matrix.size(1) == r.size(1),
+      "matrix result size doesn't match")
     if (matrix.stride(1) == 1) {
       ev.gemv('N', matrix.size(1), matrix.size(2), alpha, matrix.storage().array(),
         matrix.storageOffset() - 1,

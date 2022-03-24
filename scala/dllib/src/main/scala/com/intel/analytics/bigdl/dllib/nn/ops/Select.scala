@@ -18,7 +18,7 @@ package com.intel.analytics.bigdl.dllib.nn.ops
 import com.intel.analytics.bigdl.dllib.nn.abstractnn.Activity
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.dllib.utils.Table
+import com.intel.analytics.bigdl.dllib.utils.{Log4Error, Table}
 
 import scala.reflect.ClassTag
 
@@ -31,7 +31,7 @@ class Select[T: ClassTag]()
 
   override def updateOutput(input: Table): Activity = {
     val condition = input[Tensor[Boolean]](1)
-    require(condition.isScalar, "only support condition as a scalar")
+    Log4Error.invalidInputError(condition.isScalar, "only support condition as a scalar")
     val t = input[Activity](2)
     val e = input[Activity](3)
 

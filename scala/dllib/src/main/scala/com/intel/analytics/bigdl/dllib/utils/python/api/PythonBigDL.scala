@@ -7,7 +7,7 @@
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
+ * Unless Log4Error.unKnowExceptionErrord by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
@@ -174,7 +174,7 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
 
   def toJTensor(tensor: Tensor[T]): JTensor = {
     // clone here in case the the size of storage larger then the size of tensor.
-    require(tensor != null, "tensor cannot be null")
+    Log4Error.unKnowExceptionError(tensor != null, "tensor cannot be null")
     tensor.getTensorType match {
       case SparseType =>
         // Note: as SparseTensor's indices is inaccessible here,
@@ -218,7 +218,7 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
   }
 
   def toJSample(record: Sample): JSample[T] = {
-    require(record.bigdlType == this.typeName,
+    Log4Error.unKnowExceptionError(record.bigdlType == this.typeName,
       s"record.bigdlType: ${record.bigdlType} == this.typeName: ${this.typeName}")
     JSample[T](record.features.asScala.toArray.map(toTensor(_)),
       record.labels.asScala.toArray.map(toTensor(_)))
@@ -230,13 +230,13 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
 
   // The first dimension is batch for both X and y
   def toSampleArray(Xs: List[Tensor[T]], y: Tensor[T] = null): Array[JSample[T]] = {
-    require(!Xs.isEmpty, "Xs should not be empty")
+    Log4Error.unKnowExceptionError(!Xs.isEmpty, "Xs should not be empty")
     val totalNum = Xs(0).size()(0)
     var i = 1
     val samples = new Array[JSample[T]](totalNum)
 
     if (y != null) {
-      require(Xs(0).size()(0) == y.size()(0),
+      Log4Error.unKnowExceptionError(Xs(0).size()(0) == y.size()(0),
         s"The batch dim should be equal, but we got: ${Xs(0).size()(0)} vs ${y.size()(0)}")
       while (i <= totalNum) {
         samples(i-1) = JSample(Xs.map{X => X.select(1, i)}.toArray, y.select(1, i))
@@ -3004,7 +3004,7 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
 
   def createDistributedImageFrame(imageRdd: JavaRDD[JTensor], labelRdd: JavaRDD[JTensor])
   : DistributedImageFrame = {
-    require(null != imageRdd, "imageRdd cannot be null")
+    Log4Error.unKnowExceptionError(null != imageRdd, "imageRdd cannot be null")
     val featureRdd = if (null != labelRdd) {
       imageRdd.rdd.zip(labelRdd.rdd).map(data => {
         createImageFeature(data._1, data._2)
@@ -3019,7 +3019,7 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
 
   def createLocalImageFrame(images: JList[JTensor], labels: JList[JTensor])
   : LocalImageFrame = {
-    require(null != images, "images cannot be null")
+    Log4Error.unKnowExceptionError(null != images, "images cannot be null")
     val features = if (null != labels) {
       (0 until images.size()).map(i => {
         createImageFeature(images.get(i), labels.get(i))

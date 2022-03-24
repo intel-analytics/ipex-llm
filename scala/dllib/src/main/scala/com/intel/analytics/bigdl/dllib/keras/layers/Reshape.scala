@@ -76,7 +76,8 @@ class Reshape[T: ClassTag](
     if (infer) {
       val nElements = nonBatchInput.product
       val resizeElements = - targetShape.product
-      assert(nElements % resizeElements == 0, s"Total size after reshape must be unchanged." +
+      Log4Error.unKnowExceptionError(nElements % resizeElements == 0,
+        s"Total size after reshape must be unchanged." +
           s" inputShape: $inputShape, targetShape: ${targetShape.mkString(", ")}")
       targetShape(inferIndex) = nElements / resizeElements
     }
@@ -85,10 +86,6 @@ class Reshape[T: ClassTag](
         s"Total size after reshape must be unchanged. But in ${this.getName()}: " +
           s"input size is: ${nonBatchInput.product}, " +
           s"while reshape size is: ${targetShape.product}")
-//      require(targetShape.product == nonBatchInput.product,
-//        s"Total size after reshape must be unchanged. But in ${this.getName()}: " +
-//          s"input size is: ${nonBatchInput.product}, " +
-//          s"while reshape size is: ${targetShape.product}")
     }
     Shape(Array(input(0)) ++ targetShape)
   }

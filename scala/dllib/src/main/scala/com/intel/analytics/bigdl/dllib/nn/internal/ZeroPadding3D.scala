@@ -21,7 +21,7 @@ import com.intel.analytics.bigdl.dllib.nn.abstractnn._
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.nn.{Sequential => TSequential}
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.dllib.utils.Shape
+import com.intel.analytics.bigdl.dllib.utils.{Log4Error, Shape}
 
 import scala.reflect.ClassTag
 
@@ -45,15 +45,16 @@ class ZeroPadding3D[T: ClassTag](
    val inputShape: Shape = null)(implicit ev: TensorNumeric[T])
   extends KerasLayer[Tensor[T], Tensor[T], T](KerasLayer.addBatch(inputShape)) {
 
-  require(dimOrdering.toLowerCase() == "channel_first" ||
+  Log4Error.invalidInputError(dimOrdering.toLowerCase() == "channel_first" ||
     dimOrdering.toLowerCase() == "channel_last",
     s"For ZeroPadding3D $dimOrdering is not supported")
-  require(padding.length == 3, s"For ZeroPadding3D, subsample should be of length 3," +
+  Log4Error.invalidInputError(padding.length == 3,
+    s"For ZeroPadding3D, subsample should be of length 3," +
     s" but got length ${padding.length}")
 
   override def computeOutputShape(inputShape: Shape): Shape = {
     val input = inputShape.toSingle().toArray
-    require(input.length == 5,
+    Log4Error.invalidInputError(input.length == 5,
       s"ZeroPadding3D requires 5D input, but got input dim ${input.length}")
     dimOrdering.toLowerCase() match {
       case "channel_first" =>

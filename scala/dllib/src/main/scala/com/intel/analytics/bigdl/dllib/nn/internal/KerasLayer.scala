@@ -97,7 +97,7 @@ class KerasLayerWrapper[T: ClassTag]
     val inputShape: Shape = null)(implicit ev: TensorNumeric[T])
   extends KerasLayer[Activity, Activity, T](KerasLayer.addBatch(inputShape)) {
 
-  require(!torchLayer.isKerasStyle(), s"We only accept torch layer here, but got: $torchLayer")
+  Log4Error.invalidInputError(!torchLayer.isKerasStyle(), s"We only accept torch layer here, but got: $torchLayer")
 
   override def computeOutputShape(calcInputShape: Shape): Shape = {
     val dummyOutTensor =
@@ -260,7 +260,7 @@ abstract class KerasLayer[A <: Activity: ClassTag, B <: Activity: ClassTag, T: C
 //    }
     Log4Error.invalidOperationError(!this.modules.isEmpty, "This Layer hasn't been built",
     "Please add this layer into a Sequential before use")
-    require(modules.length == 1,
+    Log4Error.invalidInputError(modules.length == 1,
       s"modules should only contain 1 element instead of ${modules.length}")
     modules(0).asInstanceOf[AbstractModule[A, B, T]]
   }
@@ -300,7 +300,7 @@ abstract class KerasLayer[A <: Activity: ClassTag, B <: Activity: ClassTag, T: C
     if (getInputShape() != null) {
       val withoutBatchInputShape = KerasLayer.removeBatch(getInputShape())
       val withoutBatchCalcInputShape = KerasLayer.removeBatch(calcInputShape)
-      require(withoutBatchInputShape == withoutBatchCalcInputShape,
+      Log4Error.invalidInputError(withoutBatchInputShape == withoutBatchCalcInputShape,
         s"InputShape from constructor ${withoutBatchInputShape}" +
           s"should be the same with the calculated inputShape: ${withoutBatchCalcInputShape}")
     }
@@ -353,11 +353,12 @@ abstract class KerasLayer[A <: Activity: ClassTag, B <: Activity: ClassTag, T: C
   private def getShapeByIndex(shape: Shape, index: Int): Shape = {
     shape match {
       case s: SingleShape =>
-        require(index == 1, s"Getting singleshape but with index: $index")
+        Log4Error.invalidInputError(index == 1, s"Getting singleshape but with index: $index")
         s
       case m: MultiShape =>
         val multiShape = m.toMulti()
-        require(index >= 1 && index <= multiShape.length)
+        Log4Error.invalidInputError(index >= 1 && index <= multiShape.length,
+          s"index $index out of range [1, ${multiShape.length}]")
         multiShape(index - 1)
     }
   }

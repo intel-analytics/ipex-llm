@@ -7,7 +7,7 @@
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
+ * Unless Log4Error.invalidInputErrord by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
@@ -18,6 +18,7 @@ package com.intel.analytics.bigdl.dllib.tensor
 
 import java.util
 
+import com.intel.analytics.bigdl.dllib.utils.Log4Error
 import com.intel.analytics.bigdl.mkl.MKL
 import com.intel.analytics.bigdl.dllib.utils.RandomGenerator._
 
@@ -542,7 +543,7 @@ object TensorNumericMath {
       override def gemm(transa: Char, transb: Char, m: Int, n: Int, k: Int, alpha: Float,
         a: Array[Float], aOffset: Int, lda: Int, b: Array[Float], bOffset: Int, ldb: Int,
         beta: Float, c: Array[Float], cOffset: Int, ldc: Int): Unit = {
-        require(MKL.isMKLLoaded, "mkl isn't loaded")
+        Log4Error.invalidInputError(MKL.isMKLLoaded, "mkl isn't loaded")
         MKL.vsgemm(transa, transb, m, n, k, alpha, a, aOffset, lda, b, bOffset,
           ldb, beta, c, cOffset, ldc)
       }
@@ -552,7 +553,7 @@ object TensorNumericMath {
         x: Array[Float], xOffset: Int, incx: Int, beta: Float,
         y: Array[Float], yOffset: Int,
         incy: Int): Unit = {
-        require(MKL.isMKLLoaded, "mkl isn't loaded")
+        Log4Error.invalidInputError(MKL.isMKLLoaded, "mkl isn't loaded")
         MKL.vsgemv(trans, m, n, alpha, a, aoffset, lda, x, xOffset,
           incx, beta, y, yOffset, incy)
       }
@@ -560,18 +561,18 @@ object TensorNumericMath {
       override def axpy(n: Int, da: Float, dx: Array[Float], _dx_offset: Int,
         incx: Int, dy: Array[Float],
         _dy_offset: Int, incy: Int): Unit = {
-        require(MKL.isMKLLoaded, "mkl isn't loaded")
+        Log4Error.invalidInputError(MKL.isMKLLoaded, "mkl isn't loaded")
         MKL.vsaxpy(n, da, dx, _dx_offset, incx, dy, _dy_offset, incy)      }
 
       override def dot(n: Int, dx: Array[Float], _dx_offset: Int, incx: Int, dy: Array[Float],
         _dy_offset: Int, incy: Int): Float = {
-        require(MKL.isMKLLoaded, "mkl isn't loaded")
+        Log4Error.invalidInputError(MKL.isMKLLoaded, "mkl isn't loaded")
         MKL.vsdot(n, dx, _dx_offset, incx, dy, _dy_offset, incy)      }
 
       override def ger(m: Int, n: Int, alpha: Float, x: Array[Float], _x_offset: Int, incx: Int,
         y: Array[Float], _y_offset: Int,
         incy: Int, a: Array[Float], _a_offset: Int, lda: Int): Unit = {
-        require(MKL.isMKLLoaded, "mkl isn't loaded")
+        Log4Error.invalidInputError(MKL.isMKLLoaded, "mkl isn't loaded")
         MKL.vsger(m, n, alpha, x, _x_offset, incx, y, _y_offset,
           incy, a, _a_offset, lda)
       }
@@ -591,48 +592,48 @@ object TensorNumericMath {
 
       override def vPowx(n: Int, a: Array[Float], aOffset: Int, b: Float, y: Array[Float],
         yOffset: Int): Unit = {
-        require(MKL.isMKLLoaded, "mkl isn't loaded")
+        Log4Error.invalidInputError(MKL.isMKLLoaded, "mkl isn't loaded")
         MKL.vsPowx(n, a, aOffset, b, y, yOffset)
       }
 
       override def vLn(n: Int, a: Array[Float], aOffset: Int, y: Array[Float], yOffset: Int)
       : Unit = {
-        require(MKL.isMKLLoaded, "mkl isn't loaded")
+        Log4Error.invalidInputError(MKL.isMKLLoaded, "mkl isn't loaded")
         MKL.vsLn(n, a, aOffset, y, yOffset)
       }
 
       override def vExp(n: Int, a: Array[Float], aOffset: Int, y: Array[Float], yOffset: Int)
       : Unit = {
-        require(MKL.isMKLLoaded, "mkl isn't loaded")
+        Log4Error.invalidInputError(MKL.isMKLLoaded, "mkl isn't loaded")
         MKL.vsExp(n, a, aOffset, y, yOffset)
       }
 
       override def vSqrt(n: Int, a: Array[Float], aOffset: Int, y: Array[Float], yOffset: Int)
       : Unit = {
-        require(MKL.isMKLLoaded, "mkl isn't loaded")
+        Log4Error.invalidInputError(MKL.isMKLLoaded, "mkl isn't loaded")
         MKL.vsSqrt(n, a, aOffset, y, yOffset)
       }
 
       override def vTanh(n: Int, a: Array[Float], aOffset: Int, y: Array[Float], yOffset: Int)
       : Unit = {
-        require(MKL.isMKLLoaded, "mkl isn't loaded")
+        Log4Error.invalidInputError(MKL.isMKLLoaded, "mkl isn't loaded")
         MKL.vsTanh(n, a, aOffset, y, yOffset)
       }
 
       override def vAbs(n: Int, a: Array[Float], aOffset: Int, y: Array[Float], yOffset: Int)
       : Unit = {
-        require(MKL.isMKLLoaded, "mkl isn't loaded")
+        Log4Error.invalidInputError(MKL.isMKLLoaded, "mkl isn't loaded")
         MKL.vsAbs(n, a, aOffset, y, yOffset)
       }
 
       override def vLog1p(n: Int, a: Array[Float], aOffset: Int, y: Array[Float], yOffset: Int)
       : Unit = {
-        require(MKL.isMKLLoaded, "mkl isn't loaded")
+        Log4Error.invalidInputError(MKL.isMKLLoaded, "mkl isn't loaded")
         MKL.vsLog1p(n, a, aOffset, y, yOffset)
       }
 
       override def scal(n: Int, sa: Float, sx: Array[Float], offset: Int, incx: Int): Unit = {
-        require(MKL.isMKLLoaded, "mkl isn't loaded")
+        Log4Error.invalidInputError(MKL.isMKLLoaded, "mkl isn't loaded")
         MKL.vsscal(n, sa, sx, offset, incx)
       }
 
@@ -656,13 +657,13 @@ object TensorNumericMath {
 
       override def vAdd(n: Int, a: Array[Float], aOffset: Int, b: Array[Float], bOffset: Int,
         y: Array[Float], yOffset: Int): Unit = {
-        require(MKL.isMKLLoaded, "mkl isn't loaded")
+        Log4Error.invalidInputError(MKL.isMKLLoaded, "mkl isn't loaded")
         MKL.vsAdd(n, a, aOffset, b, bOffset, y, yOffset)
       }
 
       override def vSub(n: Int, a: Array[Float], aOffset: Int, b: Array[Float], bOffset: Int,
         y: Array[Float], yOffset: Int): Unit = {
-        require(MKL.isMKLLoaded, "mkl isn't loaded")
+        Log4Error.invalidInputError(MKL.isMKLLoaded, "mkl isn't loaded")
         MKL.vsSub(n, a, aOffset, b, bOffset, y, yOffset)
       }
 
@@ -791,7 +792,7 @@ object TensorNumericMath {
       }
 
       override def clip(a: Float, lower: Float, upper: Float): Float = {
-        require(lower <= upper, "lower bound must be less or equal than upper bound")
+        Log4Error.invalidInputError(lower <= upper, "lower bound must be less or equal than upper bound")
         math.min(math.max(a, lower), upper)
       }
 
@@ -848,7 +849,7 @@ object TensorNumericMath {
       override def gemm(transa: Char, transb: Char, m: Int, n: Int, k: Int, alpha: Double,
         a: Array[Double], aOffset: Int, lda: Int, b: Array[Double], bOffset: Int, ldb: Int,
         beta: Double, c: Array[Double], cOffset: Int, ldc: Int): Unit = {
-        require(MKL.isMKLLoaded, "mkl isn't loaded")
+        Log4Error.invalidInputError(MKL.isMKLLoaded, "mkl isn't loaded")
 
         MKL.vdgemm(transa, transb, m, n, k, alpha, a, aOffset, lda, b,
           bOffset, ldb, beta, c, cOffset, ldc)
@@ -857,27 +858,27 @@ object TensorNumericMath {
       override def gemv(trans: Char, m: Int, n: Int, alpha: Double, a: Array[Double], aoffset: Int,
         lda: Int, x: Array[Double], xOffset: Int, incx: Int, beta: Double, y: Array[Double],
         yOffset: Int, incy: Int): Unit = {
-        require(MKL.isMKLLoaded, "mkl isn't loaded")
+        Log4Error.invalidInputError(MKL.isMKLLoaded, "mkl isn't loaded")
         MKL.vdgemv(trans, m, n, alpha, a, aoffset, lda, x, xOffset,
           incx, beta, y, yOffset, incy)
       }
 
       override def axpy(n: Int, da: Double, dx: Array[Double], _dx_offset: Int, incx: Int,
         dy: Array[Double], _dy_offset: Int, incy: Int): Unit = {
-        require(MKL.isMKLLoaded, "mkl isn't loaded")
+        Log4Error.invalidInputError(MKL.isMKLLoaded, "mkl isn't loaded")
         MKL.vdaxpy(n, da, dx, _dx_offset, incx, dy, _dy_offset, incy)
       }
 
       override def dot(n: Int, dx: Array[Double], _dx_offset: Int, incx: Int, dy: Array[Double],
         _dy_offset: Int, incy: Int): Double = {
-        require(MKL.isMKLLoaded, "mkl isn't loaded")
+        Log4Error.invalidInputError(MKL.isMKLLoaded, "mkl isn't loaded")
         MKL.vddot(n, dx, _dx_offset, incx, dy, _dy_offset, incy)
       }
 
       override def ger(m: Int, n: Int, alpha: Double, x: Array[Double], _x_offset: Int, incx: Int,
         y: Array[Double], _y_offset: Int,
         incy: Int, a: Array[Double], _a_offset: Int, lda: Int): Unit = {
-        require(MKL.isMKLLoaded, "mkl isn't loaded")
+        Log4Error.invalidInputError(MKL.isMKLLoaded, "mkl isn't loaded")
         MKL.vdger(m, n, alpha, x, _x_offset, incx, y, _y_offset,
           incy, a, _a_offset, lda)
       }
@@ -897,48 +898,48 @@ object TensorNumericMath {
 
       override def vPowx(n: Int, a: Array[Double], aOffset: Int, b: Double, y: Array[Double],
         yOffset: Int): Unit = {
-        require(MKL.isMKLLoaded, "mkl isn't loaded")
+        Log4Error.invalidInputError(MKL.isMKLLoaded, "mkl isn't loaded")
         MKL.vdPowx(n, a, aOffset, b, y, yOffset)
       }
 
       override def vLn(n: Int, a: Array[Double], aOffset: Int, y: Array[Double],
                        yOffset: Int): Unit = {
-        require(MKL.isMKLLoaded, "mkl isn't loaded")
+        Log4Error.invalidInputError(MKL.isMKLLoaded, "mkl isn't loaded")
         MKL.vdLn(n, a, aOffset, y, yOffset)
       }
 
       override def vExp(n: Int, a: Array[Double], aOffset: Int, y: Array[Double],
                         yOffset: Int): Unit = {
-        require(MKL.isMKLLoaded, "mkl isn't loaded")
+        Log4Error.invalidInputError(MKL.isMKLLoaded, "mkl isn't loaded")
         MKL.vdExp(n, a, aOffset, y, yOffset)
       }
 
       override def vSqrt(n: Int, a: Array[Double], aOffset: Int, y: Array[Double],
                          yOffset: Int): Unit = {
-        require(MKL.isMKLLoaded, "mkl isn't loaded")
+        Log4Error.invalidInputError(MKL.isMKLLoaded, "mkl isn't loaded")
         MKL.vdSqrt(n, a, aOffset, y, yOffset)
       }
 
       override def vTanh(n: Int, a: Array[Double], aOffset: Int, y: Array[Double], yOffset: Int)
       : Unit = {
-        require(MKL.isMKLLoaded, "mkl isn't loaded")
+        Log4Error.invalidInputError(MKL.isMKLLoaded, "mkl isn't loaded")
         MKL.vdTanh(n, a, aOffset, y, yOffset)
       }
 
       override def vAbs(n: Int, a: Array[Double], aOffset: Int, y: Array[Double], yOffset: Int)
       : Unit = {
-        require(MKL.isMKLLoaded, "mkl isn't loaded")
+        Log4Error.invalidInputError(MKL.isMKLLoaded, "mkl isn't loaded")
         MKL.vdAbs(n, a, aOffset, y, yOffset)
       }
 
       override def vLog1p(n: Int, a: Array[Double], aOffset: Int, y: Array[Double], yOffset: Int)
       : Unit = {
-        require(MKL.isMKLLoaded, "mkl isn't loaded")
+        Log4Error.invalidInputError(MKL.isMKLLoaded, "mkl isn't loaded")
         MKL.vdLog1p(n, a, aOffset, y, yOffset)
       }
 
       override def scal(n: Int, sa: Double, sx: Array[Double], offset: Int, incx: Int): Unit = {
-        require(MKL.isMKLLoaded, "mkl isn't loaded")
+        Log4Error.invalidInputError(MKL.isMKLLoaded, "mkl isn't loaded")
         MKL.vdscal(n, sa, sx, offset, incx)
       }
 
@@ -962,13 +963,13 @@ object TensorNumericMath {
 
       override def vAdd(n: Int, a: Array[Double], aOffset: Int, b: Array[Double], bOffset: Int,
         y: Array[Double], yOffset: Int): Unit = {
-        require(MKL.isMKLLoaded, "mkl isn't loaded")
+        Log4Error.invalidInputError(MKL.isMKLLoaded, "mkl isn't loaded")
         MKL.vdAdd(n, a, aOffset, b, bOffset, y, yOffset)
       }
 
       override def vSub(n: Int, a: Array[Double], aOffset: Int, b: Array[Double], bOffset: Int,
         y: Array[Double], yOffset: Int): Unit = {
-        require(MKL.isMKLLoaded, "mkl isn't loaded")
+        Log4Error.invalidInputError(MKL.isMKLLoaded, "mkl isn't loaded")
         MKL.vdSub(n, a, aOffset, b, bOffset, y, yOffset)
       }
 
@@ -1105,7 +1106,7 @@ object TensorNumericMath {
       }
 
       override def clip(a: Double, lower: Double, upper: Double): Double = {
-        require(lower <= upper, "lower bound must be less or equal than upper bound")
+        Log4Error.invalidInputError(lower <= upper, "lower bound must be less or equal than upper bound")
         math.min(math.max(a, lower), upper)
       }
 

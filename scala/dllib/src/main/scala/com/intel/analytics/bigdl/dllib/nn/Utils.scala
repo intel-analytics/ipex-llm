@@ -21,7 +21,7 @@ import com.intel.analytics.bigdl.Module
 import com.intel.analytics.bigdl.dllib.nn.abstractnn.{AbstractModule, Activity, DataFormat}
 import com.intel.analytics.bigdl.dllib.tensor._
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.dllib.utils.{T, Table}
+import com.intel.analytics.bigdl.dllib.utils.{Log4Error, T, Table}
 
 import scala.collection.mutable
 import scala.reflect.ClassTag
@@ -42,7 +42,8 @@ object Utils {
       if (v.isInstanceOf[Table]) {
         t1.update(k, zeroTableCopy(if (t1.contains(k)) t1(k) else T(), t2(k)))
       } else {
-        require(v.isInstanceOf[Tensor[_]], "Input can only consist of Tensor or Table")
+        Log4Error.invalidInputError(v.isInstanceOf[Tensor[_]],
+          "Input can only consist of Tensor or Table")
         val tensorV = v.asInstanceOf[Tensor[T]]
         if (!t1.contains(k)) {
           t1.update(k, tensorV.clone().zero())
@@ -113,7 +114,7 @@ object Utils {
    */
   def recursiveTensorApply1[T](x: Activity, func: Tensor[T] => Tensor[T])(
     implicit ev: TensorNumeric[T]): Unit = {
-    require(x.isInstanceOf[Activity],
+    Log4Error.invalidInputError(x.isInstanceOf[Activity],
       s"expecting tensors or tables thereof. Got ${x} instead"
     )
     if (x.isInstanceOf[Table]) {
@@ -140,13 +141,13 @@ object Utils {
   def recursiveTensorApply2[T](x: Activity, y: Activity,
     func: (Tensor[T], Tensor[T]) => Tensor[T])(implicit ev: TensorNumeric[T]): Activity = {
     if (y.isInstanceOf[Tensor[_]] && x.isInstanceOf[Tensor[_]]) {
-      require(x.toTensor[T].nElement() == y.toTensor[T].nElement(),
+      Log4Error.invalidInputError(x.toTensor[T].nElement() == y.toTensor[T].nElement(),
         "x, y should have the same size" +
           s"x size ${x.toTensor[T].nElement()}, y size ${y.toTensor[T].nElement()}")
       func(x.toTensor[T], y.toTensor[T])
     } else {
-      require(x.isInstanceOf[Table] && y.isInstanceOf[Table], "x, y should have the same size")
-      require(x.toTable.length() == y.toTable.length(), "x, y should have the same size" +
+      Log4Error.invalidInputError(x.isInstanceOf[Table] && y.isInstanceOf[Table], "x, y should have the same size")
+      Log4Error.invalidInputError(x.toTable.length() == y.toTable.length(), "x, y should have the same size" +
         s"x size ${x.toTable.length()}, y size ${y.toTable.length()}")
       var i = 1
       while (i <= x.toTable.length()) {
@@ -232,7 +233,7 @@ object Utils {
     // copy parameters
     val srcParameters = src.getParameters()._1
     val dstParameters = dst.getParameters()._1
-    require(srcParameters.size(1) == dstParameters.size(1),
+    Log4Error.invalidInputError(srcParameters.size(1) == dstParameters.size(1),
       s"$src and $dst is not the same type.")
     dstParameters.copy(srcParameters)
     // copy running status
@@ -319,7 +320,7 @@ object Utils {
     val padAlongWidth = Math.max(0, (oW -1) * dW + kW - inputWidth)
     val padAlongHeight = Math.max(0, (oH - 1) * dH + kH - inputHeight)
     if (inputDepth != -1) {
-      require(dT > 0 && kT > 0, "kernel size and strideSize cannot be smaller than 0")
+      Log4Error.invalidInputError(dT > 0 && kT > 0, "kernel size and strideSize cannot be smaller than 0")
       val oT = Math.ceil(inputDepth.toFloat / dT.toFloat).toInt
       val padAlongDepth = Math.max(0, (oT -1) * dT + kT - inputDepth)
       return Array(padAlongDepth/2, padAlongDepth - padAlongDepth/2, padAlongHeight/2,
@@ -366,7 +367,7 @@ object Utils {
       oheight = math.ceil(1.0 * (inputHeight - dilationKernelHeight + 2*padH) / dH).toInt + 1
       owidth = math.ceil(1.0 * (inputWidth - dilationKernelWidth + 2*padW) / dW).toInt + 1
       if (inputdepth > 0) {
-        require(dt > 0 && kt > 0 && padt >= 0,
+        Log4Error.invalidInputError(dt > 0 && kt > 0 && padt >= 0,
           "kernel size, stride size, padding size cannot be smaller than 0")
         odepth = math.ceil(1.0 * (inputdepth - dilationKernelDepth + 2*padt) / dt).toInt + 1
       }
@@ -374,7 +375,7 @@ object Utils {
       oheight = math.floor(1.0 * (inputHeight - dilationKernelHeight + 2*padH) / dH).toInt + 1
       owidth = math.floor(1.0 * (inputWidth - dilationKernelWidth + 2*padW) / dW).toInt + 1
       if (inputdepth > 0) {
-        require(dt > 0 && kt > 0 && padt >= 0,
+        Log4Error.invalidInputError(dt > 0 && kt > 0 && padt >= 0,
           "kernel size, stride size, padding size cannot be smaller than 0")
         odepth = math.floor(1.0 * (inputdepth - dilationKernelDepth + 2*padt) / dt).toInt + 1
       }
@@ -477,11 +478,11 @@ object Utils {
 
   def shuffle[T: ClassTag](src: Tensor[T], permutation: Array[Int], buffer: Tensor[T] = null)(
     implicit ev: TensorNumeric[T]): Tensor[T] = {
-    require(permutation.length == src.nDimension,
+    Log4Error.invalidInputError(permutation.length == src.nDimension,
       s"permutation length should be same as tensor dimension")
-    require(permutation.min >= 0 && permutation.max <= src.size().max,
+    Log4Error.invalidInputError(permutation.min >= 0 && permutation.max <= src.size().max,
       s"permutation min value should be between 0 and ${src.size().max}")
-    require(permutation.distinct.size == src.nDimension, s"permutation has duplicated input")
+    Log4Error.invalidInputError(permutation.distinct.size == src.nDimension, s"permutation has duplicated input")
 
     var i = 0
     val outSize = new Array[Int](src.nDimension)
@@ -613,7 +614,7 @@ object Utils {
 
       s"mask should between [$start, $end]"
     }
-    require(mask.toBinaryString.length <= tensor.size().length, s"$maskInterval")
+    Log4Error.invalidInputError(mask.toBinaryString.length <= tensor.size().length, s"$maskInterval")
 
     val result = mutable.ListBuffer[Float]()
 

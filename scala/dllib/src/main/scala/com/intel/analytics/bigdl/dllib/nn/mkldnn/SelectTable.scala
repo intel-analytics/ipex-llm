@@ -18,7 +18,7 @@ package com.intel.analytics.bigdl.dllib.nn.mkldnn
 import com.intel.analytics.bigdl.dllib.nn.{Utils => NNUtils}
 import com.intel.analytics.bigdl.dllib.nn.abstractnn.Activity
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.dllib.utils.{T, Table}
+import com.intel.analytics.bigdl.dllib.utils.{Log4Error, T, Table}
 
 import scala.reflect.ClassTag
 
@@ -37,7 +37,7 @@ class SelectTable(val index: Int)(implicit ev: TensorNumeric[Float]) extends Mkl
     val input = in.asInstanceOf[Table]
     val index = if (this.index < 0) input.length() + this.index else this.index
 
-    require(input.contains(index), "index does not exist in the input table")
+    Log4Error.invalidInputError(input.contains(index), "index does not exist in the input table")
     output = input[Activity](index)
 
     output
@@ -55,7 +55,7 @@ class SelectTable(val index: Int)(implicit ev: TensorNumeric[Float]) extends Mkl
 
     NNUtils.recursiveCopy(gradInput.asInstanceOf[Table](index), gradOutput)
 
-    require(gradInput.asInstanceOf[Table].contains(index), "Index exceeds the size of input table")
+    Log4Error.invalidInputError(gradInput.asInstanceOf[Table].contains(index), "Index exceeds the size of input table")
 
     gradInput.asInstanceOf[Table]
   }

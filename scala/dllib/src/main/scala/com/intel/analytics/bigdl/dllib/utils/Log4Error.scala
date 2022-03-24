@@ -21,41 +21,39 @@ import org.apache.logging.log4j.{LogManager, Logger}
 object Log4Error {
   val logger: Logger = LogManager.getLogger(getClass)
 
-  def invalidInputError(condition: Boolean, msg: String): Unit = {
+  def invalidInputError(condition: Boolean, errmsg: String, fixmsg: String = null): Unit = {
     if (!condition) {
-      logger.error(s"*************************Usage Error: Input invalid parameter*********************\n"
-        + msg)
-
-      logger.info(s"*************************System exit*********************")
-      System.exit(0)
+      outputUserMessage(errmsg, fixmsg)
+      throw new IllegalArgumentException(errmsg)
     }
   }
 
-  def invalidOperationError(condition: Boolean, errmsg: String, fixmsg: String): Unit = {
+  def invalidOperationError(condition: Boolean, errmsg: String, fixmsg: String = null): Unit = {
     if (!condition) {
-      logger.error(s"\n*************************Usage Error: Invalid operations*********************\n"
-        + errmsg)
-      logger.error(s"\n*************************How to fix*********************\n"
-        + fixmsg)
+      outputUserMessage(errmsg, fixmsg)
       throw new InvalidOperationException(errmsg)
     }
   }
 
-  def unKnowExceptionError(condition: Boolean, errmsg: String = null, fixmsg: String = null): Unit = {
+  def outputUserMessage(errmsg: String = null, fixmsg: String = null): Unit = {
+    if (errmsg != null) {
+      logger.error(s"\n\n****************************Usage Error************************\n"
+        + errmsg)
+    }
+    if (fixmsg != null) {
+      logger.error(s"\n\n****************************How to fix*************************\n"
+        + fixmsg)
+    }
+    logger.error(s"\n\n****************************Call Stack*************************")
+  }
+
+  def unKnowExceptionError(condition: Boolean, errmsg: String = null,
+    fixmsg: String = null): Unit = {
     if (!condition) {
-      if (errmsg != null) {
-        logger.error(s"\n************************* Error *********************\n"
-          + errmsg)
-      }
-      if (fixmsg != null) {
-        logger.error(s"\n*************************How to fix*********************\n"
-          + fixmsg)
-      }
+      outputUserMessage(errmsg, fixmsg)
       throw new UnKnownException(errmsg)
     }
   }
-
-
 }
 
 class InvalidOperationException(message: String)

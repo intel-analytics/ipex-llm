@@ -18,6 +18,7 @@ package com.intel.analytics.bigdl.dllib.nn.mkldnn
 import com.intel.analytics.bigdl.mkl.{Memory, MklDnn}
 import com.intel.analytics.bigdl.dllib.nn.abstractnn.Activity
 import com.intel.analytics.bigdl.dllib.tensor.{DnnTensor, Tensor}
+import com.intel.analytics.bigdl.dllib.utils.Log4Error
 
 /**
  * Convert output to user defined layout and appoint gradOutput layout
@@ -45,8 +46,8 @@ class Output(outputLayOut: Int = Memory.Format.nc,
   }
 
   override private[bigdl] def initFwdPrimitives(inputs: Array[MemoryData], phase: Phase) = {
-    require(inputs.length == 1, "Only accept one tensor as input")
-    require(inputs(0).shape.length == 4 || inputs(0).shape.length == 2
+    Log4Error.invalidInputError(inputs.length == 1, "Only accept one tensor as input")
+    Log4Error.invalidInputError(inputs(0).shape.length == 4 || inputs(0).shape.length == 2
       || inputs(0).shape.length == 3,
       s"Only support input with 2 or 3 or 4 dimentions, but get ${inputs(0).shape.length}")
 
@@ -64,8 +65,8 @@ class Output(outputLayOut: Int = Memory.Format.nc,
   }
 
   override private[bigdl] def initBwdPrimitives(grads: Array[MemoryData], phase: Phase) = {
-    require(grads.length == 1, "Only accept one tensor as input")
-    require(grads(0).shape.length == 4 || grads(0).shape.length == 2
+    Log4Error.invalidInputError(grads.length == 1, "Only accept one tensor as input")
+    Log4Error.invalidInputError(grads(0).shape.length == 4 || grads(0).shape.length == 2
       || grads(0).shape.length == 3,
       s"Only support gradOutput with 2 or 3 or 4 dimentions, but get ${grads(0).shape.length}")
 

@@ -20,6 +20,7 @@ import com.intel.analytics.bigdl.dllib.feature.dataset.segmentation.PolyMasks
 import com.intel.analytics.bigdl.dllib.feature.transform.vision.image.{FeatureTransformer, ImageFeature}
 import com.intel.analytics.bigdl.dllib.feature.transform.vision.image.label.roi.RoiLabel
 import com.intel.analytics.bigdl.dllib.feature.transform.vision.image.util.BboxUtil
+import com.intel.analytics.bigdl.dllib.utils.Log4Error
 
 
 object ScaleResize {
@@ -88,7 +89,7 @@ class ScaleResize(minSize: Int, maxSize: Int = -1, resizeROI: Boolean = false)
 
     for (i <- 0 until masks.length) {
       val oneMask = masks(i)
-      require(oneMask.isInstanceOf[PolyMasks],
+      Log4Error.invalidInputError(oneMask.isInstanceOf[PolyMasks],
         s"Only support poly mask resize, but get ${oneMask}")
       if (oneMask.isInstanceOf[PolyMasks]) {
         val polyMask = oneMask.asInstanceOf[PolyMasks]

@@ -19,6 +19,7 @@ package com.intel.analytics.bigdl.dllib.nn
 import com.intel.analytics.bigdl.dllib.nn.abstractnn.TensorCriterion
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.dllib.utils.Log4Error
 
 import scala.reflect.ClassTag
 
@@ -37,7 +38,7 @@ class PoissonCriterion[T: ClassTag]
    * K.mean(y_pred - y_true * K.log(y_pred + K.epsilon()), axis=-1)
    */
   override def updateOutput(input: Tensor[T], target: Tensor[T]): T = {
-    require(input.isSameSizeAs(target),
+    Log4Error.invalidInputError(input.isSameSizeAs(target),
       s"Input should have the same size as target. input size: (${input.size().mkString(", ")});" +
         s" target size: (${target.size().mkString(", ")}).")
     // use gradInput as buffer
@@ -49,7 +50,7 @@ class PoissonCriterion[T: ClassTag]
    * back propagation with: 1 - y_true/y_pred
    */
   override def updateGradInput(input: Tensor[T], gradOutput: Tensor[T]): Tensor[T] = {
-    require(input.isSameSizeAs(gradOutput),
+    Log4Error.invalidInputError(input.isSameSizeAs(gradOutput),
       s"Input should have the same size as target. input size: (${input.size().mkString(", ")});" +
         s" target size: (${gradOutput.size().mkString(", ")}).")
 

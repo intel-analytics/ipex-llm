@@ -70,7 +70,8 @@ class Narrow[T: ClassTag](
       Log4Error.invalidInputError(offset >= 0 && offset <= input(positiveDim) -1,
         s"Invalid narrow offset for dim $dim: $offset, " +
           s"offset should be within range [0, ${input(positiveDim) - 1}]")
-      Log4Error.invalidInputError(positiveLength > 0 && positiveLength <= input(positiveDim) - offset,
+      Log4Error.invalidInputError(positiveLength > 0 &&
+        positiveLength <= input(positiveDim) - offset,
         s"Invalid narrow length for dim $dim with offset $offset: $length, " +
           s"length should be within range (0, ${input(positiveDim) - offset}]")
     }

@@ -19,9 +19,7 @@ import com.intel.analytics.bigdl.dllib.nn.abstractnn.{DataFormat, Initializable,
 import com.intel.analytics.bigdl.dllib.optim.Regularizer
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.dllib.tensor.{DoubleType, FloatType, Tensor}
-import com.intel.analytics.bigdl.dllib.utils.{T, Table}
-import com.intel.analytics.bigdl.dllib.utils.{Engine, OptimizerV1, OptimizerV2}
-import com.intel.analytics.bigdl.dllib.utils.Shape
+import com.intel.analytics.bigdl.dllib.utils._
 
 import scala.concurrent.Future
 import scala.reflect.ClassTag
@@ -74,7 +72,7 @@ class LocallyConnected2D[T: ClassTag](
   val withBias: Boolean = true,
   val format: DataFormat = DataFormat.NCHW
 )(implicit ev: TensorNumeric[T]) extends TensorModule[T] with Initializable {
-  require((padW >= 0 && padH >= 0) || (padW == -1 && padH == -1),
+  Log4Error.invalidInputError((padW >= 0 && padH >= 0) || (padW == -1 && padH == -1),
     s"Illegal padding configuration (padW: $padW, padH: $padH)")
 
   val sizes =
@@ -221,27 +219,27 @@ class LocallyConnected2D[T: ClassTag](
 
   override def computeOutputShape(inputShape: Shape): Shape = {
     val input = inputShape.toSingle().toArray
-    require(input.length == 4,
+    Log4Error.invalidInputError(input.length == 4,
       s"LocallyConnected2D requires 4D input, but got input dim ${input.length}")
     val (dimHeight, dimWidth, channelDim) = format.getHWCDims(input.length)
-    require(input(channelDim -1) == nInputPlane, s"input channel size " +
+    Log4Error.invalidInputError(input(channelDim -1) == nInputPlane, s"input channel size " +
       s"${input(channelDim -1)} is not the same as nInputPlane $nInputPlane")
-    require(outputWidth >= 1 && outputHeight >= 1,
+    Log4Error.invalidInputError(outputWidth >= 1 && outputHeight >= 1,
       s"output size is too small. outputWidth: $outputWidth, outputHeight: $outputHeight")
     val outputShape = getOutputShape(outputHeight, outputWidth)
     Shape(Array(input(0)) ++ outputShape)
   }
 
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
-    require(input.dim() == 3 || input.dim() == 4,
+    Log4Error.invalidInputError(input.dim() == 3 || input.dim() == 4,
       "LocallyConnected2D: " + ErrorInfo.constrainInputAs3DOrBatch)
-    require(input.isContiguous())
+    Log4Error.invalidInputError(input.isContiguous(), "input need to be contiguous")
 
     val (dimHeight, dimWidth, channelDim) = format.getHWCDims(input.dim())
-    require(input.size(channelDim) == nInputPlane, s"input channel size " +
+    Log4Error.invalidInputError(input.size(channelDim) == nInputPlane, s"input channel size " +
       s"${input.size(channelDim)} is not the same as nInputPlane $nInputPlane")
 
-    require(outputWidth >= 1 && outputHeight >= 1,
+    Log4Error.invalidInputError(outputWidth >= 1 && outputHeight >= 1,
       s"output size is too small. outputWidth: $outputWidth, outputHeight: $outputHeight")
 
     if (withBias && (onesBias.dim() != 1 || onesBias.size(1) != outputHeight * outputWidth)) {
@@ -249,7 +247,7 @@ class LocallyConnected2D[T: ClassTag](
     }
 
     if (input.dim() == 3) {
-      require(input.isContiguous())
+      Log4Error.invalidInputError(input.isContiguous(), "input need to be contiguous")
       output.resize(getOutputShape(outputHeight, outputWidth))
       if (_1x1) {
         fInput.set(input)
@@ -289,7 +287,7 @@ class LocallyConnected2D[T: ClassTag](
         val _i = i + 1
         results(i) = Engine.model.invoke(() => {
           val inputT = input.select(1, _i)
-          require(inputT.isContiguous())
+          Log4Error.invalidInputError(inputT.isContiguous(), "inputT need to be contiguous")
           val outputT = output.select(1, _i)
           val fInputT = fInput.select(1, _i)
           val biasUse = if (withBias) {
@@ -327,7 +325,7 @@ class LocallyConnected2D[T: ClassTag](
 
     val (padTop, padBottom, padLeft, padRight) = getPadding(inputHeight, inputWidth)
 
-    require(input.nDimension() == 3 || input.nDimension() == 4, "Only support 3D or 4D input")
+    Log4Error.invalidInputError(input.nDimension() == 3 || input.nDimension() == 4, "Only support 3D or 4D input")
     gradInput.resizeAs(input)
     if (_1x1) {
       fGradInput.set(gradInput)
@@ -337,7 +335,7 @@ class LocallyConnected2D[T: ClassTag](
     }
 
     if (input.nDimension() == 3) {
-      require(gradOutput.isContiguous())
+      Log4Error.invalidInputError(gradOutput.isContiguous(), "gradOutput need to be contiguous")
       updateGradInputFrame(
         gradInput,
         gradOutput,
@@ -352,7 +350,7 @@ class LocallyConnected2D[T: ClassTag](
         results(i) = Engine.model.invoke(() => {
           val gradInputT = gradInput.select(1, _i)
           val gradOutputT = gradOutput.select(1, _i)
-          require(gradOutputT.isContiguous())
+          Log4Error.invalidInputError(gradOutputT.isContiguous(), "gradOutput need to be contiguous")
           val fgradInputT = fGradInput.select(1, _i)
           updateGradInputFrame(
             gradInputT,
@@ -374,10 +372,10 @@ class LocallyConnected2D[T: ClassTag](
         nOutputPlane, nInputPlane * kernelH * kernelW)
 
   override def accGradParameters(input: Tensor[T], gradOutput: Tensor[T]): Unit = {
-    require(input.nDimension() == 3 || input.nDimension() == 4,
+    Log4Error.invalidInputError(input.nDimension() == 3 || input.nDimension() == 4,
       "Only support 3D or 4D input," +
         s"but input has ${input.nDimension()} dimensions")
-    require(gradOutput.isContiguous())
+    Log4Error.invalidInputError(gradOutput.isContiguous(), "gradOutput need to be contiguous")
 
     val (ohDim, owDim, cDim) = format.getHWCDims(input.dim())
     val oh = gradOutput.size(ohDim)

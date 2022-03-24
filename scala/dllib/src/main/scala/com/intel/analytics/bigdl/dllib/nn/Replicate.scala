@@ -18,6 +18,7 @@ package com.intel.analytics.bigdl.dllib.nn
 import com.intel.analytics.bigdl.dllib.nn.abstractnn.TensorModule
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.dllib.utils.Log4Error
 
 import scala.reflect.ClassTag
 
@@ -38,11 +39,12 @@ class Replicate[T: ClassTag](
   val nDim : Int = Int.MaxValue)
   (implicit ev: TensorNumeric[T]) extends TensorModule[T] {
 
-  require(dim > 0, "Can only replicate across positive integer dimensions. " +
+  Log4Error.invalidInputError(dim > 0,
+    "Can only replicate across positive integer dimensions. " +
     s"The number of dimensions is $dim.")
 
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
-    require(dim <= input.dim() + 1,
+    Log4Error.invalidInputError(dim <= input.dim() + 1,
       s"Not enough input dimensions to replicate along dimension $dim.")
 
     val batchOffset = if (input.dim() > nDim) 1 else 0

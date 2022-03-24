@@ -16,6 +16,8 @@
 
 package com.intel.analytics.bigdl.dllib.tensor
 
+import com.intel.analytics.bigdl.dllib.utils.Log4Error
+
 object DenseTensorApply {
   /**
    * Iterate through tensor1, and apply func to the elements,
@@ -127,7 +129,7 @@ object DenseTensorApply {
    */
   def apply2[T](tensor1: Tensor[T], tensor2: Tensor[T],
     func: TensorFunc4[T]): Unit = {
-    require(tensor1.nElement() == tensor2.nElement(),
+    Log4Error.unKnowExceptionError(tensor1.nElement() == tensor2.nElement(),
       s"inconsistent tensor size: ${tensor1.nElement()} == ${tensor2.nElement()}")
 
     if (tensor1.isEmpty) {
@@ -221,7 +223,7 @@ object DenseTensorApply {
     tensor2: Tensor[T], tensor3: Tensor[T],
     func: TensorFunc6[T]): Unit = {
 
-    require(tensor1.nElement() == tensor2.nElement() && tensor2.nElement() == tensor3.nElement(),
+    Log4Error.unKnowExceptionError(tensor1.nElement() == tensor2.nElement() && tensor2.nElement() == tensor3.nElement(),
       "inconsistent tensor size")
 
     if (tensor1.isEmpty) {
@@ -379,7 +381,7 @@ object DenseTensorApply {
   def apply2[A, B, C](tensor1: Tensor[A], tensor2: Tensor[B], tensor3: Tensor[C],
     func: TensorDiffTypeFunc6[A, B, C])
   : Unit = {
-    require(tensor1.nElement() == tensor2.nElement(),
+    Log4Error.unKnowExceptionError(tensor1.nElement() == tensor2.nElement(),
       s"inconsistent tensor size: ${tensor1.nElement()} == ${tensor2.nElement()}")
 
     if (tensor1.isEmpty) {

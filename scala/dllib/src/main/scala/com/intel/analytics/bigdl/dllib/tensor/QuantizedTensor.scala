@@ -7,7 +7,7 @@
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
+ * Unless Log4Error.unKnowExceptionErrord by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
@@ -20,6 +20,9 @@ import com.intel.analytics.bigdl.bigquant.BigQuant
 import com.intel.analytics.bigdl.dllib.nn.quantized._
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
 import java.io.{IOException, ObjectInputStream}
+
+import com.intel.analytics.bigdl.dllib.utils.Log4Error
+
 import scala.reflect.ClassTag
 
 @SerialVersionUID(- 1766499387282335147L)
@@ -126,7 +129,8 @@ private[bigdl] class QuantizedTensor[T: ClassTag](
   def this(src: Array[Byte], size: Array[Int], max: Array[T], min: Array[T], sum: Array[T],
     descParams: DescParams)(implicit ev: TensorNumeric[T]) = {
     this(size, DenseTensor.size2Stride(size), size.length)
-    require(src.length == size.product, s"size mismatch, byte array size should equal to shape")
+    Log4Error.unKnowExceptionError(src.length == size.product,
+      s"size mismatch, byte array size should equal to shape")
 
     this.internalStorage = src
     this.maxOfRow = max
@@ -168,7 +172,7 @@ private[bigdl] class QuantizedTensor[T: ClassTag](
   override def size(): Array[Int] = _size
 
   override def size(dim: Int): Int = {
-    require(dim > 0 && dim <= this.nDimension,
+    Log4Error.unKnowExceptionError(dim > 0 && dim <= this.nDimension,
       s"dimension ${dim} out of range of ${this.nDimension}D tensor")
     _size(dim - 1)
   }
@@ -176,7 +180,7 @@ private[bigdl] class QuantizedTensor[T: ClassTag](
   override def stride(): Array[Int] = _stride.slice(0, this.nDimension)
 
   override def stride(dim: Int): Int = {
-    require(dim > 0 && dim <= this.nDimension,
+    Log4Error.unKnowExceptionError(dim > 0 && dim <= this.nDimension,
       s"dimension ${dim} out of range of ${this.nDimension}D tensor")
     _stride(dim - 1)
   }

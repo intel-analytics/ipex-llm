@@ -20,7 +20,7 @@ import com.intel.analytics.bigdl.dllib.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric.{NumericDouble, NumericFloat}
-import com.intel.analytics.bigdl.dllib.utils.{Shape, SingleShape}
+import com.intel.analytics.bigdl.dllib.utils.{Log4Error, Shape, SingleShape}
 
 import scala.collection.mutable.ArrayBuffer
 import scala.reflect._
@@ -52,7 +52,7 @@ class PriorBox[T: ClassTag](minSizes: Array[Float], maxSizes: Array[Float] = nul
   init()
 
   private def init(): Unit = {
-    require(minSizes != null && minSizes.length > 0, "must provide minSize")
+    Log4Error.invalidInputError(minSizes != null && minSizes.length > 0, "must provide minSize")
     if (aspectRatios == null) aspectRatios = new ArrayBuffer[Float]()
     else aspectRatios.clear()
     aspectRatios.append(1)
@@ -72,10 +72,12 @@ class PriorBox[T: ClassTag](minSizes: Array[Float], maxSizes: Array[Float] = nul
 
     numPriors = aspectRatios.length * minSizes.length
     if (maxSizes != null && maxSizes.length > 0) {
-      require(minSizes.length == maxSizes.length)
+      Log4Error.invalidInputError(minSizes.length == maxSizes.length,
+        s"minSizes length ${minSizes.length} should match maxSizes length ${maxSizes.length}")
       i = 0
       while (i < maxSizes.length) {
-        require(maxSizes(i) > minSizes(i))
+        Log4Error.invalidInputError(maxSizes(i) > minSizes(i),
+          s"maxSizes(i) ${maxSizes(i)} greater than minSizes(i) ${minSizes(i)}")
         numPriors += 1
         i += 1
       }
@@ -84,21 +86,23 @@ class PriorBox[T: ClassTag](minSizes: Array[Float], maxSizes: Array[Float] = nul
     if (variances == null) {
       variances = Array[Float](0.1f)
     } else if (variances.length > 1) {
-      require(variances.length == 4, "Must and only provide 4 variance.")
+      Log4Error.invalidInputError(variances.length == 4, "Must and only provide 4 variance.")
     }
 
     if (imgH != 0 && imgW != 0) {
-      require(imgW > 0 && imgH > 0)
+      Log4Error.invalidInputError(imgW > 0 && imgH > 0, s"imgW should be great than 0, but is ${imgW}," +
+        s"imgH should be great than 0, but is ${imgH}")
     } else if (imgSize != 0) {
-      require(imgSize > 0)
+      Log4Error.invalidInputError(imgSize > 0, s"imgSize should be great than 0, but is ${imgSize}")
       imgH = imgSize
       imgW = imgSize
     }
 
     if (stepH != 0 && stepW != 0) {
-      require(stepW > 0 && stepH > 0)
+      Log4Error.invalidInputError(stepW > 0 && stepH > 0, s"stepW should be great than 0, but is ${stepW}," +
+        s"stepH should be great than 0, but is ${stepH}")
     } else if (step != 0) {
-      require(step > 0)
+      Log4Error.invalidInputError(step > 0, s"step should be great than 0, but is ${step}")
       stepH = step
       stepW = step
     }
@@ -123,7 +127,7 @@ class PriorBox[T: ClassTag](minSizes: Array[Float], maxSizes: Array[Float] = nul
    * @return
    */
   override def updateOutput(input: Activity): Tensor[T] = {
-    require(imgW > 0 && imgH > 0, "imgW and imgH must > 0")
+    Log4Error.invalidInputError(imgW > 0 && imgH > 0, "imgW and imgH must > 0")
     val feature = if (input.isTensor) input.toTensor[Float] else input.toTable[Tensor[Float]](1)
     val layerW = feature.size(4)
     val layerH = feature.size(3)

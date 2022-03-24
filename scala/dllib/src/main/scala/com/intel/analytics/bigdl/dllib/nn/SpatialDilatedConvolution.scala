@@ -22,8 +22,7 @@ import com.intel.analytics.bigdl.dllib.optim.Regularizer
 import com.intel.analytics.bigdl.dllib.tensor.{DenseTensorBLAS, DoubleType, FloatType, Tensor}
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.dllib.utils.RandomGenerator._
-import com.intel.analytics.bigdl.dllib.utils.{T, Table}
-import com.intel.analytics.bigdl.dllib.utils.Shape
+import com.intel.analytics.bigdl.dllib.utils.{Log4Error, Shape, T, Table}
 
 import scala.reflect.ClassTag
 
@@ -106,18 +105,20 @@ class SpatialDilatedConvolution[T: ClassTag](
     kH: Int, kW: Int, dH: Int, dW: Int, padH: Int, padW: Int,
     dilationH: Int, dilationW: Int) {
 
-    require(weight.nDimension == 4,
+    Log4Error.invalidInputError(weight.nDimension == 4,
       "4D weight tensor (nOutputPlane,nInputPlane,kH,kW) expected, " +
         s"but got: ${weight.nDimension()}")
-    require(kW > 0 && kH > 0,
+    Log4Error.invalidInputError(kW > 0 && kH > 0,
       s"kernel size should be greater than zero, but got kH: $kH kW: $kW")
-    require(dW > 0 && dH > 0,
+    Log4Error.invalidInputError(dW > 0 && dH > 0,
       s"stride should be greater than zero, but got dH: $dH dW: $dW")
-    require(weight.nDimension == 2 || weight.nDimension == 4,
+    Log4Error.invalidInputError(weight.nDimension == 2 || weight.nDimension == 4,
       s"2D or 4D weight tensor expected, but got: ${weight.nDimension()}")
 
     if (null != bias) {
-      require(bias.nDimension() == 1 && bias.size(1) == weight.size(1))
+      Log4Error.invalidOperationError(bias.nDimension() == 1 && bias.size(1) == weight.size(1),
+        s"bias.nDimension() needs to be 1, but is ${bias.nDimension()} and" +
+          s" bias.size(1) ${bias.size(1)} needs match weight.size(1) ${weight.size(1)}")
     }
 
     val nDim = input.nDimension
@@ -125,7 +126,7 @@ class SpatialDilatedConvolution[T: ClassTag](
     val dimH = if (nDim == 4) 3 else 2
     val dimW = if (nDim == 4) 4 else 3
 
-    require(nDim == 3 || nDim == 4,
+    Log4Error.invalidInputError(nDim == 3 || nDim == 4,
       "SpatialDilatedConvolution: " + ErrorInfo.constrainInputAs3DOrBatch)
 
     val inputHeight = input.size(dimH)
@@ -133,25 +134,32 @@ class SpatialDilatedConvolution[T: ClassTag](
     val outputHeight = (inputHeight + 2*padH - (dilationH * (kH - 1) + 1)) / dH + 1
     val outputWidth = (inputWidth + 2*padW - (dilationW * (kW - 1) + 1)) / dW + 1
 
-    require(outputWidth >= 1 || outputHeight >= 1,
+    Log4Error.invalidInputError(outputWidth >= 1 || outputHeight >= 1,
       s"Given input size: ($nInputPlane x $inputHeight x $inputWidth)" +
         s"Calculated output size: ($nOutputPlane x $outputHeight x $outputWidth). " +
         s"Output size is too small")
 
-    require(input.dim() == nDim && input.size(dimF) == nInputPlane)
+    Log4Error.invalidOperationError(input.dim() == nDim && input.size(dimF) == nInputPlane,
+      s"input.dim() ${input.dim()} needs to match nDim $nDim," +
+        s" input.size(dimF) ${input.size(dimF)} needs match nInputPlane ${nInputPlane}")
 
     if (null != gradOutput) {
-      require(gradOutput.nDimension() == nDim &&
+      Log4Error.invalidOperationError(gradOutput.nDimension() == nDim &&
         gradOutput.size(dimF) == nOutputPlane &&
         gradOutput.size(dimH) == outputHeight &&
-        gradOutput.size(dimW) == outputWidth
+        gradOutput.size(dimW) == outputWidth,
+        s"gradOutput size is not correct, expect" +
+          s"gradOutput.nDimension() ${gradOutput.nDimension()} == nDim $nDim and" +
+          s"gradOutput.size(dimF) ${gradOutput.size(dimF)} == nOutputPlane $nOutputPlane and" +
+          s"gradOutput.size(dimH) ${gradOutput.size(dimH)} == outputHeight $outputHeight and" +
+          s"gradOutput.size(dimW) ${gradOutput.size(dimW)} == outputWidth $outputWidth"
       )
     }
   }
 
   override def computeOutputShape(inputShape: Shape): Shape = {
     val input = inputShape.toSingle().toArray
-    require(input.length == 4,
+    Log4Error.invalidInputError(input.length == 4,
       s"AtrousConvolution2D requires 4D input, but got input dim ${input.length}")
     val outputWidth = (input(3) + 2*padW - (dilationW * (kW - 1) + 1)) / dW + 1
     val outputHeight = (input(2) + 2*padH - (dilationH * (kH - 1) + 1)) / dH + 1
@@ -161,7 +169,7 @@ class SpatialDilatedConvolution[T: ClassTag](
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
     shapeCheck(input, null, weight, bias,
       kH, kW, dH, dW, padH, padW, dilationH, dilationW)
-    require(input.isContiguous())
+    Log4Error.invalidInputError(input.isContiguous(), "SpatialDilatedConvolution expects input is contiguous")
 
     val isBatch = if (input.nDimension() == 3) {
       // Force batch

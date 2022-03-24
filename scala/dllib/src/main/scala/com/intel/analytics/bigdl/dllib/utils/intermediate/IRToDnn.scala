@@ -7,7 +7,7 @@
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
+ * Unless Log4Error.invalidInputErrord by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
@@ -25,7 +25,7 @@ import com.intel.analytics.bigdl.dllib.nn.mkldnn._
 import com.intel.analytics.bigdl.dllib.optim.DistriOptimizer._
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.dllib.utils.{DirectedGraph, Node, ReflectionUtils, T}
+import com.intel.analytics.bigdl.dllib.utils._
 
 import scala.collection.mutable
 import scala.reflect.ClassTag
@@ -120,7 +120,7 @@ private[bigdl] class IRToDnn extends ConvertBase[IRElement[Float], Module[Float]
       ReflectionUtils.reflectFromIR(node, Class.forName(prefix + "SpatialConvolution"))
     } else {
       // special process for NHWC
-      require(t.nGroup == 1, "Only support nGroup is 1 for NHWC")
+      Log4Error.invalidInputError(t.nGroup == 1, "Only support nGroup is 1 for NHWC")
       val layer = ReflectionUtils.reflectFromIR(node, Class.forName(prefix + "SpatialConvolution"))
       val p = layer.parameters()
       val weight = p._1(0)
@@ -144,7 +144,7 @@ private[bigdl] class IRToDnn extends ConvertBase[IRElement[Float], Module[Float]
       ReflectionUtils.reflectFromIR(node, Class.forName(prefix + "SpatialConvolution"))
     } else {
       // special process for NHWC
-      require(t.nGroup == 1, "Only support nGroup is 1 for NHWC")
+      Log4Error.invalidInputError(t.nGroup == 1, "Only support nGroup is 1 for NHWC")
       val layer = ReflectionUtils.reflectFromIR(node, Class.forName(prefix + "SpatialConvolution"))
       val p = layer.parameters()
       val weight = p._1(0)
@@ -185,7 +185,7 @@ private[bigdl] class IRToDnn extends ConvertBase[IRElement[Float], Module[Float]
 
   private def fromJoinTable(node: IRElement[Float]) : Module[Float] = {
     val t = node.getOp().asInstanceOf[IRJoinTable[Float]]
-    require(t.nInputDims <= 0,
+    Log4Error.invalidInputError(t.nInputDims <= 0,
       s"Dnn JoinTable only supports nInputDims <= 0, but get ${t.nInputDims}")
     mkldnn.JoinTable(t.dimension)
   }
@@ -562,7 +562,8 @@ private[bigdl] class IRToDnn extends ConvertBase[IRElement[Float], Module[Float]
     try {
       layer.getOp() match {
         case join: IRJoinTable[Float] =>
-          require(join.nInputDims <= 0)
+          Log4Error.invalidInputError(join.nInputDims <= 0,
+            s"join.nInputDims ${join.nInputDims} should not be greater than 0")
         case _ => null
       }
       true

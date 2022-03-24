@@ -20,6 +20,7 @@ import com.intel.analytics.bigdl.dllib.nn.FrameManager.Frame
 import com.intel.analytics.bigdl.dllib.nn.Graph.ModuleNode
 import com.intel.analytics.bigdl.dllib.nn.ops._
 import com.intel.analytics.bigdl.dllib.nn.tf._
+import com.intel.analytics.bigdl.dllib.utils.Log4Error
 
 import scala.collection.mutable
 
@@ -65,7 +66,8 @@ private[bigdl] class Scheduler[T] (
     val isEmpty = readyQueue.isEmpty
     if (isEmpty) {
       outputNodes.foreach(n => {
-        require(!nodeStatus.notExecuted(n), "Some output nodes have not been executed")
+        Log4Error.invalidInputError(!nodeStatus.notExecuted(n),
+          "Some output nodes have not been executed")
       })
     }
     isEmpty
@@ -105,16 +107,18 @@ private[bigdl] class Scheduler[T] (
       val e = node.element.asInstanceOf[Enter[_]]
       Some(frameManayger.createFrame(e.frame, curFrame))
     } else if (node.element.isInstanceOf[LoopCondition[_]]) {
-      require(curFrame.isDefined, "LoopCondition should be in a frame")
+      Log4Error.invalidInputError(curFrame.isDefined,
+        "LoopCondition should be in a frame")
       val f = curFrame.get
-      require(f.barrier.get() == 0, "frame barrier should be 0 when execute loop condition")
+      Log4Error.invalidInputError(f.barrier.get() == 0,
+        "frame barrier should be 0 when execute loop condition")
       f.barrier.set(node.nextNodes.size)
       curFrame
     } else if (node.element.isInstanceOf[NextIteration[_, _]]) {
-      require(curFrame.isDefined, "NextIteration should be in a frame")
+      Log4Error.invalidInputError(curFrame.isDefined, "NextIteration should be in a frame")
       curFrame
     } else if (node.element.isInstanceOf[Exit[_]]) {
-      require(curFrame.isDefined, "Exit should be in a frame")
+      Log4Error.invalidInputError(curFrame.isDefined, "Exit should be in a frame")
       val f = curFrame.get
       f.barrier.set(0)
       f.parent
@@ -169,7 +173,7 @@ private[bigdl] class Scheduler[T] (
     nodeSet.filter(n => executableNodes.contains(n.element.getName())).foreach(nextNode => {
       if (nextNode.element.isInstanceOf[MergeOps[_]]) {
         val merge = nextNode.element.asInstanceOf[MergeOps[_]]
-        require(nodeStatus.notExecuted(nextNode), s"Merge node(${nextNode.element.getName()}) " +
+        Log4Error.invalidInputError(nodeStatus.notExecuted(nextNode), s"Merge node(${nextNode.element.getName()}) " +
           s"should not be executed twice out of loop or in a same iteration of a loop")
         merge.setSwitch(nextNode.prevNodes.indexOf(curNode) + 1)
         enQueue(nextNode, frame)
@@ -196,7 +200,7 @@ private[bigdl] class Scheduler[T] (
 
   private def enQueue(node: ModuleNode[T], frame: Option[Frame[T]]): Unit = {
     if (node.element.isInstanceOf[NextIteration[_, _]]) {
-      require(frame.isDefined, "current node should be in a frame")
+      Log4Error.invalidInputError(frame.isDefined, "current node should be in a frame")
       frameManayger.pend(node, frame.get)
       nodeStatus.unset(node) // mark current node is in not ready status
       if (frame.get.barrier.get() == 0) {
@@ -219,7 +223,7 @@ object Scheduler {
      * @param status
      */
     def update(node: ModuleNode[T], status: NodeStatus): Unit = {
-      require(node != null && status != null, "Not accept null")
+      Log4Error.invalidInputError(node != null && status != null, "Not accept null")
       nodeStatus(node.element.getName()) = status
     }
 

@@ -19,6 +19,7 @@ import com.intel.analytics.bigdl.mkl._
 import com.intel.analytics.bigdl.dllib.nn.{InitializationMethod, RandomUniform, VariableFormat, Zeros}
 import com.intel.analytics.bigdl.dllib.nn.abstractnn.{Activity, Initializable}
 import com.intel.analytics.bigdl.dllib.tensor.{DnnTensor, Tensor}
+import com.intel.analytics.bigdl.dllib.utils.Log4Error
 
 import scala.collection.mutable.ArrayBuffer
 
@@ -85,7 +86,7 @@ class RNN(
   private var graddst_i: DnnTensor[Float] = _
 
   if(layers > 1) {
-    require(inputSize == hiddenSize,
+    Log4Error.invalidInputError(inputSize == hiddenSize,
       "If layer number of RNN is more than 1, the input size and the hidden size should equal.\n"
       + "inputSize: " + inputSize + '\n'
       + "hiddenSize: " + hiddenSize)
@@ -106,7 +107,7 @@ class RNN(
     case Direction.UnidirectionalLeft2Right
          | Direction.UnidirectionalRight2Left => (1, 1)
     case Direction.BidirectionalConcat =>
-      require(layers == 1, "Bidirectional Concat RNN does not support multiple layers. " +
+      Log4Error.invalidInputError(layers == 1, "Bidirectional Concat RNN does not support multiple layers. " +
         "layers = " + layers)
       (2, 2)
     case Direction.BidirectionalSum => (2, 1)
@@ -233,11 +234,11 @@ class RNN(
     val realDst = MemoryData.operationWant(fwdPD, Query.DstPd, 0)
     val realDst_iter = MemoryData.operationWant(fwdPD, Query.DstPd, 1)
 
-    require(weight.size().product == realWei.shape.product,
+    Log4Error.invalidInputError(weight.size().product == realWei.shape.product,
       s"${getName} weight shape is not correct.")
-    require(weight_i.size().product == realWei_iter.shape.product,
+    Log4Error.invalidInputError(weight_i.size().product == realWei_iter.shape.product,
       s"${getName} weight iter shape is not correct.")
-    require(bias.size().product == realBias.shape.product,
+    Log4Error.invalidInputError(bias.size().product == realBias.shape.product,
       s"${getName} bias shape is not correct.")
 
     weight.setMemoryData(HeapData(weightShape, Memory.Format.ldigo), realWei, runtime)

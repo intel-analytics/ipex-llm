@@ -20,7 +20,7 @@ import com.intel.analytics.bigdl.dllib.nn.SpatialZeroPadding
 import com.intel.analytics.bigdl.dllib.nn.abstractnn.AbstractModule
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.dllib.utils.Shape
+import com.intel.analytics.bigdl.dllib.utils.{Log4Error, Shape}
 
 import scala.reflect.ClassTag
 
@@ -41,13 +41,13 @@ class ZeroPadding1D[T: ClassTag](
    val inputShape: Shape = null)(implicit ev: TensorNumeric[T])
   extends KerasLayer[Tensor[T], Tensor[T], T](KerasLayer.addBatch(inputShape)) {
 
-  require(padding.length == 2,
+  Log4Error.invalidInputError(padding.length == 2,
     s"For ZeroPadding1D, padding values should be of length 2 " +
       s"(left_pad, right_pad), but got length ${padding.length}")
 
   override def computeOutputShape(inputShape: Shape): Shape = {
     val input = inputShape.toSingle().toArray
-    require(input.length == 3,
+    Log4Error.invalidInputError(input.length == 3,
       s"ZeroPadding1D requires 3D input, but got input dim ${input.length}")
     Shape(input(0), input(1) + padding(0) + padding(1), input(2))
   }

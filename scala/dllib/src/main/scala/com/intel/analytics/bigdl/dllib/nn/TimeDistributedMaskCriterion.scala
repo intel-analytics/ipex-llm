@@ -19,7 +19,7 @@ package com.intel.analytics.bigdl.dllib.nn
 import com.intel.analytics.bigdl.dllib.nn.abstractnn.{SizeAverageStatus, TensorCriterion}
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.dllib.utils.Engine
+import com.intel.analytics.bigdl.dllib.utils.{Engine, Log4Error}
 
 import scala.collection.mutable.ArrayBuffer
 import scala.concurrent.Future
@@ -79,7 +79,7 @@ class TimeDistributedMaskCriterion[T : ClassTag](
      * input.size = [B, T, D] => fInput.size = [B, D]
      * target.size = [B, T] => fTarget.size = [B]
      */
-    require(input.size(dimension) == target.size(dimension),
+    Log4Error.invalidInputError(input.size(dimension) == target.size(dimension),
       "target should have as many elements as input, " +
         s"input ${input.size(dimension)}, target ${target.size(dimension)}")
 
@@ -130,7 +130,7 @@ class TimeDistributedMaskCriterion[T : ClassTag](
     /**
      * Take each time slice of input and target, and calculate gradInput of each slice
      */
-    require(input.size(dimension) == target.size(dimension),
+    Log4Error.invalidInputError(input.size(dimension) == target.size(dimension),
       s"target should have as many elements as input, " +
         s"input ${input.size(dimension)}, target ${target.size(dimension)}")
     gradInput.resizeAs(input).zero()

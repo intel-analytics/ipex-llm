@@ -75,7 +75,7 @@ object Predictor {
       localModel
     } else {
       val ol = localModel(outputLayer)
-      require(ol.isDefined, s"cannot find layer that map name $outputLayer")
+      Log4Error.invalidOperationError(ol.isDefined, s"cannot find layer that map name $outputLayer")
       ol.get
     }
     localToBatch(samples.toIterator).flatMap(batch => {
@@ -92,7 +92,7 @@ object Predictor {
       Array(result.squeeze)
     } else {
       val size = result.size(1)
-      require(batchSize == size,
+      Log4Error.invalidOperationError(batchSize == size,
         s"The batchSize is required to be $size, while actual is $batchSize")
       result.split(1)
     }
@@ -111,7 +111,7 @@ object Predictor {
       (1 to result.length()).foreach(key => {
         val split = splitBatch(result(key), shareBuffer, batchSize)
         val size = split.length
-        require(batchSize == size,
+        Log4Error.invalidOperationError(batchSize == size,
           s"The batchSize is required to be $size, while actual is $batchSize")
         var i = 0
         while (i < batchSize) {

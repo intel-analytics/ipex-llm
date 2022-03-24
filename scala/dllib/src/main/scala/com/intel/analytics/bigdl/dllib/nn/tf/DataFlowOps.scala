@@ -20,7 +20,7 @@ import java.util
 import com.intel.analytics.bigdl.dllib.nn.ops.Operation
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.dllib.utils.{T, Table}
+import com.intel.analytics.bigdl.dllib.utils.{Log4Error, T, Table}
 
 import scala.collection.mutable.ArrayBuffer
 import scala.reflect.ClassTag
@@ -58,7 +58,7 @@ private[nn] class TensorArray[D: ClassTag](
   def lockSize(): Unit = this.dynamicSize = false
 
   def apply(index: Int): Tensor[D] = {
-    require(tensors(index) != null,
+    Log4Error.invalidInputError(tensors(index) != null,
       s"tensor on index $index has not been inited or has been cleared")
     val t = tensors(index)
     if (clearAfterRead) tensors(index) = null
@@ -73,14 +73,14 @@ private[nn] class TensorArray[D: ClassTag](
   def size(): Int = tensors.length
 
   def shapeOf(index: Int): Array[Int] = {
-    require(tensors(index) != null,
+    Log4Error.invalidInputError(tensors(index) != null,
       s"tensor on index $index has not been inited or has been cleared")
     tensors(index).size()
   }
 
   def update(index: Int, tensor: Tensor[D]): Unit = {
     if (!multipleWritesAggregate) {
-      require(tensors(index) == null, "There's already a tensor on the given index")
+      Log4Error.invalidInputError(tensors(index) == null, "There's already a tensor on the given index")
     }
 
     if (identicalElementShapes) {
@@ -88,11 +88,11 @@ private[nn] class TensorArray[D: ClassTag](
         otherShape = tensor.size()
       } else {
         val curShape = tensor.size()
-        require(curShape.length == otherShape.length,
+        Log4Error.invalidInputError(curShape.length == otherShape.length,
           "insert tensor dimension does not match other tensor dimension")
         var i = 0
         while(i < curShape.length) {
-          require(curShape(i) == otherShape(i),
+          Log4Error.invalidInputError(curShape(i) == otherShape(i),
             "insert tensor size does not match other tensor size")
           i += 1
         }
@@ -100,11 +100,11 @@ private[nn] class TensorArray[D: ClassTag](
     }
     if (shape != null) {
       val curShape = tensor.size()
-      require(curShape.length == shape.length,
+      Log4Error.invalidInputError(curShape.length == shape.length,
         "insert tensor dimension does not match required dimension")
       var i = 0
       while(i < curShape.length) {
-        require(curShape(i) == shape(i),
+        Log4Error.invalidInputError(curShape(i) == shape(i),
           "insert tensor size does not match required size")
         i += 1
       }
@@ -119,7 +119,8 @@ private[nn] class TensorArray[D: ClassTag](
       }
       tensors = newTensors
     } else {
-      require(index < initSize, "cannot grow size when dynamicSize is false")
+      Log4Error.invalidInputError(index < initSize,
+        "cannot grow size when dynamicSize is false")
     }
 
     if (tensors(index) == null) {
@@ -134,12 +135,14 @@ private[nn] object TensorArray {
   private val arrays = new util.WeakHashMap[String, TensorArray[_]]()
 
   def apply[D](key: String): TensorArray[D] = this.synchronized {
-    require(arrays.containsKey(key), s"Cannot find TensorArray for name $key")
+    Log4Error.invalidInputError(arrays.containsKey(key),
+      s"Cannot find TensorArray for name $key")
     arrays.get(key).asInstanceOf[TensorArray[D]]
   }
 
   def get(key: String): TensorArray[_] = this.synchronized {
-    require(arrays.containsKey(key), s"Cannot find TensorArray for name $key")
+    Log4Error.invalidInputError(arrays.containsKey(key),
+      s"Cannot find TensorArray for name $key")
     arrays.get(key)
   }
 
@@ -183,7 +186,7 @@ private[bigdl] class TensorArrayCreator[T: ClassTag, D: ClassTag](
   extends Operation[Tensor[Int], Table, T] with ResourceAllocator {
 
   override def updateOutput(input: Tensor[Int]): Table = {
-    require(input.isScalar, "input size must be a int scalar")
+    Log4Error.invalidInputError(input.isScalar, "input size must be a int scalar")
 
     val handle = getHandleName()
 
@@ -232,7 +235,7 @@ private[bigdl] class TensorArrayGrad[T: ClassTag](source: String)(
 
   override def updateOutput(input: Table): Table = {
     val handle = input[Tensor[String]](1)
-    require(handle.isScalar, "Handle of a TensorArray must be a scalar")
+    Log4Error.invalidInputError(handle.isScalar, "Handle of a TensorArray must be a scalar")
 
     val tensorArray = TensorArray.get(handle.value())
     val name = handle.value() + source
@@ -264,8 +267,8 @@ private[bigdl] class TensorArrayWrite[T: ClassTag, D: ClassTag]()(
     val handle = input[Tensor[String]](1)
     val index = input[Tensor[Int]](2)
     val value = input[Tensor[D]](3)
-    require(handle.isScalar, "Handle of a TensorArray must be a scalar")
-    require(index.isScalar, "Index must be a scalar")
+    Log4Error.invalidInputError(handle.isScalar, "Handle of a TensorArray must be a scalar")
+    Log4Error.invalidInputError(index.isScalar, "Index must be a scalar")
 
     val tensorArray = TensorArray[D](handle.value())
     tensorArray(index.value()) = value
@@ -297,8 +300,8 @@ private[bigdl] class TensorArrayRead[T: ClassTag, D: ClassTag]()(
   override def updateOutput(input: Table): Tensor[D] = {
     val handle = input[Tensor[String]](1)
     val index = input[Tensor[Int]](2)
-    require(handle.isScalar, "Handle of a TensorArray must be a scalar")
-    require(index.isScalar, "Index must be a scalar")
+    Log4Error.invalidInputError(handle.isScalar, "Handle of a TensorArray must be a scalar")
+    Log4Error.invalidInputError(index.isScalar, "Index must be a scalar")
 
     val tensorArray = TensorArray[D](handle.value())
     output = tensorArray(index.value())
@@ -332,8 +335,8 @@ private[bigdl] class TensorArrayGather[T: ClassTag, D: ClassTag]()(
   override def updateOutput(input: Table): Tensor[D] = {
     val handle = input[Tensor[String]](1)
     val indices = input[Tensor[Int]](2)
-    require(handle.isScalar, "Handle of a TensorArray must be a scalar")
-    require(indices.nDimension() == 1, "indices must be a vector")
+    Log4Error.invalidInputError(handle.isScalar, "Handle of a TensorArray must be a scalar")
+    Log4Error.invalidInputError(indices.nDimension() == 1, "indices must be a vector")
 
     val tensorArray = TensorArray[D](handle.value())
 
@@ -344,10 +347,10 @@ private[bigdl] class TensorArrayGather[T: ClassTag, D: ClassTag]()(
         sizes = tensorArray.shapeOf(indices.valueAt(i))
       } else {
         val curSizes = tensorArray.shapeOf(indices.valueAt(i))
-        require(curSizes.length == sizes.length, "the selected tensors have different dimensions")
+        Log4Error.invalidInputError(curSizes.length == sizes.length, "the selected tensors have different dimensions")
         var j = 0
         while(j < sizes.length) {
-          require(sizes(j) == curSizes(j), "the selected tensors have different sizes")
+          Log4Error.invalidInputError(sizes(j) == curSizes(j), "the selected tensors have different sizes")
           j += 1
         }
       }
@@ -394,9 +397,10 @@ private[bigdl] class TensorArrayScatter[T: ClassTag, D: ClassTag]()(
     val handle = input[Tensor[String]](1)
     val indices = input[Tensor[Int]](2)
     val value = input[Tensor[D]](3)
-    require(handle.isScalar, "Handle of a TensorArray must be a scalar")
-    require(indices.nDimension() == 1, "indices must be a vector")
-    require(indices.size(1) == value.size(1), "indices length does not match value first dimension")
+    Log4Error.invalidInputError(handle.isScalar, "Handle of a TensorArray must be a scalar")
+    Log4Error.invalidInputError(indices.nDimension() == 1, "indices must be a vector")
+    Log4Error.invalidInputError(indices.size(1) == value.size(1),
+      "indices length does not match value first dimension")
 
     val tensorArray = TensorArray[D](handle.value())
 
@@ -442,7 +446,7 @@ private[bigdl] class TensorArrayConcat[T: ClassTag, D: ClassTag]()(
 
   override def updateOutput(input: Table): Table = {
     val handle = input[Tensor[String]](1)
-    require(handle.isScalar, "Handle of a TensorArray must be a scalar")
+    Log4Error.invalidInputError(handle.isScalar, "Handle of a TensorArray must be a scalar")
 
     val tensorArray = TensorArray[D](handle.value())
 
@@ -508,8 +512,8 @@ private[bigdl] class TensorArraySplit[T: ClassTag, D: ClassTag]()(
     val handle = input[Tensor[String]](1)
     val value = input[Tensor[D]](2)
     val lengths = input[Tensor[Int]](3)
-    require(handle.isScalar, "Handle of a TensorArray must be a scalar")
-    require(lengths.nDimension() == 1, "lengths must be a vector")
+    Log4Error.invalidInputError(handle.isScalar, "Handle of a TensorArray must be a scalar")
+    Log4Error.invalidInputError(lengths.nDimension() == 1, "lengths must be a vector")
 
     val tensorArray = TensorArray[D](handle.value())
 
@@ -545,7 +549,7 @@ private[bigdl] class TensorArraySize[T: ClassTag]()(implicit ev: TensorNumeric[T
 
   override def updateOutput(input: Table): Tensor[Int] = {
     val handle = input[Tensor[String]](1)
-    require(handle.isScalar, "Handle of a TensorArray must be a scalar")
+    Log4Error.invalidInputError(handle.isScalar, "Handle of a TensorArray must be a scalar")
 
     val tensorArray = TensorArray(handle.value())
 
@@ -565,7 +569,7 @@ private[bigdl] class TensorArrayClose[T: ClassTag]()(implicit ev: TensorNumeric[
   output = TensorArray.FlowOut
 
   override def updateOutput(input: Tensor[String]): Tensor[Float] = {
-    require(input.isScalar, "Handle of a TensorArray must be a scalar")
+    Log4Error.invalidInputError(input.isScalar, "Handle of a TensorArray must be a scalar")
     TensorArray.release(input.value())
     output
   }
@@ -581,13 +585,13 @@ private[bigdl] class Stack[D](maxSize: Int) {
   private val tensors = new ArrayBuffer[Tensor[D]]()
 
   def pop(): Tensor[D] = {
-    require(count > 0, "There's no tensors in the stack")
+    Log4Error.invalidInputError(count > 0, "There's no tensors in the stack")
     count -= 1
     tensors.remove(count)
   }
 
   def push(t: Tensor[D]): Unit = {
-    require(count < maxSize, "Stack is full")
+    Log4Error.invalidInputError(count < maxSize, "Stack is full")
     tensors.append(t.clone())
     count += 1
   }
@@ -597,7 +601,7 @@ private[bigdl] object Stack {
   private val stacks = new util.WeakHashMap[String, Stack[_]]()
 
   def apply[D](key: String): Stack[D] = this.synchronized {
-    require(stacks.containsKey(key), s"Cannot find Stack for name $key")
+    Log4Error.invalidInputError(stacks.containsKey(key), s"Cannot find Stack for name $key")
     stacks.get(key).asInstanceOf[Stack[D]]
   }
 
@@ -614,7 +618,7 @@ private[bigdl] class StackCreator[T: ClassTag, D: ClassTag](
   private val name: String = "")(implicit ev: TensorNumeric[T], ev2: TensorNumeric[D])
   extends Operation[Tensor[Int], Tensor[String], T] with WithoutInput with ResourceAllocator {
   override def updateOutput(input: Tensor[Int]): Tensor[String] = {
-    require(input == null || input.isScalar,
+    Log4Error.invalidInputError(input == null || input.isScalar,
       "StackCreator: Input tensor should be a scalar or no input")
 
     val handle = getHandleName()
@@ -647,7 +651,7 @@ private[bigdl] class StackPop[T: ClassTag, D: ClassTag]()
   (implicit ev: TensorNumeric[T], ev2: TensorNumeric[D])
   extends Operation[Tensor[String], Tensor[D], T]{
   override def updateOutput(input: Tensor[String]): Tensor[D] = {
-    require(input.isScalar, "StackPop: Input tensor should be a scalar")
+    Log4Error.invalidInputError(input.isScalar, "StackPop: Input tensor should be a scalar")
     val handle = input.value()
     output = Stack[D](handle).pop()
     output
@@ -664,7 +668,7 @@ private[bigdl] class StackPush[T: ClassTag, D: ClassTag]()
   extends Operation[Table, Tensor[D], T]{
   override def updateOutput(input: Table): Tensor[D] = {
     val handleTensor = input[Tensor[String]](1)
-    require(handleTensor.isScalar, "StackPush: Input tensor should be a scalar")
+    Log4Error.invalidInputError(handleTensor.isScalar, "StackPush: Input tensor should be a scalar")
     val handle = handleTensor.value()
     val data = input[Tensor[D]](2)
     Stack[D](handle).push(data)

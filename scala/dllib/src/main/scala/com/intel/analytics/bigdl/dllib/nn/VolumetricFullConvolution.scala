@@ -19,7 +19,7 @@ import com.intel.analytics.bigdl.dllib.nn.abstractnn.{AbstractModule, Activity, 
 import com.intel.analytics.bigdl.dllib.optim.Regularizer
 import com.intel.analytics.bigdl.dllib.tensor.{DenseTensorBLAS, DoubleType, FloatType, Tensor}
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.dllib.utils.{T, Table}
+import com.intel.analytics.bigdl.dllib.utils.{Log4Error, T, Table}
 
 import scala.reflect.ClassTag
 
@@ -89,7 +89,7 @@ class VolumetricFullConvolution[T: ClassTag](
 )(implicit ev: TensorNumeric[T])
   extends AbstractModule[Activity, Tensor[T], T] with Initializable {
 
-  require(adjW <= dW - 1 && adjH <= dH - 1 && adjT <= dT -1,
+  Log4Error.invalidInputError(adjW <= dW - 1 && adjH <= dH - 1 && adjT <= dT -1,
     s"VolumetricFullConvolution: adjW=$adjW and adjH=$adjH must be smaller than " +
       s"(dW - 1)=${dW - 1} and (dH - 1)=${dH - 1} respectively")
 
@@ -143,26 +143,26 @@ class VolumetricFullConvolution[T: ClassTag](
     padT: Int, padH : Int, padW : Int,
     adjT: Int, adjH : Int, adjW : Int) : Unit = {
 
-    require(kT > 0 && kW > 0 && kH > 0,
+    Log4Error.invalidInputError(kT > 0 && kW > 0 && kH > 0,
       s"VolumetricFullConvolution: kernel size should be greater than zero, " +
       s"but got kT: $kT kH: $kH kW: $kW")
-    require(dW > 0 && dW > 0 && dH > 0,
+    Log4Error.invalidInputError(dW > 0 && dW > 0 && dH > 0,
       s"VolumetricFullConvolution: stride should be greater than zero, " +
       s"but got dT: $dT dH: $dH dW: $dW")
-    require(weight.nDimension == 4 || weight.nDimension == 6,
+    Log4Error.invalidInputError(weight.nDimension == 4 || weight.nDimension == 6,
       s"VolumetricFullConvolution: 4D or 6D weight tensor expected, but got size: ${weight.dim()}")
 
     if (null != bias) {
-      require(bias.nDimension() == 1,
+      Log4Error.invalidInputError(bias.nDimension() == 1,
         s"VolumetricFullConvolution: bias should be 1 dim, but got dim:${bias.nDimension()}")
-      require(bias.size(1) == weight.size(3) * weight.size(1),
+      Log4Error.invalidInputError(bias.size(1) == weight.size(3) * weight.size(1),
         s"VolumetricFullConvolution: bias's size equals to weight.size(3) * weight.size(1) " +
           s"= ${weight.size(1) * weight.size(3)}, but got size:${bias.size(1)}")
     }
 
     val ndim = input.nDimension()
 
-    require(ndim == 4 || ndim == 5, s"VolumetricFullConvolution: 4D or 5D input tensor expected, " +
+    Log4Error.invalidInputError(ndim == 4 || ndim == 5, s"VolumetricFullConvolution: 4D or 5D input tensor expected, " +
       s"but got size: ${input.dim()}")
 
     val dimFilter = if (input.dim() == 4) 1 else 2
@@ -178,20 +178,20 @@ class VolumetricFullConvolution[T: ClassTag](
     val outputHeight = (inputHeight - 1) * dH - 2 * padH + kH + adjH
     val outputWidth = (inputWidth - 1) * dW - 2 * padW + kW + adjW
 
-    require(outputWidth >= 1 && outputDepth >= 1 && outputHeight >= 1,
+    Log4Error.invalidInputError(outputWidth >= 1 && outputDepth >= 1 && outputHeight >= 1,
       s"VolumetricFullConvolution: Given input size: (${ input.size().mkString("x") })." +
         s" Calculated output size:" +
         s" (${ nOutputPlane }x${ outputDepth }x${ outputHeight }x${ outputWidth })." +
         s" Output size is too small")
 
-    require(input.nDimension() == ndim && input.size(dimFilter) == nInputPlane,
+    Log4Error.invalidInputError(input.nDimension() == ndim && input.size(dimFilter) == nInputPlane,
       s"VolumetricFullConvolution: input's feature maps should be $nInputPlane, " +
         s"but got ${input.size(dimFilter)}")
 
     if (null != gradOutput) {
-      require(gradOutput.nDimension() == ndim, s"VolumetricFullConvolution: gradOutput should be " +
+      Log4Error.invalidInputError(gradOutput.nDimension() == ndim, s"VolumetricFullConvolution: gradOutput should be " +
         s"$ndim, but got ${gradOutput.nDimension()}")
-      require(gradOutput.size(dimFilter) == nOutputPlane
+      Log4Error.invalidInputError(gradOutput.size(dimFilter) == nOutputPlane
         && gradOutput.size(dimDepth) == outputDepth
         && gradOutput.size(dimHeight) == outputHeight
         && gradOutput.size(dimWidth) == outputWidth,
@@ -293,7 +293,7 @@ class VolumetricFullConvolution[T: ClassTag](
 
     shapeCheck(inputTensor, null, weight, bias, kT, kH, kW,
       dT, dH, dW, padT, padH, padW, adjT, adjH, adjW)
-    require(inputTensor.isContiguous(), "VolumetricFullConvolution: input should be contiguous")
+    Log4Error.invalidInputError(inputTensor.isContiguous(), "VolumetricFullConvolution: input should be contiguous")
 
     val isBatch = if (inputTensor.nDimension() == 4) {
       // Force batch
@@ -355,7 +355,7 @@ class VolumetricFullConvolution[T: ClassTag](
     while(elt <= batchSize) {
       // Matrix mulitply per output:
       val input_n = inputTensor.select(1, elt)
-      require(input_n.isContiguous(),
+      Log4Error.invalidInputError(input_n.isContiguous(),
         s"VolumetricFullConvolution: input($elt) should be contiguous")
       val output_n = output.select(1, elt)
       val columns_n = columns.select(1, elt)

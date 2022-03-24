@@ -20,8 +20,7 @@ import com.intel.analytics.bigdl.dllib.nn.abstractnn.{Initializable, TensorModul
 import com.intel.analytics.bigdl.dllib.optim.Regularizer
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.dllib.utils.{T, Table}
-import com.intel.analytics.bigdl.dllib.utils.{Engine, OptimizerV1, OptimizerV2}
+import com.intel.analytics.bigdl.dllib.utils._
 
 import scala.concurrent.Future
 import scala.reflect.ClassTag
@@ -141,11 +140,11 @@ class LocallyConnected1D[T: ClassTag](val nInputFrame: Int,
     // Require input of 2 dimensions or 3 dimensions
     // 2d input format: time x feature
     // 3d input format: batch x time x feature
-    require(_input.dim() == 2 || _input.dim() == 3,
+    Log4Error.invalidInputError(_input.dim() == 2 || _input.dim() == 3,
       "LocallyConvolution1D: 2D or 3D(batch mode) tensor expected for input, " +
         s"but got ${_input.dim()}")
     // Require input to be contiguous
-    require(_input.isContiguous())
+    Log4Error.invalidInputError(_input.isContiguous(), "input need to be contiguous")
 
     val input = reshapeInput(_input)
 
@@ -161,9 +160,9 @@ class LocallyConnected1D[T: ClassTag](val nInputFrame: Int,
     if (biasWindow == null) biasWindow = Tensor[T]()
 
     // Shape check on input with inputFrameSize and kernelW
-    require(input.size(dimFeat) == inputFrameSize, "Invalid input frame size. Got: " +
+    Log4Error.invalidInputError(input.size(dimFeat) == inputFrameSize, "Invalid input frame size. Got: " +
       s"${input.size(dimFeat)}, Expected: $inputFrameSize")
-    require(nOutputFrame >= 1, "Input sequence smaller than kernel size. Got: " +
+    Log4Error.invalidInputError(nOutputFrame >= 1, "Input sequence smaller than kernel size. Got: " +
       s"$nInputFrame, Expected: $kernelW")
 
     val batchSize = input.size(1)
@@ -229,11 +228,11 @@ class LocallyConnected1D[T: ClassTag](val nInputFrame: Int,
     // Require input of 2 dimensions or 3 dimensions
     // 2d input format: time x feature
     // 3d input format: batch x time x feature
-    require(_input.dim() == 2 || _input.dim() == 3,
+    Log4Error.invalidInputError(_input.dim() == 2 || _input.dim() == 3,
       "TemporalConvolution: 2D or 3D(batch mode) tensor expected for input, " +
         s"but got ${_input.dim()}")
     // Require input to be contiguous
-    require(_input.isContiguous())
+    Log4Error.invalidInputError(_input.isContiguous(), "input need to be contiguoussu")
 
     val input = reshapeInput(_input)
     val gradOutput = reshapeInput(_gradOutput)
@@ -248,9 +247,9 @@ class LocallyConnected1D[T: ClassTag](val nInputFrame: Int,
     if (weightWindow == null) weightWindow = Tensor[T]()
 
     // Shape check on input with inputFrameSize and kernelW
-    require(input.size(dimFeat) == inputFrameSize, "Invalid input frame size. Got: " +
+    Log4Error.invalidInputError(input.size(dimFeat) == inputFrameSize, "Invalid input frame size. Got: " +
       s"${input.size(dimFeat)}, Expected: $inputFrameSize")
-    require(nOutputFrame >= 1, "Input sequence smaller than kernel size. Got: " +
+    Log4Error.invalidInputError(nOutputFrame >= 1, "Input sequence smaller than kernel size. Got: " +
       s"$nInputFrame, Expected: $kernelW")
 
     gradInput.resizeAs(input)
@@ -303,11 +302,11 @@ class LocallyConnected1D[T: ClassTag](val nInputFrame: Int,
   override def accGradParameters(_input: Tensor[T], _gradOutput: Tensor[T]): Unit = {
 
     // Require input of 2 dimensions or 3 dimensions
-    require(_input.nDimension() == 2 || _input.nDimension() == 3,
+    Log4Error.invalidInputError(_input.nDimension() == 2 || _input.nDimension() == 3,
       "Only support 2D or 3D input, " +
         s"input ${_input.nDimension()}")
     // Require input to be contiguous
-    require(_gradOutput.isContiguous())
+    Log4Error.invalidInputError(_gradOutput.isContiguous(), "_gradOutput need to be contiguous")
 
     val input = reshapeInput(_input)
     val gradOutput = reshapeInput(_gradOutput)

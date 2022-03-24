@@ -21,7 +21,7 @@ import com.intel.analytics.bigdl.dllib.nn.abstractnn.{AbstractModule, Activity, 
 import com.intel.analytics.bigdl.dllib.optim.Regularizer
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.dllib.utils.Shape
+import com.intel.analytics.bigdl.dllib.utils.{Log4Error, Shape}
 
 import scala.reflect.ClassTag
 
@@ -73,12 +73,12 @@ class ConvLSTM2D[T: ClassTag](
    val inputShape: Shape = null)(implicit ev: TensorNumeric[T])
   extends KerasLayer[Tensor[T], Tensor[T], T](KerasLayer.addBatch(inputShape)) {
 
-  require(dimOrdering.toLowerCase() == "channel_first", s"ConvLSTM2D currently only supports " +
+  Log4Error.invalidInputError(dimOrdering.toLowerCase() == "channel_first", s"ConvLSTM2D currently only supports " +
     s"format CHANNEL_FIRST, but got format $dimOrdering")
 
   override def computeOutputShape(inputShape: Shape): Shape = {
     val input = inputShape.toSingle().toArray
-    require(input.length == 5,
+    Log4Error.invalidInputError(input.length == 5,
       s"ConvLSTM2D requires 5D input, but got input dim ${input.length}")
     val rows = KerasUtils.computeConvOutputLength(input(3), nbKernel, "same", subsample)
     val cols = KerasUtils.computeConvOutputLength(input(4), nbKernel, "same", subsample)

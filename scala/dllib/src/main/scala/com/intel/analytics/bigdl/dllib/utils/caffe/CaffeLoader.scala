@@ -7,7 +7,7 @@
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
+ * Unless Log4Error.invalidInputErrord by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
@@ -26,7 +26,7 @@ import com.intel.analytics.bigdl.dllib.nn.Graph.ModuleNode
 import com.intel.analytics.bigdl.dllib.nn._
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.dllib.utils.{FileReader, Table}
+import com.intel.analytics.bigdl.dllib.utils.{FileReader, Log4Error, Table}
 import org.apache.logging.log4j.LogManager
 
 import scala.collection.JavaConverters._
@@ -209,10 +209,10 @@ class CaffeLoader[T: ClassTag](prototxtPath: String, modelPath: String,
     val caffeWeight = getBlob(name, index)
     if (caffeWeight.isDefined && params.contains("weight")) {
       index += 1
-      require(params.contains("weight"), s"$name should contain weight")
+      Log4Error.invalidInputError(params.contains("weight"), s"$name should contain weight")
       val caffeWeightData = caffeWeight.get.getDataList
       val weight = params[Tensor[T]]("weight")
-      require(params != null && weight.nElement() == caffeWeightData.size(),
+      Log4Error.invalidInputError(params != null && weight.nElement() == caffeWeightData.size(),
         s"weight element number is not equal between caffe layer and bigdl module $name, " +
           s"data shape in caffe is ${ caffeWeight.get.getShape() }," +
           s" while data shape in bigdl is ${ weight.size().mkString(",") }")
@@ -228,10 +228,10 @@ class CaffeLoader[T: ClassTag](prototxtPath: String, modelPath: String,
 
     val caffeBias = getBlob(name, index)
     if (caffeBias.isDefined) {
-      require(params.contains("bias"), s"$name should contain bias")
+      Log4Error.invalidInputError(params.contains("bias"), s"$name should contain bias")
       val caffeBiasList = caffeBias.get.getDataList
       val bias = params[Tensor[T]]("bias")
-      require(bias.nElement() == caffeBiasList.size(),
+      Log4Error.invalidInputError(bias.nElement() == caffeBiasList.size(),
         s"bias element number is not equal between caffe layer and bigdl module $name, " +
           s"data shape in caffe is ${ caffeBias.get.getShape() }," +
           s" while data shape in bigdl is ${ bias.size().mkString(",") }")
@@ -395,7 +395,7 @@ class CaffeLoader[T: ClassTag](prototxtPath: String, modelPath: String,
       val layerType = getLayerType(name).get.toUpperCase
       if ("SPLIT" == layerType) {
         // eliminate split layer in graph module, cache dependency only
-        require(bottomList.size == 1, s"split dependency should only be one!")
+        Log4Error.invalidInputError(bottomList.size == 1, s"split dependency should only be one!")
         topList.foreach(top => {
           if (top2LayerMap.contains(bottomList(0))) {
             splitLayerMap(top) = layersMap(top2LayerMap(bottomList(0)))

@@ -107,7 +107,8 @@ object ParallelOptimizer extends AbstractOptimizer {
       case MklDnn => 1
     }
 
-    require(_subModelNumber == 1, "currently only single model supported especially for mkldnn")
+    Log4Error.invalidOperationError(_subModelNumber == 1,
+      "currently only single model supported especially for mkldnn")
 
     val driverState = T(
       "epoch" -> optimMethods.values.head.state("epoch"),
@@ -396,7 +397,7 @@ object ParallelOptimizer extends AbstractOptimizer {
       case MklDnn => 1
     }
 
-    require(dataset.originRDD().partitions.length == nodeNumber,
+    Log4Error.invalidOperationError(dataset.originRDD().partitions.length == nodeNumber,
       s"Passed in rdd partition number ${dataset.originRDD().partitions.length}" +
         s" is not equal to configured node number ${nodeNumber}")
 
@@ -412,8 +413,9 @@ object ParallelOptimizer extends AbstractOptimizer {
       broadcastOptim) = broadcast.value
       if (!Engine.checkSingleton()) {
         if (checkSingleton) {
-          require(Engine.checkSingleton(), "Partitions of the training data are not evenly" +
-            "distributed across the executors in the Spark cluster; are there sufficient training" +
+          Log4Error.invalidOperationError(Engine.checkSingleton(),
+            "Partitions of the training data are not evenly distributed across " +
+              "the executors in the Spark cluster; are there sufficient training" +
             "data to be distributed? Set property \"bigdl.check.singleton\" to false to skip " +
             "this check")
         } else {
@@ -647,7 +649,7 @@ class ParallelOptimizer[T: ClassTag](
         asInstanceOf[Container[_, _, T]].modules,
         optimMethodMap(this.model.getName), optimMethodMap)
     } else {
-      require(optimMethodMap.contains(this._model.getName),
+      Log4Error.invalidOperationError(optimMethodMap.contains(this._model.getName),
         "single layer model should have optim method set")
     }
 
@@ -661,7 +663,7 @@ class ParallelOptimizer[T: ClassTag](
     optimMethodMap: mutable.Map[String, OptimMethod[T]]): Unit = {
     subModules.foreach(sub => {
       if (optimMethodMap.get(sub.getName) == None) {
-        require(parentMethod != null, s"${sub.getName}'s parent optim method should not be null")
+        Log4Error.invalidOperationError(parentMethod != null, s"${sub.getName}'s parent optim method should not be null")
         val subOptimMethod = parentMethod.clone
         sub.setOptimMethod(subOptimMethod)
         optimMethodMap(sub.getName) = subOptimMethod

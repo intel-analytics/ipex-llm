@@ -18,6 +18,7 @@ package com.intel.analytics.bigdl.dllib.nn.ops
 import com.intel.analytics.bigdl.dllib.nn.abstractnn.Activity
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.{NumericWildcard, TensorNumeric}
+import com.intel.analytics.bigdl.dllib.utils.Log4Error
 
 import scala.reflect.ClassTag
 
@@ -41,7 +42,7 @@ class Slice[T: ClassTag](
   (implicit ev: TensorNumeric[T]) extends Operation[Tensor[_], Tensor[_], T] {
 
   def updateOutput(input: Tensor[_]): Tensor[_] = {
-    require(begin.length == size.length && begin.length == input.dim(),
+    Log4Error.invalidInputError(begin.length == size.length && begin.length == input.dim(),
       "the length of `begin`, `size` and the dimension of input should be the same")
 
     var outputNarrow = input

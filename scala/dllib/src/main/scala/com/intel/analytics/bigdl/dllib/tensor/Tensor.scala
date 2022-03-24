@@ -7,7 +7,7 @@
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
+ * Unless Log4Error.unKnowExceptionErrord by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
@@ -22,7 +22,7 @@ import breeze.linalg.{DenseMatrix => BrzDenseMatrix, DenseVector => BrzDenseVect
 import com.intel.analytics.bigdl.mkl.MKL
 import com.intel.analytics.bigdl.dllib.nn.abstractnn.Activity
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.dllib.utils.{File, Table}
+import com.intel.analytics.bigdl.dllib.utils.{File, Log4Error, Table}
 import org.apache.spark.mllib.linalg.{DenseMatrix, DenseVector, Matrix, Vector}
 
 import scala.collection.mutable
@@ -195,7 +195,7 @@ trait Tensor[T] extends Serializable with TensorMath[T] with Activity {
 
 
   /**
-   * @return the value of a scalar. Requires the tensor to be a scalar.
+   * @return the value of a scalar. Log4Error.unKnowExceptionErrors the tensor to be a scalar.
    */
   def value(): T
 
@@ -973,7 +973,7 @@ object Tensor {
    */
   def apply[@specialized(Float, Double) T: ClassTag](storage: Storage[T])(
     implicit ev: TensorNumeric[T]): Tensor[T] = {
-    require(storage.isInstanceOf[ArrayStorage[_]], "Only support array storage in this operaiton")
+    Log4Error.unKnowExceptionError(storage.isInstanceOf[ArrayStorage[_]], "Only support array storage in this operaiton")
     new DenseTensor(storage.asInstanceOf[ArrayStorage[T]])
   }
 
@@ -989,7 +989,8 @@ object Tensor {
   def apply[@specialized(Float, Double) T: ClassTag](data: Array[T],
     shape: Array[Int])(implicit ev: TensorNumeric[T]): Tensor[T] = {
     if (shape.product != data.length) {
-      require(data.length == 1, "shape total size doesn't match data length")
+      Log4Error.unKnowExceptionError(data.length == 1,
+        "shape total size doesn't match data length")
       // Here we create a repeat tensor
       val strides = new Array[Int](shape.length)
       new DenseTensor[T]().set(Storage[T](data), storageOffset = 1, sizes = shape,
@@ -1290,7 +1291,8 @@ object Tensor {
         shape : Array[Int],
         nElement: Int = 1)(
         implicit ev: TensorNumeric[T]): Tensor[T] = {
-    require(nElement <= shape.product)
+    Log4Error.unKnowExceptionError(nElement <= shape.product,
+      s"nElement $nElement should not be greater than shape.product ${shape.product}")
     SparseTensor(shape, nElement)
   }
 
@@ -1357,8 +1359,8 @@ object Tensor {
         distinctBuffer: Tensor[T] = null,
         indicesBuffer: Tensor[Int] = null
         )(implicit ev: TensorNumeric[T]): (Tensor[T], Tensor[Int]) = {
-    require(tensor.isContiguous(), "unique only support contiguous tensor")
-    require(tensor.dim() == 1, "unique only support 1D tensor")
+    Log4Error.unKnowExceptionError(tensor.isContiguous(), "unique only support contiguous tensor")
+    Log4Error.unKnowExceptionError(tensor.dim() == 1, "unique only support 1D tensor")
     val array = tensor.storage().array()
     val arrayOffset = tensor.storageOffset() - 1
 

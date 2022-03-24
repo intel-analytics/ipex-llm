@@ -250,7 +250,7 @@ class Transformer[T: ClassTag](
 
   private def updateOutputTranslation(input: Activity): Activity = {
     if (input.isTensor) {
-      require(!this.isTraining(),
+      Log4Error.invalidInputError(!this.isTraining(),
         "Input for Transformer should be tensor when doing translation prediction")
       // inference case, first tensor is encoder_outputs,  another is attention_bias
       val res = predictModel.forward(input).toTable

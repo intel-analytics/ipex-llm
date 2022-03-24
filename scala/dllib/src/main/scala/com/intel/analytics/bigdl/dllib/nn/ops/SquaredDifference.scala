@@ -17,7 +17,7 @@ package com.intel.analytics.bigdl.dllib.nn.ops
 
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath._
-import com.intel.analytics.bigdl.dllib.utils.Table
+import com.intel.analytics.bigdl.dllib.utils.{Log4Error, Table}
 
 import scala.reflect.ClassTag
 
@@ -31,7 +31,8 @@ class SquaredDifference[T: ClassTag]()(implicit ev: TensorNumeric[T])
     val x = inputs[Tensor[NumericWildcard]](1)
     val y = inputs[Tensor[NumericWildcard]](2)
 
-    require(x.getType() == y.getType(), "The numeric type of x and y must be the same, but got" +
+    Log4Error.invalidInputError(x.getType() == y.getType(),
+      "The numeric type of x and y must be the same, but got" +
       s"x: ${x.getType()}, y: ${y.getType()}")
 
     if (output.getType() != x.getType()) {

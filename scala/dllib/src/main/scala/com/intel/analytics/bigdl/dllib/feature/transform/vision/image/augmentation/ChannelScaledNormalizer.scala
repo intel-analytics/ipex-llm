@@ -20,6 +20,7 @@ import com.intel.analytics.bigdl.dllib.feature.dataset.image.LabeledBGRImage
 import com.intel.analytics.bigdl.dllib.feature.dataset.{LocalDataSet, Transformer}
 import com.intel.analytics.bigdl.dllib.feature.transform.vision.image.{FeatureTransformer, ImageFeature}
 import com.intel.analytics.bigdl.dllib.feature.transform.vision.image.opencv.OpenCVMat
+import com.intel.analytics.bigdl.dllib.utils.Log4Error
 
 import scala.collection.Iterator
 
@@ -45,7 +46,8 @@ class ChannelScaledNormalizer(meanR: Int, meanG: Int, meanB: Int, scale: Double)
     val mat = feature.opencvMat()
     val toFloats = OpenCVMat.toFloatPixels(mat)
     val content = toFloats._1
-    require(content.length % 3 == 0, "Content should be multiple of 3 channels")
+    Log4Error.invalidInputError(content.length % 3 == 0,
+      s"Content(${content.length}) should be multiple of 3 channels")
     var i = 0
     val frameLength = content.length / 3
     val height = toFloats._2

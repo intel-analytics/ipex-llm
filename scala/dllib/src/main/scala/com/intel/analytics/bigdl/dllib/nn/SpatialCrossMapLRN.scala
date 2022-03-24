@@ -19,7 +19,7 @@ package com.intel.analytics.bigdl.dllib.nn
 import com.intel.analytics.bigdl.dllib.nn.abstractnn.{DataFormat, TensorModule}
 import com.intel.analytics.bigdl.dllib.tensor.{FloatType, Tensor}
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.dllib.utils.Engine
+import com.intel.analytics.bigdl.dllib.utils.{Engine, Log4Error}
 
 import scala.concurrent.Future
 import scala.reflect._
@@ -57,7 +57,8 @@ class SpatialCrossMapLRN[T: ClassTag]
   @transient
   private var results: Array[Future[Unit]] = null
 
-  require(size % 2 == 1, "LRN only supports odd values for size" +
+  Log4Error.invalidInputError(size % 2 == 1,
+    "LRN only supports odd values for size" +
     s"size $size")
   val prePad = (size - 1) / 2
 
@@ -94,10 +95,10 @@ class SpatialCrossMapLRN[T: ClassTag]
   }
 
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
-    require(input.nDimension() == 4, "Input must have 4 dimensions, corresponding to " +
+    Log4Error.invalidInputError(input.nDimension() == 4, "Input must have 4 dimensions, corresponding to " +
       "(batch, channels, height, width)" +
       s"input dimension ${input.nDimension()}")
-    require(input.isContiguous(), "Input is not contiguous")
+    Log4Error.invalidInputError(input.isContiguous(), "Input is not contiguous")
 
     output.resizeAs(input)
     if (scale == null) {
@@ -135,10 +136,10 @@ class SpatialCrossMapLRN[T: ClassTag]
   }
 
   override def updateGradInput(input: Tensor[T], gradOutput: Tensor[T]): Tensor[T] = {
-    require(input.nDimension() == 4, "Input must have 4 dimensions, corresponding to " +
+    Log4Error.invalidInputError(input.nDimension() == 4, "Input must have 4 dimensions, corresponding to " +
       "(batch, channels, height, width)" +
       s"inputdimension ${input.nDimension()}")
-    require(gradOutput.isContiguous(), "gradOutput is not contiguous")
+    Log4Error.invalidInputError(gradOutput.isContiguous(), "gradOutput is not contiguous")
 
     val batchNum = input.size(1)
     val channel = input.size(2)
@@ -246,8 +247,8 @@ object SpatialCrossMapLRN {
     beta: Double,
     k: Double
   ): Unit = {
-    require(input.isContiguous(), "input of LRN for NHWC should be contiguous")
-    require(output.isContiguous(), "output of LRN for NHWC should be contiguous")
+    Log4Error.invalidInputError(input.isContiguous(), "input of LRN for NHWC should be contiguous")
+    Log4Error.invalidInputError(output.isContiguous(), "output of LRN for NHWC should be contiguous")
     val channel = input.size(3)
     val inputOffset = input.storageOffset() - 1
     val inputArray = input.storage().array()

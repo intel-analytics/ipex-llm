@@ -19,7 +19,7 @@ package com.intel.analytics.bigdl.dllib.nn.internal
 import com.intel.analytics.bigdl.dllib.nn.abstractnn.{AbstractModule, IdentityOutputShape}
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.dllib.utils.Shape
+import com.intel.analytics.bigdl.dllib.utils.{Log4Error, Shape}
 
 import scala.reflect.ClassTag
 
@@ -40,7 +40,8 @@ class Activation[T: ClassTag](
   extends KerasLayer[Tensor[T], Tensor[T], T](KerasLayer.addBatch(inputShape))
     with IdentityOutputShape {
 
-  require(activation != null, "The name of an activation function as a string is required")
+  Log4Error.invalidInputError(activation != null,
+    "The name of an activation function as a string is required")
 
   override def doBuild(inputShape: Shape): AbstractModule[Tensor[T], Tensor[T], T] = {
     val kerasActivation = KerasUtils.getKerasActivation(activation)

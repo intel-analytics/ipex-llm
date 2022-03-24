@@ -17,6 +17,7 @@
 package com.intel.analytics.bigdl.dllib.tensor
 
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath._
+import com.intel.analytics.bigdl.dllib.utils.Log4Error
 
 import scala.reflect.ClassTag
 
@@ -163,8 +164,8 @@ object DenseTensorConv {
     nInputRows: Int, nInputCols: Int, kernel: Storage[T], _kernelOffset: Int, nKernelRows: Int,
     nKernelCols: Int, srow: Int, scol: Int, vf: Char, xc: Char)(
     implicit ev: TensorNumeric[T]): Unit = {
-    require(vf == 'F' || vf == 'V', "type of convolution can be 'V' or 'F'")
-    require(xc == 'X' || xc == 'C', "type of convolution can be 'X' or 'C'")
+    Log4Error.unKnowExceptionError(vf == 'F' || vf == 'V', "type of convolution can be 'V' or 'F'")
+    Log4Error.unKnowExceptionError(xc == 'X' || xc == 'C', "type of convolution can be 'X' or 'C'")
 
     if (vf == 'F') {
       if (xc == 'X') {
@@ -221,11 +222,11 @@ object DenseTensorConv {
 
   def conv2Dmul[@specialized(Float, Double) T: ClassTag](alpha: T, t: Tensor[T], k: Tensor[T],
     srow: Int, scol: Int, vf: Char, xc: Char)(implicit ev: TensorNumeric[T]): Tensor[T] = {
-    require(t.nDimension() == 2, "input: 2D Tensor expected")
-    require(k.nDimension() == 2, "kernel: 2D Tensor expected")
+    Log4Error.unKnowExceptionError(t.nDimension() == 2, "input: 2D Tensor expected")
+    Log4Error.unKnowExceptionError(k.nDimension() == 2, "kernel: 2D Tensor expected")
 
-    require(srow >= 1, "Stride should be a positive integer")
-    require(scol >= 1, "Stride should be a positive integer")
+    Log4Error.unKnowExceptionError(srow >= 1, "Stride should be a positive integer")
+    Log4Error.unKnowExceptionError(scol >= 1, "Stride should be a positive integer")
 
     val input = t.contiguous()
     val kernel = k.contiguous()
@@ -236,7 +237,7 @@ object DenseTensorConv {
     val nKernelRows = kernel.size(1)
     val nKernelCols = kernel.size(2)
 
-    require((nInputRows >= nKernelRows && nInputCols >= nKernelCols) || vf == 'F',
+    Log4Error.unKnowExceptionError((nInputRows >= nKernelRows && nInputCols >= nKernelCols) || vf == 'F',
       "conv2Dmul : Input image is smaller than kernel")
 
     val nOutputRows = convSize(nInputRows, nKernelRows, srow, vf)
@@ -251,7 +252,7 @@ object DenseTensorConv {
   }
 
   def convSize(x: Int, k: Int, s: Int, vf: Char): Int = {
-    require(vf == 'F' || vf == 'V', "type of convolution can be 'V' or 'F'")
+    Log4Error.unKnowExceptionError(vf == 'F' || vf == 'V', "type of convolution can be 'V' or 'F'")
     if (vf == 'V') {
       (x - k) / s + 1
     } else {

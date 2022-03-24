@@ -17,6 +17,8 @@ package com.intel.analytics.bigdl.dllib.nn
 
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
+import com.intel.analytics.bigdl.dllib.utils.Log4Error
+
 import scala.reflect.ClassTag
 
 /**
@@ -30,7 +32,7 @@ import scala.reflect.ClassTag
 class ClassSimplexCriterion[T: ClassTag](val nClasses: Int)
  (implicit ev: TensorNumeric[T]) extends MSECriterion[T] {
 
-  require(nClasses > 1, "ClassSimplexCriterion: Required positive integer argument nClasses > 1," +
+  Log4Error.invalidInputError(nClasses > 1, "ClassSimplexCriterion: Required positive integer argument nClasses > 1," +
     s"but get nClasses $nClasses")
 
   private val simp = regsplex(nClasses - 1)
@@ -61,7 +63,8 @@ class ClassSimplexCriterion[T: ClassTag](val nClasses: Int)
   }
 
   private def transformTarget(target: Tensor[T]): Unit = {
-    require(target.dim() == 1, s"ClassSimplexCriterion: target should be 1D tensors only!" +
+    Log4Error.invalidInputError(target.dim() == 1,
+      s"ClassSimplexCriterion: target should be 1D tensors only!" +
       s"But get ${target.dim()}")
     if (null == targetBuffer) targetBuffer = Tensor[T](nClasses)
 
@@ -75,7 +78,7 @@ class ClassSimplexCriterion[T: ClassTag](val nClasses: Int)
 
   override def updateOutput(input: Tensor[T], target: Tensor[T]): T = {
     transformTarget(target)
-    require(input.nElement() == targetBuffer.nElement(), "ClassSimplexCriterion: " +
+    Log4Error.invalidInputError(input.nElement() == targetBuffer.nElement(), "ClassSimplexCriterion: " +
       "element number wrong" +
       s"input dim(${input.nElement()})" +
       s"targetBuffer dim(${targetBuffer.nElement()})")
@@ -84,7 +87,7 @@ class ClassSimplexCriterion[T: ClassTag](val nClasses: Int)
   }
 
   override def updateGradInput(input: Tensor[T], target: Tensor[T]): Tensor[T] = {
-    require(input.nElement() == targetBuffer.nElement(), "ClassSimplexCriterion: " +
+    Log4Error.invalidInputError(input.nElement() == targetBuffer.nElement(), "ClassSimplexCriterion: " +
       "element number wrong" +
       s"input dim(${input.nElement()})" +
       s"targetBuffer dim(${targetBuffer.nElement()})")

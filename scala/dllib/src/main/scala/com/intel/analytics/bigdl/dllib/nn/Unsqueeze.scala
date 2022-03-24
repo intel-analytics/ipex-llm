@@ -19,6 +19,7 @@ package com.intel.analytics.bigdl.dllib.nn
 import com.intel.analytics.bigdl.dllib.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.{NumericWildcard, TensorNumeric}
 import com.intel.analytics.bigdl.dllib.tensor._
+import com.intel.analytics.bigdl.dllib.utils.Log4Error
 
 import scala.reflect.ClassTag
 
@@ -63,11 +64,12 @@ class Unsqueeze[T: ClassTag](
       val inputDim = input.dim() // data batch dim
       numInputDims = if (numInputDims != Int.MinValue) numInputDims else inputDim // feature map dim
       val offsetDim = inputDim - numInputDims
-      require(offsetDim >= 0, "input feature map dim (numInputDims) must be <= input:dim()," +
+      Log4Error.invalidInputError(offsetDim >= 0,
+        "input feature map dim (numInputDims) must be <= input:dim()," +
         s" input feature map dim ${numInputDims}, inputdim ${inputDim}")
       // the actual position; clearer error message for batchMode (if any)
       val actualPos = pos(index) + offsetDim
-      require(actualPos >= 1 && actualPos <= (inputDim + 1), s"Invalid position: ${pos(index)}. " +
+      Log4Error.invalidInputError(actualPos >= 1 && actualPos <= (inputDim + 1), s"Invalid position: ${pos(index)}. " +
         s"input:dim() is $input, input feature map dim (numInputDims) is $numInputDims.")
       pos(index) = actualPos
     }
@@ -87,7 +89,7 @@ class Unsqueeze[T: ClassTag](
   }
 
   override def updateGradInput(input: Tensor[_], gradOutput: Tensor[_]): Tensor[_] = {
-    require(input.nElement() == gradOutput.nElement(),
+    Log4Error.invalidInputError(input.nElement() == gradOutput.nElement(),
       "input and gradOutput should be of the same size" +
         s"input size ${input.nElement()} gradOutput size ${gradOutput.nElement()}")
     gradInput = gradOutput.view(input.size())

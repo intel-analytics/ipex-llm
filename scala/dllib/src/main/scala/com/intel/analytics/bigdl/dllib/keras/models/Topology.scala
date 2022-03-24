@@ -80,7 +80,7 @@ abstract class KerasNet[T](implicit val tag: ClassTag[T], implicit val ev: Tenso
   protected val module: Module[T] = this
 
   def getSubModules(): List[AbstractModule[Activity, Activity, T]] = {
-    require(this.labor.isInstanceOf[Container[Activity, Activity, T]],
+    Log4Error.invalidOperationError(this.labor.isInstanceOf[Container[Activity, Activity, T]],
       s"labor should be a container, but we got: $this")
     this.labor.asInstanceOf[Container[Activity, Activity, T]].modules.toList
   }
@@ -728,7 +728,8 @@ abstract class KerasNet[T](implicit val tag: ClassTag[T], implicit val ev: Tenso
      batchSize: Int,
      featureCols: Array[String],
      labelCols: Array[String]): Array[(ValidationResult, ValidationMethod[T])] = {
-    require(this.vMethods != null, "Evaluation metrics haven't been set yet")
+    Log4Error.invalidInputError(this.vMethods != null,
+      "Evaluation metrics haven't been set yet")
     val valX = getDataSet(x, batchSize, featureCols, labelCols).toDataSet()
     val xRDD = valX.toDistributed().data(false)
     evaluate(xRDD, this.vMethods)
@@ -1030,7 +1031,8 @@ private[bigdl] class InternalDistriOptimizer[T: ClassTag] (
       parameterSplits = if (optimMethods.size != 1) {
         val p = optimMethods.map { case (subModuleName, optimMethod) =>
           val subModule = trainingModel(subModuleName)
-          require(subModule.isDefined, s"Optimizer couldn't find $subModuleName in $model")
+          Log4Error.invalidOperationError(subModule.isDefined,
+            s"Optimizer couldn't find $subModuleName in $model")
           val subModuleWeights = InternalOptimizerUtil
             .getParametersFromModel(subModule.get)._1
           (subModuleName, subModuleWeights)
@@ -1038,7 +1040,7 @@ private[bigdl] class InternalDistriOptimizer[T: ClassTag] (
         val sortedWeights = p.values.toArray.sortWith(
           (a, b) => a.storageOffset() < b.storageOffset())
         val compactWeights = Module.isCompact(sortedWeights)
-        require(modelParameters._1 == compactWeights,
+        Log4Error.invalidOperationError(modelParameters._1 == compactWeights,
           s"InternDistriOptimizer: All subModules should have an OptimMethod.")
         p.map { case (subModuleName, weights) =>
           (subModuleName, (weights.storageOffset(), weights.nElement()))
@@ -1179,7 +1181,7 @@ private[bigdl] class InternalDistriOptimizer[T: ClassTag] (
 
 
   def setNumOfSlice(numOfSlice: Int): this.type = {
-    require(numOfSlice >= 0, s"excepted numOfSlice >= 0," +
+    Log4Error.invalidInputError(numOfSlice >= 0, s"excepted numOfSlice >= 0," +
       s" but got $numOfSlice")
     this.numSlice = numOfSlice
     this
@@ -1400,7 +1402,7 @@ private[bigdl] class InternalDistriOptimizerV2[T: ClassTag] (
 
 
   def setNumOfSlice(numOfSlice: Int): this.type = {
-    require(numOfSlice >= 0, s"excepted numOfSlice >= 0," +
+    Log4Error.invalidInputError(numOfSlice >= 0, s"excepted numOfSlice >= 0," +
       s" but got $numOfSlice")
     this.numSlice = numOfSlice
     this
@@ -1671,7 +1673,8 @@ object InternalDistriOptimizer {
       }).reduce((a, b) => (a._1 ++ b._1, a._2 ++ b._2))
 
       val taskSize = parameters.size / partitionNum
-      require(taskSize != 0, "parameter length should not less than partition number")
+      Log4Error.invalidOperationError(taskSize != 0,
+        "parameter length should not less than partition number")
       val extraSize = parameters.size % partitionNum
 
       (0 until partitionNum).map(pid => {

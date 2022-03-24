@@ -19,6 +19,7 @@ package com.intel.analytics.bigdl.dllib.feature.transform.vision.image.util
 
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.feature.transform.vision.image.label.roi.RoiLabel
+import com.intel.analytics.bigdl.dllib.utils.Log4Error
 import org.apache.logging.log4j.LogManager
 
 object BboxUtil {
@@ -28,7 +29,7 @@ object BboxUtil {
     // ignore if decoded
     if (output.nElement() < 6 || output.dim() == 2) return output
     val num = output.valueAt(1).toInt
-    require(num >= 0)
+    Log4Error.invalidOperationError(num >= 0, "output size cannot be negative")
     if (num == 0) {
       Tensor[Float]()
     } else {
@@ -57,9 +58,9 @@ object BboxUtil {
       return boxes
     }
     val output = Tensor[Float]().resizeAs(deltas).copy(deltas)
-    require(boxes.size(2) == 4,
+    Log4Error.invalidOperationError(boxes.size(2) == 4,
       s"boxes size ${boxes.size().mkString(",")} do not satisfy N*4 size")
-    require(output.size(2) % 4 == 0,
+    Log4Error.invalidOperationError(output.size(2) % 4 == 0,
       s"and deltas size ${output.size().mkString(",")} do not satisfy N*4a size")
     val boxesArr = boxes.storage().array()
     var offset = boxes.storageOffset() - 1
@@ -109,7 +110,7 @@ object BboxUtil {
    */
   def clipBoxes(boxes: Tensor[Float], height: Float, width: Float, minH: Float = 0,
     minW: Float = 0, scores: Tensor[Float] = null): Int = {
-    require(boxes.size(2) % 4 == 0, "boxes should have the shape N*4a")
+    Log4Error.invalidOperationError(boxes.size(2) % 4 == 0, "boxes should have the shape N*4a")
     val boxesArr = boxes.storage().array()
     var offset = boxes.storageOffset() - 1
     val scoresArr = if (scores != null) scores.storage().array() else null
@@ -256,7 +257,8 @@ object BboxUtil {
       }
       all
     } else {
-      require(output.length == batch)
+      Log4Error.invalidOperationError(output.length == batch,
+        s"output length(${output.length}) doesn't match batch($batch)")
       output
     }
     var i = 0
@@ -285,11 +287,15 @@ object BboxUtil {
   def decodeBoxes(priorBoxes: Tensor[Float], priorVariances: Tensor[Float],
     isClipBoxes: Boolean, bboxes: Tensor[Float],
     varianceEncodedInTarget: Boolean, output: Tensor[Float] = null): Tensor[Float] = {
-    require(priorBoxes.size(1) == priorVariances.size(1))
-    require(priorBoxes.size(1) == bboxes.size(1))
+    Log4Error.invalidOperationError(priorBoxes.size(1) == priorVariances.size(1),
+      s"priorBoxes.size(1) ${priorBoxes.size(1)} should" +
+        s" match priorVariances.size(1) ${priorVariances.size(1)}")
+    Log4Error.invalidOperationError(priorBoxes.size(1) == bboxes.size(1),
+      s"priorBoxes.size(1) ${priorBoxes.size(1)} should" +
+        s" match bboxes.size(1) ${bboxes.size(1)}")
     val numBboxes = priorBoxes.size(1)
     if (numBboxes > 0) {
-      require(priorBoxes.size(2) == 4)
+      Log4Error.invalidOperationError(priorBoxes.size(2) == 4, s"priorBoxes.size(2) ${priorBoxes.size(2)} should be 4")
     }
     val decodedBboxes = if (output == null) Tensor[Float](numBboxes, 4)
     else output.resizeAs(priorBoxes)
@@ -310,9 +316,12 @@ object BboxUtil {
     val x2 = priorBox.valueAt(i, 3)
     val y2 = priorBox.valueAt(i, 4)
     val priorWidth = x2 - x1
-    require(priorWidth > 0)
+    Log4Error.invalidOperationError(priorWidth > 0,
+      s"right x ${priorBox.valueAt(i, 3)} should be great than left x ${priorBox.valueAt(i, 1)}")
     val priorHeight = y2 - y1
-    require(priorHeight > 0)
+    Log4Error.invalidOperationError(priorHeight > 0,
+      s"downside y ${priorBox.valueAt(i, 4)} should be great than" +
+        s"upside y ${priorBox.valueAt(i, 2)}")
     val pCenterX = (x1 + x2) / 2
     val pCenterY = (y1 + y2) / 2
     var decodeCenterX = 0f
@@ -403,7 +412,9 @@ object BboxUtil {
   }
 
   private def getArea(box: Tensor[Float]): Float = {
-    require(box.dim() == 1 && box.nElement() >= 4)
+    Log4Error.invalidOperationError(box.dim() == 1 && box.nElement() >= 4,
+      s"box dim ${box.dim()} should be 1 and it should has" +
+        s"more than 4 elements which are actual ${box.nElement()}")
     (box.valueAt(3) - box.valueAt(1) + 1) * (box.valueAt(4) - box.valueAt(2) + 1)
   }
 
@@ -416,7 +427,7 @@ object BboxUtil {
   def getAreas(boxes: Tensor[Float], areas: Tensor[Float], startInd: Int = 1,
     normalized: Boolean = false): Tensor[Float] = {
     if (boxes.nElement() == 0) return areas
-    require(boxes.size(2) >= 4)
+    Log4Error.invalidOperationError(boxes.size(2) >= 4, s"boxes.size(2) ${boxes.size(2)} should be greater than 4")
     areas.resize(boxes.size(1))
     val boxesArr = boxes.storage().array()
     val offset = boxes.storageOffset() - 1
@@ -482,11 +493,11 @@ object BboxUtil {
 
   private def decodeSignalBoxWithWeight(encodeBox: Tensor[Float], bbox: Tensor[Float],
              weight: Array[Float], decodeBox: Tensor[Float]): Unit = {
-    require(bbox.nDimension() == 1 && encodeBox.nDimension() == 1 && decodeBox.dim() == 1,
+    Log4Error.invalidOperationError(bbox.nDimension() == 1 && encodeBox.nDimension() == 1 && decodeBox.dim() == 1,
     s"Only support decode single bbox, but " +
       s"get ${bbox.nDimension()}, ${encodeBox.nDimension()}, ${decodeBox.dim()}")
 
-    require(encodeBox.nElement() == decodeBox.nElement(), s"element number of encode tensor" +
+    Log4Error.invalidOperationError(encodeBox.nElement() == decodeBox.nElement(), s"element number of encode tensor" +
       s" and decode tensor should be same, but get ${encodeBox.nElement()} ${decodeBox.nElement()}")
 
     val TO_REMOVE = 1 // refer to pytorch, maybe it will be removed in future
@@ -553,11 +564,15 @@ object BboxUtil {
 
   def decodeWithWeight(encodeBox: Tensor[Float], bbox: Tensor[Float],
              weight: Array[Float], decodeBox: Tensor[Float]): Unit = {
-    require(encodeBox.size(1) == bbox.size(1))
-    require(encodeBox.size(1) == decodeBox.size(1))
+    Log4Error.invalidOperationError(encodeBox.size(1) == bbox.size(1), s"encodeBox.size(1) ${encodeBox.size(1)} should" +
+      s" match bbox.size(1) ${bbox.size(1)}")
+    Log4Error.invalidOperationError(encodeBox.size(1) == decodeBox.size(1),
+      s"encodeBox.size(1) ${encodeBox.size(1)} should" +
+      s" match decodeBox.size(1) ${decodeBox.size(1)}")
 
     val numBboxes = bbox.size(1)
-    if (numBboxes > 0) require(bbox.size(2) == 4)
+    if (numBboxes > 0) Log4Error.invalidOperationError(bbox.size(2) == 4,
+      s"bbox.size(2) should be 4, but actually is ${bbox.size(2)}")
 
     var i = 1
     while (i <= numBboxes) {
@@ -568,7 +583,7 @@ object BboxUtil {
   }
 
   private def clamp(input: Tensor[Float], min: Float, max: Float): Unit = {
-    require(input.isContiguous(), "input for clamp should be contiguous")
+    Log4Error.invalidInputError(input.isContiguous(), "input for clamp should be contiguous")
     val arr = input.storage().array()
     val offset = input.storageOffset() - 1
     var i = 0

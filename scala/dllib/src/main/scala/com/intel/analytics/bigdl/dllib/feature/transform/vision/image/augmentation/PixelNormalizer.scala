@@ -17,6 +17,7 @@
 package com.intel.analytics.bigdl.dllib.feature.transform.vision.image.augmentation
 
 import com.intel.analytics.bigdl.dllib.feature.transform.vision.image.{FeatureTransformer, ImageFeature}
+import com.intel.analytics.bigdl.dllib.utils.Log4Error
 import org.opencv.core.CvType
 
 /**
@@ -37,12 +38,13 @@ class PixelNormalizer(means: Array[Float]) extends FeatureTransformer {
     if (data == null) {
       data = new Array[Float](means.length)
     }
-    require(data.length == openCVMat.height() * openCVMat.width() * openCVMat.channels(),
+    Log4Error.invalidInputError(data.length ==
+      openCVMat.height() * openCVMat.width() * openCVMat.channels(),
       s"the means (${means.length}) provided must have the same length as image" +
         s" ${openCVMat.height() * openCVMat.width() * openCVMat.channels()}")
     openCVMat.get(0, 0, data)
 
-    require(means.length == data.length, s"Image size expected :" +
+    Log4Error.invalidInputError(means.length == data.length, s"Image size expected :" +
       s"${means.length}, actual : ${data.length}")
 
     var i = 0

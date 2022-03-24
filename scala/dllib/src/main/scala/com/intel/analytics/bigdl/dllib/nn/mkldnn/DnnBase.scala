@@ -19,7 +19,7 @@ import com.intel.analytics.bigdl.mkl.DataType
 import com.intel.analytics.bigdl.dllib.nn.DynamicContainer
 import com.intel.analytics.bigdl.dllib.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.dllib.tensor.{DenseType, DnnTensor, MklDnnType, Tensor}
-import com.intel.analytics.bigdl.dllib.utils.T
+import com.intel.analytics.bigdl.dllib.utils.{Log4Error, T}
 
 import scala.collection.mutable.ArrayBuffer
 
@@ -39,7 +39,7 @@ trait MklDnnModule extends MklDnnModuleHelper {
   }
 
   private[bigdl] def getRuntime: MklDnnRuntime = {
-    require(runtime != null, s"you should init the mkldnn runtime first")
+    Log4Error.invalidInputError(runtime != null, s"you should init the mkldnn runtime first")
     runtime
   }
 
@@ -109,7 +109,7 @@ trait MklDnnModuleHelper extends MemoryOwner {
   }
 
   protected def singleNativeData(formats: Array[MemoryData]): Array[MemoryData] = {
-    require(formats.length == 1, "Only accept one tensor as input")
+    Log4Error.invalidInputError(formats.length == 1, "Only accept one tensor as input")
     nativeData(formats)
   }
 
@@ -248,22 +248,22 @@ trait MklDnnLayer extends AbstractModule[Activity, Activity, Float] with MklDnnM
 
 
   override private[bigdl] def inputFormats() = {
-    require(_inputFormats != null, "You should call initFwdPrimitives first")
+    Log4Error.invalidInputError(_inputFormats != null, "You should call initFwdPrimitives first")
     _inputFormats
   }
 
   override private[bigdl] def gradInputFormats() = {
-    require(_gradInputFormats != null, "You should call initBwdPrimitives first")
+    Log4Error.invalidInputError(_gradInputFormats != null, "You should call initBwdPrimitives first")
     _gradInputFormats
   }
 
   override private[bigdl] def outputFormats() = {
-    require(_outputFormats != null, "You should call initFwdPrimitives first")
+    Log4Error.invalidInputError(_outputFormats != null, "You should call initFwdPrimitives first")
     _outputFormats
   }
 
   override private[bigdl] def gradOutputFormats() = {
-    require(_gradOutputFormats != null, "You should call initBwdPrimitives first")
+    Log4Error.invalidInputError(_gradOutputFormats != null, "You should call initBwdPrimitives first")
     _gradOutputFormats
   }
 
@@ -299,8 +299,8 @@ trait MklDnnContainer extends DynamicContainer[Activity, Activity, Float] with M
   protected var mklDnnModules : Array[MklDnnModule] = _
 
   override def add(module: AbstractModule[_ <: Activity, _ <: Activity, Float]): this.type = {
-    require(mklDnnModules == null, "You should not call add after compilation")
-    require(module.isInstanceOf[MklDnnModule], "layer should be MklDnnModule")
+    Log4Error.invalidInputError(mklDnnModules == null, "You should not call add after compilation")
+    Log4Error.invalidInputError(module.isInstanceOf[MklDnnModule], "layer should be MklDnnModule")
     super.add(module)
   }
 
@@ -319,7 +319,7 @@ trait MklDnnContainer extends DynamicContainer[Activity, Activity, Float] with M
   }
 
   final def compile(phase: Phase): Unit = {
-    require(checkInputs, s"You should add Input for the container.")
+    Log4Error.invalidInputError(checkInputs, s"You should add Input for the container.")
     compile(phase, new MklDnnRuntime, Array[MemoryData]())
   }
 

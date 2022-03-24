@@ -252,9 +252,10 @@ class CachedDistriDataSet[T: ClassTag] private[dataset]
   extends DistributedDataSet[T] {
 
   protected lazy val count: Long = buffer.mapPartitions(iter => {
-    require(iter.hasNext)
+    Log4Error.unKnowExceptionError(iter.hasNext, "unexpect empty iterator")
     val array = iter.next()
-    require(!iter.hasNext)
+//    require(!iter.hasNext)
+    Log4Error.unKnowExceptionError(!iter.hasNext, "expect only 1 element in the iterator")
     Iterator.single(array.length)
   }).reduce(_ + _)
 
@@ -284,7 +285,7 @@ class CachedDistriDataSet[T: ClassTag] private[dataset]
         override def next(): T = {
           val i = _offset.getAndIncrement()
           if (_train) {
-            require(localData.length != 0,
+            Log4Error.invalidOperationError(localData.length != 0,
               "dataset on this executor is empty, please increase " +
                 "your dataset size or decrease your number of executors.")
             localData(indexes(i % localData.length))
@@ -417,7 +418,7 @@ object DataSet {
    */
   def sortData[T: ClassTag](data: Array[T], isInOrder: Boolean): Array[T] = {
     if (isInOrder) {
-      require(classTag[T] == classTag[Sample[_]],
+      Log4Error.invalidOperationError(classTag[T] == classTag[Sample[_]],
         "DataSet.sortData: Only support sort for sample input")
       data.sortBy(a => a.asInstanceOf[Sample[_]].featureLength(0))
     } else {

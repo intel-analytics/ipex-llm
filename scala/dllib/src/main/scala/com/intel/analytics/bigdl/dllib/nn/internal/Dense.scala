@@ -21,7 +21,7 @@ import com.intel.analytics.bigdl.dllib.nn.abstractnn._
 import com.intel.analytics.bigdl.dllib.optim.Regularizer
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.dllib.utils.Shape
+import com.intel.analytics.bigdl.dllib.utils.{Log4Error, Shape}
 
 import scala.reflect.ClassTag
 
@@ -58,7 +58,7 @@ class Dense[T: ClassTag](
 
   override def computeOutputShape(inputShape: Shape): Shape = {
     val input = inputShape.toSingle().toArray
-    require(inputShape.toSingle().size >=2,
+    Log4Error.invalidInputError(inputShape.toSingle().size >=2,
       s"Dense requires input dim >=2, but got dim: ${inputShape.toSingle().length}")
     Shape(input.slice(0, input.length -1) ++ Array(outputDim))
   }

@@ -19,6 +19,7 @@ package com.intel.analytics.bigdl.dllib.optim.parameters
 import java.nio.ByteBuffer
 
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
+import com.intel.analytics.bigdl.dllib.utils.Log4Error
 
 import scala.reflect._
 
@@ -47,9 +48,14 @@ class FP16SplitsCompressedTensor[T: ClassTag](buffers: Array[Array[Byte]], size:
 
   override def compress(offset: Int, src: Tensor[T], srcOffset: Int,
                         length: Int): FP16SplitsCompressedTensor.this.type = {
-    require(src.isContiguous() && offset >= 0 && srcOffset >= 0 &&
-      srcOffset + length <= src.nElement())
-    require(offset + length <= size)
+    Log4Error.unKnowExceptionError(src.isContiguous(),
+      "src is expected to be contiguous")
+    Log4Error.unKnowExceptionError(offset >= 0 && srcOffset >= 0 &&
+      srcOffset + length <= src.nElement(),
+      s"offset $offset cannot be negative, srcOffset $srcOffset cannot be negative," +
+        s" srcOffset $srcOffset + length $length <= src.nElement() ${src.nElement()}")
+    Log4Error.unKnowExceptionError(offset + length <= size, s"offset $offset + length $length should not" +
+      s" greater than size $size")
     val tOffset = src.storageOffset() - 1 + srcOffset
 
     val splitSize = size / buffers.length
@@ -83,10 +89,17 @@ class FP16SplitsCompressedTensor[T: ClassTag](buffers: Array[Array[Byte]], size:
   override def compress(tensor: Tensor[T]): FP16SplitsCompressedTensor.this.type =
     compress(0, tensor, 0, tensor.nElement())
 
-  override def deCompress(srcOffset: Int, tensor: Tensor[T], tgtOffset: Int, length: Int): Unit = {
-    require(srcOffset >= 0 && length > 0 && srcOffset + length <= size &&
-      tgtOffset >= 0 && tgtOffset + length <= tensor.nElement())
-    require(tensor.isContiguous())
+  override def deCompress(srcOffset: Int, tensor: Tensor[T], tgtOffset: Int, length: Int): Unit = { 
+    Log4Error.unKnowExceptionError(tensor.isContiguous(),
+      "tensor is expected to be contiguous")
+    Log4Error.unKnowExceptionError(srcOffset >= 0 && length > 0 &&
+      srcOffset + length <= size,
+      s"srcOffset $srcOffset cannot be negative, length $length should be positive," +
+        s" srcOffset $srcOffset + length $length should not greater than size ${size}")
+    Log4Error.unKnowExceptionError(tgtOffset >= 0 && tgtOffset + length <= tensor.nElement(),
+      s"tgtOffset $tgtOffset cannot be negative," +
+        s"tgtOffset $tgtOffset + length $length should not greater than " +
+        s"tensor.nElement() ${tensor.nElement()}")
     val splitSize = size / buffers.length
     val extraSize = size % buffers.length
     var i = 0
@@ -124,7 +137,7 @@ class FP16SplitsCompressedTensor[T: ClassTag](buffers: Array[Array[Byte]], size:
       val start = splitSize * i + math.min(extraSize, i)
       val curLength = splitSize + (if (i < extraSize) 1 else 0)
       if (start == offset && curLength == length) {
-        require(buffers(i) != null, "split has not been inited")
+        Log4Error.unKnowExceptionError(buffers(i) != null, "split has not been inited")
         return ByteBuffer.wrap(buffers(i))
       }
       i += 1

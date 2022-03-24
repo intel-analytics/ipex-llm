@@ -7,7 +7,7 @@
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
+ * Unless Log4Error.unKnowExceptionErrord by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
@@ -16,8 +16,11 @@
 package com.intel.analytics.bigdl.dllib.tensor
 
 import java.io.{IOException, ObjectInputStream, ObjectOutputStream}
+
 import com.intel.analytics.bigdl.mkl.Memory
 import com.intel.analytics.bigdl.dllib.nn.mkldnn.MemoryOwner
+import com.intel.analytics.bigdl.dllib.utils.Log4Error
+
 import scala.reflect._
 
 /**
@@ -63,7 +66,8 @@ private[tensor] class DnnStorage[T: ClassTag](size: Int) extends Storage[T] {
   : this.type = {
     source match {
       case s: ArrayStorage[T] =>
-        require(checkIsInstanceOf(ClassTag.Float), s"copy from float storage not supported")
+        Log4Error.unKnowExceptionError(checkIsInstanceOf(ClassTag.Float),
+          s"copy from float storage not supported")
         Memory.CopyArray2Ptr(s.array().asInstanceOf[Array[Float]], sourceOffset,
           ptr.address, offset, length, bytes)
       case s: DnnStorage[T] =>
@@ -105,9 +109,9 @@ private[tensor] class DnnStorage[T: ClassTag](size: Int) extends Storage[T] {
   def isReleased(): Boolean = _isReleased
 
   private def allocate(capacity: Int): Long = {
-    require(capacity > 0, s"capacity should be larger than 0")
+    Log4Error.unKnowExceptionError(capacity > 0, s"capacity should be larger than 0")
     val ptr = Memory.AlignedMalloc(capacity * bytes, DnnStorage.CACHE_LINE_SIZE)
-    require(ptr != 0L, s"allocate native aligned memory failed")
+    Log4Error.unKnowExceptionError(ptr != 0L, s"allocate native aligned memory failed")
     _isReleased = false
     DnnStorage.add(ptr)
     ptr

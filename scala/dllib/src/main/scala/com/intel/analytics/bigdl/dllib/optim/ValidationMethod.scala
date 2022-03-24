@@ -25,8 +25,9 @@ import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.dllib.feature.transform.vision.image.RoiImageInfo
 import com.intel.analytics.bigdl.dllib.feature.transform.vision.image.label.roi.RoiLabel
-import com.intel.analytics.bigdl.dllib.utils.Table
+import com.intel.analytics.bigdl.dllib.utils.{Log4Error, Table}
 import org.apache.commons.lang3.SerializationUtils
+
 import scala.collection.mutable.ArrayBuffer
 import scala.reflect.ClassTag
 
@@ -145,7 +146,8 @@ class TreeNNAccuracy[T: ClassTag]()(
       count += _output.size(1)
     } else if (_output.dim == 2) {
       _output = _output.select(1, 1)
-      require(_target.size(1) == 1)
+      Log4Error.invalidInputError(_target.size(1) == 1,
+        s"TreeNNAccuracy expect _target.size(1) ${_target.size(1)} to be 1")
       (if (_output.size(1) == 1) {
         _output.clone().apply1(x => if (ev.isGreater(ev.fromType(0.5), x)) ev.zero else ev.one)
       } else {
@@ -200,7 +202,8 @@ class Top1Accuracy[T: ClassTag](
       })
       count += _output.size(1)
     } else if (_output.dim == 1) {
-      require(_target.size(1) == 1)
+      Log4Error.invalidInputError(_target.size(1) == 1,
+        s"TreeNNAccuracy expect _target.size(1) ${_target.size(1)} to be 1")
       (if (_output.size(1) == 1) {
         _output.clone().apply1(x => if (ev.isGreater(ev.fromType(0.5), x)) ev.zero else ev.one)
       } else {
@@ -224,16 +227,16 @@ class Top1Accuracy[T: ClassTag](
 
 /**
  * Calculate the Mean Average Precision (MAP). The algorithm follows VOC Challenge after 2007
- * Require class label beginning with 0
+ * Log4Error.invalidInputError class label beginning with 0
  * @param k Take top-k confident predictions into account. If k=-1, calculate on all predictions
  * @param classes The number of classes
  */
 class MeanAveragePrecision[T: ClassTag](k: Int, classes: Int)(
   implicit ev: TensorNumeric[T]) extends ValidationMethod[T] {
 
-  require(classes > 0 && classes <= classes, s"The number of classes should be "
+  Log4Error.invalidInputError(classes > 0 && classes <= classes, s"The number of classes should be "
     + s"> 0 and <= $classes, but got $classes")
-  require(k > 0, s"k should be > 0, but got $k")
+  Log4Error.invalidInputError(k > 0, s"k should be > 0, but got $k")
 
   override def apply(output: Activity, target: Activity): ValidationResult = {
     var _target = target.asInstanceOf[Tensor[T]].squeezeNewTensor()
@@ -246,17 +249,17 @@ class MeanAveragePrecision[T: ClassTag](k: Int, classes: Int)(
       outTensor
     }
 
-    require(_output.dim()==1 && _target.nElement() == 1 ||
+    Log4Error.invalidInputError(_output.dim()==1 && _target.nElement() == 1 ||
       _output.size(1) == _target.nElement(), "The number of samples in the output should " +
       "be the same as in the target")
 
     val posCnt = new Array[Int](classes)
     for (i <- 1 to _target.nElement()) {
       val clazz = ev.toType[Float](_target.valueAt(i))
-      require(clazz == math.ceil(clazz), s"The class for $i-th test sample should be an integer, "
+      Log4Error.invalidInputError(clazz == math.ceil(clazz), s"The class for $i-th test sample should be an integer, "
         + s"got $clazz")
       val intClazz = clazz.toInt
-      require(intClazz >= 0 && intClazz < classes, s"The class for $i-th test sample should be "
+      Log4Error.invalidInputError(intClazz >= 0 && intClazz < classes, s"The class for $i-th test sample should be "
         + s">= 0 and < $classes, but got $intClazz")
       posCnt(intClazz) += 1
     }
@@ -271,7 +274,7 @@ class MeanAveragePrecision[T: ClassTag](k: Int, classes: Int)(
         }
       })
     } else {
-      require(_output.dim() == 1, "The output should have 1 or 2 dimensions")
+      Log4Error.invalidInputError(_output.dim() == 1, "The output should have 1 or 2 dimensions")
       val row = _output
       val gtClz = ev.toType[Float](_target.valueAt(1))
       for(clz <- 0 until classes) {
@@ -319,11 +322,11 @@ object MAPUtil {
         val isCrowd = RoiImageInfo.getIsCrowd(roiLabel)
         val masks = if (isSegmentation) RoiImageInfo.getMasks(roiLabel) else null
         val bboxCnt = bbox.size(1)
-        require(bboxCnt == tclasses.size(1), "CLASSES of target tables should have the" +
+        Log4Error.invalidInputError(bboxCnt == tclasses.size(1), "CLASSES of target tables should have the" +
           "same size of the bbox counts")
-        require(bboxCnt == isCrowd.nElement(), "ISCROWD of target tables should have the" +
+        Log4Error.invalidInputError(bboxCnt == isCrowd.nElement(), "ISCROWD of target tables should have the" +
           "same size of the bbox counts")
-        require(masks == null || bboxCnt == masks.length, "MASKS of target tables should have the" +
+        Log4Error.invalidInputError(masks == null || bboxCnt == masks.length, "MASKS of target tables should have the" +
           "same size of the bbox counts")
         for (j <- 1 to bboxCnt) {
           val (label, _diff) = if (tclasses.dim() == 2) {
@@ -339,7 +342,7 @@ object MAPUtil {
               bbox.valueAt(j, 2), bbox.valueAt(j, 3), bbox.valueAt(j, 4))
           }
           gtImage += newGt
-          require(label >= 0 && label < classes, s"Bad label id $label")
+          Log4Error.invalidInputError(label >= 0 && label < classes, s"Bad label id $label")
 
           if (diff == 0) {
             gtCntByClass(label) += 1
@@ -357,7 +360,7 @@ object MAPUtil {
   def parseDetection(gtBbox: ArrayBuffer[GroundTruthRegion], label: Int, score: Float, x1: Float,
     y1: Float, x2: Float, y2: Float, mask: RLEMasks, classes: Int, iou: Array[Float],
     predictByClasses: Array[Array[ArrayBuffer[(Float, Boolean)]]]): Unit = {
-    require(label >= 0 && label < classes, s"Bad label id $label")
+    Log4Error.invalidInputError(label >= 0 && label < classes, s"Bad label id $label")
     for (i <- iou.indices) {
       // for each GT boxes, try to find a matched one with current prediction
       val matchedGt = gtBbox.toIterator.filter(gt => label == gt.label && gt.canOccupy(i))
@@ -387,7 +390,7 @@ object MAPUtil {
 
   def parseSegmentationTensorResult(outTensor: Tensor[Float],
     func: (Int, Int, Float, Float, Float, Float, Float) => Unit): Unit = {
-    require(outTensor.dim() == 2, "the output tensor should have 2 dimensions")
+    Log4Error.invalidInputError(outTensor.dim() == 2, "the output tensor should have 2 dimensions")
     for (imgId <- 0 until outTensor.size(1)) {
       // for each image
       val batch = outTensor.select(1, imgId + 1)
@@ -415,7 +418,7 @@ object MAPCOCO extends MAPType
 
 /**
  * The MAP Validation Result. The results are not calculated until result() or format() is called
- * require class label beginning with 0
+ * Log4Error.invalidInputError class label beginning with 0
  */
 class MAPValidationResult(
   private val nClass: Int,
@@ -431,9 +434,9 @@ class MAPValidationResult(
   extends ValidationResult {
 
   if (skipClass < 0) {
-    require(skipClass == -1, s"Invalid skipClass $skipClass")
+    Log4Error.invalidInputError(skipClass == -1, s"Invalid skipClass $skipClass")
   } else {
-    require(skipClass >= 0 && skipClass < nClass, s"Invalid skipClass $skipClass")
+    Log4Error.invalidInputError(skipClass >= 0 && skipClass < nClass, s"Invalid skipClass $skipClass")
   }
 
   private def sortPredictions(p: ArrayBuffer[(Float, Boolean)]): ArrayBuffer[(Float, Boolean)] = {
@@ -512,8 +515,12 @@ class MAPValidationResult(
   }
 
   private[optim] def mergeWithoutGtCnt(o: MAPValidationResult): MAPValidationResult = {
-    require(predictForClass.length == o.predictForClass.length)
-    require(gtCntForClass.length == o.gtCntForClass.length)
+    Log4Error.invalidOperationError(predictForClass.length == o.predictForClass.length,
+      s"predictForClass.length ${predictForClass.length} should " +
+        s" match o.predictForClass.length ${o.predictForClass.length}")    
+    Log4Error.invalidOperationError(gtCntForClass.length == o.gtCntForClass.length,
+      s"gtCntForClass.length ${gtCntForClass.length} should " +
+        s" match o.gtCntForClass.length ${o.gtCntForClass.length}")
     for (i <- predictForClass.indices) {
       val (left, right) = (predictForClass(i), o.predictForClass(i))
       left ++= right
@@ -622,7 +629,7 @@ class MAPMultiIOUValidationResult(
   // scalastyle:off methodName
   override def +(other: ValidationResult): ValidationResult = {
     val o = other.asInstanceOf[MAPMultiIOUValidationResult]
-    require(o.predictForClassIOU.length == predictForClassIOU.length,
+    Log4Error.invalidInputError(o.predictForClassIOU.length == predictForClassIOU.length,
       "To merge MAPMultiIOUValidationResult, the length of predictForClassIOU should be" +
         "the same")
     impl.zip(o.impl).foreach { case (v1, v2) => v1.mergeWithoutGtCnt(v2) }
@@ -690,7 +697,7 @@ class MeanAveragePrecisionObjectDetection[T: ClassTag](
 
     output match {
       case _outTensor: Tensor[_] =>
-        require(!isSegmentation, "Cannot get segmentation data from tensor output for MAP")
+        Log4Error.invalidInputError(!isSegmentation, "Cannot get segmentation data from tensor output for MAP")
         val outTensor = _outTensor.asInstanceOf[Tensor[Float]]
         MAPUtil.parseSegmentationTensorResult(outTensor,
           (imgIdx, label, score, x1, y1, x2, y2) => {
@@ -699,7 +706,7 @@ class MeanAveragePrecisionObjectDetection[T: ClassTag](
               predictByClasses = predictByClasses)
           })
       case outTable: Table =>
-        require(gtImages.length == outTable.length(), "The number of images in the output and " +
+        Log4Error.invalidInputError(gtImages.length == outTable.length(), "The number of images in the output and " +
           "in the target should be the same")
         for (imgId <- 1 to outTable.length()) {
           val gtBbox = gtImages(imgId - 1)
@@ -709,14 +716,14 @@ class MeanAveragePrecisionObjectDetection[T: ClassTag](
             val bboxes = RoiImageInfo.getBBoxes(imgOut)
             val scores = RoiImageInfo.getScores(imgOut)
             val labels = RoiImageInfo.getClasses(imgOut)
-            require(bboxes.dim() == 2, "the bbox tensor should have 2 dimensions")
+            Log4Error.invalidInputError(bboxes.dim() == 2, "the bbox tensor should have 2 dimensions")
             val masks = if (isSegmentation) Some(RoiImageInfo.getMasks(imgOut)) else None
             val batchSize = bboxes.size(1)
-            require(batchSize == labels.size(1), "CLASSES of target tables should have the" +
+            Log4Error.invalidInputError(batchSize == labels.size(1), "CLASSES of target tables should have the" +
               "same size of the bbox counts")
-            require(batchSize == scores.nElement(), "ISCROWD of target tables should have the" +
+            Log4Error.invalidInputError(batchSize == scores.nElement(), "ISCROWD of target tables should have the" +
               "same size of the bbox counts")
-            require(masks.isEmpty || batchSize == masks.get.length, "MASKS of target tables " +
+            Log4Error.invalidInputError(masks.isEmpty || batchSize == masks.get.length, "MASKS of target tables " +
               "should have the same size of the bbox counts")
             val detections = new ArrayBuffer[(Int, Float, Float, Float, Float,
               Float, RLEMasks)]()
@@ -788,7 +795,7 @@ object MeanAveragePrecision {
   /**
    * Calculate the Mean Average Precision (MAP) for classification output and target
    * The algorithm follows VOC Challenge after 2007
-   * Require class label beginning with 0
+   * Log4Error.invalidInputError class label beginning with 0
    *
    * @param nClasses The number of classes
    * @param topK Take top-k confident predictions into account. If k=-1,calculate on all predictions
@@ -855,7 +862,7 @@ class Top5Accuracy[T: ClassTag](
       }
       count += _output.size(1)
     } else if (_output.dim == 1) {
-      require(_target.size(1) == 1)
+      Log4Error.invalidInputError(_target.size(1) == 1, s"expect _target.size(1) be 1, but get ${_target.size(1)}")
       val indices = _output.topk(5, 1, false)._2
       if (indices.valueAt(1) == _target.valueAt(1) || indices.valueAt(2) == _target.valueAt(1)
         || indices.valueAt(3) == _target.valueAt(1) || indices.valueAt(4) == _target.valueAt(1)
@@ -891,10 +898,10 @@ class HitRatio[T: ClassTag](k: Int = 10, negNum: Int = 100)(
    * A couple of output and target will be count as one record.
    */
   override def apply(output: Activity, target: Activity): ValidationResult = {
-    require(output.toTensor[T].nElement() == negNum + 1,
+    Log4Error.invalidInputError(output.toTensor[T].nElement() == negNum + 1,
       s"negNum is $negNum, output's nElement should be ${negNum}, but got" +
         s" ${output.toTensor[T].nElement()}")
-    require(target.toTensor[T].nElement() == negNum + 1,
+    Log4Error.invalidInputError(target.toTensor[T].nElement() == negNum + 1,
       s"negNum is $negNum, target's nElement should be ${negNum}, but got" +
         s" ${output.toTensor[T].nElement()}")
     val o = output.toTensor[T].resize(1 + negNum)
@@ -909,8 +916,8 @@ class HitRatio[T: ClassTag](k: Int = 10, negNum: Int = 100)(
       }
       i += 1
     }
-    require(positiveItem != 0, s"${format()}: no positive item.")
-    require(positiveCount == 1, s"${format()}: too many positive items, excepted 1," +
+    Log4Error.invalidInputError(positiveItem != 0, s"${format()}: no positive item.")
+    Log4Error.invalidInputError(positiveCount == 1, s"${format()}: too many positive items, excepted 1," +
       s" but got $positiveCount")
 
     val hr = calHitRate(positiveItem, o, k)
@@ -958,10 +965,10 @@ class NDCG[T: ClassTag](k: Int = 10, negNum: Int = 100)(
    * A couple of output and target will be count as one record.
    */
   override def apply(output: Activity, target: Activity): ValidationResult = {
-    require(output.toTensor[T].nElement() == negNum + 1,
+    Log4Error.invalidInputError(output.toTensor[T].nElement() == negNum + 1,
       s"negNum is $negNum, output's nElement should be ${negNum}, but got" +
         s" ${output.toTensor[T].nElement()}")
-    require(target.toTensor[T].nElement() == negNum + 1,
+    Log4Error.invalidInputError(target.toTensor[T].nElement() == negNum + 1,
       s"negNum is $negNum, target's nElement should be ${negNum}, but got" +
         s" ${output.toTensor[T].nElement()}")
     val o = output.toTensor[T].resize(1 + negNum)
@@ -978,8 +985,8 @@ class NDCG[T: ClassTag](k: Int = 10, negNum: Int = 100)(
       i += 1
     }
 
-    require(positiveItem != 0, s"${format()}: no positive item.")
-    require(positiveCount == 1, s"${format()}: too many positive items, excepted 1," +
+    Log4Error.invalidInputError(positiveItem != 0, s"${format()}: no positive item.")
+    Log4Error.invalidInputError(positiveCount == 1, s"${format()}: too many positive items, excepted 1," +
       s" but got $positiveCount")
 
     val ndcg = calNDCG(positiveItem, o, k)

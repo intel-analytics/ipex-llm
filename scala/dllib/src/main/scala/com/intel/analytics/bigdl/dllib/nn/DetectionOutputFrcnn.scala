@@ -21,7 +21,7 @@ import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.dllib.feature.transform.vision.image.label.roi.RoiLabel
 import com.intel.analytics.bigdl.dllib.feature.transform.vision.image.util.BboxUtil
-import com.intel.analytics.bigdl.dllib.utils.Table
+import com.intel.analytics.bigdl.dllib.utils.{Log4Error, Table}
 import org.apache.logging.log4j.LogManager
 
 import scala.collection.mutable.ArrayBuffer
@@ -55,7 +55,8 @@ class DetectionOutputFrcnn(var nmsThresh: Float = 0.3f, val nClasses: Int = 21,
   // boxes (N, 4 * clsNum)
   private def postProcess(scores: Tensor[Float], boxes: Tensor[Float])
   : Array[RoiLabel] = {
-    require(scores.size(1) == boxes.size(1))
+    Log4Error.invalidInputError(scores.size(1) == boxes.size(1),
+      s"scores.size(1) ${scores.size(1)} doesnot match boxes.size(1) ${boxes.size(1)}")
     val results = new Array[RoiLabel](nClasses)
     // skip j = 0, because it's the background class
     var clsInd = 1
@@ -124,7 +125,8 @@ class DetectionOutputFrcnn(var nmsThresh: Float = 0.3f, val nClasses: Int = 21,
 
   private def selectTensor(matrix: Tensor[Float], indices: Array[Int],
     dim: Int, indiceLen: Int = -1, out: Tensor[Float] = null): Tensor[Float] = {
-    assert(dim == 1 || dim == 2)
+    Log4Error.invalidInputError(dim == 1 || dim == 2, s"dim in selectTensor should be 1 or 2," +
+      s"but is ${dim}")
     var i = 1
     val n = if (indiceLen == -1) indices.length else indiceLen
     if (matrix.nDimension() == 1) {
@@ -241,13 +243,13 @@ class DetectionOutputFrcnn(var nmsThresh: Float = 0.3f, val nClasses: Int = 21,
     else roisData.toTensor[Float]
     val boxDeltas = input[Tensor[Float]](3)
     val scores = input[Tensor[Float]](4)
-    require(imInfo.dim() == 2 && imInfo.size(1) == 1 && imInfo.size(2) == 4,
+    Log4Error.invalidInputError(imInfo.dim() == 2 && imInfo.size(1) == 1 && imInfo.size(2) == 4,
       s"imInfo should be a 1x4 tensor, while actual is ${imInfo.size().mkString("x")}")
-    require(rois.size(2) == 5,
+    Log4Error.invalidInputError(rois.size(2) == 5,
       s"rois is a Nx5 tensor, while actual is ${rois.size().mkString("x")}")
-    require(boxDeltas.size(2) == nClasses * 4,
+    Log4Error.invalidInputError(boxDeltas.size(2) == nClasses * 4,
       s"boxDeltas is a Nx(nClasses * 4) tensor, while actual is ${boxDeltas.size().mkString("x")}")
-    require(scores.size(2) == nClasses,
+    Log4Error.invalidInputError(scores.size(2) == nClasses,
       s"scores is a NxnClasses tensor, while actual is ${scores.size().mkString("x")}")
     output = resultToTensor(process(scores, boxDeltas, rois, imInfo))
     output

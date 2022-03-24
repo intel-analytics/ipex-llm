@@ -7,7 +7,7 @@
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless required by applicable law or agreed to in writing, software
+ * Unless Log4Error.invalidInputErrord by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
@@ -50,9 +50,11 @@ private[bigdl] class IRGraph[T: ClassTag](
 
   @transient private var initPrim: Boolean = false
 
-  require(inputFormats.length == inputs.length, s"IRGraph: inputFormats" +
+  Log4Error.invalidInputError(inputFormats.length == inputs.length,
+    s"IRGraph: inputFormats" +
     s"length ${inputFormats.length} should be same with input nodes length ${inputs.length}")
-  require(outputFormats.length == outputs.length, s"IRGraph: outputFormats" +
+  Log4Error.invalidInputError(outputFormats.length == outputs.length,
+    s"IRGraph: outputFormats" +
     s"length ${outputFormats.length} should be same with output nodes length ${outputs.length}")
 
   private[bigdl] var graph: Graph[T] = null
@@ -159,10 +161,10 @@ private[bigdl] class IRGraph[T: ClassTag](
         inputMemory(0) = HeapData(sizeNew, inputFormats(0))
       } else {
         val tensors = input.toTable
-        require(tensors.length() == inputFormats.length, s"table input length " +
+        Log4Error.invalidInputError(tensors.length() == inputFormats.length, s"table input length " +
           s"${tensors.length()} should be the same with inputFormats length ${inputFormats.length}")
         tensors.foreach(t => {
-          require(t._2.isInstanceOf[Tensor[T]],
+          Log4Error.invalidInputError(t._2.isInstanceOf[Tensor[T]],
             "Only support input with tensor type, table not supported")
           val t1 = t._1.asInstanceOf[Int] // starts from 1
           val t2 = t._2.asInstanceOf[Tensor[T]]
@@ -187,7 +189,7 @@ private[bigdl] class IRGraph[T: ClassTag](
   }
 
   def setQuantize(value: Boolean): this.type = {
-    require(graph != null, s"you should build the graph first")
+    Log4Error.invalidInputError(graph != null, s"you should build the graph first")
     if (graph.isInstanceOf[DnnGraph]) {
       graph.asInstanceOf[DnnGraph].setQuantize(value)
     }

@@ -364,7 +364,7 @@ object WordEmbedding {
       }
       if (!isCreated) {
         val len = in.readInt()
-        assert(len >= 0, "weight length should be an non-negative integer")
+        Log4Error.invalidInputError(len >= 0, "weight length should be an non-negative integer")
         in.skip(len)
       }
       weight = cachedWeight.asInstanceOf[Tensor[T]]

@@ -22,6 +22,7 @@ import com.intel.analytics.bigdl.dllib.nn.{Utils => NNUtils, _}
 import com.intel.analytics.bigdl.dllib.nn.abstractnn._
 import com.intel.analytics.bigdl.dllib.optim.Regularizer
 import com.intel.analytics.bigdl.dllib.tensor.{DenseTensorMath, DnnTensor, Tensor}
+import com.intel.analytics.bigdl.dllib.utils.Log4Error
 
 import scala.collection.mutable.ArrayBuffer
 
@@ -92,11 +93,11 @@ class SpatialConvolution(
   val dilationW: Int = 1,
   val dilationH: Int = 1
 ) extends MklDnnLayer with Initializable with Serializable with MklInt8Convertible {
-  require(nInputPlane % nGroup == 0, s"Number of input channels " +
+  Log4Error.invalidInputError(nInputPlane % nGroup == 0, s"Number of input channels " +
     s"should be multiples of group " +
     s"number of input channels ${nInputPlane}, " +
     s"group ${nGroup}.")
-  require(nOutputPlane % nGroup == 0,
+  Log4Error.invalidInputError(nOutputPlane % nGroup == 0,
     "Number of output channels " +
       "should be multiples of group " +
       s"(number of output channels ${nOutputPlane}, " +
@@ -236,7 +237,7 @@ class SpatialConvolution(
 
   private def setScalesOutForAttr(scaleIn: Array[Float], scaleOut: Array[Float],
     attr: Long): Unit = {
-    require(this.getWeightScales() != null, s"you should use a model contains scales")
+    Log4Error.invalidInputError(this.getWeightScales() != null, s"you should use a model contains scales")
     val scales = this.getWeightScales().flatten.map(w =>
       if (Math.abs(w - 0.0f) < DenseTensorMath.floatEpsilon) {
         0.0f
@@ -258,7 +259,7 @@ class SpatialConvolution(
 
     if (_sum && inputs.length > 1) {
       _sumInput = true
-      require(inputs.length == 2,
+      Log4Error.invalidInputError(inputs.length == 2,
         s"inputs length should be 2 when having sum operation, but get ${inputs.length}")
     }
     // we should not use output branch
@@ -349,7 +350,7 @@ class SpatialConvolution(
       val postOps = MklDnnMemory.CreatePostOps()
       if (sum) {
         val sumScale = if (needQuantize) {
-          require(scaleOut.length == sumOp.outputFormats()(0).scales.length,
+          Log4Error.invalidInputError(scaleOut.length == sumOp.outputFormats()(0).scales.length,
             s"the output scales should be the same between ${getName()} and ${sumOp.getName()}")
           scaleOut(0) / sumOp.outputFormats()(0).scales(0)
         } else {
