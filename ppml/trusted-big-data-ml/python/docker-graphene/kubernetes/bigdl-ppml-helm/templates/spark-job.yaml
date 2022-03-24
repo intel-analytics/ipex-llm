@@ -80,7 +80,7 @@ spec:
           - name: secure-password
             mountPath: /ppml/trusted-big-data-ml/work/password
           - name: nfs-storage
-            mountPath: "/ppml/trusted-big-data-ml/mounts"
+            mountPath: "/ppml/trusted-big-data-ml/submit-spark-k8s.sh"
             subPath: submit-spark-k8s.sh
       volumes:
       - name: device-plugin
