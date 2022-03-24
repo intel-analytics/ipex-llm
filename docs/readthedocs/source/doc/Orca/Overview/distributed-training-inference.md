@@ -129,8 +129,8 @@ est = Estimator.from_keras(model_creator=model_creator,
                            model_dir=model_dir)
 ```
 
-The `model_creator` argument should be a function that takes a `config_args` dictionary and returns a compiled Keras model,
-the `model_dir` argument is required for *spark* backend, it should be a share filesystem path which can be accessed by executors for culster mode.  
+The `model_creator` argument should be a function that takes a `config_args` dictionary and returns a compiled Keras model.
+The `model_dir` argument is required for *spark* backend, it should be a share filesystem path which can be accessed by executors for culster mode.  
 
 Then users can perform distributed model training and inference as follows:
 
