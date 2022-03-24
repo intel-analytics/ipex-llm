@@ -45,9 +45,9 @@ init_instance() {
         .resource_limits.max_num_of_threads = "SGX_THREAD" |
         .process.default_heap_size = "SGX_HEAP" |
         .resource_limits.kernel_space_heap_size="SGX_KERNEL_HEAP" |
-        .entry_points = [ "/usr/lib/jvm/java-11-openjdk-amd64/bin" ] |
+        .entry_points = [ "/usr/lib/jvm/java-8-openjdk-amd64/bin" ] |
         .env.untrusted = [ "DMLC_TRACKER_URI", "SPARK_DRIVER_URL", "SPARK_TESTING" ] |
-        .env.default = [ "LD_LIBRARY_PATH=/usr/lib/jvm/java-11-openjdk-amd64/lib/server:/usr/lib/jvm/java-11-openjdk-amd64/lib:/usr/lib/jvm/java-11-openjdk-amd64/../lib:/lib","SPARK_CONF_DIR=/bin/conf","SPARK_ENV_LOADED=1","PYTHONHASHSEED=0","SPARK_HOME=/bin","SPARK_SCALA_VERSION=2.12","SPARK_JARS_DIR=/bin/jars","LAUNCH_CLASSPATH=/bin/jars/*",""]' Occlum.json)" && \
+        .env.default = [ "LD_LIBRARY_PATH=/usr/lib/jvm/java-8-openjdk-amd64/lib/server:/usr/lib/jvm/java-8-openjdk-amd64/lib:/usr/lib/jvm/java-8-openjdk-amd64/../lib:/lib","SPARK_CONF_DIR=/bin/conf","SPARK_ENV_LOADED=1","PYTHONHASHSEED=0","SPARK_HOME=/bin","SPARK_SCALA_VERSION=2.12","SPARK_JARS_DIR=/bin/jars","LAUNCH_CLASSPATH=/bin/jars/*",""]' Occlum.json)" && \
     echo "${new_json}" > Occlum.json
     echo "SGX_MEM_SIZE ${SGX_MEM_SIZE}"
 
@@ -87,8 +87,8 @@ build_spark() {
     # Copy JVM and class file into Occlum instance and build
     cd /opt/occlum_spark
     mkdir -p image/usr/lib/jvm
-    cp -r /usr/lib/jvm/java-11-openjdk-amd64 image/usr/lib/jvm
-    cp -rf /etc/java-11-openjdk image/etc/
+    cp -r /usr/lib/jvm/java-8-openjdk-amd64 image/usr/lib/jvm
+    cp -rf /etc/java-8-openjdk image/etc/
     # Copy K8s secret
     mkdir -p image/var/run/secrets/
     cp -r /var/run/secrets/* image/var/run/secrets/
@@ -129,7 +129,7 @@ run_spark_pi() {
     init_instance spark
     build_spark
     echo -e "${BLUE}occlum run spark Pi${NC}"
-    occlum run /usr/lib/jvm/java-11-openjdk-amd64/bin/java \
+    occlum run /usr/lib/jvm/java-8-openjdk-amd64/bin/java \
                 -XX:-UseCompressedOops -XX:MaxMetaspaceSize=$META_SPACE \
                 -XX:ActiveProcessorCount=4 \
                 -Divy.home="/tmp/.ivy" \
@@ -154,7 +154,7 @@ run_spark_unittest_only() {
     echo -e "${BLUE}occlum run spark unit test only ${NC}"
     occlum start
     for suite in `cat /opt/sqlSuites`
-    do occlum exec /usr/lib/jvm/java-11-openjdk-amd64/bin/java -Xmx24g \
+    do occlum exec /usr/lib/jvm/java-8-openjdk-amd64/bin/java -Xmx24g \
                 -Divy.home="/tmp/.ivy" \
                 -Dos.name="Linux" \
 		-Djdk.lang.Process.launchMechanism=posix_spawn \
@@ -178,7 +178,7 @@ run_spark_lenet_mnist(){
     build_spark
     echo -e "${BLUE}occlum run BigDL lenet mnist{NC}"
     echo -e "${BLUE}logfile=$log${NC}"
-    occlum run /usr/lib/jvm/java-11-openjdk-amd64/bin/java \
+    occlum run /usr/lib/jvm/java-8-openjdk-amd64/bin/java \
                 -XX:-UseCompressedOops -XX:MaxMetaspaceSize=256m \
                 -XX:ActiveProcessorCount=4 \
                 -Divy.home="/tmp/.ivy" \
@@ -206,7 +206,7 @@ run_spark_resnet_cifar(){
     init_instance spark
     build_spark
     echo -e "${BLUE}occlum run BigDL Resnet Cifar10${NC}"
-    occlum run /usr/lib/jvm/java-11-openjdk-amd64/bin/java \
+    occlum run /usr/lib/jvm/java-8-openjdk-amd64/bin/java \
                 -XX:-UseCompressedOops -XX:MaxMetaspaceSize=$META_SPACE \
                 -XX:ActiveProcessorCount=4 \
                 -Divy.home="/tmp/.ivy" \
@@ -234,7 +234,7 @@ run_spark_tpch(){
     init_instance spark
     build_spark
     echo -e "${BLUE}occlum run BigDL spark tpch${NC}"
-    occlum run /usr/lib/jvm/java-11-openjdk-amd64/bin/java \
+    occlum run /usr/lib/jvm/java-8-openjdk-amd64/bin/java \
                 -XX:-UseCompressedOops -XX:MaxMetaspaceSize=$META_SPACE \
                 -XX:ActiveProcessorCount=4 \
                 -Divy.home="/tmp/.ivy" \
@@ -273,7 +273,7 @@ run_spark_xgboost() {
     init_instance spark
     build_spark
     echo -e "${BLUE}occlum run BigDL Spark XGBoost${NC}"
-    occlum run /usr/lib/jvm/java-11-openjdk-amd64/bin/java \
+    occlum run /usr/lib/jvm/java-8-openjdk-amd64/bin/java \
                 -XX:-UseCompressedOops -XX:MaxMetaspaceSize=$META_SPACE \
                 -XX:ActiveProcessorCount=8 \
                 -Divy.home="/tmp/.ivy" \
