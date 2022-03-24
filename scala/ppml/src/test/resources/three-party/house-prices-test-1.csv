@@ -1,0 +1,1460 @@
+Id,MSZoning,Street,LandContour,LandSlope,Condition2,OverallQual,YearRemodAdd,Exterior1st,MasVnrArea,Foundation,BsmtExposure,BsmtFinType2,TotalBsmtSF,CentralAir,2ndFlrSF,BsmtFullBath,HalfBath,KitchenQual,Fireplaces,GarageYrBlt,GarageArea,PavedDrive,EnclosedPorch,PoolArea,MiscFeature,YrSold
+1461,RH,Pave,Lvl,Gtl,Norm,5,1961,VinylSd,0,CBlock,No,LwQ,882,Y,0,0,0,TA,0,1961,730,Y,0,0,NA,2010
+1462,RL,Pave,Lvl,Gtl,Norm,6,1958,Wd Sdng,108,CBlock,No,Unf,1329,Y,0,0,1,Gd,0,1958,312,Y,0,0,Gar2,2010
+1463,RL,Pave,Lvl,Gtl,Norm,5,1998,VinylSd,0,PConc,No,Unf,928,Y,701,0,1,TA,1,1997,482,Y,0,0,NA,2010
+1464,RL,Pave,Lvl,Gtl,Norm,6,1998,VinylSd,20,PConc,No,Unf,926,Y,678,0,1,Gd,1,1998,470,Y,0,0,NA,2010
+1465,RL,Pave,HLS,Gtl,Norm,8,1992,HdBoard,0,PConc,No,Unf,1280,Y,0,0,0,Gd,0,1992,506,Y,0,0,NA,2010
+1466,RL,Pave,Lvl,Gtl,Norm,6,1994,HdBoard,0,PConc,No,Unf,763,Y,892,0,1,TA,1,1993,440,Y,0,0,NA,2010
+1467,RL,Pave,Lvl,Gtl,Norm,6,2007,HdBoard,0,PConc,No,Unf,1168,Y,0,1,0,TA,0,1992,420,Y,0,0,Shed,2010
+1468,RL,Pave,Lvl,Gtl,Norm,6,1998,VinylSd,0,PConc,No,Unf,789,Y,676,0,1,TA,1,1998,393,Y,0,0,NA,2010
+1469,RL,Pave,Lvl,Gtl,Norm,7,1990,HdBoard,0,PConc,Gd,Unf,1300,Y,0,1,1,Gd,1,1990,506,Y,0,0,NA,2010
+1470,RL,Pave,Lvl,Gtl,Norm,4,1970,Plywood,0,CBlock,No,Rec,882,Y,0,1,0,TA,0,1970,525,Y,0,0,NA,2010
+1471,RH,Pave,Lvl,Gtl,Norm,7,1999,MetalSd,0,PConc,No,BLQ,1405,Y,0,1,0,Gd,1,1999,511,Y,0,0,NA,2010
+1472,RM,Pave,Lvl,Gtl,Norm,6,1971,HdBoard,504,CBlock,No,Unf,483,Y,504,0,1,TA,0,1971,264,Y,0,0,NA,2010
+1473,RM,Pave,Lvl,Gtl,Norm,5,1971,HdBoard,492,CBlock,No,Unf,525,Y,567,0,1,TA,0,1997,320,Y,0,0,NA,2010
+1474,RL,Pave,Lvl,Gtl,Norm,6,1975,Plywood,0,CBlock,No,Unf,855,Y,601,0,1,Gd,1,1975,440,Y,0,0,NA,2010
+1475,RL,Pave,Lvl,Gtl,Norm,7,1975,Plywood,0,CBlock,No,Unf,836,Y,0,0,0,TA,0,1975,308,Y,0,0,NA,2010
+1476,RL,Pave,Lvl,Gtl,Norm,9,2010,VinylSd,162,PConc,No,Unf,1590,Y,707,0,1,Ex,1,2009,751,Y,0,0,NA,2010
+1477,RL,Pave,Lvl,Gtl,Norm,8,2010,VinylSd,256,PConc,No,Unf,1544,Y,0,0,0,Gd,0,2009,868,Y,0,0,NA,2010
+1478,RL,Pave,Lvl,Gtl,Norm,9,2005,VinylSd,615,PConc,No,Unf,1698,Y,0,0,0,Ex,1,2005,730,Y,0,0,NA,2010
+1479,RL,Pave,Lvl,Gtl,Norm,8,2006,CemntBd,240,PConc,No,Unf,1822,Y,0,0,0,Ex,1,2005,678,Y,0,0,NA,2010
+1480,RL,Pave,HLS,Mod,Norm,9,2004,VinylSd,1095,PConc,Gd,Unf,2846,Y,0,1,1,Ex,2,2003,958,Y,0,0,NA,2010
+1481,RL,Pave,Lvl,Gtl,Norm,8,2002,VinylSd,232,PConc,Gd,Unf,1671,Y,563,1,1,Gd,1,2002,756,Y,0,0,NA,2010
+1482,RL,Pave,Lvl,Gtl,Norm,8,2006,VinylSd,178,PConc,Mn,Unf,1370,Y,0,0,0,Gd,1,2006,484,Y,0,0,NA,2010
+1483,RL,Pave,Lvl,Gtl,Norm,6,2005,VinylSd,0,PConc,No,Unf,1324,Y,0,0,0,Gd,0,2005,430,Y,0,0,NA,2010
+1484,RL,Pave,Lvl,Gtl,Norm,7,2006,VinylSd,14,PConc,Av,Unf,1145,Y,0,0,0,Gd,0,2006,437,Y,0,0,NA,2010
+1485,RL,Pave,Lvl,Gtl,Norm,7,2004,VinylSd,0,PConc,No,Unf,384,Y,630,1,1,Gd,1,2004,400,Y,0,0,NA,2010
+1486,RL,Pave,Lvl,Gtl,Norm,7,2004,VinylSd,0,PConc,No,Unf,847,Y,886,0,1,Gd,1,2004,433,Y,0,0,NA,2010
+1487,RL,Pave,Lvl,Gtl,Norm,8,1998,VinylSd,114,PConc,No,Unf,1629,Y,830,0,1,Gd,1,1998,962,Y,0,0,NA,2010
+1488,RL,Pave,Lvl,Gtl,Norm,8,2006,VinylSd,226,PConc,NA,Unf,1595,Y,0,0,0,Gd,1,2005,880,Y,0,0,NA,2010
+1489,FV,Pave,Lvl,Gtl,Norm,7,2010,VinylSd,0,PConc,No,Unf,1218,Y,0,0,0,Gd,0,2009,676,Y,0,0,NA,2010
+1490,FV,Pave,Lvl,Gtl,Norm,6,2005,VinylSd,0,PConc,No,Unf,1468,Y,0,1,0,Gd,1,2005,528,Y,0,0,NA,2010
+1491,RL,Pave,Lvl,Gtl,Norm,7,2004,VinylSd,122,PConc,Av,Unf,831,Y,828,0,1,Gd,0,2004,484,Y,0,0,NA,2010
+1492,RH,Pave,Lvl,Gtl,Norm,5,1950,Wd Sdng,0,BrkTil,No,Unf,816,N,0,0,0,TA,0,1920,429,Y,80,0,NA,2010
+1493,RL,Pave,Lvl,Gtl,Norm,6,2002,Plywood,250,CBlock,Gd,GLQ,1208,Y,0,1,0,TA,2,1974,461,Y,186,0,NA,2010
+1494,RL,Pave,Lvl,Gtl,Norm,8,1993,HdBoard,504,PConc,No,GLQ,1231,Y,1098,1,1,Gd,1,1993,762,Y,0,0,NA,2010
+1495,RL,Pave,Lvl,Gtl,Norm,8,1993,HdBoard,180,PConc,No,Unf,1390,Y,823,1,1,Gd,1,1992,713,Y,0,0,NA,2010
+1496,FV,Pave,Lvl,Gtl,Norm,7,2005,MetalSd,0,PConc,Av,Unf,1488,Y,0,1,0,Gd,1,2004,506,Y,0,0,NA,2010
+1497,FV,Pave,Lvl,Gtl,Norm,7,2004,VinylSd,0,PConc,No,Unf,840,Y,840,0,1,Gd,0,2004,588,Y,0,0,NA,2010
+1498,FV,Pave,Lvl,Gtl,Norm,7,2004,MetalSd,120,PConc,Av,Unf,600,Y,600,0,1,Gd,0,2004,480,Y,0,0,NA,2010
+1499,FV,Pave,Lvl,Gtl,Norm,7,2005,MetalSd,0,PConc,No,ALQ,600,Y,600,1,1,Gd,0,2004,480,Y,0,0,NA,2010
+1500,FV,Pave,Lvl,Gtl,Norm,6,2005,VinylSd,216,PConc,No,Unf,600,Y,636,1,1,Gd,0,2005,480,Y,0,0,NA,2010
+1501,FV,Pave,Lvl,Gtl,Norm,6,2000,MetalSd,1159,PConc,No,Unf,756,Y,756,1,1,Gd,0,2000,440,Y,0,0,NA,2010
+1502,FV,Pave,Lvl,Gtl,Norm,7,2003,VinylSd,0,PConc,No,Unf,530,Y,550,0,1,Gd,0,2003,496,Y,0,0,NA,2010
+1503,FV,Pave,Lvl,Gtl,Norm,8,2010,CemntBd,0,PConc,No,Unf,1642,Y,0,1,1,Gd,1,2010,852,Y,0,0,NA,2010
+1504,FV,Pave,Lvl,Gtl,Norm,8,2000,VinylSd,0,PConc,No,Unf,975,Y,873,1,1,Gd,1,2000,592,Y,0,0,NA,2010
+1505,FV,Pave,Lvl,Gtl,Norm,7,2002,VinylSd,0,PConc,No,Unf,1492,Y,0,1,0,Gd,1,2002,596,Y,0,0,NA,2010
+1506,RL,Pave,Lvl,Gtl,Norm,6,1967,HdBoard,120,CBlock,No,Unf,1829,Y,0,1,0,TA,0,1967,535,Y,0,0,NA,2010
+1507,RL,Pave,Lvl,Gtl,Norm,6,1993,MetalSd,0,PConc,Mn,Unf,1280,Y,1215,1,1,Gd,1,1993,660,Y,0,0,NA,2010
+1508,RL,Pave,Lvl,Gtl,Norm,6,1978,MetalSd,0,PConc,Mn,LwQ,1224,Y,604,0,0,TA,1,1978,678,Y,0,0,NA,2010
+1509,RL,Pave,Lvl,Gtl,Norm,6,1971,MetalSd,0,CBlock,No,Unf,715,Y,715,0,2,TA,0,1971,441,Y,0,0,NA,2010
+1510,RL,Pave,Lvl,Gtl,Norm,5,1966,VinylSd,172,CBlock,No,Unf,1232,Y,0,1,1,TA,0,1966,490,Y,0,0,NA,2010
+1511,RL,Pave,Lvl,Gtl,Norm,5,1966,HdBoard,0,PConc,No,Unf,1209,Y,0,1,0,TA,0,1966,504,Y,120,0,NA,2010
+1512,RL,Pave,Lvl,Gtl,Norm,5,1967,Wd Sdng,268,CBlock,No,Unf,1510,Y,0,1,0,Gd,0,1967,517,Y,0,0,NA,2010
+1513,RL,Pave,Lvl,Gtl,Norm,6,1964,HdBoard,0,CBlock,No,Unf,533,Y,644,0,0,TA,0,1964,480,Y,0,0,NA,2010
+1514,RL,Pave,Lvl,Gtl,Norm,5,2001,HdBoard,144,CBlock,No,Unf,1728,Y,0,2,0,TA,0,NA,0,Y,0,0,NA,2010
+1515,RL,Pave,Lvl,Gtl,Norm,5,2002,MetalSd,265,CBlock,No,Unf,1140,Y,532,0,0,TA,2,1994,400,Y,0,0,NA,2010
+1516,RL,Pave,Lvl,Gtl,Norm,6,1950,MetalSd,340,CBlock,No,Unf,782,Y,537,0,0,TA,1,1949,470,Y,150,0,NA,2010
+1517,RL,Pave,Lvl,Gtl,Norm,6,2008,HdBoard,216,CBlock,Gd,Unf,1080,Y,0,1,0,Gd,1,1966,315,Y,0,0,Shed,2010
+1518,RL,Pave,Lvl,Gtl,Norm,5,1958,HdBoard,0,CBlock,No,Unf,1604,Y,0,0,0,TA,0,1958,576,Y,0,0,NA,2010
+1519,RL,Pave,Lvl,Gtl,Norm,7,2009,VinylSd,506,PConc,No,Unf,1480,Y,0,1,0,Gd,0,2003,620,Y,0,0,Shed,2010
+1520,RL,Pave,Lvl,Gtl,Norm,5,1959,MetalSd,150,CBlock,No,Rec,1143,Y,0,1,0,TA,0,1959,308,Y,0,0,NA,2010
+1521,RL,Pave,Lvl,Gtl,Norm,5,1959,MetalSd,91,CBlock,No,Unf,1206,Y,0,0,0,TA,0,1959,312,Y,0,0,NA,2010
+1522,RL,Pave,Lvl,Gtl,Norm,6,1959,Wd Sdng,432,CBlock,No,Unf,1244,Y,0,1,1,TA,2,1956,440,Y,0,0,NA,2010
+1523,RL,Pave,Lvl,Gtl,Norm,4,1956,MetalSd,0,CBlock,No,Unf,832,Y,505,0,0,TA,0,1956,263,Y,0,0,NA,2010
+1524,RL,Pave,Lvl,Gtl,Norm,5,1952,WdShing,0,CBlock,No,Unf,864,Y,0,0,0,Fa,0,1952,318,Y,0,0,NA,2010
+1525,RL,Pave,Lvl,Gtl,Norm,5,1955,MetalSd,0,CBlock,No,Unf,972,Y,0,0,0,TA,0,1955,305,Y,205,0,NA,2010
+1526,RL,Pave,Lvl,Gtl,Norm,5,1958,MetalSd,0,CBlock,Av,Unf,988,Y,0,1,0,TA,0,1958,264,Y,0,0,NA,2010
+1527,RL,Pave,Lvl,Gtl,Norm,4,1994,MetalSd,0,BrkTil,No,Unf,576,Y,0,0,0,TA,0,1989,676,N,0,0,NA,2010
+1528,RL,Pave,Lvl,Gtl,Norm,6,2004,WdShing,0,CBlock,No,Rec,816,Y,408,1,0,TA,0,1950,280,Y,0,0,NA,2010
+1529,RL,Pave,Lvl,Gtl,Norm,5,1960,BrkFace,0,CBlock,No,LwQ,1175,Y,0,0,1,TA,0,1960,484,Y,0,0,NA,2010
+1530,RL,Pave,Lvl,Mod,Norm,6,1984,Wd Sdng,218,CBlock,Gd,LwQ,1395,Y,0,1,0,TA,1,1963,440,Y,113,0,NA,2010
+1531,RM,Pave,Lvl,Gtl,Norm,4,1954,Wd Sdng,771,PConc,No,Unf,709,Y,687,1,0,TA,2,1900,240,Y,0,0,NA,2010
+1532,RM,Pave,Lvl,Gtl,Norm,5,1950,Wd Sdng,0,PConc,No,Unf,936,Y,0,1,0,TA,1,NA,0,P,135,0,NA,2010
+1533,RM,Pave,Bnk,Mod,Norm,5,1957,MetalSd,0,CBlock,Mn,Rec,1347,Y,0,1,0,Gd,0,1957,551,Y,0,0,NA,2010
+1534,RM,Pave,Lvl,Gtl,Norm,6,2000,MetalSd,0,PConc,No,Unf,827,Y,424,0,0,Fa,0,1938,240,N,0,0,NA,2010
+1535,RM,Pave,Lvl,Gtl,Norm,5,2009,VinylSd,0,BrkTil,No,Unf,1027,Y,606,0,0,Gd,1,1948,240,Y,126,0,NA,2010
+1536,RM,Pave,Lvl,Gtl,Norm,5,1962,MetalSd,0,BrkTil,No,Unf,1008,Y,185,0,0,TA,0,1962,315,Y,334,0,NA,2010
+1537,RM,Pave,Lvl,Gtl,Norm,2,1970,AsbShng,0,BrkTil,No,Unf,678,N,0,0,0,TA,1,1928,780,N,0,0,NA,2010
+1538,RM,Pave,Lvl,Gtl,Norm,8,2003,Wd Sdng,0,BrkTil,No,Unf,930,N,636,0,0,Gd,0,1930,288,Y,246,0,NA,2010
+1539,RM,Pave,Lvl,Gtl,Norm,8,2002,Wd Sdng,0,Stone,No,Unf,346,Y,1111,0,0,Gd,0,2003,624,N,0,0,NA,2010
+1540,RM,Pave,Lvl,Gtl,Norm,5,1950,MetalSd,0,BrkTil,Mn,Unf,840,N,1128,0,0,Fa,0,NA,0,N,18,0,NA,2010
+1541,RM,Pave,Lvl,Gtl,Norm,6,1994,Wd Sdng,0,CBlock,No,Unf,738,Y,602,0,1,TA,0,1970,624,Y,0,0,NA,2010
+1542,RM,Pave,Lvl,Gtl,Feedr,5,1997,MetalSd,0,CBlock,No,Unf,988,Y,582,0,1,TA,0,1950,363,Y,0,0,NA,2010
+1543,RL,Pave,Bnk,Gtl,Norm,7,2005,Wd Sdng,0,BrkTil,No,Unf,1108,N,908,0,1,Gd,1,1928,315,Y,60,0,NA,2010
+1544,RM,Pave,Lvl,Gtl,Norm,4,1950,MetalSd,0,BrkTil,No,Unf,765,N,0,1,0,Gd,0,1926,200,P,41,0,NA,2010
+1545,RM,Pave,Lvl,Gtl,Norm,6,1950,MetalSd,0,BrkTil,No,LwQ,608,Y,524,1,0,TA,0,1939,240,Y,128,0,NA,2010
+1546,RM,Pave,Lvl,Gtl,Norm,6,1950,MetalSd,0,CBlock,No,Unf,572,Y,348,0,1,TA,2,1973,576,Y,0,0,NA,2010
+1547,RM,Pave,Lvl,Gtl,Norm,5,1950,MetalSd,300,CBlock,No,LwQ,835,Y,498,0,1,Gd,2,1942,240,Y,35,0,NA,2010
+1548,RM,Pave,Lvl,Gtl,Norm,6,1950,Wd Sdng,0,CBlock,No,Unf,780,Y,636,0,1,TA,0,1948,312,P,48,0,NA,2010
+1549,RM,Pave,Lvl,Gtl,Norm,5,1980,VinylSd,0,CBlock,No,Unf,528,Y,492,0,0,TA,0,1979,624,P,32,0,NA,2010
+1550,RM,Pave,Lvl,Gtl,Norm,5,1950,MetalSd,0,BrkTil,No,Unf,928,Y,608,0,0,TA,1,1930,480,Y,0,0,NA,2010
+1551,RM,Pave,Lvl,Gtl,Norm,6,1950,Wd Sdng,0,BrkTil,No,Unf,1124,Y,0,1,0,TA,1,1923,288,Y,128,0,NA,2010
+1552,RM,Pave,Lvl,Gtl,Norm,4,1950,MetalSd,0,CBlock,No,Unf,888,Y,1074,0,1,TA,1,1915,572,Y,364,0,NA,2010
+1553,RM,Pave,Lvl,Gtl,Norm,6,2009,Wd Sdng,0,PConc,No,Unf,780,Y,780,0,1,Gd,0,NA,0,N,0,0,NA,2010
+1554,RM,Pave,Lvl,Gtl,Norm,6,1993,VinylSd,0,BrkTil,No,Unf,662,Y,662,0,0,TA,0,1920,180,Y,112,0,NA,2010
+1555,RL,Pave,Lvl,Gtl,Norm,5,1959,HdBoard,90,CBlock,No,Unf,1422,Y,0,0,0,TA,2,1959,365,Y,0,0,NA,2010
+1556,RL,Pave,Lvl,Gtl,Norm,5,1950,Wd Sdng,0,BrkTil,No,Unf,689,N,499,0,1,NA,0,1917,180,N,248,0,NA,2010
+1557,RL,Pave,Lvl,Gtl,Norm,5,1950,Wd Sdng,0,BrkTil,No,Unf,1212,N,180,1,0,TA,0,NA,0,N,168,0,NA,2010
+1558,RL,Pave,Bnk,Mod,Norm,6,1950,VinylSd,0,CBlock,No,Unf,600,N,319,0,0,TA,0,1940,231,Y,45,0,NA,2010
+1559,C (all),Pave,Lvl,Gtl,Norm,4,1950,Wd Sdng,0,CBlock,No,Unf,707,N,942,0,1,TA,0,NA,0,N,239,0,NA,2010
+1560,RH,Pave,Lvl,Gtl,Norm,5,1950,Wd Sdng,0,BrkTil,Mn,Unf,856,Y,744,1,0,TA,1,1910,450,P,0,0,NA,2010
+1561,RL,Pave,Lvl,Gtl,Norm,4,1967,Plywood,72,CBlock,No,Unf,1832,N,0,2,0,TA,0,NA,0,Y,0,0,NA,2010
+1562,RL,Pave,Lvl,Gtl,Norm,5,2008,HdBoard,47,CBlock,Mn,Rec,864,Y,0,1,0,Gd,0,1966,416,Y,0,0,NA,2010
+1563,RL,Pave,Lvl,Gtl,Norm,5,1968,HdBoard,0,CBlock,No,Unf,864,Y,0,1,0,TA,0,1969,280,Y,0,0,NA,2010
+1564,RL,Pave,Lvl,Gtl,Norm,5,1978,Plywood,0,CBlock,Av,Unf,1319,Y,0,1,0,TA,2,1978,591,Y,0,0,NA,2010
+1565,RL,Pave,Lvl,Gtl,Norm,5,1968,HdBoard,0,CBlock,No,ALQ,720,Y,720,0,1,TA,2,1968,480,Y,0,0,NA,2010
+1566,RL,Pave,Low,Mod,Norm,7,2001,Wd Sdng,0,CBlock,Gd,Unf,1420,Y,0,1,1,TA,2,1977,690,Y,0,0,NA,2010
+1567,RL,Pave,Lvl,Gtl,Norm,4,1950,Wd Sdng,0,BrkTil,No,Unf,660,N,0,0,0,TA,0,1945,440,N,0,0,NA,2010
+1568,RL,Pave,Low,Mod,Norm,6,1992,VinylSd,288,PConc,Av,Unf,1117,Y,864,1,1,Gd,1,1978,522,Y,0,0,NA,2010
+1569,RL,Pave,Lvl,Gtl,Norm,3,1990,Wd Sdng,0,CBlock,Mn,LwQ,972,Y,558,0,0,Fa,1,1938,480,Y,60,0,Shed,2010
+1570,RL,Pave,Lvl,Gtl,Norm,6,1987,Wd Sdng,0,CBlock,No,Rec,663,Y,0,1,0,Gd,1,1987,467,Y,52,0,NA,2010
+1571,RL,Pave,Bnk,Gtl,Norm,4,1979,WdShing,0,CBlock,No,Unf,756,Y,0,0,0,TA,1,1947,209,Y,0,0,NA,2010
+1572,RL,Pave,Lvl,Gtl,Norm,5,1998,WdShing,0,CBlock,Av,Unf,1172,Y,0,1,0,TA,0,1954,366,Y,0,0,NA,2010
+1573,RL,Pave,Lvl,Gtl,Norm,7,2010,VinylSd,96,PConc,Gd,Unf,1508,Y,0,1,0,Gd,2,2009,572,Y,0,0,NA,2010
+1574,RL,Pave,Lvl,Gtl,Norm,5,1964,Wd Sdng,0,CBlock,Mn,Unf,1250,Y,0,0,0,TA,0,1964,504,N,0,0,NA,2010
+1575,RL,Pave,Low,Mod,Norm,7,1987,Plywood,177,CBlock,Gd,Unf,1433,Y,0,1,1,Gd,2,1987,528,Y,0,0,NA,2010
+1576,RL,Pave,Lvl,Gtl,Norm,6,1993,VinylSd,85,PConc,No,Unf,946,Y,838,0,1,Gd,1,2000,1017,Y,0,0,NA,2010
+1577,RL,Pave,Lvl,Gtl,Norm,7,2010,VinylSd,80,PConc,No,Unf,1222,Y,0,0,0,Gd,0,2009,615,Y,0,0,NA,2010
+1578,RL,Pave,Lvl,Gtl,Norm,6,1993,Wd Sdng,0,PConc,No,Unf,676,Y,614,0,0,TA,0,1957,484,N,0,0,NA,2010
+1579,RL,Pave,Lvl,Gtl,Norm,5,1996,VinylSd,0,PConc,Av,Unf,870,Y,0,1,0,TA,0,1998,580,Y,0,0,NA,2010
+1580,RL,Pave,Lvl,Gtl,Norm,7,1998,VinylSd,0,PConc,No,Unf,878,Y,800,0,1,TA,1,1997,513,Y,0,0,NA,2010
+1581,RL,Pave,Lvl,Gtl,Norm,5,2004,CemntBd,0,CBlock,No,Rec,1026,Y,0,1,1,TA,0,1977,308,Y,0,0,NA,2010
+1582,RL,Pave,Lvl,Gtl,Norm,5,1972,Wd Sdng,0,CBlock,Av,Unf,876,Y,0,1,0,TA,0,1977,484,Y,0,0,NA,2010
+1583,RL,Pave,Lvl,Gtl,Norm,8,2003,CemntBd,320,PConc,No,Unf,1978,Y,0,1,1,Gd,1,2003,850,Y,0,0,NA,2010
+1584,RL,Pave,Lvl,Gtl,Norm,7,1997,VinylSd,0,PConc,No,Unf,1040,Y,1054,0,1,Gd,1,1997,621,Y,0,0,NA,2010
+1585,RM,Pave,Lvl,Gtl,Norm,6,2003,VinylSd,170,PConc,Av,Unf,848,Y,0,1,0,Gd,0,2003,420,Y,0,0,NA,2010
+1586,RL,Pave,Lvl,Mod,Norm,3,2007,VinylSd,0,CBlock,NA,NA,0,N,0,0,0,TA,0,1945,240,N,0,0,NA,2010
+1587,RL,Pave,Lvl,Gtl,Norm,5,1954,VinylSd,0,CBlock,No,Unf,381,Y,0,0,0,TA,0,1954,319,Y,56,0,NA,2010
+1588,RL,Pave,Low,Gtl,Norm,5,1968,MetalSd,0,CBlock,Gd,Unf,1196,Y,0,1,0,TA,0,1968,336,Y,168,0,NA,2010
+1589,RL,Pave,Lvl,Gtl,Norm,4,1950,VinylSd,0,CBlock,No,Unf,744,N,328,0,0,Fa,0,1956,480,P,0,0,NA,2010
+1590,RL,Pave,Lvl,Gtl,Norm,6,1975,Plywood,0,CBlock,Av,Unf,1008,Y,0,1,0,TA,1,1975,352,Y,0,0,NA,2010
+1591,RL,Pave,HLS,Gtl,Norm,4,1958,WdShing,0,CBlock,No,Unf,960,Y,0,0,0,TA,0,NA,0,Y,0,0,NA,2010
+1592,RL,Pave,Bnk,Gtl,Norm,5,1999,MetalSd,203,BrkTil,Mn,Unf,1107,N,0,0,0,Fa,1,1979,260,Y,36,0,NA,2010
+1593,RL,Pave,Lvl,Gtl,Norm,6,1950,Wd Sdng,0,CBlock,No,Unf,856,Y,0,1,0,TA,1,1939,399,Y,0,0,NA,2010
+1594,RH,Pave,Lvl,Gtl,Norm,4,1967,Plywood,0,Slab,NA,NA,0,Y,1788,0,0,TA,0,NA,0,Y,0,0,Shed,2010
+1595,RL,Pave,Lvl,Gtl,Norm,5,1950,VinylSd,0,PConc,No,Unf,894,Y,772,1,0,TA,1,NA,0,N,0,0,NA,2010
+1596,RL,Pave,Lvl,Gtl,Norm,7,1985,Wd Sdng,371,BrkTil,No,BLQ,1528,Y,908,1,1,TA,2,1941,312,Y,86,0,NA,2010
+1597,RL,Pave,Lvl,Gtl,Norm,5,1991,VinylSd,430,CBlock,No,Unf,1032,Y,1075,0,1,TA,0,1950,484,Y,0,0,NA,2010
+1598,RL,Pave,Lvl,Gtl,Norm,7,2007,VinylSd,44,PConc,No,Unf,423,Y,756,1,1,Gd,0,1994,473,Y,0,0,NA,2010
+1599,RM,Pave,HLS,Mod,Norm,8,1989,HdBoard,0,CBlock,Gd,Unf,982,Y,0,1,0,Gd,1,1989,598,Y,0,0,NA,2010
+1600,RM,Pave,HLS,Mod,Norm,8,1989,HdBoard,0,CBlock,Av,Unf,1191,Y,0,0,0,Gd,1,1989,531,Y,0,0,NA,2010
+1601,RM,Pave,Lvl,Gtl,Norm,2,1950,Wd Sdng,0,BrkTil,No,Unf,480,Y,0,0,0,TA,0,1951,200,N,0,0,NA,2010
+1602,RM,Pave,HLS,Gtl,Norm,6,1975,Wd Sdng,0,BrkTil,Mn,Unf,629,Y,380,0,0,TA,0,1950,625,Y,0,0,NA,2010
+1603,C (all),Grvl,Lvl,Gtl,Norm,4,1950,Wd Sdng,0,CBlock,No,Unf,756,Y,0,0,0,TA,0,1896,330,N,265,0,NA,2010
+1604,RM,Pave,HLS,Mod,Norm,8,2005,CemntBd,186,PConc,Gd,Unf,1594,Y,0,1,0,Gd,1,2004,525,Y,0,0,NA,2010
+1605,RL,Pave,Lvl,Gtl,Norm,8,1999,VinylSd,0,PConc,No,Unf,1049,Y,880,1,1,Gd,1,1998,741,Y,0,0,NA,2010
+1606,RL,Pave,Lvl,Gtl,Norm,6,1977,Plywood,0,CBlock,No,Unf,1243,Y,0,0,0,Gd,1,1977,473,Y,0,0,Shed,2010
+1607,RL,Pave,Lvl,Gtl,Norm,6,1976,Plywood,0,CBlock,No,Unf,1958,Y,0,0,0,TA,0,1976,776,Y,0,0,NA,2010
+1608,RL,Pave,Lvl,Gtl,Norm,7,2008,VinylSd,60,PConc,No,Unf,1336,Y,0,1,0,Gd,1,2008,660,Y,0,0,NA,2010
+1609,RL,Pave,Lvl,Gtl,Norm,7,2010,VinylSd,0,PConc,No,Unf,1214,Y,0,0,0,Gd,0,2010,520,Y,0,0,NA,2010
+1610,RL,Pave,Lvl,Gtl,Norm,5,2007,VinylSd,0,PConc,No,Unf,384,Y,700,0,1,TA,0,2007,400,Y,0,0,NA,2010
+1611,RL,Pave,Bnk,Gtl,Norm,5,1977,Plywood,0,CBlock,No,Unf,1068,Y,0,1,0,TA,1,1965,528,Y,0,0,NA,2010
+1612,RL,Pave,Lvl,Gtl,Norm,5,2005,VinylSd,0,PConc,Av,Unf,1430,Y,0,0,0,Gd,0,2004,624,Y,0,0,NA,2010
+1613,RL,Pave,Lvl,Gtl,Norm,5,1999,VinylSd,0,PConc,No,Unf,1344,Y,0,0,0,TA,1,2001,686,Y,0,0,NA,2010
+1614,RM,Pave,Low,Mod,Norm,5,1973,CemntBd,0,CBlock,Gd,Unf,945,Y,0,1,0,TA,1,1973,253,Y,56,0,NA,2010
+1615,RM,Pave,Lvl,Gtl,Norm,4,1970,CemntBd,0,CBlock,No,Unf,546,Y,546,0,1,TA,0,NA,0,Y,0,0,NA,2010
+1616,RM,Pave,Lvl,Gtl,Norm,4,1970,CemntBd,0,CBlock,No,Unf,546,Y,546,0,1,TA,0,NA,0,Y,0,0,NA,2010
+1617,RM,Pave,Lvl,Gtl,Norm,4,1972,CemntBd,0,CBlock,No,Unf,546,Y,546,0,1,TA,0,1972,286,Y,64,0,NA,2010
+1618,RL,Pave,Lvl,Gtl,Norm,5,2004,VinylSd,0,CBlock,No,Unf,864,Y,0,0,0,TA,0,1971,352,Y,0,0,NA,2010
+1619,RL,Pave,Lvl,Gtl,Norm,5,1984,VinylSd,0,CBlock,Mn,GLQ,833,Y,0,1,0,Gd,0,1984,495,Y,0,0,NA,2010
+1620,RL,Pave,Lvl,Gtl,Norm,5,1986,HdBoard,0,PConc,No,Unf,1216,Y,1216,0,2,TA,0,1985,616,Y,0,0,Shed,2010
+1621,RL,Pave,Lvl,Gtl,Norm,5,1991,HdBoard,0,PConc,No,Unf,624,Y,650,0,1,TA,0,1993,576,Y,0,0,NA,2010
+1622,RL,Pave,Lvl,Mod,Norm,5,1969,HdBoard,0,CBlock,Av,Unf,864,Y,615,0,0,TA,0,1969,275,Y,280,0,NA,2010
+1623,RL,Pave,Lvl,Mod,Norm,8,1995,VinylSd,0,PConc,Gd,LwQ,1679,Y,0,1,1,Gd,2,1994,482,Y,222,0,NA,2010
+1624,RL,Pave,Lvl,Gtl,Norm,6,1994,VinylSd,0,PConc,Mn,Unf,1152,Y,645,1,1,Gd,1,1993,616,Y,0,0,NA,2010
+1625,RL,Pave,Lvl,Gtl,Norm,6,1956,MetalSd,0,CBlock,No,Unf,882,Y,0,0,0,TA,0,1956,502,Y,0,0,NA,2009
+1626,RL,Pave,Lvl,Gtl,Norm,6,1974,Plywood,440,CBlock,No,Unf,1434,Y,0,1,0,TA,1,1974,528,Y,0,0,NA,2009
+1627,RL,Pave,Lvl,Gtl,Norm,6,1997,VinylSd,0,PConc,No,Unf,945,Y,663,0,1,TA,1,1997,470,Y,0,0,NA,2009
+1628,RL,Pave,Lvl,Gtl,Norm,8,2003,VinylSd,188,PConc,Gd,Unf,1008,Y,1275,0,1,Gd,1,2003,632,Y,0,0,NA,2009
+1629,RL,Pave,Lvl,Gtl,Norm,7,1997,HdBoard,32,PConc,No,Unf,384,Y,670,0,1,TA,1,1996,390,Y,0,0,Shed,2009
+1630,RL,Pave,Lvl,Gtl,Norm,8,2005,CemntBd,0,PConc,Av,Unf,2208,Y,0,1,0,Gd,1,2004,564,Y,0,0,NA,2009
+1631,RL,Pave,Lvl,Gtl,Norm,8,1998,CemntBd,0,PConc,Av,Unf,1418,Y,0,1,0,TA,0,1998,495,Y,0,0,NA,2009
+1632,RL,Pave,Lvl,Gtl,Norm,8,1996,CemntBd,0,PConc,No,Unf,1587,Y,0,1,0,Gd,0,1995,528,Y,0,0,NA,2009
+1633,RL,Pave,Lvl,Gtl,Norm,7,1998,VinylSd,0,PConc,No,Unf,384,Y,631,0,1,TA,1,1998,396,Y,0,0,NA,2009
+1634,RL,Pave,Lvl,Gtl,Norm,6,1999,VinylSd,0,PConc,No,Unf,952,Y,684,1,1,TA,1,1998,440,Y,0,0,NA,2009
+1635,RL,Pave,Lvl,Gtl,Norm,6,1995,HdBoard,0,PConc,No,Unf,707,Y,809,1,1,Gd,1,1994,409,Y,0,0,NA,2009
+1636,RL,Pave,Lvl,Gtl,Norm,6,1993,HdBoard,45,PConc,No,Unf,1181,Y,0,0,0,Gd,1,1993,430,Y,0,0,NA,2009
+1637,RL,Pave,Lvl,Gtl,Norm,5,1977,HdBoard,157,PConc,No,Unf,1122,Y,988,1,1,TA,1,1977,567,P,0,0,NA,2009
+1638,RL,Pave,Lvl,Gtl,Norm,7,1978,HdBoard,256,CBlock,No,Unf,832,Y,896,0,1,Gd,1,1978,529,Y,0,0,NA,2009
+1639,RL,Pave,Lvl,Gtl,Norm,6,1986,VinylSd,101,PConc,No,Unf,1427,Y,0,0,0,TA,1,1978,484,Y,0,0,NA,2009
+1640,RL,Pave,Lvl,Gtl,Norm,7,1991,Plywood,229,CBlock,No,Unf,1043,Y,1134,0,1,Gd,1,1980,441,Y,0,0,NA,2009
+1641,RL,Pave,Lvl,Gtl,Norm,6,1998,HdBoard,144,PConc,No,Unf,1140,Y,0,0,0,TA,1,1978,479,Y,0,0,NA,2009
+1642,FV,Pave,Lvl,Gtl,Norm,7,2003,CemntBd,0,PConc,Mn,Unf,926,Y,868,1,1,Ex,1,2003,581,Y,0,0,NA,2009
+1643,FV,Pave,Lvl,Gtl,Norm,8,2001,VinylSd,0,PConc,No,Unf,1058,Y,816,0,1,Gd,1,2000,588,Y,0,0,NA,2009
+1644,FV,Pave,Lvl,Gtl,Norm,8,2002,VinylSd,0,PConc,No,ALQ,972,Y,839,0,1,Gd,1,2002,565,Y,0,0,NA,2009
+1645,RL,Pave,Lvl,Gtl,Norm,5,1975,HdBoard,161,CBlock,Av,LwQ,1621,Y,0,1,0,TA,2,1975,478,Y,0,0,NA,2009
+1646,RL,Pave,Lvl,Gtl,Norm,6,1974,Plywood,196,CBlock,No,Unf,1116,Y,0,1,0,TA,1,1974,528,Y,0,0,NA,2009
+1647,RL,Pave,Lvl,Gtl,Norm,7,1975,Plywood,0,CBlock,No,Unf,1176,Y,0,0,0,TA,1,1975,506,Y,0,0,NA,2009
+1648,RL,Pave,Lvl,Gtl,Norm,5,1970,HdBoard,0,CBlock,No,Unf,1180,Y,0,0,1,TA,0,1970,477,Y,0,0,NA,2009
+1649,RL,Pave,Lvl,Gtl,Norm,5,1971,Plywood,178,CBlock,No,Unf,1043,Y,0,1,1,TA,0,1971,336,Y,0,0,NA,2009
+1650,RL,Pave,Lvl,Gtl,Norm,4,1970,VinylSd,0,CBlock,No,Unf,864,Y,0,1,0,TA,0,2001,576,Y,0,0,NA,2009
+1651,RL,Pave,Lvl,Gtl,Norm,4,2006,VinylSd,0,CBlock,No,Unf,864,Y,0,0,0,TA,0,1986,576,Y,0,0,NA,2009
+1652,RM,Pave,Lvl,Gtl,Norm,6,1973,HdBoard,504,CBlock,No,Unf,483,Y,504,1,1,TA,0,1973,264,Y,0,0,NA,2009
+1653,RM,Pave,Lvl,Gtl,Norm,6,1972,HdBoard,425,CBlock,No,LwQ,483,Y,504,1,1,TA,0,1972,288,Y,0,0,NA,2009
+1654,RL,Pave,Lvl,Gtl,Norm,6,1976,Plywood,0,CBlock,No,Unf,804,Y,744,0,1,TA,1,1976,440,Y,0,0,NA,2009
+1655,RL,Pave,Lvl,Gtl,Norm,7,1975,Plywood,0,CBlock,No,LwQ,1057,Y,0,0,0,TA,1,1975,440,Y,0,0,NA,2009
+1656,RL,Pave,Lvl,Gtl,Norm,6,1977,Plywood,0,CBlock,No,Unf,855,Y,601,0,1,TA,1,1977,440,Y,0,0,NA,2009
+1657,RL,Pave,Lvl,Gtl,Norm,6,1978,Plywood,0,CBlock,No,Unf,804,Y,744,0,1,TA,1,1978,440,Y,0,0,NA,2009
+1658,RL,Pave,Lvl,Gtl,Norm,6,1978,Plywood,0,CBlock,No,Unf,855,Y,601,0,1,TA,1,1978,440,Y,0,0,NA,2009
+1659,RL,Pave,Lvl,Gtl,Norm,7,1976,Plywood,0,CBlock,No,Unf,836,Y,0,0,0,TA,0,1976,345,Y,0,0,NA,2009
+1660,RL,Pave,Lvl,Gtl,Norm,5,2004,HdBoard,165,PConc,No,Unf,864,Y,0,0,0,TA,1,1966,656,Y,0,0,Shed,2009
+1661,RL,Pave,Lvl,Gtl,Norm,9,2007,VinylSd,726,PConc,No,Unf,1776,Y,978,1,1,Ex,3,2007,754,Y,0,0,NA,2009
+1662,RL,Pave,Lvl,Gtl,Norm,9,2009,VinylSd,0,PConc,No,Unf,1365,Y,1325,1,1,Ex,1,2009,864,Y,0,0,NA,2009
+1663,RL,Pave,Lvl,Gtl,Norm,9,2008,VinylSd,450,PConc,Av,Unf,2020,Y,0,1,0,Ex,1,2008,896,Y,0,0,NA,2009
+1664,RL,Pave,Lvl,Gtl,PosA,10,2007,VinylSd,472,PConc,Gd,Unf,2630,Y,0,2,1,Ex,2,2007,762,Y,0,0,NA,2009
+1665,RL,Pave,Lvl,Gtl,Norm,9,2008,VinylSd,302,PConc,No,Unf,1736,Y,0,0,0,Ex,1,2008,834,Y,0,0,NA,2009
+1666,RL,Pave,Lvl,Gtl,Norm,8,2005,VinylSd,238,PConc,Gd,Unf,1782,Y,0,1,0,Gd,2,2004,932,Y,0,0,NA,2009
+1667,RL,Pave,Lvl,Gtl,Norm,8,2007,VinylSd,20,PConc,Av,Unf,1508,Y,1012,1,1,Ex,1,2007,640,Y,0,0,NA,2009
+1668,RL,Pave,Lvl,Gtl,Norm,9,2008,VinylSd,284,PConc,Mn,Unf,1739,Y,0,1,0,Ex,1,2008,927,Y,0,0,NA,2009
+1669,RL,Pave,Lvl,Gtl,Norm,9,2006,VinylSd,122,PConc,Av,Unf,1504,Y,0,1,0,Ex,1,2006,700,Y,0,0,NA,2009
+1670,RL,Pave,Lvl,Gtl,Norm,9,2008,VinylSd,285,PConc,No,Unf,1774,Y,0,1,0,Ex,1,2008,850,Y,0,0,NA,2009
+1671,RL,Pave,Lvl,Gtl,Norm,7,2004,VinylSd,418,PConc,No,Unf,1760,Y,0,1,0,Gd,1,2003,583,Y,0,0,NA,2009
+1672,RL,Pave,Lvl,Gtl,Norm,9,2003,VinylSd,724,PConc,No,Unf,2452,Y,0,2,0,Ex,1,2003,886,Y,0,0,NA,2009
+1673,RL,Pave,Lvl,Gtl,Norm,8,2004,VinylSd,186,PConc,No,Unf,1082,Y,1295,0,1,Gd,1,2003,730,Y,0,0,NA,2009
+1674,RL,Pave,Lvl,Gtl,Norm,8,2006,VinylSd,383,PConc,No,Unf,1598,Y,0,0,0,Gd,1,2006,871,Y,0,0,NA,2009
+1675,RL,Pave,Lvl,Gtl,Norm,6,2005,VinylSd,240,PConc,Av,Unf,1358,Y,0,0,0,Gd,1,2005,484,Y,0,0,NA,2009
+1676,RL,Pave,Lvl,Gtl,Norm,6,2005,VinylSd,135,PConc,Av,Unf,1306,Y,0,1,0,Gd,1,2005,624,Y,0,0,NA,2009
+1677,RL,Pave,Lvl,Gtl,Norm,7,2008,VinylSd,176,PConc,No,Unf,1350,Y,0,1,0,Gd,1,2008,484,Y,0,0,NA,2009
+1678,RL,Pave,HLS,Mod,Norm,10,2005,CemntBd,730,PConc,Gd,Unf,2492,Y,0,1,1,Ex,1,2004,949,Y,0,0,NA,2009
+1679,RL,Pave,Lvl,Gtl,Norm,8,2004,VinylSd,470,PConc,Gd,Unf,2200,Y,0,1,1,Ex,1,2003,685,Y,0,0,NA,2009
+1680,RL,Pave,Lvl,Gtl,Norm,9,2009,MetalSd,308,PConc,No,Unf,1884,Y,0,1,0,Ex,1,2008,649,Y,0,0,NA,2009
+1681,RL,Pave,Lvl,Gtl,Norm,9,2008,VinylSd,500,PConc,No,Unf,1451,Y,0,0,0,Ex,1,2008,539,Y,0,0,NA,2009
+1682,RL,Pave,Lvl,Gtl,Norm,8,2003,VinylSd,270,PConc,Gd,Unf,1712,Y,0,1,0,Gd,1,2002,701,Y,0,0,NA,2009
+1683,RL,Pave,Lvl,Gtl,Norm,7,2003,VinylSd,163,PConc,No,Unf,1405,Y,0,0,0,Gd,1,2003,478,Y,0,0,NA,2009
+1684,RL,Pave,Lvl,Gtl,Norm,7,2005,VinylSd,0,PConc,No,Unf,728,Y,728,0,1,Gd,1,2005,390,Y,0,0,NA,2009
+1685,RL,Pave,Lvl,Gtl,Norm,6,2006,VinylSd,0,PConc,Av,Unf,745,Y,745,0,1,Gd,1,2005,392,Y,0,0,NA,2009
+1686,RL,Pave,Lvl,Gtl,Norm,7,2006,VinylSd,16,PConc,Av,Unf,1220,Y,0,0,0,Gd,1,2005,397,Y,0,0,NA,2009
+1687,RL,Pave,Lvl,Gtl,Norm,7,2005,WdShing,0,PConc,Mn,Unf,384,Y,630,0,1,Gd,1,2004,400,Y,0,0,NA,2009
+1688,RL,Pave,Lvl,Gtl,Norm,7,2005,VinylSd,200,PConc,No,Unf,868,Y,762,0,1,Gd,1,2004,436,Y,0,0,NA,2009
+1689,RL,Pave,Lvl,Gtl,Norm,7,2004,VinylSd,0,PConc,Mn,Unf,846,Y,748,0,1,Gd,1,2004,434,Y,0,0,NA,2009
+1690,RL,Pave,Lvl,Gtl,Norm,7,2003,VinylSd,0,PConc,No,Unf,782,Y,683,1,1,Gd,1,2003,400,Y,0,0,NA,2009
+1691,RL,Pave,Lvl,Gtl,Norm,7,2003,VinylSd,0,PConc,No,Unf,698,Y,644,1,1,Gd,1,2003,393,Y,0,0,NA,2009
+1692,RL,Pave,Lvl,Gtl,Norm,8,2002,VinylSd,NA,PConc,No,Unf,870,Y,1126,1,1,Gd,1,2002,644,Y,0,0,NA,2009
+1693,RL,Pave,Lvl,Gtl,Norm,7,2004,VinylSd,0,PConc,Mn,Rec,384,Y,630,0,1,Gd,0,2004,400,Y,0,0,NA,2009
+1694,RL,Pave,Lvl,Gtl,Norm,6,2000,VinylSd,0,PConc,No,Unf,794,Y,695,1,1,TA,1,2000,394,Y,0,0,NA,2009
+1695,RL,Pave,Lvl,Gtl,Norm,7,2000,VinylSd,0,PConc,No,Unf,384,Y,656,0,1,TA,1,1999,400,Y,0,0,NA,2009
+1696,RL,Pave,Lvl,Gtl,Norm,7,1999,VinylSd,210,PConc,No,Unf,1177,Y,1089,1,1,Gd,1,1999,658,Y,0,0,NA,2009
+1697,RL,Pave,Lvl,Gtl,Norm,7,1999,VinylSd,0,PConc,No,Unf,384,Y,656,0,1,TA,1,1999,410,Y,0,0,NA,2009
+1698,RL,Pave,Lvl,Gtl,Norm,8,2000,VinylSd,150,PConc,Mn,Unf,1455,Y,1221,1,1,Gd,2,2000,810,Y,0,0,NA,2009
+1699,RL,Pave,Lvl,Gtl,Norm,8,1995,Wd Sdng,634,PConc,Av,GLQ,2024,Y,0,1,0,Gd,2,1994,815,Y,0,0,NA,2009
+1700,RL,Pave,Lvl,Gtl,Norm,7,1996,VinylSd,286,PConc,No,Unf,1070,Y,967,1,1,Gd,1,1995,647,Y,209,0,NA,2009
+1701,RL,Pave,Lvl,Gtl,Norm,8,1994,HdBoard,372,PConc,No,Unf,1173,Y,1017,1,1,Gd,1,1993,623,Y,0,0,NA,2009
+1702,RL,Pave,Lvl,Gtl,Norm,8,2008,VinylSd,240,PConc,Mn,Unf,1696,Y,0,0,0,Gd,0,2008,972,Y,0,0,NA,2009
+1703,RL,Pave,Lvl,Gtl,Norm,8,2008,VinylSd,294,PConc,No,Unf,1614,Y,0,0,1,Gd,1,2008,726,Y,0,0,NA,2009
+1704,RL,Pave,Lvl,Gtl,Norm,8,2007,VinylSd,260,PConc,Av,Unf,1702,Y,0,1,0,Gd,1,2007,844,Y,0,0,NA,2009
+1705,RL,Pave,Lvl,Gtl,Norm,8,2006,VinylSd,206,PConc,Av,Unf,1422,Y,0,0,0,Gd,1,2006,492,Y,0,0,NA,2009
+1706,RL,Pave,Lvl,Gtl,PosN,9,2006,VinylSd,198,PConc,Gd,Unf,2458,Y,0,1,0,Ex,2,2005,795,Y,0,0,NA,2009
+1707,FV,Pave,Lvl,Gtl,Norm,7,2009,VinylSd,NA,PConc,No,Unf,1436,Y,0,0,0,Gd,0,2008,529,Y,0,0,NA,2009
+1708,FV,Pave,Lvl,Gtl,Norm,7,2008,VinylSd,0,PConc,No,Unf,1402,Y,0,0,0,Gd,0,2008,625,Y,0,0,NA,2009
+1709,FV,Pave,Lvl,Gtl,Norm,9,2008,VinylSd,120,PConc,Av,Unf,1530,Y,0,0,0,Gd,1,2008,984,Y,0,0,NA,2009
+1710,FV,Pave,Lvl,Gtl,Norm,8,2007,VinylSd,238,PConc,No,Unf,1372,Y,0,0,0,Gd,1,2006,692,Y,0,0,NA,2009
+1711,FV,Pave,Lvl,Gtl,Norm,8,2006,VinylSd,121,PConc,No,Unf,900,Y,886,1,1,Gd,1,2006,782,Y,0,0,NA,2009
+1712,FV,Pave,Lvl,Gtl,Norm,8,2009,VinylSd,288,PConc,No,Unf,1836,Y,0,0,0,Gd,1,2009,517,Y,0,0,NA,2009
+1713,FV,Pave,Lvl,Gtl,Norm,7,2007,VinylSd,0,PConc,No,Unf,1652,Y,0,1,0,Ex,1,2006,711,Y,0,0,NA,2009
+1714,FV,Pave,Lvl,Gtl,Norm,7,2004,VinylSd,0,PConc,No,ALQ,1553,Y,0,1,0,Gd,0,2003,588,Y,0,0,NA,2009
+1715,FV,Pave,Lvl,Gtl,Norm,7,2003,VinylSd,0,PConc,No,Unf,812,Y,841,1,1,Gd,0,2003,628,Y,0,0,NA,2009
+1716,RL,Pave,Lvl,Gtl,Norm,7,2007,VinylSd,0,PConc,No,Unf,1218,Y,0,0,1,Gd,0,2007,576,Y,0,0,NA,2009
+1717,RL,Pave,Lvl,Gtl,Norm,7,2006,VinylSd,0,PConc,No,Unf,1141,Y,0,1,1,Gd,0,2006,484,Y,0,0,NA,2009
+1718,RL,Pave,Lvl,Gtl,Norm,6,2004,VinylSd,0,PConc,No,Unf,1158,Y,0,0,1,Gd,0,NA,0,Y,0,0,NA,2009
+1719,RL,Pave,Lvl,Gtl,Norm,7,2004,VinylSd,0,PConc,Gd,Unf,835,Y,941,0,1,Gd,0,2004,478,Y,0,0,NA,2009
+1720,RL,Pave,Lvl,Gtl,Norm,8,2004,VinylSd,264,PConc,Gd,Rec,1512,Y,0,0,0,Gd,0,2004,845,Y,0,0,NA,2009
+1721,RL,Pave,Lvl,Gtl,Norm,7,2005,VinylSd,0,PConc,No,Unf,1114,Y,0,0,1,Gd,0,2005,576,Y,0,0,NA,2009
+1722,RL,Pave,Lvl,Gtl,Norm,5,2004,VinylSd,0,PConc,No,Unf,1114,Y,0,0,1,Gd,0,NA,0,Y,0,0,NA,2009
+1723,RL,Pave,Lvl,Gtl,Norm,5,2004,VinylSd,0,PConc,No,Unf,1114,Y,0,1,0,Gd,0,2004,576,Y,0,0,NA,2009
+1724,RL,Pave,Lvl,Gtl,Norm,7,2009,VinylSd,140,PConc,No,Unf,1450,Y,0,0,0,Gd,0,2008,788,Y,0,0,NA,2009
+1725,RL,Pave,Lvl,Gtl,Norm,7,1997,VinylSd,132,PConc,No,Unf,913,Y,1209,1,1,Gd,1,1997,559,Y,0,0,NA,2009
+1726,RL,Pave,Lvl,Gtl,Norm,6,1992,HdBoard,0,PConc,No,Rec,816,Y,897,0,1,Gd,0,1992,528,Y,0,0,NA,2009
+1727,RL,Pave,Lvl,Gtl,Norm,6,1991,Plywood,0,PConc,No,Unf,1332,Y,0,0,0,Gd,0,1990,542,Y,0,0,NA,2009
+1728,RL,Pave,Lvl,Gtl,Norm,7,1994,VinylSd,0,PConc,No,GLQ,754,Y,786,1,1,Gd,0,1994,495,Y,0,0,NA,2009
+1729,RL,Pave,Lvl,Gtl,Norm,6,1986,VinylSd,141,CBlock,No,Unf,676,Y,702,0,1,TA,0,1986,465,Y,0,0,NA,2009
+1730,RL,Pave,Lvl,Gtl,Norm,6,1981,Wd Sdng,0,Slab,NA,NA,0,Y,918,0,0,TA,2,1981,612,Y,0,0,NA,2009
+1731,RL,Pave,Lvl,Gtl,Norm,5,1962,HdBoard,0,CBlock,No,BLQ,980,Y,0,1,0,TA,0,1969,400,Y,0,0,NA,2009
+1732,RL,Pave,Lvl,Gtl,Norm,5,1961,MetalSd,0,CBlock,No,Unf,864,Y,0,1,0,TA,0,1982,732,Y,0,0,NA,2009
+1733,RL,Pave,Lvl,Gtl,Norm,5,1961,Wd Sdng,0,CBlock,No,Unf,864,Y,0,0,0,TA,0,1961,440,Y,0,0,NA,2009
+1734,RL,Pave,Lvl,Gtl,Norm,5,1965,HdBoard,0,CBlock,No,Unf,1024,Y,0,0,0,TA,0,1965,288,Y,0,0,NA,2009
+1735,RL,Pave,Lvl,Gtl,Norm,5,1995,Plywood,0,CBlock,No,Unf,912,Y,0,1,0,Gd,0,1963,300,Y,0,0,NA,2009
+1736,RL,Pave,Lvl,Gtl,Norm,5,1962,VinylSd,60,CBlock,No,BLQ,912,Y,0,0,0,TA,0,1962,252,Y,0,0,NA,2009
+1737,RL,Pave,Low,Gtl,Norm,8,1980,VinylSd,115,CBlock,Gd,Rec,2014,Y,0,1,0,Gd,2,1980,864,Y,0,0,NA,2009
+1738,RL,Pave,Lvl,Gtl,Norm,7,2008,VinylSd,196,PConc,No,ALQ,975,Y,780,0,1,Gd,1,1991,524,Y,0,0,NA,2009
+1739,FV,Pave,Lvl,Gtl,Norm,7,2005,MetalSd,0,PConc,No,Unf,1376,Y,1629,0,1,Gd,1,2004,704,Y,0,0,NA,2009
+1740,FV,Pave,Lvl,Gtl,Norm,6,2008,VinylSd,280,PConc,No,Unf,1726,Y,0,0,1,Gd,1,2008,561,Y,0,0,NA,2009
+1741,FV,Pave,Lvl,Gtl,Norm,6,2008,VinylSd,252,PConc,No,Unf,1145,Y,0,1,1,Gd,1,2008,641,Y,0,0,NA,2009
+1742,FV,Pave,Lvl,Gtl,Norm,6,2000,MetalSd,513,PConc,No,Unf,756,Y,756,1,1,Gd,0,2000,440,Y,0,0,NA,2009
+1743,FV,Pave,Lvl,Gtl,Norm,7,1999,MetalSd,218,PConc,No,Unf,691,Y,739,1,1,Gd,0,1999,506,Y,0,0,NA,2009
+1744,RL,Pave,Lvl,Gtl,Norm,8,2008,MetalSd,450,CBlock,Gd,ALQ,1694,Y,0,1,0,Ex,1,1977,642,Y,0,0,NA,2009
+1745,RL,Pave,Lvl,Gtl,Norm,7,1981,BrkFace,0,CBlock,Mn,Unf,1740,Y,0,0,1,Gd,0,1981,540,Y,218,0,NA,2009
+1746,RL,Pave,Low,Mod,Norm,8,1976,Plywood,200,CBlock,No,Unf,392,Y,1012,0,1,TA,1,1976,527,Y,0,0,NA,2009
+1747,RL,Pave,Lvl,Gtl,Norm,7,1974,VinylSd,0,CBlock,Mn,LwQ,752,Y,782,0,1,Gd,2,1974,784,Y,0,0,NA,2009
+1748,RL,Pave,Lvl,Gtl,Norm,6,1997,MetalSd,256,PConc,No,Unf,932,Y,1369,0,1,Gd,1,1967,515,Y,0,0,NA,2009
+1749,RL,Pave,Lvl,Gtl,Norm,5,1969,HdBoard,128,CBlock,Mn,Rec,1288,Y,0,0,0,TA,1,1969,502,Y,0,0,Shed,2009
+1750,RL,Pave,Lvl,Gtl,Norm,6,1969,HdBoard,200,CBlock,Av,Unf,1216,Y,0,1,0,TA,0,1969,336,Y,0,0,NA,2009
+1751,RL,Pave,Lvl,Gtl,Norm,7,1992,HdBoard,283,PConc,No,Unf,908,Y,972,0,2,Gd,2,1977,520,Y,0,0,NA,2009
+1752,RL,Pave,Lvl,Gtl,Norm,5,1967,HdBoard,0,PConc,No,Unf,864,Y,0,0,0,TA,0,1967,312,Y,0,0,NA,2009
+1753,RL,Pave,Lvl,Gtl,Norm,5,1967,HdBoard,0,CBlock,No,Unf,1568,Y,0,0,1,TA,0,1967,440,Y,0,0,NA,2009
+1754,RL,Pave,Lvl,Gtl,Norm,7,1974,Plywood,252,CBlock,No,Unf,1165,Y,896,0,1,TA,1,1974,498,Y,0,0,NA,2009
+1755,RL,Pave,Lvl,Gtl,Norm,6,1971,HdBoard,509,CBlock,Av,Unf,1232,Y,0,0,0,TA,1,1971,495,Y,0,0,NA,2009
+1756,RL,Pave,Lvl,Gtl,Norm,4,1960,VinylSd,0,CBlock,No,Unf,894,Y,0,1,0,TA,1,1988,396,Y,0,0,NA,2009
+1757,RL,Pave,Lvl,Gtl,Norm,5,1959,MetalSd,0,CBlock,No,Unf,864,Y,0,0,0,TA,0,1960,308,Y,0,0,NA,2009
+1758,RL,Pave,Lvl,Gtl,Norm,4,1957,Wd Sdng,160,CBlock,No,Unf,1040,Y,0,1,0,TA,1,1982,768,Y,84,0,NA,2009
+1759,RL,Pave,Lvl,Gtl,Norm,5,1956,Wd Sdng,70,CBlock,No,LwQ,1048,Y,0,1,0,TA,1,1956,576,Y,0,0,NA,2009
+1760,RL,Pave,Lvl,Gtl,Norm,5,1995,Wd Sdng,217,CBlock,No,BLQ,1313,Y,0,1,1,Gd,1,1961,610,Y,0,0,NA,2009
+1761,RL,Pave,Lvl,Gtl,Norm,5,1964,HdBoard,144,CBlock,No,Unf,1292,Y,0,1,1,TA,2,1964,520,Y,0,0,NA,2009
+1762,RL,Pave,Lvl,Gtl,Norm,5,1965,MetalSd,0,CBlock,No,Unf,744,Y,1315,0,1,TA,1,1965,549,Y,264,0,NA,2009
+1763,RL,Pave,Lvl,Gtl,Norm,6,1961,HdBoard,90,CBlock,Gd,Unf,1208,Y,0,1,0,Gd,1,1961,368,Y,0,0,NA,2009
+1764,RL,Pave,Lvl,Gtl,Norm,5,1955,Wd Sdng,0,CBlock,No,ALQ,960,Y,0,1,0,TA,0,1955,330,Y,0,0,NA,2009
+1765,RL,Pave,Lvl,Gtl,Norm,6,1967,BrkComm,0,CBlock,No,Unf,1680,Y,0,1,0,TA,0,1967,550,Y,260,0,NA,2009
+1766,RL,Pave,Lvl,Gtl,Norm,6,1961,MetalSd,3,CBlock,No,Unf,1453,Y,0,1,0,TA,1,1961,530,Y,0,0,NA,2009
+1767,RL,Pave,Lvl,Gtl,Norm,6,2008,MetalSd,210,CBlock,No,Unf,1562,Y,0,1,0,Gd,2,1966,542,Y,0,0,NA,2009
+1768,RL,Pave,Lvl,Gtl,Norm,5,1956,Wd Sdng,164,CBlock,No,Unf,1169,Y,0,1,0,TA,0,1956,286,Y,0,0,NA,2009
+1769,RL,Pave,Lvl,Gtl,Norm,7,1960,Plywood,128,CBlock,No,Unf,1329,Y,0,0,1,TA,2,1960,441,Y,203,0,NA,2009
+1770,RL,Pave,Lvl,Gtl,Norm,6,1998,MetalSd,0,CBlock,No,Unf,988,Y,0,1,0,Gd,0,1959,297,Y,0,0,NA,2009
+1771,RL,Pave,Lvl,Gtl,Norm,5,1956,BrkFace,0,CBlock,No,BLQ,1202,Y,0,0,0,TA,0,1956,304,Y,120,0,NA,2009
+1772,RL,Pave,Lvl,Gtl,Norm,5,1955,AsbShng,0,CBlock,No,LwQ,1382,Y,0,0,0,Gd,0,1955,350,Y,0,0,NA,2009
+1773,RL,Pave,Lvl,Gtl,Norm,4,1956,Plywood,0,CBlock,No,LwQ,1200,Y,0,1,0,TA,2,1956,294,Y,140,0,NA,2009
+1774,RL,Pave,Lvl,Gtl,Norm,5,1958,Wd Sdng,657,PConc,No,Unf,1866,Y,0,0,0,TA,0,1958,495,Y,0,0,NA,2009
+1775,RL,Pave,Lvl,Gtl,Norm,6,1954,MetalSd,80,CBlock,No,Unf,1062,Y,0,1,0,TA,0,1954,297,Y,0,0,NA,2009
+1776,RL,Pave,Lvl,Gtl,Norm,5,1951,MetalSd,0,CBlock,No,Unf,631,Y,0,0,0,TA,0,1951,480,Y,0,0,NA,2009
+1777,RL,Pave,Lvl,Gtl,Norm,5,1950,MetalSd,0,CBlock,No,Unf,793,Y,0,1,0,Fa,0,1945,240,Y,0,0,NA,2009
+1778,RL,Pave,Lvl,Gtl,Norm,5,2005,Wd Sdng,0,CBlock,No,Unf,1031,Y,0,1,0,Gd,0,1952,230,Y,0,0,NA,2009
+1779,RL,Pave,Lvl,Gtl,Norm,5,1953,Wd Sdng,140,Slab,NA,NA,0,Y,0,0,1,TA,0,1953,616,Y,100,0,NA,2009
+1780,RL,Pave,Lvl,Gtl,Norm,7,1999,WdShing,0,CBlock,Mn,Unf,699,Y,726,1,1,TA,1,1948,410,Y,134,0,NA,2009
+1781,RL,Pave,Lvl,Gtl,Norm,5,1950,Wd Sdng,0,CBlock,No,Unf,1200,Y,0,0,0,TA,0,1950,246,Y,0,0,NA,2009
+1782,RL,Pave,Lvl,Gtl,Norm,3,1958,MetalSd,0,CBlock,No,Unf,792,Y,0,0,0,TA,0,1958,366,Y,0,0,NA,2009
+1783,RL,Pave,Lvl,Gtl,Norm,5,2006,VinylSd,0,BrkTil,No,Unf,676,Y,676,0,0,Gd,0,1939,720,Y,128,0,NA,2009
+1784,RL,Pave,Lvl,Gtl,Norm,4,2003,MetalSd,0,BrkTil,No,Unf,405,Y,322,0,0,TA,0,1940,281,N,168,0,NA,2009
+1785,RL,Pave,Lvl,Gtl,Norm,5,1950,MetalSd,0,BrkTil,No,Unf,1054,Y,0,0,0,Ex,0,1987,264,N,0,0,NA,2009
+1786,RL,Pave,Lvl,Gtl,Norm,4,1950,MetalSd,0,BrkTil,No,Unf,1313,Y,0,0,0,Gd,1,1954,528,Y,432,0,NA,2009
+1787,RL,Pave,Lvl,Gtl,Norm,7,2008,VinylSd,0,PConc,No,Unf,560,Y,760,0,0,Gd,0,2008,624,Y,112,0,NA,2009
+1788,RL,Pave,Lvl,Gtl,Norm,2,1950,Stucco,0,PConc,No,Unf,416,N,0,1,0,Gd,0,NA,0,N,0,0,NA,2009
+1789,RL,Pave,Lvl,Gtl,Norm,5,1950,Wd Sdng,0,BrkTil,No,Unf,720,N,0,0,0,Gd,0,1980,576,N,0,0,NA,2009
+1790,RL,Pave,Lvl,Gtl,Norm,3,1998,VinylSd,0,BrkTil,No,Unf,630,Y,0,0,1,TA,0,1959,320,Y,0,0,NA,2009
+1791,RL,Pave,Lvl,Gtl,Norm,6,1969,MetalSd,480,CBlock,No,Unf,1248,Y,1296,0,2,TA,0,1969,907,Y,0,0,NA,2009
+1792,RL,Pave,Lvl,Gtl,Norm,6,1963,HdBoard,295,CBlock,No,Unf,1380,Y,0,0,1,TA,0,1963,364,Y,0,0,NA,2009
+1793,RL,Pave,Lvl,Gtl,Norm,6,1967,HdBoard,0,CBlock,No,Rec,1040,Y,0,1,0,TA,1,1967,480,Y,156,0,NA,2009
+1794,RL,Pave,Lvl,Gtl,Norm,6,2007,Wd Sdng,0,CBlock,Mn,Unf,951,Y,0,1,0,Gd,0,1985,480,Y,42,0,Shed,2009
+1795,RL,Pave,Lvl,Gtl,Norm,6,1957,Plywood,143,CBlock,No,Unf,1105,Y,0,0,0,TA,0,1957,308,Y,0,0,NA,2009
+1796,RL,Pave,HLS,Mod,Norm,6,1958,Wd Sdng,82,CBlock,Gd,Unf,160,Y,0,0,0,TA,1,1958,384,Y,64,0,NA,2009
+1797,RL,Pave,Lvl,Gtl,Norm,6,1950,Wd Sdng,0,CBlock,Av,Unf,795,N,368,0,0,TA,0,1989,900,Y,0,0,NA,2009
+1798,RL,Pave,Lvl,Gtl,Norm,5,1958,BrkFace,0,CBlock,No,Unf,1041,Y,0,0,0,TA,0,1958,294,Y,0,0,NA,2009
+1799,RL,Pave,Lvl,Gtl,Norm,5,1952,MetalSd,0,CBlock,No,BLQ,732,Y,0,1,0,TA,0,1952,240,Y,0,0,NA,2009
+1800,RL,Pave,Lvl,Gtl,Norm,5,1959,BrkFace,0,CBlock,Av,Rec,528,Y,0,1,0,TA,0,1959,288,Y,0,0,NA,2009
+1801,RL,Pave,Lvl,Gtl,Norm,4,1996,MetalSd,0,CBlock,No,Unf,832,Y,629,0,0,TA,0,1949,384,Y,0,0,NA,2009
+1802,RL,Pave,Lvl,Gtl,Norm,6,1994,MetalSd,0,CBlock,No,Unf,864,Y,0,0,0,TA,0,1994,576,Y,0,0,NA,2009
+1803,RL,Pave,Lvl,Gtl,Norm,6,1964,HdBoard,420,CBlock,No,Unf,780,Y,813,0,1,TA,0,1964,483,Y,0,0,NA,2009
+1804,RL,Pave,Lvl,Gtl,Norm,5,1978,Plywood,124,CBlock,Av,Unf,941,Y,0,1,0,Gd,0,1978,564,Y,0,0,NA,2009
+1805,RL,Pave,Lvl,Gtl,Norm,6,1963,HdBoard,0,CBlock,No,Unf,1045,Y,0,1,0,TA,1,1963,264,Y,0,0,NA,2009
+1806,RM,Pave,Lvl,Gtl,Norm,6,1998,Wd Sdng,0,PConc,No,Unf,901,Y,517,0,0,Gd,0,1920,162,P,40,0,NA,2009
+1807,RM,Pave,Lvl,Gtl,Norm,6,1950,Wd Sdng,0,CBlock,Mn,Unf,972,N,972,1,0,TA,0,1920,324,N,169,0,NA,2009
+1808,RM,Pave,Lvl,Gtl,Norm,5,2003,VinylSd,0,CBlock,No,Unf,240,Y,496,0,1,Gd,0,1959,472,N,0,0,NA,2009
+1809,RM,Pave,Lvl,Gtl,Norm,5,2002,VinylSd,0,CBlock,No,Unf,504,Y,700,0,0,TA,0,NA,0,N,176,0,NA,2009
+1810,RM,Pave,Lvl,Gtl,Norm,5,1950,Wd Sdng,0,BrkTil,No,Unf,690,Y,690,0,1,TA,1,1939,400,Y,0,0,NA,2009
+1811,RM,Pave,Lvl,Gtl,Norm,4,1950,AsbShng,0,BrkTil,No,Unf,600,N,600,0,0,Fa,0,NA,0,N,148,0,NA,2009
+1812,RM,Pave,Lvl,Gtl,Norm,5,1950,MetalSd,0,BrkTil,No,Unf,801,N,646,0,0,TA,0,NA,0,N,244,0,NA,2009
+1813,RM,Pave,Lvl,Gtl,Norm,5,1970,Wd Sdng,0,CBlock,No,Unf,768,Y,560,0,1,TA,0,1950,308,Y,0,0,NA,2009
+1814,RM,Pave,Lvl,Gtl,Norm,4,1950,MetalSd,0,BrkTil,No,Unf,861,Y,0,0,0,TA,0,1920,288,N,128,0,NA,2009
+1815,RM,Pave,Lvl,Gtl,Norm,2,1950,MetalSd,0,BrkTil,NA,NA,0,N,0,0,0,TA,0,1965,308,N,25,0,NA,2009
+1816,RM,Pave,Lvl,Gtl,Norm,5,1950,Stucco,0,PConc,No,Unf,624,Y,0,0,0,TA,0,1963,287,Y,81,0,NA,2009
+1817,RM,Pave,Lvl,Gtl,Norm,4,1950,VinylSd,0,BrkTil,No,Unf,677,Y,677,0,0,Gd,0,1974,720,N,160,0,NA,2009
+1818,RM,Pave,Lvl,Gtl,Norm,6,1950,Stucco,0,BrkTil,Mn,Unf,917,Y,917,0,0,Ex,0,1930,357,Y,0,0,NA,2009
+1819,RM,Pave,Lvl,Gtl,Norm,6,2007,Stucco,0,BrkTil,No,Unf,624,Y,624,1,0,Ex,1,1917,280,N,0,0,NA,2009
+1820,C (all),Pave,Lvl,Gtl,Norm,4,1950,Stucco,0,BrkTil,No,Unf,624,Y,0,0,0,TA,1,NA,0,N,0,0,NA,2009
+1821,RM,Pave,Lvl,Gtl,Norm,6,1950,MetalSd,0,BrkTil,No,Unf,972,Y,0,0,0,TA,0,1920,207,Y,176,0,NA,2009
+1822,RM,Pave,Lvl,Gtl,Norm,6,2002,MetalSd,0,PConc,No,Unf,741,Y,741,0,0,Gd,0,1950,640,Y,238,0,NA,2009
+1823,C (all),Pave,Lvl,Gtl,Norm,3,1950,AsbShng,0,CBlock,No,Unf,245,N,0,0,0,TA,0,NA,0,N,94,0,NA,2009
+1824,RL,Pave,Lvl,Gtl,Norm,6,1950,MetalSd,0,BrkTil,No,Unf,1022,N,0,0,0,Gd,1,1923,216,Y,0,0,NA,2009
+1825,RL,Pave,Lvl,Gtl,Norm,5,1982,WdShing,0,CBlock,No,Unf,297,Y,653,0,0,TA,1,1955,336,N,0,0,NA,2009
+1826,RM,Pave,Lvl,Gtl,Norm,5,1950,Stucco,444,BrkTil,No,Unf,468,Y,320,0,0,TA,0,1924,320,Y,98,0,NA,2009
+1827,RM,Pave,Lvl,Gtl,Norm,5,1999,MetalSd,0,BrkTil,No,Unf,960,Y,0,0,0,TA,0,1926,264,Y,51,0,NA,2009
+1828,RM,Pave,Lvl,Gtl,Norm,5,1950,Wd Sdng,0,BrkTil,No,Unf,952,Y,588,0,0,TA,1,1938,250,Y,34,0,NA,2009
+1829,RM,Pave,Lvl,Gtl,Norm,5,1950,Wd Sdng,0,BrkTil,No,Unf,1072,Y,0,1,0,TA,0,1982,1184,P,105,0,NA,2009
+1830,RM,Pave,Lvl,Gtl,Norm,6,1950,MetalSd,0,PConc,No,Unf,1048,Y,720,0,0,TA,0,1930,576,Y,150,0,NA,2009
+1831,RM,Pave,Lvl,Gtl,Norm,7,1994,Wd Sdng,0,BrkTil,No,Unf,672,Y,672,0,0,TA,0,1915,216,N,0,0,Shed,2009
+1832,RM,Pave,Bnk,Gtl,Norm,5,1950,MetalSd,0,BrkTil,No,Unf,1040,N,1040,0,0,TA,0,NA,0,Y,0,0,NA,2009
+1833,RM,Pave,Lvl,Gtl,Norm,6,1950,Plywood,0,CBlock,No,Unf,720,Y,784,1,0,TA,0,1927,316,Y,213,0,NA,2009
+1834,RM,Pave,Bnk,Mod,Norm,6,2002,Wd Sdng,0,BrkTil,No,Unf,483,Y,686,0,0,Gd,0,1915,379,Y,112,0,NA,2009
+1835,RM,Pave,Bnk,Gtl,Norm,7,2000,MetalSd,188,BrkTil,No,Unf,1020,N,886,0,1,TA,0,NA,0,N,102,0,NA,2009
+1836,RM,Pave,Lvl,Gtl,Norm,6,1950,MetalSd,0,BrkTil,No,Unf,1204,Y,462,0,0,TA,0,1927,384,Y,148,0,NA,2009
+1837,RM,Pave,Lvl,Gtl,Norm,4,1950,MetalSd,0,PConc,Av,Rec,858,Y,0,1,0,Gd,0,NA,0,N,105,0,NA,2009
+1838,RM,Pave,Bnk,Gtl,Norm,6,1965,MetalSd,0,CBlock,No,ALQ,698,Y,649,1,1,TA,0,1915,308,Y,288,0,NA,2009
+1839,RL,Pave,Lvl,Gtl,Norm,4,2001,MetalSd,0,CBlock,No,Unf,560,Y,0,0,0,Fa,0,1946,220,Y,24,0,NA,2009
+1840,RL,Pave,Lvl,Gtl,Norm,5,1988,Plywood,0,CBlock,Gd,Unf,1200,Y,0,3,0,TA,0,NA,0,Y,0,0,NA,2009
+1841,RL,Pave,Lvl,Gtl,Norm,5,1978,Plywood,0,PConc,Gd,Unf,1152,Y,0,2,0,TA,0,1960,252,N,0,0,NA,2009
+1842,RL,Pave,Lvl,Gtl,Norm,5,1950,MetalSd,0,PConc,No,Unf,585,N,425,1,0,TA,0,1934,226,N,0,0,NA,2009
+1843,RL,Pave,Lvl,Gtl,Norm,5,1967,HdBoard,172,CBlock,No,Unf,1052,Y,0,0,1,TA,1,1984,668,Y,0,0,NA,2009
+1844,RL,Pave,Lvl,Gtl,Norm,6,1978,Plywood,23,CBlock,Gd,Unf,456,Y,0,0,0,TA,1,1978,504,Y,0,0,NA,2009
+1845,RL,Pave,Lvl,Gtl,Norm,5,1961,HdBoard,0,CBlock,No,Unf,552,Y,611,0,0,TA,1,1961,384,Y,0,0,NA,2009
+1846,RL,Pave,Lvl,Gtl,Norm,6,1960,Wd Sdng,54,CBlock,Av,Unf,1138,Y,0,0,0,TA,1,1960,480,Y,0,0,NA,2009
+1847,RL,Pave,Lvl,Gtl,Norm,5,1956,Wd Sdng,366,CBlock,Mn,Unf,825,Y,0,0,1,TA,1,1956,336,Y,0,0,NA,2009
+1848,RL,Pave,Lvl,Gtl,Norm,2,1950,Wd Sdng,0,Slab,NA,NA,0,N,0,0,0,Fa,0,NA,0,N,100,0,NA,2009
+1849,RL,Pave,Lvl,Gtl,Norm,4,1954,VinylSd,0,CBlock,NA,NA,0,Y,0,0,0,TA,0,1980,498,Y,90,0,NA,2009
+1850,RL,Pave,Lvl,Gtl,Norm,5,1956,MetalSd,0,CBlock,No,Unf,1073,Y,0,1,0,TA,0,1956,340,Y,0,0,NA,2009
+1851,RL,Pave,Bnk,Gtl,Norm,6,1950,MetalSd,0,CBlock,No,Unf,747,Y,747,0,1,Gd,1,1946,240,Y,0,0,NA,2009
+1852,RL,Pave,Lvl,Gtl,Norm,5,1954,Wd Sdng,0,CBlock,No,Unf,1089,Y,0,1,0,TA,1,1954,252,P,0,0,NA,2009
+1853,RL,Pave,Lvl,Gtl,Norm,5,1984,HdBoard,149,CBlock,Mn,ALQ,1049,Y,0,1,0,Gd,0,1984,266,Y,0,0,NA,2009
+1854,RL,Pave,Lvl,Gtl,Norm,7,1991,HdBoard,0,PConc,No,ALQ,1054,Y,0,1,1,Gd,0,1990,462,Y,0,0,NA,2009
+1855,RL,Pave,Lvl,Gtl,Norm,6,1983,Wd Sdng,100,CBlock,Av,GLQ,520,Y,0,0,1,Gd,1,1983,576,Y,0,0,Shed,2009
+1856,RL,Pave,Lvl,Gtl,Norm,7,1994,VinylSd,0,PConc,No,Unf,1079,Y,800,1,1,Gd,1,1993,473,Y,144,0,NA,2009
+1857,RL,Pave,Bnk,Gtl,Norm,5,2007,HdBoard,0,PConc,NA,NA,0,Y,728,0,0,TA,1,1900,576,P,0,0,NA,2009
+1858,RL,Pave,Lvl,Gtl,Norm,5,1979,HdBoard,0,Slab,NA,NA,0,Y,1114,0,0,TA,0,1979,720,Y,0,0,NA,2009
+1859,RL,Pave,Bnk,Gtl,Norm,5,1979,HdBoard,0,Slab,NA,NA,0,Y,0,0,0,TA,0,1979,400,Y,0,0,NA,2009
+1860,RL,Pave,Lvl,Gtl,Norm,5,1979,Plywood,216,CBlock,Av,Unf,1094,Y,0,2,2,Gd,2,1979,672,Y,0,0,NA,2009
+1861,RL,Pave,Bnk,Gtl,Norm,5,1979,HdBoard,0,Slab,NA,NA,0,Y,0,0,0,TA,0,1979,400,Y,0,0,NA,2009
+1862,RL,Pave,Lvl,Gtl,Norm,7,2000,VinylSd,23,PConc,No,Unf,1168,Y,1619,2,2,TA,2,2000,820,Y,0,0,NA,2009
+1863,RL,Pave,Lvl,Gtl,Norm,7,2000,VinylSd,23,PConc,No,Unf,1168,Y,1619,2,2,TA,2,2000,820,Y,0,0,NA,2009
+1864,RL,Pave,Lvl,Gtl,Norm,7,2000,VinylSd,23,PConc,No,Unf,1168,Y,1619,2,2,TA,2,2000,820,Y,0,0,NA,2009
+1865,RL,Pave,Lvl,Gtl,Norm,9,2009,VinylSd,242,PConc,Gd,Unf,1555,Y,0,1,1,Ex,1,2009,1138,Y,0,0,NA,2009
+1866,RL,Pave,Lvl,Gtl,Norm,9,2008,VinylSd,364,PConc,Gd,Unf,1720,Y,0,1,0,Ex,1,2008,846,Y,0,0,NA,2009
+1867,RL,Pave,Lvl,Gtl,Norm,8,2008,VinylSd,0,PConc,Av,Unf,1468,Y,0,0,0,Gd,1,2008,904,Y,0,0,NA,2009
+1868,RL,Pave,Lvl,Gtl,Norm,8,2008,VinylSd,352,PConc,Av,Unf,1838,Y,0,1,0,Gd,2,2007,524,Y,0,0,NA,2009
+1869,RL,Pave,Lvl,Gtl,Norm,7,2007,VinylSd,0,PConc,Av,Unf,1282,Y,0,1,0,Gd,1,2007,662,Y,0,0,NA,2009
+1870,RL,Pave,Lvl,Gtl,Norm,8,2008,VinylSd,140,PConc,Av,Unf,1254,Y,0,1,0,Gd,0,2008,810,Y,0,0,NA,2009
+1871,RL,Pave,Lvl,Gtl,Norm,8,2006,VinylSd,76,PConc,Gd,Unf,1498,Y,0,0,0,Gd,1,2005,844,Y,0,0,NA,2009
+1872,RL,Pave,Lvl,Gtl,Norm,6,2006,VinylSd,0,PConc,Av,Unf,704,Y,718,0,1,Gd,1,2005,440,Y,0,0,NA,2009
+1873,RL,Pave,HLS,Mod,Norm,7,1993,VinylSd,0,PConc,Av,Unf,1449,Y,815,1,1,Gd,1,1992,525,Y,0,0,NA,2009
+1874,RL,Pave,Low,Mod,Norm,5,1994,VinylSd,0,PConc,No,Unf,990,Y,0,1,0,TA,0,1995,440,Y,0,0,NA,2009
+1875,RL,Pave,Low,Gtl,Norm,7,1998,VinylSd,0,PConc,Mn,Unf,1463,Y,0,1,0,TA,0,1998,539,Y,0,0,NA,2009
+1876,RL,Pave,Lvl,Gtl,Norm,6,1998,VinylSd,120,PConc,No,Unf,928,Y,844,1,1,TA,1,1998,492,Y,0,0,NA,2009
+1877,RL,Pave,Lvl,Gtl,Norm,7,2001,VinylSd,68,PConc,No,Unf,1431,Y,0,1,0,Gd,0,2002,577,Y,0,0,NA,2009
+1878,RL,Pave,Lvl,Gtl,Norm,7,2001,VinylSd,180,PConc,Mn,Unf,1492,Y,0,0,0,Gd,1,2001,608,Y,0,0,NA,2009
+1879,RL,Pave,Lvl,Gtl,Norm,5,1978,MetalSd,76,BrkTil,Av,Unf,907,Y,0,0,0,TA,0,1978,343,Y,0,0,NA,2009
+1880,RL,Pave,Lvl,Gtl,Norm,5,1979,HdBoard,40,CBlock,No,BLQ,914,Y,0,1,0,TA,0,1979,444,Y,0,0,NA,2009
+1881,RL,Pave,Lvl,Gtl,Norm,7,2002,VinylSd,0,PConc,Av,Unf,1569,Y,0,1,0,Gd,0,2002,1231,Y,0,0,NA,2009
+1882,RL,Pave,Lvl,Gtl,Norm,8,2003,VinylSd,198,PConc,Av,Unf,1068,Y,1116,0,1,Gd,1,2003,570,Y,0,0,NA,2009
+1883,RL,Pave,Lvl,Gtl,Norm,7,2002,VinylSd,NA,PConc,No,Unf,840,Y,885,0,1,Gd,0,2002,550,Y,0,0,NA,2009
+1884,RL,Pave,Lvl,Gtl,Norm,7,2001,VinylSd,0,PConc,No,Unf,944,Y,926,0,1,Gd,0,2001,608,Y,0,0,NA,2009
+1885,RL,Pave,Lvl,Gtl,Norm,8,2000,VinylSd,260,PConc,Gd,Unf,1462,Y,0,1,0,Gd,1,1999,521,Y,0,0,NA,2009
+1886,RL,Pave,Lvl,Gtl,Norm,8,2003,HdBoard,164,PConc,Gd,Unf,1822,Y,0,1,0,Gd,1,2002,523,Y,0,0,NA,2009
+1887,RL,Pave,Lvl,Gtl,Norm,7,1998,VinylSd,209,PConc,Av,Unf,1417,Y,0,1,0,Gd,1,1997,511,Y,0,0,NA,2009
+1888,RL,Pave,Lvl,Gtl,Norm,8,2007,VinylSd,180,PConc,Av,Unf,1578,Y,0,1,0,Gd,1,2007,810,Y,0,0,NA,2009
+1889,RL,Pave,Lvl,Gtl,Norm,6,2007,VinylSd,0,PConc,No,Unf,608,Y,788,0,1,Gd,1,2007,440,Y,0,0,NA,2009
+1890,RL,Pave,Lvl,Gtl,Norm,4,1971,HdBoard,0,CBlock,No,Unf,1014,Y,0,1,0,TA,0,1968,544,Y,0,0,NA,2009
+1891,RM,Pave,Lvl,Gtl,Norm,6,2006,VinylSd,80,Wood,Gd,Unf,547,Y,0,1,0,TA,0,2005,525,Y,0,0,NA,2009
+1892,RL,Pave,HLS,Mod,Norm,4,1959,AsbShng,0,CBlock,No,Rec,876,Y,0,0,0,TA,0,1959,320,Y,0,0,NA,2009
+1893,RL,Pave,Lvl,Gtl,Norm,5,1950,MetalSd,0,CBlock,Mn,Unf,1078,Y,0,1,0,TA,0,1950,195,Y,211,0,Shed,2009
+1894,RL,Pave,Lvl,Gtl,Norm,5,1959,VinylSd,74,CBlock,No,Unf,1678,Y,0,0,0,TA,0,NA,0,Y,0,0,NA,2009
+1895,RL,Pave,Lvl,Gtl,Norm,5,1956,HdBoard,259,CBlock,No,Unf,1150,Y,0,0,0,TA,1,1956,313,Y,0,0,NA,2009
+1896,RL,Pave,Lvl,Gtl,Norm,5,1950,Wd Sdng,0,CBlock,No,Unf,720,Y,444,0,0,TA,2,1940,256,Y,0,0,NA,2009
+1897,RH,Pave,Lvl,Gtl,Norm,5,1950,MetalSd,88,PConc,No,Unf,832,Y,436,0,1,TA,2,1938,250,Y,55,0,NA,2009
+1898,RL,Pave,Bnk,Gtl,Norm,6,1950,Wd Sdng,0,BrkTil,No,Unf,583,Y,595,0,1,TA,1,1926,180,Y,0,0,NA,2009
+1899,RL,Pave,Lvl,Gtl,Norm,6,2000,Stucco,0,BrkTil,No,Unf,816,Y,0,0,0,Gd,1,1916,440,Y,180,0,NA,2009
+1900,RL,Pave,Lvl,Gtl,Norm,7,1990,Wd Sdng,0,BrkTil,Mn,Unf,600,Y,600,0,0,TA,1,1918,215,Y,0,0,NA,2009
+1901,RL,Pave,HLS,Mod,Norm,5,1950,Wd Sdng,0,CBlock,No,Unf,840,Y,727,1,1,TA,2,1961,440,Y,150,0,NA,2009
+1902,RL,Pave,HLS,Gtl,Norm,5,1960,MetalSd,0,CBlock,No,Unf,1273,Y,0,0,0,TA,0,1960,307,Y,0,0,NA,2009
+1903,RL,Pave,HLS,Gtl,Norm,7,1950,Wd Sdng,0,BrkTil,No,Unf,920,Y,1240,0,1,TA,2,1940,400,Y,57,0,NA,2009
+1904,RL,Pave,Lvl,Gtl,Norm,5,1954,BrkFace,0,BrkTil,Mn,ALQ,1112,Y,0,1,0,TA,1,1954,390,Y,0,0,NA,2009
+1905,RL,Pave,Lvl,Gtl,Norm,6,1960,HdBoard,132,CBlock,No,BLQ,1561,Y,0,1,0,TA,1,1960,463,Y,0,0,NA,2009
+1906,RL,Pave,Bnk,Gtl,Norm,5,2005,BrkComm,0,BrkTil,No,Rec,1067,N,537,1,0,Fa,1,1949,295,Y,81,0,NA,2009
+1907,RL,Pave,Bnk,Mod,Norm,6,1954,HdBoard,420,PConc,Av,BLQ,1310,Y,0,1,1,TA,2,1954,576,Y,0,0,NA,2009
+1908,RM,Pave,Lvl,Gtl,Norm,6,1980,MetalSd,0,CBlock,No,Unf,516,Y,516,0,0,TA,1,1980,452,Y,0,0,NA,2009
+1909,RM,Pave,Lvl,Gtl,Norm,6,1992,MetalSd,0,CBlock,Mn,Unf,561,Y,668,1,1,Gd,1,1980,462,Y,0,0,NA,2009
+1910,RM,Pave,Lvl,Gtl,Norm,6,1980,MetalSd,0,CBlock,No,Unf,561,Y,668,0,1,TA,1,1980,462,Y,0,0,NA,2009
+1911,RL,Pave,Lvl,Gtl,Norm,6,1986,VinylSd,242,CBlock,No,Unf,572,Y,800,1,1,TA,1,1986,501,Y,0,0,Shed,2009
+1912,RL,Pave,Bnk,Gtl,Norm,7,2009,BrkFace,0,CBlock,No,ALQ,1803,Y,0,1,0,Ex,2,1971,551,Y,0,0,NA,2009
+1913,RM,Pave,Bnk,Gtl,Norm,5,1993,AsbShng,0,BrkTil,No,Unf,760,N,928,0,0,Gd,0,1998,576,Y,78,0,NA,2009
+1914,C (all),Pave,Lvl,Gtl,Norm,4,1950,MetalSd,0,BrkTil,No,Unf,572,N,0,0,0,TA,0,1940,200,N,72,0,NA,2009
+1915,RM,Pave,HLS,Mod,Norm,8,2008,CemntBd,174,PConc,Gd,Unf,1596,Y,0,1,0,Ex,1,2007,482,Y,0,0,NA,2009
+1916,NA,Grvl,Lvl,Gtl,Norm,2,1950,Wd Sdng,0,CBlock,NA,NA,0,N,0,0,0,TA,0,1975,280,N,0,0,NA,2009
+1917,RL,Pave,Lvl,Gtl,Norm,8,2001,CemntBd,0,PConc,No,BLQ,1107,Y,1012,0,1,Gd,1,2000,642,Y,0,0,NA,2009
+1918,RL,Pave,Lvl,Gtl,Norm,6,1977,Plywood,0,CBlock,Av,Unf,902,Y,0,1,0,TA,1,1977,351,Y,0,0,NA,2009
+1919,RL,Pave,Bnk,Gtl,Norm,6,1977,Plywood,0,CBlock,Av,LwQ,957,Y,0,1,1,TA,2,1977,541,Y,0,0,NA,2009
+1920,RL,Pave,Lvl,Gtl,Norm,5,1991,HdBoard,0,PConc,No,Unf,1582,Y,0,1,0,TA,0,1991,672,Y,0,0,NA,2009
+1921,RL,Pave,HLS,Gtl,Norm,9,2008,CemntBd,246,CBlock,Gd,Unf,2190,Y,0,1,0,Ex,1,2008,780,Y,0,0,NA,2009
+1922,RL,Pave,HLS,Gtl,Norm,9,2008,CemntBd,406,PConc,Gd,Unf,1641,Y,0,1,0,Ex,0,2008,885,Y,0,0,NA,2009
+1923,RL,Pave,Lvl,Gtl,Norm,6,2006,MetalSd,0,PConc,No,Unf,712,Y,862,0,1,Gd,1,1980,440,Y,0,0,Shed,2009
+1924,RL,Pave,Lvl,Gtl,Norm,7,1989,Plywood,310,PConc,Gd,ALQ,1645,Y,0,2,1,Gd,1,1987,578,Y,0,0,NA,2009
+1925,RL,Pave,Lvl,Gtl,Norm,7,2003,VinylSd,0,PConc,No,Unf,912,Y,942,0,1,Gd,0,2003,486,Y,0,0,NA,2009
+1926,RL,Pave,HLS,Gtl,Norm,9,2007,CemntBd,290,PConc,Gd,Unf,1978,Y,0,1,0,Ex,1,2007,920,Y,0,0,NA,2009
+1927,RL,Pave,Lvl,Gtl,Norm,5,1968,HdBoard,182,CBlock,No,Unf,1008,Y,0,0,0,Gd,0,1968,384,Y,0,0,NA,2009
+1928,RL,Pave,Lvl,Mod,Norm,5,2000,HdBoard,176,CBlock,No,Unf,1188,Y,0,0,0,TA,1,1969,504,Y,0,0,NA,2009
+1929,RL,Pave,Lvl,Gtl,Norm,5,1972,MetalSd,0,CBlock,Av,BLQ,796,Y,0,0,0,TA,0,1998,336,Y,0,0,NA,2009
+1930,RL,Pave,Lvl,Gtl,Norm,6,1996,HdBoard,0,CBlock,Av,GLQ,384,Y,0,0,0,TA,0,1993,429,Y,0,0,Shed,2009
+1931,RL,Pave,Lvl,Gtl,Norm,5,1993,HdBoard,0,PConc,Av,LwQ,828,Y,0,1,0,TA,1,1998,698,Y,0,0,NA,2009
+1932,RL,Pave,Lvl,Gtl,Norm,5,1992,HdBoard,0,PConc,No,Unf,624,Y,663,0,1,TA,0,2001,440,Y,0,0,NA,2009
+1933,RL,Pave,Lvl,Mod,Norm,5,1969,VinylSd,178,CBlock,Gd,LwQ,784,Y,848,0,1,TA,1,1969,898,Y,368,0,NA,2009
+1934,RL,Pave,Lvl,Gtl,Norm,6,1998,VinylSd,0,PConc,No,Unf,926,Y,678,0,1,TA,1,1997,470,Y,0,0,NA,2008
+1935,RL,Pave,Lvl,Gtl,Norm,6,1996,VinylSd,119,PConc,No,Unf,680,Y,790,0,1,TA,1,1995,420,Y,0,0,NA,2008
+1936,RL,Pave,Lvl,Gtl,Norm,6,1998,VinylSd,0,PConc,Gd,Unf,926,Y,678,0,1,TA,0,1998,472,Y,0,0,NA,2008
+1937,RL,Pave,Lvl,Gtl,Norm,6,1996,HdBoard,0,PConc,No,Unf,916,Y,720,0,1,TA,1,1996,386,Y,0,0,NA,2008
+1938,RL,Pave,Lvl,Gtl,Norm,5,1997,HdBoard,0,PConc,No,Unf,1348,Y,0,1,0,Gd,0,1996,404,Y,0,0,NA,2008
+1939,RL,Pave,Lvl,Gtl,Norm,8,1997,CemntBd,0,PConc,Mn,Unf,1664,Y,0,1,1,Gd,1,1997,528,Y,0,0,NA,2008
+1940,RL,Pave,HLS,Gtl,Norm,8,1992,HdBoard,0,PConc,Mn,Unf,1280,Y,0,0,0,Gd,0,1992,506,Y,0,0,NA,2008
+1941,RL,Pave,Lvl,Gtl,Norm,6,1998,VinylSd,0,PConc,No,Unf,932,Y,701,0,1,TA,1,1998,460,Y,0,0,NA,2008
+1942,RL,Pave,Lvl,Gtl,Norm,6,1991,HdBoard,194,PConc,No,Unf,836,Y,858,1,1,Gd,0,1991,416,Y,0,0,NA,2008
+1943,RL,Pave,HLS,Mod,Norm,8,1989,HdBoard,0,PConc,Gd,Unf,1337,Y,0,1,0,Gd,1,1989,462,Y,154,0,NA,2008
+1944,RL,Pave,HLS,Gtl,Norm,8,2005,VinylSd,130,PConc,Gd,Unf,1168,Y,1332,0,1,Ex,1,2005,683,Y,0,0,NA,2008
+1945,RL,Pave,HLS,Gtl,Norm,9,2004,VinylSd,296,PConc,Gd,Unf,1884,Y,0,1,0,Ex,1,2004,670,Y,0,0,NA,2008
+1946,RL,Pave,Bnk,Gtl,Norm,6,1952,BrkFace,0,CBlock,No,Unf,1632,Y,0,0,0,TA,2,1952,495,Y,144,0,Shed,2008
+1947,RL,Pave,HLS,Gtl,PosN,9,2007,MetalSd,178,PConc,Gd,Unf,1710,Y,0,1,0,Ex,1,2007,557,Y,0,0,NA,2008
+1948,RL,Pave,Lvl,Gtl,Norm,6,1950,AsbShng,44,CBlock,No,Unf,1488,Y,0,0,1,TA,1,1950,738,Y,180,0,NA,2008
+1949,RL,Pave,Lvl,Gtl,Norm,7,1988,Plywood,102,CBlock,Mn,Unf,1675,Y,0,1,0,Ex,1,1988,528,Y,0,0,NA,2008
+1950,RL,Pave,Lvl,Gtl,Norm,7,1983,WdShing,174,CBlock,Mn,Unf,1260,Y,0,1,0,TA,0,1983,598,Y,0,0,NA,2008
+1951,RL,Pave,Lvl,Gtl,Norm,7,1978,Plywood,383,CBlock,No,Rec,2048,Y,0,1,0,Gd,2,1978,550,Y,0,0,NA,2008
+1952,RL,Pave,Lvl,Gtl,Norm,7,1979,Plywood,194,CBlock,No,LwQ,1782,Y,0,0,0,Gd,1,1979,551,Y,0,0,NA,2008
+1953,RL,Pave,Lvl,Gtl,Norm,6,1976,HdBoard,621,PConc,No,Rec,1211,Y,0,1,0,Gd,1,1976,461,Y,0,0,NA,2008
+1954,RL,Pave,Lvl,Gtl,Norm,7,1988,HdBoard,280,CBlock,Mn,Unf,738,Y,767,0,1,TA,1,1980,489,Y,0,0,NA,2008
+1955,RL,Pave,Lvl,Gtl,Norm,5,1969,VinylSd,0,CBlock,No,Unf,720,Y,588,0,1,TA,0,1969,484,Y,0,0,NA,2008
+1956,RL,Pave,Lvl,Gtl,Norm,7,1978,Plywood,168,PConc,No,Unf,1420,Y,1420,0,1,Gd,2,1978,1314,Y,0,0,NA,2008
+1957,RL,Pave,Lvl,Gtl,Norm,6,1976,HdBoard,120,CBlock,No,Unf,1444,Y,0,0,0,TA,1,1976,473,Y,0,0,NA,2008
+1958,RL,Pave,Lvl,Gtl,Norm,8,1996,VinylSd,402,PConc,No,Unf,1236,Y,1104,1,1,Gd,1,1996,787,Y,218,0,NA,2008
+1959,RL,Pave,Lvl,Gtl,Norm,5,1974,VinylSd,0,CBlock,Mn,Unf,896,Y,896,0,2,TA,0,1982,480,Y,0,0,NA,2008
+1960,RL,Pave,Lvl,Gtl,Norm,4,1969,HdBoard,72,CBlock,Mn,Unf,936,Y,0,0,0,TA,0,1969,288,Y,0,0,NA,2008
+1961,RL,Pave,Lvl,Gtl,Norm,5,1971,MetalSd,0,CBlock,No,ALQ,864,Y,0,1,0,TA,0,1977,576,Y,0,0,NA,2008
+1962,RM,Pave,Lvl,Gtl,Norm,6,1973,HdBoard,359,CBlock,No,Unf,483,Y,504,0,1,TA,0,1973,264,Y,0,0,NA,2008
+1963,RM,Pave,Lvl,Gtl,Norm,6,1972,HdBoard,422,CBlock,No,Unf,483,Y,504,0,1,TA,0,1975,352,Y,0,0,NA,2008
+1964,RM,Pave,Lvl,Gtl,Norm,5,1972,HdBoard,356,CBlock,No,Unf,630,Y,672,0,1,TA,0,1972,264,Y,0,0,NA,2008
+1965,RL,Pave,Lvl,Gtl,Norm,6,1975,Plywood,0,CBlock,No,LwQ,855,Y,601,0,1,TA,0,1975,460,Y,0,0,NA,2008
+1966,RL,Pave,Lvl,Gtl,Norm,7,1977,Plywood,0,CBlock,No,Unf,1055,Y,0,0,0,TA,0,1977,440,Y,0,0,NA,2008
+1967,RL,Pave,Lvl,Gtl,Norm,8,2007,VinylSd,302,PConc,No,Unf,1582,Y,0,1,0,Gd,0,2007,905,Y,0,0,NA,2008
+1968,RL,Pave,Lvl,Gtl,Norm,8,2007,VinylSd,554,PConc,Gd,BLQ,2418,Y,0,1,1,Ex,1,2007,650,Y,0,0,NA,2008
+1969,RL,Pave,Lvl,Gtl,Norm,9,2007,VinylSd,480,PConc,Gd,Unf,1950,Y,0,1,0,Ex,1,2007,706,Y,0,0,NA,2008
+1970,RL,Pave,Lvl,Gtl,Norm,9,2006,VinylSd,270,PConc,Gd,Unf,1850,Y,898,1,1,Ex,1,2006,850,Y,0,0,NA,2008
+1971,RL,Pave,Lvl,Gtl,Norm,10,2006,CemntBd,468,PConc,Gd,Unf,1620,Y,1158,1,1,Ex,1,2005,1150,Y,0,0,NA,2008
+1972,RL,Pave,Lvl,Gtl,Norm,9,2005,CemntBd,368,PConc,Av,Unf,1414,Y,917,1,1,Ex,1,2005,1003,Y,0,0,NA,2008
+1973,RL,Pave,Lvl,Gtl,Norm,8,2007,VinylSd,108,PConc,Av,Unf,948,Y,1140,0,1,Gd,1,2007,656,Y,0,0,NA,2008
+1974,RL,Pave,Lvl,Gtl,Norm,8,2004,VinylSd,126,PConc,No,Unf,1148,Y,1162,1,1,Ex,1,2004,756,Y,0,0,NA,2008
+1975,RL,Pave,HLS,Mod,Norm,10,2003,MetalSd,680,PConc,Gd,Unf,2535,Y,0,2,1,Ex,2,2003,789,Y,0,144,NA,2008
+1976,RL,Pave,Lvl,Gtl,Norm,8,2004,VinylSd,504,PConc,Mn,Unf,1603,Y,0,1,0,Gd,1,2003,732,Y,0,0,NA,2008
+1977,RL,Pave,Lvl,Gtl,Norm,8,2002,VinylSd,1110,PConc,Mn,Unf,1479,Y,1134,1,1,Gd,1,2001,746,Y,0,0,NA,2008
+1978,RL,Pave,Lvl,Gtl,Norm,8,2003,VinylSd,221,PConc,Gd,Unf,1765,Y,886,0,1,Gd,1,2003,795,Y,0,0,NA,2008
+1979,RL,Pave,Lvl,Gtl,Norm,9,2008,MetalSd,492,PConc,No,Unf,1858,Y,0,1,0,Ex,1,2008,870,Y,0,0,NA,2008
+1980,RL,Pave,Lvl,Gtl,Norm,7,2005,VinylSd,144,PConc,No,Unf,1367,Y,0,0,0,Gd,1,2005,484,Y,0,0,NA,2008
+1981,RL,Pave,Lvl,Gtl,Norm,9,2008,MetalSd,714,PConc,No,Unf,1800,Y,0,1,0,Ex,1,2008,944,Y,0,0,NA,2008
+1982,RL,Pave,Lvl,Gtl,Norm,8,2007,MetalSd,176,PConc,No,Unf,1342,Y,0,1,0,Gd,1,2007,550,Y,0,0,NA,2008
+1983,RL,Pave,Lvl,Gtl,Norm,8,2007,MetalSd,196,PConc,No,Unf,1342,Y,0,0,0,Gd,1,2007,550,Y,0,0,NA,2008
+1984,RL,Pave,Lvl,Gtl,Norm,7,2004,VinylSd,106,PConc,No,Unf,764,Y,862,0,1,Gd,0,2003,474,Y,0,0,NA,2008
+1985,RL,Pave,Lvl,Gtl,Norm,7,2003,VinylSd,143,PConc,Gd,Unf,1415,Y,0,1,0,Gd,1,2003,644,Y,0,0,NA,2008
+1986,RM,Pave,Lvl,Gtl,Norm,7,2004,VinylSd,24,PConc,No,Unf,1393,Y,0,1,0,Gd,1,2004,668,Y,0,0,NA,2008
+1987,RL,Pave,Lvl,Gtl,Norm,7,2008,WdShing,20,PConc,Gd,Unf,1146,Y,0,0,0,Gd,1,2007,428,Y,0,0,NA,2008
+1988,RL,Pave,Lvl,Gtl,Norm,6,2004,VinylSd,0,PConc,No,Unf,789,Y,702,0,1,Gd,1,2004,393,Y,0,0,NA,2008
+1989,RL,Pave,Lvl,Gtl,Norm,7,2003,VinylSd,0,PConc,No,Unf,840,Y,880,0,1,Gd,1,2002,400,Y,0,0,NA,2008
+1990,RL,Pave,Lvl,Gtl,Norm,7,2003,VinylSd,196,PConc,No,Unf,847,Y,1139,0,1,Gd,1,2003,434,Y,0,0,NA,2008
+1991,RL,Pave,Lvl,Gtl,Norm,7,2008,VinylSd,176,PConc,No,Unf,1350,Y,0,1,0,Gd,1,2008,484,Y,0,0,NA,2008
+1992,RL,Pave,Lvl,Gtl,Norm,7,2001,VinylSd,647,PConc,Av,Unf,982,Y,884,0,1,TA,1,2000,431,Y,0,0,NA,2008
+1993,RL,Pave,Lvl,Gtl,Norm,7,2002,VinylSd,NA,PConc,No,Unf,707,Y,707,0,1,Gd,1,2002,403,Y,0,0,NA,2008
+1994,RL,Pave,Lvl,Gtl,Norm,7,2000,VinylSd,0,PConc,No,Unf,1037,Y,1285,0,1,TA,1,1999,400,Y,0,0,NA,2008
+1995,RL,Pave,Lvl,Gtl,Norm,7,1999,VinylSd,0,PConc,No,Unf,831,Y,778,0,1,TA,1,1999,450,Y,0,0,NA,2008
+1996,RL,Pave,Lvl,Gtl,Norm,8,1997,HdBoard,1290,PConc,No,Unf,1173,Y,1017,0,1,Gd,1,1997,516,Y,0,0,NA,2008
+1997,RL,Pave,Lvl,Gtl,Norm,9,2000,VinylSd,295,PConc,Mn,Unf,1519,Y,639,0,1,Ex,1,2000,687,Y,0,0,NA,2008
+1998,RL,Pave,Lvl,Gtl,Norm,8,1998,VinylSd,495,PConc,Av,Unf,1982,Y,0,1,0,Gd,1,1998,938,Y,0,0,NA,2008
+1999,RL,Pave,Lvl,Gtl,Norm,7,1997,VinylSd,0,PConc,No,Unf,1064,Y,1061,1,1,Gd,2,1996,576,Y,0,0,NA,2008
+2000,RL,Pave,Lvl,Gtl,Norm,8,1995,VinylSd,466,PConc,Av,Unf,1242,Y,1250,0,1,Gd,1,1995,751,Y,0,0,NA,2008
+2001,RL,Pave,Lvl,Gtl,Norm,7,1994,VinylSd,320,PConc,Av,GLQ,1080,Y,1089,1,1,Gd,1,1993,783,Y,0,0,NA,2008
+2002,RL,Pave,Lvl,Gtl,Norm,7,2006,VinylSd,128,PConc,No,Unf,1578,Y,0,1,0,Gd,1,2006,642,Y,0,0,NA,2008
+2003,RL,Pave,Lvl,Gtl,Norm,8,2007,VinylSd,156,PConc,Av,Unf,1341,Y,520,0,0,Gd,1,2007,851,Y,0,0,NA,2008
+2004,RL,Pave,Lvl,Gtl,Norm,8,2008,VinylSd,310,PConc,Av,Unf,955,Y,919,1,1,Gd,1,2007,880,Y,0,0,NA,2008
+2005,RL,Pave,Lvl,Gtl,Norm,8,2007,VinylSd,NA,PConc,No,Unf,1460,Y,0,0,0,Gd,1,2006,480,Y,0,0,NA,2008
+2006,FV,Pave,Lvl,Gtl,Norm,8,2008,VinylSd,0,PConc,No,Unf,1363,Y,0,0,0,Gd,0,2008,588,Y,0,0,NA,2008
+2007,FV,Pave,Lvl,Gtl,Norm,8,2007,VinylSd,292,PConc,Av,Unf,1660,Y,0,0,0,Gd,1,2007,660,Y,0,0,NA,2008
+2008,FV,Pave,Lvl,Gtl,Norm,7,2008,CemntBd,210,PConc,No,Unf,1218,Y,0,1,0,Gd,0,2008,462,Y,0,0,NA,2008
+2009,RL,Pave,Lvl,Gtl,Norm,6,2003,VinylSd,0,PConc,Mn,ALQ,835,Y,861,1,1,Gd,0,2003,542,Y,0,0,NA,2008
+2010,RL,Pave,Lvl,Gtl,Norm,7,2004,VinylSd,95,PConc,Av,Unf,835,Y,828,0,1,Gd,0,2003,478,Y,0,0,NA,2008
+2011,RL,Pave,Lvl,Gtl,Norm,6,2006,VinylSd,126,PConc,No,Unf,1175,Y,0,1,0,Gd,0,NA,0,Y,0,0,NA,2008
+2012,RL,Pave,Lvl,Gtl,Norm,7,2007,VinylSd,0,PConc,Mn,Unf,1162,Y,0,0,0,Gd,0,2007,483,Y,0,0,NA,2008
+2013,RL,Pave,Lvl,Gtl,Norm,6,1995,VinylSd,38,PConc,No,Unf,754,Y,855,0,1,Gd,0,1995,525,Y,0,0,NA,2008
+2014,RL,Pave,Lvl,Gtl,Norm,6,1994,HdBoard,120,PConc,No,Unf,886,Y,794,0,1,Gd,0,1993,474,Y,0,0,NA,2008
+2015,RL,Pave,Lvl,Gtl,Norm,7,1995,VinylSd,145,PConc,Av,Unf,832,Y,825,0,1,Gd,0,1994,483,Y,0,0,Shed,2008
+2016,RL,Pave,Lvl,Gtl,Norm,6,2001,VinylSd,0,PConc,No,Unf,827,Y,850,1,1,Gd,0,2001,627,Y,0,0,NA,2008
+2017,RL,Pave,Lvl,Gtl,Norm,7,1992,HdBoard,0,PConc,No,Unf,836,Y,893,0,1,Gd,0,1992,506,Y,0,0,NA,2008
+2018,RL,Pave,Lvl,Gtl,Norm,5,1963,Wd Sdng,0,PConc,No,ALQ,984,Y,0,1,0,TA,1,1963,384,Y,0,0,Shed,2008
+2019,RL,Pave,Lvl,Gtl,Norm,5,2007,Wd Sdng,0,CBlock,No,Unf,864,Y,0,1,0,Gd,1,1962,420,Y,0,0,NA,2008
+2020,RL,Pave,Lvl,Gtl,Norm,5,1968,HdBoard,0,CBlock,Mn,Unf,890,N,0,1,0,TA,0,1970,308,Y,0,0,NA,2008
+2021,RL,Pave,Lvl,Gtl,Norm,5,1963,Wd Sdng,0,CBlock,No,Unf,864,Y,0,0,0,TA,0,1963,276,Y,0,0,Shed,2008
+2022,RL,Pave,Lvl,Gtl,Norm,6,1974,HdBoard,144,CBlock,Av,Unf,1430,Y,0,0,0,TA,2,1974,484,Y,165,0,NA,2008
+2023,RL,Pave,Lvl,Gtl,Norm,5,1972,HdBoard,0,CBlock,No,ALQ,1001,Y,640,0,0,TA,1,1972,490,Y,92,0,NA,2008
+2024,RL,Pave,Lvl,Gtl,Norm,6,1991,HdBoard,304,PConc,No,Unf,930,Y,1319,1,1,Gd,2,1990,473,Y,0,0,NA,2008
+2025,RL,Pave,Lvl,Gtl,Norm,9,1994,Wd Sdng,568,PConc,Gd,Unf,1848,Y,959,1,1,Gd,1,1993,636,Y,0,0,NA,2008
+2026,FV,Pave,Lvl,Gtl,Norm,7,2005,MetalSd,0,PConc,No,Unf,1235,Y,0,0,0,Gd,0,2004,495,Y,0,0,NA,2008
+2027,FV,Pave,Lvl,Gtl,Norm,6,2005,MetalSd,0,PConc,No,Unf,600,Y,600,1,1,Gd,0,2005,480,Y,0,0,NA,2008
+2028,FV,Pave,Lvl,Gtl,Norm,7,2007,VinylSd,0,PConc,No,Unf,689,Y,689,0,0,Gd,0,2007,540,Y,0,0,NA,2008
+2029,FV,Pave,Lvl,Gtl,Norm,6,1999,MetalSd,216,PConc,No,Unf,744,Y,792,1,1,TA,0,1999,440,Y,0,0,NA,2008
+2030,FV,Pave,Lvl,Gtl,Norm,9,2000,MetalSd,260,PConc,Av,Unf,1614,Y,0,1,0,Ex,1,2000,495,Y,0,0,NA,2008
+2031,FV,Pave,Lvl,Gtl,Norm,9,2001,VinylSd,179,PConc,Av,Unf,1310,Y,0,1,1,Gd,1,2001,545,Y,0,0,NA,2008
+2032,FV,Pave,Lvl,Gtl,Norm,9,2001,VinylSd,0,PConc,Av,Unf,1419,Y,0,1,1,Ex,1,2001,588,Y,0,0,NA,2008
+2033,FV,Pave,Lvl,Gtl,Norm,9,2000,VinylSd,260,PConc,Av,Unf,1557,Y,0,1,0,Ex,1,1999,484,Y,0,0,NA,2008
+2034,FV,Pave,Lvl,Gtl,Norm,7,2000,VinylSd,216,PConc,No,Unf,672,Y,720,1,1,Gd,0,1999,462,Y,0,0,NA,2008
+2035,FV,Pave,Lvl,Gtl,Norm,7,2001,VinylSd,513,PConc,No,Unf,858,Y,917,1,1,TA,1,2001,546,Y,0,0,NA,2008
+2036,FV,Pave,Lvl,Gtl,Norm,8,1999,MetalSd,466,PConc,No,Unf,960,Y,624,1,1,Gd,0,1999,480,Y,0,0,NA,2008
+2037,FV,Pave,Lvl,Gtl,Norm,8,2000,MetalSd,456,PConc,No,Unf,960,Y,645,1,1,Gd,0,2000,480,Y,0,0,NA,2008
+2038,FV,Pave,Lvl,Gtl,Norm,10,1999,BrkFace,0,PConc,Mn,GLQ,970,Y,924,1,1,Ex,1,1998,846,Y,0,0,NA,2008
+2039,RL,Pave,Lvl,Gtl,Norm,8,1995,BrkFace,0,PConc,Gd,GLQ,1230,Y,0,1,1,Gd,1,1995,477,Y,0,0,NA,2008
+2040,RL,Pave,Lvl,Gtl,Norm,9,1977,Wd Sdng,1050,CBlock,No,Unf,994,Y,1345,0,2,Gd,1,1977,864,Y,16,0,NA,2008
+2041,RL,Pave,Lvl,Gtl,Norm,8,2007,VinylSd,0,CBlock,Mn,Rec,1426,Y,0,1,0,Ex,1,1976,550,Y,0,0,NA,2008
+2042,FV,Pave,Lvl,Gtl,Norm,7,2002,VinylSd,NA,PConc,No,Unf,952,Y,860,0,1,TA,1,2002,469,Y,0,0,NA,2008
+2043,RL,Pave,Lvl,Gtl,Norm,6,1969,MetalSd,0,CBlock,Av,Unf,1427,Y,0,0,0,TA,0,1969,516,Y,0,0,NA,2008
+2044,RL,Pave,Lvl,Gtl,Norm,6,1968,HdBoard,0,CBlock,No,Unf,1740,Y,0,0,1,TA,1,1968,512,Y,0,0,NA,2008
+2045,RL,Pave,Lvl,Gtl,Norm,7,1967,Plywood,0,CBlock,No,BLQ,1620,Y,0,0,0,Gd,1,1967,578,Y,192,0,Shed,2008
+2046,RL,Pave,Lvl,Gtl,Norm,5,1965,MetalSd,0,CBlock,No,Unf,1625,Y,0,0,0,TA,0,1965,484,Y,0,0,NA,2008
+2047,RL,Pave,Lvl,Gtl,Norm,5,1968,MetalSd,0,CBlock,No,Unf,732,Y,732,0,1,TA,0,1968,470,Y,0,0,NA,2008
+2048,RL,Pave,Lvl,Gtl,Norm,5,2005,HdBoard,0,CBlock,No,Rec,912,Y,0,1,0,TA,0,1978,576,Y,0,0,NA,2008
+2049,RL,Pave,Lvl,Gtl,Norm,5,1965,HdBoard,0,CBlock,No,Unf,1728,Y,0,0,0,TA,0,1987,576,Y,0,0,NA,2008
+2050,RL,Pave,Lvl,Gtl,Norm,7,1971,HdBoard,0,CBlock,No,Unf,825,Y,825,0,1,TA,0,1971,464,Y,0,0,NA,2008
+2051,RL,Pave,Lvl,Gtl,Norm,5,1956,HdBoard,0,Slab,NA,NA,0,Y,0,0,0,TA,0,1956,267,Y,40,0,NA,2008
+2052,RL,Pave,Lvl,Gtl,Norm,5,1961,Plywood,0,CBlock,No,Unf,1114,Y,0,1,0,TA,0,1961,451,Y,0,0,NA,2008
+2053,RL,Pave,Lvl,Gtl,Norm,5,2000,Wd Sdng,0,CBlock,No,Unf,1118,Y,0,1,0,Gd,0,1960,264,Y,0,0,NA,2008
+2054,RL,Pave,Bnk,Mod,Feedr,4,1950,MetalSd,0,PConc,No,Unf,348,Y,453,0,0,TA,0,1937,231,Y,0,0,NA,2008
+2055,RL,Pave,Lvl,Gtl,Norm,5,1960,MetalSd,203,CBlock,No,Unf,1296,Y,0,0,0,Gd,0,1960,450,Y,0,0,NA,2008
+2056,RL,Pave,Lvl,Gtl,Norm,5,2006,HdBoard,0,CBlock,No,Rec,572,Y,0,1,0,Gd,1,1950,264,Y,0,0,NA,2008
+2057,RL,Pave,Lvl,Gtl,Norm,5,1953,Wd Sdng,88,CBlock,No,Unf,1036,Y,0,0,0,TA,0,1953,312,Y,0,0,NA,2008
+2058,RL,Pave,Lvl,Gtl,Norm,6,1999,VinylSd,410,CBlock,No,Unf,1104,Y,884,0,1,Gd,1,1966,480,Y,0,0,NA,2008
+2059,RL,Pave,Lvl,Gtl,Norm,5,1957,Wd Sdng,143,CBlock,No,LwQ,1176,Y,0,1,0,TA,2,1957,292,Y,0,0,NA,2008
+2060,RL,Pave,Lvl,Gtl,Norm,5,1998,HdBoard,0,CBlock,No,Unf,1248,Y,0,1,0,Gd,0,1959,480,Y,0,0,NA,2008
+2061,RL,Pave,Lvl,Gtl,Norm,6,1958,Wd Sdng,187,CBlock,No,Unf,1395,Y,0,1,0,TA,1,1958,441,Y,0,0,NA,2008
+2062,RL,Pave,Lvl,Gtl,Norm,5,1958,MetalSd,0,CBlock,No,Unf,1104,Y,0,1,0,TA,0,1956,384,Y,0,0,NA,2008
+2063,RL,Pave,Lvl,Gtl,Norm,5,1952,MetalSd,52,CBlock,No,Unf,720,Y,0,1,0,Gd,0,1952,240,Y,0,0,NA,2008
+2064,RL,Pave,Lvl,Gtl,Norm,5,1953,MetalSd,84,CBlock,No,LwQ,1152,Y,0,0,1,TA,0,1971,636,Y,0,0,NA,2008
+2065,RL,Pave,Lvl,Sev,Norm,5,1953,MetalSd,0,PConc,No,LwQ,984,N,0,0,0,TA,0,1953,400,Y,0,0,NA,2008
+2066,RL,Pave,Lvl,Gtl,Norm,6,1957,Plywood,360,CBlock,No,Unf,998,Y,0,0,0,TA,2,1957,540,Y,0,0,Shed,2008
+2067,RL,Pave,Lvl,Gtl,Norm,5,1982,MetalSd,0,BrkTil,NA,NA,0,Y,0,0,1,TA,1,1957,301,Y,0,0,NA,2008
+2068,RL,Pave,Lvl,Gtl,Norm,5,1957,Wd Sdng,0,CBlock,No,Unf,1824,Y,0,0,0,TA,0,1958,484,Y,0,0,NA,2008
+2069,RL,Pave,Lvl,Gtl,Norm,4,1950,MetalSd,0,Slab,NA,NA,0,N,0,0,0,TA,0,1948,390,N,66,0,NA,2008
+2070,RL,Pave,Lvl,Gtl,Norm,5,1950,VinylSd,0,PConc,No,Unf,747,Y,412,0,0,TA,0,1932,288,N,96,0,NA,2008
+2071,RL,Pave,Lvl,Gtl,Norm,4,2005,VinylSd,0,PConc,No,Unf,672,Y,0,0,0,TA,0,1997,308,N,0,0,NA,2008
+2072,RL,Pave,Lvl,Gtl,Norm,5,1950,Wd Sdng,0,BrkTil,No,Unf,892,Y,182,0,0,TA,1,1968,1488,N,100,0,NA,2008
+2073,RL,Pave,Lvl,Gtl,Norm,5,1968,HdBoard,0,CBlock,No,Unf,912,Y,0,0,1,TA,1,1990,372,Y,0,0,Shed,2008
+2074,RL,Pave,Lvl,Gtl,Norm,7,2001,HdBoard,125,CBlock,No,Unf,1312,Y,0,0,1,TA,1,1958,495,Y,144,0,Othr,2008
+2075,RL,Pave,Lvl,Gtl,Norm,6,1993,Wd Sdng,276,CBlock,Gd,Unf,1081,Y,0,1,0,TA,0,1960,401,Y,0,0,NA,2008
+2076,RL,Pave,Lvl,Gtl,Norm,5,1951,MetalSd,0,CBlock,No,Unf,876,Y,0,0,0,TA,1,1972,576,Y,0,0,NA,2008
+2077,RL,Pave,Lvl,Gtl,Norm,5,1959,BrkFace,0,PConc,No,Rec,1256,Y,0,1,1,Gd,0,1959,311,Y,0,0,NA,2008
+2078,RL,Pave,Lvl,Gtl,Norm,5,1962,BrkFace,0,CBlock,No,Rec,1027,Y,0,0,0,TA,0,1962,299,Y,0,0,NA,2008
+2079,RL,Pave,Lvl,Gtl,Norm,6,1950,Wd Sdng,0,CBlock,No,Unf,768,Y,501,0,0,TA,0,1994,576,Y,0,0,NA,2008
+2080,RL,Pave,Lvl,Gtl,Norm,6,1954,MetalSd,0,CBlock,No,Unf,936,Y,0,1,0,TA,0,1954,280,Y,0,0,NA,2008
+2081,RL,Pave,Lvl,Gtl,Norm,6,1954,MetalSd,0,CBlock,No,Unf,854,Y,424,0,0,TA,0,1954,240,Y,0,0,NA,2008
+2082,RL,Pave,Lvl,Gtl,Norm,5,1961,BrkFace,0,CBlock,Av,Unf,1800,N,0,0,0,TA,0,NA,0,N,0,0,NA,2008
+2083,RL,Pave,Lvl,Gtl,Norm,5,1967,MetalSd,0,CBlock,Mn,Unf,768,Y,564,0,1,TA,0,1955,480,Y,0,0,NA,2008
+2084,RL,Pave,Lvl,Gtl,Norm,5,1954,MetalSd,0,CBlock,No,Unf,825,Y,0,0,0,TA,0,1954,350,Y,0,0,NA,2008
+2085,RL,Pave,Lvl,Gtl,Norm,5,1963,Wd Sdng,0,CBlock,No,Unf,1117,Y,0,0,0,TA,0,1963,264,Y,0,0,NA,2008
+2086,RM,Pave,Bnk,Gtl,Norm,6,2008,VinylSd,0,PConc,No,Unf,192,N,0,1,0,TA,0,2008,308,Y,0,0,NA,2008
+2087,RM,Pave,Lvl,Gtl,Norm,5,2005,WdShing,0,BrkTil,No,Unf,780,Y,375,0,0,TA,0,1948,400,Y,0,0,NA,2008
+2088,RM,Pave,Lvl,Gtl,Norm,5,2003,AsbShng,0,BrkTil,No,Unf,680,N,680,0,0,TA,0,1910,330,Y,0,0,NA,2008
+2089,RM,Pave,Lvl,Gtl,Norm,5,1950,MetalSd,0,CBlock,No,Unf,672,Y,0,0,0,TA,0,1950,256,Y,0,0,NA,2008
+2090,RM,Pave,Lvl,Gtl,Norm,6,2005,Wd Sdng,0,BrkTil,No,Unf,728,Y,728,0,1,Gd,0,1915,308,N,248,0,NA,2008
+2091,RM,Pave,Lvl,Gtl,Norm,4,1996,Wd Sdng,0,Stone,No,Unf,828,Y,658,0,0,TA,0,NA,0,N,109,0,NA,2008
+2092,RM,Pave,Lvl,Gtl,Norm,4,1985,MetalSd,0,BrkTil,No,Unf,801,Y,561,0,0,TA,0,1958,440,Y,0,0,NA,2008
+2093,RM,Pave,Lvl,Gtl,Norm,5,1950,WdShing,0,BrkTil,No,Unf,936,N,780,0,0,Ex,1,1920,225,N,236,0,NA,2008
+2094,RM,Pave,Lvl,Gtl,Norm,7,2006,Stucco,0,CBlock,No,Unf,931,Y,0,0,0,Gd,1,NA,0,N,0,0,NA,2008
+2095,RM,Pave,Lvl,Gtl,Norm,6,1950,Wd Sdng,0,CBlock,No,Unf,884,Y,552,0,0,TA,2,1940,828,Y,126,0,NA,2008
+2096,RM,Pave,Lvl,Gtl,Norm,5,1950,MetalSd,0,BrkTil,No,Unf,481,N,0,0,0,TA,0,1930,200,P,96,0,NA,2008
+2097,RM,Pave,Lvl,Gtl,Norm,5,1996,Wd Sdng,0,BrkTil,No,Unf,684,Y,396,0,0,Gd,0,NA,0,N,30,0,NA,2008
+2098,RM,Pave,Lvl,Gtl,Norm,5,1950,MetalSd,0,CBlock,No,Unf,904,Y,595,0,0,TA,1,1959,869,Y,0,0,NA,2008
+2099,RM,Pave,Lvl,Gtl,Norm,2,1950,VinylSd,0,BrkTil,No,Unf,407,N,0,0,0,TA,0,1949,297,Y,120,0,NA,2008
+2100,RM,Pave,Lvl,Gtl,Norm,3,1992,MetalSd,0,BrkTil,No,Unf,448,Y,0,0,0,TA,0,NA,0,N,0,0,NA,2008
+2101,RM,Pave,Lvl,Gtl,Norm,5,2006,MetalSd,0,BrkTil,No,Unf,797,N,797,0,0,TA,0,1950,420,N,60,0,NA,2008
+2102,RM,Pave,Lvl,Gtl,Norm,7,1965,Wd Sdng,0,BrkTil,No,Unf,624,Y,720,0,0,TA,0,1935,288,Y,0,0,NA,2008
+2103,RM,Pave,Lvl,Gtl,Norm,5,2003,VinylSd,0,CBlock,No,Unf,346,Y,308,0,0,TA,0,1961,308,N,139,0,NA,2008
+2104,RM,Pave,Lvl,Gtl,Norm,5,1960,AsbShng,0,BrkTil,No,Unf,973,Y,973,0,0,TA,0,1930,393,Y,219,0,NA,2008
+2105,RM,Pave,Lvl,Gtl,Norm,5,2005,MetalSd,0,BrkTil,No,Unf,572,Y,656,0,1,Gd,0,NA,0,N,0,0,NA,2008
+2106,RM,Pave,Lvl,Gtl,Norm,2,1950,AsbShng,0,BrkTil,No,Unf,723,N,363,0,0,TA,0,1920,400,N,144,0,NA,2008
+2107,RM,Pave,Lvl,Gtl,Norm,7,1999,Wd Sdng,0,BrkTil,Mn,Unf,1313,Y,1182,0,0,TA,1,1950,342,Y,0,0,NA,2008
+2108,RM,Pave,Lvl,Gtl,Norm,5,1959,MetalSd,164,CBlock,No,Unf,984,Y,0,1,0,Fa,0,1959,308,N,0,0,NA,2008
+2109,RM,Pave,Lvl,Gtl,Norm,4,2006,MetalSd,0,CBlock,No,Unf,869,Y,0,0,0,TA,0,1959,308,Y,0,0,NA,2008
+2110,RL,Pave,Bnk,Gtl,Norm,5,1983,WdShing,0,BrkTil,No,BLQ,1008,Y,0,0,0,TA,1,1992,288,Y,0,0,NA,2008
+2111,RM,Pave,Bnk,Gtl,Artery,7,1950,Wd Sdng,0,CBlock,No,Unf,672,Y,473,0,1,Gd,0,1945,252,Y,0,0,NA,2008
+2112,RL,Pave,Lvl,Gtl,Norm,5,1950,Wd Sdng,0,BrkTil,No,Unf,1024,Y,594,0,0,TA,1,1950,240,P,0,0,NA,2008
+2113,RM,Pave,Lvl,Gtl,Norm,5,2006,Wd Sdng,0,CBlock,No,Unf,672,Y,378,0,0,Gd,0,1941,240,P,0,0,NA,2008
+2114,RM,Pave,Lvl,Gtl,Feedr,6,2000,HdBoard,0,BrkTil,No,Unf,554,Y,554,0,1,TA,0,1926,200,Y,0,0,Shed,2008
+2115,RM,Pave,Lvl,Gtl,Norm,6,1989,Wd Sdng,0,CBlock,No,Unf,981,Y,658,0,1,Gd,1,1940,240,Y,0,0,NA,2008
+2116,RM,Pave,HLS,Gtl,Norm,5,2003,Wd Sdng,0,BrkTil,No,Unf,949,Y,0,0,0,TA,1,1924,370,Y,48,0,NA,2008
+2117,RM,Pave,Lvl,Gtl,Norm,6,2000,Wd Sdng,0,BrkTil,No,LwQ,825,Y,672,0,0,TA,0,2004,672,Y,0,0,NA,2008
+2118,RM,Pave,Lvl,Gtl,Norm,6,1950,Wd Sdng,0,CBlock,No,Unf,739,Y,468,0,0,TA,1,1939,240,Y,0,0,NA,2008
+2119,RM,Pave,Bnk,Mod,Norm,6,1950,MetalSd,0,BrkTil,No,Unf,992,Y,0,0,0,TA,0,1926,160,Y,101,0,NA,2008
+2120,RM,Pave,Lvl,Gtl,Norm,5,1997,AsbShng,0,BrkTil,No,Unf,565,Y,651,1,0,TA,1,1920,355,Y,180,0,NA,2008
+2121,RM,Pave,Lvl,Gtl,Norm,4,1950,MetalSd,0,PConc,NA,NA,NA,Y,0,NA,0,TA,0,1946,280,Y,0,0,NA,2008
+2122,RM,Pave,Lvl,Gtl,Norm,4,1950,MetalSd,0,PConc,No,Unf,704,Y,512,0,0,TA,0,1990,336,Y,80,0,NA,2008
+2123,RM,Pave,Lvl,Gtl,Norm,5,1995,Plywood,0,CBlock,NA,NA,0,N,0,0,0,TA,0,1925,164,P,0,0,NA,2008
+2124,RM,Pave,Lvl,Gtl,Norm,7,1950,Wd Sdng,0,BrkTil,Mn,LwQ,989,Y,764,0,0,TA,1,1939,400,Y,0,0,NA,2008
+2125,RM,Pave,Lvl,Gtl,Norm,5,1950,Wd Sdng,0,BrkTil,No,Unf,1100,Y,676,0,0,TA,0,1960,576,Y,55,0,NA,2008
+2126,RL,Pave,Lvl,Gtl,Norm,6,2004,VinylSd,0,BrkTil,No,Unf,810,Y,546,0,0,Gd,0,1970,672,Y,0,0,NA,2008
+2127,RM,Pave,Lvl,Gtl,Norm,6,1983,Wd Sdng,0,PConc,Mn,Unf,1242,Y,742,0,0,TA,0,NA,360,Y,180,0,Shed,2008
+2128,RM,Pave,Lvl,Gtl,Norm,6,1950,MetalSd,0,BrkTil,No,Unf,796,Y,784,0,0,TA,0,1910,228,N,0,0,NA,2008
+2129,RM,Grvl,Lvl,Gtl,Norm,6,1950,Stucco,0,BrkTil,No,Unf,768,Y,0,0,0,TA,0,1930,440,N,84,0,NA,2008
+2130,RM,Pave,Lvl,Gtl,Norm,6,1952,MetalSd,0,CBlock,No,Unf,768,Y,768,0,1,TA,0,1952,308,Y,80,0,NA,2008
+2131,RM,Pave,Bnk,Gtl,Norm,6,1958,Wd Sdng,0,BrkTil,No,Unf,1272,Y,0,0,0,TA,1,1938,400,Y,0,0,NA,2008
+2132,RM,Pave,Lvl,Gtl,Norm,5,1978,HdBoard,0,BrkTil,No,Unf,880,Y,428,0,0,TA,0,1950,400,Y,117,0,NA,2008
+2133,RM,Pave,Lvl,Gtl,Norm,6,1992,VinylSd,0,CBlock,No,Unf,1040,Y,0,0,0,TA,0,1993,320,Y,0,0,NA,2008
+2134,RM,Pave,Lvl,Gtl,Norm,6,1950,Stucco,0,PConc,No,Unf,768,Y,448,1,0,TA,1,1985,384,Y,0,0,NA,2008
+2135,RM,Pave,Lvl,Gtl,Norm,5,1991,Wd Sdng,0,BrkTil,No,Unf,451,Y,0,0,0,TA,0,1997,576,N,0,0,NA,2008
+2136,RM,Pave,Lvl,Gtl,Norm,3,1950,AsphShn,0,PConc,No,Unf,536,N,536,0,0,TA,0,NA,0,N,204,0,NA,2008
+2137,RL,Pave,Lvl,Gtl,Norm,5,1993,VinylSd,0,CBlock,No,Unf,1046,N,0,0,0,TA,0,1947,240,Y,122,0,NA,2008
+2138,RL,Pave,Lvl,Gtl,Norm,5,1963,HdBoard,0,CBlock,Av,Unf,981,Y,0,1,0,Gd,0,1996,440,Y,0,0,NA,2008
+2139,RL,Pave,Lvl,Gtl,Norm,6,1978,HdBoard,39,CBlock,Av,Unf,1008,Y,0,1,0,TA,1,1978,484,Y,0,0,NA,2008
+2140,RL,Pave,Lvl,Gtl,Norm,5,2005,HdBoard,0,CBlock,No,Unf,992,Y,0,1,0,Gd,0,1967,294,Y,0,0,Shed,2008
+2141,RL,Pave,Lvl,Gtl,Norm,6,1978,HdBoard,40,CBlock,Gd,Unf,450,Y,0,0,0,TA,1,1978,504,Y,0,0,NA,2008
+2142,RL,Pave,Lvl,Gtl,Norm,5,1967,MetalSd,340,CBlock,Mn,Unf,1073,Y,0,0,0,TA,0,1967,270,Y,0,0,NA,2008
+2143,RL,Pave,Lvl,Gtl,Norm,5,1984,VinylSd,0,PConc,Av,ALQ,1060,Y,0,1,0,TA,0,1984,506,Y,0,0,NA,2008
+2144,RL,Pave,Lvl,Gtl,Norm,5,1950,BrkFace,0,PConc,No,Unf,1300,Y,0,1,0,TA,0,1920,400,Y,190,0,NA,2008
+2145,RL,Pave,Lvl,Gtl,Norm,5,2003,VinylSd,0,CBlock,No,Unf,960,Y,0,1,0,Gd,0,1963,300,Y,0,0,NA,2008
+2146,RL,Pave,Lvl,Gtl,Norm,6,1956,HdBoard,0,CBlock,Gd,Unf,988,Y,0,1,0,TA,1,1956,621,Y,231,0,NA,2008
+2147,RL,Pave,Lvl,Gtl,Norm,5,1960,Plywood,275,CBlock,Mn,Unf,988,Y,0,1,0,TA,2,1960,626,Y,0,0,NA,2008
+2148,RL,Pave,Lvl,Gtl,Norm,5,1973,Wd Sdng,0,BrkTil,No,Unf,576,Y,486,1,1,Gd,0,1973,627,N,0,0,NA,2008
+2149,RL,Pave,Lvl,Gtl,Norm,5,1970,HdBoard,0,PConc,Av,Unf,864,Y,0,0,0,Gd,0,1979,912,Y,0,0,NA,2008
+2150,RL,Pave,Lvl,Gtl,Norm,7,1979,Plywood,0,CBlock,Gd,Unf,1524,Y,0,1,0,TA,2,1979,478,Y,0,0,NA,2008
+2151,RL,Pave,Lvl,Gtl,Norm,7,1950,BrkFace,0,CBlock,No,Unf,570,Y,462,0,0,TA,1,1948,249,Y,0,0,NA,2008
+2152,RL,Pave,Lvl,Gtl,Norm,5,2007,NA,0,PConc,Gd,Unf,1580,Y,0,1,0,Fa,2,NA,0,Y,0,0,NA,2008
+2153,RL,Pave,Lvl,Gtl,Norm,5,1956,Wd Sdng,0,CBlock,Av,Unf,1509,Y,0,1,0,Gd,1,1956,322,Y,0,0,NA,2008
+2154,RL,Pave,Lvl,Gtl,Norm,5,1975,HdBoard,0,PConc,Av,Unf,864,N,0,1,0,TA,0,NA,0,Y,0,0,NA,2008
+2155,RL,Pave,Lvl,Gtl,Norm,6,2001,VinylSd,216,CBlock,No,Unf,621,Y,648,0,1,TA,0,1962,280,Y,0,0,NA,2008
+2156,RL,Pave,Lvl,Gtl,Norm,6,2002,HdBoard,190,PConc,No,Unf,1077,Y,1721,0,1,Gd,1,1995,614,Y,0,0,NA,2008
+2157,RL,Pave,Lvl,Gtl,Norm,7,1994,HdBoard,251,PConc,No,Unf,1602,Y,0,1,1,Gd,1,1994,534,Y,0,0,NA,2008
+2158,RL,Pave,Lvl,Gtl,Norm,7,1994,VinylSd,0,PConc,No,Unf,812,Y,1099,0,1,Gd,1,1993,453,Y,0,0,NA,2008
+2159,RL,Pave,Lvl,Gtl,Norm,7,1996,VinylSd,0,PConc,Av,Unf,672,Y,735,0,1,Gd,1,1996,472,Y,0,0,NA,2008
+2160,RL,Pave,Lvl,Gtl,Norm,7,2007,VinylSd,0,PConc,No,Unf,628,Y,728,0,1,Gd,1,2007,484,Y,0,0,NA,2008
+2161,RL,Pave,Lvl,Gtl,Norm,8,2007,VinylSd,156,PConc,Av,Unf,1615,Y,0,0,0,Gd,1,2007,864,Y,0,0,NA,2008
+2162,RL,Pave,Lvl,Gtl,Norm,9,2008,VinylSd,554,PConc,Gd,Unf,2271,Y,0,1,0,Ex,2,2008,1348,Y,70,0,NA,2008
+2163,RL,Pave,Lvl,Gtl,Norm,9,2008,VinylSd,402,PConc,Av,Unf,1751,Y,0,1,1,Ex,2,2008,874,Y,0,0,NA,2008
+2164,RL,Pave,Lvl,Gtl,Norm,8,1995,VinylSd,302,PConc,Gd,Unf,1401,Y,0,1,0,Gd,1,1995,811,Y,0,0,NA,2008
+2165,RL,Pave,Bnk,Gtl,Norm,6,1966,Plywood,0,CBlock,Gd,ALQ,1182,Y,0,1,0,TA,1,1966,438,Y,0,0,NA,2008
+2166,RL,Pave,Low,Mod,Norm,5,1994,VinylSd,0,PConc,No,Unf,990,Y,0,1,0,TA,0,1997,528,Y,0,0,NA,2008
+2167,RL,Pave,Lvl,Gtl,Norm,7,1998,VinylSd,150,PConc,Gd,Unf,1418,Y,0,1,0,Gd,1,1997,558,Y,0,0,NA,2008
+2168,RL,Pave,Lvl,Gtl,Norm,6,1997,VinylSd,128,PConc,No,Unf,864,Y,899,1,1,Gd,0,1997,600,Y,0,0,NA,2008
+2169,RL,Pave,Lvl,Gtl,Norm,7,2000,VinylSd,120,PConc,Mn,Unf,782,Y,870,0,1,Gd,0,2000,532,Y,0,0,NA,2008
+2170,RL,Pave,Lvl,Gtl,Norm,7,2001,VinylSd,0,PConc,No,Unf,928,Y,895,1,1,Gd,0,2000,626,Y,0,0,Shed,2008
+2171,RL,Pave,Lvl,Gtl,Norm,5,1978,HdBoard,180,CBlock,Mn,Unf,864,Y,0,1,0,TA,0,1978,528,Y,280,0,NA,2008
+2172,RL,Pave,Lvl,Gtl,Norm,5,1975,HdBoard,176,CBlock,Av,Unf,1076,Y,0,0,1,TA,1,1985,576,Y,0,0,NA,2008
+2173,RL,Pave,Lvl,Gtl,Norm,5,2001,Plywood,0,CBlock,No,ALQ,864,Y,0,1,0,TA,0,1975,440,Y,239,0,NA,2008
+2174,RL,Pave,Lvl,Gtl,Norm,7,2001,VinylSd,227,PConc,No,Unf,1257,Y,871,0,1,Gd,1,2001,570,Y,0,0,NA,2008
+2175,RL,Pave,Lvl,Gtl,Norm,9,2002,VinylSd,134,PConc,Mn,Unf,1357,Y,581,1,1,Gd,1,2001,725,Y,0,0,NA,2008
+2176,RL,Pave,Lvl,Gtl,Norm,8,2003,VinylSd,240,PConc,Gd,Unf,1778,Y,0,1,0,Gd,1,2002,715,Y,0,0,NA,2008
+2177,RL,Pave,Lvl,Gtl,Norm,7,2003,VinylSd,0,PConc,No,Unf,1129,Y,1198,0,1,Gd,1,2003,596,Y,0,0,NA,2008
+2178,RL,Pave,Lvl,Gtl,Norm,8,2000,VinylSd,192,PConc,Av,Unf,850,Y,878,0,1,Gd,1,1999,560,Y,0,0,NA,2008
+2179,RM,Pave,Lvl,Gtl,Norm,6,2004,VinylSd,205,PConc,Mn,Unf,848,Y,0,1,0,Gd,0,2004,420,Y,0,0,NA,2008
+2180,RM,Pave,Lvl,Gtl,Norm,6,1998,VinylSd,0,PConc,Gd,LwQ,1838,Y,0,2,0,TA,0,1998,721,Y,0,0,NA,2008
+2181,RL,Pave,Lvl,Gtl,Norm,7,2004,VinylSd,50,PConc,Mn,Unf,1445,Y,0,0,0,Gd,0,2004,470,Y,0,0,NA,2008
+2182,RL,Pave,Lvl,Gtl,Norm,7,2007,VinylSd,212,PConc,No,Unf,1564,Y,0,0,0,Gd,0,2007,814,Y,0,0,NA,2008
+2183,RL,Pave,Lvl,Gtl,Norm,7,2007,VinylSd,0,PConc,Av,Unf,1351,Y,0,0,0,Gd,0,2007,610,Y,0,0,NA,2008
+2184,RL,Pave,Lvl,Gtl,Norm,5,1966,HdBoard,0,CBlock,No,Unf,1092,Y,0,0,0,TA,0,1966,264,Y,0,0,NA,2008
+2185,RL,Pave,Lvl,Gtl,Norm,5,1976,HdBoard,222,CBlock,Gd,Unf,456,Y,0,0,0,TA,0,1976,504,Y,0,0,NA,2008
+2186,RL,Pave,Lvl,Gtl,Norm,6,1976,HdBoard,84,CBlock,No,Unf,1127,Y,0,0,1,TA,1,1991,480,Y,138,0,NA,2008
+2187,RL,Pave,Lvl,Gtl,Norm,6,1977,Plywood,0,CBlock,Av,Rec,1029,Y,0,1,0,TA,1,1977,542,Y,0,0,NA,2008
+2188,RL,Pave,Lvl,Gtl,Norm,6,2001,Plywood,0,CBlock,Av,Unf,684,Y,714,0,1,TA,1,1976,440,Y,0,0,NA,2008
+2189,RL,Pave,Lvl,Gtl,Norm,5,1996,Plywood,0,Slab,NA,NA,0,Y,0,NA,1,Ex,2,1959,624,Y,0,0,NA,2008
+2190,RL,Pave,Lvl,Gtl,Norm,4,1955,AsbShng,0,PConc,NA,NA,0,N,0,0,0,TA,0,NA,0,N,0,0,NA,2008
+2191,RL,Pave,Lvl,Gtl,Norm,4,1955,WdShing,58,Slab,NA,NA,0,N,0,0,0,TA,0,NA,0,N,0,0,NA,2008
+2192,RL,Pave,Lvl,Gtl,Norm,4,1955,Wd Sdng,0,CBlock,Av,Unf,784,N,0,1,0,TA,0,NA,0,Y,0,0,NA,2008
+2193,RL,Pave,Lvl,Gtl,Norm,5,2007,Wd Sdng,0,PConc,No,Unf,585,Y,468,0,1,Ex,0,NA,0,N,0,0,NA,2008
+2194,RL,Pave,Lvl,Gtl,Norm,5,1993,MetalSd,0,Slab,NA,NA,0,Y,208,0,1,TA,0,NA,0,Y,0,0,NA,2008
+2195,RL,Pave,Bnk,Mod,Norm,4,1953,MetalSd,115,CBlock,No,Unf,911,Y,0,0,0,TA,0,1953,286,Y,0,0,Gar2,2008
+2196,RL,Pave,Bnk,Mod,Norm,4,1954,Wd Sdng,0,CBlock,Av,Unf,416,Y,0,0,0,TA,0,1954,312,Y,0,0,NA,2008
+2197,RL,Pave,Lvl,Gtl,Norm,4,2008,Wd Sdng,0,PConc,No,Unf,949,Y,343,0,1,Gd,0,1923,205,N,183,0,NA,2008
+2198,RL,Pave,Lvl,Gtl,Norm,7,1950,WdShing,174,BrkTil,No,Unf,1228,Y,0,0,0,TA,1,1921,312,Y,90,0,NA,2008
+2199,RL,Pave,Lvl,Gtl,Norm,6,1950,Stucco,0,BrkTil,No,Rec,960,Y,960,2,2,TA,2,1930,480,Y,121,0,NA,2008
+2200,RL,Pave,Bnk,Gtl,Norm,6,1950,Wd Sdng,0,BrkTil,No,Unf,644,Y,644,1,0,TA,1,2001,369,P,0,0,NA,2008
+2201,RL,Pave,Lvl,Gtl,Norm,6,1995,Wd Sdng,0,BrkTil,No,Unf,676,Y,588,0,0,TA,0,1994,400,Y,0,0,Shed,2008
+2202,RL,Pave,Lvl,Gtl,Norm,8,1997,Stucco,0,PConc,No,Unf,798,Y,714,1,0,Gd,1,1925,180,P,41,0,NA,2008
+2203,RL,Pave,HLS,Gtl,Norm,6,1950,Wd Sdng,0,BrkTil,No,Unf,784,Y,784,0,0,TA,1,1980,599,Y,0,0,NA,2008
+2204,RL,Pave,HLS,Mod,Norm,5,1995,WdShing,0,CBlock,No,Unf,942,Y,673,0,0,Gd,1,1937,240,Y,0,0,NA,2008
+2205,RL,Pave,HLS,Gtl,Norm,5,1950,Wd Sdng,0,BrkTil,No,Unf,884,Y,442,0,0,TA,0,1938,225,Y,0,0,NA,2008
+2206,RL,Pave,Lvl,Gtl,Norm,6,1951,WdShing,88,PConc,No,Unf,1091,N,0,0,0,TA,1,1951,344,Y,0,0,NA,2008
+2207,RL,Pave,HLS,Mod,Norm,8,1950,BrkFace,40,PConc,No,Unf,608,Y,890,0,1,TA,2,1935,786,Y,207,0,NA,2008
+2208,RL,Pave,Bnk,Gtl,Norm,7,2000,VinylSd,0,CBlock,No,Unf,832,Y,943,1,1,Gd,2,1994,506,Y,0,0,NA,2008
+2209,RL,Pave,Lvl,Gtl,Norm,5,1956,BrkFace,0,PConc,No,Unf,1898,Y,0,0,1,TA,2,1956,484,Y,224,0,NA,2008
+2210,RM,Pave,Lvl,Gtl,Norm,6,1980,MetalSd,0,CBlock,No,Unf,516,Y,516,0,0,TA,1,1980,462,Y,0,0,NA,2008
+2211,RM,Pave,Lvl,Gtl,Norm,6,1998,VinylSd,0,BrkTil,No,GLQ,894,Y,0,1,0,TA,0,1926,195,P,116,0,NA,2008
+2212,RM,Pave,Lvl,Gtl,Norm,6,2006,VinylSd,0,CBlock,No,Unf,720,Y,330,0,0,TA,0,1940,240,Y,0,0,NA,2008
+2213,RM,Pave,Lvl,Gtl,Norm,5,1950,Wd Sdng,0,CBlock,No,Unf,780,Y,420,0,0,TA,0,NA,0,Y,96,0,NA,2008
+2214,RM,Pave,Lvl,Gtl,Norm,5,1967,HdBoard,0,CBlock,Mn,Unf,624,Y,564,0,1,TA,1,1967,288,Y,0,0,NA,2008
+2215,RM,Pave,Lvl,Gtl,Norm,5,1995,Wd Sdng,0,BrkTil,No,Unf,520,Y,0,0,0,TA,0,1934,360,Y,0,0,NA,2008
+2216,RM,Pave,Lvl,Gtl,Norm,5,1958,WdShing,162,CBlock,No,Unf,1151,Y,804,0,0,TA,0,1958,356,Y,0,0,NA,2008
+2217,NA,Pave,Low,Mod,Norm,1,1952,AsbShng,0,Slab,NA,NA,0,N,0,0,0,Fa,0,1952,487,N,0,0,NA,2008
+2218,C (all),Pave,Lvl,Gtl,Norm,4,1950,Wd Sdng,0,Stone,No,Unf,173,N,536,0,0,TA,0,1895,185,Y,0,0,NA,2008
+2219,C (all),Pave,Lvl,Gtl,Norm,4,2000,Plywood,0,PConc,No,Unf,356,N,378,0,0,TA,0,1910,195,N,0,0,NA,2008
+2220,C (all),Grvl,Bnk,Gtl,Norm,4,1950,MetalSd,0,Stone,Mn,Unf,592,Y,432,0,1,Fa,0,1920,216,N,160,0,NA,2008
+2221,RM,Pave,HLS,Mod,Norm,8,2008,CemntBd,186,PConc,Gd,Unf,1596,Y,0,1,0,Ex,1,2007,525,Y,0,0,NA,2008
+2222,RM,Pave,HLS,Mod,Norm,7,2005,CemntBd,174,PConc,Gd,Unf,1594,Y,0,1,0,Ex,1,2004,482,Y,0,0,NA,2008
+2223,RL,Pave,Lvl,Gtl,Norm,7,1997,MetalSd,668,PConc,Mn,Unf,1840,Y,0,1,0,Gd,0,1996,786,Y,192,0,NA,2008
+2224,RL,Pave,Lvl,Gtl,Norm,7,1997,VinylSd,0,PConc,Mn,Unf,910,Y,910,0,1,Gd,1,1996,816,Y,0,0,NA,2008
+2225,RL,Pave,Lvl,Gtl,Norm,5,1976,Plywood,0,CBlock,NA,NA,0,Y,936,0,2,TA,0,1976,484,Y,0,0,NA,2008
+2226,RL,Pave,Lvl,Gtl,Norm,4,1991,HdBoard,0,PConc,No,Unf,1680,Y,0,1,0,TA,1,1991,432,Y,0,0,NA,2008
+2227,RL,Pave,Lvl,Gtl,Norm,7,1986,VinylSd,340,CBlock,Av,Unf,1277,Y,0,1,0,Gd,1,1986,512,Y,0,0,NA,2008
+2228,RL,Pave,HLS,Gtl,Norm,8,2007,VinylSd,258,PConc,Gd,Unf,1518,Y,0,1,0,Gd,0,2007,788,Y,0,0,NA,2008
+2229,RL,Pave,HLS,Gtl,Norm,8,2007,VinylSd,0,PConc,Av,Unf,920,Y,860,1,1,Gd,1,2007,612,Y,0,0,NA,2008
+2230,RL,Pave,Lvl,Gtl,Norm,5,2007,VinylSd,0,PConc,No,Unf,352,Y,730,0,1,TA,0,2007,400,Y,0,0,NA,2008
+2231,RL,Pave,HLS,Gtl,Norm,7,2008,VinylSd,60,PConc,Av,Unf,796,Y,816,0,1,Gd,0,2008,666,Y,0,0,NA,2008
+2232,RL,Pave,Lvl,Gtl,Norm,6,1989,Wd Sdng,128,CBlock,No,Unf,1495,Y,0,0,0,TA,1,1989,438,Y,192,0,NA,2008
+2233,RL,Pave,Lvl,Gtl,Norm,6,1986,Plywood,228,CBlock,Av,Rec,1256,Y,0,0,0,Gd,1,1986,578,Y,0,0,NA,2008
+2234,RL,Pave,Lvl,Gtl,Norm,8,2003,VinylSd,206,PConc,Av,Unf,1432,Y,0,1,0,Gd,1,2003,467,Y,0,0,NA,2008
+2235,RL,Pave,Lvl,Gtl,Norm,6,2000,VinylSd,0,PConc,Mn,Unf,1666,Y,0,1,0,Gd,0,1999,435,Y,0,0,NA,2008
+2236,RL,Pave,HLS,Gtl,Norm,8,2007,VinylSd,0,PConc,Av,Unf,1884,Y,0,1,0,Gd,1,2007,520,Y,0,0,NA,2008
+2237,RL,Pave,Lvl,Gtl,Norm,8,2006,VinylSd,674,PConc,Av,Unf,1964,Y,0,1,1,Gd,1,2005,892,Y,0,0,NA,2008
+2238,RM,Pave,Lvl,Gtl,Norm,7,1998,VinylSd,200,PConc,Gd,Unf,1344,Y,0,2,0,TA,0,1997,784,Y,0,0,NA,2008
+2239,RL,Pave,Lvl,Gtl,Artery,5,2008,VinylSd,0,PConc,No,Unf,1092,Y,0,0,0,TA,0,NA,0,Y,0,0,NA,2008
+2240,RM,Pave,Lvl,Gtl,Norm,6,1997,VinylSd,197,PConc,No,Unf,1189,Y,0,1,0,TA,0,1997,392,Y,0,0,NA,2008
+2241,RL,Pave,Lvl,Gtl,Norm,4,1964,HdBoard,98,CBlock,Av,LwQ,1200,Y,0,1,0,TA,0,1964,850,Y,0,0,NA,2008
+2242,RM,Pave,Lvl,Gtl,Norm,5,1975,CemntBd,0,PConc,No,Unf,1040,Y,0,0,0,TA,0,1975,499,Y,0,0,NA,2008
+2243,RM,Pave,Lvl,Gtl,Norm,5,1976,CemntBd,0,PConc,No,Unf,550,Y,550,0,0,TA,1,1976,336,Y,0,0,NA,2008
+2244,RM,Pave,Lvl,Gtl,Norm,4,2006,CemntBd,0,CBlock,Av,Unf,526,Y,462,1,0,TA,0,1973,297,Y,0,0,NA,2008
+2245,RM,Pave,Lvl,Gtl,Norm,4,1973,CemntBd,0,CBlock,Gd,Unf,462,Y,462,1,0,TA,1,1973,297,Y,0,0,NA,2008
+2246,RL,Pave,Lvl,Gtl,Norm,5,1968,Plywood,0,CBlock,No,Unf,1113,Y,0,1,0,Gd,0,1968,257,Y,0,0,Shed,2008
+2247,RM,Pave,Lvl,Gtl,Norm,6,2007,CemntBd,0,CBlock,No,Unf,546,Y,546,0,1,TA,0,NA,0,Y,0,0,NA,2008
+2248,RL,Pave,Lvl,Gtl,Norm,5,1983,VinylSd,0,CBlock,No,Unf,816,Y,0,0,0,TA,0,1983,264,Y,0,0,NA,2008
+2249,RL,Pave,Lvl,Gtl,Norm,5,2005,HdBoard,0,CBlock,No,Unf,845,Y,0,0,0,Gd,0,1982,264,Y,0,0,NA,2008
+2250,RL,Pave,Lvl,Gtl,Norm,5,1984,HdBoard,0,CBlock,No,Unf,864,Y,0,0,0,TA,0,1984,484,Y,0,0,NA,2008
+2251,NA,Pave,Low,Gtl,Norm,5,1950,Wd Sdng,0,BrkTil,No,Unf,686,Y,686,0,0,TA,0,1900,288,N,0,0,NA,2008
+2252,RL,Pave,Lvl,Gtl,Norm,6,1971,MetalSd,302,CBlock,No,Unf,1587,Y,0,0,0,TA,1,1971,525,Y,0,0,NA,2007
+2253,RL,Pave,HLS,Gtl,Norm,6,1997,VinylSd,0,PConc,No,Unf,384,Y,630,0,1,TA,1,1997,390,Y,0,0,NA,2007
+2254,RL,Pave,Lvl,Gtl,Norm,6,1994,HdBoard,32,PConc,No,Unf,392,Y,770,0,1,TA,1,1994,398,Y,0,0,NA,2007
+2255,RL,Pave,Lvl,Gtl,Norm,6,2000,VinylSd,0,PConc,No,Unf,923,Y,767,1,1,TA,1,2000,451,Y,0,0,NA,2007
+2256,RL,Pave,Lvl,Gtl,Norm,7,1996,HdBoard,0,PConc,No,Unf,691,Y,862,0,1,Gd,0,1996,420,Y,0,0,NA,2007
+2257,RL,Pave,Lvl,Gtl,Norm,6,2003,VinylSd,0,PConc,No,Unf,938,Y,1342,0,1,TA,1,1999,482,Y,0,0,NA,2007
+2258,RL,Pave,Lvl,Gtl,Norm,7,1993,HdBoard,52,PConc,No,Unf,1168,Y,0,0,0,Gd,0,1992,420,Y,0,0,NA,2007
+2259,RL,Pave,Lvl,Gtl,Norm,6,1994,HdBoard,0,PConc,No,Unf,903,Y,732,0,1,TA,1,1993,392,Y,0,0,NA,2007
+2260,RL,Grvl,Lvl,Gtl,Norm,6,1964,HdBoard,138,CBlock,Av,Unf,1302,Y,0,1,0,TA,1,1964,480,P,246,0,NA,2007
+2261,RL,Pave,Lvl,Gtl,Norm,8,1988,CemntBd,0,CBlock,Gd,Unf,1166,Y,0,1,0,TA,0,1988,480,Y,0,0,NA,2007
+2262,RL,Pave,HLS,Gtl,Norm,8,1990,CemntBd,0,PConc,Gd,Unf,1312,Y,0,1,0,Gd,1,1990,484,Y,140,0,NA,2007
+2263,RL,Pave,Lvl,Gtl,Norm,8,2005,VinylSd,146,PConc,Mn,Unf,1149,Y,1377,1,1,Ex,1,2005,729,Y,0,0,NA,2007
+2264,RL,Pave,Lvl,Gtl,Norm,9,2007,VinylSd,710,PConc,Av,Unf,2660,Y,0,1,1,Gd,2,2005,1110,Y,0,0,NA,2007
+2265,RL,Pave,Lvl,Gtl,Norm,5,1990,HdBoard,0,CBlock,Gd,Unf,1100,Y,0,1,1,TA,0,1969,828,N,0,0,NA,2007
+2266,RL,Pave,HLS,Gtl,Norm,9,2006,MetalSd,165,PConc,Gd,Unf,1612,Y,0,1,0,Ex,1,2006,556,Y,0,0,NA,2007
+2267,RL,Pave,HLS,Gtl,Norm,8,2006,VinylSd,945,PConc,Gd,Unf,2220,Y,0,1,1,Gd,1,2006,724,Y,0,0,NA,2007
+2268,RL,Pave,HLS,Gtl,PosA,10,2007,CemntBd,250,PConc,Gd,Unf,1742,Y,0,1,0,Ex,1,2007,724,Y,0,0,NA,2007
+2269,RL,Pave,Lvl,Gtl,Norm,6,1984,HdBoard,0,CBlock,No,Unf,1284,Y,0,1,0,TA,0,1984,480,Y,192,0,NA,2007
+2270,RL,Pave,Lvl,Gtl,Norm,7,2003,MetalSd,306,CBlock,No,Unf,725,Y,754,0,1,Gd,1,1981,484,Y,0,0,NA,2007
+2271,RL,Pave,Lvl,Gtl,Norm,7,1985,Plywood,67,CBlock,No,Unf,1529,Y,0,1,0,Gd,1,1978,663,Y,0,0,NA,2007
+2272,RL,Pave,Lvl,Gtl,Norm,7,1979,HdBoard,549,CBlock,No,Unf,780,Y,845,1,1,Gd,1,1979,481,Y,0,0,NA,2007
+2273,RL,Pave,Lvl,Gtl,Norm,6,1984,Plywood,98,CBlock,No,Unf,1153,Y,0,0,0,Gd,0,1984,495,Y,0,0,NA,2007
+2274,RL,Pave,Lvl,Gtl,Norm,6,1999,MetalSd,253,CBlock,No,Unf,1259,Y,0,1,0,TA,1,1979,478,Y,0,0,NA,2007
+2275,RL,Pave,Lvl,Gtl,Norm,6,1971,HdBoard,176,CBlock,Mn,BLQ,1625,Y,0,0,0,TA,1,1971,944,Y,249,0,NA,2007
+2276,RL,Pave,Lvl,Gtl,Norm,7,1976,Plywood,130,CBlock,Gd,Rec,1228,Y,0,0,0,Gd,1,1976,585,Y,0,0,NA,2007
+2277,RL,Pave,Lvl,Gtl,Norm,6,1974,HdBoard,0,CBlock,No,LwQ,1084,Y,793,1,1,TA,1,1974,488,Y,0,0,NA,2007
+2278,RL,Pave,Lvl,Gtl,Norm,5,1990,MetalSd,0,CBlock,No,Unf,925,Y,0,1,0,TA,0,1988,576,Y,0,0,NA,2007
+2279,RL,Pave,Lvl,Gtl,Norm,5,2002,HdBoard,32,CBlock,No,GLQ,914,Y,0,0,0,Ex,0,1970,368,Y,0,0,NA,2007
+2280,RL,Pave,Lvl,Gtl,Norm,4,1961,MetalSd,0,BrkTil,No,Unf,914,Y,0,0,0,TA,0,1961,270,Y,0,0,NA,2007
+2281,RH,Pave,Lvl,Gtl,Norm,6,2001,MetalSd,0,PConc,Mn,Unf,1337,Y,0,0,0,Gd,1,2001,511,Y,0,0,NA,2007
+2282,RH,Pave,Lvl,Gtl,Norm,6,1998,MetalSd,0,PConc,No,Unf,1405,Y,0,1,0,Gd,1,1997,522,Y,0,0,NA,2007
+2283,RM,Pave,Lvl,Gtl,Norm,6,1973,HdBoard,567,CBlock,No,Unf,525,Y,567,0,1,TA,0,1973,264,Y,0,0,NA,2007
+2284,RM,Pave,Lvl,Gtl,Norm,6,1973,HdBoard,265,CBlock,No,Unf,672,Y,546,0,1,Ex,0,1973,264,Y,0,0,NA,2007
+2285,RL,Pave,Lvl,Gtl,Norm,7,1978,Plywood,0,CBlock,No,Unf,1061,Y,0,0,0,TA,0,1978,319,Y,0,0,NA,2007
+2286,RL,Pave,Lvl,Gtl,Norm,5,1966,HdBoard,52,CBlock,No,Unf,988,Y,0,1,0,TA,0,1974,360,Y,0,0,NA,2007
+2287,RL,Pave,Lvl,Gtl,Norm,9,2007,VinylSd,378,PConc,Gd,Unf,1790,Y,0,1,0,Ex,1,2007,730,Y,0,0,NA,2007
+2288,RL,Pave,Lvl,Gtl,Norm,8,2007,CemntBd,302,PConc,Mn,Unf,1694,Y,0,0,0,Gd,1,2006,856,Y,0,0,NA,2007
+2289,RL,Pave,Lvl,Gtl,Norm,8,2007,VinylSd,0,PConc,Gd,Unf,2108,Y,0,1,1,Gd,1,2007,938,Y,0,0,NA,2007
+2290,RL,Pave,Lvl,Gtl,Norm,9,2007,CemntBd,456,PConc,Gd,Unf,1934,Y,713,1,1,Ex,1,2007,1040,Y,0,0,NA,2007
+2291,RL,Pave,Lvl,Gtl,Norm,8,2007,VinylSd,190,PConc,No,Unf,1108,Y,1402,0,1,Ex,1,2006,670,Y,0,0,NA,2007
+2292,RL,Pave,Lvl,Gtl,Norm,10,2006,VinylSd,400,PConc,Gd,Unf,1994,Y,0,1,1,Ex,2,2005,878,Y,0,0,NA,2007
+2293,RL,Pave,Lvl,Gtl,Norm,9,2007,VinylSd,456,PConc,Gd,Unf,2552,Y,0,1,0,Ex,2,2007,932,Y,0,0,NA,2007
+2294,RL,Pave,Lvl,Gtl,Norm,9,2006,MetalSd,365,PConc,Gd,Unf,1704,Y,1036,0,1,Ex,1,2005,814,Y,0,0,NA,2007
+2295,RL,Pave,Lvl,Gtl,Norm,10,2007,CemntBd,970,PConc,Av,Unf,2320,Y,0,2,1,Ex,1,2007,1174,Y,0,0,NA,2007
+2296,RL,Pave,Lvl,Gtl,Norm,8,2008,VinylSd,0,PConc,No,Unf,1582,Y,570,0,1,Gd,1,2007,728,Y,0,0,NA,2007
+2297,RL,Pave,Lvl,Gtl,Norm,8,2007,VinylSd,120,PConc,Gd,Unf,918,Y,1142,1,1,Ex,2,2007,786,Y,0,0,NA,2007
+2298,RL,Pave,HLS,Mod,Norm,9,2006,MetalSd,510,PConc,Gd,Unf,1802,Y,0,0,1,Ex,1,2006,843,Y,0,0,NA,2007
+2299,RL,Pave,Lvl,Gtl,Norm,8,2004,VinylSd,502,PConc,Av,Unf,1706,Y,1238,0,1,Ex,1,2004,916,Y,0,0,NA,2007
+2300,RL,Pave,Lvl,Gtl,Norm,8,2003,VinylSd,280,PConc,Mn,Unf,1317,Y,1168,1,1,Gd,1,2003,818,Y,0,0,NA,2007
+2301,RL,Pave,Lvl,Gtl,Norm,8,2007,VinylSd,246,PConc,Av,Unf,895,Y,923,1,1,Ex,1,2007,774,Y,0,0,NA,2007
+2302,RL,Pave,Lvl,Gtl,Norm,7,2006,VinylSd,210,PConc,Mn,Unf,1614,Y,0,1,0,Gd,0,2005,878,Y,0,0,NA,2007
+2303,RL,Pave,Lvl,Gtl,Norm,8,2005,VinylSd,210,PConc,No,Unf,1721,Y,0,1,0,Gd,0,2005,554,Y,0,0,NA,2007
+2304,RL,Pave,Lvl,Gtl,Norm,8,2007,VinylSd,0,PConc,No,Unf,1298,Y,530,0,1,Gd,0,2006,876,Y,0,0,NA,2007
+2305,RL,Pave,Lvl,Gtl,Norm,6,2006,VinylSd,182,PConc,Av,Unf,1302,Y,0,1,1,Gd,1,2005,631,Y,0,0,NA,2007
+2306,RL,Pave,Lvl,Gtl,Norm,6,2006,VinylSd,182,PConc,Av,Unf,1302,Y,0,1,1,Gd,1,2005,631,Y,0,0,NA,2007
+2307,RL,Pave,Lvl,Gtl,Norm,6,2006,VinylSd,256,PConc,Av,Unf,1362,Y,0,1,0,Gd,1,2005,460,Y,0,0,NA,2007
+2308,RL,Pave,Lvl,Gtl,Norm,8,2006,VinylSd,108,PConc,Mn,Unf,1554,Y,0,0,0,Gd,1,2006,627,Y,0,0,NA,2007
+2309,RL,Pave,Lvl,Gtl,Norm,9,2005,MetalSd,394,PConc,No,Unf,1577,Y,0,1,0,Ex,1,2005,564,Y,0,0,NA,2007
+2310,RL,Pave,Lvl,Gtl,Norm,8,2006,MetalSd,176,PConc,No,Unf,1324,Y,0,0,0,Gd,1,2006,550,Y,0,0,NA,2007
+2311,RL,Pave,Lvl,Gtl,Norm,7,2003,VinylSd,235,PConc,No,Unf,1405,Y,0,1,0,Gd,1,2003,478,Y,0,0,NA,2007
+2312,RL,Pave,Lvl,Gtl,Norm,6,2007,VinylSd,NA,CBlock,No,Unf,768,Y,728,0,0,Gd,0,2007,572,Y,0,0,NA,2007
+2313,RL,Pave,Lvl,Gtl,Norm,6,2006,VinylSd,0,PConc,No,Unf,768,Y,768,0,1,Gd,1,2005,400,Y,0,0,NA,2007
+2314,RL,Pave,Lvl,Gtl,Norm,7,2007,VinylSd,44,PConc,No,Unf,608,Y,850,0,0,Gd,0,2007,454,Y,0,0,NA,2007
+2315,RL,Pave,Lvl,Gtl,Norm,6,2006,VinylSd,0,PConc,No,Unf,738,Y,757,0,1,Gd,1,2006,440,Y,0,0,NA,2007
+2316,RL,Pave,Lvl,Gtl,Norm,6,2007,VinylSd,0,PConc,No,Unf,698,Y,1048,1,1,Gd,1,2007,350,Y,0,0,NA,2007
+2317,RL,Pave,Lvl,Gtl,Norm,6,2005,VinylSd,0,PConc,Av,Unf,1326,Y,0,1,0,Gd,0,2005,388,Y,0,0,Shed,2007
+2318,RL,Pave,Lvl,Gtl,Norm,6,2007,VinylSd,22,PConc,Av,Unf,752,Y,752,0,1,Gd,0,2007,440,Y,0,0,NA,2007
+2319,RL,Pave,Lvl,Gtl,Norm,7,2007,VinylSd,16,PConc,No,Unf,728,Y,728,0,1,Gd,0,2007,400,Y,0,0,NA,2007
+2320,RL,Pave,Lvl,Gtl,Norm,7,2007,VinylSd,0,PConc,No,Unf,1246,Y,0,0,0,Gd,0,2007,462,Y,0,0,NA,2007
+2321,RL,Pave,Lvl,Gtl,Norm,8,2003,VinylSd,72,PConc,Gd,Unf,1406,Y,0,1,0,Gd,1,2003,630,Y,0,0,NA,2007
+2322,RL,Pave,Lvl,Gtl,Norm,7,2007,VinylSd,16,PConc,Av,Unf,1266,Y,0,0,0,Gd,1,2007,388,Y,0,0,NA,2007
+2323,RL,Pave,Lvl,Gtl,Norm,7,2005,VinylSd,0,PConc,Gd,Unf,835,Y,0,1,0,Gd,0,2004,437,Y,0,0,NA,2007
+2324,RL,Pave,Lvl,Gtl,Norm,7,2004,VinylSd,0,PConc,No,Unf,384,Y,630,1,1,Gd,1,2004,400,Y,0,0,NA,2007
+2325,RL,Pave,Lvl,Gtl,Norm,7,2006,VinylSd,0,PConc,Av,Unf,1510,Y,0,0,1,Gd,1,2006,534,Y,0,0,NA,2007
+2326,RL,Pave,Lvl,Gtl,Norm,7,2003,VinylSd,NA,PConc,No,Unf,384,Y,640,0,1,Gd,1,2003,400,Y,0,0,NA,2007
+2327,RL,Pave,Lvl,Gtl,Norm,7,2003,VinylSd,16,PConc,No,Unf,847,Y,1101,0,1,Gd,1,2003,434,Y,0,0,NA,2007
+2328,RL,Pave,Lvl,Gtl,Norm,7,2002,VinylSd,0,PConc,No,Unf,854,Y,1131,0,1,Gd,1,2002,435,Y,0,0,NA,2007
+2329,RL,Pave,Lvl,Gtl,Norm,6,2000,VinylSd,0,PConc,No,Unf,915,Y,750,1,1,TA,1,2000,442,Y,0,0,NA,2007
+2330,RL,Pave,Lvl,Gtl,Norm,6,2000,VinylSd,0,PConc,No,Unf,941,Y,683,0,1,TA,1,1999,460,Y,0,0,NA,2007
+2331,RL,Pave,Lvl,Gtl,Norm,8,1998,VinylSd,515,PConc,Av,Unf,1779,Y,772,1,1,Gd,2,1998,925,Y,0,0,NA,2007
+2332,RL,Pave,Lvl,Gtl,Norm,9,1998,MetalSd,422,PConc,Gd,Unf,1408,Y,1407,1,1,Gd,1,1998,806,Y,0,0,NA,2007
+2333,RL,Pave,Lvl,Gtl,Norm,8,1999,VinylSd,0,PConc,No,Unf,1389,Y,1171,1,1,Gd,1,1998,758,Y,0,0,NA,2007
+2334,RL,Pave,Lvl,Gtl,Norm,7,1998,VinylSd,275,PConc,No,Unf,1066,Y,1277,0,1,Gd,1,1998,600,Y,0,0,NA,2007
+2335,RL,Pave,Lvl,Gtl,Norm,8,1993,VinylSd,309,PConc,No,Unf,1105,Y,1097,1,1,Gd,1,1992,517,Y,0,0,NA,2007
+2336,RL,Pave,Lvl,Gtl,Norm,8,1997,VinylSd,526,PConc,No,Unf,1325,Y,1203,0,1,Gd,1,1996,933,Y,0,0,NA,2007
+2337,RL,Pave,Lvl,Gtl,Norm,7,2007,VinylSd,0,PConc,No,Unf,1369,Y,0,0,0,Gd,0,2007,605,Y,0,0,NA,2007
+2338,RL,Pave,Lvl,Gtl,Norm,8,2007,VinylSd,164,PConc,No,Unf,1542,Y,0,1,0,Gd,1,2007,852,Y,0,0,NA,2007
+2339,RL,Pave,Lvl,Gtl,Norm,8,2006,VinylSd,248,PConc,Mn,Unf,1524,Y,0,0,0,Gd,1,2006,484,Y,0,0,NA,2007
+2340,RL,Pave,Lvl,Gtl,Norm,10,2007,CemntBd,754,PConc,Av,Unf,1966,Y,0,1,0,Ex,1,2007,1092,Y,0,0,NA,2007
+2341,RL,Pave,Lvl,Gtl,Norm,7,2007,VinylSd,NA,PConc,No,Unf,1528,Y,0,0,2,Gd,1,2007,480,Y,0,0,NA,2007
+2342,RL,Pave,Lvl,Gtl,Norm,8,2005,VinylSd,148,PConc,Av,Unf,1538,Y,0,1,0,Gd,0,2005,484,Y,0,0,NA,2007
+2343,RL,Pave,Lvl,Gtl,Norm,7,2006,VinylSd,143,PConc,Av,Unf,1494,Y,0,1,0,Gd,1,2005,672,Y,0,0,NA,2007
+2344,RL,Pave,Lvl,Gtl,Norm,7,2006,VinylSd,0,PConc,No,Unf,982,Y,995,0,1,Gd,0,2006,574,Y,0,0,NA,2007
+2345,RL,Pave,Lvl,Gtl,Norm,8,2006,VinylSd,0,PConc,No,Unf,1302,Y,528,0,1,Gd,0,2006,859,Y,0,0,NA,2007
+2346,FV,Pave,Lvl,Gtl,Norm,8,2007,VinylSd,0,PConc,No,Unf,1338,Y,0,0,0,Gd,0,2007,598,Y,0,0,NA,2007
+2347,FV,Pave,Lvl,Gtl,Norm,7,2007,VinylSd,0,PConc,No,Unf,1335,Y,0,0,0,Gd,0,2007,575,Y,0,0,NA,2007
+2348,FV,Pave,Lvl,Gtl,Norm,8,2007,VinylSd,0,PConc,Av,Unf,896,Y,896,0,1,Gd,0,2007,590,Y,0,0,NA,2007
+2349,FV,Pave,Lvl,Gtl,Norm,5,2007,VinylSd,0,CBlock,NA,Unf,725,Y,863,0,0,Gd,0,2007,561,Y,0,0,NA,2007
+2350,FV,Pave,Lvl,Gtl,Norm,8,2007,WdShing,NA,PConc,Av,Unf,955,Y,925,1,1,Ex,1,2007,880,Y,0,0,NA,2007
+2351,FV,Pave,Lvl,Gtl,Norm,8,2007,CemntBd,0,PConc,Mn,Unf,1574,Y,0,0,0,Ex,1,2007,594,Y,0,0,NA,2007
+2352,FV,Pave,Lvl,Gtl,Norm,8,2006,VinylSd,298,PConc,Av,Unf,1685,Y,0,0,0,Gd,1,2006,658,Y,0,0,NA,2007
+2353,FV,Pave,Lvl,Gtl,Norm,6,2004,VinylSd,353,PConc,Av,Unf,1158,Y,1285,0,1,Gd,1,2004,744,Y,0,0,NA,2007
+2354,RL,Pave,Lvl,Gtl,Norm,6,2007,VinylSd,0,PConc,No,Unf,1100,Y,0,0,1,TA,0,NA,0,Y,0,0,NA,2007
+2355,RL,Pave,Lvl,Gtl,Norm,7,2006,VinylSd,0,PConc,No,Unf,1143,Y,0,0,1,Gd,0,NA,0,Y,0,0,NA,2007
+2356,RL,Pave,Lvl,Gtl,Norm,5,2004,VinylSd,126,PConc,No,Unf,1094,Y,0,1,0,Gd,0,2004,576,Y,0,0,NA,2007
+2357,RL,Pave,Lvl,Gtl,Norm,7,2006,VinylSd,170,PConc,No,Unf,1461,Y,0,0,0,Gd,0,2006,566,Y,0,0,NA,2007
+2358,RL,Pave,Lvl,Gtl,Norm,6,1997,VinylSd,0,PConc,No,Unf,864,Y,900,0,1,Gd,0,1993,492,Y,0,0,NA,2007
+2359,RL,Pave,Lvl,Gtl,Norm,6,1980,Plywood,0,CBlock,No,Unf,630,Y,636,0,1,TA,2,1980,283,Y,0,0,NA,2007
+2360,RL,Pave,Lvl,Gtl,Norm,5,1977,Plywood,0,CBlock,No,Rec,894,Y,0,1,0,TA,0,1979,308,Y,0,0,NA,2007
+2361,RL,Pave,Lvl,Gtl,Norm,5,1968,HdBoard,0,CBlock,No,Unf,1040,Y,0,1,1,TA,0,1991,686,Y,0,0,NA,2007
+2362,RL,Pave,Bnk,Gtl,Norm,7,1990,HdBoard,272,PConc,No,Unf,1223,Y,1232,1,1,Gd,1,1990,564,Y,0,0,NA,2007
+2363,RL,Pave,Lvl,Gtl,Norm,5,1974,Plywood,44,CBlock,Gd,Unf,1037,Y,0,1,0,TA,0,1974,431,Y,0,0,NA,2007
+2364,RL,Pave,Lvl,Gtl,Norm,6,2006,CemntBd,0,CBlock,Mn,Unf,1044,Y,0,1,0,Gd,1,1973,542,Y,0,0,NA,2007
+2365,FV,Pave,Lvl,Gtl,Norm,8,2004,MetalSd,0,PConc,Av,Unf,1378,Y,0,1,0,Gd,1,2004,540,Y,0,0,NA,2007
+2366,FV,Pave,Lvl,Gtl,Norm,8,2007,VinylSd,30,PConc,No,Unf,1141,Y,0,1,0,Gd,0,2006,484,Y,0,0,NA,2007
+2367,FV,Pave,Lvl,Gtl,Norm,8,2007,VinylSd,36,PConc,No,Unf,1511,Y,0,1,0,Gd,0,2006,476,Y,0,0,NA,2007
+2368,FV,Pave,Lvl,Gtl,Norm,7,2007,VinylSd,0,PConc,No,Unf,1352,Y,0,1,0,Gd,1,2006,466,Y,0,0,NA,2007
+2369,FV,Pave,Lvl,Gtl,Norm,8,2007,VinylSd,NA,PConc,No,Unf,1550,Y,0,0,1,Gd,0,2007,528,Y,0,0,NA,2007
+2370,FV,Pave,Lvl,Gtl,Norm,6,1999,MetalSd,342,PConc,No,Unf,744,Y,744,1,1,TA,1,1999,440,Y,0,0,NA,2007
+2371,FV,Pave,Lvl,Gtl,Norm,6,2000,MetalSd,216,PConc,No,Unf,756,Y,804,0,1,Gd,0,2000,440,Y,0,0,NA,2007
+2372,FV,Pave,Lvl,Gtl,Norm,7,2000,CemntBd,0,PConc,No,Unf,1339,Y,0,0,0,Gd,0,1999,625,Y,0,0,NA,2007
+2373,FV,Pave,Lvl,Gtl,Norm,8,2004,CemntBd,0,PConc,No,Unf,1054,Y,976,1,1,Gd,2,2003,552,Y,0,0,NA,2007
+2374,FV,Pave,Lvl,Gtl,Norm,8,1998,VinylSd,0,PConc,Mn,Unf,1220,Y,1142,1,1,Gd,2,1998,1105,Y,36,0,NA,2007
+2375,RL,Pave,Lvl,Gtl,Norm,8,1995,BrkFace,0,PConc,Gd,ALQ,1494,Y,0,1,1,Gd,1,1994,478,Y,0,0,NA,2007
+2376,RL,Pave,Lvl,Gtl,Norm,7,1980,VinylSd,600,CBlock,No,Unf,2002,Y,0,1,1,Gd,1,1980,546,Y,0,0,NA,2007
+2377,RL,Pave,Lvl,Gtl,Norm,8,1981,BrkFace,0,CBlock,Gd,Rec,2461,Y,0,1,0,Gd,2,1981,676,Y,0,0,NA,2007
+2378,RL,Pave,Lvl,Gtl,Norm,6,1968,MetalSd,41,CBlock,No,Unf,912,Y,0,1,1,TA,0,1968,412,Y,0,0,NA,2007
+2379,RL,Pave,Lvl,Gtl,Norm,6,1970,VinylSd,525,CBlock,No,Unf,1008,Y,1008,1,1,TA,1,1970,570,Y,0,0,NA,2007
+2380,RL,Pave,Lvl,Gtl,Norm,6,1969,HdBoard,0,PConc,Av,Unf,973,Y,0,1,0,TA,0,1969,480,Y,0,0,NA,2007
+2381,RL,Pave,Lvl,Gtl,Norm,6,1968,HdBoard,196,PConc,No,Unf,1295,Y,0,1,1,TA,0,1968,528,Y,0,0,NA,2007
+2382,RL,Pave,Lvl,Gtl,Norm,7,1987,Wd Sdng,0,CBlock,No,Unf,1124,Y,0,0,0,Gd,1,1972,515,Y,0,0,NA,2007
+2383,RL,Pave,Lvl,Gtl,Norm,7,1993,VinylSd,112,PConc,No,Unf,1594,Y,0,0,0,Gd,1,1993,472,Y,0,0,NA,2007
+2384,RL,Pave,Lvl,Gtl,Norm,7,1993,MetalSd,194,PConc,No,Unf,1148,Y,984,1,1,Gd,1,1993,473,Y,0,0,NA,2007
+2385,RL,Pave,Lvl,Gtl,Norm,6,1966,HdBoard,0,CBlock,No,Unf,1093,Y,0,1,0,TA,1,1966,484,Y,0,0,Shed,2007
+2386,RL,Pave,Lvl,Gtl,Norm,6,1963,HdBoard,203,CBlock,No,Rec,1052,Y,0,1,0,TA,0,1963,311,Y,0,0,NA,2007
+2387,RL,Pave,Lvl,Gtl,Norm,5,1993,MetalSd,0,CBlock,No,BLQ,949,Y,0,1,0,Gd,0,1967,308,Y,0,0,NA,2007
+2388,RL,Pave,Lvl,Gtl,Norm,4,1964,HdBoard,0,Slab,NA,NA,0,N,0,0,0,TA,0,1964,530,Y,0,0,NA,2007
+2389,RL,Pave,Lvl,Gtl,Norm,5,1956,Wd Sdng,0,CBlock,No,LwQ,894,Y,0,0,0,Gd,1,1966,396,Y,0,0,NA,2007
+2390,RL,Pave,Lvl,Gtl,Norm,5,1961,Wd Sdng,0,CBlock,No,LwQ,864,Y,0,1,0,TA,1,1961,440,Y,0,0,NA,2007
+2391,RL,Pave,Lvl,Gtl,Norm,5,1961,VinylSd,56,CBlock,No,Unf,964,Y,0,0,0,TA,1,1985,784,Y,0,0,NA,2007
+2392,RL,Pave,Lvl,Gtl,Norm,5,1960,CemntBd,0,CBlock,No,Unf,894,Y,0,0,0,TA,0,1965,312,Y,0,0,NA,2007
+2393,RL,Pave,Lvl,Gtl,Norm,7,1966,HdBoard,202,CBlock,No,Unf,1174,Y,0,0,0,TA,1,1966,440,Y,0,0,NA,2007
+2394,RL,Pave,Lvl,Gtl,Norm,6,1965,HdBoard,98,CBlock,Gd,Unf,1042,Y,0,0,0,TA,0,1965,440,Y,0,0,NA,2007
+2395,RL,Pave,Lvl,Gtl,Norm,6,1997,MetalSd,306,CBlock,No,Unf,845,Y,1309,0,1,TA,1,1964,539,Y,0,0,NA,2007
+2396,RL,Pave,Lvl,Gtl,Norm,6,1964,Wd Sdng,212,CBlock,No,Rec,1130,Y,0,0,0,TA,1,1964,286,Y,84,0,NA,2007
+2397,RL,Pave,Lvl,Gtl,Norm,6,1991,MetalSd,136,CBlock,Mn,Unf,1592,Y,0,1,1,Gd,1,1959,510,Y,0,0,NA,2007
+2398,RL,Pave,Lvl,Gtl,Norm,5,1996,Wd Sdng,0,PConc,No,Rec,822,Y,0,0,0,TA,0,1975,512,Y,0,0,NA,2007
+2399,RL,Pave,Lvl,Gtl,Norm,3,1950,WdShing,0,CBlock,No,Unf,666,N,0,0,0,Gd,0,NA,0,N,0,0,NA,2007
+2400,RL,Pave,Lvl,Gtl,Norm,3,1950,MetalSd,0,CBlock,No,Unf,370,N,228,1,0,Fa,0,NA,0,N,0,0,Shed,2007
+2401,RL,Pave,Lvl,Gtl,Feedr,5,2000,VinylSd,0,CBlock,No,ALQ,808,Y,0,0,0,TA,0,1963,308,N,0,0,NA,2007
+2402,RL,Pave,Lvl,Gtl,Norm,5,1955,HdBoard,176,CBlock,No,Unf,1078,Y,0,1,0,TA,0,1955,288,Y,0,0,NA,2007
+2403,RL,Pave,Lvl,Gtl,Norm,5,1968,MetalSd,0,CBlock,No,Unf,1560,Y,0,0,0,TA,0,1968,792,Y,0,0,NA,2007
+2404,RL,Pave,Lvl,Gtl,Norm,5,1966,HdBoard,87,CBlock,Av,Unf,793,Y,0,0,0,TA,1,1966,432,Y,0,0,NA,2007
+2405,RL,Pave,Lvl,Gtl,Norm,6,1961,WdShing,291,CBlock,Av,Unf,1218,Y,0,1,0,TA,1,1961,525,Y,0,0,NA,2007
+2406,RL,Pave,Lvl,Gtl,Norm,6,1999,VinylSd,0,CBlock,No,Unf,936,Y,0,1,0,Gd,0,1957,315,Y,0,0,NA,2007
+2407,RL,Pave,Lvl,Gtl,Norm,5,1956,Wd Sdng,54,CBlock,No,Unf,1008,Y,0,1,0,Fa,0,1964,308,Y,0,0,NA,2007
+2408,RL,Pave,Lvl,Gtl,Norm,5,1963,MetalSd,0,CBlock,No,Unf,1053,Y,0,1,0,Gd,0,1994,692,Y,0,0,NA,2007
+2409,RL,Pave,Lvl,Gtl,Norm,5,1960,HdBoard,69,CBlock,No,Unf,1144,Y,0,0,0,TA,1,1960,336,Y,0,0,NA,2007
+2410,RL,Pave,Lvl,Gtl,Norm,6,1969,Wd Sdng,289,CBlock,No,Rec,1331,Y,0,0,0,TA,3,1957,464,Y,0,0,NA,2007
+2411,RL,Pave,Lvl,Gtl,Norm,5,1957,Wd Sdng,0,CBlock,No,Unf,922,Y,0,1,0,TA,0,1957,308,Y,0,0,NA,2007
+2412,RL,Pave,Lvl,Gtl,Norm,5,1975,VinylSd,0,CBlock,Av,Unf,1204,Y,0,0,0,TA,1,1955,310,Y,0,0,NA,2007
+2413,RL,Pave,Lvl,Gtl,Norm,5,1955,MetalSd,0,CBlock,No,Unf,1216,Y,0,1,0,TA,0,1955,336,Y,0,0,NA,2007
+2414,RL,Pave,Lvl,Gtl,Norm,5,2006,VinylSd,0,CBlock,No,Unf,864,Y,0,0,1,Ex,0,1962,336,Y,0,0,NA,2007
+2415,RL,Pave,Lvl,Gtl,Norm,5,1958,Wd Sdng,260,CBlock,No,Unf,1560,Y,0,0,0,TA,0,1958,484,Y,0,0,NA,2007
+2416,RL,Pave,Lvl,Gtl,Norm,6,1952,Wd Sdng,0,CBlock,No,Unf,948,Y,0,0,0,TA,0,1952,410,N,0,0,NA,2007
+2417,RL,Pave,Lvl,Gtl,Norm,6,1953,Wd Sdng,0,CBlock,No,ALQ,1040,Y,0,0,0,TA,0,1953,293,Y,0,0,NA,2007
+2418,RL,Pave,Lvl,Gtl,Norm,5,2003,VinylSd,0,CBlock,No,ALQ,925,Y,0,1,0,Gd,0,1956,252,Y,0,0,NA,2007
+2419,RL,Pave,Lvl,Gtl,Norm,4,1955,MetalSd,0,PConc,No,Unf,1190,Y,500,1,0,Fa,0,2002,352,Y,0,0,NA,2007
+2420,RL,Pave,Lvl,Gtl,Norm,5,1955,MetalSd,0,CBlock,No,Unf,923,Y,0,1,0,TA,2,1955,390,Y,0,0,NA,2007
+2421,RL,Pave,Lvl,Gtl,Norm,4,1953,VinylSd,0,CBlock,No,Rec,1105,Y,0,1,0,TA,1,1953,280,Y,0,368,NA,2007
+2422,RL,Pave,Lvl,Gtl,Norm,5,1952,Wd Sdng,0,CBlock,No,Unf,924,Y,0,0,0,TA,0,1952,420,Y,0,0,Shed,2007
+2423,RL,Pave,Lvl,Gtl,Norm,4,2006,VinylSd,0,CBlock,No,Unf,925,Y,544,0,0,TA,0,NA,0,N,0,0,NA,2007
+2424,RL,Pave,Lvl,Gtl,Norm,5,2004,MetalSd,0,CBlock,No,Unf,1216,Y,0,1,0,TA,1,1953,371,Y,0,0,NA,2007
+2425,RL,Pave,Lvl,Gtl,Norm,5,2007,Wd Sdng,0,BrkTil,No,Unf,666,Y,1778,0,1,Gd,0,2007,1200,Y,290,0,NA,2007
+2426,RL,Pave,Lvl,Gtl,Norm,4,1993,MetalSd,0,CBlock,Mn,LwQ,1151,Y,436,1,0,TA,0,1978,580,Y,0,0,NA,2007
+2427,RL,Pave,Lvl,Gtl,Norm,5,1999,Wd Sdng,0,CBlock,Av,Unf,736,Y,783,0,1,Gd,0,NA,0,N,0,0,NA,2007
+2428,RL,Pave,Lvl,Gtl,Norm,7,1999,Plywood,364,CBlock,Av,ALQ,725,Y,616,0,0,TA,2,1963,276,Y,0,0,NA,2007
+2429,RL,Pave,Lvl,Gtl,Norm,5,1961,HdBoard,53,CBlock,No,Unf,920,Y,0,0,0,TA,0,1961,240,Y,0,0,NA,2007
+2430,RL,Pave,Lvl,Gtl,Norm,6,1968,Wd Sdng,86,CBlock,Mn,Unf,952,Y,0,1,0,TA,0,1968,288,Y,0,0,NA,2007
+2431,RL,Pave,Lvl,Gtl,Norm,5,1950,WdShing,0,CBlock,No,Unf,864,Y,0,0,1,TA,1,1950,357,Y,0,0,NA,2007
+2432,RL,Pave,Lvl,Gtl,Norm,5,2003,BrkFace,0,CBlock,No,Unf,1040,Y,0,1,0,Gd,0,1959,286,Y,0,0,Shed,2007
+2433,RL,Pave,Lvl,Gtl,Norm,5,1958,BrkFace,0,CBlock,No,Unf,1170,Y,0,0,0,TA,1,1958,338,Y,0,0,NA,2007
+2434,RL,Pave,Lvl,Gtl,Norm,5,1960,BrkFace,0,CBlock,No,Unf,1242,Y,0,1,1,TA,0,1960,324,Y,0,0,NA,2007
+2435,RL,Pave,Lvl,Gtl,Norm,5,1960,BrkFace,0,CBlock,No,Rec,1377,Y,0,1,0,TA,2,1965,351,Y,0,0,NA,2007
+2436,RL,Pave,Lvl,Gtl,Norm,5,1961,BrkFace,0,Slab,NA,NA,0,Y,0,0,0,TA,0,1961,300,Y,0,0,NA,2007
+2437,RL,Pave,Lvl,Gtl,Norm,5,1962,Wd Sdng,0,CBlock,No,BLQ,864,Y,0,0,0,TA,0,1962,294,Y,0,0,NA,2007
+2438,RL,Pave,Lvl,Gtl,Norm,5,1962,HdBoard,0,CBlock,Av,Unf,896,Y,0,1,0,TA,1,1962,288,Y,160,0,NA,2007
+2439,RM,Pave,Bnk,Gtl,Norm,5,1980,MetalSd,0,BrkTil,No,Unf,850,Y,0,0,0,TA,0,1981,576,Y,116,0,NA,2007
+2440,RM,Pave,Lvl,Gtl,Norm,6,1950,MetalSd,0,BrkTil,No,Unf,845,Y,430,0,0,TA,0,1980,576,Y,175,0,NA,2007
+2441,RM,Pave,Lvl,Gtl,Norm,5,1950,AsbShng,0,PConc,No,Unf,1022,N,0,1,0,Fa,1,1922,184,N,20,0,NA,2007
+2442,RM,Pave,Lvl,Gtl,Norm,5,1990,MetalSd,0,BrkTil,No,Unf,967,Y,0,0,0,TA,1,1920,180,N,26,0,NA,2007
+2443,RM,Pave,Lvl,Gtl,Norm,5,1950,VinylSd,279,CBlock,No,Unf,808,Y,0,0,0,TA,2,1940,379,Y,0,0,NA,2007
+2444,RM,Pave,Lvl,Gtl,Norm,5,2006,Stucco,0,BrkTil,No,Unf,680,Y,494,0,0,Gd,1,2000,576,Y,40,0,NA,2007
+2445,RM,Pave,Lvl,Gtl,Norm,4,1950,MetalSd,0,BrkTil,No,Rec,570,N,380,0,0,TA,0,1930,252,Y,96,0,NA,2007
+2446,RM,Pave,Lvl,Gtl,Norm,4,1950,MetalSd,0,PConc,No,Unf,1075,Y,642,0,1,TA,0,1935,342,N,160,0,NA,2007
+2447,RM,Pave,Lvl,Gtl,Norm,8,1999,VinylSd,0,BrkTil,No,Unf,725,N,863,0,1,Gd,0,1992,816,Y,0,0,NA,2007
+2448,RM,Pave,Lvl,Gtl,Norm,6,1950,Wd Sdng,0,BrkTil,No,Rec,728,Y,728,0,1,TA,1,1927,374,Y,0,0,NA,2007
+2449,RM,Pave,Lvl,Gtl,Norm,5,1950,MetalSd,0,BrkTil,No,Unf,616,Y,616,0,0,TA,0,1920,480,Y,143,0,NA,2007
+2450,RM,Pave,Lvl,Gtl,Norm,6,1990,Wd Sdng,0,CBlock,No,Unf,926,Y,659,0,0,TA,0,1979,468,N,0,0,NA,2007
+2451,RM,Pave,Lvl,Gtl,Norm,5,2005,VinylSd,0,BrkTil,No,Unf,687,Y,671,0,1,Gd,1,2004,336,Y,0,0,NA,2007
+2452,RM,Pave,Lvl,Gtl,Norm,7,1987,Wd Sdng,0,PConc,No,Unf,819,Y,1142,0,0,TA,1,1950,576,N,150,0,NA,2007
+2453,RM,Pave,Lvl,Gtl,Norm,4,1956,MetalSd,1,CBlock,NA,NA,0,Y,0,0,0,TA,0,1956,331,Y,0,0,NA,2007
+2454,RM,Pave,Lvl,Gtl,Norm,4,2002,Stucco,0,Slab,NA,NA,0,Y,0,0,0,TA,1,1957,384,Y,0,0,NA,2007
+2455,RL,Pave,Bnk,Mod,Norm,5,1994,MetalSd,0,PConc,No,Rec,756,N,144,1,0,TA,1,1969,308,Y,0,0,NA,2007
+2456,RM,Pave,HLS,Gtl,Artery,5,1950,MetalSd,0,CBlock,No,Unf,910,Y,525,1,0,TA,0,1950,308,Y,0,0,NA,2007
+2457,RM,Pave,Lvl,Gtl,Norm,5,1998,MetalSd,0,CBlock,No,Unf,728,Y,546,0,0,TA,0,1939,224,Y,192,0,NA,2007
+2458,RM,Pave,Lvl,Gtl,Norm,6,1950,MetalSd,0,CBlock,Mn,Unf,600,Y,624,0,1,TA,2,1939,217,Y,0,0,NA,2007
+2459,RM,Pave,Lvl,Gtl,Norm,5,1950,AsbShng,0,BrkTil,No,Unf,884,Y,0,0,0,TA,0,1939,240,Y,136,0,NA,2007
+2460,RM,Pave,Lvl,Gtl,Norm,6,1950,VinylSd,0,BrkTil,No,Unf,861,Y,548,1,1,TA,1,1968,528,Y,84,0,NA,2007
+2461,RM,Pave,Lvl,Gtl,Norm,5,1952,Wd Sdng,0,BrkTil,No,Unf,672,Y,423,1,0,TA,0,1939,280,Y,0,0,NA,2007
+2462,RM,Pave,Lvl,Gtl,Norm,5,1992,Wd Sdng,0,BrkTil,No,Unf,966,Y,412,0,0,TA,1,1930,230,Y,96,0,NA,2007
+2463,RM,Pave,Lvl,Gtl,Norm,5,1950,Wd Sdng,0,BrkTil,No,Unf,756,Y,378,1,0,Gd,0,1926,379,Y,0,0,NA,2007
+2464,RM,Pave,Lvl,Gtl,Norm,6,1995,Wd Sdng,0,CBlock,No,Unf,1100,Y,1164,0,1,TA,0,1950,408,Y,0,0,NA,2007
+2465,RL,Pave,Bnk,Gtl,Norm,6,1950,Wd Sdng,0,PConc,No,Unf,768,Y,624,0,0,Gd,0,1977,576,P,144,0,NA,2007
+2466,RL,Pave,Lvl,Gtl,Norm,5,1950,HdBoard,0,PConc,No,Unf,750,Y,356,0,0,TA,0,1965,576,Y,0,0,NA,2007
+2467,RM,Pave,Lvl,Gtl,Norm,7,1990,Wd Sdng,0,BrkTil,No,Unf,672,N,672,1,1,Gd,1,1979,456,Y,70,0,NA,2007
+2468,RM,Pave,Lvl,Gtl,Norm,5,1950,AsbShng,0,CBlock,No,Unf,592,N,240,0,0,TA,0,1920,240,Y,77,0,NA,2007
+2469,RM,Pave,Lvl,Gtl,Norm,5,1950,AsbShng,0,CBlock,No,Unf,969,N,245,0,0,TA,0,1920,216,N,77,0,NA,2007
+2470,RM,Pave,Lvl,Gtl,Norm,6,1963,HdBoard,234,CBlock,No,Unf,741,Y,797,0,0,TA,1,1963,658,Y,0,0,NA,2007
+2471,RM,Pave,Lvl,Gtl,Norm,7,2005,VinylSd,0,CBlock,No,Rec,976,Y,976,0,1,Gd,2,1950,299,Y,0,0,NA,2007
+2472,RM,Pave,Lvl,Gtl,Norm,6,1950,MetalSd,0,CBlock,No,Unf,1138,Y,1042,0,1,TA,1,2006,720,N,170,0,NA,2007
+2473,RM,Pave,Lvl,Gtl,Norm,4,1958,MetalSd,0,BrkTil,No,ALQ,808,Y,477,1,0,TA,0,1958,436,Y,0,0,NA,2007
+2474,RM,Pave,Lvl,Gtl,Norm,4,1950,Wd Sdng,0,CBlock,No,Unf,771,Y,504,0,0,TA,0,1910,264,N,0,0,NA,2007
+2475,RL,Pave,Bnk,Gtl,Norm,7,1980,Wd Sdng,0,CBlock,No,Unf,1005,Y,1005,1,1,TA,2,1937,498,Y,0,0,NA,2007
+2476,RL,Pave,Lvl,Gtl,Norm,5,1979,Plywood,0,CBlock,No,Unf,672,N,504,1,0,TA,0,1942,240,Y,0,0,NA,2007
+2477,RL,Pave,Lvl,Gtl,Norm,5,1963,HdBoard,0,CBlock,Av,Unf,925,Y,0,1,0,TA,0,1963,308,Y,0,0,NA,2007
+2478,RL,Pave,Lvl,Gtl,Norm,5,1980,HdBoard,30,CBlock,Av,Unf,1420,Y,0,1,0,TA,1,1964,572,Y,88,0,NA,2007
+2479,RL,Pave,Lvl,Gtl,Norm,4,1964,HdBoard,0,CBlock,No,LwQ,1005,Y,0,1,0,TA,0,1964,440,N,0,0,NA,2007
+2480,RL,Pave,Lvl,Gtl,Norm,5,2001,HdBoard,50,CBlock,Gd,BLQ,980,Y,0,0,0,TA,1,1970,528,Y,0,0,NA,2007
+2481,RL,Pave,Lvl,Gtl,Norm,5,1966,HdBoard,442,CBlock,Av,BLQ,1040,Y,0,1,0,TA,0,1966,264,Y,0,0,NA,2007
+2482,RL,Pave,Lvl,Gtl,Norm,5,1990,HdBoard,0,CBlock,Av,Unf,768,Y,0,1,0,TA,0,1989,576,Y,0,0,NA,2007
+2483,RL,Pave,Lvl,Gtl,Norm,5,1968,HdBoard,89,CBlock,Mn,BLQ,876,Y,0,0,0,TA,0,1968,264,Y,0,0,NA,2007
+2484,RL,Pave,Lvl,Gtl,Norm,5,1967,MetalSd,323,CBlock,No,BLQ,943,Y,0,1,0,TA,0,1972,528,Y,0,0,NA,2007
+2485,RL,Pave,Lvl,Gtl,Norm,5,1966,Plywood,0,CBlock,No,ALQ,912,Y,0,1,0,Gd,0,1966,315,Y,0,0,NA,2007
+2486,RL,Pave,Bnk,Mod,Norm,5,1998,BrkFace,0,CBlock,No,ALQ,1240,Y,0,1,0,TA,1,1956,323,Y,0,0,NA,2007
+2487,RL,Pave,Lvl,Gtl,Norm,5,1996,Wd Sdng,356,CBlock,No,Unf,671,Y,1087,0,0,TA,1,1946,638,Y,0,0,Shed,2007
+2488,RL,Pave,Lvl,Gtl,Norm,7,1998,Wd Sdng,0,BrkTil,No,Unf,680,Y,504,0,1,Gd,2,1940,224,Y,0,0,NA,2007
+2489,RL,Pave,Lvl,Gtl,Norm,6,1995,VinylSd,0,CBlock,No,Unf,967,Y,0,0,0,Gd,1,1954,494,Y,280,0,NA,2007
+2490,RL,Pave,Lvl,Gtl,Norm,5,1998,Plywood,340,CBlock,Mn,BLQ,1158,Y,0,1,0,TA,2,1958,303,Y,0,0,NA,2007
+2491,RL,Pave,Lvl,Gtl,Norm,4,1950,Wd Sdng,0,Slab,NA,NA,0,N,0,0,0,TA,0,1952,460,Y,140,0,NA,2007
+2492,RL,Pave,Lvl,Gtl,Norm,6,1984,Wd Sdng,136,PConc,No,LwQ,1190,Y,0,0,0,TA,1,1984,552,Y,0,0,NA,2007
+2493,RL,Pave,Lvl,Gtl,Norm,5,2005,Wd Sdng,0,CBlock,Mn,Unf,409,Y,0,0,0,Gd,1,1996,576,Y,0,0,NA,2007
+2494,RL,Pave,Lvl,Gtl,Norm,5,1953,MetalSd,0,CBlock,No,Unf,1073,Y,0,0,0,TA,1,1953,649,P,0,0,NA,2007
+2495,RL,Pave,Lvl,Gtl,Norm,4,1950,Wd Sdng,0,CBlock,No,Unf,484,N,0,0,0,TA,0,1946,336,N,0,0,NA,2007
+2496,RL,Pave,Lvl,Gtl,Norm,6,1994,MetalSd,300,CBlock,No,Unf,1288,Y,0,0,0,Gd,2,1954,527,Y,0,0,NA,2007
+2497,RL,Pave,Lvl,Gtl,Norm,6,1954,Wd Sdng,0,CBlock,No,Unf,988,Y,638,0,1,Gd,0,1954,332,Y,0,0,NA,2007
+2498,RL,Pave,HLS,Gtl,Norm,5,1958,MetalSd,0,CBlock,No,Unf,864,Y,0,0,0,TA,0,1958,399,Y,0,0,NA,2007
+2499,RL,Pave,Lvl,Gtl,Norm,4,1994,HdBoard,0,Slab,NA,NA,0,N,0,0,0,Gd,0,1958,308,N,60,0,NA,2007
+2500,RL,Pave,Lvl,Mod,Norm,5,1984,Wd Sdng,149,CBlock,No,GLQ,1038,Y,0,0,0,TA,0,1984,264,Y,0,0,NA,2007
+2501,RL,Pave,Lvl,Gtl,Norm,5,1951,Wd Sdng,0,CBlock,No,Unf,1342,Y,0,1,0,TA,0,1951,256,Y,0,0,NA,2007
+2502,RL,Pave,Lvl,Gtl,Norm,5,1994,Wd Sdng,0,PConc,Mn,Unf,1080,N,400,1,0,TA,1,1951,253,Y,68,0,NA,2007
+2503,RL,Pave,Lvl,Gtl,Norm,4,1950,MetalSd,0,BrkTil,No,Unf,951,N,376,0,0,TA,0,1920,280,P,0,0,NA,2007
+2504,RL,Pave,Lvl,Gtl,Norm,6,1984,Wd Sdng,0,CBlock,No,Unf,1105,Y,717,0,0,Gd,1,1984,515,P,1012,444,NA,2007
+2505,RL,Pave,Lvl,Gtl,Norm,7,2001,VinylSd,0,PConc,No,Unf,779,Y,929,1,1,Gd,1,1994,499,Y,0,0,NA,2007
+2506,RL,Pave,Lvl,Gtl,Norm,8,2007,VinylSd,306,PConc,Av,Unf,1643,Y,0,0,0,Gd,1,2007,870,Y,0,0,NA,2007
+2507,RL,Pave,Lvl,Gtl,Norm,8,2007,CemntBd,0,PConc,Av,Unf,2140,Y,0,0,1,Gd,0,2006,894,Y,0,0,NA,2007
+2508,RL,Pave,Lvl,Gtl,Norm,8,2007,VinylSd,306,PConc,Av,Unf,1643,Y,0,0,0,Gd,1,2007,870,Y,0,0,NA,2007
+2509,RL,Pave,Lvl,Gtl,Norm,7,2006,VinylSd,204,PConc,Mn,Unf,1546,Y,0,0,0,Gd,0,2005,796,Y,0,0,NA,2007
+2510,RL,Pave,Lvl,Gtl,Norm,8,2006,VinylSd,132,PConc,No,Unf,1489,Y,0,0,0,Gd,1,2005,674,Y,0,0,NA,2007
+2511,RL,Pave,Lvl,Gtl,Norm,7,2006,VinylSd,0,PConc,No,Unf,1270,Y,0,0,0,Gd,0,2005,524,Y,0,0,NA,2007
+2512,RL,Pave,Lvl,Gtl,Norm,7,2006,VinylSd,0,PConc,Gd,Unf,879,Y,916,0,1,Gd,0,2005,578,Y,0,0,NA,2007
+2513,RL,Pave,Lvl,Gtl,Norm,7,1988,HdBoard,360,PConc,No,LwQ,929,Y,927,1,1,Gd,1,1988,619,Y,0,0,NA,2007
+2514,RL,Pave,Low,Sev,Norm,8,1976,Wd Sdng,0,CBlock,Gd,GLQ,966,Y,0,2,1,Gd,2,1976,529,Y,0,0,NA,2007
+2515,RL,Pave,Lvl,Gtl,Norm,5,1994,VinylSd,0,PConc,No,Unf,1022,Y,0,0,0,TA,0,1995,747,Y,0,0,NA,2007
+2516,RL,Pave,Lvl,Gtl,Norm,6,2006,VinylSd,0,PConc,No,Unf,635,Y,662,1,1,Gd,0,1997,497,Y,0,0,NA,2007
+2517,RL,Pave,Lvl,Gtl,Norm,5,1994,VinylSd,0,PConc,No,Unf,990,Y,0,1,0,TA,0,1995,384,Y,0,0,NA,2007
+2518,RL,Pave,Low,Mod,Norm,5,1996,VinylSd,0,PConc,No,Unf,1097,Y,0,1,1,TA,0,1996,242,Y,0,0,NA,2007
+2519,RL,Pave,Lvl,Gtl,Norm,7,1999,VinylSd,0,PConc,Gd,Unf,988,Y,885,0,1,Gd,1,1999,597,Y,0,0,NA,2007
+2520,RL,Pave,Lvl,Gtl,Norm,7,1999,VinylSd,290,PConc,No,Unf,853,Y,900,1,1,TA,1,1998,534,Y,0,0,NA,2007
+2521,RL,Pave,Lvl,Gtl,Norm,7,2001,VinylSd,0,PConc,No,Unf,845,Y,845,0,1,Gd,0,2001,517,Y,0,0,NA,2007
+2522,RL,Pave,Lvl,Gtl,Norm,7,2000,VinylSd,144,PConc,No,Unf,985,Y,857,1,1,Gd,1,2000,486,Y,0,0,NA,2007
+2523,RL,Pave,Bnk,Gtl,Norm,5,1974,HdBoard,0,CBlock,Av,Unf,864,Y,0,0,0,TA,0,1974,440,Y,0,0,NA,2007
+2524,RL,Pave,Lvl,Gtl,Norm,5,1976,VinylSd,113,CBlock,Av,Unf,1015,Y,0,0,0,TA,1,1979,370,Y,0,0,NA,2007
+2525,RL,Pave,Lvl,Gtl,Norm,5,1977,Plywood,51,CBlock,Av,Unf,995,Y,0,0,0,TA,1,1977,576,Y,0,0,NA,2007
+2526,RL,Pave,Lvl,Gtl,Norm,5,1977,CemntBd,0,CBlock,Av,Unf,1040,Y,0,0,1,TA,0,1977,748,Y,0,0,NA,2007
+2527,RL,Pave,Lvl,Gtl,Norm,5,1977,HdBoard,0,CBlock,Av,BLQ,876,Y,0,1,0,TA,0,1977,308,Y,0,0,NA,2007
+2528,RL,Pave,Lvl,Gtl,Norm,5,1975,HdBoard,0,CBlock,No,Rec,864,Y,0,0,0,TA,0,1975,440,Y,0,0,NA,2007
+2529,RL,Pave,Lvl,Gtl,Norm,5,2000,VinylSd,0,CBlock,No,Unf,864,Y,0,1,0,Ex,0,1977,576,Y,0,0,NA,2007
+2530,RL,Pave,Lvl,Gtl,Norm,4,2006,Plywood,0,CBlock,No,Unf,385,Y,0,0,0,Gd,0,1975,728,Y,0,0,NA,2007
+2531,RL,Pave,Lvl,Gtl,Norm,7,2000,VinylSd,0,PConc,Gd,Unf,1673,Y,0,1,0,Gd,1,2000,583,Y,0,0,NA,2007
+2532,RL,Pave,Lvl,Gtl,Norm,7,2003,VinylSd,0,PConc,No,Unf,979,Y,940,1,1,Gd,1,2003,610,Y,0,0,NA,2007
+2533,RL,Pave,Lvl,Gtl,Norm,7,2002,VinylSd,214,PConc,No,Unf,860,Y,869,0,1,Gd,0,2002,542,Y,0,0,NA,2007
+2534,RL,Pave,Lvl,Gtl,Norm,8,1995,HdBoard,519,PConc,Gd,GLQ,1556,Y,0,0,0,Gd,1,1994,484,Y,0,0,NA,2007
+2535,RL,Pave,Lvl,Gtl,Norm,8,2001,VinylSd,256,PConc,Mn,Unf,1531,Y,908,1,1,Gd,1,2001,560,Y,0,0,NA,2007
+2536,RL,Pave,Lvl,Gtl,Norm,7,2002,VinylSd,254,PConc,Mn,Unf,860,Y,780,1,1,Gd,2,1996,608,Y,0,0,NA,2007
+2537,RL,Pave,Lvl,Mod,Norm,8,2000,VinylSd,158,PConc,Gd,Unf,1341,Y,0,1,1,Gd,1,1999,482,Y,0,0,NA,2007
+2538,RL,Pave,Lvl,Gtl,Norm,7,2007,VinylSd,0,PConc,No,Unf,738,Y,738,0,1,Gd,0,2007,552,Y,0,0,NA,2007
+2539,RL,Pave,Lvl,Gtl,Norm,7,2005,VinylSd,0,PConc,Av,Unf,1169,Y,0,1,0,Gd,0,2005,578,Y,0,0,NA,2007
+2540,RL,Pave,Lvl,Gtl,Norm,6,2007,VinylSd,0,PConc,No,Unf,1330,Y,0,0,0,Gd,1,2006,437,Y,0,0,NA,2007
+2541,RL,Pave,Lvl,Gtl,Norm,7,2006,VinylSd,0,PConc,No,Unf,738,Y,753,0,1,Gd,1,2006,484,Y,0,0,NA,2007
+2542,RL,Pave,Lvl,Gtl,Norm,5,2005,VinylSd,0,PConc,Mn,Unf,768,Y,768,0,1,Gd,0,2005,400,Y,0,0,NA,2007
+2543,RL,Pave,Low,Gtl,Norm,5,1967,HdBoard,162,CBlock,Gd,Unf,936,Y,0,1,0,TA,1,1967,384,Y,0,0,Shed,2007
+2544,RL,Pave,Lvl,Gtl,Norm,4,1963,VinylSd,20,CBlock,No,LwQ,1088,Y,0,0,0,TA,0,2002,520,P,0,0,NA,2007
+2545,RL,Pave,Lvl,Gtl,Norm,5,1950,VinylSd,0,CBlock,No,BLQ,901,Y,450,1,0,TA,1,1975,576,N,43,0,NA,2007
+2546,RL,Pave,Lvl,Gtl,Norm,6,1960,HdBoard,198,CBlock,No,Unf,1179,Y,0,0,0,TA,0,1960,622,P,0,0,NA,2007
+2547,RL,Pave,Lvl,Gtl,Norm,6,1976,HdBoard,0,CBlock,Av,Unf,960,Y,0,1,0,TA,1,1976,528,Y,0,0,NA,2007
+2548,RL,Pave,Lvl,Gtl,Norm,5,1979,Plywood,0,Slab,NA,NA,0,Y,1133,0,1,TA,0,1979,579,Y,0,0,NA,2007
+2549,RL,Pave,Lvl,Gtl,Norm,5,2006,VinylSd,0,PConc,No,Unf,734,Y,674,1,1,TA,0,2005,489,Y,0,0,NA,2007
+2550,RL,Pave,Bnk,Gtl,Norm,10,2009,CemntBd,1224,PConc,Gd,Unf,5095,Y,0,1,1,Ex,2,2008,1154,Y,0,0,NA,2007
+2551,RM,Pave,Lvl,Gtl,Norm,6,2005,VinylSd,76,PConc,Gd,Unf,547,Y,0,1,0,Gd,0,2005,525,Y,0,0,NA,2007
+2552,RL,Pave,Lvl,Gtl,Norm,5,2000,WdShing,0,CBlock,Av,ALQ,960,Y,0,1,0,Fa,0,1959,392,Y,35,0,NA,2007
+2553,RL,Pave,Lvl,Gtl,Norm,4,1955,AsbShng,128,PConc,NA,NA,0,N,0,0,0,Fa,0,NA,0,N,0,0,NA,2007
+2554,RL,Pave,Lvl,Gtl,Norm,5,1950,Plywood,0,CBlock,No,Unf,1195,N,0,0,0,TA,0,NA,0,N,0,0,NA,2007
+2555,RL,Pave,Bnk,Gtl,Norm,6,1995,Wd Sdng,0,BrkTil,No,ALQ,660,Y,125,1,0,TA,1,1920,216,Y,84,0,NA,2007
+2556,RL,Pave,Lvl,Gtl,Norm,4,1955,MetalSd,0,CBlock,No,Unf,768,Y,0,0,0,TA,1,1959,355,Y,196,0,NA,2007
+2557,RL,Pave,HLS,Gtl,Norm,4,1955,WdShing,0,CBlock,No,Unf,864,Y,0,1,0,TA,0,1996,528,N,0,0,NA,2007
+2558,RL,Pave,Lvl,Gtl,Norm,5,1950,Wd Sdng,0,PConc,Mn,Unf,1296,N,1296,2,0,TA,0,NA,0,Y,240,0,Shed,2007
+2559,RL,Pave,Lvl,Gtl,Norm,5,1950,Stucco,0,PConc,Mn,Unf,1290,Y,0,0,0,TA,0,1973,352,Y,64,0,NA,2007
+2560,RL,Pave,HLS,Gtl,Norm,6,2005,Wd Sdng,0,BrkTil,No,Unf,651,Y,539,0,0,TA,1,1994,240,P,168,0,NA,2007
+2561,RL,Pave,Lvl,Gtl,Norm,7,1995,Wd Sdng,0,BrkTil,No,Unf,531,Y,531,1,0,TA,1,1930,216,Y,0,0,NA,2007
+2562,RL,Pave,Lvl,Gtl,Norm,6,1950,VinylSd,0,BrkTil,No,Unf,585,N,585,0,0,TA,1,1992,228,Y,0,0,NA,2007
+2563,RL,Pave,Lvl,Gtl,Norm,6,1991,Wd Sdng,0,BrkTil,No,Unf,686,Y,775,0,0,TA,1,1926,225,N,116,0,NA,2007
+2564,RL,Pave,Lvl,Gtl,Norm,7,1992,VinylSd,0,BrkTil,No,Unf,851,Y,851,0,1,Gd,1,1927,264,Y,60,0,NA,2007
+2565,RL,Pave,HLS,Gtl,Norm,5,1951,Wd Sdng,0,CBlock,NA,NA,0,Y,0,0,1,TA,1,1951,400,Y,120,0,NA,2007
+2566,RL,Pave,HLS,Gtl,Norm,4,2003,AsbShng,0,BrkTil,No,Unf,930,Y,525,0,0,Gd,1,1930,231,Y,0,0,NA,2007
+2567,RL,Pave,Lvl,Gtl,Norm,5,1950,VinylSd,0,CBlock,No,Unf,728,Y,595,0,0,TA,0,1966,528,Y,0,0,NA,2007
+2568,RL,Pave,Lvl,Gtl,Norm,6,1960,Wd Sdng,423,CBlock,Mn,Rec,1560,Y,0,0,1,TA,3,1960,580,Y,584,0,NA,2007
+2569,RL,Pave,Lvl,Gtl,Norm,6,1968,HdBoard,0,PConc,No,Unf,1488,Y,0,0,0,TA,2,1968,552,Y,216,0,NA,2007
+2570,RM,Pave,Lvl,Gtl,Norm,6,1980,MetalSd,0,CBlock,No,Unf,516,Y,516,0,0,TA,1,1980,462,Y,0,0,NA,2007
+2571,RL,Pave,Lvl,Gtl,Norm,4,1996,VinylSd,0,PConc,No,Unf,1680,Y,0,0,0,Gd,0,1996,628,Y,0,0,NA,2007
+2572,RM,Pave,Bnk,Mod,Norm,8,1988,HdBoard,0,CBlock,Gd,Unf,1004,Y,0,1,0,TA,0,1988,509,Y,0,0,NA,2007
+2573,RL,Pave,Bnk,Gtl,Norm,7,1971,Plywood,652,CBlock,No,Unf,1696,Y,0,0,0,TA,2,1971,625,Y,0,0,NA,2007
+2574,RL,Pave,HLS,Gtl,Norm,8,1986,WdShing,0,CBlock,No,Unf,279,Y,0,0,1,Gd,1,1986,691,Y,169,228,NA,2007
+2575,RM,Pave,Lvl,Gtl,Norm,6,1950,Wd Sdng,0,BrkTil,No,Unf,720,Y,495,0,0,Gd,0,1965,720,Y,30,0,NA,2007
+2576,RM,Pave,Lvl,Gtl,Norm,5,2003,VinylSd,0,BrkTil,No,Unf,936,Y,665,0,0,TA,0,NA,0,N,0,0,NA,2007
+2577,RM,Pave,Lvl,Gtl,Norm,5,1999,Wd Sdng,0,BrkTil,No,Unf,859,Y,886,0,0,Gd,0,NA,NA,Y,212,0,NA,2007
+2578,RM,Pave,Lvl,Gtl,Norm,5,1950,Stucco,0,BrkTil,No,Unf,816,Y,0,0,0,TA,0,1922,100,N,96,0,NA,2007
+2579,RM,Pave,Lvl,Gtl,Norm,2,1950,MetalSd,0,BrkTil,NA,NA,0,Y,0,0,0,TA,0,1950,256,N,0,0,NA,2007
+2580,C (all),Pave,Lvl,Gtl,Norm,5,2006,VinylSd,0,CBlock,No,Unf,957,N,957,0,0,TA,0,NA,0,N,133,0,NA,2007
+2581,C (all),Pave,Lvl,Gtl,Norm,4,1980,MetalSd,0,CBlock,No,Unf,1073,Y,0,1,0,TA,0,1985,720,Y,0,0,NA,2007
+2582,C (all),Pave,Lvl,Gtl,Norm,5,2007,MetalSd,0,BrkTil,No,Unf,837,Y,0,0,0,Gd,0,1930,216,N,42,0,NA,2007
+2583,RM,Pave,HLS,Mod,Norm,8,2007,CemntBd,473,PConc,Gd,Unf,1573,Y,0,1,0,Gd,1,2006,495,Y,0,0,NA,2007
+2584,RL,Pave,Bnk,Gtl,Norm,6,1979,HdBoard,0,CBlock,Av,Unf,1001,Y,0,1,0,Gd,1,1979,486,Y,222,0,NA,2007
+2585,RL,Pave,Lvl,Gtl,Norm,5,2002,VinylSd,166,PConc,No,Unf,1441,Y,0,0,0,Gd,1,2002,650,Y,0,0,NA,2007
+2586,RL,Pave,Lvl,Gtl,Norm,7,2002,VinylSd,0,PConc,No,Unf,1409,Y,0,1,1,Gd,1,2002,576,Y,0,0,NA,2007
+2587,RL,Pave,Lvl,Gtl,Norm,7,1992,HdBoard,0,PConc,No,Unf,1454,Y,0,1,0,TA,1,1991,506,Y,0,0,NA,2007
+2588,RL,Pave,Lvl,Gtl,Norm,7,1975,Plywood,50,CBlock,Av,GLQ,852,Y,0,0,0,TA,0,1975,360,Y,0,0,NA,2007
+2589,RL,Pave,Lvl,Gtl,Norm,6,1974,Plywood,0,CBlock,Av,Unf,970,Y,0,1,0,TA,1,1974,528,Y,0,0,NA,2007
+2590,RL,Pave,Lvl,Gtl,Norm,7,1987,VinylSd,352,BrkTil,Av,Unf,1501,Y,0,1,0,Gd,2,1987,512,Y,0,0,NA,2007
+2591,RL,Pave,Lvl,Gtl,Norm,6,1995,HdBoard,1224,CBlock,No,Unf,585,Y,0,0,1,Gd,1,1958,461,Y,0,0,NA,2007
+2592,RL,Pave,HLS,Gtl,Norm,7,2007,VinylSd,0,PConc,No,Unf,1689,Y,0,0,0,Gd,0,2007,433,Y,0,0,NA,2007
+2593,RL,Pave,HLS,Gtl,Norm,8,2007,VinylSd,NA,PConc,Av,Unf,1546,Y,0,0,0,Ex,1,2207,502,Y,0,0,NA,2007
+2594,RL,Pave,Lvl,Gtl,Norm,7,1985,Plywood,0,CBlock,No,BLQ,1265,Y,0,0,0,Gd,0,1985,528,Y,0,0,NA,2007
+2595,RL,Pave,Lvl,Gtl,Norm,8,2001,VinylSd,86,PConc,Mn,Unf,1267,Y,0,0,0,Gd,0,2001,471,Y,0,0,NA,2007
+2596,RL,Pave,Lvl,Gtl,Norm,8,2002,VinylSd,886,PConc,Av,Unf,1922,Y,0,1,0,Gd,1,2002,692,Y,0,0,NA,2007
+2597,RL,Pave,Lvl,Gtl,Norm,6,1996,VinylSd,203,PConc,No,Unf,1491,Y,0,0,0,TA,1,1996,571,Y,0,0,NA,2007
+2598,RL,Pave,Lvl,Gtl,Norm,7,2004,VinylSd,94,PConc,Gd,Unf,1122,Y,1340,1,1,Gd,1,2003,452,Y,0,0,NA,2007
+2599,RL,Pave,HLS,Gtl,PosA,10,2007,MetalSd,242,PConc,Gd,Unf,1824,Y,0,0,0,Ex,1,2006,932,Y,0,0,NA,2007
+2600,RL,Pave,Lvl,Gtl,Norm,3,1953,MetalSd,0,CBlock,NA,NA,0,Y,0,0,0,TA,0,1953,1041,N,0,561,NA,2007
+2601,RM,Pave,Lvl,Gtl,Norm,6,1997,VinylSd,134,PConc,Av,GLQ,920,Y,0,2,1,TA,0,1996,460,Y,0,0,NA,2007
+2602,RM,Pave,Lvl,Gtl,Norm,4,1972,CemntBd,0,CBlock,No,Unf,546,Y,546,0,1,TA,0,1972,253,Y,0,0,NA,2007
+2603,RM,Pave,Lvl,Gtl,Norm,4,1970,CemntBd,0,CBlock,Av,Unf,530,Y,462,1,0,TA,0,1970,297,Y,0,0,NA,2007
+2604,RM,Pave,Lvl,Gtl,Norm,4,1970,CemntBd,189,CBlock,No,Unf,546,Y,546,0,1,TA,0,NA,0,Y,0,0,NA,2007
+2605,RM,Pave,Lvl,Gtl,Norm,4,1976,CemntBd,0,CBlock,No,Unf,546,Y,546,0,1,TA,0,1976,286,Y,0,0,NA,2007
+2606,RL,Pave,Lvl,Gtl,Norm,5,1977,Plywood,144,PConc,Av,Unf,923,Y,0,1,0,Gd,1,1977,678,Y,0,0,NA,2007
+2607,RL,Pave,Low,Mod,Norm,6,1977,HdBoard,0,PConc,Gd,Unf,1244,Y,0,2,0,TA,1,1977,528,Y,0,0,NA,2007
+2608,RL,Pave,Lvl,Gtl,Norm,5,1994,Plywood,0,PConc,Mn,Unf,1160,Y,0,1,1,Gd,2,1977,672,P,0,0,NA,2007
+2609,RL,Pave,Lvl,Gtl,Norm,5,1977,Plywood,0,PConc,No,Unf,716,Y,716,1,1,TA,1,1977,531,Y,0,0,NA,2007
+2610,RL,Pave,Lvl,Gtl,Norm,5,1971,Wd Sdng,0,CBlock,Av,Unf,796,Y,0,0,0,TA,0,NA,0,Y,0,0,NA,2007
+2611,RL,Pave,Lvl,Gtl,Norm,4,1961,Plywood,198,CBlock,No,Unf,1396,N,0,0,0,TA,0,1961,444,Y,0,0,NA,2007
+2612,RL,Pave,Lvl,Gtl,Norm,5,2003,Plywood,0,PConc,No,Unf,1090,Y,0,1,1,TA,0,1976,502,Y,0,0,NA,2007
+2613,RL,Pave,Lvl,Gtl,Norm,5,1983,HdBoard,0,CBlock,No,Unf,816,Y,0,1,0,TA,0,1983,264,Y,0,0,NA,2007
+2614,RL,Pave,Lvl,Gtl,Norm,5,1984,Plywood,0,CBlock,No,Unf,864,Y,0,0,0,TA,0,1984,288,Y,0,0,NA,2007
+2615,RL,Pave,Lvl,Gtl,Norm,6,1954,Wd Sdng,28,CBlock,No,Rec,1178,Y,0,1,0,TA,0,1954,452,Y,0,0,NA,2006
+2616,RL,Pave,Lvl,Gtl,Norm,6,1956,VinylSd,244,CBlock,No,Unf,1008,Y,0,1,0,Gd,2,1956,313,Y,0,0,NA,2006
+2617,RL,Pave,Lvl,Gtl,Norm,5,1957,Wd Sdng,302,CBlock,Mn,Unf,1617,Y,0,0,1,TA,1,1957,963,Y,0,0,NA,2006
+2618,RL,Pave,Low,Sev,Norm,6,1957,Wd Sdng,902,CBlock,Gd,Unf,1705,Y,0,1,1,Ex,2,1957,550,Y,0,0,NA,2006
+2619,RL,Pave,Lvl,Gtl,Norm,7,1969,HdBoard,434,CBlock,Mn,Unf,1851,Y,0,0,0,TA,1,1969,506,Y,0,0,NA,2006
+2620,RL,Pave,Lvl,Gtl,Norm,6,1998,VinylSd,0,PConc,No,Unf,813,Y,712,1,1,TA,1,1997,400,Y,0,0,NA,2006
+2621,RL,Pave,Lvl,Gtl,Norm,6,1995,HdBoard,0,PConc,No,Unf,781,Y,890,0,1,TA,1,1995,423,Y,0,0,NA,2006
+2622,RL,Pave,Lvl,Gtl,Norm,6,1996,HdBoard,0,PConc,No,Unf,821,Y,955,0,1,TA,1,1996,443,Y,0,0,NA,2006
+2623,RL,Pave,HLS,Gtl,Norm,8,2005,VinylSd,216,PConc,No,Unf,1074,Y,990,0,1,Gd,1,2005,527,Y,0,0,NA,2006
+2624,RL,Pave,HLS,Gtl,Norm,7,2006,VinylSd,248,PConc,Av,Unf,1700,Y,512,1,1,Gd,1,2006,773,Y,0,0,NA,2006
+2625,RL,Pave,Lvl,Gtl,Norm,8,1994,CemntBd,0,PConc,No,Unf,2062,Y,608,0,1,Gd,0,1994,618,Y,0,0,NA,2006
+2626,RL,Pave,Lvl,Gtl,Norm,6,1994,HdBoard,112,PConc,No,Unf,1160,Y,0,0,0,TA,1,1993,402,Y,0,0,NA,2006
+2627,RL,Pave,Lvl,Gtl,Norm,8,1987,HdBoard,0,CBlock,No,Unf,1191,Y,0,0,0,TA,0,1987,461,Y,0,0,NA,2006
+2628,RL,Pave,HLS,Gtl,Norm,9,2006,VinylSd,600,PConc,Gd,Unf,1398,Y,1384,1,1,Ex,1,2005,670,Y,0,0,NA,2006
+2629,RL,Pave,HLS,Gtl,Norm,10,2006,CemntBd,662,PConc,Gd,Unf,1528,Y,1862,0,1,Ex,1,2006,758,Y,0,0,NA,2006
+2630,RL,Pave,HLS,Gtl,Norm,9,2006,VinylSd,184,PConc,Gd,Unf,1094,Y,1371,0,1,Gd,1,2006,675,Y,0,0,NA,2006
+2631,RL,Pave,Lvl,Gtl,Norm,10,2006,VinylSd,734,PConc,No,Unf,1850,Y,848,1,1,Ex,1,2006,736,Y,0,0,NA,2006
+2632,RL,Pave,HLS,Gtl,Norm,9,2006,VinylSd,550,PConc,Av,Unf,1390,Y,1405,0,1,Ex,1,2005,660,Y,0,0,NA,2006
+2633,RL,Pave,HLS,Gtl,Norm,9,2005,MetalSd,230,PConc,Gd,Unf,1714,Y,0,1,0,Gd,1,2005,517,Y,0,0,NA,2006
+2634,RL,Pave,HLS,Gtl,Norm,9,2005,VinylSd,420,PConc,Gd,Unf,1910,Y,0,1,1,Ex,2,2005,722,Y,0,0,NA,2006
+2635,RL,Pave,Lvl,Gtl,Norm,6,1980,HdBoard,130,CBlock,Av,Unf,988,Y,0,1,0,TA,1,1980,582,Y,0,0,NA,2006
+2636,RL,Pave,Lvl,Gtl,Norm,7,1978,Plywood,68,CBlock,No,Unf,945,Y,912,0,1,TA,1,1978,482,Y,0,0,NA,2006
+2637,RL,Pave,Lvl,Gtl,Norm,7,1976,VinylSd,252,CBlock,Gd,Unf,1047,Y,0,1,0,TA,1,1976,596,Y,40,0,NA,2006
+2638,FV,Pave,Lvl,Gtl,Norm,7,2006,VinylSd,0,PConc,No,Unf,960,Y,1358,1,1,Gd,1,2005,541,Y,0,0,NA,2006
+2639,RL,Pave,Lvl,Gtl,Norm,6,2000,Plywood,248,CBlock,No,Unf,675,Y,766,0,0,Gd,1,1975,485,Y,0,0,NA,2006
+2640,RL,Pave,Lvl,Gtl,Norm,6,1974,HdBoard,176,CBlock,No,Unf,1103,Y,0,0,0,TA,0,1974,462,Y,0,0,NA,2006
+2641,RL,Pave,Lvl,Gtl,Norm,4,1971,HdBoard,0,CBlock,No,LwQ,864,Y,0,0,0,TA,0,1995,576,Y,0,0,NA,2006
+2642,RH,Pave,Lvl,Gtl,Norm,6,2002,MetalSd,0,PConc,No,Unf,1487,Y,0,1,0,Gd,0,2002,543,Y,0,0,NA,2006
+2643,RM,Pave,Lvl,Gtl,Norm,6,1973,HdBoard,514,CBlock,No,Unf,525,Y,567,0,1,TA,0,1973,440,Y,0,0,NA,2006
+2644,RM,Pave,Lvl,Gtl,Norm,5,1973,HdBoard,200,CBlock,No,Unf,765,Y,600,0,1,Gd,1,1973,440,Y,0,0,NA,2006
+2645,RM,Pave,Lvl,Gtl,Norm,6,1972,HdBoard,380,CBlock,No,Unf,494,Y,536,0,1,TA,0,1973,264,Y,0,0,NA,2006
+2646,RM,Pave,Lvl,Gtl,Norm,6,1972,HdBoard,504,CBlock,No,Unf,483,Y,465,0,1,TA,0,1972,264,Y,0,0,NA,2006
+2647,RM,Pave,Lvl,Gtl,Norm,6,1972,HdBoard,504,CBlock,No,Unf,525,Y,567,0,1,TA,0,1972,264,Y,0,0,NA,2006
+2648,RL,Pave,Lvl,Gtl,Norm,6,1975,Plywood,0,CBlock,No,BLQ,1069,Y,0,0,0,TA,1,1975,440,Y,0,0,NA,2006
+2649,RL,Pave,Lvl,Gtl,Norm,5,1975,MetalSd,0,CBlock,Mn,Rec,943,Y,0,1,0,TA,1,1974,300,Y,240,0,NA,2006
+2650,RL,Pave,Lvl,Gtl,Norm,7,1976,Plywood,0,CBlock,No,BLQ,1055,Y,0,1,0,TA,0,1976,319,Y,0,0,NA,2006
+2651,RL,Pave,Lvl,Gtl,Norm,6,1976,Plywood,0,CBlock,No,Unf,855,Y,601,0,1,TA,1,1976,460,Y,0,0,NA,2006
+2652,RL,Pave,Lvl,Gtl,Norm,9,2006,VinylSd,215,PConc,No,Unf,1738,Y,851,1,1,Ex,1,2006,831,Y,0,0,NA,2006
+2653,RL,Pave,Lvl,Gtl,Norm,8,2004,VinylSd,232,PConc,Av,Unf,1618,Y,0,0,0,Gd,1,2004,880,Y,0,0,NA,2006
+2654,RL,Pave,Lvl,Gtl,Norm,7,2006,VinylSd,206,PConc,No,Unf,1721,Y,0,0,0,Gd,0,2006,874,Y,0,0,NA,2006
+2655,RL,Pave,HLS,Mod,Norm,9,2005,VinylSd,568,PConc,Gd,Unf,1868,Y,0,1,0,Ex,1,2005,1085,Y,0,0,NA,2006
+2656,RL,Pave,Lvl,Gtl,Norm,9,2006,VinylSd,525,PConc,Av,Unf,1090,Y,1089,0,1,Ex,1,2005,670,Y,0,0,NA,2006
+2657,RL,Pave,Lvl,Gtl,Norm,9,2006,MetalSd,385,PConc,Av,Unf,1606,Y,466,1,1,Ex,1,2005,521,Y,0,0,NA,2006
+2658,RL,Pave,Lvl,Gtl,Norm,8,2006,CemntBd,NA,PConc,Av,Unf,1209,Y,1044,0,1,Ex,1,2005,575,Y,0,0,NA,2006
+2659,RL,Pave,Lvl,Gtl,Norm,8,2006,VinylSd,0,PConc,Gd,Unf,1054,Y,1335,0,1,Gd,1,2006,672,Y,0,0,NA,2006
+2660,RL,Pave,Lvl,Gtl,Norm,8,2006,MetalSd,142,PConc,Av,Unf,1524,Y,814,1,1,Ex,1,2005,784,Y,0,0,NA,2006
+2661,RL,Pave,Lvl,Gtl,Norm,9,2006,VinylSd,430,PConc,Gd,Unf,1792,Y,0,1,0,Gd,1,2005,925,Y,0,0,NA,2006
+2662,RL,Pave,Lvl,Gtl,Norm,9,2005,MetalSd,674,PConc,Gd,Unf,1780,Y,0,1,0,Ex,1,2004,816,Y,0,0,NA,2006
+2663,RL,Pave,Lvl,Gtl,Norm,8,2004,VinylSd,112,PConc,No,Unf,1420,Y,488,1,1,Gd,1,2004,746,Y,0,0,NA,2006
+2664,RL,Pave,Lvl,Gtl,Norm,9,2005,MetalSd,278,PConc,No,Unf,1560,Y,0,1,0,Ex,1,2005,556,Y,0,0,NA,2006
+2665,RL,Pave,Lvl,Gtl,Norm,9,2006,MetalSd,518,PConc,No,Unf,1686,Y,0,1,0,Ex,1,2006,899,Y,0,0,NA,2006
+2666,RL,Pave,Lvl,Gtl,Norm,9,2006,MetalSd,572,PConc,No,Unf,1666,Y,0,1,0,Gd,1,2006,575,Y,0,0,NA,2006
+2667,RL,Pave,Lvl,Gtl,Norm,6,2006,VinylSd,0,PConc,No,Unf,728,Y,728,0,1,Gd,1,2005,390,Y,0,0,NA,2006
+2668,RL,Pave,Lvl,Gtl,Norm,7,2006,VinylSd,0,PConc,No,Unf,738,Y,754,0,1,Gd,0,2006,440,Y,0,0,NA,2006
+2669,RL,Pave,Lvl,Gtl,Norm,6,2006,VinylSd,0,PConc,Av,Unf,1326,Y,0,0,0,Gd,0,2006,427,Y,0,0,NA,2006
+2670,RL,Pave,Lvl,Gtl,Norm,8,2005,VinylSd,236,PConc,Av,Unf,1052,Y,1321,0,1,Gd,1,2004,632,Y,0,0,NA,2006
+2671,RL,Pave,Lvl,Gtl,Norm,7,2006,VinylSd,0,PConc,No,Unf,738,Y,754,0,1,Gd,0,2006,440,Y,0,0,NA,2006
+2672,RL,Pave,Lvl,Gtl,Norm,7,2006,VinylSd,14,PConc,Av,Unf,1220,Y,0,1,0,Gd,1,2006,437,Y,0,0,NA,2006
+2673,RL,Pave,Lvl,Gtl,Norm,7,2002,VinylSd,40,PConc,Av,Unf,1368,Y,0,1,0,Gd,1,2002,398,Y,0,0,NA,2006
+2674,RM,Pave,Lvl,Gtl,Norm,7,2004,VinylSd,18,PConc,No,Unf,1365,Y,0,1,0,Gd,1,2004,388,Y,0,0,NA,2006
+2675,RL,Pave,Lvl,Gtl,Norm,7,2006,VinylSd,14,PConc,Gd,Unf,1142,Y,0,0,0,Gd,0,2005,440,Y,0,0,NA,2006
+2676,RL,Pave,Lvl,Gtl,Norm,7,2005,VinylSd,0,PConc,Av,Unf,848,Y,750,0,1,Gd,1,2004,433,Y,0,0,NA,2006
+2677,RL,Pave,Lvl,Gtl,Norm,6,2000,VinylSd,0,PConc,No,Unf,982,Y,881,0,1,TA,1,2000,431,Y,0,0,NA,2006
+2678,RL,Pave,Lvl,Gtl,Norm,7,2006,VinylSd,0,PConc,No,Unf,1035,Y,1240,0,1,Gd,0,2006,617,Y,0,0,NA,2006
+2679,RL,Pave,Lvl,Gtl,Norm,8,1998,VinylSd,242,PConc,No,Unf,1044,Y,897,1,1,Gd,1,1998,885,Y,0,0,NA,2006
+2680,RL,Pave,Lvl,Gtl,Norm,8,2000,VinylSd,322,PConc,Mn,Unf,1160,Y,1029,1,1,Gd,1,2000,768,Y,0,0,NA,2006
+2681,RL,Pave,Lvl,Gtl,Norm,9,2000,VinylSd,877,PConc,Av,Unf,1540,Y,1315,1,1,Ex,1,2000,774,Y,0,0,NA,2006
+2682,RL,Pave,Lvl,Gtl,Norm,8,1995,VinylSd,397,PConc,No,Unf,1342,Y,1368,0,1,Gd,1,1995,725,Y,168,0,NA,2006
+2683,RL,Pave,Lvl,Gtl,Norm,9,1994,MetalSd,738,PConc,Gd,GLQ,1733,Y,1567,1,1,Ex,1,1993,959,Y,0,0,NA,2006
+2684,RL,Pave,Lvl,Gtl,Norm,8,1995,VinylSd,501,PConc,Gd,BLQ,1290,Y,1189,1,1,Gd,1,1994,803,Y,0,0,NA,2006
+2685,RL,Pave,Lvl,Gtl,Norm,8,1993,HdBoard,420,PConc,No,GLQ,1286,Y,1234,1,1,Gd,1,1993,704,Y,0,0,NA,2006
+2686,RL,Pave,Lvl,Gtl,Norm,8,2006,CemntBd,192,PConc,No,Unf,1100,Y,848,0,1,Gd,1,2005,760,Y,0,0,NA,2006
+2687,RL,Pave,Lvl,Gtl,Norm,8,2006,VinylSd,NA,PConc,No,Unf,1670,Y,0,1,1,Gd,1,2006,928,Y,200,0,NA,2006
+2688,RL,Pave,Lvl,Gtl,Norm,8,2006,VinylSd,60,PConc,No,Unf,1504,Y,0,0,0,Gd,0,2006,510,Y,0,0,NA,2006
+2689,FV,Pave,Lvl,Gtl,Norm,8,2006,VinylSd,0,PConc,No,Unf,1278,Y,0,0,0,Gd,0,2006,584,Y,0,0,NA,2006
+2690,FV,Pave,Lvl,Gtl,Norm,9,2006,VinylSd,0,PConc,No,Unf,2036,Y,604,1,1,Ex,1,2006,792,Y,0,0,NA,2006
+2691,FV,Pave,Lvl,Gtl,Norm,6,2005,VinylSd,0,PConc,No,Unf,858,Y,858,0,1,Gd,0,2005,615,Y,0,0,NA,2006
+2692,RL,Pave,Lvl,Gtl,Norm,6,2005,VinylSd,0,PConc,Mn,Unf,1142,Y,0,0,1,Gd,0,NA,0,Y,0,0,NA,2006
+2693,RL,Pave,Lvl,Gtl,Norm,7,2006,VinylSd,118,PConc,Av,Unf,1400,Y,0,0,0,Gd,0,2005,612,Y,0,0,NA,2006
+2694,RL,Pave,Lvl,Gtl,Norm,6,2006,VinylSd,0,PConc,No,Unf,1131,Y,0,0,1,Gd,0,NA,0,Y,0,0,NA,2006
+2695,RL,Pave,Lvl,Gtl,Norm,7,2005,VinylSd,172,PConc,No,Unf,891,Y,795,0,1,Gd,0,2005,462,Y,0,0,NA,2006
+2696,RL,Pave,Lvl,Gtl,Norm,7,2005,VinylSd,96,PConc,No,Unf,784,Y,754,0,1,Gd,0,2005,449,Y,0,0,NA,2006
+2697,RL,Pave,Lvl,Gtl,Norm,6,1998,VinylSd,0,PConc,No,Unf,941,Y,896,0,1,TA,0,1997,688,Y,0,0,NA,2006
+2698,RL,Pave,Lvl,Gtl,Norm,6,1993,HdBoard,0,PConc,No,Unf,836,Y,887,1,1,Gd,0,1992,462,Y,0,0,Othr,2006
+2699,RL,Pave,Lvl,Gtl,Norm,6,1991,Plywood,0,PConc,No,Unf,1398,Y,0,1,0,Gd,0,1990,542,Y,0,0,NA,2006
+2700,RL,Pave,Lvl,Gtl,Norm,6,1991,Plywood,0,PConc,No,Unf,1217,Y,0,0,0,Gd,0,1991,484,Y,0,0,NA,2006
+2701,RL,Pave,Lvl,Gtl,Norm,6,1994,VinylSd,0,PConc,No,Unf,636,Y,684,0,1,Gd,0,1994,472,Y,0,0,NA,2006
+2702,RL,Pave,Lvl,Gtl,Norm,5,1962,Wd Sdng,51,CBlock,No,Unf,988,Y,0,1,0,TA,0,1977,624,Y,0,0,NA,2006
+2703,RM,Pave,Lvl,Gtl,Norm,6,1977,VinylSd,0,CBlock,NA,NA,0,Y,368,0,0,TA,0,1977,528,Y,0,0,NA,2006
+2704,RL,Pave,Lvl,Gtl,Norm,5,2002,HdBoard,0,CBlock,No,Unf,864,Y,0,0,0,TA,1,1972,576,Y,0,0,NA,2006
+2705,RL,Pave,Lvl,Gtl,Norm,5,1965,HdBoard,0,CBlock,No,Unf,984,Y,0,0,0,TA,0,1965,310,Y,0,0,NA,2006
+2706,RL,Pave,Lvl,Gtl,Norm,5,1968,Plywood,90,CBlock,No,Rec,882,Y,0,0,0,TA,0,1968,294,Y,0,0,NA,2006
+2707,RL,Pave,Lvl,Gtl,Norm,5,1963,HdBoard,0,PConc,No,Unf,925,Y,0,1,0,TA,0,1990,484,Y,0,0,NA,2006
+2708,RL,Pave,Lvl,Gtl,Norm,5,1965,HdBoard,0,CBlock,No,Unf,1024,Y,0,0,1,TA,0,1965,308,Y,0,0,NA,2006
+2709,RL,Pave,Lvl,Gtl,Norm,5,1964,HdBoard,0,CBlock,No,Unf,912,N,0,0,0,TA,0,NA,0,Y,0,0,NA,2006
+2710,RL,Pave,Lvl,Gtl,Norm,5,1967,VinylSd,0,CBlock,Mn,Unf,912,Y,0,0,0,TA,1,1967,288,Y,0,0,NA,2006
+2711,RL,Pave,Low,Gtl,Norm,7,1974,WdShing,145,CBlock,Gd,BLQ,1748,Y,495,1,0,Gd,4,1974,550,Y,0,800,NA,2006
+2712,RL,Pave,HLS,Mod,Norm,8,1993,HdBoard,692,PConc,Gd,Unf,1334,Y,1306,1,1,Gd,3,1992,888,Y,186,0,NA,2006
+2713,FV,Pave,Lvl,Gtl,Norm,7,2004,MetalSd,0,PConc,No,Unf,1143,Y,0,0,1,Gd,1,2004,588,Y,0,0,NA,2006
+2714,FV,Pave,Lvl,Gtl,Norm,7,2005,MetalSd,0,PConc,No,Unf,600,Y,623,0,1,Gd,0,2005,480,Y,0,0,NA,2006
+2715,FV,Pave,Lvl,Gtl,Norm,6,2000,MetalSd,513,PConc,No,Unf,756,Y,756,0,1,Gd,0,2000,440,Y,0,0,NA,2006
+2716,FV,Pave,Lvl,Gtl,Norm,7,2003,VinylSd,0,PConc,No,Unf,530,Y,550,0,1,Gd,0,2003,496,Y,0,0,NA,2006
+2717,FV,Pave,Lvl,Gtl,Norm,7,1998,Wd Sdng,0,PConc,No,Unf,569,Y,840,0,1,Gd,1,1997,434,Y,0,0,NA,2006
+2718,FV,Pave,Lvl,Gtl,Norm,8,2002,CemntBd,0,PConc,No,Unf,1568,Y,0,0,0,Gd,1,2001,564,Y,0,0,NA,2006
+2719,RL,Pave,Lvl,Gtl,Feedr,5,1972,Plywood,144,CBlock,No,Unf,1153,Y,0,1,0,TA,0,1972,501,Y,0,0,NA,2006
+2720,RL,Pave,Lvl,Gtl,Norm,7,1967,HdBoard,264,CBlock,No,LwQ,1334,Y,0,1,0,TA,0,1967,477,Y,35,0,NA,2006
+2721,RL,Pave,Lvl,Gtl,Norm,5,1968,MetalSd,0,CBlock,No,Unf,1051,Y,0,1,0,TA,0,1968,504,Y,0,0,NA,2006
+2722,RL,Pave,Lvl,Gtl,Norm,5,1968,HdBoard,300,CBlock,Mn,Rec,900,Y,886,1,1,TA,0,1968,530,Y,0,0,Shed,2006
+2723,RL,Pave,Lvl,Gtl,Norm,6,2004,HdBoard,203,CBlock,Av,Unf,976,Y,0,1,0,Gd,1,1968,504,Y,0,0,NA,2006
+2724,RL,Pave,Lvl,Gtl,Norm,5,1968,HdBoard,0,CBlock,Gd,Unf,833,Y,0,1,0,TA,0,1968,326,Y,0,0,NA,2006
+2725,RL,Pave,Lvl,Gtl,Norm,5,1966,Plywood,0,CBlock,No,Unf,1051,Y,0,1,0,TA,0,1966,264,Y,0,0,NA,2006
+2726,RL,Pave,Lvl,Gtl,Norm,5,1967,MetalSd,140,PConc,Av,Rec,1141,Y,0,1,0,TA,0,1967,568,Y,0,0,NA,2006
+2727,RL,Pave,Lvl,Gtl,Norm,6,2000,BrkFace,0,PConc,Mn,BLQ,1187,Y,0,1,0,Gd,2,1965,299,Y,211,0,Shed,2006
+2728,RL,Pave,Lvl,Gtl,Norm,6,1964,HdBoard,112,CBlock,No,LwQ,1008,Y,0,1,1,TA,1,1964,430,Y,0,0,NA,2006
+2729,RL,Pave,Lvl,Gtl,Norm,5,1964,HdBoard,0,CBlock,No,Unf,720,Y,720,0,1,TA,1,1964,480,Y,240,0,NA,2006
+2730,RL,Pave,Lvl,Gtl,Norm,5,1960,Wd Sdng,88,CBlock,No,Unf,1248,Y,0,1,0,TA,0,1960,286,Y,0,0,NA,2006
+2731,RL,Pave,Lvl,Gtl,Norm,6,1950,MetalSd,0,CBlock,No,Unf,816,Y,0,1,0,TA,1,1949,240,Y,40,0,NA,2006
+2732,RL,Pave,Lvl,Gtl,Norm,5,1950,BrkFace,0,CBlock,No,Unf,938,Y,0,0,0,TA,1,1947,273,Y,0,0,NA,2006
+2733,RL,Pave,Lvl,Gtl,Norm,5,1990,WdShing,0,CBlock,Mn,Unf,1251,Y,0,1,0,TA,1,1961,441,Y,205,0,NA,2006
+2734,RL,Pave,Lvl,Gtl,Norm,5,1952,Wd Sdng,150,CBlock,Mn,Unf,1444,Y,0,1,0,TA,1,1952,240,Y,324,0,NA,2006
+2735,RL,Pave,Lvl,Gtl,Norm,5,1951,HdBoard,144,CBlock,No,Unf,1056,Y,0,1,0,TA,0,1951,280,Y,0,0,NA,2006
+2736,RL,Pave,Lvl,Gtl,Norm,5,1973,Wd Sdng,0,CBlock,No,Unf,704,Y,704,0,1,TA,1,1949,234,Y,0,0,NA,2006
+2737,RL,Pave,Lvl,Gtl,Norm,5,1975,MetalSd,0,CBlock,No,Unf,936,Y,0,0,0,TA,0,1954,240,Y,160,0,NA,2006
+2738,RL,Pave,Lvl,Gtl,Norm,5,1967,Plywood,0,CBlock,No,Unf,1584,Y,0,0,0,TA,0,1967,506,Y,0,0,NA,2006
+2739,RL,Pave,Lvl,Gtl,Norm,6,1964,HdBoard,0,CBlock,No,Unf,1246,Y,0,1,0,TA,2,1964,441,Y,0,0,NA,2006
+2740,RL,Pave,Lvl,Gtl,Norm,6,1963,MetalSd,332,CBlock,No,Unf,1008,Y,0,0,0,TA,0,1963,430,Y,0,0,NA,2006
+2741,RL,Pave,Lvl,Gtl,Norm,5,1957,BrkFace,0,CBlock,Mn,Unf,1179,Y,0,0,1,TA,1,1957,331,Y,0,0,NA,2006
+2742,RL,Pave,Lvl,Gtl,Norm,6,1958,Wd Sdng,632,CBlock,No,Unf,1121,Y,0,0,1,TA,1,1958,488,Y,0,0,NA,2006
+2743,RL,Pave,Lvl,Gtl,Norm,5,1956,Wd Sdng,272,CBlock,Av,Rec,1058,Y,0,1,0,TA,1,1956,300,Y,0,0,NA,2006
+2744,RL,Pave,Lvl,Gtl,Norm,6,1994,Wd Sdng,0,CBlock,Av,Unf,1124,Y,0,1,0,TA,1,1956,353,Y,180,0,NA,2006
+2745,RL,Pave,Lvl,Gtl,Norm,6,2000,Wd Sdng,176,CBlock,No,Unf,1050,Y,0,1,0,Gd,0,1954,286,Y,0,0,NA,2006
+2746,RL,Pave,Lvl,Gtl,Norm,5,2003,MetalSd,0,CBlock,No,Unf,1008,Y,0,1,0,TA,0,1952,280,Y,0,0,NA,2006
+2747,RL,Pave,Lvl,Gtl,Norm,6,1951,Wd Sdng,522,CBlock,No,Unf,216,Y,0,0,1,Gd,1,1951,400,Y,0,0,NA,2006
+2748,RL,Pave,Lvl,Gtl,Norm,5,1956,VinylSd,0,CBlock,No,Unf,301,Y,0,0,0,TA,0,1993,684,Y,0,0,NA,2006
+2749,RL,Pave,Lvl,Gtl,Norm,5,1956,Wd Sdng,0,CBlock,No,Unf,1005,Y,0,0,0,TA,1,1956,319,Y,0,0,NA,2006
+2750,RL,Pave,Bnk,Gtl,Norm,5,1955,HdBoard,0,CBlock,No,BLQ,1056,Y,0,1,1,TA,0,1955,300,Y,0,0,Shed,2006
+2751,RL,Pave,Lvl,Gtl,Norm,5,1991,MetalSd,0,CBlock,No,Unf,884,Y,0,1,0,TA,0,1951,270,Y,0,0,NA,2006
+2752,RL,Pave,Lvl,Gtl,Norm,7,1963,BrkFace,0,CBlock,No,Unf,929,Y,0,1,1,TA,3,1941,791,Y,90,0,NA,2006
+2753,RL,Pave,Lvl,Gtl,Norm,5,2001,Wd Sdng,0,CBlock,No,Unf,1015,Y,0,1,0,TA,0,2001,896,Y,0,0,Shed,2006
+2754,RL,Pave,Lvl,Gtl,Norm,5,1975,MetalSd,0,CBlock,Mn,Unf,2171,Y,1248,2,1,TA,1,1977,1008,N,148,0,NA,2006
+2755,RL,Pave,Lvl,Gtl,Norm,6,1950,VinylSd,0,CBlock,No,Unf,784,Y,412,0,1,TA,0,1953,649,Y,0,0,NA,2006
+2756,RL,Pave,Lvl,Gtl,Norm,3,2001,VinylSd,0,PConc,No,Unf,713,Y,0,0,0,Gd,0,1936,371,N,161,0,NA,2006
+2757,RL,Pave,Lvl,Gtl,Norm,3,1950,Wd Sdng,0,CBlock,Mn,Unf,715,N,0,0,0,TA,0,1967,660,N,75,0,NA,2006
+2758,RL,Pave,Lvl,Gtl,Norm,4,1998,MetalSd,0,BrkTil,No,Unf,448,Y,272,0,0,Fa,0,1900,280,Y,70,0,NA,2006
+2759,RL,Pave,Lvl,Gtl,Norm,6,1950,MetalSd,0,CBlock,No,Unf,663,Y,821,0,0,TA,1,1974,528,Y,231,0,NA,2006
+2760,RL,Pave,Lvl,Gtl,Norm,4,1950,VinylSd,0,BrkTil,No,Unf,1077,Y,779,0,1,TA,1,1935,648,Y,96,0,NA,2006
+2761,RL,Pave,Lvl,Gtl,Norm,6,1963,HdBoard,379,CBlock,Av,Unf,1083,Y,0,0,0,TA,1,1963,294,Y,0,0,NA,2006
+2762,RL,Pave,Lvl,Gtl,Norm,6,1985,HdBoard,161,CBlock,No,Unf,1135,Y,0,0,1,TA,0,1962,264,Y,0,0,NA,2006
+2763,RL,Pave,Lvl,Gtl,Norm,6,1992,HdBoard,104,CBlock,No,Unf,1313,Y,0,1,0,TA,2,1961,418,Y,0,0,NA,2006
+2764,RL,Pave,Lvl,Gtl,Norm,7,1959,Plywood,58,Slab,NA,NA,0,Y,0,0,0,Gd,1,1959,484,Y,0,0,NA,2006
+2765,RL,Pave,HLS,Gtl,Norm,7,1998,Plywood,0,CBlock,Gd,Unf,1438,Y,548,1,0,TA,2,1962,441,Y,0,0,NA,2006
+2766,RL,Pave,Lvl,Gtl,Norm,4,1950,BrkComm,0,CBlock,No,Unf,910,Y,611,0,1,Gd,0,1950,597,Y,168,0,NA,2006
+2767,RL,Pave,Lvl,Gtl,Norm,3,1950,BrkFace,0,Slab,NA,NA,0,N,0,0,0,TA,0,1950,400,Y,0,0,NA,2006
+2768,RL,Pave,Lvl,Gtl,Norm,5,1960,BrkFace,0,CBlock,No,Unf,1556,Y,0,0,0,TA,0,NA,0,Y,0,0,NA,2006
+2769,RL,Pave,Lvl,Gtl,Norm,5,1961,BrkFace,0,CBlock,No,Unf,1150,Y,0,0,0,TA,0,1961,288,Y,0,0,NA,2006
+2770,RL,Pave,Lvl,Gtl,Norm,7,1962,Wd Sdng,0,CBlock,No,Unf,1045,Y,0,1,0,TA,0,1962,528,Y,0,0,NA,2006
+2771,RL,Pave,Lvl,Gtl,Norm,5,1962,Wd Sdng,0,CBlock,No,Unf,864,Y,0,0,0,TA,0,1962,336,Y,0,0,NA,2006
+2772,RL,Pave,Lvl,Gtl,Norm,5,1962,MetalSd,0,CBlock,Av,Unf,1025,Y,0,1,0,TA,0,NA,0,Y,0,0,NA,2006
+2773,RM,Pave,Lvl,Gtl,Norm,5,2005,CemntBd,0,PConc,No,Unf,716,Y,1007,0,0,TA,0,1900,624,Y,167,0,NA,2006
+2774,RM,Pave,Lvl,Gtl,Norm,5,1950,MetalSd,264,CBlock,No,Unf,1212,Y,442,1,0,TA,0,1948,240,Y,140,0,NA,2006
+2775,RM,Pave,Lvl,Gtl,Norm,4,1980,Wd Sdng,0,PConc,No,Unf,1147,N,510,0,0,Fa,1,1920,162,N,0,0,NA,2006
+2776,RM,Pave,Lvl,Gtl,Norm,6,2004,Wd Sdng,0,BrkTil,No,Unf,780,Y,476,0,0,Gd,0,1956,400,Y,0,0,NA,2006
+2777,RM,Pave,Lvl,Gtl,Norm,7,1970,AsbShng,0,Stone,No,Unf,712,Y,580,1,0,TA,0,1985,576,Y,84,0,NA,2006
+2778,RM,Pave,Lvl,Gtl,Norm,7,1950,Wd Sdng,0,BrkTil,No,Unf,502,N,502,0,0,Gd,1,1930,200,N,68,0,NA,2006
+2779,RM,Pave,Lvl,Gtl,Norm,4,1950,MetalSd,0,PConc,No,Unf,938,N,867,0,0,Fa,0,1993,576,P,28,0,NA,2006
+2780,RM,Pave,Lvl,Gtl,Norm,6,1950,MetalSd,0,BrkTil,No,Rec,1032,N,0,0,0,TA,0,1995,280,Y,112,0,NA,2006
+2781,RM,Pave,Lvl,Gtl,Norm,5,1950,MetalSd,0,BrkTil,No,Unf,844,Y,0,0,0,TA,0,1925,216,N,123,0,NA,2006
+2782,RM,Pave,Lvl,Gtl,Norm,4,1950,MetalSd,0,CBlock,No,Unf,576,Y,0,0,0,TA,0,1952,528,Y,0,0,NA,2006
+2783,RM,Pave,Lvl,Mod,Norm,3,1950,MetalSd,0,BrkTil,Mn,Unf,738,Y,662,0,0,TA,0,1930,216,N,104,0,NA,2006
+2784,RM,Pave,Lvl,Gtl,Norm,5,1955,Wd Sdng,0,CBlock,Av,Unf,960,Y,0,1,0,TA,0,1976,576,Y,0,0,NA,2006
+2785,RM,Pave,Lvl,Gtl,Norm,5,1950,MetalSd,145,PConc,No,Unf,816,Y,750,0,1,Gd,0,1976,450,Y,296,0,NA,2006
+2786,RM,Pave,Lvl,Gtl,Norm,3,1950,AsbShng,0,BrkTil,No,Unf,492,Y,0,1,0,TA,0,1921,200,N,78,0,NA,2006
+2787,RM,Pave,Lvl,Gtl,Norm,6,1950,VinylSd,0,CBlock,No,Unf,770,Y,297,0,1,TA,0,1945,378,Y,0,0,NA,2006
+2788,RM,Pave,Lvl,Gtl,Norm,3,1950,Wd Sdng,0,PConc,No,Unf,798,Y,0,0,0,Fa,0,1938,250,N,0,0,NA,2006
+2789,RM,Pave,Lvl,Gtl,Norm,7,2005,Wd Sdng,0,BrkTil,No,Unf,1226,Y,878,0,0,TA,0,1910,432,P,88,0,NA,2006
+2790,RM,Pave,Lvl,Gtl,Norm,5,1950,Wd Sdng,0,PConc,No,Unf,624,N,624,0,0,TA,0,NA,0,N,256,0,NA,2006
+2791,RM,Pave,Lvl,Gtl,Norm,5,1958,HdBoard,0,CBlock,No,Unf,960,Y,0,0,0,TA,0,2002,624,Y,0,0,Gar2,2006
+2792,C (all),Pave,Lvl,Gtl,Norm,3,1950,Wd Sdng,0,BrkTil,No,Unf,1020,N,0,0,0,Fa,0,NA,0,N,105,0,NA,2006
+2793,RL,Pave,Bnk,Gtl,Norm,6,1996,BrkComm,0,BrkTil,No,Unf,848,N,810,0,0,TA,1,1943,240,Y,42,0,NA,2006
+2794,RM,Pave,Lvl,Gtl,Norm,3,1950,AsbShng,0,CBlock,No,Unf,728,Y,434,1,0,TA,0,1930,258,Y,0,0,NA,2006
+2795,RM,Pave,Lvl,Gtl,Norm,5,1984,MetalSd,0,BrkTil,No,Unf,741,Y,583,0,0,Gd,0,1930,180,Y,55,0,NA,2006
+2796,RL,Pave,Lvl,Gtl,Norm,5,1950,MetalSd,0,BrkTil,No,Unf,816,Y,0,0,0,TA,0,1925,210,N,112,0,NA,2006
+2797,RM,Pave,Lvl,Gtl,Feedr,6,1962,BrkFace,0,CBlock,No,Unf,1595,Y,875,0,0,TA,1,1962,576,Y,0,0,NA,2006
+2798,RM,Pave,Lvl,Gtl,Norm,4,1950,MetalSd,0,BrkTil,No,Unf,596,Y,596,0,0,Fa,0,1924,370,Y,0,0,NA,2006
+2799,RM,Pave,Lvl,Gtl,Norm,5,2004,AsbShng,0,BrkTil,No,Unf,396,Y,665,0,0,TA,0,2001,390,N,45,0,NA,2006
+2800,RM,Pave,Lvl,Gtl,Norm,5,1950,Wd Sdng,0,BrkTil,No,Unf,610,N,0,0,0,Gd,0,NA,0,N,0,0,NA,2006
+2801,RM,Pave,Lvl,Gtl,Norm,6,1950,VinylSd,0,BrkTil,No,Unf,984,Y,0,0,0,TA,0,1930,308,N,164,0,NA,2006
+2802,RL,Pave,Lvl,Gtl,Norm,5,1951,HdBoard,41,CBlock,No,Unf,806,Y,341,1,0,TA,1,1951,288,Y,0,0,NA,2006
+2803,RL,Pave,Lvl,Gtl,Feedr,6,1964,BrkFace,0,CBlock,No,Unf,1921,Y,0,0,0,TA,0,1964,576,Y,0,0,NA,2006
+2804,RL,Pave,Lvl,Gtl,Norm,5,1950,Wd Sdng,0,Slab,NA,NA,0,Y,0,0,0,TA,1,1950,394,Y,225,0,Shed,2006
+2805,RL,Pave,Lvl,Gtl,Norm,5,1950,Wd Sdng,0,Slab,NA,NA,0,N,0,0,0,TA,1,1939,260,Y,121,0,NA,2006
+2806,RL,Pave,Lvl,Gtl,Norm,5,1950,Wd Sdng,0,BrkTil,No,Unf,830,Y,0,0,0,TA,0,1936,180,P,0,0,NA,2006
+2807,RL,Pave,Lvl,Gtl,Norm,7,2004,VinylSd,0,PConc,Mn,LwQ,1073,Y,0,1,0,TA,0,2004,246,Y,0,0,NA,2006
+2808,RL,Pave,Lvl,Gtl,Norm,5,1967,HdBoard,305,CBlock,Av,Unf,1064,Y,0,0,0,TA,1,1967,528,Y,0,0,NA,2006
+2809,RL,Pave,Lvl,Gtl,Norm,6,1964,HdBoard,0,CBlock,Av,Unf,912,Y,0,0,0,TA,0,1964,336,Y,0,0,Shed,2006
+2810,RL,Pave,Lvl,Gtl,Norm,5,1966,Plywood,0,CBlock,No,Unf,1059,Y,0,1,0,TA,0,1966,286,Y,0,0,NA,2006
+2811,RL,Pave,Lvl,Gtl,Norm,5,1967,HdBoard,450,CBlock,No,LwQ,1176,Y,0,1,1,TA,1,1967,512,Y,0,0,NA,2006
+2812,RL,Pave,Lvl,Gtl,Norm,6,1978,HdBoard,200,CBlock,Gd,Unf,960,Y,0,1,0,TA,1,1979,616,Y,0,0,NA,2006
+2813,RL,Pave,Lvl,Gtl,Norm,5,1977,Plywood,0,CBlock,No,Unf,1967,Y,0,0,0,TA,0,1977,580,Y,0,0,NA,2006
+2814,RL,Pave,Lvl,Gtl,Norm,5,1977,Plywood,99,CBlock,No,Unf,1949,Y,0,0,0,TA,0,1977,586,Y,0,0,NA,2006
+2815,RL,Pave,Lvl,Gtl,Norm,5,1950,BrkFace,65,BrkTil,No,Unf,872,N,0,0,0,Fa,1,1924,322,N,116,0,NA,2006
+2816,RL,Pave,Low,Mod,Norm,7,1967,Plywood,123,CBlock,Av,ALQ,1865,Y,0,1,0,TA,2,1967,521,Y,168,0,NA,2006
+2817,RL,Pave,Low,Mod,Norm,5,1963,WdShing,0,CBlock,Av,ALQ,1000,Y,0,1,0,TA,2,1993,575,Y,148,0,NA,2006
+2818,RL,Pave,Lvl,Gtl,Norm,5,1972,HdBoard,153,PConc,Av,Rec,782,Y,0,1,0,TA,0,1973,576,Y,0,0,NA,2006
+2819,RL,Pave,HLS,Gtl,Norm,7,1981,VinylSd,0,PConc,Mn,Unf,430,Y,680,1,1,Gd,0,1980,450,Y,0,0,NA,2006
+2820,RL,Pave,Lvl,Gtl,Norm,4,1954,MetalSd,0,CBlock,No,Unf,967,Y,0,0,1,TA,1,1954,504,Y,0,0,NA,2006
+2821,RL,Pave,Lvl,Gtl,Norm,5,1950,BrkFace,0,BrkTil,No,Unf,799,N,351,0,0,TA,2,1942,215,Y,0,0,NA,2006
+2822,RL,Pave,Lvl,Gtl,Norm,6,1950,WdShing,0,PConc,No,Unf,672,Y,672,0,0,TA,2,1928,795,P,0,0,NA,2006
+2823,RL,Pave,Lvl,Gtl,Norm,6,1990,BrkFace,0,BrkTil,No,Unf,1836,Y,1836,0,1,Gd,2,1993,836,Y,32,0,NA,2006
+2824,RL,Pave,Lvl,Gtl,Norm,5,1962,Plywood,96,CBlock,Gd,Rec,1776,Y,0,0,0,TA,1,1962,528,Y,144,0,NA,2006
+2825,RL,Pave,Lvl,Gtl,Norm,5,2002,Wd Sdng,232,Slab,NA,NA,0,Y,0,0,0,TA,1,2002,569,Y,36,0,NA,2006
+2826,RL,Pave,Lvl,Gtl,Norm,5,1999,MetalSd,164,CBlock,Mn,Unf,1057,Y,0,0,0,Gd,0,1955,288,Y,0,0,NA,2006
+2827,RL,Pave,Lvl,Gtl,Norm,6,1953,MetalSd,0,CBlock,No,Unf,1000,Y,541,0,1,TA,0,1953,305,Y,0,0,NA,2006
+2828,RL,Pave,Bnk,Gtl,Norm,6,1989,HdBoard,232,CBlock,No,Unf,868,Y,1246,0,1,Ex,1,1989,506,Y,0,0,NA,2006
+2829,RL,Pave,Lvl,Gtl,Norm,6,1993,HdBoard,0,PConc,Av,GLQ,1344,Y,0,2,0,Gd,0,1993,920,Y,0,0,NA,2006
+2830,RL,Pave,Lvl,Gtl,Norm,7,2006,VinylSd,0,PConc,No,Unf,1308,Y,568,0,1,Gd,0,2005,848,Y,0,0,NA,2006
+2831,RL,Pave,Lvl,Gtl,Norm,7,2005,VinylSd,0,PConc,Av,Unf,1208,Y,0,0,0,Gd,0,2005,632,Y,0,0,NA,2006
+2832,RL,Pave,Lvl,Gtl,Norm,6,2006,VinylSd,0,PConc,No,Unf,1836,Y,0,1,0,Gd,1,2006,495,Y,0,0,NA,2006
+2833,RL,Pave,Lvl,Gtl,Norm,8,2006,VinylSd,198,PConc,Gd,Unf,1570,Y,0,1,1,Ex,0,2005,754,Y,0,0,NA,2006
+2834,RL,Pave,Lvl,Gtl,Norm,7,2006,VinylSd,0,PConc,Gd,Unf,945,Y,864,0,1,Gd,0,2005,638,Y,0,0,NA,2006
+2835,RL,Pave,Lvl,Gtl,Norm,7,2005,VinylSd,140,PConc,Gd,Unf,1614,Y,0,0,0,Gd,1,2005,576,Y,0,0,NA,2006
+2836,RL,Pave,Lvl,Gtl,Norm,7,2005,VinylSd,532,PConc,Av,Unf,784,Y,812,0,1,Gd,0,2005,610,Y,0,0,NA,2006
+2837,RL,Pave,Lvl,Gtl,Norm,6,1968,Plywood,0,CBlock,No,Unf,1388,Y,0,1,0,TA,1,1968,522,Y,0,0,NA,2006
+2838,RL,Pave,Lvl,Gtl,Norm,5,1996,VinylSd,0,PConc,No,Unf,1100,Y,0,0,1,TA,0,1996,462,Y,0,0,NA,2006
+2839,RL,Pave,Lvl,Gtl,Norm,6,1995,VinylSd,68,PConc,No,Unf,781,Y,704,0,1,Gd,1,1995,473,Y,0,0,NA,2006
+2840,RL,Pave,Lvl,Gtl,Norm,7,1998,VinylSd,0,PConc,Mn,Unf,1425,Y,0,1,0,TA,0,1998,591,Y,0,0,NA,2006
+2841,RL,Pave,Lvl,Gtl,Norm,7,1999,VinylSd,0,PConc,No,Unf,842,Y,893,0,1,Gd,0,1999,515,Y,0,0,NA,2006
+2842,RL,Pave,Lvl,Gtl,Norm,7,2000,VinylSd,0,PConc,Mn,Unf,951,Y,828,1,1,Gd,1,1999,586,Y,0,0,NA,2006
+2843,RL,Pave,Lvl,Gtl,Norm,6,1977,HdBoard,62,CBlock,Av,Unf,675,Y,702,0,1,TA,0,1977,317,Y,0,0,NA,2006
+2844,RL,Pave,Lvl,Gtl,Norm,6,1978,HdBoard,123,CBlock,Av,LwQ,995,Y,0,0,0,TA,0,1989,672,Y,0,0,NA,2006
+2845,RL,Pave,Low,Gtl,Norm,5,1972,VinylSd,0,CBlock,No,Unf,864,Y,0,0,0,TA,0,1977,297,Y,0,0,NA,2006
+2846,RL,Pave,Lvl,Gtl,Norm,7,2002,VinylSd,199,PConc,No,Unf,826,Y,884,0,1,Gd,0,2002,591,Y,0,0,NA,2006
+2847,RL,Pave,Lvl,Gtl,Norm,6,1999,VinylSd,148,PConc,Mn,Unf,840,Y,915,1,1,TA,1,1999,530,Y,0,0,NA,2006
+2848,RL,Pave,Lvl,Gtl,Norm,8,2002,Stucco,0,PConc,No,Unf,1348,Y,0,1,1,Gd,1,2002,418,Y,0,0,NA,2006
+2849,RL,Pave,Lvl,Gtl,Norm,7,2002,VinylSd,0,PConc,No,Unf,872,Y,1037,0,1,Gd,0,2002,529,Y,0,0,NA,2006
+2850,RL,Pave,Lvl,Gtl,Norm,8,1999,VinylSd,261,PConc,Av,Unf,1090,Y,1124,1,1,Gd,1,1999,646,Y,0,0,NA,2006
+2851,RL,Pave,Lvl,Gtl,Norm,7,1997,VinylSd,0,PConc,No,Unf,1065,Y,984,0,1,Gd,1,1997,467,Y,0,0,NA,2006
+2852,RL,Pave,Lvl,Gtl,Norm,7,1998,VinylSd,227,PConc,Mn,Unf,1054,Y,869,0,1,Gd,1,1998,555,Y,0,0,NA,2006
+2853,RL,Pave,Lvl,Gtl,Norm,7,1996,VinylSd,0,PConc,Av,Unf,930,Y,1045,1,1,Gd,1,1995,610,Y,0,0,NA,2006
+2854,RM,Pave,Lvl,Gtl,Norm,6,2003,VinylSd,170,PConc,Av,Unf,848,Y,0,1,0,Gd,0,2003,420,Y,0,0,NA,2006
+2855,RL,Pave,Lvl,Gtl,Norm,7,2003,VinylSd,0,PConc,No,Unf,1390,Y,0,1,0,Gd,0,2003,545,Y,0,0,NA,2006
+2856,RL,Pave,Lvl,Gtl,Norm,7,2006,VinylSd,0,PConc,Mn,Unf,851,Y,886,0,1,Gd,0,2006,578,Y,0,0,NA,2006
+2857,RL,Pave,Lvl,Gtl,Norm,7,2005,VinylSd,0,PConc,Av,Unf,784,Y,827,0,1,Gd,0,2005,572,Y,0,0,NA,2006
+2858,RL,Pave,Lvl,Gtl,Norm,7,2006,VinylSd,0,PConc,Mn,Unf,1336,Y,0,1,0,Gd,0,2005,502,Y,0,0,NA,2006
+2859,RL,Pave,Bnk,Gtl,Norm,4,2000,Plywood,0,CBlock,No,BLQ,676,Y,676,1,0,TA,0,1950,528,Y,0,0,Shed,2006
+2860,RL,Pave,Lvl,Gtl,Norm,6,1975,Plywood,355,CBlock,Gd,Unf,976,Y,0,0,0,TA,0,NA,0,Y,0,0,NA,2006
+2861,RL,Pave,HLS,Gtl,Norm,5,1969,HdBoard,0,CBlock,Mn,Unf,1176,Y,0,1,0,TA,0,1969,360,Y,0,0,NA,2006
+2862,RL,Pave,Lvl,Gtl,Norm,7,2004,HdBoard,190,PConc,No,Unf,796,Y,918,0,1,Gd,1,2003,616,Y,0,0,NA,2006
+2863,RL,Pave,Lvl,Gtl,Norm,6,2002,VinylSd,NA,PConc,Av,ALQ,914,Y,0,1,0,Gd,0,NA,0,N,0,0,NA,2006
+2864,RL,Pave,Lvl,Gtl,Norm,7,2005,VinylSd,0,PConc,No,Unf,1150,Y,1150,0,1,Gd,1,2003,502,Y,0,0,NA,2006
+2865,RM,Pave,Lvl,Gtl,Norm,6,2006,VinylSd,82,PConc,Gd,Unf,547,Y,0,1,0,TA,0,2005,525,Y,0,0,NA,2006
+2866,RM,Pave,Lvl,Gtl,Norm,7,2004,VinylSd,50,PConc,No,Unf,970,Y,739,0,0,Gd,0,2004,380,Y,0,0,NA,2006
+2867,RL,Pave,Lvl,Gtl,Norm,4,1950,VinylSd,0,CBlock,Mn,Unf,624,Y,312,0,0,TA,0,1948,265,Y,0,0,NA,2006
+2868,RL,Pave,Bnk,Gtl,Norm,6,1950,AsbShng,0,BrkTil,No,Unf,832,Y,492,0,0,TA,0,1974,528,N,208,0,NA,2006
+2869,RL,Pave,Lvl,Gtl,Norm,4,1950,Wd Sdng,0,BrkTil,No,Unf,1093,N,576,0,1,TA,0,1924,288,Y,56,0,NA,2006
+2870,RL,Pave,Lvl,Gtl,Norm,4,1968,Wd Sdng,60,CBlock,No,Unf,954,Y,0,0,0,TA,1,1956,609,Y,0,0,NA,2006
+2871,RL,Pave,Lvl,Gtl,Norm,4,1950,Wd Sdng,0,BrkTil,No,Unf,864,N,0,0,0,TA,1,NA,0,N,112,0,NA,2006
+2872,RL,Pave,Lvl,Gtl,Norm,2,1955,MetalSd,0,BrkTil,No,Unf,498,N,0,0,0,TA,0,1922,216,N,100,0,NA,2006
+2873,RL,Pave,Low,Mod,Norm,4,1993,VinylSd,0,BrkTil,No,Unf,616,N,218,0,0,Gd,0,1910,275,N,0,0,NA,2006
+2874,RL,Pave,Lvl,Gtl,Norm,5,1950,MetalSd,0,BrkTil,No,Unf,1058,Y,493,1,0,Fa,0,1938,240,Y,0,0,NA,2006
+2875,RH,Pave,Bnk,Gtl,Norm,6,1950,Wd Sdng,0,CBlock,Av,Unf,780,N,524,1,0,TA,0,1945,440,Y,0,0,NA,2006
+2876,RL,Pave,Lvl,Gtl,Norm,7,1997,Wd Sdng,0,BrkTil,No,Unf,624,Y,736,1,0,Gd,2,1926,312,Y,56,0,NA,2006
+2877,RL,Pave,HLS,Gtl,Norm,6,1950,MetalSd,0,PConc,No,Unf,755,Y,755,0,0,TA,0,1920,216,Y,164,0,NA,2006
+2878,RL,Pave,Bnk,Gtl,Norm,7,1950,MetalSd,0,BrkTil,Mn,Unf,818,Y,818,0,1,Gd,1,1919,288,N,212,0,NA,2006
+2879,RL,Pave,Bnk,Gtl,Norm,5,1950,VinylSd,0,CBlock,Av,Unf,992,Y,473,0,0,TA,2,1939,240,Y,0,0,NA,2006
+2880,RL,Pave,Lvl,Gtl,Norm,5,1950,Wd Sdng,0,CBlock,No,Unf,824,N,464,0,0,TA,0,1941,240,Y,0,0,NA,2006
+2881,RL,Pave,Lvl,Gtl,Norm,6,1950,Wd Sdng,0,PConc,No,Unf,817,Y,610,0,1,TA,1,1937,318,P,429,0,NA,2006
+2882,RL,Pave,HLS,Mod,Norm,5,1950,Wd Sdng,0,CBlock,Mn,Unf,901,Y,592,0,1,TA,1,1940,410,Y,0,0,NA,2006
+2883,RL,Pave,Lvl,Gtl,Norm,7,1950,Stucco,270,BrkTil,No,Unf,1022,Y,549,0,0,TA,1,1963,451,Y,0,0,NA,2006
+2884,RL,Pave,HLS,Gtl,Norm,7,1990,Wd Sdng,0,BrkTil,No,Unf,637,Y,650,0,1,Gd,2,1963,579,Y,0,0,NA,2006
+2885,RL,Pave,Lvl,Gtl,Norm,6,1959,Wd Sdng,0,PConc,No,Unf,697,Y,697,0,1,TA,1,1930,365,Y,0,0,NA,2006
+2886,RL,Pave,Lvl,Gtl,Norm,5,1963,Wd Sdng,405,CBlock,No,Unf,1168,Y,1037,1,0,TA,3,1950,342,Y,0,0,NA,2006
+2887,RM,Pave,Lvl,Gtl,Norm,5,1950,MetalSd,0,CBlock,Mn,Unf,976,N,0,1,0,TA,0,1942,215,N,0,0,NA,2006
+2888,RM,Pave,Lvl,Gtl,Norm,6,1950,MetalSd,0,PConc,No,Unf,861,Y,424,0,0,TA,0,1950,506,Y,132,0,NA,2006
+2889,RM,Pave,Low,Gtl,Norm,4,1950,Wd Sdng,0,BrkTil,No,Unf,432,N,0,0,0,TA,0,NA,0,N,112,0,NA,2006
+2890,RM,Pave,Lvl,Gtl,Norm,4,1950,MetalSd,0,BrkTil,No,Unf,641,Y,0,0,0,Fa,0,1925,272,N,70,0,NA,2006
+2891,RM,Pave,Lvl,Gtl,Norm,6,1957,MetalSd,327,CBlock,No,Unf,967,Y,671,0,0,Gd,0,1957,384,Y,0,0,NA,2006
+2892,C (all),Pave,Lvl,Gtl,Norm,3,1950,Wd Sdng,0,Slab,NA,NA,0,N,0,0,0,TA,0,NA,0,N,23,0,NA,2006
+2893,C (all),Pave,Lvl,Gtl,Norm,5,1951,WdShing,0,CBlock,Mn,Unf,660,N,336,0,0,TA,0,NA,0,Y,0,0,NA,2006
+2894,C (all),Grvl,Bnk,Gtl,Norm,3,1950,MetalSd,0,PConc,No,Unf,216,N,360,0,0,TA,0,NA,0,N,0,0,NA,2006
+2895,RM,Pave,HLS,Mod,Norm,8,2006,CemntBd,473,PConc,Gd,Unf,1573,Y,0,2,0,Ex,1,2005,495,Y,0,0,NA,2006
+2896,RM,Pave,HLS,Mod,Norm,8,2005,CemntBd,186,PConc,Gd,Unf,1594,Y,0,1,0,Gd,1,2004,525,Y,0,0,NA,2006
+2897,RL,Pave,Lvl,Mod,Norm,6,1979,Plywood,0,CBlock,Gd,Unf,1625,Y,0,0,0,Fa,1,1979,576,Y,0,0,NA,2006
+2898,RL,Pave,Lvl,Gtl,Norm,6,1978,Plywood,0,CBlock,Mn,Unf,1664,Y,0,0,0,TA,0,1978,616,Y,0,0,NA,2006
+2899,RL,Pave,Lvl,Gtl,Norm,8,2001,VinylSd,0,PConc,No,Unf,1491,Y,0,0,0,Gd,0,2001,490,Y,0,0,NA,2006
+2900,RL,Pave,Lvl,Gtl,Norm,6,1975,Plywood,257,CBlock,Av,Unf,1128,Y,0,1,0,TA,0,1975,528,Y,0,0,NA,2006
+2901,RL,Pave,Low,Mod,Norm,6,1958,Plywood,0,CBlock,Gd,Unf,1632,Y,0,1,0,TA,2,1958,518,Y,0,0,NA,2006
+2902,RL,Pave,Lvl,Gtl,Norm,6,2000,VinylSd,0,Wood,Av,BLQ,1381,Y,0,1,0,Gd,0,2000,470,Y,0,0,NA,2006
+2903,RL,Pave,Lvl,Gtl,Norm,8,2006,VinylSd,198,PConc,Av,Unf,1728,Y,0,1,0,Gd,2,2005,714,Y,0,0,NA,2006
+2904,RL,Pave,Lvl,Gtl,Norm,9,2006,VinylSd,382,PConc,Gd,Unf,1838,Y,0,1,0,Ex,1,2005,682,Y,0,0,NA,2006
+2905,NA,Pave,Lvl,Gtl,Norm,1,1951,CBlock,0,CBlock,NA,NA,0,Y,0,0,1,TA,0,1951,270,N,135,0,NA,2006
+2906,RM,Pave,Lvl,Gtl,Norm,7,1997,MetalSd,200,PConc,Gd,Unf,1288,Y,0,2,0,TA,0,1997,784,Y,0,0,NA,2006
+2907,RM,Pave,Lvl,Gtl,Norm,5,1977,CemntBd,0,PConc,Mn,Unf,264,Y,688,0,1,TA,1,1977,336,Y,0,0,NA,2006
+2908,RL,Pave,Lvl,Gtl,Norm,5,2003,Plywood,0,CBlock,No,Unf,864,Y,0,1,0,TA,0,1968,288,Y,0,0,NA,2006
+2909,RL,Pave,Lvl,Gtl,Norm,5,1970,Plywood,0,CBlock,No,Unf,1652,Y,0,0,0,TA,0,1970,928,Y,0,0,NA,2006
+2910,RM,Pave,Lvl,Gtl,Norm,4,1970,CemntBd,0,CBlock,Av,Unf,630,Y,0,1,0,TA,0,NA,0,Y,0,0,NA,2006
+2911,RM,Pave,Lvl,Gtl,Norm,4,1972,CemntBd,0,CBlock,No,Unf,546,Y,546,0,1,TA,0,1972,253,Y,0,0,NA,2006
+2912,RL,Pave,Lvl,Mod,Norm,5,1979,Plywood,194,PConc,Av,BLQ,1104,Y,0,1,0,TA,1,1969,336,Y,0,0,NA,2006
+2913,RM,Pave,Lvl,Gtl,Norm,4,1970,CemntBd,0,CBlock,No,Unf,546,Y,546,0,1,TA,0,1970,286,Y,0,0,NA,2006
+2914,RM,Pave,Lvl,Gtl,Norm,4,1970,CemntBd,0,CBlock,No,Unf,546,Y,546,0,1,TA,0,NA,0,Y,0,0,NA,2006
+2915,RM,Pave,Lvl,Gtl,Norm,4,1970,CemntBd,0,CBlock,No,Unf,546,Y,546,0,1,TA,0,NA,0,Y,0,0,NA,2006
+2916,RM,Pave,Lvl,Gtl,Norm,4,1970,CemntBd,0,CBlock,No,Unf,546,Y,546,0,1,TA,0,1970,286,Y,0,0,NA,2006
+2917,RL,Pave,Lvl,Gtl,Norm,5,1996,VinylSd,0,CBlock,No,Unf,1224,Y,0,1,0,TA,1,1960,576,Y,0,0,NA,2006
+2918,RL,Pave,Lvl,Gtl,Norm,5,1992,HdBoard,0,PConc,Av,Unf,912,Y,0,0,0,TA,0,NA,0,Y,0,0,Shed,2006
+2919,RL,Pave,Lvl,Mod,Norm,7,1994,HdBoard,94,PConc,Av,Unf,996,Y,1004,0,1,TA,1,1993,650,Y,0,0,NA,2006

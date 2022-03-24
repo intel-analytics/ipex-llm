@@ -25,7 +25,7 @@ from torch.fx.graph_module import GraphModule
 from torch.nn.modules.loss import _Loss
 from torch.utils.data import DataLoader
 from torchmetrics.metric import Metric
-
+from torch.optim.lr_scheduler import _LRScheduler
 from bigdl.nano.common import check_avx512
 from bigdl.nano.pytorch.lightning import LightningModuleFromTorch
 from bigdl.nano.pytorch.plugins.ddp_spawn import DDPSpawnPlugin
@@ -116,6 +116,7 @@ class Trainer(pl.Trainer):
     def compile(model: nn.Module,
                 loss: _Loss = None,
                 optimizer: torch.optim.Optimizer = None,
+                scheduler: _LRScheduler = None,
                 metrics: List[Metric] = None,
                 onnx: bool = False,
                 quantize: bool = True):
@@ -145,7 +146,7 @@ class Trainer(pl.Trainer):
                 "Loss and optimizer should be None if model is a pytorch-lightning model."
             pl_model = model
         else:
-            pl_model = LightningModuleFromTorch(model, loss, optimizer, metrics)
+            pl_model = LightningModuleFromTorch(model, loss, optimizer, scheduler, metrics)
 
         if onnx:
             try:
@@ -179,7 +180,7 @@ class Trainer(pl.Trainer):
                  accuracy_criterion: dict = None,
                  timeout=0,
                  max_trials=1,
-                 raw_return=False
+                 return_pl=True
                  ):
         """
         Calibrate a Pytorch-Lightning model for post-training quantization.
@@ -211,7 +212,7 @@ class Trainer(pl.Trainer):
                             Combine with timeout field to decide when to exit.
                             "timeout=0, max_trials=1" means it will try quantization only once and
                             return satisfying best model.
-        :param raw_return:  Decide which type to return. If set to True, a GraphModule will be
+        :param return_pl:   Decide which type to return. If set to True, a GraphModule will be
                             returned. If set to False, a pytorch lightning module will be returned.
         :return:            A GraphModule. If there is no model found, return None.
         """
@@ -233,6 +234,11 @@ class Trainer(pl.Trainer):
 
         if backend == 'inc':
             from bigdl.nano.quantization.neural_compressor import QuantizationINC
+            from bigdl.nano.quantization.neural_compressor.pytorch.utils.dataloader import \
+                check_loaders
+
+            # check if dataloader is of legal format
+            check_loaders(pl_model, [calib_dataloader, val_dataloader])
 
             if approach not in ['static', 'dynamic']:
                 raise ValueError("Approach should be 'static' or 'dynamic', "
@@ -277,7 +283,7 @@ class Trainer(pl.Trainer):
                         model = pl_model._onnx_graph
                 quantized_models.append(quantizer.post_training_quantize(model, calib_dataloader,
                                                                          val_dataloader, metric))
-            if raw_return:
+            if not return_pl:
                 if len(quantized_models) == 1:
                     return quantized_models[0].model
                 else:

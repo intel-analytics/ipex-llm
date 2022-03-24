@@ -11,15 +11,39 @@ init_instance() {
     cd flink
     # init occlum
     occlum init
-    new_json="$(jq '.resource_limits.user_space_size = "32000MB" |
-                .resource_limits.kernel_space_heap_size="512MB" |
-                .resource_limits.max_num_of_threads = 256 |
-                .process.default_heap_size = "128MB" |
-                .process.default_mmap_size = "26000MB" |
+    new_json="$(jq '.resource_limits.user_space_size = "SGX_MEM_SIZE" |
+                .resource_limits.kernel_space_heap_size="SGX_KERNEL_HEAP" |
+                .resource_limits.max_num_of_threads = "SGX_THREAD"  |
+                .process.default_heap_size = "SGX_HEAP" |
                 .entry_points = [ "/usr/lib/jvm/java-11-openjdk-amd64/bin" ] |
                 .env.default = [ "LD_LIBRARY_PATH=/usr/lib/jvm/java-11-openjdk-amd64/lib/server:/usr/lib/jvm/java-11-openjdk-amd64/lib:/lib:/opt/occlum/glibc/lib/", "OMP_NUM_THREADS=4", "KMP_AFFINITY=verbose,granularity=fine,compact,1,0", "KMP_BLOCKTIME=20" ]' Occlum.json)" && \
     echo "${new_json}" > Occlum.json
-   }
+
+    echo "SGX_MEM_SIZE ${SGX_MEM_SIZE}"
+    if [[ -z "$SGX_MEM_SIZE" ]]; then
+        sed -i "s/SGX_MEM_SIZE/32000MB/g" Occlum.json
+    else
+        sed -i "s/SGX_MEM_SIZE/${SGX_MEM_SIZE}/g" Occlum.json
+    fi
+
+    if [[ -z "$SGX_THREAD" ]]; then
+        sed -i "s/\"SGX_THREAD\"/256/g" Occlum.json
+    else
+        sed -i "s/\"SGX_THREAD\"/${SGX_THREAD}/g" Occlum.json
+    fi
+
+    if [[ -z "$SGX_HEAP" ]]; then
+        sed -i "s/SGX_HEAP/128MB/g" Occlum.json
+    else
+        sed -i "s/SGX_HEAP/${SGX_HEAP}/g" Occlum.json
+    fi
+
+    if [[ -z "$SGX_KERNEL_HEAP" ]]; then
+        sed -i "s/SGX_KERNEL_HEAP/512MB/g" Occlum.json
+    else
+        sed -i "s/SGX_KERNEL_HEAP/${SGX_KERNEL_HEAP}/g" Occlum.json
+    fi
+}
 
 build_flink() {
     # Copy JVM and class file into Occlum instance and build

@@ -32,6 +32,7 @@ import ray
 from bigdl.orca.learn.pytorch.utils import find_free_port
 from bigdl.orca.learn.pytorch.torch_runner import TorchRunner
 import torch.nn as nn
+from torch.utils.data import IterableDataset
 
 
 import logging
@@ -118,8 +119,16 @@ class PytorchRayWorker(TorchRunner):
         self._toggle_profiling(profile=profile)
 
         shards_ref = data_creator(config, batch_size)
-        if not isinstance(shards_ref, ray.ObjectID):
-            raise ValueError("Only xshards is supported for predict")
-
-        partition = ray.get(shards_ref)
-        return super().predict(partition=partition, batch_size=batch_size, profile=profile)
+        if isinstance(shards_ref, IterableDataset):
+            pred_stats = super().predict(partition=shards_ref, batch_size=batch_size,
+                                         profile=profile)
+            for pred_stat in pred_stats:
+                pred_stat.update(pred_stat)
+            worker_stats = pred_stat["prediction"]
+        else:
+            if not isinstance(shards_ref, ray.ObjectID):
+                raise ValueError("Only xshards and Ray Dataset is supported for predict")
+            partition = ray.get(shards_ref)
+            worker_stats = super().predict(partition=partition, batch_size=batch_size,
+                                           profile=profile)
+        return worker_stats

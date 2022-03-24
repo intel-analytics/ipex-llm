@@ -565,7 +565,7 @@ kubectl create clusterrolebinding spark-role --clusterrole=edit --serviceaccount
 ```
 #### 1.2.3 Generate k8s config file
 ```bash
-kubectl config view --flatten --minify > /YOUR_DIR/kuberconfig
+kubectl config view --flatten --minify > /YOUR_DIR/kubeconfig
 ```
 #### 1.2.4 Create k8s secret 
 ```bash
@@ -579,7 +579,7 @@ export ENCLAVE_KEY=/YOUR_DIR/enclave-key.pem
 export DATA_PATH=/YOUR_DIR/data
 export KEYS_PATH=/YOUR_DIR/keys
 export SECURE_PASSWORD_PATH=/YOUR_DIR/password
-export KUBECONFIG_PATH=/YOUR_DIR/kuberconfig
+export KUBECONFIG_PATH=/YOUR_DIR/kubeconfig
 export LOCAL_IP=$LOCAL_IP
 export DOCKER_IMAGE=intelanalytics/bigdl-ppml-trusted-big-data-ml-python-graphene:0.14.0-SNAPSHOT
 sudo docker run -itd \
@@ -614,13 +614,13 @@ sudo docker run -itd \
 ```
 
 ### 1.4 Init the client and config the spark-executor-template
-First, execute the `docker exec -it spark-local-k8s-client bash` command to entry container.  
+First, execute the `docker exec -it spark-local-k8s-client bash` command to entry the container.  
 #### 1.4.1 Init the Spark local k8s client
 ```bash
 ./init.sh
 ```
 #### 1.4.2 Configure spark-executor-template.yaml
-This step is to configure `/ppml/trusted-big-data-ml/spark-executor-template.yaml` file.  
+This step is to configure the `/ppml/trusted-big-data-ml/spark-executor-template.yaml` file.  
 `cat /ppml/trusted-big-data-ml/spark-executor-template.yaml`  
 ```bash
 apiVersion: v1
@@ -674,7 +674,7 @@ spec:
         path: /YOUR_DIR/data
     - name: kubeconf
       hostPath:
-        path: /YOUR_DIR/kuberconfig
+        path: /YOUR_DIR/kubeconfig
 ```
 ### <span id="spark-example">1.5 Run Spark applications on k8s</span>
 #### Spark-Pi example
@@ -732,9 +732,9 @@ export TF_MKL_ALLOC_MAX_BYTES=10737418240 && \
     --verbose \
     local:///ppml/trusted-big-data-ml/work/spark-3.1.2/examples/jars/spark-examples_2.12-3.1.2.jar 100 2>&1 | tee spark-pi-sgx.log
 ```
-You can run your own Spark Appliction after change `--class` and jar path.
+You can run your own Spark Appliction after changing `--class` and jar path.
 1. `local:///ppml/trusted-big-data-ml/work/spark-3.1.2/examples/jars/spark-examples_2.12-3.1.2.jar` => `your_jar_path`
-2. `--class org.apache.spark.examples.SparkPi` => `--calss your_class_path`
+2. `--class org.apache.spark.examples.SparkPi` => `--class your_class_path`
 
 ### Configuration Explainations
 #### 1. Bigdl ppml SGX related configurations

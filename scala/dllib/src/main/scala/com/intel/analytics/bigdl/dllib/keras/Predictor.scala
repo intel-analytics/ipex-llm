@@ -370,20 +370,28 @@ trait Predictable[T] extends VectorCompatibility{
     }
   }
 
-  protected def df2ImageSet(df: DataFrame, labelCol: String = null,
+  protected def df2ImageSet(df: DataFrame, labelCols: Array[String] = null,
                             transformer: ImageProcessing = null):
   ImageSet = {
-    val labelColIndex = if (labelCol != null) {
-      df.schema.fieldIndex(labelCol)
-    } else -1
+    val labelColIndexes = if (labelCols != null) {
+      labelCols.map(df.schema.fieldIndex(_))
+    } else null
 
     val imfRDD = df.rdd.mapPartitions { rowIter =>
       rowIter.map { row =>
         val imf = NNImageSchema.row2IMF(row.get(0).asInstanceOf[Row])
-        if (labelColIndex != -1) {
-          val labelTensor = Tensor[Float](1)
-          labelTensor(Array(1)) = row.getInt(labelColIndex)
-          imf(ImageFeature.label) = labelTensor
+        if (labelColIndexes != null) {
+          if (labelColIndexes.size == 1) {
+            val labelTensor = Tensor[Float](1)
+            labelTensor(Array(1)) = row.getInt(labelColIndexes.head)
+            imf(ImageFeature.label) = labelTensor
+          } else {
+            for ((x, i) <- labelColIndexes.view.zipWithIndex) {
+              val labelTensor = Tensor[Float](1)
+              labelTensor(Array(1)) = row.getInt(x)
+              imf.update("l" + i, labelTensor)
+            }
+          }
         }
         imf
       }

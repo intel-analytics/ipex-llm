@@ -20,7 +20,7 @@ import com.intel.analytics.bigdl.dllib.nn.Sequential
 import com.intel.analytics.bigdl.dllib.optim.MAE
 import com.intel.analytics.bigdl.ppml.FLModel
 import com.intel.analytics.bigdl.ppml.base.Estimator
-import com.intel.analytics.bigdl.ppml.fgboost.{FGBoostEstimator, FGBoostModel}
+import com.intel.analytics.bigdl.ppml.fgboost.FGBoostModel
 
 /**
  * FGBoost regression algorithm

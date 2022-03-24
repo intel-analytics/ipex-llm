@@ -21,7 +21,7 @@ conda install -y cmake==3.16.0 -c conda-forge
 conda install cxx-compiler==1.0 -c conda-forge
 conda install openmpi
 HOROVOD_WITH_PYTORCH=1; HOROVOD_WITH_GLOO=1; pip install --no-cache-dir horovod==0.19.1
-pip install analytics-zoo[ray]
+pip install bigdl-orca[ray]
 ```
 
 ## Run on local after pip install
@@ -33,4 +33,12 @@ python simple_horovod_pytorch.py
 ```
 export HADOOP_CONF_DIR=path to your hadoop conf directory
 python simple_horovod_pytorch.py --cluster_mode yarn-client 
+```
+
+## Run on K8s cluster for k8s-client mode after pip install
+```
+python pytorch_estimator.py \
+--cluster_mode k8s
+--k8s_master "k8s://https://127.0.0.1:8443"
+--container_image "intelanalytics/bigdl-k8s:latest"
 ```

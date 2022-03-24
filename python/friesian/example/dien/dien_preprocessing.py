@@ -52,10 +52,11 @@ def _parse_args():
     parser.add_argument('--driver_memory', type=str, default="36g",
                         help='The driver memory.')
     parser.add_argument('--input_transaction', type=str, required=True,
-                        help="transaction files.")
+                        help="The path to the user transaction file.")
     parser.add_argument('--input_meta', type=str, required=True,
-                        help="item metadata file")
-    parser.add_argument('--output', default="./")
+                        help="The path to the item metadata file.")
+    parser.add_argument('--output', type=str, default="./",
+                        help="The path to save the preprocessed data.")
 
     args = parser.parse_args()
     return args

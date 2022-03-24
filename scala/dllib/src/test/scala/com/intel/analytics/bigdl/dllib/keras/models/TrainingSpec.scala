@@ -34,6 +34,7 @@ import com.intel.analytics.bigdl.dllib.keras.models.Sequential
 import com.intel.analytics.bigdl.dllib.keras.models.Model
 import com.intel.analytics.bigdl.dllib.keras.objectives.{BinaryCrossEntropy, ZooClassNLLCriterion}
 import com.intel.analytics.bigdl.dllib.keras.python.PythonZooKeras
+import com.intel.analytics.bigdl.dllib.nn.Graph._
 import com.intel.analytics.bigdl.dllib.nn.{CosineEmbeddingCriterion, MSECriterion, MarginRankingCriterion, ParallelCriterion}
 import com.intel.analytics.bigdl.dllib.nnframes.{NNEstimatorSpec, NNImageReader}
 import org.apache.spark.{SparkConf, SparkContext}
@@ -409,17 +410,12 @@ class TrainingSpec extends ZooSpecHelper {
       .setInputCols(Array("f4", "f5", "f6"))
       .setOutputCol("feature2")
     val x2 = assembler2.transform(x)
-//            val input1 = Tensor[Float](100, 3).rand()
-//            val input2 = Tensor[Float](100, 3).rand()
-//            val input = T(1 -> input1, 2 -> input2)
     import com.intel.analytics.bigdl.dllib.nn.Graph.ModuleNode
     val l1: ModuleNode[Float] = Input(inputShape = Shape(3))
     val l2: ModuleNode[Float] = Input(inputShape = Shape(3))
     val output1 = Dense[Float](2, activation = "sigmoid").inputs(l1)
     val output2 = Dense[Float](2, activation = "sigmoid").inputs(l2)
     val model = Model(Array(l1, l2), Array(output1, output2))
-//            val o = model.forward(input)
-//            val t = 0
     model.compile(optimizer = new SGD[Float](), loss = ParallelCriterion[Float]())
     model.fit(x2, batchSize = 4, nbEpoch = 1, featureCols = Array("feature1", "feature2"),
       labelCols = Array("label", "label2"))
@@ -454,6 +450,41 @@ class TrainingSpec extends ZooSpecHelper {
     val predDf = model.predict(imgDF, predictionCol = "predict", transform = transformers)
     predDf.show()
     model.evaluate(imgDF, batchSize = 1, labelCols = Array("label"), transform = transformers)
+  }
+
+  "Keras model with multiple outputs" should "support image dataframe" in {
+    sc.stop()
+    val conf = new SparkConf().setMaster("local[1]")
+    val ksc = NNContext.initNNContext(conf, appName = "imageDf")
+
+    import org.apache.spark.sql.functions.lit
+    val imgDF =
+      NNImageReader.readImages(getClass.getClassLoader.getResource("gray/gray.bmp").getFile, ksc)
+        .withColumn("label1", lit(1)).withColumn("label2", lit(0))
+
+    val transformers = transforms.Compose(Array(ImageResize(50, 50),
+      ImageMirror()))
+
+    val l1: ModuleNode[Float] = Input(inputShape = Shape(1, 50, 50))
+    val conv1 = Convolution2D[Float](1, 24, 24, activation = "relu").inputs(l1)
+    val pool1 = MaxPooling2D[Float]().inputs(conv1)
+    val reshape1 = Reshape[Float](Array(169)).inputs(pool1)
+    val output1 = Dense[Float](2, activation = "log_softmax").inputs(reshape1)
+
+    val conv2 = Convolution2D[Float](1, 24, 24, activation = "relu").inputs(l1)
+    val pool2 = MaxPooling2D[Float]().inputs(conv2)
+    val reshape2 = Reshape[Float](Array(169)).inputs(pool2)
+    val output2 = Dense[Float](2, activation = "log_softmax").inputs(reshape2)
+
+    val model = Model(Array(l1), Array(output1, output2))
+
+    model.compile(optimizer = new SGD[Float](), loss = ParallelCriterion[Float]())
+    model.fit(imgDF, batchSize = 1, nbEpoch = 1, labelCols = Array("label1", "label2"),
+      transform = transformers)
+    val predDf = model.predict(imgDF, predictionCol = "predict", transform = transformers)
+    predDf.show()
+    model.evaluate(imgDF, batchSize = 1, labelCols = Array("label1", "label2"),
+      transform = transformers)
   }
 }
 

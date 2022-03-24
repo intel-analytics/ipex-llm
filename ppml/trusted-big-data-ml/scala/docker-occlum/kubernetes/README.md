@@ -3,12 +3,12 @@
 ## Prerequisite
 
 * Check Kubernetes env or Install Kubernetes from [wiki](https://kubernetes.io/zh/docs/setup/production-environment)
-* Prepare image `intelanalytics/bigdl-ppml-trusted-big-data-ml-scala-occlum:0.14.0-SNAPSHOT`
+* Prepare image `intelanalytics/bigdl-ppml-trusted-big-data-ml-scala-occlum:2.1.0-SNAPSHOT`
 
 1. Pull image from Dockerhub
 
 ```bash
-docker pull intelanalytics/bigdl-ppml-trusted-big-data-ml-scala-occlum:0.14.0-SNAPSHOT
+docker pull intelanalytics/bigdl-ppml-trusted-big-data-ml-scala-occlum:2.1.0-SNAPSHOT
 ```
 
 If Dockerhub is not accessable, we can build docker image with Dockerfile and modify the path in the build-docker-image.sh firstly.
@@ -67,3 +67,28 @@ Parameters in run_spark_xgboost.sh:
     After training, you can find xgboost model in folder `/tmp/path_to_model_to_be_saved` if this parameter is `/host/data/xgboost_model_to_be_saved`
 
 **note: make sure num_threads is larger than spark.task.cpus.**
+
+### Run Spark TPC-H example
+
+Modify the following configuration in `executor.yaml`.
+
+```yaml
+imagePullPolicy: Always
+
+env:
+- name: SGX_THREAD
+  value: "256"
+- name: SGX_HEAP
+  value: "2GB"
+- name: SGX_KERNEL_HEAP
+  value: "2GB"
+- name: SGX_MMAP
+  value: "16GB"
+```
+
+Then run the script.
+
+```bash
+./run_spark_tpch.sh
+```
+

@@ -25,24 +25,31 @@ This script is for Vertical Federated Learning functionality test, we could spli
 into two parts and mock the 2 client (parties) holding data of different features.
 """
 @click.command()
-@click.argument('file_name', '-f')
-def vfl_split_dataset(file_name):
+@click.argument('file_name', type=str)
+@click.argument('num_pieces', type=int)
+@click.argument('has_rowkey_index', type=bool)
+def vfl_split_dataset(file_name, num_pieces, has_rowkey_index):
     with open(file_name, "r") as read_obj:
         f = open(file_name, "r")
         sample = f.readline().split(",")
         f.close()
         print(f"data has {len(sample)} columns")
         csv_reader = reader(read_obj)
-        part1_col_idx = [0] + [i for i in range(1, len(sample), 2)]
-        part2_col_idx = [0] + [i for i in range(2, len(sample), 2)]
-        with open(f"{file_name}-1.csv", "w") as write_obj_1:
-            with open(f"{file_name}-2.csv", "w") as write_obj_2:
-                csv_writer_1 = writer(write_obj_1, delimiter=',')
-                csv_writer_2 = writer(write_obj_2, delimiter=',')
-                for i, row in enumerate(csv_reader):
-                    row = np.array(row)
-                    csv_writer_1.writerow(row[np.array(part1_col_idx)])
-                    csv_writer_2.writerow(row[np.array(part2_col_idx)])
+
+        writer_list = []
+        col_idx_list = []
+        for i in range(num_pieces):
+            piece_file_name = file_name.split('/')[-1].split('.')[0]
+            writer_list.append(writer(open(f"{piece_file_name}-{i}.csv", "w"), delimiter=','))
+            if has_rowkey_index:
+                col_idx_list.append([0] + [i for i in range(1 + i, len(sample), num_pieces)])
+            else:
+                col_idx_list.append([i for i in range(i, len(sample), num_pieces)])
+
+        for i, row in enumerate(csv_reader):
+            row = np.array(row)
+            for j in range(num_pieces):
+                writer_list[j].writerow(row[np.array(col_idx_list[j])])   
 
 
 if __name__ == "__main__":

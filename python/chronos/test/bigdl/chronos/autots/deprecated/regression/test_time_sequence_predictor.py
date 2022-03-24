@@ -21,8 +21,10 @@ from bigdl.chronos.autots.deprecated.regression.time_sequence_predictor import T
 import pandas as pd
 import numpy as np
 from bigdl.chronos.autots.deprecated.pipeline.time_sequence import TimeSequencePipeline
+from .. import skip_method
 
 
+@skip_method
 class TestTimeSequencePredictor(ZooTestCase):
 
     def setup_method(self, method):
