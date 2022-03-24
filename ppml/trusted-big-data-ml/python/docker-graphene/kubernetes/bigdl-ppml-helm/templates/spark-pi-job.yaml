@@ -25,36 +25,36 @@ spec:
         env:
           - name: HOST_DATA_PATH
             value: {{ .Values.dataPath }}
-          - name: SPARK_MODE
-            value: {{ .Values.sparkMode }}
-          - name: RUNTIME_SPARK_MASTER
-            value: {{ .Values.k8sMaster }}
           - name: RUNTIME_K8S_SPARK_IMAGE
             value: {{ .Values.image }}
+          - name: RUNTIME_SPARK_MASTER
+            value: {{ .Values.k8sMaster }}
           - name: RUNTIME_DRIVER_PORT
             value: "54321"
+          - name: SPARK_MODE
+            value: {{ .Values.deployMode }}
           - name: RUNTIME_DRIVER_CORES
             value: !!str {{ .Values.driverCores }}
-          - name: RUNTIME_EXECUTOR_INSTANCES
-            value: !!str {{ .Values.execInstances }}
-          - name: RUNTIME_EXECUTOR_CORES
-            value: !!str {{ .Values.execCores }}
-          - name: RUNTIME_EXECUTOR_MEMORY
-            value: {{ .Values.execMem }}
           - name: RUNTIME_DRIVER_MEMORY
             value: {{ .Values.driverMem }}
+          - name: RUNTIME_EXECUTOR_CORES
+            value: !!str {{ .Values.executorCores }}
+          - name: RUNTIME_EXECUTOR_MEMORY
+            value: {{ .Values.executorMem }}
+          - name: RUNTIME_EXECUTOR_INSTANCES
+            value: !!str {{ .Values.executorInstances }}
+          - name: SGX_ENABLED
+            value: !!str {{ .Values.sgx }}
+           - name: SGX_LOG_LEVEL
+            value: {{ .Values.sgxLog }}
           - name: SGX_DRIVER_MEM
             value: {{ .Values.sgxDriverMem }}
           - name: SGX_DRIVER_JVM_MEM
             value: {{ .Values.sgxDriverJvmMem }}
           - name: SGX_EXECUTOR_MEM
-            value: {{ .Values.sgxExecMem }}
+            value: {{ .Values.sgxExecutorMem }}
           - name: SGX_EXECUTOR_JVM_MEM
-            value: {{ .Values.sgxExecJvmMem }}
-           - name: SGX_LOG_LEVEL
-            value: {{ .Values.sgxLog }}
-          - name: SGX_ENABLED
-            value: !!str {{ .Values.sgx }}
+            value: {{ .Values.sgxExecutorJvmMem }}
         resources:
           requests:
             cpu: 1
