@@ -213,11 +213,6 @@ COPY --from=spark /opt/spark-${SPARK_VERSION} /ppml/trusted-big-data-ml/work/spa
 COPY --from=spark /opt/spark-${SPARK_VERSION}/examples/src/main/resources /ppml/trusted-big-data-ml/examples/src/main/resources
 COPY --from=bigdl /bigdl-${BIGDL_VERSION} ${BIGDL_HOME}
 ADD ./kms-client /ppml/trusted-big-data-ml/work/kms-client
-ADD ./LocalCryptoExample /ppml/trusted-big-data-ml/work/kms-client/LocalCryptoExample
-ADD ./submit-spark-job-with-kms-local-sgx.sh /ppml/trusted-big-data-ml/work/kms-client/submit-spark-job-with-kms-local-sgx.sh
-ADD ./submit-spark-job-with-kms-local.sh /ppml/trusted-big-data-ml/work/kms-client/submit-spark-job-with-kms-local.sh
-ADD ./submit-spark-job-with-kms-on-k8s-all.sh /ppml/trusted-big-data-ml/work/kms-client/submit-spark-job-with-kms-on-k8s-all.sh
-ADD ./submit-spark-job-with-kms-on-k8s.sh /ppml/trusted-big-data-ml/work/kms-client/submit-spark-job-with-kms-on-k8s.sh
 
 RUN apt-get update --fix-missing && \
     env DEBIAN_FRONTEND=noninteractive TZ=Etc/UTC apt-get install -y tzdata && \
