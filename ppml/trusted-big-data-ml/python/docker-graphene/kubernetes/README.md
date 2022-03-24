@@ -6,13 +6,20 @@ Please refer to the document [here][devicePluginK8sQuickStart].
 
 ## 2 Deploy Trusted Realtime ML for Kubernetes
 
-### 2.1 Configurables (This part is going under changes)
+### 2.1 Configurables
 
 In `bigdl-ppml-helm/values.yaml`, configure the full values for all items listed: 
-- `dataPath`: Provide the full path to your data on your host machine.
 - `image`: The PPML image you want to use.
 - `k8sMaster`: Run `kubectl cluster-info`. The output should be like `Kubernetes control plane is running at https://master_ip:master_port`. Fill in the master ip and port.
-- `pvc`: The name of the Persistent Volume Claim (PVC) of your Network File System (NFS). We assume you have a working NFS configured for your Kubernetes cluster. Please also put the script used to submit your Spark job (defaulted to `./submit-spark-k8s.sh`) in the NFS so it can be discovered by all the nodes.
+- `pvc`: The name of the Persistent Volume Claim (PVC) of your Network File System (NFS). We assume you have a working NFS configured for your Kubernetes cluster. 
+- `jar`: The `jar` file you would like Spark to run. Defaulted to SparkPi. The path should be the path in the container defined in `bigdl-ppml-helm/templates/spark-job.yaml`
+- `class`: The `class` you would like Spark to run. Defaulted to SparkPi.
+
+Please prepare the following and put them in your NFS directory:
+- The data (in a directory called `data`), 
+- The script used to submit your Spark job (defaulted to `./submit-spark-k8s.sh`) 
+- A kubeconfig file. Generate your Kubernetes config file with `kubectl config view --flatten --minify > kubeconfig`, then put it in your NFS.
+
 The other values have self-explanatory names and can be left alone.
 
 ### 2.2 Secure keys, password, and the enclave key
