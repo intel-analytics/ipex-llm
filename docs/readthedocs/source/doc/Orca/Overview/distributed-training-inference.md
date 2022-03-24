@@ -116,9 +116,9 @@ def compile_args(config):
     if "lr" in config:
         lr = config["lr"]
     else:
-        lr = 1e-3
+        lr = 1e-2
     args = {
-        "optimizer": tf.keras.optimizers.SGD(lr),
+        "optimizer": keras.optimizers.SGD(lr),
         "loss": "mean_squared_error",
         "metrics": ["mean_squared_error"]
     }
