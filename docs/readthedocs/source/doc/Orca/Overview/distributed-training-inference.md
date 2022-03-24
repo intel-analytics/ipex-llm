@@ -64,7 +64,10 @@ View the related [Python API doc]() for more details.
 
 #### **2.2 TensorFlow 2.x and Keras 2.4+**
 
-Users can create an `Estimator` for TensorFlow 2.x from a Keras model (using a _Model Creator Function_). For example:
+**Using 'tf2' or *Horovod* backend**
+
+Users can create an `Estimator` for TensorFlow 2.x from a Keras model (using a _Model Creator Function_) when the backend is
+'tf2' (currently default for TF2) or *Horovod*. For example:
 
 ```python
 def model_creator(config):
@@ -73,7 +76,7 @@ def model_creator(config):
                   loss='sparse_categorical_crossentropy',
                   metrics=['accuracy'])
     return model
-est = Estimator.from_keras(model_creator=model_creator)
+est = Estimator.from_keras(model_creator=model_creator) # or backend="horovod"
 ```
 
 The `model_creator` argument should be a function that takes a `config` dictionary and returns a compiled Keras model.
@@ -98,6 +101,57 @@ The `data` argument in `fit` method can be a spark DataFrame, an *XShards* or a 
 View the related [Python API doc]() for more details.
 
 ***For more details, view the distributed TensorFlow training/inference [page]().***
+
+**Using 'spark' backend**
+
+Users can create an 'Estimator' for TensorFlow 2.x using the *spark* backend as follows:
+
+```python
+def model_creator(config):
+    model = create_keras_lenet_model()
+    model.compile(**compile_args(config))
+    return model
+
+def compile_args(config):
+    if "lr" in config:
+        lr = config["lr"]
+    else:
+        lr = 1e-3
+    args = {
+        "optimizer": tf.keras.optimizers.SGD(lr),
+        "loss": "mean_squared_error",
+        "metrics": ["mean_squared_error"]
+    }
+    return args
+
+est = Estimator.from_keras(model_creator=model_creator,
+                           config={"lr": 1e-2},
+                           workers_per_node=2,
+                           backend="spark",
+                           model_dir=model_dir)
+```
+
+The `model_creator` argument should be a function that takes a `config_args` dictionary and returns a compiled Keras model,
+the `model_dir` argument is required for "spark" backend, it should be a share filesystem path which can be accessed by executors for culster mode.  
+
+Then users can perform distributed model training and inference as follows:
+
+```python
+def train_data_creator(config, batch_size):
+    dataset = tfds.load(name="mnist", split="train")
+    dataset = dataset.map(preprocess)
+    dataset = dataset.batch(batch_size)
+    return dataset
+stats = est.fit(data=train_data_creator,
+                epochs=max_epoch,
+                steps_per_epoch=total_size // batch_size)
+predictions = est.predict(data=df,
+                          feature_cols=['image']).collect()
+```
+
+The `data` argument in `fit` method can be a spark DataFrame, an *XShards* or a *Data Creator Function* (that returns a `tf.data.Dataset`). The `data` argument in `predict` method can be a spark DataFrame or an *XShards*. See the *data-parallel processing pipeline* [page](./data-parallel-processing.md) for more details.
+
+View the related [Python API doc]() for more details.
 
 ### **3. PyTorch Estimator**
 
