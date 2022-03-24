@@ -414,7 +414,7 @@ class TSPipeline:
             accuracy_criterion = {'absolute': absolute_drop, 'higher_is_better': False}
 
         from bigdl.nano.pytorch.trainer import Trainer
-        num_processes = max(1, torch.get_num_threads()//2)
+        num_processes = max(1, torch.get_num_threads()//8)
         self._trainer = Trainer(logger=False, max_epochs=1,
                                 checkpoint_callback=False,
                                 num_processes=num_processes,

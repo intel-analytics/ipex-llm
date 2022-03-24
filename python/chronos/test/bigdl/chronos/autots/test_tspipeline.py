@@ -186,6 +186,7 @@ class TestTSPipeline(TestCase):
                             framework=['pytorch_fx', 'onnxrt_qlinearops'])
         q_yhat = tsppl_lstm.predict(data=valid_data_creator, batch_size=64)
         q_smape = tsppl_lstm.evaluate(data=valid_data_creator, metrics=['smape'])
+        tsppl_lstm.fit(train_data_creator, batch_size=64)
         assert q_yhat.shape == yhat.shape
 
 
