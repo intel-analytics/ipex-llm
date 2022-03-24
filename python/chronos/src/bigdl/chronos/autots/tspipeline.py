@@ -379,14 +379,25 @@ class TSPipeline:
         from bigdl.chronos.autots.utils import check_quantize_available
         check_quantize_available(self._best_model.model)
         # calib data should be set if the forecaster is just loaded
-        assert calib_data is not None, "You must set a `calib_data` for quantization." 
+        assert calib_data is not None, "You must set a `calib_data` for quantization."
         # change data tuple to dataloader
         if isinstance(calib_data, tuple):
             calib_data = DataLoader(TensorDataset(torch.from_numpy(calib_data[0]),
                                                   torch.from_numpy(calib_data[1])))
+        elif isinstance(calib_data, types.FunctionType):
+            calib_data = calib_data(self._best_config)
+        else:
+            raise RuntimeError("We only support input tsdataset or data creator, "
+                               f"but found {calib_data.__class__.__name__}")
+
         if isinstance(val_data, tuple):
             val_data = DataLoader(TensorDataset(torch.from_numpy(val_data[0]),
                                                 torch.from_numpy(val_data[1])))
+        elif isinstance(val_data, types.FunctionType):
+            val_data = val_data(self._best_config)
+        else:
+            raise RuntimeError("We only support input tsdataset or data creator, "
+                               f"but found {val_data.__class__.__name__}")
 
         # map metric str to function
         from bigdl.chronos.metric.forecast_metrics import TORCHMETRICS_REGRESSION_MAP

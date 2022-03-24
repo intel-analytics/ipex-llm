@@ -16,6 +16,7 @@
 
 import math
 
+
 def recalculate_n_sampling(search_space, n_sampling):
     """
     Only process n_sampling.
@@ -31,6 +32,7 @@ def recalculate_n_sampling(search_space, n_sampling):
     n_sampling /= assist_num
     # TODO Number of threads specified by the user corresponds to n_sampling and give warning.
     return math.ceil(n_sampling)
+
 
 def check_quantize_available(model):
     from bigdl.chronos.model.nbeats_pytorch import NBeatsNet

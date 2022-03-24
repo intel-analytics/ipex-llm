@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 
-import tempfile
+import numpy as np
 from unittest import TestCase
 import pytest
 import torch
@@ -173,6 +173,21 @@ class TestTSPipeline(TestCase):
             os.path.join(self.resource_path, "tsppl_ckpt/lstm_tsppl_ckpt"))
         with pytest.raises(TypeError):
             yhat = tsppl_lstm.predict(data=get_test_tsdataset(), batch_size=16)
+
+    def test_tsppl_quantize_data_creator(self):
+        tsppl_lstm = TSPipeline.load(os.path.join(self.resource_path,
+                                                  "tsppl_ckpt/lstm_tsppl_ckpt"))
+        yhat = tsppl_lstm.predict(data=valid_data_creator, batch_size=64)
+        smape = tsppl_lstm.evaluate(data=valid_data_creator, metrics=['smape'])
+
+        tsppl_lstm.quantize(calib_data=train_data_creator,
+                            val_data=valid_data_creator,
+                            metric='mae',
+                            framework=['pytorch_fx', 'onnxrt_qlinearops'])
+        q_yhat = tsppl_lstm.predict(data=valid_data_creator, batch_size=64)
+        q_smape = tsppl_lstm.evaluate(data=valid_data_creator, metrics=['smape'])
+        assert q_yhat.shape == yhat.shape
+
 
 if __name__ == "__main__":
     pytest.main([__file__])
