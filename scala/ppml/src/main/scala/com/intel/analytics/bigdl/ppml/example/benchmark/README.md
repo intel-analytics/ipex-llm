@@ -17,7 +17,13 @@ java -cp path/to/jar com.intel.analytics.bigdl.ppml.FLServer
 This starts FLServer with default config, if you need to use custom config, copy `ppml-conf.yaml` from [here]() and overwrite.
 
 ### Testing
-For testing steps, please refer to the specific directory of the test to carry out.
+#### FGBoost
+* dataSize: size of dummy data
+* dataDum: dimension of dummy data
+* numRound: tree boost round
+```bash
+java cp path/to/jar com.intel.analytics.bigdl.ppml.example.benchmark.FGBoostBenchmark --dataSize 100 --dataDim 100 --numRound 100
+```
 
 ## Python API Benchmark Test
 Please refer to []() to see Python API benchmark test steps.
