@@ -14,7 +14,7 @@ spec:
         imagePullPolicy: Never
         command: ["/bin/sh","-c"]
         args: ["
-                sed -i \"s@/home/sdp/glorysdj/data@$OUTSIDE_DATA_PATH@g\" spark-executor-template.yaml;
+                sed -i \"s@/home/icx/glorysdj/data@$HOST_DATA_PATH@g\" spark-executor-template.yaml;
                 export RUNTIME_DRIVER_HOST=$( hostname -I | awk '{print $1}' );
                 export LOCAL_IP=$( hostname -I | awk '{print $1}' );
                 bash ./init.sh;
@@ -23,32 +23,38 @@ spec:
         securityContext:
           privileged: true
         env:
-          - name: OUTSIDE_DATA_PATH
+          - name: HOST_DATA_PATH
             value: {{ .Values.dataPath }}
-          - name: RUNTIME_SPARK_MASTER
-            value: {{ .Values.k8sMaster}}
-          - name: RUNTIME_K8S_SERVICE_ACCOUNT
-            value: "spark"
           - name: RUNTIME_K8S_SPARK_IMAGE
             value: {{ .Values.image }}
+          - name: RUNTIME_SPARK_MASTER
+            value: {{ .Values.k8sMaster }}
           - name: RUNTIME_DRIVER_PORT
             value: "54321"
-          - name: RUNTIME_EXECUTOR_INSTANCES
-            value: "1"
-          - name: RUNTIME_EXECUTOR_CORES
-            value: "4"
-          - name: RUNTIME_EXECUTOR_MEMORY
-            value: "20g"
-          - name: RUNTIME_TOTAL_EXECUTOR_CORES
-            value: "4"
+          - name: SPARK_MODE
+            value: {{ .Values.deployMode }}
           - name: RUNTIME_DRIVER_CORES
-            value: "4"
+            value: !!str {{ .Values.driverCores }}
           - name: RUNTIME_DRIVER_MEMORY
-            value: "10g"
-          - name: SGX_MEM_SIZE
-            value: "32G"
+            value: {{ .Values.driverMem }}
+          - name: RUNTIME_EXECUTOR_CORES
+            value: !!str {{ .Values.executorCores }}
+          - name: RUNTIME_EXECUTOR_MEMORY
+            value: {{ .Values.executorMem }}
+          - name: RUNTIME_EXECUTOR_INSTANCES
+            value: !!str {{ .Values.executorInstances }}
+          - name: SGX_ENABLED
+            value: !!str {{ .Values.sgx }}
           - name: SGX_LOG_LEVEL
-            value: "error"
+            value: {{ .Values.sgxLog }}
+          - name: SGX_DRIVER_MEM
+            value: {{ .Values.sgxDriverMem }}
+          - name: SGX_DRIVER_JVM_MEM
+            value: {{ .Values.sgxDriverJvmMem }}
+          - name: SGX_EXECUTOR_MEM
+            value: {{ .Values.sgxExecutorMem }}
+          - name: SGX_EXECUTOR_JVM_MEM
+            value: {{ .Values.sgxExecutorJvmMem }}
         resources:
           requests:
             cpu: 1

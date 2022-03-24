@@ -17,29 +17,32 @@ export TF_MKL_ALLOC_MAX_BYTES=10737418240 && \
   export SPARK_LOCAL_IP=$LOCAL_IP && \
   /opt/jdk8/bin/java \
     -cp '/ppml/trusted-big-data-ml/work/spark-3.1.2/conf/:/ppml/trusted-big-data-ml/work/spark-3.1.2/jars/*' \
-    -Xmx10g \
+    -Xmx5g \
     org.apache.spark.deploy.SparkSubmit \
     --master $RUNTIME_SPARK_MASTER \
-    --deploy-mode client \
+    --deploy-mode $SPARK_MODE \
     --name spark-pi-sgx \
     --conf spark.driver.host=$SPARK_LOCAL_IP \
-    --conf spark.driver.port=54321 \
-    --conf spark.driver.memory=10g \
-    --conf spark.kubernetes.authenticate.serviceAccountName=spark \
+    --conf spark.driver.port=$RUNTIME_DRIVER_PORT \
+    --conf spark.driver.memory=$RUNTIME_DRIVER_MEMORY \
+    --conf spark.executor.cores=$RUNTIME_EXECUTOR_CORES \
+    --conf spark.executor.memory=$RUNTIME_EXECUTOR_MEMORY \
+    --conf spark.executor.instances=$RUNTIME_EXECUTOR_INSTANCES \
+    --conf spark.kubernetes.authenticate.driver.serviceAccountName=spark \
     --conf spark.kubernetes.container.image=$RUNTIME_K8S_SPARK_IMAGE \
-    --conf spark.kubernetes.executor.podTemplateFile=/ppml/trusted-big-data-ml/spark-executor-template.yaml \
+    --conf spark.kubernetes.driver.podTemplateFile=/ppml/trusted-big-data-ml/mounts/spark-driver-template.yaml \
+    --conf spark.kubernetes.executor.podTemplateFile=/ppml/trusted-big-data-ml/mounts/spark-executor-template.yaml \
     --conf spark.kubernetes.executor.deleteOnTermination=false \
     --conf spark.network.timeout=10000000 \
     --conf spark.executor.heartbeatInterval=10000000 \
     --conf spark.python.use.daemon=false \
     --conf spark.python.worker.reuse=false \
-    --executor-cores 8 \
-    --total-executor-cores 16 \
-    --executor-memory 32G \
-    --conf spark.kubernetes.sgx.enabled=true \
-    --conf spark.kubernetes.sgx.mem=32g \
-    --conf spark.kubernetes.sgx.jvm.mem=16g \
-    --conf spark.kubernetes.sgx.log.level=error \
+    --conf spark.kubernetes.sgx.enabled=$SGX_ENABLED \
+    --conf spark.kubernetes.sgx.driver.mem=$SGX_DRIVER_MEM \
+    --conf spark.kubernetes.sgx.driver.jvm.mem=$SGX_DRIVER_JVM_MEM \
+    --conf spark.kubernetes.sgx.executor.mem=$SGX_EXECUTOR_MEM \
+    --conf spark.kubernetes.sgx.executorjvm.mem=$SGX_EXECUTOR_JVM_MEM \
+     --conf spark.kubernetes.sgx.log.level=$SGX_LOG_LEVEL \
     --conf spark.authenticate=true \
     --conf spark.authenticate.secret=$secure_password \
     --conf spark.kubernetes.executor.secretKeyRef.SPARK_AUTHENTICATE_SECRET="spark-secret:secret" \
@@ -62,4 +65,4 @@ export TF_MKL_ALLOC_MAX_BYTES=10737418240 && \
     --conf spark.ssl.trustStoreType=JKS \
     --class $class \
     --verbose \
-    local://$jar 100 2>&1 | tee spark-pi-sgx.log
+    local://$jar 100 2>&1 | tee spark-pi-sgx-$mode.log
