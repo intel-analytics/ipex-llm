@@ -64,10 +64,10 @@ View the related [Python API doc]() for more details.
 
 #### **2.2 TensorFlow 2.x and Keras 2.4+**
 
-**Using *tf2* or *Horovod* backend**
+**Using `tf2` or *Horovod* backend**
 
 Users can create an `Estimator` for TensorFlow 2.x from a Keras model (using a _Model Creator Function_) when the backend is
-'tf2' (currently default for TF2) or *Horovod*. For example:
+`tf2` (currently default for TF2) or *Horovod*. For example:
 
 ```python
 def model_creator(config):
@@ -104,7 +104,7 @@ View the related [Python API doc]() for more details.
 
 **Using *spark* backend**
 
-Users can create an 'Estimator' for TensorFlow 2.x using the *spark* backend as follows:
+Users can create an `Estimator` for TensorFlow 2.x using the *spark* backend as follows:
 
 ```python
 def model_creator(config):
@@ -132,7 +132,7 @@ est = Estimator.from_keras(model_creator=model_creator,
 ```
 
 The `model_creator` argument should be a function that takes a `config_args` dictionary and returns a compiled Keras model,
-the `model_dir` argument is required for "spark" backend, it should be a share filesystem path which can be accessed by executors for culster mode.  
+the `model_dir` argument is required for *spark* backend, it should be a share filesystem path which can be accessed by executors for culster mode.  
 
 Then users can perform distributed model training and inference as follows:
 
