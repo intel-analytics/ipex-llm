@@ -19,11 +19,15 @@ spec:
                 export RUNTIME_DRIVER_HOST=$( hostname -I | awk '{print $1}' );
                 export LOCAL_IP=$( hostname -I | awk '{print $1}' );
                 bash ./init.sh;
-                bash /ppml/trusted-big-data-ml/mounts/submit-spark-k8s.sh /ppml/trusted-big-data-ml/work/spark-3.1.2/examples/jars/spark-examples_2.12-3.1.2.jar org.apache.spark.examples.SparkPi | tee output.log
+                bash /ppml/trusted-big-data-ml/submit-spark-k8s.sh | tee output.log
                 "]
         securityContext:
           privileged: true
         env:
+          - name: SPARK_JAR
+            value: {{ .Values.jar }}
+          - name: SPARK_CLASS
+            value: {{ .Values.class }}
           - name: NFS_PVC_NAME
             value: {{ .Values.pvc }}
           - name: RUNTIME_K8S_SPARK_IMAGE
@@ -77,6 +81,7 @@ spec:
             mountPath: /ppml/trusted-big-data-ml/work/password
           - name: nfs-storage
             mountPath: "/ppml/trusted-big-data-ml/mounts"
+            subPath: submit-spark-k8s.sh
       volumes:
       - name: device-plugin
         hostPath:

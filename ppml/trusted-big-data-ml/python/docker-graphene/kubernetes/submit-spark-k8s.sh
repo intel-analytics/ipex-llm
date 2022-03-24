@@ -1,17 +1,4 @@
 #!/bin/bash
-
-# Usage: bash submit-spark-k8s.sh [jar_path] [class]
-# Default values are used if either the jar or the class is missing
-# Default jar path: /ppml/trusted-big-data-ml/work/spark-3.1.2/examples/jars/spark-examples_2.12-3.1.2.jar
-# Default class: org.apache.spark.examples.SparkPi
-
-jar='/ppml/trusted-big-data-ml/work/spark-3.1.2/examples/jars/spark-examples_2.12-3.1.2.jar'
-class='org.apache.spark.examples.SparkPi'
-if [ "$#" -eq 2 ]; then
-    jar=$1
-    class=$2
-fi
-
 secure_password=`openssl rsautl -inkey /ppml/trusted-big-data-ml/work/password/key.txt -decrypt </ppml/trusted-big-data-ml/work/password/output.bin` && \
 export TF_MKL_ALLOC_MAX_BYTES=10737418240 && \
   export SPARK_LOCAL_IP=$LOCAL_IP && \
@@ -64,6 +51,6 @@ export TF_MKL_ALLOC_MAX_BYTES=10737418240 && \
     --conf spark.ssl.trustStore=/ppml/trusted-big-data-ml/work/keys/keystore.jks \
     --conf spark.ssl.trustStorePassword=$secure_password \
     --conf spark.ssl.trustStoreType=JKS \
-    --class $class \
+    --class $SPARK_CLASS \
     --verbose \
-    local://$jar 100 2>&1 | tee spark-pi-sgx-$SPARK_MODE.log
+    local://$SPARK_JAR 100 2>&1 | tee spark-pi-sgx-$SPARK_MODE.log
