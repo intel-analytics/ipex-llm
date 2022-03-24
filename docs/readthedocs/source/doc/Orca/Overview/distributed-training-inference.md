@@ -100,8 +100,6 @@ The `data` argument in `fit` method can be a spark DataFrame, an *XShards* or a 
 
 View the related [Python API doc]() for more details.
 
-***For more details, view the distributed TensorFlow training/inference [page]().***
-
 **Using *spark* backend**
 
 Users can create an `Estimator` for TensorFlow 2.x using the *spark* backend as follows:
@@ -152,6 +150,8 @@ predictions = est.predict(data=df,
 The `data` argument in `fit` method can be a spark DataFrame, an *XShards* or a *Data Creator Function* (that returns a `tf.data.Dataset`). The `data` argument in `predict` method can be a spark DataFrame or an *XShards*. See the *data-parallel processing pipeline* [page](./data-parallel-processing.md) for more details.
 
 View the related [Python API doc]() for more details.
+
+***For more details, view the distributed TensorFlow training/inference [page]().***
 
 ### **3. PyTorch Estimator**
 
