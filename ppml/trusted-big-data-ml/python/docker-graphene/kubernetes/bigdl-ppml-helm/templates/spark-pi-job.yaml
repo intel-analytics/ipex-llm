@@ -45,7 +45,7 @@ spec:
             value: !!str {{ .Values.executorInstances }}
           - name: SGX_ENABLED
             value: !!str {{ .Values.sgx }}
-           - name: SGX_LOG_LEVEL
+          - name: SGX_LOG_LEVEL
             value: {{ .Values.sgxLog }}
           - name: SGX_DRIVER_MEM
             value: {{ .Values.sgxDriverMem }}
