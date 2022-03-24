@@ -30,10 +30,7 @@ OPENVINO_BINDED_COMPONENTS = ['ir_up_to_date', 'ir_model']
 
 
 # internal function to build an ortsess
-def _build_ir_model(self,
-                   input_sample=None,
-                   file_path="model.xml",
-                   **kwargs):
+def _build_ir_model(self, input_sample=None, file_path="model.xml", **kwargs):
     '''
     Internal function to build a ortsess and bind to the lightningmodule.
 
@@ -83,10 +80,14 @@ def _build_ir_model(self,
     self.ir_up_to_date = True
 
 
-def _openvino_on_train(self, mode=True):
+def train(self, mode=True):
     self.exit_openvino()
-    self.ir_up_to_date = False
-    self.ir_model = None
+    if mode == True:
+        self.ir_up_to_date = False
+        self.ir_model = None
+    assert self.train == self._torch_train
+    self.train(mode)
+
 
 def forward_batch_start(*args):
     ort_inputs = []
@@ -141,9 +142,13 @@ def eval_openvino(self, input_sample=None, file_path="model.xml", quantize=False
         assert input_sample is not None,\
             "You must state an input_sample or fit on the model to use `eval_onnx`."
         _build_ir_model(self, input_sample=input_sample, file_path=file_path, **kwargs)
+    self._torch_train = self.train
+    self._torch_eval = self.eval
+    self.train = partial(train, self)
     self.forward = partial(forward, self)
 
 def exit_openvino(self):
+    self.train = self._torch_train
     self.forward = self._torch_forward
 
 
@@ -168,8 +173,8 @@ def bind_openvino_methods(pl_model: LightningModule):
         pl_model._forward_args = inspect.getfullargspec(pl_model.forward).args[1:]
 
     # additional methods
+    pl_model._torch_forward = pl_model.forward
     pl_model.eval_openvino = partial(eval_openvino, pl_model)
     pl_model.exit_openvino = partial(exit_openvino, pl_model)
-    pl_model._openvino_on_train = partial(_openvino_on_train, pl_model)
 
     return pl_model

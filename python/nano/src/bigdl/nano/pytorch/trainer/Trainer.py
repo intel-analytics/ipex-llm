@@ -159,7 +159,10 @@ class Trainer(pl.Trainer):
             except ImportError:
                 raise RuntimeError("You should install onnx and onnxruntime to set `onnx=True`, "
                                    "or just set `onnx=False`.")
-
+        elif openvino:
+            from bigdl.nano.pytorch.runtime_binding.openvino_inference import\
+                    bind_openvino_methods
+            return bind_openvino_methods(pl_model)
         if quantize:
             from bigdl.nano.pytorch.runtime_binding.quantization_inference import\
                 bind_quantize_methods
@@ -167,13 +170,6 @@ class Trainer(pl.Trainer):
                 bind_base_inference_rt_methods
             pl_model = bind_quantize_methods(bind_base_inference_rt_methods(pl_model), None)
 
-        if openvino:
-            from bigdl.nano.pytorch.runtime_binding.openvino_inference import\
-                    bind_openvino_methods
-            from bigdl.nano.pytorch.runtime_binding.base_inference import\
-                bind_base_inference_rt_methods
-            pl_model = bind_openvino_methods(
-                bind_base_inference_rt_methods(pl_model))
         return bind_base_inference_rt_methods(pl_model)
 
     def quantize(self, pl_model: LightningModule,
