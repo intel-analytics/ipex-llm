@@ -15,7 +15,7 @@
 #
 
 from ast import Call
-import networkx as nx
+# import networkx as nx
 import tensorflow as tf
 from .space import AutoObject
 from .backend import OptunaBackend
@@ -28,98 +28,98 @@ class CALLTYPE(Enum):
     FUNC_SLICE = 3 # slices on output of a func, e.g. keras.Input(...)[:,:,]
 
 
-class CallGraph():
+# class CallGraph():
 
-    def __init__(self):
-        self.callg_ = nx.DiGraph()
+#     def __init__(self):
+#         self.callg_ = nx.DiGraph()
 
-    def update_edges(self, other):
-        self.call_g.update(other.call_g)
+#     def update_edges(self, other):
+#         self.call_g.update(other.call_g)
 
-    def add_edge(self, curr, parent, type=CALLTYPE.LAYER_CALL):
-        self.call_g.add_edge(parent, curr)
+#     def add_edge(self, curr, parent, type=CALLTYPE.LAYER_CALL):
+#         self.call_g.add_edge(parent, curr)
 
-    def add_tensor(self, node, output):
-        self.call_g.add_node(node, out_tensor=output)
+#     def add_tensor(self, node, output):
+#         self.call_g.add_node(node, out_tensor=output)
 
-    @property
-    def calls(self):
-        return self.callg_
+#     @property
+#     def calls(self):
+#         return self.callg_
 
-    @staticmethod
-    def create():
-        call_g = CallGraph()
-        return call_g
+#     @staticmethod
+#     def create():
+#         call_g = CallGraph()
+#         return call_g
 
-    @staticmethod
-    def update(inputs, current, type=CALLTYPE.LAYER_CALL):
-        call_g = CallGraph.create()
-        if not isinstance(inputs, list):
-            inputs = [inputs]
-        for inp in inputs:
-            if tf.is_tensor(inp):
-                #call_g = create_callgraph()
-                # Tensor is not hashable so add ref instead
-                call_g.add_tensor(inp.ref(), inp)
-                call_g.add_edge(current,inp.ref())
-            elif isinstance(inp, AutoObject):
-                assert(inp._callgraph is not None)
-                # merge call graph from the input
-                call_g.update_edges(inp._callgraph)
-                call_g.add_edge(current, inp)
-        return call_g
+#     @staticmethod
+#     def update(inputs, current, type=CALLTYPE.LAYER_CALL):
+#         call_g = CallGraph.create()
+#         if not isinstance(inputs, list):
+#             inputs = [inputs]
+#         for inp in inputs:
+#             if tf.is_tensor(inp):
+#                 #call_g = create_callgraph()
+#                 # Tensor is not hashable so add ref instead
+#                 call_g.add_tensor(inp.ref(), inp)
+#                 call_g.add_edge(current,inp.ref())
+#             elif isinstance(inp, AutoObject):
+#                 assert(inp._callgraph is not None)
+#                 # merge call graph from the input
+#                 call_g.update_edges(inp._callgraph)
+#                 call_g.add_edge(current, inp)
+#         return call_g
 
 
-    @staticmethod
-    def execute(inputs, outputs, trial):
-        """ inputs - input Tensor
-            outputs - auto objects
-            return - output Tensor
-        """
-        # TODO: need topological sort?
-        g = outputs._callgraph.calls()
-        # if isinstance(inputs, ListWrapper):
-        #     source = [i.ref() for i in inputs]
-        # elif tf.is_tensor(inputs):
-        #     source = inputs.ref()
-        # else:
-        #     raise ValueError("Unrecognized input type:" + type(inputs))
-        #traverse_list = nx.dfs_predecessors(g, source=source).items()
-        predecessors = nx.dfs_predecessors(g)
-        sorted_nodes = list(nx.topological_sort(g))
+#     @staticmethod
+#     def execute(inputs, outputs, trial):
+#         """ inputs - input Tensor
+#             outputs - auto objects
+#             return - output Tensor
+#         """
+#         # TODO: need topological sort?
+#         g = outputs._callgraph.calls()
+#         # if isinstance(inputs, ListWrapper):
+#         #     source = [i.ref() for i in inputs]
+#         # elif tf.is_tensor(inputs):
+#         #     source = inputs.ref()
+#         # else:
+#         #     raise ValueError("Unrecognized input type:" + type(inputs))
+#         #traverse_list = nx.dfs_predecessors(g, source=source).items()
+#         predecessors = nx.dfs_predecessors(g)
+#         sorted_nodes = list(nx.topological_sort(g))
 
-        #for autolayer, parent in sorted_nodes:
-        for node in sorted_nodes:
-            if not isinstance(node, AutoObject):
-                continue
-            parents = predecessors[node]
-            if isinstance(parents, list):
-                in_tensors = [g.nodes[p]['out_tensor'] for p in parents]
-            else:
-                in_tensors = g.nodes[parents]['out_tensor']
-            # layer is an auto object
-            layer = OptunaBackend.instantiate(trial, node)
-            out_tensor = layer(in_tensors)
-            g.add_node(node, out_tensor=out_tensor)
-        outs = g.nodes[outputs]['out_tensor']
-        return outs
+#         #for autolayer, parent in sorted_nodes:
+#         for node in sorted_nodes:
+#             if not isinstance(node, AutoObject):
+#                 continue
+#             parents = predecessors[node]
+#             if isinstance(parents, list):
+#                 in_tensors = [g.nodes[p]['out_tensor'] for p in parents]
+#             else:
+#                 in_tensors = g.nodes[parents]['out_tensor']
+#             # layer is an auto object
+#             layer = OptunaBackend.instantiate(trial, node)
+#             out_tensor = layer(in_tensors)
+#             g.add_node(node, out_tensor=out_tensor)
+#         outs = g.nodes[outputs]['out_tensor']
+#         return outs
 
-    @staticmethod
-    def plot(g: nx.DiGraph, save_path="callgraph_plot.png"):
-        #nx.draw(g, pos=nx.shell_layout(g))
-        # nx.draw_networkx(g,
-        #                 pos=nx.spring_layout(g),
-        #                 font_size=5,
-        #                 node_size=30)
-        # import matplotlib.pyplot as plt
-        # plt.savefig(save_path)
-        predecessors = nx.dfs_predecessors(g)
-        sorted_nodes = list(nx.topological_sort(g))
-        for node in sorted_nodes:
-            if not isinstance(node, AutoObject):
-                continue
-            parents = predecessors[node]
-            print(node, parents)
+#     @staticmethod
+#     def plot(g: nx.DiGraph, save_path="callgraph_plot.png"):
+#         #nx.draw(g, pos=nx.shell_layout(g))
+#         # nx.draw_networkx(g,
+#         #                 pos=nx.spring_layout(g),
+#         #                 font_size=5,
+#         #                 node_size=30)
+#         # import matplotlib.pyplot as plt
+#         # plt.savefig(save_path)
+#         predecessors = nx.dfs_predecessors(g)
+#         sorted_nodes = list(nx.topological_sort(g))
+#         for node in sorted_nodes:
+#             if not isinstance(node, AutoObject):
+#                 continue
+#             parents = predecessors[node]
+#             print(node, parents)
 
 
 

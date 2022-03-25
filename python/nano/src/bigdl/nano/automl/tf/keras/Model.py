@@ -19,7 +19,7 @@ import tensorflow as tf
 
 from bigdl.nano.automl.utils import proxy_methods
 from bigdl.nano.automl.hpo.mixin import HPOMixin
-from bigdl.nano.automl.hpo.callgraph import CallCache,CallGraph
+from bigdl.nano.automl.hpo.callgraph import CallCache
 
 
 @proxy_methods

@@ -39,7 +39,7 @@ from .space import _add_hp, _add_cs, _rm_hp, _strip_config_space, SPLITTER
 
 from .mixin import HPOMixin
 
-from .callgraph import CallCache, CallGraph, CALLTYPE
+from .callgraph import CallCache, CALLTYPE
 from bigdl.nano.automl.utils import EasyDict as ezdict
 from bigdl.nano.automl.utils import proxy_methods
 
