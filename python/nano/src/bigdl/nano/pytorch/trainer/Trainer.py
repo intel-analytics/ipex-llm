@@ -150,6 +150,7 @@ class Trainer(pl.Trainer):
         else:
             pl_model = LightningModuleFromTorch(model, loss, optimizer, scheduler, metrics)
         assert not (onnx and openvino), "Only one of onnx and openvino can be True."
+        assert not (openvino and quantize), "Quantization is not implemented for OpenVINO."
         if onnx:
             try:
                 from bigdl.nano.pytorch.runtime_binding.onnxrt_inference import\
