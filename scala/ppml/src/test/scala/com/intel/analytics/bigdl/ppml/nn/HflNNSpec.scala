@@ -34,7 +34,7 @@ class MockAnotherParty(algorithm: String, clientID: String = "mock") extends Thr
     val df = spark.read.option("header", "true")
       .csv(this.getClass.getClassLoader.getResource("diabetes-test.csv").getPath)
     val lr = new HFLLogisticRegression(df.columns.size - 1)
-    lr.fit(df, valData = df)
+    lr.fitDataFrame(df, valData = df)
   }
 }
 class NNSpec extends FlatSpec with Matchers with BeforeAndAfter with DebugLogger {
@@ -49,9 +49,9 @@ class NNSpec extends FlatSpec with Matchers with BeforeAndAfter with DebugLogger
     trainDf.show()
     FLContext.initFLContext()
     val lr = new HFLLogisticRegression(trainDf.columns.size - 1)
-    lr.fit(trainDf, valData = trainDf)
-    lr.evaluate(trainDf)
-    lr.predict(testDf)
+    lr.fitDataFrame(trainDf, valData = trainDf)
+    lr.evaluateDataFrame(trainDf)
+    lr.predictDataFrame(testDf)
     flServer.stop()
   }
   "Linear Regression" should "work" in {

@@ -16,7 +16,7 @@
 
 package com.intel.analytics.bigdl.ppml.utils
 
-import com.intel.analytics.bigdl.dllib.feature.dataset.{DataSet, Sample, SampleToMiniBatch}
+import com.intel.analytics.bigdl.dllib.feature.dataset.{DataSet, LocalDataSet, MiniBatch, Sample, SampleToMiniBatch}
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 
 /**
@@ -24,16 +24,19 @@ import com.intel.analytics.bigdl.dllib.tensor.Tensor
  * This util is for processing training data and labels in this special case for VFL
  */
 object VFLTensorUtils {
-  def featureLabelToMiniBatch(x: Tensor[Float], y: Tensor[Float], batchSize: Int) = {
+  def featureLabelToMiniBatch(x: Tensor[Float],
+                              y: Tensor[Float],
+                              batchSize: Int): LocalDataSet[MiniBatch[Float]] = {
+    if (x == null) return null
     val dataSize = x.size()(0)
-    val sampleTrain = (0 until dataSize).map(index => {
+    val sample = (0 until dataSize).map(index => {
       if (y != null) {
-        Sample(x.select(0, index), y.select(0, index))
+        Sample(x.select(1, index + 1), y.select(1, index + 1))
       } else {
-        Sample(x.select(0, index))
+        Sample(x.select(1, index + 1))
       }
     })
-    (DataSet.array(sampleTrain.toArray)
+    (DataSet.array(sample.toArray)
       -> SampleToMiniBatch(batchSize, parallelizing = false)).toLocal()
   }
 }

@@ -16,8 +16,8 @@
 
 package com.intel.analytics.bigdl.ppml.nn
 
-import com.intel.analytics.bigdl.ppml.algorithms.{VFLLinearRegression, VFLLogisticRegression, PSI}
-import com.intel.analytics.bigdl.ppml.algorithms.vfl.LogisticRegression
+import com.intel.analytics.bigdl.dllib.tensor.Tensor
+import com.intel.analytics.bigdl.ppml.algorithms.{PSI, VFLLinearRegression, VFLLogisticRegression}
 import com.intel.analytics.bigdl.ppml.example.DebugLogger
 import com.intel.analytics.bigdl.ppml.{FLContext, FLServer}
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
@@ -39,9 +39,22 @@ class VflNNSpec extends FlatSpec with Matchers with BeforeAndAfter with DebugLog
     val testDf = trainDf.drop("Outcome")
     trainDf.show()
     val lr = new VFLLogisticRegression(df.columns.size - 1)
-    lr.fit(trainDf, valData = trainDf)
-    lr.evaluate(trainDf)
-    lr.predict(testDf)
+    lr.fitDataFrame(trainDf, valData = trainDf)
+    lr.evaluateDataFrame(trainDf)
+    lr.predictDataFrame(testDf)
+    flServer.stop()
+  }
+  "Logistic Regression Tensor API" should "work" in {
+    val flServer = new FLServer()
+    flServer.build()
+    flServer.start()
+    FLContext.initFLContext()
+    val xTrain = Tensor[Float](10, 10)
+    val yTrain = Tensor[Float](10, 1)
+    val lr = new VFLLogisticRegression(10)
+    lr.fit(xTrain, yTrain)
+    lr.evaluate(xTrain)
+    lr.predict(xTrain)
     flServer.stop()
   }
   "Linear Regression" should "work" in {

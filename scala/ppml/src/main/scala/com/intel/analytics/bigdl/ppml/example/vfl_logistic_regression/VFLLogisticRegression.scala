@@ -82,9 +82,9 @@ object VFLLogisticRegression extends DebugLogger{
     // create LogisticRegression object to train the model
     val featureNum = if (argv.hasLabel) trainData.columns.size - 1 else trainData.columns.size
     val lr = new VFLLogisticRegression(featureNum, learningRate)
-    lr.fit(trainData, valData = valData, hasLabel = argv.hasLabel)
-    lr.evaluate(valData, hasLabel = argv.hasLabel)
-    lr.predict(testData)
+    lr.fitDataFrame(trainData, valData = valData, hasLabel = argv.hasLabel)
+    lr.evaluateDataFrame(valData, hasLabel = argv.hasLabel)
+    lr.predictDataFrame(testData)
   }
 
 }

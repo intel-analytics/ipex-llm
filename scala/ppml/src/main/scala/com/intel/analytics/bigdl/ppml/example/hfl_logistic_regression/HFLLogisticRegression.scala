@@ -71,8 +71,8 @@ object HFLLogisticRegression extends DebugLogger {
     val (trainData, valData, testData) = getData(dataPath, rowKeyName, batchSize)
     // create LogisticRegression object to train the model
     val lr = new HFLLogisticRegression(trainData.columns.size - 1, learningRate)
-    lr.fit(trainData, valData = valData)
-    lr.evaluate(valData)
-    lr.predict(testData)
+    lr.fitDataFrame(trainData, valData = valData)
+    lr.evaluateDataFrame(valData)
+    lr.predictDataFrame(testData)
   }
 }

@@ -19,7 +19,6 @@ package com.intel.analytics.bigdl.ppml.nn
 
 import java.util
 import java.util.Map
-
 import com.intel.analytics.bigdl.dllib.nn.{BCECriterion, MSECriterion, Sigmoid, View}
 import com.intel.analytics.bigdl.dllib.optim.Top1Accuracy
 import com.intel.analytics.bigdl.ppml.base.DataHolder
@@ -28,6 +27,7 @@ import com.intel.analytics.bigdl.ppml.generated.FlBaseProto._
 import com.intel.analytics.bigdl.ppml.generated.NNServiceGrpc
 import com.intel.analytics.bigdl.ppml.generated.NNServiceProto._
 import io.grpc.stub.StreamObserver
+import org.apache.commons.lang3.exception.ExceptionUtils
 import org.apache.logging.log4j.LogManager
 
 import collection.JavaConverters._
@@ -72,8 +72,8 @@ class NNServiceImpl(clientNum: Int) extends NNServiceGrpc.NNServiceImplBase {
       responseObserver.onCompleted()
     } catch {
       case e: Exception =>
-        logger.debug(e.getMessage)
-        val response = TrainResponse.newBuilder.setResponse(e.getMessage).setCode(1).build
+        val errorMsg = ExceptionUtils.getStackTrace(e)
+        val response = TrainResponse.newBuilder.setResponse(errorMsg).setCode(1).build
         responseObserver.onNext(response)
         responseObserver.onCompleted()
     } finally {
@@ -112,7 +112,8 @@ class NNServiceImpl(clientNum: Int) extends NNServiceGrpc.NNServiceImplBase {
       responseObserver.onCompleted()
     } catch {
       case e: Exception =>
-        val response = EvaluateResponse.newBuilder.setResponse(e.getMessage).setCode(1).build
+        val errorMsg = ExceptionUtils.getStackTrace(e)
+        val response = EvaluateResponse.newBuilder.setResponse(errorMsg).setCode(1).build
         responseObserver.onNext(response)
         responseObserver.onCompleted()
     } finally {
@@ -138,7 +139,8 @@ class NNServiceImpl(clientNum: Int) extends NNServiceGrpc.NNServiceImplBase {
       responseObserver.onCompleted()
     } catch {
       case e: Exception =>
-        val response = PredictResponse.newBuilder.setResponse(e.getMessage).setCode(1).build
+        val errorMsg = ExceptionUtils.getStackTrace(e)
+        val response = PredictResponse.newBuilder.setResponse(errorMsg).setCode(1).build
         responseObserver.onNext(response)
         responseObserver.onCompleted()
     } finally {
