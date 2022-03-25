@@ -19,6 +19,7 @@ from bigdl.orca.automl.metrics import Evaluator
 import pickle
 import tensorflow as tf
 from tensorflow.keras import backend as K
+import types
 
 
 def check_tf_version():
@@ -49,11 +50,17 @@ class KerasBaseModel(BaseModel):
             raise ValueError("You must create a compiled model in model_creator")
         self.model_built = True
 
+    def _np_to_dataset(self, data, batch_size):
+        dataset = tf.data.Dataset.from_tensor_slices(data)
+        dataset = dataset.batch(batch_size)
+        return dataset
+
     def fit_eval(self, data, validation_data=None, mc=False, verbose=0, epochs=1, metric=None,
                  metric_func=None, resources_per_trial=None,
                  **config):
         """
-        :param data: could be a tuple with numpy ndarray with form (x, y)
+        :param data: could be a tuple with numpy ndarray with form (x, y) or a tensorflow Dataset or
+               a data creator takes a config dict as parameter and returns a tf.data.Dataset.
         :param validation_data: could be a tuple with numpy ndarray with form (x, y)
         fit_eval will build a model at the first time it is built
         config will be updated for the second or later times with only non-model-arch
@@ -77,8 +84,29 @@ class KerasBaseModel(BaseModel):
             self._check_config(**tmp_config)
             self.config.update(config)
 
-        hist = self.model.fit(x, y,
-                              validation_data=validation_data,
+        # get train_dataset and validation_dataset
+        if isinstance(data, types.FunctionType):
+            train_dataset = data(self.config)
+            validation_dataset = validation_data(self.config)
+        elif isinstance(data, tf.data.Dataset):
+            train_dataset = data
+            assert isinstance(validation_data, tf.data.Dataset)
+            validation_dataset = validation_data
+        else:
+            assert isinstance(data, tuple) and isinstance(validation_data, tuple),\
+                f"data/validation_data should be a tuple or\
+                 data creator function but found {type(data)}"
+            assert isinstance(data[0], np.ndarray) and isinstance(validation_data[0], np.ndarray),\
+                f"Data and validation_data should be a tuple of np.ndarray " \
+                f"but found {type(data[0])} as the first element of data."
+            assert isinstance(data[1], np.ndarray) and isinstance(validation_data[1], np.ndarray),\
+                f"Data and validation_data should be a tuple of np.ndarray " \
+                f"but found {type(data[1])} as the second element of data."
+            train_dataset = self._np_to_dataset(data)
+            validation_dataset = self._np_to_dataset(validation_data)
+
+        hist = self.model.fit(train_dataset,
+                              validation_data=validation_dataset,
                               batch_size=self.config.get("batch_size", 32),
                               epochs=epochs,
                               verbose=verbose

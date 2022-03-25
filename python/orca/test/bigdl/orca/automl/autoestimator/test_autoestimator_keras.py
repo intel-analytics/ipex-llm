@@ -86,17 +86,40 @@ def get_multi_inputs_outputs_data():
     return train_df, val_df, feature_cols, label_cols
 
 
-def get_train_val_data():
-    def get_x_y(size):
-        x = np.random.rand(size)
-        y = x / 2
+def get_x_y(size):
+    x = np.random.rand(size)
+    y = x / 2
 
-        x = x.reshape((-1, 1))
-        y = y.reshape((-1, 1))
-        return x, y
+    x = x.reshape((-1, 1))
+    y = y.reshape((-1, 1))
+    return x, y
+
+
+def get_dataset(size, config):
+    data = get_x_y(size=size)
+    dataset = tf.data.Dataset.from_tensor_slices(data)
+    dataset = dataset.batch(config["batch_size"])
+    return dataset
+
+
+def get_train_val_data():
     data = get_x_y(size=1000)
     validation_data = get_x_y(size=400)
     return data, validation_data
+
+
+def get_train_val_dataset():
+    config = {"batch_size": 32}
+    train_dataset = get_dataset(size=1000, config=config)
+    validation_dataset = get_dataset(size=400, config=config)
+    return train_dataset, validation_dataset
+
+
+def get_train_val_data_creator():
+    from functools import partial
+    train_data_creator = partial(get_dataset, size=1000)
+    val_data_creator = partial(get_dataset, size=400)
+    return train_data_creator, val_data_creator
 
 
 def create_linear_search_space():
@@ -124,6 +147,44 @@ class TestTFKerasAutoEstimator(TestCase):
                                             name="test_fit")
 
         data, validation_data = get_train_val_data()
+        auto_est.fit(data=data,
+                     validation_data=validation_data,
+                     search_space=create_linear_search_space(),
+                     n_sampling=2,
+                     epochs=2,
+                     metric="mse",
+                     )
+        assert auto_est.get_best_model()
+        best_config = auto_est.get_best_config()
+        assert "hidden_size" in best_config
+        assert all(k in best_config.keys() for k in create_linear_search_space().keys())
+
+    def test_fit_data_creator(self):
+        auto_est = AutoEstimator.from_keras(model_creator=model_creator,
+                                            logs_dir="/tmp/zoo_automl_logs",
+                                            resources_per_trial={"cpu": 2},
+                                            name="test_fit")
+
+        data, validation_data = get_train_val_data_creator()
+        auto_est.fit(data=data,
+                     validation_data=validation_data,
+                     search_space=create_linear_search_space(),
+                     n_sampling=2,
+                     epochs=2,
+                     metric="mse",
+                     )
+        assert auto_est.get_best_model()
+        best_config = auto_est.get_best_config()
+        assert "hidden_size" in best_config
+        assert all(k in best_config.keys() for k in create_linear_search_space().keys())
+
+    def test_fit_dataset(self):
+        auto_est = AutoEstimator.from_keras(model_creator=model_creator,
+                                            logs_dir="/tmp/zoo_automl_logs",
+                                            resources_per_trial={"cpu": 2},
+                                            name="test_fit")
+
+        data, validation_data = get_train_val_dataset()
         auto_est.fit(data=data,
                      validation_data=validation_data,
                      search_space=create_linear_search_space(),
