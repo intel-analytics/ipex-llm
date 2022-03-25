@@ -16,13 +16,11 @@
 
 package com.intel.analytics.bigdl.ppml
 
-import com.intel.analytics.bigdl.dllib.feature.dataset.{DataSet, Sample, SampleToMiniBatch}
 import com.intel.analytics.bigdl.dllib.nn.Sequential
 import com.intel.analytics.bigdl.dllib.nn.abstractnn.Activity
-import com.intel.analytics.bigdl.dllib.optim.LocalPredictor
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.ppml.base.Estimator
-import com.intel.analytics.bigdl.ppml.utils.DataFrameUtils
+import com.intel.analytics.bigdl.ppml.utils.{DataFrameUtils, VFLTensorUtils}
 import org.apache.spark.sql.DataFrame
 
 abstract class FLModel() {
@@ -44,25 +42,9 @@ abstract class FLModel() {
           batchSize: Int = 4,
           xValidate: Tensor[Float] = null,
           yValidate: Tensor[Float] = null) = {
-    val dataSize = xTrain.size()(0)
-    val sampleTrain = (0 until dataSize).map(index => {
-      if (yTrain != null) {
-        Sample(xTrain.select(0, index), yTrain.select(0, index))
-      } else {
-        Sample(xTrain.select(0, index))
-      }
-    })
-    val sampleVal = (0 until dataSize).map(index => {
-      if (yTrain != null) {
-        Sample(xTrain.select(0, index), yTrain.select(0, index))
-      } else {
-        Sample(xTrain.select(0, index))
-      }
-    })
-    estimator.train(epoch, (DataSet.array(sampleTrain.toArray)
-      -> SampleToMiniBatch(batchSize, parallelizing = false)).toLocal(),
-      (DataSet.array(sampleVal.toArray) ->
-      SampleToMiniBatch(batchSize, parallelizing = false)).toLocal())
+    estimator.train(epoch,
+      VFLTensorUtils.featureLabelToMiniBatch(xTrain, yTrain, batchSize),
+      VFLTensorUtils.featureLabelToMiniBatch(xValidate, yValidate, batchSize))
   }
   /**
    *

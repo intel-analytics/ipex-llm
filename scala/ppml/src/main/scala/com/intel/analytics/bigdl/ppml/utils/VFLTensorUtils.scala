@@ -16,10 +16,24 @@
 
 package com.intel.analytics.bigdl.ppml.utils
 
+import com.intel.analytics.bigdl.dllib.feature.dataset.{DataSet, Sample, SampleToMiniBatch}
+import com.intel.analytics.bigdl.dllib.tensor.Tensor
+
 /**
  * In Vertical Federated Learning, some clients do not have labels
  * This util is for processing training data and labels in this special case for VFL
  */
-object TensorUtils {
-
+object VFLTensorUtils {
+  def featureLabelToMiniBatch(x: Tensor[Float], y: Tensor[Float], batchSize: Int) = {
+    val dataSize = x.size()(0)
+    val sampleTrain = (0 until dataSize).map(index => {
+      if (y != null) {
+        Sample(x.select(0, index), y.select(0, index))
+      } else {
+        Sample(x.select(0, index))
+      }
+    })
+    (DataSet.array(sampleTrain.toArray)
+      -> SampleToMiniBatch(batchSize, parallelizing = false)).toLocal()
+  }
 }
