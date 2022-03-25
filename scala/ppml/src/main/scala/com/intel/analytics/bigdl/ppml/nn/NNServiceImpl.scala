@@ -41,11 +41,11 @@ class NNServiceImpl(clientNum: Int) extends NNServiceGrpc.NNServiceImplBase {
 
   private def initAggregatorMap(): Unit = {
     aggregatorMap = new util.HashMap[String, NNAggregator]
-    aggregatorMap.put("vfl_logistic_regression", VflNNAggregator(1, Sigmoid[Float](),
+    aggregatorMap.put("vfl_logistic_regression", VFLNNAggregator(1, Sigmoid[Float](),
       null, BCECriterion[Float](), Array(new Top1Accuracy())))
-    aggregatorMap.put("vfl_linear_regression", VflNNAggregator(1, View[Float](),
+    aggregatorMap.put("vfl_linear_regression", VFLNNAggregator(1, View[Float](),
       null, MSECriterion[Float](), Array(new Top1Accuracy())))
-    aggregatorMap.put("hfl_logistic_regression", new HflNNAggregator())
+    aggregatorMap.put("hfl_logistic_regression", new HFLNNAggregator())
     aggregatorMap.asScala.foreach(entry => {
       entry._2.setClientNum(clientNum)
     })

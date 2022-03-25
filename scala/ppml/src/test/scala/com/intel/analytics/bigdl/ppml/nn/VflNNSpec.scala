@@ -16,8 +16,8 @@
 
 package com.intel.analytics.bigdl.ppml.nn
 
-import com.intel.analytics.bigdl.ppml.algorithms.PSI
-import com.intel.analytics.bigdl.ppml.algorithms.vfl.{LinearRegression, LogisticRegression}
+import com.intel.analytics.bigdl.ppml.algorithms.{VFLLinearRegression, VFLLogisticRegression, PSI}
+import com.intel.analytics.bigdl.ppml.algorithms.vfl.LogisticRegression
 import com.intel.analytics.bigdl.ppml.example.DebugLogger
 import com.intel.analytics.bigdl.ppml.{FLContext, FLServer}
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
@@ -38,7 +38,7 @@ class VflNNSpec extends FlatSpec with Matchers with BeforeAndAfter with DebugLog
     val trainDf = psi.uploadSetAndDownloadIntersection(df, salt)
     val testDf = trainDf.drop("Outcome")
     trainDf.show()
-    val lr = new LogisticRegression(df.columns.size - 1)
+    val lr = new VFLLogisticRegression(df.columns.size - 1)
     lr.fit(trainDf, valData = trainDf)
     lr.evaluate(trainDf)
     lr.predict(testDf)
@@ -52,8 +52,8 @@ class VflNNSpec extends FlatSpec with Matchers with BeforeAndAfter with DebugLog
     flServer.build()
     flServer.start()
     FLContext.initFLContext()
-    val logisticRegression = new LogisticRegression(featureNum = 1)
-    val linearRegression = new LinearRegression(featureNum = 1)
+    val logisticRegression = new VFLLogisticRegression(featureNum = 1)
+    val linearRegression = new VFLLinearRegression(featureNum = 1)
     flServer.stop()
   }
 }

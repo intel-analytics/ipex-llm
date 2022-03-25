@@ -2,7 +2,7 @@ package com.intel.analytics.bigdl.ppml.example.benchmark
 
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.ppml.FLContext
-import com.intel.analytics.bigdl.ppml.algorithms.vfl.FGBoostRegression
+import com.intel.analytics.bigdl.ppml.algorithms.FGBoostRegression
 import com.intel.analytics.bigdl.ppml.utils.TimingSupportive
 import scopt.OptionParser
 

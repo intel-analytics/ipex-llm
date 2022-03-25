@@ -4,8 +4,7 @@ package com.intel.analytics.bigdl.ppml.python
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.dllib.utils.python.api.{JTensor, PythonBigDL}
-import com.intel.analytics.bigdl.ppml.algorithms.PSI
-import com.intel.analytics.bigdl.ppml.algorithms.vfl.FGBoostRegression
+import com.intel.analytics.bigdl.ppml.algorithms.{FGBoostRegression, PSI}
 import com.intel.analytics.bigdl.ppml.{FLClient, FLContext, FLModel, FLServer}
 import com.intel.analytics.bigdl.ppml.fgboost.FGBoostModel
 import com.intel.analytics.bigdl.ppml.utils.FLClientClosable
