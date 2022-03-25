@@ -120,7 +120,7 @@ class Trainer(pl.Trainer):
                 scheduler: _LRScheduler = None,
                 metrics: List[Metric] = None,
                 onnx: bool = False,
-                quantize: bool = True,
+                quantize: bool = False,
                 openvino: bool = False):
         """
         Construct a pytorch-lightning model. If model is already a pytorch-lightning model,
