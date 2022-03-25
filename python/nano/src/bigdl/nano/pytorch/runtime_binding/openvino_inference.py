@@ -113,7 +113,7 @@ def _forward_openvino(self, *args):
     return self.ir_model.infer(inputs)
 
 
-def eval_openvino(self, input_sample=None, file_path="model.xml", quantize=False, **kwargs):
+def eval_openvino(self, input_sample=None, file_path="model.xml", **kwargs):
     '''
     This method change the `forward` method to an openvino backed forwarding.
 
@@ -124,7 +124,6 @@ def eval_openvino(self, input_sample=None, file_path="model.xml", quantize=False
     :param input_sample: (optional) a torch dataloader, torch.Tensor or a
            list of them for the model tracing.
     :param file_path: (optional) The path to save openvino model file.
-    :param quantize: Bool, state if we need to use quantized openvino session.
     :param **kwargs: (optional) will be passed to torch.onnx.export function.
     '''
     # change to eval mode
@@ -156,16 +155,6 @@ def exit_openvino(self):
 
 
 def bind_openvino_methods(pl_model: LightningModule):
-
-    if set(OPENVINO_BINDED_COMPONENTS) <= set(dir(pl_model)):
-        return pl_model
-
-    # check conflicts
-    for component in OPENVINO_BINDED_COMPONENTS:
-        if component in dir(pl_model):
-            warnings.warn(f"{component} method/property will be replaced. You may rename your"
-                          " customized attributes or methods and call `Trainer.compile again `"
-                          "to avoid being overwrite.")
 
     # additional attributes
     pl_model.ir_up_to_date = False  # indicate if we need to build ortsess again
