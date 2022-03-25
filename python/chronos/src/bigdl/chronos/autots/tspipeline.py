@@ -369,9 +369,19 @@ class TSPipeline:
                  max_trials=1):
         """
         Quantization TSPipeline.
-        :param calib_data: A torch.utils.data.dataloader.DataLoader object for calibration.
-               Required for static quantization.
-        :param val_data: A torch.utils.data.dataloader.DataLoader object for evaluation.
+        :param calib_data: 
+                | 1. data creator:
+                | a function that takes a config dictionary as parameter and
+                | returns a PyTorch DataLoader.
+                |
+                | 2. a bigdl.chronos.data.TSDataset:
+                | the TSDataset should follow the same operations as the training
+                | TSDataset used in `AutoTSEstimator.fit`.
+                |
+                | 3. A torch.utils.data.dataloader.DataLoader object for calibration.
+                | Required for static quantization.
+
+        :param val_data: Same as calib_data, should be data creator or TSDataset or DataLoader.
         :param metric: A str represent the metrics for tunning the quality of
                quantization. You may choose from "mse", "mae", "rmse", "r2", "mape", "smape".
         :param conf: A path to conf yaml file for quantization. Default to None,
@@ -401,20 +411,14 @@ class TSPipeline:
         if isinstance(calib_data, tuple):
             calib_data = DataLoader(TensorDataset(torch.from_numpy(calib_data[0]),
                                                   torch.from_numpy(calib_data[1])))
-        elif isinstance(calib_data, types.FunctionType):
+        if isinstance(calib_data, types.FunctionType):
             calib_data = calib_data(self._best_config)
-        else:
-            raise RuntimeError("We only support input tsdataset or data creator, "
-                               f"but found {calib_data.__class__.__name__}")
 
         if isinstance(val_data, tuple):
             val_data = DataLoader(TensorDataset(torch.from_numpy(val_data[0]),
                                                 torch.from_numpy(val_data[1])))
-        elif isinstance(val_data, types.FunctionType):
+        if isinstance(val_data, types.FunctionType):
             val_data = val_data(self._best_config)
-        else:
-            raise RuntimeError("We only support input tsdataset or data creator, "
-                               f"but found {val_data.__class__.__name__}")
 
         # map metric str to function
         from bigdl.chronos.metric.forecast_metrics import TORCHMETRICS_REGRESSION_MAP
