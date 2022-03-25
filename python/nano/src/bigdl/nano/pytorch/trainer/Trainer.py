@@ -149,7 +149,7 @@ class Trainer(pl.Trainer):
             pl_model = model
         else:
             pl_model = LightningModuleFromTorch(model, loss, optimizer, scheduler, metrics)
-        assert xor(onnx, openvino), "Only one of onnx and openvino can be True."
+        assert not (onnx and openvino), "Only one of onnx and openvino can be True."
         if onnx:
             try:
                 from bigdl.nano.pytorch.runtime_binding.onnxrt_inference import\
