@@ -39,6 +39,13 @@ def get_train_val_data():
     return data, validation_data
 
 
+def get_train_val_dataset():
+    config = {"batch_size": 32}
+    dataset = get_dataset(size=1000, config=config)
+    validation_dataset = get_dataset(size=400, config=config)
+    return dataset, validation_dataset
+
+
 def get_train_data_creator():
     def train_data_creator(config):
         return get_dataset(size=1000, config=config)
@@ -98,6 +105,19 @@ class TestBaseKerasModel(TestCase):
         })
         val_result = model.fit_eval(data=data_creator,
                                     validation_data=validation_data_creator,
+                                    metric="mse",
+                                    epochs=20)
+        assert val_result.get("mse")
+
+    def test_fit_eval_dataset(self):
+        dataset, validation_dataset = get_train_val_dataset()
+        modelBuilder_keras = KerasModelBuilder(model_creator_keras)
+        model = modelBuilder_keras.build(config={
+            "lr": 1e-2,
+            "batch_size": 32,
+        })
+        val_result = model.fit_eval(data=dataset,
+                                    validation_data=validation_dataset,
                                     metric="mse",
                                     epochs=20)
         assert val_result.get("mse")

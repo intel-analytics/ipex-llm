@@ -60,7 +60,7 @@ class KerasBaseModel(BaseModel):
                  metric_func=None, resources_per_trial=None,
                  **config):
         """
-        :param data: could be a tuple with numpy ndarray with form (x, y) or
+        :param data: could be a tuple with numpy ndarray with form (x, y) or a tensorflow Dataset
                a data creator takes a config dict as parameter and returns a tf.data.Dataset.
         :param validation_data: could be a tuple with numpy ndarray with form (x, y)
         fit_eval will build a model at the first time it is built
@@ -92,6 +92,10 @@ class KerasBaseModel(BaseModel):
                 validation_dataset = validation_data(self.config)
             else:
                 validation_dataset = validation_data
+
+        elif isinstance(data, tf.data.Dataset):
+            train_dataset = data
+            validation_dataset = validation_data
         else:
             if not isinstance(data, tuple):
                 raise ValueError(f"data/validation_data should be a tuple of numpy array "

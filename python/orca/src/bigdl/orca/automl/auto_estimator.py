@@ -146,7 +146,7 @@ class AutoEstimator:
             ndarrays or a PyTorch DataLoader or a function that takes a config dictionary as
             parameter and returns a PyTorch DataLoader.
             If the AutoEstimator is created with from_keras, data can be a tuple of
-            ndarrays or a function that takes a config dictionary as
+            ndarrays, Spark DataFrame, or a function that takes a config dictionary as
             parameter and returns a Tensorflow Dataset.
             If data is a tuple of ndarrays, it should be in the form of (x, y),
             where x is training input data and y is training target data.
