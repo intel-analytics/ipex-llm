@@ -545,6 +545,9 @@ with
 and  replace `your_master_url` with your own master url and `your_secret_key` with your own secret key.
 
 ## Run as Spark on Kubernetes Mode
+
+Follow the guide below to run Spark on Kubernetes manually. Alternatively, you can also use Helm to set everything up automatically. See [kubernetes/README.md][helmGuide]. 
+
 ### 1. Start the spark client as Docker container
 ### 1.1 Prepare the keys/password/data/enclave-key.pem
 Please refer to the previous section about [preparing data, key and password](#prepare-data).
@@ -766,3 +769,4 @@ Below is an explanation of these security configurations, Please refer to [Spark
       --conf spark.ssl.trustStorePassword=$secure_password  
       --conf spark.ssl.trustStoreType=JKS 
 ```
+[helmGuide]: https://github.com/intel-analytics/BigDL/blob/main/ppml/trusted-big-data-ml/python/docker-graphene/kubernetes/README.md
