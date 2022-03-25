@@ -51,6 +51,8 @@ class HFLNNEstimator(algorithm: String,
   protected val evaluateResults = mutable.Map[String, ArrayBuffer[Float]]()
 
 
+  def train()
+
   def train(endEpoch: Int,
             trainDataSet: LocalDataSet[MiniBatch[Float]],
             valDataSet: LocalDataSet[MiniBatch[Float]]): Module[Float] = {
