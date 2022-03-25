@@ -14,6 +14,7 @@
 # limitations under the License.
 #
 from logging import warning
+from operator import xor
 from typing import Any, List, Optional
 
 import pytorch_lightning as pl
@@ -148,7 +149,7 @@ class Trainer(pl.Trainer):
             pl_model = model
         else:
             pl_model = LightningModuleFromTorch(model, loss, optimizer, scheduler, metrics)
-
+        assert xor(onnx, openvino), "Only one of onnx and openvino can be True."
         if onnx:
             try:
                 from bigdl.nano.pytorch.runtime_binding.onnxrt_inference import\
