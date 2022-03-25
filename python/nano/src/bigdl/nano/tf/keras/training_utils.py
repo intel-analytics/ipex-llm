@@ -15,7 +15,7 @@
 #
 
 import tensorflow as tf
-
+from bigdl.nano.deps.ray.ray_api import create_ray_multiprocessing_backend
 
 class TrainingUtils:
     def fit(self,
@@ -87,8 +87,7 @@ class TrainingUtils:
                         import MultiprocessingBackend
                     _backend = MultiprocessingBackend()
                 elif backend == "ray":
-                    from bigdl.nano.common.multiprocessing.ray_backend import RayBackend
-                    _backend = RayBackend()
+                    _backend = create_ray_multiprocessing_backend()
                 else:
                     raise NotImplementedError("Backend {} is not implemented.".format(backend))
                 from bigdl.nano.tf.keras.distributed_utils import distributed_train_keras

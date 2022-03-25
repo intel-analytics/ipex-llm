@@ -29,6 +29,7 @@ from torch.optim.lr_scheduler import _LRScheduler
 from bigdl.nano.common import check_avx512
 from bigdl.nano.pytorch.lightning import LightningModuleFromTorch
 from bigdl.nano.pytorch.plugins.ddp_spawn import DDPSpawnPlugin
+from bigdl.nano.deps.ray.ray_api import distributed_ray
 
 distributed_backends = ["spawn", "ray"]
 
@@ -99,8 +100,7 @@ class Trainer(pl.Trainer):
                 # Import RayPlugins may entangle with openmp even if it has not been used,
                 # which leads to an unacceptably low performance.
                 # So we import when we need.
-                from bigdl.nano.pytorch.plugins.ray_distributed import RayPlugin
-                plugin = RayPlugin(num_workers=num_processes,  # type: ignore
+                plugin = distributed_ray(num_workers=num_processes,  # type: ignore
                                    use_ipex=use_ipex)
 
             accelerator = None
