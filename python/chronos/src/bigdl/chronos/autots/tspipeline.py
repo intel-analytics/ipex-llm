@@ -369,17 +369,18 @@ class TSPipeline:
                  max_trials=1):
         """
         Quantization TSPipeline.
-        :param calib_data: 
-                | 1. data creator:
-                | a function that takes a config dictionary as parameter and
-                | returns a PyTorch DataLoader.
-                |
-                | 2. a bigdl.chronos.data.TSDataset:
-                | the TSDataset should follow the same operations as the training
-                | TSDataset used in `AutoTSEstimator.fit`.
-                |
-                | 3. A torch.utils.data.dataloader.DataLoader object for calibration.
-                | Required for static quantization.
+        :param calib_data:
+
+               | 1. data creator:
+               | a function that takes a config dictionary as parameter and
+               | returns a PyTorch DataLoader.
+               |
+               | 2. a bigdl.chronos.data.TSDataset:
+               | the TSDataset should follow the same operations as the training
+               | TSDataset used in `AutoTSEstimator.fit`.
+               |
+               | 3. A torch.utils.data.dataloader.DataLoader object for calibration.
+               | Required for static quantization.
 
         :param val_data: Same as calib_data, should be data creator or TSDataset or DataLoader.
         :param metric: A str represent the metrics for tunning the quality of
