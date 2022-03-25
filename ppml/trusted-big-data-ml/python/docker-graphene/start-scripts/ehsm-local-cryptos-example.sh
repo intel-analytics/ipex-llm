@@ -1,5 +1,5 @@
 # set -x
-SPARK_EXTRA_JAR_PATH=/ppml/trusted-big-data-ml/work/spark-3.1.2/jars/spark-encrypt-io-0.2-SNAPSHOT.jar
+SPARK_EXTRA_JAR_PATH=/ppml/trusted-big-data-ml/work/spark-3.1.2/jars/spark-encrypt-io.jar
 SPARK_JOB_MAIN_CLASS=com.intel.analytics.bigdl.ppml.examples.LocalCryptoExample
 KMS_TYPE=EHSMKeyManagementService
 INPUT_FILE_PATH=$1
@@ -32,10 +32,10 @@ secure_password=`openssl rsautl -inkey /ppml/trusted-big-data-ml/work/password/k
   --conf spark.ssl.trustStoreType=JKS \
   --class $SPARK_JOB_MAIN_CLASS \
   $SPARK_EXTRA_JAR_PATH \
-  $INPUT_FILE_PATH \
-  $KMS_TYPE \
-  $KMS_SERVER_IP \
-  $KMS_SERVER_PORT \
-  $EHSM_APP_ID \
-  $EHSM_APP_KEY 2>&1 | tee ehsm-local-cryptos-example.log
+  --inputPath $INPUT_FILE_PATH \
+  --kmsType $KMS_TYPE \
+  --kmsServerIP $KMS_SERVER_IP \
+  --kmsServerPort $KMS_SERVER_PORT \
+  --ehsmAPPID $EHSM_APP_ID \
+  --ehsmAPPKEY $EHSM_APP_KEY 2>&1 | tee ehsm-local-cryptos-example.log
 
