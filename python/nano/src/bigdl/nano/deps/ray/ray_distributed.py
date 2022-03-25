@@ -45,6 +45,7 @@ from pytorch_lightning.utilities.seed import reset_seed
 from ray.util.sgd.utils import find_free_port
 from torch.nn import Module
 
+from bigdl.nano.deps.ray.ray_envbase import RayEnvironment
 from ray_api import create_ray_envbase
 
 
