@@ -50,7 +50,8 @@ class KerasBaseModel(BaseModel):
             raise ValueError("You must create a compiled model in model_creator")
         self.model_built = True
 
-    def _np_to_dataset(self, data, batch_size):
+    @staticmethod
+    def _np_to_dataset(data, batch_size):
         dataset = tf.data.Dataset.from_tensor_slices(data)
         dataset = dataset.batch(batch_size)
         return dataset
@@ -59,7 +60,7 @@ class KerasBaseModel(BaseModel):
                  metric_func=None, resources_per_trial=None,
                  **config):
         """
-        :param data: could be a tuple with numpy ndarray with form (x, y) or a tensorflow Dataset or
+        :param data: could be a tuple with numpy ndarray with form (x, y) or
                a data creator takes a config dict as parameter and returns a tf.data.Dataset.
         :param validation_data: could be a tuple with numpy ndarray with form (x, y)
         fit_eval will build a model at the first time it is built
@@ -67,8 +68,6 @@ class KerasBaseModel(BaseModel):
         params be functional
         TODO: check the updated params and decide if the model is needed to be rebuilt
         """
-        x, y = data[0], data[1]
-
         def update_config():
             config.setdefault("input_dim", x.shape[-1])
             config.setdefault("output_dim", y.shape[-1])
@@ -88,26 +87,17 @@ class KerasBaseModel(BaseModel):
         if isinstance(data, types.FunctionType):
             train_dataset = data(self.config)
             validation_dataset = validation_data(self.config)
-        elif isinstance(data, tf.data.Dataset):
-            train_dataset = data
-            assert isinstance(validation_data, tf.data.Dataset)
-            validation_dataset = validation_data
         else:
             assert isinstance(data, tuple) and isinstance(validation_data, tuple),\
                 f"data/validation_data should be a tuple or\
                  data creator function but found {type(data)}"
-            assert isinstance(data[0], np.ndarray) and isinstance(validation_data[0], np.ndarray),\
-                f"Data and validation_data should be a tuple of np.ndarray " \
-                f"but found {type(data[0])} as the first element of data."
-            assert isinstance(data[1], np.ndarray) and isinstance(validation_data[1], np.ndarray),\
-                f"Data and validation_data should be a tuple of np.ndarray " \
-                f"but found {type(data[1])} as the second element of data."
-            train_dataset = self._np_to_dataset(data)
-            validation_dataset = self._np_to_dataset(validation_data)
+
+            batch_size = int(self.config.get("batch_size", 32))
+            train_dataset = KerasBaseModel._np_to_dataset(data, batch_size=batch_size)
+            validation_dataset = KerasBaseModel._np_to_dataset(validation_data, batch_size)
 
         hist = self.model.fit(train_dataset,
                               validation_data=validation_dataset,
-                              batch_size=self.config.get("batch_size", 32),
                               epochs=epochs,
                               verbose=verbose
                               )

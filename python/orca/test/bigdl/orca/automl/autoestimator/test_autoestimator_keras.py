@@ -80,7 +80,7 @@ def get_multi_inputs_outputs_data():
     sc = OrcaContext.get_spark_context()
     spark = SparkSession(sc)
     feature_cols = ["f1", "f2"]
-    label_cols = ["middle","label"]
+    label_cols = ["middle", "label"]
     train_df = get_df(size=100)
     val_df = get_df(size=30)
     return train_df, val_df, feature_cols, label_cols
@@ -108,18 +108,16 @@ def get_train_val_data():
     return data, validation_data
 
 
-def get_train_val_dataset():
-    config = {"batch_size": 32}
-    train_dataset = get_dataset(size=1000, config=config)
-    validation_dataset = get_dataset(size=400, config=config)
-    return train_dataset, validation_dataset
+def get_train_data_creator():
+    def train_data_creator(config):
+        return get_dataset(size=1000, config=config)
+    return train_data_creator
 
 
-def get_train_val_data_creator():
-    from functools import partial
-    train_data_creator = partial(get_dataset, size=1000)
-    val_data_creator = partial(get_dataset, size=400)
-    return train_data_creator, val_data_creator
+def get_val_data_creator():
+    def val_data_creator(config):
+        return get_dataset(size=400, config=config)
+    return val_data_creator
 
 
 def create_linear_search_space():
@@ -165,9 +163,10 @@ class TestTFKerasAutoEstimator(TestCase):
                                             resources_per_trial={"cpu": 2},
                                             name="test_fit")
 
-        data, validation_data = get_train_val_data_creator()
-        auto_est.fit(data=data,
-                     validation_data=validation_data,
+        data_creator = get_train_data_creator()
+        validation_data_creator = get_val_data_creator()
+        auto_est.fit(data=data_creator,
+                     validation_data=validation_data_creator,
                      search_space=create_linear_search_space(),
                      n_sampling=2,
                      epochs=2,
@@ -178,24 +177,6 @@ class TestTFKerasAutoEstimator(TestCase):
         assert "hidden_size" in best_config
         assert all(k in best_config.keys() for k in create_linear_search_space().keys())
 
-    def test_fit_dataset(self):
-        auto_est = AutoEstimator.from_keras(model_creator=model_creator,
-                                            logs_dir="/tmp/zoo_automl_logs",
-                                            resources_per_trial={"cpu": 2},
-                                            name="test_fit")
-
-        data, validation_data = get_train_val_dataset()
-        auto_est.fit(data=data,
-                     validation_data=validation_data,
-                     search_space=create_linear_search_space(),
-                     n_sampling=2,
-                     epochs=2,
-                     metric="mse",
-                     )
-        assert auto_est.get_best_model()
-        best_config = auto_est.get_best_config()
-        assert "hidden_size" in best_config
-        assert all(k in best_config.keys() for k in create_linear_search_space().keys())
 
     def test_fit_search_alg_schduler(self):
         auto_est = AutoEstimator.from_keras(model_creator=model_creator,
