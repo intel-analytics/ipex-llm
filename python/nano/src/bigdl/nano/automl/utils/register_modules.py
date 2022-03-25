@@ -50,10 +50,10 @@ def register_module(symtab,
         attrs= vars(module).items()
         for name, attr in attrs:
             if check_type(attr):
-                    m = inspect.getmodule(attr)
-                    if m.__name__.startswith(prefix) \
-                        and m.__name__ not in exclude_set:
-                            filtered.append(name)
+                m = inspect.getmodule(attr)
+                if m.__name__.startswith(prefix) \
+                    and name not in exclude_set:
+                        filtered.append(name)
         return filtered
 
     if include_types == COMPONENT_TYPE.CLASS:
@@ -83,7 +83,7 @@ def register_layers(symtab):
     layer_modules = [
             "tensorflow.keras.layers",
         ]
-    exclude_layers = tuple(['Embedding'])
+    exclude_layers = ['Embedding']
     register_module(symtab,
                     layer_modules,
                     prefix="keras.layers",
@@ -95,9 +95,7 @@ def register_activations(symtab):
     activation_module = [
             "tensorflow.keras.activations"
         ]
-    excl_activations= tuple(['serialize',
-                                'deserialize',
-                                'get'])
+    excl_activations= ['serialize','deserialize','get']
     register_module(symtab,
                 activation_module,
                 prefix="keras.activations",
