@@ -8,12 +8,12 @@ Please refer to the document [here][devicePluginK8sQuickStart].
 
 ### 2.1 Configurables
 
-In `bigdl-ppml-helm/values.yaml`, configure the full values for all items listed: 
+In `bigdl-ppml-helm/values.yaml`, configure the full values for: 
 - `image`: The PPML image you want to use.
 - `k8sMaster`: Run `kubectl cluster-info`. The output should be like `Kubernetes control plane is running at https://master_ip:master_port`. Fill in the master ip and port.
 - `pvc`: The name of the Persistent Volume Claim (PVC) of your Network File System (NFS). We assume you have a working NFS configured for your Kubernetes cluster. 
-- `jar`: The `jar` file you would like Spark to run. Defaulted to SparkPi. The path should be the path in the container defined in `bigdl-ppml-helm/templates/spark-job.yaml`
-- `class`: The `class` you would like Spark to run. Defaulted to SparkPi.
+- `jar`: The `jar` file you would like Spark to run, defaulted to `spark-examples_2.12-3.1.2.jar`. The path should be the path in the container defined in `bigdl-ppml-helm/templates/spark-job.yaml`
+- `class`: The `class` you would like Spark to run, defaulted to `org.apache.spark.examples.SparkPi`.
 
 Please prepare the following and put them in your NFS directory:
 - The data (in a directory called `data`), 
@@ -45,7 +45,7 @@ sudo kubectl create clusterrolebinding spark-role --clusterrole=edit --serviceac
 ``` bash
 sudo kubectl create secret generic spark-secret --from-literal secret=YOUR_SECRET
 ```
-**The secret created should be the same as `YOUR_PASSWORD` in section 2.2**. 
+**The secret created (`YOUR_SECRET`) should be the same as `YOUR_PASSWORD` in section 2.2**. 
 
 ### 2.5 Using [Helm][helmsite] to run your Spark job
 
@@ -62,12 +62,12 @@ To check the logs of the Kubernetes job, run
 sudo kubectl logs $( sudo kubectl get pod | grep spark-pi-job | cut -d " " -f1 )
 ```
 
-To check the logs of the driver, run
+To check the logs of the Spark driver, run
 ``` bash
 sudo kubectl logs $( sudo kubectl get pod | grep "spark-pi-sgx.*-driver" -m 1 | cut -d " " -f1 )
 ```
 
-To check the logs of an executor, run
+To check the logs of an Spark executor, run
 ``` bash 
 sudo kubectl logs $( sudo kubectl get pod | grep "spark-pi-.*-exec" -m 1 | cut -d " " -f1 )
 ```
