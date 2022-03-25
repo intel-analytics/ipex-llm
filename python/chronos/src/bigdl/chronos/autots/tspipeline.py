@@ -67,7 +67,8 @@ class TSPipeline:
         self.loss_creator = loss_creator
         self.optimizer_creator = optimizer_creator
 
-    def evaluate(self, data, metrics=['mse'], multioutput="uniform_average", batch_size=32):
+    def evaluate(self, data, metrics=['mse'], multioutput="uniform_average",
+                 batch_size=32, quantize=False):
         '''
         Evaluate the time series pipeline.
 
@@ -84,13 +85,15 @@ class TSPipeline:
         :param batch_size: predict batch_size, the process will cost more time
                if batch_size is small while cost less memory. The param is only
                effective when data is a TSDataset. The values defaults to 32.
+        :param quantize: if use the quantized model to predict.
         '''
         # predict
         if isinstance(data, TSDataset):
             x, y = self._tsdataset_to_numpy(data, is_predict=False)
             yhat = self._best_model.inference(x,
                                               batch_size=batch_size,
-                                              backend=None).numpy()
+                                              backend=None,
+                                              quantize=quantize).numpy()
             # unscale
             yhat = self._tsdataset_unscale(yhat)
             y = self._tsdataset_unscale(y)
@@ -98,7 +101,9 @@ class TSPipeline:
             yhat_list, y_list = [], []
             self._best_config.update({'batch_size': batch_size})
             for x, y in data(self._best_config):
-                yhat = self._best_model.inference(x.numpy(), backend=None)
+                yhat = self._best_model.inference(x.numpy(),
+                                                  backend=None,
+                                                  quantize=quantize)
                 yhat_list.append(yhat)
                 y_list.append(y)
             yhat = torch.cat(yhat_list, dim=0).numpy()
@@ -113,7 +118,7 @@ class TSPipeline:
         return eval_result
 
     def evaluate_with_onnx(self, data, metrics=['mse'], multioutput="uniform_average",
-                           batch_size=32):
+                           batch_size=32, quantize=False):
         '''
         Evaluate the time series pipeline with onnx.
 
@@ -130,13 +135,15 @@ class TSPipeline:
         :param batch_size: predict batch_size, the process will cost more time
                if batch_size is small while cost less memory. The param is only
                effective when data is a TSDataset. The values defaults to 32.
+        :param quantize: if use the quantized model to predict.
         '''
         # predict with onnx
         if isinstance(data, TSDataset):
             x, y = self._tsdataset_to_numpy(data, is_predict=False)
             yhat = self._best_model.inference(x,
                                               batch_size=batch_size,
-                                              backend="onnx")
+                                              backend="onnx",
+                                              quantize=quantize)
             yhat = self._tsdataset_unscale(yhat)
             # unscale
             y = self._tsdataset_unscale(y)
@@ -144,7 +151,9 @@ class TSPipeline:
             yhat_list, y_list = [], []
             self._best_config.update({'batch_size': batch_size})
             for x, y in data(self._best_config):
-                yhat = self._best_model.inference(x.numpy(), backend="onnx")
+                yhat = self._best_model.inference(x.numpy(),
+                                                  backend="onnx",
+                                                  quantize=quantize)
                 yhat_list.append(yhat)
                 y_list.append(y)
             yhat = np.concatenate(yhat_list, axis=0)
@@ -157,7 +166,7 @@ class TSPipeline:
         eval_result = Evaluator.evaluate(metrics, y, yhat, aggregate=aggregate)
         return eval_result
 
-    def predict(self, data, batch_size=32):
+    def predict(self, data, batch_size=32, quantize=False):
         '''
         Rolling predict with time series pipeline.
 
@@ -167,18 +176,22 @@ class TSPipeline:
         :param batch_size: predict batch_size, the process will cost more time
                if batch_size is small while cost less memory.  The param is only
                effective when data is a TSDataset. The values defaults to 32.
+        :param quantize: if use the quantized model to predict.
         '''
         if isinstance(data, TSDataset):
             x, _ = self._tsdataset_to_numpy(data, is_predict=True)
             yhat = self._best_model.inference(x,
                                               batch_size=batch_size,
-                                              backend=None)
+                                              backend=None,
+                                              quantize=quantize)
             yhat = self._tsdataset_unscale(yhat)
         elif isinstance(data, types.FunctionType):
             yhat_list = []
             self._best_config.update({'batch_size': batch_size})
             for x, _ in data(self._best_config):
-                yhat = self._best_model.inference(x.numpy(), backend=None)
+                yhat = self._best_model.inference(x.numpy(),
+                                                  backend=None,
+                                                  quantize=quantize)
                 yhat_list.append(yhat)
             yhat = np.concatenate(yhat_list, axis=0)
         else:
@@ -186,7 +199,7 @@ class TSPipeline:
                                f"but found {data.__class__.__name__}")
         return yhat
 
-    def predict_with_onnx(self, data, batch_size=32):
+    def predict_with_onnx(self, data, batch_size=32, quantize=False):
         '''
         Rolling predict with onnx with time series pipeline.
 
@@ -196,18 +209,22 @@ class TSPipeline:
         :param batch_size: predict batch_size, the process will cost more time
                if batch_size is small while cost less memory.  The param is only
                effective when data is a TSDataset. The values defaults to 32.
+        :param quantize: if use the quantized model to predict.
         '''
         if isinstance(data, TSDataset):
             x, _ = self._tsdataset_to_numpy(data, is_predict=True)
             yhat = self._best_model.inference(x,
                                               batch_size=batch_size,
-                                              backend="onnx")
+                                              backend="onnx",
+                                              quantize=quantize)
             yhat = self._tsdataset_unscale(yhat)
         elif isinstance(data, types.FunctionType):
             yhat_list = []
             self._best_config.update({'batch_size': batch_size})
             for x, _ in data(self._best_config):
-                yhat = self._best_model.inference(x.numpy(), backend="onnx")
+                yhat = self._best_model.inference(x.numpy(),
+                                                  backend="onnx",
+                                                  quantize=quantize)
                 yhat_list.append(yhat)
             yhat = np.concatenate(yhat_list, axis=0)
         else:

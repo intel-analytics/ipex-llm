@@ -177,17 +177,39 @@ class TestTSPipeline(TestCase):
     def test_tsppl_quantize_data_creator(self):
         tsppl_lstm = TSPipeline.load(os.path.join(self.resource_path,
                                                   "tsppl_ckpt/lstm_tsppl_ckpt"))
-        yhat = tsppl_lstm.predict(data=valid_data_creator, batch_size=64)
-        smape = tsppl_lstm.evaluate(data=valid_data_creator, metrics=['smape'])
+        assert tsppl_lstm._best_config['batch_size'] == 32
+
+        yhat = tsppl_lstm.predict(valid_data_creator, batch_size=64)
+        smape = tsppl_lstm.evaluate(valid_data_creator,
+                                    metrics=['smape'])
 
         tsppl_lstm.quantize(calib_data=train_data_creator,
                             val_data=valid_data_creator,
                             metric='mae',
                             framework=['pytorch_fx', 'onnxrt_qlinearops'])
-        q_yhat = tsppl_lstm.predict(data=valid_data_creator, batch_size=64)
-        q_smape = tsppl_lstm.evaluate(data=valid_data_creator, metrics=['smape'])
-        tsppl_lstm.fit(train_data_creator, batch_size=64)
-        assert q_yhat.shape == yhat.shape
+        # only quantize
+        q_yhat = tsppl_lstm.predict(valid_data_creator, batch_size=32, quantize=True)
+        q_smape = tsppl_lstm.evaluate(valid_data_creator,
+                                      metrics=['smape'],
+                                      batch_size=128,
+                                      quantize=True)
+
+        # quantize_onnx
+        q_onnx_yhat = tsppl_lstm.predict_with_onnx(valid_data_creator,
+                                                   batch_size=64,
+                                                   quantize=True)
+
+        q_onnx_smape = tsppl_lstm.evaluate_with_onnx(valid_data_creator,
+                                                     metrics=['smape'],
+                                                     batch_size=64,
+                                                     quantize=True)
+        assert tsppl_lstm._best_config['batch_size'] == 64
+
+        tsppl_lstm.fit(train_data_creator, epochs=2, batch_size=64)
+
+        assert q_yhat.shape == yhat.shape == q_onnx_yhat.shape
+        assert all([np.mean(q_smape) < 2, np.mean(q_onnx_smape) < 2, np.mean(smape) < 2])
+
 
 
 if __name__ == "__main__":
