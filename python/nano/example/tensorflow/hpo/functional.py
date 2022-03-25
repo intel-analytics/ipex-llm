@@ -3,7 +3,8 @@ from ast import Call
 import tensorflow as tf
 from tensorflow import keras
 from bigdl.nano.tf.keras.layers import Dense
-from bigdl.nano.automl.tf.keras import Model, Input
+from bigdl.nano.tf.keras import Input
+from bigdl.nano.automl.tf.keras import Model
 import bigdl.nano.automl.hpo.space as space
 from time import time
 
