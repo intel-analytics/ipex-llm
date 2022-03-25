@@ -9,6 +9,8 @@
 ---
 
 # BigDL Movie Recommendation System 🎬
+[![](https://img.shields.io/badge/BigDL-MovieRec-brightgreen)](https://share.streamlit.io/akshaybahadur21/bigdl-movie-rec/main/streamlit-movie-rec.py) 
+[![Open In Colab](https://github.com/namanarora97/Data-Science-Notebooks/blob/main/assets/colab-badge.svg)](https://colab.research.google.com/drive/1c-Qh6GHigYbb_8zxjDGbjbx7ivN1UKs4?usp=sharing)
 
 BigDL is a distributed deep learning library for Apache Spark; with BigDL, users can write their deep learning applications as standard Spark programs, which can directly run on top of existing Spark or Hadoop clusters.
 
@@ -24,8 +26,8 @@ Recommendation System is a filtration program whose prime goal is to predict the
  This project is part of Machine Learning in Production(11745) - Assignment 3 at Carnegie Mellon University
  - Coursework : [ML in Production](https://ckaestne.github.io/seai/)
  - Assignment : [Assignment 3: Software Engineering Tools for Production ML Systems](https://github.com/ckaestne/seai/blob/S2022/assignments/I3_se4ai_tools.md)
- - GiHub : [BigDL Movie Recommendation System](https://github.com/akshaybahadur21/bigDL-Movie-Rec)
- - Blog Post : [Medium | BigDL Movie Recommendation](https://github.com/akshaybahadur21/bigDL-Movie-Rec)
+ - GitHub : [BigDL Movie Recommendation System](https://github.com/akshaybahadur21/bigDL-Movie-Rec)
+ - Blog Post : [Medium | BigDL Movie Recommendation](https://medium.com/@mlprodhw3/bigdl-movie-recommendation-system-3ac04d0e65cb)
 
 
 ## Notebooks
@@ -38,6 +40,11 @@ Recommendation System is a filtration program whose prime goal is to predict the
 **[Streamlit Hosted Movie Recommendation](https://share.streamlit.io/akshaybahadur21/bigdl-movie-rec/main/streamlit-movie-rec.py)**
 
 ## Results 📊
+- Generating Insights from the Data
+<img src="https://github.com/akshaybahadur21/BLOB/blob/master/bigDL-movie1.gif">
+
+- Generating Recommendations
+<img src="https://github.com/akshaybahadur21/BLOB/blob/master/bigDL-Movie2.gif">
 
 ## Team 🏆
 
