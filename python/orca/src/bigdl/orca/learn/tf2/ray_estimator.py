@@ -121,8 +121,8 @@ class TensorFlow2Estimator(OrcaRayEstimator):
         """
         Train this tensorflow model with train data.
 
-        :param data: train data. It can be XShards, Spark DataFrame or creator function which
-               returns Iter or DataLoader.
+        :param data: train data. It can be XShards, Spark DataFrame, Ray Dataset or
+               creator function which returns Iter or DataLoader.
                If data is XShards, each partition can be a Pandas DataFrame or a dictionary of
                {'x': feature, 'y': label}, where feature(label) is a numpy array or a tuple of
                numpy arrays.
@@ -149,9 +149,9 @@ class TensorFlow2Estimator(OrcaRayEstimator):
                validation at the end of the 1st, 2nd, and 10th epochs.
         :param data_config: An optional dictionary that can be passed to data creator function.
         :param feature_cols: Feature column name(s) of data. Only used when data is a Spark
-               DataFrame or an XShards of Pandas DataFrame. Default: None.
-        :param label_cols: Label column name(s) of data. Only used when data is a Spark DataFrame or
-               an XShards of Pandas DataFrame.
+               DataFrame, an XShards of Pandas DataFrame or a Ray Dataset. Default: None.
+        :param label_cols: Label column name(s) of data. Only used when data is a Spark DataFrame,
+               an XShards of Pandas DataFrame or a Ray Dataset.
                Default: None.
         :return:
         """
@@ -200,6 +200,24 @@ class TensorFlow2Estimator(OrcaRayEstimator):
                 worker_stats = ray_xshards.zip_reduce_shards_with_actors(val_ray_xshards,
                                                                          self.remote_workers,
                                                                          zip_func)
+        elif isinstance(data, ray.data.Dataset):
+
+            shards = data.split(n=self.num_workers, locality_hints=self.remote_workers)
+
+            def data_creator(config, batch_size):
+                tf_dataset = shard.to_tf(label_column=label_cols,
+                                         feature_columns=feature_cols,
+                                         output_signature=data_config["output_signature"],
+                                         batch_size=batch_size)
+                return tf_dataset
+
+            remote_worker_stats = []
+            for shard, worker in zip(shards, self.remote_workers):
+                params["data_creator"] = data_creator
+                stats = worker.step.remote(**params)
+                remote_worker_stats.append(stats)
+            worker_stats = ray.get(remote_worker_stats)
+            worker_stats = list(itertools.chain.from_iterable(worker_stats))
         else:
             params["data_creator"] = data
             params["validation_data_creator"] = validation_data
