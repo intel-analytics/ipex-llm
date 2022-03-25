@@ -196,6 +196,12 @@ class TFDistributedDatasetHandler(DatasetHandler):
         return dataset
 
     def _handle_sharding(self, dataset):
+        import tensorflow as tf
+        if isinstance(dataset, tf.data.Dataset):
+            options = tf.data.Options()
+            options.experimental_distribute.auto_shard_policy = \
+                tf.data.experimental.AutoShardPolicy.OFF
+            dataset = dataset.with_options(options)
         return dataset
 
     def _handle_batch_size(self, config):
