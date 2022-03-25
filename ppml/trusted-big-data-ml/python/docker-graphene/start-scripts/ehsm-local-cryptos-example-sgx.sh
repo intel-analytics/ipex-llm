@@ -7,7 +7,10 @@ KMS_SERVER_IP=$2
 KMS_SERVER_PORT=$3
 EHSM_APP_ID=$4
 EHSM_APP_KEY=$5
-LOCAL_IP=$6
+PRIMARY_KEY_PATH=$6 # The Path You Want To Save Primary Key At
+DATA_KEY_PATH=$7 # The Path You Want To Save Data Key At
+LOCAL_IP=$8
+
 
 secure_password=`openssl rsautl -inkey /ppml/trusted-big-data-ml/work/password/key.txt -decrypt </ppml/trusted-big-data-ml/work/password/output.bin`
 
@@ -37,6 +40,8 @@ SGX=1 ./pal_loader bash -c "\
   --kmsType $KMS_TYPE \
   --kmsServerIP $KMS_SERVER_IP \
   --kmsServerPort $KMS_SERVER_PORT \
+  --primaryKeyPath $PRIMARY_KEY_PATH \
+  --dataKeyPath $DATA_KEY_PATH \
   --ehsmAPPID $EHSM_APP_ID \
   --ehsmAPPKEY $EHSM_APP_KEY"  2>&1 | tee ehsm-local-cryptos-example-sgx.log
 

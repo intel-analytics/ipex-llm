@@ -3,7 +3,9 @@ SPARK_EXTRA_JAR_PATH=/ppml/trusted-big-data-ml/work/spark-3.1.2/jars/spark-encry
 SPARK_JOB_MAIN_CLASS=com.intel.analytics.bigdl.ppml.examples.LocalCryptoExample
 KMS_TYPE=SimpleKeyManagementService
 INPUT_FILE_PATH=$1
-LOCAL_IP=$2
+PRIMARY_KEY_PATH=$2 # The Path You Want To Save Primary Key At
+DATA_KEY_PATH=$3 # The Path You Want To Save Data Key At
+LOCAL_IP=$4
 
 secure_password=`openssl rsautl -inkey /ppml/trusted-big-data-ml/work/password/key.txt -decrypt </ppml/trusted-big-data-ml/work/password/output.bin`
 
@@ -29,6 +31,8 @@ SGX=1 ./pal_loader bash -c "\
   --conf spark.ssl.trustStoreType=JKS \
   --class $SPARK_JOB_MAIN_CLASS \
   $SPARK_EXTRA_JAR_PATH \
-  $INPUT_FILE_PATH \
-  $KMS_TYPE" 2>&1 | tee simple-local-cryptos-example-.log
+  --inputPath $INPUT_FILE_PATH \
+  --primaryKeyPath $PRIMARY_KEY_PATH \
+  --dataKeyPath $DATA_KEY_PATH \
+  --kmsType $KMS_TYPE" 2>&1 | tee simple-local-cryptos-example-.log
 
