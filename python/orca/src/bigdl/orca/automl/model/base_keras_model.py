@@ -19,6 +19,7 @@ from bigdl.orca.automl.metrics import Evaluator
 import pickle
 import tensorflow as tf
 from tensorflow.keras import backend as K
+import types
 
 
 def check_tf_version():
@@ -49,19 +50,24 @@ class KerasBaseModel(BaseModel):
             raise ValueError("You must create a compiled model in model_creator")
         self.model_built = True
 
+    @staticmethod
+    def _np_to_dataset(data, batch_size):
+        dataset = tf.data.Dataset.from_tensor_slices(data)
+        dataset = dataset.batch(batch_size)
+        return dataset
+
     def fit_eval(self, data, validation_data=None, mc=False, verbose=0, epochs=1, metric=None,
                  metric_func=None, resources_per_trial=None,
                  **config):
         """
-        :param data: could be a tuple with numpy ndarray with form (x, y)
+        :param data: could be a tuple with numpy ndarray with form (x, y) or
+               a data creator takes a config dict as parameter and returns a tf.data.Dataset.
         :param validation_data: could be a tuple with numpy ndarray with form (x, y)
         fit_eval will build a model at the first time it is built
         config will be updated for the second or later times with only non-model-arch
         params be functional
         TODO: check the updated params and decide if the model is needed to be rebuilt
         """
-        x, y = data[0], data[1]
-
         def update_config():
             config.setdefault("input_dim", x.shape[-1])
             config.setdefault("output_dim", y.shape[-1])
@@ -77,9 +83,21 @@ class KerasBaseModel(BaseModel):
             self._check_config(**tmp_config)
             self.config.update(config)
 
-        hist = self.model.fit(x, y,
-                              validation_data=validation_data,
-                              batch_size=self.config.get("batch_size", 32),
+        # get train_dataset and validation_dataset
+        if isinstance(data, types.FunctionType):
+            train_dataset = data(self.config)
+            validation_dataset = validation_data(self.config)
+        else:
+            assert isinstance(data, tuple) and isinstance(validation_data, tuple),\
+                f"data/validation_data should be a tuple or\
+                 data creator function but found {type(data)}"
+
+            batch_size = int(self.config.get("batch_size", 32))
+            train_dataset = KerasBaseModel._np_to_dataset(data, batch_size=batch_size)
+            validation_dataset = KerasBaseModel._np_to_dataset(validation_data, batch_size)
+
+        hist = self.model.fit(train_dataset,
+                              validation_data=validation_dataset,
                               epochs=epochs,
                               verbose=verbose
                               )
