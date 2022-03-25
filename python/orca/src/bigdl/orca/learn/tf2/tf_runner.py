@@ -199,6 +199,7 @@ class TFDistributedDatasetHandler(DatasetHandler):
         import tensorflow as tf
         if isinstance(dataset, tf.data.Dataset):
             options = tf.data.Options()
+            # Disable Tensorflow autosharding since the dataset has already been sharded.
             options.experimental_distribute.auto_shard_policy = \
                 tf.data.experimental.AutoShardPolicy.OFF
             dataset = dataset.with_options(options)
