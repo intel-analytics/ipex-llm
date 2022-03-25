@@ -237,7 +237,8 @@ class SpatialConvolution(
 
   private def setScalesOutForAttr(scaleIn: Array[Float], scaleOut: Array[Float],
     attr: Long): Unit = {
-    Log4Error.invalidInputError(this.getWeightScales() != null, s"you should use a model contains scales")
+    Log4Error.invalidInputError(this.getWeightScales() != null,
+      s"you should use a model contains scales")
     val scales = this.getWeightScales().flatten.map(w =>
       if (Math.abs(w - 0.0f) < DenseTensorMath.floatEpsilon) {
         0.0f

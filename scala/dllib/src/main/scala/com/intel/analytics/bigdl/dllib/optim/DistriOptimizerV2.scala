@@ -353,7 +353,8 @@ object DistriOptimizerV2 extends AbstractOptimizer {
     }).reduce((a, b) => (a._1 ++ b._1, a._2 ++ b._2))
 
     val taskSize = parameters.size / partitionNum
-    Log4Error.invalidOperationError(taskSize != 0, "parameter length should not less than partition number")
+    Log4Error.invalidOperationError(taskSize != 0,
+      "parameter length should not less than partition number")
     val extraSize = parameters.size % partitionNum
 
     (0 until partitionNum).map(pid => {
@@ -807,7 +808,8 @@ class DistriOptimizerV2[T: ClassTag](
     val parameterSplits = if (optimMethods.size != 1) {
       val p = optimMethods.map { case (subModuleName, optimMethod) =>
         val subModule = model(subModuleName)
-        Log4Error.invalidOperationError(subModule.isDefined, s"Optimizer couldn't find $subModuleName in $model")
+        Log4Error.invalidOperationError(subModule.isDefined,
+          s"Optimizer couldn't find $subModuleName in $model")
         val subModuleWeights = subModule.get.getParameters()._1
         (subModuleName, subModuleWeights)
       }
@@ -862,7 +864,8 @@ class DistriOptimizerV2[T: ClassTag](
       Engine.setNodeAndCore(nodeNumber, executorCores)
       if (!Engine.checkSingleton()) {
         if (checkSingleton) {
-          Log4Error.invalidOperationError(Engine.checkSingleton(), "Partitions of the training data are not evenly" +
+          Log4Error.invalidOperationError(Engine.checkSingleton(),
+            "Partitions of the training data are not evenly" +
             "distributed across the executors in the Spark cluster; are there sufficient " +
             "training" +
             "data to be distributed? Set property \"bigdl.check.singleton\" to false to skip " +

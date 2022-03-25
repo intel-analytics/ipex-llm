@@ -119,7 +119,8 @@ class VolumetricAveragePooling[T: ClassTag](
     val dimt = input.dim() - 2
     val dimh = input.dim() - 1
     val dimw = input.dim()
-    Log4Error.invalidInputError(input.size(dimw) >= kW && input.size(dimh) >= kH && input.size(dimt) >= kT,
+    Log4Error.invalidInputError(input.size(dimw) >= kW
+      && input.size(dimh) >= kH && input.size(dimt) >= kT,
       s"input image (T: ${input.size(dimt)} H: ${input.size(dimh)} W: ${input.size(dimw)}) " +
         s"smaller than kernel size (kT: $kT kH: $kH kW: $kW)")
 

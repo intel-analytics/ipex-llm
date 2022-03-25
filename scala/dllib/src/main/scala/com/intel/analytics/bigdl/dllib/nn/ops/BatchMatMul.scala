@@ -65,7 +65,8 @@ class BatchMatMul[T: ClassTag, D: ClassTag](
       output.mm(x, y)
     } else {
 
-      Log4Error.invalidInputError(x.size(1) == y.size(1), "inputs must contain the same number of minibatches" +
+      Log4Error.invalidInputError(x.size(1) == y.size(1),
+        "inputs must contain the same number of minibatches" +
         s"The minibatces of each are ${x.size(1)} and ${y.size(1)}")
 
       val dimNum = x.dim()
@@ -81,7 +82,8 @@ class BatchMatMul[T: ClassTag, D: ClassTag](
       if (adjY) {
         reshapedY = reshapedY.transpose(2, 3)
       }
-      Log4Error.invalidInputError(reshapedX.size(3) == reshapedY.size(2), "matrix sizes do not match" +
+      Log4Error.invalidInputError(reshapedX.size(3) == reshapedY.size(2),
+        "matrix sizes do not match" +
         s"the matrix sizes are ${reshapedX.size(2)} and ${reshapedY.size(3)}")
 
       output.resize(batchSize, reshapedX.size(2), reshapedY.size(3))

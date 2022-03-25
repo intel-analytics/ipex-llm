@@ -90,16 +90,19 @@ class PriorBox[T: ClassTag](minSizes: Array[Float], maxSizes: Array[Float] = nul
     }
 
     if (imgH != 0 && imgW != 0) {
-      Log4Error.invalidInputError(imgW > 0 && imgH > 0, s"imgW should be great than 0, but is ${imgW}," +
+      Log4Error.invalidInputError(imgW > 0 && imgH > 0,
+        s"imgW should be great than 0, but is ${imgW}," +
         s"imgH should be great than 0, but is ${imgH}")
     } else if (imgSize != 0) {
-      Log4Error.invalidInputError(imgSize > 0, s"imgSize should be great than 0, but is ${imgSize}")
+      Log4Error.invalidInputError(imgSize > 0,
+        s"imgSize should be great than 0, but is ${imgSize}")
       imgH = imgSize
       imgW = imgSize
     }
 
     if (stepH != 0 && stepW != 0) {
-      Log4Error.invalidInputError(stepW > 0 && stepH > 0, s"stepW should be great than 0, but is ${stepW}," +
+      Log4Error.invalidInputError(stepW > 0 && stepH > 0,
+        s"stepW should be great than 0, but is ${stepW}," +
         s"stepH should be great than 0, but is ${stepH}")
     } else if (step != 0) {
       Log4Error.invalidInputError(step > 0, s"step should be great than 0, but is ${step}")

@@ -95,7 +95,8 @@ class SpatialCrossMapLRN[T: ClassTag]
   }
 
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
-    Log4Error.invalidInputError(input.nDimension() == 4, "Input must have 4 dimensions, corresponding to " +
+    Log4Error.invalidInputError(input.nDimension() == 4,
+      "Input must have 4 dimensions, corresponding to " +
       "(batch, channels, height, width)" +
       s"input dimension ${input.nDimension()}")
     Log4Error.invalidInputError(input.isContiguous(), "Input is not contiguous")
@@ -136,7 +137,8 @@ class SpatialCrossMapLRN[T: ClassTag]
   }
 
   override def updateGradInput(input: Tensor[T], gradOutput: Tensor[T]): Tensor[T] = {
-    Log4Error.invalidInputError(input.nDimension() == 4, "Input must have 4 dimensions, corresponding to " +
+    Log4Error.invalidInputError(input.nDimension() == 4,
+      "Input must have 4 dimensions, corresponding to " +
       "(batch, channels, height, width)" +
       s"inputdimension ${input.nDimension()}")
     Log4Error.invalidInputError(gradOutput.isContiguous(), "gradOutput is not contiguous")
@@ -247,8 +249,10 @@ object SpatialCrossMapLRN {
     beta: Double,
     k: Double
   ): Unit = {
-    Log4Error.invalidInputError(input.isContiguous(), "input of LRN for NHWC should be contiguous")
-    Log4Error.invalidInputError(output.isContiguous(), "output of LRN for NHWC should be contiguous")
+    Log4Error.invalidInputError(input.isContiguous(),
+      "input of LRN for NHWC should be contiguous")
+    Log4Error.invalidInputError(output.isContiguous(),
+      "output of LRN for NHWC should be contiguous")
     val channel = input.size(3)
     val inputOffset = input.storageOffset() - 1
     val inputArray = input.storage().array()

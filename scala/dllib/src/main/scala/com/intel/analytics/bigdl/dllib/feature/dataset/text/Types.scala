@@ -102,7 +102,8 @@ class LabeledSentence[T: ClassTag](
   }
 
   def copyToLabel(storage: Array[T], offset: Int): Unit = {
-    Log4Error.invalidOperationError(_labelLength + offset <= storage.length, "index out of boundary")
+    Log4Error.invalidOperationError(_labelLength + offset <= storage.length,
+      "index out of boundary")
     ev.getType() match {
       case DoubleType => Array.copy(_label
         .asInstanceOf[Array[Double]], 0, storage

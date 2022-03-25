@@ -84,7 +84,8 @@ class Metrics extends Serializable {
 
   def set(name: String, value: ArrayBuffer[Double], sc: SparkContext): this.type = {
     Log4Error.invalidOperationError(!localMetricsMap.contains(name), "duplicated local metric")
-    Log4Error.invalidOperationError(!aggregateDistributeMetricsMap.contains(name), "duplicated distribute metric")
+    Log4Error.invalidOperationError(!aggregateDistributeMetricsMap.contains(name),
+      "duplicated distribute metric")
     if (distributeMetricsMap.contains(name)) {
       distributeMetricsMap(name).value.reset()
       distributeMetricsMap(name).value.add(value)
@@ -98,7 +99,8 @@ class Metrics extends Serializable {
   }
 
   def get(name: String): (Double, Int) = {
-    Log4Error.invalidOperationError(localMetricsMap.contains(name) || aggregateDistributeMetricsMap.contains(name),
+    Log4Error.invalidOperationError(localMetricsMap.contains(name)
+      || aggregateDistributeMetricsMap.contains(name),
     "expect name in predefined map")
     if (localMetricsMap.contains(name)) {
       (localMetricsMap(name).value.get(), localMetricsMap(name).parallel)
@@ -109,7 +111,8 @@ class Metrics extends Serializable {
   }
 
   def get(name: String, number: Int): Array[Double] = {
-    Log4Error.invalidOperationError(distributeMetricsMap.contains(name), "expect name in predefined map")
+    Log4Error.invalidOperationError(distributeMetricsMap.contains(name),
+      "expect name in predefined map")
     distributeMetricsMap(name).value.value.toArray.dropRight(number)
   }
 

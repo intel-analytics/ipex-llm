@@ -67,7 +67,8 @@ class SoftMarginCriterion[@specialized(Float, Double) T: ClassTag](var sizeAvera
 
   // TODO: replace apply for performance optimization
   override def updateGradInput(input: Tensor[T], target: Tensor[T]): Tensor[T] = {
-    Log4Error.invalidInputError(input.isSameSizeAs(target), "The input should have the same size as target" +
+    Log4Error.invalidInputError(input.isSameSizeAs(target),
+      "The input should have the same size as target" +
       s"input size ${input.nElement()}, target size ${target.nElement()}")
     val norm = if (sizeAverage) {
       ev.divide(ev.one, ev.fromType[Int](input.nElement()))

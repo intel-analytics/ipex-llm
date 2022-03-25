@@ -146,8 +146,10 @@ class SpatialSeparableConvolution[T: ClassTag](
   }
 
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
-    Log4Error.invalidInputError(input.nDimension() == 4, "SpatialSeparableConvolution only accept 4D input")
-    Log4Error.invalidInputError(input.isContiguous(), "SpatialSeparableConvolution Log4Error.invalidInputError contiguous input")
+    Log4Error.invalidInputError(input.nDimension() == 4,
+      "SpatialSeparableConvolution only accept 4D input")
+    Log4Error.invalidInputError(input.isContiguous(),
+      "SpatialSeparableConvolution Log4Error.invalidInputError contiguous input")
     Log4Error.invalidInputError(nInputChannel == input.size(channelDim),
       s"input tensor channel dimension size(${input.size(channelDim)}) doesn't " +
         s"match layer nInputChannel $nInputChannel")
@@ -162,13 +164,17 @@ class SpatialSeparableConvolution[T: ClassTag](
 
   override def backward(input: Tensor[T], gradOutput: Tensor[T]): Tensor[T] = {
     val before = System.nanoTime()
-    Log4Error.invalidInputError(input.nDimension() == 4, "SpatialSeparableConvolution only accept 4D input")
-    Log4Error.invalidInputError(input.isContiguous(), "SpatialSeparableConvolution Log4Error.invalidInputError contiguous input")
+    Log4Error.invalidInputError(input.nDimension() == 4,
+      "SpatialSeparableConvolution only accept 4D input")
+    Log4Error.invalidInputError(input.isContiguous(),
+      "SpatialSeparableConvolution Log4Error.invalidInputError contiguous input")
     Log4Error.invalidInputError(nInputChannel == input.size(channelDim),
       "input tensor channel dimension size doesn't match layer nInputChannel")
 
-    Log4Error.invalidInputError(gradOutput.nDimension() == 4, "SpatialSeparableConvolution only accept 4D gradOutput")
-    Log4Error.invalidInputError(gradOutput.isContiguous(), "SpatialSeparableConvolution Log4Error.invalidInputError contiguous gradOutput")
+    Log4Error.invalidInputError(gradOutput.nDimension() == 4,
+      "SpatialSeparableConvolution only accept 4D gradOutput")
+    Log4Error.invalidInputError(gradOutput.isContiguous(),
+      "SpatialSeparableConvolution Log4Error.invalidInputError contiguous gradOutput")
     Log4Error.invalidInputError(nOutputChannel == gradOutput.size(channelDim),
       "gradOutput tensor channel dimension size doesn't match layer nOutputChannel")
 
@@ -181,13 +187,17 @@ class SpatialSeparableConvolution[T: ClassTag](
   }
 
   override def updateGradInput(input: Tensor[T], gradOutput: Tensor[T]): Tensor[T] = {
-    Log4Error.invalidInputError(input.nDimension() == 4, "SpatialSeparableConvolution only accept 4D input")
-    Log4Error.invalidInputError(input.isContiguous(), "SpatialSeparableConvolution Log4Error.invalidInputError contiguous input")
+    Log4Error.invalidInputError(input.nDimension() == 4,
+      "SpatialSeparableConvolution only accept 4D input")
+    Log4Error.invalidInputError(input.isContiguous(),
+      "SpatialSeparableConvolution Log4Error.invalidInputError contiguous input")
     Log4Error.invalidInputError(nInputChannel == input.size(channelDim),
       "input tensor channel dimension size doesn't match layer nInputChannel")
 
-    Log4Error.invalidInputError(gradOutput.nDimension() == 4, "SpatialSeparableConvolution only accept 4D gradOutput")
-    Log4Error.invalidInputError(gradOutput.isContiguous(), "SpatialSeparableConvolution Log4Error.invalidInputError contiguous gradOutput")
+    Log4Error.invalidInputError(gradOutput.nDimension() == 4,
+      "SpatialSeparableConvolution only accept 4D gradOutput")
+    Log4Error.invalidInputError(gradOutput.isContiguous(),
+      "SpatialSeparableConvolution Log4Error.invalidInputError contiguous gradOutput")
     Log4Error.invalidInputError(nOutputChannel == gradOutput.size(channelDim),
       "gradOutput tensor channel dimension size doesn't match layer nOutputChannel")
 
@@ -197,13 +207,17 @@ class SpatialSeparableConvolution[T: ClassTag](
   }
 
   override def accGradParameters(input: Tensor[T], gradOutput: Tensor[T]): Unit = {
-    Log4Error.invalidInputError(input.nDimension() == 4, "SpatialSeparableConvolution only accept 4D input")
-    Log4Error.invalidInputError(input.isContiguous(), "SpatialSeparableConvolution Log4Error.invalidInputError contiguous input")
+    Log4Error.invalidInputError(input.nDimension() == 4,
+      "SpatialSeparableConvolution only accept 4D input")
+    Log4Error.invalidInputError(input.isContiguous(),
+      "SpatialSeparableConvolution Log4Error.invalidInputError contiguous input")
     Log4Error.invalidInputError(nInputChannel == input.size(channelDim),
       "input tensor channel dimension size doesn't match layer nInputChannel")
 
-    Log4Error.invalidInputError(gradOutput.nDimension() == 4, "SpatialSeparableConvolution only accept 4D gradOutput")
-    Log4Error.invalidInputError(gradOutput.isContiguous(), "SpatialSeparableConvolution Log4Error.invalidInputError contiguous gradOutput")
+    Log4Error.invalidInputError(gradOutput.nDimension() == 4,
+      "SpatialSeparableConvolution only accept 4D gradOutput")
+    Log4Error.invalidInputError(gradOutput.isContiguous(),
+      "SpatialSeparableConvolution Log4Error.invalidInputError contiguous gradOutput")
     Log4Error.invalidInputError(nOutputChannel == gradOutput.size(channelDim),
       "gradOutput tensor channel dimension size doesn't match layer nOutputChannel")
 

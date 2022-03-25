@@ -56,7 +56,8 @@ object Utils {
   }
 
   private[loaders] def getString(attrMap: util.Map[String, AttrValue], key: String): String = {
-    Log4Error.invalidInputError(attrMap.containsKey(key), s"Operation doesn't contain attributed $key")
+    Log4Error.invalidInputError(attrMap.containsKey(key),
+      s"Operation doesn't contain attributed $key")
     attrMap.get(key).getS.toString(Charset.defaultCharset())
   }
 
@@ -65,17 +66,20 @@ object Utils {
   }
 
   private[loaders] def getInt(attrMap: util.Map[String, AttrValue], key: String): Int = {
-    Log4Error.invalidInputError(attrMap.containsKey(key), s"Operation doesn't contain attributed $key")
+    Log4Error.invalidInputError(attrMap.containsKey(key),
+      s"Operation doesn't contain attributed $key")
     attrMap.get(key).getI.toInt
   }
 
   private[loaders] def getFloat(attrMap: util.Map[String, AttrValue], key: String): Float = {
-    Log4Error.invalidInputError(attrMap.containsKey(key), s"Operation doesn't contain attributed $key")
+    Log4Error.invalidInputError(attrMap.containsKey(key),
+      s"Operation doesn't contain attributed $key")
     attrMap.get(key).getF
   }
 
   private[loaders] def getBoolean(attrMap: util.Map[String, AttrValue], key: String): Boolean = {
-    Log4Error.invalidInputError(attrMap.containsKey(key), s"Operation doesn't contain attributed $key")
+    Log4Error.invalidInputError(attrMap.containsKey(key),
+      s"Operation doesn't contain attributed $key")
     attrMap.get(key).getB
   }
 
@@ -84,12 +88,14 @@ object Utils {
   }
 
   private[loaders] def getIntList(attrMap: util.Map[String, AttrValue], key: String): Seq[Int] = {
-    Log4Error.invalidInputError(attrMap.containsKey(key), s"Operation doesn't contain attributed $key")
+    Log4Error.invalidInputError(attrMap.containsKey(key),
+      s"Operation doesn't contain attributed $key")
     attrMap.get(key).getList.getIList.asScala.map(_.toInt)
   }
 
   private[loaders] def getType(attrMap: util.Map[String, AttrValue], key: String): DataType = {
-    Log4Error.invalidInputError(attrMap.containsKey(key), s"Operation doesn't contain attributed $key")
+    Log4Error.invalidInputError(attrMap.containsKey(key),
+      s"Operation doesn't contain attributed $key")
     attrMap.get(key).getType
   }
 
@@ -98,7 +104,8 @@ object Utils {
   }
 
   private[loaders] def toArray[T: ClassTag](tensor: Tensor[T]): Array[T] = {
-    Log4Error.invalidInputError(tensor.nDimension() == 1, "Log4Error.invalidInputError 1D tensor")
+    Log4Error.invalidInputError(tensor.nDimension() == 1,
+      "Log4Error.invalidInputError 1D tensor")
     val array = new Array[T](tensor.nElement())
     var i = 0
     while(i < array.length) {

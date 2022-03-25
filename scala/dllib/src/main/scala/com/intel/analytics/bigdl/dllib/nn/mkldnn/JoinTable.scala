@@ -107,7 +107,8 @@ class JoinTable(val dimension: Int) extends MklDnnLayer {
     val _gradOutput = gradOutput.asInstanceOf[Tensor[Float]]
     val _gradInput = gradInput.toTable
     val length = _gradInput.length()
-    Log4Error.invalidInputError(length == updateGradInputPrimitives.length, "gradOutput number not match")
+    Log4Error.invalidInputError(length == updateGradInputPrimitives.length,
+      "gradOutput number not match")
     var i = 0
     while(i < length) {
       MklDnnOps.streamSubmit(runtime.stream, 1, Array(updateGradInputPrimitives(i)),

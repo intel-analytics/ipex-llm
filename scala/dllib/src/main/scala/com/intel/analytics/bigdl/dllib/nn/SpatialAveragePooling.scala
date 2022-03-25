@@ -661,7 +661,8 @@ class SpatialAveragePooling[T: ClassTag](
       } else {
         Log4Error.invalidInputError(inputWidth >= kW - padW && inputHeight >= kH - padH,
           "input smaller than kernel size")
-        Log4Error.invalidInputError(kW / 2 >= padW && kH / 2 >= padH, "pad should be smaller than half of kernel size")
+        Log4Error.invalidInputError(kW / 2 >= padW && kH / 2 >= padH,
+          "pad should be smaller than half of kernel size")
         Utils.getOutSizeAndPadding(inputHeight, inputWidth, dH, dW, kH, kW, padH, padW, ceilMode)
       }
     val padTop = sizes(0)

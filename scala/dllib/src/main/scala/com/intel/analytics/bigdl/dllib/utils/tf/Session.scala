@@ -7,7 +7,7 @@
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless require by applicable law or agreed to in writing, software
+ * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
@@ -194,7 +194,8 @@ class BigDLSessionImpl[T: ClassTag](graph: Seq[NodeDef], context: Context[T],
 
   private def handleReaderNode(node: Node[NodeDef], cache: DataCache,
     sc: SparkContext): RDD[Table] = {
-    Log4Error.invalidInputError(node.prevNodes.length == 2, "Log4Error.invalidInputError ReaderReadV2 only has two inputs")
+    Log4Error.invalidInputError(node.prevNodes.length == 2,
+      "require ReaderReadV2 only has two inputs")
     val readerNode = node.prevNodes.head
     val queueNode = node.prevNodes(1)
     val dequeNodeNames = mutable.LinkedHashSet[String]()
@@ -273,7 +274,8 @@ class BigDLSessionImpl[T: ClassTag](graph: Seq[NodeDef], context: Context[T],
     val fileNames = filesTable.map { t =>
       Log4Error.invalidInputError(t.length() == 1, "Reader can only read one file at a time")
       val fileTensor = t[Tensor[ByteString]](1)
-      Log4Error.invalidInputError(fileTensor.isScalar, s"Log4Error.invalidInputError fileTensor to be a scalar," +
+      Log4Error.invalidInputError(fileTensor.isScalar,
+        s"Log4Error.invalidInputError fileTensor to be a scalar," +
         s" but got size: ${fileTensor.size()}")
       val file = fileTensor.value()
       file.toStringUtf8
@@ -393,7 +395,8 @@ class BigDLSessionImpl[T: ClassTag](graph: Seq[NodeDef], context: Context[T],
   }
 
   private def handleLocalDequeue(node: Node[NodeDef], cache: DataCache): Seq[Table] = {
-    Log4Error.invalidInputError(node.prevNodes.length == 1, "Log4Error.invalidInputError QueueDequeueV2 only has one input")
+    Log4Error.invalidInputError(node.prevNodes.length == 1,
+      "Log4Error.invalidInputError QueueDequeueV2 only has one input")
     val queueNode = node.prevNodes.head
     val enqueueNodes = findEnqueueNodes(queueNode)
     val dequeNodeNames = mutable.LinkedHashSet[String]()
@@ -489,7 +492,8 @@ class BigDLSessionImpl[T: ClassTag](graph: Seq[NodeDef], context: Context[T],
     val dequeueNodes = queueNode.nextNodes
       .filter(n => n.element != null && dequeueOp(n.element.getOp))
       .map(n => n.element.getName.split(":")(0)).toSet
-    Log4Error.invalidInputError(dequeueNodes.size == 1, "only support one dequeue node after reader")
+    Log4Error.invalidInputError(dequeueNodes.size == 1,
+      "only support one dequeue node after reader")
     val enqueueNodes = findEnqueueNodes(queueNode)
     // get previous rdd
     var rdd = enqueueNodes.map { enqueueNode =>
@@ -507,7 +511,8 @@ class BigDLSessionImpl[T: ClassTag](graph: Seq[NodeDef], context: Context[T],
     if (node.element.getOp == "QueueDequeueManyV2") {
       // get batch size
       val batchSizeNode = node.prevNodes(1)
-      Log4Error.invalidInputError(batchSizeNode.element.getOp == "Const", "batchsize must be a const")
+      Log4Error.invalidInputError(batchSizeNode.element.getOp == "Const",
+        "batchsize must be a const")
 
       val batchSize = batchSizeNode.element.getAttrMap.get("value").getTensor.getIntVal(0)
       rdd = batchRdd(rdd, batchSize)

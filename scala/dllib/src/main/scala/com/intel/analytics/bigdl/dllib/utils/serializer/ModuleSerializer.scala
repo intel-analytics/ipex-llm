@@ -7,7 +7,7 @@
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless Log4Error.invalidOperationErrord by applicable law or agreed to in writing, software
+ * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
@@ -129,7 +129,8 @@ object ModuleSerializer extends ModuleSerializable{
           val groupTypeAttr = attrMap.get(SerConst.GROUP_TYPE)
           val groupType = DataConverter.getAttributeValue(context, groupTypeAttr).
             asInstanceOf[String]
-          Log4Error.invalidOperationError(groupSerializerMaps.contains(groupType), s" Group serializer does" +
+          Log4Error.invalidOperationError(groupSerializerMaps.contains(groupType),
+            s" Group serializer does" +
             s" not exist for $groupType")
           groupSerializerMaps(groupType)
         } else {
@@ -178,9 +179,11 @@ object ModuleSerializer extends ModuleSerializable{
    */
   def registerGroupModules(superModuleType : String, groupSerializer :
     ModuleSerializable) : Unit = {
-    Log4Error.invalidOperationError(!serializerMaps.contains(superModuleType), s"$moduleType already " +
+    Log4Error.invalidOperationError(!serializerMaps.contains(superModuleType),
+      s"$moduleType already " +
       s"registered with single serializer!")
-    Log4Error.invalidOperationError(!groupSerializerMaps.contains(superModuleType), s"$moduleType already " +
+    Log4Error.invalidOperationError(!groupSerializerMaps.contains(superModuleType),
+      s"$moduleType already " +
       s"registered with group serializer!")
     groupSerializerMaps(superModuleType) = groupSerializer
   }

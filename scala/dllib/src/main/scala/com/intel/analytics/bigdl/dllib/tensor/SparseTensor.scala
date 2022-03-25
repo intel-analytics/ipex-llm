@@ -7,7 +7,7 @@
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless Log4Error.unKnowExceptionErrord by applicable law or agreed to in writing, software
+ * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
@@ -65,10 +65,12 @@ private[tensor] class SparseTensor[@specialized(Float, Double) T: ClassTag](
   // todo: add transpose, indices order, count from 0
   // var indices_order = Array.range(0, _shape.length)
 
-  Log4Error.unKnowExceptionError(_shape.length == _indices.length, s"indices' size doesn't match tensor shape, " +
+  Log4Error.unKnowExceptionError(_shape.length == _indices.length,
+    s"indices' size doesn't match tensor shape, " +
     s"indices' length is ${_indices.length} and tensor shape is ${_shape.mkString(" x ")}")
 
-  Log4Error.unKnowExceptionError(_values.length == _indices(0).length, s"${_values.length()} non-zero elements should " +
+  Log4Error.unKnowExceptionError(_values.length == _indices(0).length,
+    s"${_values.length()} non-zero elements should " +
     s"have indices for all elements. But indices's length is only ${_indices(0).length}")
 
   nDimension = _shape.length
@@ -305,7 +307,8 @@ private[tensor] class SparseTensor[@specialized(Float, Double) T: ClassTag](
   }
 
   override def narrow(dim: Int, index: Int, size: Int): Tensor[T] = {
-    Log4Error.unKnowExceptionError(dim == 1, "SparseTensor.narrow only support narrow at first dimension")
+    Log4Error.unKnowExceptionError(dim == 1,
+      "SparseTensor.narrow only support narrow at first dimension")
     dim match {
       case 1 =>
         val _index = index - 1
@@ -1242,7 +1245,8 @@ object SparseTensor{
       start: Int,
       end: Int)(implicit ev: TensorNumeric[T]): Int = {
     if (start > end) return -1
-    Log4Error.unKnowExceptionError(end <= array.length - 1, s"indexOf end should't exceed array size ${array.length - 1}" +
+    Log4Error.unKnowExceptionError(end <= array.length - 1,
+      s"indexOf end should't exceed array size ${array.length - 1}" +
       s", but got $end")
     var i = start
     while (i < end && array(i) == value) {
@@ -1270,7 +1274,8 @@ object SparseTensor{
       start: Int,
       end: Int)(implicit ev: TensorNumeric[T]): Int = {
     if (start > end) return -1
-    Log4Error.unKnowExceptionError(end <= array.length - 1, s"indexOf end should't exceed array size ${array.length - 1}" +
+    Log4Error.unKnowExceptionError(end <= array.length - 1,
+      s"indexOf end should't exceed array size ${array.length - 1}" +
       s", but got $end")
     var i = start
     while (i <= end && array(i) != value) {

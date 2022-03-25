@@ -7,7 +7,7 @@
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless Log4Error.invalidInputErrord by applicable law or agreed to in writing, software
+ * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
@@ -135,7 +135,8 @@ object SpatialConvolutionToTF extends BigDLToTensorflow {
         Seq(conv, filterReader, filter)
       }
     } else {
-      Log4Error.invalidInputError(spatialConv.format == DataFormat.NCHW, "Only NCHW support conv group")
+      Log4Error.invalidInputError(spatialConv.format == DataFormat.NCHW,
+        "Only NCHW support conv group")
       val nodes = new ArrayBuffer[NodeDef]()
       val splitDim = const(Tensor.scalar[Int](1), spatialConv.getName() + "/split_dim",
         ByteOrder.LITTLE_ENDIAN)
@@ -329,8 +330,10 @@ object DropoutToTF extends BigDLToTensorflow {
                        byteOrder: ByteOrder): Seq[NodeDef] = {
     Log4Error.invalidInputError(inputs.length == 1, "Dropout only accept one input")
     val layer = module.asInstanceOf[Dropout[_]]
-    Log4Error.invalidInputError(layer.isTraining() == false, "only support evaluating mode dropout")
-    Log4Error.invalidInputError(inputs.length == 1, "Log4Error.invalidInputError only one tensor input")
+    Log4Error.invalidInputError(layer.isTraining() == false,
+      "only support evaluating mode dropout")
+    Log4Error.invalidInputError(inputs.length == 1,
+      "Log4Error.invalidInputError only one tensor input")
     Seq(identity(inputs(0), layer.getName()))
   }
 }
@@ -357,7 +360,8 @@ object CAddTableToTF extends BigDLToTensorflow {
 object CMultTableToTF extends BigDLToTensorflow {
   override def toTFDef(module: AbstractModule[_, _, _], inputs: Seq[NodeDef],
                        byteOrder: ByteOrder): Seq[NodeDef] = {
-    Log4Error.invalidInputError(inputs.length == 2, "Tensorflow only support two tensor multiply together")
+    Log4Error.invalidInputError(inputs.length == 2,
+      "Tensorflow only support two tensor multiply together")
 
     Seq(multiply(inputs(0), inputs(1), module.getName()))
   }

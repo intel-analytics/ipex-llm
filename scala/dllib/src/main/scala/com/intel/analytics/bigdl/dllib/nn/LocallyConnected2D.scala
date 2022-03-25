@@ -325,7 +325,8 @@ class LocallyConnected2D[T: ClassTag](
 
     val (padTop, padBottom, padLeft, padRight) = getPadding(inputHeight, inputWidth)
 
-    Log4Error.invalidInputError(input.nDimension() == 3 || input.nDimension() == 4, "Only support 3D or 4D input")
+    Log4Error.invalidInputError(input.nDimension() == 3 || input.nDimension() == 4,
+      "Only support 3D or 4D input")
     gradInput.resizeAs(input)
     if (_1x1) {
       fGradInput.set(gradInput)
@@ -350,7 +351,8 @@ class LocallyConnected2D[T: ClassTag](
         results(i) = Engine.model.invoke(() => {
           val gradInputT = gradInput.select(1, _i)
           val gradOutputT = gradOutput.select(1, _i)
-          Log4Error.invalidInputError(gradOutputT.isContiguous(), "gradOutput need to be contiguous")
+          Log4Error.invalidInputError(gradOutputT.isContiguous(),
+            "gradOutput need to be contiguous")
           val fgradInputT = fGradInput.select(1, _i)
           updateGradInputFrame(
             gradInputT,

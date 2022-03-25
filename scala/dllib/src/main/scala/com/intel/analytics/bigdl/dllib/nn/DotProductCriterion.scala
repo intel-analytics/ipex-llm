@@ -51,8 +51,8 @@ class DotProductCriterion[T: ClassTag]
   override def updateGradInput(input: Tensor[T], target: Tensor[T]): Tensor[T] = {
     Log4Error.invalidInputError(input.dim() == 1 || input.dim() == 2, "DotProductCriterion only" +
       "support tensor with 1 or 2 dimensions")
-    Log4Error.invalidInputError(input.size().sameElements(target.size()), "The shape of input and target" +
-      "must be the same")
+    Log4Error.invalidInputError(input.size().sameElements(target.size()),
+      "The shape of input and target must be the same")
 
     gradInput.resizeAs(target)
     Tensor.dense(target, gradInput)

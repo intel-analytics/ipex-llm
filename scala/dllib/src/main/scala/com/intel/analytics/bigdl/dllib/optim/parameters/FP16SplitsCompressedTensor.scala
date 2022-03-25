@@ -54,7 +54,8 @@ class FP16SplitsCompressedTensor[T: ClassTag](buffers: Array[Array[Byte]], size:
       srcOffset + length <= src.nElement(),
       s"offset $offset cannot be negative, srcOffset $srcOffset cannot be negative," +
         s" srcOffset $srcOffset + length $length <= src.nElement() ${src.nElement()}")
-    Log4Error.unKnowExceptionError(offset + length <= size, s"offset $offset + length $length should not" +
+    Log4Error.unKnowExceptionError(offset + length <= size,
+      s"offset $offset + length $length should not" +
       s" greater than size $size")
     val tOffset = src.storageOffset() - 1 + srcOffset
 
@@ -89,7 +90,7 @@ class FP16SplitsCompressedTensor[T: ClassTag](buffers: Array[Array[Byte]], size:
   override def compress(tensor: Tensor[T]): FP16SplitsCompressedTensor.this.type =
     compress(0, tensor, 0, tensor.nElement())
 
-  override def deCompress(srcOffset: Int, tensor: Tensor[T], tgtOffset: Int, length: Int): Unit = { 
+  override def deCompress(srcOffset: Int, tensor: Tensor[T], tgtOffset: Int, length: Int): Unit = {
     Log4Error.unKnowExceptionError(tensor.isContiguous(),
       "tensor is expected to be contiguous")
     Log4Error.unKnowExceptionError(srcOffset >= 0 && length > 0 &&

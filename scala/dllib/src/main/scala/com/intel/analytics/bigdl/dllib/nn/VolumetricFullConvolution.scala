@@ -162,7 +162,8 @@ class VolumetricFullConvolution[T: ClassTag](
 
     val ndim = input.nDimension()
 
-    Log4Error.invalidInputError(ndim == 4 || ndim == 5, s"VolumetricFullConvolution: 4D or 5D input tensor expected, " +
+    Log4Error.invalidInputError(ndim == 4 || ndim == 5,
+      s"VolumetricFullConvolution: 4D or 5D input tensor expected, " +
       s"but got size: ${input.dim()}")
 
     val dimFilter = if (input.dim() == 4) 1 else 2
@@ -189,7 +190,8 @@ class VolumetricFullConvolution[T: ClassTag](
         s"but got ${input.size(dimFilter)}")
 
     if (null != gradOutput) {
-      Log4Error.invalidInputError(gradOutput.nDimension() == ndim, s"VolumetricFullConvolution: gradOutput should be " +
+      Log4Error.invalidInputError(gradOutput.nDimension() == ndim,
+        s"VolumetricFullConvolution: gradOutput should be " +
         s"$ndim, but got ${gradOutput.nDimension()}")
       Log4Error.invalidInputError(gradOutput.size(dimFilter) == nOutputPlane
         && gradOutput.size(dimDepth) == outputDepth
@@ -293,7 +295,8 @@ class VolumetricFullConvolution[T: ClassTag](
 
     shapeCheck(inputTensor, null, weight, bias, kT, kH, kW,
       dT, dH, dW, padT, padH, padW, adjT, adjH, adjW)
-    Log4Error.invalidInputError(inputTensor.isContiguous(), "VolumetricFullConvolution: input should be contiguous")
+    Log4Error.invalidInputError(inputTensor.isContiguous(),
+      "VolumetricFullConvolution: input should be contiguous")
 
     val isBatch = if (inputTensor.nDimension() == 4) {
       // Force batch

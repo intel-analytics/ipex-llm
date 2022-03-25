@@ -80,7 +80,8 @@ class ConcatTable extends MklDnnContainer with MklInt8Convertible {
   }
 
   override private[mkldnn] def initBwdPrimitives(grads: Array[MemoryData], phase: Phase) = {
-    Log4Error.invalidInputError(grads.length == mklDnnModules.length, "grad tensor number is not correct")
+    Log4Error.invalidInputError(grads.length == mklDnnModules.length,
+      "grad tensor number is not correct")
     _gradOutputFormats = new Array[MemoryData](grads.length)
     val subGradInputs = new Array[MemoryData](grads.length)
     tensorPrimitives = new Array[Long](grads.length + 1)
@@ -96,9 +97,11 @@ class ConcatTable extends MklDnnContainer with MklInt8Convertible {
       if (shape == null) {
         shape = gradInput(0).shape.clone()
       } else {
-        Log4Error.invalidInputError(shape.length == gradInput(0).shape.length, "backward grad shape should be same")
+        Log4Error.invalidInputError(shape.length == gradInput(0).shape.length,
+          "backward grad shape should be same")
         for(j <- 0 until shape.length) {
-          Log4Error.invalidInputError(shape(j) == gradInput(0).shape(j), "backward grad shape size should be same")
+          Log4Error.invalidInputError(shape(j) == gradInput(0).shape(j),
+            "backward grad shape size should be same")
         }
       }
     }
@@ -140,17 +143,20 @@ class ConcatTable extends MklDnnContainer with MklInt8Convertible {
   }
 
   override private[mkldnn] def gradInputFormats() = {
-    Log4Error.invalidInputError(_gradInputFormats != null, "You should call initBwdPrimitives first")
+    Log4Error.invalidInputError(_gradInputFormats != null,
+      "You should call initBwdPrimitives first")
     _gradInputFormats
   }
 
   override private[mkldnn] def outputFormats() = {
-    Log4Error.invalidInputError(_outputFormats != null, "You should call initFwdPrimitives first")
+    Log4Error.invalidInputError(_outputFormats != null,
+      "You should call initFwdPrimitives first")
     _outputFormats
   }
 
   override private[mkldnn] def gradOutputFormats() = {
-    Log4Error.invalidInputError(_gradOutputFormats != null, "You should call initBwdPrimitives first")
+    Log4Error.invalidInputError(_gradOutputFormats != null,
+      "You should call initBwdPrimitives first")
     _gradOutputFormats
   }
 

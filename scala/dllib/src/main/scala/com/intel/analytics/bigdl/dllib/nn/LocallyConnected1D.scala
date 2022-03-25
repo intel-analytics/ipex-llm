@@ -160,9 +160,11 @@ class LocallyConnected1D[T: ClassTag](val nInputFrame: Int,
     if (biasWindow == null) biasWindow = Tensor[T]()
 
     // Shape check on input with inputFrameSize and kernelW
-    Log4Error.invalidInputError(input.size(dimFeat) == inputFrameSize, "Invalid input frame size. Got: " +
+    Log4Error.invalidInputError(input.size(dimFeat) == inputFrameSize,
+      "Invalid input frame size. Got: " +
       s"${input.size(dimFeat)}, Expected: $inputFrameSize")
-    Log4Error.invalidInputError(nOutputFrame >= 1, "Input sequence smaller than kernel size. Got: " +
+    Log4Error.invalidInputError(nOutputFrame >= 1,
+      "Input sequence smaller than kernel size. Got: " +
       s"$nInputFrame, Expected: $kernelW")
 
     val batchSize = input.size(1)
@@ -247,9 +249,11 @@ class LocallyConnected1D[T: ClassTag](val nInputFrame: Int,
     if (weightWindow == null) weightWindow = Tensor[T]()
 
     // Shape check on input with inputFrameSize and kernelW
-    Log4Error.invalidInputError(input.size(dimFeat) == inputFrameSize, "Invalid input frame size. Got: " +
+    Log4Error.invalidInputError(input.size(dimFeat) == inputFrameSize,
+      "Invalid input frame size. Got: " +
       s"${input.size(dimFeat)}, Expected: $inputFrameSize")
-    Log4Error.invalidInputError(nOutputFrame >= 1, "Input sequence smaller than kernel size. Got: " +
+    Log4Error.invalidInputError(nOutputFrame >= 1,
+      "Input sequence smaller than kernel size. Got: " +
       s"$nInputFrame, Expected: $kernelW")
 
     gradInput.resizeAs(input)

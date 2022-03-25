@@ -50,7 +50,8 @@ class InternalCAddTable[T: ClassTag, D: ClassTag](override val inplace: Boolean 
     while (i <= input.length()) {
       if (i > gradInput.length) gradInput.insert(i, Tensor[T]().resizeAs(input(1)))
       if (inplace) {
-        Log4Error.invalidOperationError(input[Tensor[D]](1).isSameSizeAs(gradOutput), "cannot use inplace for broadcast")
+        Log4Error.invalidOperationError(input[Tensor[D]](1).isSameSizeAs(gradOutput),
+          "cannot use inplace for broadcast")
         gradInput[Tensor[D]](i).set(gradOutput)
       } else {
         if (input[Tensor[D]](i).isSameSizeAs(gradOutput)) {
@@ -58,7 +59,8 @@ class InternalCAddTable[T: ClassTag, D: ClassTag](override val inplace: Boolean 
         } else if (canFastBroadcast(input[Tensor[D]](i), gradOutput)) {
           gradInput[Tensor[D]](i).resizeAs(input[Tensor[D]](i)).copy(gradOutput.sum(1))
         } else {
-          Log4Error.invalidOperationError(input[Tensor[D]](i).isScalar, "Only support scalar broadcast backward now")
+          Log4Error.invalidOperationError(input[Tensor[D]](i).isScalar,
+            "Only support scalar broadcast backward now")
           if (!calculateSum) {
             sum = gradOutput.sum()
             calculateSum = true

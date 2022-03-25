@@ -38,7 +38,8 @@ abstract class Pooling2D[T: ClassTag](
 
   Log4Error.invalidInputError(poolSize.length == 2,
     s"For Pooling2D, poolSize should be of length 2 but got length ${poolSize.length}")
-  Log4Error.invalidInputError(borderMode == "valid" || borderMode == "same", s"Invalid border mode for " +
+  Log4Error.invalidInputError(borderMode == "valid" || borderMode == "same",
+    s"Invalid border mode for " +
     s"Pooling2D: $borderMode")
 
   val strideValues: Array[Int] = if (strides == null) poolSize else strides

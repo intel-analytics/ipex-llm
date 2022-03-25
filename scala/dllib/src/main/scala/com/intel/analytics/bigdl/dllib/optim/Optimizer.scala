@@ -508,8 +508,8 @@ object Optimizer {
         s" any trainable parameters, please check your model and optimMethods.")
       // If the storage subModule's parameter is the same with the storage of the submodule,
       // then subModule's parameter is contiguous.
-      Log4Error.invalidOperationError(modelParameters._1.storage() == subModuleWeights.storage(), s"Optimizer:" +
-        s" $subModuleName's parameter is not contiguous.")
+      Log4Error.invalidOperationError(modelParameters._1.storage() == subModuleWeights.storage(),
+        s"Optimizer: $subModuleName's parameter is not contiguous.")
       (subModuleName, subModuleWeights)
     }.toArray
 
@@ -520,7 +520,8 @@ object Optimizer {
       while (i < sortedWeights.length - 1) {
         val current = sortedWeights(i)
         val next = sortedWeights(i + 1)
-        Log4Error.invalidOperationError(current._2.storageOffset() + current._2.nElement() <= next._2.storageOffset(),
+        Log4Error.invalidOperationError(current._2.storageOffset() + current._2.nElement()
+          <= next._2.storageOffset(),
           s"Optimizer: ${current._1} and ${next._1}'s parameters are duplicated." +
             s" Please check your model and optimMethods.")
         i += 1

@@ -55,7 +55,8 @@ class SelectTable(val index: Int)(implicit ev: TensorNumeric[Float]) extends Mkl
 
     NNUtils.recursiveCopy(gradInput.asInstanceOf[Table](index), gradOutput)
 
-    Log4Error.invalidInputError(gradInput.asInstanceOf[Table].contains(index), "Index exceeds the size of input table")
+    Log4Error.invalidInputError(gradInput.asInstanceOf[Table].contains(index),
+      "Index exceeds the size of input table")
 
     gradInput.asInstanceOf[Table]
   }

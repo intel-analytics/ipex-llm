@@ -159,7 +159,8 @@ class DnnGraph(
             forwardExecution(j).element = toDnnIdentity(e.asInstanceOf[nn.Identity[Float]])
             backwardExecution(i).element = forwardExecution(j).element
           } else {
-            Log4Error.invalidInputError(e.isInstanceOf[MklDnnModule], s"DnnGraph should only contain dnn layers," +
+            Log4Error.invalidInputError(e.isInstanceOf[MklDnnModule],
+              s"DnnGraph should only contain dnn layers," +
                 s"but find ${forwardExecution(j).element.getName()} is not a mkldnn layer")
           }
           backId2ForwardId(i) = j

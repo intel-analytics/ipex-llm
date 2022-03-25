@@ -244,7 +244,8 @@ class RoiAlign[T: ClassTag] (
   }
 
   override def updateGradInput(input: Activity, gradOutput: Tensor[T]): Activity = {
-    Log4Error.invalidInputError(mode == "avg", s"Only support backward for average mode, but get ${mode}")
+    Log4Error.invalidInputError(mode == "avg",
+      s"Only support backward for average mode, but get ${mode}")
     val data = input.toTable[Tensor[T]](1)
     val rois = input.toTable[Tensor[T]](2)
     val num_rois = rois.size(1)

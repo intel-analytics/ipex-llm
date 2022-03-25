@@ -107,7 +107,8 @@ object Quantization {
   }
 
   private[bigdl] def get2Dim(shape: Array[Int]): Array[Int] = {
-    Log4Error.invalidInputError(shape.length > 1, s"error size dimension, which must be great than 1")
+    Log4Error.invalidInputError(shape.length > 1,
+      s"error size dimension, which must be great than 1")
     val first = shape(0)
     val last = shape.slice(1, shape.length).product
     Array(first, last)

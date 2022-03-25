@@ -7,7 +7,7 @@
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless Log4Error.invalidInputErrord by applicable law or agreed to in writing, software
+ * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
@@ -106,7 +106,8 @@ object TensorflowLoader{
     inputPorts.foreach(s => {
       val name = s.split(":")(0)
       val pos = s.split(":")(1)
-      Log4Error.invalidInputError(!inputs.contains(name), "You should not specify node name and node name " +
+      Log4Error.invalidInputError(!inputs.contains(name),
+        "You should not specify node name and node name " +
         "with port at same time")
       if (!result.isDefinedAt(name)) {
         result(name) = ArrayBuffer[Int]()
@@ -556,7 +557,8 @@ object TensorflowLoader{
         var j = 0
         while (i < patternNode.prevNodes.length) {
           if (patternNode.prevNodes(i).element == N_INPUT_PLACEHOLDER) {
-            Log4Error.invalidInputError(patternNode.prevNodes.count(_.element == N_INPUT_PLACEHOLDER) == 1,
+            Log4Error.invalidInputError(
+              patternNode.prevNodes.count(_.element == N_INPUT_PLACEHOLDER) == 1,
               s"only support one $N_INPUT_PLACEHOLDER ")
             direction = 1
             // skip the left input nodes of graphNode,

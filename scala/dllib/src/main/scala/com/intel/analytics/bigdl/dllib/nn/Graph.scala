@@ -167,7 +167,8 @@ abstract class Graph[T: ClassTag](
       buffer
     }
 
-    Log4Error.invalidInputError(forwardNodes.map(_.element.getName()).distinct.length == forwardNodes.length,
+    Log4Error.invalidInputError(forwardNodes.map(_.element.getName()).distinct.length ==
+      forwardNodes.length,
       s"the name of node in the graph should be unique, but find duplicated name " +
         s"${duplicatedNames(forwardNodes.map(_.element.getName())).mkString(", ")}")
 
@@ -176,7 +177,8 @@ abstract class Graph[T: ClassTag](
       .filterNot(_.element.isInstanceOf[ControlDependency[_]])
 
     val realInputs = inputs.filterNot(_.element.isInstanceOf[WithoutInput])
-    Log4Error.invalidInputError(roots.size == realInputs.length, s"There're ${realInputs.length} inputs, " +
+    Log4Error.invalidInputError(roots.size == realInputs.length,
+      s"There're ${realInputs.length} inputs, " +
       s"but graph has ${roots.size} roots")
 
     realInputs.foreach(n =>

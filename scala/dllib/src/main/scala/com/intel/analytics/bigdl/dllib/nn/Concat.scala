@@ -103,7 +103,8 @@ class Concat[T: ClassTag](val dimension: Int)(
             val curFrame = target.select(1, f)
             val outputFrame = currentOutput.select(1, f)
             Log4Error.invalidInputError(curFrame.isContiguous(), "curFrame needs to be contiguous")
-            Log4Error.invalidInputError(outputFrame.isContiguous(), "curFrame needs to be contiguous")
+            Log4Error.invalidInputError(outputFrame.isContiguous(),
+              "curFrame needs to be contiguous")
             curFrame.copy(outputFrame)
             f += 1
           }

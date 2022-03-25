@@ -69,7 +69,8 @@ class Unsqueeze[T: ClassTag](
         s" input feature map dim ${numInputDims}, inputdim ${inputDim}")
       // the actual position; clearer error message for batchMode (if any)
       val actualPos = pos(index) + offsetDim
-      Log4Error.invalidInputError(actualPos >= 1 && actualPos <= (inputDim + 1), s"Invalid position: ${pos(index)}. " +
+      Log4Error.invalidInputError(actualPos >= 1 && actualPos <= (inputDim + 1),
+        s"Invalid position: ${pos(index)}. " +
         s"input:dim() is $input, input feature map dim (numInputDims) is $numInputDims.")
       pos(index) = actualPos
     }

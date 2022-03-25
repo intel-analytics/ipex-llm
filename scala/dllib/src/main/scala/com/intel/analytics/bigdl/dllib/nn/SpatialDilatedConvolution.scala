@@ -169,7 +169,8 @@ class SpatialDilatedConvolution[T: ClassTag](
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
     shapeCheck(input, null, weight, bias,
       kH, kW, dH, dW, padH, padW, dilationH, dilationW)
-    Log4Error.invalidInputError(input.isContiguous(), "SpatialDilatedConvolution expects input is contiguous")
+    Log4Error.invalidInputError(input.isContiguous(),
+      "SpatialDilatedConvolution expects input is contiguous")
 
     val isBatch = if (input.nDimension() == 3) {
       // Force batch

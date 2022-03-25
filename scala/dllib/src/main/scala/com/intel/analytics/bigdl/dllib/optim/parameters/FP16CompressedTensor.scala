@@ -38,7 +38,8 @@ private[bigdl] class FP16CompressedTensor[T: ClassTag](
 
   def this(bytes: ByteBuffer) = this(bytes.array(), bytes.position(), bytes.remaining())
 
-  Log4Error.unKnowExceptionError(bufferLength % 2 == 0 && bufferOffset + bufferLength <= buffer.length,
+  Log4Error.unKnowExceptionError(bufferLength % 2 == 0 &&
+    bufferOffset + bufferLength <= buffer.length,
   s"bufferLength needs to be even, but is $bufferLength, bufferOffset $bufferOffset" +
     s" + bufferLength $bufferLength should not be greater than buffer.length ${buffer.length}")
 
@@ -90,7 +91,7 @@ private[bigdl] class FP16CompressedTensor[T: ClassTag](
   override def deCompress(tensor: Tensor[T]): Unit = deCompress(0, tensor, 0, bufferLength / 2)
 
   override def deCompress(srcOffset: Int, tensor: Tensor[T],
-                          tgtOffset: Int, length: Int): Unit = {    
+                          tgtOffset: Int, length: Int): Unit = {
     Log4Error.unKnowExceptionError(srcOffset >= 0 && length > 0 && tgtOffset >= 0,
       s"srcOffset $srcOffset, tgtOffset $tgtOffset, length $length cannot be negative")
     Log4Error.unKnowExceptionError((srcOffset + length) * 2 <= bufferLength,
@@ -290,7 +291,8 @@ object FP16CompressedTensor {
 
   private[parameters] def fromFP16(fp16: Array[Byte], fp16Offset: Int, fp16Length: Int,
                                    target: Array[Double], targetOffset: Int): Unit = {
-    Log4Error.unKnowExceptionError(fp16Length % 2 == 0, s"fp16Length should be even, but got $fp16Length")
+    Log4Error.unKnowExceptionError(fp16Length % 2 == 0,
+      s"fp16Length should be even, but got $fp16Length")
     Log4Error.unKnowExceptionError(fp16Length + fp16Offset <= fp16.length,
       s"fp16Length $fp16Length + fp16Offset $fp16Offset should not greater" +
         s" than fp16.length ${fp16.length}")

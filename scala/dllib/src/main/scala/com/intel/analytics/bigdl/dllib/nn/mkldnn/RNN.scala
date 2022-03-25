@@ -107,7 +107,8 @@ class RNN(
     case Direction.UnidirectionalLeft2Right
          | Direction.UnidirectionalRight2Left => (1, 1)
     case Direction.BidirectionalConcat =>
-      Log4Error.invalidInputError(layers == 1, "Bidirectional Concat RNN does not support multiple layers. " +
+      Log4Error.invalidInputError(layers == 1,
+        "Bidirectional Concat RNN does not support multiple layers. " +
         "layers = " + layers)
       (2, 2)
     case Direction.BidirectionalSum => (2, 1)

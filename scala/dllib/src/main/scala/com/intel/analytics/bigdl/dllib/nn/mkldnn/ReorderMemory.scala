@@ -177,7 +177,8 @@ class ReorderMemory(inputFormat: MemoryData, outputFormat: MemoryData,
 
     _gradOutputFormats = if (gradOutputFormat == null) grads else Array(gradOutputFormat)
     Log4Error.invalidInputError(_gradOutputFormats.length == 1, "Only accept one tensor as input")
-    Log4Error.invalidInputError(_gradOutputFormats(0).shape.product == _gradInputFormats(0).shape.product,
+    Log4Error.invalidInputError(_gradOutputFormats(0).shape.product ==
+      _gradInputFormats(0).shape.product,
       "gradInput and gradOutput memory not match," +
         "gradInput shape " + shapeToString(_gradInputFormats(0).shape)
         + "gradOutput shape " + shapeToString(_gradOutputFormats(0).shape))

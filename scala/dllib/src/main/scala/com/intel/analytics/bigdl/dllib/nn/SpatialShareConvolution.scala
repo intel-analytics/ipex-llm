@@ -49,8 +49,10 @@ class SpatialShareConvolution[T: ClassTag](
   padW, padH, nGroup, propagateBack, wRegularizer, bRegularizer,
   initWeight, initBias, initGradWeight, initGradBias, withBias) {
 
-  Log4Error.invalidInputError(Engine.model.getPoolSize == 1, "Don't support single model multi thread.")
-  Log4Error.invalidInputError(padW >= 0 && padH >= 0, "SAME padding is not supported in SpatialShareConvolution," +
+  Log4Error.invalidInputError(Engine.model.getPoolSize == 1,
+    "Don't support single model multi thread.")
+  Log4Error.invalidInputError(padW >= 0 && padH >= 0,
+    "SAME padding is not supported in SpatialShareConvolution," +
     " padW and padH should not be negative" +
     s"padW $padW padH $padH")
 
@@ -58,7 +60,8 @@ class SpatialShareConvolution[T: ClassTag](
     Log4Error.invalidInputError(input.dim() == 3 || input.dim() == 4,
       "SpatialShareConvolution: " + ErrorInfo.constrainInputAs3DOrBatch +
     s"input dimension ${input.dim()}}")
-    Log4Error.invalidInputError(input.isContiguous(), "SpatialShareConvolution expects input to be contiguous")
+    Log4Error.invalidInputError(input.isContiguous(),
+      "SpatialShareConvolution expects input to be contiguous")
     if (_1x1 || input.dim() == 3 || (input.dim() == 4 && input.size(1) == 1)) {
       super.updateOutput(input)
     } else {
@@ -75,7 +78,8 @@ class SpatialShareConvolution[T: ClassTag](
       if (withBias && onesBias.dim() != 1 || onesBias.size(1) != outputHeight * outputWidth) {
         onesBias.resize(outputHeight * outputWidth).fill(ev.fromType(1.0))
       }
-      Log4Error.invalidInputError(input.size(2) == nInputPlane, s"input.size(2) ${input.size(2)} needs match" +
+      Log4Error.invalidInputError(input.size(2) == nInputPlane,
+        s"input.size(2) ${input.size(2)} needs match" +
         s" nInputPlane $nInputPlane")
       val batchSize = input.size(1)
       output.resize(batchSize, nOutputPlane, outputHeight, outputWidth)
@@ -85,7 +89,8 @@ class SpatialShareConvolution[T: ClassTag](
       var i = 1
       while (i <= batchSize) {
         val inputT = input.select(1, i)
-        Log4Error.invalidInputError(inputT.isContiguous(), "SpatialShareConvolution expects input to be contiguous")
+        Log4Error.invalidInputError(inputT.isContiguous(),
+          "SpatialShareConvolution expects input to be contiguous")
         val outputT = output.select(1, i)
         var g = 0
         while (g < nGroup) {
@@ -114,7 +119,8 @@ class SpatialShareConvolution[T: ClassTag](
     if (!propagateBack) {
       return gradInput
     }
-    Log4Error.invalidInputError(input.nDimension() == 3 || input.nDimension() == 4, "Only support 3D or 4D input" +
+    Log4Error.invalidInputError(input.nDimension() == 3 || input.nDimension() == 4,
+      "Only support 3D or 4D input" +
       s"input dimension ${input.nDimension()}")
     if (_1x1 || input.dim() == 3 || (input.dim() == 4 && input.size(1) == 1)) {
       super.updateGradInput(input, gradOutput)
@@ -146,7 +152,8 @@ class SpatialShareConvolution[T: ClassTag](
   }
 
   override def accGradParameters(input: Tensor[T], gradOutput: Tensor[T]): Unit = {
-    Log4Error.invalidInputError(input.nDimension() == 3 || input.nDimension() == 4, "Only support 3D or 4D input" +
+    Log4Error.invalidInputError(input.nDimension() == 3 || input.nDimension() == 4,
+      "Only support 3D or 4D input" +
       s"input Dimension ${input.nDimension()}")
     Log4Error.invalidOperationError(gradOutput.isContiguous(),
       "gradOutput is not contiguous")

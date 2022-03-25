@@ -81,7 +81,8 @@ class LookupTableSparse[T: ClassTag](
     } else {
       (input.toTensor[T], None)
     }
-    Log4Error.invalidInputError(inputTensor.getTensorType == SparseType, "LookupTableSparse's input" +
+    Log4Error.invalidInputError(inputTensor.getTensorType == SparseType,
+      "LookupTableSparse's input" +
       s"must be SparseTensor, but got ${inputTensor.getTensorType}")
 
     val batchSize = inputTensor.size(1)

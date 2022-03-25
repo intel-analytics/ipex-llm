@@ -57,22 +57,26 @@ class MV[T: ClassTag](val trans: Boolean = false)
       if (trans) {
         m = m.transpose(1, 2)
       }
-      Log4Error.invalidInputError(m.size(2) == v.size(1), "matrix row count and vector length do not match" +
+      Log4Error.invalidInputError(m.size(2) == v.size(1),
+        "matrix row count and vector length do not match" +
         s"matrix row count ${m.size(2)}" +
         s"vector length ${v.size(1)}")
 
       output.resize(m.size(1)).zero()
       output.mv(m, v)
     } else {
-      Log4Error.invalidInputError(v.dim() == 2, "vector must be 2D (batch dimension)" +
+      Log4Error.invalidInputError(v.dim() == 2,
+        "vector must be 2D (batch dimension)" +
         s"dimension ${v.dim()}" )
-      Log4Error.invalidInputError(m.size(1) == v.size(1), "inputs must contain the same number of minibatches" +
+      Log4Error.invalidInputError(m.size(1) == v.size(1),
+        "inputs must contain the same number of minibatches" +
         s"The numbers are ${m.size(1)} and ${v.size(1)}")
 
       if (trans) {
         m = m.transpose(2, 3)
       }
-      Log4Error.invalidInputError(m.size(3) == v.size(2), "matrix row count and vector length do not match" +
+      Log4Error.invalidInputError(m.size(3) == v.size(2),
+        "matrix row count and vector length do not match" +
         s"matrix row count ${m.size(3)}" +
         s"vector length ${v.size(2)}")
 

@@ -173,7 +173,8 @@ private[bigdl] class Scheduler[T] (
     nodeSet.filter(n => executableNodes.contains(n.element.getName())).foreach(nextNode => {
       if (nextNode.element.isInstanceOf[MergeOps[_]]) {
         val merge = nextNode.element.asInstanceOf[MergeOps[_]]
-        Log4Error.invalidInputError(nodeStatus.notExecuted(nextNode), s"Merge node(${nextNode.element.getName()}) " +
+        Log4Error.invalidInputError(nodeStatus.notExecuted(nextNode),
+          s"Merge node(${nextNode.element.getName()}) " +
           s"should not be executed twice out of loop or in a same iteration of a loop")
         merge.setSwitch(nextNode.prevNodes.indexOf(curNode) + 1)
         enQueue(nextNode, frame)

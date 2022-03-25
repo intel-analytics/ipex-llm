@@ -158,7 +158,8 @@ class PReLU[T: ClassTag](
       }
       DenseTensorApply.apply3[T](gradInput, gradOutput, input, func)
     } else {
-      Log4Error.invalidInputError(input.nDimension() <= 4, s"${input.nDimension()}D input not supported")
+      Log4Error.invalidInputError(input.nDimension() <= 4,
+        s"${input.nDimension()}D input not supported")
       Log4Error.invalidInputError(input.size((input.nDimension() + 1) % 2 + 1) == nOutputPlane,
         "wrong number of input planes")
 
@@ -214,8 +215,10 @@ class PReLU[T: ClassTag](
 
   override def accGradParameters(input: Tensor[T], gradOutput: Tensor[T]): Unit = {
     Log4Error.invalidInputError(input.isContiguous(), "input must be contiguous")
-    Log4Error.invalidInputError(gradOutput.isContiguous(), "gradOuput must be contiguous")
-    Log4Error.invalidInputError(input.nElement() == gradOutput.nElement(), "input and gradOutput should" +
+    Log4Error.invalidInputError(gradOutput.isContiguous(),
+      "gradOuput must be contiguous")
+    Log4Error.invalidInputError(input.nElement() == gradOutput.nElement(),
+      "input and gradOutput should" +
       " has same number of element")
 
     if (scaleW == 0) {
@@ -235,7 +238,8 @@ class PReLU[T: ClassTag](
       DenseTensorApply.apply2[T](input, gradOutput, func)
       gradWeight.add(ev.times(ev.fromType[Double](scaleW), sum))
     } else {
-      Log4Error.invalidInputError(input.nDimension() <= 4, s"${input.nDimension()}D input not supported")
+      Log4Error.invalidInputError(input.nDimension() <= 4,
+        s"${input.nDimension()}D input not supported")
       Log4Error.invalidInputError(input.size((input.nDimension() + 1) % 2 + 1) == nOutputPlane,
         "wrong number of input planes")
       val (bs, ks) = input.nDimension() match {

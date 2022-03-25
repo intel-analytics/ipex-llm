@@ -139,12 +139,18 @@ private[bigdl] class Conv2DTranspose[T: ClassTag](
       Log4Error.invalidInputError(module.nOutputPlane == nOutputPlane, "nOutputPlane is not valid")
       Log4Error.invalidInputError(module.kernelH == kernel.size(kWDim), "kernelH is not valid")
       Log4Error.invalidInputError(module.kernelW == kernel.size(kWDim), "kernelW is not valid")
-      Log4Error.invalidInputError(kernel.size(3) == nInputPlane, "kernel nInputPlane is not valid")
-      Log4Error.invalidInputError(kernel.size(4) == nOutputPlane, "kernel nOutputPlane is not valid")
-      Log4Error.invalidInputError(dummyInput.size(1) == inputSizes.valueAt(1), "size 1 is not correct")
-      Log4Error.invalidInputError(dummyInput.size(2) == inputSizes.valueAt(2), "size 1 is not correct")
-      Log4Error.invalidInputError(dummyInput.size(3) == inputSizes.valueAt(3), "size 1 is not correct")
-      Log4Error.invalidInputError(dummyInput.size(4) == inputSizes.valueAt(4), "size 1 is not correct")
+      Log4Error.invalidInputError(kernel.size(3) == nInputPlane,
+        "kernel nInputPlane is not valid")
+      Log4Error.invalidInputError(kernel.size(4) == nOutputPlane,
+        "kernel nOutputPlane is not valid")
+      Log4Error.invalidInputError(dummyInput.size(1) == inputSizes.valueAt(1),
+        "size 1 is not correct")
+      Log4Error.invalidInputError(dummyInput.size(2) == inputSizes.valueAt(2),
+        "size 1 is not correct")
+      Log4Error.invalidInputError(dummyInput.size(3) == inputSizes.valueAt(3),
+        "size 1 is not correct")
+      Log4Error.invalidInputError(dummyInput.size(4) == inputSizes.valueAt(4),
+        "size 1 is not correct")
     }
 
     module.forward(dummyInput)

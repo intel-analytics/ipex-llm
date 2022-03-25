@@ -93,7 +93,8 @@ class LookupTable[T: ClassTag]
 
     var i = 0
     while (i < numEle) {
-      Log4Error.invalidInputError(ev.isGreater(ev.fromType(weight.size(1) + 1), rowIdx(i + rowOffset)),
+      Log4Error.invalidInputError(ev.isGreater(ev.fromType(weight.size(1) + 1),
+        rowIdx(i + rowOffset)),
         s"LookupTable: elements of input should be little than or equal to $nIndex + 1")
       Log4Error.invalidInputError(ev.isGreaterEq(rowIdx(i + rowOffset), ev.one),
         "LookupTable: elements of input should be greater than or equal to 1")
@@ -203,7 +204,8 @@ class LookupTable[T: ClassTag]
 
   override def accGradParameters(input: Tensor[T], gradOutput: Tensor[T]): Unit = {
     inputBuffer = input.contiguous()
-    Log4Error.invalidInputError(gradWeight.isContiguous(), "LookupTable: gradWeight must be contiguous")
+    Log4Error.invalidInputError(gradWeight.isContiguous(),
+      "LookupTable: gradWeight must be contiguous")
     Log4Error.invalidInputError(inputBuffer.dim() == 1 || inputBuffer.dim() == 2,
       s"LookupTable: input must be a vector or matrix, input dim ${inputBuffer.dim()}" )
 
@@ -224,7 +226,8 @@ class LookupTable[T: ClassTag]
 
     var i = 0
     while (i < numEle) {
-      Log4Error.invalidInputError(ev.isGreater(ev.fromType(gradWeight.size(1) + 1), input_data(i + input_offset)),
+      Log4Error.invalidInputError(ev.isGreater(ev.fromType(gradWeight.size(1) + 1),
+        input_data(i + input_offset)),
         s"LookupTable: elements of input should be little than or equal to $nIndex + 1")
       Log4Error.invalidInputError(ev.isGreaterEq(input_data(i + input_offset), ev.one),
         "LookupTable: elements of input should be greater than or equal to 1")

@@ -137,9 +137,11 @@ private[nn] class MaskPostProcessor()(implicit ev: TensorNumeric[Float])
     }
 
     val mask_prob = sigmoid.forward(maskLogits)
-    Log4Error.invalidInputError(labels.nDimension() == 1, s"Labels should be tensor with one dimension," +
+    Log4Error.invalidInputError(labels.nDimension() == 1,
+      s"Labels should be tensor with one dimension," +
       s"but get ${labels.nDimension()}")
-    Log4Error.invalidInputError(rangeBuffer.nElement() == labels.nElement(), s"number of masks should be same" +
+    Log4Error.invalidInputError(rangeBuffer.nElement() == labels.nElement(),
+      s"number of masks should be same" +
       s"with labels, but get ${rangeBuffer.nElement()} ${labels.nElement()}")
 
     output.resize(rangeBuffer.nElement(), 1, mask_prob.size(3), mask_prob.size(4))

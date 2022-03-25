@@ -252,7 +252,8 @@ private[tensor] class DenseTensor[@specialized T: ClassTag](
 
   private[tensor] def this(other: Tensor[T])(implicit ev: TensorNumeric[T]) = {
     this(null, 0, null, null, 0)
-    Log4Error.unKnowExceptionError(other.isInstanceOf[DenseTensor[_]], "Only support dense tensor in this operation")
+    Log4Error.unKnowExceptionError(other.isInstanceOf[DenseTensor[_]],
+      "Only support dense tensor in this operation")
     val _storage = other.storage().asInstanceOf[ArrayStorage[T]]
     val _storageOffset = other.storageOffset() - 1
     val _size = other.size()
@@ -367,7 +368,8 @@ private[tensor] class DenseTensor[@specialized T: ClassTag](
   }
 
   override def set(other: Tensor[T]): Tensor[T] = {
-    Log4Error.unKnowExceptionError(other.isInstanceOf[DenseTensor[_]], "Only support dense tensor in this operation")
+    Log4Error.unKnowExceptionError(other.isInstanceOf[DenseTensor[_]],
+      "Only support dense tensor in this operation")
     DenseTensor.rawSet(this, other.storage().asInstanceOf[ArrayStorage[T]],
       other.storageOffset() - 1, other.nDimension(), other.size(), other.stride())
   }
@@ -381,7 +383,8 @@ private[tensor] class DenseTensor[@specialized T: ClassTag](
         s" while the strides length is ${strides.length}")
     }
 
-    Log4Error.unKnowExceptionError(storage.isInstanceOf[ArrayStorage[_]], "Only support array storage in this operation")
+    Log4Error.unKnowExceptionError(storage.isInstanceOf[ArrayStorage[_]],
+      "Only support array storage in this operation")
     DenseTensor.rawSet(this, storage.asInstanceOf[ArrayStorage[T]], storageOffset - 1,
       if (sizes == null) 0 else sizes.length,
       sizes, strides)
@@ -432,7 +435,8 @@ private[tensor] class DenseTensor[@specialized T: ClassTag](
   override def copy(other: Tensor[T]): Tensor[T] = {
     other match {
       case t: DnnTensor[_] =>
-        Log4Error.unKnowExceptionError(this.nElement() == other.nElement(), "tensor size must match")
+        Log4Error.unKnowExceptionError(this.nElement() == other.nElement(),
+          "tensor size must match")
         this.storage().copy(other.storage(), this.storageOffset() - 1, 0, other.nElement())
       case t: DenseTensor[_] =>
         DenseTensor.copy(this, other)
@@ -573,7 +577,8 @@ private[tensor] class DenseTensor[@specialized T: ClassTag](
           }
 
           if (start < 0) start = tensor._size(cdim) + start + 1
-          Log4Error.unKnowExceptionError(start >= 0 && start < tensor._size(cdim), "start index out of bound")
+          Log4Error.unKnowExceptionError(start >= 0 && start < tensor._size(cdim),
+            "start index out of bound")
           if (range.length >= 2) {
             range[Any](2) match {
               case right: Int =>
@@ -581,9 +586,11 @@ private[tensor] class DenseTensor[@specialized T: ClassTag](
             }
           }
           if (end < 0) end = tensor._size(cdim) + end + 1
-          Log4Error.unKnowExceptionError(end >= 0 && end < tensor._size(cdim), "end index out of bound")
+          Log4Error.unKnowExceptionError(end >= 0 && end < tensor._size(cdim),
+            "end index out of bound")
 
-          Log4Error.unKnowExceptionError(end >= start, "end index must be greater or equal to start index")
+          Log4Error.unKnowExceptionError(end >= start,
+            "end index must be greater or equal to start index")
           DenseTensor.narrow(tensor, null, cdim, start, end - start + 1)
           cdim = cdim + 1
       }
@@ -740,7 +747,8 @@ private[tensor] class DenseTensor[@specialized T: ClassTag](
   }
 
   override def setValue(value: T): this.type = {
-    Log4Error.unKnowExceptionError(0 == this.nDimension, "invalid size, you can only call this on a scalar")
+    Log4Error.unKnowExceptionError(0 == this.nDimension,
+      "invalid size, you can only call this on a scalar")
     var offset = this._storageOffset
     this._storage(offset) = value
     this
@@ -909,9 +917,12 @@ private[tensor] class DenseTensor[@specialized T: ClassTag](
   }
 
   def scatter(dim: Int, index: Tensor[T], src: Tensor[T]): Tensor[T] = {
-    Log4Error.unKnowExceptionError(src.dim() == this.dim(), "Input tensor must have same dimensions as output tensor")
-    Log4Error.unKnowExceptionError(dim <= this.dim(), "Index dimension is out of bounds")
-    Log4Error.unKnowExceptionError(index.dim() == src.dim(), "Index tensor must have same dimensions as input tensor")
+    Log4Error.unKnowExceptionError(src.dim() == this.dim(),
+      "Input tensor must have same dimensions as output tensor")
+    Log4Error.unKnowExceptionError(dim <= this.dim(),
+      "Index dimension is out of bounds")
+    Log4Error.unKnowExceptionError(index.dim() == src.dim(),
+      "Index tensor must have same dimensions as input tensor")
     val elementsPerRow = index.size(dim)
     // TODO: the performance of contiguous tensor should be optimize
     DenseTensorDimApply.dimApply3[T](this, src, index, dim, (tdata, toffset, tstride,
@@ -930,9 +941,12 @@ private[tensor] class DenseTensor[@specialized T: ClassTag](
   }
 
   def gather(dim: Int, index: Tensor[T], src: Tensor[T]): Tensor[T] = {
-    Log4Error.unKnowExceptionError(src.dim() == this.dim(), "Input tensor must have same dimensions as output tensor")
-    Log4Error.unKnowExceptionError(dim <= this.dim(), "Index dimension is out of bounds")
-    Log4Error.unKnowExceptionError(index.dim() == src.dim(), "Index tensor must have same dimensions as input tensor")
+    Log4Error.unKnowExceptionError(src.dim() == this.dim(),
+      "Input tensor must have same dimensions as output tensor")
+    Log4Error.unKnowExceptionError(dim <= this.dim(),
+      "Index dimension is out of bounds")
+    Log4Error.unKnowExceptionError(index.dim() == src.dim(),
+      "Index tensor must have same dimensions as input tensor")
     val elementsPerRow = index.size(dim)
     // TODO: the performance of contiguous tensor should be optimize
     DenseTensorDimApply.dimApply3[T](this, src, index, dim, (tdata, toffset, tstride,
@@ -1017,7 +1031,8 @@ private[tensor] class DenseTensor[@specialized T: ClassTag](
   }
 
   override def add(x: Tensor[T], y: Tensor[T]): Tensor[T] = {
-    Log4Error.unKnowExceptionError(this.nElement() == x.nElement() && this.nElement() == y.nElement(),
+    Log4Error.unKnowExceptionError(this.nElement() == x.nElement()
+      && this.nElement() == y.nElement(),
       s"add expect two tensors has same number of elements. But current tensor has" +
         s" ${this.nElement()} elements while x has ${x.nElement()} elements " +
         s"and y has ${y.nElement()} elements")
@@ -1054,7 +1069,8 @@ private[tensor] class DenseTensor[@specialized T: ClassTag](
     DenseTensorMath.csub(this, this, ev.negative(value), y)
 
   override def sub(x: Tensor[T]): Tensor[T] = {
-    Log4Error.unKnowExceptionError(x.isInstanceOf[DenseTensor[T]], "Only dense tensor is supported in this operation")
+    Log4Error.unKnowExceptionError(x.isInstanceOf[DenseTensor[T]],
+      "Only dense tensor is supported in this operation")
     if (this.nElement() == x.nElement()) {
       if (MKL.isMKLLoaded && this.isContiguous() && x.isContiguous() &&
         (x.getType() == DoubleType || x.getType() == FloatType)) {
@@ -1086,7 +1102,8 @@ private[tensor] class DenseTensor[@specialized T: ClassTag](
   }
 
   override def sub(x: Tensor[T], y: Tensor[T]): Tensor[T] = {
-    Log4Error.unKnowExceptionError(this.nElement() == x.nElement() && this.nElement() == y.nElement(),
+    Log4Error.unKnowExceptionError(this.nElement() == x.nElement()
+      && this.nElement() == y.nElement(),
       s"sub expect two tensors has same number of elements. But current tensor has" +
         s" ${this.nElement()} elements while x has ${x.nElement()} elements " +
         s"and y has ${y.nElement()} elements")
@@ -1150,7 +1167,8 @@ private[tensor] class DenseTensor[@specialized T: ClassTag](
   }
 
   override def addcmul(value: T, tensor1: Tensor[T], tensor2: Tensor[T]): Tensor[T] = {
-    Log4Error.unKnowExceptionError(tensor1.nElement() == tensor2.nElement() && this.nElement() == tensor1.nElement(),
+    Log4Error.unKnowExceptionError(tensor1.nElement() == tensor2.nElement()
+      && this.nElement() == tensor1.nElement(),
       s"addcmul expect two tensors has same number of elements. But tensor1 has" +
         s" ${tensor1.nElement()} elements while tensor2 has ${tensor2.nElement()} elements " +
         s"and current tensor has ${this.nElement()} elements")
@@ -1195,13 +1213,16 @@ private[tensor] class DenseTensor[@specialized T: ClassTag](
   }
 
   override def cmul(y: Tensor[T]): Tensor[T] = {
-    Log4Error.unKnowExceptionError(y.isInstanceOf[DenseTensor[_]], "Only support dense tensor in this operation")
+    Log4Error.unKnowExceptionError(y.isInstanceOf[DenseTensor[_]],
+      "Only support dense tensor in this operation")
     DenseTensorMath.cmul(this, this, y.asInstanceOf[DenseTensor[T]])
   }
 
   override def cmul(x: Tensor[T], y: Tensor[T]): Tensor[T] = {
-    Log4Error.unKnowExceptionError(x.isInstanceOf[DenseTensor[_]], "Only support dense tensor in this operation")
-    Log4Error.unKnowExceptionError(y.isInstanceOf[DenseTensor[_]], "Only support dense tensor in this operation")
+    Log4Error.unKnowExceptionError(x.isInstanceOf[DenseTensor[_]],
+      "Only support dense tensor in this operation")
+    Log4Error.unKnowExceptionError(y.isInstanceOf[DenseTensor[_]],
+      "Only support dense tensor in this operation")
     DenseTensorMath.cmul(this, x.asInstanceOf[DenseTensor[T]], y.asInstanceOf[DenseTensor[T]])
   }
 
@@ -1238,7 +1259,8 @@ private[tensor] class DenseTensor[@specialized T: ClassTag](
   override def div(value: T): Tensor[T] = DenseTensorMath.mul(this, null, ev.inv(value))
 
   override def div(x: Tensor[T]): Tensor[T] = {
-    Log4Error.unKnowExceptionError(x.isInstanceOf[DenseTensor[_]], "Only dense tensor is supported in this operation")
+    Log4Error.unKnowExceptionError(x.isInstanceOf[DenseTensor[_]],
+      "Only dense tensor is supported in this operation")
     if (this.nElement() == x.nElement()) {
       if (MKL.isMKLLoaded && this.isContiguous() && x.isContiguous()) {
         ev.vDiv(this.nElement(), this.storage().array(), this.storageOffset() - 1,
@@ -1332,7 +1354,8 @@ private[tensor] class DenseTensor[@specialized T: ClassTag](
    * @param args
    */
   override def uniform(args: T*): T = {
-    Log4Error.unKnowExceptionError(args.length <= 2, s"invalid arguments, excepted ${args.length} <= 2.")
+    Log4Error.unKnowExceptionError(args.length <= 2,
+      s"invalid arguments, excepted ${args.length} <= 2.")
     if (args.length == 0) {
       ev.rand()
     } else if (args.length == 1) {
@@ -1347,7 +1370,8 @@ private[tensor] class DenseTensor[@specialized T: ClassTag](
 
   override def repeatTensor(sizes: Array[Int]): Tensor[T] = {
     Log4Error.unKnowExceptionError(sizes.length >= this.nDimension,
-      "Number of dimensions of repeat dims can not be smaller than number of dimensions of tensor")
+      "Number of dimensions of repeat dims can not be smaller than number" +
+        " of dimensions of tensor")
     val result = new DenseTensor[T]()
     val xTensor = this.clone()
     var xSize = xTensor.size()
@@ -1681,7 +1705,8 @@ private[tensor] class DenseTensor[@specialized T: ClassTag](
     val func2 = new TensorFunc4[T] {
       override def apply(data1: Array[T], offset1: Int, data2: Array[T], offset2: Int): Unit = {
         if (data1(offset1) != data2(offset2)) {
-          Log4Error.unKnowExceptionError(offset1 == offset2, s"offset1 $offset1 match offset2 $offset2")
+          Log4Error.unKnowExceptionError(offset1 == offset2,
+            s"offset1 $offset1 match offset2 $offset2")
           if (reverse || catchNum < count) {
             buffer(catchNum % count) = (data1(offset1), data2(offset2), offset1)
           }
@@ -1827,7 +1852,7 @@ private[tensor] class DenseTensor[@specialized T: ClassTag](
     DenseTensorMath.norm(this, y, value, dim - 1)
 
   override def abs(x: Tensor[T]): Tensor[T] = {
-    Log4Error.unKnowExceptionError(this.nElement() == x.nElement(), 
+    Log4Error.unKnowExceptionError(this.nElement() == x.nElement(),
       s"abs expects two tensors has the number of elements, but current tensor has" +
         s" ${this.nElement()} elements while x has ${x.nElement()} elements")
     if (MKL.isMKLLoaded && this.isContiguous() && x.isContiguous()) {
@@ -1865,7 +1890,8 @@ private[tensor] class DenseTensor[@specialized T: ClassTag](
     // todo: the performance of contiguous tensor should be optimized
     val func = new TensorFunc4[T] {
       def apply(data1: Array[T], offset1: Int, data2: Array[T], offset2: Int): Unit = {
-        Log4Error.unKnowExceptionError(ev.toType[Int](data2(offset2)) == 1 || ev.toType[Int](data2(offset2)) == 0,
+        Log4Error.unKnowExceptionError(ev.toType[Int](data2(offset2)) == 1
+          || ev.toType[Int](data2(offset2)) == 0,
           "Mask tensor can take 0 and 1 values only")
         if (ev.toType[Int](data2(offset2)) == 1) {
           data1(offset1) = value
@@ -1895,10 +1921,12 @@ private[tensor] class DenseTensor[@specialized T: ClassTag](
     // todo: the performance of contiguous tensor should be optimized
     val func = new TensorFunc4[T] {
       override def apply(data1: Array[T], offset1: Int, data2: Array[T], offset2: Int): Unit = {
-        Log4Error.unKnowExceptionError(ev.toType[Int](data2(offset2)) == 1 || ev.toType[Int](data2(offset2)) == 0,
+        Log4Error.unKnowExceptionError(ev.toType[Int](data2(offset2)) == 1
+          || ev.toType[Int](data2(offset2)) == 0,
           "Mask tensor can take 0 and 1 values only")
         if (ev.toType[Int](data2(offset2)) == 1) {
-          Log4Error.unKnowExceptionError(offset < data3.length, "Number of elements of y < number of ones in mask")
+          Log4Error.unKnowExceptionError(offset < data3.length,
+            "Number of elements of y < number of ones in mask")
           data1(offset1) = data3(offset)
           offset += 1
         }
@@ -1930,7 +1958,8 @@ private[tensor] class DenseTensor[@specialized T: ClassTag](
     // todo: the performance of contiguous tensor should be optimized
     val func = new TensorFunc4[T] {
       override def apply(data1: Array[T], offset1: Int, data2: Array[T], offset2: Int): Unit = {
-        Log4Error.unKnowExceptionError(ev.toType[Int](data2(offset2)) == 1 || ev.toType[Int](data2(offset2)) == 0,
+        Log4Error.unKnowExceptionError(ev.toType[Int](data2(offset2)) == 1
+          || ev.toType[Int](data2(offset2)) == 0,
           "Mask tensor can take 0 and 1 values only")
         if (ev.toType[Int](data2(offset2)) == 1) {
           result(offset) = data1(offset1)
@@ -2136,7 +2165,8 @@ private[tensor] class DenseTensor[@specialized T: ClassTag](
     var stride = new Array[Int](t.dim())
 
     for ( i <- 0 until dims.length) {
-      Log4Error.unKnowExceptionError(dims(i) > 0 && dims(i) <= temp.dim() + 1, s"invalid dimension: ${dims(i)}. " +
+      Log4Error.unKnowExceptionError(dims(i) > 0 && dims(i) <= temp.dim() + 1,
+        s"invalid dimension: ${dims(i)}. " +
         s"Tensor is of ${temp.dim()} dimensions.")
 
       size = new Array[Int](temp.dim() + 1)
@@ -2193,7 +2223,8 @@ private[tensor] class DenseTensor[@specialized T: ClassTag](
    * @return
    */
   override def indexAdd(dim: Int, index: Tensor[T], y: Tensor[T]): Tensor[T] = {
-    Log4Error.unKnowExceptionError(dim <= y.nDimension(), "Indexing dim is out of bounds of tensor y")
+    Log4Error.unKnowExceptionError(dim <= y.nDimension(),
+      "Indexing dim is out of bounds of tensor y")
     Log4Error.unKnowExceptionError(index.nElement() == y.size(dim),
       "Number of indices should be equal to source:size(dim)")
     Log4Error.unKnowExceptionError(index.nDimension() == 1, "Index is supposed to be a vector")
@@ -2226,8 +2257,10 @@ private[tensor] class DenseTensor[@specialized T: ClassTag](
    * @return
    */
   override def index(dim: Int, index: Tensor[T], y: Tensor[T]): Tensor[T] = {
-    Log4Error.unKnowExceptionError(dim <= y.nDimension(), "Indexing dim is out of bounds of tensor y")
-    Log4Error.unKnowExceptionError(index.nDimension() == 1, "Index is supposed to be a vector")
+    Log4Error.unKnowExceptionError(dim <= y.nDimension(),
+      "Indexing dim is out of bounds of tensor y")
+    Log4Error.unKnowExceptionError(index.nDimension() == 1,
+      "Index is supposed to be a vector")
     Log4Error.unKnowExceptionError(y.nDimension() > 0, "Source tensor is empty")
     val indexC = index.contiguous()
 
@@ -2654,7 +2687,8 @@ object DenseTensor {
     var src = source
     if (src == null) src = self
     Log4Error.unKnowExceptionError(src.nDimension > 0, "cannot select on a scalar")
-    Log4Error.unKnowExceptionError(_dimension >= 0 && _dimension < src.nDimension, "out of range")
+    Log4Error.unKnowExceptionError(_dimension >= 0 && _dimension < src.nDimension,
+      "out of range")
     Log4Error.unKnowExceptionError(_sliceIndex >= 0 && _sliceIndex < src.size(_dimension + 1),
       s"${_sliceIndex} out of range 0 to ${src.size(_dimension + 1) - 1}")
 
@@ -2679,7 +2713,8 @@ object DenseTensor {
       src = self
     }
 
-    Log4Error.unKnowExceptionError(_dimension >= 0 && _dimension < src.nDimension, "dimension out of range")
+    Log4Error.unKnowExceptionError(_dimension >= 0 && _dimension < src.nDimension,
+      "dimension out of range")
     Log4Error.unKnowExceptionError(_firstIndex >= 0 && _firstIndex < src.size(_dimension + 1),
       s"firstIndex(${_firstIndex}) out of range [0, ${src.size(_dimension + 1)})")
     Log4Error.unKnowExceptionError(size > 0 && _firstIndex + size <= src.size(_dimension + 1),
@@ -2697,8 +2732,10 @@ object DenseTensor {
     self: DenseTensor[T], source: DenseTensor[T], _dimension1: Int, _dimension2: Int): Unit = {
     var src = source
     if (src == null) src = self
-    Log4Error.unKnowExceptionError(_dimension1 >= 0 && _dimension1 < src.nDimension, "out of range")
-    Log4Error.unKnowExceptionError(_dimension2 >= 0 && _dimension2 < src.nDimension, "out of range")
+    Log4Error.unKnowExceptionError(_dimension1 >= 0 && _dimension1 < src.nDimension,
+      "out of range")
+    Log4Error.unKnowExceptionError(_dimension2 >= 0 && _dimension2 < src.nDimension,
+      "out of range")
 
     set(self, src)
     if (_dimension1 == _dimension2) {
@@ -2725,7 +2762,8 @@ object DenseTensor {
 
   private[tensor] def copy[@specialized T](
     self: DenseTensor[T], src: Tensor[T]): Unit = {
-    Log4Error.unKnowExceptionError(self.nElement() == src.nElement(), s"self element number(${self.nElement()}) is not" +
+    Log4Error.unKnowExceptionError(self.nElement() == src.nElement(),
+      s"self element number(${self.nElement()}) is not" +
       s" equal to source element number(${src.nElement()})")
     if (self.isEmpty) {
       return

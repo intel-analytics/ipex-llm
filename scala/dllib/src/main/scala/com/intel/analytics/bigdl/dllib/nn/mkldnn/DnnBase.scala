@@ -253,7 +253,8 @@ trait MklDnnLayer extends AbstractModule[Activity, Activity, Float] with MklDnnM
   }
 
   override private[bigdl] def gradInputFormats() = {
-    Log4Error.invalidInputError(_gradInputFormats != null, "You should call initBwdPrimitives first")
+    Log4Error.invalidInputError(_gradInputFormats != null,
+      "You should call initBwdPrimitives first")
     _gradInputFormats
   }
 
@@ -263,7 +264,8 @@ trait MklDnnLayer extends AbstractModule[Activity, Activity, Float] with MklDnnM
   }
 
   override private[bigdl] def gradOutputFormats() = {
-    Log4Error.invalidInputError(_gradOutputFormats != null, "You should call initBwdPrimitives first")
+    Log4Error.invalidInputError(_gradOutputFormats != null,
+      "You should call initBwdPrimitives first")
     _gradOutputFormats
   }
 

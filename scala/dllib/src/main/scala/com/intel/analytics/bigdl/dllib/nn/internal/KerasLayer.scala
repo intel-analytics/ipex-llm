@@ -97,7 +97,8 @@ class KerasLayerWrapper[T: ClassTag]
     val inputShape: Shape = null)(implicit ev: TensorNumeric[T])
   extends KerasLayer[Activity, Activity, T](KerasLayer.addBatch(inputShape)) {
 
-  Log4Error.invalidInputError(!torchLayer.isKerasStyle(), s"We only accept torch layer here, but got: $torchLayer")
+  Log4Error.invalidInputError(!torchLayer.isKerasStyle(),
+    s"We only accept torch layer here, but got: $torchLayer")
 
   override def computeOutputShape(calcInputShape: Shape): Shape = {
     val dummyOutTensor =

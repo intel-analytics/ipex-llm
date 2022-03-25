@@ -71,9 +71,11 @@ class Cropping2D[T: ClassTag](
 
     val (hdim, wdim, hStart, lenHCropped, wStart, lenWCropped) = calculateStartAndLength(input)
 
-    Log4Error.invalidInputError(lenHCropped > 0, s"heightCrop: ${heightCrop.mkString(", ")} is too large. Height" +
+    Log4Error.invalidInputError(lenHCropped > 0,
+      s"heightCrop: ${heightCrop.mkString(", ")} is too large. Height" +
       s" dimension length: ${input.size(hdim)}")
-    Log4Error.invalidInputError(lenWCropped > 0, s"widthCrop: ${widthCrop.mkString(", ")} is too large. Width" +
+    Log4Error.invalidInputError(lenWCropped > 0,
+      s"widthCrop: ${widthCrop.mkString(", ")} is too large. Width" +
       s" dimension length: ${input.size(wdim)}")
 
     val cropped = input

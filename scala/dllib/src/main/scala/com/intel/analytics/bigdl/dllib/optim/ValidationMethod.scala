@@ -256,10 +256,12 @@ class MeanAveragePrecision[T: ClassTag](k: Int, classes: Int)(
     val posCnt = new Array[Int](classes)
     for (i <- 1 to _target.nElement()) {
       val clazz = ev.toType[Float](_target.valueAt(i))
-      Log4Error.invalidInputError(clazz == math.ceil(clazz), s"The class for $i-th test sample should be an integer, "
+      Log4Error.invalidInputError(clazz == math.ceil(clazz),
+        s"The class for $i-th test sample should be an integer, "
         + s"got $clazz")
       val intClazz = clazz.toInt
-      Log4Error.invalidInputError(intClazz >= 0 && intClazz < classes, s"The class for $i-th test sample should be "
+      Log4Error.invalidInputError(intClazz >= 0 && intClazz < classes,
+        s"The class for $i-th test sample should be "
         + s">= 0 and < $classes, but got $intClazz")
       posCnt(intClazz) += 1
     }
@@ -322,11 +324,14 @@ object MAPUtil {
         val isCrowd = RoiImageInfo.getIsCrowd(roiLabel)
         val masks = if (isSegmentation) RoiImageInfo.getMasks(roiLabel) else null
         val bboxCnt = bbox.size(1)
-        Log4Error.invalidInputError(bboxCnt == tclasses.size(1), "CLASSES of target tables should have the" +
+        Log4Error.invalidInputError(bboxCnt == tclasses.size(1),
+          "CLASSES of target tables should have the" +
           "same size of the bbox counts")
-        Log4Error.invalidInputError(bboxCnt == isCrowd.nElement(), "ISCROWD of target tables should have the" +
+        Log4Error.invalidInputError(bboxCnt == isCrowd.nElement(),
+          "ISCROWD of target tables should have the" +
           "same size of the bbox counts")
-        Log4Error.invalidInputError(masks == null || bboxCnt == masks.length, "MASKS of target tables should have the" +
+        Log4Error.invalidInputError(masks == null || bboxCnt == masks.length,
+          "MASKS of target tables should have the" +
           "same size of the bbox counts")
         for (j <- 1 to bboxCnt) {
           val (label, _diff) = if (tclasses.dim() == 2) {
@@ -436,7 +441,8 @@ class MAPValidationResult(
   if (skipClass < 0) {
     Log4Error.invalidInputError(skipClass == -1, s"Invalid skipClass $skipClass")
   } else {
-    Log4Error.invalidInputError(skipClass >= 0 && skipClass < nClass, s"Invalid skipClass $skipClass")
+    Log4Error.invalidInputError(skipClass >= 0 && skipClass < nClass,
+      s"Invalid skipClass $skipClass")
   }
 
   private def sortPredictions(p: ArrayBuffer[(Float, Boolean)]): ArrayBuffer[(Float, Boolean)] = {
@@ -517,7 +523,7 @@ class MAPValidationResult(
   private[optim] def mergeWithoutGtCnt(o: MAPValidationResult): MAPValidationResult = {
     Log4Error.invalidOperationError(predictForClass.length == o.predictForClass.length,
       s"predictForClass.length ${predictForClass.length} should " +
-        s" match o.predictForClass.length ${o.predictForClass.length}")    
+        s" match o.predictForClass.length ${o.predictForClass.length}")
     Log4Error.invalidOperationError(gtCntForClass.length == o.gtCntForClass.length,
       s"gtCntForClass.length ${gtCntForClass.length} should " +
         s" match o.gtCntForClass.length ${o.gtCntForClass.length}")
@@ -697,7 +703,8 @@ class MeanAveragePrecisionObjectDetection[T: ClassTag](
 
     output match {
       case _outTensor: Tensor[_] =>
-        Log4Error.invalidInputError(!isSegmentation, "Cannot get segmentation data from tensor output for MAP")
+        Log4Error.invalidInputError(!isSegmentation,
+          "Cannot get segmentation data from tensor output for MAP")
         val outTensor = _outTensor.asInstanceOf[Tensor[Float]]
         MAPUtil.parseSegmentationTensorResult(outTensor,
           (imgIdx, label, score, x1, y1, x2, y2) => {
@@ -706,7 +713,8 @@ class MeanAveragePrecisionObjectDetection[T: ClassTag](
               predictByClasses = predictByClasses)
           })
       case outTable: Table =>
-        Log4Error.invalidInputError(gtImages.length == outTable.length(), "The number of images in the output and " +
+        Log4Error.invalidInputError(gtImages.length == outTable.length(),
+          "The number of images in the output and " +
           "in the target should be the same")
         for (imgId <- 1 to outTable.length()) {
           val gtBbox = gtImages(imgId - 1)
@@ -716,14 +724,18 @@ class MeanAveragePrecisionObjectDetection[T: ClassTag](
             val bboxes = RoiImageInfo.getBBoxes(imgOut)
             val scores = RoiImageInfo.getScores(imgOut)
             val labels = RoiImageInfo.getClasses(imgOut)
-            Log4Error.invalidInputError(bboxes.dim() == 2, "the bbox tensor should have 2 dimensions")
+            Log4Error.invalidInputError(bboxes.dim() == 2,
+              "the bbox tensor should have 2 dimensions")
             val masks = if (isSegmentation) Some(RoiImageInfo.getMasks(imgOut)) else None
             val batchSize = bboxes.size(1)
-            Log4Error.invalidInputError(batchSize == labels.size(1), "CLASSES of target tables should have the" +
+            Log4Error.invalidInputError(batchSize == labels.size(1),
+              "CLASSES of target tables should have the" +
               "same size of the bbox counts")
-            Log4Error.invalidInputError(batchSize == scores.nElement(), "ISCROWD of target tables should have the" +
+            Log4Error.invalidInputError(batchSize == scores.nElement(),
+              "ISCROWD of target tables should have the" +
               "same size of the bbox counts")
-            Log4Error.invalidInputError(masks.isEmpty || batchSize == masks.get.length, "MASKS of target tables " +
+            Log4Error.invalidInputError(masks.isEmpty || batchSize == masks.get.length,
+              "MASKS of target tables " +
               "should have the same size of the bbox counts")
             val detections = new ArrayBuffer[(Int, Float, Float, Float, Float,
               Float, RLEMasks)]()
@@ -862,7 +874,8 @@ class Top5Accuracy[T: ClassTag](
       }
       count += _output.size(1)
     } else if (_output.dim == 1) {
-      Log4Error.invalidInputError(_target.size(1) == 1, s"expect _target.size(1) be 1, but get ${_target.size(1)}")
+      Log4Error.invalidInputError(_target.size(1) == 1,
+        s"expect _target.size(1) be 1, but get ${_target.size(1)}")
       val indices = _output.topk(5, 1, false)._2
       if (indices.valueAt(1) == _target.valueAt(1) || indices.valueAt(2) == _target.valueAt(1)
         || indices.valueAt(3) == _target.valueAt(1) || indices.valueAt(4) == _target.valueAt(1)
@@ -917,7 +930,8 @@ class HitRatio[T: ClassTag](k: Int = 10, negNum: Int = 100)(
       i += 1
     }
     Log4Error.invalidInputError(positiveItem != 0, s"${format()}: no positive item.")
-    Log4Error.invalidInputError(positiveCount == 1, s"${format()}: too many positive items, excepted 1," +
+    Log4Error.invalidInputError(positiveCount == 1, s"${format()}:" +
+      s" too many positive items, excepted 1," +
       s" but got $positiveCount")
 
     val hr = calHitRate(positiveItem, o, k)
@@ -986,7 +1000,8 @@ class NDCG[T: ClassTag](k: Int = 10, negNum: Int = 100)(
     }
 
     Log4Error.invalidInputError(positiveItem != 0, s"${format()}: no positive item.")
-    Log4Error.invalidInputError(positiveCount == 1, s"${format()}: too many positive items, excepted 1," +
+    Log4Error.invalidInputError(positiveCount == 1, s"${format()}:" +
+      s" too many positive items, excepted 1," +
       s" but got $positiveCount")
 
     val ndcg = calNDCG(positiveItem, o, k)

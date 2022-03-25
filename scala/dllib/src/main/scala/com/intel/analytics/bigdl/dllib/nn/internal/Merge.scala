@@ -64,14 +64,16 @@ class Merge[T: ClassTag](
     import scala.util.control.Breaks._
     val input1 = input.head.toSingle().toArray
     val output = input1.clone()
-    Log4Error.invalidInputError(Math.abs(concatAxis) < output.length, s"Invalid concat axis $concatAxis")
+    Log4Error.invalidInputError(Math.abs(concatAxis) < output.length,
+      s"Invalid concat axis $concatAxis")
     axis = if (concatAxis < 0) concatAxis + output.length else concatAxis
     var i = 1
     while (i < input.length) {
       val input_i = input(i).toSingle().toArray
       var j = 0
       while (j < input_i.length) {
-        if (j != axis) Log4Error.invalidInputError(input_i(j)==output(j), s"Incompatible input dimension for merge " +
+        if (j != axis) Log4Error.invalidInputError(input_i(j)==output(j),
+          s"Incompatible input dimension for merge " +
           s"mode concat: (${output.deep.mkString(", ")}), " +
           s"(${input_i.deep.mkString(", ")})")
         j += 1
@@ -91,7 +93,8 @@ class Merge[T: ClassTag](
     var i = 1
     while (i < input.length) {
       val input_i = input(i).toSingle().toArray
-      Log4Error.invalidInputError(input_i.sameElements(input1), s"Incompatible input dimension for " +
+      Log4Error.invalidInputError(input_i.sameElements(input1),
+        s"Incompatible input dimension for " +
         s"merge mode $mergeMode: (${input1.deep.mkString(", ")}), " +
         s"(${input_i.deep.mkString(", ")})")
       i += 1
@@ -107,9 +110,11 @@ class Merge[T: ClassTag](
     else {
       checkSameInputShape(input)
       if (mergeMode == "dot" || mergeMode == "cos") {
-        Log4Error.invalidInputError(input.head.toSingle().length <=2, s"For merge mode $mergeMode, 3D input " +
+        Log4Error.invalidInputError(input.head.toSingle().length <=2,
+          s"For merge mode $mergeMode, 3D input " +
           s"or above is currently not supported, got input dim ${input.head.toSingle().length}")
-        Log4Error.invalidInputError(input.length == 2, s"Merge mode $mergeMode takes exactly two layers, " +
+        Log4Error.invalidInputError(input.length == 2,
+          s"Merge mode $mergeMode takes exactly two layers, " +
           s"but got ${input.length}")
         if (mergeMode == "dot") Shape(-1, 1) else Shape(-1, 1, 1)
       }

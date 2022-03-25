@@ -111,7 +111,8 @@ class VolumetricConvolution[T: ClassTag](
     val input = inputShape.toSingle().toArray
     Log4Error.invalidInputError(input.length == 5,
       s"Convolution3D requires 5D input, but got input dim ${input.length}")
-    Log4Error.invalidInputError(input(1) == nInputPlane, s"input.size(1) should be equal to nInputPlane. " +
+    Log4Error.invalidInputError(input(1) == nInputPlane,
+      s"input.size(1) should be equal to nInputPlane. " +
       s"But In ${this.getName()} : input.size(1) is: ${ input(1) } ," +
       s" nInputPlane is: ${ nInputPlane }")
     val inputWidth = input(4)
@@ -156,7 +157,8 @@ class VolumetricConvolution[T: ClassTag](
 
 
     if (input.dim() == 4) {
-      Log4Error.invalidInputError(input.size(1) == nInputPlane, s"input.size(1) should be equal to nInputPlane. " +
+      Log4Error.invalidInputError(input.size(1) == nInputPlane,
+        s"input.size(1) should be equal to nInputPlane. " +
         s"But In ${this.getName()} : input.size(1) is: ${ input.size(1) } ," +
         s" nInputPlane is: ${ nInputPlane }")
     }
@@ -385,7 +387,8 @@ object VolumetricConvolution {
         val gradInputT = gradInput.select(1, t)
         val gradOutputT = gradOutput.select(1, t)
         val fGradInputT = fGradInput.select(1, t)
-        Log4Error.invalidInputError(gradOutputT.isContiguous(), "each batch of gradOutput should be contiguous")
+        Log4Error.invalidInputError(gradOutputT.isContiguous(),
+          "each batch of gradOutput should be contiguous")
         updateGradInputFrame(gradInputT, gradOutputT, weightMM.transpose(1, 2), fGradInputT,
           kT, kW, kH,
           dT, dW, dH,

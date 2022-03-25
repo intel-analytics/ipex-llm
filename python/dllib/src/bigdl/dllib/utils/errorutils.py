@@ -1,3 +1,5 @@
+# This file is adapted from
+# https://github.com/apache/spark/blob/master/python/pyspark/sql/utils.py
 #
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with

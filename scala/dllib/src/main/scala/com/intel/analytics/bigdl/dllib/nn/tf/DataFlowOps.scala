@@ -80,7 +80,8 @@ private[nn] class TensorArray[D: ClassTag](
 
   def update(index: Int, tensor: Tensor[D]): Unit = {
     if (!multipleWritesAggregate) {
-      Log4Error.invalidInputError(tensors(index) == null, "There's already a tensor on the given index")
+      Log4Error.invalidInputError(tensors(index) == null,
+        "There's already a tensor on the given index")
     }
 
     if (identicalElementShapes) {
@@ -347,10 +348,12 @@ private[bigdl] class TensorArrayGather[T: ClassTag, D: ClassTag]()(
         sizes = tensorArray.shapeOf(indices.valueAt(i))
       } else {
         val curSizes = tensorArray.shapeOf(indices.valueAt(i))
-        Log4Error.invalidInputError(curSizes.length == sizes.length, "the selected tensors have different dimensions")
+        Log4Error.invalidInputError(curSizes.length == sizes.length,
+          "the selected tensors have different dimensions")
         var j = 0
         while(j < sizes.length) {
-          Log4Error.invalidInputError(sizes(j) == curSizes(j), "the selected tensors have different sizes")
+          Log4Error.invalidInputError(sizes(j) == curSizes(j),
+            "the selected tensors have different sizes")
           j += 1
         }
       }

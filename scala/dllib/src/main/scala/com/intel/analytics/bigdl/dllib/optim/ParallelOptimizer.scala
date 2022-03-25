@@ -663,7 +663,8 @@ class ParallelOptimizer[T: ClassTag](
     optimMethodMap: mutable.Map[String, OptimMethod[T]]): Unit = {
     subModules.foreach(sub => {
       if (optimMethodMap.get(sub.getName) == None) {
-        Log4Error.invalidOperationError(parentMethod != null, s"${sub.getName}'s parent optim method should not be null")
+        Log4Error.invalidOperationError(parentMethod != null,
+          s"${sub.getName}'s parent optim method should not be null")
         val subOptimMethod = parentMethod.clone
         sub.setOptimMethod(subOptimMethod)
         optimMethodMap(sub.getName) = subOptimMethod

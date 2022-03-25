@@ -295,7 +295,8 @@ object BboxUtil {
         s" match bboxes.size(1) ${bboxes.size(1)}")
     val numBboxes = priorBoxes.size(1)
     if (numBboxes > 0) {
-      Log4Error.invalidOperationError(priorBoxes.size(2) == 4, s"priorBoxes.size(2) ${priorBoxes.size(2)} should be 4")
+      Log4Error.invalidOperationError(priorBoxes.size(2) == 4,
+        s"priorBoxes.size(2) ${priorBoxes.size(2)} should be 4")
     }
     val decodedBboxes = if (output == null) Tensor[Float](numBboxes, 4)
     else output.resizeAs(priorBoxes)
@@ -427,7 +428,8 @@ object BboxUtil {
   def getAreas(boxes: Tensor[Float], areas: Tensor[Float], startInd: Int = 1,
     normalized: Boolean = false): Tensor[Float] = {
     if (boxes.nElement() == 0) return areas
-    Log4Error.invalidOperationError(boxes.size(2) >= 4, s"boxes.size(2) ${boxes.size(2)} should be greater than 4")
+    Log4Error.invalidOperationError(boxes.size(2) >= 4,
+      s"boxes.size(2) ${boxes.size(2)} should be greater than 4")
     areas.resize(boxes.size(1))
     val boxesArr = boxes.storage().array()
     val offset = boxes.storageOffset() - 1
@@ -493,11 +495,13 @@ object BboxUtil {
 
   private def decodeSignalBoxWithWeight(encodeBox: Tensor[Float], bbox: Tensor[Float],
              weight: Array[Float], decodeBox: Tensor[Float]): Unit = {
-    Log4Error.invalidOperationError(bbox.nDimension() == 1 && encodeBox.nDimension() == 1 && decodeBox.dim() == 1,
+    Log4Error.invalidOperationError(bbox.nDimension() == 1 && encodeBox.nDimension() == 1
+      && decodeBox.dim() == 1,
     s"Only support decode single bbox, but " +
       s"get ${bbox.nDimension()}, ${encodeBox.nDimension()}, ${decodeBox.dim()}")
 
-    Log4Error.invalidOperationError(encodeBox.nElement() == decodeBox.nElement(), s"element number of encode tensor" +
+    Log4Error.invalidOperationError(encodeBox.nElement() == decodeBox.nElement(),
+      s"element number of encode tensor" +
       s" and decode tensor should be same, but get ${encodeBox.nElement()} ${decodeBox.nElement()}")
 
     val TO_REMOVE = 1 // refer to pytorch, maybe it will be removed in future
@@ -564,7 +568,8 @@ object BboxUtil {
 
   def decodeWithWeight(encodeBox: Tensor[Float], bbox: Tensor[Float],
              weight: Array[Float], decodeBox: Tensor[Float]): Unit = {
-    Log4Error.invalidOperationError(encodeBox.size(1) == bbox.size(1), s"encodeBox.size(1) ${encodeBox.size(1)} should" +
+    Log4Error.invalidOperationError(encodeBox.size(1) == bbox.size(1),
+      s"encodeBox.size(1) ${encodeBox.size(1)} should" +
       s" match bbox.size(1) ${bbox.size(1)}")
     Log4Error.invalidOperationError(encodeBox.size(1) == decodeBox.size(1),
       s"encodeBox.size(1) ${encodeBox.size(1)} should" +

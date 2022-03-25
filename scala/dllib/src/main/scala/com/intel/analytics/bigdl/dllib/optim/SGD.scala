@@ -568,7 +568,8 @@ object SGD {
       if (epoch == curEpoch) return
       curEpoch = epoch
       val current = optimMethod.state.get[Float](monitor)
-      Log4Error.invalidOperationError(current.isDefined, s"Learning Rate Plateau Reducing requires ${monitor} available!")
+      Log4Error.invalidOperationError(current.isDefined,
+        s"Learning Rate Plateau Reducing requires ${monitor} available!")
       if (cooldownCounter > 0) {
         cooldownCounter -= 1
         waitCounter = 0

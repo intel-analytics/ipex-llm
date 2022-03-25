@@ -215,7 +215,8 @@ class ImageFeature extends Serializable {
   def copyTo[T: ClassTag](storage: Array[T], offset: Int, floatKey: String = ImageFeature.floats,
     toRGB: Boolean = true, greyToRGB: Boolean = false)(implicit ev: TensorNumeric[T]): Unit = {
     val channel = getChannel()
-    Log4Error.invalidOperationError(contains(floatKey), s"there should be ${floatKey} in ImageFeature")
+    Log4Error.invalidOperationError(contains(floatKey),
+      s"there should be ${floatKey} in ImageFeature")
     val data = floats(floatKey)
     Log4Error.invalidOperationError(data.length >= getWidth() * getHeight() * channel,
       s"float array length should be larger than $channel * ${getWidth()} * ${getHeight()}")

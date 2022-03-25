@@ -237,8 +237,8 @@ object DenseTensorConv {
     val nKernelRows = kernel.size(1)
     val nKernelCols = kernel.size(2)
 
-    Log4Error.unKnowExceptionError((nInputRows >= nKernelRows && nInputCols >= nKernelCols) || vf == 'F',
-      "conv2Dmul : Input image is smaller than kernel")
+    Log4Error.unKnowExceptionError((nInputRows >= nKernelRows && nInputCols >= nKernelCols)
+      || vf == 'F', "conv2Dmul : Input image is smaller than kernel")
 
     val nOutputRows = convSize(nInputRows, nKernelRows, srow, vf)
     val nOutputCols = convSize(nInputCols, nKernelCols, scol, vf)

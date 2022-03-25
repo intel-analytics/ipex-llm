@@ -32,7 +32,8 @@ import scala.reflect.ClassTag
 class ClassSimplexCriterion[T: ClassTag](val nClasses: Int)
  (implicit ev: TensorNumeric[T]) extends MSECriterion[T] {
 
-  Log4Error.invalidInputError(nClasses > 1, "ClassSimplexCriterion: Required positive integer argument nClasses > 1," +
+  Log4Error.invalidInputError(nClasses > 1,
+    "ClassSimplexCriterion: Required positive integer argument nClasses > 1," +
     s"but get nClasses $nClasses")
 
   private val simp = regsplex(nClasses - 1)
@@ -78,7 +79,8 @@ class ClassSimplexCriterion[T: ClassTag](val nClasses: Int)
 
   override def updateOutput(input: Tensor[T], target: Tensor[T]): T = {
     transformTarget(target)
-    Log4Error.invalidInputError(input.nElement() == targetBuffer.nElement(), "ClassSimplexCriterion: " +
+    Log4Error.invalidInputError(input.nElement() == targetBuffer.nElement(),
+      "ClassSimplexCriterion: " +
       "element number wrong" +
       s"input dim(${input.nElement()})" +
       s"targetBuffer dim(${targetBuffer.nElement()})")
@@ -87,7 +89,8 @@ class ClassSimplexCriterion[T: ClassTag](val nClasses: Int)
   }
 
   override def updateGradInput(input: Tensor[T], target: Tensor[T]): Tensor[T] = {
-    Log4Error.invalidInputError(input.nElement() == targetBuffer.nElement(), "ClassSimplexCriterion: " +
+    Log4Error.invalidInputError(input.nElement() == targetBuffer.nElement(),
+      "ClassSimplexCriterion: " +
       "element number wrong" +
       s"input dim(${input.nElement()})" +
       s"targetBuffer dim(${targetBuffer.nElement()})")

@@ -441,7 +441,8 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, 
     val params = parameters()
     if (params == null) return null
     val (weights, gradients) = params
-    Log4Error.invalidInputError(gradients.length == weights.length, "weight number is not equal to grad number")
+    Log4Error.invalidInputError(gradients.length == weights.length,
+      "weight number is not equal to grad number")
 
     if (weights.length == 1) {
       T(getName() -> T("weight" -> weights(0), "gradWeight" -> gradients(0)))
@@ -654,7 +655,8 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, 
     path: String,
     byteOrder: ByteOrder = ByteOrder.LITTLE_ENDIAN,
     dataFormat: TensorflowDataFormat = TensorflowDataFormat.NHWC): this.type = {
-    Log4Error.invalidInputError(this.isInstanceOf[Graph[T]], "only Graph container can be saved as Tensorflow model")
+    Log4Error.invalidInputError(this.isInstanceOf[Graph[T]],
+      "only Graph container can be saved as Tensorflow model")
     this.clearState()
     val inTrainMode = train
     if (inTrainMode) {
@@ -955,7 +957,8 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, 
     Log4Error.invalidInputError(imageFrame.isDistributed(), "ImageFrame must be distributed")
     val rdd = imageFrame.toDistributed().rdd.map(imageFeature => {
       if (imageFeature.isValid) {
-        Log4Error.invalidInputError(imageFeature.contains(ImageFeature.sample), "ImageFeature must have sample")
+        Log4Error.invalidInputError(imageFeature.contains(ImageFeature.sample),
+          "ImageFeature must have sample")
         imageFeature[Sample[T]](ImageFeature.sample)
       } else {
         null
@@ -1089,10 +1092,12 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, 
     val parameterTable = this.getParametersTable
     val copiedModuleParamTable = copy.getParametersTable
     if (parameterTable != null) {
-      Log4Error.invalidInputError(copiedModuleParamTable != null, "cloned module should have params")
+      Log4Error.invalidInputError(copiedModuleParamTable != null,
+        "cloned module should have params")
       parameterTable.foreach {
         case (name: String, params: Table) =>
-          Log4Error.invalidInputError(copiedModuleParamTable.get(name) != None, s"cloned module should have for $name")
+          Log4Error.invalidInputError(copiedModuleParamTable.get(name) != None,
+            s"cloned module should have for $name")
           setLayerWeightAndBias(params,
             copiedModuleParamTable.get(name).get.asInstanceOf[Table], deepCopy)
         case _ =>
@@ -1194,7 +1199,8 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, 
   ): Unit = {
     val errMsg = "Some module is duplicate in the current model: "
     val curId = System.identityHashCode(this)
-    Log4Error.invalidInputError(this.skipDuplicateCheck() || !record.contains(curId), errMsg + this.getName())
+    Log4Error.invalidInputError(this.skipDuplicateCheck()
+      || !record.contains(curId), errMsg + this.getName())
     record.add(curId)
   }
 
@@ -1258,7 +1264,8 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, 
         val syncEndTime = System.nanoTime()
         if (grads != null) {
           val optimMethod = this.getOptimMethod
-          Log4Error.invalidInputError(optimMethod != null, s"optim method for ${this.getName} cannot be null")
+          Log4Error.invalidInputError(optimMethod != null,
+            s"optim method for ${this.getName} cannot be null")
           optimMethod.optimize(_ => (ev.fromType(0.0f), grads),
             weights)
           this.zeroGradParameters

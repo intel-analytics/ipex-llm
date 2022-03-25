@@ -76,7 +76,8 @@ private[bigdl] class TensorMMap(_size: Array[Int])(implicit owner: MemoryOwner)
    * @param runtime the mkldnn runtime for reorder operation
    */
   def setMemoryData(from: MemoryData, to: MemoryData, runtime: MklDnnRuntime): Unit = {
-    Log4Error.invalidInputError(_from == null && _to == null, "you only can set once the memory data")
+    Log4Error.invalidInputError(_from == null && _to == null,
+      "you only can set once the memory data")
     _from = from
     _to = to
 

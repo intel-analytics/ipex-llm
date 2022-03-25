@@ -31,7 +31,8 @@ import scala.reflect.ClassTag
 class DenseToSparse[T: ClassTag](val propagateBack: Boolean = true // propagate gradient back
                                 )(implicit ev: TensorNumeric[T]) extends TensorModule[T] {
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
-    Log4Error.invalidInputError(input.getTensorType == DenseType, "DenseToSparse: input should be a DenseTensor," +
+    Log4Error.invalidInputError(input.getTensorType == DenseType,
+      "DenseToSparse: input should be a DenseTensor," +
       s"but got ${input.getTensorType}")
     output = Tensor.sparse(input)
     output

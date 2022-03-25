@@ -34,7 +34,8 @@ class All[T: ClassTag](keepDim : Boolean = false, startFromZero : Boolean = fals
   override def updateOutput(input: Table): Tensor[Boolean] = {
     val data = input[Tensor[Boolean]](1)
     val indices = input[Tensor[Int]](2)
-    Log4Error.invalidInputError(indices.nDimension() == 1 || indices.isScalar, "indices must be 1D tensor or scala")
+    Log4Error.invalidInputError(indices.nDimension() == 1 || indices.isScalar,
+      "indices must be 1D tensor or scala")
     output.resizeAs(data)
     buffer.resizeAs(data).copy(data)
     val reduceDims = new ArrayBuffer[Int]()

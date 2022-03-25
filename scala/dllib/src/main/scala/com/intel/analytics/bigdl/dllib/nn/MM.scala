@@ -71,15 +71,18 @@ class MM[T: ClassTag](
       output.resize(ma.size(1), mb.size(2))
       output.mm(ma, mb)
     } else {
-      Log4Error.invalidInputError(ma.dim() == mb.dim(), s"input tensors should be with same dimension," +
+      Log4Error.invalidInputError(ma.dim() == mb.dim(),
+        s"input tensors should be with same dimension," +
         s"but get ${ma.dim()} ${mb.dim()}")
-      Log4Error.invalidInputError(mb.dim() == 3 || mb.dim() == 4, "input tensor must be 3D or 4D, but get " +
+      Log4Error.invalidInputError(mb.dim() == 3 || mb.dim() == 4,
+        "input tensor must be 3D or 4D, but get " +
         s"input dim ${mb.dim()}")
 
       val dimNum = ma.dim()
       val batchSizeX = ma.size().slice(0, dimNum - 2).product
       val batchSizeY = mb.size().slice(0, dimNum - 2).product
-      Log4Error.invalidInputError(batchSizeX == batchSizeY, "inputs must contain the same number of minibatches" +
+      Log4Error.invalidInputError(batchSizeX == batchSizeY,
+        "inputs must contain the same number of minibatches" +
         s"The minibatches of each are ${batchSizeX} and ${batchSizeY}")
 
       var reshapedX = ma.view(Array(batchSizeX, ma.size(dimNum - 1), ma.size(dimNum)))
@@ -91,7 +94,8 @@ class MM[T: ClassTag](
       if (transB) {
         reshapedY = reshapedY.transpose(2, 3)
       }
-      Log4Error.invalidInputError(reshapedX.size(3) == reshapedY.size(2), "matrix sizes do not match" +
+      Log4Error.invalidInputError(reshapedX.size(3) == reshapedY.size(2),
+        "matrix sizes do not match" +
         s"the matrix sizes are ${reshapedX.size(3)} and ${reshapedY.size(2)}")
 
       output.resize(batchSizeX, reshapedX.size(2), reshapedY.size(3)).zero()
@@ -106,7 +110,8 @@ class MM[T: ClassTag](
   override def updateGradInput(input: Table, gradOutput: Tensor[T]): Table = {
     val (ma, mb) = checkInputFormat(input)
 
-    Log4Error.invalidInputError(gradOutput.dim() == 2 || gradOutput.dim() == 3 || gradOutput.dim() == 4,
+    Log4Error.invalidInputError(gradOutput.dim() == 2 || gradOutput.dim() == 3
+      || gradOutput.dim() == 4,
       "arguments must be a 2D or 3D or 4D Tensor" +
         s"arguments dim ${gradOutput.dim()}")
 

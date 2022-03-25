@@ -93,8 +93,10 @@ class LogSoftMax[T: ClassTag](
   }
 
   override def updateGradInput(input: Tensor[T], gradOutput: Tensor[T]): Tensor[T] = {
-    Log4Error.invalidInputError(output.nDimension() == 1 || output.nDimension() == 2, "vector or matrix expected")
-    Log4Error.invalidInputError(gradOutput.dim() == input.dim(), "LogSoftMax: input and gradOutput shapes do not " +
+    Log4Error.invalidInputError(output.nDimension() == 1 || output.nDimension() == 2,
+      "vector or matrix expected")
+    Log4Error.invalidInputError(gradOutput.dim() == input.dim(),
+      "LogSoftMax: input and gradOutput shapes do not " +
       "match, input_dim: " + input.dim() + ", gradOutput_dim: " + gradOutput.dim())
     gradInput.resizeAs(input).copy(gradOutput)
     val (nframe, dim) =

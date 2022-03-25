@@ -88,7 +88,8 @@ private[bigdl] class Assign[T: ClassTag](
     if (validateShape) {
       var i = 1
       while (i <= input1.dim()) {
-        Log4Error.invalidInputError(input1.size(i) == input2.size(i), "shape of the ref and value are not same")
+        Log4Error.invalidInputError(input1.size(i) == input2.size(i),
+          "shape of the ref and value are not same")
         i += 1
       }
     }

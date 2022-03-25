@@ -168,7 +168,8 @@ object OpenCVMat {
    * @return image in mat
    */
   def fromFloats(floats: Array[Float], height: Int, width: Int, channel: Int = 3): OpenCVMat = {
-    Log4Error.invalidInputError(channel >= 1 && channel <= 4, s"channel $channel is out of range [1,4]")
+    Log4Error.invalidInputError(channel >= 1 && channel <= 4,
+      s"channel $channel is out of range [1,4]")
     Log4Error.invalidInputError(floats.length >= height * width * channel,
       s"pixels array length ${floats.length} is less than " +
         s"height*width*channel ${height * width * channel}")
@@ -230,7 +231,8 @@ object OpenCVMat {
    * @param width image width
    */
   def fromPixelsBytes(pixels: Array[Byte], height: Int, width: Int, channel: Int = 3): OpenCVMat = {
-    Log4Error.invalidInputError(channel >= 1 && channel <= 4, s"channel $channel is out of range [1,4]")
+    Log4Error.invalidInputError(channel >= 1 && channel <= 4,
+      s"channel $channel is out of range [1,4]")
     Log4Error.invalidInputError(pixels.length >= height * width * channel,
       s"pixels array length ${pixels.length} is less than " +
         s"height*width*channel ${height * width * channel}")
@@ -251,7 +253,8 @@ object OpenCVMat {
    * @return OpenCVMat
    */
   def fromTensor(tensor: Tensor[Float], format: String = "HWC"): OpenCVMat = {
-    Log4Error.invalidInputError(format == "HWC" || format == "CHW", "the format should be HWC or CHW")
+    Log4Error.invalidInputError(format == "HWC" || format == "CHW",
+      "the format should be HWC or CHW")
     var image = if (format == "CHW") {
       tensor.transpose(1, 2).transpose(2, 3)
     } else {

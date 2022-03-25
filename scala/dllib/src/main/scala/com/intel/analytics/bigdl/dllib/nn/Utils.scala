@@ -146,8 +146,10 @@ object Utils {
           s"x size ${x.toTensor[T].nElement()}, y size ${y.toTensor[T].nElement()}")
       func(x.toTensor[T], y.toTensor[T])
     } else {
-      Log4Error.invalidInputError(x.isInstanceOf[Table] && y.isInstanceOf[Table], "x, y should have the same size")
-      Log4Error.invalidInputError(x.toTable.length() == y.toTable.length(), "x, y should have the same size" +
+      Log4Error.invalidInputError(x.isInstanceOf[Table] && y.isInstanceOf[Table],
+        "x, y should have the same size")
+      Log4Error.invalidInputError(x.toTable.length() == y.toTable.length(),
+        "x, y should have the same size" +
         s"x size ${x.toTable.length()}, y size ${y.toTable.length()}")
       var i = 1
       while (i <= x.toTable.length()) {
@@ -320,7 +322,8 @@ object Utils {
     val padAlongWidth = Math.max(0, (oW -1) * dW + kW - inputWidth)
     val padAlongHeight = Math.max(0, (oH - 1) * dH + kH - inputHeight)
     if (inputDepth != -1) {
-      Log4Error.invalidInputError(dT > 0 && kT > 0, "kernel size and strideSize cannot be smaller than 0")
+      Log4Error.invalidInputError(dT > 0 && kT > 0,
+        "kernel size and strideSize cannot be smaller than 0")
       val oT = Math.ceil(inputDepth.toFloat / dT.toFloat).toInt
       val padAlongDepth = Math.max(0, (oT -1) * dT + kT - inputDepth)
       return Array(padAlongDepth/2, padAlongDepth - padAlongDepth/2, padAlongHeight/2,
@@ -482,7 +485,8 @@ object Utils {
       s"permutation length should be same as tensor dimension")
     Log4Error.invalidInputError(permutation.min >= 0 && permutation.max <= src.size().max,
       s"permutation min value should be between 0 and ${src.size().max}")
-    Log4Error.invalidInputError(permutation.distinct.size == src.nDimension, s"permutation has duplicated input")
+    Log4Error.invalidInputError(permutation.distinct.size == src.nDimension,
+      s"permutation has duplicated input")
 
     var i = 0
     val outSize = new Array[Int](src.nDimension)
@@ -614,7 +618,8 @@ object Utils {
 
       s"mask should between [$start, $end]"
     }
-    Log4Error.invalidInputError(mask.toBinaryString.length <= tensor.size().length, s"$maskInterval")
+    Log4Error.invalidInputError(mask.toBinaryString.length <= tensor.size().length,
+      s"$maskInterval")
 
     val result = mutable.ListBuffer[Float]()
 

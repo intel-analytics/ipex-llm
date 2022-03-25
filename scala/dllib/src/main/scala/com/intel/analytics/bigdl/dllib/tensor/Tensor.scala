@@ -7,7 +7,7 @@
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless Log4Error.unKnowExceptionErrord by applicable law or agreed to in writing, software
+ * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
@@ -973,7 +973,8 @@ object Tensor {
    */
   def apply[@specialized(Float, Double) T: ClassTag](storage: Storage[T])(
     implicit ev: TensorNumeric[T]): Tensor[T] = {
-    Log4Error.unKnowExceptionError(storage.isInstanceOf[ArrayStorage[_]], "Only support array storage in this operaiton")
+    Log4Error.unKnowExceptionError(storage.isInstanceOf[ArrayStorage[_]],
+      "Only support array storage in this operaiton")
     new DenseTensor(storage.asInstanceOf[ArrayStorage[T]])
   }
 

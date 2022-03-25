@@ -59,7 +59,8 @@ class JoinTable[T: ClassTag] (
     } else if (nInputDims > 0 && firstInput.dim() == (nInputDims + 1)) {
       nDim += 1
     }
-    Log4Error.invalidInputError(firstInput.dim() >= dimension, "dimension exceeds input dimensions" +
+    Log4Error.invalidInputError(firstInput.dim() >= dimension,
+      "dimension exceeds input dimensions" +
       s" input dimension ${firstInput.dim()}, dimension ${dimension}")
     nDim
   }

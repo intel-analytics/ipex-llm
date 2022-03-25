@@ -223,7 +223,8 @@ object DenseTensorApply {
     tensor2: Tensor[T], tensor3: Tensor[T],
     func: TensorFunc6[T]): Unit = {
 
-    Log4Error.unKnowExceptionError(tensor1.nElement() == tensor2.nElement() && tensor2.nElement() == tensor3.nElement(),
+    Log4Error.unKnowExceptionError(tensor1.nElement() == tensor2.nElement()
+      && tensor2.nElement() == tensor3.nElement(),
       "inconsistent tensor size")
 
     if (tensor1.isEmpty) {

@@ -144,9 +144,11 @@ class SpatialFullConvolution[T: ClassTag](
     padH : Int, padW : Int,
     adjH : Int, adjW : Int) : Unit = {
 
-    Log4Error.invalidInputError(kW > 0 && kH > 0, s"SpatialFullConvolution: kernel size should be greater than zero, " +
+    Log4Error.invalidInputError(kW > 0 && kH > 0,
+      s"SpatialFullConvolution: kernel size should be greater than zero, " +
       s"but got kH: $kH kW: $kW")
-    Log4Error.invalidInputError(dW > 0 && dH > 0, s"SpatialFullConvolution: stride should be greater than zero, " +
+    Log4Error.invalidInputError(dW > 0 && dH > 0,
+      s"SpatialFullConvolution: stride should be greater than zero, " +
       s"but got dH: $dH dW: $dW")
     Log4Error.invalidInputError(weight.nDimension == 3 || weight.nDimension == 5,
       s"SpatialFullConvolution: 3D or 5D weight tensor expected, but got size: ${weight.dim()}")
@@ -164,7 +166,8 @@ class SpatialFullConvolution[T: ClassTag](
     val dimh = if (ndim == 4) 3 else 2
     val dimw = if (ndim == 4) 4 else 3
 
-    Log4Error.invalidInputError(ndim == 3 || ndim == 4, s"SpatialFullConvolution: 3D or 4D input tensor expected, " +
+    Log4Error.invalidInputError(ndim == 3 || ndim == 4,
+      s"SpatialFullConvolution: 3D or 4D input tensor expected, " +
       s"but got size: ${input.dim()}")
 
     val inputHeight = input.size(dimh)
@@ -188,7 +191,8 @@ class SpatialFullConvolution[T: ClassTag](
       Log4Error.invalidInputError(gradOutput.size(dimf) == nOutputPlane
         && gradOutput.size(dimh) == outputHeight
         && gradOutput.size(dimw) == outputWidth,
-        s"SpatialFullConvolution: GradOutput's size should be (${nOutputPlane} x ${outputHeight} " +
+        s"SpatialFullConvolution: GradOutput's size should be" +
+          s" (${nOutputPlane} x ${outputHeight} " +
           s"x ${outputWidth}), but got (${gradOutput.size(dimf)} x ${gradOutput.size(dimh)} " +
           s"x ${gradOutput.size(dimw)})")
     }
@@ -283,7 +287,8 @@ class SpatialFullConvolution[T: ClassTag](
     }
 
     shapeCheck(inputTensor, null, weight, bias, kH, kW, dH, dW, padH, padW, adjH, adjW)
-    Log4Error.invalidInputError(inputTensor.isContiguous(), "SpatialFullConvolution: input should be contiguous")
+    Log4Error.invalidInputError(inputTensor.isContiguous(),
+      "SpatialFullConvolution: input should be contiguous")
 
     val isBatch = if (inputTensor.nDimension() == 3) {
       // Force batch
@@ -328,7 +333,8 @@ class SpatialFullConvolution[T: ClassTag](
     while(elt <= batchSize) {
       // Matrix mulitply per output:
       val input_n = inputTensor.select(1, elt)
-      Log4Error.invalidInputError(input_n.isContiguous(), s"SpatialFullConvolution: input($elt) should be contiguous")
+      Log4Error.invalidInputError(input_n.isContiguous(),
+        s"SpatialFullConvolution: input($elt) should be contiguous")
       val output_n = output.select(1, elt)
       val columns_n = columns.select(1, elt)
 

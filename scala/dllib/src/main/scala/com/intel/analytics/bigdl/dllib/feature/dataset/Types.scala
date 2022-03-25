@@ -1,4 +1,3 @@
-
 /*
  * Copyright 2016 The BigDL Authors.
  *

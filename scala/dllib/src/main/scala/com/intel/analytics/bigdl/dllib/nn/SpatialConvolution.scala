@@ -255,7 +255,8 @@ class SpatialConvolution[T: ClassTag](
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
     Log4Error.invalidInputError(input.dim() == 3 || input.dim() == 4,
       "SpatialConvolution: " + ErrorInfo.constrainInputAs3DOrBatch)
-    Log4Error.invalidInputError(input.isContiguous(), "SpatialConvolution Log4Error.invalidInputError a contiguous input")
+    Log4Error.invalidInputError(input.isContiguous(),
+      "SpatialConvolution Log4Error.invalidInputError a contiguous input")
 
     if (weightMM == null || weightMM.storage().isEmpty) {
       weightMM = weight.view(weightMMShape)
@@ -293,7 +294,8 @@ class SpatialConvolution[T: ClassTag](
     }
 
     if (input.dim() == 3) {
-      Log4Error.invalidInputError(input.isContiguous(), "SpatialConvolution Log4Error.invalidInputError a contiguous input")
+      Log4Error.invalidInputError(input.isContiguous(),
+        "SpatialConvolution Log4Error.invalidInputError a contiguous input")
       output.resize(getOutputShape(outputHeight, outputWidth))
       if (_1x1) {
         fInput.set(input)
@@ -337,7 +339,8 @@ class SpatialConvolution[T: ClassTag](
         val _i = i + 1
         results(i) = Engine.model.invoke(() => {
           val inputT = input.select(1, _i)
-          Log4Error.invalidInputError(inputT.isContiguous(), "SpatialConvolution Log4Error.invalidInputError a contiguous input")
+          Log4Error.invalidInputError(inputT.isContiguous(),
+            "SpatialConvolution Log4Error.invalidInputError a contiguous input")
           val outputT = output.select(1, _i)
           val fInputT = fInput.select(1, _i)
           var g = 0
@@ -408,7 +411,8 @@ class SpatialConvolution[T: ClassTag](
         results(i) = Engine.model.invoke(() => {
           val gradInputT = gradInput.select(1, _i)
           val gradOutputT = gradOutput.select(1, _i)
-          Log4Error.invalidInputError(gradOutputT.isContiguous(), "gradOutput needs to be contiguous")
+          Log4Error.invalidInputError(gradOutputT.isContiguous(),
+            "gradOutput needs to be contiguous")
           val fgradInputT = fGradInput.select(1, _i)
           var g = 0
           while (g < nGroup) {

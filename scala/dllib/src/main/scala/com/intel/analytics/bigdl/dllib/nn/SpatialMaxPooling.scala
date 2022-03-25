@@ -108,7 +108,8 @@ class SpatialMaxPooling[T: ClassTag](
           "input smaller than kernel size" +
             s"input size(${input.size(dimw)},${input.size(dimh)})" +
             s"kernel size(${kW-padW},${kH-padH})")
-        Log4Error.invalidInputError(kW / 2 >= padW && kH / 2 >= padH, "pad should be smaller than half of kernel size" +
+        Log4Error.invalidInputError(kW / 2 >= padW && kH / 2 >= padH,
+          "pad should be smaller than half of kernel size" +
           s"pad size($padW,$padH)" +
           s"kernel size($kW, $kH)")
         Utils.getOutSizeAndPadding(inputHeight, inputWidth, dH, dW, kH, kW, padH, padW, ceilMode)

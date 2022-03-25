@@ -105,7 +105,8 @@ class TimeDistributed[T : ClassTag] (
 
     val _inputSize = input.size
     combine(_inputSize, inputSize)
-    Log4Error.invalidInputError(input.isContiguous(), "Input tensor to TimeDistributed should be contiguous")
+    Log4Error.invalidInputError(input.isContiguous(),
+      "Input tensor to TimeDistributed should be contiguous")
     input.resize(inputSize)
     val _output = layer.forward(input).toTensor[T]
     split(_output.size, outputSize, _inputSize(0), _inputSize(1))

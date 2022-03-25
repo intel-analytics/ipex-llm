@@ -7,7 +7,7 @@
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless Log4Error.unKnowExceptionErrord by applicable law or agreed to in writing, software
+ * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
@@ -111,8 +111,8 @@ object DenseTensorMath {
 
   def cdiv[@specialized(Float, Double) T](self: DenseTensor[T], x: Tensor[T], y: Tensor[T])
     (implicit ev: TensorNumeric[T]): Tensor[T] = {
-    Log4Error.unKnowExceptionError(self.nElement() == y.nElement() && self.nElement() == x.nElement(),
-      "element number doesn't match")
+    Log4Error.unKnowExceptionError(self.nElement() == y.nElement()
+      && self.nElement() == x.nElement(), "element number doesn't match")
     if (self.isContiguous() && y.isContiguous() && x.isContiguous() && MKL.isMKLLoaded) {
 
       ev.vDiv(self.nElement(), x.storage().array(), x.storageOffset() - 1,
@@ -813,8 +813,8 @@ object DenseTensorMath {
 
   def cmax[@specialized(Float, Double) T](self: DenseTensor[T], x: Tensor[T], y: Tensor[T])
                                          (implicit ev: TensorNumeric[T]): Tensor[T] = {
-    Log4Error.unKnowExceptionError(self.nElement() == y.nElement() && self.nElement() == x.nElement(),
-      "element number doesn't match")
+    Log4Error.unKnowExceptionError(self.nElement() == y.nElement()
+      && self.nElement() == x.nElement(), "element number doesn't match")
     // todo: the performance of contiguous tensor should be optimized
     val func = new TensorFunc6[T] {
       override def apply(data1: Array[T], offset1: Int, data2: Array[T], offset2: Int,
@@ -827,8 +827,8 @@ object DenseTensorMath {
   }
   def cmin[@specialized(Float, Double) T](self: DenseTensor[T], x: Tensor[T], y: Tensor[T])
                                          (implicit ev: TensorNumeric[T]): Tensor[T] = {
-    Log4Error.unKnowExceptionError(self.nElement() == y.nElement() && self.nElement() == x.nElement(),
-      "element number doesn't match")
+    Log4Error.unKnowExceptionError(self.nElement() == y.nElement()
+      && self.nElement() == x.nElement(), "element number doesn't match")
     // todo: the performance of contiguous tensor should be optimized
     val func = new TensorFunc6[T] {
       override def apply(data1: Array[T], offset1: Int, data2: Array[T], offset2: Int,

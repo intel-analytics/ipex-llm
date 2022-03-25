@@ -270,8 +270,8 @@ case class COCOImage(
 
     val rawdata = SeqFileFolder.decodeRawImageToBGR(this.data)
     Log4Error.invalidInputError(rawdata.length == height * width * 3, "image data size doesn't" +
-      s"match the height and width, rawdata.length(${rawdata.length}) not same with height($height)" +
-      s" * width($width) * 3")
+      s"match the height and width, rawdata.length(${rawdata.length}) not" +
+      s" same with height($height) * width($width) * 3")
     val imf = ImageFeature(rawdata, RoiLabel(labelClasses, bboxes, masks), fileName)
     imf(ImageFeature.originalSize) = (height, width, 3)
     imf(RoiImageInfo.ISCROWD) = isCrowd

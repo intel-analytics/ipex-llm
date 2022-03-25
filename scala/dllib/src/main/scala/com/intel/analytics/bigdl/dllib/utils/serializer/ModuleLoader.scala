@@ -7,7 +7,7 @@
  *
  *     http://www.apache.org/licenses/LICENSE-2.0
  *
- * Unless Log4Error.invalidInputErrord by applicable law or agreed to in writing, software
+ * Unless required by applicable law or agreed to in writing, software
  * distributed under the License is distributed on an "AS IS" BASIS,
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
@@ -102,10 +102,12 @@ object ModuleLoader {
 
       val calculatedDigest = digestInputStream.getMessageDigest.digest
 
-      Log4Error.invalidInputError(calculatedDigest.length == digestLen, "checksum error, size mismatch")
+      Log4Error.invalidInputError(calculatedDigest.length == digestLen,
+        "checksum error, size mismatch")
 
       for (i <- 0 until digestLen) {
-        Log4Error.invalidInputError(calculatedDigest(i) == storedDigest(i), "check sum error, please check weight file")
+        Log4Error.invalidInputError(calculatedDigest(i) == storedDigest(i),
+          "check sum error, please check weight file")
       }
 
     } finally {
@@ -312,7 +314,8 @@ object ModulePersister {
       if (!storageIds.contains(storageId) && storageId != -1) {
         val tensorBuilder = BigDLTensor.newBuilder(bigdlTensor)
         tensorBuilder.clearStorage()
-        Log4Error.invalidInputError(tensorStorages.contains(storageId), s"${storageId} does not exist")
+        Log4Error.invalidInputError(tensorStorages.contains(storageId),
+          s"${storageId} does not exist")
         tensorBuilder.setStorage(tensorStorages.get(storageId).
           get.asInstanceOf[TensorStorage])
         val attrValueBuilder = AttrValue.newBuilder

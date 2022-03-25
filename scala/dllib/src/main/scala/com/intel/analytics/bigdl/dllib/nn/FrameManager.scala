@@ -65,9 +65,11 @@ class FrameManager[T] extends Serializable {
 
   def pend(node: ModuleNode[T], frame : Frame[T]): Unit = {
     val name = node.element.getName()
-    Log4Error.invalidInputError(node.element.isInstanceOf[NextIteration[_, _]], "you can only pend next iteration node")
+    Log4Error.invalidInputError(node.element.isInstanceOf[NextIteration[_, _]],
+      "you can only pend next iteration node")
     if (nodeFrame.contains(name)) {
-      Log4Error.invalidInputError(nodeFrame(name).eq(frame), "node cannot be in two different fames at the same time")
+      Log4Error.invalidInputError(nodeFrame(name).eq(frame),
+        "node cannot be in two different fames at the same time")
     } else {
       nodeFrame(name) = frame
     }

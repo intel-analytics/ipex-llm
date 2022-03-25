@@ -48,7 +48,8 @@ class MultiLabelMarginCriterion[@specialized(Float, Double) T: ClassTag]
           s"target size ${target.size(1)}, input size ${input.size()}")
       (1, input.size(1))
     } else {
-      Log4Error.invalidInputError(target.nDimension() == 2 && target.size(1) == input.size(1) && target.size(2)
+      Log4Error.invalidInputError(target.nDimension() == 2 && target.size(1) == input.size(1)
+        && target.size(2)
         == input.size(2), "MultiLabelMarginCriterion: " + ErrorInfo.constrainInputSizeSameAsTarget)
       (input.size(1), input.size(2))
     }
@@ -126,13 +127,17 @@ class MultiLabelMarginCriterion[@specialized(Float, Double) T: ClassTag]
           s"isTarget size ${isTarget.size(1)} input size ${input.size(1)}")
       (1, input.size(1))
     } else {
-      Log4Error.invalidInputError(target.nDimension() == 2 && target.size(1) == input.size(1) && target.size(2)
-        == input.size(2), "MultiLabelMarginCriterion: " + ErrorInfo.constrainInputSizeSameAsTarget +
+      Log4Error.invalidInputError(target.nDimension() == 2 &&
+        target.size(1) == input.size(1) && target.size(2)
+        == input.size(2), "MultiLabelMarginCriterion: " +
+        ErrorInfo.constrainInputSizeSameAsTarget +
       s"target dimension ${target.nDimension()} " +
         s"target size(${target.size(1)},${target.size(2)})" +
         s"input size(${input.size(1)},${input.size(2)})")
-      Log4Error.invalidInputError(isTarget.nDimension() == 2 && isTarget.size(1) == input.size(1) &&
-        isTarget.size(2) == input.size(2), "MultiLabelMarginCriterion: inconsistent isTarget size" +
+      Log4Error.invalidInputError(isTarget.nDimension() == 2 &&
+        isTarget.size(1) == input.size(1) &&
+        isTarget.size(2) == input.size(2), "MultiLabelMarginCriterion:" +
+        " inconsistent isTarget size" +
         s"isTarget dimension ${isTarget.nDimension()}" +
         s"isTarget size(${isTarget.size(1)},${isTarget.size(2)})" +
         s"input size(${input.size(1)},${input.size(2)})")
