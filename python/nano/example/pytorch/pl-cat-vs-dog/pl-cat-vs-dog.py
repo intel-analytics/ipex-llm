@@ -1,3 +1,25 @@
+#
+# Copyright 2016 The BigDL Authors.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+
+"""Computer vision example on Image Classfication via Resnet50.
+This computer vision example illustrates how one could use BigDL nano to easily train 
+a Resnet50 model. For the sake of this example, the 'cats and dogs dataset' (~60MB, see
+`DATA_URL` below) and the proposed network (denoted by `TransferLearningModel`, see below) 
+is trained for 15 epochs. The training is just one epoch. After training, it will output the
+test result.
+"""
 import os
 import torch
 from bigdl.nano.pytorch.vision.datasets import ImageFolder
