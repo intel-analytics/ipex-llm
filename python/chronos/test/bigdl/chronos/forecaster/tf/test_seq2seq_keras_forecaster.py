@@ -16,9 +16,9 @@
 import pytest
 import tempfile
 
-from bigdl.chronos.forecaster.tf.seq2seq_forecaster import Seq2SeqForecaster
 from unittest import TestCase
 import numpy as np
+import tensorflow as tf
 
 
 def create_data():
@@ -39,44 +39,41 @@ def create_data():
     return train_data, test_data
 
 
+@pytest.mark.skipif(tf.__version__ < '2.0.0', reason="Run only when tf > 2.0.0.")
 class TestSeq2SeqModel(TestCase):
     
     def setUp(self):
-        pass
+        from bigdl.chronos.forecaster.tf.seq2seq_forecaster import Seq2SeqForecaster
+        self.forecaster = Seq2SeqForecaster(past_seq_len=10,
+                                            future_seq_len=2,
+                                            input_feature_num=10,
+                                            output_feature_num=2)
 
     def tearDown(self):
         pass
 
     def test_seq2seq_fit_predict_evaluate(self):
         train_data, test_data = create_data()
-        forecaster = Seq2SeqForecaster(past_seq_len=10,
-                                       future_seq_len=2,
-                                       input_feature_num=10,
-                                       output_feature_num=2)
-        forecaster.fit(train_data,
+        self.forecaster.fit(train_data,
                        epochs=2,
                        batch_size=32)
-        yhat = forecaster.predict(test_data[0])
+        yhat = self.forecaster.predict(test_data[0])
         assert yhat.shape == (400, 2, 2)
-        mse = forecaster.evaluate(test_data, multioutput="raw_values")
+        mse = self.forecaster.evaluate(test_data, multioutput="raw_values")
         assert mse[0].shape == test_data[-1].shape[1:]
 
     def test_seq2seq_save_load(self):
         train_data, test_data = create_data()
-        forecaster = Seq2SeqForecaster(past_seq_len=10,
-                                       future_seq_len=2,
-                                       input_feature_num=10,
-                                       output_feature_num=2)
-        forecaster.fit(train_data,
+        self.forecaster.fit(train_data,
                        epochs=2,
                        batch_size=32)
-        yhat = forecaster.predict(test_data[0])
+        yhat = self.forecaster.predict(test_data[0])
         with tempfile.TemporaryDirectory() as checkpoint_file:
-            forecaster.save(checkpoint_file)
-            forecaster.load(checkpoint_file)
+            self.forecaster.save(checkpoint_file)
+            self.forecaster.load(checkpoint_file)
             from bigdl.chronos.model.tf2.Seq2Seq_keras import LSTMSeq2Seq
-            assert isinstance(forecaster.internal, LSTMSeq2Seq)
-        load_model_yhat = forecaster.predict(test_data[0])
+            assert isinstance(self.forecaster.internal, LSTMSeq2Seq)
+        load_model_yhat = self.forecaster.predict(test_data[0])
         assert yhat.shape == (400, 2, 2)
         np.testing.assert_almost_equal(yhat, load_model_yhat, decimal=5)
 
