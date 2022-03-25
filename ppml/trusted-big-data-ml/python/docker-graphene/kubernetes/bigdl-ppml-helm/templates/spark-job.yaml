@@ -14,17 +14,22 @@ spec:
         imagePullPolicy: Never
         command: ["/bin/sh","-c"]
         args: ["
-                sed -i \"s@/home/icx/glorysdj/data@$HOST_DATA_PATH@g\" spark-executor-template.yaml;
+                sed -i \"s@nfsvolumeclaim@$NFS_PVC_NAME@g\" spark-driver-template.yaml;
+                sed -i \"s@nfsvolumeclaim@$NFS_PVC_NAME@g\" spark-executor-template.yaml;
                 export RUNTIME_DRIVER_HOST=$( hostname -I | awk '{print $1}' );
                 export LOCAL_IP=$( hostname -I | awk '{print $1}' );
                 bash ./init.sh;
-                bash /ppml/trusted-big-data-ml/mounts/submit-spark-k8s.sh | tee output.log
+                bash /ppml/trusted-big-data-ml/submit-spark-k8s.sh | tee output.log
                 "]
         securityContext:
           privileged: true
         env:
-          - name: HOST_DATA_PATH
-            value: {{ .Values.dataPath }}
+          - name: SPARK_JAR
+            value: {{ .Values.jar }}
+          - name: SPARK_CLASS
+            value: {{ .Values.class }}
+          - name: NFS_PVC_NAME
+            value: {{ .Values.pvc }}
           - name: RUNTIME_K8S_SPARK_IMAGE
             value: {{ .Values.image }}
           - name: RUNTIME_SPARK_MASTER
@@ -76,6 +81,7 @@ spec:
             mountPath: /ppml/trusted-big-data-ml/work/password
           - name: nfs-storage
             mountPath: "/ppml/trusted-big-data-ml/mounts"
+            subPath: submit-spark-k8s.sh
       volumes:
       - name: device-plugin
         hostPath:
