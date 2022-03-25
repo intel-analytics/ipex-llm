@@ -21,8 +21,9 @@ def create_ray_multiprocessing_backend():
 
 
 def create_ray_envbase(world_size):
-    from bigdl.nano.deps.ray.ray_envbase import RayEnvironment 
+    from bigdl.nano.deps.ray.ray_envbase import RayEnvironment
     return RayEnvironment(world_size)
+
 
 def distributed_ray(*args, **kwargs):
     from ray_distributed import RayPlugin

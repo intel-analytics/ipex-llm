@@ -17,6 +17,7 @@
 import tensorflow as tf
 from bigdl.nano.deps.ray.ray_api import create_ray_multiprocessing_backend
 
+
 class TrainingUtils:
     def fit(self,
             x=None,
