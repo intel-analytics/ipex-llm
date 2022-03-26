@@ -23,8 +23,8 @@ import com.intel.analytics.bigdl.ppml.{FLContext, FLServer}
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
 
-class VflNNSpec extends FlatSpec with Matchers with BeforeAndAfter with DebugLogger {
-  "Logistic Regression" should "work" in {
+class VFLNNSpec extends FlatSpec with Matchers with BeforeAndAfter with DebugLogger {
+  "Logistic Regression DataFrame API" should "work" in {
     val flServer = new FLServer()
     flServer.build()
     flServer.start()
@@ -57,8 +57,18 @@ class VflNNSpec extends FlatSpec with Matchers with BeforeAndAfter with DebugLog
     lr.predict(xTrain)
     flServer.stop()
   }
-  "Linear Regression" should "work" in {
-
+  "Linear Regression Tensor API" should "work" in {
+    val flServer = new FLServer()
+    flServer.build()
+    flServer.start()
+    FLContext.initFLContext()
+    val xTrain = Tensor[Float](10, 10)
+    val yTrain = Tensor[Float](10, 1)
+    val lr = new VFLLinearRegression(10)
+    lr.fit(xTrain, yTrain)
+    lr.evaluate(xTrain)
+    lr.predict(xTrain)
+    flServer.stop()
   }
   "Multiple algorithm" should "work" in {
     val flServer = new FLServer()
