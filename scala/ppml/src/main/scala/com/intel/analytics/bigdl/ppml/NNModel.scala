@@ -23,7 +23,7 @@ import com.intel.analytics.bigdl.ppml.base.Estimator
 import com.intel.analytics.bigdl.ppml.utils.{DataFrameUtils, VFLTensorUtils}
 import org.apache.spark.sql.DataFrame
 
-abstract class FLModel() {
+abstract class NNModel() {
   val model: Sequential[Float]
   val estimator: Estimator
 

@@ -18,12 +18,12 @@ package com.intel.analytics.bigdl.ppml.algorithms
 
 import com.intel.analytics.bigdl.dllib.nn.{BCECriterion, Linear, Sequential, Sigmoid}
 import com.intel.analytics.bigdl.dllib.optim.{Adam, Top1Accuracy}
-import com.intel.analytics.bigdl.ppml.FLModel
+import com.intel.analytics.bigdl.ppml.NNModel
 import com.intel.analytics.bigdl.ppml.nn.HFLNNEstimator
 import com.intel.analytics.bigdl.ppml.utils.FLClientClosable
 
 class HFLLogisticRegression(featureNum: Int,
-                            learningRate: Float = 0.005f) extends FLModel() with FLClientClosable {
+                            learningRate: Float = 0.005f) extends NNModel() with FLClientClosable {
   val model = Sequential[Float]().add(Linear(featureNum, 1))
     .add(Sigmoid[Float]())
 
