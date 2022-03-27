@@ -24,7 +24,7 @@ import os
 
 from bigdl.ppml import *
 from bigdl.ppml.fl_server import FLServer
-from bigdl.ppml.pytorch.pipeline import Pipeline
+from bigdl.ppml.pytorch.pipeline import PytorchPipeline
 from bigdl.ppml.utils import init_fl_context
 
 
@@ -48,19 +48,19 @@ class TestPytorchNN(unittest.TestCase):
     # def setUpClass(cls) -> None:
     #     multiprocessing.set_start_method('spawn') 
 
-    # def setUp(self) -> None:
-    #     self.fl_server = FLServer()
-    #     init_fl_context()
+    def setUp(self) -> None:
+        self.fl_server = FLServer()
+        init_fl_context()
 
     # def tearDown(self) -> None:
     #     self.fl_server.stop()
 
     def test_dummy_data(self):
         model = SimpleNN()
-        ppl = Pipeline(model, nn.MSELoss(), torch.optim.SGD(model.parameters(), lr=1e-3))
+        ppl = PytorchPipeline(model, nn.MSELoss(), torch.optim.SGD(model.parameters(), lr=1e-3), algorithm="vfl_logistic_regression")
         x, y = np.ones([2, 2], dtype="float32"), np.ones([2], dtype="float32")
         x, y = torch.from_numpy(x), torch.from_numpy(y)
-        ppl.train(x, y)
+        ppl.fit(x, y)
     
 
 if __name__ == '__main__':

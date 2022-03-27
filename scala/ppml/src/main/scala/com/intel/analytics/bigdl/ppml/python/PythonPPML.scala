@@ -42,6 +42,9 @@ class PythonPPML[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonBigDL
   def initFLContext() = {
     FLContext.initFLContext()
   }
+  def getFLClient() = {
+    FLContext.getClient()
+  }
   def createFLServer() = {
     new FLServer()
   }

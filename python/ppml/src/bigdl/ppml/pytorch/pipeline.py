@@ -16,24 +16,27 @@
 
 import torch
 from torch import nn
-from bigdl.dllib.utils.common import callBigDlFunc
-
-from bigdl.ppml.utils import FLClientClosable
+from bigdl.dllib.utils.common import JTensor, callBigDlFunc
 
 
-class Pipeline(FLClientClosable):
-    def __init__(self, model: nn.Module, loss_fn, optimizer: torch.optim.Optimizer, algorithm):
+class PytorchPipeline:
+    def __init__(self, model: nn.Module, loss_fn, optimizer: torch.optim.Optimizer, algorithm,
+            bigdl_type="float"):
+        self.bigdl_type = bigdl_type
         self.model = model
         self.loss_fn = loss_fn
         self.optimizer = optimizer
         self.version = 0
         self.algorithm = algorithm
+        
 
-    def server_train_step(self, y_pred, y_true):
+    def server_train_step(self, y_pred: torch.Tensor, y_true: torch.Tensor):
         """
         Get the loss data from FLServer and construct the identical Pytorch Tensor
         """
-        callBigDlFunc(self.bigdl_type, "pytorchTrainStep", self.value,
+        y_pred = JTensor.from_ndarray(y_pred.detach().numpy())
+        y_true = JTensor.from_ndarray(y_true.numpy())
+        callBigDlFunc(self.bigdl_type, "pytorchTrainStep",
             y_pred, y_true, self.version, self.algorithm)
 
     def fit(self, x, y, epoch=2):

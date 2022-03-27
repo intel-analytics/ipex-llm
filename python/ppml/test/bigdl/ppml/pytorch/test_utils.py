@@ -24,7 +24,7 @@ import os
 
 from bigdl.ppml import *
 from bigdl.ppml.fl_server import FLServer
-from bigdl.ppml.pytorch.pipeline import Pipeline
+from bigdl.ppml.pytorch.pipeline import PytorchPipeline
 from bigdl.ppml.utils import init_fl_context
 
 

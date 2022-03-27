@@ -19,6 +19,9 @@ from bigdl.dllib.utils.common import *
 def init_fl_context(bigdl_type="float"):
     callBigDlFunc(bigdl_type, "initFLContext")
 
+def get_fl_client(bigdl_type="float"):
+    callBigDlFunc(bigdl_type, "getFLClient")
+
 class FLClientClosable(JavaValue):
     def __init__(self, jvalue=None, bigdl_type="float", *args):
         super().__init__(jvalue, bigdl_type, *args)
