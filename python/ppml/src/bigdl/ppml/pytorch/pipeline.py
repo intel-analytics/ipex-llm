@@ -14,6 +14,7 @@
 # limitations under the License.
 #
 
+from grpc import server
 import torch
 from torch import nn
 from bigdl.dllib.utils.common import JTensor, callBigDlFunc
@@ -36,8 +37,10 @@ class PytorchPipeline:
         """
         y_pred = JTensor.from_ndarray(y_pred.detach().numpy())
         y_true = JTensor.from_ndarray(y_true.numpy())
-        callBigDlFunc(self.bigdl_type, "pytorchTrainStep",
+        server_loss = callBigDlFunc(self.bigdl_type, "pytorchTrainStep",
             y_pred, y_true, self.version, self.algorithm)
+        server_loss = server_loss.to_ndarray()
+        return torch.from_numpy(server_loss)
 
     def fit(self, x, y, epoch=2):
         for e in range(epoch):

@@ -56,6 +56,8 @@ class TestPytorchNN(unittest.TestCase):
     #     self.fl_server.stop()
 
     def test_dummy_data(self):
+        self.fl_server.build()
+        self.fl_server.start()
         model = SimpleNN()
         ppl = PytorchPipeline(model, nn.MSELoss(), torch.optim.SGD(model.parameters(), lr=1e-3), algorithm="vfl_logistic_regression")
         x, y = np.ones([2, 2], dtype="float32"), np.ones([2], dtype="float32")
