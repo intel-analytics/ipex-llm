@@ -90,7 +90,7 @@ class DynamicGraphSpec  extends FlatSpec with Matchers {
     val output2 = ReLU().inputs(cadd)
 
     val graph = Graph.dynamic(Array(fc1, fc2), Array(output1, output2))
-    intercept[com.intel.analytics.bigdl.dllib.utils.UnKnownException] {
+    intercept[IllegalArgumentException] {
       graph.forward(Tensor(T(0.1f, 0.2f, -0.3f, -0.4f)))
     }
   }
