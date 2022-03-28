@@ -98,8 +98,8 @@ class KerasBaseModel(BaseModel):
                                  f"or a data creator function but found {type(data)}")
             if validation_data:
                 assert isinstance(validation_data, tuple),\
-                f"validation_data should be a tuple or\
-                 data creator function but found {type(validation_data)}"
+                    f"validation_data should be a tuple or\
+                    data creator function but found {type(validation_data)}"
 
             batch_size = int(self.config.get("batch_size", 32))
             train_dataset = KerasBaseModel._np_to_dataset(data, batch_size=batch_size)
