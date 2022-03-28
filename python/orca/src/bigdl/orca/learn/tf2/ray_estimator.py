@@ -205,7 +205,7 @@ class TensorFlow2Estimator(OrcaRayEstimator):
                                                                          self.remote_workers,
                                                                          zip_func)
         elif isinstance(data, ray.data.Dataset):
-
+            import tensorflow as tf
             shards = data.split(n=self.num_workers, locality_hints=self.remote_workers)
 
             def data_creator(config, batch_size):
@@ -213,6 +213,10 @@ class TensorFlow2Estimator(OrcaRayEstimator):
                                          feature_columns=feature_cols,
                                          output_signature=data_config["output_signature"],
                                          batch_size=batch_size)
+                options = tf.data.Options()
+                options.experimental_distribute.auto_shard_policy = \
+                    tf.data.experimental.AutoShardPolicy.OFF
+                tf_dataset = tf_dataset.with_options(options)
                 return tf_dataset
 
             remote_worker_stats = []
@@ -302,7 +306,7 @@ class TensorFlow2Estimator(OrcaRayEstimator):
             worker_stats = ray_xshards.reduce_partitions_for_actors(self.remote_workers,
                                                                     transform_func)
         elif isinstance(data, ray.data.Dataset):
-
+            import tensorflow as tf
             shards = data.split(n=self.num_workers, locality_hints=self.remote_workers)
 
             def data_creator(config, batch_size):
@@ -310,6 +314,10 @@ class TensorFlow2Estimator(OrcaRayEstimator):
                                          feature_columns=feature_cols,
                                          output_signature=data_config["output_signature"],
                                          batch_size=batch_size)
+                options = tf.data.Options()
+                options.experimental_distribute.auto_shard_policy = \
+                    tf.data.experimental.AutoShardPolicy.OFF
+                tf_dataset = tf_dataset.with_options(options)
                 return tf_dataset
 
             remote_worker_stats = []
