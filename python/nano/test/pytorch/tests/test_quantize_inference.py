@@ -78,7 +78,7 @@ class TestQuantizeInference(TestCase):
         optimizer = torch.optim.Adam(model.parameters(), lr=0.01)
         trainer = Trainer(max_epochs=1)
 
-        pl_model = Trainer.compile(model, loss, optimizer)
+        pl_model = Trainer.compile(model, loss, optimizer, quantize=True)
         train_loader = create_data_loader(data_dir, batch_size, \
                                           num_workers, data_transform, subset=200)
         test_loader = create_test_data_loader(data_dir, batch_size, \
@@ -109,7 +109,7 @@ class TestQuantizeInference(TestCase):
         assert pl_model._quantized_model_up_to_date is True  # qmodel is up-to-date after building
 
         model_load = ResNet18(10, pretrained=False, include_top=False, freeze=True)
-        pl_model_load = Trainer.compile(model_load)
+        pl_model_load = Trainer.compile(model_load, quantize=True)
         with tempfile.TemporaryDirectory() as tmp_dir_name:
             ckpt_name = os.path.join(tmp_dir_name, ".ckpt")
             torch.save(pl_model.quantized_state_dict(), ckpt_name)
