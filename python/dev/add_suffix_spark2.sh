@@ -55,8 +55,6 @@ sed -i "s/bigdl-chronos==/bigdl-chronos-spark2==/g" ${file}
 sed -i "s/bigdl-chronos-spark3==/bigdl-chronos-spark2==/g" ${file}
 sed -i "s/name='bigdl-chronos'/name='bigdl-chronos-spark2'/g" ${file}
 sed -i "s/name='bigdl-chronos-spark3'/name='bigdl-chronos-spark2'/g" ${file}
-sed -i "s/bigdl-orca==/bigdl-orca-spark2==/g" ${file}
-sed -i "s/bigdl-orca-spark3==/bigdl-orca-spark2==/g" ${file}
 sed -i "s/bigdl-orca\[automl\]==/bigdl-orca-spark2\[automl\]==/g" ${file}
 sed -i "s/bigdl-orca-spark3\[automl\]==/bigdl-orca-spark2\[automl\]==/g" ${file}
 sed -i "s/dist\/bigdl_chronos-/dist\/bigdl_chronos_spark2-/g" ${file}
