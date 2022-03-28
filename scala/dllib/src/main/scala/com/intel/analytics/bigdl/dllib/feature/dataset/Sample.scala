@@ -205,8 +205,10 @@ class ArraySample[T: ClassTag] private[bigdl](
   }
 
   override def label()(implicit ev: TensorNumeric[T]): Tensor[T] = {
-    Log4Error.invalidOperationError(this.numLabel <= 1, "Only one Sample required in total " +
-      s"got ${labelSize.length} label Sample, please use label(index) instead")
+    if (this.numLabel > 1) {
+      Log4Error.invalidOperationError(false, "Only one Sample required in total " +
+        s"got ${labelSize.length} label Sample, please use label(index) instead")
+    }
     label(0)
   }
 
