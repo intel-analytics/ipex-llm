@@ -287,8 +287,10 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, 
         throw l
 //      case e: Throwable =>
 //        throw new LayerException(this.toString(), e)
-        case e: Throwable =>
-          throw e
+      case e: Throwable =>
+        val errormsg = this.toString() + "\n" + e.getMessage
+        Log4Error.unKnowExceptionError(false, errormsg, cause = e)
+        null
     }
     forwardTime += System.nanoTime() - before
 

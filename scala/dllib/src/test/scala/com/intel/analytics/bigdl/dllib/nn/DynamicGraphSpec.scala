@@ -90,7 +90,7 @@ class DynamicGraphSpec  extends FlatSpec with Matchers {
     val output2 = ReLU().inputs(cadd)
 
     val graph = Graph.dynamic(Array(fc1, fc2), Array(output1, output2))
-    intercept[LayerException] {
+    intercept[com.intel.analytics.bigdl.dllib.utils.UnKnownException] {
       graph.forward(Tensor(T(0.1f, 0.2f, -0.3f, -0.4f)))
     }
   }
@@ -150,7 +150,7 @@ class DynamicGraphSpec  extends FlatSpec with Matchers {
 
     val graph = Graph.dynamic(Array(fc1), Array(output1))
 
-    intercept[LayerException] {
+    intercept[com.intel.analytics.bigdl.dllib.utils.UnKnownException] {
       graph.forward(T(Tensor(T(0.1f, 0.2f, -0.3f, -0.4f)),
         Tensor(T(0.5f, 0.4f, -0.2f, -0.1f))))
     }
@@ -1159,7 +1159,7 @@ class DynamicGraphSpec  extends FlatSpec with Matchers {
     val result = model.forward(T(Tensor[Float](T(1)), Tensor[Boolean](T(true))))
     result.toTensor should be(Tensor[Float](T(1)))
 
-    intercept[LayerException] {
+    intercept[com.intel.analytics.bigdl.dllib.utils.UnKnownException] {
       model.forward(T(Tensor[Float](T(1)), Tensor[Boolean](T(false))))
     }
   }

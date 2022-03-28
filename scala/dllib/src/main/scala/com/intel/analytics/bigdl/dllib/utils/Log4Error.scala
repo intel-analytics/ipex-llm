@@ -48,10 +48,10 @@ object Log4Error {
   }
 
   def unKnowExceptionError(condition: Boolean, errmsg: String = null,
-    fixmsg: String = null): Unit = {
+    fixmsg: String = null, cause: Throwable = null): Unit = {
     if (!condition) {
       outputUserMessage(errmsg, fixmsg)
-      throw new UnKnownException(errmsg)
+      throw new UnKnownException(errmsg, cause)
     }
   }
 }
@@ -60,6 +60,8 @@ class InvalidOperationException(message: String)
   extends Exception(message) {
 }
 
-class UnKnownException(message: String)
-  extends Exception(message) {
+class UnKnownException(message: String, cause: Throwable = null)
+  extends Exception(message, cause) {
+
+  def this(message: String) = this(message, null)
 }
