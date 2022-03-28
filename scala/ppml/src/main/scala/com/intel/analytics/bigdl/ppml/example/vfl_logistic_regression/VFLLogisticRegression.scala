@@ -13,24 +13,28 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package com.intel.analytics.bigdl.ppml.example
 
+
 import com.intel.analytics.bigdl.ppml.FLContext
-import com.intel.analytics.bigdl.ppml.algorithms.hfl.LogisticRegression
+import com.intel.analytics.bigdl.ppml.algorithms.{VFLLogisticRegression, PSI}
+import com.intel.analytics.bigdl.ppml.example.DebugLogger
 import scopt.OptionParser
 
 import collection.JavaConverters._
 import collection.JavaConversions._
 
 
-object HflLogisticRegression extends DebugLogger {
+object VFLLogisticRegression extends DebugLogger{
+  def getData(pSI: PSI, dataPath: String, rowKeyName: String, batchSize: Int = 4) = {
+    val salt = pSI.getSalt()
 
-  def getData(dataPath: String, rowKeyName: String, batchSize: Int = 4) = {
     val spark = FLContext.getSparkSession()
-    import spark.implicits._
-    val df = spark.read.csv(dataPath)
-    val (trainDf, valDf) = ExampleUtils.splitDataFrameToTrainVal(df)
-    val testDf = trainDf.drop("_c8") // totally 9 columns: _c0 to _c8, _c8 is the label column
+    val df = spark.read.option("header", "true").csv(dataPath)
+    val intersectionDf = pSI.uploadSetAndDownloadIntersection(df, salt, rowKeyName)
+    val (trainDf, valDf) = ExampleUtils.splitDataFrameToTrainVal(intersectionDf)
+    val testDf = trainDf.drop("Outcome")
     trainDf.show()
     testDf.show()
     (trainDf, valDf, testDf)
@@ -39,6 +43,7 @@ object HflLogisticRegression extends DebugLogger {
   def main(args: Array[String]): Unit = {
     case class Params(dataPath: String = null,
                       rowKeyName: String = "ID",
+                      hasLabel: Boolean = true,
                       learningRate: Float = 0.005f,
                       batchSize: Int = 4)
     val parser: OptionParser[Params] = new OptionParser[Params]("VFL Logistic Regression") {
@@ -49,6 +54,9 @@ object HflLogisticRegression extends DebugLogger {
       opt[String]('r', "rowKeyName")
         .text("row key name of data")
         .action((x, params) => params.copy(rowKeyName = x))
+      opt[Boolean]('y', "hasLabel")
+        .text("this party has label or not")
+        .action((x, params) => params.copy(hasLabel = x))
       opt[String]('l', "learningRate")
         .text("learning rate of training")
         .action((x, params) => params.copy(learningRate = x.toFloat))
@@ -68,11 +76,15 @@ object HflLogisticRegression extends DebugLogger {
      * Usage of BigDL PPML starts from here
      */
     FLContext.initFLContext()
-    val (trainData, valData, testData) = getData(dataPath, rowKeyName, batchSize)
+    val pSI = new PSI()
+    val (trainData, valData, testData) = getData(pSI, dataPath, rowKeyName, batchSize)
+
     // create LogisticRegression object to train the model
-    val lr = new LogisticRegression(trainData.columns.size - 1, learningRate)
-    lr.fit(trainData, valData = valData)
-    lr.evaluate(valData)
-    lr.predict(testData)
+    val featureNum = if (argv.hasLabel) trainData.columns.size - 1 else trainData.columns.size
+    val lr = new VFLLogisticRegression(featureNum, learningRate)
+    lr.fitDataFrame(trainData, valData = valData, hasLabel = argv.hasLabel)
+    lr.evaluateDataFrame(valData, hasLabel = argv.hasLabel)
+    lr.predictDataFrame(testData)
   }
+
 }

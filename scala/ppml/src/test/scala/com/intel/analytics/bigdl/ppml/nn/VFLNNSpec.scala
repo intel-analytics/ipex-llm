@@ -16,15 +16,15 @@
 
 package com.intel.analytics.bigdl.ppml.nn
 
-import com.intel.analytics.bigdl.ppml.algorithms.PSI
-import com.intel.analytics.bigdl.ppml.algorithms.vfl.{LinearRegression, LogisticRegression}
+import com.intel.analytics.bigdl.dllib.tensor.Tensor
+import com.intel.analytics.bigdl.ppml.algorithms.{PSI, VFLLinearRegression, VFLLogisticRegression}
 import com.intel.analytics.bigdl.ppml.example.DebugLogger
 import com.intel.analytics.bigdl.ppml.{FLContext, FLServer}
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
 
-class VflNNSpec extends FlatSpec with Matchers with BeforeAndAfter with DebugLogger {
-  "Logistic Regression" should "work" in {
+class VFLNNSpec extends FlatSpec with Matchers with BeforeAndAfter with DebugLogger {
+  "Logistic Regression DataFrame API" should "work" in {
     val flServer = new FLServer()
     flServer.build()
     flServer.start()
@@ -38,22 +38,45 @@ class VflNNSpec extends FlatSpec with Matchers with BeforeAndAfter with DebugLog
     val trainDf = psi.uploadSetAndDownloadIntersection(df, salt)
     val testDf = trainDf.drop("Outcome")
     trainDf.show()
-    val lr = new LogisticRegression(df.columns.size - 1)
-    lr.fit(trainDf, valData = trainDf)
-    lr.evaluate(trainDf)
-    lr.predict(testDf)
+    val lr = new VFLLogisticRegression(df.columns.size - 1)
+    lr.fitDataFrame(trainDf, valData = trainDf)
+    lr.evaluateDataFrame(trainDf)
+    lr.predictDataFrame(testDf)
     flServer.stop()
   }
-  "Linear Regression" should "work" in {
-
+  "Logistic Regression Tensor API" should "work" in {
+    val flServer = new FLServer()
+    flServer.build()
+    flServer.start()
+    FLContext.initFLContext()
+    val xTrain = Tensor[Float](10, 10)
+    val yTrain = Tensor[Float](10, 1)
+    val lr = new VFLLogisticRegression(10)
+    lr.fit(xTrain, yTrain)
+    lr.evaluate(xTrain)
+    lr.predict(xTrain)
+    flServer.stop()
+  }
+  "Linear Regression Tensor API" should "work" in {
+    val flServer = new FLServer()
+    flServer.build()
+    flServer.start()
+    FLContext.initFLContext()
+    val xTrain = Tensor[Float](10, 10)
+    val yTrain = Tensor[Float](10, 1)
+    val lr = new VFLLinearRegression(10)
+    lr.fit(xTrain, yTrain)
+    lr.evaluate(xTrain)
+    lr.predict(xTrain)
+    flServer.stop()
   }
   "Multiple algorithm" should "work" in {
     val flServer = new FLServer()
     flServer.build()
     flServer.start()
     FLContext.initFLContext()
-    val logisticRegression = new LogisticRegression(featureNum = 1)
-    val linearRegression = new LinearRegression(featureNum = 1)
+    val logisticRegression = new VFLLogisticRegression(featureNum = 1)
+    val linearRegression = new VFLLinearRegression(featureNum = 1)
     flServer.stop()
   }
 }
