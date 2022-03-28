@@ -148,6 +148,10 @@ class TensorFlow2Estimator(OrcaRayEstimator):
                the epochs on which to run validation, e.g. `validation_freq=[1, 2, 10]` runs
                validation at the end of the 1st, 2nd, and 10th epochs.
         :param data_config: An optional dictionary that can be passed to data creator function.
+               If data is a Ray Dataset, specifies `output_signature` same as in 
+               `tf.data.Dataset.from_generator` (If `label_cols` is specified, a 2-element
+               tuple of `tf.TypeSpec` objects corresponding to (features, label). Otherwise, 
+               a single `tf.TypeSpec` corresponding to features tensor).
         :param feature_cols: Feature column name(s) of data. Only used when data is a Spark
                DataFrame, an XShards of Pandas DataFrame or a Ray Dataset. Default: None.
         :param label_cols: Label column name(s) of data. Only used when data is a Spark DataFrame,
