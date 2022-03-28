@@ -239,7 +239,7 @@ class TensorFlow2Estimator(OrcaRayEstimator):
         """
         Evaluates the model on the validation data set.
 
-        :param data: evaluate data. It can be XShards, Spark DataFrame, Ray Dataset or 
+        :param data: evaluate data. It can be XShards, Spark DataFrame, Ray Dataset or
                creator function which returns Iter or DataLoader.
                If data is XShards, each partition can be a Pandas DataFrame or a dictionary of
                {'x': feature, 'y': label}, where feature(label) is a numpy array or a tuple of
@@ -302,7 +302,7 @@ class TensorFlow2Estimator(OrcaRayEstimator):
             worker_stats = ray_xshards.reduce_partitions_for_actors(self.remote_workers,
                                                                     transform_func)
         elif isinstance(data, ray.data.Dataset):
-            
+
             shards = data.split(n=self.num_workers, locality_hints=self.remote_workers)
 
             def data_creator(config, batch_size):
