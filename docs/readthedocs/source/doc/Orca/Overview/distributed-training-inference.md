@@ -60,7 +60,7 @@ predictions = est.predict(data=df,
 ```
 The `data` argument in `fit` method can be a Spark DataFrame, an *XShards* or a `tf.data.Dataset`. The `data` argument in `predict` method can be a spark DataFrame or an *XShards*. See the *data-parallel processing pipeline* [page](./data-parallel-processing.md) for more details.
 
-View the related [Python API doc]() for more details.
+View the related [Python API doc](../../PythonAPI/Orca/orca.rst) for more details.
 
 #### **2.2 TensorFlow 2.x and Keras 2.4+**
 
@@ -98,7 +98,7 @@ predictions = est.predict(data=df,
 
 The `data` argument in `fit` method can be a spark DataFrame, an *XShards* or a *Data Creator Function* (that returns a `tf.data.Dataset`). The `data` argument in `predict` method can be a spark DataFrame or an *XShards*. See the *data-parallel processing pipeline* [page](./data-parallel-processing.md) for more details.
 
-View the related [Python API doc]() for more details.
+View the related [Python API doc](../../PythonAPI/Orca/orca.rst) for more details.
 
 **Using *spark* backend**
 
@@ -129,7 +129,7 @@ est = Estimator.from_keras(model_creator=model_creator,
                            model_dir=model_dir)
 ```
 
-The `model_creator` argument should be a function that takes a `config_args` dictionary and returns a compiled Keras model.
+The `model_creator` argument should be a function that takes a `config` dictionary and returns a compiled Keras model.
 The `model_dir` argument is required for *spark* backend, it should be a share filesystem path which can be accessed by executors for culster mode.  
 
 Then users can perform distributed model training and inference as follows:
@@ -149,9 +149,9 @@ predictions = est.predict(data=df,
 
 The `data` argument in `fit` method can be a spark DataFrame, an *XShards* or a *Data Creator Function* (that returns a `tf.data.Dataset`). The `data` argument in `predict` method can be a spark DataFrame or an *XShards*. See the *data-parallel processing pipeline* [page](./data-parallel-processing.md) for more details.
 
-View the related [Python API doc]() for more details.
+View the related [Python API doc](../../PythonAPI/Orca/orca.rst) for more details.
 
-***For more details, view the distributed TensorFlow training/inference [page]().***
+***For more details, view the distributed TensorFlow training/inference [page]()<TODO: link to be added>.***
 
 ### **3. PyTorch Estimator**
 
@@ -177,7 +177,7 @@ predictions = est.predict(xshards)
 
 The input to `fit` methods can be a `torch.utils.data.DataLoader`, a Spark Dataframe, an *XShards*, or a *Data Creator Function* (that returns a `torch.utils.data.DataLoader`). The input to `predict` methods should be a Spark Dataframe, or an *XShards*. See the *data-parallel processing pipeline* [page](./data-parallel-processing.md) for more details.
 
-View the related [Python API doc]() for more details.
+View the related [Python API doc](../../PythonAPI/Orca/orca.rst) for more details.
 
 **Using `torch.distributed` or *Horovod* backend**
 
@@ -209,7 +209,7 @@ predictions = est.predict(data=df,
 
 The input to `fit` methods can be a Spark DataFrame, an *XShards*, or a *Data Creator Function* (that returns a `torch.utils.data.DataLoader`). The `data` argument in `predict` method can be a Spark DataFrame or an *XShards*. See the *data-parallel processing pipeline* [page](./data-parallel-processing.md) for more details.
 
-View the related [Python API doc]() for more details.
+View the related [Python API doc](../../PythonAPI/Orca/orca.rst) for more details.
 
 ***For more details, view the distributed PyTorch training/inference [page]()<TODO: link to be added>.***
 
@@ -278,7 +278,7 @@ result_df = est.predict(df)
 
 The input to `fit` and `predict` methods can be a *Spark Dataframe*, or an *XShards*. See the *data-parallel processing pipeline* [page](./data-parallel-processing.html) for more details.
 
-View the related [Python API doc]() for more details.
+View the related [Python API doc](../../PythonAPI/Orca/orca.rst) for more details.
 
 ### **6. OpenVINO Estimator**
 
@@ -303,4 +303,4 @@ result_shards = est.predict(shards)
 
 The input to `predict` methods can be an *XShards*, or a *numpy array*. See the *data-parallel processing pipeline* [page](./data-parallel-processing.html) for more details.
 
-View the related [Python API doc]() for more details.
+View the related [Python API doc](../../PythonAPI/Orca/orca.rst) for more details.
