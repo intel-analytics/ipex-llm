@@ -15,11 +15,14 @@
 #
 
 
+from sklearn import metrics
 from tensorflow.keras.backend import clear_session
 from tensorflow.keras.models import clone_model
 import tensorflow as tf
 import inspect
+import copy
 
+from optuna.integration import TFKerasPruningCallback
 
 def is_creator(model):
     return inspect.ismethod(model) or inspect.isfunction(model)
@@ -31,6 +34,7 @@ class Objective(object):
     def __init__(self,
                  model=None,
                  target_metric=None,
+                 pruning = False,
                  **kwargs,
                  ):
         """Init the objective.
@@ -48,9 +52,32 @@ class Objective(object):
                             a model_creator to the Tuning objective.")
 
         self.model_ = model
-        self.target_metric = target_metric
+        self.target_metric_ = target_metric
+        self.pruning = pruning
         self.kwargs = kwargs
-        self.kwargs['verbose'] = False
+
+    @property
+    def target_metric(self):
+        return self.target_metric_
+
+    def prepare_fit_args(self, trial):
+        # only do shallow copy and process/duplicate
+        # specific args TODO: may need to handle more cases
+        new_kwargs = copy.copy(self.kwargs)
+        new_kwargs['verbose'] = 2
+
+        callbacks = new_kwargs.get('callbacks', None)
+        callbacks = callbacks() if inspect.isfunction(callbacks) else callbacks
+
+        if self.pruning:
+            if callbacks is None:
+                callbacks = []
+            prune_callback = TFKerasPruningCallback(trial, self.target_metric)
+            callbacks.append(prune_callback)
+
+        new_kwargs['callbacks'] = callbacks
+        return new_kwargs
+
 
     def __call__(self, trial):
         # Clear clutter from previous Keras session graphs.
@@ -65,7 +92,10 @@ class Objective(object):
             model = clone_model(self.model_)
 
         # fit
-        hist = model.fit(**self.kwargs)
+
+        new_kwargs = self.prepare_fit_args(trial)
+
+        hist = model.fit(**new_kwargs)
 
 
         # evaluate
@@ -94,17 +124,11 @@ class Objective(object):
         # else:
         #     score = scores[1]  # the first metric specified in compile
 
-        if self.target_metric is not None:
-            score = hist.history.get(self.target_metric, None)
-            if score is not None:
-                if isinstance(score, list):
-                    score = score[-1]
-                return score
 
-        print("Warn: target_metric is not evaluated")
-        score = hist.history.get('val_loss', None)
-        if score is None:
-            score = hist.history.get('loss')[-1]
-        elif isinstance(score, list):
-            score = score[-1]
-        return score
+        score = hist.history.get(self.target_metric, None)
+        if score is not None:
+            if isinstance(score, list):
+                # score = score[-1]
+                score= max(score)
+            return score
+

@@ -14,10 +14,11 @@
 # limitations under the License.
 #
 
+
 from .objective import Objective
 import optuna
-import tensorflow as tf
 import copy
+
 
 class HPOMixin:
 
@@ -36,12 +37,68 @@ class HPOMixin:
         self.tune_end = False
         self._lazymodel = None
 
+
+    def _strip_val_prefix(self,metric):
+        if metric.startswith('val_'):
+            metric = metric[len('val_'):]
+        return metric
+
+    def _check_optimize_direction(self, direction, metric):
+        #TODO check common metrics and corresponding directions
+        max_metrics=['accuracy','auc']
+        min_metrics=['loss','mae','mse']
+        stripped_metric = self._strip_val_prefix(metric).lower()
+        if stripped_metric in max_metrics:
+            if direction != 'maximize':
+                raise ValueError('metric', metric,
+                    'should use maximize direction for optmize')
+        elif stripped_metric in min_metrics:
+            if direction != 'minimize':
+                raise ValueError('metric', metric,
+                    'should use minimize direction for optmize')
+
+    def _fix_target_metric(self, target_metric, fit_kwargs):
+        compile_metrics=self.compile_kwargs.get('metrics',None)
+        if target_metric is None:
+            if fit_kwargs.get('validation_data', None) \
+                or fit_kwargs.get('validation_split', None):
+                    # if validation data or split is provided
+                    # use validation metrics
+                    prefix = 'val_'
+            else:
+                prefix = ''
+
+            if compile_metrics is None:
+                target_metric = prefix+'loss'
+            elif isinstance(compile_metrics,list):
+                target_metric = prefix+str(compile_metrics[0])
+            else:
+                target_metric = prefix+str(compile_metrics)
+        elif isinstance(target_metric,list):
+            raise ValueError("multiple objective metric is not supported.")
+        else:
+            stripped_target_metric = self._strip_val_prefix(target_metric)
+            if compile_metrics is None:
+                if stripped_target_metric not in ['loss','val_loss']:
+                    raise ValueError("target metric is should be loss or val_loss",
+                                     "if metrics is not provided in compile")
+            elif isinstance(compile_metrics,list):
+                if stripped_target_metric not in compile_metrics \
+                    and stripped_target_metric not in ['loss','val_loss']:
+                        raise ValueError("invalid target metric")
+            else:
+                if stripped_target_metric != compile_metrics \
+                    and stripped_target_metric not in ['loss','val_loss']:
+                        raise ValueError("invalid target metric")
+        return target_metric
+
     def search(
         self,
         n_trails=1,
         resume=False,
-        target_metric="accuracy",
-        direction="maximize",
+        target_metric=None,
+        direction="minimize",
+        pruning = False,
         **kwargs
     ):
         """ Do the hyper param tuning.
@@ -52,13 +109,28 @@ class HPOMixin:
             target_metric (str, optional): the target metric to optimize. Defaults to "accuracy".
             direction (str, optional): optimize direction. Defaults to "maximize".
         """
+
+        ## create objective
         if self.objective is None:
+            target_metric = self._fix_target_metric(target_metric, kwargs)
+            fit_keys = (
+                'x','y',
+                'batch_size', 'epochs',
+                'verbose','callbacks',
+                'validation_split','validation_data',
+                'shuffle','class_weight','sample_weight',
+                'initial_epoch','steps_per_epoch',
+                'validation_steps','validation_batch_size','validation_freq',
+                'max_queue_size','workers','use_multiprocessing')
+            fit_kwargs = self._filter_tuner_args(kwargs, fit_keys)
             self.objective = Objective(
                 model=self._model_build,
                 target_metric=target_metric,
-                **kwargs,
+                pruning = pruning,
+                **fit_kwargs,
             )
 
+        ## create study
         if self.study is None:
             if not resume:
                 load_if_exists = False
@@ -66,18 +138,24 @@ class HPOMixin:
             else:
                 load_if_exists = True
                 print("Resume the last tuning...")
-            create_keys = {'storage', 'sampler',
-                           'pruner', 'study_name', 'directions'}
-            create_kwargs = self._filter_tuner_args(kwargs, create_keys)
+            study_create_keys = ('storage', 'sampler',
+                           'pruner', 'study_name', 'directions')
+            study_create_kwargs = self._filter_tuner_args(kwargs, study_create_keys)
+            self._check_optimize_direction(direction,target_metric)
             self.study = optuna.create_study(
                 direction=direction,
                 load_if_exists=True,
-                **create_kwargs)
-        optimize_keys = {'timeout', 'n_jobs', 'catch',
-                         'callbacks', 'gc_after_trial', 'show_progress_bar'}
-        optimize_kwargs = self._filter_tuner_args(kwargs, optimize_keys)
+                **study_create_kwargs)
+
+        ## study optimize
+        # rename callbacks to tune_callbacks to avoid conflict with fit param
+        study_optimize_keys = ('timeout', 'n_jobs', 'catch',
+                         'tune_callbacks', 'gc_after_trial', 'show_progress_bar')
+        study_optimize_kwargs = self._filter_tuner_args(kwargs, study_optimize_keys)
+        study_optimize_kwargs['callbacks'] = study_optimize_kwargs.get('tune_callbacks', None)
+        study_optimize_kwargs.pop('tune_callbacks', None)
         self.study.optimize(
-            self.objective, n_trials=n_trails, **optimize_kwargs)
+            self.objective, n_trials=n_trails, **study_optimize_kwargs)
         self.tune_end = False
 
     def search_summary(self):
@@ -94,7 +172,8 @@ class HPOMixin:
             print("  Params: ")
             for key, value in best.params.items():
                 print("    {}: {}".format(key, value))
-            return self.study.trials_dataframe(attrs=("number", "value", "params", "state"))
+            return self.study
+            # return self.study.trials_dataframe(attrs=("number", "value", "params", "state"))
         else:
             print("Seems you have not done any tuning yet.  \
                   Call tune and then call tune_summary to get the statistics.")
@@ -139,6 +218,10 @@ class HPOMixin:
         # for lazy model compile
         # TODO support searable compile args
         # config = OptunaBackend.sample_config(trial, kwspaces)
+        # TODO objects like Optimizers has internal states so
+        # each trial needs to have a copy of its own.
+        # should allow users to pass a creator function
+        # to avoid deep copy of objects
         compile_args = copy.deepcopy(self.compile_args)
         compile_kwargs = copy.deepcopy(self.compile_kwargs)
         model.compile(*compile_args, **compile_kwargs)
