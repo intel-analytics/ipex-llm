@@ -69,10 +69,12 @@ class KerasBaseModel(BaseModel):
         TODO: check the updated params and decide if the model is needed to be rebuilt
         """
         def update_config():
-            config.setdefault("input_dim", x.shape[-1])
-            config.setdefault("output_dim", y.shape[-1])
-            if metric and not metric_func:
-                config.update({"metric": metric})
+            if isinstance(data, tuple) and isinstance(data[0], np.ndarray):
+                x, y = data
+                config.setdefault("input_dim", x.shape[-1])
+                config.setdefault("output_dim", y.shape[-1])
+                if metric and not metric_func:
+                    config.update({"metric": metric})
 
         if not self.model_built:
             update_config()
