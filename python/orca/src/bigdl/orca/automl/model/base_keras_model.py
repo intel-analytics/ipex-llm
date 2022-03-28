@@ -88,15 +88,25 @@ class KerasBaseModel(BaseModel):
         # get train_dataset and validation_dataset
         if isinstance(data, types.FunctionType):
             train_dataset = data(self.config)
-            validation_dataset = validation_data(self.config)
+            if validation_data:
+                validation_dataset = validation_data(self.config)
+            else:
+                validation_dataset = validation_data
         else:
-            assert isinstance(data, tuple) and isinstance(validation_data, tuple),\
-                f"data/validation_data should be a tuple or\
-                 data creator function but found {type(data)}"
+            if not isinstance(data, tuple):
+                raise ValueError(f"data/validation_data should be a tuple of numpy array "
+                                 f"or a data creator function but found {type(data)}")
+            if validation_data:
+                assert isinstance(validation_data, tuple),\
+                f"validation_data should be a tuple or\
+                 data creator function but found {type(validation_data)}"
 
             batch_size = int(self.config.get("batch_size", 32))
             train_dataset = KerasBaseModel._np_to_dataset(data, batch_size=batch_size)
-            validation_dataset = KerasBaseModel._np_to_dataset(validation_data, batch_size)
+            if validation_data:
+                validation_dataset = KerasBaseModel._np_to_dataset(validation_data, batch_size)
+            else:
+                validation_dataset = validation_data
 
         hist = self.model.fit(train_dataset,
                               validation_data=validation_dataset,
