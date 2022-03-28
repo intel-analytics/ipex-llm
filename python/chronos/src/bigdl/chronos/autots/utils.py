@@ -35,8 +35,6 @@ def recalculate_n_sampling(search_space, n_sampling):
 
 
 def check_quantize_available(model):
-    from bigdl.chronos.model.nbeats_pytorch import NBeatsNet
-    from bigdl.chronos.model.VanillaLSTM_pytorch import LSTMModel
-    from bigdl.chronos.model.tcn import TemporalConvNet
-    if not isinstance(model, (NBeatsNet, LSTMModel, TemporalConvNet)):
+    from bigdl.chronos.model.Seq2Seq_pytorch import LSTMSeq2Seq
+    if isinstance(model, LSTMSeq2Seq):
         raise NotImplementedError(f"This {model.__class__} has not supported quantization.")

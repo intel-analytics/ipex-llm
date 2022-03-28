@@ -175,6 +175,16 @@ class TestTSPipeline(TestCase):
             yhat = tsppl_lstm.predict(data=get_test_tsdataset(), batch_size=16)
 
     def test_tsppl_quantize_data_creator(self):
+        
+        # s2s not support quantize
+        with pytest.raises(NotImplementedError):
+            tsppl_s2s = TSPipeline.load(os.path.join(self.resource_path,
+                                                     "tsppl_ckpt/s2s_tsppl_ckpt"))
+            tsppl_s2s.quantize(calib_data=train_data_creator,
+                               metric=['smape'],
+                               framework=['pytorch_fx', 'onnxrt_qlinearops'])
+            del tsppl_s2s
+
         tsppl_lstm = TSPipeline.load(os.path.join(self.resource_path,
                                                   "tsppl_ckpt/lstm_tsppl_ckpt"))
         assert tsppl_lstm._best_config['batch_size'] == 32
@@ -208,7 +218,32 @@ class TestTSPipeline(TestCase):
         tsppl_lstm.fit(train_data_creator, epochs=2, batch_size=64)
 
         assert q_yhat.shape == yhat.shape == q_onnx_yhat.shape
-        assert all([np.mean(q_smape) < 2, np.mean(q_onnx_smape) < 2, np.mean(smape) < 2])
+        assert all([np.mean(q_smape)<2., np.mean(q_onnx_smape)<2., np.mean(smape)<2.])
+
+    def test_tsppl_quantize_input_data(self):
+        tsppl_tcn = TSPipeline.load(os.path.join(self.resource_path,
+                                                 "tsppl_ckpt/tcn_tsppl_ckpt"))
+        config = tsppl_tcn._best_config
+        # tuple input
+        calib_x = np.random.randn(1000, config['past_seq_len'],
+                                  config['input_feature_num']).astype(np.float32)
+        calib_y = np.random.randn(1000, config['future_seq_len'],
+                                  config['output_feature_num']).astype(np.float32)
+        tsppl_tcn.quantize(calib_data=(calib_x, calib_y))
+        with pytest.raises(AssertionError):
+            tsppl_tcn.quantize(calib_data=(calib_x, calib_y),
+                               metric='smape',
+                               approach='dynamic')
+
+        from bigdl.chronos.data.repo_dataset import get_public_dataset
+        train_tsdata, _, test_tsdata = get_public_dataset('network_traffic', val_ratio=0)
+        train_tsdata.roll(lookback=10, horizon=2)
+        test_tsdata.roll(lookback=10, horizon=2)
+        tsppl_tcn._best_config.update({'selected_features': []})
+        tsppl_tcn.quantize(calib_data=train_tsdata,
+                           val_data=test_tsdata,
+                           metric='smape')
+        yhat = tsppl_tcn.predict(train_tsdata)
 
 
 

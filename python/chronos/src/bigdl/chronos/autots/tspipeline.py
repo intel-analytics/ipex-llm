@@ -369,7 +369,7 @@ class TSPipeline:
                  max_trials=1):
         """
         Quantization TSPipeline.
-        :param calib_data:
+        :param calib_data: Required for static quantization.
 
                | 1. data creator:
                | a function that takes a config dictionary as parameter and
@@ -379,10 +379,14 @@ class TSPipeline:
                | the TSDataset should follow the same operations as the training
                | TSDataset used in `AutoTSEstimator.fit`.
                |
-               | 3. A torch.utils.data.dataloader.DataLoader object for calibration.
-               | Required for static quantization.
+               | 3. A torch.utils.data.dataloader.DataLoader object for calibration,
+               | Users should set the configs correctly (e.g. past_seq_len, ...).
+               | They can be found in TSPipeline._best_config.
+               |
+               | 4. A tuple of numpy ndarray.
 
-        :param val_data: Same as calib_data, should be data creator or TSDataset or DataLoader.
+        :param val_data: Same as calib_data,
+               should be data creator or TSDataset or DataLoader or numpy.ndarray.
         :param metric: A str represent the metrics for tunning the quality of
                quantization. You may choose from "mse", "mae", "rmse", "r2", "mape", "smape".
         :param conf: A path to conf yaml file for quantization. Default to None,
@@ -403,23 +407,33 @@ class TSPipeline:
                only once and return satisfying best model.
         """
         from torch.utils.data import DataLoader, TensorDataset
+        from bigdl.chronos.data import TSDataset
         # check model support for quantization
         from bigdl.chronos.autots.utils import check_quantize_available
         check_quantize_available(self._best_model.model)
         # calib data should be set if the forecaster is just loaded
-        assert calib_data is not None, "You must set a `calib_data` for quantization."
+        assert calib_data is not None and approach.startswith("static"), \
+            "You must set a `calib_data` for quantization."
         # change data tuple to dataloader
         if isinstance(calib_data, tuple):
             calib_data = DataLoader(TensorDataset(torch.from_numpy(calib_data[0]),
                                                   torch.from_numpy(calib_data[1])))
         if isinstance(calib_data, types.FunctionType):
             calib_data = calib_data(self._best_config)
+        if isinstance(calib_data, TSDataset):
+            calib_x, calib_y = self._tsdataset_to_numpy(calib_data, is_predict=False)
+            calib_data = DataLoader(TensorDataset(torch.from_numpy(calib_x),
+                                                  torch.from_numpy(calib_y)))
 
         if isinstance(val_data, tuple):
             val_data = DataLoader(TensorDataset(torch.from_numpy(val_data[0]),
                                                 torch.from_numpy(val_data[1])))
         if isinstance(val_data, types.FunctionType):
             val_data = val_data(self._best_config)
+        if isinstance(val_data, TSDataset):
+            val_x, val_y = self._tsdataset_to_numpy(val_data, is_predict=False)
+            val_data = DataLoader(TensorDataset(torch.from_numpy(val_x),
+                                                torch.from_numpy(val_y)))
 
         # map metric str to function
         from bigdl.chronos.metric.forecast_metrics import TORCHMETRICS_REGRESSION_MAP
@@ -436,10 +450,8 @@ class TSPipeline:
             accuracy_criterion = {'absolute': absolute_drop, 'higher_is_better': False}
 
         from bigdl.nano.pytorch.trainer import Trainer
-        num_processes = max(1, torch.get_num_threads()//8)
         self._trainer = Trainer(logger=False, max_epochs=1,
                                 checkpoint_callback=False,
-                                num_processes=num_processes,
                                 use_ipex=False)
 
         # quantize
