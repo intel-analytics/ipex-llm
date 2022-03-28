@@ -37,29 +37,17 @@ Complete.
 By default the dataset will be auto-downloaded.
 You could access [cats and dogs dataset](https://storage.googleapis.com/mledu-datasets/cats_and_dogs_filtered.zip) for a view of the whole dataset.
 
-## Run example 
-run this example with command line:
+## Performance Test
+Test performance on pytorch cat-vs-dog example with command line:
 
 ```bash
-python nano-cat-vs-dog.py
+python pytorch-cat-vs-dog.py
 ```
-
 **Options**
 * `--batch_size` training batch size.Default: 32.
 * `--epochs` training epoch number for performance test.Default: 2.
 * `--root_dir` path to cat vs dog dataset which should have two folders `cat` and `dog`, each containing cat and dog pictures. Default is None, i.e. download dataset before training.
 
-
-## Performance Test
-Test performance with command line:
-
-```bash
-python performance_test.py
-```
-**Options**
-* `--batch_size` training batch size.Default: 32.
-* `--root_dir` path to cat vs dog dataset which should have two folders `cat` and `dog`, each containing cat and dog pictures. Default is None, i.e. download dataset before training.
-
 ## Performance Result
 ### ResNet 50
-metric： throughput (img/s)
+metric： throughput (img/s) = imgs * epochs / time_interval
