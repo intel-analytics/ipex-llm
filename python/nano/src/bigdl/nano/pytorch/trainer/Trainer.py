@@ -171,7 +171,7 @@ class Trainer(pl.Trainer):
                 bind_base_inference_rt_methods
             pl_model = bind_quantize_methods(bind_base_inference_rt_methods(pl_model), None)
 
-        return bind_base_inference_rt_methods(pl_model)
+        return pl_model
 
     def quantize(self, pl_model: LightningModule,
                  calib_dataloader: DataLoader = None,
