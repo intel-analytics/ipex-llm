@@ -239,8 +239,8 @@ class TensorFlow2Estimator(OrcaRayEstimator):
         """
         Evaluates the model on the validation data set.
 
-        :param data: evaluate data. It can be XShards, Spark DataFrame or creator function which
-               returns Iter or DataLoader.
+        :param data: evaluate data. It can be XShards, Spark DataFrame, Ray Dataset or 
+               creator function which returns Iter or DataLoader.
                If data is XShards, each partition can be a Pandas DataFrame or a dictionary of
                {'x': feature, 'y': label}, where feature(label) is a numpy array or a tuple of
                numpy arrays.
@@ -255,10 +255,14 @@ class TensorFlow2Estimator(OrcaRayEstimator):
                sequence_length), to apply a different weight to every timestep of every sample.
         :param callbacks: List of Keras compatible callbacks to apply during evaluation.
         :param data_config: An optional dictionary that can be passed to data creator function.
+               If data is a Ray Dataset, specifies `output_signature` same as in
+               `tf.data.Dataset.from_generator` (If `label_cols` is specified, a 2-element
+               tuple of `tf.TypeSpec` objects corresponding to (features, label). Otherwise,
+               a single `tf.TypeSpec` corresponding to features tensor).
         :param feature_cols: Feature column name(s) of data. Only used when data is a Spark
-               DataFrame or an XShards of Pandas DataFrame. Default: None.
-        :param label_cols: Label column name(s) of data. Only used when data is a Spark DataFrame or
-               an XShards of Pandas DataFrame.
+               DataFrame, an XShards of Pandas DataFrame or a Ray Dataset. Default: None.
+        :param label_cols: Label column name(s) of data. Only used when data is a Spark DataFrame,
+               an XShards of Pandas DataFrame or a Ray Dataset.
                Default: None.
         :return: validation result
         """
@@ -297,6 +301,24 @@ class TensorFlow2Estimator(OrcaRayEstimator):
 
             worker_stats = ray_xshards.reduce_partitions_for_actors(self.remote_workers,
                                                                     transform_func)
+        elif isinstance(data, ray.data.Dataset):
+            
+            shards = data.split(n=self.num_workers, locality_hints=self.remote_workers)
+
+            def data_creator(config, batch_size):
+                tf_dataset = shard.to_tf(label_column=label_cols,
+                                         feature_columns=feature_cols,
+                                         output_signature=data_config["output_signature"],
+                                         batch_size=batch_size)
+                return tf_dataset
+
+            remote_worker_stats = []
+            for shard, worker in zip(shards, self.remote_workers):
+                params["data_creator"] = data_creator
+                stats = worker.validate.remote(**params)
+                remote_worker_stats.append(stats)
+            worker_stats = ray.get(remote_worker_stats)
+            worker_stats = list(itertools.chain.from_iterable(worker_stats))
         else:  # data_creator functions; should return Iter or DataLoader
             params["data_creator"] = data
             params_list = [params] * self.num_workers
