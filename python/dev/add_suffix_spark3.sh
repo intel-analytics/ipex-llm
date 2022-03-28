@@ -49,6 +49,7 @@ sed -i "s/dist\/bigdl-orca-spark2-\\$/dist\/bigdl-orca-spark3-\\$/g" ${file}
 sed -i "s/bigdl_orca.egg-info/bigdl_orca_spark3.egg-info/g" ${file}
 sed -i "s/bigdl_orca_spark2.egg-info/bigdl_orca_spark3.egg-info/g" ${file}
 sed -i "s/bigdl-orca\[ray\]/bigdl-orca-spark3\[ray\]/g" ${file}
+sed -i "s/bigdl-orca\[automl\]/bigdl-orca-spark3\[automl\]/g" ${file}
 sed -i "s/bigdl-orca-spark2\[ray\]/bigdl-orca-spark3\[ray\]/g" ${file}
 
 sed -i "s/bigdl-chronos==/bigdl-chronos-spark3==/g" ${file}
