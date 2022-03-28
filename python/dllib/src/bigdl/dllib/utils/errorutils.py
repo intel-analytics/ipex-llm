@@ -1,6 +1,3 @@
-# This file is adapted from
-# https://github.com/apache/spark/blob/master/python/pyspark/sql/utils.py
-#
 # Licensed to the Apache Software Foundation (ASF) under one or more
 # contributor license agreements.  See the NOTICE file distributed with
 # this work for additional information regarding copyright ownership.
@@ -16,6 +13,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+
+# This file is adapted from
+# https://github.com/apache/spark/blob/master/python/pyspark/sql/utils.py
+
 from typing import Any, Callable, Optional, cast
 
 import py4j
