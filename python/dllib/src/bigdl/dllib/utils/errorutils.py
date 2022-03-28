@@ -121,12 +121,12 @@ def convert_exception(e: Py4JJavaError) -> CapturedException:
     elif is_instance_of(gw, e, "java.lang.IllegalArgumentException"):
         return IllegalArgumentException(origin=e)
 
-    c: Py4JJavaError = e.getCause()
+    c = e.getCause()
     if is_instance_of(gw, c, "com.intel.analytics.bigdl.dllib.utils.InvalidOperationException"):
         return InvalidOperationException(origin=c)
     elif is_instance_of(gw, c, "java.lang.IllegalArgumentException"):
         return IllegalArgumentException(origin=c)
-    stacktrace: str = jvm.org.apache.spark.util.Utils.exceptionString(e)
+    stacktrace = jvm.org.apache.spark.util.Utils.exceptionString(e)
 
     return UnknownException(desc=e.toString(), stackTrace=stacktrace, cause=c)
 
@@ -163,4 +163,3 @@ def install_exception_handler() -> None:
     patched = capture_exception(original)
     # only patch the one used in py4j.java_gateway (call Java API)
     py4j.java_gateway.get_return_value = patched
-
