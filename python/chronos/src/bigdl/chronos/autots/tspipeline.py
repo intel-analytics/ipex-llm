@@ -383,7 +383,10 @@ class TSPipeline:
                | Users should set the configs correctly (e.g. past_seq_len, ...).
                | They can be found in TSPipeline._best_config.
                |
-               | 4. A tuple of numpy ndarray.
+               | 4. A numpy ndarray tuple (x, y).
+               | x's shape is (num_samples, past_seq_len, input_feature_dim).
+               | y's shape is (num_samples, future_seq_len, output_feature_dim).
+               | They can be found in TSPipeline._best_config.
 
         :param val_data: Same as calib_data,
                should be data creator or TSDataset or DataLoader or numpy.ndarray.
