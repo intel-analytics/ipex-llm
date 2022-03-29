@@ -10,6 +10,4 @@ sphinx:
 
 python:
   install:
-    - method: pip
-      path: .
     - requirements: docs/readthedocs/requirements-doc.txt
