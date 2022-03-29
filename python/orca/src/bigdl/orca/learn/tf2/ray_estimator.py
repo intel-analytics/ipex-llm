@@ -324,20 +324,21 @@ class TensorFlow2Estimator(OrcaRayEstimator):
             import tensorflow as tf
             shards = data.split(n=self.num_workers, locality_hints=self.remote_workers)
 
-            def process_ray_dataset(shard):
-                def data_creator(config, batch_size):
-                    tf_dataset = shard.to_tf(label_column=label_cols, feature_columns=feature_cols,
-                                             output_signature=data_config["output_signature"],
-                                             batch_size=batch_size)
-                    options = tf.data.Options()
-                    options.experimental_distribute.auto_shard_policy = \
-                        tf.data.experimental.AutoShardPolicy.OFF
-                    tf_dataset = tf_dataset.with_options(options)
-                    return tf_dataset
-                return data_creator
+            def data_creator(config, batch_size):
+                tf_dataset = shard.to_tf(label_column=label_cols, feature_columns=feature_cols,
+                                            output_signature=data_config["output_signature"],
+                                            batch_size=batch_size)
+                options = tf.data.Options()
+                options.experimental_distribute.auto_shard_policy = \
+                    tf.data.experimental.AutoShardPolicy.OFF
+                tf_dataset = tf_dataset.with_options(options)
+                return tf_dataset
 
-            worker_stats = ray.get([worker.validate.remote(process_ray_dataset(shard), **params)
-                                    for shard, worker in zip(shards, self.remote_workers)])
+            remote_worker_stats = []
+            for shard, worker in zip(shards, self.remote_workers):
+                params["data_creator"] = data_creator
+                remote_worker_stats.append(worker.step.remote(**params))
+            worker_stats = ray.get(remote_worker_stats)
             worker_stats = list(itertools.chain.from_iterable(worker_stats))
         else:  # data_creator functions; should return Iter or DataLoader
             params["data_creator"] = data
