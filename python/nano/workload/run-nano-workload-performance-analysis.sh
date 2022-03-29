@@ -7,7 +7,20 @@ export NANO_WORKLOAD_DIR=${ANALYTICS_ZOO_ROOT}/python/nano/workload
 set -e
 echo "# Start testing"
 start=$(date "+%s")
-# TODO python -m ${NANO_WORKLOAD_DIR}
+
+function runpythonfiles(){
+  for file in "ls $1"
+  do
+    if [-d 1"/"$file]
+    then
+      runpythonfiles($1"/"$file)
+    else
+      python -m $1"/"$file
+    fi
+    done
+}
+
+runpythonfiles ${NANO_WORKLOAD_DIR}
 
 now=$(date "+%s")
 time=$((now-start))
