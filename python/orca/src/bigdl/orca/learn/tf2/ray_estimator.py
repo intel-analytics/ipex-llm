@@ -211,8 +211,8 @@ class TensorFlow2Estimator(OrcaRayEstimator):
             def process_ray_dataset(shard):
                 def data_creator(config, batch_size):
                     tf_dataset = shard.to_tf(label_column=label_cols, feature_columns=feature_cols,
-                                            output_signature=data_config["output_signature"],
-                                            batch_size=batch_size)
+                                             output_signature=data_config["output_signature"],
+                                             batch_size=batch_size)
                     options = tf.data.Options()
                     options.experimental_distribute.auto_shard_policy = \
                         tf.data.experimental.AutoShardPolicy.OFF
@@ -327,8 +327,8 @@ class TensorFlow2Estimator(OrcaRayEstimator):
             def process_ray_dataset(shard):
                 def data_creator(config, batch_size):
                     tf_dataset = shard.to_tf(label_column=label_cols, feature_columns=feature_cols,
-                                            output_signature=data_config["output_signature"],
-                                            batch_size=batch_size)
+                                             output_signature=data_config["output_signature"],
+                                             batch_size=batch_size)
                     options = tf.data.Options()
                     options.experimental_distribute.auto_shard_policy = \
                         tf.data.experimental.AutoShardPolicy.OFF
