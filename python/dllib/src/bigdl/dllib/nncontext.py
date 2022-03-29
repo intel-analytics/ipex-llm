@@ -613,6 +613,9 @@ def init_nncontext(conf=None, cluster_mode="spark-submit", spark_log_level="WARN
         raise ValueError("cluster_mode can only be local, yarn-client, yarn-cluster, standalone or"
                          " spark-submit, "
                          "but got: %s".format(cluster_mode))
+
+    from bigdl.dllib.utils.errorutils import install_exception_handler
+    install_exception_handler()
     return sc
 
 
