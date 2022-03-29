@@ -47,6 +47,9 @@ log = logging.getLogger(__name__)
 
 
 def queue_dumper(q):
+    """
+    Copy values from Queue into a List.
+    """
     q_list = []
     while not q.empty():
         q_list.append(q.get())
@@ -54,6 +57,9 @@ def queue_dumper(q):
 
 
 def queue_loader(q_list):
+    """
+    Copy values from a List into a SimpleQueue.
+    """
     q = multiprocessing.SimpleQueue()
     for item in q_list:
         q.put(item)
@@ -79,7 +85,6 @@ class DDPSubprocessPlugin(DDPSpawnPlugin):
             }
             if "PYTHONPATH" in os.environ:
                 env["PYTHONPATH"] = os.environ["PYTHONPATH"]
-            print(env["PYTHONPATH"])
             processes.append(subprocess.Popen([sys.executable, f"{cwd_path}/worker.py",
                                                tmpdir], env=env))
 
@@ -107,8 +112,7 @@ class DDPSubprocessPlugin(DDPSpawnPlugin):
 
         with TemporaryDirectory() as temp_dir:
             with open(os.path.join(temp_dir, "args.pkl"), 'wb') as f:
-                queue_list = queue_dumper(self.mp_queue)
-                args = [self, queue_list]
+                args = self
                 cloudpickle.dump(args, f)
 
             processes = self._run_subprocess(temp_dir)

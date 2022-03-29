@@ -14,6 +14,7 @@
 # limitations under the License.
 #
 
+import multiprocessing
 import os
 import sys
 
@@ -21,7 +22,7 @@ import cloudpickle
 
 from pytorch_lightning.utilities.seed import reset_seed
 
-from bigdl.nano.pytorch.plugins.ddp_subprocess import queue_dumper, queue_loader
+from bigdl.nano.pytorch.plugins.ddp_subprocess import queue_dumper
 
 if __name__ == '__main__':
     temp_dir = sys.argv[1]
@@ -29,9 +30,9 @@ if __name__ == '__main__':
     with open(os.path.join(temp_dir, "args.pkl"), 'rb') as f:
         args = cloudpickle.load(f)
 
-    plugin, queue_list = args
+    plugin = args
     trainer = plugin.lightning_module.trainer
-    plugin.mp_queue = queue_loader(queue_list)
+    plugin.mp_queue = multiprocessing.SimpleQueue()
     process_idx = int(os.environ["PROCESS_IDX"])
 
     reset_seed()
