@@ -56,4 +56,12 @@ then
     exit $exit_status_3
 fi
 
+echo "Running Ray Dataset tests"
+python -m pytest -v test/bigdl/orca/learn/ray/pytorch/test_estimator_ray_dataset.py
+exit_status_4=$?
+if [ $exit_status_4 -ne 0 ];
+then
+    exit $exit_status_4
+fi
+
 ray stop -f

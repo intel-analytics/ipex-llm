@@ -63,7 +63,6 @@ class FGBoostAggregator(validationMethods: Array[ValidationMethod[Float]] = null
   }
 
   override def aggregate(flPhase: FLPhase): Unit = {
-    // TODO aggregate split
     flPhase match {
       case FLPhase.LABEL => initGradient()
       case FLPhase.SPLIT => aggregateSplit()
@@ -100,12 +99,17 @@ class FGBoostAggregator(validationMethods: Array[ValidationMethod[Float]] = null
 
 
   def initGradient(): Unit = {
+    logger.debug(s"Server init gradiant from label")
     val labelClientData = getLabelStorage().clientData
+    logger.debug(s"============0")
     val aggData = labelClientData.mapValues(_.getTensorsMap).values.flatMap(_.asScala)
       .map { data =>
         (data._1, data._2.getTensorList.asScala.toArray.map(_.toFloat))
       }.toMap
+    logger.info(s"$aggData")
+    logger.debug(s"============1")
     val label = aggData("label")
+    logger.debug(s"============2")
     validationSize = label.length
     basePrediction = if (aggData.contains("predict")) {
       aggData("predict")
@@ -118,7 +122,7 @@ class FGBoostAggregator(validationMethods: Array[ValidationMethod[Float]] = null
     val loss = obj.getLoss(basePrediction, label)
 
     logger.info(s"====Loss ${loss} ====")
-    logger.info("Label" + label.mkString("Array(", ", ", ")"))
+//    logger.info("Label" + label.mkString("Array(", ", ", ")"))
 
     val metaData = MetaData.newBuilder()
       .setName("xgboost_grad")
@@ -199,6 +203,7 @@ class FGBoostAggregator(validationMethods: Array[ValidationMethod[Float]] = null
     // Add new tree leaves to server
     serverTreeLeaf += treeLeaf
     leafMap.clear()
+    getEvalStorage().version += 1
   }
 
   def updateGradient(newPredict: Array[Float]): Unit = {
@@ -220,7 +225,7 @@ class FGBoostAggregator(validationMethods: Array[ValidationMethod[Float]] = null
     // Compute loss
     val loss = obj.getLoss(predict, label)
 
-    logger.info(s"========Loss ${loss} =======")
+    logger.info(s"New predict loss: ${loss}")
 //    logger.debug("New Predict" + predict.mkString("Array(", ", ", ")"))
 //    logger.debug("New Grad" + gradients(0).mkString("Array(", ", ", ")"))
 
@@ -254,14 +259,17 @@ class FGBoostAggregator(validationMethods: Array[ValidationMethod[Float]] = null
       splitMap.clear()
       bestSplit.notifyAll()
     }
+    getSplitStorage().version += 1
   }
 
   def aggregatePredict(flPhase: FLPhase): Array[Array[(String, Array[java.lang.Boolean])]] = {
     // get proto and convert to scala object
-    logger.info("Aggregate Predict")
+//    logger.info("Aggregate Predict")
     val boostEvalBranchMap = flPhase match {
-      case FLPhase.EVAL => getEvalStorage().clientData
-      case FLPhase.PREDICT => getPredictStorage().clientData
+      case FLPhase.EVAL =>
+        getEvalStorage().clientData
+      case FLPhase.PREDICT =>
+        getPredictStorage().clientData
       case _ => throw new IllegalArgumentException()
     }
     val evalResults = boostEvalBranchMap.mapValues { list =>
@@ -284,6 +292,13 @@ class FGBoostAggregator(validationMethods: Array[ValidationMethod[Float]] = null
         }
       }
     }
+    flPhase match {
+      case FLPhase.EVAL =>
+        getEvalStorage().clientData.clear()
+      case FLPhase.PREDICT =>
+        getPredictStorage().clientData.clear()
+      case _ => throw new IllegalArgumentException()
+    }
     result
   }
 
@@ -302,6 +317,7 @@ class FGBoostAggregator(validationMethods: Array[ValidationMethod[Float]] = null
       .setMetaData(metaData)
       .putTensors("predictResult", toFloatTensor(newPredict)).build()
     tableStorage.clearClientAndUpdateServer(aggResult)
+    getPredictStorage().version += 1
   }
 }
 

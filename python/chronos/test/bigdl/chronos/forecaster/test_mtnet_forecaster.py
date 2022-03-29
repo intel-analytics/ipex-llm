@@ -19,7 +19,6 @@ import numpy as np
 import tensorflow as tf
 import pandas as pd
 
-from bigdl.chronos.forecaster.mtnet_forecaster import MTNetForecaster
 from bigdl.chronos.data import TSDataset
 from unittest import TestCase
 
@@ -49,6 +48,7 @@ def create_data():
         tsdata.roll(lookback=lookback, horizon=horizon)
     return tsdata_train, tsdata_test
 
+@pytest.mark.skipif(tf.__version__ >= '2.0.0', reason="Run only when tf==1.15.0.")
 class TestChronosModelMTNetForecaster(TestCase):
 
     def setUp(self):
@@ -65,6 +65,7 @@ class TestChronosModelMTNetForecaster(TestCase):
         self.x_val, y_val = test_data.to_numpy()
         self.y_val = y_val[:, :, 0]
         self.x_test, _ = test_data.to_numpy()
+        from bigdl.chronos.forecaster.mtnet_forecaster import MTNetForecaster
         model = MTNetForecaster(target_dim=1,
                                 feature_dim=self.x_train.shape[-1],
                                 long_series_num=4,

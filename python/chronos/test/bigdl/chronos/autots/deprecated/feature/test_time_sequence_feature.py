@@ -24,9 +24,11 @@ import json
 import tempfile
 import shutil
 
+from .. import skip_method
 from bigdl.chronos.autots.deprecated.preprocessing.utils import train_val_test_split
 
 
+@skip_method
 class TestTimeSequenceFeature(ZooTestCase):
     def setup_method(self, method):
         pass

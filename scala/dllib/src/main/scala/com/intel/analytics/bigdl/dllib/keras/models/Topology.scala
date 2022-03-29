@@ -580,13 +580,19 @@ abstract class KerasNet[T](implicit val tag: ClassTag[T], implicit val ev: Tenso
    labelCols: Array[String],
    transform: ImageProcessing,
    valX: DataFrame)(implicit ev: TensorNumeric[T]): Unit = {
-    require(labelCols.length == 1, "current only support one label for dataframe of image")
-    val trainData = df2ImageSet(x, labelCols.head, transform)
-    val transformer2 = ImageMatToTensor[Float]() -> ImageSetToSample[Float]()
+    val trainData = df2ImageSet(x, labelCols, transform)
+    val targetKeys = if (labelCols.length > 1) {
+      (0 until labelCols.size).toList.map("l" + _).toArray
+    } else {
+      Array(ImageFeature.label)
+    }
+
+    val transformer2 = ImageMatToTensor[Float]() ->
+      ImageSetToSample[Float](targetKeys = targetKeys)
     trainData.transform(transformer2)
 
     val valData = if (valX != null) {
-      val valSet = df2ImageSet(valX, labelCols.head, transform)
+      val valSet = df2ImageSet(valX, labelCols, transform)
       valSet.transform(transformer2)
       valSet
     } else null
@@ -677,8 +683,15 @@ abstract class KerasNet[T](implicit val tag: ClassTag[T], implicit val ev: Tenso
     transform: ImageProcessing,
     batchSize: Int)
   (implicit ev: TensorNumeric[T]): Array[(ValidationResult, ValidationMethod[T])] = {
-    val rdd = df2ImageSet(x, labelCols.head, transform)
-    val transformer2 = ImageMatToTensor[Float]() -> ImageSetToSample[Float]()
+    val rdd = df2ImageSet(x, labelCols, transform)
+    val targetKeys = if (labelCols.length > 1) {
+      (0 until labelCols.size).toList.map("l" + _).toArray
+    } else {
+      Array(ImageFeature.label)
+    }
+
+    val transformer2 = ImageMatToTensor[Float]() ->
+      ImageSetToSample[Float](targetKeys = targetKeys)
     rdd.transform(transformer2)
     this.evaluate(rdd, batchSize)
   }
@@ -707,7 +720,7 @@ abstract class KerasNet[T](implicit val tag: ClassTag[T], implicit val ev: Tenso
      x: DataFrame,
      batchSize: Int,
      featureCols: Array[String],
-     labelCols: Array[String])(implicit ev: TensorNumeric[T]): Unit = {
+     labelCols: Array[String]): Array[(ValidationResult, ValidationMethod[T])] = {
     require(this.vMethods != null, "Evaluation metrics haven't been set yet")
     val valX = getDataSet(x, batchSize, featureCols, labelCols).toDataSet()
     val xRDD = valX.toDistributed().data(false)

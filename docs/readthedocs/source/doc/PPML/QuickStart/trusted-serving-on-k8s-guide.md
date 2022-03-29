@@ -3,21 +3,21 @@
 ## Prerequisites ##
 Prior to deploying PPML Cluster Serving, please make sure the following is setup
 - Hardware that supports SGX
-- A fully configured Kubernetes cluster 
-- Intel SGX Device Plugin to use SGX in K8S cluster (install following instructions [here](https://github.com/intel-analytics/BigDL/tree/branch-2.0/ppml/trusted-realtime-ml/scala/docker-graphene/kubernetes#deploy-the-intel-sgx-device-plugin-for-kubernetes "here"))
+- A fully configured Kubernetes cluster
+- Intel SGX Device Plugin to use SGX in K8S cluster (install following instructions [here](https://github.com/intel-analytics/BigDL/tree/main/ppml/trusted-realtime-ml/scala/docker-graphene/kubernetes#deploy-the-intel-sgx-device-plugin-for-kubernetes "here"))
 - Java
 
 ## Deploy Trusted Realtime ML for Kubernetes ##
 1. Pull docker image from dockerhub
 	```
-	$ docker pull intelanalytics/bigdl-ppml-trusted-realtime-ml-scala-graphene:0.14.0-SNAPSHOT
+	$ docker pull intelanalytics/bigdl-ppml-trusted-realtime-ml-scala-graphene:2.1.0-SNAPSHOT
 	```
 2. Pull the source code of BigDL and enter PPML graphene k8s directory
 	```
 	$ git clone https://github.com/intel-analytics/BigDL.git
 	$ cd BigDL/ppml/trusted-realtime-ml/scala/docker-graphene/kubernetes
 	```
-3. Generate secure keys and passwords, and deploy as secrets (Refer [here](https://github.com/intel-analytics/BigDL/tree/branch-2.0/ppml/trusted-realtime-ml/scala/docker-graphene/kubernetes#secure-keys-and-password) for details)
+3. Generate secure keys and passwords, and deploy as secrets (Refer [here](https://github.com/intel-analytics/BigDL/tree/main/ppml/trusted-realtime-ml/scala/docker-graphene/kubernetes#secure-keys-and-password) for details)
 	1. Generate keys and passwords
 		
 		Note: Make sure to add `${JAVA_HOME}/bin` to `$PATH` to avoid `keytool: command not found` error.

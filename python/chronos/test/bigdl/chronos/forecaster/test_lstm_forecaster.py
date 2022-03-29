@@ -150,6 +150,29 @@ class TestChronosModelLSTMForecaster(TestCase):
         np.testing.assert_almost_equal(test_pred_save, test_pred_load)
         np.testing.assert_almost_equal(test_pred_save_q, test_pred_load_q)
 
+    def test_lstm_forecaster_quantization_onnx(self):
+        train_data, val_data, test_data = create_data()
+        forecaster = LSTMForecaster(past_seq_len=24,
+                                    input_feature_num=2,
+                                    output_feature_num=2,
+                                    loss="mae",
+                                    lr=0.01)
+        forecaster.fit(train_data, epochs=2)
+        # no tunning quantization
+        forecaster.quantize(train_data, framework=['onnxrt_qlinearops'])
+        pred_q = forecaster.predict_with_onnx(test_data[0], quantize=True)
+        eval_q = forecaster.evaluate_with_onnx(test_data, quantize=True)
+        # quantization with tunning
+        forecaster.quantize(train_data, val_data=val_data,
+                            metric="mse", relative_drop=0.1, max_trials=3,
+                            framework=['onnxrt_qlinearops'])
+        pred_q = forecaster.predict_with_onnx(test_data[0], quantize=True)
+        eval_q = forecaster.evaluate_with_onnx(test_data, quantize=True)
+        with tempfile.TemporaryDirectory() as tmp_dir_name:
+            ckpt_name = os.path.join(tmp_dir_name, "ckpt")
+            ckpt_name_q = os.path.join(tmp_dir_name, "ckpt.q")
+            forecaster.export_onnx_file(dirname=ckpt_name, quantized_dirname=ckpt_name_q)
+
     def test_lstm_forecaster_save_load(self):
         train_data, val_data, test_data = create_data()
         forecaster = LSTMForecaster(past_seq_len=24,

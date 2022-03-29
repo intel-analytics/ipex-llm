@@ -1,5 +1,5 @@
-# Train a DeepFM model using recsys data
-This example demonstrates how to train a xgb classification model in a distributed way using [Twitter Recsys Challenge 2021 data](https://recsys-twitter.com/data/show-downloads#).
+# Train an XGBoost model using Twitter dataset
+This example demonstrates how to train an [XGBoost](https://xgboost.readthedocs.io/en/stable/) classification model in a distributed way using [Twitter Recsys Challenge 2021 data](https://recsys-twitter.com/data/show-downloads#).
 
 ## Prepare the environment
 We recommend you to use [Anaconda](https://www.anaconda.com/distribution/#linux) to prepare the environments, especially if you want to run on a yarn cluster (yarn-client mode only).
@@ -10,10 +10,10 @@ pip install --pre --upgrade bigdl-friesian
 pip install xgboost
 ```
 
-## Preprocess data
-You can download the full Twitter dataset from [here](https://recsys-twitter.com/data/show-downloads#) and then follow the [WideAndDeep Preprocessing](https://github.com/intel-analytics/BigDL/tree/branch-2.0/python/friesian/example/wnd) to preprocess the orginal data.
+## Preprocess the data
+You can download the full Twitter dataset from [here](https://recsys-twitter.com/data/show-downloads#) and then follow the [WideAndDeep Preprocessing](../wnd) to preprocess the original data.
 
-## Training  tower model
+## Train XGBoost
 * Spark local, we can use some sample data to have a trial, example command:
 ```bash
 python xgb_train.py \
@@ -34,9 +34,6 @@ python xgb_train.py \
     --model_dir /path/to/the/folder/to/save/trained_model
 ```
 
-### note for comparison:
-best results from recsys data: Accuracy: 69.89; AUC: 76.77; params: {'tree_method': 'hist', 'eta': 0.3, 'gamma': 0.1, 'min_child_weight': 10, 'reg_lambda': 1, 'scale_pos_weight': 2, 'subsample': 1, 'objective': 'binary:logistic', 'max_depth': 12, 'num_round': 800}
-
 __Options:__
 * `cluster_mode`: The cluster mode to run the data preprocessing, one of local, spark submit or yarn Default to be local.
 * `master`: The master URL, only used when cluster_mode is standalone.
@@ -48,6 +45,15 @@ __Options:__
 * `data_dir`: The input data directory as well as output of embedding reindex tables.
 * `model_dir`: The output, including model for trained models and stats to stroage reindex dicts and min_max.pkl
 
+## Results
+Best results we obtained from the full Twitter dataset:
+```
+AUC: 76.77
+Accuracy: 69.89
 
-## references:
+params: 
+{'tree_method': 'hist', 'eta': 0.3, 'gamma': 0.1, 'min_child_weight': 10, 'reg_lambda': 1, 'scale_pos_weight': 2, 'subsample': 1, 'objective': 'binary:logistic', 'max_depth': 12, 'num_round': 800}
+```
+
+## Reference
 Tianqi Chen, Carlos Guestrin. XGBoost: A Scalable Tree Boosting System. arXiv:1603.02754.

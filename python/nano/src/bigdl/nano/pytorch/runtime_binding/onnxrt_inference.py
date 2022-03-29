@@ -116,6 +116,7 @@ def _onnx_on_fit_start(self):
     self._ortsess_up_to_date = False
     self._ortsess = None
     self._quantized_ortsess_up_to_date = False
+    self._default_ortsess_inference_quantize = False
     self._quantized_ortsess = None
     self.exit_onnx()
 
@@ -125,6 +126,7 @@ def _onnx_on_train(self, mode=True):
     self._ortsess_up_to_date = False
     self._ortsess = None
     self._quantized_ortsess_up_to_date = False
+    self._default_ortsess_inference_quantize = False
     self._quantized_ortsess = None
 
 
@@ -157,7 +159,7 @@ def _forward_onnx_quantized(self, *args):
 
 
 def eval_onnx(self, input_sample=None, file_path="model.onnx",
-              sess_options=None, quantize=False, **kwargs):
+              sess_options=None, quantize=None, **kwargs):
     '''
     This method change the `forward` method to an onnxruntime backed forwarding.
 
@@ -173,6 +175,7 @@ def eval_onnx(self, input_sample=None, file_path="model.onnx",
     :param **kwargs: (optional) will be passed to torch.onnx.export function.
     '''
     # build ortsess
+    quantize = quantize if quantize is not None else self._default_ortsess_inference_quantize
     if quantize:
         assert self._quantized_ortsess_up_to_date, \
             "Please run trainer.quantize again since the, " \
@@ -220,6 +223,7 @@ def bind_onnxrt_methods(pl_model: LightningModule, q_onnx_model=None, sess_optio
         pl_model._quantized_ortsess = ort.InferenceSession("_model_quantized_cache.onnx",
                                                            sess_options=sess_options)
         pl_model._quantized_ortsess_up_to_date = True
+        pl_model._default_ortsess_inference_quantize = True
 
     # if all needed method has been binded, return the same model
     if set(ONNXRT_BINDED_COMPONENTS) <= set(dir(pl_model)):
@@ -235,6 +239,7 @@ def bind_onnxrt_methods(pl_model: LightningModule, q_onnx_model=None, sess_optio
     # additional attributes
     pl_model._ortsess_up_to_date = False  # indicate if we need to build ortsess again
     pl_model._ortsess = None  # ortsess instance
+    pl_model._default_ortsess_inference_quantize = False
     pl_model._onnx_graph = None  # onnx graph for quantization
     if isinstance(pl_model, LightningModuleFromTorch):  # forward param list for compiled model
         pl_model._forward_args = inspect.getfullargspec(pl_model.model.forward).args[1:]

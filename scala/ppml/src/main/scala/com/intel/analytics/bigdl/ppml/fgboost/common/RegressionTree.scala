@@ -79,7 +79,7 @@ class RegressionTree(
   }
 
   def findBestSplit(): Split = {
-    logger.debug("Try to find best local split")
+//    logger.debug("Try to find best local split")
     val firstNode = expandQueue.dequeue()
     val bestLocalSplit = findBestSplitValue(firstNode)
     bestLocalSplit
@@ -141,10 +141,11 @@ class RegressionTree(
         bestGain,
         leftSet.map(int2Integer).toList.asJava
       )
-      logger.info("Best local split on node " + treeNode.nodeID + " is " + bestS.toString)
+//      bestS.setFeatureName(flattenHeaders(fIndex))
+      logger.debug(s"Best local split: ${bestS.toString}")
       bestS
     } else {
-      logger.info("Failed to find local split on node " + treeNode.nodeID)
+      logger.debug("Failed to find local split on node " + treeNode.nodeID)
       Split.leaf(treeID, treeNode.nodeID)
     }
   }
@@ -253,9 +254,10 @@ object RegressionTree {
 
   def apply(dataset: Array[Tensor[Float]],
             sortedIndex: Array[Array[Int]],
-            grads: Array[Array[Float]], treeID: String): RegressionTree = {
-    new RegressionTree(dataset,
-      sortedIndex, grads, treeID)
+            grads: Array[Array[Float]],
+            treeID: String,
+            flattenHeaders: Array[String] = null): RegressionTree = {
+    new RegressionTree(dataset, sortedIndex, grads, treeID)
   }
 
 }

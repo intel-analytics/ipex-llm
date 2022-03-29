@@ -36,6 +36,13 @@ data_transform = transforms.Compose([
     transforms.ToTensor()
 ])
 
+test_data_transform = transforms.Compose([
+    transforms.Resize(256),
+    transforms.ColorJitter(),
+    transforms.Resize(128),
+    transforms.ToTensor()
+])
+
 
 class Net(ImageClassifier):
     # Common case: fully-connected top layer
@@ -55,6 +62,20 @@ def create_data_loader(dir, batch_size, num_workers, transform, subset=50):
     mask = list(range(0, len(train_set), subset))
     train_subset = torch.utils.data.Subset(train_set, mask)
     data_loader = DataLoader(train_subset, batch_size=batch_size, shuffle=True,
+                             num_workers=num_workers)
+    return data_loader
+
+
+def create_test_data_loader(dir, batch_size, num_workers, transform, subset=50):
+    '''
+    This function is to create a fixed dataset without any randomness
+    '''
+    train_set = CIFAR10(root=dir, train=False,
+                        download=True, transform=transform)
+    # `subset` is the number of subsets. The larger the number, the smaller the training set.
+    mask = list(range(0, len(train_set), subset))
+    train_subset = torch.utils.data.Subset(train_set, mask)
+    data_loader = DataLoader(train_subset, batch_size=batch_size, shuffle=False,
                              num_workers=num_workers)
     return data_loader
 

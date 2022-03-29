@@ -18,8 +18,10 @@ from bigdl.orca.test_zoo_utils import ZooTestCase
 from bigdl.chronos.autots.deprecated.preprocessing.utils import train_val_test_split
 import pandas as pd
 import numpy as np
+from .. import skip_method
 
 
+@skip_method
 class TestUtil(ZooTestCase):
     def setup_method(self, method):
         pass

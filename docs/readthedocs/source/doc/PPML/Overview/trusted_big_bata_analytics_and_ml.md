@@ -7,11 +7,11 @@ BigDL helps to build PPML applications (including big data analytics, machine le
 1. Big Data analytics and ML/DL (supporting [Apache Spark](https://spark.apache.org/) and [BigDL](https://github.com/intel-analytics/BigDL))
 2. Realtime compute and ML/DL (supporting [Apache Flink](https://flink.apache.org/) and BigDL [Cluster Serving](https://www.usenix.org/conference/opml20/presentation/song))
 
-## [1. Trusted Big Data ML](https://github.com/intel-analytics/BigDL/tree/branch-2.0/ppml/trusted-big-data-ml)
+## [1. Trusted Big Data ML](https://github.com/intel-analytics/BigDL/tree/main/ppml/trusted-big-data-ml)
 
 With the trusted Big Data analytics and ML/DL support, users can run standard Spark data analysis (such as Spark SQL, Dataframe, MLlib, etc.) and distributed deep learning (using BigDL) in a secure and trusted fashion.
 
-## [2. Trusted Real Time ML](https://github.com/intel-analytics/BigDL/tree/branch-2.0/ppml/trusted-realtime-ml/scala)
+## [2. Trusted Real Time ML](https://github.com/intel-analytics/BigDL/tree/main/ppml/trusted-realtime-ml/scala)
 
 With the trusted realtime compute and ML/DL support, users can run standard Flink stream processing and distributed DL model inference (using Cluster Serving) in a secure and trusted fashion.
 

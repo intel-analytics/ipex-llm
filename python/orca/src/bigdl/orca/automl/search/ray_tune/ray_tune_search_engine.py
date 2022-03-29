@@ -407,17 +407,9 @@ def trial_dirname_creator(trial):
 def get_data_from_part_refs(part_refs):
     from bigdl.orca.data.utils import ray_partitions_get_data_label
 
-    partitions = ray.get(part_refs)
+    partitions = [ray.get(part_ref) for part_ref in part_refs]
 
-    # convert list of dicts to one dict
-    result = {}
-    for part in partitions:
-        result.update(part)
-
-    # reorder dict with partition index
-    parts = [result[idx] for idx in range(len(result.keys()))]
-
-    data, label = ray_partitions_get_data_label(parts,
+    data, label = ray_partitions_get_data_label(partitions,
                                                 allow_tuple=True,
                                                 allow_list=False,
                                                 )

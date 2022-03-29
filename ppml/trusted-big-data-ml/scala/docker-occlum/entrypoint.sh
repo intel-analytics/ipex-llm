@@ -39,11 +39,23 @@ if [ -n "$SPARK_EXTRA_CLASSPATH" ]; then
   SPARK_CLASSPATH="$SPARK_CLASSPATH:$SPARK_EXTRA_CLASSPATH"
 fi
 
+if [[ -z "$META_SPACE" ]]; then
+    echo "META_SPACE not set, using default value 256m"
+    META_SPACE=256m
+else
+    echo "META_SPACE=$META_SPACE"
+fi
 
-/opt/occlum/start_aesm.sh
+
 case "$SPARK_K8S_CMD" in
   driver)
     echo "SGX Mem $SGX_MEM_SIZE"
+    if [[ -z "$DRIVER_MEMORY" ]]; then
+        echo "DRIVER_MEMORY not set, using default value 10g"
+        DRIVER_MEMORY=10g
+    else
+        echo "DRIVER_MEMORY=$DRIVER_MEMORY"
+    fi
     /opt/run_spark_on_occlum_glibc.sh init
     cd /opt/occlum_spark
     DMLC_TRACKER_URI=$SPARK_DRIVER_BIND_ADDRESS
@@ -52,11 +64,10 @@ case "$SPARK_K8S_CMD" in
         -Divy.home="/tmp/.ivy" \
         -Dos.name="Linux" \
         -XX:-UseCompressedOops \
-        -XX:MaxMetaspaceSize=256m \
+        -XX:MaxMetaspaceSize=$META_SPACE \
         -Djdk.lang.Process.launchMechanism=posix_spawn \
         -cp "$SPARK_CLASSPATH" \
-        -Xms8g \
-        -Xmx8g \
+        -Xmx$DRIVER_MEMORY \
         -XX:ActiveProcessorCount=4 \
         -Dio.netty.availableProcessors=64 \
         org.apache.spark.deploy.SparkSubmit \
@@ -74,7 +85,7 @@ case "$SPARK_K8S_CMD" in
         /usr/lib/jvm/java-11-openjdk-amd64/bin/java \
         "${SPARK_EXECUTOR_JAVA_OPTS[@]}" \
         -XX:-UseCompressedOops \
-        -XX:MaxMetaspaceSize=256m \
+        -XX:MaxMetaspaceSize=$META_SPACE \
         -XX:ActiveProcessorCount=$SPARK_EXECUTOR_CORES \
         -Divy.home=/tmp/.ivy \
         -Xms$SPARK_EXECUTOR_MEMORY \

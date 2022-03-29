@@ -41,15 +41,16 @@ class MultiprocessingBackend(Backend):
         return self.run_subprocess(target, args=args, nprocs=nprocs, envs=envs)
 
     def run_subprocess(self, target, args=..., nprocs=1, envs=None) -> Any:
+        import cloudpickle
         import pickle
         import subprocess
         import sys
 
         with TemporaryDirectory() as temp_dir:
             with open(os.path.join(temp_dir, "args.pkl"), 'wb') as f:
-                pickle.dump(args, f)
+                cloudpickle.dump(args, f)
             with open(os.path.join(temp_dir, "target.pkl"), 'wb') as f:
-                pickle.dump(target, f)
+                cloudpickle.dump(target, f)
 
             ex_list = []
             cwd_path = os.path.split(os.path.realpath(__file__))[0]
@@ -61,6 +62,53 @@ class MultiprocessingBackend(Backend):
                                                 env=envs[i]))
             for _, ex in enumerate(ex_list):
                 ex.wait()
+
+            results = []
+            for i in range(nprocs):
+                with open(os.path.join(temp_dir, f"history_{i}"), "rb") as f:
+                    results.append(pickle.load(f))
+        return results
+
+
+class HorovodBackend(Backend):
+
+    def setup(self) -> None:
+        pass
+
+    def shutdown(self) -> None:
+        pass
+
+    def run(self, target, args=..., nprocs=1, envs=None) -> Any:
+        if envs is not None:
+            if isinstance(envs, list):
+                assert nprocs == len(envs), "envs must have the same length with nprocs"
+            elif isinstance(envs, dict):
+                envs = [envs] * nprocs
+            else:
+                raise ValueError("envs must be a dict or a list of dict")
+
+        return self.run_subprocess(target, args=args, nprocs=nprocs, envs=envs)
+
+    def run_subprocess(self, target, args=..., nprocs=1, envs=None) -> Any:
+        import pickle
+        import subprocess
+        import sys
+
+        with TemporaryDirectory() as temp_dir:
+            with open(os.path.join(temp_dir, "args.pkl"), 'wb') as f:
+                pickle.dump((envs,) + args, f)
+            with open(os.path.join(temp_dir, "target.pkl"), 'wb') as f:
+                pickle.dump(target, f)
+
+            cwd_path = os.path.split(os.path.realpath(__file__))[0]
+
+            p = subprocess.Popen(["horovodrun", "-np", str(nprocs), "-H", f"localhost:{nprocs}",
+                                  sys.executable, f"{cwd_path}/horovod_worker.py", temp_dir])
+
+            p.wait()
+
+            if p.returncode != 0:
+                raise RuntimeError("horovodrun failed")
 
             results = []
             for i in range(nprocs):

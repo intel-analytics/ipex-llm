@@ -110,9 +110,9 @@ fi
 echo "conda dir found: $BASE_DIR"
 LIB_DIR=$BASE_DIR/lib
 
-PYTHON_VERSION=$($BASE_DIR/bin/python -c "import platform; major, mnior, patch = platform.python_version_tuple();print(major+'.'+mnior)")
+PYTHON_VERSION=$(python3 -c "import platform; major, mnior, patch = platform.python_version_tuple();print(major+'.'+mnior)")
 
-NANO_DIR="${LIB_DIR}/python${PYTHON_VERSION}/site-packages/bigdl/nano/"
+NANO_DIR="$(dirname "$(python3 -c "import bigdl; print(bigdl.__file__)")")/nano/"
 
 
 # Detect Intel openMP library
@@ -228,7 +228,7 @@ echo "KMP_AFFINITY=${KMP_AFFINITY}"
 echo "KMP_BLOCKTIME=${KMP_BLOCKTIME}"
 echo "TF_ENABLE_ONEDNN_OPTS=${TF_ENABLE_ONEDNN_OPTS}"
 echo "ENABLE_TF_OPTS=${ENABLE_TF_OPTS}"
-echo "NANO_TF_INTER_OP"=${sockets_}
+echo "NANO_TF_INTER_OP"=${NANO_TF_INTER_OP}
 echo "+++++++++++++++++++++++++"
 # Run the commands after bigdl-nano-init
 echo "Complete."
