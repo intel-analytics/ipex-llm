@@ -8,19 +8,26 @@ set -e
 echo "# Start testing"
 start=$(date "+%s")
 
-function runpythonfiles(){
-  for file in "ls $1"
+function runpythonfiles()
+{
+  for file in `ls $1`
   do
-    if [-d 1"/"$file]
+    if [ -d $1"/"$file ]
     then
-      runpythonfiles($1"/"$file)
+      runpythonfiles $1"/"$file
     else
-      python -m $1"/"$file
+      python $1"/"$file
     fi
-    done
+  done
 }
 
-runpythonfiles ${NANO_WORKLOAD_DIR}
+for file in `ls ${NANO_WORKLOAD_DIR}`
+do
+  if [ -d ${NANO_WORKLOAD_DIR}"/"$file ]
+  then
+    runpythonfiles ${NANO_WORKLOAD_DIR}"/"$file
+  fi
+done
 
 now=$(date "+%s")
 time=$((now-start))
