@@ -199,7 +199,9 @@ class AutoTSEstimator:
 
         :param data: train data.
                For backend of "torch", data can be a TSDataset or a function that takes a
-               config dictionary as parameter and returns a PyTorch DataLoader.
+               config dictionary as parameter and returns a PyTorch DataLoader. Please notice
+               that you should stick to the same data type when you predict/evaluate/fit on the
+               TSPipeline you get from `AutoTSEstimator.fit`.
                For backend of "keras", data can be a TSDataset.
         :param epochs: Max number of epochs to train in each trial. Defaults to 1.
                If you have also set metric_threshold, a trial will stop if either it has been
