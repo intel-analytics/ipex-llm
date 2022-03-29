@@ -32,16 +32,6 @@ batch_size, img_height, img_width = 32, 180, 180
 results_dir = os.path.join(os.path.dirname(__file__), "../results")
 
 
-class LossHistory(tf.keras.callbacks.Callback):
-    losses = []
-
-    def on_train_begin(self, logs={}):
-        self.losses = []
-
-    def on_batch_end(self, batch, logs={}):
-        self.losses.append(logs.get('loss'))
-
-
 def write_result_to_csv(result, columns, result_path):
     if not os.path.exists(results_dir):
         os.mkdir(results_dir)
@@ -106,20 +96,22 @@ def main():
     num_classes, train_ds, val_ds = dataset_generation()
 
     model_default = model_init(num_classes)
-    his_default = LossHistory()
-    model_default.fit(train_ds, epochs=3, validation_data=val_ds, callbacks=[his_default])
+    his_default = model_default.fit(train_ds, epochs=3, validation_data=val_ds)
 
-    # model_multiprocess = model_init(num_classes)
-    # his_multiprocess = LossHistory()
-    # model_multiprocess.fit(train_ds, epochs=3, validation_data=val_ds,
-    #                        nprocs=2, backend="multiprocessing",
-    #                        callbacks=[his_multiprocess])
+    model_multiprocess = model_init(num_classes)
+    his_multiprocess = model_multiprocess.fit(train_ds, epochs=3, validation_data=val_ds,
+                           nprocs=2, backend="multiprocessing")
 
-    result_path = os.path.join(results_dir, "keras_multiporcessing_loss.csv")
     write_result_to_csv(
-        list(zip(his_default.losses, his_default.losses)),
+        list(zip(his_default.history["loss"], his_multiprocess.history["loss"])),
         ["loss_default", "loss_multiprocess"],
-        result_path
+        os.path.join(results_dir, "keras_multiporcessing_loss.csv")
+    )
+
+    write_result_to_csv(
+        list(zip(his_default.history["accuracy"], his_multiprocess.history["accuracy"])),
+        ["accuracy_default", "accuracy_multiprocess"],
+        os.path.join(results_dir, "keras_multiporcessing_accuracy.csv")
     )
 
 
