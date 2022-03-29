@@ -42,7 +42,6 @@ class MultiprocessingBackend(Backend):
 
     def run_subprocess(self, target, args=..., nprocs=1, envs=None) -> Any:
         import cloudpickle
-        import pickle
         import subprocess
         import sys
 
@@ -58,15 +57,15 @@ class MultiprocessingBackend(Backend):
                 for key, val in os.environ.items():
                     if key not in envs[i]:
                         envs[i][key] = val
-                ex_list.append(subprocess.Popen([sys.executable, f"{cwd_path}/worker.py", temp_dir],
-                                                env=envs[i]))
+                ex_list.append(subprocess.Popen([sys.executable, f"{cwd_path}/subprocess_worker.py",
+                                                 temp_dir], env=envs[i]))
             for _, ex in enumerate(ex_list):
                 ex.wait()
 
             results = []
             for i in range(nprocs):
                 with open(os.path.join(temp_dir, f"history_{i}"), "rb") as f:
-                    results.append(pickle.load(f))
+                    results.append(cloudpickle.load(f))
         return results
 
 
