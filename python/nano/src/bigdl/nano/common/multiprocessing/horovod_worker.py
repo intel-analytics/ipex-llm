@@ -14,9 +14,8 @@
 # limitations under the License.
 #
 
-import json
 import os
-import pickle
+import cloudpickle
 import sys
 
 
@@ -24,10 +23,10 @@ if __name__ == '__main__':
     temp_dir = sys.argv[1]
 
     with open(os.path.join(temp_dir, "args.pkl"), 'rb') as f:
-        args = pickle.load(f)
+        args = cloudpickle.load(f)
 
     with open(os.path.join(temp_dir, "target.pkl"), 'rb') as f:
-        target = pickle.load(f)
+        target = cloudpickle.load(f)
 
     import horovod.tensorflow.keras as hvd
     hvd.init()
@@ -37,4 +36,4 @@ if __name__ == '__main__':
 
     with open(os.path.join(temp_dir,
                            f"history_{idx}"), "wb") as f:
-        pickle.dump(history, f)
+        cloudpickle.dump(history, f)
