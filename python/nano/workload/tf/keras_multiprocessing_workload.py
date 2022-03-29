@@ -23,12 +23,18 @@ import tensorflow as tf
 from tensorflow.keras import layers
 from bigdl.nano.tf.keras import Sequential
 
-URI = os.environ['FTP_URI']
+# URI = os.environ['FTP_URI']
+
+dataset_url = "https://storage.googleapis.com/download.tensorflow.org/example_images/flower_photos.tgz"
+data_dir = tf.keras.utils.get_file('flower_photos', origin=dataset_url, untar=True)
+data_dir = pathlib.Path(data_dir)
 batch_size, img_height, img_width = 32, 180, 180
 results_dir = os.path.join(os.path.dirname(__file__), "../results")
 
 
 class LossHistory(tf.keras.callbacks.Callback):
+    losses = []
+
     def on_train_begin(self, logs={}):
         self.losses = []
 
@@ -37,18 +43,17 @@ class LossHistory(tf.keras.callbacks.Callback):
 
 
 def write_result_to_csv(result, columns, result_path):
+    if not os.path.exists(results_dir):
+        os.mkdir(results_dir)
+
     df = pd.DataFrame(
         result,
         columns=columns
     )
-    df.to_csv(result_path, index=True, sep=',')
+    df.to_csv(result_path, index=False, sep=',')
 
 
 def dataset_generation():
-    dataset_url = URI + "/BigDL-data/flower_photos.tar.gz"
-    data_dir = tf.keras.utils.get_file('flower_photos', origin=dataset_url, untar=True)
-    data_dir = pathlib.Path(data_dir)
-
     train_ds = tf.keras.utils.image_dataset_from_directory(
         data_dir,
         validation_split=0.2,
@@ -104,15 +109,15 @@ def main():
     his_default = LossHistory()
     model_default.fit(train_ds, epochs=3, validation_data=val_ds, callbacks=[his_default])
 
-    model_multiprocess = model_init(num_classes)
-    his_multiprocess = LossHistory()
-    model_multiprocess.fit(train_ds, epochs=3, validation_data=val_ds,
-                           nprocs=2, backend="multiprocessing",
-                           callbacks=[his_multiprocess])
+    # model_multiprocess = model_init(num_classes)
+    # his_multiprocess = LossHistory()
+    # model_multiprocess.fit(train_ds, epochs=3, validation_data=val_ds,
+    #                        nprocs=2, backend="multiprocessing",
+    #                        callbacks=[his_multiprocess])
 
     result_path = os.path.join(results_dir, "keras_multiporcessing_loss.csv")
     write_result_to_csv(
-        [his_default.losses, his_multiprocess.losses],
+        list(zip(his_default.losses, his_default.losses)),
         ["loss_default", "loss_multiprocess"],
         result_path
     )
