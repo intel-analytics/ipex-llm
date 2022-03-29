@@ -92,29 +92,30 @@ class TestTF2Estimator(TestCase):
                             (tf.TensorSpec(shape=(None, 1), dtype=tf.float32),
                              tf.TensorSpec(shape=(None), dtype=tf.float32))
                             }
-        
+
         start_eval_stats = orca_estimator.evaluate(data=validation_dataset,
                                                    num_steps=2, batch_size=32,
                                                    label_cols="x", feature_cols=["y"],
                                                    data_config=data_config_args)
-        print(start_eval_stats)
 
         train_stats = orca_estimator.fit(data=train_dataset,
                                          epochs=2, batch_size=32,
                                          label_cols="x", feature_cols=["y"],
                                          data_config=data_config_args)
         print(train_stats)
-        
+
         end_eval_stats = orca_estimator.evaluate(data=validation_dataset,
                                                  num_steps=2, batch_size=32,
                                                  label_cols="x", feature_cols=["y"],
                                                  data_config=data_config_args)
-        print(end_eval_stats)
-    
+
         assert orca_estimator.get_model()
+
         dloss = end_eval_stats["validation_loss"] - start_eval_stats["validation_loss"]
-        print(f"dLoss: {dloss}")
-        assert dloss < 0, "training sanity check failed. loss increased!"
+        dmse = (end_eval_stats["validation_mean_squared_error"] -
+                start_eval_stats["validation_mean_squared_error"])
+        print(f"dLoss: {dloss}, dMSE: {dmse}")
+        assert dloss < 0 and dmse < 0, "training sanity check failed. loss increased!"
 
 if __name__ == "__main__":
     pytest.main([__file__])
