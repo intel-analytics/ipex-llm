@@ -33,7 +33,6 @@ from bigdl.orca.ray import RayContext
 
 logger = logging.getLogger(__name__)
 
-
 class TensorFlow2Estimator(OrcaRayEstimator):
     def __init__(self,
                  model_creator,
@@ -208,22 +207,12 @@ class TensorFlow2Estimator(OrcaRayEstimator):
             import tensorflow as tf
             shards = data.split(n=self.num_workers, locality_hints=self.remote_workers)
 
-            def process_ray_dataset(shard):
-                def data_creator(config, batch_size):
-                    tf_dataset = shard.to_tf(label_column=label_cols, feature_columns=feature_cols,
-                                             output_signature=data_config["output_signature"],
-                                             batch_size=batch_size)
-                    options = tf.data.Options()
-                    options.experimental_distribute.auto_shard_policy = \
-                        tf.data.experimental.AutoShardPolicy.OFF
-                    tf_dataset = tf_dataset.with_options(options)
-                    return tf_dataset
-                return data_creator
-
             remote_worker_stats = []
             if validation_data is None:
                 for shard, worker in zip(shards, self.remote_workers):
-                    params["data_creator"] = process_ray_dataset(shard)
+                    params["data_creator"] = self.process_ray_dataset(shard,
+                                                                      label_cols, feature_cols,
+                                                                      data_config)
                     remote_worker_stats.append(worker.step.remote(**params))
                 worker_stats = ray.get(remote_worker_stats)
                 worker_stats = list(itertools.chain.from_iterable(worker_stats))
@@ -236,8 +225,13 @@ class TensorFlow2Estimator(OrcaRayEstimator):
                                                    locality_hints=self.remote_workers)
 
                 for i in range(self.num_workers):
-                    params["data_creator"] = process_ray_dataset(shards[i])
-                    params["validation_data_creator"] = process_ray_dataset(val_shards[i])
+                    params["data_creator"] = self.process_ray_dataset(shards[i],
+                                                                      label_cols, feature_cols,
+                                                                      data_config)
+                    params["validation_data_creator"] = self.process_ray_dataset(val_shards[i],
+                                                                                 label_cols,
+                                                                                 feature_cols,
+                                                                                 data_config)
                     remote_worker_stats.append(self.remote_workers[i].step.remote(**params))
                 worker_stats = ray.get(remote_worker_stats)
                 worker_stats = list(itertools.chain.from_iterable(worker_stats))
@@ -321,23 +315,15 @@ class TensorFlow2Estimator(OrcaRayEstimator):
             worker_stats = ray_xshards.reduce_partitions_for_actors(self.remote_workers,
                                                                     transform_func)
         elif isinstance(data, ray.data.Dataset):
-            import tensorflow as tf
             shards = data.split(n=self.num_workers, locality_hints=self.remote_workers)
-
-            def data_creator(config, batch_size):
-                tf_dataset = shard.to_tf(label_column=label_cols, feature_columns=feature_cols,
-                                         output_signature=data_config["output_signature"],
-                                         batch_size=batch_size)
-                options = tf.data.Options()
-                options.experimental_distribute.auto_shard_policy = \
-                    tf.data.experimental.AutoShardPolicy.OFF
-                tf_dataset = tf_dataset.with_options(options)
-                return tf_dataset
 
             remote_worker_stats = []
             for shard, worker in zip(shards, self.remote_workers):
-                params["data_creator"] = data_creator
-                remote_worker_stats.append(worker.step.remote(**params))
+                params["data_creator"] = self.process_ray_dataset(shard,
+                                                                  label_cols,
+                                                                  feature_cols,
+                                                                  data_config)
+                remote_worker_stats.append(worker.validate.remote(**params))
             worker_stats = ray.get(remote_worker_stats)
             worker_stats = list(itertools.chain.from_iterable(worker_stats))
         else:  # data_creator functions; should return Iter or DataLoader
@@ -349,6 +335,23 @@ class TensorFlow2Estimator(OrcaRayEstimator):
             worker_stats = list(itertools.chain.from_iterable(worker_stats))
         stats = worker_stats[0].copy()
         return stats
+
+    def process_ray_dataset(self, shard, label_cols, feature_cols=None, data_config=None):
+        assert "output_signature" in data_config, "output_signature should be specified"
+        import tensorflow as tf
+
+        def data_creator(config, batch_size):
+            tf_dataset = shard.to_tf(label_column=label_cols,
+                                     feature_columns=feature_cols,
+                                     output_signature=data_config["output_signature"],
+                                     batch_size=batch_size)
+            options = tf.data.Options()
+            options.experimental_distribute.auto_shard_policy = \
+                tf.data.experimental.AutoShardPolicy.OFF
+            tf_dataset = tf_dataset.with_options(options)
+            return tf_dataset
+
+        return data_creator
 
     def _predict_spark_xshards(self, xshards, params):
         ray_xshards = RayXShards.from_spark_xshards(xshards)
