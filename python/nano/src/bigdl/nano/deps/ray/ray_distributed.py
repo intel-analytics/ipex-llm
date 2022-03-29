@@ -46,7 +46,6 @@ from ray.util.sgd.utils import find_free_port
 from torch.nn import Module
 
 from bigdl.nano.deps.ray.ray_envbase import RayEnvironment
-from ray_api import create_ray_envbase
 
 
 @ray.remote
@@ -134,11 +133,10 @@ class RayPlugin(DDPSpawnPlugin):
         if not ray.is_initialized():
             print(ray.init())
 
-        env = create_ray_envbase(world_size=num_workers)
         super().__init__(
             sync_batchnorm=False,
             parallel_devices=[],
-            cluster_environment=env,
+            cluster_environment=RayEnvironment(world_size=num_workers),
             **ddp_kwargs)  # type: ignore
         self.nickname = "ddp_ray"
         self.num_workers = num_workers
