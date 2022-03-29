@@ -175,7 +175,6 @@ class TestTSPipeline(TestCase):
             yhat = tsppl_lstm.predict(data=get_test_tsdataset(), batch_size=16)
 
     def test_tsppl_quantize_data_creator(self):
-        
         # s2s not support quantize
         with pytest.raises(NotImplementedError):
             tsppl_s2s = TSPipeline.load(os.path.join(self.resource_path,
