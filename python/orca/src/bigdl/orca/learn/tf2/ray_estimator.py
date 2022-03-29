@@ -33,6 +33,7 @@ from bigdl.orca.ray import RayContext
 
 logger = logging.getLogger(__name__)
 
+
 class TensorFlow2Estimator(OrcaRayEstimator):
     def __init__(self,
                  model_creator,
