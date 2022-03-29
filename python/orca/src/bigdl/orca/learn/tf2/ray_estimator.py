@@ -205,7 +205,6 @@ class TensorFlow2Estimator(OrcaRayEstimator):
                                                                          self.remote_workers,
                                                                          zip_func)
         elif isinstance(data, ray.data.Dataset):
-            import tensorflow as tf
             shards = data.split(n=self.num_workers, locality_hints=self.remote_workers)
 
             remote_worker_stats = []
