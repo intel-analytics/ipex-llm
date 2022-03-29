@@ -76,7 +76,8 @@ def _build_ir_model(self, input_sample=None, file_path="model.xml", **kwargs):
     infer_engine = IECore()
     net_onnx = infer_engine.read_network(model='model.onnx')
     net_onnx.serialize(file_path)
-    self.ir_model = infer_engine.load_network(network=file_path, device_name='CPU')
+
+    self.ir_model = infer_engine.read_network(model=file_path, weights=file_path.split('.')[0]+".bin")
     self.ir_up_to_date = True
 
 
@@ -109,8 +110,10 @@ def forward(self, *args):
 
 
 def _forward_openvino(self, *args):
+    self.ir_model.batch_size = args[0].shape[0]
+    exec_model = IECore().load_network(network=self.ir_model, device_name='CPU')
     inputs = dict(zip(self.ir_model.input_info, args))
-    return self.ir_model.infer(inputs)
+    return exec_model.infer(inputs)
 
 
 def eval_openvino(self, input_sample=None, file_path="model.xml", **kwargs):

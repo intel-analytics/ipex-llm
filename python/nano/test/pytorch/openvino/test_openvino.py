@@ -58,8 +58,7 @@ class TestOpenVINO(TestCase):
         x = torch.rand((10, 3, 256, 256))
         y = torch.ones((10, ), dtype=torch.long)
         ds = TensorDataset(x, y)
-        # TODO: batch size = 2 will cause error, need to fix this
-        dataloader = DataLoader(ds, batch_size=10)
+        dataloader = DataLoader(ds, batch_size=2)
         trainer.fit(pl_model, dataloader)
 
         # Test if eval_openvino() and exit_openvino() work
