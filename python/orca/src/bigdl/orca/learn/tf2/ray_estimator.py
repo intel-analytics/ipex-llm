@@ -338,7 +338,7 @@ class TensorFlow2Estimator(OrcaRayEstimator):
         return stats
 
     def process_ray_dataset(self, shard, label_cols, feature_cols=None, data_config=None):
-        if not "output_signature" in data_config:
+        if "output_signature" not in data_config:
             raise ValueError("output_signature should be specified in data_config")
         import tensorflow as tf
 
