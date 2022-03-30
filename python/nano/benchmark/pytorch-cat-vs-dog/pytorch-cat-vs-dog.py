@@ -15,8 +15,10 @@
 
 from gc import callbacks
 import os
+from shutil import rmtree
 import torch
 import time 
+import pandas as pd
 from bigdl.nano.pytorch.vision.datasets import ImageFolder
 from bigdl.nano.pytorch.vision.transforms import transforms
 import argparse
@@ -36,9 +38,12 @@ parser.add_argument('--epochs', default=2, type=int, help='epoch number')
 parser.add_argument('--root_dir', default=None, help='path to cat vs dog dataset'
                     'which should have two folders `cat` and `dog`, each containing'
                     'cat and dog pictures.')
-
+parser.add_argument('--remove_data', default=True, help='if to remove dataset after performance test. Default is true, i.e. remove after test')
+parser.add_argument('--output_to_csv', default=True, help='if output performance test result to csv file')
+parser.add_argument('--csv_path', default=None, help='output performance test result to csv file')
 train_start, train_end = None, None 
 
+results_dir = os.path.join(os.path.dirname(__file__), "../results")
 # for training timing
 class MyCallback(Callback):
     def on_train_end(self, trainer, pl_module):
@@ -49,6 +54,16 @@ class MyCallback(Callback):
         global train_start
         train_start = time.time()
     
+
+class Classifier(ImageClassifier):
+
+    def __init__(self):
+        backbone = resnet50(pretrained=True, include_top=False, freeze=True)
+        super().__init__(backbone=backbone, num_classes=2)
+
+    def configure_optimizers(self):
+        return torch.optim.Adam(self.parameters(), lr=0.002, amsgrad=True)
+
 
 def create_data_loader(root_dir, batch_size):
     dir_path = os.path.realpath(root_dir)
@@ -74,14 +89,13 @@ def create_data_loader(root_dir, batch_size):
     return train_loader, val_loader, size
 
 
-class Classifier(ImageClassifier):
+def write_to_csv(result, columns, path):
+    if not os.path.exists(results_dir):
+        os.mkdir(results_dir)
 
-    def __init__(self):
-        backbone = resnet50(pretrained=True, include_top=False, freeze=True)
-        super().__init__(backbone=backbone, num_classes=2)
-
-    def configure_optimizers(self):
-        return torch.optim.Adam(self.parameters(), lr=0.002, amsgrad=True)
+    df = pd.DataFrame(result, columns=columns)
+    df.to_csv(path, index=False, sep=',')
+    return 
 
 
 def main():
@@ -106,5 +120,15 @@ def main():
     throughput = train_size * args.epochs / (train_end - train_start)
     print(f"training using {train_end - train_start}s, thoughput is {throughput} img/s") 
 
+    if args.output_to_csv:
+        if args.csv_path is None:
+            write_to_csv([throughput], ["throughput"], os.path.join(results_dir, "nano-cat-vs-dog-throughput.csv"))
+        else:
+            write_to_csv([throughput], ["throughput"], os.path.join(results_dir, args.csv_path))
+
+    if args.remove_data:
+        print("Remove cat-vs-dog dataset after test.")
+        rmtree(root_path)
+        
 if __name__ == "__main__":
     main()
