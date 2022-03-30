@@ -172,7 +172,7 @@ class Trainer(pl.Trainer):
                 raise RuntimeError("You should install onnx and onnxruntime to set `onnx=True`, "
                                    "or just set `onnx=False`.")
         elif openvino:
-            from bigdl.nano.pytorch.runtime_binding.openvino_inference import bind_openvino_methods
+            from bigdl.nano.deps.openvino.torch import bind_openvino_methods
             return bind_openvino_methods(pl_model)
         if quantize:
             from bigdl.nano.pytorch.runtime_binding.quantization_inference import\

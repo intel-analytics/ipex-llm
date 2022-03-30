@@ -30,7 +30,7 @@ class TestOpenVINO(TestCase):
         y = torch.ones((10, ), dtype=torch.long)
 
         pl_model.eval_openvino(x)
-        assert pl_model.ir_up_to_date and pl_model.ir_model
+        assert pl_model.ov_infer_engine and pl_model.ov_infer_engine.ie_network
         assert pl_model.forward != pl_model._torch_forward
         y = pl_model(x)
         assert y.shape == (10, 10)  
@@ -47,7 +47,7 @@ class TestOpenVINO(TestCase):
         pl_model.eval_openvino()
         assert pl_model.forward != pl_model._torch_forward
         pl_model.train()
-        assert pl_model.forward == pl_model._torch_forward  
+        assert pl_model.forward == pl_model._torch_forward
 
     def test_openvino_inputsample_from_trainloader(self):
         trainer = Trainer(max_epochs=1)
@@ -63,7 +63,7 @@ class TestOpenVINO(TestCase):
 
         # Test if eval_openvino() and exit_openvino() work
         pl_model.eval_openvino()
-        assert pl_model.ir_up_to_date and pl_model.ir_model
+        assert pl_model.ov_infer_engine and pl_model.ov_infer_engine.ie_network
         assert pl_model.forward != pl_model._torch_forward
         y = pl_model(x)
         assert y.shape == (10, 10) 
@@ -75,4 +75,5 @@ class TestOpenVINO(TestCase):
         pl_model.eval_openvino()
         assert pl_model.forward != pl_model._torch_forward
         trainer.fit(pl_model, dataloader)
-        assert pl_model.forward == pl_model._torch_forward and pl_model.ir_up_to_date == False
+        assert pl_model.forward == pl_model._torch_forward 
+        assert  pl_model.ov_infer_engine is None
