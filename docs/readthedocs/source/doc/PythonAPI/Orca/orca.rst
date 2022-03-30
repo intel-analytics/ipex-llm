@@ -19,6 +19,15 @@ orca.learn.tf.estimator
     :show-inheritance:
 
 
+orca.learn.tf2.estimator
+-------------------------
+
+.. automodule:: bigdl.orca.learn.tf2.estimator
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+
 orca.learn.tf2.tf2_ray_estimator
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
