@@ -15,12 +15,12 @@
 #
 from openvino.inference_engine import IECore
 
+
 class BaseOpenVINOInference:
     def __init__(self, ie_network=None):
         self.ie_network = ie_network
         self.exec_model = None
         self.example_input_array = None
-
 
     def forward_step(self, *inputs):
         self.compile_executable(inputs)

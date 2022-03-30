@@ -21,6 +21,7 @@ from ..inference.pytorch_base_inference import PytorchBaseInference
 from ..inference.pytorch_base_inference import export as export_to_onnx
 import torch
 
+
 class PytorchOpenVINOInference(BaseOpenVINOInference, PytorchBaseInference):
     def __init__(self, ie_network=None):
         BaseOpenVINOInference.__init__(self, ie_network)
@@ -78,7 +79,7 @@ def eval_openvino(model, input_sample=None, xml_path="model.xml"):
     model.eval()
     if not hasattr(model, "ov_infer_engine") or not model.ov_infer_engine.ie_network:
         model.ov_infer_engine = PytorchOpenVINOInference.from_torch(model, input_sample, xml_path)
-            
+
     model.ov_infer_engine.attach(model)
 
 

@@ -66,17 +66,17 @@ def get_input_example(model: LightningModuleFromTorch, input_sample):
         if getattr(model, "example_input_array", None):
             input_sample = model.example_input_array
         elif model.trainer is not None:
-            for dataloader in [model.test_dataloader(), model.train_dataloader(),
-                                model.val_dataloader()]:
+            for dataloader in [model.test_dataloader(), model.train_dataloader(), 
+                               model.val_dataloader()]:
                 if dataloader is not None:
                     input_sample = tuple(next(iter(dataloader))[:-1])
                     break
             if input_sample is None and model.predict_dataloader():
-                input_sample = tuple(next(iter(model.predict_dataloader()))) 
+                input_sample = tuple(next(iter(model.predict_dataloader())))
         else:
             raise RuntimeError("You must specify an input_sample or call `Trainer.fit` "
                                "on the model first to use `eval_openvino`")
-            
+
     model.example_input_array = input_sample
     return input_sample
 
@@ -99,11 +99,11 @@ def export(model, input_sample=None, onnx_path="model.onnx", dynamic_axes=True):
             dynamic_axes[arg] = {0: 'batch_size'}  # set all dim0 to be dynamic
     else:
         dynamic_axes = {}
-    default_onnx_export_args = {'export_params':       True,
-                                'opset_version':       11,  # version = 11 by default
-                                'do_constant_folding': True,
-                                'input_names':         forward_args,
-                                'dynamic_axes':        dynamic_axes,  
+    default_onnx_export_args = {'export_params':    True,
+                                'opset_version':    11,  # version = 11 by default
+                                'do_constant_folding':  True,
+                                'input_names':  forward_args,
+                                'dynamic_axes': dynamic_axes,
                                 }
 
     torch.onnx.export(model, input_sample, onnx_path, **default_onnx_export_args)
