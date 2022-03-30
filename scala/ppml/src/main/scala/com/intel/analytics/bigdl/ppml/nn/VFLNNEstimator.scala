@@ -34,7 +34,7 @@ import scala.collection.JavaConverters._
 import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
 
-class VflNNEstimator(algorithm: String,
+class VFLNNEstimator(algorithm: String,
                      model: Module[Float],
                      optimMethod: OptimMethod[Float],
                      threadNum: Int = 1) extends Estimator {

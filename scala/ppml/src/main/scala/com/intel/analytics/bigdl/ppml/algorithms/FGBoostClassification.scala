@@ -14,26 +14,28 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.ppml.algorithms.vfl
+package com.intel.analytics.bigdl.ppml.algorithms
 
-import com.intel.analytics.bigdl.dllib.nn.Sequential
-import com.intel.analytics.bigdl.dllib.optim.MAE
-import com.intel.analytics.bigdl.ppml.FLModel
-import com.intel.analytics.bigdl.ppml.base.Estimator
+import com.intel.analytics.bigdl.dllib.optim.Top1Accuracy
 import com.intel.analytics.bigdl.ppml.fgboost.FGBoostModel
 
 /**
- * FGBoost regression algorithm
+ * FGBoost classification algorithm
+ * @param nLabel label number for classification
  * @param learningRate learning rate
  * @param maxDepth max depth of boosting tree
  * @param minChildSize
  */
-class FGBoostRegression(learningRate: Float = 0.005f,
-                        maxDepth: Int = 6,
-                        minChildSize: Int = 1)
-  extends FGBoostModel(continuous = true,
+class FGBoostClassification(nLabel: Int = 1,
+                            learningRate: Float = 0.005f,
+                            maxDepth: Int = 6,
+                            minChildSize: Int = 1,
+                            flattenHeaders: Array[String] = null)
+  extends FGBoostModel(continuous = false,
     learningRate = learningRate,
     maxDepth = maxDepth,
     minChildSize = minChildSize,
-    validationMethods = Array(new MAE())) {
+    validationMethods = Array(new Top1Accuracy[Float]())) {
+
 }
+

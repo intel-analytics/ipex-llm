@@ -37,7 +37,7 @@ import scala.collection.mutable.ArrayBuffer
  * @param criterion loss function, HFL takes loss at estimator, VFL takes loss at aggregator
  * @param threadNum
  */
-class HflNNEstimator(algorithm: String,
+class HFLNNEstimator(algorithm: String,
                      model: Module[Float],
                      optimMethod: OptimMethod[Float],
                      criterion: Criterion[Float],

@@ -27,7 +27,7 @@ import scala.collection.JavaConverters._
 /**
  * Return the average of all clients Tensors when calling aggregate
  */
-class HflNNAggregator extends NNAggregator {
+class HFLNNAggregator extends NNAggregator {
   protected var modelName = "averaged"
 
   /**

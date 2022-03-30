@@ -37,7 +37,7 @@ import org.apache.logging.log4j.LogManager
  * @param criterion loss function, HFL takes loss at estimator, VFL takes loss at aggregator
  * @param validationMethods
  */
-class VflNNAggregator(model: Module[Float],
+class VFLNNAggregator(model: Module[Float],
                       optimMethod: OptimMethod[Float],
                       criterion: Criterion[Float],
                       validationMethods: Array[ValidationMethod[Float]]) extends NNAggregator{
@@ -102,14 +102,14 @@ class VflNNAggregator(model: Module[Float],
 
 }
 
-object VflNNAggregator {
+object VFLNNAggregator {
   val logger = LogManager.getLogger(this.getClass)
 
   def apply(clientNum: Int,
             classifier: Module[Float],
             optimMethod: OptimMethod[Float],
-            criterion: Criterion[Float]): VflNNAggregator = {
-    val vflNNAggregator = new VflNNAggregator(classifier, optimMethod, criterion, null)
+            criterion: Criterion[Float]): VFLNNAggregator = {
+    val vflNNAggregator = new VFLNNAggregator(classifier, optimMethod, criterion, null)
     vflNNAggregator.setClientNum(clientNum)
     vflNNAggregator
   }
@@ -118,8 +118,8 @@ object VflNNAggregator {
             classifier: Module[Float],
             optimMethod: OptimMethod[Float],
             criterion: Criterion[Float],
-            validationMethods: Array[ValidationMethod[Float]]): VflNNAggregator = {
-    val vflNNAggregator = new VflNNAggregator(
+            validationMethods: Array[ValidationMethod[Float]]): VFLNNAggregator = {
+    val vflNNAggregator = new VFLNNAggregator(
       classifier, optimMethod, criterion, validationMethods)
     vflNNAggregator.setClientNum(clientNum)
     vflNNAggregator
