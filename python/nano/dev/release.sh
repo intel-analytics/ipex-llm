@@ -50,7 +50,7 @@ elif [ "$platform" == "linux" ]; then
 
 elif [ "$platform" == "windows" ]; then
     verbose_pname="win_amd64"
-    
+
 else
     echo "Unsupported platform"
 fi
@@ -67,10 +67,9 @@ if [ -d "${BIGDL_DIR}/python/nano/src/bigdl_nano.egg-info" ]; then
    rm -r ${BIGDL_DIR}/python/nano/src/bigdl_nano.egg-info
 fi
 
-
 cd $BIGDL_PYTHON_DIR
 
-wheel_command="python setup.py bdist_wheel --plat-name ${verbose_pname} --python-tag py3"
+wheel_command="python setup.py bdist_wheel --python-tag py3"
 echo "Packing python distribution: $wheel_command"
 ${wheel_command}
 

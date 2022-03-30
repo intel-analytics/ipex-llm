@@ -19,17 +19,19 @@
 
 import os
 import fnmatch
-from setuptools import setup
+from setuptools import setup, find_packages
 import urllib.request
 import os
+import platform
 import stat
 import sys
 
-exclude_patterns = ["*__pycache__*", "lightning_logs", "recipe", "setup.py"]
-nano_home = os.path.abspath(__file__ + "/../")
+from pathlib import Path
 
-bigdl_home = os.path.abspath(__file__ + "/../../../..")
-VERSION = open(os.path.join(bigdl_home, 'python/version.txt'),
+exclude_patterns = ["*__pycache__*", "lightning_logs", "recipe", "setup.py"]
+nano_home = Path(__file__).parent.resolve()
+bigdl_home = nano_home.parent.parent.parent.resolve()
+VERSION = open(bigdl_home.joinpath('python', "version.txt"),
                'r').read().strip()
 
 lib_urls = [
@@ -41,9 +43,9 @@ lib_urls = [
 
 def get_nano_packages():
     nano_packages = []
-    for dirpath, _, _ in os.walk(nano_home + "/bigdl"):
+    for dirpath, _, _ in os.walk(nano_home.joinpath("bigdl")):
         print(dirpath)
-        package = dirpath.split(nano_home + "/")[1].replace('/', '.')
+        package = dirpath.split(str(nano_home) + os.sep)[1].replace(os.sep, '.')
         if any(fnmatch.fnmatchcase(package, pat=pattern)
                 for pattern in exclude_patterns):
             print("excluding", package)
@@ -65,7 +67,16 @@ def download_libs(url: str):
     os.chmod(libso_file, st.st_mode | stat.S_IEXEC)
 
 
-def setup_package(plat_name):
+def setup_package():
+
+    if platform.system() == "Darwin":
+        plat_name = "macosx_10_11_x86_64"
+    elif platform.system() == "Windows":
+        plat_name = "win_amd64"
+    elif platform.system() == "Linux":
+        plat_name = "manylinux2010_x86_64"
+    else:
+        raise ValueError(f"Your platform are not supported now.")
 
     if plat_name != "macosx_10_11_x86_64":
         install_requires = ["intel-openmp"]
@@ -76,20 +87,10 @@ def setup_package(plat_name):
         tensorflow_requires = ["intel-tensorflow==2.7.0",
                                "keras==2.7.0",
                                "tensorflow-estimator==2.7.0"]
-        pytorch_requires = ["torch==1.9.0",
-                            "torchvision==0.10.0",
-                            "pytorch_lightning==1.4.2",
-                            "opencv-python-headless",
-                            "PyTurboJPEG",
-                            "opencv-transforms",
-                            "onnx",
-                            "onnxruntime"]
     else:
         tensorflow_requires = ["tensorflow==2.7.0",
                                "keras==2.7.0",
                                "tensorflow-estimator==2.7.0"]
-
-        pytorch_requires = []
 
     pytorch_requires = ["torch==1.9.0",
                         "torchvision==0.10.0",
@@ -136,22 +137,4 @@ def setup_package(plat_name):
 
 
 if __name__ == '__main__':
-    idx = 0
-    for arg in sys.argv:
-        if arg == "--plat-name":
-            break
-        else:
-            idx += 1
-    if idx >= len(sys.argv):
-        raise ValueError(
-            "Cannot find --plat-name argument. bigdl-tf requires --plat-name to build.")
-    verbose_plat_name = sys.argv[idx + 1]
-
-    valid_plat_names = ("win_amd64", "manylinux2010_x86_64", "macosx_10_11_x86_64")
-    if verbose_plat_name not in valid_plat_names:
-        raise ValueError(f"--plat-name is not valid. "
-                         f"--plat-name should be one of {valid_plat_names}"
-                         f" but got {verbose_plat_name}")
-    plat_name = verbose_plat_name
-
-    setup_package(plat_name)
+    setup_package()
