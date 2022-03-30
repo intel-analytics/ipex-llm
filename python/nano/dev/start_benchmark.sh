@@ -23,7 +23,7 @@ set -e
 echo "# Start testing"
 start=$(date "+%s")
 
-python $NANO_BENCHMARK_DIR/pytorch/pytoroch-cat-vs-dog.py
+python $NANO_BENCHMARK_DIR/pytorch/pytorch-cat-vs-dog.py
 
 now=$(date "+%s")
 time=$((now-start))
