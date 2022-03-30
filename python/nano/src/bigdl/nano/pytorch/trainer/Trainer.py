@@ -14,6 +14,7 @@
 # limitations under the License.
 #
 from logging import warning
+from operator import xor
 from typing import Any, List, Optional
 
 import pytorch_lightning as pl
@@ -119,7 +120,8 @@ class Trainer(pl.Trainer):
                 scheduler: _LRScheduler = None,
                 metrics: List[Metric] = None,
                 onnx: bool = False,
-                quantize: bool = True):
+                quantize: bool = False,
+                openvino: bool = False):
         """
         Construct a pytorch-lightning model. If model is already a pytorch-lightning model,
         return model. If model is pytorch model, construct a new pytorch-lightning module
@@ -147,7 +149,8 @@ class Trainer(pl.Trainer):
             pl_model = model
         else:
             pl_model = LightningModuleFromTorch(model, loss, optimizer, scheduler, metrics)
-
+        assert not (onnx and openvino), "Only one of onnx and openvino can be True."
+        assert not (openvino and quantize), "Quantization is not implemented for OpenVINO."
         if onnx:
             try:
                 from bigdl.nano.pytorch.runtime_binding.onnxrt_inference import\
@@ -158,7 +161,9 @@ class Trainer(pl.Trainer):
             except ImportError:
                 raise RuntimeError("You should install onnx and onnxruntime to set `onnx=True`, "
                                    "or just set `onnx=False`.")
-
+        elif openvino:
+            from bigdl.nano.pytorch.runtime_binding.openvino_inference import bind_openvino_methods
+            return bind_openvino_methods(pl_model)
         if quantize:
             from bigdl.nano.pytorch.runtime_binding.quantization_inference import\
                 bind_quantize_methods
@@ -166,7 +171,7 @@ class Trainer(pl.Trainer):
                 bind_base_inference_rt_methods
             pl_model = bind_quantize_methods(bind_base_inference_rt_methods(pl_model), None)
 
-        return bind_base_inference_rt_methods(pl_model)
+        return pl_model
 
     def quantize(self, pl_model: LightningModule,
                  calib_dataloader: DataLoader = None,
