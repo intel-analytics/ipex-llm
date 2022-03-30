@@ -215,10 +215,19 @@ if [ ! -z "${DISABLE_TCMALLOC_VAR:-}" ]; then
 	export LD_PRELOAD=`echo $LD_PRELOAD | sed "s/\s.*libtcmalloc\.so//g" | sed "s/.*libtcmalloc\.so\s*//g"`
 fi
 
-if [ -z "${LD_PRELOAD:-}" ]; then
-	unset LD_PRELOAD
+if [ -z "${CONDA_DEFAULT_ENV:-}" ]; then
+	echo "Not in a conda env"
+else
+    if [ -f $CONDA_PREFIX/etc/conda/activate.d/nano_vars.sh ];then
+        echo "nano_vars.sh already exists"
+    else
+        echo "Setting environment variables in current conda env"
+        mkdir -p $CONDA_PREFIX/etc/conda/activate.d
+        mkdir -p $CONDA_PREFIX/etc/conda/deactivate.d
+        echo "source bigdl-nano-init" > $CONDA_PREFIX/etc/conda/activate.d/nano_vars.sh
+		echo "source bigdl-nano-unset-env"  $CONDA_PREFIX/etc/conda/deactivate.d/nano_vars.sh
+	fi
 fi
-
 
 echo "+++++ Env Variables +++++"
 echo "LD_PRELOAD=${LD_PRELOAD}"
@@ -232,4 +241,6 @@ echo "NANO_TF_INTER_OP"=${NANO_TF_INTER_OP}
 echo "+++++++++++++++++++++++++"
 # Run the commands after bigdl-nano-init
 echo "Complete."
-${@:1}
+if [ ! $1 == "activate" ];then
+    ${@:1}
+fi

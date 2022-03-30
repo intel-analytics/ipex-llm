@@ -39,6 +39,8 @@ if [ "${version}" != "default" ]; then
     echo $version > $BIGDL_DIR/python/version.txt
 fi
 
+cp $BIGDL_DIR/python/version.txt $BIGDL_DIR/python/nano/src/
+
 bigdl_version=$(cat $BIGDL_DIR/python/version.txt | head -1)
 echo "The effective version is: ${bigdl_version}"
 
