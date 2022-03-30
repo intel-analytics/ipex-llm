@@ -31,20 +31,20 @@ orca.learn.tf2.estimator
 orca.learn.tf2.tf2_ray_estimator
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Orca Pytorch Estimator with backend of "horovod" or "tf2".
+Orca TF2Estimator with backend of "horovod" or "tf2".
 
-.. automodule:: bigdl.orca.learn.tf2.ray_estimator
+.. autoclass:: bigdl.orca.learn.tf2.ray_estimator.TensorFlow2Estimator
     :members:
     :undoc-members:
     :show-inheritance:
 
 
-orca.learn.tf2.tf2_pyspark_estimator
+orca.learn.tf2.tf2_spark_estimator
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Orca TF2Estimator with backend of "spark".
 
-.. automodule:: bigdl.orca.learn.tf2.pyspark_estimator
+.. autoclass:: bigdl.orca.learn.tf2.pyspark_estimator.SparkTFEstimator
     :members:
     :undoc-members:
     :show-inheritance:
