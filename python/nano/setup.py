@@ -28,7 +28,8 @@ import sys
 exclude_patterns = ["*__pycache__*", "lightning_logs", "recipe", "setup.py"]
 nano_home = os.path.join(os.path.dirname(os.path.abspath(__file__)), "src")
 
-VERSION = open('version.txt', 'r').read().strip()
+BIGDL_PYTHON_HOME = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+VERSION = open(os.path.join(BIGDL_PYTHON_HOME, 'version.txt'), 'r').read().strip()
 
 lib_urls = [
     "https://github.com/yangw1234/jemalloc/releases/download/v5.2.1-binary/libjemalloc.so",
@@ -41,7 +42,7 @@ def get_nano_packages():
     nano_packages = []
     for dirpath, _, _ in os.walk(os.path.join(nano_home, "bigdl")):
         print(dirpath)
-        package = dirpath.split(nano_home + "/")[1].replace('/', '.')
+        package = dirpath.split(nano_home + os.sep)[1].replace(os.sep, '.')
         if any(fnmatch.fnmatchcase(package, pat=pattern)
                 for pattern in exclude_patterns):
             print("excluding", package)
