@@ -90,3 +90,4 @@ def test_fit_function():
                                                   validation_data=val_ds, nprocs=2, backend="ray")
     assert 1 - (history_multiprocess.history['loss'][-1]
                 / history_default.history['loss'][-1]) <= 0.1
+
