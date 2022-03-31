@@ -20,7 +20,7 @@ from torchvision.models.mobilenetv3 import mobilenet_v3_small
 import torch
 from torch.utils.data.dataset import TensorDataset
 from torch.utils.data.dataloader import DataLoader
-
+import os
 
 class TestOpenVINO(TestCase):
     def test_openvino(self):
@@ -48,6 +48,10 @@ class TestOpenVINO(TestCase):
         assert pl_model.forward != pl_model._torch_forward
         pl_model.train()
         assert pl_model.forward == pl_model._torch_forward
+
+        pl_model.export_openvino(x, xml_path='test_export_openvino.xml')
+        assert os.path.exists('test_export_openvino.xml')
+        os.remove('test_export_openvino.xml')
 
     def test_openvino_inputsample_from_trainloader(self):
         trainer = Trainer(max_epochs=1)
