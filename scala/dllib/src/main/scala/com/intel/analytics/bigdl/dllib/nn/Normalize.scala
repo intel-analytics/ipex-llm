@@ -18,7 +18,7 @@ package com.intel.analytics.bigdl.dllib.nn
 import com.intel.analytics.bigdl.dllib.nn.abstractnn.TensorModule
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.dllib.utils.Shape
+import com.intel.analytics.bigdl.dllib.utils.{Log4Error, Shape}
 
 import scala.reflect.ClassTag
 
@@ -35,7 +35,8 @@ import scala.reflect.ClassTag
 @SerialVersionUID(1504221556573977764L)
 class Normalize[T: ClassTag](val p: Double, val eps: Double = 1e-10
   )(implicit ev: TensorNumeric[T]) extends TensorModule[T] {
-  require(p > 0, s"Normalize: $p-norm not supported, norm number must be bigger than zero")
+  Log4Error.invalidInputError(p > 0,
+    s"Normalize: $p-norm not supported, norm number must be bigger than zero")
 
   // buffer
   val norm = Tensor[T]()
@@ -53,7 +54,7 @@ class Normalize[T: ClassTag](val p: Double, val eps: Double = 1e-10
   var cmul: CMul[T] = null
 
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
-    require(input.dim() <= 2 || input.dim() == 4, s"Normalize: only 1d , 2d" +
+    Log4Error.invalidInputError(input.dim() <= 2 || input.dim() == 4, s"Normalize: only 1d , 2d" +
       s"or 4d layer supported, " +
       s"but got input dim ${ input.dim() }")
     inputBuffer = if (input.dim() == 1) input.view(1, input.nElement()) else input
@@ -123,10 +124,10 @@ class Normalize[T: ClassTag](val p: Double, val eps: Double = 1e-10
   }
 
   override def updateGradInput(input: Tensor[T], gradOutput: Tensor[T]): Tensor[T] = {
-    require(input.dim() <= 2 || input.dim() == 4, s"Normalize: only 1d, 2d," +
+    Log4Error.invalidInputError(input.dim() <= 2 || input.dim() == 4, s"Normalize: only 1d, 2d," +
       s"or 4d layer supported, " +
       s"but got input dim ${ input.dim() }")
-    require(gradOutput.dim() <= 2 || gradOutput.dim() == 4,
+    Log4Error.invalidInputError(gradOutput.dim() <= 2 || gradOutput.dim() == 4,
       s"Normalize: only 1d or 4d layer supported, " +
         s"but got gradOutput dim ${ gradOutput.dim() }")
 

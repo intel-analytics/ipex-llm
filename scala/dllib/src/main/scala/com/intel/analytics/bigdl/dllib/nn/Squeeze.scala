@@ -18,9 +18,9 @@ package com.intel.analytics.bigdl.dllib.nn
 import com.intel.analytics.bigdl.dllib.nn.abstractnn.{AbstractModule, TensorModule}
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.{NumericWildcard, TensorNumeric}
-import com.intel.analytics.bigdl.dllib.utils.Shape
-import scala.collection.mutable.ArrayBuffer
+import com.intel.analytics.bigdl.dllib.utils.{Log4Error, Shape}
 
+import scala.collection.mutable.ArrayBuffer
 import scala.reflect.ClassTag
 
 /**
@@ -84,7 +84,7 @@ class Squeeze[T: ClassTag](
     if (gradInput.getType() != gradOutput.getType()) {
       gradInput = gradOutput.emptyInstance()
     }
-    require(input.nElement() == gradOutput.nElement(),
+    Log4Error.invalidInputError(input.nElement() == gradOutput.nElement(),
       "input and gradoutput shoule be of the same size" +
         s"input size ${input.nElement()} gradoutput size ${gradOutput.nElement()}")
     gradInput.asInstanceOf[Tensor[NumericWildcard]]

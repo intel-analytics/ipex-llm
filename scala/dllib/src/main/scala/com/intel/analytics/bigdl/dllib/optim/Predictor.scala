@@ -63,7 +63,8 @@ object Predictor {
       localModel
     } else {
       val ol = localModel(outputLayer)
-      require(ol.isDefined, s"cannot find layer that map name $outputLayer")
+      Log4Error.invalidOperationError(ol.isDefined,
+        s"cannot find layer that map name $outputLayer")
       ol.get
     }
     localToBatch(samples.toIterator).flatMap(batch => {
@@ -81,7 +82,7 @@ object Predictor {
       Array(result.squeeze)
     } else {
       val size = result.size(1)
-      require(batchSize == size,
+      Log4Error.invalidInputError(batchSize == size,
         s"The batchSize is required to be $size, while actual is $batchSize")
       result.split(1)
     }
@@ -101,7 +102,7 @@ object Predictor {
       (1 to result.length()).foreach(key => {
         val split = splitBatch(result(key), shareBuffer, batchSize)
         val size = split.length
-        require(batchSize == size,
+        Log4Error.invalidInputError(batchSize == size,
           s"The batchSize is required to be $size, while actual is $batchSize")
         var i = 0
         while (i < batchSize) {
@@ -154,8 +155,9 @@ object Predictor {
     featurePaddingParam: Option[PaddingParam[T]])(implicit ev: TensorNumeric[T]): RDD[Activity] = {
     val partitionNum = dataSet.partitions.length
     val totalBatch = if (batchSize > 0) {
-      require(batchSize % partitionNum == 0, s"Predictor.predict: total batch size $batchSize " +
-        s"should be divided by partitionNum ${partitionNum}")
+      Log4Error.invalidInputError(batchSize % partitionNum == 0,
+        s"Predictor.predict: total batch size $batchSize should be" +
+          s" divided by partitionNum ${partitionNum}")
       batchSize
     } else {
       batchPerPartition * partitionNum
@@ -187,7 +189,7 @@ object Predictor {
     result.mapPartitions { partition =>
       partition.map(output => {
         val _output = output.toTensor[T]
-        require(_output.dim() == 1, s"Predictor.predictClass:" +
+        Log4Error.invalidInputError(_output.dim() == 1, s"Predictor.predictClass:" +
           s"Only support one sample has one label, but got ${_output.dim()} label")
         ev.toType[Int](_output.max(1)._2.valueAt(1))
       })

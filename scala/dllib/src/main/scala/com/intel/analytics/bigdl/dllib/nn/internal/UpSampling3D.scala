@@ -19,7 +19,7 @@ package com.intel.analytics.bigdl.dllib.nn.internal
 import com.intel.analytics.bigdl.dllib.nn.abstractnn.AbstractModule
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.dllib.utils.Shape
+import com.intel.analytics.bigdl.dllib.utils.{Log4Error, Shape}
 
 import scala.reflect.ClassTag
 
@@ -43,9 +43,9 @@ class UpSampling3D[T: ClassTag](
    val inputShape: Shape = null)(implicit ev: TensorNumeric[T])
   extends KerasLayer[Tensor[T], Tensor[T], T](KerasLayer.addBatch(inputShape)) {
 
-  require(dimOrdering.toLowerCase() == "channel_first",
+  Log4Error.invalidInputError(dimOrdering.toLowerCase() == "channel_first",
     s"UpSampling3D currently only supports format CHANNEL_FIRST, but got format $dimOrdering")
-  require(size.length == 3,
+  Log4Error.invalidInputError(size.length == 3,
     s"UpSampling3D: upsampling sizes should be of length 3, but got ${size.length}")
 
   override def doBuild(inputShape: Shape): AbstractModule[Tensor[T], Tensor[T], T] = {

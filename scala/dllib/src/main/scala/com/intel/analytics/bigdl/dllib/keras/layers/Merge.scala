@@ -22,7 +22,7 @@ import com.intel.analytics.bigdl.dllib.nn.internal.KerasLayer
 import com.intel.analytics.bigdl.dllib.nn.{CAddTable, CAveTable, CDivTable, CMaxTable, CMinTable, CMulTable, CSubTable, CosineDistance, DotProduct, JoinTable, ParallelTable, Sequential => TSequential}
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.dllib.utils.{MultiShape, Shape}
+import com.intel.analytics.bigdl.dllib.utils.{Log4Error, MultiShape, Shape}
 import com.intel.analytics.bigdl.dllib.keras.Net
 import com.intel.analytics.bigdl.dllib.keras.layers.utils.{KerasLayerRef, KerasUtils}
 
@@ -76,13 +76,15 @@ class Merge[T: ClassTag](
   private val mergeMode = mode.toLowerCase()
   private var axis = concatAxis
 
-  require(mergeMode == "sum" || mergeMode == "mul" || mergeMode == "concat" || mergeMode == "ave"
+  Log4Error.invalidInputError(mergeMode == "sum" || mergeMode == "mul"
+    || mergeMode == "concat" || mergeMode == "ave"
     || mergeMode == "cos" || mergeMode == "dot" || mergeMode == "max" || mergeMode == "sub"
     || mergeMode == "min" || mergeMode == "div", s"Invalid merge mode: $mergeMode")
   if (layers != null) {
-    require(layers.length >= 2, s"Merge must take at least two input layers " +
-      s"but found ${layers.length}")
-    layers.foreach(layer => require(layer.isInstanceOf[KerasLayer[Activity, Activity, T]],
+    Log4Error.invalidInputError(layers.length >= 2, s"Merge must take at least two input layers "
+      + s"but found ${layers.length}")
+    layers.foreach(layer =>
+      Log4Error.invalidInputError(layer.isInstanceOf[KerasLayer[Activity, Activity, T]],
       "Each input layer for Merge should be a Keras-Style layer"))
     KerasLayerRef(this).excludeInvalidLayers(layers)
   }
@@ -90,17 +92,20 @@ class Merge[T: ClassTag](
   private def computeOutputShapeForConcat(input: List[Shape]): Shape = {
     val input1 = input.head.toSingle().toArray
     val output = input1.clone()
-    require(Math.abs(concatAxis) < output.length, s"Invalid concat axis $concatAxis")
+    Log4Error.invalidInputError(Math.abs(concatAxis) < output.length,
+      s"Invalid concat axis $concatAxis")
     axis = if (concatAxis < 0) concatAxis + output.length else concatAxis
     var i = 1
     while (i < input.length) {
       val input_i = input(i).toSingle().toArray
       var j = 0
       while (j < input_i.length) {
-        if (j != axis && (input_i(j) != -1 || output(j) != -1)) require(input_i(j)==output(j),
-          s"Incompatible input dimension for merge " +
-          s"mode concat: (${output.deep.mkString(", ")}), " +
-          s"(${input_i.deep.mkString(", ")})")
+        if (j != axis && (input_i(j) != -1 || output(j) != -1)) {
+          Log4Error.invalidInputError(input_i(j)==output(j),
+            s"Incompatible input dimension for merge " +
+              s"mode concat: (${output.deep.mkString(", ")}), " +
+              s"(${input_i.deep.mkString(", ")})")
+        }
         j += 1
       }
       if (output(axis) != -1) {
@@ -116,7 +121,8 @@ class Merge[T: ClassTag](
     var i = 1
     while (i < input.length) {
       val input_i = input(i).toSingle().toArray
-      require(input_i.sameElements(input1), s"Incompatible input dimension for " +
+      Log4Error.invalidInputError(input_i.sameElements(input1),
+        s"Incompatible input dimension for " +
         s"merge mode $mergeMode: (${input1.deep.mkString(", ")}), " +
         s"(${input_i.deep.mkString(", ")})")
       i += 1
@@ -132,9 +138,11 @@ class Merge[T: ClassTag](
     else {
       checkSameInputShape(input)
       if (mergeMode == "dot" || mergeMode == "cos") {
-        require(input.head.toSingle().length <=2, s"For merge mode $mergeMode, 3D input " +
+        Log4Error.invalidInputError(input.head.toSingle().length <=2,
+          s"For merge mode $mergeMode, 3D input " +
           s"or above is currently not supported, got input dim ${input.head.toSingle().length}")
-        require(input.length == 2, s"Merge mode $mergeMode takes exactly two layers, " +
+        Log4Error.invalidInputError(input.length == 2,
+          s"Merge mode $mergeMode takes exactly two layers, " +
           s"but got ${input.length}")
         if (mergeMode == "dot") Shape(-1, 1) else Shape(-1, 1, 1)
       }
@@ -192,7 +200,8 @@ object Merge {
     layers: Array[AbstractModule[Activity, Activity, T]]): Shape = {
     val batchInputShape = KerasUtils.addBatch(inputShape)
     val actualInputShape = if (layers != null) {
-      layers.foreach(layer => require(layer.isInstanceOf[KerasLayer[Activity, Activity, T]],
+      layers.foreach(layer =>
+        Log4Error.invalidInputError(layer.isInstanceOf[KerasLayer[Activity, Activity, T]],
         "Each input layer for Merge should be a Keras-Style layer"))
       MultiShape(layers.map { layer =>
         if (layer.asInstanceOf[KerasLayer[Activity, Activity, T]]
@@ -204,9 +213,9 @@ object Merge {
       }.toList)
     } else null
     if (batchInputShape != null) {
-      require(batchInputShape.isInstanceOf[MultiShape],
+      Log4Error.invalidInputError(batchInputShape.isInstanceOf[MultiShape],
         "Merge requires inputShape to be MultiShape")
-      require(batchInputShape.toMulti().equals(actualInputShape.toMulti()),
+      Log4Error.invalidInputError(batchInputShape.toMulti().equals(actualInputShape.toMulti()),
         "Actual layer input shapes are not the same as expected layer input shapes")
     }
     actualInputShape

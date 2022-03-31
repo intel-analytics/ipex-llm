@@ -21,7 +21,7 @@ import com.intel.analytics.bigdl.dllib.nn.{InitializationMethod, SpatialFullConv
 import com.intel.analytics.bigdl.dllib.optim.Regularizer
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.dllib.utils.Shape
+import com.intel.analytics.bigdl.dllib.utils.{Log4Error, Shape}
 
 import scala.reflect.ClassTag
 
@@ -73,9 +73,10 @@ class Deconvolution2D[T: ClassTag](
    val inputShape: Shape = null)(implicit ev: TensorNumeric[T])
   extends KerasLayer[Tensor[T], Tensor[T], T](KerasLayer.addBatch(inputShape)) {
 
-  require(dimOrdering == DataFormat.NCHW, s"Deconvolution2D currently only supports " +
+  Log4Error.invalidInputError(dimOrdering == DataFormat.NCHW,
+    s"Deconvolution2D currently only supports " +
     s"format NCHW, but got format $dimOrdering")
-  require(subsample.length == 2,
+  Log4Error.invalidInputError(subsample.length == 2,
     s"For Deconvolution2D, subsample should be of length 2 but got length ${subsample.length}")
 
   override def doBuild(inputShape: Shape): AbstractModule[Tensor[T], Tensor[T], T] = {

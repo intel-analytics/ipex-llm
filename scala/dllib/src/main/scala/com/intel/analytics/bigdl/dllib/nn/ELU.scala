@@ -18,6 +18,7 @@ package com.intel.analytics.bigdl.dllib.nn
 import com.intel.analytics.bigdl.dllib.nn.abstractnn.{IdentityOutputShape, TensorModule}
 import com.intel.analytics.bigdl.dllib.tensor.{DenseTensorApply, Tensor, TensorFunc6}
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.dllib.utils.Log4Error
 
 import scala.reflect.ClassTag
 
@@ -61,7 +62,7 @@ class ELU[T: ClassTag](
   }
 
   override def updateGradInput(input: Tensor[T], gradOutput: Tensor[T]): Tensor[T] = {
-    require(input.isSameSizeAs(gradOutput),
+    Log4Error.invalidInputError(input.isSameSizeAs(gradOutput),
       "input should have the same size with gradOutput" +
         s"input (${input.dim()}) gradOutput (${gradOutput.dim()}")
     if (inplace) {

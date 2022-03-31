@@ -17,7 +17,7 @@ package com.intel.analytics.bigdl.dllib.nn.ops
 
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.dllib.utils.HashFunc
+import com.intel.analytics.bigdl.dllib.utils.{HashFunc, Log4Error}
 
 import scala.collection.mutable.ArrayBuffer
 import scala.reflect.ClassTag
@@ -60,13 +60,13 @@ class CategoricalColVocaList[T: ClassTag](
   private val vocaLen = vocaList.length
   private val vocaMap = vocaList.zipWithIndex.toMap
 
-  require(numOovBuckets >= 0,
+  Log4Error.invalidInputError(numOovBuckets >= 0,
     "numOovBuckets is a negative integer")
-  require(!(isSetDefault && numOovBuckets != 0),
+  Log4Error.invalidInputError(!(isSetDefault && numOovBuckets != 0),
     "defaultValue and numOovBuckets are both specified")
-  require(vocaLen > 0,
+  Log4Error.invalidInputError(vocaLen > 0,
     "the vocabulary list is empty")
-  require(vocaLen == vocaMap.size,
+  Log4Error.invalidInputError(vocaLen == vocaMap.size,
     "the vocabulary list contains duplicate keys")
 
   output = Tensor[Int]()

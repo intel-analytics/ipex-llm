@@ -16,17 +16,22 @@
 
 package com.intel.analytics.bigdl.dllib.tensor
 
+import com.intel.analytics.bigdl.dllib.utils.Log4Error
+
 object DenseTensorDimApply {
   private[tensor] def dimApply2[@specialized(Float, Double) T](tensor1: DenseTensor[T],
     tensor2: Tensor[T], _dim: Int, func: (Array[T], Int,
       Int, Int, Array[T], Int, Int, Int) => Unit): Unit = {
 
-    require(_dim >= 0 && _dim < tensor1.nDimension, "invalid dimension")
-    require(tensor1.nDimension == tensor2.nDimension(), "inconsistent tensor sizes")
+    Log4Error.unKnowExceptionError(_dim >= 0 && _dim < tensor1.nDimension,
+      "invalid dimension")
+    Log4Error.unKnowExceptionError(tensor1.nDimension == tensor2.nDimension(),
+      "inconsistent tensor sizes")
     var i = 0
     while (i < tensor1.nDimension) {
       if (i != _dim) {
-        require(tensor1.size(i + 1) == tensor2.size(i + 1), "inconsistent tensor sizes")
+        Log4Error.unKnowExceptionError(tensor1.size(i + 1) == tensor2.size(i + 1),
+          "inconsistent tensor sizes")
       }
       i += 1
     }
@@ -88,14 +93,18 @@ object DenseTensorDimApply {
       Array[T], Int, Int, Int,
         Array[T], Int, Int, Int,
         Array[T], Int, Int, Int) => Unit): Unit = {
-    require(dim > 0 && dim <= tensor1.nDimension, "invalid dimension")
-    require(tensor1.nDimension == tensor2.nDimension, "inconsistent tensor sizes")
-    require(tensor2.nDimension == tensor3.nDimension, "inconsistent tensor sizes")
+    Log4Error.unKnowExceptionError(dim > 0 && dim <= tensor1.nDimension, "invalid dimension")
+    Log4Error.unKnowExceptionError(tensor1.nDimension == tensor2.nDimension,
+      "inconsistent tensor sizes")
+    Log4Error.unKnowExceptionError(tensor2.nDimension == tensor3.nDimension,
+      "inconsistent tensor sizes")
     var d = 1
     while (d <= tensor1.nDimension) {
       if (d != dim) {
-        require(tensor1.size(d) == tensor2.size(d), "inconsistent tensor sizes")
-        require(tensor2.size(d) == tensor3.size(d), "inconsistent tensor sizes")
+        Log4Error.unKnowExceptionError(tensor1.size(d) == tensor2.size(d),
+          "inconsistent tensor sizes")
+        Log4Error.unKnowExceptionError(tensor2.size(d) == tensor3.size(d),
+          "inconsistent tensor sizes")
       }
       d += 1
     }

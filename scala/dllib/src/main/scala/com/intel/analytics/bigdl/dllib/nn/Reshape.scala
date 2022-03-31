@@ -22,7 +22,7 @@ import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.dllib.utils.serializer._
 import com.intel.analytics.bigdl.dllib.utils.serializer.converters.DataConverter
 import com.intel.analytics.bigdl.serialization.Bigdl.{AttrValue, BigDLModule}
-import com.intel.analytics.bigdl.dllib.utils.Shape
+import com.intel.analytics.bigdl.dllib.utils.{Log4Error, Shape}
 
 import scala.reflect.ClassTag
 import scala.reflect.runtime.universe
@@ -61,7 +61,8 @@ class Reshape[T: ClassTag](
 
     if ((batchMode.nonEmpty && !batchMode.get) ||
           (input.nElement() == nElement && batchMode.isEmpty && input.size(1) != 1)) {
-      require(input.nElement() == nElement, s"element number must match Reshape size. " +
+      Log4Error.unKnowExceptionError(input.nElement() == nElement,
+        s"element number must match Reshape size. " +
         s"But In ${this.getName()} : element number is: ${ input.nElement() } , " +
         s"reshape size is: ${nElement}")
       if (input.isContiguous()) output =
@@ -72,7 +73,7 @@ class Reshape[T: ClassTag](
       }
     }
     else {
-      require(input.nElement() == nElement * input.size(1),
+      Log4Error.invalidInputError(input.nElement() == nElement * input.size(1),
         s"element number must match Reshape size. " +
           s"But In ${this.getName()} : element number is: ${ input.nElement() } , " +
           s"reshape size is: ${ nElement * input.size(1) }")

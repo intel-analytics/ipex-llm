@@ -18,7 +18,7 @@ package com.intel.analytics.bigdl.dllib.nn
 import com.intel.analytics.bigdl.dllib.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.dllib.tensor._
-import com.intel.analytics.bigdl.dllib.utils.{T, Table}
+import com.intel.analytics.bigdl.dllib.utils.{Log4Error, T, Table}
 
 import scala.collection.mutable.ArrayBuffer
 import scala.reflect.ClassTag
@@ -560,7 +560,8 @@ class SequenceBeamSearch[T: ClassTag](
   override def updateOutput(input: Table): Activity = {
     val encoderOutputs = input[Tensor[T]](1)
     val encoderDecoderAttentionBias = input[Tensor[T]](2)
-    require(symbolToLogits != null, "symbolToLogits function is null, please set this function")
+    Log4Error.invalidInputError(symbolToLogits != null,
+      "symbolToLogits function is null, please set this function")
     var state = createInitialState(encoderOutputs, encoderDecoderAttentionBias)
     while (continueSearch(state)) {
       state = searchStep(state)

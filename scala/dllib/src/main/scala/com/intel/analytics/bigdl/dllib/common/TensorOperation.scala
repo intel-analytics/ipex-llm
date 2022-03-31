@@ -18,6 +18,7 @@ package com.intel.analytics.bigdl.dllib.common
 
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.dllib.utils.Log4Error
 
 import scala.reflect.ClassTag
 
@@ -33,7 +34,7 @@ object TensorOperation {
     val size = new Array[Int](ndim)
     var i = ndim - 1
     while (i >= delta) {
-      require(longTensor.size(i + 1) == shortTensor.size(i + 1 - delta) ||
+      Log4Error.unKnowExceptionError(longTensor.size(i + 1) == shortTensor.size(i + 1 - delta) ||
         longTensor.size(i + 1) == 1 ||
         shortTensor.size(i + 1 - delta) == 1, errorMsg)
       size(i) = math.max(longTensor.size(i + 1), shortTensor.size(i + 1 - delta))

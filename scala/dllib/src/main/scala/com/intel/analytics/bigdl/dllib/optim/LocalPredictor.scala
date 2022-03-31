@@ -25,8 +25,7 @@ import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.dllib.feature.transform.vision.image.{ImageFeature, ImageFrame, LocalImageFrame}
 import com.intel.analytics.bigdl.dllib.utils.Util._
 import com.intel.analytics.bigdl.dllib.utils.intermediate.ConversionUtils
-import com.intel.analytics.bigdl.dllib.utils.Util
-import com.intel.analytics.bigdl.dllib.utils.{Engine, MklBlas, MklDnn}
+import com.intel.analytics.bigdl.dllib.utils._
 import org.apache.logging.log4j.LogManager
 
 import scala.reflect.ClassTag
@@ -93,7 +92,7 @@ class LocalPredictor[T: ClassTag] private[optim](model: Module[T],
     val result = predict(dataSet)
     result.map(output => {
       val _output = output.toTensor[T]
-      require(_output.dim() == 1, s"Predictor.predictClass:" +
+      Log4Error.invalidInputError(_output.dim() == 1, s"Predictor.predictClass:" +
         s"Only support one sample has one label, but got ${_output.dim()} label")
       ev.toType[Int](_output.max(1)._2.valueAt(1))
     })
@@ -103,7 +102,7 @@ class LocalPredictor[T: ClassTag] private[optim](model: Module[T],
     val result = predict(dataSet)
     result.map(output => {
       val _output = output.toTensor[T]
-      require(_output.dim() == 1, s"Predictor.predictClass:" +
+      Log4Error.invalidInputError(_output.dim() == 1, s"Predictor.predictClass:" +
         s"Only support one sample has one lable, but got ${_output.dim()} label")
       ev.toType[Int](_output.max(1)._2.valueAt(1))
     })

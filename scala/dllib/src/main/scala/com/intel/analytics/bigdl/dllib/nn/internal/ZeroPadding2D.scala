@@ -21,7 +21,7 @@ import com.intel.analytics.bigdl.dllib.nn.{Sequential => TSequential}
 import com.intel.analytics.bigdl.dllib.nn.abstractnn.{AbstractModule, DataFormat}
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.dllib.utils.Shape
+import com.intel.analytics.bigdl.dllib.utils.{Log4Error, Shape}
 
 import scala.reflect.ClassTag
 
@@ -46,13 +46,13 @@ class ZeroPadding2D[T: ClassTag](
    val inputShape: Shape = null)(implicit ev: TensorNumeric[T])
   extends KerasLayer[Tensor[T], Tensor[T], T](KerasLayer.addBatch(inputShape)) {
 
-  require(padding.length == 4,
+  Log4Error.invalidInputError(padding.length == 4,
     s"For ZeroPadding2D, padding values should be of length 4 " +
       s"(top_pad, bottom_pad, left_pad, right_pad), but got length ${padding.length}")
 
   override def computeOutputShape(inputShape: Shape): Shape = {
     val input = inputShape.toSingle().toArray
-    require(input.length == 4,
+    Log4Error.invalidInputError(input.length == 4,
       s"ZeroPadding2D requires 4D input, but got input dim ${input.length}")
     dimOrdering match {
       case DataFormat.NCHW =>

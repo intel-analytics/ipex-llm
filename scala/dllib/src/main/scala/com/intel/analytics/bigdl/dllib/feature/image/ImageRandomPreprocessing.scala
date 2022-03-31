@@ -16,6 +16,7 @@
 package com.intel.analytics.bigdl.dllib.feature.image
 
 import com.intel.analytics.bigdl.dllib.feature.transform.vision.image.{ImageFeature, augmentation}
+import com.intel.analytics.bigdl.dllib.utils.Log4Error
 
 /**
  * Randomly apply the preprocessing to some of the input ImageFeatures, with probability specified.
@@ -29,7 +30,8 @@ class ImageRandomPreprocessing(
     prob: Double
   ) extends ImageProcessing  {
 
-  require(prob <= 1.0 && prob >= 0.0, s"prob should be in [0.0, 1.0], now it's $prob")
+  Log4Error.invalidInputError(prob <= 1.0 && prob >= 0.0,
+    s"prob should be in [0.0, 1.0], now it's $prob")
 
   private val internalRandomTransformer = new augmentation.RandomTransformer(preprocessing, prob)
   override def apply(prev: Iterator[ImageFeature]): Iterator[ImageFeature] = {

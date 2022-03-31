@@ -17,6 +17,8 @@
 package com.intel.analytics.bigdl.dllib.feature.dataset.segmentation
 
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
+import com.intel.analytics.bigdl.dllib.utils.Log4Error
+
 import scala.collection.mutable.ArrayBuffer
 
 
@@ -42,7 +44,7 @@ abstract class SegmentationMasks extends Serializable {
 class PolyMasks(val poly: Array[Array[Float]], val height: Int, val width: Int) extends
   SegmentationMasks {
   override def toRLE: RLEMasks = {
-    require(height > 0 && width > 0, "the height and width must > 0 for toRLE")
+    Log4Error.invalidInputError(height > 0 && width > 0, "the height and width must > 0 for toRLE")
     MaskUtils.mergeRLEs(MaskUtils.poly2RLE(this, height, width), false)
   }
 
@@ -361,8 +363,8 @@ object MaskUtils {
     cnts.appendAll(R(0).counts)
     for(i <- 1 until n) {
       val B = R(i)
-      require(B.height == h && B.width == w, "The height and width of the merged RLEs must" +
-        " be the same")
+      Log4Error.invalidInputError(B.height == h && B.width == w,
+        "The height and width of the merged RLEs must be the same")
       val acnt = cnts.toArray
       val am = cnts.length
       cnts.clear()
@@ -424,7 +426,8 @@ object MaskUtils {
   def rleIOU(detection: RLEMasks, groundTruth: RLEMasks, isCrowd: Boolean): Float = {
     val gtBbox = groundTruth.bbox
     val dtBbox = detection.bbox
-    require((detection.width, detection.height) == (groundTruth.width, groundTruth.height),
+    Log4Error.invalidInputError((detection.width, detection.height) ==
+      (groundTruth.width, groundTruth.height),
       "The sizes of RLEs must be the same to compute IOU")
     val iou = bboxIOU(gtBbox, dtBbox, isCrowd)
 

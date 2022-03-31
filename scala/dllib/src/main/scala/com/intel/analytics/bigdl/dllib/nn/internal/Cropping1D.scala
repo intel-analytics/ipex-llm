@@ -20,7 +20,7 @@ import com.intel.analytics.bigdl.dllib.nn.SpatialZeroPadding
 import com.intel.analytics.bigdl.dllib.nn.abstractnn.AbstractModule
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.dllib.utils.Shape
+import com.intel.analytics.bigdl.dllib.utils.{Log4Error, Shape}
 
 import scala.reflect.ClassTag
 
@@ -40,12 +40,12 @@ class Cropping1D[T: ClassTag](
    val inputShape: Shape = null)(implicit ev: TensorNumeric[T])
   extends KerasLayer[Tensor[T], Tensor[T], T](KerasLayer.addBatch(inputShape)) {
 
-  require(cropping.length == 2,
+  Log4Error.invalidInputError(cropping.length == 2,
     s"For Cropping1D, cropping values should be of length 2 but got length ${cropping.length}")
 
   override def computeOutputShape(inputShape: Shape): Shape = {
     val input = inputShape.toSingle().toArray
-    require(input.length == 3,
+    Log4Error.invalidInputError(input.length == 3,
       s"Cropping1D requires 3D input, but got input dim ${input.length}")
     Shape(input(0), input(1)-cropping(0)-cropping(1), input(2))
   }

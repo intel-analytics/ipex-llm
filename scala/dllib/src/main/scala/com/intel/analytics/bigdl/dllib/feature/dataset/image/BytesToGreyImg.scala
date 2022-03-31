@@ -17,6 +17,7 @@
 package com.intel.analytics.bigdl.dllib.feature.dataset.image
 
 import com.intel.analytics.bigdl.dllib.feature.dataset.{ByteRecord, Transformer}
+import com.intel.analytics.bigdl.dllib.utils.Log4Error
 
 import scala.collection.Iterator
 
@@ -36,7 +37,8 @@ class BytesToGreyImg(row: Int, col: Int)
 
   override def apply(prev: Iterator[ByteRecord]): Iterator[LabeledGreyImage] = {
     prev.map(rawData => {
-      require(row * col == rawData.data.length)
+      Log4Error.invalidInputError(row * col == rawData.data.length, s"row*col($row, $col) doesn't" +
+        s" match with the image data size ${rawData.data.length}")
       buffer.setLabel(rawData.label).copy(rawData.data, 255.0f)
     })
   }

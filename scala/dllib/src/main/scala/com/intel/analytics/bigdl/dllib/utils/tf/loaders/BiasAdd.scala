@@ -22,6 +22,7 @@ import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
 import org.tensorflow.framework.NodeDef
 import com.intel.analytics.bigdl.dllib.nn.tf.{BiasAdd => BiasAddOp}
 import Utils._
+import com.intel.analytics.bigdl.dllib.utils.Log4Error
 import com.intel.analytics.bigdl.dllib.utils.tf.Context
 
 import scala.reflect.ClassTag
@@ -31,7 +32,8 @@ class BiasAdd extends TensorflowOpsLoader {
     , context: Context[T])(implicit ev: TensorNumeric[T]): Module[T] = {
 
     val attr = nodeDef.getAttrMap
-    require(getString(attr, "data_format") == "NHWC", "only support NHWC format")
+    Log4Error.invalidInputError(getString(attr, "data_format") == "NHWC",
+      "only support NHWC format")
     BiasAddOp[T]()
   }
 }

@@ -25,7 +25,7 @@ import com.intel.analytics.bigdl.dllib.utils.python.api.EvaluatedResult
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.dllib.feature.transform.vision.image.{ImageFeature, ImageFeatureToMiniBatch}
-import com.intel.analytics.bigdl.dllib.utils.Table
+import com.intel.analytics.bigdl.dllib.utils.{Log4Error, Table}
 import com.intel.analytics.bigdl.dllib.common.PythonZoo
 import com.intel.analytics.bigdl.dllib.feature.FeatureSet
 import com.intel.analytics.bigdl.dllib.estimator.Estimator
@@ -49,7 +49,7 @@ class PythonEstimator[T: ClassTag](implicit ev: TensorNumeric[T]) extends Python
   def createEstimator(model: Module[T],
                       optimMethods: JMap[String, OptimMethod[T]],
                       modelDir: String): Estimator[T] = {
-    require(optimMethods != null, "optimMethods cannot be null")
+    Log4Error.invalidOperationError(optimMethods != null, "optimMethods cannot be null")
     Estimator(model, optimMethods.asScala.toMap, modelDir)
   }
 
@@ -167,7 +167,7 @@ class PythonEstimator[T: ClassTag](implicit ev: TensorNumeric[T]) extends Python
 
   def estimatorGetScalarFromSummary(estimator: Estimator[T], tag: String,
                                target: String): JList[JList[Any]] = {
-    require(target == "Train" || target == "Validation",
+    Log4Error.invalidInputError(target == "Train" || target == "Validation",
       "Invalid target, must be Train or Validation.")
     val scalarArray = if (target == "Train") estimator.getTrainSummary(tag)
     else estimator.getValidationSummary(tag)

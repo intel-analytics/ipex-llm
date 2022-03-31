@@ -18,7 +18,7 @@ package com.intel.analytics.bigdl.dllib.nn
 import com.intel.analytics.bigdl.dllib.nn.Graph.ModuleNode
 import com.intel.analytics.bigdl.dllib.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.dllib.utils.Table
+import com.intel.analytics.bigdl.dllib.utils.{Log4Error, Table}
 import com.intel.analytics.bigdl.dllib.utils.serializer.{ContainerSerializable, DeserializeContext, ModuleData, SerializeContext}
 import com.intel.analytics.bigdl.serialization.Bigdl.BigDLModule
 
@@ -55,7 +55,7 @@ class MapTable[T: ClassTag](
   }
 
   override def add(module: AbstractModule[_ <: Activity, _ <: Activity, T]): this.type = {
-    require(module != null, "Single module required")
+    Log4Error.invalidInputError(module != null, "Single module required")
     this.module = module
     if (modules.nonEmpty) {
       modules.update(0, module.asInstanceOf[AbstractModule[Activity, Activity, T]])
@@ -69,7 +69,7 @@ class MapTable[T: ClassTag](
   }
 
   override def updateOutput(input: Table): Table = {
-    require(module != null, "Single module required")
+    Log4Error.invalidInputError(module != null, "Single module required")
     extend(input.length())
     var i = 0
     while (i < input.length()) {
@@ -80,7 +80,7 @@ class MapTable[T: ClassTag](
   }
 
   override def updateGradInput(input: Table, gradOutput: Table): Table = {
-    require(module != null, "Single module required")
+    Log4Error.invalidInputError(module != null, "Single module required")
     extend(input.length())
     var i = 0
     while (i < input.length()) {
@@ -91,7 +91,7 @@ class MapTable[T: ClassTag](
   }
 
   override def accGradParameters(input: Table, gradOutput: Table): Unit = {
-    require(module != null, "Single module required")
+    Log4Error.invalidInputError(module != null, "Single module required")
     extend(input.length())
     var i = 0
     while (i < input.length()) {
@@ -136,7 +136,7 @@ object MapTable extends ContainerSerializable {
   override def doLoadModule[T: ClassTag](context: DeserializeContext)
     (implicit ev: TensorNumeric[T]) : AbstractModule[Activity, Activity, T] = {
     val mapTable = super.doLoadModule(context).asInstanceOf[MapTable[T]]
-    require(mapTable.modules.size >=1, "sub module should not be empty")
+    Log4Error.invalidInputError(mapTable.modules.size >=1, "sub module should not be empty")
     mapTable.add(mapTable.modules(0))
     mapTable
   }
@@ -146,7 +146,7 @@ object MapTable extends ContainerSerializable {
                                            (implicit ev: TensorNumeric[T]) : Unit = {
     val mapTable = context.moduleData.module.asInstanceOf[MapTable[T]]
     val subModules = mapTable.modules
-    require(subModules.size >=1, "sub module should not be empty")
+    Log4Error.invalidInputError(subModules.size >=1, "sub module should not be empty")
     // `modules` are created during forward() by 'n' times of the same module depends on input size,
     // store the first one to save the storage cost just in case large input size
     val singleModule = subModules(0)

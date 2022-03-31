@@ -20,7 +20,7 @@ import com.intel.analytics.bigdl.dllib.nn.abstractnn.AbstractModule
 import com.intel.analytics.bigdl.dllib.nn.internal.KerasLayer
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.dllib.utils.Shape
+import com.intel.analytics.bigdl.dllib.utils.{Log4Error, Shape}
 import com.intel.analytics.bigdl.dllib.keras.Net
 import com.intel.analytics.bigdl.dllib.keras.layers.utils.KerasUtils
 
@@ -55,13 +55,14 @@ class Select[T: ClassTag](
 
   private def getPositiveDimAndIndex(inputShape: Shape): (Int, Int) = {
     val input = inputShape.toSingle().toArray
-    require(input.length >= 2, s"Select requires >= 2D input, but got input dim ${input.length}")
+    Log4Error.invalidInputError(input.length >= 2,
+      s"Select requires >= 2D input, but got input dim ${input.length}")
     val positiveDim = if (dim < 0) dim + input.length else dim
-    require(positiveDim != 0, "Cannot select the batch dimension")
-    require(positiveDim > 0 && positiveDim <= input.length - 1,
+    Log4Error.invalidInputError(positiveDim != 0, "Cannot select the batch dimension")
+    Log4Error.invalidInputError(positiveDim > 0 && positiveDim <= input.length - 1,
       s"Invalid select dim: $dim, dim should be within range (0, ${input.length - 1}]")
     val positiveIndex = if (index < 0) index + input(positiveDim) else index
-    require(positiveIndex >= 0 && positiveIndex <= input(positiveDim) - 1,
+    Log4Error.invalidInputError(positiveIndex >= 0 && positiveIndex <= input(positiveDim) - 1,
       s"Invalid select index for dim $dim: $index, " +
         s"index should be within range [0, ${input(positiveDim) - 1}]")
     (positiveDim, positiveIndex)

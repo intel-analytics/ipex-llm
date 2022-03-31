@@ -17,7 +17,7 @@ package com.intel.analytics.bigdl.dllib.nn.ops
 
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.dllib.utils.Table
+import com.intel.analytics.bigdl.dllib.utils.{Log4Error, Table}
 
 import scala.reflect.ClassTag
 
@@ -43,14 +43,15 @@ class Max[T: ClassTag, D: ClassTag](
     val x = input[Tensor[D]](1)
     val y = input[Tensor[Int]](2)
 
-    require(y.isScalar || (y.nElement() == 1 && y.dim() == 1),
+    Log4Error.invalidInputError(y.isScalar || (y.nElement() == 1 && y.dim() == 1),
       s"reduction indices should be a scalar or one-element tensor")
     val reductionIndices = if (startFromZero) {
       y.value() + 1
     } else {
       y.value()
     }
-    require(reductionIndices <= x.nDimension(), s"reduction indices should smaller than" +
+    Log4Error.invalidInputError(reductionIndices <= x.nDimension(),
+      s"reduction indices should smaller than" +
       s" input's dimension, excepted smaller than ${x.dim()}, but got ${reductionIndices}")
 
     x.max(output, indices, reductionIndices)

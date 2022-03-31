@@ -20,6 +20,7 @@ import com.intel.analytics.bigdl.dllib.nn.NormMode.NormMode
 import com.intel.analytics.bigdl.dllib.nn.abstractnn.TensorCriterion
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.dllib.utils.Log4Error
 
 import scala.reflect.ClassTag
 
@@ -71,8 +72,9 @@ class SoftmaxWithCriterion[@specialized(Float, Double) T: ClassTag](ignoreLabel:
       while (j < innerNum) {
         val curTarget = ev.toType[Int](labelData(i * innerNum + j))
         if (ignoreLabel.isEmpty || ignoreLabel.get != curTarget) {
-          assert(curTarget >= 1 && curTarget <= nClasses,
-            s"curTarget $curTarget is out of range 1 to ${ nClasses } ")
+          Log4Error.invalidOperationError(curTarget >= 1 && curTarget <= nClasses,
+            s"curTarget ${curTarget} is out of range 1 to ${nClasses}",
+            s"Please make sure the label is 1 based and the range should be [1, ${nClasses}]")
           // avoid log(0)
           val prob = ev.max(probData(i * dim + (curTarget - 1) * innerNum + j),
             ev.fromType(Double.MinPositiveValue))

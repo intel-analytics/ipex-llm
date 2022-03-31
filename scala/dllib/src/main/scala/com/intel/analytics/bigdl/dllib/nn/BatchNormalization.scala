@@ -61,7 +61,8 @@ class BatchNormalization[T: ClassTag](
 )(implicit ev: TensorNumeric[T]) extends TensorModule[T] with Initializable
   with MklInt8Convertible {
 
-  require(nOutput > 0, "output feature map number must be greater than zero")
+  Log4Error.invalidInputError(nOutput > 0,
+    "output feature map number must be greater than zero")
 
   private var parallism : Option[Int] = None
 
@@ -131,7 +132,8 @@ class BatchNormalization[T: ClassTag](
 
   @inline
   protected def checkInputDim(input: Tensor[T]): Unit = {
-    require(input.dim() == nDim || (input.dim() == nDim - 1 && train == false),
+    Log4Error.invalidInputError(input.dim() == nDim ||
+      (input.dim() == nDim - 1 && train == false),
       s"only mini-batch supported (${nDim}D tensor), got ${input.dim()}D tensor instead")
   }
 

@@ -19,6 +19,7 @@ package com.intel.analytics.bigdl.dllib.nn
 import com.intel.analytics.bigdl.dllib.nn.abstractnn.TensorModule
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.dllib.utils.Log4Error
 
 import scala.reflect.ClassTag
 
@@ -56,7 +57,7 @@ class Masking[T: ClassTag](maskValue: Double = 0.0)
   }
 
   override def updateGradInput(input: Tensor[T], gradOutput: Tensor[T]): Tensor[T] = {
-    require(input.isSameSizeAs(gradOutput),
+    Log4Error.invalidInputError(input.isSameSizeAs(gradOutput),
       "Input should have the same size as gradOutput" +
         s"input size(${input.size().foreach(x => x)})" +
         s"gradOutput size(${gradOutput.size().foreach(x => x)})")
