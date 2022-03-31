@@ -24,14 +24,15 @@ object Log4Error {
   def invalidInputError(condition: Boolean, errmsg: String, fixmsg: String = null): Unit = {
     if (!condition) {
       outputUserMessage(errmsg, fixmsg)
-      throw new IllegalArgumentException(errmsg)
+      Log4Error.invalidOperationError(false,errmsg)
     }
   }
 
-  def invalidOperationError(condition: Boolean, errmsg: String, fixmsg: String = null): Unit = {
+  def invalidOperationError(condition: Boolean, errmsg: String, fixmsg: String = null,
+                            cause: Throwable = null): Unit = {
     if (!condition) {
       outputUserMessage(errmsg, fixmsg)
-      throw new InvalidOperationException(errmsg)
+      throw new InvalidOperationException(errmsg, cause)
     }
   }
 
@@ -48,18 +49,18 @@ object Log4Error {
   }
 
   def unKnowExceptionError(condition: Boolean, errmsg: String = null,
-    fixmsg: String = null): Unit = {
+    fixmsg: String = null, cause: Throwable = null): Unit = {
     if (!condition) {
       outputUserMessage(errmsg, fixmsg)
-      throw new UnKnownException(errmsg)
+      throw new UnKnownException(errmsg, cause)
     }
   }
 }
 
-class InvalidOperationException(message: String)
-  extends Exception(message) {
+class InvalidOperationException(message: String, cause: Throwable = null)
+  extends Exception(message, cause) {
+
+  def this(message: String) = this(message, null)
 }
 
-class UnKnownException(message: String)
-  extends Exception(message) {
-}
+

@@ -30,7 +30,7 @@ sealed class IROperator[T: ClassTag] extends Serializable {
     tag match {
       case ClassTag.Float => TensorNumeric.NumericFloat.asInstanceOf[TensorNumeric[T]]
       case ClassTag.Double => TensorNumeric.NumericDouble.asInstanceOf[TensorNumeric[T]]
-      case _ => throw new IllegalArgumentException(s"not supported class tag: ${tag}")
+      case _ => Log4Error.invalidOperationError(false,s"not supported class tag: ${tag}")
     }
   }
   def getClassTagNumerics() : (Array[ClassTag[_]], Array[TensorNumeric[_]]) = {

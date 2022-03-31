@@ -152,8 +152,9 @@ object ModuleSerializer extends ModuleSerializable{
         loadModule(context)
     } catch {
       case e: Exception =>
-        throw new RuntimeException(
-          s"Loading module ${context.bigdlModule.getModuleType} exception :", e)
+        Log4Error.unKnowExceptionError(false,
+          s"Loading module ${context.bigdlModule.getModuleType} exception :", cause = e)
+        null
     }
   }
 

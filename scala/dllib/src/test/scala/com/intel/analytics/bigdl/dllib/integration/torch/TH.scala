@@ -22,7 +22,7 @@ import java.nio.file.{Files, Path, Paths}
 import com.intel.analytics.bigdl.dllib.nn.abstractnn.AbstractModule
 import com.intel.analytics.bigdl.dllib.tensor._
 import com.intel.analytics.bigdl.dllib.utils.TorchObject._
-import com.intel.analytics.bigdl.dllib.utils.{File, Table}
+import com.intel.analytics.bigdl.dllib.utils.{File, Log4Error, Table}
 import org.apache.commons.lang.SerializationUtils
 
 import scala.collection.immutable.ListMap
@@ -135,7 +135,8 @@ object TH {
       } catch {
         case illegalArgumentException: IllegalArgumentException =>
           java.io.File.createTempFile(suffix, k, inputsRoot.toFile)
-        case iOException: IOException => throw iOException
+        case iOException: IOException =>
+          throw iOException
       }
 
       val inputsPath = tmp.getAbsolutePath

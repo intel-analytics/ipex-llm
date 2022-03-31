@@ -114,8 +114,10 @@ class PythonTextFeature[T: ClassTag](implicit ev: TensorNumeric[T]) extends Pyth
     truncMode.toLowerCase() match {
       case "pre" => TruncMode.pre
       case "post" => TruncMode.post
-      case _ => throw new IllegalArgumentException(s"Unsupported truncMode $truncMode, " +
-        s"please use pre or post")
+      case _ =>
+        Log4Error.invalidInputError(false, s"Unsupported truncMode $truncMode",
+          s"please use pre or post")
+        null
     }
   }
 

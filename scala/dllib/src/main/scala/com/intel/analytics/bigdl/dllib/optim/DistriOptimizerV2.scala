@@ -826,8 +826,9 @@ class DistriOptimizerV2[T: ClassTag](
     } else if (optimMethods.contains(model.getName())) {
       Map(model.getName() -> (1, parameters.nElement()))
     } else {
-      throw new IllegalArgumentException(s"${model.getName()} doesn't " +
+      Log4Error.invalidOperationError(false, s"${model.getName()} doesn't " +
         s"have corresponding OptimMethod")
+      Map(model.getName() -> (1, parameters.nElement()))
     }
 
     // LarsSSD will check the optimMethods and append LarsProcessor

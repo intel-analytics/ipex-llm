@@ -109,7 +109,7 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
 
   def jTensorsToActivity(input: JList[_ <: Object], isTable: Boolean): Activity = {
     if (input.isEmpty) {
-      throw new IllegalArgumentException("Empty input")
+      Log4Error.invalidOperationError(false,"Empty input")
     }
     if (isTable) {
       toTable(input)
@@ -128,7 +128,7 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     } else if (outputActivity.isInstanceOf[EmptyGradInput]) {
       List[JTensor]().asJava
     } else {
-      throw new UnsupportedOperationException(s"Activity type" +
+      Log4Error.invalidOperationError(false, s"Activity type" +
         s"(${outputActivity.getClass.getName}) not support")
     }
   }
@@ -168,7 +168,7 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
             jTensor.storage.map(x => ev.fromType(x.toDouble)), jTensor.shape)
         }
       case t: String =>
-        throw new IllegalArgumentException(s"Not supported type: ${t}")
+        Log4Error.invalidOperationError(false,s"Not supported type: ${t}")
     }
   }
 
@@ -201,7 +201,7 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
           result
         }
       case _ =>
-        throw new IllegalArgumentException(s"toJTensor: Unsupported tensor type" +
+        Log4Error.invalidOperationError(false,s"toJTensor: Unsupported tensor type" +
           s" ${tensor.getTensorType}")
     }
   }
@@ -1868,7 +1868,7 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
       case "BATCH_SIZE" => NormMode.BATCH_SIZE
       case "NONE" => NormMode.NONE
       case n: String =>
-        throw new IllegalArgumentException(s"Only support 'FULL', " +
+        Log4Error.invalidOperationError(false,s"Only support 'FULL', " +
           s"'VALID', 'BATCH_SIZE' and 'NONE': $n")
     }
     val labelToIgnore = ignoreLabel match {
@@ -1971,7 +1971,7 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     val order = byteOrder match {
       case "little_endian" => ByteOrder.LITTLE_ENDIAN
       case "big_endian" => ByteOrder.BIG_ENDIAN
-      case _ => throw new IllegalArgumentException(s"No support byte order $byteOrder")
+      case _ => Log4Error.invalidOperationError(false,s"No support byte order $byteOrder")
     }
     Module.loadTF[T](path, inputs.asScala, outputs.asScala, order,
       Option(binFile), generatedBackward)
@@ -1985,13 +1985,13 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     val order = byteOrder.toLowerCase match {
       case "little_endian" => ByteOrder.LITTLE_ENDIAN
       case "big_endian" => ByteOrder.BIG_ENDIAN
-      case _ => throw new IllegalArgumentException(s"Unknown byte order $byteOrder")
+      case _ => Log4Error.invalidOperationError(false,s"Unknown byte order $byteOrder")
     }
 
     val format = dataFormat.toLowerCase match {
       case "nhwc" => TensorflowDataFormat.NHWC
       case "nchw" => TensorflowDataFormat.NCHW
-      case _ => throw new IllegalArgumentException(s"Unknown format $dataFormat")
+      case _ => Log4Error.invalidOperationError(false,s"Unknown format $dataFormat")
     }
     val scalaInputs = inputs.asScala.map { elem =>
       val array = elem.asInstanceOf[JList[Any]]
@@ -2715,7 +2715,8 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
       case m: KerasModel[T] =>
         m.getSubModules().asJava
       case kl: KerasLayer[Activity, Activity, T] =>
-        throw new RuntimeException(s"There's no sub modules for ${kl}")
+        Log4Error.invalidOperationError(false, s"There's no sub modules for ${kl}")
+        null
       case _ =>
         module.modules.toList.asJava
     }
@@ -3256,7 +3257,7 @@ object PythonBigDLUtils {
       case "double" =>
         Tensor(jTensor.storage.map(x => ev.fromType(x.toDouble)), jTensor.shape)
       case t: String =>
-        throw new IllegalArgumentException(s"Not supported type: ${t}")
+        Log4Error.invalidOperationError(false,s"Not supported type: ${t}")
     }
   }
 }

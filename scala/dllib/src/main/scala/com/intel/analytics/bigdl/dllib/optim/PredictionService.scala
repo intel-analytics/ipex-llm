@@ -219,7 +219,8 @@ object PredictionService {
             table.getState().map { x => (x: @unchecked) match { case (k: String, v: Tensor[_]) =>
               Tensor.scalar(k) -> v }}.toArray
           case key =>
-            throw new UnsupportedOperationException(s"Unsupported Table key: $key!")
+            Log4Error.invalidInputError(false, s"Unsupported Table key: $key!")
+            null
         }
 
         val (keys, values) = tensorState.unzip
@@ -240,7 +241,9 @@ object PredictionService {
         attrBuilder.setTensorValue(buildBigDLTensor(tensor, attrBuilder))
 
       case _ =>
-        throw new UnsupportedOperationException("Unsupported Activity Type!")
+        Log4Error.invalidInputError(false, s"Unsupported activity type: $activity!",
+        "only support Table and Tensor")
+        null
     }
     val attr = attrBuilder.build()
     attr.toByteArray
@@ -277,7 +280,9 @@ object PredictionService {
         tensor.asInstanceOf[Tensor[_]]
 
       case tpe =>
-        throw new UnsupportedOperationException(s"Unsupported DataType($tpe)!")
+        Log4Error.invalidInputError(false, s"Unsupported DataType($tpe)",
+          "only support DataType.ARRAY_VALUE and DataType.TENSOR")
+        null
     }
   }
 
@@ -349,7 +354,9 @@ object PredictionService {
         DataConverter.getAttributeValue[Boolean](dsc, attr)
       case DataType.CHAR =>
         DataConverter.getAttributeValue[Char](dsc, attr)
-      case _ => throw new UnsupportedOperationException(s"Unsupported DataType($dataType)!")
+      case _ =>
+        Log4Error.invalidInputError(false, s"Unsupported DataType($dataType)")
+        null
     }
   }
 

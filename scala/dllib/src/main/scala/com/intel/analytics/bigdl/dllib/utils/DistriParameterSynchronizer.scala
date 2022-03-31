@@ -257,7 +257,7 @@ class BlockManagerParameterSynchronizer[T: ClassTag](val partitionID: Int, val t
                     pid
                   } catch {
                     case t: Throwable =>
-                      logger.error("Error: " + ExceptionUtils.getStackTrace(t))
+                      Log4Error.unKnowExceptionError(false, ExceptionUtils.getStackTrace(t))
                       throw t
                   }
                 }
@@ -283,8 +283,7 @@ class BlockManagerParameterSynchronizer[T: ClassTag](val partitionID: Int, val t
                       pid
                     } catch {
                       case t: Throwable =>
-                        logger.error("Error in processing fetching request: "
-                          + ExceptionUtils.getStackTrace(t))
+                        Log4Error.unKnowExceptionError(false, ExceptionUtils.getStackTrace(t))
                         throw t
                     }
                   }
@@ -343,8 +342,7 @@ class BlockManagerParameterSynchronizer[T: ClassTag](val partitionID: Int, val t
                     pid
                   } catch {
                     case t: Throwable =>
-                      logger.error("Error in processing request: "
-                        + ExceptionUtils.getStackTrace(t))
+                      Log4Error.unKnowExceptionError(false, ExceptionUtils.getStackTrace(t))
                       throw t
                   }
                 }

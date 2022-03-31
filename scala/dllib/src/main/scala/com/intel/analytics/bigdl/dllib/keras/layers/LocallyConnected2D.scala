@@ -21,7 +21,7 @@ import com.intel.analytics.bigdl.dllib.nn.abstractnn.DataFormat
 import com.intel.analytics.bigdl.dllib.optim.Regularizer
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.dllib.utils.Shape
+import com.intel.analytics.bigdl.dllib.utils.{Log4Error, Shape}
 import com.intel.analytics.bigdl.dllib.keras.Net
 import com.intel.analytics.bigdl.dllib.keras.layers.utils.KerasUtils
 
@@ -84,8 +84,10 @@ object LocallyConnected2D {
     bias: Boolean = true,
     inputShape: Shape = null)(implicit ev: TensorNumeric[T]): LocallyConnected2D[T] = {
     val subsampleArray = subsample match {
-      case null => throw new IllegalArgumentException("For LocallyConnected2D, " +
+      case null =>
+        Log4Error.invalidInputError(false, "For LocallyConnected2D, " +
         "subsample can not be null, please input int tuple of length 2")
+        null
       case _ => Array(subsample._1, subsample._2)
     }
     new LocallyConnected2D[T](nbFilter, nbRow, nbCol,

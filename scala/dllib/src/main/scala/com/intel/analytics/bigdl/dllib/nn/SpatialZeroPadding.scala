@@ -19,6 +19,7 @@ package com.intel.analytics.bigdl.dllib.nn
 import com.intel.analytics.bigdl.dllib.nn.abstractnn.TensorModule
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.dllib.utils.Log4Error
 
 import scala.reflect.ClassTag
 
@@ -42,7 +43,7 @@ class SpatialZeroPadding[T: ClassTag](
       val h = input.size(2) + this.padTop + this.padBottom
       val w = input.size(3) + this.padLeft + this.padRight
       if (w < 1 || h < 1) {
-        throw new IllegalArgumentException("input is too small")
+        Log4Error.invalidOperationError(false,"input is too small")
       }
       this.output.resize(Array(input.size(1), h, w))
       this.output.zero()
@@ -74,7 +75,7 @@ class SpatialZeroPadding[T: ClassTag](
       val h = input.size(3) + this.padTop + this.padBottom
       val w = input.size(4) + this.padLeft + this.padRight
       if (w < 1 || h < 1) {
-        throw new IllegalArgumentException("input is too small")
+        Log4Error.invalidOperationError(false,"input is too small")
       }
       this.output.resize(Array(input.size(1), input.size(2), h, w))
       this.output.zero()
@@ -103,7 +104,7 @@ class SpatialZeroPadding[T: ClassTag](
 
       cOutput.copy(cInput)
     } else {
-      throw new IllegalArgumentException("input must be 3 or 4-dimensional")
+      Log4Error.invalidOperationError(false,"input must be 3 or 4-dimensional")
     }
 
     this.output
@@ -163,7 +164,7 @@ class SpatialZeroPadding[T: ClassTag](
 
       cgInput.copy(cgOutput)
     } else {
-      throw new IllegalArgumentException("input must be 3 or 4-dimensional")
+      Log4Error.invalidOperationError(false,"input must be 3 or 4-dimensional")
     }
 
     this.gradInput

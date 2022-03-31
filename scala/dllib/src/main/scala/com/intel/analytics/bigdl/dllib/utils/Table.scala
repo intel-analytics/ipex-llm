@@ -307,8 +307,8 @@ class Table private[bigdl](
         this(i + 1).asInstanceOf[D]
       } catch {
         case e: NoSuchElementException =>
-          throw new UnsupportedOperationException("toSeq requires the key of this table are" +
-            " all the integers between 1 to this.length()", e)
+          Log4Error.unKnowExceptionError(false, s"toSeq requires the key of this table are" +
+            " all the integers between 1 to this.length()", cause = e)
       }
 
     }
@@ -316,7 +316,7 @@ class Table private[bigdl](
 
   override def toTensor[D]
   (implicit ev: TensorNumeric[D]): Tensor[D] =
-    throw new IllegalArgumentException("Table cannot be cast to Tensor")
+    Log4Error.invalidOperationError(false,"Table cannot be cast to Tensor")
 
   override def toTable: Table = this
 }

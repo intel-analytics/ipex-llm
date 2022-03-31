@@ -318,7 +318,7 @@ class ImageFeature extends Serializable {
         c += 1
       }
     } else {
-      throw new IllegalArgumentException("Not support type")
+      Log4Error.invalidInputError(false, "Not support type", "only support Float")
     }
   }
 

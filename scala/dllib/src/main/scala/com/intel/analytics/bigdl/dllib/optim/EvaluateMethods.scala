@@ -17,7 +17,7 @@
 package com.intel.analytics.bigdl.dllib.optim
 
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
-import com.intel.analytics.bigdl.dllib.utils.Log4Error
+import com.intel.analytics.bigdl.dllib.utils.{Engine, Log4Error}
 
 object EvaluateMethods {
   def calcAccuracy[T](output: Tensor[T], target: Tensor[T]): (Int, Int) = {
@@ -42,7 +42,8 @@ object EvaluateMethods {
       })
       count += 1
     } else {
-      throw new IllegalArgumentException
+      Log4Error.invalidInputError(false, s"unexpected output dim ${output.dim}",
+        "only support output dim with 1 or 2")
     }
 
     (correct, count)
@@ -76,7 +77,8 @@ object EvaluateMethods {
       }
       count += 1
     } else {
-      throw new IllegalArgumentException
+      Log4Error.unKnowExceptionError(false, s"unexpected output dim ${output.dim}",
+        "only support output dim with 1 or 2")
     }
 
     (correct, count)

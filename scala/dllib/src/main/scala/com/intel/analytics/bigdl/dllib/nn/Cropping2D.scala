@@ -100,7 +100,10 @@ class Cropping2D[T: ClassTag](
     val (hdim, wdim) = dataFormat match {
       case DataFormat.NCHW => (3, 4)
       case DataFormat.NHWC => (2, 3)
-      case _ => throw new IllegalArgumentException(s"$dataFormat is not a supported format")
+      case _ =>
+        Log4Error.invalidInputError(false, s"$dataFormat is not a supported format",
+        "only support NCHW and NHWC")
+        null
     }
 
     val hStart = heightCrop(0) + 1

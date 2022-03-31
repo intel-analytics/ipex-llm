@@ -38,7 +38,9 @@ object AutoGrad {
   // TODO: Get the nDim from Variable
   private def normalizeAxis(axis: Int, nDim: Int = -1) = {
     if (axis < 0) {
-      throw new IllegalArgumentException("We don't support axis < 0 for now") // axis + nDim
+      Log4Error.invalidInputError(false, "We don't support axis < 0 for now",
+      "Please use positive axis") // axis + nDim
+      axis
     } else {
       axis
     }
@@ -290,8 +292,8 @@ object AutoGrad {
       left = 2
       right = 3
     } else if (xShape.length > 4 && yShape.length > 4) {
-        throw new IllegalArgumentException(s"Only support 2D/3D/4D input for now," +
-          s"but got [${xShape.mkString(",")}] and [${xShape.mkString(",")}]")
+      Log4Error.invalidInputError(false, s"Only support 2D/3D/4D input for now," +
+        s"but got [${xShape.mkString(",")}] and [${xShape.mkString(",")}]")
       }
     if (axes != null) {
       Log4Error.invalidInputError(axes.length == 2,

@@ -20,6 +20,7 @@ import java.nio.ByteOrder
 import com.intel.analytics.bigdl.Module
 import com.intel.analytics.bigdl.dllib.nn.ops.{Cast => CastOps}
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.dllib.utils.Log4Error
 import com.intel.analytics.bigdl.dllib.utils.tf.Context
 import org.tensorflow.framework.{DataType, NodeDef}
 
@@ -45,7 +46,8 @@ class Cast extends TensorflowOpsLoader {
       case DataType.DT_STRING => CastOps[T, String]()
       case DataType.DT_FLOAT => CastOps[T, Float]()
       case DataType.DT_DOUBLE => CastOps[T, Double]()
-      case _ => throw new UnsupportedOperationException("Unsupported data type: "
+      case _ =>
+        Log4Error.invalidOperationError(false, "Unsupported data type: "
         + dataType.toString)
     }
     layer

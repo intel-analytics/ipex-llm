@@ -149,7 +149,7 @@ class VolumetricMaxPooling[T: ClassTag](
           nslices, itime, iwidth, iheight, otime, owidth, oheight,
           kT, kW, kH, dT, dW, dH, padT, padW, padH)
       } else {
-        throw new IllegalArgumentException("currently only support type float or double")
+        Log4Error.invalidOperationError(false,"currently only support type float or double")
       }
     } else {
       // batch mode
@@ -192,7 +192,7 @@ class VolumetricMaxPooling[T: ClassTag](
           p += 1
         }
       } else {
-        throw new IllegalArgumentException("currently only support type float or double")
+        Log4Error.invalidOperationError(false,"currently only support type float or double")
       }
 
     }
@@ -240,7 +240,7 @@ class VolumetricMaxPooling[T: ClassTag](
           nslices, itime, iwidth, iheight, otime, owidth, oheight,
           dT, dW, dH, padT, padW, padH)
       } else {
-        throw new IllegalArgumentException("currently only support type float or double")
+        Log4Error.invalidOperationError(false,"currently only support type float or double")
       }
     }
     else {
@@ -279,7 +279,7 @@ class VolumetricMaxPooling[T: ClassTag](
           p += 1
         }
       } else {
-        throw new IllegalArgumentException("currently only support type float or double")
+        Log4Error.invalidOperationError(false,"currently only support type float or double")
       }
     }
     gradInput

@@ -18,6 +18,7 @@ package com.intel.analytics.bigdl.dllib.nn
 import com.intel.analytics.bigdl.dllib.nn.abstractnn.TensorModule
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.dllib.utils.Log4Error
 
 import scala.reflect.ClassTag
 
@@ -60,7 +61,8 @@ class GaussianNoise[T: ClassTag](
     if (train) {
       this.gradInput.resizeAs(gradOutput).copy(gradOutput)
     } else {
-      throw new IllegalArgumentException("backprop only defined while training")
+      Log4Error.invalidOperationError(false,
+        "GaussianNoise: backprop only defined while training")
     }
     this.gradInput
   }

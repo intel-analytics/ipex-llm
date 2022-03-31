@@ -264,7 +264,7 @@ class Dilation2D[T: ClassTag, D: ClassTag](val strides: Array[Int],
       dilationDouble(inputTensor, filterTensor, outputTensor,
         strideRows, strideCols, rateRows, rateCols)
     } else {
-      throw new IllegalArgumentException(s"does not support datatype ${ev2.getType()}")
+      Log4Error.invalidOperationError(false,s"does not support datatype ${ev2.getType()}")
     }
     output
   }
@@ -501,7 +501,7 @@ private[bigdl] class Dilation2DBackpropFilter[T: ClassTag, D: ClassTag](
       dilation2DBackpropFilterDouble(inputTensor, filterTensor, outBackpropTensor, outputTensor,
         strideRows, strideCols, rateRows, rateCols)
     } else {
-      throw new IllegalArgumentException(s"does not support datatype ${ev2.getType()}")
+      Log4Error.invalidOperationError(false,s"does not support datatype ${ev2.getType()}")
     }
 
     output
@@ -742,7 +742,7 @@ private[bigdl] class Dilation2DBackpropInput[T: ClassTag, D: ClassTag](strides: 
       dilationBackpropInputDouble(inputTensor, filterTensor, outBackpropTensor, outputTensor,
         strideRows, strideCols, rateRows, rateCols)
     } else {
-      throw new IllegalArgumentException(s"does not support datatype ${ev2.getType()}")
+      Log4Error.invalidOperationError(false,s"does not support datatype ${ev2.getType()}")
     }
 
     output

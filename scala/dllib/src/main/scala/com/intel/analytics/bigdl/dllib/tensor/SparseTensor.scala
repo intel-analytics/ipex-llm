@@ -78,34 +78,34 @@ private[tensor] class SparseTensor[@specialized(Float, Double) T: ClassTag](
   override def dim(): Int = nDimension
 
   override def setValue(d1: Int, value: T): SparseTensor.this.type = {
-    throw new UnsupportedOperationException(s"SparseTensor: Unimplemented method")
+    Log4Error.invalidOperationError(false, s"SparseTensor: Unimplemented method")
     this
   }
 
   override def setValue(d1: Int, d2: Int, value: T): SparseTensor.this.type = {
-    throw new UnsupportedOperationException(s"SparseTensor: Unimplemented method")
+    Log4Error.invalidOperationError(false, s"SparseTensor: Unimplemented method")
     this
   }
 
   override def setValue(d1: Int, d2: Int, d3: Int, value: T): SparseTensor.this.type = {
-    throw new UnsupportedOperationException(s"SparseTensor: Unimplemented method")
+    Log4Error.invalidOperationError(false, s"SparseTensor: Unimplemented method")
     this
   }
 
   override def setValue(d1: Int, d2: Int, d3: Int, d4: Int, value: T): SparseTensor.this.type = {
-    throw new UnsupportedOperationException(s"SparseTensor: Unimplemented method")
+    Log4Error.invalidOperationError(false, s"SparseTensor: Unimplemented method")
     this
   }
 
   override def setValue(
       d1: Int, d2: Int,
       d3: Int, d4: Int, d5: Int, value: T): SparseTensor.this.type = {
-    throw new UnsupportedOperationException(s"SparseTensor: Unimplemented method")
+    Log4Error.invalidOperationError(false, s"SparseTensor: Unimplemented method")
     this
   }
 
   override def unfold(dim: Int, size: Int, step: Int): Tensor[T] = {
-    throw new UnsupportedOperationException(s"SparseTensor: Unimplemented method")
+    Log4Error.invalidOperationError(false, s"SparseTensor: Unimplemented method")
     this
   }
 
@@ -120,51 +120,63 @@ private[tensor] class SparseTensor[@specialized(Float, Double) T: ClassTag](
   }
 
   override def stride(): Array[Int] = {
-    throw new UnsupportedOperationException(s"SparseTensor: Unimplemented method")
+    Log4Error.invalidOperationError(false, s"SparseTensor: Unimplemented method")
+    null
   }
 
   override def stride(dim: Int): Int = {
-    throw new UnsupportedOperationException(s"SparseTensor: Unimplemented method")
+    Log4Error.invalidOperationError(false, s"SparseTensor: Unimplemented method")
+    0
   }
 
   override def fill(v: T): Tensor[T] = {
-    throw new UnsupportedOperationException(s"SparseTensor: Unimplemented method")
+    Log4Error.invalidOperationError(false, s"SparseTensor: Unimplemented method")
+    null
   }
 
   override def zero(): Tensor[T] = {
-    throw new UnsupportedOperationException(s"SparseTensor: Unimplemented method")
+    Log4Error.invalidOperationError(false, s"SparseTensor: Unimplemented method")
+    null
   }
 
   override def randn(): Tensor[T] = {
-    throw new UnsupportedOperationException(s"SparseTensor: Unimplemented method")
+    Log4Error.invalidOperationError(false, s"SparseTensor: Unimplemented method")
+    null
   }
 
   override def randn(mean: Double, stdv: Double): Tensor[T] = {
-    throw new UnsupportedOperationException(s"SparseTensor: Unimplemented method")
+    Log4Error.invalidOperationError(false, s"SparseTensor: Unimplemented method")
+    null
   }
 
   override def rand(): Tensor[T] = {
-    throw new UnsupportedOperationException(s"SparseTensor: Unimplemented method")
+    Log4Error.invalidOperationError(false, s"SparseTensor: Unimplemented method")
+    null
   }
 
   override def rand(lowerBound: Double, upperBound: Double): Tensor[T] = {
-    throw new UnsupportedOperationException(s"SparseTensor: Unimplemented method")
+    Log4Error.invalidOperationError(false, s"SparseTensor: Unimplemented method")
+    null
   }
 
   override def bernoulli(p: Double): Tensor[T] = {
-    throw new UnsupportedOperationException(s"SparseTensor: Unimplemented method")
+    Log4Error.invalidOperationError(false, s"SparseTensor: Unimplemented method")
+    null
   }
 
   override def transpose(dim1: Int, dim2: Int): Tensor[T] = {
     throw new UnsupportedOperationException(s"SparseTennewIndicesOffsetsor: Unimplemented method")
+    null
   }
 
   override def t(): Tensor[T] = {
-    throw new UnsupportedOperationException(s"SparseTensor: Unimplemented method")
+    Log4Error.invalidOperationError(false, s"SparseTensor: Unimplemented method")
+    null
   }
 
   override def apply(index: Int): Tensor[T] = {
-    throw new UnsupportedOperationException(s"SparseTensor: Unimplemented method")
+    Log4Error.invalidOperationError(false, s"SparseTensor: Unimplemented method")
+    null
   }
 
   override def apply(indexes: Array[Int]): T = {
@@ -180,95 +192,112 @@ private[tensor] class SparseTensor[@specialized(Float, Double) T: ClassTag](
   }
 
   override def valueAt(d1: Int): T = {
-    throw new UnsupportedOperationException(s"SparseTensor: Unimplemented method")
+    Log4Error.invalidOperationError(false, s"SparseTensor: Unimplemented method")
+    0.asInstanceOf[T]
   }
 
   override def valueAt(d1: Int, d2: Int): T = {
-    throw new UnsupportedOperationException(s"SparseTensor: Unimplemented method")
+    Log4Error.invalidOperationError(false, s"SparseTensor: Unimplemented method")
+    0.asInstanceOf[T]
   }
 
   override def valueAt(d1: Int, d2: Int, d3: Int): T = {
-    throw new UnsupportedOperationException(s"SparseTensor: Unimplemented method")
+    Log4Error.invalidOperationError(false, s"SparseTensor: Unimplemented method")
+    0.asInstanceOf[T]
   }
 
   override def valueAt(d1: Int, d2: Int, d3: Int, d4: Int): T = {
-    throw new UnsupportedOperationException(s"SparseTensor: Unimplemented method")
+    Log4Error.invalidOperationError(false, s"SparseTensor: Unimplemented method")
+    0.asInstanceOf[T]
   }
 
   override def valueAt(d1: Int, d2: Int, d3: Int, d4: Int, d5: Int): T = {
-    throw new UnsupportedOperationException(s"SparseTensor: Unimplemented method")
+    Log4Error.invalidOperationError(false, s"SparseTensor: Unimplemented method")
+    0.asInstanceOf[T]
   }
 
   override def apply(t: Table): Tensor[T] = {
-    throw new UnsupportedOperationException(s"SparseTensor: Unimplemented method")
+    Log4Error.invalidOperationError(false, s"SparseTensor: Unimplemented method")
+    null
   }
 
   override def update(index: Int, value: T): Unit = {
-    throw new UnsupportedOperationException(s"SparseTensor: Unimplemented method")
+    Log4Error.invalidOperationError(false, s"SparseTensor: Unimplemented method")
   }
 
   override def update(index: Int, src: Tensor[T]): Unit = {
-    throw new UnsupportedOperationException(s"SparseTensor: Unimplemented method")
+    Log4Error.invalidOperationError(false, s"SparseTensor: Unimplemented method")
   }
 
   override def update(indexes: Array[Int], value: T): Unit = {
-    throw new UnsupportedOperationException(s"SparseTensor: Unimplemented method")
+    Log4Error.invalidOperationError(false, s"SparseTensor: Unimplemented method")
   }
 
   override def update(t: Table, value: T): Unit = {
-    throw new UnsupportedOperationException(s"SparseTensor: Unimplemented method")
+    Log4Error.invalidOperationError(false, s"SparseTensor: Unimplemented method")
   }
 
   override def update(t: Table, src: Tensor[T]): Unit = {
-    throw new UnsupportedOperationException(s"SparseTensor: Unimplemented method")
+    Log4Error.invalidOperationError(false, s"SparseTensor: Unimplemented method")
   }
 
   override def update(filter: (T) => Boolean, value: T): Unit = {
-    throw new UnsupportedOperationException(s"SparseTensor: Unimplemented method")
+    Log4Error.invalidOperationError(false, s"SparseTensor: Unimplemented method")
   }
 
   override def isContiguous(): Boolean = {
-    throw new UnsupportedOperationException(s"SparseTensor: Unimplemented method")
+    Log4Error.invalidOperationError(false, s"SparseTensor: Unimplemented method")
+    false
   }
 
   override def contiguous(): Tensor[T] = {
-    throw new UnsupportedOperationException(s"SparseTensor: Unimplemented method")
+    Log4Error.invalidOperationError(false, s"SparseTensor: Unimplemented method")
+    null
   }
 
   override def isSameSizeAs(other: Tensor[_]): Boolean = {
-    throw new UnsupportedOperationException(s"SparseTensor: Unimplemented method")
+    Log4Error.invalidOperationError(false, s"SparseTensor: Unimplemented method")
+    false
   }
 
   override def resizeAs(src: Tensor[_]): Tensor[T] = {
-    throw new UnsupportedOperationException(s"SparseTensor: Unimplemented method")
+    Log4Error.invalidOperationError(false, s"SparseTensor: Unimplemented method")
+    null
   }
 
   override def resize(sizes: Array[Int], strides: Array[Int]): Tensor[T] = {
-    throw new UnsupportedOperationException(s"SparseTensor: Unimplemented method")
+    Log4Error.invalidOperationError(false, s"SparseTensor: Unimplemented method")
+    null
   }
 
   override def resize(size1: Int): Tensor[T] = {
-    throw new UnsupportedOperationException(s"SparseTensor: Unimplemented method")
+    Log4Error.invalidOperationError(false, s"SparseTensor: Unimplemented method")
+    null
   }
 
   override def resize(size1: Int, size2: Int): Tensor[T] = {
-    throw new UnsupportedOperationException(s"SparseTensor: Unimplemented method")
+    Log4Error.invalidOperationError(false, s"SparseTensor: Unimplemented method")
+    null
   }
 
   override def resize(size1: Int, size2: Int, size3: Int): Tensor[T] = {
-    throw new UnsupportedOperationException(s"SparseTensor: Unimplemented method")
+    Log4Error.invalidOperationError(false, s"SparseTensor: Unimplemented method")
+    null
   }
 
   override def resize(size1: Int, size2: Int, size3: Int, size4: Int): Tensor[T] = {
-    throw new UnsupportedOperationException(s"SparseTensor: Unimplemented method")
+    Log4Error.invalidOperationError(false, s"SparseTensor: Unimplemented method")
+    null
   }
 
   override def resize(size1: Int, size2: Int, size3: Int, size4: Int, size5: Int): Tensor[T] = {
-    throw new UnsupportedOperationException(s"SparseTensor: Unimplemented method")
+    Log4Error.invalidOperationError(false, s"SparseTensor: Unimplemented method")
+    null
   }
 
   override def select(dim: Int, index: Int): Tensor[T] = {
-    throw new UnsupportedOperationException(s"SparseTensor: Unimplemented method")
+    Log4Error.invalidOperationError(false, s"SparseTensor: Unimplemented method")
+    null
   }
 
   override def storage(): Storage[T] = {
@@ -280,13 +309,15 @@ private[tensor] class SparseTensor[@specialized(Float, Double) T: ClassTag](
   }
 
   override def set(other: Tensor[T]): Tensor[T] = {
-    throw new UnsupportedOperationException(s"SparseTensor: Unimplemented method")
+    Log4Error.invalidOperationError(false, s"SparseTensor: Unimplemented method")
+    null
   }
 
   override def set(
       storage: Storage[T], storageOffset: Int,
       sizes: Array[Int], strides: Array[Int]): Tensor[T] = {
-    throw new UnsupportedOperationException(s"SparseTensor: Unimplemented method")
+    Log4Error.invalidOperationError(false, s"SparseTensor: Unimplemented method")
+    null
   }
 
   override def set(): Tensor[T] = {
@@ -374,67 +405,83 @@ private[tensor] class SparseTensor[@specialized(Float, Double) T: ClassTag](
   }
 
   override def copy(other: Tensor[T]): Tensor[T] = {
-    throw new UnsupportedOperationException(s"SparseTensor: Unimplemented method")
+    Log4Error.invalidOperationError(false, s"SparseTensor: Unimplemented method")
+    null
   }
 
   override def apply1(func: (T) => T): Tensor[T] = {
-    throw new UnsupportedOperationException(s"SparseTensor: Unimplemented method")
+    Log4Error.invalidOperationError(false, s"SparseTensor: Unimplemented method")
+    null
   }
 
   override def map(other: Tensor[T], func: (T, T) => T): Tensor[T] = {
-    throw new UnsupportedOperationException(s"SparseTensor: Unimplemented method")
+    Log4Error.invalidOperationError(false, s"SparseTensor: Unimplemented method")
+    null
   }
 
   override def squeeze(): Tensor[T] = {
-    throw new UnsupportedOperationException(s"SparseTensor: Unimplemented method")
+    Log4Error.invalidOperationError(false, s"SparseTensor: Unimplemented method")
+    null
   }
 
   override def squeeze(dim: Int): Tensor[T] = {
-    throw new UnsupportedOperationException(s"SparseTensor: Unimplemented method")
+    Log4Error.invalidOperationError(false, s"SparseTensor: Unimplemented method")
+    null
   }
 
   override def squeezeNewTensor(): Tensor[T] = {
-    throw new UnsupportedOperationException(s"SparseTensor: Unimplemented method")
+    Log4Error.invalidOperationError(false, s"SparseTensor: Unimplemented method")
+    null
   }
 
   override def view(sizes: Array[Int]): Tensor[T] = {
-    throw new UnsupportedOperationException(s"SparseTensor: Unimplemented method")
+    Log4Error.invalidOperationError(false, s"SparseTensor: Unimplemented method")
+    null
   }
 
   override def repeatTensor(sizes: Array[Int]): Tensor[T] = {
-    throw new UnsupportedOperationException(s"SparseTensor: Unimplemented method")
+    Log4Error.invalidOperationError(false, s"SparseTensor: Unimplemented method")
+    null
   }
 
   override def expandAs(template: Tensor[T]): Tensor[T] = {
-    throw new UnsupportedOperationException(s"SparseTensor: Unimplemented method")
+    Log4Error.invalidOperationError(false, s"SparseTensor: Unimplemented method")
+    null
   }
 
   override def expand(sizes: Array[Int]): Tensor[T] = {
-    throw new UnsupportedOperationException(s"SparseTensor: Unimplemented method")
+    Log4Error.invalidOperationError(false, s"SparseTensor: Unimplemented method")
+    null
   }
 
   override def split(size: Int, dim: Int): Array[Tensor[T]] = {
-    throw new UnsupportedOperationException(s"SparseTensor: Unimplemented method")
+    Log4Error.invalidOperationError(false, s"SparseTensor: Unimplemented method")
+    null
   }
 
   override def split(dim: Int): Array[Tensor[T]] = {
-    throw new UnsupportedOperationException(s"SparseTensor: Unimplemented method")
+    Log4Error.invalidOperationError(false, s"SparseTensor: Unimplemented method")
+    null
   }
 
   override def toBreezeVector(): DenseVector[T] = {
-    throw new UnsupportedOperationException(s"SparseTensor: Unimplemented method")
+    Log4Error.invalidOperationError(false, s"SparseTensor: Unimplemented method")
+    null
   }
 
   override def toMLlibVector(): Vector = {
-    throw new UnsupportedOperationException(s"SparseTensor: Unimplemented method")
+    Log4Error.invalidOperationError(false, s"SparseTensor: Unimplemented method")
+    null
   }
 
   override def toBreezeMatrix(): DenseMatrix[T] = {
-    throw new UnsupportedOperationException(s"SparseTensor: Unimplemented method")
+    Log4Error.invalidOperationError(false, s"SparseTensor: Unimplemented method")
+    null
   }
 
   override def toMLlibMatrix(): Matrix = {
-    throw new UnsupportedOperationException(s"SparseTensor: Unimplemented method")
+    Log4Error.invalidOperationError(false, s"SparseTensor: Unimplemented method")
+    null
   }
 
   override def getType(): TensorDataType = {
@@ -442,27 +489,33 @@ private[tensor] class SparseTensor[@specialized(Float, Double) T: ClassTag](
   }
 
   override def diff(other: Tensor[T], count: Int, reverse: Boolean): Boolean = {
-    throw new UnsupportedOperationException(s"SparseTensor: Unimplemented method")
+    Log4Error.invalidOperationError(false, s"SparseTensor: Unimplemented method")
+    false
   }
 
   override def addSingletonDimension(t: Tensor[T], dim: Int): Tensor[T] = {
-    throw new UnsupportedOperationException(s"SparseTensor: Unimplemented method")
+    Log4Error.invalidOperationError(false, s"SparseTensor: Unimplemented method")
+    null
   }
 
   override def addMultiDimension(t: Tensor[T], dims: Array[Int]): Tensor[T] = {
-    throw new UnsupportedOperationException(s"SparseTensor: Unimplemented method")
+    Log4Error.invalidOperationError(false, s"SparseTensor: Unimplemented method")
+    null
   }
 
   override def reshape(sizes: Array[Int]): Tensor[T] = {
-    throw new UnsupportedOperationException(s"SparseTensor: Unimplemented method")
+    Log4Error.invalidOperationError(false, s"SparseTensor: Unimplemented method")
+    null
   }
 
   override def save(path: String, overWrite: Boolean): SparseTensor.this.type = {
-    throw new UnsupportedOperationException(s"SparseTensor: Unimplemented method")
+    Log4Error.invalidOperationError(false, s"SparseTensor: Unimplemented method")
+    this
   }
 
   override def getTensorNumeric(): TensorNumeric[T] = {
-    throw new UnsupportedOperationException(s"SparseTensor: Unimplemented method")
+    Log4Error.invalidOperationError(false, s"SparseTensor: Unimplemented method")
+    null.asInstanceOf[TensorNumeric[T]]
   }
 
   private def resizeIndices(nElement: Int): Unit = {
@@ -511,48 +564,59 @@ private[tensor] class SparseTensor[@specialized(Float, Double) T: ClassTag](
 
   // scalastyle:off methodName
   override def +(s: T): Tensor[T] = {
-    throw new UnsupportedOperationException(s"SparseTensor: Unimplemented method")
+    Log4Error.invalidOperationError(false, s"SparseTensor: Unimplemented method")
+    null
   }
 
   override def +(t: Tensor[T]): Tensor[T] = {
-    throw new UnsupportedOperationException(s"SparseTensor: Unimplemented method")
+    Log4Error.invalidOperationError(false, s"SparseTensor: Unimplemented method")
+    null
   }
 
   override def -(s: T): Tensor[T] = {
-    throw new UnsupportedOperationException(s"SparseTensor: Unimplemented method")
+    Log4Error.invalidOperationError(false, s"SparseTensor: Unimplemented method")
+    null
   }
 
   override def -(t: Tensor[T]): Tensor[T] = {
-    throw new UnsupportedOperationException(s"SparseTensor: Unimplemented method")
+    Log4Error.invalidOperationError(false, s"SparseTensor: Unimplemented method")
+    null
   }
 
   override def unary_-(): Tensor[T] = {
-    throw new UnsupportedOperationException(s"SparseTensor: Unimplemented method")
+    Log4Error.invalidOperationError(false, s"SparseTensor: Unimplemented method")
+    null
   }
 
   override def /(s: T): Tensor[T] = {
-    throw new UnsupportedOperationException(s"SparseTensor: Unimplemented method")
+    Log4Error.invalidOperationError(false, s"SparseTensor: Unimplemented method")
+    null
   }
 
   override def /(t: Tensor[T]): Tensor[T] = {
-    throw new UnsupportedOperationException(s"SparseTensor: Unimplemented method")
+    Log4Error.invalidOperationError(false, s"SparseTensor: Unimplemented method")
+    null
   }
 
   override def *(s: T): Tensor[T] = {
-    throw new UnsupportedOperationException(s"SparseTensor: Unimplemented method")
+    Log4Error.invalidOperationError(false, s"SparseTensor: Unimplemented method")
+    null
   }
 
   override def *(t: Tensor[T]): Tensor[T] = {
-    throw new UnsupportedOperationException(s"SparseTensor: Unimplemented method")
+    Log4Error.invalidOperationError(false, s"SparseTensor: Unimplemented method")
+    null
   }
   // scalastyle:on methodName
 
   override def sum(): T = {
-    throw new UnsupportedOperationException(s"SparseTensor: Unimplemented method")
+    Log4Error.invalidOperationError(false, s"SparseTensor: Unimplemented method")
+    0.asInstanceOf[T]
   }
 
   override def sum(dim: Int): Tensor[T] = {
-    throw new UnsupportedOperationException(s"SparseTensor: Unimplemented method")
+    Log4Error.invalidOperationError(false, s"SparseTensor: Unimplemented method")
+    null
   }
 
   override def sum(x: Tensor[T], dim: Int): Tensor[T] = {
@@ -569,365 +633,453 @@ private[tensor] class SparseTensor[@specialized(Float, Double) T: ClassTag](
   }
 
   override def mean(): T = {
-    throw new UnsupportedOperationException(s"SparseTensor: Unimplemented method")
+    Log4Error.invalidOperationError(false, s"SparseTensor: Unimplemented method")
+    0.asInstanceOf[T]
   }
 
   override def mean(dim: Int): Tensor[T] = {
-    throw new UnsupportedOperationException(s"SparseTensor: Unimplemented method")
+    Log4Error.invalidOperationError(false, s"SparseTensor: Unimplemented method")
+    null
   }
 
   override def max(): T = {
-    throw new UnsupportedOperationException(s"SparseTensor: Unimplemented method")
+    Log4Error.invalidOperationError(false, s"SparseTensor: Unimplemented method")
+    0.asInstanceOf[T]
   }
 
   override def max(dim: Int): (Tensor[T], Tensor[T]) = {
-    throw new UnsupportedOperationException(s"SparseTensor: Unimplemented method")
+    Log4Error.invalidOperationError(false, s"SparseTensor: Unimplemented method")
+    null
   }
 
   override def max(values: Tensor[T], indices: Tensor[T], dim: Int): (Tensor[T], Tensor[T]) = {
-    throw new UnsupportedOperationException(s"SparseTensor: Unimplemented method")
+    Log4Error.invalidOperationError(false, s"SparseTensor: Unimplemented method")
+    null
   }
 
   override def min(): T = {
-    throw new UnsupportedOperationException(s"SparseTensor: Unimplemented method")
+    Log4Error.invalidOperationError(false, s"SparseTensor: Unimplemented method")
+    0.asInstanceOf[T]
   }
 
   override def min(dim: Int): (Tensor[T], Tensor[T]) = {
-    throw new UnsupportedOperationException(s"SparseTensor: Unimplemented method")
+    Log4Error.invalidOperationError(false, s"SparseTensor: Unimplemented method")
+    null
   }
 
   override def min(values: Tensor[T], indices: Tensor[T], dim: Int): (Tensor[T], Tensor[T]) = {
-    throw new UnsupportedOperationException(s"SparseTensor: Unimplemented method")
+    Log4Error.invalidOperationError(false, s"SparseTensor: Unimplemented method")
+    null
   }
 
   override def scatter(dim: Int, index: Tensor[T], src: Tensor[T]): Tensor[T] = {
-    throw new UnsupportedOperationException(s"SparseTensor: Unimplemented method")
+    Log4Error.invalidOperationError(false, s"SparseTensor: Unimplemented method")
+    null
   }
 
   override def gather(dim: Int, index: Tensor[T], src: Tensor[T]): Tensor[T] = {
-    throw new UnsupportedOperationException(s"SparseTensor: Unimplemented method")
+    Log4Error.invalidOperationError(false, s"SparseTensor: Unimplemented method")
+    null
   }
 
   override def conv2(kernel: Tensor[T], vf: Char): Tensor[T] = {
-    throw new UnsupportedOperationException(s"SparseTensor: Unimplemented method")
+    Log4Error.invalidOperationError(false, s"SparseTensor: Unimplemented method")
+    null
   }
 
   override def xcorr2(kernel: Tensor[T], vf: Char): Tensor[T] = {
-    throw new UnsupportedOperationException(s"SparseTensor: Unimplemented method")
+    Log4Error.invalidOperationError(false, s"SparseTensor: Unimplemented method")
+    null
   }
 
   override def sqrt(): Tensor[T] = {
-    throw new UnsupportedOperationException(s"SparseTensor: Unimplemented method")
+    Log4Error.invalidOperationError(false, s"SparseTensor: Unimplemented method")
+    null
   }
 
   override def abs(): Tensor[T] = {
-    throw new UnsupportedOperationException(s"SparseTensor: Unimplemented method")
+    Log4Error.invalidOperationError(false, s"SparseTensor: Unimplemented method")
+    null
   }
 
   override def add(value: T, y: Tensor[T]): Tensor[T] = {
-    throw new UnsupportedOperationException(s"SparseTensor: Unimplemented method")
+    Log4Error.invalidOperationError(false, s"SparseTensor: Unimplemented method")
+    null
   }
 
   override def add(y: Tensor[T]): Tensor[T] = {
-    throw new UnsupportedOperationException(s"SparseTensor: Unimplemented method")
+    Log4Error.invalidOperationError(false, s"SparseTensor: Unimplemented method")
+    null
   }
 
   override def add(x: Tensor[T], value: T, y: Tensor[T]): Tensor[T] = {
-    throw new UnsupportedOperationException(s"SparseTensor: Unimplemented method")
+    Log4Error.invalidOperationError(false, s"SparseTensor: Unimplemented method")
+    null
   }
 
   override def add(value: T): Tensor[T] = {
-    throw new UnsupportedOperationException(s"SparseTensor: Unimplemented method")
+    Log4Error.invalidOperationError(false, s"SparseTensor: Unimplemented method")
+    null
   }
 
   override def add(x: Tensor[T], y: Tensor[T]): Tensor[T] = {
-    throw new UnsupportedOperationException(s"SparseTensor: Unimplemented method")
+    Log4Error.invalidOperationError(false, s"SparseTensor: Unimplemented method")
+    null
   }
 
   override def dot(y: Tensor[T]): T = {
     Log4Error.unKnowExceptionError(y.getTensorType == DenseType,
       s"y should be DenseType, but is ${y.getTensorType}")
     SparseTensorMath.vdot(y.asInstanceOf[DenseTensor[T]], this)
+    0.asInstanceOf[T]
   }
 
   override def cmax(value: T): Tensor[T] = {
-    throw new UnsupportedOperationException(s"SparseTensor: Unimplemented method")
+    Log4Error.invalidOperationError(false, s"SparseTensor: Unimplemented method")
+    null
   }
 
   override def dist(y: Tensor[T], norm: Int): T = {
-    throw new UnsupportedOperationException(s"SparseTensor: Unimplemented method")
+    Log4Error.invalidOperationError(false, s"SparseTensor: Unimplemented method")
+    null
   }
 
   override def addcmul(value: T, tensor1: Tensor[T], tensor2: Tensor[T]): Tensor[T] = {
-    throw new UnsupportedOperationException(s"SparseTensor: Unimplemented method")
+    Log4Error.invalidOperationError(false, s"SparseTensor: Unimplemented method")
+    null
   }
 
   override def addcmul(tensor1: Tensor[T], tensor2: Tensor[T]): Tensor[T] = {
-    throw new UnsupportedOperationException(s"SparseTensor: Unimplemented method")
+    Log4Error.invalidOperationError(false, s"SparseTensor: Unimplemented method")
+    null
   }
 
   override def addcdiv(value: T, tensor1: Tensor[T], tensor2: Tensor[T]): Tensor[T] = {
-    throw new UnsupportedOperationException(s"SparseTensor: Unimplemented method")
+    Log4Error.invalidOperationError(false, s"SparseTensor: Unimplemented method")
+    null
   }
 
   override def sub(value: T, y: Tensor[T]): Tensor[T] = {
-    throw new UnsupportedOperationException(s"SparseTensor: Unimplemented method")
+    Log4Error.invalidOperationError(false, s"SparseTensor: Unimplemented method")
+    null
   }
 
   // Puts the result of x - value * y in current tensor
   override def sub(x: Tensor[T], value: T, y: Tensor[T]): Tensor[T] = {
-    throw new UnsupportedOperationException(s"SparseTensor: Unimplemented method")
+    Log4Error.invalidOperationError(false, s"SparseTensor: Unimplemented method")
+    null
   }
 
   override def sub(y: Tensor[T]): Tensor[T] = {
-    throw new UnsupportedOperationException(s"SparseTensor: Unimplemented method")
+    Log4Error.invalidOperationError(false, s"SparseTensor: Unimplemented method")
+    null
   }
 
   override def sub(x: Tensor[T], y: Tensor[T]): Tensor[T] = {
-    throw new UnsupportedOperationException(s"SparseTensor: Unimplemented method")
+    Log4Error.invalidOperationError(false, s"SparseTensor: Unimplemented method")
+    null
   }
 
   override def sub(value: T): Tensor[T] = {
-    throw new UnsupportedOperationException(s"SparseTensor: Unimplemented method")
+    Log4Error.invalidOperationError(false, s"SparseTensor: Unimplemented method")
+    null
   }
 
   override def cmul(y: Tensor[T]): Tensor[T] = {
-    throw new UnsupportedOperationException(s"SparseTensor: Unimplemented method")
+    Log4Error.invalidOperationError(false, s"SparseTensor: Unimplemented method")
+    null
   }
 
   override def cmul(x: Tensor[T], y: Tensor[T]): Tensor[T] = {
-    throw new UnsupportedOperationException(s"SparseTensor: Unimplemented method")
+    Log4Error.invalidOperationError(false, s"SparseTensor: Unimplemented method")
+    null
   }
 
   override def cdiv(y: Tensor[T]): Tensor[T] = {
-    throw new UnsupportedOperationException(s"SparseTensor: Unimplemented method")
+    Log4Error.invalidOperationError(false, s"SparseTensor: Unimplemented method")
+    null
   }
 
   override def div(y: Tensor[T]): Tensor[T] = {
-    throw new UnsupportedOperationException(s"SparseTensor: Unimplemented method")
+    Log4Error.invalidOperationError(false, s"SparseTensor: Unimplemented method")
+    null
   }
 
   override def cdiv(x: Tensor[T], y: Tensor[T]): Tensor[T] = {
-    throw new UnsupportedOperationException(s"SparseTensor: Unimplemented method")
+    Log4Error.invalidOperationError(false, s"SparseTensor: Unimplemented method")
+    null
   }
 
   override def mul(value: T): Tensor[T] = {
-    throw new UnsupportedOperationException(s"SparseTensor: Unimplemented method")
+    Log4Error.invalidOperationError(false, s"SparseTensor: Unimplemented method")
+    null
   }
 
   override def div(value: T): Tensor[T] = {
-    throw new UnsupportedOperationException(s"SparseTensor: Unimplemented method")
+    Log4Error.invalidOperationError(false, s"SparseTensor: Unimplemented method")
+    null
   }
 
   override def mul(x: Tensor[T], value: T): Tensor[T] = {
-    throw new UnsupportedOperationException(s"SparseTensor: Unimplemented method")
+    Log4Error.invalidOperationError(false, s"SparseTensor: Unimplemented method")
+    null
   }
 
   override def addmm(v1: T, M: Tensor[T], v2: T, mat1: Tensor[T], mat2: Tensor[T]): Tensor[T] = {
-    throw new UnsupportedOperationException(s"SparseTensor: Unimplemented method")
+    Log4Error.invalidOperationError(false, s"SparseTensor: Unimplemented method")
+    null
   }
 
   override def addmm(M: Tensor[T], mat1: Tensor[T], mat2: Tensor[T]): Tensor[T] = {
-    throw new UnsupportedOperationException(s"SparseTensor: Unimplemented method")
+    Log4Error.invalidOperationError(false, s"SparseTensor: Unimplemented method")
+    null
   }
 
   override def addmm(mat1: Tensor[T], mat2: Tensor[T]): Tensor[T] = {
-    throw new UnsupportedOperationException(s"SparseTensor: Unimplemented method")
+    Log4Error.invalidOperationError(false, s"SparseTensor: Unimplemented method")
+    null
   }
 
   override def addmm(v2: T, mat1: Tensor[T], mat2: Tensor[T]): Tensor[T] = {
-    throw new UnsupportedOperationException(s"SparseTensor: Unimplemented method")
+    Log4Error.invalidOperationError(false, s"SparseTensor: Unimplemented method")
+    null
   }
 
   override def addmm(v1: T, v2: T, mat1: Tensor[T], mat2: Tensor[T]): Tensor[T] = {
-    throw new UnsupportedOperationException(s"SparseTensor: Unimplemented method")
+    Log4Error.invalidOperationError(false, s"SparseTensor: Unimplemented method")
+    null
   }
 
   override def mm(mat1: Tensor[T], mat2: Tensor[T]): Tensor[T] = {
-    throw new UnsupportedOperationException(s"SparseTensor: Unimplemented method")
+    Log4Error.invalidOperationError(false, s"SparseTensor: Unimplemented method")
+    null
   }
 
   override def addr(t1: Tensor[T], t2: Tensor[T]): Tensor[T] = {
-    throw new UnsupportedOperationException(s"SparseTensor: Unimplemented method")
+    Log4Error.invalidOperationError(false, s"SparseTensor: Unimplemented method")
+    null
   }
 
   override def addr(v1: T, t1: Tensor[T], t2: Tensor[T]): Tensor[T] = {
-    throw new UnsupportedOperationException(s"SparseTensor: Unimplemented method")
+    Log4Error.invalidOperationError(false, s"SparseTensor: Unimplemented method")
+    null
   }
 
   override def addr(v1: T, t1: Tensor[T], v2: T, t2: Tensor[T]): Tensor[T] = {
-    throw new UnsupportedOperationException(s"SparseTensor: Unimplemented method")
+    Log4Error.invalidOperationError(false, s"SparseTensor: Unimplemented method")
+    null
   }
 
   override def addr(v1: T, t1: Tensor[T], v2: T, t2: Tensor[T], t3: Tensor[T]): Tensor[T] = {
-    throw new UnsupportedOperationException(s"SparseTensor: Unimplemented method")
+    Log4Error.invalidOperationError(false, s"SparseTensor: Unimplemented method")
+    null
   }
 
   override def uniform(args: T*): T = {
-    throw new UnsupportedOperationException(s"SparseTensor: Unimplemented method")
+    Log4Error.invalidOperationError(false, s"SparseTensor: Unimplemented method")
+    0.asInstanceOf[T]
   }
 
   override def addmv(
       beta: T, vec1: Tensor[T], alpha: T,
       mat: Tensor[T], vec2: Tensor[T]): Tensor[T] = {
-    throw new UnsupportedOperationException(s"SparseTensor: Unimplemented method")
+    Log4Error.invalidOperationError(false, s"SparseTensor: Unimplemented method")
+    null
   }
 
   override def addmv(beta: T, alpha: T, mat: Tensor[T], vec2: Tensor[T]): Tensor[T] = {
-    throw new UnsupportedOperationException(s"SparseTensor: Unimplemented method")
+    Log4Error.invalidOperationError(false, s"SparseTensor: Unimplemented method")
+    null
   }
 
   override def addmv(alpha: T, mat: Tensor[T], vec2: Tensor[T]): Tensor[T] = {
-    throw new UnsupportedOperationException(s"SparseTensor: Unimplemented method")
+    Log4Error.invalidOperationError(false, s"SparseTensor: Unimplemented method")
+    null
   }
 
   override def mv(mat: Tensor[T], vec2: Tensor[T]): Tensor[T] = {
-    throw new UnsupportedOperationException(s"SparseTensor: Unimplemented method")
+    Log4Error.invalidOperationError(false, s"SparseTensor: Unimplemented method")
+    null
   }
 
   override def baddbmm(
       beta: T, M: Tensor[T],
       alpha: T, batch1: Tensor[T], batch2: Tensor[T]): Tensor[T] = {
-    throw new UnsupportedOperationException(s"SparseTensor: Unimplemented method")
+    Log4Error.invalidOperationError(false, s"SparseTensor: Unimplemented method")
+    null
   }
 
   override def baddbmm(beta: T, alpha: T, batch1: Tensor[T], batch2: Tensor[T]): Tensor[T] = {
-    throw new UnsupportedOperationException(s"SparseTensor: Unimplemented method")
+    Log4Error.invalidOperationError(false, s"SparseTensor: Unimplemented method")
+    null
   }
 
   override def baddbmm(alpha: T, batch1: Tensor[T], batch2: Tensor[T]): Tensor[T] = {
-    throw new UnsupportedOperationException(s"SparseTensor: Unimplemented method")
+    Log4Error.invalidOperationError(false, s"SparseTensor: Unimplemented method")
+    null
   }
 
   override def bmm(batch1: Tensor[T], batch2: Tensor[T]): Tensor[T] = {
-    throw new UnsupportedOperationException(s"SparseTensor: Unimplemented method")
+    Log4Error.invalidOperationError(false, s"SparseTensor: Unimplemented method")
+    null
   }
 
   override def pow(y: Tensor[T], n: T): Tensor[T] = {
-    throw new UnsupportedOperationException(s"SparseTensor: Unimplemented method")
+    Log4Error.invalidOperationError(false, s"SparseTensor: Unimplemented method")
+    null
   }
 
   override def pow(n: T): Tensor[T] = {
-    throw new UnsupportedOperationException(s"SparseTensor: Unimplemented method")
+    Log4Error.invalidOperationError(false, s"SparseTensor: Unimplemented method")
+    null
   }
 
   override def square(): Tensor[T] = {
-    throw new UnsupportedOperationException(s"SparseTensor: Unimplemented method")
+    Log4Error.invalidOperationError(false, s"SparseTensor: Unimplemented method")
+    null
   }
 
   override def topk(
       k: Int, dim: Int, increase: Boolean, result: Tensor[T],
       indices: Tensor[T], sortedResult: Boolean = true): (Tensor[T], Tensor[T]) = {
-    throw new UnsupportedOperationException(s"SparseTensor: Unimplemented method")
+    Log4Error.invalidOperationError(false, s"SparseTensor: Unimplemented method")
+    null
   }
 
   override def log(y: Tensor[T]): Tensor[T] = {
-    throw new UnsupportedOperationException(s"SparseTensor: Unimplemented method")
+    Log4Error.invalidOperationError(false, s"SparseTensor: Unimplemented method")
+    null
   }
 
   override def exp(y: Tensor[T]): Tensor[T] = {
-    throw new UnsupportedOperationException(s"SparseTensor: Unimplemented method")
+    Log4Error.invalidOperationError(false, s"SparseTensor: Unimplemented method")
+    null
   }
 
   override def sqrt(y: Tensor[T]): Tensor[T] = {
-    throw new UnsupportedOperationException(s"SparseTensor: Unimplemented method")
+    Log4Error.invalidOperationError(false, s"SparseTensor: Unimplemented method")
+    null
   }
 
   override def log1p(y: Tensor[T]): Tensor[T] = {
-    throw new UnsupportedOperationException(s"SparseTensor: Unimplemented method")
+    Log4Error.invalidOperationError(false, s"SparseTensor: Unimplemented method")
+    null
   }
+
   override def log(): Tensor[T] = {
-    throw new UnsupportedOperationException(s"SparseTensor: Unimplemented method")
+    Log4Error.invalidOperationError(false, s"SparseTensor: Unimplemented method")
+    null
   }
   override def exp(): Tensor[T] = {
-    throw new UnsupportedOperationException(s"SparseTensor: Unimplemented method")
+    Log4Error.invalidOperationError(false, s"SparseTensor: Unimplemented method")
+    null
   }
 
   override def log1p(): Tensor[T] = {
-    throw new UnsupportedOperationException(s"SparseTensor: Unimplemented method")
+    Log4Error.invalidOperationError(false, s"SparseTensor: Unimplemented method")
+    null
   }
 
   override def abs(x: Tensor[T]): Tensor[T] = {
-    throw new UnsupportedOperationException(s"SparseTensor: Unimplemented method")
+    Log4Error.invalidOperationError(false, s"SparseTensor: Unimplemented method")
+    null
   }
 
   override def norm(y: Tensor[T], value: Int, dim: Int): Tensor[T] = {
-    throw new UnsupportedOperationException(s"SparseTensor: Unimplemented method")
+    Log4Error.invalidOperationError(false, s"SparseTensor: Unimplemented method")
+    null
   }
 
   override def gt(x: Tensor[T], y: Tensor[T]): Tensor[T] = {
-    throw new UnsupportedOperationException(s"SparseTensor: Unimplemented method")
+    Log4Error.invalidOperationError(false, s"SparseTensor: Unimplemented method")
+    null
   }
 
   override def lt(x: Tensor[T], y: Tensor[T]): Tensor[T] = {
-    throw new UnsupportedOperationException(s"SparseTensor: Unimplemented method")
+    Log4Error.invalidOperationError(false, s"SparseTensor: Unimplemented method")
+    null
   }
 
   override def le(x: Tensor[T], y: Tensor[T]): Tensor[T] = {
-    throw new UnsupportedOperationException(s"SparseTensor: Unimplemented method")
+    Log4Error.invalidOperationError(false, s"SparseTensor: Unimplemented method")
+    null
   }
 
   override def eq(x: Tensor[T], y: T): Tensor[T] = {
-    throw new UnsupportedOperationException(s"SparseTensor: Unimplemented method")
+    Log4Error.invalidOperationError(false, s"SparseTensor: Unimplemented method")
+    null
   }
 
   override def maskedFill(mask: Tensor[T], e: T): Tensor[T] = {
-    throw new UnsupportedOperationException(s"SparseTensor: Unimplemented method")
+    Log4Error.invalidOperationError(false, s"SparseTensor: Unimplemented method")
+    null
   }
 
   override def maskedCopy(mask: Tensor[T], y: Tensor[T]): Tensor[T] = {
-    throw new UnsupportedOperationException(s"SparseTensor: Unimplemented method")
+    Log4Error.invalidOperationError(false, s"SparseTensor: Unimplemented method")
+    null
   }
 
   override def maskedSelect(mask: Tensor[T], y: Tensor[T]): Tensor[T] = {
-    throw new UnsupportedOperationException(s"SparseTensor: Unimplemented method")
+    Log4Error.invalidOperationError(false, s"SparseTensor: Unimplemented method")
+    null
   }
 
   override def norm(value: Int): T = {
-    throw new UnsupportedOperationException(s"SparseTensor: Unimplemented method")
+    Log4Error.invalidOperationError(false, s"SparseTensor: Unimplemented method")
+    0.asInstanceOf[T]
   }
 
   override def sign(): Tensor[T] = {
-    throw new UnsupportedOperationException(s"SparseTensor: Unimplemented method")
+    Log4Error.invalidOperationError(false, s"SparseTensor: Unimplemented method")
+    null
   }
 
   override def ge(x: Tensor[T], value: Double): Tensor[T] = {
-    throw new UnsupportedOperationException(s"SparseTensor: Unimplemented method")
+    Log4Error.invalidOperationError(false, s"SparseTensor: Unimplemented method")
+    null
   }
 
   override def indexAdd(dim: Int, index: Tensor[T], y: Tensor[T]): Tensor[T] = {
-    throw new UnsupportedOperationException(s"SparseTensor: Unimplemented method")
+    Log4Error.invalidOperationError(false, s"SparseTensor: Unimplemented method")
+    null
   }
 
   override def index(dim: Int, index: Tensor[T], y: Tensor[T]): Tensor[T] = {
-    throw new UnsupportedOperationException(s"SparseTensor: Unimplemented method")
+    Log4Error.invalidOperationError(false, s"SparseTensor: Unimplemented method")
+    null
   }
 
   override def cmax(y: Tensor[T]): Tensor[T] = {
-    throw new UnsupportedOperationException(s"SparseTensor: Unimplemented method")
+    Log4Error.invalidOperationError(false, s"SparseTensor: Unimplemented method")
+    null
   }
 
   override def cmax(x: Tensor[T], y: Tensor[T]): Tensor[T] = {
-    throw new UnsupportedOperationException(s"SparseTensor: Unimplemented method")
+    Log4Error.invalidOperationError(false, s"SparseTensor: Unimplemented method")
+    null
   }
 
   override def cmin(y: Tensor[T]): Tensor[T] = {
-    throw new UnsupportedOperationException(s"SparseTensor: Unimplemented method")
+    Log4Error.invalidOperationError(false, s"SparseTensor: Unimplemented method")
+    null
   }
 
   override def cmin(x: Tensor[T], y: Tensor[T]): Tensor[T] = {
-    throw new UnsupportedOperationException(s"SparseTensor: Unimplemented method")
+    Log4Error.invalidOperationError(false, s"SparseTensor: Unimplemented method")
+    null
   }
 
   override def range(xmin: Double, xmax: Double, step: Int): Tensor[T] = {
-    throw new UnsupportedOperationException(s"SparseTensor: Unimplemented method")
+    Log4Error.invalidOperationError(false, s"SparseTensor: Unimplemented method")
+    null
   }
 
   override def toTensor[D](implicit ev: TensorNumeric[D]): Tensor[D] = {
     if (ev.getType() == ev.getType()) {
       this.asInstanceOf[Tensor[D]]
     } else {
-      throw new IllegalArgumentException(s"The type ${ev.getType().getClass}" +
+      Log4Error.invalidOperationError(false,s"The type ${ev.getType().getClass}" +
         s" in toTensor[${ev.getType().getClass}] is not same" +
         s"as the numeric type ${ev.getType().getClass} of the " +
         "corresponding module, please keep them same.")
@@ -990,7 +1142,8 @@ private[tensor] class SparseTensor[@specialized(Float, Double) T: ClassTag](
 
         s"${sb}[${this.getClass.getName} of size ${this.size(1)}x${this.size(2)}]"
       case _ =>
-        throw new UnsupportedOperationException(s"SparseTensor: Unimplemented method")
+        Log4Error.invalidOperationError(false, s"SparseTensor: Unimplemented method")
+        null
     }
   }
 
@@ -1000,19 +1153,23 @@ private[tensor] class SparseTensor[@specialized(Float, Double) T: ClassTag](
   }
 
   override def isEmpty: Boolean = {
-    throw new UnsupportedOperationException(s"SparseTensor: Unimplemented method")
+    Log4Error.invalidOperationError(false, s"SparseTensor: Unimplemented method")
+    false
   }
 
   override def isScalar: Boolean = {
-    throw new UnsupportedOperationException(s"SparseTensor: Unimplemented method")
+    Log4Error.invalidOperationError(false, s"SparseTensor: Unimplemented method")
+    false
   }
 
   override def value(): T = {
-    throw new UnsupportedOperationException(s"SparseTensor: Unimplemented method")
+    Log4Error.invalidOperationError(false, s"SparseTensor: Unimplemented method")
+    0.asInstanceOf[T]
   }
 
   override def setValue(value: T): SparseTensor.this.type = {
-    throw new UnsupportedOperationException(s"SparseTensor: Unimplemented method")
+    Log4Error.invalidOperationError(false, s"SparseTensor: Unimplemented method")
+    null
   }
 
   override def applyFun[A: ClassTag](
@@ -1033,31 +1190,38 @@ private[tensor] class SparseTensor[@specialized(Float, Double) T: ClassTag](
       t1: Tensor[A],
       t2: Tensor[B],
       func: (A, B) => T): Tensor[T] = {
-    throw new UnsupportedOperationException(s"SparseTensor: Unimplemented method")
+    Log4Error.invalidOperationError(false, s"SparseTensor: Unimplemented method")
+    null
   }
 
   override def prod(): T = {
-    throw new UnsupportedOperationException(s"SparseTensor: Unimplemented method")
+    Log4Error.invalidOperationError(false, s"SparseTensor: Unimplemented method")
+    0.asInstanceOf[T]
   }
 
   override def prod(x: Tensor[T], dim: Int): Tensor[T] = {
-    throw new UnsupportedOperationException(s"SparseTensor: Unimplemented method")
+    Log4Error.invalidOperationError(false, s"SparseTensor: Unimplemented method")
+    null
   }
 
   override def tanh(): Tensor[T] = {
-    throw new UnsupportedOperationException(s"SparseTensor: Unimplemented method")
+    Log4Error.invalidOperationError(false, s"SparseTensor: Unimplemented method")
+    null
   }
 
   override def tanh(y: Tensor[T]): Tensor[T] = {
-    throw new UnsupportedOperationException(s"SparseTensor: Unimplemented method")
+    Log4Error.invalidOperationError(false, s"SparseTensor: Unimplemented method")
+    null
   }
 
   override def forceFill(v: Any): Tensor[T] = {
-    throw new UnsupportedOperationException(s"SparseTensor: Unimplemented method")
+    Log4Error.invalidOperationError(false, s"SparseTensor: Unimplemented method")
+    null
   }
 
   override def emptyInstance(): Tensor[T] = {
-    throw new UnsupportedOperationException(s"SparseTensor: Unimplemented method")
+    Log4Error.invalidOperationError(false, s"SparseTensor: Unimplemented method")
+    null
   }
 
   override def cast[@specialized(Long, Int, Short, Double, Float) D: ClassTag]
@@ -1088,61 +1252,79 @@ private[tensor] class SparseTensor[@specialized(Float, Double) T: ClassTag](
   override def getTensorType: TensorType = SparseType
 
   override def floor(y: Tensor[T]): Tensor[T] = {
-    throw new UnsupportedOperationException(s"SparseTensor: Unimplemented method")
+    Log4Error.invalidOperationError(false, s"SparseTensor: Unimplemented method")
+    null
   }
 
   override def floor(): Tensor[T] = {
-    throw new UnsupportedOperationException(s"SparseTensor: Unimplemented method")
+    Log4Error.invalidOperationError(false, s"SparseTensor: Unimplemented method")
+    null
   }
 
   override def ceil(): Tensor[T] = {
-    throw new UnsupportedOperationException(s"SparseTensor: Unimplemented method")
+    Log4Error.invalidOperationError(false, s"SparseTensor: Unimplemented method")
+    null
   }
 
   override def inv(): Tensor[T] = {
-    throw new UnsupportedOperationException(s"SparseTensor: Unimplemented method")
+    Log4Error.invalidOperationError(false, s"SparseTensor: Unimplemented method")
+    null
   }
 
   override def negative(x: Tensor[T]): Tensor[T] = {
-    throw new UnsupportedOperationException(s"SparseTensor: Unimplemented method")
+    Log4Error.invalidOperationError(false, s"SparseTensor: Unimplemented method")
+    null
   }
 
   override def reduce(dim: Int, result: Tensor[T], reducer: (T, T) => T): Tensor[T] = {
-    throw new UnsupportedOperationException(s"SparseTensor: Unimplemented method")
+    Log4Error.invalidOperationError(false, s"SparseTensor: Unimplemented method")
+    null
   }
 
   override def toArray(): Array[T] = {
-    throw new UnsupportedOperationException(s"SparseTensor: Unimplemented method")
+    Log4Error.invalidOperationError(false, s"SparseTensor: Unimplemented method")
+    null
   }
 
   override def erf(): Tensor[T] = {
-    throw new UnsupportedOperationException(s"SparseTensor: Unimplemented method")
+    Log4Error.invalidOperationError(false, s"SparseTensor: Unimplemented method")
+    null
   }
 
   override def erf(t: Tensor[T]): Tensor[T] = {
-    throw new UnsupportedOperationException(s"SparseTensor: Unimplemented method")
+    Log4Error.invalidOperationError(false, s"SparseTensor: Unimplemented method")
+    null
   }
 
   override def erfc(): Tensor[T] = {
-    throw new UnsupportedOperationException(s"SparseTensor: Unimplemented method")
+    Log4Error.invalidOperationError(false, s"SparseTensor: Unimplemented method")
+    null
   }
 
   override def logGamma(): Tensor[T] = {
-    throw new UnsupportedOperationException(s"SparseTensor: Unimplemented method")
+    Log4Error.invalidOperationError(false, s"SparseTensor: Unimplemented method")
+    null
   }
 
   override def digamma(): Tensor[T] = {
-    throw new UnsupportedOperationException(s"SparseTensor: Unimplemented method")
+    Log4Error.invalidOperationError(false, s"SparseTensor: Unimplemented method")
+    null
   }
 
-  override def clamp(minValue: Double, maxValue: Double): Tensor[T] =
-    throw new UnsupportedOperationException(s"SparseTensor: Unimplemented method")
+  override def clamp(minValue: Double, maxValue: Double): Tensor[T] = {
+    Log4Error.invalidOperationError(false, s"SparseTensor: Unimplemented method")
+    null
+  }
 
-  override def sumSquare(): T =
-    throw new UnsupportedOperationException(s"SparseTensor: Unimplemented method")
+  override def sumSquare(): T = {
+    Log4Error.invalidOperationError(false, s"SparseTensor: Unimplemented method")
+    0.asInstanceOf[T]
+  }
 
-  override private[bigdl] def toQuantizedTensor: QuantizedTensor[T] =
-    throw new IllegalArgumentException("SparseTensor cannot be cast to QuantizedTensor")
+  override private[bigdl] def toQuantizedTensor: QuantizedTensor[T] = {
+    Log4Error.invalidOperationError(false, s"SparseTensor: Unimplemented method")
+    null
+  }
 }
 
 object SparseTensor{

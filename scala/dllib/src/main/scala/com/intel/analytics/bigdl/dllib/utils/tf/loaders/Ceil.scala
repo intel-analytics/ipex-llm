@@ -20,6 +20,7 @@ import java.nio.ByteOrder
 import com.intel.analytics.bigdl.Module
 import com.intel.analytics.bigdl.dllib.nn.ops.{Ceil => CeilOps}
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.dllib.utils.Log4Error
 import com.intel.analytics.bigdl.dllib.utils.tf.Context
 import org.tensorflow.framework.{DataType, NodeDef}
 
@@ -37,7 +38,7 @@ class Ceil extends TensorflowOpsLoader {
     } else if (t == DataType.DT_DOUBLE) {
       CeilOps[T, Double]()
     } else {
-      throw new UnsupportedOperationException(s"not support load Cell operation for type $t")
+      Log4Error.invalidOperationError(false, s"not support load Cell operation for type $t")
     }
   }
 }

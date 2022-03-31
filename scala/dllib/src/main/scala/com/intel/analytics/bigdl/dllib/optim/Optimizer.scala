@@ -264,7 +264,7 @@ abstract class Optimizer[T: ClassTag, D](
       logger.info(s"Optimizer.setModel: Detect current optimMethod is a global optimMethod." +
         s" Automatically associate the current optimMethod with the new model.")
     } else {
-      throw new IllegalArgumentException("Optimizer.setModel: Detect current optimMethod" +
+      Log4Error.invalidOperationError(false,"Optimizer.setModel: Detect current optimMethod" +
         " is not a global optimMethod. Please use setModelAndOptimMethods")
     }
 
@@ -311,7 +311,7 @@ abstract class Optimizer[T: ClassTag, D](
   def setTrainData(sampleRDD: RDD[Sample[T]],
                  batchSize: Int,
                  miniBatchImpl: MiniBatch[T]): this.type = {
-    throw new UnsupportedOperationException(
+    Log4Error.invalidOperationError(false,
       s"setTrainData(sampleRDD, batchSize,miniBatch) " +
         s"is only supported in distributed optimizer")
     this
@@ -334,7 +334,7 @@ abstract class Optimizer[T: ClassTag, D](
                  batchSize: Int,
                  featurePaddingParam: PaddingParam[T] = null,
                  labelPaddingParam: PaddingParam[T] = null): this.type = {
-    throw new UnsupportedOperationException(
+    Log4Error.invalidOperationError(false,
       s"setTrainData(sampleRDD,batchSize,featurePaddingParam=null,labelPaddingParam=null) " +
         s"is only supported in distributed optimizer")
     this
@@ -473,8 +473,9 @@ abstract class Optimizer[T: ClassTag, D](
   private[optim] def shutdown(): Unit = {}
 
   def reserveOptim(reserve: Boolean): this.type = {
-    throw new UnsupportedOperationException(
+    Log4Error.invalidOperationError(false,
       "Only support DistriOptimizer to reserve optim methods for each worker")
+    null
   }
 }
 
@@ -717,7 +718,9 @@ object Optimizer {
           criterion = criterion
         ).asInstanceOf[Optimizer[T, D]]
       case _ =>
-        throw new UnsupportedOperationException
+        Log4Error.invalidOperationError(false, s"unexpected type ${dataset}",
+        "only support DistributedDataSet and  LocalDataSet")
+        null
     }
   }
 

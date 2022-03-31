@@ -126,7 +126,8 @@ class SpatialCrossMapLRN[T: ClassTag]
               output.select(1, _b).asInstanceOf[Tensor[Float]],
               alpha, size, beta, k)
           } else {
-            throw new NotImplementedError(s"Not support numeric type ${ev.getType()} in NHWC")
+            Log4Error.invalidOperationError(false,
+              s"Not support numeric type ${ev.getType()} in NHWC")
           }
         }
       })
@@ -179,7 +180,8 @@ class SpatialCrossMapLRN[T: ClassTag]
               output.select(1, _b).asInstanceOf[Tensor[Float]],
               alpha, size, beta, k)
           } else {
-            throw new NotImplementedError(s"Not support numeric type ${ev.getType()} in NHWC")
+            Log4Error.invalidOperationError(false,
+              s"Not support numeric type ${ev.getType()} in NHWC")
           }
         }
       })

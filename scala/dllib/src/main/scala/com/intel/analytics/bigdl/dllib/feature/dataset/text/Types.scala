@@ -73,7 +73,9 @@ class LabeledSentence[T: ClassTag](
         Array.copy(rawLabel
           .asInstanceOf[Array[Float]], 0, _label
           .asInstanceOf[Array[Float]], 0, _labelLength)
-      case t => throw new NotImplementedError(s"$t is not supported")
+      case t =>
+        Log4Error.invalidInputError(false, s"$t is not supported",
+          "only support DoubleType, FloatType")
     }
     this
   }
@@ -97,7 +99,9 @@ class LabeledSentence[T: ClassTag](
       case FloatType => Array.copy(_data
         .asInstanceOf[Array[Float]], 0, storage
         .asInstanceOf[Array[Float]], offset, _dataLength)
-      case t => throw new NotImplementedError(s"$t is not supported")
+      case t =>
+        Log4Error.invalidInputError(false, s"$t is not supported",
+          "only support DoubleType, FloatType")
     }
   }
 
@@ -111,7 +115,9 @@ class LabeledSentence[T: ClassTag](
       case FloatType => Array.copy(_label
         .asInstanceOf[Array[Float]], 0, storage
         .asInstanceOf[Array[Float]], offset, _labelLength)
-      case t => throw new NotImplementedError(s"$t is not supported")
+      case t =>
+        Log4Error.invalidInputError(false, s"$t is not supported",
+          "only support DoubleType, FloatType")
     }
   }
 
@@ -137,7 +143,9 @@ class LabeledSentence[T: ClassTag](
         Array.copy(other._label
           .asInstanceOf[Array[Float]], 0, this._label
           .asInstanceOf[Array[Float]], 0, _labelLength)
-      case t => throw new NotImplementedError(s"$t is not supported")
+      case t =>
+        Log4Error.invalidInputError(false, s"$t is not supported",
+          "only support DoubleType, FloatType")
     }
     this
   }

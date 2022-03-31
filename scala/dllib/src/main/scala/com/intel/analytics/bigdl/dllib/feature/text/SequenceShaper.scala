@@ -54,7 +54,10 @@ class SequenceShaper(
       truncMode match {
         case TruncMode.pre => indices.slice(indices.length - len, indices.length)
         case TruncMode.post => indices.slice(0, len)
-        case _ => throw new IllegalArgumentException("Unknown truncation mode")
+        case _ =>
+          Log4Error.invalidInputError(false, s"Unsupported truncMode $truncMode",
+            s"please use TruncMode.pre or TruncMode.post")
+          null
       }
     } else {
         indices ++ Array.fill[Float](len - indices.length)(padElement)

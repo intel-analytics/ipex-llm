@@ -83,9 +83,10 @@ class Sequential[T: ClassTag] private ()
 
     if (!this.isBuilt()) {
       if (module.getInputShape() == null) {
-        throw new RuntimeException("The first layer should explicitly declare inputshape")
+        Log4Error.invalidOperationError(false,
+          "first layer inputshape is null",
+          "The first layer should explicitly declare inputshape")
       } else {
-
         val outputShape = absModuleRef.build(module.getInputShape())
         // The inputShape of Sequential should only be init here.
         kerasLayerRef.setInputShape(module.getInputShape())
@@ -101,7 +102,9 @@ class Sequential[T: ClassTag] private ()
   AbstractModule[_ <: Activity, _ <: Activity, T] = {
     val inputShape = if (!this.isBuilt()) {
       if (lambda.getInputShape() == null) {
-        throw new RuntimeException("The first layer should explicitly declare inputshape")
+        Log4Error.invalidOperationError(false,
+          "first layer inputshape is null",
+          "The first layer should explicitly declare inputshape")
       }
       lambda.getInputShape()
     } else {
@@ -123,7 +126,7 @@ class Sequential[T: ClassTag] private ()
    */
   def add(module: AbstractModule[_ <: Activity, _ <: Activity, T]): this.type = {
     if (frozen) {
-      throw new RuntimeException(
+      Log4Error.invalidOperationError(false,
         "This Sequential has been frozen, as it has been added into other container")
     }
 

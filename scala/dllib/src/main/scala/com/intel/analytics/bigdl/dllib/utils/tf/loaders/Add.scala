@@ -20,6 +20,7 @@ import java.nio.ByteOrder
 import com.intel.analytics.bigdl.Module
 import com.intel.analytics.bigdl.dllib.nn.CAddTable
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.dllib.utils.Log4Error
 import com.intel.analytics.bigdl.dllib.utils.tf.Context
 import com.intel.analytics.bigdl.dllib.utils.tf.loaders.Utils.getType
 import org.tensorflow.framework.{DataType, NodeDef}
@@ -37,7 +38,8 @@ class Add extends TensorflowOpsLoader {
     } else if (t == DataType.DT_DOUBLE) {
       new CAddTable[T, Double]()
     } else {
-      throw new UnsupportedOperationException(s"Not support numeric type $t")
+      Log4Error.invalidOperationError(false, s"Not support numeric type $t")
+      null
     }
   }
 }

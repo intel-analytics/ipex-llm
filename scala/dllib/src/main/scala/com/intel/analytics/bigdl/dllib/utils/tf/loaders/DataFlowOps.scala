@@ -21,6 +21,7 @@ import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.Module
 import com.intel.analytics.bigdl.dllib.nn.tf.{StackCreator, TensorArrayConcat, TensorArrayCreator, TensorArrayGather, TensorArrayGrad, TensorArrayRead, TensorArrayScatter, TensorArraySize, TensorArraySplit, TensorArrayWrite, StackPop => StackPopOps, StackPush => StackPushOps}
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath
+import com.intel.analytics.bigdl.dllib.utils.Log4Error
 import com.intel.analytics.bigdl.dllib.utils.tf.Context
 import com.intel.analytics.bigdl.dllib.utils.tf.loaders.Utils._
 import org.tensorflow.framework.{DataType, NodeDef}
@@ -66,7 +67,7 @@ private[bigdl] class TensorArrayV3 extends TensorflowOpsLoader {
         tensorArrayName = if (tensorArrayName == "") null else tensorArrayName
       )
     } else {
-      throw new UnsupportedOperationException(s"Not support load TensorArrayV3 with data type $t")
+      Log4Error.invalidOperationError(false, s"Not support load TensorArrayV3 with data type $t")
     }
   }
 }
@@ -97,8 +98,9 @@ class TensorArrayGatherV3 extends TensorflowOpsLoader {
     } else if (t == DataType.DT_INT32) {
       new TensorArrayGather[T, Int]()
     } else {
-      throw new UnsupportedOperationException(
+      Log4Error.invalidOperationError(false,
         s"Not support load TensorArrayGatherV3 with data type $t")
+      null
     }
   }
 }
@@ -117,8 +119,9 @@ private[bigdl] class TensorArrayScatterV3 extends TensorflowOpsLoader {
     } else if (t == DataType.DT_INT32) {
       new TensorArrayScatter[T, Int]()
     } else {
-      throw new UnsupportedOperationException(
+      Log4Error.invalidOperationError(false,
         s"Not support load TensorArrayScatterV3 with data type $t")
+      null
     }
   }
 }
@@ -137,8 +140,9 @@ private[bigdl] class TensorArrayConcatV3 extends TensorflowOpsLoader {
     } else if (t == DataType.DT_INT32) {
       new TensorArrayConcat[T, Int]()
     } else {
-      throw new UnsupportedOperationException(
+      Log4Error.invalidOperationError(false,
         s"Not support load TensorArrayConcatV3 with data type $t")
+      null
     }
   }
 }
@@ -157,8 +161,9 @@ private[bigdl] class TensorArraySplitV3 extends TensorflowOpsLoader {
     } else if (t == DataType.DT_INT32) {
       new TensorArraySplit[T, Int]()
     } else {
-      throw new UnsupportedOperationException(
+      Log4Error.invalidOperationError(false,
         s"Not support load TensorArraySplitV3 with data type $t")
+      null
     }
   }
 }
@@ -177,8 +182,9 @@ private[bigdl] class TensorArrayReadV3 extends TensorflowOpsLoader {
     } else if (t == DataType.DT_INT32) {
       new TensorArrayRead[T, Int]()
     } else {
-      throw new UnsupportedOperationException(
+      Log4Error.invalidOperationError(false,
         s"Not support load TensorArrayReadV3 with data type $t")
+      null
     }
   }
 }
@@ -197,8 +203,9 @@ private[bigdl] class TensorArrayWriteV3 extends TensorflowOpsLoader {
     } else if (t == DataType.DT_INT32) {
       new TensorArrayWrite[T, Int]()
     } else {
-      throw new UnsupportedOperationException(
+      Log4Error.invalidOperationError(false,
         s"Not support load TensorArrayWriteV3 with data type $t")
+      null
     }
   }
 }
@@ -226,7 +233,8 @@ private[bigdl] class StackPopV2 extends TensorflowOpsLoader {
     } else if (t == DataType.DT_INT32) {
       new StackPopOps[T, Int]()
     } else {
-      throw new UnsupportedOperationException(s"Not support load StackPop with type $t")
+      Log4Error.invalidOperationError(false, s"Not support load StackPop with type $t")
+      null
     }
   }
 }
@@ -243,7 +251,8 @@ private[bigdl] class StackPop extends TensorflowOpsLoader {
     } else if (t == DataType.DT_INT32) {
       new StackPopOps[T, Int]()
     } else {
-      throw new UnsupportedOperationException(s"Not support load StackPop with type $t")
+      Log4Error.invalidOperationError(false, s"Not support load StackPop with type $t")
+      null
     }
   }
 }
@@ -260,7 +269,8 @@ private[bigdl] class StackPushV2 extends TensorflowOpsLoader {
     } else if (t == DataType.DT_INT32) {
       new StackPushOps[T, Int]()
     } else {
-      throw new UnsupportedOperationException(s"Not support load StackPush with type $t")
+      Log4Error.invalidOperationError(false, s"Not support load StackPush with type $t")
+      null
     }
   }
 }
@@ -277,7 +287,8 @@ private[bigdl] class StackPush extends TensorflowOpsLoader {
     } else if (t == DataType.DT_INT32) {
       new StackPushOps[T, Int]()
     } else {
-      throw new UnsupportedOperationException(s"Not support load StackPush with type $t")
+      Log4Error.invalidOperationError(false, s"Not support load StackPush with type $t")
+      null
     }
   }
 }
@@ -295,7 +306,8 @@ private[bigdl] class StackV2 extends TensorflowOpsLoader {
     } else if (t == DataType.DT_INT32) {
       new StackCreator[T, Int](stackName)
     } else {
-      throw new UnsupportedOperationException(s"Not support load Stack with type $t")
+      Log4Error.invalidOperationError(false, s"Not support load Stack with type $t")
+      null
     }
   }
 }
@@ -313,7 +325,8 @@ private[bigdl] class Stack extends TensorflowOpsLoader {
     } else if (t == DataType.DT_INT32) {
       new StackCreator[T, Int](stackName)
     } else {
-      throw new UnsupportedOperationException(s"Not support load Stack with type $t")
+      Log4Error.invalidOperationError(false, s"Not support load Stack with type $t")
+      null
     }
   }
 }

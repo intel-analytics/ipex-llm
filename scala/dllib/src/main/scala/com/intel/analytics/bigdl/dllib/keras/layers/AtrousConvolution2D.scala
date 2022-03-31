@@ -22,7 +22,7 @@ import com.intel.analytics.bigdl.dllib.nn.{InitializationMethod, Xavier}
 import com.intel.analytics.bigdl.dllib.optim.Regularizer
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.dllib.utils.Shape
+import com.intel.analytics.bigdl.dllib.utils.{Log4Error, Shape}
 import com.intel.analytics.bigdl.dllib.keras.Net
 import com.intel.analytics.bigdl.dllib.keras.layers.utils.KerasUtils
 
@@ -91,13 +91,17 @@ object AtrousConvolution2D {
     bRegularizer: Regularizer[T] = null,
     inputShape: Shape = null)(implicit ev: TensorNumeric[T]): AtrousConvolution2D[T] = {
     val subsampleArray = subsample match {
-      case null => throw new IllegalArgumentException("For AtrousConvolution2D, " +
-        "subsample can not be null, please input int tuple of length 2")
+      case null =>
+        Log4Error.invalidInputError(false, "For AtrousConvolution2D, " +
+          "subsample can not be null, please input int tuple of length 2")
+        null
       case _ => Array(subsample._1, subsample._2)
     }
     val atrousRateArray = atrousRate match {
-      case null => throw new IllegalArgumentException("For AtrousConvolution2D, " +
-        "atrousRate can not be null, please input int tuple of length 2")
+      case null =>
+        Log4Error.invalidInputError(false, "For AtrousConvolution2D, " +
+          "atrousRate can not be null, please input int tuple of length 2")
+        null
       case _ => Array(atrousRate._1, atrousRate._2)
     }
     new AtrousConvolution2D[T](nbFilter, nbRow, nbCol, KerasUtils.getInitMethod(init),

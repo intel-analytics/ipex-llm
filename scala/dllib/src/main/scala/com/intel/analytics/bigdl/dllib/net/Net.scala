@@ -29,7 +29,7 @@ import com.intel.analytics.bigdl.dllib.nn.{Container, Graph, InitializationMetho
 import com.intel.analytics.bigdl.dllib.utils.python.api.PythonBigDL
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.dllib.utils.{File, Shape}
+import com.intel.analytics.bigdl.dllib.utils.{File, Log4Error, Shape}
 import com.intel.analytics.bigdl.dllib.utils.caffe.CaffeLoader
 import com.intel.analytics.bigdl.dllib.utils.serializer.ModuleLoader
 import com.intel.analytics.bigdl.dllib.utils.tf.{Session, TensorflowLoader}
@@ -82,7 +82,8 @@ trait Net {
   }
 
   private[bigdl] def toKeras2(): String = {
-    throw new UnimplementedException()
+    Log4Error.invalidOperationError(false, "not implemented broadcast")
+    null
   }
 
   /**
@@ -122,7 +123,7 @@ object Net {
         }
       case _ =>
         if (throwException) {
-          throw new RuntimeException(s"$module does not support setInitMethod")
+          Log4Error.invalidOperationError(false, s"$module does not support setInitMethod")
         }
     }
   }
@@ -141,7 +142,7 @@ object Net {
   : KerasNet[T] = {
     val model = ModuleLoader.loadFromFile(path, weightPath)
     if (!model.isInstanceOf[KerasNet[T]]) {
-      throw new RuntimeException(
+      Log4Error.invalidOperationError(false,
         "Not an Analytics Zoo Keras-style model. Please use loadBigDL or loadCaffe instead")
     }
     model.asInstanceOf[KerasNet[T]]
@@ -317,7 +318,8 @@ object Net {
         case s: Sequential[T] => export(s, bw)
         case m: Model[T] => export(m, bw)
         case _ =>
-          throw new IllegalArgumentException(s"${module.getClass.getName} is not supported.")
+          Log4Error.invalidOperationError(false,
+            s"${module.getClass.getName} is not supported.", "Only support Sequential and Model")
       }
       bw.write(saveWeights(module, tmpDir.toString))
       bw.write(saveCommand)
@@ -350,7 +352,8 @@ object Net {
           errorMsg.append(line + "\n")
           line = error.readLine()
         }
-        throw new RuntimeException(s"Export Keras2 model failed:\n" + errorMsg.toString())
+        Log4Error.unKnowExceptionError(false,
+          s"Export Keras2 model failed:\n" + errorMsg.toString())
       }
     }
 
@@ -372,7 +375,8 @@ object Net {
           writer: BufferedWriter): Unit = {
       val element = node.element
       if (!element.isInstanceOf[Net]) {
-        throw new IllegalArgumentException(s"Unsupported layer ${element.getName()}")
+        Log4Error.invalidOperationError(false,
+          s"Unsupported layer ${element.getName()}", "only support Net")
       } else {
         val pre = if (node.prevNodes.length == 1) {
           s"(${node.prevNodes(0).element.getName})"
@@ -400,7 +404,8 @@ object Net {
           writer.write(s"${module.getName()} = ${module.asInstanceOf[Net].toKeras2()}\n")
           writer.write(s"${sequential.getName()}.add(${module.getName})\n")
         } else {
-          throw new IllegalArgumentException(s"unkown type ${this.getClass.getName}")
+          Log4Error.invalidOperationError(false,
+            s"unkown type ${this.getClass.getName}", "only support Sequential and Net")
         }
       }
     }

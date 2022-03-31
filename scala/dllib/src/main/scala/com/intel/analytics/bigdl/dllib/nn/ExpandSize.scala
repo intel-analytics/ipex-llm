@@ -46,7 +46,7 @@ class ExpandSize[T: ClassTag](targetSizes: Array[Int])
           tensorSize(i) = targetSizes(i)
           tensorStride(i) = 0
         } else if (tensorSize(i) != targetSizes(i)) {
-          throw new UnsupportedOperationException(
+          Log4Error.unKnowExceptionError(false,
             "incorrect size: only supporting singleton expansion (size=1)")
         }
       }

@@ -44,7 +44,7 @@ class RandomUniform extends TensorflowOpsLoader {
         val max = 1
         RandomUniformOps[T, Double](min, max, seed)
       case _ =>
-        throw new IllegalArgumentException("Not support data type")
+        Log4Error.invalidOperationError(false,"Not support data type")
     }
   }
 }

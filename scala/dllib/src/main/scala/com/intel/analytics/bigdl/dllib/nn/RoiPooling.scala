@@ -94,7 +94,8 @@ class RoiPooling[T: ClassTag](val pooledW: Int, val pooledH: Int, val spatialSca
         n += 1
       }
     } else {
-      throw new IllegalArgumentException("currently only Double and Float types are supported")
+      Log4Error.invalidOperationError(false,
+        "currently only Double and Float types are supported")
     }
 
     output
@@ -282,7 +283,7 @@ class RoiPooling[T: ClassTag](val pooledW: Int, val pooledH: Int, val spatialSca
       roiPoolingBackwardFloat(roisData, numRois, data,
         argmaxData, gradInputData, gradOutputData)
     } else {
-      throw new IllegalArgumentException("currently only Double and Float types are supported")
+      Log4Error.invalidOperationError(false,"currently only Double and Float types are supported")
     }
     gradInput
   }

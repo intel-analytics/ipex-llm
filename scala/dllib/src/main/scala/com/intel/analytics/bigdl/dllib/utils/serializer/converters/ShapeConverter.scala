@@ -18,7 +18,7 @@ package com.intel.analytics.bigdl.dllib.utils.serializer.converters
 
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath
 import com.intel.analytics.bigdl.dllib.utils.serializer.{DeserializeContext, SerializeContext}
-import com.intel.analytics.bigdl.dllib.utils.{MultiShape, SingleShape, Shape => BigDLShape}
+import com.intel.analytics.bigdl.dllib.utils.{Log4Error, MultiShape, SingleShape, Shape => BigDLShape}
 import com.intel.analytics.bigdl.serialization.Bigdl
 import com.intel.analytics.bigdl.serialization.Bigdl.Shape.ShapeType
 import com.intel.analytics.bigdl.serialization.Bigdl.{AttrValue, BigDLModule, DataType, Shape}
@@ -47,7 +47,9 @@ object ShapeConverter extends DataConverter {
       val shapes = shape.getShapeList.asScala.toList.map(toBigDLShape(_))
       MultiShape(shapes)
     } else {
-      throw new RuntimeException(s"${shape.getShapeType} not supported for now")
+      Log4Error.invalidOperationError(false, s"Unsupported data type: ${shape.getShapeType}",
+      "only support SINGLE, MULTI")
+      null
     }
   }
 
@@ -101,7 +103,8 @@ object ShapeConverter extends DataConverter {
         shapeBuilder.addShape(subShapeBuilder.build)
       })
     } else {
-      throw new RuntimeException(s"${bigdlShape} type not supported !")
+      Log4Error.invalidOperationError(false, s"Unsupported data type: ${bigdlShape}",
+        "only support SINGLE, MULTI")
     }
   }
 }

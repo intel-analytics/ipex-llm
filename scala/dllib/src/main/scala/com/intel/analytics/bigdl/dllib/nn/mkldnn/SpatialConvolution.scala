@@ -675,7 +675,10 @@ class SpatialConvolution(
         getConvPaddingShape(inputHeight, inputWidth, kernelH, kernelW,
           strideH, strideW, dilationH, dilationW)
       case PaddingType.Custom => ConvPaddingShape(padH, padH, padW, padW)
-      case _ => throw new IllegalArgumentException()
+      case _ =>
+        Log4Error.invalidOperationError(false, s"unsupported type ${paddingType}",
+      "only support Same, Custom")
+        null
     }
   }
 
@@ -759,7 +762,8 @@ class SpatialConvolution(
     } else if (padH >= 0 && padW >= 0) {
       PaddingType.Custom
     } else {
-      throw new IllegalArgumentException("Invalid padding")
+      Log4Error.invalidOperationError(false,"Invalid padding")
+      PaddingType.Custom
     }
   }
 

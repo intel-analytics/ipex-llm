@@ -66,7 +66,10 @@ private[bigdl] object Utils {
     memoryData.shape.length match {
       case 2 => if (isInOrOut) Memory.Format.nc else Memory.Format.oi
       case 4 => if (isInOrOut) Memory.Format.nchw else Memory.Format.oihw
-      case _ => throw new UnsupportedOperationException("Linear only supports 2-D or 4-D")
+      case _ =>
+        Log4Error.invalidOperationError(false, s"unexpected shape ${memoryData.shape}",
+          "Linear only supports 2-D or 4-D")
+        0
     }
   }
 

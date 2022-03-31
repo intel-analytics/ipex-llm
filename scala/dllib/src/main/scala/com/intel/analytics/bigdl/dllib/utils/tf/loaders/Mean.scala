@@ -23,6 +23,7 @@ import com.intel.analytics.bigdl.dllib.nn.Sequential
 import com.intel.analytics.bigdl.dllib.nn.tf.Mean
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.dllib.utils.Log4Error
 import com.intel.analytics.bigdl.dllib.utils.tf.Context
 import org.tensorflow.framework.{DataType, NodeDef}
 
@@ -55,8 +56,10 @@ class Mean extends TensorflowOpsLoader {
         "Float"
       case DataType.DT_DOUBLE =>
         "Double"
-      case _ => throw new UnsupportedOperationException("Data Type: " + dataType +
+      case _ =>
+        Log4Error.invalidOperationError(false, "Data Type: " + dataType +
         " is not Unsupported yet.")
+        null
     }
     new MeanLoadTF[T](dt, squeeze)
   }
@@ -81,7 +84,8 @@ class MeanLoadTF[T: ClassTag](val dataType: String,
         dim.foreach(i => mean.add(Mean[T, Float](i, squeeze = squeeze)))
       case "Double" =>
         dim.foreach(i => mean.add(Mean[T, Double](i, squeeze = squeeze)))
-      case _ => throw new UnsupportedOperationException("Data Type: " + dataType +
+      case _ =>
+        Log4Error.invalidOperationError(false, "Data Type: " + dataType +
         " is not Unsupported yet.")
     }
     mean

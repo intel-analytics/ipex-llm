@@ -156,7 +156,10 @@ class CrossProduct[T: ClassTag](
     val (batch, size) = t.dim() match {
       case 1 => 1 -> t.size(1)
       case 2 => t.size(1) -> t.size(2)
-      case n => throw new IllegalArgumentException(s"wrong dim of input Tensor($n)!")
+      case n =>
+        Log4Error.unKnowExceptionError(false, s"wrong dim of input Tensor($n)!",
+        "expect 1 or 2")
+        null
     }
     (t.dim(), batch, size)
   }

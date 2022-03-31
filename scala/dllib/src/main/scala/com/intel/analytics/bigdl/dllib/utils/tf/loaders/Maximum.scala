@@ -22,6 +22,7 @@ import com.intel.analytics.bigdl.dllib.nn.ops.{Maximum => MaximumOps}
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
 import org.tensorflow.framework.{DataType, NodeDef}
 import Utils._
+import com.intel.analytics.bigdl.dllib.utils.Log4Error
 import com.intel.analytics.bigdl.dllib.utils.tf.Context
 
 import scala.reflect.ClassTag
@@ -35,7 +36,8 @@ class Maximum extends TensorflowOpsLoader {
     } else if (t == DataType.DT_DOUBLE) {
       MaximumOps[T, Double]()
     } else {
-      throw new UnsupportedOperationException(s"Not support load Maximum when type is $t")
+      Log4Error.invalidOperationError(false, s"Not support load Maximum when type is $t")
+      null
     }
   }
 }

@@ -59,12 +59,14 @@ private[bigdl] class UncompressedTensor[T: ClassTag](
 
     val tOffset = src.storageOffset() - 1 + srcOffset
     if (classTag[T] == classTag[Double]) {
-      throw new Exception("Double type is not supported")
+      Log4Error.invalidInputError(false, s"${classTag[T]} is not supported",
+        "only support Float")
     } else if (classTag[T] == classTag[Float]) {
       UncompressedTensor.toBytes(src.storage().array().asInstanceOf[Array[Float]], tOffset,
         buffer, bufferOffset + offset, length)
     } else {
-      throw new IllegalArgumentException
+      Log4Error.invalidInputError(false, s"${classTag[T]} is not supported",
+        "only support Float")
     }
 
     this
@@ -86,7 +88,9 @@ private[bigdl] class UncompressedTensor[T: ClassTag](
     } else if (classTag[T] == classTag[Float]) {
       ByteBuffer.wrap(buffer, offset * 4 + bufferOffset, length * 4)
     } else {
-      throw new IllegalArgumentException
+      Log4Error.invalidInputError(false, s"${classTag[T]} is not supported",
+        "only support Float and Double")
+      null
     }
   }
 
@@ -106,14 +110,16 @@ private[bigdl] class UncompressedTensor[T: ClassTag](
       "tensor is expected to be contiguous")
 
     if (classTag[T] == classTag[Double]) {
-      throw new Exception("Double type is not supported")
+      Log4Error.invalidInputError(false, s"${classTag[T]} is not supported",
+        "only support Float")
     } else if (classTag[T] == classTag[Float]) {
       val tdata = tensor.storage().array().asInstanceOf[Array[Float]]
       val toffset = tensor.storageOffset() - 1 + tgtOffset
       UncompressedTensor.fromBytes(buffer, srcOffset * 4 + bufferOffset,
         length * 4, tdata, toffset)
     } else {
-      throw new IllegalArgumentException
+      Log4Error.invalidInputError(false, s"${classTag[T]} is not supported",
+        "only support Float")
     }
   }
 

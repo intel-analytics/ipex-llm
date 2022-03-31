@@ -20,6 +20,7 @@ import com.google.protobuf.ByteString
 import com.intel.analytics.bigdl.dllib.nn.quantized.{ConvData, ConvWeight, LinearData, LinearWeight}
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric.{NumericBoolean, NumericChar, NumericDouble, NumericFloat, NumericInt, NumericLong, NumericShort, NumericString}
 import com.intel.analytics.bigdl.dllib.tensor.{DenseType, QuantizedTensor, QuantizedType, Tensor}
+import com.intel.analytics.bigdl.dllib.utils.Log4Error
 import com.intel.analytics.bigdl.dllib.utils.serializer.SerializeContext
 import com.intel.analytics.bigdl.dllib.utils.tf.TFTensorNumeric.NumericByteString
 import com.intel.analytics.bigdl.serialization.Bigdl.{BigDLTensor, DataType, TensorStorage}
@@ -37,7 +38,9 @@ trait TensorStorageManager {
         tensor.storage == null
       case QuantizedType =>
         tensor.asInstanceOf[QuantizedTensor[_]].getStorage == null
-      case t => throw new NotImplementedError(s"$t is not supported")
+      case t =>
+        Log4Error.invalidInputError(false, s"${tensor.getTensorType} is not supported",
+          "only support DenseType and QuantizedType")
     }
     emptyTensor
   }
@@ -53,7 +56,10 @@ trait TensorStorageManager {
         } else {
           System.identityHashCode(tensor.asInstanceOf[QuantizedTensor[T]].getStorage)
         }
-      case t => throw new NotImplementedError(s"$t is not supported")
+      case t =>
+        Log4Error.invalidInputError(false, s"${tensor.getTensorType} is not supported",
+          "only support DenseType and QuantizedType")
+        null
     }
   }
 
@@ -130,7 +136,9 @@ object BigDLTensorStorageManager extends TensorStorageManager {
         if (tensor.storage() == null) null else tensor.storage().array()
       case QuantizedType =>
         tensor.asInstanceOf[QuantizedTensor[Float]].getStorage
-      case t => throw new NotImplementedError(s"$t is not supported")
+      case t =>
+        Log4Error.invalidInputError(false, s"${tensor.getTensorType} is not supported",
+          "only support DenseType and QuantizedType")
     }
 
     if (storage != null) {
@@ -186,7 +194,9 @@ object ProtoTensorStorageManager extends TensorStorageManager {
                 case LinearData => storageBuilder.addIntData(2)
                 case LinearWeight => storageBuilder.addIntData(3)
               }
-            case t => throw new NotImplementedError(s"$t is not supported")
+            case t =>
+              Log4Error.invalidInputError(false, s"${tensor.getTensorType} is not supported",
+                "only support DenseType and QuantizedType")
           }
         }
       } else if (tensorNumeric == NumericDouble) {

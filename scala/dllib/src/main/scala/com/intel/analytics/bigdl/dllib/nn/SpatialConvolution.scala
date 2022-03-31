@@ -630,7 +630,9 @@ class SpatialConvolution[T: ClassTag](
                 padLeft, padTop, padRight, padBottom,
                 outputWidth, outputHeight)
               im2colTime += System.nanoTime() - before
-            case _ => throw new UnsupportedOperationException(s"Only Float/Double supported")
+            case _ =>
+              Log4Error.invalidInputError(false, s"got unexpected type ${ev.getType()}",
+                s"Only Float/Double supported")
           }
         }
         output2d.addmm(ev.fromType[Int](0), output2d, ev.fromType[Int](1), weight, fInput)
@@ -653,7 +655,9 @@ class SpatialConvolution[T: ClassTag](
                 padLeft, padTop, padRight, padBottom,
                 outputWidth, outputHeight)
               im2colTime += System.nanoTime() - before
-            case _ => throw new UnsupportedOperationException(s"Only Float/Double supported")
+            case _ =>
+              Log4Error.invalidInputError(false, s"got unexpected type ${ev.getType()}",
+                s"Only Float/Double supported")
           }
         }
         output2d.addmm(ev.fromType[Int](0), output2d, ev.fromType[Int](1), fInput, weight)
@@ -739,7 +743,9 @@ class SpatialConvolution[T: ClassTag](
               col2imTime += System.nanoTime() - before
             }
         }
-      case _ => throw new UnsupportedOperationException(s"Only Float/Double supported")
+      case _ =>
+        Log4Error.invalidInputError(false, s"got unexpected type ${ev.getType()}",
+          s"Only Float/Double supported")
     }
   }
 
@@ -863,7 +869,9 @@ class SpatialConvolution[T: ClassTag](
             }
         }
 
-      case _ => throw new UnsupportedOperationException(s"Only Float/Double supported")
+      case _ =>
+        Log4Error.invalidInputError(false, s"got unexpected type ${ev.getType()}",
+          s"Only Float/Double supported")
     }
   }
 
@@ -949,7 +957,9 @@ class SpatialConvolution[T: ClassTag](
             }
         }
 
-      case _ => throw new UnsupportedOperationException(s"Only Float/Double supported")
+      case _ =>
+        Log4Error.invalidInputError(false, s"got unexpected type ${ev.getType()}",
+          s"Only Float/Double supported")
     }
   }
 }

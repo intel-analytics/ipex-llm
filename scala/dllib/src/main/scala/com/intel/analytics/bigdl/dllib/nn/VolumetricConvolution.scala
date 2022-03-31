@@ -321,7 +321,9 @@ object VolumetricConvolution {
           padFront, padLeft, padTop, padBack, padRight, padBottom,
           nInputPlane,
           inputDepth, inputWidth, inputHeight, outputDepth, outputWidth, outputHeight)
-      case t => throw new NotImplementedError(s"$t is not supported")
+      case t =>
+        Log4Error.invalidInputError(false, s"${ev.getType()} is not supported",
+          "only support FloatType and DoubleType")
     }
 
     output2d.addmm(ev.zero, output2d, ev.one, weight, fInput)
@@ -436,7 +438,9 @@ object VolumetricConvolution {
           padFront, padLeft, padTop, padBack, padRight, padBottom,
           gradInput.size(1), gradInput.size(2), gradInput.size(4), gradInput.size(3),
           gradOutput.size(2), gradOutput.size(4), gradOutput.size(3))
-      case t => throw new NotImplementedError(s"$t is not supported")
+      case t =>
+        Log4Error.invalidInputError(false, s"${ev.getType()} is not supported",
+          "only support FloatType and DoubleType")
     }
 
   }
@@ -528,7 +532,9 @@ object VolumetricConvolution {
           padFront, padLeft, padTop, padBack, padRight, padBottom,
           nInputPlane,
           inputDepth, inputWidth, inputHeight, outputDepth, outputWidth, outputHeight)
-      case t => throw new NotImplementedError(s"$t is not supported")
+      case t =>
+        Log4Error.invalidInputError(false, s"${ev.getType()} is not supported",
+          "only support FloatType and DoubleType")
     }
   }
 

@@ -20,6 +20,7 @@ import java.nio.ByteOrder
 import com.intel.analytics.bigdl.Module
 import com.intel.analytics.bigdl.dllib.nn.ops.{Dilation2DBackpropInput => Dilation2DBackpropInputOps}
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.dllib.utils.Log4Error
 import com.intel.analytics.bigdl.dllib.utils.tf.Context
 import org.tensorflow.framework.{DataType, NodeDef}
 
@@ -42,8 +43,9 @@ class Dilation2DBackpropInput extends TensorflowOpsLoader {
     } else if (t == DataType.DT_DOUBLE) {
       Dilation2DBackpropInputOps[T, Double](strides, rates, padding)
     } else {
-      throw new UnsupportedOperationException(
+      Log4Error.invalidOperationError(false,
         s"Not support load Dilation2DBackpropInput when type is ${t}")
+      null
     }
   }
 }

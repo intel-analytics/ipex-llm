@@ -17,7 +17,7 @@
 package com.intel.analytics.bigdl.dllib.optim
 
 import com.google.common.util.concurrent.AtomicDouble
-import com.intel.analytics.bigdl.dllib.utils.Log4Error
+import com.intel.analytics.bigdl.dllib.utils.{Engine, Log4Error}
 import org.apache.spark.SparkContext
 import org.apache.spark.util.{AccumulatorV2, DoubleAccumulator}
 
@@ -161,9 +161,10 @@ class ArrayBufferAccumulator extends AccumulatorV2[ArrayBuffer[Double], ArrayBuf
 
   def merge(other: AccumulatorV2[ArrayBuffer[Double], ArrayBuffer[Double]]): Unit = other match {
     case o: ArrayBufferAccumulator => values ++= o.values
-    case _ => throw new UnsupportedOperationException(
-      s"Cannot merge ${this.getClass.getName} with ${other.getClass.getName}"
-    )
+    case _ =>
+      Log4Error.invalidOperationError(false,
+        s"Cannot merge ${this.getClass.getName} with ${other.getClass.getName}",
+      "expect with same type")
   }
 
 }

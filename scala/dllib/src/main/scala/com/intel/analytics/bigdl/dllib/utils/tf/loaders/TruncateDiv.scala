@@ -20,6 +20,7 @@ import java.nio.ByteOrder
 import com.intel.analytics.bigdl.Module
 import com.intel.analytics.bigdl.dllib.nn.ops.{TruncateDiv => TruncateDivOps}
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.dllib.utils.Log4Error
 import com.intel.analytics.bigdl.dllib.utils.tf.Context
 import org.tensorflow.framework.{DataType, NodeDef}
 
@@ -35,7 +36,7 @@ class TruncateDiv extends TensorflowOpsLoader {
     if (t == DataType.DT_INT32) {
       TruncateDivOps[T, Int]()
     } else {
-      throw new UnsupportedOperationException(s"Not support load TruncateDiv when type is ${t}")
+      Log4Error.invalidOperationError(false, s"Not support load TruncateDiv when type is ${t}")
     }
   }
 }

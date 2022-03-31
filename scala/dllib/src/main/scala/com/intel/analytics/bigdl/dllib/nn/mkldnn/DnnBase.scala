@@ -104,7 +104,10 @@ trait MklDnnModuleHelper extends MemoryOwner {
         }
       case d: HeapData =>
         Tensor[Float](paddingShape)
-      case _ => throw new UnsupportedOperationException("memory format is not supported")
+      case _ =>
+        Log4Error.invalidInputError(false, s"memory format $format is not supported",
+        "only support NativeData and HeapData")
+        null
     }
   }
 
@@ -119,7 +122,10 @@ trait MklDnnModuleHelper extends MemoryOwner {
         f match {
           case i: NativeData => i
           case i: HeapData => i.toNative()
-          case _ => throw new UnsupportedOperationException("Not support memory format")
+          case _ =>
+            Log4Error.invalidInputError(false, s"memory format $f is not supported",
+              "only support NativeData and HeapData")
+            null
         }
       }
     )

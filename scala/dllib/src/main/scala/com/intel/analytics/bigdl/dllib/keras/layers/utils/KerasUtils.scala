@@ -68,8 +68,10 @@ object KerasUtils {
         } else {
           RandomNormal(limits.head, limits(1))
         }
-      case _ => throw new IllegalArgumentException(s"Unsupported initialization method: " +
-        s"${init.toLowerCase()}")
+      case _ =>
+        Log4Error.invalidInputError(false, s"Unsupported initialization method: " +
+        s"${init.toLowerCase()}", "only support glorot_uniform, one, zero, uniform, normal")
+        null
     }
   }
 
@@ -87,7 +89,8 @@ object KerasUtils {
 
   def getActivationName[T: ClassTag](activation: AbstractModule[_, _, T]): String = {
     if (activation == null) {
-      throw new IllegalArgumentException("activation is null")
+      Log4Error.invalidInputError(false, "activation is null")
+      ""
     } else {
       activation match {
         case _: Tanh[T] => "tanh"
@@ -104,8 +107,9 @@ object KerasUtils {
         case _: LogSoftMax[T] => "log_softmax"
         case _: Identity[T] => "linear"
         case _: com.intel.analytics.bigdl.dllib.keras.layers.SoftMax[T] => "softmax"
-        case _ => throw new IllegalArgumentException("unkown activation"
-          + activation.getClass.getName)
+        case _ =>
+          Log4Error.invalidInputError(false, s"unkown activation ${activation.getClass.getName}")
+          null
       }
     }
 
@@ -130,8 +134,10 @@ object KerasUtils {
           case "log_sigmoid" => LogSigmoid[T]()
           case "log_softmax" => LogSoftMax[T]()
           case "linear" => Identity[T]().asInstanceOf[AbstractModule[Tensor[T], Tensor[T], T]]
-          case _ => throw new IllegalArgumentException(s"Invalid activation: " +
+          case _ =>
+            Log4Error.invalidInputError(false, s"Invalid activation: " +
             s"${activation.toLowerCase}. Only simple activations can be constructed using string")
+            null.asInstanceOf[AbstractModule[Tensor[T], Tensor[T], T]]
       }
     }
   }
@@ -203,7 +209,9 @@ object KerasUtils {
       case "cosine_proximity" => CosineProximity[T]()
       case "poisson" => Poisson[T]()
       case "rank_hinge" => RankHinge[T]()
-      case _ => throw new IllegalArgumentException(s"Unsupported loss: $loss")
+      case _ =>
+        Log4Error.invalidInputError(false, s"Unsupported loss: $loss")
+        null
     }
   }
 
@@ -225,8 +233,10 @@ object KerasUtils {
       case "sparse_categorical_crossentropy" => new SparseCategoricalAccuracy[T]()
       case "categorical_crossentropy" => new CategoricalAccuracy[T]()
       case "binary_crossentropy" => new BinaryAccuracy[T]()
-      case _ => throw new IllegalArgumentException(
-        s"Unsupported metric: accuracy and loss: ${loss} combination")
+      case _ =>
+        Log4Error.invalidInputError(false, s"Unsupported metric: accuracy and " +
+          s"loss: ${loss} combination")
+        null
     }
   }
 
@@ -245,7 +255,9 @@ object KerasUtils {
           case "auc" => new AUC[T]()
           case "loss" => new Loss[T]()
           case "treennaccuracy" => new TreeNNAccuracy[T]()
-          case _ => throw new IllegalArgumentException(s"Unsupported metric: $metric")
+          case _ =>
+            Log4Error.invalidInputError(false, s"Unsupported metric: $metric")
+            null
         }
       }
     }

@@ -18,6 +18,8 @@ package com.intel.analytics.bigdl.dllib.common
 
 import java.io.{InputStream, ObjectInputStream, ObjectStreamClass}
 
+import com.intel.analytics.bigdl.dllib.utils.Log4Error
+
 final class CheckedObjectInputStream(checkedClass: Class[_], inputStream: InputStream)
   extends ObjectInputStream(inputStream) {
 
@@ -33,8 +35,9 @@ final class CheckedObjectInputStream(checkedClass: Class[_], inputStream: InputS
       if (checkedClass.isAssignableFrom(resolvedClass)) {
         resolvedClass
       } else {
-        throw new UnsupportedOperationException(s"Illegal serialization of class:" +
+        Log4Error.invalidOperationError(false, s"Illegal serialization of class:" +
           s" $resolvedClass. Supported objects must be instances of ${checkedClass.getName}")
+        null
       }
     } else {
       super.resolveClass(objectStreamClass)

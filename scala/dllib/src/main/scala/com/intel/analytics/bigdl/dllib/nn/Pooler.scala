@@ -47,7 +47,9 @@ class Pooler[T: ClassTag] (
   } else if (classTag[T] == classTag[Double]) {
     (-Math.log(scales(0))/Math.log(2.0)).toInt
   } else {
-    throw new IllegalArgumentException("currently only Double and Float types are supported")
+    Log4Error.invalidInputError(false, s"${ev.getType()} is not supported",
+      "only support FloatType and DoubleType")
+    0
   }
 
   private val lvl_max = if (classTag[T] == classTag[Float]) {
@@ -55,7 +57,9 @@ class Pooler[T: ClassTag] (
   } else if (classTag[T] == classTag[Double]) {
     (-Math.log(scales(num_levels - 1))/Math.log(2.0)).toInt
   } else {
-    throw new IllegalArgumentException("currently only Double and Float types are supported")
+    Log4Error.invalidInputError(false, s"${ev.getType()} is not supported",
+      "only support FloatType and DoubleType")
+    0
   }
 
   private def levelMapping(
@@ -76,7 +80,9 @@ class Pooler[T: ClassTag] (
       } else if (classTag[T] == classTag[Double]) {
         area(rois(i)).asInstanceOf[Double]
       } else {
-        throw new IllegalArgumentException("currently only Double and Float types are supported")
+        Log4Error.invalidInputError(false, s"${ev.getType()} is not supported",
+          "only support FloatType and DoubleType")
+        0.0
       }
 
       val s = Math.sqrt(a)
@@ -160,7 +166,7 @@ class Pooler[T: ClassTag] (
   }
 
   override def updateGradInput(input: Table, gradOutput: Tensor[T]): Table = {
-    throw new UnsupportedOperationException("Not support backward propagation")
+    Log4Error.invalidOperationError(false, "Not support backward propagation")
   }
 
   override def toString: String = "nn.Pooler"

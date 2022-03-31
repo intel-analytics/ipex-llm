@@ -16,6 +16,7 @@
 package com.intel.analytics.bigdl.dllib.nn.abstractnn
 
 import com.intel.analytics.bigdl.dllib.nn.{InitializationMethod, Zeros}
+import com.intel.analytics.bigdl.dllib.utils.Log4Error
 
 /**
  * The trait that contains setInitMethod
@@ -39,8 +40,9 @@ trait Initializable {
   }
 
   def setInitMethod(initMethod: Array[InitializationMethod]): this.type = {
-    throw new UnsupportedOperationException(s"setInitMethod with a array of InitializationMethod" +
+    Log4Error.invalidOperationError(false, s"setInitMethod with a array of InitializationMethod" +
       s" does not support for ${this.toString}")
+    this
   }
 
   def reset(): Unit

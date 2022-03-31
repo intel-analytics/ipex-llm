@@ -17,6 +17,8 @@ package com.intel.analytics.bigdl.dllib.utils.tf
 
 import java.io.{File, FileInputStream}
 
+import com.intel.analytics.bigdl.dllib.utils.Log4Error
+
 /**
  * Internal use only.
  *
@@ -62,7 +64,8 @@ class FixedLengthRecordReader(fileName: File,
       this.dataBuffer = null
       data
     } else {
-      throw new NoSuchElementException("next on empty iterator")
+      Log4Error.invalidInputError(false, "next on empty iterator")
+      null
     }
   }
 }

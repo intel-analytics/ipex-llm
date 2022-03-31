@@ -170,7 +170,7 @@ class VolumetricAveragePooling[T: ClassTag](
           countIncludePad, nslices, itime, iwidth, iheight, otime, owidth, oheight,
           kT, kW, kH, dT, dW, dH, padT, padW, padH)
       } else {
-        throw new IllegalArgumentException("currently only support type float or double")
+        Log4Error.invalidOperationError(false,"currently only support type float or double")
       }
     } else {
       // batch mode
@@ -206,7 +206,7 @@ class VolumetricAveragePooling[T: ClassTag](
           p += 1
         }
       } else {
-        throw new IllegalArgumentException("currently only support type float or double")
+        Log4Error.invalidOperationError(false,"currently only support type float or double")
       }
 
     }
@@ -252,7 +252,7 @@ class VolumetricAveragePooling[T: ClassTag](
           countIncludePad, nslices, itime, iwidth, iheight, otime, owidth, oheight,
           dT, dW, dH, padT, padW, padH)
       } else {
-        throw new IllegalArgumentException("currently only support type float or double")
+        Log4Error.invalidOperationError(false,"currently only support type float or double")
       }
     }
     else {
@@ -287,7 +287,7 @@ class VolumetricAveragePooling[T: ClassTag](
           p += 1
         }
       } else {
-        throw new IllegalArgumentException("currently only support type float or double")
+        Log4Error.invalidOperationError(false,"currently only support type float or double")
       }
     }
     gradInput

@@ -18,10 +18,10 @@ package com.intel.analytics.bigdl.dllib.utils.tf.loaders
 import java.nio.ByteOrder
 
 import com.intel.analytics.bigdl.Module
-import com.intel.analytics.bigdl.dllib.nn.tf.{MergeOps, SwitchOps, Enter => EnterOps, Exit => ExitOps,
-  LoopCondition => LoopConditionOps, NextIteration => NextIterationOps}
+import com.intel.analytics.bigdl.dllib.nn.tf.{MergeOps, SwitchOps, Enter => EnterOps, Exit => ExitOps, LoopCondition => LoopConditionOps, NextIteration => NextIterationOps}
 import com.intel.analytics.bigdl.dllib.nn.tf.ControlDependency
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.dllib.utils.Log4Error
 import com.intel.analytics.bigdl.dllib.utils.tf.Context
 import com.intel.analytics.bigdl.dllib.utils.tf.Tensorflow._
 import com.intel.analytics.bigdl.dllib.utils.tf.loaders.Utils.getType
@@ -52,7 +52,7 @@ private[bigdl] class NextIteration extends TensorflowOpsLoader {
     } else if (t == DataType.DT_INT32) {
       new NextIterationOps[T, Int]()
     } else {
-      throw new UnsupportedOperationException(s"Not support numeric type $t")
+      Log4Error.invalidOperationError(false, s"Not support numeric type $t")
     }
   }
 }

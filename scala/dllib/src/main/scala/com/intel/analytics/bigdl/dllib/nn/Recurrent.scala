@@ -104,7 +104,7 @@ class Recurrent[T : ClassTag](
     } else topology.preTopology
 
     if (batchNormParams != null && preTopology == null) {
-      throw new IllegalArgumentException(
+      Log4Error.invalidOperationError(false,
         s"${topology.getName} does not support BatchNormalization." +
           s" Please add preTopology for it. You can simply using: " +
           s"override def preTopology: AbstractModule[Activity, Activity, T] = Identity()")

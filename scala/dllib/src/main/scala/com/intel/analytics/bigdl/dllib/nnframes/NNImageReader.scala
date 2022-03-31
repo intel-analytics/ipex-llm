@@ -20,6 +20,7 @@ import com.intel.analytics.bigdl.dllib.tensor.{Storage, Tensor}
 import com.intel.analytics.bigdl.dllib.feature.transform.vision.image.opencv.OpenCVMat
 import com.intel.analytics.bigdl.dllib.feature.transform.vision.image.ImageFeature
 import com.intel.analytics.bigdl.dllib.feature.image.ImageSet
+import com.intel.analytics.bigdl.dllib.utils.Log4Error
 import org.apache.spark.SparkContext
 import org.apache.spark.sql.functions._
 import org.apache.spark.sql.types._
@@ -67,8 +68,9 @@ object NNImageSchema {
         case 1 => CvType.CV_32FC1
         case 3 => CvType.CV_32FC3
         case 4 => CvType.CV_32FC4
-        case other => throw new IllegalArgumentException(s"Unsupported number of channels:" +
+        case other => Log4Error.invalidOperationError(false, s"Unsupported number of channels:" +
           s" $other in ${imf.uri()}. Only 1, 3 and 4 are supported.")
+          CvType.CV_32FC4
       }
       (cvType, floatData)
     } else if (imf.contains(ImageFeature.mat)) {
@@ -77,7 +79,7 @@ object NNImageSchema {
       val bytesData = OpenCVMat.toBytePixels(mat)._1
       (cvType, bytesData)
     } else {
-      throw new IllegalArgumentException(s"ImageFeature should have imageTensor or mat.")
+      Log4Error.invalidOperationError(false, s"ImageFeature should have imageTensor or mat.")
     }
 
     Row(
@@ -108,7 +110,8 @@ object NNImageSchema {
         val ten = Tensor(Storage(data)).resize(size)
         imf.update(ImageFeature.imageTensor, ten)
       case _ =>
-        throw new IllegalArgumentException(s"Unsupported data type in imageColumn: $storageType")
+        Log4Error.invalidOperationError(false,
+          s"Unsupported data type in imageColumn: $storageType")
     }
     imf
   }

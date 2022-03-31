@@ -17,6 +17,8 @@ package com.intel.analytics.bigdl.dllib.feature.common
 
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.dllib.utils.Log4Error
+
 import scala.reflect.ClassTag
 
 /**
@@ -36,8 +38,10 @@ class SeqToTensor[T: ClassTag](size: Array[Int])(implicit ev: TensorNumeric[T])
         case sd: Seq[Any] => matchSeq(sd)
         case mllibVec: org.apache.spark.mllib.linalg.Vector =>
           f.asInstanceOf[org.apache.spark.mllib.linalg.Vector ].toArray.map(ev.fromType(_))
-        case _ => throw new IllegalArgumentException("SeqToTensor only supports Float, Double, " +
-          s"Array[Float], Array[Double] or MLlib Vector but got $f")
+        case _ =>
+          Log4Error.invalidInputError(false, "SeqToTensor only supports Float, Double, " +
+            s"Array[Float], Array[Double] or MLlib Vector but got $f")
+          null
       }
       Tensor(feature, if (size.isEmpty) Array(feature.length) else size).contiguous()
     }
@@ -47,8 +51,10 @@ class SeqToTensor[T: ClassTag](size: Array[Int])(implicit ev: TensorNumeric[T])
     case dd: Double => list.asInstanceOf[Seq[Double]].map(ev.fromType(_)).toArray
     case ff: Float => list.asInstanceOf[Seq[Float]].map(ev.fromType(_)).toArray
     case ii: Int => list.asInstanceOf[Seq[Int]].map(ev.fromType(_)).toArray
-    case _ => throw new IllegalArgumentException(s"SeqToTensor only supports Array[Int], " +
-      s"Array[Float] and Array[Double] for ArrayType, but got $list")
+    case _ =>
+      Log4Error.invalidInputError(false, s"SeqToTensor only supports Array[Int], " +
+        s"Array[Float] and Array[Double] for ArrayType, but got $list")
+      null
   }
 }
 

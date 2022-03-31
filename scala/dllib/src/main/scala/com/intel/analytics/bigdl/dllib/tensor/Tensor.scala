@@ -406,7 +406,8 @@ trait Tensor[T] extends Serializable with TensorMath[T] with Activity {
   def resize(size1: Int, size2: Int, size3: Int, size4: Int, size5: Int): Tensor[T]
 
   def resize(sizes: Array[Int], nElement: Int): Tensor[T] = {
-    throw new UnsupportedOperationException("resize with nElement for sparse tensor only")
+    Log4Error.invalidOperationError(false, "resize with nElement for sparse tensor only")
+    null
   }
 
   //  def repeatTensor(result: Tensor, tensor: Tensor, size: Int*)
@@ -600,7 +601,8 @@ trait Tensor[T] extends Serializable with TensorMath[T] with Activity {
    * @return an array number of non-zero elements in first dimension.
    */
   def numNonZeroByRow(): Array[Int] = {
-    throw new UnsupportedOperationException("countNonZero for sparse tensor only")
+    Log4Error.invalidOperationError(false, "numNonZeroByRow for sparse tensor only")
+    null
   }
 
   /**
@@ -744,7 +746,7 @@ trait Tensor[T] extends Serializable with TensorMath[T] with Activity {
   def save(path : String, overWrite : Boolean = false) : this.type
 
   override def toTable: Table =
-    throw new IllegalArgumentException("Tensor cannot be cast to Table")
+    Log4Error.invalidOperationError(false,"Tensor cannot be cast to Table")
 
   /**
    * Return true because it's a Tensor implemented from [[Activity]]
@@ -913,7 +915,7 @@ object Tensor {
         case e: Float => ev.fromType(e)
         case e: Double => ev.fromType(e)
         case e: String => ev.fromType(e)
-        case _ => throw new IllegalArgumentException(s"Not support numeric type " +
+        case _ => Log4Error.invalidOperationError(false,s"Not support numeric type " +
           flatTable[Any](i).getClass.getName)
       }
     }
@@ -1314,7 +1316,7 @@ object Tensor {
     } else if (sparseTensor.isInstanceOf[DenseTensor[T]]) {
       res.copy(sparseTensor)
     } else {
-      throw new IllegalArgumentException("Tensor.dense: Illegal tensor type.")
+      Log4Error.invalidOperationError(false,"Tensor.dense: Illegal tensor type.")
     }
   }
 

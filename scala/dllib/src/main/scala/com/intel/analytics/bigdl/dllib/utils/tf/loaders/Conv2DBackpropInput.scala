@@ -57,7 +57,7 @@ class Conv2DBackpropInput extends TensorflowOpsLoader {
         val strideH = strideList(3)
         Conv2DTranspose[T](strideW, strideH, pW, pH, DataFormat.NCHW)
       case _ =>
-        throw new IllegalArgumentException(s"not supported data format: $format")
+        Log4Error.invalidOperationError(false,s"not supported data format: $format")
     }
     deconv.asInstanceOf[AbstractModule[Activity, Activity, T]]
   }

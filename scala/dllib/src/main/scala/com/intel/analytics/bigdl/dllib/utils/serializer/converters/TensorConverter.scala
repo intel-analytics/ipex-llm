@@ -20,6 +20,7 @@ import com.google.protobuf.ByteString
 import com.intel.analytics.bigdl.dllib.nn.quantized._
 import com.intel.analytics.bigdl.dllib.tensor._
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.dllib.utils.Log4Error
 import com.intel.analytics.bigdl.dllib.utils.serializer.{BigDLStorage, DeserializeContext, ProtoStorageType, SerializeContext}
 import com.intel.analytics.bigdl.serialization.Bigdl._
 
@@ -39,7 +40,9 @@ object TensorConverter extends DataConverter {
         tensor.storage == null
       case QuantizedType =>
         tensor.asInstanceOf[QuantizedTensor[_]].getStorage == null
-      case t => throw new NotImplementedError(s"$t is not supported")
+      case t =>
+        Log4Error.invalidInputError(false, s"${tensor.getTensorType} is not supported",
+        "only support DenseType and QuantizedType")
     }
     emptyTensor
   }
@@ -235,7 +238,7 @@ object TensorConverter extends DataConverter {
           }
         } else created.asInstanceOf[Storage[ByteString]]
         Tensor[ByteString](storage, offSet, sizes, strides)
-      case _ => throw new IllegalArgumentException(s"$dataType not supported in tensor now !")
+      case _ => Log4Error.invalidOperationError(false,s"$dataType not supported in tensor now !")
     }
     storages(tensorId) = tensor
     tensor
@@ -249,7 +252,7 @@ object TensorConverter extends DataConverter {
     } else if (storageType == BigDLStorage) {
       BigDLTensorStorageManager.setStorage(context, tensorBuilder, tensor)
     } else {
-      throw new IllegalArgumentException(s"$storageType not supported")
+      Log4Error.invalidOperationError(false,s"$storageType not supported")
     }
   }
 
@@ -280,7 +283,9 @@ object TensorConverter extends DataConverter {
             tensorBuilder.setTensorType(TensorType.DENSE)
           case QuantizedType =>
             tensorBuilder.setTensorType(TensorType.QUANT)
-          case t => throw new NotImplementedError(s"$t is not supported")
+          case t =>
+            Log4Error.invalidInputError(false, s"${tensor.getTensorType} is not supported",
+              "only support DenseType and QuantizedType")
         }
 
         val tensorEmpty = isEmptyTensor(tensor)

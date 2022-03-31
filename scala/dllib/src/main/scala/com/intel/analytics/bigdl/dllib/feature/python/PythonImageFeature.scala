@@ -249,8 +249,10 @@ class PythonImageFeature[T: ClassTag](implicit ev: TensorNumeric[T]) extends Pyt
     format match {
       case "NCHW" => ImageMatToTensor(toRGB, tensorKey, shareBuffer, DataFormat.NCHW)
       case "NHWC" => ImageMatToTensor(toRGB, tensorKey, shareBuffer, DataFormat.NHWC)
-      case other => throw new IllegalArgumentException(s"Unsupported format:" +
-        s" $format. Only NCHW and NHWC are supported.")
+      case other =>
+        Log4Error.invalidInputError(false, s"Unsupported format:" +
+          s" $format. Only NCHW and NHWC are supported.")
+        null
     }
   }
 

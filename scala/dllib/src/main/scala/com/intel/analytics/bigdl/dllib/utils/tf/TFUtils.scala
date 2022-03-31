@@ -146,7 +146,7 @@ object TFUtils {
           j += 1
         }
         Tensor(tmp, shape)
-      case t => throw new IllegalArgumentException(s"DataType: $t not supported yet")
+      case t => Log4Error.invalidOperationError(false,s"DataType: $t not supported yet")
     }
   }
 
@@ -183,7 +183,7 @@ object TFUtils {
       case DataType.DT_UINT16 =>
         val tmp = tfTensor.getIntValList.asScala.map(_.toInt).toArray
         Tensor(tmp, shape)
-      case t => throw new IllegalArgumentException(s"DataType: $t not supported yet")
+      case t => Log4Error.invalidOperationError(false,s"DataType: $t not supported yet")
     }
   }
 

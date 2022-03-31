@@ -63,7 +63,8 @@ private[bigdl] class FP16CompressedTensor[T: ClassTag](
       FP16CompressedTensor.toFP16(src.storage().array().asInstanceOf[Array[Float]], tOffset,
         buffer, bufferOffset + offset, length)
     } else {
-      throw new IllegalArgumentException
+      Log4Error.invalidInputError(false, s"${classTag[T]} is not supported",
+        "only support Float and Double")
     }
 
     this
@@ -84,7 +85,9 @@ private[bigdl] class FP16CompressedTensor[T: ClassTag](
     } else if (classTag[T] == classTag[Float]) {
       ByteBuffer.wrap(buffer, offset * 2 + bufferOffset, length * 2)
     } else {
-      throw new IllegalArgumentException
+      Log4Error.unKnowExceptionError(false, s"${classTag[T]} is not supported",
+        "only support Float and Double")
+      ByteBuffer.wrap(buffer, offset * 2 + bufferOffset, length * 2)
     }
   }
 
@@ -113,7 +116,8 @@ private[bigdl] class FP16CompressedTensor[T: ClassTag](
       FP16CompressedTensor.fromFP16(buffer, srcOffset * 2 + bufferOffset,
         length * 2, tdata, toffset)
     } else {
-      throw new IllegalArgumentException
+      Log4Error.invalidInputError(false, s"${classTag[T]} is not supported",
+        "only support Float and Double")
     }
   }
 

@@ -15,6 +15,7 @@
  */
 package org.apache.spark.ml
 
+import com.intel.analytics.bigdl.dllib.utils.Log4Error
 import org.apache.spark.SparkContext
 import org.apache.spark.ml.param.Params
 import org.apache.spark.ml.util.DefaultParamsReader.Metadata
@@ -47,7 +48,7 @@ object DefaultParamsWriterWrapper {
           instance.set(param, value)
         }
       case _ =>
-        throw new IllegalArgumentException(
+        Log4Error.invalidOperationError(false,
           s"Cannot recognize JSON metadata: ${metadata.metadataJson}.")
     }
   }

@@ -22,6 +22,7 @@ import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.dllib.utils.tf.Context
 import org.tensorflow.framework.{DataType, NodeDef}
 import com.intel.analytics.bigdl.dllib.nn.ops.RangeOps
+import com.intel.analytics.bigdl.dllib.utils.Log4Error
 
 import scala.reflect.ClassTag
 
@@ -39,7 +40,7 @@ class Range extends TensorflowOpsLoader {
     } else if (t == DataType.DT_INT32) {
       RangeOps[T, Int]()
     } else {
-      throw new UnsupportedOperationException(s"Not support load Log when type is ${t}")
+      Log4Error.invalidOperationError(false, s"Not support load Log when type is ${t}")
     }
   }
 }

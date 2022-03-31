@@ -134,7 +134,8 @@ abstract class Graph[T: ClassTag](
   def node(name: String): ModuleNode[T] = {
     val matchNodes = forwardNodes.filter(_.element.getName() == name).toArray
     if (matchNodes.length == 0) {
-      throw new NoSuchElementException(s"Can not find node with name $name")
+      Log4Error.unKnowExceptionError(false, s"Can not find node with name $name")
+      null
     } else {
       return matchNodes.head
     }

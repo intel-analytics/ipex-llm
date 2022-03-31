@@ -58,7 +58,7 @@ class Conv3DBackpropFilterV2 extends TensorflowOpsLoader {
         val dH = strideList(4)
         Conv3DBackpropFilterV2Ops[T](dT, dW, dH, pT, pW, pH, DataFormat.NCHW)
       case _ =>
-        throw new IllegalArgumentException(s"not supported data format: $format")
+        Log4Error.invalidOperationError(false,s"not supported data format: $format")
     }
     conv.asInstanceOf[AbstractModule[Activity, Activity, T]]
   }

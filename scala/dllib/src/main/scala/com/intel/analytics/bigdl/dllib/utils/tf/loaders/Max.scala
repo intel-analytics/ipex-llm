@@ -20,6 +20,7 @@ import java.nio.ByteOrder
 import com.intel.analytics.bigdl.Module
 import com.intel.analytics.bigdl.dllib.nn.ops.{Max => MaxOps}
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.dllib.utils.Log4Error
 import com.intel.analytics.bigdl.dllib.utils.tf.Context
 import org.tensorflow.framework.{DataType, NodeDef}
 
@@ -40,7 +41,8 @@ class Max extends TensorflowOpsLoader {
     } else if (t == DataType.DT_INT32) {
       MaxOps[T, Int](keepDims, true)
     } else {
-      throw new UnsupportedOperationException(s"Not support load Gather when type is ${t}")
+      Log4Error.invalidOperationError(false, s"Not support load Gather when type is ${t}")
+      null
     }
   }
 }

@@ -58,7 +58,7 @@ class DepthwiseConv2dNativeBackpropInput extends TensorflowOpsLoader {
         val strideH = strideList(3)
         DepthwiseConv2DBackpropInput[T](strideW, strideH, pW, pH, DataFormat.NCHW)
       case _ =>
-        throw new IllegalArgumentException(s"not supported data format: $format")
+        Log4Error.invalidOperationError(false,s"not supported data format: $format")
     }
     conv.asInstanceOf[AbstractModule[Activity, Activity, T]]
   }

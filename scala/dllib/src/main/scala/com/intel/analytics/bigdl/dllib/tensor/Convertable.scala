@@ -26,6 +26,8 @@ package com.intel.analytics.bigdl.dllib.tensor
  * trait, we'd have circular type definitions when compiling Numeric.
  */
 
+import com.intel.analytics.bigdl.dllib.utils.Log4Error
+
 import scala.language.implicitConversions
 import scala.{specialized => spec}
 
@@ -178,8 +180,10 @@ trait ConvertableFromFloat extends ConvertableFrom[Float] {
 
   implicit def toByte(a: Float): Byte = a.toByte
 
-  implicit def toBoolean(a: Float): Boolean =
-    throw new UnsupportedOperationException("Float cannot be cast to Boolean type")
+  implicit def toBoolean(a: Float): Boolean = {
+    Log4Error.invalidOperationError(false, "Float cannot be cast to Boolean type")
+    false
+  }
 }
 
 trait ConvertableFromDouble extends ConvertableFrom[Double] {
@@ -199,8 +203,10 @@ trait ConvertableFromDouble extends ConvertableFrom[Double] {
 
   implicit def toByte(a: Double): Byte = a.toByte
 
-  implicit def toBoolean(a: Double): Boolean =
-    throw new UnsupportedOperationException("Float cannot be cast to Boolean type")
+  implicit def toBoolean(a: Double): Boolean = {
+    Log4Error.invalidOperationError(false, "Float cannot be cast to Boolean type")
+    false
+  }
 }
 
 trait ConvertableFromInt extends ConvertableFrom[Int] {
@@ -220,8 +226,10 @@ trait ConvertableFromInt extends ConvertableFrom[Int] {
 
   implicit def toByte(a: Int): Byte = a.toByte
 
-  implicit def toBoolean(a: Int): Boolean =
-    throw new UnsupportedOperationException("Float cannot be cast to Boolean type")
+  implicit def toBoolean(a: Int): Boolean = {
+    Log4Error.invalidOperationError(false, "Float cannot be cast to Boolean type")
+    false
+  }
 }
 
 trait ConvertableFromShort extends ConvertableFrom[Short] {
@@ -241,8 +249,10 @@ trait ConvertableFromShort extends ConvertableFrom[Short] {
 
   implicit def toByte(a: Short): Byte = a.toByte
 
-  implicit def toBoolean(a: Short): Boolean =
-    throw new UnsupportedOperationException("Float cannot be cast to Boolean type")
+  implicit def toBoolean(a: Short): Boolean = {
+    Log4Error.invalidOperationError(false, "Float cannot be cast to Boolean type")
+    false
+  }
 }
 
 trait ConvertableFromLong extends ConvertableFrom[Long] {
@@ -262,61 +272,93 @@ trait ConvertableFromLong extends ConvertableFrom[Long] {
 
   implicit def toByte(a: Long): Byte = a.toByte
 
-  implicit def toBoolean(a: Long): Boolean =
-    throw new UnsupportedOperationException("Float cannot be cast to Boolean type")
+  implicit def toBoolean(a: Long): Boolean = {
+    Log4Error.invalidOperationError(false, "Float cannot be cast to Boolean type")
+    false
+  }
 }
 
 trait ConvertableFromBoolean extends ConvertableFrom[Boolean] {
-  implicit def toFloat(a: Boolean): Float =
-    throw new UnsupportedOperationException("Boolean cannot be cast to Float")
+  implicit def toFloat(a: Boolean): Float = {
+    Log4Error.invalidOperationError(false, "Boolean cannot be cast to Float type")
+    0.0f
+  }
 
-  implicit def toDouble(a: Boolean): Double =
-    throw new UnsupportedOperationException("Float cannot be cast to Boolean type")
+  implicit def toDouble(a: Boolean): Double = {
+    Log4Error.invalidOperationError(false, "Boolean cannot be cast to Double type")
+    0.0
+  }
 
-  implicit def toInt(a: Boolean): Int =
-    throw new UnsupportedOperationException("Float cannot be cast to Boolean type")
+  implicit def toInt(a: Boolean): Int = {
+    Log4Error.invalidOperationError(false, "Boolean cannot be cast to Int type")
+    0
+  }
 
-  implicit def toShort(a: Boolean): Short =
-    throw new UnsupportedOperationException("Float cannot be cast to Boolean type")
+  implicit def toShort(a: Boolean): Short = {
+    Log4Error.invalidOperationError(false, "Boolean cannot be cast to Short type")
+    0
+  }
 
-  implicit def toLong(a: Boolean): Long =
-    throw new UnsupportedOperationException("Float cannot be cast to Boolean type")
+  implicit def toLong(a: Boolean): Long = {
+    Log4Error.invalidOperationError(false, "Boolean cannot be cast to Long type")
+    0
+  }
 
   implicit def toString(a: Boolean): String = a.toString
 
-  implicit def toChar(a: Boolean): Char =
-    throw new UnsupportedOperationException("Float cannot be cast to Boolean")
+  implicit def toChar(a: Boolean): Char = {
+    Log4Error.invalidOperationError(false, "Boolean cannot be cast to char type")
+    'a'
+  }
 
-  implicit def toByte(a: Boolean): Byte =
-    throw new UnsupportedOperationException("Boolean cannot be cast to Byte")
+  implicit def toByte(a: Boolean): Byte = {
+    Log4Error.invalidOperationError(false, "Boolean cannot be cast to byte type")
+    0
+  }
 
   implicit def toBoolean(a: Boolean): Boolean = a
 }
 
 trait ConvertableFromString extends ConvertableFrom[String] {
-  implicit def toFloat(a: String): Float =
-    throw new UnsupportedOperationException("Float cannot be cast to String")
+  implicit def toFloat(a: String): Float = {
+    Log4Error.invalidOperationError(false, "string cannot be cast to Float type")
+    0.0f
+  }
 
-  implicit def toDouble(a: String): Double =
-    throw new UnsupportedOperationException("Double cannot be cast to String")
+  implicit def toDouble(a: String): Double = {
+    Log4Error.invalidOperationError(false, "string cannot be cast to Double type")
+    0.0
+  }
 
-  implicit def toInt(a: String): Int =
-    throw new UnsupportedOperationException("Int cannot be cast to String")
+  implicit def toInt(a: String): Int = {
+    Log4Error.invalidOperationError(false, "string cannot be cast to Int type")
+    0
+  }
 
-  implicit def toShort(a: String): Short =
-    throw new UnsupportedOperationException("Short cannot be cast to String")
+  implicit def toShort(a: String): Short = {
+    Log4Error.invalidOperationError(false, "string cannot be cast to Short type")
+    0
+  }
 
-  implicit def toLong(a: String): Long =
-    throw new UnsupportedOperationException("Long cannot be cast to String")
+  implicit def toLong(a: String): Long = {
+    Log4Error.invalidOperationError(false, "string cannot be cast to Long type")
+    0
+  }
 
-  implicit def toChar(a: String): Char =
-    throw new UnsupportedOperationException("Char cannot be cast to char type")
+  implicit def toChar(a: String): Char = {
+    Log4Error.invalidOperationError(false, "string cannot be cast to char type")
+    '0'
+  }
 
-  implicit def toBoolean(a: String): Boolean =
-    throw new UnsupportedOperationException("Boolean cannot be cast to String")
+  implicit def toBoolean(a: String): Boolean = {
+    Log4Error.invalidOperationError(false, "string cannot be cast to Boolean type")
+    false
+  }
 
-  implicit def toByte(a: String): Byte =
-    throw new UnsupportedOperationException("String cannot be cast to Byte type")
+  implicit def toByte(a: String): Byte = {
+    Log4Error.invalidOperationError(false, "string cannot be cast to byte type")
+    0
+  }
 
   implicit def toString(a: String): String = a
 }
@@ -332,8 +374,10 @@ trait ConvertableFromChar extends ConvertableFrom[Char] {
 
   implicit def toLong(a: Char): Long = a.toLong
 
-  implicit def toBoolean(a: Char): Boolean =
-    throw new UnsupportedOperationException("Char cannot be cast to boolean type")
+  implicit def toBoolean(a: Char): Boolean = {
+    Log4Error.invalidOperationError(false, "string cannot be cast to boolean type")
+    false
+  }
 
   implicit def toString(a: Char): String = a.toString
 
@@ -354,8 +398,10 @@ trait ConvertableFromByte extends ConvertableFrom[Byte] {
 
   implicit def toLong(a: Byte): Long = a.toLong
 
-  implicit def toBoolean(a: Byte): Boolean =
-    throw new UnsupportedOperationException("Byte cannot be cast to boolean type")
+  implicit def toBoolean(a: Byte): Boolean = {
+    Log4Error.invalidOperationError(false, "byte cannot be cast to boolean type")
+    false
+  }
 
   implicit def toString(a: Byte): String = a.toString
 

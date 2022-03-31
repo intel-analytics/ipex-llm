@@ -46,7 +46,7 @@ class MaxPool extends TensorflowOpsLoader {
         Log4Error.invalidInputError(strideList(1) == 1, s"not support strides on depth")
         (strideList(2), strideList(3), kernelList(2), kernelList(3))
       case _ =>
-        throw new IllegalArgumentException(s"not supported data format: $format")
+        Log4Error.invalidOperationError(false,s"not supported data format: $format")
     }
 
     val (pW, pH) =

@@ -77,7 +77,8 @@ class KerasIdentityWrapper[T: ClassTag]
 (val layer: AbstractModule[Activity, Activity, T])(implicit ev: TensorNumeric[T])
   extends KerasLayer[Activity, Activity, T](null) {
   if (layer.isKerasStyle()) {
-    throw new RuntimeException(s"We only accept torch layer here, but got: $layer")
+    Log4Error.invalidOperationError(false,
+      s"We only accept torch layer here, but got: $layer")
   }
   override def computeOutputShape(inputShape: Shape): Shape = {
     inputShape
@@ -310,7 +311,8 @@ abstract class KerasLayer[A <: Activity: ClassTag, B <: Activity: ClassTag, T: C
   override def build(calcInputShape: Shape): Shape = {
     // Input would be reused multiple time in inputs for StaticGraph
     if (isBuilt() && !this.allowRebuilt()) {
-      throw new RuntimeException(s"Should not build this module: $this multiple times")
+      Log4Error.invalidOperationError(false,
+        s"Should not build this module: $this multiple times")
     }
     labor = doBuild(calcInputShape)
     checkWithCurrentInputShape(calcInputShape)

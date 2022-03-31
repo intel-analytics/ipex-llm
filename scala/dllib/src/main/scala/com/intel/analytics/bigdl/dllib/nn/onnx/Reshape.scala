@@ -48,7 +48,9 @@ class Reshape[T: ClassTag](var shape: Array[Int] = null)(implicit ev: TensorNume
     } else if (input.isTensor) {
       dataTensor = input.toTensor[T]
     } else {
-      throw new IllegalArgumentException()
+      Log4Error.invalidOperationError(false, s"unsupported type ${input}",
+        "only support Table, Tensor")
+      null
     }
     Log4Error.invalidInputError(shape != null, "shape should not be null")
     val innerReshaper = nn.Reshape(shape, batchMode = Option(false))
@@ -62,7 +64,9 @@ class Reshape[T: ClassTag](var shape: Array[Int] = null)(implicit ev: TensorNume
     } else if (input.isTensor) {
       input.toTensor[T]
     } else {
-      throw new IllegalArgumentException()
+      Log4Error.invalidOperationError(false, s"unsupported type ${input}",
+        "only support Tensor, Table")
+      null
     }
     gradInput = inputTensor.zero()
     gradInput

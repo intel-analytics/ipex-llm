@@ -18,7 +18,7 @@ package com.intel.analytics.bigdl.dllib.keras.layers
 
 import com.intel.analytics.bigdl.dllib.nn.internal.{ZeroPadding3D => BigDLZeroPadding3D}
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.dllib.utils.Shape
+import com.intel.analytics.bigdl.dllib.utils.{Log4Error, Shape}
 import com.intel.analytics.bigdl.dllib.keras.Net
 import com.intel.analytics.bigdl.dllib.keras.layers.utils.KerasUtils
 
@@ -51,8 +51,10 @@ object ZeroPadding3D {
     dimOrdering: String = "th",
     inputShape: Shape = null)(implicit ev: TensorNumeric[T]) : ZeroPadding3D[T] = {
     val paddingArray = padding match {
-      case null => throw new IllegalArgumentException("For ZeroPadding3D, " +
-        "padding can not be null, please input int tuple of length 3")
+      case null =>
+        Log4Error.invalidInputError(false, "For ZeroPadding3D, " +
+        "padding can not be null", "please input int tuple of length 3")
+        null
       case _ => Array(padding._1, padding._2, padding._3)
     }
     new ZeroPadding3D[T](paddingArray, KerasUtils.toBigDLFormat5D(dimOrdering), inputShape)

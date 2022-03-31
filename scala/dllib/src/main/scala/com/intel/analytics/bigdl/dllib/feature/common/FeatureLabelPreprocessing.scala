@@ -58,8 +58,9 @@ class FeatureLabelPreprocessing[F, X, L, T: ClassTag] private[bigdl] (
               Sample[T](fat)
           }
         case _ =>
-          throw new UnsupportedOperationException(
+          Log4Error.unKnowExceptionError(false,
             s"FeatureLabelPreprocessing expects table or tensor, but got $featureTensors")
+          null
       }
     }
   }

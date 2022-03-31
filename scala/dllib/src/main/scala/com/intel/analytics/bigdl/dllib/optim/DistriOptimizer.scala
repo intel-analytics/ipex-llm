@@ -580,7 +580,10 @@ object DistriOptimizer extends AbstractOptimizer {
     val _subModelNumber = Engine.getEngineType match {
       case MklBlas => coresPerNode
       case MklDnn => 1
-      case _ => throw new IllegalArgumentException
+      case _ =>
+        Log4Error.invalidInputError(false, s"unexpected engine type ${Engine.getEngineType}",
+          "only support MklBlas and MklDnn")
+        0
     }
 
     Log4Error.invalidOperationError(dataset.originRDD().partitions.length == nodeNumber,
@@ -879,8 +882,9 @@ class DistriOptimizer[T: ClassTag](
     } else if (optimMethods.contains(trainingModel.getName())) {
       Map(trainingModel.getName() -> (1, modelParameters._1.nElement()))
     } else {
-      throw new IllegalArgumentException(s"${trainingModel.getName()} doesn't " +
+      Log4Error.invalidOperationError(false,s"${trainingModel.getName()} doesn't " +
         s"have corresponding OptimMethod")
+      null
     }
 
     LarsSGD.containsLarsSGD(optimMethods).foreach(weightDecay =>

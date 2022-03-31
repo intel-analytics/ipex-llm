@@ -97,7 +97,9 @@ private[bigdl] class SpatialConvolution[T: ClassTag](
         case FloatType =>
           weight(i - 1).asInstanceOf[QuantizedTensor[T]].release()
           weight(i - 1) = QuantizedTensor[T](groupWeight, params)
-        case _ => throw new UnsupportedOperationException(s"Only support Float for quantized model")
+        case _ =>
+          Log4Error.invalidInputError(false, s"${ev.getType()} is not supported",
+            "only support Float for quantized model")
       }
     }
 
@@ -160,7 +162,9 @@ private[bigdl] class SpatialConvolution[T: ClassTag](
             im2ColAndGemmFloat(batch)
           batch += 1
         }
-      case _ => throw new UnsupportedOperationException(s"Only support Float for quantized model")
+      case _ =>
+        Log4Error.invalidInputError(false, s"${ev.getType()} is not supported",
+          "only support Float for quantized model")
     }
 
     @inline def im2ColAndGemmFloat(batch: Int): Unit = {
@@ -214,7 +218,9 @@ private[bigdl] class SpatialConvolution[T: ClassTag](
   }
 
   override def updateGradInput(input: Tensor[T], gradOutput: Tensor[T]): Tensor[T] = {
-    throw new UnsupportedOperationException(s"Doesn't updateGradInput for quantized model")
+    Log4Error.invalidOperationError(false,
+      s"Doesn't support updateGradInput for quantized model")
+    input
   }
 
   override def parameters(): (Array[Tensor[T]], Array[Tensor[T]]) = {
@@ -308,7 +314,9 @@ object SpatialConvolution extends QuantSerializer {
       case FloatType =>
         DataConverter.setAttributeValue(context, weightBuilder, conv.weight,
           universe.typeOf[Array[Tensor[Float]]])
-      case _ => throw new UnsupportedOperationException(s"Only support Float for quantized model")
+      case _ =>
+        Log4Error.invalidOperationError(false,
+          s"Doesn't support updateGradInput for quantized model")
     }
     modelBuilder.putAttr("weights", weightBuilder.build)
   }

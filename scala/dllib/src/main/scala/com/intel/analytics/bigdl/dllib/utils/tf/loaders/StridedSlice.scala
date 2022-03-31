@@ -52,7 +52,7 @@ class StridedSlice extends TensorflowOpsLoader {
       StridedSliceOps[T, Double](beginMask, endMask, ellipsisMask,
         newAxisMask, shrinkAxisMask, true)
     } else {
-      throw new UnsupportedOperationException(s"Not support load StridedSlice with type ${t}")
+      Log4Error.invalidOperationError(false, s"Not support load StridedSlice with type ${t}")
     }
   }
 }

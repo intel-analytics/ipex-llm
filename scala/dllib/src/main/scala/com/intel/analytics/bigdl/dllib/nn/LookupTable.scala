@@ -185,7 +185,7 @@ class LookupTable[T: ClassTag]
       }
     } catch {
       case e: IllegalArgumentException =>
-        throw new IllegalArgumentException(
+        Log4Error.invalidInputError(false,
           s"LookupTable updateOutput get exception:${e.getMessage}\n" +
           s"please ensure elements of your input will not exceed ${nIndex}")
       case e: Exception =>

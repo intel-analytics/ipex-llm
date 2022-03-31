@@ -30,7 +30,7 @@
 //        println("Using main memory")
 //        DRAMBasicMemoryAllocator.instance
 //      case _ =>
-//        throw new IllegalArgumentException(s"Not supported memoryType: ${memoryType}")
+//        Log4Error.invalidOperationError(false,s"Not supported memoryType: ${memoryType}")
 //    }
 //  }
 // }

@@ -18,7 +18,7 @@ package com.intel.analytics.bigdl.dllib.nn.quantized
 
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.dllib.utils.Table
+import com.intel.analytics.bigdl.dllib.utils.{Log4Error, Table}
 import com.intel.analytics.bigdl.dllib.utils.serializer._
 import com.intel.analytics.bigdl.dllib.utils.serializer.converters.TensorConverter
 import com.intel.analytics.bigdl.serialization.Bigdl.{AttrValue, BigDLModule}
@@ -91,7 +91,7 @@ trait QuantSerializer extends ModuleSerializable {
       serializeBias(context, modelBuilder)
       serializeOthers(context, modelBuilder)
     } else {
-      throw new IllegalArgumentException(s"$storageType not supported!")
+      Log4Error.invalidOperationError(false,s"$storageType not supported!")
     }
   }
 

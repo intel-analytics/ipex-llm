@@ -28,6 +28,7 @@ import com.intel.analytics.bigdl.{Criterion, Module}
 import com.intel.analytics.bigdl.dllib.common.PythonZoo
 import com.intel.analytics.bigdl.dllib.feature.common._
 import com.intel.analytics.bigdl.dllib.feature.image.{ImageProcessing, RowToImageFeature}
+import com.intel.analytics.bigdl.dllib.utils.Log4Error
 
 import scala.collection.mutable
 // import com.intel.analytics.bigdl.dllib.feature.pmem._
@@ -186,7 +187,9 @@ class PythonNNFrames[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonZ
     val memType = level.trim.toUpperCase match {
       case "DRAM" => DRAM
       case "DISK_AND_DRAM" => DISK_AND_DRAM(numSlice)
-      case _ => throw new IllegalArgumentException(s"$level is not supported.")
+      case _ =>
+        Log4Error.invalidOperationError(false,s"$level is not supported.")
+        DRAM
     }
     estimator.setDataCacheLevel(memType)
   }
