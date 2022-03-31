@@ -84,4 +84,3 @@ def eval_openvino(model, input_sample=None, xml_path="model.xml"):
 
 def exit_openvino(model):
     model.ov_infer_engine.detach(model)
-

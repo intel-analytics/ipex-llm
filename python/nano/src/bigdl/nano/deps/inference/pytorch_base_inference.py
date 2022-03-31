@@ -18,6 +18,7 @@ import inspect
 from torch.utils.data import DataLoader
 import torch
 
+
 class PytorchBaseInference:
     def __init__(self):
         super().__init__()
@@ -66,7 +67,7 @@ def get_input_example(model: LightningModuleFromTorch, input_sample):
         if getattr(model, "example_input_array", None):
             input_sample = model.example_input_array
         elif model.trainer is not None:
-            for dataloader in [model.test_dataloader(), model.train_dataloader(), 
+            for dataloader in [model.test_dataloader(), model.train_dataloader(),
                                model.val_dataloader()]:
                 if dataloader is not None:
                     input_sample = tuple(next(iter(dataloader))[:-1])
@@ -99,10 +100,10 @@ def export(model, input_sample=None, onnx_path="model.onnx", dynamic_axes=True):
             dynamic_axes[arg] = {0: 'batch_size'}  # set all dim0 to be dynamic
     else:
         dynamic_axes = {}
-    default_onnx_export_args = {'export_params':    True,
-                                'opset_version':    11,  # version = 11 by default
-                                'do_constant_folding':  True,
-                                'input_names':  forward_args,
+    default_onnx_export_args = {'export_params': True,
+                                'opset_version': 11,  # version = 11 by default
+                                'do_constant_folding': True,
+                                'input_names': forward_args,
                                 'dynamic_axes': dynamic_axes,
                                 }
 

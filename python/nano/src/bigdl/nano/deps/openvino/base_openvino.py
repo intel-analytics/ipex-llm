@@ -15,9 +15,10 @@
 #
 try:
     from openvino.inference_engine import IECore
-except:
+except ImportError:
     raise ImportError("To enable openvino inference, you need to install it by:\n"
                       "\t\t pip install openvino-dev")
+
 
 class BaseOpenVINOInference:
     def __init__(self, ie_network=None):

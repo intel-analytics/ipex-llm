@@ -17,11 +17,13 @@ from functools import partial
 from ..utility import LazyImport
 torch_funcs = LazyImport('bigdl.nano.deps.openvino.torch_funcs')
 
+
 def bind_openvino_methods(pl_model):
     pl_model.export_openvino = partial(torch_funcs.export, pl_model)
     pl_model.eval_openvino = partial(torch_funcs.eval_openvino, pl_model)
     pl_model.exit_openvino = partial(torch_funcs.exit_openvino, pl_model)
     return pl_model
+
 
 def export(model, input_sample=None, xml_path="model.xml"):
     torch_funcs.export(model, input_sample, xml_path)
