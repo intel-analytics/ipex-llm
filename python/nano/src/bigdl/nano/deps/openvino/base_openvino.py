@@ -13,8 +13,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-from openvino.inference_engine import IECore
-
+try:
+    from openvino.inference_engine import IECore
+except:
+    raise ImportError("To enable openvino inference, you need to install it by:\n"
+                      "\t\t pip install openvino-dev")
 
 class BaseOpenVINOInference:
     def __init__(self, ie_network=None):
