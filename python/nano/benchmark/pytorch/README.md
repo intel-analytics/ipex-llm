@@ -47,6 +47,10 @@ python pytorch-cat-vs-dog.py
 * `--batch_size` training batch size.Default: 32.
 * `--epochs` training epoch number for performance test.Default: 2.
 * `--root_dir` path to cat vs dog dataset which should have two folders `cat` and `dog`, each containing cat and dog pictures. Default is None, i.e. download dataset before training.
+* `--freeze` if force finetune freezed, None to test both cases, True/False to test corresponding case
+* `--remove_data` if to remove dataset after performance test. Default is true, i.e. remove after test
+* `--output_to_csv` if output performance test result to csv file. Default: True
+* `--csv_path` output performance test result to csv file
 
 ## Performance Result
 ### ResNet 50
