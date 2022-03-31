@@ -18,7 +18,7 @@ import shutil
 import pytest
 
 from bigdl.orca.test_zoo_utils import ZooTestCase
-from bigdl.chronos.model.MTNet_keras import MTNetKeras
+from bigdl.chronos.model.tf2.MTNet_keras import MTNetKeras
 from bigdl.chronos.data import TSDataset
 import pandas as pd
 import numpy as np
@@ -52,7 +52,7 @@ def create_data():
     return tsdata_train, tsdata_test
 
 
-@pytest.mark.skipif(tf.__version__ > '2.0.0', reason="Run only when tf==1.15.0.")
+@pytest.mark.skipif(tf.__version__ < '2.0.0', reason="Run only when tf>2.0.0")
 class TestMTNetKeras(ZooTestCase):
 
     def setup_method(self, method):
