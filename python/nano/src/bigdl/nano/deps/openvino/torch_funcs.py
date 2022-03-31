@@ -15,7 +15,6 @@
 #
 
 from functools import partial
-from openvino.inference_engine import IECore
 from .base_openvino import BaseOpenVINOInference, convert_onnx_to_xml
 from ..inference.pytorch_base_inference import PytorchBaseInference
 from ..inference.pytorch_base_inference import export as export_to_onnx
@@ -86,8 +85,3 @@ def eval_openvino(model, input_sample=None, xml_path="model.xml"):
 def exit_openvino(model):
     model.ov_infer_engine.detach(model)
 
-
-def bind_openvino_methods(pl_model: torch.nn.Module):
-    pl_model.eval_openvino = partial(eval_openvino, pl_model)
-    pl_model.exit_openvino = partial(exit_openvino, pl_model)
-    return pl_model
