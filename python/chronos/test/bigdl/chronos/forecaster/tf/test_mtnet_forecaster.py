@@ -48,7 +48,7 @@ def create_data():
         tsdata.roll(lookback=lookback, horizon=horizon)
     return tsdata_train, tsdata_test
 
-@pytest.mark.skipif(tf.__version__ >= '2.0.0', reason="Run only when tf==1.15.0.")
+@pytest.mark.skipif(tf.__version__ < '2.0.0', reason="Run only when tf>2.0.0.")
 class TestChronosModelMTNetForecaster(TestCase):
 
     def setUp(self):
@@ -61,28 +61,28 @@ class TestChronosModelMTNetForecaster(TestCase):
         # TODO hacking to fix a bug
         train_data, test_data = create_data()
         self.x_train, y_train = train_data.to_numpy()
-        self.y_train = y_train[:, :, 0]
+        self.y_train = y_train.reshape(y_train.shape[0], y_train.shape[-1])
         self.x_val, y_val = test_data.to_numpy()
-        self.y_val = y_val[:, :, 0]
-        self.x_test, _ = test_data.to_numpy()
-        from bigdl.chronos.forecaster.mtnet_forecaster import MTNetForecaster
+        self.y_val = y_val.reshape(y_val.shape[0], y_val.shape[-1])
+        self.x_test, y_test = test_data.to_numpy()
+        self.y_test = y_test.reshape(y_test.shape[0], y_test.shape[-1])
+        from bigdl.chronos.forecaster.tf.mtnet_forecaster import MTNetForecaster
         model = MTNetForecaster(target_dim=1,
                                 feature_dim=self.x_train.shape[-1],
                                 long_series_num=4,
                                 series_length=1
                                 )
-        x_train_long, x_train_short = model.preprocess_input(self.x_train)
-        x_val_long, x_val_short = model.preprocess_input(self.x_val)
-        x_test_long, x_test_short = model.preprocess_input(self.x_test)
+        # x_train_long, x_train_short = model.preprocess_input(self.x_train)
+        # x_val_long, x_val_short = model.preprocess_input(self.x_val)
+        # x_test_long, x_test_short = model.preprocess_input(self.x_test)
 
-        model.fit([x_train_long, x_train_short],
-                  self.y_train,
-                  validation_data=([x_val_long, x_val_short], self.y_val),
-                  batch_size=32,
-                  distributed=False)
-        assert model.evaluate([x_val_long, x_val_short], self.y_val)
-        predict_result = model.predict([x_test_long, x_test_short])
-        assert predict_result.shape == (self.x_test.shape[0], 1)
+        model.fit(data=(self.x_train, y_train),
+                  validation_data=(self.x_val, y_val),
+                  epochs=2,
+                  batch_size=32)
+        assert model.evaluate(data=(self.x_test, self.y_test))
+        predict_result = model.predict(self.x_test)
+        assert predict_result.shape == (self.x_test.shape[0], self.x_test.shape[-1])
 
 
 if __name__ == "__main__":

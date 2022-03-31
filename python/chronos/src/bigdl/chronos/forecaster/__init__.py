@@ -59,7 +59,7 @@ if torch_available:
     if orca_available:
         from .tcmf_forecaster import TCMFForecaster
 if tf_available:
-    from .mtnet_forecaster import MTNetForecaster
+    from .tf.mtnet_forecaster import MTNetForecaster
 if prophet_available:
     from .prophet_forecaster import ProphetForecaster
 if arima_available:

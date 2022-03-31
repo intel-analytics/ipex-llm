@@ -15,10 +15,12 @@
 #
 
 from bigdl.chronos.model.tf1.MTNet_keras import MTNetKeras as MTNetKerasModel
-from bigdl.chronos.forecaster.tfpark_forecaster import TFParkForecaster
+from bigdl.chronos.model.tf2.MTNet_keras import MTNetKeras as MTNetKerasModel
+from bigdl.chronos.forecaster.abstract import Forecaster
+from bigdl.chronos.metric.forecast_metrics import Evaluator
 
 
-class MTNetForecaster(TFParkForecaster):
+class MTNetForecaster(Forecaster):
     """
         Example:
             >>> #The dataset is split into x_train, x_val, x_test, y_train, y_val, y_test
@@ -91,30 +93,28 @@ class MTNetForecaster(TFParkForecaster):
             "rnn_dropout": rnn_dropout,
             "loss": loss
         }
-        self._internal = None
-
         super().__init__()
 
-    def _build(self):
-        """
-        build a MTNet model in tf.keras
+        self.internal = MTNetKerasModel(check_optional_config=self.check_optional_config)
 
-        :return: a tf.keras MTNet model
-        """
-        # TODO change this function call after MTNet fixes
-        self.internal = MTNetKerasModel(
-            check_optional_config=self.check_optional_config)
-        self.internal.apply_config(config=self.model_config)
-        return self.internal.build(config=self.model_config)
+    def fit(self, data, epochs=2, batch_size=32, validation_data=None):
+        self.model_config.update({'batch_size': batch_size})
+        self.internal.fit_eval(data, validation_data=validation_data, epochs=epochs, verbose=1, **self.model_config)
 
-    def preprocess_input(self, x):
+    def predict(self, data):
         """
-        The original rolled features needs an extra step to process.
-        This should be called before train_x, validation_x, and test_x
-
-        :param x: the original samples from rolling
-
-        :return: a tuple (long_term_x, short_term_x) which are long term and short term
-            history respectively
+        :param data: x's a numpy dataset.
         """
-        return self.internal._reshape_input_x(x)
+        yhat = self.internal.predict(data)
+        return yhat
+
+    def evaluate(self, data, metrics=["mae"], multioutput='raw_values'):
+        yhat = self.internal.predict(data[0])
+        return [Evaluator.evaluate(m, y_true=data[1],
+                                   y_pred=yhat, aggregate=multioutput) for m in metrics]
+
+    def save(self, checkpoint):
+        self.internal.save(checkpoint_file=checkpoint)
+
+    def load(self, checkpoint):
+        self.internal.restore(checkpoint, self.model_config)
