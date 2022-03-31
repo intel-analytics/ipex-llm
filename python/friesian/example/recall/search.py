@@ -8,7 +8,7 @@ spark = OrcaContext.get_spark_session()
 
 start = time.time()
 df = spark.read.parquet("data.parquet").repartition(8) # coalesce
-rdd = df.rdd.filter(lambda x: x[0] < 10000)
+rdd = df.rdd #.filter(lambda x: x[0] < 10000)
 idx_path = "flatl2.idx"
 
 # faiss index is ~3G and if there are too many partitions, may easily run OOM.
