@@ -61,19 +61,47 @@ object FeatureNearlineUtils {
   }
 
   def loadItemNeighborRDD(spark: SparkSession, redis: RedisUtils): Unit = {
-    assert(NearlineUtils.helper.initialItemNeighborPath != null, "initialSimilarItemsPath " +
+    assert(NearlineUtils.helper.initialItemDataPath != null, "initialSimilarItemsPath " +
       "should be provided if loadInitialSimilarData is true")
-    if (NearlineUtils.helper.initialItemNeighborPath != null) {
+    if (NearlineUtils.helper.initialItemDataPath != null) {
       assert(NearlineUtils.helper.itemIDColumn != null)
-      assert(NearlineUtils.helper.itemNeighborColumn != null)
+      assert(NearlineUtils.helper.userFeatureColumns != null)
       logger.info("Start loading similar items...")
-      redis.setSchema("item", NearlineUtils.helper.itemNeighborColumn)
+      redis.setSchema("item_neighbor", NearlineUtils.helper.userFeatureColumns)
       val neighborCOlumns = Array[String](NearlineUtils.helper.itemIDColumn,
-        NearlineUtils.helper.itemNeighborColumn)
-      divideFileAndLoad(spark, NearlineUtils.helper.initialItemDataPath, neighborCOlumns,
-        "item")
+        NearlineUtils.helper.userFeatureColumns)
+      divideFileAndLoad1(spark, NearlineUtils.helper.initialItemDataPath, neighborCOlumns,
+        "item_neighbor")
     }
     logger.info(s"Insert finished")
+  }
+  def divideFileAndLoad1(spark: SparkSession, dataDir: String, featureCols: Array[String],
+                        keyPrefix: String): Unit = {
+    var totalCnt: Long = 0
+    val readList = NearlineUtils.getListOfFiles(dataDir)
+    val start = System.currentTimeMillis()
+    for (parquetFiles <- readList) {
+      var df = spark.read.parquet(parquetFiles: _*)
+      df = df.select(featureCols.map(col): _*).distinct()
+      val cnt = df.count()
+      totalCnt = totalCnt + cnt
+      logger.info(s"Load ${cnt} features into redis.")
+      val featureRDD = df.rdd.map(row => {
+        val id = row.get(0).toString
+        val rowArr = row.get(1).toString
+        List(id, rowArr).asJava
+      })
+      featureRDD.foreachPartition { partition =>
+        if (partition.nonEmpty) {
+          val redis = RedisUtils.getInstance(256,
+            NearlineUtils.helper.redisHostPort,
+            NearlineUtils.helper.redisKeyPrefix, NearlineUtils.helper.itemSlotType)
+          redis.Mset(keyPrefix, partition.toArray)
+        }
+      }
+    }
+    val end = System.currentTimeMillis()
+    logger.info(s"Insert ${totalCnt} features into redis, takes: ${(end - start) / 1000}s")
   }
   def divideFileAndLoad(spark: SparkSession, dataDir: String, featureCols: Array[String],
                         keyPrefix: String): Unit = {

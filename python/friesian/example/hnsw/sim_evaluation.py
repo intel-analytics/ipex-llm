@@ -20,8 +20,13 @@ from pyspark.sql.functions import array
 from bigdl.orca import init_orca_context, stop_orca_context
 from bigdl.orca.data.file import exists, makedirs
 from bigdl.friesian.feature import FeatureTable
-from bigdl.orca.learn.tf2.estimator import Estimator
-from friesian.example.two_tower.model import *
+from friesian.example.two_tower.model import ColumnInfoTower
+from pyspark.ml.linalg import DenseVector, VectorUDT
+from pyspark_hnsw.evaluation import KnnSimilarityEvaluator
+from pyspark_hnsw.knn import *
+from pyspark_hnsw.linalg import Normalizer
+from pyspark.ml import Pipeline
+import os
 
 spark_conf = {"spark.network.timeout": "10000000",
               "spark.sql.broadcastTimeout": "7200",
@@ -39,54 +44,6 @@ spark_conf = {"spark.network.timeout": "10000000",
               "spark.app.name": "recsys-2tower",
               "spark.executor.memoryOverhead": "120g"}
 
-
-def train(config, train_tbl, test_tbl, epochs=1, batch_size=128, model_dir='.'):
-    two_tower = TwoTowerModel(config["user_col_info"], config["item_col_info"])
-
-    def model_creator(config):
-        model = two_tower.build_model()
-        print(model.summary())
-        optimizer = tf.keras.optimizers.Adam(config["lr"])
-        model.compile(optimizer=optimizer,
-                      loss='binary_crossentropy',
-                      metrics=['binary_accuracy', 'Recall', 'AUC'])
-        return model
-
-    estimator = Estimator.from_keras(model_creator=model_creator,
-                                     verbose=False,
-                                     config=config)
-
-    callbacks = []
-    from tensorflow.keras.callbacks import EarlyStopping
-    callbacks.append(EarlyStopping(monitor='val_auc', mode='max', verbose=1, patience=5))
-
-    train_count, test_count = train_tbl.size(), test_tbl.size()
-    train_df, test_df = train_tbl.df, test_tbl.df
-    steps_per_epoch = math.ceil(train_count / batch_size)
-    val_steps = math.ceil(test_count / batch_size)
-    feature_cols = config["user_col_info"].get_name_list() + config["item_col_info"].get_name_list()
-    print("Total number of train records: {}".format(train_count))
-    print("Total number of val records: {}".format(test_count))
-
-    estimator.fit(train_df, epochs=epochs, batch_size=batch_size,
-                  feature_cols=feature_cols,
-                  label_cols=['label'],
-                  callbacks=callbacks,
-                  validation_data=test_df,
-                  steps_per_epoch=steps_per_epoch,
-                  validation_steps=val_steps)
-
-    model = estimator.get_model()
-    user_model = get_1tower_model(model, two_tower.user_col_info)
-    item_model = get_1tower_model(model, two_tower.item_col_info)
-    tf.saved_model.save(model, os.path.join(model_dir, "twotower-model"))
-    tf.saved_model.save(user_model, os.path.join(model_dir, "user-model"))
-    tf.saved_model.save(item_model, os.path.join(model_dir, "item-model"))
-    estimator.save(os.path.join(model_dir, "twotower_model.ckpt"))
-    print("saved models")
-    return estimator
-
-
 def prepare_features(train_tbl, test_tbl, reindex_tbls):
 
     def add_ratio_features(tbl):
@@ -100,11 +57,11 @@ def prepare_features(train_tbl, test_tbl, reindex_tbls):
     def organize_cols(tbl):
         tbl = tbl.select(array("enaging_user_follower_count", "enaging_user_following_count",
                                "enaging_user_follower_following_ratio").alias("user_num"),
-                         array("len_hashtags", "len_domains", "len_links",
+                         "len_hashtags", "len_domains", "len_links",
                                "engaged_with_user_follower_count",
                                "engaged_with_user_following_count",
-                               "engaged_with_user_follower_following_ratio").alias("item_num"),
-                         *cat_cols, *embed_cols, "label")
+                               "engaged_with_user_follower_following_ratio",
+                         *cat_cols, *embed_cols, "tweet_id", "label")
         return tbl
 
     print("reindexing embedding cols")
@@ -155,7 +112,6 @@ def prepare_features(train_tbl, test_tbl, reindex_tbls):
     test_tbl = organize_cols(test_tbl)
 
     return train_tbl, test_tbl, user_col_info, item_col_info
-
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Two Tower Training/Inference')
@@ -208,8 +164,7 @@ if __name__ == '__main__':
 
     num_cols = ["enaging_user_follower_count", 'enaging_user_following_count',
                 "engaged_with_user_follower_count", "engaged_with_user_following_count",
-                "len_hashtags", "len_domains", "len_links", "hashtags", "present_links",
-                "present_domains"]
+                "len_hashtags", "len_domains", "len_links"]
     cat_cols = ["engaged_with_user_is_verified", "enaging_user_is_verified",
                 "present_media", "tweet_type", "language"]
     ratio_cols = ["engaged_with_user_follower_following_ratio",
@@ -218,22 +173,53 @@ if __name__ == '__main__':
                   "present_domains"]
     useful_cols = num_cols + cat_cols + embed_cols
     train_tbl = FeatureTable.read_parquet(args.data_dir + "/train_parquet")
+    train_tbl.show(10)
     test_tbl = FeatureTable.read_parquet(args.data_dir + "/test_parquet")
     full_tbl = train_tbl.concat(test_tbl, "outer")
     reindex_tbls = full_tbl.gen_reindex_mapping(embed_cols, freq_limit=args.frequency_limit)
+    item_cat_cols =["engaged_with_user_is_verified", "present_media", "tweet_type", "language",
+                    "engaged_with_user_id", "hashtags", "present_links", "present_domains"]
+    full, target_codes = full_tbl.target_encode(cat_cols=item_cat_cols, target_cols=["label"])
+
     train_tbl, test_tbl, user_info, item_info = prepare_features(train_tbl, test_tbl, reindex_tbls)
+    train_tbl.show(10)
+    item_num_cols = ["len_hashtags", "len_domains", "len_links",
+                               "engaged_with_user_follower_count",
+                               "engaged_with_user_following_count",
+                               "engaged_with_user_follower_following_ratio"]
+    item_features = item_num_cols + item_cat_cols
+    item_tbl = train_tbl.select(["tweet_id", "label"] + item_features)
 
-    output_dir = args.data_dir + "/embed_reindex/"
-    for i, c in enumerate(embed_cols):
-        reindex_tbls[i].write_parquet(output_dir + "_" + c)
+    item_tbl.show(10)
+    print(item_tbl.size())
+    item_tbl = item_tbl.distinct()
+    print(item_tbl.size())
+    print(item_tbl.select("tweet_id").distinct().size())
+    item_cat_cols = [c + "_te_label" for c in item_cat_cols]
+    item_tbl = item_tbl.encode_target(target_cols="label", targets=target_codes)\
+        .merge_cols(item_num_cols + item_cat_cols, "features") \
+        .select("tweet_id", "features")\
+        .apply("features", "features", lambda x: DenseVector(x), VectorUDT())
 
-    train_config = {"lr": 1e-3,
-                    "user_col_info": user_info,
-                    "item_col_info": item_info,
-                    "inter_op_parallelism": 4,
-                    "intra_op_parallelism": args.executor_cores}
+    normalizer = Normalizer(inputCol='features', outputCol='normalized_features')
+    hnsw = HnswSimilarity(identifierCol='tweet_id', queryIdentifierCol='tweet_id',
+                          featuresCol='features', distanceFunction='inner-product', m=48,
+                          ef=5, k=10,
+                          efConstruction=200, numPartitions=11, excludeSelf=True,
+                          similarityThreshold=0.1, predictionCol='approximate')
+    brute_force = BruteForceSimilarity(identifierCol='tweet_id', queryIdentifierCol='tweet_id',
+                                       featuresCol='normalized_features',
+                                       distanceFunction='inner-product',
+                                       k=10, numPartitions=11, excludeSelf=True,
+                                       similarityThreshold=0.1, predictionCol='exact')
 
-    train(train_config, train_tbl, test_tbl, epochs=args.epochs, batch_size=args.batch_size,
-          model_dir=args.model_dir)
+    pipeline = Pipeline(stages=[normalizer, hnsw, brute_force])
+
+    model = pipeline.fit(item_tbl.df)
+    query_items = item_tbl
+    output = model.transform(query_items.df)
+
+    output.show()
+    print(output.count())
 
     stop_orca_context()

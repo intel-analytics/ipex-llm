@@ -48,6 +48,14 @@ object Utils {
     }).collect
   }
 
+  def loadItemData(dataDir: String, itemIdCol: String, dataNum: Int): Array[Int] = {
+    val spark = SparkSession.builder.getOrCreate
+    val df = spark.read.parquet(dataDir)
+    df.select(itemIdCol).distinct.limit(dataNum).rdd.map(row => {
+      //      row.getLong(0).toInt
+      row.getInt(0)
+    }).collect
+  }
   /**
    * Use hadoop utils to copy file from remote to local
    * @param src remote path, could be hdfs, s3

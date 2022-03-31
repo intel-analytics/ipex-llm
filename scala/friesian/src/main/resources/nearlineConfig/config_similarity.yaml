@@ -1,0 +1,15 @@
+##### FeatureInitializer Config
+
+# default: "", prefix for redis key
+redisKeyPrefix: neighbor_
+
+# default: 0, item slot type on redis cluster. 0 means slot number use the default value 16384, 1 means all keys save to same slot, 2 means use the last character of id as hash tag.
+redisClusterItemSlotType:
+# default: null, one of initialUserDataPath or initialItemDataPath must be
+# provided. Only support parquet file
+initialItemDataPath: /Users/guoqiong/intelWork/data/friesian_service/from_yina/item_neighbors.parquet
+
+# default: null, if loadInitialData=true and initialUserDataPath != null, userIDColumn and
+# userFeatureColumns must be provided
+itemIDColumn: tweet_id
+userFeatureColumns: neighbor

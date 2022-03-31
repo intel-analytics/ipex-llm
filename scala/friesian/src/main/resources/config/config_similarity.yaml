@@ -2,8 +2,8 @@
 
 ### Basic setting
 
-# Default: 8082, which port to create the server
-servicePort: 8082
+# Default: 8085, which port to create the server
+servicePort: 8085
 
 # Default: null, open a port for prometheus monitoring tool, if set, user can check the
 # performance using prometheus
@@ -13,7 +13,7 @@ servicePort: 8082
 serviceType: kv
 
 # default: "", prefix for redis key
-redisKeyPrefix:
+redisKeyPrefix: neighbor_
 
 # default: 0, item slot type on redis cluster. 0 means slot number use the default value 16384, 1 means all keys save to same slot, 2 means use the last character of id as hash tag.
 # redisClusterItemSlotType: 2
