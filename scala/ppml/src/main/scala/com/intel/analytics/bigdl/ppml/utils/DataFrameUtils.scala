@@ -37,6 +37,7 @@ object DataFrameUtils {
                            hasLabel: Boolean = true,
                            batchSize: Int = 4): bigdl.DataSet[MiniBatch[Float]] = {
     val samples = dataFrameToSampleRDD(df, featureColumn, labelColumn, hasLabel, batchSize)
+
     DataSet.array(samples.collect()) ->
       SampleToMiniBatch(batchSize, parallelizing = false)
   }

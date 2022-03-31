@@ -16,7 +16,7 @@
 
 package com.intel.analytics.bigdl.ppml.fgboost
 
-import com.intel.analytics.bigdl.ppml.algorithms.vfl.FGBoostRegression
+import com.intel.analytics.bigdl.ppml.algorithms.FGBoostRegression
 import com.intel.analytics.bigdl.ppml.data.PreprocessUtil
 import com.intel.analytics.bigdl.ppml.example.DebugLogger
 import com.intel.analytics.bigdl.ppml.fgboost.common.{XGBoostFormatNode, XGBoostFormatSerializer, XGBoostFormatValidator}

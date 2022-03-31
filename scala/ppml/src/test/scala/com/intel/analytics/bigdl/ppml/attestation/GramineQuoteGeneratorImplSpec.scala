@@ -17,10 +17,38 @@
 package com.intel.analytics.bigdl.ppml.attestation
 
 import org.scalatest.{FlatSpec, Matchers}
+import java.io.{FileOutputStream, FileInputStream, BufferedInputStream, BufferedOutputStream}
+import scala.io.Source
+import scala.util.Random
+import sys.env
 
 class GramineQuoteGeneratorImplSpec  extends FlatSpec with Matchers {
+  // get the 'envFlag' from the shell environments, enable TEE by 'export envFlag=TEE'
+  val envFlag = if (env.contains("envFlag")) {
+    env("envFlag").toString
+  } else {
+    "nonTEE"
+  }
 
-  // TODO  GramineQuoteGeneratorImplSpec
+  // GramineQuoteGeneratorImplSpec
   "Gramine get Quote " should "work" in {
+    if (envFlag=="TEE") {
+      val gramineQuoteGenerator = new GramineQuoteGeneratorImpl()
+      // generate a random userReportData.
+      val userReportData = new Array[Byte](32)
+      Random.nextBytes(userReportData)
+      val quote = gramineQuoteGenerator.getQuote(userReportData)
+      val quoteWriter = new FileOutputStream("gramine-quote-dump")
+      quoteWriter.write(quote)
+      quoteWriter.close()
+
+    }
+    else {
+      val quote = Array[Byte](0x21, 0x21, 0x21, 0x21, 0x21, 0x21, 0x21)
+      val quoteWriter = new FileOutputStream("dummy-gramine-quote-dump")
+      quoteWriter.write(quote)
+      quoteWriter.close()
+
+    }
   }
 }

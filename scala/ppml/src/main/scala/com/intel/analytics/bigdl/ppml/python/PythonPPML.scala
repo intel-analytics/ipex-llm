@@ -4,9 +4,8 @@ package com.intel.analytics.bigdl.ppml.python
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.dllib.utils.python.api.{JTensor, PythonBigDL}
-import com.intel.analytics.bigdl.ppml.algorithms.PSI
-import com.intel.analytics.bigdl.ppml.algorithms.vfl.FGBoostRegression
-import com.intel.analytics.bigdl.ppml.{FLClient, FLContext, FLModel, FLServer}
+import com.intel.analytics.bigdl.ppml.algorithms.{FGBoostRegression, PSI}
+import com.intel.analytics.bigdl.ppml.{FLClient, FLContext, NNModel, FLServer}
 import com.intel.analytics.bigdl.ppml.fgboost.FGBoostModel
 import com.intel.analytics.bigdl.ppml.utils.FLClientClosable
 
@@ -114,13 +113,13 @@ class PythonPPML[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonBigDL
     val result = model.predict(tensorArray).map(_.storage().array())
     JTensor(result.flatten, Array(result.length, result(0).length), bigdlType = "float")
   }
-  def nnFit(model: FLModel) = {
+  def nnFit(model: NNModel) = {
 
   }
-  def nnEvaluate(model: FLModel) = {
+  def nnEvaluate(model: NNModel) = {
 
   }
-  def nnPredict(model: FLModel) = {
+  def nnPredict(model: NNModel) = {
 
   }
 }
