@@ -22,7 +22,6 @@ import pytest
 import torch
 from pytorch_lightning import LightningModule
 from test.pytorch.utils._train_torch_lightning import create_data_loader, data_transform
-from test.pytorch.utils._train_torch_lightning import train_with_linear_top_layer
 from torch import nn
 import torchmetrics
 
@@ -65,18 +64,56 @@ class TestTrainer(TestCase):
     train_loader = create_data_loader(data_dir, batch_size, num_workers, data_transform)
     user_defined_pl_model = LitResNet18(10)
 
-    def test_resnet18(self):
-        resnet18 = vision.resnet18(
-            pretrained=False, include_top=False, freeze=True)
-        train_with_linear_top_layer(
-            resnet18, batch_size, num_workers, data_dir,
-            use_orca_lite_trainer=True)
-
-    def test_trainer_compile(self):
+    def test_trainer_quantize_inc_ptq_compiled(self):
+        # Test if a Lightning Module compiled by nano works
+        train_loader_iter = iter(self.train_loader)
         trainer = Trainer(max_epochs=1)
         pl_model = Trainer.compile(self.model, self.loss, self.optimizer)
-        trainer.fit(pl_model, self.train_loader)
-        
+        x = next(train_loader_iter)[0]
 
-if __name__ == '__main__':
-    pytest.main([__file__])
+        # Case 1: Default
+        qmodel = trainer.quantize(pl_model, self.train_loader)
+        assert qmodel
+        out = qmodel(x)
+        assert out.shape == torch.Size([256, 10])
+
+        # Case 2: Override by arguments
+        qmodel = trainer.quantize(pl_model, self.train_loader, self.train_loader,
+                                  metric=torchmetrics.F1(10), framework='pytorch_fx',
+                                  approach='static',
+                                  tuning_strategy='basic',
+                                  accuracy_criterion={'relative': 0.99,
+                                                      'higher_is_better': True})
+
+        assert qmodel
+        out = qmodel(x)
+        assert out.shape == torch.Size([256, 10])
+
+        # Case 3: Dynamic quantization
+        qmodel = trainer.quantize(pl_model, approach='dynamic')
+        assert qmodel
+        out = qmodel(x)
+        assert out.shape == torch.Size([256, 10])
+
+        # Case 4: Invalid approach
+        invalid_approach = 'qat'
+        with pytest.raises(ValueError, match="Approach should be 'static' or 'dynamic', "
+                                             "{} is invalid.".format(invalid_approach)):
+            trainer.quantize(pl_model, approach=invalid_approach)
+
+        # Case 5: Test if registered metric can be fetched successfully
+        qmodel = trainer.quantize(pl_model, self.train_loader, self.train_loader,
+                                  metric=torchmetrics.F1(10))
+        assert qmodel
+        out = qmodel(x)
+        assert out.shape == torch.Size([256, 10])
+
+    def test_trainer_quantize_inc_ptq_customized(self):
+        # Test if a Lightning Module not compiled by nano works
+        train_loader_iter = iter(self.train_loader)
+        trainer = Trainer(max_epochs=1)
+
+        qmodel = trainer.quantize(self.user_defined_pl_model, self.train_loader)
+        assert qmodel
+        out = qmodel(next(train_loader_iter)[0])
+        assert out.shape == torch.Size([256, 10])

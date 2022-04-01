@@ -24,7 +24,7 @@ def QuantizationINC(framework: str,
                     max_trials=1,
                     inputs=None,
                     outputs=None):
-    from .quantization import QuantizationINC as Quantization
+    from .core import QuantizationINC as Quantization
     return Quantization(framework, conf, approach, tuning_strategy, accuracy_criterion,
                         timeout, max_trials, inputs, outputs)
 

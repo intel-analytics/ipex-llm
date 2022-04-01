@@ -239,7 +239,7 @@ class Trainer(pl.Trainer):
 
         if backend == 'inc':
             from bigdl.nano.deps.neural_compressor.inc_api import QuantizationINC,\
-            check_pytorch_dataloaders
+                check_pytorch_dataloaders
 
             # check if dataloader is of legal format
             check_pytorch_dataloaders(pl_model, [calib_dataloader, val_dataloader])

@@ -23,7 +23,7 @@ import numpy as np
 from bigdl.nano.tf.keras import Model
 
 
-class TestKerasModel(TestCase):
+class TestModelQuantize(TestCase):
     def test_model_quantize_ptq(self):
         model = MobileNetV2(weights=None, input_shape=[40, 40, 3], classes=10)
         model = Model(inputs=model.inputs, outputs=model.outputs)
