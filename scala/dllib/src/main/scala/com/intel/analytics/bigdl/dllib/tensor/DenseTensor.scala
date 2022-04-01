@@ -2290,7 +2290,7 @@ private[tensor] class DenseTensor[@specialized T: ClassTag](
       this.asInstanceOf[Tensor[D]]
     } else {
       Log4Error.invalidOperationError(false, s"The type ${env.getType().getClass}" +
-        s" in toTensor[${env.getType().getClass}] is not same" +
+        s" in toTensor[${env.getType().getClass}] is not same " +
         s"as the numeric type ${ev.getType().getClass} of the " +
         "corresponding module, please keep them same.")
       null

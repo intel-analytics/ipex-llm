@@ -731,7 +731,6 @@ private[tensor] class SparseTensor[@specialized(Float, Double) T: ClassTag](
     Log4Error.unKnowExceptionError(y.getTensorType == DenseType,
       s"y should be DenseType, but is ${y.getTensorType}")
     SparseTensorMath.vdot(y.asInstanceOf[DenseTensor[T]], this)
-    0.asInstanceOf[T]
   }
 
   override def cmax(value: T): Tensor[T] = {

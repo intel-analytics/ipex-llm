@@ -575,8 +575,8 @@ object CaffeLoader {
           "only standard Caffe format is supported"
           , cause = parseException)
         null
-      case conversionExcepion : CaffeConversionException =>
-        throw  conversionExcepion
+      case e =>
+        throw  e
     }
   }
 }

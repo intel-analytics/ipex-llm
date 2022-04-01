@@ -62,7 +62,7 @@ class GaussianDropoutSpec extends FlatSpec with Matchers {
     // output should be the same as input
     assert(input equals outputEval)
     // backward reports error in evaluation mode
-    intercept[IllegalArgumentException] {
+    intercept[com.intel.analytics.bigdl.dllib.utils.InvalidOperationException] {
       module.backward(input, gradOutput)
     }
 

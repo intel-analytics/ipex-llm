@@ -88,7 +88,7 @@ class StaticGraphSpec extends FlatSpec with Matchers {
     val output2 = ReLU().inputs(cadd)
 
     val graph = Graph(Array(fc1, fc2), Array(output1, output2))
-    intercept[IllegalArgumentException] {
+    intercept[com.intel.analytics.bigdl.dllib.utils.InvalidOperationException] {
       graph.forward(Tensor(T(0.1f, 0.2f, -0.3f, -0.4f)))
     }
   }
@@ -1293,7 +1293,7 @@ class StaticGraphSpec extends FlatSpec with Matchers {
     val model = Graph(data, l2)
     model.node("l1") should be(l1)
 
-    intercept[NoSuchElementException] {
+    intercept[com.intel.analytics.bigdl.dllib.utils.InvalidOperationException] {
       model.node("ll1")
     }
   }

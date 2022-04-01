@@ -54,7 +54,7 @@ class KerasStyleSpec extends BigDLSpecHelper {
   }
 
   "Frozen sequential" should "be tested" in {
-    intercept[RuntimeException] {
+    intercept[com.intel.analytics.bigdl.dllib.utils.InvalidOperationException] {
       val seq = KSequential[Float]()
       val seq1 = KSequential[Float]()
       seq.add(seq1)
@@ -118,7 +118,7 @@ class KerasStyleSpec extends BigDLSpecHelper {
   }
 
   "TSequential" should "not work with dense" in {
-    intercept[InvalidLayer] {
+    intercept[com.intel.analytics.bigdl.dllib.utils.InvalidOperationException] {
       val seq = TSequential[Float]()
       val d1 = Dense[Float](20, inputShape = Shape(10)).setName("dense1")
       seq.add(d1)
@@ -135,14 +135,14 @@ class KerasStyleSpec extends BigDLSpecHelper {
   }
 
   "TGraph" should "not work with dense" in {
-    intercept[InvalidLayer] {
+    intercept[com.intel.analytics.bigdl.dllib.utils.InvalidOperationException] {
       val d1 = Dense[Float](20).setName("dense1").inputs(Input(inputShape = Shape(10)))
       val l1 = Linear(2, 3).inputs(d1)
     }
   }
 
   "KGraph" should "not work with shared layers" in {
-    val thrown = intercept[RuntimeException] {
+    val thrown = intercept[com.intel.analytics.bigdl.dllib.utils.InvalidOperationException] {
       val input = Input(inputShape = Shape(10))
       val dense1 = Dense(10, inputShape = Shape(10))
       val node1 = dense1.inputs(input)
@@ -153,7 +153,7 @@ class KerasStyleSpec extends BigDLSpecHelper {
   }
 
   "KGraph" should "not work with shared weights" in {
-    val thrown = intercept[RuntimeException] {
+    val thrown = intercept[com.intel.analytics.bigdl.dllib.utils.InvalidOperationException] {
       val input1 = Input(inputShape = Shape(10))
       val input2 = Input(inputShape = Shape(10))
       val l = Dense(10, inputShape = Shape(10))
@@ -174,7 +174,7 @@ class KerasStyleSpec extends BigDLSpecHelper {
   }
 
   "Torch style linear and seq and linear" should "not work with keras Model" in {
-    intercept[InvalidLayer] {
+    intercept[com.intel.analytics.bigdl.dllib.utils.InvalidOperationException] {
       val input = Input(inputShape = Shape(10))
       val l1 = Linear(10, 3).inputs(input)
       val seq = TSequential[Float]().inputs(l1)
@@ -184,7 +184,7 @@ class KerasStyleSpec extends BigDLSpecHelper {
   }
 
   "Torch style inputs in Model constructor" should "not work" in {
-    intercept[InvalidLayer] {
+    intercept[com.intel.analytics.bigdl.dllib.utils.InvalidOperationException] {
       val tinput = TInput()
       val l1 = Linear(10, 3).inputs(tinput)
       Model(tinput, l1)
@@ -193,7 +193,7 @@ class KerasStyleSpec extends BigDLSpecHelper {
 
   "TSequential" should "not works with container containing Dense" in {
     val seq = TSequential[Float]()
-    intercept[InvalidLayer] {
+    intercept[com.intel.analytics.bigdl.dllib.utils.InvalidOperationException] {
       val parallelTable = ParallelTable[Float]()
       val d1 = Dense[Float](20, inputShape = Shape(10)).setName("dense1")
       parallelTable.add(d1)
@@ -202,7 +202,7 @@ class KerasStyleSpec extends BigDLSpecHelper {
   }
 
   "TSequential" should "not work with container with dense" in {
-    intercept[InvalidLayer] {
+    intercept[com.intel.analytics.bigdl.dllib.utils.InvalidOperationException] {
       val seq = TSequential[Float]()
       val seq2 = TSequential[Float]()
       val d1 = Dense[Float](20, inputShape = Shape(10)).setName("dense1")

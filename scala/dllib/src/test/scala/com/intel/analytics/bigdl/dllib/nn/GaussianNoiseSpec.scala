@@ -64,7 +64,7 @@ class GaussianNoiseSpec extends FlatSpec with Matchers {
     // output should be the same as input
     assert(input equals outputEval)
 
-    intercept[IllegalArgumentException] {
+    intercept[com.intel.analytics.bigdl.dllib.utils.InvalidOperationException] {
       module.backward(input, gradOutput)
     }
   }

@@ -833,7 +833,7 @@ class DenseTensorSpec extends FlatSpec with Matchers {
       output.toTensor[Double]
       fail()
     } catch {
-      case ex: IllegalArgumentException =>
+      case ex: com.intel.analytics.bigdl.dllib.utils.InvalidOperationException =>
     }
   }
 
@@ -846,7 +846,7 @@ class DenseTensorSpec extends FlatSpec with Matchers {
       output.toTable
       fail()
     } catch {
-      case ex: IllegalArgumentException =>
+      case ex: com.intel.analytics.bigdl.dllib.utils.InvalidOperationException =>
     }
   }
 
