@@ -9,7 +9,7 @@ set -e
 # ipex is not installed here. Any tests needs ipex should be moved to next pytest command.
 echo "# Start testing"
 start=$(date "+%s")
-python -m pytest -s ${PYTORCH_NANO_TEST_DIR}/tests/test_multiprocess_ray.py
+python -m pytest -s ./ray/test_multiprocess_ray.py
 
 now=$(date "+%s")
 time=$((now-start))
