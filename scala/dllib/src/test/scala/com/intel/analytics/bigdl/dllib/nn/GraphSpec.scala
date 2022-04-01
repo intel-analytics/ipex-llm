@@ -1293,7 +1293,7 @@ class StaticGraphSpec extends FlatSpec with Matchers {
     val model = Graph(data, l2)
     model.node("l1") should be(l1)
 
-    intercept[com.intel.analytics.bigdl.dllib.utils.InvalidOperationException] {
+    intercept[com.intel.analytics.bigdl.dllib.utils.UnKnownException] {
       model.node("ll1")
     }
   }
