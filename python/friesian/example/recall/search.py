@@ -8,8 +8,11 @@ spark = OrcaContext.get_spark_session()
 
 start = time.time()
 df = spark.read.parquet("data.parquet").repartition(8) # coalesce
-rdd = df.rdd #.filter(lambda x: x[0] < 10000)
+rdd = df.rdd.filter(lambda x: x[0] < 10000)
 idx_path = "flatl2.idx"
+# import faiss
+# faiss_idx = faiss.read_index(idx_path)
+# idx_br = sc.broadcast(faiss_idx)
 
 # faiss index is ~3G and if there are too many partitions, may easily run OOM.
 # TODO: can broadcast index?
@@ -17,6 +20,7 @@ def faiss_search(model_path, batch_size=65536, k=200): # each record: id, embedd
     def do_search(partition):
         import faiss
         faiss_idx = faiss.read_index(model_path)
+        # faiss_idx = idx_br.value
         buffer = []
         for record in partition:
             if len(buffer) == batch_size:
