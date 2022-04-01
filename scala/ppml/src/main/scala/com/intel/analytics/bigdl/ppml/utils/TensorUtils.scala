@@ -6,15 +6,19 @@ import org.apache.spark.sql.DataFrame
 object TensorUtils {
   def fromDataFrame(df: DataFrame,
                     columns: Array[String]) = {
-    var rowNum = 0
-    val dataArray = df.collect().map(row => {
-      if (rowNum == 0) rowNum = row.length
-      val rowArray = new Array[Float](row.length)
-      columns.indices.foreach(i => {
-        rowArray(i) = row.getAs[Float](columns(i))
+    if (columns == null) {
+      null
+    } else {
+      var rowNum = 0
+      val dataArray = df.collect().map(row => {
+        if (rowNum == 0) rowNum = row.length
+        val rowArray = new Array[Float](row.length)
+        columns.indices.foreach(i => {
+          rowArray(i) = row.getAs[Float](columns(i))
+        })
+        rowArray
       })
-      rowArray
-    })
-    Tensor[Float](dataArray.flatten, Array(rowNum, columns.length))
+      Tensor[Float](dataArray.flatten, Array(rowNum, columns.length))
+    }
   }
 }
