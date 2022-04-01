@@ -101,11 +101,11 @@ object NNContext {
         )
       } catch {
         case npe: NullPointerException =>
-          Log4Error.invalidInputError(false, "Error while locating file" +
+          Log4Error.invalidOperationError(false, "Error while locating file" +
             " zoo-version-info.properties, " +
             "if you are using an IDE to run your program, please make sure the mvn" +
             " generate-resources phase is executed and a zoo-version-info.properties file" +
-            " is located in zoo/target/extra-resources")
+            " is located in zoo/target/extra-resources", cause = npe)
         case e: Exception =>
           Log4Error.unKnowExceptionError(false, "Error loading properties from" +
             " zoo-version-info.properties", cause = e)
