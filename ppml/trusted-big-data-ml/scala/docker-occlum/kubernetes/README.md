@@ -81,6 +81,7 @@ Add these configurations to [script](https://github.com/intel-analytics/BigDL/bl
     --conf spark.driver.extraClassPath=local:///opt/spark/jars/* \
     --conf spark.executor.extraClassPath=local:///opt/spark/jars/* \
     --conf spark.cores.max=64 \
+    --conf spark.task.cpus=32 \
     --conf spark.kubernetes.driverEnv.DRIVER_MEMORY=10g \
     --conf spark.kubernetes.driverEnv.SGX_MEM_SIZE="40GB" \
     --conf spark.kubernetes.driverEnv.META_SPACE=1024m \
