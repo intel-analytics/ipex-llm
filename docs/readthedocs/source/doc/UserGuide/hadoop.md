@@ -4,8 +4,8 @@ Hadoop version: Apache Hadoop >= 2.7 (3.X included) or [CDH](https://www.clouder
 
 ---
 
-For _**scala user**_, please see [scala user guide](./scala.md) for how to run BigDL on hadoop/yarn cluster.  
-For _**python user**_, you can run BigDL programs on standard Hadoop/YARN clusters without any changes to the cluster(i.e., no need to pre-install BigDL or any Python libraries in the cluster).
+For _**Scala users**_, please see [Scala User Guide](./scala.md) for how to run BigDL on hadoop/yarn cluster.  
+For _**Python users**_, you can run BigDL programs on standard Hadoop/YARN clusters without any changes to the cluster(i.e., no need to pre-install BigDL or any Python libraries in the cluster).
 
 ### **1. Prepare Python Environment**
 
@@ -52,11 +52,11 @@ For _**python user**_, you can run BigDL programs on standard Hadoop/YARN cluste
 ---
 ### **2. Run on YARN with build-in function**
 
-_**This is the most recommended way to run bigdl on yarn,**_ as we has put conda pack and all the spark-submit setting into our codes, you can easy change your job between local and yarn.
-- Install BigDL components in the created conda environment via pip, like dllib and orca:
+_**This is the most recommended way to run BigDL on yarn,**_ as we have put conda pack and all the spark-submit settings into our code, you can easy change your job between local and yarn.
+- Install BigDL in the created conda environment via pip:
 
   ```bash
-  pip install bigdl-dllib bigdl-orca
+  pip install bigdl
   ```
 
   View the [Python User Guide](./python.md) for more details.
@@ -110,10 +110,11 @@ Follow the steps below if you need to run BigDL with [spark-submit](https://spar
 
   yarn-cluster mode:
   ```bash
-  spark-submit-with-dllib \
+  spark-submit-with-bigdl \
       --conf spark.yarn.appMasterEnv.PYSPARK_PYTHON=environment/bin/python \
       --conf spark.executorEnv.PYSPARK_PYTHON=environment/bin/python \
-      --master yarn-cluster \
+      --master yarn \
+      --deploy-mode cluster \
       --executor-memory 10g \
       --driver-memory 10g \
       --executor-cores 8 \
@@ -126,10 +127,9 @@ Follow the steps below if you need to run BigDL with [spark-submit](https://spar
 
   yarn-client mode:
   ```bash
-  spark-submit-with-dllib \
-      --conf spark.driverEnv.PYSPARK_PYTHON=environment/bin/python \
-      --conf spark.executorEnv.PYSPARK_PYTHON=environment/bin/python \
-      --master yarn-client \
+  PYSPARK_PYTHON=environment/bin/python spark-submit-with-bigdl \
+      --master yarn \
+      --deploy-mode client \
       --executor-memory 10g \
       --driver-memory 10g \
       --executor-cores 8 \
