@@ -14,7 +14,9 @@
 # limitations under the License.
 #
 from bigdl.nano.common.multiprocessing.backend import Backend
-
+import os
+from tempfile import TemporaryDirectory
+from typing import Any
 
 class HorovodBackend(Backend):
 
