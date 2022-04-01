@@ -309,14 +309,17 @@ class Table private[bigdl](
         case e: NoSuchElementException =>
           Log4Error.unKnowExceptionError(false, s"toSeq requires the key of this table are" +
             " all the integers between 1 to this.length()", cause = e)
+          0.asInstanceOf[D]
       }
 
     }
   }
 
   override def toTensor[D]
-  (implicit ev: TensorNumeric[D]): Tensor[D] =
-    Log4Error.invalidOperationError(false,"Table cannot be cast to Tensor")
+  (implicit ev: TensorNumeric[D]): Tensor[D] = {
+    Log4Error.invalidOperationError(false, "Table cannot be cast to Tensor")
+    null
+  }
 
   override def toTable: Table = this
 }

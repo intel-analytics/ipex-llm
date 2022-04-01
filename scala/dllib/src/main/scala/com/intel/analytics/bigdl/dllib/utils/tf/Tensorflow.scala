@@ -589,6 +589,7 @@ object Tensorflow {
       (buffer, DataType.DT_BOOL)
     } else {
       Log4Error.invalidOperationError(false, s"unsupported type ${value.getType()}")
+      (null, DataType.DT_BOOL)
     }
 
     AttrValue.newBuilder().setTensor(
@@ -650,7 +651,8 @@ object Tensorflow {
       return attr
     }
 
-    Log4Error.invalidOperationError(false,"TensorflowSaver: Can not find data type")
+    Log4Error.invalidOperationError(false, "TensorflowSaver: Can not find data type")
+    attr
   }
 
   private def getPaddingType(padW: Int, padH: Int, kW: Int, kH: Int, sW: Int, sH: Int)

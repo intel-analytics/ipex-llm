@@ -49,6 +49,7 @@ class Cast extends TensorflowOpsLoader {
       case _ =>
         Log4Error.invalidOperationError(false, "Unsupported data type: "
         + dataType.toString)
+        null
     }
     layer
   }

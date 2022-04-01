@@ -263,7 +263,8 @@ class BigDLSessionImpl[T: ClassTag](graph: Seq[NodeDef], context: Context[T],
     } else if (isHdfs.map(!_).reduceLeft(_ && _)) {
       false
     } else {
-      Log4Error.invalidOperationError(false,"filenames contain both local and hdfs path")
+      Log4Error.invalidOperationError(false, "filenames contain both local and hdfs path")
+      false
     }
   }
 
@@ -389,6 +390,7 @@ class BigDLSessionImpl[T: ClassTag](graph: Seq[NodeDef], context: Context[T],
     if (enqueNodes.isEmpty) {
       Log4Error.invalidOperationError(false,
         s"Cannot find enqueue node for queue: ${queueNode.element}")
+      null
     } else {
       enqueNodes
     }

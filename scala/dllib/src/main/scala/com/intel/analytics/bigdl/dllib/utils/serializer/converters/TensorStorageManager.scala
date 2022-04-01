@@ -41,6 +41,7 @@ trait TensorStorageManager {
       case t =>
         Log4Error.invalidInputError(false, s"${tensor.getTensorType} is not supported",
           "only support DenseType and QuantizedType")
+        false
     }
     emptyTensor
   }
@@ -59,7 +60,7 @@ trait TensorStorageManager {
       case t =>
         Log4Error.invalidInputError(false, s"${tensor.getTensorType} is not supported",
           "only support DenseType and QuantizedType")
-        null
+        0
     }
   }
 

@@ -68,6 +68,7 @@ private[bigdl] class TensorArrayV3 extends TensorflowOpsLoader {
       )
     } else {
       Log4Error.invalidOperationError(false, s"Not support load TensorArrayV3 with data type $t")
+      null
     }
   }
 }

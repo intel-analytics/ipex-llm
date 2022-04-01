@@ -17,7 +17,7 @@
 package com.intel.analytics.bigdl.dllib.optim
 
 import com.google.common.util.concurrent.AtomicDouble
-import com.intel.analytics.bigdl.dllib.utils.{Engine, Log4Error}
+import com.intel.analytics.bigdl.dllib.utils.Log4Error
 import org.apache.spark.SparkContext
 import org.apache.spark.util.{AccumulatorV2, DoubleAccumulator}
 

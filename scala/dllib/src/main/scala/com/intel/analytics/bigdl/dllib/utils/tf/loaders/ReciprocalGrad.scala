@@ -40,6 +40,7 @@ class ReciprocalGrad extends TensorflowOpsLoader {
       InvGradOps[T, Double]()
     } else {
       Log4Error.invalidOperationError(false, s"Not support load Inv when type is ${t}")
+      null
     }
   }
 }

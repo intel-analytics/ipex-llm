@@ -41,6 +41,7 @@ class Range extends TensorflowOpsLoader {
       RangeOps[T, Int]()
     } else {
       Log4Error.invalidOperationError(false, s"Not support load Log when type is ${t}")
+      null
     }
   }
 }

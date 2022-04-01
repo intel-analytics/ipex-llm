@@ -37,6 +37,7 @@ class Square extends TensorflowOpsLoader {
       Power[T, Double](2.0)
     } else {
       Log4Error.invalidOperationError(false, s"Not support load Square when type is $t")
+      null
     }
   }
 }

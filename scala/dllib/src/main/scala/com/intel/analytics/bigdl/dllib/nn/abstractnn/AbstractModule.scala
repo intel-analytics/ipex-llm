@@ -284,13 +284,19 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, 
       updateParameter
       updateOutput(input)
     } catch {
-      case l: LayerException =>
-        l.layerMsg = this.toString() + "/" + l.layerMsg
-        throw l
+//      case l: LayerException =>
+//        l.layerMsg = this.toString() + "/" + l.layerMsg
+//        throw l
 //      case e: Throwable =>
 //        throw new LayerException(this.toString(), e)
-        case e: Throwable =>
-          throw e
+      case l: IllegalArgumentException =>
+        throw l
+      case u: InvalidOperationException =>
+        throw u
+      case e: Throwable =>
+        val errormsg = this.toString() + "\n" + e.getMessage
+        Log4Error.unKnowExceptionError(false, errormsg, cause = e)
+        null
     }
     forwardTime += System.nanoTime() - before
 
@@ -407,7 +413,7 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, 
     } else if (extraParam == null && currentExtraParam == null) {
       this
     } else {
-      Log4Error.invalidOperationError(false,s"module's extraParameter is $currentExtraParam" +
+      Log4Error.invalidOperationError(false, s"module's extraParameter is $currentExtraParam" +
         s", while setting param is ${extraParam}")
       this
     }
@@ -1012,7 +1018,9 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, 
   private[nn] final def allocateAs(dest: Activity): Activity = dest match {
     case tensor: Tensor[T] => Tensor[T]()
     case table: Table => T()
-    case _ => Log4Error.invalidOperationError(false,"Activity only support tensor and table now")
+    case _ =>
+      Log4Error.invalidOperationError(false, "Activity only support tensor and table now")
+      null
   }
 
   /**

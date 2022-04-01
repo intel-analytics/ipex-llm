@@ -38,6 +38,7 @@ class SoftplusGrad extends TensorflowOpsLoader {
       SoftplusGradOps[T, Double]()
     } else {
       Log4Error.invalidOperationError(false, s"Not support load SoftplusGrad when type is ${t}")
+      null
     }
   }
 }

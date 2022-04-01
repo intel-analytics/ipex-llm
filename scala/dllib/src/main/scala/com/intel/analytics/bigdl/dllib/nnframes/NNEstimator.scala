@@ -372,7 +372,7 @@ class NNEstimator[T: ClassTag] private[bigdl](
 
   protected def validateParams(schema: StructType): Unit = {
     if (isSet(endWhen) && isSet(maxEpoch)) {
-      Log4Error.invalidOperationError(false,s"endWhen and maxEpoch cannot be both set")
+      Log4Error.invalidOperationError(false, s"endWhen and maxEpoch cannot be both set")
     }
     if (validationTrigger.isEmpty && validationSummary.isDefined) {
       Log4Error.invalidOperationError(false,

@@ -41,6 +41,7 @@ class TruncateMod extends TensorflowOpsLoader {
       ModOps[T, Int]()
     } else {
       Log4Error.invalidOperationError(false, s"Not support load Mod when type is ${t}")
+      null
     }
   }
 }

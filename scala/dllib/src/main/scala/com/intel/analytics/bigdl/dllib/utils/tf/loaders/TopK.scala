@@ -45,6 +45,7 @@ class TopK extends TensorflowOpsLoader {
       TopKOps[T, Double](k, s, startIndex = 0)
     } else {
       Log4Error.invalidOperationError(false, s"Not support load Inv when type is ${t}")
+      null
     }
   }
 }

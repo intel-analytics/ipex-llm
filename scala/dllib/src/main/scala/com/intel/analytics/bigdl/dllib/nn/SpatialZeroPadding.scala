@@ -43,7 +43,7 @@ class SpatialZeroPadding[T: ClassTag](
       val h = input.size(2) + this.padTop + this.padBottom
       val w = input.size(3) + this.padLeft + this.padRight
       if (w < 1 || h < 1) {
-        Log4Error.invalidOperationError(false,"input is too small")
+        Log4Error.invalidOperationError(false, "input is too small")
       }
       this.output.resize(Array(input.size(1), h, w))
       this.output.zero()
@@ -75,7 +75,7 @@ class SpatialZeroPadding[T: ClassTag](
       val h = input.size(3) + this.padTop + this.padBottom
       val w = input.size(4) + this.padLeft + this.padRight
       if (w < 1 || h < 1) {
-        Log4Error.invalidOperationError(false,"input is too small")
+        Log4Error.invalidOperationError(false, "input is too small")
       }
       this.output.resize(Array(input.size(1), input.size(2), h, w))
       this.output.zero()
@@ -104,7 +104,7 @@ class SpatialZeroPadding[T: ClassTag](
 
       cOutput.copy(cInput)
     } else {
-      Log4Error.invalidOperationError(false,"input must be 3 or 4-dimensional")
+      Log4Error.invalidOperationError(false, "input must be 3 or 4-dimensional")
     }
 
     this.output
@@ -164,7 +164,7 @@ class SpatialZeroPadding[T: ClassTag](
 
       cgInput.copy(cgOutput)
     } else {
-      Log4Error.invalidOperationError(false,"input must be 3 or 4-dimensional")
+      Log4Error.invalidOperationError(false, "input must be 3 or 4-dimensional")
     }
 
     this.gradInput

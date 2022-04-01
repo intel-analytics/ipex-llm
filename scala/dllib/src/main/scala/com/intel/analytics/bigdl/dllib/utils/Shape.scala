@@ -121,7 +121,7 @@ object Shape {
 
   def apply(item : Array[Int]): Shape = {
     if (item == null) {
-      Log4Error.invalidOperationError(false,"Empty value")
+      Log4Error.invalidOperationError(false, "Empty value")
     }
     new SingleShape(item.toList)
   }
@@ -136,7 +136,8 @@ object Shape {
     } else if (shapes.length == 1) {
       shapes(0)
     } else {
-      Log4Error.invalidOperationError(false,"Empty value")
+      Log4Error.invalidOperationError(false, "Empty value")
+      shapes(0)
     }
   }
 }

@@ -39,6 +39,7 @@ class Rsqrt extends TensorflowOpsLoader {
       Power[T, Double](-0.5, 1, 0)
     } else {
       Log4Error.invalidOperationError(false, s"Not support load Rsqrt when type is $t")
+      null
     }
   }
 }

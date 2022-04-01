@@ -39,6 +39,7 @@ class Ceil extends TensorflowOpsLoader {
       CeilOps[T, Double]()
     } else {
       Log4Error.invalidOperationError(false, s"not support load Cell operation for type $t")
+      null
     }
   }
 }

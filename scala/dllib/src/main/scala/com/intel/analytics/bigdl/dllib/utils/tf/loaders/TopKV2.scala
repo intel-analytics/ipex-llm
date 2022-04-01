@@ -47,6 +47,7 @@ class TopKV2 extends TensorflowOpsLoader {
       "Double"
     } else {
       Log4Error.invalidOperationError(false, s"Not support load Inv when type is ${t}")
+      ""
     }
 
     new TopKV2LoadTF[T](s, ts)
@@ -66,6 +67,7 @@ class TopKV2LoadTF[T: ClassTag](s: Boolean, t: String)(implicit ev: TensorNumeri
       TopKOps[T, Double](k, s, startIndex = 0)
     } else {
       Log4Error.invalidOperationError(false, s"Not support load Inv when type is ${t}")
+      null
     }
   }
 }

@@ -45,6 +45,7 @@ class ParseExample extends TensorflowOpsLoader {
         case DataType.DT_STRING => StringType
         case _ =>
           Log4Error.invalidOperationError(false, "Unsupported data type")
+          StringType
       }
     val denseShapes = nodeDef.getAttrMap.get("dense_shapes")
       .getList.getShapeList.asScala

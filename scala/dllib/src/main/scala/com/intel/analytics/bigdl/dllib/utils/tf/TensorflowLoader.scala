@@ -408,6 +408,7 @@ object TensorflowLoader{
             } catch {
               case e: Throwable =>
                 Log4Error.unKnowExceptionError(false, errorMsg, cause = e)
+                (null, Seq(n).asJava, Seq(n))
             }
           })
 
@@ -474,9 +475,15 @@ object TensorflowLoader{
     connect(outputModules)
 
     val inputNodes = inputs
-      .map(n => nameToNode.getOrElse(n, Log4Error.invalidOperationError(false,s"Can't find node $n")))
+      .map(n => nameToNode.getOrElse(n, {
+        Log4Error.invalidOperationError(false, s"Can't find node $n")
+        null
+      }))
     val outputNodes = outputs
-      .map(n => nameToNode.getOrElse(n, Log4Error.invalidOperationError(false,s"Can't find node $n")))
+      .map(n => nameToNode.getOrElse(n, {
+        Log4Error.invalidOperationError(false, s"Can't find node $n")
+        null
+      }))
 
 
     val weights = ArrayBuffer[Tensor[T]]()

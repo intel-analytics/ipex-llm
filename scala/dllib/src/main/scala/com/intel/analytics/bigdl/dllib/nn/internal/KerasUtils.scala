@@ -45,7 +45,7 @@ object KerasUtils {
       case "uniform" => RandomUniform(-0.05, 0.05)
       case "normal" => RandomNormal(0.0, 0.05)
       case _ =>
-        Log4Error.invalidOperationError(false,s"Unsupported initialization method: " +
+        Log4Error.invalidOperationError(false, s"Unsupported initialization method: " +
         s"${init.toLowerCase()}")
         Ones
     }
@@ -77,7 +77,7 @@ object KerasUtils {
           case "softsign" => SoftSign[T]()
           case "hard_sigmoid" => HardSigmoid[T]()
           case _ =>
-            Log4Error.invalidOperationError(false,s"Invalid activation: " +
+            Log4Error.invalidOperationError(false, s"Invalid activation: " +
             s"${activation.toLowerCase}. Only simple activations can be constructed using string")
             null
       }
@@ -149,7 +149,7 @@ object KerasUtils {
       case "cosine_proximity" => CosineProximityCriterion[T]()
       case "poisson" => PoissonCriterion[T]()
       case _ =>
-        Log4Error.invalidOperationError(false,s"Invalid loss: ${loss.toLowerCase()}")
+        Log4Error.invalidOperationError(false, s"Invalid loss: ${loss.toLowerCase()}")
         null
     }
   }
@@ -175,7 +175,8 @@ object KerasUtils {
       Array(new Top1Accuracy[T]())
     }
     else {
-      Log4Error.invalidOperationError(false,s"Unsupported metrics: ${metrics.mkString(", ")}")
+      Log4Error.invalidOperationError(false, s"Unsupported metrics: ${metrics.mkString(", ")}")
+      null
     }
   }
 

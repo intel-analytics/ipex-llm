@@ -66,6 +66,7 @@ abstract class Converter[T: ClassTag](implicit ev: TensorNumeric[T]) {
       return customizedConverter(layerType)(layer)
     }
     Log4Error.invalidOperationError(false, s"$layerType is not supported in BigDL for now")
+    null
   }
 
   def convertLayerFromCaffe(layer : GeneratedMessage) : Seq[ModuleNode[T]] = {

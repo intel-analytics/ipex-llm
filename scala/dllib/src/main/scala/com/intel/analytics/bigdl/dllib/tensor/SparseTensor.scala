@@ -741,7 +741,7 @@ private[tensor] class SparseTensor[@specialized(Float, Double) T: ClassTag](
 
   override def dist(y: Tensor[T], norm: Int): T = {
     Log4Error.invalidOperationError(false, s"SparseTensor: Unimplemented method")
-    null
+    0.asInstanceOf[T]
   }
 
   override def addcmul(value: T, tensor1: Tensor[T], tensor2: Tensor[T]): Tensor[T] = {
@@ -1079,10 +1079,11 @@ private[tensor] class SparseTensor[@specialized(Float, Double) T: ClassTag](
     if (ev.getType() == ev.getType()) {
       this.asInstanceOf[Tensor[D]]
     } else {
-      Log4Error.invalidOperationError(false,s"The type ${ev.getType().getClass}" +
+      Log4Error.invalidOperationError(false, s"The type ${ev.getType().getClass}" +
         s" in toTensor[${ev.getType().getClass}] is not same" +
         s"as the numeric type ${ev.getType().getClass} of the " +
         "corresponding module, please keep them same.")
+      null
     }
   }
 

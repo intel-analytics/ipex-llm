@@ -37,6 +37,7 @@ class Abs extends TensorflowOpsLoader {
       Abs[T, Double]()
     } else {
       Log4Error.invalidOperationError(false, s"Not support load Abs when type is ${t}")
+      null
     }
   }
 }

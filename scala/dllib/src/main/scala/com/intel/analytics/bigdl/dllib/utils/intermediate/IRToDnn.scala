@@ -90,6 +90,7 @@ private[bigdl] class IRToDnn extends ConvertBase[IRElement[Float], Module[Float]
         new Node(convertLayer(node.element))
       } else {
         Log4Error.invalidOperationError(false, s"can not find ${node.element.getOp()} ")
+        null
       }
       // special treat for reshape -> linear and view -> linear
       if (op.isInstanceOf[IRGeneralModule[Float]]) {

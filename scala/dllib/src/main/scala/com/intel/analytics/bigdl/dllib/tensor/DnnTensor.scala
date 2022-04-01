@@ -206,6 +206,7 @@ object DnnTensor {
   // scalastyle:off
   private def ???(): Nothing = {
     Log4Error.invalidOperationError(false, "DnnTensor doesn't support this operation")
+    null.asInstanceOf[Nothing]
   }
   // scalastyle:on
 

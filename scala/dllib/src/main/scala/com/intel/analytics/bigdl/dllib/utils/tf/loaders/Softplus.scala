@@ -37,6 +37,7 @@ class Softplus extends TensorflowOpsLoader {
       SoftPlus[T, Double]()
     } else {
       Log4Error.invalidOperationError(false, s"Not support load SoftPlus when type is ${t}")
+      null
     }
   }
 }

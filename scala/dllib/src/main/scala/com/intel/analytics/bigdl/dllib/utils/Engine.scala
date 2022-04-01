@@ -202,7 +202,9 @@ object Engine {
     System.getProperty("bigdl.localMode", "false").toLowerCase(Locale.ROOT) match {
       case "true" => true
       case "false" => false
-      case option => Log4Error.invalidOperationError(false,s"Unknown bigdl.localMode $option")
+      case option =>
+        Log4Error.invalidOperationError(false, s"Unknown bigdl.localMode $option")
+        false
     }
   }
 
@@ -221,7 +223,9 @@ object Engine {
     System.getProperty("bigdl.engineType", "mklblas").toLowerCase(Locale.ROOT) match {
       case "mklblas" => MklBlas
       case "mkldnn" => MklDnn
-      case engineType => Log4Error.invalidOperationError(false,s"Unknown engine type $engineType")
+      case engineType =>
+        Log4Error.invalidOperationError(false, s"Unknown engine type $engineType")
+        MklDnn
     }
   }
 
@@ -233,7 +237,9 @@ object Engine {
     System.getProperty("bigdl.optimizerVersion", "optimizerv1").toLowerCase(Locale.ROOT) match {
       case "optimizerv1" => OptimizerV1
       case "optimizerv2" => OptimizerV2
-      case optimizerVersion => Log4Error.invalidOperationError(false,s"Unknown type $optimizerVersion")
+      case optimizerVersion =>
+        Log4Error.invalidOperationError(false, s"Unknown type $optimizerVersion")
+        OptimizerV2
     }
   }
 
@@ -444,7 +450,7 @@ object Engine {
     val existingSparkContext = !tmpContext.getConf.contains("bigdl.temp.context")
     if (!existingSparkContext) {
       tmpContext.stop()
-      Log4Error.invalidOperationError(false,"Engine.init: Cannot find an existing"
+      Log4Error.invalidOperationError(false, "Engine.init: Cannot find an existing"
         + " spark context. Do you call this method after create spark context?")
     }
     logger.info("Find existing spark context. Checking the spark conf...")
@@ -506,7 +512,8 @@ object Engine {
     } catch {
       case s: SparkException =>
         if (s.getMessage.contains("A master URL must be set in your configuration")) {
-          Log4Error.invalidOperationError(false,"A master URL must be set in your configuration." +
+          Log4Error.invalidOperationError(false,
+            "A master URL must be set in your configuration." +
             " Or if you want to run BigDL in a local JVM environment, you should set Java " +
             "property bigdl.localMode=true")
         }
@@ -528,7 +535,9 @@ object Engine {
       master match {
         case patternLocalN(n) => Some(1, n.toInt)
         case patternLocalStar(_*) => Some(1, getNumMachineCores)
-        case _ => Log4Error.invalidOperationError(false,s"Can't parser master $master")
+        case _ =>
+          Log4Error.invalidOperationError(false, s"Can't parser master $master")
+          Some(1, 0)
       }
     } else if (master.toLowerCase.startsWith("spark")) {
       // Spark standalone mode
@@ -611,7 +620,9 @@ object Engine {
       }
       Some(nodeNum, core)
     } else {
-      Log4Error.invalidOperationError(false,s"Engine.init: Unsupported master format $master")
+      Log4Error.invalidOperationError(false,
+        s"Engine.init: Unsupported master format $master")
+      Some(1, 0)
     }
   }
 

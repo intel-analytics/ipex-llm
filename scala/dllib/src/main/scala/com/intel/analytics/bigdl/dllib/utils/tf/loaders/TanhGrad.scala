@@ -37,6 +37,7 @@ class TanhGrad extends TensorflowOpsLoader {
       TanhGradOps[T, Double]()
     } else {
       Log4Error.invalidOperationError(false, s"Not support load TanhGrad when type is ${t}")
+      null
     }
   }
 }

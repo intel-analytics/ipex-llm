@@ -53,6 +53,7 @@ private[bigdl] class NextIteration extends TensorflowOpsLoader {
       new NextIterationOps[T, Int]()
     } else {
       Log4Error.invalidOperationError(false, s"Not support numeric type $t")
+      null
     }
   }
 }

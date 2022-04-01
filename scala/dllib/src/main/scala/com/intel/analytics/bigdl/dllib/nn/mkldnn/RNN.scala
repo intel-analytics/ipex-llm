@@ -227,7 +227,7 @@ class RNN(
       case _ =>
         Log4Error.invalidInputError(false, s"Not support such RNN cell. " +
         s"Cell type: ${mode}", "only support VanillaLstm and VanillaGru")
-        null
+        MklDnnMemory.RNNCellDescInit(AlgKind.VanillaGru, f, flags, alpha, clipping)
     }
 
     val description = MklDnnMemory.RNNForwardDescInit(kind, rnnCellDesc, direction, src_layer_MD,

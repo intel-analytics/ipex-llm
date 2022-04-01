@@ -882,7 +882,8 @@ class DistriOptimizer[T: ClassTag](
     } else if (optimMethods.contains(trainingModel.getName())) {
       Map(trainingModel.getName() -> (1, modelParameters._1.nElement()))
     } else {
-      Log4Error.invalidOperationError(false,s"${trainingModel.getName()} doesn't " +
+      Log4Error.invalidOperationError(false,
+        s"${trainingModel.getName()} doesn't " +
         s"have corresponding OptimMethod")
       null
     }

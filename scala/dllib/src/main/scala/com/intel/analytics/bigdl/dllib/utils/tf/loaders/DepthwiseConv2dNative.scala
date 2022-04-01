@@ -62,7 +62,7 @@ class DepthwiseConv2dNative extends TensorflowOpsLoader {
         val strideH = strideList(3)
         DepthwiseConv2D[T](strideW, strideH, pW, pH, DataFormat.NCHW)
       case _ =>
-        Log4Error.invalidOperationError(false,s"not supported data format: $format")
+        Log4Error.invalidOperationError(false, s"not supported data format: $format")
     }
     conv.asInstanceOf[AbstractModule[Activity, Activity, T]]
   }

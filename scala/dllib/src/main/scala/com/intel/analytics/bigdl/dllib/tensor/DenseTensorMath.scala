@@ -320,6 +320,7 @@ object DenseTensorMath {
       Log4Error.unKnowExceptionError(false,
         s"multiplication between ${self.nDimension()}D and " +
         s"${t.nDimension()}D not yet supported")
+      null
     }
   }
 

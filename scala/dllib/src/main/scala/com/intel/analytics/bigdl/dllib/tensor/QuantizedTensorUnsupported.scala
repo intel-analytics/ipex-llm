@@ -163,7 +163,7 @@ abstract class QuantizedTensorUnsupported[T: ClassTag] extends Tensor[T] {
 
   override def valueAt(d1: Int, d2: Int): T = {
     Log4Error.invalidOperationError(false, errorString)
-    null
+    0.asInstanceOf[T]
   }
 
   override def valueAt(d1: Int, d2: Int, d3: Int): T = {
@@ -336,7 +336,7 @@ abstract class QuantizedTensorUnsupported[T: ClassTag] extends Tensor[T] {
    */
   override def isSameSizeAs(other: Tensor[_]): Boolean = {
     Log4Error.invalidOperationError(false, errorString)
-    null
+    false
   }
 
   /**
@@ -387,7 +387,7 @@ abstract class QuantizedTensorUnsupported[T: ClassTag] extends Tensor[T] {
    */
   override def storageOffset(): Int = {
     Log4Error.invalidOperationError(false, errorString)
-    null
+    0
   }
 
   /**
@@ -631,7 +631,7 @@ abstract class QuantizedTensorUnsupported[T: ClassTag] extends Tensor[T] {
    */
   override def diff(other: Tensor[T], count: Int, reverse: Boolean): Boolean = {
     Log4Error.invalidOperationError(false, errorString)
-    null
+    false
   }
 
   /**
@@ -795,7 +795,7 @@ abstract class QuantizedTensorUnsupported[T: ClassTag] extends Tensor[T] {
    */
   override def sum(): T = {
     Log4Error.invalidOperationError(false, errorString)
-    null
+    0.asInstanceOf[T]
   }
 
   /**
@@ -831,7 +831,7 @@ abstract class QuantizedTensorUnsupported[T: ClassTag] extends Tensor[T] {
    */
   override def mean(): T = {
     Log4Error.invalidOperationError(false, errorString)
-    null
+    0.asInstanceOf[T]
   }
 
   /**
@@ -852,7 +852,7 @@ abstract class QuantizedTensorUnsupported[T: ClassTag] extends Tensor[T] {
    */
   override def max(): T = {
     Log4Error.invalidOperationError(false, errorString)
-    null
+    0.asInstanceOf[T]
   }
 
   /**
@@ -886,7 +886,7 @@ abstract class QuantizedTensorUnsupported[T: ClassTag] extends Tensor[T] {
    */
   override def min(): T = {
     Log4Error.invalidOperationError(false, errorString)
-    null
+    0.asInstanceOf[T]
   }
 
   /**
@@ -1050,7 +1050,7 @@ abstract class QuantizedTensorUnsupported[T: ClassTag] extends Tensor[T] {
    */
   override def dot(y: Tensor[T]): T = {
     Log4Error.invalidOperationError(false, errorString)
-    null
+    0.asInstanceOf[T]
   }
 
   /**
@@ -1074,7 +1074,7 @@ abstract class QuantizedTensorUnsupported[T: ClassTag] extends Tensor[T] {
    */
   override def dist(y: Tensor[T], norm: Int): T = {
     Log4Error.invalidOperationError(false, errorString)
-    null
+    0.asInstanceOf[T]
   }
 
   /**
@@ -1463,6 +1463,11 @@ abstract class QuantizedTensorUnsupported[T: ClassTag] extends Tensor[T] {
     null
   }
 
+  override def log1p(): Tensor[T] = {
+    Log4Error.invalidOperationError(false, errorString)
+    null
+  }
+
   override def log(): Tensor[T] = {
     Log4Error.invalidOperationError(false, errorString)
     null
@@ -1580,7 +1585,7 @@ abstract class QuantizedTensorUnsupported[T: ClassTag] extends Tensor[T] {
    */
   override def norm(value: Int): T = {
     Log4Error.invalidOperationError(false, errorString)
-    null
+    0.asInstanceOf[T]
   }
 
   /**
@@ -1744,12 +1749,12 @@ abstract class QuantizedTensorUnsupported[T: ClassTag] extends Tensor[T] {
 
   override def isEmpty: Boolean = {
     Log4Error.invalidOperationError(false, errorString)
-    null
+    false
   }
 
   override def isScalar: Boolean = {
     Log4Error.invalidOperationError(false, errorString)
-    null
+    false
   }
 
   override def value(): T = {
@@ -1861,6 +1866,6 @@ abstract class QuantizedTensorUnsupported[T: ClassTag] extends Tensor[T] {
 
   override def sumSquare(): T = {
     Log4Error.invalidOperationError(false, errorString)
-    null
+    0.asInstanceOf[T]
   }
 }

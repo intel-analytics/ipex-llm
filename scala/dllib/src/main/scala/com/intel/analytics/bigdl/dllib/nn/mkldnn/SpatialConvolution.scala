@@ -762,7 +762,7 @@ class SpatialConvolution(
     } else if (padH >= 0 && padW >= 0) {
       PaddingType.Custom
     } else {
-      Log4Error.invalidOperationError(false,"Invalid padding")
+      Log4Error.invalidOperationError(false, "Invalid padding")
       PaddingType.Custom
     }
   }

@@ -238,7 +238,7 @@ object Util {
    */
   def deserialize[T: ClassTag](objectData: Array[Byte]): T = {
     if (objectData == null) {
-      Log4Error.invalidOperationError(false,"The byte[] must not be null")
+      Log4Error.invalidOperationError(false, "The byte[] must not be null")
     }
     deserialize[T](new ByteArrayInputStream(objectData))
   }
@@ -250,7 +250,7 @@ object Util {
    */
   def deserialize[T: ClassTag](inputStream: InputStream): T = {
     if (inputStream == null) {
-      Log4Error.invalidOperationError(false,"The InputStream must not be null")
+      Log4Error.invalidOperationError(false, "The InputStream must not be null")
     }
     var in: ObjectInputStream = null
     try {

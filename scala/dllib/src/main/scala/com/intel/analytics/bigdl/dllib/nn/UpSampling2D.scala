@@ -64,7 +64,7 @@ class UpSampling2D[T: ClassTag] (val size: Array[Int], val format: DataFormat = 
       case DataFormat.NHWC =>
         UpSampling2D.updateOutputNhwc(input, output, size)
       case _ =>
-        Log4Error.invalidOperationError(false,"UpSampling2D: unsupported data format.")
+        Log4Error.invalidOperationError(false, "UpSampling2D: unsupported data format.")
     }
 
     output
@@ -81,7 +81,7 @@ class UpSampling2D[T: ClassTag] (val size: Array[Int], val format: DataFormat = 
       case DataFormat.NHWC =>
         UpSampling2D.updateGradInputNhwc(gradInput, gradOutput, size)
       case _ =>
-        Log4Error.invalidOperationError(false,"UpSampling2D: unsupported data format.")
+        Log4Error.invalidOperationError(false, "UpSampling2D: unsupported data format.")
     }
 
     gradInput

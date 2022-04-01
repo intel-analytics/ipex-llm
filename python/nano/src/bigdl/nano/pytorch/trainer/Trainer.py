@@ -14,6 +14,7 @@
 # limitations under the License.
 #
 from logging import warning
+from operator import xor
 from typing import Any, List, Optional
 
 import pytorch_lightning as pl
@@ -25,7 +26,7 @@ from torch.fx.graph_module import GraphModule
 from torch.nn.modules.loss import _Loss
 from torch.utils.data import DataLoader
 from torchmetrics.metric import Metric
-
+from torch.optim.lr_scheduler import _LRScheduler
 from bigdl.nano.common import check_avx512
 from bigdl.nano.pytorch.lightning import LightningModuleFromTorch
 from bigdl.nano.pytorch.plugins.ddp_spawn import DDPSpawnPlugin
@@ -116,9 +117,11 @@ class Trainer(pl.Trainer):
     def compile(model: nn.Module,
                 loss: _Loss = None,
                 optimizer: torch.optim.Optimizer = None,
+                scheduler: _LRScheduler = None,
                 metrics: List[Metric] = None,
                 onnx: bool = False,
-                quantize: bool = True):
+                quantize: bool = False,
+                openvino: bool = False):
         """
         Construct a pytorch-lightning model. If model is already a pytorch-lightning model,
         return model. If model is pytorch model, construct a new pytorch-lightning module
@@ -145,8 +148,9 @@ class Trainer(pl.Trainer):
                 "Loss and optimizer should be None if model is a pytorch-lightning model."
             pl_model = model
         else:
-            pl_model = LightningModuleFromTorch(model, loss, optimizer, metrics)
-
+            pl_model = LightningModuleFromTorch(model, loss, optimizer, scheduler, metrics)
+        assert not (onnx and openvino), "Only one of onnx and openvino can be True."
+        assert not (openvino and quantize), "Quantization is not implemented for OpenVINO."
         if onnx:
             try:
                 from bigdl.nano.pytorch.runtime_binding.onnxrt_inference import\
@@ -157,7 +161,9 @@ class Trainer(pl.Trainer):
             except ImportError:
                 raise RuntimeError("You should install onnx and onnxruntime to set `onnx=True`, "
                                    "or just set `onnx=False`.")
-
+        elif openvino:
+            from bigdl.nano.pytorch.runtime_binding.openvino_inference import bind_openvino_methods
+            return bind_openvino_methods(pl_model)
         if quantize:
             from bigdl.nano.pytorch.runtime_binding.quantization_inference import\
                 bind_quantize_methods
@@ -165,7 +171,7 @@ class Trainer(pl.Trainer):
                 bind_base_inference_rt_methods
             pl_model = bind_quantize_methods(bind_base_inference_rt_methods(pl_model), None)
 
-        return bind_base_inference_rt_methods(pl_model)
+        return pl_model
 
     def quantize(self, pl_model: LightningModule,
                  calib_dataloader: DataLoader = None,

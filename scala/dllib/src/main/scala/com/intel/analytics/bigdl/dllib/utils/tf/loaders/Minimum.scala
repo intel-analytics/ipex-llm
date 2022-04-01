@@ -37,6 +37,7 @@ class Minimum extends TensorflowOpsLoader {
       MinimumOps[T, Double]()
     } else {
       Log4Error.invalidOperationError(false, s"Not support load Maximum when type is $t")
+      null
     }
   }
 }

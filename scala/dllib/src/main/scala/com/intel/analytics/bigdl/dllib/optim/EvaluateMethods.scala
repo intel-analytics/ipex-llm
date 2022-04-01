@@ -17,7 +17,7 @@
 package com.intel.analytics.bigdl.dllib.optim
 
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
-import com.intel.analytics.bigdl.dllib.utils.{Engine, Log4Error}
+import com.intel.analytics.bigdl.dllib.utils.Log4Error
 
 object EvaluateMethods {
   def calcAccuracy[T](output: Tensor[T], target: Tensor[T]): (Int, Int) = {

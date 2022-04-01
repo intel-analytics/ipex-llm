@@ -167,6 +167,7 @@ class Pooler[T: ClassTag] (
 
   override def updateGradInput(input: Table, gradOutput: Tensor[T]): Table = {
     Log4Error.invalidOperationError(false, "Not support backward propagation")
+    null
   }
 
   override def toString: String = "nn.Pooler"

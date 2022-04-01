@@ -119,7 +119,8 @@ private[bigdl] class BlasWrapper(val module: AbstractModule[Activity, Activity, 
     initEnv = true
     val multiThread = System.getProperty("multiThread", "false").toBoolean
     if (this.train && multiThread) {
-      Log4Error.invalidOperationError(false,"Please not set multiThread to true for model training")
+      Log4Error.invalidOperationError(false,
+        "Please not set multiThread to true for model training")
     }
     if (this.train
       || !multiThread

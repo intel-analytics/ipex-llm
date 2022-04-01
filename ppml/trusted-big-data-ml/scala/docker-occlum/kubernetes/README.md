@@ -67,3 +67,28 @@ Parameters in run_spark_xgboost.sh:
     After training, you can find xgboost model in folder `/tmp/path_to_model_to_be_saved` if this parameter is `/host/data/xgboost_model_to_be_saved`
 
 **note: make sure num_threads is larger than spark.task.cpus.**
+
+### Run Spark TPC-H example
+
+Modify the following configuration in `executor.yaml`.
+
+```yaml
+imagePullPolicy: Always
+
+env:
+- name: SGX_THREAD
+  value: "256"
+- name: SGX_HEAP
+  value: "2GB"
+- name: SGX_KERNEL_HEAP
+  value: "2GB"
+- name: SGX_MMAP
+  value: "16GB"
+```
+
+Then run the script.
+
+```bash
+./run_spark_tpch.sh
+```
+

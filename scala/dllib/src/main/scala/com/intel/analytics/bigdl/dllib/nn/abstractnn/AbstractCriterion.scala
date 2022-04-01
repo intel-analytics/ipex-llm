@@ -59,7 +59,7 @@ abstract class AbstractCriterion[A <: Activity: ClassTag, B <: Activity: ClassTa
     case tensor: Tensor[T] => Tensor[T]().asInstanceOf[D]
     case table: Table => T().asInstanceOf[D]
     case _ =>
-      Log4Error.invalidOperationError(false,"Activity only support tensor and table now")
+      Log4Error.invalidOperationError(false, "Activity only support tensor and table now")
       null.asInstanceOf[D]
   }
 

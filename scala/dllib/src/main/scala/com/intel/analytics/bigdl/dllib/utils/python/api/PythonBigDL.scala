@@ -109,7 +109,7 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
 
   def jTensorsToActivity(input: JList[_ <: Object], isTable: Boolean): Activity = {
     if (input.isEmpty) {
-      Log4Error.invalidOperationError(false,"Empty input")
+      Log4Error.invalidOperationError(false, "Empty input")
     }
     if (isTable) {
       toTable(input)
@@ -130,6 +130,7 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     } else {
       Log4Error.invalidOperationError(false, s"Activity type" +
         s"(${outputActivity.getClass.getName}) not support")
+      null
     }
   }
 
@@ -168,7 +169,8 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
             jTensor.storage.map(x => ev.fromType(x.toDouble)), jTensor.shape)
         }
       case t: String =>
-        Log4Error.invalidOperationError(false,s"Not supported type: ${t}")
+        Log4Error.invalidOperationError(false, s"Not supported type: ${t}")
+        null
     }
   }
 
@@ -201,8 +203,9 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
           result
         }
       case _ =>
-        Log4Error.invalidOperationError(false,s"toJTensor: Unsupported tensor type" +
+        Log4Error.invalidOperationError(false, s"toJTensor: Unsupported tensor type" +
           s" ${tensor.getTensorType}")
+        null
     }
   }
 
@@ -1868,8 +1871,9 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
       case "BATCH_SIZE" => NormMode.BATCH_SIZE
       case "NONE" => NormMode.NONE
       case n: String =>
-        Log4Error.invalidOperationError(false,s"Only support 'FULL', " +
+        Log4Error.invalidOperationError(false, s"Only support 'FULL', " +
           s"'VALID', 'BATCH_SIZE' and 'NONE': $n")
+        NormMode.NONE
     }
     val labelToIgnore = ignoreLabel match {
       case i: Integer => Some(i.toInt)
@@ -1971,7 +1975,9 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     val order = byteOrder match {
       case "little_endian" => ByteOrder.LITTLE_ENDIAN
       case "big_endian" => ByteOrder.BIG_ENDIAN
-      case _ => Log4Error.invalidOperationError(false,s"No support byte order $byteOrder")
+      case _ =>
+        Log4Error.invalidOperationError(false, s"No support byte order $byteOrder")
+        ByteOrder.BIG_ENDIAN
     }
     Module.loadTF[T](path, inputs.asScala, outputs.asScala, order,
       Option(binFile), generatedBackward)
@@ -1985,13 +1991,17 @@ class PythonBigDL[T: ClassTag](implicit ev: TensorNumeric[T]) extends Serializab
     val order = byteOrder.toLowerCase match {
       case "little_endian" => ByteOrder.LITTLE_ENDIAN
       case "big_endian" => ByteOrder.BIG_ENDIAN
-      case _ => Log4Error.invalidOperationError(false,s"Unknown byte order $byteOrder")
+      case _ =>
+        Log4Error.invalidOperationError(false, s"Unknown byte order $byteOrder")
+        ByteOrder.BIG_ENDIAN
     }
 
     val format = dataFormat.toLowerCase match {
       case "nhwc" => TensorflowDataFormat.NHWC
       case "nchw" => TensorflowDataFormat.NCHW
-      case _ => Log4Error.invalidOperationError(false,s"Unknown format $dataFormat")
+      case _ =>
+        Log4Error.invalidOperationError(false, s"Unknown format $dataFormat")
+        TensorflowDataFormat.NCHW
     }
     val scalaInputs = inputs.asScala.map { elem =>
       val array = elem.asInstanceOf[JList[Any]]
@@ -3257,7 +3267,8 @@ object PythonBigDLUtils {
       case "double" =>
         Tensor(jTensor.storage.map(x => ev.fromType(x.toDouble)), jTensor.shape)
       case t: String =>
-        Log4Error.invalidOperationError(false,s"Not supported type: ${t}")
+        Log4Error.invalidOperationError(false, s"Not supported type: ${t}")
+        null
     }
   }
 }

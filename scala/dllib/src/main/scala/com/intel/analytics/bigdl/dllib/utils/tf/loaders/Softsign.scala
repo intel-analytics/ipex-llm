@@ -37,6 +37,7 @@ class Softsign extends TensorflowOpsLoader {
       SoftSign[T, Double]()
     } else {
       Log4Error.invalidOperationError(false, s"Not support load SoftsignGrad when type is ${t}")
+      null
     }
   }
 }

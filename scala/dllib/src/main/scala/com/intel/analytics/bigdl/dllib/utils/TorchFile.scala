@@ -182,7 +182,7 @@ object TorchFile {
         createInstanceFor(bigDlName, args)
       } catch {
         case _: Throwable =>
-          Log4Error.invalidOperationError(false,s"unsupported module $moduleName")
+          Log4Error.invalidOperationError(false, s"unsupported module $moduleName")
       }
     }
     module
@@ -356,7 +356,7 @@ object TorchFile {
             Log4Error.invalidOperationError(false, s"unsupported type ${source}",
             "only support Table")
         }
-      case _ => Log4Error.invalidOperationError(false,objectType.toString)
+      case _ => Log4Error.invalidOperationError(false, objectType.toString)
 
     }
     byteWrite(rawData, path)
@@ -465,7 +465,7 @@ object TorchFile {
       case DoubleType => "torch.DoubleTensor"
       case FloatType => "torch.FloatTensor"
       case _ =>
-        Log4Error.invalidOperationError(false,s"Unknown type ${source.getNumericType()}")
+        Log4Error.invalidOperationError(false, s"Unknown type ${source.getNumericType()}")
     }
     table
   }

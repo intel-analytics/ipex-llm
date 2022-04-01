@@ -37,6 +37,7 @@ class RsqrtGrad extends TensorflowOpsLoader {
       RsqrtGradOps[T, Double]()
     } else {
       Log4Error.invalidOperationError(false, s"Not support load RsqrtGrad when type is $t")
+      null
     }
   }
 }

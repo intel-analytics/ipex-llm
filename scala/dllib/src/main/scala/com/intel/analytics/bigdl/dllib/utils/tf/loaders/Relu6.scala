@@ -37,6 +37,7 @@ class Relu6 extends TensorflowOpsLoader {
       ReLU6[T, Double]()
     } else {
       Log4Error.invalidOperationError(false, s"Not support load ReLU6 when type is ${t}")
+      null
     }
   }
 }

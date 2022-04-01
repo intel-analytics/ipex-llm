@@ -57,7 +57,7 @@ class Conv2DBackpropFilter extends TensorflowOpsLoader {
         val strideH = strideList(3)
         Conv2DBackFilter[T](strideW, strideH, pW, pH, DataFormat.NCHW)
       case _ =>
-        Log4Error.invalidOperationError(false,s"not supported data format: $format")
+        Log4Error.invalidOperationError(false, s"not supported data format: $format")
     }
     convBackFilter.asInstanceOf[AbstractModule[Activity, Activity, T]]
   }

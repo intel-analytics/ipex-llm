@@ -104,7 +104,8 @@ class RoiAlign[T: ClassTag] (
         width,
         spatialScale)
     } else {
-      Log4Error.invalidOperationError(false,"currently only Double and Float types are supported")
+      Log4Error.invalidOperationError(false,
+        "currently only Double and Float types are supported")
     }
 
     output

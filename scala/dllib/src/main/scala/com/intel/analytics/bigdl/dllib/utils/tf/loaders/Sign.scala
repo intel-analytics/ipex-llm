@@ -39,6 +39,7 @@ class Sign extends TensorflowOpsLoader {
       SignOps[T, Double]()
     } else {
       Log4Error.invalidOperationError(false, s"Not support load Inv when type is ${t}")
+      null
     }
   }
 }

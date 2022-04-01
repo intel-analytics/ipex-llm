@@ -113,7 +113,7 @@ object Activity {
         import com.intel.analytics.bigdl.dllib.utils.tf.TFTensorNumeric.NumericByteString
         Tensor[ByteString]()
       } else {
-        Log4Error.invalidOperationError(false,"Type T activity is not supported")
+        Log4Error.invalidOperationError(false, "Type T activity is not supported")
       }
     } else {
       null

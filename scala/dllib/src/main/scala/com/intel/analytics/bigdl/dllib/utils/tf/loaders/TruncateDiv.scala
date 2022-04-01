@@ -37,6 +37,7 @@ class TruncateDiv extends TensorflowOpsLoader {
       TruncateDivOps[T, Int]()
     } else {
       Log4Error.invalidOperationError(false, s"Not support load TruncateDiv when type is ${t}")
+      null
     }
   }
 }

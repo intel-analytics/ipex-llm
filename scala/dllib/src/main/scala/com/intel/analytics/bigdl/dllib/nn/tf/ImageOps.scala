@@ -87,7 +87,7 @@ private[bigdl] class DecodeImage[T: ClassTag](val channels: Int)(implicit ev: Te
         i += 1
       }
     } else {
-      Log4Error.invalidOperationError(false,"image data is not equal to output buffer")
+      Log4Error.invalidOperationError(false, "image data is not equal to output buffer")
     }
   }
 }
@@ -185,7 +185,7 @@ private[bigdl] class DecodeRaw[T: ClassTag](val outType: DataType,
       case DataType.DT_INT64 => decodeInt64(input, buffer.asLongBuffer().capacity())
       case DataType.DT_FLOAT => decodeFloat(input, buffer.asFloatBuffer().capacity())
       case DataType.DT_DOUBLE => decodeDouble(input, buffer.asDoubleBuffer().capacity())
-      case _ => Log4Error.invalidOperationError(false,s"$outType are not supported")
+      case _ => Log4Error.invalidOperationError(false, s"$outType are not supported")
     }
     output
   }

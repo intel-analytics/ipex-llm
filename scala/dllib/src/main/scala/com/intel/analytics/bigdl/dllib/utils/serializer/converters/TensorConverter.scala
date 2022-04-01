@@ -43,6 +43,7 @@ object TensorConverter extends DataConverter {
       case t =>
         Log4Error.invalidInputError(false, s"${tensor.getTensorType} is not supported",
         "only support DenseType and QuantizedType")
+        false
     }
     emptyTensor
   }
@@ -238,7 +239,9 @@ object TensorConverter extends DataConverter {
           }
         } else created.asInstanceOf[Storage[ByteString]]
         Tensor[ByteString](storage, offSet, sizes, strides)
-      case _ => Log4Error.invalidOperationError(false,s"$dataType not supported in tensor now !")
+      case _ =>
+        Log4Error.invalidOperationError(false, s"$dataType not supported in tensor now !")
+        null
     }
     storages(tensorId) = tensor
     tensor
@@ -252,7 +255,7 @@ object TensorConverter extends DataConverter {
     } else if (storageType == BigDLStorage) {
       BigDLTensorStorageManager.setStorage(context, tensorBuilder, tensor)
     } else {
-      Log4Error.invalidOperationError(false,s"$storageType not supported")
+      Log4Error.invalidOperationError(false, s"$storageType not supported")
     }
   }
 

@@ -36,7 +36,9 @@ object SparseTensorBLAS {
         vdotDouble(vec1.asInstanceOf[DenseTensor[Double]],
           vec2.asInstanceOf[SparseTensor[Double]])
           .asInstanceOf[T]
-      case t => Log4Error.invalidOperationError(false,s"Sparse vdot doesn't support $t")
+      case t =>
+        Log4Error.invalidOperationError(false, s"Sparse vdot doesn't support $t")
+        0.asInstanceOf[T]
     }
   }
 
@@ -132,7 +134,7 @@ object SparseTensorBLAS {
         scoomv(alpha, a.asInstanceOf[SparseTensor[Float]], x.asInstanceOf[DenseTensor[Float]],
           beta, y.asInstanceOf[DenseTensor[Float]])
       case _ =>
-        Log4Error.invalidOperationError(false,s"Sparse addmv doesn't support")
+        Log4Error.invalidOperationError(false, s"Sparse addmv doesn't support")
     }
   }
 
@@ -228,7 +230,7 @@ object SparseTensorBLAS {
         dcoomm(alpha, a.asInstanceOf[DenseTensor[Double]], x.asInstanceOf[SparseTensor[Double]],
           beta, y.asInstanceOf[DenseTensor[Double]])
       case _ =>
-        Log4Error.invalidOperationError(false,s"Sparse addmm doesn't support")
+        Log4Error.invalidOperationError(false, s"Sparse addmm doesn't support")
     }
   }
 

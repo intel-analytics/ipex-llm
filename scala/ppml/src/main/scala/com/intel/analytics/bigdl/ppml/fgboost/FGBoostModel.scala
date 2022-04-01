@@ -144,7 +144,7 @@ abstract class FGBoostModel(continuous: Boolean,
 
   def trainRegressionTree(dataSet: Array[Tensor[Float]], indices: Array[Array[Int]], totalRound: Int): Unit = {
     for (i <- 0 until totalRound) {
-      logger.debug(s"========Boosting round: $i========")
+      logger.info(s"Round: $i/$totalRound")
       val grads = downloadGrad(i)
       val currTree = RegressionTree(dataSet, indices, grads, i.toString)
       currTree.setLearningRate(learningRate).setMinChildSize(minChildSize)
@@ -155,7 +155,7 @@ abstract class FGBoostModel(continuous: Boolean,
   def trainClassificationTree(dataSet: Array[Tensor[Float]], indices: Array[Array[Int]], totalRound: Int) = {
     val labelEarlyStop = new Array[Boolean](nLabel)
     for (i <- 0 until totalRound) {
-      logger.debug(s"========Boosting round: $i========")
+      logger.info(s"Round: $i/$totalRound")
       val grads = downloadGrad(i)
       val nGrads = TreeUtils.expandGrads(grads, dataSet.length, nLabel)
       for (gID <- 0 until nLabel) {
@@ -187,7 +187,7 @@ abstract class FGBoostModel(continuous: Boolean,
         bestSplit.featureID == -1 || bestSplit.gain < 1e-6f
       } else  bestSplit.featureID == -1
       if (updateCondition) {
-        logger.warn(s"Set ${bestSplit.nodeID} as leaf")
+        logger.debug(s"Set ${bestSplit.nodeID} as leaf")
 //        logger.info(s"Set Leaf gain = ${bestSplit.gain}")
         // Add current node to leaf
 //        logger.info(s"Tree node size: ${tree.nodes.size}, bestSplit at node ${bestSplit.nodeID}")
@@ -217,6 +217,9 @@ abstract class FGBoostModel(continuous: Boolean,
       gradData.putTensors("label", toFloatTensor(label))
     }
     // Upload
+    if (flClient == null) {
+      throw new IllegalArgumentException("FLClient not initialized.")
+    }
     flClient.fgbostStub.uploadLabel(gradData.build)
   }
 
@@ -229,7 +232,7 @@ abstract class FGBoostModel(continuous: Boolean,
     // Note that g may be related to Y
     // H = 1 in regression
     val response = flClient.fgbostStub.downloadLabel("xgboost_grad", treeID)
-    logger.info("Downloaded grads from FLServer")
+    logger.debug("Downloaded grads from FLServer")
     val gradTable = response.getData
     val grad = getTensor("grad", gradTable).toArray
     val hess = getTensor("hess", gradTable).toArray

@@ -46,6 +46,7 @@ private[bigdl] class BlasToIR[T: ClassTag] extends ConvertBase[Module[T], IRElem
       IRElement(layer.getName(), op)
     } else {
       Log4Error.invalidOperationError(false, s"can not convert $layer to IRelement ")
+      null
     }
   }
 }

@@ -145,7 +145,7 @@ class FP16SplitsCompressedTensor[T: ClassTag](buffers: Array[Array[Byte]], size:
       }
       i += 1
     }
-    Log4Error.invalidOperationError(false,"Offset and length not match")
+    Log4Error.invalidOperationError(false, "Offset and length not match")
     null
   }
 

@@ -91,7 +91,7 @@ trait QuantSerializer extends ModuleSerializable {
       serializeBias(context, modelBuilder)
       serializeOthers(context, modelBuilder)
     } else {
-      Log4Error.invalidOperationError(false,s"$storageType not supported!")
+      Log4Error.invalidOperationError(false, s"$storageType not supported!")
     }
   }
 

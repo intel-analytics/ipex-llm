@@ -188,7 +188,7 @@ class PythonNNFrames[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonZ
       case "DRAM" => DRAM
       case "DISK_AND_DRAM" => DISK_AND_DRAM(numSlice)
       case _ =>
-        Log4Error.invalidOperationError(false,s"$level is not supported.")
+        Log4Error.invalidOperationError(false, s"$level is not supported.")
         DRAM
     }
     estimator.setDataCacheLevel(memType)

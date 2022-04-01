@@ -45,6 +45,7 @@ class Dilation2DBackpropFilter extends TensorflowOpsLoader {
     } else {
       Log4Error.invalidOperationError(false,
         s"Not support load Dilation2DBackpropFilter when type is ${t}")
+      null
     }
   }
 }

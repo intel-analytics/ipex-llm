@@ -42,6 +42,7 @@ private[tensor] class DnnStorage[T: ClassTag](size: Int) extends Storage[T] {
   } else {
     Log4Error.invalidInputError(false, s"Unsupported type for storage",
     "DnnStorage only support Float, Byte, Int")
+    DnnStorage.INT_BYTES
   }
 
   private var _isReleased: Boolean = false

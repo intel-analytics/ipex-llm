@@ -193,7 +193,8 @@ object ResNet {
             .setName(s"res${name}_branch1"))
           .add(SbnDnn(nOutputPlane).setName(s"bn${name}_branch1"))
       } else if (nInputPlane != nOutputPlane) {
-        Log4Error.invalidOperationError(false,s"useConv false")
+        Log4Error.invalidOperationError(false, s"useConv false")
+        null
       } else {
         Identity()
       }
@@ -271,7 +272,7 @@ object ResNet {
           "fc1000"))
         .add(ReorderMemory(HeapData(Array(batchSize, classNum), Memory.Format.nc)))
     } else {
-      Log4Error.invalidOperationError(false,s"Invalid dataset ${dataSet}")
+      Log4Error.invalidOperationError(false, s"Invalid dataset ${dataSet}")
     }
 
     modelInit(model)
@@ -323,7 +324,8 @@ object ResNet {
             .setName(s"res${name}_branch1").inputs(input)
         SbnDnn(nOutputPlane).setName(s"bn${name}_branch1").inputs(conv)
       } else if (nInputPlane != nOutputPlane) {
-        Log4Error.invalidOperationError(false,s"useConv false")
+        Log4Error.invalidOperationError(false, s"useConv false")
+        null
       } else {
         Identity().inputs(input)
       }
@@ -408,7 +410,7 @@ object ResNet {
       modelInit(model)
       model
     } else {
-      Log4Error.invalidOperationError(false,s"Invalid dataset ${dataSet}")
+      Log4Error.invalidOperationError(false, s"Invalid dataset ${dataSet}")
       null
     }
   }

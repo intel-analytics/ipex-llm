@@ -404,6 +404,7 @@ object DataConverter extends DataConverter{
 
         case _ =>
           Log4Error.invalidOperationError(false, "Unsupported data type: " + listType)
+          null
       }
       arr
     }

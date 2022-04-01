@@ -145,7 +145,7 @@ class SoftmaxWithCriterion[@specialized(Float, Double) T: ClassTag](ignoreLabel:
         case NormMode.BATCH_SIZE => ev.fromType(outerNum)
         case NormMode.NONE => ev.fromType(1)
         case _ =>
-          Log4Error.invalidOperationError(false,"Unknown normalization mode")
+          Log4Error.invalidOperationError(false, "Unknown normalization mode")
           ev.fromType(1)
       }
     }

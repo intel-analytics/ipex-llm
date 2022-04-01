@@ -24,7 +24,7 @@ object Log4Error {
   def invalidInputError(condition: Boolean, errmsg: String, fixmsg: String = null): Unit = {
     if (!condition) {
       outputUserMessage(errmsg, fixmsg)
-      Log4Error.invalidOperationError(false,errmsg)
+      throw new IllegalArgumentException(errmsg)
     }
   }
 
@@ -63,4 +63,8 @@ class InvalidOperationException(message: String, cause: Throwable = null)
   def this(message: String) = this(message, null)
 }
 
+class UnKnownException(message: String, cause: Throwable = null)
+  extends Exception(message, cause) {
 
+  def this(message: String) = this(message, null)
+}

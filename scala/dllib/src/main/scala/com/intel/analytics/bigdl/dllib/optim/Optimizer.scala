@@ -264,7 +264,8 @@ abstract class Optimizer[T: ClassTag, D](
       logger.info(s"Optimizer.setModel: Detect current optimMethod is a global optimMethod." +
         s" Automatically associate the current optimMethod with the new model.")
     } else {
-      Log4Error.invalidOperationError(false,"Optimizer.setModel: Detect current optimMethod" +
+      Log4Error.invalidOperationError(false,
+        "Optimizer.setModel: Detect current optimMethod" +
         " is not a global optimMethod. Please use setModelAndOptimMethods")
     }
 

@@ -79,7 +79,7 @@ object SerializerInstance {
       case "fp16" => new FP16CompressedTensor[T](data)
       case "none" => new UncompressedTensor[T](data)
       case _ =>
-        Log4Error.invalidOperationError(false,"Unsupported parameter type")
+        Log4Error.invalidOperationError(false, "Unsupported parameter type")
         null
     }
   }

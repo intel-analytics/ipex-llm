@@ -419,6 +419,7 @@ class V1LayerConverter[T: ClassTag](implicit ev: TensorNumeric[T]) extends Conve
   override protected def toCaffeBatchNormalization(module : AbstractModule[Activity, Activity, T],
     bottoms : ArrayBuffer[String], nextSize : Int): Seq[GeneratedMessage] = {
     Log4Error.invalidOperationError(false, "Batch normalization is not supported in V1Layer")
+    null
   }
 
   override protected def toCaffeConcat(module : AbstractModule[Activity, Activity, T],
@@ -435,6 +436,7 @@ class V1LayerConverter[T: ClassTag](implicit ev: TensorNumeric[T]) extends Conve
   override protected def toCaffeElu(module : AbstractModule[Activity, Activity, T],
     bottoms : ArrayBuffer[String], nextSize : Int): Seq[GeneratedMessage] = {
     Log4Error.invalidOperationError(false, "ELU is not supported in V1Layer")
+    null
   }
 
   override protected def toCaffeFlattern(module : AbstractModule[Activity, Activity, T],
@@ -445,6 +447,7 @@ class V1LayerConverter[T: ClassTag](implicit ev: TensorNumeric[T]) extends Conve
   override protected def toCaffeLog(module : AbstractModule[Activity, Activity, T],
     bottoms : ArrayBuffer[String], nextSize : Int): Seq[GeneratedMessage] = {
     Log4Error.invalidOperationError(false, "LOG is not supported in V1Layer")
+    null
   }
 
   override protected def toCaffePower(module : AbstractModule[Activity, Activity, T],
@@ -458,26 +461,31 @@ class V1LayerConverter[T: ClassTag](implicit ev: TensorNumeric[T]) extends Conve
   override protected def toCaffePReLu(module : AbstractModule[Activity, Activity, T],
     bottoms : ArrayBuffer[String], nextSize : Int): Seq[GeneratedMessage] = {
     Log4Error.invalidOperationError(false, "PReLU is not supported in V1Layer")
+    null
   }
 
   override  protected def toCaffeRecurrent(module : AbstractModule[Activity, Activity, T],
     bottoms : ArrayBuffer[String], nextSize : Int): Seq[GeneratedMessage] = {
     Log4Error.invalidOperationError(false, "Recurrent is not supported in V1Layer")
+    null
   }
 
   override protected def toCaffeReshape(module : AbstractModule[Activity, Activity, T],
     bottoms : ArrayBuffer[String], nextSize : Int): Seq[GeneratedMessage] = {
     Log4Error.invalidOperationError(false, "Reshape is not supported in V1Layer")
+    null
   }
 
   override protected def toCaffeScale(module : AbstractModule[Activity, Activity, T],
     bottoms : ArrayBuffer[String], nextSize : Int): Seq[GeneratedMessage] = {
     Log4Error.invalidOperationError(false, "Scale is not supported in V1Layer")
+    null
   }
 
   override protected def toCaffeBias(module : AbstractModule[Activity, Activity, T],
     bottoms : ArrayBuffer[String], nextSize : Int): Seq[GeneratedMessage] = {
     Log4Error.invalidOperationError(false, "Bias is not supported in V1Layer")
+    null
   }
 
   override  protected def toCaffeThreshold(module : AbstractModule[Activity, Activity, T],
@@ -506,6 +514,7 @@ class V1LayerConverter[T: ClassTag](implicit ev: TensorNumeric[T]) extends Conve
   override protected def toCaffeTile(module : AbstractModule[Activity, Activity, T],
     bottoms : ArrayBuffer[String], nextSize : Int): Seq[GeneratedMessage] = {
     Log4Error.invalidOperationError(false, "Tile is not supported in V1Layer")
+    null
   }
 
   override protected def toCaffeEltWiseMax(module : AbstractModule[Activity, Activity, T],

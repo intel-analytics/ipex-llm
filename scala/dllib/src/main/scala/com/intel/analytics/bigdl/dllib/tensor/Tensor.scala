@@ -745,8 +745,10 @@ trait Tensor[T] extends Serializable with TensorMath[T] with Activity {
    */
   def save(path : String, overWrite : Boolean = false) : this.type
 
-  override def toTable: Table =
-    Log4Error.invalidOperationError(false,"Tensor cannot be cast to Table")
+  override def toTable: Table = {
+    Log4Error.invalidOperationError(false, "Tensor cannot be cast to Table")
+    null
+  }
 
   /**
    * Return true because it's a Tensor implemented from [[Activity]]
@@ -915,8 +917,10 @@ object Tensor {
         case e: Float => ev.fromType(e)
         case e: Double => ev.fromType(e)
         case e: String => ev.fromType(e)
-        case _ => Log4Error.invalidOperationError(false,s"Not support numeric type " +
+        case _ =>
+          Log4Error.invalidOperationError(false, s"Not support numeric type " +
           flatTable[Any](i).getClass.getName)
+          ev.fromType(0)
       }
     }
 
@@ -1316,7 +1320,8 @@ object Tensor {
     } else if (sparseTensor.isInstanceOf[DenseTensor[T]]) {
       res.copy(sparseTensor)
     } else {
-      Log4Error.invalidOperationError(false,"Tensor.dense: Illegal tensor type.")
+      Log4Error.invalidOperationError(false, "Tensor.dense: Illegal tensor type.")
+      null
     }
   }
 

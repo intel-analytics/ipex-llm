@@ -34,7 +34,7 @@ class ScalarToTensor[T: ClassTag]()(implicit ev: TensorNumeric[T])
         case ff: Float => ev.fromType(f.asInstanceOf[Float])
         case _ =>
           Log4Error.invalidInputError(false, "ScalarToTensor only supports Float and Double")
-          null
+          ev.fromType(f.asInstanceOf[Float])
       }
       Tensor(Array(feature), Array(1))
     }
