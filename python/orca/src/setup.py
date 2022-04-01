@@ -95,7 +95,7 @@ def setup_package():
         license='Apache License, Version 2.0',
         url='https://github.com/intel-analytics/analytics-zoo',
         packages=get_bigdl_packages(),
-        install_requires=['conda-pack==0.3.1', 'packaging', 'filelock',
+        install_requires=['packaging', 'filelock',
                           'bigdl-tf==0.14.0.dev1', 'bigdl-math==0.14.0.dev1',
                           'bigdl-dllib=='+VERSION, 'pyzmq'],
         extras_require={'ray': RAY_DEP,
