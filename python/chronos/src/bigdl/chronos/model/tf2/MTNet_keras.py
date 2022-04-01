@@ -509,7 +509,7 @@ class MTNetKeras(BaseModel):
         :param y: target
         :param metric: a list of metrics in string format
         :param batch_size: Number of samples per batch.
-               If unspecified, batch_size will default to 32. 
+               If unspecified, batch_size will default to 32.
         :return: a list of metric evaluation results
         """
         y_pred = self.predict(x, batch_size=batch_size)
