@@ -59,9 +59,9 @@ class TestMTNetKeras(ZooTestCase):
         tf.keras.backend.clear_session()
         train_data, test_data = create_data()
         self.x_train, y_train = train_data.to_numpy()
-        self.y_train = y_train[:, :, 0]
+        self.y_train = y_train.reshape(y_train.shape[0], y_train.shape[-1])
         self.x_val, y_val = test_data.to_numpy()
-        self.y_val = y_val[:, :, 0]
+        self.y_val = y_val.reshape(y_val.shape[0], y_val.shape[-1])
         self.x_test, _ = test_data.to_numpy()
         self.model = MTNetKeras()
         self.config = {"long_num": 2,
@@ -87,7 +87,7 @@ class TestMTNetKeras(ZooTestCase):
                             validation_data=(self.x_val, self.y_val),
                             **self.config)
         y_pred = self.model.predict(self.x_test)
-        assert y_pred.shape == (self.x_test.shape[0], self.y_train.shape[1])
+        assert y_pred.shape == (self.x_test.shape[0], self.y_val.shape[-1])
         dirname = "/tmp"
         restored_model = MTNetKeras()
         ckpt = os.path.join(dirname, "mtnet.ckpt")
@@ -107,7 +107,7 @@ class TestMTNetKeras(ZooTestCase):
                             mc=True,
                             **self.config)
         pred, uncertainty = self.model.predict_with_uncertainty(self.x_test, n_iter=2)
-        assert pred.shape == (self.x_test.shape[0], self.y_train.shape[1])
+        assert pred.shape == (self.x_test.shape[0], self.y_val.shape[-1])
         assert uncertainty.shape == pred.shape
         # assert np.any(uncertainty) It may happen that all results are dropped out.
 
