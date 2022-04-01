@@ -32,7 +32,7 @@ class PytorchBaseInference:
         self.on_train_start(model, mode)
         model._torch_train(mode)
 
-    def on_train_start(model, mode=True):
+    def on_train_start(self, model, mode=True):
         return
 
     def on_forward_start(self, args):
