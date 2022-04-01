@@ -18,6 +18,7 @@ import os
 from tempfile import TemporaryDirectory
 from typing import Any
 
+
 class HorovodBackend(Backend):
 
     def setup(self) -> None:
