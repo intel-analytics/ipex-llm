@@ -298,9 +298,9 @@ class Trainer(pl.Trainer):
                 quantized_onnx_model = None
                 for i, framework_item in enumerate(framework):
                     if "pytorch" in framework_item:
-                        quantized_pytorch_model = quantized_models[i].model
+                        quantized_pytorch_model = quantized_models[i]
                     else:
-                        quantized_onnx_model = quantized_models[i].model
+                        quantized_onnx_model = quantized_models[i]
                 from bigdl.nano.pytorch.runtime_binding.base_inference import \
                     bind_base_inference_rt_methods
                 from bigdl.nano.pytorch.runtime_binding.quantization_inference import \

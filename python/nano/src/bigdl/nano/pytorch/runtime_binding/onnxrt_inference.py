@@ -218,8 +218,8 @@ def bind_onnxrt_methods(pl_model: LightningModule, q_onnx_model=None, sess_optio
     #     f"onnxruntime support is only valid for a LightningModule, but found a {type(pl_model)}."
 
     if q_onnx_model:
-        onnx.save(q_onnx_model, "_model_quantized_cache.onnx")
-        pl_model._q_onnx_model = q_onnx_model
+        onnx.save(q_onnx_model.model, "_model_quantized_cache.onnx")
+        pl_model._q_onnx_model = q_onnx_model.model
         pl_model._quantized_ortsess = ort.InferenceSession("_model_quantized_cache.onnx",
                                                            sess_options=sess_options)
         pl_model._quantized_ortsess_up_to_date = True
