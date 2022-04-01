@@ -15,6 +15,8 @@
 #
 
 import tensorflow as tf
+from bigdl.nano.deps.horovod.horovod_api import create_horovod_multiprocessing_backend
+from bigdl.nano.deps.horovod.horovod_api import distributed_train_keras_horovod
 
 
 class TrainingUtils:
@@ -71,13 +73,11 @@ class TrainingUtils:
             assert isinstance(x, (tf.compat.v1.data.Dataset, tf.data.Dataset)), msg
 
             if backend == "horovod":
-                from bigdl.nano.common.multiprocessing.multiprocs_backend import HorovodBackend
-                _backend = HorovodBackend()
-                from bigdl.nano.tf.keras.distributed_utils_horovod import distributed_train_keras
-                history = distributed_train_keras(_backend,
-                                                  model=self,
-                                                  nprocs=nprocs,
-                                                  fit_kwargs=fit_kwargs)
+                _backend = create_horovod_multiprocessing_backend()
+                history = distributed_train_keras_horovod(_backend,
+                                                          model=self,
+                                                          nprocs=nprocs,
+                                                          fit_kwargs=fit_kwargs)
                 return history
 
             else:
