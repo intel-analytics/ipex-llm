@@ -67,7 +67,7 @@ def quantize(self,
      :return:           A TensorflowBaseModel for INC. If there is no model found, return None.
      """
     if backend == 'inc':
-        from bigdl.nano.deps.neural_compressor import QuantizationINC
+        from bigdl.nano.deps.neural_compressor.inc_api import QuantizationINC
         from neural_compressor.experimental import common
         from neural_compressor.model.model import TensorflowBaseModel
 
