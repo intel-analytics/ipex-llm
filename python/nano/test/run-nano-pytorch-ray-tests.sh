@@ -2,14 +2,15 @@
 
 export ANALYTICS_ZOO_ROOT=${ANALYTICS_ZOO_ROOT}
 export NANO_HOME=${ANALYTICS_ZOO_ROOT}/python/nano/src
-export PYTORCH_NANO_RAY_TEST_DIR=${ANALYTICS_ZOO_ROOT}/python/nano/test/ray
+export NANO_RAY_TEST_DIR=${ANALYTICS_ZOO_ROOT}/python/nano/test/ray
+export PYTHONPATH=$PYTHONPATH:/home/wym/my_ray/BigDL/python/nano
 
 set -e
 
 # ipex is not installed here. Any tests needs ipex should be moved to next pytest command.
 echo "# Start testing"
 start=$(date "+%s")
-python -m pytest -s ${PYTORCH_NANO_RAY_TEST_DIR}/test_ray_trainer.py 
+python -m pytest -s ${NANO_RAY_TEST_DIR}/test_ray_trainer.py 
 
 now=$(date "+%s")
 time=$((now-start))
