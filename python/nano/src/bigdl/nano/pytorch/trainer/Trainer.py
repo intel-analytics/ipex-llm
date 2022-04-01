@@ -238,12 +238,11 @@ class Trainer(pl.Trainer):
                 continue
 
         if backend == 'inc':
-            from bigdl.nano.quantization.neural_compressor import QuantizationINC
-            from bigdl.nano.quantization.neural_compressor.pytorch.utils.dataloader import \
-                check_loaders
+            from bigdl.nano.deps.neural_compressor.inc_api import QuantizationINC,\
+            check_pytorch_dataloaders
 
             # check if dataloader is of legal format
-            check_loaders(pl_model, [calib_dataloader, val_dataloader])
+            check_pytorch_dataloaders(pl_model, [calib_dataloader, val_dataloader])
 
             if approach not in ['static', 'dynamic']:
                 raise ValueError("Approach should be 'static' or 'dynamic', "
