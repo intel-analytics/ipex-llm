@@ -17,7 +17,7 @@
 package com.intel.analytics.bigdl.dllib.nn
 
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
-import com.intel.analytics.bigdl.dllib.utils.Table
+import com.intel.analytics.bigdl.dllib.utils.{Log4Error, Table}
 import com.intel.analytics.bigdl.dllib.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
 
@@ -62,7 +62,7 @@ class RoiAlign[T: ClassTag] (
 
       output.resize(num_rois, channels, pooledH, pooledW)
         .fill(ev.fromType[Float](Float.MinValue))
-      require(output.nElement() != 0, "Output contains no elements")
+      Log4Error.invalidInputError(output.nElement() != 0, "Output contains no elements")
 
       val inputData = data.storage().array()
       val outputData = output.storage().array().asInstanceOf[Array[Float]]
@@ -88,7 +88,7 @@ class RoiAlign[T: ClassTag] (
 
       output.resize(num_rois, channels, pooledH, pooledW)
         .fill(ev.fromType[Double](Float.MinValue))
-      require(output.nElement() != 0, "Output contains no elements")
+      Log4Error.invalidInputError(output.nElement() != 0, "Output contains no elements")
 
       val inputData = data.storage().array()
       val outputData = output.storage().array().asInstanceOf[Array[Double]]
@@ -193,7 +193,7 @@ class RoiAlign[T: ClassTag] (
       var roi_height = roi_end_h - roi_start_h
 
       if (aligned) {
-        require(roi_width >= 0 && roi_height >= 0,
+        Log4Error.invalidInputError(roi_width >= 0 && roi_height >= 0,
           s"ROIs in ROIAlign do not have non-negative size!" +
             s"But get ${roi_height} ${roi_width}")
       } else {
@@ -244,7 +244,8 @@ class RoiAlign[T: ClassTag] (
   }
 
   override def updateGradInput(input: Activity, gradOutput: Tensor[T]): Activity = {
-    require(mode == "avg", s"Only support backward for average mode, but get ${mode}")
+    Log4Error.invalidInputError(mode == "avg",
+      s"Only support backward for average mode, but get ${mode}")
     val data = input.toTable[Tensor[T]](1)
     val rois = input.toTable[Tensor[T]](2)
     val num_rois = rois.size(1)
@@ -252,8 +253,9 @@ class RoiAlign[T: ClassTag] (
     val height = data.size(3)
     val width = data.size(4)
 
-    require(gradOutput.isContiguous(), "gradOutput should be contiguous")
-    require(gradOutput.dim() == 4, s"gradOutput should be with 4 dims, but get ${gradOutput.dim()}")
+    Log4Error.invalidInputError(gradOutput.isContiguous(), "gradOutput should be contiguous")
+    Log4Error.invalidInputError(gradOutput.dim() == 4,
+      s"gradOutput should be with 4 dims, but get ${gradOutput.dim()}")
 
     val n_stride = gradOutput.stride(1)
     val c_stride = gradOutput.stride(2)
@@ -311,7 +313,7 @@ class RoiAlign[T: ClassTag] (
       var roi_height = roi_end_h - roi_start_h
 
       if (aligned) {
-        require(roi_width >= 0 && roi_height >= 0,
+        Log4Error.invalidInputError(roi_width >= 0 && roi_height >= 0,
           "ROIs in ROIAlign cannot have non-negative size!")
       } else {
         roi_width = math.max(roi_width, 1.0f)
@@ -545,7 +547,7 @@ class RoiAlign[T: ClassTag] (
       var roi_width = roi_end_w - roi_start_w
       var roi_height = roi_end_h - roi_start_h
       if (aligned) {
-        require(roi_width >= 0 && roi_height >= 0,
+        Log4Error.invalidInputError(roi_width >= 0 && roi_height >= 0,
           "ROIs in ROIAlign cannot have non-negative size!")
       } else {
         roi_width = math.max(roi_width, 1.0f)

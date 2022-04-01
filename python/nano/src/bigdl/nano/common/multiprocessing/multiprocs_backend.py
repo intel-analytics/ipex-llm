@@ -42,7 +42,6 @@ class MultiprocessingBackend(Backend):
 
     def run_subprocess(self, target, args=..., nprocs=1, envs=None) -> Any:
         import cloudpickle
-        import pickle
         import subprocess
         import sys
 
@@ -53,20 +52,20 @@ class MultiprocessingBackend(Backend):
                 cloudpickle.dump(target, f)
 
             ex_list = []
-            cwd_path = os.path.split(os.path.realpath(__file__))[0]
+            cwd_path = os.path.dirname(__file__)
             for i in range(nprocs):
                 for key, val in os.environ.items():
                     if key not in envs[i]:
                         envs[i][key] = val
-                ex_list.append(subprocess.Popen([sys.executable, f"{cwd_path}/worker.py", temp_dir],
-                                                env=envs[i]))
+                ex_list.append(subprocess.Popen([sys.executable, f"{cwd_path}/subprocess_worker.py",
+                                                 temp_dir], env=envs[i]))
             for _, ex in enumerate(ex_list):
                 ex.wait()
 
             results = []
             for i in range(nprocs):
                 with open(os.path.join(temp_dir, f"history_{i}"), "rb") as f:
-                    results.append(pickle.load(f))
+                    results.append(cloudpickle.load(f))
         return results
 
 
@@ -90,17 +89,17 @@ class HorovodBackend(Backend):
         return self.run_subprocess(target, args=args, nprocs=nprocs, envs=envs)
 
     def run_subprocess(self, target, args=..., nprocs=1, envs=None) -> Any:
-        import pickle
+        import cloudpickle
         import subprocess
         import sys
 
         with TemporaryDirectory() as temp_dir:
             with open(os.path.join(temp_dir, "args.pkl"), 'wb') as f:
-                pickle.dump((envs,) + args, f)
+                cloudpickle.dump((envs,) + args, f)
             with open(os.path.join(temp_dir, "target.pkl"), 'wb') as f:
-                pickle.dump(target, f)
+                cloudpickle.dump(target, f)
 
-            cwd_path = os.path.split(os.path.realpath(__file__))[0]
+            cwd_path = os.path.dirname(__file__)
 
             p = subprocess.Popen(["horovodrun", "-np", str(nprocs), "-H", f"localhost:{nprocs}",
                                   sys.executable, f"{cwd_path}/horovod_worker.py", temp_dir])
@@ -113,5 +112,5 @@ class HorovodBackend(Backend):
             results = []
             for i in range(nprocs):
                 with open(os.path.join(temp_dir, f"history_{i}"), "rb") as f:
-                    results.append(pickle.load(f))
+                    results.append(cloudpickle.load(f))
         return results

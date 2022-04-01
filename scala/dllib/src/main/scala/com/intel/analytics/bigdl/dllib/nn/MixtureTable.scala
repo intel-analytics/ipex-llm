@@ -18,7 +18,7 @@ package com.intel.analytics.bigdl.dllib.nn
 import com.intel.analytics.bigdl.dllib.nn.abstractnn.AbstractModule
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.dllib.tensor.{Storage, Tensor}
-import com.intel.analytics.bigdl.dllib.utils.{T, Table}
+import com.intel.analytics.bigdl.dllib.utils.{Log4Error, T, Table}
 
 import scala.reflect.ClassTag
 
@@ -63,7 +63,7 @@ class MixtureTable[T: ClassTag](var dim: Int = Int.MaxValue)
       // expertInputs is a Table
       val expertInputs = input[Table](2)
       val expertInput = expertInputs[Tensor[T]](1)
-      require(gaterInput.size(dimG) == expertInputs.length(),
+      Log4Error.invalidInputError(gaterInput.size(dimG) == expertInputs.length(),
         "MixtureTable: Should one gater output per expert," +
           s" gater ${gaterInput.size(dimG)}, expert ${expertInputs.length()}")
       if (inputBatchSize != batchSize) {

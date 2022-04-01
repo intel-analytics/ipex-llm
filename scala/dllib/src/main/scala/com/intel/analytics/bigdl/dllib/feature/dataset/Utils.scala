@@ -16,7 +16,7 @@
 
 package com.intel.analytics.bigdl.dllib.feature.dataset
 
-import com.intel.analytics.bigdl.dllib.utils.Engine
+import com.intel.analytics.bigdl.dllib.utils.{Engine, Log4Error}
 import org.apache.logging.log4j.LogManager
 
 object Utils {
@@ -27,9 +27,10 @@ object Utils {
     val partitionNum = totalPartition.getOrElse(nodeNumber)
     logger.debug(s"partition number: $partitionNum, node number: $nodeNumber")
 
-    require(partitionNum > 0,
+    Log4Error.invalidInputError(partitionNum > 0,
       s"Utils.getBatchSize: partitionNum should be larger than 0, but get $partitionNum")
-    require(batchSize % partitionNum == 0, s"Utils.getBatchSize: total batch size $batchSize " +
+    Log4Error.invalidInputError(batchSize % partitionNum == 0,
+      s"Utils.getBatchSize: total batch size $batchSize " +
       s"should be divided by partitionNum ${partitionNum}")
 
     val batchPerUnit = batchSize / partitionNum

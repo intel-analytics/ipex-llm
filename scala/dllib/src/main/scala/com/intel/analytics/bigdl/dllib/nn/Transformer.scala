@@ -24,7 +24,7 @@ import com.intel.analytics.bigdl.dllib.tensor.{Storage, Tensor}
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.dllib.utils.serializer.converters.DataConverter
 import com.intel.analytics.bigdl.dllib.utils.serializer.{DeserializeContext, ModuleSerializable, ModuleSerializer, SerializeContext}
-import com.intel.analytics.bigdl.dllib.utils.{T, Table}
+import com.intel.analytics.bigdl.dllib.utils.{Log4Error, T, Table}
 import org.apache.zookeeper.ZooDefs.Ids
 
 import scala.collection.mutable.ArrayBuffer
@@ -250,7 +250,7 @@ class Transformer[T: ClassTag](
 
   private def updateOutputTranslation(input: Activity): Activity = {
     if (input.isTensor) {
-      require(!this.isTraining(),
+      Log4Error.invalidInputError(!this.isTraining(),
         "Input for Transformer should be tensor when doing translation prediction")
       // inference case, first tensor is encoder_outputs,  another is attention_bias
       val res = predictModel.forward(input).toTable
@@ -260,7 +260,8 @@ class Transformer[T: ClassTag](
       val scores = beamSearch.output.toTable.apply[Tensor[T]](2).select(2, 1)
       output = T(decodedIds.narrow(2, 2, decodedIds.size(2) - 1), scores)
     } else {
-      require(input.toTable.length() == 2, s"Input should be two tensors when doing " +
+      Log4Error.invalidInputError(input.toTable.length() == 2,
+        s"Input should be two tensors when doing " +
         s"translation training, but get ${input.toTable.length()}")
       // training case
       output = model.forward(input)

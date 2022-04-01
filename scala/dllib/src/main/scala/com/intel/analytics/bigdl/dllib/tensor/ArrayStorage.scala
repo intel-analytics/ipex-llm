@@ -18,6 +18,7 @@ package com.intel.analytics.bigdl.dllib.tensor
 
 import java.util
 
+import com.intel.analytics.bigdl.dllib.utils.Log4Error
 import com.intel.analytics.bigdl.mkl.Memory
 
 import scala.reflect._
@@ -41,8 +42,9 @@ private[tensor] class ArrayStorage[@specialized(Double, Float) T: ClassTag](
       case s: ArrayStorage[T] => System.arraycopy(s.values, sourceOffset,
         this.values, offset, length)
       case s: DnnStorage[T] =>
-        require(classTag[T] == ClassTag.Float, "Only support copy float dnn storage")
-        require(sourceOffset == 0, "dnn storage offset should be 0")
+        Log4Error.invalidOperationError(classTag[T] == ClassTag.Float,
+          "Only support copy float dnn storage")
+        Log4Error.unKnowExceptionError(sourceOffset == 0, "dnn storage offset should be 0")
         Memory.CopyPtr2Array(s.ptr.address, 0, values.asInstanceOf[Array[Float]], offset, length,
           DnnStorage.FLOAT_BYTES)
       case _ => throw new UnsupportedOperationException("Only support dnn or array storage")
@@ -75,7 +77,10 @@ private[tensor] class ArrayStorage[@specialized(Double, Float) T: ClassTag](
   }
 
   override def set(other: Storage[T]): this.type = {
-    require(other.length() == this.length())
+    Log4Error.unKnowExceptionError(other.length() == this.length(),
+      s"set requires two tensors has the same length," +
+        s"but current tensor length is ${this.length()}" +
+        s" while the provided one is ${other.length()}")
     this.values = other.array
     this
   }

@@ -19,7 +19,7 @@ package com.intel.analytics.bigdl.dllib.keras.layers.internal
 import com.intel.analytics.bigdl.dllib.nn.abstractnn.{AbstractModule, Activity, TensorModule}
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.dllib.utils.{T, Table}
+import com.intel.analytics.bigdl.dllib.utils.{Log4Error, T, Table}
 import com.intel.analytics.bigdl.dllib.utils.serializer.{DeserializeContext, ModuleSerializable}
 import com.intel.analytics.bigdl.dllib.utils.serializer.converters.DataConverter
 
@@ -65,7 +65,7 @@ private[bigdl] class InternalTimeDistributed[T: ClassTag](
    * split:   [B * T, D] => [B, T, D]
    */
   private def combine(src: Array[Int], target: Array[Int]): Unit = {
-    require(src.length == target.length + 1,
+    Log4Error.invalidInputError(src.length == target.length + 1,
       "TimeDistributed: combine method requires src.length == target.length + 1" +
         s" Current src.length = ${src.length}" +
         s" Current target.length = ${target.length}")
@@ -120,7 +120,7 @@ private[bigdl] class InternalTimeDistributed[T: ClassTag](
     while (i < oriSizes.length && oriSizes(i)(0) * oriSizes(i)(1) != combinedShape(0)) {
       i += 1
     }
-    require(i < oriSizes.length,
+    Log4Error.invalidOperationError(i < oriSizes.length,
       s"combined batch: ${combinedShape(0)} should match ${oriSizes(i)(0)} * ${oriSizes(i)(1)}")
     outputSize = Array(oriSizes(i)(0), oriSizes(i)(1)) ++ combinedShape.drop(1)
 
@@ -128,7 +128,7 @@ private[bigdl] class InternalTimeDistributed[T: ClassTag](
     output.set(_output).resize(outputSize)
 
     if (maskZero) {
-      require(input.isTensor, "only support mask with tensor")
+      Log4Error.invalidInputError(input.isTensor, "only support mask with tensor")
       if (maskBuffer == null) {
         maskBuffer = Tensor()
       }
@@ -178,7 +178,7 @@ private[bigdl] class InternalTimeDistributed[T: ClassTag](
     gradOutput.resize(_gradOutputSize)
 
     if (maskZero) {
-      require(gradInput.isTensor, "only support mask with Tensor")
+      Log4Error.invalidInputError(gradInput.isTensor, "only support mask with Tensor")
       for (i <- 1 to maskBuffer.size(1)) {
         for (j <- 1 to maskBuffer.size(2)) {
           if (maskBuffer(Array(i, j, 1)) == ev.zero) {

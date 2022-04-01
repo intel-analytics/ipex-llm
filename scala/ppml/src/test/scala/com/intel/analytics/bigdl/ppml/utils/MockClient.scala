@@ -16,7 +16,7 @@
 
 package com.intel.analytics.bigdl.ppml.utils
 
-import com.intel.analytics.bigdl.ppml.algorithms.vfl.FGBoostRegression
+import com.intel.analytics.bigdl.ppml.algorithms.FGBoostRegression
 import com.intel.analytics.bigdl.ppml.data.PreprocessUtil
 import org.apache.log4j.LogManager
 

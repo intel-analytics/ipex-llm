@@ -18,6 +18,7 @@ package com.intel.analytics.bigdl.dllib.nn
 import com.intel.analytics.bigdl.dllib.nn.abstractnn.TensorModule
 import com.intel.analytics.bigdl.dllib.tensor.{DoubleType, FloatType, Tensor}
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.dllib.utils.Log4Error
 
 import scala.reflect.ClassTag
 
@@ -68,34 +69,34 @@ class TemporalMaxPooling[T: ClassTag](
     val framesize = input.size(dimF)
     val noframe = (niframe - kW) / dW + 1
 
-    require(kW > 0,
+    Log4Error.invalidInputError(kW > 0,
       s"kernel size should be greater than zero, but got kW: $kW")
-    require(dW > 0,
+    Log4Error.invalidInputError(dW > 0,
       s"stride should be greater than zero, but got dW: $dW")
 
-    require(input.nDimension() == 2 || input.nDimension() == 3,
+    Log4Error.invalidInputError(input.nDimension() == 2 || input.nDimension() == 3,
       s"2D or 3D (batch mode) tensor expected for input, but got: ${input.nDimension()}")
-    require(input.size(dimS) >= kW,
+    Log4Error.invalidInputError(input.size(dimS) >= kW,
       s"input sequence smaller than kernel size. Got: ${input.size(dimS)}, Expected: $kW")
 
     if (gradOutput != null) {
-      require(gradOutput.nDimension() == ndims,
+      Log4Error.invalidInputError(gradOutput.nDimension() == ndims,
         s"gradOuput should have $ndims dimension, but got ${gradOutput.nDimension()}")
-      require(gradOutput.size(dimS) == noframe,
+      Log4Error.invalidInputError(gradOutput.size(dimS) == noframe,
         s"gradOutput's $dimS dimension expects $noframe size," +
           s" but got ${gradOutput.size(dimS)} dimension")
-      require(gradOutput.size(dimF) == framesize,
+      Log4Error.invalidInputError(gradOutput.size(dimF) == framesize,
         s"gradOutput's $dimF dimension expects $framesize size," +
           s" but got ${gradOutput.size(dimF)} dimension")
     }
 
     if (indices != null) {
-      require(indices.nDimension() == ndims,
+      Log4Error.invalidInputError(indices.nDimension() == ndims,
         s"indices should have $ndims dimension, but got ${indices.nDimension()}")
-      require(indices.size(dimS) == noframe,
+      Log4Error.invalidInputError(indices.size(dimS) == noframe,
         s"indices's $dimS dimension expects $noframe size," +
           s" but got ${gradOutput.size(dimS)} dimension")
-      require(indices.size(dimF) == framesize,
+      Log4Error.invalidInputError(indices.size(dimF) == framesize,
         s"indices's $dimF dimension expects $framesize size," +
           s" but got ${gradOutput.size(dimF)} dimension")
     }

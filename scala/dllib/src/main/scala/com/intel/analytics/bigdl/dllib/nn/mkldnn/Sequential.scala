@@ -20,6 +20,7 @@ import com.intel.analytics.bigdl.dllib.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.dllib.nn.mkldnn.Phase.{InferencePhase, TrainingPhase}
 import com.intel.analytics.bigdl.dllib.nn.{MklInt8Convertible, Sequential => Seq}
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
+import com.intel.analytics.bigdl.dllib.utils.Log4Error
 
 import scala.collection.mutable.ArrayBuffer
 
@@ -46,8 +47,8 @@ class Sequential extends MklDnnContainer with MklInt8Convertible {
   }
 
   override def add(module: AbstractModule[_ <: Activity, _ <: Activity, Float]): this.type = {
-    require(mklDnnModules == null, "You should not call add after compilation")
-    require(module.isInstanceOf[MklDnnModule], "layer should be MklDnnModule")
+    Log4Error.invalidInputError(mklDnnModules == null, "You should not call add after compilation")
+    Log4Error.invalidInputError(module.isInstanceOf[MklDnnModule], "layer should be MklDnnModule")
     super.add(module)
   }
 
@@ -315,7 +316,7 @@ class Sequential extends MklDnnContainer with MklInt8Convertible {
     (0 until bn.nOutput).foreach { j =>
       val variance = originVar.storage().array()(j + originVar.storageOffset() - 1)
       val base = Math.sqrt(variance.asInstanceOf[Float] + bn.eps).toFloat
-      require(base != 0.0, s"the eps of ${bn.getName()} should be more than 0")
+      Log4Error.invalidInputError(base != 0.0, s"the eps of ${bn.getName()} should be more than 0")
 
       val alpha = bnWeight.storage().array()(bnWeight.storageOffset() - 1 + j)
       val beta = bnWeight.storage().array()(bnWeight.storageOffset() - 1 + bn.nOutput + j)
@@ -408,7 +409,11 @@ class Sequential extends MklDnnContainer with MklInt8Convertible {
       Utils.calcScales(this.modules(i), lastOutput)
 
       val curOutput = this.modules(i).output
-      require(mklDnnModules(i).outputFormats().length == mklDnnModules(i + 1).inputFormats().length)
+      Log4Error.invalidInputError(
+        mklDnnModules(i).outputFormats().length == mklDnnModules(i + 1).inputFormats().length,
+        s"mklDnnModules(i).outputFormats().length ${mklDnnModules(i).outputFormats().length}" +
+          s" doesn't match " +
+          s"mklDnnModules(i + 1).inputFormats().len ${mklDnnModules(i + 1).inputFormats().length}")
       lastOutput = reorderManager.infer(
         mklDnnModules(i).outputFormats(),
         mklDnnModules(i + 1).inputFormats(),

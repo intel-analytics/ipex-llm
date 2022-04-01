@@ -17,6 +17,7 @@
 package com.intel.analytics.bigdl.dllib.visualization
 
 import com.intel.analytics.bigdl.dllib.optim.Trigger
+import com.intel.analytics.bigdl.dllib.utils.Log4Error
 import com.intel.analytics.bigdl.dllib.visualization.tensorboard.{FileReader, FileWriter}
 
 import scala.collection.mutable
@@ -62,7 +63,7 @@ class TrainSummary(
    * @return
    */
   def setSummaryTrigger(tag: String, trigger: Trigger): this.type = {
-    require(tag.equals("LearningRate") || tag.equals("Loss") ||
+    Log4Error.invalidInputError(tag.equals("LearningRate") || tag.equals("Loss") ||
       tag.equals("Throughput") | tag.equals("Parameters"),
       s"TrainSummary: only support LearningRate, Loss, Parameters and Throughput")
     triggers(tag) = trigger

@@ -20,7 +20,7 @@ import com.intel.analytics.bigdl.dllib.nn._
 import com.intel.analytics.bigdl.dllib.nn.abstractnn.AbstractModule
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.dllib.utils.{Shape, Table}
+import com.intel.analytics.bigdl.dllib.utils.{Log4Error, Shape, Table}
 
 import scala.reflect.ClassTag
 
@@ -47,9 +47,9 @@ class Bidirectional[T: ClassTag](
 
   private val mode = mergeMode.toLowerCase()
 
-  require(layer.returnSequences,
+  Log4Error.invalidInputError(layer.returnSequences,
     "Bidirectional currently requires RNNs to return the full sequence")
-  require(mode == "sum" || mode == "mul" || mode == "concat" || mode == "ave",
+  Log4Error.invalidInputError(mode == "sum" || mode == "mul" || mode == "concat" || mode == "ave",
     s"Invalid merge mode: $mode")
 
   override def computeOutputShape(inputShape: Shape): Shape = {

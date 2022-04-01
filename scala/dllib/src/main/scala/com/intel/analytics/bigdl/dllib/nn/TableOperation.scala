@@ -20,7 +20,7 @@ import com.intel.analytics.bigdl.dllib.nn.abstractnn.AbstractModule
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.dllib.feature.transform.vision.image.augmentation.Expand
-import com.intel.analytics.bigdl.dllib.utils.{T, Table}
+import com.intel.analytics.bigdl.dllib.utils.{Log4Error, T, Table}
 
 import scala.reflect.ClassTag
 
@@ -44,7 +44,8 @@ class TableOperation[T: ClassTag](
 
   override def updateOutput(input: Table): Tensor[T] = {
     // only support table with two tensors
-    require(input.length() == 2, s"Only support input two tensors, but get ${input.length()}")
+    Log4Error.invalidInputError(input.length() == 2,
+      s"Only support input two tensors, but get ${input.length()}")
     // get small tensor position in table
     val input1 = input[Tensor[T]](1)
     val input2 = input[Tensor[T]](2)

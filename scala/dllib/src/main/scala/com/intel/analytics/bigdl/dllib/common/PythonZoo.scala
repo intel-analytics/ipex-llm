@@ -90,7 +90,7 @@ class PythonZoo[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonBigDLK
 
   override def toJTensor(tensor: Tensor[T]): JTensor = {
     // clone here in case the the size of storage larger then the size of tensor.
-    require(tensor != null, "tensor cannot be null")
+    Log4Error.unKnowExceptionError(tensor != null, "tensor cannot be null")
     tensor.getTensorType match {
       case SparseType =>
         // Note: as SparseTensor's indices is inaccessible here,

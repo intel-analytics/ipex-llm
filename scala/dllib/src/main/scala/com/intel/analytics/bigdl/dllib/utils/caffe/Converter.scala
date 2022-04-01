@@ -26,6 +26,7 @@ import com.intel.analytics.bigdl.dllib.nn._
 import com.intel.analytics.bigdl.dllib.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.dllib.utils.Log4Error
 
 import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
@@ -50,8 +51,10 @@ abstract class Converter[T: ClassTag](implicit ev: TensorNumeric[T]) {
   def registerCutomizedConverter(layerType : String,
     converter : (GeneratedMessage) => Seq[ModuleNode[T]])
     : Unit = {
-    require(!caffe2BigDL.contains(layerType), s"$layerType is already supported")
-    require(!customizedConverter.contains(layerType), s"$layerType is already customized")
+    Log4Error.invalidInputError(!caffe2BigDL.contains(layerType),
+      s"$layerType is already supported")
+    Log4Error.invalidInputError(!customizedConverter.contains(layerType),
+      s"$layerType is already customized")
     customizedConverter(layerType) = converter
   }
   /**

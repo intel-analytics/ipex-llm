@@ -24,7 +24,7 @@ import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.dllib.utils.serializer._
 import com.intel.analytics.bigdl.dllib.utils.serializer.converters.DataConverter
-import com.intel.analytics.bigdl.dllib.utils.{MultiShape, Shape}
+import com.intel.analytics.bigdl.dllib.utils.{Log4Error, MultiShape, Shape}
 import com.intel.analytics.bigdl.dllib.keras.Net
 import com.intel.analytics.bigdl.dllib.keras.autograd.{AutoGrad, Variable}
 import com.intel.analytics.bigdl.dllib.keras.layers.utils.{GraphRef, KerasUtils}
@@ -93,7 +93,7 @@ class BERT[T: ClassTag] private (
 
   override def buildInput(inputShape: Shape):
   (Variable[T], List[Variable[T]], List[Variable[T]]) = {
-    require(inputShape.isInstanceOf[MultiShape] &&
+    Log4Error.invalidInputError(inputShape.isInstanceOf[MultiShape] &&
       inputShape.asInstanceOf[MultiShape].value.size == 4, "BERT input must be" +
       " a list of 4 tensors (consisting of input sequence, sequence positions," +
       "segment id, attention mask)")
@@ -143,7 +143,7 @@ object BERT extends KerasLayerSerializable {
     outputAllBlock: Boolean = true,
     inputSeqLen: Int = -1
     )(implicit ev: TensorNumeric[T]): BERT[T] = {
-    require(hiddenSize > 0, "hiddenSize must be great" +
+    Log4Error.invalidInputError(hiddenSize > 0, "hiddenSize must be great" +
       "than 0 with default embedding layer")
     val len = if (inputSeqLen > 0) inputSeqLen else maxPositionLen
     val wordInput = Variable(Shape(len))

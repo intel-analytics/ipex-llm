@@ -17,6 +17,7 @@ package com.intel.analytics.bigdl.dllib.feature.image3d
 
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.dllib.tensor.{DoubleType, FloatType, Tensor}
+import com.intel.analytics.bigdl.dllib.utils.Log4Error
 
 import scala.reflect.ClassTag
 
@@ -48,7 +49,7 @@ class AffineTransform3D(mat: Tensor[Double],
 extends ImageProcessing3D {
 
   override def transformTensor(tensor: Tensor[Float]): Tensor[Float] = {
-    require(tensor.dim >=3 && tensor.size(4) == 1,
+    Log4Error.invalidInputError(tensor.dim >=3 && tensor.size(4) == 1,
       "Currently 3D affine transformation only supports 1 channel 3D image.")
     val src = tensor.squeeze(4)
     val dst = Tensor[Float](src.size())

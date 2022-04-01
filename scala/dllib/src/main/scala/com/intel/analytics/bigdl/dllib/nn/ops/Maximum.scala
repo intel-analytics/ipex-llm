@@ -17,7 +17,7 @@ package com.intel.analytics.bigdl.dllib.nn.ops
 
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.dllib.utils.Table
+import com.intel.analytics.bigdl.dllib.utils.{Log4Error, Table}
 
 import scala.reflect.ClassTag
 
@@ -30,7 +30,8 @@ class Maximum[T: ClassTag, D: ClassTag]
     val x = input[Tensor[D]](1)
     val y = input[Tensor[D]](2)
 
-    require(x.size().sameElements(y.size()), "require the shape of x, y to be the same")
+    Log4Error.invalidInputError(x.size().sameElements(y.size()),
+      s"the shape of x ${x.size()}, y ${y.size()} should be the same")
 
     output.resizeAs(x).cmax(x, y)
   }

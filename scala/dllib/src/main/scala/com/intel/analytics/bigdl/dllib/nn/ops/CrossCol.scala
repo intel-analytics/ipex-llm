@@ -17,7 +17,7 @@ package com.intel.analytics.bigdl.dllib.nn.ops
 
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.dllib.utils.Table
+import com.intel.analytics.bigdl.dllib.utils.{Log4Error, Table}
 
 import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
@@ -67,7 +67,8 @@ class CrossCol[T: ClassTag](
   override def updateOutput(input: Table): Tensor[Int] = {
 
     val tensorNum = input.length()
-    require(tensorNum>=2, "the input table must contain more than one tensor")
+    Log4Error.invalidInputError(tensorNum>=2,
+      "the input table must contain more than one tensor")
     val batchSize = input[Tensor[String]](1).size(dim = 1)
 
     val indices0 = new ArrayBuffer[Int]()

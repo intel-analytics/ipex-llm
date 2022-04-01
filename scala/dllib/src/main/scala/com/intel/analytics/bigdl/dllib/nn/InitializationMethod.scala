@@ -19,7 +19,7 @@ package com.intel.analytics.bigdl.dllib.nn
 import com.intel.analytics.bigdl.dllib.nn.VariableFormat.Default
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.dllib.utils.RandomGenerator
+import com.intel.analytics.bigdl.dllib.utils.{Log4Error, RandomGenerator}
 
 /**
  * VariableFormat describe the meaning of each dimension of the variable
@@ -341,11 +341,11 @@ case object BilinearFiller extends InitializationMethod {
   def init[T](variable: Tensor[T], dataFormat: VariableFormat = Default)
              (implicit ev: TensorNumeric[T]): Unit = {
     val shape = variable.size()
-    require(shape.length == 5, s"weight must be 5 dim, " +
+    Log4Error.invalidInputError(shape.length == 5, s"weight must be 5 dim, " +
       s"but got ${shape.length}")
     val kH = shape(3)
     val kW = shape(4)
-    require(kH == kW, s"Kernel $kH * $kW must be square")
+    Log4Error.invalidInputError(kH == kW, s"Kernel $kH * $kW must be square")
     val f = Math.ceil(kW / 2.0).toInt
     val c = (2 * f - 1 - f % 2) / (2.0f * f)
     val weightArray = variable.storage().array()

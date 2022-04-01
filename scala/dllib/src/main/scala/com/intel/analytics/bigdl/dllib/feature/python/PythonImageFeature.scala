@@ -29,6 +29,7 @@ import com.intel.analytics.bigdl.dllib.common.PythonZoo
 import com.intel.analytics.bigdl.dllib.feature.common.Preprocessing
 import com.intel.analytics.bigdl.dllib.feature.image._
 import com.intel.analytics.bigdl.dllib.feature.image3d._
+import com.intel.analytics.bigdl.dllib.utils.Log4Error
 import org.apache.spark.api.java.{JavaRDD, JavaSparkContext}
 import org.opencv.imgcodecs.Imgcodecs
 import org.opencv.imgproc.Imgproc
@@ -151,7 +152,7 @@ class PythonImageFeature[T: ClassTag](implicit ev: TensorNumeric[T]) extends Pyt
 
   def createDistributedImageSet(imageRdd: JavaRDD[JTensor], labelRdd: JavaRDD[JTensor])
   : DistributedImageSet = {
-    require(null != imageRdd, "imageRdd cannot be null")
+    Log4Error.invalidOperationError(null != imageRdd, "imageRdd cannot be null")
     val featureRdd = if (null != labelRdd) {
       imageRdd.rdd.zip(labelRdd.rdd).map(data => {
         if (data._1.shape.length == 4) {
@@ -174,7 +175,7 @@ class PythonImageFeature[T: ClassTag](implicit ev: TensorNumeric[T]) extends Pyt
 
   def createLocalImageSet(images: JList[JTensor], labels: JList[JTensor])
   : LocalImageSet = {
-    require(null != images, "images cannot be null")
+    Log4Error.invalidInputError(null != images, "images cannot be null")
     val features = if (null != labels) {
       (0 until images.size()).map(i => {
         val img = images.get(i)

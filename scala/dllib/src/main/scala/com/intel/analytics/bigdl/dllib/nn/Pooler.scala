@@ -17,7 +17,7 @@
 package com.intel.analytics.bigdl.dllib.nn
 
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
-import com.intel.analytics.bigdl.dllib.utils.{T, Table}
+import com.intel.analytics.bigdl.dllib.utils.{Log4Error, T, Table}
 import com.intel.analytics.bigdl.dllib.nn.abstractnn.AbstractModule
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
 
@@ -89,7 +89,7 @@ class Pooler[T: ClassTag] (
   }
 
   private def area(roi: Tensor[T]): T = {
-    require(roi.size().length == 1 && roi.size(1) == 4,
+    Log4Error.invalidInputError(roi.size().length == 1 && roi.size(1) == 4,
       s"ROI bounding box should be 1 dimensional and have 4 elements " +
         s"(xlow, ylow, xhigh, yhigh)")
     val xlow = roi.valueAt(1)
