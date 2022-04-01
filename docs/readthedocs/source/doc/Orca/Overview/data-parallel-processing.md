@@ -143,9 +143,9 @@ location_list = shard["location"].unique()
 ```
 
 ### **4. Ray Dataset**
-Currently, Orca has supported Ray Datasets as the input to the distributed training pipeline on the pure Ray backend. 
+Orca has supported Ray Datasets as the input to the distributed training pipeline on the pure Ray backend. 
 
-First, the user can apply the `creating dataset` API of `ray.data` to read CSV, JSON or Parquet files from local disk or remote datasources such as S3 to obtain a Ray Dataset. Ray Datasets also provide basic distributed data transformations such as `map`, `filter`, and `repartition`, as shown below:
+First, the user can easily create Ray Datasets from CSV, JSON or Parquet files on local disk or remote datasources such as S3. Ray Datasets also provide basic distributed data transformations such as `map`, `filter`, and `repartition`, as shown below:
 
 ```python
 import pandas as pd
@@ -160,9 +160,7 @@ dataset = ray.data.read_parquet(str(tmp_path))
 dataset = dataset.map_batches(lambda df: df + 1, batch_size=1, batch_format="pandas")
 ```
 
-Each shard of the Ray Dataset on workers will be automatically converted to an `IterableTorchDataset` or a `tf.data.Dataset`, which can be used for distributed deep learning training. 
-
-In addition, the user need to specify the `output_signature` (which is the same in `tf.data.from_generator`) through `data_config` when using the `Tensorflow 2` backend as shown below:
+Each shard of the Ray Dataset on workers will be automatically converted to an _IterableTorchDataset_ or a _Tensorflow Dataset_, which can be used for distributed deep learning training. In addition, the user needs to specify the `output_signature` (which is the same in `tf.data.from_generator`) through `data_config` when creating an Estimator for Tensorflow 2 as shown below:
 
 ```python
 from bigdl.orca.learn.tf2 import Estiamtor 
