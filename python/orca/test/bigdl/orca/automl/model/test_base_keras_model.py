@@ -20,15 +20,35 @@ import tensorflow as tf
 import pytest
 
 
-def get_data():
-    def get_linear_data(a, b, size):
-        x = np.arange(0, 10, 10 / size, dtype=np.float32)
-        y = a*x + b
-        return x, y
-    train_x, train_y = get_linear_data(2, 5, 1000)
-    val_x, val_y = get_linear_data(2, 5, 400)
-    data = {'x': train_x, 'y': train_y, 'val_x': val_x, 'val_y': val_y}
-    return data
+def get_linear_data(a=2, b=5, size=None):
+    x = np.arange(0, 10, 10 / size, dtype=np.float32)
+    y = a*x + b
+    return x, y
+
+
+def get_dataset(size, config):
+    data = get_linear_data(size=size)
+    dataset = tf.data.Dataset.from_tensor_slices(data)
+    dataset = dataset.batch(config["batch_size"])
+    return dataset
+
+
+def get_train_val_data():
+    data = get_linear_data(size=1000)
+    validation_data = get_linear_data(size=400)
+    return data, validation_data
+
+
+def get_train_data_creator():
+    def train_data_creator(config):
+        return get_dataset(size=1000, config=config)
+    return train_data_creator
+
+
+def get_val_data_creator():
+    def val_data_creator(config):
+        return get_dataset(size=400, config=config)
+    return val_data_creator
 
 
 def model_creator_keras(config):
@@ -54,7 +74,7 @@ def model_creator_multiple_metrics(config):
 
 
 class TestBaseKerasModel(TestCase):
-    data = get_data()
+    data, validation_data = get_train_val_data()
 
     def test_fit_evaluate(self):
         modelBuilder_keras = KerasModelBuilder(model_creator_keras)
@@ -62,8 +82,22 @@ class TestBaseKerasModel(TestCase):
             "lr": 1e-2,
             "batch_size": 32,
         })
-        val_result = model.fit_eval(data=(self.data["x"], self.data["y"]),
-                                    validation_data=(self.data["val_x"], self.data["val_y"]),
+        val_result = model.fit_eval(data=self.data,
+                                    validation_data=self.validation_data,
+                                    metric="mse",
+                                    epochs=20)
+        assert val_result.get("mse")
+
+    def test_fit_eval_creator(self):
+        data_creator = get_train_data_creator()
+        validation_data_creator = get_val_data_creator()
+        modelBuilder_keras = KerasModelBuilder(model_creator_keras)
+        model = modelBuilder_keras.build(config={
+            "lr": 1e-2,
+            "batch_size": 32,
+        })
+        val_result = model.fit_eval(data=data_creator,
+                                    validation_data=validation_data_creator,
                                     metric="mse",
                                     epochs=20)
         assert val_result.get("mse")
@@ -74,8 +108,8 @@ class TestBaseKerasModel(TestCase):
             "lr": 1e-2,
             "batch_size": 32,
         })
-        val_result = model.fit_eval(data=(self.data["x"], self.data["y"]),
-                                    validation_data=(self.data["val_x"], self.data["val_y"]),
+        val_result = model.fit_eval(data=self.data,
+                                    validation_data=self.validation_data,
                                     epochs=20)
         hist_metric_name = tf.keras.metrics.get("mse").__name__
         assert val_result.get(hist_metric_name)
@@ -87,8 +121,8 @@ class TestBaseKerasModel(TestCase):
             "batch_size": 32,
         })
         with pytest.raises(ValueError):
-            model.fit_eval(data=(self.data["x"], self.data["y"]),
-                           validation_data=(self.data["val_x"], self.data["val_y"]),
+            model.fit_eval(data=self.data,
+                           validation_data=self.validation_data,
                            epochs=20)
 
     def test_uncompiled_model(self):
@@ -105,8 +139,8 @@ class TestBaseKerasModel(TestCase):
                 "lr": 1e-2,
                 "batch_size": 32,
             })
-            model.fit_eval(data=(self.data["x"], self.data["y"]),
-                           validation_data=(self.data["val_x"], self.data["val_y"]),
+            model.fit_eval(data=self.data,
+                           validation_data=self.validation_data,
                            metric="mse",
                            epochs=20)
 
@@ -117,8 +151,8 @@ class TestBaseKerasModel(TestCase):
             "batch_size": 32,
         })
         with pytest.raises(ValueError):
-            model.fit_eval(data=(self.data["x"], self.data["y"]),
-                           validation_data=(self.data["val_x"], self.data["val_y"]),
+            model.fit_eval(data=self.data,
+                           validation_data=self.validation_data,
                            metric='mae',
                            epochs=20)
 

@@ -19,6 +19,7 @@ import java.nio.file.{Files, Paths}
 
 import com.intel.analytics.bigdl.dllib.feature.dataset.DataSet
 import com.intel.analytics.bigdl.dllib.feature.dataset.image._
+import com.intel.analytics.bigdl.dllib.utils.Log4Error
 import scopt.OptionParser
 
 object ImageNetSeqFileGenerator {
@@ -88,7 +89,7 @@ object ImageNetSeqFileGenerator {
         // Process train data
         println("Process train data...")
         val trainFolderPath = Paths.get(param.folder, "train")
-        require(Files.isDirectory(trainFolderPath),
+        Log4Error.invalidInputError(Files.isDirectory(trainFolderPath),
           s"${trainFolderPath} is not valid")
         val trainDataSet = DataSet.ImageFolder.paths(trainFolderPath)
         trainDataSet.shuffle()
@@ -118,7 +119,7 @@ object ImageNetSeqFileGenerator {
         // Process validation data
         println("Process validation data...")
         val validationFolderPath = Paths.get(param.folder, "val")
-        require(Files.isDirectory(validationFolderPath),
+        Log4Error.invalidInputError(Files.isDirectory(validationFolderPath),
           s"${validationFolderPath} is not valid")
 
         val validationDataSet = DataSet.ImageFolder.paths(validationFolderPath)

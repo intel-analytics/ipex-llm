@@ -18,7 +18,7 @@ package com.intel.analytics.bigdl.dllib.nn.internal
 
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.dllib.utils.Shape
+import com.intel.analytics.bigdl.dllib.utils.{Log4Error, Shape}
 
 import scala.reflect.ClassTag
 
@@ -34,19 +34,20 @@ abstract class Pooling3D[T: ClassTag](
    val inputShape: Shape = null)(implicit ev: TensorNumeric[T])
   extends KerasLayer[Tensor[T], Tensor[T], T](KerasLayer.addBatch(inputShape)) {
 
-  require(dimOrdering.toLowerCase() == "channel_first", s"Pooling3D currently only supports " +
+  Log4Error.invalidInputError(dimOrdering.toLowerCase() == "channel_first",
+    s"Pooling3D currently only supports " +
     s"format CHANNEL_FIRST, but got format $dimOrdering")
 
-  require(poolSize.length == 3,
+  Log4Error.invalidInputError(poolSize.length == 3,
     s"For Pooling3D, poolSize should be of length 3 but got length ${poolSize.length}")
 
   val strideValues: Array[Int] = if (strides == null) poolSize else strides
-  require(strideValues.length == 3,
+  Log4Error.invalidInputError(strideValues.length == 3,
     s"For Pooling3D, strides should be of length 3 but got length ${strideValues.length}")
 
   override def computeOutputShape(inputShape: Shape): Shape = {
     val input = inputShape.toSingle().toArray
-    require(input.length == 5,
+    Log4Error.invalidInputError(input.length == 5,
       s"Pooling3D requires 5D input, but got input dim ${input.length}")
     val dim1Length = KerasUtils.computeConvOutputLength(input(2), poolSize(0),
       "valid", strideValues(0))

@@ -19,7 +19,7 @@ package com.intel.analytics.bigdl.dllib.feature.dataset
 import com.intel.analytics.bigdl.dllib.nn.abstractnn.Activity
 import com.intel.analytics.bigdl.dllib.tensor._
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.dllib.utils.{T, Table}
+import com.intel.analytics.bigdl.dllib.utils.{Log4Error, T, Table}
 
 import scala.collection.mutable.ArrayBuffer
 import scala.reflect.ClassTag
@@ -115,7 +115,7 @@ private[bigdl] class ArrayTensorMiniBatch[T: ClassTag](
       val targetData: Array[Tensor[T]],
       featurePaddingParam: Option[PaddingParam[T]] = None,
       labelPaddingParam: Option[PaddingParam[T]] = None) extends MiniBatch[T]{
-  require(inputData.length > 0, "Input data in MiniBatch is empty.")
+  Log4Error.invalidOperationError(inputData.length > 0, "Input data in MiniBatch is empty.")
   protected var batchSize = 0
   protected var unlabeled = false
 
@@ -180,8 +180,9 @@ private[bigdl] class ArrayTensorMiniBatch[T: ClassTag](
   }
 
   override def set(samples: Seq[Sample[T]])(implicit ev: TensorNumeric[T]): this.type = {
-    require(samples.length > 0, "samples is empty")
-    require(batchSize == 0 || samples.length <= batchSize, "setValue: samples's size doesn't " +
+    Log4Error.invalidOperationError(samples.length > 0, "samples is empty")
+    Log4Error.invalidInputError(batchSize == 0 || samples.length <= batchSize,
+      "setValue: samples's size doesn't " +
       s"match mini batch size, excepted ${size()} got ${samples.length}")
     val resize = batchSize != samples.length || featurePaddingParam.isDefined ||
       labelPaddingParam.isDefined || size() != samples.length
@@ -215,14 +216,14 @@ private[bigdl] class ArrayTensorMiniBatch[T: ClassTag](
 
   @deprecated("Old interface", "0.2.0")
   override def data(): Tensor[T] = {
-    require(targetData.length == 1, "Deprecated method," +
+    Log4Error.invalidInputError(targetData.length == 1, "Deprecated method," +
       " Only support TensorMiniBatch.")
     input.asInstanceOf[Tensor[T]]
   }
 
   @deprecated("Old interface", "0.2.0")
   override def labels(): Tensor[T] = {
-    require(inputData.length == 1, "Deprecated method," +
+    Log4Error.invalidInputError(inputData.length == 1, "Deprecated method," +
       " Only support TensorMiniBatch.")
     target.asInstanceOf[Tensor[T]]
   }
@@ -347,19 +348,22 @@ object MiniBatch {
       // check if featurePadding is right.
       var i = 0
       while (i < inputs.length) {
-        require(featurePadding.get.length == inputs.length, s"Number of tensor padding should " +
+        Log4Error.unKnowExceptionError(featurePadding.get.length == inputs.length,
+          s"Number of tensor padding should " +
           s"equals to Number of feature tensor in Sample. Excepted ${inputs.length}," +
           s" but got ${featurePadding.get.length}")
         if (inputs(i).dim() == 2) {
-          require(featurePadding.get(i).nElement() == 1, s"${i}thFeature is 1D, featurePadding " +
+          Log4Error.unKnowExceptionError(featurePadding.get(i).nElement() == 1,
+            s"${i}thFeature is 1D, featurePadding " +
             s"should have only one element, but got ${featurePadding.get(i)}")
         } else {
-          require(featurePadding.get(i).dim() == inputs(i).dim() - 2,
+          Log4Error.unKnowExceptionError(featurePadding.get(i).dim() == inputs(i).dim() - 2,
             s"${i}thFeature's featurePadding should have the " +
             s"same dimension with the feature in sample. Excepted: ${inputs(i).dim() - 2}, " +
             s"but got ${featurePadding.get(i).dim()}")
         }
-        require(featurePadding.get(i).isContiguous(), "featurePadding should be contiguous")
+        Log4Error.invalidInputError(featurePadding.get(i).isContiguous(),
+          "featurePadding should be contiguous")
         i += 1
       }
     }
@@ -566,7 +570,7 @@ case class FixedLength(fixedLength: Array[Int]) extends PaddingStrategy {
     while (i < sizes.length) {
         // Set the first dimension's length(besides mini batch size) to fixed length.
         val fixed = fixedLength(i)
-        require(fixed >= sizes(i)(1) || fixed < 0,
+        Log4Error.unKnowExceptionError(fixed >= sizes(i)(1) || fixed < 0,
           s"${i}th FixedLength=${fixed} is smaller than its FeatureLength=${sizes(i)(1)}")
         if (fixed >= sizes(i)(1)) {
           sizes(i)(1) = fixed
@@ -596,7 +600,7 @@ class SparseMiniBatch[T: ClassTag](
 
   override def getInput(): Activity = {
     if (null == input) {
-      require(!inputData.exists(_ == null), "SparseMiniBatch.getInput: " +
+      Log4Error.invalidOperationError(!inputData.exists(_ == null), "SparseMiniBatch.getInput: " +
         "data didn't fill in this miniBatch")
       input = if (inputData.length == 1) {
         inputData.head
@@ -610,7 +614,7 @@ class SparseMiniBatch[T: ClassTag](
 
   override def getTarget(): Activity = {
     if (null == target && targetData.length != 0) {
-      require(!targetData.exists(_ == null), "SparseMiniBatch.getInput: " +
+      Log4Error.invalidOperationError(!targetData.exists(_ == null), "SparseMiniBatch.getInput: " +
         "data didn't fill in this miniBatch")
       target = if (targetData.length == 1) {
         targetData.head
@@ -676,11 +680,16 @@ class SparseMiniBatch[T: ClassTag](
   }
 
   override def set(samples: Seq[Sample[T]])(implicit ev: TensorNumeric[T]): this.type = {
-    require(samples.length > 0, "samples is empty")
-    require(samples(0).isInstanceOf[TensorSample[T]])
+    Log4Error.invalidOperationError(samples.length > 0, "samples is empty")
+    Log4Error.invalidOperationError(samples(0).isInstanceOf[TensorSample[T]],
+      "expect elements in samples are TensorSample")
     val _samples = samples.map(_.asInstanceOf[TensorSample[T]])
-    require(batchSize == 0 || samples.length <= batchSize, "setValue: samples's size doesn't " +
-      s"match mini batch size, excepted ${size()} got ${samples.length}")
+    if (!(batchSize == 0 || samples.length <= batchSize)) {
+      Log4Error.invalidInputError(false,
+        "setValue: samples's size doesn't " +
+          s"match mini batch size, excepted ${size()} got ${samples.length}")
+    }
+
     val features = _samples.map(_.features)
     val labels = _samples.map(_.labels)
     if (batchSize == 0) {

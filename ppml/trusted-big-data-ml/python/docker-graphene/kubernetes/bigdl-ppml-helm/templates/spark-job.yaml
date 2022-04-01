@@ -1,0 +1,106 @@
+apiVersion: batch/v1
+kind: Job
+metadata:
+  name: spark-pi-job
+spec:
+  template:
+    spec:
+      serviceAccountName: spark
+      restartPolicy: Never
+      hostNetwork: true
+      containers:
+      - name: spark-local-k8s-client
+        image:  {{ .Values.image }}
+        imagePullPolicy: Never
+        command: ["/bin/sh","-c"]
+        args: ["
+                sed -i \"s@nfsvolumeclaim@$NFS_PVC_NAME@g\" spark-driver-template.yaml;
+                sed -i \"s@nfsvolumeclaim@$NFS_PVC_NAME@g\" spark-executor-template.yaml;
+                export RUNTIME_DRIVER_HOST=$( hostname -I | awk '{print $1}' );
+                export LOCAL_IP=$( hostname -I | awk '{print $1}' );
+                bash ./init.sh;
+                bash /ppml/trusted-big-data-ml/submit-spark-k8s.sh | tee output.log
+                "]
+        securityContext:
+          privileged: true
+        env:
+          - name: SPARK_JAR
+            value: {{ .Values.jar }}
+          - name: SPARK_CLASS
+            value: {{ .Values.class }}
+          - name: NFS_PVC_NAME
+            value: {{ .Values.pvc }}
+          - name: RUNTIME_K8S_SPARK_IMAGE
+            value: {{ .Values.image }}
+          - name: RUNTIME_SPARK_MASTER
+            value: {{ .Values.k8sMaster }}
+          - name: RUNTIME_DRIVER_PORT
+            value: "54321"
+          - name: SPARK_MODE
+            value: {{ .Values.deployMode }}
+          - name: RUNTIME_DRIVER_CORES
+            value: !!str {{ .Values.driverCores }}
+          - name: RUNTIME_DRIVER_MEMORY
+            value: {{ .Values.driverMem }}
+          - name: RUNTIME_EXECUTOR_CORES
+            value: !!str {{ .Values.executorCores }}
+          - name: RUNTIME_EXECUTOR_MEMORY
+            value: {{ .Values.executorMem }}
+          - name: RUNTIME_EXECUTOR_INSTANCES
+            value: !!str {{ .Values.executorInstances }}
+          - name: SGX_ENABLED
+            value: !!str {{ .Values.sgx }}
+          - name: SGX_LOG_LEVEL
+            value: {{ .Values.sgxLog }}
+          - name: SGX_DRIVER_MEM
+            value: {{ .Values.sgxDriverMem }}
+          - name: SGX_DRIVER_JVM_MEM
+            value: {{ .Values.sgxDriverJvmMem }}
+          - name: SGX_EXECUTOR_MEM
+            value: {{ .Values.sgxExecutorMem }}
+          - name: SGX_EXECUTOR_JVM_MEM
+            value: {{ .Values.sgxExecutorJvmMem }}
+        resources:
+          requests:
+            cpu: 1
+          limits:
+            cpu: 4
+        volumeMounts:
+          - name: device-plugin
+            mountPath: /var/lib/kubelet/device-plugins
+          - name: dev-gsgx
+            mountPath: /dev/gsgx
+          - name: aesm-socket
+            mountPath: /var/run/aesmd/aesm.socket
+          - name: enclave-key
+            mountPath: /graphene/Pal/src/host/Linux-SGX/signer/enclave-key.pem
+            subPath: enclave-key.pem
+          - name: secure-keys
+            mountPath: /ppml/trusted-big-data-ml/work/keys
+          - name: secure-password
+            mountPath: /ppml/trusted-big-data-ml/work/password
+          - name: nfs-storage
+            mountPath: "/ppml/trusted-big-data-ml/submit-spark-k8s.sh"
+            subPath: submit-spark-k8s.sh
+      volumes:
+      - name: device-plugin
+        hostPath:
+          path: /var/lib/kubelet/device-plugins
+      - name: dev-gsgx
+        hostPath:
+          path: /dev/gsgx
+      - name: aesm-socket
+        hostPath:
+          path: /var/run/aesmd/aesm.socket
+      - name: enclave-key
+        secret:
+          secretName: enclave-key
+      - name: secure-keys
+        secret:
+          secretName: ssl-keys
+      - name: secure-password
+        secret:
+          secretName: ssl-password
+      - name: nfs-storage
+        persistentVolumeClaim:
+          claimName: {{ .Values.pvc }}

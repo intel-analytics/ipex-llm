@@ -63,7 +63,6 @@ class FGBoostAggregator(validationMethods: Array[ValidationMethod[Float]] = null
   }
 
   override def aggregate(flPhase: FLPhase): Unit = {
-    // TODO aggregate split
     flPhase match {
       case FLPhase.LABEL => initGradient()
       case FLPhase.SPLIT => aggregateSplit()
@@ -100,12 +99,17 @@ class FGBoostAggregator(validationMethods: Array[ValidationMethod[Float]] = null
 
 
   def initGradient(): Unit = {
+    logger.debug(s"Server init gradiant from label")
     val labelClientData = getLabelStorage().clientData
+    logger.debug(s"============0")
     val aggData = labelClientData.mapValues(_.getTensorsMap).values.flatMap(_.asScala)
       .map { data =>
         (data._1, data._2.getTensorList.asScala.toArray.map(_.toFloat))
       }.toMap
+    logger.info(s"$aggData")
+    logger.debug(s"============1")
     val label = aggData("label")
+    logger.debug(s"============2")
     validationSize = label.length
     basePrediction = if (aggData.contains("predict")) {
       aggData("predict")
@@ -118,7 +122,7 @@ class FGBoostAggregator(validationMethods: Array[ValidationMethod[Float]] = null
     val loss = obj.getLoss(basePrediction, label)
 
     logger.info(s"====Loss ${loss} ====")
-    logger.info("Label" + label.mkString("Array(", ", ", ")"))
+//    logger.info("Label" + label.mkString("Array(", ", ", ")"))
 
     val metaData = MetaData.newBuilder()
       .setName("xgboost_grad")

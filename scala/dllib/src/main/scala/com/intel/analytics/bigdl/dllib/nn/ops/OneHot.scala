@@ -18,7 +18,7 @@ package com.intel.analytics.bigdl.dllib.nn.ops
 import com.intel.analytics.bigdl.dllib.nn.abstractnn.Activity
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.dllib.utils.Table
+import com.intel.analytics.bigdl.dllib.utils.{Log4Error, Table}
 
 import scala.reflect.ClassTag
 
@@ -66,11 +66,11 @@ class OneHot[T: ClassTag, D: ClassTag](
     val onValue = if (!input.contains(3)) ev1.one else input[Tensor[D]](3).value()
     val offValue = if (!input.contains(4)) ev1.zero else input[Tensor[D]](4).value()
 
-    require(input[Tensor[_]](3).getType() == input[Tensor[_]](4).getType(),
+    Log4Error.invalidInputError(input[Tensor[_]](3).getType() == input[Tensor[_]](4).getType(),
     "onValue must have the same type as offValue")
 
     val size: Array[Int] = indices.size()
-    require(indices.dim() <= 2 && indices.dim() > 0,
+    Log4Error.invalidInputError(indices.dim() <= 2 && indices.dim() > 0,
       "the dimension of input must be less than or equal to 2")
     val newSize: Array[Int] = new Array(size.length + 1)
 

@@ -99,14 +99,15 @@ object TensorflowLoader{
    * @return
    */
   private def getInputPorts(inputs: Seq[String]): mutable.Map[String, ArrayBuffer[Int]] = {
-    require(inputs.distinct.length == inputs.length,
+    Log4Error.invalidInputError(inputs.distinct.length == inputs.length,
       "input should not contain duplicated names")
     val inputPorts = inputs.filter(_.split(":").length == 2)
     val result = mutable.HashMap[String, ArrayBuffer[Int]]()
     inputPorts.foreach(s => {
       val name = s.split(":")(0)
       val pos = s.split(":")(1)
-      require(!inputs.contains(name), "You should not specify node name and node name " +
+      Log4Error.invalidInputError(!inputs.contains(name),
+        "You should not specify node name and node name " +
         "with port at same time")
       if (!result.isDefinedAt(name)) {
         result(name) = ArrayBuffer[Int]()
@@ -178,7 +179,7 @@ object TensorflowLoader{
    */
   private[bigdl] def parseTxt(graphProtoTxt: String) : List[NodeDef] = {
     val f = new java.io.File(graphProtoTxt)
-    require(f.exists(), graphProtoTxt + " does not exists")
+    Log4Error.invalidInputError(f.exists(), graphProtoTxt + " does not exists")
 
     val reader = new JFileReader(f)
 
@@ -211,7 +212,7 @@ object TensorflowLoader{
     } else {
       val results = name2Node.valuesIterator.toArray.filter(n =>
         outputs.contains(n.element.getName))
-      require(results.length == outputs.length, "Invalid outputNode names")
+      Log4Error.invalidInputError(results.length == outputs.length, "Invalid outputNode names")
       results
     }
     val (inputs, originInputs) = connect(outputNodes, name2Node, isInput, inputPorts)
@@ -258,7 +259,7 @@ object TensorflowLoader{
             // if the predefined input node is not a Placeholder, add one to match the Input node
             val inputNum = getInputNumber(node.element)
             if (inputNum == 0) {
-              require(!inputPorts.isDefined ||
+              Log4Error.invalidInputError(!inputPorts.isDefined ||
                 !inputPorts.get.isDefinedAt(node.element.getName),
                   s"node ${node.element.getName} has no input")
               newInputs(node.element.getName).append(node.element.getName)
@@ -266,7 +267,7 @@ object TensorflowLoader{
               if (inputPorts.isDefined &&
                 inputPorts.get.isDefinedAt(node.element.getName)) {
                 val selectInputs = inputPorts.get(node.element.getName)
-                selectInputs.foreach(i => require(i < inputNum && i >= 0,
+                selectInputs.foreach(i => Log4Error.invalidInputError(i < inputNum && i >= 0,
                   s"invalid input port $i at ${node.element.getName}, it should between 0 and" +
                     s" ${inputNum - 1}"))
                 var i = 0
@@ -483,7 +484,7 @@ object TensorflowLoader{
     val adjustOutputs = if (context.assignGrads.isDefined) {
       outputNodes.map(n => {
         val matchNode = context.assignGrads.get.filter(_._2 == n.element.getName())
-        require(matchNode.size <= 1, "Invalid gradients output")
+        Log4Error.invalidInputError(matchNode.size <= 1, "Invalid gradients output")
         if (matchNode.size == 1) {
           new AssignGrad[T](context(matchNode.head._1)._2).inputs(n)
         } else {
@@ -526,7 +527,7 @@ object TensorflowLoader{
 
   private def matchGraph(graph: DirectedGraph[NodeDef], pattern: DirectedGraph[String])
       : (List[Node[NodeDef]], Seq[Node[NodeDef]]) = {
-    require(graph.reverse && pattern.reverse, "Must pass in reversed graph")
+    Log4Error.invalidInputError(graph.reverse && pattern.reverse, "Must pass in reversed graph")
     val patternToGraph = new mutable.HashMap[Node[String], Node[NodeDef]]()
     val inputs = new ArrayBuffer[Node[NodeDef]]()
     patternToGraph(pattern.source) = graph.source
@@ -556,7 +557,8 @@ object TensorflowLoader{
         var j = 0
         while (i < patternNode.prevNodes.length) {
           if (patternNode.prevNodes(i).element == N_INPUT_PLACEHOLDER) {
-            require(patternNode.prevNodes.count(_.element == N_INPUT_PLACEHOLDER) == 1,
+            Log4Error.invalidInputError(
+              patternNode.prevNodes.count(_.element == N_INPUT_PLACEHOLDER) == 1,
               s"only support one $N_INPUT_PLACEHOLDER ")
             direction = 1
             // skip the left input nodes of graphNode,

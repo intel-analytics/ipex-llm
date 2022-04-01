@@ -16,9 +16,10 @@
 
 package com.intel.analytics.bigdl.dllib.visualization.tensorboard
 
-import java.io.{BufferedInputStream}
+import java.io.BufferedInputStream
 import java.nio.ByteBuffer
 
+import com.intel.analytics.bigdl.dllib.utils.Log4Error
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.{FileSystem, Path}
 import org.tensorflow.util.Event
@@ -55,7 +56,8 @@ private[bigdl] object FileReader {
   def listFiles(path: String): Array[Path] = {
     val logPath = new Path(path)
     val fs = logPath.getFileSystem(new Configuration(false))
-    require(fs.isDirectory(logPath), s"FileReader: $path should be a directory")
+    Log4Error.invalidInputError(fs.isDirectory(logPath),
+      s"FileReader: $path should be a directory")
     FileReader.recursiveListFiles(logPath, fileNameRegex, fs)
   }
 
@@ -67,7 +69,8 @@ private[bigdl] object FileReader {
   def list(path: String): Array[String] = {
     val logPath = new Path(path)
     val fs = logPath.getFileSystem(new Configuration(false))
-    require(fs.isDirectory(logPath), s"FileReader: $path should be a directory")
+    Log4Error.invalidInputError(fs.isDirectory(logPath),
+      s"FileReader: $path should be a directory")
     FileReader.recursiveListFiles(logPath, fileNameRegex, fs).map(_.getParent.toString).distinct
   }
 
@@ -80,7 +83,8 @@ private[bigdl] object FileReader {
   def readScalar(path: String, tag: String): Array[(Long, Float, Double)] = {
     val logPath = new Path(path)
     val fs = logPath.getFileSystem(new Configuration(false))
-    require(fs.isDirectory(logPath), s"FileReader: $path should be a directory")
+    Log4Error.invalidInputError(fs.isDirectory(logPath),
+      s"FileReader: $path should be a directory")
     val files = FileReader.recursiveListFiles(logPath, fileNameRegex, fs)
     files.map{file =>
       readScalar(file, tag, fs)
@@ -94,7 +98,8 @@ private[bigdl] object FileReader {
    * @return
    */
   def readScalar(file: Path, tag: String, fs: FileSystem): Array[(Long, Float, Double)] = {
-    require(fs.isFile(file), s"FileReader: ${file} should be a file")
+    Log4Error.invalidInputError(fs.isFile(file),
+      s"FileReader: ${file} should be a file")
     val bis = new BufferedInputStream(fs.open(file))
     val longBuffer = new Array[Byte](8)
     val crcBuffer = new Array[Byte](4)

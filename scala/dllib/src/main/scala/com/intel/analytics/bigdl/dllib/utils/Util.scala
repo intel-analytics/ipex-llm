@@ -69,8 +69,10 @@ object Util {
   }
 
   private[bigdl] def shift[B](data : Array[B], from : Int, to : Int): Array[B] = {
-    require(from < data.length && from >= 0, s"invalid from $from array length is ${data.length}")
-    require(to < data.length && to >= 0, s"invalid to $to array length is ${data.length}")
+    Log4Error.unKnowExceptionError(from < data.length && from >= 0,
+      s"invalid from $from array length is ${data.length}")
+    Log4Error.unKnowExceptionError(to < data.length && to >= 0,
+      s"invalid to $to array length is ${data.length}")
     if (from == to) {
       data
     } else if (from < to) {
@@ -146,7 +148,8 @@ object Util {
       .map(v => (v, v.value.shallowClone()))
     moduleConsts.foreach(_._1.value.set())
     val result = moduleConsts.map(v => (v._1.getName(), v._2)).toMap[String, Tensor[_]]
-    require(result.size == moduleConsts.length, s"${model}'s Const node's name is duplicated," +
+    Log4Error.unKnowExceptionError(result.size == moduleConsts.length,
+      s"${model}'s Const node's name is duplicated," +
       s"please check your model.")
     result
   }

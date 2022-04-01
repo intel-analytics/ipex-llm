@@ -78,13 +78,13 @@ class TestQuantizeInference(TestCase):
         optimizer = torch.optim.Adam(model.parameters(), lr=0.01)
         trainer = Trainer(max_epochs=1)
 
-        pl_model = Trainer.compile(model, loss, optimizer)
+        pl_model = Trainer.compile(model, loss, optimizer, quantize=True)
         train_loader = create_data_loader(data_dir, batch_size, \
                                           num_workers, data_transform, subset=200)
         test_loader = create_test_data_loader(data_dir, batch_size, \
                                               num_workers, test_data_transform, subset=200)
         trainer.fit(pl_model, test_loader)
-        nonquantized_loss = trainer.test(pl_model, test_loader)  # fp32
+        nonquantized_loss = trainer.validate(pl_model, test_loader)  # fp32
         assert pl_model._default_inference_quantize is False
         pl_model = trainer.quantize(pl_model, train_loader)
 
@@ -97,9 +97,9 @@ class TestQuantizeInference(TestCase):
             np.testing.assert_almost_equal(quantized_res, forward_res, decimal=5)  # same result
 
         assert pl_model._default_inference_quantize is True
-        quantized_loss = trainer.test(pl_model, test_loader)  # quantized
-        print(nonquantized_loss[0]['test/loss'], quantized_loss[0]['test/loss'])
-        assert abs(nonquantized_loss[0]['test/loss'] - quantized_loss[0]['test/loss']) > 1e-5
+        quantized_loss = trainer.validate(pl_model, test_loader)  # quantized
+        print(nonquantized_loss[0]['val/loss'], quantized_loss[0]['val/loss'])
+        assert abs(nonquantized_loss[0]['val/loss'] - quantized_loss[0]['val/loss']) > 1e-5
 
         trainer.fit(pl_model, train_loader)
         assert pl_model._quantized_model_up_to_date is False  # qmodel is not up-to-date after training
@@ -109,7 +109,7 @@ class TestQuantizeInference(TestCase):
         assert pl_model._quantized_model_up_to_date is True  # qmodel is up-to-date after building
 
         model_load = ResNet18(10, pretrained=False, include_top=False, freeze=True)
-        pl_model_load = Trainer.compile(model_load)
+        pl_model_load = Trainer.compile(model_load, quantize=True)
         with tempfile.TemporaryDirectory() as tmp_dir_name:
             ckpt_name = os.path.join(tmp_dir_name, ".ckpt")
             torch.save(pl_model.quantized_state_dict(), ckpt_name)

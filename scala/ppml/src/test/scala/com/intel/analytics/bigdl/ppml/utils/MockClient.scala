@@ -16,7 +16,8 @@
 
 package com.intel.analytics.bigdl.ppml.utils
 
-import com.intel.analytics.bigdl.ppml.algorithms.vfl.FGBoostRegression
+import com.intel.analytics.bigdl.ppml.algorithms.FGBoostRegression
+import com.intel.analytics.bigdl.ppml.data.PreprocessUtil
 import org.apache.log4j.LogManager
 
 import scala.io.Source
@@ -42,12 +43,12 @@ class MockClient(dataPath: String,
       Source.fromFile(testPath, "utf-8").getLines()
     } else null
     val (trainFeatures, testFeatures, trainLabels, flattenHeaders) =
-      TmpUtils.preprocessing(sources, testSources, rowKeyName, labelName)
+      PreprocessUtil.preprocessing(sources, testSources, rowKeyName, labelName)
     val fgBoostRegression = new FGBoostRegression(
-      learningRate = 0.1f, maxDepth = 7, minChildSize = 5, flattenHeaders)
+      learningRate = 0.1f, maxDepth = 7, minChildSize = 5)
     val testFlContext= new FlContextForTest()
     testFlContext.initFLContext()
-    fgBoostRegression.flClient = testFlContext.getClient()
+    fgBoostRegression.setFlClient(testFlContext.getClient())
     logger.debug(s"Client2 calling fit...")
     fgBoostRegression.fit(trainFeatures, trainLabels, 15)
     fgBoostRegression.predict(testFeatures)

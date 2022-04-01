@@ -16,6 +16,7 @@
 
 package com.intel.analytics.bigdl.friesian.serving.utils
 
+import com.intel.analytics.bigdl.friesian.serving.feature.utils.RedisType
 import com.intel.analytics.bigdl.orca.inference.InferenceModel
 
 import java.nio.file.Files
@@ -40,6 +41,9 @@ class gRPCHelper extends Serializable {
   @BeanProperty var redisMaxMemory = "4g"
   @BeanProperty var redisTimeout = 5000
   @BeanProperty var redisPoolMaxTotal = 256
+  @BeanProperty var redisType = "standalone"
+  @BeanProperty var redisSentinelMasterName: String = _
+  @BeanProperty var redisSentinelMasterURL = "localhost:26379"
 
   // feature service attributes
   @BeanProperty var serviceType = "kv"
@@ -47,6 +51,7 @@ class gRPCHelper extends Serializable {
   @BeanProperty var itemFeatureColumns: String = _
   @BeanProperty var redisKeyPrefix: String = _
   @BeanProperty var redisClusterItemSlotType = 0
+  @BeanProperty var logInterval = 2
 
   // recall service attributes
   @BeanProperty var indexPath: String = _
@@ -73,6 +78,7 @@ class gRPCHelper extends Serializable {
   var inferenceColArr: Array[String] = _
   var itemModel: InferenceModel = _
   var itemSlotType: Int = 0
+  var redisTypeEnum: RedisType = RedisType.STANDALONE
 
   val logger: Logger = LogManager.getLogger(getClass)
 
@@ -108,6 +114,16 @@ class gRPCHelper extends Serializable {
       0
     } else {
       redisClusterItemSlotType
+    }
+
+    assert(redisType != null, "redisType should not be null")
+    redisType = redisType.toLowerCase.trim
+    if (redisType == "sentinel") {
+      assert(redisSentinelMasterName != null,
+        "redisSentinelMasterName should not be null when redisType=sentinel")
+      redisTypeEnum = RedisType.SENTINEL
+    } else if (redisType == "cluster") {
+      redisTypeEnum = RedisType.CLUSTER
     }
   }
 

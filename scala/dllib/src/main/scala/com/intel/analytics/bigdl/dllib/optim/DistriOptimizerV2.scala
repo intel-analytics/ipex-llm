@@ -353,7 +353,8 @@ object DistriOptimizerV2 extends AbstractOptimizer {
     }).reduce((a, b) => (a._1 ++ b._1, a._2 ++ b._2))
 
     val taskSize = parameters.size / partitionNum
-    require(taskSize != 0, "parameter length should not less than partition number")
+    Log4Error.invalidOperationError(taskSize != 0,
+      "parameter length should not less than partition number")
     val extraSize = parameters.size % partitionNum
 
     (0 until partitionNum).map(pid => {
@@ -688,7 +689,8 @@ class DistriOptimizerV2[T: ClassTag](
   }
 
   override def optimize(): Module[T] = {
-    require(validArgs(), "please check the args you set, there's some wrong")
+    Log4Error.invalidOperationError(validArgs(),
+      "please check the args you set, there's some wrong")
 
     val modelParameters = model.getParameters()
     val size = modelParameters._1.nElement()
@@ -806,7 +808,8 @@ class DistriOptimizerV2[T: ClassTag](
     val parameterSplits = if (optimMethods.size != 1) {
       val p = optimMethods.map { case (subModuleName, optimMethod) =>
         val subModule = model(subModuleName)
-        require(subModule.isDefined, s"Optimizer couldn't find $subModuleName in $model")
+        Log4Error.invalidOperationError(subModule.isDefined,
+          s"Optimizer couldn't find $subModuleName in $model")
         val subModuleWeights = subModule.get.getParameters()._1
         (subModuleName, subModuleWeights)
       }
@@ -814,7 +817,7 @@ class DistriOptimizerV2[T: ClassTag](
       // check the weights of submodule with whole model's weight, they should be the same
       val sortedWeights = p.values.toArray.sortWith((a, b) => a.storageOffset() < b.storageOffset())
       val compactWeights = Module.isCompact(sortedWeights)
-      require(parameters == compactWeights,
+      Log4Error.invalidOperationError(parameters == compactWeights,
         s"DistriOptimizer: All subModules should have an OptimMethod.")
 
       p.map { case (subModuleName, weights) =>
@@ -853,7 +856,7 @@ class DistriOptimizerV2[T: ClassTag](
     val nodeNumber = Engine.nodeNumber()
     val executorCores = Engine.coreNumber()
     val partitionNumber = dataset.toDistributed().originRDD().partitions.length
-    require(partitionNumber == nodeNumber,
+    Log4Error.invalidOperationError(partitionNumber == nodeNumber,
       s"Passed in rdd partition number $partitionNumber " +
         s" is not equal to configured node number $nodeNumber")
 
@@ -861,7 +864,8 @@ class DistriOptimizerV2[T: ClassTag](
       Engine.setNodeAndCore(nodeNumber, executorCores)
       if (!Engine.checkSingleton()) {
         if (checkSingleton) {
-          require(Engine.checkSingleton(), "Partitions of the training data are not evenly" +
+          Log4Error.invalidOperationError(Engine.checkSingleton(),
+            "Partitions of the training data are not evenly" +
             "distributed across the executors in the Spark cluster; are there sufficient " +
             "training" +
             "data to be distributed? Set property \"bigdl.check.singleton\" to false to skip " +
@@ -896,7 +900,7 @@ class TrainingContext[T: ClassTag](
     val batch = data.next()
     val stackSize = batch.size() / subModelNumber
     // TODO performance call Engine.invoke
-    require((batch.size() >= subModelNumber) &&
+    Log4Error.invalidOperationError((batch.size() >= subModelNumber) &&
       (batch.size() % subModelNumber == 0), "total batch size: " +
       s"${batch.size()} should be divided by total core number: $subModelNumber")
 

@@ -20,7 +20,7 @@ import com.intel.analytics.bigdl.Module
 import com.intel.analytics.bigdl.dllib.nn.{MklInt8Convertible, Scale => ScaleLayer}
 import com.intel.analytics.bigdl.dllib.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
-import com.intel.analytics.bigdl.dllib.utils.Node
+import com.intel.analytics.bigdl.dllib.utils.{Log4Error, Node}
 
 /**
  * Add fusion operation for dnn graph node, there are three cases about fusion:
@@ -182,7 +182,8 @@ private[mkldnn] object Fusion {
     (0 until bn.nOutput).foreach { j =>
       val variance = originVar.storage().array()(j + originVar.storageOffset() - 1)
       val base = Math.sqrt(variance.asInstanceOf[Float] + bn.eps).toFloat
-      require(base != 0.0, s"the eps of ${bn.getName()} should be more than 0")
+      Log4Error.invalidInputError(base != 0.0,
+        s"the eps of ${bn.getName()} should be more than 0")
 
       val alpha = bnWeight.storage().array()(bnWeight.storageOffset() - 1 + j)
       val beta = bnWeight.storage().array()(bnWeight.storageOffset() - 1 + bn.nOutput + j)
@@ -269,7 +270,8 @@ private[mkldnn] object Fusion {
 
     // case 3, the output dimension mask should be the same
     val masks = preConvs.map(_.getOutputDimMask()).toSet
-    require(masks.size == 1, s"all preceding convolutions must have the same mask")
+    Log4Error.invalidInputError(masks.size == 1,
+      s"all preceding convolutions must have the same mask")
 
     val nextConvs = node.nextNodes.flatMap(findNext)
       .filter(_.element.isInstanceOf[SpatialConvolution])

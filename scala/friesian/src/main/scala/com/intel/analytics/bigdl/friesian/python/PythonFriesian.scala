@@ -235,7 +235,7 @@ class PythonFriesian[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonZ
                  timeCol: String,
                  minLength: Int,
                  maxLength: Int,
-                 nunSeqs: Int = Int.MaxValue): DataFrame = {
+                 numSeqs: Int = Int.MaxValue): DataFrame = {
 
     df.sparkSession.conf.set("spark.sql.legacy.allowUntypedScalaUDF", "true")
     val colNames: Array[String] = cols.asScala.toArray
@@ -265,7 +265,7 @@ class PythonFriesian[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonZ
       }
 
 
-      val result: Seq[Row] = couples.takeRight(nunSeqs).map(x => {
+      val result: Seq[Row] = couples.takeRight(numSeqs).map(x => {
         val rowValue: Array[Any] = colsWithType.flatMap(col => {
           if (colNames.contains(col.name)) {
             col.dataType.typeName match {

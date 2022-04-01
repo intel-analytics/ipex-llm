@@ -20,7 +20,7 @@ import com.intel.analytics.bigdl.dllib.nn.abstractnn.Activity
 import com.intel.analytics.bigdl.dllib.nn.ops.Operation
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.dllib.utils.Table
+import com.intel.analytics.bigdl.dllib.utils.{Log4Error, Table}
 
 import scala.reflect.ClassTag
 
@@ -37,7 +37,7 @@ private[bigdl] class Assert[T: ClassTag]()
     val predicate = predicateTensor.value()
     val message = messageTensor.value()
 
-    assert(predicate, message.toStringUtf8)
+    Log4Error.unKnowExceptionError(predicate, message.toStringUtf8, "prediction should be True")
     null
   }
 }

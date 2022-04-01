@@ -26,6 +26,7 @@ import com.intel.analytics.bigdl.dllib.common.PythonZoo
 import com.intel.analytics.bigdl.dllib.feature.common.{Preprocessing, Relation, Relations}
 import com.intel.analytics.bigdl.dllib.feature.text.TruncMode.TruncMode
 import com.intel.analytics.bigdl.dllib.feature.text.{DistributedTextSet, _}
+import com.intel.analytics.bigdl.dllib.utils.Log4Error
 import org.apache.spark.api.java.{JavaRDD, JavaSparkContext}
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.SQLContext
@@ -123,9 +124,10 @@ class PythonTextFeature[T: ClassTag](implicit ev: TensorNumeric[T]) extends Pyth
   }
 
   def createLocalTextSet(texts: JList[String], labels: JList[Int]): LocalTextSet = {
-    require(texts != null, "texts of a TextSet can't be null")
+    Log4Error.invalidInputError(texts != null, "texts of a TextSet can't be null")
     val features = if (labels != null) {
-      require(texts.size() == labels.size(), "texts and labels of a TextSet " +
+      Log4Error.invalidInputError(texts.size() == labels.size(),
+        "texts and labels of a TextSet " +
         "should have the same size")
       texts.asScala.toArray[String].zip(labels.asScala.toArray[Int]).map{feature =>
         createTextFeature(feature._1, feature._2)
@@ -140,7 +142,7 @@ class PythonTextFeature[T: ClassTag](implicit ev: TensorNumeric[T]) extends Pyth
   def createDistributedTextSet(
       texts: JavaRDD[String],
       labels: JavaRDD[Int]): DistributedTextSet = {
-    require(texts != null, "texts of a TextSet can't be null")
+    Log4Error.invalidInputError(texts != null, "texts of a TextSet can't be null")
     val features = if (labels != null) {
       texts.rdd.zip(labels.rdd).map{feature =>
         createTextFeature(feature._1, feature._2)
@@ -314,7 +316,7 @@ class PythonTextFeature[T: ClassTag](implicit ev: TensorNumeric[T]) extends Pyth
 
   private def toScalaRelations(relations: JavaRDD[Array[Object]]): RDD[Relation] = {
     relations.rdd.map(x => {
-      require(x.length == 3, "Relation should consist of id1, id2 and label")
+      Log4Error.invalidInputError(x.length == 3, "Relation should consist of id1, id2 and label")
       Relation(x(0).asInstanceOf[String], x(1).asInstanceOf[String], x(2).asInstanceOf[Int])
     })
   }
@@ -322,7 +324,7 @@ class PythonTextFeature[T: ClassTag](implicit ev: TensorNumeric[T]) extends Pyth
   private def toScalaRelations(relations: JList[JList[Any]]): Array[Relation] = {
     relations.asScala.toArray.map(relation => {
       val x = relation.asScala.toArray
-      require(x.length == 3, "Relation should consist of id1, id2 and label")
+      Log4Error.invalidInputError(x.length == 3, "Relation should consist of id1, id2 and label")
       Relation(x(0).asInstanceOf[String], x(1).asInstanceOf[String], x(2).asInstanceOf[Int])
     })
   }

@@ -21,8 +21,7 @@ import com.intel.analytics.bigdl.dllib.optim.Regularizer
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.dllib.utils.RandomGenerator._
-import com.intel.analytics.bigdl.dllib.utils.{T, Table}
-import com.intel.analytics.bigdl.dllib.utils.Shape
+import com.intel.analytics.bigdl.dllib.utils.{Log4Error, Shape, T, Table}
 
 import scala.reflect.ClassTag
 
@@ -89,12 +88,12 @@ class CMul[T: ClassTag](
       var dimTemp : Int = 1
       while(output.size(dimTemp) != multiplyDimSize) {
         dimTemp += 1
-        require(dimTemp <= output.dim(), s"OutOfBound : " +
+        Log4Error.invalidInputError(dimTemp <= output.dim(), s"OutOfBound : " +
           s"Output does not have a dimension of $multiplyDimSize elements")
       }
       outputDim = dimTemp
     } else {
-      require(output.size(dim) == expand.size(dim), s"OutOfBound : " +
+      Log4Error.invalidInputError(output.size(dim) == expand.size(dim), s"OutOfBound : " +
         s"Output does not have a dimension of ${expand.size(dim)} elements")
     }
     val (innerNum, outerNum) = Utils.getInnerOuterNum(outputDim, output)

@@ -19,6 +19,7 @@ package com.intel.analytics.bigdl.dllib.tensor
 import com.intel.analytics.bigdl.mkl.MKL
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath._
 import com.intel.analytics.bigdl.dllib.tensor.{DenseTensorApply => Apply}
+import com.intel.analytics.bigdl.dllib.utils.Log4Error
 
 import scala.reflect.ClassTag
 
@@ -28,7 +29,9 @@ object DenseTensorMath {
   def mul[@specialized(Float, Double) T](self: DenseTensor[T], x: Tensor[T], value: T)
     (implicit ev: TensorNumeric[T]): Tensor[T] = {
     if (x != null) {
-      require(self.nElement() == x.nElement())
+      Log4Error.unKnowExceptionError(self.nElement() == x.nElement(),
+        s"mul expect two tensors has same size, but current tensor size is ${self.nElement()}" +
+          s" while x size is ${x.nElement()}")
       self.copy(x)
     }
 
@@ -48,7 +51,8 @@ object DenseTensorMath {
   def cmul[@specialized T](self: DenseTensor[T], x: DenseTensor[T], y: DenseTensor[T])
     (implicit ev: TensorNumeric[T]): Tensor[T] = {
     if (x.nElement() != y.nElement() && DenseTensor.canFastBroadcast(x, y)) {
-      require(self.nElement() == x.nElement(), "the self tensor nElement is not same as x" +
+      Log4Error.unKnowExceptionError(self.nElement() == x.nElement(),
+        "the self tensor nElement is not same as x" +
         s"self(${self.nElement()}) x(${x.nElement()})")
       // recursive cmul
       var i = 0
@@ -58,7 +62,8 @@ object DenseTensorMath {
         i += 1
       }
     } else if (x.nElement() != y.nElement() && DenseTensor.canFastBroadcast(y, x)) {
-      require(self.nElement() == y.nElement(), "the self tensor nElement is not same as y" +
+      Log4Error.unKnowExceptionError(self.nElement() == y.nElement(),
+        "the self tensor nElement is not same as y" +
         s"self(${self.nElement()}) y(${y.nElement()})")
       // recursive cmul
       var i = 0
@@ -71,7 +76,8 @@ object DenseTensorMath {
       self.resizeAs(x).copy(x)
       self.cmul(self.expandTensor(y))
     } else {
-      require(self.nElement() == y.nElement(), s"element number doesn't match " +
+      Log4Error.unKnowExceptionError(self.nElement() == y.nElement(),
+        s"element number doesn't match " +
         s"self(${self.nElement()}) y(${y.nElement()}) x(${x.nElement()})")
       if (self.isContiguous() && x.isContiguous() && y.isContiguous() && MKL.isMKLLoaded) {
 
@@ -105,8 +111,8 @@ object DenseTensorMath {
 
   def cdiv[@specialized(Float, Double) T](self: DenseTensor[T], x: Tensor[T], y: Tensor[T])
     (implicit ev: TensorNumeric[T]): Tensor[T] = {
-    require(self.nElement() == y.nElement() && self.nElement() == x.nElement(),
-      "element number doesn't match")
+    Log4Error.unKnowExceptionError(self.nElement() == y.nElement()
+      && self.nElement() == x.nElement(), "element number doesn't match")
     if (self.isContiguous() && y.isContiguous() && x.isContiguous() && MKL.isMKLLoaded) {
 
       ev.vDiv(self.nElement(), x.storage().array(), x.storageOffset() - 1,
@@ -127,7 +133,9 @@ object DenseTensorMath {
   def cadd[@specialized(Float, Double) T](
     self: DenseTensor[T], x: Tensor[T], value: T, y: Tensor[T])
     (implicit ev: TensorNumeric[T]): Tensor[T] = {
-    require(x != null && y.nElement() == x.nElement())
+    Log4Error.unKnowExceptionError(x != null && y.nElement() == x.nElement(),
+      s"cadd expect two tensors has same number of elements. But x has" +
+        s" ${x.nElement()} elements while y has ${y.nElement()} elements")
 
     if (!self.eq(x) && !self.eq(y)) {
       self.resizeAs(x).copy(x)
@@ -151,7 +159,9 @@ object DenseTensorMath {
   def csub[@specialized(Float, Double) T]
   (self: DenseTensor[T], x: Tensor[T], value: T, y: Tensor[T])
   (implicit ev: TensorNumeric[T]): Tensor[T] = {
-    require(x != null && x.nElement() == y.nElement())
+    Log4Error.unKnowExceptionError(x != null && x.nElement() == y.nElement(),
+      s"csub expect two tensors has same number of elements. But x has" +
+        s" ${x.nElement()} elements while y has ${y.nElement()} elements")
     if(!self.eq(x)) {
       self.resizeAs(x).copy(x)
     }
@@ -293,7 +303,7 @@ object DenseTensorMath {
   def mul[@specialized(Float, Double) T: ClassTag](self: Tensor[T], t: Tensor[T])
     (implicit ev: TensorNumeric[T]): Tensor[T] = {
     if (self.nDimension() == 1 && t.nDimension() == 1) {
-      require(self.size(1) == t.size(1), "vector size not match")
+      Log4Error.unKnowExceptionError(self.size(1) == t.size(1), "vector size not match")
 
       val result = ev.dot(self.nElement(), self.storage().array(), self.storageOffset() - 1,
         self.stride(1), t.storage().array(), t.storageOffset() - 1, t.stride(1))
@@ -314,7 +324,9 @@ object DenseTensorMath {
 
   def pow[@specialized(Float, Double) T: ClassTag](self: DenseTensor[T], x: Tensor[T], n: T)
     (implicit ev: TensorNumeric[T]): Tensor[T] = {
-    require(self.nElement() == x.nElement())
+    Log4Error.unKnowExceptionError(self.nElement() == x.nElement(),
+      s"pow expect two tensors has same number of elements. But x has" +
+        s" ${x.nElement()} elements while current tensor has ${self.nElement()} elements")
     if (MKL.isMKLLoaded && self.isContiguous() && x.isContiguous()) {
       ev.vPowx(self.nElement(), x.storage().array(), x.storageOffset() - 1, n,
         self.storage().array(), self.storageOffset() - 1)
@@ -351,7 +363,9 @@ object DenseTensorMath {
 
   def log[@specialized(Float, Double) T: ClassTag](self: DenseTensor[T], x: Tensor[T])
     (implicit ev: TensorNumeric[T]): Tensor[T] = {
-    require(self.nElement() == x.nElement())
+    Log4Error.unKnowExceptionError(self.nElement() == x.nElement(),
+      s"log expect two tensors has same number of elements. But x has" +
+        s" ${x.nElement()} elements while current tensor has ${self.nElement()} elements")
     if (MKL.isMKLLoaded && self.isContiguous() && x.isContiguous()) {
       ev.vLn(self.nElement(), x.storage().array(), x.storageOffset() - 1,
         self.storage().array(), self.storageOffset() - 1)
@@ -368,7 +382,9 @@ object DenseTensorMath {
 
   def sqrt[@specialized(Float, Double) T: ClassTag](self: DenseTensor[T], x: Tensor[T])
     (implicit ev: TensorNumeric[T]): Tensor[T] = {
-    require(self.nElement() == x.nElement())
+    Log4Error.unKnowExceptionError(self.nElement() == x.nElement(),
+      s"sqrt expect two tensors has same number of elements. But x has" +
+        s" ${x.nElement()} elements while current tensor has ${self.nElement()} elements")
     if (MKL.isMKLLoaded && self.isContiguous() && x.isContiguous()) {
       ev.vSqrt(self.nElement(), x.storage().array(), x.storageOffset() - 1,
         self.storage().array(), self.storageOffset() - 1)
@@ -385,7 +401,9 @@ object DenseTensorMath {
 
   def tanh[@specialized(Float, Double) T: ClassTag](self: DenseTensor[T], x: Tensor[T])
                                                    (implicit ev: TensorNumeric[T]): Tensor[T] = {
-    require(self.nElement() == x.nElement())
+    Log4Error.unKnowExceptionError(self.nElement() == x.nElement(),
+      s"tanh expect two tensors has same number of elements. But x has" +
+        s" ${x.nElement()} elements while current tensor has ${self.nElement()} elements")
     if (MKL.isMKLLoaded && self.isContiguous() && x.isContiguous()) {
       ev.vTanh(self.nElement(), x.storage().array(), x.storageOffset() - 1,
         self.storage().array(), self.storageOffset() - 1)
@@ -402,7 +420,9 @@ object DenseTensorMath {
 
   def log1p[@specialized(Float, Double) T: ClassTag](self: DenseTensor[T], x: Tensor[T])
     (implicit ev: TensorNumeric[T]): Tensor[T] = {
-    require(self.nElement() == x.nElement())
+    Log4Error.unKnowExceptionError(self.nElement() == x.nElement(),
+      s"log1p expect two tensors has same number of elements. But x has" +
+        s" ${x.nElement()} elements while current tensor has ${self.nElement()} elements")
     if (MKL.isMKLLoaded && self.isContiguous() && x.isContiguous()) {
       ev.vLog1p(self.nElement(), x.storage().array(), x.storageOffset() - 1,
         self.storage().array(), self.storageOffset() - 1)
@@ -445,7 +465,8 @@ object DenseTensorMath {
 
   def prod[@specialized(Float, Double) T: ClassTag](self: DenseTensor[T], x: Tensor[T], _dim: Int)
     (implicit ev: TensorNumeric[T]): Tensor[T] = {
-    require(_dim >= 0 && _dim < x.nDimension, s"dimension ${_dim + 1} out of range")
+    Log4Error.unKnowExceptionError(_dim >= 0 && _dim < x.nDimension,
+      s"dimension ${_dim + 1} out of range")
     val result = if (self == null) new DenseTensor[T]() else self
     val sizes = x.size()
     sizes(_dim) = 1
@@ -460,7 +481,8 @@ object DenseTensorMath {
 
   def sum[@specialized T: ClassTag](self: DenseTensor[T], x: Tensor[T], _dim: Int)
     (implicit ev: TensorNumeric[T]): Tensor[T] = {
-    require(_dim >= 0 && _dim < x.nDimension, s"dimension ${_dim + 1} out of range")
+    Log4Error.unKnowExceptionError(_dim >= 0 && _dim < x.nDimension,
+      s"dimension ${_dim + 1} out of range")
     val result = if (self == null) new DenseTensor[T]() else self
     val sizes = x.size()
     sizes(_dim) = 1
@@ -512,13 +534,13 @@ object DenseTensorMath {
   def addmm[@specialized(Float, Double) T: ClassTag](r: Tensor[T], beta: T, t: Tensor[T],
     alpha: T, m1: Tensor[T], m2: Tensor[T])
     (implicit ev: TensorNumeric[T]): Tensor[T] = {
-    require(m1.dim() == 2 && m2.dim() == 2,
+    Log4Error.unKnowExceptionError(m1.dim() == 2 && m2.dim() == 2,
       s"matrices expected, got ${m1.dim()}, ${m2.dim()} tensors")
-    require(m1.size(2) == m2.size(1),
+    Log4Error.unKnowExceptionError(m1.size(2) == m2.size(1),
       s"size mismatch, m1:${m1.size().mkString("x")} m2:${m2.size().mkString("x")}")
-    require(t.dim() == 2,
+    Log4Error.unKnowExceptionError(t.dim() == 2,
       s"matrix expected, got ${t.dim()} tensor for t")
-    require(t.size(1) == m1.size(1) && t.size(2) == m2.size(2),
+    Log4Error.unKnowExceptionError(t.size(1) == m1.size(1) && t.size(2) == m2.size(2),
       s"size mismatch. t:${t.size().mkString("x")}, " +
         s"m1:${m1.size().mkString("x")} + m2:${m2.size().mkString("x")}")
 
@@ -592,9 +614,12 @@ object DenseTensorMath {
 
   def addr[@specialized(Float, Double) T](r: Tensor[T], beta: T, t: Tensor[T],
     alpha: T, vec1: Tensor[T], vec2: Tensor[T])(implicit ev: TensorNumeric[T]): Tensor[T] = {
-    require(vec1.dim() == 1 && vec2.dim() == 1)
-    require(t.dim() == 2)
-    require(t.size(1) == vec1.size(1) && t.size(2) == vec2.size(1))
+    Log4Error.unKnowExceptionError(vec1.dim() == 1 && vec2.dim() == 1,
+      s"vec1.dim() ${vec1.dim()} should be 1, vec2.dim() ${vec2.dim()} should be 1")
+    Log4Error.unKnowExceptionError(t.dim() == 2, s"t.dim() ${t.dim()} should be 2")
+    Log4Error.unKnowExceptionError(t.size(1) == vec1.size(1) && t.size(2) == vec2.size(1),
+      s"t.size(1) ${t.size(1)} should match vec1.size(1) ${vec1.size(1)}," +
+        s" t.size(2) ${t.size(2)} should match vec2.size(1) ${vec2.size(1)}")
 
     if (!r.eq(t)) {
       r.resizeAs(t).copy(t)
@@ -631,20 +656,22 @@ object DenseTensorMath {
   def baddbmm[@specialized(Float, Double) T: ClassTag]
   (result: Tensor[T], beta: T, M: Tensor[T], alpha: T, batch1: Tensor[T], batch2: Tensor[T])
     (implicit ev: TensorNumeric[T]): Tensor[T] = {
-    require(batch1.dim() == 3, s"expected 3D tensor, got ${batch1.dim()}D")
-    require(batch2.dim() == 3, s"expected 3D tensor, got ${batch2.dim()}D")
-    require(batch1.size(1) == batch2.size(1), "equal number of batches expected, got " +
+    Log4Error.unKnowExceptionError(batch1.dim() == 3, s"expected 3D tensor, got ${batch1.dim()}D")
+    Log4Error.unKnowExceptionError(batch2.dim() == 3, s"expected 3D tensor, got ${batch2.dim()}D")
+    Log4Error.unKnowExceptionError(batch1.size(1) == batch2.size(1),
+      "equal number of batches expected, got " +
       s"${batch1.size(1)}, ${batch2.size(1)}")
-    require(batch1.size(3) == batch2.size(2), s"wrong matrix size, batch1: " +
+    Log4Error.unKnowExceptionError(batch1.size(3) == batch2.size(2),
+      s"wrong matrix size, batch1: " +
       s"${batch1.size(2)}${batch1.size(3)}, batch2: " +
       s"${batch2.size(2)}${batch2.size(3)}")
 
     val bs = batch1.size(1)
     val dim1 = batch1.size(2)
     val dim2 = batch2.size(3)
-    require(M.size(1) == bs, "output tensor of incorrect size")
-    require(M.size(2) == dim1, "output tensor of incorrect size")
-    require(M.size(3) == dim2, "output tensor of incorrect size")
+    Log4Error.unKnowExceptionError(M.size(1) == bs, "output tensor of incorrect size")
+    Log4Error.unKnowExceptionError(M.size(2) == dim1, "output tensor of incorrect size")
+    Log4Error.unKnowExceptionError(M.size(3) == dim2, "output tensor of incorrect size")
 
     if (M != result) {
       result
@@ -667,10 +694,15 @@ object DenseTensorMath {
 
   def addmv[@specialized(Float, Double) T](r: Tensor[T], beta: T, t: Tensor[T], alpha: T,
     mat: Tensor[T], vec: Tensor[T])(implicit ev: TensorNumeric[T]): Tensor[T] = {
-    require(mat.nDimension() == 2 && vec.nDimension() == 1)
-    require(mat.size(2) == vec.size(1))
-    require(t.nDimension() == 1)
-    require(t.size(1) == mat.size(1), s"${t.size(1)} == ${mat.size(1)}")
+    Log4Error.unKnowExceptionError(mat.nDimension() == 2 && vec.nDimension() == 1,
+      s"mat.nDimension() ${mat.nDimension()} should be 2," +
+        s" vec.nDimension() ${vec.nDimension()} should be 1")
+    Log4Error.unKnowExceptionError(mat.size(2) == vec.size(1),
+      s"mat.size(2) ${mat.size(2)} should match vec.size(1) ${vec.size(1)}")
+    Log4Error.unKnowExceptionError(t.nDimension() == 1,
+      s"t.nDimension() ${t.nDimension()} should be 1")
+    Log4Error.unKnowExceptionError(t.size(1) == mat.size(1),
+      s"t.size(1) ${t.size(1)} should match mat.size(1) ${mat.size(1)}")
 
     if (!r.eq(t)) {
       r.resizeAs(t).copy(t)
@@ -714,7 +746,8 @@ object DenseTensorMath {
 
   def mean[@specialized(Float, Double) T: ClassTag](self: DenseTensor[T], _dim: Int)(
     implicit ev: TensorNumeric[T]): Tensor[T] = {
-    require(_dim >= 0 && _dim < self.nDimension, s"dimension ${_dim + 1} out of range")
+    Log4Error.unKnowExceptionError(_dim >= 0 && _dim < self.nDimension,
+      s"dimension ${_dim + 1} out of range")
     val result = new DenseTensor[T]()
     val sizes = self.size()
     sizes(_dim) = 1
@@ -742,7 +775,7 @@ object DenseTensorMath {
    */
   def norm[@specialized(Float, Double) T: ClassTag](self: DenseTensor[T], result: Tensor[T],
    value: Int, _dim: Int)(implicit ev: TensorNumeric[T]): Tensor[T] = {
-    require(_dim >= 0 && _dim < self.nDimension, "invalid dimension")
+    Log4Error.unKnowExceptionError(_dim >= 0 && _dim < self.nDimension, "invalid dimension")
     val sizes = self.size()
     sizes(_dim) = 1
     result.resize(sizes)
@@ -780,8 +813,8 @@ object DenseTensorMath {
 
   def cmax[@specialized(Float, Double) T](self: DenseTensor[T], x: Tensor[T], y: Tensor[T])
                                          (implicit ev: TensorNumeric[T]): Tensor[T] = {
-    require(self.nElement() == y.nElement() && self.nElement() == x.nElement(),
-      "element number doesn't match")
+    Log4Error.unKnowExceptionError(self.nElement() == y.nElement()
+      && self.nElement() == x.nElement(), "element number doesn't match")
     // todo: the performance of contiguous tensor should be optimized
     val func = new TensorFunc6[T] {
       override def apply(data1: Array[T], offset1: Int, data2: Array[T], offset2: Int,
@@ -794,8 +827,8 @@ object DenseTensorMath {
   }
   def cmin[@specialized(Float, Double) T](self: DenseTensor[T], x: Tensor[T], y: Tensor[T])
                                          (implicit ev: TensorNumeric[T]): Tensor[T] = {
-    require(self.nElement() == y.nElement() && self.nElement() == x.nElement(),
-      "element number doesn't match")
+    Log4Error.unKnowExceptionError(self.nElement() == y.nElement()
+      && self.nElement() == x.nElement(), "element number doesn't match")
     // todo: the performance of contiguous tensor should be optimized
     val func = new TensorFunc6[T] {
       override def apply(data1: Array[T], offset1: Int, data2: Array[T], offset2: Int,

@@ -18,6 +18,7 @@ package com.intel.analytics.bigdl.dllib.nn.tf
 import com.intel.analytics.bigdl.dllib.nn.abstractnn.TensorModule
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.dllib.utils.Log4Error
 
 import scala.reflect.ClassTag
 
@@ -33,7 +34,7 @@ private[bigdl] class SplitAndSelect[T: ClassTag]
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
     val dim = if (dimension < 0) input.dim() + dimension + 1 else dimension
     val dimSize = input.size(dimension)
-    require(dimSize % numSplit == 0,
+    Log4Error.invalidInputError(dimSize % numSplit == 0,
       s"numSplit must evenly divides input.size(dimension), " +
         s"numSplit: $numSplit, dimension: $dimension, dimSize: $dimSize")
     val length = dimSize / numSplit

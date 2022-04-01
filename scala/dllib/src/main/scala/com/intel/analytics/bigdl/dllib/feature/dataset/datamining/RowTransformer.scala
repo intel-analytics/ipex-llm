@@ -20,7 +20,7 @@ import com.intel.analytics.bigdl.dllib.feature.dataset.Transformer
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric.{NumericBoolean, NumericDouble, NumericFloat, NumericInt, NumericLong, NumericShort, NumericString}
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.{NumericWildcard, TensorNumeric}
-import com.intel.analytics.bigdl.dllib.utils.{T, Table}
+import com.intel.analytics.bigdl.dllib.utils.{Log4Error, T, Table}
 import org.apache.spark.sql.Row
 import org.apache.spark.sql.types._
 
@@ -49,11 +49,12 @@ class RowTransformer(
   protected val schemaMap: mutable.Map[String, RowTransformSchema] = {
     val map = mutable.LinkedHashMap[String, RowTransformSchema]()
     schemas.foreach { schema =>
-      require(!map.contains(schema.schemaKey),
+      Log4Error.invalidInputError(!map.contains(schema.schemaKey),
         s"Found replicated schemeKey: ${schema.schemaKey}"
       )
       if (schema.fieldNames.isEmpty) {
-        require(schema.indices.forall(i => i >= 0 && i < rowSize.getOrElse(Int.MaxValue)),
+        Log4Error.invalidInputError(schema.indices.forall(i => i >= 0
+          && i < rowSize.getOrElse(Int.MaxValue)),
           s"At least one of indices are out of bound: ${schema.indices.mkString(",")}"
         )
       }

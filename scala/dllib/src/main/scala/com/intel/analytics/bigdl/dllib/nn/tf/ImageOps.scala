@@ -25,6 +25,7 @@ import com.intel.analytics.bigdl.dllib.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.dllib.nn.ops.Operation
 import com.intel.analytics.bigdl.dllib.tensor._
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.dllib.utils.Log4Error
 import com.intel.analytics.bigdl.dllib.utils.serializer.converters.DataConverter
 import com.intel.analytics.bigdl.dllib.utils.serializer.{DeserializeContext, ModuleSerializable, SerializeContext}
 import org.tensorflow.framework.DataType
@@ -38,16 +39,16 @@ private[bigdl] class DecodeImage[T: ClassTag](val channels: Int)(implicit ev: Te
 
   output = Tensor[Int]()
   override def updateOutput(input: Tensor[ByteString]): Tensor[Int] = {
-    require(input.isScalar, "only support ByteString scalar")
+    Log4Error.invalidInputError(input.isScalar, "only support ByteString scalar")
     val image = ImageIO.read(new ByteArrayInputStream(input.value().toByteArray))
-    require(image != null, "Can't decode image")
+    Log4Error.invalidInputError(image != null, "Can't decode image")
     val imageWidth = image.getWidth
     val imageHeight = image.getHeight
 
     val expectedChannels = if (channels == 0) {
       image.getColorModel.getNumComponents
     } else {
-      require(channels == image.getColorModel.getNumComponents,
+      Log4Error.invalidInputError(channels == image.getColorModel.getNumComponents,
         "Only support inputs channels equal to desired channels")
       channels
     }
@@ -93,7 +94,7 @@ private[bigdl] class DecodeImage[T: ClassTag](val channels: Int)(implicit ev: Te
 
 private[bigdl] class DecodeJpeg[T: ClassTag](channels: Int, val ratio: Int = 1)
   (implicit ev: TensorNumeric[T]) extends DecodeImage[T](channels) {
-  require(ratio == 1, "currently not supported sub-sampling")
+  Log4Error.invalidInputError(ratio == 1, "currently not supported sub-sampling")
 }
 
 private[bigdl] class DecodePng[T: ClassTag](channels: Int)(implicit ev: TensorNumeric[T])
@@ -106,7 +107,7 @@ private[bigdl] class DecodeGif[T: ClassTag]()(implicit ev: TensorNumeric[T])
   extends DecodeImage[T](3) {
 
   override def updateOutput(input: Tensor[ByteString]): Tensor[Int] = {
-    require(input.isScalar, "only support ByteString scalar")
+    Log4Error.invalidInputError(input.isScalar, "only support ByteString scalar")
 
     val reader = ImageIO.getImageReadersByFormatName("gif").next()
 
@@ -128,11 +129,11 @@ private[bigdl] class DecodeGif[T: ClassTag]()(implicit ev: TensorNumeric[T])
     var i = 0
     while (i < numOfFrames) {
       val image = reader.read(i)
-      require(image != null, s"Can't decode ${i}th frame")
-      require(imageHeight == image.getHeight,
+      Log4Error.invalidInputError(image != null, s"Can't decode ${i}th frame")
+      Log4Error.invalidInputError(imageHeight == image.getHeight,
         s"Different frame should have the same height," +
           s"first image height: $imageHeight, ${i}th image height: ${image.getHeight}")
-      require(imageWidth == image.getWidth,
+      Log4Error.invalidInputError(imageWidth == image.getWidth,
         s"Different frame should have the same width," +
           s"first image width: $imageWidth, ${i}th image width: ${image.getWidth}")
 
@@ -167,7 +168,7 @@ private[bigdl] class DecodeRaw[T: ClassTag](val outType: DataType,
     if (littleEndian) ByteOrder.LITTLE_ENDIAN else ByteOrder.BIG_ENDIAN
 
   override def updateOutput(input: Tensor[ByteString]): Activity = {
-    require(input.isContiguous(), "only support contiguous input")
+    Log4Error.invalidInputError(input.isContiguous(), "only support contiguous input")
     val offset = input.storageOffset() - 1
     val data = input.storage().array()
     val firstElem = data(offset)
@@ -332,7 +333,7 @@ private[bigdl] class DecodeRaw[T: ClassTag](val outType: DataType,
     while (i < dataSize) {
       val bytes = inputData(inputOffset + i).toByteArray
       val typedInputData = bytes
-      require(typedInputData.length == featureSize,
+      Log4Error.invalidInputError(typedInputData.length == featureSize,
         s"each element should have the same size, first elem size: $featureSize, " +
           s"${i}th elem size: ${typedInputData.length}")
       var j = 0
@@ -359,7 +360,7 @@ private[bigdl] class DecodeRaw[T: ClassTag](val outType: DataType,
     while (i < dataSize) {
       val bytes = inputData(inputOffset + i).toByteArray
       val typedInputData = bytes
-      require(typedInputData.length == featureSize,
+      Log4Error.invalidInputError(typedInputData.length == featureSize,
         s"each element should have the same size, first elem size: $featureSize, " +
           s"${i}th elem size: ${typedInputData.length}")
       var j = 0

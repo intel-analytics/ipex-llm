@@ -17,6 +17,7 @@ package com.intel.analytics.bigdl.dllib.feature.image
 
 import com.intel.analytics.bigdl.dllib.feature.transform.vision.image.ImageFeature
 import com.intel.analytics.bigdl.dllib.feature.transform.vision.image.opencv.OpenCVMat
+import com.intel.analytics.bigdl.dllib.utils.Log4Error
 import org.apache.logging.log4j.LogManager
 import org.opencv.imgcodecs.Imgcodecs
 
@@ -50,7 +51,8 @@ object ImageBytesToMat {
     val bytes = feature[Array[Byte]](byteKey)
     var mat: OpenCVMat = null
     try {
-      require(null != bytes && bytes.length > 0, "image file bytes should not be empty")
+      Log4Error.invalidInputError(null != bytes && bytes.length > 0,
+        "image file bytes should not be empty")
       mat = OpenCVMethod.fromImageBytes(bytes, imageCodec)
       feature(ImageFeature.mat) = mat
       feature(ImageFeature.originalSize) = mat.shape()

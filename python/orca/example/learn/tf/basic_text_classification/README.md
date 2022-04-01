@@ -5,10 +5,10 @@ We demonstrate how to easily run synchronous distributed Tensorflow training usi
 ## Prepare environments
 We recommend you to use [Anaconda](https://www.anaconda.com/distribution/#linux) to prepare the environments, especially if you want to run on a yarn cluster(yarn-client mode only).
 ```
-conda create -n zoo python=3.7 #zoo is conda enviroment name, you can set another name you like.
-conda activate zoo
+conda create -n bigdl python=3.7 #bigdl is conda enviroment name, you can set another name you like.
+conda activate bigdl
 pip install tensorflow==1.15
-pip install --pre --upgrade analytics-zoo
+pip install --pre --upgrade bigdl-orca
 ```
 
 ## Prepare Dataset
@@ -28,9 +28,13 @@ python basic_text_classification.py --cluster_mode local
 python basic_text_classification.py --cluster_mode yarn
 ```
 
+- Run with K8s Client mode:
+```bash
+python basic_text_classification.py --cluster_mode k8s --k8s_master "k8s://https://127.0.0.1:8443" --container_image "intelanalytics/bigdl-k8s:latest"
+```
+
 In above commands
 * `--cluster_mode` The mode of spark cluster, supporting local and yarn. Default is "local".
-
 
 ## Results
 You can find the logs for training:

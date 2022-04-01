@@ -26,12 +26,14 @@ import com.intel.analytics.bigdl.dllib.feature.dataset.DataSet.SeqFileFolder
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.feature.transform.vision.image.label.roi.RoiLabel
 import com.intel.analytics.bigdl.dllib.feature.transform.vision.image.{ImageFeature, RoiImageInfo}
-import com.intel.analytics.bigdl.dllib.utils.{T, Table}
+import com.intel.analytics.bigdl.dllib.utils.{Log4Error, T, Table}
 import java.io.{BufferedReader, FileReader}
 import java.lang.reflect.Type
 import java.nio.ByteBuffer
 import java.nio.file.{Files, Path, Paths}
+
 import org.apache.spark.SparkContext
+
 import scala.collection.mutable.ArrayBuffer
 
 private[bigdl] class COCOSerializeContext {
@@ -155,7 +157,8 @@ case class COCODataset(info: COCODatasetInfo, images: Array[COCOImage],
       cateId2catIdx(cate.id) = idx + 1 // the ids starts from 1, because 0 is for background
     }
     annotations.foreach(anno => {
-      require(imageId2Image.contains(anno.imageId), s"Cannot find image_id ${anno.imageId}")
+      Log4Error.invalidInputError(imageId2Image.contains(anno.imageId),
+        s"Cannot find image_id ${anno.imageId}")
       val img = imageId2Image(anno.imageId)
       anno._categoryIdx = cateId2catIdx(anno.categoryId)
       anno.image = img
@@ -266,7 +269,9 @@ case class COCOImage(
     val masks = annotations.map(ann => ann.segmentation.asInstanceOf[SegmentationMasks]).toArray
 
     val rawdata = SeqFileFolder.decodeRawImageToBGR(this.data)
-    require(rawdata.length == height * width * 3)
+    Log4Error.invalidInputError(rawdata.length == height * width * 3, "image data size doesn't" +
+      s"match the height and width, rawdata.length(${rawdata.length}) not" +
+      s" same with height($height) * width($width) * 3")
     val imf = ImageFeature(rawdata, RoiLabel(labelClasses, bboxes, masks), fileName)
     imf(ImageFeature.originalSize) = (height, width, 3)
     imf(RoiImageInfo.ISCROWD) = isCrowd
@@ -326,7 +331,7 @@ case class COCOAnotationOD(id: Long, imageId: Long, categoryId: Long,
   def categoryIdx: Long = _categoryIdx
 
   def dumpTo(context: COCOSerializeContext): Unit = {
-    require(_categoryIdx != -1, "COCOAnotationOD should be initialized")
+    Log4Error.invalidInputError(_categoryIdx != -1, "COCOAnotationOD should be initialized")
     context.dump(_categoryIdx.toInt)
     context.dump(area)
     context.dump(bbox._1)
@@ -388,7 +393,8 @@ object COCODataset {
       val categoryId = obj.get("category_id").getAsLong
       val area = obj.get("area").getAsFloat
       val rawBbox = obj.get("bbox").getAsJsonArray
-      require(rawBbox.size() == 4, "The bbox in the COCO annotation data should have 4 elements")
+      Log4Error.invalidInputError(rawBbox.size() == 4,
+        "The bbox in the COCO annotation data should have 4 elements")
       val (x1, y1, w, h) = (rawBbox.get(0).getAsFloat, rawBbox.get(1).getAsFloat,
         rawBbox.get(2).getAsFloat, rawBbox.get(3).getAsFloat)
       val bbox = (x1, y1, x1 + w - 1, y1 + h - 1)
@@ -397,7 +403,8 @@ object COCODataset {
         val segJson = obj.getAsJsonObject("segmentation")
         val cnts = intArrAdapter.fromJsonTree(segJson.get("counts"))
         val size = intArrAdapter.fromJsonTree(segJson.get("size"))
-        require(size.length == 2, "The size in the COCO annotation data should have 2 elements")
+        Log4Error.invalidInputError(size.length == 2,
+          "The size in the COCO annotation data should have 2 elements")
         COCORLE(cnts, size(0), size(1))
       } else {
         val polys = polyAdapter.fromJsonTree(obj.get("segmentation"))

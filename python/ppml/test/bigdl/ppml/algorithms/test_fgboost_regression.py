@@ -14,31 +14,113 @@
 # limitations under the License.
 #
 
+
+from multiprocessing import Process
 import unittest
 import numpy as np
+import pandas as pd
+import os
+import math
 
-from bigdl.ppml import FLServer
+from bigdl.ppml import *
 from bigdl.ppml.algorithms.fgboost_regression import FGBoostRegression
+from bigdl.ppml.fl_server import FLServer
 from bigdl.ppml.utils import init_fl_context
+from bigdl.ppml.fl_client import FLClient
+
+resource_path = os.path.join(os.path.dirname(__file__), "../resources")
+
+def mock_process(data_train, data_test):
+    # FLContext is a singleton in JVM, so another process initialization is needed
+    # prepare_env()
+    init_fl_context()
+
+    df_train = pd.read_csv(os.path.join(resource_path, data_train))
+
+    fgboost_regression = FGBoostRegression()
+    if 'SalePrice' in df_train:
+        df_x = df_train.drop('SalePrice', 1)
+        df_y = df_train.filter(items=['SalePrice'])
+        fgboost_regression.fit(df_x, df_y, feature_columns=df_x.columns, label_columns=['SalePrice'], num_round=15)
+    else:
+        fgboost_regression.fit(df_train, feature_columns=df_train.columns, num_round=15)
+
+    df_test = pd.read_csv(os.path.join(resource_path, data_test))
+    result = fgboost_regression.predict(df_test, feature_columns=df_test.columns)
 
 
-class TestFGBoostRegression(unittest.TestCase):
+class TestFGBoostRegression(unittest.TestCase):    
+    xgboost_result = pd.read_csv(os.path.join(
+            resource_path, "house-price-xgboost-submission.csv"))
+    xgboost_result = xgboost_result['SalePrice'].to_numpy()
+    @classmethod
+    def setUpClass(cls) -> None:
+        multiprocessing.set_start_method('spawn') 
+
     def setUp(self) -> None:
         self.fl_server = FLServer()
-        self.fl_server.build()
-        self.fl_server.start()
         init_fl_context()
+        # this explicit set is needed, default value is 'fork' on Unix
+        # if 'fork', the resources would be inherited and thread crash would occur
+        # (to be verified)
+            
 
     def tearDown(self) -> None:
         self.fl_server.stop()
 
     def test_dummy_data(self):
+        self.fl_server.build()
+        self.fl_server.start()
         x, y = np.ones([2, 3]), np.ones([2])
         fgboost_regression = FGBoostRegression()
         fgboost_regression.fit(x, y)
         result = fgboost_regression.predict(x)
         result
 
+    def test_one_party(self):
+        self.fl_server.build()
+        self.fl_server.start()
+        df_train = pd.read_csv(
+            os.path.join(resource_path, "house-prices-train-preprocessed.csv"))
+        fgboost_regression = FGBoostRegression()
+        
+        df_x = df_train.drop('SalePrice', 1)
+        df_y = df_train.filter(items=['SalePrice'])
+        
+        fgboost_regression.fit(df_x, df_y,
+            feature_columns=df_x.columns, label_columns=['SalePrice'], num_round=15)
+        
+        df_test = pd.read_csv(os.path.join(resource_path, "house-prices-test-preprocessed.csv"))
+        result = fgboost_regression.predict(df_test, feature_columns=df_x.columns)
+        result = list(map(lambda x: math.exp(x), result))
+        result
+
+    def test_three_party(self):
+        self.fl_server.set_client_num(3)
+        self.fl_server.build()
+        self.fl_server.start()
+        mock_party1 = Process(target=mock_process, 
+        args=('house-prices-train-preprocessed-1.csv', 'house-prices-test-preprocessed-1.csv'))
+        mock_party1.start()
+        mock_party2 = Process(target=mock_process, 
+        args=('house-prices-train-preprocessed-2.csv', 'house-prices-test-preprocessed-2.csv'))
+        mock_party2.start()        
+
+        df_train = pd.read_csv(
+            os.path.join(resource_path, "house-prices-train-preprocessed-0.csv"))
+        fgboost_regression = FGBoostRegression()
+        if 'SalePrice' in df_train:
+            df_x = df_train.drop('SalePrice', 1)
+            df_y = df_train.filter(items=['SalePrice'])
+            
+            fgboost_regression.fit(df_x, df_y, feature_columns=df_x.columns, label_columns=['SalePrice'], num_round=15)
+        else:
+            fgboost_regression.fit(df_train, feature_columns=df_train.columns, num_round=15)
+        
+        df_test = pd.read_csv(os.path.join(resource_path, "house-prices-test-preprocessed-0.csv"))
+        result = fgboost_regression.predict(df_test, feature_columns=df_test.columns)
+        result = np.exp(result)
+        assert np.allclose(result, TestFGBoostRegression.xgboost_result, rtol=100, atol=100)
 
 if __name__ == '__main__':
     unittest.main()

@@ -16,6 +16,8 @@
 
 package com.intel.analytics.bigdl.dllib.tensor
 
+import com.intel.analytics.bigdl.dllib.utils.Log4Error
+
 object SparseTensorApply {
 
   /**
@@ -30,14 +32,14 @@ object SparseTensorApply {
   def apply1[A, B](tensor1: Tensor[A], tensor2: Tensor[B],
     func: TensorDiffTypeFunc4[A, B]): Unit = {
 
-    require(tensor1.getTensorType == SparseType,
+    Log4Error.unKnowExceptionError(tensor1.getTensorType == SparseType,
       s"Wrong TensorType found at tensor1: ${tensor1.getTensorType}")
-    require(tensor2.getTensorType == SparseType,
+    Log4Error.unKnowExceptionError(tensor2.getTensorType == SparseType,
       s"Wrong TensorType found at tensor2: ${tensor2.getTensorType}")
 
     val t1 = tensor1.asInstanceOf[SparseTensor[A]]
     val t2 = tensor2.asInstanceOf[SparseTensor[B]]
-    require(t1._nElement == t2._nElement,
+    Log4Error.unKnowExceptionError(t1._nElement == t2._nElement,
       s"nElement of tensor1(${t1._nElement}) is't equal to nElement of tensor2(${t2._nElement})")
 
     val array1 = t1.storage().array()

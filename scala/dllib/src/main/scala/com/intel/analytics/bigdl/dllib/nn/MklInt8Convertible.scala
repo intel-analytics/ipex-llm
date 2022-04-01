@@ -18,7 +18,7 @@ package com.intel.analytics.bigdl.dllib.nn
 
 import com.intel.analytics.bigdl.dllib.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
-import com.intel.analytics.bigdl.dllib.utils.Table
+import com.intel.analytics.bigdl.dllib.utils.{Log4Error, Table}
 
 import scala.collection.mutable.ArrayBuffer
 
@@ -175,7 +175,8 @@ trait MklInt8Convertible {
    * @param outputActvt output of the Sequential Module
    */
   private def calcSequentialScales(inputActvt: Activity, outputActvt: Activity): Unit = {
-    require(this.isInstanceOf[Sequential[Float@unchecked]] || this.isInstanceOf[mkldnn.Sequential],
+    Log4Error.invalidOperationError(this.isInstanceOf[Sequential[Float@unchecked]] ||
+      this.isInstanceOf[mkldnn.Sequential],
       this.getClass.getName + " is not an instance of Sequential.")
 
     val module: DynamicContainer[_, _, Float] = this.asInstanceOf[DynamicContainer[_, _, Float]]
@@ -207,7 +208,8 @@ trait MklInt8Convertible {
    * @param outputActvt output of the ConcatTable Module
    */
   private def calcConcatTableScales(inputActvt: Activity, outputActvt: Activity): Unit = {
-    require(this.isInstanceOf[ConcatTable[Float@unchecked]] || this.isInstanceOf[mkldnn.ConcatTable]
+    Log4Error.invalidOperationError(this.isInstanceOf[ConcatTable[Float@unchecked]]
+      || this.isInstanceOf[mkldnn.ConcatTable]
       , this.getClass.getName + " is not an instance of ConcatTable.")
 
     val module: DynamicContainer[_, _, Float] = this.asInstanceOf[DynamicContainer[_, _, Float]]
@@ -234,7 +236,8 @@ trait MklInt8Convertible {
    * @param outputActvt output activity of the graph module
    */
   private def calcGraphScales(inputActvt: Activity, outputActvt: Activity): Unit = {
-    require(this.isInstanceOf[Graph[Float@unchecked]], this.getClass.getName +
+    Log4Error.invalidOperationError(this.isInstanceOf[Graph[Float@unchecked]],
+      this.getClass.getName +
     " is not an instance of Graph[Float]")
 
     // calc scales for main module

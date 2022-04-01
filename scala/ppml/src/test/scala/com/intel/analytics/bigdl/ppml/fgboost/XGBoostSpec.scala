@@ -25,18 +25,18 @@ import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 class XGBoostSpec extends FlatSpec with Matchers with BeforeAndAfter with DebugLogger{
   "XGBoost Sparse Dmatrix from file" should "work" in {
     val mat = new DMatrix(getClass.getClassLoader
-      .getResource("xgboost/xgboost-sparse.txt").getPath)
+      .getResource("xgboost/format/xgboost-sparse.txt").getPath)
     mat
   }
   "XGBoost model dump json single node" should "work" in {
-    val dataPath = getClass.getClassLoader.getResource("xgboost/single-node.json").getPath
+    val dataPath = getClass.getClassLoader.getResource("xgboost/format/single-node.json").getPath
     val jsonStr = scala.io.Source.fromFile(dataPath).mkString
     val jacksonJsonSerializer = new JacksonJsonSerializer()
     val a = jacksonJsonSerializer.deSerialize(classOf[XGBoostFormatNode], jsonStr)
     a
   }
   "XGBoost model dump json small tree" should "work" in {
-    val dataPath = getClass.getClassLoader.getResource("xgboost/small-tree.json").getPath
+    val dataPath = getClass.getClassLoader.getResource("xgboost/format/small-tree.json").getPath
     val jsonStr = scala.io.Source.fromFile(dataPath).mkString
     val jacksonJsonSerializer = new JacksonJsonSerializer()
     val a = jacksonJsonSerializer.deSerialize(classOf[XGBoostFormatNode], jsonStr)

@@ -20,7 +20,7 @@ import com.intel.analytics.bigdl.dllib.nn.Graph.ModuleNode
 import com.intel.analytics.bigdl.dllib.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.dllib.utils.{T, Table}
+import com.intel.analytics.bigdl.dllib.utils.{Log4Error, T, Table}
 
 import scala.collection.mutable.ArrayBuffer
 import scala.reflect.ClassTag
@@ -38,7 +38,7 @@ class ConcatTable[T : ClassTag]
   extends DynamicContainer[Activity, Table, T] with MklInt8Convertible {
 
   override def updateOutput(input: Activity): Table = {
-    require(modules.length > 0, "empty modules of concat table")
+    Log4Error.invalidInputError(modules.length > 0, "empty modules of concat table")
     if (gradInput == null) {
       gradInput = allocateAs(input)
     }
@@ -59,7 +59,7 @@ class ConcatTable[T : ClassTag]
    */
   private def addTable(out: Activity, in: Activity) : Unit = {
     if (in.isInstanceOf[Tensor[T]] && out.isInstanceOf[Tensor[T]]) {
-      require(in.toTensor[T].nElement() == out.toTensor[T].nElement(),
+      Log4Error.invalidInputError(in.toTensor[T].nElement() == out.toTensor[T].nElement(),
         "gradInput should have the same size" +
           s"The sizes are ${in.toTensor[T].nElement()} " +
           s"and ${out.toTensor[T].nElement()}")
@@ -113,7 +113,7 @@ class ConcatTable[T : ClassTag]
   }
 
   override def updateGradInput(input: Activity, gradOutput: Table): Activity = {
-    require(modules.length > 0, "empty modules of concat table")
+    Log4Error.invalidInputError(modules.length > 0, "empty modules of concat table")
     val isInputTable = input.isInstanceOf[Table]
     val wasGradInputTable = gradInput.isInstanceOf[Table]
 
@@ -122,7 +122,7 @@ class ConcatTable[T : ClassTag]
       while (i < modules.length) {
         val currentGradInput = modules(i).updateGradInput(input,
           gradOutput.toTable(i + 1))
-        require(currentGradInput.isInstanceOf[Table],
+        Log4Error.invalidInputError(currentGradInput.isInstanceOf[Table],
           "currentGradInput is not a table!")
         if (i == 0) {
           if (!wasGradInputTable ||
@@ -161,7 +161,7 @@ class ConcatTable[T : ClassTag]
 
   override def backward(input: Activity, gradOutput: Table): Activity = {
     val before = System.nanoTime()
-    require(modules.length > 0, "empty modules of concat table")
+    Log4Error.invalidInputError(modules.length > 0, "empty modules of concat table")
     val isInputTable = input.isInstanceOf[Table]
     val wasGradInputTable = gradInput.isInstanceOf[Table]
 
@@ -170,7 +170,7 @@ class ConcatTable[T : ClassTag]
       while (i < modules.length) {
         val currentGradInput = modules(i).backward(input,
           gradOutput.toTable(i + 1))
-        require(currentGradInput.isInstanceOf[Table],
+        Log4Error.invalidInputError(currentGradInput.isInstanceOf[Table],
           "currentGradInput is not a table!")
         if (i == 0) {
           if (!wasGradInputTable ||

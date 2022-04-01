@@ -20,16 +20,16 @@ from bigdl.ppml.data_utils import *
 from bigdl.ppml import *
 
 
-class FGBoostRegression(JavaValue):
-    def __init__(self, jvalue=None, learning_rate:float=1e-3, max_depth=6, min_child_size=1):
+class FGBoostRegression(FLClientClosable):
+    def __init__(self, jvalue=None, learning_rate:float=0.1, max_depth=7, min_child_size=1):
         self.bigdl_type = "float"
         super().__init__(jvalue, self.bigdl_type, learning_rate, max_depth, min_child_size)
 
-    def fit(self, x, y, num_round=5, **kargs):
+    def fit(self, x, y=None, num_round=5, **kargs):
         x, y = convert_to_jtensor(x, y, **kargs)
         return callBigDlFunc(self.bigdl_type, "fgBoostFit", self.value, x, y, num_round)
 
-    def evaluate(self, x, y, **kargs):
+    def evaluate(self, x, y=None, **kargs):
         x, y = convert_to_jtensor(x, y, **kargs)
         return callBigDlFunc(self.bigdl_type, "fgBoostEvaluate", self.value, x, y)
 

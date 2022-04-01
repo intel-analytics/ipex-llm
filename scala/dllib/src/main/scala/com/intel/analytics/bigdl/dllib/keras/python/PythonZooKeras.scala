@@ -31,7 +31,7 @@ import com.intel.analytics.bigdl.dllib.nn.Container
 import com.intel.analytics.bigdl.dllib.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.dllib.nn.internal.{KerasLayer, KerasModel}
 import com.intel.analytics.bigdl.dllib.nn.{BatchNormalization => BNBatchNormalization}
-import com.intel.analytics.bigdl.dllib.utils.{Shape, Table}
+import com.intel.analytics.bigdl.dllib.utils.{Log4Error, Shape, Table}
 import com.intel.analytics.bigdl.dllib.feature.image.{ImageProcessing, ImageSet}
 import com.intel.analytics.bigdl.dllib.keras.autograd.{Constant, _}
 import com.intel.analytics.bigdl.dllib.keras.layers.{KerasLayerWrapper, _}
@@ -234,7 +234,7 @@ class PythonZooKeras[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonZ
       tag: String,
       target: String): JList[JList[Any]] = {
 
-    require(target == "Train" || target == "Validation",
+    Log4Error.invalidInputError(target == "Train" || target == "Validation",
       "Invalid target, must be Train or Validation.")
     val scalarArray = if (target == "Train") module.getTrainSummary(tag)
     else module.getValidationSummary(tag)
@@ -1225,7 +1225,7 @@ class PythonZooKeras[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonZ
 
   def connectInputs(module: AbstractModule[Activity, Activity, T],
       x: JList[Variable[T]]): Variable[T] = {
-    require(!x.isEmpty, "We don't accept empty inputs")
+    Log4Error.invalidInputError(!x.isEmpty, "We don't accept empty inputs")
     Variable(module.inputs(x.asScala.map(_.node): _*))
   }
 

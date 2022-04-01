@@ -47,7 +47,8 @@ trait Shape {
     } else {
       dim
     }
-    require(rdim < length && rdim >=0, "out of range")
+    Log4Error.invalidInputError(rdim < length && rdim >=0,
+      s"rdim $rdim out of range [0, $length)")
     rdim
   }
 }
