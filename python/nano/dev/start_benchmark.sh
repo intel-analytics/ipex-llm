@@ -15,17 +15,23 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+
+# Enviroment Settings
 export ANALYTICS_ZOO_ROOT=${ANALYTICS_ZOO_ROOT}
 export NANO_HOME=${ANALYTICS_ZOO_ROOT}/python/nano/src
 export NANO_BENCHMARK_DIR=${ANALYTICS_ZOO_ROOT}/python/nano/benchmark
+#
 
 set -e
 echo "# Start testing"
 start=$(date "+%s")
 
+# Boot-up commands 
+# e.g. python benchmark_program.py 
 python $NANO_BENCHMARK_DIR/pytorch/pytorch-cat-vs-dog.py
+#
 
 now=$(date "+%s")
 time=$((now-start))
-echo "Benchmark test finished"
-echo "Time used:$time sec"
+echo ">> All Benchmark test finished"
+echo ">> Time used:$time sec"
