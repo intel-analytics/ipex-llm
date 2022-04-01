@@ -16,8 +16,6 @@ ${SPARK_HOME}/bin/spark-submit \
     --conf spark.task.cpus=2 \
     --executor-cores 2 \
     --executor-memory 2g \
-    --total-executor-cores 2 \
-    --driver-cores 1 \
     --driver-memory 2g \
     local:/bin/jars/bigdl-dllib-spark_3.1.2-2.1.0-SNAPSHOT.jar \
     /host/data/xgboost_data 2  100 /host/data/xgboost_model_to_be_saved
