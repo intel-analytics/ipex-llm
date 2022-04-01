@@ -14,7 +14,6 @@
 # limitations under the License.
 #
 
-from bigdl.chronos.model.tf1.MTNet_keras import MTNetKeras as MTNetKerasModel
 from bigdl.chronos.model.tf2.MTNet_keras import MTNetKeras as MTNetKerasModel
 from bigdl.chronos.forecaster.abstract import Forecaster
 from bigdl.chronos.metric.forecast_metrics import Evaluator
