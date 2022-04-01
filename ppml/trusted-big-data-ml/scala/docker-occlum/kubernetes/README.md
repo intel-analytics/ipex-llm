@@ -126,9 +126,6 @@ The console output looks like:
 [INFO] [02/10/2022 14:57:10.071] [RabitTracker-akka.actor.default-dispatcher-7] [akka://RabitTracker/user/Handler] [2]  train-merror:0.030477   eval1-merror:0.030473   eval2-merror:0.030350
 ```
 
-
-
-
 ### Run Spark TPC-H example
 
 Modify the following configuration in `executor.yaml`.
