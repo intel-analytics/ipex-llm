@@ -16,13 +16,13 @@
 
 package com.intel.analytics.bigdl.dllib.keras.layers
 
-import com.intel.analytics.bigdl.dllib.nn.{Cell}
+import com.intel.analytics.bigdl.dllib.nn.Cell
 import com.intel.analytics.bigdl.dllib.nn.abstractnn.TensorModule
 import com.intel.analytics.bigdl.dllib.nn.internal.KerasLayer
 import com.intel.analytics.bigdl.dllib.optim.Regularizer
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.dllib.utils.Shape
+import com.intel.analytics.bigdl.dllib.utils.{Log4Error, Shape}
 import com.intel.analytics.bigdl.dllib.keras.Net
 import com.intel.analytics.bigdl.dllib.keras.layers.utils.KerasUtils
 
@@ -80,15 +80,15 @@ class ConvLSTM2D[T: ClassTag](
    var mInputShape: Shape = null)(implicit ev: TensorNumeric[T])
   extends Recurrent[T](outputDimension, returnSeq, goBackward, mInputShape) with Net {
 
-  require(dimOrdering.toLowerCase() == "channel_first", s"ConvLSTM2D currently only supports " +
-    s"format CHANNEL_FIRST, but got format $dimOrdering")
-  require(borderMode.toLowerCase() == "same" || borderMode.toLowerCase() == "valid",
-    s"ConvLSTM2D currently only supports " +
+  Log4Error.invalidInputError(dimOrdering.toLowerCase() == "channel_first",
+    s"ConvLSTM2D currently only supports format CHANNEL_FIRST, but got format $dimOrdering")
+  Log4Error.invalidInputError(borderMode.toLowerCase() == "same"
+    || borderMode.toLowerCase() == "valid", s"ConvLSTM2D currently only supports " +
     s"same and valid, but got padding $borderMode")
 
   override def computeOutputShape(inputShape: Shape): Shape = {
     val input = inputShape.toSingle().toArray
-    require(input.length == 5,
+    Log4Error.invalidInputError(input.length == 5,
       s"ConvLSTM2D requires 5D input, but got input dim ${input.length}")
     val rows = KerasUtils.computeConvOutputLength(input(3), nbKernel, borderMode, subsample)
     val cols = KerasUtils.computeConvOutputLength(input(4), nbKernel, borderMode, subsample)

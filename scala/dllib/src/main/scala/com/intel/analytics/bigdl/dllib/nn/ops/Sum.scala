@@ -17,7 +17,7 @@ package com.intel.analytics.bigdl.dllib.nn.ops
 
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.dllib.utils.Table
+import com.intel.analytics.bigdl.dllib.utils.{Log4Error, Table}
 import com.intel.analytics.bigdl.dllib.nn.{Sum => SumLayer}
 
 import scala.collection.mutable.ArrayBuffer
@@ -42,7 +42,8 @@ class Sum[T: ClassTag, D: ClassTag](val keepDims: Boolean, val startFromZero: Bo
     } else if (dims.isScalar) {
       Array(if (startFromZero) dims.value() + 1 else dims.value())
     } else {
-      require(dims.nDimension() == 1, s"Only accept 1D as dims, but now is ${dims.nDimension()}")
+      Log4Error.invalidInputError(dims.nDimension() == 1,
+        s"Only accept 1D as dims, but now is ${dims.nDimension()}")
       val buffer = new ArrayBuffer[Int]()
       dims.apply1(a => {
         buffer.append(if (startFromZero) a + 1 else a)

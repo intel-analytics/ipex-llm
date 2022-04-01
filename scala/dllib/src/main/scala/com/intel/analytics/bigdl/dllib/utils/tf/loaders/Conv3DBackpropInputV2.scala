@@ -21,6 +21,7 @@ import com.intel.analytics.bigdl.Module
 import com.intel.analytics.bigdl.dllib.nn.abstractnn.{AbstractModule, Activity, DataFormat}
 import com.intel.analytics.bigdl.dllib.nn.tf.{Conv3DBackpropInputV2 => Conv3DBackpropInputV2Ops}
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.dllib.utils.Log4Error
 import com.intel.analytics.bigdl.dllib.utils.tf.Context
 import org.tensorflow.framework.NodeDef
 
@@ -40,18 +41,18 @@ class Conv3DBackpropInputV2 extends TensorflowOpsLoader {
         (0, 0, 0)
       }
     val strideList = getIntList(attributes, "strides")
-    require(strideList.head == 1, s"not support strides on batch")
+    Log4Error.invalidInputError(strideList.head == 1, s"not support strides on batch")
 
     val format = getString(attributes, "data_format")
     val conv = format match {
       case "NDHWC" =>
-        require(strideList(4) == 1, s"not support strides on depth")
+        Log4Error.invalidInputError(strideList(4) == 1, s"not support strides on depth")
         val dT = strideList(1)
         val dW = strideList(2)
         val dH = strideList(3)
         Conv3DBackpropInputV2Ops[T](dT, dW, dH, pT, pW, pH, DataFormat.NHWC)
       case "NCDHW" =>
-        require(strideList(1) == 1, s"not support strides on depth")
+        Log4Error.invalidInputError(strideList(1) == 1, s"not support strides on depth")
         val dT = strideList(2)
         val dW = strideList(3)
         val dH = strideList(4)

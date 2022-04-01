@@ -18,7 +18,7 @@ package com.intel.analytics.bigdl.dllib.nn
 import com.intel.analytics.bigdl.dllib.nn.abstractnn.AbstractModule
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.dllib.utils.{T, Table}
+import com.intel.analytics.bigdl.dllib.utils.{Log4Error, T, Table}
 
 import scala.reflect.ClassTag
 
@@ -42,7 +42,7 @@ class BifurcateSplitTable[T: ClassTag](
 
   override def updateOutput(input: Tensor[T]): Table = {
     val slices = input.size(dimension)
-    require(slices >= 1,
+    Log4Error.invalidInputError(slices >= 1,
       s"BifurcateSplitTable: the size of referred dimension is ${slices}. " +
         s"It should be larger than 1.")
     val leftSlices = slices >> 1

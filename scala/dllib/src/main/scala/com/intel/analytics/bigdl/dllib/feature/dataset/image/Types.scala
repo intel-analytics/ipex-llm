@@ -24,7 +24,8 @@ import java.nio.channels.Channels
 import java.nio.file.Path
 import javax.imageio.ImageIO
 
-import com.intel.analytics.bigdl.dllib.feature.dataset.{Image, LocalImagePath, Label}
+import com.intel.analytics.bigdl.dllib.feature.dataset.{Image, Label, LocalImagePath}
+import com.intel.analytics.bigdl.dllib.utils.Log4Error
 
 /**
  * Represent a local file path of a image file with a float label
@@ -55,7 +56,9 @@ class GreyImage(
 ) extends Image {
 
   def copy(source: Array[Byte], normalize: Float = 1.0f, offset: Int = 0): this.type = {
-    require(data.length + offset <= source.length)
+    Log4Error.invalidOperationError(data.length + offset <= source.length,
+      s"data.length(${data.length}) + offset ($offset) should be less than" +
+        s"source length(${source.length})")
     var i = 0
     while (i < data.length) {
       data(i) = (source(i + offset) & 0xff) / normalize
@@ -138,7 +141,9 @@ class BGRImage(
     val buffer = ByteBuffer.wrap(rawData)
     _width = buffer.getInt
     _height = buffer.getInt
-    require(rawData.length == 8 + _width * _height * 3)
+    Log4Error.unKnowExceptionError(rawData.length == 8 + _width * _height * 3,
+      s"rawData.length ${rawData.length} should match" +
+        s" 8 + _width ${_width} * _height ${_height} * 3")
     if (data.length < _height * _width * 3) {
       data = new Array[Float](_width * _height * 3)
     }
@@ -152,7 +157,8 @@ class BGRImage(
 
   def copyTo(storage: Array[Float], offset: Int, toRGB: Boolean = true): Unit = {
     val frameLength = width() * height()
-    require(frameLength * 3 + offset <= storage.length)
+    Log4Error.invalidOperationError(frameLength * 3 + offset <= storage.length,
+      s"frameLength($frameLength) * 3 + offset($offset) <= storage.length")
     var j = 0
     if(toRGB) {
       while (j < frameLength) {
@@ -218,7 +224,8 @@ class BGRImage(
     val res = if (buffer == null) {
       new Array[Byte](height() * width() * 3)
     } else {
-      require(height() * width() <= buffer.length)
+      Log4Error.unKnowExceptionError(height() * width() <= buffer.length,
+        s"height(${height()}) * width(${width()}) <= buffer.length(${buffer.length}")
       buffer
     }
 
@@ -326,12 +333,13 @@ object BGRImage {
       val byteArrayOutputStream = new ByteArrayOutputStream
       channel.transferTo(0, channel.size, Channels.newChannel(byteArrayOutputStream))
       val image = ImageIO.read(new ByteArrayInputStream(byteArrayOutputStream.toByteArray))
-      require(image != null, "Can't read file " + path + ", ImageIO.read is null")
+      Log4Error.invalidInputError(image != null,
+        "Can't read file " + path + ", ImageIO.read is null")
       image
     } catch {
       case ex: Exception =>
-        ex.printStackTrace()
-        System.err.println("Can't read file " + path)
+//        ex.printStackTrace()
+//        System.err.println("Can't read file " + path)
         throw ex
     } finally {
       if (fis != null) {
@@ -357,11 +365,14 @@ object BGRImage {
     imageBuff.getGraphics.drawImage(scaledImage, 0, 0, new Color(0, 0, 0), null)
     val pixels: Array[Byte] =
       imageBuff.getRaster.getDataBuffer.asInstanceOf[DataBufferByte].getData
-    require(pixels.length % 3 == 0)
+    Log4Error.unKnowExceptionError(pixels.length % 3 == 0,
+      s"pixels.length(${pixels.length}) cannot divide by 3")
 
     val bytes = new Array[Byte](8 + pixels.length)
     val byteBuffer = ByteBuffer.wrap(bytes)
-    require(imageBuff.getWidth * imageBuff.getHeight * 3 == pixels.length)
+    Log4Error.unKnowExceptionError(imageBuff.getWidth * imageBuff.getHeight * 3 == pixels.length,
+    s"imageBuff.getWidth(${imageBuff.getWidth()}) * imageBuff.getHeight(${imageBuff.getHeight()})" +
+      s" * 3 doesn't match pixels.length(${pixels.length})")
     byteBuffer.putInt(imageBuff.getWidth)
     byteBuffer.putInt(imageBuff.getHeight)
     System.arraycopy(pixels, 0, bytes, 8, pixels.length)

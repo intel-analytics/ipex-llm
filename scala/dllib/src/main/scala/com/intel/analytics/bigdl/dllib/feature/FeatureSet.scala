@@ -23,7 +23,7 @@ import java.util.concurrent.atomic.AtomicInteger
 import com.intel.analytics.bigdl.DataSet
 import com.intel.analytics.bigdl.dllib.feature.dataset.{AbstractDataSet, DistributedDataSet, MiniBatch, Transformer}
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
-import com.intel.analytics.bigdl.dllib.utils.RandomGenerator
+import com.intel.analytics.bigdl.dllib.utils.{Log4Error, RandomGenerator}
 // import com.intel.analytics.bigdl.dllib.utils.PythonInterpreter
 import com.intel.analytics.bigdl.dllib.feature.common.{ArrayLike, ArrayLikeWrapper}
 // import com.intel.analytics.bigdl.dllib.feature.pmem._
@@ -236,9 +236,10 @@ class CachedDistributedFeatureSet[T: ClassTag]
   extends DistributedFeatureSet[T]{
 
   protected lazy val count: Long = buffer.mapPartitions(iter => {
-    require(iter.hasNext)
+    Log4Error.unKnowExceptionError(iter.hasNext, "unexpect empty iterator")
     val array = iter.next()
-    require(!iter.hasNext)
+//    require(!iter.hasNext)
+    Log4Error.unKnowExceptionError(!iter.hasNext, "there should be only 1 element in the iterator")
     Iterator.single(array.length)
   }).reduce(_ + _)
 
@@ -556,11 +557,11 @@ class CachedDistributedFeatureSet[T: ClassTag]
 class DiskFeatureSet[T: ClassTag]
 (origin: RDD[T], val numSlice: Int)
   extends DistributedFeatureSet[T]{
-  require(numSlice != 1,
+  Log4Error.invalidInputError(numSlice != 1,
     s"Detected numSlice = 1, Please use MemoryType DRAM to " +
       s"cache all data into memory.")
 
-  require(numSlice == 0 || numSlice >= 2,
+  Log4Error.invalidInputError(numSlice == 0 || numSlice >= 2,
     s"excepted numSlice == 0 or >= 2, but got $numSlice")
 
   override def numOfSlice: Int = numSlice

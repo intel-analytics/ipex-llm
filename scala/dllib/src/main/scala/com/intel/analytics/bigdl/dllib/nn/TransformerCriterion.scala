@@ -18,7 +18,7 @@ package com.intel.analytics.bigdl.dllib.nn
 import com.intel.analytics.bigdl.dllib.nn.abstractnn.{AbstractCriterion, AbstractModule, Activity}
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.dllib.utils.Table
+import com.intel.analytics.bigdl.dllib.utils.{Log4Error, Table}
 
 import scala.reflect.ClassTag
 
@@ -66,7 +66,8 @@ class TransformerCriterion[T: ClassTag](
   }
 
   override def updateGradInput(input: Activity, target: Activity): Activity = {
-    require(transformedTarget != null && transformedInput != null, "please run forward first")
+    Log4Error.invalidInputError(transformedTarget != null && transformedInput != null,
+      "please run forward first")
 
     val gradInputCriterion = criterion.backward(transformedInput, transformedTarget)
     gradInput = inputTransformer

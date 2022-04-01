@@ -17,8 +17,7 @@
 package com.intel.analytics.bigdl.ppml.example
 
 import com.intel.analytics.bigdl.ppml.FLContext
-import com.intel.analytics.bigdl.ppml.algorithms.hfl.LogisticRegression
-import com.intel.analytics.bigdl.ppml.algorithms.vfl.FGBoostRegression
+import com.intel.analytics.bigdl.ppml.algorithms.{FGBoostRegression, HFLLogisticRegression}
 import com.intel.analytics.bigdl.ppml.example.DebugLogger
 import scopt.OptionParser
 

@@ -21,13 +21,12 @@ import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.ppml.FLContext
 import com.intel.analytics.bigdl.ppml.fgboost.common.{RegressionTree, Split, TreeUtils}
 import com.intel.analytics.bigdl.ppml.generated.FlBaseProto.{MetaData, TensorMap}
-import com.intel.analytics.bigdl.ppml.utils.DataFrameUtils
+import com.intel.analytics.bigdl.ppml.utils.{DataFrameUtils, FLClientClosable}
 import com.intel.analytics.bigdl.ppml.utils.ProtoUtils.{getTensor, toArrayFloat, toBoostEvals, toFloatTensor}
 import org.apache.logging.log4j.LogManager
 
 import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
-
 import collection.JavaConverters._
 
 abstract class FGBoostModel(continuous: Boolean,
@@ -35,10 +34,8 @@ abstract class FGBoostModel(continuous: Boolean,
                             learningRate: Float = 0.005f,
                             maxDepth: Int = 6,
                             minChildSize: Int = 1,
-                            validationMethods: Array[ValidationMethod[Float]] = null,
-                            flattenHeaders: Array[String] = null) {
+                            validationMethods: Array[ValidationMethod[Float]] = null) extends FLClientClosable {
   val logger = LogManager.getLogger(getClass)
-  var flClient = FLContext.getClient()
   var splitVersion = 0
   var treeLeafVersion = 0
   var evaluateVersion = 0
@@ -147,9 +144,9 @@ abstract class FGBoostModel(continuous: Boolean,
 
   def trainRegressionTree(dataSet: Array[Tensor[Float]], indices: Array[Array[Int]], totalRound: Int): Unit = {
     for (i <- 0 until totalRound) {
-      logger.debug(s"========Boosting round: $i========")
+      logger.info(s"Round: $i/$totalRound")
       val grads = downloadGrad(i)
-      val currTree = RegressionTree(dataSet, indices, grads, i.toString, flattenHeaders = flattenHeaders)
+      val currTree = RegressionTree(dataSet, indices, grads, i.toString)
       currTree.setLearningRate(learningRate).setMinChildSize(minChildSize)
       val continueBoosting = boostRound(i, currTree)
       if (!continueBoosting) return
@@ -158,7 +155,7 @@ abstract class FGBoostModel(continuous: Boolean,
   def trainClassificationTree(dataSet: Array[Tensor[Float]], indices: Array[Array[Int]], totalRound: Int) = {
     val labelEarlyStop = new Array[Boolean](nLabel)
     for (i <- 0 until totalRound) {
-      logger.debug(s"========Boosting round: $i========")
+      logger.info(s"Round: $i/$totalRound")
       val grads = downloadGrad(i)
       val nGrads = TreeUtils.expandGrads(grads, dataSet.length, nLabel)
       for (gID <- 0 until nLabel) {
@@ -190,7 +187,7 @@ abstract class FGBoostModel(continuous: Boolean,
         bestSplit.featureID == -1 || bestSplit.gain < 1e-6f
       } else  bestSplit.featureID == -1
       if (updateCondition) {
-        logger.warn(s"Set ${bestSplit.nodeID} as leaf")
+        logger.debug(s"Set ${bestSplit.nodeID} as leaf")
 //        logger.info(s"Set Leaf gain = ${bestSplit.gain}")
         // Add current node to leaf
 //        logger.info(s"Tree node size: ${tree.nodes.size}, bestSplit at node ${bestSplit.nodeID}")
@@ -220,6 +217,9 @@ abstract class FGBoostModel(continuous: Boolean,
       gradData.putTensors("label", toFloatTensor(label))
     }
     // Upload
+    if (flClient == null) {
+      throw new IllegalArgumentException("FLClient not initialized.")
+    }
     flClient.fgbostStub.uploadLabel(gradData.build)
   }
 
@@ -232,7 +232,7 @@ abstract class FGBoostModel(continuous: Boolean,
     // Note that g may be related to Y
     // H = 1 in regression
     val response = flClient.fgbostStub.downloadLabel("xgboost_grad", treeID)
-    logger.info("Downloaded grads from FLServer")
+    logger.debug("Downloaded grads from FLServer")
     val gradTable = response.getData
     val grad = getTensor("grad", gradTable).toArray
     val hess = getTensor("hess", gradTable).toArray

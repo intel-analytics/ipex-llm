@@ -17,6 +17,7 @@
 package com.intel.analytics.bigdl.dllib.optim
 
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
+import com.intel.analytics.bigdl.dllib.utils.Log4Error
 
 object EvaluateMethods {
   def calcAccuracy[T](output: Tensor[T], target: Tensor[T]): (Int, Int) = {
@@ -31,7 +32,8 @@ object EvaluateMethods {
       })
       count += output.size(1)
     } else if (output.dim == 1) {
-      require(target.size(1) == 1)
+      Log4Error.invalidInputError(target.size(1) == 1,
+        s"calcAccuracy expect target.size(1) is 1, but got ${target.size(1)}")
       output.max(1)._2.map(target, (a, b) => {
         if (a == b) {
           correct += 1
@@ -64,7 +66,8 @@ object EvaluateMethods {
       }
       count += output.size(1)
     } else if (output.dim == 1) {
-      require(target.size(1) == 1)
+      Log4Error.invalidInputError(target.size(1) == 1,
+        s"calcTop5Accuracy expect target.size(1) is 1, but got ${target.size(1)}")
       val indices = output.topk(5, 1, false)._2
       if (indices.valueAt(1) == target.valueAt(1) || indices.valueAt(2) == target.valueAt(1)
         || indices.valueAt(3) == target.valueAt(1) || indices.valueAt(4) == target.valueAt(1)

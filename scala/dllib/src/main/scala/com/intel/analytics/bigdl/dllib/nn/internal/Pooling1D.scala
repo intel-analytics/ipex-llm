@@ -18,7 +18,7 @@ package com.intel.analytics.bigdl.dllib.nn.internal
 
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.dllib.utils.Shape
+import com.intel.analytics.bigdl.dllib.utils.{Log4Error, Shape}
 
 import scala.reflect.ClassTag
 
@@ -35,12 +35,13 @@ abstract class Pooling1D[T: ClassTag](
   extends KerasLayer[Tensor[T], Tensor[T], T](KerasLayer.addBatch(inputShape)) {
 
   // -1 means stride by default to be poolLength
-  require(stride == -1 || stride > 0, s"Invalid stride value for Pooling1D: $stride")
+  Log4Error.invalidInputError(stride == -1 || stride > 0,
+    s"Invalid stride value for Pooling1D: $stride")
   val strideValue: Int = if (stride > 0) stride else poolLength
 
   override def computeOutputShape(inputShape: Shape): Shape = {
     val input = inputShape.toSingle().toArray
-    require(input.length == 3,
+    Log4Error.invalidInputError(input.length == 3,
       s"Pooling1D requires 3D input, but got input dim ${input.length}")
     val outputLength = KerasUtils.computeConvOutputLength(input(1), poolLength,
       borderMode, strideValue)

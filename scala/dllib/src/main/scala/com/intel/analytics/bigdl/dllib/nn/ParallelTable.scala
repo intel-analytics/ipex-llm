@@ -18,7 +18,7 @@ package com.intel.analytics.bigdl.dllib.nn
 import com.intel.analytics.bigdl.dllib.nn.Graph.ModuleNode
 import com.intel.analytics.bigdl.dllib.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.dllib.utils.Table
+import com.intel.analytics.bigdl.dllib.utils.{Log4Error, Table}
 
 import scala.collection.mutable.ArrayBuffer
 import scala.reflect.ClassTag
@@ -72,7 +72,7 @@ class ParallelTable[T: ClassTag]
   override def getEndNodes(startNodes: Array[ModuleNode[T]]): Array[ModuleNode[T]] = {
     val outputs = ArrayBuffer[ModuleNode[T]]()
     var outputTuple: Array[ModuleNode[T]] = null
-    require(startNodes.length == modules.length, s"ParallelTable: " +
+    Log4Error.invalidInputError(startNodes.length == modules.length, s"ParallelTable: " +
       s"startNodes length ${startNodes.length} is more than modules length ${modules.length}")
     for (i <- 0 to modules.size - 1) {
       outputTuple = modules(i).getEndNodes(Array(startNodes(i)))

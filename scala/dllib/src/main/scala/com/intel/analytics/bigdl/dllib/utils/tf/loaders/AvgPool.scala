@@ -22,6 +22,7 @@ import com.intel.analytics.bigdl.dllib.nn.SpatialAveragePooling
 import com.intel.analytics.bigdl.dllib.nn.abstractnn.DataFormat
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.dllib.utils.Log4Error
 import com.intel.analytics.bigdl.dllib.utils.tf.Context
 import org.tensorflow.framework.NodeDef
 
@@ -41,10 +42,10 @@ class AvgPool extends TensorflowOpsLoader {
 
     val (strideH, strideW, ksizeH, ksizeW) = format match {
       case "NHWC" =>
-        require(strideList(3) == 1, s"not support strides on depth")
+        Log4Error.invalidInputError(strideList(3) == 1, s"not support strides on depth")
         (strideList(1), strideList(2), kernelList(1), kernelList(2))
       case "NCHW" =>
-        require(strideList(1) == 1, s"not support strides on depth")
+        Log4Error.invalidInputError(strideList(1) == 1, s"not support strides on depth")
         (strideList(2), strideList(3), kernelList(2), kernelList(3))
       case _ =>
         throw new IllegalArgumentException(s"not supported data format: $format")

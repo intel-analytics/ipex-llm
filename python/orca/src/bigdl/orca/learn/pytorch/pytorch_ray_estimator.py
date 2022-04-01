@@ -304,12 +304,13 @@ class PyTorchRayEstimator(OrcaRayEstimator):
         """
         Using this PyTorch model to make predictions on the data.
 
-        :param data: An instance of SparkXShards or a Spark DataFrame
+        :param data: An instance of SparkXShards, a Ray Dataset or a Spark DataFrame
         :param batch_size: The number of samples per batch for each worker. Default is 32.
         :param profile: Boolean. Whether to return time stats for the training procedure.
                Default is False.
-        :param feature_cols: feature column names if data is a Spark DataFrame.
-        :return: A SparkXShards that contains the predictions with key "prediction" in each shard
+        :param feature_cols: feature column names if data is a Spark DataFrame or Ray Dataset.
+        :return: A SparkXShards or a list that contains the predictions with key "prediction"
+               in each shard
         """
         from bigdl.orca.data import SparkXShards
         param = dict(
@@ -330,8 +331,23 @@ class PyTorchRayEstimator(OrcaRayEstimator):
                 data = process_xshards_of_pandas_dataframe(data, feature_cols)
             pred_shards = self._predict_spark_xshards(data, param)
             result = update_predict_xshards(data, pred_shards)
+        elif isinstance(data, ray.data.Dataset):
+            shards = data.split(n=self.num_workers, locality_hints=self.remote_workers)
+
+            def data_creator(config, batch_size):
+                torch_datashard = shard.to_torch(feature_columns=feature_cols,
+                                                 batch_size=batch_size)
+                return torch_datashard
+
+            remote_worker_stats = []
+            for shard, worker in zip(shards, self.remote_workers):
+                worker_stats = worker.predict.remote(data_creator, batch_size, profile)
+                remote_worker_stats.append(worker_stats)
+            result = ray.data.from_numpy(remote_worker_stats).map(
+                lambda r: {"prediction_result": r["value"]})
         else:
-            raise ValueError("Only xshards or Spark DataFrame is supported for predict")
+            raise ValueError("Only xshards, Spark DataFrame or Ray Dataset"
+                             " is supported for predict")
 
         return result
 

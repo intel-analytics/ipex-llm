@@ -22,7 +22,7 @@ import com.intel.analytics.bigdl.dllib.nn.{SpatialDilatedConvolution, Squeeze, T
 import com.intel.analytics.bigdl.dllib.optim.Regularizer
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.dllib.utils.Shape
+import com.intel.analytics.bigdl.dllib.utils.{Log4Error, Shape}
 
 import scala.reflect.ClassTag
 
@@ -67,7 +67,7 @@ class AtrousConvolution1D[T: ClassTag](
 
   override def computeOutputShape(inputShape: Shape): Shape = {
     val input = inputShape.toSingle().toArray
-    require(input.length == 3,
+    Log4Error.invalidInputError(input.length == 3,
       s"AtrousConvolution1D requires 3D input, but got input dim ${input.length}")
     val length = KerasUtils.computeConvOutputLength(input(1), filterLength,
       "valid", subsampleLength, atrousRate)

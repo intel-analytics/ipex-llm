@@ -19,7 +19,7 @@ package com.intel.analytics.bigdl.dllib.nn
 import com.intel.analytics.bigdl.dllib.nn.abstractnn.{AbstractModule, Activity, TensorModule}
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.dllib.utils.T
+import com.intel.analytics.bigdl.dllib.utils.{Log4Error, T}
 import com.intel.analytics.bigdl.dllib.utils.serializer._
 import com.intel.analytics.bigdl.dllib.utils.serializer.converters.DataConverter
 import com.intel.analytics.bigdl.serialization.Bigdl.{AttrValue, BigDLModule}
@@ -52,12 +52,14 @@ class SpatialSubtractiveNormalization[T: ClassTag](
   if (kernel == null) kernel = Tensor.ones[T](9, 9)
 
   private val kdim = kernel.nDimension()
-  require(kdim == 1 || kdim == 2, "averaging kernel must be 2D or 1D" +
+  Log4Error.invalidInputError(kdim == 1 || kdim == 2, "averaging kernel must be 2D or 1D" +
     s"averaging kernel dimension $kdim")
-  require(kernel.size(1) % 2 != 0, "averaging kernel must have ODD dimensions" +
+  Log4Error.invalidInputError(kernel.size(1) % 2 != 0,
+    "averaging kernel must have ODD dimensions" +
     s"averaging kernel dimension ${kernel.size(1)}")
   if (kdim == 2) {
-    require(kernel.size(2) % 2 != 0, "averaging kernel must have ODD dimensions" +
+    Log4Error.invalidInputError(kernel.size(2) % 2 != 0,
+      "averaging kernel must have ODD dimensions" +
       s"averaging kernel dimension ${kernel.size(2)}")
   }
 

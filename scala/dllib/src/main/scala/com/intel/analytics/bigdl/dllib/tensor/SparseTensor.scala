@@ -18,7 +18,7 @@ package com.intel.analytics.bigdl.dllib.tensor
 
 import breeze.linalg.{DenseMatrix, DenseVector}
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.dllib.utils.Table
+import com.intel.analytics.bigdl.dllib.utils.{Log4Error, Table}
 import org.apache.spark.mllib.linalg.{Matrix, Vector}
 
 import scala.reflect.ClassTag
@@ -65,10 +65,12 @@ private[tensor] class SparseTensor[@specialized(Float, Double) T: ClassTag](
   // todo: add transpose, indices order, count from 0
   // var indices_order = Array.range(0, _shape.length)
 
-  require(_shape.length == _indices.length, s"indices' size doesn't match tensor shape, " +
+  Log4Error.unKnowExceptionError(_shape.length == _indices.length,
+    s"indices' size doesn't match tensor shape, " +
     s"indices' length is ${_indices.length} and tensor shape is ${_shape.mkString(" x ")}")
 
-  require(_values.length == _indices(0).length, s"${_values.length()} non-zero elements should " +
+  Log4Error.unKnowExceptionError(_values.length == _indices(0).length,
+    s"${_values.length()} non-zero elements should " +
     s"have indices for all elements. But indices's length is only ${_indices(0).length}")
 
   nDimension = _shape.length
@@ -166,7 +168,8 @@ private[tensor] class SparseTensor[@specialized(Float, Double) T: ClassTag](
   }
 
   override def apply(indexes: Array[Int]): T = {
-    require(indexes.length == dim())
+    Log4Error.unKnowExceptionError(indexes.length == dim(),
+      s"indexes.length ${indexes.length} should match dim() ${dim()}")
     var index = 0
     var i = 0
     while (i < dim()) {
@@ -304,7 +307,8 @@ private[tensor] class SparseTensor[@specialized(Float, Double) T: ClassTag](
   }
 
   override def narrow(dim: Int, index: Int, size: Int): Tensor[T] = {
-    require(dim == 1, "SparseTensor.narrow only support narrow at first dimension")
+    Log4Error.unKnowExceptionError(dim == 1,
+      "SparseTensor.narrow only support narrow at first dimension")
     dim match {
       case 1 =>
         val _index = index - 1
@@ -552,7 +556,8 @@ private[tensor] class SparseTensor[@specialized(Float, Double) T: ClassTag](
   }
 
   override def sum(x: Tensor[T], dim: Int): Tensor[T] = {
-    require(x.dim == 1 && x.size(1) == size(1))
+    Log4Error.unKnowExceptionError(x.dim == 1 && x.size(1) == size(1),
+      s"x.dim ${x.dim} should be 1, x.size(1) ${x.size(1)} should match size(1) ${size(1)}")
     x.zero()
     var i = _storageOffset
     while (i < nElement() + _storageOffset) {
@@ -640,7 +645,8 @@ private[tensor] class SparseTensor[@specialized(Float, Double) T: ClassTag](
   }
 
   override def dot(y: Tensor[T]): T = {
-    require(y.getTensorType == DenseType)
+    Log4Error.unKnowExceptionError(y.getTensorType == DenseType,
+      s"y should be DenseType, but is ${y.getTensorType}")
     SparseTensorMath.vdot(y.asInstanceOf[DenseTensor[T]], this)
   }
 
@@ -1113,6 +1119,10 @@ private[tensor] class SparseTensor[@specialized(Float, Double) T: ClassTag](
     throw new UnsupportedOperationException(s"SparseTensor: Unimplemented method")
   }
 
+  override def erf(t: Tensor[T]): Tensor[T] = {
+    throw new UnsupportedOperationException(s"SparseTensor: Unimplemented method")
+  }
+
   override def erfc(): Tensor[T] = {
     throw new UnsupportedOperationException(s"SparseTensor: Unimplemented method")
   }
@@ -1140,13 +1150,17 @@ object SparseTensor{
       dim: Int,
       tensors: Seq[Tensor[T]],
       res: Tensor[T])(implicit ev: TensorNumeric[T]): Tensor[T] = {
-    require(dim == 1 || dim == 2)
+    Log4Error.unKnowExceptionError(dim == 1 || dim == 2,
+    s"dim should be 1 or 2, but is $dim")
     var size = tensors.head.size()
-    require(size.length <= 2, "Dimension larger than 2 are not supported yet!")
+    Log4Error.unKnowExceptionError(size.length <= 2,
+      "Dimension larger than 2 are not supported yet!")
     tensors.foreach{tensor =>
       // todo: check size
-      require(tensor.isInstanceOf[SparseTensor[T]])
-      require(tensor.dim() == size.length)
+      Log4Error.unKnowExceptionError(tensor.isInstanceOf[SparseTensor[T]],
+        s"concat expect tensor is sparseTensor")
+      Log4Error.unKnowExceptionError(tensor.dim() == size.length,
+        s"tensor.dim() ${tensor.dim()} doesn't match size.length ${size.length}")
     }
     val dim1Concat = if (size.length == 1 && dim == 1) true else false
     if (dim1Concat) size = Array(1) ++ size
@@ -1181,7 +1195,7 @@ object SparseTensor{
       tensors: Seq[SparseTensor[T]],
       res: SparseTensor[T])(implicit ev: TensorNumeric[T]): Tensor[T] = {
     val numOfIndices = res.dim()  // usually is 2
-    require(tensors.head.dim() == 1, "Not suitable for this interface.")
+    Log4Error.unKnowExceptionError(tensors.head.dim() == 1, "Not suitable for this interface.")
     var i, offset, dimOffset = 0
     while (i < tensors.length) {
       val currentTensor = tensors(i)
@@ -1231,7 +1245,8 @@ object SparseTensor{
       start: Int,
       end: Int)(implicit ev: TensorNumeric[T]): Int = {
     if (start > end) return -1
-    require(end <= array.length - 1, s"indexOf end should't exceed array size ${array.length - 1}" +
+    Log4Error.unKnowExceptionError(end <= array.length - 1,
+      s"indexOf end should't exceed array size ${array.length - 1}" +
       s", but got $end")
     var i = start
     while (i < end && array(i) == value) {
@@ -1259,7 +1274,8 @@ object SparseTensor{
       start: Int,
       end: Int)(implicit ev: TensorNumeric[T]): Int = {
     if (start > end) return -1
-    require(end <= array.length - 1, s"indexOf end should't exceed array size ${array.length - 1}" +
+    Log4Error.unKnowExceptionError(end <= array.length - 1,
+      s"indexOf end should't exceed array size ${array.length - 1}" +
       s", but got $end")
     var i = start
     while (i <= end && array(i) != value) {

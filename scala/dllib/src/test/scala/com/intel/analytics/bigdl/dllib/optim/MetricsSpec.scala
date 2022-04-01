@@ -52,7 +52,7 @@ class MetricsSpec extends FlatSpec with Matchers with BeforeAndAfter {
     val conf = new SparkConf().setMaster("local[1]").setAppName("MetricsSpec")
     sc = new SparkContext(conf)
     metric.set("test", 10.0, sc, 5)
-    intercept[IllegalArgumentException] {
+    intercept[com.intel.analytics.bigdl.dllib.utils.InvalidOperationException] {
       metric.set("test", 10, 5)
     }
   }
@@ -83,7 +83,7 @@ class MetricsSpec extends FlatSpec with Matchers with BeforeAndAfter {
     val conf = new SparkConf().setMaster("local[1]").setAppName("MetricsSpec")
     sc = new SparkContext(conf)
     metric.set("test", 10, 5)
-    intercept[IllegalArgumentException] {
+    intercept[com.intel.analytics.bigdl.dllib.utils.InvalidOperationException] {
       metric.set("test", 10.0, sc, 5)
     }
   }
@@ -99,6 +99,7 @@ class MetricsSpec extends FlatSpec with Matchers with BeforeAndAfter {
 
   it should "work on existed a local metric in multi-thread env" in {
     val metric = new Metrics
+    Engine.init(1, 1, true)
     metric.set("test", 1.0, 5)
     Engine.default.invokeAndWait(
       (1 to 5).map(i => () => {
@@ -112,7 +113,7 @@ class MetricsSpec extends FlatSpec with Matchers with BeforeAndAfter {
 
   it should "throw exception when the local metric doesn't exist" in {
     val metric = new Metrics
-    intercept[IllegalArgumentException] {
+    intercept[com.intel.analytics.bigdl.dllib.utils.InvalidOperationException] {
       metric.add("test", 10.0)
     }
   }

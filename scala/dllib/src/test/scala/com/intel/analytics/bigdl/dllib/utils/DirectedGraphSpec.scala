@@ -171,7 +171,7 @@ class DirectedGraphSpec extends FlatSpec with Matchers {
 
     val graph = nodeA.graph()
 
-    intercept[IllegalArgumentException] {
+    intercept[com.intel.analytics.bigdl.dllib.utils.UnKnownException] {
       val sorted = graph.topologySort.map(_.element)
     }
   }
@@ -186,7 +186,7 @@ class DirectedGraphSpec extends FlatSpec with Matchers {
 
     val graph = nodeD.graph(true)
 
-    intercept[IllegalArgumentException] {
+    intercept[com.intel.analytics.bigdl.dllib.utils.UnKnownException] {
       val sorted = graph.topologySort.map(_.element)
     }
   }

@@ -15,15 +15,12 @@
  */
 package com.intel.analytics.bigdl.dllib.nn.tf
 
-import com.intel.analytics.bigdl.dllib.nn.{Sigmoid, SpatialAveragePooling, SpatialBatchNormalization,
-SpatialConvolution, SpatialCrossMapLRN, SpatialMaxPooling, SpatialSeparableConvolution, Tanh, Utils,
-VolumetricConvolution, ELU => ELULayer, ReLU6 => ReLU6Layer, SoftPlus => SoftPlusLayer,
-SoftSign => SoftSignLayer, ReLU => ReLULayer}
+import com.intel.analytics.bigdl.dllib.nn.{Sigmoid, SpatialAveragePooling, SpatialBatchNormalization, SpatialConvolution, SpatialCrossMapLRN, SpatialMaxPooling, SpatialSeparableConvolution, Tanh, Utils, VolumetricConvolution, ELU => ELULayer, ReLU => ReLULayer, ReLU6 => ReLU6Layer, SoftPlus => SoftPlusLayer, SoftSign => SoftSignLayer}
 import com.intel.analytics.bigdl.dllib.nn.abstractnn.{AbstractModule, Activity, DataFormat}
 import com.intel.analytics.bigdl.dllib.nn.ops.{ModuleToOperation, Operation}
 import com.intel.analytics.bigdl.dllib.tensor.{DoubleType, FloatType, Tensor}
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.dllib.utils.Table
+import com.intel.analytics.bigdl.dllib.utils.{Log4Error, Table}
 
 import scala.reflect.ClassTag
 
@@ -94,13 +91,15 @@ private[bigdl] class Conv2DTranspose[T: ClassTag](
   private var dummyInput: Tensor[T] = _
 
   override def updateOutput(input: Activity): Tensor[T] = {
-    require(input.isTable, "Invalid input activity type")
+    Log4Error.invalidInputError(input.isTable, "Invalid input activity type")
     val inputSizes = input.toTable.apply[Tensor[Int]](1).squeeze()
     val kernel = input.toTable.apply[Tensor[T]](2)
     val data = input.toTable.apply[Tensor[T]](3)
 
-    require(data.nDimension() == 4, s"Need a 4D input but is ${data.nDimension()}")
-    require(inputSizes.nDimension() == 1, s"Need a 1D size but is ${inputSizes.nDimension()}")
+    Log4Error.invalidInputError(data.nDimension() == 4,
+      s"Need a 4D input but is ${data.nDimension()}")
+    Log4Error.invalidInputError(inputSizes.nDimension() == 1,
+      s"Need a 1D size but is ${inputSizes.nDimension()}")
 
     val (nOutputPlane, nInputPlane) = if (format == DataFormat.NCHW) {
       (data.size(2), inputSizes.valueAt(2))
@@ -136,16 +135,22 @@ private[bigdl] class Conv2DTranspose[T: ClassTag](
         (data.size(4), inputSizes.valueAt(4))
       }
 
-      require(module.nInputPlane == nInputPlane, "nInputPlane is not valid")
-      require(module.nOutputPlane == nOutputPlane, "nOutputPlane is not valid")
-      require(module.kernelH == kernel.size(kWDim), "kernelH is not valid")
-      require(module.kernelW == kernel.size(kWDim), "kernelW is not valid")
-      require(kernel.size(3) == nInputPlane, "kernel nInputPlane is not valid")
-      require(kernel.size(4) == nOutputPlane, "kernel nOutputPlane is not valid")
-      require(dummyInput.size(1) == inputSizes.valueAt(1), "size 1 is not correct")
-      require(dummyInput.size(2) == inputSizes.valueAt(2), "size 1 is not correct")
-      require(dummyInput.size(3) == inputSizes.valueAt(3), "size 1 is not correct")
-      require(dummyInput.size(4) == inputSizes.valueAt(4), "size 1 is not correct")
+      Log4Error.invalidInputError(module.nInputPlane == nInputPlane, "nInputPlane is not valid")
+      Log4Error.invalidInputError(module.nOutputPlane == nOutputPlane, "nOutputPlane is not valid")
+      Log4Error.invalidInputError(module.kernelH == kernel.size(kWDim), "kernelH is not valid")
+      Log4Error.invalidInputError(module.kernelW == kernel.size(kWDim), "kernelW is not valid")
+      Log4Error.invalidInputError(kernel.size(3) == nInputPlane,
+        "kernel nInputPlane is not valid")
+      Log4Error.invalidInputError(kernel.size(4) == nOutputPlane,
+        "kernel nOutputPlane is not valid")
+      Log4Error.invalidInputError(dummyInput.size(1) == inputSizes.valueAt(1),
+        "size 1 is not correct")
+      Log4Error.invalidInputError(dummyInput.size(2) == inputSizes.valueAt(2),
+        "size 1 is not correct")
+      Log4Error.invalidInputError(dummyInput.size(3) == inputSizes.valueAt(3),
+        "size 1 is not correct")
+      Log4Error.invalidInputError(dummyInput.size(4) == inputSizes.valueAt(4),
+        "size 1 is not correct")
     }
 
     module.forward(dummyInput)
@@ -181,13 +186,15 @@ private[bigdl] class Conv2DBackFilter[T: ClassTag](
   private var dummyInput: Tensor[T] = _
 
   override def updateOutput(input: Activity): Tensor[T] = {
-    require(input.isTable, "Invalid input activity type")
+    Log4Error.invalidInputError(input.isTable, "Invalid input activity type")
     val kernelSize = input.toTable.apply[Tensor[Int]](2).squeeze()
     val inputActivity = input.toTable.apply[Tensor[T]](1)
     val grads = input.toTable.apply[Tensor[T]](3)
 
-    require(grads.nDimension() == 4, s"Need a 4D input but is ${grads.nDimension()}")
-    require(kernelSize.nDimension() == 1, s"Need a 1D size but is ${kernelSize.nDimension()}")
+    Log4Error.invalidInputError(grads.nDimension() == 4,
+      s"Need a 4D input but is ${grads.nDimension()}")
+    Log4Error.invalidInputError(kernelSize.nDimension() == 1,
+      s"Need a 1D size but is ${kernelSize.nDimension()}")
 
     val (nOutputPlane, nInputPlane) = if (format == DataFormat.NCHW) {
       (grads.size(2), inputActivity.size(2))
@@ -218,12 +225,18 @@ private[bigdl] class Conv2DBackFilter[T: ClassTag](
         (grads.size(4), inputActivity.size(4))
       }
 
-      require(module.nInputPlane == nInputPlane, "nInputPlane is not valid")
-      require(module.nOutputPlane == nOutputPlane, "nOutputPlane is not valid")
-      require(module.kernelH == kernelSize.valueAt(1), s"kernelH is not valid")
-      require(module.kernelW == kernelSize.valueAt(2), "kernelW is not valid")
-      require(kernelSize.valueAt(3) == nInputPlane, "kernel nInputPlane is not valid")
-      require(kernelSize.valueAt(4) == nOutputPlane, "kernel nOutputPlane is not valid")
+      Log4Error.invalidInputError(module.nInputPlane == nInputPlane,
+        "nInputPlane is not valid")
+      Log4Error.invalidInputError(module.nOutputPlane == nOutputPlane,
+        "nOutputPlane is not valid")
+      Log4Error.invalidInputError(module.kernelH == kernelSize.valueAt(1),
+        s"kernelH is not valid")
+      Log4Error.invalidInputError(module.kernelW == kernelSize.valueAt(2),
+        "kernelW is not valid")
+      Log4Error.invalidInputError(kernelSize.valueAt(3) == nInputPlane,
+        "kernel nInputPlane is not valid")
+      Log4Error.invalidInputError(kernelSize.valueAt(4) == nOutputPlane,
+        "kernel nOutputPlane is not valid")
     }
 
     module.forward(inputActivity)

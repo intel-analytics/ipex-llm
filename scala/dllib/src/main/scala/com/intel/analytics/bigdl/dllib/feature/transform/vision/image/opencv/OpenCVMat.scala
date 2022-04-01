@@ -21,6 +21,7 @@ import java.io.{File, IOException, ObjectInputStream, ObjectOutputStream}
 import com.intel.analytics.bigdl.opencv.OpenCV
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.feature.transform.vision.image.util.BoundingBox
+import com.intel.analytics.bigdl.dllib.utils.Log4Error
 import org.apache.commons.io.FileUtils
 import org.opencv.core._
 import org.opencv.imgcodecs.Imgcodecs
@@ -167,8 +168,9 @@ object OpenCVMat {
    * @return image in mat
    */
   def fromFloats(floats: Array[Float], height: Int, width: Int, channel: Int = 3): OpenCVMat = {
-    require(channel >= 1 && channel <= 4, s"channel $channel is out of range [1,4]")
-    require(floats.length >= height * width * channel,
+    Log4Error.invalidInputError(channel >= 1 && channel <= 4,
+      s"channel $channel is out of range [1,4]")
+    Log4Error.invalidInputError(floats.length >= height * width * channel,
       s"pixels array length ${floats.length} is less than " +
         s"height*width*channel ${height * width * channel}")
     val mat = new OpenCVMat()
@@ -229,8 +231,9 @@ object OpenCVMat {
    * @param width image width
    */
   def fromPixelsBytes(pixels: Array[Byte], height: Int, width: Int, channel: Int = 3): OpenCVMat = {
-    require(channel >= 1 && channel <= 4, s"channel $channel is out of range [1,4]")
-    require(pixels.length >= height * width * channel,
+    Log4Error.invalidInputError(channel >= 1 && channel <= 4,
+      s"channel $channel is out of range [1,4]")
+    Log4Error.invalidInputError(pixels.length >= height * width * channel,
       s"pixels array length ${pixels.length} is less than " +
         s"height*width*channel ${height * width * channel}")
     val mat = new OpenCVMat()
@@ -250,7 +253,8 @@ object OpenCVMat {
    * @return OpenCVMat
    */
   def fromTensor(tensor: Tensor[Float], format: String = "HWC"): OpenCVMat = {
-    require(format == "HWC" || format == "CHW", "the format should be HWC or CHW")
+    Log4Error.invalidInputError(format == "HWC" || format == "CHW",
+      "the format should be HWC or CHW")
     var image = if (format == "CHW") {
       tensor.transpose(1, 2).transpose(2, 3)
     } else {

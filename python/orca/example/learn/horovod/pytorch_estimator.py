@@ -147,9 +147,7 @@ if __name__ == "__main__":
                          'k8s_driver_host/port are required not to be empty')
         init_orca_context(cluster_mode="k8s", master=args.k8s_master,
                           container_image=args.container_image,
-                          num_nodes=args.num_nodes, cores=args.cores,
-                          conf={"spark.driver.host": args.k8s_driver_host,
-                                "spark.driver.port": args.k8s_driver_port})
+                          num_nodes=args.num_nodes, cores=args.cores)
     elif args.cluster_mode == "spark-submit":
         init_orca_context(cluster_mode="spark-submit")
     train_example(workers_per_node=args.workers_per_node)

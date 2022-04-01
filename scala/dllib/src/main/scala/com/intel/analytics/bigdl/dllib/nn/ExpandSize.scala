@@ -19,6 +19,7 @@ package com.intel.analytics.bigdl.dllib.nn
 import com.intel.analytics.bigdl.dllib.nn.abstractnn.AbstractModule
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.dllib.utils.Log4Error
 
 import scala.collection.mutable.ArrayBuffer
 import scala.reflect.ClassTag
@@ -32,7 +33,7 @@ class ExpandSize[T: ClassTag](targetSizes: Array[Int])
    (implicit ev: TensorNumeric[T]) extends AbstractModule[Tensor[T], Tensor[T], T] {
 
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
-    require(targetSizes.length == input.dim(),
+    Log4Error.invalidInputError(targetSizes.length == input.dim(),
       s"the number of dimensions provided must equal ${input.dim()}")
     val tensorDim = input.dim()
     val tensorStride = input.stride()

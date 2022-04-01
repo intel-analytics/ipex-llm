@@ -8,16 +8,17 @@ spec:
     volumeMounts:
       - name: enclave-key
         mountPath: /graphene/Pal/src/host/Linux-SGX/signer/enclave-key.pem
-      - name: dev-gsgx
-        mountPath: /dev/gsgx
+        subPath: enclave-key.pem
       - name: device-plugin
         mountPath: /var/lib/kubelet/device-plugins
       - name: aesm-socket
         mountPath: /var/run/aesmd/aesm.socket
-      - name: data
+      - name: nfs-storage
         mountPath: /ppml/trusted-big-data-ml/work/data
-      - name: kubeconf
+        subPath: data
+      - name: nfs-storage
         mountPath: /root/.kube/config
+        subPath: kubeconfig
     #resources:
       #requests:
         #cpu: 16
@@ -33,20 +34,14 @@ spec:
         #sgx.intel.com/provision: 10
   volumes:
     - name: enclave-key
-      hostPath:
-        path:  /home/sdp/glorysdj/enclave-key.pem
-    - name: dev-gsgx
-      hostPath:
-        path: /dev/gsgx
+      secret:
+        secretName: enclave-key
     - name: device-plugin
       hostPath:
         path: /var/lib/kubelet/device-plugins
     - name: aesm-socket
       hostPath:
         path: /var/run/aesmd/aesm.socket
-    - name: data
-      hostPath:
-        path: /home/sdp/glorysdj/data
-    - name: kubeconf
-      hostPath:
-        path: /home/sdp/glorysdj/kubernetes/kuberconfig
+    - name: nfs-storage
+      persistentVolumeClaim:
+        claimName: nfsvolumeclaim

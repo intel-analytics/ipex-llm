@@ -94,7 +94,7 @@ class FP16ParameterSpec extends FlatSpec with Matchers with BeforeAndAfter {
     val parameter = new FP16CompressedTensor[Double](tensor)
     val buffer = parameter.bytes(1, 2)
     val parameter2 = new FP16CompressedTensor[Double](buffer)
-    intercept[IllegalArgumentException] {
+    intercept[com.intel.analytics.bigdl.dllib.utils.UnKnownException] {
       parameter2.deCompress(0, tensor, 1, 3)
     }
   }
@@ -203,7 +203,7 @@ class FP16ParameterSpec extends FlatSpec with Matchers with BeforeAndAfter {
     val parameter = new FP16CompressedTensor[Float](tensor)
     val buffer = parameter.bytes(1, 2)
     val parameter2 = new FP16CompressedTensor[Float](buffer)
-    intercept[IllegalArgumentException] {
+    intercept[com.intel.analytics.bigdl.dllib.utils.UnKnownException] {
       parameter2.deCompress(0, tensor, 1, 3)
     }
   }

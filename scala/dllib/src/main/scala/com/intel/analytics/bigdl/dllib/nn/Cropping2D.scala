@@ -18,7 +18,7 @@ package com.intel.analytics.bigdl.dllib.nn
 import com.intel.analytics.bigdl.dllib.nn.abstractnn.{DataFormat, TensorModule}
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.dllib.utils.Shape
+import com.intel.analytics.bigdl.dllib.utils.{Log4Error, Shape}
 
 import scala.reflect.ClassTag
 
@@ -45,12 +45,14 @@ class Cropping2D[T: ClassTag](
     val dataFormat: DataFormat = DataFormat.NCHW
   )(implicit ev: TensorNumeric[T]) extends TensorModule[T] {
 
-  require(heightCrop.length == 2, "heightCrop should be an array of length 2")
-  require(widthCrop.length == 2, "widthCrop should be an array of length 2")
+  Log4Error.invalidInputError(heightCrop.length == 2,
+    "heightCrop should be an array of length 2")
+  Log4Error.invalidInputError(widthCrop.length == 2,
+    "widthCrop should be an array of length 2")
 
   override def computeOutputShape(inputShape: Shape): Shape = {
     val input = inputShape.toSingle().toArray
-    require(input.length == 4,
+    Log4Error.invalidInputError(input.length == 4,
       s"Cropping2D requires 4D input, but got input dim ${input.length}")
     val outputShape = dataFormat match {
       case DataFormat.NCHW =>
@@ -64,14 +66,16 @@ class Cropping2D[T: ClassTag](
   }
 
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
-    require(input.dim() == 4, "input dimensions should be 4." +
+    Log4Error.invalidInputError(input.dim() == 4, "input dimensions should be 4." +
       " (batchSize, channels, first_axis_to_crop, second_axis_to_crop)")
 
     val (hdim, wdim, hStart, lenHCropped, wStart, lenWCropped) = calculateStartAndLength(input)
 
-    require(lenHCropped > 0, s"heightCrop: ${heightCrop.mkString(", ")} is too large. Height" +
+    Log4Error.invalidInputError(lenHCropped > 0,
+      s"heightCrop: ${heightCrop.mkString(", ")} is too large. Height" +
       s" dimension length: ${input.size(hdim)}")
-    require(lenWCropped > 0, s"widthCrop: ${widthCrop.mkString(", ")} is too large. Width" +
+    Log4Error.invalidInputError(lenWCropped > 0,
+      s"widthCrop: ${widthCrop.mkString(", ")} is too large. Width" +
       s" dimension length: ${input.size(wdim)}")
 
     val cropped = input

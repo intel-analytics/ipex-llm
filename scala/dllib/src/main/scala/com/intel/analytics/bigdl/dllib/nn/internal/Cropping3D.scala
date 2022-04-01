@@ -19,7 +19,7 @@ package com.intel.analytics.bigdl.dllib.nn.internal
 import com.intel.analytics.bigdl.dllib.nn.abstractnn.AbstractModule
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.dllib.utils.Shape
+import com.intel.analytics.bigdl.dllib.utils.{Log4Error, Shape}
 
 import scala.reflect.ClassTag
 
@@ -48,16 +48,16 @@ class Cropping3D[T: ClassTag](
    val inputShape: Shape = null)(implicit ev: TensorNumeric[T])
   extends KerasLayer[Tensor[T], Tensor[T], T](KerasLayer.addBatch(inputShape)) {
 
-  require(dim1Crop.length == 2,
+  Log4Error.invalidInputError(dim1Crop.length == 2,
     s"Cropping3D: kernel dim1 cropping values should be of length 2, " +
       s"but got length ${dim1Crop.length}")
-  require(dim2Crop.length == 2,
+  Log4Error.invalidInputError(dim2Crop.length == 2,
     s"Cropping3D: kernel dim2 cropping values should be of length 2, " +
       s"but got length ${dim2Crop.length}")
-  require(dim3Crop.length == 2,
+  Log4Error.invalidInputError(dim3Crop.length == 2,
     s"Cropping3D: kernel dim3 cropping values should be of length 2, " +
       s"but got length ${dim3Crop.length}")
-  require(dimOrdering.toLowerCase() == "channel_first" ||
+  Log4Error.invalidInputError(dimOrdering.toLowerCase() == "channel_first" ||
     dimOrdering.toLowerCase() == "channel_last",
     s"Cropping3D only supports format channel_first or channel_last, but got format $dimOrdering")
 

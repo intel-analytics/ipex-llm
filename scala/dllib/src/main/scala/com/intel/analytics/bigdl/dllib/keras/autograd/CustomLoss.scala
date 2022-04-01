@@ -19,7 +19,7 @@ package com.intel.analytics.bigdl.dllib.keras.autograd
 import com.intel.analytics.bigdl.dllib.nn.abstractnn._
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.dllib.utils.{Shape, T}
+import com.intel.analytics.bigdl.dllib.utils.{Log4Error, Shape, T}
 import com.intel.analytics.bigdl.dllib.keras.autograd.{AutoGrad => AG}
 import com.intel.analytics.bigdl.dllib.keras.Model
 import com.intel.analytics.bigdl.dllib.keras.objectives.TensorLossFunction
@@ -102,7 +102,7 @@ abstract class CustomLoss[T: ClassTag](sizeAverage: Boolean)(
     val nonBatchShape = tensorToNonBatchShape(yPred)
     val loss = getLoss(Array(nonBatchShape, nonBatchShape))
     val result = loss.forward(T(yTrueT, yPredT)).toTensor[T]
-    require(result.isScalar,
+    Log4Error.invalidOperationError(result.isScalar,
       s"The loss should be scalar, but got result with shape: [${result.size().mkString(", ")}]")
     result.value()
   }

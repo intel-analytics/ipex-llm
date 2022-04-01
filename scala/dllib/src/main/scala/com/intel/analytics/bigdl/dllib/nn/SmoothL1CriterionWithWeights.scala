@@ -19,7 +19,7 @@ package com.intel.analytics.bigdl.dllib.nn
 import com.intel.analytics.bigdl.dllib.nn.abstractnn.AbstractCriterion
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.dllib.utils.Table
+import com.intel.analytics.bigdl.dllib.utils.{Log4Error, Table}
 
 import scala.reflect.ClassTag
 
@@ -47,13 +47,13 @@ class SmoothL1CriterionWithWeights[@specialized(Float, Double) T: ClassTag]
 
   override def updateOutput(input: Tensor[T], target: Table): T = {
     // the target are composed of gt, inside_weight, outside_weight
-    assert(target.length() >= 1)
+    Log4Error.invalidOperationError(target.length() >= 1, "target length should be greater than 1")
     val bboxTarget = target[Tensor[T]](1)
     var insideW: Tensor[T] = null
     var outsideW: Tensor[T] = null
     if (target.length() == 1) {
       hasWeights = false
-      require(input.nElement() == bboxTarget.nElement(), s" " +
+      Log4Error.invalidInputError(input.nElement() == bboxTarget.nElement(), s" " +
         s"the length of bbox target, " +
         s"input must be equal, input length ${input.nElement()}," +
         s" bbox target length ${bboxTarget.nElement()}")
@@ -61,7 +61,7 @@ class SmoothL1CriterionWithWeights[@specialized(Float, Double) T: ClassTag]
       hasWeights = true
       insideW = target[Tensor[T]](2)
       outsideW = target[Tensor[T]](3)
-      require(insideW.nElement() == outsideW.nElement() &&
+      Log4Error.invalidInputError(insideW.nElement() == outsideW.nElement() &&
         insideW.nElement() == bboxTarget.nElement(),
         s"the length of bbox target, insideW, outsideW must be equal, " +
           s"bbox target ${bboxTarget.nElement()}," +
@@ -113,14 +113,14 @@ class SmoothL1CriterionWithWeights[@specialized(Float, Double) T: ClassTag]
   }
 
   override def updateGradInput(input: Tensor[T], target: Table): Tensor[T] = {
-    assert(target.length() >= 1)
+    Log4Error.invalidOperationError(target.length() >= 1, "target length should be greater than 1")
 
     val bboxTarget = target[Tensor[T]](1)
     var insideW: Tensor[T] = null
     var outsideW: Tensor[T] = null
     if (target.length() == 1) {
       hasWeights = false
-      require(input.nElement() == bboxTarget.nElement(),
+      Log4Error.invalidInputError(input.nElement() == bboxTarget.nElement(),
         "the length of bbox target, input must be equal, " +
           s"input length ${input.nElement()}, " +
           s"bbox target length ${bboxTarget.nElement()}")
@@ -128,7 +128,7 @@ class SmoothL1CriterionWithWeights[@specialized(Float, Double) T: ClassTag]
       hasWeights = true
       insideW = target[Tensor[T]](2)
       outsideW = target[Tensor[T]](3)
-      require(insideW.nElement() == outsideW.nElement() &&
+      Log4Error.invalidInputError(insideW.nElement() == outsideW.nElement() &&
         insideW.nElement() == bboxTarget.nElement(),
         "the length of bbox target, insideW, outsideW must be equal, " +
           s"bbox target ${bboxTarget.nElement()}," +

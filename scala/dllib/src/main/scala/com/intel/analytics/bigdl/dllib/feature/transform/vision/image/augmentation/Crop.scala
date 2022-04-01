@@ -20,6 +20,7 @@ import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.feature.transform.vision.image.{FeatureTransformer, ImageFeature}
 import com.intel.analytics.bigdl.dllib.feature.transform.vision.image.opencv.OpenCVMat
 import com.intel.analytics.bigdl.dllib.feature.transform.vision.image.util.{BboxUtil, BoundingBox}
+import com.intel.analytics.bigdl.dllib.utils.Log4Error
 import com.intel.analytics.bigdl.dllib.utils.RandomGenerator._
 import org.opencv.core.Rect
 
@@ -162,7 +163,8 @@ object FixedCrop {
 class DetectionCrop(roiKey: String, normalized: Boolean = true) extends Crop(normalized, true) {
 
   override def generateRoi(feature: ImageFeature): BoundingBox = {
-    require(feature(roiKey).isInstanceOf[Tensor[Float]], "currently only support tensor detection")
+    Log4Error.invalidOperationError(feature(roiKey).isInstanceOf[Tensor[Float]],
+      "currently only support tensor detection")
     var roi = feature(roiKey).asInstanceOf[Tensor[Float]]
     if (roi.dim() == 1) {
       roi = BboxUtil.decodeRois(roi)

@@ -24,7 +24,7 @@ import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.dllib.tensor._
 import com.intel.analytics.bigdl.dllib.utils.serializer.converters.DataConverter
 import com.intel.analytics.bigdl.dllib.utils.serializer.{DeserializeContext, ModuleData, SerializeContext}
-import com.intel.analytics.bigdl.dllib.utils.{T, Table}
+import com.intel.analytics.bigdl.dllib.utils.{Log4Error, T, Table}
 
 import scala.reflect.runtime.universe
 import scala.reflect.ClassTag
@@ -44,8 +44,10 @@ private[bigdl] class SpatialConvolution[T: ClassTag](
   val format: DataFormat = DataFormat.NCHW
 )(implicit ev: TensorNumeric[T]) extends QuantizedModule[T](nOutputPlane) with Initializable {
 
-  require(nInputPlane % nGroup == 0, "Number of input channels should be multiples of group.")
-  require(nOutputPlane % nGroup == 0, "Number of output channels should be multiples of group.")
+  Log4Error.invalidInputError(nInputPlane % nGroup == 0,
+    "Number of input channels should be multiples of group.")
+  Log4Error.invalidInputError(nOutputPlane % nGroup == 0,
+    "Number of output channels should be multiples of group.")
 
   private val data: QuantizedTensor[T] = QuantizedDummyTensor[T]()
   val bias: Tensor[T] = Tensor[T](nOutputPlane)
@@ -103,12 +105,13 @@ private[bigdl] class SpatialConvolution[T: ClassTag](
   }
 
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
-    require(input.dim() == 3 || input.dim() == 4,
+    Log4Error.invalidInputError(input.dim() == 3 || input.dim() == 4,
       "quantized.SpatialConvolution: " + ErrorInfo.constrainInputAs3DOrBatch)
-    require(input.isContiguous())
+    Log4Error.invalidInputError(input.isContiguous(),
+      "SpatialConvolution expect input be contiguous")
 
     val (dimHeight, dimWidth, channelDim) = format.getHWCDims(input.dim())
-    require(input.size(channelDim) == nInputPlane, s"input channel size " +
+    Log4Error.invalidInputError(input.size(channelDim) == nInputPlane, s"input channel size " +
       s"${input.size(channelDim)} is not the same as nInputPlane $nInputPlane")
 
     val inputWidth = input.size(dimWidth)

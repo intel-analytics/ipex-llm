@@ -18,6 +18,7 @@ package com.intel.analytics.bigdl.dllib.nn.ops
 import com.intel.analytics.bigdl.dllib.nn.abstractnn.Activity
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.{NumericWildCard, TensorNumeric}
+import com.intel.analytics.bigdl.dllib.utils.Log4Error
 
 import scala.reflect.ClassTag
 
@@ -31,7 +32,7 @@ class Prod[T: ClassTag](
       dimension = input.dim() + dimension + 1
     }
 
-    require(input.dim() >= dimension, "dimension exceeds input dimensions")
+    Log4Error.invalidInputError(input.dim() >= dimension, "dimension exceeds input dimensions")
     dimension
   }
 

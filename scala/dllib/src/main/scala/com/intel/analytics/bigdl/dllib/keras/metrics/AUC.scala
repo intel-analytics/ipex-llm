@@ -20,6 +20,7 @@ import com.intel.analytics.bigdl.dllib.nn.abstractnn.Activity
 import com.intel.analytics.bigdl.dllib.optim.{ValidationMethod, ValidationResult}
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.dllib.utils.Log4Error
 
 import scala.collection.mutable.ArrayBuffer
 
@@ -36,9 +37,10 @@ import scala.collection.mutable.ArrayBuffer
 class AucScore(private val tp: Tensor[Float], private val fp: Tensor[Float],
                private var po: Tensor[Float], private var ne: Tensor[Float])
   extends ValidationResult {
-  require(fp.dim() == tp.dim(), "fp dimension should be the same with tp dimension")
-  require(po.dim() == ne.dim(), "positive value dimension should be the" +
-    "same with negative value dimension")
+  Log4Error.invalidInputError(fp.dim() == tp.dim(),
+    "fp dimension should be the same with tp dimension")
+  Log4Error.invalidInputError(po.dim() == ne.dim(),
+    "positive value dimension should be the same with negative value dimension")
 
   override def result(): (Float, Int) = {
     (getScores.last, (po.valueAt(1) + ne.valueAt(1)).toInt)
@@ -141,9 +143,9 @@ class AUC[T](thresholdNum: Int = 200)(implicit ev: TensorNumeric[T])
     } else {
       target.asInstanceOf[Tensor[T]].clone().squeeze()
     }
-    require(_output.dim() <= 2 && _target.dim() <= 2,
+    Log4Error.invalidInputError(_output.dim() <= 2 && _target.dim() <= 2,
       s"${_output.dim()} dim format is not supported")
-    require(_output.dim() == _target.dim(),
+    Log4Error.invalidInputError(_output.dim() == _target.dim(),
       s"output dimension must be the same with target!!" +
         s"out dimension is: ${_output.dim()}, target dimension is: ${_target.dim()}")
 

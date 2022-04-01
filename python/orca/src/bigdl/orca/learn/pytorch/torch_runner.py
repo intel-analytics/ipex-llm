@@ -39,7 +39,7 @@ import os
 import tempfile
 import torch
 import torch.nn as nn
-from torch.utils.data import DataLoader
+from torch.utils.data import DataLoader, IterableDataset
 from torch.utils.data.distributed import DistributedSampler
 from bigdl.orca import OrcaContext
 from bigdl.orca.learn.pytorch.constants import SCHEDULER_STEP, NUM_STEPS
@@ -355,18 +355,23 @@ class TorchRunner:
                 params[arg] = config[arg]
 
         def predict_fn(shard):
-            if isinstance(shard["x"], tuple) or isinstance(shard["x"], list):
-                tensors = [torch.from_numpy(arr) for arr in shard["x"]]
+            if isinstance(partition, IterableDataset):
+                y = self.training_operator.predict(shard)
             else:
-                tensors = [torch.from_numpy(shard["x"])]
-            dataset = torch.utils.data.TensorDataset(*tensors)
-            data_loader = DataLoader(dataset, **params)
-            y = self.training_operator.predict(iter(data_loader))
-
+                if isinstance(shard["x"], tuple) or isinstance(shard["x"], list):
+                    tensors = [torch.from_numpy(arr) for arr in shard["x"]]
+                else:
+                    tensors = [torch.from_numpy(shard["x"])]
+                dataset = torch.utils.data.TensorDataset(*tensors)
+                data_loader = DataLoader(dataset, **params)
+                y = self.training_operator.predict(iter(data_loader))
             return {"prediction": y}
 
         with self.timers.record("predict"):
-            new_part = [predict_fn(shard) for shard in partition]
+            if isinstance(partition, IterableDataset):
+                new_part = [predict_fn(shard) for shard, shard_idx in partition]
+            else:
+                new_part = [predict_fn(shard) for shard in partition]
         return new_part
 
     def _toggle_profiling(self, profile=False):
