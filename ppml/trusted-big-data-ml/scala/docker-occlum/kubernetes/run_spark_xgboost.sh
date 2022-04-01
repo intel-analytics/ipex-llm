@@ -20,4 +20,4 @@ ${SPARK_HOME}/bin/spark-submit \
     --driver-cores 1 \
     --driver-memory 2g \
     local:/bin/jars/bigdl-dllib-spark_3.1.2-2.1.0-SNAPSHOT.jar \
-    /host/data/iris.data 2  100 /host/data/xgboost_model_to_be_saved
+    /host/data/xgboost_data 2  100 /host/data/xgboost_model_to_be_saved
