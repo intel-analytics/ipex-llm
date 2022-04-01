@@ -94,26 +94,63 @@ class MTNetForecaster(Forecaster):
         }
         super().__init__()
 
+        self._fitted = False
         self.internal = MTNetKerasModel(check_optional_config=self.check_optional_config)
 
     def fit(self, data, epochs=2, batch_size=32, validation_data=None):
+        """
+        :param data: a numpy.adarray tuple (x, y).
+        :param epochs: Number of epochs you want to train. The value defaults to 2.
+        :param batch_size: Number of batch size you want to train. The value defaults to 32.
+        :param validation_data: Data on which to evaluate the loss
+               and any model metrics at the end of each epoch.
+               The model will not be trained on this data. 
+        """
         self.model_config.update({'batch_size': batch_size})
         self.internal.fit_eval(data, validation_data=validation_data, epochs=epochs, verbose=1, **self.model_config)
+        self._fitted = True
 
-    def predict(self, data):
+    def predict(self, data, batch_size=32):
         """
-        :param data: x's a numpy dataset.
+        :param data: x's a numpy.ndarray.
+        :param batch_size: predict batch size. The value will not affect evaluate
+               result but will affect resources cost(e.g. memory and time).
         """
-        yhat = self.internal.predict(data)
+        if not self._fitted:
+            raise RuntimeError("You must call fit or restore first before calling predict!")
+        yhat = self.internal.predict(data, batch_size=batch_size)
         return yhat
 
-    def evaluate(self, data, metrics=["mae"], multioutput='raw_values'):
-        yhat = self.internal.predict(data[0])
+    def evaluate(self, data, metric=["mae"], batch_size=32, multioutput='raw_values'):
+        """
+        :param data: a numpy.ndarray tuple (x, y).
+        :param metric:  metric is the evaluation metric name to optimize, e.g. ["mae"].
+        :param batch_size: evaluate batch size. The value will not affect evaluate
+               result but will affect resources cost(e.g. memory and time).
+        :param multioutput: Defines aggregating of multiple output values.
+               String in ['raw_values', 'uniform_average']. The value defaults to
+               'raw_values'.
+        """
+        if not self._fitted:
+            raise RuntimeError("You must call fit or restore first before calling evaluate!")
+        yhat = self.internal.predict(data[0], batch_size=batch_size)
         return [Evaluator.evaluate(m, y_true=data[1],
-                                   y_pred=yhat, aggregate=multioutput) for m in metrics]
+                                   y_pred=yhat, aggregate=multioutput) for m in metric]
 
-    def save(self, checkpoint):
-        self.internal.save(checkpoint_file=checkpoint)
+    def save(self, checkpoint_file):
+        """
+        Save the forecaster.
 
-    def load(self, checkpoint):
-        self.internal.restore(checkpoint, self.model_config)
+        :param checkpoint_file: The location you want to save the forecaster.
+        """
+        if not self.fitted:
+            raise RuntimeError("You must call fit or restore first before calling save!")
+        self.internal.save(checkpoint_file=checkpoint_file)
+
+    def load(self, checkpoint_file):
+        """
+        Load the forecaster.
+
+        :param checkpoint_file: The checkpoint file location you want to load the forecaster.
+        """
+        self.internal.restore(checkpoint_file, self.model_config)
