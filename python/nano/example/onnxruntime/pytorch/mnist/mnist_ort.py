@@ -55,6 +55,22 @@ import torch.optim as optim
 from torchvision import datasets, transforms
 from torch.optim.lr_scheduler import StepLR
 
+from bigdl.nano.pytorch.trainer import Trainer
+
+from functools import wraps
+import time
+
+
+def timefn(fn):
+    @wraps(fn)
+    def measure_time(*args, **kwargs):
+        st = time.time()
+        result = fn(*args, **kwargs)
+        interval = time.time() - st
+        print(fn.__name__ + str(kwargs) + " took " + str(interval) + " seconds.")
+        return result
+    return measure_time
+
 
 class Net(nn.Module):
     def __init__(self):
@@ -99,8 +115,12 @@ def train(args, model, device, train_loader, optimizer, epoch):
                 break
 
 
-def test(model, device, test_loader):
-    model.eval()
+@timefn
+def test(model, device, test_loader, onnx=False):
+    if onnx:
+        model.eval_onnx(test_loader)
+    else:
+        model.eval()
     test_loss = 0
     correct = 0
     with torch.no_grad():
@@ -125,8 +145,8 @@ def main():
                         help='input batch size for training (default: 64)')
     parser.add_argument('--test-batch-size', type=int, default=1000, metavar='N',
                         help='input batch size for testing (default: 1000)')
-    parser.add_argument('--epochs', type=int, default=14, metavar='N',
-                        help='number of epochs to train (default: 14)')
+    parser.add_argument('--epochs', type=int, default=1, metavar='N',
+                        help='number of epochs to train (default: 1)')
     parser.add_argument('--lr', type=float, default=1.0, metavar='LR',
                         help='learning rate (default: 1.0)')
     parser.add_argument('--gamma', type=float, default=0.7, metavar='M',
@@ -169,15 +189,18 @@ def main():
     test_loader = torch.utils.data.DataLoader(dataset2, **test_kwargs)
 
     model = Net().to(device)
+    model = Trainer.compile(model, onnx=True)
     optimizer = optim.Adadelta(model.parameters(), lr=args.lr)
 
     scheduler = StepLR(optimizer, step_size=1, gamma=args.gamma)
     for epoch in range(1, args.epochs + 1):
         train(args, model, device, train_loader, optimizer, epoch)
-        test(model, device, test_loader)
+        test(model, device, test_loader, onnx=False)
+        test(model, device, test_loader, onnx=True)
         scheduler.step()
 
     if args.save_model:
+        model.to_onnx("mnist_cnn.onnx", input_sample=torch.zeros(1, 1, 28, 28))
         torch.save(model.state_dict(), "mnist_cnn.pt")
 
 
