@@ -70,6 +70,7 @@ class TestMTNetKeras(ZooTestCase):
                        "cnn_height": 1, # np.random.randint(1, 3),
                        "cnn_hid_size": 2,
                        "rnn_hid_sizes": [2, 2],
+                       "batch_size": 32,
                        "epochs": 1}
 
     def teardown_method(self, method):
@@ -79,7 +80,7 @@ class TestMTNetKeras(ZooTestCase):
         self.model.fit_eval(data=(self.x_train, self.y_train),
                             validation_data=(self.x_val, self.y_val),
                             **self.config)
-        self.model.evaluate(self.x_val, self.y_val)
+        self.model.evaluate(self.x_val, self.y_val, batch_size=32)
 
     def test_save_restore(self):
         import os

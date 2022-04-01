@@ -502,15 +502,17 @@ class MTNetKeras(BaseModel):
             result = hist.history.get('val_' + metric_name)[-1]
         return {self.metric: result}
 
-    def evaluate(self, x, y, metrics=['mse']):
+    def evaluate(self, x, y, metrics=['mse'], batch_size=32):
         """
         Evaluate on x, y
         :param x: input
         :param y: target
         :param metric: a list of metrics in string format
+        :param batch_size: Number of samples per batch.
+               If unspecified, batch_size will default to 32. 
         :return: a list of metric evaluation results
         """
-        y_pred = self.predict(x)
+        y_pred = self.predict(x, batch_size=batch_size)
         if y_pred.shape[1] == 1:
             multioutput = 'uniform_average'
         else:
@@ -518,9 +520,9 @@ class MTNetKeras(BaseModel):
         # y = np.squeeze(y, axis=2)
         return [Evaluator.evaluate(m, y, y_pred, multioutput=multioutput) for m in metrics]
 
-    def predict(self, x, mc=False):
+    def predict(self, x, mc=False, batch_size=32):
         input_x = self._reshape_input_x(x)
-        return self.model.predict(input_x)
+        return self.model.predict(input_x, batch_size=batch_size)
 
     def predict_with_uncertainty(self, x, n_iter=100):
         result = np.zeros((n_iter,) + (x.shape[0], self.output_dim))
