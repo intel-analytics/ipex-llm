@@ -5,18 +5,21 @@ Hadoop version: Apache Hadoop >= 2.7 (3.X included) or [CDH](https://www.clouder
 ---
 
 For _**Scala users**_, please see [Scala User Guide](./scala.md) for how to run BigDL on hadoop/yarn cluster.  
-For _**Python users**_, you can run BigDL programs on standard Hadoop/YARN clusters without any changes to the cluster(i.e., no need to pre-install BigDL or any Python libraries in the cluster).
+
+For _**Python users**_, you can run BigDL programs on standard Hadoop/YARN clusters without any changes to the cluster (i.e., no need to pre-install BigDL or other Python libraries on all nodes in the cluster).
 
 ### **1. Prepare Python Environment**
 
-- You need to first use [conda](https://docs.conda.io/projects/conda/en/latest/user-guide/install/) to prepare the Python environment _**on the local client machine**_. Create a conda environment and install all the needed Python libraries in the created conda environment:
+- You need to first use [conda](https://docs.conda.io/projects/conda/en/latest/user-guide/install/) to prepare the Python environment _**on the local client machine**_. Create a conda environment, install BigDL and all the needed Python libraries in the created conda environment:
 
   ```bash
   conda create -n bigdl python=3.7  # "bigdl" is conda environment name, you can use any name you like.
   conda activate bigdl
 
+  pip install bigdl
   # Use conda or pip to install all the needed Python dependencies in the created conda environment.
   ```
+  View the [Python User Guide](./python.md) for more details for BigDL installation.
 
 - You need to download and install JDK in the environment, and properly set the environment variable `JAVA_HOME`, which is required by Spark. __JDK8__ is highly recommended.
 
@@ -43,24 +46,16 @@ For _**Python users**_, you can run BigDL programs on standard Hadoop/YARN clust
 
 - **For CDH users**
 
-  If you are using BigDL with pip and your CDH cluster has already installed Spark, the CDH's spark will have conflict with the pyspark installed by pip required by bigdl in next section.
+  If your CDH cluster has already installed Spark, the CDH's Spark will be conflict with the pyspark installed by pip required by BigDL.
 
-  Thus before running bigdl applications, you should unset all the spark related environment variables. You can use `env | grep SPARK` to find all the existing spark environment variables.
+  Thus before running BigDL applications, you should unset all the Spark related environment variables. You can use `env | grep SPARK` to find all the existing Spark environment variables.
 
   Also, CDH cluster's `HADOOP_CONF_DIR` should be `/etc/hadoop/conf` on CDH by default.
 
 ---
-### **2. Run on YARN with build-in function**
+### **2. Run on YARN with built-in function**
 
-_**This is the most recommended way to run BigDL on yarn,**_ as we have put conda pack and all the spark-submit settings into our code, you can easy change your job between local and yarn.
-- Install BigDL in the created conda environment via pip:
-
-  ```bash
-  pip install bigdl
-  ```
-
-  View the [Python User Guide](./python.md) for more details.
-  
+_**This is the easiest and most recommended way to run BigDL on yarn,**_ as we have put environment preparation and all the Spark related commands into our code. In this way, you can easy change your job between local (for test) and yarn (for production).
 
 - We recommend using `init_orca_context` at the very beginning of your code to initiate and run BigDL on standard [Hadoop/YARN clusters](https://spark.apache.org/docs/latest/running-on-yarn.html#launching-spark-on-yarn):
 
