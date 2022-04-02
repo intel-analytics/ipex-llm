@@ -104,10 +104,11 @@ class MTNetForecaster(Forecaster):
         :param batch_size: Number of batch size you want to train. The value defaults to 32.
         :param validation_data: Data on which to evaluate the loss
                and any model metrics at the end of each epoch.
-               The model will not be trained on this data. 
+               The model will not be trained on this data.
         """
         self.model_config.update({'batch_size': batch_size})
-        self.internal.fit_eval(data, validation_data=validation_data, epochs=epochs, verbose=1, **self.model_config)
+        self.internal.fit_eval(data, validation_data=validation_data,
+                               epochs=epochs, verbose=1, **self.model_config)
         self._fitted = True
 
     def predict(self, data, batch_size=32):
