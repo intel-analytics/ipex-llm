@@ -18,7 +18,7 @@ export BIGDL_JAR="${array[$len-1]}"
 
 # Check env
 if [ -z ${BIGDL_CONF} ]; then
-    echo "Cannot find BigDL configuration files, please check your BigDL installation"
+    echo "Cannot find BigDL configuration file, please check your BigDL installation"
     exit 1
 fi
 
