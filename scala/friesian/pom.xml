@@ -39,10 +39,6 @@
                 <enabled>true</enabled>
             </snapshots>
         </repository>
-        <repository>
-            <id>dinowernli-github-repo</id>
-            <url>https://raw.github.com/dinowernli/maven-repos/master</url>
-        </repository>
     </repositories>
 
     <dependencies>
@@ -161,7 +157,7 @@
         <dependency>
             <groupId>me.dinowernli</groupId>
             <artifactId>java-grpc-prometheus</artifactId>
-            <version>0.4.0</version>
+            <version>0.5.0</version>
             <scope>${serving.scope}</scope>
             <exclusions>
                 <exclusion>
@@ -254,6 +250,24 @@
             <groupId>org.apache.logging.log4j</groupId>
             <artifactId>log4j-1.2-api</artifactId>
             <version>${log4j.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.grpc</groupId>
+            <artifactId>grpc-api</artifactId>
+            <version>1.29.0</version>
+            <scope>${spark-scope}</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.grpc</groupId>
+            <artifactId>grpc-services</artifactId>
+            <version>1.29.0</version>
+            <scope>${spark-scope}</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.grpc</groupId>
+            <artifactId>grpc-netty</artifactId>
+            <version>1.29.0</version>
+            <scope>${spark-scope}</scope>
         </dependency>
     </dependencies>
 
