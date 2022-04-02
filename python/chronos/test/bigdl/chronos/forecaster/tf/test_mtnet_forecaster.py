@@ -72,9 +72,6 @@ class TestChronosModelMTNetForecaster(TestCase):
                                 long_series_num=4,
                                 series_length=1
                                 )
-        # x_train_long, x_train_short = model.preprocess_input(self.x_train)
-        # x_val_long, x_val_short = model.preprocess_input(self.x_val)
-        # x_test_long, x_test_short = model.preprocess_input(self.x_test)
 
         model.fit(data=(self.x_train, y_train),
                   validation_data=(self.x_val, y_val),

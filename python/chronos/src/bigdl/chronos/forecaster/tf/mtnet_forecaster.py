@@ -24,19 +24,15 @@ class MTNetForecaster(Forecaster):
         Example:
             >>> #The dataset is split into x_train, x_val, x_test, y_train, y_val, y_test
             >>> model = MTNetForecaster(target_dim=1,
-                                feature_dim=x_train.shape[-1],
-                                long_series_num=6,
-                                series_length=2
-                                )
-            >>> x_train_long, x_train_short = model.preprocess_input(x_train)
-            >>> x_val_long, x_val_short = model.preprocess_input(x_val)
-            >>> x_test_long, x_test_short = model.preprocess_input(x_test)
-            >>> model.fit([x_train_long, x_train_short],
-                  y_train,
-                  validation_data=([x_val_long, x_val_short], y_val),
-                  batch_size=32,
-                  distributed=False)
-            >>> predict_result = [x_test_long, x_test_short]
+                                        feature_dim=x_train.shape[-1],
+                                        long_series_num=6,
+                                        series_length=2
+                                        )
+            >>> model.fit(data=(x_train, y_train),
+                          validation_data=(x_val, y_val),
+                          epochs=2,
+                          batch_size=32)
+            >>> model.predict(x_test, batch_size=batch_size)
     """
 
     def __init__(self,
