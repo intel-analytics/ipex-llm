@@ -15,6 +15,7 @@
     <properties>
         <scoverage.plugin.version>1.1.1</scoverage.plugin.version>
         <scoverage.scalacPluginVersion>1.1.1</scoverage.scalacPluginVersion>
+        <grpc.version>1.37.0</grpc.version>
         <scoverage.aggregate>true</scoverage.aggregate>
         <runSpecsInParallel>false</runSpecsInParallel>
         <tagsToExclude>com.intel.analytics.bigdl.tags.Integration</tagsToExclude>
@@ -254,21 +255,22 @@
         <dependency>
             <groupId>io.grpc</groupId>
             <artifactId>grpc-api</artifactId>
-            <version>1.29.0</version>
-            <scope>${spark-scope}</scope>
+            <version>${grpc.version}</version>
+            <scope>${serving.scope}</scope>
         </dependency>
         <dependency>
             <groupId>io.grpc</groupId>
             <artifactId>grpc-services</artifactId>
-            <version>1.29.0</version>
-            <scope>${spark-scope}</scope>
+            <version>${grpc.version}</version>
+            <scope>${serving.scope}</scope>
         </dependency>
         <dependency>
             <groupId>io.grpc</groupId>
-            <artifactId>grpc-netty</artifactId>
-            <version>1.29.0</version>
-            <scope>${spark-scope}</scope>
+            <artifactId>grpc-netty-shaded</artifactId>
+            <version>${grpc.version}</version>
+            <scope>${serving.scope}</scope>
         </dependency>
+
     </dependencies>
 
     <build>
