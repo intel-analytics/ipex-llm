@@ -16,15 +16,8 @@
 
 package com.intel.analytics.bigdl.ppml.attestation
 
-
-abstract class QuoteVerifier {
-
-  def verifyQuote(quote: Array[Byte]): Int = {
-    1
+object QuoteVerfierCmd {
+  def main(args: Array[String]): Unit = {
+    
   }
-
-  def verifyQuote(quote: Array[Byte], policy: Policy): Int = {
-    1
-  }
-
 }
