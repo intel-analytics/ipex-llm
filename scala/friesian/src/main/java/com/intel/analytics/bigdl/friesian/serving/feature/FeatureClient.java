@@ -24,6 +24,7 @@ import com.intel.analytics.bigdl.friesian.serving.grpc.generated.feature.Feature
 import com.intel.analytics.bigdl.friesian.serving.utils.CMDParser;
 import com.intel.analytics.bigdl.friesian.serving.utils.EncodeUtils;
 import com.intel.analytics.bigdl.friesian.serving.utils.Utils;
+import com.intel.analytics.bigdl.friesian.serving.utils.feature.FeatureUtils;
 import io.grpc.Channel;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
@@ -33,7 +34,9 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.core.config.Configurator;
 
+import java.util.Arrays;
 import java.util.Base64;
+import java.util.Iterator;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -56,6 +59,11 @@ public class FeatureClient {
         Features features;
         try {
             features = blockingStub.getUserFeatures(request.build());
+
+            System.out.println(features.getIDList());
+            System.out.println(features.getB64Feature(1).toString());
+            System.out.println(features.getColNamesList());
+
             featureObjs = featuresToObject(features);
         } catch (StatusRuntimeException e) {
             logger.warn("RPC failed: " + e.getStatus());
@@ -73,7 +81,12 @@ public class FeatureClient {
         Features features;
         try {
             features = blockingStub.getItemFeatures(request.build());
+            System.out.println("-------------get features ----------");
+            System.out.println(features.getIDList());
+            System.out.println(features.getColNamesList());
+            System.out.println(features.getB64FeatureList());
             Object[] featureObjs = featuresToObject(features);
+
         } catch (StatusRuntimeException e) {
             logger.warn("RPC failed: " + e.getStatus());
             return;
@@ -133,11 +146,25 @@ public class FeatureClient {
         ManagedChannel channel = ManagedChannelBuilder.forTarget(target).usePlaintext().build();
         FeatureClient client = new FeatureClient(channel);
 
-        int userNum = 1000;
+        int userNum = 10;
+
         int[] userList = Utils.loadUserData(dir, "enaging_user_id", userNum);
+
         long start = System.nanoTime();
+
+        Object[] result = client.getUserFeatures(userList);
+
+        int i =0;
         for (int userId : userList) {
-            Object[] result = client.getUserFeatures(new int[]{userId});
+            System.out.println(userId);
+
+            if(i < 5){
+                String v = String.valueOf(result[0]);
+                for(int ii=1; ii < result.length; ii++){
+                    v = v + "," + String.valueOf(result[ii]);
+                }
+                System.out.println(v);
+            }
         }
         long end = System.nanoTime();
         double time = (double)(end - start)/(userNum * 1000000);

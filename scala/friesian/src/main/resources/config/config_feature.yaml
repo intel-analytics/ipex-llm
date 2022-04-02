@@ -39,7 +39,7 @@ redisKeyPrefix:
 
 ### Redis Configuration
 # default: localhost:6379, if redisType=sentinel, redisUrl will be ignored
-redisUrl: 10.239.158.177:6379
+# redisUrl: 10.239.158.177:6379
 
 # default: standalone, redis server type, can be "standalone", "sentinel", or "cluster"
 # redisType:
