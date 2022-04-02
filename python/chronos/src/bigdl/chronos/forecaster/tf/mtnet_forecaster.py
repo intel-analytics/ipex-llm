@@ -100,6 +100,11 @@ class MTNetForecaster(Forecaster):
     def fit(self, data, epochs=2, batch_size=32, validation_data=None):
         """
         :param data: a numpy.adarray tuple (x, y).
+
+            | 1. a numpy ndarray tuple (x, y):
+            | x's shape is (num_samples, (long_series_num+1)*series_length, feature_dim)
+            | y's shape is (num_samples, target_dim)
+
         :param epochs: Number of epochs you want to train. The value defaults to 2.
         :param batch_size: Number of batch size you want to train. The value defaults to 32.
         :param validation_data: Data on which to evaluate the loss
@@ -113,7 +118,10 @@ class MTNetForecaster(Forecaster):
 
     def predict(self, data, batch_size=32):
         """
-        :param data: x's a numpy.ndarray.
+        :param data: a numpy.ndarray.
+
+               | 1. data's shape is (num_samples, (long_series_num+1)*series_length, feature_dim)
+
         :param batch_size: predict batch size. The value will not affect evaluate
                result but will affect resources cost(e.g. memory and time).
         """
@@ -125,6 +133,13 @@ class MTNetForecaster(Forecaster):
     def evaluate(self, data, metric=["mae"], batch_size=32, multioutput='raw_values'):
         """
         :param data: a numpy.ndarray tuple (x, y).
+
+            | 1. a numpy ndarray tuple (x, y):
+            | x's shape is (num_samples, (long_series_num+1)*series_length, feature_dim)
+            | where feature_dim should be the same as input_feature_num.
+            | y's shape is (num_samples, target_dim), where target_dim
+            | should be the same as output_feature_num.
+
         :param metric:  metric is the evaluation metric name to optimize, e.g. ["mae"].
         :param batch_size: evaluate batch size. The value will not affect evaluate
                result but will affect resources cost(e.g. memory and time).
@@ -154,4 +169,5 @@ class MTNetForecaster(Forecaster):
 
         :param checkpoint_file: The checkpoint file location you want to load the forecaster.
         """
-        self.internal.restore(checkpoint_file, self.model_config)
+        self.internal.restore(checkpoint_file=checkpoint_file,
+                              **self.model_config)
