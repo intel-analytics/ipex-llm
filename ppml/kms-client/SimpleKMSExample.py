@@ -1,4 +1,4 @@
-import SimpleKeyGenerator, FileOperator
+import SimpleKeyManagementService, FileOperator
 from cryptography.fernet import Fernet
 import argparse
 
