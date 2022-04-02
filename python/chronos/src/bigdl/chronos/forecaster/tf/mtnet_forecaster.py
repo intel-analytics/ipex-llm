@@ -136,9 +136,7 @@ class MTNetForecaster(Forecaster):
 
             | 1. a numpy ndarray tuple (x, y):
             | x's shape is (num_samples, (long_series_num+1)*series_length, feature_dim)
-            | where feature_dim should be the same as input_feature_num.
-            | y's shape is (num_samples, target_dim), where target_dim
-            | should be the same as output_feature_num.
+            | y's shape is (num_samples, target_dim)
 
         :param metric:  metric is the evaluation metric name to optimize, e.g. ["mae"].
         :param batch_size: evaluate batch size. The value will not affect evaluate
