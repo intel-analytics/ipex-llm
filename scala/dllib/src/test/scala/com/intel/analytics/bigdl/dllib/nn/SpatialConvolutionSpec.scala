@@ -2490,15 +2490,15 @@ class SpatialConvolutionSpec extends FlatSpec with Matchers {
     val output = module.forward(input)
     val gradInput = module.backward(input, gradOutput)
     expectedOutput.map(output, (v1, v2) => {
-      assert(abs(v1 - v2) < 1e-6);
+      TestUtils.conditionFailTest(abs(v1 - v2) < 1e-6);
       v1
     })
     expectedGrad.map(gradInput, (v1, v2) => {
-      assert(abs(v1 - v2) < 1e-6);
+      TestUtils.conditionFailTest(abs(v1 - v2) < 1e-6);
       v1
     })
-    assert(input == inputOrg)
-    assert(gradOutput == gradOutputOrg)
+    TestUtils.conditionFailTest(input == inputOrg)
+    TestUtils.conditionFailTest(gradOutput == gradOutputOrg)
     val gradBiasData = Array(
       5.1377515662462, 3.8248416814022, 2.8428408897016
     )
@@ -2524,11 +2524,11 @@ class SpatialConvolutionSpec extends FlatSpec with Matchers {
     )
     val gradWeight = Tensor[Double](Storage(gradWeightData), 1, Array(3, 2, 2, 3))
     module.gradBias.map(gradBias, (v1, v2) => {
-      assert(abs(v1 - v2) < 1e-6);
+      TestUtils.conditionFailTest(abs(v1 - v2) < 1e-6);
       v1
     })
     module.gradWeight.map(gradWeight, (v1, v2) => {
-      assert(abs(v1 - v2) < 1e-6);
+      TestUtils.conditionFailTest(abs(v1 - v2) < 1e-6);
       v1
     })
   }
@@ -2645,11 +2645,11 @@ class SpatialConvolutionSpec extends FlatSpec with Matchers {
       v1
     })
     expectedGrad.map(gradInput, (v1, v2) => {
-      assert(abs(v1 - v2) < 1e-6);
+      TestUtils.conditionFailTest(abs(v1 - v2) < 1e-6);
       v1
     })
-    assert(input == inputOrg)
-    assert(gradOutput == gradOutputOrg)
+    TestUtils.conditionFailTest(input == inputOrg)
+    TestUtils.conditionFailTest(gradOutput == gradOutputOrg)
     val gradBiasData = Array(
       5.1377515662462, 3.8248416814022, 2.8428408897016
     )
@@ -2675,11 +2675,11 @@ class SpatialConvolutionSpec extends FlatSpec with Matchers {
     )
     val gradWeight = Tensor[Double](Storage(gradWeightData), 1, Array(3, 2, 2, 3))
     module.gradBias.map(gradBias * 2, (v1, v2) => {
-      assert(abs(v1 - v2) < 1e-6);
+      TestUtils.conditionFailTest(abs(v1 - v2) < 1e-6);
       v1
     })
     module.gradWeight.map(gradWeight * 2, (v1, v2) => {
-      assert(abs(v1 - v2) < 1e-6);
+      TestUtils.conditionFailTest(abs(v1 - v2) < 1e-6);
       v1
     })
   }
@@ -2834,31 +2834,31 @@ class SpatialConvolutionSpec extends FlatSpec with Matchers {
     }
 
     input(maxIter).map(exInput, (v1, v2) => {
-      assert(abs(v1 - v2) < 1e-6);
+      TestUtils.conditionFailTest(abs(v1 - v2) < 1e-6);
       v1
     })
     gradInput.map(exGradInput, (v1, v2) => {
-      assert(abs(v1 - v2) < 1e-6);
+      TestUtils.conditionFailTest(abs(v1 - v2) < 1e-6);
       v1
     })
     output.map(exOutput, (v1, v2) => {
-      assert(abs(v1 - v2) < 1e-6);
+      TestUtils.conditionFailTest(abs(v1 - v2) < 1e-6);
       v1
     })
     sc.gradWeight.map(gradWeight, (v1, v2) => {
-      assert(abs(v1 - v2) < 1e-6);
+      TestUtils.conditionFailTest(abs(v1 - v2) < 1e-6);
       v1
     })
     sc.gradBias.map(gradBias, (v1, v2) => {
-      assert(abs(v1 - v2) < 1e-6);
+      TestUtils.conditionFailTest(abs(v1 - v2) < 1e-6);
       v1
     })
     sc.weight.map(exWeight, (v1, v2) => {
-      assert(abs(v1 - v2) < 1e-6);
+      TestUtils.conditionFailTest(abs(v1 - v2) < 1e-6);
       v1
     })
     sc.bias.map(exBias, (v1, v2) => {
-      assert(abs(v1 - v2) < 1e-4);
+      TestUtils.conditionFailTest(abs(v1 - v2) < 1e-4);
       v1
     })
   }

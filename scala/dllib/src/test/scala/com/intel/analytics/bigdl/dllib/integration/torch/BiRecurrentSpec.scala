@@ -139,7 +139,7 @@ class BiRecurrentSpec  extends TorchRNNSpec {
       s"""
          |
       |-- 1.4. Combine 1.1 and 1.3 to produce final model
-         |require 'rnn'
+         |TestUtils.conditionFailTest 'rnn'
          |torch.manualSeed($seed)
          |
          |local function basicblock(inputSize, hiddenSize)

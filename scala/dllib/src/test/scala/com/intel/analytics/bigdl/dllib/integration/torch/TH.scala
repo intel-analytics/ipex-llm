@@ -47,7 +47,7 @@ object TH {
   def hasRNN: Boolean = {
     val tmpFile = java.io.File.createTempFile("checkRNN", ".lua", scriptsRoot.toFile)
     val writer = new PrintWriter(tmpFile)
-    writer.write("exist = (pcall(require, 'rnn'))\n print(exist)")
+    writer.write("exist = (pcall(TestUtils.conditionFailTest, 'rnn'))\n print(exist)")
     writer.close()
 
     val existsRNN =
@@ -121,8 +121,9 @@ object TH {
 
       return luaTime // stop early
     }
-
-    val varCode = new StringBuilder("require 'nn'\n" + "require 'optim'\n")
+    // scalastyle:off
+    val varCode = new StringBuilder("assert 'nn'\n" + "assert 'optim'\n")
+    // scalastyle:on
     val usrCode = new StringBuilder("")
     val resCode = new StringBuilder("")
 

@@ -19,7 +19,7 @@ import java.io.File
 
 import com.intel.analytics.bigdl.dllib.nn.ReLU6
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
-import com.intel.analytics.bigdl.dllib.utils.Engine
+import com.intel.analytics.bigdl.dllib.utils.{Engine, TestUtils}
 import org.scalatest._
 
 import scala.collection.mutable.ListBuffer
@@ -65,11 +65,11 @@ class ReLU6Spec extends TorchSpec {
     val luaOutput2 = torchResult("gradInput").asInstanceOf[Tensor[Double]]
 
     luaOutput1.map(output, (v1, v2) => {
-      assert(abs(v1 - v2) == 0)
+      TestUtils.conditionFailTest(abs(v1 - v2) == 0)
       v1
     })
     luaOutput2.map(gradInput, (v1, v2) => {
-      assert(abs(v1 - v2) == 0)
+      TestUtils.conditionFailTest(abs(v1 - v2) == 0)
       v1
     })
 
@@ -114,11 +114,11 @@ class ReLU6Spec extends TorchSpec {
     val luaOutput2 = torchResult("gradInput").asInstanceOf[Tensor[Double]]
 
     luaOutput1.map(output, (v1, v2) => {
-      assert(abs(v1 - v2) == 0)
+      TestUtils.conditionFailTest(abs(v1 - v2) == 0)
       v1
     })
     luaOutput2.map(gradInput, (v1, v2) => {
-      assert(abs(v1 - v2) == 0)
+      TestUtils.conditionFailTest(abs(v1 - v2) == 0)
       v1
     })
 

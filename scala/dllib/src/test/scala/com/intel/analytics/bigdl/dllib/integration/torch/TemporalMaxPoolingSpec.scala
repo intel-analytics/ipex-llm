@@ -20,6 +20,7 @@ import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.dllib.nn.{GradientChecker, TemporalMaxPooling}
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.utils.RandomGenerator._
+import com.intel.analytics.bigdl.dllib.utils.TestUtils
 
 import scala.math._
 import scala.util.Random
@@ -52,11 +53,11 @@ class TemporalMaxPoolingSpec extends TorchSpec {
 
 
     luaOutput1.map(output, (v1, v2) => {
-      assert(abs(v1 - v2) == 0)
+      TestUtils.conditionFailTest(abs(v1 - v2) == 0)
       v1
     })
     luaOutput2.map(gradInput, (v1, v2) => {
-      assert(abs(v1 - v2) == 0)
+      TestUtils.conditionFailTest(abs(v1 - v2) == 0)
       v1
     })
 
@@ -91,11 +92,11 @@ class TemporalMaxPoolingSpec extends TorchSpec {
 
 
     luaOutput1.map(output, (v1, v2) => {
-      assert(abs(v1 - v2) == 0)
+      TestUtils.conditionFailTest(abs(v1 - v2) == 0)
       v1
     })
     luaOutput2.map(gradInput, (v1, v2) => {
-      assert(abs(v1 - v2) == 0)
+      TestUtils.conditionFailTest(abs(v1 - v2) == 0)
       v1
     })
 
@@ -135,11 +136,11 @@ class TemporalMaxPoolingSpec extends TorchSpec {
 
 
     luaOutput1.map(output, (v1, v2) => {
-      assert(abs(v1 - v2) == 0)
+      TestUtils.conditionFailTest(abs(v1 - v2) == 0)
       v1
     })
     luaOutput2.map(gradInput, (v1, v2) => {
-      assert(abs(v1 - v2) == 0)
+      TestUtils.conditionFailTest(abs(v1 - v2) == 0)
       v1
     })
 

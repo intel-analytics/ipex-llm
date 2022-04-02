@@ -24,7 +24,7 @@ import com.intel.analytics.bigdl.dllib.optim.SGD
 import com.intel.analytics.bigdl.dllib.tensor.{Storage, Tensor}
 import com.intel.analytics.bigdl.dllib.utils.RandomGenerator._
 import com.intel.analytics.bigdl.dllib.utils.TorchObject.TYPE_DOUBLE_TENSOR
-import com.intel.analytics.bigdl.dllib.utils.{T, Table, TorchFile}
+import com.intel.analytics.bigdl.dllib.utils.{T, Table, TestUtils, TorchFile}
 
 import scala.collection.mutable.ArrayBuffer
 import scala.math._
@@ -126,7 +126,7 @@ class LSTMPeepholeSpec  extends TorchRNNSpec {
       s"""
          |
       |-- 1.4. Combine 1.1 and 1.3 to produce final model
-         |require 'rnn'
+         |TestUtils.conditionFailTest 'rnn'
          |torch.manualSeed($seed)
          |
       |local rm =  nn.Sequential() -- input is {x[t], h[t-1]}
@@ -372,7 +372,7 @@ class LSTMPeepholeSpec  extends TorchRNNSpec {
       s"""
          |
       |-- 1.4. Combine 1.1 and 1.3 to produce final model
-         |require 'rnn'
+         |TestUtils.conditionFailTest 'rnn'
          |torch.manualSeed($seed)
          |
       |local rm =  nn.Sequential() -- input is {x[t], h[t-1]}
@@ -637,7 +637,7 @@ class LSTMPeepholeSpec  extends TorchRNNSpec {
       s"""
          |
       |-- 1.4. Combine 1.1 and 1.3 to produce final model
-         |require 'rnn'
+         |TestUtils.conditionFailTest 'rnn'
          |torch.manualSeed($seed)
          |
          |local lstm = nn.LSTM($inputSize, $hiddenSize, 1, true)
@@ -665,7 +665,7 @@ class LSTMPeepholeSpec  extends TorchRNNSpec {
 
     rec.getHiddenState().toTable.foreach { case ((key: Int, value: Tensor[_])) =>
       value.asInstanceOf[Tensor[Double]].map(luaState(key), (v1, v2) => {
-        assert(abs(v1 - v2) <= 1e-8)
+        TestUtils.conditionFailTest(abs(v1 - v2) <= 1e-8)
         v1
       })
       case _ =>
@@ -673,7 +673,7 @@ class LSTMPeepholeSpec  extends TorchRNNSpec {
     }
 
     luaOutput.map(output, (v1, v2) => {
-      assert(abs(v1 - v2) <= 1e-8)
+      TestUtils.conditionFailTest(abs(v1 - v2) <= 1e-8)
       v1
     })
   }
@@ -715,7 +715,7 @@ class LSTMPeepholeSpec  extends TorchRNNSpec {
       s"""
          |
       |-- 1.4. Combine 1.1 and 1.3 to produce final model
-         |require 'rnn'
+         |TestUtils.conditionFailTest 'rnn'
          |torch.manualSeed($seed)
          |
          |local lstm = nn.LSTM($inputSize, $hiddenSize, 1, true)
@@ -745,11 +745,11 @@ class LSTMPeepholeSpec  extends TorchRNNSpec {
     val gradInput = model.backward(input, gradOutput).toTensor
 
     luaOutput.map(output.transpose(1, 2), (v1, v2) => {
-      assert(abs(v1 - v2) <= 1e-8)
+      TestUtils.conditionFailTest(abs(v1 - v2) <= 1e-8)
       v1
     })
     luaGradInput.map(gradInput.transpose(1, 2), (v1, v2) => {
-      assert(abs(v1 - v2) <= 1e-8)
+      TestUtils.conditionFailTest(abs(v1 - v2) <= 1e-8)
       v1
     })
 
@@ -759,7 +759,7 @@ class LSTMPeepholeSpec  extends TorchRNNSpec {
     val grad2TorchAfter =
       Module.flatten[Double](reconstruct[Double](gradsArrayTorchAfter, hiddenSize))
     luagradParameters.map(grad2TorchAfter, (v1, v2) => {
-      assert(abs(v1 - v2) <= 1e-8)
+      TestUtils.conditionFailTest(abs(v1 - v2) <= 1e-8)
       v1
     })
   }

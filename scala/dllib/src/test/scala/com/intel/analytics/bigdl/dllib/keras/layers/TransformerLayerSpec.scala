@@ -21,7 +21,7 @@ import com.intel.analytics.bigdl.dllib.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.dllib.nn.internal.KerasLayer
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.utils.RandomGenerator._
-import com.intel.analytics.bigdl.dllib.utils.{Shape, T}
+import com.intel.analytics.bigdl.dllib.utils.{Shape, T, TestUtils}
 import com.intel.analytics.bigdl.dllib.keras.autograd.Variable
 import com.intel.analytics.bigdl.dllib.keras.ZooSpecHelper
 import com.intel.analytics.bigdl.dllib.keras.layers.utils.KerasUtils
@@ -165,7 +165,7 @@ class TransformerLayerSpec extends ZooSpecHelper {
     -0.7912f, 1.1205f, -1.1806f, 0.8513f,
     -0.6202f, 1.6365f, -0.9668f, -0.0495f,
     0.5538f, 0.7061f, 0.4657f, -1.7256f), Array(4, 2, 4))
-    require(output[Tensor[Float]](1).almostEqual(expect, 7e-3) == true)
+    TestUtils.conditionFailTest(output[Tensor[Float]](1).almostEqual(expect, 7e-3) == true)
 
     val gradOutput = Tensor[Float](Array[Float](1f, 23f, 43f, 29f,
       37f, 1f, 20f, 32f,
@@ -326,7 +326,7 @@ class TransformerLayerSpec extends ZooSpecHelper {
     var i = expectGrad2.length - 1
     while (i >= 0) {
       // gradout2 is smaller than gradoutput, if use gradoutput, the diff is smaller than 7
-      require(grads(i).squeeze().almostEqual(expectGrad2(i), 0.3) == true)
+      TestUtils.conditionFailTest(grads(i).squeeze().almostEqual(expectGrad2(i), 0.3) == true)
       i -= 1
     }
   }
@@ -379,7 +379,7 @@ class TransformerLayerSpec extends ZooSpecHelper {
 
       2.7088f, 2.2557f, -0.4481f, -15.9850f,
       4.8519f, 19.4551f, -10.7697f, -6.6063f), Array(2, 2, 4))
-    require(output2.almostEqual(expectOutput, 7e-3) == true)
+    TestUtils.conditionFailTest(output2.almostEqual(expectOutput, 7e-3) == true)
 
 //    val expectGradients = Array(Tensor[Float](Array[Float](-0.8818f, 1.5712f, -0.1367f, 0.1635f,
 //      -4.3644f, -1.5773f, -1.2617f,
@@ -425,7 +425,7 @@ class TransformerLayerSpec extends ZooSpecHelper {
     model.backward(xValue, gradOValue)
     val gradients = model.parameters()._2
     for (i <- 0 until gradients.length) {
-      require(gradients(i).almostEqual(expectGradients(i), 6e-3) == true)
+      TestUtils.conditionFailTest(gradients(i).almostEqual(expectGradients(i), 6e-3) == true)
     }
   }
 
@@ -434,14 +434,14 @@ class TransformerLayerSpec extends ZooSpecHelper {
     KerasUtils.tril(data)
     val expect = Array[Float](1, 0, 0, 1, 1, 0, 1, 1, 1)
     val res = data.storage().array()
-    require(expect.deep == res.deep)
+    TestUtils.conditionFailTest(expect.deep == res.deep)
 
     val data2 = Tensor.ones[Float](4, 6)
     KerasUtils.tril(data2)
     val expect2 = Array[Float](1, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0,
       1, 1, 1, 0, 0, 0, 1, 1, 1, 1, 0, 0)
     val res2 = data2.storage().array()
-    require(expect2.deep == res2.deep)
+    TestUtils.conditionFailTest(expect2.deep == res2.deep)
   }
 
   "Conv1D" should "be generate the same result with pytorch-openai conv1d" in {
@@ -460,7 +460,7 @@ class TransformerLayerSpec extends ZooSpecHelper {
     val expect = Tensor[Float](Array[Float](750, 770, 790, 1650, 1695, 1740, 2550,
       2620, 2690, 3450,
       3545, 3640, 4350, 4470, 4590, 5250, 5395, 5540), Array(2, 3, 3))
-    require(output2.almostEqual(expect, 1e-8) == true)
+    TestUtils.conditionFailTest(output2.almostEqual(expect, 1e-8) == true)
 
     val gradOutput = Tensor[Float]((2 until 20).toArray.map(_.toFloat), Array(2, 3, 3))
     model.backward(input, gradOutput)
@@ -474,7 +474,7 @@ class TransformerLayerSpec extends ZooSpecHelper {
       Tensor[Float](Array[Float](57, 63, 69), Array(3)))
 
     for (i <- 0 until grads.length) {
-      require(grads(i).almostEqual(expectGrad(i), 1e-8) == true)
+      TestUtils.conditionFailTest(grads(i).almostEqual(expectGrad(i), 1e-8) == true)
     }
   }
 }

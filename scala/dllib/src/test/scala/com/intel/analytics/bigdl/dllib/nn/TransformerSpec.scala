@@ -17,7 +17,7 @@ package com.intel.analytics.bigdl.dllib.nn
 
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.utils.serializer.ModuleSerializationTest
-import com.intel.analytics.bigdl.dllib.utils.{T, Table}
+import com.intel.analytics.bigdl.dllib.utils.{T, Table, TestUtils}
 import org.apache.zookeeper.ZooDefs.Ids
 import org.scalatest.{FlatSpec, Matchers}
 
@@ -192,8 +192,10 @@ class TransformerLayerSpec extends FlatSpec with Matchers {
       -2.7715797, 0.37446928, 1.2208222, 1.176289)
     )
 
-    require(gradInput[Tensor[Float]](1).almostEqual(expectedGradInput1, 1e-6) == true)
-    require(gradInput[Tensor[Float]](2).almostEqual(expectedGradInput2, 1e-6) == true)
+    TestUtils.conditionFailTest(
+      gradInput[Tensor[Float]](1).almostEqual(expectedGradInput1, 1e-6) == true)
+    TestUtils.conditionFailTest(
+      gradInput[Tensor[Float]](2).almostEqual(expectedGradInput2, 1e-6) == true)
   }
 
   "tranformer for translation" should "work correctly" in {
@@ -443,7 +445,7 @@ class TransformerLayerSpec extends FlatSpec with Matchers {
     transformer.forward(T(input1, input2)).toTensor[Float]
     val output = transformer.forward(T(input1, input2)).toTensor[Float]
 
-    require(output.almostEqual(expectedOutput, 1e-5) == true)
+    TestUtils.conditionFailTest(output.almostEqual(expectedOutput, 1e-5) == true)
 
     val gradInput = transformer.backward(T(input1, input2), output)
 
@@ -686,7 +688,7 @@ class TransformerLayerSpec extends FlatSpec with Matchers {
         T(-0.3374302, 0.15798312, 0.7623861, 0.5607704),
         T( 0.42308486, 1.684835, -0.98940516, -0.6840595)))
 
-    require(logits._1.almostEqual(expectedOutput, 1e-6) == true)
+    TestUtils.conditionFailTest(logits._1.almostEqual(expectedOutput, 1e-6) == true)
   }
 
   "tranformer for translation prediction" should "work correctly" in {
@@ -1051,11 +1053,11 @@ class TransformerLayerSpec extends FlatSpec with Matchers {
 
     val g1 = o2[Tensor[Float]](1)
     val g2 = o2[Tensor[Float]](2)
-    assert(g1.almostEqual(l1, 1e-8) == true)
-    assert(g2.almostEqual(l2, 1e-8) == true)
+    TestUtils.conditionFailTest(g1.almostEqual(l1, 1e-8) == true)
+    TestUtils.conditionFailTest(g2.almostEqual(l2, 1e-8) == true)
 
     val gradInput = layer2.backward(output, o2)
-    assert(output.almostEqual(gradInput, 1e-8) == true)
+    TestUtils.conditionFailTest(output.almostEqual(gradInput, 1e-8) == true)
   }
 }
 

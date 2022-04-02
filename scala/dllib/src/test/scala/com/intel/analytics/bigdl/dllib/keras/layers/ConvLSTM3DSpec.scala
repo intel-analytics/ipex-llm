@@ -18,7 +18,7 @@ package com.intel.analytics.bigdl.dllib.keras.layers
 
 import com.intel.analytics.bigdl.dllib.nn.ConvLSTMPeephole3D
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
-import com.intel.analytics.bigdl.dllib.utils.Shape
+import com.intel.analytics.bigdl.dllib.utils.{Shape, TestUtils}
 import com.intel.analytics.bigdl.dllib.keras.ZooSpecHelper
 import com.intel.analytics.bigdl.dllib.keras.serializer.ModuleSerializationTest
 
@@ -32,7 +32,8 @@ class ConvLSTM3DSpec extends ZooSpecHelper {
     val output = layer.forward(input)
     val expectedOutputShape = layer.getOutputShape().toSingle().toArray
     val actualOutputShape = output.size()
-    require(expectedOutputShape.drop(1).sameElements(actualOutputShape.drop(1)))
+    TestUtils.conditionFailTest(
+      expectedOutputShape.drop(1).sameElements(actualOutputShape.drop(1)))
     val gradInput = layer.backward(input, output)
   }
 
@@ -45,7 +46,8 @@ class ConvLSTM3DSpec extends ZooSpecHelper {
     val output = layer.forward(input)
     val expectedOutputShape = layer.getOutputShape().toSingle().toArray
     val actualOutputShape = output.size()
-    require(expectedOutputShape.drop(1).sameElements(actualOutputShape.drop(1)))
+    TestUtils.conditionFailTest(
+      expectedOutputShape.drop(1).sameElements(actualOutputShape.drop(1)))
     val gradInput = layer.backward(input, output)
   }
 

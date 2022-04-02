@@ -20,6 +20,7 @@ import java.lang.reflect.Modifier
 
 import com.intel.analytics.bigdl.dllib.nn.abstractnn.AbstractModule
 import com.intel.analytics.bigdl.dllib.keras.layers.NoKeras2
+import com.intel.analytics.bigdl.dllib.utils.TestUtils
 import org.reflections.Reflections
 import org.reflections.scanners.SubTypesScanner
 import org.reflections.util.{ClasspathHelper, ConfigurationBuilder, FilterBuilder}
@@ -64,7 +65,8 @@ abstract class SerializerSpecHelper extends FlatSpec with Matchers with BeforeAn
         try {
           val ins = Class.forName(clsWholeName)
           val testClass = ins.getConstructors()(0).newInstance()
-          require(testClass.isInstanceOf[ModuleSerializationTest], s"$clsWholeName should be a " +
+          TestUtils.conditionFailTest(testClass.isInstanceOf[ModuleSerializationTest],
+            s"$clsWholeName should be a " +
             s"subclass of com.intel.analytics.zoo.pipeline.api.keras.layers.serializer." +
             s"ModuleSerializationTest")
           testClass.asInstanceOf[ModuleSerializationTest].test()

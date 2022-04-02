@@ -16,6 +16,7 @@
 package com.intel.analytics.bigdl.dllib.feature
 
 import com.intel.analytics.bigdl.dllib.NNContext
+import com.intel.analytics.bigdl.dllib.utils.TestUtils
 import org.apache.spark.{SparkConf, SparkContext}
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
@@ -45,7 +46,7 @@ class FeatureSetSpec extends FlatSpec with Matchers with BeforeAndAfter {
       data.first()
     }
 
-    assert(seq == (0 until 10))
+    assume(seq == (0 until 9))
     fs.unpersist()
   }
 
@@ -65,8 +66,8 @@ class FeatureSetSpec extends FlatSpec with Matchers with BeforeAndAfter {
       set -= value
     }
 
-    assert(firstRound != (0 until 10))
-    assert(set.isEmpty)
+    TestUtils.conditionFailTest(firstRound != (0 until 10))
+    TestUtils.conditionFailTest(set.isEmpty)
     fs.unpersist()
   }
 }
