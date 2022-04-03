@@ -27,7 +27,7 @@ import torchmetrics
 
 import numpy as np
 
-from test.pytorch.utils._train_torch_lightning import create_data_loader, data_transform
+from _train_torch_lightning import create_data_loader, data_transform
 from bigdl.nano.pytorch.trainer import Trainer
 from bigdl.nano.pytorch.vision.models import vision
 
