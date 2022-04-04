@@ -100,12 +100,13 @@ public class SimilarityServer extends GrpcServerBase {
 
         @Override
         public void getItemNeighbors(SimilarityProto.IDs request, StreamObserver<ItemNeighbors> responseObserver) {
+            System.out.println("received request from client:" + request.getIDList());
             List<Integer> ids = request.getIDList();
             ItemNeighbors neighbors;
             int k = 5;
             for (Integer id : ids) {
                 try {
-                    neighbors = this.getNeighborsFromRedis(id, k);
+                    neighbors = this.getNeighborsFromRedis(id);
                 } catch (StatusRuntimeException e) {
                     responseObserver.onError(Status.UNAVAILABLE.withDescription("similarity " +
                             "service unavailable: " + e.getMessage()).asRuntimeException());
@@ -116,13 +117,16 @@ public class SimilarityServer extends GrpcServerBase {
             }
         }
 
-        private ItemNeighbors getNeighborsFromRedis(Integer id, int k) {
+        private ItemNeighbors getNeighborsFromRedis(Integer id) {
 
             List<Integer> ids = Collections.singletonList(id);
-            String keyPrefix = "neighbor_";
+            String keyPrefix = "neighbor";
 
             ItemNeighbors.Builder neighborBuilder = ItemNeighbors.newBuilder();
+            System.out.println("fetch data from redis:" + id);
             List<String> values = redis.MGet(keyPrefix, ids);
+//            System.out.println(ids);
+//            System.out.println(values);
             neighborBuilder.addAllID(ids);
             neighborBuilder.addAllSimilarItems(values);
 

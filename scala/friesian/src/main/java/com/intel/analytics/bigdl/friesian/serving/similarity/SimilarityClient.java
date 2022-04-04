@@ -41,7 +41,6 @@ public class SimilarityClient {
         blockingStub = SimilarityGrpc.newBlockingStub(channel);
     }
 
-
     public ItemNeighbors getItemNeighbors(int[] userIds){
        IDs.Builder ids = IDs.newBuilder();
         for (int id: userIds) {
@@ -60,7 +59,6 @@ public class SimilarityClient {
     /** Issues several different requests and then exits. */
     public static void main(String[] args) throws InterruptedException {
         Configurator.setLevel("org", Level.ERROR);
-
         CMDParser cmdParser = new CMDParser();
         cmdParser.addOption("target", "The server to connect to.", "localhost:8980");
         cmdParser.addOption("dataDir", "The data file.", "wnd_user.parquet");
@@ -75,6 +73,10 @@ public class SimilarityClient {
         int dataNum = 10;
         int[] userList = Utils.loadItemData(dir, "tweet_id", dataNum);
         ItemNeighbors itemNeighbors = client.getItemNeighbors(userList);
+        for (int i = 0; i < 5; i++) {
+            System.out.println(userList[i]);
+            System.out.println(itemNeighbors.getSimilarItemsList());
+        }
 
         System.out.println("item:" + itemNeighbors);
         System.out.println("Total user number: " + dataNum);

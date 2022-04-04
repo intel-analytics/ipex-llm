@@ -65,13 +65,15 @@ object FeatureNearlineUtils {
       "should be provided if loadInitialSimilarData is true")
     if (NearlineUtils.helper.initialItemDataPath != null) {
       assert(NearlineUtils.helper.itemIDColumn != null)
-      assert(NearlineUtils.helper.userFeatureColumns != null)
+      assert(NearlineUtils.helper.itemFeatureColumns != null)
       logger.info("Start loading similar items...")
-      redis.setSchema("item_neighbor", NearlineUtils.helper.userFeatureColumns)
+
+      val colNames = NearlineUtils.helper.itemFeatureColumns.mkString(",")
+      redis.setSchema("neighbor", colNames)
       val neighborCOlumns = Array[String](NearlineUtils.helper.itemIDColumn,
-        NearlineUtils.helper.userFeatureColumns)
+        NearlineUtils.helper.itemFeatureColumns)
       divideFileAndLoad1(spark, NearlineUtils.helper.initialItemDataPath, neighborCOlumns,
-        "item_neighbor")
+        "neighbor")
     }
     logger.info(s"Insert finished")
   }

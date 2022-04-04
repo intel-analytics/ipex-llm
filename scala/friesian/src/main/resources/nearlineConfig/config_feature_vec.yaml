@@ -8,7 +8,7 @@ redisClusterItemSlotType:
 
 # default: null, one of initialUserDataPath or initialItemDataPath must be
 # provided. Only support parquet file
-initialUserDataPath: /home/yina/Documents/data/friesian-demo/vec_feature_user_prediction.parquet
+initialUserDataPath: /Users/guoqiong/intelWork/data/friesian_service/from_yina/user_ebd.parquet
 
 # default: null, if loadInitialData=true and initialUserDataPath != null, userIDColumn and
 # userFeatureColumns must be provided

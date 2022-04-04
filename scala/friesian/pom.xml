@@ -260,6 +260,7 @@
     </dependencies>
 
     <build>
+        <!--
         <extensions>
             <extension>
                 <groupId>kr.motd.maven</groupId>
@@ -267,6 +268,7 @@
                 <version>1.6.2</version>
             </extension>
         </extensions>
+        -->
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>

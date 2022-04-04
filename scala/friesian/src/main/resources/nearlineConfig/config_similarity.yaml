@@ -12,4 +12,4 @@ initialItemDataPath: /Users/guoqiong/intelWork/data/friesian_service/from_yina/i
 # default: null, if loadInitialData=true and initialUserDataPath != null, userIDColumn and
 # userFeatureColumns must be provided
 itemIDColumn: tweet_id
-userFeatureColumns: neighbor
+itemFeatureColumns: neighbor

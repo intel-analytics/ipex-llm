@@ -222,6 +222,11 @@ public class LettuceUtils {
                 redisKeys[i] = this.redisKeyPrefix + keyPrefix + ":" + keys[i];
             }
         }
+
+        System.out.println("----------redis-key--------------");
+        for(String e: redisKeys) {
+            System.out.println(e);
+        }
         return MGet(redisKeys);
     }
 
