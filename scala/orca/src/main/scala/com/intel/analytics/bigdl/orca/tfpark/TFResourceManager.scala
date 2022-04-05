@@ -19,6 +19,7 @@ package com.intel.analytics.bigdl.orca.tfpark
 import java.nio._
 
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
+import com.intel.analytics.bigdl.dllib.utils.Log4Error
 import org.tensorflow.types.UInt8
 import org.tensorflow.{DataType, Tensor => TTensor}
 
@@ -91,7 +92,7 @@ class TFResourceManager() extends java.io.Serializable {
 
   def bigdl2Tf(t: Tensor[_], dataType: DataType): TTensor[_] = {
 
-    require(t.isContiguous(), "input to tfnet must be contiguous")
+    Log4Error.unKnowExceptionError(t.isContiguous(), "input to tfnet must be contiguous")
     val shape = t.size().map(_.toLong)
     val arr = t.storage().array()
     val offset: Int = t.storageOffset() - 1
@@ -122,7 +123,8 @@ class TFResourceManager() extends java.io.Serializable {
       val buffer = ByteBuffer.wrap(floatToBool(floatArr), offset, length)
       createBoolTFTensor(shape, buffer)
     } else if (dataType == DataType.STRING) {
-      require(shape.length <= 1)
+      Log4Error.unKnowExceptionError(shape.length <= 1,
+        s"shape length ${shape.length} is greater than 1")
       arr match {
         case a: Array[String] =>
           createStringTFTensor(a.slice(offset, offset + length))
@@ -190,7 +192,8 @@ class TFResourceManager() extends java.io.Serializable {
   def tensor2TFTensors(input: Seq[Tensor[_]], types: Seq[DataType],
                                tfTensors: Array[TTensor[_]]): Unit = {
     val t = input
-    require(tfTensors.length == t.length, "activity and tfTensors size does not equal," +
+    Log4Error.unKnowExceptionError(tfTensors.length == t.length,
+      "activity and tfTensors size does not equal," +
       s" activity length is ${t.length} tfTensors length is ${tfTensors.length}")
     var i = 0
     while (i < t.length) {
