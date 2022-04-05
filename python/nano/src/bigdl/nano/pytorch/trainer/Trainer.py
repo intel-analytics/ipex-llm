@@ -60,6 +60,7 @@ class Trainer(pl.Trainer):
                  distributed_backend="subprocess",
                  cpu_for_each_process: Optional[List[List[int]]] = None,
                  use_hpo=False,
+                 process_start_method: str = "spawn",
                  *args: Any, **kwargs: Any) -> None:
         """
         A pytorch lightning trainer that uses bigdl-nano optimization.
@@ -160,6 +161,41 @@ class Trainer(pl.Trainer):
                     strategy = DDPSubprocessStrategy(num_processes=num_processes,
                                                      cpu_for_each_process=cpu_for_each_process,
                                                      use_ipex=self.use_ipex,
+            assert distributed_backend in distributed_backends, \
+                f"Distributed backends supported now are spawn and ray," \
+                " but get {distributed_backend}."
+            if distributed_backend == "spawn":
+                if use_ipex:
+                    device = ipex_device()
+                else:
+                    device = "cpu"
+                plugin = DDPSpawnPlugin(parallel_devices=[
+                    torch.device(device) for _ in range(num_processes)],
+                    cpu_for_each_process=cpu_for_each_process,
+                    cluster_environment=LightningEnvironment())
+            elif distributed_backend == "subprocess":
+                from bigdl.nano.pytorch.plugins.ddp_subprocess import DDPSubprocessPlugin
+                if use_ipex:
+                    import intel_pytorch_extension as ipex
+                    device = ipex.DEVICE
+                else:
+                    device = "cpu"
+                plugin = DDPSubprocessPlugin(parallel_devices=[
+                    torch.device(device) for _ in range(num_processes)],
+                    cpu_for_each_process=cpu_for_each_process,
+                    process_start_method=process_start_method,
+                    cluster_environment=LightningEnvironment())
+            elif distributed_backend == "ray":
+                # Import RayPlugins may entangle with openmp even if it has not been used,
+                # which leads to an unacceptably low performance.
+                # So we import when we need.
+                plugin = distributed_ray(num_workers=num_processes,  # type: ignore
+                                         use_ipex=use_ipex,
+                                         device=ipex_device())
+
+            accelerator = None
+            if use_ipex:
+                accelerator = create_IPEXAccelerator(training_type_plugin=plugin,  # type: ignore
                                                      enable_bf16=enable_bf16)
                 elif distributed_backend == "ray":
                     from bigdl.nano.pytorch.strategies import RayStrategy

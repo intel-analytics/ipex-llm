@@ -118,6 +118,8 @@ class DDPSpawnPlugin(pl.plugins.DDPSpawnPlugin):
         cpu_for_each_process: Optional[List[List[int]]] = None,
         use_ipex=False,
         enable_bf16=False,
+        process_start_method: str = "spawn",
+        **kwargs: Any,
     ):
         """Create a DDPSpawnPlugin, adding a cpu_for_each_process parameter."""
         device = ipex_device() if use_ipex and TORCH_VERSION_LESS_1_10 else 'cpu'
@@ -127,6 +129,7 @@ class DDPSpawnPlugin(pl.plugins.DDPSpawnPlugin):
         super().__init__(parallel_devices,
                          cluster_environment=cluster_environment)
         self.cpu_for_each_process = cpu_for_each_process
+        self.process_start_method = process_start_method
         self.is_distributed = True
         self.use_ipex = use_ipex
         self.enable_bf16 = enable_bf16
@@ -137,7 +140,8 @@ class DDPSpawnPlugin(pl.plugins.DDPSpawnPlugin):
         return {
             "args": (self.lightning_module.trainer, self.mp_queue),
             "nprocs": self.num_processes,
-            "cpu_procs": self.cpu_for_each_process
+            "cpu_procs": self.cpu_for_each_process,
+            "start_method": self.process_start_method,
         }
 
     def start_training(self, trainer):
