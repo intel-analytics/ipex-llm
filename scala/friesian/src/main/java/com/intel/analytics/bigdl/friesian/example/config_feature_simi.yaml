@@ -3,12 +3,9 @@
 # default: "", prefix for redis key
 redisKeyPrefix: 2tower_
 
-# default: 0, item slot type on redis cluster. 0 means slot number use the default value 16384, 1 means all keys save to same slot, 2 means use the last character of id as hash tag.
-redisClusterItemSlotType:
-
 # default: null, one of initialUserDataPath or initialItemDataPath must be
 # provided. Only support parquet file
-initialItemDataPath: /Users/guoqiong/intelWork/data/friesian_service/from_yina/item_ebd.parquet
+initialItemDataPath: /opt/work/similarity/item_ebd.parquet
 
 # default: null, if loadInitialData=true and initialItemDataPath != null, itemIDColumn and
 # itemFeatureColumns must be provided
@@ -16,5 +13,9 @@ itemIDColumn: tweet_id
 itemFeatureColumns: prediction
 
 ### Redis Configuration
-# default: localhost:6379
-# redisUrl: 10.239.158.177:12000,10.239.158.177:12001,10.239.158.177:12002
+# Default: 8085, which port to create the server
+servicePort: 8085
+
+# Default: null, open a port for prometheus monitoring tool, if set, user can check the
+# performance using prometheus
+monitorPort: 1236

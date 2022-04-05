@@ -1,31 +1,40 @@
-# Recommend items using Friesian-Serving API
+# Recommend items using Friesian-Serving Framewrok
 
-This example shows how to recommend items for each item in a list based on item to item similarity.
+This example shows how to recommend items for each item based on item to item similarity.
 
-## steps to run this exmaple
+## steps to run this example
 
-1. Prepare Data and model
-    Follow example of Friesian to train a two tower model, generate item embeddings.
-2. Load item embeddings into redis and build faiss index
-    Load item embeddings into redis 
+1. Prepare features and embeddings
+   Follow example of Friesian to train a two tower model, generate item embeddings.
+2. Follow instructions[https://github.com/intel-analytics/BigDL/tree/main/scala/friesian#quick-start
+   ] to Pull docker image and start container
+3. Load item embeddings into redis
 ```
-bash start_service.sh feature-init -c nfs/guoqiong/similarity/config_simi_feature_init.yaml
+export SERVING_JAR_PATH=bigdl-friesian-spark_2.4.6-2.1.0-SNAPSHOT-serving.jar
+export OMP_NUM_THREADS=1
+echo "Starting loading initial features......"
+java -Dspark.master=local[*] -cp $SERVING_JAR_PATH com.intel.analytics.bigdl.friesian.nearline.feature.FeatureInitializer -c /opt/work/similarity/config_feature_simi.yaml
+
 ```
-3. build item embedding into faiss index
- ```
- bash start_service.sh recall-init -c nfs/guoqiong/similarity/config_simi_recall_init.yaml
- ```
-4. Start Feature Service
+4. Build and load faiss index
 ```
- bash start_service.sh feature -c nfs/guoqiong/config_simi_feature.yaml > feature.log 2>&1 &
+echo "Starting initializing recall index......"
+java -Dspark.master=local[*] -cp $SERVING_JAR_PATH com.intel.analytics.bigdl.friesian.nearline.recall.RecallInitializer  -c /opt/work/similarity/config_recall_simi.yaml ```
 ```
-5. Start recall service
+5. Start feature service
 ```
- bash start_service.sh feature -c nfs/guoqiong/config_simi_recall.yaml > recall.log 2>&1 &
+echo "Starting feature service......"
+java -cp $SERVING_JAR_PATH com.intel.analytics.bigdl.friesian.serving.feature.FeatureServer -c /opt/work/similarity/config_feature_simi.yaml 
+```
+6. Start recall service
+```
+echo "Starting recall service......"
+java -cp $SERVING_JAR_PATH com.intel.analytics.bigdl.friesian.serving.recall.RecallServer -c /opt/work/similarity/config_recall_simi.yaml 
 ```
 7. Start SimilarityClient
 ```
-start_service.sh client -target localhost:8980 -dataDir nfs/guoqiong/wnd_item.parquet -k 50
+echo "Starting similarity client......"
+java -Dspark.master=local[*] -cp $SERVING_JAR_PATH com.intel.analytics.bigdl.friesian.example.SimilarityClient -target localhost:8084 -dataDir /opt/work/similarity/item_ebd.parquet
 ```
 
 

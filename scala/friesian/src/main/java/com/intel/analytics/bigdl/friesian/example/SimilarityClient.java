@@ -42,7 +42,6 @@ import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
-
 public class SimilarityClient {
     private static final Logger logger = LogManager.getLogger(com.intel.analytics.bigdl.friesian.example.SimilarityClient.class.getName());
 
@@ -109,7 +108,7 @@ public class SimilarityClient {
 
     public void printCandidates(int id, Candidates candidates) {
         List<Integer> candidateList = candidates.getCandidateList();
-        System.out.printf("UserID %d: Candidates: ", id);
+        System.out.printf("ID %d: Candidates: ", id);
         StringBuilder sb = new StringBuilder();
         for (Integer candidate: candidateList) {
             sb.append(candidate).append('\t');
@@ -123,8 +122,8 @@ public class SimilarityClient {
         Configurator.setLevel("org", Level.ERROR);
 
         CMDParser cmdParser = new CMDParser();
-        cmdParser.addOption("target", "The server to connect to.", "localhost:8980");
-        cmdParser.addOption("dataDir", "The data file.", "wnd_user.parquet");
+        cmdParser.addOption("target", "The server to connect to.", "localhost:8085");
+        cmdParser.addOption("dataDir", "The data file.", "item_ebd.parquet");
 
         cmdParser.parseOptions(args);
         String target = cmdParser.getOptionValue("target");
@@ -133,10 +132,11 @@ public class SimilarityClient {
         ManagedChannel channel = ManagedChannelBuilder.forTarget(target).usePlaintext().build();
         com.intel.analytics.bigdl.friesian.example.SimilarityClient client = new com.intel.analytics.bigdl.friesian.example.SimilarityClient(channel);
 
-        int[] item_list = Utils.loadItemData(dir, "tweet_id", 100);
+        int[] item_list = Utils.loadUserData(dir, "tweet_id", 100);
+
         for (int id: item_list) {
             Timer.Context searchContext = searchTimer.time();
-            client.search(id, 50);
+            client.search(id, 10);
             searchContext.stop();
         }
         client.getClientMetrics();
