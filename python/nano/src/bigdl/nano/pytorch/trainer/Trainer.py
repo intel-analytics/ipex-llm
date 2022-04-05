@@ -70,6 +70,9 @@ class Trainer(pl.Trainer):
         :param cpu_for_each_process: A list of length `num_processes`, each containing a list of
             indices of cpus each process will be using. default: None, and the cpu will be
             automatically and evenly distributed among processes.
+        :param process_start_method: A string states the start method for process during
+               multiprocessing training. default: "spawn", possible methods include "spawn" and
+               "fork". "fork" is to-be-verified and does not support Windows.
         """
         # Check keyword arguments
         if "accelerator" in kwargs:
@@ -100,6 +103,18 @@ class Trainer(pl.Trainer):
             warning("Enable ipex<=1.10 in a cpu instruction set"
                     " without avx512 will crash."
                     "Fall back to regular pytorch.")
+                raise ValueError(f"The length of `cpu_for_each_process` ("
+                                 f"{len(cpu_for_each_process)}) is not equal to the number of"
+                                 f" processes {num_processes}.")
+        if not cpu_for_each_process in ["spawn", "fork"]:
+            raise ValueError(f"`cpu_for_each_process` can only be one of"
+                             f"[\"spawn\", \"fork\"], but get {cpu_for_each_process}.")
+
+        # Initialize trainer
+        if use_ipex and not check_avx512():
+            warning("Enable ipex in a cpu instruction set"
+                    " without avx512 may cause some random error."
+                    "Fall back to cpu device.")
             use_ipex = False
 
         self.use_ipex = use_ipex
