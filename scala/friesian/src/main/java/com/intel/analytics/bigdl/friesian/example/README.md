@@ -5,9 +5,8 @@ This example shows how to recommend items for each item based on item to item si
 ## steps to run this example
 
 1. Prepare features and embeddings
-   Follow example of Friesian to train a two tower model, generate item embeddings.
-2. Follow instructions[https://github.com/intel-analytics/BigDL/tree/main/scala/friesian#quick-start
-   ] to Pull docker image and start container
+   Follow example of [Friesian](https://github.com/intel-analytics/BigDL/tree/main/python/friesian/example/two_towe) to train a two tower model, generate item embeddings.
+2. Follow [instructions](https://github.com/intel-analytics/BigDL/tree/main/scala/friesian#quick-start) to Pull docker image and start container
 3. Load item embeddings into redis
 ```
 export SERVING_JAR_PATH=bigdl-friesian-spark_2.4.6-2.1.0-SNAPSHOT-serving.jar
