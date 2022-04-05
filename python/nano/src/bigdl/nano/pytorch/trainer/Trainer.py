@@ -106,7 +106,7 @@ class Trainer(pl.Trainer):
                 raise ValueError(f"The length of `cpu_for_each_process` ("
                                  f"{len(cpu_for_each_process)}) is not equal to the number of"
                                  f" processes {num_processes}.")
-        if not cpu_for_each_process in ["spawn", "fork"]:
+        if cpu_for_each_process not in ["spawn", "fork"]:
             raise ValueError(f"`cpu_for_each_process` can only be one of"
                              f"[\"spawn\", \"fork\"], but get {cpu_for_each_process}.")
 
