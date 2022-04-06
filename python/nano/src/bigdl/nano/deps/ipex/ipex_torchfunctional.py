@@ -17,10 +17,26 @@
 
 import torch
 from torch.nn import functional as F
-from typing import Callable
-
 from torch import Tensor
+from typing import Callable, Dict, List, Tuple
+import pickle
+import copy
+from logging import warning
+
 _cross_entropy = F.cross_entropy
+_torch_save = torch.save
+
+# To replace torch.save in ipex, you need to import and exec their __init__.py first.
+# And then you can replace torch.save with your customized function.
+try:
+    from intel_pytorch_extension.ops.save import *
+except ImportError:
+    warning("IPEXAccelerator requires intel_pytorch_extension installed, \
+    please run `pip install torch_ipex -f https://software.intel.com/ipex-whl-stable` \
+    to get IPEX ready.")
+    # process needs to stop here
+    raise ImportError
+
 
 
 def replace_torch_function(function_name: str, replace_func: Callable):
@@ -61,3 +77,47 @@ replacement_dict = {
 def apply_torch_functional_replacement():
     for k, v in replacement_dict.items():
         replace_torch_function(k, v)
+
+# Note that you need to temporarily store original torch.save,
+# because it will be modified in ipex.ops.save.
+torch.save = _torch_save
+
+
+RESTORE_TYPE = (torch.Tensor, Dict, List, Tuple)
+
+DEFAULT_PROTOCOL = 2
+
+torch_save = torch.save
+
+def to_cpu(obj):
+    # Recursively move the tensor in the output to the cpu inplace.
+    if torch.is_tensor(obj):
+        if obj.device.type == 'xpu':
+            obj = obj.cpu()
+        return obj
+
+    if isinstance(obj, RESTORE_TYPE):
+        iter_keys = obj.keys() if isinstance(obj, Dict) else range(len(obj))
+        for k in iter_keys:
+            if isinstance(obj[k], RESTORE_TYPE):
+                obj[k] = to_cpu(obj[k])
+
+    return obj
+    
+def nano_save(obj, f, pickle_module=pickle, pickle_protocol=DEFAULT_PROTOCOL,
+              _use_new_zipfile_serialization=False):
+    # Extend original `save` defined in ipex.ops.save
+    # to support converting a list of xpu tensor to cpu in torch.save
+    if isinstance(obj, RESTORE_TYPE):
+        obj_copy = copy.deepcopy(obj)
+        obj_copy = to_cpu(obj_copy)
+    elif isinstance(obj, torch.nn.Module):
+        obj_copy = copy.deepcopy(obj).to('cpu')
+    else:
+        obj_copy = obj
+
+    return torch_save(obj_copy, f, pickle_module, pickle_protocol, _use_new_zipfile_serialization)
+
+torch.save = nano_save
+
+apply_torch_functional_replacement()

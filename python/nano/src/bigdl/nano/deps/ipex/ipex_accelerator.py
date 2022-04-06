@@ -29,7 +29,7 @@ from pytorch_lightning.plugins.training_type import TrainingTypePlugin
 from pytorch_lightning.plugins.precision import PrecisionPlugin, MixedPrecisionPlugin
 from pytorch_lightning.utilities.exceptions import MisconfigurationException
 
-from . import to_cpu
+from .ipex_torchfunctional import to_cpu
 
 _STEP_OUTPUT_TYPE = Union[torch.Tensor, Dict[str, Any]]
 
