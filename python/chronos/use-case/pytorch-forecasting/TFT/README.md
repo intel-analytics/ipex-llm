@@ -21,8 +21,4 @@ bigdl-nano-init python tft.py
 ```
 
 ## Results
-The training of TFT model using nano Trainer can reach an average speed of 3.1 iter/s, while the speed of training without nano Trainer is around 1.5 iter/s in average. We can see that the training speed is significantly improved.
-
-* CPU info
-    * model name: Intel(R) Xeon(R) Gold 6252 CPU @ 2.10GHz
-    * cpu cores: 48
+In an experimental platform, the training speed of TFT model using nano Trainer is 3.5 times the speed of the training without nano Trainer. We can see that the training speed is significantly improved.
