@@ -20,7 +20,7 @@ import com.intel.analytics.bigdl.dllib.nn.abstractnn.AbstractModule
 import com.intel.analytics.bigdl.dllib.nn.internal.KerasLayer
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.dllib.utils.Shape
+import com.intel.analytics.bigdl.dllib.utils.{Log4Error, Shape}
 import com.intel.analytics.bigdl.dllib.keras.Net
 import com.intel.analytics.bigdl.dllib.keras.layers.utils.KerasUtils
 
@@ -62,15 +62,16 @@ class Narrow[T: ClassTag](
   private def getPositiveDimAndLength(inputShape: Shape): (Int, Int) = {
     val input = inputShape.toSingle().toArray
     val positiveDim = if (dim < 0) dim + input.length else dim
-    require(positiveDim >= 0 && positiveDim <= input.length - 1,
+    Log4Error.invalidInputError(positiveDim >= 0 && positiveDim <= input.length - 1,
       s"Invalid select dim: $dim, dim should be within range [0, ${input.length - 1}]")
     val positiveLength = if (length < 0) length + input(positiveDim) - offset + 1 else length
     // batch dimension is always -1 for now, so we skip the checking here.
     if(dim > 0) {
-      require(offset >= 0 && offset <= input(positiveDim) -1,
+      Log4Error.invalidInputError(offset >= 0 && offset <= input(positiveDim) -1,
         s"Invalid narrow offset for dim $dim: $offset, " +
           s"offset should be within range [0, ${input(positiveDim) - 1}]")
-      require(positiveLength > 0 && positiveLength <= input(positiveDim) - offset,
+      Log4Error.invalidInputError(positiveLength > 0 &&
+        positiveLength <= input(positiveDim) - offset,
         s"Invalid narrow length for dim $dim with offset $offset: $length, " +
           s"length should be within range (0, ${input(positiveDim) - offset}]")
     }

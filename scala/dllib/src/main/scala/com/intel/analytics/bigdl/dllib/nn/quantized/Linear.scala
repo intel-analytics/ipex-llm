@@ -22,7 +22,7 @@ import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.dllib.tensor._
 import com.intel.analytics.bigdl.dllib.utils.serializer._
 import com.intel.analytics.bigdl.dllib.utils.serializer.converters.DataConverter
-import com.intel.analytics.bigdl.dllib.utils.{T, Table}
+import com.intel.analytics.bigdl.dllib.utils.{Log4Error, T, Table}
 
 import scala.reflect.ClassTag
 import com.intel.analytics.bigdl.serialization.Bigdl.{AttrValue, BigDLModule}
@@ -53,7 +53,7 @@ private[bigdl] class Linear[T: ClassTag](
   }
 
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
-    require(input.dim() == 1 || input.dim() == 2,
+    Log4Error.invalidInputError(input.dim() == 1 || input.dim() == 2,
       "bigquant.Linear: " + ErrorInfo.constrainInputAsVectorOrBatch)
 
     val batchSize = if (input.dim() == 1) {
@@ -61,7 +61,7 @@ private[bigdl] class Linear[T: ClassTag](
       1
     } else {
       output.resize(Array(input.size(1), outputSize))
-      require(inputSize == input.size(2), s"dimension error")
+      Log4Error.invalidInputError(inputSize == input.size(2), s"dimension error")
       input.size(1)
     }
 

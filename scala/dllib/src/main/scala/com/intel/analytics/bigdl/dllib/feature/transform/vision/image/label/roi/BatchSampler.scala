@@ -18,6 +18,7 @@ package com.intel.analytics.bigdl.dllib.feature.transform.vision.image.label.roi
 
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.feature.transform.vision.image.util.{BboxUtil, BoundingBox}
+import com.intel.analytics.bigdl.dllib.utils.Log4Error
 import com.intel.analytics.bigdl.dllib.utils.RandomGenerator._
 
 import scala.collection.mutable.ArrayBuffer
@@ -42,13 +43,15 @@ class BatchSampler(maxSample: Int = 1, maxTrials: Int = 50,
   minOverlap: Option[Double] = None,
   maxOverlap: Option[Double] = None) extends Serializable {
 
-  require(minScale <= maxScale, "minScale must <= maxScale")
-  require(minScale > 0 && minScale <= 1, "minScale must in (0, 1]")
-  require(maxScale > 0 && maxScale <= 1, "maxScale must in (0, 1]")
-  require(minAspectRatio > 0 && minAspectRatio <= 1, "minAspectRatio must in (0, 1]")
-  require(maxAspectRatio >= 1, "minAspectRatio must >= 1")
+  Log4Error.invalidInputError(minScale <= maxScale, "minScale must <= maxScale")
+  Log4Error.invalidInputError(minScale > 0 && minScale <= 1, "minScale must in (0, 1]")
+  Log4Error.invalidInputError(maxScale > 0 && maxScale <= 1, "maxScale must in (0, 1]")
+  Log4Error.invalidInputError(minAspectRatio > 0 && minAspectRatio <= 1,
+    "minAspectRatio must in (0, 1]")
+  Log4Error.invalidInputError(maxAspectRatio >= 1, "minAspectRatio must >= 1")
   if (minOverlap.isDefined) {
-    require(minOverlap.get >= 0 && minOverlap.get <= 1, "minOverlap must in [0, 1]")
+    Log4Error.invalidInputError(minOverlap.get >= 0 && minOverlap.get <= 1,
+      "minOverlap must in [0, 1]")
   }
 
   def satisfySampleConstraint(sampledBox: BoundingBox, target: RoiLabel): Boolean = {

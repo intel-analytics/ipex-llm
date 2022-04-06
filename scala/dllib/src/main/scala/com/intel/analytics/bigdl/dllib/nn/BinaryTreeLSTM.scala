@@ -22,7 +22,7 @@ import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.dllib.utils.serializer._
 import com.intel.analytics.bigdl.dllib.utils.serializer.converters.DataConverter
-import com.intel.analytics.bigdl.dllib.utils.{T, Table}
+import com.intel.analytics.bigdl.dllib.utils.{Log4Error, T, Table}
 import com.intel.analytics.bigdl.serialization.Bigdl.{AttrValue, BigDLModule}
 
 import scala.collection.mutable.ArrayBuffer
@@ -512,7 +512,7 @@ object BinaryTreeLSTM extends ModuleSerializable {
  */
 class TensorTree[T: ClassTag](val content: Tensor[T])
   (implicit ev: TensorNumeric[T]) extends Serializable {
-  require(content.dim() == 2,
+  Log4Error.invalidInputError(content.dim() == 2,
     "The content of TensorTree should be a two-dimensional tensor" +
       s"content dim(${content.dim()})")
   def size: Array[Int] = content.size()

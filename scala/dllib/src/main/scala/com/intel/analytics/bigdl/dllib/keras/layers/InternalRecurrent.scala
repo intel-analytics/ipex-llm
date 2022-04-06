@@ -21,7 +21,7 @@ import com.intel.analytics.bigdl.dllib.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.serialization.Bigdl.{AttrValue, BigDLModule}
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.dllib.utils.Table
+import com.intel.analytics.bigdl.dllib.utils.{Log4Error, Table}
 import com.intel.analytics.bigdl.dllib.utils.serializer.converters.DataConverter
 import com.intel.analytics.bigdl.dllib.utils.serializer.{ContainerSerializable, DeserializeContext, ModuleSerializer, SerializeContext}
 import com.intel.analytics.bigdl.dllib.keras.layers.{InternalConvLSTM2D, InternalConvLSTM3D}
@@ -47,7 +47,7 @@ class InternalRecurrent[T: ClassTag](
 
   // get gradient hidden state at the first time step
   def getGradHiddenState(): Activity = {
-    require(cells != null && cells(0).gradInput != null,
+    Log4Error.invalidOperationError(cells != null && cells(0).gradInput != null,
       "getGradHiddenState need to be called after backward")
     cells(0).gradInput.toTable(hidDim)
   }
@@ -78,7 +78,7 @@ class InternalRecurrent[T: ClassTag](
 
   // fix not support "valid" padding issue for convlstm, it would be better fix in BigDL
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
-    require(input.dim == 3 || input.dim == 5 || input.dim == 6,
+    Log4Error.invalidInputError(input.dim == 3 || input.dim == 5 || input.dim == 6,
       "Recurrent: input should be a 3D/5D/6D Tensor, e.g [batch, times, nDim], " +
         s"current input.dim = ${input.dim}")
 

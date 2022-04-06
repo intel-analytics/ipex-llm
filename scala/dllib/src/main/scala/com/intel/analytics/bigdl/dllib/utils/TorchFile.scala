@@ -99,7 +99,7 @@ object TorchFile {
       overWrite: Boolean = false): Unit = {
     val file = new java.io.File(fileName)
     if (file.exists()) {
-      require(file.isFile(), s"$fileName is not a file")
+      Log4Error.invalidInputError(file.isFile(), s"$fileName is not a file")
       if (!overWrite) {
         throw new FileAlreadyExistsException(fileName)
       } else { // clear the file
@@ -467,7 +467,7 @@ object TorchFile {
 
   private def writeSpatialConvolution(source: SpatialConvolution[_], rawData: ByteBuffer,
     path: Path): Unit = {
-    require(source.nGroup == 1, "nGroup is not supported in torch")
+    Log4Error.invalidInputError(source.nGroup == 1, "nGroup is not supported in torch")
     val table: Table = T()
     writeGeneralParameters(source, table)
     table("nInputPlane") = source.nInputPlane
@@ -1051,7 +1051,7 @@ object TorchFile {
     val result = View[T](elements("size").asInstanceOf[Array[Int]])
     result.setNumInputDims(elements.getOrElse("numInputDims", 0.0).toInt)
     val numElements = elements.getOrElse("numElements", - 1.0).toInt
-    require(result.numElements == numElements, "Invalid view file")
+    Log4Error.invalidInputError(result.numElements == numElements, "Invalid view file")
     result
   }
 

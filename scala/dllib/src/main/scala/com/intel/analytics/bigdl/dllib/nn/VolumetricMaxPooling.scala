@@ -19,6 +19,7 @@ package com.intel.analytics.bigdl.dllib.nn
 import com.intel.analytics.bigdl.dllib.nn.abstractnn.{AbstractModule, Activity, TensorModule}
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.dllib.utils.Log4Error
 import com.intel.analytics.bigdl.dllib.utils.serializer._
 import com.intel.analytics.bigdl.dllib.utils.serializer.converters.DataConverter
 import org.codehaus.jackson.map.DeserializationContext
@@ -76,13 +77,13 @@ class VolumetricMaxPooling[T: ClassTag](
   }
 
 
-  require(kT > 0 && kW > 0 && kH > 0,
+  Log4Error.invalidInputError(kT > 0 && kW > 0 && kH > 0,
     s"kernel size should be greater than zero, but got kT: $kT kH: $kH kW: $kW")
 
-  require(dT > 0 && dW > 0 && dH > 0,
+  Log4Error.invalidInputError(dT > 0 && dW > 0 && dH > 0,
     s"stride should be greater than zero, but got dT: $dT dH: $dH dW: $dW")
 
-  require(kT / 2 >= padT && kW / 2 >= padW && kH / 2 >= padH,
+  Log4Error.invalidInputError(kT / 2 >= padT && kW / 2 >= padW && kH / 2 >= padH,
     "pad should be smaller than half of kernel size, but got " +
       s"kT: $kT kH: $kH kW: $kW, padT: $padT, padW: $padW, padH: $padH")
 
@@ -93,9 +94,9 @@ class VolumetricMaxPooling[T: ClassTag](
    * @return
    */
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
-    require(input.dim() == 4 || input.dim() == 5,
+    Log4Error.invalidInputError(input.dim() == 4 || input.dim() == 5,
       s"4D or 5D (batch mode) tensor expected for input, but got: ${ input.dim() }")
-    require(input.isContiguous(), "input is not contiguous")
+    Log4Error.invalidInputError(input.isContiguous(), "input is not contiguous")
     val dimt = input.dim() - 2
     val dimh = input.dim() - 1
     val dimw = input.dim()
@@ -124,7 +125,7 @@ class VolumetricMaxPooling[T: ClassTag](
       if ((oheight - 1) * dH >= iheight + padH) oheight -= 1
       if ((owidth - 1) * dW >= iwidth + padW) owidth -= 1
     }
-    require(otime >= 1 && owidth >= 1 && oheight >= 1,
+    Log4Error.invalidInputError(otime >= 1 && owidth >= 1 && oheight >= 1,
       s"Given input size: (${ nslices }x${ itime }x${ iheight }x${ iwidth })." +
         s" Calculated output size:" +
         s" (${ nslices }x${ otime }x${ oheight }x${ owidth }). Output size is too small")
@@ -220,7 +221,7 @@ class VolumetricMaxPooling[T: ClassTag](
     val owidth = gradOutput.size(dimw)
 
     gradInput.resizeAs(input).zero()
-    require(gradOutput.isContiguous(), "gradOutput is not contiguous")
+    Log4Error.invalidInputError(gradOutput.isContiguous(), "gradOutput is not contiguous")
 
     if (input.dim() == 4) {
       // non-batch mode

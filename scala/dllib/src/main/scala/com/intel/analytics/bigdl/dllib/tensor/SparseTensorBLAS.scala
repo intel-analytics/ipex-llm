@@ -17,6 +17,7 @@
 package com.intel.analytics.bigdl.dllib.tensor
 
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath._
+import com.intel.analytics.bigdl.dllib.utils.Log4Error
 
 object SparseTensorBLAS {
 
@@ -41,7 +42,8 @@ object SparseTensorBLAS {
 
   private def vdotFloat(vec1: DenseTensor[Float],
                    vec2: SparseTensor[Float]): Float = {
-    require(vec1.isContiguous(), "The DenseTensor must be contiguous")
+    Log4Error.unKnowExceptionError(vec1.isContiguous(),
+      "The DenseTensor must be contiguous")
 
     val vec1Values = vec1.storage().array()
     val vec1StorageOffset = vec1.storageOffset() - 1
@@ -70,7 +72,8 @@ object SparseTensorBLAS {
 
   private def vdotDouble(vec1: DenseTensor[Double],
                    vec2: SparseTensor[Double]): Double = {
-    require(vec1.isContiguous(), "The DenseTensor must be contiguous")
+    Log4Error.unKnowExceptionError(vec1.isContiguous(),
+      "The DenseTensor must be contiguous")
 
     val vec1Values = vec1.storage().array()
     val vec1StorageOffset = vec1.storageOffset() - 1

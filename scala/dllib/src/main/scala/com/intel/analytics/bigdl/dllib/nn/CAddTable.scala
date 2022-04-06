@@ -21,7 +21,7 @@ import javax.print.attribute.standard.MediaSize.Other
 import com.intel.analytics.bigdl.dllib.nn.abstractnn.AbstractModule
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.dllib.utils.{T, Table}
+import com.intel.analytics.bigdl.dllib.utils.{Log4Error, T, Table}
 import com.intel.analytics.bigdl.dllib.utils.serializer.{DeserializeContext, ModuleSerializable}
 import org.apache.hadoop.yarn.webapp.hamlet.HamletSpec.VAR
 
@@ -127,7 +127,8 @@ class CAddTable[T: ClassTag, D: ClassTag](val inplace: Boolean = false)(
     while (i <= input.length()) {
       if (i > gradInput.length) gradInput.insert(i, Tensor[T]().resizeAs(input(1)))
       if (inplace) {
-        require(input[Tensor[D]](1).isSameSizeAs(gradOutput), "cannot use inplace for broadcast")
+        Log4Error.invalidInputError(input[Tensor[D]](1).isSameSizeAs(gradOutput),
+          "cannot use inplace for broadcast")
         gradInput[Tensor[D]](i).set(gradOutput)
       } else {
         if (input[Tensor[D]](i).isSameSizeAs(gradOutput)) {
@@ -136,7 +137,8 @@ class CAddTable[T: ClassTag, D: ClassTag](val inplace: Boolean = false)(
         gradInput[Tensor[D]](i).resizeAs(input[Tensor[D]](i)).copy(
           sumAlongDims(input[Tensor[D]](i), gradOutput))
         } else {
-          require(input[Tensor[D]](i).isScalar, "Only support scalar broadcast backward now")
+          Log4Error.invalidInputError(input[Tensor[D]](i).isScalar,
+            "Only support scalar broadcast backward now")
           if (!calculateSum) {
             sum = gradOutput.sum()
             calculateSum = true

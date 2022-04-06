@@ -19,6 +19,7 @@ package com.intel.analytics.bigdl.dllib.nn
 import com.intel.analytics.bigdl.dllib.nn.abstractnn.TensorModule
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.dllib.utils.Log4Error
 
 import scala.reflect.ClassTag
 
@@ -36,7 +37,8 @@ class SpatialWithinChannelLRN[T: ClassTag]
 (val size: Int = 5, val alpha: Double = 1.0, val beta: Double = 0.75)(
   implicit ev: TensorNumeric[T]) extends TensorModule[T] {
 
-  require(size % 2 == 1, s"LRN only supports odd values for size, but the size is $size.")
+  Log4Error.invalidInputError(size % 2 == 1,
+    s"LRN only supports odd values for size, but the size is $size.")
   private val lrn = Sequential[T]()
     .add(new ConcatTable[T]()
       .add(Identity[T]())

@@ -16,13 +16,14 @@
 package com.intel.analytics.bigdl.dllib.nn.mkldnn
 
 import com.intel.analytics.bigdl.dllib.nn.abstractnn.Activity
+import com.intel.analytics.bigdl.dllib.utils.Log4Error
 
 private[bigdl] class InputWrapper extends MklDnnLayer {
 
   private var inputLayer : Input = null
 
   override private[bigdl] def initFwdPrimitives(inputs: Array[MemoryData], phase: Phase) = {
-    require(inputs.length == 1, "Only accept one tensor as input")
+    Log4Error.invalidInputError(inputs.length == 1, "Only accept one tensor as input")
     inputLayer = Input(inputs(0).shape, inputs(0).layout)
     inputLayer.setRuntime(this.runtime)
     inputLayer.initFwdPrimitives(inputs, phase)
@@ -37,7 +38,7 @@ private[bigdl] class InputWrapper extends MklDnnLayer {
   }
 
   override private[bigdl] def initBwdPrimitives(grads: Array[MemoryData], phase: Phase) = {
-    require(grads.length == 1, "Only accept one tensor as input")
+    Log4Error.invalidInputError(grads.length == 1, "Only accept one tensor as input")
     inputLayer.initBwdPrimitives(grads, phase)
     _gradInputFormats = inputLayer.gradInputFormats()
     _gradOutputFormats = inputLayer.gradOutputFormats()

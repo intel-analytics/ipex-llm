@@ -16,6 +16,8 @@
 
 package com.intel.analytics.bigdl.dllib.feature.text
 
+import com.intel.analytics.bigdl.dllib.utils.Log4Error
+
 /**
  * Removes all dirty (non English alphabet) characters from tokens and converts words
  * to lower case. Need to tokenize first.
@@ -26,7 +28,8 @@ package com.intel.analytics.bigdl.dllib.feature.text
 class Normalizer extends TextTransformer {
 
   override def transform(feature: TextFeature): TextFeature = {
-    require(feature.contains(TextFeature.tokens), "TextFeature doesn't contain tokens yet, " +
+    Log4Error.invalidOperationError(feature.contains(TextFeature.tokens),
+      "TextFeature doesn't contain tokens yet, " +
       "please tokenize first")
     val tokens = feature[Array[String]](TextFeature.tokens)
     feature(TextFeature.tokens) = tokens.map(_.toLowerCase().replaceAll("[^a-z]", ""))

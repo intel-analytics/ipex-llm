@@ -18,6 +18,7 @@ package com.intel.analytics.bigdl.dllib.feature.common
 import com.intel.analytics.bigdl.dllib.feature.dataset.Sample
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.dllib.utils.Log4Error
 
 import scala.reflect.ClassTag
 

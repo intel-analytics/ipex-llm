@@ -22,6 +22,7 @@ import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.dllib.feature.dataset.DataSet
 import com.intel.analytics.bigdl.dllib.feature.dataset.text._
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.dllib.utils.Log4Error
 
 import scala.util.Random
 import org.apache.spark.SparkContext
@@ -174,7 +175,7 @@ object Utils {
   : Array[Array[String]] = {
 
     import scala.io.Source
-    require(new File(directory + "/test.txt").exists(),
+    Log4Error.invalidInputError(new File(directory + "/test.txt").exists(),
       s"test file ${directory + "/test.txt"} not exists!")
     val lines = Source.fromFile(directory + "/test.txt")
       .getLines().map(_.split("\\W+")).toArray
@@ -246,7 +247,7 @@ object SequencePreprocess {
 
   private[bigdl] def load(fileName: String): Array[String] = {
     import scala.io.Source
-    require(new File(fileName).exists(),
+    Log4Error.invalidInputError(new File(fileName).exists(),
       s"data file ${fileName} not exists!")
     val lines = Source.fromFile(fileName).getLines().toArray
     lines

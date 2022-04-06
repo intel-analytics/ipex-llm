@@ -22,6 +22,8 @@ import com.intel.analytics.bigdl.dllib.nn.{Cell, Container, Graph}
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.Module
 import com.intel.analytics.bigdl.dllib.nn
+import com.intel.analytics.bigdl.dllib.utils.Log4Error
+
 import scala.collection.mutable.{ArrayBuffer, HashMap}
 import scala.reflect.ClassTag
 
@@ -67,7 +69,8 @@ object Quantizer extends Quantizable {
   }
 
   private def registerModule(name: String, module: Quantizable): Unit = {
-    require(!registerMaps.contains(name), s"Module: $name has been registered.")
+    Log4Error.invalidInputError(!registerMaps.contains(name),
+      s"Module: $name has been registered.")
     registerMaps(name) = module
   }
 

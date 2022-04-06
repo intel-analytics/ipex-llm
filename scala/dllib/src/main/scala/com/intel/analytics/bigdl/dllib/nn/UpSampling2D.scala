@@ -19,7 +19,7 @@ package com.intel.analytics.bigdl.dllib.nn
 import com.intel.analytics.bigdl.dllib.nn.abstractnn.{DataFormat, TensorModule}
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.dllib.utils.Shape
+import com.intel.analytics.bigdl.dllib.utils.{Log4Error, Shape}
 
 import scala.reflect.ClassTag
 
@@ -35,14 +35,16 @@ import scala.reflect.ClassTag
  */
 class UpSampling2D[T: ClassTag] (val size: Array[Int], val format: DataFormat = DataFormat.NCHW)
   (implicit ev: TensorNumeric[T]) extends TensorModule[T] {
-  require(size.length == 2, s"UpSampling2D's size should be an array containing" +
+  Log4Error.invalidInputError(size.length == 2,
+    s"UpSampling2D's size should be an array containing" +
     s" 2 elements, but got ${size.mkString("x")}")
-  require(size(0) > 0 && size(1) > 0, "UpSampling2D's size should be bigger than 0," +
+  Log4Error.invalidInputError(size(0) > 0 && size(1) > 0,
+    "UpSampling2D's size should be bigger than 0," +
     s"but got ${size.mkString("x")}")
 
   override def computeOutputShape(inputShape: Shape): Shape = {
     val input = inputShape.toSingle().toArray
-    require(input.length == 4,
+    Log4Error.invalidInputError(input.length == 4,
       s"UpSampling2D requires 4D input, but got input dim ${input.length}")
     format match {
       case DataFormat.NCHW =>
@@ -53,8 +55,8 @@ class UpSampling2D[T: ClassTag] (val size: Array[Int], val format: DataFormat = 
   }
 
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
-    require(input.dim() == 4, "UpSampling2D only supports 4D input")
-    require(input.isContiguous(), "input should be contiguous")
+    Log4Error.invalidInputError(input.dim() == 4, "UpSampling2D only supports 4D input")
+    Log4Error.invalidInputError(input.isContiguous(), "input should be contiguous")
 
     format match {
       case DataFormat.NCHW =>
@@ -69,8 +71,8 @@ class UpSampling2D[T: ClassTag] (val size: Array[Int], val format: DataFormat = 
   }
 
   override def updateGradInput(input: Tensor[T], gradOutput: Tensor[T]): Tensor[T] = {
-    require(gradOutput.dim() == 4, "UpSampling2D only supports 4D gradOutput")
-    require(gradOutput.isContiguous(), "gradOutput should be contiguous")
+    Log4Error.invalidInputError(gradOutput.dim() == 4, "UpSampling2D only supports 4D gradOutput")
+    Log4Error.invalidInputError(gradOutput.isContiguous(), "gradOutput should be contiguous")
     gradInput.resizeAs(input).zero()
 
     format match {

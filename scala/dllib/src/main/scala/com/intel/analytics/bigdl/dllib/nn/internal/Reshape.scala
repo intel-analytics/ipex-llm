@@ -20,7 +20,7 @@ import com.intel.analytics.bigdl.dllib.nn.InferReshape
 import com.intel.analytics.bigdl.dllib.nn.abstractnn.{AbstractModule, TensorModule}
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.dllib.utils.Shape
+import com.intel.analytics.bigdl.dllib.utils.{Log4Error, Shape}
 
 import scala.reflect.ClassTag
 
@@ -57,11 +57,11 @@ class Reshape[T: ClassTag](
           inferCount += 1
         }
         // We don't consider 0 here, same as Keras
-        else require(targetShape(i) >= 1,
+        else Log4Error.invalidInputError(targetShape(i) >= 1,
           s"wrong reshape size at index $i: ${targetShape(i)}")
         i += 1
       }
-      require(inferCount == 1, "can only specify one unknown dimension")
+      Log4Error.invalidInputError(inferCount == 1, "can only specify one unknown dimension")
     }
   }
 
@@ -71,12 +71,12 @@ class Reshape[T: ClassTag](
     if (infer) {
       val nElements = nonBatchInput.product
       val resizeElements = - targetShape.product
-      require(nElements > resizeElements && nElements % resizeElements == 0,
+      Log4Error.invalidInputError(nElements > resizeElements && nElements % resizeElements == 0,
       "Total size after reshape must be unchanged")
       targetShape(inferIndex) = nElements / resizeElements
     }
     else {
-      require(targetShape.product == nonBatchInput.product,
+      Log4Error.invalidInputError(targetShape.product == nonBatchInput.product,
         s"Total size after reshape must be unchanged. But In ${this.getName()} : " +
           s"original size is: ${ nonBatchInput.product }, " +
           s"reshape size is: ${ targetShape.product }")

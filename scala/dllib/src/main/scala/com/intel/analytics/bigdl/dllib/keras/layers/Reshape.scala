@@ -21,7 +21,7 @@ import com.intel.analytics.bigdl.dllib.nn.abstractnn.AbstractModule
 import com.intel.analytics.bigdl.dllib.nn.internal.KerasLayer
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.dllib.utils.Shape
+import com.intel.analytics.bigdl.dllib.utils.{Log4Error, Shape}
 import com.intel.analytics.bigdl.dllib.keras.Net
 import com.intel.analytics.bigdl.dllib.keras.layers.utils.KerasUtils
 
@@ -62,11 +62,11 @@ class Reshape[T: ClassTag](
           inferCount += 1
         }
         // We don't consider 0 here, same as Keras
-        else require(targetShape(i) >= 1,
+        else Log4Error.invalidInputError(targetShape(i) >= 1,
           s"Wrong reshape size at index $i: ${targetShape(i)}")
         i += 1
       }
-      require(inferCount == 1, "Only one unknown dimension can be specified")
+      Log4Error.invalidInputError(inferCount == 1, "Only one unknown dimension can be specified")
     }
   }
 
@@ -76,12 +76,13 @@ class Reshape[T: ClassTag](
     if (infer) {
       val nElements = nonBatchInput.product
       val resizeElements = - targetShape.product
-      require(nElements % resizeElements == 0, s"Total size after reshape must be unchanged." +
+      Log4Error.unKnowExceptionError(nElements % resizeElements == 0,
+        s"Total size after reshape must be unchanged." +
           s" inputShape: $inputShape, targetShape: ${targetShape.mkString(", ")}")
       targetShape(inferIndex) = nElements / resizeElements
     }
     else {
-      require(targetShape.product == nonBatchInput.product,
+      Log4Error.unKnowExceptionError(targetShape.product == nonBatchInput.product,
         s"Total size after reshape must be unchanged. But in ${this.getName()}: " +
           s"input size is: ${nonBatchInput.product}, " +
           s"while reshape size is: ${targetShape.product}")

@@ -116,7 +116,7 @@ class BigDLSessionImpl[T: ClassTag](graph: Seq[NodeDef], context: Context[T],
 
     val (model, input) = constructModel(outputs, byteOrder, true, None)
 
-    require(input.element.getOp == "Placeholder",
+    Log4Error.invalidInputError(input.element.getOp == "Placeholder",
       "only support Placeholder as input when in-memory input data is provided")
 
     val opt = new DistriOptimizer(
@@ -142,7 +142,7 @@ class BigDLSessionImpl[T: ClassTag](graph: Seq[NodeDef], context: Context[T],
     val weightsAndGrads = endPoints.map(e => name2Node(e)).map(n => n.graph(true).DFS).flatten
       .map(n => TFUpdater(n.element)).flatten.toSet
 
-    require(weightsAndGrads.size != 0, "Cannot find updater nodes")
+    Log4Error.invalidInputError(weightsAndGrads.size != 0, "Cannot find updater nodes")
     context.setAssignGrads(weightsAndGrads)
     val modelOutputs = if (loss.isDefined) {
       Seq(loss.get) ++ weightsAndGrads.map(_._2).toSeq
@@ -194,7 +194,8 @@ class BigDLSessionImpl[T: ClassTag](graph: Seq[NodeDef], context: Context[T],
 
   private def handleReaderNode(node: Node[NodeDef], cache: DataCache,
     sc: SparkContext): RDD[Table] = {
-    require(node.prevNodes.length == 2, "require ReaderReadV2 only has two inputs")
+    Log4Error.invalidInputError(node.prevNodes.length == 2,
+      "require ReaderReadV2 only has two inputs")
     val readerNode = node.prevNodes.head
     val queueNode = node.prevNodes(1)
     val dequeNodeNames = mutable.LinkedHashSet[String]()
@@ -271,9 +272,10 @@ class BigDLSessionImpl[T: ClassTag](graph: Seq[NodeDef], context: Context[T],
       return sc.parallelize(Seq.empty[Table], numSlices = Engine.coreNumber() * Engine.nodeNumber())
     }
     val fileNames = filesTable.map { t =>
-      require(t.length() == 1, "Reader can only read one file at a time")
+      Log4Error.invalidInputError(t.length() == 1, "Reader can only read one file at a time")
       val fileTensor = t[Tensor[ByteString]](1)
-      require(fileTensor.isScalar, s"require fileTensor to be a scalar," +
+      Log4Error.invalidInputError(fileTensor.isScalar,
+        s"Log4Error.invalidInputError fileTensor to be a scalar," +
         s" but got size: ${fileTensor.size()}")
       val file = fileTensor.value()
       file.toStringUtf8
@@ -319,10 +321,10 @@ class BigDLSessionImpl[T: ClassTag](graph: Seq[NodeDef], context: Context[T],
     val recordBytes = readerNode.getAttrMap.get("record_bytes").getI.toInt
 
     val fileNames = filesTable.map { t =>
-      require(t.length() == 1 && t(1).isInstanceOf[Tensor[ByteString]],
+      Log4Error.invalidInputError(t.length() == 1 && t(1).isInstanceOf[Tensor[ByteString]],
         "Reader can only read one file at a time")
       val fileTensor = t[Tensor[ByteString]](1)
-      require(fileTensor.isScalar)
+      Log4Error.invalidInputError(fileTensor.isScalar, "fileTensor needs to be scalar")
       val file = fileTensor.value()
       file.toStringUtf8
     }
@@ -330,11 +332,11 @@ class BigDLSessionImpl[T: ClassTag](graph: Seq[NodeDef], context: Context[T],
     val isHdfs = allHDFSFiles(fileNames)
 
     if (isHdfs) {
-      require(footerBytes == 0,
+      Log4Error.invalidInputError(footerBytes == 0,
         s"Reading from HDFS does not support footer_bytes, but get footer_bytes $footerBytes")
-      require(headerBytes == 0,
+      Log4Error.invalidInputError(headerBytes == 0,
         s"Reading from HDFS does not support footer_bytes, but get footer_bytes $headerBytes")
-      require(hopBytes == 0,
+      Log4Error.invalidInputError(hopBytes == 0,
         s"Reading from HDFS does not support footer_bytes, but get footer_bytes $hopBytes")
       fileNames.map { file =>
         val rdd = sc.binaryRecords(file, recordBytes)
@@ -393,7 +395,8 @@ class BigDLSessionImpl[T: ClassTag](graph: Seq[NodeDef], context: Context[T],
   }
 
   private def handleLocalDequeue(node: Node[NodeDef], cache: DataCache): Seq[Table] = {
-    require(node.prevNodes.length == 1, "require QueueDequeueV2 only has one input")
+    Log4Error.invalidInputError(node.prevNodes.length == 1,
+      "Log4Error.invalidInputError QueueDequeueV2 only has one input")
     val queueNode = node.prevNodes.head
     val enqueueNodes = findEnqueueNodes(queueNode)
     val dequeNodeNames = mutable.LinkedHashSet[String]()
@@ -439,7 +442,7 @@ class BigDLSessionImpl[T: ClassTag](graph: Seq[NodeDef], context: Context[T],
         override def hasNext: Boolean = iter.hasNext
 
         override def next(): Table = {
-          require(iter.hasNext, "Call next() on a empty iterator")
+          Log4Error.invalidInputError(iter.hasNext, "Call next() on a empty iterator")
 
           val tables =
             for (i <- 0 until batchSize if iter.hasNext) yield {
@@ -489,7 +492,8 @@ class BigDLSessionImpl[T: ClassTag](graph: Seq[NodeDef], context: Context[T],
     val dequeueNodes = queueNode.nextNodes
       .filter(n => n.element != null && dequeueOp(n.element.getOp))
       .map(n => n.element.getName.split(":")(0)).toSet
-    require(dequeueNodes.size == 1, "only support one dequeue node after reader")
+    Log4Error.invalidInputError(dequeueNodes.size == 1,
+      "only support one dequeue node after reader")
     val enqueueNodes = findEnqueueNodes(queueNode)
     // get previous rdd
     var rdd = enqueueNodes.map { enqueueNode =>
@@ -507,7 +511,8 @@ class BigDLSessionImpl[T: ClassTag](graph: Seq[NodeDef], context: Context[T],
     if (node.element.getOp == "QueueDequeueManyV2") {
       // get batch size
       val batchSizeNode = node.prevNodes(1)
-      require(batchSizeNode.element.getOp == "Const", "batchsize must be a const")
+      Log4Error.invalidInputError(batchSizeNode.element.getOp == "Const",
+        "batchsize must be a const")
 
       val batchSize = batchSizeNode.element.getAttrMap.get("value").getTensor.getIntVal(0)
       rdd = batchRdd(rdd, batchSize)
@@ -643,7 +648,7 @@ class BigDLSessionImpl[T: ClassTag](graph: Seq[NodeDef], context: Context[T],
 
     val inputNodes = adjustedInputs.map(name2Node)
 
-    require(inputNodes.length == 1, "Only support one model input")
+    Log4Error.invalidInputError(inputNodes.length == 1, "Only support one model input")
 
     val model = TensorflowLoader.buildBigDLModel(
       tfGraph,
@@ -709,9 +714,10 @@ object BigDLSessionImpl {
 
   private def splitTensorByFirstDim(table: Table): Array[Table] = {
     val nElem = table.length()
-    require(nElem >= 1, "EnqueueManyV2 encounter a empty table")
+    Log4Error.invalidInputError(nElem >= 1, "EnqueueManyV2 encounter a empty table")
     val first = table[Tensor[_]](1)
-    require(first.nDimension() >= 1)
+    Log4Error.invalidInputError(first.nDimension() >= 1,
+      s"first.nDimension() ${first.nDimension()} should be greater than 1")
     val depth = first.size(1)
     val result = new Array[Table](depth)
     var i = 0

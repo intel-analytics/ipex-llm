@@ -20,6 +20,7 @@ import com.intel.analytics.bigdl.dllib.nn.abstractnn.{Activity, TensorModule}
 import com.intel.analytics.bigdl.dllib.nn.{Module => _}
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.dllib.utils.Log4Error
 
 import scala.reflect.ClassTag
 
@@ -73,7 +74,7 @@ private[nn] class VectorProduct[T: ClassTag](val hiddenSize: Int)
   private def combine(src: Array[Int], target: Array[Int]): Array[Int] = {
     if (src.length <= 2) return src
     val targetArr = if (target == null) new Array[Int](src.length - 1) else target
-    require(src.length == targetArr.length + 1,
+    Log4Error.invalidInputError(src.length == targetArr.length + 1,
       "combine method requires src.length == target.length + 1" +
         s" Current src.length = ${src.length}" +
         s" Current target.length = ${targetArr.length}")
@@ -91,11 +92,11 @@ private[nn] class VectorProduct[T: ClassTag](val hiddenSize: Int)
     val dim1 = srcInput(0)
     val dim2 = srcInput(1)
     val targetArr = if (target == null) new Array[Int](srcInput.length) else target
-    require(src.length == targetArr.length - 1,
+    Log4Error.invalidInputError(src.length == targetArr.length - 1,
       "split method requires src.length == target.length - 1" +
         s" Current src.length = ${src.length}" +
         s" Current target.length = ${targetArr.length}")
-    require(dim1 * dim2 == src(0),
+    Log4Error.invalidInputError(dim1 * dim2 == src(0),
       "split method requires dim1 * dim2 == src(0), " +
         s"Current dim1 = ${dim1}, dim2 = ${dim2}, src(0) = ${src(0)}")
 

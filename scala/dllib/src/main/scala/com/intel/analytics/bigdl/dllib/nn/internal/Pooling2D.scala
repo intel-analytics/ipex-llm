@@ -19,7 +19,7 @@ package com.intel.analytics.bigdl.dllib.nn.internal
 import com.intel.analytics.bigdl.dllib.nn.abstractnn.DataFormat
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.dllib.utils.Shape
+import com.intel.analytics.bigdl.dllib.utils.{Log4Error, Shape}
 
 import scala.reflect.ClassTag
 
@@ -36,18 +36,19 @@ abstract class Pooling2D[T: ClassTag](
    val inputShape: Shape = null)(implicit ev: TensorNumeric[T])
   extends KerasLayer[Tensor[T], Tensor[T], T](KerasLayer.addBatch(inputShape)) {
 
-  require(poolSize.length == 2,
+  Log4Error.invalidInputError(poolSize.length == 2,
     s"For Pooling2D, poolSize should be of length 2 but got length ${poolSize.length}")
-  require(borderMode == "valid" || borderMode == "same", s"Invalid border mode for " +
+  Log4Error.invalidInputError(borderMode == "valid" || borderMode == "same",
+    s"Invalid border mode for " +
     s"Pooling2D: $borderMode")
 
   val strideValues: Array[Int] = if (strides == null) poolSize else strides
-  require(strideValues.length == 2,
+  Log4Error.invalidInputError(strideValues.length == 2,
     s"For Pooling2D, strides should be of length 2 but got length ${strideValues.length}")
 
   override def computeOutputShape(inputShape: Shape): Shape = {
     val input = inputShape.toSingle().toArray
-    require(input.length == 4,
+    Log4Error.invalidInputError(input.length == 4,
       s"Pooling2D requires 4D input, but got input dim ${input.length}")
     val (dimH, dimW, dimC) = dimOrdering.getHWCDims(4)
     val rows = KerasUtils.computeConvOutputLength(input(dimH -1), poolSize(0),

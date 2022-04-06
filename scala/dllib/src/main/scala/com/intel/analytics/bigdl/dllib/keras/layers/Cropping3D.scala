@@ -18,7 +18,7 @@ package com.intel.analytics.bigdl.dllib.keras.layers
 
 import com.intel.analytics.bigdl.dllib.nn.internal.{Cropping3D => BigDLCropping3D}
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.dllib.utils.Shape
+import com.intel.analytics.bigdl.dllib.utils.{Log4Error, Shape}
 import com.intel.analytics.bigdl.dllib.keras.Net
 import com.intel.analytics.bigdl.dllib.keras.layers.utils.KerasUtils
 
@@ -57,11 +57,14 @@ object Cropping3D {
     cropping: ((Int, Int), (Int, Int), (Int, Int)) = ((1, 1), (1, 1), (1, 1)),
     dimOrdering: String = "th",
     inputShape: Shape = null)(implicit ev: TensorNumeric[T]): Cropping3D[T] = {
-    require(cropping != null, "For Cropping3D, " +
+    Log4Error.invalidInputError(cropping != null, "For Cropping3D, " +
       "cropping values should be int tuple of tuple of length 2")
-    require(cropping._1 != null, "For Cropping3D, dim1Crop should be int tuple of length 2")
-    require(cropping._2 != null, "For Cropping3D, dim2Crop should be int tuple of length 2")
-    require(cropping._3 != null, "For Cropping3D, dim3Crop should be int tuple of length 2")
+    Log4Error.invalidInputError(cropping._1 != null,
+      "For Cropping3D, dim1Crop should be int tuple of length 2")
+    Log4Error.invalidInputError(cropping._2 != null,
+      "For Cropping3D, dim2Crop should be int tuple of length 2")
+    Log4Error.invalidInputError(cropping._3 != null,
+      "For Cropping3D, dim3Crop should be int tuple of length 2")
     val dim1Crop = Array(cropping._1._1, cropping._1._2)
     val dim2Crop = Array(cropping._2._1, cropping._2._2)
     val dim3Crop = Array(cropping._3._1, cropping._3._2)

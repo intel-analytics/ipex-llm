@@ -21,7 +21,7 @@ import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.dllib.utils.serializer.converters.DataConverter
 import com.intel.analytics.bigdl.dllib.utils.serializer.{DeserializeContext, ModuleSerializable, SerializeContext}
 import com.intel.analytics.bigdl.serialization.Bigdl.{AttrValue, BigDLModule}
-import com.intel.analytics.bigdl.dllib.utils.Table
+import com.intel.analytics.bigdl.dllib.utils.{Log4Error, Table}
 
 import scala.collection.BitSet
 import scala.reflect.ClassTag
@@ -61,8 +61,10 @@ private[bigdl] class StridedSlice[T: ClassTag, D: ClassTag](
   extends AbstractModule[Table, Tensor[D], T] {
 
   // TODO: support ellipsisMask and newAxisMask
-  require(ellipsisMask == 0, s"Only support ellipsisMask equals 0, but got $ellipsisMask")
-  require(newAxisMask == 0, s"Only support newAxisMask equals 0, but got $newAxisMask")
+  Log4Error.invalidInputError(ellipsisMask == 0,
+    s"Only support ellipsisMask equals 0, but got $ellipsisMask")
+  Log4Error.invalidInputError(newAxisMask == 0,
+    s"Only support newAxisMask equals 0, but got $newAxisMask")
   output = Tensor[D]()
   gradInput(1) = Tensor[D]()
 
@@ -71,8 +73,10 @@ private[bigdl] class StridedSlice[T: ClassTag, D: ClassTag](
   val stridesBuffer: Tensor[Int] = Tensor[Int]()
 
   protected def checkSize(strides: Tensor[Int], indx: Tensor[Int], indxName: String): Unit = {
-    require(indx.dim() == 1, s"$indxName should be a 1D tensor, but got ${indx.dim()}D tensor.")
-    require(indx.nElement() == strides.nElement(), s"$indxName have ${strides.nElement()} " +
+    Log4Error.invalidInputError(indx.dim() == 1,
+      s"$indxName should be a 1D tensor, but got ${indx.dim()}D tensor.")
+    Log4Error.invalidInputError(indx.nElement() == strides.nElement(),
+      s"$indxName have ${strides.nElement()} " +
       s"elements, but got ${indx.nElement()}.")
   }
 
@@ -107,12 +111,14 @@ private[bigdl] class StridedSlice[T: ClassTag, D: ClassTag](
     val end = input[Tensor[Int]](3)
     val strides = input[Tensor[Int]](4)
 
-    require(strides.dim() == 1, s"strides should be a 1D tensor, but got ${strides.dim()}D tensor.")
+    Log4Error.invalidInputError(strides.dim() == 1,
+      s"strides should be a 1D tensor, but got ${strides.dim()}D tensor.")
     checkSize(strides, begin, "Begin indices")
     checkSize(strides, end, "End indices")
 
     strides.apply1 { v =>
-      require(v == 1, s"Unsupported strides, only support stride 1. but got strides: \n${strides}")
+      Log4Error.invalidInputError(v == 1,
+        s"Unsupported strides, only support stride 1. but got strides: \n${strides}")
       v
     }
 
