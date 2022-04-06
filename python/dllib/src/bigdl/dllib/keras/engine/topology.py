@@ -501,9 +501,9 @@ class KerasNet(ZooKerasLayer):
                    If the field has a smaller length, the remaining part will be white spaces.
         """
         return callZooFunc(self.bigdl_type, "zooKerasNetSummary",
-                    self.value,
-                    line_length,
-                    [float(p) for p in positions])
+                           self.value,
+                           line_length,
+                           [float(p) for p in positions])
 
     def to_model(self):
         from bigdl.dllib.keras.models import Model
