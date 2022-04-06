@@ -416,7 +416,7 @@ class TSPipeline:
         check_quantize_available(self._best_model.model)
         # calib data should be set if the forecaster is just loaded
         assert calib_data is not None and approach.startswith("static"), \
-            "You must set a `calib_data` for quantization."
+            "You must set a `calib_data` for quantization When you use 'static'."
         # change data tuple to dataloader
         if isinstance(calib_data, tuple):
             calib_data = DataLoader(TensorDataset(torch.from_numpy(calib_data[0]),
