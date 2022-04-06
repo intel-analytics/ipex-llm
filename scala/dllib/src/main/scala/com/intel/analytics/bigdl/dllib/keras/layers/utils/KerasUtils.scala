@@ -399,7 +399,7 @@ object KerasUtils {
       lineLength: Int = 120,
       positions: Array[Double] = Array(.33, .55, .67, 1),
       summary: ArrayBuffer[String] = null): (Int, Int) = {
-    printRow(getNodeSummary(node), lineLength, positions, summary=summary)
+    printRow(getNodeSummary(node), lineLength, positions, summary = summary)
     countParams(node.element.asInstanceOf[KerasLayer[Activity, Activity, T]])
   }
 
@@ -462,7 +462,8 @@ object KerasUtils {
     // If there are multiple connected to nodes, print the remaining each in a separate line
     // without the split line.
     for (node <- nodes.slice(1, nodes.length)) {
-      printRow(Array("", "", "", node), lineLength, positions, includeSplitLine = false)
+      printRow(Array("", "", "", node), lineLength, positions, includeSplitLine = false,
+        summary = summary)
     }
     if (includeSplitLine) printSplitLine(splitChar, lineLength, summary)
   }
