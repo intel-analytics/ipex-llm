@@ -365,8 +365,10 @@ if __name__ == "__main__":
 
     args = parser.parse_args()
     if args.runtime == "ray":
+        backend = "tf2"
         init_orca_context(runtime=args.runtime, address="localhost:6379")
     else:
+        backend = "horovod"
         num_nodes = 1 if args.cluster_mode == "local" else args.worker_num
         init_orca_context(cluster_mode=args.cluster_mode, cores=args.cores, num_nodes=num_nodes,
                         memory=args.memory, init_ray_on_spark=True,
@@ -405,7 +407,7 @@ if __name__ == "__main__":
         compile_args_creator=compile_args_creator,
         verbose=True,
         config=config,
-        backend="horovod")
+        backend=backend)
 
     if args.benchmark:
         trainer.fit(
