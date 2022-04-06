@@ -16,25 +16,22 @@
 # limitations under the License.
 #
 
-cd "`dirname $0`"
-cd ../..
+# Enviroment Settings
+export ANALYTICS_ZOO_ROOT=${ANALYTICS_ZOO_ROOT}
+export NANO_HOME=${ANALYTICS_ZOO_ROOT}/python/nano/src
+export NANO_BENCHMARK_DIR=${ANALYTICS_ZOO_ROOT}/python/nano/benchmark
+#
 
-export PYSPARK_PYTHON=python
-export PYSPARK_DRIVER_PYTHON=python
-if [ -z "${OMP_NUM_THREADS}" ]; then
-    export OMP_NUM_THREADS=1
-fi
+set -e
+echo "# Start testing"
+start=$(date "+%s")
 
-ray stop -f
+# Boot-up commands 
+# e.g. python benchmark_program.py 
+python $NANO_BENCHMARK_DIR/pytorch/pytorch-cat-vs-dog.py
+#
 
-echo "Running chronos tests TF1 and Deprecated API"
-python -m pytest -v test/bigdl/chronos/model/tf1 \
-                    test/bigdl/chronos/autots/deprecated
-
-exit_status_0=$?
-if [ $exit_status_0 -ne 0 ];
-then
-    exit $exit_status_0
-fi
-
-ray stop -f
+now=$(date "+%s")
+time=$((now-start))
+echo ">> All Benchmark test finished"
+echo ">> Time used:$time sec"

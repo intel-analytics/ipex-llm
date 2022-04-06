@@ -1,5 +1,3 @@
-#!/usr/bin/env bash
-
 #
 # Copyright 2016 The BigDL Authors.
 #
@@ -16,25 +14,17 @@
 # limitations under the License.
 #
 
-cd "`dirname $0`"
-cd ../..
 
-export PYSPARK_PYTHON=python
-export PYSPARK_DRIVER_PYTHON=python
-if [ -z "${OMP_NUM_THREADS}" ]; then
-    export OMP_NUM_THREADS=1
-fi
+def create_ray_multiprocessing_backend():
+    from bigdl.nano.deps.ray.ray_backend import RayBackend
+    return RayBackend()
 
-ray stop -f
 
-echo "Running chronos tests TF1 and Deprecated API"
-python -m pytest -v test/bigdl/chronos/model/tf1 \
-                    test/bigdl/chronos/autots/deprecated
+def create_ray_envbase(world_size):
+    from bigdl.nano.deps.ray.ray_envbase import RayEnvironment
+    return RayEnvironment(world_size)
 
-exit_status_0=$?
-if [ $exit_status_0 -ne 0 ];
-then
-    exit $exit_status_0
-fi
 
-ray stop -f
+def distributed_ray(*args, **kwargs):
+    from ray_distributed import RayPlugin
+    return RayPlugin(*args, **kwargs)

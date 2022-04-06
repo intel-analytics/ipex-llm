@@ -81,11 +81,11 @@ MTNetForecaster
 
 MTNet is a memory-network based solution for multivariate time-series forecasting. In a specific task of multivariate time-series forecasting, we have several variables observed in time series and we want to forecast some or all of the variables' value in a future time stamp.
 
-MTNet is proposed by paper `A Memory-Network Based Solution for Multivariate Time-Series Forecasting <https://arxiv.org/abs/1809.02105>`__. MTNetForecaster is derived from tfpark.KerasMode, and can use all methods of KerasModel. Refer to `tfpark.KerasModel API Doc <https://github.com/intel-analytics/BigDL/blob/main/docs/docs/APIGuide/TFPark/model.md>`__ for details.
+MTNet is proposed by paper `A Memory-Network Based Solution for Multivariate Time-Series Forecasting <https://arxiv.org/abs/1809.02105>`__.
 
 For the detailed algorithm description, please refer to `here <https://github.com/intel-analytics/BigDL/blob/main/docs/docs/Chronos/Algorithm/MTNetAlgorithm.md>`__.
 
-.. automodule:: bigdl.chronos.forecaster.mtnet_forecaster
+.. automodule:: bigdl.chronos.forecaster.tf.mtnet_forecaster
     :members:
     :undoc-members:
     :show-inheritance:
