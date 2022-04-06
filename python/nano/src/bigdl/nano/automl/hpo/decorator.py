@@ -27,7 +27,6 @@ import logging
 import argparse
 import functools
 from collections import OrderedDict
-from grpc import Call
 import numpy as np
 import multiprocessing as mp
 import ConfigSpace as CS

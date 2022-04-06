@@ -16,11 +16,29 @@
 
 
 from .objective import Objective
-import optuna
 import copy
-
+from .backend import PrunerType, SamplerType
+from .backend import OptunaBackend
 
 class HPOMixin:
+
+    # argument keys for search, fit, tune creation, tune run.
+    FIT_KEYS = (
+        'x','y',
+        'batch_size', 'epochs',
+        'verbose','callbacks',
+        'validation_split','validation_data',
+        'shuffle','class_weight','sample_weight',
+        'initial_epoch','steps_per_epoch',
+        'validation_steps','validation_batch_size','validation_freq',
+        'max_queue_size','workers','use_multiprocessing')
+
+    TUNE_CREATE_KEYS = ('storage', 'sampler', 'sampler_kwargs',
+                'pruner', 'pruner_kwargs', 'study_name', 'directions')
+
+
+    TUNE_RUN_KEYS = ('timeout', 'n_jobs', 'catch', 'tune_callbacks',
+                'gc_after_trial', 'show_progress_bar')
 
     # these methods are automatically created using "@proxy_methods"
     # details see desriptions in _proxy method
@@ -98,7 +116,6 @@ class HPOMixin:
         resume=False,
         target_metric=None,
         direction="minimize",
-        pruning = False,
         **kwargs
     ):
         """ Do the hyper param tuning.
@@ -108,21 +125,14 @@ class HPOMixin:
             resume (bool, optional): whether to resume the previous tuning. Defaults to False.
             target_metric (str, optional): the target metric to optimize. Defaults to "accuracy".
             direction (str, optional): optimize direction. Defaults to "maximize".
+            pruning (bool, optional): whether to use pruning
         """
+        pruning = True if kwargs.get('pruner', None) else False
 
         ## create objective
         if self.objective is None:
             target_metric = self._fix_target_metric(target_metric, kwargs)
-            fit_keys = (
-                'x','y',
-                'batch_size', 'epochs',
-                'verbose','callbacks',
-                'validation_split','validation_data',
-                'shuffle','class_weight','sample_weight',
-                'initial_epoch','steps_per_epoch',
-                'validation_steps','validation_batch_size','validation_freq',
-                'max_queue_size','workers','use_multiprocessing')
-            fit_kwargs = self._filter_tuner_args(kwargs, fit_keys)
+            fit_kwargs = self._filter_tuner_args(kwargs, HPOMixin.FIT_KEYS)
             self.objective = Objective(
                 model=self._model_build,
                 target_metric=target_metric,
@@ -138,20 +148,40 @@ class HPOMixin:
             else:
                 load_if_exists = True
                 print("Resume the last tuning...")
-            study_create_keys = ('storage', 'sampler',
-                           'pruner', 'study_name', 'directions')
-            study_create_kwargs = self._filter_tuner_args(kwargs, study_create_keys)
+
+            study_create_kwargs = self._filter_tuner_args(kwargs, HPOMixin.TUNE_CREATE_KEYS)
             self._check_optimize_direction(direction,target_metric)
-            self.study = optuna.create_study(
+
+            # prepare sampler and pruner args
+
+            sampler_type = study_create_kwargs.get('sampler', None)
+            if sampler_type:
+                sampler_args = study_create_kwargs.get('sampler_kwargs', {})
+                sampler = OptunaBackend.create_sampler(sampler_type, sampler_args)
+                study_create_kwargs['sampler'] = sampler
+                study_create_kwargs.pop('sampler_kwargs',None)
+
+            pruner_type = study_create_kwargs.get('pruner', None)
+            if pruner_type:
+                pruner_args=study_create_kwargs.get('pruner_kwargs', {})
+                pruner = OptunaBackend.create_pruner(pruner_type, pruner_args)
+                study_create_kwargs['pruner'] = pruner
+                study_create_kwargs.pop('pruner_kwargs', None)
+
+            self.study = OptunaBackend.create_study(
                 direction=direction,
                 load_if_exists=True,
-                **study_create_kwargs)
+                **study_create_kwargs
+            )
+            # self.study = optuna.create_study(
+            #     direction=direction,
+            #     load_if_exists=True,
+            #     **study_create_kwargs)
 
         ## study optimize
         # rename callbacks to tune_callbacks to avoid conflict with fit param
-        study_optimize_keys = ('timeout', 'n_jobs', 'catch',
-                         'tune_callbacks', 'gc_after_trial', 'show_progress_bar')
-        study_optimize_kwargs = self._filter_tuner_args(kwargs, study_optimize_keys)
+
+        study_optimize_kwargs = self._filter_tuner_args(kwargs, HPOMixin.TUNE_RUN_KEYS)
         study_optimize_kwargs['callbacks'] = study_optimize_kwargs.get('tune_callbacks', None)
         study_optimize_kwargs.pop('tune_callbacks', None)
         self.study.optimize(

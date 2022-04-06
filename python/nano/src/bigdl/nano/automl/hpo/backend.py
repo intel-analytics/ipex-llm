@@ -15,9 +15,49 @@
 #
 
 from .space import Bool, Int, Categorical, Real
+from enum import Enum
+import optuna
+
+class SamplerType(Enum):
+    TPE = 1 # the default
+    CmaEs = 2
+    Grid = 3
+    Random = 4
+    PartialFixed = 5
+    NSGAII = 6 # multi-objective sampler
+    MOTPE = 7 # multi-objective sampler
+
+class PrunerType(Enum):
+    HyperBand = 1 # the default
+    Median = 2
+    Nop = 3
+    Patient = 4
+    Percentile = 5
+    SuccessiveHalving = 6
+    Threshold = 7
 
 
 class OptunaBackend(object):
+
+    pruner_map = {
+        PrunerType.HyperBand: optuna.pruners.HyperbandPruner,
+        PrunerType.Median: optuna.pruners.MedianPruner,
+        PrunerType.Nop: optuna.pruners.NopPruner,
+        PrunerType.Patient: optuna.pruners.PatientPruner,
+        PrunerType.Percentile: optuna.pruners.PercentilePruner,
+        PrunerType.SuccessiveHalving: optuna.pruners.SuccessiveHalvingPruner,
+        PrunerType.Threshold: optuna.pruners.ThresholdPruner,
+    }
+
+    sampler_map = {
+        SamplerType.TPE: optuna.samplers.TPESampler,
+        SamplerType.CmaEs: optuna.samplers.CmaEsSampler,
+        SamplerType.Grid: optuna.samplers.GridSampler,
+        SamplerType.Random: optuna.samplers.RandomSampler,
+        SamplerType.PartialFixed: optuna.samplers.PartialFixedSampler,
+        SamplerType.NSGAII: optuna.samplers.NSGAIISampler,
+        SamplerType.MOTPE: optuna.samplers.MOTPESampler,
+    }
 
     @staticmethod
     def get_other_args(kwargs, kwspaces):
@@ -68,3 +108,18 @@ class OptunaBackend(object):
             automl_obj.kwargs, automl_obj.kwspaces)
         config.update(other_kwargs)
         return config
+
+    @staticmethod
+    def create_sampler(sampler_type, kwargs):
+        sampler_class = OptunaBackend.sampler_map.get(sampler_type)
+        return sampler_class(**kwargs)
+
+    @staticmethod
+    def create_pruner(pruner_type, kwargs):
+        pruner_class = OptunaBackend.pruner_map.get(pruner_type)
+        return pruner_class(**kwargs)
+
+    @staticmethod
+    def create_study(**kwargs):
+        return optuna.create_study(**kwargs)
+
