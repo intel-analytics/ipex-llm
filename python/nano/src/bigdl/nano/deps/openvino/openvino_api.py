@@ -15,6 +15,7 @@
 #
 from functools import partial
 
+
 def bind_openvino_methods(pl_model):
     import torch_funcs
     pl_model.export_openvino = partial(torch_funcs.export, pl_model)
