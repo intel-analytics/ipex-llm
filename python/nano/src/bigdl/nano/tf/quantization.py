@@ -93,7 +93,7 @@ def quantize(self,
 
         val_loader = None
         if val_dataset:
-            val_loader = tf_dataset_to_inc_dataloader()(val_dataset, batch)
+            val_loader = tf_dataset_to_inc_dataloader(val_dataset, batch)
         calib_loader = None
         if calib_dataset:
             calib_loader = tf_dataset_to_inc_dataloader(calib_dataset, batch)
