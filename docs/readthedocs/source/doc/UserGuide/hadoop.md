@@ -103,7 +103,7 @@ Follow the steps below if you need to run BigDL with [spark-submit](https://spar
   sc = init_orca_context(cluster_mode="spark-submit")
   ```
 
-- Use `spark-submit-with-bigdl` to submit your BigDL program (e.g. script.py). You can adjust the configurations according to your cluster settings. Note that if `environment.tar.gz` is not under the same directory with `script.py`, you may need to modify the path in `--archives` in the running command below.
+- Use `spark-submit-with-bigdl` to submit your BigDL program (e.g. script.py). You can adjust the configurations according to your cluster settings. Note that if `environment.tar.gz` is not under the same directory with `script.py`, you may need to modify its path in `--archives` in the running command below.
 
   For `yarn-cluster` mode:
   ```bash
