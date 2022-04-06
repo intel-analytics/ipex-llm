@@ -29,8 +29,8 @@ import scala.collection.Iterator
 class GramineQuoteGeneratorImpl extends QuoteGenerator {
 
   val logger = LogManager.getLogger(getClass)
-  val UserReportPath = "/dev/attestation/user_report_data"
-  val QuotePath = "/dev/attestation/quote"
+  val USER_REPORT_PATH = "/dev/attestation/user_report_data"
+  val QUOTE_PATH = "/dev/attestation/quote"
 
   @throws(classOf[AttestationRuntimeException])
   override def getQuote(userReportData: Array[Byte]): Array[Byte] = {
@@ -42,7 +42,7 @@ class GramineQuoteGeneratorImpl extends QuoteGenerator {
 
     try {
       // write userReport
-      val out = new BufferedOutputStream(new FileOutputStream(UserReportPath))
+      val out = new BufferedOutputStream(new FileOutputStream(USER_REPORT_PATH))
       out.write(userReportData)
       out.close()
     } catch {
@@ -54,7 +54,7 @@ class GramineQuoteGeneratorImpl extends QuoteGenerator {
 
     try {
       // read quote
-      val quoteFile = new File(QuotePath)
+      val quoteFile = new File(QUOTE_PATH)
       val in = new FileInputStream(quoteFile)
       val bufIn = new BufferedInputStream(in)
       val quote = Iterator.continually(bufIn.read()).takeWhile(_ != -1).map(_.toByte).toArray
