@@ -17,6 +17,7 @@
 package com.intel.analytics.bigdl.dllib.tensor
 
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath._
+import com.intel.analytics.bigdl.dllib.utils.Log4Error
 
 object SparseTensorMath {
 
@@ -33,10 +34,15 @@ object SparseTensorMath {
         alpha : T,
         mat : Tensor[T],
         vec : Tensor[T])(implicit ev: TensorNumeric[T]): Tensor[T] = {
-    require(mat.nDimension() == 2 && vec.nDimension() == 1)
-    require(mat.size(2) == vec.size(1))
-    require(t.nDimension() == 1)
-    require(t.size(1) == mat.size(1))
+    Log4Error.unKnowExceptionError(mat.nDimension() == 2 && vec.nDimension() == 1,
+      s"mat.nDimension() ${mat.nDimension()} should be 2," +
+        s" vec.nDimension() ${vec.nDimension()} should be 1")
+    Log4Error.unKnowExceptionError(mat.size(2) == vec.size(1),
+      s"mat.size(2) ${mat.size(2)} should match vec.size(1) ${vec.size(1)}")
+    Log4Error.unKnowExceptionError(t.nDimension() == 1,
+      s"t.nDimension() ${t.nDimension()} should be 1")
+    Log4Error.unKnowExceptionError(t.size(1) == mat.size(1),
+      s"t.size(1) ${t.size(1)} should match mat.size(1) ${mat.size(1)}")
     if(!r.eq(t)) {
       r.resizeAs(t).copy(t)
     }
@@ -54,8 +60,12 @@ object SparseTensorMath {
          mat1: Tensor[T],
          mat2: Tensor[T]
          )(implicit ev: TensorNumeric[T]) : Tensor[T] = {
-    require(mat1.dim() == 2 && mat2.dim() == 2 && mat3.dim() == 2)
-    require(mat3.size(1) == mat1.size(1) && mat3.size(2) == mat2.size(2))
+    Log4Error.unKnowExceptionError(mat1.dim() == 2 && mat2.dim() == 2 && mat3.dim() == 2,
+      s"mat1.dim() ${mat1.dim()} should be 2, mat2.dim() ${mat2.dim()} should be 2," +
+        s" mat3.dim() ${mat3.dim()} should be 2")
+    Log4Error.unKnowExceptionError(mat3.size(1) == mat1.size(1) && mat3.size(2) == mat2.size(2),
+      s"mat3.size(1) ${mat3.size(1)} should match mat1.size(1) ${mat1.size(1)}," +
+        s" mat3.size(2) ${mat3.size(2)} should match mat2.size(2) ${mat2.size(2)}")
     if(!res.eq(mat3)) {
       res.resizeAs(mat3).copy(mat3)
     }

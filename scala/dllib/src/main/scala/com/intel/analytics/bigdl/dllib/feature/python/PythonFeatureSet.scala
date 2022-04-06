@@ -23,11 +23,10 @@ import com.intel.analytics.bigdl.dllib.utils.python.api.Sample
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.dllib.feature.transform.vision.image._
-import com.intel.analytics.bigdl.dllib.utils.Table
+import com.intel.analytics.bigdl.dllib.utils.{Engine, Log4Error, Table}
 import com.intel.analytics.bigdl.dllib.common.PythonZoo
 import com.intel.analytics.bigdl.dllib.feature.FeatureSet
 import com.intel.analytics.bigdl.dllib.feature.MemoryType
-import com.intel.analytics.bigdl.dllib.utils.Engine
 import org.apache.spark.SparkContext
 import org.apache.spark.api.java.JavaRDD
 import org.apache.spark.storage.StorageLevel
@@ -64,7 +63,8 @@ class PythonFeatureSet[T: ClassTag](implicit ev: TensorNumeric[T]) extends Pytho
         imageFrame: ImageFrame,
         memoryType: String,
         sequentialOrder: Boolean, shuffle: Boolean): FeatureSet[ImageFeature] = {
-    require(imageFrame.isDistributed(), "Only support distributed ImageFrame")
+    Log4Error.invalidOperationError(imageFrame.isDistributed(),
+      "Only support distributed ImageFrame")
     loadOpenCv(imageFrame.toDistributed().rdd.sparkContext)
    FeatureSet.rdd(imageFrame.toDistributed().rdd, MemoryType.fromString(memoryType),
      sequentialOrder = sequentialOrder, shuffle = shuffle)

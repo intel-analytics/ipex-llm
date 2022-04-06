@@ -19,7 +19,7 @@ package com.intel.analytics.bigdl.dllib.nn
 import com.intel.analytics.bigdl.dllib.nn.abstractnn.TensorModule
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.dllib.utils.Shape
+import com.intel.analytics.bigdl.dllib.utils.{Log4Error, Shape}
 
 import scala.collection.mutable.ArrayBuffer
 import scala.reflect.ClassTag
@@ -74,7 +74,8 @@ class InferReshape[T: ClassTag](
       }
       i += 1
     }
-    require(minusOneCount == 1, "at most a single value of -1 may be specified")
+    Log4Error.invalidInputError(minusOneCount == 1,
+      "at most a single value of -1 may be specified")
   }
 
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
@@ -87,7 +88,7 @@ class InferReshape[T: ClassTag](
       }
       i += 1
     }
-    require(total <= input.nElement(), "inferred size " +
+    Log4Error.invalidInputError(total <= input.nElement(), "inferred size " +
       s"dim product must be <= total input #elements" +
       s"dim product($total) input(${input.nElement()})")
     if (inferIndex != -1) {

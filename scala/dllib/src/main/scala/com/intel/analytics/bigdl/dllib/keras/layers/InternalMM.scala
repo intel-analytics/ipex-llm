@@ -21,7 +21,7 @@ import java.security.InvalidParameterException
 import com.intel.analytics.bigdl.dllib.nn.abstractnn.AbstractModule
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.dllib.utils.{T, Table}
+import com.intel.analytics.bigdl.dllib.utils.{Log4Error, T, Table}
 
 import scala.reflect.ClassTag
 
@@ -43,13 +43,13 @@ private[bigdl] class InternalMM[T: ClassTag](
   private var expandLayer: AbstractModule[Tensor[T], Tensor[T], T] = null
 
   private def checkInputFormat(input: Table): (Tensor[T], Tensor[T]) = {
-    require(input.length() == 2 && input(1).isInstanceOf[Tensor[T]] &&
+    Log4Error.invalidInputError(input.length() == 2 && input(1).isInstanceOf[Tensor[T]] &&
       input(2).isInstanceOf[Tensor[T]], "Input must be two tensors")
     val m1: Tensor[T] = input(1)
     val m2: Tensor[T] = input(2)
-    require(m1.dim() == 2 || m1.dim() == 3, "input matrix must be 2D or 3D" +
+    Log4Error.invalidInputError(m1.dim() == 2 || m1.dim() == 3, "input matrix must be 2D or 3D" +
       s" input dim ${m1.dim()}")
-    require(m2.dim() == 2 || m2.dim() == 3, "input matrix must be 2D or 3D" +
+    Log4Error.invalidInputError(m2.dim() == 2 || m2.dim() == 3, "input matrix must be 2D or 3D" +
       s" input dim ${m2.dim()}")
 
     (m1, m2)
@@ -60,7 +60,7 @@ private[bigdl] class InternalMM[T: ClassTag](
     output.set()
 
     if (ma.dim() == 2) {
-      require(mb.dim() == 2, "second input tensor must be 2D" +
+      Log4Error.invalidInputError(mb.dim() == 2, "second input tensor must be 2D" +
         s"second input dim ${mb.dim()}")
 
       if (transA) {
@@ -69,13 +69,13 @@ private[bigdl] class InternalMM[T: ClassTag](
       if (transB) {
         mb = mb.t()
       }
-      require(ma.size(2) == mb.size(1), "matrix sizes do not match" +
+      Log4Error.invalidInputError(ma.size(2) == mb.size(1), "matrix sizes do not match" +
         s"The sizes are ${ma.size(2)} and ${mb.size(1)}")
 
       output.resize(ma.size(1), mb.size(2))
       output.mm(ma, mb)
     } else {
-      require(mb.dim() == 3, "second input tensor must be 3D" +
+      Log4Error.invalidInputError(mb.dim() == 3, "second input tensor must be 3D" +
         s"second input dim ${mb.dim()}")
       if (transA) {
         ma = ma.transpose(2, 3)
@@ -83,7 +83,7 @@ private[bigdl] class InternalMM[T: ClassTag](
       if (transB) {
         mb = mb.transpose(2, 3)
       }
-      require(ma.size(3) == mb.size(2), "matrix sizes do not match" +
+      Log4Error.invalidInputError(ma.size(3) == mb.size(2), "matrix sizes do not match" +
         s"the matrix sizes are ${ma.size(3)} and ${mb.size(2)}")
 
       // with different batch dim
@@ -106,7 +106,7 @@ private[bigdl] class InternalMM[T: ClassTag](
     var (ma, mb) = checkInputFormat(input)
 
     if (ma.dim() > 2 && ma.size(1) != mb.size(1)) {
-      require(mb.dim() == 3, "second input tensor must be 3D" +
+      Log4Error.invalidInputError(mb.dim() == 3, "second input tensor must be 3D" +
         s"second input dim ${mb.dim()}")
       // with different batch dim
       val newTensors = expandTensor(ma, mb)
@@ -117,23 +117,23 @@ private[bigdl] class InternalMM[T: ClassTag](
     gradInput[Tensor[T]](1).resizeAs(ma)
     gradInput[Tensor[T]](2).resizeAs(mb)
 
-    require(gradOutput.dim() == 2 || gradOutput.dim() == 3,
+    Log4Error.invalidInputError(gradOutput.dim() == 2 || gradOutput.dim() == 3,
       "arguments must be a 2D or 3D Tensor" +
         s"arguments dim ${gradOutput.dim()}")
 
 
     val (hDim, wDim, f): (Int, Int, Tensor[T] => Tensor[T] => Tensor[T] => Tensor[T]) =
       if (gradOutput.dim() == 2) {
-        require(ma.dim() == 2, "first input tensor must be 2D" +
+        Log4Error.invalidInputError(ma.dim() == 2, "first input tensor must be 2D" +
           s"first input dim ${ma.dim()}")
-        require(mb.dim() == 2, "second input tensor must be 2D" +
+        Log4Error.invalidInputError(mb.dim() == 2, "second input tensor must be 2D" +
           s"second input dim ${mb.dim()}")
 
         (1, 2, t => m1 => m2 => t.mm(m1, m2))
       } else {
-        require(ma.dim() == 3, "first input tensor must be 3D" +
+        Log4Error.invalidInputError(ma.dim() == 3, "first input tensor must be 3D" +
           s"first input dim ${ma.dim()}")
-        require(mb.dim() == 3, "second input tensor must be 3D" +
+        Log4Error.invalidInputError(mb.dim() == 3, "second input tensor must be 3D" +
           s"second input dim ${mb.dim()}")
 
         (2, 3, t => m1 => m2 => t.bmm(m1, m2))
@@ -159,7 +159,7 @@ private[bigdl] class InternalMM[T: ClassTag](
 
     // with different batch dim
     if (ma.dim() > 2 && ma.size(1) != mb.size(1)) {
-      require(mb.dim() == 3, "second input tensor must be 3D" +
+      Log4Error.invalidInputError(mb.dim() == 3, "second input tensor must be 3D" +
         s"second input dim ${mb.dim()}")
       if (ma.size(1) == 1) {
         gradInput(1) = expandLayer.backward(ma, gradInput[Tensor[T]](1)).toTensor

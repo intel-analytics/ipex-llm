@@ -19,7 +19,7 @@ import com.intel.analytics.bigdl.dllib.nn.abstractnn.{AbstractModule, Activity, 
 import com.intel.analytics.bigdl.dllib.optim.Regularizer
 import com.intel.analytics.bigdl.dllib.tensor.{SparseType, Tensor}
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.dllib.utils.{T, Table}
+import com.intel.analytics.bigdl.dllib.utils.{Log4Error, T, Table}
 
 import scala.collection.mutable
 import scala.reflect.ClassTag
@@ -53,7 +53,8 @@ class LookupTableSparse[T: ClassTag](
   val weight = Tensor[T](nIndex, nOutput)
   val gradWeight = Tensor[T](nIndex, nOutput).zero()
 
-  require(combiner == "mean" || combiner == "sum" || combiner == "sqrtn", "LookupTableSparse's" +
+  Log4Error.invalidInputError(combiner == "mean" || combiner == "sum" || combiner == "sqrtn",
+    "LookupTableSparse's" +
     s" combiner should be one of mean, sum or sqrtn, but got ${combiner}")
 
   protected val inputBuffer: Tensor[T] = Tensor()
@@ -80,7 +81,8 @@ class LookupTableSparse[T: ClassTag](
     } else {
       (input.toTensor[T], None)
     }
-    require(inputTensor.getTensorType == SparseType, "LookupTableSparse's input" +
+    Log4Error.invalidInputError(inputTensor.getTensorType == SparseType,
+      "LookupTableSparse's input" +
       s"must be SparseTensor, but got ${inputTensor.getTensorType}")
 
     val batchSize = inputTensor.size(1)

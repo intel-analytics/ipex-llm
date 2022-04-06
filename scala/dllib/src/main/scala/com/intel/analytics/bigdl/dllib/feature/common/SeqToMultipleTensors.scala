@@ -17,6 +17,7 @@ package com.intel.analytics.bigdl.dllib.feature.common
 
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.dllib.utils.Log4Error
 
 import scala.reflect.ClassTag
 
@@ -48,8 +49,8 @@ class SeqToMultipleTensors[T: ClassTag](multiSizes: Array[Array[Int]])
         s"Array[Float] and Array[Double] for ArrayType, but got $list")
     }
 
-    require(multiSizes.map(s => s.product).sum == rawData.length, s"feature columns length " +
-      s"${rawData.length} does not match with the sum of tensors" +
+    Log4Error.unKnowExceptionError(multiSizes.map(s => s.product).sum == rawData.length,
+      s"feature columns length ${rawData.length} does not match with the sum of tensors" +
       s" ${multiSizes.map(a => a.mkString(",")).mkString("\n")}")
 
     var cur = 0

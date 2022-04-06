@@ -19,6 +19,7 @@ import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.dllib.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.dllib.tensor.{Storage, Tensor}
+import com.intel.analytics.bigdl.dllib.utils.Log4Error
 
 import scala.reflect.ClassTag
 
@@ -65,7 +66,7 @@ class Bottle[T: ClassTag](
       // Forward with the module's dimension
       val newInput = input.view(inShape.storage().array().map(_.toInt))
       val output1 = modules(0).forward(newInput).toTensor[T]
-      require(output1.dim() == nOutputDim,
+      Log4Error.invalidInputError(output1.dim() == nOutputDim,
         s"Bottle: output dims on module should be $nOutputDim, but get ${output1.dim()}")
 
       outShape.copy(Tensor[Double](Storage(output1.size.map(_.toDouble))))

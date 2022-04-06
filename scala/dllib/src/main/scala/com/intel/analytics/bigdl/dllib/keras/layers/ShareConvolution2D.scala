@@ -22,7 +22,7 @@ import com.intel.analytics.bigdl.dllib.nn.{InitializationMethod, SpatialShareCon
 import com.intel.analytics.bigdl.dllib.optim.Regularizer
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.dllib.utils.Shape
+import com.intel.analytics.bigdl.dllib.utils.{Log4Error, Shape}
 import com.intel.analytics.bigdl.dllib.keras.Net
 import com.intel.analytics.bigdl.dllib.keras.layers.utils.KerasUtils
 
@@ -80,14 +80,14 @@ class ShareConvolution2D[T: ClassTag](
     val inputShape: Shape = null)(implicit ev: TensorNumeric[T])
   extends KerasLayer[Tensor[T], Tensor[T], T](KerasUtils.addBatch(inputShape)) with Net {
 
-  require(dimOrdering == DataFormat.NCHW, s"ShareConvolution2D currently only supports " +
-    s"format NCHW, but got format $dimOrdering")
-  require(subsample.length == 2,
+  Log4Error.invalidInputError(dimOrdering == DataFormat.NCHW,
+    s"ShareConvolution2D currently only supports format NCHW, but got format $dimOrdering")
+  Log4Error.invalidInputError(subsample.length == 2,
     s"For ShareConvolution2D, subsample should be of length 2 but got length ${subsample.length}")
 
   override def computeOutputShape(inputShape: Shape): Shape = {
     val input = inputShape.toSingle().toArray
-    require(input.length == 4,
+    Log4Error.invalidInputError(input.length == 4,
       s"ShareConvolution2D requires 4D input, but got input dim ${input.length}")
     val rows = (input(2) + 2 * padH - nbRow) / subsample(0) + 1
     val cols = (input(3) + 2 * padW - nbCol) / subsample(1) + 1

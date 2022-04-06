@@ -20,7 +20,7 @@ import com.intel.analytics.bigdl.dllib.nn.{InitializationMethod, SpatialSeparabl
 import com.intel.analytics.bigdl.dllib.optim.Regularizer
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.dllib.utils.Shape
+import com.intel.analytics.bigdl.dllib.utils.{Log4Error, Shape}
 import com.intel.analytics.bigdl.dllib.nn.abstractnn.{AbstractModule, DataFormat}
 
 import scala.reflect.ClassTag
@@ -80,9 +80,10 @@ class SeparableConvolution2D[T: ClassTag](
    val inputShape: Shape = null)(implicit ev: TensorNumeric[T])
   extends KerasLayer[Tensor[T], Tensor[T], T](KerasLayer.addBatch(inputShape)) {
 
-  require(borderMode == "valid" || borderMode == "same", s"Invalid border mode for " +
+  Log4Error.invalidInputError(borderMode == "valid" || borderMode == "same",
+    s"Invalid border mode for " +
     s"SeparableConvolution2D: $borderMode")
-  require(subsample.length == 2, s"For SeparableConvolution2D, " +
+  Log4Error.invalidInputError(subsample.length == 2, s"For SeparableConvolution2D, " +
     s"subsample should be of length 2 but got length ${subsample.length}")
 
   override def doBuild(inputShape: Shape): AbstractModule[Tensor[T], Tensor[T], T] = {

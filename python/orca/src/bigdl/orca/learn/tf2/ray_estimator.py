@@ -121,8 +121,8 @@ class TensorFlow2Estimator(OrcaRayEstimator):
         """
         Train this tensorflow model with train data.
 
-        :param data: train data. It can be XShards, Spark DataFrame or creator function which
-               returns Iter or DataLoader.
+        :param data: train data. It can be XShards, Spark DataFrame, Ray Dataset or
+               creator function which returns Iter or DataLoader.
                If data is XShards, each partition can be a Pandas DataFrame or a dictionary of
                {'x': feature, 'y': label}, where feature(label) is a numpy array or a tuple of
                numpy arrays.
@@ -148,10 +148,14 @@ class TensorFlow2Estimator(OrcaRayEstimator):
                the epochs on which to run validation, e.g. `validation_freq=[1, 2, 10]` runs
                validation at the end of the 1st, 2nd, and 10th epochs.
         :param data_config: An optional dictionary that can be passed to data creator function.
+               If data is a Ray Dataset, specifies `output_signature` same as in
+               `tf.data.Dataset.from_generator` (If `label_cols` is specified, a 2-element
+               tuple of `tf.TypeSpec` objects corresponding to (features, label). Otherwise,
+               a single `tf.TypeSpec` corresponding to features tensor).
         :param feature_cols: Feature column name(s) of data. Only used when data is a Spark
-               DataFrame or an XShards of Pandas DataFrame. Default: None.
-        :param label_cols: Label column name(s) of data. Only used when data is a Spark DataFrame or
-               an XShards of Pandas DataFrame.
+               DataFrame, an XShards of Pandas DataFrame or a Ray Dataset. Default: None.
+        :param label_cols: Label column name(s) of data. Only used when data is a Spark DataFrame,
+               an XShards of Pandas DataFrame or a Ray Dataset.
                Default: None.
         :return:
         """
@@ -200,6 +204,37 @@ class TensorFlow2Estimator(OrcaRayEstimator):
                 worker_stats = ray_xshards.zip_reduce_shards_with_actors(val_ray_xshards,
                                                                          self.remote_workers,
                                                                          zip_func)
+        elif isinstance(data, ray.data.Dataset):
+            shards = data.split(n=self.num_workers, locality_hints=self.remote_workers)
+
+            remote_worker_stats = []
+            if validation_data is None:
+                for shard, worker in zip(shards, self.remote_workers):
+                    params["data_creator"] = self.process_ray_dataset(shard,
+                                                                      label_cols, feature_cols,
+                                                                      data_config)
+                    remote_worker_stats.append(worker.step.remote(**params))
+                worker_stats = ray.get(remote_worker_stats)
+                worker_stats = list(itertools.chain.from_iterable(worker_stats))
+            else:
+                assert isinstance(validation_data, ray.data.Dataset), \
+                    "Validation data type should be the same as train data, " \
+                    "but got type: {}".format(type(validation_data))
+
+                val_shards = validation_data.split(n=self.num_workers,
+                                                   locality_hints=self.remote_workers)
+
+                for i in range(self.num_workers):
+                    params["data_creator"] = self.process_ray_dataset(shards[i],
+                                                                      label_cols, feature_cols,
+                                                                      data_config)
+                    params["validation_data_creator"] = self.process_ray_dataset(val_shards[i],
+                                                                                 label_cols,
+                                                                                 feature_cols,
+                                                                                 data_config)
+                    remote_worker_stats.append(self.remote_workers[i].step.remote(**params))
+                worker_stats = ray.get(remote_worker_stats)
+                worker_stats = list(itertools.chain.from_iterable(worker_stats))
         else:
             params["data_creator"] = data
             params["validation_data_creator"] = validation_data
@@ -217,8 +252,8 @@ class TensorFlow2Estimator(OrcaRayEstimator):
         """
         Evaluates the model on the validation data set.
 
-        :param data: evaluate data. It can be XShards, Spark DataFrame or creator function which
-               returns Iter or DataLoader.
+        :param data: evaluate data. It can be XShards, Spark DataFrame, Ray Dataset or
+               creator function which returns Iter or DataLoader.
                If data is XShards, each partition can be a Pandas DataFrame or a dictionary of
                {'x': feature, 'y': label}, where feature(label) is a numpy array or a tuple of
                numpy arrays.
@@ -233,10 +268,14 @@ class TensorFlow2Estimator(OrcaRayEstimator):
                sequence_length), to apply a different weight to every timestep of every sample.
         :param callbacks: List of Keras compatible callbacks to apply during evaluation.
         :param data_config: An optional dictionary that can be passed to data creator function.
+               If data is a Ray Dataset, specifies `output_signature` same as in
+               `tf.data.Dataset.from_generator` (If `label_cols` is specified, a 2-element
+               tuple of `tf.TypeSpec` objects corresponding to (features, label). Otherwise,
+               a single `tf.TypeSpec` corresponding to features tensor).
         :param feature_cols: Feature column name(s) of data. Only used when data is a Spark
-               DataFrame or an XShards of Pandas DataFrame. Default: None.
-        :param label_cols: Label column name(s) of data. Only used when data is a Spark DataFrame or
-               an XShards of Pandas DataFrame.
+               DataFrame, an XShards of Pandas DataFrame or a Ray Dataset. Default: None.
+        :param label_cols: Label column name(s) of data. Only used when data is a Spark DataFrame,
+               an XShards of Pandas DataFrame or a Ray Dataset.
                Default: None.
         :return: validation result
         """
@@ -275,6 +314,18 @@ class TensorFlow2Estimator(OrcaRayEstimator):
 
             worker_stats = ray_xshards.reduce_partitions_for_actors(self.remote_workers,
                                                                     transform_func)
+        elif isinstance(data, ray.data.Dataset):
+            shards = data.split(n=self.num_workers, locality_hints=self.remote_workers)
+
+            remote_worker_stats = []
+            for shard, worker in zip(shards, self.remote_workers):
+                params["data_creator"] = self.process_ray_dataset(shard,
+                                                                  label_cols,
+                                                                  feature_cols,
+                                                                  data_config)
+                remote_worker_stats.append(worker.validate.remote(**params))
+            worker_stats = ray.get(remote_worker_stats)
+            worker_stats = list(itertools.chain.from_iterable(worker_stats))
         else:  # data_creator functions; should return Iter or DataLoader
             params["data_creator"] = data
             params_list = [params] * self.num_workers
@@ -284,6 +335,26 @@ class TensorFlow2Estimator(OrcaRayEstimator):
             worker_stats = list(itertools.chain.from_iterable(worker_stats))
         stats = worker_stats[0].copy()
         return stats
+
+    def process_ray_dataset(self, shard, label_cols, feature_cols, data_config):
+        assert label_cols is not None, "label_cols param must be specified" \
+                                       " when convert ray dataset to tf dataset."
+        if "output_signature" not in data_config:
+            raise ValueError("output_signature should be specified in data_config")
+        import tensorflow as tf
+
+        def data_creator(config, batch_size):
+            tf_dataset = shard.to_tf(label_column=label_cols,
+                                     feature_columns=feature_cols,
+                                     output_signature=data_config["output_signature"],
+                                     batch_size=batch_size)
+            options = tf.data.Options()
+            options.experimental_distribute.auto_shard_policy = \
+                tf.data.experimental.AutoShardPolicy.OFF
+            tf_dataset = tf_dataset.with_options(options)
+            return tf_dataset
+
+        return data_creator
 
     def _predict_spark_xshards(self, xshards, params):
         ray_xshards = RayXShards.from_spark_xshards(xshards)

@@ -19,6 +19,7 @@ package com.intel.analytics.bigdl.dllib.nn
 import com.intel.analytics.bigdl.dllib.optim.Regularizer
 import com.intel.analytics.bigdl.dllib.tensor.{SparseTensorBLAS, SparseTensorMath, SparseType, Tensor}
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.dllib.utils.Log4Error
 
 import scala.reflect.ClassTag
 
@@ -58,9 +59,10 @@ class SparseLinear[T: ClassTag](
 
   // input should be a sparseTensor
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
-    require(input.getTensorType == SparseType, s"SparseLinear's input must be a SparseTensor," +
+    Log4Error.invalidInputError(input.getTensorType == SparseType,
+      s"SparseLinear's input must be a SparseTensor," +
       s"but got ${input.getTensorType}")
-    require(input.dim() == 2,
+    Log4Error.invalidInputError(input.dim() == 2,
       "SparseLinear: " + ErrorInfo.constrainInputAsVectorOrBatch)
 
     val nFrame = input.size(1)
@@ -82,7 +84,7 @@ class SparseLinear[T: ClassTag](
 
   // just backward a part of the gradOutput. Input is sparse, while gradOutput is dense.
   override def updateGradInput(input: Tensor[T], gradOutput: Tensor[T]): Tensor[T] = {
-    require(input.dim() == 2,
+    Log4Error.invalidInputError(input.dim() == 2,
       "SparseLinear: " + ErrorInfo.constrainInputAsVectorOrBatch)
     if (backwardStart >= 0 && backwardLength > 0) {
       val _inputSize = Array(input.size(1), backwardLength)
@@ -102,7 +104,7 @@ class SparseLinear[T: ClassTag](
   override def accGradParameters(
         input: Tensor[T],
         gradOutput: Tensor[T]): Unit = {
-    require(input.dim() == 2,
+    Log4Error.invalidInputError(input.dim() == 2,
       "SparseLinear: " + ErrorInfo.constrainInputAsVectorOrBatch)
 
     gradWeight.resize(outputSize, inputSize)

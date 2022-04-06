@@ -17,7 +17,7 @@ package com.intel.analytics.bigdl.dllib.nn.ops
 
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.dllib.utils.Table
+import com.intel.analytics.bigdl.dllib.utils.{Log4Error, Table}
 
 import scala.reflect.ClassTag
 
@@ -31,8 +31,9 @@ class InTopK[T: ClassTag](k: Int, startFromZero: Boolean = false)(implicit ev: T
     val predictions = input[Tensor[Float]](1)
     val targets = input[Tensor[Int]](2)
 
-    require(predictions.nDimension() == 2, "predictions should be 2D in InTopK")
-    require(targets.nDimension() == 1, "targets shoudl be 1D in InTopK")
+    Log4Error.invalidInputError(predictions.nDimension() == 2,
+      "predictions should be 2D in InTopK")
+    Log4Error.invalidInputError(targets.nDimension() == 1, "targets shoudl be 1D in InTopK")
 
     val batchSize = targets.size(1)
     output.resizeAs(targets)

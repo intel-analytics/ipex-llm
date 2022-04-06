@@ -198,7 +198,8 @@ abstract class Optimizer[T: ClassTag, D](
    */
   def setCheckpoint(path: String, trigger: Trigger): this.type = {
     if (!path.startsWith(File.hdfsPrefix)) {
-      require(Files.isDirectory(Paths.get(path)), s"Optimizer.setCheckpoint: $path is not a folder")
+      Log4Error.invalidInputError(Files.isDirectory(Paths.get(path)),
+        s"Optimizer.setCheckpoint: $path is not a folder")
     }
     this.checkpointPath = Some(path)
     this.checkpointTrigger = Some(trigger)
@@ -408,7 +409,8 @@ abstract class Optimizer[T: ClassTag, D](
     batchsize: Int = 100, warmupIteration: Int = 200): this.type = {
     this.dropPercentage = dropPercentage
     this.maxDropPercentage = maxDropPercentage
-    require(dropPercentage >= 0 && dropPercentage <= maxDropPercentage)
+    Log4Error.invalidInputError(dropPercentage >= 0 && dropPercentage <= maxDropPercentage,
+    "invalid dropPercentage")
     this.computeThresholdbatchSize = batchsize
     this.warmupIterationNum = warmupIteration
     this
@@ -436,7 +438,7 @@ abstract class Optimizer[T: ClassTag, D](
    */
   def setConstantGradientClipping(min: Double, max: Double)
   : this.type = {
-    require(min <= max, "min value can not be larger than max")
+    Log4Error.invalidInputError(min <= max, "min value can not be larger than max")
     val index = Optimizer.findIndex[ConstantClippingProcessor](parameterProcessors)
     if (index == -1) {
       parameterProcessors.append(new ConstantClippingProcessor(min, max))
@@ -454,8 +456,8 @@ abstract class Optimizer[T: ClassTag, D](
    */
   def setGradientClippingByl2Norm(l2NormThreshold: Double)
   : this.type = {
-    require(optimMethods.size == 1, "Only support 1 optimMethod.")
-    require(l2NormThreshold > 0, "l2NormThreshold should larger than zero")
+    Log4Error.invalidInputError(optimMethods.size == 1, "Only support 1 optimMethod.")
+    Log4Error.invalidInputError(l2NormThreshold > 0, "l2NormThreshold should larger than zero")
     val index = Optimizer.findIndex[L2NormClippingProcessor](parameterProcessors)
     if (index == -1) {
       parameterProcessors.append(new L2NormClippingProcessor(l2NormThreshold))
@@ -498,14 +500,16 @@ object Optimizer {
     val modelParameters = model.getParameters()
     val p = subModuleNames.map{subModuleName =>
       val subModule = model(subModuleName)
-      require(subModule.isDefined, s"Optimizer: couldn't find $subModuleName in $model")
+      Log4Error.invalidOperationError(subModule.isDefined,
+        s"Optimizer: couldn't find $subModuleName in $model")
       val subModuleWeights = subModule.get.getParameters()._1
-      require(subModuleWeights.nElement() > 0, s"Optimizer: $subModuleName doesn't have" +
+      Log4Error.invalidInputError(subModuleWeights.nElement() > 0,
+        s"Optimizer: $subModuleName doesn't have" +
         s" any trainable parameters, please check your model and optimMethods.")
       // If the storage subModule's parameter is the same with the storage of the submodule,
       // then subModule's parameter is contiguous.
-      require(modelParameters._1.storage() == subModuleWeights.storage(), s"Optimizer:" +
-        s" $subModuleName's parameter is not contiguous.")
+      Log4Error.invalidOperationError(modelParameters._1.storage() == subModuleWeights.storage(),
+        s"Optimizer: $subModuleName's parameter is not contiguous.")
       (subModuleName, subModuleWeights)
     }.toArray
 
@@ -516,7 +520,8 @@ object Optimizer {
       while (i < sortedWeights.length - 1) {
         val current = sortedWeights(i)
         val next = sortedWeights(i + 1)
-        require(current._2.storageOffset() + current._2.nElement() <= next._2.storageOffset(),
+        Log4Error.invalidOperationError(current._2.storageOffset() + current._2.nElement()
+          <= next._2.storageOffset(),
           s"Optimizer: ${current._1} and ${next._1}'s parameters are duplicated." +
             s" Please check your model and optimMethods.")
         i += 1

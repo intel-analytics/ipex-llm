@@ -20,8 +20,7 @@ import com.intel.analytics.bigdl.Module
 import com.intel.analytics.bigdl.dllib.nn.abstractnn.{AbstractModule, Activity, TensorModule}
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.dllib.utils.Shape
-import com.intel.analytics.bigdl.dllib.utils.Table
+import com.intel.analytics.bigdl.dllib.utils.{Log4Error, Shape, Table}
 import com.intel.analytics.bigdl.dllib.utils.serializer.{DeserializeContext, ModuleSerializable}
 import com.intel.analytics.bigdl.dllib.utils.serializer.converters.DataConverter
 
@@ -56,7 +55,7 @@ class TimeDistributed[T : ClassTag] (
   private var inputBuffer: Tensor[T] = _
 
   private def combine(src: Array[Int], target: Array[Int]): Unit = {
-    require(src.length == target.length + 1,
+    Log4Error.invalidInputError(src.length == target.length + 1,
       "TimeDistributed: combine method requires src.length == target.length + 1" +
         s" Current src.length = ${src.length}" +
         s" Current target.length = ${target.length}")
@@ -70,11 +69,11 @@ class TimeDistributed[T : ClassTag] (
   }
 
   private def split(src: Array[Int], target: Array[Int], dim1: Int, dim2: Int): Unit = {
-    require(src.length == target.length - 1,
+    Log4Error.invalidInputError(src.length == target.length - 1,
       "TimeDistributed: split method requires src.length == target.length - 1" +
         s" Current src.length = ${src.length}" +
         s" Current target.length = ${target.length}")
-    require(dim1 * dim2 == src(0),
+    Log4Error.invalidInputError(dim1 * dim2 == src(0),
       "TimeDistributed: split method requires dim1 * dim2 == src(0), " +
         s"Current dim1 = ${dim1}, dim2 = ${dim2}, src(0) = ${src(0)}")
 
@@ -88,7 +87,7 @@ class TimeDistributed[T : ClassTag] (
   }
 
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
-    require(input.dim >= 3,
+    Log4Error.invalidInputError(input.dim >= 3,
       "TimeDistributed: input should be at least a 3D Tensor, e.g [batch, time, inputDim]. " +
         s"Current input.dim = ${input.dim}")
 
@@ -106,7 +105,8 @@ class TimeDistributed[T : ClassTag] (
 
     val _inputSize = input.size
     combine(_inputSize, inputSize)
-    require(input.isContiguous(), "Input tensor to TimeDistributed should be contiguous")
+    Log4Error.invalidInputError(input.isContiguous(),
+      "Input tensor to TimeDistributed should be contiguous")
     input.resize(inputSize)
     val _output = layer.forward(input).toTensor[T]
     split(_output.size, outputSize, _inputSize(0), _inputSize(1))

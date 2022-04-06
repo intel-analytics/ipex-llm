@@ -18,7 +18,7 @@ package com.intel.analytics.bigdl.dllib.feature.dataset.image
 
 import com.intel.analytics.bigdl.dllib.feature.dataset.Transformer
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
-import com.intel.analytics.bigdl.dllib.utils.RandomGenerator
+import com.intel.analytics.bigdl.dllib.utils.{Log4Error, RandomGenerator}
 import com.intel.analytics.bigdl.dllib.utils.RandomGenerator.RNG
 
 import scala.collection.Iterator
@@ -104,7 +104,8 @@ class ColorJitter extends Transformer[LabeledBGRImage, LabeledBGRImage] {
   override def apply(prev: Iterator[LabeledBGRImage]): Iterator[LabeledBGRImage] = {
     prev.map(img => {
       val content = img.content
-      require(content.length % 3 == 0)
+      Log4Error.invalidInputError(content.length % 3 == 0, s"content length ${content.length}" +
+        s" cannot be divide by 3", "expect an image with RGB channel")
       randomOrder(content)
       img
     })

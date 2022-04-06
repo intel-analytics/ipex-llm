@@ -18,7 +18,7 @@ package com.intel.analytics.bigdl.dllib.optim
 
 import com.intel.analytics.bigdl.dllib.tensor.{DenseTensorApply, Tensor, TensorFunc6}
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.dllib.utils.Table
+import com.intel.analytics.bigdl.dllib.utils.{Log4Error, Table}
 
 import scala.reflect.ClassTag
 
@@ -29,7 +29,7 @@ import scala.reflect.ClassTag
  * @param learningRate learning rate
  * @param learningRatePower double, must be less or equal to zero. Default is -0.5.
  * @param initialAccumulatorValue double, the starting value for accumulators,
- *     require zero or positive values. Default is 0.1.
+ *     Log4Error.invalidInputError zero or positive values. Default is 0.1.
  * @param l1RegularizationStrength double, must be greater or equal to zero. Default is zero.
  * @param l2RegularizationStrength double, must be greater or equal to zero. Default is zero.
  * @param l2ShrinkageRegularizationStrength double, must be greater or equal to zero.
@@ -56,21 +56,22 @@ class Ftrl[@specialized(Float, Double) T: ClassTag](
          l1RegularizationStrength: Double,
          l2RegularizationStrength: Double,
          l2ShrinkageRegularizationStrength: Double): Unit = {
-    require(learningRate >= 0.0, s"Ftrl: learning rate should be greater or equal to zero." +
+    Log4Error.invalidInputError(learningRate >= 0.0,
+      s"Ftrl: learning rate should be greater or equal to zero." +
       s" but got $learningRate")
-    require(learningRatePower <= 0.0,
+    Log4Error.invalidInputError(learningRatePower <= 0.0,
       s"Ftrl: learning rate power should be smaller or equal to zero." +
         s" but got $learningRatePower")
-    require(initialAccumulatorValue >= 0.0,
+    Log4Error.invalidInputError(initialAccumulatorValue >= 0.0,
       s"Ftrl: initial value of accumulator should be greater or equal to zero." +
         s" but got $initialAccumulatorValue")
-    require(l1RegularizationStrength >= 0.0,
+    Log4Error.invalidInputError(l1RegularizationStrength >= 0.0,
       s"Ftrl: L1 regularization strength should be greater or equal to zero." +
         s" but got $l1RegularizationStrength")
-    require(l2RegularizationStrength >= 0.0,
+    Log4Error.invalidInputError(l2RegularizationStrength >= 0.0,
       s"Ftrl: L2 regularization strength should be greater or equal to zero." +
         s" but got $l2RegularizationStrength")
-    require(l2ShrinkageRegularizationStrength >= 0.0,
+    Log4Error.invalidInputError(l2ShrinkageRegularizationStrength >= 0.0,
       s"Ftrl: L2 shrinkage regularization strength should be greater or equal to zero." +
         s" but got $l2ShrinkageRegularizationStrength")
   }

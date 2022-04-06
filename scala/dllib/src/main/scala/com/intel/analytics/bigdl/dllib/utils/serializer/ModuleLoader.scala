@@ -27,7 +27,7 @@ import com.intel.analytics.bigdl.dllib.tensor.{DenseType, QuantizedTensor, Tenso
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.dllib.utils.serializer.converters.TensorConverter
 import com.intel.analytics.bigdl.dllib.utils.serializer.converters.DataReaderWriter
-import com.intel.analytics.bigdl.dllib.utils.{File, FileReader, FileWriter, Table}
+import com.intel.analytics.bigdl.dllib.utils.{File, FileReader, FileWriter, Table, Log4Error}
 import com.intel.analytics.bigdl.serialization.Bigdl._
 
 import scala.collection.mutable
@@ -79,7 +79,7 @@ object ModuleLoader {
       val dataInputStream = new DataInputStream(digestInputStream)
       digestInputStream.on(true)
       val magicNumber = dataInputStream.readInt
-      require(magicNumber == magicNo,
+      Log4Error.invalidInputError(magicNumber == magicNo,
         s"Magic number mismatch, expected $magicNo, actual $magicNumber")
 
       val totalCount = dataInputStream.readInt
@@ -102,10 +102,12 @@ object ModuleLoader {
 
       val calculatedDigest = digestInputStream.getMessageDigest.digest
 
-      require(calculatedDigest.length == digestLen, "checksum error, size mismatch")
+      Log4Error.invalidInputError(calculatedDigest.length == digestLen,
+        "checksum error, size mismatch")
 
       for (i <- 0 until digestLen) {
-        require(calculatedDigest(i) == storedDigest(i), "check sum error, please check weight file")
+        Log4Error.invalidInputError(calculatedDigest(i) == storedDigest(i),
+          "check sum error, please check weight file")
       }
 
     } finally {
@@ -179,7 +181,8 @@ object ModuleLoader {
     val copiedParameterTable = mirror.getParametersTable()
     layers.foreach(name => {
       if (parameterTable.contains(name)) {
-        require(copiedParameterTable.contains(name), s"$name does not exist in loaded module")
+        Log4Error.invalidInputError(copiedParameterTable.contains(name),
+          s"$name does not exist in loaded module")
         copyParams(parameterTable.get(name).get.asInstanceOf[Table],
           copiedParameterTable.get(name).get.asInstanceOf[Table])
       }
@@ -197,7 +200,7 @@ object ModuleLoader {
       // this is for quantization tensors where the weight might be an array
       if (copyParams.get(paraName).get
         .isInstanceOf[Array[Tensor[T]]]) {
-        require(params.get(paraName).get
+        Log4Error.invalidInputError(params.get(paraName).get
           .isInstanceOf[Array[Tensor[T]]], "param type mismatch!")
         val copies = params.get(paraName).get
           .asInstanceOf[Array[Tensor[T]]]
@@ -311,7 +314,8 @@ object ModulePersister {
       if (!storageIds.contains(storageId) && storageId != -1) {
         val tensorBuilder = BigDLTensor.newBuilder(bigdlTensor)
         tensorBuilder.clearStorage()
-        require(tensorStorages.contains(storageId), s"${storageId} does not exist")
+        Log4Error.invalidInputError(tensorStorages.contains(storageId),
+          s"${storageId} does not exist")
         tensorBuilder.setStorage(tensorStorages.get(storageId).
           get.asInstanceOf[TensorStorage])
         val attrValueBuilder = AttrValue.newBuilder

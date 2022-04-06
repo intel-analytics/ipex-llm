@@ -21,6 +21,9 @@ import com.intel.analytics.bigdl.dllib.nn.quantized.Utils._
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
 import java.nio.ByteBuffer
+
+import com.intel.analytics.bigdl.dllib.utils.Log4Error
+
 import scala.reflect.ClassTag
 
 object Quantization {
@@ -55,7 +58,7 @@ object Quantization {
 
   def dequantize(src: Array[Float], start: Int, end: Int, dst: Array[Byte], dstOffset: Int,
     max: Float, min: Float): Unit = {
-    require(src.length >= end, s"you write too much elements")
+    Log4Error.invalidInputError(src.length >= end, s"you write too much elements")
 
     for (i <- 0 until end - start) {
       src(start + i) = dequantize(dst(dstOffset + i), max, min)
@@ -64,8 +67,8 @@ object Quantization {
 
   def quantize(src: Array[Float], start: Int, end: Int, dst: Array[Byte], dstOffset: Int,
     size: Array[Int]): (Array[Float], Array[Float]) = {
-    require(size.length == 2, s"only support 2-dim matrix")
-    require(size.product == (end - start), s"number of elements does not match")
+    Log4Error.invalidInputError(size.length == 2, s"only support 2-dim matrix")
+    Log4Error.invalidInputError(size.product == (end - start), s"number of elements does not match")
 
     val height = size(0)
     val width = size(1)
@@ -86,12 +89,13 @@ object Quantization {
 
   def dequantize(data: Array[Float], start: Int, end: Int, quantizedData: Array[Byte], offset: Int,
     max: Array[Float], min: Array[Float], size: Array[Int]): Unit = {
-    require(max.length == min.length, s"the number of max doesn't match with the number of min")
-    require(size.length == 2, s"only support 2-dim matrix")
-    require(max.length == size(0),
+    Log4Error.invalidInputError(max.length == min.length,
+      s"the number of max doesn't match with the number of min")
+    Log4Error.invalidInputError(size.length == 2, s"only support 2-dim matrix")
+    Log4Error.invalidInputError(max.length == size(0),
       s"the number of max(${max.length}) doesn't match the size(${size(1)})")
 
-    require(size.product == (end - start), s"number of elements does not match")
+    Log4Error.invalidInputError(size.product == (end - start), s"number of elements does not match")
 
     val height = size(0)
     val width = size(1)
@@ -103,7 +107,8 @@ object Quantization {
   }
 
   private[bigdl] def get2Dim(shape: Array[Int]): Array[Int] = {
-    require(shape.length > 1, s"error size dimension, which must be great than 1")
+    Log4Error.invalidInputError(shape.length > 1,
+      s"error size dimension, which must be great than 1")
     val first = shape(0)
     val last = shape.slice(1, shape.length).product
     Array(first, last)

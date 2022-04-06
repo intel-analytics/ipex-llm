@@ -20,8 +20,7 @@ import com.intel.analytics.bigdl.dllib.nn.abstractnn.{Initializable, TensorModul
 import com.intel.analytics.bigdl.dllib.optim.Regularizer
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.dllib.utils.{T, Table}
-import com.intel.analytics.bigdl.dllib.utils.Engine
+import com.intel.analytics.bigdl.dllib.utils.{Engine, Log4Error, T, Table}
 
 import scala.concurrent.Future
 import scala.reflect.ClassTag
@@ -114,11 +113,12 @@ class TemporalConvolution[T: ClassTag](
     // Require input of 2 dimensions or 3 dimensions
     // 2d input format: time x feature
     // 3d input format: batch x time x feature
-    require(input.dim() == 2 || input.dim() == 3,
+    Log4Error.invalidInputError(input.dim() == 2 || input.dim() == 3,
       "TemporalConvolution: 2D or 3D(batch mode) tensor expected for input, " +
         s"but got ${input.dim()}")
     // Require input to be contiguous
-    require(input.isContiguous())
+    Log4Error.invalidOperationError(input.isContiguous(),
+      "TemporalConvolution expects input to be contiguous")
 
     var dimSeq = 1
     var dimFeat = 2
@@ -135,9 +135,11 @@ class TemporalConvolution[T: ClassTag](
     if (outputWindow == null) outputWindow = Tensor[T]()
 
     // Shape check on input with inputFrameSize and kernelW
-    require(input.size(dimFeat) == inputFrameSize, "Invalid input frame size. Got: " +
+    Log4Error.invalidInputError(input.size(dimFeat) == inputFrameSize,
+      "Invalid input frame size. Got: " +
       s"${input.size(dimFeat)}, Expected: $inputFrameSize")
-    require(nOutputFrame >= 1, "Input sequence smaller than kernel size. Got: " +
+    Log4Error.invalidInputError(nOutputFrame >= 1,
+      "Input sequence smaller than kernel size. Got: " +
       s"$nInputFrame, Expected: $kernelW")
 
     val weightT = weight.transpose(1, 2)
@@ -221,11 +223,12 @@ class TemporalConvolution[T: ClassTag](
     // Require input of 2 dimensions or 3 dimensions
     // 2d input format: time x feature
     // 3d input format: batch x time x feature
-    require(input.dim() == 2 || input.dim() == 3,
+    Log4Error.invalidInputError(input.dim() == 2 || input.dim() == 3,
       "TemporalConvolution: 2D or 3D(batch mode) tensor expected for input, " +
         s"but got ${input.dim()}")
     // Require input to be contiguous
-    require(input.isContiguous())
+    Log4Error.invalidOperationError(input.isContiguous(),
+      "TemporalConvolution expects input to be contiguous")
 
     val dimSeq = if (input.dim() == 2) 1 else 2
     val dimFeat = if (input.dim() == 2) 2 else 3
@@ -236,9 +239,11 @@ class TemporalConvolution[T: ClassTag](
     if (gradOutputWindow == null) gradOutputWindow = Tensor[T]()
 
     // Shape check on input with inputFrameSize and kernelW
-    require(input.size(dimFeat) == inputFrameSize, "Invalid input frame size. Got: " +
+    Log4Error.invalidInputError(input.size(dimFeat) == inputFrameSize,
+      "Invalid input frame size. Got: " +
       s"${input.size(dimFeat)}, Expected: $inputFrameSize")
-    require(nOutputFrame >= 1, "Input sequence smaller than kernel size. Got: " +
+    Log4Error.invalidInputError(nOutputFrame >= 1,
+      "Input sequence smaller than kernel size. Got: " +
       s"$nInputFrame, Expected: $kernelW")
 
     gradInput.resizeAs(input)
@@ -302,11 +307,12 @@ class TemporalConvolution[T: ClassTag](
 
   override def accGradParameters(input: Tensor[T], gradOutput: Tensor[T]): Unit = {
     // Require input of 2 dimensions or 3 dimensions
-    require(input.nDimension() == 2 || input.nDimension() == 3,
+    Log4Error.invalidInputError(input.nDimension() == 2 || input.nDimension() == 3,
       "Only support 2D or 3D input, " +
         s"input ${input.nDimension()}")
     // Require input to be contiguous
-    require(gradOutput.isContiguous())
+    Log4Error.invalidOperationError(gradOutput.isContiguous(),
+      "gradOutput needs to be contiguous")
 
     val dimSeq = if (input.dim() == 2) 1 else 2
     val dimFeat = if (input.dim() == 2) 2 else 3

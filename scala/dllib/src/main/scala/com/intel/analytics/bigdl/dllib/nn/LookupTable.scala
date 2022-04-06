@@ -21,8 +21,7 @@ import com.intel.analytics.bigdl.dllib.optim.Regularizer
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.dllib.utils.RandomGenerator._
-import com.intel.analytics.bigdl.dllib.utils.{T, Table}
-import com.intel.analytics.bigdl.dllib.utils.Shape
+import com.intel.analytics.bigdl.dllib.utils.{Log4Error, Shape, T, Table}
 
 import scala.reflect.ClassTag
 
@@ -79,10 +78,10 @@ class LookupTable[T: ClassTag]
     if (normBuffer.dim() == 2) {
       normBuffer = normBuffer.view(normBuffer.nElement())
     }
-    require(weight.isContiguous(), "LookupTable: weight must be contiguous")
-    require(normBuffer.isContiguous(), "LookupTable: input must be contiguous")
-    require(normBuffer.nDimension() == 1, "LookupTable: idx must be a vector")
-    require(normType > 0, "LookupTable: non-positive-norm not supported")
+    Log4Error.invalidInputError(weight.isContiguous(), "LookupTable: weight must be contiguous")
+    Log4Error.invalidInputError(normBuffer.isContiguous(), "LookupTable: input must be contiguous")
+    Log4Error.invalidInputError(normBuffer.nDimension() == 1, "LookupTable: idx must be a vector")
+    Log4Error.invalidInputError(normType > 0, "LookupTable: non-positive-norm not supported")
 
     val rowIdx = normBuffer.storage().array()
     val rowOffset = normBuffer.storageOffset() - 1
@@ -94,9 +93,10 @@ class LookupTable[T: ClassTag]
 
     var i = 0
     while (i < numEle) {
-      require(ev.isGreater(ev.fromType(weight.size(1) + 1), rowIdx(i + rowOffset)),
+      Log4Error.invalidInputError(ev.isGreater(ev.fromType(weight.size(1) + 1),
+        rowIdx(i + rowOffset)),
         s"LookupTable: elements of input should be little than or equal to $nIndex + 1")
-      require(ev.isGreaterEq(rowIdx(i + rowOffset), ev.one),
+      Log4Error.invalidInputError(ev.isGreaterEq(rowIdx(i + rowOffset), ev.one),
         "LookupTable: elements of input should be greater than or equal to 1")
       i += 1
     }
@@ -172,7 +172,7 @@ class LookupTable[T: ClassTag]
     if (maskZero && paddingValue != 0) {
       weight.select(1, paddingValue.toInt).zero()
     }
-    require(input.dim() == 1 || input.dim() == 2,
+    Log4Error.invalidInputError(input.dim() == 1 || input.dim() == 2,
       s"LookupTable: ${ErrorInfo.constrainInputAsVectorOrBatch}, input dim [${input.dim()}]"  )
     renorm(input)
     inputBuffer = input.contiguous()
@@ -204,8 +204,9 @@ class LookupTable[T: ClassTag]
 
   override def accGradParameters(input: Tensor[T], gradOutput: Tensor[T]): Unit = {
     inputBuffer = input.contiguous()
-    require(gradWeight.isContiguous(), "LookupTable: gradWeight must be contiguous")
-    require(inputBuffer.dim() == 1 || inputBuffer.dim() == 2,
+    Log4Error.invalidInputError(gradWeight.isContiguous(),
+      "LookupTable: gradWeight must be contiguous")
+    Log4Error.invalidInputError(inputBuffer.dim() == 1 || inputBuffer.dim() == 2,
       s"LookupTable: input must be a vector or matrix, input dim ${inputBuffer.dim()}" )
 
     if (inputBuffer.dim() == 2) {
@@ -225,9 +226,10 @@ class LookupTable[T: ClassTag]
 
     var i = 0
     while (i < numEle) {
-      require(ev.isGreater(ev.fromType(gradWeight.size(1) + 1), input_data(i + input_offset)),
+      Log4Error.invalidInputError(ev.isGreater(ev.fromType(gradWeight.size(1) + 1),
+        input_data(i + input_offset)),
         s"LookupTable: elements of input should be little than or equal to $nIndex + 1")
-      require(ev.isGreaterEq(input_data(i + input_offset), ev.one),
+      Log4Error.invalidInputError(ev.isGreaterEq(input_data(i + input_offset), ev.one),
         "LookupTable: elements of input should be greater than or equal to 1")
       i += 1
     }

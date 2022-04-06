@@ -33,6 +33,7 @@ import scala.collection.mutable.{ArrayBuffer, Map => MMap}
 import scala.io.Source
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.feature.FeatureSet
+import com.intel.analytics.bigdl.dllib.utils.Log4Error
 import org.apache.logging.log4j.{LogManager, Logger}
 // import com.intel.analytics.bigdl.dllib.feature.pmem.{DRAM, MemoryType}
 import org.apache.spark.sql.SQLContext
@@ -311,7 +312,8 @@ def rdd(data: RDD[TextFeature]): DistributedTextSet = {
       val features = ArrayBuffer[TextFeature]()
       val categoryToLabel = new util.HashMap[String, Int]()
       val categoryPath = new File(path)
-      require(categoryPath.exists(), s"$path doesn't exist. Please check your input path")
+      Log4Error.invalidInputError(categoryPath.exists(),
+        s"$path doesn't exist. Please check your input path")
       val categoryPathList = categoryPath.listFiles().filter(_.isDirectory).toList.sorted
       categoryPathList.foreach { categoryPath =>
         val label = categoryToLabel.size()
@@ -409,8 +411,10 @@ def rdd(data: RDD[TextFeature]): DistributedTextSet = {
 //      corpus2: TextSet,
 //      memoryType: MemoryType = DRAM): DistributedTextSet = {
     val pairsRDD = Relations.generateRelationPairs(relations)
-    require(corpus1.isDistributed, "corpus1 must be a DistributedTextSet")
-    require(corpus2.isDistributed, "corpus2 must be a DistributedTextSet")
+      Log4Error.invalidOperationError(corpus1.isDistributed,
+        "corpus1 must be a DistributedTextSet")
+      Log4Error.invalidOperationError(corpus2.isDistributed,
+        "corpus2 must be a DistributedTextSet")
     val joinedText1 = corpus1.toDistributed().rdd.keyBy(_.getURI)
       .join(pairsRDD.keyBy(_.id1)).map(_._2)
     val joinedText2Pos = corpus2.toDistributed().rdd.keyBy(_.getURI)
@@ -423,11 +427,11 @@ def rdd(data: RDD[TextFeature]): DistributedTextSet = {
       val text1 = x._1.getIndices
       val text2Pos = x._2.getIndices
       val text2Neg = x._3.getIndices
-      require(text1 != null,
+      Log4Error.invalidOperationError(text1 != null,
         "corpus1 haven't been transformed from word to index yet, please word2idx first")
-      require(text2Pos != null && text2Neg != null,
+      Log4Error.invalidOperationError(text2Pos != null && text2Neg != null,
         "corpus2 haven't been transformed from word to index yet, please word2idx first")
-      require(text2Pos.length == text2Neg.length,
+      Log4Error.invalidOperationError(text2Pos.length == text2Neg.length,
         "corpus2 contains texts with different lengths, please shapeSequence first")
       val pairedIndices = text1 ++ text2Pos ++ text1 ++ text2Neg
       val feature = Tensor(pairedIndices, Array(2, text1.length + text2Pos.length))
@@ -454,21 +458,21 @@ def rdd(data: RDD[TextFeature]): DistributedTextSet = {
       corpus1: TextSet,
       corpus2: TextSet): LocalTextSet = {
     val pairsArray = Relations.generateRelationPairs(relations)
-    require(corpus1.isLocal, "corpus1 must be a LocalTextSet")
-    require(corpus2.isLocal, "corpus2 must be a LocalTextSet")
+    Log4Error.invalidInputError(corpus1.isLocal, "corpus1 must be a LocalTextSet")
+    Log4Error.invalidInputError(corpus2.isLocal, "corpus2 must be a LocalTextSet")
     val mapText1: MMap[String, Array[Float]] = MMap()
     val mapText2: MMap[String, Array[Float]] = MMap()
     val arrayText1 = corpus1.toLocal().array
     val arrayText2 = corpus2.toLocal().array
     for (text <- arrayText1) {
       val indices = text.getIndices
-      require(indices != null,
+      Log4Error.invalidOperationError(indices != null,
         "corpus1 haven't been transformed from word to index yet, please word2idx first")
       mapText1(text.getURI) = indices
     }
     for (text <- arrayText2) {
       val indices = text.getIndices
-      require(indices != null,
+      Log4Error.invalidOperationError(indices != null,
         "corpus2 haven't been transformed from word to index yet, please word2idx first")
       mapText2(text.getURI) = indices
     }
@@ -476,7 +480,7 @@ def rdd(data: RDD[TextFeature]): DistributedTextSet = {
       val indices1 = mapText1(x.id1)
       val indices2Pos = mapText2(x.id2Positive)
       val indices2Neg = mapText2(x.id2Negative)
-      require(indices2Neg.length == indices2Pos.length,
+      Log4Error.invalidOperationError(indices2Neg.length == indices2Pos.length,
         "corpus2 contains texts with different lengths, please shapeSequence first")
       val textFeature = TextFeature(null, x.id1 + x.id2Positive + x.id2Negative)
       val pairedIndices = indices1 ++ indices2Pos ++ indices1 ++ indices2Neg
@@ -512,8 +516,10 @@ def rdd(data: RDD[TextFeature]): DistributedTextSet = {
       relations: RDD[Relation],
       corpus1: TextSet,
       corpus2: TextSet): DistributedTextSet = {
-    require(corpus1.isDistributed, "corpus1 must be a DistributedTextSet")
-    require(corpus2.isDistributed, "corpus2 must be a DistributedTextSet")
+    Log4Error.invalidOperationError(corpus1.isDistributed,
+      "corpus1 must be a DistributedTextSet")
+    Log4Error.invalidOperationError(corpus2.isDistributed,
+      "corpus2 must be a DistributedTextSet")
     val joinedText1 = corpus1.toDistributed().rdd.keyBy(_.getURI)
       .join(relations.keyBy(_.id1)).map(_._2)
     val joinedText2 = corpus2.toDistributed().rdd.keyBy(_.getURI).join(
@@ -526,10 +532,10 @@ def rdd(data: RDD[TextFeature]): DistributedTextSet = {
       val textFeature = TextFeature(null,
         uri = text1.getURI ++ text2Array.map(_.getURI).mkString(""))
       val text1Indices = text1.getIndices
-      require(text1Indices != null,
+      Log4Error.invalidOperationError(text1Indices != null,
         "corpus1 haven't been transformed from word to index yet, please word2idx first")
       val text2IndicesArray = text2Array.map(_.getIndices)
-      text2IndicesArray.foreach(x => require(x != null,
+      text2IndicesArray.foreach(x => Log4Error.invalidOperationError(x != null,
         "corpus2 haven't been transformed from word to index yet, please word2idx first"))
       val data = text2IndicesArray.flatMap(text1Indices ++ _)
       val feature = Tensor(data,
@@ -555,21 +561,21 @@ def rdd(data: RDD[TextFeature]): DistributedTextSet = {
       relations: Array[Relation],
       corpus1: TextSet,
       corpus2: TextSet): LocalTextSet = {
-    require(corpus1.isLocal, "corpus1 must be a LocalTextSet")
-    require(corpus2.isLocal, "corpus2 must be a LocalTextSet")
+    Log4Error.invalidOperationError(corpus1.isLocal, "corpus1 must be a LocalTextSet")
+    Log4Error.invalidOperationError(corpus2.isLocal, "corpus2 must be a LocalTextSet")
     val mapText1: MMap[String, Array[Float]] = MMap()
     val mapText2: MMap[String, Array[Float]] = MMap()
     val arrayText1 = corpus1.toLocal().array
     val arrayText2 = corpus2.toLocal().array
     for (text <- arrayText1) {
       val indices = text.getIndices
-      require(indices != null,
+      Log4Error.invalidOperationError(indices != null,
         "corpus1 haven't been transformed from word to index yet, please word2idx first")
       mapText1(text.getURI) = indices
     }
     for (text <- arrayText2) {
       val indices = text.getIndices
-      require(indices != null,
+      Log4Error.invalidOperationError(indices != null,
         "corpus2 haven't been transformed from word to index yet, please word2idx first")
       mapText2(text.getURI) = indices
     }
@@ -667,10 +673,10 @@ class LocalTextSet(var array: Array[TextFeature]) extends TextSet {
     maxWordsNum: Int = -1,
     minFreq: Int = 1,
     existingMap: Map[String, Int] = null): Map[String, Int] = {
-    require(removeTopN >= 0, "removeTopN should be a non-negative integer")
-    require(maxWordsNum == -1 || maxWordsNum > 0,
+    Log4Error.invalidOperationError(removeTopN >= 0, "removeTopN should be a non-negative integer")
+    Log4Error.invalidOperationError(maxWordsNum == -1 || maxWordsNum > 0,
       "maxWordsNum should be either -1 or a positive integer")
-    require(minFreq >= 1, "minFreq should be a positive integer")
+    Log4Error.invalidOperationError(minFreq >= 1, "minFreq should be a positive integer")
     val words = if (removeTopN == 0 && maxWordsNum == -1 && minFreq == 1) {
       array.flatMap(_.getTokens).distinct
     }
@@ -755,10 +761,10 @@ class DistributedTextSet(var rdd: RDD[TextFeature]) extends TextSet {
     maxWordsNum: Int = -1,
     minFreq: Int = 1,
     existingMap: Map[String, Int] = null): Map[String, Int] = {
-    require(removeTopN >= 0, "removeTopN should be a non-negative integer")
-    require(maxWordsNum == -1 || maxWordsNum > 0,
+    Log4Error.invalidOperationError(removeTopN >= 0, "removeTopN should be a non-negative integer")
+    Log4Error.invalidOperationError(maxWordsNum == -1 || maxWordsNum > 0,
       "maxWordsNum should be either -1 or a positive integer")
-    require(minFreq >= 1, "minFreq should be a positive integer")
+    Log4Error.invalidOperationError(minFreq >= 1, "minFreq should be a positive integer")
     val words = if (removeTopN == 0 && maxWordsNum == -1 && minFreq == 1) {
       rdd.flatMap(_.getTokens).distinct().collect()
     }

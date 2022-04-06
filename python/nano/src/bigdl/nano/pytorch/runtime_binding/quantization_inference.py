@@ -60,7 +60,9 @@ def _fx_quantize_eval(self, quantize=False):
 
 def quantized_state_dict(self):
     if self._quantized_model_up_to_date:
-        return self._quantized_model.state_dict()
+        # tune_cfg is an internal variable in INC
+        # TODO: change to a better implementation
+        return self._quantized_model.state_dict(), self._quantized_model_inc.tune_cfg
     else:
         raise RuntimeError("Please call trainer.quantize again since the quantized model is"
                            " not up-to-date.")
@@ -87,21 +89,27 @@ def quantized_model_size(self):
 
 def load_quantized_state_dict(self, state_dict):
     import torch
-    from torch.quantization.quantize_fx import prepare_fx, convert_fx
-    back_to_train = self.training
+    import tempfile
+    import os
+    import yaml
+    from neural_compressor.utils.pytorch import load
+    from neural_compressor.experimental.common import Model
 
-    self.eval()
-    qconfig = torch.quantization.get_default_qconfig('fbgemm')
-    if isinstance(self, LightningModuleFromTorch):
-        prepared_model = prepare_fx(self.model, {"": qconfig})
-    else:
-        prepared_model = prepare_fx(self, {"": qconfig})
-    qmodel = convert_fx(prepared_model)
-    qmodel.load_state_dict(state_dict)
-
-    if back_to_train:
-        self.train()
+    # this implementation saves the state dict to a format that is supported by INC
+    # TODO: change this to a better implementation once INC support it
+    qmodel = None
+    with tempfile.TemporaryDirectory() as tmp_dir_name:
+        weight_file = os.path.join(tmp_dir_name, "best_model_weights.pt")
+        tune_cfg_file = os.path.join(tmp_dir_name, "best_configure.yaml")
+        with open(tune_cfg_file, 'w') as f:
+            yaml.dump(state_dict[1], f, default_flow_style=False)
+        torch.save(state_dict[0], weight_file)
+        if isinstance(self, LightningModuleFromTorch):
+            qmodel = load(checkpoint_dir=tmp_dir_name, model=self.model)
+        else:
+            qmodel = load(checkpoint_dir=tmp_dir_name, model=self)
     self._quantized_model = qmodel
+    self._quantized_model_inc = Model(qmodel)
     self._quantized_model_up_to_date = True  # set to true before training next time
 
 
@@ -123,7 +131,12 @@ def bind_quantize_methods(pl_model, q_model):
                           " customized attributes or methods and call `trainer.quantize again `"
                           "to avoid being overwrite.")
 
-    pl_model._quantized_model = q_model
+    if q_model:
+        pl_model._quantized_model_inc = q_model
+        pl_model._quantized_model = q_model.model
+    else:
+        pl_model._quantized_model_inc = None
+        pl_model._quantized_model = None
     pl_model._quantized_model_up_to_date = True
     if q_model:
         pl_model._default_inference_quantize = True

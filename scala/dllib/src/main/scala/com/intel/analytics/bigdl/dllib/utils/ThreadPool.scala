@@ -87,7 +87,7 @@ class ThreadPool(private var poolSize: Int) {
    * @return
    */
   def setMKLThread(size: Int): this.type = this.synchronized {
-    require(MKL.isMKLLoaded)
+    Log4Error.invalidInputError(MKL.isMKLLoaded, "mkl isn't loaded")
     mklPoolSize = Some(size)
     (1 to poolSize).map(i => Future {
       MKL.setNumThreads(size)
@@ -106,8 +106,8 @@ class ThreadPool(private var poolSize: Int) {
         BackendMklDnn.setFlushDenormalState()
       }
 
-      require(MKL.isMKLLoaded)
-      require(BackendMklDnn.isLoaded)
+      Log4Error.invalidInputError(MKL.isMKLLoaded, "mkl isn't loaded")
+      Log4Error.invalidInputError(BackendMklDnn.isLoaded, "BackendMklDnn isn't loaded")
 
       MKL.setNumThreads(size)
       BackendMklDnn.setNumThreads(size)
@@ -133,7 +133,7 @@ class ThreadPool(private var poolSize: Int) {
         task()
       } catch {
         case t : Throwable =>
-          logger.error("Error: " + ExceptionUtils.getStackTrace(t))
+//          logger.error("Error: " + ExceptionUtils.getStackTrace(t))
           throw t
       }
     }(context)).map(future => {
@@ -186,7 +186,7 @@ class ThreadPool(private var poolSize: Int) {
           task()
         } catch {
           case t : Throwable =>
-            logger.error("Error: " + ExceptionUtils.getStackTrace(t))
+//            logger.error("Error: " + ExceptionUtils.getStackTrace(t))
             throw t
         }
       }
@@ -204,7 +204,7 @@ class ThreadPool(private var poolSize: Int) {
         task()
       } catch {
         case t : Throwable =>
-          logger.error("Error: " + ExceptionUtils.getStackTrace(t))
+//          logger.error("Error: " + ExceptionUtils.getStackTrace(t))
           throw t
       }
     }(context))
@@ -221,7 +221,7 @@ class ThreadPool(private var poolSize: Int) {
         task()
       } catch {
         case t : Throwable =>
-          logger.error("Error: " + ExceptionUtils.getStackTrace(t))
+//          logger.error("Error: " + ExceptionUtils.getStackTrace(t))
           throw t
       }
     }(context)

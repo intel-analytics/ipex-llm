@@ -19,6 +19,7 @@ import com.intel.analytics.bigdl.dllib.nn.ResizeBilinear
 import com.intel.analytics.bigdl.dllib.nn.abstractnn.{Activity, DataFormat}
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.dllib.utils.Log4Error
 
 import scala.reflect.ClassTag
 
@@ -28,7 +29,7 @@ class ResizeBilinearOps[T: ClassTag](alignCorner: Boolean)(implicit ev: TensorNu
   private var module : ResizeBilinear[T] = _
 
   override def updateOutput(input: Activity): Tensor[T] = {
-    require(input.isTable, "Only accept two input tensors")
+    Log4Error.invalidInputError(input.isTable, "Only accept two input tensors")
     val size = input.toTable.apply[Tensor[Int]](2)
     if (module == null) {
       module = ResizeBilinear[T](
@@ -38,8 +39,8 @@ class ResizeBilinearOps[T: ClassTag](alignCorner: Boolean)(implicit ev: TensorNu
         dataFormat = DataFormat.NHWC
       )
     } else {
-      require(module.outputHeight == size.valueAt(1), "height not match")
-      require(module.outputWidth == size.valueAt(2), "width not match")
+      Log4Error.invalidInputError(module.outputHeight == size.valueAt(1), "height not match")
+      Log4Error.invalidInputError(module.outputWidth == size.valueAt(2), "width not match")
     }
     val data = input.toTable.apply[Tensor[T]](1)
     output = module.forward(data)
@@ -60,7 +61,7 @@ private[bigdl] class ResizeBilinearGrad[T: ClassTag](alignCorner: Boolean)
   private var module : ResizeBilinear[T] = _
 
   override def updateOutput(input: Activity): Tensor[T] = {
-    require(input.isTable, "Only accept two input tensors")
+    Log4Error.invalidInputError(input.isTable, "Only accept two input tensors")
     val grads = input.toTable.apply[Tensor[T]](1)
     val originImage = input.toTable.apply[Tensor[T]](2)
     if (module == null) {
@@ -71,8 +72,8 @@ private[bigdl] class ResizeBilinearGrad[T: ClassTag](alignCorner: Boolean)
         dataFormat = DataFormat.NHWC
       )
     } else {
-      require(module.outputHeight == grads.size(2), "height not match")
-      require(module.outputWidth == grads.size(3), "width not match")
+      Log4Error.invalidInputError(module.outputHeight == grads.size(2), "height not match")
+      Log4Error.invalidInputError(module.outputWidth == grads.size(3), "width not match")
     }
     output = module.backward(originImage, grads)
     output

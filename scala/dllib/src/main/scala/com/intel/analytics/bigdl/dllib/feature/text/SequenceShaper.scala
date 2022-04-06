@@ -17,6 +17,7 @@
 package com.intel.analytics.bigdl.dllib.feature.text
 
 import com.intel.analytics.bigdl.dllib.feature.text.TruncMode.TruncMode
+import com.intel.analytics.bigdl.dllib.utils.Log4Error
 
 /**
  * Shape the sequence of indices to a fixed length.
@@ -42,10 +43,11 @@ class SequenceShaper(
     val truncMode: TruncMode = TruncMode.pre,
     val padElement: Int = 0) extends TextTransformer {
 
-  require(len > 0, "len should be positive")
+  Log4Error.invalidInputError(len > 0, "len should be positive")
 
   override def transform(feature: TextFeature): TextFeature = {
-    require(feature.contains(TextFeature.indexedTokens), "TextFeature doesn't contain " +
+    Log4Error.invalidOperationError(feature.contains(TextFeature.indexedTokens),
+      "TextFeature doesn't contain " +
       "indexedTokens, please transform from word to index first")
     val indices = feature.getIndices
     val shapedIndices = if (indices.length > len) {

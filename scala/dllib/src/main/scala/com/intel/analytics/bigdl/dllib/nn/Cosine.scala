@@ -19,7 +19,7 @@ import com.intel.analytics.bigdl.dllib.nn.abstractnn.{Initializable, TensorModul
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.dllib.utils.RandomGenerator._
-import com.intel.analytics.bigdl.dllib.utils.{T, Table}
+import com.intel.analytics.bigdl.dllib.utils.{Log4Error, T, Table}
 
 import scala.reflect.ClassTag
 
@@ -67,7 +67,7 @@ class Cosine[T: ClassTag](val inputSize : Int, val outputSize : Int)(
   }
 
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
-    require(input.dim() == 1 || input.dim() == 2,
+    Log4Error.invalidInputError(input.dim() == 1 || input.dim() == 2,
       s"input.dim() ${input.dim()} Cosine:  ${ErrorInfo.constrainInputAsVectorOrBatch}")
 
     if (null == _weightNorm) _weightNorm = Tensor[T]()
@@ -101,7 +101,7 @@ class Cosine[T: ClassTag](val inputSize : Int, val outputSize : Int)(
   }
 
   override def updateGradInput(input: Tensor[T], gradOutput: Tensor[T]) : Tensor[T] = {
-    require(input.dim() == 1 || input.dim() == 2,
+    Log4Error.invalidInputError(input.dim() == 1 || input.dim() == 2,
       s"Cosine:  ${ErrorInfo.constrainInputAsVectorOrBatch}, input.dim() ${input.dim()}")
     val nElement = gradInput.nElement()
     gradInput.resizeAs(input)
@@ -139,7 +139,7 @@ class Cosine[T: ClassTag](val inputSize : Int, val outputSize : Int)(
   }
 
   override def accGradParameters(input: Tensor[T], gradOutput: Tensor[T]): Unit = {
-    require(input.dim() == 1 || input.dim() == 2,
+    Log4Error.invalidInputError(input.dim() == 1 || input.dim() == 2,
       s"Cosine:  ${ErrorInfo.constrainInputAsVectorOrBatch}, input.dim() ${input.dim()}")
 
     if (input.dim() == 1 && scaleW != 0) {

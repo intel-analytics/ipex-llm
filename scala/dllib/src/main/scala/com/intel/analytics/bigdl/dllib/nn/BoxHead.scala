@@ -23,7 +23,7 @@ import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.dllib.feature.transform.vision.image.label.roi.RoiLabel
 import com.intel.analytics.bigdl.dllib.feature.transform.vision.image.util.BboxUtil
 import com.intel.analytics.bigdl.dllib.utils.RandomGenerator._
-import com.intel.analytics.bigdl.dllib.utils.{T, Table}
+import com.intel.analytics.bigdl.dllib.utils.{Log4Error, T, Table}
 
 import scala.collection.mutable.ArrayBuffer
 
@@ -158,7 +158,8 @@ private[nn] class BoxPostProcessor(
 
   private def selectTensor(matrix: Tensor[Float], indices: Array[Int],
     dim: Int, indiceLen: Int = -1, out: Tensor[Float] = null): Tensor[Float] = {
-    require(dim == 1 || dim == 2, s"dim should be 1 or 2, but get ${dim}")
+    Log4Error.invalidInputError(dim == 1 || dim == 2,
+      s"dim should be 1 or 2, but get ${dim}")
     var i = 1
     val n = if (indiceLen == -1) indices.length else indiceLen
     if (matrix.nDimension() == 1) {

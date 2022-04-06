@@ -158,7 +158,7 @@ class Table private[bigdl](
   }
 
   def remove[T](index: Int): Option[T] = {
-    require(index > 0)
+    Log4Error.invalidInputError(index > 0, s"index should be positive, but is $index")
 
     if (topIndex >= index) {
       var i = index
@@ -195,7 +195,7 @@ class Table private[bigdl](
   def insert[T](obj: T): this.type = update(topIndex + 1, obj)
 
   def insert[T](index: Int, obj: T): this.type = {
-    require(index > 0)
+    Log4Error.invalidInputError(index > 0, s"index should be positive, but is $index")
 
     if (topIndex >= index) {
       var i = topIndex + 1
@@ -214,7 +214,8 @@ class Table private[bigdl](
 
   def add(other: Table): this.type = {
     for (s <- other.state.keys) {
-      require(s.isInstanceOf[String])
+      Log4Error.invalidInputError(s.isInstanceOf[String],
+        "key of the Table is expected to be String")
       this.state(s) = other(s)
     }
     this
