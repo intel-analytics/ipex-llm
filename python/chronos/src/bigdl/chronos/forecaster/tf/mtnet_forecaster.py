@@ -95,7 +95,7 @@ class MTNetForecaster(Forecaster):
 
     def fit(self, data, epochs=2, batch_size=32, validation_data=None):
         """
-        :param data: a numpy.adarray tuple (x, y).
+        :param data: The data support following formats:
 
             | 1. a numpy ndarray tuple (x, y):
             | x's shape is (num_samples, (long_series_num+1)*series_length, feature_dim)
@@ -114,7 +114,7 @@ class MTNetForecaster(Forecaster):
 
     def predict(self, data, batch_size=32):
         """
-        :param data: a numpy.ndarray.
+        :param data: The data support following formats:
 
                | 1. data's shape is (num_samples, (long_series_num+1)*series_length, feature_dim)
 
@@ -128,7 +128,7 @@ class MTNetForecaster(Forecaster):
 
     def evaluate(self, data, metric=["mae"], batch_size=32, multioutput='raw_values'):
         """
-        :param data: a numpy.ndarray tuple (x, y).
+        :param data: The data support following formats:
 
             | 1. a numpy ndarray tuple (x, y):
             | x's shape is (num_samples, (long_series_num+1)*series_length, feature_dim)
