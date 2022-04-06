@@ -4,19 +4,20 @@ Hadoop version: Apache Hadoop >= 2.7 (3.X included) or [CDH](https://www.clouder
 
 ---
 
-For _**Scala users**_, please see [Scala User Guide](./scala.md) for how to run BigDL on hadoop/yarn cluster.  
+For _**Scala users**_, please see [Scala User Guide](./scala.md) for how to run BigDL on Hadoop/YARN clusters.  
 
 For _**Python users**_, you can run BigDL programs on standard Hadoop/YARN clusters without any changes to the cluster (i.e., no need to pre-install BigDL or other Python libraries on all nodes in the cluster).
 
 ### **1. Prepare Python Environment**
 
-- You need to first use [conda](https://docs.conda.io/projects/conda/en/latest/user-guide/install/) to prepare the Python environment _**on the local client machine**_. Create a conda environment, install BigDL and all the needed Python libraries in the created conda environment:
+- You need to first use [conda](https://docs.conda.io/projects/conda/en/latest/user-guide/install/) to prepare the Python environment _**on the local machine**_ where you submit your application. Create a conda environment, install BigDL and all the needed Python libraries in the created conda environment:
 
   ```bash
   conda create -n bigdl python=3.7  # "bigdl" is conda environment name, you can use any name you like.
   conda activate bigdl
 
   pip install bigdl
+
   # Use conda or pip to install all the needed Python dependencies in the created conda environment.
   ```
   View the [Python User Guide](./python.md) for more details for BigDL installation.
@@ -46,18 +47,18 @@ For _**Python users**_, you can run BigDL programs on standard Hadoop/YARN clust
 
 - **For CDH users**
 
-  If your CDH cluster has already installed Spark, the CDH's Spark will be conflict with the pyspark installed by pip required by BigDL.
+  If your CDH cluster has already installed Spark, the CDH's Spark might be conflict with the pyspark installed by pip required by BigDL.
 
   Thus before running BigDL applications, you should unset all the Spark related environment variables. You can use `env | grep SPARK` to find all the existing Spark environment variables.
 
-  Also, CDH cluster's `HADOOP_CONF_DIR` should be `/etc/hadoop/conf` on CDH by default.
+  Also, a CDH cluster's `HADOOP_CONF_DIR` should be `/etc/hadoop/conf` on CDH by default.
 
 ---
 ### **2. Run on YARN with built-in function**
 
-_**This is the easiest and most recommended way to run BigDL on yarn,**_ as we have put environment preparation and all the Spark related commands into our code. In this way, you can easy change your job between local (for test) and yarn (for production).
+_**This is the easiest and most recommended way to run BigDL on YARN,**_ as you don't need to care about environment preparation and Spark related commands. In this way, you can easily switch your job between local (for test) and YARN (for production) by changing the "cluster_mode".
 
-- We recommend using `init_orca_context` at the very beginning of your code to initiate and run BigDL on standard [Hadoop/YARN clusters](https://spark.apache.org/docs/latest/running-on-yarn.html#launching-spark-on-yarn):
+- Call `init_orca_context` at the very beginning of your code to initiate and run BigDL on standard [Hadoop/YARN clusters](https://spark.apache.org/docs/latest/running-on-yarn.html#launching-spark-on-yarn):
 
   ```python
   from bigdl.orca import init_orca_context
@@ -67,9 +68,9 @@ _**This is the easiest and most recommended way to run BigDL on yarn,**_ as we h
 
   `init_orca_context` would automatically prepare the runtime Python environment, detect the current Hadoop configurations from `HADOOP_CONF_DIR` and initiate the distributed execution engine on the underlying YARN cluster. View [Orca Context](../Orca/Overview/orca-context.md) for more details.    
   
-  By specifying cluster_mode to be `yarn-client` or `yarn-cluster`, `init_orca_context` will submit the job to yarn with client and cluster mode respectively.  
+  By specifying "cluster_mode" to be `yarn-client` or `yarn-cluster`, `init_orca_context` will submit the job to YARN with client and cluster mode respectively.  
   
-  The difference between `yarn-client` and `yarn-cluster` is where you run your Spark driver. For `yarn-client`, the Spark driver will run on the node where you start Python, while for `yarn-cluster` the Spark driver will run on a random node in the yarn cluster. So if you are running with `yarn-cluster`, you should change the application's data loading from local file to a network file system (e.g. HDFS).  
+  The difference between `yarn-client` and `yarn-cluster` is where you run your Spark driver. For `yarn-client`, the Spark driver will run on the node where you start Python, while for `yarn-cluster` the Spark driver will run on a random node in the YARN cluster. So if you are running with `yarn-cluster`, you should change the application's data loading from local file to a network file system (e.g. HDFS).  
 
 - You can then simply run your BigDL program in a Jupyter notebook. Note that _**jupyter cannot run on yarn-cluster**_, as the driver is not running on the local node.
 
@@ -88,13 +89,13 @@ _**This is the easiest and most recommended way to run BigDL on yarn,**_ as we h
 
 Follow the steps below if you need to run BigDL with [spark-submit](https://spark.apache.org/docs/latest/running-on-yarn.html#launching-spark-on-yarn).  
 
-- Pack the current conda environment to `environment.tar.gz` (you can use any name you like) in the current working directory:
+- Pack the current active conda environment to `environment.tar.gz` (you can use any name you like) in the current working directory:
 
   ```bash
   conda pack -o environment.tar.gz
   ```
 
-- _**You need to write your BigDL program as a Python script.**_ In the script, you need to call `init_orca_context` at the very beginning of your code and specify cluster_mode to be `spark-submit`:
+- _**You need to write your BigDL program as a Python script.**_ In the script, you need to call `init_orca_context` at the very beginning of your code and specify "cluster_mode" to be `spark-submit`:
 
   ```python
   from bigdl.orca import init_orca_context
@@ -102,7 +103,7 @@ Follow the steps below if you need to run BigDL with [spark-submit](https://spar
   sc = init_orca_context(cluster_mode="spark-submit")
   ```
 
-- Use `spark-submit-with-bigdl` to submit your BigDL program (e.g. script.py). You can adjust the configurations according to your cluster settings.
+- Use `spark-submit-with-bigdl` to submit your BigDL program (e.g. script.py). You can adjust the configurations according to your cluster settings. Note that if `environment.tar.gz` is not under the same directory with `script.py`, you may need to modify the path in `--archives` in the running command below.
 
   For `yarn-cluster` mode:
   ```bash
@@ -133,4 +134,4 @@ Follow the steps below if you need to run BigDL with [spark-submit](https://spar
       --archives environment.tar.gz#environment \
       script.py
   ```
-  Note: For `yarn-cluster`, the Spark driver is running in a yarn container as well and thus both the driver and executors will use the Python interpreter in `environment.tar.gz`.
+  Note: For `yarn-cluster`, the Spark driver is running in a YARN container as well and thus both the driver and executors will use the Python interpreter in `environment.tar.gz`.
