@@ -32,3 +32,8 @@ def QuantizationINC(framework: str,
 def check_pytorch_dataloaders(model, loaders):
     from .pytorch.dataloader import check_loaders
     return check_loaders(model, loaders)
+
+
+def tf_dataset_to_inc_dataloader(tf_dataset, batchsize):
+    from neural_compressor.experimental import common
+    return common.DataLoader(tf_dataset, batchsize)
