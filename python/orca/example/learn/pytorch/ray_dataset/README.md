@@ -24,13 +24,13 @@ pip install --pre --upgrade ray
 
 In this example, you need to execute `data_generation.py` to prepare the dataset for training pipeline as bellow:
 
-```python
+```bash
 python data_generation.py --data_dir ${data_dir}
 ```
 
 We also support generating dataset to distributed platform like S3 as follows:
 
-```python
+```bash
 python data_generation.py --data_dir ${data_dir} --use_s3 True
 ```
 
@@ -38,12 +38,12 @@ python data_generation.py --data_dir ${data_dir} --use_s3 True
 
 Currently, we support Ray Datasets input in `torch_distributed` backend. You can load data to the Ray Dataset from local disk or remote resources like `S3`. For here you should specify the `data_dir` as the location of generated data files.
 
-```python
+```bash
 python ray_dataset_prediction.py --runtime ray --data_dir ${data_dir}
 ```
 
 If you want to finish testing quickly and simply, we recommend you to use `smoke_test`, which conducts training with only one data file as follows:
 
-```python
+```bash
 python ray_dataset_prediction.py --runtime ray --data_dir ${data_dir} --smoke_test True
 ```
