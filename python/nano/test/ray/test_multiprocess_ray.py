@@ -88,6 +88,6 @@ def test_fit_function():
     model_multiprocess = model_init(num_classes)
     history_multiprocess = model_multiprocess.fit(train_ds, epochs=3,
                                                   validation_data=val_ds, nprocs=2, backend="ray")
-    assert 1 - (history_multiprocess.history['loss'][-1]
-                / history_default.history['loss'][-1]) <= 0.1
+    assert (history_default.history['accuracy'][-1]
+            - history_multiprocess.history['accuracy'][-1]) <= 0.1
 
