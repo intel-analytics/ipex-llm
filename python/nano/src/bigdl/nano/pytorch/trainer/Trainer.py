@@ -79,7 +79,7 @@ class Trainer(pl.Trainer):
         if num_processes == 1:
             accelerator = None
             if use_ipex:
-                from bigdl.nano.pytorch.accelerators.ipex_accelerator import IPEXAccelerator
+                from bigdl.nano.deps.ipex.ipex_accelerator import IPEXAccelerator
                 accelerator = IPEXAccelerator(enable_bf16=enable_bf16)
             super().__init__(accelerator=accelerator, *args, **kwargs)
         else:
@@ -106,7 +106,7 @@ class Trainer(pl.Trainer):
 
             accelerator = None
             if use_ipex:
-                from bigdl.nano.pytorch.accelerators.ipex_accelerator import IPEXAccelerator
+                from bigdl.nano.deps.ipex.ipex_accelerator import IPEXAccelerator
                 accelerator = IPEXAccelerator(training_type_plugin=plugin,  # type: ignore
                                               enable_bf16=enable_bf16)
 
