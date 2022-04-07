@@ -37,7 +37,6 @@ from collections import defaultdict
 
 import ray
 import torch
-from bigdl.nano.deps.ipex.ipex_api import ipex_device
 from pytorch_lightning.plugins import DDPSpawnPlugin
 from pytorch_lightning import _logger as log, LightningModule
 from pytorch_lightning.utilities import rank_zero_only
@@ -119,6 +118,7 @@ class RayPlugin(DDPSpawnPlugin):
                  use_gpu: bool = False,
                  use_ipex: bool = False,
                  init_hook: Callable = None,
+                 ipex_device: str = None,
                  **ddp_kwargs: Union[Any, Dict[str, Any]]):
 
         # Unset MKL setting as bigdl.nano would give default values when init env.
@@ -143,6 +143,7 @@ class RayPlugin(DDPSpawnPlugin):
         self.num_cpus_per_worker = num_cpus_per_worker
         self.use_gpu = use_gpu
         self.use_ipex = use_ipex
+        self.ipex_device = ipex_device
 
         assert not self.use_gpu or not self.use_ipex, \
             "You can not specify gpu and ipex at the same time."
@@ -408,9 +409,9 @@ class RayPlugin(DDPSpawnPlugin):
     def root_device(self):
         if self.use_gpu and torch.cuda.is_available():
             return torch.device("cuda", 0)
-        elif self.use_ipex:
+        elif self.use_ipex and self.ipex_device is not None:
             # Add ipex option.
-            return torch.device(ipex_device())
+            return torch.device(self.ipex_device)
         else:
             return torch.device("cpu")
 

@@ -101,7 +101,8 @@ class Trainer(pl.Trainer):
                 # which leads to an unacceptably low performance.
                 # So we import when we need.
                 plugin = distributed_ray(num_workers=num_processes,  # type: ignore
-                                         use_ipex=use_ipex)
+                                         use_ipex=use_ipex,
+                                         device=ipex_device())
 
             accelerator = None
             if use_ipex:
