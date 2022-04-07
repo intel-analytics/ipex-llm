@@ -32,7 +32,7 @@ from bigdl.nano.pytorch.lightning import LightningModuleFromTorch
 from bigdl.nano.pytorch.plugins.ddp_spawn import DDPSpawnPlugin
 from bigdl.nano.deps.ray.ray_api import distributed_ray
 
-distributed_backends = ["spawn", "ray"]
+distributed_backends = ["spawn", "ray", "subprocess"]
 
 
 class Trainer(pl.Trainer):
@@ -94,6 +94,17 @@ class Trainer(pl.Trainer):
                 else:
                     device = "cpu"
                 plugin = DDPSpawnPlugin(parallel_devices=[
+                    torch.device(device) for _ in range(num_processes)],
+                    cpu_for_each_process=cpu_for_each_process,
+                    cluster_environment=LightningEnvironment())
+            elif distributed_backend == "subprocess":
+                from bigdl.nano.pytorch.plugins.ddp_subprocess import DDPSubprocessPlugin
+                if use_ipex:
+                    import intel_pytorch_extension as ipex
+                    device = ipex.DEVICE
+                else:
+                    device = "cpu"
+                plugin = DDPSubprocessPlugin(parallel_devices=[
                     torch.device(device) for _ in range(num_processes)],
                     cpu_for_each_process=cpu_for_each_process,
                     cluster_environment=LightningEnvironment())

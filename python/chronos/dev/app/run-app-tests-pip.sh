@@ -12,6 +12,41 @@ chmod +x ${BIGDL_ROOT}/python/chronos/dev/app/ipynb2py.sh
 
 set -e
 
+echo "#2 start app test for chronos-network-traffic-model-forecasting"
+#timer
+start=$(date "+%s")
+${BIGDL_ROOT}/python/chronos/dev/app/ipynb2py.sh ${BIGDL_ROOT}/python/chronos/use-case/network_traffic/network_traffic_model_forecasting
+
+FILENAME="${BIGDL_ROOT}/python/chronos/use-case/network_traffic/data/data.csv"
+if [ -f "$FILENAME" ]
+then
+   echo "$FILENAME already exists."
+else
+   echo "Downloading network traffic data"
+
+   wget $FTP_URI/analytics-zoo-data/network-traffic/data/data.csv -P ${BIGDL_ROOT}/python/chronos/use-case/network_traffic/data
+
+   echo "Finished downloading network traffic data"
+fi
+
+sed -i '/get_ipython()/d; /plot[.]/d; /plt[.]/d; /axs[.]/d' ${BIGDL_ROOT}/python/chronos/use-case/network_traffic/network_traffic_model_forecasting.py
+sed -i "s/epochs=50/epochs=2/g; s/epochs=20/epochs=2/g" ${BIGDL_ROOT}/python/chronos/use-case/network_traffic/network_traffic_model_forecasting.py
+cd ${BIGDL_ROOT}/python/chronos/use-case/network_traffic/
+
+python ${BIGDL_ROOT}/python/chronos/use-case/network_traffic/network_traffic_model_forecasting.py
+cd -
+
+exit_status=$?
+if [ $exit_status -ne 0 ];
+then
+    clear_up
+    echo "chronos network-traffic-model-forecasting failed"
+    exit $exit_status
+fi
+now=$(date "+%s")
+time2=$((now-start))
+echo "#2 chronos-network-traffic-model-forecasting time used:$time2 seconds"
+
 echo "#5 start app test for chronos-anomaly-detect-unsupervised"
 #timer
 start=$(date "+%s")

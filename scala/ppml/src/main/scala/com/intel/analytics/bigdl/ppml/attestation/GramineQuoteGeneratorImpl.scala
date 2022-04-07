@@ -17,10 +17,11 @@
 package com.intel.analytics.bigdl.ppml.attestation
 
 import org.apache.logging.log4j.LogManager
-import java.io.BufferedOutputStream;
+import java.io.{BufferedOutputStream, BufferedInputStream};
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import scala.collection.Iterator
 
 /**
  * QuoteGenerator for Gramine (https://github.com/gramineproject/gramine)
@@ -28,9 +29,8 @@ import java.io.FileOutputStream;
 class GramineQuoteGeneratorImpl extends QuoteGenerator {
 
   val logger = LogManager.getLogger(getClass)
-
-  val userReportPath = "/dev/attestation/user_report_data"
-  val quotePath = "/dev/attestation/quote"
+  val USER_REPORT_PATH = "/dev/attestation/user_report_data"
+  val QUOTE_PATH = "/dev/attestation/quote"
 
   @throws(classOf[AttestationRuntimeException])
   override def getQuote(userReportData: Array[Byte]): Array[Byte] = {
@@ -42,7 +42,7 @@ class GramineQuoteGeneratorImpl extends QuoteGenerator {
 
     try {
       // write userReport
-      val out = new BufferedOutputStream(new FileOutputStream(userReportPath))
+      val out = new BufferedOutputStream(new FileOutputStream(USER_REPORT_PATH))
       out.write(userReportData)
       out.close()
     } catch {
@@ -54,16 +54,17 @@ class GramineQuoteGeneratorImpl extends QuoteGenerator {
 
     try {
       // read quote
-      val quoteFile = new File(quotePath)
-      if (quoteFile.length == 0) {
+      val quoteFile = new File(QUOTE_PATH)
+      val in = new FileInputStream(quoteFile)
+      val bufIn = new BufferedInputStream(in)
+      val quote = Iterator.continually(bufIn.read()).takeWhile(_ != -1).map(_.toByte).toArray
+      bufIn.close()
+      in.close()
+      if (quote.length == 0) {
         logger.error("Invalid quote file length.")
         throw new AttestationRuntimeException("Retrieving Gramine quote " +
           "returned Invalid file length!")
       }
-      val in = new FileInputStream(quoteFile)
-      val quote = new Array[Byte](quoteFile.length.toInt)
-      in.read(quote)
-      in.close()
       return quote
     } catch {
       case e: Exception =>

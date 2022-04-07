@@ -30,10 +30,10 @@ except:
                   "TCNForecaster, LSTMForecaster, Seq2SeqForecaster.")
 try:
     import tensorflow as tf
-    assert tf.__version__ < "2.0.0"
+    assert tf.__version__ > "2.0.0"
     tf_available = True
 except:
-    warnings.warn("Please install `tensorflow<2.0.0` to use MTNetForecaster.")
+    warnings.warn("Please install `tensorflow>2.0.0` to use MTNetForecaster.")
 try:
     import prophet
     prophet_available = True
@@ -59,7 +59,7 @@ if torch_available:
     if orca_available:
         from .tcmf_forecaster import TCMFForecaster
 if tf_available:
-    from .mtnet_forecaster import MTNetForecaster
+    from .tf.mtnet_forecaster import MTNetForecaster
 if prophet_available:
     from .prophet_forecaster import ProphetForecaster
 if arima_available:

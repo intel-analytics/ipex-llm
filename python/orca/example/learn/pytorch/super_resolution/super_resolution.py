@@ -55,6 +55,11 @@ parser.add_argument('--threads', type=int, default=4,
 parser.add_argument('--seed', type=int, default=123, help='random seed to use. Default=123')
 parser.add_argument('--cluster_mode', type=str,
                     default='local', help='The mode of spark cluster.')
+parser.add_argument('--runtime', type=str, default="spark",
+                    help='The runtime backend, one of spark or ray.')
+parser.add_argument('--address', type=str, default="",
+                    help='The cluster address if the driver connects to an existing ray cluster. '
+                         'If it is empty, a new Ray cluster will be created.')
 parser.add_argument('--backend', type=str, default="bigdl",
                     help='The backend of PyTorch Estimator; '
                          'bigdl, torch_distributed and spark are supported.')
@@ -63,20 +68,23 @@ opt = parser.parse_args()
 
 print(opt)
 
-if opt.cluster_mode == "local":
-    init_orca_context()
-elif opt.cluster_mode.startswith("yarn"):
-    hadoop_conf = os.environ.get("HADOOP_CONF_DIR")
-    assert hadoop_conf, "Directory path to hadoop conf not found for yarn-client mode. Please " \
-            "set the environment variable HADOOP_CONF_DIR"
-    additional = None if not exists("dataset/BSDS300.zip") else "dataset/BSDS300.zip#dataset"
-    init_orca_context(cluster_mode=opt.cluster_mode, cores=4, num_nodes=2, hadoop_conf=hadoop_conf,
-                    additional_archive=additional)
-elif opt.cluster_mode == "spark-submit":
-    init_orca_context(cluster_mode="spark-submit")
+if opt.runtime == "ray":
+    init_orca_context(runtime=opt.runtime, address=opt.address)
 else:
-    print("init_orca_context failed. cluster_mode should be one of 'local', 'yarn' and 'spark-submit' but got "
-          + opt.cluster_mode)
+    if opt.cluster_mode == "local":
+        init_orca_context()
+    elif opt.cluster_mode.startswith("yarn"):
+        hadoop_conf = os.environ.get("HADOOP_CONF_DIR")
+        assert hadoop_conf, "Directory path to hadoop conf not found for yarn-client mode. Please " \
+                "set the environment variable HADOOP_CONF_DIR"
+        additional = None if not exists("dataset/BSDS300.zip") else "dataset/BSDS300.zip#dataset"
+        init_orca_context(cluster_mode=opt.cluster_mode, cores=4, num_nodes=2, hadoop_conf=hadoop_conf,
+                        additional_archive=additional)
+    elif opt.cluster_mode == "spark-submit":
+        init_orca_context(cluster_mode="spark-submit")
+    else:
+        print("init_orca_context failed. cluster_mode should be one of 'local', 'yarn' and 'spark-submit' but got "
+            + opt.cluster_mode)
           
 
 def download_report(count, block_size, total_size):
