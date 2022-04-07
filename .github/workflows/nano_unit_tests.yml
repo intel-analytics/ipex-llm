@@ -1,4 +1,4 @@
-name: Nano Horovod Unit Tests
+name: Nano Unit Tests
 
 # Controls when the action will run. 
 on:
@@ -38,13 +38,14 @@ jobs:
       - name: Build Nano whl
         run: bash python/nano/dev/release_default_linux.sh default false
 
-      - name: Install Nano whl and horovod
+      - Name: Run horovod unit tests
+        env:  ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
         run: |
+          $CONDA/bin/conda create -n horovod-tf -y python==3.7
+          source activate horovod-tf
           whl_name=`ls python/nano/src/dist/`;pip install python/nano/src/dist/$whl_name[tensorflow]
           pip install horovod
-
-      # Runs a single command using the runners shell
-      - name: Run horovod tests
-        run: |
           source bigdl-nano-init
           bash python/nano/test/run-nano-tf-horovod-tests.sh
+          conda deactivate
+          conda remove -n horovod-tf --all
