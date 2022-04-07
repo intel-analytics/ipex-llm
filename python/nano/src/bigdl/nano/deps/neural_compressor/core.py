@@ -18,8 +18,8 @@ try:
     from neural_compressor.experimental import Quantization, common
     from neural_compressor.experimental.common import Metric
 except ImportError:
-    ImportError("Intel Neural Compressor must be installed to use quantization."
-                "Please install INC by: pip install neural-compressor.")
+    raise ImportError("Intel Neural Compressor must be installed to use quantization."
+                      "Please install INC by: pip install neural-compressor.")
 
 
 from .metric import METRICS
