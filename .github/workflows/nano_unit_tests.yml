@@ -33,7 +33,6 @@ jobs:
           python -m pip install --upgrade pip
           python -m pip install --upgrade setuptools
           python -m pip install --upgrade wheel
-          pip install pytest
 
       - name: Build Nano whl
         run: bash python/nano/dev/release_default_linux.sh default false
@@ -46,6 +45,7 @@ jobs:
           $CONDA/bin/conda info
           whl_name=`ls python/nano/src/dist/`;pip install python/nano/src/dist/$whl_name[tensorflow]
           pip install horovod
+          pip install pytest
           source bigdl-nano-init
           bash python/nano/test/run-nano-tf-horovod-tests.sh
           $CONDA/bin/conda deactivate
