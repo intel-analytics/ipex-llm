@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 from typing import List, Optional
-
+from bigdl.nano.deps.neural_compressor.inc_api import QuantizationINC, tf_dataset_to_inc_dataloader
 import tensorflow as tf
 from tensorflow.keras.metrics import Metric
 
@@ -67,9 +67,6 @@ def quantize(self,
      :return:           A TensorflowBaseModel for INC. If there is no model found, return None.
      """
     if backend == 'inc':
-        from bigdl.nano.deps.neural_compressor.inc_api import QuantizationINC,\
-            tf_dataset_to_inc_dataloader
-
         def get_tensors_name(tensors):
             return [tensor.name for tensor in tensors]
 
