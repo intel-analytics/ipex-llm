@@ -44,7 +44,7 @@ model.compile(
 )
 
 model.search(
-    n_trails=2,
+    n_trials=2,
     target_metric='accuracy',
     direction="maximize",
     x=x_train,
