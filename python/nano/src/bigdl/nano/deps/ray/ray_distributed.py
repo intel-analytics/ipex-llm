@@ -37,7 +37,7 @@ from collections import defaultdict
 
 import ray
 import torch
-import intel_pytorch_extension as ipex
+from bigdl.nano.deps.ipex.ipex_api import ipex_device
 from pytorch_lightning.plugins import DDPSpawnPlugin
 from pytorch_lightning import _logger as log, LightningModule
 from pytorch_lightning.utilities import rank_zero_only
@@ -410,7 +410,7 @@ class RayPlugin(DDPSpawnPlugin):
             return torch.device("cuda", 0)
         elif self.use_ipex:
             # Add ipex option.
-            return torch.device(ipex.DEVICE)
+            return torch.device(ipex_device())
         else:
             return torch.device("cpu")
 
