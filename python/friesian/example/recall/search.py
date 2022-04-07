@@ -1,34 +1,43 @@
+import os
+os.environ["OMP_NUM_THREADS"] = "28"
+os.environ["KMP_BLOCKTIME"] = "200"
+
 import time
 import numpy as np
 from bigdl.orca import init_orca_context, OrcaContext, stop_orca_context
 from pyspark.sql.types import StructType, StructField, IntegerType, FloatType
 
-sc = init_orca_context(cores="*", memory="125g", conf={"spark.driver.maxResultSize": "10g"})
+executor_cores = 28
+num_executor = 4
+executor_memory = "200g"
+driver_cores = 4
+driver_memory = "36g"
+sc = init_orca_context("yarn", cores=executor_cores,
+                       num_nodes=num_executor, memory=executor_memory,
+                       driver_cores=driver_cores, driver_memory=driver_memory)
 spark = OrcaContext.get_spark_session()
 
 start = time.time()
-df = spark.read.parquet("data.parquet").repartition(8) # coalesce
-rdd = df.rdd.filter(lambda x: x[0] < 10000)
-idx_path = "flatl2.idx"
-# import faiss
-# faiss_idx = faiss.read_index(idx_path)
-# idx_br = sc.broadcast(faiss_idx)
+df = spark.read.parquet("hdfs://172.168.0.101:8020/yahoo/id_embed.parquet")
+rdd = df.rdd.repartition(4)
+idx_path = "/opt/flatl2.idx"
 
-# faiss index is ~3G and if there are too many partitions, may easily run OOM.
-# TODO: can broadcast index?
+
 def faiss_search(model_path, batch_size=65536, k=200): # each record: id, embedding
     def do_search(partition):
         import faiss
         faiss_idx = faiss.read_index(model_path)
-        # faiss_idx = idx_br.value
         buffer = []
         for record in partition:
             if len(buffer) == batch_size:
+                s1 = time.time()
                 seed_ids = [row[0] for row in buffer]
                 embeddings = [row[1] for row in buffer]
                 buffer = [record]
                 q_vec = np.stack(embeddings).astype(np.float32)
                 similarity_array, idx_array = faiss_idx.search(q_vec, k=k)  # TODO: exclude itself
+                e1 = time.time()
+                print("Search time: ", e1-s1)
                 for i in range(batch_size):
                     for (score, rec_id) in zip(similarity_array[i], idx_array[i]):
                         yield (int(seed_ids[i]), int(rec_id), float(score))
@@ -46,21 +55,15 @@ def faiss_search(model_path, batch_size=65536, k=200): # each record: id, embedd
 
     return do_search
 
-res_rdd = rdd.mapPartitions(faiss_search(idx_path))
-# print(res_rdd.count())
-# print(res_rdd.take(5))
-# rows = rdd.take(10)
-# res = list(faiss_search(idx_path)(rows))
 
+res_rdd = rdd.mapPartitions(faiss_search(idx_path))
 schema = StructType([
     StructField('seed_item', IntegerType(), False),
     StructField('rec_item', IntegerType(), False),
     StructField('similarity_score', FloatType(), False)
 ])
 res_df = spark.createDataFrame(res_rdd, schema=schema)
-res_df.write.mode("overwrite").parquet("similarity_search.parquet")
-# print(res_df.count())
-
+res_df.write.mode("overwrite").parquet("hdfs://172.168.0.101:8020/yahoo/similarity_search.parquet")
 end = time.time()
 print("Total time used: ", end - start)
 stop_orca_context()
