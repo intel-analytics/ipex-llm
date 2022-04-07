@@ -20,7 +20,7 @@ import com.intel.analytics.bigdl.dllib.nn.abstractnn.{AbstractModule, Activity, 
 import com.intel.analytics.bigdl.dllib.tensor
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.dllib.utils.Engine
+import com.intel.analytics.bigdl.dllib.utils.{Engine, Log4Error}
 import com.intel.analytics.bigdl.dllib.utils.serializer._
 import com.intel.analytics.bigdl.dllib.utils.serializer.converters.DataConverter
 import com.intel.analytics.bigdl.serialization.Bigdl.{AttrValue, BigDLModule}
@@ -90,7 +90,7 @@ class SpatialMaxPooling[T: ClassTag](
   }
 
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
-    require(input.dim() == 3 || input.dim() == 4,
+    Log4Error.invalidInputError(input.dim() == 3 || input.dim() == 4,
       "SpatialMaxPooling: " + ErrorInfo.constrainInputAs3DOrBatch)
 
     val (dimh, dimw, dimc) = format.getHWCDims(input.dim())
@@ -104,11 +104,12 @@ class SpatialMaxPooling[T: ClassTag](
         // no ceil/floor mode in SAME padding
         Utils.getSAMEOutSizeAndPadding(inputHeight, inputWidth, dH, dW, kH, kW)
       } else {
-        require(inputWidth >= kW - padW && inputHeight >= kH - padH,
+        Log4Error.invalidInputError(inputWidth >= kW - padW && inputHeight >= kH - padH,
           "input smaller than kernel size" +
             s"input size(${input.size(dimw)},${input.size(dimh)})" +
             s"kernel size(${kW-padW},${kH-padH})")
-        require(kW / 2 >= padW && kH / 2 >= padH, "pad should be smaller than half of kernel size" +
+        Log4Error.invalidInputError(kW / 2 >= padW && kH / 2 >= padH,
+          "pad should be smaller than half of kernel size" +
           s"pad size($padW,$padH)" +
           s"kernel size($kW, $kH)")
         Utils.getOutSizeAndPadding(inputHeight, inputWidth, dH, dW, kH, kW, padH, padW, ceilMode)

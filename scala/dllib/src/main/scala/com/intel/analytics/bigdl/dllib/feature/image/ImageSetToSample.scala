@@ -19,6 +19,7 @@ import com.intel.analytics.bigdl.dllib.feature.dataset.ArraySample
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.dllib.feature.transform.vision.image.ImageFeature
+import com.intel.analytics.bigdl.dllib.utils.Log4Error
 import org.apache.logging.log4j.{LogManager, Logger}
 
 import scala.reflect.ClassTag
@@ -45,7 +46,8 @@ class ImageSetToSample[T: ClassTag](inputKeys: Array[String] = Array(ImageFeatur
     try {
       val inputs = inputKeys.map(key => {
         val input = feature[Tensor[T]](key)
-        require(input.isInstanceOf[Tensor[T]], s"the input $key should be tensor")
+        Log4Error.invalidOperationError(input.isInstanceOf[Tensor[T]],
+          s"the input $key should be tensor")
         input.asInstanceOf[Tensor[T]]
       })
       val sample = if (targetKeys == null) {
@@ -58,7 +60,8 @@ class ImageSetToSample[T: ClassTag](inputKeys: Array[String] = Array(ImageFeatur
         val targets = targetKeys.flatMap(key => {
           if (feature.contains(key)) {
             val target = feature[Tensor[T]](key)
-            require(target.isInstanceOf[Tensor[T]], s"the target $key should be tensor")
+            Log4Error.invalidOperationError(target.isInstanceOf[Tensor[T]],
+              s"the target $key should be tensor")
             Some(target.asInstanceOf[Tensor[T]])
           }
           else {

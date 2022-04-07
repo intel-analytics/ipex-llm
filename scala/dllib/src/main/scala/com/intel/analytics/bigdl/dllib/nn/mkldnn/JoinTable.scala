@@ -18,6 +18,7 @@ package com.intel.analytics.bigdl.dllib.nn.mkldnn
 import com.intel.analytics.bigdl.mkl.{DataType, Memory, MklDnn, Query}
 import com.intel.analytics.bigdl.dllib.nn.abstractnn.Activity
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
+import com.intel.analytics.bigdl.dllib.utils.Log4Error
 
 import scala.collection.mutable.ArrayBuffer
 
@@ -26,7 +27,8 @@ class JoinTable(val dimension: Int) extends MklDnnLayer {
   private var memoryPrims: Array[Array[Long]] = _
 
   override private[mkldnn] def initFwdPrimitives(inputs: Array[MemoryData], phase: Phase) = {
-    require(inputs.length > 0, s"at least one tensor, but is ${inputs.length}")
+    Log4Error.invalidInputError(inputs.length > 0,
+      s"at least one tensor, but is ${inputs.length}")
     _inputFormats = nativeData(inputs)
 
     val totalShape = inputs(0).shape.clone()
@@ -34,14 +36,16 @@ class JoinTable(val dimension: Int) extends MklDnnLayer {
     var i = 1
     while(i < inputs.length) {
       val curShape = inputs(i).shape
-      require(totalShape.length == curShape.length, "tensor dimension not match")
-      // require(inputs(i).isInstanceOf[NativeData], "memory should be native")
+      Log4Error.invalidInputError(totalShape.length == curShape.length,
+        "tensor dimension not match")
+      // Log4Error.invalidInputError(inputs(i).isInstanceOf[NativeData],
+      // "memory should be native")
       var j = 0
       while(j < curShape.length) {
         if (j == dimension - 1) {
           totalShape(j) += curShape(j)
         } else {
-          require(totalShape(j) == curShape(j), "tensor size not match")
+          Log4Error.invalidInputError(totalShape(j) == curShape(j), "tensor size not match")
         }
         j += 1
       }
@@ -98,12 +102,13 @@ class JoinTable(val dimension: Int) extends MklDnnLayer {
   }
 
   override def updateGradInput(input: Activity, gradOutput: Activity): Activity = {
-    require(gradOutput.isTensor, "gradOutput should be tensor")
-    require(gradInput.isTable, "gradInput should be table")
+    Log4Error.invalidInputError(gradOutput.isTensor, "gradOutput should be tensor")
+    Log4Error.invalidInputError(gradInput.isTable, "gradInput should be table")
     val _gradOutput = gradOutput.asInstanceOf[Tensor[Float]]
     val _gradInput = gradInput.toTable
     val length = _gradInput.length()
-    require(length == updateGradInputPrimitives.length, "gradOutput number not match")
+    Log4Error.invalidInputError(length == updateGradInputPrimitives.length,
+      "gradOutput number not match")
     var i = 0
     while(i < length) {
       MklDnnOps.streamSubmit(runtime.stream, 1, Array(updateGradInputPrimitives(i)),

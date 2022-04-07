@@ -25,7 +25,7 @@ import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
 import scala.concurrent.duration.Duration
 import scala.concurrent.{Await, Future}
 import scala.reflect._
-import com.intel.analytics.bigdl.dllib.utils.Engine
+import com.intel.analytics.bigdl.dllib.utils.{Engine, Log4Error}
 
 /**
  * Applies 2D average-pooling operation in kWxkH regions by step size dWxdH steps.
@@ -117,7 +117,7 @@ class SpatialAveragePooling[T: ClassTag](
     outputHeight: Int, outputWidth: Int,
     kW: Int, kH: Int, dW: Int, dH: Int,
     padLeft: Int, padTop: Int, padRight: Int, padBottom: Int): Unit = {
-    require(input.isContiguous())
+    Log4Error.invalidOperationError(input.isContiguous(), "input needs to be contiguous")
     val inputData = input.storage().array()
     val inputOffset = input.storageOffset() - 1
     val outputData = output.storage().array()
@@ -163,7 +163,7 @@ class SpatialAveragePooling[T: ClassTag](
     nInputPlane: Int, inputHeight: Int, inputWidth: Int, outputHeight: Int, outputWidth: Int,
     kW: Int, kH: Int, dW: Int, dH: Int,
     padLeft: Int, padTop: Int, padRight: Int, padBottom: Int): Unit = {
-    require(input.isContiguous())
+    Log4Error.invalidOperationError(input.isContiguous(), "input needs to be contiguous")
     val inputData = input.storage().array()
     val inputOffset = input.storageOffset() - 1
     val outputData = output.storage().array()
@@ -210,7 +210,7 @@ class SpatialAveragePooling[T: ClassTag](
      nInputPlane: Int, inputHeight: Int, inputWidth: Int, outputHeight: Int,
      outputWidth: Int, kW: Int, kH: Int, dW: Int, dH: Int,
      padLeft: Int, padTop: Int, padRight: Int, padBottom: Int): Unit = {
-    require(input.isContiguous())
+    Log4Error.invalidOperationError(input.isContiguous(), "input needs to be contiguous")
     val inputData = input.storage().array()
     val inputOffset = input.storageOffset() - 1
     val outputData = output.storage().array()
@@ -268,7 +268,7 @@ class SpatialAveragePooling[T: ClassTag](
     nInputPlane: Int, inputHeight: Int, inputWidth: Int, outputHeight: Int,
     outputWidth: Int, kW: Int, kH: Int, dW: Int, dH: Int,
     padLeft: Int, padTop: Int, padRight: Int, padBottom: Int): Unit = {
-    require(input.isContiguous())
+    Log4Error.invalidOperationError(input.isContiguous(), "input needs to be contiguous")
     val inputData = input.storage().array()
     val inputOffset = input.storageOffset() - 1
     val outputData = output.storage().array()
@@ -321,7 +321,7 @@ class SpatialAveragePooling[T: ClassTag](
   }
 
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
-    require(input.dim() == 3 || input.dim() == 4,
+    Log4Error.invalidInputError(input.dim() == 3 || input.dim() == 4,
       "SpatialAveragePooling: " + ErrorInfo.constrainInputAs3DOrBatch +
     s"input dimension ${input.dim()}")
 
@@ -448,7 +448,7 @@ class SpatialAveragePooling[T: ClassTag](
     outputHeight: Int, outputWidth: Int,
     kW: Int, kH: Int, dW: Int, dH: Int,
     padLeft: Int, padTop: Int, padRight: Int, padBottom: Int): Unit = {
-    require(gradOutput.isContiguous())
+    Log4Error.invalidOperationError(gradOutput.isContiguous(), "input needs to be contiguous")
     val gradInputData = gradInput.storage().array()
     val gradInputOffset = gradInput.storageOffset() - 1
     val gradOutputData = gradOutput.storage().array()
@@ -495,7 +495,7 @@ class SpatialAveragePooling[T: ClassTag](
     outputHeight: Int, outputWidth: Int,
     kW: Int, kH: Int, dW: Int, dH: Int,
     padLeft: Int, padTop: Int, padRight: Int, padBottom: Int): Unit = {
-    require(gradOutput.isContiguous())
+    Log4Error.invalidOperationError(gradOutput.isContiguous(), "input needs to be contiguous")
     val gradInputData = gradInput.storage().array()
     val gradInputOffset = gradInput.storageOffset() - 1
     val gradOutputData = gradOutput.storage().array()
@@ -543,7 +543,7 @@ class SpatialAveragePooling[T: ClassTag](
     outputHeight: Int, outputWidth: Int,
     kW: Int, kH: Int, dW: Int, dH: Int,
     padLeft: Int, padTop: Int, padRight: Int, padBottom: Int): Unit = {
-    require(gradOutput.isContiguous())
+    Log4Error.invalidOperationError(gradOutput.isContiguous(), "input needs to be contiguous")
     val gradInputData = gradInput.storage().array()
     val gradInputOffset = gradInput.storageOffset() - 1
     val gradOutputData = gradOutput.storage().array()
@@ -593,7 +593,7 @@ class SpatialAveragePooling[T: ClassTag](
      outputHeight: Int, outputWidth: Int,
      kW: Int, kH: Int, dW: Int, dH: Int,
      padLeft: Int, padTop: Int, padRight: Int, padBottom: Int): Unit = {
-    require(gradOutput.isContiguous())
+    Log4Error.invalidOperationError(gradOutput.isContiguous(), "input needs to be contiguous")
     val gradInputData = gradInput.storage().array()
     val gradInputOffset = gradInput.storageOffset() - 1
     val gradOutputData = gradOutput.storage().array()
@@ -644,7 +644,7 @@ class SpatialAveragePooling[T: ClassTag](
 
   private[bigdl] def updateGradInputInternal(inputSize: Array[Int],
                                              gradOutput: Tensor[T]): Tensor[T] = {
-    require(inputSize.length == 3 || inputSize.length == 4,
+    Log4Error.invalidInputError(inputSize.length == 3 || inputSize.length == 4,
       "SpatialAveragePooling: " + ErrorInfo.constrainInputAs3DOrBatch +
     s"input dimension ${inputSize.length}")
     // dimh, dimw, dimc start with 1
@@ -659,9 +659,10 @@ class SpatialAveragePooling[T: ClassTag](
         // no ceil/floor mode in SAME padding
         Utils.getSAMEOutSizeAndPadding(inputHeight, inputWidth, dH, dW, kH, kW)
       } else {
-        require(inputWidth >= kW - padW && inputHeight >= kH - padH,
+        Log4Error.invalidInputError(inputWidth >= kW - padW && inputHeight >= kH - padH,
           "input smaller than kernel size")
-        require(kW / 2 >= padW && kH / 2 >= padH, "pad should be smaller than half of kernel size")
+        Log4Error.invalidInputError(kW / 2 >= padW && kH / 2 >= padH,
+          "pad should be smaller than half of kernel size")
         Utils.getOutSizeAndPadding(inputHeight, inputWidth, dH, dW, kH, kW, padH, padW, ceilMode)
       }
     val padTop = sizes(0)

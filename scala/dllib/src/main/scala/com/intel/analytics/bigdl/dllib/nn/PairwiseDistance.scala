@@ -19,7 +19,7 @@ import com.intel.analytics.bigdl.dllib.nn.abstractnn.AbstractModule
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.dllib.utils.RandomGenerator._
-import com.intel.analytics.bigdl.dllib.utils.Table
+import com.intel.analytics.bigdl.dllib.utils.{Log4Error, Table}
 
 import scala.reflect.ClassTag
 
@@ -59,7 +59,7 @@ class PairwiseDistance[T: ClassTag](
       output.add(diff.pow(ev.fromType[Int](norm)).sum(2))
       output.pow(ev.divide(ev.fromType[Int](1), ev.fromType[Int](norm)))
     } else {
-      require(requirement = false,
+      Log4Error.invalidInputError(false,
         "PairwiseDistance: " + ErrorInfo.constrainEachInputAsVectorOrBatch)
     }
     output
@@ -78,7 +78,7 @@ class PairwiseDistance[T: ClassTag](
   }
 
   override def updateGradInput(input: Table, gradOutput: Tensor[T]): Table = {
-    require(input[Tensor[T]](1).dim() <= 2,
+    Log4Error.invalidInputError(input[Tensor[T]](1).dim() <= 2,
       "PairwiseDistance : " + ErrorInfo.constrainEachInputAsVectorOrBatch)
 
     if (!gradInput.contains(1)) {

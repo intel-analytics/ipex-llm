@@ -19,7 +19,7 @@ package com.intel.analytics.bigdl.dllib.keras.layers.internal
 import com.intel.analytics.bigdl.dllib.nn.{CAddTable => BigDLCAddTable}
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.dllib.utils.Table
+import com.intel.analytics.bigdl.dllib.utils.{Log4Error, Table}
 
 import scala.reflect.ClassTag
 
@@ -27,7 +27,7 @@ class InternalCAddTable[T: ClassTag, D: ClassTag](override val inplace: Boolean 
     implicit ev: TensorNumeric[T], ev2: TensorNumeric[D]) extends BigDLCAddTable[T, D](inplace) {
 
   private def canFastBroadcast(input: Tensor[D], gradOutput: Tensor[D]): Boolean = {
-    require(input.dim() == gradOutput.dim(),
+    Log4Error.invalidOperationError(input.dim() == gradOutput.dim(),
       s"input and gradOutput should have the same dims," +
         s"but got ${input.dim()} and ${gradOutput.dim()}")
     var i = 0
@@ -50,7 +50,8 @@ class InternalCAddTable[T: ClassTag, D: ClassTag](override val inplace: Boolean 
     while (i <= input.length()) {
       if (i > gradInput.length) gradInput.insert(i, Tensor[T]().resizeAs(input(1)))
       if (inplace) {
-        require(input[Tensor[D]](1).isSameSizeAs(gradOutput), "cannot use inplace for broadcast")
+        Log4Error.invalidOperationError(input[Tensor[D]](1).isSameSizeAs(gradOutput),
+          "cannot use inplace for broadcast")
         gradInput[Tensor[D]](i).set(gradOutput)
       } else {
         if (input[Tensor[D]](i).isSameSizeAs(gradOutput)) {
@@ -58,7 +59,8 @@ class InternalCAddTable[T: ClassTag, D: ClassTag](override val inplace: Boolean 
         } else if (canFastBroadcast(input[Tensor[D]](i), gradOutput)) {
           gradInput[Tensor[D]](i).resizeAs(input[Tensor[D]](i)).copy(gradOutput.sum(1))
         } else {
-          require(input[Tensor[D]](i).isScalar, "Only support scalar broadcast backward now")
+          Log4Error.invalidOperationError(input[Tensor[D]](i).isScalar,
+            "Only support scalar broadcast backward now")
           if (!calculateSum) {
             sum = gradOutput.sum()
             calculateSum = true

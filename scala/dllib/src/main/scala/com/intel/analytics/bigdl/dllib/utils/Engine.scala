@@ -66,12 +66,12 @@ object Engine {
       "https://bigdl-project.github.io/master/#APIGuide/Engine/")
     setNodeAndCore(nExecutor, executorCores)
     val res = if (onSpark) {
-      require(localMode == false,
+      Log4Error.invalidInputError(localMode == false,
         s"Engine.init: bigdl.localMode should not be set while onSpark is " +
           s"true. Please set correct java property.")
       Some(createSparkConf())
     } else {
-      require(localMode == true,
+      Log4Error.invalidInputError(localMode == true,
         s"Engine.init: bigdl.localMode should be set while onSpark is " +
           s"false. Please set correct java property.")
       None
@@ -274,7 +274,7 @@ object Engine {
 
   private def getNumMachineCores: Int = {
     val coreNum = Runtime.getRuntime().availableProcessors()
-    require(coreNum > 0, "Get a non-positive core number")
+    Log4Error.invalidInputError(coreNum > 0, "Get a non-positive core number")
     // We assume the HT is enabled
     // TODO: check the Hyper threading
     if (coreNum > 1) coreNum / 2 else 1
@@ -297,7 +297,7 @@ object Engine {
    * @return
    */
   private[bigdl] def coreNumber(): Int = {
-    require(physicalCoreNumber != -1, s"Engine.init: Core number is " +
+    Log4Error.invalidInputError(physicalCoreNumber != -1, s"Engine.init: Core number is " +
       s"not initialized. $NOT_INIT_ERROR")
     physicalCoreNumber
   }
@@ -308,7 +308,7 @@ object Engine {
    * @param n
    */
   private[bigdl] def setCoreNumber(n: Int): Unit = {
-    require(n > 0, "Engine.init: core number is smaller than zero")
+    Log4Error.invalidInputError(n > 0, "Engine.init: core number is smaller than zero")
     physicalCoreNumber = n
     initThreadPool(n)
   }
@@ -320,7 +320,8 @@ object Engine {
    * @return
    */
   private[bigdl] def nodeNumber(): Int = {
-    require(nodeNum != -1, s"Engine.init: Node number is not initialized. $NOT_INIT_ERROR")
+    Log4Error.invalidInputError(nodeNum != -1,
+      s"Engine.init: Node number is not initialized. $NOT_INIT_ERROR")
     nodeNum
   }
 
@@ -330,7 +331,7 @@ object Engine {
    * @param n
    */
   private[bigdl] def setNodeNumber(n : Int): Unit = {
-    require(n > 0)
+    Log4Error.invalidInputError(n > 0, s"n should greater than 0, but is $n")
     nodeNum = n
   }
 
@@ -482,7 +483,7 @@ object Engine {
     if (conf.get("spark.dynamicAllocation.enabled", null) == "true") {
       val maxExecutors = conf.get("spark.dynamicAllocation.maxExecutors", "1").toInt
       val minExecutors = conf.get("spark.dynamicAllocation.minExecutors", "1").toInt
-      require(maxExecutors == minExecutors, "Engine.init: " +
+      Log4Error.invalidInputError(maxExecutors == minExecutors, "Engine.init: " +
         "spark.dynamicAllocation.maxExecutors and " +
         "spark.dynamicAllocation.minExecutors must be identical " +
         "in dynamic allocation for BigDL")
@@ -530,14 +531,17 @@ object Engine {
       // Spark standalone mode
       val coreString = conf.get("spark.executor.cores", null)
       val maxString = conf.get("spark.cores.max", null)
-      require(coreString != null, "Engine.init: Can't find executor core number" +
+      Log4Error.invalidInputError(coreString != null,
+        "Engine.init: Can't find executor core number" +
         ", do you submit with --executor-cores option")
-      require(maxString != null, "Engine.init: Can't find total core number" +
+      Log4Error.invalidInputError(maxString != null,
+        "Engine.init: Can't find total core number" +
         ". Do you submit with --total-executor-cores")
       val core = coreString.toInt
       val nodeNum = dynamicAllocationExecutor(conf).getOrElse {
         val total = maxString.toInt
-        require(total >= core && total % core == 0, s"Engine.init: total core " +
+        Log4Error.invalidInputError(total >= core && total % core == 0,
+          s"Engine.init: total core " +
           s"number($total) can't be divided " +
           s"by single core number($core) provided to spark-submit")
         total / core
@@ -546,13 +550,15 @@ object Engine {
     } else if (master.toLowerCase.startsWith("yarn")) {
       // yarn mode
       val coreString = conf.get("spark.executor.cores", null)
-      require(coreString != null, "Engine.init: Can't find executor core number" +
+      Log4Error.invalidInputError(coreString != null,
+        "Engine.init: Can't find executor core number" +
         ", do you submit with " +
         "--executor-cores option")
       val core = coreString.toInt
       val node = dynamicAllocationExecutor(conf).getOrElse {
         val numExecutorString = conf.get("spark.executor.instances", null)
-        require(numExecutorString != null, "Engine.init: Can't find executor number" +
+        Log4Error.invalidInputError(numExecutorString != null,
+          "Engine.init: Can't find executor number" +
           ", do you submit with " +
           "--num-executors option")
         numExecutorString.toInt
@@ -560,18 +566,22 @@ object Engine {
       Some(node, core)
     } else if (master.toLowerCase.startsWith("mesos")) {
       // mesos mode
-      require(conf.get("spark.mesos.coarse", null) != "false", "Engine.init: " +
+      Log4Error.invalidInputError(conf.get("spark.mesos.coarse", null) != "false",
+        "Engine.init: " +
         "Don't support mesos fine-grained mode")
       val coreString = conf.get("spark.executor.cores", null)
-      require(coreString != null, "Engine.init: Can't find executor core number" +
+      Log4Error.invalidInputError(coreString != null,
+        "Engine.init: Can't find executor core number" +
         ", do you submit with --executor-cores option")
       val core = coreString.toInt
       val nodeNum = dynamicAllocationExecutor(conf).getOrElse {
         val maxString = conf.get("spark.cores.max", null)
-        require(maxString != null, "Engine.init: Can't find total core number" +
+        Log4Error.invalidInputError(maxString != null,
+          "Engine.init: Can't find total core number" +
           ". Do you submit with --total-executor-cores")
         val total = maxString.toInt
-        require(total >= core && total % core == 0, s"Engine.init: total core " +
+        Log4Error.invalidInputError(total >= core && total % core == 0,
+          s"Engine.init: total core " +
           s"number($total) can't be divided " +
           s"by single core number($core) provided to spark-submit")
         total / core
@@ -581,14 +591,17 @@ object Engine {
       // Spark-on-kubernetes mode
       val coreString = conf.get("spark.executor.cores", null)
       val maxString = conf.get("spark.cores.max", null)
-      require(coreString != null, "Engine.init: Can't find executor core number" +
+      Log4Error.invalidInputError(coreString != null,
+        "Engine.init: Can't find executor core number" +
         ", do you submit with --conf spark.executor.cores option")
-      require(maxString != null, "Engine.init: Can't find total core number" +
+      Log4Error.invalidInputError(maxString != null,
+        "Engine.init: Can't find total core number" +
         ". Do you submit with --conf spark.cores.max option")
       val core = coreString.toInt
       val nodeNum = dynamicAllocationExecutor(conf).getOrElse {
         val total = maxString.toInt
-        require(total >= core && total % core == 0, s"Engine.init: total core " +
+        Log4Error.invalidInputError(total >= core && total % core == 0,
+          s"Engine.init: total core " +
           s"number($total) can't be divided " +
           s"by single core number($core) provided to spark-submit")
         total / core

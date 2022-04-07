@@ -16,6 +16,7 @@
 
 package org.apache.spark.ml.adapter
 
+import com.intel.analytics.bigdl.dllib.utils.Log4Error
 import org.apache.spark.sql.types.{DataType, StructField, StructType}
 
 
@@ -44,7 +45,8 @@ object SchemaUtils {
       nullable: Boolean = false): StructType = {
 
     val colSF = StructField(colName, dataType, nullable)
-    require(!schema.fieldNames.contains(colSF.name), s"Column ${colSF.name} already exists.")
+    Log4Error.invalidInputError(!schema.fieldNames.contains(colSF.name),
+      s"Column ${colSF.name} already exists.")
     StructType(schema.fields :+ colSF)
   }
 

@@ -21,13 +21,15 @@ import breeze.linalg.{*, dim, max}
 import com.intel.analytics.bigdl.dllib.nn.ResizeBilinear
 import com.intel.analytics.bigdl.dllib.nn.abstractnn.DataFormat
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
+import com.intel.analytics.bigdl.dllib.utils.Log4Error
+
 import scala.collection.mutable.ArrayBuffer
 
 private[bigdl] object Utils {
   // box with 4 element (xyxy)
   def expandBoxes(bbox: Tensor[Float], bboxExpand: Tensor[Float], scale: Float)
   : Unit = {
-    require(bbox.nElement() == 4 && bboxExpand.nElement() == 4
+    Log4Error.invalidInputError(bbox.nElement() == 4 && bboxExpand.nElement() == 4
       && bbox.dim() == 1 && bboxExpand.dim() == 1,
       "Box and expanded box should have 4 elements with one dim")
 
@@ -52,7 +54,7 @@ private[bigdl] object Utils {
 
   // mask with three dims (channel, height, wide)
   def expandMasks(mask: Tensor[Float], padding: Int): (Tensor[Float], Float) = {
-    require(mask.isContiguous(), "Only support contiguous mask")
+    Log4Error.invalidInputError(mask.isContiguous(), "Only support contiguous mask")
 
     val channel = mask.size(1)
     val width = mask.size(mask.dim() - 1) // height equals to width
@@ -137,7 +139,8 @@ private[bigdl] object Utils {
   // input & output should be 3 dims with (n, height, width)
   def bilinear(input: Tensor[Float], output: Tensor[Float],
                alignCorners: Boolean = false): Unit = {
-    require(input.dim() == 3 && output.dim() == 3, s"Only support 3 dims bilinear," +
+    Log4Error.invalidInputError(input.dim() == 3 && output.dim() == 3,
+      s"Only support 3 dims bilinear," +
       s"but get ${input.dim()} ${output.dim()}")
 
     val input_height = input.size(2)
@@ -150,7 +153,7 @@ private[bigdl] object Utils {
       return
     }
 
-    require(input.isContiguous() && output.isContiguous(),
+    Log4Error.invalidInputError(input.isContiguous() && output.isContiguous(),
       "Only support contiguous tensor for bilinear")
     val channels = input.size(1)
     val inputData = input.storage().array()

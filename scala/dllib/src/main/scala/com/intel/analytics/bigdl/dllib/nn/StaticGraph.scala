@@ -22,7 +22,7 @@ import com.intel.analytics.bigdl.dllib.nn.tf.ControlDependency
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.dllib.utils.intermediate.{BlasToIR, IRGraph}
-import com.intel.analytics.bigdl.dllib.utils.{Node, Util}
+import com.intel.analytics.bigdl.dllib.utils.{Log4Error, Node, Util}
 import com.intel.analytics.bigdl.dllib.optim.DistriOptimizer._
 
 import scala.reflect.ClassTag
@@ -96,7 +96,7 @@ class StaticGraph[T: ClassTag](
         }
         j += 1
       }
-      require(find, "Cannot find backward layer in forward executions")
+      Log4Error.invalidInputError(find, "Cannot find backward layer in forward executions")
       i += 1
     }
 

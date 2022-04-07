@@ -17,11 +17,10 @@
 package com.intel.analytics.bigdl.dllib.keras.layers
 
 import com.intel.analytics.bigdl.dllib.nn.abstractnn.{AbstractModule, Activity}
-import com.intel.analytics.bigdl.dllib.utils.SingleShape
-import com.intel.analytics.bigdl.dllib.nn.internal.{KerasLayer}
+import com.intel.analytics.bigdl.dllib.utils.{Log4Error, Shape, SingleShape}
+import com.intel.analytics.bigdl.dllib.nn.internal.KerasLayer
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.dllib.utils.Shape
 import com.intel.analytics.bigdl.dllib.keras.Net
 import com.intel.analytics.bigdl.dllib.keras.layers.internal.InternalTimeDistributed
 import com.intel.analytics.bigdl.dllib.keras.layers.utils.KerasUtils
@@ -54,7 +53,7 @@ import scala.reflect.ClassTag
 
   private def getInnerShape(inputShape: Shape): Shape = {
     val sizes = inputShape.toSingle().toArray
-    require(sizes.length >= 3,
+    Log4Error.invalidInputError(sizes.length >= 3,
       s"TimeDistributed requires at least 3D input, but got input dim ${sizes.length}")
     if (seqLen != 0) {
       // in case time dim is singleton

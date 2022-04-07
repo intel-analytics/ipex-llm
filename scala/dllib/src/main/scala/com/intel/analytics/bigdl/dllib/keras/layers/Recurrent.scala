@@ -21,7 +21,7 @@ import com.intel.analytics.bigdl.dllib.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.dllib.nn.internal.{Recurrent => BKerasRecurrent}
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.dllib.utils.Shape
+import com.intel.analytics.bigdl.dllib.utils.{Log4Error, Shape}
 import com.intel.analytics.bigdl.dllib.keras.layers.internal.InternalRecurrent
 
 import scala.reflect.ClassTag
@@ -46,7 +46,7 @@ abstract class Recurrent[T: ClassTag](
   }
 
   def getHiddenShape(): Array[Int] = {
-    require(this.isBuilt(), "Cannot getHiddenShape before call doBuild!")
+    Log4Error.invalidOperationError(this.isBuilt(), "Cannot getHiddenShape before call doBuild!")
     rec.getHiddenShape()
   }
 

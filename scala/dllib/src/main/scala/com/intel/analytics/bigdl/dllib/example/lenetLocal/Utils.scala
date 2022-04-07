@@ -20,7 +20,7 @@ import java.nio.ByteBuffer
 import java.nio.file.{Files, Paths}
 
 import com.intel.analytics.bigdl.dllib.feature.dataset.ByteRecord
-import com.intel.analytics.bigdl.dllib.utils.File
+import com.intel.analytics.bigdl.dllib.utils.{File, Log4Error}
 import scopt.OptionParser
 
 object Utils {
@@ -144,13 +144,19 @@ object Utils {
     }
     val labelMagicNumber = labelBuffer.getInt()
 
-    require(labelMagicNumber == 2049)
+    Log4Error.invalidInputError(labelMagicNumber == 2049,
+      s"unexpect labelMagicNumber $labelMagicNumber", "The data should be wrong," +
+        "labelMagicNumber for data should be 2049")
     val featureMagicNumber = featureBuffer.getInt()
-    require(featureMagicNumber == 2051)
+    Log4Error.invalidInputError(featureMagicNumber == 2051,
+      s"unexpect featureMagicNumber $featureMagicNumber", "The data should be wrong," +
+        "featureMagicNumber for data should be 2051")
 
     val labelCount = labelBuffer.getInt()
     val featureCount = featureBuffer.getInt()
-    require(labelCount == featureCount)
+    Log4Error.invalidInputError(labelCount == featureCount,
+      s"label numbers $labelCount doesn't match feature numbers $featureCount",
+      "The data should be wrong, label numbers should be the same with feature numbers")
 
     val rowNum = featureBuffer.getInt()
     val colNum = featureBuffer.getInt()

@@ -25,7 +25,7 @@ import com.intel.analytics.bigdl.dllib.utils.python.api.EvaluatedResult
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.dllib.tensor.{Tensor, DoubleType => TensorDouble, FloatType => TensorFloat}
 import com.intel.analytics.bigdl.dllib.utils.serializer.ModuleLoader
-import com.intel.analytics.bigdl.dllib.utils.{Engine, File, T}
+import com.intel.analytics.bigdl.dllib.utils.{Engine, File, Log4Error, T}
 import com.intel.analytics.bigdl.dllib.visualization.{TrainSummary, ValidationSummary}
 import com.intel.analytics.bigdl.{Criterion, DataSet, Module}
 import com.intel.analytics.bigdl.dllib.feature.{DRAM, FeatureSet, MemoryType}
@@ -362,7 +362,8 @@ class NNEstimator[T: ClassTag] private[bigdl](
    * @return this estimator
    */
   def setCheckpoint(path: String, trigger: Trigger, isOverWrite: Boolean = true): this.type = {
-    require(path != null && trigger != null, "checkpoint path and trigger cannot be null")
+    Log4Error.invalidInputError(path != null && trigger != null,
+      "checkpoint path and trigger cannot be null")
     set(checkpointPath, path)
     set(checkpointTrigger, trigger)
     set(checkpointOverwrite, isOverWrite)

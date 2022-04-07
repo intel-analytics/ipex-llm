@@ -18,6 +18,8 @@ package com.intel.analytics.bigdl.dllib.nn
 
 import com.intel.analytics.bigdl.numeric.NumericFloat
 import com.intel.analytics.bigdl.dllib.tensor.{Storage, Tensor}
+import com.intel.analytics.bigdl.dllib.utils.Log4Error
+
 import scala.collection.mutable.ArrayBuffer
 
 /**
@@ -162,7 +164,8 @@ class Anchor(ratios: Array[Float], scales: Array[Float]) extends Serializable {
    */
   private def mkAnchors(ws: Tensor[Float], hs: Tensor[Float],
     xCtr: Float, yCtr: Float): Tensor[Float] = {
-    require(ws.size(1) == hs.size(1))
+    Log4Error.invalidOperationError(ws.size(1) == hs.size(1),
+      s"expect ws.size(1) ${ws.size(1)} match hs.size(1) ${hs.size(1)}")
     val anchors = Tensor(ws.size(1), 4)
     var i = 1
     while (i <= ws.size(1)) {

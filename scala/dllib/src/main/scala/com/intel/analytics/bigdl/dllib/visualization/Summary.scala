@@ -18,6 +18,7 @@ package com.intel.analytics.bigdl.dllib.visualization
 
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.dllib.utils.Log4Error
 import com.intel.analytics.bigdl.dllib.visualization.tensorboard.FileWriter
 import org.apache.logging.log4j.LogManager
 import org.tensorflow
@@ -154,7 +155,7 @@ object Summary {
                           x: Double,
                           lo: Int = 0,
                           hi: Int = -1): Int = {
-    require(lo >= 0)
+    Log4Error.invalidOperationError(lo >= 0, s"lo should be positive, but was $lo")
     var high = if (hi == -1) {
       a.length
     } else {

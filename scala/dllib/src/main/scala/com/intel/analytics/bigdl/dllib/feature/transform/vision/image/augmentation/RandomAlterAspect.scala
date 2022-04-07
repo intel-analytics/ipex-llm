@@ -27,6 +27,7 @@ import scala.collection.Iterator
 import com.intel.analytics.bigdl.opencv
 import com.intel.analytics.bigdl.dllib.feature.transform.vision.image.{FeatureTransformer, ImageFeature}
 import com.intel.analytics.bigdl.dllib.feature.transform.vision.image.opencv.OpenCVMat
+import com.intel.analytics.bigdl.dllib.utils.Log4Error
 import org.apache.spark.ml
 import org.apache.spark.ml.feature
 import org.opencv.core.Size
@@ -71,7 +72,8 @@ class RandomAlterAspect(min_area_ratio: Float = 0.08f,
     val w = feature.opencvMat().size().width
     val area = h * w
 
-    require(min_area_ratio <= max_area_ratio, "min_area_ratio should <= max_area_ratio")
+    Log4Error.invalidInputError(min_area_ratio <= max_area_ratio,
+      s"min_area_ratio($min_area_ratio) should <= max_area_ratio($max_area_ratio)")
 
     var attempt = 0
     while (attempt < 10) {

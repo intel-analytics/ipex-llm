@@ -20,7 +20,7 @@ import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.dllib.nn.abstractnn.{AbstractModule, Activity, TensorModule}
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.dllib.utils.{T, Table}
+import com.intel.analytics.bigdl.dllib.utils.{Log4Error, T, Table}
 import com.intel.analytics.bigdl.dllib.utils.serializer._
 import com.intel.analytics.bigdl.dllib.utils.serializer.converters.DataConverter
 import com.intel.analytics.bigdl.serialization.Bigdl.{AttrValue, BigDLModule}
@@ -58,7 +58,8 @@ class RecurrentDecoder[T : ClassTag](val seqLength: Int)
    */
   override def add(module: AbstractModule[_ <: Activity, _ <: Activity, T]):
   RecurrentDecoder.this.type = {
-    require(module.isInstanceOf[Cell[T]], "Recurrent: contained module should be Cell type")
+    Log4Error.invalidInputError(module.isInstanceOf[Cell[T]],
+      "Recurrent: contained module should be Cell type")
 
     topology = module.asInstanceOf[Cell[T]]
     preTopology = topology.preTopology
@@ -69,7 +70,7 @@ class RecurrentDecoder[T : ClassTag](val seqLength: Int)
     }
     modules += topology
 
-    require((preTopology == null && modules.length == 1) ||
+    Log4Error.invalidInputError((preTopology == null && modules.length == 1) ||
       (topology != null && preTopology != null && modules.length == 2),
       "Recurrent extend: should contain only one cell or plus a pre-topology" +
         " to process input")
@@ -77,13 +78,13 @@ class RecurrentDecoder[T : ClassTag](val seqLength: Int)
   }
 
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
-    require(input.dim == 2 || input.dim == 4 || input.dim == 5,
+    Log4Error.invalidInputError(input.dim == 2 || input.dim == 4 || input.dim == 5,
       "Recurrent: input should be a 2D/4D/5D Tensor, e.g [batch, nDim], " +
         s"current input.dim = ${input.dim}")
     batchSize = input.size(batchDim)
     val hiddenSize = topology.hiddensShape(0)
     val outputSize = input.size()
-    require(hiddenSize == input.size()(1), "hiddenSize is " +
+    Log4Error.invalidInputError(hiddenSize == input.size()(1), "hiddenSize is " +
       "not the same with input size!! Please update cell settings or use Recurrent instead!")
     val featureSizes = outputSize.drop(1)
     output.resize(Array(batchSize, times) ++ featureSizes)

@@ -22,7 +22,7 @@ import java.nio.ByteBuffer
 import com.intel.analytics.bigdl.dllib.feature.dataset.image.{BGRImage, GreyImage, LabeledBGRImage, LabeledGreyImage}
 import com.intel.analytics.bigdl.dllib.feature.dataset.{ByteRecord, MiniBatch}
 import com.intel.analytics.bigdl.dllib.tensor.{Storage, Tensor}
-import com.intel.analytics.bigdl.dllib.utils.RandomGenerator
+import com.intel.analytics.bigdl.dllib.utils.{Log4Error, RandomGenerator}
 import com.intel.analytics.bigdl.dllib.estimator.EstimateSupportive
 
 trait ImageProcessing extends EstimateSupportive {
@@ -30,7 +30,8 @@ trait ImageProcessing extends EstimateSupportive {
 
   def bytesToGreyImage(record: ByteRecord, row: Int, col: Int): LabeledGreyImage = {
     val buffer = new LabeledGreyImage(row, col)
-    require(row * col == record.data.length)
+    Log4Error.invalidInputError(row * col == record.data.length, s"row*col(row:$row, col:$col)" +
+      " should be the same with length of record", "please correct row and col")
     buffer.setLabel(record.label).copy(record.data, 255.0f)
   }
 
@@ -71,7 +72,8 @@ trait ImageProcessing extends EstimateSupportive {
     val (meanR, meanG, meanB) = mean
     val (stdR, stdG, stdB) = std
     val content = labeledBGRImage.content
-    require(content.length % 3 == 0)
+    Log4Error.invalidInputError(content.length % 3 == 0, s"unexpect content length" +
+      s" ${content.length}", "expect an image with BGR channel")
     var i = 0
     while (i < content.length) {
       content(i + 2) = ((content(i + 2) - meanR) / stdR).toFloat

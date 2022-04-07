@@ -18,6 +18,7 @@ package com.intel.analytics.bigdl.dllib.nn.ops
 import com.intel.analytics.bigdl.dllib.nn.abstractnn.Activity
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.dllib.utils.Log4Error
 
 import scala.reflect.ClassTag
 
@@ -32,7 +33,8 @@ class TruncatedNormal[T: ClassTag, DataType: ClassTag](
   output = Tensor[DataType]()
 
   def updateOutput(input: Tensor[Int]): Tensor[DataType] = {
-    require(input.nDimension() == 1, "the shape should be a one-dimensional tensor.")
+    Log4Error.invalidInputError(input.nDimension() == 1,
+      "the shape should be a one-dimensional tensor.")
 
     val shape = input.asInstanceOf[Tensor[Int]].storage().toArray
     output.resize(shape).randn(

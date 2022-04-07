@@ -20,8 +20,8 @@ import com.intel.analytics.bigdl.dllib.nn.abstractnn.AbstractModule
 import com.intel.analytics.bigdl.dllib.nn.internal.{Embedding => BEmbedding}
 import com.intel.analytics.bigdl.dllib.optim.Regularizer
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.dllib.utils.Shape
-import com.intel.analytics.bigdl.dllib.nn.{AddConstant => TAddConstant, InitializationMethod, LookupTable, RandomUniform, Sequential => TSequential}
+import com.intel.analytics.bigdl.dllib.utils.{Log4Error, Shape}
+import com.intel.analytics.bigdl.dllib.nn.{InitializationMethod, LookupTable, RandomUniform, AddConstant => TAddConstant, Sequential => TSequential}
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.keras.Net
 import com.intel.analytics.bigdl.dllib.keras.layers.utils.KerasUtils
@@ -71,11 +71,13 @@ class Embedding[T: ClassTag](
   extends BEmbedding[T] (
     inputDim, outputDim, init, wRegularizer, inputShape) with Net {
 
-  require(inputDim > 0, s"inputDim of Embedding must be a positive integer, but got $inputDim")
-  require(outputDim > 0, s"outputDim of Embedding must be a positive integer, but got $outputDim")
+  Log4Error.invalidInputError(inputDim > 0,
+    s"inputDim of Embedding must be a positive integer, but got $inputDim")
+  Log4Error.invalidInputError(outputDim > 0,
+    s"outputDim of Embedding must be a positive integer, but got $outputDim")
 
   if (initWeights != null) {
-    require(initWeights.size().sameElements(Array(inputDim, outputDim)),
+    Log4Error.invalidInputError(initWeights.size().sameElements(Array(inputDim, outputDim)),
     "weights size should match (inputDim, outputDim)")
   }
 

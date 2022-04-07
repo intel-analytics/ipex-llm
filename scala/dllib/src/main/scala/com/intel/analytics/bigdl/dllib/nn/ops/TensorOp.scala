@@ -21,7 +21,7 @@ import com.intel.analytics.bigdl.serialization.Bigdl
 import com.intel.analytics.bigdl.serialization.Bigdl.{AttrValue, DataType}
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.dllib.utils.{Table, Util}
+import com.intel.analytics.bigdl.dllib.utils.{Log4Error, Table, Util}
 import com.intel.analytics.bigdl.dllib.utils.serializer.{DeserializeContext, SerializeContext}
 import com.intel.analytics.bigdl.dllib.utils.serializer.converters.DataConverter
 import org.apache.commons.lang3.SerializationUtils
@@ -643,7 +643,7 @@ object SelectTensor {
       isTensorKey: Boolean = true,
       transformer: TensorOp[T] = null)
     (implicit ev: TensorNumeric[T]): SelectTensor[T] = {
-    require(keyTensor.isScalar, "The key must be a Scalar Tensor!")
+    Log4Error.invalidInputError(keyTensor.isScalar, "The key must be a Scalar Tensor!")
     new SelectTensor[T](keyTensor, isTensorKey, transformer)
   }
 

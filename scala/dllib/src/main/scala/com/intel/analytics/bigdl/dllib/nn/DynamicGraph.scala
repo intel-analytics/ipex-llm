@@ -21,6 +21,7 @@ import com.intel.analytics.bigdl.dllib.nn.tf.{ControlOps, ResourceAllocator, Ten
 import com.intel.analytics.bigdl.dllib.nn.tf.{ControlDependency, WithoutInput}
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.dllib.utils.Log4Error
 
 import scala.collection.mutable
 import scala.reflect.ClassTag
@@ -76,7 +77,7 @@ private[bigdl] class DynamicGraph[T: ClassTag](
   override private[bigdl] def buildBackwardGraph(): this.type = {
     if (!generateBackward) return this
 
-    forwardNodes.foreach(n => require(!n.element.isInstanceOf[ControlOps[_]],
+    forwardNodes.foreach(n => Log4Error.invalidInputError(!n.element.isInstanceOf[ControlOps[_]],
       "Not suppot generate back graph with control ops node"))
 
     super.buildBackwardGraph()

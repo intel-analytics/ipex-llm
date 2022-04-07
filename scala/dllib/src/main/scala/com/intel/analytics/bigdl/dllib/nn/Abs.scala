@@ -18,6 +18,7 @@ package com.intel.analytics.bigdl.dllib.nn
 import com.intel.analytics.bigdl.dllib.nn.abstractnn.TensorModule
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.dllib.utils.Log4Error
 
 import scala.reflect.ClassTag
 
@@ -36,7 +37,7 @@ class Abs[T: ClassTag]
   }
 
   override def updateGradInput(input: Tensor[T], gradOutput: Tensor[T]): Tensor[T] = {
-    require(input.isContiguous() && gradOutput.isContiguous(),
+    Log4Error.invalidInputError(input.isContiguous() && gradOutput.isContiguous(),
       "Abs: input and gradOutput should be contiguous")
     gradInput.resizeAs(input).copy(gradOutput)
 

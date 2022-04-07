@@ -18,7 +18,8 @@ package com.intel.analytics.bigdl.dllib.nn.mkldnn
 import com.intel.analytics.bigdl.mkl.DataType
 import com.intel.analytics.bigdl.dllib.nn.abstractnn.Activity
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
-import com.intel.analytics.bigdl.dllib.utils.T
+import com.intel.analytics.bigdl.dllib.utils.{Log4Error, T}
+
 import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
 
@@ -32,7 +33,7 @@ private[mkldnn] class ReorderManager() (implicit owner: MemoryOwner) {
   private var runtime: MklDnnRuntime = _
 
   def register(from: MemoryData, to: MemoryData): Unit = {
-    require(runtime != null, "Please call setRuntime first")
+    Log4Error.invalidInputError(runtime != null, "Please call setRuntime first")
     val mId = System.identityHashCode(from)
     if (needReorder(from, to)) {
       if (reorders.contains((mId, to))) {
@@ -56,10 +57,10 @@ private[mkldnn] class ReorderManager() (implicit owner: MemoryOwner) {
   def infer(from: Array[MemoryData], to: Array[MemoryData], output: Activity)
   : Activity = {
     if (from.length == 1) {
-      require(output.isTensor, "output activity should be a tensor")
+      Log4Error.invalidInputError(output.isTensor, "output activity should be a tensor")
       inferTensor(from(0), to(0), output.asInstanceOf[Tensor[Float]])
     } else {
-      require(output.toTable.length() == from.length,
+      Log4Error.invalidInputError(output.toTable.length() == from.length,
         "output activity length doesn't match")
       val outputTable = T()
       var i = 0
