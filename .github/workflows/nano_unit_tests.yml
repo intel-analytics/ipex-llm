@@ -39,9 +39,10 @@ jobs:
         run: bash python/nano/dev/release_default_linux.sh default false
 
       - name: Run horovod unit tests
+        shell: bash
         run: |
           $CONDA/bin/conda create -n horovod-tf -y python==3.7
-          $CONDA/bin/conda activate horovod-tf
+          source activate horovod-tf
           $CONDA/bin/conda info
           whl_name=`ls python/nano/src/dist/`;pip install python/nano/src/dist/$whl_name[tensorflow]
           pip install horovod
