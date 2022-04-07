@@ -1,16 +1,52 @@
-from pathlib import Path
-import pickle
+# 
+# Copyright 2016 The BigDL Authors. 
+# 
+# Licensed under the Apache License, Version 2.0 (the "License"); 
+# you may not use this file except in compliance with the License. 
+# You may obtain a copy of the License at 
+# 
+#     http://www.apache.org/licenses/LICENSE-2.0 
+# 
+# Unless required by applicable law or agreed to in writing, software 
+# distributed under the License is distributed on an "AS IS" BASIS, 
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied. 
+# See the License for the specific language governing permissions and 
+# limitations under the License. 
+
+# THE MIT License
+
+# Copyright 2020 Jan Beitner
+
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+
+# The above copyright notice and this permission notice shall be included in
+# all copies or substantial portions of the Software.
+
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+# THE SOFTWARE.
+# 
+
+# This example is adapted from https://github.com/jdb78/pytorch-forecasting/blob/master/examples/ar.py
+
 import warnings
 
-import numpy as np
 import pandas as pd
 from pandas.core.common import SettingWithCopyWarning
 import pytorch_lightning as pl
 from pytorch_lightning.callbacks import EarlyStopping, LearningRateMonitor
-from pytorch_lightning.loggers import TensorBoardLogger
 import torch
 
-from pytorch_forecasting import EncoderNormalizer, GroupNormalizer, TimeSeriesDataSet
+from pytorch_forecasting import GroupNormalizer, TimeSeriesDataSet
 from pytorch_forecasting.data import NaNLabelEncoder
 from pytorch_forecasting.data.examples import generate_ar_data
 from pytorch_forecasting.metrics import NormalDistributionLoss
@@ -57,7 +93,8 @@ if __name__ == '__main__':
         # predict=True,
         stop_randomization=True,
     )
-    batch_size = 64
+    num_processes = 8
+    batch_size = 64 // num_processes
     train_dataloader = training.to_dataloader(train=True, batch_size=batch_size, num_workers=0)
     val_dataloader = validation.to_dataloader(train=False, batch_size=batch_size, num_workers=0)
 
@@ -78,7 +115,7 @@ if __name__ == '__main__':
         # logger=logger,
         # profiler=True,
         callbacks=[lr_logger, early_stop_callback],
-        num_processes=4,
+        num_processes=num_processes,
     )
 
 
