@@ -89,6 +89,7 @@ DEFAULT_PROTOCOL = 2
 
 torch_save = torch.save
 
+
 def to_cpu(obj):
     # Recursively move the tensor in the output to the cpu inplace.
     if torch.is_tensor(obj):
