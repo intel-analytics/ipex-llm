@@ -36,7 +36,23 @@ jobs:
       - name: Build Nano whl
         run: bash python/nano/dev/release_default_linux.sh default false
 
-      - name: Run ray unit tests
+      - name: Run ray PyTorch unit tests
+        shell: bash
+        run: |
+          $CONDA/bin/conda create -n ray-pytorch -y python==3.7.10
+          source $CONDA/bin/activate ray-pytorch
+          $CONDA/bin/conda info
+          whl_name=`ls python/nano/src/dist/`;pip install python/nano/src/dist/$whl_name[pytorch]
+          pip install pytest
+          pip install ray[default]==1.11.0 prometheus_client==0.13.0
+          source bigdl-nano-init
+          bash python/nano/test/run-nano-pytorch-ray-tests.sh
+          source $CONDA/bin/deactivate
+          $CONDA/bin/conda remove -n ray-pytorch --all
+        env:
+          ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
+
+      - name: Run ray TF unit tests
         shell: bash
         run: |
           $CONDA/bin/conda create -n ray-tf -y python==3.7.10
