@@ -21,6 +21,7 @@ import com.intel.analytics.bigdl.serving.preprocessing.PreProcessing
 import org.scalatest.{FlatSpec, Matchers}
 
 import scala.collection.mutable.ArrayBuffer
+import com.intel.analytics.bigdl.serving.utils.AssertUtils
 
 class PreProcessingSpec extends FlatSpec with Matchers {
   "base64 string to tensor" should "work" in {
@@ -55,9 +56,9 @@ class PreProcessingSpec extends FlatSpec with Matchers {
     val pre = new PreProcessing()
     val str = "abc|dff|aoa"
     val tensor = pre.decodeString(str)
-    assert(tensor.valueAt(1) == "abc")
-    assert(tensor.valueAt(2) == "dff")
-    assert(tensor.valueAt(3) == "aoa")
+    AssertUtils.conditionFailTest(tensor.valueAt(1) == "abc")
+    AssertUtils.conditionFailTest(tensor.valueAt(2) == "dff")
+    AssertUtils.conditionFailTest(tensor.valueAt(3) == "aoa")
   }
   "parse json to tensor" should "work" in {
     val instancesJson =
@@ -77,7 +78,7 @@ class PreProcessingSpec extends FlatSpec with Matchers {
     val arrowInstance = Instances.fromArrow(arrowBytes)
     val pre = new PreProcessing()
     val t = pre.getInputFromInstance(arrowInstance)
-    assert(t.head.toTable.keySet.size == 3)
+    AssertUtils.conditionFailTest(t.head.toTable.keySet.size == 3)
 
   }
 }

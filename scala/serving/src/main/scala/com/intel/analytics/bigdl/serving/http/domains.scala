@@ -60,6 +60,7 @@ import redis.clients.jedis.JedisPoolConfig
 import com.intel.analytics.bigdl.serving.serialization.StreamSerializer
 import org.slf4j.LoggerFactory
 import redis.clients.jedis.JedisPool
+import com.intel.analytics.bigdl.dllib.utils.Log4Error
 
 sealed trait ServingMessage
 
@@ -327,7 +328,8 @@ case class Instances(instances: List[mutable.LinkedHashMap[String, Any]]) {
                     (mutable.ArrayBuffer[Int], Any),
                       (mutable.ArrayBuffer[Int], mutable.ArrayBuffer[Any])
                     )]]): Schema = {
-    assert(instances.size > 0, "must have instances, and each should have the same schema")
+    Log4Error.invalidOperationError(instances.size > 0,
+      "must have instances, and each should have the same schema")
     val sample = tensors(0)
     val key_fields = sample.map(s => (s._1, s._2))
     val childrenBuilder = ImmutableList.builder[Field]()

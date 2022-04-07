@@ -21,6 +21,7 @@ import java.util.LinkedHashMap
 
 import com.intel.analytics.bigdl.serving.{ClusterServing, ClusterServingHelper}
 import org.yaml.snakeyaml.Yaml
+import com.intel.analytics.bigdl.dllib.utils.Log4Error
 
 object DeprecatedUtils {
   type HM = LinkedHashMap[String, String]
@@ -52,7 +53,8 @@ object DeprecatedUtils {
     // parse data field
     val dataConfig = configList.get("data").asInstanceOf[HM]
     val redis = getYaml(dataConfig, "src", "localhost:6379").asInstanceOf[String]
-    require(redis.split(":").length == 2, "Your redis host " +
+    Log4Error.invalidOperationError(redis.split(":").length == 2,
+      "Your redis host " +
       "and port are not valid, please check.")
     clusterServingHelper.redisHost = redis.split(":").head.trim
     clusterServingHelper.redisPort = redis.split(":").last.trim.toInt
@@ -77,7 +79,8 @@ object DeprecatedUtils {
       secureConfig, "record_encrypted", false).asInstanceOf[Boolean]
 
     val typeStr = getYaml(dataConfig, "type", "image")
-    require(typeStr != null, "data type in config must be specified.")
+    Log4Error.invalidOperationError(typeStr != null,
+      "data type in config must be specified.")
 
     clusterServingHelper.postProcessing = getYaml(dataConfig, "filter", "").asInstanceOf[String]
     clusterServingHelper.resize = getYaml(dataConfig, "resize", true).asInstanceOf[Boolean]
