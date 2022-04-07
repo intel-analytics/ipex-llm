@@ -16,7 +16,6 @@
 
 package com.intel.analytics.bigdl.ppml.attestation
 
-import com.intel.analytics.bigdl.ppml.attestation.QuoteGeneratorCmd.getClass
 import org.apache.logging.log4j.LogManager
 import scopt.OptionParser
 
@@ -28,14 +27,10 @@ object QuoteVerifierCmd {
 
         val logger = LogManager.getLogger(getClass)
         case class CmdParams(
-            libOSType: String = "gramine",
             quoteOutputPath: String = "./quoteOutputDump"
         )
 
         val cmdParser = new OptionParser[CmdParams]("PPML Attestation Quote Verification Cmd tool") {
-            opt[String]('l', "libos")
-            .text("libOSType, default is gramine")
-            .action((x, c) => c.copy(libOSType = x))
             opt[String]('q', "quote")
             .text("quoteOutputPath, default is ./quoteOutputDump")
             .action((x, c) => c.copy(quoteOutputPath = x))
@@ -43,27 +38,25 @@ object QuoteVerifierCmd {
 
         val params = cmdParser.parse(args, CmdParams()).get
 
-        if (params.libOSType=="gramine") {
-            val quoteOutputFile = new File(params.quoteOutputPath)
-            if (quoteOutputFile.length == 0) {
-                logger.error("Invalid quote file length.")
-                throw new AttestationRuntimeException("Retrieving Gramine quote " +
-                  "returned Invalid file length!")
-            }
-            val in = new FileInputStream(quoteOutputFile)
-            val quoteOutputData = new Array[Byte](quoteOutputFile.length.toInt)
-            in.read(quoteOutputData)
-            in.close()
-            val result = verifyQuote(quoteOutputData)
+        val quoteOutputFile = new File(params.quoteOutputPath)
+        if (quoteOutputFile.length == 0) {
+            logger.error("Invalid quote file length.")
+            throw new AttestationRuntimeException("Retrieving Gramine quote " +
+              "returned Invalid file length!")
         }
-
+        val in = new FileInputStream(quoteOutputFile)
+        val quoteOutputData = new Array[Byte](quoteOutputFile.length.toInt)
+        in.read(quoteOutputData)
+        in.close()
+        val result = verifyQuote(quoteOutputData)
     }
 
     def verifyQuote(quote: Array[Byte]): Int = {
         val number = new BigInteger(quote)
         val zero = new BigInteger("0")
-        // If the quoteOutput is greater than 0,then 1 will be return, if it is equal to 0,then 0 will be return,
+        // If the quoteOutput is greater than 0,then 1 will be return, if it is equal to 0, then 0 will be return,
         // else -1 will be return
         number.compareTo(zero)
     }
+
 }
