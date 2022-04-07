@@ -44,6 +44,9 @@ parser.add_argument('--cluster_mode', type=str, default="local",
                     help='The cluster mode, such as local, yarn-client, yarn-cluster, spark-submit or k8s.')
 parser.add_argument('--runtime', type=str, default="spark",
                     help='The runtime backend, one of spark or ray.')
+parser.add_argument('--address', type=str, default="",
+                    help='The cluster address if the driver connects to an existing ray cluster. '
+                         'If it is empty, a new Ray cluster will be created.')
 parser.add_argument('--backend', type=str, default="bigdl",
                     help='The backend of PyTorch Estimator; '
                          'bigdl, torch_distributed and spark are supported')
@@ -56,7 +59,7 @@ parser.add_argument("--driver_memory", type=str, default="5g", help="driver memo
 args = parser.parse_args()
 
 if args.runtime == "ray":
-    init_orca_context(runtime=args.runtime, address="localhost:6379")
+    init_orca_context(runtime=args.runtime, address=args.address)
 else:
     if args.cluster_mode == "local":
         init_orca_context(memory="4g")

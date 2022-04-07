@@ -29,7 +29,7 @@ sed "s/epochs=5/epochs=1/g;s/batch_size=4/batch_size=256/g" \
     > ${BIGDL_ROOT}/python/orca/example/learn/pytorch/fashion_mnist/fashion_mnist_tmp.py
 
 python ${BIGDL_ROOT}/python/orca/example/learn/pytorch/fashion_mnist/fashion_mnist_tmp.py \
-    --runtime ray --backend torch_distributed --batch_size=256
+    --runtime ray --address localhost:6379 --backend torch_distributed --batch_size=256
 now=$(date "+%s")
 time1=$((now-start))
 
@@ -45,7 +45,7 @@ else
 fi
 
 python ${BIGDL_ROOT}/python/orca/example/learn/pytorch/cifar10/cifar10.py \
-    --runtime ray --backend torch_distributed --batch_size=256
+    --runtime ray --address localhost:6379 --backend torch_distributed --batch_size=256
 
 now=$(date "+%s")
 time2=$((now-start))
@@ -64,7 +64,8 @@ if [ ! -d dataset/BSDS300/images ]; then
   tar -xzf BSDS300-images.tgz -C dataset
 fi
 
-python ${BIGDL_ROOT}/python/orca/example/learn/pytorch/super_resolution/super_resolution.py --runtime ray --backend torch_distributed
+python ${BIGDL_ROOT}/python/orca/example/learn/pytorch/super_resolution/super_resolution.py \
+  --runtime ray --address localhost:6379 --backend torch_distributed
 
 now=$(date "+%s")
 time3=$((now-start))
