@@ -39,7 +39,7 @@ jobs:
       - name: Run ray unit tests
         shell: bash
         run: |
-          $CONDA/bin/conda create -n ray-tf -y python==3.7
+          $CONDA/bin/conda create -n ray-tf -y python==3.7.10
           source $CONDA/bin/activate ray-tf
           $CONDA/bin/conda info
           whl_name=`ls python/nano/src/dist/`;pip install python/nano/src/dist/$whl_name[tensorflow]
@@ -55,7 +55,7 @@ jobs:
       - name: Run horovod unit tests
         shell: bash
         run: |
-          $CONDA/bin/conda create -n horovod-tf -y python==3.7
+          $CONDA/bin/conda create -n horovod-tf -y python==3.7.10
           source $CONDA/bin/activate horovod-tf
           $CONDA/bin/conda info
           whl_name=`ls python/nano/src/dist/`;pip install python/nano/src/dist/$whl_name[tensorflow]
