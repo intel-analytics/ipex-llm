@@ -38,7 +38,7 @@ jobs:
       - name: Build Nano whl
         run: bash python/nano/dev/release_default_linux.sh default false
 
-      - Name: Run horovod unit tests
+      - name: Run horovod unit tests
         run: |
           $CONDA/bin/conda create -n horovod-tf -y python==3.7
           source activate horovod-tf
