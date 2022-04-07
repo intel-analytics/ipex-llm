@@ -22,7 +22,7 @@ import numpy as np
 import tensorflow as tf
 
 
-def create_data():
+def create_data(tf_data=False, batch_size=32):
     train_num_samples = 1000
     test_num_samples = 400
     input_feature_num = 10
@@ -36,6 +36,16 @@ def create_data():
     
     train_data = get_x_y(train_num_samples)
     test_data = get_x_y(test_num_samples)
+
+    if tf_data:
+        from_tensor_slices = tf.data.Dataset.from_tensor_slices
+        train_data = from_tensor_slices(train_data).cache()\
+                                                   .shuffle(train_num_samples)\
+                                                   .batch(batch_size)\
+                                                   .prefetch(tf.data.AUTOTUNE)
+        test_data = from_tensor_slices(test_data).cache()\
+                                                 .batch(batch_size)\
+                                                 .prefetch(tf.data.AUTOTUNE)
     return train_data, test_data
 
 
@@ -62,6 +72,14 @@ class TestLSTMForecaster(TestCase):
                                   batch_size=32,
                                   multioutput="raw_values")
         assert mse[0].shape == test_data[1].shape[1:]
+
+    def test_lstm_forecaster_fit_tf_data(self):
+        train_data, test_data = create_data()
+        self.forecaster.fit(train_data,
+                    epochs=2,
+                    batch_size=32)
+        yhat = self.forecaster.predict(test_data[0])
+        assert yhat.shape == (400, 1, 2)
 
     def test_lstm_forecaster_save_load(self):
         train_data, test_data = create_data()

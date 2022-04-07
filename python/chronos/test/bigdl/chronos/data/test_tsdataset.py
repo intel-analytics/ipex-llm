@@ -493,6 +493,16 @@ class TestTSDataset(ZooTestCase):
 
         tsdata._check_basic_invariants()
 
+    def test_tsdata_to_tf_dataset(self):
+        df = get_ts_df()
+        batch_size, lookback, horizon = 32, 10, 1
+        tsdata = TSDataset.from_pandas(df, dt_col="datetime", target_col="value",
+                                       extra_feature_col=["extra feature"], id_col="id")
+        data = tsdata.roll(lookback=lookback, horizon=horizon).to_tf_dataset(batch_size=batch_size)
+        val = next(iter(data))
+        assert val[0].numpy().shape == (batch_size, lookback, 2)
+        assert val[1].numpy().shape == (batch_size, horizon, 1)
+
     def test_tsdataset_imputation(self):
         for val in ["last", "const", "linear"]:
             df = get_ugly_ts_df()
