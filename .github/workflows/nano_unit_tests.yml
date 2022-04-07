@@ -39,8 +39,6 @@ jobs:
         run: bash python/nano/dev/release_default_linux.sh default false
 
       - Name: Run horovod unit tests
-        env:  
-          ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
         run: |
           $CONDA/bin/conda create -n horovod-tf -y python==3.7
           source activate horovod-tf
@@ -50,3 +48,5 @@ jobs:
           bash python/nano/test/run-nano-tf-horovod-tests.sh
           conda deactivate
           conda remove -n horovod-tf --all
+        env:
+          ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
