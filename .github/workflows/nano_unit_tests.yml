@@ -41,7 +41,8 @@ jobs:
       - name: Run horovod unit tests
         run: |
           $CONDA/bin/conda create -n horovod-tf -y python==3.7
-          source activate horovod-tf
+          $CONDA/bin/conda activate horovod-tf
+          $CONDA/bin/conda info
           whl_name=`ls python/nano/src/dist/`;pip install python/nano/src/dist/$whl_name[tensorflow]
           pip install horovod
           source bigdl-nano-init
