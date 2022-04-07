@@ -43,11 +43,27 @@ jobs:
           source $CONDA/bin/activate horovod-tf
           $CONDA/bin/conda info
           whl_name=`ls python/nano/src/dist/`;pip install python/nano/src/dist/$whl_name[tensorflow]
-          pip install horovod
+          pip install horovod==0.24.2
           pip install pytest
           source bigdl-nano-init
           bash python/nano/test/run-nano-tf-horovod-tests.sh
           source $CONDA/bin/deactivate
           $CONDA/bin/conda remove -n horovod-tf --all
+        env:
+          ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
+
+      - name: Run ray unit tests
+        shell: bash
+        run: |
+          $CONDA/bin/conda create -n ray-tf -y python==3.7
+          source $CONDA/bin/activate ray-tf
+          $CONDA/bin/conda info
+          whl_name=`ls python/nano/src/dist/`;pip install python/nano/src/dist/$whl_name[tensorflow]
+          pip install pytest
+          pip install ray[default]==1.11.0
+          source bigdl-nano-init
+          bash python/nano/test/run-nano-tf-ray-tests.sh
+          source $CONDA/bin/deactivate
+          $CONDA/bin/conda remove -n ray-tf --all
         env:
           ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
