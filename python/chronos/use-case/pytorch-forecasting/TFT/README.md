@@ -2,7 +2,7 @@
 Nano can help a 3rd party time series lib to improve the performance (both training and inferencing) and accuracy. This use-case shows nano can easily help pytorch-forecasting speed up the training of TFT (Temporal Fusion Transformers) model.
 
 ## Prepare the environment
-We recommend you to use Anaconda to prepare the environment, especially if you want to run on a yarn cluster:
+We recommend you to use conda to prepare the environment, especially if you want to run on a yarn cluster:
 ```bash
 conda create -n my_env python=3.7 # "my_env" is conda environment name, you can use any name you like.
 conda activate my_env
@@ -21,7 +21,7 @@ bigdl-nano-init python tft.py
 ```
 
 ## Changes to use BigDL Nano
-- Change `from pytorch_lightning import Trainer` to `from bigdl.nano.pytorch import Trainer`
+- Change `from pytorch_lightning import Trainer` to `from bigdl.nano.pytorch.trainer import Trainer`
 - Set `gpus=0` in Trainer
 - Set `num_processes=8` in Trainer and set `batch_size = 128 // num_processes`
 
