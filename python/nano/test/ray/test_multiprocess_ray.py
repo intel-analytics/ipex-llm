@@ -83,15 +83,8 @@ def model_init(num_classes):
 def test_fit_function():
     num_classes, train_ds, val_ds = dataset_generation()
 
-    # Case 1: Default
-    model_default = model_init(num_classes)
-    history_default = model_default.fit(train_ds, epochs=3, validation_data=val_ds)
-
-    # Case 2: Multiple processing argument
-    # Case 2.1: multiple processing backend
     model_multiprocess = model_init(num_classes)
-    history_multiprocess = model_multiprocess.fit(train_ds, epochs=3,
-                                                  validation_data=val_ds, nprocs=2, backend="ray")
-    assert 1 - (history_multiprocess.history['loss'][-1]
-                / history_default.history['loss'][-1]) <= 0.1
+    history_multiprocess = model_multiprocess.fit(train_ds, epochs=1,
+                                                  validation_data=val_ds,
+                                                  nprocs=1, backend="ray")
 
