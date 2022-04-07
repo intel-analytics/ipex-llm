@@ -498,7 +498,7 @@ class BasePytorchForecaster(Forecaster):
             self.internal.update_ortsess(dummy_input,
                                          file_path=dirname)
 
-    def quantize(self, calib_data,
+    def quantize(self, calib_data=None,
                  val_data=None,
                  metric=None,
                  conf=None,
@@ -544,8 +544,11 @@ class BasePytorchForecaster(Forecaster):
                                       "forecaster. You can call .to_local() to transform the "
                                       "forecaster to a non-distributed version.")
 
-        # calib data should be set if the forecaster is just loaded
-        assert calib_data is not None, "You must set a `calib_data` for quantization."
+        # calib data should be set correctly according to the approach
+        if approach=='static' and calib_data is None:
+            raise ValueError("You must set a `calib_data` for static quantization.")
+        if approach=='dynamic' and calib_data is not None:
+            raise ValueError("You must not set a `calib_data` for dynamic quantization.")
 
         # change data tuple to dataloader
         if isinstance(calib_data, tuple):
