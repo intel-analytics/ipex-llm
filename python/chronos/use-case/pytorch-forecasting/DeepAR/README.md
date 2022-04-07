@@ -19,9 +19,10 @@ We use ``pytorch_forecasting.data.example.generate_ar_data`` to generate our dat
 bigdl-nano-init python deepar.py
 ```
 
-## Results
-The training of DeepAR model using nano Trainer can reach an average speed of 1.9 iter/s, while the speed of training without nano Trainer is around 1.4 iter/s in average. We can see that the training speed is significantly improved.
+## Changes to use BigDL Nano
+- Change `from pytorch_lightning import Trainer` to `from bigdl.nano.pytorch import Trainer`
+- Set `gpus=0` in Trainer
+- Set `num_processes=8` in Trainer and set `batch_size = 64 // num_processes`
 
-* CPU info
-    * model name: Intel(R) Xeon(R) Gold 6252 CPU @ 2.10GHz
-    * cpu cores: 48
+## Results
+In an experimental platform, the training speed of DeepAR model using nano Trainer is 6 times the speed of the training without nano Trainer. We can see that the training speed is significantly improved.
