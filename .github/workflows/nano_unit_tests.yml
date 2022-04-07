@@ -10,8 +10,7 @@ on:
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
-  # This workflow contains a single job called "build"
-  horovod-test:
+  nano-unit-test:
     # The type of runner that the job will run on
     runs-on: ${{ matrix.os }}
     strategy:
@@ -48,7 +47,7 @@ jobs:
           pip install pytest
           source bigdl-nano-init
           bash python/nano/test/run-nano-tf-horovod-tests.sh
-          $CONDA/bin/conda deactivate
+          source $CONDA/bin/deactivate
           $CONDA/bin/conda remove -n horovod-tf --all
         env:
           ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
