@@ -545,9 +545,9 @@ class BasePytorchForecaster(Forecaster):
                                       "forecaster to a non-distributed version.")
 
         # calib data should be set correctly according to the approach
-        if approach=='static' and calib_data is None:
+        if approach == 'static' and calib_data is None:
             raise ValueError("You must set a `calib_data` for static quantization.")
-        if approach=='dynamic' and calib_data is not None:
+        if approach == 'dynamic' and calib_data is not None:
             raise ValueError("You must not set a `calib_data` for dynamic quantization.")
 
         # change data tuple to dataloader
