@@ -38,7 +38,6 @@ except ImportError:
     raise ImportError
 
 
-
 def replace_torch_function(function_name: str, replace_func: Callable):
     setattr(torch.nn.functional, function_name, replace_func)
 
@@ -78,6 +77,7 @@ def apply_torch_functional_replacement():
     for k, v in replacement_dict.items():
         replace_torch_function(k, v)
 
+
 # Note that you need to temporarily store original torch.save,
 # because it will be modified in ipex.ops.save.
 torch.save = _torch_save
@@ -103,7 +103,8 @@ def to_cpu(obj):
                 obj[k] = to_cpu(obj[k])
 
     return obj
-    
+
+
 def nano_save(obj, f, pickle_module=pickle, pickle_protocol=DEFAULT_PROTOCOL,
               _use_new_zipfile_serialization=False):
     # Extend original `save` defined in ipex.ops.save
@@ -117,6 +118,7 @@ def nano_save(obj, f, pickle_module=pickle, pickle_protocol=DEFAULT_PROTOCOL,
         obj_copy = obj
 
     return torch_save(obj_copy, f, pickle_module, pickle_protocol, _use_new_zipfile_serialization)
+
 
 torch.save = nano_save
 

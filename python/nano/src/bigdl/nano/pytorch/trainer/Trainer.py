@@ -81,8 +81,6 @@ class Trainer(pl.Trainer):
             accelerator = None
             if use_ipex:
                 accelerator = create_IPEXAccelerator(enable_bf16=enable_bf16)
-
-
             super().__init__(accelerator=accelerator, *args, **kwargs)
         else:
             plugin = None
@@ -108,10 +106,8 @@ class Trainer(pl.Trainer):
 
             accelerator = None
             if use_ipex:
-                accelerator = create_IPEXAccelerator(
-                                                        training_type_plugin=plugin,  # type: ignore
-                                                        enable_bf16=enable_bf16
-                                                    )
+                accelerator = create_IPEXAccelerator(training_type_plugin=plugin,  # type: ignore
+                                                        enable_bf16=enable_bf16)
 
             super().__init__(accelerator=accelerator,
                              plugins=[plugin], *args, **kwargs)
