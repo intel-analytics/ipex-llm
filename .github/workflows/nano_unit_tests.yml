@@ -60,7 +60,7 @@ jobs:
           $CONDA/bin/conda info
           whl_name=`ls python/nano/src/dist/`;pip install python/nano/src/dist/$whl_name[tensorflow]
           pip install pytest
-          pip install ray[default]==1.11.0
+          pip install ray[default]==1.11.0 prometheus_client==0.13.0
           source bigdl-nano-init
           bash python/nano/test/run-nano-tf-ray-tests.sh
           source $CONDA/bin/deactivate
