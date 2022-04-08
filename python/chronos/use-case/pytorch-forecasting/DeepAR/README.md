@@ -20,9 +20,9 @@ bigdl-nano-init python deepar.py
 ```
 
 ## Changes to use BigDL Nano
-- Change `from pytorch_lightning import Trainer` to `from bigdl.nano.pytorch.trainer import Trainer`
-- Set `gpus=0` in Trainer
-- Set `num_processes=8` in Trainer and set `batch_size = 64 // num_processes`
+- Change `from pytorch_lightning import Trainer` to `from bigdl.chronos.common.pytorch import TSTrainer`
+- Set `gpus=0` in TSTrainer
+- Set `num_processes=8` in TSTrainer and set `batch_size = 64 // num_processes`
 
 ## Results
 In an experimental platform, the training speed of DeepAR model using nano Trainer is 6 times the speed of the training without nano Trainer. We can see that the training speed is significantly improved.
