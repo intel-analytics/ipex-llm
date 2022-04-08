@@ -54,6 +54,7 @@ import com.intel.analytics.bigdl.dllib.keras.layers.Input
 import com.intel.analytics.bigdl.dllib.keras.layers.utils._
 import com.intel.analytics.bigdl.dllib.keras.models._
 import com.intel.analytics.bigdl.dllib.net.NetUtils
+import org.apache.logging.log4j.LogManager
 // import com.intel.analytics.bigdl.dllib.Net.TorchModel
 import com.intel.analytics.bigdl.dllib.estimator.{AbstractEstimator, ConstantClipping, GradientClipping, L2NormClipping}
 // import com.intel.analytics.zoo.tfpark.{TFTrainingHelper, TFTrainingHelperV2}
@@ -156,7 +157,6 @@ class Model[T: ClassTag] private (private val _inputs : Seq[ModuleNode[T]],
                         positions: Array[Double] = Array(.33, .55, .67, 1)): String = {
     val summary: ArrayBuffer[String] = ArrayBuffer[String]()
     summary.append("Model Summary:")
-    println("Model Summary:")
     KerasUtils.printSplitLine('-', lineLength, summary)
 
     val toDisplay = Array("Layer (type)", "Output Shape", "Param #", "Connected to")
@@ -170,21 +170,20 @@ class Model[T: ClassTag] private (private val _inputs : Seq[ModuleNode[T]],
       trainableParams += trainable
     }
     val msgTotal = "Total params: " + "%,d".format(totalParams)
-    println(msgTotal)
     summary.append(msgTotal)
     val msgTrain = "Trainable params: " + "%,d".format(trainableParams)
-    println(msgTrain)
     summary.append(msgTrain)
     val msgNonTrain = "Non-trainable params: " + "%,d".format(totalParams - trainableParams)
-    println(msgNonTrain)
     summary.append(msgNonTrain)
     KerasUtils.printSplitLine('-', lineLength, summary)
     val res = summary.mkString("\n")
+    Model.logger.info(res)
     return res
   }
 }
 
 object Model extends KerasLayerSerializable {
+  val logger = LogManager.getLogger(this.getClass)
   ModuleSerializer.registerModule(
     "com.intel.analytics.bigdl.dllib.keras.Model",
     Model)
