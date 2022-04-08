@@ -332,7 +332,7 @@ class TestTFKerasAutoEstimator(TestCase):
     #     assert "lr" in best_config
     #     assert all(k in best_config.keys() for k in get_search_space_multi_inputs_outputs().keys())
 
-    def test_spark_df_single_inputs_model(self):
+    def test_spark_df_single_input_model(self):
         auto_est = AutoEstimator.from_keras(model_creator=single_input_model_creator,
                                         logs_dir="/tmp/zoo_automl_logs",
                                         resources_per_trial={"cpu": 2},
