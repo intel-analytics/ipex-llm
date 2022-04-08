@@ -12,7 +12,6 @@ set -e
 ray stop -f
 ray start --head
 
-
 echo "#start orca tf2 example tests"
 echo "#1 tf2 estimator resnet 50 example"
 start=$(date "+%s")
