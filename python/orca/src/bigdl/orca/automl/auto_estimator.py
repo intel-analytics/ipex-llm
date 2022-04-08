@@ -137,6 +137,7 @@ class AutoEstimator:
             scheduler_params=None,
             feature_cols=None,
             label_cols=None,
+            output_signature=None,
             ):
         """
         Automatically fit the model and search for the best hyperparameters.
@@ -203,7 +204,9 @@ class AutoEstimator:
                               scheduler=scheduler,
                               scheduler_params=scheduler_params,
                               feature_cols=feature_cols,
-                              label_cols=label_cols)
+                              label_cols=label_cols,
+                              output_signature=output_signature,
+                              )
         self.searcher.run()
         self._fitted = True
 

@@ -83,6 +83,7 @@ class RayTuneSearchEngine(SearchEngine):
                 mc=False,
                 feature_cols=None,
                 label_cols=None,
+                output_signature=None,
                 ):
         """
         Do necessary preparations for the engine
@@ -141,6 +142,8 @@ class RayTuneSearchEngine(SearchEngine):
                                                    resources_per_trial=self.resources_per_trial,
                                                    feature_cols=feature_cols,
                                                    label_cols=label_cols,
+                                                   epochs=epochs,
+                                                   output_signature=output_signature,
                                                    )
 
     @staticmethod
@@ -286,6 +289,8 @@ class RayTuneSearchEngine(SearchEngine):
                             resources_per_trial=None,
                             feature_cols=None,
                             label_cols=None,
+                            epochs=1,
+                            output_signature=None,
                             ):
         """
         Prepare the train function for ray tune
@@ -302,31 +307,41 @@ class RayTuneSearchEngine(SearchEngine):
         """
         from pyspark.sql import DataFrame
         if isinstance(data, DataFrame):
-            from bigdl.orca.learn.utils import dataframe_to_xshards
-            from bigdl.dllib.utils.common import get_node_and_core_number
-            from bigdl.orca.data.utils import process_spark_xshards
-            num_workers, _ = get_node_and_core_number()
-            spark_xshards, val_spark_xshards = dataframe_to_xshards(data,
-                                                                    validation_data=validation_data,
-                                                                    feature_cols=feature_cols,
-                                                                    label_cols=label_cols,
-                                                                    mode="fit",
-                                                                    num_workers=num_workers)
-            ray_xshards = process_spark_xshards(spark_xshards, num_workers=num_workers)
-            val_ray_xshards = process_spark_xshards(val_spark_xshards, num_workers=num_workers)
-            data_ref = ray_xshards.get_partition_refs()
-            validation_data_ref = val_ray_xshards.get_partition_refs()
+            from bigdl.orca.data import spark_df_to_ray_dataset
+            ray_dataset = spark_df_to_ray_dataset(data)
+            ray_data = ray_dataset.window(blocks_per_window=1).repeat(epochs)
+            if validation_data:
+                ray_val_data = spark_df_to_ray_dataset(validation_data).\
+                    window(blocks_per_window=1).repeat(epochs)
+            else:
+                ray_val_data = None
         else:
-            data_ref = ray.put(data)
-            validation_data_ref = ray.put(validation_data)
+            ray_data = ray.put(data)
+            ray_val_data = ray.put(validation_data)
 
         def train_func(config):
-            if isinstance(data_ref, list):
-                train_data = get_data_from_part_refs(data_ref)
-                val_data = get_data_from_part_refs(validation_data_ref)
+            if isinstance(ray_data, ray.ObjectRef):
+                train_data = ray.get(ray_data)
+                val_data = ray.get(ray_val_data)
+                is_dataset_pipeline = False
             else:
-                train_data = ray.get(data_ref)
-                val_data = ray.get(validation_data_ref)
+                # data is ray DatasetPipeline
+                train_data_iter = ray_data.iter_epochs()
+                if ray_val_data:
+                    val_data_iter = ray_val_data.iter_epochs()
+                else:
+                    val_data_iter = None
+                #TODO: add check
+                assert feature_cols, "You must specify feature_cols for Spark DataFrame input"
+                assert label_cols, "You must specify label_cols for Spark DataFrame input"
+                assert output_signature, "You must specify output_signature for Spark DataFrame \
+                    input"
+
+                config["feature_cols"] = feature_cols
+                config["label_cols"] = label_cols
+                config["output_signature"] = output_signature
+                is_dataset_pipeline = True
+
             config = convert_bayes_configs(config).copy()
             # This check is turned off to support ducking typing
             # if not isinstance(model_builder, ModelBuilder):
@@ -338,6 +353,10 @@ class RayTuneSearchEngine(SearchEngine):
             # fit model
             best_reward = None
             for i in range(1, 101):
+                if is_dataset_pipeline:
+                    train_data = next(train_data_iter)
+                    val_data = next(val_data_iter) if val_data_iter else None
+
                 result = trial_model.fit_eval(data=train_data,
                                               validation_data=val_data,
                                               mc=mc,
