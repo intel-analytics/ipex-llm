@@ -74,10 +74,10 @@ class TestLSTMForecaster(TestCase):
         assert mse[0].shape == test_data[1].shape[1:]
 
     def test_lstm_forecaster_fit_tf_data(self):
-        train_data, test_data = create_data()
+        train_data, test_data = create_data(tf_data=True)
         self.forecaster.fit(train_data,
-                    epochs=2,
-                    batch_size=32)
+                            epochs=2,
+                            batch_size=32)
         yhat = self.forecaster.predict(test_data[0])
         assert yhat.shape == (400, 1, 2)
 

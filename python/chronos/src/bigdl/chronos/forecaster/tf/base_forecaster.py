@@ -100,10 +100,10 @@ class BaseTF2Forecaster(Forecaster):
         """
         if not self.fitted:
             raise RuntimeError("You must call fit or restore first before calling evaluate!")
-        yhat = self.internal.predict(data[0].batch(batch_size))
+        yhat = self.internal.predict(data[0], batch_size=batch_size)
 
         aggregate = 'mean' if multioutput == 'uniform_average' else None
-        return Evaluator.evaluate(self.metrics, data[1], yhat, aggregate=aggregate)
+        return Evaluator.evaluate(self.metrics, y_true=data[1], y_pred=yhat, aggregate=aggregate)
 
     def save(self, checkpoint_file):
         """
