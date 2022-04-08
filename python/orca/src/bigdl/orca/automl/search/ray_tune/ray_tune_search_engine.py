@@ -331,7 +331,6 @@ class RayTuneSearchEngine(SearchEngine):
                     val_data_iter = ray_val_data.iter_epochs()
                 else:
                     val_data_iter = None
-                #TODO: add check
                 assert feature_cols, "You must specify feature_cols for Spark DataFrame input"
                 assert label_cols, "You must specify label_cols for Spark DataFrame input"
                 assert output_signature, "You must specify output_signature for Spark DataFrame \
