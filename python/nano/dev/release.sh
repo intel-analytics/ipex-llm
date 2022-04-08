@@ -20,7 +20,7 @@ RUN_SCRIPT_DIR=$(cd $(dirname $0) ; pwd)
 echo $RUN_SCRIPT_DIR
 BIGDL_DIR="$(cd ${RUN_SCRIPT_DIR}/../../..; pwd)"
 echo $BIGDL_DIR
-BIGDL_PYTHON_DIR="$(cd ${BIGDL_DIR}/python/nano/src; pwd)"
+BIGDL_PYTHON_DIR="$(cd ${BIGDL_DIR}/python/nano; pwd)"
 echo $BIGDL_PYTHON_DIR
 
 if (( $# < 3)); then
@@ -38,6 +38,8 @@ if [ "${version}" != "default" ]; then
     echo "User specified version: ${version}"
     echo $version > $BIGDL_DIR/python/version.txt
 fi
+
+cp $BIGDL_DIR/python/version.txt $BIGDL_DIR/python/nano/src/
 
 bigdl_version=$(cat $BIGDL_DIR/python/version.txt | head -1)
 echo "The effective version is: ${bigdl_version}"
