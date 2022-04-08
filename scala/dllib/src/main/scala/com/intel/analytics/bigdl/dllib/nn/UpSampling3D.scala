@@ -19,7 +19,7 @@ package com.intel.analytics.bigdl.dllib.nn
 import com.intel.analytics.bigdl.dllib.nn.abstractnn.TensorModule
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.dllib.utils.Shape
+import com.intel.analytics.bigdl.dllib.utils.{Log4Error, Shape}
 
 import scala.reflect.ClassTag
 
@@ -37,18 +37,18 @@ import scala.reflect.ClassTag
 class UpSampling3D[T: ClassTag](val size: Array[Int])
   (implicit ev: TensorNumeric[T]) extends TensorModule[T] {
 
-  require(size != null && size.length == 3, "the size should be 3 dims")
+  Log4Error.invalidInputError(size != null && size.length == 3, "the size should be 3 dims")
 
   override def computeOutputShape(inputShape: Shape): Shape = {
     val input = inputShape.toSingle().toArray
-    require(input.length == 5,
+    Log4Error.invalidInputError(input.length == 5,
       s"UpSampling3D requires 5D input, but got input dim ${input.length}")
     Shape(input(0), input(1), input(2)*size(0), input(3)*size(1), input(4)*size(2))
   }
 
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
-    require(input.dim() == 5, "only supports 5d tensors")
-    require(input.isContiguous(), "input need to be contiguous")
+    Log4Error.invalidInputError(input.dim() == 5, "only supports 5d tensors")
+    Log4Error.invalidInputError(input.isContiguous(), "input need to be contiguous")
 
     val inputDepth = input.size(3)
     val inputHeight = input.size(4)

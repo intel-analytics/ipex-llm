@@ -18,7 +18,7 @@ package com.intel.analytics.bigdl.dllib.nn
 import com.intel.analytics.bigdl.dllib.nn.abstractnn.AbstractModule
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.dllib.utils.{T, Table}
+import com.intel.analytics.bigdl.dllib.utils.{Log4Error, T, Table}
 
 import scala.reflect.ClassTag
 
@@ -35,13 +35,13 @@ class MV[T: ClassTag](val trans: Boolean = false)
   gradInput = T(Tensor[T], Tensor[T]())
 
   private def checkInputFormat(input: Table): (Tensor[T], Tensor[T]) = {
-    require(input.length() == 2 && input(1).isInstanceOf[Tensor[T]] &&
+    Log4Error.invalidInputError(input.length() == 2 && input(1).isInstanceOf[Tensor[T]] &&
       input(2).isInstanceOf[Tensor[T]], "Input must be two tensors")
     val m: Tensor[T] = input(1)
     val v: Tensor[T] = input(2)
-    require(m.dim() == 2 || m.dim() == 3, "input matrix must be 2D or 3D" +
+    Log4Error.invalidInputError(m.dim() == 2 || m.dim() == 3, "input matrix must be 2D or 3D" +
       s"input dim ${m.dim()}")
-    require(v.dim() == 1 || v.dim() == 2, "input vector must be 1D or 2D" +
+    Log4Error.invalidInputError(v.dim() == 1 || v.dim() == 2, "input vector must be 1D or 2D" +
       s"input dim ${v.dim()}")
 
     (m, v)
@@ -51,28 +51,32 @@ class MV[T: ClassTag](val trans: Boolean = false)
     var (m, v) = checkInputFormat(input)
 
     if (m.dim() == 2) {
-      require(v.dim() == 1, "vector must be 1D" +
+      Log4Error.invalidInputError(v.dim() == 1, "vector must be 1D" +
         s"dim ${v.dim()}")
 
       if (trans) {
         m = m.transpose(1, 2)
       }
-      require(m.size(2) == v.size(1), "matrix row count and vector length do not match" +
+      Log4Error.invalidInputError(m.size(2) == v.size(1),
+        "matrix row count and vector length do not match" +
         s"matrix row count ${m.size(2)}" +
         s"vector length ${v.size(1)}")
 
       output.resize(m.size(1)).zero()
       output.mv(m, v)
     } else {
-      require(v.dim() == 2, "vector must be 2D (batch dimension)" +
+      Log4Error.invalidInputError(v.dim() == 2,
+        "vector must be 2D (batch dimension)" +
         s"dimension ${v.dim()}" )
-      require(m.size(1) == v.size(1), "inputs must contain the same number of minibatches" +
+      Log4Error.invalidInputError(m.size(1) == v.size(1),
+        "inputs must contain the same number of minibatches" +
         s"The numbers are ${m.size(1)} and ${v.size(1)}")
 
       if (trans) {
         m = m.transpose(2, 3)
       }
-      require(m.size(3) == v.size(2), "matrix row count and vector length do not match" +
+      Log4Error.invalidInputError(m.size(3) == v.size(2),
+        "matrix row count and vector length do not match" +
         s"matrix row count ${m.size(3)}" +
         s"vector length ${v.size(2)}")
 
@@ -89,14 +93,14 @@ class MV[T: ClassTag](val trans: Boolean = false)
     gradInput[Tensor[T]](1).resizeAs(m).zero()
     gradInput[Tensor[T]](2).resizeAs(v).zero()
 
-    require(gradOutput.dim() == 1 || gradOutput.dim() == 2,
+    Log4Error.invalidInputError(gradOutput.dim() == 1 || gradOutput.dim() == 2,
       "arguments must be a 1D or 2D Tensor" +
         s"arguments dim ${gradOutput.dim()}")
 
     if (gradOutput.dim() == 2) {
-      require(m.dim() == 3, "matrix must must be 3D (batched)" +
+      Log4Error.invalidInputError(m.dim() == 3, "matrix must must be 3D (batched)" +
         s"matrix dim ${m.dim()}")
-      require(v.dim() == 2, "vector must be 2D (batched)" +
+      Log4Error.invalidInputError(v.dim() == 2, "vector must be 2D (batched)" +
         s"vector dim ${v.dim()}")
       val bdim = m.size(1)
       val odim = m.size(2)
@@ -111,9 +115,9 @@ class MV[T: ClassTag](val trans: Boolean = false)
           odim, 1))
       }
     } else {
-      require(m.dim() == 2, "matrix must be 2D" +
+      Log4Error.invalidInputError(m.dim() == 2, "matrix must be 2D" +
         s"matrix dimension ${m.dim()}")
-      require(v.dim() == 1, "vector must be 1D" +
+      Log4Error.invalidInputError(v.dim() == 1, "vector must be 1D" +
         s"vector dimension ${v.dim()}")
 
       if (trans) {

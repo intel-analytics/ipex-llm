@@ -19,7 +19,7 @@ import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.dllib.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.dllib.utils.{T, Table}
+import com.intel.analytics.bigdl.dllib.utils.{Log4Error, T, Table}
 
 class MaskHead(
   val inChannels: Int,
@@ -83,7 +83,8 @@ class MaskHead(
                                        dilation: Int,
                                        useGn: Boolean = false): Module[Float] = {
 
-    require(dilation == 1, s"Only support dilation = 1, but got ${dilation}")
+    Log4Error.invalidInputError(dilation == 1,
+      s"Only support dilation = 1, but got ${dilation}")
 
     val model = Sequential[Float]()
     model.add(Pooler(resolution, scales, samplingRatio))
@@ -136,9 +137,11 @@ private[nn] class MaskPostProcessor()(implicit ev: TensorNumeric[Float])
     }
 
     val mask_prob = sigmoid.forward(maskLogits)
-    require(labels.nDimension() == 1, s"Labels should be tensor with one dimension," +
+    Log4Error.invalidInputError(labels.nDimension() == 1,
+      s"Labels should be tensor with one dimension," +
       s"but get ${labels.nDimension()}")
-    require(rangeBuffer.nElement() == labels.nElement(), s"number of masks should be same" +
+    Log4Error.invalidInputError(rangeBuffer.nElement() == labels.nElement(),
+      s"number of masks should be same" +
       s"with labels, but get ${rangeBuffer.nElement()} ${labels.nElement()}")
 
     output.resize(rangeBuffer.nElement(), 1, mask_prob.size(3), mask_prob.size(4))

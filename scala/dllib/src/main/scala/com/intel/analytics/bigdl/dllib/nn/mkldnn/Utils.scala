@@ -21,7 +21,7 @@ import com.intel.analytics.bigdl.dllib.nn.MklInt8Convertible
 import com.intel.analytics.bigdl.dllib.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.dllib.nn.mkldnn.Phase.InferencePhase
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
-import com.intel.analytics.bigdl.dllib.utils.T
+import com.intel.analytics.bigdl.dllib.utils.{Log4Error, T}
 
 private[bigdl] object Utils {
   def copyMaskAndScales(from: MemoryData, to: MemoryData): Unit = {
@@ -52,7 +52,8 @@ private[bigdl] object Utils {
         })
       } else if (to.length == 1) {
         to.head.setScales(from.map(_.scales).transpose.map(_.max))
-        require(from.map(_.mask).distinct.length == 1, s"only support the same mask")
+        Log4Error.invalidInputError(from.map(_.mask).distinct.length == 1,
+          s"only support the same mask")
         to.head.setMask(from.map(_.mask).distinct.head)
       } else if (to.length > 1) {
         to.foreach(_.setScales(from.head.scales))
@@ -80,7 +81,7 @@ private[bigdl] object Utils {
   private def denseActivity(formats: Array[MemoryData], activity: Activity,
     isInOrOut: Boolean = true, runtime: MklDnnRuntime): Activity = {
     val ret = if (formats.length > 1) { // table
-      require(formats.length == activity.toTable.length(),
+      Log4Error.invalidInputError(formats.length == activity.toTable.length(),
         s"formats should be the same as activity")
       val table = T()
 

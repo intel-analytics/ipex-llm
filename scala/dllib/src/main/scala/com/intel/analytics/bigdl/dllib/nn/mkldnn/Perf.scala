@@ -28,9 +28,7 @@ import com.intel.analytics.bigdl.numeric.NumericFloat
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.dllib.utils.RandomGenerator._
-import com.intel.analytics.bigdl.dllib.utils.ThreadPool
-import com.intel.analytics.bigdl.dllib.utils.{T, Table}
-import com.intel.analytics.bigdl.dllib.utils.{Engine, OptimizerV1, OptimizerV2}
+import com.intel.analytics.bigdl.dllib.utils._
 import org.apache.logging.log4j.LogManager
 import scopt.OptionParser
 
@@ -251,7 +249,7 @@ object ResNet {
         50 -> ((3, 4, 6, 3), 2048, bottleneck: (Int, Int, String) => Module[Float])
       )
 
-      require(cfg.keySet.contains(depth), s"Invalid depth ${depth}")
+      Log4Error.invalidInputError(cfg.keySet.contains(depth), s"Invalid depth ${depth}")
 
       val (loopConfig, nFeatures, block) = cfg.get(depth).get
       iChannels = 64
@@ -383,7 +381,7 @@ object ResNet {
           bottleneck: (ModuleNode[Float], Int, Int, String) => ModuleNode[Float])
       )
 
-      require(cfg.keySet.contains(depth), s"Invalid depth ${depth}")
+      Log4Error.invalidInputError(cfg.keySet.contains(depth), s"Invalid depth ${depth}")
 
       val (loopConfig, nFeatures, block) = cfg.get(depth).get
       iChannels = 64

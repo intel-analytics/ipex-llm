@@ -18,6 +18,7 @@ package com.intel.analytics.bigdl.dllib.nn
 import com.intel.analytics.bigdl.dllib.nn.abstractnn.{AbstractModule, TensorModule}
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.dllib.utils.Log4Error
 
 import scala.reflect.ClassTag
 
@@ -61,7 +62,8 @@ class Sum[T: ClassTag](
       dimension += 1
     }
 
-    require(input.dim() >= dimension, "dimension exceeds input dimensions" +
+    Log4Error.invalidInputError(input.dim() >= dimension,
+      "dimension exceeds input dimensions" +
       s"dimension $dimension, input dimension ${input.dim()}")
     dimension
   }

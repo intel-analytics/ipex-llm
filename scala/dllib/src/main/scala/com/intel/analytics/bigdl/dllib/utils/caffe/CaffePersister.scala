@@ -21,7 +21,7 @@ import scala.collection.JavaConverters._
 import caffe.Caffe.{LayerParameter, NetParameter, V1LayerParameter}
 import com.intel.analytics.bigdl.dllib.nn.{Container, Graph, Sequential, View}
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.dllib.utils.{File, FileWriter, Node}
+import com.intel.analytics.bigdl.dllib.utils.{File, FileWriter, Log4Error, Node}
 
 import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
@@ -85,7 +85,7 @@ class CaffePersister[T: ClassTag](val prototxtPath: String,
       val module = execution.element
       logger.info(s"find dependencies for ${module.getName}")
       if (module.isInstanceOf[View[T]]) {
-        require(preModules.size == 1, "view pre-node size should be 1")
+        Log4Error.unKnowExceptionError(preModules.size == 1, "view pre-node size should be 1")
         val preNode = preModules(0)
         val nextNodes = execution.nextNodes
         val nextNodesName = nextNodes.map(_.element.getName())

@@ -18,7 +18,7 @@ package com.intel.analytics.bigdl.dllib.nn
 import com.intel.analytics.bigdl.dllib.nn.abstractnn.TensorModule
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.dllib.utils.Shape
+import com.intel.analytics.bigdl.dllib.utils.{Log4Error, Shape}
 
 import scala.reflect.ClassTag
 
@@ -47,13 +47,16 @@ class Cropping3D[T: ClassTag](
     val dataFormat: String = Cropping3D.CHANNEL_FIRST
   )(implicit ev: TensorNumeric[T]) extends TensorModule[T] {
 
-  require(dim1Crop.length == 2, "dim1Crop should be an array of length 2")
-  require(dim2Crop.length == 2, "dim2Crop should be an array of length 2")
-  require(dim3Crop.length == 2, "dim3Crop should be an array of length 2")
+  Log4Error.invalidInputError(dim1Crop.length == 2,
+    "dim1Crop should be an array of length 2")
+  Log4Error.invalidInputError(dim2Crop.length == 2,
+    "dim2Crop should be an array of length 2")
+  Log4Error.invalidInputError(dim3Crop.length == 2,
+    "dim3Crop should be an array of length 2")
 
   override def computeOutputShape(inputShape: Shape): Shape = {
     val input = inputShape.toSingle().toArray
-    require(input.length == 5,
+    Log4Error.invalidInputError(input.length == 5,
       s"Cropping3D requires 5D input, but got input dim ${input.length}")
     val outputShape = dataFormat match {
       case Cropping3D.CHANNEL_FIRST =>
@@ -67,17 +70,20 @@ class Cropping3D[T: ClassTag](
   }
 
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
-    require(input.dim() == 5, "input dimensions should be 5." +
+    Log4Error.invalidInputError(input.dim() == 5, "input dimensions should be 5." +
       " (batchSize, channels, first_axis_to_crop, second_axis_to_crop, third_axis_to_crop)")
 
     val (dim1, dim2, dim3, dim1Start, dim1Cropped, dim2Start, dim2Cropped, dim3Start, dim3Cropped) =
       calculateStartAndLength(input)
 
-    require(dim1Cropped > 0, s"dim1Crop: ${dim1Crop.mkString(", ")} is too large. dim1" +
+    Log4Error.invalidInputError(dim1Cropped > 0,
+      s"dim1Crop: ${dim1Crop.mkString(", ")} is too large. dim1" +
       s" dimension length: ${input.size(dim1)}")
-    require(dim2Cropped > 0, s"dim2Crop: ${dim2Crop.mkString(", ")} is too large. dim2" +
+    Log4Error.invalidInputError(dim2Cropped > 0,
+      s"dim2Crop: ${dim2Crop.mkString(", ")} is too large. dim2" +
       s" dimension length: ${input.size(dim2)}")
-    require(dim3Cropped > 0, s"dim3Crop: ${dim3Crop.mkString(", ")} is too large. dim3" +
+    Log4Error.invalidInputError(dim3Cropped > 0,
+      s"dim3Crop: ${dim3Crop.mkString(", ")} is too large. dim3" +
       s" dimension length: ${input.size(dim3)}")
 
     val cropped = input

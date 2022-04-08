@@ -24,7 +24,7 @@ import com.intel.analytics.bigdl.dllib.nn.{Container, StaticGraph, Sequential =>
 import com.intel.analytics.bigdl.dllib.optim._
 import com.intel.analytics.bigdl.serialization.Bigdl.BigDLModule
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.dllib.utils.{LoggerFilter, Shape}
+import com.intel.analytics.bigdl.dllib.utils.{Log4Error, LoggerFilter, Shape}
 import com.intel.analytics.bigdl.dllib.utils.serializer._
 import org.apache.spark.rdd.RDD
 
@@ -36,7 +36,7 @@ abstract class KerasModel[T: ClassTag](implicit ev: TensorNumeric[T])
   extends KerasLayer[Activity, Activity, T] {
 
   def getSubModules(): List[AbstractModule[Activity, Activity, T]] = {
-    require(this.labor.isInstanceOf[Container[Activity, Activity, T]],
+    Log4Error.invalidInputError(this.labor.isInstanceOf[Container[Activity, Activity, T]],
       "labor should be a container, but we got: $this")
     this.labor.asInstanceOf[Container[Activity, Activity, T]].modules.toList
   }
@@ -89,14 +89,14 @@ abstract class KerasModel[T: ClassTag](implicit ev: TensorNumeric[T])
   def fit[D: ClassTag](x: DataSet[D], nbEpoch: Int,
                        validationData: DataSet[MiniBatch[T]])
     (implicit ev: TensorNumeric[T]): Unit = {
-    require(this.optimMethod != null && this.criterion != null,
+    Log4Error.invalidInputError(this.optimMethod != null && this.criterion != null,
       "compile must be called before fit")
     val optimizer = Optimizer(
       model = this,
       dataset = x,
       criterion = this.criterion)
     if (validationData != null) {
-      require(this.vMethods != null, "Validation metrics haven't been set yet")
+      Log4Error.invalidInputError(this.vMethods != null, "Validation metrics haven't been set yet")
       optimizer.setValidation(trigger = Trigger.everyEpoch,
         dataset = validationData,
         vMethods = this.vMethods)
@@ -127,7 +127,7 @@ abstract class KerasModel[T: ClassTag](implicit ev: TensorNumeric[T])
   def evaluate(x: RDD[Sample[T]],
                batchSize: Int)
       (implicit ev: TensorNumeric[T]): Array[(ValidationResult, ValidationMethod[T])] = {
-    require(this.vMethods != null, "Evaluation metrics haven't been set yet")
+    Log4Error.invalidInputError(this.vMethods != null, "Evaluation metrics haven't been set yet")
     this.evaluate(x, this.vMethods, Some(batchSize))
   }
 
@@ -137,7 +137,7 @@ abstract class KerasModel[T: ClassTag](implicit ev: TensorNumeric[T])
    */
   def evaluate(x: LocalDataSet[MiniBatch[T]])
     (implicit ev: TensorNumeric[T]): Array[(ValidationResult, ValidationMethod[T])] = {
-    require(this.vMethods != null, "Evaluation metrics haven't been set yet")
+    Log4Error.invalidInputError(this.vMethods != null, "Evaluation metrics haven't been set yet")
     this.evaluate(x, this.vMethods)
   }
 

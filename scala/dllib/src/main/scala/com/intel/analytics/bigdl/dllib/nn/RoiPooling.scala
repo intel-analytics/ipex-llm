@@ -19,7 +19,7 @@ package com.intel.analytics.bigdl.dllib.nn
 import com.intel.analytics.bigdl.dllib.nn.abstractnn.AbstractModule
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.dllib.utils.Table
+import com.intel.analytics.bigdl.dllib.utils.{Log4Error, Table}
 
 import scala.reflect._
 
@@ -47,14 +47,14 @@ class RoiPooling[T: ClassTag](val pooledW: Int, val pooledH: Int, val spatialSca
   gradInput.insert(gradInputTensor)
 
   override def updateOutput(input: Table): Tensor[T] = {
-    require(input.length() == 2,
+    Log4Error.invalidInputError(input.length() == 2,
       "there must have two tensors in the table," +
       s" number of tensors ${input.length()}")
 
     val data = input[Tensor[T]](1) // Input data to ROIPooling
     val rois = input[Tensor[T]](2) // Input label to ROIPooling
 
-    require(rois.size().length > 1 && rois.size(2) == 5,
+    Log4Error.invalidInputError(rois.size().length > 1 && rois.size(2) == 5,
       "roi input shape should be (R, 5), " +
         s"input shape [${rois.size().length},${rois.size(2)}]")
 
@@ -113,7 +113,9 @@ class RoiPooling[T: ClassTag](val pooledW: Int, val pooledH: Int, val spatialSca
     val roiStartW = scaleRoiFloat(roi, 2, spatialScale)
     val roiStartH = scaleRoiFloat(roi, 3, spatialScale)
 
-    require(roiBatchInd >= 0 && dataSize(0) > roiBatchInd)
+    Log4Error.invalidOperationError(roiBatchInd >= 0 && dataSize(0) > roiBatchInd,
+      s"roiBatchInd should be great than 0, but is ${roiBatchInd}," +
+        s"dataSize(0) ${dataSize(0)} need be greater than roiBatchInd ${roiBatchInd}")
 
     val binSizeH = Math.max(scaleRoiFloat(roi, 5, spatialScale) - roiStartH + 1, 1f) / pooledH
     val binSizeW = Math.max(scaleRoiFloat(roi, 4, spatialScale) - roiStartW + 1, 1f) / pooledW
@@ -183,7 +185,9 @@ class RoiPooling[T: ClassTag](val pooledW: Int, val pooledH: Int, val spatialSca
     val roiStartW = scaleRoiDouble(roi, 2, spatialScale)
     val roiStartH = scaleRoiDouble(roi, 3, spatialScale)
 
-    require(roiBatchInd >= 0 && dataSize(0) > roiBatchInd)
+    Log4Error.invalidOperationError(roiBatchInd >= 0 && dataSize(0) > roiBatchInd,
+      s"roiBatchInd should be great than 0, but is ${roiBatchInd}," +
+        s"dataSize(0) ${dataSize(0)} need be greater than roiBatchInd ${roiBatchInd}")
 
     val binSizeH = Math.max(scaleRoiDouble(roi, 5, spatialScale) - roiStartH + 1, 1f) / pooledH
     val binSizeW = Math.max(scaleRoiDouble(roi, 4, spatialScale) - roiStartW + 1, 1f) / pooledW
@@ -251,7 +255,8 @@ class RoiPooling[T: ClassTag](val pooledW: Int, val pooledH: Int, val spatialSca
    * @return array offset
    */
   private def offset(n: Int, c: Int = 0, h: Int = 0, w: Int = 0, sizes: Array[Int]): Int = {
-    require(sizes.length == 2 || sizes.length >= 4)
+    Log4Error.invalidInputError(sizes.length == 2 || sizes.length >= 4,
+      "expect sizes length great than 4 or equals 2")
     if (sizes.length == 2) ((n * sizes(1) + c) + h) + w
     else ((n * sizes(1) + c) * sizes(2) + h) * sizes(3) + w
   }

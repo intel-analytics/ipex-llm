@@ -261,8 +261,10 @@ object AutoGrad {
       x: Variable[T],
       y: Variable[T],
       axes: List[Int] = null)(implicit ev: TensorNumeric[T]): Variable[T] = {
-    require(x.getOutputShape().isInstanceOf[SingleShape], "Only accept single shape")
-    require(y.getOutputShape().isInstanceOf[SingleShape], "Only accept single shape")
+    Log4Error.invalidInputError(x.getOutputShape().isInstanceOf[SingleShape],
+      "Only accept single shape")
+    Log4Error.invalidInputError(y.getOutputShape().isInstanceOf[SingleShape],
+      "Only accept single shape")
     var xx = x
     var yy = y
     var yShape = yy.getOutputShape().toSingle()
@@ -292,10 +294,11 @@ object AutoGrad {
           s"but got [${xShape.mkString(",")}] and [${xShape.mkString(",")}]")
       }
     if (axes != null) {
-      require(axes.length == 2, s"axes.length should be 2, but got: ${axes.length}")
-      require(axes(0) >= left && axes(0) <= right,
+      Log4Error.invalidInputError(axes.length == 2,
+        s"axes.length should be 2, but got: ${axes.length}")
+      Log4Error.invalidInputError(axes(0) >= left && axes(0) <= right,
         s"axes should between [$left, $right], not ${axes(0)}")
-      require(axes(1) >= left && axes(1) <= right,
+      Log4Error.invalidInputError(axes(1) >= left && axes(1) <= right,
         s"axes should between [$left, $right], not ${axes(1)}")
       transposeX = if (axes(0) != xShape.length - 1) {true} else {false}
       transposeY = if (axes(1) == yShape.length - 1) {true} else {false}
@@ -337,7 +340,7 @@ object AutoGrad {
       (implicit ev: TensorNumeric[T]): Variable[T] = {
   val xShape = x.getOutputShape().toSingle().toArray
   if (!normalize) {
-    require(xShape.length == 2 || xShape.length == 3,
+    Log4Error.invalidInputError(xShape.length == 2 || xShape.length == 3,
       s"Only support 2D and 3D for now, but got: ${xShape.length}")
     if (xShape.length == 2) {
       sum(x*y, axis = 1, keepDims = true)
@@ -387,8 +390,10 @@ class Variable[T: ClassTag] private[bigdl] (private[bigdl] var node: ModuleNode[
       node.element.setName(name)
     }
 
-    require(node.element.isInstanceOf[KerasLayer[Activity, Activity, T]])
-    require(node.element.asInstanceOf[InferShape].getOutputShape() != null)
+    Log4Error.invalidInputError(node.element.isInstanceOf[KerasLayer[Activity, Activity, T]],
+    "variable need be a keras layer here")
+    Log4Error.invalidInputError(node.element.asInstanceOf[InferShape].getOutputShape() != null,
+      "outputshape of variable cannot be null")
   }
 
   private[bigdl] def getRoots(): Array[ModuleNode[T]] = {
@@ -561,7 +566,7 @@ class Variable[T: ClassTag] private[bigdl] (private[bigdl] var node: ModuleNode[
       yShape = yy.getOutputShape().toSingle()
     }
 
-    require(xShape.size == yShape.size,
+    Log4Error.invalidOperationError(xShape.size == yShape.size,
       s"The two variables should have the same dims," +
         s"but got: ${x.getOutputShape().toSingle().mkString(",")}" +
         s"and ${y.getOutputShape().toSingle().mkString(",")}")

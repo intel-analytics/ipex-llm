@@ -19,6 +19,7 @@ package com.intel.analytics.bigdl.dllib.nn
 import com.intel.analytics.bigdl.dllib.nn.abstractnn.TensorCriterion
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.dllib.utils.Log4Error
 
 import scala.reflect.ClassTag
 
@@ -33,10 +34,10 @@ class DotProductCriterion[T: ClassTag]
          implicit ev: TensorNumeric[T]) extends TensorCriterion[T]  {
 
   override def updateOutput(input: Tensor[T], target: Tensor[T]): T = {
-    require(input.dim() == 1 || input.dim() == 2, "DotProductCriterion only" +
-      "support tensor with 1 or 2 dimensions")
-    require(input.size().sameElements(target.size()), "The shape of input and target" +
-      "must be the same")
+    Log4Error.invalidInputError(input.dim() == 1 || input.dim() == 2,
+      "DotProductCriterion only support tensor with 1 or 2 dimensions")
+    Log4Error.invalidInputError(input.size().sameElements(target.size()),
+      "The shape of input and target must be the same")
 
     val dotProduct = target.dot(input)
     if (sizeAverage && input.dim() == 2) {
@@ -48,10 +49,10 @@ class DotProductCriterion[T: ClassTag]
   }
 
   override def updateGradInput(input: Tensor[T], target: Tensor[T]): Tensor[T] = {
-    require(input.dim() == 1 || input.dim() == 2, "DotProductCriterion only" +
+    Log4Error.invalidInputError(input.dim() == 1 || input.dim() == 2, "DotProductCriterion only" +
       "support tensor with 1 or 2 dimensions")
-    require(input.size().sameElements(target.size()), "The shape of input and target" +
-      "must be the same")
+    Log4Error.invalidInputError(input.size().sameElements(target.size()),
+      "The shape of input and target must be the same")
 
     gradInput.resizeAs(target)
     Tensor.dense(target, gradInput)

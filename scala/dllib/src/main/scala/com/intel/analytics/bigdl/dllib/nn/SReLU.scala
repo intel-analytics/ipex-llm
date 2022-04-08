@@ -21,7 +21,7 @@ import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.dllib.utils.serializer._
 import com.intel.analytics.bigdl.dllib.utils.serializer.converters.DataConverter
-import com.intel.analytics.bigdl.dllib.utils.{T, Table}
+import com.intel.analytics.bigdl.dllib.utils.{Log4Error, T, Table}
 import com.intel.analytics.bigdl.serialization.Bigdl.{AttrValue, BigDLModule}
 
 import scala.reflect.ClassTag
@@ -127,7 +127,7 @@ class SReLU[T: ClassTag](val shape: Array[Int], val sharedAxes: Array[Int] = nul
   }
 
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
-    require(input.isContiguous(), s"the input of SReLU must be contiguous")
+    Log4Error.invalidInputError(input.isContiguous(), s"the input of SReLU must be contiguous")
     // ensure the the right part is always to the right of the left
     weights(tRight).abs().add(weights(tLeft))
     output.resizeAs(input)
@@ -178,8 +178,10 @@ class SReLU[T: ClassTag](val shape: Array[Int], val sharedAxes: Array[Int] = nul
   }
 
   override def updateGradInput(input: Tensor[T], gradOutput: Tensor[T]): Tensor[T] = {
-    require(input.isContiguous(), s"the input of SReLU must be contiguous")
-    require(gradOutput.isContiguous(), s"the gradOutput of SReLU must be contiguous")
+    Log4Error.invalidInputError(input.isContiguous(),
+      s"the input of SReLU must be contiguous")
+    Log4Error.invalidInputError(gradOutput.isContiguous(),
+      s"the gradOutput of SReLU must be contiguous")
     gradInput.resizeAs(input)
 
     var batch = 0

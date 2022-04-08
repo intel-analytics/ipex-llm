@@ -21,6 +21,7 @@ import com.intel.analytics.bigdl.dllib.nn.abstractnn.{Activity, DataFormat, Init
 import com.intel.analytics.bigdl.dllib.nn.mkldnn.Phase.{InferencePhase, TrainingPhase}
 import com.intel.analytics.bigdl.dllib.nn.{MklInt8Convertible, Ones, VariableFormat, Zeros}
 import com.intel.analytics.bigdl.dllib.tensor._
+import com.intel.analytics.bigdl.dllib.utils.Log4Error
 
 import scala.collection.mutable.ArrayBuffer
 
@@ -138,14 +139,16 @@ class SpatialBatchNormalization(
     val bias = init.select(1, 2)
 
     if (initWeight != null) {
-      require(initWeight.size(1) == nOutput)
+      Log4Error.invalidInputError(initWeight.size(1) == nOutput,
+        s"initWeight.size(1) ${initWeight.size(1)} doesn't match nOutput $nOutput")
       weight.copy(initWeight)
     } else {
       weightInitMethod.init(weight, VariableFormat.ONE_D)
     }
 
     if (initBias != null) {
-      require(initBias.size(1) == nOutput)
+      Log4Error.invalidInputError(initBias.size(1) == nOutput,
+        s"initBias.size(1) ${initBias.size(1)} doesn't match nOutput $nOutput")
       bias.copy(initBias)
     } else {
       biasInitMethod.init(bias, VariableFormat.ONE_D)
@@ -201,7 +204,8 @@ class SpatialBatchNormalization(
     // init once
     if (_inputFormats == null) {
       _inputFormats = new Array[MemoryData](1)
-      require(_outputFormats == null)
+      Log4Error.invalidInputError(_outputFormats == null,
+        "_outputFormats should not be null")
       _outputFormats = new Array[MemoryData](1)
     }
 

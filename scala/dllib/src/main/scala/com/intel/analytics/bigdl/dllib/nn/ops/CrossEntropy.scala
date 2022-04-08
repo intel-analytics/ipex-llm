@@ -17,7 +17,7 @@ package com.intel.analytics.bigdl.dllib.nn.ops
 
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.dllib.utils.Table
+import com.intel.analytics.bigdl.dllib.utils.{Log4Error, Table}
 
 import scala.reflect.ClassTag
 
@@ -37,8 +37,8 @@ class CrossEntropy[T: ClassTag](implicit ev: TensorNumeric[T])
     val modelOutput = input[Tensor[T]](1)
     val label = input[Tensor[T]](2)
 
-    require(modelOutput.nDimension() == 2, "CrossEntropy need a 2D input")
-    require(modelOutput.isSameSizeAs(label), s"size not match output" +
+    Log4Error.invalidInputError(modelOutput.nDimension() == 2, "CrossEntropy need a 2D input")
+    Log4Error.invalidInputError(modelOutput.isSameSizeAs(label), s"size not match output" +
       s"(${modelOutput.size().mkString("x")}) label(${label.size().mkString("x")})")
     val batch = modelOutput.size(1)
     if (!output.contains(1)) {

@@ -19,8 +19,7 @@ package com.intel.analytics.bigdl.dllib.nn
 import com.intel.analytics.bigdl.dllib.nn.abstractnn.{IdentityOutputShape, TensorModule}
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.dllib.tensor._
-import com.intel.analytics.bigdl.dllib.utils.Engine
-import com.intel.analytics.bigdl.dllib.utils.Shape
+import com.intel.analytics.bigdl.dllib.utils.{Engine, Log4Error, Shape}
 
 import scala.collection.mutable.ArrayBuffer
 import scala.concurrent.Future
@@ -45,7 +44,8 @@ class Threshold[T: ClassTag](
   validateParameters()
 
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
-    require(input.isContiguous())
+    Log4Error.invalidOperationError(input.isContiguous(),
+      "Threshold expect input to be contiguous")
     validateParameters()
 
     val taskSize = input.nElement() / Engine.model.getPoolSize
@@ -365,7 +365,7 @@ class Threshold[T: ClassTag](
 
   def validateParameters(): Unit = {
     if (inPlace) {
-      require(value <= threshold, "in-place processing requires value (" +
+      Log4Error.invalidInputError(value <= threshold, "in-place processing requires value (" +
         value + "') not exceed threshold (" + threshold + ")")
     }
   }

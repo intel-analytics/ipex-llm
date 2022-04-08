@@ -22,7 +22,7 @@ import com.google.protobuf.ByteString
 import com.intel.analytics.bigdl.dllib.nn.{Graph, Module}
 import com.intel.analytics.bigdl.dllib.nn.abstractnn.AbstractModule
 import com.intel.analytics.bigdl.dllib.tensor._
-import com.intel.analytics.bigdl.dllib.utils.Engine
+import com.intel.analytics.bigdl.dllib.utils.{Engine, Log4Error}
 import org.tensorflow.framework.AttrValue.ListValue
 import org.tensorflow.framework._
 import org.tensorflow.framework.TensorShapeProto.Dim
@@ -405,7 +405,7 @@ object Tensorflow {
   }
 
   def addN(inputs: Seq[NodeDef], name: String): NodeDef = {
-    require(inputs.length >= 2, "at least two inputs for addN")
+    Log4Error.invalidInputError(inputs.length >= 2, "at least two inputs for addN")
     val node = NodeDef.newBuilder()
       .setName(name)
       .putAttr("N", intAttr(inputs.length))
@@ -416,7 +416,7 @@ object Tensorflow {
   }
 
   def concat(inputs: Seq[NodeDef], name: String): NodeDef = {
-    require(inputs.length >= 1, "at least one inputs for addN")
+    Log4Error.invalidInputError(inputs.length >= 1, "at least one inputs for addN")
 
     val node = NodeDef.newBuilder()
       .setName(name)
@@ -538,7 +538,7 @@ object Tensorflow {
         shape.addDim(Dim.newBuilder().setSize(dim))
       })
     }
-    require(value.isContiguous(), "only support save a contiguous tensor")
+    Log4Error.invalidInputError(value.isContiguous(), "only support save a contiguous tensor")
 
     val (content, dtype) = if (value.getType() == DoubleType) {
       val array = value.asInstanceOf[Tensor[Double]].storage().array()

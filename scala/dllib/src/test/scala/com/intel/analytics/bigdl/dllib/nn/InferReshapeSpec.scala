@@ -50,11 +50,11 @@ class InferReshapeSpec extends FlatSpec {
       assert(gradOutput == gradOutputOrg)
     }
 
-    intercept[LayerException] {
+    intercept[com.intel.analytics.bigdl.dllib.utils.UnKnownException] {
       module.forward(Tensor[Double](2, 2))
     }
 
-    intercept[LayerException] {
+    intercept[com.intel.analytics.bigdl.dllib.utils.UnKnownException] {
       module.forward(Tensor[Double](3, 2, 2))
     }
   }
@@ -127,7 +127,7 @@ class InferReshapeSpec extends FlatSpec {
       assert(gradOutput == gradOutputOrg)
     }
 
-    intercept[LayerException] {
+    intercept[com.intel.analytics.bigdl.dllib.utils.UnKnownException] {
       module.forward(Tensor[Double](3, 1))
     }
   }

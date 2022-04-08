@@ -23,8 +23,7 @@ import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.dllib.tensor._
 import com.intel.analytics.bigdl.dllib.utils.serializer._
 import com.intel.analytics.bigdl.dllib.utils.serializer.converters.DataConverter
-import com.intel.analytics.bigdl.dllib.utils.{T, Table}
-import com.intel.analytics.bigdl.dllib.utils.Shape
+import com.intel.analytics.bigdl.dllib.utils.{Log4Error, Shape, T, Table}
 
 import scala.reflect.ClassTag
 import scala.reflect.runtime.universe
@@ -87,7 +86,7 @@ class SpatialFullConvolution[T: ClassTag](
   )(implicit ev: TensorNumeric[T])
   extends AbstractModule[Activity, Tensor[T], T] with Initializable {
 
-  require(adjW <= dW - 1 && adjH <= dH - 1,
+  Log4Error.invalidInputError(adjW <= dW - 1 && adjH <= dH - 1,
     "SpatialFullConvolution: adjW=$adjW and adjH=$adjH must be smaller than " +
       s"(dW - 1)=${dW - 1} and (dH - 1)=${dH - 1} respectively")
 
@@ -145,17 +144,19 @@ class SpatialFullConvolution[T: ClassTag](
     padH : Int, padW : Int,
     adjH : Int, adjW : Int) : Unit = {
 
-    require(kW > 0 && kH > 0, s"SpatialFullConvolution: kernel size should be greater than zero, " +
+    Log4Error.invalidInputError(kW > 0 && kH > 0,
+      s"SpatialFullConvolution: kernel size should be greater than zero, " +
       s"but got kH: $kH kW: $kW")
-    require(dW > 0 && dH > 0, s"SpatialFullConvolution: stride should be greater than zero, " +
+    Log4Error.invalidInputError(dW > 0 && dH > 0,
+      s"SpatialFullConvolution: stride should be greater than zero, " +
       s"but got dH: $dH dW: $dW")
-    require(weight.nDimension == 3 || weight.nDimension == 5,
+    Log4Error.invalidInputError(weight.nDimension == 3 || weight.nDimension == 5,
       s"SpatialFullConvolution: 3D or 5D weight tensor expected, but got size: ${weight.dim()}")
 
     if (null != bias) {
-      require(bias.nDimension() == 1,
+      Log4Error.invalidInputError(bias.nDimension() == 1,
         s"SpatialFullConvolution: bias should be 1 dim, but got dim:${bias.nDimension()}")
-      require(bias.size(1) == weight.size(3) * weight.size(1),
+      Log4Error.invalidInputError(bias.size(1) == weight.size(3) * weight.size(1),
         s"SpatialFullConvolution: bias's size equals to weight.size(3) * weight.size(1) " +
           s"= ${weight.size(1) * weight.size(3)}, but got size:${bias.size(1)}")
     }
@@ -165,7 +166,8 @@ class SpatialFullConvolution[T: ClassTag](
     val dimh = if (ndim == 4) 3 else 2
     val dimw = if (ndim == 4) 4 else 3
 
-    require(ndim == 3 || ndim == 4, s"SpatialFullConvolution: 3D or 4D input tensor expected, " +
+    Log4Error.invalidInputError(ndim == 3 || ndim == 4,
+      s"SpatialFullConvolution: 3D or 4D input tensor expected, " +
       s"but got size: ${input.dim()}")
 
     val inputHeight = input.size(dimh)
@@ -173,22 +175,24 @@ class SpatialFullConvolution[T: ClassTag](
     val outputHeight = (inputHeight - 1) * dH - 2 * padH + kH + adjH
     val outputWidth = (inputWidth - 1) * dW - 2 * padW + kW + adjW
 
-    require(outputWidth >= 1 || outputHeight >= 1,
+    Log4Error.invalidInputError(outputWidth >= 1 || outputHeight >= 1,
       s"SpatialFullConvolution: Given input size: ($nInputPlane x $inputHeight x $inputWidth). " +
       s"Calculated output size: ($nOutputPlane x $outputHeight x $outputWidth). " +
       s"Output size is too small")
 
-    require(input.nDimension() == ndim && input.size(dimf) == nInputPlane,
+    Log4Error.invalidInputError(input.nDimension() == ndim && input.size(dimf) == nInputPlane,
       s"SpatialFullConvolution: input's feature maps should be $nInputPlane, " +
         s"but got ${input.size(dimf)}")
 
     if (null != gradOutput) {
-      require(gradOutput.nDimension() == ndim, s"SpatialFullConvolution: gradOutput should be " +
+      Log4Error.invalidInputError(gradOutput.nDimension() == ndim,
+        s"SpatialFullConvolution: gradOutput should be " +
         s"$ndim, but got ${gradOutput.nDimension()}")
-      require(gradOutput.size(dimf) == nOutputPlane
+      Log4Error.invalidInputError(gradOutput.size(dimf) == nOutputPlane
         && gradOutput.size(dimh) == outputHeight
         && gradOutput.size(dimw) == outputWidth,
-        s"SpatialFullConvolution: GradOutput's size should be (${nOutputPlane} x ${outputHeight} " +
+        s"SpatialFullConvolution: GradOutput's size should be" +
+          s" (${nOutputPlane} x ${outputHeight} " +
           s"x ${outputWidth}), but got (${gradOutput.size(dimf)} x ${gradOutput.size(dimh)} " +
           s"x ${gradOutput.size(dimw)})")
     }
@@ -254,7 +258,7 @@ class SpatialFullConvolution[T: ClassTag](
 
   override def computeOutputShape(inputShape: Shape): Shape = {
     val input = inputShape.toSingle().toArray
-    require(input.length == 4,
+    Log4Error.invalidInputError(input.length == 4,
       s"Deconvolution2D requires 4D input, but got input dim ${input.length}")
     val inputHeight = input(2)
     val inputWidth = input(3)
@@ -283,7 +287,8 @@ class SpatialFullConvolution[T: ClassTag](
     }
 
     shapeCheck(inputTensor, null, weight, bias, kH, kW, dH, dW, padH, padW, adjH, adjW)
-    require(inputTensor.isContiguous(), "SpatialFullConvolution: input should be contiguous")
+    Log4Error.invalidInputError(inputTensor.isContiguous(),
+      "SpatialFullConvolution: input should be contiguous")
 
     val isBatch = if (inputTensor.nDimension() == 3) {
       // Force batch
@@ -328,7 +333,8 @@ class SpatialFullConvolution[T: ClassTag](
     while(elt <= batchSize) {
       // Matrix mulitply per output:
       val input_n = inputTensor.select(1, elt)
-      require(input_n.isContiguous(), s"SpatialFullConvolution: input($elt) should be contiguous")
+      Log4Error.invalidInputError(input_n.isContiguous(),
+        s"SpatialFullConvolution: input($elt) should be contiguous")
       val output_n = output.select(1, elt)
       val columns_n = columns.select(1, elt)
 

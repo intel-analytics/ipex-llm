@@ -17,6 +17,7 @@ package com.intel.analytics.bigdl.dllib.nn.mkldnn
 
 import com.intel.analytics.bigdl.mkl._
 import com.intel.analytics.bigdl.dllib.nn.MklInt8Convertible
+import com.intel.analytics.bigdl.dllib.utils.Log4Error
 
 class ReLU(value: Float = 0.0f) extends MklDnnLayer with MklInt8Convertible {
   private val UNDEFINED: Long = 0
@@ -44,7 +45,7 @@ class ReLU(value: Float = 0.0f) extends MklDnnLayer with MklInt8Convertible {
     val description = MklDnnMemory.EltwiseBackwardDescInit(AlgKind.EltwiseRelu,
       _gradOutputFormats(0).getMemoryDescription(), _inputFormats(0).getMemoryDescription(),
       value, 0)
-    require(fwdPrimDesc != UNDEFINED, "You should call initFwdPrimitives first")
+    Log4Error.invalidInputError(fwdPrimDesc != UNDEFINED, "You should call initFwdPrimitives first")
     val primDesc = MklDnnMemory.PrimitiveDescCreate(description, runtime.engine, fwdPrimDesc)
     _gradInputFormats = Array(MemoryData.operationWant(primDesc, Query.DiffSrcPd))
     updateGradInputPrimitives = Array(

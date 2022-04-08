@@ -20,9 +20,10 @@ import com.intel.analytics.bigdl.mkl.Memory
 import com.intel.analytics.bigdl.dllib.nn.mkldnn.{MemoryOwner, Releasable}
 import com.intel.analytics.bigdl.dllib.tensor.DnnTensor.DnnTensorUnsupportOperations
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.dllib.utils.Table
+import com.intel.analytics.bigdl.dllib.utils.{Log4Error, Table}
 import org.apache.spark.mllib.linalg
 import org.apache.spark.mllib.linalg.Matrix
+
 import scala.reflect.ClassTag
 
 class DnnTensor[T: ClassTag](
@@ -40,11 +41,14 @@ class DnnTensor[T: ClassTag](
   override def copy(other: Tensor[T]): Tensor[T] = {
     other match {
       case t: DenseTensor[_] =>
-        require(DnnTensor.noTransposed(t), "dense tensor should not be transposed")
-        require(this.nElement() == other.nElement(), "tensor elements number must be same")
+        Log4Error.unKnowExceptionError(DnnTensor.noTransposed(t),
+          "dense tensor should not be transposed")
+        Log4Error.unKnowExceptionError(this.nElement() == other.nElement(),
+          "tensor elements number must be same")
         this._storage.copy(other.storage(), 0, other.storageOffset() - 1, this.nElement())
       case t: DnnTensor[_] =>
-        require(this.nElement() == other.nElement(), "tensor elements number must be same")
+        Log4Error.unKnowExceptionError(this.nElement() == other.nElement(),
+          "tensor elements number must be same")
         this._storage.copy(other.storage(), 0, 0, this.nElement())
       case _ => throw new UnsupportedOperationException(
         "Only support copy from dense tensor and dnn tensor")
@@ -63,7 +67,7 @@ class DnnTensor[T: ClassTag](
   override def storage(): Storage[T] = _storage
 
   override def resize(s: Array[Int], stride: Array[Int] = null): this.type = {
-    require(stride == null, "dnn tensor doesn't have stride")
+    Log4Error.unKnowExceptionError(stride == null, "dnn tensor doesn't have stride")
     if (s.product > nElement()) {
       _storage.release()
       _storage = new DnnStorage[T](s.product)
@@ -82,7 +86,7 @@ class DnnTensor[T: ClassTag](
   }
 
   override def add(x: Tensor[T]): Tensor[T] = {
-    require(x.isInstanceOf[DnnTensor[_]], "Just support two dnn tensor add")
+    Log4Error.unKnowExceptionError(x.isInstanceOf[DnnTensor[_]], "Just support two dnn tensor add")
     Memory.SAdd(this.nElement(), this._storage.ptr.address, 0,
       x.asInstanceOf[DnnTensor[T]]._storage.ptr.address, 0, this._storage.ptr.address, 0)
     this
@@ -163,7 +167,8 @@ class DnnTensor[T: ClassTag](
   }
 
   override def set(other: Tensor[T]): Tensor[T] = {
-    require(other.isInstanceOf[DnnTensor[T]], s"only support to set DnnTensor")
+    Log4Error.unKnowExceptionError(other.isInstanceOf[DnnTensor[T]],
+      s"only support to set DnnTensor")
     this._storage.release()
     this._storage = other.storage().asInstanceOf[DnnStorage[T]]
     this

@@ -19,7 +19,7 @@ import com.intel.analytics.bigdl.dllib.nn.abstractnn.Activity
 import com.intel.analytics.bigdl.dllib.nn.ops.Operation
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.{NumericWildcard, TensorNumeric}
-import com.intel.analytics.bigdl.dllib.utils.{T, Table}
+import com.intel.analytics.bigdl.dllib.utils.{Log4Error, T, Table}
 
 import scala.reflect.ClassTag
 
@@ -78,7 +78,7 @@ private[bigdl] class Assign[T: ClassTag](
     val input1 = input[Tensor[NumericWildcard]](1)
     val input2 = input[Tensor[NumericWildcard]](2)
 
-    require(input1.getType() == input2.getType(),
+    Log4Error.invalidInputError(input1.getType() == input2.getType(),
       "ref and value must have the same tensor numeric type")
 
     if (output.getType() != input2.getType()) {
@@ -88,7 +88,8 @@ private[bigdl] class Assign[T: ClassTag](
     if (validateShape) {
       var i = 1
       while (i <= input1.dim()) {
-        require(input1.size(i) == input2.size(i), "shape of the ref and value are not same")
+        Log4Error.invalidInputError(input1.size(i) == input2.size(i),
+          "shape of the ref and value are not same")
         i += 1
       }
     }
