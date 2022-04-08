@@ -229,15 +229,21 @@ class TestTSPipeline(TestCase):
         calib_y = np.random.randn(1000, config['future_seq_len'],
                                   config['output_feature_num']).astype(np.float32)
         tsppl_tcn.quantize(calib_data=(calib_x, calib_y))
-        with pytest.raises(AssertionError):
+
+        with pytest.raises(RuntimeError):
             tsppl_tcn.quantize(calib_data=(calib_x, calib_y),
                                metric='smape',
                                approach='dynamic')
+        with pytest.raises(RuntimeError):
+            tsppl_tcn.quantize(calib_data=None,
+                               metric='smape',
+                               approach='static')
 
         from bigdl.chronos.data.repo_dataset import get_public_dataset
         train_tsdata, _, test_tsdata = get_public_dataset('network_traffic', val_ratio=0)
         train_tsdata.roll(lookback=10, horizon=2)
         test_tsdata.roll(lookback=10, horizon=2)
+        # mixed data
         tsppl_tcn._best_config.update({'selected_features': []})
         tsppl_tcn.quantize(calib_data=train_tsdata,
                            val_data=test_tsdata,
