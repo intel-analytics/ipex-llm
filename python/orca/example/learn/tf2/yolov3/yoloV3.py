@@ -544,8 +544,6 @@ def main():
                         help="Required. epochs.")
     parser.add_argument("--cluster_mode", dest="cluster_mode", default="local",
                         help="Required. Run on local/yarn/k8s/spark-submit mode.")
-    parser.add_argument("--runtime", dest="runtime", type=str, default="spark",
-                        help="Required. One of spark or ray.")
     parser.add_argument("--class_num", dest="class_num", type=int, default=20,
                         help="Required. class num.")
     parser.add_argument("--worker_num", type=int, default=1,
@@ -577,36 +575,33 @@ def main():
 
     options = parser.parse_args()
 
-    if options.runtime == "ray":
-        init_orca_context(runtime=options.runtime, address="localhost:6379")
-    else:
-        if options.cluster_mode == "local":
-            init_orca_context(cluster_mode="local", cores=options.cores, num_nodes=options.worker_num,
-                            memory=options.memory, init_ray_on_spark=True,
-                            object_store_memory=options.object_store_memory)
-        elif options.cluster_mode == "k8s":
-            init_orca_context(cluster_mode="k8s", master=options.k8s_master,
-                            container_image=options.container_image,
-                            init_ray_on_spark=True, enable_numa_binding=options.enable_numa_binding,
-                            num_nodes=options.worker_num, cores=options.cores, memory=options.memory,
-                            object_store_memory=options.object_store_memory,
-                            conf={"spark.driver.host": options.driver_host,
-                                    "spark.driver.port": options.driver_port,
-                                    "spark.kubernetes.executor.volumes.persistentVolumeClaim."
-                                    "nfsvolumeclaim.options.claimName": "nfsvolumeclaim",
-                                    "spark.kubernetes.executor.volumes.persistentVolumeClaim."
-                                    "nfsvolumeclaim.mount.path": options.nfs_mount_path,
-                                    "spark.kubernetes.driver.volumes.persistentVolumeClaim."
-                                    "nfsvolumeclaim.options.claimName": "nfsvolumeclaim",
-                                    "spark.kubernetes.driver.volumes.persistentVolumeClaim."
-                                    "nfsvolumeclaim.mount.path": options.nfs_mount_path})
-        elif options.cluster_mode.startswith("yarn"):
-            init_orca_context(cluster_mode=options.cluster_mode, cores=options.cores,
-                            num_nodes=options.worker_num, memory=options.memory,
-                            init_ray_on_spark=True, enable_numa_binding=options.enable_numa_binding,
-                            object_store_memory=options.object_store_memory)
-        elif options.cluster_mode == "spark-submit":
-            init_orca_context(cluster_mode="spark-submit")
+    if options.cluster_mode == "local":
+        init_orca_context(cluster_mode="local", cores=options.cores, num_nodes=options.worker_num,
+                        memory=options.memory, init_ray_on_spark=True,
+                        object_store_memory=options.object_store_memory)
+    elif options.cluster_mode == "k8s":
+        init_orca_context(cluster_mode="k8s", master=options.k8s_master,
+                        container_image=options.container_image,
+                        init_ray_on_spark=True, enable_numa_binding=options.enable_numa_binding,
+                        num_nodes=options.worker_num, cores=options.cores, memory=options.memory,
+                        object_store_memory=options.object_store_memory,
+                        conf={"spark.driver.host": options.driver_host,
+                                "spark.driver.port": options.driver_port,
+                                "spark.kubernetes.executor.volumes.persistentVolumeClaim."
+                                "nfsvolumeclaim.options.claimName": "nfsvolumeclaim",
+                                "spark.kubernetes.executor.volumes.persistentVolumeClaim."
+                                "nfsvolumeclaim.mount.path": options.nfs_mount_path,
+                                "spark.kubernetes.driver.volumes.persistentVolumeClaim."
+                                "nfsvolumeclaim.options.claimName": "nfsvolumeclaim",
+                                "spark.kubernetes.driver.volumes.persistentVolumeClaim."
+                                "nfsvolumeclaim.mount.path": options.nfs_mount_path})
+    elif options.cluster_mode.startswith("yarn"):
+        init_orca_context(cluster_mode=options.cluster_mode, cores=options.cores,
+                        num_nodes=options.worker_num, memory=options.memory,
+                        init_ray_on_spark=True, enable_numa_binding=options.enable_numa_binding,
+                        object_store_memory=options.object_store_memory)
+    elif options.cluster_mode == "spark-submit":
+        init_orca_context(cluster_mode="spark-submit")
     # convert yolov3 weights
     yolo = YoloV3(classes=80)
     load_darknet_weights(yolo, options.weights)
