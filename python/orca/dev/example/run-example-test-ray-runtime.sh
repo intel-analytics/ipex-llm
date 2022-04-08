@@ -56,7 +56,7 @@ ray stop -f
 # time2=$((now-start))
 
 # ray stop -f
-
+ray start --head
 echo "#start orca pytorch example tests"
 echo "#3 start example for orca fashion-mnist"
 start=$(date "+%s")
