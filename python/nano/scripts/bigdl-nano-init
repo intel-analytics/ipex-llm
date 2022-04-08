@@ -226,7 +226,7 @@ else
         mkdir -p $CONDA_PREFIX/etc/conda/deactivate.d
         echo "source bigdl-nano-init" > $CONDA_PREFIX/etc/conda/activate.d/nano_vars.sh
     echo "source ${CONDA_PREFIX}/bin/bigdl-nano-unset-env" > $CONDA_PREFIX/etc/conda/deactivate.d/nano_vars.sh
-	fi
+    fi
 fi
 
 echo "+++++ Env Variables +++++"
