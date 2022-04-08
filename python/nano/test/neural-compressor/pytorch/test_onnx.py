@@ -27,13 +27,13 @@ import torchmetrics
 
 import numpy as np
 
-from test.pytorch.utils._train_torch_lightning import create_data_loader, data_transform
+from _train_torch_lightning import create_data_loader, data_transform
 from bigdl.nano.pytorch.trainer import Trainer
 from bigdl.nano.pytorch.vision.models import vision
 
 batch_size = 256
 num_workers = 0
-data_dir = os.path.join(os.path.dirname(__file__), "../data")
+data_dir = os.path.join(os.path.dirname(__file__), "data")
 
 
 class ResNet18(nn.Module):

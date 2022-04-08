@@ -13,9 +13,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-from neural_compressor.conf.config import Quantization_Conf
-from neural_compressor.experimental import Quantization, common
-from neural_compressor.experimental.common import Metric
+try:
+    from neural_compressor.conf.config import Quantization_Conf
+    from neural_compressor.experimental import Quantization, common
+    from neural_compressor.experimental.common import Metric
+except ImportError:
+    raise ImportError("Intel Neural Compressor must be installed to use quantization."
+                      "Please install INC by: pip install neural-compressor.")
 
 
 from .metric import METRICS
