@@ -20,7 +20,7 @@ from torchvision.models.mobilenetv3 import mobilenet_v3_small
 import torch
 from torch.utils.data.dataset import TensorDataset
 from torch.utils.data.dataloader import DataLoader
-
+import os
 
 class TestOpenVINO(TestCase):
     def test_openvino(self):
@@ -30,7 +30,7 @@ class TestOpenVINO(TestCase):
         y = torch.ones((10, ), dtype=torch.long)
 
         pl_model.eval_openvino(x)
-        assert pl_model.ir_up_to_date and pl_model.ir_model
+        assert pl_model.ov_infer_engine and pl_model.ov_infer_engine.ie_network
         assert pl_model.forward != pl_model._torch_forward
         y = pl_model(x)
         assert y.shape == (10, 10)  
@@ -47,7 +47,11 @@ class TestOpenVINO(TestCase):
         pl_model.eval_openvino()
         assert pl_model.forward != pl_model._torch_forward
         pl_model.train()
-        assert pl_model.forward == pl_model._torch_forward  
+        assert pl_model.forward == pl_model._torch_forward
+
+        pl_model.export_openvino(x, xml_path='test_export_openvino.xml')
+        assert os.path.exists('test_export_openvino.xml')
+        os.remove('test_export_openvino.xml')
 
     def test_openvino_inputsample_from_trainloader(self):
         trainer = Trainer(max_epochs=1)
@@ -58,13 +62,12 @@ class TestOpenVINO(TestCase):
         x = torch.rand((10, 3, 256, 256))
         y = torch.ones((10, ), dtype=torch.long)
         ds = TensorDataset(x, y)
-        # TODO: batch size = 2 will cause error, need to fix this
-        dataloader = DataLoader(ds, batch_size=10)
+        dataloader = DataLoader(ds, batch_size=2)
         trainer.fit(pl_model, dataloader)
 
         # Test if eval_openvino() and exit_openvino() work
         pl_model.eval_openvino()
-        assert pl_model.ir_up_to_date and pl_model.ir_model
+        assert pl_model.ov_infer_engine and pl_model.ov_infer_engine.ie_network
         assert pl_model.forward != pl_model._torch_forward
         y = pl_model(x)
         assert y.shape == (10, 10) 
@@ -76,4 +79,5 @@ class TestOpenVINO(TestCase):
         pl_model.eval_openvino()
         assert pl_model.forward != pl_model._torch_forward
         trainer.fit(pl_model, dataloader)
-        assert pl_model.forward == pl_model._torch_forward and pl_model.ir_up_to_date == False
+        assert pl_model.forward == pl_model._torch_forward 
+        assert  pl_model.ov_infer_engine is None

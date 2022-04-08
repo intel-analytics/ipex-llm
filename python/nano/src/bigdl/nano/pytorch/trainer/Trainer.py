@@ -32,6 +32,7 @@ from bigdl.nano.pytorch.lightning import LightningModuleFromTorch
 from bigdl.nano.pytorch.plugins.ddp_spawn import DDPSpawnPlugin
 from bigdl.nano.deps.ray.ray_api import distributed_ray
 from bigdl.nano.deps.ipex.ipex_api import create_IPEXAccelerator, ipex_device
+from bigdl.nano.deps.openvino.openvino_api import bind_openvino_methods
 
 distributed_backends = ["spawn", "ray", "subprocess"]
 
@@ -172,7 +173,6 @@ class Trainer(pl.Trainer):
                 raise RuntimeError("You should install onnx and onnxruntime to set `onnx=True`, "
                                    "or just set `onnx=False`.")
         elif openvino:
-            from bigdl.nano.pytorch.runtime_binding.openvino_inference import bind_openvino_methods
             return bind_openvino_methods(pl_model)
         if quantize:
             from bigdl.nano.pytorch.runtime_binding.quantization_inference import\
