@@ -577,15 +577,15 @@ def main():
 
     if options.cluster_mode == "local":
         init_orca_context(cluster_mode="local", cores=options.cores, num_nodes=options.worker_num,
-                        memory=options.memory, init_ray_on_spark=True,
-                        object_store_memory=options.object_store_memory)
+                          memory=options.memory, init_ray_on_spark=True,
+                          object_store_memory=options.object_store_memory)
     elif options.cluster_mode == "k8s":
         init_orca_context(cluster_mode="k8s", master=options.k8s_master,
-                        container_image=options.container_image,
-                        init_ray_on_spark=True, enable_numa_binding=options.enable_numa_binding,
-                        num_nodes=options.worker_num, cores=options.cores, memory=options.memory,
-                        object_store_memory=options.object_store_memory,
-                        conf={"spark.driver.host": options.driver_host,
+                          container_image=options.container_image,
+                          init_ray_on_spark=True, enable_numa_binding=options.enable_numa_binding,
+                          num_nodes=options.worker_num, cores=options.cores, memory=options.memory,
+                          object_store_memory=options.object_store_memory,
+                          conf={"spark.driver.host": options.driver_host,
                                 "spark.driver.port": options.driver_port,
                                 "spark.kubernetes.executor.volumes.persistentVolumeClaim."
                                 "nfsvolumeclaim.options.claimName": "nfsvolumeclaim",
@@ -597,9 +597,9 @@ def main():
                                 "nfsvolumeclaim.mount.path": options.nfs_mount_path})
     elif options.cluster_mode.startswith("yarn"):
         init_orca_context(cluster_mode=options.cluster_mode, cores=options.cores,
-                        num_nodes=options.worker_num, memory=options.memory,
-                        init_ray_on_spark=True, enable_numa_binding=options.enable_numa_binding,
-                        object_store_memory=options.object_store_memory)
+                          num_nodes=options.worker_num, memory=options.memory,
+                          init_ray_on_spark=True, enable_numa_binding=options.enable_numa_binding,
+                          object_store_memory=options.object_store_memory)
     elif options.cluster_mode == "spark-submit":
         init_orca_context(cluster_mode="spark-submit")
     # convert yolov3 weights
