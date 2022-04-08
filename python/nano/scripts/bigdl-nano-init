@@ -227,12 +227,12 @@ else
         mkdir -p $ACTIVATED_PATH
         mkdir -p $DEACTIVATED_PATH
         # bigdl-nano-init
-        echo "if [-d ${CONDA_PREFIX}/bin/bigdl-nano-init ]; then}" > $ACTIVATED_PATH/nano_vars.sh
+        echo "if [ -f '${CONDA_PREFIX}/bin/bigdl-nano-init' ]; then" > $ACTIVATED_PATH/nano_vars.sh
         echo "    source bigdl-nano-init" >> $ACTIVATED_PATH/nano_vars.sh
         echo "fi" >> $ACTIVATED_PATH/nano_vars.sh
 
         #bigdl-nano-unset-env
-        echo "if [-d ${CONDA_PREFIX}/bin/bigdl-nano-unset-env ]; then}" > $DEACTIVATED_PATH/nano_vars.sh
+        echo "if [ -f '${CONDA_PREFIX}/bin/bigdl-nano-unset-env' ]; then" > $DEACTIVATED_PATH/nano_vars.sh
         echo "    source ${CONDA_PREFIX}/bin/bigdl-nano-unset-env" >> $DEACTIVATED_PATH/nano_vars.sh
         echo "fi" >> $DEACTIVATED_PATH/nano_vars.sh
     fi
