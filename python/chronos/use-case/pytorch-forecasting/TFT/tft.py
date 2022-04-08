@@ -50,7 +50,7 @@ from pytorch_forecasting import Baseline, TemporalFusionTransformer, TimeSeriesD
 from pytorch_forecasting.data import GroupNormalizer
 from pytorch_forecasting.metrics import QuantileLoss
 from pytorch_forecasting.data.examples import get_stallion_data
-from bigdl.nano.pytorch.trainer import Trainer
+from bigdl.chronos.common.pytorch import TSTrainer
 
 if __name__ == '__main__':
     warnings.filterwarnings("ignore")
@@ -135,7 +135,7 @@ if __name__ == '__main__':
     (actuals - baseline_predictions).abs().mean().item()
     # configure network and trainer
     pl.seed_everything(42)
-    trainer = Trainer(
+    trainer = TSTrainer(
         gpus=0,
         # clipping gradients is a hyperparameter and important to prevent divergance
         # of the gradient for recurrent neural networks
@@ -174,7 +174,7 @@ if __name__ == '__main__':
     lr_logger = LearningRateMonitor()  # log the learning rate
     logger = TensorBoardLogger("lightning_logs")  # logging results to a tensorboard
 
-    trainer = Trainer(
+    trainer = TSTrainer(
         max_epochs=30,
         gpus=0,
         weights_summary="top",
