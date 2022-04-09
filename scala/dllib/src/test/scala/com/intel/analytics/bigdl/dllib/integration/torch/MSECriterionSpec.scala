@@ -18,6 +18,7 @@ package com.intel.analytics.bigdl.dllib.integration.torch
 
 import com.intel.analytics.bigdl.dllib.nn.MSECriterion
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
+import com.intel.analytics.bigdl.dllib.utils.TestUtils
 
 import scala.math._
 
@@ -62,9 +63,9 @@ class MSECriterionSpec extends TorchSpec {
     val luaOutput1 = torchResult("output").asInstanceOf[Double]
     val luaOutput2 = torchResult("gradInput").asInstanceOf[Tensor[Double]]
 
-    assert(abs(luaOutput1 - output) < 1e-6);
+    TestUtils.conditionFailTest(abs(luaOutput1 - output) < 1e-6);
     luaOutput2.map(gradInput, (v1, v2) => {
-      assert(abs(v1 - v2) < 1e-6);
+      TestUtils.conditionFailTest(abs(v1 - v2) < 1e-6);
       v1
     })
   }

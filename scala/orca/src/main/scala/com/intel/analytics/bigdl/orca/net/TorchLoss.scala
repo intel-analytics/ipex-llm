@@ -22,7 +22,7 @@ import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.orca.utils.PythonInterpreter
 import jep.NDArray
 import org.apache.spark.TaskContext
-
+import com.intel.analytics.bigdl.dllib.utils.Log4Error
 
 class TorchLoss(private val criterionHolder: Array[Byte])
   extends AbstractCriterion[Activity, Activity, Float]() {
@@ -54,7 +54,7 @@ class TorchLoss(private val criterionHolder: Array[Byte])
       PythonInterpreter.exec(s"target_${postId} = _data[1]")
     } else {
       // TODO: support table target
-      require(target.isTensor, "only support tensor target")
+      Log4Error.invalidOperationError(target.isTensor, "only support tensor target")
       // TODO: detect type
       val t = target.toTensor[Float]
       if (t.nElement() == t.storage().array().length) {

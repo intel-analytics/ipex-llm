@@ -18,6 +18,7 @@ package com.intel.analytics.bigdl.dllib.nn
 
 import org.scalatest.FlatSpec
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
+import com.intel.analytics.bigdl.dllib.utils.TestUtils
 import com.intel.analytics.bigdl.dllib.utils.serializer.ModuleSerializationTest
 
 import scala.math.abs
@@ -68,15 +69,15 @@ class ThresholdSpec extends FlatSpec {
     val output = module.forward(input)
     val gradInput = module.backward(input, gradOutput)
     expectedOutput.map(output, (v1, v2) => {
-      assert(abs(v1 - v2) < 1e-6);
+      TestUtils.conditionFailTest(abs(v1 - v2) < 1e-6);
       v1
     })
     expectedGrad.map(gradInput, (v1, v2) => {
-      assert(abs(v1 - v2) < 1e-6);
+      TestUtils.conditionFailTest(abs(v1 - v2) < 1e-6);
       v1
     })
-    assert(input == inputOrg)
-    assert(gradOutput == gradOutputOrg)
+    TestUtils.conditionFailTest(input == inputOrg)
+    TestUtils.conditionFailTest(gradOutput == gradOutputOrg)
   }
 
   "A Threshold Module with inPlace = true" should "generate correct output and grad" in {
@@ -122,16 +123,16 @@ class ThresholdSpec extends FlatSpec {
     val output = module.forward(input)
     val gradInput = module.backward(input, gradOutput)
     expectedOutput.map(output, (v1, v2) => {
-      assert(abs(v1 - v2) < 1e-6);
+      TestUtils.conditionFailTest(abs(v1 - v2) < 1e-6);
       v1
     })
     expectedGrad.map(gradInput, (v1, v2) => {
-      assert(abs(v1 - v2) < 1e-6);
+      TestUtils.conditionFailTest(abs(v1 - v2) < 1e-6);
       v1
     })
     // InPlace test
-    assert(output == input)
-    assert(gradInput == gradOutput)
+    TestUtils.conditionFailTest(output == input)
+    TestUtils.conditionFailTest(gradInput == gradOutput)
   }
 
   "A Threshold Module with inPlace = true clearstate" should "not clear input" in {
@@ -139,7 +140,7 @@ class ThresholdSpec extends FlatSpec {
     val input = Tensor[Double](2, 2, 2)
     module.forward(input)
     module.clearState()
-    assert(input.nElement() == 8)
+    TestUtils.conditionFailTest(input.nElement() == 8)
   }
 }
 

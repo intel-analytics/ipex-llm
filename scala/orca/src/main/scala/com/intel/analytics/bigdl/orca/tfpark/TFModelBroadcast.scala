@@ -27,6 +27,7 @@ import com.intel.analytics.bigdl.dllib.tensor.{QuantizedTensor, QuantizedType, S
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.{NumericWildcard, TensorNumeric}
 import com.intel.analytics.bigdl.dllib.common.CheckedObjectInputStream
 import com.intel.analytics.bigdl.dllib.utils.Engine
+import com.intel.analytics.bigdl.dllib.utils.Log4Error
 import com.intel.analytics.bigdl.dllib.net.SerializationHolder
 import com.intel.analytics.bigdl.orca.tfpark.Util._
 import org.apache.commons.lang3.SerializationUtils
@@ -164,9 +165,9 @@ private[bigdl] class ModelInfo[T: ClassTag](var uuid: String, @transient var mod
   override def readInternal(in: CommonInputStream): Unit = {
     uuid = in.readString()
     val len = in.readInt()
-    require(len != 0, "model length should not be zero," +
+    Log4Error.invalidOperationError(len != 0, "model length should not be zero," +
       "please set logging level to debug for more information")
-    assert(len >= 0, "model length should be an non-negative integer")
+    Log4Error.invalidOperationError(len >= 0, "model length should be an non-negative integer")
     val w = new Array[Byte](len)
     var numOfBytes = 0
     while (numOfBytes < len) {

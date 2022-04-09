@@ -22,6 +22,7 @@ import java.util.{List => JList}
 import com.intel.analytics.bigdl.dllib.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.utils.Table
+import com.intel.analytics.bigdl.dllib.utils.Log4Error
 
 class FloatModel(var model: AbstractModule[Activity, Activity, Float],
                  var metaModel: AbstractModule[Activity, Activity, Float],
@@ -33,7 +34,7 @@ class FloatModel(var model: AbstractModule[Activity, Activity, Float],
 
   override def predict(inputs: JList[JList[JTensor]]): JList[JList[JTensor]] = {
     val batchSize = inputs.size()
-    require(batchSize > 0, "inputs size should > 0")
+    Log4Error.invalidOperationError(batchSize > 0, "inputs size should > 0")
 
     val inputActivity = transferListOfActivityToActivityOfBatch(inputs, batchSize)
     val result: Activity = predict(inputActivity)
@@ -77,7 +78,7 @@ class FloatModel(var model: AbstractModule[Activity, Activity, Float],
              weightBias: Array[Tensor[Float]],
              num: Int):
   Array[AbstractModel] = {
-    require(metaModel != null, "metaModel can NOT be null")
+    Log4Error.invalidOperationError(metaModel != null, "metaModel can NOT be null")
     List.range(0, num).map(_ => {
       val clonedModel = metaModel.cloneModule()
       val clonedModelWithWeightsBias = makeUpModel(clonedModel, weightBias)

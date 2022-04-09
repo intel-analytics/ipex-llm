@@ -1366,7 +1366,7 @@ class StaticGraphSpec extends FlatSpec with Matchers {
 
     val fwdExecution = toSingle.asInstanceOf[StaticGraph[Float]].getForwardExecutions()
     for (i <- 0 until fwdExecution.length) {
-      assert(!fwdExecution(i).element.isInstanceOf[StaticGraph[Float]])
+      TestUtils.conditionFailTest(!fwdExecution(i).element.isInstanceOf[StaticGraph[Float]])
     }
   }
 }

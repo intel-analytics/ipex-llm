@@ -16,7 +16,7 @@
 package com.intel.analytics.bigdl.dllib.utils.tf.loaders
 
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
-import com.intel.analytics.bigdl.dllib.utils.T
+import com.intel.analytics.bigdl.dllib.utils.{T, TestUtils}
 import com.intel.analytics.bigdl.dllib.utils.tf.Tensorflow.{intAttr, typeAttr}
 import com.intel.analytics.bigdl.dllib.utils.tf.TensorflowSpecHelper
 import org.tensorflow.framework.{DataType, NodeDef}
@@ -33,7 +33,7 @@ class InTopKSpec extends TensorflowSpecHelper {
       0
     )
     a.map(b, (e1, e2) => {
-      require(e1 == e2, "output not match")
+      TestUtils.conditionFailTest(e1 == e2, "output not match")
       e2
     })
   }

@@ -28,6 +28,7 @@ import org.apache.spark.sql.{DataFrame, SparkSession}
 
 import collection.JavaConverters._
 import collection.JavaConversions._
+import com.intel.analytics.bigdl.dllib.utils.Log4Error
 
 object DataFrameUtils {
   val logger = LogManager.getLogger(getClass)
@@ -68,14 +69,15 @@ object DataFrameUtils {
       val arr = if (featureColumn != null || labelColumn != null) {
         featureColumn.foreach(f => inputList.add(r.getAs[Float](f)))
         if (hasLabel) {
-          require(featureColumn != null && labelColumn != null,
+          Log4Error.invalidOperationError(featureColumn != null && labelColumn != null,
             "You must provide both featureColumn and labelColumn " +
               "or neither in training or evaluation.\n" +
               "If neither, the last would be used as label and the rest are the features")
           labelColumn.foreach(f => inputList.add(r.getAs[Float](f)))
 
         } else {
-          require(featureColumn != null, "You must provide featureColumn in predict")
+          Log4Error.invalidOperationError(featureColumn != null,
+            "You must provide featureColumn in predict")
         }
 
         featureNum = featureColumn.length
@@ -97,7 +99,8 @@ object DataFrameUtils {
 
 
       if (hasLabel) {
-        require(featureNum + labelMum == r.size, "size mismatch")
+        Log4Error.invalidOperationError(featureNum + labelMum == r.size,
+          "size mismatch")
         val features = Tensor[Float](arr.slice(0, featureNum), Array(featureNum))
         val target = Tensor[Float](arr.slice(featureNum, r.size), Array(labelMum))
         Sample(features, target)

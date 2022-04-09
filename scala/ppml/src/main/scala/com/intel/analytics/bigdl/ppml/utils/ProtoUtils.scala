@@ -34,7 +34,7 @@ import scala.reflect.ClassTag
 import scala.util.Random
 import scala.collection.JavaConversions._
 import scala.collection.JavaConverters._
-
+import com.intel.analytics.bigdl.dllib.utils.Log4Error
 
 object ProtoUtils {
   private val logger = LogManager.getLogger(getClass)
@@ -64,7 +64,8 @@ object ProtoUtils {
     }
     // TODO: multiple input
     val outputs = aggData.filter(_._1 != "target")
-    require(outputs.size == 1)
+    Log4Error.unKnowExceptionError(outputs.size == 1,
+    s"outputs size should be 1, but got ${outputs.size}")
 
     (T.seq(outputs.values.head.toSeq), target)
   }

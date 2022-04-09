@@ -20,6 +20,7 @@ import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.ppml.example.DebugLogger
 import com.intel.analytics.bigdl.ppml.fgboost.common.TreeUtils
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
+import com.intel.analytics.bigdl.ppml.utils.TestUtils
 
 class TreeUtilsSpec extends FlatSpec with Matchers with BeforeAndAfter with DebugLogger {
   "Sort feature index by value" should "work" in {
@@ -31,8 +32,11 @@ class TreeUtilsSpec extends FlatSpec with Matchers with BeforeAndAfter with Debu
     val tensor1 = Tensor[Float](Array(4f, 3, 1), Array(3))
     val tensor2 = Tensor[Float](Array(2f, 5, 6), Array(3))
     val sortedIndex = TreeUtils.sortByFeature(Array(tensor1, tensor2))
-    require(sortedIndex(0).sameElements(Array(1, 0)), "feature 0 sorted index wrong")
-    require(sortedIndex(1).sameElements(Array(0, 1)), "feature 1 sorted index wrong")
-    require(sortedIndex(2).sameElements(Array(0, 1)), "feature 2 sorted index wrong")
+    TestUtils.conditionFailTest(sortedIndex(0).sameElements(Array(1, 0)),
+      "feature 0 sorted index wrong")
+    TestUtils.conditionFailTest(sortedIndex(1).sameElements(Array(0, 1)),
+      "feature 1 sorted index wrong")
+    TestUtils.conditionFailTest(sortedIndex(2).sameElements(Array(0, 1)),
+      "feature 2 sorted index wrong")
   }
 }

@@ -24,6 +24,7 @@ import org.apache.flink.core.fs.Path
 import org.apache.flink.table.functions.{FunctionContext, ScalarFunction}
 import org.apache.flink.util.FileUtils
 import org.slf4j.LoggerFactory
+import com.intel.analytics.bigdl.dllib.utils.Log4Error
 
 @SerialVersionUID(1L)
 class ClusterServingFunction()
@@ -44,7 +45,8 @@ class ClusterServingFunction()
 
   override def open(context: FunctionContext): Unit = {
     val modelPath = context.getJobParameter("modelPath", "")
-    require(modelPath != "", "You have not provide modelPath in job parameter.")
+    Log4Error.invalidOperationError(modelPath != "",
+      "You have not provide modelPath in job parameter.")
     val modelLocalPath = copyFileToLocal(modelPath)
     if (ClusterServing.model == null) {
       ClusterServing.synchronized {

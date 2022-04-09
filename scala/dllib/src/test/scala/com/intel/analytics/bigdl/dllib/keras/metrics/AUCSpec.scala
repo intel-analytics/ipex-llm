@@ -21,7 +21,7 @@ import com.intel.analytics.bigdl.dllib.nn._
 import com.intel.analytics.bigdl.dllib.optim._
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric.NumericFloat
-import com.intel.analytics.bigdl.dllib.utils.Engine
+import com.intel.analytics.bigdl.dllib.utils.{Engine, TestUtils}
 import com.intel.analytics.bigdl.dllib.utils.RandomGenerator._
 import com.intel.analytics.bigdl.dllib.keras.objectives.BinaryCrossEntropy
 import com.intel.analytics.bigdl.dllib.nnframes.NNEstimator
@@ -41,7 +41,7 @@ class AUCSpec extends FlatSpec with Matchers{
 
     val validation = new AUC[Float](20)
     val result = validation(output, target)
-    assert(math.abs(result.result()._1 - 0.5f) <= 0.1)
+    TestUtils.conditionFailTest(math.abs(result.result()._1 - 0.5f) <= 0.1)
   }
 
   "Only correct guesses" should "provide a AUC close to 1" in {
@@ -58,7 +58,7 @@ class AUCSpec extends FlatSpec with Matchers{
 
     val validation = new AUC[Float](20)
     val result = validation(output, target)
-    assert(math.abs(result.result()._1 - 1.0f) <= 0.1)
+    TestUtils.conditionFailTest(math.abs(result.result()._1 - 1.0f) <= 0.1)
   }
 
   "AUC" should "get correct auc score" in {
@@ -67,7 +67,7 @@ class AUCSpec extends FlatSpec with Matchers{
 
     val validation = new AUC[Double](4)
     val result = validation(output, target)
-    assert(Math.abs(result.result()._1 - 0.75) < 1e-3)
+    TestUtils.conditionFailTest(Math.abs(result.result()._1 - 0.75) < 1e-3)
 
     val target2 = Tensor[Double](4).fill(1.0)
     val validation2 = new AUC[Double](4)
@@ -86,14 +86,14 @@ class AUCSpec extends FlatSpec with Matchers{
 
     val validation = new AUC[Double](20)
     val result = validation(output, target)
-    assert(Math.abs(result.result()._1 - 0.75) < 1e-3)
+    TestUtils.conditionFailTest(Math.abs(result.result()._1 - 0.75) < 1e-3)
 
     val output2 = Tensor[Double](Array(0.6, 0.7, 0.35, 0.8), Array(4))
     val target2 = Tensor[Double](Array(1.0, 0.0, 1.0, 1.0), Array(4))
 
     val validation2 = new AUC[Double](20)
     val result2 = validation2(output2, target2)
-    assert(Math.abs(result2.result()._1 - 0.3333333) < 0.1)
+    TestUtils.conditionFailTest(Math.abs(result2.result()._1 - 0.3333333) < 0.1)
 
     val addedResult = result + result2
 
@@ -102,7 +102,7 @@ class AUCSpec extends FlatSpec with Matchers{
 
     val validation3 = new AUC[Double](20)
     val result3 = validation3(output3, target3)
-    assert(result3.result()._1 == addedResult.result()._1)
+    TestUtils.conditionFailTest(result3.result()._1 == addedResult.result()._1)
   }
 
   "AUC" should "get correct auc score for multi-label classfication" in {
@@ -111,7 +111,7 @@ class AUCSpec extends FlatSpec with Matchers{
 
     val validation = new AUC[Float](20)
     val result = validation(output, target)
-    assert(Math.abs(result.result()._1 - 0.875) < 1e-3)
+    TestUtils.conditionFailTest(Math.abs(result.result()._1 - 0.875) < 1e-3)
   }
 
   "AUC merge" should "work for multi-label classfication" in {
@@ -121,7 +121,7 @@ class AUCSpec extends FlatSpec with Matchers{
 
     val validation = new AUC[Float](20)
     val result = validation(output, target)
-    assert(Math.abs(result.result()._1 - 0.875) < 1e-3)
+    TestUtils.conditionFailTest(Math.abs(result.result()._1 - 0.875) < 1e-3)
 
     val output2 = Tensor[Float](Array(0.45f, 0.56f, 0.67f, 0.2f, 0.35f, 0.6f, 0.8f, 0.7f),
       Array(4, 2))
@@ -130,7 +130,7 @@ class AUCSpec extends FlatSpec with Matchers{
 
     val validation2 = new AUC[Float](20)
     val result2 = validation2(output2, target2)
-    assert(Math.abs(result2.result()._1 - 0.75) < 1e-3)
+    TestUtils.conditionFailTest(Math.abs(result2.result()._1 - 0.75) < 1e-3)
 
     val addedResult = result + result2
 
@@ -141,7 +141,7 @@ class AUCSpec extends FlatSpec with Matchers{
 
     val validation3 = new AUC[Float](20)
     val result3 = validation3(output3, target3)
-    assert(result3.result()._1 == addedResult.result()._1)
+    TestUtils.conditionFailTest(result3.result()._1 == addedResult.result()._1)
   }
 
   "AUC" should "work with optimizer" in {

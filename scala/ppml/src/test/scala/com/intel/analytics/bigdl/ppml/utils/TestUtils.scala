@@ -14,16 +14,12 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.serving.utils
+package com.intel.analytics.bigdl.ppml.utils
 
 object TestUtils {
-  /**
-   *
-   */
-  def getStrFromResourceFile(path: String): String = {
-    val resource = getClass().getClassLoader().getResource("serving")
-
-    val dataPath = s"${resource.getPath}/$path"
-    scala.io.Source.fromFile(dataPath).mkString
+  def conditionFailTest(condition: Boolean, msg: String = null): Unit = {
+    // scalastyle:off
+    assert(condition, msg)
+    // scalastyle:on
   }
 }
