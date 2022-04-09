@@ -4,16 +4,15 @@ package com.intel.analytics.bigdl.ppml.python
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.dllib.utils.python.api.{JTensor, PythonBigDL}
-import com.intel.analytics.bigdl.ppml.algorithms.PSI
-import com.intel.analytics.bigdl.ppml.algorithms.vfl.FGBoostRegression
-import com.intel.analytics.bigdl.ppml.{FLClient, FLContext, FLModel, FLServer}
+import com.intel.analytics.bigdl.ppml.algorithms.{FGBoostRegression, PSI}
+import com.intel.analytics.bigdl.ppml.{FLClient, FLContext, NNModel, FLServer}
 import com.intel.analytics.bigdl.ppml.fgboost.FGBoostModel
 import com.intel.analytics.bigdl.ppml.utils.FLClientClosable
 
 import java.util.{List => JList}
 import scala.collection.JavaConverters._
 import scala.reflect.ClassTag
-
+import com.intel.analytics.bigdl.dllib.utils.Log4Error
 
 object PythonPPML {
 
@@ -63,6 +62,9 @@ class PythonPPML[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonBigDL
   def flServerSetClientNum(flServer: FLServer, clientNum: Int) = {
     flServer.setClientNum(clientNum)
   }
+  def flServerBlockUntilShutdown(flServer: FLServer) = {
+    flServer.blockUntilShutdown()
+  }
 
   /**
    * FlClient is not exposed to users API, the Python API for this only locates in test
@@ -90,7 +92,8 @@ class PythonPPML[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonBigDL
     psi.downloadIntersection(maxtry, retry)
   }
   def jTensorToTensorArray(jTensor: JTensor) = {
-    require(jTensor.shape.length == 2, "FGBoost only support 2D input")
+    Log4Error.invalidOperationError(jTensor.shape.length == 2,
+      "FGBoost only support 2D input")
     val featureNum = jTensor.shape(1)
     jTensor.storage.grouped(featureNum).map(array => {
       Tensor[Float](array, Array(array.length))
@@ -111,13 +114,13 @@ class PythonPPML[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonBigDL
     val result = model.predict(tensorArray).map(_.storage().array())
     JTensor(result.flatten, Array(result.length, result(0).length), bigdlType = "float")
   }
-  def nnFit(model: FLModel) = {
+  def nnFit(model: NNModel) = {
 
   }
-  def nnEvaluate(model: FLModel) = {
+  def nnEvaluate(model: NNModel) = {
 
   }
-  def nnPredict(model: FLModel) = {
+  def nnPredict(model: NNModel) = {
 
   }
 }

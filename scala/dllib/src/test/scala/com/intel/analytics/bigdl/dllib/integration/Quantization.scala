@@ -25,8 +25,7 @@ import com.intel.analytics.bigdl.dllib.models.resnet.{Utils => ResNetUtils}
 import com.intel.analytics.bigdl.dllib.nn.Module
 import com.intel.analytics.bigdl.numeric.NumericFloat
 import com.intel.analytics.bigdl.dllib.optim.{Top1Accuracy, Top5Accuracy, ValidationMethod, ValidationResult}
-import com.intel.analytics.bigdl.dllib.utils.Engine
-import com.intel.analytics.bigdl.dllib.utils.LoggerFilter
+import com.intel.analytics.bigdl.dllib.utils.{Engine, LoggerFilter, TestUtils}
 import org.apache.logging.log4j.Level
 import org.apache.logging.log4j.core.config.Configurator
 import org.apache.spark.SparkContext
@@ -49,7 +48,8 @@ class QuantizationSpec extends FlatSpec with Matchers with BeforeAndAfter{
     fp32.zip(int8).foreach{ r =>
       val a1 = r._1._1.result()._1
       val a2 = r._2._1.result()._1
-      require(Math.abs(a1 - a2) < 0.01, s"accuracy of quantized model seems wrong")
+      TestUtils.conditionFailTest(Math.abs(a1 - a2) < 0.01,
+        s"accuracy of quantized model seems wrong")
     }
   }
 

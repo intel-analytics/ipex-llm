@@ -19,7 +19,7 @@ package com.intel.analytics.bigdl.dllib.keras.utils
 import com.intel.analytics.bigdl.dllib.nn.abstractnn.Activity
 import com.intel.analytics.bigdl.dllib.nn.internal.{Input, KerasLayer, Model}
 import com.intel.analytics.bigdl.dllib.nn.{Graph, Linear}
-import com.intel.analytics.bigdl.dllib.utils.{Engine, Shape}
+import com.intel.analytics.bigdl.dllib.utils.{Engine, Shape, TestUtils}
 import com.intel.analytics.bigdl.dllib.NNContext
 import com.intel.analytics.bigdl.dllib.keras.ZooSpecHelper
 import com.intel.analytics.bigdl.dllib.keras.layers.Dense
@@ -71,7 +71,7 @@ class AbstractModuleRefSpec extends ZooSpecHelper {
     val outputShape = new AbstractModuleRef[Float](Dense[Float](2)
       .asInstanceOf[KerasLayer[Activity, Activity, Float]])
       .build(Shape(-1, 3))
-    assert(outputShape == Shape(-1, 2))
+    TestUtils.conditionFailTest(outputShape == Shape(-1, 2))
   }
 }
 
@@ -82,7 +82,7 @@ class GraphRefSpec extends ZooSpecHelper {
     val model = Model(input, Dense[Float](2).inputs(input))
     val outputs = new GraphRef[Float](model.labor.asInstanceOf[Graph[Float]])
       .getOutputs()
-    assert(outputs.length == 1)
+    TestUtils.conditionFailTest(outputs.length == 1)
   }
 }
 

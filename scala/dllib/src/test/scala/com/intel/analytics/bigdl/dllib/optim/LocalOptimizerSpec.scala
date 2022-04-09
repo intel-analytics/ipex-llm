@@ -170,8 +170,8 @@ class LocalOptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter{
       .add(new LogSoftMax[Float]())
     val sampleDataSet = (dataSet -> toTensor).asInstanceOf[LocalDataSet[MiniBatch[Float]]]
     val batchDataSet = DataSet.array(sampleDataSet.data(train = false).toArray)
-    assert(sampleDataSet.size() == numSamples)
-    assert(batchDataSet.size() == numSamples / batchSize)
+    TestUtils.conditionFailTest(sampleDataSet.size() == numSamples)
+    TestUtils.conditionFailTest(batchDataSet.size() == numSamples / batchSize)
 
     Seq(sampleDataSet, batchDataSet).foreach { dataset =>
       RandomGenerator.RNG.setSeed(10)
@@ -425,7 +425,7 @@ class LocalOptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter{
     val model = optimizer.optimize()
     val newG = model.getParameters()._2
 
-    assert(newG.sumSquare() == 0, "gradient should be 0")
+    TestUtils.conditionFailTest(newG.sumSquare() == 0, "gradient should be 0")
   }
 
   "Train model with CrossEntropy and SGD" should "be good with l2norm clipping" in {
@@ -455,6 +455,7 @@ class LocalOptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter{
 
     val model2 = optimizer2.optimize()
     val newG = model2.getParameters()._2
-    assert(expectedG.almostEqual(newG, 0.0), "clipbynorm2 should generate correct gradient")
+    TestUtils.conditionFailTest(expectedG.almostEqual(newG, 0.0),
+      "clipbynorm2 should generate correct gradient")
   }
 }

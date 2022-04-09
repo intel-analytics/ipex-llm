@@ -18,7 +18,7 @@ package com.intel.analytics.bigdl.dllib.nn
 
 import org.scalatest.FlatSpec
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
-import com.intel.analytics.bigdl.dllib.utils.LayerException
+import com.intel.analytics.bigdl.dllib.utils.{LayerException, TestUtils}
 import com.intel.analytics.bigdl.dllib.utils.serializer.ModuleSerializationTest
 
 import scala.util.Random
@@ -36,26 +36,28 @@ class ReshapeSpec extends FlatSpec {
       gradOutput.rand()
       val gradOutputOrg = gradOutput.clone()
       val gradInput = module.backward(input, gradOutput)
-      assert(output.nDimension() == 3)
-      assert(output.size(1) == batchSize)
-      assert(output.size(2) == 3)
-      assert(output.size(3) == 2)
-      assert(gradInput.isSameSizeAs(input))
+      TestUtils.conditionFailTest(output.nDimension() == 3)
+      TestUtils.conditionFailTest(output.size(1) == batchSize)
+      TestUtils.conditionFailTest(output.size(2) == 3)
+      TestUtils.conditionFailTest(output.size(3) == 2)
+      TestUtils.conditionFailTest(gradInput.isSameSizeAs(input))
       for (i <- 1 to batchSize) {
         for (j <- 0 to 5) {
-          assert(input(Array(i, 1, j + 1)) == output(Array(i, j / 2 + 1, j % 2 + 1)))
-          assert(gradInput(Array(i, 1, j + 1)) == gradOutput(Array(i, j / 2 + 1, j % 2 + 1)))
+          TestUtils.conditionFailTest(
+            input(Array(i, 1, j + 1)) == output(Array(i, j / 2 + 1, j % 2 + 1)))
+          TestUtils.conditionFailTest(
+            gradInput(Array(i, 1, j + 1)) == gradOutput(Array(i, j / 2 + 1, j % 2 + 1)))
         }
       }
-      assert(input == inputOrg)
-      assert(gradOutput == gradOutputOrg)
+      TestUtils.conditionFailTest(input == inputOrg)
+      TestUtils.conditionFailTest(gradOutput == gradOutputOrg)
     }
 
-    intercept[LayerException] {
+    intercept[IllegalArgumentException] {
       module.forward(Tensor[Double](2, 2))
     }
 
-    intercept[LayerException] {
+    intercept[IllegalArgumentException] {
       module.forward(Tensor[Double](3, 2, 2))
     }
   }
@@ -70,15 +72,17 @@ class ReshapeSpec extends FlatSpec {
     gradOutput.rand()
     val gradOutputOrg = gradOutput.clone()
     val gradInput = module.backward(input, gradOutput)
-    assert(output.nDimension() == 2)
-    assert(output.size(1) == 3)
-    assert(output.size(2) == 2)
+    TestUtils.conditionFailTest(output.nDimension() == 2)
+    TestUtils.conditionFailTest(output.size(1) == 3)
+    TestUtils.conditionFailTest(output.size(2) == 2)
     for (j <- 0 to 5) {
-      assert(input(Array(j / 3 + 1, j % 3 + 1)) == output(Array(j / 2 + 1, j % 2 + 1)))
-      assert(gradInput(Array(j / 3 + 1, j % 3 + 1)) == gradOutput(Array(j / 2 + 1, j % 2 + 1)))
+      TestUtils.conditionFailTest(
+        input(Array(j / 3 + 1, j % 3 + 1)) == output(Array(j / 2 + 1, j % 2 + 1)))
+      TestUtils.conditionFailTest(
+        gradInput(Array(j / 3 + 1, j % 3 + 1)) == gradOutput(Array(j / 2 + 1, j % 2 + 1)))
     }
-    assert(input == inputOrg)
-    assert(gradOutput == gradOutputOrg)
+    TestUtils.conditionFailTest(input == inputOrg)
+    TestUtils.conditionFailTest(gradOutput == gradOutputOrg)
   }
 
   "A Reshape Module disable batch" should "generate correct output and grad" in {
@@ -91,17 +95,19 @@ class ReshapeSpec extends FlatSpec {
     gradOutput.rand()
     val gradOutputOrg = gradOutput.clone()
     val gradInput = module.backward(input, gradOutput)
-    assert(output.nDimension() == 2)
-    assert(output.size(1) == 3)
-    assert(output.size(2) == 2)
+    TestUtils.conditionFailTest(output.nDimension() == 2)
+    TestUtils.conditionFailTest(output.size(1) == 3)
+    TestUtils.conditionFailTest(output.size(2) == 2)
     for (j <- 0 to 5) {
-      assert(input(Array(1, j / 3 + 1, j % 3 + 1)) == output(Array(j / 2 + 1, j % 2 + 1)))
-      assert(gradInput(Array(1, j / 3 + 1, j % 3 + 1)) == gradOutput(Array(j / 2 + 1, j % 2 + 1)))
+      TestUtils.conditionFailTest(
+        input(Array(1, j / 3 + 1, j % 3 + 1)) == output(Array(j / 2 + 1, j % 2 + 1)))
+      TestUtils.conditionFailTest(
+        gradInput(Array(1, j / 3 + 1, j % 3 + 1)) == gradOutput(Array(j / 2 + 1, j % 2 + 1)))
     }
-    assert(input == inputOrg)
-    assert(gradOutput == gradOutputOrg)
+    TestUtils.conditionFailTest(input == inputOrg)
+    TestUtils.conditionFailTest(gradOutput == gradOutputOrg)
 
-    intercept[LayerException] {
+    intercept[com.intel.analytics.bigdl.dllib.utils.UnKnownException] {
       module.forward(Tensor[Double](2, 3, 2))
     }
   }
@@ -117,22 +123,24 @@ class ReshapeSpec extends FlatSpec {
       gradOutput.rand()
       val gradOutputOrg = gradOutput.clone()
       val gradInput = module.backward(input, gradOutput)
-      assert(output.nDimension() == 3)
-      assert(output.size(1) == batchSize)
-      assert(output.size(2) == 3)
-      assert(output.size(3) == 2)
-      assert(gradInput.isSameSizeAs(input))
+      TestUtils.conditionFailTest(output.nDimension() == 3)
+      TestUtils.conditionFailTest(output.size(1) == batchSize)
+      TestUtils.conditionFailTest(output.size(2) == 3)
+      TestUtils.conditionFailTest(output.size(3) == 2)
+      TestUtils.conditionFailTest(gradInput.isSameSizeAs(input))
       for (i <- 1 to batchSize) {
         for (j <- 0 to 5) {
-          assert(input(Array(i, 1, j + 1)) == output(Array(i, j / 2 + 1, j % 2 + 1)))
-          assert(gradInput(Array(i, 1, j + 1)) == gradOutput(Array(i, j / 2 + 1, j % 2 + 1)))
+          TestUtils.conditionFailTest(
+            input(Array(i, 1, j + 1)) == output(Array(i, j / 2 + 1, j % 2 + 1)))
+          TestUtils.conditionFailTest(
+            gradInput(Array(i, 1, j + 1)) == gradOutput(Array(i, j / 2 + 1, j % 2 + 1)))
         }
       }
-      assert(input == inputOrg)
-      assert(gradOutput == gradOutputOrg)
+      TestUtils.conditionFailTest(input == inputOrg)
+      TestUtils.conditionFailTest(gradOutput == gradOutputOrg)
     }
 
-    intercept[LayerException] {
+    intercept[IllegalArgumentException] {
       module.forward(Tensor[Double](3, 2))
     }
   }

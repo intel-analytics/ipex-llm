@@ -20,7 +20,7 @@ import com.intel.analytics.bigdl.keras.KerasBaseSpec
 import com.intel.analytics.bigdl.dllib.nn.abstractnn.AbstractModule
 import com.intel.analytics.bigdl.dllib.nn.internal.{Activation, SoftMax, Sequential => KSequential}
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
-import com.intel.analytics.bigdl.dllib.utils.Shape
+import com.intel.analytics.bigdl.dllib.utils.{Shape, TestUtils}
 import com.intel.analytics.bigdl.dllib.utils.serializer.ModuleSerializationTest
 
 import scala.util.Random
@@ -132,7 +132,7 @@ class ActivationSpec extends KerasBaseSpec{
       0.3442668f, 0.48858032f, 0.5114197f, 0.4919456f, 0.5080544f, 0.37476337f,
       0.62523663f, 0.49339616f, 0.50660384f, 0.529314f, 0.470686f, 0.51717764f,
       0.4828224f), Array(2, 2, 2, 2))
-    require(output.almostEqual(expectOutput, 7e-3) == true)
+    TestUtils.conditionFailTest(output.almostEqual(expectOutput, 7e-3) == true)
   }
 
   "softplus" should "be the same as Keras" in {

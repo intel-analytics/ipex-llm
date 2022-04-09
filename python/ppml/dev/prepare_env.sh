@@ -16,37 +16,16 @@
 
 SCRIPT_DIR=$(dirname ${BASH_SOURCE[0]})
 echo "SCRIPT_DIR": $SCRIPT_DIR
-export DL_PYTHON_HOME="$(cd ${SCRIPT_DIR}/../src; pwd)"
+export DLLIB_PYTHON_HOME="$(cd ${SCRIPT_DIR}/../../dllib/src; pwd)"
+export PPML_PYTHON_HOME="$(cd ${SCRIPT_DIR}/../src; pwd)"
 export BIGDL_HOME="$(cd ${SCRIPT_DIR}/../../..; pwd)"
 
-echo "BIGDL_HOME: $BIGDL_HOME"
-echo "SPARK_HOME": $SPARK_HOME
-echo "DL_PYTHON_HOME": $DL_PYTHON_HOME
 
-if [ -z ${SPARK_HOME+x} ]; then echo "SPARK_HOME is unset"; exit 1; else echo "SPARK_HOME is set to '$SPARK_HOME'"; fi
+echo "DLLIB_PYTHON_HOME": $DL_PYTHON_HOME
+echo "PPML_PYTHON_HOME": $PPML_PYTHON_HOME
 
-export PYSPARK_ZIP=`find $SPARK_HOME/python/lib  -type f -iname '*.zip' | tr "\n" ":"`
-
-export PYTHONPATH=$PYTHONPATH:$PYSPARK_ZIP:$DL_PYTHON_HOME:$DL_PYTHON_HOME/:$DL_PYTHON_HOME/../test/dev:$BIGDL_HOME/scala/dllib/src/main/resources/spark-bigdl.conf
+export PYTHONPATH=$PYTHONPATH:$DLLIB_PYTHON_HOME:$PPML_PYTHON_HOME
 echo "PYTHONPATH": $PYTHONPATH
 
 export BIGDL_CLASSPATH=$(find $BIGDL_HOME/dist/lib/ -name "bigdl-ppml*with-dependencies.jar" | head -n 1)
 echo "BIGDL_CLASSPATH": $BIGDL_CLASSPATH
-
-if [[ ($SPARK_HOME == *"2.2.0"*) || ($SPARK_HOME == *"2.1.1"*) || ($SPARK_HOME == *"1.6.4"*) ]]; then
-    export PYTHON_EXECUTABLES=("python2.7" "python3.5" "python3.6")
-else
-    export PYTHON_EXECUTABLES=("python2.7" "python3.5")
-fi
-
-function run_notebook() {
-    notebook_path=$1
-    target_notebook_path=${DL_PYTHON_HOME}/tmp_${PYTHON_EXECUTABLE}.ipynb
-    echo "Change kernel to $PYTHON_EXECUTABLE"
-    sed "s/\"python.\"/\"$PYTHON_EXECUTABLE\"/g" $notebook_path > ${target_notebook_path}
-    jupyter nbconvert --to notebook --execute \
-      --ExecutePreprocessor.timeout=360 --output ${DL_PYTHON_HOME}/tmp_out.ipynb \
-      $target_notebook_path
-}
-
-export -f run_notebook

@@ -20,7 +20,7 @@ import com.intel.analytics.bigdl.dllib.nn.abstractnn.AbstractModule
 import com.intel.analytics.bigdl.dllib.nn.{Module, GaussianSampler => BGaussianSampler}
 import com.intel.analytics.bigdl.dllib.keras.layers.{GaussianSampler => ZGaussianSampler}
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
-import com.intel.analytics.bigdl.dllib.utils.{RandomGenerator, Shape, T, Table}
+import com.intel.analytics.bigdl.dllib.utils._
 import com.intel.analytics.bigdl.dllib.keras.ZooSpecHelper
 import com.intel.analytics.bigdl.dllib.keras.serializer.ModuleSerializationTest
 
@@ -31,7 +31,7 @@ class GaussianSamplerSpec extends ZooSpecHelper {
     val blayer = BGaussianSampler[Float]()
     val zlayer = ZGaussianSampler[Float](inputShape = Shape(List(Shape(3), Shape(3))))
     zlayer.build(Shape(List(Shape(-1, 3), Shape(-1, 3))))
-    assert(zlayer.getOutputShape() == Shape(-1, 3))
+    TestUtils.conditionFailTest(zlayer.getOutputShape() == Shape(-1, 3))
     val input = T(Tensor[Float](Array(2, 3)).rand(), Tensor[Float](Array(2, 3)).rand())
     compareOutputAndGradInputTable2Tensor(
       blayer.asInstanceOf[AbstractModule[Table, Tensor[Float], Float]],

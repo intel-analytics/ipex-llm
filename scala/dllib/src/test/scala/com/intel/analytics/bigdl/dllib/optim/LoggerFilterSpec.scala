@@ -136,7 +136,7 @@ class LoggerFilterSpec extends FlatSpec with BeforeAndAfter with Matchers {
       setOptimMethod(new SGD()).
       optimize()
 
-    require(Files.exists(Paths.get(logFile)), s"didn't generate $logFile")
+    TestUtils.conditionFailTest(Files.exists(Paths.get(logFile)), s"didn't generate $logFile")
 
     val allString = writer.toString
     // writerAppender.close
@@ -146,7 +146,8 @@ class LoggerFilterSpec extends FlatSpec with BeforeAndAfter with Matchers {
     {
       val pattern = ".*INFO.*DistriOptimizer.*caching training rdd ..."
       val firstLine = allString.split('\n')(0)
-      require(firstLine.matches(pattern), s"output can't matchs the specific output\n")
+      TestUtils.conditionFailTest(firstLine.matches(pattern),
+        s"output can't matchs the specific output\n")
     }
 
     {
@@ -155,7 +156,8 @@ class LoggerFilterSpec extends FlatSpec with BeforeAndAfter with Matchers {
         s"Epoch finished. Wall clock time is .*ms"
 
       val lastLine = allString.split('\n').last
-      require(lastLine.matches(pattern), s"output can't match the specific output")
+      TestUtils.conditionFailTest(lastLine.matches(pattern),
+        s"output can't match the specific output")
     }
 
   }
@@ -277,7 +279,8 @@ class LoggerFilterSpec extends FlatSpec with BeforeAndAfter with Matchers {
       val pattern = ".*INFO.*LoggerFilterSpec:.*HELLO"
       val firstLine = allString.split('\n')(0)
       println("-")
-      require(firstLine.matches(pattern), s"output can't matchs the specific output")
+      TestUtils.conditionFailTest(firstLine.matches(pattern),
+        s"output can't matchs the specific output")
     }
 
     Files.deleteIfExists(Paths.get(defaultFile))

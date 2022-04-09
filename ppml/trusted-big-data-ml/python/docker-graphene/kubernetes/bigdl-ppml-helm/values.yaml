@@ -1,0 +1,16 @@
+image: your_ppml_image
+k8sMaster: k8s://https://master_ip:master_port
+pvc: your_pvc
+
+deployMode: client
+driverCores: "1"
+driverMem: "1g"
+executorCores: "8"
+executorMem: "1g"
+executorInstances: "2"
+sgx: "true"
+sgxLog: "error"
+sgxDriverMem: "32g"
+sgxDriverJvmMem: "8g"
+sgxExecutorMem: "32g"
+sgxExecutorJvmMem: "12g"

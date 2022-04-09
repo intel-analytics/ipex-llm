@@ -14,6 +14,7 @@
 # limitations under the License.
 #
 from logging import warning
+from operator import xor
 from typing import Any, List, Optional
 
 import pytorch_lightning as pl
@@ -25,12 +26,15 @@ from torch.fx.graph_module import GraphModule
 from torch.nn.modules.loss import _Loss
 from torch.utils.data import DataLoader
 from torchmetrics.metric import Metric
-
+from torch.optim.lr_scheduler import _LRScheduler
 from bigdl.nano.common import check_avx512
 from bigdl.nano.pytorch.lightning import LightningModuleFromTorch
 from bigdl.nano.pytorch.plugins.ddp_spawn import DDPSpawnPlugin
+from bigdl.nano.deps.ray.ray_api import distributed_ray
+from bigdl.nano.deps.ipex.ipex_api import create_IPEXAccelerator, ipex_device
+from bigdl.nano.deps.openvino.openvino_api import bind_openvino_methods
 
-distributed_backends = ["spawn", "ray"]
+distributed_backends = ["spawn", "ray", "subprocess"]
 
 
 class Trainer(pl.Trainer):
@@ -77,8 +81,7 @@ class Trainer(pl.Trainer):
         if num_processes == 1:
             accelerator = None
             if use_ipex:
-                from bigdl.nano.pytorch.accelerators.ipex_accelerator import IPEXAccelerator
-                accelerator = IPEXAccelerator(enable_bf16=enable_bf16)
+                accelerator = create_IPEXAccelerator(enable_bf16=enable_bf16)
             super().__init__(accelerator=accelerator, *args, **kwargs)
         else:
             plugin = None
@@ -87,11 +90,21 @@ class Trainer(pl.Trainer):
                 " but get {distributed_backend}."
             if distributed_backend == "spawn":
                 if use_ipex:
+                    device = ipex_device()
+                else:
+                    device = "cpu"
+                plugin = DDPSpawnPlugin(parallel_devices=[
+                    torch.device(device) for _ in range(num_processes)],
+                    cpu_for_each_process=cpu_for_each_process,
+                    cluster_environment=LightningEnvironment())
+            elif distributed_backend == "subprocess":
+                from bigdl.nano.pytorch.plugins.ddp_subprocess import DDPSubprocessPlugin
+                if use_ipex:
                     import intel_pytorch_extension as ipex
                     device = ipex.DEVICE
                 else:
                     device = "cpu"
-                plugin = DDPSpawnPlugin(parallel_devices=[
+                plugin = DDPSubprocessPlugin(parallel_devices=[
                     torch.device(device) for _ in range(num_processes)],
                     cpu_for_each_process=cpu_for_each_process,
                     cluster_environment=LightningEnvironment())
@@ -99,15 +112,14 @@ class Trainer(pl.Trainer):
                 # Import RayPlugins may entangle with openmp even if it has not been used,
                 # which leads to an unacceptably low performance.
                 # So we import when we need.
-                from bigdl.nano.pytorch.plugins.ray_distributed import RayPlugin
-                plugin = RayPlugin(num_workers=num_processes,  # type: ignore
-                                   use_ipex=use_ipex)
+                plugin = distributed_ray(num_workers=num_processes,  # type: ignore
+                                         use_ipex=use_ipex,
+                                         device=ipex_device())
 
             accelerator = None
             if use_ipex:
-                from bigdl.nano.pytorch.accelerators.ipex_accelerator import IPEXAccelerator
-                accelerator = IPEXAccelerator(training_type_plugin=plugin,  # type: ignore
-                                              enable_bf16=enable_bf16)
+                accelerator = create_IPEXAccelerator(training_type_plugin=plugin,  # type: ignore
+                                                     enable_bf16=enable_bf16)
 
             super().__init__(accelerator=accelerator,
                              plugins=[plugin], *args, **kwargs)
@@ -116,9 +128,11 @@ class Trainer(pl.Trainer):
     def compile(model: nn.Module,
                 loss: _Loss = None,
                 optimizer: torch.optim.Optimizer = None,
+                scheduler: _LRScheduler = None,
                 metrics: List[Metric] = None,
                 onnx: bool = False,
-                quantize: bool = True):
+                quantize: bool = False,
+                openvino: bool = False):
         """
         Construct a pytorch-lightning model. If model is already a pytorch-lightning model,
         return model. If model is pytorch model, construct a new pytorch-lightning module
@@ -145,8 +159,9 @@ class Trainer(pl.Trainer):
                 "Loss and optimizer should be None if model is a pytorch-lightning model."
             pl_model = model
         else:
-            pl_model = LightningModuleFromTorch(model, loss, optimizer, metrics)
-
+            pl_model = LightningModuleFromTorch(model, loss, optimizer, scheduler, metrics)
+        assert not (onnx and openvino), "Only one of onnx and openvino can be True."
+        assert not (openvino and quantize), "Quantization is not implemented for OpenVINO."
         if onnx:
             try:
                 from bigdl.nano.pytorch.runtime_binding.onnxrt_inference import\
@@ -157,7 +172,8 @@ class Trainer(pl.Trainer):
             except ImportError:
                 raise RuntimeError("You should install onnx and onnxruntime to set `onnx=True`, "
                                    "or just set `onnx=False`.")
-
+        elif openvino:
+            return bind_openvino_methods(pl_model)
         if quantize:
             from bigdl.nano.pytorch.runtime_binding.quantization_inference import\
                 bind_quantize_methods
@@ -165,7 +181,7 @@ class Trainer(pl.Trainer):
                 bind_base_inference_rt_methods
             pl_model = bind_quantize_methods(bind_base_inference_rt_methods(pl_model), None)
 
-        return bind_base_inference_rt_methods(pl_model)
+        return pl_model
 
     def quantize(self, pl_model: LightningModule,
                  calib_dataloader: DataLoader = None,
@@ -232,12 +248,11 @@ class Trainer(pl.Trainer):
                 continue
 
         if backend == 'inc':
-            from bigdl.nano.quantization.neural_compressor import QuantizationINC
-            from bigdl.nano.quantization.neural_compressor.pytorch.utils.dataloader import \
-                check_loaders
+            from bigdl.nano.deps.neural_compressor.inc_api import QuantizationINC,\
+                check_pytorch_dataloaders
 
             # check if dataloader is of legal format
-            check_loaders(pl_model, [calib_dataloader, val_dataloader])
+            check_pytorch_dataloaders(pl_model, [calib_dataloader, val_dataloader])
 
             if approach not in ['static', 'dynamic']:
                 raise ValueError("Approach should be 'static' or 'dynamic', "
@@ -292,9 +307,9 @@ class Trainer(pl.Trainer):
                 quantized_onnx_model = None
                 for i, framework_item in enumerate(framework):
                     if "pytorch" in framework_item:
-                        quantized_pytorch_model = quantized_models[i].model
+                        quantized_pytorch_model = quantized_models[i]
                     else:
-                        quantized_onnx_model = quantized_models[i].model
+                        quantized_onnx_model = quantized_models[i]
                 from bigdl.nano.pytorch.runtime_binding.base_inference import \
                     bind_base_inference_rt_methods
                 from bigdl.nano.pytorch.runtime_binding.quantization_inference import \

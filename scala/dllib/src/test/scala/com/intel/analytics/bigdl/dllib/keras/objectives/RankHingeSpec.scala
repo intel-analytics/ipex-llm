@@ -17,7 +17,7 @@
 package com.intel.analytics.bigdl.dllib.keras.objectives
 
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
-import com.intel.analytics.bigdl.dllib.utils.RandomGenerator
+import com.intel.analytics.bigdl.dllib.utils.{RandomGenerator, TestUtils}
 import org.scalatest.{FlatSpec, Matchers}
 
 class RankHingeSpec extends FlatSpec with Matchers {
@@ -32,7 +32,7 @@ class RankHingeSpec extends FlatSpec with Matchers {
     val expectedArray = neg.zip(pos).map(x => x._1 - x._2 + 1.0f)
       .map(x => if (x > 0.0f) x else 0.0f)
     val expectedResult = expectedArray.sum / expectedArray.length
-    require((actualResult - expectedResult).abs < 1e-6)
+    TestUtils.conditionFailTest((actualResult - expectedResult).abs < 1e-6)
   }
 
 }

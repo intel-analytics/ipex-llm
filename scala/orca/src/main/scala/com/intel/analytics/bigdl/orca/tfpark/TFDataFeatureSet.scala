@@ -20,6 +20,7 @@ import com.intel.analytics.bigdl.dllib.feature.dataset.{DistributedDataSet, Mini
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.feature.{DistributedDataSetWrapper, DistributedFeatureSet}
 import com.intel.analytics.bigdl.dllib.utils.Engine
+import com.intel.analytics.bigdl.dllib.utils.Log4Error
 import org.apache.spark.SparkContext
 import org.apache.spark.rdd.RDD
 import org.apache.spark.storage.StorageLevel
@@ -124,7 +125,7 @@ object TFDataFeatureSet {
            ): TFDataFeatureSet = {
     val types = outputTypes.map(TFUtils.tfenum2datatype)
     val nodeNumber = Engine.nodeNumber()
-    require(nodeNumber == graphRDD.getNumPartitions,
+    Log4Error.unKnowExceptionError(nodeNumber == graphRDD.getNumPartitions,
       s"number partitions should be the same as node number, " +
       s"got number partitions ${graphRDD.getNumPartitions}, node number ${nodeNumber}")
     new TFDataFeatureSet(graphRDD, initIteratorOp, initTableOp, outputNames, types, shardIndex,

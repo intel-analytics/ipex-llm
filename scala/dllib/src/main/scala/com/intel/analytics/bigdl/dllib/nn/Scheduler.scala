@@ -66,7 +66,7 @@ private[bigdl] class Scheduler[T] (
     val isEmpty = readyQueue.isEmpty
     if (isEmpty) {
       outputNodes.foreach(n => {
-        Log4Error.invalidInputError(!nodeStatus.notExecuted(n),
+        Log4Error.unKnowExceptionError(!nodeStatus.notExecuted(n),
           "Some output nodes have not been executed")
       })
     }

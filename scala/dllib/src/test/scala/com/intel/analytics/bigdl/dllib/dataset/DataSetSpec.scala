@@ -59,8 +59,8 @@ class DataSetSpec extends SparkContextLifeCycle with Matchers {
 
     val dataSetFolder = processPath(resource.getPath()) + File.separator
     val tmpFile = java.io.File.createTempFile("UnitTest", System.nanoTime().toString)
-    require(tmpFile.delete())
-    require(tmpFile.mkdir())
+    TestUtils.conditionFailTest(tmpFile.delete())
+    TestUtils.conditionFailTest(tmpFile.mkdir())
     COCOSeqFileGenerator.main(Array("-f", dataSetFolder, "-o", tmpFile.getPath, "-p", "4",
       "-b", "2", "-m", dataSetFolder + "cocomini.json"))
 
@@ -74,33 +74,33 @@ class DataSetSpec extends SparkContextLifeCycle with Matchers {
       .collect()
       .foreach({ case (uri, size, label, iscrowd, bytes) =>
         val img = index(uri)
-        require(size == (img.height, img.width, 3))
-        require(label.masks.length == img.annotations.length)
-        require(java.util.Arrays.equals(iscrowd.toArray(),
+        TestUtils.conditionFailTest(size == (img.height, img.width, 3))
+        TestUtils.conditionFailTest(label.masks.length == img.annotations.length)
+        TestUtils.conditionFailTest(java.util.Arrays.equals(iscrowd.toArray(),
           img.annotations.map(a => if (a.isCrowd) 1f else 0f).toArray))
         img.annotations.zipWithIndex.foreach { case (ann, idx) =>
           label.masks(idx) match {
             case rle: RLEMasks =>
               val realArr = ann.segmentation.asInstanceOf[COCORLE].counts
               val seqArr = rle.counts
-              require(java.util.Arrays.equals(realArr, seqArr))
+              TestUtils.conditionFailTest(java.util.Arrays.equals(realArr, seqArr))
             case poly: PolyMasks =>
               val realArr = ann.segmentation.asInstanceOf[PolyMasks].poly.flatten
               val seqArr = poly.poly.flatten
-              require(java.util.Arrays.equals(realArr, seqArr))
+              TestUtils.conditionFailTest(java.util.Arrays.equals(realArr, seqArr))
           }
 
           val bb = label.bboxes.narrow(1, idx + 1, 1).squeeze().toArray()
           val annbb = Array(ann.bbox._1, ann.bbox._2,
             ann.bbox._3, ann.bbox._4)
-          require(java.util.Arrays.equals(bb, annbb))
+          TestUtils.conditionFailTest(java.util.Arrays.equals(bb, annbb))
         }
 
         // label checking done, now check the image data
         val inputStream = new FileInputStream(dataSetFolder + uri)
         val image = ImageIO.read(inputStream)
         val rawdata = image.getRaster.getDataBuffer.asInstanceOf[DataBufferByte].getData()
-        require(java.util.Arrays.equals(rawdata, bytes))
+        TestUtils.conditionFailTest(java.util.Arrays.equals(rawdata, bytes))
       })
   }
 
@@ -245,8 +245,8 @@ class DataSetSpec extends SparkContextLifeCycle with Matchers {
     TestUtils.cancelOnWindows()
     val resource = getClass().getClassLoader().getResource("imagenet")
     val tmpFile = java.io.File.createTempFile("UnitTest", System.nanoTime().toString)
-    require(tmpFile.delete())
-    require(tmpFile.mkdir())
+    TestUtils.conditionFailTest(tmpFile.delete())
+    TestUtils.conditionFailTest(tmpFile.mkdir())
 
     // Convert the test imagenet files to seq files
     val files = (DataSet.ImageFolder.paths(Paths.get(processPath(resource.getPath())))
@@ -438,8 +438,8 @@ class DataSetSpec extends SparkContextLifeCycle with Matchers {
     TestUtils.cancelOnWindows()
     val resource = getClass().getClassLoader().getResource("imagenet")
     val tmpFile = java.io.File.createTempFile("UnitTest", System.nanoTime().toString)
-    require(tmpFile.delete())
-    require(tmpFile.mkdir())
+    TestUtils.conditionFailTest(tmpFile.delete())
+    TestUtils.conditionFailTest(tmpFile.mkdir())
 
     // Convert the test imagenet files to seq files
     val files = (DataSet.ImageFolder.paths(Paths.get(processPath(resource.getPath())))

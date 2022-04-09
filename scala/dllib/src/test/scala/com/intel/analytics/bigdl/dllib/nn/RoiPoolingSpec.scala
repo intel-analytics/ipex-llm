@@ -17,7 +17,7 @@
 package com.intel.analytics.bigdl.dllib.nn
 
 import com.intel.analytics.bigdl.dllib.tensor.{Storage, Tensor}
-import com.intel.analytics.bigdl.dllib.utils.{T, Table}
+import com.intel.analytics.bigdl.dllib.utils.{T, Table, TestUtils}
 import com.intel.analytics.bigdl.dllib.utils.serializer.ModuleSerializationTest
 import org.scalatest.{FlatSpec, Matchers}
 
@@ -96,7 +96,7 @@ class RoiPoolingSpec extends FlatSpec with Matchers {
       9.8723792015232163521, 9.8723792015232163521, 9.8723792015232163521, 9.8723792015232163521,
       9.8723792015232163521)
     for (i <- expectedRes.indices) {
-      assert(Math.abs(res.storage().array()(i) - expectedRes(i)) < 1e-6)
+      TestUtils.conditionFailTest(Math.abs(res.storage().array()(i) - expectedRes(i)) < 1e-6)
     }
   }
 
@@ -121,7 +121,7 @@ class RoiPoolingSpec extends FlatSpec with Matchers {
       9.8723792015232163521, 9.8723792015232163521, 9.8723792015232163521, 9.8723792015232163521,
       9.8723792015232163521)
     for (i <- expectedRes.indices) {
-      assert(Math.abs(res.storage().array()(i) - expectedRes(i)) < 1e-6)
+      TestUtils.conditionFailTest(Math.abs(res.storage().array()(i) - expectedRes(i)) < 1e-6)
     }
   }
 
@@ -170,7 +170,7 @@ class RoiPoolingSpec extends FlatSpec with Matchers {
 
     expectedGradInput.size() should be(gradInputData.size())
     (expectedGradInput.storage().array() zip gradInputData.storage().array()).foreach(x =>
-      assert(Math.abs(x._1 - x._2) < 1e-6))
+      TestUtils.conditionFailTest(Math.abs(x._1 - x._2) < 1e-6))
     val gradOutputData2 = Array(0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
       0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
     val gradOutput2 = Tensor(Storage(gradOutputData2.map(x => x.toFloat)))
@@ -185,8 +185,8 @@ class RoiPoolingSpec extends FlatSpec with Matchers {
       0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
 
     for (i <- expectedGradInput2.indices) {
-      assert(expectedGradInput2.length == gradInputData2.length)
-      assert(Math.abs(expectedGradInput2(i) - gradInputData2(i)) < 1e-6)
+      TestUtils.conditionFailTest(expectedGradInput2.length == gradInputData2.length)
+      TestUtils.conditionFailTest(Math.abs(expectedGradInput2(i) - gradInputData2(i)) < 1e-6)
     }
   }
 
@@ -234,7 +234,7 @@ class RoiPoolingSpec extends FlatSpec with Matchers {
 
     expectedGradInput.size() should be(gradInputData.size())
     (expectedGradInput.storage().array() zip gradInputData.storage().array()).foreach(x =>
-      assert(Math.abs(x._1 - x._2) < 1e-6))
+      TestUtils.conditionFailTest(Math.abs(x._1 - x._2) < 1e-6))
     val gradOutputData2 = Array(0, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
       0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
     val gradOutput2 = Tensor(Storage(gradOutputData2.map(x => x.toDouble)))
@@ -249,8 +249,8 @@ class RoiPoolingSpec extends FlatSpec with Matchers {
       0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0)
 
     for (i <- expectedGradInput2.indices) {
-      assert(expectedGradInput2.length == gradInputData2.length)
-      assert(Math.abs(expectedGradInput2(i) - gradInputData2(i)) < 1e-6)
+      TestUtils.conditionFailTest(expectedGradInput2.length == gradInputData2.length)
+      TestUtils.conditionFailTest(Math.abs(expectedGradInput2(i) - gradInputData2(i)) < 1e-6)
     }
   }
 }

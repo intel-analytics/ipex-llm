@@ -26,6 +26,7 @@ import org.tensorflow.framework.NodeDef
 
 import scala.reflect.ClassTag
 
+// scalastyle:off
 class Assert extends TensorflowOpsLoader {
 
   import Utils._
@@ -35,4 +36,5 @@ class Assert extends TensorflowOpsLoader {
     new AssertOperation[T]()
   }
 }
+// scalastyle:on
 
