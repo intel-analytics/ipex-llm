@@ -31,13 +31,13 @@ class ShapeSpec extends FlatSpec with Matchers with BeforeAndAfter {
   }
 
   "multiShape not equal" should "be test" in {
-    intercept[RuntimeException] {
+    intercept[AssertionError] {
       TestUtils.conditionFailTest(Shape(List(Shape(1, 2, 3), Shape(5, 5, 5))) ==
         Shape(List(Shape(1, 2, 3), Shape(5, 6, 5))))
     }}
 
   "singleShape not equal" should "be test" in {
-    intercept[RuntimeException] {
+    intercept[AssertionError] {
       TestUtils.conditionFailTest(Shape(1, 2, 3) == Shape(1, 2, 4))
     }}
 }

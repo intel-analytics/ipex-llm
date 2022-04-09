@@ -167,7 +167,7 @@ class LSTMSpec  extends TorchRNNSpec {
       s"""
          |
       |-- 1.4. Combine 1.1 and 1.3 to produce final model
-         |TestUtils.conditionFailTest 'rnn'
+         |require 'rnn'
          |torch.manualSeed($seed)
          |
       |local rm =  nn.Sequential() -- input is {x[t], h[t-1]}
@@ -334,7 +334,7 @@ class LSTMSpec  extends TorchRNNSpec {
       s"""
          |
       |-- 1.4. Combine 1.1 and 1.3 to produce final model
-         |TestUtils.conditionFailTest 'rnn'
+         |require 'rnn'
          |torch.manualSeed($seed)
          |
       |local rm =  nn.Sequential() -- input is {x[t], h[t-1]}
