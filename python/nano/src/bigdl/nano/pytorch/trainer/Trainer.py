@@ -183,7 +183,7 @@ class Trainer(pl.Trainer):
 
         return pl_model
 
-    def quantize(self, pl_model: LightningModule,
+    def quantize(self, pl_model,  # remove the type requirement for type checking
                  calib_dataloader: DataLoader = None,
                  val_dataloader: DataLoader = None,
                  metric: Optional[Metric] = None,
