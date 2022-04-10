@@ -89,7 +89,7 @@ class TestQuantizeInference(TestCase):
         pl_model = trainer.quantize(pl_model, train_loader)
 
         for x, y in train_loader:
-            quantized_res = pl_model.inference(x, backend=None, quantize=True).numpy()  # quantized
+            quantized_res = pl_model.inference(x.numpy(), backend=None, quantize=True).numpy()  # quantized
             pl_model.eval(quantize=True)
             with torch.no_grad():
                 forward_res = pl_model(x).numpy()
@@ -116,8 +116,8 @@ class TestQuantizeInference(TestCase):
             pl_model_load.load_quantized_state_dict(torch.load(ckpt_name))
         
         for x, y in train_loader:
-            quantized_res = pl_model.inference(x, backend=None).numpy()  # quantized
-            quantized_res_load = pl_model_load.inference(x, backend=None, quantize=True).numpy()  # quantized
+            quantized_res = pl_model.inference(x.numpy(), backend=None).numpy()  # quantized
+            quantized_res_load = pl_model_load.inference(x.numpy(), backend=None, quantize=True).numpy()  # quantized
             np.testing.assert_almost_equal(quantized_res, quantized_res_load, decimal=5)  # same result
 
     def test_quantized_model_save_load_checkpoint(self):

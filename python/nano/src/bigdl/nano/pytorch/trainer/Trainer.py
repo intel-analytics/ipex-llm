@@ -164,7 +164,7 @@ class Trainer(pl.Trainer):
         assert not (openvino and quantize), "Quantization is not implemented for OpenVINO."
         if onnx:
             try:
-                from bigdl.nano.pytorch.runtime_binding.onnxrt_inference import\
+                from bigdl.nano.deps.onnxruntime.onnxruntime_api import\
                     bind_onnxrt_methods
                 from bigdl.nano.pytorch.runtime_binding.base_inference import\
                     bind_base_inference_rt_methods
@@ -279,22 +279,22 @@ class Trainer(pl.Trainer):
                         model = pl_model.model
                 else:
                     # for 'onnxrt_integerops'|'onnxrt_qlinearops'
-                    from bigdl.nano.pytorch.runtime_binding.onnxrt_inference import\
+                    from bigdl.nano.deps.onnxruntime.onnxruntime_api import\
                         bind_onnxrt_methods
                     pl_model = bind_onnxrt_methods(pl_model)
                     if approach == "post_training_static_quant":
                         assert calib_dataloader, \
                             "calib_calib_dataloader must not be None when approach is " \
                             "post-training static quantization."
-                        pl_model.update_ortsess(input_sample=tuple(next(iter(
+                        pl_model.eval_onnx(input_sample=tuple(next(iter(
                             calib_dataloader))[:-1]),
                             file_path="model.onnx")
-                        model = pl_model._onnx_graph
+                        model = pl_model.ort_infer_engine.onnx_model_fp32
                     else:
-                        assert pl_model._ortsess_up_to_date, \
-                            "Please call `update_ortsess` on model to " \
+                        assert pl_model.ort_infer_engine.onnx_model_fp32, \
+                            "Please call `eval_onnx` on model to " \
                             "update/build your onnx structure."
-                        model = pl_model._onnx_graph
+                        model = pl_model.ort_infer_engine.onnx_model_fp32
                 quantized_models.append(quantizer.post_training_quantize(model, calib_dataloader,
                                                                          val_dataloader, metric))
             if not return_pl:
@@ -314,7 +314,7 @@ class Trainer(pl.Trainer):
                     bind_base_inference_rt_methods
                 from bigdl.nano.pytorch.runtime_binding.quantization_inference import \
                     bind_quantize_methods
-                from bigdl.nano.pytorch.runtime_binding.onnxrt_inference import \
+                from bigdl.nano.deps.onnxruntime.onnxruntime_api import \
                     bind_onnxrt_methods
                 return bind_onnxrt_methods(
                     bind_quantize_methods(
