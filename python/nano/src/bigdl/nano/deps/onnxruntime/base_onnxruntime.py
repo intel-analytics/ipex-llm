@@ -34,8 +34,8 @@ class BaseORTInference:
         self.ortsess_int8 = None  # onnxruntime session int8
         self.onnx_model_int8 = None  # onnx model int8
         self.onnx_filepath_int8 = None  # onnx filepath int8
-        self.example_input_array = None # cached example input array
-    
+        self.example_input_array = None  # cached example input array
+
     def forward_step(self, *inputs):
         '''
             This function run through the onnxruntime forwarding step
@@ -44,7 +44,7 @@ class BaseORTInference:
         inputs = dict(zip(self._forward_args, inputs))
         ort_outs = self.ortsess_fp32.run(None, inputs)
         return ort_outs
-    
+
     def forward_step_int8(self, *inputs):
         '''
             This function run through the onnxruntime forwarding step
@@ -63,7 +63,7 @@ class BaseORTInference:
         '''
         self.onnx_model_fp32 = onnx.load(self.onnx_filepath_fp32)
         self.ortsess_fp32 = ort.InferenceSession(self.onnx_filepath_fp32, sess_options=sess_options)
-    
+
     def _build_ortsess_int8(self,
                             sess_options=None):
         '''

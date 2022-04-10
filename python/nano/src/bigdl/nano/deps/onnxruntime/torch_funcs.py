@@ -20,6 +20,7 @@ from ..inference.pytorch_base_inference import PytorchBaseInference, get_forward
 from ..inference.pytorch_base_inference import export as export_to_onnx
 import torch
 
+
 class PytorchORTInference(BaseORTInference, PytorchBaseInference):
     def __init__(self):
         BaseORTInference.__init__(self)
@@ -112,4 +113,4 @@ def to_quantized_onnx(model, file_path):
         save_onnx_to_file(model.ort_infer_engine.onnx_model_int8, file_path)
     else:
         raise RuntimeError("Please run trainer.quantize again since "
-                            "the quantized onnxruntime session is out-of-date.")
+                           "the quantized onnxruntime session is out-of-date.")

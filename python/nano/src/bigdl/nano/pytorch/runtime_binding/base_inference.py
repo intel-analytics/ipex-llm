@@ -88,12 +88,13 @@ def inference(self,
     '''
 
     if isinstance(input_data, list):
-        input_sample_list = list(map(lambda x:torch.from_numpy(x), input_data))
+        input_sample_list = list(map(lambda x: torch.from_numpy(x), input_data))
     else:
         input_sample_list = [torch.from_numpy(input_data)]
 
     if backend == "onnx":
-        quantize = quantize if quantize is not None else (self.ort_infer_engine.default_eval_precision == "int8")
+        quantize = quantize if quantize is not None else \
+            (self.ort_infer_engine.default_eval_precision == "int8")
         if not quantize:
             if not self.ort_infer_engine.ortsess_fp32:
                 warnings.warn("Onnxruntime session will be built implicitly,"
@@ -117,8 +118,8 @@ def inference(self,
             for batch_id in range(batch_num):
                 yhat_list.append(self(
                     *tuple(map(lambda x: x[batch_id * batch_size:
-                                           (batch_id + 1) * batch_size],
-                                input_sample_list))))
+                           (batch_id + 1) * batch_size],
+                        input_sample_list))))
             # this operation may cause performance degradation
             yhat = np.concatenate(yhat_list, axis=0)
             return yhat
