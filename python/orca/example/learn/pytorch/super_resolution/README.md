@@ -16,7 +16,7 @@ pip install bigdl-orca
 pip install jep==3.9.0
 pip install six cloudpickle
 
-# For torch_distributed backend:
+# For ray backend:
 pip install bigdl-orca[ray]
 pip install tqdm  # progress bar
 
@@ -46,16 +46,16 @@ python super_resolution.py --cluster_mode local
 python super_resolution.py --cluster_mode yarn
 ```
 
-You can run this example with bigdl backend (default), torch_distributed backend, or spark backend. 
+You can run this example with bigdl backend (default), ray backend, or spark backend. 
 
 - Run with bigdl backend:
 ```bash
 python super_resolution.py --backend bigdl
 ```
 
-- Run with torch_distributed backend:
+- Run with ray backend:
 ```bash
-python super_resolution.py --backend torch_distributed
+python super_resolution.py --backend ray
 ```
 
 - Run with spark backend:

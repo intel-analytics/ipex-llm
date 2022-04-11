@@ -187,7 +187,7 @@ class PyTorchRayEstimator(OrcaRayEstimator):
                 for i, worker in enumerate(self.remote_workers)
             ])
         else:
-            raise Exception("Only \"torch_distributed\" and \"horovod\" are supported "
+            raise Exception("Only \"ray\" and \"horovod\" are supported "
                             "values of backend, but got {}".format(backend))
         self.num_workers = len(self.remote_workers)
 

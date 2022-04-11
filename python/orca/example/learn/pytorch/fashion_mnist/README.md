@@ -18,7 +18,7 @@ pip install bigdl-orca
 pip install jep==3.9.0
 pip install six cloudpickle
 
-# For torch_distributed backend:
+# For ray backend:
 pip install bigdl-orca[ray]
 pip install tqdm  # progress bar
 
@@ -35,10 +35,10 @@ The default backend is `bigdl`.
 python fashion_mnist.py
 ```
 
-You can run with `torch_distributed` backend via:
+You can run with `ray` backend via:
 
 ```
-python fashion_mnist.py --backend torch_distributed
+python fashion_mnist.py --backend ray
 ```
 
 To see the result figures after it finishes:
@@ -64,7 +64,7 @@ python fashion_mnist.py --cluster_mode yarn
 
 Then open `https://localhost:6006` on the local client machine to see the result figures.
 
-The default backend is `bigdl`. You can also run with `torch_distributed` or `spark` by specifying the backend.
+The default backend is `bigdl`. You can also run with `ray` or `spark` by specifying the backend.
 
 ## Results
 
