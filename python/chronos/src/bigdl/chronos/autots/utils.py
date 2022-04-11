@@ -38,3 +38,20 @@ def check_quantize_available(model):
     from bigdl.chronos.model.Seq2Seq_pytorch import LSTMSeq2Seq
     if isinstance(model, LSTMSeq2Seq):
         raise NotImplementedError(f"This {model.__class__} has not supported quantization.")
+
+
+def preprocess_quantize_data(self, data):
+    import torch
+    import types
+    from torch.utils.data import DataLoader, TensorDataset
+    from bigdl.chronos.data import TSDataset
+    if isinstance(data, tuple):
+        data = DataLoader(TensorDataset(torch.from_numpy(data[0]),
+                                        torch.from_numpy(data[1])))
+    if isinstance(data, types.FunctionType):
+        data = data(self._best_config)
+    if isinstance(data, TSDataset):
+        data_x, data_y = self._tsdataset_to_numpy(data, is_predict=False)
+        data = DataLoader(TensorDataset(torch.from_numpy(data_x),
+                                        torch.from_numpy(data_y)))
+    return data

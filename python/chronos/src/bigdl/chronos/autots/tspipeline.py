@@ -369,6 +369,7 @@ class TSPipeline:
                  max_trials=1):
         """
         Quantization TSPipeline.
+
         :param calib_data: Required for static quantization.
 
                | 1. data creator:
@@ -421,26 +422,10 @@ class TSPipeline:
         elif calib_data and approach.startswith("dynamic"):
             raise RuntimeError("`calib_data` should be None When you use 'dynamic'.")
 
-        # change data tuple to dataloader
-        if isinstance(calib_data, tuple):
-            calib_data = DataLoader(TensorDataset(torch.from_numpy(calib_data[0]),
-                                                  torch.from_numpy(calib_data[1])))
-        if isinstance(calib_data, types.FunctionType):
-            calib_data = calib_data(self._best_config)
-        if isinstance(calib_data, TSDataset):
-            calib_x, calib_y = self._tsdataset_to_numpy(calib_data, is_predict=False)
-            calib_data = DataLoader(TensorDataset(torch.from_numpy(calib_x),
-                                                  torch.from_numpy(calib_y)))
-
-        if isinstance(val_data, tuple):
-            val_data = DataLoader(TensorDataset(torch.from_numpy(val_data[0]),
-                                                torch.from_numpy(val_data[1])))
-        if isinstance(val_data, types.FunctionType):
-            val_data = val_data(self._best_config)
-        if isinstance(val_data, TSDataset):
-            val_x, val_y = self._tsdataset_to_numpy(val_data, is_predict=False)
-            val_data = DataLoader(TensorDataset(torch.from_numpy(val_x),
-                                                torch.from_numpy(val_y)))
+        # preprocess data.
+        from .utils import preprocess_quantize_data
+        calib_data = preprocess_quantize_data(self, calib_data)
+        val_data = preprocess_quantize_data(self, val_data)
 
         # map metric str to function
         from bigdl.chronos.metric.forecast_metrics import TORCHMETRICS_REGRESSION_MAP
