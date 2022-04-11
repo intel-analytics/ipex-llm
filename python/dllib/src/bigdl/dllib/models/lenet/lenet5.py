@@ -65,7 +65,7 @@ if __name__ == "__main__":
     parser.add_option("-n", "--endTriggerNum", type=int, dest="endTriggerNum", default="20")
     parser.add_option("-d", "--dataPath", dest="dataPath", default="/tmp/mnist")
     parser.add_option("--optimizerVersion", dest="optimizerVersion", default="optimizerV1")
-    parser.add_option("--cluster-mode", dest="clusterMode", default="yarn")
+    parser.add_option("--cluster-mode", dest="clusterMode", default="local")
     parser.add_option("--mkl-dnn", action="store_true", dest="mklDnn", default=False,
                       help="if enable mkldnn")
 
