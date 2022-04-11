@@ -1,9 +1,15 @@
 # set -x
-SPARK_EXTRA_JAR_PATH=/ppml/trusted-big-data-ml/work/spark-3.1.2/jars/spark-encrypt-io-0.2-SNAPSHOT.jar
+SPARK_EXTRA_JAR_PATH=/ppml/trusted-big-data-ml/work/spark-3.1.2/jars/spark-encrypt-io.jar
 SPARK_JOB_MAIN_CLASS=com.intel.analytics.bigdl.ppml.examples.LocalCryptoExample
-KMS_TYPE=SimpleKeyManagementService
+KMS_TYPE=EHSMKeyManagementService
 INPUT_FILE_PATH=$1
-LOCAL_IP=$2
+KMS_SERVER_IP=$2
+KMS_SERVER_PORT=$3
+EHSM_APP_ID=$4
+EHSM_APP_KEY=$5
+PRIMARY_KEY_PATH=$6 # The Path You Want To Save Primary Key At
+DATA_KEY_PATH=$7 # The Path You Want To Save Data Key At
+LOCAL_IP=$8
 
 secure_password=`openssl rsautl -inkey /ppml/trusted-big-data-ml/work/password/key.txt -decrypt </ppml/trusted-big-data-ml/work/password/output.bin`
 
@@ -28,6 +34,12 @@ secure_password=`openssl rsautl -inkey /ppml/trusted-big-data-ml/work/password/k
   --conf spark.ssl.trustStoreType=JKS \
   --class $SPARK_JOB_MAIN_CLASS \
   $SPARK_EXTRA_JAR_PATH \
-  $INPUT_FILE_PATH \
-  $KMS_TYPE 2>&1 | tee simple-local-cryptos-example.log
+  --inputPath $INPUT_FILE_PATH \
+  --kmsType $KMS_TYPE \
+  --kmsServerIP $KMS_SERVER_IP \
+  --kmsServerPort $KMS_SERVER_PORT \
+  --primaryKeyPath $PRIMARY_KEY_PATH \
+  --dataKeyPath $DATA_KEY_PATH \
+  --ehsmAPPID $EHSM_APP_ID \
+  --ehsmAPPKEY $EHSM_APP_KEY 2>&1 | tee ehsm-local-cryptos-example.log
 

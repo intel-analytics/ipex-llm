@@ -175,7 +175,7 @@ Enter the client container deployed in the previous step and run the below comma
   
   # Step 1. Decrypt The Encrypted Files As A Spark Job Inside SGX And Then Encrypt Columns
   export OUT_DIR_PATH=YOUR_OUTPUT_SAVE_DIR # You can decide a directory path for output files, it will be created automatically
-  bash ./work/kms-client/submit-spark-job-with-kms-local.sh $INPUT_DIR_PATH $ENCRYPT_KEYS_PATH $OUT_DIR_PATH $KMS_SERVER_IP $KMS_SERVER_PORT $LOCAL_IP
+  bash ./work/start-scripts/submit-spark-job-with-kms-local.sh $INPUT_DIR_PATH $ENCRYPT_KEYS_PATH $OUT_DIR_PATH $KMS_SERVER_IP $KMS_SERVER_PORT $LOCAL_IP
   
   # Step 2. Decrypt The colums And Ouput With KMS API
   export APPID=YOUR_APP_ID
