@@ -41,7 +41,7 @@ class BaseTF2Forecaster(Forecaster):
                | should be the same as future_seq_len and output_feature_num.
                |
                | 2. a tf.data.Dataset:
-               | Should return a tuple of (x, y),
+               | A TFDataset instance which contains x and y with same shape as the tuple.
                | x's shape is (num_samples, lookback, feature_dim),
                | y's shape is (num_samples, horizon, target_dim).
 
