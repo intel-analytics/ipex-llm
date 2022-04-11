@@ -15,14 +15,12 @@
 #
 
 import tempfile
-import keras
-
+import numpy as np
 import pytest
+import tensorflow as tf
 
 from bigdl.orca.test_zoo_utils import ZooTestCase
-
-from bigdl.chronos.model.tf2.tcn_keras import model_creator, TemporalConvNet
-import numpy as np
+from bigdl.chronos.model.tf2.TCN_keras import model_creator, TemporalConvNet
 
 
 def create_data():
@@ -41,8 +39,8 @@ def create_data():
     test_data = get_x_y(test_num_samples)
     return train_data, test_data
 
-
-class TestTcn(ZooTestCase):
+@pytest.mark.skipif(tf.__version__ < '2.0.0', reason="Run only when tf>2.0.0.")
+class TestTcnKeras(ZooTestCase):
 
     train_data, test_data = create_data()
     model = model_creator(config={
@@ -66,6 +64,7 @@ class TestTcn(ZooTestCase):
                        epochs=2,
                        validation_data=self.test_data)
         self.model.save(checkpoint_file)
+        import keras
         restore_model = keras.models.load_model(checkpoint_file,  custom_objects={"TemporalConvNet": TemporalConvNet})
         model_res = self.model.evaluate(self.test_data[0], self.test_data[1])
         restore_model_res = restore_model.evaluate(self.test_data[0], self.test_data[1])
