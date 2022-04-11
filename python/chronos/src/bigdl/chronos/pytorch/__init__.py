@@ -14,4 +14,4 @@
 # limitations under the License.
 #
 
-from bigdl.nano.pytorch.trainer import Trainer as TSTrainer
+from .trainer import TSTrainer
