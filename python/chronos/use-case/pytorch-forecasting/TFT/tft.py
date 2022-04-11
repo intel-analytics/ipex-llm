@@ -50,7 +50,7 @@ from pytorch_forecasting import Baseline, TemporalFusionTransformer, TimeSeriesD
 from pytorch_forecasting.data import GroupNormalizer
 from pytorch_forecasting.metrics import QuantileLoss
 from pytorch_forecasting.data.examples import get_stallion_data
-from bigdl.chronos.common.pytorch import TSTrainer
+from bigdl.chronos.pytorch import TSTrainer
 
 if __name__ == '__main__':
     warnings.filterwarnings("ignore")
