@@ -33,6 +33,8 @@ from bigdl.nano.pytorch.plugins.ddp_spawn import DDPSpawnPlugin
 from bigdl.nano.deps.ray.ray_api import distributed_ray
 from bigdl.nano.deps.ipex.ipex_api import create_IPEXAccelerator, ipex_device
 from bigdl.nano.deps.openvino.openvino_api import bind_openvino_methods
+from bigdl.nano.deps.onnxruntime.onnxruntime_api import bind_onnxrt_methods
+
 
 distributed_backends = ["spawn", "ray", "subprocess"]
 
@@ -164,8 +166,6 @@ class Trainer(pl.Trainer):
         assert not (openvino and quantize), "Quantization is not implemented for OpenVINO."
         if onnx:
             try:
-                from bigdl.nano.deps.onnxruntime.onnxruntime_api import\
-                    bind_onnxrt_methods
                 from bigdl.nano.pytorch.runtime_binding.base_inference import\
                     bind_base_inference_rt_methods
                 pl_model = bind_onnxrt_methods(bind_base_inference_rt_methods(pl_model))
@@ -279,8 +279,6 @@ class Trainer(pl.Trainer):
                         model = pl_model.model
                 else:
                     # for 'onnxrt_integerops'|'onnxrt_qlinearops'
-                    from bigdl.nano.deps.onnxruntime.onnxruntime_api import\
-                        bind_onnxrt_methods
                     pl_model = bind_onnxrt_methods(pl_model)
                     if approach == "post_training_static_quant":
                         assert calib_dataloader, \
@@ -314,8 +312,6 @@ class Trainer(pl.Trainer):
                     bind_base_inference_rt_methods
                 from bigdl.nano.pytorch.runtime_binding.quantization_inference import \
                     bind_quantize_methods
-                from bigdl.nano.deps.onnxruntime.onnxruntime_api import \
-                    bind_onnxrt_methods
                 return bind_onnxrt_methods(
                     bind_quantize_methods(
                         bind_base_inference_rt_methods(pl_model), quantized_pytorch_model),
