@@ -280,7 +280,7 @@ if opt.backend == "bigdl":
     print("===> Validation Complete: Avg. PSNR: {:.4f} dB, Avg. Loss: {:.4f}"
           .format(10 * log10(1. / val_stats["MSE"]), val_stats["MSE"]))
 
-elif opt.backend in ["torch_distributed", "spark"]:
+elif opt.backend in ["ray", "spark"]:
     estimator = Estimator.from_torch(
         model=model_creator,
         optimizer=optim_creator,

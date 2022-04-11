@@ -42,11 +42,11 @@ class Estimator(object):
         Create an Estimator for torch.
 
         :param model: PyTorch model or model creator function if backend="bigdl", PyTorch
-               model creator function if backend="horovod" or "torch_distributed"
+               model creator function if backend="horovod" or "ray"
         :param optimizer: Orca/PyTorch optimizer or optimizer creator function if backend="bigdl"
-               , PyTorch optimizer creator function if backend="horovod" or "torch_distributed"
+               , PyTorch optimizer creator function if backend="horovod" or "ray"
         :param loss: PyTorch loss or loss creator function if backend="bigdl", PyTorch loss creator
-               function if backend="horovod" or "torch_distributed"
+               function if backend="horovod" or "ray"
         :param metrics: Orca validation methods for evaluate.
         :param scheduler_creator: parameter for `horovod` and `torch_distributed` backends. a
                learning rate scheduler wrapping the optimizer. You will need to set
@@ -64,7 +64,7 @@ class Estimator(object):
         :param model_dir: parameter for `bigdl` and `spark` backend. The path to save model. During
                the training, if checkpoint_trigger is defined and triggered, the model will be
                saved to model_dir.
-        :param backend: You can choose "horovod",  "torch_distributed", "bigdl" or "spark" as
+        :param backend: You can choose "horovod",  "ray", "bigdl" or "spark" as
                backend. Default: `bigdl`.
         :param sync_stats: Whether to sync metrics across all distributed workers after each epoch.
                If set to False, only rank 0's metrics are printed. This param only works horovod,
@@ -77,7 +77,7 @@ class Estimator(object):
                Default: True. This option is only for "spark" backend.
         :return: an Estimator object.
         """
-        if backend in {"horovod", "torch_distributed"}:
+        if backend in {"horovod", "ray"}:
             from bigdl.orca.learn.pytorch.pytorch_ray_estimator import PyTorchRayEstimator
             return PyTorchRayEstimator(model_creator=model,
                                        optimizer_creator=optimizer,

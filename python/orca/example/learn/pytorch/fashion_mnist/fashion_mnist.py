@@ -180,7 +180,7 @@ def main():
 
         res = orca_estimator.evaluate(data=test_loader)
         print("Accuracy of the network on the test images: %s" % res)
-    elif args.backend in ["torch_distributed", "spark"]:
+    elif args.backend in ["ray", "spark"]:
         orca_estimator = Estimator.from_torch(model=model_creator,
                                               optimizer=optimizer_creator,
                                               loss=criterion,

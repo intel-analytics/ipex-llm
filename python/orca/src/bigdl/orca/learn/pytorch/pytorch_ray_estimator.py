@@ -102,7 +102,7 @@ class PyTorchRayEstimator(OrcaRayEstimator):
             config=None,
             scheduler_step_freq="batch",
             use_tqdm=False,
-            backend="torch_distributed",
+            backend="ray",
             workers_per_node=1,
             sync_stats=True,
             log_level=logging.INFO):
@@ -147,7 +147,7 @@ class PyTorchRayEstimator(OrcaRayEstimator):
             log_level=log_level
         )
 
-        if backend == "torch_distributed":
+        if backend == "ray":
             cores_per_node = ray_ctx.ray_node_cpu_cores // workers_per_node
             num_nodes = ray_ctx.num_ray_nodes * workers_per_node
             RemoteRunner = ray.remote(num_cpus=cores_per_node)(PytorchRayWorker)

@@ -39,9 +39,9 @@ Estimator.from_torch(*,
                    model_dir=None,
                    backend="bigdl"):
 ```
-* `model`: PyTorch model if `backend="bigdl"`, PyTorch model creator if `backend="horovod" or "torch_distributed"`
-* `optimizer`: Orca optimizer or PyTorch optimizer if `backend="bigdl"`, PyTorch optimizer creator if `backend="horovod" or "torch_distributed"`
-* `loss`: PyTorch loss if `backend="bigdl"`, PyTorch loss creator if `backend="horovod" or "torch_distributed"`
+* `model`: PyTorch model if `backend="bigdl"`, PyTorch model creator if `backend="horovod" or "ray"`
+* `optimizer`: Orca optimizer or PyTorch optimizer if `backend="bigdl"`, PyTorch optimizer creator if `backend="horovod" or "ray"`
+* `loss`: PyTorch loss if `backend="bigdl"`, PyTorch loss creator if `backend="horovod" or "ray"`
 * `metrics`: Orca validation methods for evaluate.
 * `scheduler_creator`: parameter for `horovod` and `torch_distributed` backends. a learning rate scheduler wrapping the optimizer. You will need to set ``scheduler_step_freq="epoch"`` for the scheduler to be incremented correctly.
 * `training_operator_cls`: parameter for `horovod` and `torch_distributed` backends. Custom training operator class that subclasses the TrainingOperator class. This class will be copied onto all remote workers and used to specify custom training and validation operations. Defaults to TrainingOperator.
@@ -51,7 +51,7 @@ Estimator.from_torch(*,
 * `use_tqdm`: parameter for `horovod` and `torch_distributed` backends. You can monitor training progress if use_tqdm=True.
 * `workers_per_node`: parameter for `horovod` and `torch_distributed` backends. worker number on each node. default: 1.
 * `model_dir`: parameter for `bigdl` backend. The path to save model. During the training, if checkpoint_trigger is defined and triggered, the model will be saved to model_dir.
-* `backend`: You can choose "horovod",  "torch_distributed" or "bigdl" as backend. Default: bigdl.
+* `backend`: You can choose "horovod",  "ray" or "bigdl" as backend. Default: bigdl.
 
 ### Use horovod Estimator
 #### **Train model**
