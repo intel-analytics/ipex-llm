@@ -21,7 +21,7 @@ bigdl-nano-init python tft.py
 ```
 
 ## Changes to use BigDL Nano
-- Change `from pytorch_lightning import Trainer` to `from bigdl.chronos.common.pytorch import TSTrainer`
+- Change `from pytorch_lightning import Trainer` to `from bigdl.chronos.pytorch import TSTrainer`
 - Set `gpus=0` in TSTrainer
 - Set `num_processes=8` in TSTrainer and set `batch_size = 128 // num_processes`
 
