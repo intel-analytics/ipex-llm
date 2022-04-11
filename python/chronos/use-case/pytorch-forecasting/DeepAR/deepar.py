@@ -52,7 +52,7 @@ from pytorch_forecasting.data.examples import generate_ar_data
 from pytorch_forecasting.metrics import NormalDistributionLoss
 from pytorch_forecasting.models.deepar import DeepAR
 from pytorch_forecasting.utils import profile
-from bigdl.chronos.common.pytorch import TSTrainer
+from bigdl.chronos.pytorch import TSTrainer
 
 
 if __name__ == '__main__':
