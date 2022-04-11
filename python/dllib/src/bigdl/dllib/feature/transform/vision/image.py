@@ -18,6 +18,8 @@ import sys
 from bigdl.dllib.utils.common import JavaValue
 from bigdl.dllib.utils.common import callBigDlFunc
 from bigdl.dllib.utils.common import *
+from bigdl.dllib.utils.log4Error import *
+
 
 if sys.version >= '3':
     long = int
@@ -56,9 +58,9 @@ class Pipeline(FeatureTransformer):
 
     def __init__(self, transformers, bigdl_type="float"):
         for transfomer in transformers:
-            assert transfomer.__class__.__bases__[0].__name__ == "FeatureTransformer", \
-                "the transformer should be " \
-                "subclass of FeatureTransformer"
+            invalidInputError(transfomer.__class__.__bases__[0].__name__ == "FeatureTransformer",
+                              "the transformer should be "
+                              "subclass of FeatureTransformer")
         super(Pipeline, self).__init__(bigdl_type, transformers)
 
 
@@ -216,7 +218,8 @@ class LocalImageFrame(ImageFrame):
     """
 
     def __init__(self, image_list=None, label_list=None, jvalue=None, bigdl_type="float"):
-        assert jvalue or image_list, "jvalue and image_list cannot be None in the same time"
+        invalidInputError(jvalue or image_list,
+                          "jvalue and image_list cannot be None in the same time")
         if jvalue:
             self.value = jvalue
         else:
@@ -268,7 +271,8 @@ class DistributedImageFrame(ImageFrame):
     """
 
     def __init__(self, image_rdd=None, label_rdd=None, jvalue=None, bigdl_type="float"):
-        assert jvalue or image_rdd, "jvalue and image_rdd cannot be None in the same time"
+        invalidInputError(jvalue or image_rdd,
+                          "jvalue and image_rdd cannot be None in the same time")
         if jvalue:
             self.value = jvalue
         else:

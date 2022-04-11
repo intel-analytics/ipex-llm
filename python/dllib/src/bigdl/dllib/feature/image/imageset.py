@@ -16,6 +16,7 @@
 from bigdl.dllib.feature.transform.vision.image import ImageFrame
 from bigdl.dllib.utils.common import *
 from bigdl.dllib.utils.file_utils import callZooFunc
+from bigdl.dllib.utils.log4Error import *
 
 
 class ImageSet(JavaValue):
@@ -137,7 +138,8 @@ class LocalImageSet(ImageSet):
     """
 
     def __init__(self, image_list=None, label_list=None, jvalue=None, bigdl_type="float"):
-        assert jvalue or image_list, "jvalue and image_list cannot be None in the same time"
+        invalidInputError(jvalue or image_list,
+                          "jvalue and image_list cannot be None in the same time")
         if jvalue:
             self.value = jvalue
         else:
@@ -180,7 +182,8 @@ class DistributedImageSet(ImageSet):
     """
 
     def __init__(self, image_rdd=None, label_rdd=None, jvalue=None, bigdl_type="float"):
-        assert jvalue or image_rdd, "jvalue and image_rdd cannot be None in the same time"
+        invalidInputError(jvalue or image_rdd,
+                          "jvalue and image_rdd cannot be None in the same time")
         if jvalue:
             self.value = jvalue
         else:
