@@ -78,7 +78,7 @@ class TestLSTMForecaster(TestCase):
         self.forecaster.fit(train_data,
                             epochs=2,
                             batch_size=32)
-        yhat = self.forecaster.predict(test_data[0])
+        yhat = self.forecaster.predict(test_data)
         assert yhat.shape == (400, 1, 2)
 
     def test_lstm_forecaster_save_load(self):
