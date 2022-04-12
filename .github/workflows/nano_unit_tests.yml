@@ -44,11 +44,20 @@ jobs:
           $CONDA/bin/conda info
           whl_name=`ls python/nano/src/dist/`;pip install python/nano/src/dist/$whl_name[pytorch]
           source bigdl-nano-init
+          if [ 0"$LD_PRELOAD" = "0" ]; then
+            exit 1
+          fi
           source $CONDA/bin/deactivate
+          if [ ! 0"$LD_PRELOAD" = "0" ]; then
+            exit 1
+          fi
           source $CONDA/bin/activate bigdl-init
+          if [ 0"$LD_PRELOAD" = "0" ]; then
+            exit 1
+          fi
           pip uninstall -y bigdl-nano
           source $CONDA/bin/deactivate
-          $CONDA/bin/conda remove -n ray-pytorch --all
+          $CONDA/bin/conda remove -n bigdl-init --all
         env:
           ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
 
