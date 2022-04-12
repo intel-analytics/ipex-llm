@@ -49,7 +49,7 @@ parser.add_argument('--address', type=str, default="",
                          'If it is empty, a new Ray cluster will be created.')
 parser.add_argument('--backend', type=str, default="bigdl",
                     help='The backend of PyTorch Estimator; '
-                         'bigdl, torch_distributed and spark are supported')
+                         'bigdl, ray and spark are supported')
 parser.add_argument('--batch_size', type=int, default=4, help='The training batch size')
 parser.add_argument('--epochs', type=int, default=2, help='The number of epochs to train for')
 parser.add_argument('--data_dir', type=str, default="./data", help='The path to dataset')
@@ -171,7 +171,7 @@ if args.backend == "bigdl":
 
     res = orca_estimator.evaluate(data=test_loader)
     print("Accuracy of the network on the test images: %s" % res)
-elif args.backend in ["torch_distributed", "spark"]:
+elif args.backend in ["ray", "spark"]:
     orca_estimator = Estimator.from_torch(model=model_creator,
                                           optimizer=optim_creator,
                                           loss=criterion,
@@ -188,7 +188,7 @@ elif args.backend in ["torch_distributed", "spark"]:
     for r in res:
         print(r, ":", res[r])
 else:
-    raise NotImplementedError("Only bigdl, torch_distributed, and spark are supported as the backend,"
+    raise NotImplementedError("Only bigdl, ray, and spark are supported as the backend,"
                               " but got {}".format(args.backend))
 
 stop_orca_context()

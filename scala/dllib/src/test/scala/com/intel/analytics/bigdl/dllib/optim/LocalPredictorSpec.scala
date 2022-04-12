@@ -99,7 +99,7 @@ class LocalPredictorSpec extends FlatSpec with Matchers with BeforeAndAfter {
     (1 to 20).foreach(x => {
       imageFeatures(x - 1).uri() should be (x.toString)
       if (imageFeatures(x - 1).predict() == null) println(x, imageFeatures(x - 1).predict())
-      assert(imageFeatures(x - 1).predict() != null)
+      TestUtils.conditionFailTest(imageFeatures(x - 1).predict() != null)
     })
   }
 
@@ -127,7 +127,7 @@ class LocalPredictorSpec extends FlatSpec with Matchers with BeforeAndAfter {
       println(imageFeatures(x - 1)[Sample[Float]](ImageFeature.sample)
         .getFeatureSize()(0).mkString("x"))
       println(x, imageFeatures(x - 1).predict().asInstanceOf[Tensor[Float]].size().mkString("x"))
-      assert(imageFeatures(x - 1).predict() != null)
+      TestUtils.conditionFailTest(imageFeatures(x - 1).predict() != null)
     })
   }
 
@@ -301,8 +301,8 @@ class LocalPredictorSpec extends FlatSpec with Matchers with BeforeAndAfter {
     val imageFeatures = detection.array
     (1 to 20).foreach(x => {
       imageFeatures(x - 1).uri() should be (x.toString)
-      assert(imageFeatures(x - 1).predict() != null)
-      assert(imageFeatures(x - 1).predict().asInstanceOf[Table].length() == 2)
+      TestUtils.conditionFailTest(imageFeatures(x - 1).predict() != null)
+      TestUtils.conditionFailTest(imageFeatures(x - 1).predict().asInstanceOf[Table].length() == 2)
     })
   }
 }

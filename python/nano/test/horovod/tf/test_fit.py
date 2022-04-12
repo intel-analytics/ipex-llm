@@ -83,7 +83,7 @@ def test_fit_function():
     num_classes, train_ds, val_ds = dataset_generation()
 
     model_multiprocess = model_init(num_classes)
-    history_multiprocess = model_multiprocess.fit(train_ds, epochs=3,
+    history_multiprocess = model_multiprocess.fit(train_ds, epochs=1,
                                                   validation_data=val_ds,
                                                   nprocs=2,
                                                   backend="horovod")

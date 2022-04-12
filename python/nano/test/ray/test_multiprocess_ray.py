@@ -19,13 +19,17 @@ import tensorflow as tf
 from tensorflow.keras import layers
 from bigdl.nano.tf.keras import Sequential
 
-URI = os.environ['FTP_URI']
+if "FTP_URI" in os.environ:
+    URI = os.environ['FTP_URI']
+    flower_dataset_url = URI + "/BigDL-data/flower_photos.tar.gz"
+else:
+    flower_dataset_url = "http://download.tensorflow.org/example_images/flower_photos.tgz"
+
 batch_size, img_height, img_width = 32, 180, 180
 
 
 def dataset_generation():
-    dataset_url = URI + "/BigDL-data/flower_photos.tar.gz"
-    data_dir = tf.keras.utils.get_file('flower_photos', origin=dataset_url, untar=True)
+    data_dir = tf.keras.utils.get_file('flower_photos', origin=flower_dataset_url, untar=True)
     data_dir = pathlib.Path(data_dir)
 
     train_ds = tf.keras.utils.image_dataset_from_directory(
@@ -79,15 +83,8 @@ def model_init(num_classes):
 def test_fit_function():
     num_classes, train_ds, val_ds = dataset_generation()
 
-    # Case 1: Default
-    model_default = model_init(num_classes)
-    history_default = model_default.fit(train_ds, epochs=3, validation_data=val_ds)
-
-    # Case 2: Multiple processing argument
-    # Case 2.1: multiple processing backend
     model_multiprocess = model_init(num_classes)
-    history_multiprocess = model_multiprocess.fit(train_ds, epochs=3,
-                                                  validation_data=val_ds, nprocs=2, backend="ray")
-    assert 1 - (history_multiprocess.history['loss'][-1]
-                / history_default.history['loss'][-1]) <= 0.1
+    history_multiprocess = model_multiprocess.fit(train_ds, epochs=1,
+                                                  validation_data=val_ds,
+                                                  nprocs=1, backend="ray")
 

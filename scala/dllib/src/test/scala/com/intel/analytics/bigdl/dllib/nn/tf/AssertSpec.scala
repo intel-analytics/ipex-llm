@@ -21,6 +21,7 @@ import com.intel.analytics.bigdl.dllib.utils.T
 import com.intel.analytics.bigdl.dllib.utils.serializer.ModuleSerializationTest
 import com.intel.analytics.bigdl.dllib.utils.tf.TFTensorNumeric.NumericByteString
 
+// scalastyle:off
 class AssertSerialTest extends ModuleSerializationTest {
   override def test(): Unit = {
     val assert = new Assert[Float]().setName("assert")
@@ -32,3 +33,4 @@ class AssertSerialTest extends ModuleSerializationTest {
     runSerializationTest(assert, input)
   }
 }
+// scalastyle:on

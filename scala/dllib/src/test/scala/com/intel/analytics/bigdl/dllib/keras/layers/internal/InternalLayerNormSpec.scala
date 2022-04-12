@@ -18,6 +18,7 @@ package com.intel.analytics.bigdl.dllib.keras.layers.internal
 
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.keras.serializer.ModuleSerializationTest
+import com.intel.analytics.bigdl.dllib.utils.TestUtils
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
 
@@ -56,10 +57,10 @@ class InternalLayerNormSpec extends FlatSpec with BeforeAndAfter with Matchers {
       2.0363169f), Array(1, 4))
     val expectGradient1 = Tensor[Float](Array[Float](13.0f, 10.0f, 10.0f, 9.0f), Array(1, 4))
 
-    require(output.almostEqual(expectOutput, 1e-8))
-    require(gradInput.almostEqual(expectGradInput, 1e-8))
-    require(gradients.head.almostEqual(expectGradient0, 1e-8))
-    require(gradients.last.almostEqual(expectGradient1, 1e-8))
+    TestUtils.conditionFailTest(output.almostEqual(expectOutput, 1e-8))
+    TestUtils.conditionFailTest(gradInput.almostEqual(expectGradInput, 1e-8))
+    TestUtils.conditionFailTest(gradients.head.almostEqual(expectGradient0, 1e-8))
+    TestUtils.conditionFailTest(gradients.last.almostEqual(expectGradient1, 1e-8))
   }
 
   "layerNorm" should "be able to generate correct result2" in {
@@ -101,10 +102,10 @@ class InternalLayerNormSpec extends FlatSpec with BeforeAndAfter with Matchers {
       8.287329f, 2.0363169f), Array(1, 4))
     val expectGradient1 = Tensor[Float](Array[Float](13.0f, 10.0f, 10.0f, 9.0f), Array(1, 4))
 
-    require(output.almostEqual(expectOutput, 1e-8))
-    require(gradInput.almostEqual(expectGradInput, 1e-8))
-    require(gradients.head.almostEqual(expectGradient0, 1e-8))
-    require(gradients.last.almostEqual(expectGradient1, 1e-8))
+    TestUtils.conditionFailTest(output.almostEqual(expectOutput, 1e-8))
+    TestUtils.conditionFailTest(gradInput.almostEqual(expectGradInput, 1e-8))
+    TestUtils.conditionFailTest(gradients.head.almostEqual(expectGradient0, 1e-8))
+    TestUtils.conditionFailTest(gradients.last.almostEqual(expectGradient1, 1e-8))
   }
 }
 

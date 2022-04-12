@@ -389,7 +389,7 @@ ${SPARK_HOME}/bin/spark-submit \
   --conf spark.driver.extraClassPath=local://${BIGDL_HOME}/jars/bigdl-orca-spark_${SPARK_VERSION}-${BIGDL_VERSION}-jar-with-dependencies.jar:local://${BIGDL_HOME}/jars/bigdl-dllib-spark_${SPARK_VERSION}-${BIGDL_VERSION}-jar-with-dependencies.jar:local://${BIGDL_HOME}/jars/bigdl-friesian-spark_${SPARK_VERSION}-${BIGDL_VERSION}-jar-with-dependencies.jar \
   --conf spark.executor.extraClassPath=local://${BIGDL_HOME}/jars/bigdl-orca-spark_${SPARK_VERSION}-${BIGDL_VERSION}-jar-with-dependencies.jar:local://${BIGDL_HOME}/jars/bigdl-dllib-spark_${SPARK_VERSION}-${BIGDL_VERSION}-jar-with-dependencies.jar:local://${BIGDL_HOME}/jars/bigdl-friesian-spark_${SPARK_VERSION}-${BIGDL_VERSION}-jar-with-dependencies.jar \
   local:///opt/bigdl-0.14.0-SNAPSHOT/examples/orca/learn/pytorch/super_resolution/super_resolution.py \
-  --backend torch_distributed
+  --backend ray
 
 endtime=`date +'%Y-%m-%d %H:%M:%S'`
 start_seconds=$(date --date="$starttime" +%s);
@@ -432,7 +432,7 @@ ${SPARK_HOME}/bin/spark-submit \
   --conf spark.driver.extraClassPath=local://${BIGDL_HOME}/jars/bigdl-orca-spark_${SPARK_VERSION}-${BIGDL_VERSION}-jar-with-dependencies.jar:local://${BIGDL_HOME}/jars/bigdl-dllib-spark_${SPARK_VERSION}-${BIGDL_VERSION}-jar-with-dependencies.jar:local://${BIGDL_HOME}/jars/bigdl-friesian-spark_${SPARK_VERSION}-${BIGDL_VERSION}-jar-with-dependencies.jar \
   --conf spark.executor.extraClassPath=local://${BIGDL_HOME}/jars/bigdl-orca-spark_${SPARK_VERSION}-${BIGDL_VERSION}-jar-with-dependencies.jar:local://${BIGDL_HOME}/jars/bigdl-dllib-spark_${SPARK_VERSION}-${BIGDL_VERSION}-jar-with-dependencies.jar:local://${BIGDL_HOME}/jars/bigdl-friesian-spark_${SPARK_VERSION}-${BIGDL_VERSION}-jar-with-dependencies.jar \
   local:///opt/bigdl-0.14.0-SNAPSHOT/examples/orca/learn/pytorch/super_resolution/super_resolution.py  \
-  --backend torch_distributed
+  --backend ray
 endtime=`date +'%Y-%m-%d %H:%M:%S'`
 start_seconds=$(date --date="$starttime" +%s);
 end_seconds=$(date --date="$endtime" +%s);
@@ -476,7 +476,7 @@ ${SPARK_HOME}/bin/spark-submit \
   --conf spark.driver.extraClassPath=local://${BIGDL_HOME}/jars/bigdl-orca-spark_${SPARK_VERSION}-${BIGDL_VERSION}-jar-with-dependencies.jar:local://${BIGDL_HOME}/jars/bigdl-dllib-spark_${SPARK_VERSION}-${BIGDL_VERSION}-jar-with-dependencies.jar:local://${BIGDL_HOME}/jars/bigdl-friesian-spark_${SPARK_VERSION}-${BIGDL_VERSION}-jar-with-dependencies.jar \
   --conf spark.executor.extraClassPath=local://${BIGDL_HOME}/jars/bigdl-orca-spark_${SPARK_VERSION}-${BIGDL_VERSION}-jar-with-dependencies.jar:local://${BIGDL_HOME}/jars/bigdl-dllib-spark_${SPARK_VERSION}-${BIGDL_VERSION}-jar-with-dependencies.jar:local://${BIGDL_HOME}/jars/bigdl-friesian-spark_${SPARK_VERSION}-${BIGDL_VERSION}-jar-with-dependencies.jar \
   local:///opt/bigdl-0.14.0-SNAPSHOT/examples/orca/learn/pytorch/cifar10/cifar10.py \
-  --backend torch_distributed
+  --backend ray
 endtime=`date +'%Y-%m-%d %H:%M:%S'`
 start_seconds=$(date --date="$starttime" +%s);
 end_seconds=$(date --date="$endtime" +%s);
@@ -517,7 +517,7 @@ ${SPARK_HOME}/bin/spark-submit \
   --conf spark.driver.extraClassPath=local://${BIGDL_HOME}/jars/bigdl-orca-spark_${SPARK_VERSION}-${BIGDL_VERSION}-jar-with-dependencies.jar:local://${BIGDL_HOME}/jars/bigdl-dllib-spark_${SPARK_VERSION}-${BIGDL_VERSION}-jar-with-dependencies.jar:local://${BIGDL_HOME}/jars/bigdl-friesian-spark_${SPARK_VERSION}-${BIGDL_VERSION}-jar-with-dependencies.jar \
   --conf spark.executor.extraClassPath=local://${BIGDL_HOME}/jars/bigdl-orca-spark_${SPARK_VERSION}-${BIGDL_VERSION}-jar-with-dependencies.jar:local://${BIGDL_HOME}/jars/bigdl-dllib-spark_${SPARK_VERSION}-${BIGDL_VERSION}-jar-with-dependencies.jar:local://${BIGDL_HOME}/jars/bigdl-friesian-spark_${SPARK_VERSION}-${BIGDL_VERSION}-jar-with-dependencies.jar \
   local:///opt/bigdl-0.14.0-SNAPSHOT/examples/orca/learn/pytorch/cifar10/cifar10.py \
-  --backend torch_distributed
+  --backend ray
 endtime=`date +'%Y-%m-%d %H:%M:%S'`
 start_seconds=$(date --date="$starttime" +%s);
 end_seconds=$(date --date="$endtime" +%s);

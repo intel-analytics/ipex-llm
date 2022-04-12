@@ -17,6 +17,7 @@ package com.intel.analytics.bigdl.dllib.integration.torch
 
 import com.intel.analytics.bigdl.dllib.nn.Abs
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
+import com.intel.analytics.bigdl.dllib.utils.TestUtils
 
 @com.intel.analytics.bigdl.tags.Serial
 class AbsSpec extends TorchSpec {
@@ -52,11 +53,11 @@ class AbsSpec extends TorchSpec {
     val luaOutput2 = torchResult("gradInput").asInstanceOf[Tensor[Double]]
 
     luaOutput1.map(output, (v1, v2) => {
-      assert(Math.abs(v1 - v2) == 0);
+      TestUtils.conditionFailTest(Math.abs(v1 - v2) == 0);
       v1
     })
     luaOutput2.map(gradInput, (v1, v2) => {
-      assert(Math.abs(v1 - v2) == 0);
+      TestUtils.conditionFailTest(Math.abs(v1 - v2) == 0);
       v1
     })
 

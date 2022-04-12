@@ -193,7 +193,7 @@ if __name__ == '__main__':
               'lr': args.lr}
 
     est = Estimator.from_torch(model=model_creator, optimizer=optim_creator, loss=criterion,
-                               metrics=[Accuracy(), AUC()], use_tqdm=True, backend="torch_distributed",
+                               metrics=[Accuracy(), AUC()], use_tqdm=True, backend="ray",
                                config=config)
     train_stats = est.fit(data=train.df, feature_cols=["feature"], label_cols=["label"],
                           epochs=args.epochs, batch_size=args.batch_size)

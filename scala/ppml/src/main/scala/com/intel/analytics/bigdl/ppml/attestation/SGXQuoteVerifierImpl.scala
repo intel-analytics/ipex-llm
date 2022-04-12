@@ -16,8 +16,6 @@
 
 package com.intel.analytics.bigdl.ppml.attestation
 
-object QuoteVerfierCmd {
-  def main(args: Array[String]): Unit = {
-    
-  }
+class SGXQuoteVerifierImpl extends QuoteVerifier with Serializable {
+
 }

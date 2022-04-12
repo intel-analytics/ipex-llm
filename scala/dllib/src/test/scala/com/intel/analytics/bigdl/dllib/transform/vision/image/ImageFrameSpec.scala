@@ -50,8 +50,8 @@ class ImageFrameSpec extends FlatSpec with Matchers with BeforeAndAfter {
     val local = ImageFrame.read(resource.getFile).asInstanceOf[LocalImageFrame]
     local.array.length should be(1)
     val imf = local.array(0)
-    assert(imf.uri.endsWith("000025.jpg"))
-    assert(imf.bytes.length == 95959)
+    TestUtils.conditionFailTest(imf.uri.endsWith("000025.jpg"))
+    TestUtils.conditionFailTest(imf.bytes.length == 95959)
     imf.opencvMat().shape() should be((375, 500, 3))
   }
 
@@ -59,8 +59,8 @@ class ImageFrameSpec extends FlatSpec with Matchers with BeforeAndAfter {
     val local = ImageFrame.read(resource.getFile).asInstanceOf[LocalImageFrame]
     local.array.foreach(x => println(x.uri, x.bytes.length))
     val imageFeature = local.toDistributed(sc).rdd.first()
-    assert(imageFeature.uri.endsWith("000025.jpg"))
-    assert(imageFeature.bytes.length == 95959)
+    TestUtils.conditionFailTest(imageFeature.uri.endsWith("000025.jpg"))
+    TestUtils.conditionFailTest(imageFeature.bytes.length == 95959)
     imageFeature.opencvMat().shape() should be((375, 500, 3))
   }
 
@@ -68,8 +68,8 @@ class ImageFrameSpec extends FlatSpec with Matchers with BeforeAndAfter {
     val distributed = ImageFrame.read(resource.getFile, sc)
       .asInstanceOf[DistributedImageFrame]
     val imageFeature = distributed.rdd.first()
-    assert(imageFeature.uri.endsWith("000025.jpg"))
-    assert(imageFeature.bytes.length == 95959)
+    TestUtils.conditionFailTest(imageFeature.uri.endsWith("000025.jpg"))
+    TestUtils.conditionFailTest(imageFeature.bytes.length == 95959)
     imageFeature.opencvMat().shape() should be((375, 500, 3))
   }
 
@@ -93,8 +93,8 @@ class ImageFrameSpec extends FlatSpec with Matchers with BeforeAndAfter {
 
     val distributed = ImageFrame.readParquet(dir, sqlContext)
     val imageFeature = distributed.rdd.first()
-    assert(imageFeature.uri.endsWith("000025.jpg"))
-    assert(imageFeature.bytes.length == 95959)
+    TestUtils.conditionFailTest(imageFeature.uri.endsWith("000025.jpg"))
+    TestUtils.conditionFailTest(imageFeature.bytes.length == 95959)
     FileUtils.deleteDirectory(tmpFile)
   }
 
@@ -124,8 +124,8 @@ class ImageFrameSpec extends FlatSpec with Matchers with BeforeAndAfter {
     TestUtils.cancelOnWindows()
     val resource = getClass().getClassLoader().getResource("imagenet")
     val tmpFile = java.io.File.createTempFile("UnitTest", System.nanoTime().toString)
-    require(tmpFile.delete())
-    require(tmpFile.mkdir())
+    TestUtils.conditionFailTest(tmpFile.delete())
+    TestUtils.conditionFailTest(tmpFile.mkdir())
 
     // Convert the test imagenet files to seq files
     val files = (DataSet.ImageFolder.paths(Paths.get(processPath(resource.getPath())))
@@ -147,9 +147,9 @@ class ImageFrameSpec extends FlatSpec with Matchers with BeforeAndAfter {
 
     val sampleRdd = imageFrame.toDistributed().rdd.map(x => x[Sample[Float]](ImageFeature.sample))
     sampleRdd.foreach(x => {
-      require(x.feature().size(1) == 3)
-      require(x.feature().size(2) == 224)
-      require(x.feature().size(3) == 224)
+      TestUtils.conditionFailTest(x.feature().size(1) == 3)
+      TestUtils.conditionFailTest(x.feature().size(2) == 224)
+      TestUtils.conditionFailTest(x.feature().size(3) == 224)
       println(x.label())
     })
 

@@ -17,7 +17,7 @@
 package com.intel.analytics.bigdl.ppml.fgboost.common
 
 import com.intel.analytics.bigdl.grpc.JacksonJsonSerializer
-
+import com.intel.analytics.bigdl.dllib.utils.Log4Error
 
 case class XGBoostFormatNode(nodeid: Int,
                              depth: Int,
@@ -44,7 +44,8 @@ object XGBoostFormatSerializer {
   def apply(regressionTree: RegressionTree) = {
     def buildXGBoostFormatTree(treeNode: TreeNode): XGBoostFormatNode = {
       if (treeNode.leftChild != null) {
-        require(treeNode.rightChild != null, "???")
+        Log4Error.unKnowExceptionError(treeNode.rightChild != null,
+          "???")
         XGBoostFormatNode(treeNode.nodeID.toInt,
           treeNode.depth,
           treeNode.splitInfo.featureID,

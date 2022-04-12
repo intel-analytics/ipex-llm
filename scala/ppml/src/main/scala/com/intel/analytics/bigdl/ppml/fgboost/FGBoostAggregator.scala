@@ -30,6 +30,7 @@ import org.apache.logging.log4j.LogManager
 import scala.collection.JavaConversions._
 import scala.collection.JavaConverters._
 import scala.collection.mutable.ArrayBuffer
+import com.intel.analytics.bigdl.dllib.utils.Log4Error
 
 class FGBoostAggregator(validationMethods: Array[ValidationMethod[Float]] = null)
   extends Aggregator {
@@ -284,7 +285,8 @@ class FGBoostAggregator(validationMethods: Array[ValidationMethod[Float]] = null
     while (clientsIterator.hasNext) {
       result.zip(evalResults(clientsIterator.next())).foreach { be =>
         be._1.zip(be._2).foreach { case (clientPredict1, clientPredict2) =>
-          require(clientPredict1._1 == clientPredict2._1, "Tree id miss match." +
+          Log4Error.unKnowExceptionError(clientPredict1._1 == clientPredict2._1,
+            "Tree id miss match." +
             s" Got ${clientPredict1._1} ${clientPredict2._1}.")
           clientPredict1._2.indices.foreach { i =>
             clientPredict1._2(i) = clientPredict1._2(i) && clientPredict2._2(i)

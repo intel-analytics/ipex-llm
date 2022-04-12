@@ -16,6 +16,7 @@
 
 package com.intel.analytics.bigdl.dllib.feature.text
 
+import com.intel.analytics.bigdl.dllib.utils.TestUtils
 import org.scalatest.{FlatSpec, Matchers}
 
 import scala.collection.immutable.HashSet
@@ -26,19 +27,19 @@ class TextFeatureSpec extends FlatSpec with Matchers {
 
   "TextFeature with label" should "work properly" in {
     val feature = TextFeature(text1, label = 0)
-    require(feature.getText == text1)
-    require(feature.hasLabel)
-    require(feature.getLabel == 0)
-    require(feature.keys() == HashSet("label", "text"))
-    require(feature.getTokens == null)
-    require(feature.getSample == null)
-    require(feature.getPredict == null)
+    TestUtils.conditionFailTest(feature.getText == text1)
+    TestUtils.conditionFailTest(feature.hasLabel)
+    TestUtils.conditionFailTest(feature.getLabel == 0)
+    TestUtils.conditionFailTest(feature.keys() == HashSet("label", "text"))
+    TestUtils.conditionFailTest(feature.getTokens == null)
+    TestUtils.conditionFailTest(feature.getSample == null)
+    TestUtils.conditionFailTest(feature.getPredict == null)
   }
 
   "TextFeature without label" should "work properly" in {
     val feature = TextFeature(text1)
-    require(!feature.hasLabel)
-    require(feature.getLabel == -1)
-    require(feature.keys() == HashSet("text"))
+    TestUtils.conditionFailTest(!feature.hasLabel)
+    TestUtils.conditionFailTest(feature.getLabel == -1)
+    TestUtils.conditionFailTest(feature.keys() == HashSet("text"))
   }
 }

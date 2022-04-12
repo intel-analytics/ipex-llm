@@ -49,7 +49,7 @@ class ConvLSTMPeephole3DSpec extends FlatSpec with BeforeAndAfter with Matchers 
       val output = model.forward(input).toTensor[Double]
       for((value, j) <- output.size.view.zipWithIndex) {
         if (j > 2) {
-          require(value == input.size(j + 1))
+          TestUtils.conditionFailTest(value == input.size(j + 1))
         }
       }
       model.backward(input, output)
@@ -77,7 +77,7 @@ class ConvLSTMPeephole3DSpec extends FlatSpec with BeforeAndAfter with Matchers 
     val state = model.getHiddenState()
     val hidden = state.asInstanceOf[Table].apply(1).asInstanceOf[Tensor[Double]]
     hidden.map(output.select(2, seqLength), (v1, v2) => {
-      assert(abs(v1 - v2) == 0)
+      TestUtils.conditionFailTest(abs(v1 - v2) == 0)
       v1
     })
   }

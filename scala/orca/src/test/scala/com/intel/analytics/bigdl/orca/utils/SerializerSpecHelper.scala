@@ -27,7 +27,7 @@ import org.scalatest.{BeforeAndAfterAll, FlatSpec, Matchers, Tag}
 
 import scala.collection.JavaConverters._
 import scala.collection.mutable
-
+import com.intel.analytics.bigdl.orca.utils.TestUtils
 
 abstract class SerializerSpecHelper extends FlatSpec with Matchers with BeforeAndAfterAll{
 
@@ -64,7 +64,8 @@ abstract class SerializerSpecHelper extends FlatSpec with Matchers with BeforeAn
         try {
           val ins = Class.forName(clsWholeName)
           val testClass = ins.getConstructors()(0).newInstance()
-          require(testClass.isInstanceOf[ModuleSerializationTest], s"$clsWholeName should be a " +
+          TestUtils.conditionFailTest(testClass.isInstanceOf[ModuleSerializationTest],
+            s"$clsWholeName should be a " +
             s"subclass of com.intel.analytics.zoo.pipeline.api.keras.layers.serializer." +
             s"ModuleSerializationTest")
           testClass.asInstanceOf[ModuleSerializationTest].test()

@@ -44,6 +44,7 @@ import org.json4s._
 
 import scala.collection.mutable
 import scala.reflect.ClassTag
+import com.intel.analytics.bigdl.dllib.utils.Log4Error
 
 
 /**
@@ -83,7 +84,7 @@ class TFNet(private val graphDef: TFGraphHolder,
   if (graphMeta.variables.isDefined) {
     // Sanity check. If variables is defined, it means the backward graph
     // is generated. We cannot compute the gradInput/gradWeight if output is not a float
-    require(outputTypes.map(_ == DataType.FLOAT).reduce(_ && _),
+    Log4Error.unKnowExceptionError(outputTypes.map(_ == DataType.FLOAT).reduce(_ && _),
       "all input types are required to be float if backward are allowed")
   }
 
@@ -187,8 +188,8 @@ class TFNet(private val graphDef: TFGraphHolder,
       zooUtils.timeIt("TFNet.updateOutput") {
         val runner = sess.runner()
 
-        require(activityLength(input) == inputTypes.length,
-          s"require ${inputTypes.length} inputs, but ${activityLength(input)} given. " +
+        Log4Error.unKnowExceptionError(activityLength(input) == inputTypes.length,
+          s"expect ${inputTypes.length} inputs, but ${activityLength(input)} given. " +
             s"The inputs are ${inputNames.toSeq}")
 
         tensorManager.tensor2TFTensors(activity2Seq(input), inputTypes, inputTFTensors)
@@ -294,8 +295,8 @@ class TFNet(private val graphDef: TFGraphHolder,
 
         val runner = sess.runner()
 
-        require(activityLength(input) == inputTypes.length,
-          s"require ${inputTypes.length} inputs, but ${activityLength(input)} given. " +
+        Log4Error.unKnowExceptionError(activityLength(input) == inputTypes.length,
+          s"expect ${inputTypes.length} inputs, but ${activityLength(input)} given. " +
             s"The inputs are ${inputNames.toSeq}")
 
         val gradOutputTFTensors = new Array[TTensor[_]](outputNames.length)
@@ -459,7 +460,7 @@ class TFNet(private val graphDef: TFGraphHolder,
 
 object TFNet {
 
-  assert(TFNetNative.isLoaded)
+  Log4Error.invalidOperationError(TFNetNative.isLoaded, "TFNetNative is not loaded")
 
   @transient
   private lazy val inDriver = NetUtils.isDriver
@@ -524,9 +525,10 @@ object TFNet {
       id = in.readString()
       val (graphDef, graphDefIsCreated) = graphDefRegistry.getOrCreate(id) {
         val len = in.readInt()
-        require(len != 0, "GraphDef length should not be zero," +
+        Log4Error.invalidOperationError(len != 0, "GraphDef length should not be zero," +
           "please set logging level to debug for more information")
-        assert(len >= 0, "GraphDef length should be an non-negative integer")
+        Log4Error.invalidOperationError(len >= 0,
+          "GraphDef length should be an non-negative integer")
         val graphDef = new Array[Byte](len)
         timing("reading graph def from stream") {
           var numOfBytes = 0
@@ -540,7 +542,8 @@ object TFNet {
 
       if (!graphDefIsCreated) {
         val len = in.readInt()
-        assert(len >= 0, "GraphDef length should be an non-negative integer")
+        Log4Error.invalidOperationError(len >= 0,
+          "GraphDef length should be an non-negative integer")
         in.skip(len)
       }
 
