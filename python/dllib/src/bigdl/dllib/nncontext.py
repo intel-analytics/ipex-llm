@@ -554,8 +554,8 @@ def init_nncontext(conf=None, cluster_mode="spark-submit", spark_log_level="WARN
         hadoop_conf = os.environ.get("HADOOP_CONF_DIR")
         if not hadoop_conf:
             invalidInputError("hadoop_conf" in kwargs,
-                              "Directory path to hadoop conf not found for yarn-client" \
-                              " mode. Please either specify argument hadoop_conf or" \
+                              "Directory path to hadoop conf not found for yarn-client"
+                              " mode. Please either specify argument hadoop_conf or"
                               "set the environment variable HADOOP_CONF_DIR")
             hadoop_conf = kwargs["hadoop_conf"]
         from bigdl.dllib.utils.utils import detect_conda_env_name
