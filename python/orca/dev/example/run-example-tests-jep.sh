@@ -29,11 +29,7 @@ else
   unzip ${BIGDL_ROOT}/python/orca/example/learn/pytorch/cifar10/cifar10.zip
 fi
 
-sed "s/epochs=2/epochs=1/g;s/batch_size=4/batch_size=256/g" \
-  ${BIGDL_ROOT}/python/orca/example/learn/pytorch/cifar10/cifar10.py \
-  >${BIGDL_ROOT}/python/orca/example/learn/pytorch/cifar10/cifar10_tmp.py
-
-python ${BIGDL_ROOT}/python/orca/example/learn/pytorch/cifar10/cifar10_tmp.py
+python ${BIGDL_ROOT}/python/orca/example/learn/pytorch/cifar10/cifar10.py --batch_size 256 --epochs 1
 
 now=$(date "+%s")
 time2=$((now - start))
