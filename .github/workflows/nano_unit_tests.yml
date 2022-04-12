@@ -36,6 +36,20 @@ jobs:
       - name: Build Nano whl
         run: bash python/nano/dev/release_default_linux.sh default false
 
+      - name: Run Nano-init test
+        shell: bash
+        run: |
+          $CONDA/bin/conda create -n bigdl-init -y python==3.7.10
+          source $CONDA/bin/activate bigdl-init
+          $CONDA/bin/conda info
+          whl_name=`ls python/nano/src/dist/`;pip install python/nano/src/dist/$whl_name[pytorch]
+          source bigdl-nano-init
+          pip uninstall bigdl-nano
+          source $CONDA/bin/deactivate
+          $CONDA/bin/conda remove -n ray-pytorch --all
+        env:
+          ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
+
       - name: Run ray PyTorch unit tests
         shell: bash
         run: |
