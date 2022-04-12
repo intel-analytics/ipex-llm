@@ -44,6 +44,8 @@ jobs:
           $CONDA/bin/conda info
           whl_name=`ls python/nano/src/dist/`;pip install python/nano/src/dist/$whl_name[pytorch]
           source bigdl-nano-init
+          source $CONDA/bin/deactivate
+          source $CONDA/bin/activate bigdl-init
           pip uninstall bigdl-nano
           source $CONDA/bin/deactivate
           $CONDA/bin/conda remove -n ray-pytorch --all
