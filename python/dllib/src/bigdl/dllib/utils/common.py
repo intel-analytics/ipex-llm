@@ -192,7 +192,7 @@ class JTensor(object):
             self.indices = np.frombuffer(indices, dtype=np.int32)
         else:
             invalidInputError(isinstance(indices, np.ndarray),
-                              f"indices should be a np.ndarray, not ${type(a_ndarray)},"
+                              f"indices should be a np.ndarray, not ${type(indices)},"
                               f" ${str(indices)}")
             self.indices = np.array(indices, dtype=np.int32)
         self.bigdl_type = bigdl_type
