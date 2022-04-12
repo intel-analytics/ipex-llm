@@ -46,7 +46,7 @@ jobs:
           source bigdl-nano-init
           source $CONDA/bin/deactivate
           source $CONDA/bin/activate bigdl-init
-          pip uninstall bigdl-nano
+          pip uninstall -y bigdl-nano
           source $CONDA/bin/deactivate
           $CONDA/bin/conda remove -n ray-pytorch --all
         env:
