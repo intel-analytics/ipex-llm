@@ -76,24 +76,20 @@ class TestOnnx(TestCase):
         train_loader = create_data_loader(data_dir, batch_size, \
                                           num_workers, data_transform, subset=200)
         trainer.fit(pl_model, train_loader)
-        assert pl_model._ortsess_up_to_date is False  # ortsess is not up-to-date after training
 
         for x, y in train_loader:
             onnx_res = pl_model.inference(x.numpy())  # onnxruntime
-            pytorch_res = pl_model.inference(x, backend=None).numpy()  # native pytorch
+            pytorch_res = pl_model.inference(x.numpy(), backend=None).numpy()  # native pytorch
             pl_model.eval_onnx()
             forward_res = pl_model(x).numpy()
             pl_model.exit_onnx()
-            assert pl_model._ortsess_up_to_date is True  # ortsess is up-to-date while inferencing
             np.testing.assert_almost_equal(onnx_res, pytorch_res, decimal=5)  # same result
             np.testing.assert_almost_equal(onnx_res, forward_res, decimal=5)  # same result
 
         trainer = Trainer(max_epochs=1)
         trainer.fit(pl_model, train_loader)
-        assert pl_model._ortsess_up_to_date is False  # ortsess is not up-to-date after training
 
-        pl_model.update_ortsess()  # update the ortsess with default settings
-        assert pl_model._ortsess_up_to_date is True  # ortsess is up-to-date after updating
+        pl_model.eval_onnx()  # update the ortsess with default settings
 
         for x, y in train_loader:
             pl_model.inference(x.numpy())
@@ -111,24 +107,20 @@ class TestOnnx(TestCase):
         y[0:50] = 1
         train_loader = DataLoader(TensorDataset(x1, x2, y), batch_size=32, shuffle=True)
         trainer.fit(pl_model, train_loader)
-        assert pl_model._ortsess_up_to_date is False  # ortsess is not up-to-date after training
 
         for x1, x2, y in train_loader:
             onnx_res = pl_model.inference([x1.numpy(), x2.numpy()])  # onnxruntime
-            pytorch_res = pl_model.inference([x1, x2], backend=None).numpy()  # native pytorch
+            pytorch_res = pl_model.inference([x1.numpy(), x2.numpy()], backend=None).numpy()  # native pytorch
             pl_model.eval_onnx()
             forward_res = pl_model(x1, x2).numpy()
             pl_model.exit_onnx()
-            assert pl_model._ortsess_up_to_date is True  # ortsess is up-to-date while inferencing
             np.testing.assert_almost_equal(onnx_res, pytorch_res, decimal=5)  # same result
             np.testing.assert_almost_equal(onnx_res, forward_res, decimal=5)  # same result
 
         trainer = Trainer(max_epochs=1)
         trainer.fit(pl_model, train_loader)
-        assert pl_model._ortsess_up_to_date is False  # ortsess is not up-to-date after training
 
-        pl_model.update_ortsess()  # update the ortsess with default settings
-        assert pl_model._ortsess_up_to_date is True  # ortsess is up-to-date after updating
+        pl_model.eval_onnx()  # update the ortsess with default settings
 
         for x1, x2, y in train_loader:
             pl_model.inference([x1.numpy(), x2.numpy()])
@@ -154,9 +146,8 @@ class TestOnnx(TestCase):
 
         # normal usage without tunning
         pl_model = trainer.quantize(pl_model, train_loader, framework=['pytorch_fx', 'onnxrt_integerops'])
-        assert pl_model._quantized_model_up_to_date is True
         for x, y in train_loader:
-            onnx_res = pl_model.inference(x, backend="onnx", quantize=True).numpy()
+            onnx_res = pl_model.inference(x.numpy(), backend="onnx", quantize=True).numpy()
             pl_model.eval_onnx(quantize=True)
             forward_res = pl_model(x).numpy()
             np.testing.assert_almost_equal(onnx_res, forward_res, decimal=5)  # same result
@@ -170,10 +161,8 @@ class TestOnnx(TestCase):
                                     framework=['onnxrt_qlinearops'],
                                     accuracy_criterion={'relative': 0.99,
                                                         'higher_is_better': True})
-        # pl_model = trainer.quantize(pl_model, train_loader, framework=['onnxrt_integerops'])
-        assert pl_model._quantized_model_up_to_date is True
         for x, y in train_loader:
-            onnx_res = pl_model.inference(x, backend="onnx", quantize=True).numpy()
+            onnx_res = pl_model.inference(x.numpy(), backend="onnx", quantize=True).numpy()
             pl_model.eval_onnx()
             forward_res = pl_model(x).numpy()
             np.testing.assert_almost_equal(onnx_res, forward_res, decimal=5)  # same result
