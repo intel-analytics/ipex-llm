@@ -118,7 +118,7 @@ from bigdl.orca.learn.pytorch import Estimator
 from bigdl.orca.learn.metrics import Accuracy
 
 est = Estimator.from_torch(model=model_creator, optimizer=optim_creator, loss=criterion, metrics=[Accuracy()],
-                           backend="torch_distributed")
+                           backend="ray")
 ```
 
 Next, fit and evaluate using the Estimator
