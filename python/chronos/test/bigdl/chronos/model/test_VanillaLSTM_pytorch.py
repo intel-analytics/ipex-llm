@@ -27,10 +27,10 @@ def create_data(loader=False):
     num_train_samples = 1000
     num_val_samples = 400
     num_test_samples = 400
-    input_time_steps = 24#random.randint(20, 30)
-    input_feature_dim = 2#random.randint(4, 5)
-    output_time_steps = 1#random.randint(10, 30)
-    output_feature_dim = 2#random.randint(1, 3)
+    input_time_steps = 24
+    input_feature_dim = 2
+    output_time_steps = 1
+    output_feature_dim = 2
 
     def get_x_y(num_samples):
         x = np.random.rand(num_samples, input_time_steps, input_feature_dim)
@@ -64,31 +64,6 @@ class TestVanillaLSTMPytorch(TestCase):
         assert len(mse[0]) == self.val_data[1].shape[-1]
         assert len(smape) == self.val_data[1].shape[-2]
         assert len(smape[0]) == self.val_data[1].shape[-1]
-
-    # def test_config(self):
-    #     config = {"hidden_dim": [128] * 2,
-    #               "dropout": [0.2] * 2,
-    #               "layer_num": 2}
-    #     self.model.fit_eval((self.train_data[0], self.train_data[1]), self.val_data, metric="MSELoss", **config)
-
-    #     config = {"hidden_dim": 128,
-    #               "dropout": 0.2}
-    #     self.model.fit_eval((self.train_data[0], self.train_data[1]), self.val_data, metric="MSELoss", **config)
-
-    #     with pytest.raises(ValueError):
-    #         config = {"hidden_dim": 0.1,
-    #                   "dropout": 0.2}
-    #         self.model.fit_eval((self.train_data[0], self.train_data[1]), self.val_data, metric="MSELoss", **config)
-
-    #     with pytest.raises(ValueError):
-    #         config = {"hidden_dim": [128] * 2,
-    #                   "dropout": [0.2] * 3}
-    #         self.model.fit_eval((self.train_data[0], self.train_data[1]), self.val_data, metric="MSELoss", **config)
-
-    #     with pytest.raises(ValueError):
-    #         config = {"hidden_dim": 128,
-    #                   "dropout": [0.2] * 2}
-    #         self.model.fit_eval((self.train_data[0], self.train_data[1]), self.val_data, metric="MSELoss", **config)
 
     def test_predict_save_restore(self):
         model = VanillaLSTMPytorch()
