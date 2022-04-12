@@ -54,7 +54,7 @@ abstract class BigDLSpecHelper extends FlatSpec with Matchers with BeforeAndAfte
     doAfter()
     tmpFiles.foreach(f => {
       if (f.exists()) {
-        require(f.isFile, "cannot clean folder")
+        TestUtils.conditionFailTest(f.isFile, "cannot clean folder")
         f.delete()
         logger.info(s"deleted file $f")
       }

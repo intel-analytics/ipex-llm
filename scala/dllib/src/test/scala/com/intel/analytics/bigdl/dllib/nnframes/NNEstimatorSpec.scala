@@ -24,7 +24,7 @@ import com.intel.analytics.bigdl.dllib.nn._
 import com.intel.analytics.bigdl.dllib.optim._
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric.NumericFloat
-import com.intel.analytics.bigdl.dllib.utils.{Engine, RandomGenerator, Shape}
+import com.intel.analytics.bigdl.dllib.utils.{Engine, RandomGenerator, Shape, TestUtils}
 import com.intel.analytics.bigdl.dllib.utils.RandomGenerator.RNG
 import com.intel.analytics.bigdl.dllib.visualization.{TrainSummary, ValidationSummary}
 import com.intel.analytics.bigdl.dllib.common._
@@ -73,13 +73,13 @@ class NNEstimatorSpec extends ZooSpecHelper {
     val model = Linear[Float](10, 1)
     val criterion = ZooClassNLLCriterion[Float]()
     val estimator = NNEstimator(model, criterion, Array(10), Array(1))
-    assert(estimator.getFeaturesCol == "features")
-    assert(estimator.getLabelCol == "label")
-    assert(estimator.getMaxEpoch == 50)
-    assert(estimator.getBatchSize == 1)
-    assert(estimator.getLearningRate == 1e-3)
-    assert(estimator.getLearningRateDecay == 0)
-    assert(estimator.isCachingSample)
+    TestUtils.conditionFailTest(estimator.getFeaturesCol == "features")
+    TestUtils.conditionFailTest(estimator.getLabelCol == "label")
+    TestUtils.conditionFailTest(estimator.getMaxEpoch == 50)
+    TestUtils.conditionFailTest(estimator.getBatchSize == 1)
+    TestUtils.conditionFailTest(estimator.getLearningRate == 1e-3)
+    TestUtils.conditionFailTest(estimator.getLearningRateDecay == 0)
+    TestUtils.conditionFailTest(estimator.isCachingSample)
   }
 
   "NNEstimator" should "apply with differnt params" in {
@@ -115,7 +115,7 @@ class NNEstimatorSpec extends ZooSpecHelper {
       case Row(label: Double, prediction: Seq[_]) =>
         label == prediction.indexOf(prediction.asInstanceOf[Seq[Float]].max) + 1
     }.count()
-    assert(correct > nRecords * 0.8)
+    TestUtils.conditionFailTest(correct > nRecords * 0.8)
   }
 
   "An NNEstimator" should "construct with sampleTransformer" in {
@@ -137,7 +137,7 @@ class NNEstimatorSpec extends ZooSpecHelper {
     val predictionDF = nnModel.transform(df)
     predictionDF.show()
     predictionDF.printSchema()
-    assert(nnModel.transform(df).count() == nRecords)
+    TestUtils.conditionFailTest(nnModel.transform(df).count() == nRecords)
   }
 
   "NNEstimator" should "apply with size support different data types" in {
@@ -256,7 +256,7 @@ class NNEstimatorSpec extends ZooSpecHelper {
 
     val nnModel = estimator.fit(df)
     nnModel.isInstanceOf[NNModel[_]] should be(true)
-    assert(nnModel.transform(df).count() == nRecords)
+    TestUtils.conditionFailTest(nnModel.transform(df).count() == nRecords)
   }
 
   "An NNModel" should "has default batchperthread as 4" in {
@@ -270,7 +270,7 @@ class NNEstimatorSpec extends ZooSpecHelper {
 
     val nnModel = estimator.fit(df)
     nnModel.isInstanceOf[NNModel[_]] should be(true)
-    assert(nnModel.getBatchSize == 4 * 2)
+    TestUtils.conditionFailTest(nnModel.getBatchSize == 4 * 2)
   }
 
   "An NNModel" should "support transform with different batchSize" in {
@@ -282,7 +282,7 @@ class NNEstimatorSpec extends ZooSpecHelper {
     val data = sc.parallelize(smallData)
     val df: DataFrame = sqlContext.createDataFrame(data).toDF("features", "label")
     val nnModel = estimator.fit(df)
-    assert(df.count() == nnModel.setBatchSize(51).transform(df).count())
+    TestUtils.conditionFailTest(df.count() == nnModel.setBatchSize(51).transform(df).count())
   }
 
   "An NNModel" should "supports set Preprocessing" in {
@@ -296,7 +296,7 @@ class NNEstimatorSpec extends ZooSpecHelper {
     val nnModel = estimator.fit(df)
     val newPreprocessing = ArrayToTensor(Array(6)) -> TensorToSample()
     nnModel.setSamplePreprocessing(newPreprocessing)
-    assert(df.count() == nnModel.transform(df).count())
+    TestUtils.conditionFailTest(df.count() == nnModel.transform(df).count())
   }
 
   "An NNEstimator" should "throw exception with incorrect inputs" in {
@@ -332,7 +332,7 @@ class NNEstimatorSpec extends ZooSpecHelper {
     val nnModel = estimator.fit(df)
     val trainSummary = estimator.getTrainSummary.get
     val losses = trainSummary.readScalar("Loss")
-    assert(losses.length > 0)
+    TestUtils.conditionFailTest(losses.length > 0)
     trainSummary.close()
     logdir.deleteOnExit()
   }
@@ -352,7 +352,7 @@ class NNEstimatorSpec extends ZooSpecHelper {
     val nnModel = estimator.fit(df)
     val validationSummary = estimator.getValidationSummary.get
     val losses = validationSummary.readScalar("Loss")
-    assert(losses.length == 5)
+    TestUtils.conditionFailTest(losses.length == 5)
     validationSummary.close()
     logdir.deleteOnExit()
   }
@@ -414,14 +414,14 @@ class NNEstimatorSpec extends ZooSpecHelper {
         case Row(label: Double, prediction: Seq[_]) =>
           label == prediction.indexOf(prediction.asInstanceOf[Seq[Float]].max) + 1
       }.count()
-      assert(correct > nRecords * 0.8)
+      TestUtils.conditionFailTest(correct > nRecords * 0.8)
     }
   }
 
   "NNModel" should "support image FEATURE types" in {
     val pascalResource = getClass.getClassLoader.getResource("pascal/")
     val imageDF = NNImageReader.readImages(pascalResource.getFile, sc)
-    assert(imageDF.count() == 1)
+    TestUtils.conditionFailTest(imageDF.count() == 1)
     val transformer = RowToImageFeature() -> ImageResize(256, 256) -> ImageCenterCrop(224, 224) ->
       ImageChannelNormalize(123, 117, 104) -> ImageMatToTensor() -> ImageFeatureToTensor()
     val featurizer = NNModel(Inception_v1(1000), transformer)
@@ -440,7 +440,7 @@ class NNEstimatorSpec extends ZooSpecHelper {
     val data = sc.parallelize(smallData)
     val df = sqlContext.createDataFrame(data).toDF("features", "label")
 
-    assert(nnModel.transform(df).count() == nRecords)
+    TestUtils.conditionFailTest(nnModel.transform(df).count() == nRecords)
   }
 
   "NNModel" should "apply with differnt params" in {
@@ -454,7 +454,7 @@ class NNEstimatorSpec extends ZooSpecHelper {
       NNModel(model, SeqToTensor(Array(6)))
     ).foreach { e =>
       e.transform(df).count()
-      assert(e.getBatchSize == 4 * 2)
+      TestUtils.conditionFailTest(e.getBatchSize == 4 * 2)
     }
   }
 
@@ -520,25 +520,25 @@ class NNEstimatorSpec extends ZooSpecHelper {
       .setValidationSummary(new ValidationSummary("/tmp", appName))
       .setValidation(Trigger.maxIteration(3), df, Array(new Loss[Float]()), 2)
     val copied = estimator.copy(ParamMap.empty)
-    assert(estimator.model ne copied.model)
-    assert(estimator.criterion ne copied.criterion)
+    TestUtils.conditionFailTest(estimator.model ne copied.model)
+    TestUtils.conditionFailTest(estimator.criterion ne copied.criterion)
 
-    assert(estimator.model == copied.model)
-    assert(estimator.criterion == copied.criterion)
+    TestUtils.conditionFailTest(estimator.model == copied.model)
+    TestUtils.conditionFailTest(estimator.criterion == copied.criterion)
 
     NNEstimatorSpec.compareParams(estimator, copied)
 
     val estVal = estimator.getValidation.get
     val copiedVal = copied.getValidation.get
-    assert(estVal._1 == copiedVal._1)
-    assert(estVal._2 == copiedVal._2)
-    assert(estVal._3.deep == copiedVal._3.deep)
-    assert(estVal._4 == copiedVal._4)
+    TestUtils.conditionFailTest(estVal._1 == copiedVal._1)
+    TestUtils.conditionFailTest(estVal._2 == copiedVal._2)
+    TestUtils.conditionFailTest(estVal._3.deep == copiedVal._3.deep)
+    TestUtils.conditionFailTest(estVal._4 == copiedVal._4)
 
     // train Summary and validation Summary are not copied since they are not thread-safe and cannot
     // be shared among estimators
-    assert(copied.getTrainSummary.isEmpty)
-    assert(copied.getValidationSummary.isEmpty)
+    TestUtils.conditionFailTest(copied.getTrainSummary.isEmpty)
+    TestUtils.conditionFailTest(copied.getValidationSummary.isEmpty)
   }
 
   "An NNModel" should "supports deep copy" in {
@@ -558,9 +558,9 @@ class NNEstimatorSpec extends ZooSpecHelper {
 
     val nnModel = estimator.fit(df)
     val copied = nnModel.copy(ParamMap.empty)
-    assert(nnModel.model ne copied.model)
+    TestUtils.conditionFailTest(nnModel.model ne copied.model)
 
-    assert(nnModel.model == copied.model)
+    TestUtils.conditionFailTest(nnModel.model == copied.model)
     NNEstimatorSpec.compareParams(nnModel, copied)
   }
 
@@ -592,14 +592,14 @@ class NNEstimatorSpec extends ZooSpecHelper {
       .setBatchSize(nRecords)
       .setMaxEpoch(5)
       .setCheckpoint(tmpFile, Trigger.everyEpoch)
-    assert(estimator.getCheckpointPath == tmpFile)
+    TestUtils.conditionFailTest(estimator.getCheckpointPath == tmpFile)
 
     val data = sc.parallelize(smallData)
     val df = sqlContext.createDataFrame(data).toDF("features", "label")
     try {
       estimator.fit(df)
       val f = new File(tmpFile)
-      assert(new File(tmpFile).listFiles().length > 0)
+      TestUtils.conditionFailTest(new File(tmpFile).listFiles().length > 0)
 
       // fit again to test overwrite works without error
       NNEstimator(model, criterion, Array(6), Array(1))
@@ -659,13 +659,15 @@ object NNEstimatorSpec {
         if (p.name != "optimMethod") {
           (original.getOrDefault(p), copied.getOrDefault(p)) match {
             case (Array(values), Array(newValues)) =>
-              assert(values == newValues, s"Values do not match on param ${p.name}.")
+              TestUtils.conditionFailTest(values == newValues,
+                s"Values do not match on param ${p.name}.")
             case (value, newValue) =>
-              assert(value == newValue, s"Values do not match on param ${p.name}.")
+              TestUtils.conditionFailTest(value == newValue,
+                s"Values do not match on param ${p.name}.")
           }
         }
       } else {
-        assert(!copied.isDefined(p), s"Param ${p.name} shouldn't be defined.")
+        TestUtils.conditionFailTest(!copied.isDefined(p), s"Param ${p.name} shouldn't be defined.")
       }
     }
   }

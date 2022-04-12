@@ -187,8 +187,8 @@ class DistriOptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter {
       .add(new LogSoftMax[Float]())
     val sampleDataSet = (dataSet -> toTensor).asInstanceOf[DistributedDataSet[MiniBatch[Float]]]
     val batchDataSet = DataSet.rdd(sampleDataSet.data(train = false))
-    assert(sampleDataSet.size() == numSamples)
-    assert(batchDataSet.size() == numSamples / batchSize * numPartitions)
+    TestUtils.conditionFailTest(sampleDataSet.size() == numSamples)
+    TestUtils.conditionFailTest(batchDataSet.size() == numSamples / batchSize * numPartitions)
 
     Seq(sampleDataSet, batchDataSet).foreach { dataset =>
       RandomGenerator.RNG.setSeed(10)
@@ -799,8 +799,8 @@ class DistriOptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter {
     val newW = model.getParameters()._1
     val newG = model.getParameters()._2
 
-    assert(newW.almostEqual(oriW, 0.0), "weight should keep the same")
-    assert(newG.almostEqual(oriW.fill(0.0), 0.0), "gradient should be 0")
+    TestUtils.conditionFailTest(newW.almostEqual(oriW, 0.0), "weight should keep the same")
+    TestUtils.conditionFailTest(newG.almostEqual(oriW.fill(0.0), 0.0), "gradient should be 0")
   }
 
   "Train with MSE" should "generate correct gradients with l2norm clipping" in {
@@ -829,7 +829,8 @@ class DistriOptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter {
 
     val model2 = optimizer2.optimize()
     val newG = model2.getParameters()._2
-    assert(expectedG.almostEqual(newG, 0.0), "clipbynorm2 should generate correct gradient")
+    TestUtils.conditionFailTest(expectedG.almostEqual(newG, 0.0),
+      "clipbynorm2 should generate correct gradient")
   }
 
   "Train with MSE and SGD with constant clipping" should "be trained with good result" in {

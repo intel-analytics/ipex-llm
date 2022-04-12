@@ -33,7 +33,7 @@ import com.intel.analytics.bigdl.dllib.utils.{T, Table}
 
 import scala.collection.mutable.ArrayBuffer
 import scala.reflect.ClassTag
-
+import com.intel.analytics.bigdl.dllib.utils.Log4Error
 
 trait InferenceSupportiveNg {
 
@@ -82,7 +82,7 @@ trait InferenceSupportiveNg {
       data ++= tensorData
       i += 1
     }
-    require(data.length == shape.reduce(_ * _),
+    Log4Error.unKnowExceptionError(data.length == shape.reduce(_ * _),
       "data length should be equal to the product of shape")
     Tensor[Float](data.toArray, shape.toArray)
   }

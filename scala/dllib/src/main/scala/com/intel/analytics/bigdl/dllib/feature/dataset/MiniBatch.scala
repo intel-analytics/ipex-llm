@@ -689,7 +689,6 @@ class SparseMiniBatch[T: ClassTag](
         "setValue: samples's size doesn't " +
           s"match mini batch size, excepted ${size()} got ${samples.length}")
     }
-
     val features = _samples.map(_.features)
     val labels = _samples.map(_.labels)
     if (batchSize == 0) {

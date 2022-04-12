@@ -1,5 +1,5 @@
 # PyTorch Cifar10 example
-We demonstrate how to easily run synchronous distributed PyTorch training using PyTorch Estimator of Project Orca in Analytics Zoo. We use a simple convolutional nueral network model to train on Cifar10 dataset, which is a dataset for image classification. See [here](https://pytorch.org/tutorials/beginner/blitz/cifar10_tutorial.html) for the original single-node version of this example provided by PyTorch. We provide three distributed PyTorch training backends for this example, namely "bigdl", "torch_distributed" and "spark". You can run with either backend as you wish.
+We demonstrate how to easily run synchronous distributed PyTorch training using PyTorch Estimator of Project Orca in Analytics Zoo. We use a simple convolutional nueral network model to train on Cifar10 dataset, which is a dataset for image classification. See [here](https://pytorch.org/tutorials/beginner/blitz/cifar10_tutorial.html) for the original single-node version of this example provided by PyTorch. We provide three distributed PyTorch training backends for this example, namely "bigdl", "ray" and "spark". You can run with either backend as you wish.
 
 ## Prepare the environment
 
@@ -17,7 +17,7 @@ pip install bigdl-orca
 pip install jep==3.9.0
 pip install six cloudpickle
 
-# For torch_distributed backend:
+# For ray backend:
 pip install bigdl-orca[ray]
 pip install tqdm  # progress bar
 
@@ -34,10 +34,10 @@ The default backend is `bigdl`.
 python cifar10.py
 ```
 
-You can run with `torch_distributed` backend via:
+You can run with `ray` backend via:
 
 ```
-python cifar10.py --backend torch_distributed
+python cifar10.py --backend ray
 ```
 
 You can run with `spark` backend via:
@@ -53,7 +53,7 @@ export HADOOP_CONF_DIR=the directory of the hadoop and yarn configurations
 python cifar10.py --cluster_mode yarn-client
 ```
 
-The default backend is `bigdl`. You can also run with `torch_distributed` or `spark` by specifying the backend.
+The default backend is `bigdl`. You can also run with `ray` or `spark` by specifying the backend.
 
 ## Results
 
@@ -69,7 +69,7 @@ Final test results will be printed at the end:
 Accuracy of the network on the test images: {'Top1Accuracy': 0.541100025177002}
 ```
 
-**For "torch_distributed" and "spark" backend**
+**For "ray" and "spark" backend**
 
 Final test results will be printed at the end:
 ```

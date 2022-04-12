@@ -20,6 +20,7 @@ import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.serving.{ClusterServing, ClusterServingHelper}
 import org.scalatest.{FlatSpec, Matchers}
 import scala.sys.process._
+import com.intel.analytics.bigdl.serving.utils.AssertUtils
 
 class BigDLModelSpec extends FlatSpec with Matchers {
   "BigDL NNFrame from keras model" should "work" in {
@@ -33,7 +34,8 @@ class BigDLModelSpec extends FlatSpec with Matchers {
     "rm /tmp/linear.model".!
     val tensor = Tensor[Float](1, 2).rand()
     val result = ClusterServing.model.doPredict(tensor)
-    require(result.toTensor[Float].size().sameElements(Array(1, 1)), "shape error")
+    AssertUtils.conditionFailTest(result.toTensor[Float].size().sameElements(Array(1, 1)),
+      "shape error")
   }
 
   "BigDL NNframe from nn model" should "work" in {
@@ -46,6 +48,7 @@ class BigDLModelSpec extends FlatSpec with Matchers {
     ClusterServing.model = helper.loadInferenceModel()
     val tensor = Tensor[Float](1, 3, 224, 224).rand()
     val result = ClusterServing.model.doPredict(tensor)
-    require(result.toTensor[Float].size().sameElements(Array(1000)), "shape error")
+    AssertUtils.conditionFailTest(result.toTensor[Float].size().sameElements(Array(1000)),
+      "shape error")
   }
 }

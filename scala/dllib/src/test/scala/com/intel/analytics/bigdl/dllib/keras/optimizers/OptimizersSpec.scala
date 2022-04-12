@@ -19,7 +19,7 @@ import com.intel.analytics.bigdl.dllib.nn.{BCECriterion, Linear, Sequential, Sig
 import com.intel.analytics.bigdl.dllib.optim.SGD._
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric.NumericFloat
-import com.intel.analytics.bigdl.dllib.utils.Engine
+import com.intel.analytics.bigdl.dllib.utils.{Engine, TestUtils}
 import com.intel.analytics.bigdl.dllib.utils.RandomGenerator.RNG
 import com.intel.analytics.bigdl.dllib.NNContext
 import com.intel.analytics.bigdl.dllib.nnframes.{NNClassifier, NNClassifierModel, NNEstimatorSpec}
@@ -112,6 +112,6 @@ class OptimizersSpec extends FlatSpec with Matchers with BeforeAndAfter {
     optm.optimize(rosenBrock, w)
     optm.optimize(rosenBrock, w)
 
-    require(w.almostEqual(expectW, 2e-6))
+    TestUtils.conditionFailTest(w.almostEqual(expectW, 2e-6))
   }
 }

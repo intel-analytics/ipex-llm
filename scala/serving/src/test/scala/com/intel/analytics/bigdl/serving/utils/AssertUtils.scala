@@ -16,14 +16,10 @@
 
 package com.intel.analytics.bigdl.serving.utils
 
-object TestUtils {
-  /**
-   *
-   */
-  def getStrFromResourceFile(path: String): String = {
-    val resource = getClass().getClassLoader().getResource("serving")
-
-    val dataPath = s"${resource.getPath}/$path"
-    scala.io.Source.fromFile(dataPath).mkString
+object AssertUtils {
+  def conditionFailTest(condition: Boolean, msg: String = null): Unit = {
+    // scalastyle:off
+    assert(condition, msg)
+    // scalastyle:on
   }
 }

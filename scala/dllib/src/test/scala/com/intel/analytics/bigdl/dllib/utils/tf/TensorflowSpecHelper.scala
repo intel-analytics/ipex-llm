@@ -82,7 +82,7 @@ abstract class TensorflowSpecHelper extends BigDLSpecHelper {
     val graphFile = saveGraph(nodeDefBuilder, inputs)
     val bigdlOutput = runGraphBigDL[T](graphFile, nodeDefBuilder.getName)
     val bigdlOutputTensor = if (bigdlOutput.isTensor) {
-      require(outputIndex == 0, s"invalid output index $outputIndex")
+      TestUtils.conditionFailTest(outputIndex == 0, s"invalid output index $outputIndex")
       bigdlOutput.asInstanceOf[Tensor[_]]
     } else {
       bigdlOutput.toTable.apply[Tensor[_]](outputIndex + 1)
@@ -104,7 +104,7 @@ abstract class TensorflowSpecHelper extends BigDLSpecHelper {
     val graphFile = saveGraph(nodeDefBuilder, inputs)
     val bigdlOutput = runGraphBigDL[T](graphFile, nodeDefBuilder.getName)
     val bigdlOutputTensor = if (bigdlOutput.isTensor) {
-      require(outputIndex == 0, s"invalid output index $outputIndex")
+      TestUtils.conditionFailTest(outputIndex == 0, s"invalid output index $outputIndex")
       bigdlOutput.asInstanceOf[Tensor[D]]
     } else {
       bigdlOutput.toTable.apply[Tensor[D]](outputIndex + 1)
