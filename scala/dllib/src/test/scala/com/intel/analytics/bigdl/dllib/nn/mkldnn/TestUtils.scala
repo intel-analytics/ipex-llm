@@ -37,7 +37,8 @@ import scala.sys.process._
 object Tools {
   def error[@specialized(Float, Double) T: ClassTag](tensor1: Tensor[T], tensor2: Tensor[T])(
       implicit ev: TensorNumeric[T]): Double = {
-    require(tensor1.nElement() == tensor2.nElement())
+    com.intel.analytics.bigdl.dllib.utils.TestUtils.conditionFailTest(
+      tensor1.nElement() == tensor2.nElement())
     var ret = 0.0
     val storage1 = tensor1.storage().array()
     val storage2 = tensor2.storage().array()
@@ -57,7 +58,7 @@ object Tools {
 
   def averageError[T: ClassTag](tensor1: Tensor[T], tensor2: Tensor[T], msg: String)(
       implicit ev: TensorNumeric[T]): Double = {
-    require(tensor1.nElement() > 0)
+    com.intel.analytics.bigdl.dllib.utils.TestUtils.conditionFailTest(tensor1.nElement() > 0)
     val ret = error[T](tensor1, tensor2) / tensor1.nElement()
     println((msg, "AVERAGE ERROR:", ret).productIterator.mkString(" ").toUpperCase)
     ret
@@ -66,8 +67,8 @@ object Tools {
   def averageError[T: ClassTag](m1: Map[String, Tensor[T]],
                                 m2: Map[String, Tensor[T]],
                                 err: Map[String, Double])(implicit ev: TensorNumeric[T]): Unit = {
-    require(m1.keySet == m2.keySet)
-    require(m1.keySet subsetOf err.keySet)
+    com.intel.analytics.bigdl.dllib.utils.TestUtils.conditionFailTest(m1.keySet == m2.keySet)
+    com.intel.analytics.bigdl.dllib.utils.TestUtils.conditionFailTest(m1.keySet subsetOf err.keySet)
 
     m1.keySet.foreach(i => {
       val err = error(m1(i), m2(i)) / m1(i).nElement()
@@ -136,7 +137,9 @@ object Tools {
         val data = loadData(file).asFloatBuffer()
         val array = new Array[Float](data.limit())
         data.get(array)
-        assert(size.product == array.length, s"the data length is not correct")
+        com.intel.analytics.bigdl.dllib.utils.TestUtils.conditionFailTest(
+          size.product == array.length,
+          s"the data length is not correct")
         tensor.set(Storage(array), sizes = size)
       }
     }
@@ -219,13 +222,15 @@ object Tools {
         ret &= compare2Tensors(runningMean, dense(bn.runningMean.native).toTensor)
         ret &= compare2Tensors(runningVariance, dense(bn.runningVariance.native).toTensor)
 
-        assert(ret, s"${module.getName()} gradient can't pass, please check")
+        com.intel.analytics.bigdl.dllib.utils.TestUtils.conditionFailTest(ret,
+          s"${module.getName()} gradient can't pass, please check")
       case _ =>
         for (j <- params.indices) {
           val w = Tools.getTensor(s"Bwrd_$name.Grad.$j", params(j).size(), identity)
           ret &= Equivalent.nearequals(params(j), w, epsilon)
 
-          assert(ret, s"${module.getName()} gradient $j can't pass, please check")
+          com.intel.analytics.bigdl.dllib.utils.TestUtils.conditionFailTest(ret,
+            s"${module.getName()} gradient $j can't pass, please check")
         }
     }
 
@@ -279,16 +284,20 @@ object Tools {
       module match {
         case layer: MklDnnLayer =>
           ret &= compare2Tensors(output, toNCHW(bigdlOutput, layer.outputFormats()(0)))
-          assert(ret, s"${module.getName()} output can't pass, please check")
+          com.intel.analytics.bigdl.dllib.utils.TestUtils.conditionFailTest(ret,
+            s"${module.getName()} output can't pass, please check")
 
           ret &= compare2Tensors(gradInput, toNCHW(bigdlGradInput, layer.gradInputFormats()(0)))
-          assert(ret, s"${module.getName()} gradInput can't pass, please check")
+          com.intel.analytics.bigdl.dllib.utils.TestUtils.conditionFailTest(ret,
+            s"${module.getName()} gradInput can't pass, please check")
         case _ =>
           ret &= compare2Tensors(output, bigdlOutput)
-          assert(ret, s"${module.getName()} output can't pass, please check")
+          com.intel.analytics.bigdl.dllib.utils.TestUtils.conditionFailTest(ret,
+            s"${module.getName()} output can't pass, please check")
 
           ret &= compare2Tensors(gradInput, bigdlGradInput)
-          assert(ret, s"${module.getName()} gradInput can't pass, please check")
+          com.intel.analytics.bigdl.dllib.utils.TestUtils.conditionFailTest(ret,
+            s"${module.getName()} gradInput can't pass, please check")
       }
 
       if (module.parameters() == null) {
@@ -419,7 +428,8 @@ object Collect {
     }
 
     Files.deleteIfExists(Paths.get(file))
-    require(exitValue == 0, s"Something wrong with collect command. Please check it.")
+    com.intel.analytics.bigdl.dllib.utils.TestUtils.conditionFailTest(exitValue == 0,
+      s"Something wrong with collect command. Please check it.")
 
     identity
   }

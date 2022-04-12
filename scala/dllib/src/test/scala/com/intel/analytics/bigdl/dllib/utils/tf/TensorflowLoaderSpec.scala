@@ -274,7 +274,8 @@ class TensorflowLoaderSpec extends TensorflowSpecHelper{
     tmpLocation.delete()
     tmpLocation.mkdir()
 
-    require(runPython(s"$modelScript $tmpLocation"), "error when run the model script")
+    TestUtils.conditionFailTest(runPython(s"$modelScript $tmpLocation"),
+      "error when run the model script")
 
     // Load the model and input/output tensors
     val modelFile = tmpLocation + s + "model.pb"
@@ -283,8 +284,8 @@ class TensorflowLoaderSpec extends TensorflowSpecHelper{
     val container = model.asInstanceOf[Graph[Float]]
     val l1 = container.modules(1).asInstanceOf[Linear[Float]]
     val l2 = container.modules(3).asInstanceOf[Linear[Float]]
-    assert(l1.weight eq l2.weight)
-    assert(l1.bias eq l2.bias)
+    TestUtils.conditionFailTest(l1.weight eq l2.weight)
+    TestUtils.conditionFailTest(l1.bias eq l2.bias)
   }
 
   "Shared weights" should "be the same after running optimizer" in {
@@ -300,7 +301,8 @@ class TensorflowLoaderSpec extends TensorflowSpecHelper{
     tmpLocation.delete()
     tmpLocation.mkdir()
 
-    require(runPython(s"$modelScript $tmpLocation"), "error when run the model script")
+    TestUtils.conditionFailTest(runPython(s"$modelScript $tmpLocation"),
+      "error when run the model script")
 
     // Load the model and input/output tensors
     val modelFile = tmpLocation + s + "model.pb"
@@ -315,8 +317,8 @@ class TensorflowLoaderSpec extends TensorflowSpecHelper{
 
     val l1 = container.modules(1).asInstanceOf[Linear[Float]]
     val l2 = container.modules(3).asInstanceOf[Linear[Float]]
-    assert(l1.weight == l2.weight)
-    assert(l1.bias == l2.bias)
+    TestUtils.conditionFailTest(l1.weight == l2.weight)
+    TestUtils.conditionFailTest(l1.bias == l2.bias)
   }
 
   "static simple rnn " should "have the same result as tensorflow" in {
@@ -620,10 +622,12 @@ class TensorflowLoaderSpec extends TensorflowSpecHelper{
     tmpLocation.mkdir()
 
     if (backward) {
-      require(runPython(s"$modelScript $tmpLocation ${endPoints.mkString(",")} True"),
+      TestUtils.conditionFailTest(
+        runPython(s"$modelScript $tmpLocation ${endPoints.mkString(",")} True"),
         "error when run the model script")
     } else {
-      require(runPython(s"$modelScript $tmpLocation ${endPoints.mkString(",")} False"),
+      TestUtils.conditionFailTest(
+        runPython(s"$modelScript $tmpLocation ${endPoints.mkString(",")} False"),
         "error when run the model script")
     }
 

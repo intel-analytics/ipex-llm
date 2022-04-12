@@ -20,7 +20,7 @@ import org.scalatest.{FlatSpec, Matchers}
 import com.intel.analytics.bigdl.dllib.tensor.{Storage, Tensor}
 import com.intel.analytics.bigdl.dllib.utils.RandomGenerator._
 import com.intel.analytics.bigdl.dllib.utils.serializer.ModuleSerializationTest
-import com.intel.analytics.bigdl.dllib.utils.{T, Table}
+import com.intel.analytics.bigdl.dllib.utils.{T, Table, TestUtils}
 
 import scala.util.Random
 
@@ -117,7 +117,8 @@ class PoolerSpec extends FlatSpec with Matchers {
       0.000000000000000000, 0.000000000000000000)
 
     for (i <- expectedRes.indices) {
-      assert(Math.abs(res.storage().array()(i) - expectedRes(i)) < 1e-6)
+      TestUtils.conditionFailTest(
+        Math.abs(res.storage().array()(i) - expectedRes(i)) < 1e-6)
     }
   }
 
@@ -213,7 +214,7 @@ class PoolerSpec extends FlatSpec with Matchers {
       0.000000000000000000, 0.000000000000000000)
 
     for (i <- expectedRes.indices) {
-      assert(Math.abs(res.storage().array()(i) - expectedRes(i)) < 1e-6)
+      TestUtils.conditionFailTest(Math.abs(res.storage().array()(i) - expectedRes(i)) < 1e-6)
     }
   }
 }

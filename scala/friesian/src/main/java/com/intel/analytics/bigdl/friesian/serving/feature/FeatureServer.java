@@ -282,7 +282,7 @@ public class FeatureServer extends GrpcServerBase {
             redisContext.stop();
             if (!colNamesMap.containsKey(keyPrefix)) {
                 String colNamesStr;
-                colNamesStr = redis.get(keyPrefix);
+                colNamesStr = redis.getSchema(keyPrefix);
                 colNamesMap.put(keyPrefix, colNamesStr.split(","));
             }
             featureBuilder.addAllColNames(Arrays.asList(colNamesMap.get(keyPrefix)));

@@ -18,6 +18,7 @@ package com.intel.analytics.bigdl.dllib.feature.image3d
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.feature.transform.vision.image.ImageFeature
 import com.intel.analytics.bigdl.dllib.utils.RandomGenerator._
+import com.intel.analytics.bigdl.dllib.utils.TestUtils
 import org.scalatest.{FlatSpec, Matchers}
 
 class Crop3DSpec extends FlatSpec with Matchers{
@@ -46,8 +47,8 @@ class Crop3DSpec extends FlatSpec with Matchers{
     val image = ImageFeature3D(input)
     val cropper = RandomCrop3D(20, 30, 40)
     val output = cropper.transform(image)
-    assert(output[Tensor[Float]](ImageFeature.imageTensor).size(1) == 20 )
-    assert(output[Tensor[Float]](ImageFeature.imageTensor).size(2) == 30)
-    assert(output[Tensor[Float]](ImageFeature.imageTensor).size(3) == 40)
+    TestUtils.conditionFailTest(output[Tensor[Float]](ImageFeature.imageTensor).size(1) == 20 )
+    TestUtils.conditionFailTest(output[Tensor[Float]](ImageFeature.imageTensor).size(2) == 30)
+    TestUtils.conditionFailTest(output[Tensor[Float]](ImageFeature.imageTensor).size(3) == 40)
   }
 }

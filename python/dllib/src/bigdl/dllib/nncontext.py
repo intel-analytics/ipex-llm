@@ -639,28 +639,28 @@ def init_internal_nncontext(conf=None, spark_log_level="WARN", redirect_spark_lo
     # The following code copied and modified from
     # https://github.com/Valassis-Digital-Media/spylon-kernel/blob/master/
     # spylon_kernel/scala_interpreter.py
-    if ZooContext.log_output and not has_activate_sc:
-        import subprocess
-        import pyspark.java_gateway
-        spark_jvm_proc = None
+    # if ZooContext.log_output and not has_activate_sc:
+    import subprocess
+    import pyspark.java_gateway
+    spark_jvm_proc = None
 
-        def Popen(*args, **kwargs):
-            """Wraps subprocess.Popen to force stdout and stderr from the child process
-            to pipe to this process without buffering.
-            """
-            nonlocal spark_jvm_proc
-            # Override these in kwargs to avoid duplicate value errors
-            # Set streams to unbuffered so that we read whatever bytes are available
-            # when ready, https://docs.python.org/3.6/library/subprocess.html#popen-constructor
-            kwargs['bufsize'] = 0
-            # Capture everything from stdout for display in the notebook
-            kwargs['stdout'] = subprocess.PIPE
-            # Optionally capture stderr, otherwise it'll go to the kernel log
-            kwargs['stderr'] = subprocess.PIPE
-            spark_jvm_proc = subprocess.Popen(*args, **kwargs)
-            return spark_jvm_proc
+    def Popen(*args, **kwargs):
+        """Wraps subprocess.Popen to force stdout and stderr from the child process
+        to pipe to this process without buffering.
+        """
+        nonlocal spark_jvm_proc
+        # Override these in kwargs to avoid duplicate value errors
+        # Set streams to unbuffered so that we read whatever bytes are available
+        # when ready, https://docs.python.org/3.6/library/subprocess.html#popen-constructor
+        kwargs['bufsize'] = 0
+        # Capture everything from stdout for display in the notebook
+        kwargs['stdout'] = subprocess.PIPE
+        # Optionally capture stderr, otherwise it'll go to the kernel log
+        kwargs['stderr'] = subprocess.PIPE
+        spark_jvm_proc = subprocess.Popen(*args, **kwargs)
+        return spark_jvm_proc
 
-        pyspark.java_gateway.Popen = Popen
+    pyspark.java_gateway.Popen = Popen
 
     if isinstance(conf, six.string_types):
         sc = getOrCreateSparkContext(conf=None, appName=conf)

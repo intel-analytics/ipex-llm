@@ -20,6 +20,7 @@ import com.intel.analytics.bigdl.dllib.nn._
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.utils.RandomGenerator._
+import com.intel.analytics.bigdl.dllib.utils.TestUtils
 
 import scala.math._
 
@@ -66,8 +67,8 @@ class ConcatSpec extends TorchSpec {
       .asInstanceOf[Module[Double]]
 
     val (parameters, gradParameters) = module.getParameters()
-    require(gradParametersInitial == gradParameters)
-    require(parametersInitial == parameters)
+    TestUtils.conditionFailTest(gradParametersInitial == gradParameters)
+    TestUtils.conditionFailTest(parametersInitial == parameters)
 
     val start = System.nanoTime()
     val output = module.forward(input)
@@ -126,8 +127,8 @@ class ConcatSpec extends TorchSpec {
       .asInstanceOf[Module[Double]]
 
     val (parameters, gradParameters) = module.getParameters()
-    require(gradParametersInitial == gradParameters)
-    require(parametersInitial == parameters)
+    TestUtils.conditionFailTest(gradParametersInitial == gradParameters)
+    TestUtils.conditionFailTest(parametersInitial == parameters)
 
     val start = System.nanoTime()
     val output = module.forward(input)

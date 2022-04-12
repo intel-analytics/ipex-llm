@@ -88,53 +88,38 @@ def inference(self,
     '''
 
     if isinstance(input_data, list):
-        input_sample_list = input_data
+        input_sample_list = list(map(lambda x: torch.from_numpy(x), input_data))
     else:
-        input_sample_list = [input_data]
+        input_sample_list = [torch.from_numpy(input_data)]
 
     if backend == "onnx":
-        quantize = quantize if quantize is not None else self._default_ortsess_inference_quantize
+        quantize = quantize if quantize is not None else \
+            (self.ort_infer_engine.default_eval_precision == "int8")
         if not quantize:
-            if not self._ortsess_up_to_date:
+            if not self.ort_infer_engine.ortsess_fp32:
                 warnings.warn("Onnxruntime session will be built implicitly,"
                               " this may harm your inference latency.")
                 # generate input_sample for ortsess building
                 # defaultly set all input to a Tensor(TODO: might be an issue)
-                self.eval()
-                input_sample = []
-                for input_sample_item in input_sample_list:
-                    input_sample.append(torch.Tensor(input_sample_item))
-                self._build_ortsess(input_sample=tuple(input_sample),
-                                    file_path="model.onnx",
-                                    sess_options=sess_options,
-                                    **kwargs)
+                self.eval_onnx(input_sample=tuple(input_sample_list), sess_options=sess_options)
         else:
-            if not self._quantized_ortsess_up_to_date:
+            if not self.ort_infer_engine.ortsess_int8:
                 raise RuntimeError("Please run trainer.quantize again since "
                                    "the quantized onnxruntime session is out-of-date.")
         # generate ort_inputs
+        self.eval_onnx(quantize=quantize)
         if batch_size is None:
             # this branch is only to speed up the inferencing when batch_size is set to None.
-            if not quantize:
-                return self._forward_onnx(*input_sample_list)
-            else:
-                return self._forward_onnx_quantized(*input_sample_list)
+            return self(*input_sample_list)
         else:
             yhat_list = []
             sample_num = input_sample_list[0].shape[0]  # the first dim should be sample_num
             batch_num = math.ceil(sample_num / batch_size)
-            if not quantize:
-                for batch_id in range(batch_num):
-                    yhat_list.append(self._forward_onnx(
-                        *tuple(map(lambda x: x[batch_id * batch_size:
-                                               (batch_id + 1) * batch_size],
-                                   input_sample_list))))
-            else:
-                for batch_id in range(batch_num):
-                    yhat_list.append(self._forward_onnx_quantized(
-                        *tuple(map(lambda x: x[batch_id * batch_size:
-                                               (batch_id + 1) * batch_size],
-                                   input_sample_list))))
+            for batch_id in range(batch_num):
+                yhat_list.append(self(
+                    *tuple(map(lambda x: x[batch_id * batch_size:
+                           (batch_id + 1) * batch_size],
+                        input_sample_list))))
             # this operation may cause performance degradation
             yhat = np.concatenate(yhat_list, axis=0)
             return yhat

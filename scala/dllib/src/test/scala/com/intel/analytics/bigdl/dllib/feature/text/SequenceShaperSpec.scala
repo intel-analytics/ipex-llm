@@ -16,6 +16,7 @@
 
 package com.intel.analytics.bigdl.dllib.feature.text
 
+import com.intel.analytics.bigdl.dllib.utils.TestUtils
 import org.scalatest.{FlatSpec, Matchers}
 
 class SequenceShaperSpec extends FlatSpec with Matchers {
@@ -29,18 +30,19 @@ class SequenceShaperSpec extends FlatSpec with Matchers {
   "SequenceShaper trun pre for indices" should "work properly" in {
     val transformer = SequenceShaper(len = 2)
     val transformed = transformer.transform(genFeature())
-    require(transformed.getIndices.sameElements(Array(3.0f, 4.0f)))
+    TestUtils.conditionFailTest(transformed.getIndices.sameElements(Array(3.0f, 4.0f)))
   }
 
   "SequenceShaper trun post for indices" should "work properly" in {
     val transformer = SequenceShaper(len = 3, truncMode = TruncMode.post)
     val transformed = transformer.transform(genFeature())
-    require(transformed.getIndices.sameElements(Array(1.0f, 2.0f, 3.0f)))
+    TestUtils.conditionFailTest(transformed.getIndices.sameElements(Array(1.0f, 2.0f, 3.0f)))
   }
 
   "SequenceShaper pad for indices" should "work properly" in {
     val transformer = SequenceShaper(len = 7)
     val transformed = transformer.transform(genFeature())
-    require(transformed.getIndices.sameElements(Array(1.0f, 2.0f, 3.0f, 4.0f, 0.0f, 0.0f, 0.0f)))
+    TestUtils.conditionFailTest(
+      transformed.getIndices.sameElements(Array(1.0f, 2.0f, 3.0f, 4.0f, 0.0f, 0.0f, 0.0f)))
   }
 }

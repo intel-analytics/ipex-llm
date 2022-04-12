@@ -26,6 +26,7 @@ import com.intel.analytics.bigdl.DataSet
 import com.intel.analytics.bigdl.dllib.feature.dataset.{AbstractDataSet, DistributedDataSet, MiniBatch, Transformer}
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.utils.RandomGenerator
+import com.intel.analytics.bigdl.dllib.utils.Log4Error
 import com.intel.analytics.bigdl.orca.utils.PythonInterpreter
 import com.intel.analytics.bigdl.dllib.feature.common.{ArrayLike, ArrayLikeWrapper}
 import com.intel.analytics.bigdl.dllib.feature.{FeatureSet, _}
@@ -85,7 +86,7 @@ object PythonFeatureSet{
                         |""".stripMargin + imports
     interpRdd.mapPartitions{iter =>
       val partId = TaskContext.getPartitionId()
-      require(partId < nodeNumber, s"partId($partId) should be" +
+      Log4Error.unKnowExceptionError(partId < nodeNumber, s"partId($partId) should be" +
         s" smaller than nodeNumber(${nodeNumber})")
       PythonInterpreter.exec(preimports)
       PythonInterpreter.set("pyjarray", bcDataSet.value)

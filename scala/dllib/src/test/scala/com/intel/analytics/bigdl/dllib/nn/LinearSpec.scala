@@ -205,14 +205,14 @@ class LinearSpec extends FlatSpec with Matchers {
     }
 
     expectedBias.map(bias, (v1, v2) => {
-      assert(abs(v1 - v2) < 1e-6);
+      TestUtils.conditionFailTest(abs(v1 - v2) < 1e-6);
       v1
     })
     expectedWeight.map(weight, (v1, v2) => {
-      assert(abs(v1 - v2) < 1e-6);
+      TestUtils.conditionFailTest(abs(v1 - v2) < 1e-6);
       v1
     })
-    assert(err < 1e-6)
+    TestUtils.conditionFailTest(err < 1e-6)
   }
 
   "Linear module in batch mode" should "converge to correct weight and bias" in {
@@ -259,14 +259,14 @@ class LinearSpec extends FlatSpec with Matchers {
     }
 
     expectedBias.map(bias, (v1, v2) => {
-      assert(abs(v1 - v2) < 1e-6);
+      TestUtils.conditionFailTest(abs(v1 - v2) < 1e-6);
       v1
     })
     expectedWeight.map(weight, (v1, v2) => {
-      assert(abs(v1 - v2) < 1e-6);
+      TestUtils.conditionFailTest(abs(v1 - v2) < 1e-6);
       v1
     })
-    assert(err < 1e-6)
+    TestUtils.conditionFailTest(err < 1e-6)
   }
 
   "Linear module in batch mode without bias" should "converge to correct weight and bias" in {
@@ -309,10 +309,10 @@ class LinearSpec extends FlatSpec with Matchers {
     }
 
     expectedWeight.map(weight, (v1, v2) => {
-      assert(abs(v1 - v2) < 1e-6);
+      TestUtils.conditionFailTest(abs(v1 - v2) < 1e-6);
       v1
     })
-    assert(err < 1e-6)
+    TestUtils.conditionFailTest(err < 1e-6)
   }
 
   "Linear module in batch mode" should "be good in gradient check" in {

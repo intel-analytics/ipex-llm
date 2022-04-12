@@ -12,7 +12,7 @@ import com.intel.analytics.bigdl.ppml.utils.FLClientClosable
 import java.util.{List => JList}
 import scala.collection.JavaConverters._
 import scala.reflect.ClassTag
-
+import com.intel.analytics.bigdl.dllib.utils.Log4Error
 
 object PythonPPML {
 
@@ -92,7 +92,8 @@ class PythonPPML[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonBigDL
     psi.downloadIntersection(maxtry, retry)
   }
   def jTensorToTensorArray(jTensor: JTensor) = {
-    require(jTensor.shape.length == 2, "FGBoost only support 2D input")
+    Log4Error.invalidOperationError(jTensor.shape.length == 2,
+      "FGBoost only support 2D input")
     val featureNum = jTensor.shape(1)
     jTensor.storage.grouped(featureNum).map(array => {
       Tensor[Float](array, Array(array.length))

@@ -108,8 +108,9 @@ def setup_package(plat_name):
         "win_amd64": [],
         "macosx_10_11_x86_64": []}
 
-    script_plat = {"manylinux2010_x86_64": ["../script/bigdl-nano-init"],
-                   "win_amd64": ["../script/bigdl-nano-init.ps1"],
+    script_plat = {"manylinux2010_x86_64": ["../scripts/bigdl-nano-init",
+                                            "../scripts/bigdl-nano-unset-env"],
+                   "win_amd64": ["../scripts/bigdl-nano-init.ps1"],
                    "macosx_10_11_x86_64": []
                    }
 
