@@ -78,9 +78,9 @@ if __name__ == "__main__":
     if options.clusterMode.startswith("yarn"):
         hadoop_conf = os.environ.get("HADOOP_CONF_DIR")
         invalidInputError(hadoop_conf,
-                                    "Directory path to hadoop conf not found for yarn-client" \
-                                    " mode.", "Please either specify argument hadoop_conf or" \
-                                    "set the environment variable HADOOP_CONF_DIR")
+                          "Directory path to hadoop conf not found for yarn-client"
+                          "mode.", "Please either specify argument hadoop_conf or"
+                          "set the environment variable HADOOP_CONF_DIR")
         spark_conf = create_spark_conf().set("spark.executor.memory", "5g") \
             .set("spark.executor.cores", 2) \
             .set("spark.executor.instances", 2) \

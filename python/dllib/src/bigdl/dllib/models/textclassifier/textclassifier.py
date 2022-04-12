@@ -185,8 +185,8 @@ if __name__ == "__main__":
         if options.onYarn:
             hadoop_conf = os.environ.get("HADOOP_CONF_DIR")
             invalidInputError(hadoop_conf,
-                              "Directory path to hadoop conf not found for yarn-client" \
-                              " mode.", "Please either specify argument hadoop_conf or" \
+                              "Directory path to hadoop conf not found for yarn-client"
+                              " mode.", "Please either specify argument hadoop_conf or"
                                         "set the environment variable HADOOP_CONF_DIR")
             conda_env_name = detect_conda_env_name()
             sc = init_spark_on_yarn(hadoop_conf=hadoop_conf,

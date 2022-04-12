@@ -307,8 +307,8 @@ if __name__ == "__main__":
     # init
     hadoop_conf = os.environ.get("HADOOP_CONF_DIR")
     invalidInputError(hadoop_conf,
-                      "Directory path to hadoop conf not found for yarn-client" \
-                      " mode.", "Please either specify argument hadoop_conf or" \
+                      "Directory path to hadoop conf not found for yarn-client"
+                      " mode.", "Please either specify argument hadoop_conf or"
                                 "set the environment variable HADOOP_CONF_DIR")
 
     conf = create_spark_conf().set("spark.executor.memory", options.executorMemory) \

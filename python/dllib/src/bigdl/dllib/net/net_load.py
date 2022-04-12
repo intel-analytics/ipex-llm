@@ -53,8 +53,8 @@ class JavaToPython:
             base_module = self._load_ppackage_by_jpackage(jpackage_name)
         if pclass_name in dir(base_module):
             pclass = getattr(base_module, pclass_name)
-            invalidInputError("from_jvalue" in dir(pclass), \
-                "pclass: {} should implement from_jvalue method".format(pclass))
+            invalidInputError("from_jvalue" in dir(pclass),
+                              "pclass: {} should implement from_jvalue method".format(pclass))
             return pclass
         raise Exception("No proper python class for: {}".format(self.jfullname))
 

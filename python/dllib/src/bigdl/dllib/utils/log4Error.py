@@ -19,7 +19,7 @@ import logging
 logger = logging.getLogger(__name__)
 
 
-def outputUserMessage(errMsg, fixMsg = None):
+def outputUserMessage(errMsg, fixMsg=None):
     logger.error(f"\n\n****************************Usage Error************************\n" + errMsg)
     if fixMsg:
         logger.error(f"\n\n****************************How to fix*************************\n"
@@ -27,7 +27,7 @@ def outputUserMessage(errMsg, fixMsg = None):
     logger.error(f"\n\n****************************Call Stack*************************")
 
 
-def invalidInputError(condition, errMsg, fixMsg = None):
+def invalidInputError(condition, errMsg, fixMsg=None):
     if not condition:
         outputUserMessage(errMsg, fixMsg)
-    raise RuntimeError(errMsg)
+        raise RuntimeError(errMsg)

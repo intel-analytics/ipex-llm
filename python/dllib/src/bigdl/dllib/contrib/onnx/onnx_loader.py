@@ -82,7 +82,7 @@ class OnnxLoader(object):
                                                                            outputs)
 
             invalidInputError(len(outputs) == len(outputs_shape),
-                              f"size of outputs {len(outputs)} doesn't match outputs_shape"\
+                              f"size of outputs {len(outputs)} doesn't match outputs_shape"
                               f" ${len(outputs_shape)}")
 
             for out, out_shape in zip(outputs, outputs_shape):
