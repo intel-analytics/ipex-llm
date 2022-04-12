@@ -45,9 +45,6 @@ def create_data(loader=False):
 
 class TestVanillaLSTMPytorch(TestCase):
     train_data, val_data, test_data = create_data()
-    print("train_data[0].shape: ", train_data[0].shape)
-    print("train_data[1].shape: ", train_data[1].shape)
-    
 
     model = VanillaLSTMPytorch()
 
@@ -72,8 +69,6 @@ class TestVanillaLSTMPytorch(TestCase):
                   "batch_size": 128}
         model.fit_eval((self.train_data[0], self.train_data[1]), self.val_data, metric="mse", **config)
         pred = model.predict(self.test_data[0])
-        print("hahahaha:")
-        print(pred)
         assert pred.shape == self.test_data[1].shape
         with tempfile.TemporaryDirectory() as tmp_dir_name:
             ckpt_name = os.path.join(tmp_dir_name, "ckpt")
