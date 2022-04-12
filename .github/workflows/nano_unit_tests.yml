@@ -46,14 +46,20 @@ jobs:
           source bigdl-nano-init
           if [ 0"$LD_PRELOAD" = "0" ]; then
             exit 1
+          else
+            echo "Set environment variable successfully."
           fi
           source $CONDA/bin/deactivate
           if [ ! 0"$LD_PRELOAD" = "0" ]; then
             exit 1
+          else
+            echo "Unset environment variable successfully while deactivating conda environment."
           fi
           source $CONDA/bin/activate bigdl-init
           if [ 0"$LD_PRELOAD" = "0" ]; then
             exit 1
+          else
+            echo "Setup environment variable successfully while activating conda environment."
           fi
           pip uninstall -y bigdl-nano
           source $CONDA/bin/deactivate
