@@ -14,7 +14,7 @@ else
   wget -nv $FTP_URI/analytics-zoo-data/mnist/t10k-images-idx3-ubyte.gz -P tmp/data/MNIST/raw
 fi
 
-python ${BIGDL_ROOT}/python/orca/example/torchmodel/train/mnist/main.py --dir tmp/data
+python ${BIGDL_ROOT}/python/orca/example/torchmodel/train/mnist/main.py --dir tmp/data --epochs 1
 
 now=$(date "+%s")
 time1=$((now - start))
@@ -69,7 +69,7 @@ if [ ! -d dataset/BSDS300/images ]; then
   tar -xzf BSDS300-images.tgz -C dataset
 fi
 
-python ${BIGDL_ROOT}/python/orca/example/learn/pytorch/super_resolution/super_resolution.py
+python ${BIGDL_ROOT}/python/orca/example/learn/pytorch/super_resolution/super_resolution.py --epochs 1
 
 now=$(date "+%s")
 time4=$((now - start))
