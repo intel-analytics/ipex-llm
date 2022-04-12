@@ -107,7 +107,7 @@ case "$SPARK_K8S_CMD" in
         export SGX_MEM_SIZE=$SGX_DRIVER_MEM_SIZE && \
         export spark_commnd="/opt/jdk8/bin/java -Xms1G -Xmx$SGX_DRIVER_JVM_MEM_SIZE -cp "$SPARK_CLASSPATH" org.apache.spark.deploy.SparkSubmit --conf spark.driver.bindAddress=$SPARK_DRIVER_BIND_ADDRESS --deploy-mode client "$@"" && \
         echo $spark_commnd && \
-        /graphene/Tools/argv_serializer bash -c "export TF_MKL_ALLOC_MAX_BYTES=10737418240 && export _SPARK_AUTH_SECRET=$_SPARK_AUTH_SECRET && $spark_commnd" > /ppml/trusted-big-data-ml/spark-driver-argvs && \
+        /graphene/Tools/argv_serializer bash -c "export TF_MKL_ALLOC_MAX_BYTES=10737418240 && export _SPARK_AUTH_SECRET=$_SPARK_AUTH_SECRET && $spark_commnd" > /ppml/trusted-big-data-ml/secured-argvs && \
         ./init.sh && \
         SGX=1 ./pal_loader bash  1>&2
     fi
@@ -155,8 +155,7 @@ case "$SPARK_K8S_CMD" in
       export SGX_MEM_SIZE=$SGX_EXECUTOR_MEM_SIZE && \
       export spark_commnd="/opt/jdk8/bin/java -Xms1G -Xmx$SGX_EXECUTOR_JVM_MEM_SIZE "${SPARK_EXECUTOR_JAVA_OPTS[@]}" -cp "$SPARK_CLASSPATH" org.apache.spark.executor.CoarseGrainedExecutorBackend --driver-url $SPARK_DRIVER_URL --executor-id $SPARK_EXECUTOR_ID --cores $SPARK_EXECUTOR_CORES --app-id $SPARK_APPLICATION_ID --hostname $SPARK_EXECUTOR_POD_IP --resourceProfileId $SPARK_RESOURCE_PROFILE_ID" && \
       echo $spark_commnd && \
-      /graphene/Tools/argv_serializer bash -c "export TF_MKL_ALLOC_MAX_BYTES=10737418240 && export _SPARK_AUTH_SECRET=$_SPARK_AUTH_SECRET && $spark_commnd" > /ppml/trusted-big-data-ml/spark-executor-argvs && \
-      sed -i "s@spark-driver-argvs@spark-executor-argvs@g" /ppml/trusted-big-data-ml/bash.manifest.template && \
+      /graphene/Tools/argv_serializer bash -c "export TF_MKL_ALLOC_MAX_BYTES=10737418240 && export _SPARK_AUTH_SECRET=$_SPARK_AUTH_SECRET && $spark_commnd" > /ppml/trusted-big-data-ml/secured-argvs && \
       ./init.sh && \
       SGX=1 ./pal_loader bash  1>&2
     fi
