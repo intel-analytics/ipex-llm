@@ -62,7 +62,7 @@ orca.learn.pytorch.estimator
 orca.learn.pytorch.pytorch_ray_estimator
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Orca Pytorch Estimator with backend of "horovod" or "torch_distributed".
+Orca Pytorch Estimator with backend of "horovod" or "ray".
 
 .. autoclass:: bigdl.orca.learn.pytorch.pytorch_ray_estimator.PyTorchRayEstimator
     :members:
