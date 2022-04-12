@@ -19,6 +19,7 @@ package com.intel.analytics.bigdl.dllib.nn
 import com.intel.analytics.bigdl.dllib.nn.abstractnn.TensorCriterion
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.dllib.utils.Log4Error
 
 import scala.reflect.ClassTag
 
@@ -44,7 +45,7 @@ class SmoothL1Criterion[@specialized(Float, Double) T: ClassTag](sizeAverage: Bo
   val buffer: Tensor[T] = Tensor[T]()
 
   override def updateOutput(input: Tensor[T], target: Tensor[T]): T = {
-    require(input.nElement() == target.nElement(),
+    Log4Error.invalidInputError(input.nElement() == target.nElement(),
       "input and target size should be equal" +
         s"input size ${input.nElement()} targetsize ${target.nElement()}")
     buffer.resizeAs(input).copy(input)
@@ -70,7 +71,9 @@ class SmoothL1Criterion[@specialized(Float, Double) T: ClassTag](sizeAverage: Bo
   }
 
   override def updateGradInput(input: Tensor[T], target: Tensor[T]): Tensor[T] = {
-    require(input.nElement() == target.nElement())
+    Log4Error.invalidInputError(input.nElement() == target.nElement(),
+      "input and target size should be equal" +
+        s"input size ${input.nElement()} targetsize ${target.nElement()}")
     val norm = ev.fromType(if (sizeAverage) 1.0 / input.nElement() else 1.0)
     gradInput.resizeAs(input).copy(input)
     gradInput.add(ev.fromType(-1), target)

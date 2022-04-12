@@ -16,7 +16,7 @@
 package com.intel.analytics.bigdl.dllib.nn
 
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.dllib.utils.Table
+import com.intel.analytics.bigdl.dllib.utils.{Log4Error, Table}
 import com.intel.analytics.bigdl.dllib.nn.abstractnn.{AbstractModule, Activity}
 
 import scala.reflect.ClassTag
@@ -37,7 +37,7 @@ class SelectTable[T: ClassTag](
   override def updateOutput(input: Table): Activity = {
     val index = if (this.index < 0) input.length() + this.index else this.index
 
-    require(input.contains(index), "index does not exist in the input table")
+    Log4Error.invalidInputError(input.contains(index), "index does not exist in the input table")
     output = input[Activity](index)
 
     output
@@ -53,7 +53,8 @@ class SelectTable[T: ClassTag](
 
     Utils.recursiveCopy(gradInput(index), gradOutput)
 
-    require(gradInput.contains(index), "Index exceeds the size of input table")
+    Log4Error.invalidInputError(gradInput.contains(index),
+      "Index exceeds the size of input table")
 
     gradInput
   }

@@ -19,7 +19,7 @@ package com.intel.analytics.bigdl.dllib.keras.objectives
 import com.intel.analytics.bigdl.dllib.nn.abstractnn.{SizeAverageStatus, TensorCriterion}
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.dllib.utils.Engine
+import com.intel.analytics.bigdl.dllib.utils.{Engine, Log4Error}
 import com.intel.analytics.bigdl.dllib.nn.ErrorInfo
 
 import scala.concurrent.{Await, Future}
@@ -31,7 +31,7 @@ class ZooClassNLLCriterion[@specialized(Float, Double) T: ClassTag]
  paddingValue: Int = -1)(implicit ev: TensorNumeric[T])
   extends TensorCriterion[T] {
   private var total_weight = ev.fromType[Int](0)
-  if (weights != null) require(weights.dim() == 1,
+  if (weights != null) Log4Error.invalidInputError(weights.dim() == 1,
     "weights input should be 1-D Tensor" +
       s"weights dim(${weights.dim()})")
 
@@ -47,18 +47,20 @@ class ZooClassNLLCriterion[@specialized(Float, Double) T: ClassTag]
   sizeAverageStatus = if (sizeAverage) SizeAverageStatus.True else SizeAverageStatus.False
 
   override def updateOutput(input: Tensor[T], target: Tensor[T]): T = {
-    require(input.dim() == 1 || input.dim() == 2,
+    Log4Error.invalidInputError(input.dim() == 1 || input.dim() == 2,
       "ClassNLLCriterion: " +
         ErrorInfo.constrainInputAsVectorOrBatch +
         s"input dim(${input.dim()})")
     val nClasses = input.size(input.dim())
     if (input.dim() == 1) {
-      require(input.dim() == target.dim(),
+      Log4Error.invalidInputError(input.dim() == target.dim(),
         "ClassNLLCriterion: " + ErrorInfo.constrainInputDimSameAsTarget +
           s" Input dimension is: ${ input.dim() } , target dimension is: ${ target.dim() }")
       val curTarget = ev.toType[Int](target.valueAt(1))
-      assert(curTarget >= 1 && curTarget <= nClasses || curTarget == paddingValue,
-        s"curTarget ${curTarget} is out of range, should be 1 to ${nClasses}")
+      Log4Error.invalidOperationError(curTarget >= 1 && curTarget <= nClasses
+        || curTarget == paddingValue, s"curTarget ${curTarget} is out of range," +
+        s"should be 1 to ${nClasses}", s"Please make sure the label is 1 based and" +
+        s" the range is [1, ${nClasses}]")
       total_weight = if (weights != null) weights(Array(curTarget)) else ev.fromType[Int](1)
       output = if (curTarget == paddingValue) ev.zero
       else {
@@ -73,7 +75,7 @@ class ZooClassNLLCriterion[@specialized(Float, Double) T: ClassTag]
       val batchSize = input.size(1)
       val targetSize = target.size()
       target.squeeze()
-      require(target.dim() == 1,
+      Log4Error.invalidInputError(target.dim() == 1,
         "ClassNLLCriterion: illegal target! Target should be 1D tensor after squeeze," +
           s"but target's size is: ${ target.size() }, please check your data.")
 
@@ -89,8 +91,12 @@ class ZooClassNLLCriterion[@specialized(Float, Double) T: ClassTag]
         val _i = i
         results(_i - 1) = Engine.model.invoke( () => {
           val curTarget = ev.toType[Int](target.valueAt(_i))
-          assert(curTarget >= 1 && curTarget <= nClasses || curTarget == paddingValue,
-            s"curTarget ${curTarget} is out of range 1 to ${nClasses}")
+          Log4Error.invalidOperationError(curTarget >= 1 && curTarget <= nClasses
+            || curTarget == paddingValue, s"curTarget ${curTarget} is out of range, " +
+            s"should be 1 to ${nClasses}", s"Please make sure the label is 1 based and" +
+            s" the range should be [1, ${nClasses}]")
+//          assert(curTarget >= 1 && curTarget <= nClasses || curTarget == paddingValue,
+//            s"curTarget ${curTarget} is out of range 1 to ${nClasses}")
           if (curTarget == paddingValue) (ev.zero, ev.zero)
           else {
             val curWeight = if (weights != null) weights.valueAt(curTarget) else ev.fromType[Int](1)
@@ -122,7 +128,7 @@ class ZooClassNLLCriterion[@specialized(Float, Double) T: ClassTag]
   }
 
   override def updateGradInput(input: Tensor[T], target: Tensor[T]): Tensor[T] = {
-    require(input.dim() == 1 || input.dim() == 2,
+    Log4Error.invalidInputError(input.dim() == 1 || input.dim() == 2,
       "ClassNLLCriterion: " +
         ErrorInfo.constrainInputAsVectorOrBatch +
         s"input dim ${input.dim()}")
@@ -130,7 +136,7 @@ class ZooClassNLLCriterion[@specialized(Float, Double) T: ClassTag]
     gradInput.zero()
 
     if (input.dim() == 1) {
-      require(input.dim() == target.dim(),
+      Log4Error.invalidInputError(input.dim() == target.dim(),
         "InternalClassNLLCriterion: " + ErrorInfo.constrainInputDimSameAsTarget +
           s" Input dimension is: ${ input.dim() } , target dimension is: ${ target.dim() }")
       val curTarget = ev.toType[Int](target.valueAt(1))

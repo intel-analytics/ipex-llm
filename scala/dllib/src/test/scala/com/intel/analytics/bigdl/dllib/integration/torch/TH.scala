@@ -121,8 +121,9 @@ object TH {
 
       return luaTime // stop early
     }
-
+    // scalastyle:off
     val varCode = new StringBuilder("require 'nn'\n" + "require 'optim'\n")
+    // scalastyle:on
     val usrCode = new StringBuilder("")
     val resCode = new StringBuilder("")
 

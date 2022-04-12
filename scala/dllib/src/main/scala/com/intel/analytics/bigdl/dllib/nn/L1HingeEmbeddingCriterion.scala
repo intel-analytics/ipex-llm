@@ -19,7 +19,7 @@ import com.intel.analytics.bigdl.dllib.nn.abstractnn.AbstractCriterion
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.dllib.utils.RandomGenerator._
-import com.intel.analytics.bigdl.dllib.utils.Table
+import com.intel.analytics.bigdl.dllib.utils.{Log4Error, Table}
 
 import scala.reflect.ClassTag
 
@@ -47,7 +47,7 @@ class L1HingeEmbeddingCriterion[@specialized(Float, Double) T: ClassTag](val mar
   }
 
   override def updateOutput(input: Table, target: Tensor[T]): T = {
-    require(target.dim() == 1 && target.nElement() == 1,
+    Log4Error.invalidInputError(target.dim() == 1 && target.nElement() == 1,
       "L1HingeEmbeddingCriterion.updateOutput: " +
         "target should be vector with one element," +
         s" target shape [${target.dim()},${target.nElement()}]")
@@ -63,7 +63,7 @@ class L1HingeEmbeddingCriterion[@specialized(Float, Double) T: ClassTag](val mar
   }
 
   override def updateGradInput(input: Table, target: Tensor[T]): Table = {
-    require(target.dim() == 1 && target.nElement() == 1,
+    Log4Error.invalidInputError(target.dim() == 1 && target.nElement() == 1,
       s"L1HingeEmbeddingCriterion.updateOutput:" +
         " target should be vector with one element," +
         s" target shape [${target.dim()},${target.nElement()}]")

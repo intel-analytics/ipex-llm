@@ -19,7 +19,7 @@ package com.intel.analytics.bigdl.dllib.keras.layers
 import com.intel.analytics.bigdl.dllib.nn.abstractnn.DataFormat
 import com.intel.analytics.bigdl.dllib.nn.internal.{Cropping2D => BigDLCropping2D}
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.dllib.utils.Shape
+import com.intel.analytics.bigdl.dllib.utils.{Log4Error, Shape}
 import com.intel.analytics.bigdl.dllib.keras.Net
 import com.intel.analytics.bigdl.dllib.keras.layers.utils.KerasUtils
 
@@ -53,10 +53,12 @@ object Cropping2D {
     cropping: ((Int, Int), (Int, Int)) = ((0, 0), (0, 0)),
     dimOrdering: String = "th",
     inputShape: Shape = null)(implicit ev: TensorNumeric[T]): Cropping2D[T] = {
-    require(cropping != null, "For Cropping2D, " +
+    Log4Error.invalidInputError(cropping != null, "For Cropping2D, " +
       "cropping values should be int tuple of tuple of length 2")
-    require(cropping._1 != null, "For Cropping2D, heightCrop should be int tuple of length 2")
-    require(cropping._2 != null, "For Cropping2D, widthCrop should be int tuple of length 2")
+    Log4Error.invalidInputError(cropping._1 != null, "For Cropping2D," +
+      "heightCrop should be int tuple of length 2")
+    Log4Error.invalidInputError(cropping._2 != null, "For Cropping2D," +
+      "widthCrop should be int tuple of length 2")
     val heightCrop = Array(cropping._1._1, cropping._1._2)
     val widthCrop = Array(cropping._2._1, cropping._2._2)
     new Cropping2D[T](heightCrop, widthCrop,

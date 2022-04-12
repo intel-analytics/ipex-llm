@@ -28,6 +28,7 @@ import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
 import java.io.File
 import scala.io.Source
+import com.intel.analytics.bigdl.ppml.utils.TestUtils
 
 class CorrectnessSpec extends FlatSpec with Matchers with BeforeAndAfter with DebugLogger {
   // This is a full-dataset validation so we disable debug log
@@ -123,7 +124,8 @@ class CorrectnessSpec extends FlatSpec with Matchers with BeforeAndAfter with De
       // The tree structure validation
       XGBoostFormatValidator(xgBoostFormatNodes, fgBoostTreeInFormat)
       logger.info(s"Got similar result: ${cnt}/${fGBoostResult.length}")
-      require(cnt > 900, s"Should get over 900 results similar with XGBoost, but got only: $cnt")
+      TestUtils.conditionFailTest(cnt > 900,
+        s"Should get over 900 results similar with XGBoost, but got only: $cnt")
     } catch {
       case e: Exception => throw e
     } finally {
@@ -195,7 +197,8 @@ class CorrectnessSpec extends FlatSpec with Matchers with BeforeAndAfter with De
       // The tree structure validation
       XGBoostFormatValidator(xgBoostFormatNodes, fgBoostTreeInFormat)
       logger.info(s"Got similar result: ${cnt}/${fGBoostResult.length}")
-      require(cnt > 900, s"Should get over 900 results similar with XGBoost, but got only: $cnt")
+      TestUtils.conditionFailTest(cnt > 900,
+        s"Should get over 900 results similar with XGBoost, but got only: $cnt")
     } catch {
           // TODO: sometimes this UT (random fail) throws IndexOutOfRange Exception, need to check
       case e: Exception => throw e
@@ -264,7 +267,8 @@ class CorrectnessSpec extends FlatSpec with Matchers with BeforeAndAfter with De
       // The tree structure validation
       XGBoostFormatValidator(xgBoostFormatNodes, fgBoostTreeInFormat)
       logger.info(s"Got similar result: ${cnt}/${fGBoostResult.length}")
-      require(cnt > 900, s"Should get over 900 results similar with XGBoost, but got only: $cnt")
+      TestUtils.conditionFailTest(cnt > 900,
+        s"Should get over 900 results similar with XGBoost, but got only: $cnt")
     } catch {
       // TODO: sometimes this UT (random fail) throws IndexOutOfRange Exception, need to check
       case e: Exception => throw e

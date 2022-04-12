@@ -22,7 +22,7 @@ import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.dllib.utils.serializer._
 import com.intel.analytics.bigdl.dllib.utils.serializer.converters.DataConverter
-import com.intel.analytics.bigdl.dllib.utils.{T, Table}
+import com.intel.analytics.bigdl.dllib.utils.{Log4Error, T, Table}
 import com.intel.analytics.bigdl.serialization.Bigdl.{AttrValue, BigDLModule}
 
 import scala.collection.mutable
@@ -114,11 +114,11 @@ abstract class Cell[T : ClassTag](
       }
     } else {
       if (hidden.isInstanceOf[Tensor[T]]) {
-        require(hidden.isInstanceOf[Tensor[T]],
+        Log4Error.invalidOperationError(hidden.isInstanceOf[Tensor[T]],
           "Cell: hidden should be a Tensor")
         hidden.toTensor.resize(batchSize, hiddensShape(0))
       } else {
-        require(hidden.isInstanceOf[Table],
+        Log4Error.invalidOperationError(hidden.isInstanceOf[Table],
           "Cell: hidden should be a Table")
         var i = 1
         val sizes = new Array[Int](stepShape.length + 1)
@@ -136,7 +136,8 @@ abstract class Cell[T : ClassTag](
 
   override def updateOutput(input: Table): Table = {
     if (includePreTopology) {
-      assert(preTopology != null, "preTopology cannot be null if includePreTopology is true")
+      Log4Error.invalidOperationError(preTopology != null,
+        "preTopology cannot be null if includePreTopology is true")
       val inputTensor = input.toTable[Tensor[T]](Recurrent.inputDim)
       input(Recurrent.inputDim) = preTopology.forward(inputTensor)
       output = cell.forward(input).toTable

@@ -21,7 +21,7 @@ import com.intel.analytics.bigdl.dllib.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.dllib.nn.{CAddTable, CAveTable, CMaxTable, CMulTable, CosineDistance, DotProduct, JoinTable, ParallelTable, Sequential => TSequential}
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.dllib.utils.{MultiShape, Shape}
+import com.intel.analytics.bigdl.dllib.utils.{Log4Error, MultiShape, Shape}
 
 import scala.reflect.ClassTag
 
@@ -50,11 +50,12 @@ class Merge[T: ClassTag](
   private val mergeMode = mode.toLowerCase()
   private var axis = concatAxis
 
-  require(mergeMode == "sum" || mergeMode == "mul" || mergeMode == "concat" || mergeMode == "ave"
+  Log4Error.invalidInputError(mergeMode == "sum" || mergeMode == "mul"
+    || mergeMode == "concat" || mergeMode == "ave"
   || mergeMode == "cos" || mergeMode == "dot" || mergeMode == "max",
   s"Invalid merge mode: $mergeMode")
   if (layers != null) {
-    require(layers.length >= 2, s"Merge must take at least two input layers " +
+    Log4Error.invalidInputError(layers.length >= 2, s"Merge must take at least two input layers " +
       s"but found ${layers.length}")
     this.excludeInvalidLayers(layers)
   }
@@ -63,14 +64,16 @@ class Merge[T: ClassTag](
     import scala.util.control.Breaks._
     val input1 = input.head.toSingle().toArray
     val output = input1.clone()
-    require(Math.abs(concatAxis) < output.length, s"Invalid concat axis $concatAxis")
+    Log4Error.invalidInputError(Math.abs(concatAxis) < output.length,
+      s"Invalid concat axis $concatAxis")
     axis = if (concatAxis < 0) concatAxis + output.length else concatAxis
     var i = 1
     while (i < input.length) {
       val input_i = input(i).toSingle().toArray
       var j = 0
       while (j < input_i.length) {
-        if (j != axis) require(input_i(j)==output(j), s"Incompatible input dimension for merge " +
+        if (j != axis) Log4Error.invalidInputError(input_i(j)==output(j),
+          s"Incompatible input dimension for merge " +
           s"mode concat: (${output.deep.mkString(", ")}), " +
           s"(${input_i.deep.mkString(", ")})")
         j += 1
@@ -90,7 +93,8 @@ class Merge[T: ClassTag](
     var i = 1
     while (i < input.length) {
       val input_i = input(i).toSingle().toArray
-      require(input_i.sameElements(input1), s"Incompatible input dimension for " +
+      Log4Error.invalidInputError(input_i.sameElements(input1),
+        s"Incompatible input dimension for " +
         s"merge mode $mergeMode: (${input1.deep.mkString(", ")}), " +
         s"(${input_i.deep.mkString(", ")})")
       i += 1
@@ -106,9 +110,11 @@ class Merge[T: ClassTag](
     else {
       checkSameInputShape(input)
       if (mergeMode == "dot" || mergeMode == "cos") {
-        require(input.head.toSingle().length <=2, s"For merge mode $mergeMode, 3D input " +
+        Log4Error.invalidInputError(input.head.toSingle().length <=2,
+          s"For merge mode $mergeMode, 3D input " +
           s"or above is currently not supported, got input dim ${input.head.toSingle().length}")
-        require(input.length == 2, s"Merge mode $mergeMode takes exactly two layers, " +
+        Log4Error.invalidInputError(input.length == 2,
+          s"Merge mode $mergeMode takes exactly two layers, " +
           s"but got ${input.length}")
         if (mergeMode == "dot") Shape(-1, 1) else Shape(-1, 1, 1)
       }
@@ -172,9 +178,9 @@ object Merge {
       }.toList)
     } else null
     if (batchInputShape != null) {
-      require(batchInputShape.isInstanceOf[MultiShape],
+      Log4Error.invalidInputError(batchInputShape.isInstanceOf[MultiShape],
         "Merge requires inputShape to be MultiShape")
-      require(batchInputShape.toMulti().equals(actualInputShape.toMulti()),
+      Log4Error.invalidInputError(batchInputShape.toMulti().equals(actualInputShape.toMulti()),
         "Actual layer input shapes are not the same as expected layer input shapes")
     }
     actualInputShape

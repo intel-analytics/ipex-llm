@@ -90,7 +90,7 @@ def get_estimator(workers_per_node=2, model_fn=model_creator, sync_stats=False,
                                      metrics=[MSE()],
                                      config={"lr": 1e-2},
                                      workers_per_node=workers_per_node,
-                                     backend="torch_distributed",
+                                     backend="ray",
                                      sync_stats=sync_stats,
                                      log_level=log_level)
     return estimator

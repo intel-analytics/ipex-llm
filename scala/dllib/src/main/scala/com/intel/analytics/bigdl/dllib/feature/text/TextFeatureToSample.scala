@@ -19,6 +19,7 @@ package com.intel.analytics.bigdl.dllib.feature.text
 import com.intel.analytics.bigdl.dllib.feature.dataset.Sample
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.dllib.utils.Log4Error
 
 import scala.reflect.ClassTag
 
@@ -31,7 +32,8 @@ import scala.reflect.ClassTag
 class TextFeatureToSample extends TextTransformer {
 
   override def transform(feature: TextFeature): TextFeature = {
-    require(feature.contains(TextFeature.indexedTokens), "TextFeature doesn't contain indexTokens" +
+    Log4Error.invalidOperationError(feature.contains(TextFeature.indexedTokens),
+      "TextFeature doesn't contain indexTokens" +
       " yet. Please use WordIndexer to transform tokens to indexedTokens first")
     val indices = feature.getIndices
     val input = Tensor[Float](data = indices, shape = Array(indices.length))

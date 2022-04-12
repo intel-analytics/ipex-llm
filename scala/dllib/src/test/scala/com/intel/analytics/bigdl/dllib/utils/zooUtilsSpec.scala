@@ -16,6 +16,7 @@
 
 package com.intel.analytics.bigdl.dllib.common
 
+import com.intel.analytics.bigdl.dllib.utils.TestUtils
 import org.apache.hadoop.fs.Path
 import org.scalatest.{FlatSpec, Matchers}
 
@@ -26,9 +27,9 @@ class zooUtilsSpec extends FlatSpec with Matchers {
 
   "Utils listFiles" should "work properly" in {
     val files = zooUtils.listPaths(path)
-    assert(files.size == 3)
+    TestUtils.conditionFailTest(files.size == 3)
     val recursiveFiles = zooUtils.listPaths(path, true)
-    assert(recursiveFiles.size == 13)
+    TestUtils.conditionFailTest(recursiveFiles.size == 13)
   }
 
   "Utils readBytes" should "work properly" in {
@@ -36,7 +37,7 @@ class zooUtilsSpec extends FlatSpec with Matchers {
     val fileLen = inputStream.available()
     inputStream.close()
     val bytes = zooUtils.readBytes(txtRelations)
-    assert(bytes.length == fileLen)
+    TestUtils.conditionFailTest(bytes.length == fileLen)
   }
 
   "Utils saveBytes" should "work properly" in {

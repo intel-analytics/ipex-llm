@@ -121,6 +121,12 @@ object TestUtils {
 
     (fout, dxout)
   }
+
+  def conditionFailTest(condition: Boolean, msg: String = null): Unit = {
+    // scalastyle:off
+    assert(condition, msg)
+    // scalastyle:on
+  }
 }
 
 class ExceptionTest[T: ClassTag](failCountNumberLists: Array[Int], sleep: Boolean)

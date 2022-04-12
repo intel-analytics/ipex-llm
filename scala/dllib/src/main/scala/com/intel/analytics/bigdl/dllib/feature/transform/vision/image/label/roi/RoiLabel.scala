@@ -16,10 +16,10 @@
 
 package com.intel.analytics.bigdl.dllib.feature.transform.vision.image.label.roi
 
-import com.intel.analytics.bigdl.dllib.feature.dataset.segmentation.{MaskUtils, SegmentationMasks, RLEMasks}
+import com.intel.analytics.bigdl.dllib.feature.dataset.segmentation.{MaskUtils, RLEMasks, SegmentationMasks}
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.feature.transform.vision.image.RoiImageInfo
-import com.intel.analytics.bigdl.dllib.utils.{T, Table}
+import com.intel.analytics.bigdl.dllib.utils.{Log4Error, T, Table}
 
 /**
  * image target with classes and bounding boxes
@@ -34,21 +34,25 @@ case class RoiLabel(classes: Tensor[Float], bboxes: Tensor[Float],
   def copy(target: RoiLabel): Unit = {
     classes.resizeAs(target.classes).copy(target.classes)
     bboxes.resizeAs(target.bboxes).copy(target.bboxes)
-    require(target.masks == null, "Copying RoiLabels with masks not supported")
+    Log4Error.invalidInputError(target.masks == null, "Copying RoiLabels with masks not supported")
   }
 
   if (classes.dim() == 1) {
-    require(classes.size(1) == bboxes.size(1), s"the number of classes ${classes.size(1)} should " +
+    Log4Error.invalidInputError(classes.size(1) == bboxes.size(1),
+      s"the number of classes ${classes.size(1)} should " +
       s"be equal to the number of bounding box numbers ${bboxes.size(1)}")
     if (masks != null) {
-      require(classes.size(1) == masks.length, s"the number of classes ${classes.size(1)} should " +
+      Log4Error.invalidInputError(classes.size(1) == masks.length,
+        s"the number of classes ${classes.size(1)} should " +
         s"be equal to the number of mask array ${masks.length}")
     }
   } else if (classes.nElement() > 0 && classes.dim() == 2) {
-    require(classes.size(2) == bboxes.size(1), s"the number of classes ${classes.size(2)}" +
+    Log4Error.invalidInputError(classes.size(2) == bboxes.size(1),
+      s"the number of classes ${classes.size(2)}" +
       s"should be equal to the number of bounding box numbers ${bboxes.size(1)}")
     if (masks != null) {
-      require(classes.size(2) == masks.length, s"the number of classes ${classes.size(2)}" +
+      Log4Error.invalidInputError(classes.size(2) == masks.length,
+        s"the number of classes ${classes.size(2)}" +
         s"should be equal to the number of bounding box numbers ${masks.length}")
     }
   }

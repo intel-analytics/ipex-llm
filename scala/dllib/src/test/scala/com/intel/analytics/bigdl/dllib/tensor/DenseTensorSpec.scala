@@ -897,7 +897,7 @@ class DenseTensorSpec extends FlatSpec with Matchers {
     val thrown = intercept[Exception] {
       t.size(1)
     }
-    thrown.isInstanceOf[IllegalArgumentException] should be(true)
+    thrown.isInstanceOf[com.intel.analytics.bigdl.dllib.utils.UnKnownException] should be(true)
   }
 
   "Scalar tensor" should "be able to add" in {
@@ -1022,7 +1022,7 @@ class DenseTensorSpec extends FlatSpec with Matchers {
   "Tensor add" should "catch exception when broadcasting size not match" in {
     val t1 = Tensor[Double](T(1, 2))
     val t2 = Tensor[Double](T(T(2, 5, 3), T(3, 6, 4)))
-    intercept[IllegalArgumentException] {
+    intercept[com.intel.analytics.bigdl.dllib.utils.UnKnownException] {
       t2.add(t1) should be(Tensor[Double](T(T(3, 7, 6), T(4, 8, 7))))
     }
   }
@@ -1030,7 +1030,7 @@ class DenseTensorSpec extends FlatSpec with Matchers {
   "Tensor add" should "catch exception when broadcasting size not match 2" in {
     val t1 = Tensor[Double](T(T(1, 2, 3), T(1, 2, 3), T(1, 2, 3)))
     val t2 = Tensor[Double](T(T(2, 5, 3), T(3, 6, 4)))
-    intercept[IllegalArgumentException] {
+    intercept[com.intel.analytics.bigdl.dllib.utils.UnKnownException] {
       t2.add(t1) should be(Tensor[Double](T(T(3, 7, 6), T(4, 8, 7))))
     }
   }

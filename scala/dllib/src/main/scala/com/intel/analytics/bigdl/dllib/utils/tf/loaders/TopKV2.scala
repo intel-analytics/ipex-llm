@@ -22,6 +22,7 @@ import com.intel.analytics.bigdl.dllib.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.dllib.nn.ops.{TopK => TopKOps}
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.dllib.utils.Log4Error
 import com.intel.analytics.bigdl.dllib.utils.tf.Context
 import org.tensorflow.framework.{DataType, NodeDef}
 
@@ -56,7 +57,7 @@ class TopKV2LoadTF[T: ClassTag](s: Boolean, t: String)(implicit ev: TensorNumeri
   extends Adapter[T](Array(2)) {
   override def build(tensorArrays: Array[Tensor[_]]): AbstractModule[Activity, Activity, T] = {
     val kTensor = tensorArrays(0).asInstanceOf[Tensor[Int]]
-    require(kTensor.isScalar, "Invalid input k")
+    Log4Error.invalidInputError(kTensor.isScalar, "Invalid input k")
     val k = kTensor.value()
 
     if (t == "Float") {

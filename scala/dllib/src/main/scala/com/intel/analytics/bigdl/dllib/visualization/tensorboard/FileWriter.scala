@@ -16,7 +16,7 @@
 
 package com.intel.analytics.bigdl.dllib.visualization.tensorboard
 
-import com.intel.analytics.bigdl.dllib.utils.Engine
+import com.intel.analytics.bigdl.dllib.utils.{Engine, Log4Error}
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.Path
 import org.tensorflow
@@ -33,7 +33,8 @@ private[bigdl] class FileWriter(val logDirectory : String, flushMillis: Int = 10
   // write to local disk by default
   private val fs = logPath.getFileSystem(new Configuration(false))
 
-  require(!fs.exists(logPath) || fs.isDirectory(logPath), s"FileWriter: can not create $logPath")
+  Log4Error.invalidInputError(!fs.exists(logPath) || fs.isDirectory(logPath),
+    s"FileWriter: can not create $logPath")
   if (!fs.exists(logPath)) fs.mkdirs(logPath)
 
   private val eventWriter = new EventWriter(logDirectory, flushMillis, fs)

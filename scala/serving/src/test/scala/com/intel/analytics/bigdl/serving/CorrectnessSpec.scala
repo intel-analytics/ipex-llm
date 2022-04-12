@@ -27,6 +27,7 @@ import com.intel.analytics.bigdl.serving.http.{Instances, JsonUtil}
 import com.intel.analytics.bigdl.serving.postprocessing.PostProcessing
 import com.intel.analytics.bigdl.serving.utils.DeprecatedUtils
 import javax.imageio.ImageIO
+
 import org.apache.commons.io.FileUtils
 import org.apache.logging.log4j.LogManager
 import org.opencv.core._
@@ -36,6 +37,7 @@ import org.scalatest.{FlatSpec, Matchers}
 
 import scala.io.Source
 import scala.sys.process._
+import com.intel.analytics.bigdl.serving.utils.AssertUtils
 
 class CorrectnessSpec extends FlatSpec with Matchers {
   val configPath = "/tmp/config.yaml"
@@ -141,7 +143,7 @@ class CorrectnessSpec extends FlatSpec with Matchers {
     }
     val acc = cN / tN
     logger.info(s"Top 1 Accuracy of serving, Openvino ResNet50 Model on ImageNet is ${acc}")
-    assert(acc > 0.71)
+    AssertUtils.conditionFailTest(acc > 0.71)
 
   }
 
@@ -227,7 +229,7 @@ val helper = ClusterServing.helper
     }
     val acc = cN / tN
     logger.info(s"Top 1 Accuracy of serving, Openvino ResNet50 Model on ImageNet is ${acc}")
-    assert(acc > 0.71)
+    AssertUtils.conditionFailTest(acc > 0.71)
 
   }
 }

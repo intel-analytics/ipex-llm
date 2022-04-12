@@ -26,7 +26,7 @@ import scala.math._
 import scala.util.Random
 import com.intel.analytics.bigdl.dllib.feature.dataset.LocalArrayDataSet
 import com.intel.analytics.bigdl.dllib.feature.dataset.image.{ColorJitter, LabeledBGRImage}
-import com.intel.analytics.bigdl.dllib.utils.RandomGenerator
+import com.intel.analytics.bigdl.dllib.utils.{RandomGenerator, TestUtils}
 
 @com.intel.analytics.bigdl.tags.Serial
 class ColorJitterSpec extends TorchSpec {
@@ -155,7 +155,7 @@ class ColorJitterSpec extends TorchSpec {
     val bigdlOutput = Tensor[Float](Storage(test.content), storageOffset = 1, size = Array(3, 3, 3))
       .transpose(1, 3).transpose(2, 3)
     luaOutput.map(bigdlOutput, (v1, v2) => {
-      assert(abs(v1 - v2) < 1e-5)
+      TestUtils.conditionFailTest(abs(v1 - v2) < 1e-5)
       v1
     })
   }

@@ -19,6 +19,7 @@ package com.intel.analytics.bigdl.dllib.feature.dataset.text
 import com.intel.analytics.bigdl.dllib.feature.dataset.Sentence
 import com.intel.analytics.bigdl.dllib.tensor.{DoubleType, FloatType}
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.dllib.utils.Log4Error
 
 import scala.reflect.ClassTag
 
@@ -78,17 +79,17 @@ class LabeledSentence[T: ClassTag](
   }
 
   def getData(index: Int): T = {
-    require(index >= 0 && index < _dataLength, "index out of boundary")
+    Log4Error.invalidOperationError(index >= 0 && index < _dataLength, "index out of boundary")
     _data(index)
   }
 
   def getLabel(index: Int): T = {
-    require(index >= 0 && index < _labelLength, "index out of boundary")
+    Log4Error.invalidOperationError(index >= 0 && index < _labelLength, "index out of boundary")
     _label(index)
   }
 
   def copyToData(storage: Array[T], offset: Int): Unit = {
-    require(_dataLength + offset <= storage.length)
+    Log4Error.invalidOperationError(_dataLength + offset <= storage.length, "index out of boundary")
     ev.getType() match {
       case DoubleType => Array.copy(_data
         .asInstanceOf[Array[Double]], 0, storage
@@ -101,7 +102,8 @@ class LabeledSentence[T: ClassTag](
   }
 
   def copyToLabel(storage: Array[T], offset: Int): Unit = {
-    require(_labelLength + offset <= storage.length)
+    Log4Error.invalidOperationError(_labelLength + offset <= storage.length,
+      "index out of boundary")
     ev.getType() match {
       case DoubleType => Array.copy(_label
         .asInstanceOf[Array[Double]], 0, storage

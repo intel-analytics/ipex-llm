@@ -47,7 +47,7 @@ class NBeatsForecaster(BasePytorchForecaster):
                  seed=None,
                  distributed=False,
                  workers_per_node=1,
-                 distributed_backend="torch_distributed"):
+                 distributed_backend="ray"):
         """
         Build a NBeats Forecaster Model.
 
@@ -90,8 +90,8 @@ class NBeatsForecaster(BasePytorchForecaster):
         :param workers_per_node: int, the number of worker you want to use.
                The value defaults to 1. The param is only effective when
                distributed is set to True.
-        :param distributed_backend: str, select from "torch_distributed" or
-               "horovod". The value defaults to "torch_distributed".
+        :param distributed_backend: str, select from "ray" or
+               "horovod". The value defaults to "ray".
         """
         # ("generic", "generic") not support orca distributed.
         if stack_types[-1] == "generic" and distributed:

@@ -26,6 +26,7 @@ import org.apache.spark.TaskContext
 import scala.reflect.ClassTag
 import com.intel.analytics.bigdl.dllib.keras.models.InternalOptimizerUtil
 import com.intel.analytics.bigdl.orca.net.TorchOptim.DecayType
+import com.intel.analytics.bigdl.dllib.utils.Log4Error
 
 class TorchOptim[@specialized(Float, Double) T: ClassTag](
     torchOptim: Array[Byte],
@@ -79,7 +80,8 @@ class TorchOptim[@specialized(Float, Double) T: ClassTag](
       LrScheduler
     } else if (PythonInterpreter.getValue[Boolean](s"isinstance($name, ReduceLROnPlateau)")) {
       // ReduceLROnPlateau is not subclass of LRScheduler
-      require(decayType == EpochDecayByScore, "Plateau should use decayType EpochDecayByScore")
+      Log4Error.unKnowExceptionError(decayType == EpochDecayByScore,
+        "Plateau should use decayType EpochDecayByScore")
       initCode = s"""
            |$weightName = torch.tensor($weightName, requires_grad=True)
            |$weightName = torch.autograd.Variable($weightName)

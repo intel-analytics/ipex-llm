@@ -17,7 +17,7 @@ package com.intel.analytics.bigdl.dllib.optim.parameters
 
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.dllib.utils.Engine
+import com.intel.analytics.bigdl.dllib.utils.{Engine, Log4Error}
 import java.util.concurrent._
 import java.util.concurrent.atomic.AtomicLong
 
@@ -240,7 +240,8 @@ class AllReduceParameter[T: ClassTag](
    * @param avgNumbers average numbers.
    */
   def aggregateGradientPartition(avgNumbers: Int): Unit = {
-    require(partitionId < partitionNum, s"This parameter was created with $partitionNum " +
+    Log4Error.unKnowExceptionError(partitionId < partitionNum,
+      s"This parameter was created with $partitionNum " +
       s"partitions. It cannot be used on RDDs with > $partitionNum partitions.")
     val params = new Array[CompressedTensor[T]](partitionNum)
     val sgThreads = (0 until partitionNum).map { pid =>

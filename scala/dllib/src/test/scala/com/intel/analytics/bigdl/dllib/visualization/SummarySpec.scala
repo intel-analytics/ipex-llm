@@ -55,14 +55,14 @@ class SummarySpec extends FlatSpec with Matchers with BeforeAndAfter {
     val scalar_value = 1f
     val s = scalar("test_scalar", scalar_value)
     val values = s.getValue(0)
-    assert(s.getValueCount == 1)
-    assert(values.getTag == "test_scalar")
-    assert(values.getSimpleValue == 1.0)
+    TestUtils.conditionFailTest(s.getValueCount == 1)
+    TestUtils.conditionFailTest(values.getTag == "test_scalar")
+    TestUtils.conditionFailTest(values.getSimpleValue == 1.0)
 
     val byte_str = s.toByteArray
     val s_recovered = framework.Summary.parseFrom(byte_str)
-    assert(values.getTag == s_recovered.getValue(0).getTag())
-    assert(values.getSimpleValue == s_recovered.getValue(0).getSimpleValue)
+    TestUtils.conditionFailTest(values.getTag == s_recovered.getValue(0).getTag())
+    TestUtils.conditionFailTest(values.getSimpleValue == s_recovered.getValue(0).getSimpleValue)
   }
 
   "test_log_histogram_summary" should "return write result" in {

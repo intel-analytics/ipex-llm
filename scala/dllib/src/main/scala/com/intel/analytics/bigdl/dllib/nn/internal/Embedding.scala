@@ -20,7 +20,7 @@ import com.intel.analytics.bigdl.dllib.nn.abstractnn.AbstractModule
 import com.intel.analytics.bigdl.dllib.optim.Regularizer
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.dllib.utils.Shape
+import com.intel.analytics.bigdl.dllib.utils.{Log4Error, Shape}
 import com.intel.analytics.bigdl.dllib.nn.{AddConstant, InitializationMethod, LookupTable, RandomUniform, Zeros, Sequential => TSequential}
 
 import scala.reflect.ClassTag
@@ -51,7 +51,7 @@ class Embedding[T: ClassTag](
 
   override def computeOutputShape(inputShape: Shape): Shape = {
     val input = inputShape.toSingle().toArray
-    require(input.length == 2,
+    Log4Error.invalidInputError(input.length == 2,
       s"Embedding requires 2D input, but got input dim ${input.length}")
     Shape(input(0), input(1), outputDim)
   }

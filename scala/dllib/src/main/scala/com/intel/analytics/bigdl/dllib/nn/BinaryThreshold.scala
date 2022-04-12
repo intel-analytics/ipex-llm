@@ -19,7 +19,7 @@ package com.intel.analytics.bigdl.dllib.nn
 import com.intel.analytics.bigdl.dllib.nn.abstractnn.TensorModule
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.dllib.tensor._
-import com.intel.analytics.bigdl.dllib.utils.Engine
+import com.intel.analytics.bigdl.dllib.utils.{Engine, Log4Error}
 
 import scala.collection.mutable.ArrayBuffer
 import scala.concurrent.Future
@@ -41,7 +41,8 @@ class BinaryThreshold[T: ClassTag](
   var inPlace = ip
 
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
-    require(input.isContiguous())
+    Log4Error.invalidInputError(input.isContiguous(),
+      "BinaryThreshold expects input to be contiguous")
 
     val taskSize = input.nElement() / Engine.model.getPoolSize
     var extraTaskSize = input.nElement() % Engine.model.getPoolSize

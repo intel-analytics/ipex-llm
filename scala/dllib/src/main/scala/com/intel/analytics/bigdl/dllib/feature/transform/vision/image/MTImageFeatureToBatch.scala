@@ -17,13 +17,13 @@ package com.intel.analytics.bigdl.dllib.feature.transform.vision.image
 
 import com.intel.analytics.bigdl.dllib.feature.dataset.segmentation.RLEMasks
 import java.util.concurrent.atomic.AtomicInteger
+
 import com.intel.analytics.bigdl.dllib.feature.dataset.{MiniBatch, Sample, Transformer, Utils}
 import com.intel.analytics.bigdl.dllib.nn.abstractnn.Activity
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.dllib.tensor.{Storage, Tensor}
 import com.intel.analytics.bigdl.dllib.feature.transform.vision.image.label.roi.RoiLabel
-import com.intel.analytics.bigdl.dllib.utils.{T, Table}
-import com.intel.analytics.bigdl.dllib.utils.Engine
+import com.intel.analytics.bigdl.dllib.utils.{Engine, Log4Error, T, Table}
 
 object MTImageFeatureToBatch {
   /**
@@ -49,7 +49,8 @@ object MTImageFeatureToBatch {
       val hasLabel = labelData.head != null
       for (i <- 1 until labelData.length) {
         val curHasLabel = labelData(i) != null
-        require(curHasLabel == hasLabel, "The input data must either be all labeled or" +
+        Log4Error.invalidInputError(curHasLabel == hasLabel,
+          "The input data must either be all labeled or" +
           " be all unlabeled")
       }
       if (hasLabel) labelData else null
@@ -312,7 +313,7 @@ class RoiMiniBatch(val input: Tensor[Float], val target: Array[RoiLabel],
   }
 
   override def getTarget(): Table = {
-    require(target != null, "The target should not be null")
+    Log4Error.invalidOperationError(target != null, "The target should not be null")
     val tables = (target, isCrowd, 1 to isCrowd.length).zipped.map { case (roiLabel, crowd, i) =>
       val ret = roiLabel.toTable
         .update(RoiImageInfo.ISCROWD, crowd)
@@ -376,11 +377,12 @@ class RoiImageFeatureToBatch private[bigdl](width: Int, height: Int,
     val isCrowd = img(RoiImageInfo.ISCROWD).asInstanceOf[Tensor[Float]]
     val label = img.getLabel.asInstanceOf[RoiLabel]
     if (label != null) {
-      require(isCrowd != null && label.bboxes.size(1) == isCrowd.size(1), "The number" +
-        " of detections " +
+      Log4Error.invalidInputError(isCrowd != null && label.bboxes.size(1) == isCrowd.size(1),
+        "The number of detections " +
         "in ImageFeature's ISCROWD should be equal to the number of detections in the RoiLabel")
     } else {
-      require(isCrowd == null, "ImageFeature's ISCROWD should be not be set if the label is empty")
+      Log4Error.invalidInputError(isCrowd == null,
+        "ImageFeature's ISCROWD should be not be set if the label is empty")
     }
     isCrowdData(position) = isCrowd
     labelData(position) = label
@@ -446,11 +448,12 @@ class RoiImageFeatureToBatchWithResize private[bigdl](sizeDivisible: Int = -1, t
     val isCrowd = img(RoiImageInfo.ISCROWD).asInstanceOf[Tensor[Float]]
     val label = img.getLabel.asInstanceOf[RoiLabel]
     if (label != null) {
-      require(isCrowd != null && label.bboxes.size(1) == isCrowd.size(1), "The number of " +
-        "detections in ImageFeature's ISCROWD should be equal to the number of detections in the " +
-        "RoiLabel")
+      Log4Error.invalidInputError(isCrowd != null && label.bboxes.size(1) == isCrowd.size(1),
+        "The number of detections in ImageFeature's ISCROWD should be equal to the number of" +
+          " detections in the RoiLabel")
     } else {
-      require(isCrowd == null, "ImageFeature's ISCROWD should be not be set if the label is empty")
+      Log4Error.invalidInputError(isCrowd == null,
+        "ImageFeature's ISCROWD should be not be set if the label is empty")
     }
     isCrowdData(position) = isCrowd
     labelData(position) = label

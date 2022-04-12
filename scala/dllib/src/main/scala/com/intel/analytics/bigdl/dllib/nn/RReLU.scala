@@ -18,6 +18,7 @@ package com.intel.analytics.bigdl.dllib.nn
 import com.intel.analytics.bigdl.dllib.nn.abstractnn.TensorModule
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.dllib.tensor._
+import com.intel.analytics.bigdl.dllib.utils.Log4Error
 import com.intel.analytics.bigdl.dllib.utils.RandomGenerator._
 
 import scala.reflect.ClassTag
@@ -52,7 +53,9 @@ class RReLU[T: ClassTag](
   implicit ev: TensorNumeric[T]) extends TensorModule[T]  {
   @transient
   var noise: Tensor[T] = null
-  require(lower < upper && lower > 0 && upper > 0)
+  Log4Error.invalidInputError(lower < upper && lower > 0 && upper > 0,
+    s"lower $lower should be smaller than upper $upper and they both need" +
+      s"be greater than 0")
 
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
     if (noise == null) {
@@ -119,7 +122,7 @@ class RReLU[T: ClassTag](
   }
 
   override def updateGradInput(input: Tensor[T], gradOutput: Tensor[T]): Tensor[T] = {
-    require(input.isSameSizeAs(gradOutput),
+    Log4Error.invalidInputError(input.isSameSizeAs(gradOutput),
       "input and gradOutput should be same size" +
         s"input ${input.nElement()} gradOutput ${gradOutput.nElement()}")
     if (noise == null) {

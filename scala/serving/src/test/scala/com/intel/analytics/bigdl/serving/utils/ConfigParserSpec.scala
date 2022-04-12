@@ -17,6 +17,7 @@
 package com.intel.analytics.bigdl.serving.utils
 
 import org.scalatest.{FlatSpec, Matchers}
+import com.intel.analytics.bigdl.serving.utils.AssertUtils
 
 class ConfigParserSpec extends FlatSpec with Matchers {
   val configPath = getClass.getClassLoader.getResource("serving").getPath + "/config-test.yaml"
@@ -24,16 +25,16 @@ class ConfigParserSpec extends FlatSpec with Matchers {
   val configParser = new ConfigParser(configPath)
   "load set config" should "work" in {
     val conf = configParser.loadConfig()
-    assert(conf.modelPath.isInstanceOf[String])
-    assert(conf.modelPath == "/path")
-    assert(conf.modelParallelism == 10)
-    assert(conf.inputAlreadyBatched.isInstanceOf[Boolean])
-    assert(conf.inputAlreadyBatched == true)
-    assert(conf.redisSecureTrustStorePassword.isInstanceOf[String])
+    AssertUtils.conditionFailTest(conf.modelPath.isInstanceOf[String])
+    AssertUtils.conditionFailTest(conf.modelPath == "/path")
+    AssertUtils.conditionFailTest(conf.modelParallelism == 10)
+    AssertUtils.conditionFailTest(conf.inputAlreadyBatched.isInstanceOf[Boolean])
+    AssertUtils.conditionFailTest(conf.inputAlreadyBatched == true)
+    AssertUtils.conditionFailTest(conf.redisSecureTrustStorePassword.isInstanceOf[String])
   }
   "load default config" should "work" in {
     val conf = configParser.loadConfig()
-    assert(conf.threadPerModel == 1)
-    assert(conf.postProcessing == "")
+    AssertUtils.conditionFailTest(conf.threadPerModel == 1)
+    AssertUtils.conditionFailTest(conf.postProcessing == "")
   }
 }

@@ -24,8 +24,9 @@ import com.intel.analytics.bigdl.dllib.optim.SGD.{Default, LearningRateSchedule}
 import com.intel.analytics.bigdl.dllib.optim.parameters.{AllReduceParameter, ParameterProcessor, Util}
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.dllib.utils.Table
+import com.intel.analytics.bigdl.dllib.utils.{Log4Error, Table}
 import org.apache.spark.rdd.RDD
+
 import scala.reflect.ClassTag
 
 
@@ -61,7 +62,7 @@ class LarsSGD[T: ClassTag](
   @transient
   private[bigdl] var calculatedTrust: Option[T] = None
 
-  require(trust > 0.0 && trust <= 1.0,
+  Log4Error.invalidInputError(trust > 0.0 && trust <= 1.0,
     s"the trust for LARS is $trust, which should be greater than 0 and less than 1")
 
   /**

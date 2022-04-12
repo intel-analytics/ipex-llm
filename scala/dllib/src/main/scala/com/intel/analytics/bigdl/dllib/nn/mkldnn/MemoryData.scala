@@ -17,6 +17,7 @@ package com.intel.analytics.bigdl.dllib.nn.mkldnn
 
 import com.intel.analytics.bigdl.mkl._
 import com.intel.analytics.bigdl.dllib.tensor.DnnStorage
+import com.intel.analytics.bigdl.dllib.utils.Log4Error
 
 sealed trait MemoryData extends Serializable {
   def shape: Array[Int]
@@ -60,7 +61,7 @@ sealed trait MemoryData extends Serializable {
   }
 
   def getPrimitiveDescription(runtime: MklDnnRuntime)(implicit owner: MemoryOwner): Long = {
-    require(runtime != null, s"Have you initialized the MklDnnRuntime?")
+    Log4Error.invalidInputError(runtime != null, s"Have you initialized the MklDnnRuntime?")
     if (primitiveDesc == UNDEFINED || primitiveDesc == ERROR) {
       primitiveDesc =
         MklDnnMemory.MemoryPrimitiveDescCreate(getMemoryDescription(), runtime.engine)
@@ -69,7 +70,7 @@ sealed trait MemoryData extends Serializable {
   }
 
   def getPrimitive(runtime: MklDnnRuntime)(implicit owner: MemoryOwner): Long = {
-    require(runtime != null, s"Have you initialized the MklDnnRuntime?")
+    Log4Error.invalidInputError(runtime != null, s"Have you initialized the MklDnnRuntime?")
     if (primitive == UNDEFINED || primitive == ERROR) {
       primitive =
         MklDnnMemory.PrimitiveCreate0(getPrimitiveDescription(runtime))
@@ -86,12 +87,16 @@ sealed trait MemoryData extends Serializable {
   }
 
   def getRealSize: Long = {
-    require(primitiveDesc != UNDEFINED && primitiveDesc != ERROR)
+    Log4Error.invalidInputError(primitiveDesc != UNDEFINED && primitiveDesc != ERROR,
+      s"primitiveDesc $primitiveDesc cannot be UNDEFINED $UNDEFINED," +
+        s" primitiveDesc $primitiveDesc cannot be ERROR $ERROR")
     MklDnn.PrimitiveDescGetSize(primitiveDesc) / getDataTypeBytes
   }
 
   def getPaddingShape: Array[Int] = {
-    require(description != UNDEFINED && description != ERROR)
+    Log4Error.invalidInputError(description != UNDEFINED && description != ERROR,
+      s"description $description cannot be UNDEFINED $UNDEFINED," +
+        s" description $description cannot be ERROR $ERROR")
     Memory.GetPaddingShape(description)
   }
 
@@ -114,7 +119,7 @@ sealed trait MemoryData extends Serializable {
       case _ => false
     })
 
-    require(isConsistency,
+    Log4Error.invalidInputError(isConsistency,
       s"the shape([${shape.mkString(",")}]) of tensor is different from layout(${layout})")
   }
 }

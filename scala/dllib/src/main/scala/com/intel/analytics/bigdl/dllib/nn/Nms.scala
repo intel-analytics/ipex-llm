@@ -17,6 +17,7 @@
 package com.intel.analytics.bigdl.dllib.nn
 
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
+import com.intel.analytics.bigdl.dllib.utils.Log4Error
 
 /**
  * Non-Maximum Suppression (nms) for Object Detection
@@ -68,7 +69,10 @@ class Nms extends Serializable {
     indices: Array[Int], sorted: Boolean = false,
     orderWithBBox: Boolean = false): Int = {
     if (scores.nElement() == 0) return 0
-    require(indices.length >= scores.nElement() && boxes.size(2) == 4)
+    Log4Error.invalidOperationError(indices.length >= scores.nElement() && boxes.size(2) == 4,
+    s"indices.length ${indices.length} needs not be smaller than" +
+      s"scores.nElement() ${scores.nElement()} and boxes.size(2) expect be 4," +
+      s"but is ${boxes.size(2)}")
 
     init(scores.nElement())
     val boxArray = boxes.storage().array()

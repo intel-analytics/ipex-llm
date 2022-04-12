@@ -17,7 +17,7 @@ package com.intel.analytics.bigdl.dllib.nn.ops
 
 import com.intel.analytics.bigdl.dllib.tensor.{IntType, Tensor}
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.dllib.utils.Table
+import com.intel.analytics.bigdl.dllib.utils.{Log4Error, Table}
 
 import scala.reflect.ClassTag
 
@@ -50,7 +50,7 @@ class Gather[T: ClassTag, D: ClassTag](
       inputDim + dim
     }
     else dim
-    require(dim >= 1 && dim <= inputDim, s"Invalid position: $dim. " +
+    Log4Error.invalidInputError(dim >= 1 && dim <= inputDim, s"Invalid position: $dim. " +
       s"input:dim() is $inputTensor, input feature map dim (numInputDims) is $inputDim.")
 
     // set output shape
@@ -70,7 +70,7 @@ class Gather[T: ClassTag, D: ClassTag](
     var i = 0
     while (i < indices.nElement()) {
       val index = indices.valueAt(i + 1)
-      require(index < inputSizes(dim - 1),
+      Log4Error.invalidInputError(index < inputSizes(dim - 1),
         s"index should smaller than ${inputSizes(dim - 1)}, but got $index")
       output.select(dim, i + 1).copy(inputTensor.select(dim, index + 1))
       i += 1

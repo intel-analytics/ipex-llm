@@ -20,7 +20,7 @@ import com.intel.analytics.bigdl.dllib.nn.abstractnn.Activity
 import com.intel.analytics.bigdl.dllib.nn.ops.Operation
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.dllib.utils.Table
+import com.intel.analytics.bigdl.dllib.utils.{Log4Error, Table}
 
 import scala.reflect.ClassTag
 
@@ -28,6 +28,7 @@ import scala.reflect.ClassTag
  * Assert will assert the first input to be true, if not, throw the message in the second
  * input. Assert has no output.
  */
+// scalastyle:off
 private[bigdl] class Assert[T: ClassTag]()
   (implicit ev: TensorNumeric[T]) extends Operation[Table, Activity, T] {
   override def updateOutput(input: Table): Tensor[T] = {
@@ -37,7 +38,8 @@ private[bigdl] class Assert[T: ClassTag]()
     val predicate = predicateTensor.value()
     val message = messageTensor.value()
 
-    assert(predicate, message.toStringUtf8)
+    Log4Error.unKnowExceptionError(predicate, message.toStringUtf8, "prediction should be True")
     null
   }
 }
+// scalastyle:on

@@ -16,7 +16,7 @@
 
 package com.intel.analytics.bigdl.dllib.nn
 
-import com.intel.analytics.bigdl.dllib.utils.RandomGenerator
+import com.intel.analytics.bigdl.dllib.utils.{RandomGenerator, TestUtils}
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.dllib.tensor
 import com.intel.analytics.bigdl.dllib.nn.abstractnn.DataFormat
@@ -61,15 +61,15 @@ class SpatialMaxPoolingSpec extends FlatSpec with Matchers {
     val output = module.forward(input)
     val gradInput = module.backward(input, gradOutput)
     expectedOutput.map(output, (v1, v2) => {
-      assert(abs(v1 - v2) < 1e-6);
+      TestUtils.conditionFailTest(abs(v1 - v2) < 1e-6);
       v1
     })
     expectedGrad.map(gradInput, (v1, v2) => {
-      assert(abs(v1 - v2) < 1e-6);
+      TestUtils.conditionFailTest(abs(v1 - v2) < 1e-6);
       v1
     })
-    assert(input == inputOrg)
-    assert(gradOutput == gradOutputOrg)
+    TestUtils.conditionFailTest(input == inputOrg)
+    TestUtils.conditionFailTest(gradOutput == gradOutputOrg)
   }
 
   "A SpatialMaxPooling of float" should "generate correct output and gradInput" in {
@@ -103,15 +103,15 @@ class SpatialMaxPoolingSpec extends FlatSpec with Matchers {
     val output = module.forward(input)
     val gradInput = module.backward(input, gradOutput)
     expectedOutput.map(output, (v1, v2) => {
-      assert(abs(v1 - v2) < 1e-6);
+      TestUtils.conditionFailTest(abs(v1 - v2) < 1e-6);
       v1
     })
     expectedGrad.map(gradInput, (v1, v2) => {
-      assert(abs(v1 - v2) < 1e-6);
+      TestUtils.conditionFailTest(abs(v1 - v2) < 1e-6);
       v1
     })
-    assert(input == inputOrg)
-    assert(gradOutput == gradOutputOrg)
+    TestUtils.conditionFailTest(input == inputOrg)
+    TestUtils.conditionFailTest(gradOutput == gradOutputOrg)
   }
 
   "A SpatialMaxPooling in ceil mode" should "generate correct output and gradInput" in {
@@ -151,15 +151,15 @@ class SpatialMaxPoolingSpec extends FlatSpec with Matchers {
     val output = module.forward(input)
     val gradInput = module.backward(input, gradOutput)
     expectedOutput.map(output, (v1, v2) => {
-      assert(abs(v1 - v2) < 1e-6);
+      TestUtils.conditionFailTest(abs(v1 - v2) < 1e-6);
       v1
     })
     expectedGrad.map(gradInput, (v1, v2) => {
-      assert(abs(v1 - v2) < 1e-6);
+      TestUtils.conditionFailTest(abs(v1 - v2) < 1e-6);
       v1
     })
-    assert(input == inputOrg)
-    assert(gradOutput == gradOutputOrg)
+    TestUtils.conditionFailTest(input == inputOrg)
+    TestUtils.conditionFailTest(gradOutput == gradOutputOrg)
   }
 
   "A SpatialMaxPooling with dW,dH and pad" should "generate correct output and gradInput" in {
@@ -217,15 +217,15 @@ class SpatialMaxPoolingSpec extends FlatSpec with Matchers {
     val output = module.forward(input)
     val gradInput = module.backward(input, gradOutput)
     expectedOutput.map(output, (v1, v2) => {
-      assert(abs(v1 - v2) < 1e-6);
+      TestUtils.conditionFailTest(abs(v1 - v2) < 1e-6);
       v1
     })
     expectedGrad.map(gradInput, (v1, v2) => {
-      assert(abs(v1 - v2) < 1e-6);
+      TestUtils.conditionFailTest(abs(v1 - v2) < 1e-6);
       v1
     })
-    assert(input == inputOrg)
-    assert(gradOutput == gradOutputOrg)
+    TestUtils.conditionFailTest(input == inputOrg)
+    TestUtils.conditionFailTest(gradOutput == gradOutputOrg)
   }
 
   "A SpatialMaxPooling with asymmetry dW,dH and pad" should
@@ -274,15 +274,15 @@ class SpatialMaxPoolingSpec extends FlatSpec with Matchers {
     val output = module.forward(input)
     val gradInput = module.backward(input, gradOutput)
     expectedOutput.map(output, (v1, v2) => {
-      assert(abs(v1 - v2) < 1e-6);
+      TestUtils.conditionFailTest(abs(v1 - v2) < 1e-6);
       v1
     })
     expectedGrad.map(gradInput, (v1, v2) => {
-      assert(abs(v1 - v2) < 1e-6);
+      TestUtils.conditionFailTest(abs(v1 - v2) < 1e-6);
       v1
     })
-    assert(input == inputOrg)
-    assert(gradOutput == gradOutputOrg)
+    TestUtils.conditionFailTest(input == inputOrg)
+    TestUtils.conditionFailTest(gradOutput == gradOutputOrg)
   }
 
   "A SpatialMaxPooling" should "generate correct output and gradInput with 3D input" in {
@@ -348,15 +348,15 @@ class SpatialMaxPoolingSpec extends FlatSpec with Matchers {
     val output = module.forward(input)
     val gradInput = module.backward(input, gradOutput)
     expectedOutput.map(output, (v1, v2) => {
-      assert(abs(v1 - v2) < 1e-6);
+      TestUtils.conditionFailTest(abs(v1 - v2) < 1e-6);
       v1
     })
     expectedGrad.map(gradInput, (v1, v2) => {
-      assert(abs(v1 - v2) < 1e-6);
+      TestUtils.conditionFailTest(abs(v1 - v2) < 1e-6);
       v1
     })
-    assert(input == inputOrg)
-    assert(gradOutput == gradOutputOrg)
+    TestUtils.conditionFailTest(input == inputOrg)
+    TestUtils.conditionFailTest(gradOutput == gradOutputOrg)
   }
 
   "A SpatialMaxPooling of float" should "be good in gradient checker" in {
@@ -426,12 +426,12 @@ class SpatialMaxPoolingSpec extends FlatSpec with Matchers {
       output = output.transpose(2, 4).transpose(3, 4)
       gradInput = gradInput.transpose(2, 4).transpose(3, 4)
       expectedOutput.map(output, (v1, v2) => {
-        assert(abs(v1 - v2) < 1e-6)
+        TestUtils.conditionFailTest(abs(v1 - v2) < 1e-6)
         v1
       })
 
       expectedGrad.map(gradInput, (v1, v2) => {
-        assert(abs(v1 - v2) < 1e-6)
+        TestUtils.conditionFailTest(abs(v1 - v2) < 1e-6)
         v1
       })
 

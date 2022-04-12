@@ -20,6 +20,7 @@ import java.util
 
 import com.intel.analytics.bigdl.dllib.feature.transform.vision.image.opencv.OpenCVMat
 import com.intel.analytics.bigdl.dllib.feature.transform.vision.image.{FeatureTransformer, ImageFeature}
+import com.intel.analytics.bigdl.dllib.utils.Log4Error
 import com.intel.analytics.bigdl.dllib.utils.RandomGenerator._
 import org.opencv.core.{Core, Mat}
 import org.opencv.imgproc.Imgproc
@@ -30,8 +31,8 @@ import org.opencv.imgproc.Imgproc
 class Saturation(deltaLow: Double, deltaHigh: Double)
   extends FeatureTransformer {
 
-  require(deltaHigh >= deltaLow, "saturation upper must be >= lower.")
-  require(deltaLow >= 0, "saturation lower must be non-negative.")
+  Log4Error.invalidInputError(deltaHigh >= deltaLow, "saturation upper must be >= lower.")
+  Log4Error.invalidInputError(deltaLow >= 0, "saturation lower must be non-negative.")
   override def transformMat(feature: ImageFeature): Unit = {
     Saturation.transform(feature.opencvMat(), feature.opencvMat(), RNG.uniform(deltaLow, deltaHigh))
   }
