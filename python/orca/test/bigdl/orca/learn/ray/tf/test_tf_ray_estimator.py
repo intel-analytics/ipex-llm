@@ -218,7 +218,7 @@ class TestTFRayEstimator(TestCase):
         assert dloss < 0 and dmse < 0, "training sanity check failed. loss increased!"
 
     def test_fit_and_evaluate_tf(self):
-        self.impl_test_fit_and_evaluate(backend="tf2")
+        self.impl_test_fit_and_evaluate(backend="ray")
 
     def test_fit_and_evaluate_horovod(self):
         self.impl_test_fit_and_evaluate(backend="horovod")
@@ -237,7 +237,7 @@ class TestTFRayEstimator(TestCase):
         trainer = Estimator.from_keras(
             model_creator=auto_shard_model_creator,
             verbose=True,
-            backend="tf2", workers_per_node=2)
+            backend="ray", workers_per_node=2)
         stats = trainer.fit(create_auto_shard_datasets, epochs=1, batch_size=4, steps_per_epoch=2)
         assert stats["train_loss"] == 0.0
 

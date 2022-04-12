@@ -333,7 +333,7 @@ if __name__ == "__main__":
         model_creator=model_creator,
         verbose=True,
         config=config,
-        backend="tf2")
+        backend="ray")
 
     train_count = train_tbl.size()
     print("train size: ", train_count)

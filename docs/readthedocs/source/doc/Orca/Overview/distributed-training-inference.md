@@ -64,10 +64,10 @@ View the related [Python API doc](https://bigdl.readthedocs.io/en/latest/doc/Pyt
 
 #### **2.2 TensorFlow 2.x and Keras 2.4+**
 
-**Using `tf2` or *Horovod* backend**
+**Using `ray` or *Horovod* backend**
 
 Users can create an `Estimator` for TensorFlow 2.x from a Keras model (using a _Model Creator Function_) when the backend is
-`tf2` (currently default for TF2) or *Horovod*. For example:
+`ray` (currently default for TF2) or *Horovod*. For example:
 
 ```python
 def model_creator(config):
