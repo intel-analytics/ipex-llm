@@ -115,18 +115,7 @@ class BasePytorchForecaster(Forecaster):
         if self.distributed:
             # for cluster mode
             from bigdl.orca.common import OrcaContext
-            from bigdl.orca.ray import RayContext
-            ray_ctx = RayContext.get(initialize=False)
-            if ray_ctx.initialized:
-                num_nodes = ray_ctx.num_ray_nodes
-            else:
-                try:
-                    sc = OrcaContext.get_spark_context.getConf()
-                    num_nodes = 1 if sc.get('spark.master').startswith('local') \
-                        else int(sc.get('spark.executor.instances'))
-                except:
-                    raise Exception("No active RayContext or SparkContext. "
-                                "Please call init_orca_context to create one.")
+            num_nodes = OrcaContext.get_nodes_num()
             if batch_size % self.workers_per_node != 0:
                 raise RuntimeError("Please make sure that batch_size can be divisible by "
                                    "the product of worker_per_node and num_nodes, "

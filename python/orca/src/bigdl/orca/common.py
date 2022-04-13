@@ -153,10 +153,24 @@ class OrcaContext(metaclass=OrcaContextMeta):
         return OrcaContext.get_sql_context().sparkSession
 
     @staticmethod
-    def get_ray_context():
+    def get_ray_context(initialize=True):
         from bigdl.orca.ray import RayContext
-        return RayContext.get()
+        return RayContext.get(initialize)
 
+    @staticmethod
+    def get_nodes_num():
+        ray_ctx = OrcaContext.get_ray_context(initialize=False)
+        if ray_ctx.initialized:
+            num_nodes = ray_ctx.num_ray_nodes
+        else:
+            try:
+                sc = OrcaContext.get_spark_context.getConf()
+                num_nodes = 1 if sc.get('spark.master').startswith('local') \
+                    else int(sc.get('spark.executor.instances'))
+            except:
+                raise Exception("No active RayContext or SparkContext. "
+                                "Please call init_orca_context to create one.")
+        return num_nodes
 
 def _check_python_micro_version():
     # with ray >=1.8.0, python small micro version will cause pickle error in ray.init()
