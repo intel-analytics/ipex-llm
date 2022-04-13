@@ -1,0 +1,24 @@
+##### Configuration for recall initializer and recall service
+
+# default: 128, the dimensionality of the embedding vectors
+indexDim: 50
+
+# default: null, path to saved index path, must be provided
+indexPath: ./item_50.idx
+
+itemIDColumn: tweet_id
+itemEmbeddingColumn: prediction
+
+# default: null, Only support parquet file
+initialDataPath: /opt/work/similarity/item_ebd.parquet
+
+###### Recall Service specific
+# Default: 8084, which port to create the server
+servicePort: 8084
+
+# Default: null, open a port for prometheus monitoring tool, if set, user can check the
+# performance using prometheus
+monitorPort: 1238
+
+# default: localhost:8980, feature service target
+featureServiceURL: localhost:8085
