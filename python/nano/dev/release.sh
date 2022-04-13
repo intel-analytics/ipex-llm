@@ -43,8 +43,8 @@ bigdl_version=$(cat $BIGDL_DIR/python/version.txt | head -1)
 echo "The effective version is: ${bigdl_version}"
 
 if [ "$platform" ==  "mac" ]; then
-  verbose_pname="macosx_10_11_x86_64"
-  sed -i 's/intel-tensorflow/tensorflow/' $BIGDL_PYTHON_DIR/setup.py
+    verbose_pname="macosx_10_11_x86_64"
+    sed -i 's/intel-tensorflow/tensorflow/' $BIGDL_PYTHON_DIR/setup.py
 
 elif [ "$platform" == "linux" ]; then
     verbose_pname="manylinux2010_x86_64"
@@ -78,7 +78,7 @@ ${wheel_command}
 cat $BIGDL_PYTHON_DIR/setup.py
 
 if [ "$platform" ==  "mac" ]; then
-  sed -i 's/tensorflow==2.7.0/intel-tensorflow==2.7.0/' $BIGDL_PYTHON_DIR/setup.py
+    sed -i 's/tensorflow==2.7.0/intel-tensorflow==2.7.0/' $BIGDL_PYTHON_DIR/setup.py
 fi
 
 cat $BIGDL_PYTHON_DIR/setup.py
