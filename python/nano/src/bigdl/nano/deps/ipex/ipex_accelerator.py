@@ -25,9 +25,10 @@ from torch.optim import Optimizer
 import pytorch_lightning as pl
 from pytorch_lightning.plugins import SingleDevicePlugin
 from pytorch_lightning.accelerators.accelerator import Accelerator
-from pytorch_lightning.plugins.training_type import TrainingTypePlugin
+from pytorch_lighting.strategy import Strategy
 from pytorch_lightning.plugins.precision import PrecisionPlugin, MixedPrecisionPlugin
 from pytorch_lightning.utilities.exceptions import MisconfigurationException
+from bigdl.nano.common import check_avx512
 
 from .ipex_torchfunctional import to_cpu
 
@@ -40,7 +41,7 @@ class IPEXAccelerator(Accelerator):
     def __init__(
         self,
         precision_plugin: PrecisionPlugin = PrecisionPlugin(),
-        training_type_plugin: TrainingTypePlugin = SingleDevicePlugin(
+        strategy: Strategy = SingleDevicePlugin(
             torch.device(ipex.DEVICE)),
         enable_bf16=False,
     ) -> None:
@@ -48,7 +49,7 @@ class IPEXAccelerator(Accelerator):
 
         Args:
             precision_plugin: the plugin to handle precision-specific parts
-            training_type_plugin: the plugin to handle different training routines
+            strategy: the plugin to handle different training routines
         """
         if enable_bf16:
             # Automatically mix precision
@@ -57,7 +58,7 @@ class IPEXAccelerator(Accelerator):
         self.device = ipex.DEVICE
 
         super().__init__(precision_plugin=precision_plugin,
-                         training_type_plugin=training_type_plugin)
+                         strategy=strategy)
 
     def setup(self, trainer: 'pl.Trainer', model: 'pl.LightningModule') -> None:
         """
@@ -116,3 +117,18 @@ class IPEXAccelerator(Accelerator):
             *args,
             **kwargs,
         )
+
+    # Upgrade attempt
+    def auto_device_count(self):
+        # adding support for devices="auto", where the accelerator will have the info what’s the maximum devices available to train on.
+        # TODO
+        pass 
+
+    def is_available(self):
+        # TODO
+        if not check_avx512():
+            warning("Enable ipex in a cpu instruction set"
+                    " without avx512 may cause some random error."
+                    "Fall back to cpu device.")
+            return False
+        return True 
