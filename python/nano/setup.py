@@ -66,7 +66,13 @@ def download_libs(url: str):
 
 def setup_package():
 
-    tensorflow_requires = ["intel-tensorflow==2.7.0",
+    if VERSION.endswith("Mac"):
+        require_tensorflow = "tensorflow==2.7.0"
+        version = VERSION.strip("-Mac")
+    else:
+        require_tensorflow = "intel-tensorflow==2.7.0"
+
+    tensorflow_requires = [require_tensorflow,
                            "keras==2.7.0",
                            "tensorflow-estimator==2.7.0"]
 
@@ -95,7 +101,7 @@ def setup_package():
 
     metadata = dict(
         name='bigdl-nano',
-        version=VERSION,
+        version=version,
         description='High-performance scalable acceleration components for intel.',
         author='BigDL Authors',
         author_email='bigdl-user-group@googlegroups.com',
