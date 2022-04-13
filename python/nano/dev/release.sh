@@ -75,13 +75,9 @@ wheel_command="python setup.py bdist_wheel --plat-name ${verbose_pname} --python
 echo "Packing python distribution: $wheel_command"
 ${wheel_command}
 
-cat $BIGDL_PYTHON_DIR/setup.py
-
 if [ "$platform" ==  "mac" ]; then
     sed -i 's/tensorflow==2.7.0/intel-tensorflow==2.7.0/' $BIGDL_PYTHON_DIR/setup.py
 fi
-
-cat $BIGDL_PYTHON_DIR/setup.py
 
 if [ ${upload} == true ]; then
     upload_command="twine upload  dist/bigdl_nano-${bigdl_version}-py3-none-${verbose_pname}.whl"
