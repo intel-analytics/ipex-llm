@@ -23,8 +23,7 @@ import tensorflow
 
 class SparseAdam(tensorflow.keras.optimizers.Adam):
     """
-    Variant of the Adam optimizer that handles sparse updates more
-    efficiently.
+    A variant of the Adam optimizer that handles sparse updates more efficiently.
 
     The original Adam algorithm maintains two moving-average accumulators for
     each trainable variable; the accumulators are updated at every step.
@@ -33,8 +32,6 @@ class SparseAdam(tensorflow.keras.optimizers.Adam):
     Compared with the original Adam optimizer, it can provide large improvements in
     model training throughput for some applications.
 
-    Note, :pram amsgrad is currently not supported and the argument can only be set to
-    False.
     """
     _HAS_AGGREGATE_GRAD = True
 
@@ -46,10 +43,12 @@ class SparseAdam(tensorflow.keras.optimizers.Adam):
                  amsgrad=False,
                  name='SparseAdam',
                  **kwargs):
-        '''
-        This is a slightly modified version of tf.keras.optimizers.Adam,
+        """
+        Create a slightly modified version of tf.keras.optimizers.Adam.
+
         which only update moving-average accumulators for sparse variable
         indices that appear in the current batch.
+
         :param learning_rate: A `Tensor`, floating point value, or a schedule that is a
             `tf.keras.optimizers.schedules.LearningRateSchedule`, or a callable
             that takes no arguments and returns the actual value to use, The
@@ -64,15 +63,15 @@ class SparseAdam(tensorflow.keras.optimizers.Adam):
             "epsilon hat" in the Kingma and Ba paper (in the formula just before
             Section 2.1), not the epsilon in Algorithm 1 of the paper. Defaults to
             1e-7.
-        :param amsgrad: Boolean. Whether to apply AMSGrad variant of this algorithm from
-            the paper "On the Convergence of Adam and beyond". Defaults to `False`.
+        :param amsgrad: Boolean. Currently amsgrad is not supported and it can only
+            set to False.
         :param name: Optional name for the operations created when applying gradients.
             Defaults to `"Adam"`.
         :param kwargs: Keyword arguments. Allowed to be one of
             `"clipnorm"` or `"clipvalue"`.
             `"clipnorm"` (float) clips gradients by norm; `"clipvalue"` (float) clips
             gradients by value.
-        '''
+        """
         super().__init__(
             learning_rate=learning_rate,
             beta_1=beta_1,
