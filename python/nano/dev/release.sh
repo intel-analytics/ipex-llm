@@ -56,16 +56,16 @@ else
     echo "Unsupported platform"
 fi
 
-if [ -d "${BIGDL_DIR}/python/nano/src/build" ]; then
-   rm -r ${BIGDL_DIR}/python/nano/src/build
+if [ -d "${BIGDL_DIR}/python/nano/build" ]; then
+   rm -r ${BIGDL_DIR}/python/nano/build
 fi
 
-if [ -d "${BIGDL_DIR}/python/nano/src/dist" ]; then
-   rm -r ${BIGDL_DIR}/python/nano/src/dist
+if [ -d "${BIGDL_DIR}/python/nano/dist" ]; then
+   rm -r ${BIGDL_DIR}/python/nano/dist
 fi
 
-if [ -d "${BIGDL_DIR}/python/nano/src/bigdl_nano.egg-info" ]; then
-   rm -r ${BIGDL_DIR}/python/nano/src/bigdl_nano.egg-info
+if [ -d "${BIGDL_DIR}/python/nano/bigdl_nano.egg-info" ]; then
+   rm -r ${BIGDL_DIR}/python/nano/bigdl_nano.egg-info
 fi
 
 
