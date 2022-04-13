@@ -172,6 +172,7 @@ class OrcaContext(metaclass=OrcaContextMeta):
                                 "Please call init_orca_context to create one.")
         return num_nodes
 
+
 def _check_python_micro_version():
     # with ray >=1.8.0, python small micro version will cause pickle error in ray.init()
     # (https://github.com/ray-project/ray/issues/19938)
