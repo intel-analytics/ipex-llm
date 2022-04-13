@@ -69,8 +69,7 @@ class Objective(object):
         callbacks = callbacks() if inspect.isfunction(callbacks) else callbacks
 
         if self.pruning:
-            if callbacks is None:
-                callbacks = []
+            callbacks = callbacks or []
             prune_callback = TFKerasPruningCallback(trial, self.target_metric)
             callbacks.append(prune_callback)
 

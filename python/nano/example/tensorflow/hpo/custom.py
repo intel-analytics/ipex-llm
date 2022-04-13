@@ -14,7 +14,7 @@ N_VALID_EXAMPLES = 1000
 CLASSES = 10
 
 
-@hpo.model()
+@hpo.tfmodel()
 class MyModel(tf.keras.Model):
 
     def __init__(self, filters, kernel_size, strides, activation):

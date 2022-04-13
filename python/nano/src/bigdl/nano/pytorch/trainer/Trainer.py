@@ -32,6 +32,10 @@ from bigdl.nano.pytorch.lightning import LightningModuleFromTorch
 from bigdl.nano.pytorch.plugins.ddp_spawn import DDPSpawnPlugin
 from bigdl.nano.deps.ray.ray_api import distributed_ray
 
+
+from pytorch_lightning.trainer.states import TrainerFn, TrainerState, TrainerStatus
+from bigdl.nano.automl.pytorch import HPOSearcher
+
 distributed_backends = ["spawn", "ray", "subprocess"]
 
 
@@ -68,6 +72,9 @@ class Trainer(pl.Trainer):
                 raise ValueError(f"The length of `cpu_for_each_process` ("
                                  f"{len(cpu_for_each_process)}) is not equal to the number of"
                                  f" processes {num_processes}.")
+
+
+        self.hposearcher = HPOSearcher(trainer = self)
 
         # Initialize trainer
         if use_ipex and not check_avx512():
@@ -183,6 +190,32 @@ class Trainer(pl.Trainer):
             pl_model = bind_quantize_methods(bind_base_inference_rt_methods(pl_model), None)
 
         return pl_model
+
+
+    def search(
+        self,
+        model: "pl.LightningModule",
+        resume: bool = False,
+        target_metric = None,
+        **kwargs):
+
+        Trainer._log_api_event("search")
+
+        # TODO do we need to set these trainer states?
+        self.state.fn = TrainerFn.TUNING
+        self.state.status = TrainerStatus.RUNNING
+        self.tuning = True
+
+        result = self.hposearcher.search(model,
+                                         resume=resume,
+                                         target_metric=target_metric,
+                                         **kwargs)
+
+        assert self.state.stopped
+        self.tuning = False
+
+        return result
+
 
     def quantize(self, pl_model: LightningModule,
                  calib_dataloader: DataLoader = None,

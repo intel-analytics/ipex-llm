@@ -15,5 +15,5 @@
 #
 
 
-from bigdl.nano.automl.utils.register_modules import register_activations
+from bigdl.nano.automl.tf.register_modules import register_activations
 register_activations(globals())

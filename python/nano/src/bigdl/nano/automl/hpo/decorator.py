@@ -35,14 +35,12 @@ from .backend import OptunaBackend
 
 from .space import *
 from .space import _add_hp, _add_cs, _rm_hp, _strip_config_space, SPLITTER
+from .callgraph import CallCache
 
-from .mixin import HPOMixin
-
-from .callgraph import CallCache, CALLTYPE
 from bigdl.nano.automl.utils import EasyDict as ezdict
 from bigdl.nano.automl.utils import proxy_methods
 
-__all__ = ['args', 'obj', 'func', 'model', 'sample_config']
+__all__ = ['args', 'obj', 'func', 'tfmodel', 'plmodel', 'sample_config']
 
 logger = logging.getLogger(__name__)
 
@@ -195,6 +193,8 @@ def func(**kwvars):
     --------
     >>>
     """
+    from .callgraph import CallCache, CALLTYPE
+
     # def _automl_kwargs_func(**kwvars):
     #     def registered_func(func):
     #         kwspaces = OrderedDict()
@@ -412,7 +412,8 @@ def obj(**kwvars):
     return registered_class
 
 
-def model(**kwvars):
+def tfmodel(**kwvars):
+    from bigdl.nano.automl.tf.mixin import HPOMixin
     """Decorator for a custom model that registers its arguments as hyperparameters.
        Each hyperparameter may take a fixed value or be a searchable space (hpo.space).
 
@@ -429,7 +430,7 @@ def model(**kwvars):
         objCls = obj(**kwvars)(Cls)
 
         @proxy_methods
-        class AutoMdl(HPOMixin, Cls):
+        class TFAutoMdl(HPOMixin, Cls):
             def __init__(self, **kwargs):
                 self.kwargs = kwargs
                 self._lazyobj = objCls(**kwargs)
@@ -447,7 +448,7 @@ def model(**kwvars):
                 super().__init__(**super_kwargs)
 
             def __repr__(self):
-                return 'AutoMdl -- ' + Cls.__name__
+                return 'TFAutoMdl -- ' + Cls.__name__
 
             def _model_build(self, trial):
                 # override _model_build to build
@@ -457,6 +458,57 @@ def model(**kwvars):
                 self._model_compile(model, trial)
                 return model
 
-        return AutoMdl
+        return TFAutoMdl
 
     return registered_class
+
+def plmodel(**kwvars):
+    """Decorator for a custom model that registers its arguments as hyperparameters.
+       Each hyperparameter may take a fixed value or be a searchable space (hpo.space).
+
+    Returns
+    -------
+    Instance of :class:`hpo.space.AutomlModel`:
+        It contains a lazily initialized object.
+
+    Examples
+    --------
+    >>>
+    """
+    def registered_class(Cls):
+        objCls = obj(**kwvars)(Cls)
+
+        class PLAutoMdl(Cls):
+            def __init__(self, **kwargs):
+                self.kwargs = kwargs
+                self._lazyobj = objCls(**kwargs)
+                # generate a default config for the super class
+                default_config = self._lazyobj.cs.get_default_configuration().get_dictionary()
+                super_kwargs = copy.deepcopy(self.kwargs)
+                kwspaces = copy.deepcopy(self._lazyobj.kwspaces)
+                for k, v in super_kwargs.items():
+                    if k in kwspaces and isinstance(kwspaces[k], NestedSpace):
+                        sub_config = _strip_config_space(
+                            default_config, prefix=k)
+                        super_kwargs[k] = kwspaces[k].sample(**sub_config)
+                    elif k in default_config:
+                        super_kwargs[k] = default_config[k]
+                super().__init__(**super_kwargs)
+
+            def __repr__(self):
+                return 'PlAutoMdl -- ' + Cls.__name__
+
+            def _model_build(self, trial):
+                # override _model_build to build
+                # the model directly instead of using
+                # modeld_init and model_compile
+                model = OptunaBackend.instantiate(trial, self._lazyobj)
+                # self._model_compile(model, trial)
+                return model
+
+        return PLAutoMdl
+
+    return registered_class
+
+
+

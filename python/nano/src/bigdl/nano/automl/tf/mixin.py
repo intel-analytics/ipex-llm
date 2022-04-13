@@ -14,10 +14,19 @@
 # limitations under the License.
 #
 
+import copy
 
 from .objective import Objective
-import copy
-from .backend import OptunaBackend
+from ..hpo.backend import OptunaBackend
+from ..hpo.search import (
+    _search_summary,
+    _end_search,
+    _check_optimize_direction,
+    _filter_tuner_args,
+    _check_search_args,
+    _strip_val_prefix,
+)
+
 
 class HPOMixin:
 
@@ -56,41 +65,6 @@ class HPOMixin:
         self._lazymodel = None
 
 
-    def _strip_val_prefix(self,metric):
-        if metric.startswith('val_'):
-            metric = metric[len('val_'):]
-        return metric
-
-    def _check_optimize_direction(self, direction, directions, metric):
-        #TODO check common metrics and corresponding directions
-        if directions:
-            # TODO we don't check for multiobjective cases
-            return
-        if not direction and not directions:
-            direction = 'minimize'
-        max_metrics=['accuracy','auc']
-        min_metrics=['loss','mae','mse']
-        stripped_metric = self._strip_val_prefix(metric).lower()
-        if stripped_metric in max_metrics:
-            if direction != 'maximize':
-                raise ValueError('metric', metric,
-                    'should use maximize direction for optmize')
-        elif stripped_metric in min_metrics:
-            if direction != 'minimize':
-                raise ValueError('metric', metric,
-                    'should use minimize direction for optmize')
-
-    def _check_search_args(self, search_args):
-        search_arg_keys = set(search_args.keys())
-        allkeys = set().union(HPOMixin.FIT_KEYS,
-                           HPOMixin.TUNE_CREATE_KEYS,
-                           HPOMixin.TUNE_RUN_KEYS)
-        illegal_args = search_arg_keys.difference(allkeys)
-        if len(illegal_args) > 0 :
-            raise ValueError('Invalid Arguments found for \'search\':',
-                             ', '.join(illegal_args))
-
-
     def _fix_target_metric(self, target_metric, fit_kwargs):
         compile_metrics=self.compile_kwargs.get('metrics',None)
         if target_metric is None:
@@ -111,7 +85,7 @@ class HPOMixin:
         elif isinstance(target_metric,list):
             raise ValueError("multiple objective metric is not supported.")
         else:
-            stripped_target_metric = self._strip_val_prefix(target_metric)
+            stripped_target_metric = _strip_val_prefix(target_metric)
             if compile_metrics is None:
                 if stripped_target_metric not in ['loss','val_loss']:
                     raise ValueError("target metric is should be loss or val_loss",
@@ -141,14 +115,17 @@ class HPOMixin:
             direction (str, optional): optimize direction. Defaults to "maximize".
             pruning (bool, optional): whether to use pruning
         """
-        self._check_search_args(kwargs)
+        _check_search_args(search_args=kwargs,
+                        legal_keys=[HPOMixin.FIT_KEYS,
+                        HPOMixin.TUNE_CREATE_KEYS,
+                        HPOMixin.TUNE_RUN_KEYS])
 
         pruning = True if kwargs.get('pruner', None) else False
 
         ## create objective
         if self.objective is None:
             target_metric = self._fix_target_metric(target_metric, kwargs)
-            fit_kwargs = self._filter_tuner_args(kwargs, HPOMixin.FIT_KEYS)
+            fit_kwargs = _filter_tuner_args(kwargs, HPOMixin.FIT_KEYS)
             self.objective = Objective(
                 model=self._model_build,
                 target_metric=target_metric,
@@ -165,8 +142,8 @@ class HPOMixin:
                 load_if_exists = True
                 print("Resume the last tuning...")
 
-            study_create_kwargs = self._filter_tuner_args(kwargs, HPOMixin.TUNE_CREATE_KEYS)
-            self._check_optimize_direction(
+            study_create_kwargs = _filter_tuner_args(kwargs, HPOMixin.TUNE_CREATE_KEYS)
+            _check_optimize_direction(
                 direction=study_create_kwargs.get('direction',None),
                 directions=study_create_kwargs.get('directions',None),
                 metric=target_metric)
@@ -191,7 +168,7 @@ class HPOMixin:
             self.study = OptunaBackend.create_study(**study_create_kwargs)
 
         # renamed callbacks to tune_callbacks to avoid conflict with fit param
-        study_optimize_kwargs = self._filter_tuner_args(kwargs, HPOMixin.TUNE_RUN_KEYS)
+        study_optimize_kwargs = _filter_tuner_args(kwargs, HPOMixin.TUNE_RUN_KEYS)
         study_optimize_kwargs['callbacks'] = study_optimize_kwargs.get('tune_callbacks', None)
         study_optimize_kwargs.pop('tune_callbacks', None)
         study_optimize_kwargs['show_progress_bar'] = False
@@ -206,19 +183,7 @@ class HPOMixin:
         Returns:
             dataframe: A summary of all the trials
         """
-        if self.study is not None:
-            print("Number of finished trials: {}".format(len(self.study.trials)))
-            best = self.study.best_trial
-            print("Best trial:")
-            print("  Value: {}".format(best.value))
-            print("  Params: ")
-            for key, value in best.params.items():
-                print("    {}: {}".format(key, value))
-            return self.study
-            # return self.study.trials_dataframe(attrs=("number", "value", "params", "state"))
-        else:
-            print("Seems you have not done any tuning yet.  \
-                  Call tune and then call tune_summary to get the statistics.")
+        return _search_summary(self.study)
 
     def end_search(self, use_trial_id=-1):
         """ Put an end to tuning.
@@ -231,15 +196,9 @@ class HPOMixin:
         Raises:
             ValueError: error when tune is not called already.
         """
-        if self.objective is None or self.study is None:
-            raise ValueError("Objective and study is not created.  \
-                             Please call tune before calling end_tune. ")
-        if use_trial_id == -1:
-            trial = self.study.best_trial
-        else:
-            trial = self.study.trials[use_trial_id]
-
-        self._lazymodel = self._model_build(trial)
+        self._lazymodel = _end_search(study=self.study,
+                                     model_builder=self._model_build,
+                                     use_trial_id=use_trial_id)
         # TODO Next step: support retrive saved model instead of retrain from hparams
         self.tune_end = True
 
@@ -252,9 +211,6 @@ class HPOMixin:
             self.end_search()
         self._lazymodel.fit(*args, **kwargs)
 
-    @staticmethod
-    def _filter_tuner_args(kwargs, tuner_keys):
-        return {k: v for k, v in kwargs.items() if k in tuner_keys}
 
     def _model_compile(self, model, trial):
         # for lazy model compile
@@ -292,72 +248,3 @@ class HPOMixin:
                 'end_search' before calling '" + name + "'")
         internal_m = getattr(self._lazymodel, name)
         return internal_m(*args, **kwargs)
-
-
-class PyTorchHPOMixin:
-
-    TUNE_CREATE_KEYS = ('storage', 'sampler', 'sampler_kwargs',
-                'pruner', 'pruner_kwargs', 'study_name', 'directions')
-
-
-    TUNE_RUN_KEYS = ('timeout', 'n_jobs', 'catch', 'tune_callbacks',
-                'gc_after_trial', 'show_progress_bar')
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.objective = None
-        self.study = None
-        self.tune_end = False
-        self._lazymodel = None
-
-    def search_summary(self):
-        """Retrive a summary of trials
-
-        Returns:
-            dataframe: A summary of all the trials
-        """
-        if self.study is not None:
-            print("Number of finished trials: {}".format(len(self.study.trials)))
-            best = self.study.best_trial
-            print("Best trial:")
-            print("  Value: {}".format(best.value))
-            print("  Params: ")
-            for key, value in best.params.items():
-                print("    {}: {}".format(key, value))
-            return self.study
-            # return self.study.trials_dataframe(attrs=("number", "value", "params", "state"))
-        else:
-            print("Seems you have not done any tuning yet.  \
-                  Call tune and then call tune_summary to get the statistics.")
-
-    def end_search(self, use_trial_id=-1):
-        """ Put an end to tuning.
-            Use the specified trial or best trial to init and
-            compile the base model.
-
-        Args:
-            use_trial_id (int, optional): params of which trial to be used. Defaults to -1.
-
-        Raises:
-            ValueError: error when tune is not called already.
-        """
-        if self.objective is None or self.study is None:
-            raise ValueError("Objective and study is not created.  \
-                             Please call tune before calling end_tune. ")
-        if use_trial_id == -1:
-            trial = self.study.best_trial
-        else:
-            trial = self.study.trials[use_trial_id]
-
-        self._lazymodel = self._model_build(trial)
-        # TODO Next step: support retrive saved model instead of retrain from hparams
-        self.tune_end = True
-
-    def compile(self, *args, **kwargs):
-        self.compile_args = args
-        self.compile_kwargs = kwargs
-
-    def fit(self, *args, **kwargs):
-        if not self.tune_end:
-            self.end_search()
-        self._lazymodel.fit(*args, **kwargs)

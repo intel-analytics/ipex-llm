@@ -34,5 +34,5 @@ if platform.system() != "Darwin":
 
 
 
-from bigdl.nano.automl.utils.register_modules import register_tf_funcs
+from bigdl.nano.automl.tf.register_modules import register_tf_funcs
 register_tf_funcs(globals())
