@@ -236,20 +236,15 @@ class Net(nn.Module):
 
 def main():
     parser = argparse.ArgumentParser(description='PyTorch Ray Dataset Example')
-    parser.add_argument('--runtime', type=str, default="ray",
-                        help='The cluster mode, such as local, yarn, spark-submit or k8s.')
     parser.add_argument('--address', type=str, default="localhost:6379",
                         help='The address to use for Ray.')
-    parser.add_argument('--backend', type=str, default="torch_distributed",
-                        help='The backend of PyTorch Estimator; '
-                            'bigdl, torch_distributed and spark are supported.')
     parser.add_argument('--batch_size', type=int, default=32, help='The training batch size')
     parser.add_argument('--epochs', type=int, default=2, help='The number of epochs to train for')
     parser.add_argument('--data_dir', type=str, default="./data", help='The path of dataset')
     parser.add_argument('--smoke_test', type=str, default=False, help="Finish quickly for testing.")
     args = parser.parse_args()
 
-    init_orca_context(runtime=args.runtime, address=args.address)
+    init_orca_context(runtime="ray", address=args.address)
 
     def read_dataset(path) -> ray.data.Dataset:
         print(f"reading data from {path}")
@@ -291,24 +286,21 @@ def main():
                                lr=config.get("lr", 0.001))
         return optimizer
 
-    if args.backend == "torch_distributed":
-        orca_estimator = Estimator.from_torch(model=model_creator,
-                                              optimizer=optim_creator,
-                                              loss=nn.BCEWithLogitsLoss(),
-                                              metrics=[Accuracy()],
-                                              model_dir=os.getcwd(),
-                                              backend="torch_distributed",
-                                              workers_per_node=2,
-                                              use_tqdm=False,
-                                              config=config)
+    orca_estimator = Estimator.from_torch(model=model_creator,
+                                          optimizer=optim_creator,
+                                          loss=nn.BCEWithLogitsLoss(),
+                                          metrics=[Accuracy()],
+                                          model_dir=os.getcwd(),
+                                          backend="ray",
+                                          workers_per_node=2,
+                                          use_tqdm=False,
+                                          config=config)
 
-        stats = orca_estimator.fit(train_dataset,
-                                   epochs=args.epochs,
-                                   batch_size=args.batch_size,
-                                   label_cols="label")
-        print(stats)
-    else:
-        raise ValueError("Only `torch.distributed` backend supports Ray Dataset Input!")
+    stats = orca_estimator.fit(train_dataset,
+                               epochs=args.epochs,
+                               batch_size=args.batch_size,
+                               label_cols="label")
+    print(stats)
 
     stop_orca_context()
 
