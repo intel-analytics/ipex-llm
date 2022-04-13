@@ -22,65 +22,66 @@ from torch.utils.data.dataset import TensorDataset
 from torch.utils.data.dataloader import DataLoader
 import os
 
+
 class TestOpenVINO(TestCase):
-    # def test_openvino(self):
-    #     model = mobilenet_v3_small(num_classes=10)
-    #     pl_model = Trainer.compile(model, openvino=True)
-    #     x = torch.rand((10, 3, 256, 256))
-    #     y = torch.ones((10, ), dtype=torch.long)
+    def test_openvino(self):
+        model = mobilenet_v3_small(num_classes=10)
+        pl_model = Trainer.compile(model, openvino=True)
+        x = torch.rand((10, 3, 256, 256))
+        y = torch.ones((10, ), dtype=torch.long)
 
-    #     pl_model.eval_openvino(x)
-    #     assert pl_model.ov_infer_engine and pl_model.ov_infer_engine.ie_network
-    #     assert pl_model.forward != pl_model._torch_forward
-    #     y = pl_model(x)
-    #     assert y.shape == (10, 10)  
+        pl_model.eval_openvino(x)
+        assert pl_model.ov_infer_engine and pl_model.ov_infer_engine.ie_network
+        assert pl_model.forward != pl_model._torch_forward
+        y = pl_model(x)
+        assert y.shape == (10, 10)  
 
-    #     pl_model.exit_openvino()
-    #     assert pl_model.forward == pl_model._torch_forward
+        pl_model.exit_openvino()
+        assert pl_model.forward == pl_model._torch_forward
 
-    #     pl_model.eval_openvino()
-    #     assert pl_model.forward != pl_model._torch_forward
-    #     pl_model.eval()
-    #     assert pl_model.forward == pl_model._torch_forward
+        pl_model.eval_openvino()
+        assert pl_model.forward != pl_model._torch_forward
+        pl_model.eval()
+        assert pl_model.forward == pl_model._torch_forward
 
-    #     # Test if correctly fall back to pytorch backend
-    #     pl_model.eval_openvino()
-    #     assert pl_model.forward != pl_model._torch_forward
-    #     pl_model.train()
-    #     assert pl_model.forward == pl_model._torch_forward
+        # Test if correctly fall back to pytorch backend
+        pl_model.eval_openvino()
+        assert pl_model.forward != pl_model._torch_forward
+        pl_model.train()
+        assert pl_model.forward == pl_model._torch_forward
 
-    #     pl_model.export_openvino(x, xml_path='test_export_openvino.xml')
-    #     assert os.path.exists('test_export_openvino.xml')
-    #     os.remove('test_export_openvino.xml')
+        pl_model.export_openvino(x, xml_path='test_export_openvino.xml')
+        assert os.path.exists('test_export_openvino.xml')
+        os.remove('test_export_openvino.xml')
 
-    # def test_openvino_inputsample_from_trainloader(self):
-    #     trainer = Trainer(max_epochs=1)
-    #     model = mobilenet_v3_small(num_classes=10)
-    #     pl_model = Trainer.compile(model, loss=torch.nn.CrossEntropyLoss(),
-    #                                optimizer=torch.optim.SGD(model.parameters(), lr=0.01),
-    #                                openvino=True)
-    #     x = torch.rand((10, 3, 256, 256))
-    #     y = torch.ones((10, ), dtype=torch.long)
-    #     ds = TensorDataset(x, y)
-    #     dataloader = DataLoader(ds, batch_size=2)
-    #     trainer.fit(pl_model, dataloader)
+    def test_openvino_inputsample_from_trainloader(self):
+        trainer = Trainer(max_epochs=1)
+        model = mobilenet_v3_small(num_classes=10)
+        pl_model = Trainer.compile(model, loss=torch.nn.CrossEntropyLoss(),
+                                   optimizer=torch.optim.SGD(model.parameters(), lr=0.01),
+                                   openvino=True)
+        x = torch.rand((10, 3, 256, 256))
+        y = torch.ones((10, ), dtype=torch.long)
+        ds = TensorDataset(x, y)
+        dataloader = DataLoader(ds, batch_size=2)
+        trainer.fit(pl_model, dataloader)
 
-    #     # Test if eval_openvino() and exit_openvino() work
-    #     pl_model.eval_openvino()
-    #     assert pl_model.ov_infer_engine and pl_model.ov_infer_engine.ie_network
-    #     assert pl_model.forward != pl_model._torch_forward
-    #     y = pl_model(x)
-    #     assert y.shape == (10, 10) 
+        # Test if eval_openvino() and exit_openvino() work
+        pl_model.eval_openvino()
+        assert pl_model.ov_infer_engine and pl_model.ov_infer_engine.ie_network
+        assert pl_model.forward != pl_model._torch_forward
+        y = pl_model(x)
+        assert y.shape == (10, 10) 
         
-    #     pl_model.exit_openvino()
-    #     assert pl_model.forward == pl_model._torch_forward
+        pl_model.exit_openvino()
+        assert pl_model.forward == pl_model._torch_forward
 
-    #     # Test if correctly fall back to training mode
-    #     pl_model.eval_openvino()
-    #     assert pl_model.forward != pl_model._torch_forward
-    #     trainer.fit(pl_model, dataloader)
-    #     assert pl_model.forward == pl_model._torch_forward 
-    #     assert  pl_model.ov_infer_engine is None
+        # Test if correctly fall back to training mode
+        pl_model.eval_openvino()
+        assert pl_model.forward != pl_model._torch_forward
+        trainer.fit(pl_model, dataloader)
+        assert pl_model.forward == pl_model._torch_forward 
+        assert  pl_model.ov_infer_engine is None
 
     def test_trainer_trace_openvino(self):
         trainer = Trainer(max_epochs=1)
