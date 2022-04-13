@@ -1,6 +1,6 @@
 # Recommend items using Friesian-Serving Framewrok
 
-This example shows how to recommend items for each item based on item to item similarity.
+This example demonstrates item similarity recommendation using Friesian.
 
 ## steps to run this example
 1. Prepare environment
