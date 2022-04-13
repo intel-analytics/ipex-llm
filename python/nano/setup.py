@@ -17,7 +17,6 @@
 #
 
 
-import os
 import fnmatch
 from setuptools import setup
 import urllib.request
@@ -26,11 +25,11 @@ import stat
 import sys
 
 exclude_patterns = ["*__pycache__*", "lightning_logs", "recipe", "setup.py"]
-nano_home = os.path.abspath(__file__ + "/../")
+nano_home = os.path.join(os.path.dirname(os.path.abspath(__file__)), "src")
 
-bigdl_home = os.path.abspath(__file__ + "/../../../..")
-VERSION = open(os.path.join(bigdl_home, 'python/version.txt'),
-               'r').read().strip()
+BIGDL_PYTHON_HOME = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+VERSION = open(os.path.join(BIGDL_PYTHON_HOME, 'version.txt'), 'r').read().strip()
+
 
 lib_urls = [
     "https://github.com/yangw1234/jemalloc/releases/download/v5.2.1-binary/libjemalloc.so",
@@ -41,9 +40,9 @@ lib_urls = [
 
 def get_nano_packages():
     nano_packages = []
-    for dirpath, _, _ in os.walk(nano_home + "/bigdl"):
+    for dirpath, _, _ in os.walk(os.path.join(nano_home, "bigdl")):
         print(dirpath)
-        package = dirpath.split(nano_home + "/")[1].replace('/', '.')
+        package = dirpath.split(nano_home + os.sep)[1].replace(os.sep, '.')
         if any(fnmatch.fnmatchcase(package, pat=pattern)
                 for pattern in exclude_patterns):
             print("excluding", package)
@@ -56,7 +55,7 @@ def get_nano_packages():
 def download_libs(url: str):
     libs_dir = os.path.join(nano_home, "bigdl", "nano", "libs")
     if not os.path.exists(libs_dir):
-        os.mkdir(libs_dir)
+        os.makedirs(libs_dir, exist_ok=True)
     libso_file_name = url.split('/')[-1]
     libso_file = os.path.join(libs_dir, libso_file_name)
     if not os.path.exists(libso_file):
@@ -65,31 +64,17 @@ def download_libs(url: str):
     os.chmod(libso_file, st.st_mode | stat.S_IEXEC)
 
 
-def setup_package(plat_name):
+def setup_package():
 
-    if plat_name != "macosx_10_11_x86_64":
-        install_requires = ["intel-openmp"]
+    if VERSION.endswith("Mac"):
+        require_tensorflow = "tensorflow==2.7.0"
+        version = VERSION.strip("-Mac")
     else:
-        install_requires = []
+        require_tensorflow = "intel-tensorflow==2.7.0"
 
-    if plat_name != "macosx_10_11_x86_64":
-        tensorflow_requires = ["intel-tensorflow==2.7.0",
-                               "keras==2.7.0",
-                               "tensorflow-estimator==2.7.0"]
-        pytorch_requires = ["torch==1.9.0",
-                            "torchvision==0.10.0",
-                            "pytorch_lightning==1.4.2",
-                            "opencv-python-headless",
-                            "PyTurboJPEG",
-                            "opencv-transforms",
-                            "onnx",
-                            "onnxruntime"]
-    else:
-        tensorflow_requires = ["tensorflow==2.7.0",
-                               "keras==2.7.0",
-                               "tensorflow-estimator==2.7.0"]
-
-        pytorch_requires = []
+    tensorflow_requires = [require_tensorflow,
+                           "keras==2.7.0",
+                           "tensorflow-estimator==2.7.0"]
 
     pytorch_requires = ["torch==1.9.0",
                         "torchvision==0.10.0",
@@ -99,28 +84,24 @@ def setup_package(plat_name):
                         "opencv-transforms",
                         "onnx",
                         "onnxruntime"]
+    install_requires = ["intel-openmp"]
 
-    package_data_plat_ = {"manylinux2010_x86_64": [
+    package_data = [
         "libs/libjemalloc.so",
         "libs/libturbojpeg.so.0.2.0",
         "libs/libtcmalloc.so"
-    ],
-        "win_amd64": [],
-        "macosx_10_11_x86_64": []}
+    ]
 
-    script_plat = {"manylinux2010_x86_64": ["../scripts/bigdl-nano-init",
-                                            "../scripts/bigdl-nano-unset-env"],
-                   "win_amd64": ["../scripts/bigdl-nano-init.ps1"],
-                   "macosx_10_11_x86_64": []
-                   }
+    for url in lib_urls:
+        download_libs(url)
 
-    if plat_name == 'manylinux2010_x86_64':
-        for url in lib_urls:
-            download_libs(url)
+    scripts = ["scripts/bigdl-nano-init",
+               "scripts/bigdl-nano-init.ps1",
+               "scripts/bigdl-nano-unset-env"]
 
     metadata = dict(
         name='bigdl-nano',
-        version=VERSION,
+        version=version,
         description='High-performance scalable acceleration components for intel.',
         author='BigDL Authors',
         author_email='bigdl-user-group@googlegroups.com',
@@ -128,31 +109,13 @@ def setup_package(plat_name):
         install_requires=install_requires,
         extras_require={"tensorflow": tensorflow_requires,
                         "pytorch": pytorch_requires},
-        package_data={"bigdl.nano": package_data_plat_[plat_name]},
-        scripts=script_plat[plat_name],
-
+        package_data={"bigdl.nano": package_data},
+        scripts=scripts,
+        package_dir={"": "src"},
         packages=get_nano_packages(),
     )
     setup(**metadata)
 
 
 if __name__ == '__main__':
-    idx = 0
-    for arg in sys.argv:
-        if arg == "--plat-name":
-            break
-        else:
-            idx += 1
-    if idx >= len(sys.argv):
-        raise ValueError(
-            "Cannot find --plat-name argument. bigdl-tf requires --plat-name to build.")
-    verbose_plat_name = sys.argv[idx + 1]
-
-    valid_plat_names = ("win_amd64", "manylinux2010_x86_64", "macosx_10_11_x86_64")
-    if verbose_plat_name not in valid_plat_names:
-        raise ValueError(f"--plat-name is not valid. "
-                         f"--plat-name should be one of {valid_plat_names}"
-                         f" but got {verbose_plat_name}")
-    plat_name = verbose_plat_name
-
-    setup_package(plat_name)
+    setup_package()

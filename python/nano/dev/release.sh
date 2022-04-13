@@ -20,7 +20,7 @@ RUN_SCRIPT_DIR=$(cd $(dirname $0) ; pwd)
 echo $RUN_SCRIPT_DIR
 BIGDL_DIR="$(cd ${RUN_SCRIPT_DIR}/../../..; pwd)"
 echo $BIGDL_DIR
-BIGDL_PYTHON_DIR="$(cd ${BIGDL_DIR}/python/nano/src; pwd)"
+BIGDL_PYTHON_DIR="$(cd ${BIGDL_DIR}/python/nano; pwd)"
 echo $BIGDL_PYTHON_DIR
 
 if (( $# < 3)); then
@@ -43,7 +43,8 @@ bigdl_version=$(cat $BIGDL_DIR/python/version.txt | head -1)
 echo "The effective version is: ${bigdl_version}"
 
 if [ "$platform" ==  "mac" ]; then
-    verbose_pname="macosx_10_11_x86_64"
+	verbose_pname="macosx_10_11_x86_64"
+	sed -i '1s/$/-Mac/' $BIGDL_DIR/python/version.txt
 
 elif [ "$platform" == "linux" ]; then
     verbose_pname="manylinux2010_x86_64"
@@ -73,6 +74,10 @@ cd $BIGDL_PYTHON_DIR
 wheel_command="python setup.py bdist_wheel --plat-name ${verbose_pname} --python-tag py3"
 echo "Packing python distribution: $wheel_command"
 ${wheel_command}
+
+if [ "$platform" ==  "mac" ]; then
+	sed -i '1s/-Mac//' $BIGDL_DIR/python/version.txt
+fi
 
 if [ ${upload} == true ]; then
     upload_command="twine upload  dist/bigdl_nano-${bigdl_version}-py3-none-${verbose_pname}.whl"
