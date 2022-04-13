@@ -29,6 +29,7 @@ jobs:
 
       - name: Install dependencies
         run: pip install pycodestyle
+             pip install pydocstyle
              pip install mypy
              pip install wheel
 
