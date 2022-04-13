@@ -76,7 +76,7 @@ echo "Packing python distribution: $wheel_command"
 ${wheel_command}
 
 if [ "$platform" ==  "mac" ]; then
-    sed -i 's/tensorflow==2.7.0/intel-tensorflow==2.7.0/' $BIGDL_PYTHON_DIR/setup.py
+    sed -i 's/"tensorflow==/"intel-tensorflow==/' $BIGDL_PYTHON_DIR/setup.py
 fi
 
 if [ ${upload} == true ]; then
