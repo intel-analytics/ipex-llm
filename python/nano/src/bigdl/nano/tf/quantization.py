@@ -34,38 +34,38 @@ def quantize(self,
              inputs: List[str] = None,
              outputs: List[str] = None):
     """
-     Post-training quantization on a keras model.
+    Post-training quantization on a keras model.
 
-     :param calib_dataset:  A tf.data.Dataset object for calibration. Required for
-                                static quantization.
-     :param val_dataset:    A tf.data.Dataset object for evaluation.
-     :param batch:          Batch size of dataloader for both calib_dataset and val_dataset.
-     :param metric:         A Metric object for evaluation.
-     :param backend:        Only support 'inc' for now. Default: 'inc'.
-     :param conf:           A path to conf yaml file for quantization.
+    :param calib_dataset:  A tf.data.Dataset object for calibration. Required for
+                            static quantization.
+    :param val_dataset:    A tf.data.Dataset object for evaluation.
+    :param batch:          Batch size of dataloader for both calib_dataset and val_dataset.
+    :param metric:         A Metric object for evaluation.
+    :param backend:        Only support 'inc' for now. Default: 'inc'.
+    :param conf:           A path to conf yaml file for quantization.
                             Default: None, using default config.
-     :param approach:       'static' or 'dynamic'.
+    :param approach:       'static' or 'dynamic'.
                             'static': post_training_static_quant,
                             'dynamic': post_training_dynamic_quant.
                             Default: 'static'.
-     :param tuning_strategy:    'bayesian', 'basic', 'mse', 'sigopt'. Default: 'bayesian'.
-     :param accuracy_criterion: Tolerable accuracy drop.
+    :param tuning_strategy:    'bayesian', 'basic', 'mse', 'sigopt'. Default: 'bayesian'.
+    :param accuracy_criterion: Tolerable accuracy drop.
                                 accuracy_criterion = {'relative': 0.1, 'higher_is_better': True}
                                 allows relative accuracy loss: 1%. accuracy_criterion =
                                 {'absolute': 0.99, 'higher_is_better':False} means accuracy
                                 must be smaller than 0.99.
-     :param timeout:    Tuning timeout (seconds). Default: 0,  which means early stop.
+    :param timeout:    Tuning timeout (seconds). Default: 0,  which means early stop.
                         Combine with max_trials field to decide when to exit.
-     :param max_trials: Max tune times. Default: 1.
+    :param max_trials: Max tune times. Default: 1.
                         Combine with timeout field to decide when to exit.
                         "timeout=0, max_trials=1" means it will try quantization only once and
                         return satisfying best model.
-     :param inputs:     A list of input names.
+    :param inputs:     A list of input names.
                         Default: None, automatically get names from graph.
-     :param outputs:    A list of output names.
+    :param outputs:    A list of output names.
                         Default: None, automatically get names from graph.
-     :return:           A TensorflowBaseModel for INC. If there is no model found, return None.
-     """
+    :return:           A TensorflowBaseModel for INC. If there is no model found, return None.
+    """
     if backend == 'inc':
         def get_tensors_name(tensors):
             return [tensor.name for tensor in tensors]
