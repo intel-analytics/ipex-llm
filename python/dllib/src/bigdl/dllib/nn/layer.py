@@ -496,7 +496,7 @@ class Layer(JavaValue, SharedStaticUtils):
         ... except Py4JJavaError as err:
         ...     print(err.java_exception)
         ...
-        java.lang.IllegalArgumentException: this layer does not have weight/bias
+        java.lang.IllegalArgumentException: requirement failed: this layer does not have weight/bias
         >>> relu.get_weights()
         The layer does not have weight/bias
         >>> add = Add(2)
