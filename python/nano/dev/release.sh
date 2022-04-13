@@ -44,7 +44,7 @@ echo "The effective version is: ${bigdl_version}"
 
 if [ "$platform" ==  "mac" ]; then
 	verbose_pname="macosx_10_11_x86_64"
-	sed -i '1s/$/-Mac/' $BIGDL_DIR/python/version.txt
+	sed -i 's/intel-tensorflow/tensorflow/' $BIGDL_PYTHON_DIR/setup.py
 
 elif [ "$platform" == "linux" ]; then
     verbose_pname="manylinux2010_x86_64"
@@ -75,9 +75,13 @@ wheel_command="python setup.py bdist_wheel --plat-name ${verbose_pname} --python
 echo "Packing python distribution: $wheel_command"
 ${wheel_command}
 
+cat $BIGDL_PYTHON_DIR/setup.py
+
 if [ "$platform" ==  "mac" ]; then
-	sed -i '1s/-Mac//' $BIGDL_DIR/python/version.txt
+	sed -i 's/tensorflow==2.7.0/intel-tensorflow==2.7.0/' $BIGDL_PYTHON_DIR/setup.py
 fi
+
+cat $BIGDL_PYTHON_DIR/setup.py
 
 if [ ${upload} == true ]; then
     upload_command="twine upload  dist/bigdl_nano-${bigdl_version}-py3-none-${verbose_pname}.whl"
