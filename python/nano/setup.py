@@ -66,11 +66,13 @@ def download_libs(url: str):
 
 def setup_package():
 
+
     if VERSION.endswith("Mac"):
         require_tensorflow = "tensorflow==2.7.0"
         version = VERSION.strip("-Mac")
     else:
         require_tensorflow = "intel-tensorflow==2.7.0"
+        version = VERSION
 
     tensorflow_requires = [require_tensorflow,
                            "keras==2.7.0",
