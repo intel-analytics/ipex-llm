@@ -181,7 +181,7 @@ View the related [Python API doc](https://bigdl.readthedocs.io/en/latest/doc/Pyt
 
 **Using `torch.distributed` or *Horovod* backend**
 
-Alternatively, users can create a PyTorch `Estimator` using `torch.distributed` or *Horovod* backend by specifying the `backend` argument to be "torch_distributed" or "horovod". In this case, the `model` and `optimizer` should be wrapped in _Creater Functions_. For example:
+Alternatively, users can create a PyTorch `Estimator` using `torch.distributed` or *Horovod* backend by specifying the `backend` argument to be "ray" or "horovod". In this case, the `model` and `optimizer` should be wrapped in _Creater Functions_. For example:
 
 ```python
 def model_creator(config):
@@ -196,7 +196,7 @@ est = Estimator.from_torch(model=model,
                            optimizer=optimizer_creator,
                            loss=nn.NLLLoss(),
                            config={"lr": 1e-2},
-                           backend="torch_distributed") # or backend="horovod"
+                           backend="ray") # or backend="horovod"
 ```
 
 Then users can perform distributed model training and inference as follows:

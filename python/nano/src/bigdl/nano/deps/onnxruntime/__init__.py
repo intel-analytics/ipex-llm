@@ -1,5 +1,3 @@
-#!/usr/bin/env bash
-
 #
 # Copyright 2016 The BigDL Authors.
 #
@@ -15,25 +13,3 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-
-cd "`dirname $0`"
-cd ../..
-
-export PYSPARK_PYTHON=python
-export PYSPARK_DRIVER_PYTHON=python
-if [ -z "${OMP_NUM_THREADS}" ]; then
-    export OMP_NUM_THREADS=1
-fi
-
-ray stop -f
-
-echo "Running chronos tests TF1 and Deprecated API"
-python -m pytest -v test/bigdl/chronos/model/tf1
-
-exit_status_0=$?
-if [ $exit_status_0 -ne 0 ];
-then
-    exit $exit_status_0
-fi
-
-ray stop -f
