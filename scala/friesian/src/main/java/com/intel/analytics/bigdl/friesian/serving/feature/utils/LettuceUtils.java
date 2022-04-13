@@ -148,6 +148,11 @@ public class LettuceUtils {
         }
     }
 
+    public String getSchema(String keyPrefix) {
+        String hKey = this.redisKeyPrefix + keyPrefix;
+        return get(hKey);
+    }
+
     public String get(String key) {
         RedisStringAsyncCommands<String, String> async = getAsync();
         RedisFuture<String> future = async.get(key);

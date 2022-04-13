@@ -88,7 +88,7 @@ class TSPipeline:
         # predict
         if isinstance(data, TSDataset):
             x, y = self._tsdataset_to_numpy(data, is_predict=False)
-            yhat = self._best_model.inference(torch.from_numpy(x),
+            yhat = self._best_model.inference(x,
                                               batch_size=batch_size,
                                               backend=None).numpy()
             # unscale
@@ -98,7 +98,7 @@ class TSPipeline:
             yhat_list, y_list = [], []
             self._best_config.update({'batch_size': batch_size})
             for x, y in data(self._best_config):
-                yhat = self._best_model.inference(x, backend=None)
+                yhat = self._best_model.inference(x.numpy(), backend=None)
                 yhat_list.append(yhat)
                 y_list.append(y)
             yhat = torch.cat(yhat_list, dim=0).numpy()
@@ -170,7 +170,7 @@ class TSPipeline:
         '''
         if isinstance(data, TSDataset):
             x, _ = self._tsdataset_to_numpy(data, is_predict=True)
-            yhat = self._best_model.inference(torch.from_numpy(x),
+            yhat = self._best_model.inference(x,
                                               batch_size=batch_size,
                                               backend=None)
             yhat = self._tsdataset_unscale(yhat)
@@ -178,7 +178,7 @@ class TSPipeline:
             yhat_list = []
             self._best_config.update({'batch_size': batch_size})
             for x, _ in data(self._best_config):
-                yhat = self._best_model.inference(x, backend=None)
+                yhat = self._best_model.inference(x.numpy(), backend=None)
                 yhat_list.append(yhat)
             yhat = np.concatenate(yhat_list, axis=0)
         else:

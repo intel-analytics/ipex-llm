@@ -36,6 +36,37 @@ jobs:
       - name: Build Nano whl
         run: bash python/nano/dev/release_default_linux.sh default false
 
+      - name: Run Nano-init test
+        shell: bash
+        run: |
+          $CONDA/bin/conda create -n bigdl-init -y python==3.7.10
+          source $CONDA/bin/activate bigdl-init
+          $CONDA/bin/conda info
+          whl_name=`ls python/nano/src/dist/`;pip install python/nano/src/dist/$whl_name[pytorch]
+          source bigdl-nano-init
+          if [ 0"$LD_PRELOAD" = "0" ]; then
+            exit 1
+          else
+            echo "Set environment variable successfully."
+          fi
+          source $CONDA/bin/deactivate
+          if [ ! 0"$LD_PRELOAD" = "0" ]; then
+            exit 1
+          else
+            echo "Unset environment variable successfully while deactivating conda environment."
+          fi
+          source $CONDA/bin/activate bigdl-init
+          if [ 0"$LD_PRELOAD" = "0" ]; then
+            exit 1
+          else
+            echo "Setup environment variable successfully while activating conda environment."
+          fi
+          pip uninstall -y bigdl-nano
+          source $CONDA/bin/deactivate
+          $CONDA/bin/conda remove -n bigdl-init --all
+        env:
+          ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
+
       - name: Run ray PyTorch unit tests
         shell: bash
         run: |
