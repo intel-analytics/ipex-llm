@@ -33,6 +33,8 @@ import threading
 import tempfile
 import traceback
 from bigdl.dllib.utils.engine import get_bigdl_classpath, is_spark_below_2_2
+from bigdl.dllib.utils.log4Error import *
+
 
 INTMAX = 2147483647
 INTMIN = -2147483648
@@ -189,8 +191,9 @@ class JTensor(object):
         elif isinstance(indices, bytes):
             self.indices = np.frombuffer(indices, dtype=np.int32)
         else:
-            assert isinstance(indices, np.ndarray), \
-                "indices should be a np.ndarray, not %s, %s" % (type(a_ndarray), str(indices))
+            invalidInputError(isinstance(indices, np.ndarray),
+                              f"indices should be a np.ndarray, not ${type(indices)},"
+                              f" ${str(indices)}")
             self.indices = np.array(indices, dtype=np.int32)
         self.bigdl_type = bigdl_type
 
@@ -220,8 +223,8 @@ class JTensor(object):
         """
         if a_ndarray is None:
             return None
-        assert isinstance(a_ndarray, np.ndarray), \
-            "input should be a np.ndarray, not %s" % type(a_ndarray)
+        invalidInputError(isinstance(a_ndarray, np.ndarray),
+                          f"input should be a np.ndarray, not ${type(a_ndarray)}")
         return cls(a_ndarray,
                    a_ndarray.shape if a_ndarray.shape else (a_ndarray.size),
                    bigdl_type)
@@ -269,12 +272,13 @@ class JTensor(object):
         """
         if a_ndarray is None:
             return None
-        assert isinstance(a_ndarray, np.ndarray), \
-            "values array should be a np.ndarray, not %s" % type(a_ndarray)
-        assert isinstance(i_ndarray, np.ndarray), \
-            "indices array should be a np.ndarray, not %s" % type(a_ndarray)
-        assert i_ndarray.size == a_ndarray.size * shape.size, \
-            "size of values and indices should match."
+        invalidInputError(isinstance(a_ndarray, np.ndarray),
+                          f"input should be a np.ndarray, not ${type(a_ndarray)}")
+        invalidInputError(isinstance(i_ndarray, np.ndarray),
+                          f"indices should be a np.ndarray, not ${type(i_ndarray)}")
+        invalidInputError(i_ndarray.size == a_ndarray.size * shape.size,
+                          f"size of values ${a_ndarray.size * shape.size} and"
+                          f" indices ${i_ndarray.size} should match")
         return cls(a_ndarray,
                    shape,
                    bigdl_type,
@@ -287,7 +291,7 @@ class JTensor(object):
         SparseTensor.
         :return: a ndarray
         """
-        assert self.indices is None, "sparseTensor to ndarray is not supported"
+        invalidInputError(self.indices is None, "sparseTensor to ndarray is not supported")
         return np.array(self.storage, dtype=get_dtype(self.bigdl_type)).reshape(self.shape)  # noqa
 
     def __reduce__(self):
@@ -348,15 +352,15 @@ class Sample(object):
         if isinstance(features, np.ndarray):
             features = [features]
         else:
-            assert all(isinstance(feature, np.ndarray) for feature in features), \
-                "features should be a list of np.ndarray, not %s" % type(features)
+            invalidInputError(all(isinstance(feature, np.ndarray) for feature in features),
+                              "features should be a list of np.ndarray, not %s" % type(features))
         if np.isscalar(labels):  # in case labels is a scalar.
             labels = [np.array(labels)]
         elif isinstance(labels, np.ndarray):
             labels = [labels]
         else:
-            assert all(isinstance(label, np.ndarray) for label in labels), \
-                "labels should be a list of np.ndarray, not %s" % type(labels)
+            invalidInputError(all(isinstance(label, np.ndarray) for label in labels),
+                              "labels should be a list of np.ndarray, not %s" % type(labels))
         return cls(
             features=[JTensor.from_ndarray(feature) for feature in features],
             labels=[JTensor.from_ndarray(label) for label in labels],
@@ -381,15 +385,15 @@ class Sample(object):
         if isinstance(features, JTensor):
             features = [features]
         else:
-            assert all(isinstance(feature, JTensor) for feature in features), \
-                "features should be a list of JTensor, not %s" % type(features)
+            invalidInputError(all(isinstance(feature, JTensor) for feature in features),
+                              "features should be a list of JTensor, not %s" % type(features))
         if np.isscalar(labels):  # in case labels is a scalar.
             labels = [JTensor.from_ndarray(np.array(labels))]
         elif isinstance(labels, JTensor):
             labels = [labels]
         else:
-            assert all(isinstance(label, JTensor) for label in labels), \
-                "labels should be a list of np.ndarray, not %s" % type(labels)
+            invalidInputError(all(isinstance(label, JTensor) for label in labels),
+                              "labels should be a list of np.ndarray, not %s" % type(labels))
         return cls(
             features=features,
             labels=labels,

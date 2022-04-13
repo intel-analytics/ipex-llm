@@ -19,6 +19,8 @@ import os
 import glob
 import warnings
 import logging
+from bigdl.dllib.utils.log4Error import *
+
 
 log = logging.getLogger(__name__)
 
@@ -88,7 +90,7 @@ def __prepare_bigdl_env():
         append_path("BIGDL_JARS", bigdl_classpath)
 
     if conf_paths:
-        assert len(conf_paths) == 1, "Expecting one conf: %s" % len(conf_paths)
+        invalidInputError(len(conf_paths) == 1, "Expecting one conf: %s" % len(conf_paths))
         __sys_path_insert(conf_paths[0])
 
     if extra_resources_paths:
