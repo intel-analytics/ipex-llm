@@ -19,6 +19,7 @@ import inspect
 from torch.utils.data import DataLoader
 import torch
 
+
 class AcceleratedLightningModule(LightningModuleFromTorch):
     def __init__(self, model):
         super().__init__(model)
@@ -63,11 +64,11 @@ class AcceleratedLightningModule(LightningModuleFromTorch):
 
 
 def get_forward_args(model):
-        forward_args = inspect.getfullargspec(model.forward).args[1:]
-        if isinstance(model, LightningModuleFromTorch):  
-            # forward param list for compiled model
-            forward_args = get_forward_args(model.model)
-        return forward_args
+    forward_args = inspect.getfullargspec(model.forward).args[1:]
+    if isinstance(model, LightningModuleFromTorch):
+        # forward param list for compiled model
+        forward_args = get_forward_args(model.model)
+    return forward_args
 
 
 def get_input_example(model: LightningModuleFromTorch, input_sample):
