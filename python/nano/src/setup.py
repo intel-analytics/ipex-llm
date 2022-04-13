@@ -81,9 +81,7 @@ def setup_package(plat_name):
                             "pytorch_lightning==1.4.2",
                             "opencv-python-headless",
                             "PyTurboJPEG",
-                            "opencv-transforms",
-                            "onnx",
-                            "onnxruntime"]
+                            "opencv-transforms"]
     else:
         tensorflow_requires = ["tensorflow==2.7.0",
                                "keras==2.7.0",

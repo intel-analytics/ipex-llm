@@ -27,7 +27,6 @@ import torchmetrics
 
 import numpy as np
 
-from _train_torch_lightning import create_data_loader, data_transform
 from bigdl.nano.pytorch.trainer import Trainer
 from bigdl.nano.pytorch.vision.models import vision
 
@@ -73,8 +72,10 @@ class TestOnnx(TestCase):
         trainer = Trainer(max_epochs=1)
 
         pl_model = Trainer.compile(model, loss, optimizer, onnx=True)
-        train_loader = create_data_loader(data_dir, batch_size, \
-                                          num_workers, data_transform, subset=200)
+        x = torch.rand((10, 3, 256, 256))
+        y = torch.ones((10, ), dtype=torch.long)
+        ds = TensorDataset(x, y)
+        train_loader = DataLoader(ds, batch_size=2)
         trainer.fit(pl_model, train_loader)
 
         for x, y in train_loader:
@@ -124,53 +125,6 @@ class TestOnnx(TestCase):
 
         for x1, x2, y in train_loader:
             pl_model.inference([x1.numpy(), x2.numpy()])
-
-    def test_trainer_compile_with_onnx_quantize(self):
-        model = ResNet18(10, pretrained=False, include_top=False, freeze=True)
-        loss = nn.CrossEntropyLoss()
-        optimizer = torch.optim.Adam(model.parameters(), lr=0.01)
-        trainer = Trainer(max_epochs=1)
-
-        pl_model = Trainer.compile(model, loss, optimizer, onnx=True)
-        train_loader = create_data_loader(data_dir, batch_size, \
-                                          num_workers, data_transform, subset=200)
-        trainer.fit(pl_model, train_loader)
-
-        # false framework parameters
-        with pytest.raises(RuntimeError):
-            pl_model = trainer.quantize(pl_model, train_loader,
-                                        framework=['pytorch_fx', 'pytorch'])
-        with pytest.raises(RuntimeError):
-            pl_model = trainer.quantize(pl_model, train_loader,
-                                        framework=['onnxrt_integerops', 'onnxrt_qlinearops'])
-
-        # normal usage without tunning
-        pl_model = trainer.quantize(pl_model, train_loader, framework=['pytorch_fx', 'onnxrt_integerops'])
-        for x, y in train_loader:
-            onnx_res = pl_model.inference(x.numpy(), backend="onnx", quantize=True).numpy()
-            pl_model.eval_onnx(quantize=True)
-            forward_res = pl_model(x).numpy()
-            np.testing.assert_almost_equal(onnx_res, forward_res, decimal=5)  # same result
-
-        # quantization with tunning
-        pl_model.eval(quantize=False)
-        pl_model = trainer.quantize(pl_model,
-                                    calib_dataloader=train_loader,
-                                    val_dataloader=train_loader,
-                                    metric=torchmetrics.F1(10),
-                                    framework=['onnxrt_qlinearops'],
-                                    accuracy_criterion={'relative': 0.99,
-                                                        'higher_is_better': True})
-        for x, y in train_loader:
-            onnx_res = pl_model.inference(x.numpy(), backend="onnx", quantize=True).numpy()
-            pl_model.eval_onnx()
-            forward_res = pl_model(x).numpy()
-            np.testing.assert_almost_equal(onnx_res, forward_res, decimal=5)  # same result
-
-        # save the quantized model
-        with tempfile.TemporaryDirectory() as tmp_dir_name:
-            ckpt_name = os.path.join(tmp_dir_name, ".onnx")
-            pl_model.to_quantized_onnx(ckpt_name)
 
 
 if __name__ == '__main__':
