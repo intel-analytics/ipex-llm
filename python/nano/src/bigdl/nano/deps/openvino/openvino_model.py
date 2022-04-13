@@ -21,7 +21,7 @@ except ImportError:
 
 
 class OpenVINOModel:
-    def __init__(self, ie_network: str = None):
+    def __init__(self, ie_network: str):
         self.ie_network = None
         self.read_network(ie_network)
         self.exec_model = None

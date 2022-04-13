@@ -51,12 +51,12 @@ class AcceleratedLightningModule(LightningModuleFromTorch):
         return get_forward_args(self)
 
     @staticmethod
-    def tensors_to_numpy(tensors: List[torch.Tensor] or Tuple(torch.Tensor)):
+    def tensors_to_numpy(tensors):
         np_data = tuple(map(lambda x: x.cpu().numpy(), tensors))
         return np_data
 
     @staticmethod
-    def numpy_to_tensors(np_array: List or Tuple):
+    def numpy_to_tensors(np_array):
         tensors = tuple(map(lambda x: torch.from_numpy(x), np_array))
         if len(tensors) == 1:
             tensors = tensors[0]
