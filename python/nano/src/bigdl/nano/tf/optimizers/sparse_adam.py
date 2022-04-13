@@ -31,8 +31,8 @@ class SparseAdam(tensorflow.keras.optimizers.Adam):
     and only those portions of the gradient get applied to the parameters.
     Compared with the original Adam optimizer, it can provide large improvements in
     model training throughput for some applications.
-
     """
+
     _HAS_AGGREGATE_GRAD = True
 
     def __init__(self,
