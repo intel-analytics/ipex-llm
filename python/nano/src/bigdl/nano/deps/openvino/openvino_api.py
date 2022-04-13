@@ -27,3 +27,8 @@ def bind_openvino_methods(pl_model):
 def export(model, input_sample=None, xml_path="model.xml"):
     from . import torch_funcs
     torch_funcs.export(model, input_sample, xml_path)
+
+
+def PytorchOpenVINOModel(model, input_sample=None, xml_path="model.xml"):
+    from . import pytorch
+    return pytorch.PytorchOpenVINOModel(model, input_sample, xml_path)
