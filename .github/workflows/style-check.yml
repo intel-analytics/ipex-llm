@@ -44,10 +44,10 @@ jobs:
       - name: Nano type checking [pytorch]
         run: |
              bash python/nano/dev/release_default_linux.sh default false
-             whl_name=`ls python/nano/src/dist/`
-             pip install python/nano/src/dist/$whl_name[pytorch]
+             whl_name=`ls python/nano/dist/`
+             pip install python/nano/dist/$whl_name[pytorch]
              pip uninstall bigdl-nano -y
-             rm -rf python/nano/src/build python/nano/src/dist python/nano/src/*egg-info
+             rm -rf python/nano/build python/nano/dist python/nano/*egg-info
              bash python/nano/test/run-nano-type-test.sh
         env:
             ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
@@ -55,10 +55,10 @@ jobs:
       - name: Nano type checking [tensorflow]
         run: |
             bash python/nano/dev/release_default_linux.sh default false
-            whl_name=`ls python/nano/src/dist/`
-            pip install python/nano/src/dist/$whl_name[tensorflow]
+            whl_name=`ls python/nano/dist/`
+            pip install python/nano/dist/$whl_name[tensorflow]
             pip uninstall bigdl-nano -y
-            rm -rf python/nano/src/build python/nano/src/dist python/nano/src/*egg-info
+            rm -rf python/nano/build python/nano/dist python/nano/*egg-info
             bash python/nano/test/run-nano-type-test.sh
         env:
             ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
