@@ -21,8 +21,8 @@ from bigdl.dllib.utils.common import *
 
 # 2 ** 32 is the JVM INT limit, we reserve 2 ^ 4 here to make it safer
 # e.g. some size compute step may multiply to cause bound exceed
-MAX_MSG_SIZE = 2 ** 28 
 
+MAX_MSG_SIZE = 2 ** 28 
 def add_data(data: np.ndarray, jvalue, func_add, bigdl_type="float"):
     size = getsizeof(data)
     batch_num = math.ceil(size / MAX_MSG_SIZE)

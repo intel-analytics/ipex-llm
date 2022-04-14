@@ -17,7 +17,6 @@
 import numpy as np
 import pandas as pd
 import argparse
-import math
 import time
 from bigdl.ppml import *
 from bigdl.ppml.algorithms.fgboost_regression import FGBoostRegression
