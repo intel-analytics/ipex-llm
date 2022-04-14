@@ -153,7 +153,7 @@ class Model[T: ClassTag] private (private val _inputs : Seq[ModuleNode[T]],
 
   override def summary(
                         lineLength: Int = 120,
-                        positions: Array[Double] = Array(.33, .55, .67, 1)): String = {
+                        positions: Array[Double] = Array(.33, .55, .67, 1)): Unit = {
     println("Model Summary:")
     KerasUtils.printSplitLine('-', lineLength)
 
@@ -178,7 +178,6 @@ class Model[T: ClassTag] private (private val _inputs : Seq[ModuleNode[T]],
 }
 
 object Model extends KerasLayerSerializable {
-  val logger = LogManager.getLogger(this.getClass)
   ModuleSerializer.registerModule(
     "com.intel.analytics.bigdl.dllib.keras.Model",
     Model)
