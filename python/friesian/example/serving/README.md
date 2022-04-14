@@ -37,7 +37,7 @@ java -cp $SERVING_JAR_PATH com.intel.analytics.bigdl.friesian.serving.recall.Rec
 7. Run Similarity_client
 ```
 echo "Starting similarity client......"
-python python client.py  --target yourhost:8084 --data_dir ../item_ebd.parquet
+python  similarity_client.py  --target yourhost:8084 --data_dir ../item_ebd.parquet
 ```
 
 
