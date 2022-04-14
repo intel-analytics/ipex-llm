@@ -33,7 +33,6 @@ python ${BIGDL_ROOT}/python/orca/example/learn/pytorch/fashion_mnist/fashion_mni
 now=$(date "+%s")
 time1=$((now-start))
 
-
 echo "#2 start example for orca cifar10"
 start=$(date "+%s")
 
@@ -45,7 +44,7 @@ else
 fi
 
 python ${BIGDL_ROOT}/python/orca/example/learn/pytorch/cifar10/cifar10.py \
-    --runtime ray --address localhost:6379 --backend ray --batch_size=256
+    --runtime ray --address localhost:6379 --backend ray --batch_size 256 --epochs 1
 
 now=$(date "+%s")
 time2=$((now-start))
