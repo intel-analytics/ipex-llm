@@ -33,7 +33,6 @@ python ${BIGDL_ROOT}/python/orca/example/learn/pytorch/fashion_mnist/fashion_mni
 now=$(date "+%s")
 time1=$((now-start))
 
-
 echo "#2 start example for orca cifar10"
 start=$(date "+%s")
 
