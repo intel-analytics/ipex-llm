@@ -555,8 +555,7 @@ class Layer(JavaValue, SharedStaticUtils):
         :param byte_order: model byte order
         :param data_format: model data format, should be "nhwc" or "nchw"
         """
-        assert True
-        callBigDlFunc(self.bigdl_type, "saveTF", self.value,   inputs, path, byte_order, data_format)
+        callBigDlFunc(self.bigdl_type, "saveTF", self.value, inputs, path, byte_order, data_format)
 
     def setWRegularizer(self, wRegularizer):
         '''
