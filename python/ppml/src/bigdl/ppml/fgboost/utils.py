@@ -18,6 +18,7 @@ import numpy as np
 from sys import getsizeof
 import math
 from bigdl.dllib.utils.common import *
+from bigdl.ppml.data_utils import convert_to_jtensor
 
 # 2 ** 32 is the JVM INT limit, we reserve 2 ^ 4 here to make it safer
 # e.g. some size compute step may multiply to cause bound exceed
@@ -26,9 +27,10 @@ MAX_MSG_SIZE = 2 ** 28
 def add_data(data: np.ndarray, jvalue, func_add, bigdl_type="float"):
     size = getsizeof(data)
     batch_num = math.ceil(size / MAX_MSG_SIZE)
-    data_per_batch = data.shape[0] / batch_num
+    data_per_batch = math.ceil(data.shape[0] / batch_num)
     for i in range(batch_num):
         idx = i * data_per_batch
-        data_batch = data[idx:idx + data_per_batch, ...]
-        callBigDlFunc(bigdl_type, func_add, jvalue, data)
+        data_batch = data[idx:idx + data_per_batch, ...] if i != batch_num - 1 else data[idx:, ...]
+        data_batch, _ = convert_to_jtensor(data_batch)
+        callBigDlFunc(bigdl_type, func_add, jvalue, data_batch)
 
