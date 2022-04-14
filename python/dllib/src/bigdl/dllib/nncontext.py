@@ -681,7 +681,7 @@ def init_internal_nncontext(conf=None, spark_log_level="WARN", redirect_spark_lo
                                              daemon=True,
                                              kwargs=dict(
                                                  fd=spark_jvm_proc.stderr,
-                                                 fn=sys.stdout.write))
+                                                 fn=sys.err.write))
             stderr_reader.start()
     check_version()
     if redirect_spark_log:
