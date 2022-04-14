@@ -45,7 +45,7 @@ else
 fi
 
 python ${BIGDL_ROOT}/python/orca/example/learn/pytorch/cifar10/cifar10.py \
-    --runtime ray --address localhost:6379 --backend torch_distributed --batch_size 256 --epochs 1
+    --runtime ray --address localhost:6379 --backend ray --batch_size 256 --epochs 1
 
 now=$(date "+%s")
 time2=$((now-start))
