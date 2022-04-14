@@ -180,9 +180,7 @@ def trailing_whitespace(physical_line):
 
 
 def trailing_blacklist_words(physical_line):
-    if physical_line.find("assert ") == -1:
-        return 1, "W291 trailing whitespace"
-    else:
+    if physical_line.find("assert ") != -1:
         return 0, "Please don't use assert, use log4Error.invalidInputError instead"
 
 
