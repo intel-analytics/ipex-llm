@@ -50,6 +50,8 @@ from tensorflow.python.framework import tensor_util
 from tensorflow.python.platform import tf_logging as logging
 from tensorflow.python.util import deprecation
 from tensorflow.python.util.tf_export import tf_export
+from bigdl.dllib.utils.log4Error import *
+
 
 _VARIABLE_OPS = {
     "Assign",
@@ -88,7 +90,8 @@ def must_run_on_cpu(node, pin_variables_on_cpu=False):
     if isinstance(node, ops.Operation):
         node_def = node.node_def
     else:
-        assert isinstance(node, node_def_pb2.NodeDef)
+        invalidInputError(isinstance(node, node_def_pb2.NodeDef),
+                          f"node is not node_def_pb2.NodeDef type")
         node_def = node
 
     # If the op is a variable-related op, should we pin it on CPU?
@@ -158,7 +161,7 @@ def _extract_graph_summary(graph_def):
 def _assert_nodes_are_present(name_to_node, nodes):
     """Assert that nodes are present in the graph."""
     for d in nodes:
-        assert d in name_to_node, "%s is not in graph" % d
+        invalidInputError(d in name_to_node, "%s is not in graph" % d)
 
 
 def _bfs_for_reachable_nodes(target_nodes, name_to_input_name):

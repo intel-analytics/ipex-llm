@@ -18,6 +18,8 @@ import sys
 import six
 from bigdl.dllib.utils.common import JavaValue
 from bigdl.dllib.utils.file_utils import callZooFunc
+from bigdl.dllib.utils.log4Error import *
+
 
 if sys.version >= '3':
     long = int
@@ -34,9 +36,11 @@ class TextFeature(JavaValue):
 
     def __init__(self, text=None, label=None, uri=None, jvalue=None, bigdl_type="float"):
         if text is not None:
-            assert isinstance(text, six.string_types), "text of a TextFeature should be a string"
+            invalidInputError(isinstance(text, six.string_types),
+                              "text of a TextFeature should be a string")
         if uri is not None:
-            assert isinstance(uri, six.string_types), "uri of a TextFeature should be a string"
+            invalidInputError(isinstance(uri, six.string_types),
+                              "uri of a TextFeature should be a string")
         if label is not None:
             super(TextFeature, self).__init__(jvalue, bigdl_type, text, int(label), uri)
         else:
