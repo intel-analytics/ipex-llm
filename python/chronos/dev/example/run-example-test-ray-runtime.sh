@@ -27,13 +27,10 @@ if [ ! -f ~/.chronos/dataset/network_traffic/network_traffic_data.csv ]; then
   mv ~/.chronos/dataset/network_traffic/data.csv ~/.chronos/dataset/network_traffic/network_traffic_data.csv
 fi
 
-execute_ray_test distributed_training_network_traffic "${BIGDL_ROOT}/python/chronos/example/distributed/distributed_training_network_traffic.py"
-time1=$?
-
 ray stop -f
 ray start --head
 
 execute_ray_test distributed_training_network_traffic "${BIGDL_ROOT}/python/chronos/example/distributed/distributed_training_network_traffic.py --runtime ray --address localhost:6379"
-time2=$?
+time1=$?
 
 ray stop -f
