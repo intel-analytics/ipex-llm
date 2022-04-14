@@ -439,7 +439,7 @@ class ConvLSTMPeepholeSpec extends FlatSpec with BeforeAndAfter with Matchers {
       Array(batchSize, seqLength, inputSize, 3, 3))
 
     expectedGrad.map(gradInput, (v1, v2) => {
-      assert(abs(v1 - v2) < 1e-6)
+      TestUtils.conditionFailTest(abs(v1 - v2) < 1e-6)
       v1
     })
   }
@@ -728,7 +728,7 @@ class ConvLSTMPeepholeSpec extends FlatSpec with BeforeAndAfter with Matchers {
       Array(batchSize, seqLength, inputSize, 3, 4))
 
     expectedGrad.map(gradInput, (v1, v2) => {
-      assert(abs(v1 - v2) < 1e-6)
+      TestUtils.conditionFailTest(abs(v1 - v2) < 1e-6)
       v1
     })
   }
@@ -1026,13 +1026,13 @@ class ConvLSTMPeepholeSpec extends FlatSpec with BeforeAndAfter with Matchers {
     val hiddenState = state.toTable.apply(1).asInstanceOf[Tensor[Double]]
     val cell = state.toTable.apply(2).asInstanceOf[Tensor[Double]]
     hiddenState.map(output.select(2, seqLength), (v1, v2) => {
-      assert(abs(v1 - v2) == 0)
+      TestUtils.conditionFailTest(abs(v1 - v2) == 0)
       v1
     })
 
     cell.map(Tensor[Double](expectedCellData, Array(batchSize, hiddenSize, 3, 4)),
       (v1, v2) => {
-      assert(abs(v1 - v2) < 1e-10)
+      TestUtils.conditionFailTest(abs(v1 - v2) < 1e-10)
       v1
     })
 
@@ -1069,7 +1069,7 @@ class ConvLSTMPeepholeSpec extends FlatSpec with BeforeAndAfter with Matchers {
 
     output.map(output2,
       (v1, v2) => {
-        assert(abs(v1 - v2) != 0)
+        TestUtils.conditionFailTest(abs(v1 - v2) != 0)
         v1
       })
   }

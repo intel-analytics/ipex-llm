@@ -24,6 +24,7 @@ import com.intel.analytics.bigdl.Module
 import com.intel.analytics.bigdl.dllib.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.dllib.tensor.{QuantizedTensor, QuantizedType, Storage, Tensor}
 import com.intel.analytics.bigdl.dllib.utils.T
+import com.intel.analytics.bigdl.dllib.utils.Log4Error
 import com.intel.analytics.bigdl.orca.utils.PythonInterpreter
 import com.intel.analytics.bigdl.orca.net.TorchModel.TorchModel2Holder
 import com.intel.analytics.bigdl.dllib.net.{NetUtils, RegistryMap, SerializationHolder}
@@ -107,7 +108,7 @@ class TorchModel (
       PythonInterpreter.exec(s"input_${postId} = _data[0]")
     } else {
       // TODO: support table input
-      require(input.isTensor, "only support tensor input")
+      Log4Error.invalidOperationError(input.isTensor, "only support tensor input")
       val i = input.toTensor[Float]
       if (i.nElement() == i.storage().array().length) {
         PythonInterpreter.set("nd_input_" + postId,
@@ -248,7 +249,8 @@ class TorchModel (
   override def training(): this.type = {
     super.training()
     load
-    require(weights.nElement() > 0, "We can't train an inference-only model, weights is empty.")
+    Log4Error.unKnowExceptionError(weights.nElement() > 0,
+      "We can't train an inference-only model, weights is empty.")
     PythonInterpreter.exec(s"${getName()}.train()")
     this
   }
@@ -284,7 +286,8 @@ object TorchModel {
       id = in.readString()
       val (graph, _) = modelBytesRegistry.getOrCreate(id) {
         val len = in.readInt()
-        assert(len >= 0, "GraphDef length should be an non-negative integer")
+        Log4Error.unKnowExceptionError(len >= 0,
+          "GraphDef length should be an non-negative integer")
         val graphDef = new Array[Byte](len)
         timing("reading graph def from stream") {
           var numOfBytes = 0

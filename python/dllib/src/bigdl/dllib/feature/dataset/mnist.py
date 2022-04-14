@@ -22,6 +22,8 @@ import numpy
 
 from bigdl.dllib.feature.dataset import base
 from bigdl.dllib.feature.dataset.transformer import *
+from bigdl.dllib.utils.log4Error import *
+
 
 SOURCE_URL = 'https://ossci-datasets.s3.amazonaws.com/mnist/'
 
@@ -132,7 +134,11 @@ def load_data(location="/tmp/mnist"):
 if __name__ == "__main__":
     train, _ = read_data_sets("/tmp/mnist/", "train")
     test, _ = read_data_sets("/tmp/mnist", "test")
-    assert numpy.abs(numpy.mean(train) - TRAIN_MEAN) / TRAIN_MEAN < 1e-7
-    assert numpy.abs(numpy.std(train) - TRAIN_STD) / TRAIN_STD < 1e-7
-    assert numpy.abs(numpy.mean(test) - TEST_MEAN) / TEST_MEAN < 1e-7
-    assert numpy.abs(numpy.std(test) - TEST_STD) / TEST_STD < 1e-7
+    invalidInputError(numpy.abs(numpy.mean(train) - TRAIN_MEAN) / TRAIN_MEAN < 1e-7,
+                      f"mean of train data doesn't match ${TRAIN_MEAN}")
+    invalidInputError(numpy.abs(numpy.std(train) - TRAIN_STD) / TRAIN_STD < 1e-7,
+                      f"std of train data doesn't match ${TRAIN_STD}")
+    invalidInputError(numpy.abs(numpy.mean(test) - TEST_MEAN) / TEST_MEAN < 1e-7,
+                      f"mean of test data doesn't match ${TEST_MEAN}")
+    invalidInputError(numpy.abs(numpy.std(test) - TEST_STD) / TEST_STD < 1e-7,
+                      f"std of test data doesn't match ${TEST_STD_STD}")

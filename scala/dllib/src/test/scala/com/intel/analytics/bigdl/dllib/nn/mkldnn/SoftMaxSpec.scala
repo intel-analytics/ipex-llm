@@ -43,13 +43,15 @@ class SoftMaxSpec extends TorchSpec with Matchers {
       inputDim + pos
     }
     else pos
-    require(1 <= pos && pos <= input.nDimension(),
+    com.intel.analytics.bigdl.dllib.utils.TestUtils.conditionFailTest(1 <= pos
+      && pos <= input.nDimension(),
       s"Invalid position: $pos ." + s"input dimension ${input.nDimension()}")
     pos
   }
 
   def internalUpdateOutput(input: Tensor[Float]): Tensor[Float] = {
-    require(1 <= input.nDimension() && input.nDimension() <= 4,
+    com.intel.analytics.bigdl.dllib.utils.TestUtils.conditionFailTest(1 <= input.nDimension()
+      && input.nDimension() <= 4,
       "1D, 2D, 3D or 4D tensor expected" +
         s"input dimension ${input.nDimension()}")
     pos = getPositiveDimension(input)

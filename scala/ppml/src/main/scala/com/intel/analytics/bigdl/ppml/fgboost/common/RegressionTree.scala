@@ -21,7 +21,7 @@ import java.util
 
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.ppml.fgboost.common.TreeUtils._
-
+import com.intel.analytics.bigdl.dllib.utils.Log4Error
 import scala.collection.JavaConversions.asScalaBuffer
 import scala.collection.JavaConverters._
 import scala.collection.mutable.HashSet
@@ -67,13 +67,15 @@ class RegressionTree(
   }
 
   def setLearningRate(lr: Float): this.type = {
-    require(lr > 0, s"learning rate should greater than 0, but got ${lr}")
+    Log4Error.invalidOperationError(lr > 0,
+      s"learning rate should greater than 0, but got ${lr}")
     learningRate = lr
     this
   }
 
   def setMinChildSize(size: Int): this.type = {
-    require(size > 0, s"min child size should greater than 0, but got ${size}")
+    Log4Error.invalidOperationError(size > 0,
+      s"min child size should greater than 0, but got ${size}")
     minChildSize = size
     this
   }
@@ -128,7 +130,8 @@ class RegressionTree(
     }
     val (bestGain, fIndex, rIndex, sortedFeatureIndex) = bestGainByFeature.maxBy(_._1)
     if (bestGain > minInfoGain) {
-      require(rIndex > 0, s"best rIndex should greater than 0, but got ${rIndex}.")
+      Log4Error.unKnowExceptionError(rIndex > 0,
+        s"best rIndex should greater than 0, but got ${rIndex}.")
       val leftSet = sortedFeatureIndex.slice(0, rIndex)
       // (leftMargin + rightMargin) / 2
       val splitValue = (dataset(sortedFeatureIndex(rIndex)).valueAt(fIndex + 1) +
@@ -165,7 +168,7 @@ class RegressionTree(
     // Only predict with local nodes
     val res = Array.fill[Boolean](math.pow(2, depth + 1).toInt)(true)
     localNodes.values.foreach { split =>
-      require(split.featureID < record.size(1),
+      Log4Error.unKnowExceptionError(split.featureID < record.size(1),
         s"Node split at feature: ${split.featureID}, but input size: ${record.size(1)}")
       val currValue = record.valueAt(split.featureID + 1)
       res(split.nodeID.toInt) = currValue < split.splitValue

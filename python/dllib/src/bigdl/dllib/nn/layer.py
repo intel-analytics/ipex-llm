@@ -34,6 +34,8 @@ from py4j.java_gateway import JavaObject
 from pyspark.rdd import RDD
 from bigdl.dllib.feature.transform.vision.image import ImageFrame
 from bigdl.dllib.feature.dataset.dataset import DataSet
+from bigdl.dllib.utils.log4Error import *
+
 
 if sys.version >= '3':
     long = int
@@ -114,7 +116,9 @@ class Layer(JavaValue, SharedStaticUtils):
 
     def __init__(self, jvalue, bigdl_type, *args):
         if (jvalue):
-            assert (type(jvalue) == JavaObject)
+            invalidInputError((type(jvalue) == JavaObject),
+                              f"jvalue type ${type(jvalue)} doesn't match"
+                              f" JavaObject ${JavaObject}")
             self.value = jvalue
         else:
             self.value = callBigDlFunc(

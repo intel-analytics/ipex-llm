@@ -54,6 +54,7 @@ import com.intel.analytics.bigdl.dllib.keras.layers.Input
 import com.intel.analytics.bigdl.dllib.keras.layers.utils._
 import com.intel.analytics.bigdl.dllib.keras.models._
 import com.intel.analytics.bigdl.dllib.net.NetUtils
+import org.apache.logging.log4j.LogManager
 // import com.intel.analytics.bigdl.dllib.Net.TorchModel
 import com.intel.analytics.bigdl.dllib.estimator.{AbstractEstimator, ConstantClipping, GradientClipping, L2NormClipping}
 // import com.intel.analytics.zoo.tfpark.{TFTrainingHelper, TFTrainingHelperV2}
@@ -153,27 +154,36 @@ class Model[T: ClassTag] private (private val _inputs : Seq[ModuleNode[T]],
 
   override def summary(
                         lineLength: Int = 120,
-                        positions: Array[Double] = Array(.33, .55, .67, 1)): Unit = {
-    println("Model Summary:")
-    KerasUtils.printSplitLine('-', lineLength)
+                        positions: Array[Double] = Array(.33, .55, .67, 1)): String = {
+    val summary: ArrayBuffer[String] = ArrayBuffer[String]()
+    summary.append("Model Summary:")
+    KerasUtils.printSplitLine('-', lineLength, summary)
+
     val toDisplay = Array("Layer (type)", "Output Shape", "Param #", "Connected to")
-    KerasUtils.printRow(toDisplay, lineLength, positions, splitChar = '=')
+    KerasUtils.printRow(toDisplay, lineLength, positions, splitChar = '=', summary = summary)
     val nodes = labor.asInstanceOf[StaticGraph[T]].getSortedForwardExecutions()
     var totalParams = 0
     var trainableParams = 0
     for (node <- nodes) {
-      val (total, trainable) = KerasUtils.printNodeSummary(node, lineLength, positions)
+      val (total, trainable) = KerasUtils.printNodeSummary(node, lineLength, positions, summary)
       totalParams += total
       trainableParams += trainable
     }
-    println("Total params: " + "%,d".format(totalParams))
-    println("Trainable params: " + "%,d".format(trainableParams))
-    println("Non-trainable params: " + "%,d".format(totalParams - trainableParams))
-    KerasUtils.printSplitLine('-', lineLength)
+    val msgTotal = "Total params: " + "%,d".format(totalParams)
+    summary.append(msgTotal)
+    val msgTrain = "Trainable params: " + "%,d".format(trainableParams)
+    summary.append(msgTrain)
+    val msgNonTrain = "Non-trainable params: " + "%,d".format(totalParams - trainableParams)
+    summary.append(msgNonTrain)
+    KerasUtils.printSplitLine('-', lineLength, summary)
+    val res = summary.mkString("\n")
+    Model.logger.info(res)
+    return res
   }
 }
 
 object Model extends KerasLayerSerializable {
+  val logger = LogManager.getLogger(this.getClass)
   ModuleSerializer.registerModule(
     "com.intel.analytics.bigdl.dllib.keras.Model",
     Model)

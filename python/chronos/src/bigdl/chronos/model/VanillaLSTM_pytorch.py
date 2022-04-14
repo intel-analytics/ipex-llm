@@ -86,7 +86,7 @@ try:
 
     class VanillaLSTMPytorch(PytorchBaseModel):
 
-        def __init__(self, check_optional_config=True):
+        def __init__(self, check_optional_config=False):
             """
             Constructor of Vanilla LSTM model
             """

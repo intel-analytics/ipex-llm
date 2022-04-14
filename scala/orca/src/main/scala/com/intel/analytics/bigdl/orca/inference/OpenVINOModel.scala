@@ -28,6 +28,7 @@ import org.apache.commons.io.FileUtils
 import org.slf4j.LoggerFactory
 
 import scala.collection.JavaConverters._
+import com.intel.analytics.bigdl.dllib.utils.Log4Error
 
 class OpenVINOModel(var modelHolder: OpenVINOModelHolder,
                     var isInt8: Boolean,
@@ -189,7 +190,8 @@ object OpenVINOModel {
       val (graphDef, _) = modelBytesRegistry.getOrCreate(id) {
         val modelLen = in.readInt()
         logger.debug("Read OpenVINO model from stream")
-        assert(modelLen >= 0, "OpenVINO model length should be an non-negative integer")
+        Log4Error.invalidOperationError(modelLen >= 0,
+          "OpenVINO model length should be an non-negative integer")
         val localModelBytes = new Array[Byte](modelLen)
         timing("reading OpenVINO model from stream") {
           var numOfBytes = 0
@@ -199,7 +201,8 @@ object OpenVINOModel {
           }
         }
         val weightLen = in.readInt()
-        assert(weightLen >= 0, "OpenVINO weight length should be an non-negative integer")
+        Log4Error.invalidOperationError(weightLen >= 0,
+          "OpenVINO weight length should be an non-negative integer")
         var localWeightBytes = new Array[Byte](weightLen)
         timing("reading OpenVINO weight from stream") {
           var numOfBytes = 0

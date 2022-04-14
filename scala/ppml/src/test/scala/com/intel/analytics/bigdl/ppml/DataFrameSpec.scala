@@ -22,6 +22,7 @@ import com.intel.analytics.bigdl.ppml.utils.DataFrameUtils
 import org.apache.spark.{SparkConf, SparkContext}
 import org.apache.spark.sql.SparkSession
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
+import com.intel.analytics.bigdl.ppml.utils.TestUtils
 
 class DataFrameSpec extends FlatSpec with Matchers with BeforeAndAfter{
   "json DataFrame to DataSet" should "work" in {
@@ -29,8 +30,9 @@ class DataFrameSpec extends FlatSpec with Matchers with BeforeAndAfter{
     import spark.implicits._
     val df = spark.read.json(this.getClass.getClassLoader.getResource("people.json").getPath)
     val dataSet = DataFrameUtils.dataFrameToMiniBatch(df)
-    require(dataSet.isInstanceOf[LocalDataSet[Any]], "transformation type wrong")
-    require(dataSet.size() == 3, "size wrong")
+    TestUtils.conditionFailTest(dataSet.isInstanceOf[LocalDataSet[Any]],
+      "transformation type wrong")
+    TestUtils.conditionFailTest(dataSet.size() == 3, "size wrong")
   }
   "csv DataFrame to DataSet" should "work" in {
     val spark = FLContext.getSparkSession()
@@ -39,7 +41,8 @@ class DataFrameSpec extends FlatSpec with Matchers with BeforeAndAfter{
       .csv(this.getClass.getClassLoader.getResource("diabetes-test.csv").getPath)
     df.show()
     val dataSet = DataFrameUtils.dataFrameToMiniBatch(df)
-    require(dataSet.isInstanceOf[LocalDataSet[Any]], "transformation type wrong")
-    require(dataSet.size() == 10, "size wrong")
+    TestUtils.conditionFailTest(dataSet.isInstanceOf[LocalDataSet[Any]],
+      "transformation type wrong")
+    TestUtils.conditionFailTest(dataSet.size() == 10, "size wrong")
   }
 }

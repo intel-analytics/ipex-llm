@@ -21,6 +21,7 @@ import java.util
 
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.common.CheckedObjectInputStream
+import com.intel.analytics.bigdl.orca.utils.TestUtils
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
 class FloatModelSpec extends FlatSpec with Matchers with BeforeAndAfter
@@ -144,18 +145,18 @@ class FloatModelSpec extends FlatSpec with Matchers with BeforeAndAfter
     val in = new CheckedObjectInputStream(classOf[FloatModel], bis)
     val floatInferenceModel2 = in.readObject.asInstanceOf[FloatModel]
 
-    assert(floatInferenceModel.model == floatInferenceModel2.model)
+    TestUtils.conditionFailTest(floatInferenceModel.model == floatInferenceModel2.model)
     in.close()
   }
 
   "floatInferenceModel" should "predict" in {
     val result1 = floatInferenceModel.predict(inputTensor1)
     val result2 = floatInferenceModel.predict(inputTensor2)
-    assert(result1 != null)
-    assert(result2 != null)
+    TestUtils.conditionFailTest(result1 != null)
+    TestUtils.conditionFailTest(result2 != null)
     val inputTensorBatch = Tensor[Float](5, 3, 5, 5).rand()
     val result3 = floatInferenceModel.predict(inputTensorBatch)
-    assert(result3 != null)
+    TestUtils.conditionFailTest(result3 != null)
   }
 
   "floatInferenceModel" should "works well when copy and release" in {
@@ -169,10 +170,10 @@ class FloatModelSpec extends FlatSpec with Matchers with BeforeAndAfter
     println(original.model, original.model.getWeightsBias()(0).storage(), original.metaModel)
     println(copy1.model, copy1.model.getWeightsBias()(0).storage(), copy1.metaModel)
     println(copy2.model, copy2.model.getWeightsBias()(0).storage(), copy2.metaModel)
-    assert(original.metaModel == copy1.metaModel)
-    assert(original.metaModel == copy2.metaModel)
-    assert(originalWeightBias == copy1WeightBias)
-    assert(originalWeightBias == copy2WeightBias)
+    TestUtils.conditionFailTest(original.metaModel == copy1.metaModel)
+    TestUtils.conditionFailTest(original.metaModel == copy2.metaModel)
+    TestUtils.conditionFailTest(originalWeightBias == copy1WeightBias)
+    TestUtils.conditionFailTest(originalWeightBias == copy2WeightBias)
 
     copy1.release()
     val originalWeightBiasAfterRelease = original.model.getWeightsBias()(0).storage()
@@ -181,13 +182,13 @@ class FloatModelSpec extends FlatSpec with Matchers with BeforeAndAfter
     println(original.model, originalWeightBiasAfterRelease, original.metaModel)
     println(copy1.model, copy1.metaModel)
     println(copy2.model, copy2WeightBiassAfterRelease, copy2.metaModel)
-    assert(copy1.model == null)
-    assert(copy1.metaModel == null)
-    assert(originalWeightBias == originalWeightBiasAfterRelease)
-    assert(originalWeightBias == copy2WeightBiassAfterRelease)
+    TestUtils.conditionFailTest(copy1.model == null)
+    TestUtils.conditionFailTest(copy1.metaModel == null)
+    TestUtils.conditionFailTest(originalWeightBias == originalWeightBiasAfterRelease)
+    TestUtils.conditionFailTest(originalWeightBias == copy2WeightBiassAfterRelease)
 
     original.release()
-    assert(original.model == null)
-    assert(original.metaModel == null)
+    TestUtils.conditionFailTest(original.model == null)
+    TestUtils.conditionFailTest(original.metaModel == null)
   }
 }

@@ -18,6 +18,7 @@ package com.intel.analytics.bigdl.dllib.nn
 
 import org.scalatest.FlatSpec
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
+import com.intel.analytics.bigdl.dllib.utils.TestUtils
 
 import scala.math._
 
@@ -79,9 +80,9 @@ class MSECriterionSpec extends FlatSpec {
     expectedGrad(Array(2, 2, 2)) = -0.0087152241612785
     val output = mse.forward(input, target)
     val gradInput = mse.backward(input, target)
-    assert(abs(expectedOutput - output) < 1e-6)
+    TestUtils.conditionFailTest(abs(expectedOutput - output) < 1e-6)
     expectedGrad.map(gradInput, (v1, v2) => {
-      assert(abs(v1 - v2) < 1e-6);
+      TestUtils.conditionFailTest(abs(v1 - v2) < 1e-6);
       v1
     })
   }
@@ -119,9 +120,9 @@ class MSECriterionSpec extends FlatSpec {
     expectedGrad(Array(2, 2, 2)) = 0.59350770944729
     val output = mse.forward(input, target)
     val gradInput = mse.backward(input, target)
-    assert(abs(expectedOutput - output) < 1e-6)
+    TestUtils.conditionFailTest(abs(expectedOutput - output) < 1e-6)
     expectedGrad.map(gradInput, (v1, v2) => {
-      assert(abs(v1 - v2) < 1e-6);
+      TestUtils.conditionFailTest(abs(v1 - v2) < 1e-6);
       v1
     })
   }
