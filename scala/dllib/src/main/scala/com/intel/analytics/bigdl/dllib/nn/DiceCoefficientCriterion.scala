@@ -18,6 +18,7 @@ package com.intel.analytics.bigdl.dllib.nn
 import com.intel.analytics.bigdl.dllib.nn.abstractnn.TensorCriterion
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
+import com.intel.analytics.bigdl.dllib.utils.Log4Error
 
 import scala.reflect.ClassTag
 
@@ -58,7 +59,7 @@ class DiceCoefficientCriterion[@specialized(Float, Double) T: ClassTag]
   private var _target: Tensor[T] = null
 
   override def updateOutput(input: Tensor[T], target: Tensor[T]): T = {
-    require((input.dim() == target.dim()) && (input.isSameSizeAs(target)),
+    Log4Error.invalidInputError((input.dim() == target.dim()) && (input.isSameSizeAs(target)),
       "DiceCoefficientCriterion: " + ErrorInfo.constrainInputSizeSameAsTarget +
     s"input (${input.dim()}) target(${target.dim()})")
 

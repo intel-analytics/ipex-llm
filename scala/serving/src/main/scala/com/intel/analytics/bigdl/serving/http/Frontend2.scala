@@ -39,6 +39,7 @@ import org.slf4j.LoggerFactory
 import redis.clients.jedis.JedisPool
 
 import scala.concurrent.Await
+import com.intel.analytics.bigdl.dllib.utils.Log4Error
 
 object Frontend2 extends Supportive with EncryptSupportive {
   override val logger = LoggerFactory.getLogger(getClass)
@@ -258,7 +259,7 @@ object Frontend2 extends Supportive with EncryptSupportive {
 
     val keyStore = KeyStore.getInstance("PKCS12")
     val keystoreInputStream = new File(httpsKeyStorePath).toURI().toURL().openStream()
-    require(keystoreInputStream != null, "Keystore required!")
+    Log4Error.invalidOperationError(keystoreInputStream != null, "Keystore required!")
     keyStore.load(keystoreInputStream, token)
 
     val keyManagerFactory = KeyManagerFactory.getInstance("SunX509")

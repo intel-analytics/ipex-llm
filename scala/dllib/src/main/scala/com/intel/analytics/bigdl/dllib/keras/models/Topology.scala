@@ -80,7 +80,7 @@ abstract class KerasNet[T](implicit val tag: ClassTag[T], implicit val ev: Tenso
   protected val module: Module[T] = this
 
   def getSubModules(): List[AbstractModule[Activity, Activity, T]] = {
-    require(this.labor.isInstanceOf[Container[Activity, Activity, T]],
+    Log4Error.invalidOperationError(this.labor.isInstanceOf[Container[Activity, Activity, T]],
       s"labor should be a container, but we got: $this")
     this.labor.asInstanceOf[Container[Activity, Activity, T]].modules.toList
   }
@@ -360,11 +360,12 @@ abstract class KerasNet[T](implicit val tag: ClassTag[T], implicit val ev: Tenso
       x: DataSet[MiniBatch[T]],
       nbEpoch: Int,
       validationData: DataSet[MiniBatch[T]])(implicit ev: TensorNumeric[T]): Unit = {
-    require(this.optimMethod != null && this.criterion != null,
+    Log4Error.invalidInputError(this.optimMethod != null && this.criterion != null,
       "compile must be called before fit")
     this.internalOptimizer = this.getOrCreateOptimizer(x)
     if (validationData != null) {
-      require(this.vMethods != null, "Validation metrics haven't been set yet")
+      Log4Error.invalidInputError(this.vMethods != null,
+        "Validation metrics haven't been set yet")
       if (this.tensorBoardLogDir != null && this.tensorBoardAppName != null) {
         this.validationSummary = ValidationSummary(tensorBoardLogDir, tensorBoardAppName)
         internalOptimizer.setValidationSummary(this.validationSummary)
@@ -589,6 +590,7 @@ abstract class KerasNet[T](implicit val tag: ClassTag[T], implicit val ev: Tenso
 
     val transformer2 = ImageMatToTensor[Float]() ->
       ImageSetToSample[Float](targetKeys = targetKeys)
+
     trainData.transform(transformer2)
 
     val valData = if (valX != null) {
@@ -648,7 +650,8 @@ abstract class KerasNet[T](implicit val tag: ClassTag[T], implicit val ev: Tenso
       x: RDD[Sample[T]],
       batchSize: Int)
       (implicit ev: TensorNumeric[T]): Array[(ValidationResult, ValidationMethod[T])] = {
-    require(this.vMethods != null, "Evaluation metrics haven't been set yet")
+    Log4Error.invalidInputError(this.vMethods != null,
+      "Evaluation metrics haven't been set yet")
     this.evaluate(x, this.vMethods, Some(batchSize))
   }
 
@@ -659,7 +662,8 @@ abstract class KerasNet[T](implicit val tag: ClassTag[T], implicit val ev: Tenso
    */
   def evaluate(x: LocalDataSet[MiniBatch[T]])
       (implicit ev: TensorNumeric[T]): Array[(ValidationResult, ValidationMethod[T])] = {
-    require(this.vMethods != null, "Evaluation metrics haven't been set yet")
+    Log4Error.invalidInputError(this.vMethods != null,
+      "Evaluation metrics haven't been set yet")
     this.evaluate(x, this.vMethods)
   }
 
@@ -673,7 +677,8 @@ abstract class KerasNet[T](implicit val tag: ClassTag[T], implicit val ev: Tenso
       x: ImageSet,
       batchSize: Int)
       (implicit ev: TensorNumeric[T]): Array[(ValidationResult, ValidationMethod[T])] = {
-    require(this.vMethods != null, "Evaluation metrics haven't been set yet")
+    Log4Error.invalidInputError(this.vMethods != null,
+      "Evaluation metrics haven't been set yet")
     evaluateImage(x.toImageFrame(), this.vMethods, Some(batchSize))
   }
 
@@ -705,7 +710,9 @@ abstract class KerasNet[T](implicit val tag: ClassTag[T], implicit val ev: Tenso
   def evaluate(
       x: TextSet,
       batchSize: Int): Array[(ValidationResult, ValidationMethod[T])] = {
-    require(this.vMethods != null, "Evaluation metrics haven't been set yet")
+    Log4Error.invalidInputError(this.vMethods != null,
+
+      "Evaluation metrics haven't been set yet")
     x match {
       case distributed: DistributedTextSet =>
         val rdd = distributed.rdd.map(_.getSample).filter(_ != null)
@@ -721,7 +728,8 @@ abstract class KerasNet[T](implicit val tag: ClassTag[T], implicit val ev: Tenso
      batchSize: Int,
      featureCols: Array[String],
      labelCols: Array[String]): Array[(ValidationResult, ValidationMethod[T])] = {
-    require(this.vMethods != null, "Evaluation metrics haven't been set yet")
+    Log4Error.invalidInputError(this.vMethods != null,
+      "Evaluation metrics haven't been set yet")
     val valX = getDataSet(x, batchSize, featureCols, labelCols).toDataSet()
     val xRDD = valX.toDistributed().data(false)
     evaluate(xRDD, this.vMethods)
@@ -777,7 +785,7 @@ abstract class KerasNet[T](implicit val tag: ClassTag[T], implicit val ev: Tenso
    */
   def summary(
       lineLength: Int = 120,
-      positions: Array[Double] = Array(.33, .55, .67, 1)): Unit
+      positions: Array[Double] = Array(.33, .55, .67, 1)): String
 }
 
 object InternalOptimizer {
@@ -1000,7 +1008,8 @@ private[bigdl] class InternalDistriOptimizer[T: ClassTag] (
     logger.info(s"${model} isTorch is ${model.isPyTorch()}")
     val torchOptimize = model.isPyTorch()
     val modelPerExecutor = if (torchOptimize) {
-      require(EngineRef.getEngineType() != MklDnn, "torch model shouldn't use MKLDNN engine.")
+      Log4Error.invalidInputError(EngineRef.getEngineType() != MklDnn,
+        "torch model shouldn't use MKLDNN engine.")
       val numOmpThread = distDataset.originRDD().sparkContext
         .getConf.get("spark.executorEnv.OMP_NUM_THREADS").toInt
       logger.info(s"torch model will use ${numOmpThread} OMP threads.")
@@ -1022,7 +1031,8 @@ private[bigdl] class InternalDistriOptimizer[T: ClassTag] (
       parameterSplits = if (optimMethods.size != 1) {
         val p = optimMethods.map { case (subModuleName, optimMethod) =>
           val subModule = trainingModel(subModuleName)
-          require(subModule.isDefined, s"Optimizer couldn't find $subModuleName in $model")
+          Log4Error.invalidOperationError(subModule.isDefined,
+            s"Optimizer couldn't find $subModuleName in $model")
           val subModuleWeights = InternalOptimizerUtil
             .getParametersFromModel(subModule.get)._1
           (subModuleName, subModuleWeights)
@@ -1030,7 +1040,7 @@ private[bigdl] class InternalDistriOptimizer[T: ClassTag] (
         val sortedWeights = p.values.toArray.sortWith(
           (a, b) => a.storageOffset() < b.storageOffset())
         val compactWeights = Module.isCompact(sortedWeights)
-        require(modelParameters._1 == compactWeights,
+        Log4Error.invalidOperationError(modelParameters._1 == compactWeights,
           s"InternDistriOptimizer: All subModules should have an OptimMethod.")
         p.map { case (subModuleName, weights) =>
           (subModuleName, (weights.storageOffset(), weights.nElement()))
@@ -1099,7 +1109,7 @@ private[bigdl] class InternalDistriOptimizer[T: ClassTag] (
         case e: IllegalArgumentException =>
           throw e
         case t: Throwable =>
-          DistriOptimizer.logger.error("Error: " + ExceptionUtils.getStackTrace(t))
+//          DistriOptimizer.logger.error("Error: " + ExceptionUtils.getStackTrace(t))
           if (checkpointPath.isDefined) {
             /* To avoid retry number is used up by first few exceptions, we count time here.
              * If exception exceeds maxRetry times in maxRetry*retryTimeInterval seconds,
@@ -1171,7 +1181,7 @@ private[bigdl] class InternalDistriOptimizer[T: ClassTag] (
 
 
   def setNumOfSlice(numOfSlice: Int): this.type = {
-    require(numOfSlice >= 0, s"excepted numOfSlice >= 0," +
+    Log4Error.invalidInputError(numOfSlice >= 0, s"excepted numOfSlice >= 0," +
       s" but got $numOfSlice")
     this.numSlice = numOfSlice
     this
@@ -1392,7 +1402,7 @@ private[bigdl] class InternalDistriOptimizerV2[T: ClassTag] (
 
 
   def setNumOfSlice(numOfSlice: Int): this.type = {
-    require(numOfSlice >= 0, s"excepted numOfSlice >= 0," +
+    Log4Error.invalidInputError(numOfSlice >= 0, s"excepted numOfSlice >= 0," +
       s" but got $numOfSlice")
     this.numSlice = numOfSlice
     this
@@ -1663,7 +1673,8 @@ object InternalDistriOptimizer {
       }).reduce((a, b) => (a._1 ++ b._1, a._2 ++ b._2))
 
       val taskSize = parameters.size / partitionNum
-      require(taskSize != 0, "parameter length should not less than partition number")
+      Log4Error.invalidOperationError(taskSize != 0,
+        "parameter length should not less than partition number")
       val extraSize = parameters.size % partitionNum
 
       (0 until partitionNum).map(pid => {

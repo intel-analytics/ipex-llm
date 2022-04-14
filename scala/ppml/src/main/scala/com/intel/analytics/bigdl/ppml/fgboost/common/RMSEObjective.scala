@@ -17,6 +17,7 @@
 package com.intel.analytics.bigdl.ppml.fgboost.common
 
 import com.intel.analytics.bigdl.ppml.fgboost.common.TreeObjective
+import com.intel.analytics.bigdl.dllib.utils.Log4Error
 
 class RMSEObjective extends TreeObjective {
   def getGradient(predict: Array[Float],
@@ -28,7 +29,8 @@ class RMSEObjective extends TreeObjective {
 
   def getLoss(predict: Array[Float],
               label: Array[Float]): Float = {
-    require(predict.length == label.length)
+    Log4Error.unKnowExceptionError(predict.length == label.length,
+    s"predict length ${predict.length} doesn't match label.length ${label.length}")
     predict.zip(label).map(x => x._1 - x._2).map(math.pow(_, 2) / 2).sum.toFloat / label.length
   }
 }

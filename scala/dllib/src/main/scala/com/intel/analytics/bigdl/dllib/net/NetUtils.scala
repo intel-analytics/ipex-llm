@@ -29,6 +29,7 @@ import com.intel.analytics.bigdl.dllib.utils.serializer._
 import com.intel.analytics.bigdl.dllib.keras.Predictable
 import com.intel.analytics.bigdl.dllib.keras.layers.KerasLayerWrapper
 import com.intel.analytics.bigdl.dllib.keras.layers.utils.KerasUtils
+import com.intel.analytics.bigdl.dllib.utils.Log4Error
 import org.apache.spark.utils.SparkUtils
 import org.json4s._
 import org.json4s.jackson.JsonMethods._
@@ -232,12 +233,14 @@ private[bigdl] case class Meta(inputNames: Array[String],
                              ) {
 
   for (name <- inputNames) {
-    require(name.split(":").length == 2, s"Input names require to be Tensor names, " +
+    Log4Error.invalidInputError(name.split(":").length == 2,
+      s"Input names Log4Error.invalidInputError to be Tensor names, " +
       s"but <${name}> looks like a operation name, please try <${name}:0> instead.")
   }
 
   for (name <- outputNames) {
-    require(name.split(":").length == 2, s"Output names require to be Tensor names, " +
+    Log4Error.invalidInputError(name.split(":").length == 2,
+      s"Output names Log4Error.invalidInputError to be Tensor names, " +
       s"but <${name}> looks like a operation name, please try <${name}:0> instead.")
   }
 
@@ -292,7 +295,7 @@ trait NetUtils[T, D <: Module[T] with NetUtils[T, D]] {
       override def hasNext: Boolean = stack.nonEmpty
 
       override def next(): ModuleNode[T] = {
-        require(hasNext, "No more elements in the graph")
+        Log4Error.invalidInputError(hasNext, "No more elements in the graph")
         val node = stack.pop()
         visited.add(node)
         val nextNodes = node.prevNodes

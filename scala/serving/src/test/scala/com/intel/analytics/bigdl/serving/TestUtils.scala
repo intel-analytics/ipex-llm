@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.serving
+package com.intel.analytics.bigdl.serving.utils
 
 object TestUtils {
   /**

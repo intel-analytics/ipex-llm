@@ -15,9 +15,14 @@
 #
 
 import tensorflow as tf
+from bigdl.nano.deps.ray.ray_api import create_ray_multiprocessing_backend
+from bigdl.nano.deps.horovod.horovod_api import create_horovod_multiprocessing_backend
+from bigdl.nano.deps.horovod.horovod_api import distributed_train_keras_horovod
 
 
 class TrainingUtils:
+    """A mixedin class for nano keras Sequential and Model, adding more functions."""
+
     def fit(self,
             x=None,
             y=None,
@@ -40,7 +45,20 @@ class TrainingUtils:
             use_multiprocessing=False,
             nprocs=None,
             backend="multiprocessing"):
+        """
+        Override tf.keras.Model.fit to add more parameters.
 
+        All arguments that already exists in tf.keras.Model.fit has the same sementics with
+        tf.keras.Model.fit.
+
+        Additional parameters:
+        :param nprocs: when nprocs is not None, it specifies how many sub-processes to launch to
+                       run pseudo-distributed training; when nprocs is None, training will run
+                       in the current process.
+        :param backend: when nprocs is not None, it specifies which backend to use when launching
+                       sub-processes to run psedu-distributed training; when nprocs is None, this
+                       parameter takes no effect.
+        """
         fit_kwargs = dict(
             x=x,
             y=y,
@@ -71,13 +89,11 @@ class TrainingUtils:
             assert isinstance(x, (tf.compat.v1.data.Dataset, tf.data.Dataset)), msg
 
             if backend == "horovod":
-                from bigdl.nano.common.multiprocessing.multiprocs_backend import HorovodBackend
-                _backend = HorovodBackend()
-                from bigdl.nano.tf.keras.distributed_utils_horovod import distributed_train_keras
-                history = distributed_train_keras(_backend,
-                                                  model=self,
-                                                  nprocs=nprocs,
-                                                  fit_kwargs=fit_kwargs)
+                _backend = create_horovod_multiprocessing_backend()
+                history = distributed_train_keras_horovod(_backend,
+                                                          model=self,
+                                                          nprocs=nprocs,
+                                                          fit_kwargs=fit_kwargs)
                 return history
 
             else:
@@ -87,8 +103,7 @@ class TrainingUtils:
                         import MultiprocessingBackend
                     _backend = MultiprocessingBackend()
                 elif backend == "ray":
-                    from bigdl.nano.common.multiprocessing.ray_backend import RayBackend
-                    _backend = RayBackend()
+                    _backend = create_ray_multiprocessing_backend()
                 else:
                     raise NotImplementedError("Backend {} is not implemented.".format(backend))
                 from bigdl.nano.tf.keras.distributed_utils import distributed_train_keras

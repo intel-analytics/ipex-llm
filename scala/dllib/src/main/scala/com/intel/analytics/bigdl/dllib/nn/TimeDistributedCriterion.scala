@@ -19,7 +19,7 @@ package com.intel.analytics.bigdl.dllib.nn
 import com.intel.analytics.bigdl.dllib.nn.abstractnn.TensorCriterion
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.dllib.utils.Engine
+import com.intel.analytics.bigdl.dllib.utils.{Engine, Log4Error}
 
 import scala.collection.mutable.ArrayBuffer
 import scala.concurrent.Future
@@ -73,7 +73,7 @@ class TimeDistributedCriterion[T : ClassTag](
      * target.size = [B, T] => fTarget.size = [B]
      * If sizeAverage is true, the output is averaged through time dim
      */
-    require(input.size(dimension) == target.size(dimension),
+    Log4Error.invalidInputError(input.size(dimension) == target.size(dimension),
       "target should have as many elements as input, " +
         s"input ${input.size(dimension)}, target ${target.size(dimension)}")
 
@@ -112,7 +112,7 @@ class TimeDistributedCriterion[T : ClassTag](
      * Take each time slice of input and target, and calculate gradInput of each slice
      * If sizeAverage is true, the gradInput is also averaged through dimension
      */
-    require(input.size(dimension) == target.size(dimension),
+    Log4Error.invalidInputError(input.size(dimension) == target.size(dimension),
       s"target should have as many elements as input, " +
         s"input ${input.size(dimension)}, target ${target.size(dimension)}")
     gradInput.resizeAs(input).zero()

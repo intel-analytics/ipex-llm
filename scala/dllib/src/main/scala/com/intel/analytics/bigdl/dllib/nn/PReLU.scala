@@ -15,11 +15,10 @@
  */
 package com.intel.analytics.bigdl.dllib.nn
 
-import com.intel.analytics.bigdl.dllib.nn.abstractnn.{Initializable, TensorModule, IdentityOutputShape}
+import com.intel.analytics.bigdl.dllib.nn.abstractnn.{IdentityOutputShape, Initializable, TensorModule}
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.dllib.tensor.{DenseTensorApply, Tensor, TensorFunc4, TensorFunc6}
-import com.intel.analytics.bigdl.dllib.utils.{T, Table}
-import com.intel.analytics.bigdl.dllib.utils.{Engine, OptimizerV1, OptimizerV2}
+import com.intel.analytics.bigdl.dllib.utils._
 
 import scala.concurrent.Future
 import scala.reflect.ClassTag
@@ -67,7 +66,7 @@ class PReLU[T: ClassTag](
   @transient private var results: Array[Future[Unit]] = null
 
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
-    require(input.isContiguous(), "input must be contiguous")
+    Log4Error.invalidInputError(input.isContiguous(), "input must be contiguous")
     output.resizeAs(input)
 
     if (nOutputPlane == 0) {
@@ -84,8 +83,9 @@ class PReLU[T: ClassTag](
       }
       DenseTensorApply.apply2[T](output, input, func)
     } else {
-      require(input.nDimension() <= 4, s"${input.nDimension()}D input not supported")
-      require(input.size((input.nDimension() + 1) % 2 + 1) == nOutputPlane,
+      Log4Error.invalidInputError(input.nDimension() <= 4,
+        s"${input.nDimension()}D input not supported, only support dim <= 4")
+      Log4Error.invalidInputError(input.size((input.nDimension() + 1) % 2 + 1) == nOutputPlane,
         "wrong number of input planes")
 
       val (bs, ks) = input.nDimension() match {
@@ -136,9 +136,9 @@ class PReLU[T: ClassTag](
   }
 
   override def updateGradInput(input: Tensor[T], gradOutput: Tensor[T]): Tensor[T] = {
-    require(input.isContiguous(), "input must be contiguous")
-    require(gradOutput.isContiguous(), "gradOuput must be contiguous")
-    require(input.nElement() == gradOutput.nElement(),
+    Log4Error.invalidInputError(input.isContiguous(), "input must be contiguous")
+    Log4Error.invalidInputError(gradOutput.isContiguous(), "gradOuput must be contiguous")
+    Log4Error.invalidInputError(input.nElement() == gradOutput.nElement(),
       "input and gradoutput size should be equal" +
       s"input ${input.nElement()}, gradOutput ${gradOutput.nElement()}")
     gradInput.resizeAs(input)
@@ -158,8 +158,9 @@ class PReLU[T: ClassTag](
       }
       DenseTensorApply.apply3[T](gradInput, gradOutput, input, func)
     } else {
-      require(input.nDimension() <= 4, s"${input.nDimension()}D input not supported")
-      require(input.size((input.nDimension() + 1) % 2 + 1) == nOutputPlane,
+      Log4Error.invalidInputError(input.nDimension() <= 4,
+        s"${input.nDimension()}D input not supported")
+      Log4Error.invalidInputError(input.size((input.nDimension() + 1) % 2 + 1) == nOutputPlane,
         "wrong number of input planes")
 
       val (bs, ks) = input.nDimension() match {
@@ -213,9 +214,12 @@ class PReLU[T: ClassTag](
   }
 
   override def accGradParameters(input: Tensor[T], gradOutput: Tensor[T]): Unit = {
-    require(input.isContiguous(), "input must be contiguous")
-    require(gradOutput.isContiguous(), "gradOuput must be contiguous")
-    require(input.nElement() == gradOutput.nElement())
+    Log4Error.invalidInputError(input.isContiguous(), "input must be contiguous")
+    Log4Error.invalidInputError(gradOutput.isContiguous(),
+      "gradOuput must be contiguous")
+    Log4Error.invalidInputError(input.nElement() == gradOutput.nElement(),
+      "input and gradOutput should" +
+      " has same number of element")
 
     if (scaleW == 0) {
       return
@@ -234,8 +238,9 @@ class PReLU[T: ClassTag](
       DenseTensorApply.apply2[T](input, gradOutput, func)
       gradWeight.add(ev.times(ev.fromType[Double](scaleW), sum))
     } else {
-      require(input.nDimension() <= 4, s"${input.nDimension()}D input not supported")
-      require(input.size((input.nDimension() + 1) % 2 + 1) == nOutputPlane,
+      Log4Error.invalidInputError(input.nDimension() <= 4,
+        s"${input.nDimension()}D input not supported")
+      Log4Error.invalidInputError(input.size((input.nDimension() + 1) % 2 + 1) == nOutputPlane,
         "wrong number of input planes")
       val (bs, ks) = input.nDimension() match {
         case 1 => (1, 1)

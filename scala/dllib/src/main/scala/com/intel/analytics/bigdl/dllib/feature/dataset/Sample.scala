@@ -19,6 +19,7 @@ package com.intel.analytics.bigdl.dllib.feature.dataset
 
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.dllib.tensor.{DenseType, SparseType, Storage, Tensor}
+import com.intel.analytics.bigdl.dllib.utils.Log4Error
 import org.apache.commons.lang3.SerializationUtils
 import org.apache.zookeeper.KeeperException.UnimplementedException
 
@@ -139,13 +140,13 @@ class ArraySample[T: ClassTag] private[bigdl](
       private val data: Array[T],
       private val featureSize: Array[Array[Int]],
       private val labelSize: Array[Array[Int]]) extends Sample[T] {
-  require(data != null, "Sample: Data couldn't be empty")
-  require(featureSize != null, "Sample: Feature couldn't be empty")
+  Log4Error.invalidInputError(data != null, "Sample: Data couldn't be empty")
+  Log4Error.invalidInputError(featureSize != null, "Sample: Feature size couldn't be empty")
 
   override def getData(): Array[T] = data
 
   override def featureLength(index: Int): Int = {
-    require(null != featureSize, "featureSize is empty")
+    Log4Error.invalidInputError(null != featureSize, "featureSize is empty")
     featureSize(index)(0)
   }
 
@@ -162,12 +163,12 @@ class ArraySample[T: ClassTag] private[bigdl](
   }
 
   override def getLabelSize(): Array[Array[Int]] = {
-    require(null != labelSize, "Sample doesn't have label")
+    Log4Error.invalidInputError(null != labelSize, "Sample doesn't have label")
     labelSize
   }
 
   override def numFeature(): Int = {
-    require(null != featureSize, "featureSize is empty")
+    Log4Error.invalidInputError(null != featureSize, "featureSize is empty")
     featureSize.length
   }
 
@@ -180,20 +181,20 @@ class ArraySample[T: ClassTag] private[bigdl](
   }
 
   override def feature()(implicit ev: TensorNumeric[T]): Tensor[T] = {
-    require(this.numFeature == 1, "Only one Sample required in total" +
+      Log4Error.invalidOperationError(this.numFeature == 1, "Only one Sample required in total" +
       s"got ${featureSize.length} feature Sample, please use feature(index) instead")
     feature(0)
   }
 
   override def feature(index: Int)(implicit ev: TensorNumeric[T]): Tensor[T] = {
-    require(this.numFeature > index, "feature index out of range")
+    Log4Error.invalidOperationError(this.numFeature > index, "feature index out of range")
     val featureOffSet = 1 + getFeatureSize().zipWithIndex.
       filter(_._2 < index).map(_._1.product).sum
     Tensor[T](Storage(data), featureOffSet, getFeatureSize()(index))
   }
 
   override def label(index: Int)(implicit ev: TensorNumeric[T]): Tensor[T] = {
-    require(this.numFeature > index, "label index out of range")
+    Log4Error.invalidOperationError(this.numFeature > index, "label index out of range")
     if (this.numLabel > index) {
       val labelOffSet = 1 + getFeatureSize().map(_.product).sum + getLabelSize().zipWithIndex
         .filter(_._2 < index).map(_._1.product).sum
@@ -204,8 +205,10 @@ class ArraySample[T: ClassTag] private[bigdl](
   }
 
   override def label()(implicit ev: TensorNumeric[T]): Tensor[T] = {
-    require(this.numLabel <= 1, "Only one Sample required in total " +
-      s"got ${labelSize.length} label Sample, please use label(index) instead")
+    if (this.numLabel > 1) {
+      Log4Error.invalidOperationError(false, "Only one Sample required in total " +
+        s"got ${labelSize.length} label Sample, please use label(index) instead")
+    }
     label(0)
   }
 
@@ -215,8 +218,8 @@ class ArraySample[T: ClassTag] private[bigdl](
            labelData: Array[T],
            featureSize: Array[Int],
            labelSize: Array[Int])(implicit ev: TensorNumeric[T]): Sample[T] = {
-    require(featureSize.sameElements(this.featureSize(0)) &&
-      labelSize.sameElements(this.labelSize(0)), "size not match")
+    Log4Error.invalidOperationError(featureSize.sameElements(this.featureSize(0)) &&
+      labelSize.sameElements(this.labelSize(0)), "feature size not match label size")
 
     ev.arraycopy(featureData, 0, data, 0, featureData.length)
     ev.arraycopy(labelData, 0, data, featureData.length, labelData.length)
@@ -251,7 +254,8 @@ object ArraySample {
   private def typeCheck[T: ClassTag](tensor: Tensor[T]): Unit = {
     tensor.getTensorType match {
       case DenseType =>
-        require(tensor.isContiguous(), s"tensor in ArraySample should be contiguous," +
+        Log4Error.invalidInputError(tensor.isContiguous(),
+          s"tensor in ArraySample should be contiguous," +
           s" Please check your input.")
       case _ =>
         throw new IllegalArgumentException(s"ArraySample doesn't support ${tensor.getTensorType}")
@@ -341,7 +345,7 @@ object ArraySample {
     var i = 0
     while (i < tensors.length) {
       val tensor = tensors(i)
-      require(tensor.isContiguous(), s"${i}-th tensor is not contiguous")
+      Log4Error.invalidInputError(tensor.isContiguous(), s"${i}-th tensor is not contiguous")
       ev.arraycopy(tensor.storage().array(), tensor.storageOffset() - 1,
         data, offset, tensor.nElement())
       offset += tensor.nElement()
@@ -478,22 +482,23 @@ class TensorSample[T: ClassTag] private[bigdl] (
   }
 
   override def feature()(implicit ev: TensorNumeric[T]): Tensor[T] = {
-    require(this.numFeature == 1, "only sample with one feature supported")
+    Log4Error.invalidOperationError(this.numFeature == 1, "only sample with one feature supported")
     this.feature(0)
   }
 
   override def feature(index: Int)(implicit ev: TensorNumeric[T]): Tensor[T] = {
-    require(index < this.numFeature, "Index out of range")
+    Log4Error.invalidOperationError(index < this.numFeature, "Index out of range")
     this.features(index)
   }
 
   override def label()(implicit ev: TensorNumeric[T]): Tensor[T] = {
-    require(this.numLabel <= 1, "only sample with at most one label supported")
+    Log4Error.invalidOperationError(this.numLabel <= 1,
+      "only sample with at most one label supported")
     if (this.numLabel == 1) this.label(0) else null
   }
 
   override def label(index: Int)(implicit ev: TensorNumeric[T]): Tensor[T] = {
-    require(index < this.numFeature, "Index out of range")
+    Log4Error.invalidOperationError(index < this.numFeature, "Index out of range")
     if (index < this.numLabel) this.labels(index) else null
   }
 
@@ -503,8 +508,8 @@ object TensorSample {
   private def typeCheck[T: ClassTag](tensor: Tensor[T]): Unit = {
     tensor.getTensorType match {
       case DenseType =>
-        require(tensor.isContiguous(), s"tensor in TensorSample should be contiguous," +
-          s" Please check your input.")
+        Log4Error.invalidInputError(tensor.isContiguous(),
+          s"tensor in TensorSample should be contiguous. Please check your input.")
       case SparseType =>
       case _ =>
         throw new IllegalArgumentException(s"TensorSample doesn't support ${tensor.getTensorType}")

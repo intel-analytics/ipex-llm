@@ -213,7 +213,7 @@ class ThreadPoolSpec extends FlatSpec with Matchers {
 //      val result = tensor.pow(floatOne)
 //
 //      for (i <- 0 to result.storage().array().length -1) {
-//        assert(result.storage().array()(i) != 0.0F)
+//        TestUtils.conditionFailTest(result.storage().array()(i) != 0.0F)
 //      }
 //    }))
 //

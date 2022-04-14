@@ -20,8 +20,7 @@ import com.intel.analytics.bigdl.dllib.nn.abstractnn.AbstractModule
 import com.intel.analytics.bigdl.dllib.tensor._
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.{NumericWildcard, TensorNumeric}
 import com.intel.analytics.bigdl.dllib.utils.tf.TFTensorNumeric.NumericByteString
-import com.intel.analytics.bigdl.dllib.utils.{T, Table}
-import com.intel.analytics.bigdl.dllib.utils.{Engine, OptimizerV1, OptimizerV2}
+import com.intel.analytics.bigdl.dllib.utils._
 
 import scala.concurrent.Future
 import scala.reflect.ClassTag
@@ -60,7 +59,8 @@ class JoinTable[T: ClassTag] (
     } else if (nInputDims > 0 && firstInput.dim() == (nInputDims + 1)) {
       nDim += 1
     }
-    require(firstInput.dim() >= dimension, "dimension exceeds input dimensions" +
+    Log4Error.invalidInputError(firstInput.dim() >= dimension,
+      "dimension exceeds input dimensions" +
       s" input dimension ${firstInput.dim()}, dimension ${dimension}")
     nDim
   }
@@ -104,8 +104,10 @@ class JoinTable[T: ClassTag] (
           while (f <= target.size(1)) {
             val curFrame = target.select(1, f)
             val outputFrame = currentOutput.select(1, f)
-            require(curFrame.isContiguous())
-            require(outputFrame.isContiguous())
+            Log4Error.invalidOperationError(curFrame.isContiguous(),
+              "curFrame needs to be contiguous")
+            Log4Error.invalidOperationError(outputFrame.isContiguous(),
+              "outputFrame needs to be contiguous")
             curFrame.copy(outputFrame)
             f += 1
           }
@@ -145,8 +147,10 @@ class JoinTable[T: ClassTag] (
             val curFrame = gradInput[Tensor[_]](_i + 1).select(1, b)
               .asInstanceOf[Tensor[NumericWildcard]]
             val narrowFrame = narrowedTensor.select(1, b)
-            require(curFrame.isContiguous())
-            require(narrowFrame.isContiguous())
+            Log4Error.invalidOperationError(curFrame.isContiguous(),
+              "expect curFrame be contiguous")
+            Log4Error.invalidOperationError(narrowFrame.isContiguous(),
+              "expect narrowFrame be contiguous")
             curFrame.copy(narrowFrame)
             b += 1
           }

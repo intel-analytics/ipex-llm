@@ -20,6 +20,7 @@ import com.intel.analytics.bigdl.dllib.nn.abstractnn.Activity
 import com.intel.analytics.bigdl.dllib.optim.{AccuracyResult, Top1Accuracy, ValidationResult, Top5Accuracy => BigDLTop5Accuracy}
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.dllib.utils.Log4Error
 
 import scala.reflect.ClassTag
 
@@ -82,8 +83,9 @@ class CategoricalAccuracy[T: ClassTag]()(implicit ev: TensorNumeric[T]) extends
     val _target = target.toTensor[T]
     val _output = output.toTensor[T]
 
-    require(_target.dim() == 2, "Target should have 2 dims with one-hot encoding")
-    require(_target.size().deep == _output.size().deep,
+    Log4Error.invalidInputError(_target.dim() == 2,
+      "Target should have 2 dims with one-hot encoding")
+    Log4Error.invalidInputError(_target.size().deep == _output.size().deep,
       s"${_target.size()} == ${_output.size()}")
 
     val bigdlTarget = if (_target.dim() == 2) {

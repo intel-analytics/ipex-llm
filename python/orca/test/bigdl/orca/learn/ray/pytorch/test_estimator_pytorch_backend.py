@@ -166,7 +166,7 @@ def get_estimator(workers_per_node=1, model_fn=get_model, sync_stats=False,
                                      metrics=Accuracy(),
                                      config={"lr": 1e-2},
                                      workers_per_node=workers_per_node,
-                                     backend="torch_distributed",
+                                     backend="ray",
                                      sync_stats=sync_stats,
                                      log_level=log_level)
     return estimator
@@ -448,7 +448,7 @@ class TestPyTorchEstimator(TestCase):
                                          metrics=Accuracy(),
                                          config={},
                                          workers_per_node=2,
-                                         backend="torch_distributed",
+                                         backend="ray",
                                          sync_stats=False)
 
         stats = estimator.fit(df, batch_size=4, epochs=2,

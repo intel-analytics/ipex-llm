@@ -18,6 +18,7 @@ package com.intel.analytics.bigdl.dllib.nn
 import com.intel.analytics.bigdl.dllib.nn.abstractnn.TensorCriterion
 import com.intel.analytics.bigdl.dllib.tensor._
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.dllib.utils.Log4Error
 
 import scala.reflect.ClassTag
 
@@ -44,7 +45,8 @@ class SoftMarginCriterion[@specialized(Float, Double) T: ClassTag](var sizeAvera
 
   // TODO: replace apply for performance optimization
   override def updateOutput(input: Tensor[T], target: Tensor[T]): T = {
-    require(input.isSameSizeAs(target), "The input should have the same size as target" +
+    Log4Error.invalidInputError(input.isSameSizeAs(target),
+      "The input should have the same size as target" +
       s"input size ${input.nElement()}, target size ${target.nElement()}")
     var sum = ev.zero
     val func2 = new TensorFunc4[T] {
@@ -65,7 +67,8 @@ class SoftMarginCriterion[@specialized(Float, Double) T: ClassTag](var sizeAvera
 
   // TODO: replace apply for performance optimization
   override def updateGradInput(input: Tensor[T], target: Tensor[T]): Tensor[T] = {
-    require(input.isSameSizeAs(target), "The input should have the same size as target" +
+    Log4Error.invalidInputError(input.isSameSizeAs(target),
+      "The input should have the same size as target" +
       s"input size ${input.nElement()}, target size ${target.nElement()}")
     val norm = if (sizeAverage) {
       ev.divide(ev.one, ev.fromType[Int](input.nElement()))

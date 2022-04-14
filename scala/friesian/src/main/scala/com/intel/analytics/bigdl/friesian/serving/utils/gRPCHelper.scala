@@ -22,6 +22,7 @@ import com.intel.analytics.bigdl.orca.inference.InferenceModel
 import java.nio.file.Files
 import scala.beans.BeanProperty
 import org.apache.logging.log4j.{LogManager, Logger}
+import com.intel.analytics.bigdl.dllib.utils.Log4Error
 
 class gRPCHelper extends Serializable {
   // BeanProperty store attributes read from config file
@@ -116,10 +117,10 @@ class gRPCHelper extends Serializable {
       redisClusterItemSlotType
     }
 
-    assert(redisType != null, "redisType should not be null")
+    Log4Error.unKnowExceptionError(redisType != null, "redisType should not be null")
     redisType = redisType.toLowerCase.trim
     if (redisType == "sentinel") {
-      assert(redisSentinelMasterName != null,
+      Log4Error.unKnowExceptionError(redisSentinelMasterName != null,
         "redisSentinelMasterName should not be null when redisType=sentinel")
       redisTypeEnum = RedisType.SENTINEL
     } else if (redisType == "cluster") {

@@ -26,6 +26,7 @@ from bigdl.dllib.utils.utils import get_executor_conda_zoo_classpath
 from bigdl.dllib.utils.utils import get_zoo_bigdl_classpath_on_driver
 from bigdl.dllib.utils.utils import get_bigdl_class_version
 from bigdl.dllib.utils.engine import get_bigdl_jars
+from bigdl.dllib.utils.log4Error import *
 
 
 class SparkRunner:
@@ -87,8 +88,8 @@ class SparkRunner:
         os.environ["PYSPARK_PYTHON"] = "{}/bin/python".format(executor_python_env)
 
         pack_env = False
-        assert penv_archive or conda_name, \
-            "You should either specify penv_archive or conda_name explicitly"
+        invalidInputError(penv_archive or conda_name,
+                          "You should either specify penv_archive or conda_name explicitly")
         try:
 
             if not penv_archive:
@@ -158,8 +159,8 @@ class SparkRunner:
         os.environ["HADOOP_USER_NAME"] = hadoop_user_name
 
         pack_env = False
-        assert penv_archive or conda_name, \
-            "You should either specify penv_archive or conda_name explicitly"
+        invalidInputError(penv_archive or conda_name,
+                          "You should either specify penv_archive or conda_name explicitly")
         return_value = 1
         try:
 
@@ -278,9 +279,9 @@ class SparkRunner:
             if status != 0:
                 raise RuntimeError("starting worker failed")
         else:  # A Spark standalone cluster has already been started by the user.
-            assert master.startswith("spark://"), \
-                "Please input a valid master address for your Spark standalone cluster: " \
-                "spark://master:port"
+            invalidInputError(master.startswith("spark://"),
+                              "Please input a valid master address for your Spark"
+                              " standalone cluster: spark://master:port")
 
         # Start pyspark-shell
         submit_args = "--master " + master
@@ -339,8 +340,8 @@ class SparkRunner:
         executor_python_env = "python_env"
         os.environ["PYSPARK_PYTHON"] = "{}/bin/python".format(executor_python_env)
         pack_env = False
-        assert penv_archive or conda_name, \
-            "You should either specify penv_archive or conda_name explicitly"
+        invalidInputError(penv_archive or conda_name,
+                          "You should either specify penv_archive or conda_name explicitly")
         try:
 
             if not penv_archive:
@@ -404,8 +405,8 @@ class SparkRunner:
         print("Initializing SparkContext for k8s-cluster mode")
         executor_python_env = "python_env"
 
-        assert penv_archive, \
-            "You should specify penv_archive explicitly for k8s cluster mode"
+        invalidInputError(penv_archive,
+                          "You should specify penv_archive explicitly for k8s cluster mode")
 
         archive = "{}#{}".format(penv_archive, executor_python_env)
 

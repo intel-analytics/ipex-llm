@@ -20,6 +20,7 @@
 from bigdl.dllib.utils.common import *
 from bigdl.dllib.utils.file_utils import callZooFunc
 from bigdl.dllib.utils.utils import set_python_home
+from bigdl.dllib.utils.log4Error import *
 import warnings
 import multiprocessing
 import os
@@ -443,7 +444,8 @@ class ZooContextMeta(type):
                   " You need to set log_output before initializing the context" \
                   " (e.g., before calling init_orca_context, init_nncontext, etc.)"
             warnings.warn(msg)
-        assert isinstance(value, bool), "log_output should either be True or False"
+        invalidInputError(isinstance(value, bool),
+                          "log_output should either be True or False")
         cls._log_output = value
 
     @property
@@ -457,7 +459,8 @@ class ZooContextMeta(type):
 
     @barrier_mode.setter
     def barrier_mode(cls, value):
-        assert isinstance(value, bool), "barrier_mode should either be True or False"
+        invalidInputError(isinstance(value, bool),
+                          "barrier_mode should either be True or False")
         cls._barrier_mode = value
 
 
@@ -550,9 +553,10 @@ def init_nncontext(conf=None, cluster_mode="spark-submit", spark_log_level="WARN
     elif cluster_mode in ("yarn-client", "yarn-cluster"):  # yarn-cluster or yarn-client
         hadoop_conf = os.environ.get("HADOOP_CONF_DIR")
         if not hadoop_conf:
-            assert "hadoop_conf" in kwargs, \
-                "Directory path to hadoop conf not found for yarn-client mode. Please either " \
-                "specify argument hadoop_conf or set the environment variable HADOOP_CONF_DIR"
+            invalidInputError("hadoop_conf" in kwargs,
+                              "Directory path to hadoop conf not found for yarn-client"
+                              " mode. Please either specify argument hadoop_conf or"
+                              "set the environment variable HADOOP_CONF_DIR")
             hadoop_conf = kwargs["hadoop_conf"]
         from bigdl.dllib.utils.utils import detect_conda_env_name
 
@@ -576,8 +580,11 @@ def init_nncontext(conf=None, cluster_mode="spark-submit", spark_log_level="WARN
                                             executor_memory=memory,
                                             conf=spark_args)
     elif cluster_mode.startswith("k8s"):  # k8s or k8s-client
-        assert "master" in kwargs, "Please specify master for k8s mode"
-        assert "container_image" in kwargs, "Please specify container_image for k8s mode"
+        invalidInputError("master" in kwargs,
+                          "master is not set in k8s mode", "Please specify master for k8s mode")
+        invalidInputError("container_image" in kwargs,
+                          "container_image is not set in k8s mode",
+                          "Please specify container_image for k8s mode")
         for key in ["driver_cores", "driver_memory", "extra_executor_memory_for_ray",
                     "extra_python_lib", "penv_archive", "jars", "python_location"]:
             if key in kwargs:
@@ -639,28 +646,28 @@ def init_internal_nncontext(conf=None, spark_log_level="WARN", redirect_spark_lo
     # The following code copied and modified from
     # https://github.com/Valassis-Digital-Media/spylon-kernel/blob/master/
     # spylon_kernel/scala_interpreter.py
-    if ZooContext.log_output and not has_activate_sc:
-        import subprocess
-        import pyspark.java_gateway
-        spark_jvm_proc = None
+    # if ZooContext.log_output and not has_activate_sc:
+    import subprocess
+    import pyspark.java_gateway
+    spark_jvm_proc = None
 
-        def Popen(*args, **kwargs):
-            """Wraps subprocess.Popen to force stdout and stderr from the child process
-            to pipe to this process without buffering.
-            """
-            nonlocal spark_jvm_proc
-            # Override these in kwargs to avoid duplicate value errors
-            # Set streams to unbuffered so that we read whatever bytes are available
-            # when ready, https://docs.python.org/3.6/library/subprocess.html#popen-constructor
-            kwargs['bufsize'] = 0
-            # Capture everything from stdout for display in the notebook
-            kwargs['stdout'] = subprocess.PIPE
-            # Optionally capture stderr, otherwise it'll go to the kernel log
-            kwargs['stderr'] = subprocess.PIPE
-            spark_jvm_proc = subprocess.Popen(*args, **kwargs)
-            return spark_jvm_proc
+    def Popen(*args, **kwargs):
+        """Wraps subprocess.Popen to force stdout and stderr from the child process
+        to pipe to this process without buffering.
+        """
+        nonlocal spark_jvm_proc
+        # Override these in kwargs to avoid duplicate value errors
+        # Set streams to unbuffered so that we read whatever bytes are available
+        # when ready, https://docs.python.org/3.6/library/subprocess.html#popen-constructor
+        kwargs['bufsize'] = 0
+        # Capture everything from stdout for display in the notebook
+        kwargs['stdout'] = subprocess.PIPE
+        # Optionally capture stderr, otherwise it'll go to the kernel log
+        kwargs['stderr'] = subprocess.PIPE
+        spark_jvm_proc = subprocess.Popen(*args, **kwargs)
+        return spark_jvm_proc
 
-        pyspark.java_gateway.Popen = Popen
+    pyspark.java_gateway.Popen = Popen
 
     if isinstance(conf, six.string_types):
         sc = getOrCreateSparkContext(conf=None, appName=conf)
@@ -831,9 +838,7 @@ def _check_spark_version(sc, report_warn):
         """ % (version_info['spark_version'], sc.version)
     if c_major != r_major:
         if not report_warn:
-            print("***************************Usage Error*****************************")
-            print(error_message)
-            raise RuntimeError(error_message)
+            invalidInputError(False, error_message)
         else:
             warnings.warn(error_message)
     elif not (c_maintenance == r_maintenance and c_feature == r_feature):

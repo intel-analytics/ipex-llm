@@ -20,7 +20,7 @@ import com.intel.analytics.bigdl.dllib.optim.Regularizer
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.dllib.utils.RandomGenerator._
-import com.intel.analytics.bigdl.dllib.utils.{T, Table}
+import com.intel.analytics.bigdl.dllib.utils.{Log4Error, T, Table}
 
 import scala.reflect.ClassTag
 
@@ -49,7 +49,7 @@ class Bilinear[T: ClassTag](
  var bRegularizer: Regularizer[T] = null
 )(implicit ev: TensorNumeric[T]) extends AbstractModule[Table, Tensor[T], T] with Initializable {
 
-  require((inputSize1 > 0) && (inputSize2 > 0) && (outputSize > 0),
+  Log4Error.invalidInputError((inputSize1 > 0) && (inputSize2 > 0) && (outputSize > 0),
     s"Bilinear: inputSize1 and inputSize2 and outputSize should be positive integer numbers," +
       s"but got inputSize1 $inputSize1, inputSize2 $inputSize2, outputSize $outputSize")
 
@@ -76,18 +76,19 @@ class Bilinear[T: ClassTag](
   }
 
   override def updateOutput(input: Table): Tensor[T] = {
-    require(input.length() == 2,
+    Log4Error.invalidInputError(input.length() == 2,
       s"Bilinear: input should be a table containing two data Tensors," +
         s"but got input.length ${input.length()}")
     val res1 = input[Tensor[T]](1)
     val res2 = input[Tensor[T]](2)
 
-    require(res1.nDimension() == 2 && res2.nDimension() == 2 && res1.size(1) == res2.size(1),
+    Log4Error.invalidInputError(res1.nDimension() == 2 && res2.nDimension() == 2
+      && res1.size(1) == res2.size(1),
       "Bilinear: input Tensors should be two-dimensional and" +
         " have the same number of rows, " +
         s"res1[ ${res1.nDimension()}, ${res1.size(1)}]," +
         s" res2[ ${res2.nDimension()}, ${res2.size(1)} ]")
-    require(res1.size(2) == weight.size(2) && res2.size(2) == weight.size(3),
+    Log4Error.invalidInputError(res1.size(2) == weight.size(2) && res2.size(2) == weight.size(3),
       "Bilinear: dimensionality of first input and second input is erroneous," +
         s" first ${res1.size(2)}, " +
         s"second ${res2.size(2)}")
@@ -115,10 +116,10 @@ class Bilinear[T: ClassTag](
     val res1 = input[Tensor[T]](1)
     val res2 = input[Tensor[T]](2)
 
-    require(res1.size(1) == gradOutput.size(1),
+    Log4Error.invalidInputError(res1.size(1) == gradOutput.size(1),
       s"Bilinear: number of rows in gradOutput does not match input, " +
         s"got input rows ${res1.size(1)} and gradOutput rows ${gradOutput.size(1)}")
-    require(gradOutput.size(2) == weight.size(1),
+    Log4Error.invalidInputError(gradOutput.size(2) == weight.size(1),
       s"Bilinear: number of columns in gradOutput does not output size of layer, " +
         s"got gradOutput columns ${gradOutput.size(2)} and output columns ${weight.size(1)}")
 

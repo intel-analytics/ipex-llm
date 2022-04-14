@@ -24,6 +24,7 @@ import java.util.{List => JList}
 import com.intel.analytics.bigdl.dllib.nn.abstractnn.Activity
 
 import scala.collection.JavaConverters._
+import com.intel.analytics.bigdl.dllib.utils.Log4Error
 
 class InferenceModel(private var autoScalingEnabled: Boolean = true,
                      private var concurrentNum: Int = 20,
@@ -33,7 +34,7 @@ class InferenceModel(private var autoScalingEnabled: Boolean = true,
   extends InferenceSupportive with EncryptSupportive with Serializable {
 
   var timeMap = Map[Int, util.Queue[Long]]()
-  require(concurrentNum > 0, "concurrentNum should > 0")
+  Log4Error.invalidOperationError(concurrentNum > 0, "concurrentNum should > 0")
   /**
    * default constructor, will create a InferenceModel with auto-scaling enabled.
    *
@@ -353,7 +354,7 @@ class InferenceModel(private var autoScalingEnabled: Boolean = true,
                                     usePerSessionThreads: Boolean): Unit = {
     modelType match {
       case null | "" =>
-        require(modelType != null && modelType != "",
+        Log4Error.invalidOperationError(modelType != null && modelType != "",
           "modelType should be specified as frozenModel")
       case "frozenModel" =>
         InferenceSupportive.logger.info(s"$modelType is supported.")
@@ -374,7 +375,7 @@ class InferenceModel(private var autoScalingEnabled: Boolean = true,
                                     usePerSessionThreads: Boolean): Unit = {
     modelType match {
       case null | "" =>
-        require(modelType != null && modelType != "",
+        Log4Error.invalidOperationError(modelType != null && modelType != "",
           "modelType should be specified")
       case "frozenModel" =>
         InferenceSupportive.logger.info(s"$modelType is supported.")
@@ -400,7 +401,7 @@ class InferenceModel(private var autoScalingEnabled: Boolean = true,
                                     usePerSessionThreads: Boolean): Unit = {
     modelType match {
       case null | "" =>
-        require(modelType != null && modelType != "",
+        Log4Error.invalidOperationError(modelType != null && modelType != "",
           "modelType should be specified")
       case "frozenModel" =>
         InferenceSupportive.logger.info(s"$modelType is supported.")
@@ -526,7 +527,7 @@ class InferenceModel(private var autoScalingEnabled: Boolean = true,
    */
   def doPredict(inputs: JList[JList[JTensor]]): JList[JList[JTensor]] = {
     val batchSize = inputs.size()
-    require(batchSize > 0, "inputs size should > 0")
+    Log4Error.invalidOperationError(batchSize > 0, "inputs size should > 0")
     timing(s"model predict batch size " + batchSize) {
       predict(inputs)
     }
@@ -553,7 +554,7 @@ class InferenceModel(private var autoScalingEnabled: Boolean = true,
       InferenceSupportive.logger.warn("update timer does not exist in map, creating new one.")
       timeMap += (key -> new util.LinkedList[Long]())
     } else {
-      require(timeMap(key).size() <= 1000,
+      Log4Error.invalidOperationError(timeMap(key).size() <= 1000,
         s"timeMap size invalid, currently ${timeMap(key).size()}")
       if (timeMap(key).size() == 1000) {
         timeMap(key).poll()
@@ -652,8 +653,10 @@ class InferenceModel(private var autoScalingEnabled: Boolean = true,
   }
 
   private def offerModelQueue(): Unit = {
-    require(this.originalModel != null, "original model can not be null")
-    require(this.concurrentNum > 0, "supported concurrent number should > 0")
+    Log4Error.invalidOperationError(this.originalModel != null,
+      "original model can not be null")
+    Log4Error.invalidOperationError(this.concurrentNum > 0,
+      "supported concurrent number should > 0")
     autoScalingEnabled match {
       case true =>
       case false =>

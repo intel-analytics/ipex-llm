@@ -19,6 +19,7 @@ import com.intel.analytics.bigdl.mkl._
 import com.intel.analytics.bigdl.dllib.nn.abstractnn.{Activity, DataFormat}
 import com.intel.analytics.bigdl.dllib.nn.mkldnn.Phase.InferencePhase
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
+import com.intel.analytics.bigdl.dllib.utils.Log4Error
 
 class LRN(
   size: Int = 5,
@@ -75,7 +76,8 @@ class LRN(
     val description = MklDnnMemory.LRNBackwardDescInit(AlgKind.LrnAcrossChannels,
       _inputFormats(0).getMemoryDescription(),
       _gradOutputFormats(0).getMemoryDescription(), size, alpha.toFloat, beta.toFloat, k.toFloat)
-    require(fwdPrimDesc != UNDEFINED, "You should call initFwdPrimitives first")
+    Log4Error.invalidInputError(fwdPrimDesc != UNDEFINED,
+      "You should call initFwdPrimitives first")
     val primDesc = MklDnnMemory.PrimitiveDescCreate(description, runtime.engine, fwdPrimDesc)
     _gradInputFormats = Array(MemoryData.operationWant(primDesc, Query.DiffSrcPd))
     updateGradInputPrimitives = Array(MklDnnMemory.PrimitiveCreate2(primDesc,

@@ -24,7 +24,7 @@ import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import scala.concurrent.duration.Duration
 import scala.concurrent.{Await, Future}
 import scala.reflect.ClassTag
-import com.intel.analytics.bigdl.dllib.utils.Engine
+import com.intel.analytics.bigdl.dllib.utils.{Engine, Log4Error}
 import org.apache.hadoop.mapreduce.v2.app.speculate.TaskRuntimeEstimator
 
 /**
@@ -71,7 +71,7 @@ class ClassNLLCriterion[@specialized(Float, Double) T: ClassTag]
   logProbAsInput: Boolean = true, paddingValue: Int = -1)
   (implicit ev: TensorNumeric[T]) extends TensorCriterion[T] {
   private var total_weight = ev.fromType[Int](0)
-  if (weights != null) require(weights.dim() == 1,
+  if (weights != null) Log4Error.invalidInputError(weights.dim() == 1,
     "weights input should be 1-D Tensor" +
     s"weights dim(${weights.dim()})")
 
@@ -87,7 +87,7 @@ class ClassNLLCriterion[@specialized(Float, Double) T: ClassTag]
   sizeAverageStatus = if (sizeAverage) SizeAverageStatus.True else SizeAverageStatus.False
 
   override def updateOutput(input: Tensor[T], target: Tensor[T]): T = {
-    require(input.dim() == 1 || input.dim() == 2,
+    Log4Error.invalidInputError(input.dim() == 1 || input.dim() == 2,
       "ClassNLLCriterion: " +
         ErrorInfo.constrainInputAsVectorOrBatch +
        s"input dim(${input.dim()})")
@@ -98,12 +98,14 @@ class ClassNLLCriterion[@specialized(Float, Double) T: ClassTag]
       } else {
         target
       }
-      require(input.dim() == newTarget.dim(),
+      Log4Error.invalidInputError(input.dim() == newTarget.dim(),
         "ClassNLLCriterion: " + ErrorInfo.constrainInputDimSameAsTarget +
           s" Input dimension is: ${ input.dim() } , target dimension is: ${ newTarget.dim() }")
       val curTarget = ev.toType[Int](newTarget.valueAt(1))
-      assert(curTarget >= 1 && curTarget <= nClasses || curTarget == paddingValue,
-        s"curTarget ${curTarget} is out of range, should be 1 to ${nClasses}")
+      Log4Error.invalidOperationError(curTarget >= 1 && curTarget <= nClasses
+        || curTarget == paddingValue, s"curTarget ${curTarget} is out of range, " +
+        s"should be 1 to ${nClasses}", s"Please make sure the label is 1 based and" +
+        s" the range should be [1, ${nClasses}]")
       total_weight = if (weights != null) weights(Array(curTarget)) else ev.fromType[Int](1)
       output = if (curTarget == paddingValue) ev.zero
       else {
@@ -118,7 +120,7 @@ class ClassNLLCriterion[@specialized(Float, Double) T: ClassTag]
       val batchSize = input.size(1)
       val targetSize = target.size()
       target.squeeze()
-      require(target.dim() == 1,
+      Log4Error.invalidInputError(target.dim() == 1,
         "ClassNLLCriterion: illegal target! Target should be 1D tensor after squeeze," +
           s"but target's size is: ${ target.size() }, please check your data.")
 
@@ -134,8 +136,10 @@ class ClassNLLCriterion[@specialized(Float, Double) T: ClassTag]
         val _i = i
         results(_i - 1) = Engine.model.invoke( () => {
           val curTarget = ev.toType[Int](target.valueAt(_i))
-          assert(curTarget >= 1 && curTarget <= nClasses || curTarget == paddingValue,
-            s"curTarget ${curTarget} is out of range 1 to ${nClasses}")
+          Log4Error.invalidOperationError(curTarget >= 1 && curTarget <= nClasses
+            || curTarget == paddingValue, s"curTarget ${curTarget} is out of range, " +
+            s"should be 1 to ${nClasses}", s"Please make sure the label is 1 based and" +
+            s" the range should be [1, ${nClasses}]")
           if (curTarget == paddingValue) (ev.zero, ev.zero)
           else {
             val curWeight = if (weights != null) weights.valueAt(curTarget) else ev.fromType[Int](1)
@@ -170,16 +174,17 @@ class ClassNLLCriterion[@specialized(Float, Double) T: ClassTag]
   }
 
   override def updateGradInput(input: Tensor[T], target: Tensor[T]): Tensor[T] = {
-    require(input.dim() == 1 || input.dim() == 2,
+    Log4Error.invalidInputError(input.dim() == 1 || input.dim() == 2,
       "ClassNLLCriterion: " +
         ErrorInfo.constrainInputAsVectorOrBatch +
         s"input dim ${input.dim()}")
-    assert(ev.toType[Double](total_weight) > 0.0, "total weight must larger than 0")
+    Log4Error.unKnowExceptionError(ev.toType[Double](total_weight) > 0.0,
+      "total weight must larger than 0")
     gradInput.resizeAs(input)
     gradInput.zero()
 
     if (input.dim() == 1) {
-      require(input.dim() == target.dim(),
+      Log4Error.invalidInputError(input.dim() == target.dim(),
         "ClassNLLCriterion: " + ErrorInfo.constrainInputDimSameAsTarget +
           s" Input dimension is: ${ input.dim() } , target dimension is: ${ target.dim() }")
       val curTarget = ev.toType[Int](target.valueAt(1))

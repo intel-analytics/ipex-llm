@@ -99,7 +99,7 @@ class TestPytorchEstimator(TestCase):
                                         metrics=Accuracy(),
                                         config={"lr": 1e-2},
                                         workers_per_node=2,
-                                        backend="torch_distributed",
+                                        backend="ray",
                                         sync_stats=True)
 
         start_val_stats = estimator.evaluate(val_data_loader, batch_size=32)

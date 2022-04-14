@@ -114,9 +114,9 @@ class AEDetector(AnomalyDetector):
         self.lr = lr
 
     def check_rolled(self, arr):
-            if arr.size == 0:
-                raise ValueError("rolled array is empty, ",
-                                 "please check if roll_len is larger than the total series length")
+        if arr.size == 0:
+            raise ValueError("rolled array is empty, ",
+                             "please check if roll_len is larger than the total series length")
 
     def check_data(self, arr):
         if len(arr.shape) > 1:
@@ -136,7 +136,8 @@ class AEDetector(AnomalyDetector):
             y = roll_arr(y, self.roll_len)
             self.check_rolled(y)
         else:
-            y = y.reshape(-1, 1)
+            y = y.reshape(1, -1)
+            self.check_rolled(y)
         y = scale_arr(y)
 
         if self.backend == "keras":

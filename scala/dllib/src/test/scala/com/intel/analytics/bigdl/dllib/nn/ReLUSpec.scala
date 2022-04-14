@@ -18,6 +18,7 @@ package com.intel.analytics.bigdl.dllib.nn
 
 import org.scalatest.FlatSpec
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
+import com.intel.analytics.bigdl.dllib.utils.TestUtils
 import com.intel.analytics.bigdl.dllib.utils.serializer.ModuleSerializationTest
 
 import scala.math.abs
@@ -68,15 +69,15 @@ class ReLUSpec extends FlatSpec {
     val output = module.forward(input)
     val gradInput = module.backward(input, gradOutput)
     expectedOutput.map(output, (v1, v2) => {
-      assert(abs(v1 - v2) < 1e-6);
+      TestUtils.conditionFailTest(abs(v1 - v2) < 1e-6);
       v1
     })
     expectedGrad.map(gradInput, (v1, v2) => {
-      assert(abs(v1 - v2) < 1e-6);
+      TestUtils.conditionFailTest(abs(v1 - v2) < 1e-6);
       v1
     })
-    assert(input == inputOrg)
-    assert(gradOutput == gradOutputOrg)
+    TestUtils.conditionFailTest(input == inputOrg)
+    TestUtils.conditionFailTest(gradOutput == gradOutputOrg)
 
   }
 
@@ -121,16 +122,16 @@ class ReLUSpec extends FlatSpec {
     val output = module.forward(input)
     val gradInput = module.backward(input, gradOutput)
     expectedOutput.map(output, (v1, v2) => {
-      assert(abs(v1 - v2) < 1e-6);
+      TestUtils.conditionFailTest(abs(v1 - v2) < 1e-6);
       v1
     })
     expectedGrad.map(gradInput, (v1, v2) => {
-      assert(abs(v1 - v2) < 1e-6);
+      TestUtils.conditionFailTest(abs(v1 - v2) < 1e-6);
       v1
     })
     // InPlace test
-    assert(output == input)
-    assert(gradInput == gradOutput)
+    TestUtils.conditionFailTest(output == input)
+    TestUtils.conditionFailTest(gradInput == gradOutput)
   }
 }
 

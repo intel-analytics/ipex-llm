@@ -20,6 +20,7 @@ import com.intel.analytics.bigdl.mkl.{DataType, Memory}
 import com.intel.analytics.bigdl.dllib.nn.abstractnn.Activity
 import com.intel.analytics.bigdl.dllib.nn.mkldnn.Phase.{InferencePhase, TrainingPhase}
 import com.intel.analytics.bigdl.dllib.tensor.{DnnTensor, FloatType, Tensor}
+import com.intel.analytics.bigdl.dllib.utils.Log4Error
 
 import scala.reflect.ClassTag
 
@@ -56,7 +57,7 @@ private[bigdl] class TensorMMap(_size: Array[Int])(implicit owner: MemoryOwner)
   def heapData: HeapData = _heapData
 
   def sync(): Unit = {
-    require(_reorder != null && _native != null,
+    Log4Error.invalidInputError(_reorder != null && _native != null,
       "you should initialize the native relevant resources first")
     _from match {
       case _: HeapData => _reorder.forward(this.dense)
@@ -75,7 +76,8 @@ private[bigdl] class TensorMMap(_size: Array[Int])(implicit owner: MemoryOwner)
    * @param runtime the mkldnn runtime for reorder operation
    */
   def setMemoryData(from: MemoryData, to: MemoryData, runtime: MklDnnRuntime): Unit = {
-    require(_from == null && _to == null, "you only can set once the memory data")
+    Log4Error.invalidInputError(_from == null && _to == null,
+      "you only can set once the memory data")
     _from = from
     _to = to
 

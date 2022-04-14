@@ -18,7 +18,7 @@ package com.intel.analytics.bigdl.dllib.nn.ops
 import com.intel.analytics.bigdl.dllib.nn.abstractnn.Activity
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.dllib.utils.Table
+import com.intel.analytics.bigdl.dllib.utils.{Log4Error, Table}
 
 import scala.reflect.ClassTag
 
@@ -142,7 +142,7 @@ class Pad[T: ClassTag, D: ClassTag](
     val input = inputs[Tensor[D]](1)
     val padding = inputs[Tensor[Int]](2)
 
-    require(padding.size() sameElements Array(input.nDimension(), 2),
+    Log4Error.invalidInputError(padding.size() sameElements Array(input.nDimension(), 2),
       "the padding tensor must be an integer tensor with shape [n, 2]," +
         "where n is the number of dimension of input")
 

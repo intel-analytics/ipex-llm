@@ -20,7 +20,7 @@ import com.intel.analytics.bigdl.dllib.nn.{ErrorInfo, Replicate}
 import com.intel.analytics.bigdl.dllib.nn.abstractnn.AbstractModule
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.dllib.utils.Shape
+import com.intel.analytics.bigdl.dllib.utils.{Log4Error, Shape}
 
 import scala.reflect.ClassTag
 
@@ -41,7 +41,7 @@ class RepeatVector[T: ClassTag](
 
   override def computeOutputShape(inputShape: Shape): Shape = {
     val input = inputShape.toSingle().toArray
-    require(input.length == 2,
+    Log4Error.invalidInputError(input.length == 2,
       s"RepeatVector requires 2D input, but got input dim ${input.length}")
     Shape(input(0), n, input(1))
   }

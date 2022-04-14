@@ -20,7 +20,7 @@ import com.intel.analytics.bigdl.dllib.nn.mkldnn.Equivalent
 import com.intel.analytics.bigdl.dllib.tensor.{Storage, Tensor}
 import com.intel.analytics.bigdl.dllib.utils.RandomGenerator._
 import com.intel.analytics.bigdl.dllib.utils.serializer.ModuleSerializationTest
-import com.intel.analytics.bigdl.dllib.utils.{T, Table}
+import com.intel.analytics.bigdl.dllib.utils.{T, Table, TestUtils}
 import org.scalatest.{FlatSpec, Matchers}
 
 import scala.util.Random
@@ -99,7 +99,7 @@ class RoiAlignSpec extends FlatSpec with Matchers {
     )
 
     for (i <- expectedRes.indices) {
-      assert(Math.abs(res.storage().array()(i) - expectedRes(i)) < 1e-6)
+      TestUtils.conditionFailTest(Math.abs(res.storage().array()(i) - expectedRes(i)) < 1e-6)
     }
   }
 
@@ -176,7 +176,7 @@ class RoiAlignSpec extends FlatSpec with Matchers {
     )
 
     for (i <- expectedRes.indices) {
-      assert(Math.abs(res.storage().array()(i) - expectedRes(i)) < 1e-6)
+      TestUtils.conditionFailTest(Math.abs(res.storage().array()(i) - expectedRes(i)) < 1e-6)
     }
   }
 

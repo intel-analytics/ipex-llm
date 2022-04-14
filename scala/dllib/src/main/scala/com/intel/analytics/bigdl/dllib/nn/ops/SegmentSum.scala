@@ -17,7 +17,7 @@ package com.intel.analytics.bigdl.dllib.nn.ops
 
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.dllib.utils.Table
+import com.intel.analytics.bigdl.dllib.utils.{Log4Error, Table}
 
 import scala.reflect.ClassTag
 
@@ -30,8 +30,8 @@ class SegmentSum[T: ClassTag]()(implicit ev: TensorNumeric[T])
   def updateOutput(inputs: Table): Tensor[T] = {
     val x = inputs[Tensor[T]](1)
     val y = inputs[Tensor[Int]](2) // zero-indices
-    require(y.nDimension() == 1, "segment ids should be 1D tensor")
-    require(y.size(1) == x.size(1), "segment ids should be the same size as" +
+    Log4Error.invalidInputError(y.nDimension() == 1, "segment ids should be 1D tensor")
+    Log4Error.invalidInputError(y.size(1) == x.size(1), "segment ids should be the same size as" +
       s" first dimension of input, excepted ${x.size(1)}, but got ${y.size(1)}")
     val newSize = x.size()
     newSize(0) = y.valueAt(y.nElement()) + 1

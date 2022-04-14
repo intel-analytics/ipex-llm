@@ -22,7 +22,7 @@ import com.intel.analytics.bigdl.dllib.nn.abstractnn.Activity
 import com.intel.analytics.bigdl.dllib.nn.abstractnn.AbstractModule
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.dllib.utils.File
+import com.intel.analytics.bigdl.dllib.utils.{File, Log4Error}
 import com.intel.analytics.bigdl.dllib.utils.caffe.CaffeLoader
 import com.intel.analytics.bigdl.dllib.utils.serializer.ModuleLoader
 import com.intel.analytics.bigdl.dllib.utils.tf.{Session, TensorflowDataFormat, TensorflowLoader}
@@ -119,7 +119,8 @@ object Module {
     var i = 0
     var length = 0
     while (i < parameters.length) {
-      require(parameters(i).isContiguous(), "parameters should be contiguous")
+      Log4Error.invalidInputError(parameters(i).isContiguous(),
+        "parameters should be contiguous")
       length += parameters(i).nElement()
       i += 1
     }
@@ -142,7 +143,7 @@ object Module {
 
   def isCompact[@specialized(Float, Double) T: ClassTag](parameters: Array[Tensor[T]])(
     implicit ev: TensorNumeric[T]): Tensor[T] = {
-    require(parameters.length > 0,
+    Log4Error.invalidInputError(parameters.length > 0,
       "The length of paramters should >= 0" +
       "parameter length" +
         s" ${parameters.length}")

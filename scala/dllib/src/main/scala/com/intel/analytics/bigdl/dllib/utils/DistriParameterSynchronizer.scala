@@ -388,7 +388,8 @@ class BlockManagerParameterSynchronizer[T: ClassTag](val partitionID: Int, val t
     if (syncMeta.counter == 0) {
       return (null, null)
     }
-    require(syncResults.contains(name), "put must be done before get")
+    Log4Error.unKnowExceptionError(syncResults.contains(name),
+      "put must be done before get")
     val res = syncResults.get(name).get.get()
     (syncMeta.weights, res)
   }

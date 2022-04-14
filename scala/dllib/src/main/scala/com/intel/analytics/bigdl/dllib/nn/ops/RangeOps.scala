@@ -18,7 +18,7 @@ package com.intel.analytics.bigdl.dllib.nn.ops
 import com.intel.analytics.bigdl.dllib.nn.abstractnn.Activity
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.dllib.utils.Table
+import com.intel.analytics.bigdl.dllib.utils.{Log4Error, Table}
 
 import scala.reflect.ClassTag
 
@@ -29,7 +29,8 @@ class RangeOps[T: ClassTag, D: ClassTag]()
   output = Tensor[D]()
 
   override def updateOutput(input: Table): Tensor[D] = {
-    require(input.length() == 3, s"require 3 tensors as input, but get ${input.length()}")
+    Log4Error.invalidInputError(input.length() == 3,
+      s"Log4Error.invalidInputError 3 tensors as input, but get ${input.length()}")
     val start = input[Tensor[D]](1).value()
     val limit = input[Tensor[D]](2).value()
     val delta = input[Tensor[D]](3).value()

@@ -19,7 +19,7 @@ package com.intel.analytics.bigdl.dllib.keras.layers
 import com.intel.analytics.bigdl.dllib.nn.{Cell, ConvLSTMPeephole3D}
 import com.intel.analytics.bigdl.dllib.optim.Regularizer
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.dllib.utils.Shape
+import com.intel.analytics.bigdl.dllib.utils.{Log4Error, Shape}
 import com.intel.analytics.bigdl.dllib.keras.Net
 import com.intel.analytics.bigdl.dllib.keras.layers.utils.KerasUtils
 
@@ -67,13 +67,13 @@ class ConvLSTM3D[T: ClassTag](
     var mInputShape: Shape = null)(implicit ev: TensorNumeric[T]) extends Recurrent[T] (
   nbFilter, returnSeq, goBackward, mInputShape) with Net {
 
-  require(borderMode.toLowerCase() == "same" || borderMode.toLowerCase() == "valid",
-    s"ConvLSTM2D currently only supports " +
+  Log4Error.invalidInputError(borderMode.toLowerCase() == "same" ||
+    borderMode.toLowerCase() == "valid", s"ConvLSTM2D currently only supports " +
       s"same and valid, but got padding $borderMode")
 
   override def computeOutputShape(inputShape: Shape): Shape = {
     val input = inputShape.toSingle().toArray
-    require(input.length == 6,
+    Log4Error.invalidInputError(input.length == 6,
       s"ConvLSTM3D requires 6D input, but got input dim ${input.length}")
     val outDim1 = KerasUtils.computeConvOutputLength(input(3), nbKernel, borderMode, subsample)
     val outDim2 = KerasUtils.computeConvOutputLength(input(4), nbKernel, borderMode, subsample)

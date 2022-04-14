@@ -34,7 +34,7 @@ import com.intel.analytics.bigdl.dllib.utils.{T, Table}
 
 import scala.collection.mutable.ArrayBuffer
 import scala.reflect.ClassTag
-
+import com.intel.analytics.bigdl.dllib.utils.Log4Error
 
 trait InferenceSupportive extends EstimateSupportive{
 
@@ -80,9 +80,10 @@ trait InferenceSupportive extends EstimateSupportive{
     val batchShape: Array[Int] = batchTensorSize
     val outputLength = batchTensor.nElement() / batchSize
     val outputShape = batchShape.tail
-    require(batchSize == batchShape.head, "batchSize should be the same, " +
+    Log4Error.unKnowExceptionError(batchSize == batchShape.head,
+      "batchSize should be the same, " +
       "please check if the batchSize is changed by the model")
-    require(outputLength == outputShape.product,
+    Log4Error.unKnowExceptionError(outputLength == outputShape.product,
       "data length should be equal to the product of shape")
     val outputs = new util.ArrayList[JList[JTensor]]()
     if (batchSize == 1) {
@@ -134,7 +135,7 @@ trait InferenceSupportive extends EstimateSupportive{
 
   def transferListOfActivityToActivityOfBatch(inputs: JList[JList[JTensor]], batchSize: Int)
   : Activity = {
-    require(batchSize == inputs.size, "batchSize should be the same")
+    Log4Error.unKnowExceptionError(batchSize == inputs.size, "batchSize should be the same")
     val head = inputs.get(0)
     val headLength = head.size()
     headLength match {
@@ -184,7 +185,7 @@ trait InferenceSupportive extends EstimateSupportive{
       data ++= tensorData
       i += 1
     }
-    require(data.length == shape.reduce(_ * _),
+    Log4Error.unKnowExceptionError(data.length == shape.reduce(_ * _),
       "data length should be equal to the product of shape")
     Tensor[Float](data.toArray, shape.toArray)
   }

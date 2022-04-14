@@ -18,7 +18,7 @@ package com.intel.analytics.bigdl.dllib.keras.layers.internal
 
 import com.intel.analytics.bigdl.dllib.nn.JoinTable
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
-import com.intel.analytics.bigdl.dllib.utils.T
+import com.intel.analytics.bigdl.dllib.utils.{T, TestUtils}
 import com.intel.analytics.bigdl.dllib.keras.serializer.ModuleSerializationTest
 import org.scalatest.{FlatSpec, Matchers}
 
@@ -38,11 +38,11 @@ class InternalSplitTensorpec extends FlatSpec with Matchers {
 
     val g1 = o2[Tensor[Float]](1)
     val g2 = o2[Tensor[Float]](2)
-    assert(g1.almostEqual(l1, 1e-8) == true)
-    assert(g2.almostEqual(l2, 1e-8) == true)
+    TestUtils.conditionFailTest(g1.almostEqual(l1, 1e-8) == true)
+    TestUtils.conditionFailTest(g2.almostEqual(l2, 1e-8) == true)
 
     val gradInput = layer2.backward(output, o2)
-    assert(output.almostEqual(gradInput, 1e-8) == true)
+    TestUtils.conditionFailTest(output.almostEqual(gradInput, 1e-8) == true)
   }
 }
 

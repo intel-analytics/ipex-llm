@@ -19,6 +19,7 @@ import java.util.concurrent.atomic.AtomicInteger
 
 import com.intel.analytics.bigdl.dllib.nn.Graph.ModuleNode
 import com.intel.analytics.bigdl.dllib.nn.tf.{Exit, MergeOps, NextIteration}
+import com.intel.analytics.bigdl.dllib.utils.Log4Error
 
 import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
@@ -51,7 +52,8 @@ class FrameManager[T] extends Serializable {
   def enter(node: ModuleNode[T], frame : Frame[T]): Unit = {
     val name = node.element.getName()
     if (nodeFrame.contains(name)) {
-      require(nodeFrame(name).eq(frame), "node cannot be in two different fames at the same time")
+      Log4Error.invalidInputError(nodeFrame(name).eq(frame),
+        "node cannot be in two different fames at the same time")
     } else {
       nodeFrame(name) = frame
     }
@@ -63,9 +65,11 @@ class FrameManager[T] extends Serializable {
 
   def pend(node: ModuleNode[T], frame : Frame[T]): Unit = {
     val name = node.element.getName()
-    require(node.element.isInstanceOf[NextIteration[_, _]], "you can only pend next iteration node")
+    Log4Error.invalidInputError(node.element.isInstanceOf[NextIteration[_, _]],
+      "you can only pend next iteration node")
     if (nodeFrame.contains(name)) {
-      require(nodeFrame(name).eq(frame), "node cannot be in two different fames at the same time")
+      Log4Error.invalidInputError(nodeFrame(name).eq(frame),
+        "node cannot be in two different fames at the same time")
     } else {
       nodeFrame(name) = frame
     }

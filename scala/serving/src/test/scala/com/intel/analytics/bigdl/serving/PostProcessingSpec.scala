@@ -19,26 +19,27 @@ package com.intel.analytics.bigdl.serving
 import com.intel.analytics.bigdl.dllib.tensor.{Storage, Tensor}
 import com.intel.analytics.bigdl.serving.postprocessing.PostProcessing
 import org.scalatest.{FlatSpec, Matchers}
+import com.intel.analytics.bigdl.serving.utils.AssertUtils
 
 class PostProcessingSpec extends FlatSpec with Matchers {
   "tensor to ndarray string" should "work" in {
     val t1 = Tensor(Array(4.0f, 5, 3, 4), shape = Array(2, 2))
     val ansStr = new PostProcessing(t1).tensorToNdArrayString()
     val truthStr = "[[4.0,5.0],[3.0,4.0]]"
-    assert(ansStr == truthStr)
+    AssertUtils.conditionFailTest(ansStr == truthStr)
   }
 
   "TopN filter" should "work properly" in {
     val t1 = Tensor(Storage(Array(3.0f, 2, 1, 4, 5)))
     val ansString = new PostProcessing(t1).rankTopN(2)
     val truthString = "[[4,5.0][3,4.0]]"
-    assert(ansString == truthString)
+    AssertUtils.conditionFailTest(ansString == truthString)
   }
   "PickTopN filter" should "work properly" in {
     val t1 = Tensor(data = Array(2.0f, 2, 3, 3), shape = Array(2, 2))
     val ansString = new PostProcessing(t1).pickTopN(1)
     val truthString = "[[2.0,2.0]]"
-    assert(ansString == truthString)
+    AssertUtils.conditionFailTest(ansString == truthString)
   }
   "Arrow encode" should "work" in {
     val t1 = Tensor(data = Array(2.0f, 2, 3, 3), shape = Array(2, 2))

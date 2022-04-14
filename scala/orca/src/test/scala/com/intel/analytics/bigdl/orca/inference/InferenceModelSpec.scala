@@ -24,6 +24,7 @@ import com.intel.analytics.bigdl.dllib.common.CheckedObjectInputStream
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
 import scala.reflect.io.Directory
+import com.intel.analytics.bigdl.orca.utils.TestUtils
 
 class TestAbstractInferenceModel(supportedConcurrentNum: Integer = 1)
   extends AbstractInferenceModel(supportedConcurrentNum) {
@@ -123,11 +124,11 @@ class InferenceModelSpec extends FlatSpec with Matchers with BeforeAndAfter
       model.getWeightsBias()(0).storage()
     val weightsForAModel2 = aModel.modelQueue.take().asInstanceOf[FloatModel].
       model.getWeightsBias()(0).storage()
-    assert(weightsForAModel1 == weightsForAModel2)
+    TestUtils.conditionFailTest(weightsForAModel1 == weightsForAModel2)
 
     val weightsForFModel1 = fModels(0).model.getWeightsBias()(0).storage()
     val weightsForFModel2 = fModels(1).model.getWeightsBias()(0).storage()
-    assert(weightsForFModel1 != weightsForFModel2)
+    TestUtils.conditionFailTest(weightsForFModel1 != weightsForFModel2)
 
     val bos4AModel = new ByteArrayOutputStream
     val out4AModel = new ObjectOutputStream(bos4AModel)
@@ -144,7 +145,7 @@ class InferenceModelSpec extends FlatSpec with Matchers with BeforeAndAfter
     bos4FModel.close()
     println(s"load $supportedConcurrentNum shared wights models bytes: ${bytes4AModel.length}," +
       s"load $supportedConcurrentNum single models bytes: ${bytes4FModel.length}.")
-    assert(bytes4AModel.length < bytes4FModel.length)
+    TestUtils.conditionFailTest(bytes4AModel.length < bytes4FModel.length)
 
     val bis4AModel = new ByteArrayInputStream(bytes4AModel)
     val in4AModel = new ObjectInputStream(bis4AModel)
@@ -156,7 +157,7 @@ class InferenceModelSpec extends FlatSpec with Matchers with BeforeAndAfter
       .model.getWeightsBias()(0).storage()
     val weightsForAModel4 = aModel2.modelQueue.take().asInstanceOf[FloatModel]
       .model.getWeightsBias()(0).storage()
-    assert(weightsForAModel3 == weightsForAModel4)
+    TestUtils.conditionFailTest(weightsForAModel3 == weightsForAModel4)
 
     val inputTensor = Tensor[Float](3, 5, 5).rand()
     val result1 = fModels(0).predict(inputTensor)
@@ -220,11 +221,11 @@ class InferenceModelSpec extends FlatSpec with Matchers with BeforeAndAfter
       .model.getWeightsBias()(0).storage()
     val weightsForAModel2 = aModel.modelQueue.take().asInstanceOf[FloatModel]
       .model.getWeightsBias()(0).storage()
-    assert(weightsForAModel1 == weightsForAModel2)
+    TestUtils.conditionFailTest(weightsForAModel1 == weightsForAModel2)
 
     val weightsForFModel1 = fModels(0).model.getWeightsBias()(0).storage()
     val weightsForFModel2 = fModels(1).model.getWeightsBias()(0).storage()
-    assert(weightsForFModel1 != weightsForFModel2)
+    TestUtils.conditionFailTest(weightsForFModel1 != weightsForFModel2)
 
     val bos4AModel = new ByteArrayOutputStream
     val out4AModel = new ObjectOutputStream(bos4AModel)
@@ -241,7 +242,7 @@ class InferenceModelSpec extends FlatSpec with Matchers with BeforeAndAfter
     bos4FModel.close()
     println(s"load $supportedConcurrentNum shared wights models bytes: ${bytes4AModel.length}," +
       s"load $supportedConcurrentNum single models bytes: ${bytes4FModel.length}.")
-    assert(bytes4AModel.length < bytes4FModel.length)
+    TestUtils.conditionFailTest(bytes4AModel.length < bytes4FModel.length)
 
     val bis4AModel = new ByteArrayInputStream(bytes4AModel)
     val in4AModel = new CheckedObjectInputStream(classOf[TestAbstractInferenceModel], bis4AModel)
@@ -252,7 +253,7 @@ class InferenceModelSpec extends FlatSpec with Matchers with BeforeAndAfter
       .model.getWeightsBias()(0).storage()
     val weightsForAModel4 = aModel2.modelQueue.take().asInstanceOf[FloatModel]
       .model.getWeightsBias()(0).storage()
-    assert(weightsForAModel3 == weightsForAModel4)
+    TestUtils.conditionFailTest(weightsForAModel3 == weightsForAModel4)
 
     val currentNum = 10
     val begin3 = System.currentTimeMillis()

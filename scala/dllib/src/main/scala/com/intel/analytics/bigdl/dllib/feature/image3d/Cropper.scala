@@ -21,6 +21,7 @@ import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
 import scala.reflect.ClassTag
 import java.util.Calendar
 
+import com.intel.analytics.bigdl.dllib.utils.Log4Error
 import com.intel.analytics.bigdl.dllib.utils.RandomGenerator._
 
 object Crop3D {
@@ -35,9 +36,9 @@ object Crop3D {
 
   private[bigdl] def crop(tensor: Tensor[Float], start: Array[Int],
                         patchSize: Array[Int]): Tensor[Float] = {
-    require(start(0) <= tensor.size(1) && start(1) <= tensor.size(2) &&
+    Log4Error.invalidInputError(start(0) <= tensor.size(1) && start(1) <= tensor.size(2) &&
       start(2) <= tensor.size(3), "Cropping indices out of bounds.")
-    require(start(0) + patchSize(0) - 1  <= tensor.size(1)
+    Log4Error.invalidInputError(start(0) + patchSize(0) - 1  <= tensor.size(1)
       && start(1) + patchSize(1) - 1 <= tensor.size(2)
       && start(2) + patchSize(2) - 1 <= tensor.size(3), "Cropping indices out of bounds.")
     tensor.narrow(1, start(0), patchSize(0))
@@ -48,11 +49,11 @@ object Crop3D {
 
 class Crop3D(start: Array[Int], patchSize: Array[Int])
   extends ImageProcessing3D{
-  require(start.size == 3 && patchSize.size == 3,
+  Log4Error.invalidInputError(start.size == 3 && patchSize.size == 3,
     "'start' array and 'patchSize' array should have dim 3.")
-  require(patchSize(0) >= 0 && patchSize(1) >= 0 && patchSize(2) >= 0,
+  Log4Error.invalidInputError(patchSize(0) >= 0 && patchSize(1) >= 0 && patchSize(2) >= 0,
     "'patchSize' values should be nonnegative.")
-  require(start.map(t => t >= 0).reduce((a, b) => a && b),
+  Log4Error.invalidInputError(start.map(t => t >= 0).reduce((a, b) => a && b),
     "'start' values should be nonnegative.")
 
   override def transformTensor(tensor: Tensor[Float]): Tensor[Float] = {
@@ -76,13 +77,13 @@ class RandomCrop3D(cropDepth: Int, cropHeight: Int, cropWidth: Int)
   extends ImageProcessing3D{
 
   override def transformTensor(tensor: Tensor[Float]): Tensor[Float] = {
-    require(tensor.dim >= 3,
+    Log4Error.invalidInputError(tensor.dim >= 3,
       "the transformed image array should have dim 3.")
-    require(tensor.size(1) >= cropDepth,
+    Log4Error.invalidInputError(tensor.size(1) >= cropDepth,
       "the transformed image depth should be larger than cropped depth.")
-    require(tensor.size(2) >= cropWidth,
+    Log4Error.invalidInputError(tensor.size(2) >= cropWidth,
       "the transformed image width should be larger than cropped width.")
-    require(tensor.size(3) >= cropHeight,
+    Log4Error.invalidInputError(tensor.size(3) >= cropHeight,
       "the transformed image height should be larger than cropped height.")
     val startD = math.ceil(RNG.uniform(1e-2, tensor.size(1) - cropDepth)).toInt
     val startH = math.ceil(RNG.uniform(1e-2, tensor.size(2) - cropHeight)).toInt
@@ -109,13 +110,13 @@ class CenterCrop3D(cropDepth: Int, cropHeight: Int, cropWidth: Int)
   extends ImageProcessing3D{
 
   override def transformTensor(tensor: Tensor[Float]): Tensor[Float] = {
-    require(tensor.dim >= 3,
+    Log4Error.invalidInputError(tensor.dim >= 3,
       "the transformed image array should have dim 3.")
-    require(tensor.size(1) >= cropDepth,
+    Log4Error.invalidInputError(tensor.size(1) >= cropDepth,
       "the transformed image depth should be larger than cropped depth.")
-    require(tensor.size(2) >= cropHeight,
+    Log4Error.invalidInputError(tensor.size(2) >= cropHeight,
       "the transformed image width should be larger than cropped width.")
-    require(tensor.size(3) >= cropWidth,
+    Log4Error.invalidInputError(tensor.size(3) >= cropWidth,
       "the transformed image height should be larger than cropped height.")
     val startD = (tensor.size(1) - cropDepth)/2
     val startH = (tensor.size(2) - cropHeight)/2

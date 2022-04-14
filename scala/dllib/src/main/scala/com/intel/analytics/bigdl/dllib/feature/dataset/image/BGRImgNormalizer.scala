@@ -17,6 +17,7 @@
 package com.intel.analytics.bigdl.dllib.feature.dataset.image
 
 import com.intel.analytics.bigdl.dllib.feature.dataset.{LocalDataSet, Transformer}
+import com.intel.analytics.bigdl.dllib.utils.Log4Error
 import org.apache.logging.log4j.LogManager
 
 import scala.collection.Iterator
@@ -52,7 +53,8 @@ object BGRImgNormalizer {
     var i = 1
     while (i <= totalCount) {
       val content = iter.next().content
-      require(content.length % 3 == 0)
+      Log4Error.invalidInputError(content.length % 3 == 0, s"content length ${content.length}" +
+        s" cannot be divide by 3", "expect an image with RGB channel")
       var j = 0
       while (j < content.length) {
         sumR += content(j + 2)
@@ -64,7 +66,8 @@ object BGRImgNormalizer {
       i += 1
       logger.info(s"Mean: $i / $totalCount")
     }
-    require(total > 0)
+    Log4Error.invalidInputError(total > 0, "empty image here, the data size is 0",
+      "please use a RGB image as input")
     val meanR = sumR / total
     val meanG = sumG / total
     val meanB = sumB / total
@@ -116,7 +119,8 @@ class BGRImgNormalizer(meanR: Double, meanG: Double, meanB: Double,
   override def apply(prev: Iterator[LabeledBGRImage]): Iterator[LabeledBGRImage] = {
     prev.map(img => {
       val content = img.content
-      require(content.length % 3 == 0)
+      Log4Error.invalidInputError(content.length % 3 == 0, s"content length ${content.length}" +
+        s" cannot be divide by 3", "expect an image with RGB channel")
       var i = 0
       while (i < content.length) {
         content(i + 2) = ((content(i + 2) - meanR) / stdR).toFloat

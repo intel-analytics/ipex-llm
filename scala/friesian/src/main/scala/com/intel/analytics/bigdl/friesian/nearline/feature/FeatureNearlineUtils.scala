@@ -26,17 +26,20 @@ import org.apache.spark.sql.{Row, SparkSession}
 import org.apache.spark.sql.functions.col
 
 import scala.collection.JavaConverters._
+import com.intel.analytics.bigdl.dllib.utils.Log4Error
 
 object FeatureNearlineUtils {
   val logger: Logger = LogManager.getLogger(getClass)
 
   def loadUserItemFeaturesRDD(spark: SparkSession, redis: RedisUtils): Unit = {
-    assert(NearlineUtils.helper.initialUserDataPath != null ||
+    Log4Error.invalidOperationError(NearlineUtils.helper.initialUserDataPath != null ||
       NearlineUtils.helper.initialItemDataPath != null, "initialUserDataPath or " +
       "initialItemDataPath should be provided if loadInitialData is true")
     if (NearlineUtils.helper.initialUserDataPath != null) {
-      assert(NearlineUtils.helper.userIDColumn != null)
-      assert(NearlineUtils.helper.userFeatureColArr != null)
+      Log4Error.invalidOperationError(NearlineUtils.helper.userIDColumn != null,
+      "userIdColumn cannot be null")
+      Log4Error.invalidOperationError(NearlineUtils.helper.userFeatureColArr != null,
+      "usserFeatureColArr cannot be null")
       logger.info("Start inserting user features...")
       val colNames = NearlineUtils.helper.userFeatureColArr.mkString(",")
       redis.setSchema("user", colNames)
@@ -47,8 +50,10 @@ object FeatureNearlineUtils {
     }
 
     if (NearlineUtils.helper.initialItemDataPath != null) {
-      assert(NearlineUtils.helper.itemIDColumn != null)
-      assert(NearlineUtils.helper.itemFeatureColArr != null)
+      Log4Error.invalidOperationError(NearlineUtils.helper.itemIDColumn != null,
+        "itemIdColumn cannot be null")
+      Log4Error.invalidOperationError(NearlineUtils.helper.itemFeatureColArr != null,
+        "itemFeatureColArr cannot be null")
       logger.info("Start inserting item features...")
       val colNames = NearlineUtils.helper.itemFeatureColArr.mkString(",")
       redis.setSchema("item", colNames)

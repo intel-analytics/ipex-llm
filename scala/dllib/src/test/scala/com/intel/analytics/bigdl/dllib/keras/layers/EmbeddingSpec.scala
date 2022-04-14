@@ -17,7 +17,7 @@
 package com.intel.analytics.bigdl.dllib.keras.layers
 
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
-import com.intel.analytics.bigdl.dllib.utils.Shape
+import com.intel.analytics.bigdl.dllib.utils.{Shape, TestUtils}
 import com.intel.analytics.bigdl.dllib.keras.Sequential
 import com.intel.analytics.bigdl.dllib.keras.serializer.ModuleSerializationTest
 
@@ -29,7 +29,7 @@ class EmbeddingSpec extends KerasBaseSpec {
     val seq = Sequential[Float]()
     val layer = Embedding[Float](10, 32, weights = weights, inputLength = 4)
     seq.add(layer)
-    require(seq.getWeightsBias().sameElements(Array(weights)))
+    TestUtils.conditionFailTest(seq.getWeightsBias().sameElements(Array(weights)))
     seq.getOutputShape().toSingle().toArray should be (Array(-1, 4, 32))
     val input = Tensor[Float](2, 4)
     input(Array(1, 1)) = 1
@@ -46,7 +46,7 @@ class EmbeddingSpec extends KerasBaseSpec {
       for (j <- 0 to 3) {
         val actual = nonBatchOutput.split(1)(j)
         val expected = weights.select(1, input.valueAt(i + 1, j + 1).toInt + 1)
-        require(actual == expected)
+        TestUtils.conditionFailTest(actual == expected)
       }
     }
     val gradInput = seq.backward(input, output)

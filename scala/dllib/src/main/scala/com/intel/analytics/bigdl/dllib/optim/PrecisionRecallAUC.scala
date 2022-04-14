@@ -18,6 +18,7 @@ package com.intel.analytics.bigdl.dllib.optim
 
 import com.intel.analytics.bigdl.dllib.nn.abstractnn.Activity
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.dllib.utils.Log4Error
 
 import scala.reflect.ClassTag
 
@@ -33,8 +34,9 @@ import scala.reflect.ClassTag
  */
 class PrecisionRecallAUC[T: ClassTag]()(implicit ev: TensorNumeric[T]) extends ValidationMethod[T] {
   override def apply(output: Activity, target: Activity): ValidationResult = {
-    require(output.isTensor && target.isTensor, s"only support tensor output and tensor target")
-    require(!output.toTensor.isEmpty && !target.toTensor.isEmpty,
+    Log4Error.invalidInputError(output.isTensor && target.isTensor,
+      s"only support tensor output and tensor target")
+    Log4Error.invalidInputError(!output.toTensor.isEmpty && !target.toTensor.isEmpty,
       s"the output and target should not be empty")
     val array = List(output, target).map(_.toTensor[Float].storage().array())
     val results = array.head.zip(array.last).toArray

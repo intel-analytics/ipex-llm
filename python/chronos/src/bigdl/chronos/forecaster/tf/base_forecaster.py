@@ -39,14 +39,20 @@ class BaseTF2Forecaster(Forecaster):
                | should be the same as past_seq_len and input_feature_num.
                | y's shape is (num_samples, horizon, target_dim), where horizon and target_dim
                | should be the same as future_seq_len and output_feature_num.
+               |
+               | 2. a tf.data.Dataset:
+               | A TFDataset instance which contains x and y with same shape as the tuple.
+               | x's shape is (num_samples, lookback, feature_dim),
+               | y's shape is (num_samples, horizon, target_dim).
 
         :params epochs: Number of epochs you want to train. The value defaults to 1.
         :params batch_size: Number of batch size you want to train. The value defaults to 32.
+                Do not specify the batch_size, if your data in the form of tf.data datasets.
         """
-
-        self.internal.fit(x=data[0], y=data[1],
-                          epochs=epochs,
-                          batch_size=batch_size)
+        if isinstance(data, tuple):
+            self.internal.fit(x=data[0], y=data[1], epochs=epochs, batch_size=batch_size)
+        else:
+            self.internal.fit(x=data, epochs=epochs)
         self.fitted = True
 
     def predict(self, data, batch_size=32):
@@ -93,11 +99,11 @@ class BaseTF2Forecaster(Forecaster):
                 non-distribtued version.
         """
         if not self.fitted:
-            raise RuntimeError("You must call fit or restore first before calling predict!")
+            raise RuntimeError("You must call fit or restore first before calling evaluate!")
         yhat = self.internal.predict(data[0], batch_size=batch_size)
 
         aggregate = 'mean' if multioutput == 'uniform_average' else None
-        return Evaluator.evaluate(self.metrics, data[1], yhat, aggregate=aggregate)
+        return Evaluator.evaluate(self.metrics, y_true=data[1], y_pred=yhat, aggregate=aggregate)
 
     def save(self, checkpoint_file):
         """
@@ -106,7 +112,7 @@ class BaseTF2Forecaster(Forecaster):
         :params checkpoint_file: The location you want to save the forecaster.
         """
         if not self.fitted:
-            raise RuntimeError("You must call fit or restore first before calling predict!")
+            raise RuntimeError("You must call fit or restore first before calling save!")
         self.internal.save(checkpoint_file)
 
     def load(self, checkpoint_file):

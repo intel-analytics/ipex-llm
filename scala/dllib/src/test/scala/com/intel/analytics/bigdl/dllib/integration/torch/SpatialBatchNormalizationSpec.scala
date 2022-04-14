@@ -24,6 +24,7 @@ import com.intel.analytics.bigdl.dllib.utils.RandomGenerator._
 import scala.util.Random
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.dllib.nn.abstractnn.DataFormat
+import com.intel.analytics.bigdl.dllib.utils.TestUtils
 
 @com.intel.analytics.bigdl.tags.Serial
 class SpatialBatchNormalizationSpec extends TorchSpec {
@@ -86,9 +87,10 @@ class SpatialBatchNormalizationSpec extends TorchSpec {
     val outputTorch = torchResult("output").asInstanceOf[Tensor[Double]]
     val gradInputTorch = torchResult("gradInput").asInstanceOf[Tensor[Double]]
 
-    require(parameters == parameterTorch, "parameter compare failed")
+    TestUtils.conditionFailTest(parameters == parameterTorch, "parameter compare failed")
 
-    require(gradparameters == gradparameterTorch, "gradparameter compare failed")
+    TestUtils.conditionFailTest(gradparameters == gradparameterTorch,
+      "gradparameter compare failed")
 
     sbn.forward(input)
     sbn.backward(input, gradOutput)
@@ -98,12 +100,12 @@ class SpatialBatchNormalizationSpec extends TorchSpec {
     val gradInput = sbn.backward(input, gradOutput2)
 
     outputTorch.map(output, (v1, v2) => {
-      assert(abs(v1 - v2) == 0)
+      TestUtils.conditionFailTest(abs(v1 - v2) == 0)
       v1
     })
 
     gradInputTorch.map(gradInput, (v1, v2) => {
-      assert(abs(v1 - v2) == 0)
+      TestUtils.conditionFailTest(abs(v1 - v2) == 0)
       v1
     })
 
@@ -172,9 +174,10 @@ class SpatialBatchNormalizationSpec extends TorchSpec {
     val outputTorch = torchResult("output").asInstanceOf[Tensor[Double]]
     val gradInputTorch = torchResult("gradInput").asInstanceOf[Tensor[Double]]
 
-    require(parameters == parameterTorch, "parameter compare failed")
+    TestUtils.conditionFailTest(parameters == parameterTorch, "parameter compare failed")
 
-    require(gradparameters == gradparameterTorch, "gradparameter compare failed")
+    TestUtils.conditionFailTest(gradparameters == gradparameterTorch,
+      "gradparameter compare failed")
 
     sbn.forward(input)
     sbn.backward(input, gradOutput)
@@ -187,7 +190,7 @@ class SpatialBatchNormalizationSpec extends TorchSpec {
     val output = sbn.forward(input)
 
     outputTorch.map(output, (v1, v2) => {
-      assert(abs(v1 - v2) == 0)
+      TestUtils.conditionFailTest(abs(v1 - v2) == 0)
       v1
     })
   }

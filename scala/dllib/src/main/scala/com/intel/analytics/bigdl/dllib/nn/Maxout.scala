@@ -23,8 +23,7 @@ import com.intel.analytics.bigdl.dllib.tensor.{DenseTensorApply, Tensor, TensorF
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.dllib.utils.serializer.converters.DataConverter
 import com.intel.analytics.bigdl.dllib.utils.serializer.{DeserializeContext, ModuleSerializable, ModuleSerializer, SerializeContext}
-import com.intel.analytics.bigdl.dllib.utils.Table
-import com.intel.analytics.bigdl.dllib.utils.Shape
+import com.intel.analytics.bigdl.dllib.utils.{Log4Error, Shape, Table}
 
 import scala.reflect.ClassTag
 
@@ -57,7 +56,7 @@ class Maxout[T: ClassTag](val inputSize: Int, val outputSize: Int, val maxoutNum
 
   override def computeOutputShape(inputShape: Shape): Shape = {
     val input = inputShape.toSingle().toArray
-    require(input.length == 2,
+    Log4Error.invalidInputError(input.length == 2,
       s"MaxoutDense requires 2D input, but got input dim ${input.length}")
     Shape(input(0), outputSize)
   }

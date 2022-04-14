@@ -305,7 +305,8 @@ class DnnGraphSpec extends FlatSpec with Matchers with BeforeAndAfter {
 
       sc.parallelize(1 to 1, 1).mapPartitions(i => {
         val weightSum = bcast.value().getWeightsBias().map(f => f.sum()).sum
-        require(weightSum == 11759.763f, s"sum of model weight " +
+        com.intel.analytics.bigdl.dllib.utils.TestUtils.conditionFailTest(
+          weightSum == 11759.763f, s"sum of model weight " +
           s"parameters should be 11759.764, but get ${weightSum}")
         i
       }).count()
