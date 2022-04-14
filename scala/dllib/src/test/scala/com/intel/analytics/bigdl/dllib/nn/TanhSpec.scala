@@ -19,7 +19,7 @@ package com.intel.analytics.bigdl.dllib.nn
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.dllib.nn.tf.TanhGrad
-import com.intel.analytics.bigdl.dllib.utils.T
+import com.intel.analytics.bigdl.dllib.utils.{T, TestUtils}
 import com.intel.analytics.bigdl.dllib.utils.serializer.ModuleSerializationTest
 import org.scalatest.{FlatSpec, Matchers}
 
@@ -70,15 +70,15 @@ class TanhSpec extends FlatSpec with Matchers {
     val output = module.forward(input)
     val gradInput = module.backward(input, gradOutput)
     expectedOutput.map(output, (v1, v2) => {
-      assert(abs(v1 - v2) < 1e-6);
+      TestUtils.conditionFailTest(abs(v1 - v2) < 1e-6);
       v1
     })
     expectedGrad.map(gradInput, (v1, v2) => {
-      assert(abs(v1 - v2) < 1e-6);
+      TestUtils.conditionFailTest(abs(v1 - v2) < 1e-6);
       v1
     })
-    assert(input == inputOrg)
-    assert(gradOutput == gradOutputOrg)
+    TestUtils.conditionFailTest(input == inputOrg)
+    TestUtils.conditionFailTest(gradOutput == gradOutputOrg)
   }
 
   "A Tanh Module " should "be good in gradient check" in {

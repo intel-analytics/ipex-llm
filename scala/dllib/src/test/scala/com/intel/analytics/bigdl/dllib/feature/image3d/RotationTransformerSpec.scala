@@ -18,6 +18,7 @@ package com.intel.analytics.bigdl.dllib.feature.image3d
 import com.intel.analytics.bigdl.dllib.tensor.{Storage, Tensor}
 import com.intel.analytics.bigdl.dllib.feature.transform.vision.image.ImageFeature
 import com.intel.analytics.bigdl.dllib.utils.RandomGenerator._
+import com.intel.analytics.bigdl.dllib.utils.TestUtils
 import org.scalatest.{FlatSpec, Matchers}
 
 
@@ -49,7 +50,7 @@ class RotationTransformerSpec extends FlatSpec with Matchers{
       storage = Storage[Double](dst[Tensor[Float]](ImageFeature.imageTensor).storage().array()
         .map(_.toDouble)), storageOffset = 1, size = Array(1, 10, 10))
     dstTensor.view(10, 10).map(dstTorch, (v1, v2) => {
-      assert(math.abs(v1-v2)<1e-6)
+      TestUtils.conditionFailTest(math.abs(v1-v2)<1e-6)
       v1
     })
   }// end test
@@ -81,7 +82,7 @@ class RotationTransformerSpec extends FlatSpec with Matchers{
       storage = Storage[Double](dst[Tensor[Float]](ImageFeature.imageTensor).storage().array()
         .map(_.toDouble)), storageOffset = 1, size = Array(10, 1, 10))
     dstTensor.view(10, 10).map(dstTorch, (v1, v2) => {
-      assert(math.abs(v1-v2)<1e-6)
+      TestUtils.conditionFailTest(math.abs(v1-v2)<1e-6)
       v1
     })
   }// end test
@@ -113,7 +114,7 @@ class RotationTransformerSpec extends FlatSpec with Matchers{
       storage = Storage[Double](dst[Tensor[Float]](ImageFeature.imageTensor).storage().array()
         .map(_.toDouble)), storageOffset = 1, size = Array(10, 10, 1))
     dstTensor.view(10, 10).map(dstTorch, (v1, v2) => {
-      assert(math.abs(v1-v2)<1e-6)
+      TestUtils.conditionFailTest(math.abs(v1-v2)<1e-6)
       v1
     })
 

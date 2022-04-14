@@ -28,6 +28,11 @@ class PytorchBaseInference:
         outputs = self.forward_step(*inputs)
         return self.on_forward_end(outputs)
 
+    def forward_int8(self, torch_model, *inputs):
+        inputs = self.on_forward_start(inputs)
+        outputs = self.forward_step_int8(*inputs)
+        return self.on_forward_end(outputs)
+
     def train(self, model, mode=True):
         self.on_train_start(model, mode)
         model._torch_train(mode)
@@ -44,12 +49,18 @@ class PytorchBaseInference:
         return ort_inputs
 
     def on_forward_end(self, outputs):
-        outputs = tuple(map(lambda x: torch.from_numpy(x), outputs.values()))
+        if isinstance(outputs, dict):
+            outputs = tuple(map(lambda x: torch.from_numpy(x), outputs.values()))
+        else:
+            outputs = tuple(map(lambda x: torch.from_numpy(x), outputs))
         if len(outputs) == 1:
             outputs = outputs[0]
         return outputs
 
     def forward_step(self, *inputs):
+        raise NotImplementedError
+
+    def forward_step_int8(self, *inputs):
         raise NotImplementedError
 
 
@@ -62,6 +73,7 @@ def get_forward_args(model):
 
 def get_input_example(model: LightningModuleFromTorch, input_sample):
     if isinstance(input_sample, DataLoader):
+        # TODO: This assumpe the last output is y
         input_sample = tuple(next(iter(input_sample))[:-1])
     elif input_sample is None:
         if getattr(model, "example_input_array", None):
@@ -70,6 +82,7 @@ def get_input_example(model: LightningModuleFromTorch, input_sample):
             for dataloader in [model.test_dataloader(), model.train_dataloader(),
                                model.val_dataloader()]:
                 if dataloader is not None:
+                    # TODO: This assumpe the last output is y
                     input_sample = tuple(next(iter(dataloader))[:-1])
                     break
             if input_sample is None and model.predict_dataloader():

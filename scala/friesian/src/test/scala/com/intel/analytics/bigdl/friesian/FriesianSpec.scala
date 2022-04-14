@@ -55,8 +55,8 @@ class FriesianSpec extends ZooSpecHelper {
     val df = sqlContext.read.parquet(path)
     val cols = Array("col_1", "col_2")
     val dfFilled = friesian.fillNa(df, 0, cols.toList.asJava)
-    assert(dfFilled.filter(dfFilled("col_1").isNull).count == 0)
-    assert(dfFilled.filter(dfFilled("col_2").isNull).count == 0)
+    TestUtils.conditionFailTest(dfFilled.filter(dfFilled("col_1").isNull).count == 0)
+    TestUtils.conditionFailTest(dfFilled.filter(dfFilled("col_2").isNull).count == 0)
   }
 
   "Fill NA string" should "work properly" in {
@@ -64,8 +64,8 @@ class FriesianSpec extends ZooSpecHelper {
     val df = sqlContext.read.parquet(path)
     val cols = Array("col_4", "col_5")
     val dfFilled = friesian.fillNa(df, "bb", cols.toList.asJava)
-    assert(dfFilled.filter(dfFilled("col_4").isNull).count == 0)
-    assert(dfFilled.filter(dfFilled("col_5").isNull).count == 0)
+    TestUtils.conditionFailTest(dfFilled.filter(dfFilled("col_4").isNull).count == 0)
+    TestUtils.conditionFailTest(dfFilled.filter(dfFilled("col_5").isNull).count == 0)
   }
 
   "Fill NA string int" should "throw exception" in {
@@ -81,11 +81,11 @@ class FriesianSpec extends ZooSpecHelper {
     val path = resource.getFile + "/data1.parquet"
     val df = sqlContext.read.parquet(path)
     val dfFilled = friesian.fillNaInt(df, 3)
-    assert(dfFilled.filter(dfFilled("col_2").isNull).count == 0)
-    assert(dfFilled.filter(dfFilled("col_3").isNull).count == 0)
+    TestUtils.conditionFailTest(dfFilled.filter(dfFilled("col_2").isNull).count == 0)
+    TestUtils.conditionFailTest(dfFilled.filter(dfFilled("col_3").isNull).count == 0)
     val dfFilled2 = friesian.fillNaInt(df, 4, List("col_3").asJava)
-    assert(dfFilled2.filter(dfFilled2("col_2").isNull).count == 1)
-    assert(dfFilled2.filter(dfFilled2("col_3").isNull).count == 0)
+    TestUtils.conditionFailTest(dfFilled2.filter(dfFilled2("col_2").isNull).count == 1)
+    TestUtils.conditionFailTest(dfFilled2.filter(dfFilled2("col_3").isNull).count == 0)
   }
 
   "Clip" should "work properly" in {
@@ -101,8 +101,8 @@ class FriesianSpec extends ZooSpecHelper {
     val df = sqlContext.read.parquet(path)
     val cols = Array("col_4", "col_5")
     val stringIdxList = friesian.generateStringIdx(df, cols.toList.asJava, null)
-    assert(stringIdxList.get(0).count == 3)
-    assert(stringIdxList.get(1).count == 2)
+    TestUtils.conditionFailTest(stringIdxList.get(0).count == 3)
+    TestUtils.conditionFailTest(stringIdxList.get(1).count == 2)
   }
 
   "AssignStringIdx limit int" should "work properly" in {
@@ -110,8 +110,8 @@ class FriesianSpec extends ZooSpecHelper {
     val df = sqlContext.read.parquet(path)
     val cols = Array("col_4", "col_5")
     val stringIdxList = friesian.generateStringIdx(df, cols.toList.asJava, "2")
-    assert(stringIdxList.get(0).count == 1)
-    assert(stringIdxList.get(1).count == 1)
+    TestUtils.conditionFailTest(stringIdxList.get(0).count == 1)
+    TestUtils.conditionFailTest(stringIdxList.get(1).count == 1)
   }
 
   "AssignStringIdx limit dict" should "work properly" in {
@@ -119,8 +119,8 @@ class FriesianSpec extends ZooSpecHelper {
     val df = sqlContext.read.parquet(path)
     val cols = Array("col_4", "col_5")
     val stringIdxList = friesian.generateStringIdx(df, cols.toList.asJava, "col_4:1,col_5:3")
-    assert(stringIdxList.get(0).count == 3)
-    assert(stringIdxList.get(1).count == 1)
+    TestUtils.conditionFailTest(stringIdxList.get(0).count == 3)
+    TestUtils.conditionFailTest(stringIdxList.get(1).count == 1)
   }
 
   "AssignStringIdx limit order by freq" should "work properly" in {
@@ -130,8 +130,8 @@ class FriesianSpec extends ZooSpecHelper {
     val stringIdxList = friesian.generateStringIdx(df, cols.toList.asJava, orderByFrequency = true)
     val col4Idx = stringIdxList.get(0).collect().sortBy(_.getInt(1))
     val col5Idx = stringIdxList.get(1).collect().sortBy(_.getInt(1))
-    assert(col4Idx(0).getString(0) == "abc")
-    assert(col5Idx(0).getString(0) == "aa")
+    TestUtils.conditionFailTest(col4Idx(0).getString(0) == "abc")
+    TestUtils.conditionFailTest(col5Idx(0).getString(0) == "aa")
   }
 
   "mask Int" should "work properly" in {
@@ -145,9 +145,9 @@ class FriesianSpec extends ZooSpecHelper {
     ))
     val df = sqlContext.createDataFrame(data, schema)
     val dfmasked = friesian.mask(df, Array("history").toList.asJava, 4)
-    assert(dfmasked.columns.contains("history_mask"))
-    assert(dfmasked.filter("size(history_mask) = 4").count() == 3)
-    assert(dfmasked.filter("size(history_mask) = 2").count() == 0)
+    TestUtils.conditionFailTest(dfmasked.columns.contains("history_mask"))
+    TestUtils.conditionFailTest(dfmasked.filter("size(history_mask) = 4").count() == 3)
+    TestUtils.conditionFailTest(dfmasked.filter("size(history_mask) = 2").count() == 0)
   }
 
   "mask Long" should "work properly" in {
@@ -161,9 +161,9 @@ class FriesianSpec extends ZooSpecHelper {
     ))
     val df = sqlContext.createDataFrame(data, schema)
     val dfmasked = friesian.mask(df, Array("history").toList.asJava, 4)
-    assert(dfmasked.columns.contains("history_mask"))
-    assert(dfmasked.filter("size(history_mask) = 4").count() == 3)
-    assert(dfmasked.filter("size(history_mask) = 2").count() == 0)
+    TestUtils.conditionFailTest(dfmasked.columns.contains("history_mask"))
+    TestUtils.conditionFailTest(dfmasked.filter("size(history_mask) = 4").count() == 3)
+    TestUtils.conditionFailTest(dfmasked.filter("size(history_mask) = 2").count() == 0)
   }
 
   "mask Double" should "work properly" in {
@@ -181,9 +181,9 @@ class FriesianSpec extends ZooSpecHelper {
     val dfmasked = friesian.mask(df, Array("history").toList.asJava, 4)
     dfmasked.show(100, false)
 
-    assert(dfmasked.columns.contains("history_mask"))
-    assert(dfmasked.filter("size(history_mask) = 4").count() == 3)
-    assert(dfmasked.filter("size(history_mask) = 2").count() == 0)
+    TestUtils.conditionFailTest(dfmasked.columns.contains("history_mask"))
+    TestUtils.conditionFailTest(dfmasked.filter("size(history_mask) = 4").count() == 3)
+    TestUtils.conditionFailTest(dfmasked.filter("size(history_mask) = 2").count() == 0)
   }
 
 
@@ -199,12 +199,12 @@ class FriesianSpec extends ZooSpecHelper {
     ))
     val df = sqlContext.createDataFrame(data, schema)
     val dfmasked = friesian.mask(df, Array("history", "history1").toList.asJava, 4)
-    assert(dfmasked.columns.contains("history_mask"))
-    assert(dfmasked.columns.contains("history1_mask"))
-    assert(dfmasked.filter("size(history_mask) = 4").count() == 3)
-    assert(dfmasked.filter("size(history_mask) = 2").count() == 0)
-    assert(dfmasked.filter("size(history1_mask) = 4").count() == 3)
-    assert(dfmasked.filter("size(history1_mask) = 2").count() == 0)
+    TestUtils.conditionFailTest(dfmasked.columns.contains("history_mask"))
+    TestUtils.conditionFailTest(dfmasked.columns.contains("history1_mask"))
+    TestUtils.conditionFailTest(dfmasked.filter("size(history_mask) = 4").count() == 3)
+    TestUtils.conditionFailTest(dfmasked.filter("size(history_mask) = 2").count() == 0)
+    TestUtils.conditionFailTest(dfmasked.filter("size(history1_mask) = 4").count() == 3)
+    TestUtils.conditionFailTest(dfmasked.filter("size(history1_mask) = 2").count() == 0)
   }
 
 
@@ -222,9 +222,10 @@ class FriesianSpec extends ZooSpecHelper {
     val dft = friesian.postPad(df, Array("history", "history_list").toList.asJava, 4)
     dft.schema.fields.map(x => x.dataType).foreach(println(_))
 
-    assert(dft.filter("size(history) = 4").count() == 3)
-    assert(dft.filter("size(history_list) = 4").count() == 3)
-    assert(dft.filter(dft("name") === "rose").select("history").collect()(0)(0).toString()
+    TestUtils.conditionFailTest(dft.filter("size(history) = 4").count() == 3)
+    TestUtils.conditionFailTest(dft.filter("size(history_list) = 4").count() == 3)
+    TestUtils.conditionFailTest(
+      dft.filter(dft("name") === "rose").select("history").collect()(0)(0).toString()
       == "WrappedArray(1, 2, 0, 0)")
   }
 
@@ -242,9 +243,10 @@ class FriesianSpec extends ZooSpecHelper {
     val dft = friesian.postPad(df, Array("history", "history_list").toList.asJava, 4)
     dft.schema.fields.map(x => x.dataType).foreach(println(_))
 
-    assert(dft.filter("size(history) = 4").count() == 3)
-    assert(dft.filter("size(history_list) = 4").count() == 3)
-    assert(dft.filter(dft("name") === "rose").select("history").collect()(0)(0).toString()
+    TestUtils.conditionFailTest(dft.filter("size(history) = 4").count() == 3)
+    TestUtils.conditionFailTest(dft.filter("size(history_list) = 4").count() == 3)
+    TestUtils.conditionFailTest(
+      dft.filter(dft("name") === "rose").select("history").collect()(0)(0).toString()
       == "WrappedArray(1.0, 2.0, 0.0, 0.0)")
   }
 
@@ -261,9 +263,10 @@ class FriesianSpec extends ZooSpecHelper {
     val df = sqlContext.createDataFrame(data, schema)
     val dft = friesian.postPad(df, Array("history", "history_list").toList.asJava, 4)
 //    dft.schema.fields.map(x => x.dataType).foreach(println(_))
-    assert(dft.filter("size(history) = 4").count() == 3)
-    assert(dft.filter("size(history_list) = 4").count() == 3)
-    assert(dft.filter(dft("name") === "rose").select("history").collect()(0)(0).toString()
+    TestUtils.conditionFailTest(dft.filter("size(history) = 4").count() == 3)
+    TestUtils.conditionFailTest(dft.filter("size(history_list) = 4").count() == 3)
+    TestUtils.conditionFailTest(
+      dft.filter(dft("name") === "rose").select("history").collect()(0)(0).toString()
       == "WrappedArray(1, 2, 0, 0)")
   }
 
@@ -292,11 +295,11 @@ class FriesianSpec extends ZooSpecHelper {
 
     df.show(false)
     val dft = friesian.addHistSeq(df, Array("item", "other").toList.asJava, "name", "ts", 1, 4)
-    assert(dft.count() == 8)
-    assert(dft.filter(df("name") === "alice").count() == 2)
-    assert(dft.filter(df("name") === "jack").count() == 6)
-    assert(dft.columns.contains("item_hist_seq"))
-    assert(dft.columns.contains("other_hist_seq"))
+    TestUtils.conditionFailTest(dft.count() == 8)
+    TestUtils.conditionFailTest(dft.filter(df("name") === "alice").count() == 2)
+    TestUtils.conditionFailTest(dft.filter(df("name") === "jack").count() == 6)
+    TestUtils.conditionFailTest(dft.columns.contains("item_hist_seq"))
+    TestUtils.conditionFailTest(dft.columns.contains("other_hist_seq"))
   }
 
   "addHisSeq double long" should "work properly" in {
@@ -322,11 +325,11 @@ class FriesianSpec extends ZooSpecHelper {
       .withColumn("ts", col("time").cast("timestamp").cast("long"))
 
     val dft = friesian.addHistSeq(df, Array("item", "other").toList.asJava, "name", "ts", 1, 4)
-    assert(dft.count() == 8)
-    assert(dft.filter(df("name") === "alice").count() == 2)
-    assert(dft.filter(df("name") === "jack").count() == 6)
-    assert(dft.columns.contains("item_hist_seq"))
-    assert(dft.columns.contains("other_hist_seq"))
+    TestUtils.conditionFailTest(dft.count() == 8)
+    TestUtils.conditionFailTest(dft.filter(df("name") === "alice").count() == 2)
+    TestUtils.conditionFailTest(dft.filter(df("name") === "jack").count() == 6)
+    TestUtils.conditionFailTest(dft.columns.contains("item_hist_seq"))
+    TestUtils.conditionFailTest(dft.columns.contains("other_hist_seq"))
   }
 
   "addHisSeq numSeqs" should "work properly" in {
@@ -354,11 +357,11 @@ class FriesianSpec extends ZooSpecHelper {
 
     val dft = friesian.addHistSeq(df, Array("item", "other").toList.asJava, "name",
       "ts", 1, 4, 1)
-    assert(dft.count() == 2)
-    assert(dft.filter(df("name") === "alice").count() == 1)
-    assert(dft.filter(df("name") === "jack").count() == 1)
-    assert(dft.columns.contains("item_hist_seq"))
-    assert(dft.columns.contains("other_hist_seq"))
+    TestUtils.conditionFailTest(dft.count() == 2)
+    TestUtils.conditionFailTest(dft.filter(df("name") === "alice").count() == 1)
+    TestUtils.conditionFailTest(dft.filter(df("name") === "jack").count() == 1)
+    TestUtils.conditionFailTest(dft.columns.contains("item_hist_seq"))
+    TestUtils.conditionFailTest(dft.columns.contains("other_hist_seq"))
   }
 
   "addNegSamples" should "work properly" in {
@@ -376,8 +379,8 @@ class FriesianSpec extends ZooSpecHelper {
     ))
     val df = sqlContext.createDataFrame(data, schema)
     val dft = friesian.addNegSamples(df, 10, negNum = 2)
-    assert(dft.filter(col("label") === 1).count() == 6)
-    assert(dft.filter(col("label") === 0).count() == 12)
+    TestUtils.conditionFailTest(dft.filter(col("label") === 1).count() == 6)
+    TestUtils.conditionFailTest(dft.filter(col("label") === 0).count() == 12)
   }
 
   "addNegHisSeq" should "work properly" in {
@@ -392,8 +395,8 @@ class FriesianSpec extends ZooSpecHelper {
     ))
     val df = sqlContext.createDataFrame(data, schema)
     val dft = friesian.addNegHisSeq(df, 9, "history", 4)
-    assert(dft.select("neg_history").collect().length == 3)
-    assert(dft.select("neg_history").rdd.map(r =>
+    TestUtils.conditionFailTest(dft.select("neg_history").collect().length == 3)
+    TestUtils.conditionFailTest(dft.select("neg_history").rdd.map(r =>
       r.getAs[mutable.WrappedArray[mutable.WrappedArray[Int]]](0)).collect()(0).length == 5)
   }
 
@@ -424,9 +427,9 @@ class FriesianSpec extends ZooSpecHelper {
       Array("item", "item_hist_seq", "nclk_item_hist_seq").toList.asJava,
       dictDF, "item", "category")
 
-    assert(df1.select("category").count == 3)
-    assert(df1.select("category_hist_seq").count == 3)
-    assert(df1.select("nclk_category_hist_seq").count == 3)
+    TestUtils.conditionFailTest(df1.select("category").count == 3)
+    TestUtils.conditionFailTest(df1.select("category_hist_seq").count == 3)
+    TestUtils.conditionFailTest(df1.select("nclk_category_hist_seq").count == 3)
   }
 
   "Fill median" should "work properly" in {
@@ -434,8 +437,8 @@ class FriesianSpec extends ZooSpecHelper {
     val df = sqlContext.read.parquet(path)
     val cols = Array("col_1", "col_2")
     val dfFilled = friesian.fillMedian(df, cols.toList.asJava)
-    assert(dfFilled.filter(dfFilled("col_1").isNull).count == 0)
-    assert(dfFilled.filter(dfFilled("col_2").isNull).count == 0)
+    TestUtils.conditionFailTest(dfFilled.filter(dfFilled("col_1").isNull).count == 0)
+    TestUtils.conditionFailTest(dfFilled.filter(dfFilled("col_2").isNull).count == 0)
   }
 
   "Median" should "work properly" in {
@@ -443,8 +446,8 @@ class FriesianSpec extends ZooSpecHelper {
     val df = sqlContext.read.parquet(path)
     val cols = Array("col_1", "col_2")
     val dfFilled = friesian.median(df, cols.toList.asJava)
-    assert(dfFilled.count == 2)
-    assert(dfFilled.filter("column == 'col_1'")
+    TestUtils.conditionFailTest(dfFilled.count == 2)
+    TestUtils.conditionFailTest(dfFilled.filter("column == 'col_1'")
       .filter("median == 1.0").count == 1)
   }
 }

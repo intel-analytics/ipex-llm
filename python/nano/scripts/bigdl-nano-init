@@ -215,10 +215,36 @@ if [ ! -z "${DISABLE_TCMALLOC_VAR:-}" ]; then
 	export LD_PRELOAD=`echo $LD_PRELOAD | sed "s/\s.*libtcmalloc\.so//g" | sed "s/.*libtcmalloc\.so\s*//g"`
 fi
 
-if [ -z "${LD_PRELOAD:-}" ]; then
-	unset LD_PRELOAD
-fi
+if [ -z "${CONDA_DEFAULT_ENV:-}" ]; then
+	echo "Not in a conda env"
+else
+    if [ -f $CONDA_PREFIX/etc/conda/activate.d/nano_vars.sh ];then
+        echo "nano_vars.sh already exists"
+    else
+        echo "Setting environment variables in current conda env"
+        ACTIVATED_PATH=$CONDA_PREFIX/etc/conda/activate.d
+        DEACTIVATED_PATH=$CONDA_PREFIX/etc/conda/deactivate.d
+        mkdir -p $ACTIVATED_PATH
+        mkdir -p $DEACTIVATED_PATH
 
+        # bigdl-nano-init
+        echo "if [ -f '${CONDA_PREFIX}/bin/bigdl-nano-init' ]; then" > $ACTIVATED_PATH/nano_vars.sh
+        echo "    source bigdl-nano-init" >> $ACTIVATED_PATH/nano_vars.sh
+        echo "else" >> $ACTIVATED_PATH/nano_vars.sh
+        echo "    echo 'Cannot find bigdl-nano-init, if you have uninstalled bigdl-nano, you may want to delete $ACTIVATED_PATH/nano_vars.sh and $DEACTIVATED_PATH/nano_vars.sh'" >> $ACTIVATED_PATH/nano_vars.sh
+        echo "fi" >> $ACTIVATED_PATH/nano_vars.sh
+
+        #bigdl-nano-unset-env
+        echo "if [ -f '${CONDA_PREFIX}/bin/bigdl-nano-unset-env' ]; then" > $DEACTIVATED_PATH/nano_vars.sh
+        echo "    source ${CONDA_PREFIX}/bin/bigdl-nano-unset-env" >> $DEACTIVATED_PATH/nano_vars.sh
+        echo "else" >> $DEACTIVATED_PATH/nano_vars.sh
+        echo "    echo 'Cannot find bigdl-nano-init, if you have uninstalled bigdl-nano, you may want to delete $ACTIVATED_PATH/nano_vars.sh and $DEACTIVATED_PATH/nano_vars.sh'" >> $DEACTIVATED_PATH/nano_vars.sh
+        echo "fi" >> $DEACTIVATED_PATH/nano_vars.sh
+
+        # warning
+        echo "Added nano_vars.sh script to $ACTIVATED_PATH and $DEACTIVATED_PATH. You may want to delete them if you want to uninstall bigdl-nano."
+    fi
+fi
 
 echo "+++++ Env Variables +++++"
 echo "LD_PRELOAD=${LD_PRELOAD}"
@@ -232,4 +258,6 @@ echo "NANO_TF_INTER_OP"=${NANO_TF_INTER_OP}
 echo "+++++++++++++++++++++++++"
 # Run the commands after bigdl-nano-init
 echo "Complete."
-${@:1}
+if [ ! $1 == "activate" ];then
+    ${@:1}
+fi

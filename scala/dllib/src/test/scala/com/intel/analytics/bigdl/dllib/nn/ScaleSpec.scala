@@ -17,6 +17,7 @@
 package com.intel.analytics.bigdl.dllib.nn
 
 import com.intel.analytics.bigdl.dllib.tensor.{Storage, Tensor}
+import com.intel.analytics.bigdl.dllib.utils.TestUtils
 import com.intel.analytics.bigdl.dllib.utils.serializer.ModuleSerializationTest
 import org.scalatest.{FlatSpec, Matchers}
 
@@ -94,7 +95,7 @@ class ScaleSpec extends FlatSpec with Matchers{
 
     val output = scale.forward(input)
     output.map(expectedOutput, (a, b) => {
-      assert(Math.abs(a - b) < 1e-6)
+      TestUtils.conditionFailTest(Math.abs(a - b) < 1e-6)
       a
     })
     val outDiff = Tensor(Storage(Array(0.2203191519, 0.2832591236, 0.1163618937, 0.2043310404,
@@ -164,7 +165,7 @@ class ScaleSpec extends FlatSpec with Matchers{
     val diff = scale.backward(input, outDiff)
 
     diff.map(expectedGradInput, (a, b) => {
-      assert(Math.abs(a - b) < 1e-6)
+      TestUtils.conditionFailTest(Math.abs(a - b) < 1e-6)
       a
     })
   }
@@ -184,11 +185,11 @@ class ScaleSpec extends FlatSpec with Matchers{
     scale.zeroGradParameters()
 
     scale.parameters()._2(0).apply1(x => {
-      assert(x == 0); x
+      TestUtils.conditionFailTest(x == 0); x
     })
 
     scale.parameters()._2(1).apply1(x => {
-      assert(x == 0); x
+      TestUtils.conditionFailTest(x == 0); x
     })
   }
 

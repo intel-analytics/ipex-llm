@@ -24,7 +24,7 @@ import com.intel.analytics.bigdl.dllib.tensor.{Storage, Tensor}
 import com.intel.analytics.bigdl.dllib.feature.transform.vision.image.opencv.OpenCVMat
 import com.intel.analytics.bigdl.dllib.feature.transform.vision.image.{ImageFeature, ImageFrame}
 import com.intel.analytics.bigdl.dllib.utils.RandomGenerator.RNG
-import com.intel.analytics.bigdl.dllib.utils.{RandomGenerator, Shape, T}
+import com.intel.analytics.bigdl.dllib.utils.{RandomGenerator, Shape, T, TestUtils}
 import com.intel.analytics.bigdl.dllib.NNContext
 import com.intel.analytics.bigdl.dllib.feature.image._
 import com.intel.analytics.bigdl.dllib.keras.autograd.{Variable, AutoGrad => A}
@@ -78,7 +78,7 @@ class TrainingSpec extends ZooSpecHelper {
     val conf = new SparkConf()
       .setMaster("local[4]")
     sc = NNContext.initNNContext(conf, "hello")
-    assert(sc.appName == "hello")
+    TestUtils.conditionFailTest(sc.appName == "hello")
     sc.getConf.get("spark.serializer") should be
     ("org.apache.spark.serializer.JavaSerializer")
     sc.getConf.get("spark.scheduler.minRegisteredResourcesRatio") should be ("1.0")
@@ -224,7 +224,7 @@ class TrainingSpec extends ZooSpecHelper {
     val api = new PythonZooKeras[Float]()
     val bigdlApi = sc.broadcast(new PythonBigDL[Float]())
 
-    // python api require to take no type Sample and it takes JavaRDD as input
+    // python api TestUtils.conditionFailTest to take no type Sample and it takes JavaRDD as input
     // use toPySample to convert to no type use toJavaRDD to convert to JavaRDD
     val jd = trainingData.map(j => bigdlApi.value.toPySample(j)).toJavaRDD()
     val res = api.zooEvaluate(model, jd, 8)

@@ -16,6 +16,7 @@
 
 package com.intel.analytics.bigdl.dllib.feature.text
 
+import com.intel.analytics.bigdl.dllib.utils.TestUtils
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
 class TokenizerSpec extends FlatSpec with Matchers with BeforeAndAfter {
@@ -25,13 +26,13 @@ class TokenizerSpec extends FlatSpec with Matchers with BeforeAndAfter {
   "Tokenizer and Normalizer" should "work properly" in {
     val tokenizer = Tokenizer()
     val tokenized = tokenizer.transform(feature)
-    require(tokenized.keys().contains("tokens"))
-    require(tokenized.getTokens.sameElements(Array("Hello", "my",
+    TestUtils.conditionFailTest(tokenized.keys().contains("tokens"))
+    TestUtils.conditionFailTest(tokenized.getTokens.sameElements(Array("Hello", "my",
     "friend,", "please", "annotate", "my", "text2")))
     val normalizer = Normalizer()
     val normalized = normalizer.transform(tokenized)
-    require(normalized.keys().contains("tokens"))
-    require(normalized.getTokens.sameElements(Array("hello", "my",
+    TestUtils.conditionFailTest(normalized.keys().contains("tokens"))
+    TestUtils.conditionFailTest(normalized.getTokens.sameElements(Array("hello", "my",
       "friend", "please", "annotate", "my", "text")))
   }
 }

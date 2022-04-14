@@ -17,6 +17,7 @@
 package com.intel.analytics.bigdl.dllib.nn
 
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
+import com.intel.analytics.bigdl.dllib.utils.TestUtils
 import com.intel.analytics.bigdl.dllib.utils.serializer.ModuleSerializationTest
 import org.scalatest.{FlatSpec, Matchers}
 
@@ -39,10 +40,10 @@ class IdentitySpec extends FlatSpec with Matchers {
 
     val module = new Identity[Double]()
     val output = module.forward(input)
-    assert(input equals output)
+    TestUtils.conditionFailTest(input equals output)
 
     val gradInput = module.backward(input, gradOutput)
-    assert(gradInput equals gradOutput)
+    TestUtils.conditionFailTest(gradInput equals gradOutput)
   }
 }
 

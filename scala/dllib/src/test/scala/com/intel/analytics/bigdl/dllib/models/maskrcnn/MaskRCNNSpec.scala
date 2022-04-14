@@ -23,8 +23,7 @@ import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.feature.transform.vision.image.RoiImageInfo
 import com.intel.analytics.bigdl.dllib.feature.transform.vision.image.label.roi.RoiLabel
 import com.intel.analytics.bigdl.dllib.utils.serializer.ModuleSerializationTest
-import com.intel.analytics.bigdl.dllib.utils.{T, Table}
-import com.intel.analytics.bigdl.dllib.utils.RandomGenerator
+import com.intel.analytics.bigdl.dllib.utils.{RandomGenerator, T, Table, TestUtils}
 import org.scalatest.{FlatSpec, Matchers}
 
 import scala.reflect.io.File
@@ -218,7 +217,7 @@ class MaskRCNNSpec extends FlatSpec with Matchers {
       64.0f, 76.0f, 77.0f, 84.0f, 87.0f, 88.0f)
 
     for (i <- 0 to keepN - 1) {
-      require(expectedOutput.contains(inds(i) - 1), s"${i} ${inds(i)}")
+      TestUtils.conditionFailTest(expectedOutput.contains(inds(i) - 1), s"${i} ${inds(i)}")
     }
   }
 
@@ -478,7 +477,7 @@ class MaskRCNNSpec extends FlatSpec with Matchers {
     val tempFile = "/tmp/maskrcnn.model"
     mask.saveModule(tempFile, overWrite = true)
     val maskLoad = Module.loadModule[Float](tempFile)
-    maskLoad.getExtraParameter().foreach(t => require(t.valueAt(1) == 0.1f))
+    maskLoad.getExtraParameter().foreach(t => TestUtils.conditionFailTest(t.valueAt(1) == 0.1f))
     File(tempFile).delete()
   }
 }

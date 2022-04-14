@@ -121,6 +121,23 @@ class TestChronosModelTCNForecaster(TestCase):
         except ImportError:
             pass
 
+    def test_tcn_forecaster_quantization_dynamic(self):
+        train_data, val_data, test_data = create_data()
+        forecaster = TCNForecaster(past_seq_len=24,
+                                   future_seq_len=5,
+                                   input_feature_num=1,
+                                   output_feature_num=1,
+                                   kernel_size=4,
+                                   num_channels=[16, 16],
+                                   lr=0.01)
+        forecaster.fit(train_data, epochs=2)
+        forecaster.quantize(approach="dynamic")
+        pred_q = forecaster.predict(test_data[0], quantize=True)
+        eval_q = forecaster.evaluate(test_data, quantize=True)
+        # dynamic quantization does not need calib data
+        with pytest.raises(ValueError):
+            forecaster.quantize(train_data, approach="dynamic")
+
     def test_tcn_forecaster_quantization(self):
         train_data, val_data, test_data = create_data()
         forecaster = TCNForecaster(past_seq_len=24,

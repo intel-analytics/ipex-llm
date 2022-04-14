@@ -19,7 +19,7 @@ package com.intel.analytics.bigdl.ppml.fgboost.common
 import org.apache.log4j.LogManager
 
 import scala.collection.mutable.ArrayBuffer
-
+import com.intel.analytics.bigdl.dllib.utils.Log4Error
 
 class XGBoostFormatValidator {
 
@@ -62,7 +62,8 @@ object XGBoostFormatValidator {
           false
         }
       } else {
-        require(t1.children.tail.size == 1 && t2.children.tail.size == 1, "???")
+        Log4Error.unKnowExceptionError(t1.children.tail.size == 1 && t2.children.tail.size == 1,
+          "???")
         // validate meta info
         val xGBoostFeature = xGBoostHeaders(t1.split.toInt)
         var matchFlag = false
@@ -90,11 +91,13 @@ object XGBoostFormatValidator {
           validateTreeEquality(t1.children.tail.head, t2.children.tail.head)
       }
     }
-    require(treeArray1.length == treeArray1.length, "Boosting round not equal, " +
+    Log4Error.unKnowExceptionError(treeArray1.length == treeArray1.length,
+      "Boosting round not equal, " +
       s"FGBoost: ${treeArray1.length}, XGBoost: ${treeArray2.length}")
     // TODO: validate first 15 trees for now
     treeArray1.slice(0, 15).indices.foreach(i => {
-      require(validateTreeEquality(treeArray1(i), treeArray2(i)), s"Tree $i not same")
+      Log4Error.unKnowExceptionError(validateTreeEquality(treeArray1(i), treeArray2(i)),
+        s"Tree $i not same")
     })
   }
 }

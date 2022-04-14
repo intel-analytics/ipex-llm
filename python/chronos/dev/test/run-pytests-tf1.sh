@@ -28,8 +28,7 @@ fi
 ray stop -f
 
 echo "Running chronos tests TF1 and Deprecated API"
-python -m pytest -v test/bigdl/chronos/model/tf1 \
-                    test/bigdl/chronos/autots/deprecated
+python -m pytest -v test/bigdl/chronos/model/tf1
 
 exit_status_0=$?
 if [ $exit_status_0 -ne 0 ];
