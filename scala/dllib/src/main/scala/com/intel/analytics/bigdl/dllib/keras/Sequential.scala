@@ -175,7 +175,7 @@ class Sequential[T: ClassTag] private ()
 
   override def summary(
                         lineLength: Int = 120,
-                        positions: Array[Double] = Array(.33, .55, .67, 1)): String = {
+                        positions: Array[Double] = Array(.33, .55, .67, 1)): Unit = {
     val graph = this.toModel()
     graph.summary(lineLength, positions)
   }
