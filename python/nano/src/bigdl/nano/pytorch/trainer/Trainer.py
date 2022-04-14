@@ -36,7 +36,8 @@ from bigdl.nano.deps.ipex.ipex_api import create_IPEXAccelerator, ipex_device
 from bigdl.nano.deps.openvino.openvino_api import PytorchOpenVINOModel, load_openvino_model
 from bigdl.nano.deps.onnxruntime.onnxruntime_api import bind_onnxrt_methods,\
     PytorchONNXRuntimeModel, load_onnxruntime_model
-
+from bigdl.nano.deps.neural_compressor.inc_api import QuantizationINC, QuantizedModel,\
+    check_pytorch_dataloaders
 distributed_backends = ["spawn", "ray", "subprocess"]
 
 
@@ -236,9 +237,6 @@ class Trainer(pl.Trainer):
         :return:            A GraphModule. If there is no model found, return None.
         """
         if backend == 'inc':
-            from bigdl.nano.deps.neural_compressor.inc_api import QuantizationINC,\
-                check_pytorch_dataloaders
-
             # check if dataloader is of legal format
             check_pytorch_dataloaders(pl_model, [calib_dataloader, val_dataloader])
 
@@ -283,7 +281,8 @@ class Trainer(pl.Trainer):
             quantized_model = quantizer.post_training_quantize(model, calib_dataloader,
                                                                val_dataloader, metric)
             if not return_pl:
-                return quantized_model
+                return QuantizedModel(quantized_model) if "pytorch" in framework \
+                    else quantized_model
             else:
                 quantized_pytorch_model = quantized_model if "pytorch" in framework else None
                 quantized_onnx_model = quantized_model if "onnxrt" in framework else None

@@ -37,3 +37,7 @@ def check_pytorch_dataloaders(model, loaders):
 def tf_dataset_to_inc_dataloader(tf_dataset, batchsize):
     from neural_compressor.experimental import common
     return common.DataLoader(tf_dataset, batchsize)
+
+def QuantizedModel(model):
+    from .pytorch.model import QuantizedModel
+    return QuantizedModel(model)
