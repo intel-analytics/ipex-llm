@@ -47,20 +47,23 @@ if __name__ == '__main__':
     args = parser.parse_args()
     x = np.random.rand(args.data_size, args.data_dim)
     y = np.random.rand(args.data_size)
+    t = np.array([1, 2, 3, 4], dtype=np.float32)
+
+
     init_fl_context()
     fgboost_regression = FGBoostRegression()
     ts = time.time()
     if args.has_label:
-        fgboost_regression.fit(x, y, num_round=args.num_round)
+        fgboost_regression.fit(t, y, num_round=args.num_round)
     else:
         fgboost_regression.fit(x, num_round=args.num_round)
     te = time.time()
-    result = fgboost_regression.predict(x)
-    pe = time.time()
-    result = list(map(lambda x: math.exp(x), result))
+    # result = fgboost_regression.predict(x)
+    # pe = time.time()
+    # result = list(map(lambda x: math.exp(x), result))
 
     train_time = round(te - ts, 3)
-    predict_time = round(pe - te, 3)
+    # predict_time = round(pe - te, 3)
     print (f"data: [{args.data_size}, {args.data_dim}], boost_round: {args.num_round}")
-    print (f"training time: {train_time}, predict time: {predict_time}")
-    result
+    # print (f"training time: {train_time}, predict time: {predict_time}")
+    # result

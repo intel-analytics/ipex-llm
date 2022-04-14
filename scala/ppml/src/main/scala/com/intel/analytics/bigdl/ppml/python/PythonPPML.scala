@@ -99,6 +99,15 @@ class PythonPPML[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonBigDL
       Tensor[Float](array, Array(array.length))
     }).toArray
   }
+  def fgBoostFitAdd(model: FGBoostModel, xTrain: JTensor) = {
+    val tensorArray = jTensorToTensorArray(xTrain)
+    model.fitAdd(tensorArray)
+  }
+  def fgBoostFitCall(model: FGBoostModel, yTrain: JTensor, boostRound: Int) = {
+    val labelArray = if (yTrain != null) yTrain.storage else null
+    model.fitCall(labelArray, boostRound)
+  }
+
   def fgBoostFit(model: FGBoostModel, feature: JTensor, label: JTensor, boostRound: Int) = {
     val tensorArray = jTensorToTensorArray(feature)
     val labelArray = if (label != null) label.storage else null

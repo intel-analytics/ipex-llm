@@ -41,6 +41,7 @@ abstract class FGBoostModel(continuous: Boolean,
   var evaluateVersion = 0
   var predictVersion = 0
   protected val evaluateResults: mutable.Map[String, ArrayBuffer[Float]] = null
+  var xTrainBuffer: ArrayBuffer[Tensor[Float]] = new ArrayBuffer[Tensor[Float]]()
   val trees = new mutable.Queue[RegressionTree]()
   def fit(feature: Array[Tensor[Float]],
           label: Array[Float],
@@ -55,6 +56,23 @@ abstract class FGBoostModel(continuous: Boolean,
       trainClassificationTree(feature, sortedIndexByFeature, boostRound)
     }
   }
+  def fitAdd(xTrainBatch: Array[Tensor[Float]]) = {
+    xTrainBuffer ++= xTrainBatch
+  }
+  def fitCall(yTrain: Array[Float], boostRound: Int) = {
+    val xTrain = xTrainBuffer.toArray
+    val sortedIndexByFeature = TreeUtils.sortByFeature(xTrain)
+    // TODO Load model from file
+    initFGBoost(yTrain)
+
+    if (continuous) {
+      trainRegressionTree(xTrain, sortedIndexByFeature, boostRound)
+    } else {
+      trainClassificationTree(xTrain, sortedIndexByFeature, boostRound)
+    }
+  }
+
+
   def evaluate(feature: Array[Tensor[Float]],
                label: Array[Float]) = {
     val predictResult = predictTree(feature)
