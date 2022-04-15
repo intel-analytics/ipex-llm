@@ -5,9 +5,9 @@ import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.dllib.utils.python.api.{JTensor, PythonBigDL}
 import com.intel.analytics.bigdl.ppml.algorithms.{FGBoostRegression, PSI}
-import com.intel.analytics.bigdl.ppml.{FLClient, FLContext, NNModel, FLServer}
+import com.intel.analytics.bigdl.ppml.{FLClient, FLContext, FLServer, NNModel}
 import com.intel.analytics.bigdl.ppml.fgboost.FGBoostModel
-import com.intel.analytics.bigdl.ppml.utils.FLClientClosable
+import com.intel.analytics.bigdl.ppml.utils.{FLClientClosable, TimingSupportive}
 
 import java.util.{List => JList}
 import scala.collection.JavaConverters._
@@ -20,7 +20,7 @@ object PythonPPML {
 
   def ofDouble(): PythonPPML[Double] = new PythonPPML[Double]()
 }
-class PythonPPML[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonBigDL {
+class PythonPPML[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonBigDL with TimingSupportive{
   def initFLContext() = {
     FLContext.initFLContext()
   }
@@ -93,19 +93,28 @@ class PythonPPML[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonBigDL
   }
   def jTensorToTensorArray(jTensor: JTensor) = {
     Log4Error.invalidOperationError(jTensor.shape.length == 2,
-      "FGBoost only support 2D input")
+      s"FGBoost only support 2D input, get dimension: ${jTensor.shape.length}")
     val featureNum = jTensor.shape(1)
     jTensor.storage.grouped(featureNum).map(array => {
       Tensor[Float](array, Array(array.length))
     }).toArray
   }
   def fgBoostFitAdd(model: FGBoostModel, xTrain: JTensor) = {
-    val tensorArray = jTensorToTensorArray(xTrain)
-    model.fitAdd(tensorArray)
+    val tensorArray = timing("JVM JTensor to Array Tensor") {
+      jTensorToTensorArray(xTrain)
+    }
+    timing("Add training batch to model") {
+      model.fitAdd(tensorArray)
+    }
+
+
   }
   def fgBoostFitCall(model: FGBoostModel, yTrain: JTensor, boostRound: Int) = {
     val labelArray = if (yTrain != null) yTrain.storage else null
-    model.fitCall(labelArray, boostRound)
+    timing("Call fit method") {
+      model.fitCall(labelArray, boostRound)
+    }
+
   }
 
   def fgBoostFit(model: FGBoostModel, feature: JTensor, label: JTensor, boostRound: Int) = {

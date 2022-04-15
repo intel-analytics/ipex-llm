@@ -14,6 +14,7 @@
 # limitations under the License.
 #
 
+import time
 import numpy as np
 from sys import getsizeof
 import math
@@ -31,6 +32,11 @@ def add_data(data: np.ndarray, jvalue, func_add, bigdl_type="float"):
     for i in range(batch_num):
         idx = i * data_per_batch
         data_batch = data[idx:idx + data_per_batch, ...] if i != batch_num - 1 else data[idx:, ...]
+        ts = time.time()
         data_batch, _ = convert_to_jtensor(data_batch)
+        te_convert = time.time()
+        print(f"numpy to jtensor time: {te_convert - ts}")
         callBigDlFunc(bigdl_type, func_add, jvalue, data_batch)
+        te_add = time.time()
+        print(f"call add data time: {te_add - te_convert}")
 
