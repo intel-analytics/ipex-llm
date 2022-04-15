@@ -45,6 +45,8 @@ else
     unzip ${BIGDL_ROOT}/python/orca/example/learn/pytorch/fashion_mnist/fashion-mnist.zip
 fi
 
+echo "data processing complete"
+
 python ${BIGDL_ROOT}/python/orca/example/learn/pytorch/fashion_mnist/fashion_mnist.py --batch_size 256 --epochs 1
 
 now=$(date "+%s")
