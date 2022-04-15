@@ -279,7 +279,7 @@ SGX=1 ./pal_loader bash -c "export RABIT_TRACKER_IP=your_IP_address && /opt/jdk8
   --conf spark.driver.extraClassPath=/ppml/trusted-big-data-ml/work/bigdl-2.1.0-SNAPSHOT/jars/* \
   --properties-file /ppml/trusted-big-data-ml/work/bigdl-2.1.0-SNAPSHOT/conf/spark-bigdl.conf \
   --jars /ppml/trusted-big-data-ml/work/bigdl-2.1.0-SNAPSHOT/jars/* \
-  --py-files /ppml/trusted-big-data-ml/work/bigdl-2.1.0-SNAPSHOT/lib/bigdl-orca-spark_3.1.2-2.1.0-SNAPSHOT-python-api.zip.zip \
+  --py-files /ppml/trusted-big-data-ml/work/bigdl-2.1.0-SNAPSHOT/python/bigdl-orca-spark_3.1.2-2.1.0-SNAPSHOT-python-api.zip \
   --executor-memory 2g \
   /ppml/trusted-big-data-ml/work/examples/pyzoo/xgboost/xgboost_example.py \
   --file-path path_of_boston_housing_csv" | tee test-zoo-xgboost-regressor-sgx.log
@@ -354,7 +354,7 @@ SGX=1 ./pal_loader bash -c "export RABIT_TRACKER_IP=your_IP_address && /opt/jdk8
   --conf spark.driver.extraClassPath=/ppml/trusted-big-data-ml/work/bigdl-2.1.0-SNAPSHOT/jars/* \
   --properties-file /ppml/trusted-big-data-ml/work/bigdl-2.1.0-SNAPSHOT/conf/spark-bigdl.conf \
   --jars /ppml/trusted-big-data-ml/work/bigdl-2.1.0-SNAPSHOT/jars/* \
-  --py-files /ppml/trusted-big-data-ml/work/bigdl-2.1.0-SNAPSHOT/lib/bigdl-orca-spark_3.1.2-2.1.0-SNAPSHOT-python-api.zip.zip \
+  --py-files /ppml/trusted-big-data-ml/work/bigdl-2.1.0-SNAPSHOT/python/bigdl-orca-spark_3.1.2-2.1.0-SNAPSHOT-python-api.zip \
   --executor-memory 2g \
   /ppml/trusted-big-data-ml/work/examples/pyzoo/xgboost/xgboost_classifier.py \
   -f path_of_pima_indians_diabetes_csv" | tee test-xgboost-classifier-sgx.log
@@ -405,7 +405,7 @@ SGX=1 ./pal_loader bash -c "/opt/jdk8/bin/java -cp \
   --conf spark.driver.extraClassPath=/ppml/trusted-big-data-ml/work/bigdl-2.1.0-SNAPSHOT/jars/* \
   --properties-file /ppml/trusted-big-data-ml/work/bigdl-2.1.0-SNAPSHOT/conf/spark-bigdl.conf \
   --jars /ppml/trusted-big-data-ml/work/bigdl-2.1.0-SNAPSHOT/jars/* \
-  --py-files /ppml/trusted-big-data-ml/work/bigdl-2.1.0-SNAPSHOT/lib/bigdl-orca-spark_3.1.2-2.1.0-SNAPSHOT-python-api.zip.zip \
+  --py-files /ppml/trusted-big-data-ml/work/bigdl-2.1.0-SNAPSHOT/python/bigdl-orca-spark_3.1.2-2.1.0-SNAPSHOT-python-api.zip \
   --executor-memory 2g \
   /ppml/trusted-big-data-ml/work/examples/pyzoo/orca/data/spark_pandas.py \
   -f path_of_nyc_taxi_csv" | tee test-orca-data-sgx.log
@@ -486,7 +486,7 @@ SGX=1 ./pal_loader bash -c "/opt/jdk8/bin/java -cp \
   --conf spark.driver.extraClassPath=/ppml/trusted-big-data-ml/work/bigdl-2.1.0-SNAPSHOT/jars/* \
   --properties-file /ppml/trusted-big-data-ml/work/bigdl-2.1.0-SNAPSHOT/conf/spark-bigdl.conf \
   --jars /ppml/trusted-big-data-ml/work/bigdl-2.1.0-SNAPSHOT/jars/* \
-  --py-files /ppml/trusted-big-data-ml/work/bigdl-2.1.0-SNAPSHOT/lib/bigdl-orca-spark_3.1.2-2.1.0-SNAPSHOT-python-api.zip.zip \
+  --py-files /ppml/trusted-big-data-ml/work/bigdl-2.1.0-SNAPSHOT/python/bigdl-orca-spark_3.1.2-2.1.0-SNAPSHOT-python-api.zip \
   --executor-memory 3g \
   --executor-cores 2 \
   --driver-cores 2 \
