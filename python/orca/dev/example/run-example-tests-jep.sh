@@ -45,11 +45,7 @@ else
     unzip ${BIGDL_ROOT}/python/orca/example/learn/pytorch/fashion_mnist/fashion-mnist.zip
 fi
 
-sed "s/epochs=5/epochs=1/g;s/batch_size=4/batch_size=256/g" \
-    ${BIGDL_ROOT}/python/orca/example/learn/pytorch/fashion_mnist/fashion_mnist.py \
-    > ${BIGDL_ROOT}/python/orca/example/learn/pytorch/fashion_mnist/fashion_mnist_tmp.py
-
-python ${BIGDL_ROOT}/python/orca/example/learn/pytorch/fashion_mnist/fashion_mnist_tmp.py
+python ${BIGDL_ROOT}/python/orca/example/learn/pytorch/fashion_mnist/fashion_mnist.py --batch_size 256 --epochs 1
 
 now=$(date "+%s")
 time3=$((now - start))
