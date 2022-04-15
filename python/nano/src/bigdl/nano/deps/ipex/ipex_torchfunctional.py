@@ -29,7 +29,8 @@ _torch_save = torch.save
 # To replace torch.save in ipex, you need to import and exec their __init__.py first.
 # And then you can replace torch.save with your customized function.
 try:
-    from intel_pytorch_extension.ops.save import *
+    # from intel_pytorch_extension.ops.save import *
+    from intel_extension_for_pytorch.ops.save  import *
 except ImportError:
     warning("IPEXAccelerator requires intel_pytorch_extension installed, \
     please run `pip install torch_ipex -f https://software.intel.com/ipex-whl-stable` \

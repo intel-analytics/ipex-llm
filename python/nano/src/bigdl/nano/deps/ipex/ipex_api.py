@@ -14,11 +14,18 @@
 # limitations under the License.
 #
 
+from yaml import warnings
+
+
 def create_IPEXAccelerator(*args, **kwargs):
     from bigdl.nano.deps.ipex.ipex_accelerator import IPEXAccelerator
     return IPEXAccelerator(*args, **kwargs)
 
 
+
 def ipex_device():
-    import intel_pytorch_extension as ipex
-    return ipex.DEVICE
+    # import intel_pytorch_extension as ipex
+    # import intel_extension_for_pytorch  as ipex
+    warnings("From torch 1.10, does not need to convert to external explicitly")
+    # return ipex.DEVICE
+    return 
