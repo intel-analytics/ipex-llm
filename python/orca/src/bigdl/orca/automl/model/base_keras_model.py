@@ -24,17 +24,20 @@ import types
 
 def check_tf_version():
     tf_version = tf.__version__
-    if tf_version >= "2.0":
-        raise RuntimeError(f"Currently running TensorFlow version {tf_version}. We only support"
-                           f"TensorFlow 1.x for now and has been tested on 1.15")
+    if tf_version <= "2.0":
+        raise RuntimeError(f"Currently running TensorFlow version {tf_version}. "
+                           "We only support TensorFlow 2.x for now.")
 
 
 class KerasBaseModel(BaseModel):
     def __init__(self,
                  model_creator,
+                 optimizer, loss,
                  check_optional_config=False):
         self.check_optional_config = check_optional_config
         self.model_creator = model_creator
+        self.optimizer = optimizer
+        self.loss = loss
         self.model = None
         self.config = None
         self.model_built = False
@@ -44,6 +47,7 @@ class KerasBaseModel(BaseModel):
         self._check_config(**config)
         self.config = config
         # build model
+        self.config.update({'optim': self.optimizer, 'loss': self.loss})
         self.model = self.model_creator(config)
         # check whether the model is a compiled model
         if self.model.optimizer is None:
@@ -152,13 +156,13 @@ class KerasBaseModel(BaseModel):
                 val_x = validation_data[0]
                 val_y = validation_data[1]
             else:
-                val_x = x
-                val_y = y
+                val_x = data[0]
+                val_y = data[1]
             y_pred = self.predict(val_x)
             result = metric_func(val_y, y_pred)
             return {metric_name: result}
 
-    def evaluate(self, x, y, metrics=['mse']):
+    def evaluate(self, x, y, batch_size=32, metrics=['mse'], multioutput='raw_values'):
         """
         Evaluate on x, y
         :param x: input
@@ -166,10 +170,10 @@ class KerasBaseModel(BaseModel):
         :param metrics: a list of metrics in string format
         :return: a list of metric evaluation results
         """
-        y_pred = self.predict(x)
-        return [Evaluator.evaluate(m, y, y_pred) for m in metrics]
+        y_pred = self.predict(x, batch_size=batch_size)
+        return [Evaluator.evaluate(m, y, y_pred, multioutput=multioutput) for m in metrics]
 
-    def predict(self, x):
+    def predict(self, x, batch_size=32):
         """
         Prediction on x.
         :param x: input
@@ -177,7 +181,7 @@ class KerasBaseModel(BaseModel):
         """
         if not self.model_built:
             raise RuntimeError("You must call fit_eval or restore first before calling predict!")
-        return self.model.predict(x, batch_size=self.config.get("batch_size", 32))
+        return self.model.predict(x, batch_size=batch_size)
 
     def predict_with_uncertainty(self, x, n_iter=100):
         if not self.model_built:
@@ -202,6 +206,9 @@ class KerasBaseModel(BaseModel):
     def load_state_dict(self, state):
         self.config = state["config"]
         self.model = self.model_creator(self.config)
+        if self.model.layers[0].weights.__len__() == 0:
+            input_shape = self._get_input_shape()
+            self.model(input_shape)
         self.model.set_weights(state["weights"])
         self.model_built = True
         # self.model.optimizer.set_weights(state["optimizer_weights"])
@@ -224,13 +231,23 @@ class KerasBaseModel(BaseModel):
     def _get_optional_parameters(self):
         return {"batch_size"}
 
+    def _get_input_shape(self):
+        past_seq_len = self.config['past_seq_len']
+        input_feature_num = self.config['input_feature_num']
+        batch_size = self.config.get('batch_size', 32)
+        input_shape = tf.random.normal((batch_size, past_seq_len, input_feature_num))
+        return input_shape
 
 class KerasModelBuilder(ModelBuilder):
 
-    def __init__(self, model_creator):
+    def __init__(self, model_creator, optimizer, loss):
         self.model_creator = model_creator
+        self.optimizer = optimizer
+        self.loss = loss
 
     def build(self, config):
-        model = KerasBaseModel(self.model_creator)
+        model = KerasBaseModel(self.model_creator,
+                               self.optimizer,
+                               self.loss)
         model.build(config)
         return model

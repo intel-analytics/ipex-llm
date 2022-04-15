@@ -318,3 +318,5 @@ class BasePytorchAutomodel:
 
     def _get_best_automl_model(self):
         return self.best_model
+
+# TODO BaseKerasAutomodel

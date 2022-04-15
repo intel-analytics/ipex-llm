@@ -60,12 +60,13 @@ def valid_dataloader_creator(config):
                       shuffle=True)
 
 
-def get_auto_estimator():
+def get_auto_estimator(backend='torch'):
+    loss = torch.nn.MSELoss() if backend.startswith('torch') else "mse"
     auto_lstm = AutoLSTM(input_feature_num=input_feature_dim,
                          output_target_num=output_feature_dim,
                          past_seq_len=5,
                          optimizer='Adam',
-                         loss=torch.nn.MSELoss(),
+                         loss=loss,
                          metric="mse",
                          hidden_dim=hp.grid_search([32, 64]),
                          layer_num=hp.randint(1, 3),
@@ -73,6 +74,7 @@ def get_auto_estimator():
                          dropout=hp.uniform(0.1, 0.2),
                          logs_dir="/tmp/auto_lstm",
                          cpus_per_trial=2,
+                         backend=backend,
                          name="auto_lstm")
     return auto_lstm
 
@@ -87,7 +89,8 @@ class TestAutoLSTM(TestCase):
         stop_orca_context()
 
     def test_fit_np(self):
-        auto_lstm = get_auto_estimator()
+        # torch
+        auto_lstm = get_auto_estimator(backend='torch')
         auto_lstm.fit(data=get_x_y(size=1000),
                       epochs=1,
                       batch_size=hp.choice([32, 64]),
@@ -95,6 +98,19 @@ class TestAutoLSTM(TestCase):
                       n_sampling=1)
         assert auto_lstm.get_best_model()
         best_config = auto_lstm.get_best_config()
+        assert 0.1 <= best_config['dropout'] <= 0.2
+        assert best_config['batch_size'] in (32, 64)
+        assert 1 <= best_config['layer_num'] < 3
+
+        # keras
+        keras_auto_lstm = get_auto_estimator(backend='keras')
+        keras_auto_lstm.fit(data=get_x_y(size=1000),
+                            epochs=2,
+                            batch_size=hp.choice([32, 64]),
+                            validation_data=get_x_y(size=400),
+                            n_sampling=1)
+        assert keras_auto_lstm.get_best_model()
+        best_config = keras_auto_lstm.get_best_config()
         assert 0.1 <= best_config['dropout'] <= 0.2
         assert best_config['batch_size'] in (32, 64)
         assert 1 <= best_config['layer_num'] < 3

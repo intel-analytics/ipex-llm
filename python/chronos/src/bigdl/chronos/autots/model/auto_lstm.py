@@ -15,8 +15,8 @@
 # limitations under the License.
 #
 from bigdl.orca.automl.model.base_pytorch_model import PytorchModelBuilder
+from bigdl.orca.automl.model.base_keras_model import KerasModelBuilder
 from bigdl.orca.automl.auto_estimator import AutoEstimator
-from bigdl.chronos.model.VanillaLSTM_pytorch import model_creator
 from .base_automodel import BasePytorchAutomodel
 
 
@@ -75,9 +75,7 @@ class AutoLSTM(BasePytorchAutomodel):
             cluster, it defaults to "hdfs:///tmp/{name}".
         """
         super().__init__()
-        # todo: support backend = 'keras'
-        if backend != "torch":
-            raise ValueError(f"We only support backend as torch. Got {backend}")
+
         self.search_space = dict(
             hidden_dim=hidden_dim,
             layer_num=layer_num,
@@ -90,10 +88,19 @@ class AutoLSTM(BasePytorchAutomodel):
         )
         self.metric = metric
         self.metric_mode = metric_mode
-        model_builder = PytorchModelBuilder(model_creator=model_creator,
-                                            optimizer_creator=optimizer,
-                                            loss_creator=loss,
-                                            )
+
+        if backend.startswith("torch"):
+            from bigdl.chronos.model.VanillaLSTM_pytorch import model_creator
+            model_builder = PytorchModelBuilder(model_creator=model_creator,
+                                                optimizer_creator=optimizer,
+                                                loss_creator=loss)
+        elif backend.startswith("keras"):
+            from bigdl.chronos.model.tf2.VanillaLSTM_keras import model_creator
+            model_builder = KerasModelBuilder(model_creator=model_creator,
+                                              optimizer=optimizer,
+                                              loss=loss)
+        else:
+            raise ValueError(f"We only support keras or torch as backend. Got {backend}")
         self.auto_est = AutoEstimator(model_builder=model_builder,
                                       logs_dir=logs_dir,
                                       resources_per_trial={"cpu": cpus_per_trial},
