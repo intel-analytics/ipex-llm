@@ -175,9 +175,10 @@ class Sequential[T: ClassTag] private ()
 
   override def summary(
                         lineLength: Int = 120,
-                        positions: Array[Double] = Array(.33, .55, .67, 1)): Unit = {
+                        positions: Array[Double] = Array(.33, .55, .67, 1),
+                        needPrint: Boolean = true): String = {
     val graph = this.toModel()
-    graph.summary(lineLength, positions)
+    return graph.summary(lineLength, positions, needPrint)
   }
 
   override private[bigdl] def getKerasWeights(): Array[Tensor[Float]] = {

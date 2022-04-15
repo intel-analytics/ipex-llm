@@ -396,8 +396,9 @@ object KerasUtils {
   def printNodeSummary[T: ClassTag](
       node: ModuleNode[T],
       lineLength: Int = 120,
-      positions: Array[Double] = Array(.33, .55, .67, 1)): (Int, Int) = {
-    printRow(getNodeSummary(node), lineLength, positions)
+      positions: Array[Double] = Array(.33, .55, .67, 1),
+      summaryBuf: ArrayBuffer[String] = null): (Int, Int) = {
+    printRow(getNodeSummary(node), lineLength, positions, summaryBuf = summaryBuf)
     countParams(node.element.asInstanceOf[KerasLayer[Activity, Activity, T]])
   }
 
@@ -422,7 +423,8 @@ object KerasUtils {
       lineLength: Int = 120,
       positions: Array[Double] = Array(.33, .55, .67, 1),
       includeSplitLine: Boolean = true,
-      splitChar: Char = '_'): Unit = {
+      splitChar: Char = '_',
+      summaryBuf: ArrayBuffer[String] = null): Unit = {
     val fieldLengths = ArrayBuffer[Int]()
     for (i <- positions.indices) {
       if (i > 0) {
@@ -455,22 +457,23 @@ object KerasUtils {
 
     }
 
-    println(line)
+    summaryBuf.append(line)
     // If there are multiple connected to nodes, print the remaining each in a separate line
     // without the split line.
     for (node <- nodes.slice(1, nodes.length)) {
-      printRow(Array("", "", "", node), lineLength, positions, includeSplitLine = false)
+      printRow(Array("", "", "", node), lineLength, positions, includeSplitLine = false,
+        summaryBuf = summaryBuf)
     }
-    if (includeSplitLine) printSplitLine(splitChar, lineLength)
+    if (includeSplitLine) printSplitLine(splitChar, lineLength, summaryBuf)
   }
 
   /**
    * Print a split line that repeats the 'char' for 'lineLength' times.
    */
-  def printSplitLine(char: Char, lineLength: Int = 120): Unit = {
+  def printSplitLine(char: Char, lineLength: Int = 120, summaryBuf: ArrayBuffer[String]): Unit = {
     val str = char.toString
     val message = str * lineLength
-    println(message)
+    summaryBuf.append(message)
   }
 
   /**
