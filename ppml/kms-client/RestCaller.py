@@ -38,7 +38,7 @@ def post_request(ip, port, action, payload):
     result = json.loads(create_resp.text)['result']
     return result
 
-def request_parimary_key_ciphertext(ip, port):
+def request_primary_key_ciphertext(ip, port):
     action = "CreateKey"
     payload = {
         "keyspec":"EH_AES_GCM_128",
