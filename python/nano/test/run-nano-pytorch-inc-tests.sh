@@ -5,6 +5,8 @@ export NANO_HOME=${ANALYTICS_ZOO_ROOT}/python/nano/src
 export INC_PYTORCH_NANO_TEST_DIR=${ANALYTICS_ZOO_ROOT}/python/nano/test/neural-compressor/pytorch
 
 wget -nv ${FTP_URI}/analytics-zoo-data/cifar-10-python.tar.gz -P ${INC_PYTORCH_NANO_TEST_DIR}/data
+# temporary fix on torchmetrics, downgrade to 0.7.2
+pip install torchmetrics==0.7.2 --upgrade
 
 set -e
 
