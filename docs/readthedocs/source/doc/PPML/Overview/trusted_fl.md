@@ -56,7 +56,7 @@ Please ensure SGX is properly enabled, and SGX driver is installed. If not, plea
 
     If run in container, please modify `KEYS_PATH` to `keys/` you generated in last step in `deploy_fl_container.sh`. This dir will mount to container's `/ppml/trusted-big-data-ml/work/keys`, then modify the `privateKeyFilePath` and `certChainFilePath` in `ppml-conf.yaml` with container's absolute path. If not in container, just modify the `privateKeyFilePath` and `certChainFilePath` in `ppml-conf.yaml` with your local path. If you don't want to build tls channel with certificate, just delete the `privateKeyFilePath` and `certChainFilePath` in `ppml-conf.yaml`.
 
-3. Prepare dataset for FL training. For demo purposes, we have added a public dataset in [BigDL PPML Demo data](https://github.com/intel-analytics/BigDL/tree/branch-2.0/scala/ppml/demo/data). Please download these data into your local machine. Then modify `DATA_PATH` to `./data` with absolute path in your machine and your local ip in `deploy_fl_container.sh`. The `./data` path will mount to container's `/ppml/trusted-big-data-ml/work/data`, so if you don't run in container, you need to modify the data path in `runH_VflClient1_2.sh`.
+3. Prepare dataset for FL training. For demo purposes, we have added a public dataset in [BigDL PPML Demo data](https://github.com/intel-analytics/BigDL/tree/main/scala/ppml/demo/data). Please download these data into your local machine. Then modify `DATA_PATH` to `./data` with absolute path in your machine and your local ip in `deploy_fl_container.sh`. The `./data` path will mount to container's `/ppml/trusted-big-data-ml/work/data`, so if you don't run in container, you need to modify the data path in `runH_VflClient1_2.sh`.
 
 ### Prepare Docker Image
 
