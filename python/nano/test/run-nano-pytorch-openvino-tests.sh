@@ -3,6 +3,8 @@
 export ANALYTICS_ZOO_ROOT=${ANALYTICS_ZOO_ROOT}
 export NANO_HOME=${ANALYTICS_ZOO_ROOT}/python/nano/src
 export PYTORCH_OPENVINO_NANO_TEST_DIR=${ANALYTICS_ZOO_ROOT}/python/nano/test/openvino/pytorch
+# temporary fix on torchmetrics, downgrade to 0.7.2
+pip install torchmetrics==0.7.2 --upgrade
 
 set -e
 
