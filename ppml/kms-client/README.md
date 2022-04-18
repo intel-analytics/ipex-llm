@@ -64,7 +64,7 @@ echo "[INFO] The Output Path is $encrypted_path"
 
 Users without a ready python environment can turn to use a pre-prepared BigDL PPML container. 
 
-We have deployed necessary requirements in [SGX-based Trusted Big Data ML](https://github.com/intel-analytics/BigDL/tree/branch-2.0/ppml/trusted-big-data-ml/python/docker-graphene). You can also do the same in other trusted execution environments, like Trusted Realtime ML etc., after installing python modules listed in `requirement.yml` with pip.
+We have deployed necessary requirements in [SGX-based Trusted Big Data ML](https://github.com/intel-analytics/BigDL/tree/main/ppml/trusted-big-data-ml/python/docker-graphene). You can also do the same in other trusted execution environments, like Trusted Realtime ML etc., after installing python modules listed in `requirement.yml` with pip.
 
 Pay attention to the variables and set them to correct values according to your operating environment.
 
@@ -113,7 +113,7 @@ python ./work/kms-client/KMS_Client.py --api encrypt_directory_with_key --ip $KM
 
 The KMS client in this example is running in a BigDL PPML container. Please make sure the SGX-Graphene is available.
 
-Prepare and start the Graphene-SGX-based client container as below. As for `ENCLAVE_KEY_PATH`, `SPARK_KEY_PATH` and `SECURE_PASSWORD_PATH`, please refer to  [SGX-based Trusted Big Data ML](https://github.com/intel-analytics/BigDL/tree/branch-2.0/ppml/trusted-big-data-ml/python/docker-graphene#prepare-the-key).
+Prepare and start the Graphene-SGX-based client container as below. As for `ENCLAVE_KEY_PATH`, `SPARK_KEY_PATH` and `SECURE_PASSWORD_PATH`, please refer to  [SGX-based Trusted Big Data ML](https://github.com/intel-analytics/BigDL/tree/main/ppml/trusted-big-data-ml/python/docker-graphene#prepare-the-key).
 
 ```bash
 export INPUT_DIR_PATH=YOUR_DATA_FILE_DIRECTORY_PATH # Encrypted Data Files Is Under This Directory
