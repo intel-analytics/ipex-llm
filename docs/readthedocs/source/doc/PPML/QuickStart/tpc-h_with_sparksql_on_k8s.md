@@ -7,7 +7,7 @@
 
 ### Prepare TPC-H kit and data ###
 1. Download and compile tpc-h 
-```
+```bash
 git clone https://github.com/intel-analytics/zoo-tutorials.git
 cd zoo-tutorials/tpch-spark
 
@@ -21,22 +21,23 @@ make
 2. Generate data
 
 Generate input data with size ~100GB (user can adjust data size to need):
-```
+```bash
 ./dbgen -s 100
 ```
 
 ### Deploy PPML TPC-H on Kubernetes ###
 1.  Pull docker image
-```
+```bash
 sudo docker pull intelanalytics/bigdl-ppml-trusted-big-data-ml-python-graphene:2.1.0-SNAPSHOT
 ```
-2. Prepare SGX keys, make sure keys and tpch-spark can be accessed on each K8S node
+2. Prepare SGX keys (following instructions [here](https://github.com/intel-analytics/BigDL/tree/main/ppml/trusted-big-data-ml/python/docker-graphene#11-prepare-the-keyspassworddataenclave-keypem "here")), make sure keys and tpch-spark can be accessed on each K8S node
 3. Start a bigdl-ppml enabled Spark K8S client container with configured local IP, key, tpch and kuberconfig path
-```
-export ENCLAVE_KEY=/root/keys/enclave-key.pem
-export DATA_PATH=/root/zoo-tutorials/tpch-spark
-export KEYS_PATH=/root/keys
-export KUBERCONFIG_PATH=/root/kuberconfig
+```bash
+export ENCLAVE_KEY=/YOUR_DIR/keys/enclave-key.pem
+export DATA_PATH=/YOUR_DIR/zoo-tutorials/tpch-spark
+export KEYS_PATH=/YOUR_DIR/keys
+export SECURE_PASSWORD_PATH=/YOUR_DIR/password
+export KUBERCONFIG_PATH=/YOUR_DIR/kuberconfig
 export LOCAL_IP=$local_ip
 export DOCKER_IMAGE=intelanalytics/bigdl-ppml-trusted-big-data-ml-python-graphene:2.1.0-SNAPSHOT
 sudo docker run -itd \
@@ -50,6 +51,7 @@ sudo docker run -itd \
         -v $ENCLAVE_KEY:/graphene/Pal/src/host/Linux-SGX/signer/enclave-key.pem \
         -v $DATA_PATH:/ppml/trusted-big-data-ml/work/tpch-spark \
         -v $KEYS_PATH:/ppml/trusted-big-data-ml/work/keys \
+        -v $SECURE_PASSWORD_PATH:/ppml/trusted-big-data-ml/work/password \
         -v $KUBERCONFIG_PATH:/root/.kube/config \
         -e RUNTIME_SPARK_MASTER=k8s://https://$LOCAL_IP:6443 \
         -e RUNTIME_K8S_SERVICE_ACCOUNT=spark \
@@ -99,7 +101,8 @@ spec:
         path: /path/to/kuberconfig
 ```
 6. Run PPML TPC-H
-```
+```bash
+secure_password=`openssl rsautl -inkey /ppml/trusted-big-data-ml/work/password/key.txt -decrypt </ppml/trusted-big-data-ml/work/password/output.bin` && \
 export TF_MKL_ALLOC_MAX_BYTES=10737418240 && \
 export SPARK_LOCAL_IP=$LOCAL_IP && \
 export HDFS_HOST=$hdfs_host_ip && \
@@ -145,6 +148,27 @@ export OUTPUT_DIR=hdfs://$HDFS_HOST:$HDFS_PORT/tpc-h/output \
     --conf spark.kubernetes.sgx.enabled=true \
     --conf spark.kubernetes.sgx.executor.mem=32g \
     --conf spark.kubernetes.sgx.executor.jvm.mem=10g \
+    --conf spark.kubernetes.sgx.log.level=$SGX_LOG_LEVEL \
+    --conf spark.authenticate=true \
+    --conf spark.authenticate.secret=$secure_password \
+    --conf spark.kubernetes.executor.secretKeyRef.SPARK_AUTHENTICATE_SECRET="spark-secret:secret" \
+    --conf spark.kubernetes.driver.secretKeyRef.SPARK_AUTHENTICATE_SECRET="spark-secret:secret" \
+    --conf spark.authenticate.enableSaslEncryption=true \
+    --conf spark.network.crypto.enabled=true \
+    --conf spark.network.crypto.keyLength=128 \
+    --conf spark.network.crypto.keyFactoryAlgorithm=PBKDF2WithHmacSHA1 \
+    --conf spark.io.encryption.enabled=true \
+    --conf spark.io.encryption.keySizeBits=128 \
+    --conf spark.io.encryption.keygen.algorithm=HmacSHA1 \
+    --conf spark.ssl.enabled=true \
+    --conf spark.ssl.port=8043 \
+    --conf spark.ssl.keyPassword=$secure_password \
+    --conf spark.ssl.keyStore=/ppml/trusted-big-data-ml/work/keys/keystore.jks \
+    --conf spark.ssl.keyStorePassword=$secure_password \
+    --conf spark.ssl.keyStoreType=JKS \
+    --conf spark.ssl.trustStore=/ppml/trusted-big-data-ml/work/keys/keystore.jks \
+    --conf spark.ssl.trustStorePassword=$secure_password \
+    --conf spark.ssl.trustStoreType=JKS \
     --class main.scala.TpchQuery \
     --verbose \
     $TPCH_DIR/target/scala-2.12/spark-tpc-h-queries_2.12-1.0.jar \
