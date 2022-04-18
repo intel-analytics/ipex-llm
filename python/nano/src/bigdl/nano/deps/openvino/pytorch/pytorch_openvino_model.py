@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-
+import os
 from functools import partial
 from ..core.openvino_model import OpenVINOModel
 from ..core.utility import convert_onnx_to_xml

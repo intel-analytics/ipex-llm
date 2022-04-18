@@ -322,7 +322,8 @@ class Trainer(pl.Trainer):
     def save(model, path, precision=None, accelerator=None, input_sample=None):
         if accelerator == 'openvino':
             if precision is None:
-                if hasattr(model, "save"):
-                    model.save(path)
-                elif isinstance(model, nn.Module):
-                    PytorchOpenVINOModel(model, input_sample=input_sample, xml_path=path)
+                if not hasattr(model, "save")  and isinstance(model, nn.Module):
+                    model = PytorchOpenVINOModel(model, input_sample=input_sample)
+                else:
+                    raise TypeError("Model type of {} can not be exported.".format(type(model)))
+                model.save(path)
