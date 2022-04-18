@@ -21,8 +21,10 @@ from ...inference.pytorch.utility import export as export_to_onnx
 
 def export(model, input_sample=None, xml_path="model.xml"):
     '''
-    Internal function to build a ortsess and bind to the lightningmodule.
+    Function to export pytorch model into openvino and save it to local.
+    Any instance of torch.nn.Module including Lightning Module is acceptable.
 
+    :param model: Model instance of torch.nn.module to be exported.
     :param input_sample: torch.Tensor or a list for the model tracing.
     :param file_path: The path to save openvino model file.
     '''
