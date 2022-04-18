@@ -31,22 +31,19 @@ class RayContext(object):
 
         self.runtime = runtime
         self.initialized = False
-        self.num_ray_nodes = num_nodes
-        self.ray_node_cpu_cores = cores
 
         if runtime == "spark":
             from bigdl.orca.ray import RayOnSparkContext
-            init_params = dict(
-                num_ray_nodes=self.num_ray_nodes,
-                ray_node_cpu_cores=self.ray_node_cpu_cores)
-            init_params.update(kwargs)
-            self._ray_on_spark_context = RayOnSparkContext(**init_params)
+            self._ray_on_spark_context = RayOnSparkContext(**kwargs)
             self.is_local = self._ray_on_spark_context.is_local
 
         elif runtime == "ray":
             self.is_local = False
             ray_args = kwargs.copy()
             self.ray_args = ray_args
+
+            self.num_ray_nodes = num_nodes
+            self.ray_node_cpu_cores = cores
         else:
             raise ValueError(f"Unsupported runtime: {runtime}. "
                              f"Runtime must be spark or ray")
