@@ -22,8 +22,12 @@ from bigdl.ppml.fl_server import *
 from bigdl.ppml.utils import *
 import bigdl
 
+import psutil
 
-spark_conf = create_spark_conf().set("spark.driver.memory", "8g")
+total_mem = psutil.virtual_memory().total
+spark_mem_gb = int(total_mem / (2 ** 30) * 0.8)
+
+spark_conf = create_spark_conf().set("spark.driver.memory", f"{spark_mem_gb}g")
 SparkContext.getOrCreate(spark_conf)
 
 prepare_env()
