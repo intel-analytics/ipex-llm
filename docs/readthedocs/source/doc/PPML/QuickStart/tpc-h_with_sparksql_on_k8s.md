@@ -143,8 +143,8 @@ export OUTPUT_DIR=hdfs://$HDFS_HOST:$HDFS_PORT/tpc-h/output \
     --conf spark.kubernetes.executor.deleteOnTermination=false \
     --conf spark.kubernetes.executor.podNamePrefix=spark-tpch-sgx \
     --conf spark.kubernetes.sgx.enabled=true \
-    --conf spark.kubernetes.sgx.mem=32g \
-    --conf spark.kubernetes.sgx.jvm.mem=10g \
+    --conf spark.kubernetes.sgx.executor.mem=32g \
+    --conf spark.kubernetes.sgx.executor.jvm.mem=10g \
     --class main.scala.TpchQuery \
     --verbose \
     $TPCH_DIR/target/scala-2.12/spark-tpc-h-queries_2.12-1.0.jar \
