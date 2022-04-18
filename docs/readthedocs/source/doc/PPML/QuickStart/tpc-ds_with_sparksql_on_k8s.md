@@ -11,16 +11,17 @@
 1. Download and compile tpc-ds
 
 ```
+git clone --recursive https://github.com/intel-analytics/zoo-tutorials.git
+cd /path/to/zoo-tutorials
 git clone https://github.com/databricks/tpcds-kit.git
 cd tpcds-kit/tools
 make OS=LINUX
-
-git clone --recursive https://github.com/intel-analytics/zoo-tutorials.git
 ```
 
 2. Generate data
 
 ```
+cd /path/to/zoo-tutorials
 cd tpcds-spark/spark-sql-perf
 sbt "test:runMain com.databricks.spark.sql.perf.tpcds.GenTPCDSData -d <dsdgenDir> -s <scaleFactor> -l <dataDir> -f parquet"
 ```
