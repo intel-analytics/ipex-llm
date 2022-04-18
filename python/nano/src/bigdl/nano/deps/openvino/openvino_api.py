@@ -17,5 +17,5 @@ from functools import partial
 
 
 def PytorchOpenVINOModel(model, input_sample=None, xml_path="model.xml"):
-    from .pytorch.model import PytorchOpenVINOModel
+    from .pytorch.pytorch_openvino_model import PytorchOpenVINOModel
     return PytorchOpenVINOModel(model, input_sample, xml_path)
