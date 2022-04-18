@@ -36,12 +36,13 @@ class RayContext(object):
             from bigdl.orca.ray import RayOnSparkContext
             self._ray_on_spark_context = RayOnSparkContext(**kwargs)
             self.is_local = self._ray_on_spark_context.is_local
+            self.num_ray_nodes = self._ray_on_spark_context.num_ray_nodes
+            self.ray_node_cpu_cores = self._ray_on_spark_context.ray_node_cpu_cores
 
         elif runtime == "ray":
             self.is_local = False
             ray_args = kwargs.copy()
             self.ray_args = ray_args
-
             self.num_ray_nodes = num_nodes
             self.ray_node_cpu_cores = cores
         else:
