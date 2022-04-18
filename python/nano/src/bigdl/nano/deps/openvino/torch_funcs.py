@@ -59,28 +59,3 @@ def export(model, input_sample=None, xml_path="model.xml"):
     '''
     export_to_onnx(model, input_sample, 'model.onnx', dynamic_axes=False)
     convert_onnx_to_xml('model.onnx', xml_path)
-
-
-def eval_openvino(model, input_sample=None, xml_path="model.xml"):
-    '''
-    This method change the `forward` method to an openvino backed forwarding.
-
-    >>> model.eval_openvino(quantize=True/False)
-    >>> pred = model(x)  # openvino forwarding
-    >>> model.exit_openvino()
-
-    :param input_sample: (optional) a torch dataloader, torch.Tensor or a
-           list of them for the model tracing.
-    :param file_path: (optional) The path to save openvino model file.
-    :param **kwargs: (optional) will be passed to torch.onnx.export function.
-    '''
-    # change to eval mode
-    model.eval()
-    if not hasattr(model, "ov_infer_engine") or not model.ov_infer_engine.ie_network:
-        model.ov_infer_engine = PytorchOpenVINOInference.from_torch(model, input_sample, xml_path)
-
-    model.ov_infer_engine.attach(model)
-
-
-def exit_openvino(model):
-    model.ov_infer_engine.detach(model)
