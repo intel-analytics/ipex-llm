@@ -32,7 +32,7 @@ from bigdl.nano.pytorch.lightning import LightningModuleFromTorch
 from bigdl.nano.pytorch.plugins.ddp_spawn import DDPSpawnPlugin
 from bigdl.nano.deps.ray.ray_api import distributed_ray
 from bigdl.nano.deps.ipex.ipex_api import create_IPEXAccelerator, ipex_device
-from bigdl.nano.deps.openvino.openvino_api import bind_openvino_methods, PytorchOpenVINOModel
+from bigdl.nano.deps.openvino.openvino_api import PytorchOpenVINOModel
 from bigdl.nano.deps.onnxruntime.onnxruntime_api import bind_onnxrt_methods
 
 distributed_backends = ["spawn", "ray", "subprocess"]

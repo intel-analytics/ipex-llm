@@ -15,9 +15,10 @@
 #
 
 from functools import partial
-from .openvino_model import OpenVINOModel, convert_onnx_to_xml
-from ..inference.pytorch_base_model import AcceleratedLightningModule
-from ..inference.pytorch_base_model import export as export_to_onnx
+from ..core.openvino_model import OpenVINOModel
+from ..core.utility import convert_onnx_to_xml
+from ...inference.pytorch.model import AcceleratedLightningModule
+from ...inference.pytorch.utility import export as export_to_onnx
 import torch
 
 

@@ -13,54 +13,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-from typing import List, Tuple
 from bigdl.nano.pytorch.lightning import LightningModuleFromTorch
 import inspect
 from torch.utils.data import DataLoader
 import torch
-
-
-class AcceleratedLightningModule(LightningModuleFromTorch):
-    def __init__(self, model):
-        super().__init__(model)
-        self.on_init_end()
-
-    def on_init_end(self, *args):
-        pass
-
-    def forward(self, *inputs):
-        inputs = self.on_forward_start(inputs)
-        outputs = self.forward_step(*inputs)
-        return self.on_forward_end(outputs)
-
-    def train(self, mode=True):
-        if mode:
-            raise RuntimeError("This model is not trainable!")
-        super().train(mode)
-
-    def on_forward_start(self, inputs):
-        return inputs
-
-    def forward_step(self, *inputs):
-        return self.model(*inputs)
-
-    def on_forward_end(self, outputs):
-        return outputs
-
-    def get_forward_args(self):
-        return get_forward_args(self)
-
-    @staticmethod
-    def tensors_to_numpy(tensors):
-        np_data = tuple(map(lambda x: x.cpu().numpy(), tensors))
-        return np_data
-
-    @staticmethod
-    def numpy_to_tensors(np_array):
-        tensors = tuple(map(lambda x: torch.from_numpy(x), np_array))
-        if len(tensors) == 1:
-            tensors = tensors[0]
-        return tensors
 
 
 def get_forward_args(model):

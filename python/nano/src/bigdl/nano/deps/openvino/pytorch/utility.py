@@ -13,9 +13,18 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+
 from functools import partial
+from ..core.utility import convert_onnx_to_xml
+from ...inference.pytorch.utility import export as export_to_onnx
 
 
-def PytorchOpenVINOModel(model, input_sample=None, xml_path="model.xml"):
-    from .pytorch.model import PytorchOpenVINOModel
-    return PytorchOpenVINOModel(model, input_sample, xml_path)
+def export(model, input_sample=None, xml_path="model.xml"):
+    '''
+    Internal function to build a ortsess and bind to the lightningmodule.
+
+    :param input_sample: torch.Tensor or a list for the model tracing.
+    :param file_path: The path to save openvino model file.
+    '''
+    export_to_onnx(model, input_sample, 'model.onnx', dynamic_axes=False)
+    convert_onnx_to_xml('model.onnx', xml_path)

@@ -13,9 +13,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-from functools import partial
+from openvino.inference_engine import IECore
 
-
-def PytorchOpenVINOModel(model, input_sample=None, xml_path="model.xml"):
-    from .pytorch.model import PytorchOpenVINOModel
-    return PytorchOpenVINOModel(model, input_sample, xml_path)
+def convert_onnx_to_xml(onnx_file_path, xml_path, batch_size=1):
+    ie = IECore()
+    net_onnx = ie.read_network(model=onnx_file_path)
+    net_onnx.batch_size = batch_size
+    net_onnx.serialize(xml_path)

@@ -13,9 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-from functools import partial
-
-
-def PytorchOpenVINOModel(model, input_sample=None, xml_path="model.xml"):
-    from .pytorch.model import PytorchOpenVINOModel
-    return PytorchOpenVINOModel(model, input_sample, xml_path)
+try:
+    from openvino.inference_engine import IECore
+except ImportError:
+    raise ImportError("To enable openvino inference, you need to install it by:\n"
+                      "\t\t pip install openvino-dev")
