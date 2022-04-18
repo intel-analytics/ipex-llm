@@ -34,7 +34,7 @@ def get_input_example(model: LightningModuleFromTorch, input_sample):
     elif input_sample is None:
         if getattr(model, "example_input_array", None) is not None:
             input_sample = model.example_input_array
-        elif model.trainer is not None:
+        elif getattr(model, "trainer", None) is not None:
             for dataloader in [model.test_dataloader(), model.train_dataloader(),
                                model.val_dataloader()]:
                 if dataloader is not None:
