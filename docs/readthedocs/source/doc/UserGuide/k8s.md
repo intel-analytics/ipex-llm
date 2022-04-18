@@ -190,7 +190,7 @@ In the `/opt` directory, run this command line to start the Jupyter Notebook ser
 
 You will see the output message like below. This means the Jupyter Notebook service has started successfully within the container.
 ```
-[I 23:51:08.456 NotebookApp] Serving notebooks from local directory: /opt/bigdl-0.14.0-SNAPSHOT/apps
+[I 23:51:08.456 NotebookApp] Serving notebooks from local directory: /opt/bigdl-2.1.0-SNAPSHOT/apps
 [I 23:51:08.456 NotebookApp] Jupyter Notebook 6.2.0 is running at:
 [I 23:51:08.456 NotebookApp] http://xxxx:12345/?token=...
 [I 23:51:08.457 NotebookApp]  or http://127.0.0.1:12345/?token=...
