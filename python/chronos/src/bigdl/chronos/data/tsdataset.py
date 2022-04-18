@@ -705,6 +705,23 @@ class TSDataset:
                               batch_size=batch_size,
                               shuffle=True)
 
+    def to_tf_dataset(self, batch_size=32):
+        """
+        Export a Dataset whose elements are slices of the given tensors.
+
+        :param batch_size: Number of samples per batch of computation.
+               If unspecified, batch_size will default to 32.
+
+        :return: a tf.data dataset, including x and y.
+        """
+        # TODO Requires a tf dataset creator method and can be use less memory.
+        import tensorflow as tf
+        if self.numpy_x is None:
+            raise RuntimeError("Please call 'roll' method "
+                               "before transform a TSDataset to tf dataset!")
+        data = tf.data.Dataset.from_tensor_slices((self.numpy_x, self.numpy_y))
+        return data.cache().batch(batch_size).prefetch(tf.data.AUTOTUNE)
+
     def to_numpy(self):
         '''
         Export rolling result in form of a tuple of numpy ndarray (x, y).

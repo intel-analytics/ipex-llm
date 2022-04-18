@@ -21,23 +21,23 @@ import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 class ShapeSpec extends FlatSpec with Matchers with BeforeAndAfter {
 
   "update of SingleShape" should "be test" in {
-    assert(Shape(1, 2, 3).copyAndUpdate(-1, 20) == Shape(1, 2, 20))
+    TestUtils.conditionFailTest(Shape(1, 2, 3).copyAndUpdate(-1, 20) == Shape(1, 2, 20))
   }
 
   "update of MultiShape" should "be test" in {
     val multiShape = Shape(List(Shape(1, 2, 3), Shape(4, 5, 6)))
-    assert(multiShape.copyAndUpdate(-1, Shape(5, 5, 5)) ==
+    TestUtils.conditionFailTest(multiShape.copyAndUpdate(-1, Shape(5, 5, 5)) ==
       Shape(List(Shape(1, 2, 3), Shape(5, 5, 5))))
   }
 
   "multiShape not equal" should "be test" in {
-    intercept[RuntimeException] {
-      assert(Shape(List(Shape(1, 2, 3), Shape(5, 5, 5))) ==
+    intercept[AssertionError] {
+      TestUtils.conditionFailTest(Shape(List(Shape(1, 2, 3), Shape(5, 5, 5))) ==
         Shape(List(Shape(1, 2, 3), Shape(5, 6, 5))))
     }}
 
   "singleShape not equal" should "be test" in {
-    intercept[RuntimeException] {
-      assert(Shape(1, 2, 3) == Shape(1, 2, 4))
+    intercept[AssertionError] {
+      TestUtils.conditionFailTest(Shape(1, 2, 3) == Shape(1, 2, 4))
     }}
 }

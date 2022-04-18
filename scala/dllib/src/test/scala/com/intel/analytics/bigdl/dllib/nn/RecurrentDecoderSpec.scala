@@ -60,7 +60,7 @@ class RecurrentDecoderSpec extends FlatSpec with BeforeAndAfter with Matchers {
     val output2 = model2.forward(input2).toTensor
 
     output.map(output2, (v1, v2) => {
-      assert(abs(v1 - v2) <= 1e-8)
+      TestUtils.conditionFailTest(abs(v1 - v2) <= 1e-8)
       v1
     })
   }
@@ -95,7 +95,7 @@ class RecurrentDecoderSpec extends FlatSpec with BeforeAndAfter with Matchers {
     val output2 = model2.forward(input2).toTensor
 
     output.map(output2, (v1, v2) => {
-      assert(abs(v1 - v2) <= 1e-8)
+      TestUtils.conditionFailTest(abs(v1 - v2) <= 1e-8)
       v1
     })
   }
@@ -202,7 +202,7 @@ class RecurrentDecoderSpec extends FlatSpec with BeforeAndAfter with Matchers {
     val gradInput2 = model2.backward(input2, gradOutput).toTensor
 
     output.map(output2, (v1, v2) => {
-      assert(v1 - v2 < 1e-8)
+      TestUtils.conditionFailTest(v1 - v2 < 1e-8)
       v1
     })
   }
@@ -262,12 +262,12 @@ class RecurrentDecoderSpec extends FlatSpec with BeforeAndAfter with Matchers {
     finalOutput.narrow(2, 1, 1).copy(output2.toTable[Tensor[Double]](1))
     finalOutput.narrow(2, 2, 1).copy(output3.toTable[Tensor[Double]](1))
     output.map(finalOutput, (v1, v2) => {
-      assert(abs(v1 - v2) <= 1e-8)
+      TestUtils.conditionFailTest(abs(v1 - v2) <= 1e-8)
       v1
     })
 
     gradient.map(model2.getParameters()._2, (v1, v2) => {
-      assert(abs(v1 - v2) <= 1e-8)
+      TestUtils.conditionFailTest(abs(v1 - v2) <= 1e-8)
       v1
     })
 
@@ -275,7 +275,7 @@ class RecurrentDecoderSpec extends FlatSpec with BeforeAndAfter with Matchers {
     newGradInput.narrow(2, 1, 1).copy(gradInput2.toTable[Tensor[Double]](1))
     newGradInput.narrow(2, 2, 1).copy(gradInput3.toTable[Tensor[Double]](1))
     gradInput.map(newGradInput, (v1, v2) => {
-      assert(abs(v1 - v2) <= 1e-8)
+      TestUtils.conditionFailTest(abs(v1 - v2) <= 1e-8)
       v1
     })
   }
@@ -337,12 +337,12 @@ class RecurrentDecoderSpec extends FlatSpec with BeforeAndAfter with Matchers {
     finalOutput.narrow(2, 1, 1).copy(output2.toTable[Tensor[Double]](1))
     finalOutput.narrow(2, 2, 1).copy(output3.toTable[Tensor[Double]](1))
     output.map(finalOutput, (v1, v2) => {
-      assert(abs(v1 - v2) <= 1e-8)
+      TestUtils.conditionFailTest(abs(v1 - v2) <= 1e-8)
       v1
     })
 
     gradient.map(model2.getParameters()._2, (v1, v2) => {
-      assert(abs(v1 - v2) <= 1e-8)
+      TestUtils.conditionFailTest(abs(v1 - v2) <= 1e-8)
       v1
     })
 
@@ -350,7 +350,7 @@ class RecurrentDecoderSpec extends FlatSpec with BeforeAndAfter with Matchers {
     newGradInput.narrow(2, 1, 1).copy(gradInput2.toTable[Tensor[Double]](1))
     newGradInput.narrow(2, 2, 1).copy(gradInput3.toTable[Tensor[Double]](1))
     gradInput.map(newGradInput, (v1, v2) => {
-      assert(abs(v1 - v2) <= 1e-8)
+      TestUtils.conditionFailTest(abs(v1 - v2) <= 1e-8)
       v1
     })
   }
@@ -385,8 +385,8 @@ class RecurrentDecoderSpec extends FlatSpec with BeforeAndAfter with Matchers {
     val gradInput2 = model2.updateGradInput(input, gradOutput).toTensor
     model2.accGradParameters(input, gradOutput)
     val gradient2 = model2.getParameters()._2
-    require(gradInput.almostEqual(gradInput2, 1e-8) == true)
-    require(gradient.almostEqual(gradient2, 1e-8) == true)
+    TestUtils.conditionFailTest(gradInput.almostEqual(gradInput2, 1e-8) == true)
+    TestUtils.conditionFailTest(gradient.almostEqual(gradient2, 1e-8) == true)
   }
 
   "A ConvLSTMPeepwhole " should "work with RecurrentDecoder get/setHiddenStates" in {
@@ -449,7 +449,7 @@ class RecurrentDecoderSpec extends FlatSpec with BeforeAndAfter with Matchers {
     finalOutput.narrow(2, 1, 1).copy(output2.toTable[Tensor[Double]](1))
     finalOutput.narrow(2, 2, 1).copy(output3.toTable[Tensor[Double]](1))
     output.map(finalOutput, (v1, v2) => {
-      assert(abs(v1 - v2) <= 1e-8)
+      TestUtils.conditionFailTest(abs(v1 - v2) <= 1e-8)
       v1
     })
 
@@ -459,13 +459,13 @@ class RecurrentDecoderSpec extends FlatSpec with BeforeAndAfter with Matchers {
       val t1 = states1(k).asInstanceOf[Tensor[Double]]
       val t2 = states2(k).asInstanceOf[Tensor[Double]]
       t1.map(t2, (v1, v2) => {
-        assert(abs(v1 - v2) <= 1e-8)
+        TestUtils.conditionFailTest(abs(v1 - v2) <= 1e-8)
         v1
       })
     }
 
     gradient.map(model2.getParameters()._2, (v1, v2) => {
-      assert(abs(v1 - v2) <= 1e-8)
+      TestUtils.conditionFailTest(abs(v1 - v2) <= 1e-8)
       v1
     })
 
@@ -473,7 +473,7 @@ class RecurrentDecoderSpec extends FlatSpec with BeforeAndAfter with Matchers {
     newGradInput.narrow(2, 1, 1).copy(gradInput2.toTable[Tensor[Double]](1))
     newGradInput.narrow(2, 2, 1).copy(gradInput3.toTable[Tensor[Double]](1))
     gradInput.map(newGradInput, (v1, v2) => {
-      assert(abs(v1 - v2) <= 1e-8)
+      TestUtils.conditionFailTest(abs(v1 - v2) <= 1e-8)
       v1
     })
   }

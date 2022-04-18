@@ -32,6 +32,7 @@ import scala.reflect.ClassTag
 import scala.collection.JavaConverters._
 import scala.collection.mutable.WrappedArray
 import scala.math.pow
+import com.intel.analytics.bigdl.dllib.utils.Log4Error
 
 object PythonFriesian {
   def ofFloat(): PythonFriesian[Float] = new PythonFriesian[Float]()
@@ -331,9 +332,9 @@ class PythonFriesian[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonZ
 
     df.sparkSession.conf.set("spark.sql.legacy.allowUntypedScalaUDF", "true")
     val itemType = df.select(explode(col(historyCol))).schema.fields(0).dataType
-    require(itemType.typeName == "integer", throw new IllegalArgumentException(
+    Log4Error.invalidOperationError(itemType.typeName == "integer",
       s"Unsupported data type ${itemType.typeName} " +
-        s"of column ${historyCol} in add_neg_hist_seq"))
+        s"of column ${historyCol} in add_neg_hist_seq")
     val schema = ArrayType(ArrayType(itemType))
 
     val negativeUdf = udf(Utils.addNegativeList(negNum, itemSize), schema)
@@ -349,9 +350,9 @@ class PythonFriesian[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonZ
 
     df.sparkSession.conf.set("spark.sql.legacy.allowUntypedScalaUDF", "true")
     val itemType = df.select(itemCol).schema.fields(0).dataType
-    require(itemType.typeName == "integer", throw new IllegalArgumentException(
+    Log4Error.invalidOperationError(itemType.typeName == "integer",
       s"Unsupported data type ${itemType.typeName} " +
-        s"of column ${itemCol} in add_negative_samples"))
+        s"of column ${itemCol} in add_negative_samples")
     val schema = ArrayType(StructType(Seq(StructField(itemCol, itemType),
       StructField(labelCol, itemType))))
 

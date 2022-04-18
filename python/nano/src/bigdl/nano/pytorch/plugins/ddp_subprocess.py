@@ -47,9 +47,7 @@ log = logging.getLogger(__name__)
 
 
 def queue_dumper(q):
-    """
-    Copy values from Queue into a List.
-    """
+    """Copy values from Queue into a List."""
     q_list = []
     while not q.empty():
         q_list.append(q.get())
@@ -57,9 +55,7 @@ def queue_dumper(q):
 
 
 def queue_loader(q_list):
-    """
-    Copy values from a List into a SimpleQueue.
-    """
+    """Copy values from a List into a SimpleQueue."""
     q = multiprocessing.SimpleQueue()
     for item in q_list:
         q.put(item)
@@ -67,6 +63,13 @@ def queue_loader(q_list):
 
 
 class DDPSubprocessPlugin(DDPSpawnPlugin):
+    """
+    Extending DDPSpawnPlugin to support launch subprocesses with optimized env variables.
+
+    Instead of using python multiprocessing.spawn, this plugin use subprocess.Popen to start
+    a new process in order to run mulit-instance training in a jupyter notebook.
+    """
+
     distributed_backend = "ddp_subprocess"
 
     def _run_subprocess(self, tmpdir):
@@ -91,19 +94,22 @@ class DDPSubprocessPlugin(DDPSpawnPlugin):
         return processes
 
     def start_training(self, trainer):
+        """Run training in multiple processes."""
         self.model._ortsess = None
-        self.execution_loop()
+        self._execution_loop()
         trainer.optimizers = []
 
     def start_evaluating(self, trainer):
+        """Run evaluating in multiple processes."""
         print("evaluate")
-        self.execution_loop()
+        self._execution_loop()
 
     def start_predicting(self, trainer):
+        """Run predicting in multiple processes."""
         print("predict")
-        self.execution_loop()
+        self._execution_loop()
 
-    def execution_loop(self):
+    def _execution_loop(self):
         if self.is_global_zero and not torch.distributed.is_initialized():
             log.info("-" * 100)
             log.info(f"distributed_backend={self.distributed_backend}")

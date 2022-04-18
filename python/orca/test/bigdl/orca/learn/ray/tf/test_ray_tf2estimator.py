@@ -88,13 +88,13 @@ class TestTF2Estimator(TestCase):
                                         backend="tf2",
                                         workers_per_node=2)
 
-        start_stats = estimator.evaluate(create_test_dataset, batch_size=32)
+        start_stats = estimator.evaluate(create_test_dataset, batch_size=32, num_steps=2)
         print(start_stats)
 
         train_stats = estimator.fit(create_train_datasets, epochs=1, batch_size=32)
         print("This is Train Results:", train_stats)
 
-        end_stats = estimator.evaluate(create_test_dataset, batch_size=32)
+        end_stats = estimator.evaluate(create_test_dataset, batch_size=32, num_steps=2)
         print("This is Val Results:", end_stats)
         assert estimator.get_model()
 

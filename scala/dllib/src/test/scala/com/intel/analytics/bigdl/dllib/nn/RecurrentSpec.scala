@@ -20,8 +20,7 @@ import com.intel.analytics.bigdl.dllib.optim.SGD
 import com.intel.analytics.bigdl.dllib.tensor.{Storage, Tensor}
 import com.intel.analytics.bigdl.dllib.utils.RandomGenerator.RNG
 import com.intel.analytics.bigdl.dllib.utils.serializer.ModuleSerializationTest
-import com.intel.analytics.bigdl.dllib.utils.{T, Table}
-import com.intel.analytics.bigdl.dllib.utils.Engine
+import com.intel.analytics.bigdl.dllib.utils.{Engine, T, Table, TestUtils}
 import org.scalatest.{FlatSpec, Matchers}
 
 import scala.collection.mutable.ArrayBuffer
@@ -129,8 +128,8 @@ class RecurrentSpec extends FlatSpec with Matchers {
     println(s"forwardSum = ${forwardSum}")
     println(s"backwardSum = ${backwardSum}")
 
-    assert(abs((etaForward - forwardSum) / etaForward) < 0.01)
-    assert(abs((etaBackward - backwardSum) / etaBackward) < 0.01)
+    TestUtils.conditionFailTest(abs((etaForward - forwardSum) / etaForward) < 0.01)
+    TestUtils.conditionFailTest(abs((etaBackward - backwardSum) / etaBackward) < 0.01)
 
     val times = model.getTimesGroupByModuleType()
     times.length should be (6)
@@ -600,7 +599,7 @@ class RecurrentSpec extends FlatSpec with Matchers {
     val state = rec.getHiddenState()
 
     state.toTensor[Double].map(output.asInstanceOf[Tensor[Double]].select(2, time), (v1, v2) => {
-      assert(abs(v1 - v2) == 0)
+      TestUtils.conditionFailTest(abs(v1 - v2) == 0)
       v1
     })
 

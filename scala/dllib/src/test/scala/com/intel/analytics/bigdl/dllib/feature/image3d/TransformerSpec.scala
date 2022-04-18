@@ -21,6 +21,7 @@ import com.intel.analytics.bigdl.dllib.feature.transform.vision.image.ImageFeatu
 import com.intel.analytics.bigdl.dllib.utils.RandomGenerator._
 import com.intel.analytics.bigdl.dllib.feature.common._
 import com.intel.analytics.bigdl.dllib.feature.image._
+import com.intel.analytics.bigdl.dllib.utils.TestUtils
 import org.apache.spark.sql.Row
 import org.apache.spark.sql.types._
 import org.scalatest.{FlatSpec, Matchers}
@@ -67,7 +68,7 @@ class TransformerSpec extends FlatSpec with Matchers{
       storage = Storage[Double](output(0)[Tensor[Float]](ImageFeature.imageTensor).storage().array()
         .map(_.toDouble)), storageOffset = 1, size = Array(1, 10, 10))
     dstTensor.view(10, 10).map(dstTorch, (v1, v2) => {
-      assert(math.abs(v1-v2)<1e-6)
+      TestUtils.conditionFailTest(math.abs(v1-v2)<1e-6)
       v1
     })
   }

@@ -18,6 +18,7 @@ package com.intel.analytics.bigdl.dllib.feature
 
 import com.intel.analytics.bigdl.dllib.NNContext
 import com.intel.analytics.bigdl.dllib.feature.common.{Relation, RelationPair, Relations}
+import com.intel.analytics.bigdl.dllib.utils.TestUtils
 import org.apache.spark.sql.SQLContext
 import org.apache.spark.{SparkConf, SparkContext}
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
@@ -44,39 +45,39 @@ class RelationsSpec extends FlatSpec with Matchers with BeforeAndAfter {
 
   "Read txt file with sc" should "work properly" in {
     val relations = Relations.read(txtRelations, sc)
-    require(relations.count() == 4)
-    require(relations.collect().toSet == targetRelations)
+    TestUtils.conditionFailTest(relations.count() == 4)
+    TestUtils.conditionFailTest(relations.collect().toSet == targetRelations)
   }
 
   "Read txt file without sc" should "work properly" in {
     val relations = Relations.read(txtRelations)
-    require(relations.length == 4)
-    require(relations.toSet == targetRelations)
+    TestUtils.conditionFailTest(relations.length == 4)
+    TestUtils.conditionFailTest(relations.toSet == targetRelations)
   }
 
   "Read csv file with sc" should "work properly" in {
     val relations = Relations.read(csvRelations, sc)
-    require(relations.count() == 4)
-    require(relations.collect().toSet == targetRelations)
+    TestUtils.conditionFailTest(relations.count() == 4)
+    TestUtils.conditionFailTest(relations.collect().toSet == targetRelations)
   }
 
   "Read csv file without sc" should "work properly" in {
     val relations = Relations.read(csvRelations)
-    require(relations.length == 4)
-    require(relations.toSet == targetRelations)
+    TestUtils.conditionFailTest(relations.length == 4)
+    TestUtils.conditionFailTest(relations.toSet == targetRelations)
   }
 
   "Read parquet file" should "work properly" in {
     val relations = Relations.readParquet(parquetRelations, SQLContext.getOrCreate(sc))
-    require(relations.count() == 4)
-    require(relations.collect().toSet == targetRelations)
+    TestUtils.conditionFailTest(relations.count() == 4)
+    TestUtils.conditionFailTest(relations.collect().toSet == targetRelations)
   }
 
   "Generate relation pairs" should "work properly" in {
     val relations = Relations.read(csvRelations, sc)
     val relationPairs = Relations.generateRelationPairs(relations)
-    require(relationPairs.count() == 2)
-    require(relationPairs.collect().toSet == Set(RelationPair("Q1", "A1", "A2"),
+    TestUtils.conditionFailTest(relationPairs.count() == 2)
+    TestUtils.conditionFailTest(relationPairs.collect().toSet == Set(RelationPair("Q1", "A1", "A2"),
       RelationPair("Q2", "A2", "A1")))
   }
 

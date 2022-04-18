@@ -18,6 +18,7 @@ package com.intel.analytics.bigdl.dllib.nn
 
 import org.scalatest.{FlatSpec, Matchers}
 import com.intel.analytics.bigdl.dllib.tensor.{Storage, Tensor}
+import com.intel.analytics.bigdl.dllib.utils.TestUtils
 
 import scala.math._
 
@@ -52,9 +53,9 @@ class ClassNLLCriterionSpec extends FlatSpec with Matchers {
     expectedGrad(Array(3, 3)) = -0.5
     val output = criterion.forward(input, target)
     val gradInput = criterion.backward(input, target)
-    assert(abs(expectedOutput - output) < 1e-6)
+    TestUtils.conditionFailTest(abs(expectedOutput - output) < 1e-6)
     expectedGrad.map(gradInput, (v1, v2) => {
-      assert(abs(v1 - v2) < 1e-6);
+      TestUtils.conditionFailTest(abs(v1 - v2) < 1e-6);
       v1
     })
   }
@@ -88,9 +89,9 @@ class ClassNLLCriterionSpec extends FlatSpec with Matchers {
     expectedGrad(Array(3, 3)) = -0.33333333333333
     val output = criterion.forward(input, target)
     val gradInput = criterion.backward(input, target)
-    assert(abs(expectedOutput - output) < 1e-6)
+    TestUtils.conditionFailTest(abs(expectedOutput - output) < 1e-6)
     expectedGrad.map(gradInput, (v1, v2) => {
-      assert(abs(v1 - v2) < 1e-6);
+      TestUtils.conditionFailTest(abs(v1 - v2) < 1e-6);
       v1
     })
   }
@@ -123,9 +124,9 @@ class ClassNLLCriterionSpec extends FlatSpec with Matchers {
     expectedGrad(Array(3, 3)) = -1
     val output = criterion.forward(input, target)
     val gradInput = criterion.backward(input, target)
-    assert(abs(expectedOutput - output) < 1e-6)
+    TestUtils.conditionFailTest(abs(expectedOutput - output) < 1e-6)
     expectedGrad.map(gradInput, (v1, v2) => {
-      assert(abs(v1 - v2) < 1e-6);
+      TestUtils.conditionFailTest(abs(v1 - v2) < 1e-6);
       v1
     })
   }
@@ -163,9 +164,9 @@ class ClassNLLCriterionSpec extends FlatSpec with Matchers {
     expectedGrad(Array(3, 3)) = -0.66953149507754
     val output = criterion.forward(input, target)
     val gradInput = criterion.backward(input, target)
-    assert(abs(expectedOutput - output) < 1e-6)
+    TestUtils.conditionFailTest(abs(expectedOutput - output) < 1e-6)
     expectedGrad.map(gradInput, (v1, v2) => {
-      assert(abs(v1 - v2) < 1e-6);
+      TestUtils.conditionFailTest(abs(v1 - v2) < 1e-6);
       v1
     })
   }
@@ -202,9 +203,9 @@ class ClassNLLCriterionSpec extends FlatSpec with Matchers {
     expectedGrad(Array(3, 3)) = -0.47657615745419
     val output = criterion.forward(input, target)
     val gradInput = criterion.backward(input, target)
-    assert(abs(expectedOutput - output) < 1e-6)
+    TestUtils.conditionFailTest(abs(expectedOutput - output) < 1e-6)
     expectedGrad.map(gradInput, (v1, v2) => {
-      assert(abs(v1 - v2) < 1e-6);
+      TestUtils.conditionFailTest(abs(v1 - v2) < 1e-6);
       v1
     })
   }

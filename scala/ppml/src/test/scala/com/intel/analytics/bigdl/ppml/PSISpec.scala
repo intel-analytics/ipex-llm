@@ -23,6 +23,7 @@ import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
 import scala.collection.JavaConverters._
 import scala.concurrent.TimeoutException
+import com.intel.analytics.bigdl.ppml.utils.TestUtils
 
 class PSISpec extends FlatSpec with Matchers with BeforeAndAfter{
   var port: Int = 8980
@@ -42,7 +43,7 @@ class PSISpec extends FlatSpec with Matchers with BeforeAndAfter{
     val pSI = new PSI()
     val salt = pSI.getSalt()
     flServer.stop()
-    require(salt != null, "Get salt failed.")
+    TestUtils.conditionFailTest(salt != null, "Get salt failed.")
   }
   "PSI upload set" should "work" in {
     val flServer = new FLServer()
@@ -56,7 +57,7 @@ class PSISpec extends FlatSpec with Matchers with BeforeAndAfter{
     pSI.uploadSet(set.asJava, salt)
     flServer.stop()
 
-    require(salt != null, "Get salt failed.")
+    TestUtils.conditionFailTest(salt != null, "Get salt failed.")
   }
   "PSI download intersection" should "work" in {
     val flServer = new FLServer()
@@ -75,7 +76,7 @@ class PSISpec extends FlatSpec with Matchers with BeforeAndAfter{
     pSI2.uploadSet(set2.asJava, salt2)
     val intersection = pSI1.downloadIntersection()
     flServer.stop()
-    require(intersection.size() == 1, "Intersection number is wrong.")
+    TestUtils.conditionFailTest(intersection.size() == 1, "Intersection number is wrong.")
   }
   "PSI download null intersection" should "work" in {
     val flServer = new FLServer()

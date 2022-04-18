@@ -19,6 +19,7 @@ import java.nio._
 
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.common.zooUtils
+import com.intel.analytics.bigdl.dllib.utils.Log4Error
 import com.intel.analytics.bigdl.orca.tf.TFNetNative
 // import com.intel.analytics.zoo.pipeline.api.net.TFNet
 import org.tensorflow.{DataType, Graph, Session, Tensor => TTensor}
@@ -59,7 +60,7 @@ class GraphRunner(
 
   @transient
   private[bigdl] lazy val sess = {
-    assert(TFNetNative.isLoaded)
+    Log4Error.invalidOperationError(TFNetNative.isLoaded, "TFNetNative is not loaded")
     val graph = new Graph()
     graph.importGraphDef(graphDef)
     val sess = new Session(graph, config)
@@ -167,7 +168,7 @@ class GraphRunner(
 
 object GraphRunner {
 
-  assert(TFNetNative.isLoaded)
+  Log4Error.invalidOperationError(TFNetNative.isLoaded, "TFNetNative is not loaded")
 
   def apply(graphDef: Array[Byte],
             restoreOp: String,

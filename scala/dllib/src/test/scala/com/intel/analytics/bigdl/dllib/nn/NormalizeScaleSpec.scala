@@ -18,6 +18,7 @@ package com.intel.analytics.bigdl.dllib.nn
 
 import com.intel.analytics.bigdl.dllib.optim.L2Regularizer
 import com.intel.analytics.bigdl.dllib.tensor.{Storage, Tensor}
+import com.intel.analytics.bigdl.dllib.utils.TestUtils
 import com.intel.analytics.bigdl.dllib.utils.serializer.ModuleSerializationTest
 import org.scalatest.{FlatSpec, Matchers}
 
@@ -228,7 +229,7 @@ class NormalizeScaleSpec extends FlatSpec with Matchers {
     out should be(expectedOutput)
     val gradInput = module.backward(input, gradOut)
     gradInput.map(expectedGradInput, (a, b) => {
-      assert(Math.abs(a - b) < 1e-5)
+      TestUtils.conditionFailTest(Math.abs(a - b) < 1e-5)
       a
     })
 
@@ -341,7 +342,7 @@ class NormalizeScaleSpec extends FlatSpec with Matchers {
 
     out2 should be(expectedOut)
     gradInput2.map(expectedGradInput, (a, b) => {
-      assert(Math.abs(a - b) < 1e-5)
+      TestUtils.conditionFailTest(Math.abs(a - b) < 1e-5)
       a
     })
   }
@@ -360,7 +361,7 @@ class NormalizeScaleSpec extends FlatSpec with Matchers {
 
     module.zeroGradParameters()
     module.parameters()._2(0).apply1(x => {
-      assert(x == 0); x
+      TestUtils.conditionFailTest(x == 0); x
     })
   }
 }

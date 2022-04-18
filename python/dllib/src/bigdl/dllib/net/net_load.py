@@ -21,6 +21,8 @@ import sys
 from bigdl.dllib.utils.file_utils import callZooFunc
 from bigdl.dllib.nn.layer import Model as BModel
 from bigdl.dllib.net.graph_net import GraphNet
+from bigdl.dllib.utils.log4Error import *
+
 
 if sys.version >= '3':
     long = int
@@ -51,8 +53,8 @@ class JavaToPython:
             base_module = self._load_ppackage_by_jpackage(jpackage_name)
         if pclass_name in dir(base_module):
             pclass = getattr(base_module, pclass_name)
-            assert "from_jvalue" in dir(pclass), \
-                "pclass: {} should implement from_jvalue method".format(pclass)
+            invalidInputError("from_jvalue" in dir(pclass),
+                              "pclass: {} should implement from_jvalue method".format(pclass))
             return pclass
         raise Exception("No proper python class for: {}".format(self.jfullname))
 

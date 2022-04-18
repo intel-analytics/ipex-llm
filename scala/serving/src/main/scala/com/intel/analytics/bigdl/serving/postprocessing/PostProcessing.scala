@@ -22,7 +22,7 @@ import com.intel.analytics.bigdl.dllib.nn.abstractnn.Activity
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.serving.serialization.ArrowSerializer
 import com.intel.analytics.bigdl.serving.utils.TensorUtils
-
+import com.intel.analytics.bigdl.dllib.utils.Log4Error
 
 /**
  * PostProssing
@@ -95,14 +95,14 @@ class PostProcessing(tensor: Tensor[Float], filter: String = "") {
    * thus only 2 or 3 dimension is valid for now
    */
   def pickTopN(topN: Int): String = {
-    require(t.dim() == 2 || t.dim() == 3,
+    Log4Error.invalidOperationError(t.dim() == 2 || t.dim() == 3,
       "pickTopN post-processing only take 2 or 3 output dim tensor")
     val thisT = if (t.dim() == 3) {
       t.squeeze(1)
     } else {
       t
     }
-    require(thisT.dim() == 2,
+    Log4Error.invalidOperationError(thisT.dim() == 2,
       "Your input dim is 3 but squeeze operation fails, please open issue to BigDL team")
     var res: String = ""
     res += "["
@@ -121,19 +121,21 @@ class PostProcessing(tensor: Tensor[Float], filter: String = "") {
   }
   def processTensor(): String = {
     if (filter != "") {
-      require(filter.last == ')',
+      Log4Error.invalidOperationError(filter.last == ')',
         "please check your filter format, should be filter_name(filter_args)")
-      require(filter.split("\\(").length == 2,
+      Log4Error.invalidOperationError(filter.split("\\(").length == 2,
         "please check your filter format, should be filter_name(filter_args)")
 
       val filterType = filter.split("\\(").head
       val filterArgs = filter.split("\\(").last.dropRight(1).split(",")
       val res = filterType match {
         case "topN" =>
-          require(filterArgs.length == 1, "topN filter only support 1 argument, please check.")
+          Log4Error.invalidOperationError(filterArgs.length == 1,
+            "topN filter only support 1 argument, please check.")
           rankTopN(filterArgs(0).toInt)
         case "pickTopN" =>
-          require(filterArgs.length == 1, "pickTopN filter only support 1 argument, please check.")
+          Log4Error.invalidOperationError(filterArgs.length == 1,
+            "pickTopN filter only support 1 argument, please check.")
           pickTopN(filterArgs(0).toInt)
         case _ => ""
       }

@@ -18,7 +18,7 @@ package com.intel.analytics.bigdl.dllib.nn
 
 import breeze.numerics.abs
 import com.intel.analytics.bigdl.dllib.tensor.{Storage, Tensor}
-import com.intel.analytics.bigdl.dllib.utils.{T, Table}
+import com.intel.analytics.bigdl.dllib.utils.{T, Table, TestUtils}
 import org.scalatest.{FlatSpec, Matchers}
 
 class SmoothL1CriterionWithWeightsSpec extends FlatSpec with Matchers {
@@ -45,7 +45,7 @@ class SmoothL1CriterionWithWeightsSpec extends FlatSpec with Matchers {
     val smcod = new SmoothL1CriterionWithWeights[Float](2.4f, 2)
     val expectedOutput = -2.2134404182434082031
     val actualOutput = smcod.forward(input, target)
-    assert(abs(actualOutput - expectedOutput) < 1e-6)
+    TestUtils.conditionFailTest(abs(actualOutput - expectedOutput) < 1e-6)
 
     val expectedGrad = Tensor(Storage(Array(-0.0087008103728294372559, 0.43799301981925964355,
       0.73976248502731323242, -0.97521805763244628906, -0.1302922368049621582,
@@ -55,7 +55,7 @@ class SmoothL1CriterionWithWeightsSpec extends FlatSpec with Matchers {
 
 
     expectedGrad.map(actualGrad, (v1, v2) => {
-      assert(abs(v1 - v2) < 1e-6)
+      TestUtils.conditionFailTest(abs(v1 - v2) < 1e-6)
       v1
     })
   }
@@ -71,7 +71,7 @@ class SmoothL1CriterionWithWeightsSpec extends FlatSpec with Matchers {
     val smcod = new SmoothL1CriterionWithWeights[Float](2.4f, 2)
     val expectedOutput = -2.2134404182434082031
     val actualOutput = smcod.forward(input2, target2)
-    assert(abs(actualOutput - expectedOutput) < 1e-6)
+    TestUtils.conditionFailTest(abs(actualOutput - expectedOutput) < 1e-6)
 
     val expectedGrad = Tensor(Storage(Array(-0.0087008103728294372559, 0.43799301981925964355,
       0.73976248502731323242, -0.97521805763244628906,
@@ -83,7 +83,7 @@ class SmoothL1CriterionWithWeightsSpec extends FlatSpec with Matchers {
 
 
     expectedGrad.map(actualGrad, (v1, v2) => {
-      assert(abs(v1 - v2) < 1e-6)
+      TestUtils.conditionFailTest(abs(v1 - v2) < 1e-6)
       v1
     })
   }
@@ -95,12 +95,12 @@ class SmoothL1CriterionWithWeightsSpec extends FlatSpec with Matchers {
     val smc = SmoothL1Criterion[Float](true)
     val out1 = smcod.forward(input, new Table().insert(targetNoWeight))
     val out2 = smc.forward(input, targetNoWeight)
-    assert(abs(out1 - out2) < 1e-6)
+    TestUtils.conditionFailTest(abs(out1 - out2) < 1e-6)
 
     val smcodGrad = smcod.backward(input, new Table().insert(targetNoWeight))
     val smcGrad = smc.backward(input, targetNoWeight)
     smcodGrad.map(smcGrad, (v1, v2) => {
-      assert(abs(v1 - v2) < 1e-6)
+      TestUtils.conditionFailTest(abs(v1 - v2) < 1e-6)
       v1
     })
   }

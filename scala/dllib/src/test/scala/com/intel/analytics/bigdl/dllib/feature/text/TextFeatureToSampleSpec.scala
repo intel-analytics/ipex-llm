@@ -16,6 +16,7 @@
 
 package com.intel.analytics.bigdl.dllib.feature.text
 
+import com.intel.analytics.bigdl.dllib.utils.TestUtils
 import org.scalatest.{FlatSpec, Matchers}
 
 class TextFeatureToSampleSpec extends FlatSpec with Matchers {
@@ -31,7 +32,7 @@ class TextFeatureToSampleSpec extends FlatSpec with Matchers {
     val toSample = TextFeatureToSample()
     val transformed = toSample.transform(genFeature().setLabel(1))
     val sample = transformed.getSample
-    require(sample.getData().sameElements(Array(1.0f, 2.0f,
+    TestUtils.conditionFailTest(sample.getData().sameElements(Array(1.0f, 2.0f,
       3.0f, 4.0f, 5.0f, 2.0f, 6.0f, 1.0f)))
   }
 
@@ -39,7 +40,7 @@ class TextFeatureToSampleSpec extends FlatSpec with Matchers {
     val toSample = TextFeatureToSample()
     val transformed = toSample.transform(genFeature())
     val sample = transformed.getSample
-    require(sample.getData().sameElements(Array(1.0f, 2.0f,
+    TestUtils.conditionFailTest(sample.getData().sameElements(Array(1.0f, 2.0f,
       3.0f, 4.0f, 5.0f, 2.0f, 6.0f)))
   }
 }

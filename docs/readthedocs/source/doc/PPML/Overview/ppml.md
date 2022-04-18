@@ -93,7 +93,7 @@ docker pull intelanalytics/bigdl-ppml-trusted-big-data-ml-scala-graphene:2.1.0-S
 Alternatively, you can build Docker image from Dockerfile (this will take some time):
 
 ```bash
-cd trusted-big-data-ml/scala/docker-graphene
+cd trusted-big-data-ml/python/docker-graphene
 ./build-docker-image.sh
 ```
 
@@ -101,11 +101,11 @@ cd trusted-big-data-ml/scala/docker-graphene
 
 ##### 2.2.2.1 Start PPML Container
 
-Enter `BigDL/ppml/trusted-big-data-ml/scala/docker-graphene` dir.
+Enter `BigDL/ppml/trusted-big-data-ml/python/docker-graphene` dir.
 
 1. Copy `keys` and `password`
     ```bash
-    cd trusted-big-data-ml/scala/docker-graphene
+    cd trusted-big-data-ml/python/docker-graphene
     # copy keys and password into the current directory
     cp -r ../.././../scripts/keys/ .
     cp -r ../.././../scripts/password/ .
@@ -124,8 +124,8 @@ Enter `BigDL/ppml/trusted-big-data-ml/scala/docker-graphene` dir.
     ./init.sh
     ```
     **ENCLAVE_KEY_PATH** means the absolute path to the "enclave-key.pem", according to the above commands, the path would be like "BigDL/ppml/scripts/enclave-key.pem". <br>
-    **DATA_PATH** means the absolute path to the data(like mnist) that would use later in the spark program. According to the above commands, the path would be like "BigDL/ppml/trusted-big-data-ml/scala/docker-graphene/mnist" <br>
-    **KEYS_PATH** means the absolute path to the keys you just created and copied to. According to the above commands, the path would be like "BigDL/ppml/trusted-big-data-ml/scala/docker-graphene/keys" <br>
+    **DATA_PATH** means the absolute path to the data(like mnist) that would use later in the spark program. According to the above commands, the path would be like "BigDL/ppml/trusted-big-data-ml/python/docker-graphene/mnist" <br>
+    **KEYS_PATH** means the absolute path to the keys you just created and copied to. According to the above commands, the path would be like "BigDL/ppml/trusted-big-data-ml/python/docker-graphene/keys" <br>
     **LOCAL_IP** means your local IP address. <br>
 
 ##### 2.2.2.2 Run Your Spark Program with BigDL PPML on SGX
@@ -282,7 +282,7 @@ Enter `BigDL/ppml/trusted-big-data-ml/python/docker-graphene` directory.
 1. Copy `keys` and `password` to the current directory
 
    ```bash
-   cd ppml/trusted-big-data-ml/scala/docker-graphene
+   cd ppml/trusted-big-data-ml/python/docker-graphene
    # copy keys and password into the current directory
    cp -r ../keys .
    cp -r ../password .

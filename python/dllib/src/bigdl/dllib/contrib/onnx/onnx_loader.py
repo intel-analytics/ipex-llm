@@ -17,6 +17,7 @@
 from bigdl.dllib.nn.layer import Identity, Model
 from .ops_mapping import _convert_map as convert_map
 from .converter_utils import parse_node_attr, parse_tensor_data
+from bigdl.dllib.utils.log4Error import *
 
 
 class OnnxLoader(object):
@@ -80,7 +81,9 @@ class OnnxLoader(object):
                                                                            prev_modules, attrs,
                                                                            outputs)
 
-            assert len(outputs) == len(outputs_shape)
+            invalidInputError(len(outputs) == len(outputs_shape),
+                              f"size of outputs {len(outputs)} doesn't match outputs_shape"
+                              f" ${len(outputs_shape)}")
 
             for out, out_shape in zip(outputs, outputs_shape):
                 module_map[out] = bigdl_module

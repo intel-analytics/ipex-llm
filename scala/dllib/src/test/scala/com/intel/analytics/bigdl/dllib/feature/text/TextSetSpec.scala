@@ -64,60 +64,66 @@ class TextSetSpec extends ZooSpecHelper {
 
   "DistributedTextSet Transformation" should "work properly" in {
     val distributed = TextSet.rdd(sc.parallelize(genFeatures()))
-    require(distributed.isDistributed)
+    TestUtils.conditionFailTest(distributed.isDistributed)
     val normalized = distributed -> Tokenizer() -> Normalizer()
     val transformed = normalized.word2idx().shapeSequence(5).generateSample()
-    require(transformed.isDistributed)
+    TestUtils.conditionFailTest(transformed.isDistributed)
 
     val wordIndex = transformed.getWordIndex
-    require(wordIndex.toArray.length == 13)
-    require(wordIndex.keySet == HashSet("hello", "friend", "please", "annotate", "my", "text",
+    TestUtils.conditionFailTest(wordIndex.toArray.length == 13)
+    TestUtils.conditionFailTest(
+    wordIndex.keySet == HashSet("hello", "friend", "please", "annotate", "my", "text",
       "world", "some", "sentence", "for", "test", "this", "is"))
 
     val features = transformed.toDistributed().rdd.collect()
-    require(features.length == 2)
-    require(features(0).keys() == HashSet("label", "text", "tokens", "indexedTokens", "sample"))
-    require(features(0)[Array[Float]]("indexedTokens").length == 5)
+    TestUtils.conditionFailTest(features.length == 2)
+    TestUtils.conditionFailTest(
+    features(0).keys() == HashSet("label", "text", "tokens", "indexedTokens", "sample"))
+    TestUtils.conditionFailTest(
+    features(0)[Array[Float]]("indexedTokens").length == 5)
 
     val tmpFile = createTmpFile()
     transformed.saveWordIndex(tmpFile.getAbsolutePath)
 
     val distributed2 = TextSet.rdd(sc.parallelize(genFeatures().take(1)))
       .loadWordIndex(tmpFile.getAbsolutePath)
-    require(distributed2.getWordIndex == wordIndex)
+    TestUtils.conditionFailTest(distributed2.getWordIndex == wordIndex)
     val transformed2 = distributed2.tokenize().normalize().word2idx()
       .shapeSequence(4, TruncMode.post)
     val indices = transformed2.toDistributed().rdd.first().getIndices.map(_.toInt)
-    require(indices.sameElements(Array(wordIndex("hello"), wordIndex("my"),
+    TestUtils.conditionFailTest(
+    indices.sameElements(Array(wordIndex("hello"), wordIndex("my"),
       wordIndex("friend"), wordIndex("please"))))
   }
 
   "LocalTextSet Transformation" should "work properly" in {
     val local = TextSet.array(genFeatures())
-    require(local.isLocal)
+    TestUtils.conditionFailTest(local.isLocal)
     val transformed = local.tokenize().normalize().word2idx(removeTopN = 1)
       .shapeSequence(len = 10).generateSample()
-    require(transformed.isLocal)
+    TestUtils.conditionFailTest(transformed.isLocal)
 
     val wordIndex = transformed.getWordIndex
-    require(wordIndex.toArray.length == 12)
-    require(wordIndex.keySet.contains("hello"))
-    require(!wordIndex.keySet.contains("Hello"))
+    TestUtils.conditionFailTest(wordIndex.toArray.length == 12)
+    TestUtils.conditionFailTest(wordIndex.keySet.contains("hello"))
+    TestUtils.conditionFailTest(!wordIndex.keySet.contains("Hello"))
 
     val features = transformed.toLocal().array
-    require(features.length == 2)
-    require(features(0).keys() == HashSet("label", "text", "tokens", "indexedTokens", "sample"))
-    require(features(0).getIndices.length == 10)
+    TestUtils.conditionFailTest(features.length == 2)
+    TestUtils.conditionFailTest(
+    features(0).keys() == HashSet("label", "text", "tokens", "indexedTokens", "sample"))
+    TestUtils.conditionFailTest(features(0).getIndices.length == 10)
 
     val tmpFile = createTmpFile()
     transformed.saveWordIndex(tmpFile.getAbsolutePath)
 
     val local2 = TextSet.array(genFeatures().take(1))
       .loadWordIndex(tmpFile.getAbsolutePath)
-    require(local2.getWordIndex == wordIndex)
+    TestUtils.conditionFailTest(local2.getWordIndex == wordIndex)
     val transformed2 = local2.tokenize().normalize().word2idx().shapeSequence(4)
     val indices = transformed2.toLocal().array(0).getIndices.map(_.toInt)
-    require(indices.sameElements(Array(wordIndex("friend"), wordIndex("please"),
+    TestUtils.conditionFailTest(
+    indices.sameElements(Array(wordIndex("friend"), wordIndex("please"),
       wordIndex("annotate"), wordIndex("text"))))
   }
 
@@ -131,20 +137,21 @@ class TextSetSpec extends ZooSpecHelper {
 
   "TextSet read with sc, fit, predict and evaluate" should "work properly" in {
     val textSet = TextSet.read(path, sc)
-    require(textSet.isDistributed)
-    require(textSet.toDistributed().rdd.count() == 5)
-    require(textSet.toDistributed().rdd.collect().head.keys() == HashSet("label", "text", "uri"))
+    TestUtils.conditionFailTest(textSet.isDistributed)
+    TestUtils.conditionFailTest(textSet.toDistributed().rdd.count() == 5)
+    TestUtils.conditionFailTest(
+    textSet.toDistributed().rdd.collect().head.keys() == HashSet("label", "text", "uri"))
     val transformed = textSet.tokenize().normalize().word2idx()
       .shapeSequence(len = 30).generateSample()
     val model = TextClassifier(3, embeddingFile, transformed.getWordIndex, 30)
     model.compile(new SGD[Float](), SparseCategoricalCrossEntropy[Float](), List(new Accuracy()))
     model.fit(transformed, batchSize = 4, nbEpoch = 2, validationData = transformed)
-    require(! transformed.toDistributed().rdd.first().contains("predict"))
+    TestUtils.conditionFailTest(! transformed.toDistributed().rdd.first().contains("predict"))
 
     val predictSet = model.predict(transformed, batchPerThread = 2).toDistributed()
     val textFeatures = predictSet.rdd.collect()
     textFeatures.foreach(feature => {
-      require(feature.contains("predict"))
+      TestUtils.conditionFailTest(feature.contains("predict"))
       val input = feature.getSample.feature.reshape(Array(1, 30))
       val output = model.setEvaluateStatus().forward(input).toTensor[Float].split(1)(0)
       feature.getPredict[Float] should be (output)
@@ -161,24 +168,25 @@ class TextSetSpec extends ZooSpecHelper {
 
   "TextSet read without sc, fit, predict and evaluate" should "work properly" in {
     val textSet = TextSet.read(path)
-    require(textSet.isLocal)
-    require(textSet.toLocal().array.length == 5)
-    require(textSet.toLocal().array.head.keys() == HashSet("label", "text", "uri"))
+    TestUtils.conditionFailTest(textSet.isLocal)
+    TestUtils.conditionFailTest(textSet.toLocal().array.length == 5)
+    TestUtils.conditionFailTest(
+    textSet.toLocal().array.head.keys() == HashSet("label", "text", "uri"))
     val tokenized = textSet -> Tokenizer() -> Normalizer()
     val wordIndex = tokenized.generateWordIndexMap()
     val transformed = tokenized -> WordIndexer(wordIndex) -> SequenceShaper(len = 30) ->
       TextFeatureToSample()
-    require(transformed.getWordIndex == wordIndex)
+    TestUtils.conditionFailTest(transformed.getWordIndex == wordIndex)
     val model = TextClassifier(10, embeddingFile, wordIndex, 30)
     model.compile(new Adagrad[Float](), SparseCategoricalCrossEntropy[Float](),
       List(new Accuracy()))
     model.fit(transformed, batchSize = 4, nbEpoch = 2, validationData = transformed)
-    require(! transformed.toLocal().array.head.contains("predict"))
+    TestUtils.conditionFailTest(! transformed.toLocal().array.head.contains("predict"))
 
     val predictSet = model.predict(transformed, batchPerThread = 2).toLocal()
     val textFeatures = predictSet.array
     textFeatures.foreach(feature => {
-      require(feature.contains("predict"))
+      TestUtils.conditionFailTest(feature.contains("predict"))
       val input = feature.getSample.feature.reshape(Array(1, 30))
       val output = model.setEvaluateStatus().forward(input).toTensor[Float].split(1)(0)
       feature.getPredict[Float] should be(output)
@@ -193,30 +201,30 @@ class TextSetSpec extends ZooSpecHelper {
 
   "TextSet read corpus with sc" should "work properly" in {
     val textSet = TextSet.readCSV(corpus, sc, 2)
-    require(textSet.isDistributed)
+    TestUtils.conditionFailTest(textSet.isDistributed)
     val features = textSet.toDistributed().rdd.collect()
-    require(features.length == 2)
+    TestUtils.conditionFailTest(features.length == 2)
     val texts = features.map(_.getText).toSet
-    require(texts == Set(q1, q2))
+    TestUtils.conditionFailTest(texts == Set(q1, q2))
   }
 
   "TextSet read corpus without sc" should "work properly" in {
     val textSet = TextSet.readCSV(corpus)
-    require(textSet.isLocal)
+    TestUtils.conditionFailTest(textSet.isLocal)
     val features = textSet.toLocal().array
-    require(features.length == 2)
+    TestUtils.conditionFailTest(features.length == 2)
     val texts = features.map(_.getText).toSet
-    require(texts == Set(q1, q2))
+    TestUtils.conditionFailTest(texts == Set(q1, q2))
   }
 
   "TextSet read parquet" should "work properly" in {
     val textSet = TextSet.readParquet(qaDir + "/question_corpus.parquet",
       SQLContext.getOrCreate(sc))
-    require(textSet.isDistributed)
+    TestUtils.conditionFailTest(textSet.isDistributed)
     val features = textSet.toDistributed().rdd.collect()
-    require(features.length == 2)
+    TestUtils.conditionFailTest(features.length == 2)
     val texts = features.map(_.getText).toSet
-    require(texts == Set(q1, q2))
+    TestUtils.conditionFailTest(texts == Set(q1, q2))
   }
 
   "TextSet word2idx with minFreq and existingMap" should "work properly" in {
@@ -226,30 +234,31 @@ class TextSetSpec extends ZooSpecHelper {
     val distributedTransformed = distributed.tokenize().word2idx(minFreq = 2,
       existingMap = Map("hello" -> 1, "test" -> 2))
     val wordIndex = distributedTransformed.getWordIndex
-    require(wordIndex("hello") == 1)
-    require(wordIndex("test") == 2)
-    require(wordIndex.keySet == Set("hello", "test", "my", "you"))
-    require(wordIndex.values.toArray.sorted.sameElements(Array(1, 2, 3, 4)))
+    TestUtils.conditionFailTest(wordIndex("hello") == 1)
+    TestUtils.conditionFailTest(wordIndex("test") == 2)
+    TestUtils.conditionFailTest(wordIndex.keySet == Set("hello", "test", "my", "you"))
+    TestUtils.conditionFailTest(wordIndex.values.toArray.sorted.sameElements(Array(1, 2, 3, 4)))
     val my = wordIndex("my").toFloat
     val you = wordIndex("you").toFloat
     val indices = distributedTransformed.toDistributed().rdd.collect()(0).getIndices
-    require(indices.sameElements(Array(1.0f, my, my, my, 1.0f, you, you)))
+    TestUtils.conditionFailTest(indices.sameElements(Array(1.0f, my, my, my, 1.0f, you, you)))
 
     val local = TextSet.array(Array(feature))
     val localTransformed = local.tokenize().word2idx(removeTopN = 1, minFreq = 2,
       existingMap = Map("world" -> 2))
     val wordIndex2 = localTransformed.getWordIndex
-    require(wordIndex2("world") == 2)
-    require(wordIndex2.keySet == Set("hello", "world", "you"))
-    require(wordIndex2.values.toArray.sorted.sameElements(Array(2, 3, 4)))
+    TestUtils.conditionFailTest(wordIndex2("world") == 2)
+    TestUtils.conditionFailTest(wordIndex2.keySet == Set("hello", "world", "you"))
+    TestUtils.conditionFailTest(wordIndex2.values.toArray.sorted.sameElements(Array(2, 3, 4)))
     val hello = wordIndex2("hello").toFloat
     val you2 = wordIndex2("you").toFloat
     val indices2 = localTransformed.toLocal().array(0).getIndices
-    require(indices2.sameElements(Array(hello, 2.0f, hello, you2, you2)))
+    TestUtils.conditionFailTest(indices2.sameElements(Array(hello, 2.0f, hello, you2, you2)))
   }
 
   "TextSet from relation pairs and lists with training and validation" should "work properly" in {
-    val relations = Array(Relation("Q1", "A1", 1), Relation("Q2", "A1", 0), Relation("Q2", "A2", 1),
+    val relations =
+     Array(Relation("Q1", "A1", 1), Relation("Q2", "A1", 0), Relation("Q2", "A2", 1),
       Relation("Q2", "A3", 0))
     val relationsRDD = sc.parallelize(relations)
     val qIndices = Array(1.0f, 2.0f, 3.0f)
@@ -267,40 +276,45 @@ class TextSetSpec extends ZooSpecHelper {
     a3(TextFeature.indexedTokens) = aIndices
     val aSet = TextSet.rdd(sc.parallelize(Seq(a1, a2, a3)))
     val pairSet = TextSet.fromRelationPairs(relationsRDD, qSet, aSet)
-    require(pairSet.isDistributed)
+    TestUtils.conditionFailTest(pairSet.isDistributed)
     val pairFeatures = pairSet.toDistributed().rdd.collect()
-    require(pairFeatures.length == 2)
-    require(pairFeatures.map(_.getURI).toSet == Set("Q2A2A1", "Q2A2A3"))
+    TestUtils.conditionFailTest(pairFeatures.length == 2)
+    TestUtils.conditionFailTest(pairFeatures.map(_.getURI).toSet == Set("Q2A2A1", "Q2A2A3"))
     pairFeatures.foreach(feature => {
       val sample = feature.getSample
-      require(sample.feature().size().sameElements(Array(2, 9)))
-      require(sample.feature().reshape(Array(18)).toArray().sameElements(
+      TestUtils.conditionFailTest(sample.feature().size().sameElements(Array(2, 9)))
+      TestUtils.conditionFailTest(sample.feature().reshape(Array(18)).toArray().sameElements(
         qIndices ++ aIndices ++ qIndices ++ aIndices))
-      require(sample.label().size().sameElements(Array(2, 1)))
-      require(sample.label().reshape(Array(2)).toArray().sameElements(Array(1.0f, 0.0f)))
+      TestUtils.conditionFailTest(sample.label().size().sameElements(Array(2, 1)))
+      TestUtils.conditionFailTest(
+      sample.label().reshape(Array(2)).toArray().sameElements(Array(1.0f, 0.0f)))
     })
 
     val listSet = TextSet.fromRelationLists(relationsRDD, qSet, aSet)
-    require(listSet.isDistributed)
+    TestUtils.conditionFailTest(listSet.isDistributed)
     val listFeatures = listSet.toDistributed().rdd.collect().sortBy(_.getURI.length)
-    require(listFeatures.length == 2)
+    TestUtils.conditionFailTest(listFeatures.length == 2)
     val listFeature1 = listFeatures(0)
-    require(listFeature1.getURI == "Q1A1")
+    TestUtils.conditionFailTest(listFeature1.getURI == "Q1A1")
     val sample1 = listFeature1.getSample
-    require(sample1.feature().size().sameElements(Array(1, 9)))
-    require(sample1.feature().reshape(Array(9)).toArray().sameElements(qIndices ++ aIndices))
-    require(sample1.label().size().sameElements(Array(1, 1)))
-    require(sample1.label().reshape(Array(1)).toArray().sameElements(Array(1.0f)))
+    TestUtils.conditionFailTest(sample1.feature().size().sameElements(Array(1, 9)))
+    TestUtils.conditionFailTest(
+    sample1.feature().reshape(Array(9)).toArray().sameElements(qIndices ++ aIndices))
+    TestUtils.conditionFailTest(sample1.label().size().sameElements(Array(1, 1)))
+    TestUtils.conditionFailTest(
+    sample1.label().reshape(Array(1)).toArray().sameElements(Array(1.0f)))
     val listFeature2 = listFeatures(1)
-    require(listFeature2.getURI.startsWith("Q2"))
-    require(listFeature2.getURI.contains("A1") && listFeature2.getURI.contains("A2") &&
+    TestUtils.conditionFailTest(listFeature2.getURI.startsWith("Q2"))
+    TestUtils.conditionFailTest(
+    listFeature2.getURI.contains("A1") && listFeature2.getURI.contains("A2") &&
       listFeature2.getURI.contains("A3"))
     val sample2 = listFeature2.getSample
-    require(sample2.feature().size().sameElements(Array(3, 9)))
-    require(sample2.feature().reshape(Array(27)).toArray().sameElements(qIndices ++ aIndices
+    TestUtils.conditionFailTest(sample2.feature().size().sameElements(Array(3, 9)))
+    TestUtils.conditionFailTest(
+    sample2.feature().reshape(Array(27)).toArray().sameElements(qIndices ++ aIndices
       ++ qIndices ++ aIndices ++ qIndices ++ aIndices))
-    require(sample2.label().size().sameElements(Array(3, 1)))
-    require(sample2.label().reshape(Array(3)).toArray().sorted
+    TestUtils.conditionFailTest(sample2.label().size().sameElements(Array(3, 1)))
+    TestUtils.conditionFailTest(sample2.label().reshape(Array(3)).toArray().sorted
       .sameElements(Array(0.0f, 0.0f, 1.0f)))
 
     val gloveDir = getClass.getClassLoader.getResource("glove.6B").getPath
@@ -334,44 +348,50 @@ class TextSetSpec extends ZooSpecHelper {
     a3(TextFeature.indexedTokens) = aIndices
     val aSet = TextSet.array(Array(a1, a2, a3))
     val pairSet = TextSet.fromRelationPairs(relations, qSet, aSet)
-    require(pairSet.isLocal)
+    TestUtils.conditionFailTest(pairSet.isLocal)
     val pairFeatures = pairSet.toLocal().array
-    require(pairFeatures.length == 3)
-    require(pairFeatures.map(_.getURI).toSet == Set("Q1A1A2", "Q2A2A1", "Q2A2A3"))
+    TestUtils.conditionFailTest(pairFeatures.length == 3)
+    TestUtils.conditionFailTest(
+    pairFeatures.map(_.getURI).toSet == Set("Q1A1A2", "Q2A2A1", "Q2A2A3"))
 
     for(feature <- pairFeatures) {
       val sample = feature.getSample
-      require(sample.feature().size().sameElements(Array(2, 9)))
-      require(sample.feature().reshape(Array(18)).toArray().sameElements(
+      TestUtils.conditionFailTest(sample.feature().size().sameElements(Array(2, 9)))
+      TestUtils.conditionFailTest(
+      sample.feature().reshape(Array(18)).toArray().sameElements(
         qIndices ++ aIndices ++ qIndices ++ aIndices))
-      require(sample.label().size().sameElements(Array(2, 1)))
-      require(sample.label().reshape(Array(2)).toArray().sameElements(Array(1.0f, 0.0f)))
+      TestUtils.conditionFailTest(sample.label().size().sameElements(Array(2, 1)))
+      TestUtils.conditionFailTest(
+      sample.label().reshape(Array(2)).toArray().sameElements(Array(1.0f, 0.0f)))
     }
 
     val listSet = TextSet.fromRelationLists(relations, qSet, aSet)
-    require(listSet.isLocal)
+    TestUtils.conditionFailTest(listSet.isLocal)
     val listFeatures = listSet.toLocal().array.sortBy(_.getURI.length)
-    require(listFeatures.length == 2)
+    TestUtils.conditionFailTest(listFeatures.length == 2)
     val listFeature1 = listFeatures(0)
-    require(listFeature1.getURI.startsWith("Q1"))
-    require(listFeature1.getURI.contains("A1") && listFeature1.getURI.contains("A2"))
+    TestUtils.conditionFailTest(listFeature1.getURI.startsWith("Q1"))
+    TestUtils.conditionFailTest(
+    listFeature1.getURI.contains("A1") && listFeature1.getURI.contains("A2"))
     val sample1 = listFeature1.getSample
-    require(sample1.feature().size().sameElements(Array(2, 9)))
-    require(sample1.feature().reshape(Array(18)).toArray()
+    TestUtils.conditionFailTest(sample1.feature().size().sameElements(Array(2, 9)))
+    TestUtils.conditionFailTest(sample1.feature().reshape(Array(18)).toArray()
       .sameElements(qIndices ++ aIndices ++ qIndices ++ aIndices))
-    require(sample1.label().size().sameElements(Array(2, 1)))
-    require(sample1.label().reshape(Array(2)).toArray().sorted.
+    TestUtils.conditionFailTest(sample1.label().size().sameElements(Array(2, 1)))
+    TestUtils.conditionFailTest(sample1.label().reshape(Array(2)).toArray().sorted.
       sameElements(Array(0.0f, 1.0f)))
     val listFeature2 = listFeatures(1)
-    require(listFeature2.getURI.startsWith("Q2"))
-    require(listFeature2.getURI.contains("A1") && listFeature2.getURI.contains("A2") &&
+    TestUtils.conditionFailTest(listFeature2.getURI.startsWith("Q2"))
+    TestUtils.conditionFailTest(
+    listFeature2.getURI.contains("A1") && listFeature2.getURI.contains("A2") &&
       listFeature2.getURI.contains("A3"))
     val sample2 = listFeature2.getSample
-    require(sample2.feature().size().sameElements(Array(3, 9)))
-    require(sample2.feature().reshape(Array(27)).toArray().sameElements(qIndices ++ aIndices
+    TestUtils.conditionFailTest(sample2.feature().size().sameElements(Array(3, 9)))
+    TestUtils.conditionFailTest(
+    sample2.feature().reshape(Array(27)).toArray().sameElements(qIndices ++ aIndices
       ++ qIndices ++ aIndices ++ qIndices ++ aIndices))
-    require(sample2.label().size().sameElements(Array(3, 1)))
-    require(sample2.label().reshape(Array(3)).toArray().sorted
+    TestUtils.conditionFailTest(sample2.label().size().sameElements(Array(3, 1)))
+    TestUtils.conditionFailTest(sample2.label().reshape(Array(3)).toArray().sorted
       .sameElements(Array(0.0f, 0.0f, 1.0f)))
 
     val gloveDir = getClass.getClassLoader.getResource("glove.6B").getPath
@@ -387,7 +407,8 @@ class TextSetSpec extends ZooSpecHelper {
 
   "Array2 TextSet from relation pairs and lists with training and validation" should
     "work properly" in {
-    val relations = Array(Relation("Q1", "A1", 1), Relation("Q2", "A1", 0), Relation("Q2", "A2", 1),
+    val relations =
+     Array(Relation("Q1", "A1", 1), Relation("Q2", "A1", 0), Relation("Q2", "A2", 1),
       Relation("Q2", "A3", 0))
     val qIndices = Array(1.0f, 2.0f, 3.0f)
     val q1 = TextFeature(null, uri = "Q1")
@@ -404,40 +425,45 @@ class TextSetSpec extends ZooSpecHelper {
     a3(TextFeature.indexedTokens) = aIndices
     val aSet = TextSet.array(Array(a1, a2, a3))
     val pairSet = TextSet.fromRelationPairs(relations, qSet, aSet)
-    require(pairSet.isLocal)
+    TestUtils.conditionFailTest(pairSet.isLocal)
     val pairFeatures = pairSet.toLocal().array
-    require(pairFeatures.length == 2)
-    require(pairFeatures.map(_.getURI).toSet == Set("Q2A2A1", "Q2A2A3"))
+    TestUtils.conditionFailTest(pairFeatures.length == 2)
+    TestUtils.conditionFailTest(pairFeatures.map(_.getURI).toSet == Set("Q2A2A1", "Q2A2A3"))
     pairFeatures.foreach(feature => {
       val sample = feature.getSample
-      require(sample.feature().size().sameElements(Array(2, 9)))
-      require(sample.feature().reshape(Array(18)).toArray().sameElements(
+      TestUtils.conditionFailTest(sample.feature().size().sameElements(Array(2, 9)))
+      TestUtils.conditionFailTest(sample.feature().reshape(Array(18)).toArray().sameElements(
         qIndices ++ aIndices ++ qIndices ++ aIndices))
-      require(sample.label().size().sameElements(Array(2, 1)))
-      require(sample.label().reshape(Array(2)).toArray().sameElements(Array(1.0f, 0.0f)))
+      TestUtils.conditionFailTest(sample.label().size().sameElements(Array(2, 1)))
+      TestUtils.conditionFailTest(
+      sample.label().reshape(Array(2)).toArray().sameElements(Array(1.0f, 0.0f)))
     })
 
     val listSet = TextSet.fromRelationLists(relations, qSet, aSet)
-    require(listSet.isLocal)
+    TestUtils.conditionFailTest(listSet.isLocal)
     val listFeatures = listSet.toLocal().array.sortBy(_.getURI.length)
-    require(listFeatures.length == 2)
+    TestUtils.conditionFailTest(listFeatures.length == 2)
     val listFeature1 = listFeatures(0)
-    require(listFeature1.getURI == "Q1A1")
+    TestUtils.conditionFailTest(listFeature1.getURI == "Q1A1")
     val sample1 = listFeature1.getSample
-    require(sample1.feature().size().sameElements(Array(1, 9)))
-    require(sample1.feature().reshape(Array(9)).toArray().sameElements(qIndices ++ aIndices))
-    require(sample1.label().size().sameElements(Array(1, 1)))
-    require(sample1.label().reshape(Array(1)).toArray().sameElements(Array(1.0f)))
+    TestUtils.conditionFailTest(sample1.feature().size().sameElements(Array(1, 9)))
+    TestUtils.conditionFailTest(
+    sample1.feature().reshape(Array(9)).toArray().sameElements(qIndices ++ aIndices))
+    TestUtils.conditionFailTest(sample1.label().size().sameElements(Array(1, 1)))
+    TestUtils.conditionFailTest(
+    sample1.label().reshape(Array(1)).toArray().sameElements(Array(1.0f)))
     val listFeature2 = listFeatures(1)
-    require(listFeature2.getURI.startsWith("Q2"))
-    require(listFeature2.getURI.contains("A1") && listFeature2.getURI.contains("A2") &&
+    TestUtils.conditionFailTest(listFeature2.getURI.startsWith("Q2"))
+    TestUtils.conditionFailTest(
+    listFeature2.getURI.contains("A1") && listFeature2.getURI.contains("A2") &&
       listFeature2.getURI.contains("A3"))
     val sample2 = listFeature2.getSample
-    require(sample2.feature().size().sameElements(Array(3, 9)))
-    require(sample2.feature().reshape(Array(27)).toArray().sameElements(qIndices ++ aIndices
+    TestUtils.conditionFailTest(sample2.feature().size().sameElements(Array(3, 9)))
+    TestUtils.conditionFailTest(
+    sample2.feature().reshape(Array(27)).toArray().sameElements(qIndices ++ aIndices
       ++ qIndices ++ aIndices ++ qIndices ++ aIndices))
-    require(sample2.label().size().sameElements(Array(3, 1)))
-    require(sample2.label().reshape(Array(3)).toArray().sorted
+    TestUtils.conditionFailTest(sample2.label().size().sameElements(Array(3, 1)))
+    TestUtils.conditionFailTest(sample2.label().reshape(Array(3)).toArray().sorted
       .sameElements(Array(0.0f, 0.0f, 1.0f)))
 
     val gloveDir = getClass.getClassLoader.getResource("glove.6B").getPath

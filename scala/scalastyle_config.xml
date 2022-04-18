@@ -192,5 +192,19 @@ You can also disable only one rule, by specifying its rule id, as specified in:
 
     <check level="error" class="org.scalastyle.scalariform.EqualsHashCodeChecker" enabled="true"></check>
 
+    <check customId="noassert" enabled="true" class="org.scalastyle.scalariform.TokenChecker" level="error">
+        <parameters>
+            <parameters><parameter name="regex">^assert$</parameter></parameters>
+        </parameters>
+        <customMessage>assert is not allowed to use, please use Log4Error api instead</customMessage>
+    </check>
+
+    <check customId="norequire" enabled="true" class="org.scalastyle.scalariform.TokenChecker" level="error">
+        <parameters>
+            <parameters><parameter name="regex">^require$</parameter></parameters>
+        </parameters>
+        <customMessage>require is not allowed to use, please use Log4Error api instead</customMessage>
+    </check>
+
 
 </scalastyle>

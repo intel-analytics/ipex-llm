@@ -23,6 +23,7 @@ import com.intel.analytics.bigdl.dllib.tensor.{Storage, Tensor}
 import scala.math.abs
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.dllib.nn.abstractnn.DataFormat
+import com.intel.analytics.bigdl.dllib.utils.TestUtils
 import com.intel.analytics.bigdl.dllib.utils.serializer.ModuleSerializationTest
 
 import scala.util.Random
@@ -70,15 +71,15 @@ class SpatialAveragePoolingSpec extends FlatSpec with Matchers {
     val output = module.forward(input)
     val gradInput = module.backward(input, gradOutput)
     expectedOutput.map(output, (v1, v2) => {
-      assert(abs(v1 - v2) < 1e-6);
+      TestUtils.conditionFailTest(abs(v1 - v2) < 1e-6);
       v1
     })
     expectedGrad.map(gradInput, (v1, v2) => {
-      assert(abs(v1 - v2) < 1e-6);
+      TestUtils.conditionFailTest(abs(v1 - v2) < 1e-6);
       v1
     })
-    assert(input == inputOrg)
-    assert(gradOutput == gradOutputOrg)
+    TestUtils.conditionFailTest(input == inputOrg)
+    TestUtils.conditionFailTest(gradOutput == gradOutputOrg)
   }
 
   "A SpatialAveragePooling" should "generate correct output and gradInput with 4D input" in {
@@ -144,15 +145,15 @@ class SpatialAveragePoolingSpec extends FlatSpec with Matchers {
     val output = module.forward(input)
     val gradInput = module.backward(input, gradOutput)
     expectedOutput.map(output, (v1, v2) => {
-      assert(abs(v1 - v2) < 1e-6);
+      TestUtils.conditionFailTest(abs(v1 - v2) < 1e-6);
       v1
     })
     expectedGrad.map(gradInput, (v1, v2) => {
-      assert(abs(v1 - v2) < 1e-6);
+      TestUtils.conditionFailTest(abs(v1 - v2) < 1e-6);
       v1
     })
-    assert(input == inputOrg)
-    assert(gradOutput == gradOutputOrg)
+    TestUtils.conditionFailTest(input == inputOrg)
+    TestUtils.conditionFailTest(gradOutput == gradOutputOrg)
   }
 
   "A SpatialAveragePooling" should "generate correct output and gradInput with 3D input" in {
@@ -210,15 +211,15 @@ class SpatialAveragePoolingSpec extends FlatSpec with Matchers {
     val output = module.forward(input)
     val gradInput = module.backward(input, gradOutput)
     expectedOutput.map(output, (v1, v2) => {
-      assert(abs(v1 - v2) < 1e-6);
+      TestUtils.conditionFailTest(abs(v1 - v2) < 1e-6);
       v1
     })
     expectedGrad.map(gradInput, (v1, v2) => {
-      assert(abs(v1 - v2) < 1e-6);
+      TestUtils.conditionFailTest(abs(v1 - v2) < 1e-6);
       v1
     })
-    assert(input == inputOrg)
-    assert(gradOutput == gradOutputOrg)
+    TestUtils.conditionFailTest(input == inputOrg)
+    TestUtils.conditionFailTest(gradOutput == gradOutputOrg)
   }
 
   "A SpatialAveragePooling in ceil mode" should "generate correct output and gradInput" in {
@@ -333,12 +334,12 @@ class SpatialAveragePoolingSpec extends FlatSpec with Matchers {
       output = output.transpose(2, 4).transpose(3, 4)
       gradInput = gradInput.transpose(2, 4).transpose(3, 4)
       expectedOutput.map(output, (v1, v2) => {
-        assert(abs(v1 - v2) < 1e-6)
+        TestUtils.conditionFailTest(abs(v1 - v2) < 1e-6)
         v1
       })
 
       expectedGrad.map(gradInput, (v1, v2) => {
-        assert(abs(v1 - v2) < 1e-6)
+        TestUtils.conditionFailTest(abs(v1 - v2) < 1e-6)
         v1
       })
 

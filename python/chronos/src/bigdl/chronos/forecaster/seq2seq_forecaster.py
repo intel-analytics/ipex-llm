@@ -51,7 +51,7 @@ class Seq2SeqForecaster(BasePytorchForecaster):
                  seed=None,
                  distributed=False,
                  workers_per_node=1,
-                 distributed_backend="torch_distributed"):
+                 distributed_backend="ray"):
         """
         Build a Seq2Seq Forecast Model.
 
@@ -89,8 +89,8 @@ class Seq2SeqForecaster(BasePytorchForecaster):
         :param workers_per_node: int, the number of worker you want to use.
                The value defaults to 1. The param is only effective when
                distributed is set to True.
-        :param distributed_backend: str, select from "torch_distributed" or
-               "horovod". The value defaults to "torch_distributed".
+        :param distributed_backend: str, select from "ray" or
+               "horovod". The value defaults to "ray".
         """
         # config setting
         self.data_config = {
