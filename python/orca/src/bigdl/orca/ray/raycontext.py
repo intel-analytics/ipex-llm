@@ -36,11 +36,11 @@ class RayContext(object):
 
         if runtime == "spark":
             from bigdl.orca.ray import RayOnSparkContext
-            sc_params = dict(
-                num_ray_nodes = self.num_ray_nodes,
-                ray_node_cpu_cores = self.ray_node_cpu_cores)
-            sc_params = sc_params.updates(kwargs)
-            self._ray_on_spark_context = RayOnSparkContext(**sc_params)
+            init_params = dict(
+                num_ray_nodes=self.num_ray_nodes,
+                ray_node_cpu_cores=self.ray_node_cpu_cores)
+            init_params.update(kwargs)
+            self._ray_on_spark_context = RayOnSparkContext(**init_params)
             self.is_local = self._ray_on_spark_context.is_local
 
         elif runtime == "ray":
@@ -56,9 +56,7 @@ class RayContext(object):
     def init(self, driver_cores=0):
         if self.runtime == "ray":
             import ray
-            init_params = dict(num_cpus = self.num_ray_nodes)
-            init_params = init_params.update(self.ray_args)
-            results = ray.init(**init_params)
+            results = ray.init(**self.ray_args)
         else:
             results = self._ray_on_spark_context.init(driver_cores=driver_cores)
             self.address_info = self._ray_on_spark_context.address_info
