@@ -327,3 +327,11 @@ class Trainer(pl.Trainer):
                 else:
                     raise TypeError("Model type of {} can not be exported.".format(type(model)))
                 model.save(path)
+
+    @staticmethod
+    def load(path, accelerator=None):
+        if accelerator == 'openvino' or path.split('.')[-1]=='xml':
+            #TODO: Need to fix this with lazy import class.
+            # The usage should be:  
+            #   PytorchOpenVINOModel.load(path)
+            return PytorchOpenVINOModel().load(path)

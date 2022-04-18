@@ -14,9 +14,7 @@
 # limitations under the License.
 #
 import os
-from functools import partial
 from ..core.openvino_model import OpenVINOModel
-from ..core.utility import convert_onnx_to_xml
 from ...inference.pytorch.model import AcceleratedLightningModule
 from .utility import export
 import torch
@@ -41,3 +39,7 @@ class PytorchOpenVINOModel(OpenVINOModel, AcceleratedLightningModule):
     def on_forward_end(self, outputs):
         outputs = self.numpy_to_tensors(outputs.values())
         return outputs
+
+    @staticmethod
+    def load(path):
+        return PytorchOpenVINOModel().read_network(path)

@@ -42,3 +42,7 @@ class OpenVINOModel:
     def save(self, path):
         assert self.ie_network
         self.ie_network.serialize(path)
+
+    @staticmethod
+    def load(path):
+        return OpenVINOModel(path)
