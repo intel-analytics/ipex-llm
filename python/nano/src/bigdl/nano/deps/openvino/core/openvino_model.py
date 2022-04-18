@@ -38,3 +38,7 @@ class OpenVINOModel:
 
     def read_network(self, model: str):
         self.ie_network = IECore().read_network(model=model)
+
+    def save(self, path):
+        assert self.ie_network
+        self.ie_network.serialize(path)

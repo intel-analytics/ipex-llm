@@ -46,3 +46,7 @@ class TestOpenVINO(TestCase):
         openvino_model = trainer.trace(model, accelerator='openvino')
         y_hat = openvino_model(x)
         assert y_hat.shape == (10, 10)
+
+        openvino_model.save('saved_openvino_model.xml')
+        assert os.path.exists('saved_openvino_model.xml')
+        os.remove('saved_openvino_model.xml')
