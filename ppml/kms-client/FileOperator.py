@@ -72,4 +72,4 @@ def decrypt_csv_columns_automation(ip, port, encrypted_primary_key_path, encrypt
         print('[INFO] Decryption Finished. The Output Is ' + csv_file + '.col_decrypted')
 
     end = time.time()
-    print('[INFO] Total Elapsed Time For Columns Decrytion: ' + str(end - start) + ' s')
+    print('[INFO] Total Elapsed Time For Columns Decryption: ' + str(end - start) + ' s')
