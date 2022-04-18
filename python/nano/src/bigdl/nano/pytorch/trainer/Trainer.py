@@ -313,6 +313,16 @@ class Trainer(pl.Trainer):
         else:
             raise NotImplementedError("Backend {} is not implemented.".format(backend))
 
-    def trace(self, model: nn.Module, input_sample=None, accelerator=None):
+    @staticmethod
+    def trace(model: nn.Module, input_sample=None, accelerator=None):
         if accelerator == 'openvino':
             return PytorchOpenVINOModel(model, input_sample)
+
+    @staticmethod
+    def save(model, path, precision=None, accelerator=None, input_sample=None):
+        if accelerator == 'openvino':
+            if precision is None:
+                if hasattr(model, "save"):
+                    model.save(path)
+                elif isinstance(model, nn.Module):
+                    PytorchOpenVINOModel(model, input_sample=input_sample, xml_path=path)
