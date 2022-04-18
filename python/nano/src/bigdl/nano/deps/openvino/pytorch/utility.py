@@ -27,5 +27,5 @@ def export(model, input_sample=None, xml_path="model.xml"):
     :param file_path: The path to save openvino model file.
     '''
     export_to_onnx(model, input_sample, 'tmp.onnx', dynamic_axes=False)
-    os.remove('tmp.onnx')
     convert_onnx_to_xml('tmp.onnx', xml_path)
+    os.remove('tmp.onnx')
