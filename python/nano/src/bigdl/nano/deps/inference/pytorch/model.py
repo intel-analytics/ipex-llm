@@ -16,7 +16,7 @@
 from bigdl.nano.pytorch.lightning import LightningModuleFromTorch
 import torch
 
-from .utility import get_forward_args
+from .model_utils import get_forward_args
 
 
 class AcceleratedLightningModule(LightningModuleFromTorch):

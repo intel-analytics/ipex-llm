@@ -322,7 +322,7 @@ class Trainer(pl.Trainer):
     def save(model, path, precision=None, accelerator=None, input_sample=None):
         if accelerator == 'openvino':
             if precision is None:
-                if not hasattr(model, "save")  and isinstance(model, nn.Module):
+                if not hasattr(model, "save") and isinstance(model, nn.Module):
                     model = PytorchOpenVINOModel(model, input_sample=input_sample)
                 else:
                     raise TypeError("Model type of {} can not be exported.".format(type(model)))
@@ -330,8 +330,8 @@ class Trainer(pl.Trainer):
 
     @staticmethod
     def load(path, accelerator=None):
-        if accelerator == 'openvino' or path.split('.')[-1]=='xml':
-            #TODO: Need to fix this with lazy import class.
-            # The usage should be:  
+        if accelerator == 'openvino' or path.split('.')[-1] == 'xml':
+            # TODO: Need to fix this with lazy import class.
+            # The usage should be:
             #   PytorchOpenVINOModel.load(path)
             return PytorchOpenVINOModel().load(path)

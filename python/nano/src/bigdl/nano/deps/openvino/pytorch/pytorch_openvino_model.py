@@ -21,7 +21,7 @@ import torch
 
 
 class PytorchOpenVINOModel(OpenVINOModel, AcceleratedLightningModule):
-    def __init__(self, model: torch.nn.Module =None, input_sample=None):
+    def __init__(self, model: torch.nn.Module = None, input_sample=None):
         AcceleratedLightningModule.__init__(self, model)
         if model is not None:
             export(model, input_sample, 'tmp.xml')
@@ -32,7 +32,7 @@ class PytorchOpenVINOModel(OpenVINOModel, AcceleratedLightningModule):
         if self.ie_network is None:
             raise RuntimeError(
                 "Please create an instance by PytorchOpenVINOModel() or PytorchOpenVINOModel.load()"
-                )
+            )
         inputs = self.tensors_to_numpy(inputs)
         return inputs
 

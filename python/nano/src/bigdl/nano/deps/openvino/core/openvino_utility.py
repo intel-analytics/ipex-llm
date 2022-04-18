@@ -13,8 +13,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-try:
-    from openvino.inference_engine import IECore
-except ImportError:
-    raise ImportError("To enable openvino inference, you need to install it by:\n"
-                      "\t\t pip install openvino-dev")
+from openvino.inference_engine import IECore
+
+
+def convert_onnx_to_xml(onnx_file_path, xml_path, batch_size=1):
+    ie = IECore()
+    net_onnx = ie.read_network(model=onnx_file_path)
+    net_onnx.batch_size = batch_size
+    net_onnx.serialize(xml_path)

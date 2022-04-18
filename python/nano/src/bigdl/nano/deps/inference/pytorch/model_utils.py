@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+from typing import Any
 from bigdl.nano.pytorch.lightning import LightningModuleFromTorch
 import inspect
 from torch.utils.data import DataLoader
@@ -34,12 +35,13 @@ def get_input_example(model: LightningModuleFromTorch, input_sample):
     elif input_sample is None:
         if getattr(model, "example_input_array", None) is not None:
             input_sample = model.example_input_array
-        elif getattr(model, "trainer", None) is not None:
-            for dataloader in [model.test_dataloader(), model.train_dataloader(),
-                               model.val_dataloader()]:
+        elif not getattr(model, "trainer", None):
+            dataloaders: Any = [model.test_dataloader(), model.train_dataloader(),
+                                model.val_dataloader()]
+            for dataloader in dataloaders:
                 if dataloader is not None:
                     # TODO: This assumpe the last output is y
-                    input_sample = tuple(next(iter(dataloader))[:-1])
+                    input_sample = tuple(next(iter(dataloader)))[:-1]
                     break
             if input_sample is None and model.predict_dataloader():
                 input_sample = tuple(next(iter(model.predict_dataloader())))
