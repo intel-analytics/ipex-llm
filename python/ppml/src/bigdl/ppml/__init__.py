@@ -25,7 +25,7 @@ import bigdl
 import psutil
 
 total_mem = psutil.virtual_memory().total
-spark_mem_gb = int(total_mem / (2 ** 30) * 0.8)
+spark_mem_gb = int(total_mem / (2 ** 30) * 0.5)
 
 spark_conf = create_spark_conf().set("spark.driver.memory", f"{spark_mem_gb}g")
 SparkContext.getOrCreate(spark_conf)
