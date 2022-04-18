@@ -55,8 +55,8 @@ class AcceleratedLightningModule(LightningModuleFromTorch):
         return np_data
 
     @staticmethod
-    def numpy_to_tensors(np_array):
-        tensors = tuple(map(lambda x: torch.from_numpy(x), np_array))
+    def numpy_to_tensors(np_arrays):
+        tensors = tuple(map(lambda x: torch.from_numpy(x), np_arrays))
         if len(tensors) == 1:
             tensors = tensors[0]
         return tensors
