@@ -43,7 +43,7 @@ class RayContext(object):
                 self.num_ray_nodes = OrcaContext.node_num()
             else:
                 if "ray_node_cpu_cores" in kwargs:
-                     self.ray_node_cpu_cores = kwargs["ray_node_cpu_cores"]
+                    self.ray_node_cpu_cores = kwargs["ray_node_cpu_cores"]
                 else:
                     self.ray_node_cpu_cores = OrcaContext.core_num()
                 if "num_ray_nodes" in kwargs:
