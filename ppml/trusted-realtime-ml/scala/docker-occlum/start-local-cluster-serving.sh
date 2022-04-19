@@ -3,11 +3,10 @@ export SECURE_PASSWORD_PATH=the_dir_path_of_your_prepared_password
 export LOCAL_IP=your_local_ip_of_the_sgx_server
 sudo docker run -itd \
     -e REDIS_HOST=127.0.0.1 \
-    --privileged \
     --net=host \
     --cpuset-cpus="0-4" \
     --oom-kill-disable \
-    --device=/dev/sgx \
+    --device=/dev/sgx/enclave \
     -v /var/run/aesmd/aesm.socket:/var/run/aesmd/aesm.socket \
     -v $KEYS_PATH:/opt/keys \
     -v $PWD/conf:/opt/conf \
