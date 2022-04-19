@@ -15,7 +15,7 @@
 #
 
 import os
-from ..core.openvino_utility import convert_onnx_to_xml
+from ..core.openvino_utils import convert_onnx_to_xml
 from ...inference.pytorch.model_utils import export as export_to_onnx
 
 
