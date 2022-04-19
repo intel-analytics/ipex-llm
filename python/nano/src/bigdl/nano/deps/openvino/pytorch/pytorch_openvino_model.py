@@ -42,4 +42,10 @@ class PytorchOpenVINOModel(OpenVINOModel, AcceleratedLightningModule):
 
     @staticmethod
     def load(path):
+        """
+        Load an OpenVINO model for inference.
+
+        :param path: Path to model to be loaded.
+        :return: PytorchOpenVINOModel
+        """
         return PytorchOpenVINOModel().read_network(path)

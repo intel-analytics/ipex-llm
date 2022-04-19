@@ -40,10 +40,22 @@ class OpenVINOModel:
         self.ie_network = IECore().read_network(model=model)
 
     def save(self, path):
+        """
+        Save PytorchOpenVINOModel to local as xml and bin file
+
+        :param path: Path to save the model.
+        """
         assert self.ie_network, "self.ie_network shouldn't be None."
         assert path.split('.')[-1] == "xml", "Path of openvino model must be with '.xml' suffix."
         self.ie_network.serialize(path)
 
     @staticmethod
     def load(path):
+        """
+        Load an OpenVINO model for inference.
+
+        :param path: Path to model to be loaded.
+        :return: OpenVINOModel
+        """
+        assert path.split('.')[-1] == "xml", "Path of openvino model must be with '.xml' suffix."
         return OpenVINOModel(path)
