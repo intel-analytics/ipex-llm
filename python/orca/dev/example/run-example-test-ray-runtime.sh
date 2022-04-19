@@ -23,7 +23,7 @@ time1=$((now-start))
 ray stop -f
 #ray start --head
 
-# echo "#2 tf2 estimator resnet 50 example"
+# echo "#2 tf2 estimator yolov3 example"
 # if [ -f tmp/coco.names ]; then
 #   echo "tmp/coco.names already exists."
 # else
