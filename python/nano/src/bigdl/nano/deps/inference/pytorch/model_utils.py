@@ -53,9 +53,9 @@ def get_input_example(model: LightningModuleFromTorch, input_sample):
     return input_sample
 
 
-def export(model, input_sample=None, onnx_path="model.onnx", dynamic_axes=True):
+def export_onnx(model, input_sample=None, onnx_path="model.onnx", dynamic_axes=True):
     '''
-    Internal function to build a ortsess and bind to the lightningmodule.
+    Internal function to export pytorch model as onnx.
 
     :param input_sample: torch.Tensor or a list for the model tracing.
     :param file_path: The path to save onnx model file.
