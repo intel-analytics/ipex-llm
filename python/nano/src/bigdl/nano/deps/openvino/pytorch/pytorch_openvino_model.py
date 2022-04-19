@@ -21,18 +21,22 @@ import torch
 
 
 class PytorchOpenVINOModel(OpenVINOModel, AcceleratedLightningModule):
-    def __init__(self, model: torch.nn.Module = None, input_sample=None):
+    def __init__(self, model, input_sample=None):
         """
         Create a OpenVINO model from pytorch.
 
-        :param model: Pytorch model to be converted to OpenVINO for inference, defaults to None.
+        :param model: Pytorch model to be converted to OpenVINO for inference or 
+                      Path to Openvino saved model.
         :param input_sample: A set of inputs for trace, defaults to None if you have trace before or
                             model is a LightningModule with any dataloader attached, defaults to None
         """
-        AcceleratedLightningModule.__init__(self, model)
-        if model is not None:
+        ov_model_path = model
+        if isinstance(model,  torch.nn.Module):
             export(model, input_sample, 'tmp.xml')
-            OpenVINOModel.__init__(self, 'tmp.xml')
+            ov_model_path = 'tmp.xml'
+        AcceleratedLightningModule.__init__(self, None)
+        OpenVINOModel.__init__(self, ov_model_path)
+        if os.path.exists('tmp.xml'):
             os.remove('tmp.xml')
 
     def on_forward_start(self, inputs):
@@ -55,4 +59,5 @@ class PytorchOpenVINOModel(OpenVINOModel, AcceleratedLightningModule):
         :param path: Path to model to be loaded.
         :return: PytorchOpenVINOModel
         """
-        return PytorchOpenVINOModel().read_network(path)
+        assert path.split('.')[-1] == "xml", "Path of openvino model must be with '.xml' suffix."
+        return PytorchOpenVINOModel(path)

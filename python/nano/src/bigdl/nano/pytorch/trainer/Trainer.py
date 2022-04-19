@@ -375,4 +375,4 @@ class Trainer(pl.Trainer):
             #   PytorchOpenVINOModel.load(path)
             if not os.path.exists(path):
                 raise FileNotFoundError("{} doesn't exist.".format(path))
-            return PytorchOpenVINOModel().load(path)
+            return PytorchOpenVINOModel(path)
