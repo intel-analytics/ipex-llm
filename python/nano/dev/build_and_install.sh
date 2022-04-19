@@ -24,9 +24,9 @@ WHL_DIR="$(cd ${BIGDL_DIR}/python/nano/src; pwd)"
 echo WHL_DIR
 
 if (( $# < 4)); then
-  echo "Usage: release.sh platform version upload framework"
-  echo "Usage example: bash release.sh linux default true pytorch"
-  echo "Usage example: bash release.sh mac 0.14.0.dev1 false tensorflow"
+  echo "Usage: build_and_install.sh platform version upload framework"
+  echo "Usage example: bash build_and_install.sh linux default true pytorch"
+  echo "Usage example: bash build_and_install.sh mac 0.14.0.dev1 false tensorflow"
   exit -1
 fi
 
@@ -38,5 +38,5 @@ bash ${RUN_SCRIPT_DIR}/release.sh ${platform} ${version} ${upload}
 
 cd ${WHL_DIR}
 
-whl_name="ls dist";pip install ${whl_name}[${framework}]
+whl_name=`ls dist`;pip install ${whl_name}[${framework}]
 
