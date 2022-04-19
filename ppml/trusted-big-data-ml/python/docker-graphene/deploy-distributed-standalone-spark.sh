@@ -6,7 +6,7 @@ source ./environment.sh
 
 echo "### phase.1 distribute the keys and password and data"
 echo ">>> $MASTER"
-ssh root@$MASTER "rm -rf $ENCLAVE_KEY_PATH && rm -rf $KEYS_PATH && rm -rf $SECURE_PASSWORD_PATH && rm -rf $DATA_PATH && mkdir -p $AZ_PPML_PATH"
+ssh root@$MASTER "rm -rf $ENCLAVE_KEY_PATH && rm -rf $KEYS_PATH && rm -rf $SECURE_PASSWORD_PATH && rm -rf $DATA_PATH && mkdir -p $BIGDL_PPML_PATH"
 scp -r $SOURCE_ENCLAVE_KEY_PATH root@$MASTER:$ENCLAVE_KEY_PATH
 scp -r $SOURCE_KEYS_PATH root@$MASTER:$KEYS_PATH
 scp -r $SOURCE_SECURE_PASSWORD_PATH root@$MASTER:$SECURE_PASSWORD_PATH
@@ -14,7 +14,7 @@ scp -r $SOURCE_DATA_PATH root@$MASTER:$DATA_PATH
 for worker in ${WORKERS[@]}
   do
     echo ">>> $worker"
-    ssh root@$worker "rm -rf $ENCLAVE_KEY_PATH && rm -rf $KEYS_PATH && rm -rf $SECURE_PASSWORD_PATH && rm -rf $DATA_PATH && mkdir -p $AZ_PPML_PATH"
+    ssh root@$worker "rm -rf $ENCLAVE_KEY_PATH && rm -rf $KEYS_PATH && rm -rf $SECURE_PASSWORD_PATH && rm -rf $DATA_PATH && mkdir -p $BIGDL_PPML_PATH"
     scp -r $SOURCE_ENCLAVE_KEY_PATH root@$worker:$ENCLAVE_KEY_PATH
     scp -r $SOURCE_KEYS_PATH root@$worker:$KEYS_PATH
     scp -r $SOURCE_SECURE_PASSWORD_PATH root@$worker:$SECURE_PASSWORD_PATH

@@ -118,7 +118,7 @@ def check_col_str_list_exists(df, column, arg_name):
 def get_nonnumeric_col_type(df, columns):
     return list(filter(
         lambda x: x[0] in columns and not (x[1] == "smallint" or x[1] == "int" or
-                x[1] == "bigint" or x[1] == "float" or x[1] == "double"),
+                                           x[1] == "bigint" or x[1] == "float" or x[1] == "double"),
         df.dtypes))
 
 
@@ -212,3 +212,30 @@ def str_to_list(arg, arg_name):
         return [arg]
     assert isinstance(arg, list), arg_name + " should be str or a list of str"
     return arg
+
+
+def distribute_tfrs_model(model):
+    from tensorflow_recommenders.tasks import base
+    import tensorflow as tf
+    import warnings
+    import tensorflow_recommenders as tfrs
+
+    if not isinstance(model, tfrs.Model):
+        return model
+    attr = model.__dict__
+    task_dict = dict()
+    for k, v in attr.items():
+        if isinstance(v, base.Task):
+            task_dict[k] = v
+
+    for k, v in task_dict.items():
+        try:
+            v._loss.reduction = tf.keras.losses.Reduction.NONE
+        except:
+            warnings.warn("Model task " + k + " has no attribute _loss, please use "
+                                              "`tf.keras.losses.Reduction.SUM` or "
+                                              "`tf.keras.losses.Reduction.NONE` for "
+                                              "loss reduction in this task if the "
+                                              "Estimator raise an error.")
+
+    return model

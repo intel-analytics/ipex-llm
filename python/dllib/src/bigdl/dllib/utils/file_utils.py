@@ -23,6 +23,7 @@ import functools
 import glob
 
 from urllib.parse import urlparse
+from bigdl.dllib.utils.log4Error import *
 
 
 def convert_to_safe_path(input_path, follow_symlinks=True):
@@ -242,8 +243,8 @@ class JTensor(BJTensor):
         """
         if a_ndarray is None:
             return None
-        assert isinstance(a_ndarray, np.ndarray), \
-            "input should be a np.ndarray, not %s" % type(a_ndarray)
+        invalidInputError(isinstance(a_ndarray, np.ndarray),
+                          "input should be a np.ndarray, not %s" % type(a_ndarray))
         return cls(a_ndarray,
                    a_ndarray.shape,
                    bigdl_type)

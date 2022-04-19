@@ -13,13 +13,21 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-import tensorflow as tf
-from bigdl.nano.tf.keras.training_utils import TrainingUtils
+
+import logging
+
+logger = logging.getLogger(__name__)
 
 
-class Model(TrainingUtils, tf.keras.Model):
-    """A wrapper class for tf.keras.Model adding more functions for BigDL-Nano."""
+def outputUserMessage(errMsg, fixMsg=None):
+    logger.error(f"\n\n****************************Usage Error************************\n" + errMsg)
+    if fixMsg:
+        logger.error(f"\n\n****************************How to fix*************************\n"
+                     + fixMsg)
+    logger.error(f"\n\n****************************Call Stack*************************")
 
-    def __init__(self, *args, **kwargs):
-        """Create a nano Sequential model, having the same arguments with tf.keras.Sequential."""
-        super().__init__(*args, **kwargs)
+
+def invalidInputError(condition, errMsg, fixMsg=None):
+    if not condition:
+        outputUserMessage(errMsg, fixMsg)
+        raise RuntimeError(errMsg)
