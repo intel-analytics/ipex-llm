@@ -15,6 +15,7 @@
 #
 from logging import warning
 from operator import xor
+import os
 from typing import Any, List, Optional
 
 import pytorch_lightning as pl
@@ -334,4 +335,6 @@ class Trainer(pl.Trainer):
             # TODO: Need to fix this with lazy import class.
             # The usage should be:
             #   PytorchOpenVINOModel.load(path)
+            if not os.path.exists(path):
+                raise FileNotFoundError("{} doesn't exist.".format(path))
             return PytorchOpenVINOModel().load(path)
