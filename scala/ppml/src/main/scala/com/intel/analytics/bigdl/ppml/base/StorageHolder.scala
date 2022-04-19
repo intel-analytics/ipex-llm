@@ -73,5 +73,5 @@ class StorageHolder(flDataType: FLDataType) {
   def getTensorMapStorage() = this.tensorMapStorage
   def getSplitStorage() = this.treeSplitStorage
   def getLeafStorage() = this.treeLeafStorage
-  def getBranchStorage() = this.treeEvalStorage
+  def getTreeEvalStorage() = this.treeEvalStorage
 }
