@@ -323,8 +323,8 @@ class Trainer(pl.Trainer):
         :param model: An torch.nn.Module model, including pl.LightningModule.
         :param input_sample: A set of inputs for trace, defaults to None if you have trace before or
                              model is a LightningModule with any dataloader attached.
-        :param accelerator: The accelerator to use, defaults to None meaning staying in Pytorch backend.
-                            Only 'openvino' is supported for now.
+        :param accelerator: The accelerator to use, defaults to None meaning staying in Pytorch
+                            backend. Only 'openvino' is supported for now.
         :return: A PytorchOpenVINOModel using openvino for inference if accelerator='openvino'
         """
         if accelerator == 'openvino':
@@ -334,11 +334,11 @@ class Trainer(pl.Trainer):
     def save(model, path, precision=None, accelerator=None, input_sample=None):
         """
         Save the model to path with desired precision and format(by assigning 'accelerator').
-        Using a pytorch model, you can export to ONNX, OpenVINO directly with 
-        accelerator='openvino'/'onnx'. 
+        Using a pytorch model, you can export to ONNX, OpenVINO directly with
+        accelerator='openvino'/'onnx'.
 
         :param model: Any model of torch.nn.Module, including PytorchOpenVINOModel
-        :param path: Path to saved model. You need to specify path suffix carefully. 
+        :param path: Path to saved model. You need to specify path suffix carefully.
                      For example, 'model.xml' for OpenVINO, 'model.onnx' for ONNX.
         :param precision: Precision of saved model, 'FP32', 'FP16', 'INT8', defaults to None,
                           then the precision depends on the precision of model.
@@ -346,7 +346,8 @@ class Trainer(pl.Trainer):
                             accelerator=None will save Pytorch model, accelerator='openvino' will
                             save an IR to inference by OpenVINO. Same as ONNX.
         :param input_sample: A set of inputs for trace, defaults to None if you have trace before or
-                             model is a LightningModule with any dataloader attached, defaults to None.
+                             model is a LightningModule with any dataloader attached,
+                             defaults to None.
                              Only ONNX and OpenVINO requires an input sample to export the model.
         """
         if accelerator == 'openvino':
@@ -362,7 +363,7 @@ class Trainer(pl.Trainer):
         """
         Load a model from local.
 
-        :param path: Path to model to be loaded. You need to specify path suffix carefully. 
+        :param path: Path to model to be loaded. You need to specify path suffix carefully.
                      For example, 'model.xml' for OpenVINO, 'model.onnx' for ONNX.
         :param accelerator: Saved model format, defaults to None.
                             accelerator=None will save Pytorch model, accelerator='openvino' will

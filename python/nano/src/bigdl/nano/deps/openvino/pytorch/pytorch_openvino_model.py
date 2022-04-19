@@ -25,13 +25,14 @@ class PytorchOpenVINOModel(OpenVINOModel, AcceleratedLightningModule):
         """
         Create a OpenVINO model from pytorch.
 
-        :param model: Pytorch model to be converted to OpenVINO for inference or 
+        :param model: Pytorch model to be converted to OpenVINO for inference or
                       Path to Openvino saved model.
         :param input_sample: A set of inputs for trace, defaults to None if you have trace before or
-                            model is a LightningModule with any dataloader attached, defaults to None
+                             model is a LightningModule with any dataloader attached,
+                             defaults to None.
         """
         ov_model_path = model
-        if isinstance(model,  torch.nn.Module):
+        if isinstance(model, torch.nn.Module):
             export(model, input_sample, 'tmp.xml')
             ov_model_path = 'tmp.xml'
         AcceleratedLightningModule.__init__(self, None)
