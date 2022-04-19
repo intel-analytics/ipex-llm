@@ -23,6 +23,8 @@ import com.intel.analytics.bigdl.ppml.fgboost.common.{RegressionTree, Split, Tre
 import com.intel.analytics.bigdl.ppml.generated.FlBaseProto.{MetaData, TensorMap}
 import com.intel.analytics.bigdl.ppml.utils.{DataFrameUtils, FLClientClosable}
 import com.intel.analytics.bigdl.ppml.utils.ProtoUtils.{getTensor, toArrayFloat, toBoostEvals, toFloatTensor}
+import jdk.nashorn.internal.ir.debug.ObjectSizeCalculator
+import com.intel.analytics.bigdl.ppml.utils.Conventions._
 import org.apache.logging.log4j.LogManager
 
 import scala.collection.mutable
@@ -61,7 +63,9 @@ abstract class FGBoostModel(continuous: Boolean,
   }
   def fitCall(yTrain: Array[Float], boostRound: Int) = {
     val xTrain = xTrainBuffer.toArray
+    logger.info(s"start to sort index")
     val sortedIndexByFeature = TreeUtils.sortByFeature(xTrain)
+    logger.info(s"sort index end")
     // TODO Load model from file
     initFGBoost(yTrain)
 
@@ -156,7 +160,18 @@ abstract class FGBoostModel(continuous: Boolean,
     }
     val boostEvals = toBoostEvals(lastTreePredict)
     // TODO: add grouped sending message
-    flClient.fgbostStub.evaluate(boostEvals.asJava, evaluateVersion)
+
+    val perMsgSize = ObjectSizeCalculator.getObjectSize(boostEvals.head)
+    val dataPerGroup = MAX_MSG_SIZE / perMsgSize
+    logger.info(s"data num: ${boostEvals.size}, per msg size: $perMsgSize, data per group: $dataPerGroup")
+    boostEvals.grouped(dataPerGroup.toInt).foreach(l => {
+      logger.info(s"evaluating in train step, version: $evaluateVersion")
+      flClient.fgbostStub.evaluate(l.asJava, evaluateVersion)
+      evaluateVersion += 1
+    })
+
+
+//    flClient.fgbostStub.evaluate(boostEvals.asJava, evaluateVersion)
   }
 
 

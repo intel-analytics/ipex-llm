@@ -50,8 +50,8 @@ class FGBoostAggregator(validationMethods: Array[ValidationMethod[Float]] = null
   def getLabelStorage() = aggregateTypeMap.get(FLPhase.LABEL).getTensorMapStorage()
   def getSplitStorage() = aggregateTypeMap.get(FLPhase.SPLIT).getSplitStorage()
   def getTreeLeafStorage() = aggregateTypeMap.get(FLPhase.TREE_LEAF).getLeafStorage()
-  def getEvalStorage() = aggregateTypeMap.get(FLPhase.EVAL).getBranchStorage()
-  def getPredictStorage() = aggregateTypeMap.get(FLPhase.PREDICT).getBranchStorage()
+  def getEvalStorage() = aggregateTypeMap.get(FLPhase.EVAL).getTreeEvalStorage()
+  def getPredictStorage() = aggregateTypeMap.get(FLPhase.PREDICT).getTreeEvalStorage()
   def getResultStorage() = aggregateTypeMap.get(FLPhase.RESULT).getTensorMapStorage()
 
   override def initStorage(): Unit = {
@@ -147,7 +147,7 @@ class FGBoostAggregator(validationMethods: Array[ValidationMethod[Float]] = null
   }
 
   def aggEvaluate(): Unit = {
-    val aggPredict = aggregatePredict(FLPhase.EVAL)
+    val aggPredict = aggregatePredict(FLPhase.EVAL) // array dimension: record * trees
     val newPredict = predictWithTree(aggPredict)
     val targetProto = getLabelStorage().serverData
     // Compute new residual
@@ -262,6 +262,7 @@ class FGBoostAggregator(validationMethods: Array[ValidationMethod[Float]] = null
     }
     getSplitStorage().version += 1
   }
+
 
   def aggregatePredict(flPhase: FLPhase): Array[Array[(String, Array[java.lang.Boolean])]] = {
     // get proto and convert to scala object

@@ -13,6 +13,7 @@ import java.util.{List => JList}
 import scala.collection.JavaConverters._
 import scala.reflect.ClassTag
 import com.intel.analytics.bigdl.dllib.utils.Log4Error
+import org.apache.log4j.LogManager
 
 object PythonPPML {
 
@@ -20,7 +21,7 @@ object PythonPPML {
 
   def ofDouble(): PythonPPML[Double] = new PythonPPML[Double]()
 }
-class PythonPPML[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonBigDL with TimingSupportive{
+class PythonPPML[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonBigDL with TimingSupportive {
   def initFLContext() = {
     FLContext.initFLContext()
   }
@@ -110,6 +111,7 @@ class PythonPPML[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonBigDL
 
   }
   def fgBoostFitCall(model: FGBoostModel, yTrain: JTensor, boostRound: Int) = {
+    logger.info(s"start call fit")
     val labelArray = if (yTrain != null) yTrain.storage else null
     timing("Call fit method") {
       model.fitCall(labelArray, boostRound)
