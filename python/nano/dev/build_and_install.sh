@@ -33,10 +33,11 @@ fi
 platform=$1
 version=$2
 upload=$3  # Whether to upload the whl to pypi
+framework=$4
 
 bash ${RUN_SCRIPT_DIR}/release.sh ${platform} ${version} ${upload}
 
 cd ${WHL_DIR}
 
-whl_name=`ls dist`;pip install ${whl_name}[${framework}]
+whl_name=`ls dist`;pip install dist/${whl_name}[${framework}]
 
