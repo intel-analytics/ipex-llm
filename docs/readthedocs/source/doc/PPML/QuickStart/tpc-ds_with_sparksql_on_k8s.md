@@ -106,7 +106,7 @@ sudo docker exec -it spark-local-k8s-client bash
 
 7. Modify `spark-executor-template.yaml`, add path of `enclave-key`, `tpcds-spark` and `kuberconfig` on host
 
-```bash
+```yaml
 apiVersion: v1
 kind: Pod
 spec:
@@ -153,7 +153,7 @@ export QUERY=3
     org.apache.spark.deploy.SparkSubmit \
     --master $RUNTIME_SPARK_MASTER \
     --deploy-mode client \
-    --name spark-tpch-sgx \
+    --name spark-tpcds-sgx \
     --conf spark.driver.host=$LOCAL_IP \
     --conf spark.driver.port=54321 \
     --conf spark.driver.memory=10g \
@@ -180,10 +180,10 @@ export QUERY=3
     --conf spark.kubernetes.container.image=$RUNTIME_K8S_SPARK_IMAGE \
     --conf spark.kubernetes.executor.podTemplateFile=/ppml/trusted-big-data-ml/spark-executor-template.yaml \
     --conf spark.kubernetes.executor.deleteOnTermination=false \
-    --conf spark.kubernetes.executor.podNamePrefix=spark-tpch-sgx \
+    --conf spark.kubernetes.executor.podNamePrefix=spark-tpcds-sgx \
     --conf spark.kubernetes.sgx.enabled=true \
     --conf spark.kubernetes.sgx.executor.mem=32g \
-    --conf spark.kubernetes.sgx.executor.jvm.mem=10g \
+    --conf spark.kubernetes.sgx.executor.jvm.mem=6g \
     --conf spark.kubernetes.sgx.log.level=$SGX_LOG_LEVEL \
     --conf spark.authenticate=true \
     --conf spark.authenticate.secret=$secure_password \
@@ -207,7 +207,7 @@ export QUERY=3
     --conf spark.ssl.trustStoreType=JKS \
     --class "TPCDSBenchmark" \
     --verbose \
-    $TPCH_DIR/target/scala-2.12/tpcds-benchmark_2.12-0.1.jar \
+    $TPCDS_DIR/target/scala-2.12/tpcds-benchmark_2.12-0.1.jar \
     $OUTPUT_DIR $QUERY
 ```
 
