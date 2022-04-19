@@ -21,7 +21,7 @@ echo $RUN_SCRIPT_DIR
 BIGDL_DIR="$(cd ${RUN_SCRIPT_DIR}/../../..; pwd)"
 echo $BIGDL_DIR
 WHL_DIR="$(cd ${BIGDL_DIR}/python/nano/src; pwd)"
-echo ${WHL_DIR}
+echo WHL_DIR
 
 if (( $# < 4)); then
   echo "Usage: build_and_install.sh platform version upload framework"
@@ -37,5 +37,7 @@ framework=$4
 
 bash ${RUN_SCRIPT_DIR}/release.sh ${platform} ${version} ${upload}
 
-whl_name=`ls ${WHL_DIR}/dist`;pip install ${WHL_DIR}/dist/${whl_name}[${framework}] --force-reinstall
+cd ${WHL_DIR}
+
+whl_name=`ls dist`;pip install dist/${whl_name}[${framework}]
 

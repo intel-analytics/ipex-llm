@@ -334,6 +334,11 @@ def get_lr_schedule_callbacks(initial_lr):
 parser = argparse.ArgumentParser()
 parser.add_argument('--cluster_mode', type=str, default="local",
                     help='The mode for the Spark cluster.')
+parser.add_argument('--runtime', type=str, default="spark",
+                    help='The runtime for backend. One of spark or ray')
+parser.add_argument('--address', type=str, default="",
+                    help='The cluster address if the driver connects to an existing ray cluster. '
+                         'If it is empty, a new ray cluster will be created.')
 parser.add_argument("--worker_num", type=int, default=2,
                     help="The number of slave nodes to be used in the cluster."
                          "You can change it depending on your own cluster setting.")
@@ -362,10 +367,13 @@ parser.add_argument("--epochs", type=int, default=18, help=" epochs.")
 if __name__ == "__main__":
 
     args = parser.parse_args()
-    num_nodes = 1 if args.cluster_mode == "local" else args.worker_num
-    init_orca_context(cluster_mode=args.cluster_mode, cores=args.cores, num_nodes=num_nodes,
-                      memory=args.memory, init_ray_on_spark=True,
-                      enable_numa_binding=args.enable_numa_binding)
+    if args.runtime == "ray":
+        init_orca_context(runtime=args.runtime, address=args.address)
+    else:
+        num_nodes = 1 if args.cluster_mode == "local" else args.worker_num
+        init_orca_context(cluster_mode=args.cluster_mode, cores=args.cores, num_nodes=num_nodes,
+                        memory=args.memory, init_ray_on_spark=True,
+                        enable_numa_binding=args.enable_numa_binding)
 
     if not args.use_dummy_data:
         assert args.data_dir is not None, "--data_dir must be provided if not using dummy data"

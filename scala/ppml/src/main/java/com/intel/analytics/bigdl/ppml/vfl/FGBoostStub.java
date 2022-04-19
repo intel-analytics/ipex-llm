@@ -76,7 +76,7 @@ public class FGBoostStub {
                 .newBuilder()
                 .setClientuuid(clientID)
                 .addAllTreeEval(boostEval)
-                .setBsVersion(version)
+                .setVersion(version)
                 .build();
 
         return stub.evaluate(evaluateRequest);
@@ -88,7 +88,7 @@ public class FGBoostStub {
                 .newBuilder()
                 .setClientuuid(clientID)
                 .addAllTreeEval(boostEval)
-                .setBsVersion(version)
+                .setVersion(version)
                 .build();
 
         return stub.predict(request);
