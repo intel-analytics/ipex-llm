@@ -45,8 +45,8 @@ from torch.optim.optimizer import Optimizer
 
 
 class SparseAdam(Optimizer):
-    """Variant of the Adam optimizer that handles both sparse and non-sparse
-    updates more efficiently.
+    """
+    A variant of the Adam optimizer that can handles both sparse and non-sparse updates.
 
     The original Adam algorithm maintains two moving-average accumulators for
     each trainable variable; the accumulators are updated at every step.
@@ -61,16 +61,17 @@ class SparseAdam(Optimizer):
     """
 
     def __init__(self, params, lr=1e-3, betas=(0.9, 0.999), eps=1e-8):
-        """Constructs a new SparseAdam optimizer.
-        Args:
-          lr: A `Tensor` or a floating point value. or a schedule
+        """
+        Construct a new SparseAdam optimizer.
+
+        param lr: A `Tensor` or a floating point value. or a schedule
             that is a `tf.keras.optimizers.schedules.LearningRateSchedule`
             The learning rate.
-          beta_1: A `float` value or a constant `float` tensor.
+        param beta_1: A `float` value or a constant `float` tensor.
             The exponential decay rate for the 1st moment estimates.
-          beta_2: A `float` value or a constant `float` tensor.
+        param beta_2: A `float` value or a constant `float` tensor.
             The exponential decay rate for the 2nd moment estimates.
-          epsilon: A small constant for numerical stability.
+        param epsilon: A small constant for numerical stability.
             This epsilon is "epsilon hat" in
             [Adam: A Method for Stochastic Optimization. Kingma et al., 2014]
             (http://arxiv.org/abs/1412.6980) (in the formula just
@@ -89,13 +90,12 @@ class SparseAdam(Optimizer):
         super(SparseAdam, self).__init__(params, defaults)
 
     def step(self, closure=None):
-        """Performs a single optimization step.
+        """
+        Perform a single optimization step.
 
-        Arguments:
-            closure (callable, optional): A closure that reevaluates the model
+        :param closure: A optional callable. A closure that reevaluates the model
                 and returns the loss.
         """
-
         loss = None
         if closure is not None:
             loss = closure()
@@ -108,13 +108,13 @@ class SparseAdam(Optimizer):
                 grad = p.grad.data
 
                 if grad.is_sparse:
-                    self.sparse_step(group, p, grad)
+                    self._sparse_step(group, p, grad)
                 else:
-                    self.dense_step(group, p, grad)
+                    self._dense_step(group, p, grad)
 
         return loss
 
-    def sparse_step(self, group, param, grad):
+    def _sparse_step(self, group, param, grad):
         state = self.state[param]
 
         # State initialization
@@ -163,7 +163,7 @@ class SparseAdam(Optimizer):
 
         param.data.add_(make_sparse(-step_size * numer.div_(denom)))
 
-    def dense_step(self, group, param, grad):
+    def _dense_step(self, group, param, grad):
         state = self.state[param]
 
         # State initialization

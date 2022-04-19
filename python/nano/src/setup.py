@@ -94,6 +94,7 @@ def setup_package(plat_name):
     pytorch_requires = ["torch==1.9.0",
                         "torchvision==0.10.0",
                         "pytorch_lightning==1.4.2",
+                        "torchmetrics==0.7.2",
                         "opencv-python-headless",
                         "PyTurboJPEG",
                         "opencv-transforms",

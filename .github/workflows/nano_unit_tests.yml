@@ -46,7 +46,6 @@ jobs:
           source $CONDA/bin/activate bigdl-init
           $CONDA/bin/conda info
           whl_name=`ls python/nano/src/dist/`;pip install python/nano/src/dist/$whl_name[pytorch]
-          pip install torchmetrics==0.7.2 --upgrade # temporary fix on torchmetrics, downgrade to 0.7.2
           source bigdl-nano-init
           if [ 0"$LD_PRELOAD" = "0" ]; then
             exit 1
@@ -80,7 +79,6 @@ jobs:
           whl_name=`ls python/nano/src/dist/`;pip install python/nano/src/dist/$whl_name[pytorch]
           pip install pytest
           pip install ray[default]==1.11.0 prometheus_client==0.13.0
-          pip install torchmetrics==0.7.2 --upgrade # temporary fix on torchmetrics, downgrade to 0.7.2
           source bigdl-nano-init
           bash python/nano/test/run-nano-pytorch-ray-tests.sh
           source $CONDA/bin/deactivate

@@ -671,7 +671,7 @@ export TF_MKL_ALLOC_MAX_BYTES=10737418240 && \
     --conf spark.kubernetes.sgx.driver.mem=$SGX_DRIVER_MEM \
     --conf spark.kubernetes.sgx.driver.jvm.mem=$SGX_DRIVER_JVM_MEM \
     --conf spark.kubernetes.sgx.executor.mem=$SGX_EXECUTOR_MEM \
-    --conf spark.kubernetes.sgx.executorjvm.mem=$SGX_EXECUTOR_JVM_MEM \
+    --conf spark.kubernetes.sgx.executor.jvm.mem=$SGX_EXECUTOR_JVM_MEM \
     --conf spark.kubernetes.sgx.log.level=$SGX_LOG_LEVEL \
     --conf spark.authenticate=true \
     --conf spark.authenticate.secret=$secure_password \
@@ -705,13 +705,13 @@ You can run your own Spark Appliction after changing `--class` and jar path.
 #### 1. Bigdl ppml SGX related configurations
 The following parameters enable spark executor running on SGX.  
 `spark.kubernetes.sgx.enabled`: true -> enable spark executor running on sgx, false -> native on k8s withour SGX.  
-`spark.kubernetes.sgx.mem`: Spark executor SGX epc memeory.  
-`spark.kubernetes.sgx.jvm.mem`: Spark executor JVM memory, Recommended setting is half of epc memory.  
+`spark.kubernetes.sgx.executor.mem`: Spark executor SGX epc memeory.  
+`spark.kubernetes.sgx.executor.jvm.mem`: Spark executor JVM memory, Recommended setting is half of epc memory.  
 `spark.kubernetes.sgx.log.level`: Spark executor on SGX log level, Supported values are error,all and debug.  
 ```bash
     --conf spark.kubernetes.sgx.enabled=true
-    --conf spark.kubernetes.sgx.mem=32g
-    --conf spark.kubernetes.sgx.jvm.mem=16g
+    --conf spark.kubernetes.sgx.executor.mem=32g
+    --conf spark.kubernetes.sgx.executor.jvm.mem=16g
     --conf spark.kubernetes.sgx.log.level=error
 ```
 #### 2. Spark security configurations
