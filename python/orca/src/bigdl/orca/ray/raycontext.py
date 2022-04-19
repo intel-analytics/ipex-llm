@@ -16,6 +16,8 @@
 
 
 from threading import Lock
+from bigdl.orca import OrcaContext
+from pyparsing import Or
 
 
 class RayContext(object):
@@ -36,8 +38,19 @@ class RayContext(object):
             from bigdl.orca.ray import RayOnSparkContext
             self._ray_on_spark_context = RayOnSparkContext(**kwargs)
             self.is_local = self._ray_on_spark_context.is_local
-            self.num_ray_nodes = self._ray_on_spark_context.num_ray_nodes
-            self.ray_node_cpu_cores = self._ray_on_spark_context.ray_node_cpu_cores
+
+            if self.is_local:
+                self.ray_node_cpu_cores = OrcaContext.core_num()
+                self.num_ray_nodes = OrcaContext.node_num()
+            else:
+                if "ray_node_cpu_cores" in kwargs:
+                     self.ray_node_cpu_cores = kwargs["ray_node_cpu_cores"]
+                else:
+                    self.ray_node_cpu_cores = OrcaContext.core_num()
+                if "num_ray_nodes" in kwargs:
+                    self.num_ray_nodes = kwargs["num_ray_nodes"]
+                else:
+                    self.num_ray_nodes = OrcaContext.node_num()
 
         elif runtime == "ray":
             self.is_local = False
