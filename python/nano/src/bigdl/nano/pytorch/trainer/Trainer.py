@@ -187,6 +187,7 @@ class Trainer(pl.Trainer):
                 plugin = DDPSpawnPlugin(parallel_devices=[
                     torch.device(device) for _ in range(num_processes)],
                     cpu_for_each_process=cpu_for_each_process,
+                    process_start_method=process_start_method,
                     cluster_environment=LightningEnvironment())
             elif distributed_backend == "subprocess":
                 from bigdl.nano.pytorch.plugins.ddp_subprocess import DDPSubprocessPlugin
@@ -198,7 +199,6 @@ class Trainer(pl.Trainer):
                 plugin = DDPSubprocessPlugin(parallel_devices=[
                     torch.device(device) for _ in range(num_processes)],
                     cpu_for_each_process=cpu_for_each_process,
-                    process_start_method=process_start_method,
                     cluster_environment=LightningEnvironment())
             elif distributed_backend == "ray":
                 # Import RayPlugins may entangle with openmp even if it has not been used,
