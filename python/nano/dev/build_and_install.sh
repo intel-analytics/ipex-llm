@@ -39,5 +39,5 @@ bash ${RUN_SCRIPT_DIR}/release.sh ${platform} ${version} ${upload}
 
 cd ${WHL_DIR}
 
-whl_name=`ls dist`;pip install dist/${whl_name}[${framework}]
+whl_name=`ls dist`;pip install dist/${whl_name}[${framework}] --force-reinstall
 
