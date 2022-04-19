@@ -174,7 +174,7 @@ class OrcaContext(metaclass=OrcaContextMeta):
             num_nodes = 1
         else:
             if sc.getConf().contains("spark.executor.instances"):
-                num_nodes = int(sc.get("spark.executor.instances"))
+                num_nodes = int(sc.getConf().get("spark.executor.instances"))
         return num_nodes
 
     @staticmethod
