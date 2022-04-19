@@ -21,7 +21,7 @@ echo $RUN_SCRIPT_DIR
 BIGDL_DIR="$(cd ${RUN_SCRIPT_DIR}/../../..; pwd)"
 echo $BIGDL_DIR
 WHL_DIR="$(cd ${BIGDL_DIR}/python/nano; pwd)"
-echo WHL_DIR
+echo $WHL_DIR
 
 if (( $# < 4)); then
   echo "Usage: build_and_install.sh platform version upload framework"
