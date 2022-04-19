@@ -86,7 +86,7 @@ The examples are run in the docker container. Attach it and see the results (`do
 
 ### Rebuild Image
 
-Enlarge these four configurations in [run_spark_on_occlum_glibc.sh](https://github.com/intel-analytics/BigDL/blob/branch-2.0/ppml/trusted-big-data-ml/scala/docker-occlum/run_spark_on_occlum_glibc.sh#L19) to:
+Enlarge these four configurations in [run_spark_on_occlum_glibc.sh](https://github.com/intel-analytics/BigDL/blob/main/ppml/trusted-big-data-ml/scala/docker-occlum/run_spark_on_occlum_glibc.sh#L19) to:
 ```
 .resource_limits.max_num_of_threads = 4096 |
 .process.default_heap_size = "4096MB" |
@@ -164,7 +164,7 @@ And the log files will be saved to `data/olog` folder.
 
 ### Rebuild Image
 
-Enlarge these four configurations in [run_spark_on_occlum_glibc.sh](https://github.com/intel-analytics/BigDL/blob/branch-2.0/ppml/trusted-big-data-ml/scala/docker-occlum/run_spark_on_occlum_glibc.sh#L19) to:
+Enlarge these four configurations in [run_spark_on_occlum_glibc.sh](https://github.com/intel-analytics/BigDL/blob/main/ppml/trusted-big-data-ml/scala/docker-occlum/run_spark_on_occlum_glibc.sh#L19) to:
 ```
 .resource_limits.max_num_of_threads = 4096 |
 .process.default_heap_size = "32GB" |

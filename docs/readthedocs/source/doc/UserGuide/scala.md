@@ -72,7 +72,7 @@ You can run a bigdl-dllib program, e.g., the [Language Model](https://github.com
 ${BIGDL_HOME}/bin/spark-submit-with-dllib.sh \
   --master local[2] \
   --class com.intel.analytics.bigdl.dllib.example.languagemodel.PTBWordLM \
-  ${BIGDL_HOME}/jars/bigdl-dllib-0.14.0-SNAPSHOT-jar-with-dependencies.jar \   #change to your jar file if your download is not spark_2.4.3-0.14.0
+  ${BIGDL_HOME}/jars/bigdl-dllib-2.1.0-SNAPSHOT-jar-with-dependencies.jar \   #change to your jar file if your download is not spark_2.4.3-2.0.0
   -f DATA_PATH \
   -b 4 \
   --numLayers 2 --vocab 100 --hidden 6 \
@@ -87,7 +87,7 @@ ${BIGDL_HOME}/bin/spark-submit-with-dllib.sh \
   --executor-cores cores_per_executor \
   --total-executor-cores total_cores_for_the_job \
   --class com.intel.analytics.bigdl.dllib.example.languagemodel.PTBWordLM \
-  ${BIGDL_HOME}/jars/bigdl-dllib-0.14.0-SNAPSHOT-jar-with-dependencies.jar \   #change to your jar file if your download is not spark_2.4.3-0.14.0
+  ${BIGDL_HOME}/jars/bigdl-dllib-2.1.0-SNAPSHOT-jar-with-dependencies.jar \   #change to your jar file if your download is not spark_2.4.3-2.0.0
   -f DATA_PATH \
   -b 4 \
   --numLayers 2 --vocab 100 --hidden 6 \
@@ -101,7 +101,7 @@ ${BIGDL_HOME}/bin/spark-submit-with-dllib.sh \
  --executor-cores cores_per_executor \
  --num-executors executors_number \
  --class com.intel.analytics.bigdl.dllib.example.languagemodel.PTBWordLM \
- ${BIGDL_HOME}/jars/bigdl-dllib-0.14.0-SNAPSHOT-jar-with-dependencies.jar \   #change to your jar file if your download is not spark_2.4.3-0.14.0
+ ${BIGDL_HOME}/jars/bigdl-dllib-2.1.0-SNAPSHOT-jar-with-dependencies.jar \   #change to your jar file if your download is not spark_2.4.3-2.0.0
  -f DATA_PATH \
  -b 4 \
  --numLayers 2 --vocab 100 --hidden 6 \
@@ -115,7 +115,7 @@ ${BIGDL_HOME}/bin/spark-submit-with-dllib.sh \
  --executor-cores cores_per_executor \
  --num-executors executors_number \
  --class com.intel.analytics.bigdl.dllib.example.languagemodel.PTBWordLM \
- ${BIGDL_HOME}/jars/bigdl-dllib-0.14.0-SNAPSHOT-jar-with-dependencies.jar \   #change to your jar file if your download is not spark_2.4.3-0.14.0
+ ${BIGDL_HOME}/jars/bigdl-dllib-2.1.0-SNAPSHOT-jar-with-dependencies.jar \   #change to your jar file if your download is not spark_2.4.3-2.0.0
  -f DATA_PATH \
  -b 4 \
  --numLayers 2 --vocab 100 --hidden 6 \

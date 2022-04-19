@@ -69,7 +69,7 @@ RUN cd /opt && \
 
 # Download bigdl
 RUN cd /opt && \
-    wget https://raw.githubusercontent.com/intel-analytics/BigDL/branch-2.0/ppml/trusted-realtime-ml/scala/docker-graphene/download-bigdl-serving.sh && \
+    wget https://raw.githubusercontent.com/intel-analytics/BigDL/main/ppml/trusted-realtime-ml/scala/docker-graphene/download-bigdl-serving.sh && \
     chmod a+x download-bigdl-serving.sh && \
     ./download-bigdl-serving.sh
 
@@ -81,7 +81,7 @@ RUN cd /opt && \
     wget -c "https://sourceforge.net/projects/analytics-zoo/files/analytics-zoo-models/openvino/2018_R5/resnet_v1_50.xml/download" -O resnet_v1_50.xml
 # data and scripts for kubernets
 RUN cd /opt && \
-    wget https://raw.githubusercontent.com/intel-analytics/BigDL/branch-2.0/scala/serving/scripts/perf-benchmark/requirement.yml && \
+    wget https://raw.githubusercontent.com/intel-analytics/BigDL/main/scala/serving/scripts/perf-benchmark/requirement.yml && \
     wget -c "https://sourceforge.net/projects/analytics-zoo/files/analytics-zoo-data/ILSVRC2012_val_00000001.JPEG/download" -O ILSVRC2012_val_00000001.JPEG
 
 # stage.3 az ppml occlum

@@ -16,6 +16,7 @@
 
 import math
 import numpy as np
+from bigdl.dllib.utils.log4Error import *
 
 
 def calc_output_shape(input, kernel, padding=0, stride=1, dilation=1, ceil_mode=False):
@@ -43,7 +44,8 @@ def parse_node_attr(node_proto):
 
         for field in ['floats', 'ints', 'strings']:
             if list(getattr(attr, field)):
-                assert attr.name not in attrs, "Only one type of attr is allowed"
+                invalidInputError(attr.name not in attrs,
+                                  "Only one type of attr is allowed")
                 attrs[attr.name] = tuple(getattr(attr, field))
 
         for field in ['t', 'g']:

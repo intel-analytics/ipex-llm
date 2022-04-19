@@ -24,6 +24,8 @@ from bigdl.dllib.utils.file_utils import callZooFunc, put_local_file_to_remote
 from bigdl.dllib.utils.common import *
 from bigdl.dllib.feature.common import *
 from bigdl.dllib.nncontext import init_nncontext
+from bigdl.dllib.utils.log4Error import *
+
 
 if sys.version >= '3':
     long = int
@@ -201,7 +203,8 @@ class NNEstimator(JavaEstimator, HasFeaturesCol, HasLabelCol, HasPredictionCol, 
                 feature_preprocessing = SeqToTensor(feature_preprocessing)
 
         if type(label_preprocessing) is list:
-            assert (all(isinstance(x, int) for x in label_preprocessing))
+            invalidInputError((all(isinstance(x, int) for x in label_preprocessing)),
+                              "some elements in label_preprocessing is not integer")
             label_preprocessing = SeqToTensor(label_preprocessing)
 
         sample_preprocessing = FeatureLabelPreprocessing(feature_preprocessing, label_preprocessing)
@@ -539,7 +542,8 @@ class NNModel(JavaTransformer, MLWritable, MLReadable, HasFeaturesCol, HasPredic
         super(NNModel, self).__init__()
         # initialize with Java NNModel
         if jvalue:
-            assert feature_preprocessing is None
+            invalidInputError(feature_preprocessing is None,
+                              "feature_preprocessing cannot be None")
             self.value = jvalue
         # initialize with Python Model and preprocessing
         else:
@@ -737,7 +741,7 @@ class XGBClassifierModel:
 
     def __init__(self, jvalue):
         super(XGBClassifierModel, self).__init__()
-        assert jvalue is not None
+        invalidInputError(jvalue is not None, "XGBClassifierModel jvalue cannot be None")
         self.value = jvalue
 
     def setFeaturesCol(self, features):
@@ -789,7 +793,7 @@ class XGBRegressor():
 class XGBRegressorModel:
     def __init__(self, jvalue):
         super(XGBRegressorModel, self).__init__()
-        assert jvalue is not None
+        invalidInputError(jvalue is not None, "XGBRegressorModel jvalue cannot be None")
         self.value = jvalue
 
     def setFeaturesCol(self, features):

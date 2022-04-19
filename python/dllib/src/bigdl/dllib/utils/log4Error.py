@@ -14,6 +14,20 @@
 # limitations under the License.
 #
 
-#BigDL version info config
+import logging
 
-version=2.1.0-SNAPSHOT
+logger = logging.getLogger(__name__)
+
+
+def outputUserMessage(errMsg, fixMsg=None):
+    logger.error(f"\n\n****************************Usage Error************************\n" + errMsg)
+    if fixMsg:
+        logger.error(f"\n\n****************************How to fix*************************\n"
+                     + fixMsg)
+    logger.error(f"\n\n****************************Call Stack*************************")
+
+
+def invalidInputError(condition, errMsg, fixMsg=None):
+    if not condition:
+        outputUserMessage(errMsg, fixMsg)
+        raise RuntimeError(errMsg)

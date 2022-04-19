@@ -87,8 +87,8 @@ RUN ./download-bigdl.sh && \
     cd /opt && \
     ./download-bigdl-serving.sh
 RUN cd /opt && \
-    wget https://raw.githubusercontent.com/intel-analytics/BigDL/branch-2.0/scala/serving/scripts/perf-benchmark/e2e_throughput.py && \
-    wget https://raw.githubusercontent.com/intel-analytics/BigDL/branch-2.0/scala/serving/scripts/perf-benchmark/requirement.yml && \
+    wget https://raw.githubusercontent.com/intel-analytics/BigDL/main/scala/serving/scripts/perf-benchmark/e2e_throughput.py && \
+    wget https://raw.githubusercontent.com/intel-analytics/BigDL/main/scala/serving/scripts/perf-benchmark/requirement.yml && \
     wget -c "https://sourceforge.net/projects/analytics-zoo/files/analytics-zoo-data/ILSVRC2012_val_00000001.JPEG/download" -O ILSVRC2012_val_00000001.JPEG && \
     mkdir resnet50 && \
     cd resnet50 && \
