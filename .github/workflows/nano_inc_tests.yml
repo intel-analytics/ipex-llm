@@ -87,7 +87,7 @@ jobs:
           $CONDA/bin/conda create -n inc-tf -y python==3.7.10 setuptools=58.0.4
           source $CONDA/bin/activate inc-tf
           $CONDA/bin/conda info
-          whl_name=`ls python/nano/src/dist/`;pip install python/nano/src/dist/$whl_name[tf]
+          whl_name=`ls python/nano/src/dist/`;pip install python/nano/src/dist/$whl_name[tensorflow]
           pip install pytest
           pip install neural-compressor==1.8.1
           source bigdl-nano-init
