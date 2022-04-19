@@ -50,8 +50,8 @@ class FGBoostAggregator(validationMethods: Array[ValidationMethod[Float]] = null
   def getLabelStorage() = aggregateTypeMap.get(FLPhase.LABEL).getTensorMapStorage()
   def getSplitStorage() = aggregateTypeMap.get(FLPhase.SPLIT).getSplitStorage()
   def getTreeLeafStorage() = aggregateTypeMap.get(FLPhase.TREE_LEAF).getLeafStorage()
-  def getEvalStorage() = aggregateTypeMap.get(FLPhase.EVAL).getBranchStorage()
-  def getPredictStorage() = aggregateTypeMap.get(FLPhase.PREDICT).getBranchStorage()
+  def getEvalStorage() = aggregateTypeMap.get(FLPhase.EVAL).getTreeEvalStorage()
+  def getPredictStorage() = aggregateTypeMap.get(FLPhase.PREDICT).getTreeEvalStorage()
   def getResultStorage() = aggregateTypeMap.get(FLPhase.RESULT).getTensorMapStorage()
 
   override def initStorage(): Unit = {

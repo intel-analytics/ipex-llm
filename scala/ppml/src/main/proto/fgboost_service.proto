@@ -106,7 +106,8 @@ message UploadTreeEvalRequest {
 message EvaluateRequest {
     string clientuuid = 1;
     repeated BoostEval treeEval = 2;
-    int32 bsVersion = 3;
+    int32 version = 3;
+    bool lastBatch = 4;
 }
 
 message EvaluateResponse {
@@ -118,7 +119,8 @@ message EvaluateResponse {
 message PredictRequest {
     string clientuuid = 1;
     repeated BoostEval treeEval = 2;
-    int32 bsVersion = 3;
+    int32 version = 3;
+    bool lastBatch = 4;
 }
 message SplitRequest {
     string clientuuid = 1;
