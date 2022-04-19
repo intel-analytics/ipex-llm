@@ -40,7 +40,8 @@ class OpenVINOModel:
         self.ie_network = IECore().read_network(model=model)
 
     def save(self, path):
-        assert self.ie_network
+        assert self.ie_network, "self.ie_network shouldn't be None."
+        assert path.split('.')[-1] == "xml", "Path of openvino model must be with '.xml' suffix."
         self.ie_network.serialize(path)
 
     @staticmethod
