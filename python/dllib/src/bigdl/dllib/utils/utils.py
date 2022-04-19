@@ -23,6 +23,7 @@ import os
 import re
 from bigdl.dllib.utils.log4Error import *
 
+
 if sys.version >= '3':
     long = int
     unicode = str
