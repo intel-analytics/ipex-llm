@@ -23,6 +23,7 @@ import com.intel.analytics.bigdl.serving.serialization.ArrowDeserializer
 import org.scalatest.{FlatSpec, Matchers}
 
 import scala.sys.process._
+import com.intel.analytics.bigdl.serving.utils.AssertUtils
 
 class TensorflowModelSpec extends FlatSpec with Matchers {
   ClusterServing.helper = new ClusterServingHelper()
@@ -49,8 +50,8 @@ class TensorflowModelSpec extends FlatSpec with Matchers {
 
     postProcessed.foreach(x => {
       val result = ArrowDeserializer.getArray(x._2)
-      require(result(0)._1.length == 1001, "result length wrong")
-      require(result(0)._2.length == 2, "result shape wrong")
+      AssertUtils.conditionFailTest(result(0)._1.length == 1001, "result length wrong")
+      AssertUtils.conditionFailTest(result(0)._2.length == 2, "result shape wrong")
     })
   }
 
@@ -78,8 +79,8 @@ class TensorflowModelSpec extends FlatSpec with Matchers {
 
     postProcessed.foreach(x => {
       val result = ArrowDeserializer.getArray(x._2)
-      require(result(0)._1.length == 1001, "result length wrong")
-      require(result(0)._2.length == 2, "result shape wrong")
+      AssertUtils.conditionFailTest(result(0)._1.length == 1001, "result length wrong")
+      AssertUtils.conditionFailTest(result(0)._2.length == 2, "result shape wrong")
     })
   }
 
@@ -108,8 +109,8 @@ class TensorflowModelSpec extends FlatSpec with Matchers {
 
     postProcessed.foreach(x => {
       val result = ArrowDeserializer.getArray(x._2)
-      require(result(0)._1.length == 1001, "result length wrong")
-      require(result(0)._2.length == 2, "result shape wrong")
+      AssertUtils.conditionFailTest(result(0)._1.length == 1001, "result length wrong")
+      AssertUtils.conditionFailTest(result(0)._2.length == 2, "result shape wrong")
     })
   }
 
@@ -138,8 +139,8 @@ class TensorflowModelSpec extends FlatSpec with Matchers {
 
     postProcessed.foreach(x => {
       val result = ArrowDeserializer.getArray(x._2)
-      require(result(0)._1.length == 1000, "result length wrong")
-      require(result(0)._2.length == 2, "result shape wrong")
+      AssertUtils.conditionFailTest(result(0)._1.length == 1000, "result length wrong")
+      AssertUtils.conditionFailTest(result(0)._2.length == 2, "result shape wrong")
     })
   }
 
@@ -168,8 +169,8 @@ class TensorflowModelSpec extends FlatSpec with Matchers {
     val postProcessed = inference.singleThreadInference(in)
     postProcessed.foreach(x => {
       val result = ArrowDeserializer.getArray(x._2)
-      require(result(0)._1.length == 128, "result length wrong")
-      require(result(0)._2.length == 2, "result shape wrong")
+      AssertUtils.conditionFailTest(result(0)._1.length == 128, "result length wrong")
+      AssertUtils.conditionFailTest(result(0)._2.length == 2, "result shape wrong")
     })
   }
 
@@ -197,8 +198,8 @@ class TensorflowModelSpec extends FlatSpec with Matchers {
 
     postProcessed.foreach(x => {
       val result = ArrowDeserializer.getArray(x._2)
-      require(result(0)._1.length == 1000, "result length wrong")
-      require(result(0)._2.length == 2, "result shape wrong")
+      AssertUtils.conditionFailTest(result(0)._1.length == 1000, "result length wrong")
+      AssertUtils.conditionFailTest(result(0)._2.length == 2, "result shape wrong")
     })
   }
 
@@ -226,8 +227,8 @@ class TensorflowModelSpec extends FlatSpec with Matchers {
 
     postProcessed.foreach(x => {
       val result = ArrowDeserializer.getArray(x._2)
-      require(result(0)._1.length == 2, "result length wrong")
-      require(result(0)._2.length == 2, "result shape wrong")
+      AssertUtils.conditionFailTest(result(0)._1.length == 2, "result length wrong")
+      AssertUtils.conditionFailTest(result(0)._2.length == 2, "result shape wrong")
     })
   }
   "TF String input" should "work" in {
@@ -245,7 +246,7 @@ class TensorflowModelSpec extends FlatSpec with Matchers {
     t.setValue(1, "123")
     t.setValue(2, "456")
     val res = model.doPredict(t)
-    assert(res.toTensor[Float].valueAt(1) == 123)
-    assert(res.toTensor[Float].valueAt(2) == 456)
+    AssertUtils.conditionFailTest(res.toTensor[Float].valueAt(1) == 123)
+    AssertUtils.conditionFailTest(res.toTensor[Float].valueAt(2) == 456)
   }
 }

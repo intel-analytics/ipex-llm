@@ -24,6 +24,7 @@ from bigdl.dllib.utils.common import *
 from bigdl.dllib.nncontext import *
 from bigdl.dllib.utils.utils import detect_conda_env_name
 import os
+from bigdl.dllib.utils.log4Error import *
 
 
 def build_model(class_num):
@@ -76,8 +77,10 @@ if __name__ == "__main__":
         conf["spark.executor.extraJavaOptions"] = "-Dbigdl.engineType=mkldnn"
     if options.clusterMode.startswith("yarn"):
         hadoop_conf = os.environ.get("HADOOP_CONF_DIR")
-        assert hadoop_conf, "Directory path to hadoop conf not found for yarn-client mode. Please" \
-                            "set the environment variable HADOOP_CONF_DIR"
+        invalidInputError(hadoop_conf,
+                          "Directory path to hadoop conf not found for yarn-client"
+                          "mode.", "Please either specify argument hadoop_conf or"
+                          "set the environment variable HADOOP_CONF_DIR")
         spark_conf = create_spark_conf().set("spark.executor.memory", "5g") \
             .set("spark.executor.cores", 2) \
             .set("spark.executor.instances", 2) \

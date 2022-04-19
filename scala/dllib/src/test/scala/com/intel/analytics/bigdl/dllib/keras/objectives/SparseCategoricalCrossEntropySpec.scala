@@ -21,6 +21,7 @@ import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.keras.layers.{KerasRunner, Loss}
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric.NumericFloat
 import com.intel.analytics.bigdl.dllib.keras.layers.KerasBaseSpec
+import com.intel.analytics.bigdl.dllib.utils.TestUtils
 
 import scala.math.abs
 
@@ -72,9 +73,9 @@ class SparseCategoricalCrossEntropySpec extends KerasBaseSpec {
     expectedGrad(Array(3, 3)) = -0.33333333333333
     val output = criterion.forward(input, target)
     val gradInput = criterion.backward(input, target)
-    assert(abs(expectedOutput - output) < 1e-6)
+    TestUtils.conditionFailTest(abs(expectedOutput - output) < 1e-6)
     expectedGrad.map(gradInput, (v1, v2) => {
-      assert(abs(v1 - v2) < 1e-6)
+      TestUtils.conditionFailTest(abs(v1 - v2) < 1e-6)
       v1
     })
   }
@@ -113,9 +114,9 @@ class SparseCategoricalCrossEntropySpec extends KerasBaseSpec {
     expectedGrad(Array(3, 3)) = -0.47657615745419
     val output = criterion.forward(input, target)
     val gradInput = criterion.backward(input, target)
-    assert(abs(expectedOutput - output) < 1e-6)
+    TestUtils.conditionFailTest(abs(expectedOutput - output) < 1e-6)
     expectedGrad.map(gradInput, (v1, v2) => {
-      assert(abs(v1 - v2) < 1e-6)
+      TestUtils.conditionFailTest(abs(v1 - v2) < 1e-6)
       v1
     })
   }
@@ -151,9 +152,9 @@ class SparseCategoricalCrossEntropySpec extends KerasBaseSpec {
     expectedGrad(Array(3, 3)) = -1
     val output = criterion.forward(input, target)
     val gradInput = criterion.backward(input, target)
-    assert(abs(expectedOutput - output) < 1e-6)
+    TestUtils.conditionFailTest(abs(expectedOutput - output) < 1e-6)
     expectedGrad.map(gradInput, (v1, v2) => {
-      assert(abs(v1 - v2) < 1e-6)
+      TestUtils.conditionFailTest(abs(v1 - v2) < 1e-6)
       v1
     })
   }

@@ -195,7 +195,7 @@ class BasePytorchForecaster(Forecaster):
         else:
             if not self.fitted:
                 raise RuntimeError("You must call fit or restore first before calling predict!")
-            yhat = self.internal.inference(torch.from_numpy(data),
+            yhat = self.internal.inference(data,
                                            backend=None,
                                            quantize=quantize).numpy()
             if not is_local_data:
@@ -283,7 +283,7 @@ class BasePytorchForecaster(Forecaster):
         else:
             if not self.fitted:
                 raise RuntimeError("You must call fit or restore first before calling evaluate!")
-            yhat_torch = self.internal.inference(torch.from_numpy(data[0]),
+            yhat_torch = self.internal.inference(data[0],
                                                  backend=None,
                                                  quantize=quantize)
 
@@ -477,8 +477,8 @@ class BasePytorchForecaster(Forecaster):
                                       "forecaster to a non-distributed version.")
         dummy_input = torch.rand(1, self.data_config["past_seq_len"],
                                  self.data_config["input_feature_num"])
-        self.internal.update_ortsess(dummy_input,
-                                     sess_options=sess_options)
+        self.internal.eval_onnx(dummy_input,
+                                sess_options=sess_options)
 
     def export_onnx_file(self, dirname="model.onnx", quantized_dirname="qmodel.onnx"):
         """
@@ -495,10 +495,10 @@ class BasePytorchForecaster(Forecaster):
         if quantized_dirname:
             self.internal.to_quantized_onnx(quantized_dirname)
         if dirname:
-            self.internal.update_ortsess(dummy_input,
-                                         file_path=dirname)
+            self.internal.eval_onnx(dummy_input,
+                                    file_path=dirname)
 
-    def quantize(self, calib_data,
+    def quantize(self, calib_data=None,
                  val_data=None,
                  metric=None,
                  conf=None,
@@ -544,8 +544,11 @@ class BasePytorchForecaster(Forecaster):
                                       "forecaster. You can call .to_local() to transform the "
                                       "forecaster to a non-distributed version.")
 
-        # calib data should be set if the forecaster is just loaded
-        assert calib_data is not None, "You must set a `calib_data` for quantization."
+        # calib data should be set correctly according to the approach
+        if approach == 'static' and calib_data is None:
+            raise ValueError("You must set a `calib_data` for static quantization.")
+        if approach == 'dynamic' and calib_data is not None:
+            raise ValueError("You must not set a `calib_data` for dynamic quantization.")
 
         # change data tuple to dataloader
         if isinstance(calib_data, tuple):

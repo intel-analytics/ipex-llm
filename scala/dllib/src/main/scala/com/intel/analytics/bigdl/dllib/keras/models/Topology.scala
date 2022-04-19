@@ -785,7 +785,8 @@ abstract class KerasNet[T](implicit val tag: ClassTag[T], implicit val ev: Tenso
    */
   def summary(
       lineLength: Int = 120,
-      positions: Array[Double] = Array(.33, .55, .67, 1)): Unit
+      positions: Array[Double] = Array(.33, .55, .67, 1),
+      needPrint: Boolean = true): String
 }
 
 object InternalOptimizer {

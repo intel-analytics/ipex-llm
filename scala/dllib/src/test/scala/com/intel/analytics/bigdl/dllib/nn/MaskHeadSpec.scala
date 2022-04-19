@@ -17,8 +17,7 @@ package com.intel.analytics.bigdl.dllib.nn
 
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.utils.serializer.ModuleSerializationTest
-import com.intel.analytics.bigdl.dllib.utils.{T, Table}
-import com.intel.analytics.bigdl.dllib.utils.RandomGenerator
+import com.intel.analytics.bigdl.dllib.utils.{RandomGenerator, T, Table, TestUtils}
 import org.scalatest.{FlatSpec, Matchers}
 
 class MaskHeadSpec extends FlatSpec with Matchers {
@@ -1037,7 +1036,7 @@ class MaskHeadSpec extends FlatSpec with Matchers {
 
     val output = layer.forward(input).toTensor[Float]
 
-    require(output.size(1) == 2 && output.size(2) == 2 &&
+    TestUtils.conditionFailTest(output.size(1) == 2 && output.size(2) == 2 &&
       output.size(3) == 16 && output.size(4) == 16)
 
     val expectedOutput = Tensor[Float](T(T(T(

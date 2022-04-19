@@ -14,7 +14,6 @@
 # limitations under the License.
 #
 
-from curses import noecho
 from bigdl.nano.common.multiprocessing.backend import Backend
 import ray
 

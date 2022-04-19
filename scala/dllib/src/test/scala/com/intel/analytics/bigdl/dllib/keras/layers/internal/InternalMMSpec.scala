@@ -18,7 +18,7 @@ package com.intel.analytics.bigdl.dllib.keras.layers.internal
 
 import com.intel.analytics.bigdl.dllib.nn.{Input, Log}
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
-import com.intel.analytics.bigdl.dllib.utils.{Shape, T}
+import com.intel.analytics.bigdl.dllib.utils.{Shape, T, TestUtils}
 import com.intel.analytics.bigdl.dllib.keras.autograd.{AutoGrad, Variable}
 import com.intel.analytics.bigdl.dllib.keras.Model
 import com.intel.analytics.bigdl.dllib.keras.serializer.ModuleSerializationTest
@@ -37,7 +37,7 @@ class InternalMMSpec extends FlatSpec with Matchers {
     val i2 = Tensor[Float](recordNum, 3, 4).rand()
     val o1 = model.forward(T(i1, i2)).toTensor[Float].clone()
     val o2 = model.forward(T(i1, i2)).toTensor[Float].clone()
-    assert(o1.almostEqual(o2, 1e-5))
+    TestUtils.conditionFailTest(o1.almostEqual(o2, 1e-5))
   }
 
   "hashcode()" should "behave correctly" in {
@@ -50,7 +50,7 @@ class InternalMMSpec extends FlatSpec with Matchers {
     val i2 = Tensor[Float](recordNum, 3, 4).rand()
     val o1 = model.forward(T(i1, i2)).toTensor[Float].clone()
     val o2 = model.forward(T(i1, i2)).toTensor[Float].clone()
-    assert(o1.almostEqual(o2, 1e-5))
+    TestUtils.conditionFailTest(o1.almostEqual(o2, 1e-5))
 
   }
 

@@ -75,7 +75,8 @@ class PythonSpec extends FlatSpec with Matchers with BeforeAndAfter {
       false
     ).iterator().next()
     val expectedOutput = linear.forward(input)
-    require(pythonBigDL.toTensor(joutput) == expectedOutput, "forward output should be the same")
+    TestUtils.conditionFailTest(pythonBigDL.toTensor(joutput) == expectedOutput,
+      "forward output should be the same")
 
     // test backward for linear
     val loss = mse.forward(pythonBigDL.toTensor(joutput), target)
@@ -87,7 +88,7 @@ class PythonSpec extends FlatSpec with Matchers with BeforeAndAfter {
       List(pythonBigDL.toJTensor(mseGradOutput)).asJava,
       false
     ).iterator().next()
-    require(pythonBigDL.toTensor(jLinearGradOutput) == expectedLinearGradOutput,
+    TestUtils.conditionFailTest(pythonBigDL.toTensor(jLinearGradOutput) == expectedLinearGradOutput,
       "backward output should be the same")
   }
 
@@ -134,7 +135,7 @@ class PythonSpec extends FlatSpec with Matchers with BeforeAndAfter {
     val tensor: Tensor[Float] = Tensor.ones[Float](10)
     val jTensor = pythonBigDL.toJTensor(tensor)
     val tensorBack = pythonBigDL.toTensor(jTensor)
-    require(tensorBack == tensor)
+    TestUtils.conditionFailTest(tensorBack == tensor)
 
     RNG.setSeed(100)
     val linear = Linear[Float](4, 5)
@@ -146,7 +147,7 @@ class PythonSpec extends FlatSpec with Matchers with BeforeAndAfter {
       -0.677581f,
       0.07945433f,
       -0.5742568f), Array(5))
-    require(output == expectedResult)
+    TestUtils.conditionFailTest(output == expectedResult)
   }
 
   "to jtensor with empty tensor" should "be test" in {
@@ -155,7 +156,7 @@ class PythonSpec extends FlatSpec with Matchers with BeforeAndAfter {
     val jTensor = pythonBigDL.toJTensor(tensor)
     println(jTensor.shape)
     val tensorBack = pythonBigDL.toTensor(jTensor)
-    require(tensorBack == tensor)
+    TestUtils.conditionFailTest(tensorBack == tensor)
   }
 
   // todo: failed when running with mkldnn tests in parallelism

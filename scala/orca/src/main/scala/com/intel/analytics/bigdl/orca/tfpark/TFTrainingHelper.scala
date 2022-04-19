@@ -20,6 +20,7 @@ import com.intel.analytics.bigdl.dllib.nn.Module
 import com.intel.analytics.bigdl.dllib.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.utils.T
+import com.intel.analytics.bigdl.dllib.utils.Log4Error
 import com.intel.analytics.bigdl.dllib.common.zooUtils
 import com.intel.analytics.bigdl.orca.tf.TFNetNative
 import org.slf4j.LoggerFactory
@@ -247,7 +248,7 @@ private[bigdl] class TFTrainingHelper protected(val graphRunner: GraphRunner,
   override def updateOutput(input: Activity): Activity = {
     zooUtils.timeIt("updateOutput") {
 
-      assert(tableInited)
+      Log4Error.unKnowExceptionError(tableInited, "table is not initialized")
 
       this.beforeRunGradient()
 
@@ -295,7 +296,7 @@ private[bigdl] class TFTrainingHelper protected(val graphRunner: GraphRunner,
 
   def loadZooCheckpoint(path: String): Unit = {
     val module = Module.load(path).asInstanceOf[TFTrainingHelper]
-    assert(module.variables sameElements this.variables,
+    Log4Error.unKnowExceptionError(module.variables sameElements this.variables,
       "variables in graphdef does not equal to the current variables." +
         s"\nvariable names in checkpoint: ${module.variables}" +
         s"\nvariable names in current graph, ${this.variables}")
@@ -310,7 +311,7 @@ private[bigdl] class TFTrainingHelper protected(val graphRunner: GraphRunner,
 
 object TFTrainingHelper {
 
-  assert(TFNetNative.isLoaded)
+  Log4Error.invalidOperationError(TFNetNative.isLoaded, "TFNetNative is not loaded")
 
   val logger = LoggerFactory.getLogger(getClass)
 

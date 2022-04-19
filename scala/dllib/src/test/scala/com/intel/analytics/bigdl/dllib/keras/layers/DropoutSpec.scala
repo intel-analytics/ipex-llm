@@ -17,7 +17,7 @@
 package com.intel.analytics.bigdl.dllib.keras.layers
 
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
-import com.intel.analytics.bigdl.dllib.utils.Shape
+import com.intel.analytics.bigdl.dllib.utils.{Shape, TestUtils}
 import com.intel.analytics.bigdl.dllib.keras.Sequential
 import com.intel.analytics.bigdl.dllib.keras.serializer.ModuleSerializationTest
 
@@ -40,7 +40,7 @@ class DropoutSpec extends KerasBaseSpec {
     seq.add(layer)
     val input = Tensor[Float](3, 8, 10).rand()
     val output = seq.setEvaluateStatus().forward(input)
-    require(output == input)
+    TestUtils.conditionFailTest(output == input)
   }
 
 }

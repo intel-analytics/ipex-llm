@@ -17,6 +17,7 @@
 package com.intel.analytics.bigdl.dllib.nn
 
 import com.intel.analytics.bigdl.dllib.tensor.{Storage, Tensor}
+import com.intel.analytics.bigdl.dllib.utils.TestUtils
 import com.intel.analytics.bigdl.dllib.utils.serializer.ModuleSerializationTest
 import org.scalatest.FlatSpec
 
@@ -45,7 +46,7 @@ class PriorBoxSpec extends FlatSpec {
     val expected = Tensor(Storage(expectedStr.split("\n").map(_.toFloat))).resize(1, 2, 16)
 
     out.map(expected, (a, b) => {
-      assert((a - b).abs < 1e-5);
+      TestUtils.conditionFailTest((a - b).abs < 1e-5);
       a
     })
   }

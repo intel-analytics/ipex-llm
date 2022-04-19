@@ -62,7 +62,7 @@ parser.add_argument('--address', type=str, default="",
                          'If it is empty, a new Ray cluster will be created.')
 parser.add_argument('--backend', type=str, default="bigdl",
                     help='The backend of PyTorch Estimator; '
-                         'bigdl, torch_distributed and spark are supported.')
+                         'bigdl, ray and spark are supported.')
 parser.add_argument('--data_dir', type=str, default="./dataset", help='The path of datesets.')
 opt = parser.parse_args()
 
@@ -280,7 +280,7 @@ if opt.backend == "bigdl":
     print("===> Validation Complete: Avg. PSNR: {:.4f} dB, Avg. Loss: {:.4f}"
           .format(10 * log10(1. / val_stats["MSE"]), val_stats["MSE"]))
 
-elif opt.backend in ["torch_distributed", "spark"]:
+elif opt.backend in ["ray", "spark"]:
     estimator = Estimator.from_torch(
         model=model_creator,
         optimizer=optim_creator,
@@ -315,7 +315,7 @@ elif opt.backend in ["torch_distributed", "spark"]:
         torch.save(model, model_out_path)
         print("Checkpoint saved to {}".format(model_out_path))
 else:
-    raise NotImplementedError("Only bigdl, torch_distributed, and spark are supported as the backend, "
+    raise NotImplementedError("Only bigdl, ray, and spark are supported as the backend, "
                               "but got {}".format(opt.backend))
 
 stop_orca_context()

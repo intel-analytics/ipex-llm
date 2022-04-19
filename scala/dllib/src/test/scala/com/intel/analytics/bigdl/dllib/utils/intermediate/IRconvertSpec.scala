@@ -238,9 +238,9 @@ class IRconvertSpec extends BigDLSpecHelper {
 
     val blas = modelBlas().asInstanceOf[StaticGraph[Float]]
     val allNodes = blas.getSortedForwardExecutions()
-    require(BlasToIR[Float].convertingCheck(allNodes))
+    TestUtils.conditionFailTest(BlasToIR[Float].convertingCheck(allNodes))
     val irNodes = BlasToIR[Float].convert(allNodes).map(_._2).toArray
-    require(IRToDnn[Float].convertingCheck(irNodes))
+    TestUtils.conditionFailTest(IRToDnn[Float].convertingCheck(irNodes))
     val dnnNodes = IRToDnn[Float].convert(irNodes).map(_._2).toArray
 
     val inputsNodes = dnnNodes.filter(_.element.getName() == "input")(0)
@@ -272,10 +272,10 @@ class IRconvertSpec extends BigDLSpecHelper {
 
     val allNodes = modelIR()
     RandomGenerator.RNG.setSeed(1000)
-    require(IRToBlas[Float].convertingCheck(allNodes))
+    TestUtils.conditionFailTest(IRToBlas[Float].convertingCheck(allNodes))
     val blasNodes = IRToBlas[Float].convert(allNodes).map(_._2).toArray
     RandomGenerator.RNG.setSeed(1000)
-    require(IRToDnn[Float].convertingCheck(allNodes))
+    TestUtils.conditionFailTest(IRToDnn[Float].convertingCheck(allNodes))
     val dnnNodes = IRToDnn[Float].convert(allNodes).map(_._2).toArray
 
     val blas = Graph(blasNodes.filter(_.element.getName() == "input"),
@@ -311,10 +311,10 @@ class IRconvertSpec extends BigDLSpecHelper {
 
     val allNodes = modelIR2()
     RandomGenerator.RNG.setSeed(1000)
-    require(IRToBlas[Float].convertingCheck(allNodes))
+    TestUtils.conditionFailTest(IRToBlas[Float].convertingCheck(allNodes))
     val blasNodes = IRToBlas[Float].convert(allNodes).map(_._2).toArray
     RandomGenerator.RNG.setSeed(1000)
-    require(IRToDnn[Float].convertingCheck(allNodes))
+    TestUtils.conditionFailTest(IRToDnn[Float].convertingCheck(allNodes))
     val dnnNodes = IRToDnn[Float].convert(allNodes).map(_._2).toArray
 
     val blas = Graph(blasNodes.filter(_.element.getName() == "input"),

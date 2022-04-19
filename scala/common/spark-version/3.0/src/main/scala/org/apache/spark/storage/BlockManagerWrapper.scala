@@ -29,7 +29,9 @@ object BlockManagerWrapper {
   def putBytes( blockId: BlockId,
                 bytes: ByteBuffer,
                 level: StorageLevel): Unit = {
-    require(bytes != null, "Bytes is null")
+    if (bytes == null) {
+      throw new Exception("Bytes is null")
+    }
     putBytesFn(blockId, new ChunkedByteBuffer(bytes), level)
   }
 

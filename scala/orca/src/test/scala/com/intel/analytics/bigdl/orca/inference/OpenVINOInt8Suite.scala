@@ -30,7 +30,7 @@ import scala.io.Source
 import scala.language.postfixOps
 import scala.sys.process._
 import sys.env
-
+import com.intel.analytics.bigdl.orca.utils.TestUtils
 
 @OpenVinoTest
 class OpenVINOInt8Suite extends FunSuite with Matchers with BeforeAndAfterAll
@@ -156,7 +156,7 @@ class OpenVINOInt8Suite extends FunSuite with Matchers with BeforeAndAfterAll
     })
     classes.foreach { output =>
       val outputTensor = Tensor[Float](output, Array(2, 1))
-      assert(labels == outputTensor)
+      TestUtils.conditionFailTest(labels == outputTensor)
     }
   }
 
@@ -195,7 +195,7 @@ class OpenVINOInt8Suite extends FunSuite with Matchers with BeforeAndAfterAll
     })
     classesInt8.foreach { output =>
       val outputTensor = Tensor[Float](output, Array(2, 1))
-      assert(labels == outputTensor)
+      TestUtils.conditionFailTest(labels == outputTensor)
     }
   }
 
@@ -236,7 +236,7 @@ class OpenVINOInt8Suite extends FunSuite with Matchers with BeforeAndAfterAll
     })
     classes.foreach { output =>
       val outputTensor = Tensor[Float](output, Array(2, 1))
-      assert(labels == outputTensor)
+      TestUtils.conditionFailTest(labels == outputTensor)
     }
   }
 
@@ -271,7 +271,7 @@ class OpenVINOInt8Suite extends FunSuite with Matchers with BeforeAndAfterAll
       class1.toFloat
     })
     val classInt8Tensor = Tensor[Float](classesInt8, Array(2, 1))
-    assert(labels == classInt8Tensor)
+    TestUtils.conditionFailTest(labels == classInt8Tensor)
     println(classesInt8.mkString(","))
   }
 
