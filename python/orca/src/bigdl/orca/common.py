@@ -15,8 +15,6 @@
 #
 
 import os
-import re
-import multiprocessing
 from bigdl.dllib.nncontext import ZooContext
 
 

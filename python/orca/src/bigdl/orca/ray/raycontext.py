@@ -17,7 +17,6 @@
 
 from threading import Lock
 from bigdl.orca import OrcaContext
-from pyparsing import Or
 
 
 class RayContext(object):
