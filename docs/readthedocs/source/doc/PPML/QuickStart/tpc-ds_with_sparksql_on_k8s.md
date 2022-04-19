@@ -10,7 +10,7 @@
 
 1. Download and compile tpc-ds
 
-```
+```bash
 git clone --recursive https://github.com/intel-analytics/zoo-tutorials.git
 cd /path/to/zoo-tutorials
 git clone https://github.com/databricks/tpcds-kit.git
@@ -20,7 +20,7 @@ make OS=LINUX
 
 2. Generate data
 
-```
+```bash
 cd /path/to/zoo-tutorials
 cd tpcds-spark/spark-sql-perf
 sbt "test:runMain com.databricks.spark.sql.perf.tpcds.GenTPCDSData -d <dsdgenDir> -s <scaleFactor> -l <dataDir> -f parquet"
@@ -32,14 +32,14 @@ sbt "test:runMain com.databricks.spark.sql.perf.tpcds.GenTPCDSData -d <dsdgenDir
 
 1. Compile Kit
 
-```
+```bash
 cd zoo-tutorials/tpcds-spark
 sbt package
 ```
 
 2. Create external tables
 
-```
+```bash
 $SPARK_HOME/bin/spark-submit \
         --class "createTables" \
         --master <spark-master> \
@@ -53,18 +53,19 @@ $SPARK_HOME/bin/spark-submit \
 
 3. Pull docker image
 
-```
+```bash
 sudo docker pull intelanalytics/bigdl-ppml-trusted-big-data-ml-python-graphene:2.1.0-SNAPSHOT
 ```
 
-4. Prepare SGX keys, make sure keys and tpcds-spark can be accessed on each K8S node
+4. Prepare SGX keys (following instructions [here](https://github.com/intel-analytics/BigDL/tree/main/ppml/trusted-big-data-ml/python/docker-graphene#11-prepare-the-keyspassworddataenclave-keypem "here")), make sure keys and tpch-spark can be accessed on each K8S node
 5. Start a bigdl-ppml enabled Spark K8S client container with configured local IP, key, tpc-ds and kuberconfig path
 
-```
-export ENCLAVE_KEY=/root/keys/enclave-key.pem
-export DATA_PATH=/root/zoo-tutorials/tpcds-spark
-export KEYS_PATH=/root/keys
-export KUBERCONFIG_PATH=/root/kuberconfig
+```bash
+export ENCLAVE_KEY=/YOUR_DIR/keys/enclave-key.pem
+export DATA_PATH=/YOUR_DIR/zoo-tutorials/tpcds-spark
+export KEYS_PATH=/YOUR_DIR/keys
+export SECURE_PASSWORD_PATH=/YOUR_DIR/password
+export KUBERCONFIG_PATH=/YOUR_DIR/kuberconfig
 export LOCAL_IP=$local_ip
 export DOCKER_IMAGE=intelanalytics/bigdl-ppml-trusted-big-data-ml-python-graphene:2.1.0-SNAPSHOT
 sudo docker run -itd \
@@ -78,6 +79,7 @@ sudo docker run -itd \
         -v $ENCLAVE_KEY:/graphene/Pal/src/host/Linux-SGX/signer/enclave-key.pem \
         -v $DATA_PATH:/ppml/trusted-big-data-ml/work/tpcds-spark \
         -v $KEYS_PATH:/ppml/trusted-big-data-ml/work/keys \
+	-v $SECURE_PASSWORD_PATH:/ppml/trusted-big-data-ml/work/password \
         -v $KUBERCONFIG_PATH:/root/.kube/config \
         -e RUNTIME_SPARK_MASTER=k8s://https://$LOCAL_IP:6443 \
         -e RUNTIME_K8S_SERVICE_ACCOUNT=spark \
@@ -98,13 +100,13 @@ sudo docker run -itd \
 
 6. Attach to the client container
 
-```
+```bash
 sudo docker exec -it spark-local-k8s-client bash
 ```
 
 7. Modify `spark-executor-template.yaml`, add path of `enclave-key`, `tpcds-spark` and `kuberconfig` on host
 
-```
+```bash
 apiVersion: v1
 kind: Pod
 spec:
@@ -135,7 +137,8 @@ spec:
 
 Optional argument `QUERY` is the query number to run. Multiple query numbers should be separated by space, e.g. `1 2 3`. If no query number is specified, all 1-99 queries would be executed.
 
-```
+```bash
+secure_password=`openssl rsautl -inkey /ppml/trusted-big-data-ml/work/password/key.txt -decrypt </ppml/trusted-big-data-ml/work/password/output.bin` && \
 export TF_MKL_ALLOC_MAX_BYTES=10737418240 && \
 export SPARK_LOCAL_IP=$LOCAL_IP && \
 export HDFS_HOST=$hdfs_host_ip && \
@@ -179,8 +182,29 @@ export QUERY=3
     --conf spark.kubernetes.executor.deleteOnTermination=false \
     --conf spark.kubernetes.executor.podNamePrefix=spark-tpch-sgx \
     --conf spark.kubernetes.sgx.enabled=true \
-    --conf spark.kubernetes.sgx.mem=32g \
-    --conf spark.kubernetes.sgx.jvm.mem=10g \
+    --conf spark.kubernetes.sgx.executor.mem=32g \
+    --conf spark.kubernetes.sgx.executor.jvm.mem=10g \
+    --conf spark.kubernetes.sgx.log.level=$SGX_LOG_LEVEL \
+    --conf spark.authenticate=true \
+    --conf spark.authenticate.secret=$secure_password \
+    --conf spark.kubernetes.executor.secretKeyRef.SPARK_AUTHENTICATE_SECRET="spark-secret:secret" \
+    --conf spark.kubernetes.driver.secretKeyRef.SPARK_AUTHENTICATE_SECRET="spark-secret:secret" \
+    --conf spark.authenticate.enableSaslEncryption=true \
+    --conf spark.network.crypto.enabled=true \
+    --conf spark.network.crypto.keyLength=128 \
+    --conf spark.network.crypto.keyFactoryAlgorithm=PBKDF2WithHmacSHA1 \
+    --conf spark.io.encryption.enabled=true \
+    --conf spark.io.encryption.keySizeBits=128 \
+    --conf spark.io.encryption.keygen.algorithm=HmacSHA1 \
+    --conf spark.ssl.enabled=true \
+    --conf spark.ssl.port=8043 \
+    --conf spark.ssl.keyPassword=$secure_password \
+    --conf spark.ssl.keyStore=/ppml/trusted-big-data-ml/work/keys/keystore.jks \
+    --conf spark.ssl.keyStorePassword=$secure_password \
+    --conf spark.ssl.keyStoreType=JKS \
+    --conf spark.ssl.trustStore=/ppml/trusted-big-data-ml/work/keys/keystore.jks \
+    --conf spark.ssl.trustStorePassword=$secure_password \
+    --conf spark.ssl.trustStoreType=JKS \
     --class "TPCDSBenchmark" \
     --verbose \
     $TPCH_DIR/target/scala-2.12/tpcds-benchmark_2.12-0.1.jar \
