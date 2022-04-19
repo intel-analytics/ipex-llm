@@ -14,11 +14,14 @@
 # limitations under the License.
 #
 
+
+from time import time
 from bigdl.dllib.utils.common import JavaValue
 from bigdl.ppml.data_utils import *
 
 from bigdl.ppml import *
 from bigdl.ppml.fgboost.utils import add_data
+import logging
 
 
 class FGBoostRegression(FLClientClosable):
@@ -28,8 +31,10 @@ class FGBoostRegression(FLClientClosable):
 
     def fit(self, x, y=None, num_round=5, **kargs):
         add_data(x, self.value, "fgBoostFitAdd", self.bigdl_type)
+        ts = time()
         x, y = convert_to_jtensor(x, y, **kargs)
-        
+        te = time()
+        logging.info(f"ndarray to jtensor: [{te-ts} s]")
         return callBigDlFunc(self.bigdl_type, "fgBoostFitCall", self.value, y, num_round)
 
     def evaluate(self, x, y=None, batchsize=4, **kargs):

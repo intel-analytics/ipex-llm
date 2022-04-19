@@ -35,8 +35,8 @@ def add_data(data: np.ndarray, jvalue, func_add, bigdl_type="float"):
         ts = time.time()
         data_batch, _ = convert_to_jtensor(data_batch)
         te_convert = time.time()
-        print(f"numpy to jtensor time: {te_convert - ts}")
+        logging.info(f"numpy to jtensor time: {te_convert - ts}")
         callBigDlFunc(bigdl_type, func_add, jvalue, data_batch)
         te_add = time.time()
-        print(f"call add data time: {te_add - te_convert}")
+        logging.info(f"call add data time: {te_add - te_convert}")
 
