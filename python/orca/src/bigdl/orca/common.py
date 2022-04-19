@@ -15,6 +15,8 @@
 #
 
 import os
+import re
+import multiprocessing
 from bigdl.dllib.nncontext import ZooContext
 
 
@@ -153,9 +155,39 @@ class OrcaContext(metaclass=OrcaContextMeta):
         return OrcaContext.get_sql_context().sparkSession
 
     @staticmethod
-    def get_ray_context():
+    def get_ray_context(initialize=True):
         from bigdl.orca.ray import RayContext
-        return RayContext.get()
+        return RayContext.get(initialize)
+
+    @staticmethod
+    def core_num():
+        sc = OrcaContext.get_spark_context()
+        if sc.getConf().get('spark.master').startswith('local'):
+            num_cores = OrcaContext.get_local_cores_num(sc)
+        else:
+            if sc.getConf().contains("spark.executor.cores"):
+                num_cores = int(sc.getConf().get("spark.executor.cores"))
+        return num_cores
+
+    @staticmethod
+    def node_num():
+        sc = OrcaContext.get_spark_context()
+        if sc.getConf().get('spark.master').startswith('local'):
+            num_nodes = 1
+        else:
+            if sc.getConf().contains("spark.executor.instances"):
+                num_nodes = int(sc.get("spark.executor.instances"))
+        return num_nodes
+
+    @staticmethod
+    def get_local_cores_num(sc):
+        import re
+        import multiprocessing
+        local_symbol = re.match(r"local\[(.*)\]", sc.master).group(1)
+        if local_symbol == "*":
+            return multiprocessing.cpu_count()
+        else:
+            return int(local_symbol)
 
 
 def _check_python_micro_version():
