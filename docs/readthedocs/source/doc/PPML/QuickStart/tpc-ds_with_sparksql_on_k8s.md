@@ -58,7 +58,6 @@ sudo docker pull intelanalytics/bigdl-ppml-trusted-big-data-ml-python-graphene:2
 ```
 
 4. Prepare SGX keys, make sure keys and tpcds-spark can be accessed on each K8S node
-
 5. Start a bigdl-ppml enabled Spark K8S client container with configured local IP, key, tpc-ds and kuberconfig path
 
 ```
