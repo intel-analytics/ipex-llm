@@ -16,7 +16,7 @@
 
 import os
 from ..core.openvino_utils import convert_onnx_to_xml
-from ...inference.pytorch.model_utils import export_onnx
+from ...inference.pytorch.model_utils import export_to_onnx
 
 
 def export(model, input_sample=None, xml_path="model.xml"):
@@ -26,9 +26,9 @@ def export(model, input_sample=None, xml_path="model.xml"):
 
     :param model: Model instance of torch.nn.module to be exported.
     :param input_sample: torch.Tensor or a list for the model tracing.
-    :param file_path: The path to save openvino model file.
+    :param xml_path: The path to save openvino model file.
     '''
-    export_onnx(model, input_sample, 'tmp.onnx', dynamic_axes=False)
+    export_to_onnx(model, input_sample, 'tmp.onnx', dynamic_axes=False)
     convert_onnx_to_xml('tmp.onnx', xml_path)
     if os.path.exists('tmp.onnx'):
         os.remove('tmp.onnx')

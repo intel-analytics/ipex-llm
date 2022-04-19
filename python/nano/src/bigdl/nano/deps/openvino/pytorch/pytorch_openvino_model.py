@@ -26,7 +26,7 @@ class PytorchOpenVINOModel(OpenVINOModel, AcceleratedLightningModule):
         Create a OpenVINO model from pytorch.
 
         :param model: Pytorch model to be converted to OpenVINO for inference or
-                      Path to Openvino saved model.
+                      path to Openvino saved model.
         :param input_sample: A set of inputs for trace, defaults to None if you have trace before or
                              model is a LightningModule with any dataloader attached,
                              defaults to None.
@@ -58,7 +58,7 @@ class PytorchOpenVINOModel(OpenVINOModel, AcceleratedLightningModule):
         Load an OpenVINO model for inference.
 
         :param path: Path to model to be loaded.
-        :return: PytorchOpenVINOModel
+        :return: PytorchOpenVINOModel model for OpenVINO inference.
         """
         assert path.split('.')[-1] == "xml", "Path of openvino model must be with '.xml' suffix."
         return PytorchOpenVINOModel(path)

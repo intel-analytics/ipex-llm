@@ -55,7 +55,7 @@ class OpenVINOModel:
         Load an OpenVINO model for inference.
 
         :param path: Path to model to be loaded.
-        :return: OpenVINOModel
+        :return: OpenVINOModel model for OpenVINO inference.
         """
         assert path.split('.')[-1] == "xml", "Path of openvino model must be with '.xml' suffix."
         return OpenVINOModel(path)
