@@ -174,6 +174,10 @@ class BasePytorchForecaster(Forecaster):
                  if data is a xshard item.
         """
         # data transform
+        if isinstance(data, DataLoader) and self.distributed:
+            data = loader_to_creator(data)
+        if isinstance(data, tuple) and self.distributed:
+            data = np_to_creator(data)
         is_local_data = isinstance(data, np.ndarray)
         if is_local_data and self.distributed:
             data = np_to_xshard(data)
