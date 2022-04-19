@@ -57,7 +57,7 @@ $SPARK_HOME/bin/spark-submit \
 sudo docker pull intelanalytics/bigdl-ppml-trusted-big-data-ml-python-graphene:2.1.0-SNAPSHOT
 ```
 
-4. Prepare SGX keys (following instructions [here](https://github.com/intel-analytics/BigDL/tree/main/ppml/trusted-big-data-ml/python/docker-graphene#11-prepare-the-keyspassworddataenclave-keypem "here")), make sure keys and tpch-spark can be accessed on each K8S node
+4. Prepare SGX keys (following instructions [here](https://github.com/intel-analytics/BigDL/tree/main/ppml/trusted-big-data-ml/python/docker-graphene#11-prepare-the-keyspassworddataenclave-keypem "here")), make sure keys and tpcds-spark can be accessed on each K8S node
 5. Start a bigdl-ppml enabled Spark K8S client container with configured local IP, key, tpc-ds and kuberconfig path
 
 ```bash
