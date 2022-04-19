@@ -1,4 +1,4 @@
-## **KMS Scala Start-up with LocalCryptoExample**
+# KMS Scala Start-up with LocalCryptoExample
 
 ## 1. Prerequisites
 
@@ -48,8 +48,8 @@ bash work/kms-client/LocalCryptoExample/ehsm-local-cryptos-example.sh <your_data
 
 Then, you will find primary key, data key at `./encrypted_primary_key`, `./encrypted_data_key` respectively. Also, results are saved at `<your_data_file_path>.encrypted`,  `<your_data_file_path>.decrypted`, which are encrypted ciphertext and decrypted plaintext respectively.
 If you want to run the spark job in SGX mode, do as the following:
+
 ```bash
 bash init.sh
 bash work/kms-client/LocalCryptoExample/ehsm-local-cryptos-example-sgx.sh <your_data_file_path> <spark_local_ip>
 ```
-

@@ -25,11 +25,19 @@ from torch.optim.lr_scheduler import _LRScheduler
 
 
 class LightningModuleFromTorch(LightningModule):
+    """
+    A wrapper LightningMoudle for common PyTorch models.
+
+    This class implements common methods in LightningModule, so that classic pytorch
+    supervised learning model only needs to supply module, loss and optimizer to create
+    a LightningModule.
+    """
+
     def __init__(self, model: nn.Module, loss: _Loss = None, optimizer: Optimizer = None,
                  scheduler: _LRScheduler = None,
                  metrics: List[Metric] = None):
         """
-        Integrate pytorch modules, loss, optimizer to pytorch-lightning model.
+        Create a LightningMoudle that integrates pytorch modules, loss, optimizer.
 
         :param model:       Pytorch model to be converted.
         :param loss:        A torch loss function.
@@ -45,6 +53,7 @@ class LightningModuleFromTorch(LightningModule):
         self.metrics = metrics
 
     def forward(self, *args, **kwargs):
+        """Same as torch.nn.Module.forward()."""
         return self.model(*args, **kwargs)
 
     def _forward(self, batch):
@@ -53,16 +62,19 @@ class LightningModuleFromTorch(LightningModule):
         return self(*(batch[:nargs - 1]))
 
     def on_train_start(self) -> None:
+        """Called at the beginning of training after sanity check."""
         assert self.loss, "Loss must not be None for training."
         return super().on_train_start()
 
     def training_step(self, batch, batch_idx):
+        """Define a single training step, return a loss tensor."""
         y_hat = self._forward(batch)
         loss = self.loss(y_hat, batch[-1])  # use last output as target
         self.log("train/loss", loss, on_step=True, logger=True)
         return loss
 
     def validation_step(self, batch, batch_idx):
+        """Define a single validation step."""
         y_hat = self._forward(batch)
         if self.loss:
             loss = self.loss(y_hat, batch[-1])  # use last output as target
@@ -74,6 +86,7 @@ class LightningModuleFromTorch(LightningModule):
             self.log_dict(acc, on_epoch=True, prog_bar=True, logger=True)
 
     def test_step(self, batch, batch_idx):
+        """Define a single test step."""
         y_hat = self._forward(batch)
         if self.metrics:
             acc = {"test/{}_{}".format(type(metric).__name__, i): metric(y_hat, batch[-1])
@@ -81,9 +94,11 @@ class LightningModuleFromTorch(LightningModule):
             self.log_dict(acc, on_epoch=True, prog_bar=True, logger=True)
 
     def predict_step(self, batch, batch_idx):
+        """Define a single predict step."""
         return self(*batch)
 
     def configure_optimizers(self):
+        """Setup the optimizers for this module, and return optimizers and schedulers."""
         optimizers = [self.optimizer]
         schedulers = []
         if self.scheduler:
@@ -92,6 +107,7 @@ class LightningModuleFromTorch(LightningModule):
 
     def load_state_dict(self, state_dict: 'OrderedDict[str, Tensor]',
                         strict: bool = True):
+        """Same as LightningModule.load_state_dict, execept falling back to pytorch."""
         try:
             super().load_state_dict(state_dict)
         except RuntimeError:

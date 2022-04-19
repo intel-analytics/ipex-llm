@@ -28,6 +28,10 @@ class FGBoostServiceImpl(clientNum: Int) extends FGBoostServiceGrpc.FGBoostServi
   val logger = LogManager.getLogger(getClass)
   val aggregator = new FGBoostAggregator()
   aggregator.setClientNum(clientNum)
+
+  val evalBuffer = List[BoostEval]()
+  val predBuffer = List[BoostEval]()
+
   override def downloadLabel(request: DownloadLabelRequest,
                              responseObserver: StreamObserver[DownloadResponse]): Unit = {
     val version = request.getMetaData.getVersion
@@ -130,7 +134,7 @@ class FGBoostServiceImpl(clientNum: Int) extends FGBoostServiceGrpc.FGBoostServi
                         responseObserver: StreamObserver[EvaluateResponse]): Unit = {
     val clientUUID = request.getClientuuid
     val predicts: java.util.List[BoostEval] = request.getTreeEvalList
-    val version = request.getBsVersion
+    val version = request.getVersion
     logger.debug(s"Server received Evaluate request of version: $version")
     synchronized {
       if (aggregator.getEvalStorage().version != version) {
@@ -141,7 +145,7 @@ class FGBoostServiceImpl(clientNum: Int) extends FGBoostServiceGrpc.FGBoostServi
       }
     }
     try {
-      aggregator.putClientData(FLPhase.EVAL, clientUUID, request.getBsVersion, new DataHolder(predicts))
+      aggregator.putClientData(FLPhase.EVAL, clientUUID, request.getVersion, new DataHolder(predicts))
       val result = aggregator.getResultStorage().serverData
       if (result == null) {
         val response = "Your required data doesn't exist"
@@ -170,7 +174,7 @@ class FGBoostServiceImpl(clientNum: Int) extends FGBoostServiceGrpc.FGBoostServi
     val clientUUID = request.getClientuuid
     val predicts: java.util.List[BoostEval] = request.getTreeEvalList
     try {
-      aggregator.putClientData(FLPhase.PREDICT, clientUUID, request.getBsVersion, new DataHolder(predicts))
+      aggregator.putClientData(FLPhase.PREDICT, clientUUID, request.getVersion, new DataHolder(predicts))
       val result = aggregator.getResultStorage().serverData
       if (result == null) {
         val response = "Your required data doesn't exist"
