@@ -17,5 +17,13 @@ from functools import partial
 
 
 def PytorchOpenVINOModel(model=None, input_sample=None):
+    """
+    Create a OpenVINO model from pytorch.
+
+    :param model: Pytorch model to be converted to OpenVINO for inference, defaults to None.
+    :param input_sample: A set of inputs for trace, defaults to None if you have trace before or
+                         model is a LightningModule with any dataloader attached, defaults to None
+    :return: PytorchOpenVINOModel model for OpenVINO inference.
+    """
     from .pytorch.pytorch_openvino_model import PytorchOpenVINOModel
     return PytorchOpenVINOModel(model, input_sample)

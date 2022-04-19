@@ -22,6 +22,13 @@ import torch
 
 class PytorchOpenVINOModel(OpenVINOModel, AcceleratedLightningModule):
     def __init__(self, model: torch.nn.Module = None, input_sample=None):
+        """
+        Create a OpenVINO model from pytorch.
+
+        :param model: Pytorch model to be converted to OpenVINO for inference, defaults to None.
+        :param input_sample: A set of inputs for trace, defaults to None if you have trace before or
+                            model is a LightningModule with any dataloader attached, defaults to None
+        """
         AcceleratedLightningModule.__init__(self, model)
         if model is not None:
             export(model, input_sample, 'tmp.xml')
