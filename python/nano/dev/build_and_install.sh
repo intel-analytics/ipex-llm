@@ -17,15 +17,12 @@
 
 set -e
 RUN_SCRIPT_DIR=$(cd $(dirname $0) ; pwd)
-echo $RUN_SCRIPT_DIR
 BIGDL_DIR="$(cd ${RUN_SCRIPT_DIR}/../../..; pwd)"
-echo $BIGDL_DIR
 WHL_DIR="$(cd ${BIGDL_DIR}/python/nano/src; pwd)"
-echo WHL_DIR
 
 if (( $# < 4)); then
-  echo "Usage: build_and_install.sh platform version upload framework"
-  echo "Usage example: bash build_and_install.sh linux default true pytorch"
+  echo "Usage: build_and_install.sh platform version upload framework pip_install_options[optional]"
+  echo "Usage example: bash build_and_install.sh linux default true pytorch --force-reinstall"
   echo "Usage example: bash build_and_install.sh mac 0.14.0.dev1 false tensorflow"
   exit -1
 fi
@@ -34,10 +31,12 @@ platform=$1
 version=$2
 upload=$3  # Whether to upload the whl to pypi
 framework=$4
+install_options=${@:5:$((${#@}))}
 
 bash ${RUN_SCRIPT_DIR}/release.sh ${platform} ${version} ${upload}
 
 cd ${WHL_DIR}
+whl_name=`ls dist`
+pip install $install_options dist/${whl_name}[${framework}]
 
-whl_name=`ls dist`;pip install dist/${whl_name}[${framework}]
 
