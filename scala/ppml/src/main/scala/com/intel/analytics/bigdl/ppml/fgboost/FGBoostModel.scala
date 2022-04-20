@@ -164,10 +164,14 @@ abstract class FGBoostModel(continuous: Boolean,
     val perMsgSize = ObjectSizeCalculator.getObjectSize(boostEvals.head)
     val dataPerGroup = MAX_MSG_SIZE / perMsgSize
     logger.info(s"data num: ${boostEvals.size}, per msg size: $perMsgSize, data per group: $dataPerGroup")
+    var sended = 0
+    var lastBatch = false
     boostEvals.grouped(dataPerGroup.toInt).foreach(l => {
+      if (sended + dataPerGroup.toInt >= boostEvals.size) lastBatch = true
       logger.info(s"evaluating in train step, version: $evaluateVersion")
-      flClient.fgbostStub.evaluate(l.asJava, evaluateVersion)
-      evaluateVersion += 1
+      val response = flClient.fgbostStub.evaluate(l.asJava, evaluateVersion, lastBatch)
+      logger.info(response.getResponse)
+      sended += l.size
     })
 
 

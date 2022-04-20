@@ -24,22 +24,28 @@ import io.grpc.stub.StreamObserver
 import org.apache.commons.lang3.exception.ExceptionUtils
 import org.apache.logging.log4j.LogManager
 
+import java.util
+import collection.JavaConverters._
+
+
 class FGBoostServiceImpl(clientNum: Int) extends FGBoostServiceGrpc.FGBoostServiceImplBase{
   val logger = LogManager.getLogger(getClass)
   val aggregator = new FGBoostAggregator()
   aggregator.setClientNum(clientNum)
 
-  val evalBuffer = List[BoostEval]()
-  val predBuffer = List[BoostEval]()
+  val evalBuffer = new util.ArrayList[BoostEval]()
+  var predBuffer = new util.ArrayList[BoostEval]()
 
   override def downloadLabel(request: DownloadLabelRequest,
                              responseObserver: StreamObserver[DownloadResponse]): Unit = {
     val version = request.getMetaData.getVersion
     logger.debug(s"Server received downloadLabel request of version: $version")
     synchronized {
-      if (aggregator.getLabelStorage().version != version) {
+      if (aggregator.getLabelStorage().version < version) {
         logger.debug(s"Download label: server version is ${aggregator.getLabelStorage().version}, waiting")
         wait()
+      } else if (aggregator.getLabelStorage().version > version) {
+        logger.error(s"Server version could never advance client version, something is wrong.")
       } else {
         notifyAll()
       }
@@ -133,30 +139,41 @@ class FGBoostServiceImpl(clientNum: Int) extends FGBoostServiceGrpc.FGBoostServi
   override def evaluate(request: EvaluateRequest,
                         responseObserver: StreamObserver[EvaluateResponse]): Unit = {
     val clientUUID = request.getClientuuid
-    val predicts: java.util.List[BoostEval] = request.getTreeEvalList
     val version = request.getVersion
     logger.debug(s"Server received Evaluate request of version: $version")
-    synchronized {
-      if (aggregator.getEvalStorage().version != version) {
-        logger.debug(s"Evaluate: server version is ${aggregator.getEvalStorage().version}, waiting")
-        wait()
-      } else {
-        notifyAll()
-      }
-    }
     try {
-      aggregator.putClientData(FLPhase.EVAL, clientUUID, request.getVersion, new DataHolder(predicts))
-      val result = aggregator.getResultStorage().serverData
-      if (result == null) {
-        val response = "Your required data doesn't exist"
-        responseObserver.onNext(EvaluateResponse.newBuilder.setResponse(response).setCode(0).build)
+      // If not last batch, add to buffer, else put data into data map and trigger aggregate
+      evalBuffer.addAll(request.getTreeEvalList)
+      if (!request.getLastBatch) {
+        logger.info(s"Added evaluate data to buffer, current size: ${evalBuffer.size()}")
+        val response = "Add data successfully"
+        responseObserver.onNext(
+          EvaluateResponse.newBuilder.setResponse(response).setCode(1).build)
         responseObserver.onCompleted()
       }
       else {
-        val response = "Download data successfully"
-        responseObserver.onNext(
-          EvaluateResponse.newBuilder.setResponse(response).setData(result).setCode(1).build)
-        responseObserver.onCompleted()
+        logger.info(s"Last batch data received, put buffer to clientData map in server")
+        synchronized {
+          if (aggregator.getEvalStorage().version != version) {
+            logger.debug(s"Evaluate: server version is ${aggregator.getEvalStorage().version}, waiting")
+            wait()
+          } else {
+            notifyAll()
+          }
+        }
+        aggregator.putClientData(FLPhase.EVAL, clientUUID, request.getVersion, new DataHolder(evalBuffer))
+        val result = aggregator.getResultStorage().serverData
+        if (result == null) {
+          val response = "Server evaluate complete"
+          responseObserver.onNext(EvaluateResponse.newBuilder.setResponse(response).setCode(0).build)
+          responseObserver.onCompleted()
+        }
+        else {
+          val response = "Download data successfully"
+          responseObserver.onNext(
+            EvaluateResponse.newBuilder.setResponse(response).setData(result).setCode(1).build)
+          responseObserver.onCompleted()
+        }
       }
     } catch {
       case e: Exception =>
@@ -173,6 +190,7 @@ class FGBoostServiceImpl(clientNum: Int) extends FGBoostServiceGrpc.FGBoostServi
                        responseObserver: StreamObserver[PredictResponse]): Unit = {
     val clientUUID = request.getClientuuid
     val predicts: java.util.List[BoostEval] = request.getTreeEvalList
+    // TODO: add same logic with evaluate
     try {
       aggregator.putClientData(FLPhase.PREDICT, clientUUID, request.getVersion, new DataHolder(predicts))
       val result = aggregator.getResultStorage().serverData

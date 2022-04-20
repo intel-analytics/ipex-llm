@@ -49,7 +49,7 @@ if __name__ == '__main__':
 
 
     init_fl_context()
-    fgboost_regression = FGBoostRegression()
+    fgboost_regression = FGBoostRegression(max_depth=3)
     ts = time.time()
     if args.has_label:
         fgboost_regression.fit(x, y, num_round=args.num_round)

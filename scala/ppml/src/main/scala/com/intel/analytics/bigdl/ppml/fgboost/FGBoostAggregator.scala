@@ -102,15 +102,12 @@ class FGBoostAggregator(validationMethods: Array[ValidationMethod[Float]] = null
   def initGradient(): Unit = {
     logger.debug(s"Server init gradiant from label")
     val labelClientData = getLabelStorage().clientData
-    logger.debug(s"============0")
     val aggData = labelClientData.mapValues(_.getTensorsMap).values.flatMap(_.asScala)
       .map { data =>
         (data._1, data._2.getTensorList.asScala.toArray.map(_.toFloat))
       }.toMap
     logger.info(s"$aggData")
-    logger.debug(s"============1")
     val label = aggData("label")
-    logger.debug(s"============2")
     validationSize = label.length
     basePrediction = if (aggData.contains("predict")) {
       aggData("predict")
@@ -210,17 +207,15 @@ class FGBoostAggregator(validationMethods: Array[ValidationMethod[Float]] = null
   def updateGradient(newPredict: Array[Float]): Unit = {
     // For XGBoost Regression with squared loss
     // g = y' - y, h = 1
-    logger.info("Updating Gradient with new Predict")
+    logger.info(s"Updating Gradient with new Predict, new predict size: ${newPredict.size}")
     val tableStorage = getLabelStorage()
     val gradTable = tableStorage.serverData.getTensorsMap
     val predict = gradTable.get("predict").getTensorList.asScala.toArray.map(_.toFloat)
     val label = gradTable.get("label").getTensorList.asScala.toArray.map(_.toFloat)
-
     // Update Predict
     for (i <- predict.indices) {
       predict(i) = predict(i) + newPredict(i)
     }
-
     // Compute Gradients
     val gradients = obj.getGradient(predict, label)
     // Compute loss
@@ -242,7 +237,9 @@ class FGBoostAggregator(validationMethods: Array[ValidationMethod[Float]] = null
       .putTensors("label", toFloatTensor(label))
       .build()
     // Update gradient
+
     tableStorage.clearClientAndUpdateServer(aggregatedModel)
+    logger.info(s"current label storage version: ${getLabelStorage().version}")
   }
 
   def getTreeNodeId(treeID: String, nodeID: String): String = treeID + "_" + nodeID
