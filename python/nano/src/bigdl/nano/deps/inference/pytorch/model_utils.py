@@ -53,7 +53,7 @@ def get_input_example(model: LightningModuleFromTorch, input_sample):
     return input_sample
 
 
-def export_to_onnx(model, input_sample=None, onnx_path="model.onnx", dynamic_axes=True):
+def export_to_onnx(model, input_sample=None, onnx_path="model.onnx", dynamic_axes=True, **kwargs):
     '''
     Internal function to export pytorch model as onnx.
 
@@ -77,5 +77,5 @@ def export_to_onnx(model, input_sample=None, onnx_path="model.onnx", dynamic_axe
                                 'input_names': forward_args,
                                 'dynamic_axes': dynamic_axes,
                                 }
-
+    default_onnx_export_args.update(kwargs)
     torch.onnx.export(model, input_sample, onnx_path, **default_onnx_export_args)
