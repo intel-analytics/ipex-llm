@@ -117,8 +117,7 @@ class Trainer(pl.Trainer):
             elif distributed_backend == "subprocess":
                 from bigdl.nano.pytorch.plugins.ddp_subprocess import DDPSubprocessPlugin
                 if use_ipex:
-                    import intel_pytorch_extension as ipex
-                    device = ipex.DEVICE
+                    device = ipex_device()
                 else:
                     device = "cpu"
                 plugin = DDPSubprocessPlugin(parallel_devices=[
