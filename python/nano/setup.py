@@ -71,7 +71,7 @@ def setup_package():
                            "tensorflow-estimator==2.7.0"]
 
     pytorch_requires = ["torch==1.11.0",
-                        "torchvision==0.10.0",
+                        "torchvision==0.12.0",
                         "pytorch_lightning==1.4.2",
                         "torchmetrics==0.7.2",
                         "intel_extension_for_pytorch==1.11.0",
