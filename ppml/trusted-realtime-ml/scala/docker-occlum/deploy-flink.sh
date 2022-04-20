@@ -22,7 +22,6 @@ echo "### phase.2 deploy the flink components"
 
 echo ">>> $MASTER, start flink-jobmanager"
 ssh root@$MASTER "docker run  -d\
-      --privileged \
       --net=host \
       --cpuset-cpus="3-5" \
       --oom-kill-disable \
@@ -43,7 +42,6 @@ for worker in ${WORKERS[@]}
   do
     echo ">>> $worker"
     ssh root@$worker "docker run -itd \
-        --privileged \
         --net=host \
         --cpuset-cpus="6-30" \
         --oom-kill-disable \
