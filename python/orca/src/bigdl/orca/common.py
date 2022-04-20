@@ -153,19 +153,9 @@ class OrcaContext(metaclass=OrcaContextMeta):
         return OrcaContext.get_sql_context().sparkSession
 
     @staticmethod
-    def get_ray_context(initialize=True):
+    def get_ray_context():
         from bigdl.orca.ray import RayContext
-        return RayContext.get(initialize)
-
-    @staticmethod
-    def get_core_num():
-        ray_ctx = OrcaContext.get_ray_context(initialize=False)
-        return ray_ctx.core_num
-
-    @staticmethod
-    def get_node_num():
-        ray_ctx = OrcaContext.get_ray_context(initialize=False)
-        return ray_ctx.node_num
+        return RayContext.get()
 
 
 def _check_python_micro_version():
