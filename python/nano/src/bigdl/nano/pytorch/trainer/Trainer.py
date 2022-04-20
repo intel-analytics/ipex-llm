@@ -318,7 +318,7 @@ class Trainer(pl.Trainer):
     def trace(model: nn.Module, input_sample=None, accelerator=None):
         """
         Trace a pytorch model and convert it into an accelerated module for inference.
-        For example, this function returns a PytorchOpenVINOModel when accelerator=='opevino'.
+        For example, this function returns a PytorchOpenVINOModel when accelerator=='openvino'.
 
         :param model: An torch.nn.Module model, including pl.LightningModule.
         :param input_sample: A set of inputs for trace, defaults to None if you have trace before or
