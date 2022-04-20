@@ -114,8 +114,8 @@ class BasePytorchForecaster(Forecaster):
         # fit on internal
         if self.distributed:
             # for cluster mode
-            from bigdl.orca.common import OrcaContext
-            num_nodes = OrcaContext.get_nodes_num()
+            from bigdl.orca import OrcaContext
+            num_nodes = OrcaContext.get_ray_context().num_ray_nodes
             if batch_size % self.workers_per_node != 0:
                 raise RuntimeError("Please make sure that batch_size can be divisible by "
                                    "the product of worker_per_node and num_nodes, "
