@@ -59,6 +59,7 @@ def export_to_onnx(model, input_sample=None, onnx_path="model.onnx", dynamic_axe
 
     :param input_sample: torch.Tensor or a list for the model tracing.
     :param file_path: The path to save onnx model file.
+    :param dynamic_axes: If we set the first dim of each input as a dynamic batch_size
     :param **kwargs: will be passed to torch.onnx.export function.
     '''
     input_sample = get_input_example(model, input_sample)
