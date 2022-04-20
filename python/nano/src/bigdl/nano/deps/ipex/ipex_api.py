@@ -20,5 +20,5 @@ def create_IPEXAccelerator(*args, **kwargs):
 
 
 def ipex_device():
-    import intel_pytorch_extension as ipex
-    return ipex.DEVICE
+    ipex_device = 'xpu:0' # DeprecationWarning after ipex 1.9.0
+    return ipex_device
