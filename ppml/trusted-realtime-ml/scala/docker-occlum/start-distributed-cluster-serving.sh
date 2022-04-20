@@ -32,7 +32,6 @@ echo "### phase.2 pull the docker image finished successfully"
 echo "### phase.3 deploy the cluster serving components"
 echo ">>> $MASTER, start redis"
 ssh root@$MASTER "docker run -itd \
-      --privileged \
       --net=host \
       --cpuset-cpus="0-2" \
       --oom-kill-disable \
@@ -48,7 +47,6 @@ bash ./deploy-flink.sh
 
 echo ">>> $MASTER, start http-frontend"
 ssh root@$MASTER "docker run -itd \
-      --privileged \
       --net=host \
       --cpuset-cpus="31-32" \
       --oom-kill-disable \
@@ -68,7 +66,6 @@ echo ">>> $MASTER, http-frontend started successfully."
 
 echo ">>> $MASTER, start cluster-serving"
 ssh root@$MASTER "docker run -itd \
-      --privileged \
       --net=host \
       --cpuset-cpus="33-34" \
       --oom-kill-disable \
