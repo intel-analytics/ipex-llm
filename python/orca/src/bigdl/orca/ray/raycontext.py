@@ -49,10 +49,6 @@ class RayContext(object):
             raise ValueError(f"Unsupported runtime: {runtime}. "
                              f"Runtime must be spark or ray")
 
-        # Record number of cores and nodes user sets through init_orca_context()
-        self.node_num = num_nodes
-        self.core_num = cores
-
         RayContext._active_ray_context = self
 
     def init(self, driver_cores=0):
