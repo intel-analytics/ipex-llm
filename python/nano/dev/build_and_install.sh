@@ -37,6 +37,6 @@ bash ${RUN_SCRIPT_DIR}/release.sh ${platform} ${version} ${upload}
 
 cd ${WHL_DIR}
 whl_name=`ls dist`
-pip3 install $install_options dist/${whl_name}[${framework}]
+pip install $install_options dist/${whl_name}[${framework}]
 
 
