@@ -15,8 +15,8 @@
 #
 
 
+from distutils import core
 from threading import Lock
-from bigdl.orca import OrcaContext
 
 
 class RayContext(object):
@@ -37,19 +37,8 @@ class RayContext(object):
             from bigdl.orca.ray import RayOnSparkContext
             self._ray_on_spark_context = RayOnSparkContext(**kwargs)
             self.is_local = self._ray_on_spark_context.is_local
-
-            if self.is_local:
-                self.ray_node_cpu_cores = OrcaContext.core_num()
-                self.num_ray_nodes = OrcaContext.node_num()
-            else:
-                if "ray_node_cpu_cores" in kwargs:
-                    self.ray_node_cpu_cores = kwargs["ray_node_cpu_cores"]
-                else:
-                    self.ray_node_cpu_cores = OrcaContext.core_num()
-                if "num_ray_nodes" in kwargs:
-                    self.num_ray_nodes = kwargs["num_ray_nodes"]
-                else:
-                    self.num_ray_nodes = OrcaContext.node_num()
+            self.num_ray_nodes = self._ray_on_spark_context.num_ray_nodes
+            self.ray_node_cpu_cores = self._ray_on_spark_context.ray_node_cpu_cores
 
         elif runtime == "ray":
             self.is_local = False
@@ -61,6 +50,8 @@ class RayContext(object):
             raise ValueError(f"Unsupported runtime: {runtime}. "
                              f"Runtime must be spark or ray")
 
+        self.node_num = num_nodes
+        self.core_num = cores
         RayContext._active_ray_context = self
 
     def init(self, driver_cores=0):
