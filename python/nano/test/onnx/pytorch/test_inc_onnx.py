@@ -79,15 +79,15 @@ class TestOnnx(TestCase):
         trainer.fit(pl_model, train_loader)
 
         # false framework parameters
-        with pytest.raises(RuntimeError):
-            pl_model = trainer.quantize(pl_model, train_loader,
-                                        framework=['pytorch_fx', 'pytorch'])
-        with pytest.raises(RuntimeError):
-            pl_model = trainer.quantize(pl_model, train_loader,
-                                        framework=['onnxrt_integerops', 'onnxrt_qlinearops'])
+        # with pytest.raises(RuntimeError):
+        #     pl_model = trainer.quantize(pl_model, train_loader,
+        #                                 framework=['pytorch_fx', 'pytorch'])
+        # with pytest.raises(RuntimeError):
+        #     pl_model = trainer.quantize(pl_model, train_loader,
+        #                                 framework=['onnxrt_integerops', 'onnxrt_qlinearops'])
 
         # normal usage without tunning
-        pl_model = trainer.quantize(pl_model, train_loader, framework=['pytorch_fx', 'onnxrt_integerops'])
+        pl_model = trainer.quantize(pl_model, train_loader, framework='onnxrt_integerops')
         for x, y in train_loader:
             onnx_res = pl_model.inference(x.numpy(), backend="onnx", quantize=True).numpy()
             pl_model.eval_onnx(quantize=True)
@@ -100,7 +100,7 @@ class TestOnnx(TestCase):
                                     calib_dataloader=train_loader,
                                     val_dataloader=train_loader,
                                     metric=torchmetrics.F1(10),
-                                    framework=['onnxrt_qlinearops'],
+                                    framework='onnxrt_qlinearops',
                                     accuracy_criterion={'relative': 0.99,
                                                         'higher_is_better': True})
         for x, y in train_loader:
