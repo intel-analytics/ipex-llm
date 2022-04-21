@@ -25,6 +25,7 @@ import org.apache.commons.lang3.exception.ExceptionUtils
 import org.apache.logging.log4j.LogManager
 
 import java.util
+import java.util.concurrent.ConcurrentHashMap
 import collection.JavaConverters._
 
 
@@ -33,8 +34,9 @@ class FGBoostServiceImpl(clientNum: Int) extends FGBoostServiceGrpc.FGBoostServi
   val aggregator = new FGBoostAggregator()
   aggregator.setClientNum(clientNum)
 
-  val evalBuffer = new util.ArrayList[BoostEval]()
-  var predBuffer = new util.ArrayList[BoostEval]()
+  // store client id as key and client data as value
+  val evalBufferMap = new ConcurrentHashMap[String, util.ArrayList[BoostEval]]()
+  var predBufferMap = new ConcurrentHashMap[String, util.ArrayList[BoostEval]]()
 
   override def downloadLabel(request: DownloadLabelRequest,
                              responseObserver: StreamObserver[DownloadResponse]): Unit = {
@@ -141,6 +143,10 @@ class FGBoostServiceImpl(clientNum: Int) extends FGBoostServiceGrpc.FGBoostServi
     val clientUUID = request.getClientuuid
     val version = request.getVersion
     logger.debug(s"Server received Evaluate request of version: $version")
+    if (!evalBufferMap.containsKey(clientUUID)) {
+      evalBufferMap.put(clientUUID, new util.ArrayList[BoostEval]())
+    }
+    val evalBuffer = evalBufferMap.get(clientUUID)
     try {
       // If not last batch, add to buffer, else put data into data map and trigger aggregate
       evalBuffer.addAll(request.getTreeEvalList)
