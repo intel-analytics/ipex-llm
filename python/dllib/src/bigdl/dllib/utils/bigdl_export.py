@@ -16,23 +16,10 @@
 # limitations under the License.
 #
 
-import collections
 import functools
 import sys
 
-from tensorflow.python.util import tf_decorator
-from tensorflow.python.util import tf_inspect
-
 Keras_API_NAME = 'keras'
-
-_Attributes = collections.namedtuple(
-    'ExportedApiAttributes', ['names'])
-
-API_ATTRS = {
-    Keras_API_NAME: _Attributes(
-        '_keras_api_names')
-}
-_NAME_TO_SYMBOL_MAPPING = dict()
 
 
 class api_export(object):  # pylint: disable=invalid-name
@@ -49,18 +36,9 @@ class api_export(object):  # pylint: disable=invalid-name
         self._api_name = kwargs.get('api_name', Keras_API_NAME)
 
     def __call__(self, func):
-        api_names_attr = API_ATTRS[self._api_name].names
-
-        _, undecorated_func = tf_decorator.unwrap(func)
-        self.set_attr(undecorated_func, api_names_attr, self._names)
-
         for name in self._names:
-            _NAME_TO_SYMBOL_MAPPING[name] = func
             sys.modules[name] = func
         return func
-
-    def set_attr(self, func, api_names_attr, names):
-        setattr(func, api_names_attr, names)
 
 
 keras_export = functools.partial(api_export, api_name=Keras_API_NAME)

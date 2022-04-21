@@ -21,7 +21,7 @@ import com.intel.analytics.bigdl.dllib.nn.abstractnn.AbstractModule
 import com.intel.analytics.bigdl.dllib.keras.layers.{Identity => ZIdentity}
 import com.intel.analytics.bigdl.dllib.nn.{Module, Identity => BIdentity}
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
-import com.intel.analytics.bigdl.dllib.utils.{RandomGenerator, Shape, T, Table}
+import com.intel.analytics.bigdl.dllib.utils._
 import com.intel.analytics.bigdl.dllib.keras.ZooSpecHelper
 import com.intel.analytics.bigdl.dllib.keras.serializer.ModuleSerializationTest
 import org.scalatest.{FlatSpec, Matchers}
@@ -31,7 +31,7 @@ class IdentitySpec extends KerasBaseSpec {
     val blayer = BIdentity[Float]()
     val zlayer = ZIdentity[Float](inputShape = Shape(Array(3)))
     zlayer.build(Shape(Array(-1, 3)))
-    assert(zlayer.getOutputShape() == Shape(-1, 3))
+    TestUtils.conditionFailTest(zlayer.getOutputShape() == Shape(-1, 3))
     val input = Tensor[Float](Array(2, 3)).rand()
     compareOutputAndGradInput(
       blayer.asInstanceOf[AbstractModule[Tensor[Float], Tensor[Float], Float]],

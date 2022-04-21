@@ -16,8 +16,8 @@
 
 from bigdl.dllib.utils.file_utils import callZooFunc
 from pyspark.sql.types import IntegerType, ShortType, LongType, FloatType, DecimalType, \
-    DoubleType
-from pyspark.sql.functions import broadcast
+    DoubleType, BooleanType
+from pyspark.sql.functions import broadcast, udf
 
 
 def compute(df):
@@ -118,7 +118,7 @@ def check_col_str_list_exists(df, column, arg_name):
 def get_nonnumeric_col_type(df, columns):
     return list(filter(
         lambda x: x[0] in columns and not (x[1] == "smallint" or x[1] == "int" or
-                x[1] == "bigint" or x[1] == "float" or x[1] == "double"),
+                                           x[1] == "bigint" or x[1] == "float" or x[1] == "double"),
         df.dtypes))
 
 
@@ -164,13 +164,11 @@ def encode_target_(tbl, targets, target_cols=None, drop_cat=True, drop_fold=True
             out_target_mean = new_out_target_mean
 
         all_size = join_tbl.size()
-        limit_size = 1000000
+        limit_size = 100000000
         t_df = join_tbl.df
         top_df = t_df if all_size <= limit_size \
             else t_df.sort(t_df.target_encode_count.desc()).limit(limit_size)
         br_df = broadcast(top_df.drop("target_encode_count"))
-        keyset = set(top_df.select(cat_col).rdd.map(lambda r: r[0]).collect())
-        filter_udf = lambda key: key in keyset
 
         if fold_col is None:
             join_key = cat_col
@@ -180,6 +178,8 @@ def encode_target_(tbl, targets, target_cols=None, drop_cat=True, drop_fold=True
         if all_size <= limit_size:
             joined = tbl.df.join(br_df, on=join_key, how="left")
         else:
+            keyset = set(top_df.select(cat_col).rdd.map(lambda r: r[0]).collect())
+            filter_udf = udf(lambda key: key in keyset, BooleanType())
             df1 = tbl.df.filter(filter_udf(cat_col))
             df2 = tbl.df.subtract(df1)
             joined1 = df1.join(br_df, on=join_key)
@@ -188,7 +188,6 @@ def encode_target_(tbl, targets, target_cols=None, drop_cat=True, drop_fold=True
             joined = joined1.union(joined2)
 
         tbl = tbl._clone(joined)
-
         # for new columns, fill na with mean
         for out_col, target_mean in out_target_mean.items():
             if out_col in tbl.df.columns:
@@ -213,3 +212,30 @@ def str_to_list(arg, arg_name):
         return [arg]
     assert isinstance(arg, list), arg_name + " should be str or a list of str"
     return arg
+
+
+def distribute_tfrs_model(model):
+    from tensorflow_recommenders.tasks import base
+    import tensorflow as tf
+    import warnings
+    import tensorflow_recommenders as tfrs
+
+    if not isinstance(model, tfrs.Model):
+        return model
+    attr = model.__dict__
+    task_dict = dict()
+    for k, v in attr.items():
+        if isinstance(v, base.Task):
+            task_dict[k] = v
+
+    for k, v in task_dict.items():
+        try:
+            v._loss.reduction = tf.keras.losses.Reduction.NONE
+        except:
+            warnings.warn("Model task " + k + " has no attribute _loss, please use "
+                                              "`tf.keras.losses.Reduction.SUM` or "
+                                              "`tf.keras.losses.Reduction.NONE` for "
+                                              "loss reduction in this task if the "
+                                              "Estimator raise an error.")
+
+    return model

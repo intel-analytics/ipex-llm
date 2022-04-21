@@ -19,7 +19,7 @@ package com.intel.analytics.bigdl.dllib.nn.internal
 import com.intel.analytics.bigdl.dllib.nn.abstractnn._
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.dllib.utils.Shape
+import com.intel.analytics.bigdl.dllib.utils.{Log4Error, Shape}
 
 import scala.reflect.ClassTag
 
@@ -49,7 +49,7 @@ class SpatialDropout3D[T: ClassTag](
   extends KerasLayer[Tensor[T], Tensor[T], T](KerasLayer.addBatch(inputShape))
     with IdentityOutputShape {
 
-  require(dimOrdering.toLowerCase() == "channel_first" ||
+  Log4Error.invalidInputError(dimOrdering.toLowerCase() == "channel_first" ||
           dimOrdering.toLowerCase() == "channel_last",
           s"SpatialDropout3D only supports format CHANNEL_FIRST or CHANNEL_LAST," +
           s" format $dimOrdering is not supported")

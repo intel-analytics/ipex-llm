@@ -167,7 +167,8 @@ abstract class Graph[T: ClassTag](
       buffer
     }
 
-    require(forwardNodes.map(_.element.getName()).distinct.length == forwardNodes.length,
+    Log4Error.invalidInputError(forwardNodes.map(_.element.getName()).distinct.length ==
+      forwardNodes.length,
       s"the name of node in the graph should be unique, but find duplicated name " +
         s"${duplicatedNames(forwardNodes.map(_.element.getName())).mkString(", ")}")
 
@@ -176,11 +177,12 @@ abstract class Graph[T: ClassTag](
       .filterNot(_.element.isInstanceOf[ControlDependency[_]])
 
     val realInputs = inputs.filterNot(_.element.isInstanceOf[WithoutInput])
-    require(roots.size == realInputs.length, s"There're ${realInputs.length} inputs, " +
+    Log4Error.invalidInputError(roots.size == realInputs.length,
+      s"There're ${realInputs.length} inputs, " +
       s"but graph has ${roots.size} roots")
 
     realInputs.foreach(n =>
-      require(roots.contains(n), "inputs and graph roots are not match")
+      Log4Error.invalidInputError(roots.contains(n), "inputs and graph roots are not match")
     )
   }
 
@@ -250,7 +252,7 @@ abstract class Graph[T: ClassTag](
 
     names.foreach(name => {
       val layer = this (name)
-      require(layer.isDefined, s"cannot find layer match ${name}")
+      Log4Error.invalidInputError(layer.isDefined, s"cannot find layer match ${name}")
       stopGradientLayers.add(layer.get.getName())
     })
     buildBackwardGraph()
@@ -266,7 +268,7 @@ abstract class Graph[T: ClassTag](
   def freeze(names: Array[String]): this.type = {
     names.foreach(name => {
       val layer = this (name)
-      require(layer.isDefined, s"cannot find layer match ${name}")
+      Log4Error.invalidInputError(layer.isDefined, s"cannot find layer match ${name}")
       layer.get.setScaleW(0)
       layer.get.setScaleB(0)
     })
@@ -285,11 +287,11 @@ abstract class Graph[T: ClassTag](
     input: Activity
   ): Activity = {
     if (inputs.length == 1) {
-      require(inputs(0).eq(node), "input node is not in the input list")
+      Log4Error.invalidInputError(inputs(0).eq(node), "input node is not in the input list")
       input
     } else {
       val i = inputs.indexOf(node)
-      require(i != -1, "input node is not in the input list")
+      Log4Error.invalidInputError(i != -1, "input node is not in the input list")
       input.toTable[Tensor[T]](i + 1)
     }
   }
@@ -412,7 +414,7 @@ abstract class Graph[T: ClassTag](
       other
     } else {
       if (other.isTensor) {
-        require(activity.isTensor, "Cannot add a table to a tensor")
+        Log4Error.invalidInputError(activity.isTensor, "Cannot add a table to a tensor")
         activity.toTensor[T].add(other.toTensor[T])
       } else {
         // if 'activity' and 'other' are both table, we need to merge 'other' to 'activity'

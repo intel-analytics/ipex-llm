@@ -29,7 +29,7 @@ private[bigdl] trait Releasable {
  * This trait is a owner of the resources that need to be released.
  * It will track all Releasable resources (Primitives, tensor, ReorderMemory).
  * You can call releaseResources to release all the
- * resources at once. These resources will require an implicit MemoryOwner at
+ * resources at once. These resources will Log4Error.invalidInputError an implicit MemoryOwner at
  * the constructors. The constructors of the resources will register themselves to the MemoryOwner.
  * For DNN Layer classes, they extends MemoryOwner and have a implicit value of "this" as a
  * MemoryOwner. ReorderMemory is a kind of special resource. They can be a normal layer or a

@@ -18,6 +18,7 @@ package com.intel.analytics.bigdl.dllib.nn
 import com.intel.analytics.bigdl.dllib.nn.abstractnn.TensorModule
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.dllib.utils.Log4Error
 
 import scala.reflect.ClassTag
 
@@ -44,7 +45,7 @@ class Reverse[T: ClassTag](dim: Int = 1, isInplace: Boolean = false)
    * @return
    */
   private def reverseTensor(src: Tensor[T], target: Tensor[T], dim: Int): Tensor[T] = {
-    require(dim > 0 && dim <= src.dim,
+    Log4Error.invalidInputError(dim > 0 && dim <= src.dim,
       s"Reverse: the designated dimension ${dim} to reverse input Tensor" +
         s" is out of index. The input.dim = ${src.dim}")
 
@@ -67,7 +68,7 @@ class Reverse[T: ClassTag](dim: Int = 1, isInplace: Boolean = false)
    * @return
    */
   private def reverseTensor(src: Tensor[T], dim: Int): Tensor[T] = {
-    require(dim > 0 && dim <= src.dim,
+    Log4Error.invalidInputError(dim > 0 && dim <= src.dim,
       s"Reverse: the designated dimension ${dim} to reverse input Tensor" +
         s" is out of index. The input.dim = ${src.dim}")
     if (buffer == null) buffer = Tensor[T]()

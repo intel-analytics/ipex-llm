@@ -44,7 +44,7 @@ import com.intel.analytics.bigdl.dllib.utils.serializer.{DeserializeContext, Mod
 import com.intel.analytics.bigdl.dllib.visualization.{TrainSummary, ValidationSummary}
 import com.intel.analytics.bigdl.dllib.optim.ZooTrigger
 import com.intel.analytics.bigdl.dllib.feature._
-import com.intel.analytics.bigdl.dllib.feature.image.ImageSet
+import com.intel.analytics.bigdl.dllib.feature.image._
 import com.intel.analytics.bigdl.dllib.feature.text._
 import com.intel.analytics.bigdl.dllib.keras.{Net, Predictable}
 import com.intel.analytics.bigdl.dllib.keras.autograd.{Lambda, Variable}
@@ -53,9 +53,9 @@ import com.intel.analytics.bigdl.dllib.keras.layers.Input
 import com.intel.analytics.bigdl.dllib.keras.layers.utils._
 import com.intel.analytics.bigdl.dllib.keras.Model
 import com.intel.analytics.bigdl.dllib.net.NetUtils
-import com.intel.analytics.bigdl.dllib.estimator.{AbstractEstimator, ConstantClipping,
-GradientClipping, L2NormClipping}
+import com.intel.analytics.bigdl.dllib.estimator.{AbstractEstimator, ConstantClipping, GradientClipping, L2NormClipping}
 import com.intel.analytics.bigdl.dllib.feature.common._
+import com.intel.analytics.bigdl.dllib.feature.transform.vision.image.ImageFeature
 import com.intel.analytics.bigdl.dllib.nnframes.NNImageSchema
 import org.apache.commons.lang.exception.ExceptionUtils
 import org.apache.commons.lang3.SerializationUtils
@@ -80,7 +80,7 @@ abstract class KerasNet[T](implicit val tag: ClassTag[T], implicit val ev: Tenso
   protected val module: Module[T] = this
 
   def getSubModules(): List[AbstractModule[Activity, Activity, T]] = {
-    require(this.labor.isInstanceOf[Container[Activity, Activity, T]],
+    Log4Error.invalidOperationError(this.labor.isInstanceOf[Container[Activity, Activity, T]],
       s"labor should be a container, but we got: $this")
     this.labor.asInstanceOf[Container[Activity, Activity, T]].modules.toList
   }
@@ -316,7 +316,9 @@ abstract class KerasNet[T](implicit val tag: ClassTag[T], implicit val ev: Tenso
    */
   private def toDataSet(x: RDD[Sample[T]], batchSize: Int,
     featurePaddingParam: PaddingParam[T] = null,
-    labelPaddingParam: PaddingParam[T] = null): DataSet[MiniBatch[T]] = {
+    labelPaddingParam: PaddingParam[T] = null,
+    shuffleData: Boolean = true,
+    groupSize: Int = 1): DataSet[MiniBatch[T]] = {
     val _featurePaddingParam = if (featurePaddingParam != null) {
       Some(featurePaddingParam)
     } else None
@@ -324,8 +326,8 @@ abstract class KerasNet[T](implicit val tag: ClassTag[T], implicit val ev: Tenso
       Some(labelPaddingParam)
     } else None
 
-    if (x != null) DataSet.rdd(x) -> SampleToMiniBatch[T](batchSize, _featurePaddingParam,
-      _labelPaddingParam)
+    if (x != null) DataSet.rdd(x, shuffleData = shuffleData, groupSize = groupSize) ->
+      SampleToMiniBatch[T](batchSize, _featurePaddingParam, _labelPaddingParam)
     else null
   }
 
@@ -358,11 +360,12 @@ abstract class KerasNet[T](implicit val tag: ClassTag[T], implicit val ev: Tenso
       x: DataSet[MiniBatch[T]],
       nbEpoch: Int,
       validationData: DataSet[MiniBatch[T]])(implicit ev: TensorNumeric[T]): Unit = {
-    require(this.optimMethod != null && this.criterion != null,
+    Log4Error.invalidInputError(this.optimMethod != null && this.criterion != null,
       "compile must be called before fit")
     this.internalOptimizer = this.getOrCreateOptimizer(x)
     if (validationData != null) {
-      require(this.vMethods != null, "Validation metrics haven't been set yet")
+      Log4Error.invalidInputError(this.vMethods != null,
+        "Validation metrics haven't been set yet")
       if (this.tensorBoardLogDir != null && this.tensorBoardAppName != null) {
         this.validationSummary = ValidationSummary(tensorBoardLogDir, tensorBoardAppName)
         internalOptimizer.setValidationSummary(this.validationSummary)
@@ -439,10 +442,14 @@ abstract class KerasNet[T](implicit val tag: ClassTag[T], implicit val ev: Tenso
       nbEpoch: Int = 10,
       validationData: RDD[Sample[T]] = null,
       featurePaddingParam: PaddingParam[T] = null,
-      labelPaddingParam: PaddingParam[T] = null)(implicit ev: TensorNumeric[T]): Unit = {
+      labelPaddingParam: PaddingParam[T] = null,
+      shuffleData: Boolean = true,
+      groupSize: Int = 1)(implicit ev: TensorNumeric[T]): Unit = {
     KerasUtils.validateBatchSize(batchSize)
-    val trainData = toDataSet(x, batchSize, featurePaddingParam, labelPaddingParam)
-    val valData = toDataSet(validationData, batchSize, featurePaddingParam, labelPaddingParam)
+    val trainData = toDataSet(x, batchSize, featurePaddingParam, labelPaddingParam,
+      shuffleData, groupSize)
+    val valData = toDataSet(validationData, batchSize, featurePaddingParam, labelPaddingParam,
+      shuffleData, groupSize)
     this.fit(trainData, nbEpoch, valData)
 
     releaseDataSets(Array(trainData, valData))
@@ -480,50 +487,66 @@ abstract class KerasNet[T](implicit val tag: ClassTag[T], implicit val ev: Tenso
       dataFrame: DataFrame,
       batchSize: Int,
       featureCols: Array[String],
-      labelCols: Array[String],
-      preprocessing: Preprocessing[(Any, Option[Any]), Sample[T]]): FeatureSet[MiniBatch[T]] = {
+      labelCols: Array[String]): FeatureSet[MiniBatch[T]] = {
+    val featureColIndexs = featureCols.map {f => dataFrame.schema.fieldIndex(f)}
+    val labelColIndexs = labelCols.map {f => dataFrame.schema.fieldIndex(f)}
+    var featureSizes: Array[Array[Int]] = null
+    var labelSizes: Array[Array[Int]] = null
 
-    val sp = FeatureLabelPreprocessing(SeqToTensor(), ScalarToTensor())
-      .asInstanceOf[Preprocessing[(Any, Option[Any]), Sample[T]]]
-
-    val guid = java.util.UUID.randomUUID.toString
-    val internalFeatureCol = "features" + guid
-    val internalLabelCol = "labels" + guid
-    val df = if (featureCols.size > 1) {
-      val assembler = new VectorAssembler()
-        .setInputCols(featureCols)
-        .setOutputCol(internalFeatureCol)
-      assembler.transform(dataFrame)
+    val featureFunc = if (featureCols.length == 1) {
+      val featureType = dataFrame.schema(featureCols.head).dataType
+      unwrapVectorAsNecessary(featureType)
     } else {
-      dataFrame.withColumnRenamed(featureCols.head, internalFeatureCol)
+      val row = dataFrame.take(1).head
+      featureSizes = featureCols.map {f =>
+        val colType = dataFrame.schema(f).dataType
+        if (colType.typeName.contains("vector")) {
+          val idx = dataFrame.schema.fieldIndex(f)
+          val seq = getVectorSeq(row, colType, idx)
+          Array(seq.size)
+        } else {
+          Array(1)
+        }
+      }
+
+      val colTypes = dataFrame.schema.fields.map(f => f.dataType)
+      extractFeaturesFromRow(colTypes)
     }
 
-    val assembleDF = if (labelCols.size > 1) {
-      val assembler = new VectorAssembler()
-        .setInputCols(labelCols)
-        .setOutputCol(internalLabelCol)
-      assembler.transform(df)
+    val labelFunc: (Row) => Option[Any] = if (labelCols.length == 1) {
+      val lci = dataFrame.schema.fieldIndex(labelCols.head)
+      val labelFunc = unwrapVectorAsNecessary(dataFrame.schema(labelCols.head).dataType)
+      (row: Row) => Some(labelFunc(row, Array(lci)))
     } else {
-      df.withColumnRenamed(labelCols.head, internalLabelCol)
+      labelSizes = labelCols.map {f => Array(1)}
+
+      val colTypes = dataFrame.schema.fields.map(f => f.dataType)
+      val labelFunc = extractFeaturesFromRow(colTypes)
+      (row: Row) => Some(labelFunc(row, labelColIndexs))
     }
 
-    val featureColIndex = assembleDF.schema.fieldIndex(internalFeatureCol)
-    val featureType = assembleDF.schema(internalFeatureCol).dataType
-    val featureFunc = unwrapVectorAsNecessary(featureType)
-
-    val labelFunc: (Row) => Option[Any] = {
-      val lci = assembleDF.schema.fieldIndex(internalLabelCol)
-      val labelFunc = unwrapVectorAsNecessary(assembleDF.schema(internalLabelCol).dataType)
-      (row: Row) => Some(labelFunc(row, lci))
-    }
-
-    val featureAndLabel = assembleDF.rdd.map { row =>
-      val features = featureFunc(row, featureColIndex)
+    val featureAndLabel = dataFrame.rdd.map { row =>
+      val features = featureFunc(row, featureColIndexs)
       val labels = labelFunc(row)
       (features, labels)
     }
 
-    val initialDataSet = FeatureSet.rdd(featureAndLabel).transform(sp)
+    val featurePreprocessing = if (featureCols.size == 1) {
+      SeqToTensor()
+    } else {
+      SeqToMultipleTensors(featureSizes)
+    }
+
+    val preprocessing = if (labelCols.size == 1) {
+      FeatureLabelPreprocessing(featurePreprocessing, ScalarToTensor())
+        .asInstanceOf[Preprocessing[(Any, Option[Any]), Sample[T]]]
+    } else {
+      FeatureLabelsPreprocessing(featurePreprocessing, SeqToMultipleTensors(labelSizes))
+        .asInstanceOf[Preprocessing[(Any, Option[Any]), Sample[T]]]
+    }
+
+    val initialDataSet = FeatureSet.rdd(featureAndLabel).transform(preprocessing)
+
     initialDataSet.transform(SampleToMiniBatch[T](batchSize))
   }
 
@@ -534,20 +557,12 @@ abstract class KerasNet[T](implicit val tag: ClassTag[T], implicit val ev: Tenso
       featureCols: Array[String],
       labelCols: Array[String],
       valX: DataFrame)(implicit ev: TensorNumeric[T]): Unit = {
-    val preprocessing =
-      FeatureLabelPreprocessing(SeqToTensor(), ScalarToTensor())
-        .asInstanceOf[Preprocessing[(Any, Option[Any]), Sample[T]]]
-
-    val trainingData = getDataSet(x, batchSize, featureCols, labelCols,
-      preprocessing).toDataSet()
+    val trainingData = getDataSet(x, batchSize, featureCols, labelCols).toDataSet()
     val valData = if (valX != null) {
-      getDataSet(valX, batchSize, featureCols, labelCols, preprocessing).toDataSet()
+      getDataSet(valX, batchSize, featureCols, labelCols).toDataSet()
     } else null
 
     this.fit(trainingData, nbEpoch, valData)
-
-    predictTransformer = ToTuple() -> preprocessing
-      .asInstanceOf[Preprocessing[(Any, Option[Any]), Sample[T]]].clonePreprocessing()
   }
 
   def fit(
@@ -557,6 +572,43 @@ abstract class KerasNet[T](implicit val tag: ClassTag[T], implicit val ev: Tenso
       featureCols: Array[String],
       labelCols: Array[String])(implicit ev: TensorNumeric[T]): Unit = {
     this.fit(x, batchSize, nbEpoch, featureCols, labelCols, null)
+  }
+
+  def fit(
+   x: DataFrame,
+   batchSize: Int,
+   nbEpoch: Int,
+   labelCols: Array[String],
+   transform: ImageProcessing,
+   valX: DataFrame)(implicit ev: TensorNumeric[T]): Unit = {
+    val trainData = df2ImageSet(x, labelCols, transform)
+    val targetKeys = if (labelCols.length > 1) {
+      (0 until labelCols.size).toList.map("l" + _).toArray
+    } else {
+      Array(ImageFeature.label)
+    }
+
+    val transformer2 = ImageMatToTensor[Float]() ->
+      ImageSetToSample[Float](targetKeys = targetKeys)
+
+    trainData.transform(transformer2)
+
+    val valData = if (valX != null) {
+      val valSet = df2ImageSet(valX, labelCols, transform)
+      valSet.transform(transformer2)
+      valSet
+    } else null
+
+    this.fit(trainData, batchSize, nbEpoch, valData)
+  }
+
+  def fit(
+     x: DataFrame,
+     batchSize: Int,
+     nbEpoch: Int,
+     labelCols: Array[String],
+     transform: ImageProcessing)(implicit ev: TensorNumeric[T]): Unit = {
+    this.fit(x, batchSize, nbEpoch, labelCols, transform, null)
   }
 
   /**
@@ -598,7 +650,8 @@ abstract class KerasNet[T](implicit val tag: ClassTag[T], implicit val ev: Tenso
       x: RDD[Sample[T]],
       batchSize: Int)
       (implicit ev: TensorNumeric[T]): Array[(ValidationResult, ValidationMethod[T])] = {
-    require(this.vMethods != null, "Evaluation metrics haven't been set yet")
+    Log4Error.invalidInputError(this.vMethods != null,
+      "Evaluation metrics haven't been set yet")
     this.evaluate(x, this.vMethods, Some(batchSize))
   }
 
@@ -609,7 +662,8 @@ abstract class KerasNet[T](implicit val tag: ClassTag[T], implicit val ev: Tenso
    */
   def evaluate(x: LocalDataSet[MiniBatch[T]])
       (implicit ev: TensorNumeric[T]): Array[(ValidationResult, ValidationMethod[T])] = {
-    require(this.vMethods != null, "Evaluation metrics haven't been set yet")
+    Log4Error.invalidInputError(this.vMethods != null,
+      "Evaluation metrics haven't been set yet")
     this.evaluate(x, this.vMethods)
   }
 
@@ -623,8 +677,28 @@ abstract class KerasNet[T](implicit val tag: ClassTag[T], implicit val ev: Tenso
       x: ImageSet,
       batchSize: Int)
       (implicit ev: TensorNumeric[T]): Array[(ValidationResult, ValidationMethod[T])] = {
-    require(this.vMethods != null, "Evaluation metrics haven't been set yet")
+    Log4Error.invalidInputError(this.vMethods != null,
+      "Evaluation metrics haven't been set yet")
     evaluateImage(x.toImageFrame(), this.vMethods, Some(batchSize))
+  }
+
+  def evaluate(
+    x: DataFrame,
+    labelCols: Array[String],
+    transform: ImageProcessing,
+    batchSize: Int)
+  (implicit ev: TensorNumeric[T]): Array[(ValidationResult, ValidationMethod[T])] = {
+    val rdd = df2ImageSet(x, labelCols, transform)
+    val targetKeys = if (labelCols.length > 1) {
+      (0 until labelCols.size).toList.map("l" + _).toArray
+    } else {
+      Array(ImageFeature.label)
+    }
+
+    val transformer2 = ImageMatToTensor[Float]() ->
+      ImageSetToSample[Float](targetKeys = targetKeys)
+    rdd.transform(transformer2)
+    this.evaluate(rdd, batchSize)
   }
 
   /**
@@ -636,7 +710,9 @@ abstract class KerasNet[T](implicit val tag: ClassTag[T], implicit val ev: Tenso
   def evaluate(
       x: TextSet,
       batchSize: Int): Array[(ValidationResult, ValidationMethod[T])] = {
-    require(this.vMethods != null, "Evaluation metrics haven't been set yet")
+    Log4Error.invalidInputError(this.vMethods != null,
+
+      "Evaluation metrics haven't been set yet")
     x match {
       case distributed: DistributedTextSet =>
         val rdd = distributed.rdd.map(_.getSample).filter(_ != null)
@@ -645,6 +721,18 @@ abstract class KerasNet[T](implicit val tag: ClassTag[T], implicit val ev: Tenso
         val localSet = toDataSet(local, batchSize).asInstanceOf[LocalDataSet[MiniBatch[T]]]
         evaluate(localSet)
     }
+  }
+
+  def evaluate(
+     x: DataFrame,
+     batchSize: Int,
+     featureCols: Array[String],
+     labelCols: Array[String]): Array[(ValidationResult, ValidationMethod[T])] = {
+    Log4Error.invalidInputError(this.vMethods != null,
+      "Evaluation metrics haven't been set yet")
+    val valX = getDataSet(x, batchSize, featureCols, labelCols).toDataSet()
+    val xRDD = valX.toDistributed().data(false)
+    evaluate(xRDD, this.vMethods)
   }
 
   def toModel(): keras.Model[T]
@@ -697,7 +785,8 @@ abstract class KerasNet[T](implicit val tag: ClassTag[T], implicit val ev: Tenso
    */
   def summary(
       lineLength: Int = 120,
-      positions: Array[Double] = Array(.33, .55, .67, 1)): Unit
+      positions: Array[Double] = Array(.33, .55, .67, 1),
+      needPrint: Boolean = true): String
 }
 
 object InternalOptimizer {
@@ -920,7 +1009,8 @@ private[bigdl] class InternalDistriOptimizer[T: ClassTag] (
     logger.info(s"${model} isTorch is ${model.isPyTorch()}")
     val torchOptimize = model.isPyTorch()
     val modelPerExecutor = if (torchOptimize) {
-      require(EngineRef.getEngineType() != MklDnn, "torch model shouldn't use MKLDNN engine.")
+      Log4Error.invalidInputError(EngineRef.getEngineType() != MklDnn,
+        "torch model shouldn't use MKLDNN engine.")
       val numOmpThread = distDataset.originRDD().sparkContext
         .getConf.get("spark.executorEnv.OMP_NUM_THREADS").toInt
       logger.info(s"torch model will use ${numOmpThread} OMP threads.")
@@ -942,7 +1032,8 @@ private[bigdl] class InternalDistriOptimizer[T: ClassTag] (
       parameterSplits = if (optimMethods.size != 1) {
         val p = optimMethods.map { case (subModuleName, optimMethod) =>
           val subModule = trainingModel(subModuleName)
-          require(subModule.isDefined, s"Optimizer couldn't find $subModuleName in $model")
+          Log4Error.invalidOperationError(subModule.isDefined,
+            s"Optimizer couldn't find $subModuleName in $model")
           val subModuleWeights = InternalOptimizerUtil
             .getParametersFromModel(subModule.get)._1
           (subModuleName, subModuleWeights)
@@ -950,7 +1041,7 @@ private[bigdl] class InternalDistriOptimizer[T: ClassTag] (
         val sortedWeights = p.values.toArray.sortWith(
           (a, b) => a.storageOffset() < b.storageOffset())
         val compactWeights = Module.isCompact(sortedWeights)
-        require(modelParameters._1 == compactWeights,
+        Log4Error.invalidOperationError(modelParameters._1 == compactWeights,
           s"InternDistriOptimizer: All subModules should have an OptimMethod.")
         p.map { case (subModuleName, weights) =>
           (subModuleName, (weights.storageOffset(), weights.nElement()))
@@ -1019,7 +1110,7 @@ private[bigdl] class InternalDistriOptimizer[T: ClassTag] (
         case e: IllegalArgumentException =>
           throw e
         case t: Throwable =>
-          DistriOptimizer.logger.error("Error: " + ExceptionUtils.getStackTrace(t))
+//          DistriOptimizer.logger.error("Error: " + ExceptionUtils.getStackTrace(t))
           if (checkpointPath.isDefined) {
             /* To avoid retry number is used up by first few exceptions, we count time here.
              * If exception exceeds maxRetry times in maxRetry*retryTimeInterval seconds,
@@ -1091,7 +1182,7 @@ private[bigdl] class InternalDistriOptimizer[T: ClassTag] (
 
 
   def setNumOfSlice(numOfSlice: Int): this.type = {
-    require(numOfSlice >= 0, s"excepted numOfSlice >= 0," +
+    Log4Error.invalidInputError(numOfSlice >= 0, s"excepted numOfSlice >= 0," +
       s" but got $numOfSlice")
     this.numSlice = numOfSlice
     this
@@ -1312,7 +1403,7 @@ private[bigdl] class InternalDistriOptimizerV2[T: ClassTag] (
 
 
   def setNumOfSlice(numOfSlice: Int): this.type = {
-    require(numOfSlice >= 0, s"excepted numOfSlice >= 0," +
+    Log4Error.invalidInputError(numOfSlice >= 0, s"excepted numOfSlice >= 0," +
       s" but got $numOfSlice")
     this.numSlice = numOfSlice
     this
@@ -1583,7 +1674,8 @@ object InternalDistriOptimizer {
       }).reduce((a, b) => (a._1 ++ b._1, a._2 ++ b._2))
 
       val taskSize = parameters.size / partitionNum
-      require(taskSize != 0, "parameter length should not less than partition number")
+      Log4Error.invalidOperationError(taskSize != 0,
+        "parameter length should not less than partition number")
       val extraSize = parameters.size % partitionNum
 
       (0 until partitionNum).map(pid => {

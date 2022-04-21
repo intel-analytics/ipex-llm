@@ -20,7 +20,7 @@ import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.dllib.nn.{Sequential, SpatialConvolution}
 import com.intel.analytics.bigdl.dllib.nn._
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
-import com.intel.analytics.bigdl.dllib.utils.Engine
+import com.intel.analytics.bigdl.dllib.utils.{Engine, TestUtils}
 import com.intel.analytics.bigdl.dllib.utils.RandomGenerator._
 
 import scala.util.Random
@@ -173,7 +173,7 @@ class SpatialConvolutionSpec extends TorchSpec {
       Array("weight", "bias", "output"))
     val luaOutput = torchResult("output").asInstanceOf[Tensor[Double]]
 
-    require(output.equals(luaOutput) == true)
+    TestUtils.conditionFailTest(output.equals(luaOutput) == true)
   }
 
   "A SpatialConvolution init with msrafiller" should "generate correct output" in {

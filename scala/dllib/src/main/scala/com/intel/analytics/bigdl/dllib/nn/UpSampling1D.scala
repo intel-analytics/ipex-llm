@@ -19,7 +19,7 @@ package com.intel.analytics.bigdl.dllib.nn
 import com.intel.analytics.bigdl.dllib.nn.abstractnn.TensorModule
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.dllib.utils.Shape
+import com.intel.analytics.bigdl.dllib.utils.{Log4Error, Shape}
 
 import scala.reflect.ClassTag
 
@@ -35,19 +35,19 @@ import scala.reflect.ClassTag
  */
 class UpSampling1D[T: ClassTag] (val length: Int)
   (implicit ev: TensorNumeric[T]) extends TensorModule[T] {
-  require(length > 0, "UpSampling1D's length should be bigger than 0," +
+  Log4Error.invalidInputError(length > 0, "UpSampling1D's length should be bigger than 0," +
     s"but got $length")
 
   override def computeOutputShape(inputShape: Shape): Shape = {
     val input = inputShape.toSingle().toArray
-    require(input.length == 3,
+    Log4Error.invalidInputError(input.length == 3,
       s"UpSampling1D requires 3D input, but got input dim ${input.length}")
     Shape(input(0), input(1) * length, input(2))
   }
 
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
-    require(input.dim() == 3, "UpSampling1D only supports 3D input")
-    require(input.isContiguous(), "input should be contiguous")
+    Log4Error.invalidInputError(input.dim() == 3, "UpSampling1D only supports 3D input")
+    Log4Error.invalidInputError(input.isContiguous(), "input should be contiguous")
 
     val inputLength = input.size(3)
     val outputLength = inputLength * length
@@ -75,8 +75,8 @@ class UpSampling1D[T: ClassTag] (val length: Int)
   }
 
   override def updateGradInput(input: Tensor[T], gradOutput: Tensor[T]): Tensor[T] = {
-    require(gradOutput.dim() == 3, "UpSampling1D only supports 3D input")
-    require(gradOutput.isContiguous(), "gradOutput should be contiguous")
+    Log4Error.invalidInputError(gradOutput.dim() == 3, "UpSampling1D only supports 3D input")
+    Log4Error.invalidInputError(gradOutput.isContiguous(), "gradOutput should be contiguous")
     gradInput.resizeAs(input).zero()
 
     val gradInputData = gradInput.storage().array()

@@ -18,6 +18,7 @@ package com.intel.analytics.bigdl.dllib.integration.torch
 
 import com.intel.analytics.bigdl.dllib.nn.{Linear, Sequential}
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
+import com.intel.analytics.bigdl.dllib.utils.TestUtils
 
 import scala.math._
 
@@ -45,11 +46,11 @@ class ModuleSpec extends TorchSpec {
     val luaOutput2 = torchResult("grad").asInstanceOf[Tensor[Double]]
 
     luaOutput1.map(weight, (v1, v2) => {
-      assert(abs(v1 - v2) < 1e-6);
+      TestUtils.conditionFailTest(abs(v1 - v2) < 1e-6);
       v1
     })
     luaOutput2.map(grad, (v1, v2) => {
-      assert(abs(v1 - v2) < 1e-6);
+      TestUtils.conditionFailTest(abs(v1 - v2) < 1e-6);
       v1
     })
 

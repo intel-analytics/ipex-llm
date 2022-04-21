@@ -280,5 +280,4 @@ if __name__ == "__main__":
             grad_buffer[k] = np.zeros_like(v)
         batch_num += 1
 
-    ray_ctx.stop()
     stop_orca_context()

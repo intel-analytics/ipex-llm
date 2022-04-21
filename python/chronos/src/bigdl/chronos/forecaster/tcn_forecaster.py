@@ -51,7 +51,7 @@ class TCNForecaster(BasePytorchForecaster):
                  seed=None,
                  distributed=False,
                  workers_per_node=1,
-                 distributed_backend="torch_distributed"):
+                 distributed_backend="ray"):
         """
         Build a TCN Forecast Model.
 
@@ -90,8 +90,8 @@ class TCNForecaster(BasePytorchForecaster):
         :param workers_per_node: int, the number of worker you want to use.
                The value defaults to 1. The param is only effective when
                distributed is set to True.
-        :param distributed_backend: str, select from "torch_distributed" or
-               "horovod". The value defaults to "torch_distributed".
+        :param distributed_backend: str, select from "ray" or
+               "horovod". The value defaults to "ray".
         """
         # config setting
         self.data_config = {
@@ -134,6 +134,7 @@ class TCNForecaster(BasePytorchForecaster):
         self.num_processes = max(1, current_num_threads//8)  # 8 is a magic num
         self.use_ipex = False  # TCN has worse performance on ipex
         self.onnx_available = True
+        self.quantize_available = True
         self.checkpoint_callback = False
 
         super().__init__()

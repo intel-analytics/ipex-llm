@@ -111,31 +111,31 @@ class CaffeLoaderSpec extends FlatSpec with Matchers {
 
     parameters[Table]("conv")[Tensor[Double]]("weight").map(conv1weight,
       (a, b) => {
-        assert(Math.abs(a - b) < 1e-6)
+        TestUtils.conditionFailTest(Math.abs(a - b) < 1e-6)
         a
       })
 
     parameters[Table]("conv")[Tensor[Double]]("bias").map(conv1bias,
       (a, b) => {
-        assert(Math.abs(a - b) < 1e-6)
+        TestUtils.conditionFailTest(Math.abs(a - b) < 1e-6)
         a
       })
 
     parameters[Table]("conv2")[Tensor[Double]]("weight").map(conv2weight,
       (a, b) => {
-        assert(Math.abs(a - b) < 1e-6)
+        TestUtils.conditionFailTest(Math.abs(a - b) < 1e-6)
         a
       })
 
     parameters[Table]("conv2")[Tensor[Double]]("bias").map(conv2bias,
       (a, b) => {
-        assert(Math.abs(a - b) < 1e-6)
+        TestUtils.conditionFailTest(Math.abs(a - b) < 1e-6)
         a
       })
 
     parameters[Table]("ip")[Tensor[Double]]("weight").map(linearWeight,
       (a, b) => {
-        assert(Math.abs(a - b) < 1e-6)
+        TestUtils.conditionFailTest(Math.abs(a - b) < 1e-6)
         a
       })
   }
@@ -183,19 +183,19 @@ class CaffeLoaderSpec extends FlatSpec with Matchers {
 
     parameters[Table]("conv")[Tensor[Double]]("weight").map(conv1weight,
       (a, b) => {
-        assert(Math.abs(a - b) < 1e-6)
+        TestUtils.conditionFailTest(Math.abs(a - b) < 1e-6)
         a
       })
 
     parameters[Table]("conv")[Tensor[Double]]("bias").map(conv1bias,
       (a, b) => {
-        assert(Math.abs(a - b) < 1e-6)
+        TestUtils.conditionFailTest(Math.abs(a - b) < 1e-6)
         a
       })
 
     parameters[Table]("ip")[Tensor[Double]]("weight").map(linearWeight,
       (a, b) => {
-        assert(Math.abs(a - b) < 1e-6)
+        TestUtils.conditionFailTest(Math.abs(a - b) < 1e-6)
         a
       })
   }

@@ -35,6 +35,7 @@ import org.opencv.imgproc.Imgproc
 
 import scala.collection.JavaConverters._
 import redis.clients.jedis.Jedis
+import com.intel.analytics.bigdl.dllib.utils.Log4Error
 
 class PreProcessing()
   extends EncryptSupportive with InferenceSupportive {
@@ -123,7 +124,7 @@ class PreProcessing()
     val mat = OpenCVMethod.fromImageBytes(byteBuffer, Imgcodecs.CV_LOAD_IMAGE_UNCHANGED)
     if (helper.imageResize != "") {
       val hw = helper.imageResize.split(",")
-      require(hw.length == 2, "Image dim must be 2")
+      Log4Error.invalidOperationError(hw.length == 2, "Image dim must be 2")
       Imgproc.resize(mat, mat, new Size(hw(0).trim.toInt, hw(1).trim.toInt))
     }
 //    Imgproc.resize(mat, mat, new Size(224, 224))

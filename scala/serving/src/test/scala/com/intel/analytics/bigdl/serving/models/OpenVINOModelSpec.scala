@@ -21,6 +21,7 @@ import com.intel.analytics.bigdl.serving.serialization.ArrowDeserializer
 import org.scalatest.{FlatSpec, Matchers}
 
 import scala.sys.process._
+import com.intel.analytics.bigdl.serving.utils.AssertUtils
 
 class OpenVINOModelSpec extends FlatSpec with Matchers {
   ClusterServing.helper = new ClusterServingHelper()
@@ -48,8 +49,8 @@ class OpenVINOModelSpec extends FlatSpec with Matchers {
 
     postProcessed.foreach(x => {
       val result = ArrowDeserializer.getArray(x._2)
-      require(result(0)._1.length == 1001, "result length wrong")
-      require(result(0)._2.length == 1, "result shape wrong")
+      AssertUtils.conditionFailTest(result(0)._1.length == 1001, "result length wrong")
+      AssertUtils.conditionFailTest(result(0)._2.length == 1, "result shape wrong")
     })
   }
 
@@ -77,8 +78,8 @@ class OpenVINOModelSpec extends FlatSpec with Matchers {
 
     postProcessed.foreach(x => {
       val result = ArrowDeserializer.getArray(x._2)
-      require(result(0)._1.length == 1001, "result length wrong")
-      require(result(0)._2.length == 1, "result shape wrong")
+      AssertUtils.conditionFailTest(result(0)._1.length == 1001, "result length wrong")
+      AssertUtils.conditionFailTest(result(0)._2.length == 1, "result shape wrong")
     })
   }
 
@@ -107,8 +108,8 @@ class OpenVINOModelSpec extends FlatSpec with Matchers {
 
     postProcessed.foreach(x => {
       val result = ArrowDeserializer.getArray(x._2)
-      require(result(0)._1.length == 1001, "result length wrong")
-      require(result(0)._2.length == 1, "result shape wrong")
+      AssertUtils.conditionFailTest(result(0)._1.length == 1001, "result length wrong")
+      AssertUtils.conditionFailTest(result(0)._2.length == 1, "result shape wrong")
     })
   }
 
@@ -137,8 +138,8 @@ class OpenVINOModelSpec extends FlatSpec with Matchers {
 
     postProcessed.foreach(x => {
       val result = ArrowDeserializer.getArray(x._2)
-      require(result(0)._1.length == 1000, "result length wrong")
-      require(result(0)._2.length == 1, "result shape wrong")
+      AssertUtils.conditionFailTest(result(0)._1.length == 1000, "result length wrong")
+      AssertUtils.conditionFailTest(result(0)._2.length == 1, "result shape wrong")
     })
   }
 
@@ -167,8 +168,8 @@ class OpenVINOModelSpec extends FlatSpec with Matchers {
 
     postProcessed.foreach(x => {
       val result = ArrowDeserializer.getArray(x._2)
-      require(result(0)._1.length == 1000, "result length wrong")
-      require(result(0)._2.length == 1, "result shape wrong")
+      AssertUtils.conditionFailTest(result(0)._1.length == 1000, "result length wrong")
+      AssertUtils.conditionFailTest(result(0)._2.length == 1, "result shape wrong")
     })
   }
 
@@ -198,8 +199,8 @@ class OpenVINOModelSpec extends FlatSpec with Matchers {
 
     postProcessed.foreach(x => {
       val result = ArrowDeserializer.getArray(x._2)
-      require(result(0)._1.length == 1000, "result length wrong")
-      require(result(0)._2.length == 1, "result shape wrong")
+      AssertUtils.conditionFailTest(result(0)._1.length == 1000, "result length wrong")
+      AssertUtils.conditionFailTest(result(0)._2.length == 1, "result shape wrong")
     })
   }
 
@@ -229,8 +230,8 @@ class OpenVINOModelSpec extends FlatSpec with Matchers {
 
     postProcessed.foreach(x => {
       val result = ArrowDeserializer.getArray(x._2)
-      require(result(0)._1.length == 1400, "result length wrong")
-      require(result(0)._2.length == 3, "result shape wrong")
+      AssertUtils.conditionFailTest(result(0)._1.length == 1400, "result length wrong")
+      AssertUtils.conditionFailTest(result(0)._2.length == 3, "result shape wrong")
     })
   }
 

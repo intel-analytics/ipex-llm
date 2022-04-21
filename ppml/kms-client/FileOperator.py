@@ -17,7 +17,7 @@ def encrypt_data_file(ip, port, data_file_path, encrypted_primary_key_path, encr
     encrypted = fernet.encrypt(read_data_file(data_file_path))
     if save_path is None:
         save_path = data_file_path + '.encrypted'
-    write_data_file(data_file_path, encrypted)
+    write_data_file(save_path, encrypted)
     print('[INFO] Encrypt Successfully! Encrypted Output Is ' + save_path)
 
 def decrypt_data_file(ip, port, data_file_path, encrypted_primary_key_path, encrypted_data_key_path, save_path=None):
@@ -25,15 +25,18 @@ def decrypt_data_file(ip, port, data_file_path, encrypted_primary_key_path, encr
     fernet = Fernet(data_key)
     decrypted = fernet.decrypt(read_data_file(data_file_path))
     if save_path is None:
-        save_path = encrypted_file_path + '.decrypted'
-    write_data_file(data_file_path, decrypted)
+        save_path = data_file_path + '.decrypted'
+    write_data_file(save_path, decrypted)
     print('[INFO] Decrypt Successfully! Decrypted Output Is ' + save_path)
 
-def encrypt_directory_automation(ip, port, input_dir, encrypted_primary_key_path, encrypted_data_key_path, save_dir=None):
+def encrypt_directory_automation(ip, port, input_dir, encrypted_primary_key_path, encrypted_data_key_path, save_dir):
     print('[INFO] Encrypt Files Start...')
     if save_dir is None:
-        save_dir = input_dir+'.encrypted'
-    os.mkdir(save_dir)
+        if input_dir[-1]=='/':
+            input_dir = input_dir[:-1]
+        save_dir = input_dir + '.encrypted'
+    if not os.path.isdir(save_dir):
+        os.mkdir(save_dir)
     data_key = retrieve_data_key_plaintext(ip, port, encrypted_primary_key_path, encrypted_data_key_path)
     fernet = Fernet(data_key)
     for file_name in os.listdir(input_dir):
@@ -59,7 +62,7 @@ def decrypt_csv_columns_automation(ip, port, encrypted_primary_key_path, encrypt
     for csv_file in all_csv_files:
         data = csv.reader(open(csv_file,'r'))
         csvWriter = csv.writer(open(csv_file + '.col_decrypted', 'w', newline='\n'))
-        csvWriter.writerow(next(data)) # Header
+        next(data)
         for row in data:
             write_buffer = []
             for field in row:
@@ -69,4 +72,4 @@ def decrypt_csv_columns_automation(ip, port, encrypted_primary_key_path, encrypt
         print('[INFO] Decryption Finished. The Output Is ' + csv_file + '.col_decrypted')
 
     end = time.time()
-    print('[INFO] Total Elapsed Time For Columns Decrytion: ' + str(end - start) + ' s')
+    print('[INFO] Total Elapsed Time For Columns Decryption: ' + str(end - start) + ' s')

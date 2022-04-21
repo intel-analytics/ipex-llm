@@ -272,3 +272,9 @@ def override(interface_class):
         return method
 
     return overrider
+
+
+def get_filesystem(filepath):
+    from fsspec.core import url_to_fs
+    fs, _ = url_to_fs(str(filepath))
+    return fs

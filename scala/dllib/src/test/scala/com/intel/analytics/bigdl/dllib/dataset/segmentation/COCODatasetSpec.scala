@@ -22,6 +22,8 @@ import com.intel.analytics.bigdl.dllib.feature.transform.vision.image.label.roi.
 import java.awt.image.DataBufferByte
 import java.io.{File, FileInputStream}
 import javax.imageio.ImageIO
+
+import com.intel.analytics.bigdl.dllib.utils.TestUtils
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
 class COCODatasetSpec extends FlatSpec with Matchers with BeforeAndAfter {
@@ -91,7 +93,8 @@ class COCODatasetSpec extends FlatSpec with Matchers with BeforeAndAfter {
       val inputStream = new FileInputStream(resourcePath + File.separator + uri.next())
       val image = ImageIO.read(inputStream)
       val rawdata = image.getRaster.getDataBuffer.asInstanceOf[DataBufferByte].getData()
-      require(java.util.Arrays.equals(rawdata, imf[Array[Byte]](ImageFeature.bytes)))
+      TestUtils.conditionFailTest(java.util.Arrays.equals(rawdata,
+        imf[Array[Byte]](ImageFeature.bytes)))
     })
   }
 

@@ -24,7 +24,7 @@ import com.intel.analytics.bigdl.dllib.nn.abstractnn.{AbstractModule, Activity, 
 import com.intel.analytics.bigdl.dllib.optim._
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.dllib.utils.{MultiShape, Shape, SingleShape}
+import com.intel.analytics.bigdl.dllib.utils.{Log4Error, MultiShape, Shape, SingleShape}
 import com.intel.analytics.bigdl.dllib.keras.Net
 import com.intel.analytics.bigdl.dllib.keras.metrics.{AUC, Accuracy, BinaryAccuracy, CategoricalAccuracy, SparseCategoricalAccuracy, Top5Accuracy => ZooTop5Accuracy}
 import com.intel.analytics.bigdl.dllib.keras.models.KerasNet
@@ -35,11 +35,11 @@ import scala.collection.mutable.ArrayBuffer
 import scala.reflect.ClassTag
 
 object KerasUtils {
-
   def getPadsFromBorderMode(borderMode: String = "valid",
       paddings: Array[Int] = null): (Int, Int) = {
     if (paddings != null && !paddings.isEmpty) {
-      require(paddings.length == 2)
+      Log4Error.invalidOperationError(paddings.length == 2,
+        s"expect paddings length is 2, but got ${paddings.length}")
       (paddings(0), paddings(1))
     } else if (borderMode == "same") {
       // padH, padW
@@ -160,8 +160,10 @@ object KerasUtils {
   }
 
   def toBigDLFormat(dimOrdering: String): DataFormat = {
-    require(dimOrdering.toLowerCase() == "tf" || dimOrdering.toLowerCase() == "th",
-      s"Dim ordering must be either tf or th, but got ${dimOrdering.toLowerCase()}")
+    Log4Error.invalidInputError(dimOrdering.toLowerCase() == "tf"
+      || dimOrdering.toLowerCase() == "th",
+      s"Dim ordering must be either tf or th, but got ${dimOrdering.toLowerCase()}",
+      "Please set dimOrdering=tf or dimOrdering=tf")
     dimOrdering.toLowerCase() match {
       case "tf" => DataFormat.NHWC
       case "th" => DataFormat.NCHW
@@ -169,7 +171,8 @@ object KerasUtils {
   }
 
   def toBigDLFormat5D(dimOrdering: String): String = {
-    require(dimOrdering.toLowerCase() == "tf" || dimOrdering.toLowerCase() == "th",
+    Log4Error.invalidInputError(dimOrdering.toLowerCase() == "tf"
+      || dimOrdering.toLowerCase() == "th",
       s"Dim ordering must be either tf or th, but got ${dimOrdering.toLowerCase()}")
     dimOrdering.toLowerCase() match {
       case "tf" => "CHANNEL_LAST"
@@ -295,7 +298,7 @@ object KerasUtils {
     } catch {
         case t: Throwable =>
           val methods = clazz.getMethods().filter(_.getName() == methodName)
-          require(methods.length == 1,
+          Log4Error.invalidOperationError(methods.length == 1,
             s"We should only found one result, but got ${methodName}: ${methods.length}")
           methods(0)
     }
@@ -313,7 +316,7 @@ object KerasUtils {
       } catch {
         case t: Throwable =>
           val methods = clazz.getMethods().filter(_.getName() == methodName)
-          require(methods.length == 1,
+          Log4Error.invalidOperationError(methods.length == 1,
             s"We should only found one result, but got ${methodName}: ${methods.length}")
           methods(0)
       }
@@ -393,8 +396,9 @@ object KerasUtils {
   def printNodeSummary[T: ClassTag](
       node: ModuleNode[T],
       lineLength: Int = 120,
-      positions: Array[Double] = Array(.33, .55, .67, 1)): (Int, Int) = {
-    printRow(getNodeSummary(node), lineLength, positions)
+      positions: Array[Double] = Array(.33, .55, .67, 1),
+      summaryBuf: ArrayBuffer[String] = null): (Int, Int) = {
+    printRow(getNodeSummary(node), lineLength, positions, summaryBuf = summaryBuf)
     countParams(node.element.asInstanceOf[KerasLayer[Activity, Activity, T]])
   }
 
@@ -419,12 +423,14 @@ object KerasUtils {
       lineLength: Int = 120,
       positions: Array[Double] = Array(.33, .55, .67, 1),
       includeSplitLine: Boolean = true,
-      splitChar: Char = '_'): Unit = {
+      splitChar: Char = '_',
+      summaryBuf: ArrayBuffer[String] = null): Unit = {
     val fieldLengths = ArrayBuffer[Int]()
     for (i <- positions.indices) {
       if (i > 0) {
         val len = (positions(i) - positions(i-1)) * lineLength
-        require(len > 0, s"Invalid positions specified: ${positions(i)} < ${positions(i-1)}")
+        Log4Error.invalidOperationError(len > 0,
+          s"Invalid positions specified: ${positions(i)} < ${positions(i-1)}")
         fieldLengths.append(len.toInt)
       }
       else fieldLengths.append((positions(i)*lineLength).toInt)
@@ -450,21 +456,24 @@ object KerasUtils {
       }
 
     }
-    println(line)
+
+    summaryBuf.append(line)
     // If there are multiple connected to nodes, print the remaining each in a separate line
     // without the split line.
     for (node <- nodes.slice(1, nodes.length)) {
-      printRow(Array("", "", "", node), lineLength, positions, includeSplitLine = false)
+      printRow(Array("", "", "", node), lineLength, positions, includeSplitLine = false,
+        summaryBuf = summaryBuf)
     }
-    if (includeSplitLine) printSplitLine(splitChar, lineLength)
+    if (includeSplitLine) printSplitLine(splitChar, lineLength, summaryBuf)
   }
 
   /**
    * Print a split line that repeats the 'char' for 'lineLength' times.
    */
-  def printSplitLine(char: Char, lineLength: Int = 120): Unit = {
+  def printSplitLine(char: Char, lineLength: Int = 120, summaryBuf: ArrayBuffer[String]): Unit = {
     val str = char.toString
-    println(str * lineLength)
+    val message = str * lineLength
+    summaryBuf.append(message)
   }
 
   /**
@@ -507,12 +516,12 @@ object KerasUtils {
 
   def validateBatchSize(batchSize: Int): Unit = {
     val totalCores = EngineRef.getCoreNumber() * EngineRef.getNodeNumber()
-    require(batchSize % totalCores == 0,
+    Log4Error.invalidInputError(batchSize % totalCores == 0,
       s"BatchSize: ${batchSize} cannot be divided by ${totalCores}")
   }
 
   def tril[T: ClassTag](x: Tensor[T])(implicit ev: TensorNumeric[T]): Tensor[T] = {
-    require(x.dim() == 2, "tril expects a matrix!")
+    Log4Error.invalidInputError(x.dim() == 2, "tril expects a matrix!")
     val stride1 = x.stride(1)
     val stride2 = x.stride(2)
     for (i <- 0 until x.size(1)) {

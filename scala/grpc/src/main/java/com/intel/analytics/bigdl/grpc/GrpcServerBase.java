@@ -92,7 +92,7 @@ public abstract class GrpcServerBase extends AbstractGrpcBase {
         if (certChainFilePath != null && privateKeyFilePath != null) {
             serverBuilder.sslContext(getSslContext());
         }
-        server = serverBuilder.build();
+        server = serverBuilder.maxInboundMessageSize(Integer.MAX_VALUE).build();
     }
 
     SslContext getSslContext() throws SSLException {

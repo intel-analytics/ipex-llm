@@ -7,21 +7,38 @@ There're three ways to do forecasting:
 - Use [**auto forecasting models**](#use-auto-forecasting-model) with auto hyperparameter optimization.
 - Use [**standalone forecasters**](#use-standalone-forecaster-pipeline).
 
+#### **0. Supported Time Series Forecasting Model**
+
+- `Model`: Model name.
+- `Style`: Forecasting model style. Detailed information will be stated in [this section](#time-series-forecasting-concepts).
+- `Multi-Variate`: Predict more than one variable at the same time?
+- `Multi-Step`: Predict more than one data point in the future?
+- `Exogenous Variables`: Take other variables(you don't need to predict) into consideration?
+- `Distributed`: Scale the model to a cluster and take data from distributed file system?
+- `ONNX`: Export and use `OnnxRuntime` to do the inference.
+- `Quantization`: Export and use quantized int8 model to do the inference.
+- `Auto Models`: AutoModel API support.
+- `AutoTS`: AutoTS API support.
+- `Backend`: The DL framework we use to implement this model.
+
 <span id="supported_forecasting_model"></span>
 
-| Model   | Style | Multi-Variate | Multi-Step | Distributed\* | Auto Models | AutoTS | Backend |
-| ----------------- | ----- | ------------- | ---------- | ----------- | ----------- | ----------- | ----------- |
-| LSTM    | RR    | ✅             | ❌          | ✅           | ✅          | ✅         | pytorch  |
-| Seq2Seq     | RR    | ✅             | ✅          | ✅           | ✅          | ✅         | pytorch  |
-| TCN | RR    | ✅             | ✅          | ✅           | ✅          | ✅         | pytorch  |
-| MTNet   | RR    | ✅             | ❌         | ✅           | ❌          | ✳️\*\*\*        | tensorflow |
-| TCMF    | TS    | ✅             | ✅          | ✳️\*\*           | ❌          | ❌         | pytorch  |
-| Prophet | TS    | ❌             | ✅          | ❌           | ✅          | ❌         | prophet  |
-| ARIMA   | TS    | ❌             | ✅          | ❌           | ✅          | ❌         | pmdarima |
+| Model   | Style | Multi-Variate | Multi-Step | Exogenous Variables | Distributed | ONNX | Quantization | Auto Models | AutoTS | Backend |
+| ----------------- | ----- | ------------- | ---------- | ------- | ----------- | ----------- | ----------- | ----------- | ----------- | ----------- |
+| LSTM    | RR    | ✅             | ❌      | ✅    | ✅   | ✅           | ✅        | ✅          | ✅         | pytorch  |
+| Seq2Seq     | RR    | ✅             | ✅     | ✅     | ✅     | ✅           | ❌      | ✅          | ✅         | pytorch  |
+| TCN | RR    | ✅             | ✅     | ✅     | ✅     | ✅           | ✅      | ✅          | ✅         | pytorch  |
+| NBeats | RR    | ❌             | ✅     | ❌     | ✅     | ✅           | ✅      | ❌          | ❌         | pytorch  |
+| MTNet   | RR    | ✅             | ❌    | ✅     | ✅     | ❌          | ❌         | ❌          | ✳️\*\*        | tensorflow |
+| TCMF    | TS    | ✅             | ✅    | ✅      | ✳️\*     | ❌          | ❌         | ❌          | ❌         | pytorch  |
+| Prophet | TS    | ❌             | ✅    | ❌      | ❌        | ❌          | ❌      | ✅          | ❌         | prophet  |
+| ARIMA   | TS    | ❌             | ✅    | ❌      | ❌         | ❌          | ❌     | ✅          | ❌         | pmdarima |
+| Customized\*\*\* | RR | Customized | Customized | Customized | ❌ |✅|❌|❌|✅|pytorch
 
-\* Distributed training/inferencing is only supported by standalone forecasters.<br>
-\*\* TCMF only partially supports distributed training.<br>
-\*\*\*  Auto tuning of MTNet is only supported in our deprecated AutoTS API.<br>
+\* TCMF only partially supports distributed training.<br>
+\*\*  Auto tuning of MTNet is only supported in our deprecated AutoTS API.<br>
+\*\*\* Customized model is only supported in `AutoTSEstimator` with pytorch as backend.
+
 
 
 #### **1. Time Series Forecasting Concepts**
@@ -56,7 +73,7 @@ For AutoTS Pipeline, we will leverage `AutoTSEstimator`, `TSPipeline` and prefer
 .. note::
     `AutoTSEstimator` currently only support pytorch backend.
 ```
-View [Quick Start](https://bigdl.readthedocs.io/en/latest/doc/Chronos/QuickStart/chronos-autotsest-quickstart.html) for a more detailed example.
+View [Quick Start](../QuickStart/chronos-autotsest-quickstart.html) for a more detailed example.
 
 ##### **2.1 Prepare dataset**
 `AutoTSEstimator` support 2 types of data input. 
@@ -105,7 +122,7 @@ ts_pipeline = auto_estimator.fit(data=tsdata_train,
                                  batch_size=hp.randint(32, 64),
                                  epochs=5)
 ```
-Detailed information and settings please refer to [AutoTSEstimator API doc](https://bigdl.readthedocs.io/en/latest/doc/PythonAPI/Chronos/autotsestimator.html#id1).
+Detailed information and settings please refer to [AutoTSEstimator API doc](../../PythonAPI/Chronos/autotsestimator.html#id1).
 ##### **2.4 Development on TSPipeline**
 You may carry out predict, evaluate, incremental training or save/load for further development.
 ```python
@@ -140,7 +157,7 @@ Detailed information please refer to [TSPipeline API doc](../../PythonAPI/Chrono
 
 _Chronos_ provides a set of standalone time series forecasters without AutoML support, including deep learning models as well as traditional statistical models.
 
-View some examples notebooks for [Network Traffic Prediction](https://github.com/intel-analytics/BigDL/tree/branch-2.0/python/chronos/use-case/network_traffic) 
+View some examples notebooks for [Network Traffic Prediction][network_traffic]
 
 The common process of using a Forecaster looks like below. 
 ```python
@@ -159,7 +176,7 @@ View [Quick Start](../QuickStart/chronos-tsdataset-forecaster-quickstart.md) for
 
 LSTMForecaster wraps a vanilla LSTM model, and is suitable for univariate time series forecasting.
 
-View Network Traffic Prediction [notebook](https://github.com/intel-analytics/BigDL/blob/branch-2.0/python/chronos/use-case/network_traffic/network_traffic_model_forecasting.ipynb) and [LSTMForecaster API Doc](../../PythonAPI/Chronos/forecasters.html#lstmforecaster) for more details.
+View Network Traffic Prediction [notebook][network_traffic_model_forecasting] and [LSTMForecaster API Doc](../../PythonAPI/Chronos/forecasters.html#lstmforecaster) for more details.
 
 <span id="Seq2SeqForecaster"></span>
 ###### **3.2 Seq2SeqForecaster**
@@ -173,21 +190,21 @@ View [Seq2SeqForecaster API Doc](../../PythonAPI/Chronos/forecasters.html#seq2se
 
 Temporal Convolutional Networks (TCN) is a neural network that use convolutional architecture rather than recurrent networks. It supports multi-step and multi-variant cases. Causal Convolutions enables large scale parallel computing which makes TCN has less inference time than RNN based model such as LSTM.
 
-View Network Traffic multivariate multistep Prediction [notebook](https://github.com/intel-analytics/BigDL/blob/branch-2.0/python/chronos/use-case/network_traffic/network_traffic_multivariate_multistep_tcnforecaster.ipynb) and [TCNForecaster API Doc](../../PythonAPI/Chronos/forecasters.html#tcnforecaster) for more details.
+View Network Traffic multivariate multistep Prediction [notebook][network_traffic_multivariate_multistep_tcnforecaster] and [TCNForecaster API Doc](../../PythonAPI/Chronos/forecasters.html#tcnforecaster) for more details.
 
 <span id="MTNetForecaster"></span>
 ###### **3.4 MTNetForecaster**
 
 MTNetForecaster wraps a MTNet model. The model architecture mostly follows the [MTNet paper](https://arxiv.org/abs/1809.02105) with slight modifications, and is suitable for multivariate time series forecasting.
 
-View Network Traffic Prediction [notebook](https://github.com/intel-analytics/BigDL/blob/branch-2.0/python/chronos/use-case/network_traffic/network_traffic_model_forecasting.ipynb) and [MTNetForecaster API Doc](../../PythonAPI/Chronos/forecasters.html#mtnetforecaster) for more details.
+View Network Traffic Prediction [notebook][network_traffic_model_forecasting] and [MTNetForecaster API Doc](../../PythonAPI/Chronos/forecasters.html#mtnetforecaster) for more details.
 
 <span id="TCMFForecaster"></span>
 ###### **3.5 TCMFForecaster**
 
 TCMFForecaster wraps a model architecture that follows implementation of the paper [DeepGLO paper](https://arxiv.org/abs/1905.03806) with slight modifications. It is especially suitable for extremely high dimensional (up-to millions) multivariate time series forecasting.
 
-View High-dimensional Electricity Data Forecasting [example](https://github.com/intel-analytics/BigDL/blob/branch-2.0/python/chronos/example/tcmf/run_electricity.py) and [TCMFForecaster API Doc](../../PythonAPI/Chronos/forecasters.html#tcmfforecaster) for more details.
+View High-dimensional Electricity Data Forecasting [example][run_electricity] and [TCMFForecaster API Doc](../../PythonAPI/Chronos/forecasters.html#tcmfforecaster) for more details.
 
 <span id="ARIMAForecaster"></span>
 ###### **3.6 ARIMAForecaster**
@@ -201,16 +218,27 @@ View [ARIMAForecaster API Doc](../../PythonAPI/Chronos/forecasters.html#arimafor
 
 ProphetForecaster wraps the Prophet model ([site](https://github.com/facebook/prophet)) which is an additive model where non-linear trends are fit with yearly, weekly, and daily seasonality, plus holiday effects and is suitable for univariate time series forecasting. It works best with time series that have strong seasonal effects and several seasons of historical data and is robust to missing data and shifts in the trend, and typically handles outliers well.
 
-View Stock Prediction [notebook](https://github.com/intel-analytics/BigDL/blob/branch-2.0/python/chronos/use-case/fsi/stock_prediction_prophet.ipynb) and [ProphetForecaster API Doc](../../PythonAPI/Chronos/forecasters.html#prophetforecaster) for more details.
+View Stock Prediction [notebook][stock_prediction_prophet] and [ProphetForecaster API Doc](../../PythonAPI/Chronos/forecasters.html#prophetforecaster) for more details.
+
+<span id="NBeatsForecaster"></span>
+###### **3.8 NBeatsForecaster**
+
+Neural basis expansion analysis for interpretable time series forecasting ([N-BEATS](https://arxiv.org/abs/1905.10437)) is a deep neural architecture based on backward and forward residual links and a very deep stack of fully-connected layers. Nbeats can solve univariate time series point forecasting problems, being interpretable, and fast to train.
 
 #### **4. Use Auto forecasting model**
 Auto forecasting models are designed to be used exactly the same as Forecasters. The only difference is that you can set hp search function to the hyperparameters and the `.fit()` method will search the best hyperparameter setting.
 ```python
 # set hyperparameters in hp search function, loss, metric...
-f = Forecaster(...)
+auto_model = AutoModel(...)
 # input data, batch size, epoch...
-f.fit(...)
+auto_model.fit(...)
 # input test data x, batch size...
-f.predict(...)
+auto_model.predict(...)
 ```
 The input data can be easily get from `TSDataset`. Users can refer to detailed [API doc](../../PythonAPI/Chronos/automodels.html).
+
+[network_traffic]:<https://github.com/intel-analytics/BigDL/tree/main/python/chronos/use-case/network_traffic>
+[network_traffic_model_forecasting]:<https://github.com/intel-analytics/BigDL/blob/main/python/chronos/use-case/network_traffic/network_traffic_model_forecasting.ipynb>
+[network_traffic_multivariate_multistep_tcnforecaster]:<https://github.com/intel-analytics/BigDL/blob/main/python/chronos/use-case/network_traffic/network_traffic_multivariate_multistep_tcnforecaster.ipynb>
+[run_electricity]:<https://github.com/intel-analytics/BigDL/blob/main/python/chronos/example/tcmf/run_electricity.py>
+[stock_prediction_prophet]:<https://github.com/intel-analytics/BigDL/blob/main/python/chronos/use-case/fsi/stock_prediction_prophet.ipynb>

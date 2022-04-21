@@ -16,12 +16,12 @@
 
 package com.intel.analytics.bigdl.dllib.nn.internal
 
-import com.intel.analytics.bigdl.dllib.nn.abstractnn.{AbstractModule}
+import com.intel.analytics.bigdl.dllib.nn.abstractnn.AbstractModule
 import com.intel.analytics.bigdl.dllib.nn.{InitializationMethod, VolumetricConvolution, Xavier, Zeros}
 import com.intel.analytics.bigdl.dllib.optim.Regularizer
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.dllib.utils.Shape
+import com.intel.analytics.bigdl.dllib.utils.{Log4Error, Shape}
 
 import scala.reflect.ClassTag
 
@@ -72,11 +72,13 @@ class Convolution3D[T: ClassTag](
    val inputShape: Shape = null)(implicit ev: TensorNumeric[T])
   extends KerasLayer[Tensor[T], Tensor[T], T](KerasLayer.addBatch(inputShape)) {
 
-  require(dimOrdering.toLowerCase() == "channel_first", s"Pooling3D currently only supports " +
+  Log4Error.invalidInputError(dimOrdering.toLowerCase() == "channel_first",
+    s"Pooling3D currently only supports " +
     s"format CHANNEL_FIRST, but got format $dimOrdering")
-  require(borderMode == "valid" || borderMode == "same", s"Invalid border mode for " +
+  Log4Error.invalidInputError(borderMode == "valid" || borderMode == "same",
+    s"Invalid border mode for " +
     s"Convolution3D: $borderMode")
-  require(subsample.length == 3,
+  Log4Error.invalidInputError(subsample.length == 3,
     s"For Convolution3D, subsample should be of length 3 but got length ${subsample.length}")
 
   override def doBuild(inputShape: Shape): AbstractModule[Tensor[T], Tensor[T], T] = {

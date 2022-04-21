@@ -62,7 +62,8 @@ class BasePytorchForecaster(Forecaster):
             loss = self.loss_creator(self.loss_config)
             optimizer = self.optimizer_creator(model, self.optim_config)
             self.internal = Trainer.compile(model=model, loss=loss,
-                                            optimizer=optimizer, onnx=self.onnx_available)
+                                            optimizer=optimizer, onnx=self.onnx_available,
+                                            quantize=True)
 
     def fit(self, data, epochs=1, batch_size=32):
         # TODO: give an option to close validation during fit to save time.
@@ -149,7 +150,7 @@ class BasePytorchForecaster(Forecaster):
             self.trainer.fit(self.internal, data)
             self.fitted = True
 
-    def predict(self, data, batch_size=32):
+    def predict(self, data, batch_size=32, quantize=False):
         """
         Predict using a trained forecaster.
 
@@ -167,6 +168,7 @@ class BasePytorchForecaster(Forecaster):
 
         :param batch_size: predict batch size. The value will not affect predict
                result but will affect resources cost(e.g. memory and time).
+        :param quantize: if use the quantized model to predict.
 
         :return: A numpy array with shape (num_samples, horizon, target_dim)
                  if data is a numpy ndarray. A xshard item with format {‘prediction’: result},
@@ -193,12 +195,14 @@ class BasePytorchForecaster(Forecaster):
         else:
             if not self.fitted:
                 raise RuntimeError("You must call fit or restore first before calling predict!")
-            yhat = self.internal.inference(torch.from_numpy(data), backend=None).numpy()
+            yhat = self.internal.inference(data,
+                                           backend=None,
+                                           quantize=quantize).numpy()
             if not is_local_data:
                 yhat = np_to_xshard(yhat, prefix="prediction")
             return yhat
 
-    def predict_with_onnx(self, data, batch_size=32):
+    def predict_with_onnx(self, data, batch_size=32, quantize=False):
         """
         Predict using a trained forecaster with onnxruntime. The method can only be
         used when forecaster is a non-distributed version.
@@ -215,6 +219,7 @@ class BasePytorchForecaster(Forecaster):
         :param batch_size: predict batch size. The value will not affect predict
                result but will affect resources cost(e.g. memory and time). Defaults
                to 32. None for all-data-single-time inference.
+        :param quantize: if use the quantized onnx model to predict.
 
         :return: A numpy array with shape (num_samples, horizon, target_dim).
         """
@@ -224,9 +229,9 @@ class BasePytorchForecaster(Forecaster):
                                       "forecaster to a non-distributed version.")
         if not self.fitted:
             raise RuntimeError("You must call fit or restore first before calling predict!")
-        return self.internal.inference(data, batch_size=batch_size)
+        return self.internal.inference(data, batch_size=batch_size, quantize=quantize)
 
-    def evaluate(self, data, batch_size=32, multioutput="raw_values"):
+    def evaluate(self, data, batch_size=32, multioutput="raw_values", quantize=False):
         """
         Evaluate using a trained forecaster.
 
@@ -260,6 +265,7 @@ class BasePytorchForecaster(Forecaster):
                String in ['raw_values', 'uniform_average']. The value defaults to
                'raw_values'.The param is only effective when the forecaster is a
                non-distribtued version.
+        :param quantize: if use the quantized model to predict.
 
         :return: A list of evaluation results. Each item represents a metric.
         """
@@ -277,7 +283,9 @@ class BasePytorchForecaster(Forecaster):
         else:
             if not self.fitted:
                 raise RuntimeError("You must call fit or restore first before calling evaluate!")
-            yhat_torch = self.internal.inference(torch.from_numpy(data[0]), backend=None)
+            yhat_torch = self.internal.inference(data[0],
+                                                 backend=None,
+                                                 quantize=quantize)
 
             aggregate = 'mean' if multioutput == 'uniform_average' else None
             return Evaluator.evaluate(self.metrics, data[1],
@@ -285,7 +293,8 @@ class BasePytorchForecaster(Forecaster):
 
     def evaluate_with_onnx(self, data,
                            batch_size=32,
-                           multioutput="raw_values"):
+                           multioutput="raw_values",
+                           quantize=False):
         """
         Evaluate using a trained forecaster with onnxruntime. The method can only be
         used when forecaster is a non-distributed version.
@@ -316,6 +325,7 @@ class BasePytorchForecaster(Forecaster):
         :param multioutput: Defines aggregating of multiple output values.
                String in ['raw_values', 'uniform_average']. The value defaults to
                'raw_values'.
+        :param quantize: if use the quantized onnx model to evaluate.
 
         :return: A list of evaluation results. Each item represents a metric.
         """
@@ -325,12 +335,12 @@ class BasePytorchForecaster(Forecaster):
                                       "forecaster to a non-distributed version.")
         if not self.fitted:
             raise RuntimeError("You must call fit or restore first before calling evaluate!")
-        yhat = self.internal.inference(data[0], batch_size=batch_size)
+        yhat = self.internal.inference(data[0], batch_size=batch_size, quantize=quantize)
 
         aggregate = 'mean' if multioutput == 'uniform_average' else None
         return Evaluator.evaluate(self.metrics, data[1], yhat, aggregate=aggregate)
 
-    def save(self, checkpoint_file):
+    def save(self, checkpoint_file, quantize_checkpoint_file=None):
         """
         Save the forecaster.
 
@@ -339,19 +349,28 @@ class BasePytorchForecaster(Forecaster):
         file generated by .save() method can only be used by .load().
 
         :param checkpoint_file: The location you want to save the forecaster.
+        :param quantize_checkpoint_file: The location you want to save quantized forecaster.
         """
         if self.distributed:
             self.internal.save(checkpoint_file)
         else:
             if not self.fitted:
                 raise RuntimeError("You must call fit or restore first before calling save!")
-            self.trainer.save_checkpoint(checkpoint_file)
+            self.trainer.save_checkpoint(checkpoint_file)  # save current status
+            if quantize_checkpoint_file:
+                try:
+                    torch.save(self.internal.quantized_state_dict(), quantize_checkpoint_file)
+                except RuntimeError:
+                    warnings.warn("Please call .quantize() method to build "
+                                  "an up-to-date quantized model")
 
-    def load(self, checkpoint_file):
+    def load(self, checkpoint_file, quantize_checkpoint_file=None):
         """
         restore the forecaster.
 
         :param checkpoint_file: The checkpoint file location you want to load the forecaster.
+        :param quantize_checkpoint_file: The checkpoint file location you want to
+               load the quantized forecaster.
         """
         if self.distributed:
             self.internal.load(checkpoint_file)
@@ -366,8 +385,15 @@ class BasePytorchForecaster(Forecaster):
                                                                           model=model,
                                                                           loss=loss,
                                                                           optimizer=optimizer)
-            self.internal = Trainer.compile(self.internal, onnx=self.onnx_available)
+            self.internal = Trainer.compile(self.internal, onnx=self.onnx_available, quantize=True)
             self.fitted = True
+            if quantize_checkpoint_file:
+                self.internal.load_quantized_state_dict(torch.load(quantize_checkpoint_file))
+            # This trainer is only for quantization, once the user call `fit`, it will be
+            # replaced according to the new training config
+            self.trainer = Trainer(logger=False, max_epochs=1,
+                                   checkpoint_callback=self.checkpoint_callback,
+                                   num_processes=self.num_processes, use_ipex=self.use_ipex)
 
     def to_local(self):
         """
@@ -394,7 +420,8 @@ class BasePytorchForecaster(Forecaster):
         loss = self.loss_creator(self.loss_config)
         optimizer = self.optimizer_creator(model, self.optim_config)
         self.internal = Trainer.compile(model=model, loss=loss,
-                                        optimizer=optimizer, onnx=self.onnx_available)
+                                        optimizer=optimizer, onnx=self.onnx_available,
+                                        quantize=True)
 
         self.distributed = False
         self.fitted = True
@@ -450,10 +477,10 @@ class BasePytorchForecaster(Forecaster):
                                       "forecaster to a non-distributed version.")
         dummy_input = torch.rand(1, self.data_config["past_seq_len"],
                                  self.data_config["input_feature_num"])
-        self.internal.update_ortsess(dummy_input,
-                                     sess_options=sess_options)
+        self.internal.eval_onnx(dummy_input,
+                                sess_options=sess_options)
 
-    def export_onnx_file(self, dirname="model.onnx"):
+    def export_onnx_file(self, dirname="model.onnx", quantized_dirname="qmodel.onnx"):
         """
         Save the onnx model file to the disk.
 
@@ -465,5 +492,96 @@ class BasePytorchForecaster(Forecaster):
                                       "forecaster to a non-distributed version.")
         dummy_input = torch.rand(1, self.data_config["past_seq_len"],
                                  self.data_config["input_feature_num"])
-        self.internal.update_ortsess(dummy_input,
-                                     dirname=dirname)
+        if quantized_dirname:
+            self.internal.to_quantized_onnx(quantized_dirname)
+        if dirname:
+            self.internal.eval_onnx(dummy_input,
+                                    file_path=dirname)
+
+    def quantize(self, calib_data=None,
+                 val_data=None,
+                 metric=None,
+                 conf=None,
+                 framework='pytorch_fx',
+                 approach='static',
+                 tuning_strategy='bayesian',
+                 relative_drop=None,
+                 absolute_drop=None,
+                 timeout=0,
+                 max_trials=1):
+        """
+        Quantize the forecaster.
+
+        :param calib_data: A torch.utils.data.dataloader.DataLoader object for calibration.
+               Required for static quantization.
+        :param val_data: A torch.utils.data.dataloader.DataLoader object for evaluation.
+        :param metric: A str represent the metrics for tunning the quality of
+               quantization. You may choose from "mse", "mae", "rmse", "r2", "mape", "smape".
+        :param conf: A path to conf yaml file for quantization. Default to None,
+               using default config.
+        :param framework: string or list, [{'pytorch'|'pytorch_fx'|'pytorch_ipex'},
+               {'onnxrt_integerops'|'onnxrt_qlinearops'}]. Default: 'pytorch_fx'.
+               Consistent with Intel Neural Compressor.
+        :param approach: str, 'static' or 'dynamic'. Default to 'static'.
+        :param tuning_strategy: str, 'bayesian', 'basic', 'mse' or 'sigopt'. Default to 'bayesian'.
+        :param relative_drop: Float, tolerable ralative accuracy drop. Default to None,
+               e.g. set to 0.1 means that we accept a 10% increase in the metrics error.
+        :param absolute_drop: Float, tolerable ralative accuracy drop. Default to None,
+               e.g. set to 5 means that we can only accept metrics smaller than 5.
+        :param timeout: Tuning timeout (seconds). Default to 0, which means early stop.
+               Combine with max_trials field to decide when to exit.
+        :param max_trials: Max tune times. Default to 1. Combine with timeout field to
+               decide when to exit. "timeout=0, max_trials=1" means it will try quantization
+               only once and return satisfying best model.
+        """
+        # check model support for quantization
+        if not self.quantize_available:
+            raise NotImplementedError("This model has not supported quantization.")
+
+        # Distributed forecaster does not support quantization
+        if self.distributed:
+            raise NotImplementedError("quantization has not been supported for distributed "
+                                      "forecaster. You can call .to_local() to transform the "
+                                      "forecaster to a non-distributed version.")
+
+        # calib data should be set correctly according to the approach
+        if approach == 'static' and calib_data is None:
+            raise ValueError("You must set a `calib_data` for static quantization.")
+        if approach == 'dynamic' and calib_data is not None:
+            raise ValueError("You must not set a `calib_data` for dynamic quantization.")
+
+        # change data tuple to dataloader
+        if isinstance(calib_data, tuple):
+            calib_data = DataLoader(TensorDataset(torch.from_numpy(calib_data[0]),
+                                                  torch.from_numpy(calib_data[1])))
+        if isinstance(val_data, tuple):
+            val_data = DataLoader(TensorDataset(torch.from_numpy(val_data[0]),
+                                                torch.from_numpy(val_data[1])))
+
+        # map metric str to function
+        from bigdl.chronos.metric.forecast_metrics import TORCHMETRICS_REGRESSION_MAP
+        if isinstance(metric, str):
+            metric = TORCHMETRICS_REGRESSION_MAP[metric]
+
+        # init acc criterion
+        accuracy_criterion = None
+        if relative_drop and absolute_drop:
+            raise ValueError("Please unset either `relative_drop` or `absolute_drop`.")
+        if relative_drop:
+            accuracy_criterion = {'relative': relative_drop, 'higher_is_better': False}
+        if absolute_drop:
+            accuracy_criterion = {'absolute': absolute_drop, 'higher_is_better': False}
+
+        # quantize
+        self.internal = self.trainer.quantize(self.internal,
+                                              calib_dataloader=calib_data,
+                                              val_dataloader=val_data,
+                                              metric=metric,
+                                              conf=conf,
+                                              framework=framework,
+                                              approach=approach,
+                                              tuning_strategy=tuning_strategy,
+                                              accuracy_criterion=accuracy_criterion,
+                                              timeout=timeout,
+                                              max_trials=max_trials,
+                                              return_pl=True)

@@ -153,23 +153,36 @@ class Model[T: ClassTag] private (private val _inputs : Seq[ModuleNode[T]],
 
   override def summary(
                         lineLength: Int = 120,
-                        positions: Array[Double] = Array(.33, .55, .67, 1)): Unit = {
-    println("Model Summary:")
-    KerasUtils.printSplitLine('-', lineLength)
+                        positions: Array[Double] = Array(.33, .55, .67, 1),
+                        needPrint: Boolean = true): String = {
+    val summaryBuf = ArrayBuffer[String]()
+    summaryBuf.append("Model Summary:")
+    KerasUtils.printSplitLine('-', lineLength, summaryBuf)
+
     val toDisplay = Array("Layer (type)", "Output Shape", "Param #", "Connected to")
-    KerasUtils.printRow(toDisplay, lineLength, positions, splitChar = '=')
+    KerasUtils.printRow(toDisplay, lineLength, positions, splitChar = '=',
+      summaryBuf = summaryBuf)
     val nodes = labor.asInstanceOf[StaticGraph[T]].getSortedForwardExecutions()
     var totalParams = 0
     var trainableParams = 0
     for (node <- nodes) {
-      val (total, trainable) = KerasUtils.printNodeSummary(node, lineLength, positions)
+      val (total, trainable) = KerasUtils.printNodeSummary(node, lineLength, positions,
+        summaryBuf = summaryBuf)
       totalParams += total
       trainableParams += trainable
     }
-    println("Total params: " + "%,d".format(totalParams))
-    println("Trainable params: " + "%,d".format(trainableParams))
-    println("Non-trainable params: " + "%,d".format(totalParams - trainableParams))
-    KerasUtils.printSplitLine('-', lineLength)
+    val msgTotal = "Total params: " + "%,d".format(totalParams)
+    summaryBuf.append(msgTotal)
+    val msgTrain = "Trainable params: " + "%,d".format(trainableParams)
+    summaryBuf.append(msgTrain)
+    val msgNonTrain = "Non-trainable params: " + "%,d".format(totalParams - trainableParams)
+    summaryBuf.append(msgNonTrain)
+    KerasUtils.printSplitLine('-', lineLength, summaryBuf)
+    val res = summaryBuf.mkString("\n")
+    if (needPrint) {
+      InternalDistriOptimizer.logger.info(res)
+    }
+    return res
   }
 }
 

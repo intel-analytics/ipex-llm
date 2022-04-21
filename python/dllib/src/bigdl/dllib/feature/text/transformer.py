@@ -19,6 +19,8 @@ import six
 from bigdl.dllib.feature.common import Preprocessing
 from bigdl.dllib.feature.text import TextFeature
 from bigdl.dllib.utils.file_utils import callZooFunc
+from bigdl.dllib.utils.log4Error import *
+
 
 if sys.version >= '3':
     long = int
@@ -106,7 +108,7 @@ class SequenceShaper(TextTransformer):
     """
 
     def __init__(self, len, trunc_mode="pre", pad_element=0, bigdl_type="float"):
-        assert isinstance(pad_element, int), "pad_element should be an int"
+        invalidInputError(isinstance(pad_element, int), "pad_element should be an int")
         super(SequenceShaper, self).__init__(bigdl_type, len, trunc_mode, pad_element)
 
 

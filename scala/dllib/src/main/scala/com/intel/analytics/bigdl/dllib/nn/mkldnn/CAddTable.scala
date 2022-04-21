@@ -18,16 +18,16 @@ package com.intel.analytics.bigdl.dllib.nn.mkldnn
 import com.intel.analytics.bigdl.mkl.{DataType, Memory, MklDnn}
 import com.intel.analytics.bigdl.dllib.nn.MklInt8Convertible
 import com.intel.analytics.bigdl.dllib.nn.abstractnn.Activity
-import com.intel.analytics.bigdl.dllib.utils.T
+import com.intel.analytics.bigdl.dllib.utils.{Log4Error, T}
 
 class CAddTable extends MklDnnLayer with MklInt8Convertible {
   override private[mkldnn] def initFwdPrimitives(inputs: Array[MemoryData], phase: Phase) = {
     _inputFormats = nativeData(inputs)
     val shape = inputs(0).shape.clone()
     for(i <- 1 until inputs.length) {
-      require(shape.length == inputs(i).shape.length, "dimension not match")
+      Log4Error.invalidInputError(shape.length == inputs(i).shape.length, "dimension not match")
       for(j <- 0 until shape.length) {
-        require(shape(j) == inputs(i).shape(j), "size not match")
+        Log4Error.invalidInputError(shape(j) == inputs(i).shape(j), "size not match")
       }
     }
 
@@ -63,7 +63,7 @@ class CAddTable extends MklDnnLayer with MklInt8Convertible {
   }
 
   override def updateGradInput(input: Activity, gradOutput: Activity): Activity = {
-    require(gradOutput.isTensor, "gradOutput should be a tensor")
+    Log4Error.invalidInputError(gradOutput.isTensor, "gradOutput should be a tensor")
     val _gradInput = gradInput.toTable
     var i = 1
     while(i <= _inputFormats.length) {

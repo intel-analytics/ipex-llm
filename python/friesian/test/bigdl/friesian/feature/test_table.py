@@ -676,6 +676,9 @@ class TestTable(TestCase):
         assert 'id' in tbl.df.columns, "id should be one column in the stringindex"
         assert 'letter' in tbl.df.columns, "letter should be one column in the stringindex"
         assert tbl.size() == 3, "the StringIndex should have three rows"
+        cast_tbl = tbl.cast("id", "long")
+        assert isinstance(cast_tbl, StringIndex), \
+            "cast on stringindex should result in stringindex"
         with self.assertRaises(Exception) as context:
             StringIndex.from_dict(indices, None)
         self.assertTrue("col_name should be str, but get None"
@@ -723,9 +726,10 @@ class TestTable(TestCase):
         directory = "write.csv"
         if os.path.exists("write.csv"):
             shutil.rmtree("write.csv")
-        tbl.write_csv(directory, mode="overwrite", header=True, num_partitions=1)
+        tbl.write_csv(directory, mode="overwrite", header=True, num_partitions=1,
+                      delimiter="\t")
         assert os.path.exists("write.csv"), "files not write"
-        result = FeatureTable(spark.read.csv(directory, header=True))
+        result = FeatureTable(spark.read.csv(directory, header=True, sep="\t"))
         assert isinstance(result, FeatureTable)
         assert result.size() == 3, "the size of result should be 3"
         assert result.filter("age == 23").size() == 1, "wrong age"
@@ -1141,6 +1145,16 @@ class TestTable(TestCase):
         records3 = feature_tbl3.df.collect()
         assert isinstance(records3[0][0], int)
         assert isinstance(records3[0][1], str) and isinstance(records3[0][1], str)
+
+    def test_read_text(self):
+        file_path = os.path.join(self.resource_path, "data.csv")
+        feature_tbl = FeatureTable.read_text(file_path, col_name="line")
+        assert feature_tbl.size() == 5
+        columns = feature_tbl.columns
+        assert columns == ["line"]
+        rows = feature_tbl.df.collect()
+        assert rows[0][0] == "col1,col2,col3"  # when read as text, header will be treated as the first row
+        assert rows[3][0] == "4.0,x,aaa"
 
     def test_category_encode_and_one_hot_encode(self):
         file_path = os.path.join(self.resource_path, "data.csv")

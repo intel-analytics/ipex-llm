@@ -17,10 +17,15 @@
 import pytest
 import shutil
 
+from pyspark.sql.types import *
+from pyspark.sql.functions import lit
+
 from bigdl.dllib.feature.common import ChainedPreprocessing
+from bigdl.dllib.nncontext import *
 from bigdl.dllib.feature.image import *
 from bigdl.dllib.keras.layers import *
 from bigdl.dllib.keras.models import *
+from bigdl.dllib.nnframes import *
 from test.bigdl.test_zoo_utils import ZooTestCase
 
 np.random.seed(1337)  # for reproducibility
@@ -56,7 +61,7 @@ class TestSimpleIntegration(ZooTestCase):
 
     def test_training_with_tensorboard_checkpoint_gradientclipping(self):
         model = Sequential()
-        model.add(Dense(8, input_shape=(32, 32, )))
+        model.add(Dense(8, input_shape=(32, 32, ), name="dense1"))
         model.add(Flatten())
         model.add(Dense(4, activation="softmax"))
         X_train = np.random.random([200, 32, 32])
@@ -72,8 +77,10 @@ class TestSimpleIntegration(ZooTestCase):
         model.set_tensorboard(tmp_log_dir, "training_test")
         model.set_checkpoint(tmp_checkpoint_path)
         model.set_constant_gradient_clipping(0.01, 0.03)
+        model.freeze("dense1")
         model.fit(X_train, y_train, batch_size=112, nb_epoch=2, validation_data=(X_test, y_test))
         model.clear_gradient_clipping()
+        model.unfreeze("dense1")
         model.fit(X_train, y_train, batch_size=112, nb_epoch=2, validation_data=(X_test, y_test))
         model.set_gradient_clipping_by_l2_norm(0.2)
         model.fit(X_train, y_train, batch_size=112, nb_epoch=2, validation_data=(X_test, y_test))
@@ -247,6 +254,52 @@ class TestSimpleIntegration(ZooTestCase):
                       loss="sparse_categorical_crossentropy",
                       metrics=['accuracy', 'loss'])
         model.fit(X_train, y_train, validation_data=(X_test, y_test))
+
+    def test_training_with_dataframe(self):
+        data = self.sc.parallelize([
+            ((2.0, 1.0, 3.0, 4.0, 2.0, 1.0), 0.0),
+            ((4.0, 3.0, 1.0, 2.0, 3.0, 5.0), 1.0),
+            ((2.0, 3.0, 2.0, 1.0, 1.0, 3.0), 1.0),
+            ((1.0, 2.0, 4.0, 3.0, 2.0, 5.0), 1.0)])
+
+        schema = StructType([
+            StructField("features", ArrayType(DoubleType(), False), False),
+            StructField("label", DoubleType(), False)])
+        df = self.sqlContext.createDataFrame(data, schema)
+
+        model = Sequential()
+        model.add(Dense(2, activation="sigmoid", input_shape=(6,)))
+        model.compile(optimizer="sgd",
+                      loss="sparse_categorical_crossentropy")
+        model.fit(df, feature_cols=["features"], label_cols=["label"], batch_size=4, nb_epoch=1)
+
+        predDf = model.predict(df, feature_cols=["features"], prediction_col="predict")
+        predDf.show()
+        model.evaluate(df, batch_size=4, feature_cols=["features"], label_cols=["label"])
+
+    def test_training_with_dataframe_image(self):
+        self.sc.stop()
+        sparkConf = init_spark_conf().setMaster("local[1]")
+        self.sc = init_nncontext(sparkConf)
+
+        resource_path = os.path.join(os.path.split(__file__)[0], "../resources")
+        image_path = os.path.join(resource_path, "gray/gray.bmp")
+        image_df = NNImageReader.readImages(image_path, self.sc).withColumn("label", lit(1))
+
+        from bigdl.dllib.feature.image import transforms
+        transformers = transforms.Compose([ImageResize(50, 50), ImageMirror()])
+        model = Sequential()
+        model.add(Convolution2D(1, 24, 24, activation="relu", input_shape=(1, 50, 50)))
+        model.add(MaxPooling2D())
+        model.add(Reshape([169]))
+        model.add(Dense(2, activation="log_softmax"))
+        model.compile(optimizer="sgd",
+                      loss="sparse_categorical_crossentropy")
+        model.fit(image_df, label_cols=["label"], batch_size=1, nb_epoch=1, transform=transformers)
+
+        predDf = model.predict(image_df, prediction_col="predict", transform=transformers)
+        predDf.show()
+        model.evaluate(image_df, batch_size=1, label_cols=["label"], transform=transformers)
 
 if __name__ == "__main__":
     pytest.main([__file__])

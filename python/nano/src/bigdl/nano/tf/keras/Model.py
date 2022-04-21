@@ -14,8 +14,12 @@
 # limitations under the License.
 #
 import tensorflow as tf
+from bigdl.nano.tf.keras.training_utils import TrainingUtils
 
 
-class Model(tf.keras.Model):
+class Model(TrainingUtils, tf.keras.Model):
+    """A wrapper class for tf.keras.Model adding more functions for BigDL-Nano."""
+
     def __init__(self, *args, **kwargs):
+        """Create a nano Sequential model, having the same arguments with tf.keras.Sequential."""
         super().__init__(*args, **kwargs)

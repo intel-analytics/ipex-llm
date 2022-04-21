@@ -73,9 +73,9 @@ def setup_package(plat_name):
         install_requires = []
 
     if plat_name != "macosx_10_11_x86_64":
-        tensorflow_requires = ["intel-tensorflow==2.6.0",
-                               "keras==2.6.0",
-                               "tensorflow-estimator==2.6.0"]
+        tensorflow_requires = ["intel-tensorflow==2.7.0",
+                               "keras==2.7.0",
+                               "tensorflow-estimator==2.7.0"]
         pytorch_requires = ["torch==1.9.0",
                             "torchvision==0.10.0",
                             "pytorch_lightning==1.4.2",
@@ -85,15 +85,16 @@ def setup_package(plat_name):
                             "onnx",
                             "onnxruntime"]
     else:
-        tensorflow_requires = ["tensorflow==2.6.0",
-                               "keras==2.6.0",
-                               "tensorflow-estimator==2.6.0"]
+        tensorflow_requires = ["tensorflow==2.7.0",
+                               "keras==2.7.0",
+                               "tensorflow-estimator==2.7.0"]
 
         pytorch_requires = []
 
     pytorch_requires = ["torch==1.9.0",
                         "torchvision==0.10.0",
                         "pytorch_lightning==1.4.2",
+                        "torchmetrics==0.7.2",
                         "opencv-python-headless",
                         "PyTurboJPEG",
                         "opencv-transforms",
@@ -108,8 +109,9 @@ def setup_package(plat_name):
         "win_amd64": [],
         "macosx_10_11_x86_64": []}
 
-    script_plat = {"manylinux2010_x86_64": ["../script/bigdl-nano-init"],
-                   "win_amd64": ["../script/bigdl-nano-init.ps1"],
+    script_plat = {"manylinux2010_x86_64": ["../scripts/bigdl-nano-init",
+                                            "../scripts/bigdl-nano-unset-env"],
+                   "win_amd64": ["../scripts/bigdl-nano-init.ps1"],
                    "macosx_10_11_x86_64": []
                    }
 
@@ -132,7 +134,6 @@ def setup_package(plat_name):
 
         packages=get_nano_packages(),
     )
-
     setup(**metadata)
 
 

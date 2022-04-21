@@ -17,7 +17,7 @@ package com.intel.analytics.bigdl.dllib.nn.ops
 
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.{NumericWildCard, TensorNumeric}
-import com.intel.analytics.bigdl.dllib.utils.Table
+import com.intel.analytics.bigdl.dllib.utils.{Log4Error, Table}
 
 import scala.reflect.ClassTag
 
@@ -46,7 +46,7 @@ private[bigdl] class InvGrad[T: ClassTag, D: ClassTag]()
   output = Tensor[D]()
 
   override def updateOutput(input: Table): Tensor[D] = {
-    require(input.length() == 2, "InvGrad requires two tensors as input")
+    Log4Error.invalidInputError(input.length() == 2, "InvGrad requires two tensors as input")
     val x = input[Tensor[D]](1)
     val d = input[Tensor[D]](2)
 

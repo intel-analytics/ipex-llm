@@ -15,13 +15,9 @@
 #
 
 import logging
-import tempfile
-import shutil
-import os
 import numpy as np
 
-import tensorflow as tf
-from bigdl.dllib.utils.file_utils import is_local_path, get_remote_dir_to_local
+from bigdl.orca.learn.utils import get_latest_checkpoint
 
 
 logger = logging.getLogger(__name__)
@@ -90,18 +86,7 @@ class Estimator(object):
 
     @staticmethod
     def latest_checkpoint(checkpoint_dir):
-        if is_local_path(checkpoint_dir):
-            checkpoint_path = tf.train.latest_checkpoint(checkpoint_dir)
-            return checkpoint_path
-        else:
-            try:
-                temp_dir = tempfile.mkdtemp()
-                get_remote_dir_to_local(checkpoint_dir, temp_dir)
-                checkpoint_path = tf.train.latest_checkpoint(temp_dir)
-                checkpoint_prefix = os.path.basename(checkpoint_path)
-                return os.path.join(checkpoint_dir, checkpoint_prefix)
-            finally:
-                shutil.rmtree(temp_dir)
+        return get_latest_checkpoint(checkpoint_dir)
 
 
 def make_data_creator(refs):

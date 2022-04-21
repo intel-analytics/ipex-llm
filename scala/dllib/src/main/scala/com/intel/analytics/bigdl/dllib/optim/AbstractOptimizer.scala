@@ -24,8 +24,7 @@ import com.intel.analytics.bigdl.dllib.optim.parameters.AllReduceParameter
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.dllib.utils.intermediate.IRGraph
-import com.intel.analytics.bigdl.dllib.utils.{Engine, MklBlas, MklDnn}
-import com.intel.analytics.bigdl.dllib.utils.{Table}
+import com.intel.analytics.bigdl.dllib.utils._
 import com.intel.analytics.bigdl.dllib.visualization.{TrainSummary, ValidationSummary}
 import org.apache.spark.rdd.{RDD, ZippedPartitionsWithLocalityRDD}
 
@@ -70,7 +69,8 @@ abstract class AbstractOptimizer {
     scalarTrigger.foreach { v =>
       if (v._2(driverState)) {
         // TODO: Support show learningrate for multiOptimMethod
-        require(driverState.contains(v._1), s"DistriOptimizer.saveSummary: Summary ${v._1} " +
+        Log4Error.invalidOperationError(driverState.contains(v._1),
+          s"DistriOptimizer.saveSummary: Summary ${v._1} " +
           s"is not supported now.")
         trainSummary.addScalar(
           v._1, driverState[Float](v._1), currentIteration

@@ -19,7 +19,7 @@ package com.intel.analytics.bigdl.dllib.keras.layers
 import com.intel.analytics.bigdl.dllib.nn.abstractnn.Activity
 import com.intel.analytics.bigdl.dllib.nn.internal.KerasLayer
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
-import com.intel.analytics.bigdl.dllib.utils.{Shape, T}
+import com.intel.analytics.bigdl.dllib.utils.{Shape, T, TestUtils}
 import com.intel.analytics.bigdl.dllib.keras.autograd.Variable
 import com.intel.analytics.bigdl.dllib.keras.Model
 import com.intel.analytics.bigdl.dllib.keras.serializer.ModuleSerializationTest
@@ -41,7 +41,7 @@ class BertSpec extends ZooSpecHelper {
     val shape = Shape(List(Shape(1, 10), Shape(1, 10), Shape(1, 10), Shape(1, 1, 1, 10)))
     layer.build(shape)
     val w = layer.parameters()._1
-//    require(w.length == 43)
+//    TestUtils.conditionFailTest(w.length == 43)
     val inputIds = Tensor[Float](Array[Float](7, 20, 39, 27, 10,
       39, 30, 21, 17, 15), Array(1, 10))
     val segmentIds = Tensor[Float](Array[Float](0, 0, 0, 0, 0, 1, 1, 1, 1, 1), Array(1, 10))
@@ -67,7 +67,7 @@ class BertSpec extends ZooSpecHelper {
     val shape = Shape(List(Shape(1, 10), Shape(1, 10), Shape(1, 10), Shape(1, 1, 1, 10)))
     layer.build(shape)
     val w = layer.parameters()._1
-//    require(w.length == 43)
+//    TestUtils.conditionFailTest(w.length == 43)
     val inputIds = Tensor[Float](Array[Float](7, 20, 39, 27, 10,
       39, 30, 21, 17, 15), Array(1, 10))
     val segmentIds = Tensor[Float](Array[Float](0, 0, 0, 0, 0, 1, 1, 1, 1, 1), Array(1, 10))
@@ -560,7 +560,7 @@ class BertSpec extends ZooSpecHelper {
       -1.5163f, -0.0971f, 0.8916f,
       -0.3329f, -0.3355f, 1.0987f, -1.9300f, 0.9568f, 0.5973f, -1.0527f,
       0.8440f, 1.0099f, -0.8555f), Array(2, 6, 10))
-    require(output[Tensor[Float]](1).almostEqual(expect, 5e-3) == true)
+    TestUtils.conditionFailTest(output[Tensor[Float]](1).almostEqual(expect, 5e-3) == true)
 
     val gradOutput = Tensor[Float](Array[Float](21f, 52f, 1f, 87f, 29f, 37f,
       1f, 63f, 59f, 20f,
@@ -1072,7 +1072,7 @@ class BertSpec extends ZooSpecHelper {
 
     var i = expectGrad.size - 1
     while (i >= 0) {
-      require(expectGrad(i).almostEqual(grads(i), 3.5) == true)
+      TestUtils.conditionFailTest(expectGrad(i).almostEqual(grads(i), 3.5) == true)
       i -= 1
     }
   }
@@ -1114,10 +1114,12 @@ class BertSpec extends ZooSpecHelper {
     val gradInput3 = layer2.backward(T(inputIds, segmentIds, positionIds, masks),
       gradOutput).toTable
     for (i <- 1 to output2.length()) {
-      require(output2[Tensor[Float]](i).almostEqual(expectO[Tensor[Float]](i), 1e-8))
+      TestUtils.conditionFailTest(output2[Tensor[Float]](i).almostEqual(expectO[Tensor[Float]](i),
+        1e-8))
     }
     for (i <- 1 to gradInput.length()) {
-      require(expepctGradInput[Tensor[Float]](i).almostEqual(gradInput3[Tensor[Float]](i), 1e-5))
+      TestUtils.conditionFailTest(
+        expepctGradInput[Tensor[Float]](i).almostEqual(gradInput3[Tensor[Float]](i), 1e-5))
     }
   }
 
@@ -1233,7 +1235,7 @@ class BertSpec extends ZooSpecHelper {
 //      -0.0081f, -0.9695f, 0.0637f, 0.7831f, -0.2514f, 0.6340f, -0.3967f, 0.8890f,
 //      -0.9158f, -0.2154f, -0.2064f, -0.6473f, -0.2937f, 0.6980f, 0.3257f, 0.9740f,
 //      -0.7701f, 0.7724f, 0.5081f, 0.7332f, 0.3277f, 0.5873f, -0.4213f, 0.8806f), Array(1, 768))
-//    require(output[Tensor[Float]](13).almostEqual(expectPoolOutput, 2e-4))
+//    TestUtils.conditionFailTest(output[Tensor[Float]](13).almostEqual(expectPoolOutput, 2e-4))
 //
 //    val gradPoolOutput = Tensor[Float](Array[Float](99.0f, 78.0f, 61.0f, 16.0f, 73.0f,
 //      8.0f, 62.0f, 27.0f, 30.0f, 80.0f, 7.0f, 76.0f, 15.0f, 53.0f,
@@ -1350,12 +1352,12 @@ class BertSpec extends ZooSpecHelper {
 //    val gradInput = layer.backward(input, gradOutput).toTable
 //
 //    val gradients = layer.parameters()._2
-//    require(Math.abs(gradients(2).apply(Array(1, 1)) - 151.8128) < 0.005)
-//    require(Math.abs(gradients(2).apply(Array(1, 2)) - (-249.5875)) < 0.015)
-//    require(Math.abs(gradients(0).apply(Array(1, 1)) - (-16.2635)) < 0.006)
-//    require(Math.abs(gradients(0).apply(Array(1, 2)) - (-18.1143)) < 0.016)
-//    require(Math.abs(gradients(5).apply(Array(1, 1)) - 0.0743) < 5e-5)
-//    require(Math.abs(gradients(5).apply(Array(1, 2)) - 0.6531) < 7e-5)
+//    TestUtils.conditionFailTest(Math.abs(gradients(2).apply(Array(1, 1)) - 151.8128) < 0.005)
+//    TestUtils.conditionFailTest(Math.abs(gradients(2).apply(Array(1, 2)) - (-249.5875)) < 0.015)
+//    TestUtils.conditionFailTest(Math.abs(gradients(0).apply(Array(1, 1)) - (-16.2635)) < 0.006)
+//    TestUtils.conditionFailTest(Math.abs(gradients(0).apply(Array(1, 2)) - (-18.1143)) < 0.016)
+//    TestUtils.conditionFailTest(Math.abs(gradients(5).apply(Array(1, 1)) - 0.0743) < 5e-5)
+//    TestUtils.conditionFailTest(Math.abs(gradients(5).apply(Array(1, 2)) - 0.6531) < 7e-5)
 //  }
 
   "Bert gelu" should "be able to generate correct result" in {
@@ -1385,7 +1387,7 @@ class BertSpec extends ZooSpecHelper {
       6.0000f, 7.0000f, 8.0000f, 9.0000f,
       10.0000f, 11.0000f, 12.0000f, 13.0000f,
       14.0000f, 15.0000f, 16.0000f, 17.0000f), Array(2, 2, 4))
-    require(output2.almostEqual(expectOutput, 5e-5) == true)
+    TestUtils.conditionFailTest(output2.almostEqual(expectOutput, 5e-5) == true)
 
     val expectGradInput = Tensor[Float](Array[Float](21.7046f, 21.2509f, 22.0111f, 23.0002f,
       24.0000f, 25.0000f, 26.0000f, 27.0000f,
@@ -1393,7 +1395,7 @@ class BertSpec extends ZooSpecHelper {
       28.0000f, 29.0000f, 30.0000f, 31.0000f,
       32.0000f, 33.0000f, 34.0000f, 35.0000f), Array(2, 2, 4))
     val gradInput = model.backward(xValue, gradOValue).toTensor[Float]
-    require(gradInput.almostEqual(expectGradInput, 5e-5) == true)
+    TestUtils.conditionFailTest(gradInput.almostEqual(expectGradInput, 5e-5) == true)
   }
 }
 

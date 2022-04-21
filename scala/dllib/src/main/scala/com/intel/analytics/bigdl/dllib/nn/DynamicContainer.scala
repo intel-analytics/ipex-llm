@@ -18,7 +18,7 @@ package com.intel.analytics.bigdl.dllib.nn
 import com.intel.analytics.bigdl.dllib.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.dllib.nn.ops.Operation
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.dllib.utils.Util
+import com.intel.analytics.bigdl.dllib.utils.{Log4Error, Util}
 
 import scala.reflect.ClassTag
 
@@ -38,7 +38,7 @@ abstract class DynamicContainer[A <: Activity : ClassTag, B <: Activity : ClassT
    * @return this container
    */
   def add(module: AbstractModule[_ <: Activity, _ <: Activity, T]): this.type = {
-    require(!module.isInstanceOf[Operation[_, _, _]],
+    Log4Error.invalidInputError(!module.isInstanceOf[Operation[_, _, _]],
       "Add operations to dynamic container is not allowed, as operations don't have backward. " +
         "Operation can only be used in Graph")
     validateInput[T](Seq(module))

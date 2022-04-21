@@ -24,7 +24,7 @@ import com.intel.analytics.bigdl.numeric.NumericFloat
 import com.intel.analytics.bigdl.dllib.optim.SGD
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.utils.RandomGenerator._
-import com.intel.analytics.bigdl.dllib.utils.T
+import com.intel.analytics.bigdl.dllib.utils.{T, TestUtils}
 
 import scala.math._
 import scala.util.Random
@@ -146,13 +146,13 @@ gradInput = model.gradInput
       val tmp = abs(outputTest.storage().array()(i) - output.storage().array()(i))
       abss += tmp
     }
-    assert(abss < 1e-2)
+    TestUtils.conditionFailTest(abss < 1e-2)
     println(s"outputAbs:$abss")
 
     val errTest = criterion.forward(outputTest, floatLabel)
     val err = TH.map("err", suffix).asInstanceOf[Double]
     println(s"${abs(errTest - err)}")
-    assert(abs(errTest - err) < 1e-6)
+    TestUtils.conditionFailTest(abs(errTest - err) < 1e-6)
 
     val gradOutputTest = criterion.backward(outputTest, floatLabel).toTensor
     val gradOutput = TH.map("gradOutput", suffix).asInstanceOf[Tensor[Double]]
@@ -161,7 +161,7 @@ gradInput = model.gradInput
       val tmp = abs(gradOutputTest.storage().array()(i) - gradOutput.storage().array()(i))
       abss += tmp
     }
-    assert(abss == 0.0)
+    TestUtils.conditionFailTest(abss == 0.0)
     println(s"gradOutputTestAbs:$abss")
 
     val gradInput = model.backward(floatInput, gradOutputTest).toTensor[Float]
@@ -183,7 +183,7 @@ gradInput = model.gradInput
       val tmp = abs(weights.storage().array()(i) - weightsTorch.storage().array()(i))
       abss += tmp
     }
-    assert(abss < 2e-2)
+    TestUtils.conditionFailTest(abss < 2e-2)
   }
 
   "AlexNet Float save to torch" should "generate correct output" in {
@@ -268,13 +268,13 @@ gradInput = model.gradInput
       val tmp = abs(outputTest.storage().array()(i) - output.storage().array()(i))
       abss += tmp
     }
-    assert(abss < 1e-2)
+    TestUtils.conditionFailTest(abss < 1e-2)
     println(s"outputAbs:$abss")
 
     val errTest = criterion.forward(outputTest, labels)
     val err = TH.map("err", suffix).asInstanceOf[Double]
     println(s"err:${abs(errTest - err)}")
-    assert(abs(errTest - err) < 1e-6)
+    TestUtils.conditionFailTest(abs(errTest - err) < 1e-6)
 
     val gradOutputTest = criterion.backward(outputTest, labels).toTensor
     val gradOutput = TH.map("gradOutput", suffix).asInstanceOf[Tensor[Float]]
@@ -283,7 +283,7 @@ gradInput = model.gradInput
       val tmp = abs(gradOutputTest.storage().array()(i) - gradOutput.storage().array()(i))
       abss += tmp
     }
-    assert(abss == 0.0)
+    TestUtils.conditionFailTest(abss == 0.0)
     println(s"gradOutputTestAbs:$abss")
 
     val gradInput = model.backward(input, gradOutputTest).toTensor[Float]
@@ -304,7 +304,7 @@ gradInput = model.gradInput
       val tmp = abs(weights.storage().array()(i) - weightsTorch.storage().array()(i))
       abss += tmp
     }
-    assert(abss < 2e-2)
+    TestUtils.conditionFailTest(abss < 2e-2)
   }
 
 

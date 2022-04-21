@@ -67,27 +67,33 @@ class TSPipeline:
         self.loss_creator = loss_creator
         self.optimizer_creator = optimizer_creator
 
-    def evaluate(self, data, metrics=['mse'], multioutput="uniform_average", batch_size=32):
+    def evaluate(self, data, metrics=['mse'], multioutput="uniform_average",
+                 batch_size=32, quantize=False):
         '''
         Evaluate the time series pipeline.
 
         :param data: data can be a TSDataset or data creator.
                The TSDataset should follow the same operations as the training
                TSDataset used in AutoTSEstimator.fit.
-        :param metrics: list. The evaluation metric name to optimize. e.g. ["mse"]
+        :param metrics: list of string or callable. e.g. ['mse'] or [customized_metrics]
+               If callable function, it signature should be func(y_true, y_pred), where y_true and
+               y_pred are numpy ndarray. The function should return a float value as evaluation
+               result.
         :param multioutput: Defines aggregating of multiple output values.
                String in ['raw_values', 'uniform_average']. The value defaults to
                'uniform_average'.
         :param batch_size: predict batch_size, the process will cost more time
                if batch_size is small while cost less memory. The param is only
                effective when data is a TSDataset. The values defaults to 32.
+        :param quantize: if use the quantized model to predict.
         '''
         # predict
         if isinstance(data, TSDataset):
             x, y = self._tsdataset_to_numpy(data, is_predict=False)
-            yhat = self._best_model.inference(torch.from_numpy(x),
+            yhat = self._best_model.inference(x,
                                               batch_size=batch_size,
-                                              backend=None).numpy()
+                                              backend=None,
+                                              quantize=quantize).numpy()
             # unscale
             yhat = self._tsdataset_unscale(yhat)
             y = self._tsdataset_unscale(y)
@@ -95,7 +101,9 @@ class TSPipeline:
             yhat_list, y_list = [], []
             self._best_config.update({'batch_size': batch_size})
             for x, y in data(self._best_config):
-                yhat = self._best_model.inference(x, backend=None)
+                yhat = self._best_model.inference(x.numpy(),
+                                                  backend=None,
+                                                  quantize=quantize)
                 yhat_list.append(yhat)
                 y_list.append(y)
             yhat = torch.cat(yhat_list, dim=0).numpy()
@@ -110,27 +118,32 @@ class TSPipeline:
         return eval_result
 
     def evaluate_with_onnx(self, data, metrics=['mse'], multioutput="uniform_average",
-                           batch_size=32):
+                           batch_size=32, quantize=False):
         '''
         Evaluate the time series pipeline with onnx.
 
         :param data: data can be a TSDataset or data creator.
                The TSDataset should follow the same operations as the training
                TSDataset used in AutoTSEstimator.fit.
-        :param metrics: list. The evaluation metric name to optimize. e.g. ["mse"]
+        :param metrics: list of string or callable. e.g. ['mse'] or [customized_metrics]
+               If callable function, it signature should be func(y_true, y_pred), where y_true and
+               y_pred are numpy ndarray. The function should return a float value as evaluation
+               result.
         :param multioutput: Defines aggregating of multiple output values.
                String in ['raw_values', 'uniform_average']. The value defaults to
                'uniform_average'.
         :param batch_size: predict batch_size, the process will cost more time
                if batch_size is small while cost less memory. The param is only
                effective when data is a TSDataset. The values defaults to 32.
+        :param quantize: if use the quantized model to predict.
         '''
         # predict with onnx
         if isinstance(data, TSDataset):
             x, y = self._tsdataset_to_numpy(data, is_predict=False)
             yhat = self._best_model.inference(x,
                                               batch_size=batch_size,
-                                              backend="onnx")
+                                              backend="onnx",
+                                              quantize=quantize)
             yhat = self._tsdataset_unscale(yhat)
             # unscale
             y = self._tsdataset_unscale(y)
@@ -138,7 +151,9 @@ class TSPipeline:
             yhat_list, y_list = [], []
             self._best_config.update({'batch_size': batch_size})
             for x, y in data(self._best_config):
-                yhat = self._best_model.inference(x.numpy(), backend="onnx")
+                yhat = self._best_model.inference(x.numpy(),
+                                                  backend="onnx",
+                                                  quantize=quantize)
                 yhat_list.append(yhat)
                 y_list.append(y)
             yhat = np.concatenate(yhat_list, axis=0)
@@ -151,7 +166,7 @@ class TSPipeline:
         eval_result = Evaluator.evaluate(metrics, y, yhat, aggregate=aggregate)
         return eval_result
 
-    def predict(self, data, batch_size=32):
+    def predict(self, data, batch_size=32, quantize=False):
         '''
         Rolling predict with time series pipeline.
 
@@ -161,18 +176,22 @@ class TSPipeline:
         :param batch_size: predict batch_size, the process will cost more time
                if batch_size is small while cost less memory.  The param is only
                effective when data is a TSDataset. The values defaults to 32.
+        :param quantize: if use the quantized model to predict.
         '''
         if isinstance(data, TSDataset):
             x, _ = self._tsdataset_to_numpy(data, is_predict=True)
-            yhat = self._best_model.inference(torch.from_numpy(x),
+            yhat = self._best_model.inference(x,
                                               batch_size=batch_size,
-                                              backend=None)
+                                              backend=None,
+                                              quantize=quantize)
             yhat = self._tsdataset_unscale(yhat)
         elif isinstance(data, types.FunctionType):
             yhat_list = []
             self._best_config.update({'batch_size': batch_size})
             for x, _ in data(self._best_config):
-                yhat = self._best_model.inference(x, backend=None)
+                yhat = self._best_model.inference(x.numpy(),
+                                                  backend=None,
+                                                  quantize=quantize)
                 yhat_list.append(yhat)
             yhat = np.concatenate(yhat_list, axis=0)
         else:
@@ -180,7 +199,7 @@ class TSPipeline:
                                f"but found {data.__class__.__name__}")
         return yhat
 
-    def predict_with_onnx(self, data, batch_size=32):
+    def predict_with_onnx(self, data, batch_size=32, quantize=False):
         '''
         Rolling predict with onnx with time series pipeline.
 
@@ -190,18 +209,22 @@ class TSPipeline:
         :param batch_size: predict batch_size, the process will cost more time
                if batch_size is small while cost less memory.  The param is only
                effective when data is a TSDataset. The values defaults to 32.
+        :param quantize: if use the quantized model to predict.
         '''
         if isinstance(data, TSDataset):
             x, _ = self._tsdataset_to_numpy(data, is_predict=True)
             yhat = self._best_model.inference(x,
                                               batch_size=batch_size,
-                                              backend="onnx")
+                                              backend="onnx",
+                                              quantize=quantize)
             yhat = self._tsdataset_unscale(yhat)
         elif isinstance(data, types.FunctionType):
             yhat_list = []
             self._best_config.update({'batch_size': batch_size})
             for x, _ in data(self._best_config):
-                yhat = self._best_model.inference(x.numpy(), backend="onnx")
+                yhat = self._best_model.inference(x.numpy(),
+                                                  backend="onnx",
+                                                  quantize=quantize)
                 yhat_list.append(yhat)
             yhat = np.concatenate(yhat_list, axis=0)
         else:
@@ -332,7 +355,113 @@ class TSPipeline:
                           best_config=best_config,
                           **data_process)
 
+    def quantize(self,
+                 calib_data,
+                 val_data=None,
+                 metric=None,
+                 conf=None,
+                 framework='pytorch_fx',
+                 approach='static',
+                 tuning_strategy='bayesian',
+                 relative_drop=None,
+                 absolute_drop=None,
+                 timeout=0,
+                 max_trials=1):
+        """
+        Quantization TSPipeline.
+
+        :param calib_data: Required for static quantization.
+
+               | 1. data creator:
+               | a function that takes a config dictionary as parameter and
+               | returns a PyTorch DataLoader.
+               |
+               | 2. a bigdl.chronos.data.TSDataset:
+               | the TSDataset should follow the same operations as the training
+               | TSDataset used in `AutoTSEstimator.fit`.
+               |
+               | 3. A torch.utils.data.dataloader.DataLoader object for calibration,
+               | Users should set the configs correctly (e.g. past_seq_len, ...).
+               | They can be found in TSPipeline._best_config.
+               |
+               | 4. A numpy ndarray tuple (x, y).
+               | x's shape is (num_samples, past_seq_len, input_feature_dim).
+               | y's shape is (num_samples, future_seq_len, output_feature_dim).
+               | They can be found in TSPipeline._best_config.
+
+        :param val_data: Same as calib_data,
+               should be data creator or TSDataset or DataLoader or numpy.ndarray.
+        :param metric: A str represent the metrics for tunning the quality of
+               quantization. You may choose from "mse", "mae", "rmse", "r2", "mape", "smape".
+        :param conf: A path to conf yaml file for quantization. Default to None,
+               using default config.
+        :param framework: string or list, [{'pytorch'|'pytorch_fx'|'pytorch_ipex'},
+               {'onnxrt_integerops'|'onnxrt_qlinearops'}]. Default: 'pytorch_fx'.
+               Consistent with Intel Neural Compressor.
+        :param approach: str, 'static' or 'dynamic'. Default to 'static'.
+        :param tuning_strategy: str, 'bayesian', 'basic', 'mse' or 'sigopt'. Default to 'bayesian'.
+        :param relative_drop: Float, tolerable ralative accuracy drop. Default to None,
+               e.g. set to 0.1 means that we accept a 10% increase in the metrics error.
+        :param absolute_drop: Float, tolerable ralative accuracy drop. Default to None,
+               e.g. set to 5 means that we can only accept metrics smaller than 5.
+        :param timeout: Tuning timeout (seconds). Default to 0, which means early stop.
+               Combine with max_trials field to decide when to exit.
+        :param max_trials: Max tune times. Default to 1. Combine with timeout field to
+               decide when to exit. "timeout=0, max_trials=1" means it will try quantization
+               only once and return satisfying best model.
+        """
+        from torch.utils.data import DataLoader, TensorDataset
+        from bigdl.chronos.data import TSDataset
+        # check model support for quantization
+        from bigdl.chronos.autots.utils import check_quantize_available
+        check_quantize_available(self._best_model.model)
+        # calib data should be set if the forecaster is just loaded
+        if calib_data is None and approach.startswith("static"):
+            raise RuntimeError("You must set a `calib_data` "
+                               "for quantization When you use 'static'.")
+        elif calib_data and approach.startswith("dynamic"):
+            raise RuntimeError("`calib_data` should be None When you use 'dynamic'.")
+
+        # preprocess data.
+        from .utils import preprocess_quantize_data
+        calib_data = preprocess_quantize_data(self, calib_data)
+        val_data = preprocess_quantize_data(self, val_data)
+
+        # map metric str to function
+        from bigdl.chronos.metric.forecast_metrics import TORCHMETRICS_REGRESSION_MAP
+        if isinstance(metric, str):
+            metric = TORCHMETRICS_REGRESSION_MAP[metric]
+
+        # init acc criterion
+        accuracy_criterion = None
+        if relative_drop and absolute_drop:
+            raise ValueError("Please unset either `relative_drop` or `absolute_drop`.")
+        if relative_drop:
+            accuracy_criterion = {'relative': relative_drop, 'higher_is_better': False}
+        if absolute_drop:
+            accuracy_criterion = {'absolute': absolute_drop, 'higher_is_better': False}
+
+        from bigdl.nano.pytorch.trainer import Trainer
+        self._trainer = Trainer(logger=False, max_epochs=1,
+                                checkpoint_callback=False,
+                                use_ipex=False)
+
+        # quantize
+        self._best_model = self._trainer.quantize(self._best_model,
+                                                  calib_dataloader=calib_data,
+                                                  val_dataloader=val_data,
+                                                  metric=metric,
+                                                  conf=conf,
+                                                  framework=framework,
+                                                  approach=approach,
+                                                  tuning_strategy=tuning_strategy,
+                                                  accuracy_criterion=accuracy_criterion,
+                                                  timeout=timeout,
+                                                  max_trials=max_trials,
+                                                  return_pl=True)
+
     def _tsdataset_to_loader(self, data, is_predict=False, batch_size=32):
+        self._check_mixed_data_type_usage()
         lookback = self._best_config["past_seq_len"]
         horizon = 0 if is_predict else self._best_config["future_seq_len"]
         selected_features = self._best_config["selected_features"]
@@ -344,6 +473,7 @@ class TSPipeline:
         return data_loader
 
     def _tsdataset_to_numpy(self, data, is_predict=False):
+        self._check_mixed_data_type_usage()
         lookback = self._best_config["past_seq_len"]
         horizon = 0 if is_predict else self._best_config["future_seq_len"]
         selected_features = self._best_config["selected_features"]
@@ -351,6 +481,13 @@ class TSPipeline:
                   horizon=horizon,
                   feature_col=selected_features)
         return data.to_numpy()
+
+    def _check_mixed_data_type_usage(self):
+        for key in ("past_seq_len", "future_seq_len", "selected_features"):
+            if key not in self._best_config:
+                raise TypeError("You use a data creator to fit your AutoTSEstimator, "
+                                "and use a TSDataset to predict/evaluate/fit on the TSPipeline. "
+                                "Please stick to the same data type.")
 
     def _tsdataset_unscale(self, y):
         if self._scaler:

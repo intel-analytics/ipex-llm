@@ -58,6 +58,7 @@ class FLServer private[ppml](val _args: Array[String] = null) extends GrpcServer
   @throws[IOException]
   override def parseConfig(): Unit = {
     val flHelper = getConfigFromYaml(classOf[FLHelper], configPath)
+    // overwrite the current config if there exists in config file
     if (flHelper != null) {
       port = flHelper.serverPort
       clientNum = flHelper.clientNum

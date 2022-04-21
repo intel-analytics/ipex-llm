@@ -482,3 +482,15 @@ class SharedValue(object):
 
     def unpersist(self):
         self.broadcast_data.unpersist()
+
+
+def spark_df_to_ray_dataset(df):
+    """
+    Convert a Spark DataFrame to Ray Dataset. The block number of ray datasets equals to the
+    partition number of the input DataFrame.
+    :param df: A Spark dataframe.
+    :return: A Ray Dataset holding Arrow records read from the dataframe.
+    """
+    spark_xshards = spark_df_to_pd_sparkxshards(df)
+    ray_dataset = spark_xshards_to_ray_dataset(spark_xshards)
+    return ray_dataset

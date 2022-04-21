@@ -17,7 +17,7 @@
 package com.intel.analytics.bigdl.dllib.nn
 
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
-import com.intel.analytics.bigdl.dllib.utils.T
+import com.intel.analytics.bigdl.dllib.utils.{T, TestUtils}
 import org.scalatest.{FlatSpec, Matchers}
 
 import scala.math._
@@ -78,9 +78,9 @@ class TimeDistributedCriterionSpec extends FlatSpec with Matchers {
     expectedGrad(Array(3, 2, 1)) = 0
     expectedGrad(Array(3, 2, 2)) = 0
     expectedGrad(Array(3, 2, 3)) = -0.16666666666666666
-    assert(abs(expectedOutput - output) < 1e-6)
+    TestUtils.conditionFailTest(abs(expectedOutput - output) < 1e-6)
     expectedGrad.map(gradInput, (v1, v2) => {
-      assert(abs(v1 - v2) < 1e-6)
+      TestUtils.conditionFailTest(abs(v1 - v2) < 1e-6)
       v1
     })
   }
@@ -140,9 +140,9 @@ class TimeDistributedCriterionSpec extends FlatSpec with Matchers {
     expectedGrad(Array(3, 2, 1)) = 0
     expectedGrad(Array(3, 2, 2)) = 0
     expectedGrad(Array(3, 2, 3)) = -0.3333333333333333
-    assert(abs(expectedOutput - output) < 1e-6)
+    TestUtils.conditionFailTest(abs(expectedOutput - output) < 1e-6)
     expectedGrad.map(gradInput, (v1, v2) => {
-      assert(abs(v1 - v2) < 1e-6)
+      TestUtils.conditionFailTest(abs(v1 - v2) < 1e-6)
       v1
     })
   }
@@ -202,9 +202,9 @@ class TimeDistributedCriterionSpec extends FlatSpec with Matchers {
     expectedGrad(Array(3, 2, 1)) = 0
     expectedGrad(Array(3, 2, 2)) = 0
     expectedGrad(Array(3, 2, 3)) = -0.5
-    assert(abs(expectedOutput - output) < 1e-6)
+    TestUtils.conditionFailTest(abs(expectedOutput - output) < 1e-6)
     expectedGrad.map(gradInput, (v1, v2) => {
-      assert(abs(v1 - v2) < 1e-6)
+      TestUtils.conditionFailTest(abs(v1 - v2) < 1e-6)
       v1
     })
   }
@@ -264,9 +264,9 @@ class TimeDistributedCriterionSpec extends FlatSpec with Matchers {
     expectedGrad(Array(3, 2, 1)) = 0
     expectedGrad(Array(3, 2, 2)) = 0
     expectedGrad(Array(3, 2, 3)) = -1
-    assert(abs(expectedOutput - output) < 1e-6)
+    TestUtils.conditionFailTest(abs(expectedOutput - output) < 1e-6)
     expectedGrad.map(gradInput, (v1, v2) => {
-      assert(abs(v1 - v2) < 1e-6)
+      TestUtils.conditionFailTest(abs(v1 - v2) < 1e-6)
       v1
     })
   }
@@ -361,7 +361,7 @@ class TimeDistributedCriterionSpec extends FlatSpec with Matchers {
     val gradInput = layer.backward(input, target)
 
     expectedGrad.map(gradInput, (v1, v2) => {
-      assert(abs(v1 - v2) < 1e-6)
+      TestUtils.conditionFailTest(abs(v1 - v2) < 1e-6)
       v1
     })
   }
@@ -404,9 +404,9 @@ class TimeDistributedCriterionSpec extends FlatSpec with Matchers {
     val output = layer.forward(input, target)
     val gradInput = layer.backward(input, target)
 
-    assert(abs(expectedOutput - output) < 1e-6)
+    TestUtils.conditionFailTest(abs(expectedOutput - output) < 1e-6)
     expectedGrad.map(gradInput, (v1, v2) => {
-      assert(abs(v1 - v2) < 1e-6)
+      TestUtils.conditionFailTest(abs(v1 - v2) < 1e-6)
       v1
     })
   }
@@ -450,9 +450,9 @@ class TimeDistributedCriterionSpec extends FlatSpec with Matchers {
     val output = layer.forward(input, target)
     val gradInput = layer.backward(input, target)
 
-    assert(abs(expectedOutput - output) < 1e-6)
+    TestUtils.conditionFailTest(abs(expectedOutput - output) < 1e-6)
     expectedGrad.map(gradInput, (v1, v2) => {
-      assert(abs(v1 - v2) < 1e-6)
+      TestUtils.conditionFailTest(abs(v1 - v2) < 1e-6)
       v1
     })
   }
@@ -496,9 +496,9 @@ class TimeDistributedCriterionSpec extends FlatSpec with Matchers {
     val output = layer.forward(input, target)
     val gradInput = layer.backward(input, target)
 
-    assert(abs(expectedOutput - output) < 1e-6)
+    TestUtils.conditionFailTest(abs(expectedOutput - output) < 1e-6)
     expectedGrad.map(gradInput, (v1, v2) => {
-      assert(abs(v1 - v2) < 1e-6)
+      TestUtils.conditionFailTest(abs(v1 - v2) < 1e-6)
       v1
     })
   }
@@ -592,9 +592,9 @@ class TimeDistributedCriterionSpec extends FlatSpec with Matchers {
     val output = criterion.forward(T(input), T(target))
     val gradInput = criterion.backward(T(input), T(target))
 
-    assert(abs(expectedOutput - output) < 1e-6)
+    TestUtils.conditionFailTest(abs(expectedOutput - output) < 1e-6)
     expectedGrad.map(gradInput(1), (v1, v2) => {
-      assert(abs(v1 - v2) < 1e-6)
+      TestUtils.conditionFailTest(abs(v1 - v2) < 1e-6)
       v1
     })
   }

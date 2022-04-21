@@ -20,6 +20,9 @@ import numpy as np
 from pyspark.ml.linalg import DenseVector, SparseVector, VectorUDT
 import sys
 import os
+import re
+from bigdl.dllib.utils.log4Error import *
+
 
 if sys.version >= '3':
     long = int
@@ -130,8 +133,9 @@ def pack_penv(conda_name, output_name):
 def get_conda_python_path():
     conda_env_path = "/".join(detect_python_location().split("/")[:-2])
     python_interpreters = glob.glob("{}/lib/python*".format(conda_env_path))
-    assert len(python_interpreters) == 1, "Conda env should contain a single Python " \
-                                          "interpreter, but got: {}".format(python_interpreters)
+    invalidInputError(len(python_interpreters) == 1,
+                      "Conda env should contain a single Python "
+                      "interpreter, but got: {}".format(python_interpreters))
     return python_interpreters[0]
 
 
@@ -151,13 +155,25 @@ def get_executor_conda_zoo_classpath(conda_path):
 def get_zoo_bigdl_classpath_on_driver():
     from bigdl.dllib.utils.engine import get_bigdl_classpath
     bigdl_classpath = get_bigdl_classpath()
-    assert bigdl_classpath, "Cannot find BigDL classpath, please check your installation"
+    invalidInputError(bigdl_classpath,
+                      "Cannot find BigDL classpath, please check your installation")
     return bigdl_classpath
 
 
 def set_python_home():
     if "PYTHONHOME" not in os.environ:
         os.environ['PYTHONHOME'] = "/".join(detect_python_location().split("/")[:-2])
+
+
+def get_bigdl_class_version():
+    from bigdl.dllib.utils.engine import get_bigdl_jars
+    bigdl_jars = get_bigdl_jars()
+    try:
+        bigdl_class_version = re.search('spark_(.+?)-jar', bigdl_jars[0]).group(1)[6:]
+    except AttributeError:
+        # not found
+        bigdl_class_version = 'Cannot find BigDL classpath, please check your installation'
+    return bigdl_class_version
 
 
 def _is_scalar_type(dtype, accept_str_col=False):
@@ -183,13 +199,22 @@ def convert_row_to_numpy(row, schema, feature_cols, label_cols, accept_str_col=F
             feature_type = schema[name].dataType
             if _is_scalar_type(feature_type, accept_str_col):
                 result.append(np.array(row[name]).astype(np.float32))
+                if isinstance(feature_type, df_types.FloatType):
+                    result.append(np.array(row[name]).astype(np.float32))
+                elif isinstance(feature_type, df_types.IntegerType):
+                    result.append(np.array(row[name]).astype(np.int32))
+                else:
+                    result.append(np.array(row[name]))
             elif isinstance(feature_type, df_types.ArrayType):
-                result.append(np.array(row[name]).astype(np.float32))
+                if accept_str_col and isinstance(feature_type.elementType, df_types.StringType):
+                    result.append(np.array(row[name]).astype(np.str))
+                else:
+                    result.append(np.array(row[name]).astype(np.float32))
             elif isinstance(row[name], DenseVector):
                 result.append(row[name].values.astype(np.float32))
             else:
-                assert isinstance(row[name], SparseVector), \
-                    "unsupported field {}, data {}".format(schema[name], row[name])
+                invalidInputError(isinstance(row[name], SparseVector),
+                                  "unsupported field {}, data {}".format(schema[name], row[name]))
                 result.append(row[name].toArray())
         if len(result) == 1:
             return result[0]

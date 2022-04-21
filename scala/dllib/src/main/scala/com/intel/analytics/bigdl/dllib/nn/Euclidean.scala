@@ -19,7 +19,7 @@ import com.intel.analytics.bigdl.dllib.nn.abstractnn.{Initializable, TensorModul
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.dllib.utils.RandomGenerator._
-import com.intel.analytics.bigdl.dllib.utils.{T, Table}
+import com.intel.analytics.bigdl.dllib.utils.{Log4Error, T, Table}
 
 import scala.reflect.ClassTag
 
@@ -59,7 +59,7 @@ class Euclidean[T: ClassTag](val inputSize: Int, val outputSize: Int,
 
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
 
-    require(input.dim() == 1 || input.dim() == 2,
+    Log4Error.invalidInputError(input.dim() == 1 || input.dim() == 2,
       "Euclidean: " + ErrorInfo.constrainInputAsVectorOrBatch +
       s"input dim ${input.dim()}")
 
@@ -99,7 +99,7 @@ class Euclidean[T: ClassTag](val inputSize: Int, val outputSize: Int,
   }
 
   override def updateGradInput(input: Tensor[T], gradOutput: Tensor[T]): Tensor[T] = {
-    require(input.dim() == 1 || input.dim() == 2,
+    Log4Error.invalidInputError(input.dim() == 1 || input.dim() == 2,
       "Euclidean: " + ErrorInfo.constrainInputAsVectorOrBatch +
     s"input dim ${input.dim()}")
 
@@ -131,7 +131,7 @@ class Euclidean[T: ClassTag](val inputSize: Int, val outputSize: Int,
 
   override def accGradParameters(input: Tensor[T], gradOutput: Tensor[T]): Unit = {
 
-    require(input.dim() == 1 || input.dim() == 2,
+    Log4Error.invalidInputError(input.dim() == 1 || input.dim() == 2,
       "Euclidean: " + ErrorInfo.constrainInputAsVectorOrBatch)
     if (scaleW == 0) {
       return

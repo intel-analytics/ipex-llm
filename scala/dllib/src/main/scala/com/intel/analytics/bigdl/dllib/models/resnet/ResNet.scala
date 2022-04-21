@@ -24,7 +24,7 @@ import com.intel.analytics.bigdl.numeric.NumericFloat
 import com.intel.analytics.bigdl.dllib.optim.L2Regularizer
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.dllib.tensor.{Storage, Tensor}
-import com.intel.analytics.bigdl.dllib.utils.Table
+import com.intel.analytics.bigdl.dllib.utils.{Log4Error, Table}
 import com.intel.analytics.bigdl.dllib.utils.RandomGenerator._
 import org.apache.logging.log4j.LogManager
 
@@ -240,7 +240,7 @@ object ResNet {
           bottleneck: (Int, Int) => Module[Float])
       )
 
-      require(cfg.keySet.contains(depth), s"Invalid depth ${depth}")
+      Log4Error.invalidInputError(cfg.keySet.contains(depth), s"Invalid depth ${depth}")
 
       val (loopConfig, nFeatures, block) = cfg.get(depth).get
       iChannels = 64
@@ -259,7 +259,7 @@ object ResNet {
         .add(Linear(nFeatures, classNum, true, L2Regularizer(1e-4), L2Regularizer(1e-4))
           .setInitMethod(RandomNormal(0.0, 0.01), Zeros))
     } else if (dataSet == DatasetType.CIFAR10) {
-      require((depth - 2)%6 == 0,
+      Log4Error.invalidInputError((depth - 2)%6 == 0,
         "depth should be one of 20, 32, 44, 56, 110, 1202")
       val n = (depth-2)/6
       iChannels = 16
@@ -369,7 +369,7 @@ object ResNet {
           bottleneckFunc: (Int, Int, ModuleNode[Float]) => ModuleNode[Float])
       )
 
-      require(cfg.keySet.contains(depth), s"Invalid depth ${depth}")
+      Log4Error.invalidInputError(cfg.keySet.contains(depth), s"Invalid depth ${depth}")
 
       val (loopConfig, nFeatures, block) = cfg.get(depth).get
       iChannels = 64
@@ -391,7 +391,7 @@ object ResNet {
                .setInitMethod(RandomNormal(0.0, 0.01), Zeros).inputs(view)
       Graph(input, output)
     } else if (dataset == DatasetType.CIFAR10) {
-      require((depth - 2)%6 == 0,
+      Log4Error.invalidInputError((depth - 2)%6 == 0,
         "depth should be one of 20, 32, 44, 56, 110, 1202")
       val n = (depth-2)/6
       iChannels = 16

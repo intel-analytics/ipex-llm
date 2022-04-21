@@ -19,7 +19,7 @@ package com.intel.analytics.bigdl.dllib.optim
 import com.intel.analytics.bigdl.dllib.optim.SGD.{Default, LearningRateSchedule}
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
-import com.intel.analytics.bigdl.dllib.utils.{T, Table}
+import com.intel.analytics.bigdl.dllib.utils.{Log4Error, T, Table}
 
 import scala.collection.mutable.ArrayBuffer
 import scala.reflect.ClassTag
@@ -71,13 +71,13 @@ class SGD[@specialized(Float, Double) T: ClassTag](
     val wds = this.weightDecays
     val clr = ev.fromType(this.learningRateSchedule.currentRate)
 
-    require(!nesterov || (mom > 0 && damp == 0),
+    Log4Error.invalidOperationError(!nesterov || (mom > 0 && damp == 0),
       "Nesterov momentum requires a momentum and zero dampening")
 
     var (fx, dfdx) = feval(x)
 
     if (wd != 0 || wds != null) {
-      require(!state.get[Boolean]("isLayerwiseScaled").getOrElse(false),
+      Log4Error.invalidOperationError(!state.get[Boolean]("isLayerwiseScaled").getOrElse(false),
         "SGD: Can't set layerwise scale and weight decay at the same time")
     }
     if (wd != 0) {
@@ -544,8 +544,8 @@ object SGD {
   case class Plateau(monitor: String, factor: Float = 0.1f,
     patience: Int = 10, mode: String = "min", epsilon: Float = 1e-4f,
     cooldown: Int = 0, minLr: Float = 0) extends LearningRateSchedule {
-    require(factor < 1, "Plateau does not support a factor >= 1.0")
-    require(mode == "min" || mode == "max",
+    Log4Error.invalidOperationError(factor < 1, "Plateau does not support a factor >= 1.0")
+    Log4Error.invalidOperationError(mode == "min" || mode == "max",
       s"Learning Rate Plateau Reducing mode ${ mode } is unknown, please use min | max")
     var (monitorOp, best) = if (mode == "min") {
       ((a: Float, b: Float) => a < b - epsilon, Float.PositiveInfinity)
@@ -568,7 +568,8 @@ object SGD {
       if (epoch == curEpoch) return
       curEpoch = epoch
       val current = optimMethod.state.get[Float](monitor)
-      require(current.isDefined, s"Learning Rate Plateau Reducing requires ${monitor} available!")
+      Log4Error.invalidOperationError(current.isDefined,
+        s"Learning Rate Plateau Reducing requires ${monitor} available!")
       if (cooldownCounter > 0) {
         cooldownCounter -= 1
         waitCounter = 0

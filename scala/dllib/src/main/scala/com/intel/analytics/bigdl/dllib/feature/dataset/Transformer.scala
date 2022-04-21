@@ -21,7 +21,7 @@ import com.intel.analytics.bigdl.dllib.nn.abstractnn.Activity
 import org.apache.commons.lang3.SerializationUtils
 import java.util
 
-import com.intel.analytics.bigdl.dllib.utils.T
+import com.intel.analytics.bigdl.dllib.utils.{Log4Error, T}
 import org.apache.spark.rdd.RDD
 
 import scala.collection.Iterator
@@ -234,7 +234,8 @@ class SampleToBatch[T: ClassTag]
           var batchLength = 1
           while (i < batchSize && prev.hasNext) {
             val sample = prev.next()
-            require(sample.feature().isContiguous() && sample.label().isContiguous(),
+            Log4Error.invalidInputError(sample.feature().isContiguous()
+              && sample.label().isContiguous(),
               "SampleToBatch: Only support contiguous tensor")
             sampleData(i) = sample
             featureIndex = getLarger(sampleData(featureIndex).feature().nElement(),
@@ -252,14 +253,14 @@ class SampleToBatch[T: ClassTag]
           featureSize(0) = batchLength
           val featureLength = sampleData(featureIndex).feature().size(1)
           featureSize(1) = if (padFeature) fixedLength.getOrElse(featureLength) else featureLength
-          require(featureSize(1) >= featureLength,
+          Log4Error.invalidOperationError(featureSize(1) >= featureLength,
             "SampleToBatch: fixedLength should not be less than first dimension of feature")
           oneFeatureElement = getProduct(featureSize, 1, featureSize.length)
 
           labelSize(0) = batchLength
           val labelLength = sampleData(labelIndex).label().size(1)
           labelSize(1) = if (padLabel) fixedLength.getOrElse(labelLength) else labelLength
-          require(labelSize(1) >= labelLength,
+          Log4Error.invalidOperationError(labelSize(1) >= labelLength,
             "SampleToBatch: fixedLength should not be less than first dimension of label")
           oneLabelElement = getProduct(labelSize, 1, labelSize.length)
 
@@ -270,7 +271,8 @@ class SampleToBatch[T: ClassTag]
             labelData = new Array[T](batchSize * oneLabelElement)
           }
           if (padFeature) {
-            require(((featurePadding.get.dim() + 1) == sampleData(featureIndex).feature().dim())
+            Log4Error.invalidOperationError(((featurePadding.get.dim() + 1)
+              == sampleData(featureIndex).feature().dim())
               && featurePadding.get.isContiguous(), "SampleToBatch: featurePadding should be" +
               s"contiguous and dim should be ${sampleData(featureIndex).feature().dim() - 1}")
           }

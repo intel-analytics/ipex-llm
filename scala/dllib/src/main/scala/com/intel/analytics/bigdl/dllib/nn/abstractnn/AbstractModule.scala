@@ -282,11 +282,14 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, 
       updateParameter
       updateOutput(input)
     } catch {
-      case l: LayerException =>
-        l.layerMsg = this.toString() + "/" + l.layerMsg
+      case l: IllegalArgumentException =>
         throw l
+      case u: InvalidOperationException =>
+        throw u
       case e: Throwable =>
-        throw new LayerException(this.toString(), e)
+        val errormsg = this.toString() + "\n" + e.getMessage
+        Log4Error.unKnowExceptionError(false, errormsg, cause = e)
+        null
     }
     forwardTime += System.nanoTime() - before
 
@@ -391,7 +394,7 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, 
   def setExtraParameter(extraParam: Array[Tensor[T]]): this.type = {
     val currentExtraParam = this.getExtraParameter()
     if (extraParam != null && currentExtraParam != null) {
-      require(extraParam.length == currentExtraParam.length,
+      Log4Error.invalidInputError(extraParam.length == currentExtraParam.length,
         "state's length doesn't match, excepted:" +
           s"${currentExtraParam.length}, but got  ${extraParam.length}")
       var i = 0
@@ -439,7 +442,8 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, 
     val params = parameters()
     if (params == null) return null
     val (weights, gradients) = params
-    require(gradients.length == weights.length, "weight number is not equal to grad number")
+    Log4Error.invalidInputError(gradients.length == weights.length,
+      "weight number is not equal to grad number")
 
     if (weights.length == 1) {
       T(getName() -> T("weight" -> weights(0), "gradWeight" -> gradients(0)))
@@ -652,7 +656,8 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, 
     path: String,
     byteOrder: ByteOrder = ByteOrder.LITTLE_ENDIAN,
     dataFormat: TensorflowDataFormat = TensorflowDataFormat.NHWC): this.type = {
-    require(this.isInstanceOf[Graph[T]], "only Graph container can be saved as Tensorflow model")
+    Log4Error.invalidInputError(this.isInstanceOf[Graph[T]],
+      "only Graph container can be saved as Tensorflow model")
     this.clearState()
     val inTrainMode = train
     if (inTrainMode) {
@@ -742,8 +747,8 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, 
    * @return
    */
   final def setWeightsBias(newWeights: Array[Tensor[T]]): this.type = {
-    require(parameters() != null, "this layer does not have weight/bias")
-    require(parameters()._1.length == newWeights.length,
+    Log4Error.invalidInputError(parameters() != null, "this layer does not have weight/bias")
+    Log4Error.invalidInputError(parameters()._1.length == newWeights.length,
       "the number of input weight/bias is not consistant with " +
         "number of weight/bias of this layer, " +
         s"number of input ${parameters()._1.length}," +
@@ -751,7 +756,7 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, 
     val weights = parameters()._1
     for(i <- newWeights.indices) {
       // TODO: enable this checking as we don't respect shape right now.
-      //      require(weights(i).size().deep == newWeights(i).size().deep,
+      //      Log4Error.invalidInputError(weights(i).size().deep == newWeights(i).size().deep,
       //        s"Mismatch shape, ${weights(i).size().mkString(",")}" +
       //          s" vs ${newWeights(i).size().mkString(",")} ")
       weights(i).copy(newWeights(i))
@@ -950,10 +955,11 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, 
     vMethods: Array[_ <:ValidationMethod[T]],
     batchSize: Option[Int] = None
     ): Array[(ValidationResult, ValidationMethod[T])] = {
-    require(imageFrame.isDistributed(), "ImageFrame must be distributed")
+    Log4Error.invalidInputError(imageFrame.isDistributed(), "ImageFrame must be distributed")
     val rdd = imageFrame.toDistributed().rdd.map(imageFeature => {
       if (imageFeature.isValid) {
-        require(imageFeature.contains(ImageFeature.sample), "ImageFeature must have sample")
+        Log4Error.invalidInputError(imageFeature.contains(ImageFeature.sample),
+          "ImageFeature must have sample")
         imageFeature[Sample[T]](ImageFeature.sample)
       } else {
         null
@@ -1052,11 +1058,11 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, 
     val (weightParameters, gradParameters) = this.parameters()
 
     // maybe null if not weights in this module.
-    require(weightParameters != null && weightParameters.length > 0,
+    Log4Error.invalidInputError(weightParameters != null && weightParameters.length > 0,
       s"model ${this.getName()} doesn't have any trainable parameters.")
 
     // If some gradParameters are not allocated storage, allocate it
-    require(weightParameters.size == gradParameters.size,
+    Log4Error.invalidInputError(weightParameters.size == gradParameters.size,
       "weights and gradient number are not match")
     weightParameters.zip(gradParameters).foreach{ case(w, g) => g.resizeAs(w)}
     (Module.flatten[T](weightParameters), Module.flatten[T](gradParameters))
@@ -1087,10 +1093,12 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, 
     val parameterTable = this.getParametersTable
     val copiedModuleParamTable = copy.getParametersTable
     if (parameterTable != null) {
-      require(copiedModuleParamTable != null, "cloned module should have params")
+      Log4Error.invalidInputError(copiedModuleParamTable != null,
+        "cloned module should have params")
       parameterTable.foreach {
         case (name: String, params: Table) =>
-          require(copiedModuleParamTable.get(name) != None, s"cloned module should have for $name")
+          Log4Error.invalidInputError(copiedModuleParamTable.get(name) != None,
+            s"cloned module should have for $name")
           setLayerWeightAndBias(params,
             copiedModuleParamTable.get(name).get.asInstanceOf[Table], deepCopy)
         case _ =>
@@ -1192,7 +1200,8 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, 
   ): Unit = {
     val errMsg = "Some module is duplicate in the current model: "
     val curId = System.identityHashCode(this)
-    require(this.skipDuplicateCheck() || !record.contains(curId), errMsg + this.getName())
+    Log4Error.invalidInputError(this.skipDuplicateCheck()
+      || !record.contains(curId), errMsg + this.getName())
     record.add(curId)
   }
 
@@ -1256,7 +1265,8 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, 
         val syncEndTime = System.nanoTime()
         if (grads != null) {
           val optimMethod = this.getOptimMethod
-          require(optimMethod != null, s"optim method for ${this.getName} cannot be null")
+          Log4Error.invalidInputError(optimMethod != null,
+            s"optim method for ${this.getName} cannot be null")
           optimMethod.optimize(_ => (ev.fromType(0.0f), grads),
             weights)
           this.zeroGradParameters

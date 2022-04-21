@@ -18,6 +18,7 @@ package com.intel.analytics.bigdl.dllib.feature.dataset.text
 
 import com.intel.analytics.bigdl.dllib.feature.dataset.Transformer
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.dllib.utils.Log4Error
 
 import scala.collection.Iterator
 import scala.reflect.ClassTag
@@ -85,7 +86,7 @@ private[bigdl] class TextToSentenceWithSteps[T: ClassTag](numSteps: Int)
 
   override def apply(prev: Iterator[Array[T]]): Iterator[LabeledSentence[T]] = {
     prev.map(sentence => {
-      require(sentence.length >= numSteps + 1,
+      Log4Error.invalidOperationError(sentence.length >= numSteps + 1,
         "input sentence length should be numSteps + 1, " +
           s"sentence.length = ${sentence.length}, numSteps = ${numSteps}")
       Array.copy(sentence, 0, xbuffer, 0, numSteps)

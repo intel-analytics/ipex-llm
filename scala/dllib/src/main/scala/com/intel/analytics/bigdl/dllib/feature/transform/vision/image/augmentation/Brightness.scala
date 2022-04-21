@@ -18,6 +18,7 @@ package com.intel.analytics.bigdl.dllib.feature.transform.vision.image.augmentat
 
 import com.intel.analytics.bigdl.dllib.feature.transform.vision.image.opencv.OpenCVMat
 import com.intel.analytics.bigdl.dllib.feature.transform.vision.image.{FeatureTransformer, ImageFeature}
+import com.intel.analytics.bigdl.dllib.utils.Log4Error
 import com.intel.analytics.bigdl.dllib.utils.RandomGenerator._
 
 /**
@@ -28,7 +29,8 @@ import com.intel.analytics.bigdl.dllib.utils.RandomGenerator._
  */
 class Brightness(deltaLow: Double, deltaHigh: Double)
   extends FeatureTransformer {
-  require(deltaLow <= deltaHigh)
+  Log4Error.invalidInputError(deltaLow <= deltaHigh, s"deltaLow($deltaLow) should be smaller" +
+    s" than deltaHigh($deltaHigh")
   override def transformMat(feature: ImageFeature): Unit = {
     Brightness.transform(feature.opencvMat(), feature.opencvMat(), RNG.uniform(deltaLow, deltaHigh))
   }

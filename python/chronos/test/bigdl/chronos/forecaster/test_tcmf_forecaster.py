@@ -41,6 +41,27 @@ class TestChronosModelTCMFForecaster(TestCase):
                                max_TCN_epoch=1,
                                alt_iters=2)
 
+    def tearDown(self):
+        pass
+
+    @classmethod
+    def tearDownClass(cls):
+        # stop possible active_spark_context
+        from pyspark import SparkContext
+        from bigdl.orca.ray import RayContext
+        if SparkContext._active_spark_context is not None:
+            print("Stopping spark_orca context")
+            sc = SparkContext.getOrCreate()
+            if sc.getConf().get("spark.master").startswith("spark://"):
+                from bigdl.dllib.nncontext import stop_spark_standalone
+                stop_spark_standalone()
+            sc.stop()
+        if RayContext._active_ray_context is not None:
+            print("Stopping ray_orca context")
+            ray_ctx = RayContext.get(initialize=False)
+            if ray_ctx.initialized:
+                ray_ctx.stop()
+
     def test_forecast_tcmf_ndarray(self):
         ndarray_input = {'id': self.id, 'y': self.data}
         self.model.fit(ndarray_input, **self.fit_params)

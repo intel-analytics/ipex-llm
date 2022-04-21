@@ -33,11 +33,18 @@ run_taskmanager() {
         occlum build
     fi
 
+    if [[ -z "$META_SPACE" ]]; then
+        echo "META_SPACE not set, using default value 256m"
+        META_SPACE=256m
+    else
+        echo "META_SPACE=$META_SPACE"
+    fi
+
     echo -e "${BLUE}occlum run JVM taskmanager${NC}"
     echo -e "${BLUE}logfile=$log${NC}"
     # start task manager in occlum
     occlum run /usr/lib/jvm/java-11-openjdk-amd64/bin/java \
-    -XX:+UseG1GC -Xmx10g -Xms10g -XX:MaxDirectMemorySize=4g -XX:MaxMetaspaceSize=256m \
+    -XX:+UseG1GC -Xmx10g -Xms10g -XX:MaxDirectMemorySize=4g -XX:MaxMetaspaceSize=$META_SPACE \
     -Dos.name=Linux \
     -XX:ActiveProcessorCount=${core_num} \
     -Dlog.file=$log \

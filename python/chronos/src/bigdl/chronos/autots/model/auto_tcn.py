@@ -29,6 +29,7 @@ class AutoTCN(BasePytorchAutomodel):
                  optimizer,
                  loss,
                  metric,
+                 metric_mode=None,
                  hidden_units=None,
                  levels=None,
                  num_channels=None,
@@ -51,7 +52,14 @@ class AutoTCN(BasePytorchAutomodel):
         :param optimizer: String or pyTorch optimizer creator function or
                tf.keras optimizer instance.
         :param loss: String or pytorch/tf.keras loss instance or pytorch loss creator function.
-        :param metric: String. The evaluation metric name to optimize. e.g. "mse"
+        :param metric: String or customized evaluation metric function.
+            If string, metric is the evaluation metric name to optimize, e.g. "mse".
+            If callable function, it signature should be func(y_true, y_pred), where y_true and
+            y_pred are numpy ndarray. The function should return a float value as evaluation result.
+        :param metric_mode: One of ["min", "max"]. "max" means greater metric value is better.
+            You have to specify metric_mode if you use a customized metric function.
+            You don't have to specify metric_mode if you use the built-in metric in
+            bigdl.orca.automl.metrics.Evaluator.
         :param hidden_units: Int or hp sampling function from an integer space. The number of hidden
                units or filters for each convolutional layer. It is similar to `units` for LSTM.
                It defaults to 30. We will omit the hidden_units value if num_channels is specified.
@@ -96,6 +104,7 @@ class AutoTCN(BasePytorchAutomodel):
             dropout=dropout,
         )
         self.metric = metric
+        self.metric_mode = metric_mode
         model_builder = PytorchModelBuilder(model_creator=model_creator,
                                             optimizer_creator=optimizer,
                                             loss_creator=loss,

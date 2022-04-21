@@ -16,16 +16,16 @@
 
 package com.intel.analytics.bigdl.friesian.serving.recall;
 
+import com.codahale.metrics.ConsoleReporter;
+import com.codahale.metrics.MetricAttribute;
 import com.codahale.metrics.MetricRegistry;
 import com.codahale.metrics.Timer;
 import com.google.protobuf.Empty;
-import com.intel.analytics.bigdl.dllib.nn.abstractnn.Activity;
 import com.intel.analytics.bigdl.friesian.serving.grpc.generated.feature.FeatureGrpc;
 import com.intel.analytics.bigdl.friesian.serving.grpc.generated.recall.RecallGrpc;
 import com.intel.analytics.bigdl.friesian.serving.grpc.generated.recall.RecallProto.*;
 import com.intel.analytics.bigdl.grpc.JacksonJsonSerializer;
 import com.intel.analytics.bigdl.grpc.GrpcServerBase;
-import com.intel.analytics.bigdl.orca.inference.InferenceModel;
 import com.intel.analytics.bigdl.friesian.serving.recall.faiss.swighnswlib.floatArray;
 import com.intel.analytics.bigdl.friesian.serving.grpc.generated.feature.FeatureProto.Features;
 import com.intel.analytics.bigdl.friesian.serving.grpc.generated.feature.FeatureProto.IDs;
@@ -52,6 +52,7 @@ import org.apache.logging.log4j.core.config.Configurator;
 
 import java.io.IOException;
 import java.util.*;
+import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 public class RecallServer extends GrpcServerBase {
@@ -104,47 +105,35 @@ public class RecallServer extends GrpcServerBase {
     }
 
     private static class RecallService extends RecallGrpc.RecallImplBase {
-        private InferenceModel userModel;
-        private InferenceModel itemModel;
-        private com.intel.analytics.bigdl.friesian.serving.recall.RecallService indexService;
-        private boolean callFeatureService = false;
+        private IndexService indexService;
         private FeatureGrpc.FeatureBlockingStub featureServiceStub;
         MetricRegistry metrics = new MetricRegistry();
         Timer overallTimer = metrics.timer("indexing.overall");
-        Timer predictTimer = metrics.timer("indexing.predict");
+        Timer featureTimer = metrics.timer("indexing.feature");
+        Timer decodeTimer = metrics.timer("indexing.decode");
         Timer faissTimer = metrics.timer("indexing.faiss");
 
         RecallService() {
-            if (Utils.helper().getGetFeatureFromFeatureService()) {
-                callFeatureService = true;
-                ManagedChannel featureServiceChannel =
-                        ManagedChannelBuilder.forTarget(Utils.helper().getFeatureServiceURL())
-                                .usePlaintext().build();
-                featureServiceStub = FeatureGrpc.newBlockingStub(featureServiceChannel);
-            } else {
-                userModel = Utils.helper()
-                        .loadInferenceModel(Utils.helper().getModelParallelism(),
-                                Utils.helper().getUserModelPath(), null);
-            }
-            // load or build faiss index
-            indexService = new com.intel.analytics.bigdl.friesian.serving.recall
-                    .RecallService(Utils.helper().indexDim());
-            if (Utils.helper().loadSavedIndex()) {
-                assert(Utils.helper().getIndexPath() != null): "indexPath must be provided " +
-                        "if loadSavedIndex=true.";
-                indexService.load(Utils.helper().getIndexPath());
-            } else {
-                if (Utils.helper().getItemModelPath() != null) {
-                    itemModel = Utils.helper()
-                            .loadInferenceModel(Utils.helper().getModelParallelism(),
-                                    Utils.helper().getItemModelPath(), null);
-                    Utils.helper().setItemModel(itemModel);
-                }
-                String dataDir = Utils.helper().getInitialDataPath();
-                RecallUtils.loadItemData(indexService, dataDir, itemModel,1000000);
-                assert(this.indexService.isTrained());
-            }
+            ManagedChannel featureServiceChannel =
+                    ManagedChannelBuilder.forTarget(Utils.helper().getFeatureServiceURL())
+                            .usePlaintext().build();
+            featureServiceStub = FeatureGrpc.newBlockingStub(featureServiceChannel);
+            // load faiss index
+            indexService = new IndexService(Utils.helper().indexDim());
+            assert(Utils.helper().getIndexPath() != null): "indexPath must be provided";
+            indexService.load(Utils.helper().getIndexPath());
             System.out.printf("Index service nTotal = %d\n", this.indexService.getNTotal());
+            if (Utils.helper().logInterval() > 0) {
+                MetricAttribute[] disAttr = {MetricAttribute.STDDEV, MetricAttribute.P75,
+                        MetricAttribute.P999, MetricAttribute.P98, MetricAttribute.M5_RATE,
+                        MetricAttribute.M15_RATE};
+                ConsoleReporter reporter = ConsoleReporter.forRegistry(metrics)
+                        .convertRatesTo(TimeUnit.SECONDS)
+                        .convertDurationsTo(TimeUnit.MILLISECONDS)
+                        .disabledMetricAttributes(new HashSet<>(Arrays.asList(disAttr)))
+                        .build();
+                reporter.start(Utils.helper().logInterval(), TimeUnit.MINUTES);
+            }
         }
 
         @Override
@@ -182,8 +171,9 @@ public class RecallServer extends GrpcServerBase {
         public void resetMetrics(Empty request, StreamObserver<Empty> responseObserver) {
             metrics = new MetricRegistry();
             overallTimer = metrics.timer("indexing.overall");
-            predictTimer = metrics.timer("indexing.predict");
+            featureTimer = metrics.timer("indexing.feature");
             faissTimer = metrics.timer("indexing.faiss");
+            decodeTimer = metrics.timer("indexing.decode");
             responseObserver.onNext(Empty.newBuilder().build());
             responseObserver.onCompleted();
         }
@@ -192,26 +182,21 @@ public class RecallServer extends GrpcServerBase {
             Timer.Context overallContext = overallTimer.time();
             int userId = msg.getUserID();
             int k = msg.getK();
-            Timer.Context predictContext = predictTimer.time();
+            Timer.Context featureContext = featureTimer.time();
             float[] userFeatureList;
-            if (callFeatureService) {
-                IDs userIds = IDs.newBuilder().addID(userId).build();
-                Features feature = featureServiceStub.getUserFeatures(userIds);
-                Object[][] featureList = FeatureUtils.getFeatures(feature);
-                if (featureList[0] == null) {
-                    throw new Exception("Can't get user feature from feature service");
-                }
-                userFeatureList = RecallUtils.featureObjToFloatArr(featureList[0]);
-            } else {
-                Activity userFeature = this.userModel
-                        .doPredict(RecallUtils.constructActivity(
-                                Collections.singletonList(userId)));
-                userFeatureList = RecallUtils.activityToFloatArr(userFeature);
+            IDs userIds = IDs.newBuilder().addID(userId).build();
+            Features feature = featureServiceStub.getUserFeatures(userIds);
+            featureContext.stop();
+            Timer.Context decodeContext = decodeTimer.time();
+            Object[][] featureList = FeatureUtils.getFeatures(feature);
+            if (featureList[0] == null) {
+                throw new Exception("Can't get user feature from feature service");
             }
-            predictContext.stop();
+            userFeatureList = RecallUtils.featureObjToFloatArr(featureList[0]);
+            decodeContext.stop();
             Timer.Context faissContext = faissTimer.time();
             int[] candidates =
-                    indexService.search(com.intel.analytics.bigdl.friesian.serving.recall.RecallService.vectorToFloatArray(userFeatureList), k);
+                    indexService.search(IndexService.vectorToFloatArray(userFeatureList), k);
             faissContext.stop();
             Candidates.Builder result = Candidates.newBuilder();
             // TODO: length < k
@@ -225,21 +210,12 @@ public class RecallServer extends GrpcServerBase {
         private Empty addItemToIndex(Item msg) {
             // TODO: multi server synchronize
             System.out.printf("Index service nTotal before = %d\n", this.indexService.getNTotal());
-            int itemId = msg.getItemID();
-            Activity itemFeature = predict(this.itemModel,
-                    RecallUtils.constructActivity(Collections.singletonList(itemId)));
-            float[] itemFeatureList = RecallUtils.activityToFloatArr(itemFeature);
-            addToIndex(itemId, itemFeatureList);
             System.out.printf("Index service nTotal after = %d\n", this.indexService.getNTotal());
             return Empty.newBuilder().build();
         }
 
-        private Activity predict(InferenceModel inferenceModel, Activity data){
-            return inferenceModel.doPredict(data);
-        }
-
         private void addToIndex(int targetId, float[] vector) {
-            floatArray fa = com.intel.analytics.bigdl.friesian.serving.recall.RecallService.vectorToFloatArray(vector);
+            floatArray fa = IndexService.vectorToFloatArray(vector);
             this.indexService.add(targetId, fa);
         }
 

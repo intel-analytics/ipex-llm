@@ -1,7 +1,7 @@
 #!/bin/bash
 status_8_local_spark_customer_profile=1
 SPARK_LOCAL_IP=192.168.0.112
-DB_PATH=/ppml/trusted-big-data-ml/work/data/sqlite_example/test_100w.db
+DB_PATH=/ppml/trusted-big-data-ml/work/data/sqlite_example/100w.db
 
 # attention to SPARK_LOCAL_IP env change into targeted ip
 if [ $status_8_local_spark_customer_profile -ne 0 ]; then
@@ -12,7 +12,7 @@ SGX=1 ./pal_loader bash -c "export TF_MKL_ALLOC_MAX_BYTES=10737418240 && export 
   org.apache.spark.deploy.SparkSubmit \
     --master 'local[4]' \
     --conf spark.driver.memory=2g \
-    --properties-file /ppml/trusted-big-data-ml/work/bigdl-0.14.0-SNAPSHOT/conf/spark-bigdl.conf \
+    --properties-file /ppml/trusted-big-data-ml/work/bigdl-$BIGDL_VERSION/conf/spark-bigdl.conf \
     --executor-memory 2g \
     --conf spark.python.use.daemon=false \
     --conf spark.python.worker.reuse=false \

@@ -16,12 +16,13 @@
 
 package com.intel.analytics.bigdl.friesian.serving.utils
 
+import com.intel.analytics.bigdl.friesian.serving.feature.utils.RedisType
 import com.intel.analytics.bigdl.orca.inference.InferenceModel
-
 
 import java.nio.file.Files
 import scala.beans.BeanProperty
 import org.apache.logging.log4j.{LogManager, Logger}
+import com.intel.analytics.bigdl.dllib.utils.Log4Error
 
 class gRPCHelper extends Serializable {
   // BeanProperty store attributes read from config file
@@ -41,27 +42,21 @@ class gRPCHelper extends Serializable {
   @BeanProperty var redisMaxMemory = "4g"
   @BeanProperty var redisTimeout = 5000
   @BeanProperty var redisPoolMaxTotal = 256
+  @BeanProperty var redisType = "standalone"
+  @BeanProperty var redisSentinelMasterName: String = _
+  @BeanProperty var redisSentinelMasterURL = "localhost:26379"
 
   // feature service attributes
   @BeanProperty var serviceType = "kv"
-  @BeanProperty var loadInitialData = false
-  @BeanProperty var initialDataPath: String = _
-  @BeanProperty var initialUserDataPath: String = _
-  @BeanProperty var initialItemDataPath: String = _
   @BeanProperty var userFeatureColumns: String = _
   @BeanProperty var itemFeatureColumns: String = _
-  @BeanProperty var userIDColumn: String = _
-  @BeanProperty var itemIDColumn: String = _
   @BeanProperty var redisKeyPrefix: String = _
   @BeanProperty var redisClusterItemSlotType = 0
+  @BeanProperty var logInterval = 2
 
   // recall service attributes
-  @BeanProperty var loadSavedIndex = false
   @BeanProperty var indexPath: String = _
-  @BeanProperty var getFeatureFromFeatureService = false
-  @BeanProperty var saveBuiltIndex = false
   @BeanProperty var indexDim: Int = 128
-  @BeanProperty var part: Int = 20
 
   // feature & recall service attributes
   @BeanProperty var userModelPath: String = _
@@ -75,7 +70,8 @@ class gRPCHelper extends Serializable {
   @BeanProperty var rankingServiceURL = "localhost:8980"
 
   var configPath: String = "config.yaml"
-  var redisHostPort: java.util.ArrayList[(String, Int)] = new java.util.ArrayList[(String, Int)]()
+  var redisHostPort: java.util.ArrayList[(String, Integer)] =
+    new java.util.ArrayList[(String, Integer)]()
   var blasFlag: Boolean = false
   var savedModelInputsArr: Array[String] = _
   var userFeatureColArr: Array[String] = _
@@ -83,6 +79,7 @@ class gRPCHelper extends Serializable {
   var inferenceColArr: Array[String] = _
   var itemModel: InferenceModel = _
   var itemSlotType: Int = 0
+  var redisTypeEnum: RedisType = RedisType.STANDALONE
 
   val logger: Logger = LogManager.getLogger(getClass)
 
@@ -118,6 +115,16 @@ class gRPCHelper extends Serializable {
       0
     } else {
       redisClusterItemSlotType
+    }
+
+    Log4Error.unKnowExceptionError(redisType != null, "redisType should not be null")
+    redisType = redisType.toLowerCase.trim
+    if (redisType == "sentinel") {
+      Log4Error.unKnowExceptionError(redisSentinelMasterName != null,
+        "redisSentinelMasterName should not be null when redisType=sentinel")
+      redisTypeEnum = RedisType.SENTINEL
+    } else if (redisType == "cluster") {
+      redisTypeEnum = RedisType.CLUSTER
     }
   }
 

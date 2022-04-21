@@ -6,17 +6,28 @@ metadata:
 spec:
   containers:
   - name: spark-example
-    image: intelanalytics/bigdl-ppml-trusted-big-data-ml-scala-occlum:0.14.0-SNAPSHOT
+    image: intelanalytics/bigdl-ppml-trusted-big-data-ml-scala-occlum:2.1.0-SNAPSHOT
     imagePullPolicy: Never
     volumeMounts:
     - name: sgx-enclave
       mountPath: /dev/sgx/enclave
     - name: sgx-provision
       mountPath: /dev/sgx/provision
+    - name: aesm
+      mountPath: /var/run/aesmd/aesm.socket
     - name: data-exchange
       mountPath: /opt/occlum_spark/data
     securityContext:
       privileged: true
+    env:
+    - name: SGX_MEM_SIZE
+      value: "20GB"
+    - name: SGX_THREAD
+      value: "512"
+    - name: SGX_HEAP
+      value: "512MB"
+    - name: SGX_KERNEL_HEAP
+      value: "1GB"
   volumes:
   - name: sgx-enclave
     hostPath:
@@ -24,6 +35,9 @@ spec:
   - name: sgx-provision
     hostPath:
       path: /dev/sgx_provision
+  - name: aesm
+    hostPath:
+      path: /var/run/aesmd/aesm.socket
   - name: data-exchange
     hostPath:
       path: /tmp

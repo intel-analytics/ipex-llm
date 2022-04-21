@@ -107,8 +107,8 @@ if __name__ == '__main__':
                         help='The executor core number.')
     parser.add_argument('--executor_memory', type=str, default="160g",
                         help='The executor memory.')
-    parser.add_argument('--num_executor', type=int, default=8,
-                        help='The number of executor.')
+    parser.add_argument('--num_executors', type=int, default=8,
+                        help='The number of executors.')
     parser.add_argument('--driver_cores', type=int, default=4,
                         help='The driver core number.')
     parser.add_argument('--driver_memory', type=str, default="36g",
@@ -128,17 +128,21 @@ if __name__ == '__main__':
         init_orca_context("local", cores=args.executor_cores, memory=args.executor_memory)
     elif args.cluster_mode == "standalone":
         init_orca_context("standalone", master=args.master,
-                          cores=args.executor_cores, num_nodes=args.num_executor,
+                          cores=args.executor_cores, num_nodes=args.num_executors,
                           memory=args.executor_memory,
                           driver_cores=args.driver_cores, driver_memory=args.driver_memory,
                           init_ray_on_spark=False)
     elif args.cluster_mode == "yarn":
         init_orca_context("yarn-client", cores=args.executor_cores,
-                          num_nodes=args.num_executor, memory=args.executor_memory,
+                          num_nodes=args.num_executors, memory=args.executor_memory,
                           driver_cores=args.driver_cores, driver_memory=args.driver_memory,
                           init_ray_on_spark=False)
     elif args.cluster_mode == "spark-submit":
         init_orca_context("spark-submit")
+    else:
+        raise ValueError(
+            "cluster_mode should be one of 'local', 'yarn', 'standalone' and 'spark-submit'"
+            ", but got " + args.cluster_mode)
 
     train_data, test_data, n_uid, n_mid, n_cat = load_dien_data(args.data_dir)
 

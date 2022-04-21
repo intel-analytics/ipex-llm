@@ -176,7 +176,7 @@ class PredictorSpec extends SparkContextLifeCycle with Matchers {
       println(imageFeatures(x - 1)[Sample[Float]](ImageFeature.sample)
         .getFeatureSize()(0).mkString("x"))
       println(x, imageFeatures(x - 1).predict().asInstanceOf[Tensor[Float]].size().mkString("x"))
-      assert(imageFeatures(x - 1).predict() != null)
+      TestUtils.conditionFailTest(imageFeatures(x - 1).predict() != null)
     })
   }
 
@@ -202,8 +202,8 @@ class PredictorSpec extends SparkContextLifeCycle with Matchers {
     (1 to 20).foreach(x => {
       imageFeatures(x - 1).uri() should be (x.toString)
       print(imageFeatures(x - 1).predict())
-      assert(imageFeatures(x - 1).predict() != null)
-      assert(imageFeatures(x - 1).predict().asInstanceOf[Table].length() == 2)
+      TestUtils.conditionFailTest(imageFeatures(x - 1).predict() != null)
+      TestUtils.conditionFailTest(imageFeatures(x - 1).predict().asInstanceOf[Table].length() == 2)
     })
   }
 
@@ -248,8 +248,8 @@ class PredictorSpec extends SparkContextLifeCycle with Matchers {
     val imageFeatures = detection.rdd.collect()
     (1 to 20).foreach(x => {
       imageFeatures(x - 1).uri() should be (x.toString)
-      assert(imageFeatures(x - 1).predict() != null)
-      assert(imageFeatures(x - 1).predict().asInstanceOf[Table].length() == 3)
+      TestUtils.conditionFailTest(imageFeatures(x - 1).predict() != null)
+      TestUtils.conditionFailTest(imageFeatures(x - 1).predict().asInstanceOf[Table].length() == 3)
     })
   }
 

@@ -16,6 +16,7 @@
 package com.intel.analytics.bigdl.dllib.nn
 
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
+import com.intel.analytics.bigdl.dllib.utils.TestUtils
 import org.scalatest.{FlatSpec, Matchers}
 
 import scala.math._
@@ -76,9 +77,9 @@ class TimeDistributedMaskCriterionSpec extends FlatSpec with Matchers {
     expectedGrad(Array(3, 2, 1)) = 0
     expectedGrad(Array(3, 2, 2)) = 0
     expectedGrad(Array(3, 2, 3)) = -0.25
-    assert(abs(expectedOutput - output) < 1e-6)
+    TestUtils.conditionFailTest(abs(expectedOutput - output) < 1e-6)
     expectedGrad.map(gradInput, (v1, v2) => {
-      assert(abs(v1 - v2) < 1e-6)
+      TestUtils.conditionFailTest(abs(v1 - v2) < 1e-6)
       v1
     })
   }

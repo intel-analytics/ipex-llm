@@ -17,7 +17,7 @@
 package com.intel.analytics.bigdl.dllib.keras.layers
 
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.dllib.utils.Shape
+import com.intel.analytics.bigdl.dllib.utils.{Log4Error, Shape}
 import com.intel.analytics.bigdl.dllib.keras.layers.utils.KerasUtils
 
 import scala.reflect.ClassTag
@@ -33,15 +33,15 @@ abstract class Pooling2D[T: ClassTag](
     val inputShape: Shape = null)(implicit ev: TensorNumeric[T])
   extends LayerWrapperByForward[T](KerasUtils.addBatch(inputShape)) {
 
-  require(poolSize.length == 2,
+  Log4Error.invalidInputError(poolSize.length == 2,
   s"For Pooling2D, poolSize should be of length 2 but got length ${poolSize.length}")
 
   if (borderMode!=null) {
-    require(borderMode == "valid" || borderMode == "same", s"Invalid border mode for " +
-      s"Pooling2D: $borderMode")
+    Log4Error.invalidInputError(borderMode == "valid" || borderMode == "same",
+      s"Invalid border mode for Pooling2D: $borderMode")
   }
 
   val strideValues: Array[Int] = if (strides == null) poolSize else strides
-  require(strideValues.length == 2,
+  Log4Error.invalidInputError(strideValues.length == 2,
   s"For Pooling2D, strides should be of length 2 but got length ${strideValues.length}")
 }

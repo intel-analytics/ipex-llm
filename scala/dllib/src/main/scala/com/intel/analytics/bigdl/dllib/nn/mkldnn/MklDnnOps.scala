@@ -17,15 +17,16 @@ package com.intel.analytics.bigdl.dllib.nn.mkldnn
 
 import com.intel.analytics.bigdl.mkl.{Memory, MklDnn, Engine => DnnEngine, Stream => DnnStream}
 import com.intel.analytics.bigdl.dllib.tensor.{DnnTensor, Tensor}
+import com.intel.analytics.bigdl.dllib.utils.Log4Error
 
 private[mkldnn] object MklDnnOps {
   def memorySetDataHandle(memory: Long, data: Tensor[Float], offset: Int): Long = {
-    require(MklDnn.isLoaded, "mkldnn isn't loaded")
+    Log4Error.invalidInputError(MklDnn.isLoaded, "mkldnn isn't loaded")
     MklDnn.MemorySetDataHandle(memory, data.storage().array(), offset)
   }
 
   def memoryReleaseDataHandle(data: Tensor[Float], ptr: Long): Unit = {
-    require(MklDnn.isLoaded, "mkldnn isn't loaded")
+    Log4Error.invalidInputError(MklDnn.isLoaded, "mkldnn isn't loaded")
     MklDnn.MemoryReleaseDataHandle(data.storage().array(), ptr)
   }
 
@@ -33,8 +34,10 @@ private[mkldnn] object MklDnnOps {
     memory_primitives: Array[Long],
     buffers: Array[Tensor[Float@unchecked]]): Unit = {
     // the tensor maybe Tensor[Byte]. so use the unchecked to handle this
-    require(MklDnn.isLoaded, "mkldnn isn't loaded")
-    require(memory_primitives.length == buffers.length)
+    Log4Error.invalidInputError(MklDnn.isLoaded, "mkldnn isn't loaded")
+    Log4Error.invalidInputError(memory_primitives.length == buffers.length,
+      s"memory_primitives.length ${memory_primitives.length} doesn't match" +
+        s" buffers.length ${buffers.length}")
 
     val handle = new Array[Long](memory_primitives.length)
     for (i <- memory_primitives.indices) {

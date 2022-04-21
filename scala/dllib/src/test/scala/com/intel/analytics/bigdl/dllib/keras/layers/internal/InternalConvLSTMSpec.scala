@@ -21,7 +21,7 @@ import com.intel.analytics.bigdl.dllib.nn.{MSECriterion, Sequential, TimeDistrib
 import com.intel.analytics.bigdl.dllib.optim.{L2Regularizer, SGD}
 import com.intel.analytics.bigdl.dllib.tensor.{Storage, Tensor}
 import com.intel.analytics.bigdl.dllib.utils.RandomGenerator._
-import com.intel.analytics.bigdl.dllib.utils.T
+import com.intel.analytics.bigdl.dllib.utils.{T, TestUtils}
 import com.intel.analytics.bigdl.dllib.keras.layers.InternalConvLSTM2D
 import com.intel.analytics.bigdl.dllib.keras.layers.internal.InternalRecurrent
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
@@ -455,7 +455,7 @@ class InternalConvLSTMSpec extends FlatSpec with BeforeAndAfter with Matchers {
       Array(batchSize, seqLength, inputSize, 3, 3))
 
     expectedGrad.map(gradInput, (v1, v2) => {
-      assert(abs(v1 - v2) < 1e-6)
+      TestUtils.conditionFailTest(abs(v1 - v2) < 1e-6)
       v1
     })
   }
@@ -745,7 +745,7 @@ class InternalConvLSTMSpec extends FlatSpec with BeforeAndAfter with Matchers {
       Array(batchSize, seqLength, inputSize, 3, 4))
 
     expectedGrad.map(gradInput, (v1, v2) => {
-      assert(abs(v1 - v2) < 1e-6)
+      TestUtils.conditionFailTest(abs(v1 - v2) < 1e-6)
       v1
     })
   }
@@ -1044,13 +1044,13 @@ class InternalConvLSTMSpec extends FlatSpec with BeforeAndAfter with Matchers {
     val hiddenState = state.toTable.apply(1).asInstanceOf[Tensor[Double]]
     val cell = state.toTable.apply(2).asInstanceOf[Tensor[Double]]
     hiddenState.map(output.select(2, seqLength), (v1, v2) => {
-      assert(abs(v1 - v2) == 0)
+      TestUtils.conditionFailTest(abs(v1 - v2) == 0)
       v1
     })
 
     cell.map(Tensor[Double](expectedCellData, Array(batchSize, hiddenSize, 3, 4)),
       (v1, v2) => {
-        assert(abs(v1 - v2) < 1e-10)
+        TestUtils.conditionFailTest(abs(v1 - v2) < 1e-10)
         v1
       })
 
@@ -1089,7 +1089,7 @@ class InternalConvLSTMSpec extends FlatSpec with BeforeAndAfter with Matchers {
 
     output.map(output2,
       (v1, v2) => {
-        assert(abs(v1 - v2) != 0)
+        TestUtils.conditionFailTest(abs(v1 - v2) != 0)
         v1
       })
   }

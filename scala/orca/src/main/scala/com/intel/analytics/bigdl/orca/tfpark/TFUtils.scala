@@ -25,6 +25,7 @@ import com.intel.analytics.bigdl.dllib.optim._
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.feature.transform.vision.image.ImageFeature
 import com.intel.analytics.bigdl.dllib.utils.{T, Table}
+import com.intel.analytics.bigdl.dllib.utils.Log4Error
 import com.intel.analytics.bigdl.dllib.feature.common.Preprocessing
 import com.intel.analytics.bigdl.dllib.feature.image.ImageProcessing
 import com.intel.analytics.bigdl.dllib.keras.{metrics => kmetrics}
@@ -100,7 +101,8 @@ object TFUtils {
 
     if (dataType == DataType.STRING) {
       val outputTensor = output.asInstanceOf[Tensor[Array[Byte]]]
-      require(t.numDimensions() <= 1, "only scalar or Vector string are supported")
+      Log4Error.unKnowExceptionError(t.numDimensions() <= 1,
+        "only scalar or Vector string are supported")
       val elements = t.numElements()
       val buffer = ByteBuffer.allocate(t.numBytes())
       t.writeTo(buffer)
@@ -151,7 +153,7 @@ object TFUtils {
         case DataType.BOOL =>
           val outputTensor = output.asInstanceOf[Tensor[Float]]
           val arr = new Array[Byte](t.numBytes())
-          assert(t.numBytes() == shape.product, "sanity check")
+          Log4Error.unKnowExceptionError(t.numBytes() == shape.product, "sanity check")
           val buffer = ByteBuffer.wrap(arr)
           t.writeTo(buffer)
           byte2float(arr, outputTensor.storage().array(), outputTensor.storageOffset() - 1)

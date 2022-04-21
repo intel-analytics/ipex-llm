@@ -19,6 +19,8 @@ import os
 import glob
 import warnings
 import logging
+from bigdl.dllib.utils.log4Error import *
+
 
 log = logging.getLogger(__name__)
 
@@ -84,7 +86,8 @@ def __prepare_analytics_zoo_env():
         append_path("BIGDL_JARS", analytics_zoo_classpath)
 
     if conf_paths:
-        assert len(conf_paths) == 1, "Expecting one conf, but got: %s" % len(conf_paths)
+        invalidInputError(len(conf_paths) == 1,
+                          "Expecting one conf, but got: %s" % len(conf_paths))
         if conf_paths[0] not in sys.path:
             log.info(f"Prepending {conf_paths[0]} to sys.path")
             sys.path.insert(0, conf_paths[0])
@@ -119,7 +122,8 @@ def get_analytics_zoo_classpath():
     jar_dir = os.path.abspath(__file__ + "/../../../")
     jar_paths = glob.glob(os.path.join(jar_dir, "share/orca/lib/*.jar"))
     if jar_paths:
-        assert len(jar_paths) == 1, "Expecting one jar: %s" % len(jar_paths)
+        invalidInputError(len(jar_paths) == 1,
+                          "Expecting one jar: %s" % len(jar_paths))
         return jar_paths[0]
     return ""
 

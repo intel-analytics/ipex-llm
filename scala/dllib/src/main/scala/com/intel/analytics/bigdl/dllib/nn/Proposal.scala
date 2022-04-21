@@ -20,7 +20,7 @@ import com.intel.analytics.bigdl.dllib.nn.abstractnn.AbstractModule
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.dllib.feature.transform.vision.image.util.BboxUtil
-import com.intel.analytics.bigdl.dllib.utils.Table
+import com.intel.analytics.bigdl.dllib.utils.{Log4Error, Table}
 
 /**
  * Outputs object detection proposals by applying estimated bounding-box
@@ -79,7 +79,8 @@ class Proposal(preNmsTopNTest: Int, postNmsTopNTest: Int, val ratios: Array[Floa
   override def updateOutput(input: Table): Tensor[Float] = {
     val inputScore = input[Tensor[Float]](1)
     val imInfo = input[Tensor[Float]](3)
-    require(inputScore.size(1) == 1 && imInfo.size(1) == 1, "currently only support single batch")
+    Log4Error.invalidInputError(inputScore.size(1) == 1 && imInfo.size(1) == 1,
+      "currently only support single batch")
     init()
     // transpose from (1, 4A, H, W) to (H * W * A, 4)
     transposeAndReshape(input[Tensor[Float]](2), 4, bboxDeltas)

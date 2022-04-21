@@ -61,7 +61,7 @@ class PyTorchModelSpec extends ZooSpecHelper with InferenceSupportive {
            |import torch
            |import torch.nn as nn
            |import torchvision.models as models
-           |from zoo.pipeline.api.torch import zoo_pickle_module
+           |from bigdl.orca.torch import zoo_pickle_module
            |
            |class SimpleTorchModel(nn.Module):
            |    def __init__(self):

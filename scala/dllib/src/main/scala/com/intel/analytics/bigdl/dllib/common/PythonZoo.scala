@@ -27,11 +27,12 @@ import org.apache.spark.api.java.JavaRDD
 import java.util.{List => JList}
 
 import com.intel.analytics.bigdl.Module
-import com.intel.analytics.bigdl.dllib.feature.dataset.{MiniBatch}
+import com.intel.analytics.bigdl.dllib.feature.dataset.MiniBatch
 import com.intel.analytics.bigdl.dllib.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.dllib.optim.{LocalPredictor, ValidationMethod, _}
-import com.intel.analytics.bigdl.dllib.feature.image.ImageSet
+import com.intel.analytics.bigdl.dllib.feature.image.{ImageProcessing, ImageSet}
 import com.intel.analytics.bigdl.dllib.feature.text.TextSet
+import org.apache.spark.sql.DataFrame
 // import com.intel.analytics.zoo.pipeline.api.net.TFNet
 
 import scala.collection.JavaConverters._
@@ -89,7 +90,7 @@ class PythonZoo[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonBigDLK
 
   override def toJTensor(tensor: Tensor[T]): JTensor = {
     // clone here in case the the size of storage larger then the size of tensor.
-    require(tensor != null, "tensor cannot be null")
+    Log4Error.unKnowExceptionError(tensor != null, "tensor cannot be null")
     tensor.getTensorType match {
       case SparseType =>
         // Note: as SparseTensor's indices is inaccessible here,
@@ -159,6 +160,26 @@ class PythonZoo[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonBigDLK
                  module: Predictable[T],
                  x: JavaRDD[MiniBatch[T]]): JavaRDD[JList[Object]] = {
     module.predictMiniBatch(x.rdd).map(activityToList).toJavaRDD()
+  }
+
+  def zooPredict(
+                  module: Predictable[T],
+                  x: DataFrame,
+                  featureCols: JList[String],
+                  predictionCol: String,
+                  batchPerThread: Int
+                ): DataFrame = {
+    module.predict(x, featureCols.asScala.toArray, predictionCol, batchPerThread)
+  }
+
+  def zooPredictImage(
+                  module: Predictable[T],
+                  x: DataFrame,
+                  predictionCol: String,
+                  transform: ImageProcessing,
+                  batchPerThread: Int
+                ): DataFrame = {
+    module.predict(x, predictionCol, transform, batchPerThread)
   }
 
   // todo support featurePaddingParam

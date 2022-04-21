@@ -1,26 +1,28 @@
 # Orca PyTorch Super Resolution example on BSDS300 dataset
 
-We demonstrate how to easily run synchronous distributed Pytorch training using Pytorch Estimator of Project Orca in Analytics Zoo. This is an example using the efficient sub-pixel convolution layer to train on [BSDS3000 dataset](https://www2.eecs.berkeley.edu/Research/Projects/CS/vision/bsds/), using crops from the 200 training images, and evaluating on crops of the 100 test images. See [here](https://github.com/pytorch/examples/tree/master/super_resolution) for the original single-node version of this example provided by Pytorch. We provide three distributed PyTorch training backends for this example, namely "bigdl", "torch_distributed" and "spark". You can run with either backend as you wish.
+We demonstrate how to easily run synchronous distributed Pytorch training using Pytorch Estimator of Project Orca in Analytics Zoo. This is an example using the efficient sub-pixel convolution layer to train on [BSDS3000 dataset](https://www2.eecs.berkeley.edu/Research/Projects/CS/vision/bsds/), using crops from the 200 training images, and evaluating on crops of the 100 test images. See [here](https://github.com/pytorch/examples/tree/master/super_resolution) for the original single-node version of this example provided by Pytorch. We provide three distributed PyTorch training backends for this example, namely "bigdl", "ray" and "spark". You can run with either backend as you wish.
 
 ## Prepare the environment
 We recommend you to use [Anaconda](https://www.anaconda.com/distribution/#linux) to prepare the environment, especially if you want to run on a yarn cluster (yarn-client mode only).
 ```
-conda create -n zoo python=3.7  # "zoo" is conda environment name, you can use any name you like.
-conda activate zoo
+conda create -n bigdl python=3.7  # "bigdl" is conda environment name, you can use any name you like.
+conda activate bigdl
 pip install pillow
 conda install pytorch torchvision cpuonly -c pytorch  # command for linux
 conda install pytorch torchvision -c pytorch  # command for macOS
 
 # For bigdl backend:
-pip install analytics-zoo  # 0.10.0.dev3 or above
+pip install bigdl-orca
 pip install jep==3.9.0
 pip install six cloudpickle
 
-# For torch_distributed backend:
-pip install analytics-zoo[ray]  # 0.10.0.dev3 or above
+# For ray backend:
+pip install bigdl-orca[ray]
+pip install tqdm  # progress bar
 
 # For spark backend
 pip install bigdl-orca
+pip install tqdm  # progress bar
 ```
 
 ## Prepare Dataset
@@ -44,22 +46,21 @@ python super_resolution.py --cluster_mode local
 python super_resolution.py --cluster_mode yarn
 ```
 
-You can run this example with bigdl backend (default) or torch_distributed backend. 
+You can run this example with bigdl backend (default), ray backend, or spark backend. 
 
 - Run with bigdl backend:
 ```bash
 python super_resolution.py --backend bigdl
 ```
 
-- Run with torch_distributed backend:
+- Run with ray backend:
 ```bash
-python super_resolution.py --backend torch_distributed
-
+python super_resolution.py --backend ray
+```
 
 - Run with spark backend:
 ```bash
 python super_resolution.py --backend spark
-
 ```
 
 **Options**
@@ -69,7 +70,7 @@ python super_resolution.py --backend spark
 * `--lr` Learning Rate. Default is 0.01.
 * `--epochs` The number of epochs to train for. Default is 2.
 * `--cluster_mode` The mode of spark cluster. Either "local" or "yarn". Default is "local".
-* `--backend` The backend of PyTorch Estimator. Either "bigdl", "torch_distributed" or "spark. Default is "bigdl".
+* `--backend` The backend of PyTorch Estimator. Either "bigdl", "ray" or "spark. Default is "bigdl".
 * `--data_dir` The path of datesets. Default is "./dataset".
 
 ## Results
@@ -86,7 +87,7 @@ You can find the result for validation as follows:
 ===> Validation Complete: Avg. PSNR: 12.3136 dB, Avg. Loss: 0.0587
 ```
 
-**For "torch_distributed" and "spark" backend**
+**For "ray" and "spark" backend**
 
 You can find the result for training as follows:
 ```

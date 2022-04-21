@@ -18,6 +18,7 @@ package com.intel.analytics.bigdl.dllib.feature.dataset.image
 
 import com.intel.analytics.bigdl.dllib.feature.dataset.Transformer
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
+import com.intel.analytics.bigdl.dllib.utils.Log4Error
 
 object BGRImgPixelNormalizer {
   def apply(means: Tensor[Float]): BGRImgPixelNormalizer
@@ -35,8 +36,10 @@ class BGRImgPixelNormalizer(means: Tensor[Float])
     prev.map(img => {
       val content = img.content
       val meansData = means.storage().array()
-      require(content.length % 3 == 0)
-      require(content.length == means.nElement())
+      Log4Error.invalidInputError(content.length % 3 == 0, s"content length ${content.length}" +
+        s" cannot be divide by 3", "expect an image with RGB channel")
+      Log4Error.invalidInputError(content.length == means.nElement(),
+        s"content length ${content.length} doesn't match means length ${means.nElement()}")
       var i = 0
       while (i < content.length) {
         content(i + 2) = content(i + 2) - meansData(i + 2)

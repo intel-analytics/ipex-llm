@@ -21,8 +21,7 @@ from evaluation import uAUC
 from bigdl.friesian.feature import FeatureTable
 from bigdl.orca import init_orca_context, stop_orca_context
 from bigdl.orca.learn.pytorch import Estimator
-from bigdl.orca.learn.metrics import Accuracy
-
+from bigdl.orca.learn.metrics import Accuracy, AUC
 import argparse
 
 spark_conf = {"spark.network.timeout": "10000000",
@@ -127,6 +126,10 @@ if __name__ == '__main__':
                                extra_python_lib="evaluation.py")
     elif args.cluster_mode == "spark-submit":
         sc = init_orca_context("spark-submit", object_store_memory="40g")
+    else:
+        raise ValueError(
+            "cluster_mode should be one of 'local', 'yarn' and 'spark-submit'"
+            ", but got " + args.cluster_mode)
 
     num_cols = ["enaging_user_follower_count", 'enaging_user_following_count',
                 "engaged_with_user_follower_count", "engaged_with_user_following_count",
@@ -190,7 +193,7 @@ if __name__ == '__main__':
               'lr': args.lr}
 
     est = Estimator.from_torch(model=model_creator, optimizer=optim_creator, loss=criterion,
-                               metrics=[Accuracy()], use_tqdm=True, backend="torch_distributed",
+                               metrics=[Accuracy(), AUC()], use_tqdm=True, backend="ray",
                                config=config)
     train_stats = est.fit(data=train.df, feature_cols=["feature"], label_cols=["label"],
                           epochs=args.epochs, batch_size=args.batch_size)
@@ -203,8 +206,7 @@ if __name__ == '__main__':
     print("Validation stats: {}".format(valid_stats))
 
     predicts = est.predict(data=test.df, feature_cols=["feature"], batch_size=args.batch_size)
-    predicts = predicts.select("prediction").collect()
-    auc = uAUC(test_labels, predicts, test_user_ids)
-    print("AUC: ", auc)
+    predicts.show(10, False)
+
     est.shutdown()
     stop_orca_context()
