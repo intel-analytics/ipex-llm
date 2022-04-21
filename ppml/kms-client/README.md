@@ -248,17 +248,17 @@ You can do below operations supported by BigDL PPML with KMS Client APIs. Please
 - Encrypt all files under a directory with existing keys:
 
   ```bash
-  python ./work/kms-client/KMS_Client.py -api encrypt_directory_with_key -ip <KMS_SERVER_IP> [-port <KMS_SERVER_PORT>] -dir <DIRECTORY_TO_BE_ENCRYPTED> -pkp <PRIMARYED_KEY_PATH> -dkp <DATA_KEY_PATH> [-sdp <SAVE_DIRECTORY_PATH>]
+  python ./work/kms-client/KMS_Client.py -api encrypt_directory_with_key -ip <KMS_SERVER_IP> [-port <KMS_SERVER_PORT>] -dir <DIRECTORY_TO_BE_ENCRYPTED> -pkp <PRIMARY_KEY_PATH> -dkp <DATA_KEY_PATH> [-sdp <SAVE_DIRECTORY_PATH>]
   ```
 
 - Get plaintext data key from a `encrypted_data_key`:
 
   ```bash
-  python ./work/kms-client/KMS_Client.py -api get_data_key_plaintext -ip <KMS_SERVER_IP> [-port <KMS_SERVER_PORT>] -pkp <PRIMARYED_KEY_PATH> -dkp <DATA_KEY_PATH>
+  python ./work/kms-client/KMS_Client.py -api get_data_key_plaintext -ip <KMS_SERVER_IP> [-port <KMS_SERVER_PORT>] -pkp <PRIMARY_KEY_PATH> -dkp <DATA_KEY_PATH>
   ```
 
 - Decrypt columns of CSVs under a directory:
 
   ```bash
-  python ./work/kms-client/KMS_Client.py -api decrypt_csv_columns -ip <KMS_SERVER_IP> [-port <KMS_SERVER_PORT>] -pkp <PRIMARYED_KEY_PATH> -dkp <DATA_KEY_PATH> -dir <DIRECTORY_TO_BE_ENCRYPTED>
+  python ./work/kms-client/KMS_Client.py -api decrypt_csv_columns -ip <KMS_SERVER_IP> [-port <KMS_SERVER_PORT>] -pkp <PRIMARY_KEY_PATH> -dkp <DATA_KEY_PATH> -dir <DIRECTORY_TO_BE_ENCRYPTED>
   ```

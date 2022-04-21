@@ -9,7 +9,7 @@ on:
     branches: [ main ]
     paths:
       - 'python/nano/**'
-      - '.github/**'
+      - '.github/workflows/nano_unit_tests.yml'
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:

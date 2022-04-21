@@ -192,7 +192,7 @@ class Trainer(pl.Trainer):
                  framework='pytorch_fx',
                  approach='static',
                  tuning_strategy='bayesian',
-                 accuracy_criterion: dict = None,
+                 accuracy_criterion: dict = {'relative': 0.99, 'higher_is_better': True},
                  timeout=0,
                  max_trials=1,
                  return_pl=True

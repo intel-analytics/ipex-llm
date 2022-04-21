@@ -11158,10 +11158,16 @@ public final class FGBoostServiceProto {
         int index);
 
     /**
-     * <code>int32 bsVersion = 3;</code>
-     * @return The bsVersion.
+     * <code>int32 version = 3;</code>
+     * @return The version.
      */
-    int getBsVersion();
+    int getVersion();
+
+    /**
+     * <code>bool lastBatch = 4;</code>
+     * @return The lastBatch.
+     */
+    boolean getLastBatch();
   }
   /**
    * Protobuf type {@code fgboost.EvaluateRequest}
@@ -11228,7 +11234,12 @@ public final class FGBoostServiceProto {
             }
             case 24: {
 
-              bsVersion_ = input.readInt32();
+              version_ = input.readInt32();
+              break;
+            }
+            case 32: {
+
+              lastBatch_ = input.readBool();
               break;
             }
             default: {
@@ -11344,15 +11355,26 @@ public final class FGBoostServiceProto {
       return treeEval_.get(index);
     }
 
-    public static final int BSVERSION_FIELD_NUMBER = 3;
-    private int bsVersion_;
+    public static final int VERSION_FIELD_NUMBER = 3;
+    private int version_;
     /**
-     * <code>int32 bsVersion = 3;</code>
-     * @return The bsVersion.
+     * <code>int32 version = 3;</code>
+     * @return The version.
      */
     @Override
-    public int getBsVersion() {
-      return bsVersion_;
+    public int getVersion() {
+      return version_;
+    }
+
+    public static final int LASTBATCH_FIELD_NUMBER = 4;
+    private boolean lastBatch_;
+    /**
+     * <code>bool lastBatch = 4;</code>
+     * @return The lastBatch.
+     */
+    @Override
+    public boolean getLastBatch() {
+      return lastBatch_;
     }
 
     private byte memoizedIsInitialized = -1;
@@ -11375,8 +11397,11 @@ public final class FGBoostServiceProto {
       for (int i = 0; i < treeEval_.size(); i++) {
         output.writeMessage(2, treeEval_.get(i));
       }
-      if (bsVersion_ != 0) {
-        output.writeInt32(3, bsVersion_);
+      if (version_ != 0) {
+        output.writeInt32(3, version_);
+      }
+      if (lastBatch_ != false) {
+        output.writeBool(4, lastBatch_);
       }
       unknownFields.writeTo(output);
     }
@@ -11394,9 +11419,13 @@ public final class FGBoostServiceProto {
         size += com.google.protobuf.CodedOutputStream
           .computeMessageSize(2, treeEval_.get(i));
       }
-      if (bsVersion_ != 0) {
+      if (version_ != 0) {
         size += com.google.protobuf.CodedOutputStream
-          .computeInt32Size(3, bsVersion_);
+          .computeInt32Size(3, version_);
+      }
+      if (lastBatch_ != false) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeBoolSize(4, lastBatch_);
       }
       size += unknownFields.getSerializedSize();
       memoizedSize = size;
@@ -11417,8 +11446,10 @@ public final class FGBoostServiceProto {
           .equals(other.getClientuuid())) return false;
       if (!getTreeEvalList()
           .equals(other.getTreeEvalList())) return false;
-      if (getBsVersion()
-          != other.getBsVersion()) return false;
+      if (getVersion()
+          != other.getVersion()) return false;
+      if (getLastBatch()
+          != other.getLastBatch()) return false;
       if (!unknownFields.equals(other.unknownFields)) return false;
       return true;
     }
@@ -11436,8 +11467,11 @@ public final class FGBoostServiceProto {
         hash = (37 * hash) + TREEEVAL_FIELD_NUMBER;
         hash = (53 * hash) + getTreeEvalList().hashCode();
       }
-      hash = (37 * hash) + BSVERSION_FIELD_NUMBER;
-      hash = (53 * hash) + getBsVersion();
+      hash = (37 * hash) + VERSION_FIELD_NUMBER;
+      hash = (53 * hash) + getVersion();
+      hash = (37 * hash) + LASTBATCH_FIELD_NUMBER;
+      hash = (53 * hash) + com.google.protobuf.Internal.hashBoolean(
+          getLastBatch());
       hash = (29 * hash) + unknownFields.hashCode();
       memoizedHashCode = hash;
       return hash;
@@ -11580,7 +11614,9 @@ public final class FGBoostServiceProto {
         } else {
           treeEvalBuilder_.clear();
         }
-        bsVersion_ = 0;
+        version_ = 0;
+
+        lastBatch_ = false;
 
         return this;
       }
@@ -11619,7 +11655,8 @@ public final class FGBoostServiceProto {
         } else {
           result.treeEval_ = treeEvalBuilder_.build();
         }
-        result.bsVersion_ = bsVersion_;
+        result.version_ = version_;
+        result.lastBatch_ = lastBatch_;
         onBuilt();
         return result;
       }
@@ -11698,8 +11735,11 @@ public final class FGBoostServiceProto {
             }
           }
         }
-        if (other.getBsVersion() != 0) {
-          setBsVersion(other.getBsVersion());
+        if (other.getVersion() != 0) {
+          setVersion(other.getVersion());
+        }
+        if (other.getLastBatch() != false) {
+          setLastBatch(other.getLastBatch());
         }
         this.mergeUnknownFields(other.unknownFields);
         onChanged();
@@ -12047,33 +12087,64 @@ public final class FGBoostServiceProto {
         return treeEvalBuilder_;
       }
 
-      private int bsVersion_ ;
+      private int version_ ;
       /**
-       * <code>int32 bsVersion = 3;</code>
-       * @return The bsVersion.
+       * <code>int32 version = 3;</code>
+       * @return The version.
        */
       @Override
-      public int getBsVersion() {
-        return bsVersion_;
+      public int getVersion() {
+        return version_;
       }
       /**
-       * <code>int32 bsVersion = 3;</code>
-       * @param value The bsVersion to set.
+       * <code>int32 version = 3;</code>
+       * @param value The version to set.
        * @return This builder for chaining.
        */
-      public Builder setBsVersion(int value) {
+      public Builder setVersion(int value) {
         
-        bsVersion_ = value;
+        version_ = value;
         onChanged();
         return this;
       }
       /**
-       * <code>int32 bsVersion = 3;</code>
+       * <code>int32 version = 3;</code>
        * @return This builder for chaining.
        */
-      public Builder clearBsVersion() {
+      public Builder clearVersion() {
         
-        bsVersion_ = 0;
+        version_ = 0;
+        onChanged();
+        return this;
+      }
+
+      private boolean lastBatch_ ;
+      /**
+       * <code>bool lastBatch = 4;</code>
+       * @return The lastBatch.
+       */
+      @Override
+      public boolean getLastBatch() {
+        return lastBatch_;
+      }
+      /**
+       * <code>bool lastBatch = 4;</code>
+       * @param value The lastBatch to set.
+       * @return This builder for chaining.
+       */
+      public Builder setLastBatch(boolean value) {
+        
+        lastBatch_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>bool lastBatch = 4;</code>
+       * @return This builder for chaining.
+       */
+      public Builder clearLastBatch() {
+        
+        lastBatch_ = false;
         onChanged();
         return this;
       }
@@ -13162,10 +13233,16 @@ public final class FGBoostServiceProto {
         int index);
 
     /**
-     * <code>int32 bsVersion = 3;</code>
-     * @return The bsVersion.
+     * <code>int32 version = 3;</code>
+     * @return The version.
      */
-    int getBsVersion();
+    int getVersion();
+
+    /**
+     * <code>bool lastBatch = 4;</code>
+     * @return The lastBatch.
+     */
+    boolean getLastBatch();
   }
   /**
    * Protobuf type {@code fgboost.PredictRequest}
@@ -13232,7 +13309,12 @@ public final class FGBoostServiceProto {
             }
             case 24: {
 
-              bsVersion_ = input.readInt32();
+              version_ = input.readInt32();
+              break;
+            }
+            case 32: {
+
+              lastBatch_ = input.readBool();
               break;
             }
             default: {
@@ -13348,15 +13430,26 @@ public final class FGBoostServiceProto {
       return treeEval_.get(index);
     }
 
-    public static final int BSVERSION_FIELD_NUMBER = 3;
-    private int bsVersion_;
+    public static final int VERSION_FIELD_NUMBER = 3;
+    private int version_;
     /**
-     * <code>int32 bsVersion = 3;</code>
-     * @return The bsVersion.
+     * <code>int32 version = 3;</code>
+     * @return The version.
      */
     @Override
-    public int getBsVersion() {
-      return bsVersion_;
+    public int getVersion() {
+      return version_;
+    }
+
+    public static final int LASTBATCH_FIELD_NUMBER = 4;
+    private boolean lastBatch_;
+    /**
+     * <code>bool lastBatch = 4;</code>
+     * @return The lastBatch.
+     */
+    @Override
+    public boolean getLastBatch() {
+      return lastBatch_;
     }
 
     private byte memoizedIsInitialized = -1;
@@ -13379,8 +13472,11 @@ public final class FGBoostServiceProto {
       for (int i = 0; i < treeEval_.size(); i++) {
         output.writeMessage(2, treeEval_.get(i));
       }
-      if (bsVersion_ != 0) {
-        output.writeInt32(3, bsVersion_);
+      if (version_ != 0) {
+        output.writeInt32(3, version_);
+      }
+      if (lastBatch_ != false) {
+        output.writeBool(4, lastBatch_);
       }
       unknownFields.writeTo(output);
     }
@@ -13398,9 +13494,13 @@ public final class FGBoostServiceProto {
         size += com.google.protobuf.CodedOutputStream
           .computeMessageSize(2, treeEval_.get(i));
       }
-      if (bsVersion_ != 0) {
+      if (version_ != 0) {
         size += com.google.protobuf.CodedOutputStream
-          .computeInt32Size(3, bsVersion_);
+          .computeInt32Size(3, version_);
+      }
+      if (lastBatch_ != false) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeBoolSize(4, lastBatch_);
       }
       size += unknownFields.getSerializedSize();
       memoizedSize = size;
@@ -13421,8 +13521,10 @@ public final class FGBoostServiceProto {
           .equals(other.getClientuuid())) return false;
       if (!getTreeEvalList()
           .equals(other.getTreeEvalList())) return false;
-      if (getBsVersion()
-          != other.getBsVersion()) return false;
+      if (getVersion()
+          != other.getVersion()) return false;
+      if (getLastBatch()
+          != other.getLastBatch()) return false;
       if (!unknownFields.equals(other.unknownFields)) return false;
       return true;
     }
@@ -13440,8 +13542,11 @@ public final class FGBoostServiceProto {
         hash = (37 * hash) + TREEEVAL_FIELD_NUMBER;
         hash = (53 * hash) + getTreeEvalList().hashCode();
       }
-      hash = (37 * hash) + BSVERSION_FIELD_NUMBER;
-      hash = (53 * hash) + getBsVersion();
+      hash = (37 * hash) + VERSION_FIELD_NUMBER;
+      hash = (53 * hash) + getVersion();
+      hash = (37 * hash) + LASTBATCH_FIELD_NUMBER;
+      hash = (53 * hash) + com.google.protobuf.Internal.hashBoolean(
+          getLastBatch());
       hash = (29 * hash) + unknownFields.hashCode();
       memoizedHashCode = hash;
       return hash;
@@ -13584,7 +13689,9 @@ public final class FGBoostServiceProto {
         } else {
           treeEvalBuilder_.clear();
         }
-        bsVersion_ = 0;
+        version_ = 0;
+
+        lastBatch_ = false;
 
         return this;
       }
@@ -13623,7 +13730,8 @@ public final class FGBoostServiceProto {
         } else {
           result.treeEval_ = treeEvalBuilder_.build();
         }
-        result.bsVersion_ = bsVersion_;
+        result.version_ = version_;
+        result.lastBatch_ = lastBatch_;
         onBuilt();
         return result;
       }
@@ -13702,8 +13810,11 @@ public final class FGBoostServiceProto {
             }
           }
         }
-        if (other.getBsVersion() != 0) {
-          setBsVersion(other.getBsVersion());
+        if (other.getVersion() != 0) {
+          setVersion(other.getVersion());
+        }
+        if (other.getLastBatch() != false) {
+          setLastBatch(other.getLastBatch());
         }
         this.mergeUnknownFields(other.unknownFields);
         onChanged();
@@ -14051,33 +14162,64 @@ public final class FGBoostServiceProto {
         return treeEvalBuilder_;
       }
 
-      private int bsVersion_ ;
+      private int version_ ;
       /**
-       * <code>int32 bsVersion = 3;</code>
-       * @return The bsVersion.
+       * <code>int32 version = 3;</code>
+       * @return The version.
        */
       @Override
-      public int getBsVersion() {
-        return bsVersion_;
+      public int getVersion() {
+        return version_;
       }
       /**
-       * <code>int32 bsVersion = 3;</code>
-       * @param value The bsVersion to set.
+       * <code>int32 version = 3;</code>
+       * @param value The version to set.
        * @return This builder for chaining.
        */
-      public Builder setBsVersion(int value) {
+      public Builder setVersion(int value) {
         
-        bsVersion_ = value;
+        version_ = value;
         onChanged();
         return this;
       }
       /**
-       * <code>int32 bsVersion = 3;</code>
+       * <code>int32 version = 3;</code>
        * @return This builder for chaining.
        */
-      public Builder clearBsVersion() {
+      public Builder clearVersion() {
         
-        bsVersion_ = 0;
+        version_ = 0;
+        onChanged();
+        return this;
+      }
+
+      private boolean lastBatch_ ;
+      /**
+       * <code>bool lastBatch = 4;</code>
+       * @return The lastBatch.
+       */
+      @Override
+      public boolean getLastBatch() {
+        return lastBatch_;
+      }
+      /**
+       * <code>bool lastBatch = 4;</code>
+       * @param value The lastBatch to set.
+       * @return This builder for chaining.
+       */
+      public Builder setLastBatch(boolean value) {
+        
+        lastBatch_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>bool lastBatch = 4;</code>
+       * @return This builder for chaining.
+       */
+      public Builder clearLastBatch() {
+        
+        lastBatch_ = false;
         onChanged();
         return this;
       }
@@ -16716,35 +16858,36 @@ public final class FGBoostServiceProto {
       " \001(\t\"2\n\020RegisterResponse\022\020\n\010response\030\001 \001" +
       "(\t\022\014\n\004code\030\002 \001(\005\"b\n\025UploadTreeEvalReques" +
       "t\022\022\n\nclientuuid\030\001 \001(\t\022\017\n\007version\030\002 \001(\005\022$" +
-      "\n\010treeEval\030\003 \003(\0132\022.fgboost.BoostEval\"^\n\017" +
+      "\n\010treeEval\030\003 \003(\0132\022.fgboost.BoostEval\"o\n\017" +
       "EvaluateRequest\022\022\n\nclientuuid\030\001 \001(\t\022$\n\010t" +
-      "reeEval\030\002 \003(\0132\022.fgboost.BoostEval\022\021\n\tbsV" +
-      "ersion\030\003 \001(\005\"]\n\020EvaluateResponse\022\020\n\010resp" +
-      "onse\030\001 \001(\t\022\030\n\004data\030\002 \001(\0132\n.TensorMap\022\014\n\004" +
-      "code\030\003 \001(\005\022\017\n\007message\030\004 \001(\t\"]\n\016PredictRe" +
-      "quest\022\022\n\nclientuuid\030\001 \001(\t\022$\n\010treeEval\030\002 " +
-      "\003(\0132\022.fgboost.BoostEval\022\021\n\tbsVersion\030\003 \001" +
-      "(\005\"E\n\014SplitRequest\022\022\n\nclientuuid\030\001 \001(\t\022!" +
-      "\n\005split\030\002 \001(\0132\022.fgboost.DataSplit\"K\n\017Pre" +
-      "dictResponse\022\020\n\010response\030\001 \001(\t\022\030\n\004data\030\002" +
-      " \001(\0132\n.TensorMap\022\014\n\004code\030\003 \001(\005\"R\n\rSplitR" +
-      "esponse\022!\n\005split\030\001 \001(\0132\022.fgboost.DataSpl" +
-      "it\022\020\n\010response\030\002 \001(\t\022\014\n\004code\030\003 \001(\0052\361\003\n\016F" +
-      "GBoostService\022E\n\013uploadLabel\022\033.fgboost.U" +
-      "ploadLabelRequest\032\027.fgboost.UploadRespon" +
-      "se\"\000\022K\n\rdownloadLabel\022\035.fgboost.Download" +
-      "LabelRequest\032\031.fgboost.DownloadResponse\"" +
-      "\000\0228\n\005split\022\025.fgboost.SplitRequest\032\026.fgbo" +
-      "ost.SplitResponse\"\000\022A\n\010register\022\030.fgboos" +
-      "t.RegisterRequest\032\031.fgboost.RegisterResp" +
-      "onse\"\000\022K\n\016uploadTreeLeaf\022\036.fgboost.Uploa" +
-      "dTreeLeafRequest\032\027.fgboost.UploadRespons" +
-      "e\"\000\022A\n\010evaluate\022\030.fgboost.EvaluateReques" +
-      "t\032\031.fgboost.EvaluateResponse\"\000\022>\n\007predic" +
-      "t\022\027.fgboost.PredictRequest\032\030.fgboost.Pre" +
-      "dictResponse\"\000B?\n(com.intel.analytics.bi" +
-      "gdl.ppml.generatedB\023FGBoostServiceProtob" +
-      "\006proto3"
+      "reeEval\030\002 \003(\0132\022.fgboost.BoostEval\022\017\n\007ver" +
+      "sion\030\003 \001(\005\022\021\n\tlastBatch\030\004 \001(\010\"]\n\020Evaluat" +
+      "eResponse\022\020\n\010response\030\001 \001(\t\022\030\n\004data\030\002 \001(" +
+      "\0132\n.TensorMap\022\014\n\004code\030\003 \001(\005\022\017\n\007message\030\004" +
+      " \001(\t\"n\n\016PredictRequest\022\022\n\nclientuuid\030\001 \001" +
+      "(\t\022$\n\010treeEval\030\002 \003(\0132\022.fgboost.BoostEval" +
+      "\022\017\n\007version\030\003 \001(\005\022\021\n\tlastBatch\030\004 \001(\010\"E\n\014" +
+      "SplitRequest\022\022\n\nclientuuid\030\001 \001(\t\022!\n\005spli" +
+      "t\030\002 \001(\0132\022.fgboost.DataSplit\"K\n\017PredictRe" +
+      "sponse\022\020\n\010response\030\001 \001(\t\022\030\n\004data\030\002 \001(\0132\n" +
+      ".TensorMap\022\014\n\004code\030\003 \001(\005\"R\n\rSplitRespons" +
+      "e\022!\n\005split\030\001 \001(\0132\022.fgboost.DataSplit\022\020\n\010" +
+      "response\030\002 \001(\t\022\014\n\004code\030\003 \001(\0052\361\003\n\016FGBoost" +
+      "Service\022E\n\013uploadLabel\022\033.fgboost.UploadL" +
+      "abelRequest\032\027.fgboost.UploadResponse\"\000\022K" +
+      "\n\rdownloadLabel\022\035.fgboost.DownloadLabelR" +
+      "equest\032\031.fgboost.DownloadResponse\"\000\0228\n\005s" +
+      "plit\022\025.fgboost.SplitRequest\032\026.fgboost.Sp" +
+      "litResponse\"\000\022A\n\010register\022\030.fgboost.Regi" +
+      "sterRequest\032\031.fgboost.RegisterResponse\"\000" +
+      "\022K\n\016uploadTreeLeaf\022\036.fgboost.UploadTreeL" +
+      "eafRequest\032\027.fgboost.UploadResponse\"\000\022A\n" +
+      "\010evaluate\022\030.fgboost.EvaluateRequest\032\031.fg" +
+      "boost.EvaluateResponse\"\000\022>\n\007predict\022\027.fg" +
+      "boost.PredictRequest\032\030.fgboost.PredictRe" +
+      "sponse\"\000B?\n(com.intel.analytics.bigdl.pp" +
+      "ml.generatedB\023FGBoostServiceProtob\006proto" +
+      "3"
     };
     descriptor = com.google.protobuf.Descriptors.FileDescriptor
       .internalBuildGeneratedFileFrom(descriptorData,
@@ -16834,7 +16977,7 @@ public final class FGBoostServiceProto {
     internal_static_fgboost_EvaluateRequest_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_fgboost_EvaluateRequest_descriptor,
-        new String[] { "Clientuuid", "TreeEval", "BsVersion", });
+        new String[] { "Clientuuid", "TreeEval", "Version", "LastBatch", });
     internal_static_fgboost_EvaluateResponse_descriptor =
       getDescriptor().getMessageTypes().get(14);
     internal_static_fgboost_EvaluateResponse_fieldAccessorTable = new
@@ -16846,7 +16989,7 @@ public final class FGBoostServiceProto {
     internal_static_fgboost_PredictRequest_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_fgboost_PredictRequest_descriptor,
-        new String[] { "Clientuuid", "TreeEval", "BsVersion", });
+        new String[] { "Clientuuid", "TreeEval", "Version", "LastBatch", });
     internal_static_fgboost_SplitRequest_descriptor =
       getDescriptor().getMessageTypes().get(16);
     internal_static_fgboost_SplitRequest_fieldAccessorTable = new
