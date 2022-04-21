@@ -13,14 +13,18 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+import os
+
+import yaml
 from bigdl.nano.utils.inference.pytorch.model import AcceleratedLightningModule
 from neural_compressor.utils.pytorch import load
+from neural_compressor.model.model import PyTorchModel
 
 
 class QuantizedModel(AcceleratedLightningModule):
     def __init__(self, model):
-        self.quantized = model
         super().__init__(model.model)
+        self.quantized = model
 
     def save(self, path):
         return self.quantized.save(path)
@@ -38,4 +42,10 @@ class QuantizedModel(AcceleratedLightningModule):
 
     @staticmethod
     def load(path, model):
-        return QuantizedModel(load(path, model))
+        qmodel = PyTorchModel(load(path, model))
+        tune_cfg_file = os.path.join(os.path.abspath(os.path.expanduser(path)),
+                                    'best_configure.yaml')
+        with open(tune_cfg_file, 'r') as f:
+            tune_cfg = yaml.safe_load(f)
+            qmodel.tune_cfg = tune_cfg
+        return QuantizedModel(qmodel)
