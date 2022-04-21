@@ -23,7 +23,7 @@ import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.dllib.utils.serializer._
 import com.intel.analytics.bigdl.dllib.utils.serializer.{ContainerSerializable, ModuleSerializer}
-import com.intel.analytics.bigdl.dllib.utils.{T, Table}
+import com.intel.analytics.bigdl.dllib.utils.{Log4Error, T, Table}
 import com.intel.analytics.bigdl.dllib.utils.serializer.converters.DataConverter
 import com.intel.analytics.bigdl.serialization.Bigdl.{AttrValue, BigDLModule}
 
@@ -92,9 +92,9 @@ class Recurrent[T : ClassTag](
    * @return this container
    */
   override def add(module: AbstractModule[_ <: Activity, _ <: Activity, T]): this.type = {
-    require(module.isInstanceOf[Cell[T]],
+    Log4Error.invalidInputError(module.isInstanceOf[Cell[T]],
       "Recurrent: added module should be Cell type!")
-    require(!module.isInstanceOf[MultiRNNCell[T]],
+    Log4Error.invalidInputError(!module.isInstanceOf[MultiRNNCell[T]],
       "Recurrent: added module cannot be MultiRNNCell," +
         "use Sequential().add(Recurrent(cell)).add(Recurrent(cell))... instead!")
 
@@ -120,7 +120,7 @@ class Recurrent[T : ClassTag](
     }
     modules += topology
 
-    require((preTopology == null && modules.length == 1) ||
+    Log4Error.invalidInputError((preTopology == null && modules.length == 1) ||
       (topology != null && preTopology != null && modules.length == 2),
       "Recurrent extend: should contain only one cell or plus a pre-topology" +
         " to process input")
@@ -241,7 +241,7 @@ class Recurrent[T : ClassTag](
   }
 
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
-    require(input.dim == 3 || input.dim == 5 || input.dim == 6,
+    Log4Error.invalidInputError(input.dim == 3 || input.dim == 5 || input.dim == 6,
       "Recurrent: input should be a 3D/5D/6D Tensor, e.g [batch, times, nDim], " +
         s"current input.dim = ${input.dim}")
 
@@ -271,7 +271,7 @@ class Recurrent[T : ClassTag](
     initHidden(outputSize.drop(2))
     cloneCells()
     if (maskZero) {
-      require(input.dim == 3,
+      Log4Error.invalidInputError(input.dim == 3,
         "If maskZero set to true, input should be a 3D Tensor, e.g [batch, times, nDim]")
       inputBuffer.resizeAs(input).abs(input).max(maskBuffer, indexBuffer, 3)
       minLength = ev.toType[Int](maskBuffer.sign().sum(2).min(1)._1(Array(1, 1, 1)))
@@ -313,7 +313,7 @@ class Recurrent[T : ClassTag](
 
   // get hidden state at the last time step
   def getHiddenState(): Activity = {
-    require(cells != null && cells(times - 1).output != null,
+    Log4Error.invalidInputError(cells != null && cells(times - 1).output != null,
       "getHiddenState need to be called after updateOutput")
     cells(times - 1).output.toTable(hidDim)
   }
@@ -579,11 +579,11 @@ class Recurrent[T : ClassTag](
   }
 
   override def reset(): Unit = {
-    require((preTopology == null && modules.length == 1) ||
+    Log4Error.invalidInputError((preTopology == null && modules.length == 1) ||
       (topology != null && preTopology != null && modules.length == 2),
       "Recurrent extend: should contain only one cell or plus a pre-topology" +
         " to process input.")
-    require(topology.isInstanceOf[Cell[T]],
+    Log4Error.invalidInputError(topology.isInstanceOf[Cell[T]],
       "Recurrent: should contain module with Cell type")
 
     modules.foreach(_.reset())

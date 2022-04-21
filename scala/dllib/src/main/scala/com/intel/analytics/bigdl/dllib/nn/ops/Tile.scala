@@ -18,8 +18,7 @@ package com.intel.analytics.bigdl.dllib.nn.ops
 import com.intel.analytics.bigdl.dllib.nn.abstractnn.Activity
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath._
-import com.intel.analytics.bigdl.dllib.utils.{T, Table}
-import com.intel.analytics.bigdl.dllib.utils.{Engine, OptimizerV1, OptimizerV2}
+import com.intel.analytics.bigdl.dllib.utils._
 
 import scala.concurrent.Future
 import scala.reflect.ClassTag
@@ -49,7 +48,7 @@ class Tile[T: ClassTag]()(implicit ev: TensorNumeric[T])
       return output
     }
 
-    require(input.nDimension() == multiples.size(1),
+    Log4Error.invalidInputError(input.nDimension() == multiples.size(1),
       "Length of multiples must be the same as the number of dimensions in input")
 
     output.asInstanceOf[Tensor[Tensor[NumericWildcard]]].resizeAs(input).copy(input)
@@ -83,8 +82,10 @@ class Tile[T: ClassTag]()(implicit ev: TensorNumeric[T])
             while (f <= target.size(1)) {
               val curFrame = target.select(1, f)
               val outputFrame = currentOutput.select(1, f)
-              require(curFrame.isContiguous())
-              require(outputFrame.isContiguous())
+              Log4Error.invalidInputError(curFrame.isContiguous(),
+              "curFrame is not contiguous")
+              Log4Error.invalidInputError(outputFrame.isContiguous(),
+                "outputFrame is not contiguous")
               curFrame.asInstanceOf[Tensor[NumericWildcard]]
                 .copy(outputFrame.asInstanceOf[Tensor[NumericWildcard]])
               f += 1

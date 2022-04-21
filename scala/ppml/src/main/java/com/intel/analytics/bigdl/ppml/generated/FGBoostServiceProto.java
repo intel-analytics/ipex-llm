@@ -19,34 +19,40 @@ public final class FGBoostServiceProto {
       com.google.protobuf.MessageOrBuilder {
 
     /**
-     * <code>optional string clientuuid = 1;</code>
+     * <code>string clientuuid = 1;</code>
+     * @return The clientuuid.
      */
     String getClientuuid();
     /**
-     * <code>optional string clientuuid = 1;</code>
+     * <code>string clientuuid = 1;</code>
+     * @return The bytes for clientuuid.
      */
     com.google.protobuf.ByteString
         getClientuuidBytes();
 
     /**
-     * <code>optional .TensorMap data = 2;</code>
+     * <code>.TensorMap data = 2;</code>
+     * @return Whether the data field is set.
      */
     boolean hasData();
     /**
-     * <code>optional .TensorMap data = 2;</code>
+     * <code>.TensorMap data = 2;</code>
+     * @return The data.
      */
     FlBaseProto.TensorMap getData();
     /**
-     * <code>optional .TensorMap data = 2;</code>
+     * <code>.TensorMap data = 2;</code>
      */
     FlBaseProto.TensorMapOrBuilder getDataOrBuilder();
 
     /**
-     * <code>optional string algorithm = 3;</code>
+     * <code>string algorithm = 3;</code>
+     * @return The algorithm.
      */
     String getAlgorithm();
     /**
-     * <code>optional string algorithm = 3;</code>
+     * <code>string algorithm = 3;</code>
+     * @return The bytes for algorithm.
      */
     com.google.protobuf.ByteString
         getAlgorithmBytes();
@@ -54,10 +60,11 @@ public final class FGBoostServiceProto {
   /**
    * Protobuf type {@code fgboost.UploadLabelRequest}
    */
-  public  static final class UploadLabelRequest extends
+  public static final class UploadLabelRequest extends
       com.google.protobuf.GeneratedMessageV3 implements
       // @@protoc_insertion_point(message_implements:fgboost.UploadLabelRequest)
       UploadLabelRequestOrBuilder {
+  private static final long serialVersionUID = 0L;
     // Use UploadLabelRequest.newBuilder() to construct.
     private UploadLabelRequest(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
       super(builder);
@@ -68,16 +75,27 @@ public final class FGBoostServiceProto {
     }
 
     @Override
+    @SuppressWarnings({"unused"})
+    protected Object newInstance(
+        UnusedPrivateParameter unused) {
+      return new UploadLabelRequest();
+    }
+
+    @Override
     public final com.google.protobuf.UnknownFieldSet
     getUnknownFields() {
-      return com.google.protobuf.UnknownFieldSet.getDefaultInstance();
+      return this.unknownFields;
     }
     private UploadLabelRequest(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       this();
-      int mutable_bitField0_ = 0;
+      if (extensionRegistry == null) {
+        throw new NullPointerException();
+      }
+      com.google.protobuf.UnknownFieldSet.Builder unknownFields =
+          com.google.protobuf.UnknownFieldSet.newBuilder();
       try {
         boolean done = false;
         while (!done) {
@@ -86,12 +104,6 @@ public final class FGBoostServiceProto {
             case 0:
               done = true;
               break;
-            default: {
-              if (!input.skipField(tag)) {
-                done = true;
-              }
-              break;
-            }
             case 10: {
               String s = input.readStringRequireUtf8();
 
@@ -117,6 +129,13 @@ public final class FGBoostServiceProto {
               algorithm_ = s;
               break;
             }
+            default: {
+              if (!parseUnknownField(
+                  input, unknownFields, extensionRegistry, tag)) {
+                done = true;
+              }
+              break;
+            }
           }
         }
       } catch (com.google.protobuf.InvalidProtocolBufferException e) {
@@ -125,6 +144,7 @@ public final class FGBoostServiceProto {
         throw new com.google.protobuf.InvalidProtocolBufferException(
             e).setUnfinishedMessage(this);
       } finally {
+        this.unknownFields = unknownFields.build();
         makeExtensionsImmutable();
       }
     }
@@ -133,7 +153,8 @@ public final class FGBoostServiceProto {
       return FGBoostServiceProto.internal_static_fgboost_UploadLabelRequest_descriptor;
     }
 
-    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+    @Override
+    protected FieldAccessorTable
         internalGetFieldAccessorTable() {
       return FGBoostServiceProto.internal_static_fgboost_UploadLabelRequest_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
@@ -143,8 +164,10 @@ public final class FGBoostServiceProto {
     public static final int CLIENTUUID_FIELD_NUMBER = 1;
     private volatile Object clientuuid_;
     /**
-     * <code>optional string clientuuid = 1;</code>
+     * <code>string clientuuid = 1;</code>
+     * @return The clientuuid.
      */
+    @Override
     public String getClientuuid() {
       Object ref = clientuuid_;
       if (ref instanceof String) {
@@ -158,8 +181,10 @@ public final class FGBoostServiceProto {
       }
     }
     /**
-     * <code>optional string clientuuid = 1;</code>
+     * <code>string clientuuid = 1;</code>
+     * @return The bytes for clientuuid.
      */
+    @Override
     public com.google.protobuf.ByteString
         getClientuuidBytes() {
       Object ref = clientuuid_;
@@ -177,20 +202,25 @@ public final class FGBoostServiceProto {
     public static final int DATA_FIELD_NUMBER = 2;
     private FlBaseProto.TensorMap data_;
     /**
-     * <code>optional .TensorMap data = 2;</code>
+     * <code>.TensorMap data = 2;</code>
+     * @return Whether the data field is set.
      */
+    @Override
     public boolean hasData() {
       return data_ != null;
     }
     /**
-     * <code>optional .TensorMap data = 2;</code>
+     * <code>.TensorMap data = 2;</code>
+     * @return The data.
      */
+    @Override
     public FlBaseProto.TensorMap getData() {
       return data_ == null ? FlBaseProto.TensorMap.getDefaultInstance() : data_;
     }
     /**
-     * <code>optional .TensorMap data = 2;</code>
+     * <code>.TensorMap data = 2;</code>
      */
+    @Override
     public FlBaseProto.TensorMapOrBuilder getDataOrBuilder() {
       return getData();
     }
@@ -198,8 +228,10 @@ public final class FGBoostServiceProto {
     public static final int ALGORITHM_FIELD_NUMBER = 3;
     private volatile Object algorithm_;
     /**
-     * <code>optional string algorithm = 3;</code>
+     * <code>string algorithm = 3;</code>
+     * @return The algorithm.
      */
+    @Override
     public String getAlgorithm() {
       Object ref = algorithm_;
       if (ref instanceof String) {
@@ -213,8 +245,10 @@ public final class FGBoostServiceProto {
       }
     }
     /**
-     * <code>optional string algorithm = 3;</code>
+     * <code>string algorithm = 3;</code>
+     * @return The bytes for algorithm.
      */
+    @Override
     public com.google.protobuf.ByteString
         getAlgorithmBytes() {
       Object ref = algorithm_;
@@ -230,6 +264,7 @@ public final class FGBoostServiceProto {
     }
 
     private byte memoizedIsInitialized = -1;
+    @Override
     public final boolean isInitialized() {
       byte isInitialized = memoizedIsInitialized;
       if (isInitialized == 1) return true;
@@ -239,6 +274,7 @@ public final class FGBoostServiceProto {
       return true;
     }
 
+    @Override
     public void writeTo(com.google.protobuf.CodedOutputStream output)
                         throws java.io.IOException {
       if (!getClientuuidBytes().isEmpty()) {
@@ -250,8 +286,10 @@ public final class FGBoostServiceProto {
       if (!getAlgorithmBytes().isEmpty()) {
         com.google.protobuf.GeneratedMessageV3.writeString(output, 3, algorithm_);
       }
+      unknownFields.writeTo(output);
     }
 
+    @Override
     public int getSerializedSize() {
       int size = memoizedSize;
       if (size != -1) return size;
@@ -267,11 +305,11 @@ public final class FGBoostServiceProto {
       if (!getAlgorithmBytes().isEmpty()) {
         size += com.google.protobuf.GeneratedMessageV3.computeStringSize(3, algorithm_);
       }
+      size += unknownFields.getSerializedSize();
       memoizedSize = size;
       return size;
     }
 
-    private static final long serialVersionUID = 0L;
     @Override
     public boolean equals(final Object obj) {
       if (obj == this) {
@@ -282,17 +320,17 @@ public final class FGBoostServiceProto {
       }
       UploadLabelRequest other = (UploadLabelRequest) obj;
 
-      boolean result = true;
-      result = result && getClientuuid()
-          .equals(other.getClientuuid());
-      result = result && (hasData() == other.hasData());
+      if (!getClientuuid()
+          .equals(other.getClientuuid())) return false;
+      if (hasData() != other.hasData()) return false;
       if (hasData()) {
-        result = result && getData()
-            .equals(other.getData());
+        if (!getData()
+            .equals(other.getData())) return false;
       }
-      result = result && getAlgorithm()
-          .equals(other.getAlgorithm());
-      return result;
+      if (!getAlgorithm()
+          .equals(other.getAlgorithm())) return false;
+      if (!unknownFields.equals(other.unknownFields)) return false;
+      return true;
     }
 
     @Override
@@ -301,7 +339,7 @@ public final class FGBoostServiceProto {
         return memoizedHashCode;
       }
       int hash = 41;
-      hash = (19 * hash) + getDescriptorForType().hashCode();
+      hash = (19 * hash) + getDescriptor().hashCode();
       hash = (37 * hash) + CLIENTUUID_FIELD_NUMBER;
       hash = (53 * hash) + getClientuuid().hashCode();
       if (hasData()) {
@@ -315,6 +353,17 @@ public final class FGBoostServiceProto {
       return hash;
     }
 
+    public static UploadLabelRequest parseFrom(
+        java.nio.ByteBuffer data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static UploadLabelRequest parseFrom(
+        java.nio.ByteBuffer data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
     public static UploadLabelRequest parseFrom(
         com.google.protobuf.ByteString data)
         throws com.google.protobuf.InvalidProtocolBufferException {
@@ -374,6 +423,7 @@ public final class FGBoostServiceProto {
           .parseWithIOException(PARSER, input, extensionRegistry);
     }
 
+    @Override
     public Builder newBuilderForType() { return newBuilder(); }
     public static Builder newBuilder() {
       return DEFAULT_INSTANCE.toBuilder();
@@ -381,6 +431,7 @@ public final class FGBoostServiceProto {
     public static Builder newBuilder(UploadLabelRequest prototype) {
       return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
     }
+    @Override
     public Builder toBuilder() {
       return this == DEFAULT_INSTANCE
           ? new Builder() : new Builder().mergeFrom(this);
@@ -388,7 +439,7 @@ public final class FGBoostServiceProto {
 
     @Override
     protected Builder newBuilderForType(
-        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+        BuilderParent parent) {
       Builder builder = new Builder(parent);
       return builder;
     }
@@ -404,7 +455,8 @@ public final class FGBoostServiceProto {
         return FGBoostServiceProto.internal_static_fgboost_UploadLabelRequest_descriptor;
       }
 
-      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+      @Override
+      protected FieldAccessorTable
           internalGetFieldAccessorTable() {
         return FGBoostServiceProto.internal_static_fgboost_UploadLabelRequest_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
@@ -417,7 +469,7 @@ public final class FGBoostServiceProto {
       }
 
       private Builder(
-          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+          BuilderParent parent) {
         super(parent);
         maybeForceBuilderInitialization();
       }
@@ -426,6 +478,7 @@ public final class FGBoostServiceProto {
                 .alwaysUseFieldBuilders) {
         }
       }
+      @Override
       public Builder clear() {
         super.clear();
         clientuuid_ = "";
@@ -441,15 +494,18 @@ public final class FGBoostServiceProto {
         return this;
       }
 
+      @Override
       public com.google.protobuf.Descriptors.Descriptor
           getDescriptorForType() {
         return FGBoostServiceProto.internal_static_fgboost_UploadLabelRequest_descriptor;
       }
 
+      @Override
       public UploadLabelRequest getDefaultInstanceForType() {
         return UploadLabelRequest.getDefaultInstance();
       }
 
+      @Override
       public UploadLabelRequest build() {
         UploadLabelRequest result = buildPartial();
         if (!result.isInitialized()) {
@@ -458,6 +514,7 @@ public final class FGBoostServiceProto {
         return result;
       }
 
+      @Override
       public UploadLabelRequest buildPartial() {
         UploadLabelRequest result = new UploadLabelRequest(this);
         result.clientuuid_ = clientuuid_;
@@ -471,32 +528,39 @@ public final class FGBoostServiceProto {
         return result;
       }
 
+      @Override
       public Builder clone() {
-        return (Builder) super.clone();
+        return super.clone();
       }
+      @Override
       public Builder setField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           Object value) {
-        return (Builder) super.setField(field, value);
+        return super.setField(field, value);
       }
+      @Override
       public Builder clearField(
           com.google.protobuf.Descriptors.FieldDescriptor field) {
-        return (Builder) super.clearField(field);
+        return super.clearField(field);
       }
+      @Override
       public Builder clearOneof(
           com.google.protobuf.Descriptors.OneofDescriptor oneof) {
-        return (Builder) super.clearOneof(oneof);
+        return super.clearOneof(oneof);
       }
+      @Override
       public Builder setRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           int index, Object value) {
-        return (Builder) super.setRepeatedField(field, index, value);
+        return super.setRepeatedField(field, index, value);
       }
+      @Override
       public Builder addRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           Object value) {
-        return (Builder) super.addRepeatedField(field, value);
+        return super.addRepeatedField(field, value);
       }
+      @Override
       public Builder mergeFrom(com.google.protobuf.Message other) {
         if (other instanceof UploadLabelRequest) {
           return mergeFrom((UploadLabelRequest)other);
@@ -519,14 +583,17 @@ public final class FGBoostServiceProto {
           algorithm_ = other.algorithm_;
           onChanged();
         }
+        this.mergeUnknownFields(other.unknownFields);
         onChanged();
         return this;
       }
 
+      @Override
       public final boolean isInitialized() {
         return true;
       }
 
+      @Override
       public Builder mergeFrom(
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
@@ -547,7 +614,8 @@ public final class FGBoostServiceProto {
 
       private Object clientuuid_ = "";
       /**
-       * <code>optional string clientuuid = 1;</code>
+       * <code>string clientuuid = 1;</code>
+       * @return The clientuuid.
        */
       public String getClientuuid() {
         Object ref = clientuuid_;
@@ -562,7 +630,8 @@ public final class FGBoostServiceProto {
         }
       }
       /**
-       * <code>optional string clientuuid = 1;</code>
+       * <code>string clientuuid = 1;</code>
+       * @return The bytes for clientuuid.
        */
       public com.google.protobuf.ByteString
           getClientuuidBytes() {
@@ -578,7 +647,9 @@ public final class FGBoostServiceProto {
         }
       }
       /**
-       * <code>optional string clientuuid = 1;</code>
+       * <code>string clientuuid = 1;</code>
+       * @param value The clientuuid to set.
+       * @return This builder for chaining.
        */
       public Builder setClientuuid(
           String value) {
@@ -591,7 +662,8 @@ public final class FGBoostServiceProto {
         return this;
       }
       /**
-       * <code>optional string clientuuid = 1;</code>
+       * <code>string clientuuid = 1;</code>
+       * @return This builder for chaining.
        */
       public Builder clearClientuuid() {
         
@@ -600,7 +672,9 @@ public final class FGBoostServiceProto {
         return this;
       }
       /**
-       * <code>optional string clientuuid = 1;</code>
+       * <code>string clientuuid = 1;</code>
+       * @param value The bytes for clientuuid to set.
+       * @return This builder for chaining.
        */
       public Builder setClientuuidBytes(
           com.google.protobuf.ByteString value) {
@@ -614,17 +688,19 @@ public final class FGBoostServiceProto {
         return this;
       }
 
-      private FlBaseProto.TensorMap data_ = null;
+      private FlBaseProto.TensorMap data_;
       private com.google.protobuf.SingleFieldBuilderV3<
           FlBaseProto.TensorMap, FlBaseProto.TensorMap.Builder, FlBaseProto.TensorMapOrBuilder> dataBuilder_;
       /**
-       * <code>optional .TensorMap data = 2;</code>
+       * <code>.TensorMap data = 2;</code>
+       * @return Whether the data field is set.
        */
       public boolean hasData() {
         return dataBuilder_ != null || data_ != null;
       }
       /**
-       * <code>optional .TensorMap data = 2;</code>
+       * <code>.TensorMap data = 2;</code>
+       * @return The data.
        */
       public FlBaseProto.TensorMap getData() {
         if (dataBuilder_ == null) {
@@ -634,7 +710,7 @@ public final class FGBoostServiceProto {
         }
       }
       /**
-       * <code>optional .TensorMap data = 2;</code>
+       * <code>.TensorMap data = 2;</code>
        */
       public Builder setData(FlBaseProto.TensorMap value) {
         if (dataBuilder_ == null) {
@@ -650,7 +726,7 @@ public final class FGBoostServiceProto {
         return this;
       }
       /**
-       * <code>optional .TensorMap data = 2;</code>
+       * <code>.TensorMap data = 2;</code>
        */
       public Builder setData(
           FlBaseProto.TensorMap.Builder builderForValue) {
@@ -664,7 +740,7 @@ public final class FGBoostServiceProto {
         return this;
       }
       /**
-       * <code>optional .TensorMap data = 2;</code>
+       * <code>.TensorMap data = 2;</code>
        */
       public Builder mergeData(FlBaseProto.TensorMap value) {
         if (dataBuilder_ == null) {
@@ -682,7 +758,7 @@ public final class FGBoostServiceProto {
         return this;
       }
       /**
-       * <code>optional .TensorMap data = 2;</code>
+       * <code>.TensorMap data = 2;</code>
        */
       public Builder clearData() {
         if (dataBuilder_ == null) {
@@ -696,7 +772,7 @@ public final class FGBoostServiceProto {
         return this;
       }
       /**
-       * <code>optional .TensorMap data = 2;</code>
+       * <code>.TensorMap data = 2;</code>
        */
       public FlBaseProto.TensorMap.Builder getDataBuilder() {
         
@@ -704,7 +780,7 @@ public final class FGBoostServiceProto {
         return getDataFieldBuilder().getBuilder();
       }
       /**
-       * <code>optional .TensorMap data = 2;</code>
+       * <code>.TensorMap data = 2;</code>
        */
       public FlBaseProto.TensorMapOrBuilder getDataOrBuilder() {
         if (dataBuilder_ != null) {
@@ -715,7 +791,7 @@ public final class FGBoostServiceProto {
         }
       }
       /**
-       * <code>optional .TensorMap data = 2;</code>
+       * <code>.TensorMap data = 2;</code>
        */
       private com.google.protobuf.SingleFieldBuilderV3<
           FlBaseProto.TensorMap, FlBaseProto.TensorMap.Builder, FlBaseProto.TensorMapOrBuilder>
@@ -733,7 +809,8 @@ public final class FGBoostServiceProto {
 
       private Object algorithm_ = "";
       /**
-       * <code>optional string algorithm = 3;</code>
+       * <code>string algorithm = 3;</code>
+       * @return The algorithm.
        */
       public String getAlgorithm() {
         Object ref = algorithm_;
@@ -748,7 +825,8 @@ public final class FGBoostServiceProto {
         }
       }
       /**
-       * <code>optional string algorithm = 3;</code>
+       * <code>string algorithm = 3;</code>
+       * @return The bytes for algorithm.
        */
       public com.google.protobuf.ByteString
           getAlgorithmBytes() {
@@ -764,7 +842,9 @@ public final class FGBoostServiceProto {
         }
       }
       /**
-       * <code>optional string algorithm = 3;</code>
+       * <code>string algorithm = 3;</code>
+       * @param value The algorithm to set.
+       * @return This builder for chaining.
        */
       public Builder setAlgorithm(
           String value) {
@@ -777,7 +857,8 @@ public final class FGBoostServiceProto {
         return this;
       }
       /**
-       * <code>optional string algorithm = 3;</code>
+       * <code>string algorithm = 3;</code>
+       * @return This builder for chaining.
        */
       public Builder clearAlgorithm() {
         
@@ -786,7 +867,9 @@ public final class FGBoostServiceProto {
         return this;
       }
       /**
-       * <code>optional string algorithm = 3;</code>
+       * <code>string algorithm = 3;</code>
+       * @param value The bytes for algorithm to set.
+       * @return This builder for chaining.
        */
       public Builder setAlgorithmBytes(
           com.google.protobuf.ByteString value) {
@@ -799,14 +882,16 @@ public final class FGBoostServiceProto {
         onChanged();
         return this;
       }
+      @Override
       public final Builder setUnknownFields(
           final com.google.protobuf.UnknownFieldSet unknownFields) {
-        return this;
+        return super.setUnknownFields(unknownFields);
       }
 
+      @Override
       public final Builder mergeUnknownFields(
           final com.google.protobuf.UnknownFieldSet unknownFields) {
-        return this;
+        return super.mergeUnknownFields(unknownFields);
       }
 
 
@@ -825,11 +910,12 @@ public final class FGBoostServiceProto {
 
     private static final com.google.protobuf.Parser<UploadLabelRequest>
         PARSER = new com.google.protobuf.AbstractParser<UploadLabelRequest>() {
+      @Override
       public UploadLabelRequest parsePartialFrom(
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws com.google.protobuf.InvalidProtocolBufferException {
-          return new UploadLabelRequest(input, extensionRegistry);
+        return new UploadLabelRequest(input, extensionRegistry);
       }
     };
 
@@ -842,6 +928,7 @@ public final class FGBoostServiceProto {
       return PARSER;
     }
 
+    @Override
     public UploadLabelRequest getDefaultInstanceForType() {
       return DEFAULT_INSTANCE;
     }
@@ -853,24 +940,28 @@ public final class FGBoostServiceProto {
       com.google.protobuf.MessageOrBuilder {
 
     /**
-     * <code>optional .MetaData metaData = 1;</code>
+     * <code>.MetaData metaData = 1;</code>
+     * @return Whether the metaData field is set.
      */
     boolean hasMetaData();
     /**
-     * <code>optional .MetaData metaData = 1;</code>
+     * <code>.MetaData metaData = 1;</code>
+     * @return The metaData.
      */
     FlBaseProto.MetaData getMetaData();
     /**
-     * <code>optional .MetaData metaData = 1;</code>
+     * <code>.MetaData metaData = 1;</code>
      */
     FlBaseProto.MetaDataOrBuilder getMetaDataOrBuilder();
 
     /**
-     * <code>optional string algorithm = 2;</code>
+     * <code>string algorithm = 2;</code>
+     * @return The algorithm.
      */
     String getAlgorithm();
     /**
-     * <code>optional string algorithm = 2;</code>
+     * <code>string algorithm = 2;</code>
+     * @return The bytes for algorithm.
      */
     com.google.protobuf.ByteString
         getAlgorithmBytes();
@@ -878,10 +969,11 @@ public final class FGBoostServiceProto {
   /**
    * Protobuf type {@code fgboost.DownloadLabelRequest}
    */
-  public  static final class DownloadLabelRequest extends
+  public static final class DownloadLabelRequest extends
       com.google.protobuf.GeneratedMessageV3 implements
       // @@protoc_insertion_point(message_implements:fgboost.DownloadLabelRequest)
       DownloadLabelRequestOrBuilder {
+  private static final long serialVersionUID = 0L;
     // Use DownloadLabelRequest.newBuilder() to construct.
     private DownloadLabelRequest(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
       super(builder);
@@ -891,16 +983,27 @@ public final class FGBoostServiceProto {
     }
 
     @Override
+    @SuppressWarnings({"unused"})
+    protected Object newInstance(
+        UnusedPrivateParameter unused) {
+      return new DownloadLabelRequest();
+    }
+
+    @Override
     public final com.google.protobuf.UnknownFieldSet
     getUnknownFields() {
-      return com.google.protobuf.UnknownFieldSet.getDefaultInstance();
+      return this.unknownFields;
     }
     private DownloadLabelRequest(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       this();
-      int mutable_bitField0_ = 0;
+      if (extensionRegistry == null) {
+        throw new NullPointerException();
+      }
+      com.google.protobuf.UnknownFieldSet.Builder unknownFields =
+          com.google.protobuf.UnknownFieldSet.newBuilder();
       try {
         boolean done = false;
         while (!done) {
@@ -909,12 +1012,6 @@ public final class FGBoostServiceProto {
             case 0:
               done = true;
               break;
-            default: {
-              if (!input.skipField(tag)) {
-                done = true;
-              }
-              break;
-            }
             case 10: {
               FlBaseProto.MetaData.Builder subBuilder = null;
               if (metaData_ != null) {
@@ -934,6 +1031,13 @@ public final class FGBoostServiceProto {
               algorithm_ = s;
               break;
             }
+            default: {
+              if (!parseUnknownField(
+                  input, unknownFields, extensionRegistry, tag)) {
+                done = true;
+              }
+              break;
+            }
           }
         }
       } catch (com.google.protobuf.InvalidProtocolBufferException e) {
@@ -942,6 +1046,7 @@ public final class FGBoostServiceProto {
         throw new com.google.protobuf.InvalidProtocolBufferException(
             e).setUnfinishedMessage(this);
       } finally {
+        this.unknownFields = unknownFields.build();
         makeExtensionsImmutable();
       }
     }
@@ -950,7 +1055,8 @@ public final class FGBoostServiceProto {
       return FGBoostServiceProto.internal_static_fgboost_DownloadLabelRequest_descriptor;
     }
 
-    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+    @Override
+    protected FieldAccessorTable
         internalGetFieldAccessorTable() {
       return FGBoostServiceProto.internal_static_fgboost_DownloadLabelRequest_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
@@ -960,20 +1066,25 @@ public final class FGBoostServiceProto {
     public static final int METADATA_FIELD_NUMBER = 1;
     private FlBaseProto.MetaData metaData_;
     /**
-     * <code>optional .MetaData metaData = 1;</code>
+     * <code>.MetaData metaData = 1;</code>
+     * @return Whether the metaData field is set.
      */
+    @Override
     public boolean hasMetaData() {
       return metaData_ != null;
     }
     /**
-     * <code>optional .MetaData metaData = 1;</code>
+     * <code>.MetaData metaData = 1;</code>
+     * @return The metaData.
      */
+    @Override
     public FlBaseProto.MetaData getMetaData() {
       return metaData_ == null ? FlBaseProto.MetaData.getDefaultInstance() : metaData_;
     }
     /**
-     * <code>optional .MetaData metaData = 1;</code>
+     * <code>.MetaData metaData = 1;</code>
      */
+    @Override
     public FlBaseProto.MetaDataOrBuilder getMetaDataOrBuilder() {
       return getMetaData();
     }
@@ -981,8 +1092,10 @@ public final class FGBoostServiceProto {
     public static final int ALGORITHM_FIELD_NUMBER = 2;
     private volatile Object algorithm_;
     /**
-     * <code>optional string algorithm = 2;</code>
+     * <code>string algorithm = 2;</code>
+     * @return The algorithm.
      */
+    @Override
     public String getAlgorithm() {
       Object ref = algorithm_;
       if (ref instanceof String) {
@@ -996,8 +1109,10 @@ public final class FGBoostServiceProto {
       }
     }
     /**
-     * <code>optional string algorithm = 2;</code>
+     * <code>string algorithm = 2;</code>
+     * @return The bytes for algorithm.
      */
+    @Override
     public com.google.protobuf.ByteString
         getAlgorithmBytes() {
       Object ref = algorithm_;
@@ -1013,6 +1128,7 @@ public final class FGBoostServiceProto {
     }
 
     private byte memoizedIsInitialized = -1;
+    @Override
     public final boolean isInitialized() {
       byte isInitialized = memoizedIsInitialized;
       if (isInitialized == 1) return true;
@@ -1022,6 +1138,7 @@ public final class FGBoostServiceProto {
       return true;
     }
 
+    @Override
     public void writeTo(com.google.protobuf.CodedOutputStream output)
                         throws java.io.IOException {
       if (metaData_ != null) {
@@ -1030,8 +1147,10 @@ public final class FGBoostServiceProto {
       if (!getAlgorithmBytes().isEmpty()) {
         com.google.protobuf.GeneratedMessageV3.writeString(output, 2, algorithm_);
       }
+      unknownFields.writeTo(output);
     }
 
+    @Override
     public int getSerializedSize() {
       int size = memoizedSize;
       if (size != -1) return size;
@@ -1044,11 +1163,11 @@ public final class FGBoostServiceProto {
       if (!getAlgorithmBytes().isEmpty()) {
         size += com.google.protobuf.GeneratedMessageV3.computeStringSize(2, algorithm_);
       }
+      size += unknownFields.getSerializedSize();
       memoizedSize = size;
       return size;
     }
 
-    private static final long serialVersionUID = 0L;
     @Override
     public boolean equals(final Object obj) {
       if (obj == this) {
@@ -1059,15 +1178,15 @@ public final class FGBoostServiceProto {
       }
       DownloadLabelRequest other = (DownloadLabelRequest) obj;
 
-      boolean result = true;
-      result = result && (hasMetaData() == other.hasMetaData());
+      if (hasMetaData() != other.hasMetaData()) return false;
       if (hasMetaData()) {
-        result = result && getMetaData()
-            .equals(other.getMetaData());
+        if (!getMetaData()
+            .equals(other.getMetaData())) return false;
       }
-      result = result && getAlgorithm()
-          .equals(other.getAlgorithm());
-      return result;
+      if (!getAlgorithm()
+          .equals(other.getAlgorithm())) return false;
+      if (!unknownFields.equals(other.unknownFields)) return false;
+      return true;
     }
 
     @Override
@@ -1076,7 +1195,7 @@ public final class FGBoostServiceProto {
         return memoizedHashCode;
       }
       int hash = 41;
-      hash = (19 * hash) + getDescriptorForType().hashCode();
+      hash = (19 * hash) + getDescriptor().hashCode();
       if (hasMetaData()) {
         hash = (37 * hash) + METADATA_FIELD_NUMBER;
         hash = (53 * hash) + getMetaData().hashCode();
@@ -1088,6 +1207,17 @@ public final class FGBoostServiceProto {
       return hash;
     }
 
+    public static DownloadLabelRequest parseFrom(
+        java.nio.ByteBuffer data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static DownloadLabelRequest parseFrom(
+        java.nio.ByteBuffer data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
     public static DownloadLabelRequest parseFrom(
         com.google.protobuf.ByteString data)
         throws com.google.protobuf.InvalidProtocolBufferException {
@@ -1147,6 +1277,7 @@ public final class FGBoostServiceProto {
           .parseWithIOException(PARSER, input, extensionRegistry);
     }
 
+    @Override
     public Builder newBuilderForType() { return newBuilder(); }
     public static Builder newBuilder() {
       return DEFAULT_INSTANCE.toBuilder();
@@ -1154,6 +1285,7 @@ public final class FGBoostServiceProto {
     public static Builder newBuilder(DownloadLabelRequest prototype) {
       return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
     }
+    @Override
     public Builder toBuilder() {
       return this == DEFAULT_INSTANCE
           ? new Builder() : new Builder().mergeFrom(this);
@@ -1161,7 +1293,7 @@ public final class FGBoostServiceProto {
 
     @Override
     protected Builder newBuilderForType(
-        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+        BuilderParent parent) {
       Builder builder = new Builder(parent);
       return builder;
     }
@@ -1177,7 +1309,8 @@ public final class FGBoostServiceProto {
         return FGBoostServiceProto.internal_static_fgboost_DownloadLabelRequest_descriptor;
       }
 
-      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+      @Override
+      protected FieldAccessorTable
           internalGetFieldAccessorTable() {
         return FGBoostServiceProto.internal_static_fgboost_DownloadLabelRequest_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
@@ -1190,7 +1323,7 @@ public final class FGBoostServiceProto {
       }
 
       private Builder(
-          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+          BuilderParent parent) {
         super(parent);
         maybeForceBuilderInitialization();
       }
@@ -1199,6 +1332,7 @@ public final class FGBoostServiceProto {
                 .alwaysUseFieldBuilders) {
         }
       }
+      @Override
       public Builder clear() {
         super.clear();
         if (metaDataBuilder_ == null) {
@@ -1212,15 +1346,18 @@ public final class FGBoostServiceProto {
         return this;
       }
 
+      @Override
       public com.google.protobuf.Descriptors.Descriptor
           getDescriptorForType() {
         return FGBoostServiceProto.internal_static_fgboost_DownloadLabelRequest_descriptor;
       }
 
+      @Override
       public DownloadLabelRequest getDefaultInstanceForType() {
         return DownloadLabelRequest.getDefaultInstance();
       }
 
+      @Override
       public DownloadLabelRequest build() {
         DownloadLabelRequest result = buildPartial();
         if (!result.isInitialized()) {
@@ -1229,6 +1366,7 @@ public final class FGBoostServiceProto {
         return result;
       }
 
+      @Override
       public DownloadLabelRequest buildPartial() {
         DownloadLabelRequest result = new DownloadLabelRequest(this);
         if (metaDataBuilder_ == null) {
@@ -1241,32 +1379,39 @@ public final class FGBoostServiceProto {
         return result;
       }
 
+      @Override
       public Builder clone() {
-        return (Builder) super.clone();
+        return super.clone();
       }
+      @Override
       public Builder setField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           Object value) {
-        return (Builder) super.setField(field, value);
+        return super.setField(field, value);
       }
+      @Override
       public Builder clearField(
           com.google.protobuf.Descriptors.FieldDescriptor field) {
-        return (Builder) super.clearField(field);
+        return super.clearField(field);
       }
+      @Override
       public Builder clearOneof(
           com.google.protobuf.Descriptors.OneofDescriptor oneof) {
-        return (Builder) super.clearOneof(oneof);
+        return super.clearOneof(oneof);
       }
+      @Override
       public Builder setRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           int index, Object value) {
-        return (Builder) super.setRepeatedField(field, index, value);
+        return super.setRepeatedField(field, index, value);
       }
+      @Override
       public Builder addRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           Object value) {
-        return (Builder) super.addRepeatedField(field, value);
+        return super.addRepeatedField(field, value);
       }
+      @Override
       public Builder mergeFrom(com.google.protobuf.Message other) {
         if (other instanceof DownloadLabelRequest) {
           return mergeFrom((DownloadLabelRequest)other);
@@ -1285,14 +1430,17 @@ public final class FGBoostServiceProto {
           algorithm_ = other.algorithm_;
           onChanged();
         }
+        this.mergeUnknownFields(other.unknownFields);
         onChanged();
         return this;
       }
 
+      @Override
       public final boolean isInitialized() {
         return true;
       }
 
+      @Override
       public Builder mergeFrom(
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
@@ -1311,17 +1459,19 @@ public final class FGBoostServiceProto {
         return this;
       }
 
-      private FlBaseProto.MetaData metaData_ = null;
+      private FlBaseProto.MetaData metaData_;
       private com.google.protobuf.SingleFieldBuilderV3<
           FlBaseProto.MetaData, FlBaseProto.MetaData.Builder, FlBaseProto.MetaDataOrBuilder> metaDataBuilder_;
       /**
-       * <code>optional .MetaData metaData = 1;</code>
+       * <code>.MetaData metaData = 1;</code>
+       * @return Whether the metaData field is set.
        */
       public boolean hasMetaData() {
         return metaDataBuilder_ != null || metaData_ != null;
       }
       /**
-       * <code>optional .MetaData metaData = 1;</code>
+       * <code>.MetaData metaData = 1;</code>
+       * @return The metaData.
        */
       public FlBaseProto.MetaData getMetaData() {
         if (metaDataBuilder_ == null) {
@@ -1331,7 +1481,7 @@ public final class FGBoostServiceProto {
         }
       }
       /**
-       * <code>optional .MetaData metaData = 1;</code>
+       * <code>.MetaData metaData = 1;</code>
        */
       public Builder setMetaData(FlBaseProto.MetaData value) {
         if (metaDataBuilder_ == null) {
@@ -1347,7 +1497,7 @@ public final class FGBoostServiceProto {
         return this;
       }
       /**
-       * <code>optional .MetaData metaData = 1;</code>
+       * <code>.MetaData metaData = 1;</code>
        */
       public Builder setMetaData(
           FlBaseProto.MetaData.Builder builderForValue) {
@@ -1361,7 +1511,7 @@ public final class FGBoostServiceProto {
         return this;
       }
       /**
-       * <code>optional .MetaData metaData = 1;</code>
+       * <code>.MetaData metaData = 1;</code>
        */
       public Builder mergeMetaData(FlBaseProto.MetaData value) {
         if (metaDataBuilder_ == null) {
@@ -1379,7 +1529,7 @@ public final class FGBoostServiceProto {
         return this;
       }
       /**
-       * <code>optional .MetaData metaData = 1;</code>
+       * <code>.MetaData metaData = 1;</code>
        */
       public Builder clearMetaData() {
         if (metaDataBuilder_ == null) {
@@ -1393,7 +1543,7 @@ public final class FGBoostServiceProto {
         return this;
       }
       /**
-       * <code>optional .MetaData metaData = 1;</code>
+       * <code>.MetaData metaData = 1;</code>
        */
       public FlBaseProto.MetaData.Builder getMetaDataBuilder() {
         
@@ -1401,7 +1551,7 @@ public final class FGBoostServiceProto {
         return getMetaDataFieldBuilder().getBuilder();
       }
       /**
-       * <code>optional .MetaData metaData = 1;</code>
+       * <code>.MetaData metaData = 1;</code>
        */
       public FlBaseProto.MetaDataOrBuilder getMetaDataOrBuilder() {
         if (metaDataBuilder_ != null) {
@@ -1412,7 +1562,7 @@ public final class FGBoostServiceProto {
         }
       }
       /**
-       * <code>optional .MetaData metaData = 1;</code>
+       * <code>.MetaData metaData = 1;</code>
        */
       private com.google.protobuf.SingleFieldBuilderV3<
           FlBaseProto.MetaData, FlBaseProto.MetaData.Builder, FlBaseProto.MetaDataOrBuilder>
@@ -1430,7 +1580,8 @@ public final class FGBoostServiceProto {
 
       private Object algorithm_ = "";
       /**
-       * <code>optional string algorithm = 2;</code>
+       * <code>string algorithm = 2;</code>
+       * @return The algorithm.
        */
       public String getAlgorithm() {
         Object ref = algorithm_;
@@ -1445,7 +1596,8 @@ public final class FGBoostServiceProto {
         }
       }
       /**
-       * <code>optional string algorithm = 2;</code>
+       * <code>string algorithm = 2;</code>
+       * @return The bytes for algorithm.
        */
       public com.google.protobuf.ByteString
           getAlgorithmBytes() {
@@ -1461,7 +1613,9 @@ public final class FGBoostServiceProto {
         }
       }
       /**
-       * <code>optional string algorithm = 2;</code>
+       * <code>string algorithm = 2;</code>
+       * @param value The algorithm to set.
+       * @return This builder for chaining.
        */
       public Builder setAlgorithm(
           String value) {
@@ -1474,7 +1628,8 @@ public final class FGBoostServiceProto {
         return this;
       }
       /**
-       * <code>optional string algorithm = 2;</code>
+       * <code>string algorithm = 2;</code>
+       * @return This builder for chaining.
        */
       public Builder clearAlgorithm() {
         
@@ -1483,7 +1638,9 @@ public final class FGBoostServiceProto {
         return this;
       }
       /**
-       * <code>optional string algorithm = 2;</code>
+       * <code>string algorithm = 2;</code>
+       * @param value The bytes for algorithm to set.
+       * @return This builder for chaining.
        */
       public Builder setAlgorithmBytes(
           com.google.protobuf.ByteString value) {
@@ -1496,14 +1653,16 @@ public final class FGBoostServiceProto {
         onChanged();
         return this;
       }
+      @Override
       public final Builder setUnknownFields(
           final com.google.protobuf.UnknownFieldSet unknownFields) {
-        return this;
+        return super.setUnknownFields(unknownFields);
       }
 
+      @Override
       public final Builder mergeUnknownFields(
           final com.google.protobuf.UnknownFieldSet unknownFields) {
-        return this;
+        return super.mergeUnknownFields(unknownFields);
       }
 
 
@@ -1522,11 +1681,12 @@ public final class FGBoostServiceProto {
 
     private static final com.google.protobuf.Parser<DownloadLabelRequest>
         PARSER = new com.google.protobuf.AbstractParser<DownloadLabelRequest>() {
+      @Override
       public DownloadLabelRequest parsePartialFrom(
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws com.google.protobuf.InvalidProtocolBufferException {
-          return new DownloadLabelRequest(input, extensionRegistry);
+        return new DownloadLabelRequest(input, extensionRegistry);
       }
     };
 
@@ -1539,6 +1699,7 @@ public final class FGBoostServiceProto {
       return PARSER;
     }
 
+    @Override
     public DownloadLabelRequest getDefaultInstanceForType() {
       return DEFAULT_INSTANCE;
     }
@@ -1550,60 +1711,76 @@ public final class FGBoostServiceProto {
       com.google.protobuf.MessageOrBuilder {
 
     /**
-     * <code>optional .TensorMap data = 1;</code>
+     * <code>.TensorMap data = 1;</code>
+     * @return Whether the data field is set.
      */
     boolean hasData();
     /**
-     * <code>optional .TensorMap data = 1;</code>
+     * <code>.TensorMap data = 1;</code>
+     * @return The data.
      */
     FlBaseProto.TensorMap getData();
     /**
-     * <code>optional .TensorMap data = 1;</code>
+     * <code>.TensorMap data = 1;</code>
      */
     FlBaseProto.TensorMapOrBuilder getDataOrBuilder();
 
     /**
-     * <code>optional string response = 2;</code>
+     * <code>string response = 2;</code>
+     * @return The response.
      */
     String getResponse();
     /**
-     * <code>optional string response = 2;</code>
+     * <code>string response = 2;</code>
+     * @return The bytes for response.
      */
     com.google.protobuf.ByteString
         getResponseBytes();
 
     /**
-     * <code>optional int32 code = 3;</code>
+     * <code>int32 code = 3;</code>
+     * @return The code.
      */
     int getCode();
   }
   /**
    * Protobuf type {@code fgboost.DownloadResponse}
    */
-  public  static final class DownloadResponse extends
+  public static final class DownloadResponse extends
       com.google.protobuf.GeneratedMessageV3 implements
       // @@protoc_insertion_point(message_implements:fgboost.DownloadResponse)
       DownloadResponseOrBuilder {
+  private static final long serialVersionUID = 0L;
     // Use DownloadResponse.newBuilder() to construct.
     private DownloadResponse(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
       super(builder);
     }
     private DownloadResponse() {
       response_ = "";
-      code_ = 0;
+    }
+
+    @Override
+    @SuppressWarnings({"unused"})
+    protected Object newInstance(
+        UnusedPrivateParameter unused) {
+      return new DownloadResponse();
     }
 
     @Override
     public final com.google.protobuf.UnknownFieldSet
     getUnknownFields() {
-      return com.google.protobuf.UnknownFieldSet.getDefaultInstance();
+      return this.unknownFields;
     }
     private DownloadResponse(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       this();
-      int mutable_bitField0_ = 0;
+      if (extensionRegistry == null) {
+        throw new NullPointerException();
+      }
+      com.google.protobuf.UnknownFieldSet.Builder unknownFields =
+          com.google.protobuf.UnknownFieldSet.newBuilder();
       try {
         boolean done = false;
         while (!done) {
@@ -1612,12 +1789,6 @@ public final class FGBoostServiceProto {
             case 0:
               done = true;
               break;
-            default: {
-              if (!input.skipField(tag)) {
-                done = true;
-              }
-              break;
-            }
             case 10: {
               FlBaseProto.TensorMap.Builder subBuilder = null;
               if (data_ != null) {
@@ -1642,6 +1813,13 @@ public final class FGBoostServiceProto {
               code_ = input.readInt32();
               break;
             }
+            default: {
+              if (!parseUnknownField(
+                  input, unknownFields, extensionRegistry, tag)) {
+                done = true;
+              }
+              break;
+            }
           }
         }
       } catch (com.google.protobuf.InvalidProtocolBufferException e) {
@@ -1650,6 +1828,7 @@ public final class FGBoostServiceProto {
         throw new com.google.protobuf.InvalidProtocolBufferException(
             e).setUnfinishedMessage(this);
       } finally {
+        this.unknownFields = unknownFields.build();
         makeExtensionsImmutable();
       }
     }
@@ -1658,7 +1837,8 @@ public final class FGBoostServiceProto {
       return FGBoostServiceProto.internal_static_fgboost_DownloadResponse_descriptor;
     }
 
-    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+    @Override
+    protected FieldAccessorTable
         internalGetFieldAccessorTable() {
       return FGBoostServiceProto.internal_static_fgboost_DownloadResponse_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
@@ -1668,20 +1848,25 @@ public final class FGBoostServiceProto {
     public static final int DATA_FIELD_NUMBER = 1;
     private FlBaseProto.TensorMap data_;
     /**
-     * <code>optional .TensorMap data = 1;</code>
+     * <code>.TensorMap data = 1;</code>
+     * @return Whether the data field is set.
      */
+    @Override
     public boolean hasData() {
       return data_ != null;
     }
     /**
-     * <code>optional .TensorMap data = 1;</code>
+     * <code>.TensorMap data = 1;</code>
+     * @return The data.
      */
+    @Override
     public FlBaseProto.TensorMap getData() {
       return data_ == null ? FlBaseProto.TensorMap.getDefaultInstance() : data_;
     }
     /**
-     * <code>optional .TensorMap data = 1;</code>
+     * <code>.TensorMap data = 1;</code>
      */
+    @Override
     public FlBaseProto.TensorMapOrBuilder getDataOrBuilder() {
       return getData();
     }
@@ -1689,8 +1874,10 @@ public final class FGBoostServiceProto {
     public static final int RESPONSE_FIELD_NUMBER = 2;
     private volatile Object response_;
     /**
-     * <code>optional string response = 2;</code>
+     * <code>string response = 2;</code>
+     * @return The response.
      */
+    @Override
     public String getResponse() {
       Object ref = response_;
       if (ref instanceof String) {
@@ -1704,8 +1891,10 @@ public final class FGBoostServiceProto {
       }
     }
     /**
-     * <code>optional string response = 2;</code>
+     * <code>string response = 2;</code>
+     * @return The bytes for response.
      */
+    @Override
     public com.google.protobuf.ByteString
         getResponseBytes() {
       Object ref = response_;
@@ -1723,13 +1912,16 @@ public final class FGBoostServiceProto {
     public static final int CODE_FIELD_NUMBER = 3;
     private int code_;
     /**
-     * <code>optional int32 code = 3;</code>
+     * <code>int32 code = 3;</code>
+     * @return The code.
      */
+    @Override
     public int getCode() {
       return code_;
     }
 
     private byte memoizedIsInitialized = -1;
+    @Override
     public final boolean isInitialized() {
       byte isInitialized = memoizedIsInitialized;
       if (isInitialized == 1) return true;
@@ -1739,6 +1931,7 @@ public final class FGBoostServiceProto {
       return true;
     }
 
+    @Override
     public void writeTo(com.google.protobuf.CodedOutputStream output)
                         throws java.io.IOException {
       if (data_ != null) {
@@ -1750,8 +1943,10 @@ public final class FGBoostServiceProto {
       if (code_ != 0) {
         output.writeInt32(3, code_);
       }
+      unknownFields.writeTo(output);
     }
 
+    @Override
     public int getSerializedSize() {
       int size = memoizedSize;
       if (size != -1) return size;
@@ -1768,11 +1963,11 @@ public final class FGBoostServiceProto {
         size += com.google.protobuf.CodedOutputStream
           .computeInt32Size(3, code_);
       }
+      size += unknownFields.getSerializedSize();
       memoizedSize = size;
       return size;
     }
 
-    private static final long serialVersionUID = 0L;
     @Override
     public boolean equals(final Object obj) {
       if (obj == this) {
@@ -1783,17 +1978,17 @@ public final class FGBoostServiceProto {
       }
       DownloadResponse other = (DownloadResponse) obj;
 
-      boolean result = true;
-      result = result && (hasData() == other.hasData());
+      if (hasData() != other.hasData()) return false;
       if (hasData()) {
-        result = result && getData()
-            .equals(other.getData());
+        if (!getData()
+            .equals(other.getData())) return false;
       }
-      result = result && getResponse()
-          .equals(other.getResponse());
-      result = result && (getCode()
-          == other.getCode());
-      return result;
+      if (!getResponse()
+          .equals(other.getResponse())) return false;
+      if (getCode()
+          != other.getCode()) return false;
+      if (!unknownFields.equals(other.unknownFields)) return false;
+      return true;
     }
 
     @Override
@@ -1802,7 +1997,7 @@ public final class FGBoostServiceProto {
         return memoizedHashCode;
       }
       int hash = 41;
-      hash = (19 * hash) + getDescriptorForType().hashCode();
+      hash = (19 * hash) + getDescriptor().hashCode();
       if (hasData()) {
         hash = (37 * hash) + DATA_FIELD_NUMBER;
         hash = (53 * hash) + getData().hashCode();
@@ -1816,6 +2011,17 @@ public final class FGBoostServiceProto {
       return hash;
     }
 
+    public static DownloadResponse parseFrom(
+        java.nio.ByteBuffer data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static DownloadResponse parseFrom(
+        java.nio.ByteBuffer data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
     public static DownloadResponse parseFrom(
         com.google.protobuf.ByteString data)
         throws com.google.protobuf.InvalidProtocolBufferException {
@@ -1875,6 +2081,7 @@ public final class FGBoostServiceProto {
           .parseWithIOException(PARSER, input, extensionRegistry);
     }
 
+    @Override
     public Builder newBuilderForType() { return newBuilder(); }
     public static Builder newBuilder() {
       return DEFAULT_INSTANCE.toBuilder();
@@ -1882,6 +2089,7 @@ public final class FGBoostServiceProto {
     public static Builder newBuilder(DownloadResponse prototype) {
       return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
     }
+    @Override
     public Builder toBuilder() {
       return this == DEFAULT_INSTANCE
           ? new Builder() : new Builder().mergeFrom(this);
@@ -1889,7 +2097,7 @@ public final class FGBoostServiceProto {
 
     @Override
     protected Builder newBuilderForType(
-        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+        BuilderParent parent) {
       Builder builder = new Builder(parent);
       return builder;
     }
@@ -1905,7 +2113,8 @@ public final class FGBoostServiceProto {
         return FGBoostServiceProto.internal_static_fgboost_DownloadResponse_descriptor;
       }
 
-      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+      @Override
+      protected FieldAccessorTable
           internalGetFieldAccessorTable() {
         return FGBoostServiceProto.internal_static_fgboost_DownloadResponse_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
@@ -1918,7 +2127,7 @@ public final class FGBoostServiceProto {
       }
 
       private Builder(
-          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+          BuilderParent parent) {
         super(parent);
         maybeForceBuilderInitialization();
       }
@@ -1927,6 +2136,7 @@ public final class FGBoostServiceProto {
                 .alwaysUseFieldBuilders) {
         }
       }
+      @Override
       public Builder clear() {
         super.clear();
         if (dataBuilder_ == null) {
@@ -1942,15 +2152,18 @@ public final class FGBoostServiceProto {
         return this;
       }
 
+      @Override
       public com.google.protobuf.Descriptors.Descriptor
           getDescriptorForType() {
         return FGBoostServiceProto.internal_static_fgboost_DownloadResponse_descriptor;
       }
 
+      @Override
       public DownloadResponse getDefaultInstanceForType() {
         return DownloadResponse.getDefaultInstance();
       }
 
+      @Override
       public DownloadResponse build() {
         DownloadResponse result = buildPartial();
         if (!result.isInitialized()) {
@@ -1959,6 +2172,7 @@ public final class FGBoostServiceProto {
         return result;
       }
 
+      @Override
       public DownloadResponse buildPartial() {
         DownloadResponse result = new DownloadResponse(this);
         if (dataBuilder_ == null) {
@@ -1972,32 +2186,39 @@ public final class FGBoostServiceProto {
         return result;
       }
 
+      @Override
       public Builder clone() {
-        return (Builder) super.clone();
+        return super.clone();
       }
+      @Override
       public Builder setField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           Object value) {
-        return (Builder) super.setField(field, value);
+        return super.setField(field, value);
       }
+      @Override
       public Builder clearField(
           com.google.protobuf.Descriptors.FieldDescriptor field) {
-        return (Builder) super.clearField(field);
+        return super.clearField(field);
       }
+      @Override
       public Builder clearOneof(
           com.google.protobuf.Descriptors.OneofDescriptor oneof) {
-        return (Builder) super.clearOneof(oneof);
+        return super.clearOneof(oneof);
       }
+      @Override
       public Builder setRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           int index, Object value) {
-        return (Builder) super.setRepeatedField(field, index, value);
+        return super.setRepeatedField(field, index, value);
       }
+      @Override
       public Builder addRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           Object value) {
-        return (Builder) super.addRepeatedField(field, value);
+        return super.addRepeatedField(field, value);
       }
+      @Override
       public Builder mergeFrom(com.google.protobuf.Message other) {
         if (other instanceof DownloadResponse) {
           return mergeFrom((DownloadResponse)other);
@@ -2019,14 +2240,17 @@ public final class FGBoostServiceProto {
         if (other.getCode() != 0) {
           setCode(other.getCode());
         }
+        this.mergeUnknownFields(other.unknownFields);
         onChanged();
         return this;
       }
 
+      @Override
       public final boolean isInitialized() {
         return true;
       }
 
+      @Override
       public Builder mergeFrom(
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
@@ -2045,17 +2269,19 @@ public final class FGBoostServiceProto {
         return this;
       }
 
-      private FlBaseProto.TensorMap data_ = null;
+      private FlBaseProto.TensorMap data_;
       private com.google.protobuf.SingleFieldBuilderV3<
           FlBaseProto.TensorMap, FlBaseProto.TensorMap.Builder, FlBaseProto.TensorMapOrBuilder> dataBuilder_;
       /**
-       * <code>optional .TensorMap data = 1;</code>
+       * <code>.TensorMap data = 1;</code>
+       * @return Whether the data field is set.
        */
       public boolean hasData() {
         return dataBuilder_ != null || data_ != null;
       }
       /**
-       * <code>optional .TensorMap data = 1;</code>
+       * <code>.TensorMap data = 1;</code>
+       * @return The data.
        */
       public FlBaseProto.TensorMap getData() {
         if (dataBuilder_ == null) {
@@ -2065,7 +2291,7 @@ public final class FGBoostServiceProto {
         }
       }
       /**
-       * <code>optional .TensorMap data = 1;</code>
+       * <code>.TensorMap data = 1;</code>
        */
       public Builder setData(FlBaseProto.TensorMap value) {
         if (dataBuilder_ == null) {
@@ -2081,7 +2307,7 @@ public final class FGBoostServiceProto {
         return this;
       }
       /**
-       * <code>optional .TensorMap data = 1;</code>
+       * <code>.TensorMap data = 1;</code>
        */
       public Builder setData(
           FlBaseProto.TensorMap.Builder builderForValue) {
@@ -2095,7 +2321,7 @@ public final class FGBoostServiceProto {
         return this;
       }
       /**
-       * <code>optional .TensorMap data = 1;</code>
+       * <code>.TensorMap data = 1;</code>
        */
       public Builder mergeData(FlBaseProto.TensorMap value) {
         if (dataBuilder_ == null) {
@@ -2113,7 +2339,7 @@ public final class FGBoostServiceProto {
         return this;
       }
       /**
-       * <code>optional .TensorMap data = 1;</code>
+       * <code>.TensorMap data = 1;</code>
        */
       public Builder clearData() {
         if (dataBuilder_ == null) {
@@ -2127,7 +2353,7 @@ public final class FGBoostServiceProto {
         return this;
       }
       /**
-       * <code>optional .TensorMap data = 1;</code>
+       * <code>.TensorMap data = 1;</code>
        */
       public FlBaseProto.TensorMap.Builder getDataBuilder() {
         
@@ -2135,7 +2361,7 @@ public final class FGBoostServiceProto {
         return getDataFieldBuilder().getBuilder();
       }
       /**
-       * <code>optional .TensorMap data = 1;</code>
+       * <code>.TensorMap data = 1;</code>
        */
       public FlBaseProto.TensorMapOrBuilder getDataOrBuilder() {
         if (dataBuilder_ != null) {
@@ -2146,7 +2372,7 @@ public final class FGBoostServiceProto {
         }
       }
       /**
-       * <code>optional .TensorMap data = 1;</code>
+       * <code>.TensorMap data = 1;</code>
        */
       private com.google.protobuf.SingleFieldBuilderV3<
           FlBaseProto.TensorMap, FlBaseProto.TensorMap.Builder, FlBaseProto.TensorMapOrBuilder>
@@ -2164,7 +2390,8 @@ public final class FGBoostServiceProto {
 
       private Object response_ = "";
       /**
-       * <code>optional string response = 2;</code>
+       * <code>string response = 2;</code>
+       * @return The response.
        */
       public String getResponse() {
         Object ref = response_;
@@ -2179,7 +2406,8 @@ public final class FGBoostServiceProto {
         }
       }
       /**
-       * <code>optional string response = 2;</code>
+       * <code>string response = 2;</code>
+       * @return The bytes for response.
        */
       public com.google.protobuf.ByteString
           getResponseBytes() {
@@ -2195,7 +2423,9 @@ public final class FGBoostServiceProto {
         }
       }
       /**
-       * <code>optional string response = 2;</code>
+       * <code>string response = 2;</code>
+       * @param value The response to set.
+       * @return This builder for chaining.
        */
       public Builder setResponse(
           String value) {
@@ -2208,7 +2438,8 @@ public final class FGBoostServiceProto {
         return this;
       }
       /**
-       * <code>optional string response = 2;</code>
+       * <code>string response = 2;</code>
+       * @return This builder for chaining.
        */
       public Builder clearResponse() {
         
@@ -2217,7 +2448,9 @@ public final class FGBoostServiceProto {
         return this;
       }
       /**
-       * <code>optional string response = 2;</code>
+       * <code>string response = 2;</code>
+       * @param value The bytes for response to set.
+       * @return This builder for chaining.
        */
       public Builder setResponseBytes(
           com.google.protobuf.ByteString value) {
@@ -2233,13 +2466,17 @@ public final class FGBoostServiceProto {
 
       private int code_ ;
       /**
-       * <code>optional int32 code = 3;</code>
+       * <code>int32 code = 3;</code>
+       * @return The code.
        */
+      @Override
       public int getCode() {
         return code_;
       }
       /**
-       * <code>optional int32 code = 3;</code>
+       * <code>int32 code = 3;</code>
+       * @param value The code to set.
+       * @return This builder for chaining.
        */
       public Builder setCode(int value) {
         
@@ -2248,7 +2485,8 @@ public final class FGBoostServiceProto {
         return this;
       }
       /**
-       * <code>optional int32 code = 3;</code>
+       * <code>int32 code = 3;</code>
+       * @return This builder for chaining.
        */
       public Builder clearCode() {
         
@@ -2256,14 +2494,16 @@ public final class FGBoostServiceProto {
         onChanged();
         return this;
       }
+      @Override
       public final Builder setUnknownFields(
           final com.google.protobuf.UnknownFieldSet unknownFields) {
-        return this;
+        return super.setUnknownFields(unknownFields);
       }
 
+      @Override
       public final Builder mergeUnknownFields(
           final com.google.protobuf.UnknownFieldSet unknownFields) {
-        return this;
+        return super.mergeUnknownFields(unknownFields);
       }
 
 
@@ -2282,11 +2522,12 @@ public final class FGBoostServiceProto {
 
     private static final com.google.protobuf.Parser<DownloadResponse>
         PARSER = new com.google.protobuf.AbstractParser<DownloadResponse>() {
+      @Override
       public DownloadResponse parsePartialFrom(
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws com.google.protobuf.InvalidProtocolBufferException {
-          return new DownloadResponse(input, extensionRegistry);
+        return new DownloadResponse(input, extensionRegistry);
       }
     };
 
@@ -2299,80 +2540,110 @@ public final class FGBoostServiceProto {
       return PARSER;
     }
 
+    @Override
     public DownloadResponse getDefaultInstanceForType() {
       return DEFAULT_INSTANCE;
     }
 
   }
 
-  public interface TreeLeavesOrBuilder extends
-      // @@protoc_insertion_point(interface_extends:fgboost.TreeLeaves)
+  public interface TreeLeafOrBuilder extends
+      // @@protoc_insertion_point(interface_extends:fgboost.TreeLeaf)
       com.google.protobuf.MessageOrBuilder {
 
     /**
-     * <code>optional string treeID = 1;</code>
+     * <code>string treeID = 1;</code>
+     * @return The treeID.
      */
     String getTreeID();
     /**
-     * <code>optional string treeID = 1;</code>
+     * <code>string treeID = 1;</code>
+     * @return The bytes for treeID.
      */
     com.google.protobuf.ByteString
         getTreeIDBytes();
 
     /**
      * <code>repeated int32 leafIndex = 2;</code>
+     * @return A list containing the leafIndex.
      */
     java.util.List<Integer> getLeafIndexList();
     /**
      * <code>repeated int32 leafIndex = 2;</code>
+     * @return The count of leafIndex.
      */
     int getLeafIndexCount();
     /**
      * <code>repeated int32 leafIndex = 2;</code>
+     * @param index The index of the element to return.
+     * @return The leafIndex at the given index.
      */
     int getLeafIndex(int index);
 
     /**
      * <code>repeated float leafOutput = 3;</code>
+     * @return A list containing the leafOutput.
      */
     java.util.List<Float> getLeafOutputList();
     /**
      * <code>repeated float leafOutput = 3;</code>
+     * @return The count of leafOutput.
      */
     int getLeafOutputCount();
     /**
      * <code>repeated float leafOutput = 3;</code>
+     * @param index The index of the element to return.
+     * @return The leafOutput at the given index.
      */
     float getLeafOutput(int index);
+
+    /**
+     * <code>int32 version = 4;</code>
+     * @return The version.
+     */
+    int getVersion();
   }
   /**
-   * Protobuf type {@code fgboost.TreeLeaves}
+   * Protobuf type {@code fgboost.TreeLeaf}
    */
-  public  static final class TreeLeaves extends
+  public static final class TreeLeaf extends
       com.google.protobuf.GeneratedMessageV3 implements
-      // @@protoc_insertion_point(message_implements:fgboost.TreeLeaves)
-      TreeLeavesOrBuilder {
-    // Use TreeLeaves.newBuilder() to construct.
-    private TreeLeaves(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
+      // @@protoc_insertion_point(message_implements:fgboost.TreeLeaf)
+      TreeLeafOrBuilder {
+  private static final long serialVersionUID = 0L;
+    // Use TreeLeaf.newBuilder() to construct.
+    private TreeLeaf(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
       super(builder);
     }
-    private TreeLeaves() {
+    private TreeLeaf() {
       treeID_ = "";
-      leafIndex_ = java.util.Collections.emptyList();
-      leafOutput_ = java.util.Collections.emptyList();
+      leafIndex_ = emptyIntList();
+      leafOutput_ = emptyFloatList();
+    }
+
+    @Override
+    @SuppressWarnings({"unused"})
+    protected Object newInstance(
+        UnusedPrivateParameter unused) {
+      return new TreeLeaf();
     }
 
     @Override
     public final com.google.protobuf.UnknownFieldSet
     getUnknownFields() {
-      return com.google.protobuf.UnknownFieldSet.getDefaultInstance();
+      return this.unknownFields;
     }
-    private TreeLeaves(
+    private TreeLeaf(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       this();
+      if (extensionRegistry == null) {
+        throw new NullPointerException();
+      }
       int mutable_bitField0_ = 0;
+      com.google.protobuf.UnknownFieldSet.Builder unknownFields =
+          com.google.protobuf.UnknownFieldSet.newBuilder();
       try {
         boolean done = false;
         while (!done) {
@@ -2381,12 +2652,6 @@ public final class FGBoostServiceProto {
             case 0:
               done = true;
               break;
-            default: {
-              if (!input.skipField(tag)) {
-                done = true;
-              }
-              break;
-            }
             case 10: {
               String s = input.readStringRequireUtf8();
 
@@ -2394,45 +2659,57 @@ public final class FGBoostServiceProto {
               break;
             }
             case 16: {
-              if (!((mutable_bitField0_ & 0x00000002) == 0x00000002)) {
-                leafIndex_ = new java.util.ArrayList<Integer>();
-                mutable_bitField0_ |= 0x00000002;
+              if (!((mutable_bitField0_ & 0x00000001) != 0)) {
+                leafIndex_ = newIntList();
+                mutable_bitField0_ |= 0x00000001;
               }
-              leafIndex_.add(input.readInt32());
+              leafIndex_.addInt(input.readInt32());
               break;
             }
             case 18: {
               int length = input.readRawVarint32();
               int limit = input.pushLimit(length);
-              if (!((mutable_bitField0_ & 0x00000002) == 0x00000002) && input.getBytesUntilLimit() > 0) {
-                leafIndex_ = new java.util.ArrayList<Integer>();
-                mutable_bitField0_ |= 0x00000002;
+              if (!((mutable_bitField0_ & 0x00000001) != 0) && input.getBytesUntilLimit() > 0) {
+                leafIndex_ = newIntList();
+                mutable_bitField0_ |= 0x00000001;
               }
               while (input.getBytesUntilLimit() > 0) {
-                leafIndex_.add(input.readInt32());
+                leafIndex_.addInt(input.readInt32());
               }
               input.popLimit(limit);
               break;
             }
             case 29: {
-              if (!((mutable_bitField0_ & 0x00000004) == 0x00000004)) {
-                leafOutput_ = new java.util.ArrayList<Float>();
-                mutable_bitField0_ |= 0x00000004;
+              if (!((mutable_bitField0_ & 0x00000002) != 0)) {
+                leafOutput_ = newFloatList();
+                mutable_bitField0_ |= 0x00000002;
               }
-              leafOutput_.add(input.readFloat());
+              leafOutput_.addFloat(input.readFloat());
               break;
             }
             case 26: {
               int length = input.readRawVarint32();
               int limit = input.pushLimit(length);
-              if (!((mutable_bitField0_ & 0x00000004) == 0x00000004) && input.getBytesUntilLimit() > 0) {
-                leafOutput_ = new java.util.ArrayList<Float>();
-                mutable_bitField0_ |= 0x00000004;
+              if (!((mutable_bitField0_ & 0x00000002) != 0) && input.getBytesUntilLimit() > 0) {
+                leafOutput_ = newFloatList();
+                mutable_bitField0_ |= 0x00000002;
               }
               while (input.getBytesUntilLimit() > 0) {
-                leafOutput_.add(input.readFloat());
+                leafOutput_.addFloat(input.readFloat());
               }
               input.popLimit(limit);
+              break;
+            }
+            case 32: {
+
+              version_ = input.readInt32();
+              break;
+            }
+            default: {
+              if (!parseUnknownField(
+                  input, unknownFields, extensionRegistry, tag)) {
+                done = true;
+              }
               break;
             }
           }
@@ -2443,33 +2720,36 @@ public final class FGBoostServiceProto {
         throw new com.google.protobuf.InvalidProtocolBufferException(
             e).setUnfinishedMessage(this);
       } finally {
-        if (((mutable_bitField0_ & 0x00000002) == 0x00000002)) {
-          leafIndex_ = java.util.Collections.unmodifiableList(leafIndex_);
+        if (((mutable_bitField0_ & 0x00000001) != 0)) {
+          leafIndex_.makeImmutable(); // C
         }
-        if (((mutable_bitField0_ & 0x00000004) == 0x00000004)) {
-          leafOutput_ = java.util.Collections.unmodifiableList(leafOutput_);
+        if (((mutable_bitField0_ & 0x00000002) != 0)) {
+          leafOutput_.makeImmutable(); // C
         }
+        this.unknownFields = unknownFields.build();
         makeExtensionsImmutable();
       }
     }
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return FGBoostServiceProto.internal_static_fgboost_TreeLeaves_descriptor;
+      return FGBoostServiceProto.internal_static_fgboost_TreeLeaf_descriptor;
     }
 
-    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+    @Override
+    protected FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return FGBoostServiceProto.internal_static_fgboost_TreeLeaves_fieldAccessorTable
+      return FGBoostServiceProto.internal_static_fgboost_TreeLeaf_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
-              TreeLeaves.class, Builder.class);
+              TreeLeaf.class, Builder.class);
     }
 
-    private int bitField0_;
     public static final int TREEID_FIELD_NUMBER = 1;
     private volatile Object treeID_;
     /**
-     * <code>optional string treeID = 1;</code>
+     * <code>string treeID = 1;</code>
+     * @return The treeID.
      */
+    @Override
     public String getTreeID() {
       Object ref = treeID_;
       if (ref instanceof String) {
@@ -2483,8 +2763,10 @@ public final class FGBoostServiceProto {
       }
     }
     /**
-     * <code>optional string treeID = 1;</code>
+     * <code>string treeID = 1;</code>
+     * @return The bytes for treeID.
      */
+    @Override
     public com.google.protobuf.ByteString
         getTreeIDBytes() {
       Object ref = treeID_;
@@ -2500,52 +2782,74 @@ public final class FGBoostServiceProto {
     }
 
     public static final int LEAFINDEX_FIELD_NUMBER = 2;
-    private java.util.List<Integer> leafIndex_;
+    private com.google.protobuf.Internal.IntList leafIndex_;
     /**
      * <code>repeated int32 leafIndex = 2;</code>
+     * @return A list containing the leafIndex.
      */
+    @Override
     public java.util.List<Integer>
         getLeafIndexList() {
       return leafIndex_;
     }
     /**
      * <code>repeated int32 leafIndex = 2;</code>
+     * @return The count of leafIndex.
      */
     public int getLeafIndexCount() {
       return leafIndex_.size();
     }
     /**
      * <code>repeated int32 leafIndex = 2;</code>
+     * @param index The index of the element to return.
+     * @return The leafIndex at the given index.
      */
     public int getLeafIndex(int index) {
-      return leafIndex_.get(index);
+      return leafIndex_.getInt(index);
     }
     private int leafIndexMemoizedSerializedSize = -1;
 
     public static final int LEAFOUTPUT_FIELD_NUMBER = 3;
-    private java.util.List<Float> leafOutput_;
+    private com.google.protobuf.Internal.FloatList leafOutput_;
     /**
      * <code>repeated float leafOutput = 3;</code>
+     * @return A list containing the leafOutput.
      */
+    @Override
     public java.util.List<Float>
         getLeafOutputList() {
       return leafOutput_;
     }
     /**
      * <code>repeated float leafOutput = 3;</code>
+     * @return The count of leafOutput.
      */
     public int getLeafOutputCount() {
       return leafOutput_.size();
     }
     /**
      * <code>repeated float leafOutput = 3;</code>
+     * @param index The index of the element to return.
+     * @return The leafOutput at the given index.
      */
     public float getLeafOutput(int index) {
-      return leafOutput_.get(index);
+      return leafOutput_.getFloat(index);
     }
     private int leafOutputMemoizedSerializedSize = -1;
 
+    public static final int VERSION_FIELD_NUMBER = 4;
+    private int version_;
+    /**
+     * <code>int32 version = 4;</code>
+     * @return The version.
+     */
+    @Override
+    public int getVersion() {
+      return version_;
+    }
+
     private byte memoizedIsInitialized = -1;
+    @Override
     public final boolean isInitialized() {
       byte isInitialized = memoizedIsInitialized;
       if (isInitialized == 1) return true;
@@ -2555,6 +2859,7 @@ public final class FGBoostServiceProto {
       return true;
     }
 
+    @Override
     public void writeTo(com.google.protobuf.CodedOutputStream output)
                         throws java.io.IOException {
       getSerializedSize();
@@ -2566,17 +2871,22 @@ public final class FGBoostServiceProto {
         output.writeUInt32NoTag(leafIndexMemoizedSerializedSize);
       }
       for (int i = 0; i < leafIndex_.size(); i++) {
-        output.writeInt32NoTag(leafIndex_.get(i));
+        output.writeInt32NoTag(leafIndex_.getInt(i));
       }
       if (getLeafOutputList().size() > 0) {
         output.writeUInt32NoTag(26);
         output.writeUInt32NoTag(leafOutputMemoizedSerializedSize);
       }
       for (int i = 0; i < leafOutput_.size(); i++) {
-        output.writeFloatNoTag(leafOutput_.get(i));
+        output.writeFloatNoTag(leafOutput_.getFloat(i));
       }
+      if (version_ != 0) {
+        output.writeInt32(4, version_);
+      }
+      unknownFields.writeTo(output);
     }
 
+    @Override
     public int getSerializedSize() {
       int size = memoizedSize;
       if (size != -1) return size;
@@ -2589,7 +2899,7 @@ public final class FGBoostServiceProto {
         int dataSize = 0;
         for (int i = 0; i < leafIndex_.size(); i++) {
           dataSize += com.google.protobuf.CodedOutputStream
-            .computeInt32SizeNoTag(leafIndex_.get(i));
+            .computeInt32SizeNoTag(leafIndex_.getInt(i));
         }
         size += dataSize;
         if (!getLeafIndexList().isEmpty()) {
@@ -2610,29 +2920,35 @@ public final class FGBoostServiceProto {
         }
         leafOutputMemoizedSerializedSize = dataSize;
       }
+      if (version_ != 0) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeInt32Size(4, version_);
+      }
+      size += unknownFields.getSerializedSize();
       memoizedSize = size;
       return size;
     }
 
-    private static final long serialVersionUID = 0L;
     @Override
     public boolean equals(final Object obj) {
       if (obj == this) {
        return true;
       }
-      if (!(obj instanceof TreeLeaves)) {
+      if (!(obj instanceof TreeLeaf)) {
         return super.equals(obj);
       }
-      TreeLeaves other = (TreeLeaves) obj;
+      TreeLeaf other = (TreeLeaf) obj;
 
-      boolean result = true;
-      result = result && getTreeID()
-          .equals(other.getTreeID());
-      result = result && getLeafIndexList()
-          .equals(other.getLeafIndexList());
-      result = result && getLeafOutputList()
-          .equals(other.getLeafOutputList());
-      return result;
+      if (!getTreeID()
+          .equals(other.getTreeID())) return false;
+      if (!getLeafIndexList()
+          .equals(other.getLeafIndexList())) return false;
+      if (!getLeafOutputList()
+          .equals(other.getLeafOutputList())) return false;
+      if (getVersion()
+          != other.getVersion()) return false;
+      if (!unknownFields.equals(other.unknownFields)) return false;
+      return true;
     }
 
     @Override
@@ -2641,7 +2957,7 @@ public final class FGBoostServiceProto {
         return memoizedHashCode;
       }
       int hash = 41;
-      hash = (19 * hash) + getDescriptorForType().hashCode();
+      hash = (19 * hash) + getDescriptor().hashCode();
       hash = (37 * hash) + TREEID_FIELD_NUMBER;
       hash = (53 * hash) + getTreeID().hashCode();
       if (getLeafIndexCount() > 0) {
@@ -2652,63 +2968,76 @@ public final class FGBoostServiceProto {
         hash = (37 * hash) + LEAFOUTPUT_FIELD_NUMBER;
         hash = (53 * hash) + getLeafOutputList().hashCode();
       }
+      hash = (37 * hash) + VERSION_FIELD_NUMBER;
+      hash = (53 * hash) + getVersion();
       hash = (29 * hash) + unknownFields.hashCode();
       memoizedHashCode = hash;
       return hash;
     }
 
-    public static TreeLeaves parseFrom(
+    public static TreeLeaf parseFrom(
+        java.nio.ByteBuffer data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static TreeLeaf parseFrom(
+        java.nio.ByteBuffer data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static TreeLeaf parseFrom(
         com.google.protobuf.ByteString data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static TreeLeaves parseFrom(
+    public static TreeLeaf parseFrom(
         com.google.protobuf.ByteString data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static TreeLeaves parseFrom(byte[] data)
+    public static TreeLeaf parseFrom(byte[] data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static TreeLeaves parseFrom(
+    public static TreeLeaf parseFrom(
         byte[] data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static TreeLeaves parseFrom(java.io.InputStream input)
+    public static TreeLeaf parseFrom(java.io.InputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input);
     }
-    public static TreeLeaves parseFrom(
+    public static TreeLeaf parseFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input, extensionRegistry);
     }
-    public static TreeLeaves parseDelimitedFrom(java.io.InputStream input)
+    public static TreeLeaf parseDelimitedFrom(java.io.InputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseDelimitedWithIOException(PARSER, input);
     }
-    public static TreeLeaves parseDelimitedFrom(
+    public static TreeLeaf parseDelimitedFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
     }
-    public static TreeLeaves parseFrom(
+    public static TreeLeaf parseFrom(
         com.google.protobuf.CodedInputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input);
     }
-    public static TreeLeaves parseFrom(
+    public static TreeLeaf parseFrom(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
@@ -2716,13 +3045,15 @@ public final class FGBoostServiceProto {
           .parseWithIOException(PARSER, input, extensionRegistry);
     }
 
+    @Override
     public Builder newBuilderForType() { return newBuilder(); }
     public static Builder newBuilder() {
       return DEFAULT_INSTANCE.toBuilder();
     }
-    public static Builder newBuilder(TreeLeaves prototype) {
+    public static Builder newBuilder(TreeLeaf prototype) {
       return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
     }
+    @Override
     public Builder toBuilder() {
       return this == DEFAULT_INSTANCE
           ? new Builder() : new Builder().mergeFrom(this);
@@ -2730,36 +3061,37 @@ public final class FGBoostServiceProto {
 
     @Override
     protected Builder newBuilderForType(
-        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+        BuilderParent parent) {
       Builder builder = new Builder(parent);
       return builder;
     }
     /**
-     * Protobuf type {@code fgboost.TreeLeaves}
+     * Protobuf type {@code fgboost.TreeLeaf}
      */
     public static final class Builder extends
         com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
-        // @@protoc_insertion_point(builder_implements:fgboost.TreeLeaves)
-        TreeLeavesOrBuilder {
+        // @@protoc_insertion_point(builder_implements:fgboost.TreeLeaf)
+        TreeLeafOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
           getDescriptor() {
-        return FGBoostServiceProto.internal_static_fgboost_TreeLeaves_descriptor;
+        return FGBoostServiceProto.internal_static_fgboost_TreeLeaf_descriptor;
       }
 
-      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+      @Override
+      protected FieldAccessorTable
           internalGetFieldAccessorTable() {
-        return FGBoostServiceProto.internal_static_fgboost_TreeLeaves_fieldAccessorTable
+        return FGBoostServiceProto.internal_static_fgboost_TreeLeaf_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
-                TreeLeaves.class, Builder.class);
+                TreeLeaf.class, Builder.class);
       }
 
-      // Construct using com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.TreeLeaves.newBuilder()
+      // Construct using com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.TreeLeaf.newBuilder()
       private Builder() {
         maybeForceBuilderInitialization();
       }
 
       private Builder(
-          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+          BuilderParent parent) {
         super(parent);
         maybeForceBuilderInitialization();
       }
@@ -2768,91 +3100,104 @@ public final class FGBoostServiceProto {
                 .alwaysUseFieldBuilders) {
         }
       }
+      @Override
       public Builder clear() {
         super.clear();
         treeID_ = "";
 
-        leafIndex_ = java.util.Collections.emptyList();
+        leafIndex_ = emptyIntList();
+        bitField0_ = (bitField0_ & ~0x00000001);
+        leafOutput_ = emptyFloatList();
         bitField0_ = (bitField0_ & ~0x00000002);
-        leafOutput_ = java.util.Collections.emptyList();
-        bitField0_ = (bitField0_ & ~0x00000004);
+        version_ = 0;
+
         return this;
       }
 
+      @Override
       public com.google.protobuf.Descriptors.Descriptor
           getDescriptorForType() {
-        return FGBoostServiceProto.internal_static_fgboost_TreeLeaves_descriptor;
+        return FGBoostServiceProto.internal_static_fgboost_TreeLeaf_descriptor;
       }
 
-      public TreeLeaves getDefaultInstanceForType() {
-        return TreeLeaves.getDefaultInstance();
+      @Override
+      public TreeLeaf getDefaultInstanceForType() {
+        return TreeLeaf.getDefaultInstance();
       }
 
-      public TreeLeaves build() {
-        TreeLeaves result = buildPartial();
+      @Override
+      public TreeLeaf build() {
+        TreeLeaf result = buildPartial();
         if (!result.isInitialized()) {
           throw newUninitializedMessageException(result);
         }
         return result;
       }
 
-      public TreeLeaves buildPartial() {
-        TreeLeaves result = new TreeLeaves(this);
+      @Override
+      public TreeLeaf buildPartial() {
+        TreeLeaf result = new TreeLeaf(this);
         int from_bitField0_ = bitField0_;
-        int to_bitField0_ = 0;
         result.treeID_ = treeID_;
-        if (((bitField0_ & 0x00000002) == 0x00000002)) {
-          leafIndex_ = java.util.Collections.unmodifiableList(leafIndex_);
-          bitField0_ = (bitField0_ & ~0x00000002);
+        if (((bitField0_ & 0x00000001) != 0)) {
+          leafIndex_.makeImmutable();
+          bitField0_ = (bitField0_ & ~0x00000001);
         }
         result.leafIndex_ = leafIndex_;
-        if (((bitField0_ & 0x00000004) == 0x00000004)) {
-          leafOutput_ = java.util.Collections.unmodifiableList(leafOutput_);
-          bitField0_ = (bitField0_ & ~0x00000004);
+        if (((bitField0_ & 0x00000002) != 0)) {
+          leafOutput_.makeImmutable();
+          bitField0_ = (bitField0_ & ~0x00000002);
         }
         result.leafOutput_ = leafOutput_;
-        result.bitField0_ = to_bitField0_;
+        result.version_ = version_;
         onBuilt();
         return result;
       }
 
+      @Override
       public Builder clone() {
-        return (Builder) super.clone();
+        return super.clone();
       }
+      @Override
       public Builder setField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           Object value) {
-        return (Builder) super.setField(field, value);
+        return super.setField(field, value);
       }
+      @Override
       public Builder clearField(
           com.google.protobuf.Descriptors.FieldDescriptor field) {
-        return (Builder) super.clearField(field);
+        return super.clearField(field);
       }
+      @Override
       public Builder clearOneof(
           com.google.protobuf.Descriptors.OneofDescriptor oneof) {
-        return (Builder) super.clearOneof(oneof);
+        return super.clearOneof(oneof);
       }
+      @Override
       public Builder setRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           int index, Object value) {
-        return (Builder) super.setRepeatedField(field, index, value);
+        return super.setRepeatedField(field, index, value);
       }
+      @Override
       public Builder addRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           Object value) {
-        return (Builder) super.addRepeatedField(field, value);
+        return super.addRepeatedField(field, value);
       }
+      @Override
       public Builder mergeFrom(com.google.protobuf.Message other) {
-        if (other instanceof TreeLeaves) {
-          return mergeFrom((TreeLeaves)other);
+        if (other instanceof TreeLeaf) {
+          return mergeFrom((TreeLeaf)other);
         } else {
           super.mergeFrom(other);
           return this;
         }
       }
 
-      public Builder mergeFrom(TreeLeaves other) {
-        if (other == TreeLeaves.getDefaultInstance()) return this;
+      public Builder mergeFrom(TreeLeaf other) {
+        if (other == TreeLeaf.getDefaultInstance()) return this;
         if (!other.getTreeID().isEmpty()) {
           treeID_ = other.treeID_;
           onChanged();
@@ -2860,7 +3205,7 @@ public final class FGBoostServiceProto {
         if (!other.leafIndex_.isEmpty()) {
           if (leafIndex_.isEmpty()) {
             leafIndex_ = other.leafIndex_;
-            bitField0_ = (bitField0_ & ~0x00000002);
+            bitField0_ = (bitField0_ & ~0x00000001);
           } else {
             ensureLeafIndexIsMutable();
             leafIndex_.addAll(other.leafIndex_);
@@ -2870,30 +3215,36 @@ public final class FGBoostServiceProto {
         if (!other.leafOutput_.isEmpty()) {
           if (leafOutput_.isEmpty()) {
             leafOutput_ = other.leafOutput_;
-            bitField0_ = (bitField0_ & ~0x00000004);
+            bitField0_ = (bitField0_ & ~0x00000002);
           } else {
             ensureLeafOutputIsMutable();
             leafOutput_.addAll(other.leafOutput_);
           }
           onChanged();
         }
+        if (other.getVersion() != 0) {
+          setVersion(other.getVersion());
+        }
+        this.mergeUnknownFields(other.unknownFields);
         onChanged();
         return this;
       }
 
+      @Override
       public final boolean isInitialized() {
         return true;
       }
 
+      @Override
       public Builder mergeFrom(
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws java.io.IOException {
-        TreeLeaves parsedMessage = null;
+        TreeLeaf parsedMessage = null;
         try {
           parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
         } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-          parsedMessage = (TreeLeaves) e.getUnfinishedMessage();
+          parsedMessage = (TreeLeaf) e.getUnfinishedMessage();
           throw e.unwrapIOException();
         } finally {
           if (parsedMessage != null) {
@@ -2906,7 +3257,8 @@ public final class FGBoostServiceProto {
 
       private Object treeID_ = "";
       /**
-       * <code>optional string treeID = 1;</code>
+       * <code>string treeID = 1;</code>
+       * @return The treeID.
        */
       public String getTreeID() {
         Object ref = treeID_;
@@ -2921,7 +3273,8 @@ public final class FGBoostServiceProto {
         }
       }
       /**
-       * <code>optional string treeID = 1;</code>
+       * <code>string treeID = 1;</code>
+       * @return The bytes for treeID.
        */
       public com.google.protobuf.ByteString
           getTreeIDBytes() {
@@ -2937,7 +3290,9 @@ public final class FGBoostServiceProto {
         }
       }
       /**
-       * <code>optional string treeID = 1;</code>
+       * <code>string treeID = 1;</code>
+       * @param value The treeID to set.
+       * @return This builder for chaining.
        */
       public Builder setTreeID(
           String value) {
@@ -2950,7 +3305,8 @@ public final class FGBoostServiceProto {
         return this;
       }
       /**
-       * <code>optional string treeID = 1;</code>
+       * <code>string treeID = 1;</code>
+       * @return This builder for chaining.
        */
       public Builder clearTreeID() {
         
@@ -2959,7 +3315,9 @@ public final class FGBoostServiceProto {
         return this;
       }
       /**
-       * <code>optional string treeID = 1;</code>
+       * <code>string treeID = 1;</code>
+       * @param value The bytes for treeID to set.
+       * @return This builder for chaining.
        */
       public Builder setTreeIDBytes(
           com.google.protobuf.ByteString value) {
@@ -2973,53 +3331,65 @@ public final class FGBoostServiceProto {
         return this;
       }
 
-      private java.util.List<Integer> leafIndex_ = java.util.Collections.emptyList();
+      private com.google.protobuf.Internal.IntList leafIndex_ = emptyIntList();
       private void ensureLeafIndexIsMutable() {
-        if (!((bitField0_ & 0x00000002) == 0x00000002)) {
-          leafIndex_ = new java.util.ArrayList<Integer>(leafIndex_);
-          bitField0_ |= 0x00000002;
+        if (!((bitField0_ & 0x00000001) != 0)) {
+          leafIndex_ = mutableCopy(leafIndex_);
+          bitField0_ |= 0x00000001;
          }
       }
       /**
        * <code>repeated int32 leafIndex = 2;</code>
+       * @return A list containing the leafIndex.
        */
       public java.util.List<Integer>
           getLeafIndexList() {
-        return java.util.Collections.unmodifiableList(leafIndex_);
+        return ((bitField0_ & 0x00000001) != 0) ?
+                 java.util.Collections.unmodifiableList(leafIndex_) : leafIndex_;
       }
       /**
        * <code>repeated int32 leafIndex = 2;</code>
+       * @return The count of leafIndex.
        */
       public int getLeafIndexCount() {
         return leafIndex_.size();
       }
       /**
        * <code>repeated int32 leafIndex = 2;</code>
+       * @param index The index of the element to return.
+       * @return The leafIndex at the given index.
        */
       public int getLeafIndex(int index) {
-        return leafIndex_.get(index);
+        return leafIndex_.getInt(index);
       }
       /**
        * <code>repeated int32 leafIndex = 2;</code>
+       * @param index The index to set the value at.
+       * @param value The leafIndex to set.
+       * @return This builder for chaining.
        */
       public Builder setLeafIndex(
           int index, int value) {
         ensureLeafIndexIsMutable();
-        leafIndex_.set(index, value);
+        leafIndex_.setInt(index, value);
         onChanged();
         return this;
       }
       /**
        * <code>repeated int32 leafIndex = 2;</code>
+       * @param value The leafIndex to add.
+       * @return This builder for chaining.
        */
       public Builder addLeafIndex(int value) {
         ensureLeafIndexIsMutable();
-        leafIndex_.add(value);
+        leafIndex_.addInt(value);
         onChanged();
         return this;
       }
       /**
        * <code>repeated int32 leafIndex = 2;</code>
+       * @param values The leafIndex to add.
+       * @return This builder for chaining.
        */
       public Builder addAllLeafIndex(
           Iterable<? extends Integer> values) {
@@ -3031,61 +3401,74 @@ public final class FGBoostServiceProto {
       }
       /**
        * <code>repeated int32 leafIndex = 2;</code>
+       * @return This builder for chaining.
        */
       public Builder clearLeafIndex() {
-        leafIndex_ = java.util.Collections.emptyList();
-        bitField0_ = (bitField0_ & ~0x00000002);
+        leafIndex_ = emptyIntList();
+        bitField0_ = (bitField0_ & ~0x00000001);
         onChanged();
         return this;
       }
 
-      private java.util.List<Float> leafOutput_ = java.util.Collections.emptyList();
+      private com.google.protobuf.Internal.FloatList leafOutput_ = emptyFloatList();
       private void ensureLeafOutputIsMutable() {
-        if (!((bitField0_ & 0x00000004) == 0x00000004)) {
-          leafOutput_ = new java.util.ArrayList<Float>(leafOutput_);
-          bitField0_ |= 0x00000004;
+        if (!((bitField0_ & 0x00000002) != 0)) {
+          leafOutput_ = mutableCopy(leafOutput_);
+          bitField0_ |= 0x00000002;
          }
       }
       /**
        * <code>repeated float leafOutput = 3;</code>
+       * @return A list containing the leafOutput.
        */
       public java.util.List<Float>
           getLeafOutputList() {
-        return java.util.Collections.unmodifiableList(leafOutput_);
+        return ((bitField0_ & 0x00000002) != 0) ?
+                 java.util.Collections.unmodifiableList(leafOutput_) : leafOutput_;
       }
       /**
        * <code>repeated float leafOutput = 3;</code>
+       * @return The count of leafOutput.
        */
       public int getLeafOutputCount() {
         return leafOutput_.size();
       }
       /**
        * <code>repeated float leafOutput = 3;</code>
+       * @param index The index of the element to return.
+       * @return The leafOutput at the given index.
        */
       public float getLeafOutput(int index) {
-        return leafOutput_.get(index);
+        return leafOutput_.getFloat(index);
       }
       /**
        * <code>repeated float leafOutput = 3;</code>
+       * @param index The index to set the value at.
+       * @param value The leafOutput to set.
+       * @return This builder for chaining.
        */
       public Builder setLeafOutput(
           int index, float value) {
         ensureLeafOutputIsMutable();
-        leafOutput_.set(index, value);
+        leafOutput_.setFloat(index, value);
         onChanged();
         return this;
       }
       /**
        * <code>repeated float leafOutput = 3;</code>
+       * @param value The leafOutput to add.
+       * @return This builder for chaining.
        */
       public Builder addLeafOutput(float value) {
         ensureLeafOutputIsMutable();
-        leafOutput_.add(value);
+        leafOutput_.addFloat(value);
         onChanged();
         return this;
       }
       /**
        * <code>repeated float leafOutput = 3;</code>
+       * @param values The leafOutput to add.
+       * @return This builder for chaining.
        */
       public Builder addAllLeafOutput(
           Iterable<? extends Float> values) {
@@ -3097,115 +3480,167 @@ public final class FGBoostServiceProto {
       }
       /**
        * <code>repeated float leafOutput = 3;</code>
+       * @return This builder for chaining.
        */
       public Builder clearLeafOutput() {
-        leafOutput_ = java.util.Collections.emptyList();
-        bitField0_ = (bitField0_ & ~0x00000004);
+        leafOutput_ = emptyFloatList();
+        bitField0_ = (bitField0_ & ~0x00000002);
         onChanged();
         return this;
       }
+
+      private int version_ ;
+      /**
+       * <code>int32 version = 4;</code>
+       * @return The version.
+       */
+      @Override
+      public int getVersion() {
+        return version_;
+      }
+      /**
+       * <code>int32 version = 4;</code>
+       * @param value The version to set.
+       * @return This builder for chaining.
+       */
+      public Builder setVersion(int value) {
+        
+        version_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>int32 version = 4;</code>
+       * @return This builder for chaining.
+       */
+      public Builder clearVersion() {
+        
+        version_ = 0;
+        onChanged();
+        return this;
+      }
+      @Override
       public final Builder setUnknownFields(
           final com.google.protobuf.UnknownFieldSet unknownFields) {
-        return this;
+        return super.setUnknownFields(unknownFields);
       }
 
+      @Override
       public final Builder mergeUnknownFields(
           final com.google.protobuf.UnknownFieldSet unknownFields) {
-        return this;
+        return super.mergeUnknownFields(unknownFields);
       }
 
 
-      // @@protoc_insertion_point(builder_scope:fgboost.TreeLeaves)
+      // @@protoc_insertion_point(builder_scope:fgboost.TreeLeaf)
     }
 
-    // @@protoc_insertion_point(class_scope:fgboost.TreeLeaves)
-    private static final TreeLeaves DEFAULT_INSTANCE;
+    // @@protoc_insertion_point(class_scope:fgboost.TreeLeaf)
+    private static final TreeLeaf DEFAULT_INSTANCE;
     static {
-      DEFAULT_INSTANCE = new TreeLeaves();
+      DEFAULT_INSTANCE = new TreeLeaf();
     }
 
-    public static TreeLeaves getDefaultInstance() {
+    public static TreeLeaf getDefaultInstance() {
       return DEFAULT_INSTANCE;
     }
 
-    private static final com.google.protobuf.Parser<TreeLeaves>
-        PARSER = new com.google.protobuf.AbstractParser<TreeLeaves>() {
-      public TreeLeaves parsePartialFrom(
+    private static final com.google.protobuf.Parser<TreeLeaf>
+        PARSER = new com.google.protobuf.AbstractParser<TreeLeaf>() {
+      @Override
+      public TreeLeaf parsePartialFrom(
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws com.google.protobuf.InvalidProtocolBufferException {
-          return new TreeLeaves(input, extensionRegistry);
+        return new TreeLeaf(input, extensionRegistry);
       }
     };
 
-    public static com.google.protobuf.Parser<TreeLeaves> parser() {
+    public static com.google.protobuf.Parser<TreeLeaf> parser() {
       return PARSER;
     }
 
     @Override
-    public com.google.protobuf.Parser<TreeLeaves> getParserForType() {
+    public com.google.protobuf.Parser<TreeLeaf> getParserForType() {
       return PARSER;
     }
 
-    public TreeLeaves getDefaultInstanceForType() {
+    @Override
+    public TreeLeaf getDefaultInstanceForType() {
       return DEFAULT_INSTANCE;
     }
 
   }
 
-  public interface UploadTreeLeavesRequestOrBuilder extends
-      // @@protoc_insertion_point(interface_extends:fgboost.UploadTreeLeavesRequest)
+  public interface UploadTreeLeafRequestOrBuilder extends
+      // @@protoc_insertion_point(interface_extends:fgboost.UploadTreeLeafRequest)
       com.google.protobuf.MessageOrBuilder {
 
     /**
-     * <code>optional string clientuuid = 1;</code>
+     * <code>string clientuuid = 1;</code>
+     * @return The clientuuid.
      */
     String getClientuuid();
     /**
-     * <code>optional string clientuuid = 1;</code>
+     * <code>string clientuuid = 1;</code>
+     * @return The bytes for clientuuid.
      */
     com.google.protobuf.ByteString
         getClientuuidBytes();
 
     /**
-     * <code>optional .fgboost.TreeLeaves treeLeaves = 2;</code>
+     * <code>.fgboost.TreeLeaf treeLeaf = 2;</code>
+     * @return Whether the treeLeaf field is set.
      */
-    boolean hasTreeLeaves();
+    boolean hasTreeLeaf();
     /**
-     * <code>optional .fgboost.TreeLeaves treeLeaves = 2;</code>
+     * <code>.fgboost.TreeLeaf treeLeaf = 2;</code>
+     * @return The treeLeaf.
      */
-    TreeLeaves getTreeLeaves();
+    TreeLeaf getTreeLeaf();
     /**
-     * <code>optional .fgboost.TreeLeaves treeLeaves = 2;</code>
+     * <code>.fgboost.TreeLeaf treeLeaf = 2;</code>
      */
-    TreeLeavesOrBuilder getTreeLeavesOrBuilder();
+    TreeLeafOrBuilder getTreeLeafOrBuilder();
   }
   /**
-   * Protobuf type {@code fgboost.UploadTreeLeavesRequest}
+   * Protobuf type {@code fgboost.UploadTreeLeafRequest}
    */
-  public  static final class UploadTreeLeavesRequest extends
+  public static final class UploadTreeLeafRequest extends
       com.google.protobuf.GeneratedMessageV3 implements
-      // @@protoc_insertion_point(message_implements:fgboost.UploadTreeLeavesRequest)
-      UploadTreeLeavesRequestOrBuilder {
-    // Use UploadTreeLeavesRequest.newBuilder() to construct.
-    private UploadTreeLeavesRequest(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
+      // @@protoc_insertion_point(message_implements:fgboost.UploadTreeLeafRequest)
+      UploadTreeLeafRequestOrBuilder {
+  private static final long serialVersionUID = 0L;
+    // Use UploadTreeLeafRequest.newBuilder() to construct.
+    private UploadTreeLeafRequest(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
       super(builder);
     }
-    private UploadTreeLeavesRequest() {
+    private UploadTreeLeafRequest() {
       clientuuid_ = "";
+    }
+
+    @Override
+    @SuppressWarnings({"unused"})
+    protected Object newInstance(
+        UnusedPrivateParameter unused) {
+      return new UploadTreeLeafRequest();
     }
 
     @Override
     public final com.google.protobuf.UnknownFieldSet
     getUnknownFields() {
-      return com.google.protobuf.UnknownFieldSet.getDefaultInstance();
+      return this.unknownFields;
     }
-    private UploadTreeLeavesRequest(
+    private UploadTreeLeafRequest(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       this();
-      int mutable_bitField0_ = 0;
+      if (extensionRegistry == null) {
+        throw new NullPointerException();
+      }
+      com.google.protobuf.UnknownFieldSet.Builder unknownFields =
+          com.google.protobuf.UnknownFieldSet.newBuilder();
       try {
         boolean done = false;
         while (!done) {
@@ -3214,12 +3649,6 @@ public final class FGBoostServiceProto {
             case 0:
               done = true;
               break;
-            default: {
-              if (!input.skipField(tag)) {
-                done = true;
-              }
-              break;
-            }
             case 10: {
               String s = input.readStringRequireUtf8();
 
@@ -3227,16 +3656,23 @@ public final class FGBoostServiceProto {
               break;
             }
             case 18: {
-              TreeLeaves.Builder subBuilder = null;
-              if (treeLeaves_ != null) {
-                subBuilder = treeLeaves_.toBuilder();
+              TreeLeaf.Builder subBuilder = null;
+              if (treeLeaf_ != null) {
+                subBuilder = treeLeaf_.toBuilder();
               }
-              treeLeaves_ = input.readMessage(TreeLeaves.parser(), extensionRegistry);
+              treeLeaf_ = input.readMessage(TreeLeaf.parser(), extensionRegistry);
               if (subBuilder != null) {
-                subBuilder.mergeFrom(treeLeaves_);
-                treeLeaves_ = subBuilder.buildPartial();
+                subBuilder.mergeFrom(treeLeaf_);
+                treeLeaf_ = subBuilder.buildPartial();
               }
 
+              break;
+            }
+            default: {
+              if (!parseUnknownField(
+                  input, unknownFields, extensionRegistry, tag)) {
+                done = true;
+              }
               break;
             }
           }
@@ -3247,26 +3683,30 @@ public final class FGBoostServiceProto {
         throw new com.google.protobuf.InvalidProtocolBufferException(
             e).setUnfinishedMessage(this);
       } finally {
+        this.unknownFields = unknownFields.build();
         makeExtensionsImmutable();
       }
     }
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return FGBoostServiceProto.internal_static_fgboost_UploadTreeLeavesRequest_descriptor;
+      return FGBoostServiceProto.internal_static_fgboost_UploadTreeLeafRequest_descriptor;
     }
 
-    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+    @Override
+    protected FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return FGBoostServiceProto.internal_static_fgboost_UploadTreeLeavesRequest_fieldAccessorTable
+      return FGBoostServiceProto.internal_static_fgboost_UploadTreeLeafRequest_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
-              UploadTreeLeavesRequest.class, Builder.class);
+              UploadTreeLeafRequest.class, Builder.class);
     }
 
     public static final int CLIENTUUID_FIELD_NUMBER = 1;
     private volatile Object clientuuid_;
     /**
-     * <code>optional string clientuuid = 1;</code>
+     * <code>string clientuuid = 1;</code>
+     * @return The clientuuid.
      */
+    @Override
     public String getClientuuid() {
       Object ref = clientuuid_;
       if (ref instanceof String) {
@@ -3280,8 +3720,10 @@ public final class FGBoostServiceProto {
       }
     }
     /**
-     * <code>optional string clientuuid = 1;</code>
+     * <code>string clientuuid = 1;</code>
+     * @return The bytes for clientuuid.
      */
+    @Override
     public com.google.protobuf.ByteString
         getClientuuidBytes() {
       Object ref = clientuuid_;
@@ -3296,28 +3738,34 @@ public final class FGBoostServiceProto {
       }
     }
 
-    public static final int TREELEAVES_FIELD_NUMBER = 2;
-    private TreeLeaves treeLeaves_;
+    public static final int TREELEAF_FIELD_NUMBER = 2;
+    private TreeLeaf treeLeaf_;
     /**
-     * <code>optional .fgboost.TreeLeaves treeLeaves = 2;</code>
+     * <code>.fgboost.TreeLeaf treeLeaf = 2;</code>
+     * @return Whether the treeLeaf field is set.
      */
-    public boolean hasTreeLeaves() {
-      return treeLeaves_ != null;
+    @Override
+    public boolean hasTreeLeaf() {
+      return treeLeaf_ != null;
     }
     /**
-     * <code>optional .fgboost.TreeLeaves treeLeaves = 2;</code>
+     * <code>.fgboost.TreeLeaf treeLeaf = 2;</code>
+     * @return The treeLeaf.
      */
-    public TreeLeaves getTreeLeaves() {
-      return treeLeaves_ == null ? TreeLeaves.getDefaultInstance() : treeLeaves_;
+    @Override
+    public TreeLeaf getTreeLeaf() {
+      return treeLeaf_ == null ? TreeLeaf.getDefaultInstance() : treeLeaf_;
     }
     /**
-     * <code>optional .fgboost.TreeLeaves treeLeaves = 2;</code>
+     * <code>.fgboost.TreeLeaf treeLeaf = 2;</code>
      */
-    public TreeLeavesOrBuilder getTreeLeavesOrBuilder() {
-      return getTreeLeaves();
+    @Override
+    public TreeLeafOrBuilder getTreeLeafOrBuilder() {
+      return getTreeLeaf();
     }
 
     private byte memoizedIsInitialized = -1;
+    @Override
     public final boolean isInitialized() {
       byte isInitialized = memoizedIsInitialized;
       if (isInitialized == 1) return true;
@@ -3327,16 +3775,19 @@ public final class FGBoostServiceProto {
       return true;
     }
 
+    @Override
     public void writeTo(com.google.protobuf.CodedOutputStream output)
                         throws java.io.IOException {
       if (!getClientuuidBytes().isEmpty()) {
         com.google.protobuf.GeneratedMessageV3.writeString(output, 1, clientuuid_);
       }
-      if (treeLeaves_ != null) {
-        output.writeMessage(2, getTreeLeaves());
+      if (treeLeaf_ != null) {
+        output.writeMessage(2, getTreeLeaf());
       }
+      unknownFields.writeTo(output);
     }
 
+    @Override
     public int getSerializedSize() {
       int size = memoizedSize;
       if (size != -1) return size;
@@ -3345,34 +3796,34 @@ public final class FGBoostServiceProto {
       if (!getClientuuidBytes().isEmpty()) {
         size += com.google.protobuf.GeneratedMessageV3.computeStringSize(1, clientuuid_);
       }
-      if (treeLeaves_ != null) {
+      if (treeLeaf_ != null) {
         size += com.google.protobuf.CodedOutputStream
-          .computeMessageSize(2, getTreeLeaves());
+          .computeMessageSize(2, getTreeLeaf());
       }
+      size += unknownFields.getSerializedSize();
       memoizedSize = size;
       return size;
     }
 
-    private static final long serialVersionUID = 0L;
     @Override
     public boolean equals(final Object obj) {
       if (obj == this) {
        return true;
       }
-      if (!(obj instanceof UploadTreeLeavesRequest)) {
+      if (!(obj instanceof UploadTreeLeafRequest)) {
         return super.equals(obj);
       }
-      UploadTreeLeavesRequest other = (UploadTreeLeavesRequest) obj;
+      UploadTreeLeafRequest other = (UploadTreeLeafRequest) obj;
 
-      boolean result = true;
-      result = result && getClientuuid()
-          .equals(other.getClientuuid());
-      result = result && (hasTreeLeaves() == other.hasTreeLeaves());
-      if (hasTreeLeaves()) {
-        result = result && getTreeLeaves()
-            .equals(other.getTreeLeaves());
+      if (!getClientuuid()
+          .equals(other.getClientuuid())) return false;
+      if (hasTreeLeaf() != other.hasTreeLeaf()) return false;
+      if (hasTreeLeaf()) {
+        if (!getTreeLeaf()
+            .equals(other.getTreeLeaf())) return false;
       }
-      return result;
+      if (!unknownFields.equals(other.unknownFields)) return false;
+      return true;
     }
 
     @Override
@@ -3381,70 +3832,81 @@ public final class FGBoostServiceProto {
         return memoizedHashCode;
       }
       int hash = 41;
-      hash = (19 * hash) + getDescriptorForType().hashCode();
+      hash = (19 * hash) + getDescriptor().hashCode();
       hash = (37 * hash) + CLIENTUUID_FIELD_NUMBER;
       hash = (53 * hash) + getClientuuid().hashCode();
-      if (hasTreeLeaves()) {
-        hash = (37 * hash) + TREELEAVES_FIELD_NUMBER;
-        hash = (53 * hash) + getTreeLeaves().hashCode();
+      if (hasTreeLeaf()) {
+        hash = (37 * hash) + TREELEAF_FIELD_NUMBER;
+        hash = (53 * hash) + getTreeLeaf().hashCode();
       }
       hash = (29 * hash) + unknownFields.hashCode();
       memoizedHashCode = hash;
       return hash;
     }
 
-    public static UploadTreeLeavesRequest parseFrom(
+    public static UploadTreeLeafRequest parseFrom(
+        java.nio.ByteBuffer data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static UploadTreeLeafRequest parseFrom(
+        java.nio.ByteBuffer data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
+    public static UploadTreeLeafRequest parseFrom(
         com.google.protobuf.ByteString data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static UploadTreeLeavesRequest parseFrom(
+    public static UploadTreeLeafRequest parseFrom(
         com.google.protobuf.ByteString data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static UploadTreeLeavesRequest parseFrom(byte[] data)
+    public static UploadTreeLeafRequest parseFrom(byte[] data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static UploadTreeLeavesRequest parseFrom(
+    public static UploadTreeLeafRequest parseFrom(
         byte[] data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static UploadTreeLeavesRequest parseFrom(java.io.InputStream input)
+    public static UploadTreeLeafRequest parseFrom(java.io.InputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input);
     }
-    public static UploadTreeLeavesRequest parseFrom(
+    public static UploadTreeLeafRequest parseFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input, extensionRegistry);
     }
-    public static UploadTreeLeavesRequest parseDelimitedFrom(java.io.InputStream input)
+    public static UploadTreeLeafRequest parseDelimitedFrom(java.io.InputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseDelimitedWithIOException(PARSER, input);
     }
-    public static UploadTreeLeavesRequest parseDelimitedFrom(
+    public static UploadTreeLeafRequest parseDelimitedFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
     }
-    public static UploadTreeLeavesRequest parseFrom(
+    public static UploadTreeLeafRequest parseFrom(
         com.google.protobuf.CodedInputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input);
     }
-    public static UploadTreeLeavesRequest parseFrom(
+    public static UploadTreeLeafRequest parseFrom(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
@@ -3452,13 +3914,15 @@ public final class FGBoostServiceProto {
           .parseWithIOException(PARSER, input, extensionRegistry);
     }
 
+    @Override
     public Builder newBuilderForType() { return newBuilder(); }
     public static Builder newBuilder() {
       return DEFAULT_INSTANCE.toBuilder();
     }
-    public static Builder newBuilder(UploadTreeLeavesRequest prototype) {
+    public static Builder newBuilder(UploadTreeLeafRequest prototype) {
       return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
     }
+    @Override
     public Builder toBuilder() {
       return this == DEFAULT_INSTANCE
           ? new Builder() : new Builder().mergeFrom(this);
@@ -3466,36 +3930,37 @@ public final class FGBoostServiceProto {
 
     @Override
     protected Builder newBuilderForType(
-        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+        BuilderParent parent) {
       Builder builder = new Builder(parent);
       return builder;
     }
     /**
-     * Protobuf type {@code fgboost.UploadTreeLeavesRequest}
+     * Protobuf type {@code fgboost.UploadTreeLeafRequest}
      */
     public static final class Builder extends
         com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
-        // @@protoc_insertion_point(builder_implements:fgboost.UploadTreeLeavesRequest)
-        UploadTreeLeavesRequestOrBuilder {
+        // @@protoc_insertion_point(builder_implements:fgboost.UploadTreeLeafRequest)
+        UploadTreeLeafRequestOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
           getDescriptor() {
-        return FGBoostServiceProto.internal_static_fgboost_UploadTreeLeavesRequest_descriptor;
+        return FGBoostServiceProto.internal_static_fgboost_UploadTreeLeafRequest_descriptor;
       }
 
-      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+      @Override
+      protected FieldAccessorTable
           internalGetFieldAccessorTable() {
-        return FGBoostServiceProto.internal_static_fgboost_UploadTreeLeavesRequest_fieldAccessorTable
+        return FGBoostServiceProto.internal_static_fgboost_UploadTreeLeafRequest_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
-                UploadTreeLeavesRequest.class, Builder.class);
+                UploadTreeLeafRequest.class, Builder.class);
       }
 
-      // Construct using com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.UploadTreeLeavesRequest.newBuilder()
+      // Construct using com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.UploadTreeLeafRequest.newBuilder()
       private Builder() {
         maybeForceBuilderInitialization();
       }
 
       private Builder(
-          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+          BuilderParent parent) {
         super(parent);
         maybeForceBuilderInitialization();
       }
@@ -3504,109 +3969,124 @@ public final class FGBoostServiceProto {
                 .alwaysUseFieldBuilders) {
         }
       }
+      @Override
       public Builder clear() {
         super.clear();
         clientuuid_ = "";
 
-        if (treeLeavesBuilder_ == null) {
-          treeLeaves_ = null;
+        if (treeLeafBuilder_ == null) {
+          treeLeaf_ = null;
         } else {
-          treeLeaves_ = null;
-          treeLeavesBuilder_ = null;
+          treeLeaf_ = null;
+          treeLeafBuilder_ = null;
         }
         return this;
       }
 
+      @Override
       public com.google.protobuf.Descriptors.Descriptor
           getDescriptorForType() {
-        return FGBoostServiceProto.internal_static_fgboost_UploadTreeLeavesRequest_descriptor;
+        return FGBoostServiceProto.internal_static_fgboost_UploadTreeLeafRequest_descriptor;
       }
 
-      public UploadTreeLeavesRequest getDefaultInstanceForType() {
-        return UploadTreeLeavesRequest.getDefaultInstance();
+      @Override
+      public UploadTreeLeafRequest getDefaultInstanceForType() {
+        return UploadTreeLeafRequest.getDefaultInstance();
       }
 
-      public UploadTreeLeavesRequest build() {
-        UploadTreeLeavesRequest result = buildPartial();
+      @Override
+      public UploadTreeLeafRequest build() {
+        UploadTreeLeafRequest result = buildPartial();
         if (!result.isInitialized()) {
           throw newUninitializedMessageException(result);
         }
         return result;
       }
 
-      public UploadTreeLeavesRequest buildPartial() {
-        UploadTreeLeavesRequest result = new UploadTreeLeavesRequest(this);
+      @Override
+      public UploadTreeLeafRequest buildPartial() {
+        UploadTreeLeafRequest result = new UploadTreeLeafRequest(this);
         result.clientuuid_ = clientuuid_;
-        if (treeLeavesBuilder_ == null) {
-          result.treeLeaves_ = treeLeaves_;
+        if (treeLeafBuilder_ == null) {
+          result.treeLeaf_ = treeLeaf_;
         } else {
-          result.treeLeaves_ = treeLeavesBuilder_.build();
+          result.treeLeaf_ = treeLeafBuilder_.build();
         }
         onBuilt();
         return result;
       }
 
+      @Override
       public Builder clone() {
-        return (Builder) super.clone();
+        return super.clone();
       }
+      @Override
       public Builder setField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           Object value) {
-        return (Builder) super.setField(field, value);
+        return super.setField(field, value);
       }
+      @Override
       public Builder clearField(
           com.google.protobuf.Descriptors.FieldDescriptor field) {
-        return (Builder) super.clearField(field);
+        return super.clearField(field);
       }
+      @Override
       public Builder clearOneof(
           com.google.protobuf.Descriptors.OneofDescriptor oneof) {
-        return (Builder) super.clearOneof(oneof);
+        return super.clearOneof(oneof);
       }
+      @Override
       public Builder setRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           int index, Object value) {
-        return (Builder) super.setRepeatedField(field, index, value);
+        return super.setRepeatedField(field, index, value);
       }
+      @Override
       public Builder addRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           Object value) {
-        return (Builder) super.addRepeatedField(field, value);
+        return super.addRepeatedField(field, value);
       }
+      @Override
       public Builder mergeFrom(com.google.protobuf.Message other) {
-        if (other instanceof UploadTreeLeavesRequest) {
-          return mergeFrom((UploadTreeLeavesRequest)other);
+        if (other instanceof UploadTreeLeafRequest) {
+          return mergeFrom((UploadTreeLeafRequest)other);
         } else {
           super.mergeFrom(other);
           return this;
         }
       }
 
-      public Builder mergeFrom(UploadTreeLeavesRequest other) {
-        if (other == UploadTreeLeavesRequest.getDefaultInstance()) return this;
+      public Builder mergeFrom(UploadTreeLeafRequest other) {
+        if (other == UploadTreeLeafRequest.getDefaultInstance()) return this;
         if (!other.getClientuuid().isEmpty()) {
           clientuuid_ = other.clientuuid_;
           onChanged();
         }
-        if (other.hasTreeLeaves()) {
-          mergeTreeLeaves(other.getTreeLeaves());
+        if (other.hasTreeLeaf()) {
+          mergeTreeLeaf(other.getTreeLeaf());
         }
+        this.mergeUnknownFields(other.unknownFields);
         onChanged();
         return this;
       }
 
+      @Override
       public final boolean isInitialized() {
         return true;
       }
 
+      @Override
       public Builder mergeFrom(
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws java.io.IOException {
-        UploadTreeLeavesRequest parsedMessage = null;
+        UploadTreeLeafRequest parsedMessage = null;
         try {
           parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
         } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-          parsedMessage = (UploadTreeLeavesRequest) e.getUnfinishedMessage();
+          parsedMessage = (UploadTreeLeafRequest) e.getUnfinishedMessage();
           throw e.unwrapIOException();
         } finally {
           if (parsedMessage != null) {
@@ -3618,7 +4098,8 @@ public final class FGBoostServiceProto {
 
       private Object clientuuid_ = "";
       /**
-       * <code>optional string clientuuid = 1;</code>
+       * <code>string clientuuid = 1;</code>
+       * @return The clientuuid.
        */
       public String getClientuuid() {
         Object ref = clientuuid_;
@@ -3633,7 +4114,8 @@ public final class FGBoostServiceProto {
         }
       }
       /**
-       * <code>optional string clientuuid = 1;</code>
+       * <code>string clientuuid = 1;</code>
+       * @return The bytes for clientuuid.
        */
       public com.google.protobuf.ByteString
           getClientuuidBytes() {
@@ -3649,7 +4131,9 @@ public final class FGBoostServiceProto {
         }
       }
       /**
-       * <code>optional string clientuuid = 1;</code>
+       * <code>string clientuuid = 1;</code>
+       * @param value The clientuuid to set.
+       * @return This builder for chaining.
        */
       public Builder setClientuuid(
           String value) {
@@ -3662,7 +4146,8 @@ public final class FGBoostServiceProto {
         return this;
       }
       /**
-       * <code>optional string clientuuid = 1;</code>
+       * <code>string clientuuid = 1;</code>
+       * @return This builder for chaining.
        */
       public Builder clearClientuuid() {
         
@@ -3671,7 +4156,9 @@ public final class FGBoostServiceProto {
         return this;
       }
       /**
-       * <code>optional string clientuuid = 1;</code>
+       * <code>string clientuuid = 1;</code>
+       * @param value The bytes for clientuuid to set.
+       * @return This builder for chaining.
        */
       public Builder setClientuuidBytes(
           com.google.protobuf.ByteString value) {
@@ -3685,166 +4172,172 @@ public final class FGBoostServiceProto {
         return this;
       }
 
-      private TreeLeaves treeLeaves_ = null;
+      private TreeLeaf treeLeaf_;
       private com.google.protobuf.SingleFieldBuilderV3<
-          TreeLeaves, TreeLeaves.Builder, TreeLeavesOrBuilder> treeLeavesBuilder_;
+          TreeLeaf, TreeLeaf.Builder, TreeLeafOrBuilder> treeLeafBuilder_;
       /**
-       * <code>optional .fgboost.TreeLeaves treeLeaves = 2;</code>
+       * <code>.fgboost.TreeLeaf treeLeaf = 2;</code>
+       * @return Whether the treeLeaf field is set.
        */
-      public boolean hasTreeLeaves() {
-        return treeLeavesBuilder_ != null || treeLeaves_ != null;
+      public boolean hasTreeLeaf() {
+        return treeLeafBuilder_ != null || treeLeaf_ != null;
       }
       /**
-       * <code>optional .fgboost.TreeLeaves treeLeaves = 2;</code>
+       * <code>.fgboost.TreeLeaf treeLeaf = 2;</code>
+       * @return The treeLeaf.
        */
-      public TreeLeaves getTreeLeaves() {
-        if (treeLeavesBuilder_ == null) {
-          return treeLeaves_ == null ? TreeLeaves.getDefaultInstance() : treeLeaves_;
+      public TreeLeaf getTreeLeaf() {
+        if (treeLeafBuilder_ == null) {
+          return treeLeaf_ == null ? TreeLeaf.getDefaultInstance() : treeLeaf_;
         } else {
-          return treeLeavesBuilder_.getMessage();
+          return treeLeafBuilder_.getMessage();
         }
       }
       /**
-       * <code>optional .fgboost.TreeLeaves treeLeaves = 2;</code>
+       * <code>.fgboost.TreeLeaf treeLeaf = 2;</code>
        */
-      public Builder setTreeLeaves(TreeLeaves value) {
-        if (treeLeavesBuilder_ == null) {
+      public Builder setTreeLeaf(TreeLeaf value) {
+        if (treeLeafBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
           }
-          treeLeaves_ = value;
+          treeLeaf_ = value;
           onChanged();
         } else {
-          treeLeavesBuilder_.setMessage(value);
+          treeLeafBuilder_.setMessage(value);
         }
 
         return this;
       }
       /**
-       * <code>optional .fgboost.TreeLeaves treeLeaves = 2;</code>
+       * <code>.fgboost.TreeLeaf treeLeaf = 2;</code>
        */
-      public Builder setTreeLeaves(
-          TreeLeaves.Builder builderForValue) {
-        if (treeLeavesBuilder_ == null) {
-          treeLeaves_ = builderForValue.build();
+      public Builder setTreeLeaf(
+          TreeLeaf.Builder builderForValue) {
+        if (treeLeafBuilder_ == null) {
+          treeLeaf_ = builderForValue.build();
           onChanged();
         } else {
-          treeLeavesBuilder_.setMessage(builderForValue.build());
+          treeLeafBuilder_.setMessage(builderForValue.build());
         }
 
         return this;
       }
       /**
-       * <code>optional .fgboost.TreeLeaves treeLeaves = 2;</code>
+       * <code>.fgboost.TreeLeaf treeLeaf = 2;</code>
        */
-      public Builder mergeTreeLeaves(TreeLeaves value) {
-        if (treeLeavesBuilder_ == null) {
-          if (treeLeaves_ != null) {
-            treeLeaves_ =
-              TreeLeaves.newBuilder(treeLeaves_).mergeFrom(value).buildPartial();
+      public Builder mergeTreeLeaf(TreeLeaf value) {
+        if (treeLeafBuilder_ == null) {
+          if (treeLeaf_ != null) {
+            treeLeaf_ =
+              TreeLeaf.newBuilder(treeLeaf_).mergeFrom(value).buildPartial();
           } else {
-            treeLeaves_ = value;
+            treeLeaf_ = value;
           }
           onChanged();
         } else {
-          treeLeavesBuilder_.mergeFrom(value);
+          treeLeafBuilder_.mergeFrom(value);
         }
 
         return this;
       }
       /**
-       * <code>optional .fgboost.TreeLeaves treeLeaves = 2;</code>
+       * <code>.fgboost.TreeLeaf treeLeaf = 2;</code>
        */
-      public Builder clearTreeLeaves() {
-        if (treeLeavesBuilder_ == null) {
-          treeLeaves_ = null;
+      public Builder clearTreeLeaf() {
+        if (treeLeafBuilder_ == null) {
+          treeLeaf_ = null;
           onChanged();
         } else {
-          treeLeaves_ = null;
-          treeLeavesBuilder_ = null;
+          treeLeaf_ = null;
+          treeLeafBuilder_ = null;
         }
 
         return this;
       }
       /**
-       * <code>optional .fgboost.TreeLeaves treeLeaves = 2;</code>
+       * <code>.fgboost.TreeLeaf treeLeaf = 2;</code>
        */
-      public TreeLeaves.Builder getTreeLeavesBuilder() {
+      public TreeLeaf.Builder getTreeLeafBuilder() {
         
         onChanged();
-        return getTreeLeavesFieldBuilder().getBuilder();
+        return getTreeLeafFieldBuilder().getBuilder();
       }
       /**
-       * <code>optional .fgboost.TreeLeaves treeLeaves = 2;</code>
+       * <code>.fgboost.TreeLeaf treeLeaf = 2;</code>
        */
-      public TreeLeavesOrBuilder getTreeLeavesOrBuilder() {
-        if (treeLeavesBuilder_ != null) {
-          return treeLeavesBuilder_.getMessageOrBuilder();
+      public TreeLeafOrBuilder getTreeLeafOrBuilder() {
+        if (treeLeafBuilder_ != null) {
+          return treeLeafBuilder_.getMessageOrBuilder();
         } else {
-          return treeLeaves_ == null ?
-              TreeLeaves.getDefaultInstance() : treeLeaves_;
+          return treeLeaf_ == null ?
+              TreeLeaf.getDefaultInstance() : treeLeaf_;
         }
       }
       /**
-       * <code>optional .fgboost.TreeLeaves treeLeaves = 2;</code>
+       * <code>.fgboost.TreeLeaf treeLeaf = 2;</code>
        */
       private com.google.protobuf.SingleFieldBuilderV3<
-          TreeLeaves, TreeLeaves.Builder, TreeLeavesOrBuilder>
-          getTreeLeavesFieldBuilder() {
-        if (treeLeavesBuilder_ == null) {
-          treeLeavesBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
-              TreeLeaves, TreeLeaves.Builder, TreeLeavesOrBuilder>(
-                  getTreeLeaves(),
+          TreeLeaf, TreeLeaf.Builder, TreeLeafOrBuilder>
+          getTreeLeafFieldBuilder() {
+        if (treeLeafBuilder_ == null) {
+          treeLeafBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
+              TreeLeaf, TreeLeaf.Builder, TreeLeafOrBuilder>(
+                  getTreeLeaf(),
                   getParentForChildren(),
                   isClean());
-          treeLeaves_ = null;
+          treeLeaf_ = null;
         }
-        return treeLeavesBuilder_;
+        return treeLeafBuilder_;
       }
+      @Override
       public final Builder setUnknownFields(
           final com.google.protobuf.UnknownFieldSet unknownFields) {
-        return this;
+        return super.setUnknownFields(unknownFields);
       }
 
+      @Override
       public final Builder mergeUnknownFields(
           final com.google.protobuf.UnknownFieldSet unknownFields) {
-        return this;
+        return super.mergeUnknownFields(unknownFields);
       }
 
 
-      // @@protoc_insertion_point(builder_scope:fgboost.UploadTreeLeavesRequest)
+      // @@protoc_insertion_point(builder_scope:fgboost.UploadTreeLeafRequest)
     }
 
-    // @@protoc_insertion_point(class_scope:fgboost.UploadTreeLeavesRequest)
-    private static final UploadTreeLeavesRequest DEFAULT_INSTANCE;
+    // @@protoc_insertion_point(class_scope:fgboost.UploadTreeLeafRequest)
+    private static final UploadTreeLeafRequest DEFAULT_INSTANCE;
     static {
-      DEFAULT_INSTANCE = new UploadTreeLeavesRequest();
+      DEFAULT_INSTANCE = new UploadTreeLeafRequest();
     }
 
-    public static UploadTreeLeavesRequest getDefaultInstance() {
+    public static UploadTreeLeafRequest getDefaultInstance() {
       return DEFAULT_INSTANCE;
     }
 
-    private static final com.google.protobuf.Parser<UploadTreeLeavesRequest>
-        PARSER = new com.google.protobuf.AbstractParser<UploadTreeLeavesRequest>() {
-      public UploadTreeLeavesRequest parsePartialFrom(
+    private static final com.google.protobuf.Parser<UploadTreeLeafRequest>
+        PARSER = new com.google.protobuf.AbstractParser<UploadTreeLeafRequest>() {
+      @Override
+      public UploadTreeLeafRequest parsePartialFrom(
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws com.google.protobuf.InvalidProtocolBufferException {
-          return new UploadTreeLeavesRequest(input, extensionRegistry);
+        return new UploadTreeLeafRequest(input, extensionRegistry);
       }
     };
 
-    public static com.google.protobuf.Parser<UploadTreeLeavesRequest> parser() {
+    public static com.google.protobuf.Parser<UploadTreeLeafRequest> parser() {
       return PARSER;
     }
 
     @Override
-    public com.google.protobuf.Parser<UploadTreeLeavesRequest> getParserForType() {
+    public com.google.protobuf.Parser<UploadTreeLeafRequest> getParserForType() {
       return PARSER;
     }
 
-    public UploadTreeLeavesRequest getDefaultInstanceForType() {
+    @Override
+    public UploadTreeLeafRequest getDefaultInstanceForType() {
       return DEFAULT_INSTANCE;
     }
 
@@ -3855,75 +4348,96 @@ public final class FGBoostServiceProto {
       com.google.protobuf.MessageOrBuilder {
 
     /**
-     * <code>optional string treeID = 1;</code>
+     * <code>string treeID = 1;</code>
+     * @return The treeID.
      */
     String getTreeID();
     /**
-     * <code>optional string treeID = 1;</code>
+     * <code>string treeID = 1;</code>
+     * @return The bytes for treeID.
      */
     com.google.protobuf.ByteString
         getTreeIDBytes();
 
     /**
-     * <code>optional string nodeID = 2;</code>
+     * <code>string nodeID = 2;</code>
+     * @return The nodeID.
      */
     String getNodeID();
     /**
-     * <code>optional string nodeID = 2;</code>
+     * <code>string nodeID = 2;</code>
+     * @return The bytes for nodeID.
      */
     com.google.protobuf.ByteString
         getNodeIDBytes();
 
     /**
-     * <code>optional int32 featureID = 3;</code>
+     * <code>int32 featureID = 3;</code>
+     * @return The featureID.
      */
     int getFeatureID();
 
     /**
-     * <code>optional float splitValue = 4;</code>
+     * <code>float splitValue = 4;</code>
+     * @return The splitValue.
      */
     float getSplitValue();
 
     /**
-     * <code>optional float gain = 5;</code>
+     * <code>float gain = 5;</code>
+     * @return The gain.
      */
     float getGain();
 
     /**
-     * <code>optional int32 setLength = 6;</code>
+     * <code>int32 setLength = 6;</code>
+     * @return The setLength.
      */
     int getSetLength();
 
     /**
      * <code>repeated int32 itemSet = 7;</code>
+     * @return A list containing the itemSet.
      */
     java.util.List<Integer> getItemSetList();
     /**
      * <code>repeated int32 itemSet = 7;</code>
+     * @return The count of itemSet.
      */
     int getItemSetCount();
     /**
      * <code>repeated int32 itemSet = 7;</code>
+     * @param index The index of the element to return.
+     * @return The itemSet at the given index.
      */
     int getItemSet(int index);
 
     /**
-     * <code>optional string clientUid = 8;</code>
+     * <code>string clientUid = 8;</code>
+     * @return The clientUid.
      */
     String getClientUid();
     /**
-     * <code>optional string clientUid = 8;</code>
+     * <code>string clientUid = 8;</code>
+     * @return The bytes for clientUid.
      */
     com.google.protobuf.ByteString
         getClientUidBytes();
+
+    /**
+     * <code>int32 version = 9;</code>
+     * @return The version.
+     */
+    int getVersion();
   }
   /**
    * Protobuf type {@code fgboost.DataSplit}
    */
-  public  static final class DataSplit extends
+  public static final class DataSplit extends
       com.google.protobuf.GeneratedMessageV3 implements
       // @@protoc_insertion_point(message_implements:fgboost.DataSplit)
       DataSplitOrBuilder {
+  private static final long serialVersionUID = 0L;
     // Use DataSplit.newBuilder() to construct.
     private DataSplit(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
       super(builder);
@@ -3931,25 +4445,33 @@ public final class FGBoostServiceProto {
     private DataSplit() {
       treeID_ = "";
       nodeID_ = "";
-      featureID_ = 0;
-      splitValue_ = 0F;
-      gain_ = 0F;
-      setLength_ = 0;
-      itemSet_ = java.util.Collections.emptyList();
+      itemSet_ = emptyIntList();
       clientUid_ = "";
+    }
+
+    @Override
+    @SuppressWarnings({"unused"})
+    protected Object newInstance(
+        UnusedPrivateParameter unused) {
+      return new DataSplit();
     }
 
     @Override
     public final com.google.protobuf.UnknownFieldSet
     getUnknownFields() {
-      return com.google.protobuf.UnknownFieldSet.getDefaultInstance();
+      return this.unknownFields;
     }
     private DataSplit(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       this();
+      if (extensionRegistry == null) {
+        throw new NullPointerException();
+      }
       int mutable_bitField0_ = 0;
+      com.google.protobuf.UnknownFieldSet.Builder unknownFields =
+          com.google.protobuf.UnknownFieldSet.newBuilder();
       try {
         boolean done = false;
         while (!done) {
@@ -3958,12 +4480,6 @@ public final class FGBoostServiceProto {
             case 0:
               done = true;
               break;
-            default: {
-              if (!input.skipField(tag)) {
-                done = true;
-              }
-              break;
-            }
             case 10: {
               String s = input.readStringRequireUtf8();
 
@@ -3997,22 +4513,22 @@ public final class FGBoostServiceProto {
               break;
             }
             case 56: {
-              if (!((mutable_bitField0_ & 0x00000040) == 0x00000040)) {
-                itemSet_ = new java.util.ArrayList<Integer>();
-                mutable_bitField0_ |= 0x00000040;
+              if (!((mutable_bitField0_ & 0x00000001) != 0)) {
+                itemSet_ = newIntList();
+                mutable_bitField0_ |= 0x00000001;
               }
-              itemSet_.add(input.readInt32());
+              itemSet_.addInt(input.readInt32());
               break;
             }
             case 58: {
               int length = input.readRawVarint32();
               int limit = input.pushLimit(length);
-              if (!((mutable_bitField0_ & 0x00000040) == 0x00000040) && input.getBytesUntilLimit() > 0) {
-                itemSet_ = new java.util.ArrayList<Integer>();
-                mutable_bitField0_ |= 0x00000040;
+              if (!((mutable_bitField0_ & 0x00000001) != 0) && input.getBytesUntilLimit() > 0) {
+                itemSet_ = newIntList();
+                mutable_bitField0_ |= 0x00000001;
               }
               while (input.getBytesUntilLimit() > 0) {
-                itemSet_.add(input.readInt32());
+                itemSet_.addInt(input.readInt32());
               }
               input.popLimit(limit);
               break;
@@ -4023,6 +4539,18 @@ public final class FGBoostServiceProto {
               clientUid_ = s;
               break;
             }
+            case 72: {
+
+              version_ = input.readInt32();
+              break;
+            }
+            default: {
+              if (!parseUnknownField(
+                  input, unknownFields, extensionRegistry, tag)) {
+                done = true;
+              }
+              break;
+            }
           }
         }
       } catch (com.google.protobuf.InvalidProtocolBufferException e) {
@@ -4031,9 +4559,10 @@ public final class FGBoostServiceProto {
         throw new com.google.protobuf.InvalidProtocolBufferException(
             e).setUnfinishedMessage(this);
       } finally {
-        if (((mutable_bitField0_ & 0x00000040) == 0x00000040)) {
-          itemSet_ = java.util.Collections.unmodifiableList(itemSet_);
+        if (((mutable_bitField0_ & 0x00000001) != 0)) {
+          itemSet_.makeImmutable(); // C
         }
+        this.unknownFields = unknownFields.build();
         makeExtensionsImmutable();
       }
     }
@@ -4042,19 +4571,21 @@ public final class FGBoostServiceProto {
       return FGBoostServiceProto.internal_static_fgboost_DataSplit_descriptor;
     }
 
-    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+    @Override
+    protected FieldAccessorTable
         internalGetFieldAccessorTable() {
       return FGBoostServiceProto.internal_static_fgboost_DataSplit_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
               DataSplit.class, Builder.class);
     }
 
-    private int bitField0_;
     public static final int TREEID_FIELD_NUMBER = 1;
     private volatile Object treeID_;
     /**
-     * <code>optional string treeID = 1;</code>
+     * <code>string treeID = 1;</code>
+     * @return The treeID.
      */
+    @Override
     public String getTreeID() {
       Object ref = treeID_;
       if (ref instanceof String) {
@@ -4068,8 +4599,10 @@ public final class FGBoostServiceProto {
       }
     }
     /**
-     * <code>optional string treeID = 1;</code>
+     * <code>string treeID = 1;</code>
+     * @return The bytes for treeID.
      */
+    @Override
     public com.google.protobuf.ByteString
         getTreeIDBytes() {
       Object ref = treeID_;
@@ -4087,8 +4620,10 @@ public final class FGBoostServiceProto {
     public static final int NODEID_FIELD_NUMBER = 2;
     private volatile Object nodeID_;
     /**
-     * <code>optional string nodeID = 2;</code>
+     * <code>string nodeID = 2;</code>
+     * @return The nodeID.
      */
+    @Override
     public String getNodeID() {
       Object ref = nodeID_;
       if (ref instanceof String) {
@@ -4102,8 +4637,10 @@ public final class FGBoostServiceProto {
       }
     }
     /**
-     * <code>optional string nodeID = 2;</code>
+     * <code>string nodeID = 2;</code>
+     * @return The bytes for nodeID.
      */
+    @Override
     public com.google.protobuf.ByteString
         getNodeIDBytes() {
       Object ref = nodeID_;
@@ -4121,8 +4658,10 @@ public final class FGBoostServiceProto {
     public static final int FEATUREID_FIELD_NUMBER = 3;
     private int featureID_;
     /**
-     * <code>optional int32 featureID = 3;</code>
+     * <code>int32 featureID = 3;</code>
+     * @return The featureID.
      */
+    @Override
     public int getFeatureID() {
       return featureID_;
     }
@@ -4130,8 +4669,10 @@ public final class FGBoostServiceProto {
     public static final int SPLITVALUE_FIELD_NUMBER = 4;
     private float splitValue_;
     /**
-     * <code>optional float splitValue = 4;</code>
+     * <code>float splitValue = 4;</code>
+     * @return The splitValue.
      */
+    @Override
     public float getSplitValue() {
       return splitValue_;
     }
@@ -4139,8 +4680,10 @@ public final class FGBoostServiceProto {
     public static final int GAIN_FIELD_NUMBER = 5;
     private float gain_;
     /**
-     * <code>optional float gain = 5;</code>
+     * <code>float gain = 5;</code>
+     * @return The gain.
      */
+    @Override
     public float getGain() {
       return gain_;
     }
@@ -4148,40 +4691,49 @@ public final class FGBoostServiceProto {
     public static final int SETLENGTH_FIELD_NUMBER = 6;
     private int setLength_;
     /**
-     * <code>optional int32 setLength = 6;</code>
+     * <code>int32 setLength = 6;</code>
+     * @return The setLength.
      */
+    @Override
     public int getSetLength() {
       return setLength_;
     }
 
     public static final int ITEMSET_FIELD_NUMBER = 7;
-    private java.util.List<Integer> itemSet_;
+    private com.google.protobuf.Internal.IntList itemSet_;
     /**
      * <code>repeated int32 itemSet = 7;</code>
+     * @return A list containing the itemSet.
      */
+    @Override
     public java.util.List<Integer>
         getItemSetList() {
       return itemSet_;
     }
     /**
      * <code>repeated int32 itemSet = 7;</code>
+     * @return The count of itemSet.
      */
     public int getItemSetCount() {
       return itemSet_.size();
     }
     /**
      * <code>repeated int32 itemSet = 7;</code>
+     * @param index The index of the element to return.
+     * @return The itemSet at the given index.
      */
     public int getItemSet(int index) {
-      return itemSet_.get(index);
+      return itemSet_.getInt(index);
     }
     private int itemSetMemoizedSerializedSize = -1;
 
     public static final int CLIENTUID_FIELD_NUMBER = 8;
     private volatile Object clientUid_;
     /**
-     * <code>optional string clientUid = 8;</code>
+     * <code>string clientUid = 8;</code>
+     * @return The clientUid.
      */
+    @Override
     public String getClientUid() {
       Object ref = clientUid_;
       if (ref instanceof String) {
@@ -4195,8 +4747,10 @@ public final class FGBoostServiceProto {
       }
     }
     /**
-     * <code>optional string clientUid = 8;</code>
+     * <code>string clientUid = 8;</code>
+     * @return The bytes for clientUid.
      */
+    @Override
     public com.google.protobuf.ByteString
         getClientUidBytes() {
       Object ref = clientUid_;
@@ -4211,7 +4765,19 @@ public final class FGBoostServiceProto {
       }
     }
 
+    public static final int VERSION_FIELD_NUMBER = 9;
+    private int version_;
+    /**
+     * <code>int32 version = 9;</code>
+     * @return The version.
+     */
+    @Override
+    public int getVersion() {
+      return version_;
+    }
+
     private byte memoizedIsInitialized = -1;
+    @Override
     public final boolean isInitialized() {
       byte isInitialized = memoizedIsInitialized;
       if (isInitialized == 1) return true;
@@ -4221,6 +4787,7 @@ public final class FGBoostServiceProto {
       return true;
     }
 
+    @Override
     public void writeTo(com.google.protobuf.CodedOutputStream output)
                         throws java.io.IOException {
       getSerializedSize();
@@ -4247,13 +4814,18 @@ public final class FGBoostServiceProto {
         output.writeUInt32NoTag(itemSetMemoizedSerializedSize);
       }
       for (int i = 0; i < itemSet_.size(); i++) {
-        output.writeInt32NoTag(itemSet_.get(i));
+        output.writeInt32NoTag(itemSet_.getInt(i));
       }
       if (!getClientUidBytes().isEmpty()) {
         com.google.protobuf.GeneratedMessageV3.writeString(output, 8, clientUid_);
       }
+      if (version_ != 0) {
+        output.writeInt32(9, version_);
+      }
+      unknownFields.writeTo(output);
     }
 
+    @Override
     public int getSerializedSize() {
       int size = memoizedSize;
       if (size != -1) return size;
@@ -4285,7 +4857,7 @@ public final class FGBoostServiceProto {
         int dataSize = 0;
         for (int i = 0; i < itemSet_.size(); i++) {
           dataSize += com.google.protobuf.CodedOutputStream
-            .computeInt32SizeNoTag(itemSet_.get(i));
+            .computeInt32SizeNoTag(itemSet_.getInt(i));
         }
         size += dataSize;
         if (!getItemSetList().isEmpty()) {
@@ -4298,11 +4870,15 @@ public final class FGBoostServiceProto {
       if (!getClientUidBytes().isEmpty()) {
         size += com.google.protobuf.GeneratedMessageV3.computeStringSize(8, clientUid_);
       }
+      if (version_ != 0) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeInt32Size(9, version_);
+      }
+      size += unknownFields.getSerializedSize();
       memoizedSize = size;
       return size;
     }
 
-    private static final long serialVersionUID = 0L;
     @Override
     public boolean equals(final Object obj) {
       if (obj == this) {
@@ -4313,28 +4889,28 @@ public final class FGBoostServiceProto {
       }
       DataSplit other = (DataSplit) obj;
 
-      boolean result = true;
-      result = result && getTreeID()
-          .equals(other.getTreeID());
-      result = result && getNodeID()
-          .equals(other.getNodeID());
-      result = result && (getFeatureID()
-          == other.getFeatureID());
-      result = result && (
-          Float.floatToIntBits(getSplitValue())
-          == Float.floatToIntBits(
-              other.getSplitValue()));
-      result = result && (
-          Float.floatToIntBits(getGain())
-          == Float.floatToIntBits(
-              other.getGain()));
-      result = result && (getSetLength()
-          == other.getSetLength());
-      result = result && getItemSetList()
-          .equals(other.getItemSetList());
-      result = result && getClientUid()
-          .equals(other.getClientUid());
-      return result;
+      if (!getTreeID()
+          .equals(other.getTreeID())) return false;
+      if (!getNodeID()
+          .equals(other.getNodeID())) return false;
+      if (getFeatureID()
+          != other.getFeatureID()) return false;
+      if (Float.floatToIntBits(getSplitValue())
+          != Float.floatToIntBits(
+              other.getSplitValue())) return false;
+      if (Float.floatToIntBits(getGain())
+          != Float.floatToIntBits(
+              other.getGain())) return false;
+      if (getSetLength()
+          != other.getSetLength()) return false;
+      if (!getItemSetList()
+          .equals(other.getItemSetList())) return false;
+      if (!getClientUid()
+          .equals(other.getClientUid())) return false;
+      if (getVersion()
+          != other.getVersion()) return false;
+      if (!unknownFields.equals(other.unknownFields)) return false;
+      return true;
     }
 
     @Override
@@ -4343,7 +4919,7 @@ public final class FGBoostServiceProto {
         return memoizedHashCode;
       }
       int hash = 41;
-      hash = (19 * hash) + getDescriptorForType().hashCode();
+      hash = (19 * hash) + getDescriptor().hashCode();
       hash = (37 * hash) + TREEID_FIELD_NUMBER;
       hash = (53 * hash) + getTreeID().hashCode();
       hash = (37 * hash) + NODEID_FIELD_NUMBER;
@@ -4364,11 +4940,24 @@ public final class FGBoostServiceProto {
       }
       hash = (37 * hash) + CLIENTUID_FIELD_NUMBER;
       hash = (53 * hash) + getClientUid().hashCode();
+      hash = (37 * hash) + VERSION_FIELD_NUMBER;
+      hash = (53 * hash) + getVersion();
       hash = (29 * hash) + unknownFields.hashCode();
       memoizedHashCode = hash;
       return hash;
     }
 
+    public static DataSplit parseFrom(
+        java.nio.ByteBuffer data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static DataSplit parseFrom(
+        java.nio.ByteBuffer data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
     public static DataSplit parseFrom(
         com.google.protobuf.ByteString data)
         throws com.google.protobuf.InvalidProtocolBufferException {
@@ -4428,6 +5017,7 @@ public final class FGBoostServiceProto {
           .parseWithIOException(PARSER, input, extensionRegistry);
     }
 
+    @Override
     public Builder newBuilderForType() { return newBuilder(); }
     public static Builder newBuilder() {
       return DEFAULT_INSTANCE.toBuilder();
@@ -4435,6 +5025,7 @@ public final class FGBoostServiceProto {
     public static Builder newBuilder(DataSplit prototype) {
       return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
     }
+    @Override
     public Builder toBuilder() {
       return this == DEFAULT_INSTANCE
           ? new Builder() : new Builder().mergeFrom(this);
@@ -4442,7 +5033,7 @@ public final class FGBoostServiceProto {
 
     @Override
     protected Builder newBuilderForType(
-        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+        BuilderParent parent) {
       Builder builder = new Builder(parent);
       return builder;
     }
@@ -4458,7 +5049,8 @@ public final class FGBoostServiceProto {
         return FGBoostServiceProto.internal_static_fgboost_DataSplit_descriptor;
       }
 
-      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+      @Override
+      protected FieldAccessorTable
           internalGetFieldAccessorTable() {
         return FGBoostServiceProto.internal_static_fgboost_DataSplit_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
@@ -4471,7 +5063,7 @@ public final class FGBoostServiceProto {
       }
 
       private Builder(
-          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+          BuilderParent parent) {
         super(parent);
         maybeForceBuilderInitialization();
       }
@@ -4480,6 +5072,7 @@ public final class FGBoostServiceProto {
                 .alwaysUseFieldBuilders) {
         }
       }
+      @Override
       public Builder clear() {
         super.clear();
         treeID_ = "";
@@ -4494,22 +5087,27 @@ public final class FGBoostServiceProto {
 
         setLength_ = 0;
 
-        itemSet_ = java.util.Collections.emptyList();
-        bitField0_ = (bitField0_ & ~0x00000040);
+        itemSet_ = emptyIntList();
+        bitField0_ = (bitField0_ & ~0x00000001);
         clientUid_ = "";
+
+        version_ = 0;
 
         return this;
       }
 
+      @Override
       public com.google.protobuf.Descriptors.Descriptor
           getDescriptorForType() {
         return FGBoostServiceProto.internal_static_fgboost_DataSplit_descriptor;
       }
 
+      @Override
       public DataSplit getDefaultInstanceForType() {
         return DataSplit.getDefaultInstance();
       }
 
+      @Override
       public DataSplit build() {
         DataSplit result = buildPartial();
         if (!result.isInitialized()) {
@@ -4518,53 +5116,60 @@ public final class FGBoostServiceProto {
         return result;
       }
 
+      @Override
       public DataSplit buildPartial() {
         DataSplit result = new DataSplit(this);
         int from_bitField0_ = bitField0_;
-        int to_bitField0_ = 0;
         result.treeID_ = treeID_;
         result.nodeID_ = nodeID_;
         result.featureID_ = featureID_;
         result.splitValue_ = splitValue_;
         result.gain_ = gain_;
         result.setLength_ = setLength_;
-        if (((bitField0_ & 0x00000040) == 0x00000040)) {
-          itemSet_ = java.util.Collections.unmodifiableList(itemSet_);
-          bitField0_ = (bitField0_ & ~0x00000040);
+        if (((bitField0_ & 0x00000001) != 0)) {
+          itemSet_.makeImmutable();
+          bitField0_ = (bitField0_ & ~0x00000001);
         }
         result.itemSet_ = itemSet_;
         result.clientUid_ = clientUid_;
-        result.bitField0_ = to_bitField0_;
+        result.version_ = version_;
         onBuilt();
         return result;
       }
 
+      @Override
       public Builder clone() {
-        return (Builder) super.clone();
+        return super.clone();
       }
+      @Override
       public Builder setField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           Object value) {
-        return (Builder) super.setField(field, value);
+        return super.setField(field, value);
       }
+      @Override
       public Builder clearField(
           com.google.protobuf.Descriptors.FieldDescriptor field) {
-        return (Builder) super.clearField(field);
+        return super.clearField(field);
       }
+      @Override
       public Builder clearOneof(
           com.google.protobuf.Descriptors.OneofDescriptor oneof) {
-        return (Builder) super.clearOneof(oneof);
+        return super.clearOneof(oneof);
       }
+      @Override
       public Builder setRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           int index, Object value) {
-        return (Builder) super.setRepeatedField(field, index, value);
+        return super.setRepeatedField(field, index, value);
       }
+      @Override
       public Builder addRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           Object value) {
-        return (Builder) super.addRepeatedField(field, value);
+        return super.addRepeatedField(field, value);
       }
+      @Override
       public Builder mergeFrom(com.google.protobuf.Message other) {
         if (other instanceof DataSplit) {
           return mergeFrom((DataSplit)other);
@@ -4599,7 +5204,7 @@ public final class FGBoostServiceProto {
         if (!other.itemSet_.isEmpty()) {
           if (itemSet_.isEmpty()) {
             itemSet_ = other.itemSet_;
-            bitField0_ = (bitField0_ & ~0x00000040);
+            bitField0_ = (bitField0_ & ~0x00000001);
           } else {
             ensureItemSetIsMutable();
             itemSet_.addAll(other.itemSet_);
@@ -4610,14 +5215,20 @@ public final class FGBoostServiceProto {
           clientUid_ = other.clientUid_;
           onChanged();
         }
+        if (other.getVersion() != 0) {
+          setVersion(other.getVersion());
+        }
+        this.mergeUnknownFields(other.unknownFields);
         onChanged();
         return this;
       }
 
+      @Override
       public final boolean isInitialized() {
         return true;
       }
 
+      @Override
       public Builder mergeFrom(
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
@@ -4639,7 +5250,8 @@ public final class FGBoostServiceProto {
 
       private Object treeID_ = "";
       /**
-       * <code>optional string treeID = 1;</code>
+       * <code>string treeID = 1;</code>
+       * @return The treeID.
        */
       public String getTreeID() {
         Object ref = treeID_;
@@ -4654,7 +5266,8 @@ public final class FGBoostServiceProto {
         }
       }
       /**
-       * <code>optional string treeID = 1;</code>
+       * <code>string treeID = 1;</code>
+       * @return The bytes for treeID.
        */
       public com.google.protobuf.ByteString
           getTreeIDBytes() {
@@ -4670,7 +5283,9 @@ public final class FGBoostServiceProto {
         }
       }
       /**
-       * <code>optional string treeID = 1;</code>
+       * <code>string treeID = 1;</code>
+       * @param value The treeID to set.
+       * @return This builder for chaining.
        */
       public Builder setTreeID(
           String value) {
@@ -4683,7 +5298,8 @@ public final class FGBoostServiceProto {
         return this;
       }
       /**
-       * <code>optional string treeID = 1;</code>
+       * <code>string treeID = 1;</code>
+       * @return This builder for chaining.
        */
       public Builder clearTreeID() {
         
@@ -4692,7 +5308,9 @@ public final class FGBoostServiceProto {
         return this;
       }
       /**
-       * <code>optional string treeID = 1;</code>
+       * <code>string treeID = 1;</code>
+       * @param value The bytes for treeID to set.
+       * @return This builder for chaining.
        */
       public Builder setTreeIDBytes(
           com.google.protobuf.ByteString value) {
@@ -4708,7 +5326,8 @@ public final class FGBoostServiceProto {
 
       private Object nodeID_ = "";
       /**
-       * <code>optional string nodeID = 2;</code>
+       * <code>string nodeID = 2;</code>
+       * @return The nodeID.
        */
       public String getNodeID() {
         Object ref = nodeID_;
@@ -4723,7 +5342,8 @@ public final class FGBoostServiceProto {
         }
       }
       /**
-       * <code>optional string nodeID = 2;</code>
+       * <code>string nodeID = 2;</code>
+       * @return The bytes for nodeID.
        */
       public com.google.protobuf.ByteString
           getNodeIDBytes() {
@@ -4739,7 +5359,9 @@ public final class FGBoostServiceProto {
         }
       }
       /**
-       * <code>optional string nodeID = 2;</code>
+       * <code>string nodeID = 2;</code>
+       * @param value The nodeID to set.
+       * @return This builder for chaining.
        */
       public Builder setNodeID(
           String value) {
@@ -4752,7 +5374,8 @@ public final class FGBoostServiceProto {
         return this;
       }
       /**
-       * <code>optional string nodeID = 2;</code>
+       * <code>string nodeID = 2;</code>
+       * @return This builder for chaining.
        */
       public Builder clearNodeID() {
         
@@ -4761,7 +5384,9 @@ public final class FGBoostServiceProto {
         return this;
       }
       /**
-       * <code>optional string nodeID = 2;</code>
+       * <code>string nodeID = 2;</code>
+       * @param value The bytes for nodeID to set.
+       * @return This builder for chaining.
        */
       public Builder setNodeIDBytes(
           com.google.protobuf.ByteString value) {
@@ -4777,13 +5402,17 @@ public final class FGBoostServiceProto {
 
       private int featureID_ ;
       /**
-       * <code>optional int32 featureID = 3;</code>
+       * <code>int32 featureID = 3;</code>
+       * @return The featureID.
        */
+      @Override
       public int getFeatureID() {
         return featureID_;
       }
       /**
-       * <code>optional int32 featureID = 3;</code>
+       * <code>int32 featureID = 3;</code>
+       * @param value The featureID to set.
+       * @return This builder for chaining.
        */
       public Builder setFeatureID(int value) {
         
@@ -4792,7 +5421,8 @@ public final class FGBoostServiceProto {
         return this;
       }
       /**
-       * <code>optional int32 featureID = 3;</code>
+       * <code>int32 featureID = 3;</code>
+       * @return This builder for chaining.
        */
       public Builder clearFeatureID() {
         
@@ -4803,13 +5433,17 @@ public final class FGBoostServiceProto {
 
       private float splitValue_ ;
       /**
-       * <code>optional float splitValue = 4;</code>
+       * <code>float splitValue = 4;</code>
+       * @return The splitValue.
        */
+      @Override
       public float getSplitValue() {
         return splitValue_;
       }
       /**
-       * <code>optional float splitValue = 4;</code>
+       * <code>float splitValue = 4;</code>
+       * @param value The splitValue to set.
+       * @return This builder for chaining.
        */
       public Builder setSplitValue(float value) {
         
@@ -4818,7 +5452,8 @@ public final class FGBoostServiceProto {
         return this;
       }
       /**
-       * <code>optional float splitValue = 4;</code>
+       * <code>float splitValue = 4;</code>
+       * @return This builder for chaining.
        */
       public Builder clearSplitValue() {
         
@@ -4829,13 +5464,17 @@ public final class FGBoostServiceProto {
 
       private float gain_ ;
       /**
-       * <code>optional float gain = 5;</code>
+       * <code>float gain = 5;</code>
+       * @return The gain.
        */
+      @Override
       public float getGain() {
         return gain_;
       }
       /**
-       * <code>optional float gain = 5;</code>
+       * <code>float gain = 5;</code>
+       * @param value The gain to set.
+       * @return This builder for chaining.
        */
       public Builder setGain(float value) {
         
@@ -4844,7 +5483,8 @@ public final class FGBoostServiceProto {
         return this;
       }
       /**
-       * <code>optional float gain = 5;</code>
+       * <code>float gain = 5;</code>
+       * @return This builder for chaining.
        */
       public Builder clearGain() {
         
@@ -4855,13 +5495,17 @@ public final class FGBoostServiceProto {
 
       private int setLength_ ;
       /**
-       * <code>optional int32 setLength = 6;</code>
+       * <code>int32 setLength = 6;</code>
+       * @return The setLength.
        */
+      @Override
       public int getSetLength() {
         return setLength_;
       }
       /**
-       * <code>optional int32 setLength = 6;</code>
+       * <code>int32 setLength = 6;</code>
+       * @param value The setLength to set.
+       * @return This builder for chaining.
        */
       public Builder setSetLength(int value) {
         
@@ -4870,7 +5514,8 @@ public final class FGBoostServiceProto {
         return this;
       }
       /**
-       * <code>optional int32 setLength = 6;</code>
+       * <code>int32 setLength = 6;</code>
+       * @return This builder for chaining.
        */
       public Builder clearSetLength() {
         
@@ -4879,53 +5524,65 @@ public final class FGBoostServiceProto {
         return this;
       }
 
-      private java.util.List<Integer> itemSet_ = java.util.Collections.emptyList();
+      private com.google.protobuf.Internal.IntList itemSet_ = emptyIntList();
       private void ensureItemSetIsMutable() {
-        if (!((bitField0_ & 0x00000040) == 0x00000040)) {
-          itemSet_ = new java.util.ArrayList<Integer>(itemSet_);
-          bitField0_ |= 0x00000040;
+        if (!((bitField0_ & 0x00000001) != 0)) {
+          itemSet_ = mutableCopy(itemSet_);
+          bitField0_ |= 0x00000001;
          }
       }
       /**
        * <code>repeated int32 itemSet = 7;</code>
+       * @return A list containing the itemSet.
        */
       public java.util.List<Integer>
           getItemSetList() {
-        return java.util.Collections.unmodifiableList(itemSet_);
+        return ((bitField0_ & 0x00000001) != 0) ?
+                 java.util.Collections.unmodifiableList(itemSet_) : itemSet_;
       }
       /**
        * <code>repeated int32 itemSet = 7;</code>
+       * @return The count of itemSet.
        */
       public int getItemSetCount() {
         return itemSet_.size();
       }
       /**
        * <code>repeated int32 itemSet = 7;</code>
+       * @param index The index of the element to return.
+       * @return The itemSet at the given index.
        */
       public int getItemSet(int index) {
-        return itemSet_.get(index);
+        return itemSet_.getInt(index);
       }
       /**
        * <code>repeated int32 itemSet = 7;</code>
+       * @param index The index to set the value at.
+       * @param value The itemSet to set.
+       * @return This builder for chaining.
        */
       public Builder setItemSet(
           int index, int value) {
         ensureItemSetIsMutable();
-        itemSet_.set(index, value);
+        itemSet_.setInt(index, value);
         onChanged();
         return this;
       }
       /**
        * <code>repeated int32 itemSet = 7;</code>
+       * @param value The itemSet to add.
+       * @return This builder for chaining.
        */
       public Builder addItemSet(int value) {
         ensureItemSetIsMutable();
-        itemSet_.add(value);
+        itemSet_.addInt(value);
         onChanged();
         return this;
       }
       /**
        * <code>repeated int32 itemSet = 7;</code>
+       * @param values The itemSet to add.
+       * @return This builder for chaining.
        */
       public Builder addAllItemSet(
           Iterable<? extends Integer> values) {
@@ -4937,17 +5594,19 @@ public final class FGBoostServiceProto {
       }
       /**
        * <code>repeated int32 itemSet = 7;</code>
+       * @return This builder for chaining.
        */
       public Builder clearItemSet() {
-        itemSet_ = java.util.Collections.emptyList();
-        bitField0_ = (bitField0_ & ~0x00000040);
+        itemSet_ = emptyIntList();
+        bitField0_ = (bitField0_ & ~0x00000001);
         onChanged();
         return this;
       }
 
       private Object clientUid_ = "";
       /**
-       * <code>optional string clientUid = 8;</code>
+       * <code>string clientUid = 8;</code>
+       * @return The clientUid.
        */
       public String getClientUid() {
         Object ref = clientUid_;
@@ -4962,7 +5621,8 @@ public final class FGBoostServiceProto {
         }
       }
       /**
-       * <code>optional string clientUid = 8;</code>
+       * <code>string clientUid = 8;</code>
+       * @return The bytes for clientUid.
        */
       public com.google.protobuf.ByteString
           getClientUidBytes() {
@@ -4978,7 +5638,9 @@ public final class FGBoostServiceProto {
         }
       }
       /**
-       * <code>optional string clientUid = 8;</code>
+       * <code>string clientUid = 8;</code>
+       * @param value The clientUid to set.
+       * @return This builder for chaining.
        */
       public Builder setClientUid(
           String value) {
@@ -4991,7 +5653,8 @@ public final class FGBoostServiceProto {
         return this;
       }
       /**
-       * <code>optional string clientUid = 8;</code>
+       * <code>string clientUid = 8;</code>
+       * @return This builder for chaining.
        */
       public Builder clearClientUid() {
         
@@ -5000,7 +5663,9 @@ public final class FGBoostServiceProto {
         return this;
       }
       /**
-       * <code>optional string clientUid = 8;</code>
+       * <code>string clientUid = 8;</code>
+       * @param value The bytes for clientUid to set.
+       * @return This builder for chaining.
        */
       public Builder setClientUidBytes(
           com.google.protobuf.ByteString value) {
@@ -5013,14 +5678,47 @@ public final class FGBoostServiceProto {
         onChanged();
         return this;
       }
-      public final Builder setUnknownFields(
-          final com.google.protobuf.UnknownFieldSet unknownFields) {
+
+      private int version_ ;
+      /**
+       * <code>int32 version = 9;</code>
+       * @return The version.
+       */
+      @Override
+      public int getVersion() {
+        return version_;
+      }
+      /**
+       * <code>int32 version = 9;</code>
+       * @param value The version to set.
+       * @return This builder for chaining.
+       */
+      public Builder setVersion(int value) {
+        
+        version_ = value;
+        onChanged();
         return this;
       }
+      /**
+       * <code>int32 version = 9;</code>
+       * @return This builder for chaining.
+       */
+      public Builder clearVersion() {
+        
+        version_ = 0;
+        onChanged();
+        return this;
+      }
+      @Override
+      public final Builder setUnknownFields(
+          final com.google.protobuf.UnknownFieldSet unknownFields) {
+        return super.setUnknownFields(unknownFields);
+      }
 
+      @Override
       public final Builder mergeUnknownFields(
           final com.google.protobuf.UnknownFieldSet unknownFields) {
-        return this;
+        return super.mergeUnknownFields(unknownFields);
       }
 
 
@@ -5039,11 +5737,12 @@ public final class FGBoostServiceProto {
 
     private static final com.google.protobuf.Parser<DataSplit>
         PARSER = new com.google.protobuf.AbstractParser<DataSplit>() {
+      @Override
       public DataSplit parsePartialFrom(
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws com.google.protobuf.InvalidProtocolBufferException {
-          return new DataSplit(input, extensionRegistry);
+        return new DataSplit(input, extensionRegistry);
       }
     };
 
@@ -5056,6 +5755,7 @@ public final class FGBoostServiceProto {
       return PARSER;
     }
 
+    @Override
     public DataSplit getDefaultInstanceForType() {
       return DEFAULT_INSTANCE;
     }
@@ -5067,47 +5767,61 @@ public final class FGBoostServiceProto {
       com.google.protobuf.MessageOrBuilder {
 
     /**
-     * <code>optional string response = 1;</code>
+     * <code>string response = 1;</code>
+     * @return The response.
      */
     String getResponse();
     /**
-     * <code>optional string response = 1;</code>
+     * <code>string response = 1;</code>
+     * @return The bytes for response.
      */
     com.google.protobuf.ByteString
         getResponseBytes();
 
     /**
-     * <code>optional int32 code = 2;</code>
+     * <code>int32 code = 2;</code>
+     * @return The code.
      */
     int getCode();
   }
   /**
    * Protobuf type {@code fgboost.UploadResponse}
    */
-  public  static final class UploadResponse extends
+  public static final class UploadResponse extends
       com.google.protobuf.GeneratedMessageV3 implements
       // @@protoc_insertion_point(message_implements:fgboost.UploadResponse)
       UploadResponseOrBuilder {
+  private static final long serialVersionUID = 0L;
     // Use UploadResponse.newBuilder() to construct.
     private UploadResponse(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
       super(builder);
     }
     private UploadResponse() {
       response_ = "";
-      code_ = 0;
+    }
+
+    @Override
+    @SuppressWarnings({"unused"})
+    protected Object newInstance(
+        UnusedPrivateParameter unused) {
+      return new UploadResponse();
     }
 
     @Override
     public final com.google.protobuf.UnknownFieldSet
     getUnknownFields() {
-      return com.google.protobuf.UnknownFieldSet.getDefaultInstance();
+      return this.unknownFields;
     }
     private UploadResponse(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       this();
-      int mutable_bitField0_ = 0;
+      if (extensionRegistry == null) {
+        throw new NullPointerException();
+      }
+      com.google.protobuf.UnknownFieldSet.Builder unknownFields =
+          com.google.protobuf.UnknownFieldSet.newBuilder();
       try {
         boolean done = false;
         while (!done) {
@@ -5116,12 +5830,6 @@ public final class FGBoostServiceProto {
             case 0:
               done = true;
               break;
-            default: {
-              if (!input.skipField(tag)) {
-                done = true;
-              }
-              break;
-            }
             case 10: {
               String s = input.readStringRequireUtf8();
 
@@ -5133,6 +5841,13 @@ public final class FGBoostServiceProto {
               code_ = input.readInt32();
               break;
             }
+            default: {
+              if (!parseUnknownField(
+                  input, unknownFields, extensionRegistry, tag)) {
+                done = true;
+              }
+              break;
+            }
           }
         }
       } catch (com.google.protobuf.InvalidProtocolBufferException e) {
@@ -5141,6 +5856,7 @@ public final class FGBoostServiceProto {
         throw new com.google.protobuf.InvalidProtocolBufferException(
             e).setUnfinishedMessage(this);
       } finally {
+        this.unknownFields = unknownFields.build();
         makeExtensionsImmutable();
       }
     }
@@ -5149,7 +5865,8 @@ public final class FGBoostServiceProto {
       return FGBoostServiceProto.internal_static_fgboost_UploadResponse_descriptor;
     }
 
-    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+    @Override
+    protected FieldAccessorTable
         internalGetFieldAccessorTable() {
       return FGBoostServiceProto.internal_static_fgboost_UploadResponse_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
@@ -5159,8 +5876,10 @@ public final class FGBoostServiceProto {
     public static final int RESPONSE_FIELD_NUMBER = 1;
     private volatile Object response_;
     /**
-     * <code>optional string response = 1;</code>
+     * <code>string response = 1;</code>
+     * @return The response.
      */
+    @Override
     public String getResponse() {
       Object ref = response_;
       if (ref instanceof String) {
@@ -5174,8 +5893,10 @@ public final class FGBoostServiceProto {
       }
     }
     /**
-     * <code>optional string response = 1;</code>
+     * <code>string response = 1;</code>
+     * @return The bytes for response.
      */
+    @Override
     public com.google.protobuf.ByteString
         getResponseBytes() {
       Object ref = response_;
@@ -5193,13 +5914,16 @@ public final class FGBoostServiceProto {
     public static final int CODE_FIELD_NUMBER = 2;
     private int code_;
     /**
-     * <code>optional int32 code = 2;</code>
+     * <code>int32 code = 2;</code>
+     * @return The code.
      */
+    @Override
     public int getCode() {
       return code_;
     }
 
     private byte memoizedIsInitialized = -1;
+    @Override
     public final boolean isInitialized() {
       byte isInitialized = memoizedIsInitialized;
       if (isInitialized == 1) return true;
@@ -5209,6 +5933,7 @@ public final class FGBoostServiceProto {
       return true;
     }
 
+    @Override
     public void writeTo(com.google.protobuf.CodedOutputStream output)
                         throws java.io.IOException {
       if (!getResponseBytes().isEmpty()) {
@@ -5217,8 +5942,10 @@ public final class FGBoostServiceProto {
       if (code_ != 0) {
         output.writeInt32(2, code_);
       }
+      unknownFields.writeTo(output);
     }
 
+    @Override
     public int getSerializedSize() {
       int size = memoizedSize;
       if (size != -1) return size;
@@ -5231,11 +5958,11 @@ public final class FGBoostServiceProto {
         size += com.google.protobuf.CodedOutputStream
           .computeInt32Size(2, code_);
       }
+      size += unknownFields.getSerializedSize();
       memoizedSize = size;
       return size;
     }
 
-    private static final long serialVersionUID = 0L;
     @Override
     public boolean equals(final Object obj) {
       if (obj == this) {
@@ -5246,12 +5973,12 @@ public final class FGBoostServiceProto {
       }
       UploadResponse other = (UploadResponse) obj;
 
-      boolean result = true;
-      result = result && getResponse()
-          .equals(other.getResponse());
-      result = result && (getCode()
-          == other.getCode());
-      return result;
+      if (!getResponse()
+          .equals(other.getResponse())) return false;
+      if (getCode()
+          != other.getCode()) return false;
+      if (!unknownFields.equals(other.unknownFields)) return false;
+      return true;
     }
 
     @Override
@@ -5260,7 +5987,7 @@ public final class FGBoostServiceProto {
         return memoizedHashCode;
       }
       int hash = 41;
-      hash = (19 * hash) + getDescriptorForType().hashCode();
+      hash = (19 * hash) + getDescriptor().hashCode();
       hash = (37 * hash) + RESPONSE_FIELD_NUMBER;
       hash = (53 * hash) + getResponse().hashCode();
       hash = (37 * hash) + CODE_FIELD_NUMBER;
@@ -5270,6 +5997,17 @@ public final class FGBoostServiceProto {
       return hash;
     }
 
+    public static UploadResponse parseFrom(
+        java.nio.ByteBuffer data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static UploadResponse parseFrom(
+        java.nio.ByteBuffer data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
     public static UploadResponse parseFrom(
         com.google.protobuf.ByteString data)
         throws com.google.protobuf.InvalidProtocolBufferException {
@@ -5329,6 +6067,7 @@ public final class FGBoostServiceProto {
           .parseWithIOException(PARSER, input, extensionRegistry);
     }
 
+    @Override
     public Builder newBuilderForType() { return newBuilder(); }
     public static Builder newBuilder() {
       return DEFAULT_INSTANCE.toBuilder();
@@ -5336,6 +6075,7 @@ public final class FGBoostServiceProto {
     public static Builder newBuilder(UploadResponse prototype) {
       return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
     }
+    @Override
     public Builder toBuilder() {
       return this == DEFAULT_INSTANCE
           ? new Builder() : new Builder().mergeFrom(this);
@@ -5343,7 +6083,7 @@ public final class FGBoostServiceProto {
 
     @Override
     protected Builder newBuilderForType(
-        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+        BuilderParent parent) {
       Builder builder = new Builder(parent);
       return builder;
     }
@@ -5359,7 +6099,8 @@ public final class FGBoostServiceProto {
         return FGBoostServiceProto.internal_static_fgboost_UploadResponse_descriptor;
       }
 
-      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+      @Override
+      protected FieldAccessorTable
           internalGetFieldAccessorTable() {
         return FGBoostServiceProto.internal_static_fgboost_UploadResponse_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
@@ -5372,7 +6113,7 @@ public final class FGBoostServiceProto {
       }
 
       private Builder(
-          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+          BuilderParent parent) {
         super(parent);
         maybeForceBuilderInitialization();
       }
@@ -5381,6 +6122,7 @@ public final class FGBoostServiceProto {
                 .alwaysUseFieldBuilders) {
         }
       }
+      @Override
       public Builder clear() {
         super.clear();
         response_ = "";
@@ -5390,15 +6132,18 @@ public final class FGBoostServiceProto {
         return this;
       }
 
+      @Override
       public com.google.protobuf.Descriptors.Descriptor
           getDescriptorForType() {
         return FGBoostServiceProto.internal_static_fgboost_UploadResponse_descriptor;
       }
 
+      @Override
       public UploadResponse getDefaultInstanceForType() {
         return UploadResponse.getDefaultInstance();
       }
 
+      @Override
       public UploadResponse build() {
         UploadResponse result = buildPartial();
         if (!result.isInitialized()) {
@@ -5407,6 +6152,7 @@ public final class FGBoostServiceProto {
         return result;
       }
 
+      @Override
       public UploadResponse buildPartial() {
         UploadResponse result = new UploadResponse(this);
         result.response_ = response_;
@@ -5415,32 +6161,39 @@ public final class FGBoostServiceProto {
         return result;
       }
 
+      @Override
       public Builder clone() {
-        return (Builder) super.clone();
+        return super.clone();
       }
+      @Override
       public Builder setField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           Object value) {
-        return (Builder) super.setField(field, value);
+        return super.setField(field, value);
       }
+      @Override
       public Builder clearField(
           com.google.protobuf.Descriptors.FieldDescriptor field) {
-        return (Builder) super.clearField(field);
+        return super.clearField(field);
       }
+      @Override
       public Builder clearOneof(
           com.google.protobuf.Descriptors.OneofDescriptor oneof) {
-        return (Builder) super.clearOneof(oneof);
+        return super.clearOneof(oneof);
       }
+      @Override
       public Builder setRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           int index, Object value) {
-        return (Builder) super.setRepeatedField(field, index, value);
+        return super.setRepeatedField(field, index, value);
       }
+      @Override
       public Builder addRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           Object value) {
-        return (Builder) super.addRepeatedField(field, value);
+        return super.addRepeatedField(field, value);
       }
+      @Override
       public Builder mergeFrom(com.google.protobuf.Message other) {
         if (other instanceof UploadResponse) {
           return mergeFrom((UploadResponse)other);
@@ -5459,14 +6212,17 @@ public final class FGBoostServiceProto {
         if (other.getCode() != 0) {
           setCode(other.getCode());
         }
+        this.mergeUnknownFields(other.unknownFields);
         onChanged();
         return this;
       }
 
+      @Override
       public final boolean isInitialized() {
         return true;
       }
 
+      @Override
       public Builder mergeFrom(
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
@@ -5487,7 +6243,8 @@ public final class FGBoostServiceProto {
 
       private Object response_ = "";
       /**
-       * <code>optional string response = 1;</code>
+       * <code>string response = 1;</code>
+       * @return The response.
        */
       public String getResponse() {
         Object ref = response_;
@@ -5502,7 +6259,8 @@ public final class FGBoostServiceProto {
         }
       }
       /**
-       * <code>optional string response = 1;</code>
+       * <code>string response = 1;</code>
+       * @return The bytes for response.
        */
       public com.google.protobuf.ByteString
           getResponseBytes() {
@@ -5518,7 +6276,9 @@ public final class FGBoostServiceProto {
         }
       }
       /**
-       * <code>optional string response = 1;</code>
+       * <code>string response = 1;</code>
+       * @param value The response to set.
+       * @return This builder for chaining.
        */
       public Builder setResponse(
           String value) {
@@ -5531,7 +6291,8 @@ public final class FGBoostServiceProto {
         return this;
       }
       /**
-       * <code>optional string response = 1;</code>
+       * <code>string response = 1;</code>
+       * @return This builder for chaining.
        */
       public Builder clearResponse() {
         
@@ -5540,7 +6301,9 @@ public final class FGBoostServiceProto {
         return this;
       }
       /**
-       * <code>optional string response = 1;</code>
+       * <code>string response = 1;</code>
+       * @param value The bytes for response to set.
+       * @return This builder for chaining.
        */
       public Builder setResponseBytes(
           com.google.protobuf.ByteString value) {
@@ -5556,13 +6319,17 @@ public final class FGBoostServiceProto {
 
       private int code_ ;
       /**
-       * <code>optional int32 code = 2;</code>
+       * <code>int32 code = 2;</code>
+       * @return The code.
        */
+      @Override
       public int getCode() {
         return code_;
       }
       /**
-       * <code>optional int32 code = 2;</code>
+       * <code>int32 code = 2;</code>
+       * @param value The code to set.
+       * @return This builder for chaining.
        */
       public Builder setCode(int value) {
         
@@ -5571,7 +6338,8 @@ public final class FGBoostServiceProto {
         return this;
       }
       /**
-       * <code>optional int32 code = 2;</code>
+       * <code>int32 code = 2;</code>
+       * @return This builder for chaining.
        */
       public Builder clearCode() {
         
@@ -5579,14 +6347,16 @@ public final class FGBoostServiceProto {
         onChanged();
         return this;
       }
+      @Override
       public final Builder setUnknownFields(
           final com.google.protobuf.UnknownFieldSet unknownFields) {
-        return this;
+        return super.setUnknownFields(unknownFields);
       }
 
+      @Override
       public final Builder mergeUnknownFields(
           final com.google.protobuf.UnknownFieldSet unknownFields) {
-        return this;
+        return super.mergeUnknownFields(unknownFields);
       }
 
 
@@ -5605,11 +6375,12 @@ public final class FGBoostServiceProto {
 
     private static final com.google.protobuf.Parser<UploadResponse>
         PARSER = new com.google.protobuf.AbstractParser<UploadResponse>() {
+      @Override
       public UploadResponse parsePartialFrom(
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws com.google.protobuf.InvalidProtocolBufferException {
-          return new UploadResponse(input, extensionRegistry);
+        return new UploadResponse(input, extensionRegistry);
       }
     };
 
@@ -5622,6 +6393,7 @@ public final class FGBoostServiceProto {
       return PARSER;
     }
 
+    @Override
     public UploadResponse getDefaultInstanceForType() {
       return DEFAULT_INSTANCE;
     }
@@ -5633,55 +6405,74 @@ public final class FGBoostServiceProto {
       com.google.protobuf.MessageOrBuilder {
 
     /**
-     * <code>optional string treeID = 1;</code>
+     * <code>string treeID = 1;</code>
+     * @return The treeID.
      */
     String getTreeID();
     /**
-     * <code>optional string treeID = 1;</code>
+     * <code>string treeID = 1;</code>
+     * @return The bytes for treeID.
      */
     com.google.protobuf.ByteString
         getTreeIDBytes();
 
     /**
      * <code>repeated bool predicts = 2;</code>
+     * @return A list containing the predicts.
      */
     java.util.List<Boolean> getPredictsList();
     /**
      * <code>repeated bool predicts = 2;</code>
+     * @return The count of predicts.
      */
     int getPredictsCount();
     /**
      * <code>repeated bool predicts = 2;</code>
+     * @param index The index of the element to return.
+     * @return The predicts at the given index.
      */
     boolean getPredicts(int index);
   }
   /**
    * Protobuf type {@code fgboost.TreePredict}
    */
-  public  static final class TreePredict extends
+  public static final class TreePredict extends
       com.google.protobuf.GeneratedMessageV3 implements
       // @@protoc_insertion_point(message_implements:fgboost.TreePredict)
       TreePredictOrBuilder {
+  private static final long serialVersionUID = 0L;
     // Use TreePredict.newBuilder() to construct.
     private TreePredict(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
       super(builder);
     }
     private TreePredict() {
       treeID_ = "";
-      predicts_ = java.util.Collections.emptyList();
+      predicts_ = emptyBooleanList();
+    }
+
+    @Override
+    @SuppressWarnings({"unused"})
+    protected Object newInstance(
+        UnusedPrivateParameter unused) {
+      return new TreePredict();
     }
 
     @Override
     public final com.google.protobuf.UnknownFieldSet
     getUnknownFields() {
-      return com.google.protobuf.UnknownFieldSet.getDefaultInstance();
+      return this.unknownFields;
     }
     private TreePredict(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       this();
+      if (extensionRegistry == null) {
+        throw new NullPointerException();
+      }
       int mutable_bitField0_ = 0;
+      com.google.protobuf.UnknownFieldSet.Builder unknownFields =
+          com.google.protobuf.UnknownFieldSet.newBuilder();
       try {
         boolean done = false;
         while (!done) {
@@ -5690,12 +6481,6 @@ public final class FGBoostServiceProto {
             case 0:
               done = true;
               break;
-            default: {
-              if (!input.skipField(tag)) {
-                done = true;
-              }
-              break;
-            }
             case 10: {
               String s = input.readStringRequireUtf8();
 
@@ -5703,24 +6488,31 @@ public final class FGBoostServiceProto {
               break;
             }
             case 16: {
-              if (!((mutable_bitField0_ & 0x00000002) == 0x00000002)) {
-                predicts_ = new java.util.ArrayList<Boolean>();
-                mutable_bitField0_ |= 0x00000002;
+              if (!((mutable_bitField0_ & 0x00000001) != 0)) {
+                predicts_ = newBooleanList();
+                mutable_bitField0_ |= 0x00000001;
               }
-              predicts_.add(input.readBool());
+              predicts_.addBoolean(input.readBool());
               break;
             }
             case 18: {
               int length = input.readRawVarint32();
               int limit = input.pushLimit(length);
-              if (!((mutable_bitField0_ & 0x00000002) == 0x00000002) && input.getBytesUntilLimit() > 0) {
-                predicts_ = new java.util.ArrayList<Boolean>();
-                mutable_bitField0_ |= 0x00000002;
+              if (!((mutable_bitField0_ & 0x00000001) != 0) && input.getBytesUntilLimit() > 0) {
+                predicts_ = newBooleanList();
+                mutable_bitField0_ |= 0x00000001;
               }
               while (input.getBytesUntilLimit() > 0) {
-                predicts_.add(input.readBool());
+                predicts_.addBoolean(input.readBool());
               }
               input.popLimit(limit);
+              break;
+            }
+            default: {
+              if (!parseUnknownField(
+                  input, unknownFields, extensionRegistry, tag)) {
+                done = true;
+              }
               break;
             }
           }
@@ -5731,9 +6523,10 @@ public final class FGBoostServiceProto {
         throw new com.google.protobuf.InvalidProtocolBufferException(
             e).setUnfinishedMessage(this);
       } finally {
-        if (((mutable_bitField0_ & 0x00000002) == 0x00000002)) {
-          predicts_ = java.util.Collections.unmodifiableList(predicts_);
+        if (((mutable_bitField0_ & 0x00000001) != 0)) {
+          predicts_.makeImmutable(); // C
         }
+        this.unknownFields = unknownFields.build();
         makeExtensionsImmutable();
       }
     }
@@ -5742,19 +6535,21 @@ public final class FGBoostServiceProto {
       return FGBoostServiceProto.internal_static_fgboost_TreePredict_descriptor;
     }
 
-    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+    @Override
+    protected FieldAccessorTable
         internalGetFieldAccessorTable() {
       return FGBoostServiceProto.internal_static_fgboost_TreePredict_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
               TreePredict.class, Builder.class);
     }
 
-    private int bitField0_;
     public static final int TREEID_FIELD_NUMBER = 1;
     private volatile Object treeID_;
     /**
-     * <code>optional string treeID = 1;</code>
+     * <code>string treeID = 1;</code>
+     * @return The treeID.
      */
+    @Override
     public String getTreeID() {
       Object ref = treeID_;
       if (ref instanceof String) {
@@ -5768,8 +6563,10 @@ public final class FGBoostServiceProto {
       }
     }
     /**
-     * <code>optional string treeID = 1;</code>
+     * <code>string treeID = 1;</code>
+     * @return The bytes for treeID.
      */
+    @Override
     public com.google.protobuf.ByteString
         getTreeIDBytes() {
       Object ref = treeID_;
@@ -5785,29 +6582,35 @@ public final class FGBoostServiceProto {
     }
 
     public static final int PREDICTS_FIELD_NUMBER = 2;
-    private java.util.List<Boolean> predicts_;
+    private com.google.protobuf.Internal.BooleanList predicts_;
     /**
      * <code>repeated bool predicts = 2;</code>
+     * @return A list containing the predicts.
      */
+    @Override
     public java.util.List<Boolean>
         getPredictsList() {
       return predicts_;
     }
     /**
      * <code>repeated bool predicts = 2;</code>
+     * @return The count of predicts.
      */
     public int getPredictsCount() {
       return predicts_.size();
     }
     /**
      * <code>repeated bool predicts = 2;</code>
+     * @param index The index of the element to return.
+     * @return The predicts at the given index.
      */
     public boolean getPredicts(int index) {
-      return predicts_.get(index);
+      return predicts_.getBoolean(index);
     }
     private int predictsMemoizedSerializedSize = -1;
 
     private byte memoizedIsInitialized = -1;
+    @Override
     public final boolean isInitialized() {
       byte isInitialized = memoizedIsInitialized;
       if (isInitialized == 1) return true;
@@ -5817,6 +6620,7 @@ public final class FGBoostServiceProto {
       return true;
     }
 
+    @Override
     public void writeTo(com.google.protobuf.CodedOutputStream output)
                         throws java.io.IOException {
       getSerializedSize();
@@ -5828,10 +6632,12 @@ public final class FGBoostServiceProto {
         output.writeUInt32NoTag(predictsMemoizedSerializedSize);
       }
       for (int i = 0; i < predicts_.size(); i++) {
-        output.writeBoolNoTag(predicts_.get(i));
+        output.writeBoolNoTag(predicts_.getBoolean(i));
       }
+      unknownFields.writeTo(output);
     }
 
+    @Override
     public int getSerializedSize() {
       int size = memoizedSize;
       if (size != -1) return size;
@@ -5851,11 +6657,11 @@ public final class FGBoostServiceProto {
         }
         predictsMemoizedSerializedSize = dataSize;
       }
+      size += unknownFields.getSerializedSize();
       memoizedSize = size;
       return size;
     }
 
-    private static final long serialVersionUID = 0L;
     @Override
     public boolean equals(final Object obj) {
       if (obj == this) {
@@ -5866,12 +6672,12 @@ public final class FGBoostServiceProto {
       }
       TreePredict other = (TreePredict) obj;
 
-      boolean result = true;
-      result = result && getTreeID()
-          .equals(other.getTreeID());
-      result = result && getPredictsList()
-          .equals(other.getPredictsList());
-      return result;
+      if (!getTreeID()
+          .equals(other.getTreeID())) return false;
+      if (!getPredictsList()
+          .equals(other.getPredictsList())) return false;
+      if (!unknownFields.equals(other.unknownFields)) return false;
+      return true;
     }
 
     @Override
@@ -5880,7 +6686,7 @@ public final class FGBoostServiceProto {
         return memoizedHashCode;
       }
       int hash = 41;
-      hash = (19 * hash) + getDescriptorForType().hashCode();
+      hash = (19 * hash) + getDescriptor().hashCode();
       hash = (37 * hash) + TREEID_FIELD_NUMBER;
       hash = (53 * hash) + getTreeID().hashCode();
       if (getPredictsCount() > 0) {
@@ -5892,6 +6698,17 @@ public final class FGBoostServiceProto {
       return hash;
     }
 
+    public static TreePredict parseFrom(
+        java.nio.ByteBuffer data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static TreePredict parseFrom(
+        java.nio.ByteBuffer data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
     public static TreePredict parseFrom(
         com.google.protobuf.ByteString data)
         throws com.google.protobuf.InvalidProtocolBufferException {
@@ -5951,6 +6768,7 @@ public final class FGBoostServiceProto {
           .parseWithIOException(PARSER, input, extensionRegistry);
     }
 
+    @Override
     public Builder newBuilderForType() { return newBuilder(); }
     public static Builder newBuilder() {
       return DEFAULT_INSTANCE.toBuilder();
@@ -5958,6 +6776,7 @@ public final class FGBoostServiceProto {
     public static Builder newBuilder(TreePredict prototype) {
       return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
     }
+    @Override
     public Builder toBuilder() {
       return this == DEFAULT_INSTANCE
           ? new Builder() : new Builder().mergeFrom(this);
@@ -5965,7 +6784,7 @@ public final class FGBoostServiceProto {
 
     @Override
     protected Builder newBuilderForType(
-        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+        BuilderParent parent) {
       Builder builder = new Builder(parent);
       return builder;
     }
@@ -5981,7 +6800,8 @@ public final class FGBoostServiceProto {
         return FGBoostServiceProto.internal_static_fgboost_TreePredict_descriptor;
       }
 
-      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+      @Override
+      protected FieldAccessorTable
           internalGetFieldAccessorTable() {
         return FGBoostServiceProto.internal_static_fgboost_TreePredict_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
@@ -5994,7 +6814,7 @@ public final class FGBoostServiceProto {
       }
 
       private Builder(
-          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+          BuilderParent parent) {
         super(parent);
         maybeForceBuilderInitialization();
       }
@@ -6003,24 +6823,28 @@ public final class FGBoostServiceProto {
                 .alwaysUseFieldBuilders) {
         }
       }
+      @Override
       public Builder clear() {
         super.clear();
         treeID_ = "";
 
-        predicts_ = java.util.Collections.emptyList();
-        bitField0_ = (bitField0_ & ~0x00000002);
+        predicts_ = emptyBooleanList();
+        bitField0_ = (bitField0_ & ~0x00000001);
         return this;
       }
 
+      @Override
       public com.google.protobuf.Descriptors.Descriptor
           getDescriptorForType() {
         return FGBoostServiceProto.internal_static_fgboost_TreePredict_descriptor;
       }
 
+      @Override
       public TreePredict getDefaultInstanceForType() {
         return TreePredict.getDefaultInstance();
       }
 
+      @Override
       public TreePredict build() {
         TreePredict result = buildPartial();
         if (!result.isInitialized()) {
@@ -6029,47 +6853,53 @@ public final class FGBoostServiceProto {
         return result;
       }
 
+      @Override
       public TreePredict buildPartial() {
         TreePredict result = new TreePredict(this);
         int from_bitField0_ = bitField0_;
-        int to_bitField0_ = 0;
         result.treeID_ = treeID_;
-        if (((bitField0_ & 0x00000002) == 0x00000002)) {
-          predicts_ = java.util.Collections.unmodifiableList(predicts_);
-          bitField0_ = (bitField0_ & ~0x00000002);
+        if (((bitField0_ & 0x00000001) != 0)) {
+          predicts_.makeImmutable();
+          bitField0_ = (bitField0_ & ~0x00000001);
         }
         result.predicts_ = predicts_;
-        result.bitField0_ = to_bitField0_;
         onBuilt();
         return result;
       }
 
+      @Override
       public Builder clone() {
-        return (Builder) super.clone();
+        return super.clone();
       }
+      @Override
       public Builder setField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           Object value) {
-        return (Builder) super.setField(field, value);
+        return super.setField(field, value);
       }
+      @Override
       public Builder clearField(
           com.google.protobuf.Descriptors.FieldDescriptor field) {
-        return (Builder) super.clearField(field);
+        return super.clearField(field);
       }
+      @Override
       public Builder clearOneof(
           com.google.protobuf.Descriptors.OneofDescriptor oneof) {
-        return (Builder) super.clearOneof(oneof);
+        return super.clearOneof(oneof);
       }
+      @Override
       public Builder setRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           int index, Object value) {
-        return (Builder) super.setRepeatedField(field, index, value);
+        return super.setRepeatedField(field, index, value);
       }
+      @Override
       public Builder addRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           Object value) {
-        return (Builder) super.addRepeatedField(field, value);
+        return super.addRepeatedField(field, value);
       }
+      @Override
       public Builder mergeFrom(com.google.protobuf.Message other) {
         if (other instanceof TreePredict) {
           return mergeFrom((TreePredict)other);
@@ -6088,21 +6918,24 @@ public final class FGBoostServiceProto {
         if (!other.predicts_.isEmpty()) {
           if (predicts_.isEmpty()) {
             predicts_ = other.predicts_;
-            bitField0_ = (bitField0_ & ~0x00000002);
+            bitField0_ = (bitField0_ & ~0x00000001);
           } else {
             ensurePredictsIsMutable();
             predicts_.addAll(other.predicts_);
           }
           onChanged();
         }
+        this.mergeUnknownFields(other.unknownFields);
         onChanged();
         return this;
       }
 
+      @Override
       public final boolean isInitialized() {
         return true;
       }
 
+      @Override
       public Builder mergeFrom(
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
@@ -6124,7 +6957,8 @@ public final class FGBoostServiceProto {
 
       private Object treeID_ = "";
       /**
-       * <code>optional string treeID = 1;</code>
+       * <code>string treeID = 1;</code>
+       * @return The treeID.
        */
       public String getTreeID() {
         Object ref = treeID_;
@@ -6139,7 +6973,8 @@ public final class FGBoostServiceProto {
         }
       }
       /**
-       * <code>optional string treeID = 1;</code>
+       * <code>string treeID = 1;</code>
+       * @return The bytes for treeID.
        */
       public com.google.protobuf.ByteString
           getTreeIDBytes() {
@@ -6155,7 +6990,9 @@ public final class FGBoostServiceProto {
         }
       }
       /**
-       * <code>optional string treeID = 1;</code>
+       * <code>string treeID = 1;</code>
+       * @param value The treeID to set.
+       * @return This builder for chaining.
        */
       public Builder setTreeID(
           String value) {
@@ -6168,7 +7005,8 @@ public final class FGBoostServiceProto {
         return this;
       }
       /**
-       * <code>optional string treeID = 1;</code>
+       * <code>string treeID = 1;</code>
+       * @return This builder for chaining.
        */
       public Builder clearTreeID() {
         
@@ -6177,7 +7015,9 @@ public final class FGBoostServiceProto {
         return this;
       }
       /**
-       * <code>optional string treeID = 1;</code>
+       * <code>string treeID = 1;</code>
+       * @param value The bytes for treeID to set.
+       * @return This builder for chaining.
        */
       public Builder setTreeIDBytes(
           com.google.protobuf.ByteString value) {
@@ -6191,53 +7031,65 @@ public final class FGBoostServiceProto {
         return this;
       }
 
-      private java.util.List<Boolean> predicts_ = java.util.Collections.emptyList();
+      private com.google.protobuf.Internal.BooleanList predicts_ = emptyBooleanList();
       private void ensurePredictsIsMutable() {
-        if (!((bitField0_ & 0x00000002) == 0x00000002)) {
-          predicts_ = new java.util.ArrayList<Boolean>(predicts_);
-          bitField0_ |= 0x00000002;
+        if (!((bitField0_ & 0x00000001) != 0)) {
+          predicts_ = mutableCopy(predicts_);
+          bitField0_ |= 0x00000001;
          }
       }
       /**
        * <code>repeated bool predicts = 2;</code>
+       * @return A list containing the predicts.
        */
       public java.util.List<Boolean>
           getPredictsList() {
-        return java.util.Collections.unmodifiableList(predicts_);
+        return ((bitField0_ & 0x00000001) != 0) ?
+                 java.util.Collections.unmodifiableList(predicts_) : predicts_;
       }
       /**
        * <code>repeated bool predicts = 2;</code>
+       * @return The count of predicts.
        */
       public int getPredictsCount() {
         return predicts_.size();
       }
       /**
        * <code>repeated bool predicts = 2;</code>
+       * @param index The index of the element to return.
+       * @return The predicts at the given index.
        */
       public boolean getPredicts(int index) {
-        return predicts_.get(index);
+        return predicts_.getBoolean(index);
       }
       /**
        * <code>repeated bool predicts = 2;</code>
+       * @param index The index to set the value at.
+       * @param value The predicts to set.
+       * @return This builder for chaining.
        */
       public Builder setPredicts(
           int index, boolean value) {
         ensurePredictsIsMutable();
-        predicts_.set(index, value);
+        predicts_.setBoolean(index, value);
         onChanged();
         return this;
       }
       /**
        * <code>repeated bool predicts = 2;</code>
+       * @param value The predicts to add.
+       * @return This builder for chaining.
        */
       public Builder addPredicts(boolean value) {
         ensurePredictsIsMutable();
-        predicts_.add(value);
+        predicts_.addBoolean(value);
         onChanged();
         return this;
       }
       /**
        * <code>repeated bool predicts = 2;</code>
+       * @param values The predicts to add.
+       * @return This builder for chaining.
        */
       public Builder addAllPredicts(
           Iterable<? extends Boolean> values) {
@@ -6249,21 +7101,24 @@ public final class FGBoostServiceProto {
       }
       /**
        * <code>repeated bool predicts = 2;</code>
+       * @return This builder for chaining.
        */
       public Builder clearPredicts() {
-        predicts_ = java.util.Collections.emptyList();
-        bitField0_ = (bitField0_ & ~0x00000002);
+        predicts_ = emptyBooleanList();
+        bitField0_ = (bitField0_ & ~0x00000001);
         onChanged();
         return this;
       }
+      @Override
       public final Builder setUnknownFields(
           final com.google.protobuf.UnknownFieldSet unknownFields) {
-        return this;
+        return super.setUnknownFields(unknownFields);
       }
 
+      @Override
       public final Builder mergeUnknownFields(
           final com.google.protobuf.UnknownFieldSet unknownFields) {
-        return this;
+        return super.mergeUnknownFields(unknownFields);
       }
 
 
@@ -6282,11 +7137,12 @@ public final class FGBoostServiceProto {
 
     private static final com.google.protobuf.Parser<TreePredict>
         PARSER = new com.google.protobuf.AbstractParser<TreePredict>() {
+      @Override
       public TreePredict parsePartialFrom(
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws com.google.protobuf.InvalidProtocolBufferException {
-          return new TreePredict(input, extensionRegistry);
+        return new TreePredict(input, extensionRegistry);
       }
     };
 
@@ -6299,6 +7155,7 @@ public final class FGBoostServiceProto {
       return PARSER;
     }
 
+    @Override
     public TreePredict getDefaultInstanceForType() {
       return DEFAULT_INSTANCE;
     }
@@ -6331,15 +7188,16 @@ public final class FGBoostServiceProto {
      * <code>repeated .fgboost.TreePredict predicts = 1;</code>
      */
     TreePredictOrBuilder getPredictsOrBuilder(
-            int index);
+        int index);
   }
   /**
    * Protobuf type {@code fgboost.BoostPredict}
    */
-  public  static final class BoostPredict extends
+  public static final class BoostPredict extends
       com.google.protobuf.GeneratedMessageV3 implements
       // @@protoc_insertion_point(message_implements:fgboost.BoostPredict)
       BoostPredictOrBuilder {
+  private static final long serialVersionUID = 0L;
     // Use BoostPredict.newBuilder() to construct.
     private BoostPredict(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
       super(builder);
@@ -6349,16 +7207,28 @@ public final class FGBoostServiceProto {
     }
 
     @Override
+    @SuppressWarnings({"unused"})
+    protected Object newInstance(
+        UnusedPrivateParameter unused) {
+      return new BoostPredict();
+    }
+
+    @Override
     public final com.google.protobuf.UnknownFieldSet
     getUnknownFields() {
-      return com.google.protobuf.UnknownFieldSet.getDefaultInstance();
+      return this.unknownFields;
     }
     private BoostPredict(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       this();
+      if (extensionRegistry == null) {
+        throw new NullPointerException();
+      }
       int mutable_bitField0_ = 0;
+      com.google.protobuf.UnknownFieldSet.Builder unknownFields =
+          com.google.protobuf.UnknownFieldSet.newBuilder();
       try {
         boolean done = false;
         while (!done) {
@@ -6367,19 +7237,20 @@ public final class FGBoostServiceProto {
             case 0:
               done = true;
               break;
-            default: {
-              if (!input.skipField(tag)) {
-                done = true;
-              }
-              break;
-            }
             case 10: {
-              if (!((mutable_bitField0_ & 0x00000001) == 0x00000001)) {
+              if (!((mutable_bitField0_ & 0x00000001) != 0)) {
                 predicts_ = new java.util.ArrayList<TreePredict>();
                 mutable_bitField0_ |= 0x00000001;
               }
               predicts_.add(
                   input.readMessage(TreePredict.parser(), extensionRegistry));
+              break;
+            }
+            default: {
+              if (!parseUnknownField(
+                  input, unknownFields, extensionRegistry, tag)) {
+                done = true;
+              }
               break;
             }
           }
@@ -6390,9 +7261,10 @@ public final class FGBoostServiceProto {
         throw new com.google.protobuf.InvalidProtocolBufferException(
             e).setUnfinishedMessage(this);
       } finally {
-        if (((mutable_bitField0_ & 0x00000001) == 0x00000001)) {
+        if (((mutable_bitField0_ & 0x00000001) != 0)) {
           predicts_ = java.util.Collections.unmodifiableList(predicts_);
         }
+        this.unknownFields = unknownFields.build();
         makeExtensionsImmutable();
       }
     }
@@ -6401,7 +7273,8 @@ public final class FGBoostServiceProto {
       return FGBoostServiceProto.internal_static_fgboost_BoostPredict_descriptor;
     }
 
-    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+    @Override
+    protected FieldAccessorTable
         internalGetFieldAccessorTable() {
       return FGBoostServiceProto.internal_static_fgboost_BoostPredict_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
@@ -6413,12 +7286,14 @@ public final class FGBoostServiceProto {
     /**
      * <code>repeated .fgboost.TreePredict predicts = 1;</code>
      */
+    @Override
     public java.util.List<TreePredict> getPredictsList() {
       return predicts_;
     }
     /**
      * <code>repeated .fgboost.TreePredict predicts = 1;</code>
      */
+    @Override
     public java.util.List<? extends TreePredictOrBuilder>
         getPredictsOrBuilderList() {
       return predicts_;
@@ -6426,24 +7301,28 @@ public final class FGBoostServiceProto {
     /**
      * <code>repeated .fgboost.TreePredict predicts = 1;</code>
      */
+    @Override
     public int getPredictsCount() {
       return predicts_.size();
     }
     /**
      * <code>repeated .fgboost.TreePredict predicts = 1;</code>
      */
+    @Override
     public TreePredict getPredicts(int index) {
       return predicts_.get(index);
     }
     /**
      * <code>repeated .fgboost.TreePredict predicts = 1;</code>
      */
+    @Override
     public TreePredictOrBuilder getPredictsOrBuilder(
         int index) {
       return predicts_.get(index);
     }
 
     private byte memoizedIsInitialized = -1;
+    @Override
     public final boolean isInitialized() {
       byte isInitialized = memoizedIsInitialized;
       if (isInitialized == 1) return true;
@@ -6453,13 +7332,16 @@ public final class FGBoostServiceProto {
       return true;
     }
 
+    @Override
     public void writeTo(com.google.protobuf.CodedOutputStream output)
                         throws java.io.IOException {
       for (int i = 0; i < predicts_.size(); i++) {
         output.writeMessage(1, predicts_.get(i));
       }
+      unknownFields.writeTo(output);
     }
 
+    @Override
     public int getSerializedSize() {
       int size = memoizedSize;
       if (size != -1) return size;
@@ -6469,11 +7351,11 @@ public final class FGBoostServiceProto {
         size += com.google.protobuf.CodedOutputStream
           .computeMessageSize(1, predicts_.get(i));
       }
+      size += unknownFields.getSerializedSize();
       memoizedSize = size;
       return size;
     }
 
-    private static final long serialVersionUID = 0L;
     @Override
     public boolean equals(final Object obj) {
       if (obj == this) {
@@ -6484,10 +7366,10 @@ public final class FGBoostServiceProto {
       }
       BoostPredict other = (BoostPredict) obj;
 
-      boolean result = true;
-      result = result && getPredictsList()
-          .equals(other.getPredictsList());
-      return result;
+      if (!getPredictsList()
+          .equals(other.getPredictsList())) return false;
+      if (!unknownFields.equals(other.unknownFields)) return false;
+      return true;
     }
 
     @Override
@@ -6496,7 +7378,7 @@ public final class FGBoostServiceProto {
         return memoizedHashCode;
       }
       int hash = 41;
-      hash = (19 * hash) + getDescriptorForType().hashCode();
+      hash = (19 * hash) + getDescriptor().hashCode();
       if (getPredictsCount() > 0) {
         hash = (37 * hash) + PREDICTS_FIELD_NUMBER;
         hash = (53 * hash) + getPredictsList().hashCode();
@@ -6506,6 +7388,17 @@ public final class FGBoostServiceProto {
       return hash;
     }
 
+    public static BoostPredict parseFrom(
+        java.nio.ByteBuffer data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static BoostPredict parseFrom(
+        java.nio.ByteBuffer data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
     public static BoostPredict parseFrom(
         com.google.protobuf.ByteString data)
         throws com.google.protobuf.InvalidProtocolBufferException {
@@ -6565,6 +7458,7 @@ public final class FGBoostServiceProto {
           .parseWithIOException(PARSER, input, extensionRegistry);
     }
 
+    @Override
     public Builder newBuilderForType() { return newBuilder(); }
     public static Builder newBuilder() {
       return DEFAULT_INSTANCE.toBuilder();
@@ -6572,6 +7466,7 @@ public final class FGBoostServiceProto {
     public static Builder newBuilder(BoostPredict prototype) {
       return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
     }
+    @Override
     public Builder toBuilder() {
       return this == DEFAULT_INSTANCE
           ? new Builder() : new Builder().mergeFrom(this);
@@ -6579,7 +7474,7 @@ public final class FGBoostServiceProto {
 
     @Override
     protected Builder newBuilderForType(
-        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+        BuilderParent parent) {
       Builder builder = new Builder(parent);
       return builder;
     }
@@ -6595,7 +7490,8 @@ public final class FGBoostServiceProto {
         return FGBoostServiceProto.internal_static_fgboost_BoostPredict_descriptor;
       }
 
-      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+      @Override
+      protected FieldAccessorTable
           internalGetFieldAccessorTable() {
         return FGBoostServiceProto.internal_static_fgboost_BoostPredict_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
@@ -6608,7 +7504,7 @@ public final class FGBoostServiceProto {
       }
 
       private Builder(
-          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+          BuilderParent parent) {
         super(parent);
         maybeForceBuilderInitialization();
       }
@@ -6618,6 +7514,7 @@ public final class FGBoostServiceProto {
           getPredictsFieldBuilder();
         }
       }
+      @Override
       public Builder clear() {
         super.clear();
         if (predictsBuilder_ == null) {
@@ -6629,15 +7526,18 @@ public final class FGBoostServiceProto {
         return this;
       }
 
+      @Override
       public com.google.protobuf.Descriptors.Descriptor
           getDescriptorForType() {
         return FGBoostServiceProto.internal_static_fgboost_BoostPredict_descriptor;
       }
 
+      @Override
       public BoostPredict getDefaultInstanceForType() {
         return BoostPredict.getDefaultInstance();
       }
 
+      @Override
       public BoostPredict build() {
         BoostPredict result = buildPartial();
         if (!result.isInitialized()) {
@@ -6646,11 +7546,12 @@ public final class FGBoostServiceProto {
         return result;
       }
 
+      @Override
       public BoostPredict buildPartial() {
         BoostPredict result = new BoostPredict(this);
         int from_bitField0_ = bitField0_;
         if (predictsBuilder_ == null) {
-          if (((bitField0_ & 0x00000001) == 0x00000001)) {
+          if (((bitField0_ & 0x00000001) != 0)) {
             predicts_ = java.util.Collections.unmodifiableList(predicts_);
             bitField0_ = (bitField0_ & ~0x00000001);
           }
@@ -6662,32 +7563,39 @@ public final class FGBoostServiceProto {
         return result;
       }
 
+      @Override
       public Builder clone() {
-        return (Builder) super.clone();
+        return super.clone();
       }
+      @Override
       public Builder setField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           Object value) {
-        return (Builder) super.setField(field, value);
+        return super.setField(field, value);
       }
+      @Override
       public Builder clearField(
           com.google.protobuf.Descriptors.FieldDescriptor field) {
-        return (Builder) super.clearField(field);
+        return super.clearField(field);
       }
+      @Override
       public Builder clearOneof(
           com.google.protobuf.Descriptors.OneofDescriptor oneof) {
-        return (Builder) super.clearOneof(oneof);
+        return super.clearOneof(oneof);
       }
+      @Override
       public Builder setRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           int index, Object value) {
-        return (Builder) super.setRepeatedField(field, index, value);
+        return super.setRepeatedField(field, index, value);
       }
+      @Override
       public Builder addRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           Object value) {
-        return (Builder) super.addRepeatedField(field, value);
+        return super.addRepeatedField(field, value);
       }
+      @Override
       public Builder mergeFrom(com.google.protobuf.Message other) {
         if (other instanceof BoostPredict) {
           return mergeFrom((BoostPredict)other);
@@ -6725,14 +7633,17 @@ public final class FGBoostServiceProto {
             }
           }
         }
+        this.mergeUnknownFields(other.unknownFields);
         onChanged();
         return this;
       }
 
+      @Override
       public final boolean isInitialized() {
         return true;
       }
 
+      @Override
       public Builder mergeFrom(
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
@@ -6755,7 +7666,7 @@ public final class FGBoostServiceProto {
       private java.util.List<TreePredict> predicts_ =
         java.util.Collections.emptyList();
       private void ensurePredictsIsMutable() {
-        if (!((bitField0_ & 0x00000001) == 0x00000001)) {
+        if (!((bitField0_ & 0x00000001) != 0)) {
           predicts_ = new java.util.ArrayList<TreePredict>(predicts_);
           bitField0_ |= 0x00000001;
          }
@@ -6984,21 +7895,23 @@ public final class FGBoostServiceProto {
           predictsBuilder_ = new com.google.protobuf.RepeatedFieldBuilderV3<
               TreePredict, TreePredict.Builder, TreePredictOrBuilder>(
                   predicts_,
-                  ((bitField0_ & 0x00000001) == 0x00000001),
+                  ((bitField0_ & 0x00000001) != 0),
                   getParentForChildren(),
                   isClean());
           predicts_ = null;
         }
         return predictsBuilder_;
       }
+      @Override
       public final Builder setUnknownFields(
           final com.google.protobuf.UnknownFieldSet unknownFields) {
-        return this;
+        return super.setUnknownFields(unknownFields);
       }
 
+      @Override
       public final Builder mergeUnknownFields(
           final com.google.protobuf.UnknownFieldSet unknownFields) {
-        return this;
+        return super.mergeUnknownFields(unknownFields);
       }
 
 
@@ -7017,11 +7930,12 @@ public final class FGBoostServiceProto {
 
     private static final com.google.protobuf.Parser<BoostPredict>
         PARSER = new com.google.protobuf.AbstractParser<BoostPredict>() {
+      @Override
       public BoostPredict parsePartialFrom(
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws com.google.protobuf.InvalidProtocolBufferException {
-          return new BoostPredict(input, extensionRegistry);
+        return new BoostPredict(input, extensionRegistry);
       }
     };
 
@@ -7034,6 +7948,7 @@ public final class FGBoostServiceProto {
       return PARSER;
     }
 
+    @Override
     public BoostPredict getDefaultInstanceForType() {
       return DEFAULT_INSTANCE;
     }
@@ -7066,15 +7981,16 @@ public final class FGBoostServiceProto {
      * <code>repeated .fgboost.TreePredict evaluates = 1;</code>
      */
     TreePredictOrBuilder getEvaluatesOrBuilder(
-            int index);
+        int index);
   }
   /**
    * Protobuf type {@code fgboost.BoostEval}
    */
-  public  static final class BoostEval extends
+  public static final class BoostEval extends
       com.google.protobuf.GeneratedMessageV3 implements
       // @@protoc_insertion_point(message_implements:fgboost.BoostEval)
       BoostEvalOrBuilder {
+  private static final long serialVersionUID = 0L;
     // Use BoostEval.newBuilder() to construct.
     private BoostEval(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
       super(builder);
@@ -7084,16 +8000,28 @@ public final class FGBoostServiceProto {
     }
 
     @Override
+    @SuppressWarnings({"unused"})
+    protected Object newInstance(
+        UnusedPrivateParameter unused) {
+      return new BoostEval();
+    }
+
+    @Override
     public final com.google.protobuf.UnknownFieldSet
     getUnknownFields() {
-      return com.google.protobuf.UnknownFieldSet.getDefaultInstance();
+      return this.unknownFields;
     }
     private BoostEval(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       this();
+      if (extensionRegistry == null) {
+        throw new NullPointerException();
+      }
       int mutable_bitField0_ = 0;
+      com.google.protobuf.UnknownFieldSet.Builder unknownFields =
+          com.google.protobuf.UnknownFieldSet.newBuilder();
       try {
         boolean done = false;
         while (!done) {
@@ -7102,19 +8030,20 @@ public final class FGBoostServiceProto {
             case 0:
               done = true;
               break;
-            default: {
-              if (!input.skipField(tag)) {
-                done = true;
-              }
-              break;
-            }
             case 10: {
-              if (!((mutable_bitField0_ & 0x00000001) == 0x00000001)) {
+              if (!((mutable_bitField0_ & 0x00000001) != 0)) {
                 evaluates_ = new java.util.ArrayList<TreePredict>();
                 mutable_bitField0_ |= 0x00000001;
               }
               evaluates_.add(
                   input.readMessage(TreePredict.parser(), extensionRegistry));
+              break;
+            }
+            default: {
+              if (!parseUnknownField(
+                  input, unknownFields, extensionRegistry, tag)) {
+                done = true;
+              }
               break;
             }
           }
@@ -7125,9 +8054,10 @@ public final class FGBoostServiceProto {
         throw new com.google.protobuf.InvalidProtocolBufferException(
             e).setUnfinishedMessage(this);
       } finally {
-        if (((mutable_bitField0_ & 0x00000001) == 0x00000001)) {
+        if (((mutable_bitField0_ & 0x00000001) != 0)) {
           evaluates_ = java.util.Collections.unmodifiableList(evaluates_);
         }
+        this.unknownFields = unknownFields.build();
         makeExtensionsImmutable();
       }
     }
@@ -7136,7 +8066,8 @@ public final class FGBoostServiceProto {
       return FGBoostServiceProto.internal_static_fgboost_BoostEval_descriptor;
     }
 
-    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+    @Override
+    protected FieldAccessorTable
         internalGetFieldAccessorTable() {
       return FGBoostServiceProto.internal_static_fgboost_BoostEval_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
@@ -7148,12 +8079,14 @@ public final class FGBoostServiceProto {
     /**
      * <code>repeated .fgboost.TreePredict evaluates = 1;</code>
      */
+    @Override
     public java.util.List<TreePredict> getEvaluatesList() {
       return evaluates_;
     }
     /**
      * <code>repeated .fgboost.TreePredict evaluates = 1;</code>
      */
+    @Override
     public java.util.List<? extends TreePredictOrBuilder>
         getEvaluatesOrBuilderList() {
       return evaluates_;
@@ -7161,24 +8094,28 @@ public final class FGBoostServiceProto {
     /**
      * <code>repeated .fgboost.TreePredict evaluates = 1;</code>
      */
+    @Override
     public int getEvaluatesCount() {
       return evaluates_.size();
     }
     /**
      * <code>repeated .fgboost.TreePredict evaluates = 1;</code>
      */
+    @Override
     public TreePredict getEvaluates(int index) {
       return evaluates_.get(index);
     }
     /**
      * <code>repeated .fgboost.TreePredict evaluates = 1;</code>
      */
+    @Override
     public TreePredictOrBuilder getEvaluatesOrBuilder(
         int index) {
       return evaluates_.get(index);
     }
 
     private byte memoizedIsInitialized = -1;
+    @Override
     public final boolean isInitialized() {
       byte isInitialized = memoizedIsInitialized;
       if (isInitialized == 1) return true;
@@ -7188,13 +8125,16 @@ public final class FGBoostServiceProto {
       return true;
     }
 
+    @Override
     public void writeTo(com.google.protobuf.CodedOutputStream output)
                         throws java.io.IOException {
       for (int i = 0; i < evaluates_.size(); i++) {
         output.writeMessage(1, evaluates_.get(i));
       }
+      unknownFields.writeTo(output);
     }
 
+    @Override
     public int getSerializedSize() {
       int size = memoizedSize;
       if (size != -1) return size;
@@ -7204,11 +8144,11 @@ public final class FGBoostServiceProto {
         size += com.google.protobuf.CodedOutputStream
           .computeMessageSize(1, evaluates_.get(i));
       }
+      size += unknownFields.getSerializedSize();
       memoizedSize = size;
       return size;
     }
 
-    private static final long serialVersionUID = 0L;
     @Override
     public boolean equals(final Object obj) {
       if (obj == this) {
@@ -7219,10 +8159,10 @@ public final class FGBoostServiceProto {
       }
       BoostEval other = (BoostEval) obj;
 
-      boolean result = true;
-      result = result && getEvaluatesList()
-          .equals(other.getEvaluatesList());
-      return result;
+      if (!getEvaluatesList()
+          .equals(other.getEvaluatesList())) return false;
+      if (!unknownFields.equals(other.unknownFields)) return false;
+      return true;
     }
 
     @Override
@@ -7231,7 +8171,7 @@ public final class FGBoostServiceProto {
         return memoizedHashCode;
       }
       int hash = 41;
-      hash = (19 * hash) + getDescriptorForType().hashCode();
+      hash = (19 * hash) + getDescriptor().hashCode();
       if (getEvaluatesCount() > 0) {
         hash = (37 * hash) + EVALUATES_FIELD_NUMBER;
         hash = (53 * hash) + getEvaluatesList().hashCode();
@@ -7241,6 +8181,17 @@ public final class FGBoostServiceProto {
       return hash;
     }
 
+    public static BoostEval parseFrom(
+        java.nio.ByteBuffer data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static BoostEval parseFrom(
+        java.nio.ByteBuffer data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
     public static BoostEval parseFrom(
         com.google.protobuf.ByteString data)
         throws com.google.protobuf.InvalidProtocolBufferException {
@@ -7300,6 +8251,7 @@ public final class FGBoostServiceProto {
           .parseWithIOException(PARSER, input, extensionRegistry);
     }
 
+    @Override
     public Builder newBuilderForType() { return newBuilder(); }
     public static Builder newBuilder() {
       return DEFAULT_INSTANCE.toBuilder();
@@ -7307,6 +8259,7 @@ public final class FGBoostServiceProto {
     public static Builder newBuilder(BoostEval prototype) {
       return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
     }
+    @Override
     public Builder toBuilder() {
       return this == DEFAULT_INSTANCE
           ? new Builder() : new Builder().mergeFrom(this);
@@ -7314,7 +8267,7 @@ public final class FGBoostServiceProto {
 
     @Override
     protected Builder newBuilderForType(
-        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+        BuilderParent parent) {
       Builder builder = new Builder(parent);
       return builder;
     }
@@ -7330,7 +8283,8 @@ public final class FGBoostServiceProto {
         return FGBoostServiceProto.internal_static_fgboost_BoostEval_descriptor;
       }
 
-      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+      @Override
+      protected FieldAccessorTable
           internalGetFieldAccessorTable() {
         return FGBoostServiceProto.internal_static_fgboost_BoostEval_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
@@ -7343,7 +8297,7 @@ public final class FGBoostServiceProto {
       }
 
       private Builder(
-          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+          BuilderParent parent) {
         super(parent);
         maybeForceBuilderInitialization();
       }
@@ -7353,6 +8307,7 @@ public final class FGBoostServiceProto {
           getEvaluatesFieldBuilder();
         }
       }
+      @Override
       public Builder clear() {
         super.clear();
         if (evaluatesBuilder_ == null) {
@@ -7364,15 +8319,18 @@ public final class FGBoostServiceProto {
         return this;
       }
 
+      @Override
       public com.google.protobuf.Descriptors.Descriptor
           getDescriptorForType() {
         return FGBoostServiceProto.internal_static_fgboost_BoostEval_descriptor;
       }
 
+      @Override
       public BoostEval getDefaultInstanceForType() {
         return BoostEval.getDefaultInstance();
       }
 
+      @Override
       public BoostEval build() {
         BoostEval result = buildPartial();
         if (!result.isInitialized()) {
@@ -7381,11 +8339,12 @@ public final class FGBoostServiceProto {
         return result;
       }
 
+      @Override
       public BoostEval buildPartial() {
         BoostEval result = new BoostEval(this);
         int from_bitField0_ = bitField0_;
         if (evaluatesBuilder_ == null) {
-          if (((bitField0_ & 0x00000001) == 0x00000001)) {
+          if (((bitField0_ & 0x00000001) != 0)) {
             evaluates_ = java.util.Collections.unmodifiableList(evaluates_);
             bitField0_ = (bitField0_ & ~0x00000001);
           }
@@ -7397,32 +8356,39 @@ public final class FGBoostServiceProto {
         return result;
       }
 
+      @Override
       public Builder clone() {
-        return (Builder) super.clone();
+        return super.clone();
       }
+      @Override
       public Builder setField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           Object value) {
-        return (Builder) super.setField(field, value);
+        return super.setField(field, value);
       }
+      @Override
       public Builder clearField(
           com.google.protobuf.Descriptors.FieldDescriptor field) {
-        return (Builder) super.clearField(field);
+        return super.clearField(field);
       }
+      @Override
       public Builder clearOneof(
           com.google.protobuf.Descriptors.OneofDescriptor oneof) {
-        return (Builder) super.clearOneof(oneof);
+        return super.clearOneof(oneof);
       }
+      @Override
       public Builder setRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           int index, Object value) {
-        return (Builder) super.setRepeatedField(field, index, value);
+        return super.setRepeatedField(field, index, value);
       }
+      @Override
       public Builder addRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           Object value) {
-        return (Builder) super.addRepeatedField(field, value);
+        return super.addRepeatedField(field, value);
       }
+      @Override
       public Builder mergeFrom(com.google.protobuf.Message other) {
         if (other instanceof BoostEval) {
           return mergeFrom((BoostEval)other);
@@ -7460,14 +8426,17 @@ public final class FGBoostServiceProto {
             }
           }
         }
+        this.mergeUnknownFields(other.unknownFields);
         onChanged();
         return this;
       }
 
+      @Override
       public final boolean isInitialized() {
         return true;
       }
 
+      @Override
       public Builder mergeFrom(
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
@@ -7490,7 +8459,7 @@ public final class FGBoostServiceProto {
       private java.util.List<TreePredict> evaluates_ =
         java.util.Collections.emptyList();
       private void ensureEvaluatesIsMutable() {
-        if (!((bitField0_ & 0x00000001) == 0x00000001)) {
+        if (!((bitField0_ & 0x00000001) != 0)) {
           evaluates_ = new java.util.ArrayList<TreePredict>(evaluates_);
           bitField0_ |= 0x00000001;
          }
@@ -7719,21 +8688,23 @@ public final class FGBoostServiceProto {
           evaluatesBuilder_ = new com.google.protobuf.RepeatedFieldBuilderV3<
               TreePredict, TreePredict.Builder, TreePredictOrBuilder>(
                   evaluates_,
-                  ((bitField0_ & 0x00000001) == 0x00000001),
+                  ((bitField0_ & 0x00000001) != 0),
                   getParentForChildren(),
                   isClean());
           evaluates_ = null;
         }
         return evaluatesBuilder_;
       }
+      @Override
       public final Builder setUnknownFields(
           final com.google.protobuf.UnknownFieldSet unknownFields) {
-        return this;
+        return super.setUnknownFields(unknownFields);
       }
 
+      @Override
       public final Builder mergeUnknownFields(
           final com.google.protobuf.UnknownFieldSet unknownFields) {
-        return this;
+        return super.mergeUnknownFields(unknownFields);
       }
 
 
@@ -7752,11 +8723,12 @@ public final class FGBoostServiceProto {
 
     private static final com.google.protobuf.Parser<BoostEval>
         PARSER = new com.google.protobuf.AbstractParser<BoostEval>() {
+      @Override
       public BoostEval parsePartialFrom(
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws com.google.protobuf.InvalidProtocolBufferException {
-          return new BoostEval(input, extensionRegistry);
+        return new BoostEval(input, extensionRegistry);
       }
     };
 
@@ -7769,6 +8741,7 @@ public final class FGBoostServiceProto {
       return PARSER;
     }
 
+    @Override
     public BoostEval getDefaultInstanceForType() {
       return DEFAULT_INSTANCE;
     }
@@ -7780,21 +8753,25 @@ public final class FGBoostServiceProto {
       com.google.protobuf.MessageOrBuilder {
 
     /**
-     * <code>optional string clientuuid = 1;</code>
+     * <code>string clientuuid = 1;</code>
+     * @return The clientuuid.
      */
     String getClientuuid();
     /**
-     * <code>optional string clientuuid = 1;</code>
+     * <code>string clientuuid = 1;</code>
+     * @return The bytes for clientuuid.
      */
     com.google.protobuf.ByteString
         getClientuuidBytes();
 
     /**
-     * <code>optional string token = 2;</code>
+     * <code>string token = 2;</code>
+     * @return The token.
      */
     String getToken();
     /**
-     * <code>optional string token = 2;</code>
+     * <code>string token = 2;</code>
+     * @return The bytes for token.
      */
     com.google.protobuf.ByteString
         getTokenBytes();
@@ -7802,10 +8779,11 @@ public final class FGBoostServiceProto {
   /**
    * Protobuf type {@code fgboost.RegisterRequest}
    */
-  public  static final class RegisterRequest extends
+  public static final class RegisterRequest extends
       com.google.protobuf.GeneratedMessageV3 implements
       // @@protoc_insertion_point(message_implements:fgboost.RegisterRequest)
       RegisterRequestOrBuilder {
+  private static final long serialVersionUID = 0L;
     // Use RegisterRequest.newBuilder() to construct.
     private RegisterRequest(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
       super(builder);
@@ -7816,16 +8794,27 @@ public final class FGBoostServiceProto {
     }
 
     @Override
+    @SuppressWarnings({"unused"})
+    protected Object newInstance(
+        UnusedPrivateParameter unused) {
+      return new RegisterRequest();
+    }
+
+    @Override
     public final com.google.protobuf.UnknownFieldSet
     getUnknownFields() {
-      return com.google.protobuf.UnknownFieldSet.getDefaultInstance();
+      return this.unknownFields;
     }
     private RegisterRequest(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       this();
-      int mutable_bitField0_ = 0;
+      if (extensionRegistry == null) {
+        throw new NullPointerException();
+      }
+      com.google.protobuf.UnknownFieldSet.Builder unknownFields =
+          com.google.protobuf.UnknownFieldSet.newBuilder();
       try {
         boolean done = false;
         while (!done) {
@@ -7834,12 +8823,6 @@ public final class FGBoostServiceProto {
             case 0:
               done = true;
               break;
-            default: {
-              if (!input.skipField(tag)) {
-                done = true;
-              }
-              break;
-            }
             case 10: {
               String s = input.readStringRequireUtf8();
 
@@ -7852,6 +8835,13 @@ public final class FGBoostServiceProto {
               token_ = s;
               break;
             }
+            default: {
+              if (!parseUnknownField(
+                  input, unknownFields, extensionRegistry, tag)) {
+                done = true;
+              }
+              break;
+            }
           }
         }
       } catch (com.google.protobuf.InvalidProtocolBufferException e) {
@@ -7860,6 +8850,7 @@ public final class FGBoostServiceProto {
         throw new com.google.protobuf.InvalidProtocolBufferException(
             e).setUnfinishedMessage(this);
       } finally {
+        this.unknownFields = unknownFields.build();
         makeExtensionsImmutable();
       }
     }
@@ -7868,7 +8859,8 @@ public final class FGBoostServiceProto {
       return FGBoostServiceProto.internal_static_fgboost_RegisterRequest_descriptor;
     }
 
-    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+    @Override
+    protected FieldAccessorTable
         internalGetFieldAccessorTable() {
       return FGBoostServiceProto.internal_static_fgboost_RegisterRequest_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
@@ -7878,8 +8870,10 @@ public final class FGBoostServiceProto {
     public static final int CLIENTUUID_FIELD_NUMBER = 1;
     private volatile Object clientuuid_;
     /**
-     * <code>optional string clientuuid = 1;</code>
+     * <code>string clientuuid = 1;</code>
+     * @return The clientuuid.
      */
+    @Override
     public String getClientuuid() {
       Object ref = clientuuid_;
       if (ref instanceof String) {
@@ -7893,8 +8887,10 @@ public final class FGBoostServiceProto {
       }
     }
     /**
-     * <code>optional string clientuuid = 1;</code>
+     * <code>string clientuuid = 1;</code>
+     * @return The bytes for clientuuid.
      */
+    @Override
     public com.google.protobuf.ByteString
         getClientuuidBytes() {
       Object ref = clientuuid_;
@@ -7912,8 +8908,10 @@ public final class FGBoostServiceProto {
     public static final int TOKEN_FIELD_NUMBER = 2;
     private volatile Object token_;
     /**
-     * <code>optional string token = 2;</code>
+     * <code>string token = 2;</code>
+     * @return The token.
      */
+    @Override
     public String getToken() {
       Object ref = token_;
       if (ref instanceof String) {
@@ -7927,8 +8925,10 @@ public final class FGBoostServiceProto {
       }
     }
     /**
-     * <code>optional string token = 2;</code>
+     * <code>string token = 2;</code>
+     * @return The bytes for token.
      */
+    @Override
     public com.google.protobuf.ByteString
         getTokenBytes() {
       Object ref = token_;
@@ -7944,6 +8944,7 @@ public final class FGBoostServiceProto {
     }
 
     private byte memoizedIsInitialized = -1;
+    @Override
     public final boolean isInitialized() {
       byte isInitialized = memoizedIsInitialized;
       if (isInitialized == 1) return true;
@@ -7953,6 +8954,7 @@ public final class FGBoostServiceProto {
       return true;
     }
 
+    @Override
     public void writeTo(com.google.protobuf.CodedOutputStream output)
                         throws java.io.IOException {
       if (!getClientuuidBytes().isEmpty()) {
@@ -7961,8 +8963,10 @@ public final class FGBoostServiceProto {
       if (!getTokenBytes().isEmpty()) {
         com.google.protobuf.GeneratedMessageV3.writeString(output, 2, token_);
       }
+      unknownFields.writeTo(output);
     }
 
+    @Override
     public int getSerializedSize() {
       int size = memoizedSize;
       if (size != -1) return size;
@@ -7974,11 +8978,11 @@ public final class FGBoostServiceProto {
       if (!getTokenBytes().isEmpty()) {
         size += com.google.protobuf.GeneratedMessageV3.computeStringSize(2, token_);
       }
+      size += unknownFields.getSerializedSize();
       memoizedSize = size;
       return size;
     }
 
-    private static final long serialVersionUID = 0L;
     @Override
     public boolean equals(final Object obj) {
       if (obj == this) {
@@ -7989,12 +8993,12 @@ public final class FGBoostServiceProto {
       }
       RegisterRequest other = (RegisterRequest) obj;
 
-      boolean result = true;
-      result = result && getClientuuid()
-          .equals(other.getClientuuid());
-      result = result && getToken()
-          .equals(other.getToken());
-      return result;
+      if (!getClientuuid()
+          .equals(other.getClientuuid())) return false;
+      if (!getToken()
+          .equals(other.getToken())) return false;
+      if (!unknownFields.equals(other.unknownFields)) return false;
+      return true;
     }
 
     @Override
@@ -8003,7 +9007,7 @@ public final class FGBoostServiceProto {
         return memoizedHashCode;
       }
       int hash = 41;
-      hash = (19 * hash) + getDescriptorForType().hashCode();
+      hash = (19 * hash) + getDescriptor().hashCode();
       hash = (37 * hash) + CLIENTUUID_FIELD_NUMBER;
       hash = (53 * hash) + getClientuuid().hashCode();
       hash = (37 * hash) + TOKEN_FIELD_NUMBER;
@@ -8013,6 +9017,17 @@ public final class FGBoostServiceProto {
       return hash;
     }
 
+    public static RegisterRequest parseFrom(
+        java.nio.ByteBuffer data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static RegisterRequest parseFrom(
+        java.nio.ByteBuffer data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
     public static RegisterRequest parseFrom(
         com.google.protobuf.ByteString data)
         throws com.google.protobuf.InvalidProtocolBufferException {
@@ -8072,6 +9087,7 @@ public final class FGBoostServiceProto {
           .parseWithIOException(PARSER, input, extensionRegistry);
     }
 
+    @Override
     public Builder newBuilderForType() { return newBuilder(); }
     public static Builder newBuilder() {
       return DEFAULT_INSTANCE.toBuilder();
@@ -8079,6 +9095,7 @@ public final class FGBoostServiceProto {
     public static Builder newBuilder(RegisterRequest prototype) {
       return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
     }
+    @Override
     public Builder toBuilder() {
       return this == DEFAULT_INSTANCE
           ? new Builder() : new Builder().mergeFrom(this);
@@ -8086,7 +9103,7 @@ public final class FGBoostServiceProto {
 
     @Override
     protected Builder newBuilderForType(
-        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+        BuilderParent parent) {
       Builder builder = new Builder(parent);
       return builder;
     }
@@ -8102,7 +9119,8 @@ public final class FGBoostServiceProto {
         return FGBoostServiceProto.internal_static_fgboost_RegisterRequest_descriptor;
       }
 
-      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+      @Override
+      protected FieldAccessorTable
           internalGetFieldAccessorTable() {
         return FGBoostServiceProto.internal_static_fgboost_RegisterRequest_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
@@ -8115,7 +9133,7 @@ public final class FGBoostServiceProto {
       }
 
       private Builder(
-          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+          BuilderParent parent) {
         super(parent);
         maybeForceBuilderInitialization();
       }
@@ -8124,6 +9142,7 @@ public final class FGBoostServiceProto {
                 .alwaysUseFieldBuilders) {
         }
       }
+      @Override
       public Builder clear() {
         super.clear();
         clientuuid_ = "";
@@ -8133,15 +9152,18 @@ public final class FGBoostServiceProto {
         return this;
       }
 
+      @Override
       public com.google.protobuf.Descriptors.Descriptor
           getDescriptorForType() {
         return FGBoostServiceProto.internal_static_fgboost_RegisterRequest_descriptor;
       }
 
+      @Override
       public RegisterRequest getDefaultInstanceForType() {
         return RegisterRequest.getDefaultInstance();
       }
 
+      @Override
       public RegisterRequest build() {
         RegisterRequest result = buildPartial();
         if (!result.isInitialized()) {
@@ -8150,6 +9172,7 @@ public final class FGBoostServiceProto {
         return result;
       }
 
+      @Override
       public RegisterRequest buildPartial() {
         RegisterRequest result = new RegisterRequest(this);
         result.clientuuid_ = clientuuid_;
@@ -8158,32 +9181,39 @@ public final class FGBoostServiceProto {
         return result;
       }
 
+      @Override
       public Builder clone() {
-        return (Builder) super.clone();
+        return super.clone();
       }
+      @Override
       public Builder setField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           Object value) {
-        return (Builder) super.setField(field, value);
+        return super.setField(field, value);
       }
+      @Override
       public Builder clearField(
           com.google.protobuf.Descriptors.FieldDescriptor field) {
-        return (Builder) super.clearField(field);
+        return super.clearField(field);
       }
+      @Override
       public Builder clearOneof(
           com.google.protobuf.Descriptors.OneofDescriptor oneof) {
-        return (Builder) super.clearOneof(oneof);
+        return super.clearOneof(oneof);
       }
+      @Override
       public Builder setRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           int index, Object value) {
-        return (Builder) super.setRepeatedField(field, index, value);
+        return super.setRepeatedField(field, index, value);
       }
+      @Override
       public Builder addRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           Object value) {
-        return (Builder) super.addRepeatedField(field, value);
+        return super.addRepeatedField(field, value);
       }
+      @Override
       public Builder mergeFrom(com.google.protobuf.Message other) {
         if (other instanceof RegisterRequest) {
           return mergeFrom((RegisterRequest)other);
@@ -8203,14 +9233,17 @@ public final class FGBoostServiceProto {
           token_ = other.token_;
           onChanged();
         }
+        this.mergeUnknownFields(other.unknownFields);
         onChanged();
         return this;
       }
 
+      @Override
       public final boolean isInitialized() {
         return true;
       }
 
+      @Override
       public Builder mergeFrom(
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
@@ -8231,7 +9264,8 @@ public final class FGBoostServiceProto {
 
       private Object clientuuid_ = "";
       /**
-       * <code>optional string clientuuid = 1;</code>
+       * <code>string clientuuid = 1;</code>
+       * @return The clientuuid.
        */
       public String getClientuuid() {
         Object ref = clientuuid_;
@@ -8246,7 +9280,8 @@ public final class FGBoostServiceProto {
         }
       }
       /**
-       * <code>optional string clientuuid = 1;</code>
+       * <code>string clientuuid = 1;</code>
+       * @return The bytes for clientuuid.
        */
       public com.google.protobuf.ByteString
           getClientuuidBytes() {
@@ -8262,7 +9297,9 @@ public final class FGBoostServiceProto {
         }
       }
       /**
-       * <code>optional string clientuuid = 1;</code>
+       * <code>string clientuuid = 1;</code>
+       * @param value The clientuuid to set.
+       * @return This builder for chaining.
        */
       public Builder setClientuuid(
           String value) {
@@ -8275,7 +9312,8 @@ public final class FGBoostServiceProto {
         return this;
       }
       /**
-       * <code>optional string clientuuid = 1;</code>
+       * <code>string clientuuid = 1;</code>
+       * @return This builder for chaining.
        */
       public Builder clearClientuuid() {
         
@@ -8284,7 +9322,9 @@ public final class FGBoostServiceProto {
         return this;
       }
       /**
-       * <code>optional string clientuuid = 1;</code>
+       * <code>string clientuuid = 1;</code>
+       * @param value The bytes for clientuuid to set.
+       * @return This builder for chaining.
        */
       public Builder setClientuuidBytes(
           com.google.protobuf.ByteString value) {
@@ -8300,7 +9340,8 @@ public final class FGBoostServiceProto {
 
       private Object token_ = "";
       /**
-       * <code>optional string token = 2;</code>
+       * <code>string token = 2;</code>
+       * @return The token.
        */
       public String getToken() {
         Object ref = token_;
@@ -8315,7 +9356,8 @@ public final class FGBoostServiceProto {
         }
       }
       /**
-       * <code>optional string token = 2;</code>
+       * <code>string token = 2;</code>
+       * @return The bytes for token.
        */
       public com.google.protobuf.ByteString
           getTokenBytes() {
@@ -8331,7 +9373,9 @@ public final class FGBoostServiceProto {
         }
       }
       /**
-       * <code>optional string token = 2;</code>
+       * <code>string token = 2;</code>
+       * @param value The token to set.
+       * @return This builder for chaining.
        */
       public Builder setToken(
           String value) {
@@ -8344,7 +9388,8 @@ public final class FGBoostServiceProto {
         return this;
       }
       /**
-       * <code>optional string token = 2;</code>
+       * <code>string token = 2;</code>
+       * @return This builder for chaining.
        */
       public Builder clearToken() {
         
@@ -8353,7 +9398,9 @@ public final class FGBoostServiceProto {
         return this;
       }
       /**
-       * <code>optional string token = 2;</code>
+       * <code>string token = 2;</code>
+       * @param value The bytes for token to set.
+       * @return This builder for chaining.
        */
       public Builder setTokenBytes(
           com.google.protobuf.ByteString value) {
@@ -8366,14 +9413,16 @@ public final class FGBoostServiceProto {
         onChanged();
         return this;
       }
+      @Override
       public final Builder setUnknownFields(
           final com.google.protobuf.UnknownFieldSet unknownFields) {
-        return this;
+        return super.setUnknownFields(unknownFields);
       }
 
+      @Override
       public final Builder mergeUnknownFields(
           final com.google.protobuf.UnknownFieldSet unknownFields) {
-        return this;
+        return super.mergeUnknownFields(unknownFields);
       }
 
 
@@ -8392,11 +9441,12 @@ public final class FGBoostServiceProto {
 
     private static final com.google.protobuf.Parser<RegisterRequest>
         PARSER = new com.google.protobuf.AbstractParser<RegisterRequest>() {
+      @Override
       public RegisterRequest parsePartialFrom(
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws com.google.protobuf.InvalidProtocolBufferException {
-          return new RegisterRequest(input, extensionRegistry);
+        return new RegisterRequest(input, extensionRegistry);
       }
     };
 
@@ -8409,6 +9459,7 @@ public final class FGBoostServiceProto {
       return PARSER;
     }
 
+    @Override
     public RegisterRequest getDefaultInstanceForType() {
       return DEFAULT_INSTANCE;
     }
@@ -8420,47 +9471,61 @@ public final class FGBoostServiceProto {
       com.google.protobuf.MessageOrBuilder {
 
     /**
-     * <code>optional string response = 1;</code>
+     * <code>string response = 1;</code>
+     * @return The response.
      */
     String getResponse();
     /**
-     * <code>optional string response = 1;</code>
+     * <code>string response = 1;</code>
+     * @return The bytes for response.
      */
     com.google.protobuf.ByteString
         getResponseBytes();
 
     /**
-     * <code>optional int32 code = 2;</code>
+     * <code>int32 code = 2;</code>
+     * @return The code.
      */
     int getCode();
   }
   /**
    * Protobuf type {@code fgboost.RegisterResponse}
    */
-  public  static final class RegisterResponse extends
+  public static final class RegisterResponse extends
       com.google.protobuf.GeneratedMessageV3 implements
       // @@protoc_insertion_point(message_implements:fgboost.RegisterResponse)
       RegisterResponseOrBuilder {
+  private static final long serialVersionUID = 0L;
     // Use RegisterResponse.newBuilder() to construct.
     private RegisterResponse(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
       super(builder);
     }
     private RegisterResponse() {
       response_ = "";
-      code_ = 0;
+    }
+
+    @Override
+    @SuppressWarnings({"unused"})
+    protected Object newInstance(
+        UnusedPrivateParameter unused) {
+      return new RegisterResponse();
     }
 
     @Override
     public final com.google.protobuf.UnknownFieldSet
     getUnknownFields() {
-      return com.google.protobuf.UnknownFieldSet.getDefaultInstance();
+      return this.unknownFields;
     }
     private RegisterResponse(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       this();
-      int mutable_bitField0_ = 0;
+      if (extensionRegistry == null) {
+        throw new NullPointerException();
+      }
+      com.google.protobuf.UnknownFieldSet.Builder unknownFields =
+          com.google.protobuf.UnknownFieldSet.newBuilder();
       try {
         boolean done = false;
         while (!done) {
@@ -8469,12 +9534,6 @@ public final class FGBoostServiceProto {
             case 0:
               done = true;
               break;
-            default: {
-              if (!input.skipField(tag)) {
-                done = true;
-              }
-              break;
-            }
             case 10: {
               String s = input.readStringRequireUtf8();
 
@@ -8486,6 +9545,13 @@ public final class FGBoostServiceProto {
               code_ = input.readInt32();
               break;
             }
+            default: {
+              if (!parseUnknownField(
+                  input, unknownFields, extensionRegistry, tag)) {
+                done = true;
+              }
+              break;
+            }
           }
         }
       } catch (com.google.protobuf.InvalidProtocolBufferException e) {
@@ -8494,6 +9560,7 @@ public final class FGBoostServiceProto {
         throw new com.google.protobuf.InvalidProtocolBufferException(
             e).setUnfinishedMessage(this);
       } finally {
+        this.unknownFields = unknownFields.build();
         makeExtensionsImmutable();
       }
     }
@@ -8502,7 +9569,8 @@ public final class FGBoostServiceProto {
       return FGBoostServiceProto.internal_static_fgboost_RegisterResponse_descriptor;
     }
 
-    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+    @Override
+    protected FieldAccessorTable
         internalGetFieldAccessorTable() {
       return FGBoostServiceProto.internal_static_fgboost_RegisterResponse_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
@@ -8512,8 +9580,10 @@ public final class FGBoostServiceProto {
     public static final int RESPONSE_FIELD_NUMBER = 1;
     private volatile Object response_;
     /**
-     * <code>optional string response = 1;</code>
+     * <code>string response = 1;</code>
+     * @return The response.
      */
+    @Override
     public String getResponse() {
       Object ref = response_;
       if (ref instanceof String) {
@@ -8527,8 +9597,10 @@ public final class FGBoostServiceProto {
       }
     }
     /**
-     * <code>optional string response = 1;</code>
+     * <code>string response = 1;</code>
+     * @return The bytes for response.
      */
+    @Override
     public com.google.protobuf.ByteString
         getResponseBytes() {
       Object ref = response_;
@@ -8546,13 +9618,16 @@ public final class FGBoostServiceProto {
     public static final int CODE_FIELD_NUMBER = 2;
     private int code_;
     /**
-     * <code>optional int32 code = 2;</code>
+     * <code>int32 code = 2;</code>
+     * @return The code.
      */
+    @Override
     public int getCode() {
       return code_;
     }
 
     private byte memoizedIsInitialized = -1;
+    @Override
     public final boolean isInitialized() {
       byte isInitialized = memoizedIsInitialized;
       if (isInitialized == 1) return true;
@@ -8562,6 +9637,7 @@ public final class FGBoostServiceProto {
       return true;
     }
 
+    @Override
     public void writeTo(com.google.protobuf.CodedOutputStream output)
                         throws java.io.IOException {
       if (!getResponseBytes().isEmpty()) {
@@ -8570,8 +9646,10 @@ public final class FGBoostServiceProto {
       if (code_ != 0) {
         output.writeInt32(2, code_);
       }
+      unknownFields.writeTo(output);
     }
 
+    @Override
     public int getSerializedSize() {
       int size = memoizedSize;
       if (size != -1) return size;
@@ -8584,11 +9662,11 @@ public final class FGBoostServiceProto {
         size += com.google.protobuf.CodedOutputStream
           .computeInt32Size(2, code_);
       }
+      size += unknownFields.getSerializedSize();
       memoizedSize = size;
       return size;
     }
 
-    private static final long serialVersionUID = 0L;
     @Override
     public boolean equals(final Object obj) {
       if (obj == this) {
@@ -8599,12 +9677,12 @@ public final class FGBoostServiceProto {
       }
       RegisterResponse other = (RegisterResponse) obj;
 
-      boolean result = true;
-      result = result && getResponse()
-          .equals(other.getResponse());
-      result = result && (getCode()
-          == other.getCode());
-      return result;
+      if (!getResponse()
+          .equals(other.getResponse())) return false;
+      if (getCode()
+          != other.getCode()) return false;
+      if (!unknownFields.equals(other.unknownFields)) return false;
+      return true;
     }
 
     @Override
@@ -8613,7 +9691,7 @@ public final class FGBoostServiceProto {
         return memoizedHashCode;
       }
       int hash = 41;
-      hash = (19 * hash) + getDescriptorForType().hashCode();
+      hash = (19 * hash) + getDescriptor().hashCode();
       hash = (37 * hash) + RESPONSE_FIELD_NUMBER;
       hash = (53 * hash) + getResponse().hashCode();
       hash = (37 * hash) + CODE_FIELD_NUMBER;
@@ -8623,6 +9701,17 @@ public final class FGBoostServiceProto {
       return hash;
     }
 
+    public static RegisterResponse parseFrom(
+        java.nio.ByteBuffer data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static RegisterResponse parseFrom(
+        java.nio.ByteBuffer data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
     public static RegisterResponse parseFrom(
         com.google.protobuf.ByteString data)
         throws com.google.protobuf.InvalidProtocolBufferException {
@@ -8682,6 +9771,7 @@ public final class FGBoostServiceProto {
           .parseWithIOException(PARSER, input, extensionRegistry);
     }
 
+    @Override
     public Builder newBuilderForType() { return newBuilder(); }
     public static Builder newBuilder() {
       return DEFAULT_INSTANCE.toBuilder();
@@ -8689,6 +9779,7 @@ public final class FGBoostServiceProto {
     public static Builder newBuilder(RegisterResponse prototype) {
       return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
     }
+    @Override
     public Builder toBuilder() {
       return this == DEFAULT_INSTANCE
           ? new Builder() : new Builder().mergeFrom(this);
@@ -8696,7 +9787,7 @@ public final class FGBoostServiceProto {
 
     @Override
     protected Builder newBuilderForType(
-        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+        BuilderParent parent) {
       Builder builder = new Builder(parent);
       return builder;
     }
@@ -8712,7 +9803,8 @@ public final class FGBoostServiceProto {
         return FGBoostServiceProto.internal_static_fgboost_RegisterResponse_descriptor;
       }
 
-      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+      @Override
+      protected FieldAccessorTable
           internalGetFieldAccessorTable() {
         return FGBoostServiceProto.internal_static_fgboost_RegisterResponse_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
@@ -8725,7 +9817,7 @@ public final class FGBoostServiceProto {
       }
 
       private Builder(
-          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+          BuilderParent parent) {
         super(parent);
         maybeForceBuilderInitialization();
       }
@@ -8734,6 +9826,7 @@ public final class FGBoostServiceProto {
                 .alwaysUseFieldBuilders) {
         }
       }
+      @Override
       public Builder clear() {
         super.clear();
         response_ = "";
@@ -8743,15 +9836,18 @@ public final class FGBoostServiceProto {
         return this;
       }
 
+      @Override
       public com.google.protobuf.Descriptors.Descriptor
           getDescriptorForType() {
         return FGBoostServiceProto.internal_static_fgboost_RegisterResponse_descriptor;
       }
 
+      @Override
       public RegisterResponse getDefaultInstanceForType() {
         return RegisterResponse.getDefaultInstance();
       }
 
+      @Override
       public RegisterResponse build() {
         RegisterResponse result = buildPartial();
         if (!result.isInitialized()) {
@@ -8760,6 +9856,7 @@ public final class FGBoostServiceProto {
         return result;
       }
 
+      @Override
       public RegisterResponse buildPartial() {
         RegisterResponse result = new RegisterResponse(this);
         result.response_ = response_;
@@ -8768,32 +9865,39 @@ public final class FGBoostServiceProto {
         return result;
       }
 
+      @Override
       public Builder clone() {
-        return (Builder) super.clone();
+        return super.clone();
       }
+      @Override
       public Builder setField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           Object value) {
-        return (Builder) super.setField(field, value);
+        return super.setField(field, value);
       }
+      @Override
       public Builder clearField(
           com.google.protobuf.Descriptors.FieldDescriptor field) {
-        return (Builder) super.clearField(field);
+        return super.clearField(field);
       }
+      @Override
       public Builder clearOneof(
           com.google.protobuf.Descriptors.OneofDescriptor oneof) {
-        return (Builder) super.clearOneof(oneof);
+        return super.clearOneof(oneof);
       }
+      @Override
       public Builder setRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           int index, Object value) {
-        return (Builder) super.setRepeatedField(field, index, value);
+        return super.setRepeatedField(field, index, value);
       }
+      @Override
       public Builder addRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           Object value) {
-        return (Builder) super.addRepeatedField(field, value);
+        return super.addRepeatedField(field, value);
       }
+      @Override
       public Builder mergeFrom(com.google.protobuf.Message other) {
         if (other instanceof RegisterResponse) {
           return mergeFrom((RegisterResponse)other);
@@ -8812,14 +9916,17 @@ public final class FGBoostServiceProto {
         if (other.getCode() != 0) {
           setCode(other.getCode());
         }
+        this.mergeUnknownFields(other.unknownFields);
         onChanged();
         return this;
       }
 
+      @Override
       public final boolean isInitialized() {
         return true;
       }
 
+      @Override
       public Builder mergeFrom(
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
@@ -8840,7 +9947,8 @@ public final class FGBoostServiceProto {
 
       private Object response_ = "";
       /**
-       * <code>optional string response = 1;</code>
+       * <code>string response = 1;</code>
+       * @return The response.
        */
       public String getResponse() {
         Object ref = response_;
@@ -8855,7 +9963,8 @@ public final class FGBoostServiceProto {
         }
       }
       /**
-       * <code>optional string response = 1;</code>
+       * <code>string response = 1;</code>
+       * @return The bytes for response.
        */
       public com.google.protobuf.ByteString
           getResponseBytes() {
@@ -8871,7 +9980,9 @@ public final class FGBoostServiceProto {
         }
       }
       /**
-       * <code>optional string response = 1;</code>
+       * <code>string response = 1;</code>
+       * @param value The response to set.
+       * @return This builder for chaining.
        */
       public Builder setResponse(
           String value) {
@@ -8884,7 +9995,8 @@ public final class FGBoostServiceProto {
         return this;
       }
       /**
-       * <code>optional string response = 1;</code>
+       * <code>string response = 1;</code>
+       * @return This builder for chaining.
        */
       public Builder clearResponse() {
         
@@ -8893,7 +10005,9 @@ public final class FGBoostServiceProto {
         return this;
       }
       /**
-       * <code>optional string response = 1;</code>
+       * <code>string response = 1;</code>
+       * @param value The bytes for response to set.
+       * @return This builder for chaining.
        */
       public Builder setResponseBytes(
           com.google.protobuf.ByteString value) {
@@ -8909,13 +10023,17 @@ public final class FGBoostServiceProto {
 
       private int code_ ;
       /**
-       * <code>optional int32 code = 2;</code>
+       * <code>int32 code = 2;</code>
+       * @return The code.
        */
+      @Override
       public int getCode() {
         return code_;
       }
       /**
-       * <code>optional int32 code = 2;</code>
+       * <code>int32 code = 2;</code>
+       * @param value The code to set.
+       * @return This builder for chaining.
        */
       public Builder setCode(int value) {
         
@@ -8924,7 +10042,8 @@ public final class FGBoostServiceProto {
         return this;
       }
       /**
-       * <code>optional int32 code = 2;</code>
+       * <code>int32 code = 2;</code>
+       * @return This builder for chaining.
        */
       public Builder clearCode() {
         
@@ -8932,14 +10051,16 @@ public final class FGBoostServiceProto {
         onChanged();
         return this;
       }
+      @Override
       public final Builder setUnknownFields(
           final com.google.protobuf.UnknownFieldSet unknownFields) {
-        return this;
+        return super.setUnknownFields(unknownFields);
       }
 
+      @Override
       public final Builder mergeUnknownFields(
           final com.google.protobuf.UnknownFieldSet unknownFields) {
-        return this;
+        return super.mergeUnknownFields(unknownFields);
       }
 
 
@@ -8958,11 +10079,12 @@ public final class FGBoostServiceProto {
 
     private static final com.google.protobuf.Parser<RegisterResponse>
         PARSER = new com.google.protobuf.AbstractParser<RegisterResponse>() {
+      @Override
       public RegisterResponse parsePartialFrom(
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws com.google.protobuf.InvalidProtocolBufferException {
-          return new RegisterResponse(input, extensionRegistry);
+        return new RegisterResponse(input, extensionRegistry);
       }
     };
 
@@ -8975,6 +10097,7 @@ public final class FGBoostServiceProto {
       return PARSER;
     }
 
+    @Override
     public RegisterResponse getDefaultInstanceForType() {
       return DEFAULT_INSTANCE;
     }
@@ -8986,17 +10109,20 @@ public final class FGBoostServiceProto {
       com.google.protobuf.MessageOrBuilder {
 
     /**
-     * <code>optional string clientuuid = 1;</code>
+     * <code>string clientuuid = 1;</code>
+     * @return The clientuuid.
      */
     String getClientuuid();
     /**
-     * <code>optional string clientuuid = 1;</code>
+     * <code>string clientuuid = 1;</code>
+     * @return The bytes for clientuuid.
      */
     com.google.protobuf.ByteString
         getClientuuidBytes();
 
     /**
-     * <code>optional int32 version = 2;</code>
+     * <code>int32 version = 2;</code>
+     * @return The version.
      */
     int getVersion();
 
@@ -9022,36 +10148,48 @@ public final class FGBoostServiceProto {
      * <code>repeated .fgboost.BoostEval treeEval = 3;</code>
      */
     BoostEvalOrBuilder getTreeEvalOrBuilder(
-            int index);
+        int index);
   }
   /**
    * Protobuf type {@code fgboost.UploadTreeEvalRequest}
    */
-  public  static final class UploadTreeEvalRequest extends
+  public static final class UploadTreeEvalRequest extends
       com.google.protobuf.GeneratedMessageV3 implements
       // @@protoc_insertion_point(message_implements:fgboost.UploadTreeEvalRequest)
       UploadTreeEvalRequestOrBuilder {
+  private static final long serialVersionUID = 0L;
     // Use UploadTreeEvalRequest.newBuilder() to construct.
     private UploadTreeEvalRequest(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
       super(builder);
     }
     private UploadTreeEvalRequest() {
       clientuuid_ = "";
-      version_ = 0;
       treeEval_ = java.util.Collections.emptyList();
+    }
+
+    @Override
+    @SuppressWarnings({"unused"})
+    protected Object newInstance(
+        UnusedPrivateParameter unused) {
+      return new UploadTreeEvalRequest();
     }
 
     @Override
     public final com.google.protobuf.UnknownFieldSet
     getUnknownFields() {
-      return com.google.protobuf.UnknownFieldSet.getDefaultInstance();
+      return this.unknownFields;
     }
     private UploadTreeEvalRequest(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       this();
+      if (extensionRegistry == null) {
+        throw new NullPointerException();
+      }
       int mutable_bitField0_ = 0;
+      com.google.protobuf.UnknownFieldSet.Builder unknownFields =
+          com.google.protobuf.UnknownFieldSet.newBuilder();
       try {
         boolean done = false;
         while (!done) {
@@ -9060,12 +10198,6 @@ public final class FGBoostServiceProto {
             case 0:
               done = true;
               break;
-            default: {
-              if (!input.skipField(tag)) {
-                done = true;
-              }
-              break;
-            }
             case 10: {
               String s = input.readStringRequireUtf8();
 
@@ -9078,12 +10210,19 @@ public final class FGBoostServiceProto {
               break;
             }
             case 26: {
-              if (!((mutable_bitField0_ & 0x00000004) == 0x00000004)) {
+              if (!((mutable_bitField0_ & 0x00000001) != 0)) {
                 treeEval_ = new java.util.ArrayList<BoostEval>();
-                mutable_bitField0_ |= 0x00000004;
+                mutable_bitField0_ |= 0x00000001;
               }
               treeEval_.add(
                   input.readMessage(BoostEval.parser(), extensionRegistry));
+              break;
+            }
+            default: {
+              if (!parseUnknownField(
+                  input, unknownFields, extensionRegistry, tag)) {
+                done = true;
+              }
               break;
             }
           }
@@ -9094,9 +10233,10 @@ public final class FGBoostServiceProto {
         throw new com.google.protobuf.InvalidProtocolBufferException(
             e).setUnfinishedMessage(this);
       } finally {
-        if (((mutable_bitField0_ & 0x00000004) == 0x00000004)) {
+        if (((mutable_bitField0_ & 0x00000001) != 0)) {
           treeEval_ = java.util.Collections.unmodifiableList(treeEval_);
         }
+        this.unknownFields = unknownFields.build();
         makeExtensionsImmutable();
       }
     }
@@ -9105,19 +10245,21 @@ public final class FGBoostServiceProto {
       return FGBoostServiceProto.internal_static_fgboost_UploadTreeEvalRequest_descriptor;
     }
 
-    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+    @Override
+    protected FieldAccessorTable
         internalGetFieldAccessorTable() {
       return FGBoostServiceProto.internal_static_fgboost_UploadTreeEvalRequest_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
               UploadTreeEvalRequest.class, Builder.class);
     }
 
-    private int bitField0_;
     public static final int CLIENTUUID_FIELD_NUMBER = 1;
     private volatile Object clientuuid_;
     /**
-     * <code>optional string clientuuid = 1;</code>
+     * <code>string clientuuid = 1;</code>
+     * @return The clientuuid.
      */
+    @Override
     public String getClientuuid() {
       Object ref = clientuuid_;
       if (ref instanceof String) {
@@ -9131,8 +10273,10 @@ public final class FGBoostServiceProto {
       }
     }
     /**
-     * <code>optional string clientuuid = 1;</code>
+     * <code>string clientuuid = 1;</code>
+     * @return The bytes for clientuuid.
      */
+    @Override
     public com.google.protobuf.ByteString
         getClientuuidBytes() {
       Object ref = clientuuid_;
@@ -9150,8 +10294,10 @@ public final class FGBoostServiceProto {
     public static final int VERSION_FIELD_NUMBER = 2;
     private int version_;
     /**
-     * <code>optional int32 version = 2;</code>
+     * <code>int32 version = 2;</code>
+     * @return The version.
      */
+    @Override
     public int getVersion() {
       return version_;
     }
@@ -9161,12 +10307,14 @@ public final class FGBoostServiceProto {
     /**
      * <code>repeated .fgboost.BoostEval treeEval = 3;</code>
      */
+    @Override
     public java.util.List<BoostEval> getTreeEvalList() {
       return treeEval_;
     }
     /**
      * <code>repeated .fgboost.BoostEval treeEval = 3;</code>
      */
+    @Override
     public java.util.List<? extends BoostEvalOrBuilder>
         getTreeEvalOrBuilderList() {
       return treeEval_;
@@ -9174,24 +10322,28 @@ public final class FGBoostServiceProto {
     /**
      * <code>repeated .fgboost.BoostEval treeEval = 3;</code>
      */
+    @Override
     public int getTreeEvalCount() {
       return treeEval_.size();
     }
     /**
      * <code>repeated .fgboost.BoostEval treeEval = 3;</code>
      */
+    @Override
     public BoostEval getTreeEval(int index) {
       return treeEval_.get(index);
     }
     /**
      * <code>repeated .fgboost.BoostEval treeEval = 3;</code>
      */
+    @Override
     public BoostEvalOrBuilder getTreeEvalOrBuilder(
         int index) {
       return treeEval_.get(index);
     }
 
     private byte memoizedIsInitialized = -1;
+    @Override
     public final boolean isInitialized() {
       byte isInitialized = memoizedIsInitialized;
       if (isInitialized == 1) return true;
@@ -9201,6 +10353,7 @@ public final class FGBoostServiceProto {
       return true;
     }
 
+    @Override
     public void writeTo(com.google.protobuf.CodedOutputStream output)
                         throws java.io.IOException {
       if (!getClientuuidBytes().isEmpty()) {
@@ -9212,8 +10365,10 @@ public final class FGBoostServiceProto {
       for (int i = 0; i < treeEval_.size(); i++) {
         output.writeMessage(3, treeEval_.get(i));
       }
+      unknownFields.writeTo(output);
     }
 
+    @Override
     public int getSerializedSize() {
       int size = memoizedSize;
       if (size != -1) return size;
@@ -9230,11 +10385,11 @@ public final class FGBoostServiceProto {
         size += com.google.protobuf.CodedOutputStream
           .computeMessageSize(3, treeEval_.get(i));
       }
+      size += unknownFields.getSerializedSize();
       memoizedSize = size;
       return size;
     }
 
-    private static final long serialVersionUID = 0L;
     @Override
     public boolean equals(final Object obj) {
       if (obj == this) {
@@ -9245,14 +10400,14 @@ public final class FGBoostServiceProto {
       }
       UploadTreeEvalRequest other = (UploadTreeEvalRequest) obj;
 
-      boolean result = true;
-      result = result && getClientuuid()
-          .equals(other.getClientuuid());
-      result = result && (getVersion()
-          == other.getVersion());
-      result = result && getTreeEvalList()
-          .equals(other.getTreeEvalList());
-      return result;
+      if (!getClientuuid()
+          .equals(other.getClientuuid())) return false;
+      if (getVersion()
+          != other.getVersion()) return false;
+      if (!getTreeEvalList()
+          .equals(other.getTreeEvalList())) return false;
+      if (!unknownFields.equals(other.unknownFields)) return false;
+      return true;
     }
 
     @Override
@@ -9261,7 +10416,7 @@ public final class FGBoostServiceProto {
         return memoizedHashCode;
       }
       int hash = 41;
-      hash = (19 * hash) + getDescriptorForType().hashCode();
+      hash = (19 * hash) + getDescriptor().hashCode();
       hash = (37 * hash) + CLIENTUUID_FIELD_NUMBER;
       hash = (53 * hash) + getClientuuid().hashCode();
       hash = (37 * hash) + VERSION_FIELD_NUMBER;
@@ -9275,6 +10430,17 @@ public final class FGBoostServiceProto {
       return hash;
     }
 
+    public static UploadTreeEvalRequest parseFrom(
+        java.nio.ByteBuffer data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static UploadTreeEvalRequest parseFrom(
+        java.nio.ByteBuffer data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
     public static UploadTreeEvalRequest parseFrom(
         com.google.protobuf.ByteString data)
         throws com.google.protobuf.InvalidProtocolBufferException {
@@ -9334,6 +10500,7 @@ public final class FGBoostServiceProto {
           .parseWithIOException(PARSER, input, extensionRegistry);
     }
 
+    @Override
     public Builder newBuilderForType() { return newBuilder(); }
     public static Builder newBuilder() {
       return DEFAULT_INSTANCE.toBuilder();
@@ -9341,6 +10508,7 @@ public final class FGBoostServiceProto {
     public static Builder newBuilder(UploadTreeEvalRequest prototype) {
       return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
     }
+    @Override
     public Builder toBuilder() {
       return this == DEFAULT_INSTANCE
           ? new Builder() : new Builder().mergeFrom(this);
@@ -9348,7 +10516,7 @@ public final class FGBoostServiceProto {
 
     @Override
     protected Builder newBuilderForType(
-        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+        BuilderParent parent) {
       Builder builder = new Builder(parent);
       return builder;
     }
@@ -9364,7 +10532,8 @@ public final class FGBoostServiceProto {
         return FGBoostServiceProto.internal_static_fgboost_UploadTreeEvalRequest_descriptor;
       }
 
-      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+      @Override
+      protected FieldAccessorTable
           internalGetFieldAccessorTable() {
         return FGBoostServiceProto.internal_static_fgboost_UploadTreeEvalRequest_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
@@ -9377,7 +10546,7 @@ public final class FGBoostServiceProto {
       }
 
       private Builder(
-          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+          BuilderParent parent) {
         super(parent);
         maybeForceBuilderInitialization();
       }
@@ -9387,6 +10556,7 @@ public final class FGBoostServiceProto {
           getTreeEvalFieldBuilder();
         }
       }
+      @Override
       public Builder clear() {
         super.clear();
         clientuuid_ = "";
@@ -9395,22 +10565,25 @@ public final class FGBoostServiceProto {
 
         if (treeEvalBuilder_ == null) {
           treeEval_ = java.util.Collections.emptyList();
-          bitField0_ = (bitField0_ & ~0x00000004);
+          bitField0_ = (bitField0_ & ~0x00000001);
         } else {
           treeEvalBuilder_.clear();
         }
         return this;
       }
 
+      @Override
       public com.google.protobuf.Descriptors.Descriptor
           getDescriptorForType() {
         return FGBoostServiceProto.internal_static_fgboost_UploadTreeEvalRequest_descriptor;
       }
 
+      @Override
       public UploadTreeEvalRequest getDefaultInstanceForType() {
         return UploadTreeEvalRequest.getDefaultInstance();
       }
 
+      @Override
       public UploadTreeEvalRequest build() {
         UploadTreeEvalRequest result = buildPartial();
         if (!result.isInitialized()) {
@@ -9419,52 +10592,58 @@ public final class FGBoostServiceProto {
         return result;
       }
 
+      @Override
       public UploadTreeEvalRequest buildPartial() {
         UploadTreeEvalRequest result = new UploadTreeEvalRequest(this);
         int from_bitField0_ = bitField0_;
-        int to_bitField0_ = 0;
         result.clientuuid_ = clientuuid_;
         result.version_ = version_;
         if (treeEvalBuilder_ == null) {
-          if (((bitField0_ & 0x00000004) == 0x00000004)) {
+          if (((bitField0_ & 0x00000001) != 0)) {
             treeEval_ = java.util.Collections.unmodifiableList(treeEval_);
-            bitField0_ = (bitField0_ & ~0x00000004);
+            bitField0_ = (bitField0_ & ~0x00000001);
           }
           result.treeEval_ = treeEval_;
         } else {
           result.treeEval_ = treeEvalBuilder_.build();
         }
-        result.bitField0_ = to_bitField0_;
         onBuilt();
         return result;
       }
 
+      @Override
       public Builder clone() {
-        return (Builder) super.clone();
+        return super.clone();
       }
+      @Override
       public Builder setField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           Object value) {
-        return (Builder) super.setField(field, value);
+        return super.setField(field, value);
       }
+      @Override
       public Builder clearField(
           com.google.protobuf.Descriptors.FieldDescriptor field) {
-        return (Builder) super.clearField(field);
+        return super.clearField(field);
       }
+      @Override
       public Builder clearOneof(
           com.google.protobuf.Descriptors.OneofDescriptor oneof) {
-        return (Builder) super.clearOneof(oneof);
+        return super.clearOneof(oneof);
       }
+      @Override
       public Builder setRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           int index, Object value) {
-        return (Builder) super.setRepeatedField(field, index, value);
+        return super.setRepeatedField(field, index, value);
       }
+      @Override
       public Builder addRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           Object value) {
-        return (Builder) super.addRepeatedField(field, value);
+        return super.addRepeatedField(field, value);
       }
+      @Override
       public Builder mergeFrom(com.google.protobuf.Message other) {
         if (other instanceof UploadTreeEvalRequest) {
           return mergeFrom((UploadTreeEvalRequest)other);
@@ -9487,7 +10666,7 @@ public final class FGBoostServiceProto {
           if (!other.treeEval_.isEmpty()) {
             if (treeEval_.isEmpty()) {
               treeEval_ = other.treeEval_;
-              bitField0_ = (bitField0_ & ~0x00000004);
+              bitField0_ = (bitField0_ & ~0x00000001);
             } else {
               ensureTreeEvalIsMutable();
               treeEval_.addAll(other.treeEval_);
@@ -9500,7 +10679,7 @@ public final class FGBoostServiceProto {
               treeEvalBuilder_.dispose();
               treeEvalBuilder_ = null;
               treeEval_ = other.treeEval_;
-              bitField0_ = (bitField0_ & ~0x00000004);
+              bitField0_ = (bitField0_ & ~0x00000001);
               treeEvalBuilder_ = 
                 com.google.protobuf.GeneratedMessageV3.alwaysUseFieldBuilders ?
                    getTreeEvalFieldBuilder() : null;
@@ -9509,14 +10688,17 @@ public final class FGBoostServiceProto {
             }
           }
         }
+        this.mergeUnknownFields(other.unknownFields);
         onChanged();
         return this;
       }
 
+      @Override
       public final boolean isInitialized() {
         return true;
       }
 
+      @Override
       public Builder mergeFrom(
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
@@ -9538,7 +10720,8 @@ public final class FGBoostServiceProto {
 
       private Object clientuuid_ = "";
       /**
-       * <code>optional string clientuuid = 1;</code>
+       * <code>string clientuuid = 1;</code>
+       * @return The clientuuid.
        */
       public String getClientuuid() {
         Object ref = clientuuid_;
@@ -9553,7 +10736,8 @@ public final class FGBoostServiceProto {
         }
       }
       /**
-       * <code>optional string clientuuid = 1;</code>
+       * <code>string clientuuid = 1;</code>
+       * @return The bytes for clientuuid.
        */
       public com.google.protobuf.ByteString
           getClientuuidBytes() {
@@ -9569,7 +10753,9 @@ public final class FGBoostServiceProto {
         }
       }
       /**
-       * <code>optional string clientuuid = 1;</code>
+       * <code>string clientuuid = 1;</code>
+       * @param value The clientuuid to set.
+       * @return This builder for chaining.
        */
       public Builder setClientuuid(
           String value) {
@@ -9582,7 +10768,8 @@ public final class FGBoostServiceProto {
         return this;
       }
       /**
-       * <code>optional string clientuuid = 1;</code>
+       * <code>string clientuuid = 1;</code>
+       * @return This builder for chaining.
        */
       public Builder clearClientuuid() {
         
@@ -9591,7 +10778,9 @@ public final class FGBoostServiceProto {
         return this;
       }
       /**
-       * <code>optional string clientuuid = 1;</code>
+       * <code>string clientuuid = 1;</code>
+       * @param value The bytes for clientuuid to set.
+       * @return This builder for chaining.
        */
       public Builder setClientuuidBytes(
           com.google.protobuf.ByteString value) {
@@ -9607,13 +10796,17 @@ public final class FGBoostServiceProto {
 
       private int version_ ;
       /**
-       * <code>optional int32 version = 2;</code>
+       * <code>int32 version = 2;</code>
+       * @return The version.
        */
+      @Override
       public int getVersion() {
         return version_;
       }
       /**
-       * <code>optional int32 version = 2;</code>
+       * <code>int32 version = 2;</code>
+       * @param value The version to set.
+       * @return This builder for chaining.
        */
       public Builder setVersion(int value) {
         
@@ -9622,7 +10815,8 @@ public final class FGBoostServiceProto {
         return this;
       }
       /**
-       * <code>optional int32 version = 2;</code>
+       * <code>int32 version = 2;</code>
+       * @return This builder for chaining.
        */
       public Builder clearVersion() {
         
@@ -9634,9 +10828,9 @@ public final class FGBoostServiceProto {
       private java.util.List<BoostEval> treeEval_ =
         java.util.Collections.emptyList();
       private void ensureTreeEvalIsMutable() {
-        if (!((bitField0_ & 0x00000004) == 0x00000004)) {
+        if (!((bitField0_ & 0x00000001) != 0)) {
           treeEval_ = new java.util.ArrayList<BoostEval>(treeEval_);
-          bitField0_ |= 0x00000004;
+          bitField0_ |= 0x00000001;
          }
       }
 
@@ -9786,7 +10980,7 @@ public final class FGBoostServiceProto {
       public Builder clearTreeEval() {
         if (treeEvalBuilder_ == null) {
           treeEval_ = java.util.Collections.emptyList();
-          bitField0_ = (bitField0_ & ~0x00000004);
+          bitField0_ = (bitField0_ & ~0x00000001);
           onChanged();
         } else {
           treeEvalBuilder_.clear();
@@ -9863,21 +11057,23 @@ public final class FGBoostServiceProto {
           treeEvalBuilder_ = new com.google.protobuf.RepeatedFieldBuilderV3<
               BoostEval, BoostEval.Builder, BoostEvalOrBuilder>(
                   treeEval_,
-                  ((bitField0_ & 0x00000004) == 0x00000004),
+                  ((bitField0_ & 0x00000001) != 0),
                   getParentForChildren(),
                   isClean());
           treeEval_ = null;
         }
         return treeEvalBuilder_;
       }
+      @Override
       public final Builder setUnknownFields(
           final com.google.protobuf.UnknownFieldSet unknownFields) {
-        return this;
+        return super.setUnknownFields(unknownFields);
       }
 
+      @Override
       public final Builder mergeUnknownFields(
           final com.google.protobuf.UnknownFieldSet unknownFields) {
-        return this;
+        return super.mergeUnknownFields(unknownFields);
       }
 
 
@@ -9896,11 +11092,12 @@ public final class FGBoostServiceProto {
 
     private static final com.google.protobuf.Parser<UploadTreeEvalRequest>
         PARSER = new com.google.protobuf.AbstractParser<UploadTreeEvalRequest>() {
+      @Override
       public UploadTreeEvalRequest parsePartialFrom(
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws com.google.protobuf.InvalidProtocolBufferException {
-          return new UploadTreeEvalRequest(input, extensionRegistry);
+        return new UploadTreeEvalRequest(input, extensionRegistry);
       }
     };
 
@@ -9913,6 +11110,7 @@ public final class FGBoostServiceProto {
       return PARSER;
     }
 
+    @Override
     public UploadTreeEvalRequest getDefaultInstanceForType() {
       return DEFAULT_INSTANCE;
     }
@@ -9924,11 +11122,13 @@ public final class FGBoostServiceProto {
       com.google.protobuf.MessageOrBuilder {
 
     /**
-     * <code>optional string clientuuid = 1;</code>
+     * <code>string clientuuid = 1;</code>
+     * @return The clientuuid.
      */
     String getClientuuid();
     /**
-     * <code>optional string clientuuid = 1;</code>
+     * <code>string clientuuid = 1;</code>
+     * @return The bytes for clientuuid.
      */
     com.google.protobuf.ByteString
         getClientuuidBytes();
@@ -9955,20 +11155,28 @@ public final class FGBoostServiceProto {
      * <code>repeated .fgboost.BoostEval treeEval = 2;</code>
      */
     BoostEvalOrBuilder getTreeEvalOrBuilder(
-            int index);
+        int index);
 
     /**
-     * <code>optional int32 bsVersion = 3;</code>
+     * <code>int32 version = 3;</code>
+     * @return The version.
      */
-    int getBsVersion();
+    int getVersion();
+
+    /**
+     * <code>bool lastBatch = 4;</code>
+     * @return The lastBatch.
+     */
+    boolean getLastBatch();
   }
   /**
    * Protobuf type {@code fgboost.EvaluateRequest}
    */
-  public  static final class EvaluateRequest extends
+  public static final class EvaluateRequest extends
       com.google.protobuf.GeneratedMessageV3 implements
       // @@protoc_insertion_point(message_implements:fgboost.EvaluateRequest)
       EvaluateRequestOrBuilder {
+  private static final long serialVersionUID = 0L;
     // Use EvaluateRequest.newBuilder() to construct.
     private EvaluateRequest(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
       super(builder);
@@ -9976,20 +11184,31 @@ public final class FGBoostServiceProto {
     private EvaluateRequest() {
       clientuuid_ = "";
       treeEval_ = java.util.Collections.emptyList();
-      bsVersion_ = 0;
+    }
+
+    @Override
+    @SuppressWarnings({"unused"})
+    protected Object newInstance(
+        UnusedPrivateParameter unused) {
+      return new EvaluateRequest();
     }
 
     @Override
     public final com.google.protobuf.UnknownFieldSet
     getUnknownFields() {
-      return com.google.protobuf.UnknownFieldSet.getDefaultInstance();
+      return this.unknownFields;
     }
     private EvaluateRequest(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       this();
+      if (extensionRegistry == null) {
+        throw new NullPointerException();
+      }
       int mutable_bitField0_ = 0;
+      com.google.protobuf.UnknownFieldSet.Builder unknownFields =
+          com.google.protobuf.UnknownFieldSet.newBuilder();
       try {
         boolean done = false;
         while (!done) {
@@ -9998,12 +11217,6 @@ public final class FGBoostServiceProto {
             case 0:
               done = true;
               break;
-            default: {
-              if (!input.skipField(tag)) {
-                done = true;
-              }
-              break;
-            }
             case 10: {
               String s = input.readStringRequireUtf8();
 
@@ -10011,9 +11224,9 @@ public final class FGBoostServiceProto {
               break;
             }
             case 18: {
-              if (!((mutable_bitField0_ & 0x00000002) == 0x00000002)) {
+              if (!((mutable_bitField0_ & 0x00000001) != 0)) {
                 treeEval_ = new java.util.ArrayList<BoostEval>();
-                mutable_bitField0_ |= 0x00000002;
+                mutable_bitField0_ |= 0x00000001;
               }
               treeEval_.add(
                   input.readMessage(BoostEval.parser(), extensionRegistry));
@@ -10021,7 +11234,19 @@ public final class FGBoostServiceProto {
             }
             case 24: {
 
-              bsVersion_ = input.readInt32();
+              version_ = input.readInt32();
+              break;
+            }
+            case 32: {
+
+              lastBatch_ = input.readBool();
+              break;
+            }
+            default: {
+              if (!parseUnknownField(
+                  input, unknownFields, extensionRegistry, tag)) {
+                done = true;
+              }
               break;
             }
           }
@@ -10032,9 +11257,10 @@ public final class FGBoostServiceProto {
         throw new com.google.protobuf.InvalidProtocolBufferException(
             e).setUnfinishedMessage(this);
       } finally {
-        if (((mutable_bitField0_ & 0x00000002) == 0x00000002)) {
+        if (((mutable_bitField0_ & 0x00000001) != 0)) {
           treeEval_ = java.util.Collections.unmodifiableList(treeEval_);
         }
+        this.unknownFields = unknownFields.build();
         makeExtensionsImmutable();
       }
     }
@@ -10043,19 +11269,21 @@ public final class FGBoostServiceProto {
       return FGBoostServiceProto.internal_static_fgboost_EvaluateRequest_descriptor;
     }
 
-    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+    @Override
+    protected FieldAccessorTable
         internalGetFieldAccessorTable() {
       return FGBoostServiceProto.internal_static_fgboost_EvaluateRequest_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
               EvaluateRequest.class, Builder.class);
     }
 
-    private int bitField0_;
     public static final int CLIENTUUID_FIELD_NUMBER = 1;
     private volatile Object clientuuid_;
     /**
-     * <code>optional string clientuuid = 1;</code>
+     * <code>string clientuuid = 1;</code>
+     * @return The clientuuid.
      */
+    @Override
     public String getClientuuid() {
       Object ref = clientuuid_;
       if (ref instanceof String) {
@@ -10069,8 +11297,10 @@ public final class FGBoostServiceProto {
       }
     }
     /**
-     * <code>optional string clientuuid = 1;</code>
+     * <code>string clientuuid = 1;</code>
+     * @return The bytes for clientuuid.
      */
+    @Override
     public com.google.protobuf.ByteString
         getClientuuidBytes() {
       Object ref = clientuuid_;
@@ -10090,12 +11320,14 @@ public final class FGBoostServiceProto {
     /**
      * <code>repeated .fgboost.BoostEval treeEval = 2;</code>
      */
+    @Override
     public java.util.List<BoostEval> getTreeEvalList() {
       return treeEval_;
     }
     /**
      * <code>repeated .fgboost.BoostEval treeEval = 2;</code>
      */
+    @Override
     public java.util.List<? extends BoostEvalOrBuilder>
         getTreeEvalOrBuilderList() {
       return treeEval_;
@@ -10103,33 +11335,50 @@ public final class FGBoostServiceProto {
     /**
      * <code>repeated .fgboost.BoostEval treeEval = 2;</code>
      */
+    @Override
     public int getTreeEvalCount() {
       return treeEval_.size();
     }
     /**
      * <code>repeated .fgboost.BoostEval treeEval = 2;</code>
      */
+    @Override
     public BoostEval getTreeEval(int index) {
       return treeEval_.get(index);
     }
     /**
      * <code>repeated .fgboost.BoostEval treeEval = 2;</code>
      */
+    @Override
     public BoostEvalOrBuilder getTreeEvalOrBuilder(
         int index) {
       return treeEval_.get(index);
     }
 
-    public static final int BSVERSION_FIELD_NUMBER = 3;
-    private int bsVersion_;
+    public static final int VERSION_FIELD_NUMBER = 3;
+    private int version_;
     /**
-     * <code>optional int32 bsVersion = 3;</code>
+     * <code>int32 version = 3;</code>
+     * @return The version.
      */
-    public int getBsVersion() {
-      return bsVersion_;
+    @Override
+    public int getVersion() {
+      return version_;
+    }
+
+    public static final int LASTBATCH_FIELD_NUMBER = 4;
+    private boolean lastBatch_;
+    /**
+     * <code>bool lastBatch = 4;</code>
+     * @return The lastBatch.
+     */
+    @Override
+    public boolean getLastBatch() {
+      return lastBatch_;
     }
 
     private byte memoizedIsInitialized = -1;
+    @Override
     public final boolean isInitialized() {
       byte isInitialized = memoizedIsInitialized;
       if (isInitialized == 1) return true;
@@ -10139,6 +11388,7 @@ public final class FGBoostServiceProto {
       return true;
     }
 
+    @Override
     public void writeTo(com.google.protobuf.CodedOutputStream output)
                         throws java.io.IOException {
       if (!getClientuuidBytes().isEmpty()) {
@@ -10147,11 +11397,16 @@ public final class FGBoostServiceProto {
       for (int i = 0; i < treeEval_.size(); i++) {
         output.writeMessage(2, treeEval_.get(i));
       }
-      if (bsVersion_ != 0) {
-        output.writeInt32(3, bsVersion_);
+      if (version_ != 0) {
+        output.writeInt32(3, version_);
       }
+      if (lastBatch_ != false) {
+        output.writeBool(4, lastBatch_);
+      }
+      unknownFields.writeTo(output);
     }
 
+    @Override
     public int getSerializedSize() {
       int size = memoizedSize;
       if (size != -1) return size;
@@ -10164,15 +11419,19 @@ public final class FGBoostServiceProto {
         size += com.google.protobuf.CodedOutputStream
           .computeMessageSize(2, treeEval_.get(i));
       }
-      if (bsVersion_ != 0) {
+      if (version_ != 0) {
         size += com.google.protobuf.CodedOutputStream
-          .computeInt32Size(3, bsVersion_);
+          .computeInt32Size(3, version_);
       }
+      if (lastBatch_ != false) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeBoolSize(4, lastBatch_);
+      }
+      size += unknownFields.getSerializedSize();
       memoizedSize = size;
       return size;
     }
 
-    private static final long serialVersionUID = 0L;
     @Override
     public boolean equals(final Object obj) {
       if (obj == this) {
@@ -10183,14 +11442,16 @@ public final class FGBoostServiceProto {
       }
       EvaluateRequest other = (EvaluateRequest) obj;
 
-      boolean result = true;
-      result = result && getClientuuid()
-          .equals(other.getClientuuid());
-      result = result && getTreeEvalList()
-          .equals(other.getTreeEvalList());
-      result = result && (getBsVersion()
-          == other.getBsVersion());
-      return result;
+      if (!getClientuuid()
+          .equals(other.getClientuuid())) return false;
+      if (!getTreeEvalList()
+          .equals(other.getTreeEvalList())) return false;
+      if (getVersion()
+          != other.getVersion()) return false;
+      if (getLastBatch()
+          != other.getLastBatch()) return false;
+      if (!unknownFields.equals(other.unknownFields)) return false;
+      return true;
     }
 
     @Override
@@ -10199,20 +11460,34 @@ public final class FGBoostServiceProto {
         return memoizedHashCode;
       }
       int hash = 41;
-      hash = (19 * hash) + getDescriptorForType().hashCode();
+      hash = (19 * hash) + getDescriptor().hashCode();
       hash = (37 * hash) + CLIENTUUID_FIELD_NUMBER;
       hash = (53 * hash) + getClientuuid().hashCode();
       if (getTreeEvalCount() > 0) {
         hash = (37 * hash) + TREEEVAL_FIELD_NUMBER;
         hash = (53 * hash) + getTreeEvalList().hashCode();
       }
-      hash = (37 * hash) + BSVERSION_FIELD_NUMBER;
-      hash = (53 * hash) + getBsVersion();
+      hash = (37 * hash) + VERSION_FIELD_NUMBER;
+      hash = (53 * hash) + getVersion();
+      hash = (37 * hash) + LASTBATCH_FIELD_NUMBER;
+      hash = (53 * hash) + com.google.protobuf.Internal.hashBoolean(
+          getLastBatch());
       hash = (29 * hash) + unknownFields.hashCode();
       memoizedHashCode = hash;
       return hash;
     }
 
+    public static EvaluateRequest parseFrom(
+        java.nio.ByteBuffer data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static EvaluateRequest parseFrom(
+        java.nio.ByteBuffer data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
     public static EvaluateRequest parseFrom(
         com.google.protobuf.ByteString data)
         throws com.google.protobuf.InvalidProtocolBufferException {
@@ -10272,6 +11547,7 @@ public final class FGBoostServiceProto {
           .parseWithIOException(PARSER, input, extensionRegistry);
     }
 
+    @Override
     public Builder newBuilderForType() { return newBuilder(); }
     public static Builder newBuilder() {
       return DEFAULT_INSTANCE.toBuilder();
@@ -10279,6 +11555,7 @@ public final class FGBoostServiceProto {
     public static Builder newBuilder(EvaluateRequest prototype) {
       return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
     }
+    @Override
     public Builder toBuilder() {
       return this == DEFAULT_INSTANCE
           ? new Builder() : new Builder().mergeFrom(this);
@@ -10286,7 +11563,7 @@ public final class FGBoostServiceProto {
 
     @Override
     protected Builder newBuilderForType(
-        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+        BuilderParent parent) {
       Builder builder = new Builder(parent);
       return builder;
     }
@@ -10302,7 +11579,8 @@ public final class FGBoostServiceProto {
         return FGBoostServiceProto.internal_static_fgboost_EvaluateRequest_descriptor;
       }
 
-      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+      @Override
+      protected FieldAccessorTable
           internalGetFieldAccessorTable() {
         return FGBoostServiceProto.internal_static_fgboost_EvaluateRequest_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
@@ -10315,7 +11593,7 @@ public final class FGBoostServiceProto {
       }
 
       private Builder(
-          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+          BuilderParent parent) {
         super(parent);
         maybeForceBuilderInitialization();
       }
@@ -10325,30 +11603,36 @@ public final class FGBoostServiceProto {
           getTreeEvalFieldBuilder();
         }
       }
+      @Override
       public Builder clear() {
         super.clear();
         clientuuid_ = "";
 
         if (treeEvalBuilder_ == null) {
           treeEval_ = java.util.Collections.emptyList();
-          bitField0_ = (bitField0_ & ~0x00000002);
+          bitField0_ = (bitField0_ & ~0x00000001);
         } else {
           treeEvalBuilder_.clear();
         }
-        bsVersion_ = 0;
+        version_ = 0;
+
+        lastBatch_ = false;
 
         return this;
       }
 
+      @Override
       public com.google.protobuf.Descriptors.Descriptor
           getDescriptorForType() {
         return FGBoostServiceProto.internal_static_fgboost_EvaluateRequest_descriptor;
       }
 
+      @Override
       public EvaluateRequest getDefaultInstanceForType() {
         return EvaluateRequest.getDefaultInstance();
       }
 
+      @Override
       public EvaluateRequest build() {
         EvaluateRequest result = buildPartial();
         if (!result.isInitialized()) {
@@ -10357,52 +11641,59 @@ public final class FGBoostServiceProto {
         return result;
       }
 
+      @Override
       public EvaluateRequest buildPartial() {
         EvaluateRequest result = new EvaluateRequest(this);
         int from_bitField0_ = bitField0_;
-        int to_bitField0_ = 0;
         result.clientuuid_ = clientuuid_;
         if (treeEvalBuilder_ == null) {
-          if (((bitField0_ & 0x00000002) == 0x00000002)) {
+          if (((bitField0_ & 0x00000001) != 0)) {
             treeEval_ = java.util.Collections.unmodifiableList(treeEval_);
-            bitField0_ = (bitField0_ & ~0x00000002);
+            bitField0_ = (bitField0_ & ~0x00000001);
           }
           result.treeEval_ = treeEval_;
         } else {
           result.treeEval_ = treeEvalBuilder_.build();
         }
-        result.bsVersion_ = bsVersion_;
-        result.bitField0_ = to_bitField0_;
+        result.version_ = version_;
+        result.lastBatch_ = lastBatch_;
         onBuilt();
         return result;
       }
 
+      @Override
       public Builder clone() {
-        return (Builder) super.clone();
+        return super.clone();
       }
+      @Override
       public Builder setField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           Object value) {
-        return (Builder) super.setField(field, value);
+        return super.setField(field, value);
       }
+      @Override
       public Builder clearField(
           com.google.protobuf.Descriptors.FieldDescriptor field) {
-        return (Builder) super.clearField(field);
+        return super.clearField(field);
       }
+      @Override
       public Builder clearOneof(
           com.google.protobuf.Descriptors.OneofDescriptor oneof) {
-        return (Builder) super.clearOneof(oneof);
+        return super.clearOneof(oneof);
       }
+      @Override
       public Builder setRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           int index, Object value) {
-        return (Builder) super.setRepeatedField(field, index, value);
+        return super.setRepeatedField(field, index, value);
       }
+      @Override
       public Builder addRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           Object value) {
-        return (Builder) super.addRepeatedField(field, value);
+        return super.addRepeatedField(field, value);
       }
+      @Override
       public Builder mergeFrom(com.google.protobuf.Message other) {
         if (other instanceof EvaluateRequest) {
           return mergeFrom((EvaluateRequest)other);
@@ -10422,7 +11713,7 @@ public final class FGBoostServiceProto {
           if (!other.treeEval_.isEmpty()) {
             if (treeEval_.isEmpty()) {
               treeEval_ = other.treeEval_;
-              bitField0_ = (bitField0_ & ~0x00000002);
+              bitField0_ = (bitField0_ & ~0x00000001);
             } else {
               ensureTreeEvalIsMutable();
               treeEval_.addAll(other.treeEval_);
@@ -10435,7 +11726,7 @@ public final class FGBoostServiceProto {
               treeEvalBuilder_.dispose();
               treeEvalBuilder_ = null;
               treeEval_ = other.treeEval_;
-              bitField0_ = (bitField0_ & ~0x00000002);
+              bitField0_ = (bitField0_ & ~0x00000001);
               treeEvalBuilder_ = 
                 com.google.protobuf.GeneratedMessageV3.alwaysUseFieldBuilders ?
                    getTreeEvalFieldBuilder() : null;
@@ -10444,17 +11735,23 @@ public final class FGBoostServiceProto {
             }
           }
         }
-        if (other.getBsVersion() != 0) {
-          setBsVersion(other.getBsVersion());
+        if (other.getVersion() != 0) {
+          setVersion(other.getVersion());
         }
+        if (other.getLastBatch() != false) {
+          setLastBatch(other.getLastBatch());
+        }
+        this.mergeUnknownFields(other.unknownFields);
         onChanged();
         return this;
       }
 
+      @Override
       public final boolean isInitialized() {
         return true;
       }
 
+      @Override
       public Builder mergeFrom(
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
@@ -10476,7 +11773,8 @@ public final class FGBoostServiceProto {
 
       private Object clientuuid_ = "";
       /**
-       * <code>optional string clientuuid = 1;</code>
+       * <code>string clientuuid = 1;</code>
+       * @return The clientuuid.
        */
       public String getClientuuid() {
         Object ref = clientuuid_;
@@ -10491,7 +11789,8 @@ public final class FGBoostServiceProto {
         }
       }
       /**
-       * <code>optional string clientuuid = 1;</code>
+       * <code>string clientuuid = 1;</code>
+       * @return The bytes for clientuuid.
        */
       public com.google.protobuf.ByteString
           getClientuuidBytes() {
@@ -10507,7 +11806,9 @@ public final class FGBoostServiceProto {
         }
       }
       /**
-       * <code>optional string clientuuid = 1;</code>
+       * <code>string clientuuid = 1;</code>
+       * @param value The clientuuid to set.
+       * @return This builder for chaining.
        */
       public Builder setClientuuid(
           String value) {
@@ -10520,7 +11821,8 @@ public final class FGBoostServiceProto {
         return this;
       }
       /**
-       * <code>optional string clientuuid = 1;</code>
+       * <code>string clientuuid = 1;</code>
+       * @return This builder for chaining.
        */
       public Builder clearClientuuid() {
         
@@ -10529,7 +11831,9 @@ public final class FGBoostServiceProto {
         return this;
       }
       /**
-       * <code>optional string clientuuid = 1;</code>
+       * <code>string clientuuid = 1;</code>
+       * @param value The bytes for clientuuid to set.
+       * @return This builder for chaining.
        */
       public Builder setClientuuidBytes(
           com.google.protobuf.ByteString value) {
@@ -10546,9 +11850,9 @@ public final class FGBoostServiceProto {
       private java.util.List<BoostEval> treeEval_ =
         java.util.Collections.emptyList();
       private void ensureTreeEvalIsMutable() {
-        if (!((bitField0_ & 0x00000002) == 0x00000002)) {
+        if (!((bitField0_ & 0x00000001) != 0)) {
           treeEval_ = new java.util.ArrayList<BoostEval>(treeEval_);
-          bitField0_ |= 0x00000002;
+          bitField0_ |= 0x00000001;
          }
       }
 
@@ -10698,7 +12002,7 @@ public final class FGBoostServiceProto {
       public Builder clearTreeEval() {
         if (treeEvalBuilder_ == null) {
           treeEval_ = java.util.Collections.emptyList();
-          bitField0_ = (bitField0_ & ~0x00000002);
+          bitField0_ = (bitField0_ & ~0x00000001);
           onChanged();
         } else {
           treeEvalBuilder_.clear();
@@ -10775,7 +12079,7 @@ public final class FGBoostServiceProto {
           treeEvalBuilder_ = new com.google.protobuf.RepeatedFieldBuilderV3<
               BoostEval, BoostEval.Builder, BoostEvalOrBuilder>(
                   treeEval_,
-                  ((bitField0_ & 0x00000002) == 0x00000002),
+                  ((bitField0_ & 0x00000001) != 0),
                   getParentForChildren(),
                   isClean());
           treeEval_ = null;
@@ -10783,39 +12087,77 @@ public final class FGBoostServiceProto {
         return treeEvalBuilder_;
       }
 
-      private int bsVersion_ ;
+      private int version_ ;
       /**
-       * <code>optional int32 bsVersion = 3;</code>
+       * <code>int32 version = 3;</code>
+       * @return The version.
        */
-      public int getBsVersion() {
-        return bsVersion_;
+      @Override
+      public int getVersion() {
+        return version_;
       }
       /**
-       * <code>optional int32 bsVersion = 3;</code>
+       * <code>int32 version = 3;</code>
+       * @param value The version to set.
+       * @return This builder for chaining.
        */
-      public Builder setBsVersion(int value) {
+      public Builder setVersion(int value) {
         
-        bsVersion_ = value;
+        version_ = value;
         onChanged();
         return this;
       }
       /**
-       * <code>optional int32 bsVersion = 3;</code>
+       * <code>int32 version = 3;</code>
+       * @return This builder for chaining.
        */
-      public Builder clearBsVersion() {
+      public Builder clearVersion() {
         
-        bsVersion_ = 0;
+        version_ = 0;
         onChanged();
-        return this;
-      }
-      public final Builder setUnknownFields(
-          final com.google.protobuf.UnknownFieldSet unknownFields) {
         return this;
       }
 
+      private boolean lastBatch_ ;
+      /**
+       * <code>bool lastBatch = 4;</code>
+       * @return The lastBatch.
+       */
+      @Override
+      public boolean getLastBatch() {
+        return lastBatch_;
+      }
+      /**
+       * <code>bool lastBatch = 4;</code>
+       * @param value The lastBatch to set.
+       * @return This builder for chaining.
+       */
+      public Builder setLastBatch(boolean value) {
+        
+        lastBatch_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>bool lastBatch = 4;</code>
+       * @return This builder for chaining.
+       */
+      public Builder clearLastBatch() {
+        
+        lastBatch_ = false;
+        onChanged();
+        return this;
+      }
+      @Override
+      public final Builder setUnknownFields(
+          final com.google.protobuf.UnknownFieldSet unknownFields) {
+        return super.setUnknownFields(unknownFields);
+      }
+
+      @Override
       public final Builder mergeUnknownFields(
           final com.google.protobuf.UnknownFieldSet unknownFields) {
-        return this;
+        return super.mergeUnknownFields(unknownFields);
       }
 
 
@@ -10834,11 +12176,12 @@ public final class FGBoostServiceProto {
 
     private static final com.google.protobuf.Parser<EvaluateRequest>
         PARSER = new com.google.protobuf.AbstractParser<EvaluateRequest>() {
+      @Override
       public EvaluateRequest parsePartialFrom(
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws com.google.protobuf.InvalidProtocolBufferException {
-          return new EvaluateRequest(input, extensionRegistry);
+        return new EvaluateRequest(input, extensionRegistry);
       }
     };
 
@@ -10851,6 +12194,7 @@ public final class FGBoostServiceProto {
       return PARSER;
     }
 
+    @Override
     public EvaluateRequest getDefaultInstanceForType() {
       return DEFAULT_INSTANCE;
     }
@@ -10862,39 +12206,46 @@ public final class FGBoostServiceProto {
       com.google.protobuf.MessageOrBuilder {
 
     /**
-     * <code>optional string response = 1;</code>
+     * <code>string response = 1;</code>
+     * @return The response.
      */
     String getResponse();
     /**
-     * <code>optional string response = 1;</code>
+     * <code>string response = 1;</code>
+     * @return The bytes for response.
      */
     com.google.protobuf.ByteString
         getResponseBytes();
 
     /**
-     * <code>optional .TensorMap data = 2;</code>
+     * <code>.TensorMap data = 2;</code>
+     * @return Whether the data field is set.
      */
     boolean hasData();
     /**
-     * <code>optional .TensorMap data = 2;</code>
+     * <code>.TensorMap data = 2;</code>
+     * @return The data.
      */
     FlBaseProto.TensorMap getData();
     /**
-     * <code>optional .TensorMap data = 2;</code>
+     * <code>.TensorMap data = 2;</code>
      */
     FlBaseProto.TensorMapOrBuilder getDataOrBuilder();
 
     /**
-     * <code>optional int32 code = 3;</code>
+     * <code>int32 code = 3;</code>
+     * @return The code.
      */
     int getCode();
 
     /**
-     * <code>optional string message = 4;</code>
+     * <code>string message = 4;</code>
+     * @return The message.
      */
     String getMessage();
     /**
-     * <code>optional string message = 4;</code>
+     * <code>string message = 4;</code>
+     * @return The bytes for message.
      */
     com.google.protobuf.ByteString
         getMessageBytes();
@@ -10902,31 +12253,42 @@ public final class FGBoostServiceProto {
   /**
    * Protobuf type {@code fgboost.EvaluateResponse}
    */
-  public  static final class EvaluateResponse extends
+  public static final class EvaluateResponse extends
       com.google.protobuf.GeneratedMessageV3 implements
       // @@protoc_insertion_point(message_implements:fgboost.EvaluateResponse)
       EvaluateResponseOrBuilder {
+  private static final long serialVersionUID = 0L;
     // Use EvaluateResponse.newBuilder() to construct.
     private EvaluateResponse(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
       super(builder);
     }
     private EvaluateResponse() {
       response_ = "";
-      code_ = 0;
       message_ = "";
+    }
+
+    @Override
+    @SuppressWarnings({"unused"})
+    protected Object newInstance(
+        UnusedPrivateParameter unused) {
+      return new EvaluateResponse();
     }
 
     @Override
     public final com.google.protobuf.UnknownFieldSet
     getUnknownFields() {
-      return com.google.protobuf.UnknownFieldSet.getDefaultInstance();
+      return this.unknownFields;
     }
     private EvaluateResponse(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       this();
-      int mutable_bitField0_ = 0;
+      if (extensionRegistry == null) {
+        throw new NullPointerException();
+      }
+      com.google.protobuf.UnknownFieldSet.Builder unknownFields =
+          com.google.protobuf.UnknownFieldSet.newBuilder();
       try {
         boolean done = false;
         while (!done) {
@@ -10935,12 +12297,6 @@ public final class FGBoostServiceProto {
             case 0:
               done = true;
               break;
-            default: {
-              if (!input.skipField(tag)) {
-                done = true;
-              }
-              break;
-            }
             case 10: {
               String s = input.readStringRequireUtf8();
 
@@ -10971,6 +12327,13 @@ public final class FGBoostServiceProto {
               message_ = s;
               break;
             }
+            default: {
+              if (!parseUnknownField(
+                  input, unknownFields, extensionRegistry, tag)) {
+                done = true;
+              }
+              break;
+            }
           }
         }
       } catch (com.google.protobuf.InvalidProtocolBufferException e) {
@@ -10979,6 +12342,7 @@ public final class FGBoostServiceProto {
         throw new com.google.protobuf.InvalidProtocolBufferException(
             e).setUnfinishedMessage(this);
       } finally {
+        this.unknownFields = unknownFields.build();
         makeExtensionsImmutable();
       }
     }
@@ -10987,7 +12351,8 @@ public final class FGBoostServiceProto {
       return FGBoostServiceProto.internal_static_fgboost_EvaluateResponse_descriptor;
     }
 
-    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+    @Override
+    protected FieldAccessorTable
         internalGetFieldAccessorTable() {
       return FGBoostServiceProto.internal_static_fgboost_EvaluateResponse_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
@@ -10997,8 +12362,10 @@ public final class FGBoostServiceProto {
     public static final int RESPONSE_FIELD_NUMBER = 1;
     private volatile Object response_;
     /**
-     * <code>optional string response = 1;</code>
+     * <code>string response = 1;</code>
+     * @return The response.
      */
+    @Override
     public String getResponse() {
       Object ref = response_;
       if (ref instanceof String) {
@@ -11012,8 +12379,10 @@ public final class FGBoostServiceProto {
       }
     }
     /**
-     * <code>optional string response = 1;</code>
+     * <code>string response = 1;</code>
+     * @return The bytes for response.
      */
+    @Override
     public com.google.protobuf.ByteString
         getResponseBytes() {
       Object ref = response_;
@@ -11031,20 +12400,25 @@ public final class FGBoostServiceProto {
     public static final int DATA_FIELD_NUMBER = 2;
     private FlBaseProto.TensorMap data_;
     /**
-     * <code>optional .TensorMap data = 2;</code>
+     * <code>.TensorMap data = 2;</code>
+     * @return Whether the data field is set.
      */
+    @Override
     public boolean hasData() {
       return data_ != null;
     }
     /**
-     * <code>optional .TensorMap data = 2;</code>
+     * <code>.TensorMap data = 2;</code>
+     * @return The data.
      */
+    @Override
     public FlBaseProto.TensorMap getData() {
       return data_ == null ? FlBaseProto.TensorMap.getDefaultInstance() : data_;
     }
     /**
-     * <code>optional .TensorMap data = 2;</code>
+     * <code>.TensorMap data = 2;</code>
      */
+    @Override
     public FlBaseProto.TensorMapOrBuilder getDataOrBuilder() {
       return getData();
     }
@@ -11052,8 +12426,10 @@ public final class FGBoostServiceProto {
     public static final int CODE_FIELD_NUMBER = 3;
     private int code_;
     /**
-     * <code>optional int32 code = 3;</code>
+     * <code>int32 code = 3;</code>
+     * @return The code.
      */
+    @Override
     public int getCode() {
       return code_;
     }
@@ -11061,8 +12437,10 @@ public final class FGBoostServiceProto {
     public static final int MESSAGE_FIELD_NUMBER = 4;
     private volatile Object message_;
     /**
-     * <code>optional string message = 4;</code>
+     * <code>string message = 4;</code>
+     * @return The message.
      */
+    @Override
     public String getMessage() {
       Object ref = message_;
       if (ref instanceof String) {
@@ -11076,8 +12454,10 @@ public final class FGBoostServiceProto {
       }
     }
     /**
-     * <code>optional string message = 4;</code>
+     * <code>string message = 4;</code>
+     * @return The bytes for message.
      */
+    @Override
     public com.google.protobuf.ByteString
         getMessageBytes() {
       Object ref = message_;
@@ -11093,6 +12473,7 @@ public final class FGBoostServiceProto {
     }
 
     private byte memoizedIsInitialized = -1;
+    @Override
     public final boolean isInitialized() {
       byte isInitialized = memoizedIsInitialized;
       if (isInitialized == 1) return true;
@@ -11102,6 +12483,7 @@ public final class FGBoostServiceProto {
       return true;
     }
 
+    @Override
     public void writeTo(com.google.protobuf.CodedOutputStream output)
                         throws java.io.IOException {
       if (!getResponseBytes().isEmpty()) {
@@ -11116,8 +12498,10 @@ public final class FGBoostServiceProto {
       if (!getMessageBytes().isEmpty()) {
         com.google.protobuf.GeneratedMessageV3.writeString(output, 4, message_);
       }
+      unknownFields.writeTo(output);
     }
 
+    @Override
     public int getSerializedSize() {
       int size = memoizedSize;
       if (size != -1) return size;
@@ -11137,11 +12521,11 @@ public final class FGBoostServiceProto {
       if (!getMessageBytes().isEmpty()) {
         size += com.google.protobuf.GeneratedMessageV3.computeStringSize(4, message_);
       }
+      size += unknownFields.getSerializedSize();
       memoizedSize = size;
       return size;
     }
 
-    private static final long serialVersionUID = 0L;
     @Override
     public boolean equals(final Object obj) {
       if (obj == this) {
@@ -11152,19 +12536,19 @@ public final class FGBoostServiceProto {
       }
       EvaluateResponse other = (EvaluateResponse) obj;
 
-      boolean result = true;
-      result = result && getResponse()
-          .equals(other.getResponse());
-      result = result && (hasData() == other.hasData());
+      if (!getResponse()
+          .equals(other.getResponse())) return false;
+      if (hasData() != other.hasData()) return false;
       if (hasData()) {
-        result = result && getData()
-            .equals(other.getData());
+        if (!getData()
+            .equals(other.getData())) return false;
       }
-      result = result && (getCode()
-          == other.getCode());
-      result = result && getMessage()
-          .equals(other.getMessage());
-      return result;
+      if (getCode()
+          != other.getCode()) return false;
+      if (!getMessage()
+          .equals(other.getMessage())) return false;
+      if (!unknownFields.equals(other.unknownFields)) return false;
+      return true;
     }
 
     @Override
@@ -11173,7 +12557,7 @@ public final class FGBoostServiceProto {
         return memoizedHashCode;
       }
       int hash = 41;
-      hash = (19 * hash) + getDescriptorForType().hashCode();
+      hash = (19 * hash) + getDescriptor().hashCode();
       hash = (37 * hash) + RESPONSE_FIELD_NUMBER;
       hash = (53 * hash) + getResponse().hashCode();
       if (hasData()) {
@@ -11189,6 +12573,17 @@ public final class FGBoostServiceProto {
       return hash;
     }
 
+    public static EvaluateResponse parseFrom(
+        java.nio.ByteBuffer data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static EvaluateResponse parseFrom(
+        java.nio.ByteBuffer data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
     public static EvaluateResponse parseFrom(
         com.google.protobuf.ByteString data)
         throws com.google.protobuf.InvalidProtocolBufferException {
@@ -11248,6 +12643,7 @@ public final class FGBoostServiceProto {
           .parseWithIOException(PARSER, input, extensionRegistry);
     }
 
+    @Override
     public Builder newBuilderForType() { return newBuilder(); }
     public static Builder newBuilder() {
       return DEFAULT_INSTANCE.toBuilder();
@@ -11255,6 +12651,7 @@ public final class FGBoostServiceProto {
     public static Builder newBuilder(EvaluateResponse prototype) {
       return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
     }
+    @Override
     public Builder toBuilder() {
       return this == DEFAULT_INSTANCE
           ? new Builder() : new Builder().mergeFrom(this);
@@ -11262,7 +12659,7 @@ public final class FGBoostServiceProto {
 
     @Override
     protected Builder newBuilderForType(
-        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+        BuilderParent parent) {
       Builder builder = new Builder(parent);
       return builder;
     }
@@ -11278,7 +12675,8 @@ public final class FGBoostServiceProto {
         return FGBoostServiceProto.internal_static_fgboost_EvaluateResponse_descriptor;
       }
 
-      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+      @Override
+      protected FieldAccessorTable
           internalGetFieldAccessorTable() {
         return FGBoostServiceProto.internal_static_fgboost_EvaluateResponse_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
@@ -11291,7 +12689,7 @@ public final class FGBoostServiceProto {
       }
 
       private Builder(
-          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+          BuilderParent parent) {
         super(parent);
         maybeForceBuilderInitialization();
       }
@@ -11300,6 +12698,7 @@ public final class FGBoostServiceProto {
                 .alwaysUseFieldBuilders) {
         }
       }
+      @Override
       public Builder clear() {
         super.clear();
         response_ = "";
@@ -11317,15 +12716,18 @@ public final class FGBoostServiceProto {
         return this;
       }
 
+      @Override
       public com.google.protobuf.Descriptors.Descriptor
           getDescriptorForType() {
         return FGBoostServiceProto.internal_static_fgboost_EvaluateResponse_descriptor;
       }
 
+      @Override
       public EvaluateResponse getDefaultInstanceForType() {
         return EvaluateResponse.getDefaultInstance();
       }
 
+      @Override
       public EvaluateResponse build() {
         EvaluateResponse result = buildPartial();
         if (!result.isInitialized()) {
@@ -11334,6 +12736,7 @@ public final class FGBoostServiceProto {
         return result;
       }
 
+      @Override
       public EvaluateResponse buildPartial() {
         EvaluateResponse result = new EvaluateResponse(this);
         result.response_ = response_;
@@ -11348,32 +12751,39 @@ public final class FGBoostServiceProto {
         return result;
       }
 
+      @Override
       public Builder clone() {
-        return (Builder) super.clone();
+        return super.clone();
       }
+      @Override
       public Builder setField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           Object value) {
-        return (Builder) super.setField(field, value);
+        return super.setField(field, value);
       }
+      @Override
       public Builder clearField(
           com.google.protobuf.Descriptors.FieldDescriptor field) {
-        return (Builder) super.clearField(field);
+        return super.clearField(field);
       }
+      @Override
       public Builder clearOneof(
           com.google.protobuf.Descriptors.OneofDescriptor oneof) {
-        return (Builder) super.clearOneof(oneof);
+        return super.clearOneof(oneof);
       }
+      @Override
       public Builder setRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           int index, Object value) {
-        return (Builder) super.setRepeatedField(field, index, value);
+        return super.setRepeatedField(field, index, value);
       }
+      @Override
       public Builder addRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           Object value) {
-        return (Builder) super.addRepeatedField(field, value);
+        return super.addRepeatedField(field, value);
       }
+      @Override
       public Builder mergeFrom(com.google.protobuf.Message other) {
         if (other instanceof EvaluateResponse) {
           return mergeFrom((EvaluateResponse)other);
@@ -11399,14 +12809,17 @@ public final class FGBoostServiceProto {
           message_ = other.message_;
           onChanged();
         }
+        this.mergeUnknownFields(other.unknownFields);
         onChanged();
         return this;
       }
 
+      @Override
       public final boolean isInitialized() {
         return true;
       }
 
+      @Override
       public Builder mergeFrom(
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
@@ -11427,7 +12840,8 @@ public final class FGBoostServiceProto {
 
       private Object response_ = "";
       /**
-       * <code>optional string response = 1;</code>
+       * <code>string response = 1;</code>
+       * @return The response.
        */
       public String getResponse() {
         Object ref = response_;
@@ -11442,7 +12856,8 @@ public final class FGBoostServiceProto {
         }
       }
       /**
-       * <code>optional string response = 1;</code>
+       * <code>string response = 1;</code>
+       * @return The bytes for response.
        */
       public com.google.protobuf.ByteString
           getResponseBytes() {
@@ -11458,7 +12873,9 @@ public final class FGBoostServiceProto {
         }
       }
       /**
-       * <code>optional string response = 1;</code>
+       * <code>string response = 1;</code>
+       * @param value The response to set.
+       * @return This builder for chaining.
        */
       public Builder setResponse(
           String value) {
@@ -11471,7 +12888,8 @@ public final class FGBoostServiceProto {
         return this;
       }
       /**
-       * <code>optional string response = 1;</code>
+       * <code>string response = 1;</code>
+       * @return This builder for chaining.
        */
       public Builder clearResponse() {
         
@@ -11480,7 +12898,9 @@ public final class FGBoostServiceProto {
         return this;
       }
       /**
-       * <code>optional string response = 1;</code>
+       * <code>string response = 1;</code>
+       * @param value The bytes for response to set.
+       * @return This builder for chaining.
        */
       public Builder setResponseBytes(
           com.google.protobuf.ByteString value) {
@@ -11494,17 +12914,19 @@ public final class FGBoostServiceProto {
         return this;
       }
 
-      private FlBaseProto.TensorMap data_ = null;
+      private FlBaseProto.TensorMap data_;
       private com.google.protobuf.SingleFieldBuilderV3<
           FlBaseProto.TensorMap, FlBaseProto.TensorMap.Builder, FlBaseProto.TensorMapOrBuilder> dataBuilder_;
       /**
-       * <code>optional .TensorMap data = 2;</code>
+       * <code>.TensorMap data = 2;</code>
+       * @return Whether the data field is set.
        */
       public boolean hasData() {
         return dataBuilder_ != null || data_ != null;
       }
       /**
-       * <code>optional .TensorMap data = 2;</code>
+       * <code>.TensorMap data = 2;</code>
+       * @return The data.
        */
       public FlBaseProto.TensorMap getData() {
         if (dataBuilder_ == null) {
@@ -11514,7 +12936,7 @@ public final class FGBoostServiceProto {
         }
       }
       /**
-       * <code>optional .TensorMap data = 2;</code>
+       * <code>.TensorMap data = 2;</code>
        */
       public Builder setData(FlBaseProto.TensorMap value) {
         if (dataBuilder_ == null) {
@@ -11530,7 +12952,7 @@ public final class FGBoostServiceProto {
         return this;
       }
       /**
-       * <code>optional .TensorMap data = 2;</code>
+       * <code>.TensorMap data = 2;</code>
        */
       public Builder setData(
           FlBaseProto.TensorMap.Builder builderForValue) {
@@ -11544,7 +12966,7 @@ public final class FGBoostServiceProto {
         return this;
       }
       /**
-       * <code>optional .TensorMap data = 2;</code>
+       * <code>.TensorMap data = 2;</code>
        */
       public Builder mergeData(FlBaseProto.TensorMap value) {
         if (dataBuilder_ == null) {
@@ -11562,7 +12984,7 @@ public final class FGBoostServiceProto {
         return this;
       }
       /**
-       * <code>optional .TensorMap data = 2;</code>
+       * <code>.TensorMap data = 2;</code>
        */
       public Builder clearData() {
         if (dataBuilder_ == null) {
@@ -11576,7 +12998,7 @@ public final class FGBoostServiceProto {
         return this;
       }
       /**
-       * <code>optional .TensorMap data = 2;</code>
+       * <code>.TensorMap data = 2;</code>
        */
       public FlBaseProto.TensorMap.Builder getDataBuilder() {
         
@@ -11584,7 +13006,7 @@ public final class FGBoostServiceProto {
         return getDataFieldBuilder().getBuilder();
       }
       /**
-       * <code>optional .TensorMap data = 2;</code>
+       * <code>.TensorMap data = 2;</code>
        */
       public FlBaseProto.TensorMapOrBuilder getDataOrBuilder() {
         if (dataBuilder_ != null) {
@@ -11595,7 +13017,7 @@ public final class FGBoostServiceProto {
         }
       }
       /**
-       * <code>optional .TensorMap data = 2;</code>
+       * <code>.TensorMap data = 2;</code>
        */
       private com.google.protobuf.SingleFieldBuilderV3<
           FlBaseProto.TensorMap, FlBaseProto.TensorMap.Builder, FlBaseProto.TensorMapOrBuilder>
@@ -11613,13 +13035,17 @@ public final class FGBoostServiceProto {
 
       private int code_ ;
       /**
-       * <code>optional int32 code = 3;</code>
+       * <code>int32 code = 3;</code>
+       * @return The code.
        */
+      @Override
       public int getCode() {
         return code_;
       }
       /**
-       * <code>optional int32 code = 3;</code>
+       * <code>int32 code = 3;</code>
+       * @param value The code to set.
+       * @return This builder for chaining.
        */
       public Builder setCode(int value) {
         
@@ -11628,7 +13054,8 @@ public final class FGBoostServiceProto {
         return this;
       }
       /**
-       * <code>optional int32 code = 3;</code>
+       * <code>int32 code = 3;</code>
+       * @return This builder for chaining.
        */
       public Builder clearCode() {
         
@@ -11639,7 +13066,8 @@ public final class FGBoostServiceProto {
 
       private Object message_ = "";
       /**
-       * <code>optional string message = 4;</code>
+       * <code>string message = 4;</code>
+       * @return The message.
        */
       public String getMessage() {
         Object ref = message_;
@@ -11654,7 +13082,8 @@ public final class FGBoostServiceProto {
         }
       }
       /**
-       * <code>optional string message = 4;</code>
+       * <code>string message = 4;</code>
+       * @return The bytes for message.
        */
       public com.google.protobuf.ByteString
           getMessageBytes() {
@@ -11670,7 +13099,9 @@ public final class FGBoostServiceProto {
         }
       }
       /**
-       * <code>optional string message = 4;</code>
+       * <code>string message = 4;</code>
+       * @param value The message to set.
+       * @return This builder for chaining.
        */
       public Builder setMessage(
           String value) {
@@ -11683,7 +13114,8 @@ public final class FGBoostServiceProto {
         return this;
       }
       /**
-       * <code>optional string message = 4;</code>
+       * <code>string message = 4;</code>
+       * @return This builder for chaining.
        */
       public Builder clearMessage() {
         
@@ -11692,7 +13124,9 @@ public final class FGBoostServiceProto {
         return this;
       }
       /**
-       * <code>optional string message = 4;</code>
+       * <code>string message = 4;</code>
+       * @param value The bytes for message to set.
+       * @return This builder for chaining.
        */
       public Builder setMessageBytes(
           com.google.protobuf.ByteString value) {
@@ -11705,14 +13139,16 @@ public final class FGBoostServiceProto {
         onChanged();
         return this;
       }
+      @Override
       public final Builder setUnknownFields(
           final com.google.protobuf.UnknownFieldSet unknownFields) {
-        return this;
+        return super.setUnknownFields(unknownFields);
       }
 
+      @Override
       public final Builder mergeUnknownFields(
           final com.google.protobuf.UnknownFieldSet unknownFields) {
-        return this;
+        return super.mergeUnknownFields(unknownFields);
       }
 
 
@@ -11731,11 +13167,12 @@ public final class FGBoostServiceProto {
 
     private static final com.google.protobuf.Parser<EvaluateResponse>
         PARSER = new com.google.protobuf.AbstractParser<EvaluateResponse>() {
+      @Override
       public EvaluateResponse parsePartialFrom(
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws com.google.protobuf.InvalidProtocolBufferException {
-          return new EvaluateResponse(input, extensionRegistry);
+        return new EvaluateResponse(input, extensionRegistry);
       }
     };
 
@@ -11748,6 +13185,7 @@ public final class FGBoostServiceProto {
       return PARSER;
     }
 
+    @Override
     public EvaluateResponse getDefaultInstanceForType() {
       return DEFAULT_INSTANCE;
     }
@@ -11759,11 +13197,13 @@ public final class FGBoostServiceProto {
       com.google.protobuf.MessageOrBuilder {
 
     /**
-     * <code>optional string clientuuid = 1;</code>
+     * <code>string clientuuid = 1;</code>
+     * @return The clientuuid.
      */
     String getClientuuid();
     /**
-     * <code>optional string clientuuid = 1;</code>
+     * <code>string clientuuid = 1;</code>
+     * @return The bytes for clientuuid.
      */
     com.google.protobuf.ByteString
         getClientuuidBytes();
@@ -11790,20 +13230,28 @@ public final class FGBoostServiceProto {
      * <code>repeated .fgboost.BoostEval treeEval = 2;</code>
      */
     BoostEvalOrBuilder getTreeEvalOrBuilder(
-            int index);
+        int index);
 
     /**
-     * <code>optional int32 bsVersion = 3;</code>
+     * <code>int32 version = 3;</code>
+     * @return The version.
      */
-    int getBsVersion();
+    int getVersion();
+
+    /**
+     * <code>bool lastBatch = 4;</code>
+     * @return The lastBatch.
+     */
+    boolean getLastBatch();
   }
   /**
    * Protobuf type {@code fgboost.PredictRequest}
    */
-  public  static final class PredictRequest extends
+  public static final class PredictRequest extends
       com.google.protobuf.GeneratedMessageV3 implements
       // @@protoc_insertion_point(message_implements:fgboost.PredictRequest)
       PredictRequestOrBuilder {
+  private static final long serialVersionUID = 0L;
     // Use PredictRequest.newBuilder() to construct.
     private PredictRequest(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
       super(builder);
@@ -11811,20 +13259,31 @@ public final class FGBoostServiceProto {
     private PredictRequest() {
       clientuuid_ = "";
       treeEval_ = java.util.Collections.emptyList();
-      bsVersion_ = 0;
+    }
+
+    @Override
+    @SuppressWarnings({"unused"})
+    protected Object newInstance(
+        UnusedPrivateParameter unused) {
+      return new PredictRequest();
     }
 
     @Override
     public final com.google.protobuf.UnknownFieldSet
     getUnknownFields() {
-      return com.google.protobuf.UnknownFieldSet.getDefaultInstance();
+      return this.unknownFields;
     }
     private PredictRequest(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       this();
+      if (extensionRegistry == null) {
+        throw new NullPointerException();
+      }
       int mutable_bitField0_ = 0;
+      com.google.protobuf.UnknownFieldSet.Builder unknownFields =
+          com.google.protobuf.UnknownFieldSet.newBuilder();
       try {
         boolean done = false;
         while (!done) {
@@ -11833,12 +13292,6 @@ public final class FGBoostServiceProto {
             case 0:
               done = true;
               break;
-            default: {
-              if (!input.skipField(tag)) {
-                done = true;
-              }
-              break;
-            }
             case 10: {
               String s = input.readStringRequireUtf8();
 
@@ -11846,9 +13299,9 @@ public final class FGBoostServiceProto {
               break;
             }
             case 18: {
-              if (!((mutable_bitField0_ & 0x00000002) == 0x00000002)) {
+              if (!((mutable_bitField0_ & 0x00000001) != 0)) {
                 treeEval_ = new java.util.ArrayList<BoostEval>();
-                mutable_bitField0_ |= 0x00000002;
+                mutable_bitField0_ |= 0x00000001;
               }
               treeEval_.add(
                   input.readMessage(BoostEval.parser(), extensionRegistry));
@@ -11856,7 +13309,19 @@ public final class FGBoostServiceProto {
             }
             case 24: {
 
-              bsVersion_ = input.readInt32();
+              version_ = input.readInt32();
+              break;
+            }
+            case 32: {
+
+              lastBatch_ = input.readBool();
+              break;
+            }
+            default: {
+              if (!parseUnknownField(
+                  input, unknownFields, extensionRegistry, tag)) {
+                done = true;
+              }
               break;
             }
           }
@@ -11867,9 +13332,10 @@ public final class FGBoostServiceProto {
         throw new com.google.protobuf.InvalidProtocolBufferException(
             e).setUnfinishedMessage(this);
       } finally {
-        if (((mutable_bitField0_ & 0x00000002) == 0x00000002)) {
+        if (((mutable_bitField0_ & 0x00000001) != 0)) {
           treeEval_ = java.util.Collections.unmodifiableList(treeEval_);
         }
+        this.unknownFields = unknownFields.build();
         makeExtensionsImmutable();
       }
     }
@@ -11878,19 +13344,21 @@ public final class FGBoostServiceProto {
       return FGBoostServiceProto.internal_static_fgboost_PredictRequest_descriptor;
     }
 
-    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+    @Override
+    protected FieldAccessorTable
         internalGetFieldAccessorTable() {
       return FGBoostServiceProto.internal_static_fgboost_PredictRequest_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
               PredictRequest.class, Builder.class);
     }
 
-    private int bitField0_;
     public static final int CLIENTUUID_FIELD_NUMBER = 1;
     private volatile Object clientuuid_;
     /**
-     * <code>optional string clientuuid = 1;</code>
+     * <code>string clientuuid = 1;</code>
+     * @return The clientuuid.
      */
+    @Override
     public String getClientuuid() {
       Object ref = clientuuid_;
       if (ref instanceof String) {
@@ -11904,8 +13372,10 @@ public final class FGBoostServiceProto {
       }
     }
     /**
-     * <code>optional string clientuuid = 1;</code>
+     * <code>string clientuuid = 1;</code>
+     * @return The bytes for clientuuid.
      */
+    @Override
     public com.google.protobuf.ByteString
         getClientuuidBytes() {
       Object ref = clientuuid_;
@@ -11925,12 +13395,14 @@ public final class FGBoostServiceProto {
     /**
      * <code>repeated .fgboost.BoostEval treeEval = 2;</code>
      */
+    @Override
     public java.util.List<BoostEval> getTreeEvalList() {
       return treeEval_;
     }
     /**
      * <code>repeated .fgboost.BoostEval treeEval = 2;</code>
      */
+    @Override
     public java.util.List<? extends BoostEvalOrBuilder>
         getTreeEvalOrBuilderList() {
       return treeEval_;
@@ -11938,33 +13410,50 @@ public final class FGBoostServiceProto {
     /**
      * <code>repeated .fgboost.BoostEval treeEval = 2;</code>
      */
+    @Override
     public int getTreeEvalCount() {
       return treeEval_.size();
     }
     /**
      * <code>repeated .fgboost.BoostEval treeEval = 2;</code>
      */
+    @Override
     public BoostEval getTreeEval(int index) {
       return treeEval_.get(index);
     }
     /**
      * <code>repeated .fgboost.BoostEval treeEval = 2;</code>
      */
+    @Override
     public BoostEvalOrBuilder getTreeEvalOrBuilder(
         int index) {
       return treeEval_.get(index);
     }
 
-    public static final int BSVERSION_FIELD_NUMBER = 3;
-    private int bsVersion_;
+    public static final int VERSION_FIELD_NUMBER = 3;
+    private int version_;
     /**
-     * <code>optional int32 bsVersion = 3;</code>
+     * <code>int32 version = 3;</code>
+     * @return The version.
      */
-    public int getBsVersion() {
-      return bsVersion_;
+    @Override
+    public int getVersion() {
+      return version_;
+    }
+
+    public static final int LASTBATCH_FIELD_NUMBER = 4;
+    private boolean lastBatch_;
+    /**
+     * <code>bool lastBatch = 4;</code>
+     * @return The lastBatch.
+     */
+    @Override
+    public boolean getLastBatch() {
+      return lastBatch_;
     }
 
     private byte memoizedIsInitialized = -1;
+    @Override
     public final boolean isInitialized() {
       byte isInitialized = memoizedIsInitialized;
       if (isInitialized == 1) return true;
@@ -11974,6 +13463,7 @@ public final class FGBoostServiceProto {
       return true;
     }
 
+    @Override
     public void writeTo(com.google.protobuf.CodedOutputStream output)
                         throws java.io.IOException {
       if (!getClientuuidBytes().isEmpty()) {
@@ -11982,11 +13472,16 @@ public final class FGBoostServiceProto {
       for (int i = 0; i < treeEval_.size(); i++) {
         output.writeMessage(2, treeEval_.get(i));
       }
-      if (bsVersion_ != 0) {
-        output.writeInt32(3, bsVersion_);
+      if (version_ != 0) {
+        output.writeInt32(3, version_);
       }
+      if (lastBatch_ != false) {
+        output.writeBool(4, lastBatch_);
+      }
+      unknownFields.writeTo(output);
     }
 
+    @Override
     public int getSerializedSize() {
       int size = memoizedSize;
       if (size != -1) return size;
@@ -11999,15 +13494,19 @@ public final class FGBoostServiceProto {
         size += com.google.protobuf.CodedOutputStream
           .computeMessageSize(2, treeEval_.get(i));
       }
-      if (bsVersion_ != 0) {
+      if (version_ != 0) {
         size += com.google.protobuf.CodedOutputStream
-          .computeInt32Size(3, bsVersion_);
+          .computeInt32Size(3, version_);
       }
+      if (lastBatch_ != false) {
+        size += com.google.protobuf.CodedOutputStream
+          .computeBoolSize(4, lastBatch_);
+      }
+      size += unknownFields.getSerializedSize();
       memoizedSize = size;
       return size;
     }
 
-    private static final long serialVersionUID = 0L;
     @Override
     public boolean equals(final Object obj) {
       if (obj == this) {
@@ -12018,14 +13517,16 @@ public final class FGBoostServiceProto {
       }
       PredictRequest other = (PredictRequest) obj;
 
-      boolean result = true;
-      result = result && getClientuuid()
-          .equals(other.getClientuuid());
-      result = result && getTreeEvalList()
-          .equals(other.getTreeEvalList());
-      result = result && (getBsVersion()
-          == other.getBsVersion());
-      return result;
+      if (!getClientuuid()
+          .equals(other.getClientuuid())) return false;
+      if (!getTreeEvalList()
+          .equals(other.getTreeEvalList())) return false;
+      if (getVersion()
+          != other.getVersion()) return false;
+      if (getLastBatch()
+          != other.getLastBatch()) return false;
+      if (!unknownFields.equals(other.unknownFields)) return false;
+      return true;
     }
 
     @Override
@@ -12034,20 +13535,34 @@ public final class FGBoostServiceProto {
         return memoizedHashCode;
       }
       int hash = 41;
-      hash = (19 * hash) + getDescriptorForType().hashCode();
+      hash = (19 * hash) + getDescriptor().hashCode();
       hash = (37 * hash) + CLIENTUUID_FIELD_NUMBER;
       hash = (53 * hash) + getClientuuid().hashCode();
       if (getTreeEvalCount() > 0) {
         hash = (37 * hash) + TREEEVAL_FIELD_NUMBER;
         hash = (53 * hash) + getTreeEvalList().hashCode();
       }
-      hash = (37 * hash) + BSVERSION_FIELD_NUMBER;
-      hash = (53 * hash) + getBsVersion();
+      hash = (37 * hash) + VERSION_FIELD_NUMBER;
+      hash = (53 * hash) + getVersion();
+      hash = (37 * hash) + LASTBATCH_FIELD_NUMBER;
+      hash = (53 * hash) + com.google.protobuf.Internal.hashBoolean(
+          getLastBatch());
       hash = (29 * hash) + unknownFields.hashCode();
       memoizedHashCode = hash;
       return hash;
     }
 
+    public static PredictRequest parseFrom(
+        java.nio.ByteBuffer data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static PredictRequest parseFrom(
+        java.nio.ByteBuffer data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
     public static PredictRequest parseFrom(
         com.google.protobuf.ByteString data)
         throws com.google.protobuf.InvalidProtocolBufferException {
@@ -12107,6 +13622,7 @@ public final class FGBoostServiceProto {
           .parseWithIOException(PARSER, input, extensionRegistry);
     }
 
+    @Override
     public Builder newBuilderForType() { return newBuilder(); }
     public static Builder newBuilder() {
       return DEFAULT_INSTANCE.toBuilder();
@@ -12114,6 +13630,7 @@ public final class FGBoostServiceProto {
     public static Builder newBuilder(PredictRequest prototype) {
       return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
     }
+    @Override
     public Builder toBuilder() {
       return this == DEFAULT_INSTANCE
           ? new Builder() : new Builder().mergeFrom(this);
@@ -12121,7 +13638,7 @@ public final class FGBoostServiceProto {
 
     @Override
     protected Builder newBuilderForType(
-        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+        BuilderParent parent) {
       Builder builder = new Builder(parent);
       return builder;
     }
@@ -12137,7 +13654,8 @@ public final class FGBoostServiceProto {
         return FGBoostServiceProto.internal_static_fgboost_PredictRequest_descriptor;
       }
 
-      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+      @Override
+      protected FieldAccessorTable
           internalGetFieldAccessorTable() {
         return FGBoostServiceProto.internal_static_fgboost_PredictRequest_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
@@ -12150,7 +13668,7 @@ public final class FGBoostServiceProto {
       }
 
       private Builder(
-          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+          BuilderParent parent) {
         super(parent);
         maybeForceBuilderInitialization();
       }
@@ -12160,30 +13678,36 @@ public final class FGBoostServiceProto {
           getTreeEvalFieldBuilder();
         }
       }
+      @Override
       public Builder clear() {
         super.clear();
         clientuuid_ = "";
 
         if (treeEvalBuilder_ == null) {
           treeEval_ = java.util.Collections.emptyList();
-          bitField0_ = (bitField0_ & ~0x00000002);
+          bitField0_ = (bitField0_ & ~0x00000001);
         } else {
           treeEvalBuilder_.clear();
         }
-        bsVersion_ = 0;
+        version_ = 0;
+
+        lastBatch_ = false;
 
         return this;
       }
 
+      @Override
       public com.google.protobuf.Descriptors.Descriptor
           getDescriptorForType() {
         return FGBoostServiceProto.internal_static_fgboost_PredictRequest_descriptor;
       }
 
+      @Override
       public PredictRequest getDefaultInstanceForType() {
         return PredictRequest.getDefaultInstance();
       }
 
+      @Override
       public PredictRequest build() {
         PredictRequest result = buildPartial();
         if (!result.isInitialized()) {
@@ -12192,52 +13716,59 @@ public final class FGBoostServiceProto {
         return result;
       }
 
+      @Override
       public PredictRequest buildPartial() {
         PredictRequest result = new PredictRequest(this);
         int from_bitField0_ = bitField0_;
-        int to_bitField0_ = 0;
         result.clientuuid_ = clientuuid_;
         if (treeEvalBuilder_ == null) {
-          if (((bitField0_ & 0x00000002) == 0x00000002)) {
+          if (((bitField0_ & 0x00000001) != 0)) {
             treeEval_ = java.util.Collections.unmodifiableList(treeEval_);
-            bitField0_ = (bitField0_ & ~0x00000002);
+            bitField0_ = (bitField0_ & ~0x00000001);
           }
           result.treeEval_ = treeEval_;
         } else {
           result.treeEval_ = treeEvalBuilder_.build();
         }
-        result.bsVersion_ = bsVersion_;
-        result.bitField0_ = to_bitField0_;
+        result.version_ = version_;
+        result.lastBatch_ = lastBatch_;
         onBuilt();
         return result;
       }
 
+      @Override
       public Builder clone() {
-        return (Builder) super.clone();
+        return super.clone();
       }
+      @Override
       public Builder setField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           Object value) {
-        return (Builder) super.setField(field, value);
+        return super.setField(field, value);
       }
+      @Override
       public Builder clearField(
           com.google.protobuf.Descriptors.FieldDescriptor field) {
-        return (Builder) super.clearField(field);
+        return super.clearField(field);
       }
+      @Override
       public Builder clearOneof(
           com.google.protobuf.Descriptors.OneofDescriptor oneof) {
-        return (Builder) super.clearOneof(oneof);
+        return super.clearOneof(oneof);
       }
+      @Override
       public Builder setRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           int index, Object value) {
-        return (Builder) super.setRepeatedField(field, index, value);
+        return super.setRepeatedField(field, index, value);
       }
+      @Override
       public Builder addRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           Object value) {
-        return (Builder) super.addRepeatedField(field, value);
+        return super.addRepeatedField(field, value);
       }
+      @Override
       public Builder mergeFrom(com.google.protobuf.Message other) {
         if (other instanceof PredictRequest) {
           return mergeFrom((PredictRequest)other);
@@ -12257,7 +13788,7 @@ public final class FGBoostServiceProto {
           if (!other.treeEval_.isEmpty()) {
             if (treeEval_.isEmpty()) {
               treeEval_ = other.treeEval_;
-              bitField0_ = (bitField0_ & ~0x00000002);
+              bitField0_ = (bitField0_ & ~0x00000001);
             } else {
               ensureTreeEvalIsMutable();
               treeEval_.addAll(other.treeEval_);
@@ -12270,7 +13801,7 @@ public final class FGBoostServiceProto {
               treeEvalBuilder_.dispose();
               treeEvalBuilder_ = null;
               treeEval_ = other.treeEval_;
-              bitField0_ = (bitField0_ & ~0x00000002);
+              bitField0_ = (bitField0_ & ~0x00000001);
               treeEvalBuilder_ = 
                 com.google.protobuf.GeneratedMessageV3.alwaysUseFieldBuilders ?
                    getTreeEvalFieldBuilder() : null;
@@ -12279,17 +13810,23 @@ public final class FGBoostServiceProto {
             }
           }
         }
-        if (other.getBsVersion() != 0) {
-          setBsVersion(other.getBsVersion());
+        if (other.getVersion() != 0) {
+          setVersion(other.getVersion());
         }
+        if (other.getLastBatch() != false) {
+          setLastBatch(other.getLastBatch());
+        }
+        this.mergeUnknownFields(other.unknownFields);
         onChanged();
         return this;
       }
 
+      @Override
       public final boolean isInitialized() {
         return true;
       }
 
+      @Override
       public Builder mergeFrom(
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
@@ -12311,7 +13848,8 @@ public final class FGBoostServiceProto {
 
       private Object clientuuid_ = "";
       /**
-       * <code>optional string clientuuid = 1;</code>
+       * <code>string clientuuid = 1;</code>
+       * @return The clientuuid.
        */
       public String getClientuuid() {
         Object ref = clientuuid_;
@@ -12326,7 +13864,8 @@ public final class FGBoostServiceProto {
         }
       }
       /**
-       * <code>optional string clientuuid = 1;</code>
+       * <code>string clientuuid = 1;</code>
+       * @return The bytes for clientuuid.
        */
       public com.google.protobuf.ByteString
           getClientuuidBytes() {
@@ -12342,7 +13881,9 @@ public final class FGBoostServiceProto {
         }
       }
       /**
-       * <code>optional string clientuuid = 1;</code>
+       * <code>string clientuuid = 1;</code>
+       * @param value The clientuuid to set.
+       * @return This builder for chaining.
        */
       public Builder setClientuuid(
           String value) {
@@ -12355,7 +13896,8 @@ public final class FGBoostServiceProto {
         return this;
       }
       /**
-       * <code>optional string clientuuid = 1;</code>
+       * <code>string clientuuid = 1;</code>
+       * @return This builder for chaining.
        */
       public Builder clearClientuuid() {
         
@@ -12364,7 +13906,9 @@ public final class FGBoostServiceProto {
         return this;
       }
       /**
-       * <code>optional string clientuuid = 1;</code>
+       * <code>string clientuuid = 1;</code>
+       * @param value The bytes for clientuuid to set.
+       * @return This builder for chaining.
        */
       public Builder setClientuuidBytes(
           com.google.protobuf.ByteString value) {
@@ -12381,9 +13925,9 @@ public final class FGBoostServiceProto {
       private java.util.List<BoostEval> treeEval_ =
         java.util.Collections.emptyList();
       private void ensureTreeEvalIsMutable() {
-        if (!((bitField0_ & 0x00000002) == 0x00000002)) {
+        if (!((bitField0_ & 0x00000001) != 0)) {
           treeEval_ = new java.util.ArrayList<BoostEval>(treeEval_);
-          bitField0_ |= 0x00000002;
+          bitField0_ |= 0x00000001;
          }
       }
 
@@ -12533,7 +14077,7 @@ public final class FGBoostServiceProto {
       public Builder clearTreeEval() {
         if (treeEvalBuilder_ == null) {
           treeEval_ = java.util.Collections.emptyList();
-          bitField0_ = (bitField0_ & ~0x00000002);
+          bitField0_ = (bitField0_ & ~0x00000001);
           onChanged();
         } else {
           treeEvalBuilder_.clear();
@@ -12610,7 +14154,7 @@ public final class FGBoostServiceProto {
           treeEvalBuilder_ = new com.google.protobuf.RepeatedFieldBuilderV3<
               BoostEval, BoostEval.Builder, BoostEvalOrBuilder>(
                   treeEval_,
-                  ((bitField0_ & 0x00000002) == 0x00000002),
+                  ((bitField0_ & 0x00000001) != 0),
                   getParentForChildren(),
                   isClean());
           treeEval_ = null;
@@ -12618,39 +14162,77 @@ public final class FGBoostServiceProto {
         return treeEvalBuilder_;
       }
 
-      private int bsVersion_ ;
+      private int version_ ;
       /**
-       * <code>optional int32 bsVersion = 3;</code>
+       * <code>int32 version = 3;</code>
+       * @return The version.
        */
-      public int getBsVersion() {
-        return bsVersion_;
+      @Override
+      public int getVersion() {
+        return version_;
       }
       /**
-       * <code>optional int32 bsVersion = 3;</code>
+       * <code>int32 version = 3;</code>
+       * @param value The version to set.
+       * @return This builder for chaining.
        */
-      public Builder setBsVersion(int value) {
+      public Builder setVersion(int value) {
         
-        bsVersion_ = value;
+        version_ = value;
         onChanged();
         return this;
       }
       /**
-       * <code>optional int32 bsVersion = 3;</code>
+       * <code>int32 version = 3;</code>
+       * @return This builder for chaining.
        */
-      public Builder clearBsVersion() {
+      public Builder clearVersion() {
         
-        bsVersion_ = 0;
+        version_ = 0;
         onChanged();
-        return this;
-      }
-      public final Builder setUnknownFields(
-          final com.google.protobuf.UnknownFieldSet unknownFields) {
         return this;
       }
 
+      private boolean lastBatch_ ;
+      /**
+       * <code>bool lastBatch = 4;</code>
+       * @return The lastBatch.
+       */
+      @Override
+      public boolean getLastBatch() {
+        return lastBatch_;
+      }
+      /**
+       * <code>bool lastBatch = 4;</code>
+       * @param value The lastBatch to set.
+       * @return This builder for chaining.
+       */
+      public Builder setLastBatch(boolean value) {
+        
+        lastBatch_ = value;
+        onChanged();
+        return this;
+      }
+      /**
+       * <code>bool lastBatch = 4;</code>
+       * @return This builder for chaining.
+       */
+      public Builder clearLastBatch() {
+        
+        lastBatch_ = false;
+        onChanged();
+        return this;
+      }
+      @Override
+      public final Builder setUnknownFields(
+          final com.google.protobuf.UnknownFieldSet unknownFields) {
+        return super.setUnknownFields(unknownFields);
+      }
+
+      @Override
       public final Builder mergeUnknownFields(
           final com.google.protobuf.UnknownFieldSet unknownFields) {
-        return this;
+        return super.mergeUnknownFields(unknownFields);
       }
 
 
@@ -12669,11 +14251,12 @@ public final class FGBoostServiceProto {
 
     private static final com.google.protobuf.Parser<PredictRequest>
         PARSER = new com.google.protobuf.AbstractParser<PredictRequest>() {
+      @Override
       public PredictRequest parsePartialFrom(
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws com.google.protobuf.InvalidProtocolBufferException {
-          return new PredictRequest(input, extensionRegistry);
+        return new PredictRequest(input, extensionRegistry);
       }
     };
 
@@ -12686,6 +14269,7 @@ public final class FGBoostServiceProto {
       return PARSER;
     }
 
+    @Override
     public PredictRequest getDefaultInstanceForType() {
       return DEFAULT_INSTANCE;
     }
@@ -12697,35 +14281,40 @@ public final class FGBoostServiceProto {
       com.google.protobuf.MessageOrBuilder {
 
     /**
-     * <code>optional string clientuuid = 1;</code>
+     * <code>string clientuuid = 1;</code>
+     * @return The clientuuid.
      */
     String getClientuuid();
     /**
-     * <code>optional string clientuuid = 1;</code>
+     * <code>string clientuuid = 1;</code>
+     * @return The bytes for clientuuid.
      */
     com.google.protobuf.ByteString
         getClientuuidBytes();
 
     /**
-     * <code>optional .fgboost.DataSplit split = 2;</code>
+     * <code>.fgboost.DataSplit split = 2;</code>
+     * @return Whether the split field is set.
      */
     boolean hasSplit();
     /**
-     * <code>optional .fgboost.DataSplit split = 2;</code>
+     * <code>.fgboost.DataSplit split = 2;</code>
+     * @return The split.
      */
     DataSplit getSplit();
     /**
-     * <code>optional .fgboost.DataSplit split = 2;</code>
+     * <code>.fgboost.DataSplit split = 2;</code>
      */
     DataSplitOrBuilder getSplitOrBuilder();
   }
   /**
    * Protobuf type {@code fgboost.SplitRequest}
    */
-  public  static final class SplitRequest extends
+  public static final class SplitRequest extends
       com.google.protobuf.GeneratedMessageV3 implements
       // @@protoc_insertion_point(message_implements:fgboost.SplitRequest)
       SplitRequestOrBuilder {
+  private static final long serialVersionUID = 0L;
     // Use SplitRequest.newBuilder() to construct.
     private SplitRequest(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
       super(builder);
@@ -12735,16 +14324,27 @@ public final class FGBoostServiceProto {
     }
 
     @Override
+    @SuppressWarnings({"unused"})
+    protected Object newInstance(
+        UnusedPrivateParameter unused) {
+      return new SplitRequest();
+    }
+
+    @Override
     public final com.google.protobuf.UnknownFieldSet
     getUnknownFields() {
-      return com.google.protobuf.UnknownFieldSet.getDefaultInstance();
+      return this.unknownFields;
     }
     private SplitRequest(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       this();
-      int mutable_bitField0_ = 0;
+      if (extensionRegistry == null) {
+        throw new NullPointerException();
+      }
+      com.google.protobuf.UnknownFieldSet.Builder unknownFields =
+          com.google.protobuf.UnknownFieldSet.newBuilder();
       try {
         boolean done = false;
         while (!done) {
@@ -12753,12 +14353,6 @@ public final class FGBoostServiceProto {
             case 0:
               done = true;
               break;
-            default: {
-              if (!input.skipField(tag)) {
-                done = true;
-              }
-              break;
-            }
             case 10: {
               String s = input.readStringRequireUtf8();
 
@@ -12778,6 +14372,13 @@ public final class FGBoostServiceProto {
 
               break;
             }
+            default: {
+              if (!parseUnknownField(
+                  input, unknownFields, extensionRegistry, tag)) {
+                done = true;
+              }
+              break;
+            }
           }
         }
       } catch (com.google.protobuf.InvalidProtocolBufferException e) {
@@ -12786,6 +14387,7 @@ public final class FGBoostServiceProto {
         throw new com.google.protobuf.InvalidProtocolBufferException(
             e).setUnfinishedMessage(this);
       } finally {
+        this.unknownFields = unknownFields.build();
         makeExtensionsImmutable();
       }
     }
@@ -12794,7 +14396,8 @@ public final class FGBoostServiceProto {
       return FGBoostServiceProto.internal_static_fgboost_SplitRequest_descriptor;
     }
 
-    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+    @Override
+    protected FieldAccessorTable
         internalGetFieldAccessorTable() {
       return FGBoostServiceProto.internal_static_fgboost_SplitRequest_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
@@ -12804,8 +14407,10 @@ public final class FGBoostServiceProto {
     public static final int CLIENTUUID_FIELD_NUMBER = 1;
     private volatile Object clientuuid_;
     /**
-     * <code>optional string clientuuid = 1;</code>
+     * <code>string clientuuid = 1;</code>
+     * @return The clientuuid.
      */
+    @Override
     public String getClientuuid() {
       Object ref = clientuuid_;
       if (ref instanceof String) {
@@ -12819,8 +14424,10 @@ public final class FGBoostServiceProto {
       }
     }
     /**
-     * <code>optional string clientuuid = 1;</code>
+     * <code>string clientuuid = 1;</code>
+     * @return The bytes for clientuuid.
      */
+    @Override
     public com.google.protobuf.ByteString
         getClientuuidBytes() {
       Object ref = clientuuid_;
@@ -12838,25 +14445,31 @@ public final class FGBoostServiceProto {
     public static final int SPLIT_FIELD_NUMBER = 2;
     private DataSplit split_;
     /**
-     * <code>optional .fgboost.DataSplit split = 2;</code>
+     * <code>.fgboost.DataSplit split = 2;</code>
+     * @return Whether the split field is set.
      */
+    @Override
     public boolean hasSplit() {
       return split_ != null;
     }
     /**
-     * <code>optional .fgboost.DataSplit split = 2;</code>
+     * <code>.fgboost.DataSplit split = 2;</code>
+     * @return The split.
      */
+    @Override
     public DataSplit getSplit() {
       return split_ == null ? DataSplit.getDefaultInstance() : split_;
     }
     /**
-     * <code>optional .fgboost.DataSplit split = 2;</code>
+     * <code>.fgboost.DataSplit split = 2;</code>
      */
+    @Override
     public DataSplitOrBuilder getSplitOrBuilder() {
       return getSplit();
     }
 
     private byte memoizedIsInitialized = -1;
+    @Override
     public final boolean isInitialized() {
       byte isInitialized = memoizedIsInitialized;
       if (isInitialized == 1) return true;
@@ -12866,6 +14479,7 @@ public final class FGBoostServiceProto {
       return true;
     }
 
+    @Override
     public void writeTo(com.google.protobuf.CodedOutputStream output)
                         throws java.io.IOException {
       if (!getClientuuidBytes().isEmpty()) {
@@ -12874,8 +14488,10 @@ public final class FGBoostServiceProto {
       if (split_ != null) {
         output.writeMessage(2, getSplit());
       }
+      unknownFields.writeTo(output);
     }
 
+    @Override
     public int getSerializedSize() {
       int size = memoizedSize;
       if (size != -1) return size;
@@ -12888,11 +14504,11 @@ public final class FGBoostServiceProto {
         size += com.google.protobuf.CodedOutputStream
           .computeMessageSize(2, getSplit());
       }
+      size += unknownFields.getSerializedSize();
       memoizedSize = size;
       return size;
     }
 
-    private static final long serialVersionUID = 0L;
     @Override
     public boolean equals(final Object obj) {
       if (obj == this) {
@@ -12903,15 +14519,15 @@ public final class FGBoostServiceProto {
       }
       SplitRequest other = (SplitRequest) obj;
 
-      boolean result = true;
-      result = result && getClientuuid()
-          .equals(other.getClientuuid());
-      result = result && (hasSplit() == other.hasSplit());
+      if (!getClientuuid()
+          .equals(other.getClientuuid())) return false;
+      if (hasSplit() != other.hasSplit()) return false;
       if (hasSplit()) {
-        result = result && getSplit()
-            .equals(other.getSplit());
+        if (!getSplit()
+            .equals(other.getSplit())) return false;
       }
-      return result;
+      if (!unknownFields.equals(other.unknownFields)) return false;
+      return true;
     }
 
     @Override
@@ -12920,7 +14536,7 @@ public final class FGBoostServiceProto {
         return memoizedHashCode;
       }
       int hash = 41;
-      hash = (19 * hash) + getDescriptorForType().hashCode();
+      hash = (19 * hash) + getDescriptor().hashCode();
       hash = (37 * hash) + CLIENTUUID_FIELD_NUMBER;
       hash = (53 * hash) + getClientuuid().hashCode();
       if (hasSplit()) {
@@ -12932,6 +14548,17 @@ public final class FGBoostServiceProto {
       return hash;
     }
 
+    public static SplitRequest parseFrom(
+        java.nio.ByteBuffer data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static SplitRequest parseFrom(
+        java.nio.ByteBuffer data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
     public static SplitRequest parseFrom(
         com.google.protobuf.ByteString data)
         throws com.google.protobuf.InvalidProtocolBufferException {
@@ -12991,6 +14618,7 @@ public final class FGBoostServiceProto {
           .parseWithIOException(PARSER, input, extensionRegistry);
     }
 
+    @Override
     public Builder newBuilderForType() { return newBuilder(); }
     public static Builder newBuilder() {
       return DEFAULT_INSTANCE.toBuilder();
@@ -12998,6 +14626,7 @@ public final class FGBoostServiceProto {
     public static Builder newBuilder(SplitRequest prototype) {
       return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
     }
+    @Override
     public Builder toBuilder() {
       return this == DEFAULT_INSTANCE
           ? new Builder() : new Builder().mergeFrom(this);
@@ -13005,7 +14634,7 @@ public final class FGBoostServiceProto {
 
     @Override
     protected Builder newBuilderForType(
-        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+        BuilderParent parent) {
       Builder builder = new Builder(parent);
       return builder;
     }
@@ -13021,7 +14650,8 @@ public final class FGBoostServiceProto {
         return FGBoostServiceProto.internal_static_fgboost_SplitRequest_descriptor;
       }
 
-      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+      @Override
+      protected FieldAccessorTable
           internalGetFieldAccessorTable() {
         return FGBoostServiceProto.internal_static_fgboost_SplitRequest_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
@@ -13034,7 +14664,7 @@ public final class FGBoostServiceProto {
       }
 
       private Builder(
-          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+          BuilderParent parent) {
         super(parent);
         maybeForceBuilderInitialization();
       }
@@ -13043,6 +14673,7 @@ public final class FGBoostServiceProto {
                 .alwaysUseFieldBuilders) {
         }
       }
+      @Override
       public Builder clear() {
         super.clear();
         clientuuid_ = "";
@@ -13056,15 +14687,18 @@ public final class FGBoostServiceProto {
         return this;
       }
 
+      @Override
       public com.google.protobuf.Descriptors.Descriptor
           getDescriptorForType() {
         return FGBoostServiceProto.internal_static_fgboost_SplitRequest_descriptor;
       }
 
+      @Override
       public SplitRequest getDefaultInstanceForType() {
         return SplitRequest.getDefaultInstance();
       }
 
+      @Override
       public SplitRequest build() {
         SplitRequest result = buildPartial();
         if (!result.isInitialized()) {
@@ -13073,6 +14707,7 @@ public final class FGBoostServiceProto {
         return result;
       }
 
+      @Override
       public SplitRequest buildPartial() {
         SplitRequest result = new SplitRequest(this);
         result.clientuuid_ = clientuuid_;
@@ -13085,32 +14720,39 @@ public final class FGBoostServiceProto {
         return result;
       }
 
+      @Override
       public Builder clone() {
-        return (Builder) super.clone();
+        return super.clone();
       }
+      @Override
       public Builder setField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           Object value) {
-        return (Builder) super.setField(field, value);
+        return super.setField(field, value);
       }
+      @Override
       public Builder clearField(
           com.google.protobuf.Descriptors.FieldDescriptor field) {
-        return (Builder) super.clearField(field);
+        return super.clearField(field);
       }
+      @Override
       public Builder clearOneof(
           com.google.protobuf.Descriptors.OneofDescriptor oneof) {
-        return (Builder) super.clearOneof(oneof);
+        return super.clearOneof(oneof);
       }
+      @Override
       public Builder setRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           int index, Object value) {
-        return (Builder) super.setRepeatedField(field, index, value);
+        return super.setRepeatedField(field, index, value);
       }
+      @Override
       public Builder addRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           Object value) {
-        return (Builder) super.addRepeatedField(field, value);
+        return super.addRepeatedField(field, value);
       }
+      @Override
       public Builder mergeFrom(com.google.protobuf.Message other) {
         if (other instanceof SplitRequest) {
           return mergeFrom((SplitRequest)other);
@@ -13129,14 +14771,17 @@ public final class FGBoostServiceProto {
         if (other.hasSplit()) {
           mergeSplit(other.getSplit());
         }
+        this.mergeUnknownFields(other.unknownFields);
         onChanged();
         return this;
       }
 
+      @Override
       public final boolean isInitialized() {
         return true;
       }
 
+      @Override
       public Builder mergeFrom(
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
@@ -13157,7 +14802,8 @@ public final class FGBoostServiceProto {
 
       private Object clientuuid_ = "";
       /**
-       * <code>optional string clientuuid = 1;</code>
+       * <code>string clientuuid = 1;</code>
+       * @return The clientuuid.
        */
       public String getClientuuid() {
         Object ref = clientuuid_;
@@ -13172,7 +14818,8 @@ public final class FGBoostServiceProto {
         }
       }
       /**
-       * <code>optional string clientuuid = 1;</code>
+       * <code>string clientuuid = 1;</code>
+       * @return The bytes for clientuuid.
        */
       public com.google.protobuf.ByteString
           getClientuuidBytes() {
@@ -13188,7 +14835,9 @@ public final class FGBoostServiceProto {
         }
       }
       /**
-       * <code>optional string clientuuid = 1;</code>
+       * <code>string clientuuid = 1;</code>
+       * @param value The clientuuid to set.
+       * @return This builder for chaining.
        */
       public Builder setClientuuid(
           String value) {
@@ -13201,7 +14850,8 @@ public final class FGBoostServiceProto {
         return this;
       }
       /**
-       * <code>optional string clientuuid = 1;</code>
+       * <code>string clientuuid = 1;</code>
+       * @return This builder for chaining.
        */
       public Builder clearClientuuid() {
         
@@ -13210,7 +14860,9 @@ public final class FGBoostServiceProto {
         return this;
       }
       /**
-       * <code>optional string clientuuid = 1;</code>
+       * <code>string clientuuid = 1;</code>
+       * @param value The bytes for clientuuid to set.
+       * @return This builder for chaining.
        */
       public Builder setClientuuidBytes(
           com.google.protobuf.ByteString value) {
@@ -13224,17 +14876,19 @@ public final class FGBoostServiceProto {
         return this;
       }
 
-      private DataSplit split_ = null;
+      private DataSplit split_;
       private com.google.protobuf.SingleFieldBuilderV3<
           DataSplit, DataSplit.Builder, DataSplitOrBuilder> splitBuilder_;
       /**
-       * <code>optional .fgboost.DataSplit split = 2;</code>
+       * <code>.fgboost.DataSplit split = 2;</code>
+       * @return Whether the split field is set.
        */
       public boolean hasSplit() {
         return splitBuilder_ != null || split_ != null;
       }
       /**
-       * <code>optional .fgboost.DataSplit split = 2;</code>
+       * <code>.fgboost.DataSplit split = 2;</code>
+       * @return The split.
        */
       public DataSplit getSplit() {
         if (splitBuilder_ == null) {
@@ -13244,7 +14898,7 @@ public final class FGBoostServiceProto {
         }
       }
       /**
-       * <code>optional .fgboost.DataSplit split = 2;</code>
+       * <code>.fgboost.DataSplit split = 2;</code>
        */
       public Builder setSplit(DataSplit value) {
         if (splitBuilder_ == null) {
@@ -13260,7 +14914,7 @@ public final class FGBoostServiceProto {
         return this;
       }
       /**
-       * <code>optional .fgboost.DataSplit split = 2;</code>
+       * <code>.fgboost.DataSplit split = 2;</code>
        */
       public Builder setSplit(
           DataSplit.Builder builderForValue) {
@@ -13274,7 +14928,7 @@ public final class FGBoostServiceProto {
         return this;
       }
       /**
-       * <code>optional .fgboost.DataSplit split = 2;</code>
+       * <code>.fgboost.DataSplit split = 2;</code>
        */
       public Builder mergeSplit(DataSplit value) {
         if (splitBuilder_ == null) {
@@ -13292,7 +14946,7 @@ public final class FGBoostServiceProto {
         return this;
       }
       /**
-       * <code>optional .fgboost.DataSplit split = 2;</code>
+       * <code>.fgboost.DataSplit split = 2;</code>
        */
       public Builder clearSplit() {
         if (splitBuilder_ == null) {
@@ -13306,7 +14960,7 @@ public final class FGBoostServiceProto {
         return this;
       }
       /**
-       * <code>optional .fgboost.DataSplit split = 2;</code>
+       * <code>.fgboost.DataSplit split = 2;</code>
        */
       public DataSplit.Builder getSplitBuilder() {
         
@@ -13314,7 +14968,7 @@ public final class FGBoostServiceProto {
         return getSplitFieldBuilder().getBuilder();
       }
       /**
-       * <code>optional .fgboost.DataSplit split = 2;</code>
+       * <code>.fgboost.DataSplit split = 2;</code>
        */
       public DataSplitOrBuilder getSplitOrBuilder() {
         if (splitBuilder_ != null) {
@@ -13325,7 +14979,7 @@ public final class FGBoostServiceProto {
         }
       }
       /**
-       * <code>optional .fgboost.DataSplit split = 2;</code>
+       * <code>.fgboost.DataSplit split = 2;</code>
        */
       private com.google.protobuf.SingleFieldBuilderV3<
           DataSplit, DataSplit.Builder, DataSplitOrBuilder>
@@ -13340,14 +14994,16 @@ public final class FGBoostServiceProto {
         }
         return splitBuilder_;
       }
+      @Override
       public final Builder setUnknownFields(
           final com.google.protobuf.UnknownFieldSet unknownFields) {
-        return this;
+        return super.setUnknownFields(unknownFields);
       }
 
+      @Override
       public final Builder mergeUnknownFields(
           final com.google.protobuf.UnknownFieldSet unknownFields) {
-        return this;
+        return super.mergeUnknownFields(unknownFields);
       }
 
 
@@ -13366,11 +15022,12 @@ public final class FGBoostServiceProto {
 
     private static final com.google.protobuf.Parser<SplitRequest>
         PARSER = new com.google.protobuf.AbstractParser<SplitRequest>() {
+      @Override
       public SplitRequest parsePartialFrom(
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws com.google.protobuf.InvalidProtocolBufferException {
-          return new SplitRequest(input, extensionRegistry);
+        return new SplitRequest(input, extensionRegistry);
       }
     };
 
@@ -13383,6 +15040,7 @@ public final class FGBoostServiceProto {
       return PARSER;
     }
 
+    @Override
     public SplitRequest getDefaultInstanceForType() {
       return DEFAULT_INSTANCE;
     }
@@ -13394,60 +15052,76 @@ public final class FGBoostServiceProto {
       com.google.protobuf.MessageOrBuilder {
 
     /**
-     * <code>optional string response = 1;</code>
+     * <code>string response = 1;</code>
+     * @return The response.
      */
     String getResponse();
     /**
-     * <code>optional string response = 1;</code>
+     * <code>string response = 1;</code>
+     * @return The bytes for response.
      */
     com.google.protobuf.ByteString
         getResponseBytes();
 
     /**
-     * <code>optional .TensorMap data = 2;</code>
+     * <code>.TensorMap data = 2;</code>
+     * @return Whether the data field is set.
      */
     boolean hasData();
     /**
-     * <code>optional .TensorMap data = 2;</code>
+     * <code>.TensorMap data = 2;</code>
+     * @return The data.
      */
     FlBaseProto.TensorMap getData();
     /**
-     * <code>optional .TensorMap data = 2;</code>
+     * <code>.TensorMap data = 2;</code>
      */
     FlBaseProto.TensorMapOrBuilder getDataOrBuilder();
 
     /**
-     * <code>optional int32 code = 3;</code>
+     * <code>int32 code = 3;</code>
+     * @return The code.
      */
     int getCode();
   }
   /**
    * Protobuf type {@code fgboost.PredictResponse}
    */
-  public  static final class PredictResponse extends
+  public static final class PredictResponse extends
       com.google.protobuf.GeneratedMessageV3 implements
       // @@protoc_insertion_point(message_implements:fgboost.PredictResponse)
       PredictResponseOrBuilder {
+  private static final long serialVersionUID = 0L;
     // Use PredictResponse.newBuilder() to construct.
     private PredictResponse(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
       super(builder);
     }
     private PredictResponse() {
       response_ = "";
-      code_ = 0;
+    }
+
+    @Override
+    @SuppressWarnings({"unused"})
+    protected Object newInstance(
+        UnusedPrivateParameter unused) {
+      return new PredictResponse();
     }
 
     @Override
     public final com.google.protobuf.UnknownFieldSet
     getUnknownFields() {
-      return com.google.protobuf.UnknownFieldSet.getDefaultInstance();
+      return this.unknownFields;
     }
     private PredictResponse(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       this();
-      int mutable_bitField0_ = 0;
+      if (extensionRegistry == null) {
+        throw new NullPointerException();
+      }
+      com.google.protobuf.UnknownFieldSet.Builder unknownFields =
+          com.google.protobuf.UnknownFieldSet.newBuilder();
       try {
         boolean done = false;
         while (!done) {
@@ -13456,12 +15130,6 @@ public final class FGBoostServiceProto {
             case 0:
               done = true;
               break;
-            default: {
-              if (!input.skipField(tag)) {
-                done = true;
-              }
-              break;
-            }
             case 10: {
               String s = input.readStringRequireUtf8();
 
@@ -13486,6 +15154,13 @@ public final class FGBoostServiceProto {
               code_ = input.readInt32();
               break;
             }
+            default: {
+              if (!parseUnknownField(
+                  input, unknownFields, extensionRegistry, tag)) {
+                done = true;
+              }
+              break;
+            }
           }
         }
       } catch (com.google.protobuf.InvalidProtocolBufferException e) {
@@ -13494,6 +15169,7 @@ public final class FGBoostServiceProto {
         throw new com.google.protobuf.InvalidProtocolBufferException(
             e).setUnfinishedMessage(this);
       } finally {
+        this.unknownFields = unknownFields.build();
         makeExtensionsImmutable();
       }
     }
@@ -13502,7 +15178,8 @@ public final class FGBoostServiceProto {
       return FGBoostServiceProto.internal_static_fgboost_PredictResponse_descriptor;
     }
 
-    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+    @Override
+    protected FieldAccessorTable
         internalGetFieldAccessorTable() {
       return FGBoostServiceProto.internal_static_fgboost_PredictResponse_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
@@ -13512,8 +15189,10 @@ public final class FGBoostServiceProto {
     public static final int RESPONSE_FIELD_NUMBER = 1;
     private volatile Object response_;
     /**
-     * <code>optional string response = 1;</code>
+     * <code>string response = 1;</code>
+     * @return The response.
      */
+    @Override
     public String getResponse() {
       Object ref = response_;
       if (ref instanceof String) {
@@ -13527,8 +15206,10 @@ public final class FGBoostServiceProto {
       }
     }
     /**
-     * <code>optional string response = 1;</code>
+     * <code>string response = 1;</code>
+     * @return The bytes for response.
      */
+    @Override
     public com.google.protobuf.ByteString
         getResponseBytes() {
       Object ref = response_;
@@ -13546,20 +15227,25 @@ public final class FGBoostServiceProto {
     public static final int DATA_FIELD_NUMBER = 2;
     private FlBaseProto.TensorMap data_;
     /**
-     * <code>optional .TensorMap data = 2;</code>
+     * <code>.TensorMap data = 2;</code>
+     * @return Whether the data field is set.
      */
+    @Override
     public boolean hasData() {
       return data_ != null;
     }
     /**
-     * <code>optional .TensorMap data = 2;</code>
+     * <code>.TensorMap data = 2;</code>
+     * @return The data.
      */
+    @Override
     public FlBaseProto.TensorMap getData() {
       return data_ == null ? FlBaseProto.TensorMap.getDefaultInstance() : data_;
     }
     /**
-     * <code>optional .TensorMap data = 2;</code>
+     * <code>.TensorMap data = 2;</code>
      */
+    @Override
     public FlBaseProto.TensorMapOrBuilder getDataOrBuilder() {
       return getData();
     }
@@ -13567,13 +15253,16 @@ public final class FGBoostServiceProto {
     public static final int CODE_FIELD_NUMBER = 3;
     private int code_;
     /**
-     * <code>optional int32 code = 3;</code>
+     * <code>int32 code = 3;</code>
+     * @return The code.
      */
+    @Override
     public int getCode() {
       return code_;
     }
 
     private byte memoizedIsInitialized = -1;
+    @Override
     public final boolean isInitialized() {
       byte isInitialized = memoizedIsInitialized;
       if (isInitialized == 1) return true;
@@ -13583,6 +15272,7 @@ public final class FGBoostServiceProto {
       return true;
     }
 
+    @Override
     public void writeTo(com.google.protobuf.CodedOutputStream output)
                         throws java.io.IOException {
       if (!getResponseBytes().isEmpty()) {
@@ -13594,8 +15284,10 @@ public final class FGBoostServiceProto {
       if (code_ != 0) {
         output.writeInt32(3, code_);
       }
+      unknownFields.writeTo(output);
     }
 
+    @Override
     public int getSerializedSize() {
       int size = memoizedSize;
       if (size != -1) return size;
@@ -13612,11 +15304,11 @@ public final class FGBoostServiceProto {
         size += com.google.protobuf.CodedOutputStream
           .computeInt32Size(3, code_);
       }
+      size += unknownFields.getSerializedSize();
       memoizedSize = size;
       return size;
     }
 
-    private static final long serialVersionUID = 0L;
     @Override
     public boolean equals(final Object obj) {
       if (obj == this) {
@@ -13627,17 +15319,17 @@ public final class FGBoostServiceProto {
       }
       PredictResponse other = (PredictResponse) obj;
 
-      boolean result = true;
-      result = result && getResponse()
-          .equals(other.getResponse());
-      result = result && (hasData() == other.hasData());
+      if (!getResponse()
+          .equals(other.getResponse())) return false;
+      if (hasData() != other.hasData()) return false;
       if (hasData()) {
-        result = result && getData()
-            .equals(other.getData());
+        if (!getData()
+            .equals(other.getData())) return false;
       }
-      result = result && (getCode()
-          == other.getCode());
-      return result;
+      if (getCode()
+          != other.getCode()) return false;
+      if (!unknownFields.equals(other.unknownFields)) return false;
+      return true;
     }
 
     @Override
@@ -13646,7 +15338,7 @@ public final class FGBoostServiceProto {
         return memoizedHashCode;
       }
       int hash = 41;
-      hash = (19 * hash) + getDescriptorForType().hashCode();
+      hash = (19 * hash) + getDescriptor().hashCode();
       hash = (37 * hash) + RESPONSE_FIELD_NUMBER;
       hash = (53 * hash) + getResponse().hashCode();
       if (hasData()) {
@@ -13660,6 +15352,17 @@ public final class FGBoostServiceProto {
       return hash;
     }
 
+    public static PredictResponse parseFrom(
+        java.nio.ByteBuffer data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static PredictResponse parseFrom(
+        java.nio.ByteBuffer data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
     public static PredictResponse parseFrom(
         com.google.protobuf.ByteString data)
         throws com.google.protobuf.InvalidProtocolBufferException {
@@ -13719,6 +15422,7 @@ public final class FGBoostServiceProto {
           .parseWithIOException(PARSER, input, extensionRegistry);
     }
 
+    @Override
     public Builder newBuilderForType() { return newBuilder(); }
     public static Builder newBuilder() {
       return DEFAULT_INSTANCE.toBuilder();
@@ -13726,6 +15430,7 @@ public final class FGBoostServiceProto {
     public static Builder newBuilder(PredictResponse prototype) {
       return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
     }
+    @Override
     public Builder toBuilder() {
       return this == DEFAULT_INSTANCE
           ? new Builder() : new Builder().mergeFrom(this);
@@ -13733,7 +15438,7 @@ public final class FGBoostServiceProto {
 
     @Override
     protected Builder newBuilderForType(
-        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+        BuilderParent parent) {
       Builder builder = new Builder(parent);
       return builder;
     }
@@ -13749,7 +15454,8 @@ public final class FGBoostServiceProto {
         return FGBoostServiceProto.internal_static_fgboost_PredictResponse_descriptor;
       }
 
-      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+      @Override
+      protected FieldAccessorTable
           internalGetFieldAccessorTable() {
         return FGBoostServiceProto.internal_static_fgboost_PredictResponse_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
@@ -13762,7 +15468,7 @@ public final class FGBoostServiceProto {
       }
 
       private Builder(
-          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+          BuilderParent parent) {
         super(parent);
         maybeForceBuilderInitialization();
       }
@@ -13771,6 +15477,7 @@ public final class FGBoostServiceProto {
                 .alwaysUseFieldBuilders) {
         }
       }
+      @Override
       public Builder clear() {
         super.clear();
         response_ = "";
@@ -13786,15 +15493,18 @@ public final class FGBoostServiceProto {
         return this;
       }
 
+      @Override
       public com.google.protobuf.Descriptors.Descriptor
           getDescriptorForType() {
         return FGBoostServiceProto.internal_static_fgboost_PredictResponse_descriptor;
       }
 
+      @Override
       public PredictResponse getDefaultInstanceForType() {
         return PredictResponse.getDefaultInstance();
       }
 
+      @Override
       public PredictResponse build() {
         PredictResponse result = buildPartial();
         if (!result.isInitialized()) {
@@ -13803,6 +15513,7 @@ public final class FGBoostServiceProto {
         return result;
       }
 
+      @Override
       public PredictResponse buildPartial() {
         PredictResponse result = new PredictResponse(this);
         result.response_ = response_;
@@ -13816,32 +15527,39 @@ public final class FGBoostServiceProto {
         return result;
       }
 
+      @Override
       public Builder clone() {
-        return (Builder) super.clone();
+        return super.clone();
       }
+      @Override
       public Builder setField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           Object value) {
-        return (Builder) super.setField(field, value);
+        return super.setField(field, value);
       }
+      @Override
       public Builder clearField(
           com.google.protobuf.Descriptors.FieldDescriptor field) {
-        return (Builder) super.clearField(field);
+        return super.clearField(field);
       }
+      @Override
       public Builder clearOneof(
           com.google.protobuf.Descriptors.OneofDescriptor oneof) {
-        return (Builder) super.clearOneof(oneof);
+        return super.clearOneof(oneof);
       }
+      @Override
       public Builder setRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           int index, Object value) {
-        return (Builder) super.setRepeatedField(field, index, value);
+        return super.setRepeatedField(field, index, value);
       }
+      @Override
       public Builder addRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           Object value) {
-        return (Builder) super.addRepeatedField(field, value);
+        return super.addRepeatedField(field, value);
       }
+      @Override
       public Builder mergeFrom(com.google.protobuf.Message other) {
         if (other instanceof PredictResponse) {
           return mergeFrom((PredictResponse)other);
@@ -13863,14 +15581,17 @@ public final class FGBoostServiceProto {
         if (other.getCode() != 0) {
           setCode(other.getCode());
         }
+        this.mergeUnknownFields(other.unknownFields);
         onChanged();
         return this;
       }
 
+      @Override
       public final boolean isInitialized() {
         return true;
       }
 
+      @Override
       public Builder mergeFrom(
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
@@ -13891,7 +15612,8 @@ public final class FGBoostServiceProto {
 
       private Object response_ = "";
       /**
-       * <code>optional string response = 1;</code>
+       * <code>string response = 1;</code>
+       * @return The response.
        */
       public String getResponse() {
         Object ref = response_;
@@ -13906,7 +15628,8 @@ public final class FGBoostServiceProto {
         }
       }
       /**
-       * <code>optional string response = 1;</code>
+       * <code>string response = 1;</code>
+       * @return The bytes for response.
        */
       public com.google.protobuf.ByteString
           getResponseBytes() {
@@ -13922,7 +15645,9 @@ public final class FGBoostServiceProto {
         }
       }
       /**
-       * <code>optional string response = 1;</code>
+       * <code>string response = 1;</code>
+       * @param value The response to set.
+       * @return This builder for chaining.
        */
       public Builder setResponse(
           String value) {
@@ -13935,7 +15660,8 @@ public final class FGBoostServiceProto {
         return this;
       }
       /**
-       * <code>optional string response = 1;</code>
+       * <code>string response = 1;</code>
+       * @return This builder for chaining.
        */
       public Builder clearResponse() {
         
@@ -13944,7 +15670,9 @@ public final class FGBoostServiceProto {
         return this;
       }
       /**
-       * <code>optional string response = 1;</code>
+       * <code>string response = 1;</code>
+       * @param value The bytes for response to set.
+       * @return This builder for chaining.
        */
       public Builder setResponseBytes(
           com.google.protobuf.ByteString value) {
@@ -13958,17 +15686,19 @@ public final class FGBoostServiceProto {
         return this;
       }
 
-      private FlBaseProto.TensorMap data_ = null;
+      private FlBaseProto.TensorMap data_;
       private com.google.protobuf.SingleFieldBuilderV3<
           FlBaseProto.TensorMap, FlBaseProto.TensorMap.Builder, FlBaseProto.TensorMapOrBuilder> dataBuilder_;
       /**
-       * <code>optional .TensorMap data = 2;</code>
+       * <code>.TensorMap data = 2;</code>
+       * @return Whether the data field is set.
        */
       public boolean hasData() {
         return dataBuilder_ != null || data_ != null;
       }
       /**
-       * <code>optional .TensorMap data = 2;</code>
+       * <code>.TensorMap data = 2;</code>
+       * @return The data.
        */
       public FlBaseProto.TensorMap getData() {
         if (dataBuilder_ == null) {
@@ -13978,7 +15708,7 @@ public final class FGBoostServiceProto {
         }
       }
       /**
-       * <code>optional .TensorMap data = 2;</code>
+       * <code>.TensorMap data = 2;</code>
        */
       public Builder setData(FlBaseProto.TensorMap value) {
         if (dataBuilder_ == null) {
@@ -13994,7 +15724,7 @@ public final class FGBoostServiceProto {
         return this;
       }
       /**
-       * <code>optional .TensorMap data = 2;</code>
+       * <code>.TensorMap data = 2;</code>
        */
       public Builder setData(
           FlBaseProto.TensorMap.Builder builderForValue) {
@@ -14008,7 +15738,7 @@ public final class FGBoostServiceProto {
         return this;
       }
       /**
-       * <code>optional .TensorMap data = 2;</code>
+       * <code>.TensorMap data = 2;</code>
        */
       public Builder mergeData(FlBaseProto.TensorMap value) {
         if (dataBuilder_ == null) {
@@ -14026,7 +15756,7 @@ public final class FGBoostServiceProto {
         return this;
       }
       /**
-       * <code>optional .TensorMap data = 2;</code>
+       * <code>.TensorMap data = 2;</code>
        */
       public Builder clearData() {
         if (dataBuilder_ == null) {
@@ -14040,7 +15770,7 @@ public final class FGBoostServiceProto {
         return this;
       }
       /**
-       * <code>optional .TensorMap data = 2;</code>
+       * <code>.TensorMap data = 2;</code>
        */
       public FlBaseProto.TensorMap.Builder getDataBuilder() {
         
@@ -14048,7 +15778,7 @@ public final class FGBoostServiceProto {
         return getDataFieldBuilder().getBuilder();
       }
       /**
-       * <code>optional .TensorMap data = 2;</code>
+       * <code>.TensorMap data = 2;</code>
        */
       public FlBaseProto.TensorMapOrBuilder getDataOrBuilder() {
         if (dataBuilder_ != null) {
@@ -14059,7 +15789,7 @@ public final class FGBoostServiceProto {
         }
       }
       /**
-       * <code>optional .TensorMap data = 2;</code>
+       * <code>.TensorMap data = 2;</code>
        */
       private com.google.protobuf.SingleFieldBuilderV3<
           FlBaseProto.TensorMap, FlBaseProto.TensorMap.Builder, FlBaseProto.TensorMapOrBuilder>
@@ -14077,13 +15807,17 @@ public final class FGBoostServiceProto {
 
       private int code_ ;
       /**
-       * <code>optional int32 code = 3;</code>
+       * <code>int32 code = 3;</code>
+       * @return The code.
        */
+      @Override
       public int getCode() {
         return code_;
       }
       /**
-       * <code>optional int32 code = 3;</code>
+       * <code>int32 code = 3;</code>
+       * @param value The code to set.
+       * @return This builder for chaining.
        */
       public Builder setCode(int value) {
         
@@ -14092,7 +15826,8 @@ public final class FGBoostServiceProto {
         return this;
       }
       /**
-       * <code>optional int32 code = 3;</code>
+       * <code>int32 code = 3;</code>
+       * @return This builder for chaining.
        */
       public Builder clearCode() {
         
@@ -14100,14 +15835,16 @@ public final class FGBoostServiceProto {
         onChanged();
         return this;
       }
+      @Override
       public final Builder setUnknownFields(
           final com.google.protobuf.UnknownFieldSet unknownFields) {
-        return this;
+        return super.setUnknownFields(unknownFields);
       }
 
+      @Override
       public final Builder mergeUnknownFields(
           final com.google.protobuf.UnknownFieldSet unknownFields) {
-        return this;
+        return super.mergeUnknownFields(unknownFields);
       }
 
 
@@ -14126,11 +15863,12 @@ public final class FGBoostServiceProto {
 
     private static final com.google.protobuf.Parser<PredictResponse>
         PARSER = new com.google.protobuf.AbstractParser<PredictResponse>() {
+      @Override
       public PredictResponse parsePartialFrom(
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws com.google.protobuf.InvalidProtocolBufferException {
-          return new PredictResponse(input, extensionRegistry);
+        return new PredictResponse(input, extensionRegistry);
       }
     };
 
@@ -14143,6 +15881,7 @@ public final class FGBoostServiceProto {
       return PARSER;
     }
 
+    @Override
     public PredictResponse getDefaultInstanceForType() {
       return DEFAULT_INSTANCE;
     }
@@ -14154,60 +15893,76 @@ public final class FGBoostServiceProto {
       com.google.protobuf.MessageOrBuilder {
 
     /**
-     * <code>optional .fgboost.DataSplit split = 1;</code>
+     * <code>.fgboost.DataSplit split = 1;</code>
+     * @return Whether the split field is set.
      */
     boolean hasSplit();
     /**
-     * <code>optional .fgboost.DataSplit split = 1;</code>
+     * <code>.fgboost.DataSplit split = 1;</code>
+     * @return The split.
      */
     DataSplit getSplit();
     /**
-     * <code>optional .fgboost.DataSplit split = 1;</code>
+     * <code>.fgboost.DataSplit split = 1;</code>
      */
     DataSplitOrBuilder getSplitOrBuilder();
 
     /**
-     * <code>optional string response = 2;</code>
+     * <code>string response = 2;</code>
+     * @return The response.
      */
     String getResponse();
     /**
-     * <code>optional string response = 2;</code>
+     * <code>string response = 2;</code>
+     * @return The bytes for response.
      */
     com.google.protobuf.ByteString
         getResponseBytes();
 
     /**
-     * <code>optional int32 code = 3;</code>
+     * <code>int32 code = 3;</code>
+     * @return The code.
      */
     int getCode();
   }
   /**
    * Protobuf type {@code fgboost.SplitResponse}
    */
-  public  static final class SplitResponse extends
+  public static final class SplitResponse extends
       com.google.protobuf.GeneratedMessageV3 implements
       // @@protoc_insertion_point(message_implements:fgboost.SplitResponse)
       SplitResponseOrBuilder {
+  private static final long serialVersionUID = 0L;
     // Use SplitResponse.newBuilder() to construct.
     private SplitResponse(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
       super(builder);
     }
     private SplitResponse() {
       response_ = "";
-      code_ = 0;
+    }
+
+    @Override
+    @SuppressWarnings({"unused"})
+    protected Object newInstance(
+        UnusedPrivateParameter unused) {
+      return new SplitResponse();
     }
 
     @Override
     public final com.google.protobuf.UnknownFieldSet
     getUnknownFields() {
-      return com.google.protobuf.UnknownFieldSet.getDefaultInstance();
+      return this.unknownFields;
     }
     private SplitResponse(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       this();
-      int mutable_bitField0_ = 0;
+      if (extensionRegistry == null) {
+        throw new NullPointerException();
+      }
+      com.google.protobuf.UnknownFieldSet.Builder unknownFields =
+          com.google.protobuf.UnknownFieldSet.newBuilder();
       try {
         boolean done = false;
         while (!done) {
@@ -14216,12 +15971,6 @@ public final class FGBoostServiceProto {
             case 0:
               done = true;
               break;
-            default: {
-              if (!input.skipField(tag)) {
-                done = true;
-              }
-              break;
-            }
             case 10: {
               DataSplit.Builder subBuilder = null;
               if (split_ != null) {
@@ -14246,6 +15995,13 @@ public final class FGBoostServiceProto {
               code_ = input.readInt32();
               break;
             }
+            default: {
+              if (!parseUnknownField(
+                  input, unknownFields, extensionRegistry, tag)) {
+                done = true;
+              }
+              break;
+            }
           }
         }
       } catch (com.google.protobuf.InvalidProtocolBufferException e) {
@@ -14254,6 +16010,7 @@ public final class FGBoostServiceProto {
         throw new com.google.protobuf.InvalidProtocolBufferException(
             e).setUnfinishedMessage(this);
       } finally {
+        this.unknownFields = unknownFields.build();
         makeExtensionsImmutable();
       }
     }
@@ -14262,7 +16019,8 @@ public final class FGBoostServiceProto {
       return FGBoostServiceProto.internal_static_fgboost_SplitResponse_descriptor;
     }
 
-    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+    @Override
+    protected FieldAccessorTable
         internalGetFieldAccessorTable() {
       return FGBoostServiceProto.internal_static_fgboost_SplitResponse_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
@@ -14272,20 +16030,25 @@ public final class FGBoostServiceProto {
     public static final int SPLIT_FIELD_NUMBER = 1;
     private DataSplit split_;
     /**
-     * <code>optional .fgboost.DataSplit split = 1;</code>
+     * <code>.fgboost.DataSplit split = 1;</code>
+     * @return Whether the split field is set.
      */
+    @Override
     public boolean hasSplit() {
       return split_ != null;
     }
     /**
-     * <code>optional .fgboost.DataSplit split = 1;</code>
+     * <code>.fgboost.DataSplit split = 1;</code>
+     * @return The split.
      */
+    @Override
     public DataSplit getSplit() {
       return split_ == null ? DataSplit.getDefaultInstance() : split_;
     }
     /**
-     * <code>optional .fgboost.DataSplit split = 1;</code>
+     * <code>.fgboost.DataSplit split = 1;</code>
      */
+    @Override
     public DataSplitOrBuilder getSplitOrBuilder() {
       return getSplit();
     }
@@ -14293,8 +16056,10 @@ public final class FGBoostServiceProto {
     public static final int RESPONSE_FIELD_NUMBER = 2;
     private volatile Object response_;
     /**
-     * <code>optional string response = 2;</code>
+     * <code>string response = 2;</code>
+     * @return The response.
      */
+    @Override
     public String getResponse() {
       Object ref = response_;
       if (ref instanceof String) {
@@ -14308,8 +16073,10 @@ public final class FGBoostServiceProto {
       }
     }
     /**
-     * <code>optional string response = 2;</code>
+     * <code>string response = 2;</code>
+     * @return The bytes for response.
      */
+    @Override
     public com.google.protobuf.ByteString
         getResponseBytes() {
       Object ref = response_;
@@ -14327,13 +16094,16 @@ public final class FGBoostServiceProto {
     public static final int CODE_FIELD_NUMBER = 3;
     private int code_;
     /**
-     * <code>optional int32 code = 3;</code>
+     * <code>int32 code = 3;</code>
+     * @return The code.
      */
+    @Override
     public int getCode() {
       return code_;
     }
 
     private byte memoizedIsInitialized = -1;
+    @Override
     public final boolean isInitialized() {
       byte isInitialized = memoizedIsInitialized;
       if (isInitialized == 1) return true;
@@ -14343,6 +16113,7 @@ public final class FGBoostServiceProto {
       return true;
     }
 
+    @Override
     public void writeTo(com.google.protobuf.CodedOutputStream output)
                         throws java.io.IOException {
       if (split_ != null) {
@@ -14354,8 +16125,10 @@ public final class FGBoostServiceProto {
       if (code_ != 0) {
         output.writeInt32(3, code_);
       }
+      unknownFields.writeTo(output);
     }
 
+    @Override
     public int getSerializedSize() {
       int size = memoizedSize;
       if (size != -1) return size;
@@ -14372,11 +16145,11 @@ public final class FGBoostServiceProto {
         size += com.google.protobuf.CodedOutputStream
           .computeInt32Size(3, code_);
       }
+      size += unknownFields.getSerializedSize();
       memoizedSize = size;
       return size;
     }
 
-    private static final long serialVersionUID = 0L;
     @Override
     public boolean equals(final Object obj) {
       if (obj == this) {
@@ -14387,17 +16160,17 @@ public final class FGBoostServiceProto {
       }
       SplitResponse other = (SplitResponse) obj;
 
-      boolean result = true;
-      result = result && (hasSplit() == other.hasSplit());
+      if (hasSplit() != other.hasSplit()) return false;
       if (hasSplit()) {
-        result = result && getSplit()
-            .equals(other.getSplit());
+        if (!getSplit()
+            .equals(other.getSplit())) return false;
       }
-      result = result && getResponse()
-          .equals(other.getResponse());
-      result = result && (getCode()
-          == other.getCode());
-      return result;
+      if (!getResponse()
+          .equals(other.getResponse())) return false;
+      if (getCode()
+          != other.getCode()) return false;
+      if (!unknownFields.equals(other.unknownFields)) return false;
+      return true;
     }
 
     @Override
@@ -14406,7 +16179,7 @@ public final class FGBoostServiceProto {
         return memoizedHashCode;
       }
       int hash = 41;
-      hash = (19 * hash) + getDescriptorForType().hashCode();
+      hash = (19 * hash) + getDescriptor().hashCode();
       if (hasSplit()) {
         hash = (37 * hash) + SPLIT_FIELD_NUMBER;
         hash = (53 * hash) + getSplit().hashCode();
@@ -14420,6 +16193,17 @@ public final class FGBoostServiceProto {
       return hash;
     }
 
+    public static SplitResponse parseFrom(
+        java.nio.ByteBuffer data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static SplitResponse parseFrom(
+        java.nio.ByteBuffer data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
     public static SplitResponse parseFrom(
         com.google.protobuf.ByteString data)
         throws com.google.protobuf.InvalidProtocolBufferException {
@@ -14479,6 +16263,7 @@ public final class FGBoostServiceProto {
           .parseWithIOException(PARSER, input, extensionRegistry);
     }
 
+    @Override
     public Builder newBuilderForType() { return newBuilder(); }
     public static Builder newBuilder() {
       return DEFAULT_INSTANCE.toBuilder();
@@ -14486,6 +16271,7 @@ public final class FGBoostServiceProto {
     public static Builder newBuilder(SplitResponse prototype) {
       return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
     }
+    @Override
     public Builder toBuilder() {
       return this == DEFAULT_INSTANCE
           ? new Builder() : new Builder().mergeFrom(this);
@@ -14493,7 +16279,7 @@ public final class FGBoostServiceProto {
 
     @Override
     protected Builder newBuilderForType(
-        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+        BuilderParent parent) {
       Builder builder = new Builder(parent);
       return builder;
     }
@@ -14509,7 +16295,8 @@ public final class FGBoostServiceProto {
         return FGBoostServiceProto.internal_static_fgboost_SplitResponse_descriptor;
       }
 
-      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+      @Override
+      protected FieldAccessorTable
           internalGetFieldAccessorTable() {
         return FGBoostServiceProto.internal_static_fgboost_SplitResponse_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
@@ -14522,7 +16309,7 @@ public final class FGBoostServiceProto {
       }
 
       private Builder(
-          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+          BuilderParent parent) {
         super(parent);
         maybeForceBuilderInitialization();
       }
@@ -14531,6 +16318,7 @@ public final class FGBoostServiceProto {
                 .alwaysUseFieldBuilders) {
         }
       }
+      @Override
       public Builder clear() {
         super.clear();
         if (splitBuilder_ == null) {
@@ -14546,15 +16334,18 @@ public final class FGBoostServiceProto {
         return this;
       }
 
+      @Override
       public com.google.protobuf.Descriptors.Descriptor
           getDescriptorForType() {
         return FGBoostServiceProto.internal_static_fgboost_SplitResponse_descriptor;
       }
 
+      @Override
       public SplitResponse getDefaultInstanceForType() {
         return SplitResponse.getDefaultInstance();
       }
 
+      @Override
       public SplitResponse build() {
         SplitResponse result = buildPartial();
         if (!result.isInitialized()) {
@@ -14563,6 +16354,7 @@ public final class FGBoostServiceProto {
         return result;
       }
 
+      @Override
       public SplitResponse buildPartial() {
         SplitResponse result = new SplitResponse(this);
         if (splitBuilder_ == null) {
@@ -14576,32 +16368,39 @@ public final class FGBoostServiceProto {
         return result;
       }
 
+      @Override
       public Builder clone() {
-        return (Builder) super.clone();
+        return super.clone();
       }
+      @Override
       public Builder setField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           Object value) {
-        return (Builder) super.setField(field, value);
+        return super.setField(field, value);
       }
+      @Override
       public Builder clearField(
           com.google.protobuf.Descriptors.FieldDescriptor field) {
-        return (Builder) super.clearField(field);
+        return super.clearField(field);
       }
+      @Override
       public Builder clearOneof(
           com.google.protobuf.Descriptors.OneofDescriptor oneof) {
-        return (Builder) super.clearOneof(oneof);
+        return super.clearOneof(oneof);
       }
+      @Override
       public Builder setRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           int index, Object value) {
-        return (Builder) super.setRepeatedField(field, index, value);
+        return super.setRepeatedField(field, index, value);
       }
+      @Override
       public Builder addRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           Object value) {
-        return (Builder) super.addRepeatedField(field, value);
+        return super.addRepeatedField(field, value);
       }
+      @Override
       public Builder mergeFrom(com.google.protobuf.Message other) {
         if (other instanceof SplitResponse) {
           return mergeFrom((SplitResponse)other);
@@ -14623,14 +16422,17 @@ public final class FGBoostServiceProto {
         if (other.getCode() != 0) {
           setCode(other.getCode());
         }
+        this.mergeUnknownFields(other.unknownFields);
         onChanged();
         return this;
       }
 
+      @Override
       public final boolean isInitialized() {
         return true;
       }
 
+      @Override
       public Builder mergeFrom(
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
@@ -14649,17 +16451,19 @@ public final class FGBoostServiceProto {
         return this;
       }
 
-      private DataSplit split_ = null;
+      private DataSplit split_;
       private com.google.protobuf.SingleFieldBuilderV3<
           DataSplit, DataSplit.Builder, DataSplitOrBuilder> splitBuilder_;
       /**
-       * <code>optional .fgboost.DataSplit split = 1;</code>
+       * <code>.fgboost.DataSplit split = 1;</code>
+       * @return Whether the split field is set.
        */
       public boolean hasSplit() {
         return splitBuilder_ != null || split_ != null;
       }
       /**
-       * <code>optional .fgboost.DataSplit split = 1;</code>
+       * <code>.fgboost.DataSplit split = 1;</code>
+       * @return The split.
        */
       public DataSplit getSplit() {
         if (splitBuilder_ == null) {
@@ -14669,7 +16473,7 @@ public final class FGBoostServiceProto {
         }
       }
       /**
-       * <code>optional .fgboost.DataSplit split = 1;</code>
+       * <code>.fgboost.DataSplit split = 1;</code>
        */
       public Builder setSplit(DataSplit value) {
         if (splitBuilder_ == null) {
@@ -14685,7 +16489,7 @@ public final class FGBoostServiceProto {
         return this;
       }
       /**
-       * <code>optional .fgboost.DataSplit split = 1;</code>
+       * <code>.fgboost.DataSplit split = 1;</code>
        */
       public Builder setSplit(
           DataSplit.Builder builderForValue) {
@@ -14699,7 +16503,7 @@ public final class FGBoostServiceProto {
         return this;
       }
       /**
-       * <code>optional .fgboost.DataSplit split = 1;</code>
+       * <code>.fgboost.DataSplit split = 1;</code>
        */
       public Builder mergeSplit(DataSplit value) {
         if (splitBuilder_ == null) {
@@ -14717,7 +16521,7 @@ public final class FGBoostServiceProto {
         return this;
       }
       /**
-       * <code>optional .fgboost.DataSplit split = 1;</code>
+       * <code>.fgboost.DataSplit split = 1;</code>
        */
       public Builder clearSplit() {
         if (splitBuilder_ == null) {
@@ -14731,7 +16535,7 @@ public final class FGBoostServiceProto {
         return this;
       }
       /**
-       * <code>optional .fgboost.DataSplit split = 1;</code>
+       * <code>.fgboost.DataSplit split = 1;</code>
        */
       public DataSplit.Builder getSplitBuilder() {
         
@@ -14739,7 +16543,7 @@ public final class FGBoostServiceProto {
         return getSplitFieldBuilder().getBuilder();
       }
       /**
-       * <code>optional .fgboost.DataSplit split = 1;</code>
+       * <code>.fgboost.DataSplit split = 1;</code>
        */
       public DataSplitOrBuilder getSplitOrBuilder() {
         if (splitBuilder_ != null) {
@@ -14750,7 +16554,7 @@ public final class FGBoostServiceProto {
         }
       }
       /**
-       * <code>optional .fgboost.DataSplit split = 1;</code>
+       * <code>.fgboost.DataSplit split = 1;</code>
        */
       private com.google.protobuf.SingleFieldBuilderV3<
           DataSplit, DataSplit.Builder, DataSplitOrBuilder>
@@ -14768,7 +16572,8 @@ public final class FGBoostServiceProto {
 
       private Object response_ = "";
       /**
-       * <code>optional string response = 2;</code>
+       * <code>string response = 2;</code>
+       * @return The response.
        */
       public String getResponse() {
         Object ref = response_;
@@ -14783,7 +16588,8 @@ public final class FGBoostServiceProto {
         }
       }
       /**
-       * <code>optional string response = 2;</code>
+       * <code>string response = 2;</code>
+       * @return The bytes for response.
        */
       public com.google.protobuf.ByteString
           getResponseBytes() {
@@ -14799,7 +16605,9 @@ public final class FGBoostServiceProto {
         }
       }
       /**
-       * <code>optional string response = 2;</code>
+       * <code>string response = 2;</code>
+       * @param value The response to set.
+       * @return This builder for chaining.
        */
       public Builder setResponse(
           String value) {
@@ -14812,7 +16620,8 @@ public final class FGBoostServiceProto {
         return this;
       }
       /**
-       * <code>optional string response = 2;</code>
+       * <code>string response = 2;</code>
+       * @return This builder for chaining.
        */
       public Builder clearResponse() {
         
@@ -14821,7 +16630,9 @@ public final class FGBoostServiceProto {
         return this;
       }
       /**
-       * <code>optional string response = 2;</code>
+       * <code>string response = 2;</code>
+       * @param value The bytes for response to set.
+       * @return This builder for chaining.
        */
       public Builder setResponseBytes(
           com.google.protobuf.ByteString value) {
@@ -14837,13 +16648,17 @@ public final class FGBoostServiceProto {
 
       private int code_ ;
       /**
-       * <code>optional int32 code = 3;</code>
+       * <code>int32 code = 3;</code>
+       * @return The code.
        */
+      @Override
       public int getCode() {
         return code_;
       }
       /**
-       * <code>optional int32 code = 3;</code>
+       * <code>int32 code = 3;</code>
+       * @param value The code to set.
+       * @return This builder for chaining.
        */
       public Builder setCode(int value) {
         
@@ -14852,7 +16667,8 @@ public final class FGBoostServiceProto {
         return this;
       }
       /**
-       * <code>optional int32 code = 3;</code>
+       * <code>int32 code = 3;</code>
+       * @return This builder for chaining.
        */
       public Builder clearCode() {
         
@@ -14860,14 +16676,16 @@ public final class FGBoostServiceProto {
         onChanged();
         return this;
       }
+      @Override
       public final Builder setUnknownFields(
           final com.google.protobuf.UnknownFieldSet unknownFields) {
-        return this;
+        return super.setUnknownFields(unknownFields);
       }
 
+      @Override
       public final Builder mergeUnknownFields(
           final com.google.protobuf.UnknownFieldSet unknownFields) {
-        return this;
+        return super.mergeUnknownFields(unknownFields);
       }
 
 
@@ -14886,11 +16704,12 @@ public final class FGBoostServiceProto {
 
     private static final com.google.protobuf.Parser<SplitResponse>
         PARSER = new com.google.protobuf.AbstractParser<SplitResponse>() {
+      @Override
       public SplitResponse parsePartialFrom(
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws com.google.protobuf.InvalidProtocolBufferException {
-          return new SplitResponse(input, extensionRegistry);
+        return new SplitResponse(input, extensionRegistry);
       }
     };
 
@@ -14903,6 +16722,7 @@ public final class FGBoostServiceProto {
       return PARSER;
     }
 
+    @Override
     public SplitResponse getDefaultInstanceForType() {
       return DEFAULT_INSTANCE;
     }
@@ -14925,15 +16745,15 @@ public final class FGBoostServiceProto {
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internal_static_fgboost_DownloadResponse_fieldAccessorTable;
   private static final com.google.protobuf.Descriptors.Descriptor
-    internal_static_fgboost_TreeLeaves_descriptor;
+    internal_static_fgboost_TreeLeaf_descriptor;
   private static final 
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
-      internal_static_fgboost_TreeLeaves_fieldAccessorTable;
+      internal_static_fgboost_TreeLeaf_fieldAccessorTable;
   private static final com.google.protobuf.Descriptors.Descriptor
-    internal_static_fgboost_UploadTreeLeavesRequest_descriptor;
+    internal_static_fgboost_UploadTreeLeafRequest_descriptor;
   private static final 
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
-      internal_static_fgboost_UploadTreeLeavesRequest_fieldAccessorTable;
+      internal_static_fgboost_UploadTreeLeafRequest_fieldAccessorTable;
   private static final com.google.protobuf.Descriptors.Descriptor
     internal_static_fgboost_DataSplit_descriptor;
   private static final 
@@ -15020,66 +16840,60 @@ public final class FGBoostServiceProto {
       "\n\010metaData\030\001 \001(\0132\t.MetaData\022\021\n\talgorithm" +
       "\030\002 \001(\t\"L\n\020DownloadResponse\022\030\n\004data\030\001 \001(\013" +
       "2\n.TensorMap\022\020\n\010response\030\002 \001(\t\022\014\n\004code\030\003" +
-      " \001(\005\"C\n\nTreeLeaves\022\016\n\006treeID\030\001 \001(\t\022\021\n\tle" +
-      "afIndex\030\002 \003(\005\022\022\n\nleafOutput\030\003 \003(\002\"V\n\027Upl" +
-      "oadTreeLeavesRequest\022\022\n\nclientuuid\030\001 \001(\t",
-      "\022\'\n\ntreeLeaves\030\002 \001(\0132\023.fgboost.TreeLeave" +
-      "s\"\227\001\n\tDataSplit\022\016\n\006treeID\030\001 \001(\t\022\016\n\006nodeI" +
-      "D\030\002 \001(\t\022\021\n\tfeatureID\030\003 \001(\005\022\022\n\nsplitValue" +
-      "\030\004 \001(\002\022\014\n\004gain\030\005 \001(\002\022\021\n\tsetLength\030\006 \001(\005\022" +
-      "\017\n\007itemSet\030\007 \003(\005\022\021\n\tclientUid\030\010 \001(\t\"0\n\016U" +
-      "ploadResponse\022\020\n\010response\030\001 \001(\t\022\014\n\004code\030" +
-      "\002 \001(\005\"/\n\013TreePredict\022\016\n\006treeID\030\001 \001(\t\022\020\n\010" +
-      "predicts\030\002 \003(\010\"6\n\014BoostPredict\022&\n\010predic" +
-      "ts\030\001 \003(\0132\024.fgboost.TreePredict\"4\n\tBoostE" +
-      "val\022\'\n\tevaluates\030\001 \003(\0132\024.fgboost.TreePre",
-      "dict\"4\n\017RegisterRequest\022\022\n\nclientuuid\030\001 " +
-      "\001(\t\022\r\n\005token\030\002 \001(\t\"2\n\020RegisterResponse\022\020" +
-      "\n\010response\030\001 \001(\t\022\014\n\004code\030\002 \001(\005\"b\n\025Upload" +
-      "TreeEvalRequest\022\022\n\nclientuuid\030\001 \001(\t\022\017\n\007v" +
-      "ersion\030\002 \001(\005\022$\n\010treeEval\030\003 \003(\0132\022.fgboost" +
-      ".BoostEval\"^\n\017EvaluateRequest\022\022\n\nclientu" +
-      "uid\030\001 \001(\t\022$\n\010treeEval\030\002 \003(\0132\022.fgboost.Bo" +
-      "ostEval\022\021\n\tbsVersion\030\003 \001(\005\"]\n\020EvaluateRe" +
+      " \001(\005\"R\n\010TreeLeaf\022\016\n\006treeID\030\001 \001(\t\022\021\n\tleaf" +
+      "Index\030\002 \003(\005\022\022\n\nleafOutput\030\003 \003(\002\022\017\n\007versi" +
+      "on\030\004 \001(\005\"P\n\025UploadTreeLeafRequest\022\022\n\ncli" +
+      "entuuid\030\001 \001(\t\022#\n\010treeLeaf\030\002 \001(\0132\021.fgboos" +
+      "t.TreeLeaf\"\250\001\n\tDataSplit\022\016\n\006treeID\030\001 \001(\t" +
+      "\022\016\n\006nodeID\030\002 \001(\t\022\021\n\tfeatureID\030\003 \001(\005\022\022\n\ns" +
+      "plitValue\030\004 \001(\002\022\014\n\004gain\030\005 \001(\002\022\021\n\tsetLeng" +
+      "th\030\006 \001(\005\022\017\n\007itemSet\030\007 \003(\005\022\021\n\tclientUid\030\010" +
+      " \001(\t\022\017\n\007version\030\t \001(\005\"0\n\016UploadResponse\022" +
+      "\020\n\010response\030\001 \001(\t\022\014\n\004code\030\002 \001(\005\"/\n\013TreeP" +
+      "redict\022\016\n\006treeID\030\001 \001(\t\022\020\n\010predicts\030\002 \003(\010" +
+      "\"6\n\014BoostPredict\022&\n\010predicts\030\001 \003(\0132\024.fgb" +
+      "oost.TreePredict\"4\n\tBoostEval\022\'\n\tevaluat" +
+      "es\030\001 \003(\0132\024.fgboost.TreePredict\"4\n\017Regist" +
+      "erRequest\022\022\n\nclientuuid\030\001 \001(\t\022\r\n\005token\030\002" +
+      " \001(\t\"2\n\020RegisterResponse\022\020\n\010response\030\001 \001" +
+      "(\t\022\014\n\004code\030\002 \001(\005\"b\n\025UploadTreeEvalReques" +
+      "t\022\022\n\nclientuuid\030\001 \001(\t\022\017\n\007version\030\002 \001(\005\022$" +
+      "\n\010treeEval\030\003 \003(\0132\022.fgboost.BoostEval\"o\n\017" +
+      "EvaluateRequest\022\022\n\nclientuuid\030\001 \001(\t\022$\n\010t" +
+      "reeEval\030\002 \003(\0132\022.fgboost.BoostEval\022\017\n\007ver" +
+      "sion\030\003 \001(\005\022\021\n\tlastBatch\030\004 \001(\010\"]\n\020Evaluat" +
+      "eResponse\022\020\n\010response\030\001 \001(\t\022\030\n\004data\030\002 \001(" +
+      "\0132\n.TensorMap\022\014\n\004code\030\003 \001(\005\022\017\n\007message\030\004" +
+      " \001(\t\"n\n\016PredictRequest\022\022\n\nclientuuid\030\001 \001" +
+      "(\t\022$\n\010treeEval\030\002 \003(\0132\022.fgboost.BoostEval" +
+      "\022\017\n\007version\030\003 \001(\005\022\021\n\tlastBatch\030\004 \001(\010\"E\n\014" +
+      "SplitRequest\022\022\n\nclientuuid\030\001 \001(\t\022!\n\005spli" +
+      "t\030\002 \001(\0132\022.fgboost.DataSplit\"K\n\017PredictRe" +
       "sponse\022\020\n\010response\030\001 \001(\t\022\030\n\004data\030\002 \001(\0132\n" +
-      ".TensorMap\022\014\n\004code\030\003 \001(\005\022\017\n\007message\030\004 \001(",
-      "\t\"]\n\016PredictRequest\022\022\n\nclientuuid\030\001 \001(\t\022" +
-      "$\n\010treeEval\030\002 \003(\0132\022.fgboost.BoostEval\022\021\n" +
-      "\tbsVersion\030\003 \001(\005\"E\n\014SplitRequest\022\022\n\nclie" +
-      "ntuuid\030\001 \001(\t\022!\n\005split\030\002 \001(\0132\022.fgboost.Da" +
-      "taSplit\"K\n\017PredictResponse\022\020\n\010response\030\001" +
-      " \001(\t\022\030\n\004data\030\002 \001(\0132\n.TensorMap\022\014\n\004code\030\003" +
-      " \001(\005\"R\n\rSplitResponse\022!\n\005split\030\001 \001(\0132\022.f" +
-      "gboost.DataSplit\022\020\n\010response\030\002 \001(\t\022\014\n\004co" +
-      "de\030\003 \001(\0052\365\003\n\016FGBoostService\022E\n\013uploadLab" +
-      "el\022\033.fgboost.UploadLabelRequest\032\027.fgboos",
-      "t.UploadResponse\"\000\022K\n\rdownloadLabel\022\035.fg" +
-      "boost.DownloadLabelRequest\032\031.fgboost.Dow" +
-      "nloadResponse\"\000\0228\n\005split\022\025.fgboost.Split" +
-      "Request\032\026.fgboost.SplitResponse\"\000\022A\n\010reg" +
-      "ister\022\030.fgboost.RegisterRequest\032\031.fgboos" +
-      "t.RegisterResponse\"\000\022O\n\020uploadTreeLeaves" +
-      "\022 .fgboost.UploadTreeLeavesRequest\032\027.fgb" +
-      "oost.UploadResponse\"\000\022A\n\010evaluate\022\030.fgbo" +
-      "ost.EvaluateRequest\032\031.fgboost.EvaluateRe" +
-      "sponse\"\000\022>\n\007predict\022\027.fgboost.PredictReq",
-      "uest\032\030.fgboost.PredictResponse\"\000B?\n(com." +
-      "intel.analytics.bigdl.ppml.generatedB\023FG" +
-      "BoostServiceProtob\006proto3"
+      ".TensorMap\022\014\n\004code\030\003 \001(\005\"R\n\rSplitRespons" +
+      "e\022!\n\005split\030\001 \001(\0132\022.fgboost.DataSplit\022\020\n\010" +
+      "response\030\002 \001(\t\022\014\n\004code\030\003 \001(\0052\361\003\n\016FGBoost" +
+      "Service\022E\n\013uploadLabel\022\033.fgboost.UploadL" +
+      "abelRequest\032\027.fgboost.UploadResponse\"\000\022K" +
+      "\n\rdownloadLabel\022\035.fgboost.DownloadLabelR" +
+      "equest\032\031.fgboost.DownloadResponse\"\000\0228\n\005s" +
+      "plit\022\025.fgboost.SplitRequest\032\026.fgboost.Sp" +
+      "litResponse\"\000\022A\n\010register\022\030.fgboost.Regi" +
+      "sterRequest\032\031.fgboost.RegisterResponse\"\000" +
+      "\022K\n\016uploadTreeLeaf\022\036.fgboost.UploadTreeL" +
+      "eafRequest\032\027.fgboost.UploadResponse\"\000\022A\n" +
+      "\010evaluate\022\030.fgboost.EvaluateRequest\032\031.fg" +
+      "boost.EvaluateResponse\"\000\022>\n\007predict\022\027.fg" +
+      "boost.PredictRequest\032\030.fgboost.PredictRe" +
+      "sponse\"\000B?\n(com.intel.analytics.bigdl.pp" +
+      "ml.generatedB\023FGBoostServiceProtob\006proto" +
+      "3"
     };
-    com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
-        new com.google.protobuf.Descriptors.FileDescriptor.    InternalDescriptorAssigner() {
-          public com.google.protobuf.ExtensionRegistry assignDescriptors(
-              com.google.protobuf.Descriptors.FileDescriptor root) {
-            descriptor = root;
-            return null;
-          }
-        };
-    com.google.protobuf.Descriptors.FileDescriptor
+    descriptor = com.google.protobuf.Descriptors.FileDescriptor
       .internalBuildGeneratedFileFrom(descriptorData,
         new com.google.protobuf.Descriptors.FileDescriptor[] {
           FlBaseProto.getDescriptor(),
-        }, assigner);
+        });
     internal_static_fgboost_UploadLabelRequest_descriptor =
       getDescriptor().getMessageTypes().get(0);
     internal_static_fgboost_UploadLabelRequest_fieldAccessorTable = new
@@ -15098,24 +16912,24 @@ public final class FGBoostServiceProto {
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_fgboost_DownloadResponse_descriptor,
         new String[] { "Data", "Response", "Code", });
-    internal_static_fgboost_TreeLeaves_descriptor =
+    internal_static_fgboost_TreeLeaf_descriptor =
       getDescriptor().getMessageTypes().get(3);
-    internal_static_fgboost_TreeLeaves_fieldAccessorTable = new
+    internal_static_fgboost_TreeLeaf_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
-        internal_static_fgboost_TreeLeaves_descriptor,
-        new String[] { "TreeID", "LeafIndex", "LeafOutput", });
-    internal_static_fgboost_UploadTreeLeavesRequest_descriptor =
+        internal_static_fgboost_TreeLeaf_descriptor,
+        new String[] { "TreeID", "LeafIndex", "LeafOutput", "Version", });
+    internal_static_fgboost_UploadTreeLeafRequest_descriptor =
       getDescriptor().getMessageTypes().get(4);
-    internal_static_fgboost_UploadTreeLeavesRequest_fieldAccessorTable = new
+    internal_static_fgboost_UploadTreeLeafRequest_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
-        internal_static_fgboost_UploadTreeLeavesRequest_descriptor,
-        new String[] { "Clientuuid", "TreeLeaves", });
+        internal_static_fgboost_UploadTreeLeafRequest_descriptor,
+        new String[] { "Clientuuid", "TreeLeaf", });
     internal_static_fgboost_DataSplit_descriptor =
       getDescriptor().getMessageTypes().get(5);
     internal_static_fgboost_DataSplit_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_fgboost_DataSplit_descriptor,
-        new String[] { "TreeID", "NodeID", "FeatureID", "SplitValue", "Gain", "SetLength", "ItemSet", "ClientUid", });
+        new String[] { "TreeID", "NodeID", "FeatureID", "SplitValue", "Gain", "SetLength", "ItemSet", "ClientUid", "Version", });
     internal_static_fgboost_UploadResponse_descriptor =
       getDescriptor().getMessageTypes().get(6);
     internal_static_fgboost_UploadResponse_fieldAccessorTable = new
@@ -15163,7 +16977,7 @@ public final class FGBoostServiceProto {
     internal_static_fgboost_EvaluateRequest_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_fgboost_EvaluateRequest_descriptor,
-        new String[] { "Clientuuid", "TreeEval", "BsVersion", });
+        new String[] { "Clientuuid", "TreeEval", "Version", "LastBatch", });
     internal_static_fgboost_EvaluateResponse_descriptor =
       getDescriptor().getMessageTypes().get(14);
     internal_static_fgboost_EvaluateResponse_fieldAccessorTable = new
@@ -15175,7 +16989,7 @@ public final class FGBoostServiceProto {
     internal_static_fgboost_PredictRequest_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_fgboost_PredictRequest_descriptor,
-        new String[] { "Clientuuid", "TreeEval", "BsVersion", });
+        new String[] { "Clientuuid", "TreeEval", "Version", "LastBatch", });
     internal_static_fgboost_SplitRequest_descriptor =
       getDescriptor().getMessageTypes().get(16);
     internal_static_fgboost_SplitRequest_fieldAccessorTable = new

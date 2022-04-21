@@ -50,7 +50,7 @@ receive, key: test, value: 2
 
 ### Run KafkaServing
 #### Start CluserServing with Kafka
-If you want to test ClusterServing with Kafka, change [ClusterServing.scala](https://github.com/intel-analytics/analytics-zoo/blob/master/zoo/src/main/scala/com/intel/analytics/zoo/serving/ClusterServing.scala) in `analytics-zoo/blob/master/zoo/src/main/scala/com/intel/analytics/zoo/serving/ClusterServing.scala` as follows:
+If you want to test ClusterServing with Kafka, change [ClusterServing.scala](https://github.com/intel-analytics/bigdl/blob/master/bigdl/src/main/scala/com/intel/analytics/bigdl/serving/ClusterServing.scala) in `bigdl/blob/master/bigdl/src/main/scala/com/intel/analytics/bigdl/serving/ClusterServing.scala` as follows:
 
 ```scala
 streamingEnv.addSource(new FlinkRedisSource(helper)) -> streamingEnv.addSource(new FlinkKafkaSource(helper))
@@ -62,4 +62,4 @@ then you can start ClusterServing as usual.
 #### Test with python
 You can use python to test KafkaServing, similar to [python test](#run-python-test). Change the topic (producer) in `kafka_example.py` to `serving_stream` and the topic (consumer) in `kafka_example.py` to `cluster-serving_serving_stream`. Modify the message sent by the producer to match the input format for serving and run the producer&consumer. You should be seeing predict results in consumer terminal.
 
-**Make sure to serialize and deserialize the data on Kafka using the same serializer/deserializer** --- For example, on python producer side, the serializer should match the deserializer in `analytics-zoo/blob/master/zoo/src/main/scala/com/intel/analytics/zoo/serving/engine/FlinkKafkaSource.scala`.
+**Make sure to serialize and deserialize the data on Kafka using the same serializer/deserializer** --- For example, on python producer side, the serializer should match the deserializer in `bigdl/blob/master/bigdl/src/main/scala/com/intel/analytics/bigdl/serving/engine/FlinkKafkaSource.scala`.

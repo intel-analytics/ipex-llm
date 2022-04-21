@@ -24,7 +24,7 @@ import com.intel.analytics.bigdl.dllib.nn._
 import com.intel.analytics.bigdl.dllib.optim.{Adam, LBFGS, Loss, Trigger}
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric.NumericFloat
-import com.intel.analytics.bigdl.dllib.utils.Engine
+import com.intel.analytics.bigdl.dllib.utils.{Engine, TestUtils}
 import com.intel.analytics.bigdl.dllib.utils.RandomGenerator.RNG
 import com.intel.analytics.bigdl.dllib.visualization.{TrainSummary, ValidationSummary}
 import com.intel.analytics.bigdl.dllib.feature.common._
@@ -74,12 +74,12 @@ class NNClassifierSpec extends ZooSpecHelper {
     val model = Linear[Float](10, 1)
     val criterion = ZooClassNLLCriterion[Float]()
     val estimator = NNClassifier(model, criterion, Array(10))
-    assert(estimator.getFeaturesCol == "features")
-    assert(estimator.getLabelCol == "label")
-    assert(estimator.getMaxEpoch == 50)
-    assert(estimator.getBatchSize == 1)
-    assert(estimator.getLearningRate == 1e-3)
-    assert(estimator.getLearningRateDecay == 0)
+    TestUtils.conditionFailTest(estimator.getFeaturesCol == "features")
+    TestUtils.conditionFailTest(estimator.getLabelCol == "label")
+    TestUtils.conditionFailTest(estimator.getMaxEpoch == 50)
+    TestUtils.conditionFailTest(estimator.getBatchSize == 1)
+    TestUtils.conditionFailTest(estimator.getLearningRate == 1e-3)
+    TestUtils.conditionFailTest(estimator.getLearningRateDecay == 0)
   }
 
   "NNClassifier" should "apply with differnt params" in {
@@ -108,7 +108,8 @@ class NNClassifierSpec extends ZooSpecHelper {
 
     val nnModel = classifier.fit(df)
     nnModel.isInstanceOf[NNClassifierModel[_]] should be(true)
-    assert(nnModel.transform(df).where("prediction=label").count() > nRecords * 0.8)
+    TestUtils.conditionFailTest(
+      nnModel.transform(df).where("prediction=label").count() > nRecords * 0.8)
   }
 
   "NNClassifier" should "support model with Sigmoid" in {
@@ -126,7 +127,7 @@ class NNClassifierSpec extends ZooSpecHelper {
     val nnModel = classifier.fit(df)
     nnModel.isInstanceOf[NNClassifierModel[_]] should be(true)
     val correctCount = nnModel.transform(df).where("prediction=label").count()
-    assert(correctCount > nRecords * 0.8)
+    TestUtils.conditionFailTest(correctCount > nRecords * 0.8)
   }
 
   "NNClassifier" should "apply with size support different FEATURE types" in {
@@ -229,7 +230,8 @@ class NNClassifierSpec extends ZooSpecHelper {
         Data(targetArr(i), inputArr.slice(i * 28 * 28, (i + 1) * 28 * 28).map(_.toDouble))))
     val rowRDD = sc.parallelize(tensorBuffer)
     val testData = sqlContext.createDataFrame(rowRDD)
-    assert(valTrans.transform(testData).where("prediction=label").count() == testData.count())
+    TestUtils.conditionFailTest(
+      valTrans.transform(testData).where("prediction=label").count() == testData.count())
     tensorBuffer.clear()
   }
 
@@ -254,7 +256,8 @@ class NNClassifierSpec extends ZooSpecHelper {
 
       val pipelineModel = pipeline.fit(df)
       pipelineModel.isInstanceOf[PipelineModel] should be(true)
-      assert(pipelineModel.transform(df).where("prediction=label").count() > nRecords * 0.8)
+      TestUtils.conditionFailTest(
+        pipelineModel.transform(df).where("prediction=label").count() > nRecords * 0.8)
     }
   }
 
@@ -262,7 +265,7 @@ class NNClassifierSpec extends ZooSpecHelper {
     val pascalResource = getClass.getClassLoader.getResource("pascal/")
     val imageDF = NNImageReader.readImages(pascalResource.getFile, sc)
       .withColumn("label", lit(2.0f))
-    assert(imageDF.count() == 1)
+    TestUtils.conditionFailTest(imageDF.count() == 1)
     val transformer = RowToImageFeature() -> ImageResize(256, 256) -> ImageCenterCrop(224, 224) ->
       ImageChannelNormalize(123, 117, 104, 1, 1, 1) -> ImageMatToTensor() -> ImageFeatureToTensor()
 
@@ -320,7 +323,7 @@ class NNClassifierSpec extends ZooSpecHelper {
       NNClassifierModel(model, SeqToTensor(Array(6)))
     ).foreach { e =>
       e.transform(df).count()
-      assert(e.getBatchSize == 4)
+      TestUtils.conditionFailTest(e.getBatchSize == 4)
     }
   }
 
@@ -342,23 +345,23 @@ class NNClassifierSpec extends ZooSpecHelper {
       .setValidationSummary(new ValidationSummary("/tmp", appName))
       .setValidation(Trigger.maxIteration(3), df, Array(new Loss[Float]()), 2)
     val copied = classifier.copy(ParamMap.empty)
-    assert(classifier.model ne copied.model)
-    assert(classifier.criterion ne copied.criterion)
+    TestUtils.conditionFailTest(classifier.model ne copied.model)
+    TestUtils.conditionFailTest(classifier.criterion ne copied.criterion)
 
-    assert(classifier.model == copied.model)
-    assert(classifier.criterion == copied.criterion)
+    TestUtils.conditionFailTest(classifier.model == copied.model)
+    TestUtils.conditionFailTest(classifier.criterion == copied.criterion)
     NNEstimatorSpec.compareParams(classifier, copied)
     val estVal = classifier.getValidation.get
     val copiedVal = copied.getValidation.get
-    assert(estVal._1 == copiedVal._1)
-    assert(estVal._2 == copiedVal._2)
-    assert(estVal._3.deep == copiedVal._3.deep)
-    assert(estVal._4 == copiedVal._4)
+    TestUtils.conditionFailTest(estVal._1 == copiedVal._1)
+    TestUtils.conditionFailTest(estVal._2 == copiedVal._2)
+    TestUtils.conditionFailTest(estVal._3.deep == copiedVal._3.deep)
+    TestUtils.conditionFailTest(estVal._4 == copiedVal._4)
 
     // train Summary and validation Summary are not copied since they are not thread-safe and cannot
     // be shared among estimators
-    assert(copied.getTrainSummary.isEmpty)
-    assert(copied.getValidationSummary.isEmpty)
+    TestUtils.conditionFailTest(copied.getTrainSummary.isEmpty)
+    TestUtils.conditionFailTest(copied.getValidationSummary.isEmpty)
   }
 
   "NNClassifierModel" should "construct with sampleTransformer" in {
@@ -369,7 +372,7 @@ class NNClassifierSpec extends ZooSpecHelper {
     val data = sc.parallelize(smallData)
     val df = sqlContext.createDataFrame(data).toDF("features", "label")
 
-    assert(nnModel.transform(df).count() == nRecords)
+    TestUtils.conditionFailTest(nnModel.transform(df).count() == nRecords)
   }
 
   "NNClassifierModel" should "supports deep copy" in {
@@ -389,10 +392,10 @@ class NNClassifierSpec extends ZooSpecHelper {
 
     val nnModel = classifier.fit(df)
     val copied = nnModel.copy(ParamMap.empty)
-    assert(copied.isInstanceOf[NNClassifierModel[_]])
-    assert(nnModel.model ne copied.model)
+    TestUtils.conditionFailTest(copied.isInstanceOf[NNClassifierModel[_]])
+    TestUtils.conditionFailTest(nnModel.model ne copied.model)
 
-    assert(nnModel.model == copied.model)
+    TestUtils.conditionFailTest(nnModel.model == copied.model)
     NNEstimatorSpec.compareParams(nnModel, copied)
   }
 
@@ -408,7 +411,7 @@ class NNClassifierSpec extends ZooSpecHelper {
     val nnModel = classifier.fit(df)
     val newPreprocessing = ArrayToTensor(Array(6)) -> TensorToSample()
     nnModel.setSamplePreprocessing(newPreprocessing)
-    assert(df.count() == nnModel.transform(df).count())
+    TestUtils.conditionFailTest(df.count() == nnModel.transform(df).count())
   }
 
   "XGBClassifierModel" should "work with sparse features" in {
@@ -423,8 +426,15 @@ class NNClassifierSpec extends ZooSpecHelper {
         .option("header", true)
         .load(filePath)
       val model = XGBClassifierModel.load(modelPath, 2)
-      model.setFeaturesCol(Array("age", "gender", "jointime", "star"))
-      model.transform(df).count()
+      df.printSchema()
+
+      val vectorAssembler = new VectorAssembler().
+        setInputCols(Array("age", "gender", "jointime", "star")).
+        setOutputCol("features")
+      val xgbInput = vectorAssembler.transform(df).select("features")
+
+      model.setFeaturesCol("features")
+      model.transform(xgbInput).count()
     }
   }
 
@@ -443,9 +453,18 @@ class NNClassifierSpec extends ZooSpecHelper {
         StructField("class", StringType, true)))
       val df = spark.read.schema(schema).csv(filePath)
 
+      val vectorAssembler = new VectorAssembler().
+        setInputCols(Array("sepal length", "sepal width", "petal length", "petal width")).
+        setOutputCol("sparse_features")
+      val data = vectorAssembler.transform(df).select("sparse_features",
+        "class")
+      val asDense = udf((v: Vector) => v.toDense)
+      val xgbInput = data.withColumn("features", asDense(col("sparse_features")))
+
+
       val model = XGBClassifierModel.load(modelPath, 2)
-      model.setFeaturesCol(Array("sepal length", "sepal width", "petal length", "petal width"))
-      model.transform(df).count()
+      model.setFeaturesCol("features")
+      model.transform(xgbInput).count()
     }
   }
 

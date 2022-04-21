@@ -6,7 +6,7 @@
 Pull image from dockerhub.
 
 ```bash
-docker pull intelanalytics/bigdl-ppml-trusted-big-data-ml-scala-occlum:0.14.0-SNAPSHOT
+docker pull intelanalytics/bigdl-ppml-trusted-big-data-ml-scala-occlum:2.1.0-SNAPSHOT
 ```
 
 Also, you can build image with `build-docker-image.sh`. Configure environment variables in `Dockerfile` and `build-docker-image.sh`.
@@ -84,6 +84,22 @@ The examples are run in the docker container. Attach it and see the results (`do
 
 ## Spark TPC-H example
 
+### Rebuild Image
+
+Enlarge these four configurations in [run_spark_on_occlum_glibc.sh](https://github.com/intel-analytics/BigDL/blob/main/ppml/trusted-big-data-ml/scala/docker-occlum/run_spark_on_occlum_glibc.sh#L19) to:
+```
+.resource_limits.max_num_of_threads = 4096 |
+.process.default_heap_size = "4096MB" |
+.resource_limits.kernel_space_heap_size="4096MB" |
+.process.default_mmap_size = "81920MB" |
+```
+
+Then build the docker image:
+
+``` bash
+bash build-docker-image.sh
+```
+
 ### Generate Data
 
 ```
@@ -92,9 +108,9 @@ cd zoo-tutorials/tpch-spark/dbgen && \
 make
 ```
 
-Then you can generate 1G size data by:
+Then you can generate 100G size data by:
 ```
-./dbgen -s 1
+./dbgen -s 100
 ```
 
 Then mount `/path/to/zoo-tutorials/tpch-spark/dbgen` to container's `/opt/occlum_spark/data` in `start-spark-local.sh` via:
@@ -108,3 +124,88 @@ bash start-spark-local.sh tpch
 ```
 
 You will find `output` folder under `/path/to/zoo-tutorials/tpch-spark/dbgen` which contains sql result.
+
+## Spark SQL Scala Unit Tests
+
+### Run Spark SQl Scala Unit Tests
+To run Spark Sql Scala Unit Tests, start the docker container with:
+```
+bash start-spark-local.sh ut
+```
+You can see some output like this:
+```
+22/01/28 03:06:54 INFO SqlResourceSuite: 
+
+===== TEST OUTPUT FOR o.a.s.status.api.v1.sql.SqlResourceSuite: 'Prepare ExecutionData when details = false and planDescription = false' =====
+
+22/01/28 03:06:54 INFO SqlResourceSuite: 
+
+===== FINISHED o.a.s.status.api.v1.sql.SqlResourceSuite: 'Prepare ExecutionData when details = false and planDescription = false' =====
+
+22/01/28 03:06:54 INFO SqlResourceSuite: 
+
+===== TEST OUTPUT FOR o.a.s.status.api.v1.sql.SqlResourceSuite: 'Prepare ExecutionData when details = true and planDescription = false' =====
+
+22/01/28 03:06:54 INFO SqlResourceSuite: 
+
+===== FINISHED o.a.s.status.api.v1.sql.SqlResourceSuite: 'Prepare ExecutionData when details = true and planDescription = false' =====
+
+22/01/28 03:06:54 INFO SqlResourceSuite: 
+
+===== TEST OUTPUT FOR o.a.s.status.api.v1.sql.SqlResourceSuite: 'Prepare ExecutionData when details = true and planDescription = true' =====
+
+22/01/28 03:06:54 INFO SqlResourceSuite: 
+
+===== FINISHED o.a.s.status.api.v1.sql.SqlResourceSuite: 'Prepare ExecutionData when details = true and planDescription = true' =====
+```
+And the log files will be saved to `data/olog` folder.
+
+## BigDL XGBoost Example
+
+### Rebuild Image
+
+Enlarge these four configurations in [run_spark_on_occlum_glibc.sh](https://github.com/intel-analytics/BigDL/blob/main/ppml/trusted-big-data-ml/scala/docker-occlum/run_spark_on_occlum_glibc.sh#L19) to:
+```
+.resource_limits.max_num_of_threads = 4096 |
+.process.default_heap_size = "32GB" |
+.resource_limits.kernel_space_heap_size="2GB" |
+.process.default_mmap_size = "24GB" |
+```
+
+Then build the docker image:
+
+``` bash
+bash build-docker-image.sh
+```
+
+### Download data
+You can download the criteo-1tb-click-logs-dataset from [here](https://ailab.criteo.com/download-criteo-1tb-click-logs-dataset/). Split 10g data from the dataset and put it into a folder. Then mount `/path/to/data/10g_data` to container's `/opt/occlum_spark/data` in `start-spark-local.sh` via:
+```
+-v /path/to/data/10g_data:/opt/occlum_spark/data
+```
+Enlarge SGX memory in `start-spark-local.sh` to:
+```
+	-e SGX_MEM_SIZE=58GB \
+```
+
+Start run BigDL Spark XGBoost example:
+```
+bash start-spark-local.sh xgboost
+```
+
+The console output looks like:
+```
+[INFO] [02/10/2022 14:57:04.244] [RabitTracker-akka.actor.default-dispatcher-3] [akka://RabitTracker/user/Handler] [0]  train-merror:0.030477   eval1-merror:0.030473   eval2-merror:0.030350
+[INFO] [02/10/2022 14:57:07.296] [RabitTracker-akka.actor.default-dispatcher-3] [akka://RabitTracker/user/Handler] [1]  train-merror:0.030477   eval1-merror:0.030473   eval2-merror:0.030350
+[INFO] [02/10/2022 14:57:10.071] [RabitTracker-akka.actor.default-dispatcher-7] [akka://RabitTracker/user/Handler] [2]  train-merror:0.030477   eval1-merror:0.030473   eval2-merror:0.030350
+```
+
+You can find XGBoost model under folder `/path/to/data/`.
+```
+/path/to/data/
+├── data
+│   └── XGBoostClassificationModel
+└── metadata
+    ├── part-00000
+    └── _SUCCESS
+```

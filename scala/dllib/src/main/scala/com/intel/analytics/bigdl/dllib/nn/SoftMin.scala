@@ -19,7 +19,7 @@ package com.intel.analytics.bigdl.dllib.nn
 import com.intel.analytics.bigdl.dllib.nn.abstractnn.TensorModule
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.dllib.utils.Engine
+import com.intel.analytics.bigdl.dllib.utils.{Engine, Log4Error}
 
 import scala.concurrent.Future
 import scala.reflect.ClassTag
@@ -141,7 +141,7 @@ object SoftMin {
     results: Array[Future[Unit]], pos: Int = 1
     )(implicit ev: TensorNumeric[T]): Tensor[T] = {
 
-    require(input.size().deep == gradOutput.size().deep,
+    Log4Error.invalidInputError(input.size().deep == gradOutput.size().deep,
       "input should have the same size with gradOutput" +
         s"inputsize ${input.size().deep} gradOutput ${gradOutput.size().deep}")
     // get nFrame, dim and stride value based on the output tensor and pos

@@ -44,6 +44,7 @@ class ProphetModel:
         seasonality_mode = config.get('seasonality_mode', 'additive')
         changepoint_range = config.get('changepoint_range', 0.8)
         self.metric = config.get('metric', self.metric)
+        self.metric_func = config.get('metric_func', None)
 
         self.model = Prophet(changepoint_prior_scale=changepoint_prior_scale,
                              seasonality_prior_scale=seasonality_prior_scale,
@@ -51,9 +52,23 @@ class ProphetModel:
                              changepoint_range=changepoint_range,
                              seasonality_mode=seasonality_mode)
 
+    def _fit(self, data, **config):
+        """
+        Only fit the data without validation data
+
+        :param data: training data, an dataframe with Td rows,
+            and 2 columns, with column 'ds' indicating date and column 'y' indicating target
+            and Td is the time dimension
+        """
+        if not self.model_init:
+            self._build(**config)
+            self.model_init = True
+
+        self.model.fit(data)
+
     def fit_eval(self,
                  data,
-                 validation_data,
+                 validation_data=None,
                  **config):
         """
         Fit on the training data from scratch.
@@ -69,20 +84,26 @@ class ProphetModel:
                cross_validation is set to True.
         :return: the evaluation metric value
         """
-        if not self.model_init:
-            self._build(**config)
-            self.model_init = True
+        self._fit(data, **config)
 
-        self.model.fit(data)
-
+        # cross_validation
         cross_validation = config.get('cross_validation', False)
         expected_horizon = config.get('expect_horizon', int(0.1*len(data)))
         if cross_validation:
             return self._eval_cross_validation(expected_horizon)
-        else:
-            val_metric = self.evaluate(target=validation_data,
-                                       metrics=[self.metric])[0].item()
-            return {self.metric: val_metric}
+
+        # normal validation process
+        if validation_data is not None:
+            if self.metric_func:
+                val_metric = self.evaluate(target=validation_data,
+                                           metrics=[self.metric_func])[0].item()
+            else:
+                val_metric = self.evaluate(target=validation_data,
+                                           metrics=[self.metric])[0].item()
+            if self.metric_func:
+                return {self.metric_func.__name__: val_metric}
+            else:
+                return {self.metric: val_metric}
 
     def _eval_cross_validation(self, expected_horizon):
         df_cv = cross_validation(self.model, horizon=expected_horizon)
@@ -117,7 +138,10 @@ class ProphetModel:
             So data should be None as it is not used.
         :param target: target for evaluation. A dataframe with 2 columns, where column 'ds'
                indicating date and column 'y' indicating target.
-        :param metrics: a list of metrics in string format
+        :param metrics: a list of metrics in string format or callable function with format
+               it signature should be func(y_true, y_pred), where y_true and y_pred are numpy
+               ndarray. The function should return a float value as evaluation result.
+
         :return: a list of metric evaluation results
         """
         if data is not None:

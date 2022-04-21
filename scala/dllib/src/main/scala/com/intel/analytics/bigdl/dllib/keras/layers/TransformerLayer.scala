@@ -22,7 +22,7 @@ import com.intel.analytics.bigdl.dllib.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.dllib.nn.internal.KerasLayer
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.dllib.utils.{MultiShape, Shape}
+import com.intel.analytics.bigdl.dllib.utils.{Log4Error, MultiShape, Shape}
 import com.intel.analytics.bigdl.dllib.keras.Net
 import com.intel.analytics.bigdl.dllib.keras.autograd.{AutoGrad, Constant, Variable}
 import com.intel.analytics.bigdl.dllib.keras.layers.utils.KerasUtils
@@ -73,7 +73,7 @@ private[layers] class TransformerLayer[T: ClassTag](
     val layer = if (!this.isBuilt()) {
       val (extendedAttentionMask, embeddingInputs, inputs) = buildInput(inputShape)
 
-      require(embeddingLayer.isInstanceOf[Net], "use layers from" +
+      Log4Error.invalidInputError(embeddingLayer.isInstanceOf[Net], "use layers from" +
         "com.intel.analytics.bigdl.dllib.keras and operators from" +
         " com.intel.analytics.bigdl.dllib.keras.autograd to construct the embedding layer")
       val embedding = embeddingLayer.asInstanceOf[Net]
@@ -109,8 +109,9 @@ private[layers] class TransformerLayer[T: ClassTag](
 
   // return (extenedAttentionMask, embeddingInputs, inputs)
   def buildInput(inputShape: Shape): (Variable[T], List[Variable[T]], List[Variable[T]]) = {
-    require(inputShape.isInstanceOf[MultiShape], "TransformerLayer input must be" +
-      " a list of tensors (consisting of input sequence, sequence positions, etc.)")
+    Log4Error.invalidInputError(inputShape.isInstanceOf[MultiShape],
+      "TransformerLayer input must be a list of tensors (consisting of input sequence," +
+        " sequence positions, etc.)")
     val _inputShape = KerasUtils.removeBatch(inputShape).toMulti()
     seqLen = _inputShape.head.toSingle().head
 
@@ -234,7 +235,7 @@ object TransformerLayer {
     initializerRange: Double = 0.02,
     bidirectional: Boolean = false,
     outputAllBlock: Boolean = false)(implicit ev: TensorNumeric[T]): TransformerLayer[T] = {
-    require(hiddenSize > 0, "hiddenSize must be greater" +
+    Log4Error.invalidInputError(hiddenSize > 0, "hiddenSize must be greater" +
       "than 0 with default embedding layer")
     val wordInput = InputLayer[T](inputShape = Shape(seqLen))
     val postionInput = InputLayer[T](inputShape = Shape(seqLen))

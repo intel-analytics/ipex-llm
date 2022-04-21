@@ -25,7 +25,7 @@ service FGBoostService {
     rpc downloadLabel(DownloadLabelRequest) returns (DownloadResponse) {}
     rpc split(SplitRequest) returns (SplitResponse) {}
     rpc register(RegisterRequest) returns (RegisterResponse) {}
-    rpc uploadTreeLeaves(UploadTreeLeavesRequest) returns (UploadResponse) {}
+    rpc uploadTreeLeaf(UploadTreeLeafRequest) returns (UploadResponse) {}
     rpc evaluate(EvaluateRequest) returns (EvaluateResponse) {}
     rpc predict(PredictRequest) returns (PredictResponse) {}
 }
@@ -45,15 +45,16 @@ message DownloadResponse {
     string response = 2;
     int32 code = 3;
 }
-message TreeLeaves {
+message TreeLeaf {
     string treeID = 1;
     repeated int32 leafIndex = 2;
     repeated float leafOutput = 3;
+    int32 version = 4;
 }
 
-message UploadTreeLeavesRequest {
+message UploadTreeLeafRequest {
     string clientuuid = 1;
-    TreeLeaves treeLeaves = 2;
+    TreeLeaf treeLeaf = 2;
 }
 message DataSplit {
     string treeID = 1;
@@ -64,6 +65,7 @@ message DataSplit {
     int32 setLength = 6;
     repeated int32 itemSet = 7;
     string clientUid = 8;
+    int32 version = 9;
 }
 
 message UploadResponse {
@@ -104,7 +106,8 @@ message UploadTreeEvalRequest {
 message EvaluateRequest {
     string clientuuid = 1;
     repeated BoostEval treeEval = 2;
-    int32 bsVersion = 3;
+    int32 version = 3;
+    bool lastBatch = 4;
 }
 
 message EvaluateResponse {
@@ -116,7 +119,8 @@ message EvaluateResponse {
 message PredictRequest {
     string clientuuid = 1;
     repeated BoostEval treeEval = 2;
-    int32 bsVersion = 3;
+    int32 version = 3;
+    bool lastBatch = 4;
 }
 message SplitRequest {
     string clientuuid = 1;

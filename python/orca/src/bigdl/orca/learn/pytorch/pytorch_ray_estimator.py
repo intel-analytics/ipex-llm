@@ -102,7 +102,7 @@ class PyTorchRayEstimator(OrcaRayEstimator):
             config=None,
             scheduler_step_freq="batch",
             use_tqdm=False,
-            backend="torch_distributed",
+            backend="ray",
             workers_per_node=1,
             sync_stats=True,
             log_level=logging.INFO):
@@ -147,7 +147,7 @@ class PyTorchRayEstimator(OrcaRayEstimator):
             log_level=log_level
         )
 
-        if backend == "torch_distributed":
+        if backend == "ray":
             cores_per_node = ray_ctx.ray_node_cpu_cores // workers_per_node
             num_nodes = ray_ctx.num_ray_nodes * workers_per_node
             RemoteRunner = ray.remote(num_cpus=cores_per_node)(PytorchRayWorker)
@@ -187,7 +187,7 @@ class PyTorchRayEstimator(OrcaRayEstimator):
                 for i, worker in enumerate(self.remote_workers)
             ])
         else:
-            raise Exception("Only \"torch_distributed\" and \"horovod\" are supported "
+            raise Exception("Only \"ray\" and \"horovod\" are supported "
                             "values of backend, but got {}".format(backend))
         self.num_workers = len(self.remote_workers)
 
@@ -206,8 +206,8 @@ class PyTorchRayEstimator(OrcaRayEstimator):
         Calls `TrainingOperator.train_epoch()` on N parallel workers simultaneously
         underneath the hood.
 
-        :param data: An instance of SparkXShards, a Spark DataFrame or a function that
-               takes config and batch_size as argument and returns a PyTorch DataLoader for
+        :param data: An instance of SparkXShards, a Ray Dataset, a Spark DataFrame or a function
+               that takes config and batch_size as argument and returns a PyTorch DataLoader for
                training.
         :param epochs: The number of epochs to train the model. Default is 1.
         :param batch_size: The number of samples per batch for each worker. Default is 32.
@@ -223,8 +223,8 @@ class PyTorchRayEstimator(OrcaRayEstimator):
                Default is True.
         :param info: An optional dictionary that can be passed to the TrainingOperator for
                train_epoch and train_batch.
-        :param feature_cols: feature column names if data is Spark DataFrame.
-        :param label_cols: label column names if data is Spark DataFrame.
+        :param feature_cols: feature column names if data is Spark DataFrame or Ray Dataset.
+        :param label_cols: label column names if data is Spark DataFrame or Ray Dataset.
         :param callbacks: A list for all callbacks.
 
         :return: A list of dictionary of metrics for every training epoch. If reduce_results is
@@ -234,6 +234,7 @@ class PyTorchRayEstimator(OrcaRayEstimator):
                 when creating the Estimator.
         """
         from bigdl.orca.data import SparkXShards
+        from ray.data import Dataset
 
         data, _ = maybe_dataframe_to_xshards(data,
                                              validation_data=None,
@@ -256,10 +257,29 @@ class PyTorchRayEstimator(OrcaRayEstimator):
 
             worker_stats = ray_xshards.reduce_partitions_for_actors(self.remote_workers,
                                                                     transform_func)
+        elif isinstance(data, Dataset):
+            shards = data.split(n=self.num_workers, locality_hints=self.remote_workers)
+
+            def data_creator(config, batch_size):
+                torch_datashard = shard.to_torch(label_column=label_cols,
+                                                 feature_columns=feature_cols,
+                                                 batch_size=batch_size)
+                return torch_datashard
+
+            remote_worker_stats = []
+            for shard, worker in zip(shards, self.remote_workers):
+                stats = worker.train_epochs.remote(data_creator, epochs, batch_size, profile,
+                                                   info, False, callbacks)
+                remote_worker_stats.append(stats)
+            success = check_for_failure(remote_worker_stats)
+            if success:
+                worker_stats = ray.get(remote_worker_stats)
+            else:
+                worker_stats = None
         else:
             assert isinstance(data, types.FunctionType), \
-                "data should be either an instance of SparkXShards or a callable function, but " \
-                "got type: {}".format(type(data))
+                "data should be either an instance of SparkXShards, Ray Dataset " \
+                "or a callable function, but got type: {}".format(type(data))
 
             success, worker_stats = self._train_epochs(data,
                                                        epochs=epochs,
@@ -284,12 +304,13 @@ class PyTorchRayEstimator(OrcaRayEstimator):
         """
         Using this PyTorch model to make predictions on the data.
 
-        :param data: An instance of SparkXShards or a Spark DataFrame
+        :param data: An instance of SparkXShards, a Ray Dataset or a Spark DataFrame
         :param batch_size: The number of samples per batch for each worker. Default is 32.
         :param profile: Boolean. Whether to return time stats for the training procedure.
                Default is False.
-        :param feature_cols: feature column names if data is a Spark DataFrame.
-        :return: A SparkXShards that contains the predictions with key "prediction" in each shard
+        :param feature_cols: feature column names if data is a Spark DataFrame or Ray Dataset.
+        :return: A SparkXShards or a list that contains the predictions with key "prediction"
+               in each shard
         """
         from bigdl.orca.data import SparkXShards
         param = dict(
@@ -310,8 +331,23 @@ class PyTorchRayEstimator(OrcaRayEstimator):
                 data = process_xshards_of_pandas_dataframe(data, feature_cols)
             pred_shards = self._predict_spark_xshards(data, param)
             result = update_predict_xshards(data, pred_shards)
+        elif isinstance(data, ray.data.Dataset):
+            shards = data.split(n=self.num_workers, locality_hints=self.remote_workers)
+
+            def data_creator(config, batch_size):
+                torch_datashard = shard.to_torch(feature_columns=feature_cols,
+                                                 batch_size=batch_size)
+                return torch_datashard
+
+            remote_worker_stats = []
+            for shard, worker in zip(shards, self.remote_workers):
+                worker_stats = worker.predict.remote(data_creator, batch_size, profile)
+                remote_worker_stats.append(worker_stats)
+            result = ray.data.from_numpy(remote_worker_stats).map(
+                lambda r: {"prediction_result": r["value"]})
         else:
-            raise ValueError("Only xshards or Spark DataFrame is supported for predict")
+            raise ValueError("Only xshards, Spark DataFrame or Ray Dataset"
+                             " is supported for predict")
 
         return result
 
@@ -330,8 +366,8 @@ class PyTorchRayEstimator(OrcaRayEstimator):
         Calls `TrainingOperator.validate()` on N parallel workers simultaneously
         underneath the hood.
 
-        :param data: An instance of SparkXShards, a Spark DataFrame or a function that
-               takes config and batch_size as argument and returns a PyTorch DataLoader for
+        :param data: An instance of SparkXShards, a Spark DataFrame, a Ray Dataset or a function
+               that takes config and batch_size as argument and returns a PyTorch DataLoader for
                validation.
         :param batch_size: The number of samples per batch for each worker. Default is 32.
                The total batch size would be workers_per_node*num_nodes.
@@ -343,8 +379,8 @@ class PyTorchRayEstimator(OrcaRayEstimator):
                Default is False.
         :param info: An optional dictionary that can be passed to the TrainingOperator
                for validate.
-        :param feature_cols: feature column names if train data is Spark DataFrame.
-        :param label_cols: label column names if train data is Spark DataFrame.
+        :param feature_cols: feature column names if train data is Spark DataFrame or Ray Dataset.
+        :param label_cols: label column names if train data is Spark DataFrame or Ray Dataset.
 
         :return: A dictionary of metrics for the given data, including validation accuracy and loss.
                 You can also provide custom metrics by passing in a custom training_operator_cls
@@ -371,6 +407,21 @@ class PyTorchRayEstimator(OrcaRayEstimator):
 
             worker_stats = ray_xshards.reduce_partitions_for_actors(self.remote_workers,
                                                                     transform_func)
+        elif isinstance(data, ray.data.Dataset):
+            shards = data.split(n=self.num_workers, locality_hints=self.remote_workers)
+
+            def data_creator(config, batch_size):
+                torch_datashard = shard.to_torch(label_column=label_cols,
+                                                 feature_columns=feature_cols,
+                                                 batch_size=batch_size)
+                return torch_datashard
+
+            remote_worker_stats = []
+            for shard, worker in zip(shards, self.remote_workers):
+                stats = worker.validate.remote(
+                    data_creator, batch_size, num_steps, profile, info, False)
+                remote_worker_stats.append(stats)
+            worker_stats = ray.get(remote_worker_stats)
         else:
             assert isinstance(data, types.FunctionType), \
                 "data should be either an instance of SparkXShards or a callable function, but " \
@@ -415,6 +466,43 @@ class PyTorchRayEstimator(OrcaRayEstimator):
         """
         state_dict = torch.load(model_path)
         self.load_state_dict(state_dict)
+
+    def save_checkpoint(self, model_path):
+        """
+        Manually saves the Estimator state (including model and optimizer) to the provided
+        model_path.
+
+        :param model_path: (str) Path to save the model. Both local and remote path are supported.
+               e.g. "/tmp/estimator.ckpt" or "hdfs:///tmp/estimator.ckpt"
+        :return: None
+        """
+        from bigdl.dllib.utils.file_utils import is_local_path
+        if is_local_path(model_path):
+            self.save(model_path)
+        else:
+            results = [
+                worker.save_checkpoint.remote(model_path)
+                for worker in self.remote_workers
+            ]
+            ray.get(results)
+
+    def load_checkpoint(self, model_path):
+        """
+        Loads the Estimator state (including model and optimizer) from the provided model_path.
+
+        :param model_path: (str) Path to the existing model. Both local and remote path are
+               supported. e.g. "/tmp/estimator.ckpt" or "hdfs:///tmp/estimator.ckpt"
+        :return: None
+        """
+        from bigdl.dllib.utils.file_utils import is_local_path
+        if is_local_path(model_path):
+            self.load(model_path)
+        else:
+            results = [
+                worker.load_checkpoint.remote(model_path)
+                for worker in self.remote_workers
+            ]
+            ray.get(results)
 
     def shutdown(self, force=False):
         """

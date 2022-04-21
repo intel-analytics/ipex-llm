@@ -19,6 +19,7 @@
 #
 
 from __future__ import print_function
+import os
 import argparse
 import numpy as np
 import matplotlib.pyplot as plt
@@ -109,21 +110,29 @@ def main():
     parser = argparse.ArgumentParser(description='PyTorch Tensorboard Example')
     parser.add_argument('--cluster_mode', type=str, default="local",
                         help='The cluster mode, such as local, yarn-client, yarn-cluster, spark-submit or k8s.')
+    parser.add_argument('--runtime', type=str, default="spark",
+                        help='The runtime backend, one of spark or ray.')
+    parser.add_argument('--address', type=str, default="",
+                        help='The cluster address if the driver connects to an existing ray cluster. '
+                             'If it is empty, a new Ray cluster will be created.')
     parser.add_argument('--backend', type=str, default="bigdl",
                         help='The backend of PyTorch Estimator; '
-                             'bigdl, torch_distributed and spark are supported.')
-    parser.add_argument('--batch_size', type=int, default=64, help='The training batch size')
+                             'bigdl, ray and spark are supported.')
+    parser.add_argument('--batch_size', type=int, default=4, help='The training batch size')
     parser.add_argument('--epochs', type=int, default=2, help='The number of epochs to train for')
     parser.add_argument('--data_dir', type=str, default="./data", help='The path of dataset')
     parser.add_argument('--download', type=bool, default=True, help='Download dataset or not')
     args = parser.parse_args()
 
-    if args.cluster_mode == "local":
-        init_orca_context()
-    elif args.cluster_mode.startswith("yarn"):
-        init_orca_context(cluster_mode=args.cluster_mode, cores=4, num_nodes=2)
-    elif args.cluster_mode == "spark-submit":
-        init_orca_context(cluster_mode=args.cluster_mode)
+    if args.runtime == "ray":
+        init_orca_context(runtime=args.runtime, address=args.address)
+    else:
+        if args.cluster_mode == "local":
+            init_orca_context()
+        elif args.cluster_mode.startswith("yarn"):
+            init_orca_context(cluster_mode=args.cluster_mode, cores=4, num_nodes=2)
+        elif args.cluster_mode == "spark-submit":
+            init_orca_context(cluster_mode=args.cluster_mode)
 
     tensorboard_dir = args.data_dir+"runs"
     writer = SummaryWriter(tensorboard_dir + '/fashion_mnist_experiment_1')
@@ -171,11 +180,13 @@ def main():
 
         res = orca_estimator.evaluate(data=test_loader)
         print("Accuracy of the network on the test images: %s" % res)
-    elif args.backend in ["torch_distributed", "spark"]:
+    elif args.backend in ["ray", "spark"]:
         orca_estimator = Estimator.from_torch(model=model_creator,
                                               optimizer=optimizer_creator,
                                               loss=criterion,
                                               metrics=[Accuracy()],
+                                              model_dir=os.getcwd(),
+                                              use_tqdm=True,
                                               backend=args.backend)
         stats = orca_estimator.fit(train_data_creator, epochs=epochs, batch_size=batch_size)
 
@@ -186,7 +197,7 @@ def main():
         print("Validation stats: {}".format(val_stats))
         orca_estimator.shutdown()
     else:
-        raise NotImplementedError("Only bigdl and torch_distributed are supported "
+        raise NotImplementedError("Only bigdl, ray, and spark are supported "
                                   "as the backend, but got {}".format(args.backend))
 
     stop_orca_context()

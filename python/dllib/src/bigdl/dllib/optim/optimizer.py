@@ -33,6 +33,8 @@ from bigdl.dllib.utils.common import init_engine
 from bigdl.dllib.utils.common import to_list
 from bigdl.dllib.feature.dataset.dataset import *
 import warnings
+from bigdl.dllib.utils.log4Error import *
+
 
 if sys.version >= '3':
     long = int
@@ -501,7 +503,9 @@ class OptimMethod(JavaValue):
 
     def __init__(self, jvalue, bigdl_type, *args):
         if (jvalue):
-            assert (type(jvalue) == JavaObject)
+            invalidInputError((type(jvalue) == JavaObject),
+                              f"jvalue type ${type(jvalue)} doesn't match"
+                              f" JavaObject ${JavaObject}")
             self.value = jvalue
         else:
             self.value = callBigDlFunc(
@@ -925,7 +929,7 @@ class Optimizer(BaseOptimizer):
         :param batch_size: training batch size
         """
         warnings.warn("You are recommended to use `create` method to create an optimizer.")
-        assert isinstance(training_rdd, RDD), "Only type of RDD is allowed"
+        invalidInputError(isinstance(training_rdd, RDD), "Only type of RDD is allowed")
         self.pvalue = DistriOptimizer(model,
                                       training_rdd,
                                       criterion,

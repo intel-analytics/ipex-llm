@@ -98,7 +98,7 @@ model = tf.keras.models.load_model("./model.h5")
 tf.saved_model.save(model, "saved_model")
 ```
 ### Model - ckpt to Frozen Graph
-[freeze checkpoint example](https://github.com/intel-analytics/bigdl/tree/master/pyzoo/bigdl/examples/tensorflow/freeze_checkpoint)
+[freeze checkpoint example](https://github.com/intel-analytics/bigdl/tree/master/python/orca/example/freeze_checkpoint)
 ### Notes - Use SavedModel
 If model has single tensor input, then nothing to notice.
 

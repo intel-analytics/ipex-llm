@@ -42,10 +42,15 @@ from bigdl.orca.learn.trigger import EveryEpoch
 parser = argparse.ArgumentParser(description='PyTorch Cifar10 Example')
 parser.add_argument('--cluster_mode', type=str, default="local",
                     help='The cluster mode, such as local, yarn-client, yarn-cluster, spark-submit or k8s.')
+parser.add_argument('--runtime', type=str, default="spark",
+                    help='The runtime backend, one of spark or ray.')
+parser.add_argument('--address', type=str, default="",
+                    help='The cluster address if the driver connects to an existing ray cluster. '
+                         'If it is empty, a new Ray cluster will be created.')
 parser.add_argument('--backend', type=str, default="bigdl",
                     help='The backend of PyTorch Estimator; '
-                         'bigdl, torch_distributed and spark are supported')
-parser.add_argument('--batch_size', type=int, default=64, help='The training batch size')
+                         'bigdl, ray and spark are supported')
+parser.add_argument('--batch_size', type=int, default=4, help='The training batch size')
 parser.add_argument('--epochs', type=int, default=2, help='The number of epochs to train for')
 parser.add_argument('--data_dir', type=str, default="./data", help='The path to dataset')
 parser.add_argument('--download', type=bool, default=True, help='Download dataset or not')
@@ -53,15 +58,18 @@ parser.add_argument("--executor_memory", type=str, default="5g", help="executor 
 parser.add_argument("--driver_memory", type=str, default="5g", help="driver memory")
 args = parser.parse_args()
 
-if args.cluster_mode == "local":
-    init_orca_context(memory="4g")
-elif args.cluster_mode.startswith("yarn"):
-    if args.cluster_mode == "yarn-client":
-        init_orca_context(cluster_mode="yarn-client")
-    elif args.cluster_mode == "yarn-cluster":
-        init_orca_context(cluster_mode="yarn-cluster", memory=args.executor_memory, driver_memory=args.driver_memory)
-elif args.cluster_mode == "spark-submit":
-    init_orca_context(cluster_mode="spark-submit")
+if args.runtime == "ray":
+    init_orca_context(runtime=args.runtime, address=args.address)
+else:
+    if args.cluster_mode == "local":
+        init_orca_context(memory="4g")
+    elif args.cluster_mode.startswith("yarn"):
+        if args.cluster_mode == "yarn-client":
+            init_orca_context(cluster_mode="yarn-client")
+        elif args.cluster_mode == "yarn-cluster":
+            init_orca_context(cluster_mode="yarn-cluster", memory=args.executor_memory, driver_memory=args.driver_memory)
+    elif args.cluster_mode == "spark-submit":
+        init_orca_context(cluster_mode="spark-submit")
 
 transform = transforms.Compose(
     [transforms.ToTensor(),
@@ -163,12 +171,14 @@ if args.backend == "bigdl":
 
     res = orca_estimator.evaluate(data=test_loader)
     print("Accuracy of the network on the test images: %s" % res)
-elif args.backend in ["torch_distributed", "spark"]:
+elif args.backend in ["ray", "spark"]:
     orca_estimator = Estimator.from_torch(model=model_creator,
                                           optimizer=optim_creator,
                                           loss=criterion,
                                           metrics=[Accuracy()],
+                                          model_dir=os.getcwd(),
                                           backend=args.backend,
+                                          use_tqdm=True,
                                           config={"lr": 0.001,
                                                   "root": root_dir})
 
@@ -178,7 +188,7 @@ elif args.backend in ["torch_distributed", "spark"]:
     for r in res:
         print(r, ":", res[r])
 else:
-    raise NotImplementedError("Only bigdl and torch_distributed are supported as the backend,"
+    raise NotImplementedError("Only bigdl, ray, and spark are supported as the backend,"
                               " but got {}".format(args.backend))
 
 stop_orca_context()

@@ -7,16 +7,15 @@ We recommend conda to set up your environment. You can install a conda distribut
 if you haven't already.
 
 ```bash
-conda create -n analytics-zoo python==3.7
-conda activate analytics-zoo
-pip install tensorflow
-pip install pandas
+conda create -n bigdl python==3.7
+conda activate bigdl
+pip install tensorflow pandas pyarrow pillow
 ```
 
-Then download and install latest nightly-build Analytics Zoo.
+Then download and install latest nightly-build BigDL Orca.
 
 ```bash
-pip install --pre --upgrade analytics-zoo[ray]
+pip install --pre --upgrade bigdl-orca[ray]
 ```
 
 ## Training Data
@@ -27,6 +26,12 @@ Download VOC2009 dataset [here](http://host.robots.ox.ac.uk/pascal/VOC/voc2009/V
 ## Pretrained Weights
 
 Download pretrained weights [here](https://pjreddie.com/media/files/yolov3.weights).
+
+
+## VOC data names
+
+Download VOC data names [here](https://github.com/pjreddie/darknet/blob/master/data/voc.names).
+
 
 ## Running example
 

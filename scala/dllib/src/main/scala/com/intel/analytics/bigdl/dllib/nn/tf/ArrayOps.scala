@@ -19,7 +19,7 @@ import com.intel.analytics.bigdl.dllib.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.dllib.nn.ops.{ModuleToOperation, Operation}
 import com.intel.analytics.bigdl.dllib.tensor.{Storage, Tensor}
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.{NumericWildCard, TensorNumeric}
-import com.intel.analytics.bigdl.dllib.utils.{T, Table}
+import com.intel.analytics.bigdl.dllib.utils.{Log4Error, T, Table}
 
 import scala.collection.mutable.ArrayBuffer
 import scala.reflect.ClassTag
@@ -67,7 +67,8 @@ private[bigdl] class InvertPermutation[T: ClassTag]()(implicit ev: TensorNumeric
   output = Tensor[Int]()
 
   override def updateOutput(input: Tensor[Int]): Tensor[Int] = {
-    require(input.dim() == 1, "InvertPermutation only accept 1D tensor as input")
+    Log4Error.invalidInputError(input.dim() == 1,
+      "InvertPermutation only accept 1D tensor as input")
     output.resizeAs(input)
     var i = 0
     while(i < input.size(1)) {
@@ -106,14 +107,16 @@ private[bigdl] class ConcatOffset[T: ClassTag]()(implicit ev: TensorNumeric[T])
 
   override def updateOutput(input: Table): Table = {
     val concatDim = input[Tensor[Int]](1)
-    require(concatDim.isScalar, "ConcatOffset: concat dim must be a scalar")
+    Log4Error.invalidInputError(concatDim.isScalar,
+      "ConcatOffset: concat dim must be a scalar")
     val cdim = concatDim.value()
     val n = input.length() - 1
     var i = 1
     var offset = 0
     while(i <= n) {
       val shape = input[Tensor[Int]](i + 1)
-      require(shape.nDimension() == 1, "ConcatOffset: shape must be 1D tensor")
+      Log4Error.invalidInputError(shape.nDimension() == 1,
+        "ConcatOffset: shape must be 1D tensor")
       if (!output.contains(i)) {
         output(i) = Tensor[Int]()
       }
@@ -142,14 +145,15 @@ private[bigdl] class Fill[T: ClassTag]() (implicit ev: TensorNumeric[T])
       output.resizeAs(value).asInstanceOf[Tensor[NumericWildCard]]
         .copy(value.asInstanceOf[Tensor[NumericWildCard]])
     } else {
-      require(shapeTensor.nDimension() == 1, "shape tensor is not a vector")
+      Log4Error.invalidInputError(shapeTensor.nDimension() == 1,
+        "shape tensor is not a vector")
       val shape = new Array[Int](shapeTensor.nElement())
       var i = 0
       while (i < shapeTensor.nElement()) {
         shape(i) = shapeTensor.valueAt(i + 1)
         i = i + 1
       }
-      require(value.isScalar, "value tensor is not a scalar")
+      Log4Error.invalidInputError(value.isScalar, "value tensor is not a scalar")
       if (value.getType() != output.getType()) {
         output = value.emptyInstance().resize(shape)
       } else {

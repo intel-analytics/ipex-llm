@@ -10,5 +10,5 @@ sed -i 's/resnet50/resnet50\/fp32/g' /opt/config.yaml
 cd /opt
 apt install -y libgl1-mesa-glx python3-pip
 pip3 install --upgrade pip
-pip3 install --pre --upgrade analytics-zoo
+pip3 install --pre --upgrade bigdl
 pip3 install -r requirement.yml

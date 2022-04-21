@@ -21,7 +21,7 @@ import com.intel.analytics.bigdl.dllib.feature.dataset.{MiniBatch, Sample, Sampl
 import com.intel.analytics.bigdl.dllib.models.utils.ModelBroadcast
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.dllib.utils.Engine
+import com.intel.analytics.bigdl.dllib.utils.{Engine, Log4Error}
 
 import scala.reflect.ClassTag
 
@@ -87,7 +87,7 @@ object TextPredictor {
      batchSize: Int)(implicit ev: TensorNumeric[T]): Array[Tensor[T]] = {
     val result = if (shareBuffer) output else output.clone()
     val size = result.size(1)
-    require(batchSize == size,
+    Log4Error.invalidOperationError(batchSize == size,
       s"batchSize is required to be $size, while the actual batchSize is $batchSize")
     result.split(1)
   }

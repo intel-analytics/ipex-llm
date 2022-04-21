@@ -20,7 +20,7 @@
 
         <fileSet>
             <outputDirectory>/cluster-serving</outputDirectory>
-            <directory>../${project.basedir}/zoo/target</directory>
+            <directory>../${project.basedir}/scala/serving/target</directory>
             <includes>
                 <include>bigdl-serving-*.jar</include>
                 <include>bigdl-serving-*.zip</include>

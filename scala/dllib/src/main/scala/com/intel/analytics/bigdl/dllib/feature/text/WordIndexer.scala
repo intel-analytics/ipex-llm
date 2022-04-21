@@ -16,6 +16,8 @@
 
 package com.intel.analytics.bigdl.dllib.feature.text
 
+import com.intel.analytics.bigdl.dllib.utils.Log4Error
+
 /**
  * Given a wordIndex map, transform tokens to corresponding indices.
  * Those words not in the map will be aborted.
@@ -27,10 +29,11 @@ package com.intel.analytics.bigdl.dllib.feature.text
  */
 class WordIndexer(val map: Map[String, Int]) extends TextTransformer {
 
-  require(map != null, "map for WordIndexer can't be null")
+  Log4Error.invalidInputError(map != null, "map for WordIndexer can't be null")
 
   override def transform(feature: TextFeature): TextFeature = {
-    require(feature.contains(TextFeature.tokens), "TextFeature doesn't contain tokens yet, " +
+    Log4Error.invalidOperationError(feature.contains(TextFeature.tokens),
+      "TextFeature doesn't contain tokens yet, " +
       "please tokenize first")
     val tokens = feature.getTokens
     val indices = tokens.flatMap(word => {

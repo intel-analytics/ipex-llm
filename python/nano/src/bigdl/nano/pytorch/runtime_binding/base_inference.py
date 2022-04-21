@@ -22,8 +22,7 @@ import warnings
 import math
 import numpy as np
 
-BASE_BINDED_COMPONENTS = ['_on_fit_start_old',
-                          '_train_old',
+BASE_BINDED_COMPONENTS = ['_train_old',
                           '_torch_forward',
                           '_eval_old',
                           'inference']
@@ -46,7 +45,7 @@ def train(self, mode=True):
     return self._train_old(mode)
 
 
-def eval(self, quantize=False):
+def eval(self, quantize=None):
     # Note: this order should not be changed
     # 1. run original .eval()
     self._eval_old()
@@ -55,6 +54,7 @@ def eval(self, quantize=False):
         self.exit_onnx()
     # 3. apply quantized model if applied
     if "_fx_quantize_eval" in self.__dict__:
+        quantize = self._default_inference_quantize if quantize is None else quantize
         self._fx_quantize_eval(quantize)
 
 
@@ -64,7 +64,7 @@ def inference(self,
               batch_size=None,
               sess_options=None,
               backend="onnx",
-              quantize=False,
+              quantize=None,
               **kwargs):
     '''
     Inference with/without onnxruntime.
@@ -88,44 +88,44 @@ def inference(self,
     '''
 
     if isinstance(input_data, list):
-        input_sample_list = input_data
+        input_sample_list = list(map(lambda x: torch.from_numpy(x), input_data))
     else:
-        input_sample_list = [input_data]
+        input_sample_list = [torch.from_numpy(input_data)]
 
     if backend == "onnx":
-        self.eval()
-        assert not quantize,\
-            "quantized inference has not been supported by onnx backend, please set `backend=None`"
-        if not self._ortsess_up_to_date:
-            warnings.warn("Onnxruntime session will be built implicitly,"
-                          " this may harm your inference latency.")
-            # generate input_sample for ortsess building
-            # defaultly set all input to a Tensor(TODO: might be an issue)
-            input_sample = []
-            for input_sample_item in input_sample_list:
-                input_sample.append(torch.Tensor(input_sample_item))
-            self._build_ortsess(input_sample=tuple(input_sample),
-                                file_path="model.onnx",
-                                sess_options=sess_options,
-                                **kwargs)
+        quantize = quantize if quantize is not None else \
+            (self.ort_infer_engine.default_eval_precision == "int8")
+        if not quantize:
+            if not self.ort_infer_engine.ortsess_fp32:
+                warnings.warn("Onnxruntime session will be built implicitly,"
+                              " this may harm your inference latency.")
+                # generate input_sample for ortsess building
+                # defaultly set all input to a Tensor(TODO: might be an issue)
+                self.eval_onnx(input_sample=tuple(input_sample_list), sess_options=sess_options)
+        else:
+            if not self.ort_infer_engine.ortsess_int8:
+                raise RuntimeError("Please run trainer.quantize again since "
+                                   "the quantized onnxruntime session is out-of-date.")
         # generate ort_inputs
+        self.eval_onnx(quantize=quantize)
         if batch_size is None:
             # this branch is only to speed up the inferencing when batch_size is set to None.
-            return self._forward_onnx(*input_sample_list)
+            return self(*input_sample_list)
         else:
             yhat_list = []
             sample_num = input_sample_list[0].shape[0]  # the first dim should be sample_num
             batch_num = math.ceil(sample_num / batch_size)
             for batch_id in range(batch_num):
-                yhat_list.append(self._forward_onnx(
+                yhat_list.append(self(
                     *tuple(map(lambda x: x[batch_id * batch_size:
-                                           (batch_id + 1) * batch_size],
-                               input_sample_list))))
+                           (batch_id + 1) * batch_size],
+                        input_sample_list))))
             # this operation may cause performance degradation
             yhat = np.concatenate(yhat_list, axis=0)
             return yhat
     else:
         # inference w/o onnxruntime (fallback to pytorch native forward)
+        quantize = quantize if quantize is not None else self._default_inference_quantize
         self.eval(quantize=quantize)
         with torch.no_grad():
             yhat_list = []
@@ -140,7 +140,7 @@ def inference(self,
             return yhat
 
 
-def bind_base_inference_rt_methods(pl_model: LightningModule):
+def bind_base_inference_rt_methods(pl_model):
 
     # if all needed method has been binded, return the same model
     if set(BASE_BINDED_COMPONENTS) <= set(dir(pl_model)):
@@ -151,6 +151,7 @@ def bind_base_inference_rt_methods(pl_model: LightningModule):
     pl_model._train_old = pl_model.train
     pl_model._torch_forward = pl_model.forward
     pl_model._eval_old = pl_model.eval
+    pl_model._default_inference_quantize = False
 
     pl_model.eval = partial(eval, pl_model)
     pl_model.on_fit_start = partial(on_fit_start, pl_model)

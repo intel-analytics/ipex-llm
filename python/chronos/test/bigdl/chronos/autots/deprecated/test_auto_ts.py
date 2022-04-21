@@ -21,11 +21,13 @@ from bigdl.orca.test_zoo_utils import ZooTestCase
 from bigdl.chronos.autots.deprecated.config.recipe import LSTMGridRandomRecipe, MTNetGridRandomRecipe
 from bigdl.chronos.autots.deprecated.forecast import AutoTSTrainer
 from bigdl.chronos.autots.deprecated.forecast import TSPipeline
+from . import skip_method
 
 import pandas as pd
 
 
 @pytest.mark.usefixtures("init_ray_context_fixture")
+@skip_method
 class TestChronosAutoTS(ZooTestCase):
 
     def setup_method(self, method):

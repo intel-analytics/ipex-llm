@@ -18,7 +18,7 @@ import com.intel.analytics.bigdl.mkl.{DataType, Memory, MklDnn}
 import com.intel.analytics.bigdl.dllib.nn.MklInt8Convertible
 import com.intel.analytics.bigdl.dllib.nn.abstractnn.Activity
 import com.intel.analytics.bigdl.dllib.tensor.{DnnTensor, Tensor}
-import com.intel.analytics.bigdl.dllib.utils.{T, Table}
+import com.intel.analytics.bigdl.dllib.utils.{Log4Error, T, Table}
 
 import scala.collection.mutable.ArrayBuffer
 
@@ -31,7 +31,7 @@ class ConcatTable extends MklDnnContainer with MklInt8Convertible {
   @transient private var tensorPrimitives: Array[Long] = null
 
   override def updateOutput(input: Activity): Activity = {
-    require(modules.length > 0, "empty modules of concat table")
+    Log4Error.invalidInputError(modules.length > 0, "empty modules of concat table")
     var i = 0
     while (i < modules.length) {
       val currentOutput = modules(i).forward(
@@ -43,7 +43,7 @@ class ConcatTable extends MklDnnContainer with MklInt8Convertible {
   }
 
   override def updateGradInput(input: Activity, gradOutput: Activity): Activity = {
-    require(modules.length > 0, "empty modules of concat table")
+    Log4Error.invalidInputError(modules.length > 0, "empty modules of concat table")
 
     var i = 0
     while (i < modules.length) {
@@ -65,12 +65,12 @@ class ConcatTable extends MklDnnContainer with MklInt8Convertible {
   }
 
   override private[mkldnn] def initFwdPrimitives(inputs: Array[MemoryData], phase: Phase) = {
-    require(mklDnnModules != null, "You should call compile first")
-    require(inputs.length == 1, "Concat only accept one tensor")
+    Log4Error.invalidInputError(mklDnnModules != null, "You should call compile first")
+    Log4Error.invalidInputError(inputs.length == 1, "Concat only accept one tensor")
     val buffer = new ArrayBuffer[MemoryData]()
     mklDnnModules.foreach(m => {
       val (realInput, out) = m.initFwdPrimitives(inputs, phase)
-      require(out.length == 1, "output should be one tensor")
+      Log4Error.invalidInputError(out.length == 1, "output should be one tensor")
       inputs.zip(realInput).map {case(f, t) => reorderManager.register(f, t)}
       buffer.append(out(0))
     })
@@ -80,7 +80,8 @@ class ConcatTable extends MklDnnContainer with MklInt8Convertible {
   }
 
   override private[mkldnn] def initBwdPrimitives(grads: Array[MemoryData], phase: Phase) = {
-    require(grads.length == mklDnnModules.length, "grad tensor number is not correct")
+    Log4Error.invalidInputError(grads.length == mklDnnModules.length,
+      "grad tensor number is not correct")
     _gradOutputFormats = new Array[MemoryData](grads.length)
     val subGradInputs = new Array[MemoryData](grads.length)
     tensorPrimitives = new Array[Long](grads.length + 1)
@@ -88,17 +89,19 @@ class ConcatTable extends MklDnnContainer with MklInt8Convertible {
     for(i <- 0 until grads.length) {
       val m = mklDnnModules(i)
       val (realGrads, gradInput) = m.initBwdPrimitives(Array(grads(i)), phase)
-      require(realGrads.length == 1, "real grad length should be 1")
+      Log4Error.invalidInputError(realGrads.length == 1, "real grad length should be 1")
       _gradOutputFormats(i) = realGrads(0)
-      require(gradInput.length == 1, "real grad length should be 1")
+      Log4Error.invalidInputError(gradInput.length == 1, "real grad length should be 1")
       subGradInputs(i) = gradInput(0)
       tensorPrimitives(i) = gradInput(0).getPrimitive(runtime)
       if (shape == null) {
         shape = gradInput(0).shape.clone()
       } else {
-        require(shape.length == gradInput(0).shape.length, "backward grad shape should be same")
+        Log4Error.invalidInputError(shape.length == gradInput(0).shape.length,
+          "backward grad shape should be same")
         for(j <- 0 until shape.length) {
-          require(shape(j) == gradInput(0).shape(j), "backward grad shape size should be same")
+          Log4Error.invalidInputError(shape(j) == gradInput(0).shape(j),
+            "backward grad shape size should be same")
         }
       }
     }
@@ -122,7 +125,7 @@ class ConcatTable extends MklDnnContainer with MklInt8Convertible {
     for(i <- 0 until grads.length) {
       val m = mklDnnModules(i)
       val realGradOutput = m.initGradWPrimitives(Array(grads(i)), phase)
-      require(realGradOutput.length == 1, s"real grad length should be 1, " +
+      Log4Error.invalidInputError(realGradOutput.length == 1, s"real grad length should be 1, " +
         s"but it's ${realGradOutput.length}")
       realGradsBuffer.append(realGradOutput(0))
     }
@@ -135,22 +138,25 @@ class ConcatTable extends MklDnnContainer with MklInt8Convertible {
   }
 
   override private[mkldnn] def inputFormats() = {
-    require(_inputFormats != null, "You should call initFwdPrimitives first")
+    Log4Error.invalidInputError(_inputFormats != null, "You should call initFwdPrimitives first")
     _inputFormats
   }
 
   override private[mkldnn] def gradInputFormats() = {
-    require(_gradInputFormats != null, "You should call initBwdPrimitives first")
+    Log4Error.invalidInputError(_gradInputFormats != null,
+      "You should call initBwdPrimitives first")
     _gradInputFormats
   }
 
   override private[mkldnn] def outputFormats() = {
-    require(_outputFormats != null, "You should call initFwdPrimitives first")
+    Log4Error.invalidInputError(_outputFormats != null,
+      "You should call initFwdPrimitives first")
     _outputFormats
   }
 
   override private[mkldnn] def gradOutputFormats() = {
-    require(_gradOutputFormats != null, "You should call initBwdPrimitives first")
+    Log4Error.invalidInputError(_gradOutputFormats != null,
+      "You should call initBwdPrimitives first")
     _gradOutputFormats
   }
 

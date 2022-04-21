@@ -49,7 +49,7 @@ User can download a bigdl-${VERSION}-http.jar from the Nexus Repository with GAV
 ```
 <groupId>com.intel.analytics.bigdl</groupId>
 <artifactId>bigdl-bigdl_${BIGDL_VERSION}-spark_${SPARK_VERSION}</artifactId>
-<version>${ZOO_VERSION}</version>
+<version>${BIGDL_VERSION}</version>
 ```
 User can also build from the source code:
 ```
@@ -58,7 +58,7 @@ mvn clean package -P spark_2.4+ -Dmaven.test.skip=true
 #### Start the HTTP Server
 User can start the HTTP server with following command.
 ```
-java -jar bigdl-bigdl_${BIGDL_VERSION}-spark_${SPARK_VERSION}-${ZOO_VERSION}-http.jar
+java -jar bigdl-bigdl_${BIGDL_VERSION}-spark_${SPARK_VERSION}-${BIGDL_VERSION}-http.jar
 ```
 And check the status of the HTTP server with:
 ```
@@ -68,7 +68,7 @@ If you get a response like "welcome to BigDL web serving frontend", that means t
 #### Start options
 User can pass options to the HTTP server when start it:
 ```
-java -jar bigdl-bigdl_${BIGDL_VERSION}-spark_${SPARK_VERSION}-${ZOO_VERSION}-http.jar --redisHost="172.16.0.109"
+java -jar bigdl-bigdl_${BIGDL_VERSION}-spark_${SPARK_VERSION}-${BIGDL_VERSION}-http.jar --redisHost="172.16.0.109"
 ```
 All the supported parameter are listed here:
 * **interface**: the binded server interface, default is "0.0.0.0"

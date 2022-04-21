@@ -18,6 +18,7 @@ import six
 from bigdl.dllib.utils.common import JavaValue
 from bigdl.dllib.utils.file_utils import callZooFunc
 from pyspark import RDD
+from bigdl.dllib.utils.log4Error import *
 
 
 class TextSet(JavaValue):
@@ -56,7 +57,9 @@ class TextSet(JavaValue):
         if self.is_distributed():
             jvalue = self.value
         else:
-            assert sc, "sc cannot be null to transform a LocalTextSet to a DistributedTextSet"
+            invalidInputError(sc,
+                              "sc cannot be null to transform a LocalTextSet to a"
+                              " DistributedTextSet")
             jvalue = callZooFunc(self.bigdl_type, "textSetToDistributed", self.value,
                                  sc, partition_num)
         return DistributedTextSet(jvalue=jvalue)
@@ -278,7 +281,7 @@ class TextSet(JavaValue):
 
         :return: TextSet after sequence shaping.
         """
-        assert isinstance(pad_element, int), "pad_element should be an int"
+        invalidInputError(isinstance(pad_element, int), "pad_element should be an int")
         jvalue = callZooFunc(self.bigdl_type, "textSetShapeSequence", self.value,
                              len, trunc_mode, pad_element)
         return TextSet(jvalue=jvalue)
@@ -446,8 +449,8 @@ class LocalTextSet(TextSet):
         labels: List of int or None if texts don't have labels.
         """
         if texts is not None:
-            assert all(isinstance(text, six.string_types) for text in texts), \
-                "texts for LocalTextSet should be list of string"
+            invalidInputError(all(isinstance(text, six.string_types) for text in texts),
+                              "texts for LocalTextSet should be list of string")
         if labels is not None:
             labels = [int(label) for label in labels]
         super(LocalTextSet, self).__init__(jvalue, bigdl_type, texts, labels)
@@ -467,9 +470,11 @@ class DistributedTextSet(TextSet):
         labels: RDD of int or None if texts don't have labels.
         """
         if texts is not None:
-            assert isinstance(texts, RDD), "texts for DistributedTextSet should be RDD of String"
+            invalidInputError(isinstance(texts, RDD),
+                              "texts for DistributedTextSet should be RDD of String")
         if labels is not None:
-            assert isinstance(labels, RDD), "labels for DistributedTextSet should be RDD of int"
+            invalidInputError(isinstance(labels, RDD),
+                              "labels for DistributedTextSet should be RDD of int")
             labels = labels.map(lambda x: int(x))
         super(DistributedTextSet, self).__init__(jvalue, bigdl_type, texts, labels)
 

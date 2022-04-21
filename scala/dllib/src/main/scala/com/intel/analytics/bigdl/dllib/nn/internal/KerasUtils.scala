@@ -22,6 +22,7 @@ import com.intel.analytics.bigdl.dllib.nn.abstractnn.{AbstractModule, DataFormat
 import com.intel.analytics.bigdl.dllib.optim._
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.dllib.utils.Log4Error
 
 import scala.reflect.ClassTag
 
@@ -104,7 +105,8 @@ object KerasUtils {
   }
 
   private[bigdl] def toBigDLFormat(dimOrdering: String): DataFormat = {
-    require(dimOrdering.toLowerCase() == "tf" || dimOrdering.toLowerCase() == "th",
+    Log4Error.invalidInputError(dimOrdering.toLowerCase() == "tf"
+      || dimOrdering.toLowerCase() == "th",
       s"Dim ordering must be either tf or th, but got ${dimOrdering.toLowerCase()}")
     dimOrdering.toLowerCase() match {
       case "tf" => DataFormat.NHWC
@@ -113,7 +115,8 @@ object KerasUtils {
   }
 
   private[bigdl] def toBigDLFormat5D(dimOrdering: String): String = {
-    require(dimOrdering.toLowerCase() == "tf" || dimOrdering.toLowerCase() == "th",
+    Log4Error.invalidInputError(dimOrdering.toLowerCase() == "tf"
+      || dimOrdering.toLowerCase() == "th",
       s"Dim ordering must be either tf or th, but got ${dimOrdering.toLowerCase()}")
     dimOrdering.toLowerCase() match {
       case "tf" => "CHANNEL_LAST"

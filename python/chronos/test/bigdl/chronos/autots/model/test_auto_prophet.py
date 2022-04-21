@@ -64,7 +64,14 @@ class TestAutoProphet(TestCase):
 
     def test_auto_prophet_predict_evaluate(self):
         data, expect_horizon = get_data()
-        auto_prophet = AutoProphet(metric="mse",
+        from torchmetrics.functional import mean_squared_error
+        import torch
+        def customized_metric(y_true, y_pred):
+            return mean_squared_error(torch.from_numpy(y_pred),
+                                      torch.from_numpy(y_true)).numpy()
+
+        auto_prophet = AutoProphet(metric=customized_metric,
+                                   metric_mode="min",
                                    changepoint_prior_scale=hp.loguniform(0.001, 0.5),
                                    seasonality_prior_scale=hp.loguniform(0.01, 10),
                                    holidays_prior_scale=hp.loguniform(0.01, 10),

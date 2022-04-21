@@ -25,7 +25,7 @@ import com.intel.analytics.bigdl.dllib.optim.Regularizer
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.dllib.utils.serializer._
-import com.intel.analytics.bigdl.dllib.utils.{MultiShape, SingleShape, Shape => BigDLShape}
+import com.intel.analytics.bigdl.dllib.utils.{Log4Error, MultiShape, SingleShape, Shape => BigDLShape}
 import com.intel.analytics.bigdl.serialization.Bigdl._
 import com.intel.analytics.bigdl.serialization.Bigdl.AttrValue.ArrayValue
 
@@ -77,7 +77,8 @@ object DataConverter extends DataConverter{
   private val customizedConverter = new mutable.HashMap[String, DataConverter]
 
   def registerConverter(tpe : String, converter : DataConverter) : Unit = {
-    require(!customizedConverter.contains(tpe), s"converter for $tpe already exists!")
+    Log4Error.invalidOperationError(!customizedConverter.contains(tpe),
+      s"converter for $tpe already exists!")
     customizedConverter(tpe) = converter
   }
 
@@ -563,7 +564,8 @@ object DataConverter extends DataConverter{
     override def getAttributeValue[T: ClassTag](context: DeserializeContext, attribute: AttrValue)
                                                (implicit ev: TensorNumeric[T]): AnyRef = {
       val subType = attribute.getSubType
-      require(customizedConverter.contains(subType), s"unrecognized type $subType")
+      Log4Error.invalidOperationError(customizedConverter.contains(subType),
+        s"unrecognized type $subType")
       val customConverter = customizedConverter.get(subType).get
       customConverter.getAttributeValue(context, attribute)
     }
@@ -571,7 +573,8 @@ object DataConverter extends DataConverter{
     override def setAttributeValue[T: ClassTag](context: SerializeContext[T],
                                                 attributeBuilder: AttrValue.Builder,
       value: Any, valueType: universe.Type)(implicit ev: TensorNumeric[T]): Unit = {
-      require(customizedConverter.contains(valueType.toString), s"unrecognized type $valueType")
+      Log4Error.invalidOperationError(customizedConverter.contains(valueType.toString),
+        s"unrecognized type $valueType")
       val customConverter = customizedConverter.get(valueType.toString).get
       attributeBuilder.setDataType(DataType.CUSTOM)
       attributeBuilder.setSubType(valueType.toString)

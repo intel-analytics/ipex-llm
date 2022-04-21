@@ -21,7 +21,7 @@ import com.intel.analytics.bigdl.dllib.nn.internal.{KerasLayer, BatchNormalizati
 import com.intel.analytics.bigdl.dllib.nn.abstractnn.{AbstractModule, DataFormat}
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.dllib.utils.Shape
+import com.intel.analytics.bigdl.dllib.utils.{Log4Error, Shape}
 import com.intel.analytics.bigdl.dllib.keras.Net
 import com.intel.analytics.bigdl.dllib.keras.layers.utils.KerasUtils
 
@@ -77,7 +77,7 @@ class BatchNormalization[T: ClassTag](
 
   override def computeOutputShape(inputShape: Shape): Shape = {
     val input = inputShape.toSingle().toArray
-    require(input.length == 4 || input.length == 2,
+    Log4Error.invalidInputError(input.length == 4 || input.length == 2,
       s"BatchNormalization requires 4D or 2D input, but got input dim ${input.length}")
     inputShape
   }

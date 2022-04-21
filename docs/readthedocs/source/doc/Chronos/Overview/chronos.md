@@ -10,6 +10,8 @@ You can use _Chronos_ to do:
 - **Anomaly Detection** (using [Anomaly Detectors](./anomaly_detection.html#anomaly-detection))
 - **Synthetic Data Generation** (using [Simulators](./simulation.html#generate-synthetic-data))
 
+Furthermore, Chronos is adapted to integrate many optimized library and best known methods(BKMs) for accuracy and performance improvement.
+
 ---
 ### **2. Install**
 
@@ -25,6 +27,12 @@ You may also install `bigdl-chronos` with target `[all]` to install the addition
 pip install bigdl-chronos[all]
 # nightly built version
 pip install --pre --upgrade bigdl-chronos[all]
+```
+```eval_rst
+.. note:: 
+    **Supported OS**:
+
+     Chronos is thoroughly tested on Ubuntu (16.04/18.04/20.04). If you are a Windows user, the most convenient way to use Chronos on a windows laptop might be using WSL2, you may refer to https://docs.microsoft.com/en-us/windows/wsl/setup/environment or just install a ubuntu virtual machine.
 ```
 ---
 ### **3. Run**
@@ -46,6 +54,18 @@ You can directly write _Chronos_ application in a python file (e.g. script.py) a
 python script.py
 ```
 
+```eval_rst
+.. note:: 
+    **Optimization on Intel® Hardware**:
+    
+     Chronos integrated many optimized library and best known methods(BKMs), users can have best performance to add ``bigdl-nano-init`` before their scripts. 
+     
+     ``bigdl-nano-init python script.py``
+
+     Currently, this function is under active development and we encourage our users to add ``bigdl-nano-init`` for forecaster's training.
+     
+```
+
 ---
 ### **4. Get Started**
 
@@ -61,7 +81,7 @@ Otherwise, there is no need to initialize an orca context.
 View [Orca Context](../../Orca/Overview/orca-context.md) for more details. Note that argument `init_ray_on_spark` must be `True` for _Chronos_. 
 
 ```python
-from bigdl.orca.common import init_orca_context, stop_orca_context
+from bigdl.orca import init_orca_context, stop_orca_context
 
 # run in local mode
 init_orca_context(cluster_mode="local", cores=4, init_ray_on_spark=True)
@@ -101,7 +121,6 @@ for tsdata in [tsdata_train, tsdata_val, tsdata_test]:
 
 # AutoTSEstimator initalization
 autotsest = AutoTSEstimator(model="tcn",
-                            past_seq_len=hp.randint(50, 200),
                             future_seq_len=10)
 
 # AutoTSEstimator fitting
@@ -126,23 +145,40 @@ _Chronos_ provides flexible components for forecasting, detection, simulation an
 
 ### **6. Examples and Demos**
 - Quickstarts
-    - [Use AutoTSEstimator for Time-Series Forecasting](https://bigdl.readthedocs.io/en/latest/doc/Chronos/QuickStart/chronos-autotsest-quickstart.html)
-    - [Use TSDataset and Forecaster for Time-Series Forecasting](https://bigdl.readthedocs.io/en/latest/doc/Chronos/QuickStart/chronos-tsdataset-forecaster-quickstart.html)
-    - [Use Anomaly Detector for Unsupervised Anomaly Detection](https://bigdl.readthedocs.io/en/latest/doc/Chronos/QuickStart/chronos-anomaly-detector.html)
+    - [Use AutoTSEstimator for Time-Series Forecasting](../QuickStart/chronos-autotsest-quickstart.html)
+    - [Use TSDataset and Forecaster for Time-Series Forecasting](../QuickStart/chronos-tsdataset-forecaster-quickstart.html)
+    - [Use Anomaly Detector for Unsupervised Anomaly Detection](../QuickStart/chronos-anomaly-detector.html)
 - Examples
-    - [Use AutoLSTM on nyc taxi dataset](https://github.com/intel-analytics/BigDL/blob/branch-2.0/python/chronos/example/auto_model/autolstm_nyc_taxi.py)
-    - [Use AutoProphet on nyc taxi dataset](https://github.com/intel-analytics/BigDL/blob/branch-2.0/python/chronos/example/auto_model/autoprophet_nyc_taxi.py)
-    - [High dimension time series forecasting with Chronos TCMFForecaster](https://github.com/intel-analytics/BigDL/blob/branch-2.0/python/chronos/example/tcmf/run_electricity.py)
-    - [Use distributed training with Chronos Seq2SeqForecaster](https://github.com/intel-analytics/BigDL/blob/branch-2.0/python/chronos/example/distributed/distributed_training_network_traffic.py)
-    - [Use ONNXRuntime to accelerate the inference of AutoTSEstimator](https://github.com/intel-analytics/BigDL/blob/branch-2.0/python/chronos/example/onnx/onnx_autotsestimator_nyc_taxi.py)
-    - [Use ONNXRuntime to accelerate the inference of Seq2SeqForecaster](https://github.com/intel-analytics/BigDL/blob/branch-2.0/python/chronos/example/onnx/onnx_forecaster_network_traffic.py)
-    - [Generate synthetic data with DPGANSimulator in a data-driven fashion](https://github.com/intel-analytics/BigDL/tree/branch-2.0/python/chronos/example/simulator)
+    - [Use AutoLSTM on nyc taxi dataset][autolstm_nyc_taxi]
+    - [Use AutoProphet on nyc taxi dataset][autoprophet_nyc_taxi]
+    - [High dimension time series forecasting with Chronos TCMFForecaster][run_electricity]
+    - [Use distributed training with Chronos Seq2SeqForecaster][distributed_training_network_traffic]
+    - [Use ONNXRuntime to accelerate the inference of AutoTSEstimator][onnx_autotsestimator_nyc_taxi]
+    - [Use ONNXRuntime to accelerate the inference of Seq2SeqForecaster][onnx_forecaster_network_traffic]
+    - [Generate synthetic data with DPGANSimulator in a data-driven fashion][simulator]
 - Use cases
-    - [Unsupervised Anomaly Detection](https://github.com/intel-analytics/BigDL/blob/branch-2.0/python/chronos/use-case/AIOps/AIOps_anomaly_detect_unsupervised.ipynb)
-    - [Unsupervised Anomaly Detection based on Forecasts](https://github.com/intel-analytics/BigDL/blob/branch-2.0/python/chronos/use-case/AIOps/AIOps_anomaly_detect_unsupervised_forecast_based.ipynb)
-    - [Stock Price Prediction with LSTM](https://github.com/intel-analytics/BigDL/blob/branch-2.0/python/chronos/use-case/fsi/stock_prediction.ipynb)
-    - [Stock Price Prediction with ProphetForecaster and AutoProphet](https://github.com/intel-analytics/BigDL/blob/branch-2.0/python/chronos/use-case/fsi/stock_prediction_prophet.ipynb)
-    - [Network Traffic Forecasting with AutoTSEstimator](https://github.com/intel-analytics/BigDL/blob/branch-2.0/python/chronos/use-case/network_traffic/network_traffic_autots_forecasting.ipynb)
-    - [Network Traffic Forecasting (using multivariate time series data)](https://github.com/intel-analytics/BigDL/blob/branch-2.0/python/chronos/use-case/network_traffic/network_traffic_model_forecasting.ipynb)
-    - [Network Traffic Forecasting (using multistep time series data)](https://github.com/intel-analytics/BigDL/blob/branch-2.0/python/chronos/use-case/network_traffic/network_traffic_multivariate_multistep_tcnforecaster.ipynb)
-    - [Network Traffic Forecasting with Customized Model](https://github.com/intel-analytics/BigDL/blob/branch-2.0/python/chronos/use-case/network_traffic/network_traffic_autots_customized_model.ipynb)
+    - [Unsupervised Anomaly Detection][AIOps_anomaly_detect_unsupervised]
+    - [Unsupervised Anomaly Detection based on Forecasts][AIOps_anomaly_detect_unsupervised_forecast_based]
+    - [Stock Price Prediction with LSTM][stock_prediction]
+    - [Stock Price Prediction with ProphetForecaster and AutoProphet][stock_prediction_prophet]
+    - [Network Traffic Forecasting with AutoTSEstimator][network_traffic_autots_forecasting]
+    - [Network Traffic Forecasting (using multivariate time series data)][network_traffic_model_forecasting]
+    - [Network Traffic Forecasting (using multistep time series data)][network_traffic_multivariate_multistep_tcnforecaster]
+    - [Network Traffic Forecasting with Customized Model][network_traffic_autots_customized_model]
+
+<!--Reference links in article-->
+[autolstm_nyc_taxi]: <https://github.com/intel-analytics/BigDL/blob/main/python/chronos/example/auto_model/autolstm_nyc_taxi.py>
+[autoprophet_nyc_taxi]: <https://github.com/intel-analytics/BigDL/blob/main/python/chronos/example/auto_model/autoprophet_nyc_taxi.py>
+[run_electricity]: <https://github.com/intel-analytics/BigDL/blob/main/python/chronos/example/tcmf/run_electricity.py>
+[distributed_training_network_traffic]: <https://github.com/intel-analytics/BigDL/blob/main/python/chronos/example/distributed/distributed_training_network_traffic.py>
+[onnx_autotsestimator_nyc_taxi]: <https://github.com/intel-analytics/BigDL/blob/main/python/chronos/example/onnx/onnx_autotsestimator_nyc_taxi.py>
+[onnx_forecaster_network_traffic]: <https://github.com/intel-analytics/BigDL/blob/main/python/chronos/example/onnx/onnx_forecaster_network_traffic.py>
+[simulator]: <https://github.com/intel-analytics/BigDL/tree/main/python/chronos/example/simulator>
+[AIOps_anomaly_detect_unsupervised]: <https://github.com/intel-analytics/BigDL/blob/main/python/chronos/use-case/AIOps/AIOps_anomaly_detect_unsupervised.ipynb>
+[AIOps_anomaly_detect_unsupervised_forecast_based]: <https://github.com/intel-analytics/BigDL/blob/main/python/chronos/use-case/AIOps/AIOps_anomaly_detect_unsupervised_forecast_based.ipynb>
+[stock_prediction]: <https://github.com/intel-analytics/BigDL/blob/main/python/chronos/use-case/fsi/stock_prediction.ipynb>
+[stock_prediction_prophet]: <https://github.com/intel-analytics/BigDL/blob/main/python/chronos/use-case/fsi/stock_prediction_prophet.ipynb>
+[network_traffic_autots_forecasting]: <https://github.com/intel-analytics/BigDL/blob/main/python/chronos/use-case/network_traffic/network_traffic_autots_forecasting.ipynb>
+[network_traffic_model_forecasting]: <https://github.com/intel-analytics/BigDL/blob/main/python/chronos/use-case/network_traffic/network_traffic_model_forecasting.ipynb>
+[network_traffic_multivariate_multistep_tcnforecaster]: <https://github.com/intel-analytics/BigDL/blob/main/python/chronos/use-case/network_traffic/network_traffic_multivariate_multistep_tcnforecaster.ipynb>
+[network_traffic_autots_customized_model]: <https://github.com/intel-analytics/BigDL/blob/main/python/chronos/use-case/network_traffic/network_traffic_autots_customized_model.ipynb>

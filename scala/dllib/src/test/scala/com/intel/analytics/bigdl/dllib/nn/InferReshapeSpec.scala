@@ -17,7 +17,7 @@
 package com.intel.analytics.bigdl.dllib.nn
 
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
-import com.intel.analytics.bigdl.dllib.utils.LayerException
+import com.intel.analytics.bigdl.dllib.utils.{LayerException, TestUtils}
 import com.intel.analytics.bigdl.dllib.utils.serializer.ModuleSerializationTest
 import org.scalatest.FlatSpec
 
@@ -35,26 +35,28 @@ class InferReshapeSpec extends FlatSpec {
       gradOutput.rand()
       val gradOutputOrg = gradOutput.clone()
       val gradInput = module.backward(input, gradOutput)
-      assert(output.nDimension() == 3)
-      assert(output.size(1) == batchSize)
-      assert(output.size(2) == 3)
-      assert(output.size(3) == 2)
-      assert(gradInput.isSameSizeAs(input))
+      TestUtils.conditionFailTest(output.nDimension() == 3)
+      TestUtils.conditionFailTest(output.size(1) == batchSize)
+      TestUtils.conditionFailTest(output.size(2) == 3)
+      TestUtils.conditionFailTest(output.size(3) == 2)
+      TestUtils.conditionFailTest(gradInput.isSameSizeAs(input))
       for (i <- 1 to batchSize) {
         for (j <- 0 to 5) {
-          assert(input(Array(i, 1, j + 1)) == output(Array(i, j / 2 + 1, j % 2 + 1)))
-          assert(gradInput(Array(i, 1, j + 1)) == gradOutput(Array(i, j / 2 + 1, j % 2 + 1)))
+          TestUtils.conditionFailTest(
+            input(Array(i, 1, j + 1)) == output(Array(i, j / 2 + 1, j % 2 + 1)))
+          TestUtils.conditionFailTest(
+            gradInput(Array(i, 1, j + 1)) == gradOutput(Array(i, j / 2 + 1, j % 2 + 1)))
         }
       }
-      assert(input == inputOrg)
-      assert(gradOutput == gradOutputOrg)
+      TestUtils.conditionFailTest(input == inputOrg)
+      TestUtils.conditionFailTest(gradOutput == gradOutputOrg)
     }
 
-    intercept[LayerException] {
+    intercept[com.intel.analytics.bigdl.dllib.utils.UnKnownException] {
       module.forward(Tensor[Double](2, 2))
     }
 
-    intercept[LayerException] {
+    intercept[com.intel.analytics.bigdl.dllib.utils.UnKnownException] {
       module.forward(Tensor[Double](3, 2, 2))
     }
   }
@@ -69,15 +71,17 @@ class InferReshapeSpec extends FlatSpec {
     gradOutput.rand()
     val gradOutputOrg = gradOutput.clone()
     val gradInput = module.backward(input, gradOutput)
-    assert(output.nDimension() == 2)
-    assert(output.size(1) == 3)
-    assert(output.size(2) == 2)
+    TestUtils.conditionFailTest(output.nDimension() == 2)
+    TestUtils.conditionFailTest(output.size(1) == 3)
+    TestUtils.conditionFailTest(output.size(2) == 2)
     for (j <- 0 to 5) {
-      assert(input(Array(j / 3 + 1, j % 3 + 1)) == output(Array(j / 2 + 1, j % 2 + 1)))
-      assert(gradInput(Array(j / 3 + 1, j % 3 + 1)) == gradOutput(Array(j / 2 + 1, j % 2 + 1)))
+      TestUtils.conditionFailTest(
+        input(Array(j / 3 + 1, j % 3 + 1)) == output(Array(j / 2 + 1, j % 2 + 1)))
+      TestUtils.conditionFailTest(
+        gradInput(Array(j / 3 + 1, j % 3 + 1)) == gradOutput(Array(j / 2 + 1, j % 2 + 1)))
     }
-    assert(input == inputOrg)
-    assert(gradOutput == gradOutputOrg)
+    TestUtils.conditionFailTest(input == inputOrg)
+    TestUtils.conditionFailTest(gradOutput == gradOutputOrg)
   }
 
   "A InferReshape Module disable batch with infer" should "generate correct output and grad" in {
@@ -90,15 +94,17 @@ class InferReshapeSpec extends FlatSpec {
     gradOutput.rand()
     val gradOutputOrg = gradOutput.clone()
     val gradInput = module.backward(input, gradOutput)
-    assert(output.nDimension() == 2)
-    assert(output.size(1) == 3)
-    assert(output.size(2) == 2)
+    TestUtils.conditionFailTest(output.nDimension() == 2)
+    TestUtils.conditionFailTest(output.size(1) == 3)
+    TestUtils.conditionFailTest(output.size(2) == 2)
     for (j <- 0 to 5) {
-      assert(input(Array(1, j / 3 + 1, j % 3 + 1)) == output(Array(j / 2 + 1, j % 2 + 1)))
-      assert(gradInput(Array(1, j / 3 + 1, j % 3 + 1)) == gradOutput(Array(j / 2 + 1, j % 2 + 1)))
+      TestUtils.conditionFailTest(
+        input(Array(1, j / 3 + 1, j % 3 + 1)) == output(Array(j / 2 + 1, j % 2 + 1)))
+      TestUtils.conditionFailTest(gradInput(
+        Array(1, j / 3 + 1, j % 3 + 1)) == gradOutput(Array(j / 2 + 1, j % 2 + 1)))
     }
-    assert(input == inputOrg)
-    assert(gradOutput == gradOutputOrg)
+    TestUtils.conditionFailTest(input == inputOrg)
+    TestUtils.conditionFailTest(gradOutput == gradOutputOrg)
   }
 
   "A InferReshape Module enable batch with infer" should "generate correct output and grad" in {
@@ -112,22 +118,24 @@ class InferReshapeSpec extends FlatSpec {
       gradOutput.rand()
       val gradOutputOrg = gradOutput.clone()
       val gradInput = module.backward(input, gradOutput)
-      assert(output.nDimension() == 3)
-      assert(output.size(1) == batchSize)
-      assert(output.size(2) == 3)
-      assert(output.size(3) == 2)
-      assert(gradInput.isSameSizeAs(input))
+      TestUtils.conditionFailTest(output.nDimension() == 3)
+      TestUtils.conditionFailTest(output.size(1) == batchSize)
+      TestUtils.conditionFailTest(output.size(2) == 3)
+      TestUtils.conditionFailTest(output.size(3) == 2)
+      TestUtils.conditionFailTest(gradInput.isSameSizeAs(input))
       for (i <- 1 to batchSize) {
         for (j <- 0 to 5) {
-          assert(input(Array(i, 1, j + 1)) == output(Array(i, j / 2 + 1, j % 2 + 1)))
-          assert(gradInput(Array(i, 1, j + 1)) == gradOutput(Array(i, j / 2 + 1, j % 2 + 1)))
+          TestUtils.conditionFailTest(
+            input(Array(i, 1, j + 1)) == output(Array(i, j / 2 + 1, j % 2 + 1)))
+          TestUtils.conditionFailTest(
+            gradInput(Array(i, 1, j + 1)) == gradOutput(Array(i, j / 2 + 1, j % 2 + 1)))
         }
       }
-      assert(input == inputOrg)
-      assert(gradOutput == gradOutputOrg)
+      TestUtils.conditionFailTest(input == inputOrg)
+      TestUtils.conditionFailTest(gradOutput == gradOutputOrg)
     }
 
-    intercept[LayerException] {
+    intercept[com.intel.analytics.bigdl.dllib.utils.UnKnownException] {
       module.forward(Tensor[Double](3, 1))
     }
   }
@@ -138,21 +146,21 @@ class InferReshapeSpec extends FlatSpec {
     val model = new InferReshape[Float](Array(0, 4, -1, 0))
     val expectedShape = Array(2, 4, 16, 8)
     val out = model.forward(tensor).size()
-    (out zip expectedShape).foreach(x => assert(x._1 == x._2))
+    (out zip expectedShape).foreach(x => TestUtils.conditionFailTest(x._1 == x._2))
 
     val tensor2 = Tensor.randperm[Float](1024)
     tensor2.resize(2, 16, 4, 8)
     val model2 = new InferReshape[Float](Array(-1, 4))
     val expectedShape2 = Array(256, 4)
     val out2 = model2.forward(tensor).size()
-    (out2 zip expectedShape2).foreach(x => assert(x._1 == x._2))
+    (out2 zip expectedShape2).foreach(x => TestUtils.conditionFailTest(x._1 == x._2))
 
     val tensor3 = Tensor.randperm[Float](1024)
     tensor3.resize(256, 4)
     val model3 = new InferReshape[Float](Array(1, 4, -1, 8))
     val expectedShape3 = Array(1, 4, 32, 8)
     val out3 = model3.forward(tensor).size()
-    (out3 zip expectedShape3).foreach(x => assert(x._1 == x._2))
+    (out3 zip expectedShape3).foreach(x => TestUtils.conditionFailTest(x._1 == x._2))
 
 
     val cls = Tensor.randperm[Float](18 * 55 * 37)
@@ -169,11 +177,11 @@ class InferReshapeSpec extends FlatSpec {
     clsProc.add(new SoftMax[Float]())
     clsProc.add(new InferReshape[Float](Array(1, 2 * 9, -1, 37)))
     val out4 = clsProc.forward(cls).asInstanceOf[Tensor[Float]].size()
-    (out4 zip cls.size()).foreach(x => assert(x._1 == x._2))
+    (out4 zip cls.size()).foreach(x => TestUtils.conditionFailTest(x._1 == x._2))
   }
 
   def assertIntArrayEqual(a1: Array[Int], a2: Array[Int]): Unit = {
-    (a1 zip a2).foreach(x => assert(x._1 == x._2))
+    (a1 zip a2).foreach(x => TestUtils.conditionFailTest(x._1 == x._2))
   }
 }
 

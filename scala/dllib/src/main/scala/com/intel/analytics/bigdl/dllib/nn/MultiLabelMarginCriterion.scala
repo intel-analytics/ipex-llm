@@ -18,6 +18,7 @@ package com.intel.analytics.bigdl.dllib.nn
 import com.intel.analytics.bigdl.dllib.nn.abstractnn.TensorCriterion
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.dllib.utils.Log4Error
 
 import scala.reflect.ClassTag
 
@@ -37,21 +38,22 @@ class MultiLabelMarginCriterion[@specialized(Float, Double) T: ClassTag]
 
   override def updateOutput(input: Tensor[T], target: Tensor[T]): T = {
     if (null == isTarget) isTarget = Tensor[T]()
-    require(input.nDimension() == 1 || input.nDimension() == 2,
+    Log4Error.invalidInputError(input.nDimension() == 1 || input.nDimension() == 2,
       "MultiLabelMarginCriterion: " + ErrorInfo.constrainInputAsVectorOrBatch +
     s"input dimension ${input.nDimension()}")
     val (nframe, dim) = if (input.nDimension() == 1) {
-      require(target.nDimension() == 1 && target.size(1) == input.size(1),
+      Log4Error.invalidInputError(target.nDimension() == 1 && target.size(1) == input.size(1),
         "MultiLabelMarginCriterion: " + ErrorInfo.constrainInputSizeSameAsTarget +
       s"target dimension ${target.nDimension()}, " +
           s"target size ${target.size(1)}, input size ${input.size()}")
       (1, input.size(1))
     } else {
-      require(target.nDimension() == 2 && target.size(1) == input.size(1) && target.size(2)
+      Log4Error.invalidInputError(target.nDimension() == 2 && target.size(1) == input.size(1)
+        && target.size(2)
         == input.size(2), "MultiLabelMarginCriterion: " + ErrorInfo.constrainInputSizeSameAsTarget)
       (input.size(1), input.size(2))
     }
-    require(ev.isGreaterEq(target.min(), ev.zero) &&
+    Log4Error.invalidInputError(ev.isGreaterEq(target.min(), ev.zero) &&
       ev.isGreaterEq(ev.fromType(dim), target.max()), "MultiLabelMarginCriterion: " +
       s"target out of range, target min should be greater than or equal to zero, but get " +
       s"${target.min()}, target max should be less than or equal to $dim, but get ${target.max()}")
@@ -111,39 +113,43 @@ class MultiLabelMarginCriterion[@specialized(Float, Double) T: ClassTag]
   }
 
   override def updateGradInput(input: Tensor[T], target: Tensor[T]): Tensor[T] = {
-    require(input.nDimension() == 1 || input.nDimension() == 2,
+    Log4Error.invalidInputError(input.nDimension() == 1 || input.nDimension() == 2,
       "MultiLabelMarginCriterion: " + ErrorInfo.constrainInputAsVectorOrBatch +
     s"input dimension ${input.nDimension()}")
     val (nframe, dim) = if (input.nDimension() == 1) {
-      require(target.nDimension() == 1 && target.size(1) == input.size(1),
+      Log4Error.invalidInputError(target.nDimension() == 1 && target.size(1) == input.size(1),
         "MultiLabelMarginCriterion: " + ErrorInfo.constrainInputSizeSameAsTarget +
       s"target dimension ${target.nDimension()}" +
           s"target size ${target.size(1)} input size ${input.size(1)}")
-      require(isTarget.nDimension() == 1 && isTarget.size(1) == input.size(1),
+      Log4Error.invalidInputError(isTarget.nDimension() == 1 && isTarget.size(1) == input.size(1),
         "MultiLabelMarginCriterion: inconsistent isTarget size" +
           s"isTarget dimension ${isTarget.size(1)}" +
           s"isTarget size ${isTarget.size(1)} input size ${input.size(1)}")
       (1, input.size(1))
     } else {
-      require(target.nDimension() == 2 && target.size(1) == input.size(1) && target.size(2)
-        == input.size(2), "MultiLabelMarginCriterion: " + ErrorInfo.constrainInputSizeSameAsTarget +
+      Log4Error.invalidInputError(target.nDimension() == 2 &&
+        target.size(1) == input.size(1) && target.size(2)
+        == input.size(2), "MultiLabelMarginCriterion: " +
+        ErrorInfo.constrainInputSizeSameAsTarget +
       s"target dimension ${target.nDimension()} " +
         s"target size(${target.size(1)},${target.size(2)})" +
         s"input size(${input.size(1)},${input.size(2)})")
-      require(isTarget.nDimension() == 2 && isTarget.size(1) == input.size(1) &&
-        isTarget.size(2) == input.size(2), "MultiLabelMarginCriterion: inconsistent isTarget size" +
+      Log4Error.invalidInputError(isTarget.nDimension() == 2 &&
+        isTarget.size(1) == input.size(1) &&
+        isTarget.size(2) == input.size(2), "MultiLabelMarginCriterion:" +
+        " inconsistent isTarget size" +
         s"isTarget dimension ${isTarget.nDimension()}" +
         s"isTarget size(${isTarget.size(1)},${isTarget.size(2)})" +
         s"input size(${input.size(1)},${input.size(2)})")
       (input.size(1), input.size(2))
     }
 
-    require(ev.isGreaterEq(target.min(), ev.zero) &&
+    Log4Error.invalidInputError(ev.isGreaterEq(target.min(), ev.zero) &&
       ev.isGreaterEq(ev.fromType(dim), target.max()), "MultiLabelMarginCriterion: " +
       s"target out of range, target min should be greater than or equal to zero, but get " +
       s"${target.min()}, target max should be less than or equal to $dim, but get ${target.max()}")
 
-    require(ev.isGreaterEq(isTarget.min(), ev.zero) &&
+    Log4Error.invalidInputError(ev.isGreaterEq(isTarget.min(), ev.zero) &&
       ev.isGreaterEq(ev.fromType(dim), isTarget.max()), "MultiLabelMarginCriterion: " +
       "target out of range")
 

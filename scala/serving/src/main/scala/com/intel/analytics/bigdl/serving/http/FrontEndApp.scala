@@ -34,13 +34,14 @@ import org.slf4j.LoggerFactory
 
 import scala.collection.mutable
 import scala.concurrent.Await
+import com.intel.analytics.bigdl.dllib.utils.Log4Error
 
 object FrontEndApp extends Supportive with EncryptSupportive {
   override val logger = LoggerFactory.getLogger(getClass)
 
-  val name = "analytics zoo web serving frontend"
+  val name = "BigDL web serving frontend"
 
-  implicit val system = ActorSystem("zoo-serving-frontend-system")
+  implicit val system = ActorSystem("bigdl-serving-frontend-system")
   implicit val materializer = ActorMaterializer()
   implicit val executionContext = system.dispatcher
   implicit val timeout: Timeout = Timeout(100, TimeUnit.SECONDS)
@@ -316,7 +317,7 @@ object FrontEndApp extends Supportive with EncryptSupportive {
   val jacksonJsonSerializer = new JacksonJsonSerializer()
 
   val argumentsParser = new scopt.OptionParser[FrontEndAppArguments]("AZ Serving") {
-    head("Analytics Zoo Serving Frontend")
+    head("BigDL Serving Frontend")
     opt[String]('i', "interface")
       .action((x, c) => c.copy(interface = x))
       .text("network interface of frontend")
@@ -388,7 +389,7 @@ object FrontEndApp extends Supportive with EncryptSupportive {
 
     val keyStore = KeyStore.getInstance("PKCS12")
     val keystoreInputStream = new File(httpsKeyStorePath).toURI().toURL().openStream()
-    require(keystoreInputStream != null, "Keystore required!")
+    Log4Error.invalidOperationError(keystoreInputStream != null, "Keystore required!")
     keyStore.load(keystoreInputStream, token)
 
     val keyManagerFactory = KeyManagerFactory.getInstance("SunX509")

@@ -13,3 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+import pytest
+
+skip_method = pytest.mark.skip(reason="We will remove deprecated API.")

@@ -30,10 +30,12 @@ import numpy as np
 import pandas as pd
 from numpy.testing import assert_array_almost_equal
 import os
+from .. import skip_method
 
 default_past_seq_len = 2
 
 
+@skip_method
 class TestTimeSequencePipeline(ZooTestCase):
 
     def setup_method(self, method):

@@ -16,7 +16,7 @@
 
 package com.intel.analytics.bigdl.dllib.utils.serializer
 
-import java.io.{File}
+import java.io.File
 import java.lang.reflect.Modifier
 
 import com.intel.analytics.bigdl.dllib.nn.abstractnn.{AbstractModule, Activity}
@@ -24,7 +24,7 @@ import com.intel.analytics.bigdl.dllib.nn.ops.{Exp => ExpOps, Pow => PowOps, Sel
 import com.intel.analytics.bigdl.dllib.nn.tf.{DecodeGif => DecodeGifOps, DecodeJpeg => DecodeJpegOps, DecodePng => DecodePngOps, DecodeRaw => DecodeRawOps}
 import com.intel.analytics.bigdl.dllib.utils.RandomGenerator.RNG
 import com.intel.analytics.bigdl.dllib.utils.tf.loaders.{Pack => _}
-import com.intel.analytics.bigdl.dllib.utils.{Shape => KShape}
+import com.intel.analytics.bigdl.dllib.utils.{TestUtils, Shape => KShape}
 import org.reflections.Reflections
 import org.reflections.scanners.SubTypesScanner
 import org.reflections.util.{ClasspathHelper, ConfigurationBuilder, FilterBuilder}
@@ -105,7 +105,7 @@ abstract class SerializerSpecHelper extends FlatSpec with Matchers with BeforeAn
       println(s"$t do not need to be tested")
     })
     getExpected.foreach(exp => {
-      require(tested.contains(exp), s" $exp not included in the test!")
+      TestUtils.conditionFailTest(tested.contains(exp), s" $exp not included in the test!")
     })
   }
 }

@@ -306,7 +306,8 @@ object SpatialBatchNormalization {
     mean: Tensor[Float], variance: Tensor[Float], scale: Tensor[Float], offset: Tensor[Float],
     eps: Float): Unit = {
 
-    require(input.isContiguous(), "BatchNorm NHWC require a contiguous input")
+    Log4Error.invalidInputError(input.isContiguous(),
+      "BatchNorm NHWC require a contiguous input")
     val inputData = input.storage().array()
     val inputOffset = input.storageOffset() - 1
     val outputData = output.storage().array()
@@ -376,7 +377,8 @@ object SpatialBatchNormalization {
     mean: Tensor[Double], variance: Tensor[Double], scale: Tensor[Double], offset: Tensor[Double],
     eps: Double): Unit = {
 
-    require(input.isContiguous(), "BatchNorm NHWC require a contiguous input")
+    Log4Error.invalidInputError(input.isContiguous(),
+      "BatchNorm NHWC require a contiguous input")
     val inputData = input.storage().array()
     val inputOffset = input.storageOffset() - 1
     val outputData = output.storage().array()
@@ -425,7 +427,8 @@ object SpatialBatchNormalization {
     runningVar: Tensor[Float], scale: Tensor[Float], offset: Tensor[Float],
     eps: Float, momentum: Float,
     batchVar: Tensor[Float] = null, saveVar: Tensor[Float] = null): Unit = {
-    require(input.isContiguous(), "BatchNorm NHWC require a contiguous input")
+    Log4Error.invalidInputError(input.isContiguous(),
+      "BatchNorm NHWC require a contiguous input")
     val inputData = input.storage().array()
     val inputOffset = input.storageOffset() - 1
     val outputData = output.storage().array()
@@ -537,7 +540,8 @@ object SpatialBatchNormalization {
     runningVar: Tensor[Double], scale: Tensor[Double], offset: Tensor[Double],
     eps: Double, momentum: Double,
     batchVar: Tensor[Double] = null, saveVar: Tensor[Double] = null): Unit = {
-    require(input.isContiguous(), "BatchNorm NHWC require a contiguous input")
+    Log4Error.invalidInputError(input.isContiguous(),
+      "BatchNorm NHWC require a contiguous input")
     val inputData = input.storage().array()
     val inputOffset = input.storageOffset() - 1
     val outputData = output.storage().array()
@@ -648,7 +652,8 @@ object SpatialBatchNormalization {
     mean: Tensor[Float], variance: Tensor[Float], scale: Tensor[Float],
     offset: Tensor[Float], eps: Float): Unit = {
 
-    require(input.isContiguous(), "BatchNorm NCHW require a contiguous input")
+    Log4Error.invalidInputError(input.isContiguous(),
+      "BatchNorm NCHW require a contiguous input")
     val inputData = input.storage().array()
     val inputOffset = input.storageOffset() - 1
     val outputData = output.storage().array()
@@ -709,7 +714,8 @@ object SpatialBatchNormalization {
     eps: Double)
   : Unit = {
 
-    require(input.isContiguous(), "BatchNorm NCHW require a contiguous input")
+    Log4Error.invalidInputError(input.isContiguous(),
+      "BatchNorm NCHW require a contiguous input")
     val inputData = input.storage().array()
     val inputOffset = input.storageOffset() - 1
     val outputData = output.storage().array()
@@ -775,13 +781,17 @@ object SpatialBatchNormalization {
     gMean: Tensor[Float],
     gxMean: Tensor[Float]
   ): Unit = {
-    require(input.nDimension() == 4, "BN require a 4D input")
-    require(input.isContiguous(), "input is not contiguous")
-    require(gradOutput.nDimension() == 4, "BN require a 4D gradient")
-    require(gradOutput.isContiguous(), "gradient is not contiguous")
+    Log4Error.invalidInputError(input.nDimension() == 4,
+      "BN require a 4D input")
+    Log4Error.invalidInputError(input.isContiguous(), "input is not contiguous")
+    Log4Error.invalidInputError(gradOutput.nDimension() == 4,
+      "BN require a 4D gradient")
+    Log4Error.invalidInputError(gradOutput.isContiguous(), "gradient is not contiguous")
     val nChannel = gradOutput.size(4)
-    require(saveMean.size(1) == nChannel, "saveMean length is not consistent with channel number")
-    require(saveStd.size(1) == nChannel, "saveStd length is not consistent with channel number")
+    Log4Error.invalidInputError(saveMean.size(1) == nChannel,
+      "saveMean length is not consistent with channel number")
+    Log4Error.invalidInputError(saveStd.size(1) == nChannel,
+      "saveStd length is not consistent with channel number")
 
     gradInput.resizeAs(gradOutput)
     if (gMean.isEmpty) {
@@ -824,7 +834,8 @@ object SpatialBatchNormalization {
     }
 
     if (scale != null) {
-      require(scale.size(1) == nChannel, "scale length is not consistent with channel number")
+      Log4Error.invalidInputError(scale.size(1) == nChannel,
+        "scale length is not consistent with channel number")
 
       val scaleData = scale.storage().array()
       val scaleOffset = scale.storageOffset() - 1
@@ -868,13 +879,17 @@ object SpatialBatchNormalization {
     gMean: Tensor[Double],
     gxMean: Tensor[Double]
   ): Unit = {
-    require(input.nDimension() == 4, "BN require a 4D input")
-    require(input.isContiguous(), "input is not contiguous")
-    require(gradOutput.nDimension() == 4, "BN require a 4D gradient")
-    require(gradOutput.isContiguous(), "gradient is not contiguous")
+    Log4Error.invalidInputError(input.nDimension() == 4,
+      "BN require a 4D input")
+    Log4Error.invalidInputError(input.isContiguous(), "input is not contiguous")
+    Log4Error.invalidInputError(gradOutput.nDimension() == 4,
+      "BN require a 4D gradient")
+    Log4Error.invalidInputError(gradOutput.isContiguous(), "gradient is not contiguous")
     val nChannel = gradOutput.size(4)
-    require(saveMean.size(1) == nChannel, "saveMean length is not consistent with channel number")
-    require(saveStd.size(1) == nChannel, "saveStd length is not consistent with channel number")
+    Log4Error.invalidInputError(saveMean.size(1) == nChannel,
+      "saveMean length is not consistent with channel number")
+    Log4Error.invalidInputError(saveStd.size(1) == nChannel,
+      "saveStd length is not consistent with channel number")
 
     gradInput.resizeAs(gradOutput)
     if (gMean.isEmpty) {
@@ -917,7 +932,8 @@ object SpatialBatchNormalization {
     }
 
     if (scale != null) {
-      require(scale.size(1) == nChannel, "scale length is not consistent with channel number")
+      Log4Error.invalidInputError(scale.size(1) == nChannel,
+        "scale length is not consistent with channel number")
       val scaleData = scale.storage().array()
       val scaleOffset = scale.storageOffset() - 1
       i = 0
@@ -956,10 +972,12 @@ object SpatialBatchNormalization {
     scale: Tensor[Float],
     saveStd: Tensor[Float]
   ): Unit = {
-    require(gradOutput.nDimension() == 4, "BN require a 4D gradient")
-    require(gradOutput.isContiguous(), "gradient is not contiguous")
+    Log4Error.invalidInputError(gradOutput.nDimension() == 4,
+      "BN require a 4D gradient")
+    Log4Error.invalidInputError(gradOutput.isContiguous(), "gradient is not contiguous")
     val nChannel = gradOutput.size(4)
-    require(saveStd.size(1) == nChannel, "saveStd length is not consistent with channel number")
+    Log4Error.invalidInputError(saveStd.size(1) == nChannel,
+      "saveStd length is not consistent with channel number")
 
     gradInput.resizeAs(gradOutput)
     val gradOutputData = gradOutput.storage().array()
@@ -972,7 +990,8 @@ object SpatialBatchNormalization {
     val n = gradOutput.nElement()
 
     if (scale != null) {
-      require(scale.size(1) == nChannel, "scale length is not consistent with channel number")
+      Log4Error.invalidInputError(scale.size(1) == nChannel,
+        "scale length is not consistent with channel number")
       val scaleData = scale.storage().array()
       val scaleOffset = scale.storageOffset() - 1
       var i = 0
@@ -1007,10 +1026,12 @@ object SpatialBatchNormalization {
     scale: Tensor[Double],
     saveStd: Tensor[Double]
   ): Unit = {
-    require(gradOutput.nDimension() == 4, "BN require a 4D gradient")
-    require(gradOutput.isContiguous(), "gradient is not contiguous")
+    Log4Error.invalidInputError(gradOutput.nDimension() == 4,
+      "BN require a 4D gradient")
+    Log4Error.invalidInputError(gradOutput.isContiguous(), "gradient is not contiguous")
     val nChannel = gradOutput.size(4)
-    require(saveStd.size(1) == nChannel, "saveStd length is not consistent with channel number")
+    Log4Error.invalidInputError(saveStd.size(1) == nChannel,
+      "saveStd length is not consistent with channel number")
 
     gradInput.resizeAs(gradOutput)
     val gradOutputData = gradOutput.storage().array()
@@ -1024,7 +1045,8 @@ object SpatialBatchNormalization {
     var i = 0
 
     if (scale != null) {
-      require(scale.size(1) == nChannel, "scale length is not consistent with channel number")
+      Log4Error.invalidInputError(scale.size(1) == nChannel,
+        "scale length is not consistent with channel number")
       val scaleData = scale.storage().array()
       val scaleOffset = scale.storageOffset() - 1
       while (i < n) {
@@ -1066,13 +1088,17 @@ object SpatialBatchNormalization {
     gxMeanKey: String = null,
     needSync: Boolean = false
   ): Unit = {
-    require(input.nDimension() == 4, "BN require a 4D input")
-    require(input.isContiguous(), "input is not contiguous")
-    require(gradOutput.nDimension() == 4, "BN require a 4D gradient")
-    require(gradOutput.isContiguous(), "gradient is not contiguous")
+    Log4Error.invalidInputError(input.nDimension() == 4,
+      "BN require a 4D input")
+    Log4Error.invalidInputError(input.isContiguous(), "input is not contiguous")
+    Log4Error.invalidInputError(gradOutput.nDimension() == 4,
+      "BN require a 4D gradient")
+    Log4Error.invalidInputError(gradOutput.isContiguous(), "gradient is not contiguous")
     val nChannel = gradOutput.size(2)
-    require(saveMean.size(1) == nChannel, "saveMean length is not consistent with channel number")
-    require(saveStd.size(1) == nChannel, "saveStd length is not consistent with channel number")
+    Log4Error.invalidInputError(saveMean.size(1) == nChannel,
+      "saveMean length is not consistent with channel number")
+    Log4Error.invalidInputError(saveStd.size(1) == nChannel,
+      "saveStd length is not consistent with channel number")
 
     gradInput.resizeAs(gradOutput)
     if (gMean.isEmpty) {
@@ -1173,7 +1199,8 @@ object SpatialBatchNormalization {
     i = 0
     b = 0
     if (scale != null) {
-      require(scale.size(1) == nChannel, "scale length is not consistent with channel number")
+      Log4Error.invalidInputError(scale.size(1) == nChannel,
+        "scale length is not consistent with channel number")
       val scaleData = scale.storage().array()
       val scaleOffset = scale.storageOffset() - 1
       while (b < nBatch) {
@@ -1225,7 +1252,8 @@ object SpatialBatchNormalization {
                                                 stdKey: String = null,
                                                 needSync: Boolean = false)
   : Unit = {
-    require(input.isContiguous(), "BatchNorm NCHW require a contiguous input")
+    Log4Error.invalidInputError(input.isContiguous(),
+      "BatchNorm NCHW require a contiguous input")
     val inputData = input.storage().array()
     val inputOffset = input.storageOffset() - 1
     val outputData = output.storage().array()
@@ -1427,7 +1455,8 @@ object SpatialBatchNormalization {
                                                  stdKey: String = null,
                                                  needSync: Boolean = false)
   : Unit = {
-    require(input.isContiguous(), "BatchNorm NCHW require a contiguous input")
+    Log4Error.invalidInputError(input.isContiguous(),
+      "BatchNorm NCHW require a contiguous input")
     val inputData = input.storage().array()
     val inputOffset = input.storageOffset() - 1
     val outputData = output.storage().array()
@@ -1627,13 +1656,17 @@ object SpatialBatchNormalization {
     gxMeanKey: String = null,
     needSync: Boolean = false
   ): Unit = {
-    require(input.nDimension() == 4, "BN require a 4D input")
-    require(input.isContiguous(), "input is not contiguous")
-    require(gradOutput.nDimension() == 4, "BN require a 4D gradient")
-    require(gradOutput.isContiguous(), "gradient is not contiguous")
+    Log4Error.invalidInputError(input.nDimension() == 4,
+      "BN require a 4D input")
+    Log4Error.invalidInputError(input.isContiguous(), "input is not contiguous")
+    Log4Error.invalidInputError(gradOutput.nDimension() == 4,
+      "BN require a 4D gradient")
+    Log4Error.invalidInputError(gradOutput.isContiguous(), "gradient is not contiguous")
     val nChannel = gradOutput.size(2)
-    require(saveMean.size(1) == nChannel, "saveMean length is not consistent with channel number")
-    require(saveStd.size(1) == nChannel, "saveStd length is not consistent with channel number")
+    Log4Error.invalidInputError(saveMean.size(1) == nChannel,
+      "saveMean length is not consistent with channel number")
+    Log4Error.invalidInputError(saveStd.size(1) == nChannel,
+      "saveStd length is not consistent with channel number")
 
     gradInput.resizeAs(gradOutput)
     if (gMean.isEmpty) {
@@ -1734,7 +1767,8 @@ object SpatialBatchNormalization {
     if (scale != null) {
       val scaleData = scale.storage().array()
       val scaleOffset = scale.storageOffset() - 1
-      require(scale.size(1) == nChannel, "scale length is not consistent with channel number")
+      Log4Error.invalidInputError(scale.size(1) == nChannel,
+        "scale length is not consistent with channel number")
       while (b < nBatch) {
         var c = 0
         while (c < nChannel) {
@@ -1777,10 +1811,12 @@ object SpatialBatchNormalization {
     scale: Tensor[Float],
     saveStd: Tensor[Float]
   ): Unit = {
-    require(gradOutput.nDimension() == 4, "BN require a 4D gradient")
-    require(gradOutput.isContiguous(), "gradient is not contiguous")
+    Log4Error.invalidInputError(gradOutput.nDimension() == 4,
+      "BN require a 4D gradient")
+    Log4Error.invalidInputError(gradOutput.isContiguous(), "gradient is not contiguous")
     val nChannel = gradOutput.size(2)
-    require(saveStd.size(1) == nChannel, "saveStd length is not consistent with channel number")
+    Log4Error.invalidInputError(saveStd.size(1) == nChannel,
+      "saveStd length is not consistent with channel number")
 
     gradInput.resizeAs(gradOutput)
     val gradOutputData = gradOutput.storage().array()
@@ -1795,7 +1831,8 @@ object SpatialBatchNormalization {
     var b = 0
     var i = 0
     if (scale != null) {
-      require(scale.size(1) == nChannel, "scale length is not consistent with channel number")
+      Log4Error.invalidInputError(scale.size(1) == nChannel,
+        "scale length is not consistent with channel number")
       val scaleData = scale.storage().array()
       val scaleOffset = scale.storageOffset() - 1
       while (b < nBatch) {
@@ -1838,10 +1875,12 @@ object SpatialBatchNormalization {
     scale: Tensor[Double],
     saveStd: Tensor[Double]
   ): Unit = {
-    require(gradOutput.nDimension() == 4, "BN require a 4D gradient")
-    require(gradOutput.isContiguous(), "gradient is not contiguous")
+    Log4Error.invalidInputError(gradOutput.nDimension() == 4,
+      "BN require a 4D gradient")
+    Log4Error.invalidInputError(gradOutput.isContiguous(), "gradient is not contiguous")
     val nChannel = gradOutput.size(2)
-    require(saveStd.size(1) == nChannel, "saveStd length is not consistent with channel number")
+    Log4Error.invalidInputError(saveStd.size(1) == nChannel,
+      "saveStd length is not consistent with channel number")
 
     gradInput.resizeAs(gradOutput)
     val gradOutputData = gradOutput.storage().array()
@@ -1856,7 +1895,8 @@ object SpatialBatchNormalization {
     var b = 0
     var i = 0
     if (scale != null) {
-      require(scale.size(1) == nChannel, "scale length is not consistent with channel number")
+      Log4Error.invalidInputError(scale.size(1) == nChannel,
+        "scale length is not consistent with channel number")
       val scaleData = scale.storage().array()
       val scaleOffset = scale.storageOffset() - 1
       while (b < nBatch) {
@@ -1897,12 +1937,12 @@ object SpatialBatchNormalization {
     gradWeight: Tensor[Float], gradBias: Tensor[Float],
     input: Tensor[Float], saveMean: Tensor[Float],
     saveStd: Tensor[Float], scaleW: Float, scaleB: Float): Unit = {
-    require(gradOutput.isContiguous(), "gradOutput must be contiguous")
-    require(gradWeight.isContiguous(), "gradWeight must be contiguous")
-    require(gradBias.isContiguous(), "gradBias must be contiguous")
-    require(input.isContiguous(), "gradWeight must be contiguous")
-    require(saveMean.nDimension() == 1, "saveMean must be 1D")
-    require(saveStd.nDimension() == 1, "saveStd must be 1D")
+    Log4Error.invalidInputError(gradOutput.isContiguous(), "gradOutput must be contiguous")
+    Log4Error.invalidInputError(gradWeight.isContiguous(), "gradWeight must be contiguous")
+    Log4Error.invalidInputError(gradBias.isContiguous(), "gradBias must be contiguous")
+    Log4Error.invalidInputError(input.isContiguous(), "gradWeight must be contiguous")
+    Log4Error.invalidInputError(saveMean.nDimension() == 1, "saveMean must be 1D")
+    Log4Error.invalidInputError(saveStd.nDimension() == 1, "saveStd must be 1D")
     val nChannel = saveMean.size(1)
     val gradOutputData = gradOutput.storage().array()
     val gradOutputOffset = gradOutput.storageOffset() - 1
@@ -1937,12 +1977,12 @@ object SpatialBatchNormalization {
     gradWeight: Tensor[Double], gradBias: Tensor[Double],
     input: Tensor[Double], saveMean: Tensor[Double],
     saveStd: Tensor[Double], scaleW: Double, scaleB: Double): Unit = {
-    require(gradOutput.isContiguous(), "gradOutput must be contiguous")
-    require(gradWeight.isContiguous(), "gradWeight must be contiguous")
-    require(gradBias.isContiguous(), "gradBias must be contiguous")
-    require(input.isContiguous(), "gradWeight must be contiguous")
-    require(saveMean.nDimension() == 1, "saveMean must be 1D")
-    require(saveStd.nDimension() == 1, "saveStd must be 1D")
+    Log4Error.invalidInputError(gradOutput.isContiguous(), "gradOutput must be contiguous")
+    Log4Error.invalidInputError(gradWeight.isContiguous(), "gradWeight must be contiguous")
+    Log4Error.invalidInputError(gradBias.isContiguous(), "gradBias must be contiguous")
+    Log4Error.invalidInputError(input.isContiguous(), "gradWeight must be contiguous")
+    Log4Error.invalidInputError(saveMean.nDimension() == 1, "saveMean must be 1D")
+    Log4Error.invalidInputError(saveStd.nDimension() == 1, "saveStd must be 1D")
     val nChannel = saveMean.size(1)
     val gradOutputData = gradOutput.storage().array()
     val gradOutputOffset = gradOutput.storageOffset() - 1
@@ -1977,12 +2017,12 @@ object SpatialBatchNormalization {
     gradWeight: Tensor[Float], gradBias: Tensor[Float],
     input: Tensor[Float], saveMean: Tensor[Float],
     saveStd: Tensor[Float], scaleW: Float, scaleB: Float): Unit = {
-    require(gradOutput.isContiguous(), "gradOutput must be contiguous")
-    require(gradWeight.isContiguous(), "gradWeight must be contiguous")
-    require(gradBias.isContiguous(), "gradBias must be contiguous")
-    require(input.isContiguous(), "gradWeight must be contiguous")
-    require(saveMean.nDimension() == 1, "saveMean must be 1D")
-    require(saveStd.nDimension() == 1, "saveStd must be 1D")
+    Log4Error.invalidInputError(gradOutput.isContiguous(), "gradOutput must be contiguous")
+    Log4Error.invalidInputError(gradWeight.isContiguous(), "gradWeight must be contiguous")
+    Log4Error.invalidInputError(gradBias.isContiguous(), "gradBias must be contiguous")
+    Log4Error.invalidInputError(input.isContiguous(), "gradWeight must be contiguous")
+    Log4Error.invalidInputError(saveMean.nDimension() == 1, "saveMean must be 1D")
+    Log4Error.invalidInputError(saveStd.nDimension() == 1, "saveStd must be 1D")
     val nChannel = saveMean.size(1)
     val gradOutputData = gradOutput.storage().array()
     val gradOutputOffset = gradOutput.storageOffset() - 1
@@ -2024,12 +2064,12 @@ object SpatialBatchNormalization {
     gradWeight: Tensor[Double], gradBias: Tensor[Double],
     input: Tensor[Double], saveMean: Tensor[Double],
     saveStd: Tensor[Double], scaleW: Double, scaleB: Double): Unit = {
-    require(gradOutput.isContiguous(), "gradOutput must be contiguous")
-    require(gradWeight.isContiguous(), "gradWeight must be contiguous")
-    require(gradBias.isContiguous(), "gradBias must be contiguous")
-    require(input.isContiguous(), "gradWeight must be contiguous")
-    require(saveMean.nDimension() == 1, "saveMean must be 1D")
-    require(saveStd.nDimension() == 1, "saveStd must be 1D")
+    Log4Error.invalidInputError(gradOutput.isContiguous(), "gradOutput must be contiguous")
+    Log4Error.invalidInputError(gradWeight.isContiguous(), "gradWeight must be contiguous")
+    Log4Error.invalidInputError(gradBias.isContiguous(), "gradBias must be contiguous")
+    Log4Error.invalidInputError(input.isContiguous(), "gradWeight must be contiguous")
+    Log4Error.invalidInputError(saveMean.nDimension() == 1, "saveMean must be 1D")
+    Log4Error.invalidInputError(saveStd.nDimension() == 1, "saveStd must be 1D")
     val nChannel = saveMean.size(1)
     val gradOutputData = gradOutput.storage().array()
     val gradOutputOffset = gradOutput.storageOffset() - 1

@@ -2,9 +2,9 @@
 
 chmod a+x ./*
 
-export ANALYTICS_ZOO_HOME=$(pwd)/../../../../..
-export BPATH=$ANALYTICS_ZOO_HOME/scripts/cluster-serving
-export PYTHONPATH=$PYTHONPATH:$ANALYTICS_ZOO_HOME/pyzoo
+export BIGDL_HOME=$(pwd)/../../../../..
+export BPATH=$BIGDL_HOME/scala/serving/scripts
+export PYTHONPATH=$PYTHONPATH:$BIGDL_HOME/python/serving/src
 
 $BPATH/cluster-serving-start &
 sleep 20

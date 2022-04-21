@@ -14,16 +14,16 @@
 # limitations under the License.
 #
 
-import onnx
-from bigdl.dllib.nn.onnx.layer import *
 from bigdl.dllib.nn.layer import Identity, Model
 from .ops_mapping import _convert_map as convert_map
 from .converter_utils import parse_node_attr, parse_tensor_data
+from bigdl.dllib.utils.log4Error import *
 
 
 class OnnxLoader(object):
 
     def load_model(self, file_path):
+        import onnx
         model_proto = onnx.load_model(file_path)
         # self._ir_version = model_proto.ir_version
         # self._opset_import = model_proto.opset_import
@@ -81,7 +81,9 @@ class OnnxLoader(object):
                                                                            prev_modules, attrs,
                                                                            outputs)
 
-            assert len(outputs) == len(outputs_shape)
+            invalidInputError(len(outputs) == len(outputs_shape),
+                              f"size of outputs {len(outputs)} doesn't match outputs_shape"
+                              f" ${len(outputs_shape)}")
 
             for out, out_shape in zip(outputs, outputs_shape):
                 module_map[out] = bigdl_module

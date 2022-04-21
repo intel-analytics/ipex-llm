@@ -51,11 +51,11 @@ class Seq2SeqForecaster(BasePytorchForecaster):
                  seed=None,
                  distributed=False,
                  workers_per_node=1,
-                 distributed_backend="torch_distributed"):
+                 distributed_backend="ray"):
         """
-        Build a TCN Forecast Model.
+        Build a Seq2Seq Forecast Model.
 
-        TCN Forecast may fall into local optima. Please set repo_initialization
+        Seq2Seq Forecast may fall into local optima. Please set repo_initialization
         to False to alleviate the issue. You can also change a random seed to
         work around.
 
@@ -89,8 +89,8 @@ class Seq2SeqForecaster(BasePytorchForecaster):
         :param workers_per_node: int, the number of worker you want to use.
                The value defaults to 1. The param is only effective when
                distributed is set to True.
-        :param distributed_backend: str, select from "torch_distributed" or
-               "horovod". The value defaults to "torch_distributed".
+        :param distributed_backend: str, select from "ray" or
+               "horovod". The value defaults to "ray".
         """
         # config setting
         self.data_config = {
@@ -133,6 +133,7 @@ class Seq2SeqForecaster(BasePytorchForecaster):
         self.num_processes = max(1, current_num_threads//8)  # 8 is a magic num
         self.use_ipex = False  # S2S has worse performance on ipex
         self.onnx_available = True
+        self.quantize_available = False
         self.checkpoint_callback = False
 
         super().__init__()

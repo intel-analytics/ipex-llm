@@ -83,5 +83,6 @@ fi
 if [ -f $BASEDIR/friesian/target/bigdl-friesian*-python-api.zip ]; then
     cp -r $BASEDIR/friesian/target/bigdl-friesian*-python-api.zip $DIST_DIR/lib
 fi
+cp -r $BASEDIR/ppml/target/bigdl-ppml*-jar-with-dependencies.jar $DIST_DIR/lib
 cp -r $BASEDIR/dllib/src/main/resources/spark-bigdl.conf $DIST_DIR/conf
 cp -r $BASEDIR/../scripts/* $DIST_DIR/bin

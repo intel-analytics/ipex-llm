@@ -50,7 +50,7 @@ pip install bigdl-serving
 #### Install nightly version
 Download package from [here](https://sourceforge.net/projects/bigdl/files/cluster-serving-py/), run following command to install Cluster Serving
 ```
-pip install analytics_zoo_serving-*.whl
+pip install bigdl_serving-*.whl
 ```
 For users who need to deploy and start Cluster Serving, run `cluster-serving-init` to download and prepare dependencies.
 
@@ -99,7 +99,7 @@ You need to put your model file into a directory with layout like following acco
 **note:** `.pb` is the weight file which name must be `frozen_inference_graph.pb`, `.json` is the inputs and outputs definition file which name must be `graph_meta.json`, with contents like `{"input_names":["input:0"],"output_names":["output:0"]}`
 
 ***Tensorflow Checkpoint***
-Please refer to [freeze checkpoint example](https://github.com/intel-analytics/bigdl/tree/master/pyzoo/bigdl/examples/tensorflow/freeze_checkpoint)
+Please refer to [freeze checkpoint example](https://github.com/intel-analytics/bigdl/tree/master/python/orca/example/freeze_checkpoint)
 
 **Pytorch**
 
@@ -107,7 +107,7 @@ Please refer to [freeze checkpoint example](https://github.com/intel-analytics/b
 |-- model
    |-- xx.pt
 ```
-Running Pytorch model needs extra dependency and config. Refer to [here](https://github.com/intel-analytics/bigdl/blob/master/pyzoo/bigdl/examples/pytorch/train/README.md) to install dependencies, and set environment variable `$PYTHONHOME` to your python, e.g. python could be run by `$PYTHONHOME/bin/python` and library is at `$PYTHONHOME/lib/`.
+Running Pytorch model needs extra dependency and config. Refer to [here](https://github.com/intel-analytics/bigdl/blob/master/python/orca/example/torchmodel/train/README.md) to install dependencies, and set environment variable `$PYTHONHOME` to your python, e.g. python could be run by `$PYTHONHOME/bin/python` and library is at `$PYTHONHOME/lib/`.
 
 **OpenVINO**
 

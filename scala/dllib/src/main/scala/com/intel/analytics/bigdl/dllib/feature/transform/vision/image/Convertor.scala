@@ -22,6 +22,7 @@ import com.intel.analytics.bigdl.opencv.OpenCV
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.dllib.feature.transform.vision.image.opencv.OpenCVMat
+import com.intel.analytics.bigdl.dllib.utils.Log4Error
 import org.apache.logging.log4j.LogManager
 
 import scala.reflect._
@@ -47,7 +48,8 @@ object BytesToMat {
     val bytes = feature[Array[Byte]](byteKey)
     var mat: OpenCVMat = null
     try {
-      require(null != bytes && bytes.length > 0, "image file bytes should not be empty")
+      Log4Error.invalidOperationError(null != bytes && bytes.length > 0,
+        "image file bytes should not be empty")
       mat = OpenCVMat.fromImageBytes(bytes)
       feature(ImageFeature.mat) = mat
       feature(ImageFeature.originalSize) = mat.shape()
@@ -70,10 +72,10 @@ object BytesToMat {
 class PixelBytesToMat(byteKey: String = ImageFeature.bytes) extends FeatureTransformer {
 
   override def transform(feature: ImageFeature): ImageFeature = {
-    require(OpenCV.isOpenCVLoaded, "opencv isn't loaded")
+    Log4Error.invalidOperationError(OpenCV.isOpenCVLoaded, "opencv isn't loaded")
     if (!feature.isValid) return feature
     try {
-      require(feature.getOriginalSize != null,
+      Log4Error.invalidOperationError(feature.getOriginalSize != null,
         "please set the original size of image in ImageFeature")
       val pixels = feature[Array[Byte]](byteKey)
       val mat = OpenCVMat.fromPixelsBytes(pixels, feature.getOriginalHeight,
@@ -214,7 +216,8 @@ class ImageFrameToSample[T: ClassTag](inputKeys: Array[String] = Array(ImageFeat
     try {
       val inputs = inputKeys.map(key => {
         val input = feature[Tensor[T]](key)
-        require(input.isInstanceOf[Tensor[T]], s"the input $key should be tensor")
+        Log4Error.invalidOperationError(input.isInstanceOf[Tensor[T]],
+          s"the input $key should be tensor")
         input.asInstanceOf[Tensor[T]]
       })
       val sample = if (targetKeys == null) {
@@ -222,7 +225,8 @@ class ImageFrameToSample[T: ClassTag](inputKeys: Array[String] = Array(ImageFeat
       } else {
         val targets = targetKeys.map(key => {
           val target = feature[Tensor[T]](key)
-          require(target.isInstanceOf[Tensor[T]], s"the target $key should be tensor")
+          Log4Error.invalidOperationError(target.isInstanceOf[Tensor[T]],
+            s"the target $key should be tensor")
           target.asInstanceOf[Tensor[T]]
         })
         ArraySample[T](inputs, targets)

@@ -6,7 +6,7 @@ This guide is for users who:
 * have used specified data type of a specific framework, e.g. TFDataSet
 * want to deploy the local code on Cluster Serving but do not know how to write client code (Cluster Serving takes Numpy Ndarray as input, other types need to transform in advance).
 
-**If you have the above needs but fail to find the solution below, please [create issue here](https://github.com/intel-analytics/analytics-zoo/issues)
+**If you have the above needs but fail to find the solution below, please [create issue here](https://github.com/intel-analytics/bigdl/issues)
 
 ## Tensorflow
 
@@ -83,7 +83,7 @@ model = tf.keras.models.load_model("./model.h5")
 tf.saved_model.save(model, "saved_model")
 ```
 ### Model - ckpt to Frozen Graph
-[freeze checkpoint example](https://github.com/intel-analytics/analytics-zoo/tree/master/pyzoo/zoo/examples/tensorflow/freeze_checkpoint)
+[freeze checkpoint example](https://github.com/intel-analytics/bigdl/tree/master/python/orca/example/freeze_checkpoint)
 ### Notes - Use SavedModel
 If model has single tensor input, then nothing to notice.
 
@@ -110,8 +110,8 @@ To transform following data type to Numpy Ndarray, following examples are provid
 
 #### example
 ##### TFDataSet: 
-[l08c08_forecasting_with_lstm.py](https://github.com/intel-analytics/analytics-zoo/tree/master/docs/docs/ClusterServingGuide/OtherFrameworkUsers/l08c08_forecasting_with_lstm.py)
+[l08c08_forecasting_with_lstm.py](https://github.com/intel-analytics/bigdl/tree/master/docs/docs/ClusterServingGuide/OtherFrameworkUsers/l08c08_forecasting_with_lstm.py)
 ##### Tokenizer: 
-[l10c03_nlp_constructing_text_generation_model.py](https://github.com/intel-analytics/analytics-zoo/tree/master/docs/docs/ClusterServingGuide/OtherFrameworkUsers/l10c03_nlp_constructing_text_generation_model.py) 
+[l10c03_nlp_constructing_text_generation_model.py](https://github.com/intel-analytics/bigdl/tree/master/docs/docs/ClusterServingGuide/OtherFrameworkUsers/l10c03_nlp_constructing_text_generation_model.py) 
 ##### ImageDataGenerator: 
-[transfer_learning.py](https://github.com/intel-analytics/analytics-zoo/tree/master/docs/docs/ClusterServingGuide/OtherFrameworkUsers/transfer_learning.py)
+[transfer_learning.py](https://github.com/intel-analytics/bigdl/tree/master/docs/docs/ClusterServingGuide/OtherFrameworkUsers/transfer_learning.py)

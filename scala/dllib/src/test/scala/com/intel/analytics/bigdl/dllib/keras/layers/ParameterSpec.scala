@@ -21,7 +21,7 @@ import com.intel.analytics.bigdl.dllib.nn.abstractnn.{AbstractCriterion, Abstrac
 import com.intel.analytics.bigdl.dllib.nn.internal.Sequential
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.dllib.utils.{Shape, T, Table}
+import com.intel.analytics.bigdl.dllib.utils.{Shape, T, Table, TestUtils}
 import com.intel.analytics.bigdl.dllib.keras.Net
 import com.intel.analytics.bigdl.dllib.keras.autograd.{AutoGrad, Lambda, Parameter, Variable}
 import com.intel.analytics.bigdl.dllib.keras.ZooSpecHelper
@@ -120,8 +120,10 @@ class ParameterSpec extends KerasBaseSpec {
       train(i, input, res, seq, mse)
       train(i, input, res, cmodel, mse)
     }
-    assert(seq.getWeightsBias()(0).almostEqual(cmodel.getWeightsBias()(1), 1e-4))
-    assert(seq.getWeightsBias()(1).almostEqual(cmodel.getWeightsBias()(0), 1e-4))
+    TestUtils.conditionFailTest(
+      seq.getWeightsBias()(0).almostEqual(cmodel.getWeightsBias()(1), 1e-4))
+    TestUtils.conditionFailTest(
+      seq.getWeightsBias()(1).almostEqual(cmodel.getWeightsBias()(0), 1e-4))
   }
 
   // uncomment till zoo model merge
@@ -144,7 +146,7 @@ class ParameterSpec extends KerasBaseSpec {
 //    val model2 = Module.loadModule[Float](absPath)
 //    val output2 = model2.forward(input2).toTensor[Float]
 //    val gradInput2 = model2.backward(input2, gradOutput).toTensor[Float]
-//    require(out.almostEqual(output2, 1e-8))
-//    require(gradInput.almostEqual(gradInput2, 1e-9))
+//    TestUtils.conditionFailTest(out.almostEqual(output2, 1e-8))
+//    TestUtils.conditionFailTest(gradInput.almostEqual(gradInput2, 1e-9))
 //  }
 }

@@ -17,30 +17,32 @@
 package com.intel.analytics.bigdl.dllib.keras.models
 
 import com.intel.analytics.bigdl.dllib.feature.dataset.{LocalDataSet, MiniBatch, Sample}
-import com.intel.analytics.bigdl.dllib.nn.{ClassNLLCriterion, MSECriterion}
-import com.intel.analytics.bigdl.dllib.optim.{Loss, SGD, Top1Accuracy, Top5Accuracy}
+import com.intel.analytics.bigdl.dllib.optim._
 import com.intel.analytics.bigdl.dllib.utils.python.api.PythonBigDL
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.dllib.tensor.{Storage, Tensor}
 import com.intel.analytics.bigdl.dllib.feature.transform.vision.image.opencv.OpenCVMat
 import com.intel.analytics.bigdl.dllib.feature.transform.vision.image.{ImageFeature, ImageFrame}
 import com.intel.analytics.bigdl.dllib.utils.RandomGenerator.RNG
-import com.intel.analytics.bigdl.dllib.utils.{RandomGenerator, Shape}
+import com.intel.analytics.bigdl.dllib.utils.{RandomGenerator, Shape, T, TestUtils}
 import com.intel.analytics.bigdl.dllib.NNContext
 import com.intel.analytics.bigdl.dllib.feature.image._
 import com.intel.analytics.bigdl.dllib.keras.autograd.{Variable, AutoGrad => A}
-import com.intel.analytics.bigdl.dllib.keras.ZooSpecHelper
+import com.intel.analytics.bigdl.dllib.keras.{Sequential, ZooSpecHelper}
 import com.intel.analytics.bigdl.dllib.keras.layers._
 import com.intel.analytics.bigdl.dllib.keras.models.Sequential
 import com.intel.analytics.bigdl.dllib.keras.models.Model
-import com.intel.analytics.bigdl.dllib.keras.objectives.ZooClassNLLCriterion
+import com.intel.analytics.bigdl.dllib.keras.objectives.{BinaryCrossEntropy, ZooClassNLLCriterion}
 import com.intel.analytics.bigdl.dllib.keras.python.PythonZooKeras
+import com.intel.analytics.bigdl.dllib.nn.Graph._
+import com.intel.analytics.bigdl.dllib.nn.{CosineEmbeddingCriterion, MSECriterion, MarginRankingCriterion, ParallelCriterion}
 import com.intel.analytics.bigdl.dllib.nnframes.{NNEstimatorSpec, NNImageReader}
 import org.apache.spark.{SparkConf, SparkContext}
 import org.apache.spark.rdd.RDD
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 import org.apache.commons.io.FileUtils
 import org.apache.hadoop.fs.Path
+import org.apache.spark.ml.feature.VectorAssembler
 import org.apache.spark.sql._
 import org.apache.spark.sql.functions._
 
@@ -76,7 +78,7 @@ class TrainingSpec extends ZooSpecHelper {
     val conf = new SparkConf()
       .setMaster("local[4]")
     sc = NNContext.initNNContext(conf, "hello")
-    assert(sc.appName == "hello")
+    TestUtils.conditionFailTest(sc.appName == "hello")
     sc.getConf.get("spark.serializer") should be
     ("org.apache.spark.serializer.JavaSerializer")
     sc.getConf.get("spark.scheduler.minRegisteredResourcesRatio") should be ("1.0")
@@ -113,6 +115,7 @@ class TrainingSpec extends ZooSpecHelper {
     model.add(Dense[Float](2, activation = "softmax"))
     model.compile(optimizer = "sgd", loss = "sparse_categorical_crossentropy",
       metrics = List("accuracy"))
+    model.summary()
     val tmpLogDir = createTmpDir()
     val tmpCheckpointDir = createTmpDir()
     model.setTensorBoard(tmpLogDir.getAbsolutePath, "TrainingSpec")
@@ -222,7 +225,7 @@ class TrainingSpec extends ZooSpecHelper {
     val api = new PythonZooKeras[Float]()
     val bigdlApi = sc.broadcast(new PythonBigDL[Float]())
 
-    // python api require to take no type Sample and it takes JavaRDD as input
+    // python api TestUtils.conditionFailTest to take no type Sample and it takes JavaRDD as input
     // use toPySample to convert to no type use toJavaRDD to convert to JavaRDD
     val jd = trainingData.map(j => bigdlApi.value.toPySample(j)).toJavaRDD()
     val res = api.zooEvaluate(model, jd, 8)
@@ -273,9 +276,11 @@ class TrainingSpec extends ZooSpecHelper {
     labelCols = Array("label"))
     val predDf = model.predict(df, featureCols = Array("features"), predictionCol = "predict")
     predDf.show()
+    model.evaluate(df, batchSize = 4, featureCols = Array("features"),
+      labelCols = Array("label"))
   }
 
-  "Keras model" should "support dataframe with multiple features" in {
+  "Keras model" should "support dataframe with vector" in {
     val weight = Array(1.0, 2.0, 3.0)
     val rnd = RandomGenerator.RNG
     val rawdata = (1 to 100)
@@ -290,14 +295,197 @@ class TrainingSpec extends ZooSpecHelper {
     val sqlContext = new SQLContext(sc)
     val data = sc.parallelize(rawdata)
     val df = sqlContext.createDataFrame(data).toDF("f1", "f2", "f3", "label")
+
+    val assembler = new VectorAssembler()
+      .setInputCols(Array("f1", "f2", "f3"))
+      .setOutputCol("features")
+    val x = assembler.transform(df)
+
     val model = Sequential[Float]()
     model.add(Dense[Float](2, activation = "sigmoid", inputShape = Shape(3)))
     model.compile(optimizer = new SGD[Float](), loss = ZooClassNLLCriterion[Float]())
-    model.fit(df, batchSize = 4, nbEpoch = 1, featureCols = Array("f1", "f2", "f3"),
+    model.fit(x, batchSize = 4, nbEpoch = 1, featureCols = Array("features"),
       labelCols = Array("label"))
-    val predDf = model.predict(df, featureCols = Array("f1", "f2", "f3"),
+    val predDf = model.predict(x, featureCols = Array("features"),
       predictionCol = "predict")
     predDf.show()
+  }
+
+  "Keras model" should "support dataframe with multiple features" in {
+    val weight = Array(1.0, 2.0)
+    val rnd = RandomGenerator.RNG
+    val rawdata = (1 to 100)
+      .map(i => Array.tabulate(weight.size)(index => rnd.uniform(0, 1) * 2 - 1))
+      .map { record =>
+        val y = record.zip(weight).map(t => t._1 * t._2).sum
+        -1.0 + 0.01 * rnd.normal(0, 1)
+        val label = if (y > 0) 2.0 else 1.0
+        (record(0), record(1), label)
+      }
+
+    val sqlContext = new SQLContext(sc)
+    val data = sc.parallelize(rawdata)
+    val df = sqlContext.createDataFrame(data).toDF("f1", "f2", "label")
+//    val input1 = Tensor[Float](100, 1).rand()
+//    val input2 = Tensor[Float](100, 1).rand()
+//    val input = T(1 -> input1, 2 -> input2)
+    val model = Sequential[Float]()
+    val l1 = InputLayer[Float](inputShape = Shape(1))
+    val l2 = InputLayer[Float](inputShape = Shape(1))
+    val layer = Merge[Float](layers = List(l1, l2), mode = "sum")
+    model.add(layer)
+    model.add(Dense[Float](2, activation = "sigmoid"))
+//    val o = model.forward(input)
+//    val t = 0
+    model.compile(optimizer = new SGD[Float](), loss = ZooClassNLLCriterion[Float]())
+    model.fit(df, batchSize = 4, nbEpoch = 1, featureCols = Array("f1", "f2"),
+      labelCols = Array("label"))
+    val predDf = model.predict(df, featureCols = Array("f1", "f2"),
+      predictionCol = "predict")
+    predDf.show()
+  }
+
+  "Keras model" should "support dataframe with multiple features vectors" in {
+    val weight = Array(1.0, 2.0, 3.0, 4.0, 5.0, 6.0)
+    val rnd = RandomGenerator.RNG
+    val rawdata = (1 to 100)
+      .map(i => Array.tabulate(weight.size)(index => rnd.uniform(0, 1) * 2 - 1))
+      .map { record =>
+        val y = record.zip(weight).map(t => t._1 * t._2).sum
+        -1.0 + 0.01 * rnd.normal(0, 1)
+        val label = if (y > 0) 2.0 else 1.0
+        (record(0), record(1), record(2), record(3), record(4), record(5), label)
+      }
+
+    val sqlContext = new SQLContext(sc)
+    val data = sc.parallelize(rawdata)
+    val df = sqlContext.createDataFrame(data).toDF("f1", "f2", "f3", "f4", "f5", "f6", "label")
+
+    val assembler = new VectorAssembler()
+      .setInputCols(Array("f1", "f2", "f3"))
+      .setOutputCol("feature1")
+    val x = assembler.transform(df)
+
+    val assembler2 = new VectorAssembler()
+      .setInputCols(Array("f4", "f5", "f6"))
+      .setOutputCol("feature2")
+    val x2 = assembler2.transform(x)
+    val model = Sequential[Float]()
+    val l1 = InputLayer[Float](inputShape = Shape(3))
+    val l2 = InputLayer[Float](inputShape = Shape(3))
+    val layer = Merge[Float](layers = List(l1, l2), mode = "sum")
+    model.add(layer)
+    model.add(Dense[Float](2, activation = "sigmoid"))
+    model.compile(optimizer = new SGD[Float](), loss = ZooClassNLLCriterion[Float]())
+    model.fit(x2, batchSize = 4, nbEpoch = 1, featureCols = Array("feature1", "feature2"),
+      labelCols = Array("label"))
+    val predDf = model.predict(x2, featureCols = Array("feature1", "feature2"),
+      predictionCol = "predict")
+    predDf.show()
+  }
+
+  "Keras model" should "support dataframe with multiple features vectors and multiple labels" in {
+    val weight = Array(1.0, 2.0, 3.0, 4.0, 5.0, 6.0)
+    val rnd = RandomGenerator.RNG
+    val rawdata = (1 to 100)
+      .map(i => Array.tabulate(weight.size)(index => rnd.uniform(0, 1) * 2 - 1))
+      .map { record =>
+        val y = record.zip(weight).map(t => t._1 * t._2).sum
+        -1.0 + 0.01 * rnd.normal(0, 1)
+        val label = if (y > 0) 2.0 else 1.0
+        val label2 = if (y > 0) 5.0 else 3.0
+        (record(0), record(1), record(2), record(3), record(4), record(5), label, label2)
+      }
+
+    val sqlContext = new SQLContext(sc)
+    val data = sc.parallelize(rawdata)
+    val df = sqlContext.createDataFrame(data).toDF("f1", "f2", "f3", "f4", "f5", "f6",
+      "label", "label2")
+
+    val assembler = new VectorAssembler()
+      .setInputCols(Array("f1", "f2", "f3"))
+      .setOutputCol("feature1")
+    val x = assembler.transform(df)
+
+    val assembler2 = new VectorAssembler()
+      .setInputCols(Array("f4", "f5", "f6"))
+      .setOutputCol("feature2")
+    val x2 = assembler2.transform(x)
+    import com.intel.analytics.bigdl.dllib.nn.Graph.ModuleNode
+    val l1: ModuleNode[Float] = Input(inputShape = Shape(3))
+    val l2: ModuleNode[Float] = Input(inputShape = Shape(3))
+    val output1 = Dense[Float](2, activation = "sigmoid").inputs(l1)
+    val output2 = Dense[Float](2, activation = "sigmoid").inputs(l2)
+    val model = Model(Array(l1, l2), Array(output1, output2))
+    model.compile(optimizer = new SGD[Float](), loss = ParallelCriterion[Float]())
+    model.fit(x2, batchSize = 4, nbEpoch = 1, featureCols = Array("feature1", "feature2"),
+      labelCols = Array("label", "label2"))
+    val predDf = model.predict(x2, featureCols = Array("feature1", "feature2"),
+      predictionCol = "predict")
+    predDf.show()
+  }
+
+  "Keras model" should "support image dataframe" in {
+    sc.stop()
+    val conf = new SparkConf().setMaster("local[1]")
+    val ksc = NNContext.initNNContext(conf, appName = "imageDf")
+
+    import org.apache.spark.sql.functions.lit
+    val imgDF =
+      NNImageReader.readImages(getClass.getClassLoader.getResource("gray/gray.bmp").getFile, ksc)
+    .withColumn("label", lit(1))
+
+    import com.intel.analytics.bigdl.dllib.feature.image
+    val transformers = transforms.Compose(Array(ImageResize(50, 50),
+      ImageMirror()))
+
+    val model = Sequential[Float]()
+    model.add(Convolution2D[Float](1, 24, 24, activation = "relu",
+      inputShape = Shape(1, 50, 50)))
+    model.add(MaxPooling2D[Float]())
+    model.add(Reshape[Float](Array(169)))
+    model.add(Dense[Float](2, activation = "log_softmax"))
+    model.compile(optimizer = new SGD[Float](), loss = ZooClassNLLCriterion[Float]())
+    model.fit(imgDF, batchSize = 1, nbEpoch = 1, labelCols = Array("label"),
+      transform = transformers)
+    val predDf = model.predict(imgDF, predictionCol = "predict", transform = transformers)
+    predDf.show()
+    model.evaluate(imgDF, batchSize = 1, labelCols = Array("label"), transform = transformers)
+  }
+
+  "Keras model with multiple outputs" should "support image dataframe" in {
+    sc.stop()
+    val conf = new SparkConf().setMaster("local[1]")
+    val ksc = NNContext.initNNContext(conf, appName = "imageDf")
+
+    import org.apache.spark.sql.functions.lit
+    val imgDF =
+      NNImageReader.readImages(getClass.getClassLoader.getResource("gray/gray.bmp").getFile, ksc)
+        .withColumn("label1", lit(1)).withColumn("label2", lit(0))
+
+    val transformers = transforms.Compose(Array(ImageResize(50, 50),
+      ImageMirror()))
+
+    val l1: ModuleNode[Float] = Input(inputShape = Shape(1, 50, 50))
+    val conv1 = Convolution2D[Float](1, 24, 24, activation = "relu").inputs(l1)
+    val pool1 = MaxPooling2D[Float]().inputs(conv1)
+    val reshape1 = Reshape[Float](Array(169)).inputs(pool1)
+    val output1 = Dense[Float](2, activation = "log_softmax").inputs(reshape1)
+
+    val conv2 = Convolution2D[Float](1, 24, 24, activation = "relu").inputs(l1)
+    val pool2 = MaxPooling2D[Float]().inputs(conv2)
+    val reshape2 = Reshape[Float](Array(169)).inputs(pool2)
+    val output2 = Dense[Float](2, activation = "log_softmax").inputs(reshape2)
+
+    val model = Model(Array(l1), Array(output1, output2))
+
+    model.compile(optimizer = new SGD[Float](), loss = ParallelCriterion[Float]())
+    model.fit(imgDF, batchSize = 1, nbEpoch = 1, labelCols = Array("label1", "label2"),
+      transform = transformers)
+    val predDf = model.predict(imgDF, predictionCol = "predict", transform = transformers)
+    predDf.show()
+    model.evaluate(imgDF, batchSize = 1, labelCols = Array("label1", "label2"),
+      transform = transformers)
   }
 }
 

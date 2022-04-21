@@ -201,7 +201,7 @@ class DnnPredictorSpec extends FlatSpec with Matchers with BeforeAndAfter {
     (1 to 20).foreach(x => {
       imageFeatures(x - 1).uri() should be (x.toString)
       if (imageFeatures(x - 1).predict() == null) println(x, imageFeatures(x - 1).predict())
-      assert(imageFeatures(x - 1).predict() != null)
+      TestUtils.conditionFailTest(imageFeatures(x - 1).predict() != null)
     })
   }
 }

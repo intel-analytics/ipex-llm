@@ -21,6 +21,7 @@ import com.intel.analytics.bigdl.dllib.nn.abstractnn.{Activity, Initializable}
 import com.intel.analytics.bigdl.dllib.nn.{InitializationMethod, MklInt8Convertible, RandomUniform, VariableFormat}
 import com.intel.analytics.bigdl.dllib.optim.Regularizer
 import com.intel.analytics.bigdl.dllib.tensor._
+import com.intel.analytics.bigdl.dllib.utils.Log4Error
 
 import scala.collection.mutable.ArrayBuffer
 
@@ -89,7 +90,8 @@ class Linear(
     weightLayout = weightParams._2
 
     val inputShape = inputs(0).shape
-    require(inputs(0).shape.length > 1, s"mkldnn linear unspported input dimension")
+    Log4Error.invalidInputError(inputs(0).shape.length > 1,
+      s"mkldnn linear unspported input dimension")
 
     val outputShape = Array(inputs(0).shape(0), outputSize)
 
@@ -113,7 +115,7 @@ class Linear(
       MemoryData.operationWant(forwardPrimDesc, x)
     }
 
-    require(weight.size().product == realWei.shape.product,
+    Log4Error.invalidInputError(weight.size().product == realWei.shape.product,
       s"${getName} weight shape is not correct.")
 
     weight.setMemoryData(HeapData(weightShape, weightLayout), realWei, runtime)

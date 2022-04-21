@@ -17,6 +17,7 @@ package com.intel.analytics.bigdl.dllib.nn.ops
 
 import com.intel.analytics.bigdl.dllib.tensor.{SparseType, Tensor}
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.dllib.utils.Log4Error
 
 import scala.reflect.ClassTag
 
@@ -54,7 +55,8 @@ class IndicatorCol[T: ClassTag](
 
   override def updateOutput(input: Tensor[Int]): Tensor[T] = {
 
-    require(input.getTensorType == SparseType, "Only sparse input is supported")
+    Log4Error.invalidInputError(input.getTensorType == SparseType,
+      "Only sparse input is supported")
 
     val rows = input.size(dim = 1)
     val resTensor = Tensor[T](rows, feaLen)
@@ -66,7 +68,7 @@ class IndicatorCol[T: ClassTag](
         narrowTensor.storageOffset()-1, narrowTensor.storageOffset() - 1 + narrowTensor.nElement())
       var j = 0
       while (j < tempArr.length) {
-        require(tempArr(j) < feaLen, "the parameter feaLen is set too small")
+        Log4Error.invalidInputError(tempArr(j) < feaLen, "the parameter feaLen is set too small")
         isCount match {
           case false =>
             resTensor.setValue(i, tempArr(j) + 1, ev.one)

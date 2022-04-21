@@ -19,7 +19,7 @@ package com.intel.analytics.bigdl.dllib.nn
 import com.intel.analytics.bigdl.dllib.nn.abstractnn.AbstractModule
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.dllib.utils.{T, Table}
+import com.intel.analytics.bigdl.dllib.utils.{Log4Error, T, Table}
 
 import scala.reflect.ClassTag
 
@@ -46,7 +46,7 @@ class CrossProduct[T: ClassTag](
 
   override def updateOutput(input: Table): Tensor[T] = {
     val len = input.length()
-    require(numTensor <= 0 || numTensor == len,
+    Log4Error.invalidInputError(numTensor <= 0 || numTensor == len,
       s"Input tensor number is $len, unequal to numTensor($numTensor)!")
 
     val (_, batch, _) = getShape(input[Tensor[T]](1))
@@ -85,10 +85,10 @@ class CrossProduct[T: ClassTag](
     val len = input.length()
     val gout = gradOutput
 
-    require(gout.dim() == 2, s"invalid dim of gradOutput(${gout.dim()})!")
+    Log4Error.invalidInputError(gout.dim() == 2, s"invalid dim of gradOutput(${gout.dim()})!")
 
     val outLen = len * (len - 1) / 2
-    require(gout.size(2) == outLen,
+    Log4Error.invalidInputError(gout.size(2) == outLen,
       s"invalid colSize of gradOutput(${gout.size(2)}), it should be $outLen!")
 
     val (dim, _, emLen) = getShape(input[Tensor[T]](1))
@@ -135,7 +135,7 @@ class CrossProduct[T: ClassTag](
 
   protected def checkEmbeddingSize(t: Tensor[T]): Unit = {
     val size = if (t.dim() == 1) t.size(1) else t.size(2)
-    require(embeddingSize <= 0 || embeddingSize == size,
+    Log4Error.invalidInputError(embeddingSize <= 0 || embeddingSize == size,
       s"size of input Tensor($size) not equal to embeddingSize($embeddingSize)!")
   }
 

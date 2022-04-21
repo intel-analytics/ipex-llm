@@ -21,6 +21,7 @@ import com.intel.analytics.bigdl.Module
 import com.intel.analytics.bigdl.dllib.nn.abstractnn.DataFormat
 import com.intel.analytics.bigdl.dllib.nn.tf.{FusedBatchNorm => FusedBatchNormOps}
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.dllib.utils.Log4Error
 import com.intel.analytics.bigdl.dllib.utils.tf.Context
 import org.tensorflow.framework.{DataType, NodeDef}
 
@@ -33,7 +34,7 @@ class FusedBatchNorm extends TensorflowOpsLoader {
   override def build[T: ClassTag](nodeDef: NodeDef, byteOrder: ByteOrder, context: Context[T])
     (implicit ev: TensorNumeric[T]): Module[T] = {
     val t = getType(nodeDef.getAttrMap, "T")
-    require(t == DataType.DT_FLOAT, "Only support float batch normal")
+    Log4Error.invalidInputError(t == DataType.DT_FLOAT, "Only support float batch normal")
     val eps = getFloat(nodeDef.getAttrMap, "epsilon")
     val dataFormat = getString(nodeDef.getAttrMap, "data_format")
     val isTrain = getBoolean(nodeDef.getAttrMap, "is_training")

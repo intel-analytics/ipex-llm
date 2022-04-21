@@ -18,6 +18,7 @@ package com.intel.analytics.bigdl.dllib.nn
 import com.intel.analytics.bigdl.dllib.nn.abstractnn.TensorCriterion
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.dllib.tensor.{DenseTensorApply, Tensor, TensorFunc4}
+import com.intel.analytics.bigdl.dllib.utils.Log4Error
 
 import scala.reflect.ClassTag
 
@@ -31,7 +32,7 @@ class DistKLDivCriterion[@specialized(Float, Double) T: ClassTag](val sizeAverag
  (implicit ev: TensorNumeric[T]) extends TensorCriterion[T] {
 
   override def updateOutput(input: Tensor[T], target: Tensor[T]): T = {
-    require((input.dim() == target.dim()) && (input.isSameSizeAs(target)),
+    Log4Error.invalidInputError((input.dim() == target.dim()) && (input.isSameSizeAs(target)),
       "DistKLDivCriterion:  " +
         ErrorInfo.constrainInputSizeSameAsTarget +
         s"input dim:${input.dim()}, " +
@@ -53,7 +54,7 @@ class DistKLDivCriterion[@specialized(Float, Double) T: ClassTag](val sizeAverag
   }
 
   override def updateGradInput(input: Tensor[T], target: Tensor[T]): Tensor[T] = {
-    require((input.dim() == target.dim()) && (input.isSameSizeAs(target)),
+    Log4Error.invalidInputError((input.dim() == target.dim()) && (input.isSameSizeAs(target)),
       s"DistKLDivCriterion:  " +
         s"${ErrorInfo.constrainInputSizeSameAsTarget}, " +
         s"input dim:${input.dim()}, " +

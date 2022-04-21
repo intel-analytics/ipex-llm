@@ -31,8 +31,8 @@ import com.intel.analytics.bigdl.dllib.nn.Container
 import com.intel.analytics.bigdl.dllib.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.dllib.nn.internal.{KerasLayer, KerasModel}
 import com.intel.analytics.bigdl.dllib.nn.{BatchNormalization => BNBatchNormalization}
-import com.intel.analytics.bigdl.dllib.utils.{Shape, Table}
-import com.intel.analytics.bigdl.dllib.feature.image.ImageSet
+import com.intel.analytics.bigdl.dllib.utils.{Log4Error, Shape, Table}
+import com.intel.analytics.bigdl.dllib.feature.image.{ImageProcessing, ImageSet}
 import com.intel.analytics.bigdl.dllib.keras.autograd.{Constant, _}
 import com.intel.analytics.bigdl.dllib.keras.layers.{KerasLayerWrapper, _}
 import com.intel.analytics.bigdl.dllib.keras.layers.utils.KerasUtils
@@ -44,6 +44,7 @@ import com.intel.analytics.bigdl.dllib.keras.optimizers.{Adam, AdamWeightDecay, 
 import org.apache.spark.api.java.JavaRDD
 import com.intel.analytics.bigdl.dllib.common.PythonZoo
 import com.intel.analytics.bigdl.dllib.feature.text.TextSet
+import org.apache.spark.sql._
 // import com.intel.analytics.zoo.models.common.ZooModel
 // import com.intel.analytics.zoo.models.seq2seq.{Bridge, RNNDecoder, RNNEncoder}
 import com.intel.analytics.bigdl.dllib.keras.Net
@@ -143,6 +144,30 @@ class PythonZooKeras[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonZ
     module.fit(trainData, nbEpoch, valData)
   }
 
+  def zooFit(
+     module: KerasNet[T],
+     x: DataFrame,
+     batchSize: Int,
+     epochs: Int,
+     featureCols: JList[String],
+     labelCols: JList[String],
+     validationData: DataFrame): Unit = {
+    module.fit(x, batchSize, epochs, featureCols.asScala.toArray, labelCols.asScala.toArray,
+      if (validationData == null) null else validationData)
+  }
+
+  def zooFitImage(
+     module: KerasNet[T],
+     x: DataFrame,
+     batchSize: Int,
+     epochs: Int,
+     labelCols: JList[String],
+     transform: ImageProcessing,
+     validationData: DataFrame): Unit = {
+    module.fit(x, batchSize, epochs, labelCols.asScala.toArray, transform,
+      if (validationData == null) null else validationData)
+  }
+
   private def processEvaluateResult(
     resultArray: Array[(ValidationResult, ValidationMethod[T])]): JList[Float] = {
     resultArray.map { result =>
@@ -174,6 +199,29 @@ class PythonZooKeras[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonZ
     processEvaluateResult(resultArray)
   }
 
+  def zooEvaluate(
+       module: KerasNet[T],
+       x: DataFrame,
+       batchSize: Int,
+       featureCols: JList[String],
+       labelCols: JList[String]): JList[Float] = {
+    val resultArray = module.evaluate(x, batchSize, featureCols.asScala.toArray,
+      labelCols.asScala.toArray)
+    processEvaluateResult(resultArray)
+  }
+
+  def zooEvaluateImage(
+                   module: KerasNet[T],
+                   x: DataFrame,
+                   labelCols: JList[String],
+                   transform: ImageProcessing,
+                   batchSize: Int
+                   ): JList[Float] = {
+    val resultArray = module.evaluate(x,
+      labelCols.asScala.toArray, transform, batchSize)
+    processEvaluateResult(resultArray)
+  }
+
   def zooSetTensorBoard(
       module: KerasNet[T],
       logDir: String,
@@ -186,7 +234,7 @@ class PythonZooKeras[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonZ
       tag: String,
       target: String): JList[JList[Any]] = {
 
-    require(target == "Train" || target == "Validation",
+    Log4Error.invalidInputError(target == "Train" || target == "Validation",
       "Invalid target, must be Train or Validation.")
     val scalarArray = if (target == "Train") module.getTrainSummary(tag)
     else module.getValidationSummary(tag)
@@ -220,6 +268,26 @@ class PythonZooKeras[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonZ
     module.setCheckpoint(path, overWrite)
   }
 
+  def zooFreeze(
+    module: KerasNet[T],
+    names: JList[String] = null): Unit = {
+    if (names == null) {
+      module.freeze()
+      return
+    }
+    module.freeze(names.asScala.toArray: _*)
+  }
+
+  def zoounFreeze(
+     module: KerasNet[T],
+     names: JList[String] = null): Unit = {
+    if (names == null) {
+      module.unFreeze()
+      return
+    }
+    module.unFreeze(names.asScala.toArray: _*)
+  }
+
   def zooSaveGraphTopology(
       module: Model[T],
       logPath: String,
@@ -238,8 +306,8 @@ class PythonZooKeras[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonZ
   def zooKerasNetSummary(
       model: KerasNet[T],
       lineLength: Int = 120,
-      positions: JList[Double]): Unit = {
-    model.summary(lineLength, positions.asScala.toArray)
+      positions: JList[Double]): String = {
+    return model.summary(lineLength, positions.asScala.toArray, false)
   }
 
   def createZooKerasDense(
@@ -1157,7 +1225,7 @@ class PythonZooKeras[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonZ
 
   def connectInputs(module: AbstractModule[Activity, Activity, T],
       x: JList[Variable[T]]): Variable[T] = {
-    require(!x.isEmpty, "We don't accept empty inputs")
+    Log4Error.invalidInputError(!x.isEmpty, "We don't accept empty inputs")
     Variable(module.inputs(x.asScala.map(_.node): _*))
   }
 

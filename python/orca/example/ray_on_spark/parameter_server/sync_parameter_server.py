@@ -142,5 +142,4 @@ if __name__ == "__main__":
             accuracy = net.compute_accuracy(test_xs, test_ys)
             print("Iteration {}: accuracy is {}".format(i, accuracy))
         i += 1
-    ray_ctx.stop()
     stop_orca_context()

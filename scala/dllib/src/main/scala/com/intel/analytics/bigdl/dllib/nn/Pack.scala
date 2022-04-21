@@ -18,7 +18,7 @@ package com.intel.analytics.bigdl.dllib.nn
 import com.intel.analytics.bigdl.dllib.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.{NumericWildcard, TensorNumeric}
-import com.intel.analytics.bigdl.dllib.utils.{T, Table}
+import com.intel.analytics.bigdl.dllib.utils.{Log4Error, T, Table}
 
 import scala.reflect.ClassTag
 
@@ -38,7 +38,8 @@ class Pack[T: ClassTag] (val dimension: Int)(implicit ev: TensorNumeric[T])
     if (nDim < 0) {
       nDim = firstInput.dim() + nDim + 1
     }
-    require(nDim <= firstInput.dim() + 1, "dimension exceeds input dimensions" +
+    Log4Error.invalidInputError(nDim <= firstInput.dim() + 1,
+      "dimension exceeds input dimensions" +
       s"dimension $nDim, inputDimension ${firstInput.dim()}")
     nDim
   }

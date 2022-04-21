@@ -29,6 +29,7 @@ import org.tensorflow.framework.{GraphDef, MetaGraphDef}
 import org.tensorflow.op.Ops
 import org.tensorflow.op.core.Placeholder
 import org.tensorflow.{DataType, Graph, SavedModelBundle}
+import com.intel.analytics.bigdl.dllib.utils.Log4Error
 
 import scala.reflect.ClassTag
 
@@ -145,8 +146,8 @@ private[bigdl] class TFNetForInference(graphRunner: GraphRunner,
   override def updateOutput(input: Activity): Activity = {
     zooUtils.timeIt("updateOutput") {
 
-      assert(variableInited)
-      assert(tableInited)
+      Log4Error.invalidOperationError(variableInited, "variable is not inited")
+      Log4Error.invalidOperationError(tableInited, "table is not inited")
 
       val feeds = zooUtils.activity2VectorBuilder(input)
 

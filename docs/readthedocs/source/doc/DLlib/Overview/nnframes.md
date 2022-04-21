@@ -8,14 +8,14 @@
 
 The examples are included in the DLlib source code.
 
-- image classification: model inference using pre-trained Inception v1 model. (See [Scala version](https://github.com/intel-analytics/analytics-zoo/tree/master/zoo/src/main/scala/com/intel/analytics/zoo/examples/nnframes/imageInference) and [Python version](https://github.com/intel-analytics/analytics-zoo/tree/master/pyzoo/zoo/examples/nnframes/imageInference))
-- image classification: transfer learning from pre-trained Inception v1 model. (See [Scala version](https://github.com/intel-analytics/analytics-zoo/tree/master/zoo/src/main/scala/com/intel/analytics/zoo/examples/nnframes/imageTransferLearning) and [Python version](https://github.com/intel-analytics/analytics-zoo/tree/master/pyzoo/zoo/examples/nnframes/imageTransferLearning))
+- image classification: model inference using pre-trained Inception v1 model. (See [Python version](https://github.com/intel-analytics/BigDL/tree/branch-2.0/python/dllib/examples/nnframes/imageInference))
+- image classification: transfer learning from pre-trained Inception v1 model. (See [Python version](https://github.com/intel-analytics/BigDL/tree/branch-2.0/python/dllib/examples/nnframes/imageTransferLearning))
 
 ## 2. Primary APIs
 
 - **NNEstimator and NNModel**
 
-  Analytics Zoo provides `NNEstimator` for model training with Spark DataFrame, which provides high level API for training a BigDL Model with the Apache Spark [Estimator](https://spark.apache.org/docs/2.1.1/ml-pipeline.html#estimators) and [Transfomer](https://spark.apache.org/docs/2.1.1/ml-pipeline.html#transformers) pattern, thus users can conveniently fit Analytics Zoo into a ML pipeline. The fit result of `NNEstimator` is a NNModel, which is a Spark ML Transformer.
+  BigDL DLLib provides `NNEstimator` for model training with Spark DataFrame, which provides high level API for training a BigDL Model with the Apache Spark [Estimator](https://spark.apache.org/docs/2.1.1/ml-pipeline.html#estimators) and [Transfomer](https://spark.apache.org/docs/2.1.1/ml-pipeline.html#transformers) pattern, thus users can conveniently fit BigDL DLLib into a ML pipeline. The fit result of `NNEstimator` is a NNModel, which is a Spark ML Transformer.
 
 - **NNClassifier and NNClassifierModel**
 
@@ -46,13 +46,13 @@ to allow users to combine the components of BigDL and Spark MLlib.
 `NNEstimator` supports different feature and label data types through `Preprocessing`. During fit (training), NNEstimator will extract feature and label data from input DataFrame and use the `Preprocessing` to convert data for the model, typically converts the feature and label to Tensors or converts the (feature, option[Label]) tuple to a BigDL `Sample`. 
 
 Each`Preprocessing` conducts a data conversion step in the preprocessing phase, multiple `Preprocessing` can be combined into a `ChainedPreprocessing`. Some pre-defined 
-`Preprocessing` for popular data types like Image, Array or Vector are provided in package `com.intel.analytics.zoo.feature`, while user can also develop customized `Preprocessing`.
+`Preprocessing` for popular data types like Image, Array or Vector are provided in package `com.intel.analytics.bigdl.dllib.feature`, while user can also develop customized `Preprocessing`.
 
 NNEstimator and NNClassifier also supports setting the caching level for the training data. Options are "DRAM", "PMEM" or "DISK_AND_DRAM". If DISK_AND_DRAM(numSlice) is used, only 1/numSlice data will be loaded into memory during training time. By default, DRAM mode is used and all data are cached in memory.
 
 By default, `SeqToTensor` is used to convert an array or Vector to a 1-dimension Tensor. Using the `Preprocessing` allows `NNEstimator` to cache only the raw data and decrease the memory consumption during feature conversion and training, it also enables the model to digest extra data types that DataFrame does not support currently.
 
-More concrete examples are available in package `com.intel.analytics.zoo.examples.nnframes`
+More concrete examples are available in package `com.intel.analytics.bigdl.dllib.examples.nnframes`
 
 `NNEstimator` can be created with various parameters for different scenarios.
 
@@ -78,9 +78,9 @@ Meanwhile, for advanced use cases (e.g. model with multiple input tensor), `NNEs
 
 **Scala Example:**
 ```scala
-import com.intel.analytics.bigdl.nn._
-import com.intel.analytics.zoo.pipeline.nnframes.NNEstimator
-import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
+import com.intel.analytics.bigdl.dllib.nn._
+import com.intel.analytics.bigdl.dllib.nnframes.NNEstimator
+import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric.NumericFloat
 
 val model = Sequential().add(Linear(2, 2))
 val criterion = MSECriterion()
@@ -99,11 +99,11 @@ nnModel.transform(df).show(false)
 
 **Python Example:**
 ```python
-from bigdl.nn.layer import *
-from bigdl.nn.criterion import *
-from bigdl.util.common import *
-from zoo.pipeline.nnframes.nn_classifier import *
-from zoo.feature.common import *
+from bigdl.dllib.nn.layer import *
+from bigdl.dllib.nn.criterion import *
+from bigdl.dllib.utils.common import *
+from bigdl.dllib.nnframes.nn_classifier import *
+from bigdl.dllib.feature.common import *
 
 data = self.sc.parallelize([
     ((2.0, 1.0), (1.0, 2.0)),
@@ -252,9 +252,9 @@ Meanwhile, for advanced use cases (e.g. model with multiple input tensor), `NNCl
 
 **Scala example:**
 ```scala
-import com.intel.analytics.bigdl.nn._
-import com.intel.analytics.zoo.pipeline.nnframes.NNClassifier
-import com.intel.analytics.bigdl.tensor.TensorNumericMath.TensorNumeric.NumericFloat
+import com.intel.analytics.bigdl.dllib.nn._
+import com.intel.analytics.bigdl.dllib.nnframes.NNClassifier
+import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric.NumericFloat
 
 val model = Sequential().add(Linear(2, 2))
 val criterion = MSECriterion()
@@ -280,7 +280,7 @@ from bigdl.util.common import *
 from bigdl.dlframes.dl_classifier import *
 from pyspark.sql.types import *
 
-#Logistic Regression with BigDL layers and Analytics zoo NNClassifier
+#Logistic Regression with BigDL layers and NNClassifier
 model = Sequential().add(Linear(2, 2)).add(LogSoftMax())
 criterion = ZooClassNLLCriterion()
 estimator = NNClassifier(model, criterion, [2]).setBatchSize(4).setMaxEpoch(10)
@@ -358,7 +358,7 @@ classifier.setBatchSize(4).setMaxEpoch(10).setLearningRate(0.01).setOptimMethod(
 
 NNEstimator/NNCLassifer supports training with Spark's [DataFrame/DataSet](https://spark.apache.org/docs/latest/sql-programming-guide.html#datasets-and-dataframes)
 
-Suppose `df` is the training data, simple call `fit` method and let Analytics Zoo train the model for you.
+Suppose `df` is the training data, simple call `fit` method and let BigDL DLLib train the model for you.
 
 **Scala:**
 
@@ -393,8 +393,8 @@ nnModel.transform(df).show(false)
 ```
 
 For the complete examples of NNFrames, please refer to: 
-[Scala examples](https://github.com/intel-analytics/analytics-zoo/tree/master/zoo/src/main/scala/com/intel/analytics/zoo/examples/nnframes)
-[Python examples](https://github.com/intel-analytics/analytics-zoo/tree/master/pyzoo/zoo/examples/nnframes)
+[Scala examples](https://github.com/intel-analytics/BigDL/tree/branch-2.0/scala/dllib/src/main/scala/com/intel/analytics/bigdl/dllib/example/nnframes)
+[Python examples](https://github.com/intel-analytics/BigDL/tree/branch-2.0/python/dllib/examples/nnframes)
 
 
 ### 2.8 NNImageReader
@@ -411,7 +411,7 @@ Python:
 image_frame = NNImageReader.readImages(image_path, self.sc)
 ```
 
-The output DataFrame contains a sinlge column named "image". The schema of "image" column can be accessed from `com.intel.analytics.zoo.pipeline.nnframes.DLImageSchema.byteSchema`. Each record in "image" column represents one image record, in the format of Row(origin, height, width, num of channels, mode, data), where origin contains the URI for the image file, and `data` holds the original file bytes for the image file. `mode` represents the OpenCV-compatible type: CV_8UC3, CV_8UC1 in most cases.
+The output DataFrame contains a sinlge column named "image". The schema of "image" column can be accessed from `com.intel.analytics.bigdl.dllib.nnframes.DLImageSchema.byteSchema`. Each record in "image" column represents one image record, in the format of Row(origin, height, width, num of channels, mode, data), where origin contains the URI for the image file, and `data` holds the original file bytes for the image file. `mode` represents the OpenCV-compatible type: CV_8UC3, CV_8UC1 in most cases.
 
 ```scala
 val byteSchema = StructType(
@@ -425,4 +425,4 @@ val byteSchema = StructType(
     StructField("data", BinaryType, false) :: Nil)
 ```
 
-After loading the image, user can compose the preprocess steps with the `Preprocessing` defined in `com.intel.analytics.zoo.feature.image`.
+After loading the image, user can compose the preprocess steps with the `Preprocessing` defined in `com.intel.analytics.bigdl.dllib.feature.image`.

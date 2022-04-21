@@ -105,6 +105,10 @@ class AUC(Metric):
         from bigdl.dllib.keras.metrics import AUC as KerasAUC
         return KerasAUC(threshold_num=self.threshold_num)
 
+    def get_pytorch_metric(self):
+        from bigdl.orca.learn.pytorch import pytorch_metrics
+        return pytorch_metrics.AUROC()
+
     def get_name(self):
         return "AUC"
 
@@ -337,3 +341,78 @@ class Poisson(Metric):
 
     def get_name(self):
         return "Poisson"
+
+
+class ROC(Metric):
+    """
+    Metric for binary(0/1) classification
+
+    >>> meter = ROC()
+    """
+
+    def get_pytorch_metric(self):
+        from bigdl.orca.learn.pytorch import pytorch_metrics
+        return pytorch_metrics.ROC()
+
+    def get_name(self):
+        return "ROC"
+
+
+class F1Score(Metric):
+    """
+    Metric for binary(0/1) classification
+
+    >>> meter = F1Score()
+    """
+
+    def get_pytorch_metric(self):
+        from bigdl.orca.learn.pytorch import pytorch_metrics
+        return pytorch_metrics.F1Score()
+
+    def get_name(self):
+        return "F1Score"
+
+
+class Precision(Metric):
+    """
+    Metric for binary(0/1) classification
+
+    >>> meter = Precision()
+    """
+
+    def get_pytorch_metric(self):
+        from bigdl.orca.learn.pytorch import pytorch_metrics
+        return pytorch_metrics.Precision()
+
+    def get_name(self):
+        return "Precision"
+
+
+class Recall(Metric):
+    """
+    Metric for binary(0/1) classification
+
+    >>> meter = Recall()
+    """
+
+    def get_pytorch_metric(self):
+        from bigdl.orca.learn.pytorch import pytorch_metrics
+        return pytorch_metrics.Recall()
+
+    def get_name(self):
+        return "Recall"
+
+
+class PrecisionRecallCurve(Metric):
+    """
+    Metric for binary(0/1) classification
+
+    >>> meter = PrecisionRecallCurve()
+    """
+
+    def get_pytorch_metric(self):
+        from bigdl.orca.learn.pytorch import pytorch_metrics
+        return pytorch_metrics.PrecisionRecallCurve()
+
+    def get_name(self):
+        return "PrecisionRecallCurve"

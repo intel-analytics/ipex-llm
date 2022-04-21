@@ -22,6 +22,7 @@ import com.intel.analytics.bigdl.dllib.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.dllib.nn.tf.{StridedSlice => StridedSliceOps}
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.dllib.utils.Log4Error
 import com.intel.analytics.bigdl.dllib.utils.tf.Context
 import org.tensorflow.framework.{DataType, NodeDef}
 
@@ -58,7 +59,7 @@ class StridedSlice extends TensorflowOpsLoader {
 
 object StridedSlice {
   def oneDTensorToArray(tensor: Tensor[Int]): Array[Int] = {
-    require(tensor.nDimension() == 1, "1D tensor required")
+    Log4Error.invalidInputError(tensor.nDimension() == 1, "1D tensor required")
     val result = new Array[Int](tensor.nElement())
     var i = 0
     while(i < tensor.nElement()) {

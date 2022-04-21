@@ -21,6 +21,7 @@ import java.util
 import com.intel.analytics.bigdl.dllib.feature.transform.vision.image.{FeatureTransformer, ImageFeature}
 import com.intel.analytics.bigdl.dllib.feature.transform.vision.image.opencv.OpenCVMat
 import com.intel.analytics.bigdl.dllib.feature.transform.vision.image.util.BoundingBox
+import com.intel.analytics.bigdl.dllib.utils.Log4Error
 import com.intel.analytics.bigdl.dllib.utils.RandomGenerator._
 import org.opencv.core.{Core, Mat, Rect, Scalar}
 
@@ -60,7 +61,8 @@ class Expand(meansR: Int = 123, meansG: Int = 117, meansB: Int = 104,
     // Split the image to 3 channels.
     val channels = new util.ArrayList[Mat]()
     Core.split(output, channels)
-    require(channels.size() == 3)
+    Log4Error.invalidInputError(channels.size() == 3, s"channel size(${channels.size()}) is not 3",
+    "please use a RGB image as input")
     channels.get(0).setTo(new Scalar(meansB))
     channels.get(1).setTo(new Scalar(meansG))
     channels.get(2).setTo(new Scalar(meansR))
@@ -106,7 +108,7 @@ class FixExpand(expandHeight: Int, expandWidth: Int) extends FeatureTransformer 
     try {
       val width = input.width()
       val height = input.height()
-      require(width <= expandWidth,
+      Log4Error.invalidInputError(width <= expandWidth,
         s"width ${width} of input mat is not <= expandWidth $expandWidth")
       output = new OpenCVMat()
       // Get new height and width

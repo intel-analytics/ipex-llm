@@ -18,6 +18,7 @@ package com.intel.analytics.bigdl.dllib.nn
 import com.intel.analytics.bigdl.dllib.nn.abstractnn.TensorModule
 import com.intel.analytics.bigdl.dllib.tensor.{DenseTensorApply, Tensor, TensorFunc6}
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.dllib.utils.Log4Error
 
 import scala.reflect.ClassTag
 
@@ -54,7 +55,8 @@ class LogSigmoid[T: ClassTag] (implicit ev: TensorNumeric[T])
   }
 
   override def updateGradInput(input: Tensor[T], gradOutput: Tensor[T]): Tensor[T] = {
-    require(input.isSameSizeAs(gradOutput), "input and gradOutput should have the same size" +
+    Log4Error.invalidInputError(input.isSameSizeAs(gradOutput),
+      "input and gradOutput should have the same size" +
       s"input size ${input.dim()}, gradOutput size ${input.dim()}")
     gradInput
       .resizeAs(buffer)

@@ -34,7 +34,9 @@ from bigdl.dllib.keras.models import Model as ZModel
 from bigdl.dllib.keras.optimizers import Adam as KAdam
 from bigdl.dllib.nnframes import *
 from bigdl.dllib.utils.tf import *
-
+from pyspark.sql.functions import array
+from pyspark.ml.linalg import DenseVector, VectorUDT
+from pyspark.sql.functions import udf, array
 
 class TestNNClassifer():
     def setup_method(self, method):
@@ -854,9 +856,39 @@ class TestNNClassifer():
             .builder \
             .getOrCreate()
         df = spark.read.csv(filePath, sep=",", inferSchema=True, header=True)
-        model.setFeaturesCol(["age", "gender", "jointime", "star"])
+        df = df.select(array("age", "gender", "jointime", "star").alias("features")) \
+            .withColumn("features", udf(lambda x: DenseVector(x), VectorUDT())("features"))
+
+        model.setFeaturesCol("features")
         predict = model.transform(df)
-        predict.count()
+        assert predict.count() == 14
+
+    def test_XGBClassifier_train(self):
+        from sys import platform
+        if platform in ("darwin", "win32"):
+            return
+
+        resource_path = os.path.join(os.path.split(__file__)[0], "../resources")
+        path = os.path.join(resource_path, "xgbclassifier/")
+        modelPath = path + "XGBClassifer.bin"
+        filePath = path + "test.csv"
+        model = XGBClassifierModel.loadModel(modelPath, 2)
+
+        from pyspark.sql import SparkSession
+
+        spark = SparkSession \
+            .builder \
+            .getOrCreate()
+        df = spark.read.csv(filePath, sep=",", inferSchema=True, header=True)
+        df = df.select(array("age", "gender", "jointime", "star").alias("features"), "label")\
+            .withColumn("features", udf(lambda x: DenseVector(x), VectorUDT())("features"))
+        params = {"eta": 0.2, "max_depth":4, "max_leaf_nodes": 8, "objective": "binary:logistic",
+                  "num_round": 100}
+        classifier = XGBClassifier(params)
+        xgbmodel = classifier.fit(df)
+        xgbmodel.setFeaturesCol("features")
+        predicts = xgbmodel.transform(df)
+        assert predicts.count() == 14
 
     def test_XGBRegressor(self):
         from sys import platform
@@ -894,4 +926,4 @@ class TestNNClassifer():
 
 
 if __name__ == "__main__":
-    pytest.main()
+    pytest.main([__file__])

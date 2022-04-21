@@ -17,6 +17,8 @@
 from bigdl.dllib.nn.layer import Layer
 from bigdl.dllib.utils.common import *
 from bigdl.dllib.utils.file_utils import callZooFunc
+from bigdl.dllib.utils.log4Error import *
+
 
 if sys.version >= '3':
     long = int
@@ -109,10 +111,12 @@ class ZooKerasLayer(ZooKerasCreator, ZooCallable, Layer, InferShape):
         :param weights: a list of numpy arrays which represent weight and bias
         """
         current_shapes = self.get_weights_shape()
-        assert len(current_shapes) == len(weights), "The parameters number should be the same"
+        invalidInputError(len(current_shapes) == len(weights),
+                          "The parameters number should be the same")
         for w, cws in zip(weights, current_shapes):
-            assert w.shape == cws, \
-                "The shape of parameter should be the same, but got %s, %s" % (w.shape, cws)
+            invalidInputError(w.shape == cws,
+                              "The shape of parameter should be the same,"
+                              " but got %s, %s" % (w.shape, cws))
 
         tensors = [JTensor.from_ndarray(param, self.bigdl_type) for param in to_list(weights)]
         callZooFunc(self.bigdl_type, "zooSetWeights", self.value, tensors)

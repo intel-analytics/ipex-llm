@@ -19,6 +19,7 @@ package com.intel.analytics.bigdl.dllib.nn
 import com.intel.analytics.bigdl.dllib.nn.abstractnn.TensorCriterion
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.dllib.tensor.{DenseTensorApply, Tensor, TensorFunc4, TensorFunc6}
+import com.intel.analytics.bigdl.dllib.utils.Log4Error
 
 import scala.reflect.ClassTag
 
@@ -46,17 +47,17 @@ class BCECriterion[@specialized(Float, Double) T: ClassTag]
   val onesBuffer: Tensor[T] = Tensor[T]()
 
   override def updateOutput(input: Tensor[T], target: Tensor[T]): T = {
-    require(input.size().sameElements(target.size()),
+    Log4Error.invalidInputError(input.size().sameElements(target.size()),
       s"input size should be equal to target size, but got input size: ${input.size().toList}," +
         s" target size: ${target.size().toList}")
 
     if (weights != null) {
       if (weights.nDimension() < input.nDimension()) {
-        require(weights.size().sameElements(input.size().tail),
+        Log4Error.invalidInputError(weights.size().sameElements(input.size().tail),
           s"weights size should be equal to input size or input size's tail, but got" +
             s" input size: ${input.size().toList}, weights size: ${weights.size().toList}")
       } else if (weights.nDimension() == input.nDimension()) {
-        require(weights.size().sameElements(input.size()),
+        Log4Error.invalidInputError(weights.size().sameElements(input.size()),
           s"weights size should be equal to input size or input size's tail, but got" +
             s" input size: ${input.size().toList}, weights size: ${weights.size().toList}")
       } else {
@@ -97,7 +98,7 @@ class BCECriterion[@specialized(Float, Double) T: ClassTag]
   }
 
   override def updateGradInput(input: Tensor[T], target: Tensor[T]): Tensor[T] = {
-    require(input.nElement() == target.nElement(),
+    Log4Error.invalidInputError(input.nElement() == target.nElement(),
       "input and target should have the same dims." +
         s"input dim(${input.nElement()})" +
         s"target dim(${target.nElement()})")

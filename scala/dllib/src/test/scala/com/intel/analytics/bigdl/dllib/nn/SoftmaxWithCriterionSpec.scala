@@ -18,6 +18,7 @@ package com.intel.analytics.bigdl.dllib.nn
 
 import breeze.numerics.abs
 import com.intel.analytics.bigdl.dllib.tensor.{Storage, Tensor}
+import com.intel.analytics.bigdl.dllib.utils.TestUtils
 import org.scalatest.{FlatSpec, Matchers}
 
 class SoftmaxWithCriterionSpec extends FlatSpec with Matchers {
@@ -47,15 +48,15 @@ class SoftmaxWithCriterionSpec extends FlatSpec with Matchers {
         normalizeMode = normMode).forward(input, target)
       sum += res
     }
-    assert(abs(actOut - 49.084717) < 1e-4)
-    assert(abs(actOut * 4 - sum) < 1e-4)
+    TestUtils.conditionFailTest(abs(actOut - 49.084717) < 1e-4)
+    TestUtils.conditionFailTest(abs(actOut * 4 - sum) < 1e-4)
   }
 
   "SoftmaxWithCriterion backward" should "work properly" in {
     val normMode = NormMode.apply(1)
     val sfmLoss = new SoftmaxWithCriterion[Float](normalizeMode = normMode, ignoreLabel = Some(1))
     val actOut = sfmLoss.forward(input, target)
-    assert(abs(actOut - 8.274073) < 1e-4)
+    TestUtils.conditionFailTest(abs(actOut - 8.274073) < 1e-4)
 
     val actGradInput = sfmLoss.backward(input, target)
 
@@ -70,10 +71,10 @@ class SoftmaxWithCriterionSpec extends FlatSpec with Matchers {
     0.001109384, 0.15816866, 0.040721968,
     0.18815985, 0.0, 1.0973286E-11)
 
-    assert(expectedGradInput.length == actGradInput.nElement())
+    TestUtils.conditionFailTest(expectedGradInput.length == actGradInput.nElement())
     (actGradInput.storage().array() zip expectedGradInput).foreach(x => {
       // because in caffe, they use weight 2 for the loss
-      assert(abs(x._1 - x._2) < 1e-4)
+      TestUtils.conditionFailTest(abs(x._1 - x._2) < 1e-4)
     })
   }
 }

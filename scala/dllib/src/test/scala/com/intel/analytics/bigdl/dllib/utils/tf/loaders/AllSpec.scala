@@ -16,7 +16,7 @@
 package com.intel.analytics.bigdl.dllib.utils.tf.loaders
 
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
-import com.intel.analytics.bigdl.dllib.utils.T
+import com.intel.analytics.bigdl.dllib.utils.{T, TestUtils}
 import com.intel.analytics.bigdl.dllib.utils.tf.Tensorflow.{booleanAttr, typeAttr}
 import com.intel.analytics.bigdl.dllib.utils.tf.TensorflowSpecHelper
 import org.tensorflow.framework.{DataType, NodeDef}
@@ -34,7 +34,7 @@ class AllSpec extends TensorflowSpecHelper {
       0
     )
     t1.map(t2, (a, b) => {
-      require(a == b, "output not match")
+      TestUtils.conditionFailTest(a == b, "output not match")
       b
     })
   }
@@ -51,7 +51,7 @@ class AllSpec extends TensorflowSpecHelper {
       0
     )
     t1.map(t2, (a, b) => {
-      require(a == b, "output not match")
+      TestUtils.conditionFailTest(a == b, "output not match")
       b
     })
   }
@@ -68,7 +68,7 @@ class AllSpec extends TensorflowSpecHelper {
       0
     )
     t1.map(t2, (a, b) => {
-      require(a == b, "output not match")
+      TestUtils.conditionFailTest(a == b, "output not match")
       b
     })
   }
@@ -85,7 +85,7 @@ class AllSpec extends TensorflowSpecHelper {
       0
     )
     t1.map(t2, (a, b) => {
-      require(a == b, "output not match")
+      TestUtils.conditionFailTest(a == b, "output not match")
       b
     })
   }

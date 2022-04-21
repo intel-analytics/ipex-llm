@@ -19,7 +19,6 @@ package com.intel.analytics.bigdl.dllib.keras.layers.internal
 import com.intel.analytics.bigdl.dllib.nn.abstractnn.TensorModule
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.dllib.common.zooMKLBlas
 
 import scala.reflect.ClassTag
 
@@ -27,8 +26,7 @@ private[bigdl] class InternalERF[T: ClassTag]()(
   implicit ev: TensorNumeric[T]) extends TensorModule[T] {
   val derivativeFactor = ev.fromType(1.1283791670955126)
   override def updateOutput(input: Tensor[T]): Tensor[T] = {
-    output.resizeAs(input).copy(input)
-    zooMKLBlas.erf(output)
+    output.resizeAs(input).erf(input)
     output
   }
 

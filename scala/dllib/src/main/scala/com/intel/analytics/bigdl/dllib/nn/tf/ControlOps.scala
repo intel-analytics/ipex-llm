@@ -22,7 +22,7 @@ import com.intel.analytics.bigdl.dllib.nn.abstractnn.Activity
 import com.intel.analytics.bigdl.dllib.nn.ops.Operation
 import com.intel.analytics.bigdl.dllib.tensor.{BooleanType, Tensor}
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.dllib.utils.{Edge, Node, T}
+import com.intel.analytics.bigdl.dllib.utils.{Edge, Log4Error, Node, T}
 
 import scala.reflect.ClassTag
 
@@ -128,12 +128,13 @@ sealed class  SwitchControlNode[T] (element: T) extends Node[T](element) {
    */
   def availableNodes() : Seq[Node[T]] = {
     val bothNodes = this.nextNodesAndEdges.filter(_._2.fromIndex.isEmpty).map(_._1).distinct
-    require(bothNodes.length == 0, "You should not connect to one node with both type of edges")
+    Log4Error.invalidInputError(bothNodes.length == 0,
+      "You should not connect to one node with both type of edges")
 
     val trueNodes = this.nextNodesAndEdges.filter(_._2.fromIndex.get == 2).map(_._1).distinct
     val falseNodes = this.nextNodesAndEdges.filter(_._2.fromIndex.get == 1).map(_._1).distinct
     trueNodes.foreach( n =>
-      require(!falseNodes.contains(n),
+      Log4Error.invalidInputError(!falseNodes.contains(n),
         "You should not connect to one node with both type of edges")
     )
 
@@ -214,9 +215,9 @@ sealed private[bigdl] class LoopCondition[T: ClassTag] private[bigdl]()
    * @return
    */
   private[bigdl] def continue() : Boolean = {
-    require(this.output.isTensor, "loop condition result should be a tensor")
+    Log4Error.invalidInputError(this.output.isTensor, "loop condition result should be a tensor")
     val t = this.output.asInstanceOf[Tensor[Boolean]]
-    require((t.isScalar || t.nElement() == 1) && t.getType() == BooleanType,
+    Log4Error.invalidInputError((t.isScalar || t.nElement() == 1) && t.getType() == BooleanType,
       "loop condition result should be a boolean scalar or one element tensor")
     t.storage().apply(t.storageOffset() - 1)
   }

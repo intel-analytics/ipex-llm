@@ -21,7 +21,7 @@ import com.intel.analytics.bigdl.dllib.nn.{Container => TContainer, LocallyConne
 import com.intel.analytics.bigdl.dllib.optim.Regularizer
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.dllib.utils.Shape
+import com.intel.analytics.bigdl.dllib.utils.{Log4Error, Shape}
 
 import scala.reflect.ClassTag
 
@@ -66,9 +66,10 @@ class LocallyConnected2D[T: ClassTag](
    val inputShape: Shape = null)(implicit ev: TensorNumeric[T])
   extends KerasLayer[Tensor[T], Tensor[T], T](KerasLayer.addBatch(inputShape)) {
 
-  require(borderMode == "valid" || borderMode == "same", s"Invalid border mode for " +
+  Log4Error.invalidInputError(borderMode == "valid" || borderMode == "same",
+    s"Invalid border mode for " +
     s"LocallyConnected2D: $borderMode")
-  require(subsample.length == 2,
+  Log4Error.invalidInputError(subsample.length == 2,
     s"For LocallyConnected2D, subsample should be of length 2 but got length ${subsample.length}")
 
   override def doBuild(inputShape: Shape): AbstractModule[Tensor[T], Tensor[T], T] = {

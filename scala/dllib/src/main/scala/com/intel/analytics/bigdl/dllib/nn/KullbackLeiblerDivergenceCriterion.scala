@@ -19,6 +19,7 @@ package com.intel.analytics.bigdl.dllib.nn
 import com.intel.analytics.bigdl.dllib.nn.abstractnn.TensorCriterion
 import com.intel.analytics.bigdl.dllib.tensor.{DenseTensorApply, Tensor, TensorFunc6}
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.dllib.utils.Log4Error
 
 import scala.reflect.ClassTag
 
@@ -48,7 +49,7 @@ class KullbackLeiblerDivergenceCriterion[T: ClassTag]
   override def updateOutput(input: Tensor[T], target : Tensor[T]): T = {
     if (bufferInput == null) bufferInput = Tensor[T]()
     if (bufferTarget == null) bufferTarget = Tensor[T]()
-    require(input.isSameSizeAs(target),
+    Log4Error.invalidInputError(input.isSameSizeAs(target),
       s"Input should have the same size as target. input size: (${input.size().mkString(", ")});" +
         s" target size: (${target.size().mkString(", ")}).")
 
@@ -69,7 +70,7 @@ class KullbackLeiblerDivergenceCriterion[T: ClassTag]
    * back propagation with: - target / input
    */
   override def updateGradInput(input: Tensor[T], target: Tensor[T]): Tensor[T] = {
-    require(input.isSameSizeAs(target),
+    Log4Error.invalidInputError(input.isSameSizeAs(target),
       s"Input should have the same size as target. input size: (${input.size().mkString(", ")});" +
         s" target size: (${target.size().mkString(", ")}).")
 

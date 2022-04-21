@@ -26,14 +26,15 @@ import com.intel.analytics.bigdl.ppml.common.{FLPhase, Storage}
 import com.intel.analytics.bigdl.ppml.generated.FlBaseProto
 import com.intel.analytics.bigdl.ppml.generated.FlBaseProto._
 import com.intel.analytics.bigdl.dllib.utils.{Table => DllibTable}
-import com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.{BoostEval, PredictResponse, TreePredict}
+import com.intel.analytics.bigdl.ppml.fgboost.common.Split
+import com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.{BoostEval, DataSplit, PredictResponse, TreePredict}
 import org.apache.logging.log4j.LogManager
 
 import scala.reflect.ClassTag
 import scala.util.Random
 import scala.collection.JavaConversions._
 import scala.collection.JavaConverters._
-
+import com.intel.analytics.bigdl.dllib.utils.Log4Error
 
 object ProtoUtils {
   private val logger = LogManager.getLogger(getClass)
@@ -63,7 +64,8 @@ object ProtoUtils {
     }
     // TODO: multiple input
     val outputs = aggData.filter(_._1 != "target")
-    require(outputs.size == 1)
+    Log4Error.unKnowExceptionError(outputs.size == 1,
+    s"outputs size should be 1, but got ${outputs.size}")
 
     (T.seq(outputs.values.head.toSeq), target)
   }
@@ -106,10 +108,6 @@ object ProtoUtils {
     val weights = getParametersFromModel(model)._1
     val metadata = MetaData.newBuilder
       .setName(name).setVersion(version).build
-    FloatTensor.newBuilder()
-      .addAllTensor(weights.storage.toList.map(v => float2Float(v)))
-      .addAllShape(weights.size.toList.map(v => int2Integer(v)))
-      .build()
     val tensor =
       FloatTensor.newBuilder()
         .addAllTensor(weights.storage.toList.map(v => float2Float(v)))
@@ -183,8 +181,4 @@ object ProtoUtils {
     else
       false
   }
-
-
-
-
 }

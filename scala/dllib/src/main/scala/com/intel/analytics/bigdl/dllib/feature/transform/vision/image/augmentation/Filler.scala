@@ -17,6 +17,7 @@
 package com.intel.analytics.bigdl.dllib.feature.transform.vision.image.augmentation
 
 import com.intel.analytics.bigdl.dllib.feature.transform.vision.image.{FeatureTransformer, ImageFeature}
+import com.intel.analytics.bigdl.dllib.utils.Log4Error
 import org.opencv.core
 import org.opencv.core.Mat
 
@@ -32,12 +33,12 @@ import org.opencv.core.Mat
 class Filler(startX: Float, startY: Float, endX: Float, endY: Float, value: Int = 255)
   extends FeatureTransformer {
 
-  require(startX >= 0 && startX <= 1, s"$startX should be in the range [0, 1]")
-  require(startY >= 0 && startY <= 1, s"$startY should be in the range [0, 1]")
-  require(endX >= 0 && endX <= 1, s"$endX should be in the range [0, 1]")
-  require(endY >= 0 && endY <= 1, s"$endY should be in the range [0, 1]")
-  require(endX > startX, s"$endX should be greater than $startX")
-  require(endY > startY, s"$endY should be greater than $startY")
+  Log4Error.invalidInputError(startX >= 0 && startX <= 1, s"$startX should be in the range [0, 1]")
+  Log4Error.invalidInputError(startY >= 0 && startY <= 1, s"$startY should be in the range [0, 1]")
+  Log4Error.invalidInputError(endX >= 0 && endX <= 1, s"$endX should be in the range [0, 1]")
+  Log4Error.invalidInputError(endY >= 0 && endY <= 1, s"$endY should be in the range [0, 1]")
+  Log4Error.invalidInputError(endX > startX, s"$endX should be greater than $startX")
+  Log4Error.invalidInputError(endY > startY, s"$endY should be greater than $startY")
 
   override def transformMat(feature: ImageFeature): Unit = {
     var fillMat: Mat = null
