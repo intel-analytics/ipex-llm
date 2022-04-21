@@ -16,14 +16,15 @@
 from functools import partial
 
 
-def bind_openvino_methods(pl_model):
-    from . import torch_funcs
-    pl_model.export_openvino = partial(torch_funcs.export, pl_model)
-    pl_model.eval_openvino = partial(torch_funcs.eval_openvino, pl_model)
-    pl_model.exit_openvino = partial(torch_funcs.exit_openvino, pl_model)
-    return pl_model
+def PytorchOpenVINOModel(model, input_sample=None):
+    """
+    Create a OpenVINO model from pytorch.
 
-
-def export(model, input_sample=None, xml_path="model.xml"):
-    from . import torch_funcs
-    torch_funcs.export(model, input_sample, xml_path)
+    :param model: Pytorch model to be converted to OpenVINO for inference or
+                  path to Openvino saved model.
+    :param input_sample: A set of inputs for trace, defaults to None if you have trace before or
+                         model is a LightningModule with any dataloader attached, defaults to None
+    :return: PytorchOpenVINOModel model for OpenVINO inference.
+    """
+    from .pytorch.pytorch_openvino_model import PytorchOpenVINOModel
+    return PytorchOpenVINOModel(model, input_sample)

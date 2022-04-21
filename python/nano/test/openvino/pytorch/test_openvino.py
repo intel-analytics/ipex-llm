@@ -22,62 +22,59 @@ from torch.utils.data.dataset import TensorDataset
 from torch.utils.data.dataloader import DataLoader
 import os
 
+
 class TestOpenVINO(TestCase):
-    def test_openvino(self):
-        model = mobilenet_v3_small(num_classes=10)
-        pl_model = Trainer.compile(model, openvino=True)
-        x = torch.rand((10, 3, 256, 256))
-        y = torch.ones((10, ), dtype=torch.long)
-
-        pl_model.eval_openvino(x)
-        assert pl_model.ov_infer_engine and pl_model.ov_infer_engine.ie_network
-        assert pl_model.forward != pl_model._torch_forward
-        y = pl_model(x)
-        assert y.shape == (10, 10)  
-
-        pl_model.exit_openvino()
-        assert pl_model.forward == pl_model._torch_forward
-
-        pl_model.eval_openvino()
-        assert pl_model.forward != pl_model._torch_forward
-        pl_model.eval()
-        assert pl_model.forward == pl_model._torch_forward
-
-        # Test if correctly fall back to pytorch backend
-        pl_model.eval_openvino()
-        assert pl_model.forward != pl_model._torch_forward
-        pl_model.train()
-        assert pl_model.forward == pl_model._torch_forward
-
-        pl_model.export_openvino(x, xml_path='test_export_openvino.xml')
-        assert os.path.exists('test_export_openvino.xml')
-        os.remove('test_export_openvino.xml')
-
-    def test_openvino_inputsample_from_trainloader(self):
+    def test_trainer_trace_openvino(self):
         trainer = Trainer(max_epochs=1)
         model = mobilenet_v3_small(num_classes=10)
-        pl_model = Trainer.compile(model, loss=torch.nn.CrossEntropyLoss(),
-                                   optimizer=torch.optim.SGD(model.parameters(), lr=0.01),
-                                   openvino=True)
+        
         x = torch.rand((10, 3, 256, 256))
         y = torch.ones((10, ), dtype=torch.long)
+
+        # trace a torch model 
+        openvino_model = trainer.trace(model, x, 'openvino')
+        y_hat = openvino_model(x)
+        assert y_hat.shape == (10, 10)
+
+        # trace pytorch-lightning model
+        pl_model = Trainer.compile(model, loss=torch.nn.CrossEntropyLoss(),
+                                   optimizer=torch.optim.SGD(model.parameters(), lr=0.01))
         ds = TensorDataset(x, y)
         dataloader = DataLoader(ds, batch_size=2)
         trainer.fit(pl_model, dataloader)
 
-        # Test if eval_openvino() and exit_openvino() work
-        pl_model.eval_openvino()
-        assert pl_model.ov_infer_engine and pl_model.ov_infer_engine.ie_network
-        assert pl_model.forward != pl_model._torch_forward
-        y = pl_model(x)
-        assert y.shape == (10, 10) 
-        
-        pl_model.exit_openvino()
-        assert pl_model.forward == pl_model._torch_forward
+        openvino_model = trainer.trace(model, accelerator='openvino')
+        y_hat = openvino_model(x)
+        assert y_hat.shape == (10, 10)
 
-        # Test if correctly fall back to training mode
-        pl_model.eval_openvino()
-        assert pl_model.forward != pl_model._torch_forward
+        openvino_model.save('saved_openvino_model.xml')
+        assert os.path.exists('saved_openvino_model.xml')
+        os.remove('saved_openvino_model.xml')
+
+    def test_trainer_save_openvino(self):
+        trainer = Trainer(max_epochs=1)
+        model = mobilenet_v3_small(num_classes=10)
+        x = torch.rand((10, 3, 256, 256))
+        y = torch.ones((10, ), dtype=torch.long)       
+
+        # save and load pytorch model
+        Trainer.save(model, 'trainer_save_openvino_model.xml', accelerator='openvino', input_sample=x)
+        assert os.path.exists('trainer_save_openvino_model.xml')
+        openvino_model = Trainer.load('trainer_save_openvino_model.xml')
+        y_hat = openvino_model(x)
+        assert y_hat.shape == (10, 10)
+        os.remove('trainer_save_openvino_model.xml')
+
+        # save and load pytorch-lightning model
+        pl_model = Trainer.compile(model, loss=torch.nn.CrossEntropyLoss(),
+                                   optimizer=torch.optim.SGD(model.parameters(), lr=0.01))
+        ds = TensorDataset(x, y)
+        dataloader = DataLoader(ds, batch_size=2)
         trainer.fit(pl_model, dataloader)
-        assert pl_model.forward == pl_model._torch_forward 
-        assert  pl_model.ov_infer_engine is None
+
+        Trainer.save(pl_model, 'pl_trainer_save_openvino_model.xml', accelerator='openvino')
+        assert os.path.exists('pl_trainer_save_openvino_model.xml')
+        openvino_model = Trainer.load('pl_trainer_save_openvino_model.xml')
+        y_hat = openvino_model(x)
+        assert y_hat.shape == (10, 10)
+        os.remove('pl_trainer_save_openvino_model.xml')
