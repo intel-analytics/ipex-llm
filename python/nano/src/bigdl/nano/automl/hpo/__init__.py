@@ -15,3 +15,4 @@
 #
 
 from .space import *
+from .decorator import *
