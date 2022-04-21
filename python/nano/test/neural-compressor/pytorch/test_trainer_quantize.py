@@ -121,3 +121,9 @@ class TestTrainer(TestCase):
         assert qmodel
         out = qmodel(next(train_loader_iter)[0])
         assert out.shape == torch.Size([256, 10])
+
+        qmodel.save('.')
+        loaded_qmodel = qmodel.load('.', self.user_defined_pl_model)
+        assert qmodel
+        out = loaded_qmodel(next(train_loader_iter)[0])
+        assert out.shape == torch.Size([256, 10])
