@@ -121,6 +121,6 @@ def nano_save(obj, f, pickle_module=pickle, pickle_protocol=DEFAULT_PROTOCOL,
     return torch_save(obj_copy, f, pickle_module, pickle_protocol, _use_new_zipfile_serialization)
 
 
-torch.save = nano_save
+# torch.save = nano_save
 
 apply_torch_functional_replacement()
