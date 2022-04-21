@@ -14,8 +14,28 @@
 # limitations under the License.
 #
 from bigdl.nano.utils.inference.pytorch.model import AcceleratedLightningModule
+from neural_compressor.utils.pytorch import load
+
 
 class QuantizedModel(AcceleratedLightningModule):
     def __init__(self, model):
         self.quantized = model
         super().__init__(model.model)
+
+    def save(self, path):
+        return self.quantized.save(path)
+
+    def load_state_dict(self, state_dict):
+        load(state_dict, self.quantized._model)
+
+    def state_dict(self):
+        try:
+            stat_dict = self.quantized.model.state_dict()
+            stat_dict['best_configure'] = self.quantized.tune_cfg
+        except IOError as e:
+            raise IOError("Fail to dump configure and weights due to {}.".format(e))
+        return stat_dict
+
+    @staticmethod
+    def load(path, model):
+        return QuantizedModel(load(path, model))
