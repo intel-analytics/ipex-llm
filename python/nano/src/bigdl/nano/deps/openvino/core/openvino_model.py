@@ -13,18 +13,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-try:
-    from openvino.inference_engine import IECore
-except ImportError:
-    raise ImportError("To enable openvino inference, you need to install it by:\n"
-                      "\t\t pip install openvino-dev")
+from openvino.inference_engine import IECore
 
 
-class BaseOpenVINOInference:
-    def __init__(self, ie_network=None):
-        self.ie_network = ie_network
+class OpenVINOModel:
+    def __init__(self, ie_network: str):
+        self.ie_network = None
+        self.read_network(ie_network)
         self.exec_model = None
-        self.example_input_array = None
 
     def forward_step(self, *inputs):
         self.compile_executable(inputs)
@@ -40,17 +36,15 @@ class BaseOpenVINOInference:
             self.ie_network.batch_size = input_batch_size
             self.exec_model = IECore().load_network(network=self.ie_network, device_name='CPU')
 
-    def reset(self, model):
-        self.ie_network = None
-        self.exec_model = None
-        model.ov_infer_engine = None
-
     def read_network(self, model: str):
         self.ie_network = IECore().read_network(model=model)
 
+    def save(self, path):
+        """
+        Save PytorchOpenVINOModel to local as xml and bin file
 
-def convert_onnx_to_xml(onnx_file_path, xml_path, batch_size=1):
-    ie = IECore()
-    net_onnx = ie.read_network(model=onnx_file_path)
-    net_onnx.batch_size = batch_size
-    net_onnx.serialize(xml_path)
+        :param path: Path to save the model.
+        """
+        assert self.ie_network, "self.ie_network shouldn't be None."
+        assert path.split('.')[-1] == "xml", "Path of openvino model must be with '.xml' suffix."
+        self.ie_network.serialize(path)

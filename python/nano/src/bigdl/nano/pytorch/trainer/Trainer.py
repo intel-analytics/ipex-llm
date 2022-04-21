@@ -15,6 +15,7 @@
 #
 from logging import warning
 from operator import xor
+import os
 from typing import Any, List, Optional
 
 import pytorch_lightning as pl
@@ -32,9 +33,8 @@ from bigdl.nano.pytorch.lightning import LightningModuleFromTorch
 from bigdl.nano.pytorch.plugins.ddp_spawn import DDPSpawnPlugin
 from bigdl.nano.deps.ray.ray_api import distributed_ray
 from bigdl.nano.deps.ipex.ipex_api import create_IPEXAccelerator, ipex_device
-from bigdl.nano.deps.openvino.openvino_api import bind_openvino_methods
+from bigdl.nano.deps.openvino.openvino_api import PytorchOpenVINOModel
 from bigdl.nano.deps.onnxruntime.onnxruntime_api import bind_onnxrt_methods
-
 
 distributed_backends = ["spawn", "ray", "subprocess"]
 
@@ -133,8 +133,7 @@ class Trainer(pl.Trainer):
                 scheduler: _LRScheduler = None,
                 metrics: List[Metric] = None,
                 onnx: bool = False,
-                quantize: bool = False,
-                openvino: bool = False):
+                quantize: bool = False):
         """
         Construct a pytorch-lightning model. If model is already a pytorch-lightning model,
         return model. If model is pytorch model, construct a new pytorch-lightning module
@@ -162,8 +161,6 @@ class Trainer(pl.Trainer):
             pl_model = model
         else:
             pl_model = LightningModuleFromTorch(model, loss, optimizer, scheduler, metrics)
-        assert not (onnx and openvino), "Only one of onnx and openvino can be True."
-        assert not (openvino and quantize), "Quantization is not implemented for OpenVINO."
         if onnx:
             try:
                 from bigdl.nano.pytorch.runtime_binding.base_inference import\
@@ -172,8 +169,6 @@ class Trainer(pl.Trainer):
             except ImportError:
                 raise RuntimeError("You should install onnx and onnxruntime to set `onnx=True`, "
                                    "or just set `onnx=False`.")
-        elif openvino:
-            return bind_openvino_methods(pl_model)
         if quantize:
             from bigdl.nano.pytorch.runtime_binding.quantization_inference import\
                 bind_quantize_methods
@@ -318,3 +313,67 @@ class Trainer(pl.Trainer):
                     quantized_onnx_model)
         else:
             raise NotImplementedError("Backend {} is not implemented.".format(backend))
+
+    @staticmethod
+    def trace(model: nn.Module, input_sample=None, accelerator=None):
+        """
+        Trace a pytorch model and convert it into an accelerated module for inference.
+        For example, this function returns a PytorchOpenVINOModel when accelerator=='openvino'.
+
+        :param model: An torch.nn.Module model, including pl.LightningModule.
+        :param input_sample: A set of inputs for trace, defaults to None if you have trace before or
+                             model is a LightningModule with any dataloader attached.
+        :param accelerator: The accelerator to use, defaults to None meaning staying in Pytorch
+                            backend. Only 'openvino' is supported for now.
+        :return: A PytorchOpenVINOModel using openvino for inference if accelerator='openvino'
+        """
+        if accelerator == 'openvino':
+            return PytorchOpenVINOModel(model, input_sample)
+
+    @staticmethod
+    def save(model, path, precision=None, accelerator=None, input_sample=None):
+        """
+        Save the model to path with desired precision and format(by assigning 'accelerator').
+        Using a pytorch model, you can export to ONNX, OpenVINO directly with
+        accelerator='openvino'/'onnx'.
+
+        :param model: Any model of torch.nn.Module, including PytorchOpenVINOModel
+        :param path: Path to saved model. You need to specify path suffix carefully.
+                     For example, 'model.xml' for OpenVINO, 'model.onnx' for ONNX.
+        :param precision: Precision of saved model, 'FP32', 'FP16', 'INT8', defaults to None,
+                          then the precision depends on the precision of model.
+        :param accelerator: Saved model format and its future accelerator, defaults to None.
+                            accelerator=None will save Pytorch model, accelerator='openvino' will
+                            save an IR to inference by OpenVINO. Same as ONNX.
+        :param input_sample: A set of inputs for trace, defaults to None if you have trace before or
+                             model is a LightningModule with any dataloader attached,
+                             defaults to None.
+                             Only ONNX and OpenVINO requires an input sample to export the model.
+        """
+        if accelerator == 'openvino':
+            if precision is None:
+                if not hasattr(model, "save") and isinstance(model, nn.Module):
+                    model = PytorchOpenVINOModel(model, input_sample=input_sample)
+                else:
+                    raise TypeError("Model type of {} can not be exported.".format(type(model)))
+                model.save(path)
+
+    @staticmethod
+    def load(path, accelerator=None):
+        """
+        Load a model from local.
+
+        :param path: Path to model to be loaded. You need to specify path suffix carefully.
+                     For example, 'model.xml' for OpenVINO, 'model.onnx' for ONNX.
+        :param accelerator: Saved model format, defaults to None.
+                            accelerator=None will save Pytorch model, accelerator='openvino' will
+                            save an IR to inference by OpenVINO. Same as ONNX.
+        :return: A PytorchOpenVINOModel using openvino for inference if accelerator='openvino'
+        """
+        if accelerator == 'openvino' or path.split('.')[-1] == 'xml':
+            # TODO: Need to fix this with lazy import class.
+            # The usage should be:
+            #   PytorchOpenVINOModel.load(path)
+            if not os.path.exists(path):
+                raise FileNotFoundError("{} doesn't exist.".format(path))
+            return PytorchOpenVINOModel(path)
