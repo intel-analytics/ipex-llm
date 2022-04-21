@@ -162,6 +162,7 @@ class FGBoostServiceImpl(clientNum: Int) extends FGBoostServiceGrpc.FGBoostServi
           }
         }
         aggregator.putClientData(FLPhase.EVAL, clientUUID, request.getVersion, new DataHolder(evalBuffer))
+        evalBuffer.clear()
         val result = aggregator.getResultStorage().serverData
         if (result == null) {
           val response = "Server evaluate complete"
