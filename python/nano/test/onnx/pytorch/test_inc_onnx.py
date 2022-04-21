@@ -1,0 +1,119 @@
+#
+# Copyright 2016 The BigDL Authors.
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#     http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+#
+
+
+import pytest
+import os
+from unittest import TestCase
+import tempfile
+
+import torch
+from torch import nn
+from torch.utils.data import TensorDataset, DataLoader
+import torchmetrics
+
+import numpy as np
+
+from bigdl.nano.pytorch.trainer import Trainer
+from bigdl.nano.pytorch.vision.models import vision
+
+batch_size = 256
+num_workers = 0
+data_dir = os.path.join(os.path.dirname(__file__), "data")
+
+
+class ResNet18(nn.Module):
+    def __init__(self, num_classes, pretrained=True, include_top=False, freeze=True):
+        super().__init__()
+        backbone = vision.resnet18(pretrained=pretrained, include_top=include_top, freeze=freeze)
+        output_size = backbone.get_output_size()
+        head = nn.Linear(output_size, num_classes)
+        self.model = nn.Sequential(backbone, head)
+
+    def forward(self, x):
+        return self.model(x)
+
+
+class MultiInputModel(nn.Module):
+    def __init__(self):
+        super().__init__()
+
+        self.layer_1 = nn.Linear(28 * 28, 128)
+        self.layer_2 = nn.Linear(28 * 28, 128)
+        self.layer_3 = nn.Linear(256, 2)
+
+    def forward(self, x1, x2):
+        x1 = self.layer_1(x1)
+        x2 = self.layer_2(x2)
+        x = torch.cat([x1, x2], axis=1)
+
+        return self.layer_3(x)
+
+
+class TestOnnx(TestCase):
+
+    def test_trainer_compile_with_onnx_quantize(self):
+        model = ResNet18(10, pretrained=False, include_top=False, freeze=True)
+        loss = nn.CrossEntropyLoss()
+        optimizer = torch.optim.Adam(model.parameters(), lr=0.01)
+        trainer = Trainer(max_epochs=1)
+
+        pl_model = Trainer.compile(model, loss, optimizer, onnx=True)
+        x = torch.rand((10, 3, 256, 256))
+        y = torch.ones((10, ), dtype=torch.long)
+        ds = TensorDataset(x, y)
+        train_loader = DataLoader(ds, batch_size=2)
+        trainer.fit(pl_model, train_loader)
+
+        # false framework parameters
+        with pytest.raises(RuntimeError):
+            pl_model = trainer.quantize(pl_model, train_loader,
+                                        framework=['pytorch_fx', 'pytorch'])
+        with pytest.raises(RuntimeError):
+            pl_model = trainer.quantize(pl_model, train_loader,
+                                        framework=['onnxrt_integerops', 'onnxrt_qlinearops'])
+
+        # normal usage without tunning
+        pl_model = trainer.quantize(pl_model, train_loader, framework=['pytorch_fx', 'onnxrt_integerops'])
+        for x, y in train_loader:
+            onnx_res = pl_model.inference(x.numpy(), backend="onnx", quantize=True).numpy()
+            pl_model.eval_onnx(quantize=True)
+            forward_res = pl_model(x).numpy()
+            np.testing.assert_almost_equal(onnx_res, forward_res, decimal=5)  # same result
+
+        # quantization with tunning
+        pl_model.eval(quantize=False)
+        pl_model = trainer.quantize(pl_model,
+                                    calib_dataloader=train_loader,
+                                    val_dataloader=train_loader,
+                                    metric=torchmetrics.F1(10),
+                                    framework=['onnxrt_qlinearops'],
+                                    accuracy_criterion={'relative': 0.99,
+                                                        'higher_is_better': True})
+        for x, y in train_loader:
+            onnx_res = pl_model.inference(x.numpy(), backend="onnx", quantize=True).numpy()
+            pl_model.eval_onnx()
+            forward_res = pl_model(x).numpy()
+            np.testing.assert_almost_equal(onnx_res, forward_res, decimal=5)  # same result
+
+        # save the quantized model
+        with tempfile.TemporaryDirectory() as tmp_dir_name:
+            ckpt_name = os.path.join(tmp_dir_name, ".onnx")
+            pl_model.to_quantized_onnx(ckpt_name)
+
+
+if __name__ == '__main__':
+    pytest.main([__file__])
