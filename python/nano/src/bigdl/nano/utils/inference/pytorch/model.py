@@ -13,15 +13,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-from bigdl.nano.pytorch.lightning import LightningModuleFromTorch
+from pytorch_lightning import LightningModule
 import torch
 
 from .model_utils import get_forward_args
 
 
-class AcceleratedLightningModule(LightningModuleFromTorch):
+class AcceleratedLightningModule(LightningModule):
     def __init__(self, model):
-        super().__init__(model)
+        self.model = model
+        super().__init__()
         self.on_init_end()
 
     def on_init_end(self, *args):

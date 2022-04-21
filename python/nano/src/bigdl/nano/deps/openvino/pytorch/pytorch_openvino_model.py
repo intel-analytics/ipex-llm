@@ -15,7 +15,7 @@
 #
 import os
 from ..core.openvino_model import OpenVINOModel
-from ...inference.pytorch.model import AcceleratedLightningModule
+from bigdl.nano.utils.inference.pytorch.model import AcceleratedLightningModule
 from .pytorch_openvino_utils import export
 import torch
 
