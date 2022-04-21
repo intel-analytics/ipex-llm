@@ -18,7 +18,7 @@
 set -e
 RUN_SCRIPT_DIR=$(cd $(dirname $0) ; pwd)
 BIGDL_DIR="$(cd ${RUN_SCRIPT_DIR}/../../..; pwd)"
-WHL_DIR="$(cd ${BIGDL_DIR}/python/nano/src; pwd)"
+WHL_DIR="$(cd ${BIGDL_DIR}/python/nano; pwd)"
 
 if (( $# < 4)); then
   echo "Usage: build_and_install.sh platform version upload framework pip_install_options[optional]"
