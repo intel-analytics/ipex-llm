@@ -9,8 +9,7 @@ You can use _Chronos_ to do:
 - **Time Series Forecasting** (using [Standalone Forecasters](./forecasting.html#use-standalone-forecaster-pipeline), [Auto Models](./forecasting.html#use-auto-forecasting-model) (with HPO) or [AutoTS](./forecasting.html#use-autots-pipeline) (full AutoML enabled pipelines))
 - **Anomaly Detection** (using [Anomaly Detectors](./anomaly_detection.html#anomaly-detection))
 - **Synthetic Data Generation** (using [Simulators](./simulation.html#generate-synthetic-data))
-
-Furthermore, Chronos is adapted to integrate many optimized library and best known methods(BKMs) for accuracy and performance improvement.
+- **Speed up or tune your customized time-series model** (using TSTrainer and [AutoTS](./forecasting.html#use-autots-pipeline))
 
 ---
 ### **2. Install**
@@ -31,7 +30,7 @@ pip install --pre --upgrade bigdl-chronos[all]
 Some dependencies are optional and not included in `bigdl-chronos[all]`. You may install them when you want to use corresponding functionalities. This includes:
 ```bash
 pip install tsfresh==0.17.0
-pip install tensorflow==1.15.0
+pip install bigdl-nano[tensorflow]
 pip install pmdarima==1.8.2
 pip install prophet==1.0.1
 pip install neural-compressor==1.8.1
@@ -139,15 +138,15 @@ if __name__ == "__main__":
     stand = StandardScaler()
     for tsdata in [tsdata_train, tsdata_val, tsdata_test]:
         tsdata.gen_dt_feature().impute()\
-            .scale(stand, fit=tsdata is tsdata_train)
+              .scale(stand, fit=tsdata is tsdata_train)
 
     # AutoTSEstimator initalization
     autotsest = AutoTSEstimator(model="tcn",
                                 future_seq_len=10)
 
     # AutoTSEstimator fitting
-    tsppl = autotsest.fit(tsdata_train,
-                        validation_data=tsdata_val)
+    tsppl = autotsest.fit(data=tsdata_train,
+                          validation_data=tsdata_val)
 
     # Evaluation
     autotsest_mse = tsppl.evaluate(tsdata_test)

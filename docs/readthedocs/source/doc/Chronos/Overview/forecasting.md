@@ -25,11 +25,11 @@ There're three ways to do forecasting:
 
 | Model   | Style | Multi-Variate | Multi-Step | Exogenous Variables | Distributed | ONNX | Quantization | Auto Models | AutoTS | Backend |
 | ----------------- | ----- | ------------- | ---------- | ------- | ----------- | ----------- | ----------- | ----------- | ----------- | ----------- |
-| LSTM    | RR    | ✅             | ❌      | ✅    | ✅   | ✅           | ✅        | ✅          | ✅         | pytorch  |
-| Seq2Seq     | RR    | ✅             | ✅     | ✅     | ✅     | ✅           | ❌      | ✅          | ✅         | pytorch  |
+| LSTM    | RR    | ✅             | ❌      | ✅    | ✅   | ✅           | ✅        | ✅          | ✅         | pytorch/tf2  |
+| Seq2Seq     | RR    | ✅             | ✅     | ✅     | ✅     | ✅           | ❌      | ✅          | ✅         | pytorch/tf2  |
 | TCN | RR    | ✅             | ✅     | ✅     | ✅     | ✅           | ✅      | ✅          | ✅         | pytorch  |
 | NBeats | RR    | ❌             | ✅     | ❌     | ✅     | ✅           | ✅      | ❌          | ❌         | pytorch  |
-| MTNet   | RR    | ✅             | ❌    | ✅     | ✅     | ❌          | ❌         | ❌          | ✳️\*\*        | tensorflow |
+| MTNet   | RR    | ✅             | ❌    | ✅     | ❌     | ❌          | ❌         | ❌          | ✳️\*\*        | tf2 |
 | TCMF    | TS    | ✅             | ✅    | ✅      | ✳️\*     | ❌          | ❌         | ❌          | ❌         | pytorch  |
 | Prophet | TS    | ❌             | ✅    | ❌      | ❌        | ❌          | ❌      | ✅          | ❌         | prophet  |
 | ARIMA   | TS    | ❌             | ✅    | ❌      | ❌         | ❌          | ❌     | ✅          | ❌         | pmdarima |
@@ -111,9 +111,10 @@ auto_estimator = AutoTSEstimator(model='lstm',
 ```
 We prebuild three defualt search space for each build-in model, which you can use the by setting `search_space` to "minimal"，"normal", or "large" or define your own search space in a dictionary. The larger the search space, the better accuracy you will get and the more time will be cost.
 
-`past_seq_len` can be set as a hp sample function, the proper range is highly related to your data. A range between 0.5 cycle and 3 cycle is reasonable.
+`past_seq_len` can be set as a hp sample function, the proper range is highly related to your data. A range between 0.5 cycle and 2 cycle is reasonable. You may set it to `"auto"`, then a cycle length will be detected automatically and this parameter will be set to a random search between 0.5 cycle and 2 cycle length.
 
-`selected_features` is set to "auto" by default, where the `AutoTSEstimator` will find the best subset of extra features to help the forecasting task.
+`selected_features` is set to `"auto"` by default, where the `AutoTSEstimator` will find the best subset of extra features to help the forecasting task.
+
 ##### **2.3 Fit on AutoTSEstimator**
 Fitting on `AutoTSEstimator` is fairly easy. A `TSPipeline` will be returned once fitting is completed.
 ```python
@@ -172,35 +173,35 @@ The input data can be easily get from `TSDataset`.
 View [Quick Start](../QuickStart/chronos-tsdataset-forecaster-quickstart.md) for a more detailed example. Refer to [API docs](../../PythonAPI/Chronos/forecasters.html) of each Forecaster for detailed usage instructions and examples.
 
 <span id="LSTMForecaster"></span>
-###### **3.1 LSTMForecaster**
+##### **3.1 LSTMForecaster**
 
 LSTMForecaster wraps a vanilla LSTM model, and is suitable for univariate time series forecasting.
 
 View Network Traffic Prediction [notebook][network_traffic_model_forecasting] and [LSTMForecaster API Doc](../../PythonAPI/Chronos/forecasters.html#lstmforecaster) for more details.
 
 <span id="Seq2SeqForecaster"></span>
-###### **3.2 Seq2SeqForecaster**
+##### **3.2 Seq2SeqForecaster**
 
 Seq2SeqForecaster wraps a sequence to sequence model based on LSTM, and is suitable for multivariant & multistep time series forecasting.
 
 View [Seq2SeqForecaster API Doc](../../PythonAPI/Chronos/forecasters.html#seq2seqforecaster) for more details.
 
 <span id="TCNForecaster"></span>
-###### **3.3 TCNForecaster**
+##### **3.3 TCNForecaster**
 
 Temporal Convolutional Networks (TCN) is a neural network that use convolutional architecture rather than recurrent networks. It supports multi-step and multi-variant cases. Causal Convolutions enables large scale parallel computing which makes TCN has less inference time than RNN based model such as LSTM.
 
 View Network Traffic multivariate multistep Prediction [notebook][network_traffic_multivariate_multistep_tcnforecaster] and [TCNForecaster API Doc](../../PythonAPI/Chronos/forecasters.html#tcnforecaster) for more details.
 
 <span id="MTNetForecaster"></span>
-###### **3.4 MTNetForecaster**
+##### **3.4 MTNetForecaster**
 
 ```eval_rst
 .. note:: 
     **Additional Dependencies**:
-    You need to install `tensorflow` to enable this built-in model.
+    You need to install `bigdl-nano[tensorflow]` to enable this built-in model.
 
-    ``pip install tensorflow==1.15.0``
+    ``pip install bigdl-nano[tensorflow]``
 ```
 
 MTNetForecaster wraps a MTNet model. The model architecture mostly follows the [MTNet paper](https://arxiv.org/abs/1809.02105) with slight modifications, and is suitable for multivariate time series forecasting.
@@ -208,14 +209,14 @@ MTNetForecaster wraps a MTNet model. The model architecture mostly follows the [
 View Network Traffic Prediction [notebook][network_traffic_model_forecasting] and [MTNetForecaster API Doc](../../PythonAPI/Chronos/forecasters.html#mtnetforecaster) for more details.
 
 <span id="TCMFForecaster"></span>
-###### **3.5 TCMFForecaster**
+##### **3.5 TCMFForecaster**
 
 TCMFForecaster wraps a model architecture that follows implementation of the paper [DeepGLO paper](https://arxiv.org/abs/1905.03806) with slight modifications. It is especially suitable for extremely high dimensional (up-to millions) multivariate time series forecasting.
 
 View High-dimensional Electricity Data Forecasting [example][run_electricity] and [TCMFForecaster API Doc](../../PythonAPI/Chronos/forecasters.html#tcmfforecaster) for more details.
 
 <span id="ARIMAForecaster"></span>
-###### **3.6 ARIMAForecaster**
+##### **3.6 ARIMAForecaster**
 
 ```eval_rst
 .. note:: 
@@ -230,7 +231,7 @@ ARIMAForecaster wraps a ARIMA model and is suitable for univariate time series f
 View [ARIMAForecaster API Doc](../../PythonAPI/Chronos/forecasters.html#arimaforecaster) for more details.
 
 <span id="ProphetForecaster"></span>
-###### **3.7 ProphetForecaster**
+##### **3.7 ProphetForecaster**
 
 ```eval_rst
 .. note:: 
@@ -240,12 +241,18 @@ View [ARIMAForecaster API Doc](../../PythonAPI/Chronos/forecasters.html#arimafor
     ``pip install prophet==1.0.1``
 ```
 
+```eval_rst
+.. note:: 
+    **Acceleration Note**:
+    Intel® Distribution for Python may improve the speed of prophet's training and inferencing. You may install it by refering to https://www.intel.com/content/www/us/en/developer/tools/oneapi/distribution-for-python.html.
+```
+
 ProphetForecaster wraps the Prophet model ([site](https://github.com/facebook/prophet)) which is an additive model where non-linear trends are fit with yearly, weekly, and daily seasonality, plus holiday effects and is suitable for univariate time series forecasting. It works best with time series that have strong seasonal effects and several seasons of historical data and is robust to missing data and shifts in the trend, and typically handles outliers well.
 
 View Stock Prediction [notebook][stock_prediction_prophet] and [ProphetForecaster API Doc](../../PythonAPI/Chronos/forecasters.html#prophetforecaster) for more details.
 
 <span id="NBeatsForecaster"></span>
-###### **3.8 NBeatsForecaster**
+##### **3.8 NBeatsForecaster**
 
 Neural basis expansion analysis for interpretable time series forecasting ([N-BEATS](https://arxiv.org/abs/1905.10437)) is a deep neural architecture based on backward and forward residual links and a very deep stack of fully-connected layers. Nbeats can solve univariate time series point forecasting problems, being interpretable, and fast to train.
 
