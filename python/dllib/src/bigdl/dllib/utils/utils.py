@@ -211,16 +211,16 @@ def convert_row_to_numpy(row, schema, feature_cols, label_cols, accept_str_col=F
             elif isinstance(feature_type, df_types.ArrayType):
                 if accept_str_col and isinstance(feature_type.elementType, df_types.StringType):
                     result.append(np.array(row[name]).astype(np.str))
-                elif isinstance(feature_type.elementType, df_types.FloatType):
-                    result.append(np.array(row[name]).astype(np.float32))
-                elif isinstance(feature_type.elementType, df_types.DoubleType):
-                    result.append(np.array(row[name]).astype(np.float64))
+                # elif isinstance(feature_type.elementType, df_types.FloatType):
+                #     result.append(np.array(row[name]).astype(np.float32))
+                # elif isinstance(feature_type.elementType, df_types.DoubleType):
+                #     result.append(np.array(row[name]).astype(np.float64))
                 elif isinstance(feature_type.elementType, df_types.IntegerType):
                     result.append(np.array(row[name]).astype(np.int32))
-                elif isinstance(feature_type.elementType, df_types.LongType):
-                    result.append(np.array(row[name]).astype(np.int64))
+                # elif isinstance(feature_type.elementType, df_types.LongType):
+                #     result.append(np.array(row[name]).astype(np.int64))
                 else:
-                    result.append(np.array(row[name]))
+                    result.append(np.array(row[name]).astype(np.float32))
             elif isinstance(row[name], DenseVector):
                 result.append(row[name].values.astype(np.float32))
             else:
