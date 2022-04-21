@@ -34,10 +34,6 @@ from bigdl.nano.pytorch.lightning import LightningModuleFromTorch
 from bigdl.nano.pytorch.plugins.ddp_spawn import DDPSpawnPlugin
 from bigdl.nano.deps.automl.hpo_api import create_hpo_searcher, check_hpo_status
 from bigdl.nano.deps.ray.ray_api import distributed_ray
-<<<<<<< HEAD
-
-=======
->>>>>>> merge resolve
 from bigdl.nano.deps.ipex.ipex_api import create_IPEXAccelerator, ipex_device, ipex_optimize
 from bigdl.nano.deps.openvino.openvino_api import PytorchOpenVINOModel, load_openvino_model
 from bigdl.nano.deps.onnxruntime.onnxruntime_api import bind_onnxrt_methods,\
@@ -46,15 +42,6 @@ from bigdl.nano.deps.neural_compressor.inc_api import QuantizationINC, PytorchQu
     check_pytorch_dataloaders, load_inc_model
 
 
-<<<<<<< HEAD
-=======
-from bigdl.nano.deps.ipex.ipex_api import create_IPEXAccelerator, ipex_device, ipex_optimize
-from bigdl.nano.deps.openvino.openvino_api import bind_openvino_methods
-from bigdl.nano.deps.onnxruntime.onnxruntime_api import bind_onnxrt_methods
-
-from code.BigDL.python.nano.src.bigdl.nano.deps.ipex.ipex_api import ipex_optimze
-
->>>>>>> compile refactor
 
 distributed_backends = ["spawn", "ray", "subprocess"]
 
