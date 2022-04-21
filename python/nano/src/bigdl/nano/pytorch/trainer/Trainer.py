@@ -34,7 +34,7 @@ from bigdl.nano.pytorch.lightning import LightningModuleFromTorch
 from bigdl.nano.pytorch.plugins.ddp_spawn import DDPSpawnPlugin
 from bigdl.nano.deps.automl.hpo_api import create_hpo_searcher, check_hpo_status
 from bigdl.nano.deps.ray.ray_api import distributed_ray
-from bigdl.nano.deps.ipex.ipex_api import create_IPEXAccelerator, ipex_device
+from bigdl.nano.deps.ipex.ipex_api import create_IPEXAccelerator, ipex_device, ipex_optimize
 from bigdl.nano.deps.openvino.openvino_api import PytorchOpenVINOModel, load_openvino_model
 from bigdl.nano.deps.onnxruntime.onnxruntime_api import bind_onnxrt_methods,\
     PytorchONNXRuntimeModel, load_onnxruntime_model
@@ -146,7 +146,9 @@ class Trainer(pl.Trainer):
                 loss: _Loss = None,
                 optimizer: torch.optim.Optimizer = None,
                 scheduler: _LRScheduler = None,
-                metrics: List[Metric] = None):
+                metrics: List[Metric] = None,
+                use_ipex: bool = False,
+                enable_bf16: bool = False):
         """
         Construct a pytorch-lightning model.
 
@@ -171,6 +173,11 @@ class Trainer(pl.Trainer):
                 "Loss and optimizer should be None if model is a pytorch-lightning model."
             pl_model = model
         else:
+            if use_ipex: 
+                if enable_bf16:
+                    model, optimizer= ipex_optimize(model, optimizer=optimizer, dtype=torch.bfloat16)
+                else:
+                    model, optimizer= ipex_optimize(model, optimizer=optimizer)
             pl_model = LightningModuleFromTorch(model, loss, optimizer, scheduler, metrics)
 
         return pl_model
