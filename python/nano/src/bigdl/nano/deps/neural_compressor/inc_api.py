@@ -39,5 +39,5 @@ def tf_dataset_to_inc_dataloader(tf_dataset, batchsize):
     return common.DataLoader(tf_dataset, batchsize)
 
 def QuantizedModel(model):
-    from .pytorch.model import QuantizedModel
+    from .pytorch.quantized_model import QuantizedModel
     return QuantizedModel(model)

@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-from bigdl.nano.deps.inference.model import AcceleratedLightningModule
+from bigdl.nano.utils.inference.pytorch.model import AcceleratedLightningModule
 
 class QuantizedModel(AcceleratedLightningModule):
     def __init__(self, model):
