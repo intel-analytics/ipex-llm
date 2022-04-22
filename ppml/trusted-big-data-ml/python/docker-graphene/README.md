@@ -29,7 +29,7 @@ Before running the following command, please modify the paths in `build-docker-i
   The ppml in bigdl needs secured keys to enable spark security such as Authentication, RPC Encryption, Local Storage Encryption and TLS, you need to prepare the secure keys and keystores. In this tutorial, you can generate keys and keystores with root permission (test only, need input security password for keys).
 
   ```bash
-  sudo ../../../scripts/generate-keys.sh
+  sudo bash ../../../scripts/generate-keys.sh
   ```
 
   You also need to generate your enclave key using the command below, and keep it safely for future remote attestations and to start SGX enclaves more securely.
@@ -58,7 +58,6 @@ Before you run the following commands to start the container, you need to modify
 ./deploy-local-spark-sgx.sh
 sudo docker exec -it spark-local bash
 cd /ppml/trusted-big-data-ml
-./init.sh
 ```
 
  #### 2. Run your pyspark program
@@ -81,7 +80,6 @@ Before you run the following commands to start the container, you need to modify
 ./deploy-local-spark-sgx.sh
 sudo docker exec -it spark-local bash
 cd /ppml/trusted-big-data-ml
-./init.sh
 ```
 
  #### 2. Run native python examples
@@ -91,7 +89,9 @@ cd /ppml/trusted-big-data-ml
 Run the example with SGX with the following command in the terminal.
 
 ```bash
-SGX=1 ./pal_loader bash -c "python ./work/examples/helloworld.py" | tee test-helloworld-sgx.log
+/graphene/Tools/argv_serializer bash -c "python ./work/examples/helloworld.py" > /ppml/trusted-big-data-ml/secured-argvs
+./init.sh
+SGX=1 ./pal_loader bash | tee test-helloworld-sgx.log
 ```
 Then check the output with the following command.
 
@@ -108,7 +108,9 @@ The result should be
 Run the example with SGX with the following command in the terminal.
 
 ```bash
-SGX=1 ./pal_loader bash -c "python ./work/examples/test-numpy.py" | tee test-numpy-sgx.log
+/graphene/Tools/argv_serializer bash -c "python ./work/examples/test-numpy.py | tee test-numpy-sgx.log" > /ppml/trusted-big-data-ml/secured-argvs
+./init.sh
+SGX=1 ./pal_loader bash | tee test-numpy-sgx.log
 ```
 
 Then check the output with the following command.
@@ -131,7 +133,6 @@ Before you run the following commands to start the container, you need to modify
 ./deploy-local-spark-sgx.sh
 sudo docker exec -it spark-local bash
 cd /ppml/trusted-big-data-ml
-./init.sh
 ```
 
  #### 2. Run pyspark examples
@@ -141,12 +142,17 @@ cd /ppml/trusted-big-data-ml
 Run the example with SGX spark local mode with the following command in the terminal. 
 
 ```bash
-SGX=1 ./pal_loader bash -c "/opt/jdk8/bin/java \
+/graphene/Tools/argv_serializer bash -c "/opt/jdk8/bin/java \
         -cp '/ppml/trusted-big-data-ml/work/spark-3.1.2/conf/:/ppml/trusted-big-data-ml/work/spark-3.1.2/jars/*' \
         -Xmx1g org.apache.spark.deploy.SparkSubmit \
         --master 'local[4]' \
+        --conf spark.network.timeout=10000000 \
+        --conf spark.executor.heartbeatInterval=10000000 \
         --conf spark.python.use.daemon=false \
-        /ppml/trusted-big-data-ml/work/spark-3.1.2/examples/src/main/python/pi.py" 2>&1 | tee test-pi-sgx.log
+        --conf spark.python.worker.reuse=false \
+        /ppml/trusted-big-data-ml/work/spark-3.1.2/examples/src/main/python/pi.py" > /ppml/trusted-big-data-ml/secured-argvs
+./init.sh
+SGX=1 ./pal_loader bash 2>&1 | tee test-pi-sgx.log
 ```
 
 Then check the output with the following command.
@@ -164,12 +170,17 @@ The result should be similar to
 Run the example with SGX spark local mode with the following command in the terminal. 
 
 ```bash
-SGX=1 ./pal_loader bash -c "export PYSPARK_PYTHON=/usr/bin/python && /opt/jdk8/bin/java \
+/graphene/Tools/argv_serializer bash -c "export PYSPARK_PYTHON=/usr/bin/python && /opt/jdk8/bin/java \
         -cp '/ppml/trusted-big-data-ml/work/spark-3.1.2/conf/:/ppml/trusted-big-data-ml/work/spark-3.1.2/jars/*' \
         -Xmx1g org.apache.spark.deploy.SparkSubmit \
         --master 'local[4]' \
+        --conf spark.network.timeout=10000000 \
+        --conf spark.executor.heartbeatInterval=10000000 \
         --conf spark.python.use.daemon=false \
-        /ppml/trusted-big-data-ml/work/spark-3.1.2/examples/src/main/python/wordcount.py ./work/examples/helloworld.py" 2>&1 | tee test-wordcount-sgx.log
+        --conf spark.python.worker.reuse=false \
+        /ppml/trusted-big-data-ml/work/spark-3.1.2/examples/src/main/python/wordcount.py ./work/examples/helloworld.py" > /ppml/trusted-big-data-ml/secured-argvs
+./init.sh
+SGX=1 ./pal_loader bash 2>&1 | tee test-wordcount-sgx.log
 ```
 
 Then check the output with the following command.
@@ -189,14 +200,17 @@ Before running the example, make sure that the paths of resource in `/ppml/trust
 Run the example with SGX spark local mode with the following command in the terminal. 
 
 ```bash
-SGX=1 ./pal_loader bash -c "export PYSPARK_PYTHON=/usr/bin/python && \
+/graphene/Tools/argv_serializer bash -c "export PYSPARK_PYTHON=/usr/bin/python && \
         /opt/jdk8/bin/java \
         -cp '/ppml/trusted-big-data-ml/work/spark-3.1.2/conf/:/ppml/trusted-big-data-ml/work/spark-3.1.2/jars/*' \
         -Xmx1g org.apache.spark.deploy.SparkSubmit \
         --master 'local[4]' \
         --conf spark.python.use.daemon=false \
         --conf spark.python.worker.reuse=false \
-        /ppml/trusted-big-data-ml/work/spark-3.1.2/examples/src/main/python/sql/basic.py" 2>&1 | tee test-sql-basic-sgx.log
+        /ppml/trusted-big-data-ml/work/spark-3.1.2/examples/src/main/python/sql/basic.py" > /ppml/trusted-big-data-ml/secured-argvs
+
+./init.sh
+SGX=1 ./pal_loader bash 2>&1 | tee test-sql-basic-sgx.log
 ```
 
 Then check the output with the following command.
@@ -228,7 +242,7 @@ The result should be similar to
 Run the example with SGX spark local mode with the following command in the terminal. 
 
 ```bash
-SGX=1 ./pal_loader bash -c "/opt/jdk8/bin/java -cp \
+/graphene/Tools/argv_serializer bash -c "/opt/jdk8/bin/java -cp \
   '/ppml/trusted-big-data-ml/work/bigdl-2.1.0-SNAPSHOT/jars/*:/ppml/trusted-big-data-ml/work/spark-3.1.2/conf/:/ppml/trusted-big-data-ml/work/spark-3.1.2/jars/*' \
   -Xmx2g \
   org.apache.spark.deploy.SparkSubmit \
@@ -247,7 +261,10 @@ SGX=1 ./pal_loader bash -c "/opt/jdk8/bin/java -cp \
   --executor-memory 8g \
   /ppml/trusted-big-data-ml/work/bigdl-2.1.0-SNAPSHOT/examples/dllib/lenet/lenet.py \
   --dataPath /ppml/trusted-big-data-ml/work/data/mnist \
-  --maxEpoch 2" 2>&1 | tee test-bigdl-lenet-sgx.log
+  --maxEpoch 2" > /ppml/trusted-big-data-ml/secured-argvs
+  
+./init.sh
+SGX=1 ./pal_loader bash 2>&1 | tee test-bigdl-lenet-sgx.log
 ```
 
 Then check the output with the following command.
@@ -269,7 +286,7 @@ The result should be similar to
 Before running the example, make sure that `Boston_Housing.csv` is under `work/data` directory or the same path in the command. Run the example with SGX spark local mode with the following command in the terminal. Replace `your_IP_address` with your IP address and `path_of_boston_housing_csv` with your path of `Boston_Housing.csv`.
 
 ```bash
-SGX=1 ./pal_loader bash -c "export RABIT_TRACKER_IP=your_IP_address && /opt/jdk8/bin/java -cp \
+/graphene/Tools/argv_serializer bash -c "export RABIT_TRACKER_IP=your_IP_address && /opt/jdk8/bin/java -cp \
     '/ppml/trusted-big-data-ml/work/bigdl-2.1.0-SNAPSHOT/jars/*:/ppml/trusted-big-data-ml/work/spark-3.1.2/conf/:/ppml/trusted-big-data-ml/work/spark-3.1.2/jars/*' \
   -Xmx2g \
   org.apache.spark.deploy.SparkSubmit \
@@ -282,7 +299,9 @@ SGX=1 ./pal_loader bash -c "export RABIT_TRACKER_IP=your_IP_address && /opt/jdk8
   --py-files /ppml/trusted-big-data-ml/work/bigdl-2.1.0-SNAPSHOT/python/bigdl-orca-spark_3.1.2-2.1.0-SNAPSHOT-python-api.zip \
   --executor-memory 2g \
   /ppml/trusted-big-data-ml/work/examples/pyzoo/xgboost/xgboost_example.py \
-  --file-path path_of_boston_housing_csv" | tee test-zoo-xgboost-regressor-sgx.log
+  --file-path path_of_boston_housing_csv" > /ppml/trusted-big-data-ml/secured-argvs
+./init.sh
+SGX=1 ./pal_loader bash 2>&1 | tee test-zoo-xgboost-regressor-sgx.log
 ```
 
 Then check the output with the following command.
@@ -344,7 +363,7 @@ wget https://raw.githubusercontent.com/jbrownlee/Datasets/master/pima-indians-di
 After downloading the dataset, make sure that `pima-indians-diabetes.data.csv` is under `work/data` directory or the same path in the command. Run the example with SGX spark local mode with the following command in the terminal. Replace `your_IP_address` with your IP address and `path_of_pima_indians_diabetes_csv` with your path of `pima-indians-diabetes.data.csv`.
 
 ```bash
-SGX=1 ./pal_loader bash -c "export RABIT_TRACKER_IP=your_IP_address && /opt/jdk8/bin/java -cp \
+/graphene/Tools/argv_serializer bash -c "export RABIT_TRACKER_IP=your_IP_address && /opt/jdk8/bin/java -cp \
   '/ppml/trusted-big-data-ml/work/bigdl-2.1.0-SNAPSHOT/jars/*:/ppml/trusted-big-data-ml/work/spark-3.1.2/conf/:/ppml/trusted-big-data-ml/work/spark-3.1.2/jars/*' \
   -Xmx2g \
   org.apache.spark.deploy.SparkSubmit \
@@ -357,7 +376,9 @@ SGX=1 ./pal_loader bash -c "export RABIT_TRACKER_IP=your_IP_address && /opt/jdk8
   --py-files /ppml/trusted-big-data-ml/work/bigdl-2.1.0-SNAPSHOT/python/bigdl-orca-spark_3.1.2-2.1.0-SNAPSHOT-python-api.zip \
   --executor-memory 2g \
   /ppml/trusted-big-data-ml/work/examples/pyzoo/xgboost/xgboost_classifier.py \
-  -f path_of_pima_indians_diabetes_csv" | tee test-xgboost-classifier-sgx.log
+  -f path_of_pima_indians_diabetes_csv" > /ppml/trusted-big-data-ml/secured-argvs
+./init.sh
+SGX=1 ./pal_loader bash 2>&1 | tee test-xgboost-classifier-sgx.log
 ```
 
 Then check the output with the following command.
@@ -395,20 +416,29 @@ wget https://raw.githubusercontent.com/numenta/NAB/master/data/realKnownCause/ny
 After downloading the dataset, make sure that `nyc_taxi.csv` is under `work/data` directory or the same path in the command. Run the example with SGX spark local mode with the following command in the terminal. Replace `path_of_nyc_taxi_csv` with your path of `nyc_taxi.csv`.
 
 ```bash
-SGX=1 ./pal_loader bash -c "/opt/jdk8/bin/java -cp \
+/graphene/Tools/argv_serializer bash -c "/opt/jdk8/bin/java -cp \
   '/ppml/trusted-big-data-ml/work/bigdl-2.1.0-SNAPSHOT/jars/*:/ppml/trusted-big-data-ml/work/spark-3.1.2/conf/:/ppml/trusted-big-data-ml/work/spark-3.1.2/jars/*' \
   -Xmx2g \
   org.apache.spark.deploy.SparkSubmit \
   --master 'local[4]' \
-  --conf spark.driver.memory=2g \
+  --conf spark.python.use.daemon=false \
+  --conf spark.python.worker.reuse=false \
+  --conf spark.driver.memory=8g \
+  --conf spark.rpc.message.maxSize=190 \
+  --conf spark.network.timeout=10000000 \
+  --conf spark.executor.heartbeatInterval=10000000 \
+  --properties-file /ppml/trusted-big-data-ml/work/bigdl-2.1.0-SNAPSHOT/conf/spark-bigdl.conf \
   --conf spark.executor.extraClassPath=/ppml/trusted-big-data-ml/work/bigdl-2.1.0-SNAPSHOT/jars/* \
   --conf spark.driver.extraClassPath=/ppml/trusted-big-data-ml/work/bigdl-2.1.0-SNAPSHOT/jars/* \
-  --properties-file /ppml/trusted-big-data-ml/work/bigdl-2.1.0-SNAPSHOT/conf/spark-bigdl.conf \
-  --jars /ppml/trusted-big-data-ml/work/bigdl-2.1.0-SNAPSHOT/jars/* \
-  --py-files /ppml/trusted-big-data-ml/work/bigdl-2.1.0-SNAPSHOT/python/bigdl-orca-spark_3.1.2-2.1.0-SNAPSHOT-python-api.zip \
-  --executor-memory 2g \
-  /ppml/trusted-big-data-ml/work/examples/pyzoo/orca/data/spark_pandas.py \
-  -f path_of_nyc_taxi_csv" | tee test-orca-data-sgx.log
+  --py-files /ppml/trusted-big-data-ml/work/bigdl-2.1.0-SNAPSHOT/python/bigdl-spark_3.1.2-2.1.0-SNAPSHOT-python-api.zip,/ppml/trusted-big-data-ml/work/bigdl-2.1.0-SNAPSHOT/examples/orca/data/spark_pandas.py \
+  --driver-cores 2 \
+  --total-executor-cores 2 \
+  --executor-cores 2 \
+  --executor-memory 8g \
+  /ppml/trusted-big-data-ml/work/bigdl-2.1.0-SNAPSHOT/examples/orca/data/spark_pandas.py \
+  -f /ppml/trusted-big-data-ml/work/data/nyc_taxi.csv" > /ppml/trusted-big-data-ml/secured-argvs
+./init.sh
+SGX=1 ./pal_loader bash 2>&1 | tee test-orca-data-sgx.log
 ```
 
 Then check the output with the following command.
@@ -476,22 +506,28 @@ Then the result should contain the similar content as
 Run the example with SGX spark local mode with the following command in the terminal. To run the example in SGX standalone mode, replace `-e SGX_MEM_SIZE=32G \` with `-e SGX_MEM_SIZE=64G \` in `start-distributed-spark-driver.sh`
 
 ```bash
-SGX=1 ./pal_loader bash -c "/opt/jdk8/bin/java -cp \
+/graphene/Tools/argv_serializer bash -c "/opt/jdk8/bin/java -cp \
   '/ppml/trusted-big-data-ml/work/bigdl-2.1.0-SNAPSHOT/jars/*:/ppml/trusted-big-data-ml/work/spark-3.1.2/conf/:/ppml/trusted-big-data-ml/work/spark-3.1.2/jars/*' \
   -Xmx3g \
   org.apache.spark.deploy.SparkSubmit \
   --master 'local[4]' \
+  --conf spark.python.use.daemon=false \
+  --conf spark.python.worker.reuse=false \
   --conf spark.driver.memory=3g \
+  --conf spark.rpc.message.maxSize=190 \
+  --conf spark.network.timeout=10000000 \
+  --conf spark.executor.heartbeatInterval=10000000 \
   --conf spark.executor.extraClassPath=/ppml/trusted-big-data-ml/work/bigdl-2.1.0-SNAPSHOT/jars/* \
   --conf spark.driver.extraClassPath=/ppml/trusted-big-data-ml/work/bigdl-2.1.0-SNAPSHOT/jars/* \
   --properties-file /ppml/trusted-big-data-ml/work/bigdl-2.1.0-SNAPSHOT/conf/spark-bigdl.conf \
-  --jars /ppml/trusted-big-data-ml/work/bigdl-2.1.0-SNAPSHOT/jars/* \
-  --py-files /ppml/trusted-big-data-ml/work/bigdl-2.1.0-SNAPSHOT/python/bigdl-orca-spark_3.1.2-2.1.0-SNAPSHOT-python-api.zip \
+  --py-files /ppml/trusted-big-data-ml/work/bigdl-2.1.0-SNAPSHOT/python/bigdl-orca-spark_3.1.2-2.1.0-SNAPSHOT-python-api.zip,/ppml/trusted-big-data-ml/work/bigdl-2.1.0-SNAPSHOT/python/bigdl-dllib-spark_3.1.2-2.1.0-SNAPSHOT-python-api.zip,/ppml/trusted-big-data-ml/work/bigdl-2.1.0-SNAPSHOT/examples/orca/learn/tf/basic_text_classification/basic_text_classification.py \
   --executor-memory 3g \
   --executor-cores 2 \
   --driver-cores 2 \
-  /ppml/trusted-big-data-ml/work/examples/pyzoo/orca/learn/tf/basic_text_classification/basic_text_classification.py \
-  --cluster_mode local" | tee test-orca-tf-text-sgx.log
+  /ppml/trusted-big-data-ml/work/bigdl-2.1.0-SNAPSHOT/examples/orca/learn/tf/basic_text_classification/basic_text_classification.py \
+  --cluster_mode local" > /ppml/trusted-big-data-ml/secured-argvs
+./init.sh
+SGX=1 ./pal_loader bash 2>&1 | tee test-orca-tf-text.log
 ```
 
 Then check the output with the following command.
