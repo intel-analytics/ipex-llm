@@ -134,7 +134,7 @@ def train_torch_lighting_ipex(model_without_top, batch_size, num_workers, data_d
     
     trainer = Trainer(max_epochs=1)
 
-    model = trainer.compile(model, use_ipex=use_ipex, enable_bf16=enable_bf16)
+    model = Trainer.compile(model, use_ipex=use_ipex, enable_bf16=enable_bf16)
 
     trainer.fit(model, train_loader)
 
