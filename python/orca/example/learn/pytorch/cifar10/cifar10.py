@@ -96,12 +96,15 @@ classes = ('plane', 'car', 'bird', 'cat',
            'deer', 'dog', 'frog', 'horse', 'ship', 'truck')
 
 
-def imshow(img):
+def imshow(img, one_channel=False):
+    if one_channel:
+        img = img.mean(dim=0)
     img = img / 2 + 0.5     # unnormalize
     npimg = img.numpy()
-    plt.imshow(np.transpose(npimg, (1, 2, 0)))
-    plt.show()
-
+    if one_channel:
+        plt.imshow(npimg, cmap="Greys")
+    else:
+        plt.imshow(np.transpose(npimg, (1, 2, 0)))
 
 class Net(nn.Module):
     def __init__(self):
@@ -148,13 +151,13 @@ test_loader = test_loader_creator(config={"root": root_dir}, batch_size=batch_si
 dataiter = iter(train_loader)
 images, labels = dataiter.next()
 # show images
-imshow(torchvision.utils.make_grid(images))
+imshow(torchvision.utils.make_grid(images), one_channel=False)
 # print labels
 print(' '.join('%5s' % classes[labels[j]] for j in range(batch_size)))
 
 dataiter = iter(test_loader)
 images, labels = dataiter.next()
-imshow(torchvision.utils.make_grid(images))
+imshow(torchvision.utils.make_grid(images), one_channel=False)
 print('GroundTruth: ', ' '.join('%5s' % classes[labels[j]] for j in range(batch_size)))
 
 if args.backend == "bigdl":
