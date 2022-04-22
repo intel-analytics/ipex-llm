@@ -71,12 +71,13 @@ public class FGBoostStub {
 
 
     public EvaluateResponse evaluate(
-            List<BoostEval> boostEval, int version) {
+            List<BoostEval> boostEval, int version, boolean lastBatch) {
         EvaluateRequest evaluateRequest = EvaluateRequest
                 .newBuilder()
                 .setClientuuid(clientID)
                 .addAllTreeEval(boostEval)
                 .setVersion(version)
+                .setLastBatch(lastBatch)
                 .build();
 
         return stub.evaluate(evaluateRequest);
