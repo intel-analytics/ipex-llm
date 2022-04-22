@@ -151,13 +151,13 @@ test_loader = test_loader_creator(config={"root": root_dir}, batch_size=batch_si
 dataiter = iter(train_loader)
 images, labels = dataiter.next()
 # show images
-imshow(torchvision.utils.make_grid(images), one_channel=True)
+imshow(torchvision.utils.make_grid(images), one_channel=false)
 # print labels
 print(' '.join('%5s' % classes[labels[j]] for j in range(batch_size)))
 
 dataiter = iter(test_loader)
 images, labels = dataiter.next()
-imshow(torchvision.utils.make_grid(images), one_channel=True)
+imshow(torchvision.utils.make_grid(images), one_channel=false)
 print('GroundTruth: ', ' '.join('%5s' % classes[labels[j]] for j in range(batch_size)))
 
 if args.backend == "bigdl":
