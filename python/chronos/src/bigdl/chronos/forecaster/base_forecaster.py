@@ -576,14 +576,14 @@ class BasePytorchForecaster(Forecaster):
         framework = [framework] if isinstance(framework, str) else framework
         for framework_item in framework:
             self.internal = self.trainer.quantize(self.internal,
-                                                calib_dataloader=calib_data,
-                                                val_dataloader=val_data,
-                                                metric=metric,
-                                                conf=conf,
-                                                framework=framework_item,
-                                                approach=approach,
-                                                tuning_strategy=tuning_strategy,
-                                                accuracy_criterion=accuracy_criterion,
-                                                timeout=timeout,
-                                                max_trials=max_trials,
-                                                return_pl=True)
+                                                  calib_dataloader=calib_data,
+                                                  val_dataloader=val_data,
+                                                  metric=metric,
+                                                  conf=conf,
+                                                  framework=framework_item,
+                                                  approach=approach,
+                                                  tuning_strategy=tuning_strategy,
+                                                  accuracy_criterion=accuracy_criterion,
+                                                  timeout=timeout,
+                                                  max_trials=max_trials,
+                                                  return_pl=True)
