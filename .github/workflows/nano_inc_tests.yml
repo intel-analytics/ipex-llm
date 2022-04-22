@@ -44,7 +44,7 @@ jobs:
           $CONDA/bin/conda info
           bash python/nano/dev/build_and_install.sh linux default false pytorch
           pip install pytest
-          pip install neural-compressor==1.8.1
+          pip install neural-compressor==1.11.0
           source bigdl-nano-init
           bash python/nano/test/run-nano-pytorch-inc-tests.sh
           source $CONDA/bin/deactivate
