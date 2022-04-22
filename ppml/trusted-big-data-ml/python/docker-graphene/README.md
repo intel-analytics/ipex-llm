@@ -152,7 +152,7 @@ Run the example with SGX spark local mode with the following command in the term
         --conf spark.python.worker.reuse=false \
         /ppml/trusted-big-data-ml/work/spark-3.1.2/examples/src/main/python/pi.py" > /ppml/trusted-big-data-ml/secured-argvs
 ./init.sh
-SGX=1 ./pal_loader bash  2>&1 | tee test-pi-sgx.log
+SGX=1 ./pal_loader bash 2>&1 | tee test-pi-sgx.log
 ```
 
 Then check the output with the following command.
