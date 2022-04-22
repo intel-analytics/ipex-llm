@@ -78,14 +78,6 @@ class TestOnnx(TestCase):
         train_loader = DataLoader(ds, batch_size=2)
         trainer.fit(pl_model, train_loader)
 
-        # false framework parameters
-        # with pytest.raises(RuntimeError):
-        #     pl_model = trainer.quantize(pl_model, train_loader,
-        #                                 framework=['pytorch_fx', 'pytorch'])
-        # with pytest.raises(RuntimeError):
-        #     pl_model = trainer.quantize(pl_model, train_loader,
-        #                                 framework=['onnxrt_integerops', 'onnxrt_qlinearops'])
-
         # normal usage without tunning
         pl_model = trainer.quantize(pl_model, train_loader, framework='onnxrt_integerops')
         for x, y in train_loader:
