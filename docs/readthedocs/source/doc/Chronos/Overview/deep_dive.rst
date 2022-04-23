@@ -16,4 +16,5 @@ Chronos Deep Dive
     forecasting.md
     anomaly_detection.md
     simulation.md
+    speed_up.md
     useful_functionalities.md
