@@ -50,17 +50,7 @@ You can enable a tensorboard view in jupyter notebook by the following code.
 %tensorboard --logdir <logs_dir>/<name>_leaderboard/
 ```
 
-#### **2. ONNX/ONNX Runtime support**
-Users may export their trained(w/wo auto tuning) model to ONNX file and deploy it on other service. Chronos also provides an internal onnxruntime inference support for those **users who pursue low latency and higher throughput during inference on a single node**.
-
-LSTM, TCN and Seq2seq has supported onnx in their forecasters, auto models and AutoTS. When users use these built-in models, they may call `predict_with_onnx`/`evaluate_with_onnx` for prediction or evaluation. They may also call `export_onnx_file` to export the onnx model file and `build_onnx` to change the onnxruntime's setting(not necessary).
-
-```python
-f = Forecaster(...)
-f.fit(...)
-f.predict_with_onnx(...)
-```
-#### **3. Distributed training**
+#### **2. Distributed training**
 LSTM, TCN and Seq2seq users can easily train their forecasters in a distributed fashion to **handle extra large dataset and utilize a cluster**. The functionality is powered by Project Orca.
 ```python
 f = Forecaster(..., distributed=True)
@@ -69,7 +59,7 @@ f.predict(...)
 f.to_local()  # collect the forecaster to single node
 f.predict_with_onnx(...)  # onnxruntime only supports single node
 ```
-#### **4. XShardsTSDataset**
+#### **3. XShardsTSDataset**
 ```eval_rst
 .. warning::
     `XShardsTSDataset` is still experimental.
@@ -89,37 +79,4 @@ test_tsdata_xshards = test_tsdata.roll(...).to_xshards()
 f = Forecaster(..., distributed=True)
 f.fit(tsdata_xshards, ...)
 f.predict(test_tsdata_xshards, ...)
-```
-#### **5. Quantization**
-Quantization refers to processes that enable lower precision inference. In Chronos, post-training quantization is supported relied on [Intel® Neural Compressor](https://intel.github.io/neural-compressor/README.html).
-```eval_rst
-.. note:: 
-    **Additional Dependencies**:
-    You need to install `neural-compressor` to enable quantization related methods.
-
-    ``pip install neural-compressor==1.8.1``
-```
-```python
-# init
-f = Forecaster(...)
-
-# train the forecaster
-f.fit(train_data, ...)
-
-# quantize the forecaster
-f.quantize(train_data, ...)
-
-# predict with int8 model with better inference throughput
-f.predict(test_data, quantize=True)
-
-# predict with fp32
-f.predict(test_data, quantize=False)
-
-# save
-f.save(checkpoint_file="fp32.model"
-       quantize_checkpoint_file="int8.model")
-
-# load
-f.load(checkpoint_file="fp32.model"
-       quantize_checkpoint_file="int8.model")
 ```
