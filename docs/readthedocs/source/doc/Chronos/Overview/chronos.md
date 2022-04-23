@@ -78,12 +78,6 @@ python script.py
      Currently, this function is under active development and we encourage our users to add ``bigdl-nano-init`` for forecaster's training.
      
 ```
-```eval_rst
-.. note:: 
-    **Write your script under** ``if __name__=="__main__":``:
-
-     Chronos will automatically utilize the computation resources on the hardware. This includes multi-process training on a single node. Use this header will prevent many strange behavior.
-```
 
 ---
 ### **4. Get Started**
@@ -129,7 +123,7 @@ from sklearn.preprocessing import StandardScaler
 
 if __name__ == "__main__":
     # initial orca context
-    init_orca_context(cluster_mode="local", cores=4, memory="8g")
+    init_orca_context(cluster_mode="local", cores=4, memory="8g", init_ray_on_spark=True)
 
     # load dataset
     tsdata_train, tsdata_val, tsdata_test = get_public_dataset(name='nyc_taxi')
