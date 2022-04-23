@@ -447,18 +447,32 @@ class TSPipeline:
                                 use_ipex=False)
 
         # quantize
-        self._best_model = self._trainer.quantize(self._best_model,
-                                                  calib_dataloader=calib_data,
-                                                  val_dataloader=val_data,
-                                                  metric=metric,
-                                                  conf=conf,
-                                                  framework=framework,
-                                                  approach=approach,
-                                                  tuning_strategy=tuning_strategy,
-                                                  accuracy_criterion=accuracy_criterion,
-                                                  timeout=timeout,
-                                                  max_trials=max_trials,
-                                                  return_pl=True)
+        framework = [framework] if isinstance(framework, str) else framework
+        temp_quantized_model = None
+        for framework_item in framework:
+            if "onnxrt" in framework_item:
+                # Temp patch to developing bigdl-nano
+                # TODO: delete once bigdl-nano has a stable inference API
+                if "_quantized_model" in dir(self._best_model):
+                    temp_quantized_model = self._best_model._quantized_model
+                    self._best_model._quantized_model = None
+            self._best_model = self._trainer.quantize(self._best_model,
+                                                      calib_dataloader=calib_data,
+                                                      val_dataloader=val_data,
+                                                      metric=metric,
+                                                      conf=conf,
+                                                      framework=framework_item,
+                                                      approach=approach,
+                                                      tuning_strategy=tuning_strategy,
+                                                      accuracy_criterion=accuracy_criterion,
+                                                      timeout=timeout,
+                                                      max_trials=max_trials,
+                                                      return_pl=True)
+            if "onnxrt" in framework_item:
+                # Temp patch to developing bigdl-nano
+                # TODO: delete once bigdl-nano has a stable inference API
+                if "_quantized_model" in dir(self._best_model):
+                    self._best_model._quantized_model = temp_quantized_model
 
     def _tsdataset_to_loader(self, data, is_predict=False, batch_size=32):
         self._check_mixed_data_type_usage()
