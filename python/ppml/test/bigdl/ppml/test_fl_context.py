@@ -15,7 +15,7 @@
 #
 
 import unittest
-from bigdl.ppml import *
+from bigdl.ppml.fl import *
 
 
 class TestFlContext(unittest.TestCase):

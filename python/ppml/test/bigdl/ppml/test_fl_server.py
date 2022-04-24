@@ -15,7 +15,7 @@
 #
 
 import unittest
-from bigdl.ppml import FLServer
+from bigdl.ppml.fl import FLServer
 
 
 

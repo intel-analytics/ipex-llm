@@ -16,7 +16,7 @@
 
 import unittest
 import pandas as pd
-from bigdl.ppml.data_utils import *
+from bigdl.ppml.fl.data_utils import *
 
 
 class TestDataUtils(unittest.TestCase):

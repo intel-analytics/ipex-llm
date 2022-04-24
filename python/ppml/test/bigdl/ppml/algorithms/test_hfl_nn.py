@@ -17,9 +17,9 @@
 import unittest
 import numpy as np
 
-from bigdl.ppml import FLServer
-from bigdl.ppml.algorithms.fgboost_regression import FGBoostRegression
-from bigdl.ppml.utils import init_fl_context
+from bigdl.ppml.fl import FLServer
+from bigdl.ppml.fl.algorithms.fgboost_regression import FGBoostRegression
+from bigdl.ppml.fl.utils import init_fl_context
 
 
 class TestHflNN(unittest.TestCase):
@@ -32,7 +32,8 @@ class TestHflNN(unittest.TestCase):
     def tearDown(self) -> None:
         self.fl_server.stop()
 
-    def test_dummy_data(self):
+    def test_single_simple_nn(self):
+        
         x, y = np.ones([2, 3]), np.ones([2])
 
 
