@@ -20,7 +20,7 @@ import pytest
 import tensorflow as tf
 
 from bigdl.orca.test_zoo_utils import ZooTestCase
-from bigdl.chronos.model.tf2.TCN_keras import model_creator, TemporalConvNet
+from bigdl.chronos.model.tf2.TCN_keras import model_creator, TemporalConvNet, TemporalBlock
 
 
 def create_data():
@@ -48,7 +48,7 @@ class TestTcnKeras(ZooTestCase):
         "output_feature_num": 2
     })
 
-    def test_seq2seq_fit_predict_evaluate(self):
+    def test_tcn_fit_predict_evaluate(self):
         self.model.fit(self.train_data[0],
                        self.train_data[1],
                        epochs=2,
@@ -57,7 +57,7 @@ class TestTcnKeras(ZooTestCase):
         self.model.evaluate(self.test_data[0], self.test_data[1])
         assert yhat.shape == self.test_data[1].shape
 
-    def test_seq2seq_save_load(self):
+    def test_tcn_save_load(self):
         checkpoint_file = tempfile.TemporaryDirectory().name
         self.model.fit(self.train_data[0],
                        self.train_data[1],
@@ -65,7 +65,8 @@ class TestTcnKeras(ZooTestCase):
                        validation_data=self.test_data)
         self.model.save(checkpoint_file)
         import keras
-        restore_model = keras.models.load_model(checkpoint_file,  custom_objects={"TemporalConvNet": TemporalConvNet})
+        restore_model = keras.models.load_model(checkpoint_file,  custom_objects={"TemporalConvNet": TemporalConvNet,
+                                                                                  "TemporalBlock": TemporalBlock})
         model_res = self.model.evaluate(self.test_data[0], self.test_data[1])
         restore_model_res = restore_model.evaluate(self.test_data[0], self.test_data[1])
         np.testing.assert_almost_equal(model_res, restore_model_res, decimal=5)
