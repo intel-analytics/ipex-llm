@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.ppml;
+package com.intel.analytics.bigdl.ppml.fl;
 
 public class FLHelper {
     int clientNum = 1;

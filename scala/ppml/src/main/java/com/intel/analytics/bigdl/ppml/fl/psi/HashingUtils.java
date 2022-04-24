@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.ppml.psi;
+package com.intel.analytics.bigdl.ppml.fl.psi;
 
 
 import org.slf4j.Logger;

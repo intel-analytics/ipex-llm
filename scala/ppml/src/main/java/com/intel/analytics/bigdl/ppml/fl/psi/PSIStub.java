@@ -14,11 +14,11 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.ppml.psi;
+package com.intel.analytics.bigdl.ppml.fl.psi;
 
-import com.intel.analytics.bigdl.ppml.generated.FlBaseProto.*;
-import com.intel.analytics.bigdl.ppml.generated.PSIServiceGrpc;
-import com.intel.analytics.bigdl.ppml.generated.PSIServiceProto.*;
+import com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.*;
+import com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceGrpc;
+import com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.*;
 
 import io.grpc.Channel;
 import io.grpc.StatusRuntimeException;

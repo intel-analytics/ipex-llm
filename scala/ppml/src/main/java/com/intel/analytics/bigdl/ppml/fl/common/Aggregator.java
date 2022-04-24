@@ -14,17 +14,15 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.ppml.common;
+package com.intel.analytics.bigdl.ppml.fl.common;
 
-import com.intel.analytics.bigdl.ppml.base.DataHolder;
-import com.intel.analytics.bigdl.ppml.base.StorageHolder;
+import com.intel.analytics.bigdl.ppml.fl.base.DataHolder;
+import com.intel.analytics.bigdl.ppml.fl.base.StorageHolder;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 import java.util.HashMap;
 import java.util.Map;
-
-import static com.intel.analytics.bigdl.ppml.common.FLPhase.*;
 
 
 public abstract class Aggregator {

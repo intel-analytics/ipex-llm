@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.ppml.psi;
+package com.intel.analytics.bigdl.ppml.fl.psi;
 
 import java.util.ArrayList;
 import java.util.Arrays;

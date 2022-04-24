@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.ppml.common;
+package com.intel.analytics.bigdl.ppml.fl.common;
 
 
 

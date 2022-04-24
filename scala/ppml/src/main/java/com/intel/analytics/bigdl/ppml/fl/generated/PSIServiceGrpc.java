@@ -1,4 +1,4 @@
-package com.intel.analytics.bigdl.ppml.generated;
+package com.intel.analytics.bigdl.ppml.fl.generated;
 
 import static io.grpc.MethodDescriptor.generateFullMethodName;
 

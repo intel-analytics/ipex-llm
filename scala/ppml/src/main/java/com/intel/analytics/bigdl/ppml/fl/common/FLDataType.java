@@ -14,16 +14,11 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.ppml.common;
+package com.intel.analytics.bigdl.ppml.fl.common;
 
-public enum FLPhase {
-    // NN Phase
-    TRAIN,
-    EVAL,
-    PREDICT,
-    // FGBoost Phase
-    LABEL,
-    SPLIT,
+public enum FLDataType {
+    TENSOR_MAP,
+    TREE_SPLIT,
     TREE_LEAF,
-    RESULT
+    TREE_EVAL
 }

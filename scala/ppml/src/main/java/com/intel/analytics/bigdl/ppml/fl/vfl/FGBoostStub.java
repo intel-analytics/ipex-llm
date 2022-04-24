@@ -14,12 +14,12 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.ppml.vfl;
+package com.intel.analytics.bigdl.ppml.fl.vfl;
 
 
-import com.intel.analytics.bigdl.ppml.generated.FGBoostServiceGrpc;
-import com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.*;
-import com.intel.analytics.bigdl.ppml.generated.FlBaseProto.*;
+import com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceGrpc;
+import com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto.*;
+import com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.*;
 import io.grpc.Channel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;

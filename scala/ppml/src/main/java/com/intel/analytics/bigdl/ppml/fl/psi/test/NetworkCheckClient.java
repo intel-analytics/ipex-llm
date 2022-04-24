@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.ppml.psi.test;
+package com.intel.analytics.bigdl.ppml.fl.psi.test;
 
-import com.intel.analytics.bigdl.ppml.FLClient;
-import com.intel.analytics.bigdl.ppml.psi.HashingUtils;
+import com.intel.analytics.bigdl.ppml.fl.FLClient;
+import com.intel.analytics.bigdl.ppml.fl.psi.HashingUtils;
 import io.grpc.ManagedChannel;
 import io.grpc.ManagedChannelBuilder;
 
