@@ -82,8 +82,8 @@ elif [ "$ATTESTATION" = "true" ]; then
     echo "PPML Application Exit!"
     exit 1
   if
-  ATTESTATION_ID = sed -n '1p' /ppml/trusted-big-data-ml/work/kms/appkey
-  ATTESTATION_KEY = sed -n '2p' /ppml/trusted-big-data-ml/work/kms/appkey
+  ATTESTATION_ID = sed -n '1p' /ppml/trusted-big-data-ml/work/kms/kms.secret
+  ATTESTATION_KEY = sed -n '2p' /ppml/trusted-big-data-ml/work/kms/kms.secret
   ATTESTATION_COMMAND="/opt/jdk8/bin/java -Xmx1g -cp /ppml/trusted-big-data-ml/spark-encrypt-io-0.2-SNAPSHOT-jar-with-dependencies.jar com.intel.analytics.bigdl.ppml.attestation.AttestationCLI -u ${ATTESTATION_SERVICE_URL} -i ${ATTESTATION_ID}  -k ${ATTESTATION_KEY}"
 fi
 
