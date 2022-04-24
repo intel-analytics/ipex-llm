@@ -178,7 +178,7 @@ class TestAutoLSTM(TestCase):
             np.testing.assert_almost_equal(eval_res, eval_res_onnx, decimal=5)
         except ImportError:
             pass
-        
+
         # keras
         auto_keras_lstm = get_auto_estimator(backend='keras')
         auto_keras_lstm.fit(data=get_x_y(size=1000),
@@ -187,11 +187,11 @@ class TestAutoLSTM(TestCase):
                             validation_data=get_x_y(size=400),
                             n_sampling=1)
         with tempfile.TemporaryDirectory() as tmp_dir_name:
-            auto_lstm.save(tmp_dir_name)
-            auto_lstm.load(tmp_dir_name)
+            auto_keras_lstm.save('lstm_model')
+            auto_keras_lstm.load('lstm_model')
         test_data_x, test_data_y = get_x_y(size=100)
-        pred = auto_lstm.predict(test_data_x)
-        eval_res = auto_lstm.evaluate((test_data_x, test_data_y))
+        pred = auto_keras_lstm.predict(test_data_x)
+        eval_res = auto_keras_lstm.evaluate((test_data_x, test_data_y))
 
 if __name__ == "__main__":
     pytest.main([__file__])
