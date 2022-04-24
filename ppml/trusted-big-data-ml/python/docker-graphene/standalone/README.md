@@ -1,10 +1,14 @@
-# Run as Spark Standalone Mode
+# Spark Standalone Mode in SGX
 
-WARNING: Spark Standalone on SGX is not recommended anymore. Using it in production will encounter performance, resource management and deployment issues.
+[Spark Standalone](https://spark.apache.org/docs/latest/spark-standalone.html) is a simple deploy mode provided by Spark. With the help of Graphene-SGX, we are able to setup Spark Standalone (Spark Master and Spark Worker) within SGX, and deploy PPML applications upon them.
+
+WARNING: Spark Standalone on SGX is not recommended anymore. Using it in production will encounter performance, resource management and deployment issues. Please refer to [Spark Kubernetes on SGX](https://github.com/intel-analytics/BigDL/blob/main/ppml/trusted-big-data-ml/python/docker-graphene/kubernetes/README.md).
+
+**Modify variables and paths in `environment.sh`, e.g., `YOUR_LOCAL_ENCLAVE_KEY_PATH`.**
 
 ## Start the container to run spark applications in spark standalone mode
 
-Before you run the following commands to start the container, you need to modify the paths in `environment.sh` and then run the following commands.
+ Run the following commands
 
 ```bash
 ./deploy-distributed-standalone-spark.sh
