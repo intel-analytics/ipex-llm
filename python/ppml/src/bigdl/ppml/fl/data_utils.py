@@ -16,7 +16,7 @@
 
 import pandas as pd
 import numpy as np
-from bigdl.ppml import *
+from bigdl.ppml.fl import *
 
 
 def get_input_type(x, y=None):

@@ -15,9 +15,9 @@
 #
 
 from bigdl.dllib.utils.common import JavaValue
-from bigdl.ppml.data_utils import *
+from bigdl.ppml.fl.data_utils import *
 
-from bigdl.ppml import *
+from bigdl.ppml.fl import *
 
 
 class FGBoostRegression(FLClientClosable):

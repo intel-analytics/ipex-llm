@@ -18,13 +18,13 @@
 from bigdl.dllib.nncontext import *
 from bigdl.dllib.utils.engine import prepare_env
 from bigdl.dllib.utils.common import *
-from bigdl.ppml.fl_server import *
-from bigdl.ppml.utils import *
+from bigdl.ppml.fl.fl_server import *
+from bigdl.ppml.fl.utils import *
 import bigdl
 
 prepare_env()
 creator_classes = JavaCreator.get_creator_class()[:]
 JavaCreator.set_creator_class([])
-JavaCreator.add_creator_class("com.intel.analytics.bigdl.ppml.python.PythonPPML")
+JavaCreator.add_creator_class("com.intel.analytics.bigdl.ppml.fl.python.PythonPPML")
 for clz in creator_classes:
     JavaCreator.add_creator_class(clz)
