@@ -21,12 +21,8 @@ from .model_utils import get_forward_args
 
 class AcceleratedLightningModule(LightningModule):
     def __init__(self, model):
-        self.model = model
         super().__init__()
-        self.on_init_end()
-
-    def on_init_end(self, *args):
-        pass
+        self.model = model
 
     def forward(self, *inputs):
         inputs = self.on_forward_start(inputs)
