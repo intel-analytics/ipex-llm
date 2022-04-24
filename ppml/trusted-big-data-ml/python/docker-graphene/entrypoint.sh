@@ -77,9 +77,13 @@ if [ -n "$ATTESTATION" ]; then
     ATTESTATION=false
 elif [ "$ATTESTATION" = "true" ]; then
   # Build ATTESTATION_COMMAND
-  ATTESTATION_SERVICE_URL=""
-  ATTESTATION_ID = ""
-  ATTESTATION_KEY = ""
+  if [ -n "$ATTESTATION_SERVICE_URL" ]; then
+    echo "ERROR: Attestation is required, but Attestation Service URL is empty!"
+    echo "PPML Application Exit!"
+    exit 1
+  if
+  ATTESTATION_ID = sed -n '1p' /ppml/trusted-big-data-ml/work/kms/appkey
+  ATTESTATION_KEY = sed -n '2p' /ppml/trusted-big-data-ml/work/kms/appkey
   ATTESTATION_COMMAND="/opt/jdk8/bin/java -Xmx1g -cp /ppml/trusted-big-data-ml/spark-encrypt-io-0.2-SNAPSHOT-jar-with-dependencies.jar com.intel.analytics.bigdl.ppml.attestation.AttestationCLI -u ${ATTESTATION_SERVICE_URL} -i ${ATTESTATION_ID}  -k ${ATTESTATION_KEY}"
 fi
 
