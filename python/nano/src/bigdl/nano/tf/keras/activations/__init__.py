@@ -13,10 +13,3 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-
-#TODO extend to a class later for configuration
-
-from .hpo.config import HPOConfig
-
-hpo_config = HPOConfig()
-globals()['hpo_config'] = hpo_config

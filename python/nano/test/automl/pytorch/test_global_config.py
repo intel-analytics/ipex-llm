@@ -14,9 +14,23 @@
 # limitations under the License.
 #
 
-#TODO extend to a class later for configuration
 
-from .hpo.config import HPOConfig
+import pytest
+from unittest import TestCase
 
-hpo_config = HPOConfig()
-globals()['hpo_config'] = hpo_config
+import bigdl.nano.automl as nano_automl
+
+class TestGlobalConfig(TestCase):
+
+    def test_disable_automl(self):
+        nano_automl.hpo_config.disable_hpo_pytorch()
+        pass
+
+    def test_enable_automl(self):
+        nano_automl.hpo_config.enable_hpo_pytorch()
+        pass
+
+
+
+if __name__ == '__main__':
+    pytest.main([__file__])
