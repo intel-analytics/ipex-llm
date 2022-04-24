@@ -14,13 +14,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-from bigdl.orca.automl.model.base_pytorch_model import PytorchModelBuilder
-from bigdl.orca.automl.model.base_keras_model import KerasModelBuilder
 from bigdl.orca.automl.auto_estimator import AutoEstimator
-from .base_automodel import BasePytorchAutomodel
+from .base_automodel import BaseAutomodelMixin
 
 
-class AutoLSTM(BasePytorchAutomodel):
+class AutoLSTM(BaseAutomodelMixin):
     def __init__(self,
                  input_feature_num,
                  output_target_num,
@@ -88,19 +86,10 @@ class AutoLSTM(BasePytorchAutomodel):
         )
         self.metric = metric
         self.metric_mode = metric_mode
+        # dynamic_binding and model_builder
+        self.backend = backend
+        model_builder = BaseAutomodelMixin._dynamic_binding(self, optimizer, loss)
 
-        if backend.startswith("torch"):
-            from bigdl.chronos.model.VanillaLSTM_pytorch import model_creator
-            model_builder = PytorchModelBuilder(model_creator=model_creator,
-                                                optimizer_creator=optimizer,
-                                                loss_creator=loss)
-        elif backend.startswith("keras"):
-            from bigdl.chronos.model.tf2.VanillaLSTM_keras import model_creator
-            model_builder = KerasModelBuilder(model_creator=model_creator,
-                                              optimizer=optimizer,
-                                              loss=loss)
-        else:
-            raise ValueError(f"We only support keras or torch as backend. Got {backend}")
         self.auto_est = AutoEstimator(model_builder=model_builder,
                                       logs_dir=logs_dir,
                                       resources_per_trial={"cpu": cpus_per_trial},

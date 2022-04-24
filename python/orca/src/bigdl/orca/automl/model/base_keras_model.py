@@ -238,6 +238,7 @@ class KerasBaseModel(BaseModel):
         input_shape = tf.random.normal((batch_size, past_seq_len, input_feature_num))
         return input_shape
 
+
 class KerasModelBuilder(ModelBuilder):
 
     def __init__(self, model_creator, optimizer, loss):

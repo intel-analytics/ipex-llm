@@ -18,13 +18,9 @@
 import os
 import json
 from bigdl.chronos.autots.utils import recalculate_n_sampling
-DEFAULT_BEST_MODEL_DIR = "best_model.ckpt"
-DEFAULT_BEST_CONFIG_DIR = "best_config.json"
 
 
-class BasePytorchAutomodel:
-    def __init__(self, **kwargs):
-        self.best_model = None
+class BaseAutomodelMixin:
 
     def fit(self,
             data,
@@ -228,8 +224,8 @@ class BasePytorchAutomodel:
             raise RuntimeError("You must call fit or load first before calling predict!")
         if not os.path.isdir(checkpoint_path):
             os.mkdir(checkpoint_path)
-        model_path = os.path.join(checkpoint_path, DEFAULT_BEST_MODEL_DIR)
-        best_config_path = os.path.join(checkpoint_path, DEFAULT_BEST_CONFIG_DIR)
+        model_path = os.path.join(checkpoint_path, self._DEFAULT_BEST_MODEL_DIR)
+        best_config_path = os.path.join(checkpoint_path, self._DEFAULT_BEST_CONFIG_DIR)
         self.best_model.save(model_path)
         with open(best_config_path, "w") as f:
             json.dump(self.best_config, f)
@@ -240,8 +236,8 @@ class BasePytorchAutomodel:
 
         :param checkpoint_path: The checkpoint location you want to load the best model.
         """
-        model_path = os.path.join(checkpoint_path, DEFAULT_BEST_MODEL_DIR)
-        best_config_path = os.path.join(checkpoint_path, DEFAULT_BEST_CONFIG_DIR)
+        model_path = os.path.join(checkpoint_path, self._DEFAULT_BEST_MODEL_DIR)
+        best_config_path = os.path.join(checkpoint_path, self._DEFAULT_BEST_CONFIG_DIR)
         self.best_model.restore(model_path)
         with open(best_config_path, "r") as f:
             self.best_config = json.load(f)
@@ -319,4 +315,30 @@ class BasePytorchAutomodel:
     def _get_best_automl_model(self):
         return self.best_model
 
-# TODO BaseKerasAutomodel
+    @staticmethod
+    def _dynamic_binding(obj, optimizer, loss):
+        """
+        dynamic binding keras and pytorch method
+        :params obj: a AutoLSTM instance
+        :params optimizer: torch or keras optim
+        :prarms loss: torch or keras loss
+        """
+        if obj.backend.startswith("torch"):
+            from bigdl.orca.automl.model.base_pytorch_model import PytorchModelBuilder
+            from bigdl.chronos.model.VanillaLSTM_pytorch import model_creator
+            model_builder = PytorchModelBuilder(model_creator=model_creator,
+                                                optimizer_creator=optimizer,
+                                                loss_creator=loss)
+            obj._DEFAULT_BEST_MODEL_DIR = "best_model.ckpt"
+            obj._DEFAULT_BEST_CONFIG_DIR = "best_config.json"
+        elif obj.backend.startswith("keras"):
+            from bigdl.orca.automl.model.base_keras_model import KerasModelBuilder
+            from bigdl.chronos.model.tf2.VanillaLSTM_keras import model_creator
+            model_builder = KerasModelBuilder(model_creator=model_creator,
+                                              optimizer=optimizer,
+                                              loss=loss)
+            obj._DEFAULT_BEST_MODEL_DIR = "best_keras_model.ckpt"
+            obj._DEFAULT_BEST_CONFIG_DIR = "best_keras_config.json"
+        else:
+            raise ValueError(f"We only support keras or torch as backend. Got {obj.backend}")
+        return model_builder
