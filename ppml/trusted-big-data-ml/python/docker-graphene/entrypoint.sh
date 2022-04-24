@@ -74,7 +74,7 @@ fi
 
 # Attestation
 if [ -n "$ATTESTATION" ]; then
-    ATTESTATION=false
+    ATTESTATION="false"
 elif [ "$ATTESTATION" = "true" ]; then
   # Build ATTESTATION_COMMAND
   if [ -n "$ATTESTATION_SERVICE_URL" ]; then

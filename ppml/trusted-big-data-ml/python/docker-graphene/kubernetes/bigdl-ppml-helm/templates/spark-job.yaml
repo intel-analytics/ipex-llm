@@ -75,6 +75,9 @@ spec:
           - name: enclave-key
             mountPath: /graphene/Pal/src/host/Linux-SGX/signer/enclave-key.pem
             subPath: enclave-key.pem
+          - name: kms-secret
+            mountPath: /ppml/trusted-big-data-ml/work/kms
+            subPath: kms.secret
           - name: secure-keys
             mountPath: /ppml/trusted-big-data-ml/work/keys
           - name: secure-password
@@ -95,6 +98,9 @@ spec:
       - name: enclave-key
         secret:
           secretName: enclave-key
+      - name: kms-secret
+        secret:
+          secretName: kms-secret
       - name: secure-keys
         secret:
           secretName: ssl-keys
