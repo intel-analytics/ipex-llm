@@ -340,7 +340,7 @@ class Trainer(pl.Trainer):
                 yaml.safe_dump(metadata, f)
             torch.save(model.state_dict(), "{}/{}".format(path, metadata['checkpoint']))
 
-    def load(self, path, model: LightningModule=None):
+    def load(self, path, model: LightningModule = None):
         """
         Load a model from local.
 
@@ -363,4 +363,3 @@ class Trainer(pl.Trainer):
         state_dict = torch.load("{}/{}".format(path, metadata['checkpoint']))
         model.load_state_dict(state_dict)
         return model
-

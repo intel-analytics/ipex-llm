@@ -60,19 +60,19 @@ class AcceleratedLightningModule(LightningModule):
         return tensors
 
     def dump_status(self, path):
-        with open(path+"/meta-data.yml", 'w') as f:
+        with open(path + "/meta-data.yml", 'w') as f:
             yaml.safe_dump(self.status, f)
 
     def save(self, path):
         raise NotImplementedError("Saving function is not implemented.")
-        
+
     @property
     def status(self):
         return {"ModelType": type(self).__name__}
 
     @staticmethod
     def load_status(path):
-        with open(path+"/meta-data.yml", 'r') as f:
+        with open(path + "/meta-data.yml", 'r') as f:
             metadata = yaml.safe_load(f)
         return metadata
 
