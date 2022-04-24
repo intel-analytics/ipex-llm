@@ -541,7 +541,7 @@ Then the result should be similar to
 > INFO results: {'loss': 0.6932533979415894, 'acc Top1Accuracy': 0.7544000148773193}
 ## Run as Spark on Kubernetes Mode
 
-Note: If you want spark standalone mode, please refer to [standalone/README.md][standalone]. But it is not recommended.
+WARNING: If you want spark standalone mode, please refer to [standalone/README.md][standalone]. But it is not recommended.
 
 Follow the guide below to run Spark on Kubernetes manually. Alternatively, you can also use Helm to set everything up automatically. See [kubernetes/README.md][helmGuide].
 

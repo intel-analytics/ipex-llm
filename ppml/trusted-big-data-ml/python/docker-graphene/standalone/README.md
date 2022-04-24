@@ -1,6 +1,8 @@
 # Run as Spark Standalone Mode
 
-## 1. Start the container to run spark applications in spark standalone mode
+WARNING: Spark Standalone on SGX is not recommended anymore. Using it in production will encounter performance, resource management and deployment issues.
+
+## Start the container to run spark applications in spark standalone mode
 
 Before you run the following commands to start the container, you need to modify the paths in `environment.sh` and then run the following commands.
 
@@ -20,9 +22,9 @@ cd /ppml/trusted-big-data-ml
 ./standalone/start-spark-standalone-driver-sgx.sh
 ```
 
-## 2. Run pyspark examples
+## Run PySpark examples
 
-To run the pyspark examples in spark standalone mode, you only need to replace the following command in spark local mode command:
+To run the PySpark examples in spark standalone mode, you only need to replace the following command in spark local mode command:
 
 ```bash
 --master 'local[4]' \
