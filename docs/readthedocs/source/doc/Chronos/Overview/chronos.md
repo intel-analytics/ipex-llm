@@ -26,6 +26,8 @@ You may also install `bigdl-chronos` with target `[all]` to install the addition
 pip install bigdl-chronos[all]
 # nightly built version
 pip install --pre --upgrade bigdl-chronos[all]
+# set env variables for your conda environment
+source bigdl-nano-init
 ```
 Some dependencies are optional and not included in `bigdl-chronos[all]`. You may install them when you want to use corresponding functionalities. This includes:
 ```bash
@@ -156,6 +158,7 @@ _Chronos_ provides flexible components for forecasting, detection, simulation an
 - [Time Series Anomaly Detection Overview](./anomaly_detection.html)
 - [Generate Synthetic Sequential Data Overview](./simulation.html)
 - [Useful Functionalities Overview](./useful_functionalities.html)
+- [Speed up Chronos built-in/customized models](./speed_up.html)
 - [Chronos API Doc](../../PythonAPI/Chronos/index.html)
 
 ### **6. Examples and Demos**
@@ -181,6 +184,8 @@ _Chronos_ provides flexible components for forecasting, detection, simulation an
     - [Network Traffic Forecasting (using multivariate time series data)][network_traffic_model_forecasting]
     - [Network Traffic Forecasting (using multistep time series data)][network_traffic_multivariate_multistep_tcnforecaster]
     - [Network Traffic Forecasting with Customized Model][network_traffic_autots_customized_model]
+    - [Help pytorch-forecasting improve the training speed of DeepAR model][pytorch_forecasting_deepar]
+    - [Help pytorch-forecasting improve the training speed of TFT model][pytorch_forecasting_tft]
 
 <!--Reference links in article-->
 [autolstm_nyc_taxi]: <https://github.com/intel-analytics/BigDL/blob/main/python/chronos/example/auto_model/autolstm_nyc_taxi.py>
@@ -199,3 +204,5 @@ _Chronos_ provides flexible components for forecasting, detection, simulation an
 [network_traffic_multivariate_multistep_tcnforecaster]: <https://github.com/intel-analytics/BigDL/blob/main/python/chronos/use-case/network_traffic/network_traffic_multivariate_multistep_tcnforecaster.ipynb>
 [network_traffic_autots_customized_model]: <https://github.com/intel-analytics/BigDL/blob/main/python/chronos/use-case/network_traffic/network_traffic_autots_customized_model.ipynb>
 [quantization]: <https://github.com/intel-analytics/BigDL/blob/main/python/chronos/example/quantization/quantization_tcnforecaster_nyc_taxi.py>
+[pytorch_forecasting_deepar]: <https://github.com/intel-analytics/BigDL/tree/main/python/chronos/use-case/pytorch-forecasting/DeepAR>
+[pytorch_forecasting_tft]: <https://github.com/intel-analytics/BigDL/tree/main/python/chronos/use-case/pytorch-forecasting/TFT>

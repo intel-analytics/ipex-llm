@@ -6,7 +6,7 @@ We will focus on **single node acceleration for forecasting models' training and
 
 - Distributed time series data processing - [XShardsTSDataset (based on Spark, powered by `bigdl.orca.data`)](./useful_functionalities.html#xshardstsdataset)
 - Distributed training on a cluster - [Distributed training (based on Ray/Spark/Horovod, powered by `bigdl.orca.learn`)](./useful_functionalities.html#distributed-training)
-- Non-forecasting models / non-deep-learning models - [Prophet with intel python](./forecasting.html#37-prophetforecaster), [DBScan Detector with intel Sklearn](./anomaly_detection.html#3-dbscandetector), [DPGANSimulator pytorch implementation](./simulation.html#1-dpgansimulator).
+- Non-forecasting models / non-deep-learning models - [Prophet with intel python](./forecasting.html#prophetforecaster), [DBScan Detector with intel Sklearn](./anomaly_detection.html#dbscandetector), [DPGANSimulator pytorch implementation](./simulation.html#dpgansimulator).
 
 You may refer to other pages listed above.
 
