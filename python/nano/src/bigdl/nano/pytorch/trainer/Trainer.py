@@ -28,12 +28,13 @@ from torch.nn.modules.loss import _Loss
 from torch.utils.data import DataLoader
 from torchmetrics.metric import Metric
 from torch.optim.lr_scheduler import _LRScheduler
+import yaml
 from bigdl.nano.common import check_avx512
 from bigdl.nano.pytorch.lightning import LightningModuleFromTorch
 from bigdl.nano.pytorch.plugins.ddp_spawn import DDPSpawnPlugin
 from bigdl.nano.deps.ray.ray_api import distributed_ray
 from bigdl.nano.deps.ipex.ipex_api import create_IPEXAccelerator, ipex_device
-from bigdl.nano.deps.openvino.openvino_api import PytorchOpenVINOModel
+from bigdl.nano.deps.openvino.openvino_api import PytorchOpenVINOModel, load_openvino_model
 from bigdl.nano.deps.onnxruntime.onnxruntime_api import bind_onnxrt_methods
 
 distributed_backends = ["spawn", "ray", "subprocess"]
@@ -315,8 +316,7 @@ class Trainer(pl.Trainer):
         if accelerator == 'openvino':
             return PytorchOpenVINOModel(model, input_sample)
 
-    @staticmethod
-    def save(model, path, precision=None, accelerator=None, input_sample=None):
+    def save(self, model: LightningModule, path):
         """
         Save the model to path with desired precision and format(by assigning 'accelerator').
 
@@ -326,40 +326,32 @@ class Trainer(pl.Trainer):
         :param model: Any model of torch.nn.Module, including PytorchOpenVINOModel
         :param path: Path to saved model. You need to specify path suffix carefully.
                      For example, 'model.xml' for OpenVINO, 'model.onnx' for ONNX.
-        :param precision: Precision of saved model, 'FP32', 'FP16', 'INT8', defaults to None,
-                          then the precision depends on the precision of model.
-        :param accelerator: Saved model format and its future accelerator, defaults to None.
-                            accelerator=None will save Pytorch model, accelerator='openvino' will
-                            save an IR to inference by OpenVINO. Same as ONNX.
-        :param input_sample: A set of inputs for trace, defaults to None if you have trace before or
-                             model is a LightningModule with any dataloader attached,
-                             defaults to None.
-                             Only ONNX and OpenVINO requires an input sample to export the model.
         """
-        if accelerator == 'openvino':
-            if precision is None:
-                if not hasattr(model, "save") and isinstance(model, nn.Module):
-                    model = PytorchOpenVINOModel(model, input_sample=input_sample)
-                else:
-                    raise TypeError("Model type of {} can not be exported.".format(type(model)))
-                model.save(path)
+        if hasattr(model, 'save'):
+            model.save(path)
+        else:
+            with open(path + '/meta-data.yml', 'w+') as f:
+                yaml.safe_dump(f)
+            self.save_checkpoint(path + "/saved_weight.pt", weights_only=True)
 
-    @staticmethod
-    def load(path, accelerator=None):
+    def load(self, path, model: LightningModule=None):
         """
         Load a model from local.
 
         :param path: Path to model to be loaded. You need to specify path suffix carefully.
                      For example, 'model.xml' for OpenVINO, 'model.onnx' for ONNX.
-        :param accelerator: Saved model format, defaults to None.
-                            accelerator=None will save Pytorch model, accelerator='openvino' will
-                            save an IR to inference by OpenVINO. Same as ONNX.
+        :param model: Required FP32 model to load pytorch model. Optional for ONNX/OpenVINO.
         :return: A PytorchOpenVINOModel using openvino for inference if accelerator='openvino'
         """
-        if accelerator == 'openvino' or path.split('.')[-1] == 'xml':
-            # TODO: Need to fix this with lazy import class.
-            # The usage should be:
-            #   PytorchOpenVINOModel.load(path)
-            if not os.path.exists(path):
-                raise FileNotFoundError("{} doesn't exist.".format(path))
-            return PytorchOpenVINOModel(path)
+        if not os.path.exists(path):
+            raise FileNotFoundError("{} doesn't exist.".format(path))
+        with open(path + '/meta-data.yml', ) as f:
+            metadata = yaml.safe_load(f)
+        model_type = metadata['ModelType']
+        if model_type == 'PytorchOpenVINOModel':
+            return load_openvino_model(path)
+        # if model_type == 'PytorchONNXModel':
+        # if model_type == 'PytorchQuantizedModel':
+        # ... to be implemented
+        return model.load_from_checkpoint(path)
+
