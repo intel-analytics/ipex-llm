@@ -146,7 +146,7 @@ class BasePytorchForecaster(Forecaster):
             if isinstance(data, tuple):
                 data = DataLoader(TensorDataset(torch.from_numpy(data[0]),
                                                 torch.from_numpy(data[1])),
-                                  batch_size=batch_size,
+                                  batch_size=256//self.num_processes,
                                   shuffle=True)
 
             # Trainer init and fitting
