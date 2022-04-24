@@ -35,8 +35,8 @@ class PytorchOpenVINOModel(OpenVINOModel, AcceleratedLightningModule):
         if isinstance(model, torch.nn.Module):
             export(model, input_sample, 'tmp.xml')
             ov_model_path = 'tmp.xml'
-        AcceleratedLightningModule.__init__(self, None)
         OpenVINOModel.__init__(self, ov_model_path)
+        AcceleratedLightningModule.__init__(self, None)
         if os.path.exists('tmp.xml'):
             os.remove('tmp.xml')
 
@@ -52,13 +52,28 @@ class PytorchOpenVINOModel(OpenVINOModel, AcceleratedLightningModule):
         outputs = self.numpy_to_tensors(outputs.values())
         return outputs
 
+    @property
+    def status(self):
+        status = super().status
+        status.update({"xml_path": 'ov_saved_model.xml', "weight_path": 'ov_saved_model.bin'})
+        return status
+
     @staticmethod
     def load(path):
         """
-        Load an OpenVINO model for inference.
+        Load an OpenVINO model for inference from directory.
 
         :param path: Path to model to be loaded.
         :return: PytorchOpenVINOModel model for OpenVINO inference.
         """
-        assert path.split('.')[-1] == "xml", "Path of openvino model must be with '.xml' suffix."
-        return PytorchOpenVINOModel(path)
+        status = PytorchOpenVINOModel.load_status(path)
+        assert status.get('xml_path', None), "xml_path must not be None for loading."
+        assert status['xml_path'].split('.')[-1] == "xml", \
+            "Path of openvino model must be with '.xml' suffix."
+        xml_path = "{}/{}".format(path, status['xml_path'])
+        return PytorchOpenVINOModel(xml_path)
+
+    def save(self, path):
+        os.makedirs(path, exist_ok=True)
+        self.dump_status(path)
+        super().save("{}/{}".format(path, self.status['xml_path']))
