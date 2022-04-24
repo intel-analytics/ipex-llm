@@ -256,11 +256,11 @@ ADD ./init.sh /ppml/trusted-big-data-ml/init.sh
 ADD ./clean.sh /ppml/trusted-big-data-ml/clean.sh
 ADD ./examples /ppml/trusted-big-data-ml/work/examples
 ADD ./start-spark-local-train-sgx.sh /ppml/trusted-big-data-ml/start-spark-local-train-sgx.sh
-ADD ./start-spark-standalone-master-sgx.sh /ppml/trusted-big-data-ml/start-spark-standalone-master-sgx.sh
-ADD ./start-spark-standalone-worker-sgx.sh /ppml/trusted-big-data-ml/start-spark-standalone-worker-sgx.sh
-ADD ./start-spark-standalone-driver-sgx.sh /ppml/trusted-big-data-ml/start-spark-standalone-driver-sgx.sh
+ADD ./standalone/check-status.sh /ppml/trusted-big-data-ml/standalone/check-status.sh
+ADD ./standalone/start-spark-standalone-master-sgx.sh /ppml/trusted-big-data-ml/standalone/start-spark-standalone-master-sgx.sh
+ADD ./standalone/start-spark-standalone-worker-sgx.sh /ppml/trusted-big-data-ml/standalone/start-spark-standalone-worker-sgx.sh
+ADD ./standalone/start-spark-standalone-driver-sgx.sh /ppml/trusted-big-data-ml/standalone/start-spark-standalone-driver-sgx.sh
 ADD ./ppml-spark-submit.sh /ppml/trusted-big-data-ml/ppml-spark-submit.sh
-ADD ./check-status.sh /ppml/trusted-big-data-ml/check-status.sh
 ADD ./tracker.py ./tracker.py
 ADD ./start-scripts /ppml/trusted-big-data-ml/work/start-scripts
 ADD ./test-suites /ppml/trusted-big-data-ml/work/test-suites
@@ -280,11 +280,11 @@ RUN zip -u ${BIGDL_HOME}/jars/bigdl-dllib-spark_${SPARK_VERSION}-${BIGDL_VERSION
     chmod a+x /ppml/trusted-big-data-ml/init.sh && \
     chmod a+x /ppml/trusted-big-data-ml/clean.sh && \
     chmod a+x /ppml/trusted-big-data-ml/start-spark-local-train-sgx.sh && \
-    chmod a+x /ppml/trusted-big-data-ml/start-spark-standalone-master-sgx.sh && \
-    chmod a+x /ppml/trusted-big-data-ml/start-spark-standalone-worker-sgx.sh && \
-    chmod a+x /ppml/trusted-big-data-ml/start-spark-standalone-driver-sgx.sh && \
+    chmod a+x /ppml/trusted-big-data-ml/standalone/check-status.sh && \
+    chmod a+x /ppml/trusted-big-data-ml/standalone/start-spark-standalone-master-sgx.sh && \
+    chmod a+x /ppml/trusted-big-data-ml/standalone/start-spark-standalone-worker-sgx.sh && \
+    chmod a+x /ppml/trusted-big-data-ml/standalone/start-spark-standalone-driver-sgx.sh && \
     chmod a+x /ppml/trusted-big-data-ml/ppml-spark-submit.sh && \
-    chmod a+x /ppml/trusted-big-data-ml/check-status.sh && \
     chmod a+x /ppml/trusted-big-data-ml/work/start-scripts/start-python-helloworld-sgx.sh && \
     chmod a+x /ppml/trusted-big-data-ml/work/start-scripts/start-python-numpy-sgx.sh && \
     chmod a+x /ppml/trusted-big-data-ml/work/start-scripts/start-spark-local-bigdl-sgx.sh && \
