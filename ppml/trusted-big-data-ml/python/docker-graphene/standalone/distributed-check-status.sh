@@ -22,20 +22,20 @@ fi
 if [ "$#" -gt 2 ]; then
     echo "Acceptable arguments: \"all\", or one or more among \"master\", \"worker\"."
 elif [ "$all" -eq 1 ]; then
-    ssh root@$MASTER "docker exec spark-master bash /ppml/trusted-big-data-ml/check-status.sh master"
+    ssh root@$MASTER "docker exec spark-master bash /ppml/trusted-big-data-ml/standalone/check-status.sh master"
     for worker in ${WORKERS[@]}
     do
-        ssh root@$worker "docker exec spark-worker-$worker bash /ppml/trusted-big-data-ml/check-status.sh worker"
+        ssh root@$worker "docker exec spark-worker-$worker bash /ppml/trusted-big-data-ml/standalone/check-status.sh worker"
     done
 else
     for arg in "$@"
     do
         if [ "$arg" == master ]; then
-            ssh root@$MASTER "docker exec spark-master bash /ppml/trusted-big-data-ml/check-status.sh master"
+            ssh root@$MASTER "docker exec spark-master bash /ppml/trusted-big-data-ml/standalone/check-status.sh master"
         elif [ "$arg" == worker ]; then
             for worker in ${WORKERS[@]}
             do
-                ssh root@$worker "docker exec spark-worker-$worker bash /ppml/trusted-big-data-ml/check-status.sh worker"
+                ssh root@$worker "docker exec spark-worker-$worker bash /ppml/trusted-big-data-ml/standalone/check-status.sh worker"
             done
         else
             echo "Acceptable arguments: \"all\", or one or more among \"master\", \"worker\"."

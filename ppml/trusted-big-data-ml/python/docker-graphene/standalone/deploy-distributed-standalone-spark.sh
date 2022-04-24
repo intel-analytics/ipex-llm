@@ -52,7 +52,7 @@ ssh root@$MASTER "docker run -itd \
       -e SPARK_MASTER_IP=$MASTER \
       -e SPARK_MASTER_PORT=7077 \
       -e SPARK_MASTER_WEBUI_PORT=8080 \
-      $TRUSTED_BIGDATA_ML_DOCKER bash -c 'cd /ppml/trusted-big-data-ml && ./init.sh && ./start-spark-standalone-master-sgx.sh  && tail -f /dev/null'"
+      $TRUSTED_BIGDATA_ML_DOCKER bash -c 'cd /ppml/trusted-big-data-ml && ./init.sh && ./standalone/start-spark-standalone-master-sgx.sh  && tail -f /dev/null'"
 while ! ssh root@$MASTER "nc -z -v $MASTER 8080 2>&1 | grep -a 'succeed' | wc -l"; do
   sleep 10
 done
@@ -78,7 +78,7 @@ for worker in ${WORKERS[@]}
           -e SPARK_MASTER=spark://$MASTER:7077 \
           -e SPARK_WORKER_PORT=8082 \
           -e SPARK_WORKER_WEBUI_PORT=8081 \
-          $TRUSTED_BIGDATA_ML_DOCKER bash -c 'cd /ppml/trusted-big-data-ml && ./init.sh && ./start-spark-standalone-worker-sgx.sh'"
+          $TRUSTED_BIGDATA_ML_DOCKER bash -c 'cd /ppml/trusted-big-data-ml && ./init.sh && ./standalone/start-spark-standalone-worker-sgx.sh'"
   done
 
 for worker in ${WORKERS[@]}
