@@ -36,7 +36,7 @@ from bigdl.nano.deps.ipex.ipex_api import create_IPEXAccelerator, ipex_device
 from bigdl.nano.deps.openvino.openvino_api import PytorchOpenVINOModel, load_openvino_model
 from bigdl.nano.deps.onnxruntime.onnxruntime_api import bind_onnxrt_methods,\
     PytorchONNXRuntimeModel, load_onnxruntime_model
-from bigdl.nano.deps.neural_compressor.inc_api import QuantizationINC, QuantizedModel,\
+from bigdl.nano.deps.neural_compressor.inc_api import QuantizationINC, PytorchQuantizedModel,\
     check_pytorch_dataloaders
 distributed_backends = ["spawn", "ray", "subprocess"]
 
