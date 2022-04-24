@@ -38,6 +38,15 @@ def tf_dataset_to_inc_dataloader(tf_dataset, batchsize):
     from neural_compressor.experimental import common
     return common.DataLoader(tf_dataset, batchsize)
 
-def QuantizedModel(model):
-    from .pytorch.quantized_model import QuantizedModel
-    return QuantizedModel(model)
+def PytorchQuantizedModel(model):
+    from .pytorch.quantized_model import PytorchQuantizedModel
+    return PytorchQuantizedModel(model)
+
+def load(path, framework):
+    if framework == 'pytorch':
+        return PytorchQuantizedModel.load(path)
+    elif framework == 'tensorflow':
+        raise NotImplementedError("QuantizedTensorflowModel loading is not implemented yet.")
+    else:
+        raise ValueError("The value {} for framework is not supported. "
+                         "Please choose from 'pytorch'/'tensorflow'.")

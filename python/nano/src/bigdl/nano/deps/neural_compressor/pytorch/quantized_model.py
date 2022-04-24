@@ -28,7 +28,7 @@ class PytorchQuantizedModel(AcceleratedLightningModule):
 
     def save(self, path):
         self.quantized.save(path)
-        super().save(path)
+        self.dump_status(path)
 
     def load_state_dict(self, state_dict):
         load(state_dict, self.quantized._model)
@@ -49,4 +49,4 @@ class PytorchQuantizedModel(AcceleratedLightningModule):
         with open(tune_cfg_file, 'r') as f:
             tune_cfg = yaml.safe_load(f)
             qmodel.tune_cfg = tune_cfg
-        return QuantizedModel(qmodel)
+        return PytorchQuantizedModel(qmodel)
