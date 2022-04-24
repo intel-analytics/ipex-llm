@@ -81,7 +81,7 @@ def eval_onnx(model, input_sample=None, file_path="model.onnx",
     :param **kwargs: (optional) will be passed to torch.onnx.export function.
     '''
     # change to eval mode
-    model.eval()
+    model.eval(quantize=False)
 
     # check default evaluation precision
     if quantize is None:
