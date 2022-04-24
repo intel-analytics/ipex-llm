@@ -89,7 +89,7 @@ class Trainer(pl.Trainer):
             plugin = None
             assert distributed_backend in distributed_backends, \
                 f"Distributed backends supported now are spawn and ray," \
-                " but get {distributed_backend}."
+                f" but get {distributed_backend}."
             if distributed_backend == "spawn":
                 if use_ipex:
                     device = ipex_device()

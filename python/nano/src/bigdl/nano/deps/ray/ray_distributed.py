@@ -379,7 +379,7 @@ class RayPlugin(DDPSpawnPlugin):
             log.info("-" * 100)
             log.info(f"distributed_backend={self.distributed_backend}")
             log.info(f"All DDP processes registered. Starting ddp with"
-                     "{self.world_size} processes")
+                     f"{self.world_size} processes")
             log.info("-" * 100)
 
         # set the ranks and devices
