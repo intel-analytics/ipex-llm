@@ -254,7 +254,6 @@ ADD ./bash.manifest.template /ppml/trusted-big-data-ml/bash.manifest.template
 ADD ./Makefile /ppml/trusted-big-data-ml/Makefile
 ADD ./init.sh /ppml/trusted-big-data-ml/init.sh
 ADD ./examples /ppml/trusted-big-data-ml/work/examples
-ADD ./start-spark-local-train-sgx.sh /ppml/trusted-big-data-ml/start-spark-local-train-sgx.sh
 ADD ./standalone/check-status.sh /ppml/trusted-big-data-ml/standalone/check-status.sh
 ADD ./standalone/start-spark-standalone-master-sgx.sh /ppml/trusted-big-data-ml/standalone/start-spark-standalone-master-sgx.sh
 ADD ./standalone/start-spark-standalone-worker-sgx.sh /ppml/trusted-big-data-ml/standalone/start-spark-standalone-worker-sgx.sh
@@ -277,22 +276,9 @@ RUN zip -u ${BIGDL_HOME}/jars/bigdl-dllib-spark_${SPARK_VERSION}-${BIGDL_VERSION
     sed -i 's/examples/\/ppml\/trusted-big-data-ml\/work\/spark-3.1.2\/examples/' /ppml/trusted-big-data-ml/work/spark-3.1.2/examples/src/main/python/sql/hive.py && \
     sed -i 's/spark-warehouse/\/ppml\/trusted-big-data-ml\/work\/spark-warehouse/' /ppml/trusted-big-data-ml/work/spark-3.1.2/examples/src/main/python/sql/hive.py && \
     chmod a+x /ppml/trusted-big-data-ml/init.sh && \
-    chmod a+x /ppml/trusted-big-data-ml/start-spark-local-train-sgx.sh && \
-    chmod a+x /ppml/trusted-big-data-ml/standalone/check-status.sh && \
-    chmod a+x /ppml/trusted-big-data-ml/standalone/start-spark-standalone-master-sgx.sh && \
-    chmod a+x /ppml/trusted-big-data-ml/standalone/start-spark-standalone-worker-sgx.sh && \
-    chmod a+x /ppml/trusted-big-data-ml/standalone/start-spark-standalone-driver-sgx.sh && \
+    chmod a+x /ppml/trusted-big-data-ml/standalone/* && \
     chmod a+x /ppml/trusted-big-data-ml/ppml-spark-submit.sh && \
-    chmod a+x /ppml/trusted-big-data-ml/work/start-scripts/start-python-helloworld-sgx.sh && \
-    chmod a+x /ppml/trusted-big-data-ml/work/start-scripts/start-python-numpy-sgx.sh && \
-    chmod a+x /ppml/trusted-big-data-ml/work/start-scripts/start-spark-local-bigdl-sgx.sh && \
-    chmod a+x /ppml/trusted-big-data-ml/work/start-scripts/start-spark-local-pi-sgx.sh && \
-    chmod a+x /ppml/trusted-big-data-ml/work/start-scripts/start-spark-local-sql-sgx.sh && \
-    chmod a+x /ppml/trusted-big-data-ml/work/start-scripts/start-spark-local-wordcount-sgx.sh && \
-    chmod a+x /ppml/trusted-big-data-ml/work/start-scripts/start-spark-local-xgboost-regressor-sgx.sh && \
-    chmod a+x /ppml/trusted-big-data-ml/work/start-scripts/start-spark-local-xgboost-classifier-sgx.sh && \
-    chmod a+x /ppml/trusted-big-data-ml/work/start-scripts/start-spark-local-orca-data-sgx.sh && \
-    chmod a+x /ppml/trusted-big-data-ml/work/start-scripts/start-spark-local-orca-tf-text.sh && \
+    chmod a+x /ppml/trusted-big-data-ml/work/start-scripts/* && \
     chmod a+x /ppml/trusted-big-data-ml/work/test-suites/pyspark-e2e-example.sh && \
     chmod a+x /ppml/trusted-big-data-ml/work/test-suites/pyspark-simple-examples.sh && \
     chmod a+x /ppml/trusted-big-data-ml/work/test-suites/pyspark-sql-api-examples.sh && \
