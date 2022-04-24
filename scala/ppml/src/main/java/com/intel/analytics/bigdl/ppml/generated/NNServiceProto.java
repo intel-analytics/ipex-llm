@@ -39,11 +39,11 @@ public final class NNServiceProto {
      * <code>.TensorMap data = 2;</code>
      * @return The data.
      */
-    proto.FlBaseProto.TensorMap getData();
+    com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap getData();
     /**
      * <code>.TensorMap data = 2;</code>
      */
-    proto.FlBaseProto.TensorMapOrBuilder getDataOrBuilder();
+    com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMapOrBuilder getDataOrBuilder();
 
     /**
      * <code>string algorithm = 3;</code>
@@ -111,11 +111,11 @@ public final class NNServiceProto {
               break;
             }
             case 18: {
-              proto.FlBaseProto.TensorMap.Builder subBuilder = null;
+              com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap.Builder subBuilder = null;
               if (data_ != null) {
                 subBuilder = data_.toBuilder();
               }
-              data_ = input.readMessage(proto.FlBaseProto.TensorMap.parser(), extensionRegistry);
+              data_ = input.readMessage(com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap.parser(), extensionRegistry);
               if (subBuilder != null) {
                 subBuilder.mergeFrom(data_);
                 data_ = subBuilder.buildPartial();
@@ -150,15 +150,15 @@ public final class NNServiceProto {
     }
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return NNServiceProto.internal_static_nn_TrainRequest_descriptor;
+      return com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.internal_static_nn_TrainRequest_descriptor;
     }
 
     @Override
     protected FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return NNServiceProto.internal_static_nn_TrainRequest_fieldAccessorTable
+      return com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.internal_static_nn_TrainRequest_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
-              TrainRequest.class, Builder.class);
+              com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.TrainRequest.class, com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.TrainRequest.Builder.class);
     }
 
     public static final int CLIENTUUID_FIELD_NUMBER = 1;
@@ -200,7 +200,7 @@ public final class NNServiceProto {
     }
 
     public static final int DATA_FIELD_NUMBER = 2;
-    private proto.FlBaseProto.TensorMap data_;
+    private com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap data_;
     /**
      * <code>.TensorMap data = 2;</code>
      * @return Whether the data field is set.
@@ -214,14 +214,14 @@ public final class NNServiceProto {
      * @return The data.
      */
     @Override
-    public proto.FlBaseProto.TensorMap getData() {
-      return data_ == null ? proto.FlBaseProto.TensorMap.getDefaultInstance() : data_;
+    public com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap getData() {
+      return data_ == null ? com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap.getDefaultInstance() : data_;
     }
     /**
      * <code>.TensorMap data = 2;</code>
      */
     @Override
-    public proto.FlBaseProto.TensorMapOrBuilder getDataOrBuilder() {
+    public com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMapOrBuilder getDataOrBuilder() {
       return getData();
     }
 
@@ -315,10 +315,10 @@ public final class NNServiceProto {
       if (obj == this) {
        return true;
       }
-      if (!(obj instanceof TrainRequest)) {
+      if (!(obj instanceof com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.TrainRequest)) {
         return super.equals(obj);
       }
-      TrainRequest other = (TrainRequest) obj;
+      com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.TrainRequest other = (com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.TrainRequest) obj;
 
       if (!getClientuuid()
           .equals(other.getClientuuid())) return false;
@@ -353,69 +353,69 @@ public final class NNServiceProto {
       return hash;
     }
 
-    public static TrainRequest parseFrom(
+    public static com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.TrainRequest parseFrom(
         java.nio.ByteBuffer data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static TrainRequest parseFrom(
+    public static com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.TrainRequest parseFrom(
         java.nio.ByteBuffer data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static TrainRequest parseFrom(
+    public static com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.TrainRequest parseFrom(
         com.google.protobuf.ByteString data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static TrainRequest parseFrom(
+    public static com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.TrainRequest parseFrom(
         com.google.protobuf.ByteString data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static TrainRequest parseFrom(byte[] data)
+    public static com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.TrainRequest parseFrom(byte[] data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static TrainRequest parseFrom(
+    public static com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.TrainRequest parseFrom(
         byte[] data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static TrainRequest parseFrom(java.io.InputStream input)
+    public static com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.TrainRequest parseFrom(java.io.InputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input);
     }
-    public static TrainRequest parseFrom(
+    public static com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.TrainRequest parseFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input, extensionRegistry);
     }
-    public static TrainRequest parseDelimitedFrom(java.io.InputStream input)
+    public static com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.TrainRequest parseDelimitedFrom(java.io.InputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseDelimitedWithIOException(PARSER, input);
     }
-    public static TrainRequest parseDelimitedFrom(
+    public static com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.TrainRequest parseDelimitedFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
     }
-    public static TrainRequest parseFrom(
+    public static com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.TrainRequest parseFrom(
         com.google.protobuf.CodedInputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input);
     }
-    public static TrainRequest parseFrom(
+    public static com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.TrainRequest parseFrom(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
@@ -428,7 +428,7 @@ public final class NNServiceProto {
     public static Builder newBuilder() {
       return DEFAULT_INSTANCE.toBuilder();
     }
-    public static Builder newBuilder(TrainRequest prototype) {
+    public static Builder newBuilder(com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.TrainRequest prototype) {
       return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
     }
     @Override
@@ -449,18 +449,18 @@ public final class NNServiceProto {
     public static final class Builder extends
         com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
         // @@protoc_insertion_point(builder_implements:nn.TrainRequest)
-        TrainRequestOrBuilder {
+        com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.TrainRequestOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
           getDescriptor() {
-        return NNServiceProto.internal_static_nn_TrainRequest_descriptor;
+        return com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.internal_static_nn_TrainRequest_descriptor;
       }
 
       @Override
       protected FieldAccessorTable
           internalGetFieldAccessorTable() {
-        return NNServiceProto.internal_static_nn_TrainRequest_fieldAccessorTable
+        return com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.internal_static_nn_TrainRequest_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
-                TrainRequest.class, Builder.class);
+                com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.TrainRequest.class, com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.TrainRequest.Builder.class);
       }
 
       // Construct using com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.TrainRequest.newBuilder()
@@ -497,17 +497,17 @@ public final class NNServiceProto {
       @Override
       public com.google.protobuf.Descriptors.Descriptor
           getDescriptorForType() {
-        return NNServiceProto.internal_static_nn_TrainRequest_descriptor;
+        return com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.internal_static_nn_TrainRequest_descriptor;
       }
 
       @Override
-      public TrainRequest getDefaultInstanceForType() {
-        return TrainRequest.getDefaultInstance();
+      public com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.TrainRequest getDefaultInstanceForType() {
+        return com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.TrainRequest.getDefaultInstance();
       }
 
       @Override
-      public TrainRequest build() {
-        TrainRequest result = buildPartial();
+      public com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.TrainRequest build() {
+        com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.TrainRequest result = buildPartial();
         if (!result.isInitialized()) {
           throw newUninitializedMessageException(result);
         }
@@ -515,8 +515,8 @@ public final class NNServiceProto {
       }
 
       @Override
-      public TrainRequest buildPartial() {
-        TrainRequest result = new TrainRequest(this);
+      public com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.TrainRequest buildPartial() {
+        com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.TrainRequest result = new com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.TrainRequest(this);
         result.clientuuid_ = clientuuid_;
         if (dataBuilder_ == null) {
           result.data_ = data_;
@@ -562,16 +562,16 @@ public final class NNServiceProto {
       }
       @Override
       public Builder mergeFrom(com.google.protobuf.Message other) {
-        if (other instanceof TrainRequest) {
-          return mergeFrom((TrainRequest)other);
+        if (other instanceof com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.TrainRequest) {
+          return mergeFrom((com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.TrainRequest)other);
         } else {
           super.mergeFrom(other);
           return this;
         }
       }
 
-      public Builder mergeFrom(TrainRequest other) {
-        if (other == TrainRequest.getDefaultInstance()) return this;
+      public Builder mergeFrom(com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.TrainRequest other) {
+        if (other == com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.TrainRequest.getDefaultInstance()) return this;
         if (!other.getClientuuid().isEmpty()) {
           clientuuid_ = other.clientuuid_;
           onChanged();
@@ -598,11 +598,11 @@ public final class NNServiceProto {
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws java.io.IOException {
-        TrainRequest parsedMessage = null;
+        com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.TrainRequest parsedMessage = null;
         try {
           parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
         } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-          parsedMessage = (TrainRequest) e.getUnfinishedMessage();
+          parsedMessage = (com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.TrainRequest) e.getUnfinishedMessage();
           throw e.unwrapIOException();
         } finally {
           if (parsedMessage != null) {
@@ -688,9 +688,9 @@ public final class NNServiceProto {
         return this;
       }
 
-      private proto.FlBaseProto.TensorMap data_;
+      private com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap data_;
       private com.google.protobuf.SingleFieldBuilderV3<
-          proto.FlBaseProto.TensorMap, proto.FlBaseProto.TensorMap.Builder, proto.FlBaseProto.TensorMapOrBuilder> dataBuilder_;
+          com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap, com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap.Builder, com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMapOrBuilder> dataBuilder_;
       /**
        * <code>.TensorMap data = 2;</code>
        * @return Whether the data field is set.
@@ -702,9 +702,9 @@ public final class NNServiceProto {
        * <code>.TensorMap data = 2;</code>
        * @return The data.
        */
-      public proto.FlBaseProto.TensorMap getData() {
+      public com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap getData() {
         if (dataBuilder_ == null) {
-          return data_ == null ? proto.FlBaseProto.TensorMap.getDefaultInstance() : data_;
+          return data_ == null ? com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap.getDefaultInstance() : data_;
         } else {
           return dataBuilder_.getMessage();
         }
@@ -712,7 +712,7 @@ public final class NNServiceProto {
       /**
        * <code>.TensorMap data = 2;</code>
        */
-      public Builder setData(proto.FlBaseProto.TensorMap value) {
+      public Builder setData(com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap value) {
         if (dataBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
@@ -729,7 +729,7 @@ public final class NNServiceProto {
        * <code>.TensorMap data = 2;</code>
        */
       public Builder setData(
-          proto.FlBaseProto.TensorMap.Builder builderForValue) {
+          com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap.Builder builderForValue) {
         if (dataBuilder_ == null) {
           data_ = builderForValue.build();
           onChanged();
@@ -742,11 +742,11 @@ public final class NNServiceProto {
       /**
        * <code>.TensorMap data = 2;</code>
        */
-      public Builder mergeData(proto.FlBaseProto.TensorMap value) {
+      public Builder mergeData(com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap value) {
         if (dataBuilder_ == null) {
           if (data_ != null) {
             data_ =
-              proto.FlBaseProto.TensorMap.newBuilder(data_).mergeFrom(value).buildPartial();
+              com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap.newBuilder(data_).mergeFrom(value).buildPartial();
           } else {
             data_ = value;
           }
@@ -774,7 +774,7 @@ public final class NNServiceProto {
       /**
        * <code>.TensorMap data = 2;</code>
        */
-      public proto.FlBaseProto.TensorMap.Builder getDataBuilder() {
+      public com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap.Builder getDataBuilder() {
         
         onChanged();
         return getDataFieldBuilder().getBuilder();
@@ -782,23 +782,23 @@ public final class NNServiceProto {
       /**
        * <code>.TensorMap data = 2;</code>
        */
-      public proto.FlBaseProto.TensorMapOrBuilder getDataOrBuilder() {
+      public com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMapOrBuilder getDataOrBuilder() {
         if (dataBuilder_ != null) {
           return dataBuilder_.getMessageOrBuilder();
         } else {
           return data_ == null ?
-              proto.FlBaseProto.TensorMap.getDefaultInstance() : data_;
+              com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap.getDefaultInstance() : data_;
         }
       }
       /**
        * <code>.TensorMap data = 2;</code>
        */
       private com.google.protobuf.SingleFieldBuilderV3<
-          proto.FlBaseProto.TensorMap, proto.FlBaseProto.TensorMap.Builder, proto.FlBaseProto.TensorMapOrBuilder>
+          com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap, com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap.Builder, com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMapOrBuilder> 
           getDataFieldBuilder() {
         if (dataBuilder_ == null) {
           dataBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
-              proto.FlBaseProto.TensorMap, proto.FlBaseProto.TensorMap.Builder, proto.FlBaseProto.TensorMapOrBuilder>(
+              com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap, com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap.Builder, com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMapOrBuilder>(
                   getData(),
                   getParentForChildren(),
                   isClean());
@@ -899,12 +899,12 @@ public final class NNServiceProto {
     }
 
     // @@protoc_insertion_point(class_scope:nn.TrainRequest)
-    private static final TrainRequest DEFAULT_INSTANCE;
+    private static final com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.TrainRequest DEFAULT_INSTANCE;
     static {
-      DEFAULT_INSTANCE = new TrainRequest();
+      DEFAULT_INSTANCE = new com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.TrainRequest();
     }
 
-    public static TrainRequest getDefaultInstance() {
+    public static com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.TrainRequest getDefaultInstance() {
       return DEFAULT_INSTANCE;
     }
 
@@ -929,7 +929,7 @@ public final class NNServiceProto {
     }
 
     @Override
-    public TrainRequest getDefaultInstanceForType() {
+    public com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.TrainRequest getDefaultInstanceForType() {
       return DEFAULT_INSTANCE;
     }
 
@@ -960,11 +960,11 @@ public final class NNServiceProto {
      * <code>.TensorMap data = 2;</code>
      * @return The data.
      */
-    proto.FlBaseProto.TensorMap getData();
+    com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap getData();
     /**
      * <code>.TensorMap data = 2;</code>
      */
-    proto.FlBaseProto.TensorMapOrBuilder getDataOrBuilder();
+    com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMapOrBuilder getDataOrBuilder();
 
     /**
      * <code>int32 code = 3;</code>
@@ -1025,11 +1025,11 @@ public final class NNServiceProto {
               break;
             }
             case 18: {
-              proto.FlBaseProto.TensorMap.Builder subBuilder = null;
+              com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap.Builder subBuilder = null;
               if (data_ != null) {
                 subBuilder = data_.toBuilder();
               }
-              data_ = input.readMessage(proto.FlBaseProto.TensorMap.parser(), extensionRegistry);
+              data_ = input.readMessage(com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap.parser(), extensionRegistry);
               if (subBuilder != null) {
                 subBuilder.mergeFrom(data_);
                 data_ = subBuilder.buildPartial();
@@ -1063,15 +1063,15 @@ public final class NNServiceProto {
     }
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return NNServiceProto.internal_static_nn_TrainResponse_descriptor;
+      return com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.internal_static_nn_TrainResponse_descriptor;
     }
 
     @Override
     protected FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return NNServiceProto.internal_static_nn_TrainResponse_fieldAccessorTable
+      return com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.internal_static_nn_TrainResponse_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
-              TrainResponse.class, Builder.class);
+              com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.TrainResponse.class, com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.TrainResponse.Builder.class);
     }
 
     public static final int RESPONSE_FIELD_NUMBER = 1;
@@ -1113,7 +1113,7 @@ public final class NNServiceProto {
     }
 
     public static final int DATA_FIELD_NUMBER = 2;
-    private proto.FlBaseProto.TensorMap data_;
+    private com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap data_;
     /**
      * <code>.TensorMap data = 2;</code>
      * @return Whether the data field is set.
@@ -1127,14 +1127,14 @@ public final class NNServiceProto {
      * @return The data.
      */
     @Override
-    public proto.FlBaseProto.TensorMap getData() {
-      return data_ == null ? proto.FlBaseProto.TensorMap.getDefaultInstance() : data_;
+    public com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap getData() {
+      return data_ == null ? com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap.getDefaultInstance() : data_;
     }
     /**
      * <code>.TensorMap data = 2;</code>
      */
     @Override
-    public proto.FlBaseProto.TensorMapOrBuilder getDataOrBuilder() {
+    public com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMapOrBuilder getDataOrBuilder() {
       return getData();
     }
 
@@ -1202,10 +1202,10 @@ public final class NNServiceProto {
       if (obj == this) {
        return true;
       }
-      if (!(obj instanceof TrainResponse)) {
+      if (!(obj instanceof com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.TrainResponse)) {
         return super.equals(obj);
       }
-      TrainResponse other = (TrainResponse) obj;
+      com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.TrainResponse other = (com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.TrainResponse) obj;
 
       if (!getResponse()
           .equals(other.getResponse())) return false;
@@ -1240,69 +1240,69 @@ public final class NNServiceProto {
       return hash;
     }
 
-    public static TrainResponse parseFrom(
+    public static com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.TrainResponse parseFrom(
         java.nio.ByteBuffer data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static TrainResponse parseFrom(
+    public static com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.TrainResponse parseFrom(
         java.nio.ByteBuffer data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static TrainResponse parseFrom(
+    public static com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.TrainResponse parseFrom(
         com.google.protobuf.ByteString data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static TrainResponse parseFrom(
+    public static com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.TrainResponse parseFrom(
         com.google.protobuf.ByteString data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static TrainResponse parseFrom(byte[] data)
+    public static com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.TrainResponse parseFrom(byte[] data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static TrainResponse parseFrom(
+    public static com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.TrainResponse parseFrom(
         byte[] data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static TrainResponse parseFrom(java.io.InputStream input)
+    public static com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.TrainResponse parseFrom(java.io.InputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input);
     }
-    public static TrainResponse parseFrom(
+    public static com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.TrainResponse parseFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input, extensionRegistry);
     }
-    public static TrainResponse parseDelimitedFrom(java.io.InputStream input)
+    public static com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.TrainResponse parseDelimitedFrom(java.io.InputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseDelimitedWithIOException(PARSER, input);
     }
-    public static TrainResponse parseDelimitedFrom(
+    public static com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.TrainResponse parseDelimitedFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
     }
-    public static TrainResponse parseFrom(
+    public static com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.TrainResponse parseFrom(
         com.google.protobuf.CodedInputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input);
     }
-    public static TrainResponse parseFrom(
+    public static com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.TrainResponse parseFrom(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
@@ -1315,7 +1315,7 @@ public final class NNServiceProto {
     public static Builder newBuilder() {
       return DEFAULT_INSTANCE.toBuilder();
     }
-    public static Builder newBuilder(TrainResponse prototype) {
+    public static Builder newBuilder(com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.TrainResponse prototype) {
       return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
     }
     @Override
@@ -1336,18 +1336,18 @@ public final class NNServiceProto {
     public static final class Builder extends
         com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
         // @@protoc_insertion_point(builder_implements:nn.TrainResponse)
-        TrainResponseOrBuilder {
+        com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.TrainResponseOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
           getDescriptor() {
-        return NNServiceProto.internal_static_nn_TrainResponse_descriptor;
+        return com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.internal_static_nn_TrainResponse_descriptor;
       }
 
       @Override
       protected FieldAccessorTable
           internalGetFieldAccessorTable() {
-        return NNServiceProto.internal_static_nn_TrainResponse_fieldAccessorTable
+        return com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.internal_static_nn_TrainResponse_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
-                TrainResponse.class, Builder.class);
+                com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.TrainResponse.class, com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.TrainResponse.Builder.class);
       }
 
       // Construct using com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.TrainResponse.newBuilder()
@@ -1384,17 +1384,17 @@ public final class NNServiceProto {
       @Override
       public com.google.protobuf.Descriptors.Descriptor
           getDescriptorForType() {
-        return NNServiceProto.internal_static_nn_TrainResponse_descriptor;
+        return com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.internal_static_nn_TrainResponse_descriptor;
       }
 
       @Override
-      public TrainResponse getDefaultInstanceForType() {
-        return TrainResponse.getDefaultInstance();
+      public com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.TrainResponse getDefaultInstanceForType() {
+        return com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.TrainResponse.getDefaultInstance();
       }
 
       @Override
-      public TrainResponse build() {
-        TrainResponse result = buildPartial();
+      public com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.TrainResponse build() {
+        com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.TrainResponse result = buildPartial();
         if (!result.isInitialized()) {
           throw newUninitializedMessageException(result);
         }
@@ -1402,8 +1402,8 @@ public final class NNServiceProto {
       }
 
       @Override
-      public TrainResponse buildPartial() {
-        TrainResponse result = new TrainResponse(this);
+      public com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.TrainResponse buildPartial() {
+        com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.TrainResponse result = new com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.TrainResponse(this);
         result.response_ = response_;
         if (dataBuilder_ == null) {
           result.data_ = data_;
@@ -1449,16 +1449,16 @@ public final class NNServiceProto {
       }
       @Override
       public Builder mergeFrom(com.google.protobuf.Message other) {
-        if (other instanceof TrainResponse) {
-          return mergeFrom((TrainResponse)other);
+        if (other instanceof com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.TrainResponse) {
+          return mergeFrom((com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.TrainResponse)other);
         } else {
           super.mergeFrom(other);
           return this;
         }
       }
 
-      public Builder mergeFrom(TrainResponse other) {
-        if (other == TrainResponse.getDefaultInstance()) return this;
+      public Builder mergeFrom(com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.TrainResponse other) {
+        if (other == com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.TrainResponse.getDefaultInstance()) return this;
         if (!other.getResponse().isEmpty()) {
           response_ = other.response_;
           onChanged();
@@ -1484,11 +1484,11 @@ public final class NNServiceProto {
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws java.io.IOException {
-        TrainResponse parsedMessage = null;
+        com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.TrainResponse parsedMessage = null;
         try {
           parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
         } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-          parsedMessage = (TrainResponse) e.getUnfinishedMessage();
+          parsedMessage = (com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.TrainResponse) e.getUnfinishedMessage();
           throw e.unwrapIOException();
         } finally {
           if (parsedMessage != null) {
@@ -1574,9 +1574,9 @@ public final class NNServiceProto {
         return this;
       }
 
-      private proto.FlBaseProto.TensorMap data_;
+      private com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap data_;
       private com.google.protobuf.SingleFieldBuilderV3<
-          proto.FlBaseProto.TensorMap, proto.FlBaseProto.TensorMap.Builder, proto.FlBaseProto.TensorMapOrBuilder> dataBuilder_;
+          com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap, com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap.Builder, com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMapOrBuilder> dataBuilder_;
       /**
        * <code>.TensorMap data = 2;</code>
        * @return Whether the data field is set.
@@ -1588,9 +1588,9 @@ public final class NNServiceProto {
        * <code>.TensorMap data = 2;</code>
        * @return The data.
        */
-      public proto.FlBaseProto.TensorMap getData() {
+      public com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap getData() {
         if (dataBuilder_ == null) {
-          return data_ == null ? proto.FlBaseProto.TensorMap.getDefaultInstance() : data_;
+          return data_ == null ? com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap.getDefaultInstance() : data_;
         } else {
           return dataBuilder_.getMessage();
         }
@@ -1598,7 +1598,7 @@ public final class NNServiceProto {
       /**
        * <code>.TensorMap data = 2;</code>
        */
-      public Builder setData(proto.FlBaseProto.TensorMap value) {
+      public Builder setData(com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap value) {
         if (dataBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
@@ -1615,7 +1615,7 @@ public final class NNServiceProto {
        * <code>.TensorMap data = 2;</code>
        */
       public Builder setData(
-          proto.FlBaseProto.TensorMap.Builder builderForValue) {
+          com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap.Builder builderForValue) {
         if (dataBuilder_ == null) {
           data_ = builderForValue.build();
           onChanged();
@@ -1628,11 +1628,11 @@ public final class NNServiceProto {
       /**
        * <code>.TensorMap data = 2;</code>
        */
-      public Builder mergeData(proto.FlBaseProto.TensorMap value) {
+      public Builder mergeData(com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap value) {
         if (dataBuilder_ == null) {
           if (data_ != null) {
             data_ =
-              proto.FlBaseProto.TensorMap.newBuilder(data_).mergeFrom(value).buildPartial();
+              com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap.newBuilder(data_).mergeFrom(value).buildPartial();
           } else {
             data_ = value;
           }
@@ -1660,7 +1660,7 @@ public final class NNServiceProto {
       /**
        * <code>.TensorMap data = 2;</code>
        */
-      public proto.FlBaseProto.TensorMap.Builder getDataBuilder() {
+      public com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap.Builder getDataBuilder() {
         
         onChanged();
         return getDataFieldBuilder().getBuilder();
@@ -1668,23 +1668,23 @@ public final class NNServiceProto {
       /**
        * <code>.TensorMap data = 2;</code>
        */
-      public proto.FlBaseProto.TensorMapOrBuilder getDataOrBuilder() {
+      public com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMapOrBuilder getDataOrBuilder() {
         if (dataBuilder_ != null) {
           return dataBuilder_.getMessageOrBuilder();
         } else {
           return data_ == null ?
-              proto.FlBaseProto.TensorMap.getDefaultInstance() : data_;
+              com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap.getDefaultInstance() : data_;
         }
       }
       /**
        * <code>.TensorMap data = 2;</code>
        */
       private com.google.protobuf.SingleFieldBuilderV3<
-          proto.FlBaseProto.TensorMap, proto.FlBaseProto.TensorMap.Builder, proto.FlBaseProto.TensorMapOrBuilder>
+          com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap, com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap.Builder, com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMapOrBuilder> 
           getDataFieldBuilder() {
         if (dataBuilder_ == null) {
           dataBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
-              proto.FlBaseProto.TensorMap, proto.FlBaseProto.TensorMap.Builder, proto.FlBaseProto.TensorMapOrBuilder>(
+              com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap, com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap.Builder, com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMapOrBuilder>(
                   getData(),
                   getParentForChildren(),
                   isClean());
@@ -1740,12 +1740,12 @@ public final class NNServiceProto {
     }
 
     // @@protoc_insertion_point(class_scope:nn.TrainResponse)
-    private static final TrainResponse DEFAULT_INSTANCE;
+    private static final com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.TrainResponse DEFAULT_INSTANCE;
     static {
-      DEFAULT_INSTANCE = new TrainResponse();
+      DEFAULT_INSTANCE = new com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.TrainResponse();
     }
 
-    public static TrainResponse getDefaultInstance() {
+    public static com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.TrainResponse getDefaultInstance() {
       return DEFAULT_INSTANCE;
     }
 
@@ -1770,7 +1770,7 @@ public final class NNServiceProto {
     }
 
     @Override
-    public TrainResponse getDefaultInstanceForType() {
+    public com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.TrainResponse getDefaultInstanceForType() {
       return DEFAULT_INSTANCE;
     }
 
@@ -1801,11 +1801,11 @@ public final class NNServiceProto {
      * <code>.TensorMap data = 2;</code>
      * @return The data.
      */
-    proto.FlBaseProto.TensorMap getData();
+    com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap getData();
     /**
      * <code>.TensorMap data = 2;</code>
      */
-    proto.FlBaseProto.TensorMapOrBuilder getDataOrBuilder();
+    com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMapOrBuilder getDataOrBuilder();
 
     /**
      * <code>string algorithm = 3;</code>
@@ -1879,11 +1879,11 @@ public final class NNServiceProto {
               break;
             }
             case 18: {
-              proto.FlBaseProto.TensorMap.Builder subBuilder = null;
+              com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap.Builder subBuilder = null;
               if (data_ != null) {
                 subBuilder = data_.toBuilder();
               }
-              data_ = input.readMessage(proto.FlBaseProto.TensorMap.parser(), extensionRegistry);
+              data_ = input.readMessage(com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap.parser(), extensionRegistry);
               if (subBuilder != null) {
                 subBuilder.mergeFrom(data_);
                 data_ = subBuilder.buildPartial();
@@ -1923,15 +1923,15 @@ public final class NNServiceProto {
     }
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return NNServiceProto.internal_static_nn_EvaluateRequest_descriptor;
+      return com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.internal_static_nn_EvaluateRequest_descriptor;
     }
 
     @Override
     protected FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return NNServiceProto.internal_static_nn_EvaluateRequest_fieldAccessorTable
+      return com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.internal_static_nn_EvaluateRequest_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
-              EvaluateRequest.class, Builder.class);
+              com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.EvaluateRequest.class, com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.EvaluateRequest.Builder.class);
     }
 
     public static final int CLIENTUUID_FIELD_NUMBER = 1;
@@ -1973,7 +1973,7 @@ public final class NNServiceProto {
     }
 
     public static final int DATA_FIELD_NUMBER = 2;
-    private proto.FlBaseProto.TensorMap data_;
+    private com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap data_;
     /**
      * <code>.TensorMap data = 2;</code>
      * @return Whether the data field is set.
@@ -1987,14 +1987,14 @@ public final class NNServiceProto {
      * @return The data.
      */
     @Override
-    public proto.FlBaseProto.TensorMap getData() {
-      return data_ == null ? proto.FlBaseProto.TensorMap.getDefaultInstance() : data_;
+    public com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap getData() {
+      return data_ == null ? com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap.getDefaultInstance() : data_;
     }
     /**
      * <code>.TensorMap data = 2;</code>
      */
     @Override
-    public proto.FlBaseProto.TensorMapOrBuilder getDataOrBuilder() {
+    public com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMapOrBuilder getDataOrBuilder() {
       return getData();
     }
 
@@ -2106,10 +2106,10 @@ public final class NNServiceProto {
       if (obj == this) {
        return true;
       }
-      if (!(obj instanceof EvaluateRequest)) {
+      if (!(obj instanceof com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.EvaluateRequest)) {
         return super.equals(obj);
       }
-      EvaluateRequest other = (EvaluateRequest) obj;
+      com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.EvaluateRequest other = (com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.EvaluateRequest) obj;
 
       if (!getClientuuid()
           .equals(other.getClientuuid())) return false;
@@ -2149,69 +2149,69 @@ public final class NNServiceProto {
       return hash;
     }
 
-    public static EvaluateRequest parseFrom(
+    public static com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.EvaluateRequest parseFrom(
         java.nio.ByteBuffer data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static EvaluateRequest parseFrom(
+    public static com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.EvaluateRequest parseFrom(
         java.nio.ByteBuffer data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static EvaluateRequest parseFrom(
+    public static com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.EvaluateRequest parseFrom(
         com.google.protobuf.ByteString data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static EvaluateRequest parseFrom(
+    public static com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.EvaluateRequest parseFrom(
         com.google.protobuf.ByteString data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static EvaluateRequest parseFrom(byte[] data)
+    public static com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.EvaluateRequest parseFrom(byte[] data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static EvaluateRequest parseFrom(
+    public static com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.EvaluateRequest parseFrom(
         byte[] data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static EvaluateRequest parseFrom(java.io.InputStream input)
+    public static com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.EvaluateRequest parseFrom(java.io.InputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input);
     }
-    public static EvaluateRequest parseFrom(
+    public static com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.EvaluateRequest parseFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input, extensionRegistry);
     }
-    public static EvaluateRequest parseDelimitedFrom(java.io.InputStream input)
+    public static com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.EvaluateRequest parseDelimitedFrom(java.io.InputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseDelimitedWithIOException(PARSER, input);
     }
-    public static EvaluateRequest parseDelimitedFrom(
+    public static com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.EvaluateRequest parseDelimitedFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
     }
-    public static EvaluateRequest parseFrom(
+    public static com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.EvaluateRequest parseFrom(
         com.google.protobuf.CodedInputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input);
     }
-    public static EvaluateRequest parseFrom(
+    public static com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.EvaluateRequest parseFrom(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
@@ -2224,7 +2224,7 @@ public final class NNServiceProto {
     public static Builder newBuilder() {
       return DEFAULT_INSTANCE.toBuilder();
     }
-    public static Builder newBuilder(EvaluateRequest prototype) {
+    public static Builder newBuilder(com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.EvaluateRequest prototype) {
       return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
     }
     @Override
@@ -2245,18 +2245,18 @@ public final class NNServiceProto {
     public static final class Builder extends
         com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
         // @@protoc_insertion_point(builder_implements:nn.EvaluateRequest)
-        EvaluateRequestOrBuilder {
+        com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.EvaluateRequestOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
           getDescriptor() {
-        return NNServiceProto.internal_static_nn_EvaluateRequest_descriptor;
+        return com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.internal_static_nn_EvaluateRequest_descriptor;
       }
 
       @Override
       protected FieldAccessorTable
           internalGetFieldAccessorTable() {
-        return NNServiceProto.internal_static_nn_EvaluateRequest_fieldAccessorTable
+        return com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.internal_static_nn_EvaluateRequest_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
-                EvaluateRequest.class, Builder.class);
+                com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.EvaluateRequest.class, com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.EvaluateRequest.Builder.class);
       }
 
       // Construct using com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.EvaluateRequest.newBuilder()
@@ -2295,17 +2295,17 @@ public final class NNServiceProto {
       @Override
       public com.google.protobuf.Descriptors.Descriptor
           getDescriptorForType() {
-        return NNServiceProto.internal_static_nn_EvaluateRequest_descriptor;
+        return com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.internal_static_nn_EvaluateRequest_descriptor;
       }
 
       @Override
-      public EvaluateRequest getDefaultInstanceForType() {
-        return EvaluateRequest.getDefaultInstance();
+      public com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.EvaluateRequest getDefaultInstanceForType() {
+        return com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.EvaluateRequest.getDefaultInstance();
       }
 
       @Override
-      public EvaluateRequest build() {
-        EvaluateRequest result = buildPartial();
+      public com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.EvaluateRequest build() {
+        com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.EvaluateRequest result = buildPartial();
         if (!result.isInitialized()) {
           throw newUninitializedMessageException(result);
         }
@@ -2313,8 +2313,8 @@ public final class NNServiceProto {
       }
 
       @Override
-      public EvaluateRequest buildPartial() {
-        EvaluateRequest result = new EvaluateRequest(this);
+      public com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.EvaluateRequest buildPartial() {
+        com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.EvaluateRequest result = new com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.EvaluateRequest(this);
         result.clientuuid_ = clientuuid_;
         if (dataBuilder_ == null) {
           result.data_ = data_;
@@ -2361,16 +2361,16 @@ public final class NNServiceProto {
       }
       @Override
       public Builder mergeFrom(com.google.protobuf.Message other) {
-        if (other instanceof EvaluateRequest) {
-          return mergeFrom((EvaluateRequest)other);
+        if (other instanceof com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.EvaluateRequest) {
+          return mergeFrom((com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.EvaluateRequest)other);
         } else {
           super.mergeFrom(other);
           return this;
         }
       }
 
-      public Builder mergeFrom(EvaluateRequest other) {
-        if (other == EvaluateRequest.getDefaultInstance()) return this;
+      public Builder mergeFrom(com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.EvaluateRequest other) {
+        if (other == com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.EvaluateRequest.getDefaultInstance()) return this;
         if (!other.getClientuuid().isEmpty()) {
           clientuuid_ = other.clientuuid_;
           onChanged();
@@ -2400,11 +2400,11 @@ public final class NNServiceProto {
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws java.io.IOException {
-        EvaluateRequest parsedMessage = null;
+        com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.EvaluateRequest parsedMessage = null;
         try {
           parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
         } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-          parsedMessage = (EvaluateRequest) e.getUnfinishedMessage();
+          parsedMessage = (com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.EvaluateRequest) e.getUnfinishedMessage();
           throw e.unwrapIOException();
         } finally {
           if (parsedMessage != null) {
@@ -2490,9 +2490,9 @@ public final class NNServiceProto {
         return this;
       }
 
-      private proto.FlBaseProto.TensorMap data_;
+      private com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap data_;
       private com.google.protobuf.SingleFieldBuilderV3<
-          proto.FlBaseProto.TensorMap, proto.FlBaseProto.TensorMap.Builder, proto.FlBaseProto.TensorMapOrBuilder> dataBuilder_;
+          com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap, com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap.Builder, com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMapOrBuilder> dataBuilder_;
       /**
        * <code>.TensorMap data = 2;</code>
        * @return Whether the data field is set.
@@ -2504,9 +2504,9 @@ public final class NNServiceProto {
        * <code>.TensorMap data = 2;</code>
        * @return The data.
        */
-      public proto.FlBaseProto.TensorMap getData() {
+      public com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap getData() {
         if (dataBuilder_ == null) {
-          return data_ == null ? proto.FlBaseProto.TensorMap.getDefaultInstance() : data_;
+          return data_ == null ? com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap.getDefaultInstance() : data_;
         } else {
           return dataBuilder_.getMessage();
         }
@@ -2514,7 +2514,7 @@ public final class NNServiceProto {
       /**
        * <code>.TensorMap data = 2;</code>
        */
-      public Builder setData(proto.FlBaseProto.TensorMap value) {
+      public Builder setData(com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap value) {
         if (dataBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
@@ -2531,7 +2531,7 @@ public final class NNServiceProto {
        * <code>.TensorMap data = 2;</code>
        */
       public Builder setData(
-          proto.FlBaseProto.TensorMap.Builder builderForValue) {
+          com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap.Builder builderForValue) {
         if (dataBuilder_ == null) {
           data_ = builderForValue.build();
           onChanged();
@@ -2544,11 +2544,11 @@ public final class NNServiceProto {
       /**
        * <code>.TensorMap data = 2;</code>
        */
-      public Builder mergeData(proto.FlBaseProto.TensorMap value) {
+      public Builder mergeData(com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap value) {
         if (dataBuilder_ == null) {
           if (data_ != null) {
             data_ =
-              proto.FlBaseProto.TensorMap.newBuilder(data_).mergeFrom(value).buildPartial();
+              com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap.newBuilder(data_).mergeFrom(value).buildPartial();
           } else {
             data_ = value;
           }
@@ -2576,7 +2576,7 @@ public final class NNServiceProto {
       /**
        * <code>.TensorMap data = 2;</code>
        */
-      public proto.FlBaseProto.TensorMap.Builder getDataBuilder() {
+      public com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap.Builder getDataBuilder() {
         
         onChanged();
         return getDataFieldBuilder().getBuilder();
@@ -2584,23 +2584,23 @@ public final class NNServiceProto {
       /**
        * <code>.TensorMap data = 2;</code>
        */
-      public proto.FlBaseProto.TensorMapOrBuilder getDataOrBuilder() {
+      public com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMapOrBuilder getDataOrBuilder() {
         if (dataBuilder_ != null) {
           return dataBuilder_.getMessageOrBuilder();
         } else {
           return data_ == null ?
-              proto.FlBaseProto.TensorMap.getDefaultInstance() : data_;
+              com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap.getDefaultInstance() : data_;
         }
       }
       /**
        * <code>.TensorMap data = 2;</code>
        */
       private com.google.protobuf.SingleFieldBuilderV3<
-          proto.FlBaseProto.TensorMap, proto.FlBaseProto.TensorMap.Builder, proto.FlBaseProto.TensorMapOrBuilder>
+          com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap, com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap.Builder, com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMapOrBuilder> 
           getDataFieldBuilder() {
         if (dataBuilder_ == null) {
           dataBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
-              proto.FlBaseProto.TensorMap, proto.FlBaseProto.TensorMap.Builder, proto.FlBaseProto.TensorMapOrBuilder>(
+              com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap, com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap.Builder, com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMapOrBuilder>(
                   getData(),
                   getParentForChildren(),
                   isClean());
@@ -2732,12 +2732,12 @@ public final class NNServiceProto {
     }
 
     // @@protoc_insertion_point(class_scope:nn.EvaluateRequest)
-    private static final EvaluateRequest DEFAULT_INSTANCE;
+    private static final com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.EvaluateRequest DEFAULT_INSTANCE;
     static {
-      DEFAULT_INSTANCE = new EvaluateRequest();
+      DEFAULT_INSTANCE = new com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.EvaluateRequest();
     }
 
-    public static EvaluateRequest getDefaultInstance() {
+    public static com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.EvaluateRequest getDefaultInstance() {
       return DEFAULT_INSTANCE;
     }
 
@@ -2762,7 +2762,7 @@ public final class NNServiceProto {
     }
 
     @Override
-    public EvaluateRequest getDefaultInstanceForType() {
+    public com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.EvaluateRequest getDefaultInstanceForType() {
       return DEFAULT_INSTANCE;
     }
 
@@ -2793,11 +2793,11 @@ public final class NNServiceProto {
      * <code>.TensorMap data = 2;</code>
      * @return The data.
      */
-    proto.FlBaseProto.TensorMap getData();
+    com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap getData();
     /**
      * <code>.TensorMap data = 2;</code>
      */
-    proto.FlBaseProto.TensorMapOrBuilder getDataOrBuilder();
+    com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMapOrBuilder getDataOrBuilder();
 
     /**
      * <code>int32 code = 3;</code>
@@ -2871,11 +2871,11 @@ public final class NNServiceProto {
               break;
             }
             case 18: {
-              proto.FlBaseProto.TensorMap.Builder subBuilder = null;
+              com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap.Builder subBuilder = null;
               if (data_ != null) {
                 subBuilder = data_.toBuilder();
               }
-              data_ = input.readMessage(proto.FlBaseProto.TensorMap.parser(), extensionRegistry);
+              data_ = input.readMessage(com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap.parser(), extensionRegistry);
               if (subBuilder != null) {
                 subBuilder.mergeFrom(data_);
                 data_ = subBuilder.buildPartial();
@@ -2915,15 +2915,15 @@ public final class NNServiceProto {
     }
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return NNServiceProto.internal_static_nn_EvaluateResponse_descriptor;
+      return com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.internal_static_nn_EvaluateResponse_descriptor;
     }
 
     @Override
     protected FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return NNServiceProto.internal_static_nn_EvaluateResponse_fieldAccessorTable
+      return com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.internal_static_nn_EvaluateResponse_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
-              EvaluateResponse.class, Builder.class);
+              com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.EvaluateResponse.class, com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.EvaluateResponse.Builder.class);
     }
 
     public static final int RESPONSE_FIELD_NUMBER = 1;
@@ -2965,7 +2965,7 @@ public final class NNServiceProto {
     }
 
     public static final int DATA_FIELD_NUMBER = 2;
-    private proto.FlBaseProto.TensorMap data_;
+    private com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap data_;
     /**
      * <code>.TensorMap data = 2;</code>
      * @return Whether the data field is set.
@@ -2979,14 +2979,14 @@ public final class NNServiceProto {
      * @return The data.
      */
     @Override
-    public proto.FlBaseProto.TensorMap getData() {
-      return data_ == null ? proto.FlBaseProto.TensorMap.getDefaultInstance() : data_;
+    public com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap getData() {
+      return data_ == null ? com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap.getDefaultInstance() : data_;
     }
     /**
      * <code>.TensorMap data = 2;</code>
      */
     @Override
-    public proto.FlBaseProto.TensorMapOrBuilder getDataOrBuilder() {
+    public com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMapOrBuilder getDataOrBuilder() {
       return getData();
     }
 
@@ -3098,10 +3098,10 @@ public final class NNServiceProto {
       if (obj == this) {
        return true;
       }
-      if (!(obj instanceof EvaluateResponse)) {
+      if (!(obj instanceof com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.EvaluateResponse)) {
         return super.equals(obj);
       }
-      EvaluateResponse other = (EvaluateResponse) obj;
+      com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.EvaluateResponse other = (com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.EvaluateResponse) obj;
 
       if (!getResponse()
           .equals(other.getResponse())) return false;
@@ -3140,69 +3140,69 @@ public final class NNServiceProto {
       return hash;
     }
 
-    public static EvaluateResponse parseFrom(
+    public static com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.EvaluateResponse parseFrom(
         java.nio.ByteBuffer data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static EvaluateResponse parseFrom(
+    public static com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.EvaluateResponse parseFrom(
         java.nio.ByteBuffer data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static EvaluateResponse parseFrom(
+    public static com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.EvaluateResponse parseFrom(
         com.google.protobuf.ByteString data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static EvaluateResponse parseFrom(
+    public static com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.EvaluateResponse parseFrom(
         com.google.protobuf.ByteString data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static EvaluateResponse parseFrom(byte[] data)
+    public static com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.EvaluateResponse parseFrom(byte[] data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static EvaluateResponse parseFrom(
+    public static com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.EvaluateResponse parseFrom(
         byte[] data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static EvaluateResponse parseFrom(java.io.InputStream input)
+    public static com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.EvaluateResponse parseFrom(java.io.InputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input);
     }
-    public static EvaluateResponse parseFrom(
+    public static com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.EvaluateResponse parseFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input, extensionRegistry);
     }
-    public static EvaluateResponse parseDelimitedFrom(java.io.InputStream input)
+    public static com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.EvaluateResponse parseDelimitedFrom(java.io.InputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseDelimitedWithIOException(PARSER, input);
     }
-    public static EvaluateResponse parseDelimitedFrom(
+    public static com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.EvaluateResponse parseDelimitedFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
     }
-    public static EvaluateResponse parseFrom(
+    public static com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.EvaluateResponse parseFrom(
         com.google.protobuf.CodedInputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input);
     }
-    public static EvaluateResponse parseFrom(
+    public static com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.EvaluateResponse parseFrom(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
@@ -3215,7 +3215,7 @@ public final class NNServiceProto {
     public static Builder newBuilder() {
       return DEFAULT_INSTANCE.toBuilder();
     }
-    public static Builder newBuilder(EvaluateResponse prototype) {
+    public static Builder newBuilder(com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.EvaluateResponse prototype) {
       return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
     }
     @Override
@@ -3236,18 +3236,18 @@ public final class NNServiceProto {
     public static final class Builder extends
         com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
         // @@protoc_insertion_point(builder_implements:nn.EvaluateResponse)
-        EvaluateResponseOrBuilder {
+        com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.EvaluateResponseOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
           getDescriptor() {
-        return NNServiceProto.internal_static_nn_EvaluateResponse_descriptor;
+        return com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.internal_static_nn_EvaluateResponse_descriptor;
       }
 
       @Override
       protected FieldAccessorTable
           internalGetFieldAccessorTable() {
-        return NNServiceProto.internal_static_nn_EvaluateResponse_fieldAccessorTable
+        return com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.internal_static_nn_EvaluateResponse_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
-                EvaluateResponse.class, Builder.class);
+                com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.EvaluateResponse.class, com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.EvaluateResponse.Builder.class);
       }
 
       // Construct using com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.EvaluateResponse.newBuilder()
@@ -3286,17 +3286,17 @@ public final class NNServiceProto {
       @Override
       public com.google.protobuf.Descriptors.Descriptor
           getDescriptorForType() {
-        return NNServiceProto.internal_static_nn_EvaluateResponse_descriptor;
+        return com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.internal_static_nn_EvaluateResponse_descriptor;
       }
 
       @Override
-      public EvaluateResponse getDefaultInstanceForType() {
-        return EvaluateResponse.getDefaultInstance();
+      public com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.EvaluateResponse getDefaultInstanceForType() {
+        return com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.EvaluateResponse.getDefaultInstance();
       }
 
       @Override
-      public EvaluateResponse build() {
-        EvaluateResponse result = buildPartial();
+      public com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.EvaluateResponse build() {
+        com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.EvaluateResponse result = buildPartial();
         if (!result.isInitialized()) {
           throw newUninitializedMessageException(result);
         }
@@ -3304,8 +3304,8 @@ public final class NNServiceProto {
       }
 
       @Override
-      public EvaluateResponse buildPartial() {
-        EvaluateResponse result = new EvaluateResponse(this);
+      public com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.EvaluateResponse buildPartial() {
+        com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.EvaluateResponse result = new com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.EvaluateResponse(this);
         result.response_ = response_;
         if (dataBuilder_ == null) {
           result.data_ = data_;
@@ -3352,16 +3352,16 @@ public final class NNServiceProto {
       }
       @Override
       public Builder mergeFrom(com.google.protobuf.Message other) {
-        if (other instanceof EvaluateResponse) {
-          return mergeFrom((EvaluateResponse)other);
+        if (other instanceof com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.EvaluateResponse) {
+          return mergeFrom((com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.EvaluateResponse)other);
         } else {
           super.mergeFrom(other);
           return this;
         }
       }
 
-      public Builder mergeFrom(EvaluateResponse other) {
-        if (other == EvaluateResponse.getDefaultInstance()) return this;
+      public Builder mergeFrom(com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.EvaluateResponse other) {
+        if (other == com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.EvaluateResponse.getDefaultInstance()) return this;
         if (!other.getResponse().isEmpty()) {
           response_ = other.response_;
           onChanged();
@@ -3391,11 +3391,11 @@ public final class NNServiceProto {
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws java.io.IOException {
-        EvaluateResponse parsedMessage = null;
+        com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.EvaluateResponse parsedMessage = null;
         try {
           parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
         } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-          parsedMessage = (EvaluateResponse) e.getUnfinishedMessage();
+          parsedMessage = (com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.EvaluateResponse) e.getUnfinishedMessage();
           throw e.unwrapIOException();
         } finally {
           if (parsedMessage != null) {
@@ -3481,9 +3481,9 @@ public final class NNServiceProto {
         return this;
       }
 
-      private proto.FlBaseProto.TensorMap data_;
+      private com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap data_;
       private com.google.protobuf.SingleFieldBuilderV3<
-          proto.FlBaseProto.TensorMap, proto.FlBaseProto.TensorMap.Builder, proto.FlBaseProto.TensorMapOrBuilder> dataBuilder_;
+          com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap, com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap.Builder, com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMapOrBuilder> dataBuilder_;
       /**
        * <code>.TensorMap data = 2;</code>
        * @return Whether the data field is set.
@@ -3495,9 +3495,9 @@ public final class NNServiceProto {
        * <code>.TensorMap data = 2;</code>
        * @return The data.
        */
-      public proto.FlBaseProto.TensorMap getData() {
+      public com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap getData() {
         if (dataBuilder_ == null) {
-          return data_ == null ? proto.FlBaseProto.TensorMap.getDefaultInstance() : data_;
+          return data_ == null ? com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap.getDefaultInstance() : data_;
         } else {
           return dataBuilder_.getMessage();
         }
@@ -3505,7 +3505,7 @@ public final class NNServiceProto {
       /**
        * <code>.TensorMap data = 2;</code>
        */
-      public Builder setData(proto.FlBaseProto.TensorMap value) {
+      public Builder setData(com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap value) {
         if (dataBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
@@ -3522,7 +3522,7 @@ public final class NNServiceProto {
        * <code>.TensorMap data = 2;</code>
        */
       public Builder setData(
-          proto.FlBaseProto.TensorMap.Builder builderForValue) {
+          com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap.Builder builderForValue) {
         if (dataBuilder_ == null) {
           data_ = builderForValue.build();
           onChanged();
@@ -3535,11 +3535,11 @@ public final class NNServiceProto {
       /**
        * <code>.TensorMap data = 2;</code>
        */
-      public Builder mergeData(proto.FlBaseProto.TensorMap value) {
+      public Builder mergeData(com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap value) {
         if (dataBuilder_ == null) {
           if (data_ != null) {
             data_ =
-              proto.FlBaseProto.TensorMap.newBuilder(data_).mergeFrom(value).buildPartial();
+              com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap.newBuilder(data_).mergeFrom(value).buildPartial();
           } else {
             data_ = value;
           }
@@ -3567,7 +3567,7 @@ public final class NNServiceProto {
       /**
        * <code>.TensorMap data = 2;</code>
        */
-      public proto.FlBaseProto.TensorMap.Builder getDataBuilder() {
+      public com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap.Builder getDataBuilder() {
         
         onChanged();
         return getDataFieldBuilder().getBuilder();
@@ -3575,23 +3575,23 @@ public final class NNServiceProto {
       /**
        * <code>.TensorMap data = 2;</code>
        */
-      public proto.FlBaseProto.TensorMapOrBuilder getDataOrBuilder() {
+      public com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMapOrBuilder getDataOrBuilder() {
         if (dataBuilder_ != null) {
           return dataBuilder_.getMessageOrBuilder();
         } else {
           return data_ == null ?
-              proto.FlBaseProto.TensorMap.getDefaultInstance() : data_;
+              com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap.getDefaultInstance() : data_;
         }
       }
       /**
        * <code>.TensorMap data = 2;</code>
        */
       private com.google.protobuf.SingleFieldBuilderV3<
-          proto.FlBaseProto.TensorMap, proto.FlBaseProto.TensorMap.Builder, proto.FlBaseProto.TensorMapOrBuilder>
+          com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap, com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap.Builder, com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMapOrBuilder> 
           getDataFieldBuilder() {
         if (dataBuilder_ == null) {
           dataBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
-              proto.FlBaseProto.TensorMap, proto.FlBaseProto.TensorMap.Builder, proto.FlBaseProto.TensorMapOrBuilder>(
+              com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap, com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap.Builder, com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMapOrBuilder>(
                   getData(),
                   getParentForChildren(),
                   isClean());
@@ -3723,12 +3723,12 @@ public final class NNServiceProto {
     }
 
     // @@protoc_insertion_point(class_scope:nn.EvaluateResponse)
-    private static final EvaluateResponse DEFAULT_INSTANCE;
+    private static final com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.EvaluateResponse DEFAULT_INSTANCE;
     static {
-      DEFAULT_INSTANCE = new EvaluateResponse();
+      DEFAULT_INSTANCE = new com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.EvaluateResponse();
     }
 
-    public static EvaluateResponse getDefaultInstance() {
+    public static com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.EvaluateResponse getDefaultInstance() {
       return DEFAULT_INSTANCE;
     }
 
@@ -3753,7 +3753,7 @@ public final class NNServiceProto {
     }
 
     @Override
-    public EvaluateResponse getDefaultInstanceForType() {
+    public com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.EvaluateResponse getDefaultInstanceForType() {
       return DEFAULT_INSTANCE;
     }
 
@@ -3784,11 +3784,11 @@ public final class NNServiceProto {
      * <code>.TensorMap data = 2;</code>
      * @return The data.
      */
-    proto.FlBaseProto.TensorMap getData();
+    com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap getData();
     /**
      * <code>.TensorMap data = 2;</code>
      */
-    proto.FlBaseProto.TensorMapOrBuilder getDataOrBuilder();
+    com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMapOrBuilder getDataOrBuilder();
 
     /**
      * <code>string algorithm = 3;</code>
@@ -3856,11 +3856,11 @@ public final class NNServiceProto {
               break;
             }
             case 18: {
-              proto.FlBaseProto.TensorMap.Builder subBuilder = null;
+              com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap.Builder subBuilder = null;
               if (data_ != null) {
                 subBuilder = data_.toBuilder();
               }
-              data_ = input.readMessage(proto.FlBaseProto.TensorMap.parser(), extensionRegistry);
+              data_ = input.readMessage(com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap.parser(), extensionRegistry);
               if (subBuilder != null) {
                 subBuilder.mergeFrom(data_);
                 data_ = subBuilder.buildPartial();
@@ -3895,15 +3895,15 @@ public final class NNServiceProto {
     }
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return NNServiceProto.internal_static_nn_PredictRequest_descriptor;
+      return com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.internal_static_nn_PredictRequest_descriptor;
     }
 
     @Override
     protected FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return NNServiceProto.internal_static_nn_PredictRequest_fieldAccessorTable
+      return com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.internal_static_nn_PredictRequest_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
-              PredictRequest.class, Builder.class);
+              com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.PredictRequest.class, com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.PredictRequest.Builder.class);
     }
 
     public static final int CLIENTUUID_FIELD_NUMBER = 1;
@@ -3945,7 +3945,7 @@ public final class NNServiceProto {
     }
 
     public static final int DATA_FIELD_NUMBER = 2;
-    private proto.FlBaseProto.TensorMap data_;
+    private com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap data_;
     /**
      * <code>.TensorMap data = 2;</code>
      * @return Whether the data field is set.
@@ -3959,14 +3959,14 @@ public final class NNServiceProto {
      * @return The data.
      */
     @Override
-    public proto.FlBaseProto.TensorMap getData() {
-      return data_ == null ? proto.FlBaseProto.TensorMap.getDefaultInstance() : data_;
+    public com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap getData() {
+      return data_ == null ? com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap.getDefaultInstance() : data_;
     }
     /**
      * <code>.TensorMap data = 2;</code>
      */
     @Override
-    public proto.FlBaseProto.TensorMapOrBuilder getDataOrBuilder() {
+    public com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMapOrBuilder getDataOrBuilder() {
       return getData();
     }
 
@@ -4060,10 +4060,10 @@ public final class NNServiceProto {
       if (obj == this) {
        return true;
       }
-      if (!(obj instanceof PredictRequest)) {
+      if (!(obj instanceof com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.PredictRequest)) {
         return super.equals(obj);
       }
-      PredictRequest other = (PredictRequest) obj;
+      com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.PredictRequest other = (com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.PredictRequest) obj;
 
       if (!getClientuuid()
           .equals(other.getClientuuid())) return false;
@@ -4098,69 +4098,69 @@ public final class NNServiceProto {
       return hash;
     }
 
-    public static PredictRequest parseFrom(
+    public static com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.PredictRequest parseFrom(
         java.nio.ByteBuffer data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static PredictRequest parseFrom(
+    public static com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.PredictRequest parseFrom(
         java.nio.ByteBuffer data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static PredictRequest parseFrom(
+    public static com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.PredictRequest parseFrom(
         com.google.protobuf.ByteString data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static PredictRequest parseFrom(
+    public static com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.PredictRequest parseFrom(
         com.google.protobuf.ByteString data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static PredictRequest parseFrom(byte[] data)
+    public static com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.PredictRequest parseFrom(byte[] data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static PredictRequest parseFrom(
+    public static com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.PredictRequest parseFrom(
         byte[] data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static PredictRequest parseFrom(java.io.InputStream input)
+    public static com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.PredictRequest parseFrom(java.io.InputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input);
     }
-    public static PredictRequest parseFrom(
+    public static com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.PredictRequest parseFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input, extensionRegistry);
     }
-    public static PredictRequest parseDelimitedFrom(java.io.InputStream input)
+    public static com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.PredictRequest parseDelimitedFrom(java.io.InputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseDelimitedWithIOException(PARSER, input);
     }
-    public static PredictRequest parseDelimitedFrom(
+    public static com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.PredictRequest parseDelimitedFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
     }
-    public static PredictRequest parseFrom(
+    public static com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.PredictRequest parseFrom(
         com.google.protobuf.CodedInputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input);
     }
-    public static PredictRequest parseFrom(
+    public static com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.PredictRequest parseFrom(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
@@ -4173,7 +4173,7 @@ public final class NNServiceProto {
     public static Builder newBuilder() {
       return DEFAULT_INSTANCE.toBuilder();
     }
-    public static Builder newBuilder(PredictRequest prototype) {
+    public static Builder newBuilder(com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.PredictRequest prototype) {
       return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
     }
     @Override
@@ -4194,18 +4194,18 @@ public final class NNServiceProto {
     public static final class Builder extends
         com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
         // @@protoc_insertion_point(builder_implements:nn.PredictRequest)
-        PredictRequestOrBuilder {
+        com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.PredictRequestOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
           getDescriptor() {
-        return NNServiceProto.internal_static_nn_PredictRequest_descriptor;
+        return com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.internal_static_nn_PredictRequest_descriptor;
       }
 
       @Override
       protected FieldAccessorTable
           internalGetFieldAccessorTable() {
-        return NNServiceProto.internal_static_nn_PredictRequest_fieldAccessorTable
+        return com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.internal_static_nn_PredictRequest_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
-                PredictRequest.class, Builder.class);
+                com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.PredictRequest.class, com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.PredictRequest.Builder.class);
       }
 
       // Construct using com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.PredictRequest.newBuilder()
@@ -4242,17 +4242,17 @@ public final class NNServiceProto {
       @Override
       public com.google.protobuf.Descriptors.Descriptor
           getDescriptorForType() {
-        return NNServiceProto.internal_static_nn_PredictRequest_descriptor;
+        return com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.internal_static_nn_PredictRequest_descriptor;
       }
 
       @Override
-      public PredictRequest getDefaultInstanceForType() {
-        return PredictRequest.getDefaultInstance();
+      public com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.PredictRequest getDefaultInstanceForType() {
+        return com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.PredictRequest.getDefaultInstance();
       }
 
       @Override
-      public PredictRequest build() {
-        PredictRequest result = buildPartial();
+      public com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.PredictRequest build() {
+        com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.PredictRequest result = buildPartial();
         if (!result.isInitialized()) {
           throw newUninitializedMessageException(result);
         }
@@ -4260,8 +4260,8 @@ public final class NNServiceProto {
       }
 
       @Override
-      public PredictRequest buildPartial() {
-        PredictRequest result = new PredictRequest(this);
+      public com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.PredictRequest buildPartial() {
+        com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.PredictRequest result = new com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.PredictRequest(this);
         result.clientuuid_ = clientuuid_;
         if (dataBuilder_ == null) {
           result.data_ = data_;
@@ -4307,16 +4307,16 @@ public final class NNServiceProto {
       }
       @Override
       public Builder mergeFrom(com.google.protobuf.Message other) {
-        if (other instanceof PredictRequest) {
-          return mergeFrom((PredictRequest)other);
+        if (other instanceof com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.PredictRequest) {
+          return mergeFrom((com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.PredictRequest)other);
         } else {
           super.mergeFrom(other);
           return this;
         }
       }
 
-      public Builder mergeFrom(PredictRequest other) {
-        if (other == PredictRequest.getDefaultInstance()) return this;
+      public Builder mergeFrom(com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.PredictRequest other) {
+        if (other == com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.PredictRequest.getDefaultInstance()) return this;
         if (!other.getClientuuid().isEmpty()) {
           clientuuid_ = other.clientuuid_;
           onChanged();
@@ -4343,11 +4343,11 @@ public final class NNServiceProto {
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws java.io.IOException {
-        PredictRequest parsedMessage = null;
+        com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.PredictRequest parsedMessage = null;
         try {
           parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
         } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-          parsedMessage = (PredictRequest) e.getUnfinishedMessage();
+          parsedMessage = (com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.PredictRequest) e.getUnfinishedMessage();
           throw e.unwrapIOException();
         } finally {
           if (parsedMessage != null) {
@@ -4433,9 +4433,9 @@ public final class NNServiceProto {
         return this;
       }
 
-      private proto.FlBaseProto.TensorMap data_;
+      private com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap data_;
       private com.google.protobuf.SingleFieldBuilderV3<
-          proto.FlBaseProto.TensorMap, proto.FlBaseProto.TensorMap.Builder, proto.FlBaseProto.TensorMapOrBuilder> dataBuilder_;
+          com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap, com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap.Builder, com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMapOrBuilder> dataBuilder_;
       /**
        * <code>.TensorMap data = 2;</code>
        * @return Whether the data field is set.
@@ -4447,9 +4447,9 @@ public final class NNServiceProto {
        * <code>.TensorMap data = 2;</code>
        * @return The data.
        */
-      public proto.FlBaseProto.TensorMap getData() {
+      public com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap getData() {
         if (dataBuilder_ == null) {
-          return data_ == null ? proto.FlBaseProto.TensorMap.getDefaultInstance() : data_;
+          return data_ == null ? com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap.getDefaultInstance() : data_;
         } else {
           return dataBuilder_.getMessage();
         }
@@ -4457,7 +4457,7 @@ public final class NNServiceProto {
       /**
        * <code>.TensorMap data = 2;</code>
        */
-      public Builder setData(proto.FlBaseProto.TensorMap value) {
+      public Builder setData(com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap value) {
         if (dataBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
@@ -4474,7 +4474,7 @@ public final class NNServiceProto {
        * <code>.TensorMap data = 2;</code>
        */
       public Builder setData(
-          proto.FlBaseProto.TensorMap.Builder builderForValue) {
+          com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap.Builder builderForValue) {
         if (dataBuilder_ == null) {
           data_ = builderForValue.build();
           onChanged();
@@ -4487,11 +4487,11 @@ public final class NNServiceProto {
       /**
        * <code>.TensorMap data = 2;</code>
        */
-      public Builder mergeData(proto.FlBaseProto.TensorMap value) {
+      public Builder mergeData(com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap value) {
         if (dataBuilder_ == null) {
           if (data_ != null) {
             data_ =
-              proto.FlBaseProto.TensorMap.newBuilder(data_).mergeFrom(value).buildPartial();
+              com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap.newBuilder(data_).mergeFrom(value).buildPartial();
           } else {
             data_ = value;
           }
@@ -4519,7 +4519,7 @@ public final class NNServiceProto {
       /**
        * <code>.TensorMap data = 2;</code>
        */
-      public proto.FlBaseProto.TensorMap.Builder getDataBuilder() {
+      public com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap.Builder getDataBuilder() {
         
         onChanged();
         return getDataFieldBuilder().getBuilder();
@@ -4527,23 +4527,23 @@ public final class NNServiceProto {
       /**
        * <code>.TensorMap data = 2;</code>
        */
-      public proto.FlBaseProto.TensorMapOrBuilder getDataOrBuilder() {
+      public com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMapOrBuilder getDataOrBuilder() {
         if (dataBuilder_ != null) {
           return dataBuilder_.getMessageOrBuilder();
         } else {
           return data_ == null ?
-              proto.FlBaseProto.TensorMap.getDefaultInstance() : data_;
+              com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap.getDefaultInstance() : data_;
         }
       }
       /**
        * <code>.TensorMap data = 2;</code>
        */
       private com.google.protobuf.SingleFieldBuilderV3<
-          proto.FlBaseProto.TensorMap, proto.FlBaseProto.TensorMap.Builder, proto.FlBaseProto.TensorMapOrBuilder>
+          com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap, com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap.Builder, com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMapOrBuilder> 
           getDataFieldBuilder() {
         if (dataBuilder_ == null) {
           dataBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
-              proto.FlBaseProto.TensorMap, proto.FlBaseProto.TensorMap.Builder, proto.FlBaseProto.TensorMapOrBuilder>(
+              com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap, com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap.Builder, com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMapOrBuilder>(
                   getData(),
                   getParentForChildren(),
                   isClean());
@@ -4644,12 +4644,12 @@ public final class NNServiceProto {
     }
 
     // @@protoc_insertion_point(class_scope:nn.PredictRequest)
-    private static final PredictRequest DEFAULT_INSTANCE;
+    private static final com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.PredictRequest DEFAULT_INSTANCE;
     static {
-      DEFAULT_INSTANCE = new PredictRequest();
+      DEFAULT_INSTANCE = new com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.PredictRequest();
     }
 
-    public static PredictRequest getDefaultInstance() {
+    public static com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.PredictRequest getDefaultInstance() {
       return DEFAULT_INSTANCE;
     }
 
@@ -4674,7 +4674,7 @@ public final class NNServiceProto {
     }
 
     @Override
-    public PredictRequest getDefaultInstanceForType() {
+    public com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.PredictRequest getDefaultInstanceForType() {
       return DEFAULT_INSTANCE;
     }
 
@@ -4705,11 +4705,11 @@ public final class NNServiceProto {
      * <code>.TensorMap data = 2;</code>
      * @return The data.
      */
-    proto.FlBaseProto.TensorMap getData();
+    com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap getData();
     /**
      * <code>.TensorMap data = 2;</code>
      */
-    proto.FlBaseProto.TensorMapOrBuilder getDataOrBuilder();
+    com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMapOrBuilder getDataOrBuilder();
 
     /**
      * <code>int32 code = 3;</code>
@@ -4770,11 +4770,11 @@ public final class NNServiceProto {
               break;
             }
             case 18: {
-              proto.FlBaseProto.TensorMap.Builder subBuilder = null;
+              com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap.Builder subBuilder = null;
               if (data_ != null) {
                 subBuilder = data_.toBuilder();
               }
-              data_ = input.readMessage(proto.FlBaseProto.TensorMap.parser(), extensionRegistry);
+              data_ = input.readMessage(com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap.parser(), extensionRegistry);
               if (subBuilder != null) {
                 subBuilder.mergeFrom(data_);
                 data_ = subBuilder.buildPartial();
@@ -4808,15 +4808,15 @@ public final class NNServiceProto {
     }
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return NNServiceProto.internal_static_nn_PredictResponse_descriptor;
+      return com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.internal_static_nn_PredictResponse_descriptor;
     }
 
     @Override
     protected FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return NNServiceProto.internal_static_nn_PredictResponse_fieldAccessorTable
+      return com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.internal_static_nn_PredictResponse_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
-              PredictResponse.class, Builder.class);
+              com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.PredictResponse.class, com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.PredictResponse.Builder.class);
     }
 
     public static final int RESPONSE_FIELD_NUMBER = 1;
@@ -4858,7 +4858,7 @@ public final class NNServiceProto {
     }
 
     public static final int DATA_FIELD_NUMBER = 2;
-    private proto.FlBaseProto.TensorMap data_;
+    private com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap data_;
     /**
      * <code>.TensorMap data = 2;</code>
      * @return Whether the data field is set.
@@ -4872,14 +4872,14 @@ public final class NNServiceProto {
      * @return The data.
      */
     @Override
-    public proto.FlBaseProto.TensorMap getData() {
-      return data_ == null ? proto.FlBaseProto.TensorMap.getDefaultInstance() : data_;
+    public com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap getData() {
+      return data_ == null ? com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap.getDefaultInstance() : data_;
     }
     /**
      * <code>.TensorMap data = 2;</code>
      */
     @Override
-    public proto.FlBaseProto.TensorMapOrBuilder getDataOrBuilder() {
+    public com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMapOrBuilder getDataOrBuilder() {
       return getData();
     }
 
@@ -4947,10 +4947,10 @@ public final class NNServiceProto {
       if (obj == this) {
        return true;
       }
-      if (!(obj instanceof PredictResponse)) {
+      if (!(obj instanceof com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.PredictResponse)) {
         return super.equals(obj);
       }
-      PredictResponse other = (PredictResponse) obj;
+      com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.PredictResponse other = (com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.PredictResponse) obj;
 
       if (!getResponse()
           .equals(other.getResponse())) return false;
@@ -4985,69 +4985,69 @@ public final class NNServiceProto {
       return hash;
     }
 
-    public static PredictResponse parseFrom(
+    public static com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.PredictResponse parseFrom(
         java.nio.ByteBuffer data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static PredictResponse parseFrom(
+    public static com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.PredictResponse parseFrom(
         java.nio.ByteBuffer data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static PredictResponse parseFrom(
+    public static com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.PredictResponse parseFrom(
         com.google.protobuf.ByteString data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static PredictResponse parseFrom(
+    public static com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.PredictResponse parseFrom(
         com.google.protobuf.ByteString data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static PredictResponse parseFrom(byte[] data)
+    public static com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.PredictResponse parseFrom(byte[] data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static PredictResponse parseFrom(
+    public static com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.PredictResponse parseFrom(
         byte[] data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static PredictResponse parseFrom(java.io.InputStream input)
+    public static com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.PredictResponse parseFrom(java.io.InputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input);
     }
-    public static PredictResponse parseFrom(
+    public static com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.PredictResponse parseFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input, extensionRegistry);
     }
-    public static PredictResponse parseDelimitedFrom(java.io.InputStream input)
+    public static com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.PredictResponse parseDelimitedFrom(java.io.InputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseDelimitedWithIOException(PARSER, input);
     }
-    public static PredictResponse parseDelimitedFrom(
+    public static com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.PredictResponse parseDelimitedFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
     }
-    public static PredictResponse parseFrom(
+    public static com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.PredictResponse parseFrom(
         com.google.protobuf.CodedInputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input);
     }
-    public static PredictResponse parseFrom(
+    public static com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.PredictResponse parseFrom(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
@@ -5060,7 +5060,7 @@ public final class NNServiceProto {
     public static Builder newBuilder() {
       return DEFAULT_INSTANCE.toBuilder();
     }
-    public static Builder newBuilder(PredictResponse prototype) {
+    public static Builder newBuilder(com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.PredictResponse prototype) {
       return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
     }
     @Override
@@ -5081,18 +5081,18 @@ public final class NNServiceProto {
     public static final class Builder extends
         com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
         // @@protoc_insertion_point(builder_implements:nn.PredictResponse)
-        PredictResponseOrBuilder {
+        com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.PredictResponseOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
           getDescriptor() {
-        return NNServiceProto.internal_static_nn_PredictResponse_descriptor;
+        return com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.internal_static_nn_PredictResponse_descriptor;
       }
 
       @Override
       protected FieldAccessorTable
           internalGetFieldAccessorTable() {
-        return NNServiceProto.internal_static_nn_PredictResponse_fieldAccessorTable
+        return com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.internal_static_nn_PredictResponse_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
-                PredictResponse.class, Builder.class);
+                com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.PredictResponse.class, com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.PredictResponse.Builder.class);
       }
 
       // Construct using com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.PredictResponse.newBuilder()
@@ -5129,17 +5129,17 @@ public final class NNServiceProto {
       @Override
       public com.google.protobuf.Descriptors.Descriptor
           getDescriptorForType() {
-        return NNServiceProto.internal_static_nn_PredictResponse_descriptor;
+        return com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.internal_static_nn_PredictResponse_descriptor;
       }
 
       @Override
-      public PredictResponse getDefaultInstanceForType() {
-        return PredictResponse.getDefaultInstance();
+      public com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.PredictResponse getDefaultInstanceForType() {
+        return com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.PredictResponse.getDefaultInstance();
       }
 
       @Override
-      public PredictResponse build() {
-        PredictResponse result = buildPartial();
+      public com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.PredictResponse build() {
+        com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.PredictResponse result = buildPartial();
         if (!result.isInitialized()) {
           throw newUninitializedMessageException(result);
         }
@@ -5147,8 +5147,8 @@ public final class NNServiceProto {
       }
 
       @Override
-      public PredictResponse buildPartial() {
-        PredictResponse result = new PredictResponse(this);
+      public com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.PredictResponse buildPartial() {
+        com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.PredictResponse result = new com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.PredictResponse(this);
         result.response_ = response_;
         if (dataBuilder_ == null) {
           result.data_ = data_;
@@ -5194,16 +5194,16 @@ public final class NNServiceProto {
       }
       @Override
       public Builder mergeFrom(com.google.protobuf.Message other) {
-        if (other instanceof PredictResponse) {
-          return mergeFrom((PredictResponse)other);
+        if (other instanceof com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.PredictResponse) {
+          return mergeFrom((com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.PredictResponse)other);
         } else {
           super.mergeFrom(other);
           return this;
         }
       }
 
-      public Builder mergeFrom(PredictResponse other) {
-        if (other == PredictResponse.getDefaultInstance()) return this;
+      public Builder mergeFrom(com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.PredictResponse other) {
+        if (other == com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.PredictResponse.getDefaultInstance()) return this;
         if (!other.getResponse().isEmpty()) {
           response_ = other.response_;
           onChanged();
@@ -5229,11 +5229,11 @@ public final class NNServiceProto {
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws java.io.IOException {
-        PredictResponse parsedMessage = null;
+        com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.PredictResponse parsedMessage = null;
         try {
           parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
         } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-          parsedMessage = (PredictResponse) e.getUnfinishedMessage();
+          parsedMessage = (com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.PredictResponse) e.getUnfinishedMessage();
           throw e.unwrapIOException();
         } finally {
           if (parsedMessage != null) {
@@ -5319,9 +5319,9 @@ public final class NNServiceProto {
         return this;
       }
 
-      private proto.FlBaseProto.TensorMap data_;
+      private com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap data_;
       private com.google.protobuf.SingleFieldBuilderV3<
-          proto.FlBaseProto.TensorMap, proto.FlBaseProto.TensorMap.Builder, proto.FlBaseProto.TensorMapOrBuilder> dataBuilder_;
+          com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap, com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap.Builder, com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMapOrBuilder> dataBuilder_;
       /**
        * <code>.TensorMap data = 2;</code>
        * @return Whether the data field is set.
@@ -5333,9 +5333,9 @@ public final class NNServiceProto {
        * <code>.TensorMap data = 2;</code>
        * @return The data.
        */
-      public proto.FlBaseProto.TensorMap getData() {
+      public com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap getData() {
         if (dataBuilder_ == null) {
-          return data_ == null ? proto.FlBaseProto.TensorMap.getDefaultInstance() : data_;
+          return data_ == null ? com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap.getDefaultInstance() : data_;
         } else {
           return dataBuilder_.getMessage();
         }
@@ -5343,7 +5343,7 @@ public final class NNServiceProto {
       /**
        * <code>.TensorMap data = 2;</code>
        */
-      public Builder setData(proto.FlBaseProto.TensorMap value) {
+      public Builder setData(com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap value) {
         if (dataBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
@@ -5360,7 +5360,7 @@ public final class NNServiceProto {
        * <code>.TensorMap data = 2;</code>
        */
       public Builder setData(
-          proto.FlBaseProto.TensorMap.Builder builderForValue) {
+          com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap.Builder builderForValue) {
         if (dataBuilder_ == null) {
           data_ = builderForValue.build();
           onChanged();
@@ -5373,11 +5373,11 @@ public final class NNServiceProto {
       /**
        * <code>.TensorMap data = 2;</code>
        */
-      public Builder mergeData(proto.FlBaseProto.TensorMap value) {
+      public Builder mergeData(com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap value) {
         if (dataBuilder_ == null) {
           if (data_ != null) {
             data_ =
-              proto.FlBaseProto.TensorMap.newBuilder(data_).mergeFrom(value).buildPartial();
+              com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap.newBuilder(data_).mergeFrom(value).buildPartial();
           } else {
             data_ = value;
           }
@@ -5405,7 +5405,7 @@ public final class NNServiceProto {
       /**
        * <code>.TensorMap data = 2;</code>
        */
-      public proto.FlBaseProto.TensorMap.Builder getDataBuilder() {
+      public com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap.Builder getDataBuilder() {
         
         onChanged();
         return getDataFieldBuilder().getBuilder();
@@ -5413,23 +5413,23 @@ public final class NNServiceProto {
       /**
        * <code>.TensorMap data = 2;</code>
        */
-      public proto.FlBaseProto.TensorMapOrBuilder getDataOrBuilder() {
+      public com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMapOrBuilder getDataOrBuilder() {
         if (dataBuilder_ != null) {
           return dataBuilder_.getMessageOrBuilder();
         } else {
           return data_ == null ?
-              proto.FlBaseProto.TensorMap.getDefaultInstance() : data_;
+              com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap.getDefaultInstance() : data_;
         }
       }
       /**
        * <code>.TensorMap data = 2;</code>
        */
       private com.google.protobuf.SingleFieldBuilderV3<
-          proto.FlBaseProto.TensorMap, proto.FlBaseProto.TensorMap.Builder, proto.FlBaseProto.TensorMapOrBuilder>
+          com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap, com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap.Builder, com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMapOrBuilder> 
           getDataFieldBuilder() {
         if (dataBuilder_ == null) {
           dataBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
-              proto.FlBaseProto.TensorMap, proto.FlBaseProto.TensorMap.Builder, proto.FlBaseProto.TensorMapOrBuilder>(
+              com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap, com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap.Builder, com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMapOrBuilder>(
                   getData(),
                   getParentForChildren(),
                   isClean());
@@ -5485,12 +5485,12 @@ public final class NNServiceProto {
     }
 
     // @@protoc_insertion_point(class_scope:nn.PredictResponse)
-    private static final PredictResponse DEFAULT_INSTANCE;
+    private static final com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.PredictResponse DEFAULT_INSTANCE;
     static {
-      DEFAULT_INSTANCE = new PredictResponse();
+      DEFAULT_INSTANCE = new com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.PredictResponse();
     }
 
-    public static PredictResponse getDefaultInstance() {
+    public static com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.PredictResponse getDefaultInstance() {
       return DEFAULT_INSTANCE;
     }
 
@@ -5515,7 +5515,7 @@ public final class NNServiceProto {
     }
 
     @Override
-    public PredictResponse getDefaultInstanceForType() {
+    public com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.PredictResponse getDefaultInstanceForType() {
       return DEFAULT_INSTANCE;
     }
 
@@ -5584,7 +5584,7 @@ public final class NNServiceProto {
     descriptor = com.google.protobuf.Descriptors.FileDescriptor
       .internalBuildGeneratedFileFrom(descriptorData,
         new com.google.protobuf.Descriptors.FileDescriptor[] {
-          proto.FlBaseProto.getDescriptor(),
+          com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.getDescriptor(),
         });
     internal_static_nn_TrainRequest_descriptor =
       getDescriptor().getMessageTypes().get(0);
@@ -5622,7 +5622,7 @@ public final class NNServiceProto {
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_nn_PredictResponse_descriptor,
         new String[] { "Response", "Data", "Code", });
-    proto.FlBaseProto.getDescriptor();
+    com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.getDescriptor();
   }
 
   // @@protoc_insertion_point(outer_class_scope)

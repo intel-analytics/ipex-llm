@@ -14,29 +14,29 @@ public final class NNServiceGrpc {
   public static final String SERVICE_NAME = "nn.NNService";
 
   // Static method descriptors that strictly reflect the proto.
-  private static volatile io.grpc.MethodDescriptor<proto.NNServiceProto.TrainRequest,
-      proto.NNServiceProto.TrainResponse> getTrainMethod;
+  private static volatile io.grpc.MethodDescriptor<com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.TrainRequest,
+      com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.TrainResponse> getTrainMethod;
 
   @io.grpc.stub.annotations.RpcMethod(
       fullMethodName = SERVICE_NAME + '/' + "train",
-      requestType = proto.NNServiceProto.TrainRequest.class,
-      responseType = proto.NNServiceProto.TrainResponse.class,
+      requestType = com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.TrainRequest.class,
+      responseType = com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.TrainResponse.class,
       methodType = io.grpc.MethodDescriptor.MethodType.UNARY)
-  public static io.grpc.MethodDescriptor<proto.NNServiceProto.TrainRequest,
-      proto.NNServiceProto.TrainResponse> getTrainMethod() {
-    io.grpc.MethodDescriptor<proto.NNServiceProto.TrainRequest, proto.NNServiceProto.TrainResponse> getTrainMethod;
+  public static io.grpc.MethodDescriptor<com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.TrainRequest,
+      com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.TrainResponse> getTrainMethod() {
+    io.grpc.MethodDescriptor<com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.TrainRequest, com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.TrainResponse> getTrainMethod;
     if ((getTrainMethod = NNServiceGrpc.getTrainMethod) == null) {
       synchronized (NNServiceGrpc.class) {
         if ((getTrainMethod = NNServiceGrpc.getTrainMethod) == null) {
           NNServiceGrpc.getTrainMethod = getTrainMethod =
-              io.grpc.MethodDescriptor.<proto.NNServiceProto.TrainRequest, proto.NNServiceProto.TrainResponse>newBuilder()
+              io.grpc.MethodDescriptor.<com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.TrainRequest, com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.TrainResponse>newBuilder()
               .setType(io.grpc.MethodDescriptor.MethodType.UNARY)
               .setFullMethodName(generateFullMethodName(SERVICE_NAME, "train"))
               .setSampledToLocalTracing(true)
               .setRequestMarshaller(io.grpc.protobuf.ProtoUtils.marshaller(
-                  proto.NNServiceProto.TrainRequest.getDefaultInstance()))
+                  com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.TrainRequest.getDefaultInstance()))
               .setResponseMarshaller(io.grpc.protobuf.ProtoUtils.marshaller(
-                  proto.NNServiceProto.TrainResponse.getDefaultInstance()))
+                  com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.TrainResponse.getDefaultInstance()))
               .setSchemaDescriptor(new NNServiceMethodDescriptorSupplier("train"))
               .build();
         }
@@ -45,29 +45,29 @@ public final class NNServiceGrpc {
     return getTrainMethod;
   }
 
-  private static volatile io.grpc.MethodDescriptor<proto.NNServiceProto.EvaluateRequest,
-      proto.NNServiceProto.EvaluateResponse> getEvaluateMethod;
+  private static volatile io.grpc.MethodDescriptor<com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.EvaluateRequest,
+      com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.EvaluateResponse> getEvaluateMethod;
 
   @io.grpc.stub.annotations.RpcMethod(
       fullMethodName = SERVICE_NAME + '/' + "evaluate",
-      requestType = proto.NNServiceProto.EvaluateRequest.class,
-      responseType = proto.NNServiceProto.EvaluateResponse.class,
+      requestType = com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.EvaluateRequest.class,
+      responseType = com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.EvaluateResponse.class,
       methodType = io.grpc.MethodDescriptor.MethodType.UNARY)
-  public static io.grpc.MethodDescriptor<proto.NNServiceProto.EvaluateRequest,
-      proto.NNServiceProto.EvaluateResponse> getEvaluateMethod() {
-    io.grpc.MethodDescriptor<proto.NNServiceProto.EvaluateRequest, proto.NNServiceProto.EvaluateResponse> getEvaluateMethod;
+  public static io.grpc.MethodDescriptor<com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.EvaluateRequest,
+      com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.EvaluateResponse> getEvaluateMethod() {
+    io.grpc.MethodDescriptor<com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.EvaluateRequest, com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.EvaluateResponse> getEvaluateMethod;
     if ((getEvaluateMethod = NNServiceGrpc.getEvaluateMethod) == null) {
       synchronized (NNServiceGrpc.class) {
         if ((getEvaluateMethod = NNServiceGrpc.getEvaluateMethod) == null) {
           NNServiceGrpc.getEvaluateMethod = getEvaluateMethod =
-              io.grpc.MethodDescriptor.<proto.NNServiceProto.EvaluateRequest, proto.NNServiceProto.EvaluateResponse>newBuilder()
+              io.grpc.MethodDescriptor.<com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.EvaluateRequest, com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.EvaluateResponse>newBuilder()
               .setType(io.grpc.MethodDescriptor.MethodType.UNARY)
               .setFullMethodName(generateFullMethodName(SERVICE_NAME, "evaluate"))
               .setSampledToLocalTracing(true)
               .setRequestMarshaller(io.grpc.protobuf.ProtoUtils.marshaller(
-                  proto.NNServiceProto.EvaluateRequest.getDefaultInstance()))
+                  com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.EvaluateRequest.getDefaultInstance()))
               .setResponseMarshaller(io.grpc.protobuf.ProtoUtils.marshaller(
-                  proto.NNServiceProto.EvaluateResponse.getDefaultInstance()))
+                  com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.EvaluateResponse.getDefaultInstance()))
               .setSchemaDescriptor(new NNServiceMethodDescriptorSupplier("evaluate"))
               .build();
         }
@@ -76,29 +76,29 @@ public final class NNServiceGrpc {
     return getEvaluateMethod;
   }
 
-  private static volatile io.grpc.MethodDescriptor<proto.NNServiceProto.PredictRequest,
-      proto.NNServiceProto.PredictResponse> getPredictMethod;
+  private static volatile io.grpc.MethodDescriptor<com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.PredictRequest,
+      com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.PredictResponse> getPredictMethod;
 
   @io.grpc.stub.annotations.RpcMethod(
       fullMethodName = SERVICE_NAME + '/' + "predict",
-      requestType = proto.NNServiceProto.PredictRequest.class,
-      responseType = proto.NNServiceProto.PredictResponse.class,
+      requestType = com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.PredictRequest.class,
+      responseType = com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.PredictResponse.class,
       methodType = io.grpc.MethodDescriptor.MethodType.UNARY)
-  public static io.grpc.MethodDescriptor<proto.NNServiceProto.PredictRequest,
-      proto.NNServiceProto.PredictResponse> getPredictMethod() {
-    io.grpc.MethodDescriptor<proto.NNServiceProto.PredictRequest, proto.NNServiceProto.PredictResponse> getPredictMethod;
+  public static io.grpc.MethodDescriptor<com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.PredictRequest,
+      com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.PredictResponse> getPredictMethod() {
+    io.grpc.MethodDescriptor<com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.PredictRequest, com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.PredictResponse> getPredictMethod;
     if ((getPredictMethod = NNServiceGrpc.getPredictMethod) == null) {
       synchronized (NNServiceGrpc.class) {
         if ((getPredictMethod = NNServiceGrpc.getPredictMethod) == null) {
           NNServiceGrpc.getPredictMethod = getPredictMethod =
-              io.grpc.MethodDescriptor.<proto.NNServiceProto.PredictRequest, proto.NNServiceProto.PredictResponse>newBuilder()
+              io.grpc.MethodDescriptor.<com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.PredictRequest, com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.PredictResponse>newBuilder()
               .setType(io.grpc.MethodDescriptor.MethodType.UNARY)
               .setFullMethodName(generateFullMethodName(SERVICE_NAME, "predict"))
               .setSampledToLocalTracing(true)
               .setRequestMarshaller(io.grpc.protobuf.ProtoUtils.marshaller(
-                  proto.NNServiceProto.PredictRequest.getDefaultInstance()))
+                  com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.PredictRequest.getDefaultInstance()))
               .setResponseMarshaller(io.grpc.protobuf.ProtoUtils.marshaller(
-                  proto.NNServiceProto.PredictResponse.getDefaultInstance()))
+                  com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.PredictResponse.getDefaultInstance()))
               .setSchemaDescriptor(new NNServiceMethodDescriptorSupplier("predict"))
               .build();
         }
@@ -157,22 +157,22 @@ public final class NNServiceGrpc {
 
     /**
      */
-    public void train(proto.NNServiceProto.TrainRequest request,
-                      io.grpc.stub.StreamObserver<proto.NNServiceProto.TrainResponse> responseObserver) {
+    public void train(com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.TrainRequest request,
+        io.grpc.stub.StreamObserver<com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.TrainResponse> responseObserver) {
       io.grpc.stub.ServerCalls.asyncUnimplementedUnaryCall(getTrainMethod(), responseObserver);
     }
 
     /**
      */
-    public void evaluate(proto.NNServiceProto.EvaluateRequest request,
-                         io.grpc.stub.StreamObserver<proto.NNServiceProto.EvaluateResponse> responseObserver) {
+    public void evaluate(com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.EvaluateRequest request,
+        io.grpc.stub.StreamObserver<com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.EvaluateResponse> responseObserver) {
       io.grpc.stub.ServerCalls.asyncUnimplementedUnaryCall(getEvaluateMethod(), responseObserver);
     }
 
     /**
      */
-    public void predict(proto.NNServiceProto.PredictRequest request,
-                        io.grpc.stub.StreamObserver<proto.NNServiceProto.PredictResponse> responseObserver) {
+    public void predict(com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.PredictRequest request,
+        io.grpc.stub.StreamObserver<com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.PredictResponse> responseObserver) {
       io.grpc.stub.ServerCalls.asyncUnimplementedUnaryCall(getPredictMethod(), responseObserver);
     }
 
@@ -182,22 +182,22 @@ public final class NNServiceGrpc {
             getTrainMethod(),
             io.grpc.stub.ServerCalls.asyncUnaryCall(
               new MethodHandlers<
-                proto.NNServiceProto.TrainRequest,
-                proto.NNServiceProto.TrainResponse>(
+                com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.TrainRequest,
+                com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.TrainResponse>(
                   this, METHODID_TRAIN)))
           .addMethod(
             getEvaluateMethod(),
             io.grpc.stub.ServerCalls.asyncUnaryCall(
               new MethodHandlers<
-                proto.NNServiceProto.EvaluateRequest,
-                proto.NNServiceProto.EvaluateResponse>(
+                com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.EvaluateRequest,
+                com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.EvaluateResponse>(
                   this, METHODID_EVALUATE)))
           .addMethod(
             getPredictMethod(),
             io.grpc.stub.ServerCalls.asyncUnaryCall(
               new MethodHandlers<
-                proto.NNServiceProto.PredictRequest,
-                proto.NNServiceProto.PredictResponse>(
+                com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.PredictRequest,
+                com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.PredictResponse>(
                   this, METHODID_PREDICT)))
           .build();
     }
@@ -219,24 +219,24 @@ public final class NNServiceGrpc {
 
     /**
      */
-    public void train(proto.NNServiceProto.TrainRequest request,
-                      io.grpc.stub.StreamObserver<proto.NNServiceProto.TrainResponse> responseObserver) {
+    public void train(com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.TrainRequest request,
+        io.grpc.stub.StreamObserver<com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.TrainResponse> responseObserver) {
       io.grpc.stub.ClientCalls.asyncUnaryCall(
           getChannel().newCall(getTrainMethod(), getCallOptions()), request, responseObserver);
     }
 
     /**
      */
-    public void evaluate(proto.NNServiceProto.EvaluateRequest request,
-                         io.grpc.stub.StreamObserver<proto.NNServiceProto.EvaluateResponse> responseObserver) {
+    public void evaluate(com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.EvaluateRequest request,
+        io.grpc.stub.StreamObserver<com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.EvaluateResponse> responseObserver) {
       io.grpc.stub.ClientCalls.asyncUnaryCall(
           getChannel().newCall(getEvaluateMethod(), getCallOptions()), request, responseObserver);
     }
 
     /**
      */
-    public void predict(proto.NNServiceProto.PredictRequest request,
-                        io.grpc.stub.StreamObserver<proto.NNServiceProto.PredictResponse> responseObserver) {
+    public void predict(com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.PredictRequest request,
+        io.grpc.stub.StreamObserver<com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.PredictResponse> responseObserver) {
       io.grpc.stub.ClientCalls.asyncUnaryCall(
           getChannel().newCall(getPredictMethod(), getCallOptions()), request, responseObserver);
     }
@@ -258,21 +258,21 @@ public final class NNServiceGrpc {
 
     /**
      */
-    public proto.NNServiceProto.TrainResponse train(proto.NNServiceProto.TrainRequest request) {
+    public com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.TrainResponse train(com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.TrainRequest request) {
       return io.grpc.stub.ClientCalls.blockingUnaryCall(
           getChannel(), getTrainMethod(), getCallOptions(), request);
     }
 
     /**
      */
-    public proto.NNServiceProto.EvaluateResponse evaluate(proto.NNServiceProto.EvaluateRequest request) {
+    public com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.EvaluateResponse evaluate(com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.EvaluateRequest request) {
       return io.grpc.stub.ClientCalls.blockingUnaryCall(
           getChannel(), getEvaluateMethod(), getCallOptions(), request);
     }
 
     /**
      */
-    public proto.NNServiceProto.PredictResponse predict(proto.NNServiceProto.PredictRequest request) {
+    public com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.PredictResponse predict(com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.PredictRequest request) {
       return io.grpc.stub.ClientCalls.blockingUnaryCall(
           getChannel(), getPredictMethod(), getCallOptions(), request);
     }
@@ -294,24 +294,24 @@ public final class NNServiceGrpc {
 
     /**
      */
-    public com.google.common.util.concurrent.ListenableFuture<proto.NNServiceProto.TrainResponse> train(
-        proto.NNServiceProto.TrainRequest request) {
+    public com.google.common.util.concurrent.ListenableFuture<com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.TrainResponse> train(
+        com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.TrainRequest request) {
       return io.grpc.stub.ClientCalls.futureUnaryCall(
           getChannel().newCall(getTrainMethod(), getCallOptions()), request);
     }
 
     /**
      */
-    public com.google.common.util.concurrent.ListenableFuture<proto.NNServiceProto.EvaluateResponse> evaluate(
-        proto.NNServiceProto.EvaluateRequest request) {
+    public com.google.common.util.concurrent.ListenableFuture<com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.EvaluateResponse> evaluate(
+        com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.EvaluateRequest request) {
       return io.grpc.stub.ClientCalls.futureUnaryCall(
           getChannel().newCall(getEvaluateMethod(), getCallOptions()), request);
     }
 
     /**
      */
-    public com.google.common.util.concurrent.ListenableFuture<proto.NNServiceProto.PredictResponse> predict(
-        proto.NNServiceProto.PredictRequest request) {
+    public com.google.common.util.concurrent.ListenableFuture<com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.PredictResponse> predict(
+        com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.PredictRequest request) {
       return io.grpc.stub.ClientCalls.futureUnaryCall(
           getChannel().newCall(getPredictMethod(), getCallOptions()), request);
     }
@@ -339,16 +339,16 @@ public final class NNServiceGrpc {
     public void invoke(Req request, io.grpc.stub.StreamObserver<Resp> responseObserver) {
       switch (methodId) {
         case METHODID_TRAIN:
-          serviceImpl.train((proto.NNServiceProto.TrainRequest) request,
-              (io.grpc.stub.StreamObserver<proto.NNServiceProto.TrainResponse>) responseObserver);
+          serviceImpl.train((com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.TrainRequest) request,
+              (io.grpc.stub.StreamObserver<com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.TrainResponse>) responseObserver);
           break;
         case METHODID_EVALUATE:
-          serviceImpl.evaluate((proto.NNServiceProto.EvaluateRequest) request,
-              (io.grpc.stub.StreamObserver<proto.NNServiceProto.EvaluateResponse>) responseObserver);
+          serviceImpl.evaluate((com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.EvaluateRequest) request,
+              (io.grpc.stub.StreamObserver<com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.EvaluateResponse>) responseObserver);
           break;
         case METHODID_PREDICT:
-          serviceImpl.predict((proto.NNServiceProto.PredictRequest) request,
-              (io.grpc.stub.StreamObserver<proto.NNServiceProto.PredictResponse>) responseObserver);
+          serviceImpl.predict((com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.PredictRequest) request,
+              (io.grpc.stub.StreamObserver<com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.PredictResponse>) responseObserver);
           break;
         default:
           throw new AssertionError();
@@ -372,7 +372,7 @@ public final class NNServiceGrpc {
 
     @Override
     public com.google.protobuf.Descriptors.FileDescriptor getFileDescriptor() {
-      return proto.NNServiceProto.getDescriptor();
+      return com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.getDescriptor();
     }
 
     @Override
