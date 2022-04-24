@@ -15,6 +15,7 @@
 #
 from pytorch_lightning import LightningModule
 import torch
+import yaml
 
 from .model_utils import get_forward_args
 
@@ -58,5 +59,23 @@ class AcceleratedLightningModule(LightningModule):
             tensors = tensors[0]
         return tensors
 
+    def dump_status(self, path):
+        with open(path+"/meta-data.yml", 'w') as f:
+            yaml.safe_dump(self.status, f)
+
     def save(self, path):
-        raise NotImplementedError("AcceleratedLightningModule.save should be overridden.")
+        raise NotImplementedError("Saving function is not implemented.")
+        
+    @property
+    def status(self):
+        return {"ModelType": type(self).__name__}
+
+    @staticmethod
+    def load_status(path):
+        with open(path+"/meta-data.yml", 'r') as f:
+            metadata = yaml.safe_load(f)
+        return metadata
+
+    @staticmethod
+    def load(path, model=None):
+        raise NotImplementedError("Loading function is not implemented.")
