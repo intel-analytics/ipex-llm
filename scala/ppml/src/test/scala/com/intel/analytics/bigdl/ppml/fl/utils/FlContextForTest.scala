@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.ppml.utils
+package com.intel.analytics.bigdl.ppml.fl.utils
 
 import com.intel.analytics.bigdl.dllib.utils.Engine
-import com.intel.analytics.bigdl.ppml.FLClient
+import com.intel.analytics.bigdl.ppml.fl.FLClient
 import org.apache.spark.SparkConf
 import org.apache.spark.sql.SparkSession
 

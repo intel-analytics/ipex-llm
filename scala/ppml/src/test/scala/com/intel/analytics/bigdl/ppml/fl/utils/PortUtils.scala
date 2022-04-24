@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.ppml.utils
+package com.intel.analytics.bigdl.ppml.fl.utils
 
 import java.io.IOException
 import java.net.{DatagramSocket, ServerSocket}

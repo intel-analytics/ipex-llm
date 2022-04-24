@@ -14,11 +14,11 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.ppml.fgboost
+package com.intel.analytics.bigdl.ppml.fl.fgboost
 
 import com.intel.analytics.bigdl.grpc.JacksonJsonSerializer
-import com.intel.analytics.bigdl.ppml.example.DebugLogger
-import com.intel.analytics.bigdl.ppml.fgboost.common.XGBoostFormatNode
+import com.intel.analytics.bigdl.ppml.fl.example.DebugLogger
+import com.intel.analytics.bigdl.ppml.fl.fgboost.common.XGBoostFormatNode
 import ml.dmlc.xgboost4j.scala.DMatrix
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 

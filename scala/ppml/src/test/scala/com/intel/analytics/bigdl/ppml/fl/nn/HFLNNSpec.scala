@@ -14,11 +14,12 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.ppml.nn
+package com.intel.analytics.bigdl.ppml.fl.nn
 
-import com.intel.analytics.bigdl.ppml.algorithms.HFLLogisticRegression
-import com.intel.analytics.bigdl.ppml.example.DebugLogger
-import com.intel.analytics.bigdl.ppml.{FLContext, FLServer}
+import com.intel.analytics.bigdl.ppml.fl.algorithms.HFLLogisticRegression
+import com.intel.analytics.bigdl.ppml.fl.example.DebugLogger
+import com.intel.analytics.bigdl.ppml.FLContext
+import com.intel.analytics.bigdl.ppml.fl.{FLContext, FLServer}
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
 class MockAnotherParty(algorithm: String, clientID: String = "mock") extends Thread {

@@ -14,21 +14,20 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.ppml.fgboost
+package com.intel.analytics.bigdl.ppml.fl.fgboost
 
-import com.intel.analytics.bigdl.ppml.algorithms.FGBoostRegression
-import com.intel.analytics.bigdl.ppml.data.PreprocessUtil
-import com.intel.analytics.bigdl.ppml.example.DebugLogger
-import com.intel.analytics.bigdl.ppml.fgboost.common.{XGBoostFormatNode, XGBoostFormatSerializer, XGBoostFormatValidator}
-import com.intel.analytics.bigdl.ppml.utils.MockClient
-import com.intel.analytics.bigdl.ppml.{FLContext, FLServer}
+import com.intel.analytics.bigdl.ppml.fl.algorithms.FGBoostRegression
+import com.intel.analytics.bigdl.ppml.fl.example.DebugLogger
+import com.intel.analytics.bigdl.ppml.fl.fgboost.common.{XGBoostFormatNode, XGBoostFormatSerializer, XGBoostFormatValidator}
+import com.intel.analytics.bigdl.ppml.fl.utils.{MockClient, PreprocessUtil, TestUtils}
+import com.intel.analytics.bigdl.ppml.FLContext
+import com.intel.analytics.bigdl.ppml.fl.{FLContext, FLServer}
 import ml.dmlc.xgboost4j.scala.{DMatrix, XGBoost}
 import org.apache.log4j.LogManager
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
 import java.io.File
 import scala.io.Source
-import com.intel.analytics.bigdl.ppml.utils.TestUtils
 
 class CorrectnessSpec extends FlatSpec with Matchers with BeforeAndAfter with DebugLogger {
   // This is a full-dataset validation so we disable debug log

@@ -16,14 +16,15 @@
 
 package com.intel.analytics.bigdl.ppml
 
-import com.intel.analytics.bigdl.ppml.algorithms.PSI
-import com.intel.analytics.bigdl.ppml.utils.PortUtils
+import com.intel.analytics.bigdl.ppml.fl.{FLContext, FLServer}
+import com.intel.analytics.bigdl.ppml.fl.algorithms.PSI
+import com.intel.analytics.bigdl.ppml.fl.utils.PortUtils
 import org.apache.logging.log4j.LogManager
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
 import scala.collection.JavaConverters._
 import scala.concurrent.TimeoutException
-import com.intel.analytics.bigdl.ppml.utils.TestUtils
+import com.intel.analytics.bigdl.ppml.fl.utils.TestUtils
 
 class PSISpec extends FlatSpec with Matchers with BeforeAndAfter{
   var port: Int = 8980

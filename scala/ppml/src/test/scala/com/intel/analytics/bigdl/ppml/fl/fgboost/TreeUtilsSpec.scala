@@ -14,13 +14,13 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.ppml.fgboost
+package com.intel.analytics.bigdl.ppml.fl.fgboost
 
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
-import com.intel.analytics.bigdl.ppml.example.DebugLogger
-import com.intel.analytics.bigdl.ppml.fgboost.common.TreeUtils
+import com.intel.analytics.bigdl.ppml.fl.example.DebugLogger
+import com.intel.analytics.bigdl.ppml.fl.fgboost.common.TreeUtils
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
-import com.intel.analytics.bigdl.ppml.utils.TestUtils
+import com.intel.analytics.bigdl.ppml.fl.utils.TestUtils
 
 class TreeUtilsSpec extends FlatSpec with Matchers with BeforeAndAfter with DebugLogger {
   "Sort feature index by value" should "work" in {

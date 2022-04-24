@@ -18,11 +18,12 @@ package com.intel.analytics.bigdl.ppml
 
 import com.intel.analytics.bigdl.dllib.feature.dataset.{LocalDataSet, Sample}
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
-import com.intel.analytics.bigdl.ppml.utils.DataFrameUtils
+import com.intel.analytics.bigdl.ppml.fl.FLContext
+import com.intel.analytics.bigdl.ppml.fl.utils.DataFrameUtils
 import org.apache.spark.{SparkConf, SparkContext}
 import org.apache.spark.sql.SparkSession
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
-import com.intel.analytics.bigdl.ppml.utils.TestUtils
+import com.intel.analytics.bigdl.ppml.fl.utils.TestUtils
 
 class DataFrameSpec extends FlatSpec with Matchers with BeforeAndAfter{
   "json DataFrame to DataSet" should "work" in {

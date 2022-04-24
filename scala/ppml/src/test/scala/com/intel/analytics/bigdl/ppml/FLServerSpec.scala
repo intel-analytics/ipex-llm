@@ -16,7 +16,8 @@
 
 package com.intel.analytics.bigdl.ppml
 
-import com.intel.analytics.bigdl.ppml.example.DebugLogger
+import com.intel.analytics.bigdl.ppml.fl.{FLClient, FLServer}
+import com.intel.analytics.bigdl.ppml.fl.example.DebugLogger
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
 class FLServerSpec extends FlatSpec with Matchers with BeforeAndAfter with DebugLogger {

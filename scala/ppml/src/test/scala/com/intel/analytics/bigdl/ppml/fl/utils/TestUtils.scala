@@ -1,5 +1,5 @@
 /*
- * Copyright 2021 The BigDL Authors.
+ * Copyright 2016 The BigDL Authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
  * you may not use this file except in compliance with the License.
@@ -14,15 +14,12 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.ppml.fgboost
+package com.intel.analytics.bigdl.ppml.fl.utils
 
-import com.intel.analytics.bigdl.ppml.example.DebugLogger
-import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
-
-class FGBoostRegressionSepc extends FlatSpec with Matchers with BeforeAndAfter with DebugLogger{
-  // House pricing dataset compared with xgboost training and prediction result
-  "FGBoost Regression single party" should "work" in {
-
+object TestUtils {
+  def conditionFailTest(condition: Boolean, msg: String = null): Unit = {
+    // scalastyle:off
+    assert(condition, msg)
+    // scalastyle:on
   }
 }
-

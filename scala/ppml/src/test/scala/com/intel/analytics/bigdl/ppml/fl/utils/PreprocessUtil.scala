@@ -1,4 +1,4 @@
-package com.intel.analytics.bigdl.ppml.data
+package com.intel.analytics.bigdl.ppml.fl.utils
 
 import com.intel.analytics.bigdl.dllib.tensor.{Storage, Tensor}
 
@@ -175,6 +175,7 @@ object PreprocessUtil {
     }.toArray
     (trainFeatures, testFeatures, trainLabels, flattenHeader.toArray)
   }
+
   def writePreprocessed(dataPathTrain: String,
                         dataPathTest: String,
                         rowkeyName: String = "Id",

@@ -14,12 +14,13 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.ppml.nn
+package com.intel.analytics.bigdl.ppml.fl.nn
 
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
-import com.intel.analytics.bigdl.ppml.algorithms.{PSI, VFLLinearRegression, VFLLogisticRegression}
-import com.intel.analytics.bigdl.ppml.example.DebugLogger
-import com.intel.analytics.bigdl.ppml.{FLContext, FLServer}
+import com.intel.analytics.bigdl.ppml.fl.algorithms.{PSI, VFLLinearRegression, VFLLogisticRegression}
+import com.intel.analytics.bigdl.ppml.fl.example.DebugLogger
+import com.intel.analytics.bigdl.ppml.FLContext
+import com.intel.analytics.bigdl.ppml.fl.{FLContext, FLServer}
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
 

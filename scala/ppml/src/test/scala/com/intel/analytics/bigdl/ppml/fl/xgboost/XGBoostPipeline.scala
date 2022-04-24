@@ -14,10 +14,10 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.ppml.xgboost
+package com.intel.analytics.bigdl.ppml.fl.xgboost
 
-import com.intel.analytics.bigdl.ppml.data.PreprocessUtil
-import com.intel.analytics.bigdl.ppml.fgboost.common.{XGBoostFormatSerializer, XGBoostFormatValidator}
+import com.intel.analytics.bigdl.ppml.fl.fgboost.common.{XGBoostFormatSerializer, XGBoostFormatValidator}
+import com.intel.analytics.bigdl.ppml.fl.utils.PreprocessUtil
 import ml.dmlc.xgboost4j.scala.{DMatrix, XGBoost}
 
 import java.io.{BufferedWriter, File, FileWriter}

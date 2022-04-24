@@ -14,10 +14,9 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.ppml.utils
+package com.intel.analytics.bigdl.ppml.fl.utils
 
-import com.intel.analytics.bigdl.ppml.algorithms.FGBoostRegression
-import com.intel.analytics.bigdl.ppml.data.PreprocessUtil
+import com.intel.analytics.bigdl.ppml.fl.algorithms.FGBoostRegression
 import org.apache.log4j.LogManager
 
 import scala.io.Source
