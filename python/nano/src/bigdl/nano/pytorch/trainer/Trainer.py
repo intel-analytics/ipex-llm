@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+import copy
 from logging import warning
 from operator import xor
 import os
@@ -327,12 +328,17 @@ class Trainer(pl.Trainer):
         :param path: Path to saved model. You need to specify path suffix carefully.
                      For example, 'model.xml' for OpenVINO, 'model.onnx' for ONNX.
         """
+        os.makedirs(path, exist_ok=True)
         if hasattr(model, 'save'):
             model.save(path)
         else:
             with open(path + '/meta-data.yml', 'w+') as f:
-                yaml.safe_dump(f)
-            self.save_checkpoint(path + "/saved_weight.pt", weights_only=True)
+                metadata = {
+                    'ModelType': 'PytorchModel',
+                    'checkpoint': 'saved_weight.pt'
+                }
+                yaml.safe_dump(metadata, f)
+            torch.save(model.state_dict(), "{}/{}".format(path, metadata['checkpoint']))
 
     def load(self, path, model: LightningModule=None):
         """
@@ -353,5 +359,8 @@ class Trainer(pl.Trainer):
         # if model_type == 'PytorchONNXModel':
         # if model_type == 'PytorchQuantizedModel':
         # ... to be implemented
-        return model.load_from_checkpoint(path)
+        model = copy.deepcopy(model)
+        state_dict = torch.load("{}/{}".format(path, metadata['checkpoint']))
+        model.load_state_dict(state_dict)
+        return model
 
