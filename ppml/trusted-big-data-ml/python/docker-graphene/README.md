@@ -354,7 +354,7 @@ The result should be similar to
 
 ##### Example 6: XGBoost Classifier
 
-Before running the example, download the sample dataset from [pima-indians-diabetes](https://raw.githubusercontent.com/jbrownlee/Datasets/master/pima-indians-diabetes.data.csv) dataset manually or with following command. 
+Before running the example, download the sample dataset from [pima-indians-diabetes](https://raw.githubusercontent.com/jbrownlee/Datasets/master/pima-indians-diabetes.data.csv) dataset manually or with following command.
 
 ```bash
 wget https://raw.githubusercontent.com/jbrownlee/Datasets/master/pima-indians-diabetes.data.csv
@@ -407,7 +407,7 @@ The result should be similar to
 
 ##### Example 7: Orca data
 
-Before running the example, download the [NYC Taxi](https://raw.githubusercontent.com/numenta/NAB/master/data/realKnownCause/nyc_taxi.csv) dataset in Numenta Anoomaly Benchmark for demo manually or with following command. 
+Before running the example, download the [NYC Taxi](https://raw.githubusercontent.com/numenta/NAB/master/data/realKnownCause/nyc_taxi.csv) dataset in Numenta Anoomaly Benchmark for demo manually or with following command.
 
 ```bash
 wget https://raw.githubusercontent.com/numenta/NAB/master/data/realKnownCause/nyc_taxi.csv
@@ -447,7 +447,7 @@ Then check the output with the following command.
 cat test-orca-data-sgx.log | egrep -a "INFO data|Stopping" -A10
 ```
 
-Then the result should contain the similar content as 
+Then the result should contain the similar content as
 
 >INFO data collected: [        timestamp value
 >
@@ -503,7 +503,7 @@ Then the result should contain the similar content as
 
 ##### Example 8: Orca learn Tensorflow basic text classification
 
-Run the example with SGX spark local mode with the following command in the terminal. To run the example in SGX standalone mode, replace `-e SGX_MEM_SIZE=32G \` with `-e SGX_MEM_SIZE=64G \` in `start-distributed-spark-driver.sh`
+Run the example with SGX spark local mode with the following command in the terminal.
 
 ```bash
 /graphene/Tools/argv_serializer bash -c "/opt/jdk8/bin/java -cp \
@@ -541,7 +541,7 @@ Then the result should be similar to
 > INFO results: {'loss': 0.6932533979415894, 'acc Top1Accuracy': 0.7544000148773193}
 ## Run as Spark on Kubernetes Mode
 
-Note: If you want spark standalone mode, please refer to [Run as Spark Standalone Mode](). But it is not recommended.
+Note: If you want spark standalone mode, please refer to [standalone/README.md][standalone]. But it is not recommended.
 
 Follow the guide below to run Spark on Kubernetes manually. Alternatively, you can also use Helm to set everything up automatically. See [kubernetes/README.md][helmGuide].
 
@@ -628,7 +628,7 @@ First, run `docker exec -it spark-local-k8s-client bash` to entry the container.
 ```
 #### 1.4.2 Configure `spark-executor-template.yaml` in the container
 
-We assume you have a working Network File System (NFS) configured for your Kubernetes cluster. Configure the `nfsvolumeclaim` on the last line to the name of the Persistent Volume Claim (PVC) of your NFS. 
+We assume you have a working Network File System (NFS) configured for your Kubernetes cluster. Configure the `nfsvolumeclaim` on the last line to the name of the Persistent Volume Claim (PVC) of your NFS.
 
 Please prepare the following and put them in your NFS directory:
 - The data (in a directory called `data`),
@@ -766,3 +766,4 @@ Below is an explanation of these security configurations, Please refer to [Spark
       --conf spark.ssl.trustStoreType=JKS 
 ```
 [helmGuide]: https://github.com/intel-analytics/BigDL/blob/main/ppml/trusted-big-data-ml/python/docker-graphene/kubernetes/README.md
+[standalone]: https://github.com/intel-analytics/BigDL/blob/main/ppml/trusted-big-data-ml/python/docker-graphene/standalone/README.md
