@@ -17,7 +17,7 @@ syntax = 'proto3';
 package fgboost;
 import "fl_base.proto";
 //option java_multiple_files = true;
-option java_package = "com.intel.analytics.bigdl.ppml.generated";
+option java_package = "com.intel.analytics.bigdl.ppml.fl.generated";
 option java_outer_classname = "FGBoostServiceProto";
 
 service FGBoostService {
@@ -106,8 +106,7 @@ message UploadTreeEvalRequest {
 message EvaluateRequest {
     string clientuuid = 1;
     repeated BoostEval treeEval = 2;
-    int32 version = 3;
-    bool lastBatch = 4;
+    int32 bsVersion = 3;
 }
 
 message EvaluateResponse {
@@ -119,8 +118,7 @@ message EvaluateResponse {
 message PredictRequest {
     string clientuuid = 1;
     repeated BoostEval treeEval = 2;
-    int32 version = 3;
-    bool lastBatch = 4;
+    int32 bsVersion = 3;
 }
 message SplitRequest {
     string clientuuid = 1;

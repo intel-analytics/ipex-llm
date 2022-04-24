@@ -39,11 +39,11 @@ public final class FGBoostServiceProto {
      * <code>.TensorMap data = 2;</code>
      * @return The data.
      */
-    FlBaseProto.TensorMap getData();
+    proto.FlBaseProto.TensorMap getData();
     /**
      * <code>.TensorMap data = 2;</code>
      */
-    FlBaseProto.TensorMapOrBuilder getDataOrBuilder();
+    proto.FlBaseProto.TensorMapOrBuilder getDataOrBuilder();
 
     /**
      * <code>string algorithm = 3;</code>
@@ -111,11 +111,11 @@ public final class FGBoostServiceProto {
               break;
             }
             case 18: {
-              FlBaseProto.TensorMap.Builder subBuilder = null;
+              proto.FlBaseProto.TensorMap.Builder subBuilder = null;
               if (data_ != null) {
                 subBuilder = data_.toBuilder();
               }
-              data_ = input.readMessage(FlBaseProto.TensorMap.parser(), extensionRegistry);
+              data_ = input.readMessage(proto.FlBaseProto.TensorMap.parser(), extensionRegistry);
               if (subBuilder != null) {
                 subBuilder.mergeFrom(data_);
                 data_ = subBuilder.buildPartial();
@@ -200,7 +200,7 @@ public final class FGBoostServiceProto {
     }
 
     public static final int DATA_FIELD_NUMBER = 2;
-    private FlBaseProto.TensorMap data_;
+    private proto.FlBaseProto.TensorMap data_;
     /**
      * <code>.TensorMap data = 2;</code>
      * @return Whether the data field is set.
@@ -214,14 +214,14 @@ public final class FGBoostServiceProto {
      * @return The data.
      */
     @Override
-    public FlBaseProto.TensorMap getData() {
-      return data_ == null ? FlBaseProto.TensorMap.getDefaultInstance() : data_;
+    public proto.FlBaseProto.TensorMap getData() {
+      return data_ == null ? proto.FlBaseProto.TensorMap.getDefaultInstance() : data_;
     }
     /**
      * <code>.TensorMap data = 2;</code>
      */
     @Override
-    public FlBaseProto.TensorMapOrBuilder getDataOrBuilder() {
+    public proto.FlBaseProto.TensorMapOrBuilder getDataOrBuilder() {
       return getData();
     }
 
@@ -463,7 +463,7 @@ public final class FGBoostServiceProto {
                 UploadLabelRequest.class, Builder.class);
       }
 
-      // Construct using com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.UploadLabelRequest.newBuilder()
+      // Construct using com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto.UploadLabelRequest.newBuilder()
       private Builder() {
         maybeForceBuilderInitialization();
       }
@@ -688,9 +688,9 @@ public final class FGBoostServiceProto {
         return this;
       }
 
-      private FlBaseProto.TensorMap data_;
+      private proto.FlBaseProto.TensorMap data_;
       private com.google.protobuf.SingleFieldBuilderV3<
-          FlBaseProto.TensorMap, FlBaseProto.TensorMap.Builder, FlBaseProto.TensorMapOrBuilder> dataBuilder_;
+          proto.FlBaseProto.TensorMap, proto.FlBaseProto.TensorMap.Builder, proto.FlBaseProto.TensorMapOrBuilder> dataBuilder_;
       /**
        * <code>.TensorMap data = 2;</code>
        * @return Whether the data field is set.
@@ -702,9 +702,9 @@ public final class FGBoostServiceProto {
        * <code>.TensorMap data = 2;</code>
        * @return The data.
        */
-      public FlBaseProto.TensorMap getData() {
+      public proto.FlBaseProto.TensorMap getData() {
         if (dataBuilder_ == null) {
-          return data_ == null ? FlBaseProto.TensorMap.getDefaultInstance() : data_;
+          return data_ == null ? proto.FlBaseProto.TensorMap.getDefaultInstance() : data_;
         } else {
           return dataBuilder_.getMessage();
         }
@@ -712,7 +712,7 @@ public final class FGBoostServiceProto {
       /**
        * <code>.TensorMap data = 2;</code>
        */
-      public Builder setData(FlBaseProto.TensorMap value) {
+      public Builder setData(proto.FlBaseProto.TensorMap value) {
         if (dataBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
@@ -729,7 +729,7 @@ public final class FGBoostServiceProto {
        * <code>.TensorMap data = 2;</code>
        */
       public Builder setData(
-          FlBaseProto.TensorMap.Builder builderForValue) {
+          proto.FlBaseProto.TensorMap.Builder builderForValue) {
         if (dataBuilder_ == null) {
           data_ = builderForValue.build();
           onChanged();
@@ -742,11 +742,11 @@ public final class FGBoostServiceProto {
       /**
        * <code>.TensorMap data = 2;</code>
        */
-      public Builder mergeData(FlBaseProto.TensorMap value) {
+      public Builder mergeData(proto.FlBaseProto.TensorMap value) {
         if (dataBuilder_ == null) {
           if (data_ != null) {
             data_ =
-              FlBaseProto.TensorMap.newBuilder(data_).mergeFrom(value).buildPartial();
+              proto.FlBaseProto.TensorMap.newBuilder(data_).mergeFrom(value).buildPartial();
           } else {
             data_ = value;
           }
@@ -774,7 +774,7 @@ public final class FGBoostServiceProto {
       /**
        * <code>.TensorMap data = 2;</code>
        */
-      public FlBaseProto.TensorMap.Builder getDataBuilder() {
+      public proto.FlBaseProto.TensorMap.Builder getDataBuilder() {
         
         onChanged();
         return getDataFieldBuilder().getBuilder();
@@ -782,23 +782,23 @@ public final class FGBoostServiceProto {
       /**
        * <code>.TensorMap data = 2;</code>
        */
-      public FlBaseProto.TensorMapOrBuilder getDataOrBuilder() {
+      public proto.FlBaseProto.TensorMapOrBuilder getDataOrBuilder() {
         if (dataBuilder_ != null) {
           return dataBuilder_.getMessageOrBuilder();
         } else {
           return data_ == null ?
-              FlBaseProto.TensorMap.getDefaultInstance() : data_;
+              proto.FlBaseProto.TensorMap.getDefaultInstance() : data_;
         }
       }
       /**
        * <code>.TensorMap data = 2;</code>
        */
       private com.google.protobuf.SingleFieldBuilderV3<
-          FlBaseProto.TensorMap, FlBaseProto.TensorMap.Builder, FlBaseProto.TensorMapOrBuilder>
+          proto.FlBaseProto.TensorMap, proto.FlBaseProto.TensorMap.Builder, proto.FlBaseProto.TensorMapOrBuilder>
           getDataFieldBuilder() {
         if (dataBuilder_ == null) {
           dataBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
-              FlBaseProto.TensorMap, FlBaseProto.TensorMap.Builder, FlBaseProto.TensorMapOrBuilder>(
+              proto.FlBaseProto.TensorMap, proto.FlBaseProto.TensorMap.Builder, proto.FlBaseProto.TensorMapOrBuilder>(
                   getData(),
                   getParentForChildren(),
                   isClean());
@@ -948,11 +948,11 @@ public final class FGBoostServiceProto {
      * <code>.MetaData metaData = 1;</code>
      * @return The metaData.
      */
-    FlBaseProto.MetaData getMetaData();
+    proto.FlBaseProto.MetaData getMetaData();
     /**
      * <code>.MetaData metaData = 1;</code>
      */
-    FlBaseProto.MetaDataOrBuilder getMetaDataOrBuilder();
+    proto.FlBaseProto.MetaDataOrBuilder getMetaDataOrBuilder();
 
     /**
      * <code>string algorithm = 2;</code>
@@ -1013,11 +1013,11 @@ public final class FGBoostServiceProto {
               done = true;
               break;
             case 10: {
-              FlBaseProto.MetaData.Builder subBuilder = null;
+              proto.FlBaseProto.MetaData.Builder subBuilder = null;
               if (metaData_ != null) {
                 subBuilder = metaData_.toBuilder();
               }
-              metaData_ = input.readMessage(FlBaseProto.MetaData.parser(), extensionRegistry);
+              metaData_ = input.readMessage(proto.FlBaseProto.MetaData.parser(), extensionRegistry);
               if (subBuilder != null) {
                 subBuilder.mergeFrom(metaData_);
                 metaData_ = subBuilder.buildPartial();
@@ -1064,7 +1064,7 @@ public final class FGBoostServiceProto {
     }
 
     public static final int METADATA_FIELD_NUMBER = 1;
-    private FlBaseProto.MetaData metaData_;
+    private proto.FlBaseProto.MetaData metaData_;
     /**
      * <code>.MetaData metaData = 1;</code>
      * @return Whether the metaData field is set.
@@ -1078,14 +1078,14 @@ public final class FGBoostServiceProto {
      * @return The metaData.
      */
     @Override
-    public FlBaseProto.MetaData getMetaData() {
-      return metaData_ == null ? FlBaseProto.MetaData.getDefaultInstance() : metaData_;
+    public proto.FlBaseProto.MetaData getMetaData() {
+      return metaData_ == null ? proto.FlBaseProto.MetaData.getDefaultInstance() : metaData_;
     }
     /**
      * <code>.MetaData metaData = 1;</code>
      */
     @Override
-    public FlBaseProto.MetaDataOrBuilder getMetaDataOrBuilder() {
+    public proto.FlBaseProto.MetaDataOrBuilder getMetaDataOrBuilder() {
       return getMetaData();
     }
 
@@ -1317,7 +1317,7 @@ public final class FGBoostServiceProto {
                 DownloadLabelRequest.class, Builder.class);
       }
 
-      // Construct using com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.DownloadLabelRequest.newBuilder()
+      // Construct using com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto.DownloadLabelRequest.newBuilder()
       private Builder() {
         maybeForceBuilderInitialization();
       }
@@ -1459,9 +1459,9 @@ public final class FGBoostServiceProto {
         return this;
       }
 
-      private FlBaseProto.MetaData metaData_;
+      private proto.FlBaseProto.MetaData metaData_;
       private com.google.protobuf.SingleFieldBuilderV3<
-          FlBaseProto.MetaData, FlBaseProto.MetaData.Builder, FlBaseProto.MetaDataOrBuilder> metaDataBuilder_;
+          proto.FlBaseProto.MetaData, proto.FlBaseProto.MetaData.Builder, proto.FlBaseProto.MetaDataOrBuilder> metaDataBuilder_;
       /**
        * <code>.MetaData metaData = 1;</code>
        * @return Whether the metaData field is set.
@@ -1473,9 +1473,9 @@ public final class FGBoostServiceProto {
        * <code>.MetaData metaData = 1;</code>
        * @return The metaData.
        */
-      public FlBaseProto.MetaData getMetaData() {
+      public proto.FlBaseProto.MetaData getMetaData() {
         if (metaDataBuilder_ == null) {
-          return metaData_ == null ? FlBaseProto.MetaData.getDefaultInstance() : metaData_;
+          return metaData_ == null ? proto.FlBaseProto.MetaData.getDefaultInstance() : metaData_;
         } else {
           return metaDataBuilder_.getMessage();
         }
@@ -1483,7 +1483,7 @@ public final class FGBoostServiceProto {
       /**
        * <code>.MetaData metaData = 1;</code>
        */
-      public Builder setMetaData(FlBaseProto.MetaData value) {
+      public Builder setMetaData(proto.FlBaseProto.MetaData value) {
         if (metaDataBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
@@ -1500,7 +1500,7 @@ public final class FGBoostServiceProto {
        * <code>.MetaData metaData = 1;</code>
        */
       public Builder setMetaData(
-          FlBaseProto.MetaData.Builder builderForValue) {
+          proto.FlBaseProto.MetaData.Builder builderForValue) {
         if (metaDataBuilder_ == null) {
           metaData_ = builderForValue.build();
           onChanged();
@@ -1513,11 +1513,11 @@ public final class FGBoostServiceProto {
       /**
        * <code>.MetaData metaData = 1;</code>
        */
-      public Builder mergeMetaData(FlBaseProto.MetaData value) {
+      public Builder mergeMetaData(proto.FlBaseProto.MetaData value) {
         if (metaDataBuilder_ == null) {
           if (metaData_ != null) {
             metaData_ =
-              FlBaseProto.MetaData.newBuilder(metaData_).mergeFrom(value).buildPartial();
+              proto.FlBaseProto.MetaData.newBuilder(metaData_).mergeFrom(value).buildPartial();
           } else {
             metaData_ = value;
           }
@@ -1545,7 +1545,7 @@ public final class FGBoostServiceProto {
       /**
        * <code>.MetaData metaData = 1;</code>
        */
-      public FlBaseProto.MetaData.Builder getMetaDataBuilder() {
+      public proto.FlBaseProto.MetaData.Builder getMetaDataBuilder() {
         
         onChanged();
         return getMetaDataFieldBuilder().getBuilder();
@@ -1553,23 +1553,23 @@ public final class FGBoostServiceProto {
       /**
        * <code>.MetaData metaData = 1;</code>
        */
-      public FlBaseProto.MetaDataOrBuilder getMetaDataOrBuilder() {
+      public proto.FlBaseProto.MetaDataOrBuilder getMetaDataOrBuilder() {
         if (metaDataBuilder_ != null) {
           return metaDataBuilder_.getMessageOrBuilder();
         } else {
           return metaData_ == null ?
-              FlBaseProto.MetaData.getDefaultInstance() : metaData_;
+              proto.FlBaseProto.MetaData.getDefaultInstance() : metaData_;
         }
       }
       /**
        * <code>.MetaData metaData = 1;</code>
        */
       private com.google.protobuf.SingleFieldBuilderV3<
-          FlBaseProto.MetaData, FlBaseProto.MetaData.Builder, FlBaseProto.MetaDataOrBuilder>
+          proto.FlBaseProto.MetaData, proto.FlBaseProto.MetaData.Builder, proto.FlBaseProto.MetaDataOrBuilder>
           getMetaDataFieldBuilder() {
         if (metaDataBuilder_ == null) {
           metaDataBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
-              FlBaseProto.MetaData, FlBaseProto.MetaData.Builder, FlBaseProto.MetaDataOrBuilder>(
+              proto.FlBaseProto.MetaData, proto.FlBaseProto.MetaData.Builder, proto.FlBaseProto.MetaDataOrBuilder>(
                   getMetaData(),
                   getParentForChildren(),
                   isClean());
@@ -1719,11 +1719,11 @@ public final class FGBoostServiceProto {
      * <code>.TensorMap data = 1;</code>
      * @return The data.
      */
-    FlBaseProto.TensorMap getData();
+    proto.FlBaseProto.TensorMap getData();
     /**
      * <code>.TensorMap data = 1;</code>
      */
-    FlBaseProto.TensorMapOrBuilder getDataOrBuilder();
+    proto.FlBaseProto.TensorMapOrBuilder getDataOrBuilder();
 
     /**
      * <code>string response = 2;</code>
@@ -1790,11 +1790,11 @@ public final class FGBoostServiceProto {
               done = true;
               break;
             case 10: {
-              FlBaseProto.TensorMap.Builder subBuilder = null;
+              proto.FlBaseProto.TensorMap.Builder subBuilder = null;
               if (data_ != null) {
                 subBuilder = data_.toBuilder();
               }
-              data_ = input.readMessage(FlBaseProto.TensorMap.parser(), extensionRegistry);
+              data_ = input.readMessage(proto.FlBaseProto.TensorMap.parser(), extensionRegistry);
               if (subBuilder != null) {
                 subBuilder.mergeFrom(data_);
                 data_ = subBuilder.buildPartial();
@@ -1846,7 +1846,7 @@ public final class FGBoostServiceProto {
     }
 
     public static final int DATA_FIELD_NUMBER = 1;
-    private FlBaseProto.TensorMap data_;
+    private proto.FlBaseProto.TensorMap data_;
     /**
      * <code>.TensorMap data = 1;</code>
      * @return Whether the data field is set.
@@ -1860,14 +1860,14 @@ public final class FGBoostServiceProto {
      * @return The data.
      */
     @Override
-    public FlBaseProto.TensorMap getData() {
-      return data_ == null ? FlBaseProto.TensorMap.getDefaultInstance() : data_;
+    public proto.FlBaseProto.TensorMap getData() {
+      return data_ == null ? proto.FlBaseProto.TensorMap.getDefaultInstance() : data_;
     }
     /**
      * <code>.TensorMap data = 1;</code>
      */
     @Override
-    public FlBaseProto.TensorMapOrBuilder getDataOrBuilder() {
+    public proto.FlBaseProto.TensorMapOrBuilder getDataOrBuilder() {
       return getData();
     }
 
@@ -2121,7 +2121,7 @@ public final class FGBoostServiceProto {
                 DownloadResponse.class, Builder.class);
       }
 
-      // Construct using com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.DownloadResponse.newBuilder()
+      // Construct using com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto.DownloadResponse.newBuilder()
       private Builder() {
         maybeForceBuilderInitialization();
       }
@@ -2269,9 +2269,9 @@ public final class FGBoostServiceProto {
         return this;
       }
 
-      private FlBaseProto.TensorMap data_;
+      private proto.FlBaseProto.TensorMap data_;
       private com.google.protobuf.SingleFieldBuilderV3<
-          FlBaseProto.TensorMap, FlBaseProto.TensorMap.Builder, FlBaseProto.TensorMapOrBuilder> dataBuilder_;
+          proto.FlBaseProto.TensorMap, proto.FlBaseProto.TensorMap.Builder, proto.FlBaseProto.TensorMapOrBuilder> dataBuilder_;
       /**
        * <code>.TensorMap data = 1;</code>
        * @return Whether the data field is set.
@@ -2283,9 +2283,9 @@ public final class FGBoostServiceProto {
        * <code>.TensorMap data = 1;</code>
        * @return The data.
        */
-      public FlBaseProto.TensorMap getData() {
+      public proto.FlBaseProto.TensorMap getData() {
         if (dataBuilder_ == null) {
-          return data_ == null ? FlBaseProto.TensorMap.getDefaultInstance() : data_;
+          return data_ == null ? proto.FlBaseProto.TensorMap.getDefaultInstance() : data_;
         } else {
           return dataBuilder_.getMessage();
         }
@@ -2293,7 +2293,7 @@ public final class FGBoostServiceProto {
       /**
        * <code>.TensorMap data = 1;</code>
        */
-      public Builder setData(FlBaseProto.TensorMap value) {
+      public Builder setData(proto.FlBaseProto.TensorMap value) {
         if (dataBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
@@ -2310,7 +2310,7 @@ public final class FGBoostServiceProto {
        * <code>.TensorMap data = 1;</code>
        */
       public Builder setData(
-          FlBaseProto.TensorMap.Builder builderForValue) {
+          proto.FlBaseProto.TensorMap.Builder builderForValue) {
         if (dataBuilder_ == null) {
           data_ = builderForValue.build();
           onChanged();
@@ -2323,11 +2323,11 @@ public final class FGBoostServiceProto {
       /**
        * <code>.TensorMap data = 1;</code>
        */
-      public Builder mergeData(FlBaseProto.TensorMap value) {
+      public Builder mergeData(proto.FlBaseProto.TensorMap value) {
         if (dataBuilder_ == null) {
           if (data_ != null) {
             data_ =
-              FlBaseProto.TensorMap.newBuilder(data_).mergeFrom(value).buildPartial();
+              proto.FlBaseProto.TensorMap.newBuilder(data_).mergeFrom(value).buildPartial();
           } else {
             data_ = value;
           }
@@ -2355,7 +2355,7 @@ public final class FGBoostServiceProto {
       /**
        * <code>.TensorMap data = 1;</code>
        */
-      public FlBaseProto.TensorMap.Builder getDataBuilder() {
+      public proto.FlBaseProto.TensorMap.Builder getDataBuilder() {
         
         onChanged();
         return getDataFieldBuilder().getBuilder();
@@ -2363,23 +2363,23 @@ public final class FGBoostServiceProto {
       /**
        * <code>.TensorMap data = 1;</code>
        */
-      public FlBaseProto.TensorMapOrBuilder getDataOrBuilder() {
+      public proto.FlBaseProto.TensorMapOrBuilder getDataOrBuilder() {
         if (dataBuilder_ != null) {
           return dataBuilder_.getMessageOrBuilder();
         } else {
           return data_ == null ?
-              FlBaseProto.TensorMap.getDefaultInstance() : data_;
+              proto.FlBaseProto.TensorMap.getDefaultInstance() : data_;
         }
       }
       /**
        * <code>.TensorMap data = 1;</code>
        */
       private com.google.protobuf.SingleFieldBuilderV3<
-          FlBaseProto.TensorMap, FlBaseProto.TensorMap.Builder, FlBaseProto.TensorMapOrBuilder>
+          proto.FlBaseProto.TensorMap, proto.FlBaseProto.TensorMap.Builder, proto.FlBaseProto.TensorMapOrBuilder>
           getDataFieldBuilder() {
         if (dataBuilder_ == null) {
           dataBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
-              FlBaseProto.TensorMap, FlBaseProto.TensorMap.Builder, FlBaseProto.TensorMapOrBuilder>(
+              proto.FlBaseProto.TensorMap, proto.FlBaseProto.TensorMap.Builder, proto.FlBaseProto.TensorMapOrBuilder>(
                   getData(),
                   getParentForChildren(),
                   isClean());
@@ -3085,7 +3085,7 @@ public final class FGBoostServiceProto {
                 TreeLeaf.class, Builder.class);
       }
 
-      // Construct using com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.TreeLeaf.newBuilder()
+      // Construct using com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto.TreeLeaf.newBuilder()
       private Builder() {
         maybeForceBuilderInitialization();
       }
@@ -3954,7 +3954,7 @@ public final class FGBoostServiceProto {
                 UploadTreeLeafRequest.class, Builder.class);
       }
 
-      // Construct using com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.UploadTreeLeafRequest.newBuilder()
+      // Construct using com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto.UploadTreeLeafRequest.newBuilder()
       private Builder() {
         maybeForceBuilderInitialization();
       }
@@ -5057,7 +5057,7 @@ public final class FGBoostServiceProto {
                 DataSplit.class, Builder.class);
       }
 
-      // Construct using com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.DataSplit.newBuilder()
+      // Construct using com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto.DataSplit.newBuilder()
       private Builder() {
         maybeForceBuilderInitialization();
       }
@@ -6107,7 +6107,7 @@ public final class FGBoostServiceProto {
                 UploadResponse.class, Builder.class);
       }
 
-      // Construct using com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.UploadResponse.newBuilder()
+      // Construct using com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto.UploadResponse.newBuilder()
       private Builder() {
         maybeForceBuilderInitialization();
       }
@@ -6808,7 +6808,7 @@ public final class FGBoostServiceProto {
                 TreePredict.class, Builder.class);
       }
 
-      // Construct using com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.TreePredict.newBuilder()
+      // Construct using com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto.TreePredict.newBuilder()
       private Builder() {
         maybeForceBuilderInitialization();
       }
@@ -7498,7 +7498,7 @@ public final class FGBoostServiceProto {
                 BoostPredict.class, Builder.class);
       }
 
-      // Construct using com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.BoostPredict.newBuilder()
+      // Construct using com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto.BoostPredict.newBuilder()
       private Builder() {
         maybeForceBuilderInitialization();
       }
@@ -8291,7 +8291,7 @@ public final class FGBoostServiceProto {
                 BoostEval.class, Builder.class);
       }
 
-      // Construct using com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.BoostEval.newBuilder()
+      // Construct using com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto.BoostEval.newBuilder()
       private Builder() {
         maybeForceBuilderInitialization();
       }
@@ -9127,7 +9127,7 @@ public final class FGBoostServiceProto {
                 RegisterRequest.class, Builder.class);
       }
 
-      // Construct using com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.RegisterRequest.newBuilder()
+      // Construct using com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto.RegisterRequest.newBuilder()
       private Builder() {
         maybeForceBuilderInitialization();
       }
@@ -9811,7 +9811,7 @@ public final class FGBoostServiceProto {
                 RegisterResponse.class, Builder.class);
       }
 
-      // Construct using com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.RegisterResponse.newBuilder()
+      // Construct using com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto.RegisterResponse.newBuilder()
       private Builder() {
         maybeForceBuilderInitialization();
       }
@@ -10540,7 +10540,7 @@ public final class FGBoostServiceProto {
                 UploadTreeEvalRequest.class, Builder.class);
       }
 
-      // Construct using com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.UploadTreeEvalRequest.newBuilder()
+      // Construct using com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto.UploadTreeEvalRequest.newBuilder()
       private Builder() {
         maybeForceBuilderInitialization();
       }
@@ -11158,16 +11158,10 @@ public final class FGBoostServiceProto {
         int index);
 
     /**
-     * <code>int32 version = 3;</code>
-     * @return The version.
+     * <code>int32 bsVersion = 3;</code>
+     * @return The bsVersion.
      */
-    int getVersion();
-
-    /**
-     * <code>bool lastBatch = 4;</code>
-     * @return The lastBatch.
-     */
-    boolean getLastBatch();
+    int getBsVersion();
   }
   /**
    * Protobuf type {@code fgboost.EvaluateRequest}
@@ -11234,12 +11228,7 @@ public final class FGBoostServiceProto {
             }
             case 24: {
 
-              version_ = input.readInt32();
-              break;
-            }
-            case 32: {
-
-              lastBatch_ = input.readBool();
+              bsVersion_ = input.readInt32();
               break;
             }
             default: {
@@ -11355,26 +11344,15 @@ public final class FGBoostServiceProto {
       return treeEval_.get(index);
     }
 
-    public static final int VERSION_FIELD_NUMBER = 3;
-    private int version_;
+    public static final int BSVERSION_FIELD_NUMBER = 3;
+    private int bsVersion_;
     /**
-     * <code>int32 version = 3;</code>
-     * @return The version.
+     * <code>int32 bsVersion = 3;</code>
+     * @return The bsVersion.
      */
     @Override
-    public int getVersion() {
-      return version_;
-    }
-
-    public static final int LASTBATCH_FIELD_NUMBER = 4;
-    private boolean lastBatch_;
-    /**
-     * <code>bool lastBatch = 4;</code>
-     * @return The lastBatch.
-     */
-    @Override
-    public boolean getLastBatch() {
-      return lastBatch_;
+    public int getBsVersion() {
+      return bsVersion_;
     }
 
     private byte memoizedIsInitialized = -1;
@@ -11397,11 +11375,8 @@ public final class FGBoostServiceProto {
       for (int i = 0; i < treeEval_.size(); i++) {
         output.writeMessage(2, treeEval_.get(i));
       }
-      if (version_ != 0) {
-        output.writeInt32(3, version_);
-      }
-      if (lastBatch_ != false) {
-        output.writeBool(4, lastBatch_);
+      if (bsVersion_ != 0) {
+        output.writeInt32(3, bsVersion_);
       }
       unknownFields.writeTo(output);
     }
@@ -11419,13 +11394,9 @@ public final class FGBoostServiceProto {
         size += com.google.protobuf.CodedOutputStream
           .computeMessageSize(2, treeEval_.get(i));
       }
-      if (version_ != 0) {
+      if (bsVersion_ != 0) {
         size += com.google.protobuf.CodedOutputStream
-          .computeInt32Size(3, version_);
-      }
-      if (lastBatch_ != false) {
-        size += com.google.protobuf.CodedOutputStream
-          .computeBoolSize(4, lastBatch_);
+          .computeInt32Size(3, bsVersion_);
       }
       size += unknownFields.getSerializedSize();
       memoizedSize = size;
@@ -11446,10 +11417,8 @@ public final class FGBoostServiceProto {
           .equals(other.getClientuuid())) return false;
       if (!getTreeEvalList()
           .equals(other.getTreeEvalList())) return false;
-      if (getVersion()
-          != other.getVersion()) return false;
-      if (getLastBatch()
-          != other.getLastBatch()) return false;
+      if (getBsVersion()
+          != other.getBsVersion()) return false;
       if (!unknownFields.equals(other.unknownFields)) return false;
       return true;
     }
@@ -11467,11 +11436,8 @@ public final class FGBoostServiceProto {
         hash = (37 * hash) + TREEEVAL_FIELD_NUMBER;
         hash = (53 * hash) + getTreeEvalList().hashCode();
       }
-      hash = (37 * hash) + VERSION_FIELD_NUMBER;
-      hash = (53 * hash) + getVersion();
-      hash = (37 * hash) + LASTBATCH_FIELD_NUMBER;
-      hash = (53 * hash) + com.google.protobuf.Internal.hashBoolean(
-          getLastBatch());
+      hash = (37 * hash) + BSVERSION_FIELD_NUMBER;
+      hash = (53 * hash) + getBsVersion();
       hash = (29 * hash) + unknownFields.hashCode();
       memoizedHashCode = hash;
       return hash;
@@ -11587,7 +11553,7 @@ public final class FGBoostServiceProto {
                 EvaluateRequest.class, Builder.class);
       }
 
-      // Construct using com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.EvaluateRequest.newBuilder()
+      // Construct using com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto.EvaluateRequest.newBuilder()
       private Builder() {
         maybeForceBuilderInitialization();
       }
@@ -11614,9 +11580,7 @@ public final class FGBoostServiceProto {
         } else {
           treeEvalBuilder_.clear();
         }
-        version_ = 0;
-
-        lastBatch_ = false;
+        bsVersion_ = 0;
 
         return this;
       }
@@ -11655,8 +11619,7 @@ public final class FGBoostServiceProto {
         } else {
           result.treeEval_ = treeEvalBuilder_.build();
         }
-        result.version_ = version_;
-        result.lastBatch_ = lastBatch_;
+        result.bsVersion_ = bsVersion_;
         onBuilt();
         return result;
       }
@@ -11735,11 +11698,8 @@ public final class FGBoostServiceProto {
             }
           }
         }
-        if (other.getVersion() != 0) {
-          setVersion(other.getVersion());
-        }
-        if (other.getLastBatch() != false) {
-          setLastBatch(other.getLastBatch());
+        if (other.getBsVersion() != 0) {
+          setBsVersion(other.getBsVersion());
         }
         this.mergeUnknownFields(other.unknownFields);
         onChanged();
@@ -12087,64 +12047,33 @@ public final class FGBoostServiceProto {
         return treeEvalBuilder_;
       }
 
-      private int version_ ;
+      private int bsVersion_ ;
       /**
-       * <code>int32 version = 3;</code>
-       * @return The version.
+       * <code>int32 bsVersion = 3;</code>
+       * @return The bsVersion.
        */
       @Override
-      public int getVersion() {
-        return version_;
+      public int getBsVersion() {
+        return bsVersion_;
       }
       /**
-       * <code>int32 version = 3;</code>
-       * @param value The version to set.
+       * <code>int32 bsVersion = 3;</code>
+       * @param value The bsVersion to set.
        * @return This builder for chaining.
        */
-      public Builder setVersion(int value) {
+      public Builder setBsVersion(int value) {
         
-        version_ = value;
+        bsVersion_ = value;
         onChanged();
         return this;
       }
       /**
-       * <code>int32 version = 3;</code>
+       * <code>int32 bsVersion = 3;</code>
        * @return This builder for chaining.
        */
-      public Builder clearVersion() {
+      public Builder clearBsVersion() {
         
-        version_ = 0;
-        onChanged();
-        return this;
-      }
-
-      private boolean lastBatch_ ;
-      /**
-       * <code>bool lastBatch = 4;</code>
-       * @return The lastBatch.
-       */
-      @Override
-      public boolean getLastBatch() {
-        return lastBatch_;
-      }
-      /**
-       * <code>bool lastBatch = 4;</code>
-       * @param value The lastBatch to set.
-       * @return This builder for chaining.
-       */
-      public Builder setLastBatch(boolean value) {
-        
-        lastBatch_ = value;
-        onChanged();
-        return this;
-      }
-      /**
-       * <code>bool lastBatch = 4;</code>
-       * @return This builder for chaining.
-       */
-      public Builder clearLastBatch() {
-        
-        lastBatch_ = false;
+        bsVersion_ = 0;
         onChanged();
         return this;
       }
@@ -12226,11 +12155,11 @@ public final class FGBoostServiceProto {
      * <code>.TensorMap data = 2;</code>
      * @return The data.
      */
-    FlBaseProto.TensorMap getData();
+    proto.FlBaseProto.TensorMap getData();
     /**
      * <code>.TensorMap data = 2;</code>
      */
-    FlBaseProto.TensorMapOrBuilder getDataOrBuilder();
+    proto.FlBaseProto.TensorMapOrBuilder getDataOrBuilder();
 
     /**
      * <code>int32 code = 3;</code>
@@ -12304,11 +12233,11 @@ public final class FGBoostServiceProto {
               break;
             }
             case 18: {
-              FlBaseProto.TensorMap.Builder subBuilder = null;
+              proto.FlBaseProto.TensorMap.Builder subBuilder = null;
               if (data_ != null) {
                 subBuilder = data_.toBuilder();
               }
-              data_ = input.readMessage(FlBaseProto.TensorMap.parser(), extensionRegistry);
+              data_ = input.readMessage(proto.FlBaseProto.TensorMap.parser(), extensionRegistry);
               if (subBuilder != null) {
                 subBuilder.mergeFrom(data_);
                 data_ = subBuilder.buildPartial();
@@ -12398,7 +12327,7 @@ public final class FGBoostServiceProto {
     }
 
     public static final int DATA_FIELD_NUMBER = 2;
-    private FlBaseProto.TensorMap data_;
+    private proto.FlBaseProto.TensorMap data_;
     /**
      * <code>.TensorMap data = 2;</code>
      * @return Whether the data field is set.
@@ -12412,14 +12341,14 @@ public final class FGBoostServiceProto {
      * @return The data.
      */
     @Override
-    public FlBaseProto.TensorMap getData() {
-      return data_ == null ? FlBaseProto.TensorMap.getDefaultInstance() : data_;
+    public proto.FlBaseProto.TensorMap getData() {
+      return data_ == null ? proto.FlBaseProto.TensorMap.getDefaultInstance() : data_;
     }
     /**
      * <code>.TensorMap data = 2;</code>
      */
     @Override
-    public FlBaseProto.TensorMapOrBuilder getDataOrBuilder() {
+    public proto.FlBaseProto.TensorMapOrBuilder getDataOrBuilder() {
       return getData();
     }
 
@@ -12683,7 +12612,7 @@ public final class FGBoostServiceProto {
                 EvaluateResponse.class, Builder.class);
       }
 
-      // Construct using com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.EvaluateResponse.newBuilder()
+      // Construct using com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto.EvaluateResponse.newBuilder()
       private Builder() {
         maybeForceBuilderInitialization();
       }
@@ -12914,9 +12843,9 @@ public final class FGBoostServiceProto {
         return this;
       }
 
-      private FlBaseProto.TensorMap data_;
+      private proto.FlBaseProto.TensorMap data_;
       private com.google.protobuf.SingleFieldBuilderV3<
-          FlBaseProto.TensorMap, FlBaseProto.TensorMap.Builder, FlBaseProto.TensorMapOrBuilder> dataBuilder_;
+          proto.FlBaseProto.TensorMap, proto.FlBaseProto.TensorMap.Builder, proto.FlBaseProto.TensorMapOrBuilder> dataBuilder_;
       /**
        * <code>.TensorMap data = 2;</code>
        * @return Whether the data field is set.
@@ -12928,9 +12857,9 @@ public final class FGBoostServiceProto {
        * <code>.TensorMap data = 2;</code>
        * @return The data.
        */
-      public FlBaseProto.TensorMap getData() {
+      public proto.FlBaseProto.TensorMap getData() {
         if (dataBuilder_ == null) {
-          return data_ == null ? FlBaseProto.TensorMap.getDefaultInstance() : data_;
+          return data_ == null ? proto.FlBaseProto.TensorMap.getDefaultInstance() : data_;
         } else {
           return dataBuilder_.getMessage();
         }
@@ -12938,7 +12867,7 @@ public final class FGBoostServiceProto {
       /**
        * <code>.TensorMap data = 2;</code>
        */
-      public Builder setData(FlBaseProto.TensorMap value) {
+      public Builder setData(proto.FlBaseProto.TensorMap value) {
         if (dataBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
@@ -12955,7 +12884,7 @@ public final class FGBoostServiceProto {
        * <code>.TensorMap data = 2;</code>
        */
       public Builder setData(
-          FlBaseProto.TensorMap.Builder builderForValue) {
+          proto.FlBaseProto.TensorMap.Builder builderForValue) {
         if (dataBuilder_ == null) {
           data_ = builderForValue.build();
           onChanged();
@@ -12968,11 +12897,11 @@ public final class FGBoostServiceProto {
       /**
        * <code>.TensorMap data = 2;</code>
        */
-      public Builder mergeData(FlBaseProto.TensorMap value) {
+      public Builder mergeData(proto.FlBaseProto.TensorMap value) {
         if (dataBuilder_ == null) {
           if (data_ != null) {
             data_ =
-              FlBaseProto.TensorMap.newBuilder(data_).mergeFrom(value).buildPartial();
+              proto.FlBaseProto.TensorMap.newBuilder(data_).mergeFrom(value).buildPartial();
           } else {
             data_ = value;
           }
@@ -13000,7 +12929,7 @@ public final class FGBoostServiceProto {
       /**
        * <code>.TensorMap data = 2;</code>
        */
-      public FlBaseProto.TensorMap.Builder getDataBuilder() {
+      public proto.FlBaseProto.TensorMap.Builder getDataBuilder() {
         
         onChanged();
         return getDataFieldBuilder().getBuilder();
@@ -13008,23 +12937,23 @@ public final class FGBoostServiceProto {
       /**
        * <code>.TensorMap data = 2;</code>
        */
-      public FlBaseProto.TensorMapOrBuilder getDataOrBuilder() {
+      public proto.FlBaseProto.TensorMapOrBuilder getDataOrBuilder() {
         if (dataBuilder_ != null) {
           return dataBuilder_.getMessageOrBuilder();
         } else {
           return data_ == null ?
-              FlBaseProto.TensorMap.getDefaultInstance() : data_;
+              proto.FlBaseProto.TensorMap.getDefaultInstance() : data_;
         }
       }
       /**
        * <code>.TensorMap data = 2;</code>
        */
       private com.google.protobuf.SingleFieldBuilderV3<
-          FlBaseProto.TensorMap, FlBaseProto.TensorMap.Builder, FlBaseProto.TensorMapOrBuilder>
+          proto.FlBaseProto.TensorMap, proto.FlBaseProto.TensorMap.Builder, proto.FlBaseProto.TensorMapOrBuilder>
           getDataFieldBuilder() {
         if (dataBuilder_ == null) {
           dataBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
-              FlBaseProto.TensorMap, FlBaseProto.TensorMap.Builder, FlBaseProto.TensorMapOrBuilder>(
+              proto.FlBaseProto.TensorMap, proto.FlBaseProto.TensorMap.Builder, proto.FlBaseProto.TensorMapOrBuilder>(
                   getData(),
                   getParentForChildren(),
                   isClean());
@@ -13233,16 +13162,10 @@ public final class FGBoostServiceProto {
         int index);
 
     /**
-     * <code>int32 version = 3;</code>
-     * @return The version.
+     * <code>int32 bsVersion = 3;</code>
+     * @return The bsVersion.
      */
-    int getVersion();
-
-    /**
-     * <code>bool lastBatch = 4;</code>
-     * @return The lastBatch.
-     */
-    boolean getLastBatch();
+    int getBsVersion();
   }
   /**
    * Protobuf type {@code fgboost.PredictRequest}
@@ -13309,12 +13232,7 @@ public final class FGBoostServiceProto {
             }
             case 24: {
 
-              version_ = input.readInt32();
-              break;
-            }
-            case 32: {
-
-              lastBatch_ = input.readBool();
+              bsVersion_ = input.readInt32();
               break;
             }
             default: {
@@ -13430,26 +13348,15 @@ public final class FGBoostServiceProto {
       return treeEval_.get(index);
     }
 
-    public static final int VERSION_FIELD_NUMBER = 3;
-    private int version_;
+    public static final int BSVERSION_FIELD_NUMBER = 3;
+    private int bsVersion_;
     /**
-     * <code>int32 version = 3;</code>
-     * @return The version.
+     * <code>int32 bsVersion = 3;</code>
+     * @return The bsVersion.
      */
     @Override
-    public int getVersion() {
-      return version_;
-    }
-
-    public static final int LASTBATCH_FIELD_NUMBER = 4;
-    private boolean lastBatch_;
-    /**
-     * <code>bool lastBatch = 4;</code>
-     * @return The lastBatch.
-     */
-    @Override
-    public boolean getLastBatch() {
-      return lastBatch_;
+    public int getBsVersion() {
+      return bsVersion_;
     }
 
     private byte memoizedIsInitialized = -1;
@@ -13472,11 +13379,8 @@ public final class FGBoostServiceProto {
       for (int i = 0; i < treeEval_.size(); i++) {
         output.writeMessage(2, treeEval_.get(i));
       }
-      if (version_ != 0) {
-        output.writeInt32(3, version_);
-      }
-      if (lastBatch_ != false) {
-        output.writeBool(4, lastBatch_);
+      if (bsVersion_ != 0) {
+        output.writeInt32(3, bsVersion_);
       }
       unknownFields.writeTo(output);
     }
@@ -13494,13 +13398,9 @@ public final class FGBoostServiceProto {
         size += com.google.protobuf.CodedOutputStream
           .computeMessageSize(2, treeEval_.get(i));
       }
-      if (version_ != 0) {
+      if (bsVersion_ != 0) {
         size += com.google.protobuf.CodedOutputStream
-          .computeInt32Size(3, version_);
-      }
-      if (lastBatch_ != false) {
-        size += com.google.protobuf.CodedOutputStream
-          .computeBoolSize(4, lastBatch_);
+          .computeInt32Size(3, bsVersion_);
       }
       size += unknownFields.getSerializedSize();
       memoizedSize = size;
@@ -13521,10 +13421,8 @@ public final class FGBoostServiceProto {
           .equals(other.getClientuuid())) return false;
       if (!getTreeEvalList()
           .equals(other.getTreeEvalList())) return false;
-      if (getVersion()
-          != other.getVersion()) return false;
-      if (getLastBatch()
-          != other.getLastBatch()) return false;
+      if (getBsVersion()
+          != other.getBsVersion()) return false;
       if (!unknownFields.equals(other.unknownFields)) return false;
       return true;
     }
@@ -13542,11 +13440,8 @@ public final class FGBoostServiceProto {
         hash = (37 * hash) + TREEEVAL_FIELD_NUMBER;
         hash = (53 * hash) + getTreeEvalList().hashCode();
       }
-      hash = (37 * hash) + VERSION_FIELD_NUMBER;
-      hash = (53 * hash) + getVersion();
-      hash = (37 * hash) + LASTBATCH_FIELD_NUMBER;
-      hash = (53 * hash) + com.google.protobuf.Internal.hashBoolean(
-          getLastBatch());
+      hash = (37 * hash) + BSVERSION_FIELD_NUMBER;
+      hash = (53 * hash) + getBsVersion();
       hash = (29 * hash) + unknownFields.hashCode();
       memoizedHashCode = hash;
       return hash;
@@ -13662,7 +13557,7 @@ public final class FGBoostServiceProto {
                 PredictRequest.class, Builder.class);
       }
 
-      // Construct using com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.PredictRequest.newBuilder()
+      // Construct using com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto.PredictRequest.newBuilder()
       private Builder() {
         maybeForceBuilderInitialization();
       }
@@ -13689,9 +13584,7 @@ public final class FGBoostServiceProto {
         } else {
           treeEvalBuilder_.clear();
         }
-        version_ = 0;
-
-        lastBatch_ = false;
+        bsVersion_ = 0;
 
         return this;
       }
@@ -13730,8 +13623,7 @@ public final class FGBoostServiceProto {
         } else {
           result.treeEval_ = treeEvalBuilder_.build();
         }
-        result.version_ = version_;
-        result.lastBatch_ = lastBatch_;
+        result.bsVersion_ = bsVersion_;
         onBuilt();
         return result;
       }
@@ -13810,11 +13702,8 @@ public final class FGBoostServiceProto {
             }
           }
         }
-        if (other.getVersion() != 0) {
-          setVersion(other.getVersion());
-        }
-        if (other.getLastBatch() != false) {
-          setLastBatch(other.getLastBatch());
+        if (other.getBsVersion() != 0) {
+          setBsVersion(other.getBsVersion());
         }
         this.mergeUnknownFields(other.unknownFields);
         onChanged();
@@ -14162,64 +14051,33 @@ public final class FGBoostServiceProto {
         return treeEvalBuilder_;
       }
 
-      private int version_ ;
+      private int bsVersion_ ;
       /**
-       * <code>int32 version = 3;</code>
-       * @return The version.
+       * <code>int32 bsVersion = 3;</code>
+       * @return The bsVersion.
        */
       @Override
-      public int getVersion() {
-        return version_;
+      public int getBsVersion() {
+        return bsVersion_;
       }
       /**
-       * <code>int32 version = 3;</code>
-       * @param value The version to set.
+       * <code>int32 bsVersion = 3;</code>
+       * @param value The bsVersion to set.
        * @return This builder for chaining.
        */
-      public Builder setVersion(int value) {
+      public Builder setBsVersion(int value) {
         
-        version_ = value;
+        bsVersion_ = value;
         onChanged();
         return this;
       }
       /**
-       * <code>int32 version = 3;</code>
+       * <code>int32 bsVersion = 3;</code>
        * @return This builder for chaining.
        */
-      public Builder clearVersion() {
+      public Builder clearBsVersion() {
         
-        version_ = 0;
-        onChanged();
-        return this;
-      }
-
-      private boolean lastBatch_ ;
-      /**
-       * <code>bool lastBatch = 4;</code>
-       * @return The lastBatch.
-       */
-      @Override
-      public boolean getLastBatch() {
-        return lastBatch_;
-      }
-      /**
-       * <code>bool lastBatch = 4;</code>
-       * @param value The lastBatch to set.
-       * @return This builder for chaining.
-       */
-      public Builder setLastBatch(boolean value) {
-        
-        lastBatch_ = value;
-        onChanged();
-        return this;
-      }
-      /**
-       * <code>bool lastBatch = 4;</code>
-       * @return This builder for chaining.
-       */
-      public Builder clearLastBatch() {
-        
-        lastBatch_ = false;
+        bsVersion_ = 0;
         onChanged();
         return this;
       }
@@ -14658,7 +14516,7 @@ public final class FGBoostServiceProto {
                 SplitRequest.class, Builder.class);
       }
 
-      // Construct using com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.SplitRequest.newBuilder()
+      // Construct using com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto.SplitRequest.newBuilder()
       private Builder() {
         maybeForceBuilderInitialization();
       }
@@ -15072,11 +14930,11 @@ public final class FGBoostServiceProto {
      * <code>.TensorMap data = 2;</code>
      * @return The data.
      */
-    FlBaseProto.TensorMap getData();
+    proto.FlBaseProto.TensorMap getData();
     /**
      * <code>.TensorMap data = 2;</code>
      */
-    FlBaseProto.TensorMapOrBuilder getDataOrBuilder();
+    proto.FlBaseProto.TensorMapOrBuilder getDataOrBuilder();
 
     /**
      * <code>int32 code = 3;</code>
@@ -15137,11 +14995,11 @@ public final class FGBoostServiceProto {
               break;
             }
             case 18: {
-              FlBaseProto.TensorMap.Builder subBuilder = null;
+              proto.FlBaseProto.TensorMap.Builder subBuilder = null;
               if (data_ != null) {
                 subBuilder = data_.toBuilder();
               }
-              data_ = input.readMessage(FlBaseProto.TensorMap.parser(), extensionRegistry);
+              data_ = input.readMessage(proto.FlBaseProto.TensorMap.parser(), extensionRegistry);
               if (subBuilder != null) {
                 subBuilder.mergeFrom(data_);
                 data_ = subBuilder.buildPartial();
@@ -15225,7 +15083,7 @@ public final class FGBoostServiceProto {
     }
 
     public static final int DATA_FIELD_NUMBER = 2;
-    private FlBaseProto.TensorMap data_;
+    private proto.FlBaseProto.TensorMap data_;
     /**
      * <code>.TensorMap data = 2;</code>
      * @return Whether the data field is set.
@@ -15239,14 +15097,14 @@ public final class FGBoostServiceProto {
      * @return The data.
      */
     @Override
-    public FlBaseProto.TensorMap getData() {
-      return data_ == null ? FlBaseProto.TensorMap.getDefaultInstance() : data_;
+    public proto.FlBaseProto.TensorMap getData() {
+      return data_ == null ? proto.FlBaseProto.TensorMap.getDefaultInstance() : data_;
     }
     /**
      * <code>.TensorMap data = 2;</code>
      */
     @Override
-    public FlBaseProto.TensorMapOrBuilder getDataOrBuilder() {
+    public proto.FlBaseProto.TensorMapOrBuilder getDataOrBuilder() {
       return getData();
     }
 
@@ -15462,7 +15320,7 @@ public final class FGBoostServiceProto {
                 PredictResponse.class, Builder.class);
       }
 
-      // Construct using com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.PredictResponse.newBuilder()
+      // Construct using com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto.PredictResponse.newBuilder()
       private Builder() {
         maybeForceBuilderInitialization();
       }
@@ -15686,9 +15544,9 @@ public final class FGBoostServiceProto {
         return this;
       }
 
-      private FlBaseProto.TensorMap data_;
+      private proto.FlBaseProto.TensorMap data_;
       private com.google.protobuf.SingleFieldBuilderV3<
-          FlBaseProto.TensorMap, FlBaseProto.TensorMap.Builder, FlBaseProto.TensorMapOrBuilder> dataBuilder_;
+          proto.FlBaseProto.TensorMap, proto.FlBaseProto.TensorMap.Builder, proto.FlBaseProto.TensorMapOrBuilder> dataBuilder_;
       /**
        * <code>.TensorMap data = 2;</code>
        * @return Whether the data field is set.
@@ -15700,9 +15558,9 @@ public final class FGBoostServiceProto {
        * <code>.TensorMap data = 2;</code>
        * @return The data.
        */
-      public FlBaseProto.TensorMap getData() {
+      public proto.FlBaseProto.TensorMap getData() {
         if (dataBuilder_ == null) {
-          return data_ == null ? FlBaseProto.TensorMap.getDefaultInstance() : data_;
+          return data_ == null ? proto.FlBaseProto.TensorMap.getDefaultInstance() : data_;
         } else {
           return dataBuilder_.getMessage();
         }
@@ -15710,7 +15568,7 @@ public final class FGBoostServiceProto {
       /**
        * <code>.TensorMap data = 2;</code>
        */
-      public Builder setData(FlBaseProto.TensorMap value) {
+      public Builder setData(proto.FlBaseProto.TensorMap value) {
         if (dataBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
@@ -15727,7 +15585,7 @@ public final class FGBoostServiceProto {
        * <code>.TensorMap data = 2;</code>
        */
       public Builder setData(
-          FlBaseProto.TensorMap.Builder builderForValue) {
+          proto.FlBaseProto.TensorMap.Builder builderForValue) {
         if (dataBuilder_ == null) {
           data_ = builderForValue.build();
           onChanged();
@@ -15740,11 +15598,11 @@ public final class FGBoostServiceProto {
       /**
        * <code>.TensorMap data = 2;</code>
        */
-      public Builder mergeData(FlBaseProto.TensorMap value) {
+      public Builder mergeData(proto.FlBaseProto.TensorMap value) {
         if (dataBuilder_ == null) {
           if (data_ != null) {
             data_ =
-              FlBaseProto.TensorMap.newBuilder(data_).mergeFrom(value).buildPartial();
+              proto.FlBaseProto.TensorMap.newBuilder(data_).mergeFrom(value).buildPartial();
           } else {
             data_ = value;
           }
@@ -15772,7 +15630,7 @@ public final class FGBoostServiceProto {
       /**
        * <code>.TensorMap data = 2;</code>
        */
-      public FlBaseProto.TensorMap.Builder getDataBuilder() {
+      public proto.FlBaseProto.TensorMap.Builder getDataBuilder() {
         
         onChanged();
         return getDataFieldBuilder().getBuilder();
@@ -15780,23 +15638,23 @@ public final class FGBoostServiceProto {
       /**
        * <code>.TensorMap data = 2;</code>
        */
-      public FlBaseProto.TensorMapOrBuilder getDataOrBuilder() {
+      public proto.FlBaseProto.TensorMapOrBuilder getDataOrBuilder() {
         if (dataBuilder_ != null) {
           return dataBuilder_.getMessageOrBuilder();
         } else {
           return data_ == null ?
-              FlBaseProto.TensorMap.getDefaultInstance() : data_;
+              proto.FlBaseProto.TensorMap.getDefaultInstance() : data_;
         }
       }
       /**
        * <code>.TensorMap data = 2;</code>
        */
       private com.google.protobuf.SingleFieldBuilderV3<
-          FlBaseProto.TensorMap, FlBaseProto.TensorMap.Builder, FlBaseProto.TensorMapOrBuilder>
+          proto.FlBaseProto.TensorMap, proto.FlBaseProto.TensorMap.Builder, proto.FlBaseProto.TensorMapOrBuilder>
           getDataFieldBuilder() {
         if (dataBuilder_ == null) {
           dataBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
-              FlBaseProto.TensorMap, FlBaseProto.TensorMap.Builder, FlBaseProto.TensorMapOrBuilder>(
+              proto.FlBaseProto.TensorMap, proto.FlBaseProto.TensorMap.Builder, proto.FlBaseProto.TensorMapOrBuilder>(
                   getData(),
                   getParentForChildren(),
                   isClean());
@@ -16303,7 +16161,7 @@ public final class FGBoostServiceProto {
                 SplitResponse.class, Builder.class);
       }
 
-      // Construct using com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.SplitResponse.newBuilder()
+      // Construct using com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto.SplitResponse.newBuilder()
       private Builder() {
         maybeForceBuilderInitialization();
       }
@@ -16858,41 +16716,40 @@ public final class FGBoostServiceProto {
       " \001(\t\"2\n\020RegisterResponse\022\020\n\010response\030\001 \001" +
       "(\t\022\014\n\004code\030\002 \001(\005\"b\n\025UploadTreeEvalReques" +
       "t\022\022\n\nclientuuid\030\001 \001(\t\022\017\n\007version\030\002 \001(\005\022$" +
-      "\n\010treeEval\030\003 \003(\0132\022.fgboost.BoostEval\"o\n\017" +
+      "\n\010treeEval\030\003 \003(\0132\022.fgboost.BoostEval\"^\n\017" +
       "EvaluateRequest\022\022\n\nclientuuid\030\001 \001(\t\022$\n\010t" +
-      "reeEval\030\002 \003(\0132\022.fgboost.BoostEval\022\017\n\007ver" +
-      "sion\030\003 \001(\005\022\021\n\tlastBatch\030\004 \001(\010\"]\n\020Evaluat" +
-      "eResponse\022\020\n\010response\030\001 \001(\t\022\030\n\004data\030\002 \001(" +
-      "\0132\n.TensorMap\022\014\n\004code\030\003 \001(\005\022\017\n\007message\030\004" +
-      " \001(\t\"n\n\016PredictRequest\022\022\n\nclientuuid\030\001 \001" +
-      "(\t\022$\n\010treeEval\030\002 \003(\0132\022.fgboost.BoostEval" +
-      "\022\017\n\007version\030\003 \001(\005\022\021\n\tlastBatch\030\004 \001(\010\"E\n\014" +
-      "SplitRequest\022\022\n\nclientuuid\030\001 \001(\t\022!\n\005spli" +
-      "t\030\002 \001(\0132\022.fgboost.DataSplit\"K\n\017PredictRe" +
-      "sponse\022\020\n\010response\030\001 \001(\t\022\030\n\004data\030\002 \001(\0132\n" +
-      ".TensorMap\022\014\n\004code\030\003 \001(\005\"R\n\rSplitRespons" +
-      "e\022!\n\005split\030\001 \001(\0132\022.fgboost.DataSplit\022\020\n\010" +
-      "response\030\002 \001(\t\022\014\n\004code\030\003 \001(\0052\361\003\n\016FGBoost" +
-      "Service\022E\n\013uploadLabel\022\033.fgboost.UploadL" +
-      "abelRequest\032\027.fgboost.UploadResponse\"\000\022K" +
-      "\n\rdownloadLabel\022\035.fgboost.DownloadLabelR" +
-      "equest\032\031.fgboost.DownloadResponse\"\000\0228\n\005s" +
-      "plit\022\025.fgboost.SplitRequest\032\026.fgboost.Sp" +
-      "litResponse\"\000\022A\n\010register\022\030.fgboost.Regi" +
-      "sterRequest\032\031.fgboost.RegisterResponse\"\000" +
-      "\022K\n\016uploadTreeLeaf\022\036.fgboost.UploadTreeL" +
-      "eafRequest\032\027.fgboost.UploadResponse\"\000\022A\n" +
-      "\010evaluate\022\030.fgboost.EvaluateRequest\032\031.fg" +
-      "boost.EvaluateResponse\"\000\022>\n\007predict\022\027.fg" +
-      "boost.PredictRequest\032\030.fgboost.PredictRe" +
-      "sponse\"\000B?\n(com.intel.analytics.bigdl.pp" +
-      "ml.generatedB\023FGBoostServiceProtob\006proto" +
-      "3"
+      "reeEval\030\002 \003(\0132\022.fgboost.BoostEval\022\021\n\tbsV" +
+      "ersion\030\003 \001(\005\"]\n\020EvaluateResponse\022\020\n\010resp" +
+      "onse\030\001 \001(\t\022\030\n\004data\030\002 \001(\0132\n.TensorMap\022\014\n\004" +
+      "code\030\003 \001(\005\022\017\n\007message\030\004 \001(\t\"]\n\016PredictRe" +
+      "quest\022\022\n\nclientuuid\030\001 \001(\t\022$\n\010treeEval\030\002 " +
+      "\003(\0132\022.fgboost.BoostEval\022\021\n\tbsVersion\030\003 \001" +
+      "(\005\"E\n\014SplitRequest\022\022\n\nclientuuid\030\001 \001(\t\022!" +
+      "\n\005split\030\002 \001(\0132\022.fgboost.DataSplit\"K\n\017Pre" +
+      "dictResponse\022\020\n\010response\030\001 \001(\t\022\030\n\004data\030\002" +
+      " \001(\0132\n.TensorMap\022\014\n\004code\030\003 \001(\005\"R\n\rSplitR" +
+      "esponse\022!\n\005split\030\001 \001(\0132\022.fgboost.DataSpl" +
+      "it\022\020\n\010response\030\002 \001(\t\022\014\n\004code\030\003 \001(\0052\361\003\n\016F" +
+      "GBoostService\022E\n\013uploadLabel\022\033.fgboost.U" +
+      "ploadLabelRequest\032\027.fgboost.UploadRespon" +
+      "se\"\000\022K\n\rdownloadLabel\022\035.fgboost.Download" +
+      "LabelRequest\032\031.fgboost.DownloadResponse\"" +
+      "\000\0228\n\005split\022\025.fgboost.SplitRequest\032\026.fgbo" +
+      "ost.SplitResponse\"\000\022A\n\010register\022\030.fgboos" +
+      "t.RegisterRequest\032\031.fgboost.RegisterResp" +
+      "onse\"\000\022K\n\016uploadTreeLeaf\022\036.fgboost.Uploa" +
+      "dTreeLeafRequest\032\027.fgboost.UploadRespons" +
+      "e\"\000\022A\n\010evaluate\022\030.fgboost.EvaluateReques" +
+      "t\032\031.fgboost.EvaluateResponse\"\000\022>\n\007predic" +
+      "t\022\027.fgboost.PredictRequest\032\030.fgboost.Pre" +
+      "dictResponse\"\000BB\n+com.intel.analytics.bi" +
+      "gdl.ppml.fl.generatedB\023FGBoostServicePro" +
+      "tob\006proto3"
     };
     descriptor = com.google.protobuf.Descriptors.FileDescriptor
       .internalBuildGeneratedFileFrom(descriptorData,
         new com.google.protobuf.Descriptors.FileDescriptor[] {
-          FlBaseProto.getDescriptor(),
+          proto.FlBaseProto.getDescriptor(),
         });
     internal_static_fgboost_UploadLabelRequest_descriptor =
       getDescriptor().getMessageTypes().get(0);
@@ -16977,7 +16834,7 @@ public final class FGBoostServiceProto {
     internal_static_fgboost_EvaluateRequest_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_fgboost_EvaluateRequest_descriptor,
-        new String[] { "Clientuuid", "TreeEval", "Version", "LastBatch", });
+        new String[] { "Clientuuid", "TreeEval", "BsVersion", });
     internal_static_fgboost_EvaluateResponse_descriptor =
       getDescriptor().getMessageTypes().get(14);
     internal_static_fgboost_EvaluateResponse_fieldAccessorTable = new
@@ -16989,7 +16846,7 @@ public final class FGBoostServiceProto {
     internal_static_fgboost_PredictRequest_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_fgboost_PredictRequest_descriptor,
-        new String[] { "Clientuuid", "TreeEval", "Version", "LastBatch", });
+        new String[] { "Clientuuid", "TreeEval", "BsVersion", });
     internal_static_fgboost_SplitRequest_descriptor =
       getDescriptor().getMessageTypes().get(16);
     internal_static_fgboost_SplitRequest_fieldAccessorTable = new
@@ -17008,7 +16865,7 @@ public final class FGBoostServiceProto {
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_fgboost_SplitResponse_descriptor,
         new String[] { "Split", "Response", "Code", });
-    FlBaseProto.getDescriptor();
+    proto.FlBaseProto.getDescriptor();
   }
 
   // @@protoc_insertion_point(outer_class_scope)

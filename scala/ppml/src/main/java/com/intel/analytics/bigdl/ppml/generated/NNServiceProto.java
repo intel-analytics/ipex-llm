@@ -19,34 +19,40 @@ public final class NNServiceProto {
       com.google.protobuf.MessageOrBuilder {
 
     /**
-     * <code>optional string clientuuid = 1;</code>
+     * <code>string clientuuid = 1;</code>
+     * @return The clientuuid.
      */
     String getClientuuid();
     /**
-     * <code>optional string clientuuid = 1;</code>
+     * <code>string clientuuid = 1;</code>
+     * @return The bytes for clientuuid.
      */
     com.google.protobuf.ByteString
         getClientuuidBytes();
 
     /**
-     * <code>optional .TensorMap data = 2;</code>
+     * <code>.TensorMap data = 2;</code>
+     * @return Whether the data field is set.
      */
     boolean hasData();
     /**
-     * <code>optional .TensorMap data = 2;</code>
+     * <code>.TensorMap data = 2;</code>
+     * @return The data.
      */
-    FlBaseProto.TensorMap getData();
+    proto.FlBaseProto.TensorMap getData();
     /**
-     * <code>optional .TensorMap data = 2;</code>
+     * <code>.TensorMap data = 2;</code>
      */
-    FlBaseProto.TensorMapOrBuilder getDataOrBuilder();
+    proto.FlBaseProto.TensorMapOrBuilder getDataOrBuilder();
 
     /**
-     * <code>optional string algorithm = 3;</code>
+     * <code>string algorithm = 3;</code>
+     * @return The algorithm.
      */
     String getAlgorithm();
     /**
-     * <code>optional string algorithm = 3;</code>
+     * <code>string algorithm = 3;</code>
+     * @return The bytes for algorithm.
      */
     com.google.protobuf.ByteString
         getAlgorithmBytes();
@@ -54,10 +60,11 @@ public final class NNServiceProto {
   /**
    * Protobuf type {@code nn.TrainRequest}
    */
-  public  static final class TrainRequest extends
+  public static final class TrainRequest extends
       com.google.protobuf.GeneratedMessageV3 implements
       // @@protoc_insertion_point(message_implements:nn.TrainRequest)
       TrainRequestOrBuilder {
+  private static final long serialVersionUID = 0L;
     // Use TrainRequest.newBuilder() to construct.
     private TrainRequest(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
       super(builder);
@@ -68,16 +75,27 @@ public final class NNServiceProto {
     }
 
     @Override
+    @SuppressWarnings({"unused"})
+    protected Object newInstance(
+        UnusedPrivateParameter unused) {
+      return new TrainRequest();
+    }
+
+    @Override
     public final com.google.protobuf.UnknownFieldSet
     getUnknownFields() {
-      return com.google.protobuf.UnknownFieldSet.getDefaultInstance();
+      return this.unknownFields;
     }
     private TrainRequest(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       this();
-      int mutable_bitField0_ = 0;
+      if (extensionRegistry == null) {
+        throw new NullPointerException();
+      }
+      com.google.protobuf.UnknownFieldSet.Builder unknownFields =
+          com.google.protobuf.UnknownFieldSet.newBuilder();
       try {
         boolean done = false;
         while (!done) {
@@ -86,12 +104,6 @@ public final class NNServiceProto {
             case 0:
               done = true;
               break;
-            default: {
-              if (!input.skipField(tag)) {
-                done = true;
-              }
-              break;
-            }
             case 10: {
               String s = input.readStringRequireUtf8();
 
@@ -99,11 +111,11 @@ public final class NNServiceProto {
               break;
             }
             case 18: {
-              FlBaseProto.TensorMap.Builder subBuilder = null;
+              proto.FlBaseProto.TensorMap.Builder subBuilder = null;
               if (data_ != null) {
                 subBuilder = data_.toBuilder();
               }
-              data_ = input.readMessage(FlBaseProto.TensorMap.parser(), extensionRegistry);
+              data_ = input.readMessage(proto.FlBaseProto.TensorMap.parser(), extensionRegistry);
               if (subBuilder != null) {
                 subBuilder.mergeFrom(data_);
                 data_ = subBuilder.buildPartial();
@@ -117,6 +129,13 @@ public final class NNServiceProto {
               algorithm_ = s;
               break;
             }
+            default: {
+              if (!parseUnknownField(
+                  input, unknownFields, extensionRegistry, tag)) {
+                done = true;
+              }
+              break;
+            }
           }
         }
       } catch (com.google.protobuf.InvalidProtocolBufferException e) {
@@ -125,6 +144,7 @@ public final class NNServiceProto {
         throw new com.google.protobuf.InvalidProtocolBufferException(
             e).setUnfinishedMessage(this);
       } finally {
+        this.unknownFields = unknownFields.build();
         makeExtensionsImmutable();
       }
     }
@@ -133,7 +153,8 @@ public final class NNServiceProto {
       return NNServiceProto.internal_static_nn_TrainRequest_descriptor;
     }
 
-    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+    @Override
+    protected FieldAccessorTable
         internalGetFieldAccessorTable() {
       return NNServiceProto.internal_static_nn_TrainRequest_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
@@ -143,8 +164,10 @@ public final class NNServiceProto {
     public static final int CLIENTUUID_FIELD_NUMBER = 1;
     private volatile Object clientuuid_;
     /**
-     * <code>optional string clientuuid = 1;</code>
+     * <code>string clientuuid = 1;</code>
+     * @return The clientuuid.
      */
+    @Override
     public String getClientuuid() {
       Object ref = clientuuid_;
       if (ref instanceof String) {
@@ -158,8 +181,10 @@ public final class NNServiceProto {
       }
     }
     /**
-     * <code>optional string clientuuid = 1;</code>
+     * <code>string clientuuid = 1;</code>
+     * @return The bytes for clientuuid.
      */
+    @Override
     public com.google.protobuf.ByteString
         getClientuuidBytes() {
       Object ref = clientuuid_;
@@ -175,31 +200,38 @@ public final class NNServiceProto {
     }
 
     public static final int DATA_FIELD_NUMBER = 2;
-    private FlBaseProto.TensorMap data_;
+    private proto.FlBaseProto.TensorMap data_;
     /**
-     * <code>optional .TensorMap data = 2;</code>
+     * <code>.TensorMap data = 2;</code>
+     * @return Whether the data field is set.
      */
+    @Override
     public boolean hasData() {
       return data_ != null;
     }
     /**
-     * <code>optional .TensorMap data = 2;</code>
+     * <code>.TensorMap data = 2;</code>
+     * @return The data.
      */
-    public FlBaseProto.TensorMap getData() {
-      return data_ == null ? FlBaseProto.TensorMap.getDefaultInstance() : data_;
+    @Override
+    public proto.FlBaseProto.TensorMap getData() {
+      return data_ == null ? proto.FlBaseProto.TensorMap.getDefaultInstance() : data_;
     }
     /**
-     * <code>optional .TensorMap data = 2;</code>
+     * <code>.TensorMap data = 2;</code>
      */
-    public FlBaseProto.TensorMapOrBuilder getDataOrBuilder() {
+    @Override
+    public proto.FlBaseProto.TensorMapOrBuilder getDataOrBuilder() {
       return getData();
     }
 
     public static final int ALGORITHM_FIELD_NUMBER = 3;
     private volatile Object algorithm_;
     /**
-     * <code>optional string algorithm = 3;</code>
+     * <code>string algorithm = 3;</code>
+     * @return The algorithm.
      */
+    @Override
     public String getAlgorithm() {
       Object ref = algorithm_;
       if (ref instanceof String) {
@@ -213,8 +245,10 @@ public final class NNServiceProto {
       }
     }
     /**
-     * <code>optional string algorithm = 3;</code>
+     * <code>string algorithm = 3;</code>
+     * @return The bytes for algorithm.
      */
+    @Override
     public com.google.protobuf.ByteString
         getAlgorithmBytes() {
       Object ref = algorithm_;
@@ -230,6 +264,7 @@ public final class NNServiceProto {
     }
 
     private byte memoizedIsInitialized = -1;
+    @Override
     public final boolean isInitialized() {
       byte isInitialized = memoizedIsInitialized;
       if (isInitialized == 1) return true;
@@ -239,6 +274,7 @@ public final class NNServiceProto {
       return true;
     }
 
+    @Override
     public void writeTo(com.google.protobuf.CodedOutputStream output)
                         throws java.io.IOException {
       if (!getClientuuidBytes().isEmpty()) {
@@ -250,8 +286,10 @@ public final class NNServiceProto {
       if (!getAlgorithmBytes().isEmpty()) {
         com.google.protobuf.GeneratedMessageV3.writeString(output, 3, algorithm_);
       }
+      unknownFields.writeTo(output);
     }
 
+    @Override
     public int getSerializedSize() {
       int size = memoizedSize;
       if (size != -1) return size;
@@ -267,11 +305,11 @@ public final class NNServiceProto {
       if (!getAlgorithmBytes().isEmpty()) {
         size += com.google.protobuf.GeneratedMessageV3.computeStringSize(3, algorithm_);
       }
+      size += unknownFields.getSerializedSize();
       memoizedSize = size;
       return size;
     }
 
-    private static final long serialVersionUID = 0L;
     @Override
     public boolean equals(final Object obj) {
       if (obj == this) {
@@ -282,17 +320,17 @@ public final class NNServiceProto {
       }
       TrainRequest other = (TrainRequest) obj;
 
-      boolean result = true;
-      result = result && getClientuuid()
-          .equals(other.getClientuuid());
-      result = result && (hasData() == other.hasData());
+      if (!getClientuuid()
+          .equals(other.getClientuuid())) return false;
+      if (hasData() != other.hasData()) return false;
       if (hasData()) {
-        result = result && getData()
-            .equals(other.getData());
+        if (!getData()
+            .equals(other.getData())) return false;
       }
-      result = result && getAlgorithm()
-          .equals(other.getAlgorithm());
-      return result;
+      if (!getAlgorithm()
+          .equals(other.getAlgorithm())) return false;
+      if (!unknownFields.equals(other.unknownFields)) return false;
+      return true;
     }
 
     @Override
@@ -301,7 +339,7 @@ public final class NNServiceProto {
         return memoizedHashCode;
       }
       int hash = 41;
-      hash = (19 * hash) + getDescriptorForType().hashCode();
+      hash = (19 * hash) + getDescriptor().hashCode();
       hash = (37 * hash) + CLIENTUUID_FIELD_NUMBER;
       hash = (53 * hash) + getClientuuid().hashCode();
       if (hasData()) {
@@ -315,6 +353,17 @@ public final class NNServiceProto {
       return hash;
     }
 
+    public static TrainRequest parseFrom(
+        java.nio.ByteBuffer data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static TrainRequest parseFrom(
+        java.nio.ByteBuffer data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
     public static TrainRequest parseFrom(
         com.google.protobuf.ByteString data)
         throws com.google.protobuf.InvalidProtocolBufferException {
@@ -374,6 +423,7 @@ public final class NNServiceProto {
           .parseWithIOException(PARSER, input, extensionRegistry);
     }
 
+    @Override
     public Builder newBuilderForType() { return newBuilder(); }
     public static Builder newBuilder() {
       return DEFAULT_INSTANCE.toBuilder();
@@ -381,6 +431,7 @@ public final class NNServiceProto {
     public static Builder newBuilder(TrainRequest prototype) {
       return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
     }
+    @Override
     public Builder toBuilder() {
       return this == DEFAULT_INSTANCE
           ? new Builder() : new Builder().mergeFrom(this);
@@ -388,7 +439,7 @@ public final class NNServiceProto {
 
     @Override
     protected Builder newBuilderForType(
-        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+        BuilderParent parent) {
       Builder builder = new Builder(parent);
       return builder;
     }
@@ -404,20 +455,21 @@ public final class NNServiceProto {
         return NNServiceProto.internal_static_nn_TrainRequest_descriptor;
       }
 
-      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+      @Override
+      protected FieldAccessorTable
           internalGetFieldAccessorTable() {
         return NNServiceProto.internal_static_nn_TrainRequest_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
                 TrainRequest.class, Builder.class);
       }
 
-      // Construct using com.intel.analytics.bigdl.ppml.generated.NNServiceProto.TrainRequest.newBuilder()
+      // Construct using com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.TrainRequest.newBuilder()
       private Builder() {
         maybeForceBuilderInitialization();
       }
 
       private Builder(
-          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+          BuilderParent parent) {
         super(parent);
         maybeForceBuilderInitialization();
       }
@@ -426,6 +478,7 @@ public final class NNServiceProto {
                 .alwaysUseFieldBuilders) {
         }
       }
+      @Override
       public Builder clear() {
         super.clear();
         clientuuid_ = "";
@@ -441,15 +494,18 @@ public final class NNServiceProto {
         return this;
       }
 
+      @Override
       public com.google.protobuf.Descriptors.Descriptor
           getDescriptorForType() {
         return NNServiceProto.internal_static_nn_TrainRequest_descriptor;
       }
 
+      @Override
       public TrainRequest getDefaultInstanceForType() {
         return TrainRequest.getDefaultInstance();
       }
 
+      @Override
       public TrainRequest build() {
         TrainRequest result = buildPartial();
         if (!result.isInitialized()) {
@@ -458,6 +514,7 @@ public final class NNServiceProto {
         return result;
       }
 
+      @Override
       public TrainRequest buildPartial() {
         TrainRequest result = new TrainRequest(this);
         result.clientuuid_ = clientuuid_;
@@ -471,32 +528,39 @@ public final class NNServiceProto {
         return result;
       }
 
+      @Override
       public Builder clone() {
-        return (Builder) super.clone();
+        return super.clone();
       }
+      @Override
       public Builder setField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           Object value) {
-        return (Builder) super.setField(field, value);
+        return super.setField(field, value);
       }
+      @Override
       public Builder clearField(
           com.google.protobuf.Descriptors.FieldDescriptor field) {
-        return (Builder) super.clearField(field);
+        return super.clearField(field);
       }
+      @Override
       public Builder clearOneof(
           com.google.protobuf.Descriptors.OneofDescriptor oneof) {
-        return (Builder) super.clearOneof(oneof);
+        return super.clearOneof(oneof);
       }
+      @Override
       public Builder setRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           int index, Object value) {
-        return (Builder) super.setRepeatedField(field, index, value);
+        return super.setRepeatedField(field, index, value);
       }
+      @Override
       public Builder addRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           Object value) {
-        return (Builder) super.addRepeatedField(field, value);
+        return super.addRepeatedField(field, value);
       }
+      @Override
       public Builder mergeFrom(com.google.protobuf.Message other) {
         if (other instanceof TrainRequest) {
           return mergeFrom((TrainRequest)other);
@@ -519,14 +583,17 @@ public final class NNServiceProto {
           algorithm_ = other.algorithm_;
           onChanged();
         }
+        this.mergeUnknownFields(other.unknownFields);
         onChanged();
         return this;
       }
 
+      @Override
       public final boolean isInitialized() {
         return true;
       }
 
+      @Override
       public Builder mergeFrom(
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
@@ -547,7 +614,8 @@ public final class NNServiceProto {
 
       private Object clientuuid_ = "";
       /**
-       * <code>optional string clientuuid = 1;</code>
+       * <code>string clientuuid = 1;</code>
+       * @return The clientuuid.
        */
       public String getClientuuid() {
         Object ref = clientuuid_;
@@ -562,7 +630,8 @@ public final class NNServiceProto {
         }
       }
       /**
-       * <code>optional string clientuuid = 1;</code>
+       * <code>string clientuuid = 1;</code>
+       * @return The bytes for clientuuid.
        */
       public com.google.protobuf.ByteString
           getClientuuidBytes() {
@@ -578,7 +647,9 @@ public final class NNServiceProto {
         }
       }
       /**
-       * <code>optional string clientuuid = 1;</code>
+       * <code>string clientuuid = 1;</code>
+       * @param value The clientuuid to set.
+       * @return This builder for chaining.
        */
       public Builder setClientuuid(
           String value) {
@@ -591,7 +662,8 @@ public final class NNServiceProto {
         return this;
       }
       /**
-       * <code>optional string clientuuid = 1;</code>
+       * <code>string clientuuid = 1;</code>
+       * @return This builder for chaining.
        */
       public Builder clearClientuuid() {
         
@@ -600,7 +672,9 @@ public final class NNServiceProto {
         return this;
       }
       /**
-       * <code>optional string clientuuid = 1;</code>
+       * <code>string clientuuid = 1;</code>
+       * @param value The bytes for clientuuid to set.
+       * @return This builder for chaining.
        */
       public Builder setClientuuidBytes(
           com.google.protobuf.ByteString value) {
@@ -614,29 +688,31 @@ public final class NNServiceProto {
         return this;
       }
 
-      private FlBaseProto.TensorMap data_ = null;
+      private proto.FlBaseProto.TensorMap data_;
       private com.google.protobuf.SingleFieldBuilderV3<
-          FlBaseProto.TensorMap, FlBaseProto.TensorMap.Builder, FlBaseProto.TensorMapOrBuilder> dataBuilder_;
+          proto.FlBaseProto.TensorMap, proto.FlBaseProto.TensorMap.Builder, proto.FlBaseProto.TensorMapOrBuilder> dataBuilder_;
       /**
-       * <code>optional .TensorMap data = 2;</code>
+       * <code>.TensorMap data = 2;</code>
+       * @return Whether the data field is set.
        */
       public boolean hasData() {
         return dataBuilder_ != null || data_ != null;
       }
       /**
-       * <code>optional .TensorMap data = 2;</code>
+       * <code>.TensorMap data = 2;</code>
+       * @return The data.
        */
-      public FlBaseProto.TensorMap getData() {
+      public proto.FlBaseProto.TensorMap getData() {
         if (dataBuilder_ == null) {
-          return data_ == null ? FlBaseProto.TensorMap.getDefaultInstance() : data_;
+          return data_ == null ? proto.FlBaseProto.TensorMap.getDefaultInstance() : data_;
         } else {
           return dataBuilder_.getMessage();
         }
       }
       /**
-       * <code>optional .TensorMap data = 2;</code>
+       * <code>.TensorMap data = 2;</code>
        */
-      public Builder setData(FlBaseProto.TensorMap value) {
+      public Builder setData(proto.FlBaseProto.TensorMap value) {
         if (dataBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
@@ -650,10 +726,10 @@ public final class NNServiceProto {
         return this;
       }
       /**
-       * <code>optional .TensorMap data = 2;</code>
+       * <code>.TensorMap data = 2;</code>
        */
       public Builder setData(
-          FlBaseProto.TensorMap.Builder builderForValue) {
+          proto.FlBaseProto.TensorMap.Builder builderForValue) {
         if (dataBuilder_ == null) {
           data_ = builderForValue.build();
           onChanged();
@@ -664,13 +740,13 @@ public final class NNServiceProto {
         return this;
       }
       /**
-       * <code>optional .TensorMap data = 2;</code>
+       * <code>.TensorMap data = 2;</code>
        */
-      public Builder mergeData(FlBaseProto.TensorMap value) {
+      public Builder mergeData(proto.FlBaseProto.TensorMap value) {
         if (dataBuilder_ == null) {
           if (data_ != null) {
             data_ =
-              FlBaseProto.TensorMap.newBuilder(data_).mergeFrom(value).buildPartial();
+              proto.FlBaseProto.TensorMap.newBuilder(data_).mergeFrom(value).buildPartial();
           } else {
             data_ = value;
           }
@@ -682,7 +758,7 @@ public final class NNServiceProto {
         return this;
       }
       /**
-       * <code>optional .TensorMap data = 2;</code>
+       * <code>.TensorMap data = 2;</code>
        */
       public Builder clearData() {
         if (dataBuilder_ == null) {
@@ -696,33 +772,33 @@ public final class NNServiceProto {
         return this;
       }
       /**
-       * <code>optional .TensorMap data = 2;</code>
+       * <code>.TensorMap data = 2;</code>
        */
-      public FlBaseProto.TensorMap.Builder getDataBuilder() {
+      public proto.FlBaseProto.TensorMap.Builder getDataBuilder() {
         
         onChanged();
         return getDataFieldBuilder().getBuilder();
       }
       /**
-       * <code>optional .TensorMap data = 2;</code>
+       * <code>.TensorMap data = 2;</code>
        */
-      public FlBaseProto.TensorMapOrBuilder getDataOrBuilder() {
+      public proto.FlBaseProto.TensorMapOrBuilder getDataOrBuilder() {
         if (dataBuilder_ != null) {
           return dataBuilder_.getMessageOrBuilder();
         } else {
           return data_ == null ?
-              FlBaseProto.TensorMap.getDefaultInstance() : data_;
+              proto.FlBaseProto.TensorMap.getDefaultInstance() : data_;
         }
       }
       /**
-       * <code>optional .TensorMap data = 2;</code>
+       * <code>.TensorMap data = 2;</code>
        */
       private com.google.protobuf.SingleFieldBuilderV3<
-          FlBaseProto.TensorMap, FlBaseProto.TensorMap.Builder, FlBaseProto.TensorMapOrBuilder>
+          proto.FlBaseProto.TensorMap, proto.FlBaseProto.TensorMap.Builder, proto.FlBaseProto.TensorMapOrBuilder>
           getDataFieldBuilder() {
         if (dataBuilder_ == null) {
           dataBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
-              FlBaseProto.TensorMap, FlBaseProto.TensorMap.Builder, FlBaseProto.TensorMapOrBuilder>(
+              proto.FlBaseProto.TensorMap, proto.FlBaseProto.TensorMap.Builder, proto.FlBaseProto.TensorMapOrBuilder>(
                   getData(),
                   getParentForChildren(),
                   isClean());
@@ -733,7 +809,8 @@ public final class NNServiceProto {
 
       private Object algorithm_ = "";
       /**
-       * <code>optional string algorithm = 3;</code>
+       * <code>string algorithm = 3;</code>
+       * @return The algorithm.
        */
       public String getAlgorithm() {
         Object ref = algorithm_;
@@ -748,7 +825,8 @@ public final class NNServiceProto {
         }
       }
       /**
-       * <code>optional string algorithm = 3;</code>
+       * <code>string algorithm = 3;</code>
+       * @return The bytes for algorithm.
        */
       public com.google.protobuf.ByteString
           getAlgorithmBytes() {
@@ -764,7 +842,9 @@ public final class NNServiceProto {
         }
       }
       /**
-       * <code>optional string algorithm = 3;</code>
+       * <code>string algorithm = 3;</code>
+       * @param value The algorithm to set.
+       * @return This builder for chaining.
        */
       public Builder setAlgorithm(
           String value) {
@@ -777,7 +857,8 @@ public final class NNServiceProto {
         return this;
       }
       /**
-       * <code>optional string algorithm = 3;</code>
+       * <code>string algorithm = 3;</code>
+       * @return This builder for chaining.
        */
       public Builder clearAlgorithm() {
         
@@ -786,7 +867,9 @@ public final class NNServiceProto {
         return this;
       }
       /**
-       * <code>optional string algorithm = 3;</code>
+       * <code>string algorithm = 3;</code>
+       * @param value The bytes for algorithm to set.
+       * @return This builder for chaining.
        */
       public Builder setAlgorithmBytes(
           com.google.protobuf.ByteString value) {
@@ -799,14 +882,16 @@ public final class NNServiceProto {
         onChanged();
         return this;
       }
+      @Override
       public final Builder setUnknownFields(
           final com.google.protobuf.UnknownFieldSet unknownFields) {
-        return this;
+        return super.setUnknownFields(unknownFields);
       }
 
+      @Override
       public final Builder mergeUnknownFields(
           final com.google.protobuf.UnknownFieldSet unknownFields) {
-        return this;
+        return super.mergeUnknownFields(unknownFields);
       }
 
 
@@ -825,11 +910,12 @@ public final class NNServiceProto {
 
     private static final com.google.protobuf.Parser<TrainRequest>
         PARSER = new com.google.protobuf.AbstractParser<TrainRequest>() {
+      @Override
       public TrainRequest parsePartialFrom(
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws com.google.protobuf.InvalidProtocolBufferException {
-          return new TrainRequest(input, extensionRegistry);
+        return new TrainRequest(input, extensionRegistry);
       }
     };
 
@@ -842,6 +928,7 @@ public final class NNServiceProto {
       return PARSER;
     }
 
+    @Override
     public TrainRequest getDefaultInstanceForType() {
       return DEFAULT_INSTANCE;
     }
@@ -853,60 +940,76 @@ public final class NNServiceProto {
       com.google.protobuf.MessageOrBuilder {
 
     /**
-     * <code>optional string response = 1;</code>
+     * <code>string response = 1;</code>
+     * @return The response.
      */
     String getResponse();
     /**
-     * <code>optional string response = 1;</code>
+     * <code>string response = 1;</code>
+     * @return The bytes for response.
      */
     com.google.protobuf.ByteString
         getResponseBytes();
 
     /**
-     * <code>optional .TensorMap data = 2;</code>
+     * <code>.TensorMap data = 2;</code>
+     * @return Whether the data field is set.
      */
     boolean hasData();
     /**
-     * <code>optional .TensorMap data = 2;</code>
+     * <code>.TensorMap data = 2;</code>
+     * @return The data.
      */
-    FlBaseProto.TensorMap getData();
+    proto.FlBaseProto.TensorMap getData();
     /**
-     * <code>optional .TensorMap data = 2;</code>
+     * <code>.TensorMap data = 2;</code>
      */
-    FlBaseProto.TensorMapOrBuilder getDataOrBuilder();
+    proto.FlBaseProto.TensorMapOrBuilder getDataOrBuilder();
 
     /**
-     * <code>optional int32 code = 3;</code>
+     * <code>int32 code = 3;</code>
+     * @return The code.
      */
     int getCode();
   }
   /**
    * Protobuf type {@code nn.TrainResponse}
    */
-  public  static final class TrainResponse extends
+  public static final class TrainResponse extends
       com.google.protobuf.GeneratedMessageV3 implements
       // @@protoc_insertion_point(message_implements:nn.TrainResponse)
       TrainResponseOrBuilder {
+  private static final long serialVersionUID = 0L;
     // Use TrainResponse.newBuilder() to construct.
     private TrainResponse(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
       super(builder);
     }
     private TrainResponse() {
       response_ = "";
-      code_ = 0;
+    }
+
+    @Override
+    @SuppressWarnings({"unused"})
+    protected Object newInstance(
+        UnusedPrivateParameter unused) {
+      return new TrainResponse();
     }
 
     @Override
     public final com.google.protobuf.UnknownFieldSet
     getUnknownFields() {
-      return com.google.protobuf.UnknownFieldSet.getDefaultInstance();
+      return this.unknownFields;
     }
     private TrainResponse(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       this();
-      int mutable_bitField0_ = 0;
+      if (extensionRegistry == null) {
+        throw new NullPointerException();
+      }
+      com.google.protobuf.UnknownFieldSet.Builder unknownFields =
+          com.google.protobuf.UnknownFieldSet.newBuilder();
       try {
         boolean done = false;
         while (!done) {
@@ -915,12 +1018,6 @@ public final class NNServiceProto {
             case 0:
               done = true;
               break;
-            default: {
-              if (!input.skipField(tag)) {
-                done = true;
-              }
-              break;
-            }
             case 10: {
               String s = input.readStringRequireUtf8();
 
@@ -928,11 +1025,11 @@ public final class NNServiceProto {
               break;
             }
             case 18: {
-              FlBaseProto.TensorMap.Builder subBuilder = null;
+              proto.FlBaseProto.TensorMap.Builder subBuilder = null;
               if (data_ != null) {
                 subBuilder = data_.toBuilder();
               }
-              data_ = input.readMessage(FlBaseProto.TensorMap.parser(), extensionRegistry);
+              data_ = input.readMessage(proto.FlBaseProto.TensorMap.parser(), extensionRegistry);
               if (subBuilder != null) {
                 subBuilder.mergeFrom(data_);
                 data_ = subBuilder.buildPartial();
@@ -945,6 +1042,13 @@ public final class NNServiceProto {
               code_ = input.readInt32();
               break;
             }
+            default: {
+              if (!parseUnknownField(
+                  input, unknownFields, extensionRegistry, tag)) {
+                done = true;
+              }
+              break;
+            }
           }
         }
       } catch (com.google.protobuf.InvalidProtocolBufferException e) {
@@ -953,6 +1057,7 @@ public final class NNServiceProto {
         throw new com.google.protobuf.InvalidProtocolBufferException(
             e).setUnfinishedMessage(this);
       } finally {
+        this.unknownFields = unknownFields.build();
         makeExtensionsImmutable();
       }
     }
@@ -961,7 +1066,8 @@ public final class NNServiceProto {
       return NNServiceProto.internal_static_nn_TrainResponse_descriptor;
     }
 
-    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+    @Override
+    protected FieldAccessorTable
         internalGetFieldAccessorTable() {
       return NNServiceProto.internal_static_nn_TrainResponse_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
@@ -971,8 +1077,10 @@ public final class NNServiceProto {
     public static final int RESPONSE_FIELD_NUMBER = 1;
     private volatile Object response_;
     /**
-     * <code>optional string response = 1;</code>
+     * <code>string response = 1;</code>
+     * @return The response.
      */
+    @Override
     public String getResponse() {
       Object ref = response_;
       if (ref instanceof String) {
@@ -986,8 +1094,10 @@ public final class NNServiceProto {
       }
     }
     /**
-     * <code>optional string response = 1;</code>
+     * <code>string response = 1;</code>
+     * @return The bytes for response.
      */
+    @Override
     public com.google.protobuf.ByteString
         getResponseBytes() {
       Object ref = response_;
@@ -1003,36 +1113,44 @@ public final class NNServiceProto {
     }
 
     public static final int DATA_FIELD_NUMBER = 2;
-    private FlBaseProto.TensorMap data_;
+    private proto.FlBaseProto.TensorMap data_;
     /**
-     * <code>optional .TensorMap data = 2;</code>
+     * <code>.TensorMap data = 2;</code>
+     * @return Whether the data field is set.
      */
+    @Override
     public boolean hasData() {
       return data_ != null;
     }
     /**
-     * <code>optional .TensorMap data = 2;</code>
+     * <code>.TensorMap data = 2;</code>
+     * @return The data.
      */
-    public FlBaseProto.TensorMap getData() {
-      return data_ == null ? FlBaseProto.TensorMap.getDefaultInstance() : data_;
+    @Override
+    public proto.FlBaseProto.TensorMap getData() {
+      return data_ == null ? proto.FlBaseProto.TensorMap.getDefaultInstance() : data_;
     }
     /**
-     * <code>optional .TensorMap data = 2;</code>
+     * <code>.TensorMap data = 2;</code>
      */
-    public FlBaseProto.TensorMapOrBuilder getDataOrBuilder() {
+    @Override
+    public proto.FlBaseProto.TensorMapOrBuilder getDataOrBuilder() {
       return getData();
     }
 
     public static final int CODE_FIELD_NUMBER = 3;
     private int code_;
     /**
-     * <code>optional int32 code = 3;</code>
+     * <code>int32 code = 3;</code>
+     * @return The code.
      */
+    @Override
     public int getCode() {
       return code_;
     }
 
     private byte memoizedIsInitialized = -1;
+    @Override
     public final boolean isInitialized() {
       byte isInitialized = memoizedIsInitialized;
       if (isInitialized == 1) return true;
@@ -1042,6 +1160,7 @@ public final class NNServiceProto {
       return true;
     }
 
+    @Override
     public void writeTo(com.google.protobuf.CodedOutputStream output)
                         throws java.io.IOException {
       if (!getResponseBytes().isEmpty()) {
@@ -1053,8 +1172,10 @@ public final class NNServiceProto {
       if (code_ != 0) {
         output.writeInt32(3, code_);
       }
+      unknownFields.writeTo(output);
     }
 
+    @Override
     public int getSerializedSize() {
       int size = memoizedSize;
       if (size != -1) return size;
@@ -1071,11 +1192,11 @@ public final class NNServiceProto {
         size += com.google.protobuf.CodedOutputStream
           .computeInt32Size(3, code_);
       }
+      size += unknownFields.getSerializedSize();
       memoizedSize = size;
       return size;
     }
 
-    private static final long serialVersionUID = 0L;
     @Override
     public boolean equals(final Object obj) {
       if (obj == this) {
@@ -1086,17 +1207,17 @@ public final class NNServiceProto {
       }
       TrainResponse other = (TrainResponse) obj;
 
-      boolean result = true;
-      result = result && getResponse()
-          .equals(other.getResponse());
-      result = result && (hasData() == other.hasData());
+      if (!getResponse()
+          .equals(other.getResponse())) return false;
+      if (hasData() != other.hasData()) return false;
       if (hasData()) {
-        result = result && getData()
-            .equals(other.getData());
+        if (!getData()
+            .equals(other.getData())) return false;
       }
-      result = result && (getCode()
-          == other.getCode());
-      return result;
+      if (getCode()
+          != other.getCode()) return false;
+      if (!unknownFields.equals(other.unknownFields)) return false;
+      return true;
     }
 
     @Override
@@ -1105,7 +1226,7 @@ public final class NNServiceProto {
         return memoizedHashCode;
       }
       int hash = 41;
-      hash = (19 * hash) + getDescriptorForType().hashCode();
+      hash = (19 * hash) + getDescriptor().hashCode();
       hash = (37 * hash) + RESPONSE_FIELD_NUMBER;
       hash = (53 * hash) + getResponse().hashCode();
       if (hasData()) {
@@ -1119,6 +1240,17 @@ public final class NNServiceProto {
       return hash;
     }
 
+    public static TrainResponse parseFrom(
+        java.nio.ByteBuffer data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static TrainResponse parseFrom(
+        java.nio.ByteBuffer data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
     public static TrainResponse parseFrom(
         com.google.protobuf.ByteString data)
         throws com.google.protobuf.InvalidProtocolBufferException {
@@ -1178,6 +1310,7 @@ public final class NNServiceProto {
           .parseWithIOException(PARSER, input, extensionRegistry);
     }
 
+    @Override
     public Builder newBuilderForType() { return newBuilder(); }
     public static Builder newBuilder() {
       return DEFAULT_INSTANCE.toBuilder();
@@ -1185,6 +1318,7 @@ public final class NNServiceProto {
     public static Builder newBuilder(TrainResponse prototype) {
       return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
     }
+    @Override
     public Builder toBuilder() {
       return this == DEFAULT_INSTANCE
           ? new Builder() : new Builder().mergeFrom(this);
@@ -1192,7 +1326,7 @@ public final class NNServiceProto {
 
     @Override
     protected Builder newBuilderForType(
-        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+        BuilderParent parent) {
       Builder builder = new Builder(parent);
       return builder;
     }
@@ -1208,20 +1342,21 @@ public final class NNServiceProto {
         return NNServiceProto.internal_static_nn_TrainResponse_descriptor;
       }
 
-      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+      @Override
+      protected FieldAccessorTable
           internalGetFieldAccessorTable() {
         return NNServiceProto.internal_static_nn_TrainResponse_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
                 TrainResponse.class, Builder.class);
       }
 
-      // Construct using com.intel.analytics.bigdl.ppml.generated.NNServiceProto.TrainResponse.newBuilder()
+      // Construct using com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.TrainResponse.newBuilder()
       private Builder() {
         maybeForceBuilderInitialization();
       }
 
       private Builder(
-          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+          BuilderParent parent) {
         super(parent);
         maybeForceBuilderInitialization();
       }
@@ -1230,6 +1365,7 @@ public final class NNServiceProto {
                 .alwaysUseFieldBuilders) {
         }
       }
+      @Override
       public Builder clear() {
         super.clear();
         response_ = "";
@@ -1245,15 +1381,18 @@ public final class NNServiceProto {
         return this;
       }
 
+      @Override
       public com.google.protobuf.Descriptors.Descriptor
           getDescriptorForType() {
         return NNServiceProto.internal_static_nn_TrainResponse_descriptor;
       }
 
+      @Override
       public TrainResponse getDefaultInstanceForType() {
         return TrainResponse.getDefaultInstance();
       }
 
+      @Override
       public TrainResponse build() {
         TrainResponse result = buildPartial();
         if (!result.isInitialized()) {
@@ -1262,6 +1401,7 @@ public final class NNServiceProto {
         return result;
       }
 
+      @Override
       public TrainResponse buildPartial() {
         TrainResponse result = new TrainResponse(this);
         result.response_ = response_;
@@ -1275,32 +1415,39 @@ public final class NNServiceProto {
         return result;
       }
 
+      @Override
       public Builder clone() {
-        return (Builder) super.clone();
+        return super.clone();
       }
+      @Override
       public Builder setField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           Object value) {
-        return (Builder) super.setField(field, value);
+        return super.setField(field, value);
       }
+      @Override
       public Builder clearField(
           com.google.protobuf.Descriptors.FieldDescriptor field) {
-        return (Builder) super.clearField(field);
+        return super.clearField(field);
       }
+      @Override
       public Builder clearOneof(
           com.google.protobuf.Descriptors.OneofDescriptor oneof) {
-        return (Builder) super.clearOneof(oneof);
+        return super.clearOneof(oneof);
       }
+      @Override
       public Builder setRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           int index, Object value) {
-        return (Builder) super.setRepeatedField(field, index, value);
+        return super.setRepeatedField(field, index, value);
       }
+      @Override
       public Builder addRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           Object value) {
-        return (Builder) super.addRepeatedField(field, value);
+        return super.addRepeatedField(field, value);
       }
+      @Override
       public Builder mergeFrom(com.google.protobuf.Message other) {
         if (other instanceof TrainResponse) {
           return mergeFrom((TrainResponse)other);
@@ -1322,14 +1469,17 @@ public final class NNServiceProto {
         if (other.getCode() != 0) {
           setCode(other.getCode());
         }
+        this.mergeUnknownFields(other.unknownFields);
         onChanged();
         return this;
       }
 
+      @Override
       public final boolean isInitialized() {
         return true;
       }
 
+      @Override
       public Builder mergeFrom(
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
@@ -1350,7 +1500,8 @@ public final class NNServiceProto {
 
       private Object response_ = "";
       /**
-       * <code>optional string response = 1;</code>
+       * <code>string response = 1;</code>
+       * @return The response.
        */
       public String getResponse() {
         Object ref = response_;
@@ -1365,7 +1516,8 @@ public final class NNServiceProto {
         }
       }
       /**
-       * <code>optional string response = 1;</code>
+       * <code>string response = 1;</code>
+       * @return The bytes for response.
        */
       public com.google.protobuf.ByteString
           getResponseBytes() {
@@ -1381,7 +1533,9 @@ public final class NNServiceProto {
         }
       }
       /**
-       * <code>optional string response = 1;</code>
+       * <code>string response = 1;</code>
+       * @param value The response to set.
+       * @return This builder for chaining.
        */
       public Builder setResponse(
           String value) {
@@ -1394,7 +1548,8 @@ public final class NNServiceProto {
         return this;
       }
       /**
-       * <code>optional string response = 1;</code>
+       * <code>string response = 1;</code>
+       * @return This builder for chaining.
        */
       public Builder clearResponse() {
         
@@ -1403,7 +1558,9 @@ public final class NNServiceProto {
         return this;
       }
       /**
-       * <code>optional string response = 1;</code>
+       * <code>string response = 1;</code>
+       * @param value The bytes for response to set.
+       * @return This builder for chaining.
        */
       public Builder setResponseBytes(
           com.google.protobuf.ByteString value) {
@@ -1417,29 +1574,31 @@ public final class NNServiceProto {
         return this;
       }
 
-      private FlBaseProto.TensorMap data_ = null;
+      private proto.FlBaseProto.TensorMap data_;
       private com.google.protobuf.SingleFieldBuilderV3<
-          FlBaseProto.TensorMap, FlBaseProto.TensorMap.Builder, FlBaseProto.TensorMapOrBuilder> dataBuilder_;
+          proto.FlBaseProto.TensorMap, proto.FlBaseProto.TensorMap.Builder, proto.FlBaseProto.TensorMapOrBuilder> dataBuilder_;
       /**
-       * <code>optional .TensorMap data = 2;</code>
+       * <code>.TensorMap data = 2;</code>
+       * @return Whether the data field is set.
        */
       public boolean hasData() {
         return dataBuilder_ != null || data_ != null;
       }
       /**
-       * <code>optional .TensorMap data = 2;</code>
+       * <code>.TensorMap data = 2;</code>
+       * @return The data.
        */
-      public FlBaseProto.TensorMap getData() {
+      public proto.FlBaseProto.TensorMap getData() {
         if (dataBuilder_ == null) {
-          return data_ == null ? FlBaseProto.TensorMap.getDefaultInstance() : data_;
+          return data_ == null ? proto.FlBaseProto.TensorMap.getDefaultInstance() : data_;
         } else {
           return dataBuilder_.getMessage();
         }
       }
       /**
-       * <code>optional .TensorMap data = 2;</code>
+       * <code>.TensorMap data = 2;</code>
        */
-      public Builder setData(FlBaseProto.TensorMap value) {
+      public Builder setData(proto.FlBaseProto.TensorMap value) {
         if (dataBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
@@ -1453,10 +1612,10 @@ public final class NNServiceProto {
         return this;
       }
       /**
-       * <code>optional .TensorMap data = 2;</code>
+       * <code>.TensorMap data = 2;</code>
        */
       public Builder setData(
-          FlBaseProto.TensorMap.Builder builderForValue) {
+          proto.FlBaseProto.TensorMap.Builder builderForValue) {
         if (dataBuilder_ == null) {
           data_ = builderForValue.build();
           onChanged();
@@ -1467,13 +1626,13 @@ public final class NNServiceProto {
         return this;
       }
       /**
-       * <code>optional .TensorMap data = 2;</code>
+       * <code>.TensorMap data = 2;</code>
        */
-      public Builder mergeData(FlBaseProto.TensorMap value) {
+      public Builder mergeData(proto.FlBaseProto.TensorMap value) {
         if (dataBuilder_ == null) {
           if (data_ != null) {
             data_ =
-              FlBaseProto.TensorMap.newBuilder(data_).mergeFrom(value).buildPartial();
+              proto.FlBaseProto.TensorMap.newBuilder(data_).mergeFrom(value).buildPartial();
           } else {
             data_ = value;
           }
@@ -1485,7 +1644,7 @@ public final class NNServiceProto {
         return this;
       }
       /**
-       * <code>optional .TensorMap data = 2;</code>
+       * <code>.TensorMap data = 2;</code>
        */
       public Builder clearData() {
         if (dataBuilder_ == null) {
@@ -1499,33 +1658,33 @@ public final class NNServiceProto {
         return this;
       }
       /**
-       * <code>optional .TensorMap data = 2;</code>
+       * <code>.TensorMap data = 2;</code>
        */
-      public FlBaseProto.TensorMap.Builder getDataBuilder() {
+      public proto.FlBaseProto.TensorMap.Builder getDataBuilder() {
         
         onChanged();
         return getDataFieldBuilder().getBuilder();
       }
       /**
-       * <code>optional .TensorMap data = 2;</code>
+       * <code>.TensorMap data = 2;</code>
        */
-      public FlBaseProto.TensorMapOrBuilder getDataOrBuilder() {
+      public proto.FlBaseProto.TensorMapOrBuilder getDataOrBuilder() {
         if (dataBuilder_ != null) {
           return dataBuilder_.getMessageOrBuilder();
         } else {
           return data_ == null ?
-              FlBaseProto.TensorMap.getDefaultInstance() : data_;
+              proto.FlBaseProto.TensorMap.getDefaultInstance() : data_;
         }
       }
       /**
-       * <code>optional .TensorMap data = 2;</code>
+       * <code>.TensorMap data = 2;</code>
        */
       private com.google.protobuf.SingleFieldBuilderV3<
-          FlBaseProto.TensorMap, FlBaseProto.TensorMap.Builder, FlBaseProto.TensorMapOrBuilder>
+          proto.FlBaseProto.TensorMap, proto.FlBaseProto.TensorMap.Builder, proto.FlBaseProto.TensorMapOrBuilder>
           getDataFieldBuilder() {
         if (dataBuilder_ == null) {
           dataBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
-              FlBaseProto.TensorMap, FlBaseProto.TensorMap.Builder, FlBaseProto.TensorMapOrBuilder>(
+              proto.FlBaseProto.TensorMap, proto.FlBaseProto.TensorMap.Builder, proto.FlBaseProto.TensorMapOrBuilder>(
                   getData(),
                   getParentForChildren(),
                   isClean());
@@ -1536,13 +1695,17 @@ public final class NNServiceProto {
 
       private int code_ ;
       /**
-       * <code>optional int32 code = 3;</code>
+       * <code>int32 code = 3;</code>
+       * @return The code.
        */
+      @Override
       public int getCode() {
         return code_;
       }
       /**
-       * <code>optional int32 code = 3;</code>
+       * <code>int32 code = 3;</code>
+       * @param value The code to set.
+       * @return This builder for chaining.
        */
       public Builder setCode(int value) {
         
@@ -1551,7 +1714,8 @@ public final class NNServiceProto {
         return this;
       }
       /**
-       * <code>optional int32 code = 3;</code>
+       * <code>int32 code = 3;</code>
+       * @return This builder for chaining.
        */
       public Builder clearCode() {
         
@@ -1559,14 +1723,16 @@ public final class NNServiceProto {
         onChanged();
         return this;
       }
+      @Override
       public final Builder setUnknownFields(
           final com.google.protobuf.UnknownFieldSet unknownFields) {
-        return this;
+        return super.setUnknownFields(unknownFields);
       }
 
+      @Override
       public final Builder mergeUnknownFields(
           final com.google.protobuf.UnknownFieldSet unknownFields) {
-        return this;
+        return super.mergeUnknownFields(unknownFields);
       }
 
 
@@ -1585,11 +1751,12 @@ public final class NNServiceProto {
 
     private static final com.google.protobuf.Parser<TrainResponse>
         PARSER = new com.google.protobuf.AbstractParser<TrainResponse>() {
+      @Override
       public TrainResponse parsePartialFrom(
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws com.google.protobuf.InvalidProtocolBufferException {
-          return new TrainResponse(input, extensionRegistry);
+        return new TrainResponse(input, extensionRegistry);
       }
     };
 
@@ -1602,6 +1769,7 @@ public final class NNServiceProto {
       return PARSER;
     }
 
+    @Override
     public TrainResponse getDefaultInstanceForType() {
       return DEFAULT_INSTANCE;
     }
@@ -1613,50 +1781,58 @@ public final class NNServiceProto {
       com.google.protobuf.MessageOrBuilder {
 
     /**
-     * <code>optional string clientuuid = 1;</code>
+     * <code>string clientuuid = 1;</code>
+     * @return The clientuuid.
      */
     String getClientuuid();
     /**
-     * <code>optional string clientuuid = 1;</code>
+     * <code>string clientuuid = 1;</code>
+     * @return The bytes for clientuuid.
      */
     com.google.protobuf.ByteString
         getClientuuidBytes();
 
     /**
-     * <code>optional .TensorMap data = 2;</code>
+     * <code>.TensorMap data = 2;</code>
+     * @return Whether the data field is set.
      */
     boolean hasData();
     /**
-     * <code>optional .TensorMap data = 2;</code>
+     * <code>.TensorMap data = 2;</code>
+     * @return The data.
      */
-    FlBaseProto.TensorMap getData();
+    proto.FlBaseProto.TensorMap getData();
     /**
-     * <code>optional .TensorMap data = 2;</code>
+     * <code>.TensorMap data = 2;</code>
      */
-    FlBaseProto.TensorMapOrBuilder getDataOrBuilder();
+    proto.FlBaseProto.TensorMapOrBuilder getDataOrBuilder();
 
     /**
-     * <code>optional string algorithm = 3;</code>
+     * <code>string algorithm = 3;</code>
+     * @return The algorithm.
      */
     String getAlgorithm();
     /**
-     * <code>optional string algorithm = 3;</code>
+     * <code>string algorithm = 3;</code>
+     * @return The bytes for algorithm.
      */
     com.google.protobuf.ByteString
         getAlgorithmBytes();
 
     /**
-     * <code>optional bool return = 4;</code>
+     * <code>bool return = 4;</code>
+     * @return The return.
      */
     boolean getReturn();
   }
   /**
    * Protobuf type {@code nn.EvaluateRequest}
    */
-  public  static final class EvaluateRequest extends
+  public static final class EvaluateRequest extends
       com.google.protobuf.GeneratedMessageV3 implements
       // @@protoc_insertion_point(message_implements:nn.EvaluateRequest)
       EvaluateRequestOrBuilder {
+  private static final long serialVersionUID = 0L;
     // Use EvaluateRequest.newBuilder() to construct.
     private EvaluateRequest(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
       super(builder);
@@ -1664,20 +1840,30 @@ public final class NNServiceProto {
     private EvaluateRequest() {
       clientuuid_ = "";
       algorithm_ = "";
-      return_ = false;
+    }
+
+    @Override
+    @SuppressWarnings({"unused"})
+    protected Object newInstance(
+        UnusedPrivateParameter unused) {
+      return new EvaluateRequest();
     }
 
     @Override
     public final com.google.protobuf.UnknownFieldSet
     getUnknownFields() {
-      return com.google.protobuf.UnknownFieldSet.getDefaultInstance();
+      return this.unknownFields;
     }
     private EvaluateRequest(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       this();
-      int mutable_bitField0_ = 0;
+      if (extensionRegistry == null) {
+        throw new NullPointerException();
+      }
+      com.google.protobuf.UnknownFieldSet.Builder unknownFields =
+          com.google.protobuf.UnknownFieldSet.newBuilder();
       try {
         boolean done = false;
         while (!done) {
@@ -1686,12 +1872,6 @@ public final class NNServiceProto {
             case 0:
               done = true;
               break;
-            default: {
-              if (!input.skipField(tag)) {
-                done = true;
-              }
-              break;
-            }
             case 10: {
               String s = input.readStringRequireUtf8();
 
@@ -1699,11 +1879,11 @@ public final class NNServiceProto {
               break;
             }
             case 18: {
-              FlBaseProto.TensorMap.Builder subBuilder = null;
+              proto.FlBaseProto.TensorMap.Builder subBuilder = null;
               if (data_ != null) {
                 subBuilder = data_.toBuilder();
               }
-              data_ = input.readMessage(FlBaseProto.TensorMap.parser(), extensionRegistry);
+              data_ = input.readMessage(proto.FlBaseProto.TensorMap.parser(), extensionRegistry);
               if (subBuilder != null) {
                 subBuilder.mergeFrom(data_);
                 data_ = subBuilder.buildPartial();
@@ -1722,6 +1902,13 @@ public final class NNServiceProto {
               return_ = input.readBool();
               break;
             }
+            default: {
+              if (!parseUnknownField(
+                  input, unknownFields, extensionRegistry, tag)) {
+                done = true;
+              }
+              break;
+            }
           }
         }
       } catch (com.google.protobuf.InvalidProtocolBufferException e) {
@@ -1730,6 +1917,7 @@ public final class NNServiceProto {
         throw new com.google.protobuf.InvalidProtocolBufferException(
             e).setUnfinishedMessage(this);
       } finally {
+        this.unknownFields = unknownFields.build();
         makeExtensionsImmutable();
       }
     }
@@ -1738,7 +1926,8 @@ public final class NNServiceProto {
       return NNServiceProto.internal_static_nn_EvaluateRequest_descriptor;
     }
 
-    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+    @Override
+    protected FieldAccessorTable
         internalGetFieldAccessorTable() {
       return NNServiceProto.internal_static_nn_EvaluateRequest_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
@@ -1748,8 +1937,10 @@ public final class NNServiceProto {
     public static final int CLIENTUUID_FIELD_NUMBER = 1;
     private volatile Object clientuuid_;
     /**
-     * <code>optional string clientuuid = 1;</code>
+     * <code>string clientuuid = 1;</code>
+     * @return The clientuuid.
      */
+    @Override
     public String getClientuuid() {
       Object ref = clientuuid_;
       if (ref instanceof String) {
@@ -1763,8 +1954,10 @@ public final class NNServiceProto {
       }
     }
     /**
-     * <code>optional string clientuuid = 1;</code>
+     * <code>string clientuuid = 1;</code>
+     * @return The bytes for clientuuid.
      */
+    @Override
     public com.google.protobuf.ByteString
         getClientuuidBytes() {
       Object ref = clientuuid_;
@@ -1780,31 +1973,38 @@ public final class NNServiceProto {
     }
 
     public static final int DATA_FIELD_NUMBER = 2;
-    private FlBaseProto.TensorMap data_;
+    private proto.FlBaseProto.TensorMap data_;
     /**
-     * <code>optional .TensorMap data = 2;</code>
+     * <code>.TensorMap data = 2;</code>
+     * @return Whether the data field is set.
      */
+    @Override
     public boolean hasData() {
       return data_ != null;
     }
     /**
-     * <code>optional .TensorMap data = 2;</code>
+     * <code>.TensorMap data = 2;</code>
+     * @return The data.
      */
-    public FlBaseProto.TensorMap getData() {
-      return data_ == null ? FlBaseProto.TensorMap.getDefaultInstance() : data_;
+    @Override
+    public proto.FlBaseProto.TensorMap getData() {
+      return data_ == null ? proto.FlBaseProto.TensorMap.getDefaultInstance() : data_;
     }
     /**
-     * <code>optional .TensorMap data = 2;</code>
+     * <code>.TensorMap data = 2;</code>
      */
-    public FlBaseProto.TensorMapOrBuilder getDataOrBuilder() {
+    @Override
+    public proto.FlBaseProto.TensorMapOrBuilder getDataOrBuilder() {
       return getData();
     }
 
     public static final int ALGORITHM_FIELD_NUMBER = 3;
     private volatile Object algorithm_;
     /**
-     * <code>optional string algorithm = 3;</code>
+     * <code>string algorithm = 3;</code>
+     * @return The algorithm.
      */
+    @Override
     public String getAlgorithm() {
       Object ref = algorithm_;
       if (ref instanceof String) {
@@ -1818,8 +2018,10 @@ public final class NNServiceProto {
       }
     }
     /**
-     * <code>optional string algorithm = 3;</code>
+     * <code>string algorithm = 3;</code>
+     * @return The bytes for algorithm.
      */
+    @Override
     public com.google.protobuf.ByteString
         getAlgorithmBytes() {
       Object ref = algorithm_;
@@ -1837,13 +2039,16 @@ public final class NNServiceProto {
     public static final int RETURN_FIELD_NUMBER = 4;
     private boolean return_;
     /**
-     * <code>optional bool return = 4;</code>
+     * <code>bool return = 4;</code>
+     * @return The return.
      */
+    @Override
     public boolean getReturn() {
       return return_;
     }
 
     private byte memoizedIsInitialized = -1;
+    @Override
     public final boolean isInitialized() {
       byte isInitialized = memoizedIsInitialized;
       if (isInitialized == 1) return true;
@@ -1853,6 +2058,7 @@ public final class NNServiceProto {
       return true;
     }
 
+    @Override
     public void writeTo(com.google.protobuf.CodedOutputStream output)
                         throws java.io.IOException {
       if (!getClientuuidBytes().isEmpty()) {
@@ -1867,8 +2073,10 @@ public final class NNServiceProto {
       if (return_ != false) {
         output.writeBool(4, return_);
       }
+      unknownFields.writeTo(output);
     }
 
+    @Override
     public int getSerializedSize() {
       int size = memoizedSize;
       if (size != -1) return size;
@@ -1888,11 +2096,11 @@ public final class NNServiceProto {
         size += com.google.protobuf.CodedOutputStream
           .computeBoolSize(4, return_);
       }
+      size += unknownFields.getSerializedSize();
       memoizedSize = size;
       return size;
     }
 
-    private static final long serialVersionUID = 0L;
     @Override
     public boolean equals(final Object obj) {
       if (obj == this) {
@@ -1903,19 +2111,19 @@ public final class NNServiceProto {
       }
       EvaluateRequest other = (EvaluateRequest) obj;
 
-      boolean result = true;
-      result = result && getClientuuid()
-          .equals(other.getClientuuid());
-      result = result && (hasData() == other.hasData());
+      if (!getClientuuid()
+          .equals(other.getClientuuid())) return false;
+      if (hasData() != other.hasData()) return false;
       if (hasData()) {
-        result = result && getData()
-            .equals(other.getData());
+        if (!getData()
+            .equals(other.getData())) return false;
       }
-      result = result && getAlgorithm()
-          .equals(other.getAlgorithm());
-      result = result && (getReturn()
-          == other.getReturn());
-      return result;
+      if (!getAlgorithm()
+          .equals(other.getAlgorithm())) return false;
+      if (getReturn()
+          != other.getReturn()) return false;
+      if (!unknownFields.equals(other.unknownFields)) return false;
+      return true;
     }
 
     @Override
@@ -1924,7 +2132,7 @@ public final class NNServiceProto {
         return memoizedHashCode;
       }
       int hash = 41;
-      hash = (19 * hash) + getDescriptorForType().hashCode();
+      hash = (19 * hash) + getDescriptor().hashCode();
       hash = (37 * hash) + CLIENTUUID_FIELD_NUMBER;
       hash = (53 * hash) + getClientuuid().hashCode();
       if (hasData()) {
@@ -1941,6 +2149,17 @@ public final class NNServiceProto {
       return hash;
     }
 
+    public static EvaluateRequest parseFrom(
+        java.nio.ByteBuffer data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static EvaluateRequest parseFrom(
+        java.nio.ByteBuffer data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
     public static EvaluateRequest parseFrom(
         com.google.protobuf.ByteString data)
         throws com.google.protobuf.InvalidProtocolBufferException {
@@ -2000,6 +2219,7 @@ public final class NNServiceProto {
           .parseWithIOException(PARSER, input, extensionRegistry);
     }
 
+    @Override
     public Builder newBuilderForType() { return newBuilder(); }
     public static Builder newBuilder() {
       return DEFAULT_INSTANCE.toBuilder();
@@ -2007,6 +2227,7 @@ public final class NNServiceProto {
     public static Builder newBuilder(EvaluateRequest prototype) {
       return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
     }
+    @Override
     public Builder toBuilder() {
       return this == DEFAULT_INSTANCE
           ? new Builder() : new Builder().mergeFrom(this);
@@ -2014,7 +2235,7 @@ public final class NNServiceProto {
 
     @Override
     protected Builder newBuilderForType(
-        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+        BuilderParent parent) {
       Builder builder = new Builder(parent);
       return builder;
     }
@@ -2030,20 +2251,21 @@ public final class NNServiceProto {
         return NNServiceProto.internal_static_nn_EvaluateRequest_descriptor;
       }
 
-      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+      @Override
+      protected FieldAccessorTable
           internalGetFieldAccessorTable() {
         return NNServiceProto.internal_static_nn_EvaluateRequest_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
                 EvaluateRequest.class, Builder.class);
       }
 
-      // Construct using com.intel.analytics.bigdl.ppml.generated.NNServiceProto.EvaluateRequest.newBuilder()
+      // Construct using com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.EvaluateRequest.newBuilder()
       private Builder() {
         maybeForceBuilderInitialization();
       }
 
       private Builder(
-          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+          BuilderParent parent) {
         super(parent);
         maybeForceBuilderInitialization();
       }
@@ -2052,6 +2274,7 @@ public final class NNServiceProto {
                 .alwaysUseFieldBuilders) {
         }
       }
+      @Override
       public Builder clear() {
         super.clear();
         clientuuid_ = "";
@@ -2069,15 +2292,18 @@ public final class NNServiceProto {
         return this;
       }
 
+      @Override
       public com.google.protobuf.Descriptors.Descriptor
           getDescriptorForType() {
         return NNServiceProto.internal_static_nn_EvaluateRequest_descriptor;
       }
 
+      @Override
       public EvaluateRequest getDefaultInstanceForType() {
         return EvaluateRequest.getDefaultInstance();
       }
 
+      @Override
       public EvaluateRequest build() {
         EvaluateRequest result = buildPartial();
         if (!result.isInitialized()) {
@@ -2086,6 +2312,7 @@ public final class NNServiceProto {
         return result;
       }
 
+      @Override
       public EvaluateRequest buildPartial() {
         EvaluateRequest result = new EvaluateRequest(this);
         result.clientuuid_ = clientuuid_;
@@ -2100,32 +2327,39 @@ public final class NNServiceProto {
         return result;
       }
 
+      @Override
       public Builder clone() {
-        return (Builder) super.clone();
+        return super.clone();
       }
+      @Override
       public Builder setField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           Object value) {
-        return (Builder) super.setField(field, value);
+        return super.setField(field, value);
       }
+      @Override
       public Builder clearField(
           com.google.protobuf.Descriptors.FieldDescriptor field) {
-        return (Builder) super.clearField(field);
+        return super.clearField(field);
       }
+      @Override
       public Builder clearOneof(
           com.google.protobuf.Descriptors.OneofDescriptor oneof) {
-        return (Builder) super.clearOneof(oneof);
+        return super.clearOneof(oneof);
       }
+      @Override
       public Builder setRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           int index, Object value) {
-        return (Builder) super.setRepeatedField(field, index, value);
+        return super.setRepeatedField(field, index, value);
       }
+      @Override
       public Builder addRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           Object value) {
-        return (Builder) super.addRepeatedField(field, value);
+        return super.addRepeatedField(field, value);
       }
+      @Override
       public Builder mergeFrom(com.google.protobuf.Message other) {
         if (other instanceof EvaluateRequest) {
           return mergeFrom((EvaluateRequest)other);
@@ -2151,14 +2385,17 @@ public final class NNServiceProto {
         if (other.getReturn() != false) {
           setReturn(other.getReturn());
         }
+        this.mergeUnknownFields(other.unknownFields);
         onChanged();
         return this;
       }
 
+      @Override
       public final boolean isInitialized() {
         return true;
       }
 
+      @Override
       public Builder mergeFrom(
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
@@ -2179,7 +2416,8 @@ public final class NNServiceProto {
 
       private Object clientuuid_ = "";
       /**
-       * <code>optional string clientuuid = 1;</code>
+       * <code>string clientuuid = 1;</code>
+       * @return The clientuuid.
        */
       public String getClientuuid() {
         Object ref = clientuuid_;
@@ -2194,7 +2432,8 @@ public final class NNServiceProto {
         }
       }
       /**
-       * <code>optional string clientuuid = 1;</code>
+       * <code>string clientuuid = 1;</code>
+       * @return The bytes for clientuuid.
        */
       public com.google.protobuf.ByteString
           getClientuuidBytes() {
@@ -2210,7 +2449,9 @@ public final class NNServiceProto {
         }
       }
       /**
-       * <code>optional string clientuuid = 1;</code>
+       * <code>string clientuuid = 1;</code>
+       * @param value The clientuuid to set.
+       * @return This builder for chaining.
        */
       public Builder setClientuuid(
           String value) {
@@ -2223,7 +2464,8 @@ public final class NNServiceProto {
         return this;
       }
       /**
-       * <code>optional string clientuuid = 1;</code>
+       * <code>string clientuuid = 1;</code>
+       * @return This builder for chaining.
        */
       public Builder clearClientuuid() {
         
@@ -2232,7 +2474,9 @@ public final class NNServiceProto {
         return this;
       }
       /**
-       * <code>optional string clientuuid = 1;</code>
+       * <code>string clientuuid = 1;</code>
+       * @param value The bytes for clientuuid to set.
+       * @return This builder for chaining.
        */
       public Builder setClientuuidBytes(
           com.google.protobuf.ByteString value) {
@@ -2246,29 +2490,31 @@ public final class NNServiceProto {
         return this;
       }
 
-      private FlBaseProto.TensorMap data_ = null;
+      private proto.FlBaseProto.TensorMap data_;
       private com.google.protobuf.SingleFieldBuilderV3<
-          FlBaseProto.TensorMap, FlBaseProto.TensorMap.Builder, FlBaseProto.TensorMapOrBuilder> dataBuilder_;
+          proto.FlBaseProto.TensorMap, proto.FlBaseProto.TensorMap.Builder, proto.FlBaseProto.TensorMapOrBuilder> dataBuilder_;
       /**
-       * <code>optional .TensorMap data = 2;</code>
+       * <code>.TensorMap data = 2;</code>
+       * @return Whether the data field is set.
        */
       public boolean hasData() {
         return dataBuilder_ != null || data_ != null;
       }
       /**
-       * <code>optional .TensorMap data = 2;</code>
+       * <code>.TensorMap data = 2;</code>
+       * @return The data.
        */
-      public FlBaseProto.TensorMap getData() {
+      public proto.FlBaseProto.TensorMap getData() {
         if (dataBuilder_ == null) {
-          return data_ == null ? FlBaseProto.TensorMap.getDefaultInstance() : data_;
+          return data_ == null ? proto.FlBaseProto.TensorMap.getDefaultInstance() : data_;
         } else {
           return dataBuilder_.getMessage();
         }
       }
       /**
-       * <code>optional .TensorMap data = 2;</code>
+       * <code>.TensorMap data = 2;</code>
        */
-      public Builder setData(FlBaseProto.TensorMap value) {
+      public Builder setData(proto.FlBaseProto.TensorMap value) {
         if (dataBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
@@ -2282,10 +2528,10 @@ public final class NNServiceProto {
         return this;
       }
       /**
-       * <code>optional .TensorMap data = 2;</code>
+       * <code>.TensorMap data = 2;</code>
        */
       public Builder setData(
-          FlBaseProto.TensorMap.Builder builderForValue) {
+          proto.FlBaseProto.TensorMap.Builder builderForValue) {
         if (dataBuilder_ == null) {
           data_ = builderForValue.build();
           onChanged();
@@ -2296,13 +2542,13 @@ public final class NNServiceProto {
         return this;
       }
       /**
-       * <code>optional .TensorMap data = 2;</code>
+       * <code>.TensorMap data = 2;</code>
        */
-      public Builder mergeData(FlBaseProto.TensorMap value) {
+      public Builder mergeData(proto.FlBaseProto.TensorMap value) {
         if (dataBuilder_ == null) {
           if (data_ != null) {
             data_ =
-              FlBaseProto.TensorMap.newBuilder(data_).mergeFrom(value).buildPartial();
+              proto.FlBaseProto.TensorMap.newBuilder(data_).mergeFrom(value).buildPartial();
           } else {
             data_ = value;
           }
@@ -2314,7 +2560,7 @@ public final class NNServiceProto {
         return this;
       }
       /**
-       * <code>optional .TensorMap data = 2;</code>
+       * <code>.TensorMap data = 2;</code>
        */
       public Builder clearData() {
         if (dataBuilder_ == null) {
@@ -2328,33 +2574,33 @@ public final class NNServiceProto {
         return this;
       }
       /**
-       * <code>optional .TensorMap data = 2;</code>
+       * <code>.TensorMap data = 2;</code>
        */
-      public FlBaseProto.TensorMap.Builder getDataBuilder() {
+      public proto.FlBaseProto.TensorMap.Builder getDataBuilder() {
         
         onChanged();
         return getDataFieldBuilder().getBuilder();
       }
       /**
-       * <code>optional .TensorMap data = 2;</code>
+       * <code>.TensorMap data = 2;</code>
        */
-      public FlBaseProto.TensorMapOrBuilder getDataOrBuilder() {
+      public proto.FlBaseProto.TensorMapOrBuilder getDataOrBuilder() {
         if (dataBuilder_ != null) {
           return dataBuilder_.getMessageOrBuilder();
         } else {
           return data_ == null ?
-              FlBaseProto.TensorMap.getDefaultInstance() : data_;
+              proto.FlBaseProto.TensorMap.getDefaultInstance() : data_;
         }
       }
       /**
-       * <code>optional .TensorMap data = 2;</code>
+       * <code>.TensorMap data = 2;</code>
        */
       private com.google.protobuf.SingleFieldBuilderV3<
-          FlBaseProto.TensorMap, FlBaseProto.TensorMap.Builder, FlBaseProto.TensorMapOrBuilder>
+          proto.FlBaseProto.TensorMap, proto.FlBaseProto.TensorMap.Builder, proto.FlBaseProto.TensorMapOrBuilder>
           getDataFieldBuilder() {
         if (dataBuilder_ == null) {
           dataBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
-              FlBaseProto.TensorMap, FlBaseProto.TensorMap.Builder, FlBaseProto.TensorMapOrBuilder>(
+              proto.FlBaseProto.TensorMap, proto.FlBaseProto.TensorMap.Builder, proto.FlBaseProto.TensorMapOrBuilder>(
                   getData(),
                   getParentForChildren(),
                   isClean());
@@ -2365,7 +2611,8 @@ public final class NNServiceProto {
 
       private Object algorithm_ = "";
       /**
-       * <code>optional string algorithm = 3;</code>
+       * <code>string algorithm = 3;</code>
+       * @return The algorithm.
        */
       public String getAlgorithm() {
         Object ref = algorithm_;
@@ -2380,7 +2627,8 @@ public final class NNServiceProto {
         }
       }
       /**
-       * <code>optional string algorithm = 3;</code>
+       * <code>string algorithm = 3;</code>
+       * @return The bytes for algorithm.
        */
       public com.google.protobuf.ByteString
           getAlgorithmBytes() {
@@ -2396,7 +2644,9 @@ public final class NNServiceProto {
         }
       }
       /**
-       * <code>optional string algorithm = 3;</code>
+       * <code>string algorithm = 3;</code>
+       * @param value The algorithm to set.
+       * @return This builder for chaining.
        */
       public Builder setAlgorithm(
           String value) {
@@ -2409,7 +2659,8 @@ public final class NNServiceProto {
         return this;
       }
       /**
-       * <code>optional string algorithm = 3;</code>
+       * <code>string algorithm = 3;</code>
+       * @return This builder for chaining.
        */
       public Builder clearAlgorithm() {
         
@@ -2418,7 +2669,9 @@ public final class NNServiceProto {
         return this;
       }
       /**
-       * <code>optional string algorithm = 3;</code>
+       * <code>string algorithm = 3;</code>
+       * @param value The bytes for algorithm to set.
+       * @return This builder for chaining.
        */
       public Builder setAlgorithmBytes(
           com.google.protobuf.ByteString value) {
@@ -2434,13 +2687,17 @@ public final class NNServiceProto {
 
       private boolean return_ ;
       /**
-       * <code>optional bool return = 4;</code>
+       * <code>bool return = 4;</code>
+       * @return The return.
        */
+      @Override
       public boolean getReturn() {
         return return_;
       }
       /**
-       * <code>optional bool return = 4;</code>
+       * <code>bool return = 4;</code>
+       * @param value The return to set.
+       * @return This builder for chaining.
        */
       public Builder setReturn(boolean value) {
         
@@ -2449,7 +2706,8 @@ public final class NNServiceProto {
         return this;
       }
       /**
-       * <code>optional bool return = 4;</code>
+       * <code>bool return = 4;</code>
+       * @return This builder for chaining.
        */
       public Builder clearReturn() {
         
@@ -2457,14 +2715,16 @@ public final class NNServiceProto {
         onChanged();
         return this;
       }
+      @Override
       public final Builder setUnknownFields(
           final com.google.protobuf.UnknownFieldSet unknownFields) {
-        return this;
+        return super.setUnknownFields(unknownFields);
       }
 
+      @Override
       public final Builder mergeUnknownFields(
           final com.google.protobuf.UnknownFieldSet unknownFields) {
-        return this;
+        return super.mergeUnknownFields(unknownFields);
       }
 
 
@@ -2483,11 +2743,12 @@ public final class NNServiceProto {
 
     private static final com.google.protobuf.Parser<EvaluateRequest>
         PARSER = new com.google.protobuf.AbstractParser<EvaluateRequest>() {
+      @Override
       public EvaluateRequest parsePartialFrom(
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws com.google.protobuf.InvalidProtocolBufferException {
-          return new EvaluateRequest(input, extensionRegistry);
+        return new EvaluateRequest(input, extensionRegistry);
       }
     };
 
@@ -2500,6 +2761,7 @@ public final class NNServiceProto {
       return PARSER;
     }
 
+    @Override
     public EvaluateRequest getDefaultInstanceForType() {
       return DEFAULT_INSTANCE;
     }
@@ -2511,39 +2773,46 @@ public final class NNServiceProto {
       com.google.protobuf.MessageOrBuilder {
 
     /**
-     * <code>optional string response = 1;</code>
+     * <code>string response = 1;</code>
+     * @return The response.
      */
     String getResponse();
     /**
-     * <code>optional string response = 1;</code>
+     * <code>string response = 1;</code>
+     * @return The bytes for response.
      */
     com.google.protobuf.ByteString
         getResponseBytes();
 
     /**
-     * <code>optional .TensorMap data = 2;</code>
+     * <code>.TensorMap data = 2;</code>
+     * @return Whether the data field is set.
      */
     boolean hasData();
     /**
-     * <code>optional .TensorMap data = 2;</code>
+     * <code>.TensorMap data = 2;</code>
+     * @return The data.
      */
-    FlBaseProto.TensorMap getData();
+    proto.FlBaseProto.TensorMap getData();
     /**
-     * <code>optional .TensorMap data = 2;</code>
+     * <code>.TensorMap data = 2;</code>
      */
-    FlBaseProto.TensorMapOrBuilder getDataOrBuilder();
+    proto.FlBaseProto.TensorMapOrBuilder getDataOrBuilder();
 
     /**
-     * <code>optional int32 code = 3;</code>
+     * <code>int32 code = 3;</code>
+     * @return The code.
      */
     int getCode();
 
     /**
-     * <code>optional string message = 4;</code>
+     * <code>string message = 4;</code>
+     * @return The message.
      */
     String getMessage();
     /**
-     * <code>optional string message = 4;</code>
+     * <code>string message = 4;</code>
+     * @return The bytes for message.
      */
     com.google.protobuf.ByteString
         getMessageBytes();
@@ -2551,31 +2820,42 @@ public final class NNServiceProto {
   /**
    * Protobuf type {@code nn.EvaluateResponse}
    */
-  public  static final class EvaluateResponse extends
+  public static final class EvaluateResponse extends
       com.google.protobuf.GeneratedMessageV3 implements
       // @@protoc_insertion_point(message_implements:nn.EvaluateResponse)
       EvaluateResponseOrBuilder {
+  private static final long serialVersionUID = 0L;
     // Use EvaluateResponse.newBuilder() to construct.
     private EvaluateResponse(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
       super(builder);
     }
     private EvaluateResponse() {
       response_ = "";
-      code_ = 0;
       message_ = "";
+    }
+
+    @Override
+    @SuppressWarnings({"unused"})
+    protected Object newInstance(
+        UnusedPrivateParameter unused) {
+      return new EvaluateResponse();
     }
 
     @Override
     public final com.google.protobuf.UnknownFieldSet
     getUnknownFields() {
-      return com.google.protobuf.UnknownFieldSet.getDefaultInstance();
+      return this.unknownFields;
     }
     private EvaluateResponse(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       this();
-      int mutable_bitField0_ = 0;
+      if (extensionRegistry == null) {
+        throw new NullPointerException();
+      }
+      com.google.protobuf.UnknownFieldSet.Builder unknownFields =
+          com.google.protobuf.UnknownFieldSet.newBuilder();
       try {
         boolean done = false;
         while (!done) {
@@ -2584,12 +2864,6 @@ public final class NNServiceProto {
             case 0:
               done = true;
               break;
-            default: {
-              if (!input.skipField(tag)) {
-                done = true;
-              }
-              break;
-            }
             case 10: {
               String s = input.readStringRequireUtf8();
 
@@ -2597,11 +2871,11 @@ public final class NNServiceProto {
               break;
             }
             case 18: {
-              FlBaseProto.TensorMap.Builder subBuilder = null;
+              proto.FlBaseProto.TensorMap.Builder subBuilder = null;
               if (data_ != null) {
                 subBuilder = data_.toBuilder();
               }
-              data_ = input.readMessage(FlBaseProto.TensorMap.parser(), extensionRegistry);
+              data_ = input.readMessage(proto.FlBaseProto.TensorMap.parser(), extensionRegistry);
               if (subBuilder != null) {
                 subBuilder.mergeFrom(data_);
                 data_ = subBuilder.buildPartial();
@@ -2620,6 +2894,13 @@ public final class NNServiceProto {
               message_ = s;
               break;
             }
+            default: {
+              if (!parseUnknownField(
+                  input, unknownFields, extensionRegistry, tag)) {
+                done = true;
+              }
+              break;
+            }
           }
         }
       } catch (com.google.protobuf.InvalidProtocolBufferException e) {
@@ -2628,6 +2909,7 @@ public final class NNServiceProto {
         throw new com.google.protobuf.InvalidProtocolBufferException(
             e).setUnfinishedMessage(this);
       } finally {
+        this.unknownFields = unknownFields.build();
         makeExtensionsImmutable();
       }
     }
@@ -2636,7 +2918,8 @@ public final class NNServiceProto {
       return NNServiceProto.internal_static_nn_EvaluateResponse_descriptor;
     }
 
-    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+    @Override
+    protected FieldAccessorTable
         internalGetFieldAccessorTable() {
       return NNServiceProto.internal_static_nn_EvaluateResponse_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
@@ -2646,8 +2929,10 @@ public final class NNServiceProto {
     public static final int RESPONSE_FIELD_NUMBER = 1;
     private volatile Object response_;
     /**
-     * <code>optional string response = 1;</code>
+     * <code>string response = 1;</code>
+     * @return The response.
      */
+    @Override
     public String getResponse() {
       Object ref = response_;
       if (ref instanceof String) {
@@ -2661,8 +2946,10 @@ public final class NNServiceProto {
       }
     }
     /**
-     * <code>optional string response = 1;</code>
+     * <code>string response = 1;</code>
+     * @return The bytes for response.
      */
+    @Override
     public com.google.protobuf.ByteString
         getResponseBytes() {
       Object ref = response_;
@@ -2678,31 +2965,38 @@ public final class NNServiceProto {
     }
 
     public static final int DATA_FIELD_NUMBER = 2;
-    private FlBaseProto.TensorMap data_;
+    private proto.FlBaseProto.TensorMap data_;
     /**
-     * <code>optional .TensorMap data = 2;</code>
+     * <code>.TensorMap data = 2;</code>
+     * @return Whether the data field is set.
      */
+    @Override
     public boolean hasData() {
       return data_ != null;
     }
     /**
-     * <code>optional .TensorMap data = 2;</code>
+     * <code>.TensorMap data = 2;</code>
+     * @return The data.
      */
-    public FlBaseProto.TensorMap getData() {
-      return data_ == null ? FlBaseProto.TensorMap.getDefaultInstance() : data_;
+    @Override
+    public proto.FlBaseProto.TensorMap getData() {
+      return data_ == null ? proto.FlBaseProto.TensorMap.getDefaultInstance() : data_;
     }
     /**
-     * <code>optional .TensorMap data = 2;</code>
+     * <code>.TensorMap data = 2;</code>
      */
-    public FlBaseProto.TensorMapOrBuilder getDataOrBuilder() {
+    @Override
+    public proto.FlBaseProto.TensorMapOrBuilder getDataOrBuilder() {
       return getData();
     }
 
     public static final int CODE_FIELD_NUMBER = 3;
     private int code_;
     /**
-     * <code>optional int32 code = 3;</code>
+     * <code>int32 code = 3;</code>
+     * @return The code.
      */
+    @Override
     public int getCode() {
       return code_;
     }
@@ -2710,8 +3004,10 @@ public final class NNServiceProto {
     public static final int MESSAGE_FIELD_NUMBER = 4;
     private volatile Object message_;
     /**
-     * <code>optional string message = 4;</code>
+     * <code>string message = 4;</code>
+     * @return The message.
      */
+    @Override
     public String getMessage() {
       Object ref = message_;
       if (ref instanceof String) {
@@ -2725,8 +3021,10 @@ public final class NNServiceProto {
       }
     }
     /**
-     * <code>optional string message = 4;</code>
+     * <code>string message = 4;</code>
+     * @return The bytes for message.
      */
+    @Override
     public com.google.protobuf.ByteString
         getMessageBytes() {
       Object ref = message_;
@@ -2742,6 +3040,7 @@ public final class NNServiceProto {
     }
 
     private byte memoizedIsInitialized = -1;
+    @Override
     public final boolean isInitialized() {
       byte isInitialized = memoizedIsInitialized;
       if (isInitialized == 1) return true;
@@ -2751,6 +3050,7 @@ public final class NNServiceProto {
       return true;
     }
 
+    @Override
     public void writeTo(com.google.protobuf.CodedOutputStream output)
                         throws java.io.IOException {
       if (!getResponseBytes().isEmpty()) {
@@ -2765,8 +3065,10 @@ public final class NNServiceProto {
       if (!getMessageBytes().isEmpty()) {
         com.google.protobuf.GeneratedMessageV3.writeString(output, 4, message_);
       }
+      unknownFields.writeTo(output);
     }
 
+    @Override
     public int getSerializedSize() {
       int size = memoizedSize;
       if (size != -1) return size;
@@ -2786,11 +3088,11 @@ public final class NNServiceProto {
       if (!getMessageBytes().isEmpty()) {
         size += com.google.protobuf.GeneratedMessageV3.computeStringSize(4, message_);
       }
+      size += unknownFields.getSerializedSize();
       memoizedSize = size;
       return size;
     }
 
-    private static final long serialVersionUID = 0L;
     @Override
     public boolean equals(final Object obj) {
       if (obj == this) {
@@ -2801,19 +3103,19 @@ public final class NNServiceProto {
       }
       EvaluateResponse other = (EvaluateResponse) obj;
 
-      boolean result = true;
-      result = result && getResponse()
-          .equals(other.getResponse());
-      result = result && (hasData() == other.hasData());
+      if (!getResponse()
+          .equals(other.getResponse())) return false;
+      if (hasData() != other.hasData()) return false;
       if (hasData()) {
-        result = result && getData()
-            .equals(other.getData());
+        if (!getData()
+            .equals(other.getData())) return false;
       }
-      result = result && (getCode()
-          == other.getCode());
-      result = result && getMessage()
-          .equals(other.getMessage());
-      return result;
+      if (getCode()
+          != other.getCode()) return false;
+      if (!getMessage()
+          .equals(other.getMessage())) return false;
+      if (!unknownFields.equals(other.unknownFields)) return false;
+      return true;
     }
 
     @Override
@@ -2822,7 +3124,7 @@ public final class NNServiceProto {
         return memoizedHashCode;
       }
       int hash = 41;
-      hash = (19 * hash) + getDescriptorForType().hashCode();
+      hash = (19 * hash) + getDescriptor().hashCode();
       hash = (37 * hash) + RESPONSE_FIELD_NUMBER;
       hash = (53 * hash) + getResponse().hashCode();
       if (hasData()) {
@@ -2838,6 +3140,17 @@ public final class NNServiceProto {
       return hash;
     }
 
+    public static EvaluateResponse parseFrom(
+        java.nio.ByteBuffer data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static EvaluateResponse parseFrom(
+        java.nio.ByteBuffer data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
     public static EvaluateResponse parseFrom(
         com.google.protobuf.ByteString data)
         throws com.google.protobuf.InvalidProtocolBufferException {
@@ -2897,6 +3210,7 @@ public final class NNServiceProto {
           .parseWithIOException(PARSER, input, extensionRegistry);
     }
 
+    @Override
     public Builder newBuilderForType() { return newBuilder(); }
     public static Builder newBuilder() {
       return DEFAULT_INSTANCE.toBuilder();
@@ -2904,6 +3218,7 @@ public final class NNServiceProto {
     public static Builder newBuilder(EvaluateResponse prototype) {
       return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
     }
+    @Override
     public Builder toBuilder() {
       return this == DEFAULT_INSTANCE
           ? new Builder() : new Builder().mergeFrom(this);
@@ -2911,7 +3226,7 @@ public final class NNServiceProto {
 
     @Override
     protected Builder newBuilderForType(
-        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+        BuilderParent parent) {
       Builder builder = new Builder(parent);
       return builder;
     }
@@ -2927,20 +3242,21 @@ public final class NNServiceProto {
         return NNServiceProto.internal_static_nn_EvaluateResponse_descriptor;
       }
 
-      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+      @Override
+      protected FieldAccessorTable
           internalGetFieldAccessorTable() {
         return NNServiceProto.internal_static_nn_EvaluateResponse_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
                 EvaluateResponse.class, Builder.class);
       }
 
-      // Construct using com.intel.analytics.bigdl.ppml.generated.NNServiceProto.EvaluateResponse.newBuilder()
+      // Construct using com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.EvaluateResponse.newBuilder()
       private Builder() {
         maybeForceBuilderInitialization();
       }
 
       private Builder(
-          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+          BuilderParent parent) {
         super(parent);
         maybeForceBuilderInitialization();
       }
@@ -2949,6 +3265,7 @@ public final class NNServiceProto {
                 .alwaysUseFieldBuilders) {
         }
       }
+      @Override
       public Builder clear() {
         super.clear();
         response_ = "";
@@ -2966,15 +3283,18 @@ public final class NNServiceProto {
         return this;
       }
 
+      @Override
       public com.google.protobuf.Descriptors.Descriptor
           getDescriptorForType() {
         return NNServiceProto.internal_static_nn_EvaluateResponse_descriptor;
       }
 
+      @Override
       public EvaluateResponse getDefaultInstanceForType() {
         return EvaluateResponse.getDefaultInstance();
       }
 
+      @Override
       public EvaluateResponse build() {
         EvaluateResponse result = buildPartial();
         if (!result.isInitialized()) {
@@ -2983,6 +3303,7 @@ public final class NNServiceProto {
         return result;
       }
 
+      @Override
       public EvaluateResponse buildPartial() {
         EvaluateResponse result = new EvaluateResponse(this);
         result.response_ = response_;
@@ -2997,32 +3318,39 @@ public final class NNServiceProto {
         return result;
       }
 
+      @Override
       public Builder clone() {
-        return (Builder) super.clone();
+        return super.clone();
       }
+      @Override
       public Builder setField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           Object value) {
-        return (Builder) super.setField(field, value);
+        return super.setField(field, value);
       }
+      @Override
       public Builder clearField(
           com.google.protobuf.Descriptors.FieldDescriptor field) {
-        return (Builder) super.clearField(field);
+        return super.clearField(field);
       }
+      @Override
       public Builder clearOneof(
           com.google.protobuf.Descriptors.OneofDescriptor oneof) {
-        return (Builder) super.clearOneof(oneof);
+        return super.clearOneof(oneof);
       }
+      @Override
       public Builder setRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           int index, Object value) {
-        return (Builder) super.setRepeatedField(field, index, value);
+        return super.setRepeatedField(field, index, value);
       }
+      @Override
       public Builder addRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           Object value) {
-        return (Builder) super.addRepeatedField(field, value);
+        return super.addRepeatedField(field, value);
       }
+      @Override
       public Builder mergeFrom(com.google.protobuf.Message other) {
         if (other instanceof EvaluateResponse) {
           return mergeFrom((EvaluateResponse)other);
@@ -3048,14 +3376,17 @@ public final class NNServiceProto {
           message_ = other.message_;
           onChanged();
         }
+        this.mergeUnknownFields(other.unknownFields);
         onChanged();
         return this;
       }
 
+      @Override
       public final boolean isInitialized() {
         return true;
       }
 
+      @Override
       public Builder mergeFrom(
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
@@ -3076,7 +3407,8 @@ public final class NNServiceProto {
 
       private Object response_ = "";
       /**
-       * <code>optional string response = 1;</code>
+       * <code>string response = 1;</code>
+       * @return The response.
        */
       public String getResponse() {
         Object ref = response_;
@@ -3091,7 +3423,8 @@ public final class NNServiceProto {
         }
       }
       /**
-       * <code>optional string response = 1;</code>
+       * <code>string response = 1;</code>
+       * @return The bytes for response.
        */
       public com.google.protobuf.ByteString
           getResponseBytes() {
@@ -3107,7 +3440,9 @@ public final class NNServiceProto {
         }
       }
       /**
-       * <code>optional string response = 1;</code>
+       * <code>string response = 1;</code>
+       * @param value The response to set.
+       * @return This builder for chaining.
        */
       public Builder setResponse(
           String value) {
@@ -3120,7 +3455,8 @@ public final class NNServiceProto {
         return this;
       }
       /**
-       * <code>optional string response = 1;</code>
+       * <code>string response = 1;</code>
+       * @return This builder for chaining.
        */
       public Builder clearResponse() {
         
@@ -3129,7 +3465,9 @@ public final class NNServiceProto {
         return this;
       }
       /**
-       * <code>optional string response = 1;</code>
+       * <code>string response = 1;</code>
+       * @param value The bytes for response to set.
+       * @return This builder for chaining.
        */
       public Builder setResponseBytes(
           com.google.protobuf.ByteString value) {
@@ -3143,29 +3481,31 @@ public final class NNServiceProto {
         return this;
       }
 
-      private FlBaseProto.TensorMap data_ = null;
+      private proto.FlBaseProto.TensorMap data_;
       private com.google.protobuf.SingleFieldBuilderV3<
-          FlBaseProto.TensorMap, FlBaseProto.TensorMap.Builder, FlBaseProto.TensorMapOrBuilder> dataBuilder_;
+          proto.FlBaseProto.TensorMap, proto.FlBaseProto.TensorMap.Builder, proto.FlBaseProto.TensorMapOrBuilder> dataBuilder_;
       /**
-       * <code>optional .TensorMap data = 2;</code>
+       * <code>.TensorMap data = 2;</code>
+       * @return Whether the data field is set.
        */
       public boolean hasData() {
         return dataBuilder_ != null || data_ != null;
       }
       /**
-       * <code>optional .TensorMap data = 2;</code>
+       * <code>.TensorMap data = 2;</code>
+       * @return The data.
        */
-      public FlBaseProto.TensorMap getData() {
+      public proto.FlBaseProto.TensorMap getData() {
         if (dataBuilder_ == null) {
-          return data_ == null ? FlBaseProto.TensorMap.getDefaultInstance() : data_;
+          return data_ == null ? proto.FlBaseProto.TensorMap.getDefaultInstance() : data_;
         } else {
           return dataBuilder_.getMessage();
         }
       }
       /**
-       * <code>optional .TensorMap data = 2;</code>
+       * <code>.TensorMap data = 2;</code>
        */
-      public Builder setData(FlBaseProto.TensorMap value) {
+      public Builder setData(proto.FlBaseProto.TensorMap value) {
         if (dataBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
@@ -3179,10 +3519,10 @@ public final class NNServiceProto {
         return this;
       }
       /**
-       * <code>optional .TensorMap data = 2;</code>
+       * <code>.TensorMap data = 2;</code>
        */
       public Builder setData(
-          FlBaseProto.TensorMap.Builder builderForValue) {
+          proto.FlBaseProto.TensorMap.Builder builderForValue) {
         if (dataBuilder_ == null) {
           data_ = builderForValue.build();
           onChanged();
@@ -3193,13 +3533,13 @@ public final class NNServiceProto {
         return this;
       }
       /**
-       * <code>optional .TensorMap data = 2;</code>
+       * <code>.TensorMap data = 2;</code>
        */
-      public Builder mergeData(FlBaseProto.TensorMap value) {
+      public Builder mergeData(proto.FlBaseProto.TensorMap value) {
         if (dataBuilder_ == null) {
           if (data_ != null) {
             data_ =
-              FlBaseProto.TensorMap.newBuilder(data_).mergeFrom(value).buildPartial();
+              proto.FlBaseProto.TensorMap.newBuilder(data_).mergeFrom(value).buildPartial();
           } else {
             data_ = value;
           }
@@ -3211,7 +3551,7 @@ public final class NNServiceProto {
         return this;
       }
       /**
-       * <code>optional .TensorMap data = 2;</code>
+       * <code>.TensorMap data = 2;</code>
        */
       public Builder clearData() {
         if (dataBuilder_ == null) {
@@ -3225,33 +3565,33 @@ public final class NNServiceProto {
         return this;
       }
       /**
-       * <code>optional .TensorMap data = 2;</code>
+       * <code>.TensorMap data = 2;</code>
        */
-      public FlBaseProto.TensorMap.Builder getDataBuilder() {
+      public proto.FlBaseProto.TensorMap.Builder getDataBuilder() {
         
         onChanged();
         return getDataFieldBuilder().getBuilder();
       }
       /**
-       * <code>optional .TensorMap data = 2;</code>
+       * <code>.TensorMap data = 2;</code>
        */
-      public FlBaseProto.TensorMapOrBuilder getDataOrBuilder() {
+      public proto.FlBaseProto.TensorMapOrBuilder getDataOrBuilder() {
         if (dataBuilder_ != null) {
           return dataBuilder_.getMessageOrBuilder();
         } else {
           return data_ == null ?
-              FlBaseProto.TensorMap.getDefaultInstance() : data_;
+              proto.FlBaseProto.TensorMap.getDefaultInstance() : data_;
         }
       }
       /**
-       * <code>optional .TensorMap data = 2;</code>
+       * <code>.TensorMap data = 2;</code>
        */
       private com.google.protobuf.SingleFieldBuilderV3<
-          FlBaseProto.TensorMap, FlBaseProto.TensorMap.Builder, FlBaseProto.TensorMapOrBuilder>
+          proto.FlBaseProto.TensorMap, proto.FlBaseProto.TensorMap.Builder, proto.FlBaseProto.TensorMapOrBuilder>
           getDataFieldBuilder() {
         if (dataBuilder_ == null) {
           dataBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
-              FlBaseProto.TensorMap, FlBaseProto.TensorMap.Builder, FlBaseProto.TensorMapOrBuilder>(
+              proto.FlBaseProto.TensorMap, proto.FlBaseProto.TensorMap.Builder, proto.FlBaseProto.TensorMapOrBuilder>(
                   getData(),
                   getParentForChildren(),
                   isClean());
@@ -3262,13 +3602,17 @@ public final class NNServiceProto {
 
       private int code_ ;
       /**
-       * <code>optional int32 code = 3;</code>
+       * <code>int32 code = 3;</code>
+       * @return The code.
        */
+      @Override
       public int getCode() {
         return code_;
       }
       /**
-       * <code>optional int32 code = 3;</code>
+       * <code>int32 code = 3;</code>
+       * @param value The code to set.
+       * @return This builder for chaining.
        */
       public Builder setCode(int value) {
         
@@ -3277,7 +3621,8 @@ public final class NNServiceProto {
         return this;
       }
       /**
-       * <code>optional int32 code = 3;</code>
+       * <code>int32 code = 3;</code>
+       * @return This builder for chaining.
        */
       public Builder clearCode() {
         
@@ -3288,7 +3633,8 @@ public final class NNServiceProto {
 
       private Object message_ = "";
       /**
-       * <code>optional string message = 4;</code>
+       * <code>string message = 4;</code>
+       * @return The message.
        */
       public String getMessage() {
         Object ref = message_;
@@ -3303,7 +3649,8 @@ public final class NNServiceProto {
         }
       }
       /**
-       * <code>optional string message = 4;</code>
+       * <code>string message = 4;</code>
+       * @return The bytes for message.
        */
       public com.google.protobuf.ByteString
           getMessageBytes() {
@@ -3319,7 +3666,9 @@ public final class NNServiceProto {
         }
       }
       /**
-       * <code>optional string message = 4;</code>
+       * <code>string message = 4;</code>
+       * @param value The message to set.
+       * @return This builder for chaining.
        */
       public Builder setMessage(
           String value) {
@@ -3332,7 +3681,8 @@ public final class NNServiceProto {
         return this;
       }
       /**
-       * <code>optional string message = 4;</code>
+       * <code>string message = 4;</code>
+       * @return This builder for chaining.
        */
       public Builder clearMessage() {
         
@@ -3341,7 +3691,9 @@ public final class NNServiceProto {
         return this;
       }
       /**
-       * <code>optional string message = 4;</code>
+       * <code>string message = 4;</code>
+       * @param value The bytes for message to set.
+       * @return This builder for chaining.
        */
       public Builder setMessageBytes(
           com.google.protobuf.ByteString value) {
@@ -3354,14 +3706,16 @@ public final class NNServiceProto {
         onChanged();
         return this;
       }
+      @Override
       public final Builder setUnknownFields(
           final com.google.protobuf.UnknownFieldSet unknownFields) {
-        return this;
+        return super.setUnknownFields(unknownFields);
       }
 
+      @Override
       public final Builder mergeUnknownFields(
           final com.google.protobuf.UnknownFieldSet unknownFields) {
-        return this;
+        return super.mergeUnknownFields(unknownFields);
       }
 
 
@@ -3380,11 +3734,12 @@ public final class NNServiceProto {
 
     private static final com.google.protobuf.Parser<EvaluateResponse>
         PARSER = new com.google.protobuf.AbstractParser<EvaluateResponse>() {
+      @Override
       public EvaluateResponse parsePartialFrom(
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws com.google.protobuf.InvalidProtocolBufferException {
-          return new EvaluateResponse(input, extensionRegistry);
+        return new EvaluateResponse(input, extensionRegistry);
       }
     };
 
@@ -3397,6 +3752,7 @@ public final class NNServiceProto {
       return PARSER;
     }
 
+    @Override
     public EvaluateResponse getDefaultInstanceForType() {
       return DEFAULT_INSTANCE;
     }
@@ -3408,34 +3764,40 @@ public final class NNServiceProto {
       com.google.protobuf.MessageOrBuilder {
 
     /**
-     * <code>optional string clientuuid = 1;</code>
+     * <code>string clientuuid = 1;</code>
+     * @return The clientuuid.
      */
     String getClientuuid();
     /**
-     * <code>optional string clientuuid = 1;</code>
+     * <code>string clientuuid = 1;</code>
+     * @return The bytes for clientuuid.
      */
     com.google.protobuf.ByteString
         getClientuuidBytes();
 
     /**
-     * <code>optional .TensorMap data = 2;</code>
+     * <code>.TensorMap data = 2;</code>
+     * @return Whether the data field is set.
      */
     boolean hasData();
     /**
-     * <code>optional .TensorMap data = 2;</code>
+     * <code>.TensorMap data = 2;</code>
+     * @return The data.
      */
-    FlBaseProto.TensorMap getData();
+    proto.FlBaseProto.TensorMap getData();
     /**
-     * <code>optional .TensorMap data = 2;</code>
+     * <code>.TensorMap data = 2;</code>
      */
-    FlBaseProto.TensorMapOrBuilder getDataOrBuilder();
+    proto.FlBaseProto.TensorMapOrBuilder getDataOrBuilder();
 
     /**
-     * <code>optional string algorithm = 3;</code>
+     * <code>string algorithm = 3;</code>
+     * @return The algorithm.
      */
     String getAlgorithm();
     /**
-     * <code>optional string algorithm = 3;</code>
+     * <code>string algorithm = 3;</code>
+     * @return The bytes for algorithm.
      */
     com.google.protobuf.ByteString
         getAlgorithmBytes();
@@ -3443,10 +3805,11 @@ public final class NNServiceProto {
   /**
    * Protobuf type {@code nn.PredictRequest}
    */
-  public  static final class PredictRequest extends
+  public static final class PredictRequest extends
       com.google.protobuf.GeneratedMessageV3 implements
       // @@protoc_insertion_point(message_implements:nn.PredictRequest)
       PredictRequestOrBuilder {
+  private static final long serialVersionUID = 0L;
     // Use PredictRequest.newBuilder() to construct.
     private PredictRequest(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
       super(builder);
@@ -3457,16 +3820,27 @@ public final class NNServiceProto {
     }
 
     @Override
+    @SuppressWarnings({"unused"})
+    protected Object newInstance(
+        UnusedPrivateParameter unused) {
+      return new PredictRequest();
+    }
+
+    @Override
     public final com.google.protobuf.UnknownFieldSet
     getUnknownFields() {
-      return com.google.protobuf.UnknownFieldSet.getDefaultInstance();
+      return this.unknownFields;
     }
     private PredictRequest(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       this();
-      int mutable_bitField0_ = 0;
+      if (extensionRegistry == null) {
+        throw new NullPointerException();
+      }
+      com.google.protobuf.UnknownFieldSet.Builder unknownFields =
+          com.google.protobuf.UnknownFieldSet.newBuilder();
       try {
         boolean done = false;
         while (!done) {
@@ -3475,12 +3849,6 @@ public final class NNServiceProto {
             case 0:
               done = true;
               break;
-            default: {
-              if (!input.skipField(tag)) {
-                done = true;
-              }
-              break;
-            }
             case 10: {
               String s = input.readStringRequireUtf8();
 
@@ -3488,11 +3856,11 @@ public final class NNServiceProto {
               break;
             }
             case 18: {
-              FlBaseProto.TensorMap.Builder subBuilder = null;
+              proto.FlBaseProto.TensorMap.Builder subBuilder = null;
               if (data_ != null) {
                 subBuilder = data_.toBuilder();
               }
-              data_ = input.readMessage(FlBaseProto.TensorMap.parser(), extensionRegistry);
+              data_ = input.readMessage(proto.FlBaseProto.TensorMap.parser(), extensionRegistry);
               if (subBuilder != null) {
                 subBuilder.mergeFrom(data_);
                 data_ = subBuilder.buildPartial();
@@ -3506,6 +3874,13 @@ public final class NNServiceProto {
               algorithm_ = s;
               break;
             }
+            default: {
+              if (!parseUnknownField(
+                  input, unknownFields, extensionRegistry, tag)) {
+                done = true;
+              }
+              break;
+            }
           }
         }
       } catch (com.google.protobuf.InvalidProtocolBufferException e) {
@@ -3514,6 +3889,7 @@ public final class NNServiceProto {
         throw new com.google.protobuf.InvalidProtocolBufferException(
             e).setUnfinishedMessage(this);
       } finally {
+        this.unknownFields = unknownFields.build();
         makeExtensionsImmutable();
       }
     }
@@ -3522,7 +3898,8 @@ public final class NNServiceProto {
       return NNServiceProto.internal_static_nn_PredictRequest_descriptor;
     }
 
-    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+    @Override
+    protected FieldAccessorTable
         internalGetFieldAccessorTable() {
       return NNServiceProto.internal_static_nn_PredictRequest_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
@@ -3532,8 +3909,10 @@ public final class NNServiceProto {
     public static final int CLIENTUUID_FIELD_NUMBER = 1;
     private volatile Object clientuuid_;
     /**
-     * <code>optional string clientuuid = 1;</code>
+     * <code>string clientuuid = 1;</code>
+     * @return The clientuuid.
      */
+    @Override
     public String getClientuuid() {
       Object ref = clientuuid_;
       if (ref instanceof String) {
@@ -3547,8 +3926,10 @@ public final class NNServiceProto {
       }
     }
     /**
-     * <code>optional string clientuuid = 1;</code>
+     * <code>string clientuuid = 1;</code>
+     * @return The bytes for clientuuid.
      */
+    @Override
     public com.google.protobuf.ByteString
         getClientuuidBytes() {
       Object ref = clientuuid_;
@@ -3564,31 +3945,38 @@ public final class NNServiceProto {
     }
 
     public static final int DATA_FIELD_NUMBER = 2;
-    private FlBaseProto.TensorMap data_;
+    private proto.FlBaseProto.TensorMap data_;
     /**
-     * <code>optional .TensorMap data = 2;</code>
+     * <code>.TensorMap data = 2;</code>
+     * @return Whether the data field is set.
      */
+    @Override
     public boolean hasData() {
       return data_ != null;
     }
     /**
-     * <code>optional .TensorMap data = 2;</code>
+     * <code>.TensorMap data = 2;</code>
+     * @return The data.
      */
-    public FlBaseProto.TensorMap getData() {
-      return data_ == null ? FlBaseProto.TensorMap.getDefaultInstance() : data_;
+    @Override
+    public proto.FlBaseProto.TensorMap getData() {
+      return data_ == null ? proto.FlBaseProto.TensorMap.getDefaultInstance() : data_;
     }
     /**
-     * <code>optional .TensorMap data = 2;</code>
+     * <code>.TensorMap data = 2;</code>
      */
-    public FlBaseProto.TensorMapOrBuilder getDataOrBuilder() {
+    @Override
+    public proto.FlBaseProto.TensorMapOrBuilder getDataOrBuilder() {
       return getData();
     }
 
     public static final int ALGORITHM_FIELD_NUMBER = 3;
     private volatile Object algorithm_;
     /**
-     * <code>optional string algorithm = 3;</code>
+     * <code>string algorithm = 3;</code>
+     * @return The algorithm.
      */
+    @Override
     public String getAlgorithm() {
       Object ref = algorithm_;
       if (ref instanceof String) {
@@ -3602,8 +3990,10 @@ public final class NNServiceProto {
       }
     }
     /**
-     * <code>optional string algorithm = 3;</code>
+     * <code>string algorithm = 3;</code>
+     * @return The bytes for algorithm.
      */
+    @Override
     public com.google.protobuf.ByteString
         getAlgorithmBytes() {
       Object ref = algorithm_;
@@ -3619,6 +4009,7 @@ public final class NNServiceProto {
     }
 
     private byte memoizedIsInitialized = -1;
+    @Override
     public final boolean isInitialized() {
       byte isInitialized = memoizedIsInitialized;
       if (isInitialized == 1) return true;
@@ -3628,6 +4019,7 @@ public final class NNServiceProto {
       return true;
     }
 
+    @Override
     public void writeTo(com.google.protobuf.CodedOutputStream output)
                         throws java.io.IOException {
       if (!getClientuuidBytes().isEmpty()) {
@@ -3639,8 +4031,10 @@ public final class NNServiceProto {
       if (!getAlgorithmBytes().isEmpty()) {
         com.google.protobuf.GeneratedMessageV3.writeString(output, 3, algorithm_);
       }
+      unknownFields.writeTo(output);
     }
 
+    @Override
     public int getSerializedSize() {
       int size = memoizedSize;
       if (size != -1) return size;
@@ -3656,11 +4050,11 @@ public final class NNServiceProto {
       if (!getAlgorithmBytes().isEmpty()) {
         size += com.google.protobuf.GeneratedMessageV3.computeStringSize(3, algorithm_);
       }
+      size += unknownFields.getSerializedSize();
       memoizedSize = size;
       return size;
     }
 
-    private static final long serialVersionUID = 0L;
     @Override
     public boolean equals(final Object obj) {
       if (obj == this) {
@@ -3671,17 +4065,17 @@ public final class NNServiceProto {
       }
       PredictRequest other = (PredictRequest) obj;
 
-      boolean result = true;
-      result = result && getClientuuid()
-          .equals(other.getClientuuid());
-      result = result && (hasData() == other.hasData());
+      if (!getClientuuid()
+          .equals(other.getClientuuid())) return false;
+      if (hasData() != other.hasData()) return false;
       if (hasData()) {
-        result = result && getData()
-            .equals(other.getData());
+        if (!getData()
+            .equals(other.getData())) return false;
       }
-      result = result && getAlgorithm()
-          .equals(other.getAlgorithm());
-      return result;
+      if (!getAlgorithm()
+          .equals(other.getAlgorithm())) return false;
+      if (!unknownFields.equals(other.unknownFields)) return false;
+      return true;
     }
 
     @Override
@@ -3690,7 +4084,7 @@ public final class NNServiceProto {
         return memoizedHashCode;
       }
       int hash = 41;
-      hash = (19 * hash) + getDescriptorForType().hashCode();
+      hash = (19 * hash) + getDescriptor().hashCode();
       hash = (37 * hash) + CLIENTUUID_FIELD_NUMBER;
       hash = (53 * hash) + getClientuuid().hashCode();
       if (hasData()) {
@@ -3704,6 +4098,17 @@ public final class NNServiceProto {
       return hash;
     }
 
+    public static PredictRequest parseFrom(
+        java.nio.ByteBuffer data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static PredictRequest parseFrom(
+        java.nio.ByteBuffer data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
     public static PredictRequest parseFrom(
         com.google.protobuf.ByteString data)
         throws com.google.protobuf.InvalidProtocolBufferException {
@@ -3763,6 +4168,7 @@ public final class NNServiceProto {
           .parseWithIOException(PARSER, input, extensionRegistry);
     }
 
+    @Override
     public Builder newBuilderForType() { return newBuilder(); }
     public static Builder newBuilder() {
       return DEFAULT_INSTANCE.toBuilder();
@@ -3770,6 +4176,7 @@ public final class NNServiceProto {
     public static Builder newBuilder(PredictRequest prototype) {
       return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
     }
+    @Override
     public Builder toBuilder() {
       return this == DEFAULT_INSTANCE
           ? new Builder() : new Builder().mergeFrom(this);
@@ -3777,7 +4184,7 @@ public final class NNServiceProto {
 
     @Override
     protected Builder newBuilderForType(
-        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+        BuilderParent parent) {
       Builder builder = new Builder(parent);
       return builder;
     }
@@ -3793,20 +4200,21 @@ public final class NNServiceProto {
         return NNServiceProto.internal_static_nn_PredictRequest_descriptor;
       }
 
-      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+      @Override
+      protected FieldAccessorTable
           internalGetFieldAccessorTable() {
         return NNServiceProto.internal_static_nn_PredictRequest_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
                 PredictRequest.class, Builder.class);
       }
 
-      // Construct using com.intel.analytics.bigdl.ppml.generated.NNServiceProto.PredictRequest.newBuilder()
+      // Construct using com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.PredictRequest.newBuilder()
       private Builder() {
         maybeForceBuilderInitialization();
       }
 
       private Builder(
-          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+          BuilderParent parent) {
         super(parent);
         maybeForceBuilderInitialization();
       }
@@ -3815,6 +4223,7 @@ public final class NNServiceProto {
                 .alwaysUseFieldBuilders) {
         }
       }
+      @Override
       public Builder clear() {
         super.clear();
         clientuuid_ = "";
@@ -3830,15 +4239,18 @@ public final class NNServiceProto {
         return this;
       }
 
+      @Override
       public com.google.protobuf.Descriptors.Descriptor
           getDescriptorForType() {
         return NNServiceProto.internal_static_nn_PredictRequest_descriptor;
       }
 
+      @Override
       public PredictRequest getDefaultInstanceForType() {
         return PredictRequest.getDefaultInstance();
       }
 
+      @Override
       public PredictRequest build() {
         PredictRequest result = buildPartial();
         if (!result.isInitialized()) {
@@ -3847,6 +4259,7 @@ public final class NNServiceProto {
         return result;
       }
 
+      @Override
       public PredictRequest buildPartial() {
         PredictRequest result = new PredictRequest(this);
         result.clientuuid_ = clientuuid_;
@@ -3860,32 +4273,39 @@ public final class NNServiceProto {
         return result;
       }
 
+      @Override
       public Builder clone() {
-        return (Builder) super.clone();
+        return super.clone();
       }
+      @Override
       public Builder setField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           Object value) {
-        return (Builder) super.setField(field, value);
+        return super.setField(field, value);
       }
+      @Override
       public Builder clearField(
           com.google.protobuf.Descriptors.FieldDescriptor field) {
-        return (Builder) super.clearField(field);
+        return super.clearField(field);
       }
+      @Override
       public Builder clearOneof(
           com.google.protobuf.Descriptors.OneofDescriptor oneof) {
-        return (Builder) super.clearOneof(oneof);
+        return super.clearOneof(oneof);
       }
+      @Override
       public Builder setRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           int index, Object value) {
-        return (Builder) super.setRepeatedField(field, index, value);
+        return super.setRepeatedField(field, index, value);
       }
+      @Override
       public Builder addRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           Object value) {
-        return (Builder) super.addRepeatedField(field, value);
+        return super.addRepeatedField(field, value);
       }
+      @Override
       public Builder mergeFrom(com.google.protobuf.Message other) {
         if (other instanceof PredictRequest) {
           return mergeFrom((PredictRequest)other);
@@ -3908,14 +4328,17 @@ public final class NNServiceProto {
           algorithm_ = other.algorithm_;
           onChanged();
         }
+        this.mergeUnknownFields(other.unknownFields);
         onChanged();
         return this;
       }
 
+      @Override
       public final boolean isInitialized() {
         return true;
       }
 
+      @Override
       public Builder mergeFrom(
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
@@ -3936,7 +4359,8 @@ public final class NNServiceProto {
 
       private Object clientuuid_ = "";
       /**
-       * <code>optional string clientuuid = 1;</code>
+       * <code>string clientuuid = 1;</code>
+       * @return The clientuuid.
        */
       public String getClientuuid() {
         Object ref = clientuuid_;
@@ -3951,7 +4375,8 @@ public final class NNServiceProto {
         }
       }
       /**
-       * <code>optional string clientuuid = 1;</code>
+       * <code>string clientuuid = 1;</code>
+       * @return The bytes for clientuuid.
        */
       public com.google.protobuf.ByteString
           getClientuuidBytes() {
@@ -3967,7 +4392,9 @@ public final class NNServiceProto {
         }
       }
       /**
-       * <code>optional string clientuuid = 1;</code>
+       * <code>string clientuuid = 1;</code>
+       * @param value The clientuuid to set.
+       * @return This builder for chaining.
        */
       public Builder setClientuuid(
           String value) {
@@ -3980,7 +4407,8 @@ public final class NNServiceProto {
         return this;
       }
       /**
-       * <code>optional string clientuuid = 1;</code>
+       * <code>string clientuuid = 1;</code>
+       * @return This builder for chaining.
        */
       public Builder clearClientuuid() {
         
@@ -3989,7 +4417,9 @@ public final class NNServiceProto {
         return this;
       }
       /**
-       * <code>optional string clientuuid = 1;</code>
+       * <code>string clientuuid = 1;</code>
+       * @param value The bytes for clientuuid to set.
+       * @return This builder for chaining.
        */
       public Builder setClientuuidBytes(
           com.google.protobuf.ByteString value) {
@@ -4003,29 +4433,31 @@ public final class NNServiceProto {
         return this;
       }
 
-      private FlBaseProto.TensorMap data_ = null;
+      private proto.FlBaseProto.TensorMap data_;
       private com.google.protobuf.SingleFieldBuilderV3<
-          FlBaseProto.TensorMap, FlBaseProto.TensorMap.Builder, FlBaseProto.TensorMapOrBuilder> dataBuilder_;
+          proto.FlBaseProto.TensorMap, proto.FlBaseProto.TensorMap.Builder, proto.FlBaseProto.TensorMapOrBuilder> dataBuilder_;
       /**
-       * <code>optional .TensorMap data = 2;</code>
+       * <code>.TensorMap data = 2;</code>
+       * @return Whether the data field is set.
        */
       public boolean hasData() {
         return dataBuilder_ != null || data_ != null;
       }
       /**
-       * <code>optional .TensorMap data = 2;</code>
+       * <code>.TensorMap data = 2;</code>
+       * @return The data.
        */
-      public FlBaseProto.TensorMap getData() {
+      public proto.FlBaseProto.TensorMap getData() {
         if (dataBuilder_ == null) {
-          return data_ == null ? FlBaseProto.TensorMap.getDefaultInstance() : data_;
+          return data_ == null ? proto.FlBaseProto.TensorMap.getDefaultInstance() : data_;
         } else {
           return dataBuilder_.getMessage();
         }
       }
       /**
-       * <code>optional .TensorMap data = 2;</code>
+       * <code>.TensorMap data = 2;</code>
        */
-      public Builder setData(FlBaseProto.TensorMap value) {
+      public Builder setData(proto.FlBaseProto.TensorMap value) {
         if (dataBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
@@ -4039,10 +4471,10 @@ public final class NNServiceProto {
         return this;
       }
       /**
-       * <code>optional .TensorMap data = 2;</code>
+       * <code>.TensorMap data = 2;</code>
        */
       public Builder setData(
-          FlBaseProto.TensorMap.Builder builderForValue) {
+          proto.FlBaseProto.TensorMap.Builder builderForValue) {
         if (dataBuilder_ == null) {
           data_ = builderForValue.build();
           onChanged();
@@ -4053,13 +4485,13 @@ public final class NNServiceProto {
         return this;
       }
       /**
-       * <code>optional .TensorMap data = 2;</code>
+       * <code>.TensorMap data = 2;</code>
        */
-      public Builder mergeData(FlBaseProto.TensorMap value) {
+      public Builder mergeData(proto.FlBaseProto.TensorMap value) {
         if (dataBuilder_ == null) {
           if (data_ != null) {
             data_ =
-              FlBaseProto.TensorMap.newBuilder(data_).mergeFrom(value).buildPartial();
+              proto.FlBaseProto.TensorMap.newBuilder(data_).mergeFrom(value).buildPartial();
           } else {
             data_ = value;
           }
@@ -4071,7 +4503,7 @@ public final class NNServiceProto {
         return this;
       }
       /**
-       * <code>optional .TensorMap data = 2;</code>
+       * <code>.TensorMap data = 2;</code>
        */
       public Builder clearData() {
         if (dataBuilder_ == null) {
@@ -4085,33 +4517,33 @@ public final class NNServiceProto {
         return this;
       }
       /**
-       * <code>optional .TensorMap data = 2;</code>
+       * <code>.TensorMap data = 2;</code>
        */
-      public FlBaseProto.TensorMap.Builder getDataBuilder() {
+      public proto.FlBaseProto.TensorMap.Builder getDataBuilder() {
         
         onChanged();
         return getDataFieldBuilder().getBuilder();
       }
       /**
-       * <code>optional .TensorMap data = 2;</code>
+       * <code>.TensorMap data = 2;</code>
        */
-      public FlBaseProto.TensorMapOrBuilder getDataOrBuilder() {
+      public proto.FlBaseProto.TensorMapOrBuilder getDataOrBuilder() {
         if (dataBuilder_ != null) {
           return dataBuilder_.getMessageOrBuilder();
         } else {
           return data_ == null ?
-              FlBaseProto.TensorMap.getDefaultInstance() : data_;
+              proto.FlBaseProto.TensorMap.getDefaultInstance() : data_;
         }
       }
       /**
-       * <code>optional .TensorMap data = 2;</code>
+       * <code>.TensorMap data = 2;</code>
        */
       private com.google.protobuf.SingleFieldBuilderV3<
-          FlBaseProto.TensorMap, FlBaseProto.TensorMap.Builder, FlBaseProto.TensorMapOrBuilder>
+          proto.FlBaseProto.TensorMap, proto.FlBaseProto.TensorMap.Builder, proto.FlBaseProto.TensorMapOrBuilder>
           getDataFieldBuilder() {
         if (dataBuilder_ == null) {
           dataBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
-              FlBaseProto.TensorMap, FlBaseProto.TensorMap.Builder, FlBaseProto.TensorMapOrBuilder>(
+              proto.FlBaseProto.TensorMap, proto.FlBaseProto.TensorMap.Builder, proto.FlBaseProto.TensorMapOrBuilder>(
                   getData(),
                   getParentForChildren(),
                   isClean());
@@ -4122,7 +4554,8 @@ public final class NNServiceProto {
 
       private Object algorithm_ = "";
       /**
-       * <code>optional string algorithm = 3;</code>
+       * <code>string algorithm = 3;</code>
+       * @return The algorithm.
        */
       public String getAlgorithm() {
         Object ref = algorithm_;
@@ -4137,7 +4570,8 @@ public final class NNServiceProto {
         }
       }
       /**
-       * <code>optional string algorithm = 3;</code>
+       * <code>string algorithm = 3;</code>
+       * @return The bytes for algorithm.
        */
       public com.google.protobuf.ByteString
           getAlgorithmBytes() {
@@ -4153,7 +4587,9 @@ public final class NNServiceProto {
         }
       }
       /**
-       * <code>optional string algorithm = 3;</code>
+       * <code>string algorithm = 3;</code>
+       * @param value The algorithm to set.
+       * @return This builder for chaining.
        */
       public Builder setAlgorithm(
           String value) {
@@ -4166,7 +4602,8 @@ public final class NNServiceProto {
         return this;
       }
       /**
-       * <code>optional string algorithm = 3;</code>
+       * <code>string algorithm = 3;</code>
+       * @return This builder for chaining.
        */
       public Builder clearAlgorithm() {
         
@@ -4175,7 +4612,9 @@ public final class NNServiceProto {
         return this;
       }
       /**
-       * <code>optional string algorithm = 3;</code>
+       * <code>string algorithm = 3;</code>
+       * @param value The bytes for algorithm to set.
+       * @return This builder for chaining.
        */
       public Builder setAlgorithmBytes(
           com.google.protobuf.ByteString value) {
@@ -4188,14 +4627,16 @@ public final class NNServiceProto {
         onChanged();
         return this;
       }
+      @Override
       public final Builder setUnknownFields(
           final com.google.protobuf.UnknownFieldSet unknownFields) {
-        return this;
+        return super.setUnknownFields(unknownFields);
       }
 
+      @Override
       public final Builder mergeUnknownFields(
           final com.google.protobuf.UnknownFieldSet unknownFields) {
-        return this;
+        return super.mergeUnknownFields(unknownFields);
       }
 
 
@@ -4214,11 +4655,12 @@ public final class NNServiceProto {
 
     private static final com.google.protobuf.Parser<PredictRequest>
         PARSER = new com.google.protobuf.AbstractParser<PredictRequest>() {
+      @Override
       public PredictRequest parsePartialFrom(
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws com.google.protobuf.InvalidProtocolBufferException {
-          return new PredictRequest(input, extensionRegistry);
+        return new PredictRequest(input, extensionRegistry);
       }
     };
 
@@ -4231,6 +4673,7 @@ public final class NNServiceProto {
       return PARSER;
     }
 
+    @Override
     public PredictRequest getDefaultInstanceForType() {
       return DEFAULT_INSTANCE;
     }
@@ -4242,60 +4685,76 @@ public final class NNServiceProto {
       com.google.protobuf.MessageOrBuilder {
 
     /**
-     * <code>optional string response = 1;</code>
+     * <code>string response = 1;</code>
+     * @return The response.
      */
     String getResponse();
     /**
-     * <code>optional string response = 1;</code>
+     * <code>string response = 1;</code>
+     * @return The bytes for response.
      */
     com.google.protobuf.ByteString
         getResponseBytes();
 
     /**
-     * <code>optional .TensorMap data = 2;</code>
+     * <code>.TensorMap data = 2;</code>
+     * @return Whether the data field is set.
      */
     boolean hasData();
     /**
-     * <code>optional .TensorMap data = 2;</code>
+     * <code>.TensorMap data = 2;</code>
+     * @return The data.
      */
-    FlBaseProto.TensorMap getData();
+    proto.FlBaseProto.TensorMap getData();
     /**
-     * <code>optional .TensorMap data = 2;</code>
+     * <code>.TensorMap data = 2;</code>
      */
-    FlBaseProto.TensorMapOrBuilder getDataOrBuilder();
+    proto.FlBaseProto.TensorMapOrBuilder getDataOrBuilder();
 
     /**
-     * <code>optional int32 code = 3;</code>
+     * <code>int32 code = 3;</code>
+     * @return The code.
      */
     int getCode();
   }
   /**
    * Protobuf type {@code nn.PredictResponse}
    */
-  public  static final class PredictResponse extends
+  public static final class PredictResponse extends
       com.google.protobuf.GeneratedMessageV3 implements
       // @@protoc_insertion_point(message_implements:nn.PredictResponse)
       PredictResponseOrBuilder {
+  private static final long serialVersionUID = 0L;
     // Use PredictResponse.newBuilder() to construct.
     private PredictResponse(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
       super(builder);
     }
     private PredictResponse() {
       response_ = "";
-      code_ = 0;
+    }
+
+    @Override
+    @SuppressWarnings({"unused"})
+    protected Object newInstance(
+        UnusedPrivateParameter unused) {
+      return new PredictResponse();
     }
 
     @Override
     public final com.google.protobuf.UnknownFieldSet
     getUnknownFields() {
-      return com.google.protobuf.UnknownFieldSet.getDefaultInstance();
+      return this.unknownFields;
     }
     private PredictResponse(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       this();
-      int mutable_bitField0_ = 0;
+      if (extensionRegistry == null) {
+        throw new NullPointerException();
+      }
+      com.google.protobuf.UnknownFieldSet.Builder unknownFields =
+          com.google.protobuf.UnknownFieldSet.newBuilder();
       try {
         boolean done = false;
         while (!done) {
@@ -4304,12 +4763,6 @@ public final class NNServiceProto {
             case 0:
               done = true;
               break;
-            default: {
-              if (!input.skipField(tag)) {
-                done = true;
-              }
-              break;
-            }
             case 10: {
               String s = input.readStringRequireUtf8();
 
@@ -4317,11 +4770,11 @@ public final class NNServiceProto {
               break;
             }
             case 18: {
-              FlBaseProto.TensorMap.Builder subBuilder = null;
+              proto.FlBaseProto.TensorMap.Builder subBuilder = null;
               if (data_ != null) {
                 subBuilder = data_.toBuilder();
               }
-              data_ = input.readMessage(FlBaseProto.TensorMap.parser(), extensionRegistry);
+              data_ = input.readMessage(proto.FlBaseProto.TensorMap.parser(), extensionRegistry);
               if (subBuilder != null) {
                 subBuilder.mergeFrom(data_);
                 data_ = subBuilder.buildPartial();
@@ -4334,6 +4787,13 @@ public final class NNServiceProto {
               code_ = input.readInt32();
               break;
             }
+            default: {
+              if (!parseUnknownField(
+                  input, unknownFields, extensionRegistry, tag)) {
+                done = true;
+              }
+              break;
+            }
           }
         }
       } catch (com.google.protobuf.InvalidProtocolBufferException e) {
@@ -4342,6 +4802,7 @@ public final class NNServiceProto {
         throw new com.google.protobuf.InvalidProtocolBufferException(
             e).setUnfinishedMessage(this);
       } finally {
+        this.unknownFields = unknownFields.build();
         makeExtensionsImmutable();
       }
     }
@@ -4350,7 +4811,8 @@ public final class NNServiceProto {
       return NNServiceProto.internal_static_nn_PredictResponse_descriptor;
     }
 
-    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+    @Override
+    protected FieldAccessorTable
         internalGetFieldAccessorTable() {
       return NNServiceProto.internal_static_nn_PredictResponse_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
@@ -4360,8 +4822,10 @@ public final class NNServiceProto {
     public static final int RESPONSE_FIELD_NUMBER = 1;
     private volatile Object response_;
     /**
-     * <code>optional string response = 1;</code>
+     * <code>string response = 1;</code>
+     * @return The response.
      */
+    @Override
     public String getResponse() {
       Object ref = response_;
       if (ref instanceof String) {
@@ -4375,8 +4839,10 @@ public final class NNServiceProto {
       }
     }
     /**
-     * <code>optional string response = 1;</code>
+     * <code>string response = 1;</code>
+     * @return The bytes for response.
      */
+    @Override
     public com.google.protobuf.ByteString
         getResponseBytes() {
       Object ref = response_;
@@ -4392,36 +4858,44 @@ public final class NNServiceProto {
     }
 
     public static final int DATA_FIELD_NUMBER = 2;
-    private FlBaseProto.TensorMap data_;
+    private proto.FlBaseProto.TensorMap data_;
     /**
-     * <code>optional .TensorMap data = 2;</code>
+     * <code>.TensorMap data = 2;</code>
+     * @return Whether the data field is set.
      */
+    @Override
     public boolean hasData() {
       return data_ != null;
     }
     /**
-     * <code>optional .TensorMap data = 2;</code>
+     * <code>.TensorMap data = 2;</code>
+     * @return The data.
      */
-    public FlBaseProto.TensorMap getData() {
-      return data_ == null ? FlBaseProto.TensorMap.getDefaultInstance() : data_;
+    @Override
+    public proto.FlBaseProto.TensorMap getData() {
+      return data_ == null ? proto.FlBaseProto.TensorMap.getDefaultInstance() : data_;
     }
     /**
-     * <code>optional .TensorMap data = 2;</code>
+     * <code>.TensorMap data = 2;</code>
      */
-    public FlBaseProto.TensorMapOrBuilder getDataOrBuilder() {
+    @Override
+    public proto.FlBaseProto.TensorMapOrBuilder getDataOrBuilder() {
       return getData();
     }
 
     public static final int CODE_FIELD_NUMBER = 3;
     private int code_;
     /**
-     * <code>optional int32 code = 3;</code>
+     * <code>int32 code = 3;</code>
+     * @return The code.
      */
+    @Override
     public int getCode() {
       return code_;
     }
 
     private byte memoizedIsInitialized = -1;
+    @Override
     public final boolean isInitialized() {
       byte isInitialized = memoizedIsInitialized;
       if (isInitialized == 1) return true;
@@ -4431,6 +4905,7 @@ public final class NNServiceProto {
       return true;
     }
 
+    @Override
     public void writeTo(com.google.protobuf.CodedOutputStream output)
                         throws java.io.IOException {
       if (!getResponseBytes().isEmpty()) {
@@ -4442,8 +4917,10 @@ public final class NNServiceProto {
       if (code_ != 0) {
         output.writeInt32(3, code_);
       }
+      unknownFields.writeTo(output);
     }
 
+    @Override
     public int getSerializedSize() {
       int size = memoizedSize;
       if (size != -1) return size;
@@ -4460,11 +4937,11 @@ public final class NNServiceProto {
         size += com.google.protobuf.CodedOutputStream
           .computeInt32Size(3, code_);
       }
+      size += unknownFields.getSerializedSize();
       memoizedSize = size;
       return size;
     }
 
-    private static final long serialVersionUID = 0L;
     @Override
     public boolean equals(final Object obj) {
       if (obj == this) {
@@ -4475,17 +4952,17 @@ public final class NNServiceProto {
       }
       PredictResponse other = (PredictResponse) obj;
 
-      boolean result = true;
-      result = result && getResponse()
-          .equals(other.getResponse());
-      result = result && (hasData() == other.hasData());
+      if (!getResponse()
+          .equals(other.getResponse())) return false;
+      if (hasData() != other.hasData()) return false;
       if (hasData()) {
-        result = result && getData()
-            .equals(other.getData());
+        if (!getData()
+            .equals(other.getData())) return false;
       }
-      result = result && (getCode()
-          == other.getCode());
-      return result;
+      if (getCode()
+          != other.getCode()) return false;
+      if (!unknownFields.equals(other.unknownFields)) return false;
+      return true;
     }
 
     @Override
@@ -4494,7 +4971,7 @@ public final class NNServiceProto {
         return memoizedHashCode;
       }
       int hash = 41;
-      hash = (19 * hash) + getDescriptorForType().hashCode();
+      hash = (19 * hash) + getDescriptor().hashCode();
       hash = (37 * hash) + RESPONSE_FIELD_NUMBER;
       hash = (53 * hash) + getResponse().hashCode();
       if (hasData()) {
@@ -4508,6 +4985,17 @@ public final class NNServiceProto {
       return hash;
     }
 
+    public static PredictResponse parseFrom(
+        java.nio.ByteBuffer data)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data);
+    }
+    public static PredictResponse parseFrom(
+        java.nio.ByteBuffer data,
+        com.google.protobuf.ExtensionRegistryLite extensionRegistry)
+        throws com.google.protobuf.InvalidProtocolBufferException {
+      return PARSER.parseFrom(data, extensionRegistry);
+    }
     public static PredictResponse parseFrom(
         com.google.protobuf.ByteString data)
         throws com.google.protobuf.InvalidProtocolBufferException {
@@ -4567,6 +5055,7 @@ public final class NNServiceProto {
           .parseWithIOException(PARSER, input, extensionRegistry);
     }
 
+    @Override
     public Builder newBuilderForType() { return newBuilder(); }
     public static Builder newBuilder() {
       return DEFAULT_INSTANCE.toBuilder();
@@ -4574,6 +5063,7 @@ public final class NNServiceProto {
     public static Builder newBuilder(PredictResponse prototype) {
       return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
     }
+    @Override
     public Builder toBuilder() {
       return this == DEFAULT_INSTANCE
           ? new Builder() : new Builder().mergeFrom(this);
@@ -4581,7 +5071,7 @@ public final class NNServiceProto {
 
     @Override
     protected Builder newBuilderForType(
-        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+        BuilderParent parent) {
       Builder builder = new Builder(parent);
       return builder;
     }
@@ -4597,20 +5087,21 @@ public final class NNServiceProto {
         return NNServiceProto.internal_static_nn_PredictResponse_descriptor;
       }
 
-      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+      @Override
+      protected FieldAccessorTable
           internalGetFieldAccessorTable() {
         return NNServiceProto.internal_static_nn_PredictResponse_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
                 PredictResponse.class, Builder.class);
       }
 
-      // Construct using com.intel.analytics.bigdl.ppml.generated.NNServiceProto.PredictResponse.newBuilder()
+      // Construct using com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.PredictResponse.newBuilder()
       private Builder() {
         maybeForceBuilderInitialization();
       }
 
       private Builder(
-          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+          BuilderParent parent) {
         super(parent);
         maybeForceBuilderInitialization();
       }
@@ -4619,6 +5110,7 @@ public final class NNServiceProto {
                 .alwaysUseFieldBuilders) {
         }
       }
+      @Override
       public Builder clear() {
         super.clear();
         response_ = "";
@@ -4634,15 +5126,18 @@ public final class NNServiceProto {
         return this;
       }
 
+      @Override
       public com.google.protobuf.Descriptors.Descriptor
           getDescriptorForType() {
         return NNServiceProto.internal_static_nn_PredictResponse_descriptor;
       }
 
+      @Override
       public PredictResponse getDefaultInstanceForType() {
         return PredictResponse.getDefaultInstance();
       }
 
+      @Override
       public PredictResponse build() {
         PredictResponse result = buildPartial();
         if (!result.isInitialized()) {
@@ -4651,6 +5146,7 @@ public final class NNServiceProto {
         return result;
       }
 
+      @Override
       public PredictResponse buildPartial() {
         PredictResponse result = new PredictResponse(this);
         result.response_ = response_;
@@ -4664,32 +5160,39 @@ public final class NNServiceProto {
         return result;
       }
 
+      @Override
       public Builder clone() {
-        return (Builder) super.clone();
+        return super.clone();
       }
+      @Override
       public Builder setField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           Object value) {
-        return (Builder) super.setField(field, value);
+        return super.setField(field, value);
       }
+      @Override
       public Builder clearField(
           com.google.protobuf.Descriptors.FieldDescriptor field) {
-        return (Builder) super.clearField(field);
+        return super.clearField(field);
       }
+      @Override
       public Builder clearOneof(
           com.google.protobuf.Descriptors.OneofDescriptor oneof) {
-        return (Builder) super.clearOneof(oneof);
+        return super.clearOneof(oneof);
       }
+      @Override
       public Builder setRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           int index, Object value) {
-        return (Builder) super.setRepeatedField(field, index, value);
+        return super.setRepeatedField(field, index, value);
       }
+      @Override
       public Builder addRepeatedField(
           com.google.protobuf.Descriptors.FieldDescriptor field,
           Object value) {
-        return (Builder) super.addRepeatedField(field, value);
+        return super.addRepeatedField(field, value);
       }
+      @Override
       public Builder mergeFrom(com.google.protobuf.Message other) {
         if (other instanceof PredictResponse) {
           return mergeFrom((PredictResponse)other);
@@ -4711,14 +5214,17 @@ public final class NNServiceProto {
         if (other.getCode() != 0) {
           setCode(other.getCode());
         }
+        this.mergeUnknownFields(other.unknownFields);
         onChanged();
         return this;
       }
 
+      @Override
       public final boolean isInitialized() {
         return true;
       }
 
+      @Override
       public Builder mergeFrom(
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
@@ -4739,7 +5245,8 @@ public final class NNServiceProto {
 
       private Object response_ = "";
       /**
-       * <code>optional string response = 1;</code>
+       * <code>string response = 1;</code>
+       * @return The response.
        */
       public String getResponse() {
         Object ref = response_;
@@ -4754,7 +5261,8 @@ public final class NNServiceProto {
         }
       }
       /**
-       * <code>optional string response = 1;</code>
+       * <code>string response = 1;</code>
+       * @return The bytes for response.
        */
       public com.google.protobuf.ByteString
           getResponseBytes() {
@@ -4770,7 +5278,9 @@ public final class NNServiceProto {
         }
       }
       /**
-       * <code>optional string response = 1;</code>
+       * <code>string response = 1;</code>
+       * @param value The response to set.
+       * @return This builder for chaining.
        */
       public Builder setResponse(
           String value) {
@@ -4783,7 +5293,8 @@ public final class NNServiceProto {
         return this;
       }
       /**
-       * <code>optional string response = 1;</code>
+       * <code>string response = 1;</code>
+       * @return This builder for chaining.
        */
       public Builder clearResponse() {
         
@@ -4792,7 +5303,9 @@ public final class NNServiceProto {
         return this;
       }
       /**
-       * <code>optional string response = 1;</code>
+       * <code>string response = 1;</code>
+       * @param value The bytes for response to set.
+       * @return This builder for chaining.
        */
       public Builder setResponseBytes(
           com.google.protobuf.ByteString value) {
@@ -4806,29 +5319,31 @@ public final class NNServiceProto {
         return this;
       }
 
-      private FlBaseProto.TensorMap data_ = null;
+      private proto.FlBaseProto.TensorMap data_;
       private com.google.protobuf.SingleFieldBuilderV3<
-          FlBaseProto.TensorMap, FlBaseProto.TensorMap.Builder, FlBaseProto.TensorMapOrBuilder> dataBuilder_;
+          proto.FlBaseProto.TensorMap, proto.FlBaseProto.TensorMap.Builder, proto.FlBaseProto.TensorMapOrBuilder> dataBuilder_;
       /**
-       * <code>optional .TensorMap data = 2;</code>
+       * <code>.TensorMap data = 2;</code>
+       * @return Whether the data field is set.
        */
       public boolean hasData() {
         return dataBuilder_ != null || data_ != null;
       }
       /**
-       * <code>optional .TensorMap data = 2;</code>
+       * <code>.TensorMap data = 2;</code>
+       * @return The data.
        */
-      public FlBaseProto.TensorMap getData() {
+      public proto.FlBaseProto.TensorMap getData() {
         if (dataBuilder_ == null) {
-          return data_ == null ? FlBaseProto.TensorMap.getDefaultInstance() : data_;
+          return data_ == null ? proto.FlBaseProto.TensorMap.getDefaultInstance() : data_;
         } else {
           return dataBuilder_.getMessage();
         }
       }
       /**
-       * <code>optional .TensorMap data = 2;</code>
+       * <code>.TensorMap data = 2;</code>
        */
-      public Builder setData(FlBaseProto.TensorMap value) {
+      public Builder setData(proto.FlBaseProto.TensorMap value) {
         if (dataBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
@@ -4842,10 +5357,10 @@ public final class NNServiceProto {
         return this;
       }
       /**
-       * <code>optional .TensorMap data = 2;</code>
+       * <code>.TensorMap data = 2;</code>
        */
       public Builder setData(
-          FlBaseProto.TensorMap.Builder builderForValue) {
+          proto.FlBaseProto.TensorMap.Builder builderForValue) {
         if (dataBuilder_ == null) {
           data_ = builderForValue.build();
           onChanged();
@@ -4856,13 +5371,13 @@ public final class NNServiceProto {
         return this;
       }
       /**
-       * <code>optional .TensorMap data = 2;</code>
+       * <code>.TensorMap data = 2;</code>
        */
-      public Builder mergeData(FlBaseProto.TensorMap value) {
+      public Builder mergeData(proto.FlBaseProto.TensorMap value) {
         if (dataBuilder_ == null) {
           if (data_ != null) {
             data_ =
-              FlBaseProto.TensorMap.newBuilder(data_).mergeFrom(value).buildPartial();
+              proto.FlBaseProto.TensorMap.newBuilder(data_).mergeFrom(value).buildPartial();
           } else {
             data_ = value;
           }
@@ -4874,7 +5389,7 @@ public final class NNServiceProto {
         return this;
       }
       /**
-       * <code>optional .TensorMap data = 2;</code>
+       * <code>.TensorMap data = 2;</code>
        */
       public Builder clearData() {
         if (dataBuilder_ == null) {
@@ -4888,33 +5403,33 @@ public final class NNServiceProto {
         return this;
       }
       /**
-       * <code>optional .TensorMap data = 2;</code>
+       * <code>.TensorMap data = 2;</code>
        */
-      public FlBaseProto.TensorMap.Builder getDataBuilder() {
+      public proto.FlBaseProto.TensorMap.Builder getDataBuilder() {
         
         onChanged();
         return getDataFieldBuilder().getBuilder();
       }
       /**
-       * <code>optional .TensorMap data = 2;</code>
+       * <code>.TensorMap data = 2;</code>
        */
-      public FlBaseProto.TensorMapOrBuilder getDataOrBuilder() {
+      public proto.FlBaseProto.TensorMapOrBuilder getDataOrBuilder() {
         if (dataBuilder_ != null) {
           return dataBuilder_.getMessageOrBuilder();
         } else {
           return data_ == null ?
-              FlBaseProto.TensorMap.getDefaultInstance() : data_;
+              proto.FlBaseProto.TensorMap.getDefaultInstance() : data_;
         }
       }
       /**
-       * <code>optional .TensorMap data = 2;</code>
+       * <code>.TensorMap data = 2;</code>
        */
       private com.google.protobuf.SingleFieldBuilderV3<
-          FlBaseProto.TensorMap, FlBaseProto.TensorMap.Builder, FlBaseProto.TensorMapOrBuilder>
+          proto.FlBaseProto.TensorMap, proto.FlBaseProto.TensorMap.Builder, proto.FlBaseProto.TensorMapOrBuilder>
           getDataFieldBuilder() {
         if (dataBuilder_ == null) {
           dataBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
-              FlBaseProto.TensorMap, FlBaseProto.TensorMap.Builder, FlBaseProto.TensorMapOrBuilder>(
+              proto.FlBaseProto.TensorMap, proto.FlBaseProto.TensorMap.Builder, proto.FlBaseProto.TensorMapOrBuilder>(
                   getData(),
                   getParentForChildren(),
                   isClean());
@@ -4925,13 +5440,17 @@ public final class NNServiceProto {
 
       private int code_ ;
       /**
-       * <code>optional int32 code = 3;</code>
+       * <code>int32 code = 3;</code>
+       * @return The code.
        */
+      @Override
       public int getCode() {
         return code_;
       }
       /**
-       * <code>optional int32 code = 3;</code>
+       * <code>int32 code = 3;</code>
+       * @param value The code to set.
+       * @return This builder for chaining.
        */
       public Builder setCode(int value) {
         
@@ -4940,7 +5459,8 @@ public final class NNServiceProto {
         return this;
       }
       /**
-       * <code>optional int32 code = 3;</code>
+       * <code>int32 code = 3;</code>
+       * @return This builder for chaining.
        */
       public Builder clearCode() {
         
@@ -4948,14 +5468,16 @@ public final class NNServiceProto {
         onChanged();
         return this;
       }
+      @Override
       public final Builder setUnknownFields(
           final com.google.protobuf.UnknownFieldSet unknownFields) {
-        return this;
+        return super.setUnknownFields(unknownFields);
       }
 
+      @Override
       public final Builder mergeUnknownFields(
           final com.google.protobuf.UnknownFieldSet unknownFields) {
-        return this;
+        return super.mergeUnknownFields(unknownFields);
       }
 
 
@@ -4974,11 +5496,12 @@ public final class NNServiceProto {
 
     private static final com.google.protobuf.Parser<PredictResponse>
         PARSER = new com.google.protobuf.AbstractParser<PredictResponse>() {
+      @Override
       public PredictResponse parsePartialFrom(
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws com.google.protobuf.InvalidProtocolBufferException {
-          return new PredictResponse(input, extensionRegistry);
+        return new PredictResponse(input, extensionRegistry);
       }
     };
 
@@ -4991,6 +5514,7 @@ public final class NNServiceProto {
       return PARSER;
     }
 
+    @Override
     public PredictResponse getDefaultInstanceForType() {
       return DEFAULT_INSTANCE;
     }
@@ -5045,7 +5569,7 @@ public final class NNServiceProto {
       "\030\002 \001(\0132\n.TensorMap\022\021\n\talgorithm\030\003 \001(\t\022\016\n" +
       "\006return\030\004 \001(\010\"]\n\020EvaluateResponse\022\020\n\010res" +
       "ponse\030\001 \001(\t\022\030\n\004data\030\002 \001(\0132\n.TensorMap\022\014\n" +
-      "\004code\030\003 \001(\005\022\017\n\007message\030\004 \001(\t\"Q\n\016PredictR",
+      "\004code\030\003 \001(\005\022\017\n\007message\030\004 \001(\t\"Q\n\016PredictR" +
       "equest\022\022\n\nclientuuid\030\001 \001(\t\022\030\n\004data\030\002 \001(\013" +
       "2\n.TensorMap\022\021\n\talgorithm\030\003 \001(\t\"K\n\017Predi" +
       "ctResponse\022\020\n\010response\030\001 \001(\t\022\030\n\004data\030\002 \001" +
@@ -5054,22 +5578,14 @@ public final class NNServiceProto {
       "Response\"\000\0227\n\010evaluate\022\023.nn.EvaluateRequ" +
       "est\032\024.nn.EvaluateResponse\"\000\0224\n\007predict\022\022" +
       ".nn.PredictRequest\032\023.nn.PredictResponse\"" +
-      "\000B:\n(com.intel.analytics.bigdl.ppml.gene" +
-      "ratedB\016NNServiceProtob\006proto3"
+      "\000B=\n+com.intel.analytics.bigdl.ppml.fl.g" +
+      "eneratedB\016NNServiceProtob\006proto3"
     };
-    com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
-        new com.google.protobuf.Descriptors.FileDescriptor.    InternalDescriptorAssigner() {
-          public com.google.protobuf.ExtensionRegistry assignDescriptors(
-              com.google.protobuf.Descriptors.FileDescriptor root) {
-            descriptor = root;
-            return null;
-          }
-        };
-    com.google.protobuf.Descriptors.FileDescriptor
+    descriptor = com.google.protobuf.Descriptors.FileDescriptor
       .internalBuildGeneratedFileFrom(descriptorData,
         new com.google.protobuf.Descriptors.FileDescriptor[] {
-          FlBaseProto.getDescriptor(),
-        }, assigner);
+          proto.FlBaseProto.getDescriptor(),
+        });
     internal_static_nn_TrainRequest_descriptor =
       getDescriptor().getMessageTypes().get(0);
     internal_static_nn_TrainRequest_fieldAccessorTable = new
@@ -5106,7 +5622,7 @@ public final class NNServiceProto {
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_nn_PredictResponse_descriptor,
         new String[] { "Response", "Data", "Code", });
-    FlBaseProto.getDescriptor();
+    proto.FlBaseProto.getDescriptor();
   }
 
   // @@protoc_insertion_point(outer_class_scope)
