@@ -21,13 +21,14 @@ from neural_compressor.utils.pytorch import load
 from neural_compressor.model.model import PyTorchModel
 
 
-class QuantizedModel(AcceleratedLightningModule):
+class PytorchQuantizedModel(AcceleratedLightningModule):
     def __init__(self, model):
         super().__init__(model.model)
         self.quantized = model
 
     def save(self, path):
-        return self.quantized.save(path)
+        self.quantized.save(path)
+        super().save(path)
 
     def load_state_dict(self, state_dict):
         load(state_dict, self.quantized._model)
