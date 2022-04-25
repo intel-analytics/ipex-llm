@@ -69,6 +69,7 @@ def uAUC(labels, preds, user_id_list):
     user_auc = float(total_auc)/size
     return user_auc
 
+
 def calc_auc(raw_arr):
     """Summary
 
@@ -78,8 +79,7 @@ def calc_auc(raw_arr):
     Returns:
         TYPE: Description
     """
-
-    arr = sorted(raw_arr, key=lambda d:d[0], reverse=True)
+    arr = sorted(raw_arr, key=lambda d: d[0], reverse=True)
     pos, neg = 0., 0.
     for record in arr:
         if record[1] == 1.:
