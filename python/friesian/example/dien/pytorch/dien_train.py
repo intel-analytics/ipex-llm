@@ -43,10 +43,6 @@ from bigdl.friesian.feature import FeatureTable
 from pyspark.sql.window import Window
 from pyspark.sql.functions import desc, rank, col
 
-input_meta = '/dien/meta_Books.csv'
-input_transaction = '/dien/reviews_Books.json'
-output = '/dien/data/'
-
 n_uid = 8026325
 n_mid = 2370586
 n_cat = 2752
@@ -73,7 +69,6 @@ feature_columns += [
 
 behavior_feature_list = ["item_id", "cate_id"]
 
-
 def model_creator(config):
     model = DIEN(feature_columns, behavior_feature_list, dnn_hidden_units=[4, 4, 4], dnn_dropout=0.4, gru_type="AUGRU",
                  use_negsampling=False, device='cpu', seed=2, att_hidden_units=(64, 16), att_activation="relu", init_std=0.1)#, modelpath=root_path)
@@ -85,12 +80,29 @@ def optim_creator(model, config):
     return optimizer
 
 if __name__ == '__main__':
-    OrcaContext.log_output = True  
-    executor_cores = 28
-    num_executor = 2
-    executor_memory = "30g"
-    driver_cores = 4
-    driver_memory = "36g"
+    parser = argparse.ArgumentParser(description='Tensorflow DIEN Training/Inference')
+    parser.add_argument('--cluster_mode', type=str, default="local",
+                        help='The cluster mode, such as local, yarn, standalone or spark-submit.')
+    parser.add_argument('--master', type=str, default=None,
+                        help='The master url, only used when cluster mode is standalone.')
+    parser.add_argument('--executor_cores', type=int, default=2,
+                        help='The executor core number.')
+    parser.add_argument('--executor_memory', type=str, default="160g",
+                        help='The executor memory.')
+    parser.add_argument('--num_executors', type=int, default=8,
+                        help='The number of executors.')
+    parser.add_argument('--driver_cores', type=int, default=4,
+                        help='The driver core number.')
+    parser.add_argument('--driver_memory', type=str, default="36g",
+                        help='The driver memory.')
+    parser.add_argument('--lr', default=0.001, type=float, help='learning rate')
+    parser.add_argument('--epochs', default=1, type=int, help='train epoch')
+    parser.add_argument('--batch_size', default=8, type=int, help='batch size')
+    parser.add_argument('--input_transaction', type=str, help='input transaction json file')
+    parser.add_argument('--input_meta', type=str, help='input meta csv file')
+    parser.add_argument('--output', type=str, default="./data", help='data directory')
+    args = parser.parse_args()
+
     conf = {"spark.executor.memoryOverhead": "130g",
             "spark.network.timeout": "10000000",
             "spark.sql.broadcastTimeout": "7200",
@@ -103,25 +115,46 @@ if __name__ == '__main__':
             "spark.eventLog.enabled": "true",
             "spark.app.name": "recsys-demo-train",
             "spark.rpc.message.maxSize":"256"}
-    sc = init_orca_context("yarn", cores=executor_cores,
-                        num_nodes=num_executor, memory=executor_memory,
-                        driver_cores=driver_cores, driver_memory=driver_memory,
-                        conf=conf, object_store_memory="80g",
-                        env={"KMP_BLOCKTIME": "1",
-                                "KMP_AFFINITY": "granularity=fine,compact,1,0",
-                                "OMP_NUM_THREADS": "28"},
-                        extra_python_lib="./dienl.py")
+
+    if args.cluster_mode == "local":
+        init_orca_context("local", cores=args.executor_cores, memory=args.executor_memory)
+    elif args.cluster_mode == "standalone":
+        init_orca_context("standalone", master=args.master,
+                          cores=args.executor_cores, num_nodes=args.num_executors,
+                          memory=args.executor_memory,
+                          driver_cores=args.driver_cores, driver_memory=args.driver_memory,
+                          conf=conf,
+                          env={"KMP_BLOCKTIME": "1",
+                               "KMP_AFFINITY": "granularity=fine,compact,1,0",
+                               "OMP_NUM_THREADS": "28"},
+                          extra_python_lib="./dienl.py")
+    elif args.cluster_mode == "yarn":
+        init_orca_context("yarn-client", cores=args.executor_cores,
+                          num_nodes=args.num_executors, memory=args.executor_memory,
+                          driver_cores=args.driver_cores, driver_memory=args.driver_memory,
+                          conf=conf, object_store_memory="80g",
+                          env={"KMP_BLOCKTIME": "1",
+                               "KMP_AFFINITY": "granularity=fine,compact,1,0",
+                               "OMP_NUM_THREADS": "28"},
+                          extra_python_lib="./dienl.py")
+    elif args.cluster_mode == "spark-submit":
+        init_orca_context("spark-submit")
+    else:
+        raise ValueError(
+            "cluster_mode should be one of 'local', 'yarn', 'standalone' and 'spark-submit'"
+            ", but got " + args.cluster_mode)
+
 
     # Preprocess
     begin = time.time()
-    transaction_tbl = FeatureTable.read_json(input_transaction).select(
+    transaction_tbl = FeatureTable.read_json(args.input_transaction).select(
         ['reviewerID', 'asin', 'unixReviewTime']) \
         .rename({'reviewerID': 'user', 'asin': 'item', 'unixReviewTime': 'time'}) \
         .dropna(columns=['user', 'item'])
     transaction_tbl.cache()
     print("Total number of transactions: ", transaction_tbl.size())
 
-    item_tbl = FeatureTable.read_csv(input_meta, delimiter="\t", names=['item', 'category'])\
+    item_tbl = FeatureTable.read_csv(args.input_meta, delimiter="\t", names=['item', 'category'])\
         .apply("category", "category", lambda x: x.lower() if x is not None else "default")
     item_tbl.cache()
     print("Total number of items: ", item_tbl.size())
@@ -149,11 +182,11 @@ if __name__ == '__main__':
         .apply("label", "label", lambda x: [1 - float(x), float(x)], "array<float>")
 
     # write out
-    user_index.write_parquet(output)
-    item_cat_indices[0].write_parquet(output)
-    item_cat_indices[1].write_parquet(output)
-    item_tbl.write_parquet(output + "item2cat")
-    full_tbl.write_parquet(output + "data")
+    user_index.write_parquet(args.output)
+    item_cat_indices[0].write_parquet(args.output)
+    item_cat_indices[1].write_parquet(args.output)
+    item_tbl.write_parquet(args.output + "item2cat")
+    full_tbl.write_parquet(args.output + "data")
 
     end = time.time()
 
