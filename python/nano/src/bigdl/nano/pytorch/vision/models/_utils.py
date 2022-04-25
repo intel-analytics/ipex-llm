@@ -26,7 +26,6 @@ def set_parameter_requires_grad(model: nn.Module, exception: str):
     :param exception: (str) The name of the layer that does not need to be frozen.
     :return:
     """
-
     for name, param in model.named_parameters():
         if exception not in name:
             param.requires_grad = False
@@ -64,7 +63,6 @@ class SqueezeNetWithoutTopLayer(BackboneModule):
     SqueezeNet model with the top convolution layer removed, and with a new method
     `get_output_size` to retrieve the output channel size of the model.
     """
-
     def forward(self, x):
         x = self.net.features(x)
         x = self.net.classifier(x)
