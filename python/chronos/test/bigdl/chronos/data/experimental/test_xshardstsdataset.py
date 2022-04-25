@@ -20,7 +20,7 @@ import pandas as pd
 import random
 import os
 
-from bigdl.orca.test_zoo_utils import ZooTestCase
+from unittest import TestCase
 from bigdl.chronos.data import TSDataset
 from bigdl.chronos.data.experimental import XShardsTSDataset
 from bigdl.orca.data.pandas import read_csv
@@ -30,13 +30,26 @@ from pandas.testing import assert_frame_equal
 from numpy.testing import assert_array_almost_equal
 
 
-class TestXShardsTSDataset(ZooTestCase):
+class TestXShardsTSDataset(TestCase):
 
-    def setup_method(self, method):
+    def setUp(self):
         self.resource_path = os.path.join(os.path.split(__file__)[0], "../../resources/")
 
-    def teardown_method(self, method):
+    def tearDown(self):
         pass
+    
+    @classmethod
+    def tearDownClass(cls):
+        # stop possible active_spark_context
+        from pyspark import SparkContext
+        from bigdl.orca.ray import RayContext
+        if SparkContext._active_spark_context is not None:
+            print("Stopping spark_orca context")
+            sc = SparkContext.getOrCreate()
+            if sc.getConf().get("spark.master").startswith("spark://"):
+                from bigdl.dllib.nncontext import stop_spark_standalone
+                stop_spark_standalone()
+            sc.stop()
 
     def test_xshardstsdataset_initialization(self):
         shards_single = read_csv(os.path.join(self.resource_path, "single.csv"))

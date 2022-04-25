@@ -520,7 +520,7 @@ class TestAutoTrainer(TestCase):
                            batch_size=hp.choice([16, 32]),
                            validation_data=train_ts)
         config = auto_estimator.get_best_config()
-        assert 3 <= config['past_seq_len'] <= 10
+        assert 2 <= config['past_seq_len'] <= 10
 
 if __name__ == "__main__":
     pytest.main([__file__])

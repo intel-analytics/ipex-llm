@@ -416,6 +416,43 @@ class PyTorchRayEstimator(OrcaRayEstimator):
         state_dict = torch.load(model_path)
         self.load_state_dict(state_dict)
 
+    def save_checkpoint(self, model_path):
+        """
+        Manually saves the Estimator state (including model and optimizer) to the provided
+        model_path.
+
+        :param model_path: (str) Path to save the model. Both local and remote path are supported.
+               e.g. "/tmp/estimator.ckpt" or "hdfs:///tmp/estimator.ckpt"
+        :return: None
+        """
+        from bigdl.dllib.utils.file_utils import is_local_path
+        if is_local_path(model_path):
+            self.save(model_path)
+        else:
+            results = [
+                worker.save_checkpoint.remote(model_path)
+                for worker in self.remote_workers
+            ]
+            ray.get(results)
+
+    def load_checkpoint(self, model_path):
+        """
+        Loads the Estimator state (including model and optimizer) from the provided model_path.
+
+        :param model_path: (str) Path to the existing model. Both local and remote path are
+               supported. e.g. "/tmp/estimator.ckpt" or "hdfs:///tmp/estimator.ckpt"
+        :return: None
+        """
+        from bigdl.dllib.utils.file_utils import is_local_path
+        if is_local_path(model_path):
+            self.load(model_path)
+        else:
+            results = [
+                worker.load_checkpoint.remote(model_path)
+                for worker in self.remote_workers
+            ]
+            ray.get(results)
+
     def shutdown(self, force=False):
         """
         Shuts down workers and releases resources.

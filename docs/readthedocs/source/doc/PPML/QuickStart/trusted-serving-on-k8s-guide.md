@@ -10,7 +10,7 @@ Prior to deploying PPML Cluster Serving, please make sure the following is setup
 ## Deploy Trusted Realtime ML for Kubernetes ##
 1. Pull docker image from dockerhub
 	```
-	$ docker pull intelanalytics/bigdl-ppml-trusted-realtime-ml-scala-graphene:0.14.0-SNAPSHOT
+	$ docker pull intelanalytics/bigdl-ppml-trusted-realtime-ml-scala-graphene:2.0.0
 	```
 2. Pull the source code of BigDL and enter PPML graphene k8s directory
 	```

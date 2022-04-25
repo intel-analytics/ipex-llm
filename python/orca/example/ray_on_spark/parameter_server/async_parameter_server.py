@@ -145,5 +145,4 @@ if __name__ == "__main__":
         print("Iteration {}: accuracy is {}".format(i, accuracy))
         i += 1
         time.sleep(1)
-    ray_ctx.stop()
     stop_orca_context()

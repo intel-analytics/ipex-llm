@@ -41,7 +41,6 @@ import org.apache.logging.log4j.Level;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.apache.logging.log4j.core.config.Configurator;
-import org.apache.spark.sql.SparkSession;
 import redis.clients.jedis.Jedis;
 import com.intel.analytics.bigdl.friesian.serving.utils.TimerMetrics;
 import com.intel.analytics.bigdl.friesian.serving.utils.TimerMetrics$;
@@ -127,12 +126,9 @@ public class FeatureServer extends GrpcServerBase {
             colNamesMap = new HashMap<>();
             parseServiceType();
             if (serviceType.contains(ServiceType.KV)) {
-                redis = RedisUtils.getInstance(Utils.helper().getRedisPoolMaxTotal());
-                if (Utils.helper().getLoadInitialData()) {
-                    // Load features in files
-                    SparkSession spark = SparkSession.builder().getOrCreate();
-                    FeatureUtils.loadUserItemFeaturesRDD(spark);
-                }
+                redis = RedisUtils.getInstance(Utils.helper().getRedisPoolMaxTotal(),
+                        Utils.helper().redisHostPort(), Utils.helper().getRedisKeyPrefix(),
+                        Utils.helper().itemSlotType());
             }
             redisCluster = redis.getCluster() != null;
 

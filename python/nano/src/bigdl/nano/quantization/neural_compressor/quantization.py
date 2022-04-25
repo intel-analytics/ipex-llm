@@ -99,7 +99,8 @@ class QuantizationINC(Quantization):
 
                 self.metric = Metric(
                     MyMetric,
-                    name="%s_%s" % (framework_metric.__name__, type(metric).__name__)
+                    name=f"{framework}_{type(metric).__name__}_"
+                         f"{framework_metric.get_next_metric_id()}"
                 )
 
         quantized = self()

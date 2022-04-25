@@ -182,9 +182,17 @@ def convert_row_to_numpy(row, schema, feature_cols, label_cols, accept_str_col=F
         for name in cols:
             feature_type = schema[name].dataType
             if _is_scalar_type(feature_type, accept_str_col):
-                result.append(np.array(row[name]))
+                if isinstance(feature_type, df_types.FloatType):
+                    result.append(np.array(row[name]).astype(np.float32))
+                elif isinstance(feature_type, df_types.IntegerType):
+                    result.append(np.array(row[name]).astype(np.int32))
+                else:
+                    result.append(np.array(row[name]))
             elif isinstance(feature_type, df_types.ArrayType):
-                result.append(np.array(row[name]).astype(np.float32))
+                if accept_str_col and isinstance(feature_type.elementType, df_types.StringType):
+                    result.append(np.array(row[name]).astype(np.str))
+                else:
+                    result.append(np.array(row[name]).astype(np.float32))
             elif isinstance(row[name], DenseVector):
                 result.append(row[name].values.astype(np.float32))
             else:

@@ -423,8 +423,15 @@ class NNClassifierSpec extends ZooSpecHelper {
         .option("header", true)
         .load(filePath)
       val model = XGBClassifierModel.load(modelPath, 2)
-      model.setFeaturesCol(Array("age", "gender", "jointime", "star"))
-      model.transform(df).count()
+      df.printSchema()
+
+      val vectorAssembler = new VectorAssembler().
+        setInputCols(Array("age", "gender", "jointime", "star")).
+        setOutputCol("features")
+      val xgbInput = vectorAssembler.transform(df).select("features")
+
+      model.setFeaturesCol("features")
+      model.transform(xgbInput).count()
     }
   }
 
@@ -443,9 +450,18 @@ class NNClassifierSpec extends ZooSpecHelper {
         StructField("class", StringType, true)))
       val df = spark.read.schema(schema).csv(filePath)
 
+      val vectorAssembler = new VectorAssembler().
+        setInputCols(Array("sepal length", "sepal width", "petal length", "petal width")).
+        setOutputCol("sparse_features")
+      val data = vectorAssembler.transform(df).select("sparse_features",
+        "class")
+      val asDense = udf((v: Vector) => v.toDense)
+      val xgbInput = data.withColumn("features", asDense(col("sparse_features")))
+
+
       val model = XGBClassifierModel.load(modelPath, 2)
-      model.setFeaturesCol(Array("sepal length", "sepal width", "petal length", "petal width"))
-      model.transform(df).count()
+      model.setFeaturesCol("features")
+      model.transform(xgbInput).count()
     }
   }
 

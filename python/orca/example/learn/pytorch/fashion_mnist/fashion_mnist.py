@@ -19,6 +19,7 @@
 #
 
 from __future__ import print_function
+import os
 import argparse
 import numpy as np
 import matplotlib.pyplot as plt
@@ -112,7 +113,7 @@ def main():
     parser.add_argument('--backend', type=str, default="bigdl",
                         help='The backend of PyTorch Estimator; '
                              'bigdl, torch_distributed and spark are supported.')
-    parser.add_argument('--batch_size', type=int, default=64, help='The training batch size')
+    parser.add_argument('--batch_size', type=int, default=4, help='The training batch size')
     parser.add_argument('--epochs', type=int, default=2, help='The number of epochs to train for')
     parser.add_argument('--data_dir', type=str, default="./data", help='The path of dataset')
     parser.add_argument('--download', type=bool, default=True, help='Download dataset or not')
@@ -176,6 +177,8 @@ def main():
                                               optimizer=optimizer_creator,
                                               loss=criterion,
                                               metrics=[Accuracy()],
+                                              model_dir=os.getcwd(),
+                                              use_tqdm=True,
                                               backend=args.backend)
         stats = orca_estimator.fit(train_data_creator, epochs=epochs, batch_size=batch_size)
 
@@ -186,7 +189,7 @@ def main():
         print("Validation stats: {}".format(val_stats))
         orca_estimator.shutdown()
     else:
-        raise NotImplementedError("Only bigdl and torch_distributed are supported "
+        raise NotImplementedError("Only bigdl, torch_distributed, and spark are supported "
                                   "as the backend, but got {}".format(args.backend))
 
     stop_orca_context()

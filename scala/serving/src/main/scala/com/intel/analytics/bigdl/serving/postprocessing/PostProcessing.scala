@@ -103,7 +103,7 @@ class PostProcessing(tensor: Tensor[Float], filter: String = "") {
       t
     }
     require(thisT.dim() == 2,
-      "Your input dim is 3 but squeeze operation fails, please open issue to Analytics Zoo team")
+      "Your input dim is 3 but squeeze operation fails, please open issue to BigDL team")
     var res: String = ""
     res += "["
     (1 to topN).foreach(topIdx => {

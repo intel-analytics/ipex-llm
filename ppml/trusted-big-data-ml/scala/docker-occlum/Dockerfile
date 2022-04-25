@@ -1,11 +1,13 @@
 FROM krallin/ubuntu-tini AS tini
 
-FROM ubuntu:18.04 as bigdl
+FROM ubuntu:20.04 as bigdl
 
 ARG SPARK_VERSION=3.1.2
 ARG HADOOP_VERSION=3.2.0
+ARG SPARK_SCALA_VERSION=2.12
 ENV HADOOP_VERSION=${HADOOP_VERSION}
 ENV SPARK_VERSION=${SPARK_VERSION}
+ENV SPARK_SCALA_VERSION=${SPARK_SCALA_VERSION}
 ENV SPARK_HOME=/opt/spark
 
 ARG SPARK_JAR_REPO_URL
@@ -14,9 +16,11 @@ ARG HTTP_PROXY_HOST
 ARG HTTP_PROXY_PORT
 ARG HTTPS_PROXY_HOST
 ARG HTTPS_PROXY_PORT
+ENV HTTP_PROXY=http://$HTTP_PROXY_HOST:$HTTP_PROXY_PORT
+ENV HTTPS_PROXY=http://$HTTPS_PROXY_HOST:$HTTPS_PROXY_PORT
 
 RUN apt-get update && DEBIAN_FRONTEND="noninteractive" apt-get install -y --no-install-recommends \
-        openjdk-8-jdk build-essential wget git && \
+        openjdk-8-jdk build-essential wget git unzip && \
     apt-get clean && \
     rm -rf /var/lib/apt/lists/*
 
@@ -39,7 +43,14 @@ RUN cd /opt && \
     rm spark/jars/spark-kubernetes_2.12-$SPARK_VERSION.jar && \
     rm spark/jars/spark-network-common_2.12-$SPARK_VERSION.jar && \
     rm spark/jars/hadoop-common-3.2.0.jar && \
-    rm spark/jars/hive-exec-2.3.7-core.jar
+    rm spark/jars/hive-exec-2.3.7-core.jar && \
+    rm spark/jars/slf4j-log4j12-1.7.30.jar && \
+    rm spark/jars/log4j-1.2.17.jar && \
+    wget -P /opt/spark/jars/ https://repo1.maven.org/maven2/org/apache/logging/log4j/log4j-1.2-api/2.17.1/log4j-1.2-api-2.17.1.jar && \
+    wget -P /opt/spark/jars/ https://repo1.maven.org/maven2/org/slf4j/slf4j-reload4j/1.7.35/slf4j-reload4j-1.7.35.jar && \
+    wget -P /opt/spark/jars/ https://repo1.maven.org/maven2/org/apache/logging/log4j/log4j-api/2.17.1/log4j-api-2.17.1.jar && \
+    wget -P /opt/spark/jars/ https://repo1.maven.org/maven2/org/apache/logging/log4j/log4j-core/2.17.1/log4j-core-2.17.1.jar && \
+    wget -P /opt/spark/jars/ https://repo1.maven.org/maven2/org/apache/logging/log4j/log4j-slf4j-impl/2.17.1/log4j-slf4j-impl-2.17.1.jar
 
 # spark modification
 RUN cd /opt && \
@@ -51,6 +62,35 @@ RUN cd /opt && \
     mv /opt/spark-kubernetes_2.12-$SPARK_VERSION.jar /opt/spark/jars/spark-kubernetes_2.12-$SPARK_VERSION.jar && \
     mv /opt/spark-network-common_2.12-$SPARK_VERSION.jar /opt/spark/jars/spark-network-common_2.12-$SPARK_VERSION.jar && \
     mv /opt/pyspark.zip /opt/spark/python/lib/pyspark.zip
+
+# prepare spark source code and jars for unit test
+RUN cd /opt && \
+    wget https://github.com/apache/spark/archive/refs/tags/v$SPARK_VERSION.zip && \
+    unzip v$SPARK_VERSION.zip && \
+    rm v$SPARK_VERSION.zip && \
+    mv spark-$SPARK_VERSION spark-source && \
+    cd spark-source && \
+    cp -r /opt/spark/bin . && \
+    cd /opt/spark && \
+    mkdir /opt/spark/test-jars && \
+    cd /opt/spark/test-jars && \
+    wget $SPARK_JAR_REPO_URL/spark-core_2.12-$SPARK_VERSION-tests.jar && \
+    wget $SPARK_JAR_REPO_URL/spark-catalyst_2.12-$SPARK_VERSION-tests.jar && \
+    wget https://repo1.maven.org/maven2/org/scalactic/scalactic_2.12/3.1.4/scalactic_2.12-3.1.4.jar && \
+    wget https://repo1.maven.org/maven2/org/scalatest/scalatest_2.12/3.1.4/scalatest_2.12-3.1.4.jar && \
+    wget https://repo1.maven.org/maven2/org/mockito/mockito-core/3.4.6/mockito-core-3.4.6.jar && \
+    wget https://repo1.maven.org/maven2/com/h2database/h2/1.4.195/h2-1.4.195.jar && \
+    wget https://repo1.maven.org/maven2/com/ibm/db2/jcc/11.5.0.0/jcc-11.5.0.0.jar && \
+    wget https://repo1.maven.org/maven2/org/apache/parquet/parquet-avro/1.10.1/parquet-avro-1.10.1.jar && \
+    wget https://repo1.maven.org/maven2/net/bytebuddy/byte-buddy/1.10.13/byte-buddy-1.10.13.jar && \
+    wget https://repo1.maven.org/maven2/org/postgresql/postgresql/42.2.6/postgresql-42.2.6.jar && \
+    wget https://repo1.maven.org/maven2/org/scalatestplus/scalatestplus-mockito_2.12/1.0.0-SNAP5/scalatestplus-mockito_2.12-1.0.0-SNAP5.jar && \
+    wget https://repo1.maven.org/maven2/org/scalatestplus/scalatestplus-scalacheck_2.12/3.1.0.0-RC2/scalatestplus-scalacheck_2.12-3.1.0.0-RC2.jar && \
+    mkdir /opt/spark/test-classes && \
+    cd /opt/spark/test-classes && \
+    wget $SPARK_JAR_REPO_URL/spark-sql_2.12-$SPARK_VERSION-tests.jar && \
+    jar xvf spark-sql_2.12-$SPARK_VERSION-tests.jar && \
+    rm spark-sql_2.12-$SPARK_VERSION-tests.jar
 
 RUN mkdir -p /opt/src
 
@@ -116,9 +156,9 @@ RUN cd /opt && \
     sed -i 's/2.4.0/3.1.2/g' tpch.sbt && \
     sbt package
 
-FROM occlum/occlum:0.26.0-ubuntu18.04 as ppml
+FROM occlum/occlum:0.27.0-ubuntu20.04 as ppml
 
-ARG BIGDL_VERSION=0.14.0-SNAPSHOT
+ARG BIGDL_VERSION=2.0.0
 ARG SPARK_VERSION=3.1.2
 ARG HADOOP_VERSION=3.2.0
 ENV HADOOP_VERSION=${HADOOP_VERSION}
@@ -184,6 +224,8 @@ COPY --from=bigdl /opt/zoo-tutorials/tpch-spark/target/scala-2.12/spark-tpc-h-qu
 
 # Copy scripts & other files
 ADD ./run_spark_on_occlum_glibc.sh /opt/run_spark_on_occlum_glibc.sh
+ADD ./sqlSuites /opt/sqlSuites
+ADD ./log4j2.xml /opt/spark/conf/log4j2.xml
 
 COPY ./entrypoint.sh /opt/
 

@@ -17,6 +17,8 @@ from abc import ABC, abstractmethod
 
 
 class INCMetric(ABC):
+    METRIC_ID = 0
+
     def __init__(self):
         self.pred_list = []
         self.label_list = []
@@ -55,3 +57,8 @@ class INCMetric(ABC):
     @abstractmethod
     def to_scalar(self, tensor):
         pass
+
+    @staticmethod
+    def get_next_metric_id():
+        INCMetric.METRIC_ID += 1
+        return INCMetric.METRIC_ID

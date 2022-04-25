@@ -16,12 +16,12 @@
 
 package com.intel.analytics.bigdl.ppml.nn
 
-import com.intel.analytics.bigdl.ppml.base.StorageHolder
 import com.intel.analytics.bigdl.ppml.common.{FLDataType, FLPhase}
 import com.intel.analytics.bigdl.ppml.common.FLPhase.{EVAL, PREDICT, TRAIN}
 import com.intel.analytics.bigdl.ppml.generated.FlBaseProto.{FloatTensor, TensorMap, MetaData}
 
 import scala.collection.JavaConverters._
+
 
 
 /**
@@ -38,7 +38,7 @@ class HflNNAggregator extends NNAggregator {
     val sumedDataMap = new java.util.HashMap[String, FloatTensor]()
     // sum
     // to do: concurrent hashmap
-    val storage = aggregateTypeMap.get(flPhase).getTableStorage()
+    val storage = aggregateTypeMap.get(flPhase).getTensorMapStorage()
     val dataMap = storage.clientData
     for (model <- dataMap.asScala.values) {
       val modelMap = model.getTensorsMap

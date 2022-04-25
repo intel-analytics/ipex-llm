@@ -44,7 +44,7 @@ import com.intel.analytics.bigdl.dllib.utils.serializer.{DeserializeContext, Mod
 import com.intel.analytics.bigdl.dllib.visualization.{TrainSummary, ValidationSummary}
 import com.intel.analytics.bigdl.dllib.optim.ZooTrigger
 import com.intel.analytics.bigdl.dllib.feature._
-import com.intel.analytics.bigdl.dllib.feature.image.ImageSet
+import com.intel.analytics.bigdl.dllib.feature.image._
 import com.intel.analytics.bigdl.dllib.feature.text._
 import com.intel.analytics.bigdl.dllib.keras.{Net, Predictable}
 import com.intel.analytics.bigdl.dllib.keras.autograd.{Lambda, Variable}
@@ -53,9 +53,9 @@ import com.intel.analytics.bigdl.dllib.keras.layers.Input
 import com.intel.analytics.bigdl.dllib.keras.layers.utils._
 import com.intel.analytics.bigdl.dllib.keras.Model
 import com.intel.analytics.bigdl.dllib.net.NetUtils
-import com.intel.analytics.bigdl.dllib.estimator.{AbstractEstimator, ConstantClipping,
-GradientClipping, L2NormClipping}
+import com.intel.analytics.bigdl.dllib.estimator.{AbstractEstimator, ConstantClipping, GradientClipping, L2NormClipping}
 import com.intel.analytics.bigdl.dllib.feature.common._
+import com.intel.analytics.bigdl.dllib.feature.transform.vision.image.ImageFeature
 import com.intel.analytics.bigdl.dllib.nnframes.NNImageSchema
 import org.apache.commons.lang.exception.ExceptionUtils
 import org.apache.commons.lang3.SerializationUtils
@@ -316,7 +316,9 @@ abstract class KerasNet[T](implicit val tag: ClassTag[T], implicit val ev: Tenso
    */
   private def toDataSet(x: RDD[Sample[T]], batchSize: Int,
     featurePaddingParam: PaddingParam[T] = null,
-    labelPaddingParam: PaddingParam[T] = null): DataSet[MiniBatch[T]] = {
+    labelPaddingParam: PaddingParam[T] = null,
+    shuffleData: Boolean = true,
+    groupSize: Int = 1): DataSet[MiniBatch[T]] = {
     val _featurePaddingParam = if (featurePaddingParam != null) {
       Some(featurePaddingParam)
     } else None
@@ -324,8 +326,8 @@ abstract class KerasNet[T](implicit val tag: ClassTag[T], implicit val ev: Tenso
       Some(labelPaddingParam)
     } else None
 
-    if (x != null) DataSet.rdd(x) -> SampleToMiniBatch[T](batchSize, _featurePaddingParam,
-      _labelPaddingParam)
+    if (x != null) DataSet.rdd(x, shuffleData = shuffleData, groupSize = groupSize) ->
+      SampleToMiniBatch[T](batchSize, _featurePaddingParam, _labelPaddingParam)
     else null
   }
 
@@ -439,10 +441,14 @@ abstract class KerasNet[T](implicit val tag: ClassTag[T], implicit val ev: Tenso
       nbEpoch: Int = 10,
       validationData: RDD[Sample[T]] = null,
       featurePaddingParam: PaddingParam[T] = null,
-      labelPaddingParam: PaddingParam[T] = null)(implicit ev: TensorNumeric[T]): Unit = {
+      labelPaddingParam: PaddingParam[T] = null,
+      shuffleData: Boolean = true,
+      groupSize: Int = 1)(implicit ev: TensorNumeric[T]): Unit = {
     KerasUtils.validateBatchSize(batchSize)
-    val trainData = toDataSet(x, batchSize, featurePaddingParam, labelPaddingParam)
-    val valData = toDataSet(validationData, batchSize, featurePaddingParam, labelPaddingParam)
+    val trainData = toDataSet(x, batchSize, featurePaddingParam, labelPaddingParam,
+      shuffleData, groupSize)
+    val valData = toDataSet(validationData, batchSize, featurePaddingParam, labelPaddingParam,
+      shuffleData, groupSize)
     this.fit(trainData, nbEpoch, valData)
 
     releaseDataSets(Array(trainData, valData))
@@ -480,50 +486,66 @@ abstract class KerasNet[T](implicit val tag: ClassTag[T], implicit val ev: Tenso
       dataFrame: DataFrame,
       batchSize: Int,
       featureCols: Array[String],
-      labelCols: Array[String],
-      preprocessing: Preprocessing[(Any, Option[Any]), Sample[T]]): FeatureSet[MiniBatch[T]] = {
+      labelCols: Array[String]): FeatureSet[MiniBatch[T]] = {
+    val featureColIndexs = featureCols.map {f => dataFrame.schema.fieldIndex(f)}
+    val labelColIndexs = labelCols.map {f => dataFrame.schema.fieldIndex(f)}
+    var featureSizes: Array[Array[Int]] = null
+    var labelSizes: Array[Array[Int]] = null
 
-    val sp = FeatureLabelPreprocessing(SeqToTensor(), ScalarToTensor())
-      .asInstanceOf[Preprocessing[(Any, Option[Any]), Sample[T]]]
-
-    val guid = java.util.UUID.randomUUID.toString
-    val internalFeatureCol = "features" + guid
-    val internalLabelCol = "labels" + guid
-    val df = if (featureCols.size > 1) {
-      val assembler = new VectorAssembler()
-        .setInputCols(featureCols)
-        .setOutputCol(internalFeatureCol)
-      assembler.transform(dataFrame)
+    val featureFunc = if (featureCols.length == 1) {
+      val featureType = dataFrame.schema(featureCols.head).dataType
+      unwrapVectorAsNecessary(featureType)
     } else {
-      dataFrame.withColumnRenamed(featureCols.head, internalFeatureCol)
+      val row = dataFrame.take(1).head
+      featureSizes = featureCols.map {f =>
+        val colType = dataFrame.schema(f).dataType
+        if (colType.typeName.contains("vector")) {
+          val idx = dataFrame.schema.fieldIndex(f)
+          val seq = getVectorSeq(row, colType, idx)
+          Array(seq.size)
+        } else {
+          Array(1)
+        }
+      }
+
+      val colTypes = dataFrame.schema.fields.map(f => f.dataType)
+      extractFeaturesFromRow(colTypes)
     }
 
-    val assembleDF = if (labelCols.size > 1) {
-      val assembler = new VectorAssembler()
-        .setInputCols(labelCols)
-        .setOutputCol(internalLabelCol)
-      assembler.transform(df)
+    val labelFunc: (Row) => Option[Any] = if (labelCols.length == 1) {
+      val lci = dataFrame.schema.fieldIndex(labelCols.head)
+      val labelFunc = unwrapVectorAsNecessary(dataFrame.schema(labelCols.head).dataType)
+      (row: Row) => Some(labelFunc(row, Array(lci)))
     } else {
-      df.withColumnRenamed(labelCols.head, internalLabelCol)
+      labelSizes = labelCols.map {f => Array(1)}
+
+      val colTypes = dataFrame.schema.fields.map(f => f.dataType)
+      val labelFunc = extractFeaturesFromRow(colTypes)
+      (row: Row) => Some(labelFunc(row, labelColIndexs))
     }
 
-    val featureColIndex = assembleDF.schema.fieldIndex(internalFeatureCol)
-    val featureType = assembleDF.schema(internalFeatureCol).dataType
-    val featureFunc = unwrapVectorAsNecessary(featureType)
-
-    val labelFunc: (Row) => Option[Any] = {
-      val lci = assembleDF.schema.fieldIndex(internalLabelCol)
-      val labelFunc = unwrapVectorAsNecessary(assembleDF.schema(internalLabelCol).dataType)
-      (row: Row) => Some(labelFunc(row, lci))
-    }
-
-    val featureAndLabel = assembleDF.rdd.map { row =>
-      val features = featureFunc(row, featureColIndex)
+    val featureAndLabel = dataFrame.rdd.map { row =>
+      val features = featureFunc(row, featureColIndexs)
       val labels = labelFunc(row)
       (features, labels)
     }
 
-    val initialDataSet = FeatureSet.rdd(featureAndLabel).transform(sp)
+    val featurePreprocessing = if (featureCols.size == 1) {
+      SeqToTensor()
+    } else {
+      SeqToMultipleTensors(featureSizes)
+    }
+
+    val preprocessing = if (labelCols.size == 1) {
+      FeatureLabelPreprocessing(featurePreprocessing, ScalarToTensor())
+        .asInstanceOf[Preprocessing[(Any, Option[Any]), Sample[T]]]
+    } else {
+      FeatureLabelsPreprocessing(featurePreprocessing, SeqToMultipleTensors(labelSizes))
+        .asInstanceOf[Preprocessing[(Any, Option[Any]), Sample[T]]]
+    }
+
+    val initialDataSet = FeatureSet.rdd(featureAndLabel).transform(preprocessing)
+
     initialDataSet.transform(SampleToMiniBatch[T](batchSize))
   }
 
@@ -534,20 +556,12 @@ abstract class KerasNet[T](implicit val tag: ClassTag[T], implicit val ev: Tenso
       featureCols: Array[String],
       labelCols: Array[String],
       valX: DataFrame)(implicit ev: TensorNumeric[T]): Unit = {
-    val preprocessing =
-      FeatureLabelPreprocessing(SeqToTensor(), ScalarToTensor())
-        .asInstanceOf[Preprocessing[(Any, Option[Any]), Sample[T]]]
-
-    val trainingData = getDataSet(x, batchSize, featureCols, labelCols,
-      preprocessing).toDataSet()
+    val trainingData = getDataSet(x, batchSize, featureCols, labelCols).toDataSet()
     val valData = if (valX != null) {
-      getDataSet(valX, batchSize, featureCols, labelCols, preprocessing).toDataSet()
+      getDataSet(valX, batchSize, featureCols, labelCols).toDataSet()
     } else null
 
     this.fit(trainingData, nbEpoch, valData)
-
-    predictTransformer = ToTuple() -> preprocessing
-      .asInstanceOf[Preprocessing[(Any, Option[Any]), Sample[T]]].clonePreprocessing()
   }
 
   def fit(
@@ -557,6 +571,36 @@ abstract class KerasNet[T](implicit val tag: ClassTag[T], implicit val ev: Tenso
       featureCols: Array[String],
       labelCols: Array[String])(implicit ev: TensorNumeric[T]): Unit = {
     this.fit(x, batchSize, nbEpoch, featureCols, labelCols, null)
+  }
+
+  def fit(
+   x: DataFrame,
+   batchSize: Int,
+   nbEpoch: Int,
+   labelCols: Array[String],
+   transform: ImageProcessing,
+   valX: DataFrame)(implicit ev: TensorNumeric[T]): Unit = {
+    require(labelCols.length == 1, "current only support one label for dataframe of image")
+    val trainData = df2ImageSet(x, labelCols.head, transform)
+    val transformer2 = ImageMatToTensor[Float]() -> ImageSetToSample[Float]()
+    trainData.transform(transformer2)
+
+    val valData = if (valX != null) {
+      val valSet = df2ImageSet(valX, labelCols.head, transform)
+      valSet.transform(transformer2)
+      valSet
+    } else null
+
+    this.fit(trainData, batchSize, nbEpoch, valData)
+  }
+
+  def fit(
+     x: DataFrame,
+     batchSize: Int,
+     nbEpoch: Int,
+     labelCols: Array[String],
+     transform: ImageProcessing)(implicit ev: TensorNumeric[T]): Unit = {
+    this.fit(x, batchSize, nbEpoch, labelCols, transform, null)
   }
 
   /**
@@ -627,6 +671,18 @@ abstract class KerasNet[T](implicit val tag: ClassTag[T], implicit val ev: Tenso
     evaluateImage(x.toImageFrame(), this.vMethods, Some(batchSize))
   }
 
+  def evaluate(
+    x: DataFrame,
+    labelCols: Array[String],
+    transform: ImageProcessing,
+    batchSize: Int)
+  (implicit ev: TensorNumeric[T]): Array[(ValidationResult, ValidationMethod[T])] = {
+    val rdd = df2ImageSet(x, labelCols.head, transform)
+    val transformer2 = ImageMatToTensor[Float]() -> ImageSetToSample[Float]()
+    rdd.transform(transformer2)
+    this.evaluate(rdd, batchSize)
+  }
+
   /**
    * Evaluate a model on TextSet.
    *
@@ -645,6 +701,17 @@ abstract class KerasNet[T](implicit val tag: ClassTag[T], implicit val ev: Tenso
         val localSet = toDataSet(local, batchSize).asInstanceOf[LocalDataSet[MiniBatch[T]]]
         evaluate(localSet)
     }
+  }
+
+  def evaluate(
+     x: DataFrame,
+     batchSize: Int,
+     featureCols: Array[String],
+     labelCols: Array[String])(implicit ev: TensorNumeric[T]): Unit = {
+    require(this.vMethods != null, "Evaluation metrics haven't been set yet")
+    val valX = getDataSet(x, batchSize, featureCols, labelCols).toDataSet()
+    val xRDD = valX.toDistributed().data(false)
+    evaluate(xRDD, this.vMethods)
   }
 
   def toModel(): keras.Model[T]

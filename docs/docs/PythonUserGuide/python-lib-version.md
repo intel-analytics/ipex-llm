@@ -20,7 +20,7 @@ protobuf==3.11.4
 psutil==5.7.0
 py4j==0.10.7
 pyspark==2.4.6
-ray==1.2.0
+ray==1.9.2
 redis==3.4.1
 scikit-learn==0.22.2.post1
 scipy==1.4.1

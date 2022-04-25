@@ -6,23 +6,25 @@ We demonstrate how to easily show the graphical results of running synchronous d
 We recommend you to use Anaconda to prepare the environment, especially if you want to run on a yarn cluster:
 
 ```
-conda create -n zoo python=3.7  # "zoo" is conda environmenst name, you can use any name you like.
-conda activate zoo
+conda create -n bigdl python=3.7  # "bigdl" is conda environment name, you can use any name you like.
+conda activate bigdl
 pip install torch
 pip install torchvision
 pip install matplotlib
 pip install tensorboard
 
 # For bigdl backend
-pip install analytics-zoo  # 0.10.0.dev3 or above
+pip install bigdl-orca
 pip install jep==3.9.0
 pip install six cloudpickle
 
 # For torch_distributed backend:
-pip install analytics-zoo[ray]  # 0.10.0.dev3 or above
+pip install bigdl-orca[ray]
+pip install tqdm  # progress bar
 
 # For spark backend
 pip install bigdl-orca
+pip install tqdm  # progress bar
 ```
 
 ## Run on local after pip install

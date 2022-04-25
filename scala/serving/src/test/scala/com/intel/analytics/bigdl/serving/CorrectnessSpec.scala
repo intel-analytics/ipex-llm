@@ -39,7 +39,6 @@ import scala.sys.process._
 
 class CorrectnessSpec extends FlatSpec with Matchers {
   val configPath = "/tmp/config.yaml"
-//  val configPath = "/home/litchy/pro/analytics-zoo/config.yaml"
   var redisHost: String = "localhost"
   var redisPort: Int = 6379
   val logger = LogManager.getLogger(getClass)

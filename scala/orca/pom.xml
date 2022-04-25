@@ -5,7 +5,7 @@
     <parent>
         <artifactId>bigdl-parent-spark_${spark.version}</artifactId>
         <groupId>com.intel.analytics.bigdl</groupId>
-        <version>0.14.0-SNAPSHOT</version>
+        <version>2.0.0</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -26,7 +26,7 @@
         <dependency>
             <groupId>com.intel.analytics.bigdl</groupId>
             <artifactId>bigdl-dllib-spark_${spark.version}</artifactId>
-            <version>0.14.0-SNAPSHOT</version>
+            <version>2.0.0</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
@@ -38,7 +38,24 @@
             <groupId>org.tensorflow</groupId>
             <artifactId>libtensorflow</artifactId>
             <version>1.15.0</version>
-
+        </dependency>
+        <dependency>
+            <groupId>log4j</groupId>
+            <artifactId>log4j</artifactId>
+            <version>1.2.17</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.slf4j</groupId>
+            <artifactId>slf4j-log4j12</artifactId>
+            <version>1.7.16</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.zookeeper</groupId>
+            <artifactId>zookeeper</artifactId>
+            <version>3.6.2</version>
+            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.tensorflow</groupId>
@@ -190,7 +207,7 @@
         <!--<dependency>-->
             <!--<groupId>com.intel.analytics.bigdl.core.dist</groupId>-->
             <!--<artifactId>all</artifactId>-->
-            <!--<version>0.14.0-SNAPSHOT</version>-->
+            <!--<version>2.0.0</version>-->
             <!--<scope>${bigdl-core-all-scope}</scope>-->
         <!--</dependency>-->
         <!--<dependency>-->
@@ -470,7 +487,7 @@
               <dependency>
                 <groupId>com.intel.analytics.bigdl.core.dist</groupId>
                 <artifactId>${os-flag}</artifactId>
-                <version>0.14.0-SNAPSHOT</version>
+                <version>2.0.0</version>
                 <type>pom</type>
               </dependency>
             </dependencies>
@@ -507,7 +524,7 @@
                 <dependency>
                     <groupId>com.intel.analytics.zoo</groupId>
                     <artifactId>zoo-core-dist-all</artifactId>
-                    <version>0.14.0-SNAPSHOT</version>
+                    <version>2.0.0</version>
                     <type>jar</type>
                 </dependency>
             </dependencies>
@@ -522,7 +539,7 @@
                 <dependency>
                     <groupId>com.intel.analytics.zoo</groupId>
                     <artifactId>zoo-core-dist-linux64</artifactId>
-                    <version>0.14.0-SNAPSHOT</version>
+                    <version>2.0.0</version>
                     <type>pom</type>
                     <exclusions>
                         <exclusion>
@@ -544,7 +561,7 @@
                 <dependency>
                     <groupId>com.intel.analytics.zoo</groupId>
                     <artifactId>zoo-core-dist-mac</artifactId>
-                    <version>0.14.0-SNAPSHOT</version>
+                    <version>2.0.0</version>
                     <type>pom</type>
                         <exclusions>
                         <exclusion>

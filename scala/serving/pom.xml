@@ -5,7 +5,7 @@
     <parent>
         <artifactId>bigdl-parent-spark_${spark.version}</artifactId>
         <groupId>com.intel.analytics.bigdl</groupId>
-        <version>0.14.0-SNAPSHOT</version>
+        <version>2.0.0</version>
     </parent>
     <modelVersion>4.0.0</modelVersion>
 
@@ -13,8 +13,8 @@
     <packaging>jar</packaging>
 
     <properties>
-        <akka.http.version>10.1.11</akka.http.version>
-        <akka.actor.version>2.5.26</akka.actor.version>
+        <akka.http.version>10.1.15</akka.http.version>
+        <akka.actor.version>2.5.31</akka.actor.version>
         <spark-scope>compile</spark-scope>
     </properties>
 
@@ -27,12 +27,12 @@
         <dependency>
             <groupId>com.intel.analytics.bigdl</groupId>
             <artifactId>bigdl-dllib-spark_${spark.version}</artifactId>
-            <version>0.14.0-SNAPSHOT</version>
+            <version>2.0.0</version>
         </dependency>
         <dependency>
             <groupId>com.intel.analytics.bigdl</groupId>
             <artifactId>bigdl-orca-spark_${spark.version}</artifactId>
-            <version>0.14.0-SNAPSHOT</version>
+            <version>2.0.0</version>
         </dependency>
         <dependency>
             <groupId>org.apache.spark</groupId>
@@ -66,9 +66,19 @@
             </exclusions>
         </dependency>
         <dependency>
-            <groupId>org.slf4j</groupId>
-            <artifactId>slf4j-log4j12</artifactId>
-            <version>1.7.16</version>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-api</artifactId>
+            <version>${log4j.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-slf4j-impl</artifactId>
+            <version>${log4j.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-1.2-api</artifactId>
+            <version>${log4j.version}</version>
         </dependency>
         <dependency>
             <groupId>org.scala-lang</groupId>
@@ -351,6 +361,9 @@
                                     <resource>reference.conf</resource>
                                 </transformer>
                                 <transformer
+                                        implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer"/>
+                                <transformer implementation="com.github.edwgiz.mavenShadePlugin.log4j2CacheTransformer.PluginsCacheFileTransformer" />
+                                <transformer
                                         implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
                                     <manifestEntries>
                                         <Main-Class>com.intel.analytics.bigdl.serving.http.FrontEndApp</Main-Class>
@@ -388,6 +401,13 @@
                     </execution>
 
                 </executions>
+                <dependencies>
+                    <dependency>
+                        <groupId>com.github.edwgiz</groupId>
+                        <artifactId>maven-shade-plugin.log4j2-cachefile-transformer</artifactId>
+                        <version>2.6.1</version>
+                    </dependency>
+                </dependencies>
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>

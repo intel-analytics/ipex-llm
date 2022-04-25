@@ -116,6 +116,18 @@ class TestChronosModelSeq2SeqForecaster(TestCase):
         except ImportError:
             pass
 
+    def test_s2s_forecaster_quantization(self):
+        train_data, val_data, test_data = create_data()
+        forecaster = Seq2SeqForecaster(past_seq_len=24,
+                                       future_seq_len=5,
+                                       input_feature_num=1,
+                                       output_feature_num=1,
+                                       loss="mae",
+                                       lr=0.01)
+        forecaster.fit(train_data, epochs=2)
+        with pytest.raises(NotImplementedError):
+            forecaster.quantize(train_data)
+
     def test_s2s_forecaster_save_load(self):
         train_data, val_data, test_data = create_data()
         forecaster = Seq2SeqForecaster(past_seq_len=24,

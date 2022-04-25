@@ -12,28 +12,16 @@ monitorPort: 1236
 # 'kv' or 'inference' default: kv
 serviceType: kv
 
-# default: false, if need to load initial data to redis, set true
-loadInitialData: true
-
 # default: "", prefix for redis key
 redisKeyPrefix: 2tower_
 
 # default: 0, item slot type on redis cluster. 0 means slot number use the default value 16384, 1 means all keys save to same slot, 2 means use the last character of id as hash tag.
-redisClusterItemSlotType: 1
+redisClusterItemSlotType:
 
-# default: null, if loadInitialData=true, initialUserDataPath or initialItemDataPath must be
-# provided. Only support parquet file
-initialUserDataPath: /home/yina/Documents/data/friesian-demo/vec_feature_user_prediction.parquet
-# initialItemDataPath:
+# default: null, if serviceType='kv,inference', userFeatureColumns must be provided
+# userFeatureColumns: prediction
 
-# default: null, if loadInitialData=true and initialUserDataPath != null, userIDColumn and
-# userFeatureColumns must be provided
-userIDColumn: enaging_user_id
-userFeatureColumns: prediction
-
-# default: null, if loadInitialData=true and initialItemDataPath != null, userIDColumn and
-# userFeatureColumns must be provided
-# itemIDColumn:
+# default: null, if serviceType='kv,inference', itemFeatureColumns must be provided
 # itemFeatureColumns:
 
 # default: null, user model path or item model path must be provided if serviceType

@@ -24,10 +24,13 @@ import tensorflow as tf
 from pyspark import BarrierTaskContext, TaskContext
 
 from bigdl.orca.data.utils import ray_partition_get_data_label
-from bigdl.orca.data.file import put_local_dir_to_remote
+from bigdl.orca.data.file import exists
 from bigdl.orca.learn.utils import save_pkl, duplicate_stdout_stderr_to_file,\
-    get_specific_object_from_callbacks, get_replaced_path, get_rank
+    get_specific_object_from_callbacks, get_replaced_path, get_rank, \
+    process_tensorboard_in_callbacks, save_model, load_model, \
+    replace_specific_object_from_callbacks
 from bigdl.orca.learn.log_monitor import LogMonitor
+from bigdl.orca.learn.tf2.callbacks import ModelCheckpoint
 
 logger = logging.getLogger(__name__)
 
@@ -180,7 +183,7 @@ class SparkRunner:
                  backend="tf-distributed",
                  mode="fit",
                  model_dir=None,
-                 epoch=0,
+                 application_id=None,
                  need_to_log_to_driver=False,
                  driver_ip=None,
                  driver_port=None
@@ -198,7 +201,6 @@ class SparkRunner:
         self.config = {} if config is None else config
         self.inter_op_parallelism = self.config.get("inter_op_parallelism", 1)
         self.intra_op_parallelism = self.config.get("intra_op_parallelism", 1)
-        self.epoch = epoch
         self.verbose = verbose
         self.model_weights = model_weights
         self.size = size
@@ -225,6 +227,7 @@ class SparkRunner:
             if mode == "fit" or mode == "evaluate":
                 self.setup_distributed(self.cluster)
         self.model_dir = model_dir
+        self.application_id = application_id
 
     def setup(self):
         import tensorflow as tf
@@ -263,9 +266,13 @@ class SparkRunner:
         runs a training epoch and updates the model parameters
         """
         with self.strategy.scope():
-            model = self.model_creator(self.config)
-            if self.model_weights:
-                model.set_weights(self.model_weights.value)
+            if exists(self._model_saved_path):
+                # for continous training
+                model = load_model(self._model_saved_path)
+            else:
+                model = self.model_creator(self.config)
+                if self.model_weights:
+                    model.set_weights(self.model_weights.value)
 
             dataset_handler = DatasetHandler.get_handler(self.backend, self.rank, self.size)
             train_dataset, test_dataset = dataset_handler \
@@ -274,14 +281,13 @@ class SparkRunner:
                                        config=config, epochs=epochs,
                                        steps_per_epoch=steps_per_epoch,
                                        validation_steps=validation_steps)
-        checkpoint = None
         if callbacks:
-            checkpoint = get_specific_object_from_callbacks(tf.keras.callbacks.ModelCheckpoint,
-                                                            callbacks)
-            if checkpoint:
-                original_checkpoint_dir = os.path.dirname(checkpoint.filepath)
-                replaced_checkpoint_path = get_replaced_path(checkpoint.filepath)
-                checkpoint.filepath = replaced_checkpoint_path
+            replace_specific_object_from_callbacks(callbacks,
+                                                   tf.keras.callbacks.ModelCheckpoint,
+                                                   ModelCheckpoint,
+                                                   self.rank)
+
+            replaced_log_dir = process_tensorboard_in_callbacks(callbacks, "fit", self.rank)
 
         history = model.fit(train_dataset,
                             epochs=epochs,
@@ -294,20 +300,16 @@ class SparkRunner:
                             validation_steps=validation_steps,
                             validation_freq=validation_freq)
 
-        if checkpoint:
-            try:
-                if self.rank == 0:
-                    put_local_dir_to_remote(os.path.dirname(replaced_checkpoint_path),
-                                            original_checkpoint_dir)
-            finally:
-                shutil.rmtree(os.path.dirname(replaced_checkpoint_path))
+        if callbacks:
+            if replaced_log_dir and os.path.exists(replaced_log_dir):
+                shutil.rmtree(replaced_log_dir)
 
         return (model, history)
 
     def step(self, data_creator, epochs=1, batch_size=32, verbose=1,
              callbacks=None, validation_data_creator=None, class_weight=None,
-             steps_per_epoch=None, validation_steps=None, validation_freq=1,
-             data_config=None):
+             initial_epoch=0, steps_per_epoch=None, validation_steps=None,
+             validation_freq=1, data_config=None):
         """
         Get model training results and new model.
         """
@@ -319,17 +321,16 @@ class SparkRunner:
 
         model, history = self.distributed_train_func(data_creator,
                                                      config,
-                                                     epochs=self.epoch + epochs,
+                                                     epochs=epochs,
                                                      verbose=verbose,
                                                      callbacks=callbacks,
                                                      steps_per_epoch=steps_per_epoch,
                                                      class_weight=class_weight,
-                                                     initial_epoch=self.epoch,
+                                                     initial_epoch=initial_epoch,
                                                      validation_data_creator=val_data_creator,
                                                      validation_steps=validation_steps,
                                                      validation_freq=validation_freq
                                                      )
-        self.epoch += epochs
         weights = model.get_weights()
         if history is None:
             stats = {}
@@ -337,16 +338,22 @@ class SparkRunner:
             stats = {k: v[-1] for k, v in history.history.items()}
         if self.rank == 0:
             if self.model_dir is not None:
+                save_model(model, self._model_saved_path, save_format="h5")
                 model_state = {
-                    "epoch": self.epoch,
                     "weights": weights,
                     "optimizer_weights": model.optimizer.get_weights()
                 }
                 save_pkl(model_state, os.path.join(self.model_dir, "state.pkl"))
+
             if self.need_to_log_to_driver:
                 LogMonitor.stop_log_monitor(self.log_path, self.logger_thread, self.thread_stop)
             return [stats]
         else:
+            temp_dir = tempfile.mkdtemp()
+            try:
+                save_model(model, os.path.join(temp_dir, "model.h5"))
+            finally:
+                shutil.rmtree(temp_dir)
             if self.need_to_log_to_driver:
                 LogMonitor.stop_log_monitor(self.log_path, self.logger_thread, self.thread_stop)
             return []
@@ -374,6 +381,8 @@ class SparkRunner:
             dataset = dataset_handler.handle_dataset_validation(data_creator,
                                                                 config=config,
                                                                 steps=steps)
+        if callbacks:
+            replaced_log_dir = process_tensorboard_in_callbacks(callbacks, "evaluate", self.rank)
 
         params = dict(
             verbose=verbose,
@@ -396,6 +405,11 @@ class SparkRunner:
             }
         else:
             stats = {"results": results}
+
+        # clean temporary dir for tensorboard
+        if callbacks:
+            if replaced_log_dir and os.path.exists(replaced_log_dir):
+                shutil.rmtree(replaced_log_dir)
 
         if self.rank == 0:
             if self.need_to_log_to_driver:
@@ -436,3 +450,7 @@ class SparkRunner:
         if self.need_to_log_to_driver:
             LogMonitor.stop_log_monitor(self.log_path, self.logger_thread, self.thread_stop)
         return new_part
+
+    @property
+    def _model_saved_path(self):
+        return os.path.join(self.model_dir, "{}_model.h5".format(self.application_id))

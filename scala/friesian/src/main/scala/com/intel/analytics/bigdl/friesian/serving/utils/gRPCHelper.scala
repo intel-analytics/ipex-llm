@@ -18,7 +18,6 @@ package com.intel.analytics.bigdl.friesian.serving.utils
 
 import com.intel.analytics.bigdl.orca.inference.InferenceModel
 
-
 import java.nio.file.Files
 import scala.beans.BeanProperty
 import org.apache.logging.log4j.{LogManager, Logger}
@@ -44,24 +43,14 @@ class gRPCHelper extends Serializable {
 
   // feature service attributes
   @BeanProperty var serviceType = "kv"
-  @BeanProperty var loadInitialData = false
-  @BeanProperty var initialDataPath: String = _
-  @BeanProperty var initialUserDataPath: String = _
-  @BeanProperty var initialItemDataPath: String = _
   @BeanProperty var userFeatureColumns: String = _
   @BeanProperty var itemFeatureColumns: String = _
-  @BeanProperty var userIDColumn: String = _
-  @BeanProperty var itemIDColumn: String = _
   @BeanProperty var redisKeyPrefix: String = _
   @BeanProperty var redisClusterItemSlotType = 0
 
   // recall service attributes
-  @BeanProperty var loadSavedIndex = false
   @BeanProperty var indexPath: String = _
-  @BeanProperty var getFeatureFromFeatureService = false
-  @BeanProperty var saveBuiltIndex = false
   @BeanProperty var indexDim: Int = 128
-  @BeanProperty var part: Int = 20
 
   // feature & recall service attributes
   @BeanProperty var userModelPath: String = _
@@ -75,7 +64,8 @@ class gRPCHelper extends Serializable {
   @BeanProperty var rankingServiceURL = "localhost:8980"
 
   var configPath: String = "config.yaml"
-  var redisHostPort: java.util.ArrayList[(String, Int)] = new java.util.ArrayList[(String, Int)]()
+  var redisHostPort: java.util.ArrayList[(String, Integer)] =
+    new java.util.ArrayList[(String, Integer)]()
   var blasFlag: Boolean = false
   var savedModelInputsArr: Array[String] = _
   var userFeatureColArr: Array[String] = _

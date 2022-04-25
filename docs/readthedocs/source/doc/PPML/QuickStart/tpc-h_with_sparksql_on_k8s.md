@@ -28,7 +28,7 @@ Generate input data with size ~100GB (user can adjust data size to need):
 ### Deploy PPML TPC-H on Kubernetes ###
 1.  Pull docker image
 ```
-sudo docker pull intelanalytics/bigdl-ppml-trusted-big-data-ml-python-graphene:0.14.0-SNAPSHOT
+sudo docker pull intelanalytics/bigdl-ppml-trusted-big-data-ml-python-graphene:2.0.0
 ```
 2. Prepare SGX keys, make sure keys and tpch-spark can be accessed on each K8S node
 3. Start a bigdl-ppml enabled Spark K8S client container with configured local IP, key, tpch and kuberconfig path
@@ -38,7 +38,7 @@ export DATA_PATH=/root/zoo-tutorials/tpch-spark
 export KEYS_PATH=/root/keys
 export KUBERCONFIG_PATH=/root/kuberconfig
 export LOCAL_IP=$local_ip
-export DOCKER_IMAGE=intelanalytics/bigdl-ppml-trusted-big-data-ml-python-graphene:0.14.0-SNAPSHOT
+export DOCKER_IMAGE=intelanalytics/bigdl-ppml-trusted-big-data-ml-python-graphene:2.0.0
 sudo docker run -itd \
         --privileged \
         --net=host \
@@ -136,7 +136,7 @@ export OUTPUT_DIR=hdfs://$HDFS_HOST:$HDFS_PORT/tpc-h/output \
     --executor-cores 8 \
     --total-executor-cores 192 \
     --executor-memory 16G \
-    --properties-file /ppml/trusted-big-data-ml/work/bigdl-0.14.0-SNAPSHOT/conf/spark-bigdl.conf \
+    --properties-file /ppml/trusted-big-data-ml/work/bigdl-2.0.0/conf/spark-bigdl.conf \
     --conf spark.kubernetes.authenticate.serviceAccountName=spark \
     --conf spark.kubernetes.container.image=$RUNTIME_K8S_SPARK_IMAGE \
     --conf spark.kubernetes.executor.podTemplateFile=/ppml/trusted-big-data-ml/spark-executor-template.yaml \

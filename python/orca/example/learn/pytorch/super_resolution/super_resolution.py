@@ -277,6 +277,8 @@ elif opt.backend in ["torch_distributed", "spark"]:
         model=model_creator,
         optimizer=optim_creator,
         loss=criterion,
+        model_dir=os.getcwd(),
+        use_tqdm=True,
         backend=opt.backend,
         config={
             "lr": opt.lr,
@@ -305,7 +307,7 @@ elif opt.backend in ["torch_distributed", "spark"]:
         torch.save(model, model_out_path)
         print("Checkpoint saved to {}".format(model_out_path))
 else:
-    raise NotImplementedError("Only bigdl and torch_distributed are supported as the backend, "
+    raise NotImplementedError("Only bigdl, torch_distributed, and spark are supported as the backend, "
                               "but got {}".format(opt.backend))
 
 stop_orca_context()

@@ -133,7 +133,7 @@ public final class FGBoostServiceProto {
       return FGBoostServiceProto.internal_static_fgboost_UploadLabelRequest_descriptor;
     }
 
-    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+    protected FieldAccessorTable
         internalGetFieldAccessorTable() {
       return FGBoostServiceProto.internal_static_fgboost_UploadLabelRequest_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
@@ -388,7 +388,7 @@ public final class FGBoostServiceProto {
 
     @Override
     protected Builder newBuilderForType(
-        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+        BuilderParent parent) {
       Builder builder = new Builder(parent);
       return builder;
     }
@@ -404,7 +404,7 @@ public final class FGBoostServiceProto {
         return FGBoostServiceProto.internal_static_fgboost_UploadLabelRequest_descriptor;
       }
 
-      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+      protected FieldAccessorTable
           internalGetFieldAccessorTable() {
         return FGBoostServiceProto.internal_static_fgboost_UploadLabelRequest_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
@@ -417,7 +417,7 @@ public final class FGBoostServiceProto {
       }
 
       private Builder(
-          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+          BuilderParent parent) {
         super(parent);
         maybeForceBuilderInitialization();
       }
@@ -950,7 +950,7 @@ public final class FGBoostServiceProto {
       return FGBoostServiceProto.internal_static_fgboost_DownloadLabelRequest_descriptor;
     }
 
-    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+    protected FieldAccessorTable
         internalGetFieldAccessorTable() {
       return FGBoostServiceProto.internal_static_fgboost_DownloadLabelRequest_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
@@ -1161,7 +1161,7 @@ public final class FGBoostServiceProto {
 
     @Override
     protected Builder newBuilderForType(
-        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+        BuilderParent parent) {
       Builder builder = new Builder(parent);
       return builder;
     }
@@ -1177,7 +1177,7 @@ public final class FGBoostServiceProto {
         return FGBoostServiceProto.internal_static_fgboost_DownloadLabelRequest_descriptor;
       }
 
-      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+      protected FieldAccessorTable
           internalGetFieldAccessorTable() {
         return FGBoostServiceProto.internal_static_fgboost_DownloadLabelRequest_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
@@ -1190,7 +1190,7 @@ public final class FGBoostServiceProto {
       }
 
       private Builder(
-          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+          BuilderParent parent) {
         super(parent);
         maybeForceBuilderInitialization();
       }
@@ -1658,7 +1658,7 @@ public final class FGBoostServiceProto {
       return FGBoostServiceProto.internal_static_fgboost_DownloadResponse_descriptor;
     }
 
-    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+    protected FieldAccessorTable
         internalGetFieldAccessorTable() {
       return FGBoostServiceProto.internal_static_fgboost_DownloadResponse_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
@@ -1889,7 +1889,7 @@ public final class FGBoostServiceProto {
 
     @Override
     protected Builder newBuilderForType(
-        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+        BuilderParent parent) {
       Builder builder = new Builder(parent);
       return builder;
     }
@@ -1905,7 +1905,7 @@ public final class FGBoostServiceProto {
         return FGBoostServiceProto.internal_static_fgboost_DownloadResponse_descriptor;
       }
 
-      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+      protected FieldAccessorTable
           internalGetFieldAccessorTable() {
         return FGBoostServiceProto.internal_static_fgboost_DownloadResponse_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
@@ -1918,7 +1918,7 @@ public final class FGBoostServiceProto {
       }
 
       private Builder(
-          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+          BuilderParent parent) {
         super(parent);
         maybeForceBuilderInitialization();
       }
@@ -2305,8 +2305,8 @@ public final class FGBoostServiceProto {
 
   }
 
-  public interface TreeLeavesOrBuilder extends
-      // @@protoc_insertion_point(interface_extends:fgboost.TreeLeaves)
+  public interface TreeLeafOrBuilder extends
+      // @@protoc_insertion_point(interface_extends:fgboost.TreeLeaf)
       com.google.protobuf.MessageOrBuilder {
 
     /**
@@ -2346,17 +2346,17 @@ public final class FGBoostServiceProto {
     float getLeafOutput(int index);
   }
   /**
-   * Protobuf type {@code fgboost.TreeLeaves}
+   * Protobuf type {@code fgboost.TreeLeaf}
    */
-  public  static final class TreeLeaves extends
+  public  static final class TreeLeaf extends
       com.google.protobuf.GeneratedMessageV3 implements
-      // @@protoc_insertion_point(message_implements:fgboost.TreeLeaves)
-      TreeLeavesOrBuilder {
-    // Use TreeLeaves.newBuilder() to construct.
-    private TreeLeaves(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
+      // @@protoc_insertion_point(message_implements:fgboost.TreeLeaf)
+      TreeLeafOrBuilder {
+    // Use TreeLeaf.newBuilder() to construct.
+    private TreeLeaf(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
       super(builder);
     }
-    private TreeLeaves() {
+    private TreeLeaf() {
       treeID_ = "";
       leafIndex_ = java.util.Collections.emptyList();
       leafOutput_ = java.util.Collections.emptyList();
@@ -2367,7 +2367,7 @@ public final class FGBoostServiceProto {
     getUnknownFields() {
       return com.google.protobuf.UnknownFieldSet.getDefaultInstance();
     }
-    private TreeLeaves(
+    private TreeLeaf(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
@@ -2454,14 +2454,14 @@ public final class FGBoostServiceProto {
     }
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return FGBoostServiceProto.internal_static_fgboost_TreeLeaves_descriptor;
+      return FGBoostServiceProto.internal_static_fgboost_TreeLeaf_descriptor;
     }
 
-    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+    protected FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return FGBoostServiceProto.internal_static_fgboost_TreeLeaves_fieldAccessorTable
+      return FGBoostServiceProto.internal_static_fgboost_TreeLeaf_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
-              TreeLeaves.class, Builder.class);
+              TreeLeaf.class, Builder.class);
     }
 
     private int bitField0_;
@@ -2620,10 +2620,10 @@ public final class FGBoostServiceProto {
       if (obj == this) {
        return true;
       }
-      if (!(obj instanceof TreeLeaves)) {
+      if (!(obj instanceof TreeLeaf)) {
         return super.equals(obj);
       }
-      TreeLeaves other = (TreeLeaves) obj;
+      TreeLeaf other = (TreeLeaf) obj;
 
       boolean result = true;
       result = result && getTreeID()
@@ -2657,58 +2657,58 @@ public final class FGBoostServiceProto {
       return hash;
     }
 
-    public static TreeLeaves parseFrom(
+    public static TreeLeaf parseFrom(
         com.google.protobuf.ByteString data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static TreeLeaves parseFrom(
+    public static TreeLeaf parseFrom(
         com.google.protobuf.ByteString data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static TreeLeaves parseFrom(byte[] data)
+    public static TreeLeaf parseFrom(byte[] data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static TreeLeaves parseFrom(
+    public static TreeLeaf parseFrom(
         byte[] data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static TreeLeaves parseFrom(java.io.InputStream input)
+    public static TreeLeaf parseFrom(java.io.InputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input);
     }
-    public static TreeLeaves parseFrom(
+    public static TreeLeaf parseFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input, extensionRegistry);
     }
-    public static TreeLeaves parseDelimitedFrom(java.io.InputStream input)
+    public static TreeLeaf parseDelimitedFrom(java.io.InputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseDelimitedWithIOException(PARSER, input);
     }
-    public static TreeLeaves parseDelimitedFrom(
+    public static TreeLeaf parseDelimitedFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
     }
-    public static TreeLeaves parseFrom(
+    public static TreeLeaf parseFrom(
         com.google.protobuf.CodedInputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input);
     }
-    public static TreeLeaves parseFrom(
+    public static TreeLeaf parseFrom(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
@@ -2720,7 +2720,7 @@ public final class FGBoostServiceProto {
     public static Builder newBuilder() {
       return DEFAULT_INSTANCE.toBuilder();
     }
-    public static Builder newBuilder(TreeLeaves prototype) {
+    public static Builder newBuilder(TreeLeaf prototype) {
       return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
     }
     public Builder toBuilder() {
@@ -2730,36 +2730,36 @@ public final class FGBoostServiceProto {
 
     @Override
     protected Builder newBuilderForType(
-        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+        BuilderParent parent) {
       Builder builder = new Builder(parent);
       return builder;
     }
     /**
-     * Protobuf type {@code fgboost.TreeLeaves}
+     * Protobuf type {@code fgboost.TreeLeaf}
      */
     public static final class Builder extends
         com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
-        // @@protoc_insertion_point(builder_implements:fgboost.TreeLeaves)
-        TreeLeavesOrBuilder {
+        // @@protoc_insertion_point(builder_implements:fgboost.TreeLeaf)
+        TreeLeafOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
           getDescriptor() {
-        return FGBoostServiceProto.internal_static_fgboost_TreeLeaves_descriptor;
+        return FGBoostServiceProto.internal_static_fgboost_TreeLeaf_descriptor;
       }
 
-      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+      protected FieldAccessorTable
           internalGetFieldAccessorTable() {
-        return FGBoostServiceProto.internal_static_fgboost_TreeLeaves_fieldAccessorTable
+        return FGBoostServiceProto.internal_static_fgboost_TreeLeaf_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
-                TreeLeaves.class, Builder.class);
+                TreeLeaf.class, Builder.class);
       }
 
-      // Construct using com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.TreeLeaves.newBuilder()
+      // Construct using com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.TreeLeaf.newBuilder()
       private Builder() {
         maybeForceBuilderInitialization();
       }
 
       private Builder(
-          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+          BuilderParent parent) {
         super(parent);
         maybeForceBuilderInitialization();
       }
@@ -2781,23 +2781,23 @@ public final class FGBoostServiceProto {
 
       public com.google.protobuf.Descriptors.Descriptor
           getDescriptorForType() {
-        return FGBoostServiceProto.internal_static_fgboost_TreeLeaves_descriptor;
+        return FGBoostServiceProto.internal_static_fgboost_TreeLeaf_descriptor;
       }
 
-      public TreeLeaves getDefaultInstanceForType() {
-        return TreeLeaves.getDefaultInstance();
+      public TreeLeaf getDefaultInstanceForType() {
+        return TreeLeaf.getDefaultInstance();
       }
 
-      public TreeLeaves build() {
-        TreeLeaves result = buildPartial();
+      public TreeLeaf build() {
+        TreeLeaf result = buildPartial();
         if (!result.isInitialized()) {
           throw newUninitializedMessageException(result);
         }
         return result;
       }
 
-      public TreeLeaves buildPartial() {
-        TreeLeaves result = new TreeLeaves(this);
+      public TreeLeaf buildPartial() {
+        TreeLeaf result = new TreeLeaf(this);
         int from_bitField0_ = bitField0_;
         int to_bitField0_ = 0;
         result.treeID_ = treeID_;
@@ -2843,16 +2843,16 @@ public final class FGBoostServiceProto {
         return (Builder) super.addRepeatedField(field, value);
       }
       public Builder mergeFrom(com.google.protobuf.Message other) {
-        if (other instanceof TreeLeaves) {
-          return mergeFrom((TreeLeaves)other);
+        if (other instanceof TreeLeaf) {
+          return mergeFrom((TreeLeaf)other);
         } else {
           super.mergeFrom(other);
           return this;
         }
       }
 
-      public Builder mergeFrom(TreeLeaves other) {
-        if (other == TreeLeaves.getDefaultInstance()) return this;
+      public Builder mergeFrom(TreeLeaf other) {
+        if (other == TreeLeaf.getDefaultInstance()) return this;
         if (!other.getTreeID().isEmpty()) {
           treeID_ = other.treeID_;
           onChanged();
@@ -2889,11 +2889,11 @@ public final class FGBoostServiceProto {
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws java.io.IOException {
-        TreeLeaves parsedMessage = null;
+        TreeLeaf parsedMessage = null;
         try {
           parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
         } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-          parsedMessage = (TreeLeaves) e.getUnfinishedMessage();
+          parsedMessage = (TreeLeaf) e.getUnfinishedMessage();
           throw e.unwrapIOException();
         } finally {
           if (parsedMessage != null) {
@@ -3115,46 +3115,46 @@ public final class FGBoostServiceProto {
       }
 
 
-      // @@protoc_insertion_point(builder_scope:fgboost.TreeLeaves)
+      // @@protoc_insertion_point(builder_scope:fgboost.TreeLeaf)
     }
 
-    // @@protoc_insertion_point(class_scope:fgboost.TreeLeaves)
-    private static final TreeLeaves DEFAULT_INSTANCE;
+    // @@protoc_insertion_point(class_scope:fgboost.TreeLeaf)
+    private static final TreeLeaf DEFAULT_INSTANCE;
     static {
-      DEFAULT_INSTANCE = new TreeLeaves();
+      DEFAULT_INSTANCE = new TreeLeaf();
     }
 
-    public static TreeLeaves getDefaultInstance() {
+    public static TreeLeaf getDefaultInstance() {
       return DEFAULT_INSTANCE;
     }
 
-    private static final com.google.protobuf.Parser<TreeLeaves>
-        PARSER = new com.google.protobuf.AbstractParser<TreeLeaves>() {
-      public TreeLeaves parsePartialFrom(
+    private static final com.google.protobuf.Parser<TreeLeaf>
+        PARSER = new com.google.protobuf.AbstractParser<TreeLeaf>() {
+      public TreeLeaf parsePartialFrom(
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws com.google.protobuf.InvalidProtocolBufferException {
-          return new TreeLeaves(input, extensionRegistry);
+          return new TreeLeaf(input, extensionRegistry);
       }
     };
 
-    public static com.google.protobuf.Parser<TreeLeaves> parser() {
+    public static com.google.protobuf.Parser<TreeLeaf> parser() {
       return PARSER;
     }
 
     @Override
-    public com.google.protobuf.Parser<TreeLeaves> getParserForType() {
+    public com.google.protobuf.Parser<TreeLeaf> getParserForType() {
       return PARSER;
     }
 
-    public TreeLeaves getDefaultInstanceForType() {
+    public TreeLeaf getDefaultInstanceForType() {
       return DEFAULT_INSTANCE;
     }
 
   }
 
-  public interface UploadTreeLeavesRequestOrBuilder extends
-      // @@protoc_insertion_point(interface_extends:fgboost.UploadTreeLeavesRequest)
+  public interface UploadTreeLeafRequestOrBuilder extends
+      // @@protoc_insertion_point(interface_extends:fgboost.UploadTreeLeafRequest)
       com.google.protobuf.MessageOrBuilder {
 
     /**
@@ -3168,30 +3168,30 @@ public final class FGBoostServiceProto {
         getClientuuidBytes();
 
     /**
-     * <code>optional .fgboost.TreeLeaves treeLeaves = 2;</code>
+     * <code>optional .fgboost.TreeLeaf treeLeaf = 2;</code>
      */
-    boolean hasTreeLeaves();
+    boolean hasTreeLeaf();
     /**
-     * <code>optional .fgboost.TreeLeaves treeLeaves = 2;</code>
+     * <code>optional .fgboost.TreeLeaf treeLeaf = 2;</code>
      */
-    TreeLeaves getTreeLeaves();
+    TreeLeaf getTreeLeaf();
     /**
-     * <code>optional .fgboost.TreeLeaves treeLeaves = 2;</code>
+     * <code>optional .fgboost.TreeLeaf treeLeaf = 2;</code>
      */
-    TreeLeavesOrBuilder getTreeLeavesOrBuilder();
+    TreeLeafOrBuilder getTreeLeafOrBuilder();
   }
   /**
-   * Protobuf type {@code fgboost.UploadTreeLeavesRequest}
+   * Protobuf type {@code fgboost.UploadTreeLeafRequest}
    */
-  public  static final class UploadTreeLeavesRequest extends
+  public  static final class UploadTreeLeafRequest extends
       com.google.protobuf.GeneratedMessageV3 implements
-      // @@protoc_insertion_point(message_implements:fgboost.UploadTreeLeavesRequest)
-      UploadTreeLeavesRequestOrBuilder {
-    // Use UploadTreeLeavesRequest.newBuilder() to construct.
-    private UploadTreeLeavesRequest(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
+      // @@protoc_insertion_point(message_implements:fgboost.UploadTreeLeafRequest)
+      UploadTreeLeafRequestOrBuilder {
+    // Use UploadTreeLeafRequest.newBuilder() to construct.
+    private UploadTreeLeafRequest(com.google.protobuf.GeneratedMessageV3.Builder<?> builder) {
       super(builder);
     }
-    private UploadTreeLeavesRequest() {
+    private UploadTreeLeafRequest() {
       clientuuid_ = "";
     }
 
@@ -3200,7 +3200,7 @@ public final class FGBoostServiceProto {
     getUnknownFields() {
       return com.google.protobuf.UnknownFieldSet.getDefaultInstance();
     }
-    private UploadTreeLeavesRequest(
+    private UploadTreeLeafRequest(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
@@ -3227,14 +3227,14 @@ public final class FGBoostServiceProto {
               break;
             }
             case 18: {
-              TreeLeaves.Builder subBuilder = null;
-              if (treeLeaves_ != null) {
-                subBuilder = treeLeaves_.toBuilder();
+              TreeLeaf.Builder subBuilder = null;
+              if (treeLeaf_ != null) {
+                subBuilder = treeLeaf_.toBuilder();
               }
-              treeLeaves_ = input.readMessage(TreeLeaves.parser(), extensionRegistry);
+              treeLeaf_ = input.readMessage(TreeLeaf.parser(), extensionRegistry);
               if (subBuilder != null) {
-                subBuilder.mergeFrom(treeLeaves_);
-                treeLeaves_ = subBuilder.buildPartial();
+                subBuilder.mergeFrom(treeLeaf_);
+                treeLeaf_ = subBuilder.buildPartial();
               }
 
               break;
@@ -3252,14 +3252,14 @@ public final class FGBoostServiceProto {
     }
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return FGBoostServiceProto.internal_static_fgboost_UploadTreeLeavesRequest_descriptor;
+      return FGBoostServiceProto.internal_static_fgboost_UploadTreeLeafRequest_descriptor;
     }
 
-    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+    protected FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return FGBoostServiceProto.internal_static_fgboost_UploadTreeLeavesRequest_fieldAccessorTable
+      return FGBoostServiceProto.internal_static_fgboost_UploadTreeLeafRequest_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
-              UploadTreeLeavesRequest.class, Builder.class);
+              UploadTreeLeafRequest.class, Builder.class);
     }
 
     public static final int CLIENTUUID_FIELD_NUMBER = 1;
@@ -3296,25 +3296,25 @@ public final class FGBoostServiceProto {
       }
     }
 
-    public static final int TREELEAVES_FIELD_NUMBER = 2;
-    private TreeLeaves treeLeaves_;
+    public static final int TREELEAF_FIELD_NUMBER = 2;
+    private TreeLeaf treeLeaf_;
     /**
-     * <code>optional .fgboost.TreeLeaves treeLeaves = 2;</code>
+     * <code>optional .fgboost.TreeLeaf treeLeaf = 2;</code>
      */
-    public boolean hasTreeLeaves() {
-      return treeLeaves_ != null;
+    public boolean hasTreeLeaf() {
+      return treeLeaf_ != null;
     }
     /**
-     * <code>optional .fgboost.TreeLeaves treeLeaves = 2;</code>
+     * <code>optional .fgboost.TreeLeaf treeLeaf = 2;</code>
      */
-    public TreeLeaves getTreeLeaves() {
-      return treeLeaves_ == null ? TreeLeaves.getDefaultInstance() : treeLeaves_;
+    public TreeLeaf getTreeLeaf() {
+      return treeLeaf_ == null ? TreeLeaf.getDefaultInstance() : treeLeaf_;
     }
     /**
-     * <code>optional .fgboost.TreeLeaves treeLeaves = 2;</code>
+     * <code>optional .fgboost.TreeLeaf treeLeaf = 2;</code>
      */
-    public TreeLeavesOrBuilder getTreeLeavesOrBuilder() {
-      return getTreeLeaves();
+    public TreeLeafOrBuilder getTreeLeafOrBuilder() {
+      return getTreeLeaf();
     }
 
     private byte memoizedIsInitialized = -1;
@@ -3332,8 +3332,8 @@ public final class FGBoostServiceProto {
       if (!getClientuuidBytes().isEmpty()) {
         com.google.protobuf.GeneratedMessageV3.writeString(output, 1, clientuuid_);
       }
-      if (treeLeaves_ != null) {
-        output.writeMessage(2, getTreeLeaves());
+      if (treeLeaf_ != null) {
+        output.writeMessage(2, getTreeLeaf());
       }
     }
 
@@ -3345,9 +3345,9 @@ public final class FGBoostServiceProto {
       if (!getClientuuidBytes().isEmpty()) {
         size += com.google.protobuf.GeneratedMessageV3.computeStringSize(1, clientuuid_);
       }
-      if (treeLeaves_ != null) {
+      if (treeLeaf_ != null) {
         size += com.google.protobuf.CodedOutputStream
-          .computeMessageSize(2, getTreeLeaves());
+          .computeMessageSize(2, getTreeLeaf());
       }
       memoizedSize = size;
       return size;
@@ -3359,18 +3359,18 @@ public final class FGBoostServiceProto {
       if (obj == this) {
        return true;
       }
-      if (!(obj instanceof UploadTreeLeavesRequest)) {
+      if (!(obj instanceof UploadTreeLeafRequest)) {
         return super.equals(obj);
       }
-      UploadTreeLeavesRequest other = (UploadTreeLeavesRequest) obj;
+      UploadTreeLeafRequest other = (UploadTreeLeafRequest) obj;
 
       boolean result = true;
       result = result && getClientuuid()
           .equals(other.getClientuuid());
-      result = result && (hasTreeLeaves() == other.hasTreeLeaves());
-      if (hasTreeLeaves()) {
-        result = result && getTreeLeaves()
-            .equals(other.getTreeLeaves());
+      result = result && (hasTreeLeaf() == other.hasTreeLeaf());
+      if (hasTreeLeaf()) {
+        result = result && getTreeLeaf()
+            .equals(other.getTreeLeaf());
       }
       return result;
     }
@@ -3384,67 +3384,67 @@ public final class FGBoostServiceProto {
       hash = (19 * hash) + getDescriptorForType().hashCode();
       hash = (37 * hash) + CLIENTUUID_FIELD_NUMBER;
       hash = (53 * hash) + getClientuuid().hashCode();
-      if (hasTreeLeaves()) {
-        hash = (37 * hash) + TREELEAVES_FIELD_NUMBER;
-        hash = (53 * hash) + getTreeLeaves().hashCode();
+      if (hasTreeLeaf()) {
+        hash = (37 * hash) + TREELEAF_FIELD_NUMBER;
+        hash = (53 * hash) + getTreeLeaf().hashCode();
       }
       hash = (29 * hash) + unknownFields.hashCode();
       memoizedHashCode = hash;
       return hash;
     }
 
-    public static UploadTreeLeavesRequest parseFrom(
+    public static UploadTreeLeafRequest parseFrom(
         com.google.protobuf.ByteString data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static UploadTreeLeavesRequest parseFrom(
+    public static UploadTreeLeafRequest parseFrom(
         com.google.protobuf.ByteString data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static UploadTreeLeavesRequest parseFrom(byte[] data)
+    public static UploadTreeLeafRequest parseFrom(byte[] data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static UploadTreeLeavesRequest parseFrom(
+    public static UploadTreeLeafRequest parseFrom(
         byte[] data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static UploadTreeLeavesRequest parseFrom(java.io.InputStream input)
+    public static UploadTreeLeafRequest parseFrom(java.io.InputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input);
     }
-    public static UploadTreeLeavesRequest parseFrom(
+    public static UploadTreeLeafRequest parseFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input, extensionRegistry);
     }
-    public static UploadTreeLeavesRequest parseDelimitedFrom(java.io.InputStream input)
+    public static UploadTreeLeafRequest parseDelimitedFrom(java.io.InputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseDelimitedWithIOException(PARSER, input);
     }
-    public static UploadTreeLeavesRequest parseDelimitedFrom(
+    public static UploadTreeLeafRequest parseDelimitedFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
     }
-    public static UploadTreeLeavesRequest parseFrom(
+    public static UploadTreeLeafRequest parseFrom(
         com.google.protobuf.CodedInputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input);
     }
-    public static UploadTreeLeavesRequest parseFrom(
+    public static UploadTreeLeafRequest parseFrom(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
@@ -3456,7 +3456,7 @@ public final class FGBoostServiceProto {
     public static Builder newBuilder() {
       return DEFAULT_INSTANCE.toBuilder();
     }
-    public static Builder newBuilder(UploadTreeLeavesRequest prototype) {
+    public static Builder newBuilder(UploadTreeLeafRequest prototype) {
       return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
     }
     public Builder toBuilder() {
@@ -3466,36 +3466,36 @@ public final class FGBoostServiceProto {
 
     @Override
     protected Builder newBuilderForType(
-        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+        BuilderParent parent) {
       Builder builder = new Builder(parent);
       return builder;
     }
     /**
-     * Protobuf type {@code fgboost.UploadTreeLeavesRequest}
+     * Protobuf type {@code fgboost.UploadTreeLeafRequest}
      */
     public static final class Builder extends
         com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
-        // @@protoc_insertion_point(builder_implements:fgboost.UploadTreeLeavesRequest)
-        UploadTreeLeavesRequestOrBuilder {
+        // @@protoc_insertion_point(builder_implements:fgboost.UploadTreeLeafRequest)
+        UploadTreeLeafRequestOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
           getDescriptor() {
-        return FGBoostServiceProto.internal_static_fgboost_UploadTreeLeavesRequest_descriptor;
+        return FGBoostServiceProto.internal_static_fgboost_UploadTreeLeafRequest_descriptor;
       }
 
-      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+      protected FieldAccessorTable
           internalGetFieldAccessorTable() {
-        return FGBoostServiceProto.internal_static_fgboost_UploadTreeLeavesRequest_fieldAccessorTable
+        return FGBoostServiceProto.internal_static_fgboost_UploadTreeLeafRequest_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
-                UploadTreeLeavesRequest.class, Builder.class);
+                UploadTreeLeafRequest.class, Builder.class);
       }
 
-      // Construct using com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.UploadTreeLeavesRequest.newBuilder()
+      // Construct using com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.UploadTreeLeafRequest.newBuilder()
       private Builder() {
         maybeForceBuilderInitialization();
       }
 
       private Builder(
-          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+          BuilderParent parent) {
         super(parent);
         maybeForceBuilderInitialization();
       }
@@ -3508,39 +3508,39 @@ public final class FGBoostServiceProto {
         super.clear();
         clientuuid_ = "";
 
-        if (treeLeavesBuilder_ == null) {
-          treeLeaves_ = null;
+        if (treeLeafBuilder_ == null) {
+          treeLeaf_ = null;
         } else {
-          treeLeaves_ = null;
-          treeLeavesBuilder_ = null;
+          treeLeaf_ = null;
+          treeLeafBuilder_ = null;
         }
         return this;
       }
 
       public com.google.protobuf.Descriptors.Descriptor
           getDescriptorForType() {
-        return FGBoostServiceProto.internal_static_fgboost_UploadTreeLeavesRequest_descriptor;
+        return FGBoostServiceProto.internal_static_fgboost_UploadTreeLeafRequest_descriptor;
       }
 
-      public UploadTreeLeavesRequest getDefaultInstanceForType() {
-        return UploadTreeLeavesRequest.getDefaultInstance();
+      public UploadTreeLeafRequest getDefaultInstanceForType() {
+        return UploadTreeLeafRequest.getDefaultInstance();
       }
 
-      public UploadTreeLeavesRequest build() {
-        UploadTreeLeavesRequest result = buildPartial();
+      public UploadTreeLeafRequest build() {
+        UploadTreeLeafRequest result = buildPartial();
         if (!result.isInitialized()) {
           throw newUninitializedMessageException(result);
         }
         return result;
       }
 
-      public UploadTreeLeavesRequest buildPartial() {
-        UploadTreeLeavesRequest result = new UploadTreeLeavesRequest(this);
+      public UploadTreeLeafRequest buildPartial() {
+        UploadTreeLeafRequest result = new UploadTreeLeafRequest(this);
         result.clientuuid_ = clientuuid_;
-        if (treeLeavesBuilder_ == null) {
-          result.treeLeaves_ = treeLeaves_;
+        if (treeLeafBuilder_ == null) {
+          result.treeLeaf_ = treeLeaf_;
         } else {
-          result.treeLeaves_ = treeLeavesBuilder_.build();
+          result.treeLeaf_ = treeLeafBuilder_.build();
         }
         onBuilt();
         return result;
@@ -3573,22 +3573,22 @@ public final class FGBoostServiceProto {
         return (Builder) super.addRepeatedField(field, value);
       }
       public Builder mergeFrom(com.google.protobuf.Message other) {
-        if (other instanceof UploadTreeLeavesRequest) {
-          return mergeFrom((UploadTreeLeavesRequest)other);
+        if (other instanceof UploadTreeLeafRequest) {
+          return mergeFrom((UploadTreeLeafRequest)other);
         } else {
           super.mergeFrom(other);
           return this;
         }
       }
 
-      public Builder mergeFrom(UploadTreeLeavesRequest other) {
-        if (other == UploadTreeLeavesRequest.getDefaultInstance()) return this;
+      public Builder mergeFrom(UploadTreeLeafRequest other) {
+        if (other == UploadTreeLeafRequest.getDefaultInstance()) return this;
         if (!other.getClientuuid().isEmpty()) {
           clientuuid_ = other.clientuuid_;
           onChanged();
         }
-        if (other.hasTreeLeaves()) {
-          mergeTreeLeaves(other.getTreeLeaves());
+        if (other.hasTreeLeaf()) {
+          mergeTreeLeaf(other.getTreeLeaf());
         }
         onChanged();
         return this;
@@ -3602,11 +3602,11 @@ public final class FGBoostServiceProto {
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws java.io.IOException {
-        UploadTreeLeavesRequest parsedMessage = null;
+        UploadTreeLeafRequest parsedMessage = null;
         try {
           parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
         } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-          parsedMessage = (UploadTreeLeavesRequest) e.getUnfinishedMessage();
+          parsedMessage = (UploadTreeLeafRequest) e.getUnfinishedMessage();
           throw e.unwrapIOException();
         } finally {
           if (parsedMessage != null) {
@@ -3685,121 +3685,121 @@ public final class FGBoostServiceProto {
         return this;
       }
 
-      private TreeLeaves treeLeaves_ = null;
+      private TreeLeaf treeLeaf_ = null;
       private com.google.protobuf.SingleFieldBuilderV3<
-          TreeLeaves, TreeLeaves.Builder, TreeLeavesOrBuilder> treeLeavesBuilder_;
+          TreeLeaf, TreeLeaf.Builder, TreeLeafOrBuilder> treeLeafBuilder_;
       /**
-       * <code>optional .fgboost.TreeLeaves treeLeaves = 2;</code>
+       * <code>optional .fgboost.TreeLeaf treeLeaf = 2;</code>
        */
-      public boolean hasTreeLeaves() {
-        return treeLeavesBuilder_ != null || treeLeaves_ != null;
+      public boolean hasTreeLeaf() {
+        return treeLeafBuilder_ != null || treeLeaf_ != null;
       }
       /**
-       * <code>optional .fgboost.TreeLeaves treeLeaves = 2;</code>
+       * <code>optional .fgboost.TreeLeaf treeLeaf = 2;</code>
        */
-      public TreeLeaves getTreeLeaves() {
-        if (treeLeavesBuilder_ == null) {
-          return treeLeaves_ == null ? TreeLeaves.getDefaultInstance() : treeLeaves_;
+      public TreeLeaf getTreeLeaf() {
+        if (treeLeafBuilder_ == null) {
+          return treeLeaf_ == null ? TreeLeaf.getDefaultInstance() : treeLeaf_;
         } else {
-          return treeLeavesBuilder_.getMessage();
+          return treeLeafBuilder_.getMessage();
         }
       }
       /**
-       * <code>optional .fgboost.TreeLeaves treeLeaves = 2;</code>
+       * <code>optional .fgboost.TreeLeaf treeLeaf = 2;</code>
        */
-      public Builder setTreeLeaves(TreeLeaves value) {
-        if (treeLeavesBuilder_ == null) {
+      public Builder setTreeLeaf(TreeLeaf value) {
+        if (treeLeafBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
           }
-          treeLeaves_ = value;
+          treeLeaf_ = value;
           onChanged();
         } else {
-          treeLeavesBuilder_.setMessage(value);
+          treeLeafBuilder_.setMessage(value);
         }
 
         return this;
       }
       /**
-       * <code>optional .fgboost.TreeLeaves treeLeaves = 2;</code>
+       * <code>optional .fgboost.TreeLeaf treeLeaf = 2;</code>
        */
-      public Builder setTreeLeaves(
-          TreeLeaves.Builder builderForValue) {
-        if (treeLeavesBuilder_ == null) {
-          treeLeaves_ = builderForValue.build();
+      public Builder setTreeLeaf(
+          TreeLeaf.Builder builderForValue) {
+        if (treeLeafBuilder_ == null) {
+          treeLeaf_ = builderForValue.build();
           onChanged();
         } else {
-          treeLeavesBuilder_.setMessage(builderForValue.build());
+          treeLeafBuilder_.setMessage(builderForValue.build());
         }
 
         return this;
       }
       /**
-       * <code>optional .fgboost.TreeLeaves treeLeaves = 2;</code>
+       * <code>optional .fgboost.TreeLeaf treeLeaf = 2;</code>
        */
-      public Builder mergeTreeLeaves(TreeLeaves value) {
-        if (treeLeavesBuilder_ == null) {
-          if (treeLeaves_ != null) {
-            treeLeaves_ =
-              TreeLeaves.newBuilder(treeLeaves_).mergeFrom(value).buildPartial();
+      public Builder mergeTreeLeaf(TreeLeaf value) {
+        if (treeLeafBuilder_ == null) {
+          if (treeLeaf_ != null) {
+            treeLeaf_ =
+              TreeLeaf.newBuilder(treeLeaf_).mergeFrom(value).buildPartial();
           } else {
-            treeLeaves_ = value;
+            treeLeaf_ = value;
           }
           onChanged();
         } else {
-          treeLeavesBuilder_.mergeFrom(value);
+          treeLeafBuilder_.mergeFrom(value);
         }
 
         return this;
       }
       /**
-       * <code>optional .fgboost.TreeLeaves treeLeaves = 2;</code>
+       * <code>optional .fgboost.TreeLeaf treeLeaf = 2;</code>
        */
-      public Builder clearTreeLeaves() {
-        if (treeLeavesBuilder_ == null) {
-          treeLeaves_ = null;
+      public Builder clearTreeLeaf() {
+        if (treeLeafBuilder_ == null) {
+          treeLeaf_ = null;
           onChanged();
         } else {
-          treeLeaves_ = null;
-          treeLeavesBuilder_ = null;
+          treeLeaf_ = null;
+          treeLeafBuilder_ = null;
         }
 
         return this;
       }
       /**
-       * <code>optional .fgboost.TreeLeaves treeLeaves = 2;</code>
+       * <code>optional .fgboost.TreeLeaf treeLeaf = 2;</code>
        */
-      public TreeLeaves.Builder getTreeLeavesBuilder() {
+      public TreeLeaf.Builder getTreeLeafBuilder() {
         
         onChanged();
-        return getTreeLeavesFieldBuilder().getBuilder();
+        return getTreeLeafFieldBuilder().getBuilder();
       }
       /**
-       * <code>optional .fgboost.TreeLeaves treeLeaves = 2;</code>
+       * <code>optional .fgboost.TreeLeaf treeLeaf = 2;</code>
        */
-      public TreeLeavesOrBuilder getTreeLeavesOrBuilder() {
-        if (treeLeavesBuilder_ != null) {
-          return treeLeavesBuilder_.getMessageOrBuilder();
+      public TreeLeafOrBuilder getTreeLeafOrBuilder() {
+        if (treeLeafBuilder_ != null) {
+          return treeLeafBuilder_.getMessageOrBuilder();
         } else {
-          return treeLeaves_ == null ?
-              TreeLeaves.getDefaultInstance() : treeLeaves_;
+          return treeLeaf_ == null ?
+              TreeLeaf.getDefaultInstance() : treeLeaf_;
         }
       }
       /**
-       * <code>optional .fgboost.TreeLeaves treeLeaves = 2;</code>
+       * <code>optional .fgboost.TreeLeaf treeLeaf = 2;</code>
        */
       private com.google.protobuf.SingleFieldBuilderV3<
-          TreeLeaves, TreeLeaves.Builder, TreeLeavesOrBuilder>
-          getTreeLeavesFieldBuilder() {
-        if (treeLeavesBuilder_ == null) {
-          treeLeavesBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
-              TreeLeaves, TreeLeaves.Builder, TreeLeavesOrBuilder>(
-                  getTreeLeaves(),
+          TreeLeaf, TreeLeaf.Builder, TreeLeafOrBuilder>
+          getTreeLeafFieldBuilder() {
+        if (treeLeafBuilder_ == null) {
+          treeLeafBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
+              TreeLeaf, TreeLeaf.Builder, TreeLeafOrBuilder>(
+                  getTreeLeaf(),
                   getParentForChildren(),
                   isClean());
-          treeLeaves_ = null;
+          treeLeaf_ = null;
         }
-        return treeLeavesBuilder_;
+        return treeLeafBuilder_;
       }
       public final Builder setUnknownFields(
           final com.google.protobuf.UnknownFieldSet unknownFields) {
@@ -3812,39 +3812,39 @@ public final class FGBoostServiceProto {
       }
 
 
-      // @@protoc_insertion_point(builder_scope:fgboost.UploadTreeLeavesRequest)
+      // @@protoc_insertion_point(builder_scope:fgboost.UploadTreeLeafRequest)
     }
 
-    // @@protoc_insertion_point(class_scope:fgboost.UploadTreeLeavesRequest)
-    private static final UploadTreeLeavesRequest DEFAULT_INSTANCE;
+    // @@protoc_insertion_point(class_scope:fgboost.UploadTreeLeafRequest)
+    private static final UploadTreeLeafRequest DEFAULT_INSTANCE;
     static {
-      DEFAULT_INSTANCE = new UploadTreeLeavesRequest();
+      DEFAULT_INSTANCE = new UploadTreeLeafRequest();
     }
 
-    public static UploadTreeLeavesRequest getDefaultInstance() {
+    public static UploadTreeLeafRequest getDefaultInstance() {
       return DEFAULT_INSTANCE;
     }
 
-    private static final com.google.protobuf.Parser<UploadTreeLeavesRequest>
-        PARSER = new com.google.protobuf.AbstractParser<UploadTreeLeavesRequest>() {
-      public UploadTreeLeavesRequest parsePartialFrom(
+    private static final com.google.protobuf.Parser<UploadTreeLeafRequest>
+        PARSER = new com.google.protobuf.AbstractParser<UploadTreeLeafRequest>() {
+      public UploadTreeLeafRequest parsePartialFrom(
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws com.google.protobuf.InvalidProtocolBufferException {
-          return new UploadTreeLeavesRequest(input, extensionRegistry);
+          return new UploadTreeLeafRequest(input, extensionRegistry);
       }
     };
 
-    public static com.google.protobuf.Parser<UploadTreeLeavesRequest> parser() {
+    public static com.google.protobuf.Parser<UploadTreeLeafRequest> parser() {
       return PARSER;
     }
 
     @Override
-    public com.google.protobuf.Parser<UploadTreeLeavesRequest> getParserForType() {
+    public com.google.protobuf.Parser<UploadTreeLeafRequest> getParserForType() {
       return PARSER;
     }
 
-    public UploadTreeLeavesRequest getDefaultInstanceForType() {
+    public UploadTreeLeafRequest getDefaultInstanceForType() {
       return DEFAULT_INSTANCE;
     }
 
@@ -4042,7 +4042,7 @@ public final class FGBoostServiceProto {
       return FGBoostServiceProto.internal_static_fgboost_DataSplit_descriptor;
     }
 
-    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+    protected FieldAccessorTable
         internalGetFieldAccessorTable() {
       return FGBoostServiceProto.internal_static_fgboost_DataSplit_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
@@ -4442,7 +4442,7 @@ public final class FGBoostServiceProto {
 
     @Override
     protected Builder newBuilderForType(
-        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+        BuilderParent parent) {
       Builder builder = new Builder(parent);
       return builder;
     }
@@ -4458,7 +4458,7 @@ public final class FGBoostServiceProto {
         return FGBoostServiceProto.internal_static_fgboost_DataSplit_descriptor;
       }
 
-      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+      protected FieldAccessorTable
           internalGetFieldAccessorTable() {
         return FGBoostServiceProto.internal_static_fgboost_DataSplit_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
@@ -4471,7 +4471,7 @@ public final class FGBoostServiceProto {
       }
 
       private Builder(
-          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+          BuilderParent parent) {
         super(parent);
         maybeForceBuilderInitialization();
       }
@@ -5149,7 +5149,7 @@ public final class FGBoostServiceProto {
       return FGBoostServiceProto.internal_static_fgboost_UploadResponse_descriptor;
     }
 
-    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+    protected FieldAccessorTable
         internalGetFieldAccessorTable() {
       return FGBoostServiceProto.internal_static_fgboost_UploadResponse_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
@@ -5343,7 +5343,7 @@ public final class FGBoostServiceProto {
 
     @Override
     protected Builder newBuilderForType(
-        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+        BuilderParent parent) {
       Builder builder = new Builder(parent);
       return builder;
     }
@@ -5359,7 +5359,7 @@ public final class FGBoostServiceProto {
         return FGBoostServiceProto.internal_static_fgboost_UploadResponse_descriptor;
       }
 
-      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+      protected FieldAccessorTable
           internalGetFieldAccessorTable() {
         return FGBoostServiceProto.internal_static_fgboost_UploadResponse_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
@@ -5372,7 +5372,7 @@ public final class FGBoostServiceProto {
       }
 
       private Builder(
-          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+          BuilderParent parent) {
         super(parent);
         maybeForceBuilderInitialization();
       }
@@ -5742,7 +5742,7 @@ public final class FGBoostServiceProto {
       return FGBoostServiceProto.internal_static_fgboost_TreePredict_descriptor;
     }
 
-    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+    protected FieldAccessorTable
         internalGetFieldAccessorTable() {
       return FGBoostServiceProto.internal_static_fgboost_TreePredict_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
@@ -5965,7 +5965,7 @@ public final class FGBoostServiceProto {
 
     @Override
     protected Builder newBuilderForType(
-        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+        BuilderParent parent) {
       Builder builder = new Builder(parent);
       return builder;
     }
@@ -5981,7 +5981,7 @@ public final class FGBoostServiceProto {
         return FGBoostServiceProto.internal_static_fgboost_TreePredict_descriptor;
       }
 
-      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+      protected FieldAccessorTable
           internalGetFieldAccessorTable() {
         return FGBoostServiceProto.internal_static_fgboost_TreePredict_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
@@ -5994,7 +5994,7 @@ public final class FGBoostServiceProto {
       }
 
       private Builder(
-          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+          BuilderParent parent) {
         super(parent);
         maybeForceBuilderInitialization();
       }
@@ -6331,7 +6331,7 @@ public final class FGBoostServiceProto {
      * <code>repeated .fgboost.TreePredict predicts = 1;</code>
      */
     TreePredictOrBuilder getPredictsOrBuilder(
-            int index);
+        int index);
   }
   /**
    * Protobuf type {@code fgboost.BoostPredict}
@@ -6401,7 +6401,7 @@ public final class FGBoostServiceProto {
       return FGBoostServiceProto.internal_static_fgboost_BoostPredict_descriptor;
     }
 
-    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+    protected FieldAccessorTable
         internalGetFieldAccessorTable() {
       return FGBoostServiceProto.internal_static_fgboost_BoostPredict_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
@@ -6579,7 +6579,7 @@ public final class FGBoostServiceProto {
 
     @Override
     protected Builder newBuilderForType(
-        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+        BuilderParent parent) {
       Builder builder = new Builder(parent);
       return builder;
     }
@@ -6595,7 +6595,7 @@ public final class FGBoostServiceProto {
         return FGBoostServiceProto.internal_static_fgboost_BoostPredict_descriptor;
       }
 
-      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+      protected FieldAccessorTable
           internalGetFieldAccessorTable() {
         return FGBoostServiceProto.internal_static_fgboost_BoostPredict_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
@@ -6608,7 +6608,7 @@ public final class FGBoostServiceProto {
       }
 
       private Builder(
-          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+          BuilderParent parent) {
         super(parent);
         maybeForceBuilderInitialization();
       }
@@ -7066,7 +7066,7 @@ public final class FGBoostServiceProto {
      * <code>repeated .fgboost.TreePredict evaluates = 1;</code>
      */
     TreePredictOrBuilder getEvaluatesOrBuilder(
-            int index);
+        int index);
   }
   /**
    * Protobuf type {@code fgboost.BoostEval}
@@ -7136,7 +7136,7 @@ public final class FGBoostServiceProto {
       return FGBoostServiceProto.internal_static_fgboost_BoostEval_descriptor;
     }
 
-    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+    protected FieldAccessorTable
         internalGetFieldAccessorTable() {
       return FGBoostServiceProto.internal_static_fgboost_BoostEval_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
@@ -7314,7 +7314,7 @@ public final class FGBoostServiceProto {
 
     @Override
     protected Builder newBuilderForType(
-        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+        BuilderParent parent) {
       Builder builder = new Builder(parent);
       return builder;
     }
@@ -7330,7 +7330,7 @@ public final class FGBoostServiceProto {
         return FGBoostServiceProto.internal_static_fgboost_BoostEval_descriptor;
       }
 
-      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+      protected FieldAccessorTable
           internalGetFieldAccessorTable() {
         return FGBoostServiceProto.internal_static_fgboost_BoostEval_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
@@ -7343,7 +7343,7 @@ public final class FGBoostServiceProto {
       }
 
       private Builder(
-          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+          BuilderParent parent) {
         super(parent);
         maybeForceBuilderInitialization();
       }
@@ -7868,7 +7868,7 @@ public final class FGBoostServiceProto {
       return FGBoostServiceProto.internal_static_fgboost_RegisterRequest_descriptor;
     }
 
-    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+    protected FieldAccessorTable
         internalGetFieldAccessorTable() {
       return FGBoostServiceProto.internal_static_fgboost_RegisterRequest_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
@@ -8086,7 +8086,7 @@ public final class FGBoostServiceProto {
 
     @Override
     protected Builder newBuilderForType(
-        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+        BuilderParent parent) {
       Builder builder = new Builder(parent);
       return builder;
     }
@@ -8102,7 +8102,7 @@ public final class FGBoostServiceProto {
         return FGBoostServiceProto.internal_static_fgboost_RegisterRequest_descriptor;
       }
 
-      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+      protected FieldAccessorTable
           internalGetFieldAccessorTable() {
         return FGBoostServiceProto.internal_static_fgboost_RegisterRequest_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
@@ -8115,7 +8115,7 @@ public final class FGBoostServiceProto {
       }
 
       private Builder(
-          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+          BuilderParent parent) {
         super(parent);
         maybeForceBuilderInitialization();
       }
@@ -8502,7 +8502,7 @@ public final class FGBoostServiceProto {
       return FGBoostServiceProto.internal_static_fgboost_RegisterResponse_descriptor;
     }
 
-    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+    protected FieldAccessorTable
         internalGetFieldAccessorTable() {
       return FGBoostServiceProto.internal_static_fgboost_RegisterResponse_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
@@ -8696,7 +8696,7 @@ public final class FGBoostServiceProto {
 
     @Override
     protected Builder newBuilderForType(
-        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+        BuilderParent parent) {
       Builder builder = new Builder(parent);
       return builder;
     }
@@ -8712,7 +8712,7 @@ public final class FGBoostServiceProto {
         return FGBoostServiceProto.internal_static_fgboost_RegisterResponse_descriptor;
       }
 
-      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+      protected FieldAccessorTable
           internalGetFieldAccessorTable() {
         return FGBoostServiceProto.internal_static_fgboost_RegisterResponse_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
@@ -8725,7 +8725,7 @@ public final class FGBoostServiceProto {
       }
 
       private Builder(
-          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+          BuilderParent parent) {
         super(parent);
         maybeForceBuilderInitialization();
       }
@@ -9022,7 +9022,7 @@ public final class FGBoostServiceProto {
      * <code>repeated .fgboost.BoostEval treeEval = 3;</code>
      */
     BoostEvalOrBuilder getTreeEvalOrBuilder(
-            int index);
+        int index);
   }
   /**
    * Protobuf type {@code fgboost.UploadTreeEvalRequest}
@@ -9105,7 +9105,7 @@ public final class FGBoostServiceProto {
       return FGBoostServiceProto.internal_static_fgboost_UploadTreeEvalRequest_descriptor;
     }
 
-    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+    protected FieldAccessorTable
         internalGetFieldAccessorTable() {
       return FGBoostServiceProto.internal_static_fgboost_UploadTreeEvalRequest_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
@@ -9348,7 +9348,7 @@ public final class FGBoostServiceProto {
 
     @Override
     protected Builder newBuilderForType(
-        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+        BuilderParent parent) {
       Builder builder = new Builder(parent);
       return builder;
     }
@@ -9364,7 +9364,7 @@ public final class FGBoostServiceProto {
         return FGBoostServiceProto.internal_static_fgboost_UploadTreeEvalRequest_descriptor;
       }
 
-      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+      protected FieldAccessorTable
           internalGetFieldAccessorTable() {
         return FGBoostServiceProto.internal_static_fgboost_UploadTreeEvalRequest_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
@@ -9377,7 +9377,7 @@ public final class FGBoostServiceProto {
       }
 
       private Builder(
-          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+          BuilderParent parent) {
         super(parent);
         maybeForceBuilderInitialization();
       }
@@ -9955,7 +9955,7 @@ public final class FGBoostServiceProto {
      * <code>repeated .fgboost.BoostEval treeEval = 2;</code>
      */
     BoostEvalOrBuilder getTreeEvalOrBuilder(
-            int index);
+        int index);
 
     /**
      * <code>optional int32 bsVersion = 3;</code>
@@ -10043,7 +10043,7 @@ public final class FGBoostServiceProto {
       return FGBoostServiceProto.internal_static_fgboost_EvaluateRequest_descriptor;
     }
 
-    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+    protected FieldAccessorTable
         internalGetFieldAccessorTable() {
       return FGBoostServiceProto.internal_static_fgboost_EvaluateRequest_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
@@ -10286,7 +10286,7 @@ public final class FGBoostServiceProto {
 
     @Override
     protected Builder newBuilderForType(
-        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+        BuilderParent parent) {
       Builder builder = new Builder(parent);
       return builder;
     }
@@ -10302,7 +10302,7 @@ public final class FGBoostServiceProto {
         return FGBoostServiceProto.internal_static_fgboost_EvaluateRequest_descriptor;
       }
 
-      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+      protected FieldAccessorTable
           internalGetFieldAccessorTable() {
         return FGBoostServiceProto.internal_static_fgboost_EvaluateRequest_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
@@ -10315,7 +10315,7 @@ public final class FGBoostServiceProto {
       }
 
       private Builder(
-          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+          BuilderParent parent) {
         super(parent);
         maybeForceBuilderInitialization();
       }
@@ -10987,7 +10987,7 @@ public final class FGBoostServiceProto {
       return FGBoostServiceProto.internal_static_fgboost_EvaluateResponse_descriptor;
     }
 
-    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+    protected FieldAccessorTable
         internalGetFieldAccessorTable() {
       return FGBoostServiceProto.internal_static_fgboost_EvaluateResponse_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
@@ -11262,7 +11262,7 @@ public final class FGBoostServiceProto {
 
     @Override
     protected Builder newBuilderForType(
-        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+        BuilderParent parent) {
       Builder builder = new Builder(parent);
       return builder;
     }
@@ -11278,7 +11278,7 @@ public final class FGBoostServiceProto {
         return FGBoostServiceProto.internal_static_fgboost_EvaluateResponse_descriptor;
       }
 
-      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+      protected FieldAccessorTable
           internalGetFieldAccessorTable() {
         return FGBoostServiceProto.internal_static_fgboost_EvaluateResponse_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
@@ -11291,7 +11291,7 @@ public final class FGBoostServiceProto {
       }
 
       private Builder(
-          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+          BuilderParent parent) {
         super(parent);
         maybeForceBuilderInitialization();
       }
@@ -11790,7 +11790,7 @@ public final class FGBoostServiceProto {
      * <code>repeated .fgboost.BoostEval treeEval = 2;</code>
      */
     BoostEvalOrBuilder getTreeEvalOrBuilder(
-            int index);
+        int index);
 
     /**
      * <code>optional int32 bsVersion = 3;</code>
@@ -11878,7 +11878,7 @@ public final class FGBoostServiceProto {
       return FGBoostServiceProto.internal_static_fgboost_PredictRequest_descriptor;
     }
 
-    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+    protected FieldAccessorTable
         internalGetFieldAccessorTable() {
       return FGBoostServiceProto.internal_static_fgboost_PredictRequest_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
@@ -12121,7 +12121,7 @@ public final class FGBoostServiceProto {
 
     @Override
     protected Builder newBuilderForType(
-        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+        BuilderParent parent) {
       Builder builder = new Builder(parent);
       return builder;
     }
@@ -12137,7 +12137,7 @@ public final class FGBoostServiceProto {
         return FGBoostServiceProto.internal_static_fgboost_PredictRequest_descriptor;
       }
 
-      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+      protected FieldAccessorTable
           internalGetFieldAccessorTable() {
         return FGBoostServiceProto.internal_static_fgboost_PredictRequest_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
@@ -12150,7 +12150,7 @@ public final class FGBoostServiceProto {
       }
 
       private Builder(
-          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+          BuilderParent parent) {
         super(parent);
         maybeForceBuilderInitialization();
       }
@@ -12794,7 +12794,7 @@ public final class FGBoostServiceProto {
       return FGBoostServiceProto.internal_static_fgboost_SplitRequest_descriptor;
     }
 
-    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+    protected FieldAccessorTable
         internalGetFieldAccessorTable() {
       return FGBoostServiceProto.internal_static_fgboost_SplitRequest_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
@@ -13005,7 +13005,7 @@ public final class FGBoostServiceProto {
 
     @Override
     protected Builder newBuilderForType(
-        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+        BuilderParent parent) {
       Builder builder = new Builder(parent);
       return builder;
     }
@@ -13021,7 +13021,7 @@ public final class FGBoostServiceProto {
         return FGBoostServiceProto.internal_static_fgboost_SplitRequest_descriptor;
       }
 
-      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+      protected FieldAccessorTable
           internalGetFieldAccessorTable() {
         return FGBoostServiceProto.internal_static_fgboost_SplitRequest_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
@@ -13034,7 +13034,7 @@ public final class FGBoostServiceProto {
       }
 
       private Builder(
-          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+          BuilderParent parent) {
         super(parent);
         maybeForceBuilderInitialization();
       }
@@ -13502,7 +13502,7 @@ public final class FGBoostServiceProto {
       return FGBoostServiceProto.internal_static_fgboost_PredictResponse_descriptor;
     }
 
-    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+    protected FieldAccessorTable
         internalGetFieldAccessorTable() {
       return FGBoostServiceProto.internal_static_fgboost_PredictResponse_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
@@ -13733,7 +13733,7 @@ public final class FGBoostServiceProto {
 
     @Override
     protected Builder newBuilderForType(
-        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+        BuilderParent parent) {
       Builder builder = new Builder(parent);
       return builder;
     }
@@ -13749,7 +13749,7 @@ public final class FGBoostServiceProto {
         return FGBoostServiceProto.internal_static_fgboost_PredictResponse_descriptor;
       }
 
-      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+      protected FieldAccessorTable
           internalGetFieldAccessorTable() {
         return FGBoostServiceProto.internal_static_fgboost_PredictResponse_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
@@ -13762,7 +13762,7 @@ public final class FGBoostServiceProto {
       }
 
       private Builder(
-          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+          BuilderParent parent) {
         super(parent);
         maybeForceBuilderInitialization();
       }
@@ -14262,7 +14262,7 @@ public final class FGBoostServiceProto {
       return FGBoostServiceProto.internal_static_fgboost_SplitResponse_descriptor;
     }
 
-    protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+    protected FieldAccessorTable
         internalGetFieldAccessorTable() {
       return FGBoostServiceProto.internal_static_fgboost_SplitResponse_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
@@ -14493,7 +14493,7 @@ public final class FGBoostServiceProto {
 
     @Override
     protected Builder newBuilderForType(
-        com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+        BuilderParent parent) {
       Builder builder = new Builder(parent);
       return builder;
     }
@@ -14509,7 +14509,7 @@ public final class FGBoostServiceProto {
         return FGBoostServiceProto.internal_static_fgboost_SplitResponse_descriptor;
       }
 
-      protected com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
+      protected FieldAccessorTable
           internalGetFieldAccessorTable() {
         return FGBoostServiceProto.internal_static_fgboost_SplitResponse_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
@@ -14522,7 +14522,7 @@ public final class FGBoostServiceProto {
       }
 
       private Builder(
-          com.google.protobuf.GeneratedMessageV3.BuilderParent parent) {
+          BuilderParent parent) {
         super(parent);
         maybeForceBuilderInitialization();
       }
@@ -14925,15 +14925,15 @@ public final class FGBoostServiceProto {
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
       internal_static_fgboost_DownloadResponse_fieldAccessorTable;
   private static final com.google.protobuf.Descriptors.Descriptor
-    internal_static_fgboost_TreeLeaves_descriptor;
+    internal_static_fgboost_TreeLeaf_descriptor;
   private static final 
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
-      internal_static_fgboost_TreeLeaves_fieldAccessorTable;
+      internal_static_fgboost_TreeLeaf_fieldAccessorTable;
   private static final com.google.protobuf.Descriptors.Descriptor
-    internal_static_fgboost_UploadTreeLeavesRequest_descriptor;
+    internal_static_fgboost_UploadTreeLeafRequest_descriptor;
   private static final 
     com.google.protobuf.GeneratedMessageV3.FieldAccessorTable
-      internal_static_fgboost_UploadTreeLeavesRequest_fieldAccessorTable;
+      internal_static_fgboost_UploadTreeLeafRequest_fieldAccessorTable;
   private static final com.google.protobuf.Descriptors.Descriptor
     internal_static_fgboost_DataSplit_descriptor;
   private static final 
@@ -15020,52 +15020,52 @@ public final class FGBoostServiceProto {
       "\n\010metaData\030\001 \001(\0132\t.MetaData\022\021\n\talgorithm" +
       "\030\002 \001(\t\"L\n\020DownloadResponse\022\030\n\004data\030\001 \001(\013" +
       "2\n.TensorMap\022\020\n\010response\030\002 \001(\t\022\014\n\004code\030\003" +
-      " \001(\005\"C\n\nTreeLeaves\022\016\n\006treeID\030\001 \001(\t\022\021\n\tle" +
-      "afIndex\030\002 \003(\005\022\022\n\nleafOutput\030\003 \003(\002\"V\n\027Upl" +
-      "oadTreeLeavesRequest\022\022\n\nclientuuid\030\001 \001(\t",
-      "\022\'\n\ntreeLeaves\030\002 \001(\0132\023.fgboost.TreeLeave" +
-      "s\"\227\001\n\tDataSplit\022\016\n\006treeID\030\001 \001(\t\022\016\n\006nodeI" +
-      "D\030\002 \001(\t\022\021\n\tfeatureID\030\003 \001(\005\022\022\n\nsplitValue" +
-      "\030\004 \001(\002\022\014\n\004gain\030\005 \001(\002\022\021\n\tsetLength\030\006 \001(\005\022" +
-      "\017\n\007itemSet\030\007 \003(\005\022\021\n\tclientUid\030\010 \001(\t\"0\n\016U" +
-      "ploadResponse\022\020\n\010response\030\001 \001(\t\022\014\n\004code\030" +
-      "\002 \001(\005\"/\n\013TreePredict\022\016\n\006treeID\030\001 \001(\t\022\020\n\010" +
-      "predicts\030\002 \003(\010\"6\n\014BoostPredict\022&\n\010predic" +
-      "ts\030\001 \003(\0132\024.fgboost.TreePredict\"4\n\tBoostE" +
-      "val\022\'\n\tevaluates\030\001 \003(\0132\024.fgboost.TreePre",
-      "dict\"4\n\017RegisterRequest\022\022\n\nclientuuid\030\001 " +
-      "\001(\t\022\r\n\005token\030\002 \001(\t\"2\n\020RegisterResponse\022\020" +
-      "\n\010response\030\001 \001(\t\022\014\n\004code\030\002 \001(\005\"b\n\025Upload" +
-      "TreeEvalRequest\022\022\n\nclientuuid\030\001 \001(\t\022\017\n\007v" +
-      "ersion\030\002 \001(\005\022$\n\010treeEval\030\003 \003(\0132\022.fgboost" +
-      ".BoostEval\"^\n\017EvaluateRequest\022\022\n\nclientu" +
-      "uid\030\001 \001(\t\022$\n\010treeEval\030\002 \003(\0132\022.fgboost.Bo" +
-      "ostEval\022\021\n\tbsVersion\030\003 \001(\005\"]\n\020EvaluateRe" +
-      "sponse\022\020\n\010response\030\001 \001(\t\022\030\n\004data\030\002 \001(\0132\n" +
-      ".TensorMap\022\014\n\004code\030\003 \001(\005\022\017\n\007message\030\004 \001(",
-      "\t\"]\n\016PredictRequest\022\022\n\nclientuuid\030\001 \001(\t\022" +
-      "$\n\010treeEval\030\002 \003(\0132\022.fgboost.BoostEval\022\021\n" +
-      "\tbsVersion\030\003 \001(\005\"E\n\014SplitRequest\022\022\n\nclie" +
-      "ntuuid\030\001 \001(\t\022!\n\005split\030\002 \001(\0132\022.fgboost.Da" +
-      "taSplit\"K\n\017PredictResponse\022\020\n\010response\030\001" +
-      " \001(\t\022\030\n\004data\030\002 \001(\0132\n.TensorMap\022\014\n\004code\030\003" +
-      " \001(\005\"R\n\rSplitResponse\022!\n\005split\030\001 \001(\0132\022.f" +
-      "gboost.DataSplit\022\020\n\010response\030\002 \001(\t\022\014\n\004co" +
-      "de\030\003 \001(\0052\365\003\n\016FGBoostService\022E\n\013uploadLab" +
-      "el\022\033.fgboost.UploadLabelRequest\032\027.fgboos",
-      "t.UploadResponse\"\000\022K\n\rdownloadLabel\022\035.fg" +
-      "boost.DownloadLabelRequest\032\031.fgboost.Dow" +
-      "nloadResponse\"\000\0228\n\005split\022\025.fgboost.Split" +
-      "Request\032\026.fgboost.SplitResponse\"\000\022A\n\010reg" +
-      "ister\022\030.fgboost.RegisterRequest\032\031.fgboos" +
-      "t.RegisterResponse\"\000\022O\n\020uploadTreeLeaves" +
-      "\022 .fgboost.UploadTreeLeavesRequest\032\027.fgb" +
-      "oost.UploadResponse\"\000\022A\n\010evaluate\022\030.fgbo" +
-      "ost.EvaluateRequest\032\031.fgboost.EvaluateRe" +
-      "sponse\"\000\022>\n\007predict\022\027.fgboost.PredictReq",
-      "uest\032\030.fgboost.PredictResponse\"\000B?\n(com." +
-      "intel.analytics.bigdl.ppml.generatedB\023FG" +
-      "BoostServiceProtob\006proto3"
+      " \001(\005\"A\n\010TreeLeaf\022\016\n\006treeID\030\001 \001(\t\022\021\n\tleaf" +
+      "Index\030\002 \003(\005\022\022\n\nleafOutput\030\003 \003(\002\"P\n\025Uploa" +
+      "dTreeLeafRequest\022\022\n\nclientuuid\030\001 \001(\t\022#\n\010",
+      "treeLeaf\030\002 \001(\0132\021.fgboost.TreeLeaf\"\227\001\n\tDa" +
+      "taSplit\022\016\n\006treeID\030\001 \001(\t\022\016\n\006nodeID\030\002 \001(\t\022" +
+      "\021\n\tfeatureID\030\003 \001(\005\022\022\n\nsplitValue\030\004 \001(\002\022\014" +
+      "\n\004gain\030\005 \001(\002\022\021\n\tsetLength\030\006 \001(\005\022\017\n\007itemS" +
+      "et\030\007 \003(\005\022\021\n\tclientUid\030\010 \001(\t\"0\n\016UploadRes" +
+      "ponse\022\020\n\010response\030\001 \001(\t\022\014\n\004code\030\002 \001(\005\"/\n" +
+      "\013TreePredict\022\016\n\006treeID\030\001 \001(\t\022\020\n\010predicts" +
+      "\030\002 \003(\010\"6\n\014BoostPredict\022&\n\010predicts\030\001 \003(\013" +
+      "2\024.fgboost.TreePredict\"4\n\tBoostEval\022\'\n\te" +
+      "valuates\030\001 \003(\0132\024.fgboost.TreePredict\"4\n\017",
+      "RegisterRequest\022\022\n\nclientuuid\030\001 \001(\t\022\r\n\005t" +
+      "oken\030\002 \001(\t\"2\n\020RegisterResponse\022\020\n\010respon" +
+      "se\030\001 \001(\t\022\014\n\004code\030\002 \001(\005\"b\n\025UploadTreeEval" +
+      "Request\022\022\n\nclientuuid\030\001 \001(\t\022\017\n\007version\030\002" +
+      " \001(\005\022$\n\010treeEval\030\003 \003(\0132\022.fgboost.BoostEv" +
+      "al\"^\n\017EvaluateRequest\022\022\n\nclientuuid\030\001 \001(" +
+      "\t\022$\n\010treeEval\030\002 \003(\0132\022.fgboost.BoostEval\022" +
+      "\021\n\tbsVersion\030\003 \001(\005\"]\n\020EvaluateResponse\022\020" +
+      "\n\010response\030\001 \001(\t\022\030\n\004data\030\002 \001(\0132\n.TensorM" +
+      "ap\022\014\n\004code\030\003 \001(\005\022\017\n\007message\030\004 \001(\t\"]\n\016Pre",
+      "dictRequest\022\022\n\nclientuuid\030\001 \001(\t\022$\n\010treeE" +
+      "val\030\002 \003(\0132\022.fgboost.BoostEval\022\021\n\tbsVersi" +
+      "on\030\003 \001(\005\"E\n\014SplitRequest\022\022\n\nclientuuid\030\001" +
+      " \001(\t\022!\n\005split\030\002 \001(\0132\022.fgboost.DataSplit\"" +
+      "K\n\017PredictResponse\022\020\n\010response\030\001 \001(\t\022\030\n\004" +
+      "data\030\002 \001(\0132\n.TensorMap\022\014\n\004code\030\003 \001(\005\"R\n\r" +
+      "SplitResponse\022!\n\005split\030\001 \001(\0132\022.fgboost.D" +
+      "ataSplit\022\020\n\010response\030\002 \001(\t\022\014\n\004code\030\003 \001(\005" +
+      "2\361\003\n\016FGBoostService\022E\n\013uploadLabel\022\033.fgb" +
+      "oost.UploadLabelRequest\032\027.fgboost.Upload",
+      "Response\"\000\022K\n\rdownloadLabel\022\035.fgboost.Do" +
+      "wnloadLabelRequest\032\031.fgboost.DownloadRes" +
+      "ponse\"\000\0228\n\005split\022\025.fgboost.SplitRequest\032" +
+      "\026.fgboost.SplitResponse\"\000\022A\n\010register\022\030." +
+      "fgboost.RegisterRequest\032\031.fgboost.Regist" +
+      "erResponse\"\000\022K\n\016uploadTreeLeaf\022\036.fgboost" +
+      ".UploadTreeLeafRequest\032\027.fgboost.UploadR" +
+      "esponse\"\000\022A\n\010evaluate\022\030.fgboost.Evaluate" +
+      "Request\032\031.fgboost.EvaluateResponse\"\000\022>\n\007" +
+      "predict\022\027.fgboost.PredictRequest\032\030.fgboo",
+      "st.PredictResponse\"\000B?\n(com.intel.analyt" +
+      "ics.bigdl.ppml.generatedB\023FGBoostService" +
+      "Protob\006proto3"
     };
     com.google.protobuf.Descriptors.FileDescriptor.InternalDescriptorAssigner assigner =
         new com.google.protobuf.Descriptors.FileDescriptor.    InternalDescriptorAssigner() {
@@ -15098,18 +15098,18 @@ public final class FGBoostServiceProto {
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_fgboost_DownloadResponse_descriptor,
         new String[] { "Data", "Response", "Code", });
-    internal_static_fgboost_TreeLeaves_descriptor =
+    internal_static_fgboost_TreeLeaf_descriptor =
       getDescriptor().getMessageTypes().get(3);
-    internal_static_fgboost_TreeLeaves_fieldAccessorTable = new
+    internal_static_fgboost_TreeLeaf_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
-        internal_static_fgboost_TreeLeaves_descriptor,
+        internal_static_fgboost_TreeLeaf_descriptor,
         new String[] { "TreeID", "LeafIndex", "LeafOutput", });
-    internal_static_fgboost_UploadTreeLeavesRequest_descriptor =
+    internal_static_fgboost_UploadTreeLeafRequest_descriptor =
       getDescriptor().getMessageTypes().get(4);
-    internal_static_fgboost_UploadTreeLeavesRequest_fieldAccessorTable = new
+    internal_static_fgboost_UploadTreeLeafRequest_fieldAccessorTable = new
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
-        internal_static_fgboost_UploadTreeLeavesRequest_descriptor,
-        new String[] { "Clientuuid", "TreeLeaves", });
+        internal_static_fgboost_UploadTreeLeafRequest_descriptor,
+        new String[] { "Clientuuid", "TreeLeaf", });
     internal_static_fgboost_DataSplit_descriptor =
       getDescriptor().getMessageTypes().get(5);
     internal_static_fgboost_DataSplit_fieldAccessorTable = new

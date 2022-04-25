@@ -301,6 +301,10 @@ if __name__ == "__main__":
                           init_ray_on_spark=True)
     elif options.cluster_mode == "spark-submit":
         init_orca_context("spark-submit")
+    else:
+        raise ValueError(
+            "cluster_mode should be one of 'local', 'yarn', 'standalone' and 'spark-submit'"
+            ", but got " + args.cluster_mode)
 
     train_tbl, test_tbl, indicator_sizes, embedding_sizes, cross_sizes = get_size(options.data_dir)
 

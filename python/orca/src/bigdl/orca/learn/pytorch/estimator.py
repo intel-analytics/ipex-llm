@@ -123,3 +123,9 @@ class Estimator(object):
         else:
             raise ValueError("Only horovod, torch_distributed, bigdl and spark backends are "
                              f"supported for now, got backend: {backend}")
+
+    @staticmethod
+    def latest_checkpoint(checkpoint_dir):
+        from .callbacks.model_checkpoint import ModelCheckpoint
+        checkpoint_path = ModelCheckpoint.get_latest_checkpoint(checkpoint_dir)
+        return checkpoint_path

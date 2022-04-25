@@ -202,5 +202,4 @@ if __name__ == "__main__":
     if args.as_test:
         raise ValueError("Desired reward ({}) not reached!".format(
             args.stop_reward))
-    ray_ctx.stop()
     stop_orca_context()

@@ -7,21 +7,38 @@ There're three ways to do forecasting:
 - Use [**auto forecasting models**](#use-auto-forecasting-model) with auto hyperparameter optimization.
 - Use [**standalone forecasters**](#use-standalone-forecaster-pipeline).
 
+#### **0. Supported Time Series Forecasting Model**
+
+- `Model`: Model name.
+- `Style`: Forecasting model style. Detailed information will be stated in [this section](#time-series-forecasting-concepts).
+- `Multi-Variate`: Predict more than one variable at the same time?
+- `Multi-Step`: Predict more than one data point in the future?
+- `Exogenous Variables`: Take other variables(you don't need to predict) into consideration?
+- `Distributed`: Scale the model to a cluster and take data from distributed file system?
+- `ONNX`: Export and use `OnnxRuntime` to do the inference.
+- `Quantization`: Export and use quantized int8 model to do the inference.
+- `Auto Models`: AutoModel API support.
+- `AutoTS`: AutoTS API support.
+- `Backend`: The DL framework we use to implement this model.
+
 <span id="supported_forecasting_model"></span>
 
-| Model   | Style | Multi-Variate | Multi-Step | Distributed\* | Auto Models | AutoTS | Backend |
-| ----------------- | ----- | ------------- | ---------- | ----------- | ----------- | ----------- | ----------- |
-| LSTM    | RR    | ✅             | ❌          | ✅           | ✅          | ✅         | pytorch  |
-| Seq2Seq     | RR    | ✅             | ✅          | ✅           | ✅          | ✅         | pytorch  |
-| TCN | RR    | ✅             | ✅          | ✅           | ✅          | ✅         | pytorch  |
-| MTNet   | RR    | ✅             | ❌         | ✅           | ❌          | ✳️\*\*\*        | tensorflow |
-| TCMF    | TS    | ✅             | ✅          | ✳️\*\*           | ❌          | ❌         | pytorch  |
-| Prophet | TS    | ❌             | ✅          | ❌           | ✅          | ❌         | prophet  |
-| ARIMA   | TS    | ❌             | ✅          | ❌           | ✅          | ❌         | pmdarima |
+| Model   | Style | Multi-Variate | Multi-Step | Exogenous Variables | Distributed | ONNX | Quantization | Auto Models | AutoTS | Backend |
+| ----------------- | ----- | ------------- | ---------- | ------- | ----------- | ----------- | ----------- | ----------- | ----------- | ----------- |
+| LSTM    | RR    | ✅             | ❌      | ✅    | ✅   | ✅           | ✅        | ✅          | ✅         | pytorch  |
+| Seq2Seq     | RR    | ✅             | ✅     | ✅     | ✅     | ✅           | ❌      | ✅          | ✅         | pytorch  |
+| TCN | RR    | ✅             | ✅     | ✅     | ✅     | ✅           | ✅      | ✅          | ✅         | pytorch  |
+| NBeats | RR    | ❌             | ✅     | ❌     | ✅     | ✅           | ✅      | ❌          | ❌         | pytorch  |
+| MTNet   | RR    | ✅             | ❌    | ✅     | ✅     | ❌          | ❌         | ❌          | ✳️\*\*        | tensorflow |
+| TCMF    | TS    | ✅             | ✅    | ✅      | ✳️\*     | ❌          | ❌         | ❌          | ❌         | pytorch  |
+| Prophet | TS    | ❌             | ✅    | ❌      | ❌        | ❌          | ❌      | ✅          | ❌         | prophet  |
+| ARIMA   | TS    | ❌             | ✅    | ❌      | ❌         | ❌          | ❌     | ✅          | ❌         | pmdarima |
+| Customized\*\*\* | RR | Customized | Customized | Customized | ❌ |✅|❌|❌|✅|pytorch
 
-\* Distributed training/inferencing is only supported by standalone forecasters.<br>
-\*\* TCMF only partially supports distributed training.<br>
-\*\*\*  Auto tuning of MTNet is only supported in our deprecated AutoTS API.<br>
+\* TCMF only partially supports distributed training.<br>
+\*\*  Auto tuning of MTNet is only supported in our deprecated AutoTS API.<br>
+\*\*\* Customized model is only supported in `AutoTSEstimator` with pytorch as backend.
+
 
 
 #### **1. Time Series Forecasting Concepts**
@@ -203,14 +220,19 @@ ProphetForecaster wraps the Prophet model ([site](https://github.com/facebook/pr
 
 View Stock Prediction [notebook](https://github.com/intel-analytics/BigDL/blob/branch-2.0/python/chronos/use-case/fsi/stock_prediction_prophet.ipynb) and [ProphetForecaster API Doc](../../PythonAPI/Chronos/forecasters.html#prophetforecaster) for more details.
 
+<span id="NBeatsForecaster"></span>
+###### **3.8 NBeatsForecaster**
+
+Neural basis expansion analysis for interpretable time series forecasting ([N-BEATS](https://arxiv.org/abs/1905.10437)) is a deep neural architecture based on backward and forward residual links and a very deep stack of fully-connected layers. Nbeats can solve univariate time series point forecasting problems, being interpretable, and fast to train.
+
 #### **4. Use Auto forecasting model**
 Auto forecasting models are designed to be used exactly the same as Forecasters. The only difference is that you can set hp search function to the hyperparameters and the `.fit()` method will search the best hyperparameter setting.
 ```python
 # set hyperparameters in hp search function, loss, metric...
-f = Forecaster(...)
+auto_model = AutoModel(...)
 # input data, batch size, epoch...
-f.fit(...)
+auto_model.fit(...)
 # input test data x, batch size...
-f.predict(...)
+auto_model.predict(...)
 ```
 The input data can be easily get from `TSDataset`. Users can refer to detailed [API doc](../../PythonAPI/Chronos/automodels.html).

@@ -172,7 +172,8 @@ class PyTorchPySparkEstimator(BaseEstimator):
             reduce_results=True,
             info=None,
             feature_cols=None,
-            label_cols=None):
+            label_cols=None,
+            callbacks=[]):
         """
         Trains a PyTorch model given training data for several epochs.
         Calls `TrainingOperator.train_epoch()` on N parallel workers simultaneously
@@ -197,6 +198,7 @@ class PyTorchPySparkEstimator(BaseEstimator):
                train_epoch and train_batch.
         :param feature_cols: feature column names if data is Spark DataFrame.
         :param label_cols: label column names if data is Spark DataFrame.
+        :param callbacks: A list for all callbacks.
 
         :return: A list of dictionary of metrics for every training epoch. If reduce_results is
                 False, this will return a nested list of metric dictionaries whose length will be
@@ -225,6 +227,7 @@ class PyTorchPySparkEstimator(BaseEstimator):
             batch_size=batch_size,
             profile=profile,
             info=info,
+            callbacks=callbacks,
         )
 
         if isinstance(data, SparkXShards):
@@ -475,6 +478,35 @@ class PyTorchPySparkEstimator(BaseEstimator):
         """
         state_dict = torch.load(model_path)
         self.state_dict = state_dict
+
+    def save_checkpoint(self, model_path):
+        """
+        Manually saves the Estimator state (including model and optimizer) to the provided
+        model_path.
+        :param model_path: (str) Path to save the model. Both local and remote path are supported.
+               e.g. "/tmp/estimator.ckpt" or "hdfs:///tmp/estimator.ckpt"
+        :return: None
+        """
+        from bigdl.dllib.utils.file_utils import is_local_path
+        if is_local_path(model_path):
+            self.save(model_path)
+        else:
+            self.driver_runner.load_state_dict(self.state_dict)
+            self.driver_runner.save_checkpoint(filepath=model_path)
+
+    def load_checkpoint(self, model_path):
+        """
+        Loads the Estimator state (including model and optimizer) from the provided model_path.
+        :param model_path: (str) Path to the existing model. Both local and remote path are
+               supported. e.g. "/tmp/estimator.ckpt" or "hdfs:///tmp/estimator.ckpt"
+        :return: None
+        """
+        from bigdl.dllib.utils.file_utils import is_local_path
+        if is_local_path(model_path):
+            self.load(model_path)
+        else:
+            self.driver_runner.load_checkpoint(filepath=model_path)
+            self.state_dict = self.driver_runner.get_state_dict()
 
     def _process_stats(self, worker_stats):
         stats = {

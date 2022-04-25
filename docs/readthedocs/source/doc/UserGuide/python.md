@@ -119,7 +119,7 @@ BigDL has been tested on __Python 3.6 and 3.7__ with the following library versi
 
 ```bash
 pyspark==2.4.6 or 3.1.2
-ray==1.2.0
+ray==1.9.2
 tensorflow==1.15.0 or >2.0
 pytorch>=1.5.0
 torchvision>=0.6.0
