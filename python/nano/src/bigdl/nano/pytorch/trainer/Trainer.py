@@ -366,4 +366,6 @@ class Trainer(pl.Trainer):
             model.load_state_dict(state_dict)
             return model
         else:
-            raise TypeError("Model type of {} is not acceptable for pytorch loading.".format(type(model)))
+            raise TypeError(
+                "Model type of {} is not acceptable for pytorch loading.".format(type(model))
+            )
