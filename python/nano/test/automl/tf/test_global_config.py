@@ -19,11 +19,21 @@ import pytest
 from unittest import TestCase
 
 import bigdl.nano.automl as nano_automl
+import bigdl.nano.tf
 
 class TestGlobalConfig(TestCase):
 
-    def test_enable_automl(self):
-        nano_automl.hpo_config.enable_hpo_tf()
+    def _import_should_raise(self):
+        with self.assertRaises(ImportError):
+            from bigdl.nano.tf.keras.activations import sigmoid, linear
+        with self.assertRaises(ImportError):
+            from bigdl.nano.tf.keras.layers import Dense, ELU, Embeddings
+        with self.assertRaises(ImportError):
+            from bigdl.nano.tf import cast
+        with self.assertRaises(ImportError):
+            from bigdl.nano.tf.keras import Input
+
+    def _import_should_okay(self):
         try:
             from bigdl.nano.tf.keras.activations import sigmoid, linear
         except ImportError:
@@ -41,18 +51,41 @@ class TestGlobalConfig(TestCase):
         except ImportError:
             self.fail("nano.tf.automl should contain keras.Input")
 
+    def test_enable_automl(self):
+        nano_automl.hpo_config.enable_hpo_tf()
+        self._import_should_okay()
+        nano_automl.hpo_config.enable_hpo_tf()
+        self._import_should_okay()
+
     def test_disable_automl(self):
         nano_automl.hpo_config.disable_hpo_tf()
-        with self.assertRaises(ImportError):
-            from bigdl.nano.tf.keras.activations import sigmoid, linear
-        with self.assertRaises(ImportError):
-            from bigdl.nano.tf.keras.layers import Dense, Embeddings
-        with self.assertRaises(ImportError):
-            from bigdl.nano.tf import cast
-        with self.assertRaises(ImportError):
-            from bigdl.nano.tf.keras import Input
+        self._import_should_raise()
+        nano_automl.hpo_config.disable_hpo_tf()
+        self._import_should_raise()
 
+    def test_multi_enable_disable(self):
+        nano_automl.hpo_config.disable_hpo_tf()
+        self._import_should_raise()
+        nano_automl.hpo_config.enable_hpo_tf()
+        self._import_should_okay()
+        nano_automl.hpo_config.disable_hpo_tf()
+        self._import_should_raise()
+        nano_automl.hpo_config.enable_hpo_tf()
+        self._import_should_okay()
+        nano_automl.hpo_config.disable_hpo_tf()
+        self._import_should_raise()
 
+    def test_multi_enable_disable2(self):
+        nano_automl.hpo_config.enable_hpo_tf()
+        self._import_should_okay()
+        nano_automl.hpo_config.disable_hpo_tf()
+        self._import_should_raise()
+        nano_automl.hpo_config.enable_hpo_tf()
+        self._import_should_okay()
+
+    def test_hpo_settings(self):
+        with self.assertRaises(ValueError):
+            nano_automl.hpo_config.hpo_tf = True
 
 
 if __name__ == '__main__':
