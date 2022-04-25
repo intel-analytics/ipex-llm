@@ -17,21 +17,24 @@
 from enum import Enum
 import optuna
 
+
 class SamplerType(Enum):
     """Types of Samplers. Sampler are used for generating hyper parameters
     """
-    TPE = 1 # the default
+
+    TPE = 1  # the default
     CmaEs = 2
     Grid = 3
     Random = 4
     PartialFixed = 5
-    NSGAII = 6 # multi-objective sampler
-    MOTPE = 7 # multi-objective sampler
+    NSGAII = 6  # multi-objective sampler
+    MOTPE = 7  # multi-objective sampler
+
 
 class PrunerType(Enum):
     """Types of Pruners. Pruners are used to stop non-promising trials early
     """
-    HyperBand = 1 # the default
+    HyperBand = 1  # the default
     Median = 2
     Nop = 3
     Patient = 4
@@ -76,8 +79,8 @@ class OptunaBackend(object):
         config = {}
         for hp in hp_ordering:
             hp_obj = configspace.get_hyperparameter(hp)
-            hp_prefix = hp_obj.meta.setdefault('prefix',None)
-            hp_name = hp_prefix+':'+hp if hp_prefix else hp
+            hp_prefix = hp_obj.meta.setdefault('prefix', None)
+            hp_name = hp_prefix + ':' + hp if hp_prefix else hp
             hp_type = str(type(hp_obj)).lower()  # type of hyperparam
             if 'integer' in hp_type:
                 hp_dimension = trial.suggest_int(
@@ -127,4 +130,3 @@ class OptunaBackend(object):
     @staticmethod
     def create_study(**kwargs):
         return optuna.create_study(**kwargs)
-

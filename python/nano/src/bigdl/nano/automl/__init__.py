@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 
-#TODO extend to a class later for configuration
+# TODO extend to a class later for configuration
 
 from .hpo.config import HPOConfig
 

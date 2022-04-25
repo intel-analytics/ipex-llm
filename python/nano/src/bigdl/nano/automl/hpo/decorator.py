@@ -179,7 +179,6 @@ def args(default=None, **kwvars):
     return registered_func
 
 
-
 def func(**kwvars):
     """Decorator for a function that registers its arguments as hyperparameters.
        Each hyperparameter may take a fixed value or be a searchable space (hpo.space).
@@ -240,7 +239,7 @@ def func(**kwvars):
                 return 'AutoSlice -- [] ' + str(id(self))
 
         class AutoFunc(AutoObject):
-            #@_automl_kwargs_func(**kwvars)
+            # @_automl_kwargs_func(**kwvars)
             def __init__(self, *args, **kwargs):
                 self.func = func
                 self.args = args
@@ -267,7 +266,7 @@ def func(**kwvars):
 
             def sample(self, **config):
                 kwargs = copy.deepcopy(self.kwargs)
-                #kwspaces = copy.deepcopy(AutoFunc.kwspaces)
+                # kwspaces = copy.deepcopy(AutoFunc.kwspaces)
                 kwspaces = copy.deepcopy(self.kwspaces_)
                 for k, v in kwargs.items():
                     if k in kwspaces and isinstance(kwspaces[k], NestedSpace):
@@ -346,7 +345,7 @@ def obj(**kwvars):
 
     def registered_class(Cls):
         class AutoCls(AutoObject):
-            #@_automl_kwargs_obj(**kwvars)
+            # @_automl_kwargs_obj(**kwvars)
             def __init__(self, *args, **kwargs):
                 self.args = args
                 self.kwargs = kwargs
@@ -358,7 +357,7 @@ def obj(**kwvars):
 
             def sample(self, **config):
                 kwargs = copy.deepcopy(self.kwargs)
-                #kwspaces = copy.deepcopy(automlobject.kwspaces)
+                # kwspaces = copy.deepcopy(automlobject.kwspaces)
                 kwspaces = copy.deepcopy(self.kwspaces_)
                 for k, v in kwargs.items():
                     if k in kwspaces and isinstance(kwspaces[k], NestedSpace):
@@ -392,7 +391,7 @@ def obj(**kwvars):
 
             def __call__(self, *args, **kwargs):
 
-                #super.__call__(*args, **kwargs)
+                # super.__call__(*args, **kwargs)
                 # this is to handle functional API of layers
                 self._call_args = args
                 self._call_kwargs = kwargs
@@ -404,7 +403,7 @@ def obj(**kwvars):
                 self._callgraph = CallCache.update(inputs, self)
                 return self
 
-        #automlobject.kwvars = automlobject.__init__.kwvars
+        # automlobject.kwvars = automlobject.__init__.kwvars
         AutoCls.__doc__ = Cls.__doc__
         AutoCls.__name__ = Cls.__name__
         return AutoCls
@@ -462,6 +461,7 @@ def tfmodel(**kwvars):
 
     return registered_class
 
+
 def plmodel(**kwvars):
     """Decorator for a custom model that registers its arguments as hyperparameters.
        Each hyperparameter may take a fixed value or be a searchable space (hpo.space).
@@ -509,6 +509,3 @@ def plmodel(**kwvars):
         return PLAutoMdl
 
     return registered_class
-
-
-

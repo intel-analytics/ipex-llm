@@ -22,9 +22,9 @@
 # https://github.com/awslabs/autogluon/blob/master/LICENSE
 
 
-
 def _filter_tuner_args(kwargs, tuner_keys):
     return {k: v for k, v in kwargs.items() if k in tuner_keys}
+
 
 def _search_summary(study):
     """Retrive a summary of trials
@@ -45,6 +45,7 @@ def _search_summary(study):
     else:
         print("Seems you have not done any tuning yet.  \
                 Call tune and then call tune_summary to get the statistics.")
+
 
 def _end_search(study, model_builder, use_trial_id=-1):
     """ Put an end to tuning.
@@ -69,34 +70,37 @@ def _end_search(study, model_builder, use_trial_id=-1):
     # TODO Next step: support retrive saved model instead of retrain from hparams
     return _lazymodel
 
+
 def _check_search_args(search_args, legal_keys):
     search_arg_keys = set(search_args.keys())
     allkeys = set().union(*legal_keys)
     illegal_args = search_arg_keys.difference(allkeys)
-    if len(illegal_args) > 0 :
+    if len(illegal_args) > 0:
         raise ValueError('Invalid Arguments found for \'search\':',
-                            ', '.join(illegal_args))
+                         ', '.join(illegal_args))
+
 
 def _strip_val_prefix(metric):
     if metric.startswith('val_'):
         metric = metric[len('val_'):]
     return metric
 
+
 def _check_optimize_direction(direction, directions, metric):
-    #TODO check common metrics and corresponding directions
+    # TODO check common metrics and corresponding directions
     if directions:
         # TODO we don't check for multiobjective cases
         return
     if not direction and not directions:
         direction = 'minimize'
-    max_metrics=['accuracy','auc', 'acc']
-    min_metrics=['loss','mae','mse']
+    max_metrics = ['accuracy', 'auc', 'acc']
+    min_metrics = ['loss', 'mae', 'mse']
     stripped_metric = _strip_val_prefix(metric).lower()
     if stripped_metric in max_metrics:
         if direction != 'maximize':
             raise ValueError('metric', metric,
-                'should use maximize direction for optmize')
+                             'should use maximize direction for optmize')
     elif stripped_metric in min_metrics:
         if direction != 'minimize':
             raise ValueError('metric', metric,
-                'should use minimize direction for optmize')
+                             'should use minimize direction for optmize')

@@ -23,6 +23,7 @@ import copy
 
 from optuna.integration import TFKerasPruningCallback
 
+
 def is_creator(model):
     return inspect.ismethod(model) or inspect.isfunction(model)
 
@@ -33,7 +34,7 @@ class Objective(object):
     def __init__(self,
                  model=None,
                  target_metric=None,
-                 pruning = False,
+                 pruning=False,
                  **kwargs,
                  ):
         """Init the objective.
@@ -76,7 +77,6 @@ class Objective(object):
         new_kwargs['callbacks'] = callbacks
         return new_kwargs
 
-
     def __call__(self, trial):
         # Clear clutter from previous Keras session graphs.
         clear_session()
@@ -97,6 +97,5 @@ class Objective(object):
         if score is not None:
             if isinstance(score, list):
                 # score = score[-1]
-                score= max(score)
+                score = max(score)
             return score
-

@@ -23,19 +23,16 @@ from bigdl.nano.automl.utils.register_modules import (
     COMPONENT_TYPE,
     register_module,
     register_module_simple,
-    clean_modules_simple,
-    )
+    clean_modules_simple,)
 
 
-TF_LAYER_MODULES = [
-        ("tensorflow.keras.layers", "keras.layers"),
-    ]
+TF_LAYER_MODULES = [("tensorflow.keras.layers", "keras.layers"), ]
+
 NANO_DEFINED_TF_LAYERS = ['Embedding']
 
-TF_ACTIVATION_MODULE = [
-        ("tensorflow.keras.activations", "keras.activations")
-    ]
-TF_ACTIVATION_EXCLUDE = ['serialize','deserialize','get']
+TF_ACTIVATION_MODULE = [("tensorflow.keras.activations", "keras.activations")]
+
+TF_ACTIVATION_EXCLUDE = ['serialize', 'deserialize', 'get']
 
 TF_FUNCS = ['cast']
 TF_KERAS_FUNCS = ['Input']
@@ -49,7 +46,7 @@ class HPOConfig(object):
     def __init__(self,
                  hpo_tf=False,
                  hpo_pytorch=False):
-        #configuraitons
+        # configuraitons
         self.hpo_tf_ = hpo_tf
         self.hpo_pytorch_ = hpo_pytorch
 
@@ -57,19 +54,18 @@ class HPOConfig(object):
         try:
             import torch
             self.torch_available = True
-        except:
+        except e:
             pass
         self.tf_available = False
         try:
             import tensorflow
             self.tf_available = True
-        except:
+        except e:
             pass
 
         self.added_tf_activations = []
         self.added_tf_layers = []
         self.backup_tf_layers = None
-
 
     def enable_hpo_tf(self):
         if self.hpo_tf:
@@ -82,7 +78,7 @@ class HPOConfig(object):
 
     def enable_hpo_pytorch(self):
         self.hpo_pytorch_ = True if self.torch_available else False
-        #TODO anything pytorch specific add here
+        # TODO anything pytorch specific add here
 
     def disable_hpo_tf(self):
         if self.hpo_tf:
@@ -129,9 +125,8 @@ class HPOConfig(object):
         self.added_tf_activations = register_module(
             vars(nano_activations),
             TF_ACTIVATION_MODULE,
-            include_types = COMPONENT_TYPE.FUNC,
-            exclude_names = TF_ACTIVATION_EXCLUDE)
-
+            include_types=COMPONENT_TYPE.FUNC,
+            exclude_names=TF_ACTIVATION_EXCLUDE)
 
         # register decorated layers
         import bigdl.nano.tf.keras.layers as nano_layers
@@ -142,15 +137,15 @@ class HPOConfig(object):
         self.added_tf_layers = register_module(
             vars(nano_layers),
             TF_LAYER_MODULES,
-            include_types = COMPONENT_TYPE.CLASS,
-            exclude_names = NANO_DEFINED_TF_LAYERS)
+            include_types=COMPONENT_TYPE.CLASS,
+            exclude_names=NANO_DEFINED_TF_LAYERS)
         self._backup_existing_components(
             vars(nano_layers),
             subcomponents=NANO_DEFINED_TF_LAYERS)
         register_module_simple(
             vars(nano_layers),
-            subcomponents = NANO_DEFINED_TF_LAYERS,
-            component_type = COMPONENT_TYPE.CLASS,
+            subcomponents=NANO_DEFINED_TF_LAYERS,
+            component_type=COMPONENT_TYPE.CLASS,
             module='bigdl.nano.tf.keras.layers'
         )
         self.added_tf_layers.extend(NANO_DEFINED_TF_LAYERS)
@@ -158,17 +153,16 @@ class HPOConfig(object):
         # register decorated tf.cast
         import bigdl.nano.tf
         register_module_simple(vars(bigdl.nano.tf),
-                               subcomponents = TF_FUNCS,
-                               component_type = COMPONENT_TYPE.FUNC,
+                               subcomponents=TF_FUNCS,
+                               component_type=COMPONENT_TYPE.FUNC,
                                module='tensorflow')
 
         # register decorated tf.keras.Input
         import bigdl.nano.tf.keras
         register_module_simple(vars(bigdl.nano.tf.keras),
                                subcomponents=TF_KERAS_FUNCS,
-                               component_type = COMPONENT_TYPE.FUNC,
+                               component_type=COMPONENT_TYPE.FUNC,
                                module='tensorflow.keras')
-
 
     def _reload_modules(self):
         import bigdl.nano.tf.keras.layers
@@ -206,5 +200,3 @@ class HPOConfig(object):
         import bigdl.nano.tf.keras
         clean_modules_simple(vars(bigdl.nano.tf.keras),
                              subcomponents=TF_KERAS_FUNCS)
-
-

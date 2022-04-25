@@ -15,14 +15,16 @@
 #
 
 import importlib
-from bigdl.nano.automl.hpo import obj,func
+from bigdl.nano.automl.hpo import obj, func
 import inspect
 from enum import Enum
 import copy
 
+
 class COMPONENT_TYPE(Enum):
     CLASS = 1
     FUNC = 2
+
 
 def decorate_cls(module, name):
     component = getattr(module, name)
@@ -30,10 +32,12 @@ def decorate_cls(module, name):
     decorated = obj()(derived)
     return decorated
 
+
 def decorate_func(module, name):
     component = getattr(module, name)
     decorated = func()(component)
     return decorated
+
 
 def register_module(target_symtab,
                     modules,
@@ -49,20 +53,21 @@ def register_module(target_symtab,
                check_type,
                exclude_set):
         filtered = []
-        attrs= vars(module).items()
+        attrs = vars(module).items()
         for name, attr in attrs:
             if check_type(attr):
                 m = inspect.getmodule(attr)
-                if m.__name__.startswith(prefix) \
-                    and name not in exclude_set:
-                        filtered.append(name)
+                if m.__name__.startswith(prefix) and name not in exclude_set:
+                    filtered.append(name)
         return filtered
 
     if include_types == COMPONENT_TYPE.CLASS:
-        type_checker = lambda x: inspect.isclass(x)
+        def type_checker(x):
+            inspect.isclass(x)
         decorator = decorate_cls
     elif include_types == COMPONENT_TYPE.FUNC:
-        type_checker = lambda x: inspect.isfunction(x)
+        def type_checker(x):
+            inspect.isfunction(x)
         decorator = decorate_func
     else:
         raise ValueError("Unknown Component Type",
@@ -73,7 +78,7 @@ def register_module(target_symtab,
         module = importlib.import_module(m)
         c_names = filter(module,
                          prefix,
-                         check_type = type_checker,
+                         check_type=type_checker,
                          exclude_set=exclude_names)
         # TODO check layers
         for c_name in c_names:
