@@ -24,12 +24,20 @@ from ._utils import BackboneModule
 
 
 class ImageClassifier(pl.LightningModule):
-    # Linear top layer
+    """A common LightningModule implementation of a image classifier."""
 
     def __init__(self, backbone: BackboneModule,
                  num_classes: int,
                  head: nn.Module = None,
                  criterion: nn.Module = None):
+        """
+        Create a ImageClassifier for common image classifier task.
+
+        :param backbone: a backbone network of this ImageClassifer
+        :param num_classes: the number of classification classes
+        :param head: the head network on top of the backone network
+        :param criterion: criterion for the classifier, default to CrossEntropyLoss
+        """
         super().__init__()
 
         if head is None:
@@ -41,9 +49,11 @@ class ImageClassifier(pl.LightningModule):
         self.criterion = criterion
 
     def forward(self, x):
+        """Run regular forward of a pytorch model."""
         return self.model(x)
 
     def training_step(self, batch, batch_idx):
+        """A training step of a ImageClassifier."""
         x, y = batch
         output = self.model(x)
         loss = self.criterion(output, y)
@@ -51,6 +61,7 @@ class ImageClassifier(pl.LightningModule):
         return loss
 
     def test_step(self, batch, batch_idx):
+        """A test step of a ImageClassifier."""
         x, y = batch
         output = self.forward(x)
         loss = self.criterion(output, y)

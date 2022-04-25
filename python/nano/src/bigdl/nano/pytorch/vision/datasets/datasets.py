@@ -36,28 +36,7 @@ else:
 
 
 class ImageFolder(torchvision.datasets.ImageFolder):
-    """A generic data loader where the images are arranged in this way: ::
-
-        root/dog/xxx.png
-        root/dog/xxy.png
-        root/dog/[...]/xxz.png
-
-        root/cat/123.png
-        root/cat/nsdf3.png
-        root/cat/[...]/asd932_.png
-
-    Args:
-        root (string): Root directory path.
-        transform (callable, optional): A function/transform that  takes in an PIL image
-            and returns a transformed version. E.g, ``transforms.RandomCrop``
-        target_transform (callable, optional): A function/transform that takes in the
-            target and transforms it.
-
-     Attributes:
-        classes (list): List of the class names sorted alphabetically.
-        class_to_idx (dict): Dict with items (class_name, class_index).
-        imgs (list): List of (image path, class_index) tuples
-    """
+    """A optimzied ImageFolder using libjpeg_turbo to load jpg images."""
 
     def __init__(
             self,
@@ -65,16 +44,25 @@ class ImageFolder(torchvision.datasets.ImageFolder):
             transform: Optional[Callable] = None,
             target_transform: Optional[Callable] = None
     ):
+        """
+        Create a ImageFolder.
+
+        :param root: A string represting the root directory path.
+        :param transform: A function/transform that takes in an ndarray image
+            and returns a transformed version. E.g, ``transforms.RandomCrop``
+        :param target_transform: A function/transform that takes in the
+            target and transforms it.
+        """
         super(ImageFolder, self).__init__(root, transform, target_transform)
         self.jpeg: Optional[TurboJPEG] = None
 
-    def read_image_to_bytes(self, path: str):
+    def _read_image_to_bytes(self, path: str):
         fd = open(path, 'rb')
         img_str = fd.read()
         fd.close()
         return img_str
 
-    def decode_img_libjpeg_turbo(self, img_str: str):
+    def _decode_img_libjpeg_turbo(self, img_str: str):
         if self.jpeg is None:
             self.jpeg = TurboJPEG(lib_path=local_libturbo_path)
         bgr_array = self.jpeg.decode(img_str)
@@ -85,8 +73,8 @@ class ImageFolder(torchvision.datasets.ImageFolder):
         label = self.imgs[idx][1]
 
         if path.endswith(".jpg") or path.endswith(".jpeg"):
-            img_str = self.read_image_to_bytes(path)
-            img = self.decode_img_libjpeg_turbo(img_str)
+            img_str = self._read_image_to_bytes(path)
+            img = self._decode_img_libjpeg_turbo(img_str)
         else:
             img = cv2.imread(path)
         img = cv2.cvtColor(img, cv2.COLOR_BGR2RGB)
@@ -99,6 +87,8 @@ class ImageFolder(torchvision.datasets.ImageFolder):
 
 
 class SegmentationImageFolder:
+    """A dataset for segmentation tasks."""
+
     def __init__(
             self,
             root: str,
@@ -106,6 +96,24 @@ class SegmentationImageFolder:
             mask_folder: str,
             transforms: Optional[Callable] = None,
     ):
+        """
+        Create dataset for image segmentation task.
+
+        The layout the folder should look like following:
+            root/image_folder/image_1.jpg
+            root/image_folder/image_2.jpg
+            ...
+            root/mask_folder/image_1.jpg
+            root/mask_folder/image_2.jpg
+
+        image_folder and the mask_folder should have the same number images in it
+        and the corresponding image and mask should have the same prefix.
+
+        :param root: the directory to look for image_folder and mask_folder
+        :param image_folder: the directory under root containing image files
+        :param mask_folder: the directory under root containing mask files
+        :param transforms: an optional transforms operating on images and masks
+        """
         self.image_folder = os.path.join(root, image_folder)
         self.mask_folder = os.path.join(root, mask_folder)
         self.imgs = list(sorted(os.listdir(self.image_folder)))
