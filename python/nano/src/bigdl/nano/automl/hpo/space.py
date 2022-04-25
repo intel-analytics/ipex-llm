@@ -79,7 +79,7 @@ class SimpleSpace(Space):
            this search space. The default value is always tried
            in the first trial of HPO.
         """
-        return self.hp.meta.setdefault('prefix',None)
+        return self.hp.meta.setdefault('prefix', None)
 
     @prefix.setter
     def prefix(self, value):
@@ -456,9 +456,9 @@ class Categorical(NestedSpace):
     def cs(self):
         """ ConfigSpace representation of this search space.
         """
-        cs = CS.ConfigurationSpace(meta={'prefix':self._prefix})
+        cs = CS.ConfigurationSpace(meta={'prefix': self._prefix})
         if len(self.data) == 0:
-            return CS.ConfigurationSpace(meta={'prefix':self._prefix})
+            return CS.ConfigurationSpace(meta={'prefix': self._prefix})
         hp = CSH.CategoricalHyperparameter(
             name='choice', choices=range(len(self.data)),
             meta={})
@@ -534,7 +534,7 @@ class Real(SimpleSpace):
             upper=self.upper,
             default_value=self._default,
             log=self.log,
-            meta={'prefix':self._prefix})
+            meta={'prefix': self._prefix})
 
 
 class Int(SimpleSpace):
@@ -557,7 +557,7 @@ class Int(SimpleSpace):
     >>> range = space.Int(0, 100)
     """
 
-    def __init__(self, lower, upper, default=None,prefix=None):
+    def __init__(self, lower, upper, default=None, prefix=None):
         self.lower = lower
         self.upper = upper
         self._default = default
@@ -569,7 +569,7 @@ class Int(SimpleSpace):
             lower=self.lower,
             upper=self.upper,
             default_value=self._default,
-            meta={'prefix':self._prefix})
+            meta={'prefix': self._prefix})
 
 
 class Bool(Int):

@@ -38,22 +38,21 @@ class HPOMixin:
     """
     # argument keys for search, fit, tune creation, tune run.
     FIT_KEYS = {
-        'x','y',
+        'x', 'y',
         'batch_size', 'epochs',
-        'verbose','callbacks',
-        'validation_split','validation_data',
-        'shuffle','class_weight','sample_weight',
-        'initial_epoch','steps_per_epoch',
-        'validation_steps','validation_batch_size','validation_freq',
-        'max_queue_size','workers','use_multiprocessing'}
+        'verbose', 'callbacks',
+        'validation_split', 'validation_data',
+        'shuffle', 'class_weight', 'sample_weight',
+        'initial_epoch', 'steps_per_epoch',
+        'validation_steps', 'validation_batch_size', 'validation_freq',
+        'max_queue_size', 'workers', 'use_multiprocessing'}
 
     TUNE_CREATE_KEYS = {'storage', 'sampler', 'sampler_kwargs',
-                'pruner', 'pruner_kwargs', 'study_name', 'load_if_exists',
-                'direction', 'directions'}
+                        'pruner', 'pruner_kwargs', 'study_name', 'load_if_exists',
+                        'direction', 'directions'}
 
-
-    TUNE_RUN_KEYS = {'n_trials','timeout','n_jobs', 'catch', 'tune_callbacks',
-                'gc_after_trial', 'show_progress_bar'}
+    TUNE_RUN_KEYS = {'n_trials', 'timeout', 'n_jobs', 'catch', 'tune_callbacks',
+                     'gc_after_trial', 'show_progress_bar'}
 
     # these methods are automatically created using "@proxy_methods"
     # details see desriptions in _proxy method
@@ -70,40 +69,38 @@ class HPOMixin:
         self.tune_end = False
         self._lazymodel = None
 
-
     def _fix_target_metric(self, target_metric, fit_kwargs):
-        compile_metrics=self.compile_kwargs.get('metrics',None)
+        compile_metrics = self.compile_kwargs.get('metrics', None)
         if target_metric is None:
-            if fit_kwargs.get('validation_data', None) \
-                or fit_kwargs.get('validation_split', None):
-                    # if validation data or split is provided
-                    # use validation metrics
-                    prefix = 'val_'
+            if fit_kwargs.get('validation_data', None) or fit_kwargs.get('validation_split', None):
+                # if validation data or split is provided
+                # use validation metrics
+                prefix = 'val_'
             else:
                 prefix = ''
 
             if compile_metrics is None:
-                target_metric = prefix+'loss'
-            elif isinstance(compile_metrics,list):
-                target_metric = prefix+str(compile_metrics[0])
+                target_metric = prefix + 'loss'
+            elif isinstance(compile_metrics, list):
+                target_metric = prefix + str(compile_metrics[0])
             else:
-                target_metric = prefix+str(compile_metrics)
-        elif isinstance(target_metric,list):
+                target_metric = prefix + str(compile_metrics)
+        elif isinstance(target_metric, list):
             raise ValueError("multiple objective metric is not supported.")
         else:
             stripped_target_metric = _strip_val_prefix(target_metric)
             if compile_metrics is None:
-                if stripped_target_metric not in ['loss','val_loss']:
+                if stripped_target_metric not in ['loss', 'val_loss']:
                     raise ValueError("target metric is should be loss or val_loss",
                                      "if metrics is not provided in compile")
-            elif isinstance(compile_metrics,list):
-                if stripped_target_metric not in compile_metrics \
-                    and stripped_target_metric not in ['loss','val_loss']:
-                        raise ValueError("invalid target metric")
+            elif isinstance(compile_metrics, list):
+                target_not_in = stripped_target_metric not in ['loss', 'val_loss']
+                if stripped_target_metric not in compile_metrics and target_not_in:
+                    raise ValueError("invalid target metric")
             else:
-                if stripped_target_metric != compile_metrics \
-                    and stripped_target_metric not in ['loss','val_loss']:
-                        raise ValueError("invalid target metric")
+                target_not_in = stripped_target_metric not in ['loss', 'val_loss']
+                if stripped_target_metric != compile_metrics and target_not_in:
+                    raise ValueError("invalid target metric")
         return target_metric
 
     def search(
@@ -122,24 +119,24 @@ class HPOMixin:
             pruning (bool, optional): whether to use pruning
         """
         _check_search_args(search_args=kwargs,
-                        legal_keys=[HPOMixin.FIT_KEYS,
-                        HPOMixin.TUNE_CREATE_KEYS,
-                        HPOMixin.TUNE_RUN_KEYS])
+                           legal_keys=[HPOMixin.FIT_KEYS,
+                                       HPOMixin.TUNE_CREATE_KEYS,
+                                       HPOMixin.TUNE_RUN_KEYS])
 
         pruning = True if kwargs.get('pruner', None) else False
 
-        ## create objective
+        # # create objective
         if self.objective is None:
             target_metric = self._fix_target_metric(target_metric, kwargs)
             fit_kwargs = _filter_tuner_args(kwargs, HPOMixin.FIT_KEYS)
             self.objective = Objective(
                 model=self._model_build,
                 target_metric=target_metric,
-                pruning = pruning,
+                pruning=pruning,
                 **fit_kwargs,
             )
 
-        ## create study
+        # # create study
         if self.study is None:
             if not resume:
                 load_if_exists = False
@@ -150,8 +147,8 @@ class HPOMixin:
 
             study_create_kwargs = _filter_tuner_args(kwargs, HPOMixin.TUNE_CREATE_KEYS)
             _check_optimize_direction(
-                direction=study_create_kwargs.get('direction',None),
-                directions=study_create_kwargs.get('directions',None),
+                direction=study_create_kwargs.get('direction', None),
+                directions=study_create_kwargs.get('directions', None),
                 metric=target_metric)
 
             # prepare sampler and pruner args
@@ -160,17 +157,17 @@ class HPOMixin:
                 sampler_args = study_create_kwargs.get('sampler_kwargs', {})
                 sampler = OptunaBackend.create_sampler(sampler_type, sampler_args)
                 study_create_kwargs['sampler'] = sampler
-                study_create_kwargs.pop('sampler_kwargs',None)
+                study_create_kwargs.pop('sampler_kwargs', None)
 
             pruner_type = study_create_kwargs.get('pruner', None)
             if pruner_type:
-                pruner_args=study_create_kwargs.get('pruner_kwargs', {})
+                pruner_args = study_create_kwargs.get('pruner_kwargs', {})
                 pruner = OptunaBackend.create_pruner(pruner_type, pruner_args)
                 study_create_kwargs['pruner'] = pruner
                 study_create_kwargs.pop('pruner_kwargs', None)
 
             study_create_kwargs['load_if_exists'] = load_if_exists
-            #create study
+            # create study
             self.study = OptunaBackend.create_study(**study_create_kwargs)
 
         # renamed callbacks to tune_callbacks to avoid conflict with fit param
@@ -178,7 +175,7 @@ class HPOMixin:
         study_optimize_kwargs['callbacks'] = study_optimize_kwargs.get('tune_callbacks', None)
         study_optimize_kwargs.pop('tune_callbacks', None)
         study_optimize_kwargs['show_progress_bar'] = False
-        ## run optimize
+        # # run optimize
         self.study.optimize(self.objective, **study_optimize_kwargs)
 
         self.tune_end = False
@@ -203,8 +200,8 @@ class HPOMixin:
             ValueError: error when tune is not called already.
         """
         self._lazymodel = _end_search(study=self.study,
-                                     model_builder=self._model_build,
-                                     use_trial_id=use_trial_id)
+                                      model_builder=self._model_build,
+                                      use_trial_id=use_trial_id)
         # TODO Next step: support retrive saved model instead of retrain from hparams
         self.tune_end = True
 
@@ -216,7 +213,6 @@ class HPOMixin:
         if not self.tune_end:
             self.end_search()
         self._lazymodel.fit(*args, **kwargs)
-
 
     def _model_compile(self, model, trial):
         # for lazy model compile
@@ -237,10 +233,10 @@ class HPOMixin:
         # super().__init__(**self._model_init_args(trial))
         # self._model_compile(super(), trial)
         # use composition instead of inherited
-        #modelcls = self.__class__.__bases__[1]
+        # modelcls = self.__class__.__bases__[1]
         modelcls = self.model_class
         model = modelcls(**self._model_init_args(trial))
-        #model = tf.keras.Model(**self._model_init_args(trial))
+        # model = tf.keras.Model(**self._model_init_args(trial))
         self._model_compile(model, trial)
         return model
 

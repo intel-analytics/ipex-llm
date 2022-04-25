@@ -21,9 +21,9 @@ from enum import Enum
 
 
 class CALLTYPE(Enum):
-    LAYER_CALL = 1 # e.g. all keras layers such as Conv2D, etc.
-    FUNC_CALL = 2 # such as keras.Input
-    FUNC_SLICE = 3 # slices on output of a func, e.g. keras.Input(...)[:,:,]
+    LAYER_CALL = 1  # e.g. all keras layers such as Conv2D, etc.
+    FUNC_CALL = 2  # such as keras.Input
+    FUNC_SLICE = 3  # slices on output of a func, e.g. keras.Input(...)[:,:,]
 
 
 class CallCache(object):
@@ -76,10 +76,10 @@ class CallCache(object):
                     input_callgraph.skip = True
             elif isinstance(inp, list) or isinstance(inp, tuple):
                 for item in inp:
-                    update_cache_from_input(cache,item)
+                    update_cache_from_input(cache, item)
             elif isinstance(inp, dict):
                 for _, item in inp.items():
-                    update_cache_from_input(cache,item)
+                    update_cache_from_input(cache, item)
             else:
                 # ignore other arguments
                 pass
@@ -88,7 +88,7 @@ class CallCache(object):
 
         if ctype == CALLTYPE.LAYER_CALL or ctype == CALLTYPE.FUNC_CALL:
 
-            update_cache_from_input(cur_cache,arguments)
+            update_cache_from_input(cur_cache, arguments)
             cur_cache.append_call(current, arguments, ctype)
         elif ctype == CALLTYPE.FUNC_SLICE:
             (source, slice_args) = arguments
@@ -101,7 +101,6 @@ class CallCache(object):
 
         return cur_cache
 
-
     @staticmethod
     def execute(inputs, outputs, trial):
         def _replace_autoobj(n, cache):
@@ -110,18 +109,19 @@ class CallCache(object):
             else:
                 new_n = n
             return new_n
+
         def _process_arguments(arguments, cache):
             # TODO refactor
-            if isinstance(arguments, list) :
+            if isinstance(arguments, list):
                 new_arguments = [_process_arguments(
                     arg, cache) for arg in arguments]
             elif isinstance(arguments, tuple):
                 lst = [_process_arguments(
                     arg, cache) for arg in arguments]
-                new_arguments=tuple(lst)
+                new_arguments = tuple(lst)
             elif isinstance(arguments, dict):
                 new_arguments = arguments.copy()
-                for name,arg in new_arguments.items():
+                for name, arg in new_arguments.items():
                     new_arg = _process_arguments(
                         arg, cache)
                     new_arguments[name] = new_arg
@@ -142,7 +142,7 @@ class CallCache(object):
                 out_tensor = instance(new_arguments)
             elif call_type == CALLTYPE.FUNC_SLICE:
                 source, slice_args = arguments
-                slice_args, slice_kwargs =slice_args
+                slice_args, slice_kwargs = slice_args
                 source_tensor = out_cache.get_tensor(source)
                 # the actual excution of the functional API
                 out_tensor = source_tensor.__getitem__(*slice_args, **slice_kwargs)
@@ -161,14 +161,13 @@ class CallCache(object):
             out_cache.add_tensor(caller, out_tensor)
         out_tensors = out_cache.get_tensor(outputs)
 
-        #get input tensors
+        # get input tensors
         if isinstance(inputs, list):
             in_tensors = [out_cache.get_tensor(inp) for inp in inputs]
         else:
             in_tensors = out_cache.get_tensor(inputs)
 
-        return (in_tensors,out_tensors)
-
+        return (in_tensors, out_tensors)
 
     def plot(self, save_path=None):
         print("dumping call cache...............start")
