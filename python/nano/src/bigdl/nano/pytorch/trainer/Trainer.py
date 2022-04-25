@@ -347,7 +347,7 @@ class Trainer(pl.Trainer):
         """
         if not os.path.exists(path):
             raise FileNotFoundError("{} doesn't exist.".format(path))
-        with open(path + '/meta-data.yml', ) as f:
+        with open(path + '/meta-data.yml', 'r') as f:
             metadata = yaml.safe_load(f)
         model_type = metadata['ModelType']
         if model_type == 'PytorchOpenVINOModel':
