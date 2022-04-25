@@ -14,9 +14,24 @@
 # limitations under the License.
 #
 
-#TODO extend to a class later for configuration
 
-from .hpo.config import HPOConfig
+import pytest
+from unittest import TestCase
 
-hpo_config = HPOConfig()
-globals()['hpo_config'] = hpo_config
+import bigdl.nano.automl as automl
+
+class TestRegisterModules(TestCase):
+
+    def test_register_layers(self):
+        pass
+
+    def test_register_activations(self):
+        pass
+
+    def test_register_tf_funcs(self):
+        pass
+
+
+
+if __name__ == '__main__':
+    pytest.main([__file__])
