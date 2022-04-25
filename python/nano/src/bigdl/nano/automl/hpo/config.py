@@ -66,32 +66,45 @@ class HPOConfig(object):
         except:
             pass
 
-        self.added_tf_activations = None
-        self.added_tf_layers = None
+        self.added_tf_activations = []
+        self.added_tf_layers = []
         self.backup_tf_layers = None
 
 
     def enable_hpo_tf(self):
+        if self.hpo_tf:
+            return
         self.hpo_tf_ = True if self.tf_available else False
         if self.hpo_tf:
+            self._reload_modules()
             self._add_decorated_nano_tf_modules()
+
 
     def enable_hpo_pytorch(self):
         self.hpo_pytorch_ = True if self.torch_available else False
         #TODO anything pytorch specific add here
 
     def disable_hpo_tf(self):
-        # if self.hpo_tf:
-        #     self._clean_nano_tf_modules(self)
-        self._reload_modules()
+        if self.hpo_tf:
+            self._clean_nano_tf_modules()
+        # self._reload_modules()
         self.hpo_tf_ = False
 
     def disable_hpo_pytorch(self):
         self.hpo_pytorch_ = False
 
+    def reset(self):
+        self._clean_nano_tf_modules()
+        self._reload_modules()
+
     @property
     def hpo_tf(self):
         return self.hpo_tf_
+
+    @hpo_tf.setter
+    def hpo_tf(self):
+        raise ValueError("Directly set hpo_tf value is not permitted. Please\
+            use enable_hpo_tf() or disable_hpo_tf() to enable/disable tensorflow hpo. ")
 
     @property
     def hpo_pytorch(self):
@@ -140,7 +153,7 @@ class HPOConfig(object):
             component_type = COMPONENT_TYPE.CLASS,
             module='bigdl.nano.tf.keras.layers'
         )
-        self.added_tf_layers = self.added_tf_layers.extend(NANO_DEFINED_TF_LAYERS)
+        self.added_tf_layers.extend(NANO_DEFINED_TF_LAYERS)
 
         # register decorated tf.cast
         import bigdl.nano.tf
@@ -168,15 +181,21 @@ class HPOConfig(object):
         importlib.reload(bigdl.nano.tf)
 
     def _clean_nano_tf_modules(self):
+        # TODO check all decorated objects and remove them
+        # especially for dynamically added layers and activations
+        self.added_tf_layers = self.added_tf_layers or []
+        self.added_tf_activations = self.added_tf_activations or []
         # clean nano tf layers
         import bigdl.nano.tf.keras.layers as nano_layers
         clean_modules_simple(vars(nano_layers),
                              subcomponents=self.added_tf_layers)
         # restore non-decorated layers in nano, e.g. Embedding
         self._restore_existing_components(vars(nano_layers))
+
         # clean nano nano_activations
         import bigdl.nano.tf.keras.activations as nano_activations
-        clean_modules_simple(vars(nano_activations))
+        clean_modules_simple(vars(nano_activations),
+                             subcomponents=self.added_tf_activations)
 
         # clean up decorated tf.cast
         import bigdl.nano.tf
