@@ -25,18 +25,20 @@ CAT_COLS = list(range(14, 40))
 
 
 if __name__ == '__main__':
-   parser = ArgumentParser()
-   parser.add_argument('--input', type=str, required=True, help="The path to the csv file to be processed.")
-   parser.add_argument('--output', type=str, default=".", help="The path to the folder to save the parquet data.")
-   args = parser.parse_args()
-   spark = SparkSession.builder.getOrCreate()
-   input = args.input
-   output = args.output
+    parser = ArgumentParser()
+    parser.add_argument('--input', type=str, required=True,
+                        help="The path to the csv file to be processed.")
+    parser.add_argument('--output', type=str, default=".",
+                        help="The path to the folder to save the parquet data.")
+    args = parser.parse_args()
+    spark = SparkSession.builder.getOrCreate()
+    input = args.input
+    output = args.output
 
-   label_fields = [StructField('_c%d' % LABEL_COL, IntegerType())]
-   int_fields = [StructField('_c%d' % i, IntegerType()) for i in INT_COLS]
-   str_fields = [StructField('_c%d' % i, StringType()) for i in CAT_COLS]
-   schema = StructType(label_fields + int_fields + str_fields)
+    label_fields = [StructField('_c%d' % LABEL_COL, IntegerType())]
+    int_fields = [StructField('_c%d' % i, IntegerType()) for i in INT_COLS]
+    str_fields = [StructField('_c%d' % i, StringType()) for i in CAT_COLS]
+    schema = StructType(label_fields + int_fields + str_fields)
 
-   df = spark.read.schema(schema).option('sep', '\t').csv(input)
-   df.write.parquet(output, mode="overwrite")
+    df = spark.read.schema(schema).option('sep', '\t').csv(input)
+    df.write.parquet(output, mode="overwrite")

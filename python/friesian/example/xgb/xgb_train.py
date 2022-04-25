@@ -81,8 +81,8 @@ if __name__ == '__main__':
     embed_cols = ["enaging_user_id", "engaged_with_user_id", "hashtags", "present_links",
                   "present_domains"]
 
-    features = num_cols + [col + "_te_label" for col in cat_cols] +\
-               [col + "_te_label" for col in embed_cols]
+    features = num_cols + [col + "_te_label" for col in cat_cols] + \
+        [col + "_te_label" for col in embed_cols]
     begin = time.time()
     train_tbl = FeatureTable.read_parquet(args.data_dir + "/train_parquet")\
         .drop("tweet_timestamp", "enaging_user_account_creation", "reply_timestamp", "text_tokens",
