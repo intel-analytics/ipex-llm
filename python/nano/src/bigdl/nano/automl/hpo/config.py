@@ -102,7 +102,7 @@ class HPOConfig(object):
         return self.hpo_tf_
 
     @hpo_tf.setter
-    def hpo_tf(self):
+    def hpo_tf(self, value):
         raise ValueError("Directly set hpo_tf value is not permitted. Please\
             use enable_hpo_tf() or disable_hpo_tf() to enable/disable tensorflow hpo. ")
 

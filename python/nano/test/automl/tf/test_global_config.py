@@ -83,6 +83,9 @@ class TestGlobalConfig(TestCase):
         nano_automl.hpo_config.enable_hpo_tf()
         self._import_should_okay()
 
+    def test_hpo_settings(self):
+        with self.assertRaises(ValueError):
+            nano_automl.hpo_config.hpo_tf = True
 
 
 if __name__ == '__main__':
