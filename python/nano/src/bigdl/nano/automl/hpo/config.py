@@ -43,6 +43,7 @@ class HPOConfig(object):
     To access it, use "bigdl.nano.automl.hpo_config".
     E.g., "use bigd.nano.automl.hpo_config.enable_hpo_tf() to enable tf hpo"
     """
+
     def __init__(self,
                  hpo_tf=False,
                  hpo_pytorch=False):

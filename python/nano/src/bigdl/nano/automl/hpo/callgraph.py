@@ -29,6 +29,7 @@ class CALLTYPE(Enum):
 class CallCache(object):
     """A data structure to cache the sequence of functional calls.
     """
+
     def __init__(self):
         self.callqueue_ = []
         self.tensors_ = dict()
