@@ -82,9 +82,9 @@ def load_dien_data(data_dir):
     tbl = tbl.append_column("rank1", rank().over(windowSpec1))
     tbl = tbl.filter(col('rank1') == 1)
     train_data, test_data = tbl.split([0.8, 0.2], seed=1)
-    usertbl = FeatureTable.read_parquet(data_dir + "/user_index/*")
-    itemtbl = FeatureTable.read_parquet(data_dir + "/item_index/*")
-    cattbl = FeatureTable.read_parquet(data_dir + "/category_index/*")
+    usertbl = FeatureTable.read_parquet(data_dir + "/user.parquet")
+    itemtbl = FeatureTable.read_parquet(data_dir + "/item.parquet")
+    cattbl = FeatureTable.read_parquet(data_dir + "/category.parquet")
     n_uid = usertbl.get_stats("id", "max")["id"] + 1
     n_mid = itemtbl.get_stats("id", "max")["id"] + 1
     n_cat = cattbl.get_stats("id", "max")["id"] + 1
