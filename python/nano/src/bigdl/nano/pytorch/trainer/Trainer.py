@@ -316,7 +316,8 @@ class Trainer(pl.Trainer):
         if accelerator == 'openvino':
             return PytorchOpenVINOModel(model, input_sample)
 
-    def save(self, model: LightningModule, path):
+    @staticmethod
+    def save(model: LightningModule, path):
         """
         Save the model to local file.
 
@@ -336,7 +337,8 @@ class Trainer(pl.Trainer):
                 yaml.safe_dump(metadata, f)
             torch.save(model.state_dict(), "{}/{}".format(path, metadata['checkpoint']))
 
-    def load(self, path, model: LightningModule = None):
+    @staticmethod
+    def load(path, model: LightningModule = None):
         """
         Load a model from local.
 
