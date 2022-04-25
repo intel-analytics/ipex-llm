@@ -11,7 +11,8 @@ set -e
 # ipex is not installed here. Any tests needs ipex should be moved to next pytest command.
 echo "# Start testing"
 start=$(date "+%s")
-python -m pytest -s ${PYTORCH_NANO_TEST_DIR}/tests/ -k 'not ipex'
+python -m pytest -s ${PYTORCH_NANO_TEST_DIR}/tests/ -k 'not ipex and not fork'
+python -m pytest -s ${PYTORCH_NANO_TEST_DIR}/tests/test_plugin.py  # avoid issue pytorch/#41639
 
 now=$(date "+%s")
 time=$((now-start))
