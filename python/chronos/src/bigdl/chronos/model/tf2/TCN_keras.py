@@ -43,7 +43,7 @@
 import tensorflow as tf
 from bigdl.nano.tf.keras import Model
 from tensorflow.keras.layers import Conv1D, BatchNormalization, Activation,\
-    Dropout, Input, Layer, Permute ,Dense
+    Dropout, Input, Layer, Permute, Dense
 
 
 class TemporalBlock(Layer):
@@ -109,7 +109,7 @@ class TemporalBlock(Layer):
                 "padding": self.padding,
                 "dropout_rate": self.dropout_rate,
                 "repo_initialization": self.repo_initialization}
-    
+
     @classmethod
     def from_config(cls, config):
         return cls(**config)
