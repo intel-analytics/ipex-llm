@@ -342,7 +342,8 @@ class Trainer(pl.Trainer):
 
         :param path: Path to model to be loaded. Path should be a directory.
         :param model: Required FP32 model to load pytorch model. Optional for ONNX/OpenVINO.
-        :return: Model with different acceleration(None/OpenVINO/ONNX) or precision(FP32/FP16/BF16/INT8).
+        :return: Model with different acceleration(None/OpenVINO/ONNX) or
+                 precision(FP32/FP16/BF16/INT8).
         """
         if not os.path.exists(path):
             raise FileNotFoundError("{} doesn't exist.".format(path))
