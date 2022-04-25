@@ -14,19 +14,19 @@ Before running the following command, please modify the paths in `build-docker-i
 ./build-docker-image.sh
 ```
 
-#### `<span id="prepare-data">`2. Prepare data, key and password
+#### <span id="prepare-data">2. Prepare data, key and password</span>
 
-* ##### Prepare the Data
+*  ##### Prepare the Data
 
   To train a model with ppml in bigdl, you need to prepare the data first. The Docker image is taking lenet and mnist as example.You can download the MNIST Data from [here](http://yann.lecun.com/exdb/mnist/). Unzip all the files and put them in one folder(e.g. mnist).
 
   There are four files. **train-images-idx3-ubyte** contains train images, **train-labels-idx1-ubyte** is train label file, **t10k-images-idx3-ubyte** has validation images and **t10k-labels-idx1-ubyte** contains validation labels. For more detail, please refer to the download page.
 
   After you decompress the gzip files, these files may be renamed by some decompress tools, e.g. **train-images-idx3-ubyte** is renamed to **train-images.idx3-ubyte**. Please change the name back before you run the example.
+
 * ##### Prepare the Key
 
   The ppml in bigdl needs secured keys to enable spark security such as Authentication, RPC Encryption, Local Storage Encryption and TLS, you need to prepare the secure keys and keystores. In this tutorial, you can generate keys and keystores with root permission (test only, need input security password for keys).
-
 
   ```bash
   sudo bash ../../../scripts/generate-keys.sh
@@ -39,10 +39,10 @@ Before running the following command, please modify the paths in `build-docker-i
   ```bash
   openssl genrsa -3 -out enclave-key.pem 3072
   ```
+
 * ##### Prepare the Password
 
   Next, you need to store the password you used for key generation, i.e., `generate-keys.sh`, in a secured file.
-
 
   ```bash
   sudo bash ../../../scripts/generate-password.sh used_password_when_generate_keys
@@ -60,7 +60,7 @@ sudo docker exec -it spark-local bash
 cd /ppml/trusted-big-data-ml
 ```
 
-#### 2. Run your pyspark program
+ #### 2. Run your pyspark program
 
 To run your pyspark program, first you need to prepare your own pyspark program and put it under the trusted directory in SGX  `/ppml/trusted-big-data-ml/work`. Then run with `ppml-spark-submit.sh` using the command:
 
@@ -82,7 +82,7 @@ sudo docker exec -it spark-local bash
 cd /ppml/trusted-big-data-ml
 ```
 
-#### 2. Run native python examples
+ #### 2. Run native python examples
 
 ##### Example 1: `helloworld.py`
 
@@ -93,7 +93,6 @@ Run the example with SGX with the following command in the terminal.
 ./init.sh
 SGX=1 ./pal_loader bash | tee test-helloworld-sgx.log
 ```
-
 Then check the output with the following command.
 
 ```bash
@@ -136,11 +135,11 @@ sudo docker exec -it spark-local bash
 cd /ppml/trusted-big-data-ml
 ```
 
-#### 2. Run pyspark examples
+ #### 2. Run pyspark examples
 
 ##### Example 1: `pi.py`
 
-Run the example with SGX spark local mode with the following command in the terminal.
+Run the example with SGX spark local mode with the following command in the terminal. 
 
 ```bash
 /graphene/Tools/argv_serializer bash -c "/opt/jdk8/bin/java \
@@ -164,7 +163,7 @@ cat test-pi-sgx.log | egrep "roughly"
 
 The result should be similar to
 
-> Pi is roughly 3.146760
+>Pi is roughly 3.146760
 
 ##### Example 2: `test-wordcount.py`
 
@@ -240,7 +239,7 @@ The result should be similar to
 
 ##### Example 4: Bigdl lenet
 
-Run the example with SGX spark local mode with the following command in the terminal.
+Run the example with SGX spark local mode with the following command in the terminal. 
 
 ```bash
 /graphene/Tools/argv_serializer bash -c "/opt/jdk8/bin/java -cp \
@@ -276,11 +275,11 @@ cat test-bigdl-lenet-sgx.log | egrep "Accuracy"
 
 The result should be similar to
 
-> creating: createTop1Accuracy
+>creating: createTop1Accuracy
 >
-> 2021-06-18 01:39:45 INFO DistriOptimizer$:180 - [Epoch 1 60032/60000][Iteration 469][Wall Clock 457.926565s] Top1Accuracy is Accuracy(correct: 9488, count: 10000, accuracy: 0.9488)
+>2021-06-18 01:39:45 INFO DistriOptimizer$:180 - [Epoch 1 60032/60000][Iteration 469][Wall Clock 457.926565s] Top1Accuracy is Accuracy(correct: 9488, count: 10000, accuracy: 0.9488)
 >
-> 2021-06-18 01:46:20 INFO DistriOptimizer$:180 - [Epoch 2 60032/60000][Iteration 938][Wall Clock 845.747782s] Top1Accuracy is Accuracy(correct: 9696, count: 10000, accuracy: 0.9696)
+>2021-06-18 01:46:20 INFO DistriOptimizer$:180 - [Epoch 2 60032/60000][Iteration 938][Wall Clock 845.747782s] Top1Accuracy is Accuracy(correct: 9696, count: 10000, accuracy: 0.9696)
 
 ##### Example 5: XGBoost Regressor
 
@@ -313,45 +312,45 @@ cat test-zoo-xgboost-regressor-sgx.log | egrep "prediction" -A19
 
 The result should be similar to
 
-> |      features|label|    prediction|
+>|      features|label|    prediction|
 >
-> +--------------------+-----+------------------+
+>+--------------------+-----+------------------+
 >
-> |[41.5292,0.0,18.1...| 8.5| 8.51994514465332|
+>|[41.5292,0.0,18.1...| 8.5| 8.51994514465332|
 >
-> |[67.9208,0.0,18.1...| 5.0| 5.720333099365234|
+>|[67.9208,0.0,18.1...| 5.0| 5.720333099365234|
 >
-> |[20.7162,0.0,18.1...| 11.9|10.601168632507324|
+>|[20.7162,0.0,18.1...| 11.9|10.601168632507324|
 >
-> |[11.9511,0.0,18.1...| 27.9| 26.19390106201172|
+>|[11.9511,0.0,18.1...| 27.9| 26.19390106201172|
 >
-> |[7.40389,0.0,18.1...| 17.2|16.112293243408203|
+>|[7.40389,0.0,18.1...| 17.2|16.112293243408203|
 >
-> |[14.4383,0.0,18.1...| 27.5|25.952226638793945|
+>|[14.4383,0.0,18.1...| 27.5|25.952226638793945|
 >
-> |[51.1358,0.0,18.1...| 15.0| 14.67484188079834|
+>|[51.1358,0.0,18.1...| 15.0| 14.67484188079834|
 >
-> |[14.0507,0.0,18.1...| 17.2|16.112293243408203|
+>|[14.0507,0.0,18.1...| 17.2|16.112293243408203|
 >
-> |[18.811,0.0,18.1,...| 17.9| 17.42863655090332|
+>|[18.811,0.0,18.1,...| 17.9| 17.42863655090332|
 >
-> |[28.6558,0.0,18.1...| 16.3| 16.0191593170166|
+>|[28.6558,0.0,18.1...| 16.3| 16.0191593170166|
 >
-> |[45.7461,0.0,18.1...| 7.0| 5.300708770751953|
+>|[45.7461,0.0,18.1...| 7.0| 5.300708770751953|
 >
-> |[18.0846,0.0,18.1...| 7.2| 6.346951007843018|
+>|[18.0846,0.0,18.1...| 7.2| 6.346951007843018|
 >
-> |[10.8342,0.0,18.1...| 7.5| 6.571983814239502|
+>|[10.8342,0.0,18.1...| 7.5| 6.571983814239502|
 >
-> |[25.9406,0.0,18.1...| 10.4|10.235769271850586|
+>|[25.9406,0.0,18.1...| 10.4|10.235769271850586|
 >
-> |[73.5341,0.0,18.1...| 8.8| 8.460335731506348|
+>|[73.5341,0.0,18.1...| 8.8| 8.460335731506348|
 >
-> |[11.8123,0.0,18.1...| 8.4| 9.193297386169434|
+>|[11.8123,0.0,18.1...| 8.4| 9.193297386169434|
 >
-> |[11.0874,0.0,18.1...| 16.7|16.174896240234375|
+>|[11.0874,0.0,18.1...| 16.7|16.174896240234375|
 >
-> |[7.02259,0.0,18.1...| 14.2| 13.38729190826416|
+>|[7.02259,0.0,18.1...| 14.2| 13.38729190826416|
 
 ##### Example 6: XGBoost Classifier
 
@@ -450,55 +449,57 @@ cat test-orca-data-sgx.log | egrep -a "INFO data|Stopping" -A10
 
 Then the result should contain the similar content as
 
-> INFO data collected: [        timestamp value
+>INFO data collected: [        timestamp value
 >
-> 0   2014-07-01 00:00:00 10844
+>0   2014-07-01 00:00:00 10844
 >
-> 1   2014-07-01 00:30:00  8127
+>1   2014-07-01 00:30:00  8127
 >
-> 2   2014-07-01 01:00:00  6210
+>2   2014-07-01 01:00:00  6210
 >
-> 3   2014-07-01 01:30:00  4656
+>3   2014-07-01 01:30:00  4656
 >
-> 4   2014-07-01 02:00:00  3820
+>4   2014-07-01 02:00:00  3820
 >
-> ...          ...  ...
+>...          ...  ...
 >
-> 10315 2015-01-31 21:30:00 24670
+>10315 2015-01-31 21:30:00 24670
 >
-> 10316 2015-01-31 22:00:00 25721
+>10316 2015-01-31 22:00:00 25721
 >
-> 10317 2015-01-31 22:30:00 27309
+>10317 2015-01-31 22:30:00 27309
 >
-> 10318 2015-01-31 23:00:00 26591
+>10318 2015-01-31 23:00:00 26591
 >
-> \--
+>\--
 >
-> INFO data2 collected: [        timestamp value      datetime hours awake
+> 
 >
-> 0  2014-07-01 00:00:00 10844 2014-07-01 00:00:00   0   1
+>INFO data2 collected: [        timestamp value      datetime hours awake
 >
-> 1  2014-07-01 00:30:00  8127 2014-07-01 00:30:00   0   1
+>0  2014-07-01 00:00:00 10844 2014-07-01 00:00:00   0   1
 >
-> 2  2014-07-01 03:00:00  2369 2014-07-01 03:00:00   3   0
+>1  2014-07-01 00:30:00  8127 2014-07-01 00:30:00   0   1
 >
-> 3  2014-07-01 04:30:00  2158 2014-07-01 04:30:00   4   0
+>2  2014-07-01 03:00:00  2369 2014-07-01 03:00:00   3   0
 >
-> 4  2014-07-01 05:00:00  2515 2014-07-01 05:00:00   5   0
+>3  2014-07-01 04:30:00  2158 2014-07-01 04:30:00   4   0
 >
-> ...         ...  ...         ...  ...  ...
+>4  2014-07-01 05:00:00  2515 2014-07-01 05:00:00   5   0
 >
-> 5215 2015-01-31 17:30:00 23595 2015-01-31 17:30:00   17   1
+>...         ...  ...         ...  ...  ...
 >
-> 5216 2015-01-31 18:30:00 27286 2015-01-31 18:30:00   18   1
+>5215 2015-01-31 17:30:00 23595 2015-01-31 17:30:00   17   1
 >
-> 5217 2015-01-31 19:00:00 28804 2015-01-31 19:00:00   19   1
+>5216 2015-01-31 18:30:00 27286 2015-01-31 18:30:00   18   1
 >
-> 5218 2015-01-31 19:30:00 27773 2015-01-31 19:30:00   19   1
+>5217 2015-01-31 19:00:00 28804 2015-01-31 19:00:00   19   1
 >
-> \--
+>5218 2015-01-31 19:30:00 27773 2015-01-31 19:30:00   19   1
 >
-> Stopping orca context
+>\--
+>
+>Stopping orca context
 
 ##### Example 8: Orca learn Tensorflow basic text classification
 
@@ -538,7 +539,6 @@ cat test-orca-tf-text.log | egrep "results"
 Then the result should be similar to
 
 > INFO results: {'loss': 0.6932533979415894, 'acc Top1Accuracy': 0.7544000148773193}
-
 ## Run as Spark on Kubernetes Mode
 
 WARNING: If you want spark standalone mode, please refer to [standalone/README.md][standalone]. But it is not recommended.
@@ -546,47 +546,34 @@ WARNING: If you want spark standalone mode, please refer to [standalone/README.m
 Follow the guide below to run Spark on Kubernetes manually. Alternatively, you can also use Helm to set everything up automatically. See [kubernetes/README.md][helmGuide].
 
 ### 1. Start the spark client as Docker container
-
 ### 1.1 Prepare the keys/password/data/enclave-key.pem
-
 Please refer to the previous section about [preparing data, key and password](#prepare-data).
 
-```bash
+``` bash
 bash ../../../scripts/generate-keys.sh
 bash ../../../scripts/generate-password.sh YOUR_PASSWORD
 kubectl apply -f keys/keys.yaml
 kubectl apply -f password/password.yaml
 ```
-
 Run `cd kubernetes && bash enclave-key-to-secret.sh` to generate your enclave key and add it to your Kubernetes cluster as a secret.
-
 ### 1.2 Prepare the k8s configurations
-
 #### 1.2.1 Create the RBAC
-
 ```bash
 kubectl create serviceaccount spark
 kubectl create clusterrolebinding spark-role --clusterrole=edit --serviceaccount=default:spark --namespace=default
 ```
-
 #### 1.2.2 Generate k8s config file
-
 ```bash
 kubectl config view --flatten --minify > /YOUR_DIR/kubeconfig
 ```
-
 #### 1.2.3 Create k8s secret
-
 ```bash
 kubectl create secret generic spark-secret --from-literal secret=YOUR_SECRET
 ```
-
 **The secret created (`YOUR_SECRET`) should be the same as the password you specified in section 1.1**
 
 ### 1.3 Start the client container
-
 Configure the environment variables in the following script before running it. See [Bigdl ppml SGX related configurations](#1-bigdl-ppml-sgx-related-configurations) for details of memory configurations.
-
 ```bash
 export K8S_MASTER=k8s://$( sudo kubectl cluster-info | grep 'https.*' -o -m 1 )
 echo The k8s master is $K8S_MASTER .
@@ -619,10 +606,10 @@ sudo docker run -itd \
     -e RUNTIME_DRIVER_CORES=1 \
     -e RUNTIME_EXECUTOR_INSTANCES=1 \
     -e RUNTIME_EXECUTOR_CORES=8 \
-    -e RUNTIME_EXECUTOR_MEMORY=1g \
+    -e RUNTIME_EXECUTOR_MEMORY=20g \
     -e RUNTIME_TOTAL_EXECUTOR_CORES=4 \
     -e RUNTIME_DRIVER_CORES=4 \
-    -e RUNTIME_DRIVER_MEMORY=1g \
+    -e RUNTIME_DRIVER_MEMORY=10g \
     -e SGX_DRIVER_MEM=32g \
     -e SGX_DRIVER_JVM_MEM=8g \
     -e SGX_EXECUTOR_MEM=32g \
@@ -633,28 +620,21 @@ sudo docker run -itd \
     -e LOCAL_IP=$LOCAL_IP \
     $DOCKER_IMAGE bash
 ```
-
-### `<span id="spark-example">`1.4 Init the client and run Spark applications on k8s
-
+### <span id="spark-example">1.4 Init the client and run Spark applications on k8s</span>
 First, run `docker exec -it spark-local-k8s-client bash` to entry the container.
-
 #### 1.4.1 Init the Spark local k8s client
-
 ```bash
 ./init.sh
 ```
-
 #### 1.4.2 Configure `spark-executor-template.yaml` in the container
 
 We assume you have a working Network File System (NFS) configured for your Kubernetes cluster. Configure the `nfsvolumeclaim` on the last line to the name of the Persistent Volume Claim (PVC) of your NFS.
 
 Please prepare the following and put them in your NFS directory:
-
 - The data (in a directory called `data`),
 - The kubeconfig file.
 
 #### 1.4.3 Spark-Pi example
-
 ```bash
 #!/bin/bash
 secure_password=`openssl rsautl -inkey /ppml/trusted-big-data-ml/work/password/key.txt -decrypt </ppml/trusted-big-data-ml/work/password/output.bin` && \
@@ -662,7 +642,7 @@ export TF_MKL_ALLOC_MAX_BYTES=10737418240 && \
   export SPARK_LOCAL_IP=$LOCAL_IP && \
   /opt/jdk8/bin/java \
     -cp '/ppml/trusted-big-data-ml/work/spark-3.1.2/conf/:/ppml/trusted-big-data-ml/work/spark-3.1.2/jars/*' \
-    -Xmx8g \
+    -Xmx5g \
     org.apache.spark.deploy.SparkSubmit \
     --master $RUNTIME_SPARK_MASTER \
     --deploy-mode $SPARK_MODE \
@@ -713,44 +693,34 @@ export TF_MKL_ALLOC_MAX_BYTES=10737418240 && \
     --verbose \
     local:///ppml/trusted-big-data-ml/work/spark-3.1.2/examples/jars/spark-examples_2.12-3.1.2.jar 100 2>&1 | tee spark-pi-sgx-$SPARK_MODE.log
 ```
-
 You can run your own Spark Appliction after changing `--class` and jar path.
-
 1. `local:///ppml/trusted-big-data-ml/work/spark-3.1.2/examples/jars/spark-examples_2.12-3.1.2.jar` => `your_jar_path`
 2. `--class org.apache.spark.examples.SparkPi` => `--class your_class_path`
 
 ### Configuration Explainations
-
 #### 1. Bigdl ppml SGX related configurations
 
 ![ppml_memory_config.png](../../../../docs/readthedocs/image/ppml_memory_config.png)
 
-The following parameters enable spark executor running on SGX.
-`spark.kubernetes.sgx.enabled`: true -> enable spark executor running on sgx, false -> native on k8s withour SGX.
-`spark.kubernetes.sgx.executor.mem`: Spark executor SGX epc memeory.
-`spark.kubernetes.sgx.executor.jvm.mem`: Spark executor JVM memory, Recommended setting is half of epc memory.
-`spark.kubernetes.sgx.log.level`: Spark executor on SGX log level, Supported values are error,all and debug.
-
+The following parameters enable spark executor running on SGX.  
+`spark.kubernetes.sgx.enabled`: true -> enable spark executor running on sgx, false -> native on k8s withour SGX.  
+`spark.kubernetes.sgx.executor.mem`: Spark executor SGX epc memeory.  
+`spark.kubernetes.sgx.executor.jvm.mem`: Spark executor JVM memory, Recommended setting is half of epc memory.  
+`spark.kubernetes.sgx.log.level`: Spark executor on SGX log level, Supported values are error,all and debug.  
 ```bash
     --conf spark.kubernetes.sgx.enabled=true
     --conf spark.kubernetes.sgx.executor.mem=32g
     --conf spark.kubernetes.sgx.executor.jvm.mem=16g
     --conf spark.kubernetes.sgx.log.level=error
 ```
-
 #### 2. Spark security configurations
-
-Below is an explanation of these security configurations, Please refer to [Spark Security](https://spark.apache.org/docs/3.1.2/security.html) for detail.
-
+Below is an explanation of these security configurations, Please refer to [Spark Security](https://spark.apache.org/docs/3.1.2/security.html) for detail.  
 ##### 2.1 Spark RPC
-
 ###### 2.1.1 Authentication
-
-`spark.authenticate`: true -> Spark authenticates its internal connections, default is false.
-`spark.authenticate.secret`: The secret key used authentication.
-`spark.kubernetes.executor.secretKeyRef.SPARK_AUTHENTICATE_SECRET` and `spark.kubernetes.driver.secretKeyRef.SPARK_AUTHENTICATE_SECRET`: mount `SPARK_AUTHENTICATE_SECRET` environment variable from a secret for both the Driver and Executors.
-`spark.authenticate.enableSaslEncryption`: true -> enable SASL-based encrypted communication, default is false.
-
+`spark.authenticate`: true -> Spark authenticates its internal connections, default is false.  
+`spark.authenticate.secret`: The secret key used authentication.  
+`spark.kubernetes.executor.secretKeyRef.SPARK_AUTHENTICATE_SECRET` and `spark.kubernetes.driver.secretKeyRef.SPARK_AUTHENTICATE_SECRET`: mount `SPARK_AUTHENTICATE_SECRET` environment variable from a secret for both the Driver and Executors.  
+`spark.authenticate.enableSaslEncryption`: true -> enable SASL-based encrypted communication, default is false.  
 ```bash
     --conf spark.authenticate=true
     --conf spark.authenticate.secret=$secure_password
@@ -760,41 +730,33 @@ Below is an explanation of these security configurations, Please refer to [Spark
 ```
 
 ###### 2.1.2 Encryption
-
-`spark.network.crypto.enabled`: true -> enable AES-based RPC encryption, default is false.
-`spark.network.crypto.keyLength`: The length in bits of the encryption key to generate.
-`spark.network.crypto.keyFactoryAlgorithm`: The key factory algorithm to use when generating encryption keys.
-
+`spark.network.crypto.enabled`: true -> enable AES-based RPC encryption, default is false.  
+`spark.network.crypto.keyLength`: The length in bits of the encryption key to generate.  
+`spark.network.crypto.keyFactoryAlgorithm`: The key factory algorithm to use when generating encryption keys.  
 ```bash
     --conf spark.network.crypto.enabled=true 
     --conf spark.network.crypto.keyLength=128 
     --conf spark.network.crypto.keyFactoryAlgorithm=PBKDF2WithHmacSHA1
 ```
-
 ###### 2.1.3. Local Storage Encryption
-
-`spark.io.encryption.enabled`: true -> enable local disk I/O encryption, default is false.
-`spark.io.encryption.keySizeBits`: IO encryption key size in bits.
-`spark.io.encryption.keygen.algorithm`: The algorithm to use when generating the IO encryption key.
-
+`spark.io.encryption.enabled`: true -> enable local disk I/O encryption, default is false.  
+`spark.io.encryption.keySizeBits`: IO encryption key size in bits.  
+`spark.io.encryption.keygen.algorithm`: The algorithm to use when generating the IO encryption key.  
 ```bash
     --conf spark.io.encryption.enabled=true
     --conf spark.io.encryption.keySizeBits=128
     --conf spark.io.encryption.keygen.algorithm=HmacSHA1
 ```
-
 ###### 2.1.4 SSL Configuration
-
-`spark.ssl.enabled`: true -> enable SSL.
-`spark.ssl.port`: the port where the SSL service will listen on.
-`spark.ssl.keyPassword`: the password to the private key in the key store.
-`spark.ssl.keyStore`: path to the key store file.
-`spark.ssl.keyStorePassword`: password to the key store.
-`spark.ssl.keyStoreType`: the type of the key store.
-`spark.ssl.trustStore`: path to the trust store file.
-`spark.ssl.trustStorePassword`: password for the trust store.
-`spark.ssl.trustStoreType`: the type of the trust store.
-
+`spark.ssl.enabled`: true -> enable SSL.  
+`spark.ssl.port`: the port where the SSL service will listen on.  
+`spark.ssl.keyPassword`: the password to the private key in the key store.  
+`spark.ssl.keyStore`: path to the key store file.  
+`spark.ssl.keyStorePassword`: password to the key store.  
+`spark.ssl.keyStoreType`: the type of the key store.  
+`spark.ssl.trustStore`: path to the trust store file.  
+`spark.ssl.trustStorePassword`: password for the trust store.  
+`spark.ssl.trustStoreType`: the type of the trust store.  
 ```bash
       --conf spark.ssl.enabled=true
       --conf spark.ssl.port=8043
@@ -806,6 +768,5 @@ Below is an explanation of these security configurations, Please refer to [Spark
       --conf spark.ssl.trustStorePassword=$secure_password  
       --conf spark.ssl.trustStoreType=JKS 
 ```
-
 [helmGuide]: https://github.com/intel-analytics/BigDL/blob/main/ppml/trusted-big-data-ml/python/docker-graphene/kubernetes/README.md
 [standalone]: https://github.com/intel-analytics/BigDL/blob/main/ppml/trusted-big-data-ml/python/docker-graphene/standalone/README.md
