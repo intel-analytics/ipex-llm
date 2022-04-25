@@ -18,9 +18,9 @@ Before running the following command, please modify the paths in `build-docker-i
 
 *  ##### Prepare the Data
 
-  To train a model with ppml in bigdl, you need to prepare the data first. The Docker image is taking lenet and mnist as example.You can download the MNIST Data from [here](http://yann.lecun.com/exdb/mnist/). Unzip all the files and put them in one folder(e.g. mnist). 
+  To train a model with ppml in bigdl, you need to prepare the data first. The Docker image is taking lenet and mnist as example.You can download the MNIST Data from [here](http://yann.lecun.com/exdb/mnist/). Unzip all the files and put them in one folder(e.g. mnist).
 
-  There are four files. **train-images-idx3-ubyte** contains train images, **train-labels-idx1-ubyte** is train label file, **t10k-images-idx3-ubyte** has validation images and **t10k-labels-idx1-ubyte** contains validation labels. For more detail, please refer to the download page. 
+  There are four files. **train-images-idx3-ubyte** contains train images, **train-labels-idx1-ubyte** is train label file, **t10k-images-idx3-ubyte** has validation images and **t10k-labels-idx1-ubyte** contains validation labels. For more detail, please refer to the download page.
 
   After you decompress the gzip files, these files may be renamed by some decompress tools, e.g. **train-images-idx3-ubyte** is renamed to **train-images.idx3-ubyte**. Please change the name back before you run the example.
 
@@ -99,7 +99,7 @@ Then check the output with the following command.
 cat test-helloworld-sgx.log | egrep "Hello World"
 ```
 
-The result should be 
+The result should be
 
 > Hello World
 
@@ -167,7 +167,7 @@ The result should be similar to
 
 ##### Example 2: `test-wordcount.py`
 
-Run the example with SGX spark local mode with the following command in the terminal. 
+Run the example with SGX spark local mode with the following command in the terminal.
 
 ```bash
 /graphene/Tools/argv_serializer bash -c "export PYSPARK_PYTHON=/usr/bin/python && /opt/jdk8/bin/java \
@@ -197,7 +197,7 @@ The result should be similar to
 
 Before running the example, make sure that the paths of resource in `/ppml/trusted-big-data-ml/work/spark-3.1.2/examples/src/main/python/sql/basic.py` are the same as the paths of `people.json`  and `people.txt`.
 
-Run the example with SGX spark local mode with the following command in the terminal. 
+Run the example with SGX spark local mode with the following command in the terminal.
 
 ```bash
 /graphene/Tools/argv_serializer bash -c "export PYSPARK_PYTHON=/usr/bin/python && \
@@ -223,7 +223,7 @@ The result should be similar to
 
 > | 19|  Justin|
 >
-> |  Justin| 
+> |  Justin|
 >
 > |  Justin|       20|
 >
@@ -354,7 +354,7 @@ The result should be similar to
 
 ##### Example 6: XGBoost Classifier
 
-Before running the example, download the sample dataset from [pima-indians-diabetes](https://raw.githubusercontent.com/jbrownlee/Datasets/master/pima-indians-diabetes.data.csv) dataset manually or with following command. 
+Before running the example, download the sample dataset from [pima-indians-diabetes](https://raw.githubusercontent.com/jbrownlee/Datasets/master/pima-indians-diabetes.data.csv) dataset manually or with following command.
 
 ```bash
 wget https://raw.githubusercontent.com/jbrownlee/Datasets/master/pima-indians-diabetes.data.csv
@@ -407,7 +407,7 @@ The result should be similar to
 
 ##### Example 7: Orca data
 
-Before running the example, download the [NYC Taxi](https://raw.githubusercontent.com/numenta/NAB/master/data/realKnownCause/nyc_taxi.csv) dataset in Numenta Anoomaly Benchmark for demo manually or with following command. 
+Before running the example, download the [NYC Taxi](https://raw.githubusercontent.com/numenta/NAB/master/data/realKnownCause/nyc_taxi.csv) dataset in Numenta Anoomaly Benchmark for demo manually or with following command.
 
 ```bash
 wget https://raw.githubusercontent.com/numenta/NAB/master/data/realKnownCause/nyc_taxi.csv
@@ -447,7 +447,7 @@ Then check the output with the following command.
 cat test-orca-data-sgx.log | egrep -a "INFO data|Stopping" -A10
 ```
 
-Then the result should contain the similar content as 
+Then the result should contain the similar content as
 
 >INFO data collected: [        timestamp value
 >
@@ -503,7 +503,7 @@ Then the result should contain the similar content as
 
 ##### Example 8: Orca learn Tensorflow basic text classification
 
-Run the example with SGX spark local mode with the following command in the terminal. To run the example in SGX standalone mode, replace `-e SGX_MEM_SIZE=32G \` with `-e SGX_MEM_SIZE=64G \` in `start-distributed-spark-driver.sh`
+Run the example with SGX spark local mode with the following command in the terminal.
 
 ```bash
 /graphene/Tools/argv_serializer bash -c "/opt/jdk8/bin/java -cp \
@@ -539,50 +539,11 @@ cat test-orca-tf-text.log | egrep "results"
 Then the result should be similar to
 
 > INFO results: {'loss': 0.6932533979415894, 'acc Top1Accuracy': 0.7544000148773193}
-
-## Run as Spark Standalone Mode
-
-#### 1. Start the container to run spark applications in spark standalone mode
-
-Before you run the following commands to start the container, you need to modify the paths in `environment.sh` and then run the following commands.
-
-```bash
-./deploy-distributed-standalone-spark.sh
-./start-distributed-spark-driver.sh
-```
-
-Then use `distributed-check-status.sh` to check master's and worker's status and make sure that both of them are running.
-
-Use the following commands to enter the docker of spark driver.
-
-```bash
-sudo docker exec -it spark-driver bash
-cd /ppml/trusted-big-data-ml
-./init.sh
-./start-spark-standalone-driver-sgx.sh
-```
-
-#### 2. Run pyspark examples
-
-To run the pyspark examples in spark standalone mode, you only need to replace the following command in spark local mode command:
-
-```bash
---master 'local[4]' \
-```
-
-with
-
-```bash
---master 'spark://your_master_url' \
---conf spark.authenticate=true \
---conf spark.authenticate.secret=your_secret_key \
-```
-
-and  replace `your_master_url` with your own master url and `your_secret_key` with your own secret key.
-
 ## Run as Spark on Kubernetes Mode
 
-Follow the guide below to run Spark on Kubernetes manually. Alternatively, you can also use Helm to set everything up automatically. See [kubernetes/README.md][helmGuide]. 
+WARNING: If you want spark standalone mode, please refer to [standalone/README.md][standalone]. But it is not recommended.
+
+Follow the guide below to run Spark on Kubernetes manually. Alternatively, you can also use Helm to set everything up automatically. See [kubernetes/README.md][helmGuide].
 
 ### 1. Start the spark client as Docker container
 ### 1.1 Prepare the keys/password/data/enclave-key.pem
@@ -667,12 +628,11 @@ First, run `docker exec -it spark-local-k8s-client bash` to entry the container.
 ```
 #### 1.4.2 Configure `spark-executor-template.yaml` in the container
 
-We assume you have a working Network File System (NFS) configured for your Kubernetes cluster. Configure the `nfsvolumeclaim` on the last line to the name of the Persistent Volume Claim (PVC) of your NFS. 
+We assume you have a working Network File System (NFS) configured for your Kubernetes cluster. Configure the `nfsvolumeclaim` on the last line to the name of the Persistent Volume Claim (PVC) of your NFS.
 
 Please prepare the following and put them in your NFS directory:
 - The data (in a directory called `data`),
 - The kubeconfig file.
-
 
 #### 1.4.3 Spark-Pi example
 ```bash
@@ -806,3 +766,4 @@ Below is an explanation of these security configurations, Please refer to [Spark
       --conf spark.ssl.trustStoreType=JKS 
 ```
 [helmGuide]: https://github.com/intel-analytics/BigDL/blob/main/ppml/trusted-big-data-ml/python/docker-graphene/kubernetes/README.md
+[standalone]: https://github.com/intel-analytics/BigDL/blob/main/ppml/trusted-big-data-ml/python/docker-graphene/standalone/README.md
