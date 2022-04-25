@@ -18,6 +18,7 @@ from logging import warning
 from operator import xor
 import os
 from typing import Any, List, Optional
+from numpy import isin
 
 import pytorch_lightning as pl
 import torch
@@ -359,7 +360,10 @@ class Trainer(pl.Trainer):
         # if model_type == 'PytorchONNXModel':
         # if model_type == 'PytorchQuantizedModel':
         # ... to be implemented
-        model = copy.deepcopy(model)
-        state_dict = torch.load("{}/{}".format(path, metadata['checkpoint']))
-        model.load_state_dict(state_dict)
-        return model
+        if isinstance(model, nn.Module):
+            model = copy.deepcopy(model)
+            state_dict = torch.load("{}/{}".format(path, metadata['checkpoint']))
+            model.load_state_dict(state_dict)
+            return model
+        else:
+            raise TypeError("Model type of {} is not acceptable for pytorch loading.".format(type(model)))
