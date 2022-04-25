@@ -40,27 +40,20 @@ best_auc = 0.0
 hash_flag = False
 use_neg = False
 
-# build input feature table
-feature_columns = [SparseFeat('user', n_uid, embedding_dim=EMBEDDING_DIM, use_hash=hash_flag),
-                    SparseFeat('item_id', n_mid, embedding_dim=EMBEDDING_DIM, use_hash=hash_flag),
-                    SparseFeat('cate_id', n_cat, embedding_dim=EMBEDDING_DIM, use_hash=hash_flag)]
-feature_columns += [
-    VarLenSparseFeat(SparseFeat('hist_item_id', vocabulary_size=n_mid, embedding_dim=EMBEDDING_DIM, embedding_name='item_id'),
-                        maxlen=MAX_HIST_LEN, length_name="seq_length"),
-    VarLenSparseFeat(SparseFeat('hist_cate_id', vocabulary_size=n_cat, embedding_dim=EMBEDDING_DIM, embedding_name='cate_id'),
-                        maxlen=MAX_HIST_LEN,
-                        length_name="seq_length")]
+feature_columns = []
+behavior_feature_list = []
 
-behavior_feature_list = ["item_id", "cate_id"]
 
 def model_creator(config):
-    model = DIEN(feature_columns, behavior_feature_list, dnn_hidden_units=[4, 4, 4], dnn_dropout=0.4, gru_type="AUGRU",
-                 use_negsampling=False, device='cpu', seed=2, att_hidden_units=(64, 16), att_activation="relu", init_std=0.1)#, modelpath=root_path)
+    model = DIEN(feature_columns, behavior_feature_list, dnn_hidden_units=[4, 4, 4],
+                 dnn_dropout=0.4, gru_type="AUGRU", use_negsampling=False,
+                 device='cpu', seed=2, att_hidden_units=(64, 16),
+                 att_activation="relu", init_std=0.1)
     return model
 
+
 def optim_creator(model, config):
-    optimizer = optim.Adam(model.parameters(),
-                          lr=config.get("lr", 0.001))
+    optimizer = optim.Adam(model.parameters(), lr=config.get("lr", 0.001))
     return optimizer
 
 if __name__ == '__main__':
@@ -96,7 +89,7 @@ if __name__ == '__main__':
             "spark.driver.maxResultSize": "40G",
             "spark.eventLog.enabled": "true",
             "spark.app.name": "recsys-demo-train",
-            "spark.rpc.message.maxSize":"256"}
+            "spark.rpc.message.maxSize": "256"}
 
     if args.cluster_mode == "local":
         init_orca_context("local", cores=args.executor_cores, memory=args.executor_memory)
@@ -120,8 +113,15 @@ if __name__ == '__main__':
 
     # Read Data
     tbl = FeatureTable.read_parquet(args.data_dir + "data") \
-            .rename({'item_hist_seq': 'hist_item_id', 'item': 'item_id', 'category': 'cate_id','category_hist_seq':'hist_cate_id','item_hist_seq_len':'seq_length'}) \
-            .apply('label','label',lambda x: 0.0 if float(x[0]) == 1.0 else 1.0, "float")
+                      .rename({'item_hist_seq': 'hist_item_id',
+                               'item': 'item_id',
+                               'category': 'cate_id',
+                               'category_hist_seq': 'hist_cate_id',
+                               'item_hist_seq_len': 'seq_length'}) \
+                      .apply('label',
+                             'label',
+                             lambda x: 0.0 if float(x[0]) == 1.0 else 1.0,
+                             "float")
     windowSpec1 = Window.partitionBy("user").orderBy(desc("time"))
     tbl = tbl.append_column("rank1", rank().over(windowSpec1))
     tbl = tbl.filter(col('rank1') == 1)
@@ -142,28 +142,61 @@ if __name__ == '__main__':
     print("item size: ", n_mid)
     print("category size: ", n_cat)
 
+    # build input feature table
+    feature_columns = [SparseFeat('user',
+                                  n_uid,
+                                  embedding_dim=EMBEDDING_DIM,
+                                  use_hash=hash_flag),
+                       SparseFeat('item_id',
+                                  n_mid,
+                                  embedding_dim=EMBEDDING_DIM,
+                                  use_hash=hash_flag),
+                       SparseFeat('cate_id',
+                                  n_cat,
+                                  embedding_dim=EMBEDDING_DIM,
+                                  use_hash=hash_flag)]
+    feature_columns += [VarLenSparseFeat(SparseFeat('hist_item_id',
+                                                    vocabulary_size=n_mid,
+                                                    embedding_dim=EMBEDDING_DIM,
+                                                    embedding_name='item_id'),
+                                         maxlen=MAX_HIST_LEN,
+                                         length_name="seq_length"),
+                        VarLenSparseFeat(SparseFeat('hist_cate_id',
+                                                    vocabulary_size=n_cat,
+                                                    embedding_dim=EMBEDDING_DIM,
+                                                    embedding_name='cate_id'),
+                                         maxlen=MAX_HIST_LEN,
+                                         length_name="seq_length")]
+
+    behavior_feature_list = ["item_id", "cate_id"]
+
     # Create model
     device = 'cpu'
     use_cuda = True
     if use_cuda and torch.cuda.is_available():
         print('cuda ready...')
         device = 'cuda:0'
-        
+
     criterion = nn.BCELoss()
 
     orca_estimator = Estimator.from_torch(model=model_creator,
-                                        optimizer=optim_creator,
-                                        metrics=[Accuracy(), BinaryCrossEntropy()],
-                                        loss=criterion,
-                                        backend="torch_distributed",
-                                        use_tqdm=True)
+                                          optimizer=optim_creator,
+                                          metrics=[Accuracy(), BinaryCrossEntropy()],
+                                          loss=criterion,
+                                          backend="torch_distributed",
+                                          use_tqdm=True)
 
     # Train model
-    orca_estimator.fit(data=train_data.df, 
-                    epochs=100, 
-                    batch_size=512, 
-                    feature_cols=["user","item_id","cate_id","hist_item_id","seq_length","hist_cate_id"],
-                    label_cols=["label"])
+    orca_estimator.fit(data=train_data.df,
+                       epochs=100,
+                       batch_size=512,
+                       feature_cols=["user",
+                                     "item_id",
+                                     "cate_id",
+                                     "hist_item_id",
+                                     "seq_length",
+                                     "hist_cate_id"],
+                       label_cols=["label"])
     res = orca_estimator.evaluate(data=test_data.df)
     for r in res:
         print(r, ":", res[r])

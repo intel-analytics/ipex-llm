@@ -20,7 +20,9 @@
 #   Ze Wang, wangze0801@126.com
 #
 # Reference:
-#   [1] Zhou G, Mou N, Fan Y, et al. Deep Interest Evolution Network for Click-Through Rate Prediction[J]. arXiv preprint arXiv:1809.03672, 2018. (https://arxiv.org/pdf/1809.03672.pdf)
+#   [1] Zhou G, Mou N, Fan Y, et al.
+#   Deep Interest Evolution Network for Click-Through Rate Prediction[J].
+#   arXiv preprint arXiv:1809.03672, 2018. (https://arxiv.org/pdf/1809.03672.pdf)
 
 from collections import namedtuple, defaultdict, OrderedDict
 from itertools import chain
@@ -44,22 +46,30 @@ from tensorflow.python.keras.callbacks import History, CallbackList
 
 DEFAULT_GROUP_NAME = "default_group"
 
+
 class SparseFeat(namedtuple('SparseFeat',
-                            ['name', 'vocabulary_size', 'embedding_dim', 'use_hash', 'dtype', 'embedding_name',
+                            ['name',
+                             'vocabulary_size',
+                             'embedding_dim',
+                             'use_hash',
+                             'dtype',
+                             'embedding_name',
                              'group_name'])):
     __slots__ = ()
 
-    def __new__(cls, name, vocabulary_size, embedding_dim=4, use_hash=False, dtype="int32", embedding_name=None,
+    def __new__(cls, name, vocabulary_size, embedding_dim=4,
+                use_hash=False, dtype="int32", embedding_name=None,
                 group_name=DEFAULT_GROUP_NAME):
         if embedding_name is None:
             embedding_name = name
         if embedding_dim == "auto":
             embedding_dim = 6 * int(pow(vocabulary_size, 0.25))
         if use_hash:
-            print(
-                "Notice! Feature Hashing on the fly currently is not supported in torch version,you can use tensorflow version!")
-        return super(SparseFeat, cls).__new__(cls, name, vocabulary_size, embedding_dim, use_hash, dtype,
-                                              embedding_name, group_name)
+            print("Notice! \
+                  Feature Hashing on the fly currently is not supported in torch version, \
+                  you can use tensorflow version!")
+        return super(SparseFeat, cls).__new__(cls, name, vocabulary_size, embedding_dim,
+                                              use_hash, dtype, embedding_name, group_name)
 
     def __hash__(self):
         return self.name.__hash__()
@@ -157,17 +167,20 @@ def get_dense_input(X, features, feature_columns):
     return dense_input_list
 
 
-def get_varlen_pooling_list(embedding_dict, features, feature_index, varlen_sparse_feature_columns, device):
+def get_varlen_pooling_list(embedding_dict, features, feature_index,
+                            varlen_sparse_feature_columns, device):
     varlen_sparse_embedding_list = []
     for feat in varlen_sparse_feature_columns:
         seq_emb = embedding_dict[feat.name]
         if feat.length_name is None:
-            seq_mask = features[:, feature_index[feat.name][0]:feature_index[feat.name][1]].long() != 0
+            seq_mask = features[:, feature_index[feat.name][0]:
+                                feature_index[feat.name][1]].long() != 0
 
             emb = SequencePoolingLayer(mode=feat.combiner, supports_masking=True, device=device)(
                 [seq_emb, seq_mask])
         else:
-            seq_length = features[:, feature_index[feat.length_name][0]:feature_index[feat.length_name][1]].long()
+            seq_length = features[:, feature_index[feat.length_name][0]:
+                                  feature_index[feat.length_name][1]].long()
             emb = SequencePoolingLayer(mode=feat.combiner, supports_masking=False, device=device)(
                 [seq_emb, seq_length])
         varlen_sparse_embedding_list.append(emb)
@@ -195,18 +208,17 @@ def varlen_embedding_lookup(X, embedding_dict, sequence_input_dict, varlen_spars
         feature_name = fc.name
         embedding_name = fc.embedding_name
         if fc.use_hash:
-            # lookup_idx = Hash(fc.vocabulary_size, mask_zero=True)(sequence_input_dict[feature_name])
-            # TODO: add hash function
             lookup_idx = sequence_input_dict[feature_name]
         else:
             lookup_idx = sequence_input_dict[feature_name]
         varlen_embedding_vec_dict[feature_name] = embedding_dict[embedding_name](
-            X[:, lookup_idx[0]:lookup_idx[1]].long())  # (lookup_idx)
+            X[:, lookup_idx[0]:lookup_idx[1]].long())
 
     return varlen_embedding_vec_dict
 
 
-def embedding_lookup(X, sparse_embedding_dict, sparse_input_dict, sparse_feature_columns, return_feat_list=(),
+def embedding_lookup(X, sparse_embedding_dict, sparse_input_dict,
+                     sparse_feature_columns, return_feat_list=(),
                      mask_feat_list=(), to_list=False):
     """
         Args:
@@ -214,7 +226,8 @@ def embedding_lookup(X, sparse_embedding_dict, sparse_input_dict, sparse_feature
             sparse_embedding_dict: nn.ModuleDict, {embedding_name: nn.Embedding}
             sparse_input_dict: OrderedDict, {feature_name:(start, start+dimension)}
             sparse_feature_columns: list, sparse features
-            return_feat_list: list, names of feature to be returned, defualt () -> return all features
+            return_feat_list: list, names of feature to be returned,
+            default () -> return all features
             mask_feat_list, list, names of feature to be masked in hash transform
         Return:
             group_embedding_dict: defaultdict(list)
@@ -236,17 +249,21 @@ def embedding_lookup(X, sparse_embedding_dict, sparse_input_dict, sparse_feature
     return group_embedding_dict
 
 
-def create_embedding_matrix(feature_columns, init_std=0.0001, linear=False, sparse=False, device='cpu'):
+def create_embedding_matrix(feature_columns, init_std=0.0001, linear=False,
+                            sparse=False, device='cpu'):
     # Return nn.ModuleDict: for sparse features, {embedding_name: nn.Embedding}
     # for varlen sparse features, {embedding_name: nn.EmbeddingBag}
     sparse_feature_columns = list(
-        filter(lambda x: isinstance(x, SparseFeat), feature_columns)) if len(feature_columns) else []
+        filter(lambda x: isinstance(x, SparseFeat), feature_columns)) \
+        if len(feature_columns) else []
 
     varlen_sparse_feature_columns = list(
-        filter(lambda x: isinstance(x, VarLenSparseFeat), feature_columns)) if len(feature_columns) else []
+        filter(lambda x: isinstance(x, VarLenSparseFeat), feature_columns)) \
+        if len(feature_columns) else []
 
     embedding_dict = nn.ModuleDict(
-        {feat.embedding_name: nn.Embedding(feat.vocabulary_size, feat.embedding_dim if not linear else 1, sparse=sparse)
+        {feat.embedding_name: nn.Embedding(feat.vocabulary_size, feat.embedding_dim
+         if not linear else 1, sparse=sparse)
          for feat in
          sparse_feature_columns + varlen_sparse_feature_columns}
     )
@@ -287,7 +304,8 @@ def build_input_features(feature_columns):
             raise TypeError("Invalid feature column type,got", type(feat))
     return features
 
-### DeepCTR.utils ###
+# DeepCTR.utils
+
 
 def concat_fun(inputs, axis=-1):
     if len(inputs) == 1:
@@ -349,10 +367,13 @@ def slice_arrays(arrays, start=None, stop=None):
         else:
             return [None]
 
-### DeepCTR.layers ###
+# DeepCTR.layers
+
 
 class Dice(nn.Module):
-    """The Data Adaptive Activation Function in DIN,which can be viewed as a generalization of PReLu and can adaptively adjust the rectified point according to distribution of input data.
+    """The Data Adaptive Activation Function in DIN,
+    which can be viewed as a generalization of PReLu,
+    and can adaptively adjust the rectified point according to distribution of input data.
 
     Input shape:
         - 2 dims: [batch_size, embedding_size(features)]
@@ -362,7 +383,10 @@ class Dice(nn.Module):
         - Same shape as input.
 
     References
-        - [Zhou G, Zhu X, Song C, et al. Deep interest network for click-through rate prediction[C]//Proceedings of the 24th ACM SIGKDD International Conference on Knowledge Discovery & Data Mining. ACM, 2018: 1059-1068.](https://arxiv.org/pdf/1706.06978.pdf)
+        - [Zhou G, Zhu X, Song C, et al. Deep interest network for click-through rate prediction[C]
+        Proceedings of the 24th ACM SIGKDD International Conference
+        on Knowledge Discovery & Data Mining.
+        ACM, 2018: 1059-1068.](https://arxiv.org/pdf/1706.06978.pdf)
         - https://github.com/zhougr1993/DeepInterestNetwork, https://github.com/fanoping/DIN-pytorch
     """
 
@@ -429,14 +453,16 @@ class PredictionLayer(nn.Module):
 
 
 class SequencePoolingLayer(nn.Module):
-    """The SequencePoolingLayer is used to apply pooling operation(sum,mean,max) on variable-length sequence feature/multi-value feature.
+    """The SequencePoolingLayer is used to apply pooling operation(sum,mean,max)
+       on variable-length sequence feature/multi-value feature.
 
       Input shape
         - A list of two  tensor [seq_value,seq_len]
 
         - seq_value is a 3D tensor with shape: ``(batch_size, T, embedding_size)``
 
-        - seq_len is a 2D tensor with shape : ``(batch_size, 1)``,indicate valid length of each sequence.
+        - seq_len is a 2D tensor with shape : ``(batch_size, 1)``,
+          indicate valid length of each sequence.
 
       Output shape
         - 3D tensor with shape: ``(batch_size, 1, embedding_size)``.
@@ -531,7 +557,7 @@ def activation_layer(act_name, hidden_size=None, dice_dim=2):
 
 
 def maxlen_lookup(X, sparse_input_dict, maxlen_column):
-    if maxlen_column is None or len(maxlen_column)==0:
+    if maxlen_column is None or len(maxlen_column) == 0:
         raise ValueError('please add max length column for VarLenSparseFeat of DIN/DIEN input')
     lookup_idx = np.array(sparse_input_dict[maxlen_column[0]])
     return X[:, lookup_idx[0]:lookup_idx[1]].long()
@@ -543,14 +569,20 @@ class Linear(nn.Module):
         self.feature_index = feature_index
         self.device = device
         self.sparse_feature_columns = list(
-            filter(lambda x: isinstance(x, SparseFeat), feature_columns)) if len(feature_columns) else []
+            filter(lambda x: isinstance(x, SparseFeat), feature_columns)) \
+            if len(feature_columns) else []
         self.dense_feature_columns = list(
-            filter(lambda x: isinstance(x, DenseFeat), feature_columns)) if len(feature_columns) else []
+            filter(lambda x: isinstance(x, DenseFeat), feature_columns)) \
+            if len(feature_columns) else []
 
         self.varlen_sparse_feature_columns = list(
-            filter(lambda x: isinstance(x, VarLenSparseFeat), feature_columns)) if len(feature_columns) else []
+            filter(lambda x: isinstance(x, VarLenSparseFeat), feature_columns)) \
+            if len(feature_columns) else []
 
-        self.embedding_dict = create_embedding_matrix(feature_columns, init_std, linear=True, sparse=False,
+        self.embedding_dict = create_embedding_matrix(feature_columns,
+                                                      init_std,
+                                                      linear=True,
+                                                      sparse=False,
                                                       device=device)
 
         #         nn.ModuleDict(
@@ -562,18 +594,18 @@ class Linear(nn.Module):
             nn.init.normal_(tensor.weight, mean=0, std=init_std)
 
         if len(self.dense_feature_columns) > 0:
-            self.weight = nn.Parameter(torch.Tensor(sum(fc.dimension for fc in self.dense_feature_columns), 1).to(
-                device))
+            self.weight = nn.Parameter(torch.Tensor(sum(fc.dimension
+                                       for fc in self.dense_feature_columns), 1).to(device))
             torch.nn.init.normal_(self.weight, mean=0, std=init_std)
 
     def forward(self, X, sparse_feat_refine_weight=None):
 
         sparse_embedding_list = [self.embedding_dict[feat.embedding_name](
-            X[:, self.feature_index[feat.name][0]:self.feature_index[feat.name][1]].long()) for
-            feat in self.sparse_feature_columns]
+            X[:, self.feature_index[feat.name][0]:self.feature_index[feat.name][1]].long())
+                                for feat in self.sparse_feature_columns]
 
-        dense_value_list = [X[:, self.feature_index[feat.name][0]:self.feature_index[feat.name][1]] for feat in
-                            self.dense_feature_columns]
+        dense_value_list = [X[:, self.feature_index[feat.name][0]:self.feature_index[feat.name][1]]
+                            for feat in self.dense_feature_columns]
 
         sequence_embed_dict = varlen_embedding_lookup(X, self.embedding_dict, self.feature_index,
                                                       self.varlen_sparse_feature_columns)
