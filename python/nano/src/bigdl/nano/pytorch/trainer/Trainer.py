@@ -44,6 +44,7 @@ from bigdl.nano.utils.log4Error import invalidInputError
 from bigdl.nano.utils.inference.pytorch.model import AcceleratedLightningModule
 from bigdl.nano.common import check_avx512
 distributed_backends = ["spawn", "ray", "subprocess"]
+distributed_backends = ["spawn", "ray", "subprocess", "fork"]
 
 
 class Trainer(pl.Trainer):
@@ -70,9 +71,9 @@ class Trainer(pl.Trainer):
         :param cpu_for_each_process: A list of length `num_processes`, each containing a list of
             indices of cpus each process will be using. default: None, and the cpu will be
             automatically and evenly distributed among processes.
-        :param process_start_method: A string states the start method for process during
-               multiprocessing training. default: "spawn", possible methods include "spawn" and
-               "fork". "fork" is to-be-verified and does not support Windows.
+        :param distributed_backend: distributed backend for multiprocessing training.
+               "spawn", "ray", "subprocess", "fork" are valid values. "fork" is to-be-verified
+               and experimental for now and it does not support Windows.
         """
         # Check keyword arguments
         if "accelerator" in kwargs:
@@ -106,9 +107,6 @@ class Trainer(pl.Trainer):
                 raise ValueError(f"The length of `cpu_for_each_process` ("
                                  f"{len(cpu_for_each_process)}) is not equal to the number of"
                                  f" processes {num_processes}.")
-        if process_start_method not in ["spawn", "fork"]:
-            raise ValueError(f"`process_start_method` can only be one of"
-                             f"[\"spawn\", \"fork\"], but get {process_start_method}.")
 
         # Initialize trainer
         if use_ipex and not check_avx512():
@@ -179,7 +177,7 @@ class Trainer(pl.Trainer):
             assert distributed_backend in distributed_backends, \
                 f"Distributed backends supported now are spawn and ray," \
                 " but get {distributed_backend}."
-            if distributed_backend == "spawn":
+            if distributed_backend in ["spawn", "fork"]:
                 if use_ipex:
                     device = ipex_device()
                 else:
@@ -187,7 +185,7 @@ class Trainer(pl.Trainer):
                 plugin = DDPSpawnPlugin(parallel_devices=[
                     torch.device(device) for _ in range(num_processes)],
                     cpu_for_each_process=cpu_for_each_process,
-                    process_start_method=process_start_method,
+                    process_start_method=distributed_backend,
                     cluster_environment=LightningEnvironment())
             elif distributed_backend == "subprocess":
                 from bigdl.nano.pytorch.plugins.ddp_subprocess import DDPSubprocessPlugin

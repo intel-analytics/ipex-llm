@@ -125,6 +125,16 @@ class TestPlugin(TestCase):
 
         assert pl_model.model.fc1.weight.data == 0.25, "spawn plugin works incorrect"
         return 
+    def test_trainer_fork_plugin(self):
+        pl_model = LightningModuleFromTorch(
+            self.model, self.loss, self.optimizer,
+            metrics=[torchmetrics.F1(num_classes), torchmetrics.Accuracy(num_classes=10)]
+        )
+        trainer = Trainer(num_processes=2, distributed_backend="fork",
+                          max_epochs=4)
+        trainer.fit(pl_model, self.data_loader)
+        trainer.test(pl_model, self.data_loader)
+
 
 if __name__ == '__main__':
     pytest.main([__file__])
