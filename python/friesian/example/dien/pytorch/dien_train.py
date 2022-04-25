@@ -98,9 +98,7 @@ if __name__ == '__main__':
     parser.add_argument('--lr', default=0.001, type=float, help='learning rate')
     parser.add_argument('--epochs', default=1, type=int, help='train epoch')
     parser.add_argument('--batch_size', default=8, type=int, help='batch size')
-    parser.add_argument('--input_transaction', type=str, help='input transaction json file')
-    parser.add_argument('--input_meta', type=str, help='input meta csv file')
-    parser.add_argument('--output', type=str, default="./data", help='data directory')
+    parser.add_argument('--data_dir', type=str, default="./preprocessed", help='data directory')
     args = parser.parse_args()
 
     conf = {"spark.executor.memoryOverhead": "130g",
@@ -144,56 +142,8 @@ if __name__ == '__main__':
             "cluster_mode should be one of 'local', 'yarn', 'standalone' and 'spark-submit'"
             ", but got " + args.cluster_mode)
 
-    # Preprocess
-    begin = time.time()
-    transaction_tbl = FeatureTable.read_json(args.input_transaction).select(
-        ['reviewerID', 'asin', 'unixReviewTime']) \
-        .rename({'reviewerID': 'user', 'asin': 'item', 'unixReviewTime': 'time'}) \
-        .dropna(columns=['user', 'item'])
-    transaction_tbl.cache()
-    print("Total number of transactions: ", transaction_tbl.size())
-
-    item_tbl = FeatureTable.read_csv(args.input_meta, delimiter="\t", names=['item', 'category'])\
-        .apply("category", "category", lambda x: x.lower() if x is not None else "default")
-    item_tbl.cache()
-    print("Total number of items: ", item_tbl.size())
-
-    user_index = transaction_tbl.gen_string_idx('user', freq_limit=1)
-    item_cat_indices = item_tbl.gen_string_idx(["item", "category"], freq_limit=1)
-    item_size = item_cat_indices[0].size()
-
-    item_tbl = item_tbl\
-        .encode_string(["item", "category"], item_cat_indices)
-
-    full_tbl = transaction_tbl\
-        .encode_string(['user', 'item'], [user_index, item_cat_indices[0]])\
-        .add_hist_seq(cols=['item'], user_col="user",
-                    sort_col='time', min_len=1, max_len=100, num_seqs=1)\
-        .add_neg_hist_seq(item_size, 'item_hist_seq', neg_num=5)\
-        .add_negative_samples(item_size, item_col='item', neg_num=1)\
-        .add_value_features(columns=["item", "item_hist_seq", "neg_item_hist_seq"],
-                            dict_tbl=item_tbl, key="item", value="category") \
-        .apply("item_hist_seq", "item_hist_seq_len", len, "int") \
-        .pad(cols=['item_hist_seq', 'category_hist_seq',
-            'neg_item_hist_seq', 'neg_category_hist_seq'],
-            seq_len=100,
-            mask_cols=['item_hist_seq']) \
-        .apply("label", "label", lambda x: [1 - float(x), float(x)], "array<float>")
-
-    # write out
-    user_index.write_parquet(args.output)
-    item_cat_indices[0].write_parquet(args.output)
-    item_cat_indices[1].write_parquet(args.output)
-    item_tbl.write_parquet(args.output + "item2cat")
-    full_tbl.write_parquet(args.output + "data")
-
-    end = time.time()
-
-    print(f"DIEN preprocessing time: {(end - begin):.2f}s")
-
     # Read Data
-    data_dir = "/dien/data/"
-    tbl = FeatureTable.read_parquet(data_dir + "data") \
+    tbl = FeatureTable.read_parquet(args.data_dir + "data") \
             .rename({'item_hist_seq': 'hist_item_id', 'item': 'item_id', 'category': 'cate_id','category_hist_seq':'hist_cate_id','item_hist_seq_len':'seq_length'}) \
             .apply('label','label',lambda x: 0.0 if float(x[0]) == 1.0 else 1.0, "float")
     windowSpec1 = Window.partitionBy("user").orderBy(desc("time"))
@@ -201,9 +151,9 @@ if __name__ == '__main__':
     tbl = tbl.filter(col('rank1') == 1)
     train_data, test_data = tbl.split([0.8, 0.2], seed=1)
 
-    usertbl = FeatureTable.read_parquet(data_dir + "/user.parquet/*")
-    itemtbl = FeatureTable.read_parquet(data_dir + "/item.parquet/*")
-    cattbl = FeatureTable.read_parquet(data_dir + "/category.parquet/*")
+    usertbl = FeatureTable.read_parquet(args.data_dir + "/user.parquet/*")
+    itemtbl = FeatureTable.read_parquet(args.data_dir + "/item.parquet/*")
+    cattbl = FeatureTable.read_parquet(args.data_dir + "/category.parquet/*")
 
     n_uid = usertbl.get_stats("id", "max")["id"] + 1
     n_mid = itemtbl.get_stats("id", "max")["id"] + 1
