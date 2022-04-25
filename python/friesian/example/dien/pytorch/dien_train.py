@@ -105,20 +105,12 @@ if __name__ == '__main__':
                           cores=args.executor_cores, num_nodes=args.num_executors,
                           memory=args.executor_memory,
                           driver_cores=args.driver_cores, driver_memory=args.driver_memory,
-                          conf=conf,
-                          env={"KMP_BLOCKTIME": "1",
-                               "KMP_AFFINITY": "granularity=fine,compact,1,0",
-                               "OMP_NUM_THREADS": "28"},
-                          extra_python_lib="./dienl.py")
+                          conf=conf, extra_python_lib="./dienl.py")
     elif args.cluster_mode == "yarn":
         init_orca_context("yarn-client", cores=args.executor_cores,
                           num_nodes=args.num_executors, memory=args.executor_memory,
                           driver_cores=args.driver_cores, driver_memory=args.driver_memory,
-                          conf=conf, object_store_memory="80g",
-                          env={"KMP_BLOCKTIME": "1",
-                               "KMP_AFFINITY": "granularity=fine,compact,1,0",
-                               "OMP_NUM_THREADS": "28"},
-                          extra_python_lib="./dienl.py")
+                          conf=conf, object_store_memory="80g", extra_python_lib="./dienl.py")
     elif args.cluster_mode == "spark-submit":
         init_orca_context("spark-submit")
     else:
