@@ -75,7 +75,6 @@ class HPOConfig(object):
             self._reload_modules()
             self._add_decorated_nano_tf_modules()
 
-
     def enable_hpo_pytorch(self):
         self.hpo_pytorch_ = True if self.torch_available else False
         # TODO anything pytorch specific add here
