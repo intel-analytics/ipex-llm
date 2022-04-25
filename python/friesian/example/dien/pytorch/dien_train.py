@@ -14,38 +14,22 @@
 # limitations under the License.
 #
 
-import pandas as pd
-import numpy as np
 from pyparsing import col
 import torch
-import os
 
 from dienl import SparseFeat, DenseFeat, VarLenSparseFeat, get_feature_names, DIEN
 from pyspark.ml.linalg import DenseVector
 import torch.nn as nn
-import numpy as np
-from pyspark.sql.functions import lit, rand, col
 import torch.optim as optim
+
+from bigdl.orca.learn.pytorch import Estimator
 from bigdl.orca import init_orca_context, stop_orca_context
-from bigdl.orca.learn.pytorch import Estimator
 from bigdl.orca.learn.metrics import Accuracy, BinaryCrossEntropy
-from bigdl.orca import OrcaContext
-from torch.nn import functional as F
-from bigdl.orca.learn.trigger import EveryEpoch
-
-import argparse
-import math
-import time
-
-from bigdl.orca import init_orca_context, stop_orca_context, OrcaContext
-from bigdl.orca.learn.pytorch import Estimator
 from bigdl.friesian.feature import FeatureTable
 from pyspark.sql.window import Window
-from pyspark.sql.functions import desc, rank, col
+from pyspark.sql.functions import desc, rank
 
-n_uid = 8026325
-n_mid = 2370586
-n_cat = 2752
+import argparse
 
 EMBEDDING_DIM = 18
 HIDDEN_SIZE = 18 * 2
