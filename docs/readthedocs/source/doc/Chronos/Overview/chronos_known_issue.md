@@ -1,6 +1,6 @@
 # Chronos Known Issue
 ## **1. Issue 1**
-**Problem description:**
+**Problem description**
 
 Numpy.ndarray size changed, may indicate binary incompatibility. Expected 88 from C header, got 80 from PyObject. 
 
@@ -18,7 +18,7 @@ Numpy.ndarray size changed, may indicate binary incompatibility. Expected 88 fro
 ---------------------------
 
 ## **2. Issue 2**
-**Problem description:**
+**Problem description**
 
 NotImplementedError: Cannot convert a symbolic Tensor (encoder_lstm_8/strided_slice:0) to a numpy array. 
 
@@ -34,7 +34,7 @@ NotImplementedError: Cannot convert a symbolic Tensor (encoder_lstm_8/strided_sl
 
 ## **3. Issue 3**
 
-**Problem description:**
+**Problem description**
 
 `StanModel` object has no attribute ‘fit_class’, cause of pip, may be. 
 
@@ -52,7 +52,7 @@ NotImplementedError: Cannot convert a symbolic Tensor (encoder_lstm_8/strided_sl
 ---------------------------
 
 ## **4. Issue 4**
-**Problem description:**
+**Problem description**
 
 Exception: No active RayContext. Please call init_orca_context to create a RayContext. 
 * ray_ctx = RayContext.get() 
@@ -66,9 +66,9 @@ Exception: No active RayContext. Please call init_orca_context to create a RayCo
 ---------------------------
 
 ## **5. Issue 5**
-**Problem description:**
+**Problem description**
 
- “sed: error while loading shared libraries: libunwind.so.8: cannot open shared object file: No such file or directory.” 
+ Sed: error while loading shared libraries: libunwind.so.8: cannot open shared object file: No such file or directory.
 
 * Only happens when you run `source bigdl-nano-init`. 
 
@@ -79,7 +79,7 @@ Exception: No active RayContext. Please call init_orca_context to create a RayCo
 ---------------------------
 
 ## **6. Issue 6**
-**Problem description:**
+**Problem description**
 
 ERROR: ld.so: object '/your_path/libs/libtcmalloc.so' from LD_PRELOAD cannot be preloaded (cannot open shared object file): ignored. 
 * Only happens when you run `source bigdl-nano-init`. 
