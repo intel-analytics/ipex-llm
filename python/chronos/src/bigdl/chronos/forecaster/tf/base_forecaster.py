@@ -16,7 +16,7 @@
 
 from bigdl.chronos.forecaster.abstract import Forecaster
 from bigdl.chronos.metric.forecast_metrics import Evaluator
-import keras
+import pickle
 
 
 class BaseTF2Forecaster(Forecaster):
@@ -113,14 +113,23 @@ class BaseTF2Forecaster(Forecaster):
         """
         if not self.fitted:
             raise RuntimeError("You must call fit or restore first before calling save!")
-        self.internal.save(checkpoint_file)
+        with open(checkpoint_file, "wb") as w:
+            pickle.dump(self.internal.get_weights(), w)
 
-    def load(self, checkpoint_file):
+    def load(self, checkpoint_file, input_shape=None):
         """
         Load the forecaster.
 
         :params checkpoint_file: The checkpoint file location you want to load the forecaster.
+        :params input_shape: A numpy.ndarray tuple, shape is (batch_size, lookback, feature_dim),
+                For init model weight matrix only, Do not specify
+                if model weight is already created.
         """
-        self.internal = keras.models.load_model(checkpoint_file,
-                                                custom_objects=self.custom_objects_config)
+
+        with open(checkpoint_file, 'rb') as r:
+            weights = pickle.load(r)
+        self.internal = self.model_creator(config={**self.model_config})
+        if input_shape:
+            _ = self.internal(input_shape)
+        self.internal.set_weights(weights)
         self.fitted = True

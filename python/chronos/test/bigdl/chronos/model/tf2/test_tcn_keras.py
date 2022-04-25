@@ -17,6 +17,7 @@
 import tempfile
 import numpy as np
 import pytest
+import keras
 import tensorflow as tf
 
 from bigdl.orca.test_zoo_utils import ZooTestCase
@@ -44,7 +45,9 @@ class TestTcnKeras(ZooTestCase):
 
     train_data, test_data = create_data()
     model = model_creator(config={
+        "past_seq_len": 20,
         "future_seq_len": 10,
+        "input_feature_num": 10,
         "output_feature_num": 2
     })
 
@@ -63,14 +66,13 @@ class TestTcnKeras(ZooTestCase):
                        self.train_data[1],
                        epochs=2,
                        validation_data=self.test_data)
-        self.model.save(checkpoint_file)
-        restore_model = tf.keras.models.load_model(checkpoint_file, custom_objects={"TemporalConvNet": TemporalConvNet,
-                                                                                    "TemporalBlock": TemporalBlock})
+        self.model.save(checkpoint_file, overwrite=True, )
+        restore_model = keras.models.load_model(checkpoint_file,
+                                                custom_objects={"TemporalConvNet": TemporalConvNet})
         model_res = self.model.evaluate(self.test_data[0], self.test_data[1])
-        # TODO: Some issue happens in test system (no issue on local)
-        # restore_model_res = restore_model.evaluate(self.test_data[0], self.test_data[1])
-        # np.testing.assert_almost_equal(model_res, restore_model_res, decimal=5)
-        # assert isinstance(restore_model, TemporalConvNet)
+        restore_model_res = restore_model.evaluate(self.test_data[0], self.test_data[1])
+        np.testing.assert_almost_equal(model_res, restore_model_res, decimal=5)
+        assert isinstance(restore_model, TemporalConvNet)
 
 
 if __name__ == '__main__':
