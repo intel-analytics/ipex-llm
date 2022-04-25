@@ -67,6 +67,7 @@ BigDL Documentation
    doc/Chronos/Overview/chronos.md
    doc/Chronos/Overview/deep_dive.rst
    doc/Chronos/QuickStart/index.md
+   doc/Chronos/Overview/chronos_known_issue.md
 
 .. toctree::
    :maxdepth: 1
