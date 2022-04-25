@@ -66,6 +66,7 @@ class MultiInputModel(nn.Module):
 class TestOnnx(TestCase):
 
     def test_trainer_compile_with_onnx(self):
+        # TODO: to remove this ut
         model = ResNet18(10, pretrained=False, include_top=False, freeze=True)
         loss = nn.CrossEntropyLoss()
         optimizer = torch.optim.Adam(model.parameters(), lr=0.01)
@@ -95,7 +96,30 @@ class TestOnnx(TestCase):
         for x, y in train_loader:
             pl_model.inference(x.numpy())
 
+    def test_trainer_trace_onnx(self):
+        model = ResNet18(10, pretrained=False, include_top=False, freeze=True)
+        loss = nn.CrossEntropyLoss()
+        optimizer = torch.optim.Adam(model.parameters(), lr=0.01)
+        trainer = Trainer(max_epochs=1)
+
+        pl_model = Trainer.compile(model, loss, optimizer, onnx=True)
+        x = torch.rand((10, 3, 256, 256))
+        y = torch.ones((10, ), dtype=torch.long)
+        ds = TensorDataset(x, y)
+        train_loader = DataLoader(ds, batch_size=2)
+        trainer.fit(pl_model, train_loader)
+
+        onnx_model = trainer.trace(pl_model, accelerator="onnxruntime")
+
+        for x, y in train_loader:
+            model.eval()
+            with torch.no_grad():
+                forward_res_pytorch = pl_model(x).numpy()
+            forward_res_onnx = onnx_model(x).numpy()
+            np.testing.assert_almost_equal(forward_res_onnx, forward_res_pytorch, decimal=5)
+
     def test_multiple_input_onnx(self):
+        # TODO: to remove this ut
         model = MultiInputModel()
         loss = nn.CrossEntropyLoss()
         optimizer = torch.optim.Adam(model.parameters(), lr=0.01)
@@ -125,6 +149,29 @@ class TestOnnx(TestCase):
 
         for x1, x2, y in train_loader:
             pl_model.inference([x1.numpy(), x2.numpy()])
+
+    def test_trainer_trace_multiple_input_onnx(self):
+        model = MultiInputModel()
+        loss = nn.CrossEntropyLoss()
+        optimizer = torch.optim.Adam(model.parameters(), lr=0.01)
+        trainer = Trainer(max_epochs=1)
+
+        pl_model = Trainer.compile(model, loss, optimizer, onnx=True)
+        x1 = torch.randn(100, 28 * 28)
+        x2 = torch.randn(100, 28 * 28)
+        y = torch.zeros(100).long()
+        y[0:50] = 1
+        train_loader = DataLoader(TensorDataset(x1, x2, y), batch_size=32, shuffle=True)
+        trainer.fit(pl_model, train_loader)
+
+        onnx_model = trainer.trace(pl_model, accelerator="onnxruntime")
+
+        for x1, x2, y in train_loader:
+            model.eval()
+            with torch.no_grad():
+                forward_res_pytorch = pl_model(x1, x2).numpy()
+            forward_res_onnx = onnx_model(x1, x2).numpy()
+            np.testing.assert_almost_equal(forward_res_onnx, forward_res_pytorch, decimal=5)
 
 
 if __name__ == '__main__':

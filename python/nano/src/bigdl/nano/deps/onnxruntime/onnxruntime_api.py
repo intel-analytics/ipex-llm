@@ -30,3 +30,19 @@ def bind_onnxrt_methods(pl_model: LightningModule, q_onnx_model=None, sess_optio
     pl_model.exit_onnx = partial(torch_funcs.exit_onnx, pl_model)
     pl_model.to_quantized_onnx = partial(torch_funcs.to_quantized_onnx, pl_model)
     return pl_model
+
+
+def PytorchONNXRuntimeModel(model, input_sample=None):
+    """
+        Create a ONNX Runtime model from pytorch.
+
+        :param model: 1. Pytorch model to be converted to ONNXRuntime for inference
+                      2. Path to ONNXRuntime saved model.
+        :param input_sample: A set of inputs for trace, defaults to None if you have trace before or
+                             model is a LightningModule with any dataloader attached,
+                             defaults to None.
+
+        :return: A PytorchONNXRuntimeModel instance
+        """
+    from .pytorch.pytorch_onnxruntime_model import PytorchONNXRuntimeModel
+    return PytorchONNXRuntimeModel(model, input_sample)

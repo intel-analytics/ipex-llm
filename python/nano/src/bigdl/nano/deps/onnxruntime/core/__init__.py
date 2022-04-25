@@ -13,9 +13,3 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-try:
-    import onnx
-    import onnxruntime as ort
-except ImportError:
-    raise ImportError("To enable onnxruntime inference, you need to install it by:\n"
-                      "\t\t pip install onnxruntime")
