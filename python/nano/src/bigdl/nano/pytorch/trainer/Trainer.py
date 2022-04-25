@@ -18,8 +18,6 @@ from logging import warning
 from operator import xor
 import os
 from typing import Any, List, Optional
-from numpy import isin
-
 import pytorch_lightning as pl
 import torch
 from pytorch_lightning import LightningModule
@@ -313,21 +311,18 @@ class Trainer(pl.Trainer):
                              model is a LightningModule with any dataloader attached.
         :param accelerator: The accelerator to use, defaults to None meaning staying in Pytorch
                             backend. Only 'openvino' is supported for now.
-        :return: A PytorchOpenVINOModel using openvino for inference if accelerator='openvino'
+        :return: Model with different acceleration(OpenVINO/ONNX).
         """
         if accelerator == 'openvino':
             return PytorchOpenVINOModel(model, input_sample)
 
     def save(self, model: LightningModule, path):
         """
-        Save the model to path with desired precision and format(by assigning 'accelerator').
+        Save the model to local file.
 
-        Using a pytorch model, you can export to ONNX, OpenVINO directly with
-        accelerator='openvino'/'onnx'.
-
-        :param model: Any model of torch.nn.Module, including PytorchOpenVINOModel
-        :param path: Path to saved model. You need to specify path suffix carefully.
-                     For example, 'model.xml' for OpenVINO, 'model.onnx' for ONNX.
+        :param model: Any model of torch.nn.Module, including PytorchOpenVINOModel,
+         PytorchONNXModel.
+        :param path: Path to saved model. Path should be a directory.
         """
         os.makedirs(path, exist_ok=True)
         if hasattr(model, 'save'):
@@ -345,10 +340,9 @@ class Trainer(pl.Trainer):
         """
         Load a model from local.
 
-        :param path: Path to model to be loaded. You need to specify path suffix carefully.
-                     For example, 'model.xml' for OpenVINO, 'model.onnx' for ONNX.
+        :param path: Path to model to be loaded. Path should be a directory.
         :param model: Required FP32 model to load pytorch model. Optional for ONNX/OpenVINO.
-        :return: A PytorchOpenVINOModel using openvino for inference if accelerator='openvino'
+        :return: Model with different acceleration(None/OpenVINO/ONNX) or precision(FP32/FP16/BF16/INT8).
         """
         if not os.path.exists(path):
             raise FileNotFoundError("{} doesn't exist.".format(path))

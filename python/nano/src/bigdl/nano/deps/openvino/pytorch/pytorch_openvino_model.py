@@ -74,6 +74,11 @@ class PytorchOpenVINOModel(OpenVINOModel, AcceleratedLightningModule):
         return PytorchOpenVINOModel(xml_path)
 
     def save(self, path):
+        """
+        Save the model to local file.
+
+        :param path: Path to saved model. Path should be a directory.
+        """
         os.makedirs(path, exist_ok=True)
         self.dump_status(path)
         super().save("{}/{}".format(path, self.status['xml_path']))
