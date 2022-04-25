@@ -13,7 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-
 #
 # modified dien implementation of DeepCTR
 #
@@ -22,7 +21,6 @@
 #
 # Reference:
 #   [1] Zhou G, Mou N, Fan Y, et al. Deep Interest Evolution Network for Click-Through Rate Prediction[J]. arXiv preprint arXiv:1809.03672, 2018. (https://arxiv.org/pdf/1809.03672.pdf)
-
 
 from collections import namedtuple, defaultdict, OrderedDict
 from itertools import chain
@@ -43,9 +41,6 @@ from torch import nn
 from torch.nn import functional as F
 
 from tensorflow.python.keras.callbacks import History, CallbackList
-
-
-### DeepCTR.Inputs ###
 
 DEFAULT_GROUP_NAME = "default_group"
 

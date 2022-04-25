@@ -144,7 +144,6 @@ if __name__ == '__main__':
             "cluster_mode should be one of 'local', 'yarn', 'standalone' and 'spark-submit'"
             ", but got " + args.cluster_mode)
 
-
     # Preprocess
     begin = time.time()
     transaction_tbl = FeatureTable.read_json(args.input_transaction).select(
@@ -216,7 +215,6 @@ if __name__ == '__main__':
     print("user size: ", n_uid)
     print("item size: ", n_mid)
     print("category size: ", n_cat)
-
 
     # Create model
     device = 'cpu'
