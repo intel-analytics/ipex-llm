@@ -41,7 +41,29 @@ python ../../example/dien/dien_train.py \
 now=$(date "+%s")
 time1=$((now - start))
 
-rm -rf data
-rm -rf result
 
 echo "#1 dien train time used: $time1 seconds"
+
+echo "#2 start example pytorch test for dien train"
+#timer
+start=$(date "+%s")
+if [ -d data/input_dien_train ]; then
+  echo "data/input_dien_train already exists"
+else
+  wget -nv $FTP_URI/analytics-zoo-data/input_dien_train.tar.gz -P data
+  tar -xvzf data/input_dien_train.tar.gz -C data
+fi
+
+python ../../example/dien/pytorch/dien_train.py \
+    --executor_cores 4 \
+    --executor_memory 50g \
+    --batch_size 512 \
+    --data_dir ./data/input_dien_train \
+
+now=$(date "+%s")
+time2=$((now - start))
+
+echo "#2 dien train with pytorch time used: $time2 seconds"
+
+rm -rf data
+rm -rf result

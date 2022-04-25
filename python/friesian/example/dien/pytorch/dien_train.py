@@ -15,10 +15,8 @@
 #
 
 from pyparsing import col
-import torch
 
-from dienl import SparseFeat, DenseFeat, VarLenSparseFeat, get_feature_names, DIEN
-from pyspark.ml.linalg import DenseVector
+from dienl import SparseFeat, VarLenSparseFeat, DIEN
 import torch.nn as nn
 import torch.optim as optim
 
@@ -113,15 +111,10 @@ if __name__ == '__main__':
 
     # Read Data
     tbl = FeatureTable.read_parquet(args.data_dir + "data") \
-                      .rename({'item_hist_seq': 'hist_item_id',
-                               'item': 'item_id',
-                               'category': 'cate_id',
-                               'category_hist_seq': 'hist_cate_id',
-                               'item_hist_seq_len': 'seq_length'}) \
-                      .apply('label',
-                             'label',
-                             lambda x: 0.0 if float(x[0]) == 1.0 else 1.0,
-                             "float")
+                      .rename({'item_hist_seq': 'hist_item_id', 'item': 'item_id', 'category': 'cate_id',
+                               'category_hist_seq': 'hist_cate_id', 'item_hist_seq_len': 'seq_length'}) \
+                      .apply('label', 'label',
+                             lambda x: 0.0 if float(x[0]) == 1.0 else 1.0, "float")
     windowSpec1 = Window.partitionBy("user").orderBy(desc("time"))
     tbl = tbl.append_column("rank1", rank().over(windowSpec1))
     tbl = tbl.filter(col('rank1') == 1)
@@ -172,13 +165,7 @@ if __name__ == '__main__':
 
     # Create model
     device = 'cpu'
-    use_cuda = True
-    if use_cuda and torch.cuda.is_available():
-        print('cuda ready...')
-        device = 'cuda:0'
-
     criterion = nn.BCELoss()
-
     orca_estimator = Estimator.from_torch(model=model_creator,
                                           optimizer=optim_creator,
                                           metrics=[Accuracy(), BinaryCrossEntropy()],
@@ -190,12 +177,8 @@ if __name__ == '__main__':
     orca_estimator.fit(data=train_data.df,
                        epochs=100,
                        batch_size=512,
-                       feature_cols=["user",
-                                     "item_id",
-                                     "cate_id",
-                                     "hist_item_id",
-                                     "seq_length",
-                                     "hist_cate_id"],
+                       feature_cols=["user", "item_id", "cate_id",
+                                     "hist_item_id", "seq_length", "hist_cate_id"],
                        label_cols=["label"])
     res = orca_estimator.evaluate(data=test_data.df)
     for r in res:
