@@ -86,10 +86,12 @@ if __name__ == '__main__':
     parser.add_argument('--batch_size', default=8000, type=int, help='batch size')
     parser.add_argument('--model_dir', default='snapshot', type=str,
                         help='snapshot directory name (default: snapshot)')
+    parser.add_argument('--data_dir', type=str, default="./movielens", help='data directory')
     args = parser.parse_args()
 
     if args.cluster_mode == "local":
-        sc = init_orca_context("local", init_ray_on_spark=True)
+        sc = init_orca_context("local", cores=args.executor_cores,
+                               memory=args.executor_memory, init_ray_on_spark=True)
     elif args.cluster_mode == "standalone":
         sc = init_orca_context("standalone", master=args.master,
                                cores=args.executor_cores, num_nodes=args.num_executor,
@@ -109,7 +111,7 @@ if __name__ == '__main__':
             "cluster_mode should be one of 'local', 'yarn', 'standalone' and 'spark-submit'"
             ", but got " + args.cluster_mode)
 
-    movielens_data = movielens.get_id_ratings("/tmp/movielens/")
+    movielens_data = movielens.get_id_ratings(args.data_dir)
     pddf = pd.DataFrame(movielens_data, columns=["user", "item", "label"])
     num_users, num_items = pddf["user"].max() + 1, pddf["item"].max() + 1
 
