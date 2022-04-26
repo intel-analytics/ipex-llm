@@ -602,7 +602,7 @@ class Linear(nn.Module):
 
         sparse_embedding_list = [self.embedding_dict[feat.embedding_name](
             X[:, self.feature_index[feat.name][0]:self.feature_index[feat.name][1]].long())
-                                for feat in self.sparse_feature_columns]
+            for feat in self.sparse_feature_columns]
 
         dense_value_list = [X[:, self.feature_index[feat.name][0]:self.feature_index[feat.name][1]]
                             for feat in self.dense_feature_columns]
@@ -610,7 +610,8 @@ class Linear(nn.Module):
         sequence_embed_dict = varlen_embedding_lookup(X, self.embedding_dict, self.feature_index,
                                                       self.varlen_sparse_feature_columns)
         varlen_embedding_list = get_varlen_pooling_list(sequence_embed_dict, X, self.feature_index,
-                                                        self.varlen_sparse_feature_columns, self.device)
+                                                        self.varlen_sparse_feature_columns,
+                                                        self.device)
 
         sparse_embedding_list += varlen_embedding_list
 
@@ -634,19 +635,24 @@ class DNN(nn.Module):
     """The Multi Layer Percetron
 
       Input shape
-        - nD tensor with shape: ``(batch_size, ..., input_dim)``. The most common situation would be a 2D input with shape ``(batch_size, input_dim)``.
+        - nD tensor with shape: ``(batch_size, ..., input_dim)``.
+        The most common situation would be a 2D input with shape ``(batch_size, input_dim)``.
 
       Output shape
-        - nD tensor with shape: ``(batch_size, ..., hidden_size[-1])``. For instance, for a 2D input with shape ``(batch_size, input_dim)``, the output would have shape ``(batch_size, hidden_size[-1])``.
+        - nD tensor with shape: ``(batch_size, ..., hidden_size[-1])``.
+        For instance, for a 2D input with shape ``(batch_size, input_dim)``,
+        the output would have shape ``(batch_size, hidden_size[-1])``.
 
       Arguments
         - **inputs_dim**: input feature dimension.
 
-        - **hidden_units**:list of positive integer, the layer number and units in each layer.
+        - **hidden_units**:list of positive integer,
+        the layer number and units in each layer.
 
         - **activation**: Activation function to use.
 
-        - **l2_reg**: float between 0 and 1. L2 regularizer strength applied to the kernel weights matrix.
+        - **l2_reg**: float between 0 and 1.
+        L2 regularizer strength applied to the kernel weights matrix.
 
         - **dropout_rate**: float in [0,1). Fraction of the units to dropout.
 
@@ -655,8 +661,10 @@ class DNN(nn.Module):
         - **seed**: A Python integer to use as random seed.
     """
 
-    def __init__(self, inputs_dim, hidden_units, activation='relu', l2_reg=0, dropout_rate=0, use_bn=False,
-                 init_std=0.0001, dice_dim=3, seed=1024, device='cpu'):
+    def __init__(self, inputs_dim, hidden_units,
+                 activation='relu', l2_reg=0, dropout_rate=0,
+                 use_bn=False, init_std=0.0001, dice_dim=3,
+                 seed=1024, device='cpu'):
         super(DNN, self).__init__()
         self.dropout_rate = dropout_rate
         self.dropout = nn.Dropout(dropout_rate)
@@ -668,14 +676,17 @@ class DNN(nn.Module):
         hidden_units = [inputs_dim] + list(hidden_units)
 
         self.linears = nn.ModuleList(
-            [nn.Linear(hidden_units[i], hidden_units[i + 1]) for i in range(len(hidden_units) - 1)])
+            [nn.Linear(hidden_units[i], hidden_units[i + 1])
+             for i in range(len(hidden_units) - 1)])
 
         if self.use_bn:
             self.bn = nn.ModuleList(
-                [nn.BatchNorm1d(hidden_units[i + 1]) for i in range(len(hidden_units) - 1)])
+                [nn.BatchNorm1d(hidden_units[i + 1])
+                 for i in range(len(hidden_units) - 1)])
 
         self.activation_layers = nn.ModuleList(
-            [activation_layer(activation, hidden_units[i + 1], dice_dim) for i in range(len(hidden_units) - 1)])
+            [activation_layer(activation, hidden_units[i + 1], dice_dim)
+             for i in range(len(hidden_units) - 1)])
 
         for name, tensor in self.linears.named_parameters():
             if 'weight' in name:
@@ -704,7 +715,8 @@ class AGRUCell(nn.Module):
     """ Attention based GRU (AGRU)
 
         Reference:
-        -  Deep Interest Evolution Network for Click-Through Rate Prediction[J]. arXiv preprint arXiv:1809.03672, 2018.
+        -  Deep Interest Evolution Network for Click-Through Rate Prediction[J].
+        arXiv preprint arXiv:1809.03672, 2018.
     """
 
     def __init__(self, input_size, hidden_size, bias=True):
@@ -750,7 +762,8 @@ class AUGRUCell(nn.Module):
     """ Effect of GRU with attentional update gate (AUGRU)
 
         Reference:
-        -  Deep Interest Evolution Network for Click-Through Rate Prediction[J]. arXiv preprint arXiv:1809.03672, 2018.
+        -  Deep Interest Evolution Network for Click-Through Rate Prediction[J].
+        arXiv preprint arXiv:1809.03672, 2018.
         RNN -> LSTM -> GRU -> AUGRU
     """
 
@@ -806,7 +819,8 @@ class DynamicGRU(nn.Module):
             self.rnn = AUGRUCell(input_size, hidden_size, bias)
 
     def forward(self, inputs, att_scores=None, hx=None):
-        if not isinstance(inputs, PackedSequence) or not isinstance(att_scores, PackedSequence):
+        if not isinstance(inputs, PackedSequence) or \
+           not isinstance(att_scores, PackedSequence):
             raise NotImplementedError("DynamicGRU only supports packed input and att_scores")
 
         inputs, batch_sizes, sorted_indices, unsorted_indices = inputs
@@ -837,30 +851,39 @@ class LocalActivationUnit(nn.Module):
         user interests varies adaptively given different candidate items.
 
     Input shape
-        - A list of two 3D tensor with shape:  ``(batch_size, 1, embedding_size)`` and ``(batch_size, T, embedding_size)``
+        - A list of two 3D tensor with shape:
+        ``(batch_size, 1, embedding_size)`` and ``(batch_size, T, embedding_size)``
 
     Output shape
         - 3D tensor with shape: ``(batch_size, T, 1)``.
 
     Arguments
-        - **hidden_units**:list of positive integer, the attention net layer number and units in each layer.
+        - **hidden_units**:list of positive integer,
+        the attention net layer number and units in each layer.
 
         - **activation**: Activation function to use in attention net.
 
-        - **l2_reg**: float between 0 and 1. L2 regularizer strength applied to the kernel weights matrix of attention net.
+        - **l2_reg**: float between 0 and 1.
+        L2 regularizer strength applied to the kernel weights matrix of attention net.
 
-        - **dropout_rate**: float in [0,1). Fraction of the units to dropout in attention net.
+        - **dropout_rate**: float in [0,1).
+        Fraction of the units to dropout in attention net.
 
-        - **use_bn**: bool. Whether use BatchNormalization before activation or not in attention net.
+        - **use_bn**: bool.
+        Whether use BatchNormalization before activation or not in attention net.
 
         - **seed**: A Python integer to use as random seed.
 
     References
-        - [Zhou G, Zhu X, Song C, et al. Deep interest network for click-through rate prediction[C]//Proceedings of the 24th ACM SIGKDD International Conference on Knowledge Discovery & Data Mining. ACM, 2018: 1059-1068.](https://arxiv.org/pdf/1706.06978.pdf)
+        - [Zhou G, Zhu X, Song C, et al.
+        Deep interest network for click-through rate prediction
+        Proceedings of the 24th ACM SIGKDD International Conference on
+        Knowledge Discovery & Data Mining.
+        ACM, 2018: 1059-1068.](https://arxiv.org/pdf/1706.06978.pdf)
     """
 
-    def __init__(self, hidden_units=(64, 32), embedding_dim=4, activation='sigmoid', dropout_rate=0, dice_dim=3,
-                 l2_reg=0, use_bn=False):
+    def __init__(self, hidden_units=(64, 32), embedding_dim=4, activation='sigmoid',
+                 dropout_rate=0, dice_dim=3, l2_reg=0, use_bn=False):
         super(LocalActivationUnit, self).__init__()
 
         self.dnn = DNN(inputs_dim=4 * embedding_dim,
@@ -880,8 +903,8 @@ class LocalActivationUnit(nn.Module):
 
         queries = query.expand(-1, user_behavior_len, -1)
 
-        attention_input = torch.cat([queries, user_behavior, queries - user_behavior, queries * user_behavior],
-                                    dim=-1)  # as the source code, subtraction simulates verctors' difference
+        attention_input = torch.cat([queries, user_behavior, queries - user_behavior,
+                                     queries * user_behavior], dim=-1)
         attention_output = self.dnn(attention_input)
 
         attention_score = self.dense(attention_output)  # [B, T, 1]
@@ -893,25 +916,32 @@ class AttentionSequencePoolingLayer(nn.Module):
     """The Attentional sequence pooling operation used in DIN & DIEN.
 
         Arguments
-          - **att_hidden_units**:list of positive integer, the attention net layer number and units in each layer.
+          - **att_hidden_units**:list of positive integer,
+          the attention net layer number and units in each layer.
 
           - **att_activation**: Activation function to use in attention net.
 
-          - **weight_normalization**: bool.Whether normalize the attention score of local activation unit.
+          - **weight_normalization**: bool.
+          Whether normalize the attention score of local activation unit.
 
           - **supports_masking**:If True,the input need to support masking.
 
         References
-          - [Zhou G, Zhu X, Song C, et al. Deep interest network for click-through rate prediction[C]//Proceedings of the 24th ACM SIGKDD International Conference on Knowledge Discovery & Data Mining. ACM, 2018: 1059-1068.](https://arxiv.org/pdf/1706.06978.pdf)
+          - [Zhou G, Zhu X, Song C, et al. Deep interest network for click-through rate prediction
+          Proceedings of the 24th ACM SIGKDD International Conference
+          on Knowledge Discovery & Data Mining.
+          ACM, 2018: 1059-1068.](https://arxiv.org/pdf/1706.06978.pdf)
       """
 
-    def __init__(self, att_hidden_units=(80, 40), att_activation='sigmoid', weight_normalization=False,
-                 return_score=False, supports_masking=False, embedding_dim=4, **kwargs):
+    def __init__(self, att_hidden_units=(80, 40), att_activation='sigmoid',
+                 weight_normalization=False, return_score=False,
+                 supports_masking=False, embedding_dim=4, **kwargs):
         super(AttentionSequencePoolingLayer, self).__init__()
         self.return_score = return_score
         self.weight_normalization = weight_normalization
         self.supports_masking = supports_masking
-        self.local_att = LocalActivationUnit(hidden_units=att_hidden_units, embedding_dim=embedding_dim,
+        self.local_att = LocalActivationUnit(hidden_units=att_hidden_units,
+                                             embedding_dim=embedding_dim,
                                              activation=att_activation,
                                              dropout_rate=0, use_bn=False)
 
@@ -937,35 +967,36 @@ class AttentionSequencePoolingLayer(nn.Module):
                 raise ValueError("When supports_masking=True,input must support masking")
             keys_masks = mask.unsqueeze(1)
         else:
-            keys_masks = torch.arange(max_length, device=keys_length.device, dtype=keys_length.dtype).repeat(batch_size,
-                                                                                                             1)  # [B, T]
-            keys_masks = keys_masks < keys_length.view(-1, 1)  # 0, 1 mask
-            keys_masks = keys_masks.unsqueeze(1)  # [B, 1, T]
+            keys_masks = torch.arange(max_length, device=keys_length.device,
+                                      dtype=keys_length.dtype).repeat(batch_size, 1)
+            keys_masks = keys_masks < keys_length.view(-1, 1)
+            keys_masks = keys_masks.unsqueeze(1)
 
-        attention_score = self.local_att(query, keys)  # [B, T, 1]
+        attention_score = self.local_att(query, keys)
 
-        outputs = torch.transpose(attention_score, 1, 2)  # [B, 1, T]
+        outputs = torch.transpose(attention_score, 1, 2)
 
         if self.weight_normalization:
             paddings = torch.ones_like(outputs) * (-2 ** 32 + 1)
         else:
             paddings = torch.zeros_like(outputs)
 
-        outputs = torch.where(keys_masks, outputs, paddings)  # [B, 1, T]
+        outputs = torch.where(keys_masks, outputs, paddings)
 
         # Scale
         # outputs = outputs / (keys.shape[-1] ** 0.05)
 
         if self.weight_normalization:
-            outputs = F.softmax(outputs, dim=-1)  # [B, 1, T]
+            outputs = F.softmax(outputs, dim=-1)
 
         if not self.return_score:
             # Weighted sum
-            outputs = torch.matmul(outputs, keys)  # [B, 1, E]
+            outputs = torch.matmul(outputs, keys)
 
         return outputs
 
-### DeepCTR.BaseModel + .dien ###
+# DeepCTR.BaseModel + .dien
+
 
 class InterestExtractor(nn.Module):
     def __init__(self, input_size, use_neg=False, init_std=0.001, device='cpu'):
@@ -973,7 +1004,8 @@ class InterestExtractor(nn.Module):
         self.use_neg = use_neg
         self.gru = nn.GRU(input_size=input_size, hidden_size=input_size, batch_first=True)
         if self.use_neg:
-            self.auxiliary_net = DNN(input_size * 2, [100, 50, 1], 'sigmoid', init_std=init_std, device=device)
+            self.auxiliary_net = DNN(input_size * 2, [100, 50, 1], 'sigmoid',
+                                     init_std=init_std, device=device)
         for name, tensor in self.gru.named_parameters():
             if 'weight' in name:
                 nn.init.normal_(tensor, mean=0, std=init_std)
@@ -1004,16 +1036,18 @@ class InterestExtractor(nn.Module):
         if masked_keys_length.shape[0] == 0:
             return zero_outputs,
 
-        masked_keys = torch.masked_select(keys, mask.view(-1, 1, 1)).view(-1, max_length, dim)
+        masked_keys = torch.masked_select(keys, mask.view(-1, 1, 1)) \
+                           .view(-1, max_length, dim)
 
-        packed_keys = pack_padded_sequence(masked_keys, lengths=masked_keys_length, batch_first=True,
-                                           enforce_sorted=False)
+        packed_keys = pack_padded_sequence(masked_keys, lengths=masked_keys_length,
+                                           batch_first=True, enforce_sorted=False)
         packed_interests, _ = self.gru(packed_keys)
-        interests, _ = pad_packed_sequence(packed_interests, batch_first=True, padding_value=0.0,
-                                           total_length=max_length)
+        interests, _ = pad_packed_sequence(packed_interests, batch_first=True,
+                                           padding_value=0.0, total_length=max_length)
 
         if self.use_neg and neg_keys is not None:
-            masked_neg_keys = torch.masked_select(neg_keys, mask.view(-1, 1, 1)).view(-1, max_length, dim)
+            masked_neg_keys = torch.masked_select(neg_keys, mask.view(-1, 1, 1)) \
+                                   .view(-1, max_length, dim)
             aux_loss = self._cal_auxiliary_loss(
                 interests[:, :-1, :],
                 masked_keys[:, 1:, :],
@@ -1030,14 +1064,16 @@ class InterestExtractor(nn.Module):
             return torch.zeros((1,), device=states.device)
 
         _, max_seq_length, embedding_size = states.size()
-        states = torch.masked_select(states, mask_shape.view(-1, 1, 1)).view(-1, max_seq_length, embedding_size)
-        click_seq = torch.masked_select(click_seq, mask_shape.view(-1, 1, 1)).view(-1, max_seq_length, embedding_size)
-        noclick_seq = torch.masked_select(noclick_seq, mask_shape.view(-1, 1, 1)).view(-1, max_seq_length,
-                                                                                       embedding_size)
+        states = torch.masked_select(states, mask_shape.view(-1, 1, 1)) \
+                      .view(-1, max_seq_length, embedding_size)
+        click_seq = torch.masked_select(click_seq, mask_shape.view(-1, 1, 1)) \
+                         .view(-1, max_seq_length, embedding_size)
+        noclick_seq = torch.masked_select(noclick_seq, mask_shape.view(-1, 1, 1)) \
+                           .view(-1, max_seq_length, embedding_size)
         batch_size = states.size()[0]
 
-        mask = (torch.arange(max_seq_length, device=states.device).repeat(
-            batch_size, 1) < keys_length.view(-1, 1)).float()
+        mask = (torch.arange(max_seq_length, device=states.device)
+                     .repeat(batch_size, 1) < keys_length.view(-1, 1)).float()
 
         click_input = torch.cat([states, click_seq], dim=-1)
         noclick_input = torch.cat([states, noclick_seq], dim=-1)
@@ -1080,26 +1116,34 @@ class InterestEvolving(nn.Module):
         self.use_neg = use_neg
 
         if gru_type == 'GRU':
-            self.attention = AttentionSequencePoolingLayer(embedding_dim=input_size,
-                                                           att_hidden_units=att_hidden_size,
-                                                           att_activation=att_activation,
-                                                           weight_normalization=att_weight_normalization,
-                                                           return_score=False)
-            self.interest_evolution = nn.GRU(input_size=input_size, hidden_size=input_size, batch_first=True)
+            self.attention = AttentionSequencePoolingLayer(
+                embedding_dim=input_size,
+                att_hidden_units=att_hidden_size,
+                att_activation=att_activation,
+                weight_normalization=att_weight_normalization,
+                return_score=False)
+            self.interest_evolution = nn.GRU(input_size=input_size,
+                                             hidden_size=input_size,
+                                             batch_first=True)
         elif gru_type == 'AIGRU':
-            self.attention = AttentionSequencePoolingLayer(embedding_dim=input_size,
-                                                           att_hidden_units=att_hidden_size,
-                                                           att_activation=att_activation,
-                                                           weight_normalization=att_weight_normalization,
-                                                           return_score=True)
-            self.interest_evolution = nn.GRU(input_size=input_size, hidden_size=input_size, batch_first=True)
+            self.attention = AttentionSequencePoolingLayer(
+                embedding_dim=input_size,
+                att_hidden_units=att_hidden_size,
+                att_activation=att_activation,
+                weight_normalization=att_weight_normalization,
+                return_score=True)
+            self.interest_evolution = nn.GRU(input_size=input_size,
+                                             hidden_size=input_size,
+                                             batch_first=True)
         elif gru_type == 'AGRU' or gru_type == 'AUGRU':
-            self.attention = AttentionSequencePoolingLayer(embedding_dim=input_size,
-                                                           att_hidden_units=att_hidden_size,
-                                                           att_activation=att_activation,
-                                                           weight_normalization=att_weight_normalization,
-                                                           return_score=True)
-            self.interest_evolution = DynamicGRU(input_size=input_size, hidden_size=input_size,
+            self.attention = AttentionSequencePoolingLayer(
+                embedding_dim=input_size,
+                att_hidden_units=att_hidden_size,
+                att_activation=att_activation,
+                weight_normalization=att_weight_normalization,
+                return_score=True)
+            self.interest_evolution = DynamicGRU(input_size=input_size,
+                                                 hidden_size=input_size,
                                                  gru_type=gru_type)
         for name, tensor in self.interest_evolution.named_parameters():
             if 'weight' in name:
@@ -1110,8 +1154,8 @@ class InterestEvolving(nn.Module):
         # states [B, T, H]
         batch_size, max_seq_length, _ = states.size()
 
-        mask = (torch.arange(max_seq_length, device=keys_length.device).repeat(
-            batch_size, 1) == (keys_length.view(-1, 1) - 1))
+        mask = (torch.arange(max_seq_length, device=keys_length.device)
+                     .repeat(batch_size, 1) == (keys_length.view(-1, 1) - 1))
 
         return states[mask]
 
@@ -1142,52 +1186,52 @@ class InterestEvolving(nn.Module):
         query = torch.masked_select(query, mask.view(-1, 1)).view(-1, dim).unsqueeze(1)
 
         if self.gru_type == 'GRU':
-            packed_keys = pack_padded_sequence(keys, lengths=keys_length, batch_first=True, enforce_sorted=False)
+            packed_keys = pack_padded_sequence(keys, lengths=keys_length,
+                                               batch_first=True, enforce_sorted=False)
             packed_interests, _ = self.interest_evolution(packed_keys)
-            interests, _ = pad_packed_sequence(packed_interests, batch_first=True, padding_value=0.0,
-                                               total_length=max_length)
-            outputs = self.attention(query, interests, keys_length.unsqueeze(1))  # [b, 1, H]
-            outputs = outputs.squeeze(1)  # [b, H]
+            interests, _ = pad_packed_sequence(packed_interests, batch_first=True,
+                                               padding_value=0.0, total_length=max_length)
+            outputs = self.attention(query, interests, keys_length.unsqueeze(1))
+            outputs = outputs.squeeze(1)
         elif self.gru_type == 'AIGRU':
-            att_scores = self.attention(query, keys, keys_length.unsqueeze(1))  # [b, 1, T]
-            interests = keys * att_scores.transpose(1, 2)  # [b, T, H]
-            packed_interests = pack_padded_sequence(interests, lengths=keys_length, batch_first=True,
-                                                    enforce_sorted=False)
+            att_scores = self.attention(query, keys, keys_length.unsqueeze(1))
+            interests = keys * att_scores.transpose(1, 2)
+            packed_interests = pack_padded_sequence(interests, lengths=keys_length,
+                                                    batch_first=True, enforce_sorted=False)
             _, outputs = self.interest_evolution(packed_interests)
-            outputs = outputs.squeeze(0) # [b, H]
+            outputs = outputs.squeeze(0)
         elif self.gru_type == 'AGRU' or self.gru_type == 'AUGRU':
-            att_scores = self.attention(query, keys, keys_length.unsqueeze(1)).squeeze(1)  # [b, T]
+            att_scores = self.attention(query, keys, keys_length.unsqueeze(1)).squeeze(1)
             packed_interests = pack_padded_sequence(keys, lengths=keys_length, batch_first=True,
                                                     enforce_sorted=False)
             packed_scores = pack_padded_sequence(att_scores, lengths=keys_length, batch_first=True,
                                                  enforce_sorted=False)
             outputs = self.interest_evolution(packed_interests, packed_scores)
-            outputs, _ = pad_packed_sequence(outputs, batch_first=True, padding_value=0.0, total_length=max_length)
+            outputs, _ = pad_packed_sequence(outputs, batch_first=True,
+                                             padding_value=0.0, total_length=max_length)
             # pick last state
-            outputs = InterestEvolving._get_last_state(outputs, keys_length) # [b, H]
+            outputs = InterestEvolving._get_last_state(outputs, keys_length)
         # [b, H] -> [B, H]
         zero_outputs[mask] = outputs
         return zero_outputs
 
+# merge DeepCTR.BaseModel and DeepCTR.dien
 
-class DIEN(nn.Module): ### merge DeepCTR.BaseModel and DeepCTR.dien ###
 
-    ### modified DeepCTR.BaseModel
-
+class DIEN(nn.Module):
     def add_regularization_weight(self, weight_list, l1=0.0, l2=0.0):
         # For a Parameter, put it in a list to keep Compatible with get_regularization_loss()
         if isinstance(weight_list, torch.nn.parameter.Parameter):
             weight_list = [weight_list]
-        # For generators, filters and ParameterLists, convert them to a list of tensors to avoid bugs.
+        # For generators, filters and ParameterLists,
+        # convert them to a list of tensors to avoid bugs.
         # e.g., we can't pickle generator objects when we save the model.
         else:
             weight_list = list(weight_list)
         self.regularization_weight.append((weight_list, l1, l2))
 
-
     def add_auxiliary_loss(self, aux_loss, alpha):
         self.aux_loss = aux_loss * alpha
-
 
     def get_regularization_loss(self, ):
         total_reg_loss = torch.zeros((1,), device=self.device)
@@ -1207,9 +1251,10 @@ class DIEN(nn.Module): ### merge DeepCTR.BaseModel and DeepCTR.dien ###
 
         return total_reg_loss
 
-
-    def _base_init(self, linear_feature_columns, dnn_feature_columns, l2_reg_linear=1e-5, l2_reg_embedding=1e-5,
-                 init_std=0.0001, seed=1024, task='binary', device='cpu', gpus=None, weight_path='.'):
+    def _base_init(self, linear_feature_columns, dnn_feature_columns,
+                   l2_reg_linear=1e-5, l2_reg_embedding=1e-5, init_std=0.0001,
+                   seed=1024, task='binary', device='cpu',
+                   gpus=None, weight_path='.'):
         '''
           original BaseModel.__init__
         '''
@@ -1223,25 +1268,24 @@ class DIEN(nn.Module): ### merge DeepCTR.BaseModel and DeepCTR.dien ###
         if gpus and str(self.gpus[0]) not in self.device:
             raise ValueError(
                 "`gpus[0]` should be the same gpu with `device`")
-        self.weight_path = weight_path # output path of weight files
+        self.weight_path = weight_path
 
         self.feature_index = build_input_features(
             linear_feature_columns + dnn_feature_columns)
         self.dnn_feature_columns = dnn_feature_columns
 
-        self.embedding_dict = create_embedding_matrix(dnn_feature_columns, init_std, sparse=False, device=device)
-        #         nn.ModuleDict(
-        #             {feat.embedding_name: nn.Embedding(feat.dimension, embedding_size, sparse=True) for feat in
-        #              self.dnn_feature_columns}
-        #         )
+        self.embedding_dict = create_embedding_matrix(dnn_feature_columns, init_std,
+                                                      sparse=False, device=device)
 
         self.linear_model = Linear(
             linear_feature_columns, self.feature_index, device=device)
 
         self.regularization_weight = []
 
-        self.add_regularization_weight(self.embedding_dict.parameters(), l2=l2_reg_embedding)
-        self.add_regularization_weight(self.linear_model.parameters(), l2=l2_reg_linear)
+        self.add_regularization_weight(self.embedding_dict.parameters(),
+                                       l2=l2_reg_embedding)
+        self.add_regularization_weight(self.linear_model.parameters(),
+                                       l2=l2_reg_linear)
 
         self.out = PredictionLayer(task, )
         self.to(device)
@@ -1251,9 +1295,8 @@ class DIEN(nn.Module): ### merge DeepCTR.BaseModel and DeepCTR.dien ###
         self._ckpt_saved_epoch = False  # used for EarlyStopping in tf1.14
         self.history = History()
 
-        ### parameters for save, (Intel-RecoSys, 20210818)
-        self.model_format = 'pth' # save in a .pth format
-
+        # parameters for save, (Intel-RecoSys, 20210818)
+        self.model_format = 'pth'
 
     def _create_dataset(self, *datas):
         if len(datas) == 1:
@@ -1273,7 +1316,6 @@ class DIEN(nn.Module): ### merge DeepCTR.BaseModel and DeepCTR.dien ###
                 torch.from_numpy(ys)
             )
 
-
     def _get_optim(self, optimizer):
         if isinstance(optimizer, str):
             if optimizer == "sgd":
@@ -1290,7 +1332,6 @@ class DIEN(nn.Module): ### merge DeepCTR.BaseModel and DeepCTR.dien ###
             optim = optimizer
         return optim
 
-
     def _get_loss_func(self, loss):
         if isinstance(loss, str):
             if loss == "binary_crossentropy":
@@ -1305,8 +1346,8 @@ class DIEN(nn.Module): ### merge DeepCTR.BaseModel and DeepCTR.dien ###
             loss_func = loss
         return loss_func
 
-
-    def _log_loss(self, y_true, y_pred, eps=1e-7, normalize=True, sample_weight=None, labels=None):
+    def _log_loss(self, y_true, y_pred, eps=1e-7,
+                  normalize=True, sample_weight=None, labels=None):
         # change eps to improve calculation accuracy
         return log_loss(y_true,
                         y_pred,
@@ -1314,7 +1355,6 @@ class DIEN(nn.Module): ### merge DeepCTR.BaseModel and DeepCTR.dien ###
                         normalize,
                         sample_weight,
                         labels)
-
 
     def _get_metrics(self, metrics, set_eps=False):
         metrics_ = {}
@@ -1335,30 +1375,12 @@ class DIEN(nn.Module): ### merge DeepCTR.BaseModel and DeepCTR.dien ###
                 self.metrics_names.append(metric)
         return metrics_
 
-
-    def fit(self, xy, batch_size=None, epochs=1, verbose=1, initial_epoch=0, validation_split=0.,
-            validation_data=None, workers=1, shuffle=True, callbacks=None, steps_per_epoch=None, max_queue_size=None, validation_steps=None):
-        """
-        modified by YoungWay, 20210818
-        :param xy: x, y (fake train_generator, actually a tuple of x and y)
-          x: Numpy array of training data (if the model has a single input), or list of Numpy arrays (if the model has multiple inputs).If input layers in the model are named, you can also pass a
-            dictionary mapping input names to Numpy arrays.
-          y: Numpy array of target (label) data (if the model has a single output), or list of Numpy arrays (if the model has multiple outputs).
-        :param batch_size: Integer or `None`. Number of samples per gradient update. If unspecified, `batch_size` will default to 256.
-        :param epochs: Integer. Number of epochs to train the model. An epoch is an iteration over the entire `x` and `y` data provided. Note that in conjunction with `initial_epoch`, `epochs` is to be understood as "final epoch". The model is not trained for a number of iterations given by `epochs`, but merely until the epoch of index `epochs` is reached.
-        :param verbose: Integer. 0, 1, or 2. Verbosity mode. 0 = silent, 1 = progress bar, 2 = one line per epoch.
-        :param initial_epoch: Integer. Epoch at which to start training (useful for resuming a previous training run).
-        :param validation_split: Float between 0 and 1. Fraction of the training data to be used as validation data. The model will set apart this fraction of the training data, will not train on it, and will evaluate the loss and any model metrics on this data at the end of each epoch. The validation data is selected from the last samples in the `x` and `y` data provided, before shuffling.
-        :param validation_data: tuple `(x_val, y_val)` or tuple `(x_val, y_val, val_sample_weights)` on which to evaluate the loss and any model metrics at the end of each epoch. The model will not be trained on this data. `validation_data` will override `validation_split`.
-        :param shuffle: Boolean. Whether to shuffle the order of the batches at the beginning of each epoch.
-        :param callbacks: List of `deepctr_torch.callbacks.Callback` instances. List of callbacks to apply during training and validation (if ). See [callbacks](https://tensorflow.google.cn/api_docs/python/tf/keras/callbacks). Now available: `EarlyStopping` , `ModelCheckpoint`
-        :param steps_per_epoch: placeholder, do nothing
-        :param max_queue_size: placeholder, do nothing
-        :param validation_steps: placeholder, do nothing
-
-        :return: A `History` object. Its `History.history` attribute is a record of training loss values and metrics values at successive epochs, as well as validation loss values and validation metrics values (if applicable).
-        """
-        x, y = xy ###
+    def fit(self, xy, batch_size=None,
+            epochs=1, verbose=1, initial_epoch=0,
+            validation_split=0., validation_data=None, workers=1,
+            shuffle=True, callbacks=None, steps_per_epoch=None,
+            max_queue_size=None, validation_steps=None):
+        x, y = xy
         if isinstance(x, dict):
             x = [x[feature] for feature in self.feature_index]
 
@@ -1369,7 +1391,7 @@ class DIEN(nn.Module): ### merge DeepCTR.BaseModel and DeepCTR.dien ###
                 val_x, val_y = validation_data
                 val_sample_weight = None
             elif len(validation_data) == 3:
-                val_x, val_y, val_sample_weight = validation_data  # pylint: disable=unpacking-non-sequence
+                val_x, val_y, val_sample_weight = validation_data
             else:
                 raise ValueError(
                     'When passing a `validation_data` argument, '
@@ -1395,13 +1417,6 @@ class DIEN(nn.Module): ### merge DeepCTR.BaseModel and DeepCTR.dien ###
             val_x = []
             val_y = []
 
-        #for i in range(len(x)):
-        #    if len(x[i].shape) == 1:
-        #        x[i] = np.expand_dims(x[i], axis=1)
-        #train_tensor_data = Data.TensorDataset(
-        #        torch.from_numpy(np.concatenate(x, axis=-1)),
-        #        torch.from_numpy(y)
-        #    )
         train_tensor_data = self._create_dataset(x, y)
 
         if batch_size is None:
@@ -1414,28 +1429,23 @@ class DIEN(nn.Module): ### merge DeepCTR.BaseModel and DeepCTR.dien ###
         if self.gpus:
             print('parallel running on these gpus:', self.gpus)
             model = torch.nn.DataParallel(model, device_ids=self.gpus)
-            batch_size *= len(self.gpus)  # input `batch_size` is batch_size per gpu
+            batch_size *= len(self.gpus)
         else:
             print(self.device)
-        
+
         print('setup trainset dataloader')
-        #train_loader = DataLoader(
-        #    dataset=train_tensor_data, 
-        #    shuffle=shuffle, 
-        #    batch_size=batch_size, 
-        #    num_workers=workers) ### stack overflow if using more than one worker
         train_loader = DataLoader(dataset=train_tensor_data, shuffle=shuffle, batch_size=batch_size)
         sample_num = len(train_tensor_data)
         steps_per_epoch = (sample_num - 1) // batch_size + 1
 
         # configure callbacks
         print('setup training callbacks')
-        callbacks = (callbacks or []) + [self.history]  # add history callback
+        callbacks = (callbacks or []) + [self.history]
         callbacks = CallbackList(callbacks)
         callbacks.set_model(self)
         callbacks.on_train_begin()
         callbacks.set_model(self)
-        if not hasattr(callbacks, 'model'):  # for tf1.4
+        if not hasattr(callbacks, 'model'):
             callbacks.__setattr__('model', self)
         callbacks.model.stop_training = False
 
@@ -1469,7 +1479,8 @@ class DIEN(nn.Module): ### merge DeepCTR.BaseModel and DeepCTR.dien ###
                                 if name not in train_result:
                                     train_result[name] = []
                                 train_result[name].append(metric_fun(
-                                    y.cpu().data.numpy(), y_pred.cpu().data.numpy().astype("float64")))
+                                    y.cpu().data.numpy(),
+                                    y_pred.cpu().data.numpy().astype("float64")))
             except KeyboardInterrupt:
                 t.close()
                 raise
@@ -1489,7 +1500,6 @@ class DIEN(nn.Module): ### merge DeepCTR.BaseModel and DeepCTR.dien ###
             # verbose
             if verbose > 0:
                 epoch_time = int(time.time() - start_time)
-                # print('batch {0}/{1}'.format(epoch + 1, epochs))
 
                 eval_str = "{0}s - loss: {1: .4f}".format(
                     epoch_time, epoch_logs["loss"])
@@ -1510,16 +1520,7 @@ class DIEN(nn.Module): ### merge DeepCTR.BaseModel and DeepCTR.dien ###
         callbacks.on_train_end()
         return self.history
 
-
     def evaluate(self, xy, batch_size=256):
-        """
-
-        :param xy:
-          - x: Numpy array of test data (if the model has a single input), or list of Numpy arrays (if the model has multiple inputs).
-          - y: Numpy array of target (label) data (if the model has a single output), or list of Numpy arrays (if the model has multiple outputs).
-        :param batch_size: Integer or `None`. Number of samples per evaluation step. If unspecified, `batch_size` will default to 256.
-        :return: Dict contains metric names and metric values.
-        """
         assert len(xy) == 2 and isinstance(xy, tuple)
         val_x, val_y = xy
         pred_ans = self.predict(val_x, batch_size)
@@ -1528,14 +1529,7 @@ class DIEN(nn.Module): ### merge DeepCTR.BaseModel and DeepCTR.dien ###
             eval_result[name] = metric_fun(val_y, pred_ans)
         return eval_result
 
-
     def predict(self, x, batch_size=256):
-        """
-
-        :param x: The input data, as a Numpy array (or list of Numpy arrays if the model has multiple inputs).
-        :param batch_size: Integer. If unspecified, it will default to 256.
-        :return: Numpy array(s) of predictions.
-        """
         model = self.eval()
         if isinstance(x, dict):
             x = [x[feature] for feature in self.feature_index]
@@ -1543,8 +1537,6 @@ class DIEN(nn.Module): ### merge DeepCTR.BaseModel and DeepCTR.dien ###
             if len(x[i].shape) == 1:
                 x[i] = np.expand_dims(x[i], axis=1)
 
-        #tensor_data = Data.TensorDataset(
-        #    torch.from_numpy(np.concatenate(x, axis=-1)))
         tensor_data = self._create_dataset(x)
         test_loader = DataLoader(
             dataset=tensor_data, shuffle=False, batch_size=batch_size)
@@ -1554,26 +1546,19 @@ class DIEN(nn.Module): ### merge DeepCTR.BaseModel and DeepCTR.dien ###
             for _, x_test in enumerate(test_loader):
                 x = x_test[0].to(self.device).float()
 
-                y_pred = model(x).cpu().data.numpy()  # .squeeze()
+                y_pred = model(x).cpu().data.numpy()
                 pred_ans.append(y_pred)
 
         return np.concatenate(pred_ans).astype("float64")
-
 
     def compile(self, optimizer,
                 loss=None,
                 metrics=None,
                 ):
-        """
-        :param optimizer: String (name of optimizer) or optimizer instance. See [optimizers](https://pytorch.org/docs/stable/optim.html).
-        :param loss: String (name of objective function) or objective function. See [losses](https://pytorch.org/docs/stable/nn.functional.html#loss-functions).
-        :param metrics: List of metrics to be evaluated by the model during training and testing. Typically you will use `metrics=['accuracy']`.
-        """
         self.metrics_names = ["loss"]
         self.optim = self._get_optim(optimizer)
         self.loss_func = self._get_loss_func(loss)
         self.metrics = self._get_metrics(metrics)
-
 
     def save(self, modelpath):
         '''
@@ -1584,8 +1569,7 @@ class DIEN(nn.Module): ### merge DeepCTR.BaseModel and DeepCTR.dien ###
           ---
           by YoungWay, 20210818
         '''
-        torch.save(self.state_dict(), modelpath) ### 
-    
+        torch.save(self.state_dict(), modelpath)
 
     def load(self, modelpath):
         '''
@@ -1596,57 +1580,34 @@ class DIEN(nn.Module): ### merge DeepCTR.BaseModel and DeepCTR.dien ###
           ---
           by YoungWay, 20210818
         '''
-        self.load_state_dict(torch.load(modelpath)) ###
+        self.load_state_dict(torch.load(modelpath))
 
-
-    ### transfer from DeepCTR.dien
-    """Instantiates the Deep Interest Evolution Network architecture.
-
-    :param dnn_feature_columns: An iterable containing all the features used by deep part of the model.
-    :param history_feature_list: list,to indicate  sequence sparse field
-    :param gru_type: str,can be GRU AIGRU AUGRU AGRU
-    :param use_negsampling: bool, whether or not use negtive sampling
-    :param alpha: float ,weight of auxiliary_loss
-    :param use_bn: bool. Whether use BatchNormalization before activation or not in deep net
-    :param dnn_hidden_units: list,list of positive integer or empty list, the layer number and units in each layer of DNN
-    :param dnn_activation: Activation function to use in DNN
-    :param att_hidden_units: list,list of positive integer , the layer number and units in each layer of attention net
-    :param att_activation: Activation function to use in attention net
-    :param att_weight_normalization: bool.Whether normalize the attention score of local activation unit.
-    :param l2_reg_dnn: float. L2 regularizer strength applied to DNN
-    :param l2_reg_embedding: float. L2 regularizer strength applied to embedding vector
-    :param dnn_dropout: float in [0,1), the probability we will drop out a given DNN coordinate.
-    :param init_std: float,to use as the initialize std of embedding vector
-    :param seed: integer ,to use as random seed.
-    :param task: str, ``"binary"`` for  binary logloss or  ``"regression"`` for regression loss
-    :param device: str, ``"cpu"`` or ``"cuda:0"``
-    :param gpus: list of int or torch.device for multiple gpus. If None, run on `device`. `gpus[0]` should be the same gpu with `device`.
-    :return: A PyTorch model instance.
-
-    """
-    def __init__(self,
-                 dnn_feature_columns, history_feature_list,
-                 gru_type="GRU", use_negsampling=False, alpha=1.0, use_bn=False, dnn_hidden_units=(256, 128),
-                 dnn_activation='relu',
-                 att_hidden_units=(64, 16), att_activation="relu", att_weight_normalization=True,
-                 l2_reg_dnn=0, l2_reg_embedding=1e-6, dnn_dropout=0, init_std=0.0001, seed=1024, task='binary',
-                 device='cpu', gpus=None):
+    def __init__(self, dnn_feature_columns, history_feature_list,
+                 gru_type="GRU", use_negsampling=False, alpha=1.0,
+                 use_bn=False, dnn_hidden_units=(256, 128), dnn_activation='relu',
+                 att_hidden_units=(64, 16), att_activation="relu",
+                 att_weight_normalization=True, l2_reg_dnn=0, l2_reg_embedding=1e-6,
+                 dnn_dropout=0, init_std=0.0001, seed=1024,
+                 task='binary', device='cpu', gpus=None):
         super(DIEN, self).__init__()
-        self._base_init([], dnn_feature_columns, l2_reg_linear=0, l2_reg_embedding=l2_reg_embedding,
-                                   init_std=init_std, seed=seed, task=task, device=device, gpus=gpus)
+        self._base_init([], dnn_feature_columns, l2_reg_linear=0,
+                        l2_reg_embedding=l2_reg_embedding, init_std=init_std,
+                        seed=seed, task=task, device=device, gpus=gpus)
 
         self.item_features = history_feature_list
         self.use_negsampling = use_negsampling
         self.alpha = alpha
         self._split_columns()
 
-        # structure: embedding layer -> interest extractor layer -> interest evolution layer -> DNN layer -> out
-
+        # structure: embedding layer -> interest extractor layer ->
+        # interest evolution layer -> DNN layer -> out
         # embedding layer
         # inherit -> self.embedding_dict
         input_size = self._compute_interest_dim()
         # interest extractor layer
-        self.interest_extractor = InterestExtractor(input_size=input_size, use_neg=use_negsampling, init_std=init_std)
+        self.interest_extractor = InterestExtractor(input_size=input_size,
+                                                    use_neg=use_negsampling,
+                                                    init_std=init_std)
         # interest evolution layer
         self.interest_evolution = InterestEvolving(
             input_size=input_size,
@@ -1658,12 +1619,12 @@ class DIEN(nn.Module): ### merge DeepCTR.BaseModel and DeepCTR.dien ###
             att_weight_normalization=att_weight_normalization)
         # DNN layer
         dnn_input_size = self._compute_dnn_dim() + input_size
-        self.dnn = DNN(dnn_input_size, dnn_hidden_units, dnn_activation, l2_reg_dnn, dnn_dropout, use_bn,
-                       init_std=init_std, seed=seed)
+        self.dnn = DNN(dnn_input_size, dnn_hidden_units,
+                       dnn_activation, l2_reg_dnn,
+                       dnn_dropout, use_bn, init_std=init_std, seed=seed)
         self.linear = nn.Linear(dnn_hidden_units[-1], 1, bias=False)
         # prediction layer
         # inherit -> self.out
-
         # init
         for name, tensor in self.linear.named_parameters():
             if 'weight' in name:
@@ -1671,8 +1632,9 @@ class DIEN(nn.Module): ### merge DeepCTR.BaseModel and DeepCTR.dien ###
 
         self.to(device)
 
-
-    def forward(self, user, item_id, cate_id, hist_item_id, seq_length, hist_cate_id):
+    def forward(self, user, item_id,
+                cate_id, hist_item_id,
+                seq_length, hist_cate_id):
         # [B, H] , [B, T, H], [B, T, H] , [B]
         user = user.unsqueeze(1).float()
         item_id = item_id.unsqueeze(1).float()
@@ -1682,19 +1644,22 @@ class DIEN(nn.Module): ### merge DeepCTR.BaseModel and DeepCTR.dien ###
         hist_item_id = hist_item_id.float()
         hist_cate_id = hist_cate_id.float()
         x = [user, item_id, cate_id, hist_item_id, seq_length, hist_cate_id]
-        X = torch.cat(tuple(x),1)
-        X = torch.cat(tuple([ x[0].unsqueeze(0) for x in Data.TensorDataset(X)]),0)
+        X = torch.cat(tuple(x), 1)
+        X = torch.cat(tuple([x[0].unsqueeze(0) for x in Data.TensorDataset(X)]), 0)
 
         query_emb, keys_emb, neg_keys_emb, keys_length = self._get_emb(X)
         # [b, T, H],  [1]  (b<H)
-        masked_interest, aux_loss = self.interest_extractor(keys_emb, keys_length, neg_keys_emb)
+        masked_interest, aux_loss = self.interest_extractor(keys_emb,
+                                                            keys_length,
+                                                            neg_keys_emb)
         self.add_auxiliary_loss(aux_loss, self.alpha)
         # [B, H]
         hist = self.interest_evolution(query_emb, masked_interest, keys_length)
         # [B, H2]
         deep_input_emb = self._get_deep_input_emb(X)
         deep_input_emb = concat_fun([hist, deep_input_emb])
-        dense_value_list = get_dense_input(X, self.feature_index, self.dense_feature_columns)
+        dense_value_list = get_dense_input(X, self.feature_index,
+                                           self.dense_feature_columns)
         dnn_input = combined_dnn_input([deep_input_emb], dense_value_list)
         # [B, 1]
         output = self.linear(self.dnn(dnn_input))
@@ -1720,24 +1685,31 @@ class DIEN(nn.Module): ### merge DeepCTR.BaseModel and DeepCTR.dien ###
 
         # convert input to emb
         features = self.feature_index
-        query_emb_list = embedding_lookup(X, self.embedding_dict, features, self.sparse_feature_columns,
-                                          return_feat_list=self.item_features, to_list=True)
+        query_emb_list = embedding_lookup(X, self.embedding_dict, features,
+                                          self.sparse_feature_columns,
+                                          return_feat_list=self.item_features,
+                                          to_list=True)
         # [batch_size, dim]
         query_emb = torch.squeeze(concat_fun(query_emb_list), 1)
 
-        keys_emb_list = embedding_lookup(X, self.embedding_dict, features, history_feature_columns,
-                                         return_feat_list=history_fc_names, to_list=True)
+        keys_emb_list = embedding_lookup(X, self.embedding_dict, features,
+                                         history_feature_columns,
+                                         return_feat_list=history_fc_names,
+                                         to_list=True)
         # [batch_size, max_len, dim]
         keys_emb = concat_fun(keys_emb_list)
 
-        keys_length_feature_name = [feat.length_name for feat in self.varlen_sparse_feature_columns if
+        keys_length_feature_name = [feat.length_name for feat in
+                                    self.varlen_sparse_feature_columns if
                                     feat.length_name is not None]
         # [batch_size]
         keys_length = torch.squeeze(maxlen_lookup(X, features, keys_length_feature_name), 1)
 
         if self.use_negsampling:
-            neg_keys_emb_list = embedding_lookup(X, self.embedding_dict, features, neg_history_feature_columns,
-                                                 return_feat_list=neg_history_fc_names, to_list=True)
+            neg_keys_emb_list = embedding_lookup(X, self.embedding_dict,
+                                                 features, neg_history_feature_columns,
+                                                 return_feat_list=neg_history_fc_names,
+                                                 to_list=True)
             neg_keys_emb = concat_fun(neg_keys_emb_list)
         else:
             neg_keys_emb = None
@@ -1771,7 +1743,8 @@ class DIEN(nn.Module): ### merge DeepCTR.BaseModel and DeepCTR.dien ###
         return dnn_input_dim
 
     def _get_deep_input_emb(self, X):
-        dnn_input_emb_list = embedding_lookup(X, self.embedding_dict, self.feature_index, self.sparse_feature_columns,
+        dnn_input_emb_list = embedding_lookup(X, self.embedding_dict,
+                                              self.feature_index, self.sparse_feature_columns,
                                               mask_feat_list=self.item_features, to_list=True)
         dnn_input_emb = concat_fun(dnn_input_emb_list)
         return dnn_input_emb.squeeze(1)

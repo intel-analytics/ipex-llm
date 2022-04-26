@@ -111,8 +111,9 @@ if __name__ == '__main__':
 
     # Read Data
     tbl = FeatureTable.read_parquet(args.data_dir + "data") \
-                      .rename({'item_hist_seq': 'hist_item_id', 'item': 'item_id', 'category': 'cate_id',
-                               'category_hist_seq': 'hist_cate_id', 'item_hist_seq_len': 'seq_length'}) \
+                      .rename({'item_hist_seq': 'hist_item_id', 'item': 'item_id',
+                               'category': 'cate_id', 'category_hist_seq': 'hist_cate_id',
+                               'item_hist_seq_len': 'seq_length'}) \
                       .apply('label', 'label',
                              lambda x: 0.0 if float(x[0]) == 1.0 else 1.0, "float")
     windowSpec1 = Window.partitionBy("user").orderBy(desc("time"))
