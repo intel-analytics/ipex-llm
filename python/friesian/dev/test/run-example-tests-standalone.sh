@@ -36,7 +36,7 @@ else
 fi
 
 python ../../example/dien/preprocessing_inference.py \
-    --cluster mode=standalone \
+    --cluster_mode standalone \
     --executor_cores 6 \
     --executor_memory 50g \
     --input_meta ./data/test \
