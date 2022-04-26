@@ -48,14 +48,14 @@ start=$(date "+%s")
 if [ -d data/input_wnd ]; then
   echo "data/input_wnd already exists"
 else
-  wget -nv $FTP_URI/analytics-zoo-data/input_wnd.tar.gz -P data
-  tar -xvzf data/input_wnd.tar.gz -C data
+  wget -nv $FTP_URI/analytics-zoo-data/recsys_sample.tar.gz -P data
+  tar -xvzf data/recsys_sample.tar.gz -C data
 fi
 
 python ../../example/wnd/train/wnd_train_recsys.py \
     --executor_cores 4 \
     --executor_memory 10g \
-    --data_dir ./data/input_wnd \
+    --data_dir ./data/recsys_sample \
     --model_dir ./result \
     -b 1600
 
