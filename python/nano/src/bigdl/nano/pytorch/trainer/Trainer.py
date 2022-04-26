@@ -15,8 +15,7 @@
 #
 import copy
 from logging import warning
-from operator import xor
-import os
+from pathlib import Path
 from typing import Any, List, Optional
 import pytorch_lightning as pl
 import torch
@@ -325,17 +324,21 @@ class Trainer(pl.Trainer):
          PytorchONNXModel.
         :param path: Path to saved model. Path should be a directory.
         """
-        os.makedirs(path, exist_ok=True)
+        path = Path(path)
+        Path.mkdir(path, exist_ok=True)
         if hasattr(model, 'save'):
             model.save(path)
         else:
-            with open(path + '/meta-data.yml', 'w+') as f:
+            # typically for models of nn.Module, LightningModule and LightningModuleFromTorch type
+            meta_path = Path(path) / "meta-data.yml"
+            with open(meta_path, 'w+') as f:
                 metadata = {
                     'ModelType': 'PytorchModel',
                     'checkpoint': 'saved_weight.pt'
                 }
                 yaml.safe_dump(metadata, f)
-            torch.save(model.state_dict(), "{}/{}".format(path, metadata['checkpoint']))
+            checkpoint_path = path / metadata['checkpoint']
+            torch.save(model.state_dict(), checkpoint_path)
 
     @staticmethod
     def load(path, model: LightningModule = None):
@@ -347,9 +350,11 @@ class Trainer(pl.Trainer):
         :return: Model with different acceleration(None/OpenVINO/ONNX) or
                  precision(FP32/FP16/BF16/INT8).
         """
-        if not os.path.exists(path):
+        path = Path(path)
+        if not path.exists():
             raise FileNotFoundError("{} doesn't exist.".format(path))
-        with open(path + '/meta-data.yml', 'r') as f:
+        meta_path = Path(path) / "meta-data.yml"
+        with open(meta_path, 'r') as f:
             metadata = yaml.safe_load(f)
         model_type = metadata['ModelType']
         if model_type == 'PytorchOpenVINOModel':
@@ -358,8 +363,10 @@ class Trainer(pl.Trainer):
         # if model_type == 'PytorchQuantizedModel':
         # ... to be implemented
         if isinstance(model, nn.Module):
+            # typically for models of nn.Module, LightningModule and LightningModuleFromTorch type
             model = copy.deepcopy(model)
-            state_dict = torch.load("{}/{}".format(path, metadata['checkpoint']))
+            checkpoint_path = path / metadata['checkpoint']
+            state_dict = torch.load(checkpoint_path, map_location='cpu')
             model.load_state_dict(state_dict)
             return model
         else:

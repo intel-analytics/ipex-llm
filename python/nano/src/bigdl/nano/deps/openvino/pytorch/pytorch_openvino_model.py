@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-import os
+from pathlib import Path
 from ..core.openvino_model import OpenVINOModel
 from bigdl.nano.utils.inference.pytorch.model import AcceleratedLightningModule
 from .pytorch_openvino_utils import export
@@ -37,8 +37,9 @@ class PytorchOpenVINOModel(OpenVINOModel, AcceleratedLightningModule):
             ov_model_path = 'tmp.xml'
         OpenVINOModel.__init__(self, ov_model_path)
         AcceleratedLightningModule.__init__(self, None)
-        if os.path.exists('tmp.xml'):
-            os.remove('tmp.xml')
+        xml_path = Path('tmp.xml')
+        if xml_path.exists():
+            xml_path.unlink()
 
     def on_forward_start(self, inputs):
         if self.ie_network is None:
@@ -67,11 +68,14 @@ class PytorchOpenVINOModel(OpenVINOModel, AcceleratedLightningModule):
         :return: PytorchOpenVINOModel model for OpenVINO inference.
         """
         status = PytorchOpenVINOModel.load_status(path)
-        assert status.get('xml_path', None), "xml_path must not be None for loading."
-        assert status['xml_path'].split('.')[-1] == "xml", \
-            "Path of openvino model must be with '.xml' suffix."
-        xml_path = "{}/{}".format(path, status['xml_path'])
+        if status.get('xml_path', None):
+            xml_path = Path(status['xml_path'])
+            assert xml_path.suffix == '.xml', "Path of openvino model must be with '.xml' suffix."
+        else:
+            raise KeyError("meta-data.yml must specify 'xml_path' for loading.")
+        xml_path = Path(path) / status['xml_path']
         return PytorchOpenVINOModel(xml_path)
 
     def save_model(self, path):
-        super().save("{}/{}".format(path, self.status['xml_path']))
+        xml_path = Path(path) / self.status['xml_path']
+        super().save_model(xml_path)

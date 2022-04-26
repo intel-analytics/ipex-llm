@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+from pathlib import Path
 from openvino.inference_engine import IECore
 
 
@@ -39,12 +40,13 @@ class OpenVINOModel:
     def read_network(self, model: str):
         self.ie_network = IECore().read_network(model=model)
 
-    def save(self, path):
+    def save_model(self, path):
         """
         Save PytorchOpenVINOModel to local as xml and bin file
 
         :param path: Path to save the model.
         """
+        path = Path(path)
         assert self.ie_network, "self.ie_network shouldn't be None."
-        assert path.split('.')[-1] == "xml", "Path of openvino model must be with '.xml' suffix."
-        self.ie_network.serialize(path)
+        assert path.suffix == ".xml", "Path of openvino model must be with '.xml' suffix."
+        self.ie_network.serialize(str(path))

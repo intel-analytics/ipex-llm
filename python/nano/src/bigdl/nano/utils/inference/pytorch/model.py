@@ -13,11 +13,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-import os
 from pytorch_lightning import LightningModule
 import torch
 import yaml
-
+from pathlib import Path
 from .model_utils import get_forward_args
 
 
@@ -61,7 +60,8 @@ class AcceleratedLightningModule(LightningModule):
         return tensors
 
     def dump_status(self, path):
-        with open(path + "/meta-data.yml", 'w') as f:
+        meta_path = Path(path) / "meta-data.yml"
+        with open(meta_path, 'w') as f:
             yaml.safe_dump(self.status, f)
 
     def save_model(self, path):
@@ -78,7 +78,8 @@ class AcceleratedLightningModule(LightningModule):
 
         :param path: Path to saved model. Path should be a directory.
         """
-        os.makedirs(path, exist_ok=True)
+        path = Path(path)
+        Path.mkdir(path, exist_ok=True)
         self.dump_status(path)
         self.save_model(path)
         
@@ -88,7 +89,8 @@ class AcceleratedLightningModule(LightningModule):
 
     @staticmethod
     def load_status(path):
-        with open(path + "/meta-data.yml", 'r') as f:
+        meta_path = Path(path) / "meta-data.yml"
+        with open(meta_path, 'r') as f:
             metadata = yaml.safe_load(f)
         return metadata
 
