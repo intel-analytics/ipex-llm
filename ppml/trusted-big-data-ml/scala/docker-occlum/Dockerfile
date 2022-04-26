@@ -220,7 +220,7 @@ RUN cd /opt && \
     wget https://raw.githubusercontent.com/intel-analytics/analytics-zoo/bigdl-2.0/docker/hyperzoo/download-bigdl.sh && \
     chmod a+x ./download-bigdl.sh && \
     ./download-bigdl.sh && \
-    rm bigdl*.zip \
+    rm bigdl*.zip
 
 # Prepare Attestation
 ADD ./build_content.sh /root/demos/remote_attestation/init_ra_flow/
