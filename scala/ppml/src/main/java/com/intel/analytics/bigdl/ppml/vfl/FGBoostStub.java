@@ -17,9 +17,9 @@
 package com.intel.analytics.bigdl.ppml.vfl;
 
 
-import com.intel.analytics.bigdl.ppml.generated.FGBoostServiceGrpc;
-import com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.*;
-import com.intel.analytics.bigdl.ppml.generated.FlBaseProto.*;
+import com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceGrpc;
+import com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto.*;
+import com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.*;
 import io.grpc.Channel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -53,8 +53,8 @@ public class FGBoostStub {
 //        logger.info("Upload the following data:");
 //        logger.info("Upload Data Name:" + data.getMetaData().getName());
 //        logger.info("Upload Data Version:" + data.getMetaData().getVersion());
-//        logger.debug("Upload Data" + data.getTensorsMap());
-//        logger.info("Upload" + data.getTensorsMap().get("weights").getTensorList().subList(0, 5));
+//        logger.debug("Upload Data" + data.getTensorMapMap());
+//        logger.info("Upload" + data.getTensorMapMap().get("weights").getTensorList().subList(0, 5));
 
         UploadResponse uploadResponse = stub.uploadLabel(uploadRequest);
         return uploadResponse;

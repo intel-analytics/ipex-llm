@@ -24,8 +24,8 @@ import com.intel.analytics.bigdl.dllib.nn.abstractnn.Activity
 import com.intel.analytics.bigdl.dllib.optim.OptimMethod
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.ppml.base.Estimator
-import com.intel.analytics.bigdl.ppml.generated.FlBaseProto._
-import com.intel.analytics.bigdl.ppml.generated.NNServiceProto.EvaluateResponse
+import com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto._
+import com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.EvaluateResponse
 import com.intel.analytics.bigdl.ppml.{FLClient, FLContext}
 import com.intel.analytics.bigdl.ppml.utils.ProtoUtils._
 import org.apache.logging.log4j.LogManager

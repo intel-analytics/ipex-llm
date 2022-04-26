@@ -23,11 +23,10 @@ import com.intel.analytics.bigdl.dllib.keras.models.InternalOptimizerUtil.getPar
 import com.intel.analytics.bigdl.dllib.utils.T
 import com.intel.analytics.bigdl.ppml.FLClient
 import com.intel.analytics.bigdl.ppml.common.{FLPhase, Storage}
-import com.intel.analytics.bigdl.ppml.generated.FlBaseProto
-import com.intel.analytics.bigdl.ppml.generated.FlBaseProto._
+import com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto._
 import com.intel.analytics.bigdl.dllib.utils.{Table => DllibTable}
 import com.intel.analytics.bigdl.ppml.fgboost.common.Split
-import com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.{BoostEval, DataSplit, PredictResponse, TreePredict}
+import com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto.{BoostEval, DataSplit, PredictResponse, TreePredict}
 import org.apache.logging.log4j.LogManager
 
 import scala.reflect.ClassTag
@@ -35,6 +34,7 @@ import scala.util.Random
 import scala.collection.JavaConversions._
 import scala.collection.JavaConverters._
 import com.intel.analytics.bigdl.dllib.utils.Log4Error
+import com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto
 
 object ProtoUtils {
   private val logger = LogManager.getLogger(getClass)
@@ -44,14 +44,14 @@ object ProtoUtils {
     val tensorProto = toFloatTensor(output.toTensor[Float])
 
     val builder = TensorMap.newBuilder
-      .putTensors("output", tensorProto)
+      .putTensorMap("output", tensorProto)
     if (meta != null) {
       builder.setMetaData(meta)
     }
 
     if (target != null) {
       val targetTensor = toFloatTensor(target.toTensor[Float])
-      builder.putTensors("target", targetTensor)
+      builder.putTensorMap("target", targetTensor)
     }
     builder.build()
   }
@@ -71,7 +71,7 @@ object ProtoUtils {
   }
   def protoTableMapToTensorIterableMap(inputMap: java.util.Map[String, FlBaseProto.TensorMap]):
     Map[String, Iterable[Tensor[Float]]] = {
-    inputMap.asScala.mapValues(_.getTensorsMap).values
+    inputMap.asScala.mapValues(_.getTensorMapMap).values
       .flatMap(_.asScala).groupBy(_._1)
       .map{data =>
         (data._1, data._2.map {v =>
@@ -114,7 +114,7 @@ object ProtoUtils {
         .addAllShape(weights.size.toList.map(v => int2Integer(v)))
         .build()
     val metamodel = TensorMap.newBuilder
-      .putTensors("weights", tensor)
+      .putTensorMap("weights", tensor)
       .setMetaData(metadata)
       .build
     metamodel
@@ -123,7 +123,7 @@ object ProtoUtils {
 
   def updateModel(model: Module[Float],
                   modelData: TensorMap): Unit = {
-    val weigthBias = modelData.getTensorsMap.get("weights")
+    val weigthBias = modelData.getTensorMapMap.get("weights")
     val data = weigthBias.getTensorList.asScala.map(v => Float2float(v)).toArray
     val shape = weigthBias.getShapeList.asScala.map(v => Integer2int(v)).toArray
     val tensor = Tensor(data, shape)
@@ -131,7 +131,7 @@ object ProtoUtils {
   }
 
   def getTensor(name: String, modelData: TensorMap): Tensor[Float] = {
-    val dataMap = modelData.getTensorsMap.get(name)
+    val dataMap = modelData.getTensorMapMap.get(name)
     val data = dataMap.getTensorList.asScala.map(Float2float).toArray
     val shape = dataMap.getShapeList.asScala.map(Integer2int).toArray
     Tensor[Float](data, shape)
@@ -171,7 +171,7 @@ object ProtoUtils {
     }.toList
   }
   def toArrayFloat(response: PredictResponse): Array[Float] = {
-    response.getData.getTensorsMap.get("predictResult")
+    response.getData.getTensorMapMap.get("predictResult")
       .getTensorList.asScala.toArray.map(_.toFloat)
   }
 

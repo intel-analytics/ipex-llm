@@ -22,7 +22,7 @@ import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.utils.T
 import com.intel.analytics.bigdl.ppml.common.{Aggregator, FLPhase}
 import com.intel.analytics.bigdl.ppml.common.FLPhase._
-import com.intel.analytics.bigdl.ppml.generated.FlBaseProto._
+import com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto._
 import com.intel.analytics.bigdl.ppml.nn.NNAggregator
 import com.intel.analytics.bigdl.ppml.utils.ProtoUtils
 import com.intel.analytics.bigdl.ppml.utils.ProtoUtils.toFloatTensor
@@ -68,8 +68,8 @@ class VFLNNAggregator(model: Module[Float],
 
         aggregatedTable = TensorMap.newBuilder()
           .setMetaData(meta)
-          .putTensors("gradInput", toFloatTensor(grad.toTable.apply[Tensor[Float]](1)))
-          .putTensors("loss", toFloatTensor(Tensor[Float](T(loss))))
+          .putTensorMap("gradInput", toFloatTensor(grad.toTable.apply[Tensor[Float]](1)))
+          .putTensorMap("loss", toFloatTensor(Tensor[Float](T(loss))))
           .build()
 
       case FLPhase.EVAL =>
@@ -94,7 +94,7 @@ class VFLNNAggregator(model: Module[Float],
         val meta = metaBuilder.setName("predictResult").setVersion(storage.version).build()
         aggregatedTable = TensorMap.newBuilder()
           .setMetaData(meta)
-          .putTensors("predictOutput", toFloatTensor(output.toTensor[Float]))
+          .putTensorMap("predictOutput", toFloatTensor(output.toTensor[Float]))
           .build()
     }
     storage.clearClientAndUpdateServer(aggregatedTable)
