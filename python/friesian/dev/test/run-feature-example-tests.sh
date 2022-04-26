@@ -89,16 +89,17 @@ python ../../example/wnd/wnd_preprocessing.py \
 now=$(date "+%s")
 time3=$((now - start))
 
-echo "#4 start example test for wnd recsys train data converting"
-mkdir -p data/recsys_sample/spark_parquet
-#timer
-start=$(date "+%s")
+
 if [ -d data/recsys_sample ]; then
   echo "data/recsys_sample already exists"
 else
   wget -nv $FTP_URI/analytics-zoo-data/recsys_sample.tar.gz -P data
   tar -xvzf data/recsys_sample.tar.gz -C data
 fi
+echo "#4 start example test for wnd recsys train data converting"
+mkdir -p data/recsys_sample/spark_parquet
+#timer
+start=$(date "+%s")
 python ../../example/wnd/train/convert_train.py \
     --input_folder ./data/recsys_sample/raw_parquet \
     --output_folder ./data/recsys_sample/spark_parquet
