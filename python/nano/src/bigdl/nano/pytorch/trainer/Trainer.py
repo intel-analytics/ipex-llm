@@ -353,24 +353,31 @@ class Trainer(pl.Trainer):
         path = Path(path)
         if not path.exists():
             raise FileNotFoundError("{} doesn't exist.".format(path))
-        meta_path = Path(path) / "meta-data.yml"
+        meta_path = path / "meta-data.yml"
+        if not meta_path.exists():
+            raise FileNotFoundError("File {} is required to load model.".format(str(meta_path)))
         with open(meta_path, 'r') as f:
             metadata = yaml.safe_load(f)
-        model_type = metadata['ModelType']
+        model_type = metadata.get('ModelType', None)
         if model_type == 'PytorchOpenVINOModel':
             assert model is None, "Argument 'model' must be None for OpenVINO loading."
             return load_openvino_model(path)
         # if model_type == 'PytorchONNXModel':
         # if model_type == 'PytorchQuantizedModel':
         # ... to be implemented
-        if isinstance(model, nn.Module):
+        if model_type in ['PytorchModel', None] or isinstance(model, nn.Module):
             # typically for models of nn.Module, LightningModule and LightningModuleFromTorch type
             model = copy.deepcopy(model)
-            checkpoint_path = path / metadata['checkpoint']
-            state_dict = torch.load(checkpoint_path, map_location='cpu')
-            model.load_state_dict(state_dict)
-            return model
+            checkpoint_path = metadata.get('checkpoint', None)
+            if checkpoint_path:
+                checkpoint_path = path / metadata['checkpoint']
+                state_dict = torch.load(checkpoint_path, map_location='cpu')
+                model.load_state_dict(state_dict)
+                return model
+            else:
+                raise KeyError("Key 'checkpoint' must be specified.")
         else:
-            raise TypeError(
-                "Model type of {} is not acceptable for pytorch loading.".format(type(model))
+            raise ValueError(
+                "ModelType {} or argument 'model={}' is not acceptable for pytorch"
+                " \loading.".format(model_type, type(model))
             )
