@@ -79,7 +79,7 @@ class HFLNNAggregator extends NNAggregator {
     val metaData = MetaData.newBuilder
       .setName(modelName).setVersion(storage.version + 1).build
     val aggregatedTable = TensorMap.newBuilder
-      .setMetaData(metaData).putAllTensors(averagedDataMap).build
+      .setMetaData(metaData).putAllTensorMap(averagedDataMap).build
     storage.clearClientAndUpdateServer(aggregatedTable)
   }
 }

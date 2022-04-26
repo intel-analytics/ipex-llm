@@ -44,14 +44,14 @@ object ProtoUtils {
     val tensorProto = toFloatTensor(output.toTensor[Float])
 
     val builder = TensorMap.newBuilder
-      .putTensors("output", tensorProto)
+      .putTensorMap("output", tensorProto)
     if (meta != null) {
       builder.setMetaData(meta)
     }
 
     if (target != null) {
       val targetTensor = toFloatTensor(target.toTensor[Float])
-      builder.putTensors("target", targetTensor)
+      builder.putTensorMap("target", targetTensor)
     }
     builder.build()
   }
@@ -114,7 +114,7 @@ object ProtoUtils {
         .addAllShape(weights.size.toList.map(v => int2Integer(v)))
         .build()
     val metamodel = TensorMap.newBuilder
-      .putTensors("weights", tensor)
+      .putTensorMap("weights", tensor)
       .setMetaData(metadata)
       .build
     metamodel

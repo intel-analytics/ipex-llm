@@ -123,7 +123,7 @@ public final class FlBaseProto {
     }
     public static final com.google.protobuf.Descriptors.EnumDescriptor
         getDescriptor() {
-      return com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.getDescriptor().getEnumTypes().get(0);
+      return FlBaseProto.getDescriptor().getEnumTypes().get(0);
     }
 
     private static final SIGNAL[] VALUES = values();
@@ -304,15 +304,15 @@ public final class FlBaseProto {
     }
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return internal_static_FloatTensor_descriptor;
+      return FlBaseProto.internal_static_FloatTensor_descriptor;
     }
 
     @Override
     protected FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return internal_static_FloatTensor_fieldAccessorTable
+      return FlBaseProto.internal_static_FloatTensor_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
-              com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.FloatTensor.class, com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.FloatTensor.Builder.class);
+              FloatTensor.class, Builder.class);
     }
 
     public static final int SHAPE_FIELD_NUMBER = 1;
@@ -444,10 +444,10 @@ public final class FlBaseProto {
       if (obj == this) {
        return true;
       }
-      if (!(obj instanceof com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.FloatTensor)) {
+      if (!(obj instanceof FloatTensor)) {
         return super.equals(obj);
       }
-      com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.FloatTensor other = (com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.FloatTensor) obj;
+      FloatTensor other = (FloatTensor) obj;
 
       if (!getShapeList()
           .equals(other.getShapeList())) return false;
@@ -477,69 +477,69 @@ public final class FlBaseProto {
       return hash;
     }
 
-    public static com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.FloatTensor parseFrom(
+    public static FloatTensor parseFrom(
         java.nio.ByteBuffer data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.FloatTensor parseFrom(
+    public static FloatTensor parseFrom(
         java.nio.ByteBuffer data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.FloatTensor parseFrom(
+    public static FloatTensor parseFrom(
         com.google.protobuf.ByteString data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.FloatTensor parseFrom(
+    public static FloatTensor parseFrom(
         com.google.protobuf.ByteString data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.FloatTensor parseFrom(byte[] data)
+    public static FloatTensor parseFrom(byte[] data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.FloatTensor parseFrom(
+    public static FloatTensor parseFrom(
         byte[] data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.FloatTensor parseFrom(java.io.InputStream input)
+    public static FloatTensor parseFrom(java.io.InputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input);
     }
-    public static com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.FloatTensor parseFrom(
+    public static FloatTensor parseFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input, extensionRegistry);
     }
-    public static com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.FloatTensor parseDelimitedFrom(java.io.InputStream input)
+    public static FloatTensor parseDelimitedFrom(java.io.InputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseDelimitedWithIOException(PARSER, input);
     }
-    public static com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.FloatTensor parseDelimitedFrom(
+    public static FloatTensor parseDelimitedFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
     }
-    public static com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.FloatTensor parseFrom(
+    public static FloatTensor parseFrom(
         com.google.protobuf.CodedInputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input);
     }
-    public static com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.FloatTensor parseFrom(
+    public static FloatTensor parseFrom(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
@@ -552,7 +552,7 @@ public final class FlBaseProto {
     public static Builder newBuilder() {
       return DEFAULT_INSTANCE.toBuilder();
     }
-    public static Builder newBuilder(com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.FloatTensor prototype) {
+    public static Builder newBuilder(FloatTensor prototype) {
       return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
     }
     @Override
@@ -573,18 +573,18 @@ public final class FlBaseProto {
     public static final class Builder extends
         com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
         // @@protoc_insertion_point(builder_implements:FloatTensor)
-        com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.FloatTensorOrBuilder {
+        FloatTensorOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
           getDescriptor() {
-        return internal_static_FloatTensor_descriptor;
+        return FlBaseProto.internal_static_FloatTensor_descriptor;
       }
 
       @Override
       protected FieldAccessorTable
           internalGetFieldAccessorTable() {
-        return internal_static_FloatTensor_fieldAccessorTable
+        return FlBaseProto.internal_static_FloatTensor_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
-                com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.FloatTensor.class, com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.FloatTensor.Builder.class);
+                FloatTensor.class, Builder.class);
       }
 
       // Construct using com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.FloatTensor.newBuilder()
@@ -615,17 +615,17 @@ public final class FlBaseProto {
       @Override
       public com.google.protobuf.Descriptors.Descriptor
           getDescriptorForType() {
-        return internal_static_FloatTensor_descriptor;
+        return FlBaseProto.internal_static_FloatTensor_descriptor;
       }
 
       @Override
-      public com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.FloatTensor getDefaultInstanceForType() {
-        return getDefaultInstance();
+      public FloatTensor getDefaultInstanceForType() {
+        return FloatTensor.getDefaultInstance();
       }
 
       @Override
-      public com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.FloatTensor build() {
-        com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.FloatTensor result = buildPartial();
+      public FloatTensor build() {
+        FloatTensor result = buildPartial();
         if (!result.isInitialized()) {
           throw newUninitializedMessageException(result);
         }
@@ -633,8 +633,8 @@ public final class FlBaseProto {
       }
 
       @Override
-      public com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.FloatTensor buildPartial() {
-        com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.FloatTensor result = new com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.FloatTensor(this);
+      public FloatTensor buildPartial() {
+        FloatTensor result = new FloatTensor(this);
         int from_bitField0_ = bitField0_;
         if (((bitField0_ & 0x00000001) != 0)) {
           shape_.makeImmutable();
@@ -684,16 +684,16 @@ public final class FlBaseProto {
       }
       @Override
       public Builder mergeFrom(com.google.protobuf.Message other) {
-        if (other instanceof com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.FloatTensor) {
-          return mergeFrom((com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.FloatTensor)other);
+        if (other instanceof FloatTensor) {
+          return mergeFrom((FloatTensor)other);
         } else {
           super.mergeFrom(other);
           return this;
         }
       }
 
-      public Builder mergeFrom(com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.FloatTensor other) {
-        if (other == getDefaultInstance()) return this;
+      public Builder mergeFrom(FloatTensor other) {
+        if (other == FloatTensor.getDefaultInstance()) return this;
         if (!other.shape_.isEmpty()) {
           if (shape_.isEmpty()) {
             shape_ = other.shape_;
@@ -729,11 +729,11 @@ public final class FlBaseProto {
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws java.io.IOException {
-        com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.FloatTensor parsedMessage = null;
+        FloatTensor parsedMessage = null;
         try {
           parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
         } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-          parsedMessage = (com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.FloatTensor) e.getUnfinishedMessage();
+          parsedMessage = (FloatTensor) e.getUnfinishedMessage();
           throw e.unwrapIOException();
         } finally {
           if (parsedMessage != null) {
@@ -918,12 +918,12 @@ public final class FlBaseProto {
     }
 
     // @@protoc_insertion_point(class_scope:FloatTensor)
-    private static final com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.FloatTensor DEFAULT_INSTANCE;
+    private static final FloatTensor DEFAULT_INSTANCE;
     static {
-      DEFAULT_INSTANCE = new com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.FloatTensor();
+      DEFAULT_INSTANCE = new FloatTensor();
     }
 
-    public static com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.FloatTensor getDefaultInstance() {
+    public static FloatTensor getDefaultInstance() {
       return DEFAULT_INSTANCE;
     }
 
@@ -948,7 +948,7 @@ public final class FlBaseProto {
     }
 
     @Override
-    public com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.FloatTensor getDefaultInstanceForType() {
+    public FloatTensor getDefaultInstanceForType() {
       return DEFAULT_INSTANCE;
     }
 
@@ -967,11 +967,11 @@ public final class FlBaseProto {
      * <code>.MetaData metaData = 1;</code>
      * @return The metaData.
      */
-    com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.MetaData getMetaData();
+    MetaData getMetaData();
     /**
      * <code>.MetaData metaData = 1;</code>
      */
-    com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.MetaDataOrBuilder getMetaDataOrBuilder();
+    MetaDataOrBuilder getMetaDataOrBuilder();
 
     /**
      * <code>map&lt;string, .FloatTensor&gt; tensorMap = 2;</code>
@@ -986,25 +986,25 @@ public final class FlBaseProto {
      * Use {@link #getTensorMapMap()} instead.
      */
     @Deprecated
-    java.util.Map<String, com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.FloatTensor>
+    java.util.Map<String, FloatTensor>
     getTensorMap();
     /**
      * <code>map&lt;string, .FloatTensor&gt; tensorMap = 2;</code>
      */
-    java.util.Map<String, com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.FloatTensor>
+    java.util.Map<String, FloatTensor>
     getTensorMapMap();
     /**
      * <code>map&lt;string, .FloatTensor&gt; tensorMap = 2;</code>
      */
 
-    com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.FloatTensor getTensorMapOrDefault(
+    FloatTensor getTensorMapOrDefault(
         String key,
-        com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.FloatTensor defaultValue);
+        FloatTensor defaultValue);
     /**
      * <code>map&lt;string, .FloatTensor&gt; tensorMap = 2;</code>
      */
 
-    com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.FloatTensor getTensorMapOrThrow(
+    FloatTensor getTensorMapOrThrow(
         String key);
   }
   /**
@@ -1057,11 +1057,11 @@ public final class FlBaseProto {
               done = true;
               break;
             case 10: {
-              com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.MetaData.Builder subBuilder = null;
+              MetaData.Builder subBuilder = null;
               if (metaData_ != null) {
                 subBuilder = metaData_.toBuilder();
               }
-              metaData_ = input.readMessage(com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.MetaData.parser(), extensionRegistry);
+              metaData_ = input.readMessage(MetaData.parser(), extensionRegistry);
               if (subBuilder != null) {
                 subBuilder.mergeFrom(metaData_);
                 metaData_ = subBuilder.buildPartial();
@@ -1075,7 +1075,7 @@ public final class FlBaseProto {
                     TensorMapDefaultEntryHolder.defaultEntry);
                 mutable_bitField0_ |= 0x00000001;
               }
-              com.google.protobuf.MapEntry<String, com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.FloatTensor>
+              com.google.protobuf.MapEntry<String, FloatTensor>
               tensorMap__ = input.readMessage(
                   TensorMapDefaultEntryHolder.defaultEntry.getParserForType(), extensionRegistry);
               tensorMap_.getMutableMap().put(
@@ -1103,7 +1103,7 @@ public final class FlBaseProto {
     }
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return internal_static_TensorMap_descriptor;
+      return FlBaseProto.internal_static_TensorMap_descriptor;
     }
 
     @SuppressWarnings({"rawtypes"})
@@ -1121,13 +1121,13 @@ public final class FlBaseProto {
     @Override
     protected FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return internal_static_TensorMap_fieldAccessorTable
+      return FlBaseProto.internal_static_TensorMap_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
-              com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap.class, com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap.Builder.class);
+              TensorMap.class, Builder.class);
     }
 
     public static final int METADATA_FIELD_NUMBER = 1;
-    private com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.MetaData metaData_;
+    private MetaData metaData_;
     /**
      * <code>.MetaData metaData = 1;</code>
      * @return Whether the metaData field is set.
@@ -1141,32 +1141,32 @@ public final class FlBaseProto {
      * @return The metaData.
      */
     @Override
-    public com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.MetaData getMetaData() {
-      return metaData_ == null ? com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.MetaData.getDefaultInstance() : metaData_;
+    public MetaData getMetaData() {
+      return metaData_ == null ? MetaData.getDefaultInstance() : metaData_;
     }
     /**
      * <code>.MetaData metaData = 1;</code>
      */
     @Override
-    public com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.MetaDataOrBuilder getMetaDataOrBuilder() {
+    public MetaDataOrBuilder getMetaDataOrBuilder() {
       return getMetaData();
     }
 
     public static final int TENSORMAP_FIELD_NUMBER = 2;
     private static final class TensorMapDefaultEntryHolder {
       static final com.google.protobuf.MapEntry<
-          String, com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.FloatTensor> defaultEntry =
+          String, FloatTensor> defaultEntry =
               com.google.protobuf.MapEntry
-              .<String, com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.FloatTensor>newDefaultInstance(
-                      internal_static_TensorMap_TensorMapEntry_descriptor,
+              .<String, FloatTensor>newDefaultInstance(
+                  FlBaseProto.internal_static_TensorMap_TensorMapEntry_descriptor,
                   com.google.protobuf.WireFormat.FieldType.STRING,
                   "",
                   com.google.protobuf.WireFormat.FieldType.MESSAGE,
-                  com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.FloatTensor.getDefaultInstance());
+                  FloatTensor.getDefaultInstance());
     }
     private com.google.protobuf.MapField<
-        String, com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.FloatTensor> tensorMap_;
-    private com.google.protobuf.MapField<String, com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.FloatTensor>
+        String, FloatTensor> tensorMap_;
+    private com.google.protobuf.MapField<String, FloatTensor>
     internalGetTensorMap() {
       if (tensorMap_ == null) {
         return com.google.protobuf.MapField.emptyMapField(
@@ -1193,7 +1193,7 @@ public final class FlBaseProto {
      */
     @Override
     @Deprecated
-    public java.util.Map<String, com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.FloatTensor> getTensorMap() {
+    public java.util.Map<String, FloatTensor> getTensorMap() {
       return getTensorMapMap();
     }
     /**
@@ -1201,7 +1201,7 @@ public final class FlBaseProto {
      */
     @Override
 
-    public java.util.Map<String, com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.FloatTensor> getTensorMapMap() {
+    public java.util.Map<String, FloatTensor> getTensorMapMap() {
       return internalGetTensorMap().getMap();
     }
     /**
@@ -1209,11 +1209,11 @@ public final class FlBaseProto {
      */
     @Override
 
-    public com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.FloatTensor getTensorMapOrDefault(
+    public FloatTensor getTensorMapOrDefault(
         String key,
-        com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.FloatTensor defaultValue) {
+        FloatTensor defaultValue) {
       if (key == null) { throw new NullPointerException(); }
-      java.util.Map<String, com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.FloatTensor> map =
+      java.util.Map<String, FloatTensor> map =
           internalGetTensorMap().getMap();
       return map.containsKey(key) ? map.get(key) : defaultValue;
     }
@@ -1222,10 +1222,10 @@ public final class FlBaseProto {
      */
     @Override
 
-    public com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.FloatTensor getTensorMapOrThrow(
+    public FloatTensor getTensorMapOrThrow(
         String key) {
       if (key == null) { throw new NullPointerException(); }
-      java.util.Map<String, com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.FloatTensor> map =
+      java.util.Map<String, FloatTensor> map =
           internalGetTensorMap().getMap();
       if (!map.containsKey(key)) {
         throw new IllegalArgumentException();
@@ -1269,9 +1269,9 @@ public final class FlBaseProto {
         size += com.google.protobuf.CodedOutputStream
           .computeMessageSize(1, getMetaData());
       }
-      for (java.util.Map.Entry<String, com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.FloatTensor> entry
+      for (java.util.Map.Entry<String, FloatTensor> entry
            : internalGetTensorMap().getMap().entrySet()) {
-        com.google.protobuf.MapEntry<String, com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.FloatTensor>
+        com.google.protobuf.MapEntry<String, FloatTensor>
         tensorMap__ = TensorMapDefaultEntryHolder.defaultEntry.newBuilderForType()
             .setKey(entry.getKey())
             .setValue(entry.getValue())
@@ -1289,10 +1289,10 @@ public final class FlBaseProto {
       if (obj == this) {
        return true;
       }
-      if (!(obj instanceof com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap)) {
+      if (!(obj instanceof TensorMap)) {
         return super.equals(obj);
       }
-      com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap other = (com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap) obj;
+      TensorMap other = (TensorMap) obj;
 
       if (hasMetaData() != other.hasMetaData()) return false;
       if (hasMetaData()) {
@@ -1325,69 +1325,69 @@ public final class FlBaseProto {
       return hash;
     }
 
-    public static com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap parseFrom(
+    public static TensorMap parseFrom(
         java.nio.ByteBuffer data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap parseFrom(
+    public static TensorMap parseFrom(
         java.nio.ByteBuffer data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap parseFrom(
+    public static TensorMap parseFrom(
         com.google.protobuf.ByteString data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap parseFrom(
+    public static TensorMap parseFrom(
         com.google.protobuf.ByteString data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap parseFrom(byte[] data)
+    public static TensorMap parseFrom(byte[] data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap parseFrom(
+    public static TensorMap parseFrom(
         byte[] data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap parseFrom(java.io.InputStream input)
+    public static TensorMap parseFrom(java.io.InputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input);
     }
-    public static com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap parseFrom(
+    public static TensorMap parseFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input, extensionRegistry);
     }
-    public static com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap parseDelimitedFrom(java.io.InputStream input)
+    public static TensorMap parseDelimitedFrom(java.io.InputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseDelimitedWithIOException(PARSER, input);
     }
-    public static com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap parseDelimitedFrom(
+    public static TensorMap parseDelimitedFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
     }
-    public static com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap parseFrom(
+    public static TensorMap parseFrom(
         com.google.protobuf.CodedInputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input);
     }
-    public static com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap parseFrom(
+    public static TensorMap parseFrom(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
@@ -1400,7 +1400,7 @@ public final class FlBaseProto {
     public static Builder newBuilder() {
       return DEFAULT_INSTANCE.toBuilder();
     }
-    public static Builder newBuilder(com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap prototype) {
+    public static Builder newBuilder(TensorMap prototype) {
       return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
     }
     @Override
@@ -1424,10 +1424,10 @@ public final class FlBaseProto {
     public static final class Builder extends
         com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
         // @@protoc_insertion_point(builder_implements:TensorMap)
-        com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMapOrBuilder {
+        TensorMapOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
           getDescriptor() {
-        return internal_static_TensorMap_descriptor;
+        return FlBaseProto.internal_static_TensorMap_descriptor;
       }
 
       @SuppressWarnings({"rawtypes"})
@@ -1455,9 +1455,9 @@ public final class FlBaseProto {
       @Override
       protected FieldAccessorTable
           internalGetFieldAccessorTable() {
-        return internal_static_TensorMap_fieldAccessorTable
+        return FlBaseProto.internal_static_TensorMap_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
-                com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap.class, com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap.Builder.class);
+                TensorMap.class, Builder.class);
       }
 
       // Construct using com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap.newBuilder()
@@ -1491,17 +1491,17 @@ public final class FlBaseProto {
       @Override
       public com.google.protobuf.Descriptors.Descriptor
           getDescriptorForType() {
-        return internal_static_TensorMap_descriptor;
+        return FlBaseProto.internal_static_TensorMap_descriptor;
       }
 
       @Override
-      public com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap getDefaultInstanceForType() {
-        return getDefaultInstance();
+      public TensorMap getDefaultInstanceForType() {
+        return TensorMap.getDefaultInstance();
       }
 
       @Override
-      public com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap build() {
-        com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap result = buildPartial();
+      public TensorMap build() {
+        TensorMap result = buildPartial();
         if (!result.isInitialized()) {
           throw newUninitializedMessageException(result);
         }
@@ -1509,8 +1509,8 @@ public final class FlBaseProto {
       }
 
       @Override
-      public com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap buildPartial() {
-        com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap result = new com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap(this);
+      public TensorMap buildPartial() {
+        TensorMap result = new TensorMap(this);
         int from_bitField0_ = bitField0_;
         if (metaDataBuilder_ == null) {
           result.metaData_ = metaData_;
@@ -1557,16 +1557,16 @@ public final class FlBaseProto {
       }
       @Override
       public Builder mergeFrom(com.google.protobuf.Message other) {
-        if (other instanceof com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap) {
-          return mergeFrom((com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap)other);
+        if (other instanceof TensorMap) {
+          return mergeFrom((TensorMap)other);
         } else {
           super.mergeFrom(other);
           return this;
         }
       }
 
-      public Builder mergeFrom(com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap other) {
-        if (other == getDefaultInstance()) return this;
+      public Builder mergeFrom(TensorMap other) {
+        if (other == TensorMap.getDefaultInstance()) return this;
         if (other.hasMetaData()) {
           mergeMetaData(other.getMetaData());
         }
@@ -1587,11 +1587,11 @@ public final class FlBaseProto {
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws java.io.IOException {
-        com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap parsedMessage = null;
+        TensorMap parsedMessage = null;
         try {
           parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
         } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-          parsedMessage = (com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap) e.getUnfinishedMessage();
+          parsedMessage = (TensorMap) e.getUnfinishedMessage();
           throw e.unwrapIOException();
         } finally {
           if (parsedMessage != null) {
@@ -1602,9 +1602,9 @@ public final class FlBaseProto {
       }
       private int bitField0_;
 
-      private com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.MetaData metaData_;
+      private MetaData metaData_;
       private com.google.protobuf.SingleFieldBuilderV3<
-          com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.MetaData, com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.MetaData.Builder, com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.MetaDataOrBuilder> metaDataBuilder_;
+          MetaData, MetaData.Builder, MetaDataOrBuilder> metaDataBuilder_;
       /**
        * <code>.MetaData metaData = 1;</code>
        * @return Whether the metaData field is set.
@@ -1616,9 +1616,9 @@ public final class FlBaseProto {
        * <code>.MetaData metaData = 1;</code>
        * @return The metaData.
        */
-      public com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.MetaData getMetaData() {
+      public MetaData getMetaData() {
         if (metaDataBuilder_ == null) {
-          return metaData_ == null ? com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.MetaData.getDefaultInstance() : metaData_;
+          return metaData_ == null ? MetaData.getDefaultInstance() : metaData_;
         } else {
           return metaDataBuilder_.getMessage();
         }
@@ -1626,7 +1626,7 @@ public final class FlBaseProto {
       /**
        * <code>.MetaData metaData = 1;</code>
        */
-      public Builder setMetaData(com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.MetaData value) {
+      public Builder setMetaData(MetaData value) {
         if (metaDataBuilder_ == null) {
           if (value == null) {
             throw new NullPointerException();
@@ -1643,7 +1643,7 @@ public final class FlBaseProto {
        * <code>.MetaData metaData = 1;</code>
        */
       public Builder setMetaData(
-          com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.MetaData.Builder builderForValue) {
+          MetaData.Builder builderForValue) {
         if (metaDataBuilder_ == null) {
           metaData_ = builderForValue.build();
           onChanged();
@@ -1656,11 +1656,11 @@ public final class FlBaseProto {
       /**
        * <code>.MetaData metaData = 1;</code>
        */
-      public Builder mergeMetaData(com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.MetaData value) {
+      public Builder mergeMetaData(MetaData value) {
         if (metaDataBuilder_ == null) {
           if (metaData_ != null) {
             metaData_ =
-              com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.MetaData.newBuilder(metaData_).mergeFrom(value).buildPartial();
+              MetaData.newBuilder(metaData_).mergeFrom(value).buildPartial();
           } else {
             metaData_ = value;
           }
@@ -1688,7 +1688,7 @@ public final class FlBaseProto {
       /**
        * <code>.MetaData metaData = 1;</code>
        */
-      public com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.MetaData.Builder getMetaDataBuilder() {
+      public MetaData.Builder getMetaDataBuilder() {
         
         onChanged();
         return getMetaDataFieldBuilder().getBuilder();
@@ -1696,23 +1696,23 @@ public final class FlBaseProto {
       /**
        * <code>.MetaData metaData = 1;</code>
        */
-      public com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.MetaDataOrBuilder getMetaDataOrBuilder() {
+      public MetaDataOrBuilder getMetaDataOrBuilder() {
         if (metaDataBuilder_ != null) {
           return metaDataBuilder_.getMessageOrBuilder();
         } else {
           return metaData_ == null ?
-              com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.MetaData.getDefaultInstance() : metaData_;
+              MetaData.getDefaultInstance() : metaData_;
         }
       }
       /**
        * <code>.MetaData metaData = 1;</code>
        */
       private com.google.protobuf.SingleFieldBuilderV3<
-          com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.MetaData, com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.MetaData.Builder, com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.MetaDataOrBuilder> 
+          MetaData, MetaData.Builder, MetaDataOrBuilder>
           getMetaDataFieldBuilder() {
         if (metaDataBuilder_ == null) {
           metaDataBuilder_ = new com.google.protobuf.SingleFieldBuilderV3<
-              com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.MetaData, com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.MetaData.Builder, com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.MetaDataOrBuilder>(
+              MetaData, MetaData.Builder, MetaDataOrBuilder>(
                   getMetaData(),
                   getParentForChildren(),
                   isClean());
@@ -1722,8 +1722,8 @@ public final class FlBaseProto {
       }
 
       private com.google.protobuf.MapField<
-          String, com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.FloatTensor> tensorMap_;
-      private com.google.protobuf.MapField<String, com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.FloatTensor>
+          String, FloatTensor> tensorMap_;
+      private com.google.protobuf.MapField<String, FloatTensor>
       internalGetTensorMap() {
         if (tensorMap_ == null) {
           return com.google.protobuf.MapField.emptyMapField(
@@ -1731,7 +1731,7 @@ public final class FlBaseProto {
         }
         return tensorMap_;
       }
-      private com.google.protobuf.MapField<String, com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.FloatTensor>
+      private com.google.protobuf.MapField<String, FloatTensor>
       internalGetMutableTensorMap() {
         onChanged();;
         if (tensorMap_ == null) {
@@ -1762,7 +1762,7 @@ public final class FlBaseProto {
        */
       @Override
       @Deprecated
-      public java.util.Map<String, com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.FloatTensor> getTensorMap() {
+      public java.util.Map<String, FloatTensor> getTensorMap() {
         return getTensorMapMap();
       }
       /**
@@ -1770,7 +1770,7 @@ public final class FlBaseProto {
        */
       @Override
 
-      public java.util.Map<String, com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.FloatTensor> getTensorMapMap() {
+      public java.util.Map<String, FloatTensor> getTensorMapMap() {
         return internalGetTensorMap().getMap();
       }
       /**
@@ -1778,11 +1778,11 @@ public final class FlBaseProto {
        */
       @Override
 
-      public com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.FloatTensor getTensorMapOrDefault(
+      public FloatTensor getTensorMapOrDefault(
           String key,
-          com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.FloatTensor defaultValue) {
+          FloatTensor defaultValue) {
         if (key == null) { throw new NullPointerException(); }
-        java.util.Map<String, com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.FloatTensor> map =
+        java.util.Map<String, FloatTensor> map =
             internalGetTensorMap().getMap();
         return map.containsKey(key) ? map.get(key) : defaultValue;
       }
@@ -1791,10 +1791,10 @@ public final class FlBaseProto {
        */
       @Override
 
-      public com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.FloatTensor getTensorMapOrThrow(
+      public FloatTensor getTensorMapOrThrow(
           String key) {
         if (key == null) { throw new NullPointerException(); }
-        java.util.Map<String, com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.FloatTensor> map =
+        java.util.Map<String, FloatTensor> map =
             internalGetTensorMap().getMap();
         if (!map.containsKey(key)) {
           throw new IllegalArgumentException();
@@ -1822,7 +1822,7 @@ public final class FlBaseProto {
        * Use alternate mutation accessors instead.
        */
       @Deprecated
-      public java.util.Map<String, com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.FloatTensor>
+      public java.util.Map<String, FloatTensor>
       getMutableTensorMap() {
         return internalGetMutableTensorMap().getMutableMap();
       }
@@ -1831,7 +1831,7 @@ public final class FlBaseProto {
        */
       public Builder putTensorMap(
           String key,
-          com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.FloatTensor value) {
+          FloatTensor value) {
         if (key == null) { throw new NullPointerException(); }
         if (value == null) { throw new NullPointerException(); }
         internalGetMutableTensorMap().getMutableMap()
@@ -1843,7 +1843,7 @@ public final class FlBaseProto {
        */
 
       public Builder putAllTensorMap(
-          java.util.Map<String, com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.FloatTensor> values) {
+          java.util.Map<String, FloatTensor> values) {
         internalGetMutableTensorMap().getMutableMap()
             .putAll(values);
         return this;
@@ -1865,12 +1865,12 @@ public final class FlBaseProto {
     }
 
     // @@protoc_insertion_point(class_scope:TensorMap)
-    private static final com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap DEFAULT_INSTANCE;
+    private static final TensorMap DEFAULT_INSTANCE;
     static {
-      DEFAULT_INSTANCE = new com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap();
+      DEFAULT_INSTANCE = new TensorMap();
     }
 
-    public static com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap getDefaultInstance() {
+    public static TensorMap getDefaultInstance() {
       return DEFAULT_INSTANCE;
     }
 
@@ -1895,7 +1895,7 @@ public final class FlBaseProto {
     }
 
     @Override
-    public com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap getDefaultInstanceForType() {
+    public TensorMap getDefaultInstanceForType() {
       return DEFAULT_INSTANCE;
     }
 
@@ -2004,15 +2004,15 @@ public final class FlBaseProto {
     }
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return internal_static_MetaData_descriptor;
+      return FlBaseProto.internal_static_MetaData_descriptor;
     }
 
     @Override
     protected FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return internal_static_MetaData_fieldAccessorTable
+      return FlBaseProto.internal_static_MetaData_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
-              com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.MetaData.class, com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.MetaData.Builder.class);
+              MetaData.class, Builder.class);
     }
 
     public static final int NAME_FIELD_NUMBER = 1;
@@ -2110,10 +2110,10 @@ public final class FlBaseProto {
       if (obj == this) {
        return true;
       }
-      if (!(obj instanceof com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.MetaData)) {
+      if (!(obj instanceof MetaData)) {
         return super.equals(obj);
       }
-      com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.MetaData other = (com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.MetaData) obj;
+      MetaData other = (MetaData) obj;
 
       if (!getName()
           .equals(other.getName())) return false;
@@ -2139,69 +2139,69 @@ public final class FlBaseProto {
       return hash;
     }
 
-    public static com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.MetaData parseFrom(
+    public static MetaData parseFrom(
         java.nio.ByteBuffer data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.MetaData parseFrom(
+    public static MetaData parseFrom(
         java.nio.ByteBuffer data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.MetaData parseFrom(
+    public static MetaData parseFrom(
         com.google.protobuf.ByteString data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.MetaData parseFrom(
+    public static MetaData parseFrom(
         com.google.protobuf.ByteString data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.MetaData parseFrom(byte[] data)
+    public static MetaData parseFrom(byte[] data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.MetaData parseFrom(
+    public static MetaData parseFrom(
         byte[] data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.MetaData parseFrom(java.io.InputStream input)
+    public static MetaData parseFrom(java.io.InputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input);
     }
-    public static com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.MetaData parseFrom(
+    public static MetaData parseFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input, extensionRegistry);
     }
-    public static com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.MetaData parseDelimitedFrom(java.io.InputStream input)
+    public static MetaData parseDelimitedFrom(java.io.InputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseDelimitedWithIOException(PARSER, input);
     }
-    public static com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.MetaData parseDelimitedFrom(
+    public static MetaData parseDelimitedFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
     }
-    public static com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.MetaData parseFrom(
+    public static MetaData parseFrom(
         com.google.protobuf.CodedInputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input);
     }
-    public static com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.MetaData parseFrom(
+    public static MetaData parseFrom(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
@@ -2214,7 +2214,7 @@ public final class FlBaseProto {
     public static Builder newBuilder() {
       return DEFAULT_INSTANCE.toBuilder();
     }
-    public static Builder newBuilder(com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.MetaData prototype) {
+    public static Builder newBuilder(MetaData prototype) {
       return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
     }
     @Override
@@ -2238,18 +2238,18 @@ public final class FlBaseProto {
     public static final class Builder extends
         com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
         // @@protoc_insertion_point(builder_implements:MetaData)
-        com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.MetaDataOrBuilder {
+        MetaDataOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
           getDescriptor() {
-        return internal_static_MetaData_descriptor;
+        return FlBaseProto.internal_static_MetaData_descriptor;
       }
 
       @Override
       protected FieldAccessorTable
           internalGetFieldAccessorTable() {
-        return internal_static_MetaData_fieldAccessorTable
+        return FlBaseProto.internal_static_MetaData_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
-                com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.MetaData.class, com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.MetaData.Builder.class);
+                MetaData.class, Builder.class);
       }
 
       // Construct using com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.MetaData.newBuilder()
@@ -2280,17 +2280,17 @@ public final class FlBaseProto {
       @Override
       public com.google.protobuf.Descriptors.Descriptor
           getDescriptorForType() {
-        return internal_static_MetaData_descriptor;
+        return FlBaseProto.internal_static_MetaData_descriptor;
       }
 
       @Override
-      public com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.MetaData getDefaultInstanceForType() {
-        return getDefaultInstance();
+      public MetaData getDefaultInstanceForType() {
+        return MetaData.getDefaultInstance();
       }
 
       @Override
-      public com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.MetaData build() {
-        com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.MetaData result = buildPartial();
+      public MetaData build() {
+        MetaData result = buildPartial();
         if (!result.isInitialized()) {
           throw newUninitializedMessageException(result);
         }
@@ -2298,8 +2298,8 @@ public final class FlBaseProto {
       }
 
       @Override
-      public com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.MetaData buildPartial() {
-        com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.MetaData result = new com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.MetaData(this);
+      public MetaData buildPartial() {
+        MetaData result = new MetaData(this);
         result.name_ = name_;
         result.version_ = version_;
         onBuilt();
@@ -2340,16 +2340,16 @@ public final class FlBaseProto {
       }
       @Override
       public Builder mergeFrom(com.google.protobuf.Message other) {
-        if (other instanceof com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.MetaData) {
-          return mergeFrom((com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.MetaData)other);
+        if (other instanceof MetaData) {
+          return mergeFrom((MetaData)other);
         } else {
           super.mergeFrom(other);
           return this;
         }
       }
 
-      public Builder mergeFrom(com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.MetaData other) {
-        if (other == getDefaultInstance()) return this;
+      public Builder mergeFrom(MetaData other) {
+        if (other == MetaData.getDefaultInstance()) return this;
         if (!other.getName().isEmpty()) {
           name_ = other.name_;
           onChanged();
@@ -2372,11 +2372,11 @@ public final class FlBaseProto {
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws java.io.IOException {
-        com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.MetaData parsedMessage = null;
+        MetaData parsedMessage = null;
         try {
           parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
         } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-          parsedMessage = (com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.MetaData) e.getUnfinishedMessage();
+          parsedMessage = (MetaData) e.getUnfinishedMessage();
           throw e.unwrapIOException();
         } finally {
           if (parsedMessage != null) {
@@ -2509,12 +2509,12 @@ public final class FlBaseProto {
     }
 
     // @@protoc_insertion_point(class_scope:MetaData)
-    private static final com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.MetaData DEFAULT_INSTANCE;
+    private static final MetaData DEFAULT_INSTANCE;
     static {
-      DEFAULT_INSTANCE = new com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.MetaData();
+      DEFAULT_INSTANCE = new MetaData();
     }
 
-    public static com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.MetaData getDefaultInstance() {
+    public static MetaData getDefaultInstance() {
       return DEFAULT_INSTANCE;
     }
 
@@ -2539,7 +2539,7 @@ public final class FlBaseProto {
     }
 
     @Override
-    public com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.MetaData getDefaultInstanceForType() {
+    public MetaData getDefaultInstanceForType() {
       return DEFAULT_INSTANCE;
     }
 

@@ -133,15 +133,15 @@ public final class PSIServiceProto {
     }
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return internal_static_SaltRequest_descriptor;
+      return PSIServiceProto.internal_static_SaltRequest_descriptor;
     }
 
     @Override
     protected FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return internal_static_SaltRequest_fieldAccessorTable
+      return PSIServiceProto.internal_static_SaltRequest_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
-              com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.SaltRequest.class, com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.SaltRequest.Builder.class);
+              SaltRequest.class, Builder.class);
     }
 
     public static final int TASK_ID_FIELD_NUMBER = 1;
@@ -283,10 +283,10 @@ public final class PSIServiceProto {
       if (obj == this) {
        return true;
       }
-      if (!(obj instanceof com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.SaltRequest)) {
+      if (!(obj instanceof SaltRequest)) {
         return super.equals(obj);
       }
-      com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.SaltRequest other = (com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.SaltRequest) obj;
+      SaltRequest other = (SaltRequest) obj;
 
       if (!getTaskId()
           .equals(other.getTaskId())) return false;
@@ -316,69 +316,69 @@ public final class PSIServiceProto {
       return hash;
     }
 
-    public static com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.SaltRequest parseFrom(
+    public static SaltRequest parseFrom(
         java.nio.ByteBuffer data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.SaltRequest parseFrom(
+    public static SaltRequest parseFrom(
         java.nio.ByteBuffer data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.SaltRequest parseFrom(
+    public static SaltRequest parseFrom(
         com.google.protobuf.ByteString data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.SaltRequest parseFrom(
+    public static SaltRequest parseFrom(
         com.google.protobuf.ByteString data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.SaltRequest parseFrom(byte[] data)
+    public static SaltRequest parseFrom(byte[] data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.SaltRequest parseFrom(
+    public static SaltRequest parseFrom(
         byte[] data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.SaltRequest parseFrom(java.io.InputStream input)
+    public static SaltRequest parseFrom(java.io.InputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input);
     }
-    public static com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.SaltRequest parseFrom(
+    public static SaltRequest parseFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input, extensionRegistry);
     }
-    public static com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.SaltRequest parseDelimitedFrom(java.io.InputStream input)
+    public static SaltRequest parseDelimitedFrom(java.io.InputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseDelimitedWithIOException(PARSER, input);
     }
-    public static com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.SaltRequest parseDelimitedFrom(
+    public static SaltRequest parseDelimitedFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
     }
-    public static com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.SaltRequest parseFrom(
+    public static SaltRequest parseFrom(
         com.google.protobuf.CodedInputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input);
     }
-    public static com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.SaltRequest parseFrom(
+    public static SaltRequest parseFrom(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
@@ -391,7 +391,7 @@ public final class PSIServiceProto {
     public static Builder newBuilder() {
       return DEFAULT_INSTANCE.toBuilder();
     }
-    public static Builder newBuilder(com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.SaltRequest prototype) {
+    public static Builder newBuilder(SaltRequest prototype) {
       return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
     }
     @Override
@@ -412,18 +412,18 @@ public final class PSIServiceProto {
     public static final class Builder extends
         com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
         // @@protoc_insertion_point(builder_implements:SaltRequest)
-        com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.SaltRequestOrBuilder {
+        SaltRequestOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
           getDescriptor() {
-        return internal_static_SaltRequest_descriptor;
+        return PSIServiceProto.internal_static_SaltRequest_descriptor;
       }
 
       @Override
       protected FieldAccessorTable
           internalGetFieldAccessorTable() {
-        return internal_static_SaltRequest_fieldAccessorTable
+        return PSIServiceProto.internal_static_SaltRequest_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
-                com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.SaltRequest.class, com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.SaltRequest.Builder.class);
+                SaltRequest.class, Builder.class);
       }
 
       // Construct using com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.SaltRequest.newBuilder()
@@ -456,17 +456,17 @@ public final class PSIServiceProto {
       @Override
       public com.google.protobuf.Descriptors.Descriptor
           getDescriptorForType() {
-        return internal_static_SaltRequest_descriptor;
+        return PSIServiceProto.internal_static_SaltRequest_descriptor;
       }
 
       @Override
-      public com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.SaltRequest getDefaultInstanceForType() {
-        return getDefaultInstance();
+      public SaltRequest getDefaultInstanceForType() {
+        return SaltRequest.getDefaultInstance();
       }
 
       @Override
-      public com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.SaltRequest build() {
-        com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.SaltRequest result = buildPartial();
+      public SaltRequest build() {
+        SaltRequest result = buildPartial();
         if (!result.isInitialized()) {
           throw newUninitializedMessageException(result);
         }
@@ -474,8 +474,8 @@ public final class PSIServiceProto {
       }
 
       @Override
-      public com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.SaltRequest buildPartial() {
-        com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.SaltRequest result = new com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.SaltRequest(this);
+      public SaltRequest buildPartial() {
+        SaltRequest result = new SaltRequest(this);
         result.taskId_ = taskId_;
         result.clientNum_ = clientNum_;
         result.secureCode_ = secureCode_;
@@ -517,16 +517,16 @@ public final class PSIServiceProto {
       }
       @Override
       public Builder mergeFrom(com.google.protobuf.Message other) {
-        if (other instanceof com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.SaltRequest) {
-          return mergeFrom((com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.SaltRequest)other);
+        if (other instanceof SaltRequest) {
+          return mergeFrom((SaltRequest)other);
         } else {
           super.mergeFrom(other);
           return this;
         }
       }
 
-      public Builder mergeFrom(com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.SaltRequest other) {
-        if (other == getDefaultInstance()) return this;
+      public Builder mergeFrom(SaltRequest other) {
+        if (other == SaltRequest.getDefaultInstance()) return this;
         if (!other.getTaskId().isEmpty()) {
           taskId_ = other.taskId_;
           onChanged();
@@ -553,11 +553,11 @@ public final class PSIServiceProto {
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws java.io.IOException {
-        com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.SaltRequest parsedMessage = null;
+        SaltRequest parsedMessage = null;
         try {
           parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
         } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-          parsedMessage = (com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.SaltRequest) e.getUnfinishedMessage();
+          parsedMessage = (SaltRequest) e.getUnfinishedMessage();
           throw e.unwrapIOException();
         } finally {
           if (parsedMessage != null) {
@@ -766,12 +766,12 @@ public final class PSIServiceProto {
     }
 
     // @@protoc_insertion_point(class_scope:SaltRequest)
-    private static final com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.SaltRequest DEFAULT_INSTANCE;
+    private static final SaltRequest DEFAULT_INSTANCE;
     static {
-      DEFAULT_INSTANCE = new com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.SaltRequest();
+      DEFAULT_INSTANCE = new SaltRequest();
     }
 
-    public static com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.SaltRequest getDefaultInstance() {
+    public static SaltRequest getDefaultInstance() {
       return DEFAULT_INSTANCE;
     }
 
@@ -796,7 +796,7 @@ public final class PSIServiceProto {
     }
 
     @Override
-    public com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.SaltRequest getDefaultInstanceForType() {
+    public SaltRequest getDefaultInstanceForType() {
       return DEFAULT_INSTANCE;
     }
 
@@ -891,15 +891,15 @@ public final class PSIServiceProto {
     }
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return internal_static_SaltReply_descriptor;
+      return PSIServiceProto.internal_static_SaltReply_descriptor;
     }
 
     @Override
     protected FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return internal_static_SaltReply_fieldAccessorTable
+      return PSIServiceProto.internal_static_SaltReply_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
-              com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.SaltReply.class, com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.SaltReply.Builder.class);
+              SaltReply.class, Builder.class);
     }
 
     public static final int SALT_REPLY_FIELD_NUMBER = 1;
@@ -979,10 +979,10 @@ public final class PSIServiceProto {
       if (obj == this) {
        return true;
       }
-      if (!(obj instanceof com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.SaltReply)) {
+      if (!(obj instanceof SaltReply)) {
         return super.equals(obj);
       }
-      com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.SaltReply other = (com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.SaltReply) obj;
+      SaltReply other = (SaltReply) obj;
 
       if (!getSaltReply()
           .equals(other.getSaltReply())) return false;
@@ -1004,69 +1004,69 @@ public final class PSIServiceProto {
       return hash;
     }
 
-    public static com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.SaltReply parseFrom(
+    public static SaltReply parseFrom(
         java.nio.ByteBuffer data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.SaltReply parseFrom(
+    public static SaltReply parseFrom(
         java.nio.ByteBuffer data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.SaltReply parseFrom(
+    public static SaltReply parseFrom(
         com.google.protobuf.ByteString data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.SaltReply parseFrom(
+    public static SaltReply parseFrom(
         com.google.protobuf.ByteString data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.SaltReply parseFrom(byte[] data)
+    public static SaltReply parseFrom(byte[] data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.SaltReply parseFrom(
+    public static SaltReply parseFrom(
         byte[] data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.SaltReply parseFrom(java.io.InputStream input)
+    public static SaltReply parseFrom(java.io.InputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input);
     }
-    public static com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.SaltReply parseFrom(
+    public static SaltReply parseFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input, extensionRegistry);
     }
-    public static com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.SaltReply parseDelimitedFrom(java.io.InputStream input)
+    public static SaltReply parseDelimitedFrom(java.io.InputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseDelimitedWithIOException(PARSER, input);
     }
-    public static com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.SaltReply parseDelimitedFrom(
+    public static SaltReply parseDelimitedFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
     }
-    public static com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.SaltReply parseFrom(
+    public static SaltReply parseFrom(
         com.google.protobuf.CodedInputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input);
     }
-    public static com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.SaltReply parseFrom(
+    public static SaltReply parseFrom(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
@@ -1079,7 +1079,7 @@ public final class PSIServiceProto {
     public static Builder newBuilder() {
       return DEFAULT_INSTANCE.toBuilder();
     }
-    public static Builder newBuilder(com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.SaltReply prototype) {
+    public static Builder newBuilder(SaltReply prototype) {
       return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
     }
     @Override
@@ -1100,18 +1100,18 @@ public final class PSIServiceProto {
     public static final class Builder extends
         com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
         // @@protoc_insertion_point(builder_implements:SaltReply)
-        com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.SaltReplyOrBuilder {
+        SaltReplyOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
           getDescriptor() {
-        return internal_static_SaltReply_descriptor;
+        return PSIServiceProto.internal_static_SaltReply_descriptor;
       }
 
       @Override
       protected FieldAccessorTable
           internalGetFieldAccessorTable() {
-        return internal_static_SaltReply_fieldAccessorTable
+        return PSIServiceProto.internal_static_SaltReply_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
-                com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.SaltReply.class, com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.SaltReply.Builder.class);
+                SaltReply.class, Builder.class);
       }
 
       // Construct using com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.SaltReply.newBuilder()
@@ -1140,17 +1140,17 @@ public final class PSIServiceProto {
       @Override
       public com.google.protobuf.Descriptors.Descriptor
           getDescriptorForType() {
-        return internal_static_SaltReply_descriptor;
+        return PSIServiceProto.internal_static_SaltReply_descriptor;
       }
 
       @Override
-      public com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.SaltReply getDefaultInstanceForType() {
-        return getDefaultInstance();
+      public SaltReply getDefaultInstanceForType() {
+        return SaltReply.getDefaultInstance();
       }
 
       @Override
-      public com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.SaltReply build() {
-        com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.SaltReply result = buildPartial();
+      public SaltReply build() {
+        SaltReply result = buildPartial();
         if (!result.isInitialized()) {
           throw newUninitializedMessageException(result);
         }
@@ -1158,8 +1158,8 @@ public final class PSIServiceProto {
       }
 
       @Override
-      public com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.SaltReply buildPartial() {
-        com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.SaltReply result = new com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.SaltReply(this);
+      public SaltReply buildPartial() {
+        SaltReply result = new SaltReply(this);
         result.saltReply_ = saltReply_;
         onBuilt();
         return result;
@@ -1199,16 +1199,16 @@ public final class PSIServiceProto {
       }
       @Override
       public Builder mergeFrom(com.google.protobuf.Message other) {
-        if (other instanceof com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.SaltReply) {
-          return mergeFrom((com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.SaltReply)other);
+        if (other instanceof SaltReply) {
+          return mergeFrom((SaltReply)other);
         } else {
           super.mergeFrom(other);
           return this;
         }
       }
 
-      public Builder mergeFrom(com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.SaltReply other) {
-        if (other == getDefaultInstance()) return this;
+      public Builder mergeFrom(SaltReply other) {
+        if (other == SaltReply.getDefaultInstance()) return this;
         if (!other.getSaltReply().isEmpty()) {
           saltReply_ = other.saltReply_;
           onChanged();
@@ -1228,11 +1228,11 @@ public final class PSIServiceProto {
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws java.io.IOException {
-        com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.SaltReply parsedMessage = null;
+        SaltReply parsedMessage = null;
         try {
           parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
         } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-          parsedMessage = (com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.SaltReply) e.getUnfinishedMessage();
+          parsedMessage = (SaltReply) e.getUnfinishedMessage();
           throw e.unwrapIOException();
         } finally {
           if (parsedMessage != null) {
@@ -1334,12 +1334,12 @@ public final class PSIServiceProto {
     }
 
     // @@protoc_insertion_point(class_scope:SaltReply)
-    private static final com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.SaltReply DEFAULT_INSTANCE;
+    private static final SaltReply DEFAULT_INSTANCE;
     static {
-      DEFAULT_INSTANCE = new com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.SaltReply();
+      DEFAULT_INSTANCE = new SaltReply();
     }
 
-    public static com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.SaltReply getDefaultInstance() {
+    public static SaltReply getDefaultInstance() {
       return DEFAULT_INSTANCE;
     }
 
@@ -1364,7 +1364,7 @@ public final class PSIServiceProto {
     }
 
     @Override
-    public com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.SaltReply getDefaultInstanceForType() {
+    public SaltReply getDefaultInstanceForType() {
       return DEFAULT_INSTANCE;
     }
 
@@ -1561,15 +1561,15 @@ public final class PSIServiceProto {
     }
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return internal_static_UploadSetRequest_descriptor;
+      return PSIServiceProto.internal_static_UploadSetRequest_descriptor;
     }
 
     @Override
     protected FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return internal_static_UploadSetRequest_fieldAccessorTable
+      return PSIServiceProto.internal_static_UploadSetRequest_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
-              com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.UploadSetRequest.class, com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.UploadSetRequest.Builder.class);
+              UploadSetRequest.class, Builder.class);
     }
 
     public static final int TASK_ID_FIELD_NUMBER = 1;
@@ -1811,10 +1811,10 @@ public final class PSIServiceProto {
       if (obj == this) {
        return true;
       }
-      if (!(obj instanceof com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.UploadSetRequest)) {
+      if (!(obj instanceof UploadSetRequest)) {
         return super.equals(obj);
       }
-      com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.UploadSetRequest other = (com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.UploadSetRequest) obj;
+      UploadSetRequest other = (UploadSetRequest) obj;
 
       if (!getTaskId()
           .equals(other.getTaskId())) return false;
@@ -1862,69 +1862,69 @@ public final class PSIServiceProto {
       return hash;
     }
 
-    public static com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.UploadSetRequest parseFrom(
+    public static UploadSetRequest parseFrom(
         java.nio.ByteBuffer data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.UploadSetRequest parseFrom(
+    public static UploadSetRequest parseFrom(
         java.nio.ByteBuffer data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.UploadSetRequest parseFrom(
+    public static UploadSetRequest parseFrom(
         com.google.protobuf.ByteString data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.UploadSetRequest parseFrom(
+    public static UploadSetRequest parseFrom(
         com.google.protobuf.ByteString data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.UploadSetRequest parseFrom(byte[] data)
+    public static UploadSetRequest parseFrom(byte[] data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.UploadSetRequest parseFrom(
+    public static UploadSetRequest parseFrom(
         byte[] data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.UploadSetRequest parseFrom(java.io.InputStream input)
+    public static UploadSetRequest parseFrom(java.io.InputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input);
     }
-    public static com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.UploadSetRequest parseFrom(
+    public static UploadSetRequest parseFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input, extensionRegistry);
     }
-    public static com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.UploadSetRequest parseDelimitedFrom(java.io.InputStream input)
+    public static UploadSetRequest parseDelimitedFrom(java.io.InputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseDelimitedWithIOException(PARSER, input);
     }
-    public static com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.UploadSetRequest parseDelimitedFrom(
+    public static UploadSetRequest parseDelimitedFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
     }
-    public static com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.UploadSetRequest parseFrom(
+    public static UploadSetRequest parseFrom(
         com.google.protobuf.CodedInputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input);
     }
-    public static com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.UploadSetRequest parseFrom(
+    public static UploadSetRequest parseFrom(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
@@ -1937,7 +1937,7 @@ public final class PSIServiceProto {
     public static Builder newBuilder() {
       return DEFAULT_INSTANCE.toBuilder();
     }
-    public static Builder newBuilder(com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.UploadSetRequest prototype) {
+    public static Builder newBuilder(UploadSetRequest prototype) {
       return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
     }
     @Override
@@ -1958,18 +1958,18 @@ public final class PSIServiceProto {
     public static final class Builder extends
         com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
         // @@protoc_insertion_point(builder_implements:UploadSetRequest)
-        com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.UploadSetRequestOrBuilder {
+        UploadSetRequestOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
           getDescriptor() {
-        return internal_static_UploadSetRequest_descriptor;
+        return PSIServiceProto.internal_static_UploadSetRequest_descriptor;
       }
 
       @Override
       protected FieldAccessorTable
           internalGetFieldAccessorTable() {
-        return internal_static_UploadSetRequest_fieldAccessorTable
+        return PSIServiceProto.internal_static_UploadSetRequest_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
-                com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.UploadSetRequest.class, com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.UploadSetRequest.Builder.class);
+                UploadSetRequest.class, Builder.class);
       }
 
       // Construct using com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.UploadSetRequest.newBuilder()
@@ -2010,17 +2010,17 @@ public final class PSIServiceProto {
       @Override
       public com.google.protobuf.Descriptors.Descriptor
           getDescriptorForType() {
-        return internal_static_UploadSetRequest_descriptor;
+        return PSIServiceProto.internal_static_UploadSetRequest_descriptor;
       }
 
       @Override
-      public com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.UploadSetRequest getDefaultInstanceForType() {
-        return getDefaultInstance();
+      public UploadSetRequest getDefaultInstanceForType() {
+        return UploadSetRequest.getDefaultInstance();
       }
 
       @Override
-      public com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.UploadSetRequest build() {
-        com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.UploadSetRequest result = buildPartial();
+      public UploadSetRequest build() {
+        UploadSetRequest result = buildPartial();
         if (!result.isInitialized()) {
           throw newUninitializedMessageException(result);
         }
@@ -2028,8 +2028,8 @@ public final class PSIServiceProto {
       }
 
       @Override
-      public com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.UploadSetRequest buildPartial() {
-        com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.UploadSetRequest result = new com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.UploadSetRequest(this);
+      public UploadSetRequest buildPartial() {
+        UploadSetRequest result = new UploadSetRequest(this);
         int from_bitField0_ = bitField0_;
         result.taskId_ = taskId_;
         result.clientId_ = clientId_;
@@ -2080,16 +2080,16 @@ public final class PSIServiceProto {
       }
       @Override
       public Builder mergeFrom(com.google.protobuf.Message other) {
-        if (other instanceof com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.UploadSetRequest) {
-          return mergeFrom((com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.UploadSetRequest)other);
+        if (other instanceof UploadSetRequest) {
+          return mergeFrom((UploadSetRequest)other);
         } else {
           super.mergeFrom(other);
           return this;
         }
       }
 
-      public Builder mergeFrom(com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.UploadSetRequest other) {
-        if (other == getDefaultInstance()) return this;
+      public Builder mergeFrom(UploadSetRequest other) {
+        if (other == UploadSetRequest.getDefaultInstance()) return this;
         if (!other.getTaskId().isEmpty()) {
           taskId_ = other.taskId_;
           onChanged();
@@ -2135,11 +2135,11 @@ public final class PSIServiceProto {
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws java.io.IOException {
-        com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.UploadSetRequest parsedMessage = null;
+        UploadSetRequest parsedMessage = null;
         try {
           parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
         } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-          parsedMessage = (com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.UploadSetRequest) e.getUnfinishedMessage();
+          parsedMessage = (UploadSetRequest) e.getUnfinishedMessage();
           throw e.unwrapIOException();
         } finally {
           if (parsedMessage != null) {
@@ -2552,12 +2552,12 @@ public final class PSIServiceProto {
     }
 
     // @@protoc_insertion_point(class_scope:UploadSetRequest)
-    private static final com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.UploadSetRequest DEFAULT_INSTANCE;
+    private static final UploadSetRequest DEFAULT_INSTANCE;
     static {
-      DEFAULT_INSTANCE = new com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.UploadSetRequest();
+      DEFAULT_INSTANCE = new UploadSetRequest();
     }
 
-    public static com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.UploadSetRequest getDefaultInstance() {
+    public static UploadSetRequest getDefaultInstance() {
       return DEFAULT_INSTANCE;
     }
 
@@ -2582,7 +2582,7 @@ public final class PSIServiceProto {
     }
 
     @Override
-    public com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.UploadSetRequest getDefaultInstanceForType() {
+    public UploadSetRequest getDefaultInstanceForType() {
       return DEFAULT_INSTANCE;
     }
 
@@ -2613,7 +2613,7 @@ public final class PSIServiceProto {
      * <code>.SIGNAL status = 2;</code>
      * @return The status.
      */
-    com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.SIGNAL getStatus();
+    FlBaseProto.SIGNAL getStatus();
   }
   /**
    * Protobuf type {@code UploadSetResponse}
@@ -2695,15 +2695,15 @@ public final class PSIServiceProto {
     }
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return internal_static_UploadSetResponse_descriptor;
+      return PSIServiceProto.internal_static_UploadSetResponse_descriptor;
     }
 
     @Override
     protected FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return internal_static_UploadSetResponse_fieldAccessorTable
+      return PSIServiceProto.internal_static_UploadSetResponse_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
-              com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.UploadSetResponse.class, com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.UploadSetResponse.Builder.class);
+              UploadSetResponse.class, Builder.class);
     }
 
     public static final int TASK_ID_FIELD_NUMBER = 1;
@@ -2757,10 +2757,10 @@ public final class PSIServiceProto {
      * <code>.SIGNAL status = 2;</code>
      * @return The status.
      */
-    @Override public com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.SIGNAL getStatus() {
+    @Override public FlBaseProto.SIGNAL getStatus() {
       @SuppressWarnings("deprecation")
-      com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.SIGNAL result = com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.SIGNAL.valueOf(status_);
-      return result == null ? com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.SIGNAL.UNRECOGNIZED : result;
+      FlBaseProto.SIGNAL result = FlBaseProto.SIGNAL.valueOf(status_);
+      return result == null ? FlBaseProto.SIGNAL.UNRECOGNIZED : result;
     }
 
     private byte memoizedIsInitialized = -1;
@@ -2780,7 +2780,7 @@ public final class PSIServiceProto {
       if (!getTaskIdBytes().isEmpty()) {
         com.google.protobuf.GeneratedMessageV3.writeString(output, 1, taskId_);
       }
-      if (status_ != com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.SIGNAL.SUCCESS.getNumber()) {
+      if (status_ != FlBaseProto.SIGNAL.SUCCESS.getNumber()) {
         output.writeEnum(2, status_);
       }
       unknownFields.writeTo(output);
@@ -2795,7 +2795,7 @@ public final class PSIServiceProto {
       if (!getTaskIdBytes().isEmpty()) {
         size += com.google.protobuf.GeneratedMessageV3.computeStringSize(1, taskId_);
       }
-      if (status_ != com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.SIGNAL.SUCCESS.getNumber()) {
+      if (status_ != FlBaseProto.SIGNAL.SUCCESS.getNumber()) {
         size += com.google.protobuf.CodedOutputStream
           .computeEnumSize(2, status_);
       }
@@ -2809,10 +2809,10 @@ public final class PSIServiceProto {
       if (obj == this) {
        return true;
       }
-      if (!(obj instanceof com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.UploadSetResponse)) {
+      if (!(obj instanceof UploadSetResponse)) {
         return super.equals(obj);
       }
-      com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.UploadSetResponse other = (com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.UploadSetResponse) obj;
+      UploadSetResponse other = (UploadSetResponse) obj;
 
       if (!getTaskId()
           .equals(other.getTaskId())) return false;
@@ -2837,69 +2837,69 @@ public final class PSIServiceProto {
       return hash;
     }
 
-    public static com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.UploadSetResponse parseFrom(
+    public static UploadSetResponse parseFrom(
         java.nio.ByteBuffer data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.UploadSetResponse parseFrom(
+    public static UploadSetResponse parseFrom(
         java.nio.ByteBuffer data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.UploadSetResponse parseFrom(
+    public static UploadSetResponse parseFrom(
         com.google.protobuf.ByteString data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.UploadSetResponse parseFrom(
+    public static UploadSetResponse parseFrom(
         com.google.protobuf.ByteString data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.UploadSetResponse parseFrom(byte[] data)
+    public static UploadSetResponse parseFrom(byte[] data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.UploadSetResponse parseFrom(
+    public static UploadSetResponse parseFrom(
         byte[] data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.UploadSetResponse parseFrom(java.io.InputStream input)
+    public static UploadSetResponse parseFrom(java.io.InputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input);
     }
-    public static com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.UploadSetResponse parseFrom(
+    public static UploadSetResponse parseFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input, extensionRegistry);
     }
-    public static com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.UploadSetResponse parseDelimitedFrom(java.io.InputStream input)
+    public static UploadSetResponse parseDelimitedFrom(java.io.InputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseDelimitedWithIOException(PARSER, input);
     }
-    public static com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.UploadSetResponse parseDelimitedFrom(
+    public static UploadSetResponse parseDelimitedFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
     }
-    public static com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.UploadSetResponse parseFrom(
+    public static UploadSetResponse parseFrom(
         com.google.protobuf.CodedInputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input);
     }
-    public static com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.UploadSetResponse parseFrom(
+    public static UploadSetResponse parseFrom(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
@@ -2912,7 +2912,7 @@ public final class PSIServiceProto {
     public static Builder newBuilder() {
       return DEFAULT_INSTANCE.toBuilder();
     }
-    public static Builder newBuilder(com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.UploadSetResponse prototype) {
+    public static Builder newBuilder(UploadSetResponse prototype) {
       return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
     }
     @Override
@@ -2933,18 +2933,18 @@ public final class PSIServiceProto {
     public static final class Builder extends
         com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
         // @@protoc_insertion_point(builder_implements:UploadSetResponse)
-        com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.UploadSetResponseOrBuilder {
+        UploadSetResponseOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
           getDescriptor() {
-        return internal_static_UploadSetResponse_descriptor;
+        return PSIServiceProto.internal_static_UploadSetResponse_descriptor;
       }
 
       @Override
       protected FieldAccessorTable
           internalGetFieldAccessorTable() {
-        return internal_static_UploadSetResponse_fieldAccessorTable
+        return PSIServiceProto.internal_static_UploadSetResponse_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
-                com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.UploadSetResponse.class, com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.UploadSetResponse.Builder.class);
+                UploadSetResponse.class, Builder.class);
       }
 
       // Construct using com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.UploadSetResponse.newBuilder()
@@ -2975,17 +2975,17 @@ public final class PSIServiceProto {
       @Override
       public com.google.protobuf.Descriptors.Descriptor
           getDescriptorForType() {
-        return internal_static_UploadSetResponse_descriptor;
+        return PSIServiceProto.internal_static_UploadSetResponse_descriptor;
       }
 
       @Override
-      public com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.UploadSetResponse getDefaultInstanceForType() {
-        return getDefaultInstance();
+      public UploadSetResponse getDefaultInstanceForType() {
+        return UploadSetResponse.getDefaultInstance();
       }
 
       @Override
-      public com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.UploadSetResponse build() {
-        com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.UploadSetResponse result = buildPartial();
+      public UploadSetResponse build() {
+        UploadSetResponse result = buildPartial();
         if (!result.isInitialized()) {
           throw newUninitializedMessageException(result);
         }
@@ -2993,8 +2993,8 @@ public final class PSIServiceProto {
       }
 
       @Override
-      public com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.UploadSetResponse buildPartial() {
-        com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.UploadSetResponse result = new com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.UploadSetResponse(this);
+      public UploadSetResponse buildPartial() {
+        UploadSetResponse result = new UploadSetResponse(this);
         result.taskId_ = taskId_;
         result.status_ = status_;
         onBuilt();
@@ -3035,16 +3035,16 @@ public final class PSIServiceProto {
       }
       @Override
       public Builder mergeFrom(com.google.protobuf.Message other) {
-        if (other instanceof com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.UploadSetResponse) {
-          return mergeFrom((com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.UploadSetResponse)other);
+        if (other instanceof UploadSetResponse) {
+          return mergeFrom((UploadSetResponse)other);
         } else {
           super.mergeFrom(other);
           return this;
         }
       }
 
-      public Builder mergeFrom(com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.UploadSetResponse other) {
-        if (other == getDefaultInstance()) return this;
+      public Builder mergeFrom(UploadSetResponse other) {
+        if (other == UploadSetResponse.getDefaultInstance()) return this;
         if (!other.getTaskId().isEmpty()) {
           taskId_ = other.taskId_;
           onChanged();
@@ -3067,11 +3067,11 @@ public final class PSIServiceProto {
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws java.io.IOException {
-        com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.UploadSetResponse parsedMessage = null;
+        UploadSetResponse parsedMessage = null;
         try {
           parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
         } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-          parsedMessage = (com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.UploadSetResponse) e.getUnfinishedMessage();
+          parsedMessage = (UploadSetResponse) e.getUnfinishedMessage();
           throw e.unwrapIOException();
         } finally {
           if (parsedMessage != null) {
@@ -3181,17 +3181,17 @@ public final class PSIServiceProto {
        * @return The status.
        */
       @Override
-      public com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.SIGNAL getStatus() {
+      public FlBaseProto.SIGNAL getStatus() {
         @SuppressWarnings("deprecation")
-        com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.SIGNAL result = com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.SIGNAL.valueOf(status_);
-        return result == null ? com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.SIGNAL.UNRECOGNIZED : result;
+        FlBaseProto.SIGNAL result = FlBaseProto.SIGNAL.valueOf(status_);
+        return result == null ? FlBaseProto.SIGNAL.UNRECOGNIZED : result;
       }
       /**
        * <code>.SIGNAL status = 2;</code>
        * @param value The status to set.
        * @return This builder for chaining.
        */
-      public Builder setStatus(com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.SIGNAL value) {
+      public Builder setStatus(FlBaseProto.SIGNAL value) {
         if (value == null) {
           throw new NullPointerException();
         }
@@ -3227,12 +3227,12 @@ public final class PSIServiceProto {
     }
 
     // @@protoc_insertion_point(class_scope:UploadSetResponse)
-    private static final com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.UploadSetResponse DEFAULT_INSTANCE;
+    private static final UploadSetResponse DEFAULT_INSTANCE;
     static {
-      DEFAULT_INSTANCE = new com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.UploadSetResponse();
+      DEFAULT_INSTANCE = new UploadSetResponse();
     }
 
-    public static com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.UploadSetResponse getDefaultInstance() {
+    public static UploadSetResponse getDefaultInstance() {
       return DEFAULT_INSTANCE;
     }
 
@@ -3257,7 +3257,7 @@ public final class PSIServiceProto {
     }
 
     @Override
-    public com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.UploadSetResponse getDefaultInstanceForType() {
+    public UploadSetResponse getDefaultInstanceForType() {
       return DEFAULT_INSTANCE;
     }
 
@@ -3363,15 +3363,15 @@ public final class PSIServiceProto {
     }
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return internal_static_DownloadIntersectionRequest_descriptor;
+      return PSIServiceProto.internal_static_DownloadIntersectionRequest_descriptor;
     }
 
     @Override
     protected FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return internal_static_DownloadIntersectionRequest_fieldAccessorTable
+      return PSIServiceProto.internal_static_DownloadIntersectionRequest_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
-              com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.DownloadIntersectionRequest.class, com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.DownloadIntersectionRequest.Builder.class);
+              DownloadIntersectionRequest.class, Builder.class);
     }
 
     public static final int TASK_ID_FIELD_NUMBER = 1;
@@ -3469,10 +3469,10 @@ public final class PSIServiceProto {
       if (obj == this) {
        return true;
       }
-      if (!(obj instanceof com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.DownloadIntersectionRequest)) {
+      if (!(obj instanceof DownloadIntersectionRequest)) {
         return super.equals(obj);
       }
-      com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.DownloadIntersectionRequest other = (com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.DownloadIntersectionRequest) obj;
+      DownloadIntersectionRequest other = (DownloadIntersectionRequest) obj;
 
       if (!getTaskId()
           .equals(other.getTaskId())) return false;
@@ -3498,69 +3498,69 @@ public final class PSIServiceProto {
       return hash;
     }
 
-    public static com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.DownloadIntersectionRequest parseFrom(
+    public static DownloadIntersectionRequest parseFrom(
         java.nio.ByteBuffer data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.DownloadIntersectionRequest parseFrom(
+    public static DownloadIntersectionRequest parseFrom(
         java.nio.ByteBuffer data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.DownloadIntersectionRequest parseFrom(
+    public static DownloadIntersectionRequest parseFrom(
         com.google.protobuf.ByteString data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.DownloadIntersectionRequest parseFrom(
+    public static DownloadIntersectionRequest parseFrom(
         com.google.protobuf.ByteString data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.DownloadIntersectionRequest parseFrom(byte[] data)
+    public static DownloadIntersectionRequest parseFrom(byte[] data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.DownloadIntersectionRequest parseFrom(
+    public static DownloadIntersectionRequest parseFrom(
         byte[] data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.DownloadIntersectionRequest parseFrom(java.io.InputStream input)
+    public static DownloadIntersectionRequest parseFrom(java.io.InputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input);
     }
-    public static com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.DownloadIntersectionRequest parseFrom(
+    public static DownloadIntersectionRequest parseFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input, extensionRegistry);
     }
-    public static com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.DownloadIntersectionRequest parseDelimitedFrom(java.io.InputStream input)
+    public static DownloadIntersectionRequest parseDelimitedFrom(java.io.InputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseDelimitedWithIOException(PARSER, input);
     }
-    public static com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.DownloadIntersectionRequest parseDelimitedFrom(
+    public static DownloadIntersectionRequest parseDelimitedFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
     }
-    public static com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.DownloadIntersectionRequest parseFrom(
+    public static DownloadIntersectionRequest parseFrom(
         com.google.protobuf.CodedInputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input);
     }
-    public static com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.DownloadIntersectionRequest parseFrom(
+    public static DownloadIntersectionRequest parseFrom(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
@@ -3573,7 +3573,7 @@ public final class PSIServiceProto {
     public static Builder newBuilder() {
       return DEFAULT_INSTANCE.toBuilder();
     }
-    public static Builder newBuilder(com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.DownloadIntersectionRequest prototype) {
+    public static Builder newBuilder(DownloadIntersectionRequest prototype) {
       return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
     }
     @Override
@@ -3594,18 +3594,18 @@ public final class PSIServiceProto {
     public static final class Builder extends
         com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
         // @@protoc_insertion_point(builder_implements:DownloadIntersectionRequest)
-        com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.DownloadIntersectionRequestOrBuilder {
+        DownloadIntersectionRequestOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
           getDescriptor() {
-        return internal_static_DownloadIntersectionRequest_descriptor;
+        return PSIServiceProto.internal_static_DownloadIntersectionRequest_descriptor;
       }
 
       @Override
       protected FieldAccessorTable
           internalGetFieldAccessorTable() {
-        return internal_static_DownloadIntersectionRequest_fieldAccessorTable
+        return PSIServiceProto.internal_static_DownloadIntersectionRequest_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
-                com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.DownloadIntersectionRequest.class, com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.DownloadIntersectionRequest.Builder.class);
+                DownloadIntersectionRequest.class, Builder.class);
       }
 
       // Construct using com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.DownloadIntersectionRequest.newBuilder()
@@ -3636,17 +3636,17 @@ public final class PSIServiceProto {
       @Override
       public com.google.protobuf.Descriptors.Descriptor
           getDescriptorForType() {
-        return internal_static_DownloadIntersectionRequest_descriptor;
+        return PSIServiceProto.internal_static_DownloadIntersectionRequest_descriptor;
       }
 
       @Override
-      public com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.DownloadIntersectionRequest getDefaultInstanceForType() {
-        return getDefaultInstance();
+      public DownloadIntersectionRequest getDefaultInstanceForType() {
+        return DownloadIntersectionRequest.getDefaultInstance();
       }
 
       @Override
-      public com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.DownloadIntersectionRequest build() {
-        com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.DownloadIntersectionRequest result = buildPartial();
+      public DownloadIntersectionRequest build() {
+        DownloadIntersectionRequest result = buildPartial();
         if (!result.isInitialized()) {
           throw newUninitializedMessageException(result);
         }
@@ -3654,8 +3654,8 @@ public final class PSIServiceProto {
       }
 
       @Override
-      public com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.DownloadIntersectionRequest buildPartial() {
-        com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.DownloadIntersectionRequest result = new com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.DownloadIntersectionRequest(this);
+      public DownloadIntersectionRequest buildPartial() {
+        DownloadIntersectionRequest result = new DownloadIntersectionRequest(this);
         result.taskId_ = taskId_;
         result.split_ = split_;
         onBuilt();
@@ -3696,16 +3696,16 @@ public final class PSIServiceProto {
       }
       @Override
       public Builder mergeFrom(com.google.protobuf.Message other) {
-        if (other instanceof com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.DownloadIntersectionRequest) {
-          return mergeFrom((com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.DownloadIntersectionRequest)other);
+        if (other instanceof DownloadIntersectionRequest) {
+          return mergeFrom((DownloadIntersectionRequest)other);
         } else {
           super.mergeFrom(other);
           return this;
         }
       }
 
-      public Builder mergeFrom(com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.DownloadIntersectionRequest other) {
-        if (other == getDefaultInstance()) return this;
+      public Builder mergeFrom(DownloadIntersectionRequest other) {
+        if (other == DownloadIntersectionRequest.getDefaultInstance()) return this;
         if (!other.getTaskId().isEmpty()) {
           taskId_ = other.taskId_;
           onChanged();
@@ -3728,11 +3728,11 @@ public final class PSIServiceProto {
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws java.io.IOException {
-        com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.DownloadIntersectionRequest parsedMessage = null;
+        DownloadIntersectionRequest parsedMessage = null;
         try {
           parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
         } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-          parsedMessage = (com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.DownloadIntersectionRequest) e.getUnfinishedMessage();
+          parsedMessage = (DownloadIntersectionRequest) e.getUnfinishedMessage();
           throw e.unwrapIOException();
         } finally {
           if (parsedMessage != null) {
@@ -3865,12 +3865,12 @@ public final class PSIServiceProto {
     }
 
     // @@protoc_insertion_point(class_scope:DownloadIntersectionRequest)
-    private static final com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.DownloadIntersectionRequest DEFAULT_INSTANCE;
+    private static final DownloadIntersectionRequest DEFAULT_INSTANCE;
     static {
-      DEFAULT_INSTANCE = new com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.DownloadIntersectionRequest();
+      DEFAULT_INSTANCE = new DownloadIntersectionRequest();
     }
 
-    public static com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.DownloadIntersectionRequest getDefaultInstance() {
+    public static DownloadIntersectionRequest getDefaultInstance() {
       return DEFAULT_INSTANCE;
     }
 
@@ -3895,7 +3895,7 @@ public final class PSIServiceProto {
     }
 
     @Override
-    public com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.DownloadIntersectionRequest getDefaultInstanceForType() {
+    public DownloadIntersectionRequest getDefaultInstanceForType() {
       return DEFAULT_INSTANCE;
     }
 
@@ -3926,7 +3926,7 @@ public final class PSIServiceProto {
      * <code>.SIGNAL status = 2;</code>
      * @return The status.
      */
-    com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.SIGNAL getStatus();
+    FlBaseProto.SIGNAL getStatus();
 
     /**
      * <code>int32 split = 3;</code>
@@ -4091,15 +4091,15 @@ public final class PSIServiceProto {
     }
     public static final com.google.protobuf.Descriptors.Descriptor
         getDescriptor() {
-      return internal_static_DownloadIntersectionResponse_descriptor;
+      return PSIServiceProto.internal_static_DownloadIntersectionResponse_descriptor;
     }
 
     @Override
     protected FieldAccessorTable
         internalGetFieldAccessorTable() {
-      return internal_static_DownloadIntersectionResponse_fieldAccessorTable
+      return PSIServiceProto.internal_static_DownloadIntersectionResponse_fieldAccessorTable
           .ensureFieldAccessorsInitialized(
-              com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.DownloadIntersectionResponse.class, com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.DownloadIntersectionResponse.Builder.class);
+              DownloadIntersectionResponse.class, Builder.class);
     }
 
     public static final int TASK_ID_FIELD_NUMBER = 1;
@@ -4153,10 +4153,10 @@ public final class PSIServiceProto {
      * <code>.SIGNAL status = 2;</code>
      * @return The status.
      */
-    @Override public com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.SIGNAL getStatus() {
+    @Override public FlBaseProto.SIGNAL getStatus() {
       @SuppressWarnings("deprecation")
-      com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.SIGNAL result = com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.SIGNAL.valueOf(status_);
-      return result == null ? com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.SIGNAL.UNRECOGNIZED : result;
+      FlBaseProto.SIGNAL result = FlBaseProto.SIGNAL.valueOf(status_);
+      return result == null ? FlBaseProto.SIGNAL.UNRECOGNIZED : result;
     }
 
     public static final int SPLIT_FIELD_NUMBER = 3;
@@ -4255,7 +4255,7 @@ public final class PSIServiceProto {
       if (!getTaskIdBytes().isEmpty()) {
         com.google.protobuf.GeneratedMessageV3.writeString(output, 1, taskId_);
       }
-      if (status_ != com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.SIGNAL.SUCCESS.getNumber()) {
+      if (status_ != FlBaseProto.SIGNAL.SUCCESS.getNumber()) {
         output.writeEnum(2, status_);
       }
       if (split_ != 0) {
@@ -4285,7 +4285,7 @@ public final class PSIServiceProto {
       if (!getTaskIdBytes().isEmpty()) {
         size += com.google.protobuf.GeneratedMessageV3.computeStringSize(1, taskId_);
       }
-      if (status_ != com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.SIGNAL.SUCCESS.getNumber()) {
+      if (status_ != FlBaseProto.SIGNAL.SUCCESS.getNumber()) {
         size += com.google.protobuf.CodedOutputStream
           .computeEnumSize(2, status_);
       }
@@ -4323,10 +4323,10 @@ public final class PSIServiceProto {
       if (obj == this) {
        return true;
       }
-      if (!(obj instanceof com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.DownloadIntersectionResponse)) {
+      if (!(obj instanceof DownloadIntersectionResponse)) {
         return super.equals(obj);
       }
-      com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.DownloadIntersectionResponse other = (com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.DownloadIntersectionResponse) obj;
+      DownloadIntersectionResponse other = (DownloadIntersectionResponse) obj;
 
       if (!getTaskId()
           .equals(other.getTaskId())) return false;
@@ -4373,69 +4373,69 @@ public final class PSIServiceProto {
       return hash;
     }
 
-    public static com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.DownloadIntersectionResponse parseFrom(
+    public static DownloadIntersectionResponse parseFrom(
         java.nio.ByteBuffer data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.DownloadIntersectionResponse parseFrom(
+    public static DownloadIntersectionResponse parseFrom(
         java.nio.ByteBuffer data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.DownloadIntersectionResponse parseFrom(
+    public static DownloadIntersectionResponse parseFrom(
         com.google.protobuf.ByteString data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.DownloadIntersectionResponse parseFrom(
+    public static DownloadIntersectionResponse parseFrom(
         com.google.protobuf.ByteString data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.DownloadIntersectionResponse parseFrom(byte[] data)
+    public static DownloadIntersectionResponse parseFrom(byte[] data)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data);
     }
-    public static com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.DownloadIntersectionResponse parseFrom(
+    public static DownloadIntersectionResponse parseFrom(
         byte[] data,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws com.google.protobuf.InvalidProtocolBufferException {
       return PARSER.parseFrom(data, extensionRegistry);
     }
-    public static com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.DownloadIntersectionResponse parseFrom(java.io.InputStream input)
+    public static DownloadIntersectionResponse parseFrom(java.io.InputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input);
     }
-    public static com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.DownloadIntersectionResponse parseFrom(
+    public static DownloadIntersectionResponse parseFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input, extensionRegistry);
     }
-    public static com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.DownloadIntersectionResponse parseDelimitedFrom(java.io.InputStream input)
+    public static DownloadIntersectionResponse parseDelimitedFrom(java.io.InputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseDelimitedWithIOException(PARSER, input);
     }
-    public static com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.DownloadIntersectionResponse parseDelimitedFrom(
+    public static DownloadIntersectionResponse parseDelimitedFrom(
         java.io.InputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseDelimitedWithIOException(PARSER, input, extensionRegistry);
     }
-    public static com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.DownloadIntersectionResponse parseFrom(
+    public static DownloadIntersectionResponse parseFrom(
         com.google.protobuf.CodedInputStream input)
         throws java.io.IOException {
       return com.google.protobuf.GeneratedMessageV3
           .parseWithIOException(PARSER, input);
     }
-    public static com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.DownloadIntersectionResponse parseFrom(
+    public static DownloadIntersectionResponse parseFrom(
         com.google.protobuf.CodedInputStream input,
         com.google.protobuf.ExtensionRegistryLite extensionRegistry)
         throws java.io.IOException {
@@ -4448,7 +4448,7 @@ public final class PSIServiceProto {
     public static Builder newBuilder() {
       return DEFAULT_INSTANCE.toBuilder();
     }
-    public static Builder newBuilder(com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.DownloadIntersectionResponse prototype) {
+    public static Builder newBuilder(DownloadIntersectionResponse prototype) {
       return DEFAULT_INSTANCE.toBuilder().mergeFrom(prototype);
     }
     @Override
@@ -4469,18 +4469,18 @@ public final class PSIServiceProto {
     public static final class Builder extends
         com.google.protobuf.GeneratedMessageV3.Builder<Builder> implements
         // @@protoc_insertion_point(builder_implements:DownloadIntersectionResponse)
-        com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.DownloadIntersectionResponseOrBuilder {
+        DownloadIntersectionResponseOrBuilder {
       public static final com.google.protobuf.Descriptors.Descriptor
           getDescriptor() {
-        return internal_static_DownloadIntersectionResponse_descriptor;
+        return PSIServiceProto.internal_static_DownloadIntersectionResponse_descriptor;
       }
 
       @Override
       protected FieldAccessorTable
           internalGetFieldAccessorTable() {
-        return internal_static_DownloadIntersectionResponse_fieldAccessorTable
+        return PSIServiceProto.internal_static_DownloadIntersectionResponse_fieldAccessorTable
             .ensureFieldAccessorsInitialized(
-                com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.DownloadIntersectionResponse.class, com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.DownloadIntersectionResponse.Builder.class);
+                DownloadIntersectionResponse.class, Builder.class);
       }
 
       // Construct using com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.DownloadIntersectionResponse.newBuilder()
@@ -4521,17 +4521,17 @@ public final class PSIServiceProto {
       @Override
       public com.google.protobuf.Descriptors.Descriptor
           getDescriptorForType() {
-        return internal_static_DownloadIntersectionResponse_descriptor;
+        return PSIServiceProto.internal_static_DownloadIntersectionResponse_descriptor;
       }
 
       @Override
-      public com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.DownloadIntersectionResponse getDefaultInstanceForType() {
-        return getDefaultInstance();
+      public DownloadIntersectionResponse getDefaultInstanceForType() {
+        return DownloadIntersectionResponse.getDefaultInstance();
       }
 
       @Override
-      public com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.DownloadIntersectionResponse build() {
-        com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.DownloadIntersectionResponse result = buildPartial();
+      public DownloadIntersectionResponse build() {
+        DownloadIntersectionResponse result = buildPartial();
         if (!result.isInitialized()) {
           throw newUninitializedMessageException(result);
         }
@@ -4539,8 +4539,8 @@ public final class PSIServiceProto {
       }
 
       @Override
-      public com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.DownloadIntersectionResponse buildPartial() {
-        com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.DownloadIntersectionResponse result = new com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.DownloadIntersectionResponse(this);
+      public DownloadIntersectionResponse buildPartial() {
+        DownloadIntersectionResponse result = new DownloadIntersectionResponse(this);
         int from_bitField0_ = bitField0_;
         result.taskId_ = taskId_;
         result.status_ = status_;
@@ -4591,16 +4591,16 @@ public final class PSIServiceProto {
       }
       @Override
       public Builder mergeFrom(com.google.protobuf.Message other) {
-        if (other instanceof com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.DownloadIntersectionResponse) {
-          return mergeFrom((com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.DownloadIntersectionResponse)other);
+        if (other instanceof DownloadIntersectionResponse) {
+          return mergeFrom((DownloadIntersectionResponse)other);
         } else {
           super.mergeFrom(other);
           return this;
         }
       }
 
-      public Builder mergeFrom(com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.DownloadIntersectionResponse other) {
-        if (other == getDefaultInstance()) return this;
+      public Builder mergeFrom(DownloadIntersectionResponse other) {
+        if (other == DownloadIntersectionResponse.getDefaultInstance()) return this;
         if (!other.getTaskId().isEmpty()) {
           taskId_ = other.taskId_;
           onChanged();
@@ -4645,11 +4645,11 @@ public final class PSIServiceProto {
           com.google.protobuf.CodedInputStream input,
           com.google.protobuf.ExtensionRegistryLite extensionRegistry)
           throws java.io.IOException {
-        com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.DownloadIntersectionResponse parsedMessage = null;
+        DownloadIntersectionResponse parsedMessage = null;
         try {
           parsedMessage = PARSER.parsePartialFrom(input, extensionRegistry);
         } catch (com.google.protobuf.InvalidProtocolBufferException e) {
-          parsedMessage = (com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.DownloadIntersectionResponse) e.getUnfinishedMessage();
+          parsedMessage = (DownloadIntersectionResponse) e.getUnfinishedMessage();
           throw e.unwrapIOException();
         } finally {
           if (parsedMessage != null) {
@@ -4760,17 +4760,17 @@ public final class PSIServiceProto {
        * @return The status.
        */
       @Override
-      public com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.SIGNAL getStatus() {
+      public FlBaseProto.SIGNAL getStatus() {
         @SuppressWarnings("deprecation")
-        com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.SIGNAL result = com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.SIGNAL.valueOf(status_);
-        return result == null ? com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.SIGNAL.UNRECOGNIZED : result;
+        FlBaseProto.SIGNAL result = FlBaseProto.SIGNAL.valueOf(status_);
+        return result == null ? FlBaseProto.SIGNAL.UNRECOGNIZED : result;
       }
       /**
        * <code>.SIGNAL status = 2;</code>
        * @param value The status to set.
        * @return This builder for chaining.
        */
-      public Builder setStatus(com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.SIGNAL value) {
+      public Builder setStatus(FlBaseProto.SIGNAL value) {
         if (value == null) {
           throw new NullPointerException();
         }
@@ -5040,12 +5040,12 @@ public final class PSIServiceProto {
     }
 
     // @@protoc_insertion_point(class_scope:DownloadIntersectionResponse)
-    private static final com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.DownloadIntersectionResponse DEFAULT_INSTANCE;
+    private static final DownloadIntersectionResponse DEFAULT_INSTANCE;
     static {
-      DEFAULT_INSTANCE = new com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.DownloadIntersectionResponse();
+      DEFAULT_INSTANCE = new DownloadIntersectionResponse();
     }
 
-    public static com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.DownloadIntersectionResponse getDefaultInstance() {
+    public static DownloadIntersectionResponse getDefaultInstance() {
       return DEFAULT_INSTANCE;
     }
 
@@ -5070,7 +5070,7 @@ public final class PSIServiceProto {
     }
 
     @Override
-    public com.intel.analytics.bigdl.ppml.fl.generated.PSIServiceProto.DownloadIntersectionResponse getDefaultInstanceForType() {
+    public DownloadIntersectionResponse getDefaultInstanceForType() {
       return DEFAULT_INSTANCE;
     }
 
@@ -5141,7 +5141,7 @@ public final class PSIServiceProto {
     descriptor = com.google.protobuf.Descriptors.FileDescriptor
       .internalBuildGeneratedFileFrom(descriptorData,
         new com.google.protobuf.Descriptors.FileDescriptor[] {
-          com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.getDescriptor(),
+          FlBaseProto.getDescriptor(),
         });
     internal_static_SaltRequest_descriptor =
       getDescriptor().getMessageTypes().get(0);
@@ -5179,7 +5179,7 @@ public final class PSIServiceProto {
       com.google.protobuf.GeneratedMessageV3.FieldAccessorTable(
         internal_static_DownloadIntersectionResponse_descriptor,
         new String[] { "TaskId", "Status", "Split", "NumSplit", "SplitLength", "TotalLength", "Intersection", });
-    com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.getDescriptor();
+    FlBaseProto.getDescriptor();
   }
 
   // @@protoc_insertion_point(outer_class_scope)
