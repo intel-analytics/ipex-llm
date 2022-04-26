@@ -44,6 +44,7 @@ init_instance() {
     new_json="$(jq '.resource_limits.user_space_size = "SGX_MEM_SIZE" |
         .resource_limits.max_num_of_threads = "SGX_THREAD" |
         .process.default_heap_size = "SGX_HEAP" |
+        .metadata.debuggable = false |
         .resource_limits.kernel_space_heap_size="SGX_KERNEL_HEAP" |
         .entry_points = [ "/usr/lib/jvm/java-11-openjdk-amd64/bin" ] |
         .env.untrusted = [ "DMLC_TRACKER_URI", "SPARK_DRIVER_URL", "SPARK_TESTING" ] |
@@ -69,18 +70,24 @@ init_instance() {
     else
         sed -i "s/\"SGX_THREAD\"/${SGX_THREAD}/g" Occlum.json
     fi
-    
+
     if [[ -z "$SGX_HEAP" ]]; then
         sed -i "s/SGX_HEAP/512MB/g" Occlum.json
     else
         sed -i "s/SGX_HEAP/${SGX_HEAP}/g" Occlum.json
     fi
-    
+
     if [[ -z "$SGX_KERNEL_HEAP" ]]; then
         sed -i "s/SGX_KERNEL_HEAP/1GB/g" Occlum.json
     else
         sed -i "s/SGX_KERNEL_HEAP/${SGX_KERNEL_HEAP}/g" Occlum.json
     fi
+    if [[ -z "$PCCS_URL" ]]; then
+        echo "NO PCCS"
+    else
+        sed -i "s#https://localhost:8081/sgx/certification/v3/#${PCCS_URL}#g" /etc/sgx_default_qcnl.conf
+    fi
+    sed -i "s/#USE_SECURE_CERT=FALSE/USE_SECURE_CERT=FALSE/g" /etc/sgx_default_qcnl.conf
 }
 
 build_spark() {
@@ -122,7 +129,27 @@ build_spark() {
     mkdir -p image/bin/jars
     cp -f $BIGDL_HOME/jars/* image/bin/jars
     cp -rf /opt/spark-source image/opt/
-    occlum build
+    occlum build --image-key /opt/occlum_spark/data/image_key
+    build_initfs
+}
+
+build_initfs() {
+    cd /root/demos/remote_attestation/init_ra_flow/
+    bash build_content.sh build_init_ra
+    cd /opt/occlum_spark
+    rm -rf initfs
+    jq ' .verify_mr_enclave = "off" |
+        .verify_mr_signer = "off" |
+        .verify_isv_prod_id = "off" |
+        .verify_isv_svn = "off" |
+        .verify_enclave_debuggable = "on" |
+        .sgx_mrs[0].debuggable = false ' /root/demos/remote_attestation/init_ra_flow/ra_config_template.json > /opt/occlum_spark/dynamic_config.json
+    export INITRA_DIR=/root/demos/remote_attestation/init_ra_flow/init_ra
+    export DEP_LIBS_DIR=/root/demos/remote_attestation/init_ra_flow/dep_libs
+    export RATLS_DIR=/root/demos/ra_tls
+    copy_bom -f /root/demos/remote_attestation/init_ra_flow/init_ra_client.yaml --root initfs --include-dir /opt/occlum/etc/template
+
+    occlum build -f --image-key /opt/occlum_spark/data/image_key
 }
 
 run_spark_pi() {

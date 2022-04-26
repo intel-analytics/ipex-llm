@@ -18,6 +18,8 @@ bash build-docker-image.sh
 ```
 
 ## Before run example
+
+### Check Device
 Before run any example, please make sure you have correctly set the --device option in the start-spark-local.sh according to your machine.
 
 For example:
@@ -29,6 +31,26 @@ or:
   --device=/dev/sgx/enclave
   --device=/dev/sgx/provision
 ```
+
+### Start BigDL PPML Occlum Attestation Server
+Modify `PCCL_URL`, `ATTESTATION_SERVER_IP` and `ATTESTATION_SERVER_PORT` in `start-occlum-attestation-server.sh`, Then
+```commandline
+bash start-occlum-attestation-server.sh
+sudo docker exec -it bigdl-ppml-trusted-big-data-ml-scala-occlum-attestation-server bash
+cd /root/demos/remote_attestation/init_ra_flow
+bash run_attestation_server.sh
+```
+You will see:
+```
+Server listening on $ATTESTATION_SERVER_IP:$ATTESTATION_SERVER_PORT
+```
+
+Get `image_key`:
+```commandline
+docker cp bigdl-ppml-trusted-big-data-ml-scala-occlum-attestation-server:/root/demos/remote_attestation/init_ra_flow/image_key ./data
+```
+
+### Before you run examples, you need to mount this `image_key` to container's `/opt/occlum_spark/data/`.
 
 ## Spark 3.1.2 Pi example
 
