@@ -9,7 +9,7 @@ on:
     branches: [ main ]
     paths:
       - 'python/nano/**'
-      - '.github/**'
+      - '.github/workflows/nano_unit_tests.yml'
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
@@ -36,16 +36,13 @@ jobs:
           python -m pip install --upgrade setuptools==58.0.4
           python -m pip install --upgrade wheel
 
-      - name: Build Nano whl
-        run: bash python/nano/dev/release_default_linux.sh default false
-
       - name: Run Nano-init test
         shell: bash
         run: |
           $CONDA/bin/conda create -n bigdl-init -y python==3.7.10 setuptools==58.0.4
           source $CONDA/bin/activate bigdl-init
           $CONDA/bin/conda info
-          whl_name=`ls python/nano/src/dist/`;pip install python/nano/src/dist/$whl_name[pytorch]
+          bash python/nano/dev/build_and_install.sh linux default false pytorch
           source bigdl-nano-init
           if [ 0"$LD_PRELOAD" = "0" ]; then
             exit 1
@@ -76,7 +73,7 @@ jobs:
           $CONDA/bin/conda create -n ray-pytorch -y python==3.7.10 setuptools=58.0.4
           source $CONDA/bin/activate ray-pytorch
           $CONDA/bin/conda info
-          whl_name=`ls python/nano/src/dist/`;pip install python/nano/src/dist/$whl_name[pytorch]
+          bash python/nano/dev/build_and_install.sh linux default false pytorch
           pip install pytest
           pip install ray[default]==1.11.0 prometheus_client==0.13.0
           source bigdl-nano-init
@@ -92,7 +89,7 @@ jobs:
           $CONDA/bin/conda create -n ray-tf -y python==3.7.10 setuptools=58.0.4
           source $CONDA/bin/activate ray-tf
           $CONDA/bin/conda info
-          whl_name=`ls python/nano/src/dist/`;pip install python/nano/src/dist/$whl_name[tensorflow]
+          bash python/nano/dev/build_and_install.sh linux default false tensorflow
           pip install pytest
           pip install ray[default]==1.11.0 prometheus_client==0.13.0
           source bigdl-nano-init
@@ -108,7 +105,7 @@ jobs:
           $CONDA/bin/conda create -n horovod-tf -y python==3.7.10 setuptools=58.0.4
           source $CONDA/bin/activate horovod-tf
           $CONDA/bin/conda info
-          whl_name=`ls python/nano/src/dist/`;pip install python/nano/src/dist/$whl_name[tensorflow]
+          bash python/nano/dev/build_and_install.sh linux default false tensorflow
           pip install horovod==0.24.2
           pip install pytest
           source bigdl-nano-init

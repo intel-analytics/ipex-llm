@@ -15,6 +15,7 @@
 #
 from logging import warning
 from operator import xor
+import os
 from typing import Any, List, Optional
 
 import pytorch_lightning as pl
@@ -32,14 +33,19 @@ from bigdl.nano.pytorch.lightning import LightningModuleFromTorch
 from bigdl.nano.pytorch.plugins.ddp_spawn import DDPSpawnPlugin
 from bigdl.nano.deps.ray.ray_api import distributed_ray
 from bigdl.nano.deps.ipex.ipex_api import create_IPEXAccelerator, ipex_device
-from bigdl.nano.deps.openvino.openvino_api import bind_openvino_methods
+from bigdl.nano.deps.openvino.openvino_api import PytorchOpenVINOModel
 from bigdl.nano.deps.onnxruntime.onnxruntime_api import bind_onnxrt_methods
-
 
 distributed_backends = ["spawn", "ray", "subprocess"]
 
 
 class Trainer(pl.Trainer):
+    """
+    Trainer for BigDL-Nano pytorch.
+
+    This Trainer extends PyTorch Lightning Trainer by adding
+    various options to accelerate pytorch training.
+    """
 
     def __init__(self, num_processes: int = 1,
                  use_ipex: bool = False,
@@ -49,13 +55,13 @@ class Trainer(pl.Trainer):
                  *args: Any, **kwargs: Any) -> None:
         """
         A pytorch lightning trainer that uses bigdl-nano optimization.
+
         :param num_processes: number of processes in distributed training. default: 4.
         :param use_ipex: whether we use ipex as accelerator for trainer. default: True.
         :param cpu_for_each_process: A list of length `num_processes`, each containing a list of
             indices of cpus each process will be using. default: None, and the cpu will be
             automatically and evenly distributed among processes.
         """
-
         # Check keyword arguments
         if "accelerator" in kwargs:
             warning(f"""Accelerator will be specified by bigdl-nano,
@@ -133,10 +139,11 @@ class Trainer(pl.Trainer):
                 scheduler: _LRScheduler = None,
                 metrics: List[Metric] = None,
                 onnx: bool = False,
-                quantize: bool = False,
-                openvino: bool = False):
+                quantize: bool = False):
         """
-        Construct a pytorch-lightning model. If model is already a pytorch-lightning model,
+        Construct a pytorch-lightning model.
+
+        If model is already a pytorch-lightning model,
         return model. If model is pytorch model, construct a new pytorch-lightning module
         with model, loss and optimizer.
 
@@ -162,8 +169,6 @@ class Trainer(pl.Trainer):
             pl_model = model
         else:
             pl_model = LightningModuleFromTorch(model, loss, optimizer, scheduler, metrics)
-        assert not (onnx and openvino), "Only one of onnx and openvino can be True."
-        assert not (openvino and quantize), "Quantization is not implemented for OpenVINO."
         if onnx:
             try:
                 from bigdl.nano.pytorch.runtime_binding.base_inference import\
@@ -172,8 +177,6 @@ class Trainer(pl.Trainer):
             except ImportError:
                 raise RuntimeError("You should install onnx and onnxruntime to set `onnx=True`, "
                                    "or just set `onnx=False`.")
-        elif openvino:
-            return bind_openvino_methods(pl_model)
         if quantize:
             from bigdl.nano.pytorch.runtime_binding.quantization_inference import\
                 bind_quantize_methods
@@ -192,7 +195,7 @@ class Trainer(pl.Trainer):
                  framework='pytorch_fx',
                  approach='static',
                  tuning_strategy='bayesian',
-                 accuracy_criterion: dict = None,
+                 accuracy_criterion: dict = {'relative': 0.99, 'higher_is_better': True},
                  timeout=0,
                  max_trials=1,
                  return_pl=True
@@ -208,8 +211,8 @@ class Trainer(pl.Trainer):
         :param backend:             Only 'inc' is supported. Default: 'inc'.
         :param conf:        A path to conf yaml file for quantization.
                             Default: None, using default config.
-        :param framework:   string or list, [{'pytorch'|'pytorch_fx'|'pytorch_ipex'},
-                            {'onnxrt_integerops'|'onnxrt_qlinearops'}]. Default: 'pytorch_fx'.
+        :param framework:   string, one of 'pytorch'|'pytorch_fx'|'pytorch_ipex'|
+                            'onnxrt_integerops'|'onnxrt_qlinearops'. Default: 'pytorch_fx'.
                             Consistent with Intel Neural Compressor.
         :param approach:    'static' or 'dynamic'.
                             'static': post_training_static_quant,
@@ -231,22 +234,6 @@ class Trainer(pl.Trainer):
                             returned. If set to False, a pytorch lightning module will be returned.
         :return:            A GraphModule. If there is no model found, return None.
         """
-        has_pytorch = False
-        has_onnx = False
-        for framework_item in framework:
-            if "pytorch" in framework_item:
-                if has_pytorch:
-                    raise RuntimeError("You should choose one from "
-                                       "{'pytorch'|'pytorch_fx'|'pytorch_ipex'}")
-                has_pytorch = True
-                continue
-            if "onnx" in framework_item:
-                if has_onnx:
-                    raise RuntimeError("You should choose one from "
-                                       "{'onnxrt_integerops'|'onnxrt_qlinearops'}")
-                has_onnx = True
-                continue
-
         if backend == 'inc':
             from bigdl.nano.deps.neural_compressor.inc_api import QuantizationINC,\
                 check_pytorch_dataloaders
@@ -263,51 +250,43 @@ class Trainer(pl.Trainer):
             }
             approach = approach_map.get(approach)
 
-            framework = [framework] if isinstance(framework, str) else framework
-            quantized_models = []
-            for framework_item in framework:
-                quantizer = QuantizationINC(framework=framework_item, conf=conf, approach=approach,
-                                            tuning_strategy=tuning_strategy,
-                                            accuracy_criterion=accuracy_criterion,
-                                            timeout=timeout, max_trials=max_trials)
-                if "pytorch" in framework_item:
-                    # for 'pytorch'|'pytorch_fx'|'pytorch_ipex'
-                    model: Any = pl_model  # state model to be 'Any' since we may have pl or onnx
-                    if isinstance(pl_model, LightningModuleFromTorch):
-                        # LightningModuleFromTorch.forward fails to trace in FX
-                        # so replace it temporarily
-                        model = pl_model.model
-                else:
-                    # for 'onnxrt_integerops'|'onnxrt_qlinearops'
-                    pl_model = bind_onnxrt_methods(pl_model)
-                    if approach == "post_training_static_quant":
-                        assert calib_dataloader, \
-                            "calib_calib_dataloader must not be None when approach is " \
-                            "post-training static quantization."
-                        pl_model.eval_onnx(input_sample=tuple(next(iter(
-                            calib_dataloader))[:-1]),
-                            file_path="model.onnx")
-                        model = pl_model.ort_infer_engine.onnx_model_fp32
-                    else:
-                        assert pl_model.ort_infer_engine.onnx_model_fp32, \
-                            "Please call `eval_onnx` on model to " \
-                            "update/build your onnx structure."
-                        model = pl_model.ort_infer_engine.onnx_model_fp32
-                quantized_models.append(quantizer.post_training_quantize(model, calib_dataloader,
-                                                                         val_dataloader, metric))
-            if not return_pl:
-                if len(quantized_models) == 1:
-                    return quantized_models[0].model
-                else:
-                    return quantized_models[0].model, quantized_models[1].model
+            quantized_model = None
+            # for framework_item in framework:
+            quantizer = QuantizationINC(framework=framework, conf=conf, approach=approach,
+                                        tuning_strategy=tuning_strategy,
+                                        accuracy_criterion=accuracy_criterion,
+                                        timeout=timeout, max_trials=max_trials)
+            if "pytorch" in framework:
+                # for 'pytorch'|'pytorch_fx'|'pytorch_ipex'
+                model: Any = pl_model  # state model to be 'Any' since we may have pl or onnx
+                if isinstance(pl_model, LightningModuleFromTorch):
+                    # LightningModuleFromTorch.forward fails to trace in FX
+                    # so replace it temporarily
+                    model = pl_model.model
             else:
-                quantized_pytorch_model = None
-                quantized_onnx_model = None
-                for i, framework_item in enumerate(framework):
-                    if "pytorch" in framework_item:
-                        quantized_pytorch_model = quantized_models[i]
-                    else:
-                        quantized_onnx_model = quantized_models[i]
+                # for 'onnxrt_integerops'|'onnxrt_qlinearops'
+                pl_model = bind_onnxrt_methods(pl_model)
+                if approach == "post_training_static_quant":
+                    assert calib_dataloader, \
+                        "calib_calib_dataloader must not be None when approach is " \
+                        "post-training static quantization."
+                    pl_model.eval_onnx(input_sample=tuple(next(iter(
+                        calib_dataloader))[:-1]),
+                        file_path="model.onnx")
+                    model = pl_model.ort_infer_engine.onnx_model_fp32
+                else:
+                    assert pl_model.ort_infer_engine.onnx_model_fp32, \
+                        "Please call `eval_onnx` on model to " \
+                        "update/build your onnx structure."
+                    model = pl_model.ort_infer_engine.onnx_model_fp32
+            quantized_model = quantizer.post_training_quantize(model, calib_dataloader,
+                                                               val_dataloader, metric)
+            if not return_pl:
+                return quantized_model
+            else:
+                quantized_pytorch_model = quantized_model if "pytorch" in framework else None
+                quantized_onnx_model = quantized_model if "onnxrt" in framework else None
+
                 from bigdl.nano.pytorch.runtime_binding.base_inference import \
                     bind_base_inference_rt_methods
                 from bigdl.nano.pytorch.runtime_binding.quantization_inference import \
@@ -318,3 +297,69 @@ class Trainer(pl.Trainer):
                     quantized_onnx_model)
         else:
             raise NotImplementedError("Backend {} is not implemented.".format(backend))
+
+    @staticmethod
+    def trace(model: nn.Module, input_sample=None, accelerator=None):
+        """
+        Trace a pytorch model and convert it into an accelerated module for inference.
+
+        For example, this function returns a PytorchOpenVINOModel when accelerator=='openvino'.
+
+        :param model: An torch.nn.Module model, including pl.LightningModule.
+        :param input_sample: A set of inputs for trace, defaults to None if you have trace before or
+                             model is a LightningModule with any dataloader attached.
+        :param accelerator: The accelerator to use, defaults to None meaning staying in Pytorch
+                            backend. Only 'openvino' is supported for now.
+        :return: A PytorchOpenVINOModel using openvino for inference if accelerator='openvino'
+        """
+        if accelerator == 'openvino':
+            return PytorchOpenVINOModel(model, input_sample)
+
+    @staticmethod
+    def save(model, path, precision=None, accelerator=None, input_sample=None):
+        """
+        Save the model to path with desired precision and format(by assigning 'accelerator').
+
+        Using a pytorch model, you can export to ONNX, OpenVINO directly with
+        accelerator='openvino'/'onnx'.
+
+        :param model: Any model of torch.nn.Module, including PytorchOpenVINOModel
+        :param path: Path to saved model. You need to specify path suffix carefully.
+                     For example, 'model.xml' for OpenVINO, 'model.onnx' for ONNX.
+        :param precision: Precision of saved model, 'FP32', 'FP16', 'INT8', defaults to None,
+                          then the precision depends on the precision of model.
+        :param accelerator: Saved model format and its future accelerator, defaults to None.
+                            accelerator=None will save Pytorch model, accelerator='openvino' will
+                            save an IR to inference by OpenVINO. Same as ONNX.
+        :param input_sample: A set of inputs for trace, defaults to None if you have trace before or
+                             model is a LightningModule with any dataloader attached,
+                             defaults to None.
+                             Only ONNX and OpenVINO requires an input sample to export the model.
+        """
+        if accelerator == 'openvino':
+            if precision is None:
+                if not hasattr(model, "save") and isinstance(model, nn.Module):
+                    model = PytorchOpenVINOModel(model, input_sample=input_sample)
+                else:
+                    raise TypeError("Model type of {} can not be exported.".format(type(model)))
+                model.save(path)
+
+    @staticmethod
+    def load(path, accelerator=None):
+        """
+        Load a model from local.
+
+        :param path: Path to model to be loaded. You need to specify path suffix carefully.
+                     For example, 'model.xml' for OpenVINO, 'model.onnx' for ONNX.
+        :param accelerator: Saved model format, defaults to None.
+                            accelerator=None will save Pytorch model, accelerator='openvino' will
+                            save an IR to inference by OpenVINO. Same as ONNX.
+        :return: A PytorchOpenVINOModel using openvino for inference if accelerator='openvino'
+        """
+        if accelerator == 'openvino' or path.split('.')[-1] == 'xml':
+            # TODO: Need to fix this with lazy import class.
+            # The usage should be:
+            #   PytorchOpenVINOModel.load(path)
+            if not os.path.exists(path):
+                raise FileNotFoundError("{} doesn't exist.".format(path))
+            return PytorchOpenVINOModel(path)

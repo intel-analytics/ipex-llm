@@ -9,13 +9,12 @@ You can use _Chronos_ to do:
 - **Time Series Forecasting** (using [Standalone Forecasters](./forecasting.html#use-standalone-forecaster-pipeline), [Auto Models](./forecasting.html#use-auto-forecasting-model) (with HPO) or [AutoTS](./forecasting.html#use-autots-pipeline) (full AutoML enabled pipelines))
 - **Anomaly Detection** (using [Anomaly Detectors](./anomaly_detection.html#anomaly-detection))
 - **Synthetic Data Generation** (using [Simulators](./simulation.html#generate-synthetic-data))
-
-Furthermore, Chronos is adapted to integrate many optimized library and best known methods(BKMs) for accuracy and performance improvement.
+- **Speed up or tune your customized time-series model** (using TSTrainer and [AutoTS](./forecasting.html#use-autots-pipeline))
 
 ---
 ### **2. Install**
 
-Install `bigdl-chronos` from PyPI. We recommened to install with a conda virtual environment.
+Install `bigdl-chronos` from PyPI. We recommened to install with a conda virtual environment. To install Conda, please refer to https://docs.conda.io/en/latest/miniconda.html#.
 ```bash
 conda create -n my_env python=3.7
 conda activate my_env
@@ -27,12 +26,28 @@ You may also install `bigdl-chronos` with target `[all]` to install the addition
 pip install bigdl-chronos[all]
 # nightly built version
 pip install --pre --upgrade bigdl-chronos[all]
+# set env variables for your conda environment
+source bigdl-nano-init
+```
+Some dependencies are optional and not included in `bigdl-chronos[all]`. You may install them when you want to use corresponding functionalities. This includes:
+```bash
+pip install tsfresh==0.17.0
+pip install bigdl-nano[tensorflow]
+pip install pmdarima==1.8.2
+pip install prophet==1.0.1
+pip install neural-compressor==1.8.1
 ```
 ```eval_rst
 .. note:: 
     **Supported OS**:
 
      Chronos is thoroughly tested on Ubuntu (16.04/18.04/20.04). If you are a Windows user, the most convenient way to use Chronos on a windows laptop might be using WSL2, you may refer to https://docs.microsoft.com/en-us/windows/wsl/setup/environment or just install a ubuntu virtual machine.
+```
+```eval_rst
+.. note:: 
+    **Supported Python Version**:
+
+     Chronos is thoroughly tested on Python3.6/3.7. Still, it is highly recommended to use python3.7.
 ```
 ---
 ### **3. Run**
@@ -83,18 +98,19 @@ View [Orca Context](../../Orca/Overview/orca-context.md) for more details. Note 
 ```python
 from bigdl.orca import init_orca_context, stop_orca_context
 
-# run in local mode
-init_orca_context(cluster_mode="local", cores=4, init_ray_on_spark=True)
-# run on K8s cluster
-init_orca_context(cluster_mode="k8s", num_nodes=2, cores=2, init_ray_on_spark=True)
-# run on Hadoop YARN cluster
-init_orca_context(cluster_mode="yarn-client", num_nodes=2, cores=2, init_ray_on_spark=True)
+if __name__ == "__main__":
+    # run in local mode
+    init_orca_context(cluster_mode="local", cores=4, init_ray_on_spark=True)
+    # run on K8s cluster
+    init_orca_context(cluster_mode="k8s", num_nodes=2, cores=2, init_ray_on_spark=True)
+    # run on Hadoop YARN cluster
+    init_orca_context(cluster_mode="yarn-client", num_nodes=2, cores=2, init_ray_on_spark=True)
 
-# >>> Start of Chronos Application >>>
-# ...
-# <<< End of Chronos Application <<<
+    # >>> Start of Chronos Application >>>
+    # ...
+    # <<< End of Chronos Application <<<
 
-stop_orca_context()
+    stop_orca_context()
 ```
 #### **4.2 AutoTS Example**
 
@@ -107,31 +123,32 @@ from bigdl.chronos.autots import AutoTSEstimator
 from bigdl.orca import init_orca_context, stop_orca_context
 from sklearn.preprocessing import StandardScaler
 
-# initial orca context
-init_orca_context(cluster_mode="local", cores=4, memory="8g")
+if __name__ == "__main__":
+    # initial orca context
+    init_orca_context(cluster_mode="local", cores=4, memory="8g", init_ray_on_spark=True)
 
-# load dataset
-tsdata_train, tsdata_val, tsdata_test = get_public_dataset(name='nyc_taxi')
+    # load dataset
+    tsdata_train, tsdata_val, tsdata_test = get_public_dataset(name='nyc_taxi')
 
-# dataset preprocessing
-stand = StandardScaler()
-for tsdata in [tsdata_train, tsdata_val, tsdata_test]:
-    tsdata.gen_dt_feature().impute()\
-          .scale(stand, fit=tsdata is tsdata_train)
+    # dataset preprocessing
+    stand = StandardScaler()
+    for tsdata in [tsdata_train, tsdata_val, tsdata_test]:
+        tsdata.gen_dt_feature().impute()\
+              .scale(stand, fit=tsdata is tsdata_train)
 
-# AutoTSEstimator initalization
-autotsest = AutoTSEstimator(model="tcn",
-                            future_seq_len=10)
+    # AutoTSEstimator initalization
+    autotsest = AutoTSEstimator(model="tcn",
+                                future_seq_len=10)
 
-# AutoTSEstimator fitting
-tsppl = autotsest.fit(tsdata_train,
-                      validation_data=tsdata_val)
+    # AutoTSEstimator fitting
+    tsppl = autotsest.fit(data=tsdata_train,
+                          validation_data=tsdata_val)
 
-# Evaluation
-autotsest_mse = tsppl.evaluate(tsdata_test)
+    # Evaluation
+    autotsest_mse = tsppl.evaluate(tsdata_test)
 
-# stop orca context
-stop_orca_context()
+    # stop orca context
+    stop_orca_context()
 ```
 
 ### **5. Details**
@@ -141,6 +158,7 @@ _Chronos_ provides flexible components for forecasting, detection, simulation an
 - [Time Series Anomaly Detection Overview](./anomaly_detection.html)
 - [Generate Synthetic Sequential Data Overview](./simulation.html)
 - [Useful Functionalities Overview](./useful_functionalities.html)
+- [Speed up Chronos built-in/customized models](./speed_up.html)
 - [Chronos API Doc](../../PythonAPI/Chronos/index.html)
 
 ### **6. Examples and Demos**
@@ -156,6 +174,7 @@ _Chronos_ provides flexible components for forecasting, detection, simulation an
     - [Use ONNXRuntime to accelerate the inference of AutoTSEstimator][onnx_autotsestimator_nyc_taxi]
     - [Use ONNXRuntime to accelerate the inference of Seq2SeqForecaster][onnx_forecaster_network_traffic]
     - [Generate synthetic data with DPGANSimulator in a data-driven fashion][simulator]
+    - [Quantizate your forecaster to speed up inference][quantization]
 - Use cases
     - [Unsupervised Anomaly Detection][AIOps_anomaly_detect_unsupervised]
     - [Unsupervised Anomaly Detection based on Forecasts][AIOps_anomaly_detect_unsupervised_forecast_based]
@@ -165,6 +184,8 @@ _Chronos_ provides flexible components for forecasting, detection, simulation an
     - [Network Traffic Forecasting (using multivariate time series data)][network_traffic_model_forecasting]
     - [Network Traffic Forecasting (using multistep time series data)][network_traffic_multivariate_multistep_tcnforecaster]
     - [Network Traffic Forecasting with Customized Model][network_traffic_autots_customized_model]
+    - [Help pytorch-forecasting improve the training speed of DeepAR model][pytorch_forecasting_deepar]
+    - [Help pytorch-forecasting improve the training speed of TFT model][pytorch_forecasting_tft]
 
 <!--Reference links in article-->
 [autolstm_nyc_taxi]: <https://github.com/intel-analytics/BigDL/blob/main/python/chronos/example/auto_model/autolstm_nyc_taxi.py>
@@ -182,3 +203,6 @@ _Chronos_ provides flexible components for forecasting, detection, simulation an
 [network_traffic_model_forecasting]: <https://github.com/intel-analytics/BigDL/blob/main/python/chronos/use-case/network_traffic/network_traffic_model_forecasting.ipynb>
 [network_traffic_multivariate_multistep_tcnforecaster]: <https://github.com/intel-analytics/BigDL/blob/main/python/chronos/use-case/network_traffic/network_traffic_multivariate_multistep_tcnforecaster.ipynb>
 [network_traffic_autots_customized_model]: <https://github.com/intel-analytics/BigDL/blob/main/python/chronos/use-case/network_traffic/network_traffic_autots_customized_model.ipynb>
+[quantization]: <https://github.com/intel-analytics/BigDL/blob/main/python/chronos/example/quantization/quantization_tcnforecaster_nyc_taxi.py>
+[pytorch_forecasting_deepar]: <https://github.com/intel-analytics/BigDL/tree/main/python/chronos/use-case/pytorch-forecasting/DeepAR>
+[pytorch_forecasting_tft]: <https://github.com/intel-analytics/BigDL/tree/main/python/chronos/use-case/pytorch-forecasting/TFT>

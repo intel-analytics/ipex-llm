@@ -22,7 +22,7 @@ envs_checklist = ["LD_PRELOAD", "OMP_NUM_THREADS", "KMP_AFFINITY",
 _unset_envs = []
 
 
-def check_nano_envs():
+def _check_nano_envs():
     for k in envs_checklist:
         if not os.environ.get(k, None):
             _unset_envs.append(k)
@@ -37,4 +37,4 @@ def check_nano_envs():
                 f"{highlight_boundary}")
 
 # disable env check for now, as it does not work for tf and windows
-# check_nano_envs()
+# _check_nano_envs()

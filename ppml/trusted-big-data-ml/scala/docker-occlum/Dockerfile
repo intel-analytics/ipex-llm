@@ -158,7 +158,7 @@ RUN cd /opt && \
     sed -i 's/2.4.0/3.1.2/g' tpch.sbt && \
     sbt package
 
-FROM occlum/occlum:0.27.0-ubuntu20.04 as ppml
+FROM occlum/occlum:0.27.1-ubuntu20.04 as ppml
 
 ARG BIGDL_VERSION=2.1.0-SNAPSHOT
 ARG SPARK_VERSION
@@ -222,6 +222,11 @@ RUN cd /opt && \
     ./download-bigdl.sh && \
     rm bigdl*.zip
 
+# Prepare Attestation
+ADD ./build_content.sh /root/demos/remote_attestation/init_ra_flow/
+ADD ./run_attestation_server.sh /root/demos/remote_attestation/init_ra_flow/
+RUN cd /root/demos/remote_attestation/init_ra_flow/ && \
+    bash build_content.sh build_ra_tls
 # Prepare Tpc-H
 COPY --from=bigdl /opt/zoo-tutorials/tpch-spark/target/scala-2.12/spark-tpc-h-queries_2.12-1.0.jar $SPARK_HOME/jars
 

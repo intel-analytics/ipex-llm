@@ -14,10 +14,14 @@
 # limitations under the License.
 #
 
+
+from time import time
 from bigdl.dllib.utils.common import JavaValue
 from bigdl.ppml.data_utils import *
 
 from bigdl.ppml import *
+from bigdl.ppml.fgboost.utils import add_data
+import logging
 
 
 class FGBoostRegression(FLClientClosable):
@@ -26,13 +30,26 @@ class FGBoostRegression(FLClientClosable):
         super().__init__(jvalue, self.bigdl_type, learning_rate, max_depth, min_child_size)
 
     def fit(self, x, y=None, num_round=5, **kargs):
+        add_data(x, self.value, "fgBoostFitAdd", self.bigdl_type)
+        ts = time()
         x, y = convert_to_jtensor(x, y, **kargs)
-        return callBigDlFunc(self.bigdl_type, "fgBoostFit", self.value, x, y, num_round)
+        te = time()
+        logging.info(f"ndarray to jtensor: [{te-ts} s]")
+        return callBigDlFunc(self.bigdl_type, "fgBoostFitCall", self.value, y, num_round)
 
-    def evaluate(self, x, y=None, **kargs):
+    def evaluate(self, x, y=None, batchsize=4, **kargs):
         x, y = convert_to_jtensor(x, y, **kargs)
         return callBigDlFunc(self.bigdl_type, "fgBoostEvaluate", self.value, x, y)
 
-    def predict(self, x, **kargs):
-        x, _ = convert_to_jtensor(x, **kargs)
-        return callBigDlFunc(self.bigdl_type, "fgBoostPredict", self.value, x).to_ndarray()
+    def predict(self, x, batchsize=4, **kargs):
+        i = version = 0
+        result = []
+        while i + batchsize < len(x):
+            x_batch = x[i:i+batchsize]
+            x_batch, _ = convert_to_jtensor(x_batch, **kargs)
+            result_batch = callBigDlFunc(self.bigdl_type, "fgBoostPredict", self.value, x, version).to_ndarray()
+            result.append(result_batch)
+        x_batch = x[i:]
+        x_batch, _ = convert_to_jtensor(x_batch, **kargs)
+        result_batch = callBigDlFunc(self.bigdl_type, "fgBoostPredict", self.value, x, version).to_ndarray()
+        return np.array(result_batch)
