@@ -16,7 +16,7 @@
 
 import logging
 import grpc
-from friesian.example.serving.generaged import recall_pb2_grpc, recall_pb2
+from friesian.example.serving.generated import recall_pb2_grpc, recall_pb2
 import os
 import pandas as pd
 import argparse
