@@ -19,9 +19,8 @@ automl.hpo_config.enable_hpo_tf()
 
 import tensorflow as tf
 from tensorflow.keras.datasets import mnist
-from tensorflow.keras.layers import Conv2D
-from tensorflow.keras.layers import Dense
-from tensorflow.keras.layers import Flatten
+from tensorflow.keras.layers import (
+    Conv2D, MaxPooling2D, Dense, BatchNormalization, GlobalAveragePooling2D, Flatten)
 from tensorflow.keras.optimizers import RMSprop
 
 import bigdl.nano.automl.hpo as hpo
@@ -35,21 +34,24 @@ CLASSES = 10
 @hpo.tfmodel()
 class MyModel(tf.keras.Model):
 
-    def __init__(self, filters, kernel_size, strides, activation):
+    def __init__(self, filters, kernel_size, strides, num_classes=10):
         super().__init__()
-        self.conv1 = Conv2D(
-            filters=filters,
-            kernel_size=kernel_size,
-            strides=strides,
-            activation=activation)
-        self.flat = Flatten()
-        self.dense = Dense(CLASSES, activation="softmax")
+        self.conv1 = Conv2D(filters=filters,
+                            kernel_size=kernel_size,
+                            strides=strides,
+                            activation="relu")
+        self.max1  = MaxPooling2D(3)
+        self.bn1   = BatchNormalization()
 
-    def call(self, inputs):
+        self.gap   = GlobalAveragePooling2D()
+        self.dense = Dense(num_classes)
+
+    def call(self, inputs, trainig=False):
         x = self.conv1(inputs)
-        x = self.flat(x)
-        x = self.dense(x)
-        return x
+        x = self.max1(x)
+        x = self.bn1(x)
+        x = self.gap(x)
+        return self.dense(x)
 
 
 if __name__ == "__main__":
@@ -69,7 +71,7 @@ if __name__ == "__main__":
         filters=hpo.space.Categorical(32, 64),
         kernel_size=hpo.space.Categorical(3, 5),
         strides=hpo.space.Categorical(1, 2),
-        activation=hpo.space.Categorical("relu", "linear")
+        num_classes=10
     )
 
     model.compile(
