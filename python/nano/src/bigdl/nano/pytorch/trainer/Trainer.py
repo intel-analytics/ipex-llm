@@ -326,8 +326,8 @@ class Trainer(pl.Trainer):
         """
         path = Path(path)
         Path.mkdir(path, exist_ok=True)
-        if hasattr(model, 'save'):
-            model.save(path)
+        if hasattr(model, '_save'):
+            model._save(path)
         else:
             # typically for models of nn.Module, LightningModule and LightningModuleFromTorch type
             meta_path = Path(path) / "meta-data.yml"

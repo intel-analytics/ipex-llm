@@ -59,12 +59,12 @@ class AcceleratedLightningModule(LightningModule):
             tensors = tensors[0]
         return tensors
 
-    def dump_status(self, path):
+    def _dump_status(self, path):
         meta_path = Path(path) / "meta-data.yml"
         with open(meta_path, 'w') as f:
             yaml.safe_dump(self.status, f)
 
-    def save_model(self, path):
+    def _save_model(self, path):
         """
         Save the model file to directory.
 
@@ -72,7 +72,7 @@ class AcceleratedLightningModule(LightningModule):
         """
         raise NotImplementedError("Saving function is not implemented.")
 
-    def save(self, path):
+    def _save(self, path):
         """
         Save the model to local file.
 
@@ -80,20 +80,21 @@ class AcceleratedLightningModule(LightningModule):
         """
         path = Path(path)
         Path.mkdir(path, exist_ok=True)
-        self.dump_status(path)
-        self.save_model(path)
-        
+        self._dump_status(path)
+        self._save_model(path)
+
     @property
     def status(self):
+        print("ModelType", type(self).__name__)
         return {"ModelType": type(self).__name__}
 
     @staticmethod
-    def load_status(path):
+    def _load_status(path):
         meta_path = Path(path) / "meta-data.yml"
         with open(meta_path, 'r') as f:
             metadata = yaml.safe_load(f)
         return metadata
 
     @staticmethod
-    def load(path, model=None):
+    def _load(path, model=None):
         raise NotImplementedError("Loading function is not implemented.")

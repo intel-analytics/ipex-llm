@@ -49,14 +49,6 @@ class TestOpenVINO(TestCase):
         y_hat = openvino_model(x)
         assert y_hat.shape == (10, 10)
 
-        openvino_model.save('saved_openvino')
-        assert len(os.listdir('saved_openvino')) > 0
-        loaded_openvino_model = PytorchOpenVINOModel.load('saved_openvino')
-        y_hat = loaded_openvino_model(x)
-        assert y_hat.shape == (10, 10)
-
-        shutil.rmtree('saved_openvino')
-
     def test_trainer_save_openvino(self):
         trainer = Trainer(max_epochs=1)
         model = mobilenet_v3_small(num_classes=10)

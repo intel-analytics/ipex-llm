@@ -32,4 +32,4 @@ def PytorchOpenVINOModel(model, input_sample=None):
 
 def load_openvino_model(path):
     from .pytorch.pytorch_openvino_model import PytorchOpenVINOModel
-    return PytorchOpenVINOModel.load(path)
+    return PytorchOpenVINOModel._load(path)

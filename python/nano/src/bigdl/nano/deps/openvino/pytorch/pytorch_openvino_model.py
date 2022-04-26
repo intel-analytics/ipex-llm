@@ -60,14 +60,14 @@ class PytorchOpenVINOModel(OpenVINOModel, AcceleratedLightningModule):
         return status
 
     @staticmethod
-    def load(path):
+    def _load(path):
         """
         Load an OpenVINO model for inference from directory.
 
         :param path: Path to model to be loaded.
         :return: PytorchOpenVINOModel model for OpenVINO inference.
         """
-        status = PytorchOpenVINOModel.load_status(path)
+        status = PytorchOpenVINOModel._load_status(path)
         if status.get('xml_path', None):
             xml_path = Path(status['xml_path'])
             assert xml_path.suffix == '.xml', "Path of openvino model must be with '.xml' suffix."
@@ -76,6 +76,6 @@ class PytorchOpenVINOModel(OpenVINOModel, AcceleratedLightningModule):
         xml_path = Path(path) / status['xml_path']
         return PytorchOpenVINOModel(xml_path)
 
-    def save_model(self, path):
+    def _save_model(self, path):
         xml_path = Path(path) / self.status['xml_path']
-        super().save_model(xml_path)
+        super()._save_model(xml_path)
