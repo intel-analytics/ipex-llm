@@ -365,7 +365,7 @@ class Trainer(pl.Trainer):
         # if model_type == 'PytorchONNXModel':
         # if model_type == 'PytorchQuantizedModel':
         # ... to be implemented
-        if model_type in ['PytorchModel', None] or isinstance(model, nn.Module):
+        if isinstance(model, nn.Module):
             # typically for models of nn.Module, LightningModule and LightningModuleFromTorch type
             model = copy.deepcopy(model)
             checkpoint_path = metadata.get('checkpoint', None)
@@ -379,5 +379,5 @@ class Trainer(pl.Trainer):
         else:
             raise ValueError(
                 "ModelType {} or argument 'model={}' is not acceptable for pytorch"
-                " \loading.".format(model_type, type(model))
+                " loading.".format(model_type, type(model))
             )
