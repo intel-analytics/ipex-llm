@@ -85,7 +85,6 @@ class AcceleratedLightningModule(LightningModule):
 
     @property
     def status(self):
-        print("ModelType", type(self).__name__)
         return {"ModelType": type(self).__name__}
 
     @staticmethod
