@@ -46,7 +46,7 @@ function build_server_instance()
 build_server_instance
 unset HTTPS_PROXY
 if [[ -z "$PCCS_URL" ]]; then
-    echo "[Error] NO PCCS"
+    echo "[ERROR] NO PCCS"
     exit 1
 else
     sed -i "s#https://localhost:8081/sgx/certification/v3/#${PCCS_URL}#g" /etc/sgx_default_qcnl.conf
