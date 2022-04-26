@@ -85,6 +85,6 @@ def test_fit_function():
     model_multiprocess = model_init(num_classes)
     history_multiprocess = model_multiprocess.fit(train_ds, epochs=1,
                                                   validation_data=val_ds,
-                                                  nprocs=2,
+                                                  num_processes=2,
                                                   backend="horovod")
     # todo check 1. batch_size, 2. number of iterations and 3. model accuracy
