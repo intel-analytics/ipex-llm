@@ -25,7 +25,7 @@ from bigdl.orca import init_orca_context, stop_orca_context
 from bigdl.orca.learn.metrics import Accuracy, BinaryCrossEntropy
 from bigdl.friesian.feature import FeatureTable
 from pyspark.sql.window import Window
-from pyspark.sql.functions import desc, rank
+from pyspark.sql.functions import desc, rank, col
 
 import argparse
 
@@ -116,9 +116,9 @@ if __name__ == '__main__':
                                'item_hist_seq_len': 'seq_length'}) \
                       .apply('label', 'label',
                              lambda x: 0.0 if float(x[0]) == 1.0 else 1.0, "float")
-    windowSpec1 = Window.partitionBy("user").orderBy(desc("time"))
-    tbl = tbl.append_column("rank1", rank().over(windowSpec1))
-    tbl = tbl.filter(col('rank1') == 1)
+    #windowSpec1 = Window.partitionBy("user").orderBy(desc("time"))
+    #tbl = tbl.append_column("rank1", rank().over(windowSpec1))
+    #tbl = tbl.filter(col('rank1') == 1)
     train_data, test_data = tbl.split([0.8, 0.2], seed=1)
 
     usertbl = FeatureTable.read_parquet(args.data_dir + "/user.parquet/*")

@@ -33,7 +33,7 @@ python dien_train.py \
     --master spark://master-url:port \
     --executor_cores 8 \
     --executor_memory 50g \
-    --num_executors 8 \
+    --num_executors 2 \
     --batch_size 128 \
     --data_dir /path/to/the/folder/to/save/preprocessed/parquet/files
 ```
@@ -44,7 +44,7 @@ python dien_train.py \
     --cluster_mode yarn \
     --executor_cores 8 \
     --executor_memory 50g \
-    --num_executors 8 \
+    --num_executors 2 \
     --batch_size 512 \
     --data_dir /path/to/the/folder/to/save/preprocessed/parquet/files
 ```
