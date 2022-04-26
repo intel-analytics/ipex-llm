@@ -87,6 +87,7 @@ init_instance() {
         echo "[INFO] Attestation is disabled!"
         ATTESTATION="false"
     fi
+
     if [[ $PCCS == "" ]] && [[ $ATTESTATION == "true" ]]; then
        echo "[ERROR] Attestation set to true but NO PCCS"
        exit 1
