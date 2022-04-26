@@ -23,7 +23,6 @@ set -e
 mkdir -p result
 mkdir -p result/stats
 
-
 echo "#1 start example test for two tower train"
 #timer
 start=$(date "+%s")
