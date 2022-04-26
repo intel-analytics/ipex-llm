@@ -65,8 +65,7 @@ def register_module(target_symtab,
             attr = getattr(module, name)
             if not name.startswith('_') and check_type(attr):
                 m = inspect.getmodule(attr)
-                if m.__name__.startswith(prefix) \
-                    and name not in exclude_set:
+                if m.__name__.startswith(prefix) and name not in exclude_set:
                     filtered.append(name)
         return filtered
 
