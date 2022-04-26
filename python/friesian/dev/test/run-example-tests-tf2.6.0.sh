@@ -19,10 +19,11 @@
 export FTP_URI=$FTP_URI
 
 set -e
+
 mkdir -p result
 mkdir -p result/stats
-echo "#1 start example test for two tower train"
 
+echo "#1 start example test for two tower train"
 #timer
 start=$(date "+%s")
 if [ -d data/input_2tower ]; then
@@ -45,8 +46,8 @@ time1=$((now - start))
 echo "#2 start example test for wnd train"
 #timer
 start=$(date "+%s")
-if [ -d data/input_wnd ]; then
-  echo "data/input_wnd already exists"
+if [ -d data/recsys_sample ]; then
+  echo "data/recsys_sample already exists"
 else
   wget -nv $FTP_URI/analytics-zoo-data/recsys_sample.tar.gz -P data
   tar -xvzf data/recsys_sample.tar.gz -C data
@@ -67,4 +68,3 @@ rm -rf result
 
 echo "#1 two tower train time used: $time1 seconds"
 echo "#2 wnd train time used: $time2 seconds"
-
