@@ -83,6 +83,10 @@ init_instance() {
         sed -i "s/SGX_KERNEL_HEAP/${SGX_KERNEL_HEAP}/g" Occlum.json
     fi
 
+    if [ -z "$ATTESTATION" ]; then
+        echo "[INFO] Attestation is disabled!"
+        ATTESTATION="false"
+    fi
     if [[ $PCCS == "" ]] && [[ $ATTESTATION == "true" ]]; then
        echo "[ERROR] Attestation set to true but NO PCCS"
        exit 1
