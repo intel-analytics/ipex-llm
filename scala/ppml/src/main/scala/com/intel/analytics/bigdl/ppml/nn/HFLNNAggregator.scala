@@ -18,7 +18,7 @@ package com.intel.analytics.bigdl.ppml.nn
 
 import com.intel.analytics.bigdl.ppml.common.{FLDataType, FLPhase}
 import com.intel.analytics.bigdl.ppml.common.FLPhase.{EVAL, PREDICT, TRAIN}
-import com.intel.analytics.bigdl.ppml.generated.FlBaseProto.{FloatTensor, TensorMap, MetaData}
+import com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.{FloatTensor, TensorMap, MetaData}
 
 import scala.collection.JavaConverters._
 
@@ -41,7 +41,7 @@ class HFLNNAggregator extends NNAggregator {
     val storage = aggregateTypeMap.get(flPhase).getTensorMapStorage()
     val dataMap = storage.clientData
     for (model <- dataMap.asScala.values) {
-      val modelMap = model.getTensorsMap
+      val modelMap = model.getTensorMapMap
 
       for (tensorName <- modelMap.keySet.asScala) {
         val shapeList = modelMap.get(tensorName).getShapeList

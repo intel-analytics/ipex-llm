@@ -22,7 +22,7 @@ import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.utils.T
 import com.intel.analytics.bigdl.ppml.common.{Aggregator, FLPhase}
 import com.intel.analytics.bigdl.ppml.common.FLPhase._
-import com.intel.analytics.bigdl.ppml.generated.FlBaseProto._
+import com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto._
 import com.intel.analytics.bigdl.ppml.nn.NNAggregator
 import com.intel.analytics.bigdl.ppml.utils.ProtoUtils
 import com.intel.analytics.bigdl.ppml.utils.ProtoUtils.toFloatTensor

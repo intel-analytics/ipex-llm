@@ -20,7 +20,7 @@ import com.intel.analytics.bigdl.dllib.optim.ValidationMethod
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.ppml.FLContext
 import com.intel.analytics.bigdl.ppml.fgboost.common.{RegressionTree, Split, TreeUtils}
-import com.intel.analytics.bigdl.ppml.generated.FlBaseProto.{MetaData, TensorMap}
+import com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.{MetaData, TensorMap}
 import com.intel.analytics.bigdl.ppml.utils.{DataFrameUtils, FLClientClosable}
 import com.intel.analytics.bigdl.ppml.utils.ProtoUtils.{getTensor, toArrayFloat, toBoostEvals, toFloatTensor}
 import jdk.nashorn.internal.ir.debug.ObjectSizeCalculator
@@ -251,7 +251,7 @@ abstract class FGBoostModel(continuous: Boolean,
 
     if (label != null && label.nonEmpty) {
       // party with label
-      gradData.putTensors("label", toFloatTensor(label))
+      gradData.putTensorMap("label", toFloatTensor(label))
     }
     // Upload
     if (flClient == null) {

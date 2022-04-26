@@ -16,8 +16,8 @@
 
 package com.intel.analytics.bigdl.ppml.base
 
-import com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.{BoostEval, DataSplit, TreeLeaf}
-import com.intel.analytics.bigdl.ppml.generated.FlBaseProto.TensorMap
+import com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto.{BoostEval, DataSplit, TreeLeaf}
+import com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap
 
 
 /**
