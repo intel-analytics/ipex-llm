@@ -40,6 +40,12 @@ distributed_backends = ["spawn", "ray", "subprocess"]
 
 
 class Trainer(pl.Trainer):
+    """
+    Trainer for BigDL-Nano pytorch.
+
+    This Trainer extends PyTorch Lightning Trainer by adding
+    various options to accelerate pytorch training.
+    """
 
     def __init__(self, num_processes: int = 1,
                  use_ipex: bool = False,
@@ -49,13 +55,13 @@ class Trainer(pl.Trainer):
                  *args: Any, **kwargs: Any) -> None:
         """
         A pytorch lightning trainer that uses bigdl-nano optimization.
+
         :param num_processes: number of processes in distributed training. default: 4.
         :param use_ipex: whether we use ipex as accelerator for trainer. default: True.
         :param cpu_for_each_process: A list of length `num_processes`, each containing a list of
             indices of cpus each process will be using. default: None, and the cpu will be
             automatically and evenly distributed among processes.
         """
-
         # Check keyword arguments
         if "accelerator" in kwargs:
             warning(f"""Accelerator will be specified by bigdl-nano,
@@ -135,7 +141,9 @@ class Trainer(pl.Trainer):
                 onnx: bool = False,
                 quantize: bool = False):
         """
-        Construct a pytorch-lightning model. If model is already a pytorch-lightning model,
+        Construct a pytorch-lightning model.
+
+        If model is already a pytorch-lightning model,
         return model. If model is pytorch model, construct a new pytorch-lightning module
         with model, loss and optimizer.
 
@@ -226,7 +234,6 @@ class Trainer(pl.Trainer):
                             returned. If set to False, a pytorch lightning module will be returned.
         :return:            A GraphModule. If there is no model found, return None.
         """
-
         if backend == 'inc':
             from bigdl.nano.deps.neural_compressor.inc_api import QuantizationINC,\
                 check_pytorch_dataloaders
@@ -295,6 +302,7 @@ class Trainer(pl.Trainer):
     def trace(model: nn.Module, input_sample=None, accelerator=None):
         """
         Trace a pytorch model and convert it into an accelerated module for inference.
+
         For example, this function returns a PytorchOpenVINOModel when accelerator=='openvino'.
 
         :param model: An torch.nn.Module model, including pl.LightningModule.
@@ -311,6 +319,7 @@ class Trainer(pl.Trainer):
     def save(model, path, precision=None, accelerator=None, input_sample=None):
         """
         Save the model to path with desired precision and format(by assigning 'accelerator').
+
         Using a pytorch model, you can export to ONNX, OpenVINO directly with
         accelerator='openvino'/'onnx'.
 

@@ -23,9 +23,9 @@ import com.intel.analytics.bigdl.dllib.nn.{BCECriterion, MSECriterion, Sigmoid, 
 import com.intel.analytics.bigdl.dllib.optim.Top1Accuracy
 import com.intel.analytics.bigdl.ppml.base.DataHolder
 import com.intel.analytics.bigdl.ppml.common.FLPhase._
-import com.intel.analytics.bigdl.ppml.generated.FlBaseProto._
-import com.intel.analytics.bigdl.ppml.generated.NNServiceGrpc
-import com.intel.analytics.bigdl.ppml.generated.NNServiceProto._
+import com.intel.analytics.bigdl.ppml.fl.generated.NNServiceGrpc
+import com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto._
+import com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto._
 import io.grpc.stub.StreamObserver
 import org.apache.commons.lang3.exception.ExceptionUtils
 import org.apache.logging.log4j.LogManager

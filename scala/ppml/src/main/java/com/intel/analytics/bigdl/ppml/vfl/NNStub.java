@@ -16,9 +16,9 @@
 
 package com.intel.analytics.bigdl.ppml.vfl;
 
-import com.intel.analytics.bigdl.ppml.generated.FlBaseProto.*;
-import com.intel.analytics.bigdl.ppml.generated.NNServiceProto.*;
-import com.intel.analytics.bigdl.ppml.generated.NNServiceGrpc;
+import com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.*;
+import com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.*;
+import com.intel.analytics.bigdl.ppml.fl.generated.NNServiceGrpc;
 import io.grpc.Channel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -72,6 +72,6 @@ public class NNStub {
 //        logger.debug("Upload Data Name:" + data.getMetaData().getName());
 //        logger.debug("Upload Data Version:" + data.getMetaData().getVersion());
 //        logger.debug("Upload Data:");
-//        logger.debug(data.getTensorsMap().toString());
+//        logger.debug(data.getTensorMapMap().toString());
     }
 }

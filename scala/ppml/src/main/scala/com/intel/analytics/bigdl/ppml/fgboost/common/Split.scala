@@ -16,7 +16,7 @@
 
 package com.intel.analytics.bigdl.ppml.fgboost.common
 
-import com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto.DataSplit
+import com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto.DataSplit
 import org.apache.logging.log4j.LogManager
 import java.util
 

@@ -22,8 +22,8 @@ import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.ppml.base.StorageHolder
 import com.intel.analytics.bigdl.ppml.common.{Aggregator, FLDataType, FLPhase}
 import com.intel.analytics.bigdl.ppml.fgboost.common.{RMSEObjective, TreeObjective}
-import com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto._
-import com.intel.analytics.bigdl.ppml.generated.FlBaseProto._
+import com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto._
+import com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto._
 import com.intel.analytics.bigdl.ppml.utils.ProtoUtils._
 import org.apache.logging.log4j.LogManager
 
@@ -102,7 +102,7 @@ class FGBoostAggregator(validationMethods: Array[ValidationMethod[Float]] = null
   def initGradient(): Unit = {
     logger.debug(s"Server init gradiant from label")
     val labelClientData = getLabelStorage().clientData
-    val aggData = labelClientData.mapValues(_.getTensorsMap).values.flatMap(_.asScala)
+    val aggData = labelClientData.mapValues(_.getTensorMapMap).values.flatMap(_.asScala)
       .map { data =>
         (data._1, data._2.getTensorList.asScala.toArray.map(_.toFloat))
       }.toMap
@@ -128,10 +128,10 @@ class FGBoostAggregator(validationMethods: Array[ValidationMethod[Float]] = null
       .build()
     val aggregatedModel = TensorMap.newBuilder()
       .setMetaData(metaData)
-      .putTensors("grad", toFloatTensor(grad))
-      .putTensors("hess", toFloatTensor(hess))
-      .putTensors("predict", toFloatTensor(basePrediction))
-      .putTensors("label", toFloatTensor(label))
+      .putTensorMap("grad", toFloatTensor(grad))
+      .putTensorMap("hess", toFloatTensor(hess))
+      .putTensorMap("predict", toFloatTensor(basePrediction))
+      .putTensorMap("label", toFloatTensor(label))
       .build()
     // Update gradient
     getLabelStorage().clearClientAndUpdateServer(aggregatedModel)
@@ -209,7 +209,7 @@ class FGBoostAggregator(validationMethods: Array[ValidationMethod[Float]] = null
     // g = y' - y, h = 1
     logger.info(s"Updating Gradient with new Predict, new predict size: ${newPredict.size}")
     val tableStorage = getLabelStorage()
-    val gradTable = tableStorage.serverData.getTensorsMap
+    val gradTable = tableStorage.serverData.getTensorMapMap
     val predict = gradTable.get("predict").getTensorList.asScala.toArray.map(_.toFloat)
     val label = gradTable.get("label").getTensorList.asScala.toArray.map(_.toFloat)
     // Update Predict
@@ -231,10 +231,10 @@ class FGBoostAggregator(validationMethods: Array[ValidationMethod[Float]] = null
       .build()
     val aggregatedModel = TensorMap.newBuilder()
       .setMetaData(metaData)
-      .putTensors("grad", toFloatTensor(gradients(0)))
-      .putTensors("predict", toFloatTensor(predict))
-      .putTensors("hess", toFloatTensor(gradients(1)))
-      .putTensors("label", toFloatTensor(label))
+      .putTensorMap("grad", toFloatTensor(gradients(0)))
+      .putTensorMap("predict", toFloatTensor(predict))
+      .putTensorMap("hess", toFloatTensor(gradients(1)))
+      .putTensorMap("label", toFloatTensor(label))
       .build()
     // Update gradient
 
@@ -315,7 +315,7 @@ class FGBoostAggregator(validationMethods: Array[ValidationMethod[Float]] = null
       .build()
     val aggResult = TensorMap.newBuilder()
       .setMetaData(metaData)
-      .putTensors("predictResult", toFloatTensor(newPredict)).build()
+      .putTensorMap("predictResult", toFloatTensor(newPredict)).build()
     tableStorage.clearClientAndUpdateServer(aggResult)
     getPredictStorage().version += 1
   }

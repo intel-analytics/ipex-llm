@@ -29,4 +29,4 @@ ssh root@$MASTER "docker run -itd \
       -e SPARK_MASTER=spark://$MASTER:7077 \
       -e SPARK_DRIVER_PORT=10027 \
       -e SPARK_DRIVER_BLOCK_MANAGER_PORT=10026 \
-      $TRUSTED_BIGDATA_ML_DOCKER bash"
+      $TRUSTED_BIGDATA_ML_IMAGE bash"

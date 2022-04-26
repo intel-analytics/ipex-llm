@@ -17,8 +17,8 @@
 package com.intel.analytics.bigdl.ppml.base
 
 import com.intel.analytics.bigdl.ppml.common.{FLDataType, FLPhase, Storage}
-import com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto._
-import com.intel.analytics.bigdl.ppml.generated.FlBaseProto.TensorMap
+import com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto._
+import com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap
 import org.apache.logging.log4j.LogManager
 
 /**

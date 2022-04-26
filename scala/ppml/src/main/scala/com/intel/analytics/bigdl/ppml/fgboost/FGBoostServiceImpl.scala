@@ -18,8 +18,8 @@ package com.intel.analytics.bigdl.ppml.fgboost
 
 import com.intel.analytics.bigdl.ppml.base.DataHolder
 import com.intel.analytics.bigdl.ppml.common.FLPhase
-import com.intel.analytics.bigdl.ppml.generated.FGBoostServiceProto._
-import com.intel.analytics.bigdl.ppml.generated.{FGBoostServiceGrpc, FGBoostServiceProto}
+import com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceGrpc
+import com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto._
 import io.grpc.stub.StreamObserver
 import org.apache.commons.lang3.exception.ExceptionUtils
 import org.apache.logging.log4j.LogManager
