@@ -1,6 +1,6 @@
 # Train DIEN using the Amazon book review dataset
 This folder showcases how to use BigDL Friesian to preprocess and train a [DIEN](https://arxiv.org/pdf/1809.03672.pdf) model. 
-Model definition is based on [ai-matrix](https://github.com/alibaba/ai-matrix/tree/master/macro_benchmark/DIEN) and
+Model definition is based on [here](https://github.com/mouna99/dien) and
 [Amazon Book Reviews](http://snap.stanford.edu/data/amazon/productGraph/categoryFiles/reviews_Books.json.gz) dataset is used in this example.
 
 ## Prepare the environment
@@ -8,12 +8,12 @@ We recommend you to use [Anaconda](https://www.anaconda.com/distribution/#linux)
 ```
 conda create -n bigdl python=3.7  # "bigdl" is the conda environment name, you can use any name you like.
 conda activate bigdl
-pip install tensorflow==1.15.0
+pip install pytorch=1.11.0
 pip install --pre --upgrade bigdl-friesian
 ```
 
 ## Prepare the data
-Data is preprocessed with ``/home/mingxuan/bigdl_last/python/friesian/example/dien/dien_preprocessing.py`` on yarn cluster.
+Data is preprocessed with ``../dien_preprocessing.py`` on yarn cluster.
 
 
 ## Train DIEN
