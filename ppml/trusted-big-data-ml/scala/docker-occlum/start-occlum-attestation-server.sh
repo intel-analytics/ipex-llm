@@ -2,7 +2,7 @@
 sudo docker rm -f bigdl-ppml-trusted-big-data-ml-scala-occlum-attestation-server
 
 # Run new command in container
-sudo docker run -itd \
+sudo docker run -it \
 	--net=host \
 	--name=bigdl-ppml-trusted-big-data-ml-scala-occlum-attestation-server \
 	--cpuset-cpus 5-7 \
