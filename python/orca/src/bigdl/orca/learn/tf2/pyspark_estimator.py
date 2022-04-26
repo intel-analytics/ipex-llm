@@ -121,6 +121,7 @@ class SparkTFEstimator():
                the model to "pay more attention" to samples from an under-represented class.
         :return:
         """
+        from bigdl.orca.data.tf.tf2_data import Dataset, TF2Dataset
         sc = OrcaContext.get_spark_context()
 
         # dataframe change to xshard, num_partition >= num_workers
@@ -196,6 +197,20 @@ class SparkTFEstimator():
                 res = train_rdd.zip(val_rdd).repartition(self.num_workers).barrier()\
                     .mapPartitions(
                     lambda iter: transform_func(iter, init_params, params)).collect()
+        elif isinstance(data, Dataset):
+            train_rdd = TF2Dataset(data)
+            if validation_data is None:
+                def transform_func(iter, init_param, param):
+                    partition_data = list(iter)
+                    param["data_creator"] = make_data_creator(partition_data)
+                    # TODO: error handling
+                    return SparkRunner(**init_param).step(**param)
+
+                res = train_rdd.rdd.repartition(self.num_workers).barrier() \
+                    .mapPartitions(
+                    lambda iter: transform_func(iter, init_params, params)).collect()
+            else:
+                pass
         else:
             params["data_creator"] = data
             params["validation_data_creator"] = validation_data

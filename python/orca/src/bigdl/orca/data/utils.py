@@ -202,6 +202,46 @@ def ray_partitions_get_data_label(partition_list,
     return data, label
 
 
+def ray_partitions_get_tf_dataset(partition_list, has_label=True):
+    import tensorflow as tf
+    partition_data = [item for partition in partition_list for item in partition]
+    if len(partition_data) != 0:
+
+        sample = partition_data[0]
+        keys = sample.keys()
+        if "x" in keys:
+            if has_label:
+                assert "y" in keys, "key y should in each shard if has_label=True"
+            data, label = ray_partition_get_data_label(partition_data,
+                                                       allow_tuple=True,
+                                                       allow_list=False)
+            dataset = tf.data.Dataset.from_tensor_slices((data, label))
+        elif "ds_def" in keys and "elem_spec" in keys:
+            from tensorflow.python.distribute.coordinator.values import deserialize_dataset_from_graph
+            from functools import reduce
+            dataset_list = [deserialize_dataset_from_graph(serialized_dataset["ds_def"], serialized_dataset["elem_spec"])
+                            for serialized_dataset in partition_data]
+            dataset = reduce(lambda x, y: x.concatenate(y), dataset_list)
+        else:
+            raise ValueError("value of x and y should be a ndarray, "
+                             "a tuple of ndarrays or a list of ndarrays")
+    else:
+        dataset = tf.data.Dataset.from_tensor_slices(([], []))
+
+    return dataset
+
+
+def spark_partitions_get_tf_dataset(partition_list):
+    # from functools import reduce
+    # TODO: dataset = reduce(lambda x, y: x.concatenate(y), partition_list)
+    ds = partition_list[0]
+    ds_def = ds["ds_def"]
+    elem_spec = ds["elem_spec"]
+    from tensorflow.python.distribute.coordinator.values import deserialize_dataset_from_graph
+    dataset = deserialize_dataset_from_graph(ds_def, elem_spec)
+    return dataset
+
+
 # todo: this might be very slow
 def xshard_to_sample(data):
     from bigdl.dllib.utils.file_utils import Sample

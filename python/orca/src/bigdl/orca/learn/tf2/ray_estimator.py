@@ -172,18 +172,29 @@ class TensorFlow2Estimator(OrcaRayEstimator):
         )
 
         from bigdl.orca.data import SparkXShards
+        from bigdl.orca.data.tf.tf2_data import Dataset, TF2Dataset
         data, validation_data = maybe_dataframe_to_xshards(data, validation_data,
                                                            feature_cols, label_cols,
                                                            mode="fit",
                                                            num_workers=self.num_workers,
                                                            accept_str_col=True)
 
-        if isinstance(data, SparkXShards):
-            if data._get_class_name() == 'pandas.core.frame.DataFrame':
-                data, validation_data = process_xshards_of_pandas_dataframe(data, feature_cols,
-                                                                            label_cols,
-                                                                            validation_data, "fit")
-            ray_xshards = process_spark_xshards(data, self.num_workers)
+        if isinstance(data, SparkXShards) or isinstance(data, Dataset):
+            if isinstance(data, SparkXShards):
+                if data._get_class_name() == 'pandas.core.frame.DataFrame':
+                    data, validation_data = process_xshards_of_pandas_dataframe(data, feature_cols,
+                                                                                label_cols,
+                                                                                validation_data, "fit")
+                ray_xshards = process_spark_xshards(data, self.num_workers)
+                if validation_data is not None:
+                    val_ray_xshards = process_spark_xshards(validation_data, self.num_workers)
+            else:
+                ray_xshards = TF2Dataset(data).get_ray_xshards(self.num_workers)
+                if validation_data is not None:
+                    assert isinstance(validation_data, Dataset), \
+                        "Validation data type should be the same as train data, " \
+                        "but got type: {}".format(type(validation_data))
+                    val_ray_xshards = TF2Dataset(validation_data).get_ray_xshards(self.num_workers)
 
             if validation_data is None:
                 def transform_func(worker, partition_refs):
@@ -193,8 +204,6 @@ class TensorFlow2Estimator(OrcaRayEstimator):
                 worker_stats = ray_xshards.reduce_partitions_for_actors(self.remote_workers,
                                                                         transform_func)
             else:
-                val_ray_xshards = process_spark_xshards(validation_data, self.num_workers)
-
                 def zip_func(worker, this_partition_refs, that_partition_refs):
                     params["data_creator"] = make_data_creator(this_partition_refs)
                     params["validation_data_creator"] = \
@@ -289,6 +298,7 @@ class TensorFlow2Estimator(OrcaRayEstimator):
             data_config=data_config,
         )
         from bigdl.orca.data import SparkXShards
+        from bigdl.orca.data.tf.tf2_data import Dataset, TF2Dataset
 
         data, _ = maybe_dataframe_to_xshards(data,
                                              validation_data=None,
@@ -298,15 +308,19 @@ class TensorFlow2Estimator(OrcaRayEstimator):
                                              num_workers=self.num_workers,
                                              accept_str_col=True)
 
-        if isinstance(data, SparkXShards):
-            if data._get_class_name() == 'pandas.core.frame.DataFrame':
-                data = process_xshards_of_pandas_dataframe(data, feature_cols, label_cols)
+        if isinstance(data, SparkXShards) or isinstance(data, Dataset):
+            if isinstance(data, SparkXShards):
+                if data._get_class_name() == 'pandas.core.frame.DataFrame':
+                    data = process_xshards_of_pandas_dataframe(data, feature_cols, label_cols)
 
-            data = data
-            if data.num_partitions() != self.num_workers:
-                data = data.repartition(self.num_workers)
+                data = data
+                if data.num_partitions() != self.num_workers:
+                    data = data.repartition(self.num_workers)
 
-            ray_xshards = RayXShards.from_spark_xshards(data)
+                ray_xshards = RayXShards.from_spark_xshards(data)
+            else:
+                # TODO: repartition?
+                ray_xshards = TF2Dataset(data).get_ray_xshards(self.num_workers)
 
             def transform_func(worker, partition_refs):
                 params["data_creator"] = make_data_creator(partition_refs)

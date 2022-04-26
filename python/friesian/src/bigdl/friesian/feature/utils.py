@@ -212,3 +212,63 @@ def str_to_list(arg, arg_name):
         return [arg]
     assert isinstance(arg, list), arg_name + " should be str or a list of str"
     return arg
+
+
+def featuretable_to_xshards(tbl, convert_cols=None):
+    from bigdl.friesian.feature import FeatureTable
+    from bigdl.orca.data import SparkXShards
+    from pyspark.ml.linalg import DenseVector
+    import numpy as np
+    assert isinstance(tbl, FeatureTable), "This function only supports friesian FeatureTable"
+    # TODO: partition < node num
+    if convert_cols is None:
+        convert_cols = tbl.columns
+    if convert_cols and not isinstance(convert_cols, list):
+        convert_cols = [convert_cols]
+
+    schema = tbl.df.schema
+    np_type_dict = dict()
+    for col in convert_cols:
+        assert col in tbl.columns, "Column name " + col + " does not exist in the FeatureTable"
+        feature_type = schema[col].dataType
+        np_type = df_type_to_np_type(feature_type)
+        if np_type:
+            np_type_dict[col] = np_type
+
+    def to_numpy_dict(iter):
+        rows = list(iter)
+        result = dict()
+        for c in convert_cols:
+            result[c] = []
+        for row in rows:
+            for c in convert_cols:
+                result[c].append(row[c])
+        for c in convert_cols:
+            if c in np_type_dict:
+                result[c] = np.asarray(result[c], dtype=np_type_dict[c])
+            else:
+                data = result[c]
+                if len(data) > 0 and isinstance(data[0], DenseVector):
+                    # TODO: test
+                    result[c] = np.stack(list(map(lambda vector: vector.values.astype(np.float32), data)))
+                else:
+                    "unsupported field {}".format(schema[c])
+        return [result]
+
+    return SparkXShards(tbl.df.rdd.mapPartitions(to_numpy_dict))
+
+
+def df_type_to_np_type(dtype):
+    import pyspark.sql.types as df_types
+    import numpy as np
+    if isinstance(dtype, df_types.FloatType):
+        return np.float32
+    elif isinstance(dtype, df_types.IntegerType):
+        return np.int32
+    elif isinstance(dtype, df_types.StringType):
+        return np.str
+    elif isinstance(dtype, df_types.ArrayType):
+        return df_type_to_np_type(dtype.elementType)
+    else:
+        return None
+

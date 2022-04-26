@@ -23,7 +23,7 @@ import tensorflow as tf
 
 from pyspark import BarrierTaskContext, TaskContext
 
-from bigdl.orca.data.utils import ray_partition_get_data_label
+from bigdl.orca.data.utils import ray_partition_get_data_label, spark_partitions_get_tf_dataset
 from bigdl.orca.data.file import exists
 from bigdl.orca.learn.utils import save_pkl, duplicate_stdout_stderr_to_file,\
     get_specific_object_from_callbacks, get_replaced_path, get_rank, \
@@ -119,16 +119,26 @@ class TFDistributedDatasetHandler(DatasetHandler):
     def _handle_xshards(self, dataset, steps, local_batch_size, shuffle):
         import tensorflow as tf
 
-        data, label = ray_partition_get_data_label(dataset,
-                                                   allow_tuple=True,
-                                                   allow_list=False)
+        is_normal_xshards = False
+        # try:
+        #     if isinstance(dataset[0], tf.data.Dataset):
+        #         is_normal_xshards = False
+        # except:
+        #     pass
+
+        if is_normal_xshards:
+            data, label = ray_partition_get_data_label(dataset,
+                                                       allow_tuple=True,
+                                                       allow_list=False)
+            tf_dataset = tf.data.Dataset.from_tensor_slices((data, label))
+        else:
+            tf_dataset = spark_partitions_get_tf_dataset(dataset)
 
         def dataset_fn(input_context):
-            dataset = tf.data.Dataset.from_tensor_slices((data, label))
             options = tf.data.Options()
             options.experimental_distribute.auto_shard_policy = \
                 tf.data.experimental.AutoShardPolicy.OFF
-            dataset = dataset.with_options(options)
+            dataset = tf_dataset.with_options(options)
             dataset = dataset.repeat()
             dataset = dataset.take(steps * local_batch_size)
             if shuffle:
