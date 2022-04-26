@@ -137,6 +137,8 @@ build_spark() {
     mkdir -p image/bin/jars
     cp -f $BIGDL_HOME/jars/* image/bin/jars
     cp -rf /opt/spark-source image/opt/
+
+    # Build
     if [[ $ATTESTATION == "true" ]]; then
        occlum build --image-key /opt/occlum_spark/data/image_key
        build_initfs
