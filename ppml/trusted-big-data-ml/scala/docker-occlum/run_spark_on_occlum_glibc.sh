@@ -85,6 +85,7 @@ init_instance() {
 
     if [[ $PCCS == "" ]] && [[ $ATTESTATION == "true" ]]; then
        echo "[ERROR] Attestation set to true but NO PCCS"
+       exit 1
     else
        sed -i "s#https://localhost:8081/sgx/certification/v3/#${PCCS_URL}#g" /etc/sgx_default_qcnl.conf
     fi
