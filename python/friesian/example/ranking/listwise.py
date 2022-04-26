@@ -10,7 +10,7 @@ from optparse import OptionParser
 
 
 class RankingModel(tfrs.Model):
-    def __init__(self):
+    def __init__(self, loss):
         super().__init__()
         embedding_dimension = 32
 
@@ -38,20 +38,18 @@ class RankingModel(tfrs.Model):
         ])
 
         self.task = tfrs.tasks.Ranking(
-            loss=tfr.keras.losses.ListMLELoss(),
+            loss=loss,
             metrics=[
+                tfr.keras.metrics.MRRMetric(name="mrr"),
                 tfr.keras.metrics.NDCGMetric(name="ndcg_metric"),
-                tf.keras.metrics.RootMeanSquaredError()
-            ]
+                tf.keras.metrics.RootMeanSquaredError("RMSE")]
         )
 
     def call(self, features):
         # We first convert the id features into embeddings.
         # User embeddings are a [batch_size, embedding_dim] tensor.
         user_embeddings = self.user_embeddings(features["user_id"])
-
         movie_embeddings = self.movie_embeddings(features["movie_title"])
-
         list_length = features["movie_title"].shape[1]
         user_embedding_repeated = tf.repeat(
             tf.expand_dims(user_embeddings, 1), [list_length], axis=1)
@@ -106,8 +104,8 @@ if __name__ == "__main__":
             "cluster_mode should be one of 'local', 'yarn', 'standalone' and 'spark-submit'"
             ", but got " + args.cluster_mode)
 
-    ratings = tfds.load("movielens/100k-ratings", split="train")
-    movies = tfds.load("movielens/100k-movies", split="train")
+    ratings = tfds.load("movielens/100k-ratings", split="train", data_dir=executor_data)
+    movies = tfds.load("movielens/100k-movies", split="train", data_dir=executor_data)
 
     ratings = ratings.map(lambda x: {
         "movie_title": x["movie_title"],
@@ -128,44 +126,46 @@ if __name__ == "__main__":
     batch_size = 1024
 
     def model_creator(config):
-        model = RankingModel()
+        model = RankingModel(tf.keras.losses.MeanSquaredError())
         from bigdl.friesian.feature.utils import distribute_tfrs_model
         model = distribute_tfrs_model(model)
         model.compile(optimizer=tf.keras.optimizers.Adam(config['lr']))
         return model
 
-
     def train_data_creator(config, batch_size):
-        ratings = tfds.load("movielens/100k-ratings", split="train")
+        ratings = tfds.load("movielens/100k-ratings", split="train", data_dir=executor_data)
 
         ratings = ratings.map(lambda x: {
             "movie_title": x["movie_title"],
             "user_id": x["user_id"],
             "user_rating": x["user_rating"],
         })
+        options = tf.data.Options()
+        options.experimental_distribute.auto_shard_policy = tf.data.experimental.AutoShardPolicy.DATA
+        ratings = ratings.with_options(options)
 
         train = ratings.take(80_000)
+        print(train.take(1))
         train = tfrs.examples.movielens.sample_listwise(
             train,
             num_list_per_user=50,
             num_examples_per_list=5,
             seed=42
         )
-        options = tf.data.Options()
-        options.experimental_distribute.auto_shard_policy = tf.data.experimental.AutoShardPolicy.DATA
-        train = train.with_options(options)
+        print(train.take(1))
         train = train.batch(batch_size)
         return train
 
-
     def val_data_creator(config, batch_size):
-        ratings = tfds.load("movielens/100k-ratings", split="train")
-
+        ratings = tfds.load("movielens/100k-ratings", split="train", data_dir=executor_data)
         ratings = ratings.map(lambda x: {
             "movie_title": x["movie_title"],
             "user_id": x["user_id"],
             "user_rating": x["user_rating"],
         })
+        options = tf.data.Options()
+        options.experimental_distribute.auto_shard_policy = tf.data.experimental.AutoShardPolicy.OFF
+        ratings = ratings.with_options(options)
 
         test = ratings.skip(80_000).take(20_000)
         test = tfrs.examples.movielens.sample_listwise(
@@ -174,13 +174,12 @@ if __name__ == "__main__":
             num_examples_per_list=5,
             seed=42
         )
-        options = tf.data.Options()
-        options.experimental_distribute.auto_shard_policy = tf.data.experimental.AutoShardPolicy.DATA
-        test = test.with_options(options)
+
         test = test.batch(batch_size)
         return test
 
     est = Estimator.from_keras(model_creator=model_creator, config=config)
     est.fit(data=train_data_creator, epochs=1, batch_size=batch_size, verbose=0)
-    est.evaluate(data=val_data_creator, batch_size=batch_size)
+    stats = est.evaluate(data=val_data_creator, batch_size=batch_size)
+    print(stats)
     stop_orca_context()
