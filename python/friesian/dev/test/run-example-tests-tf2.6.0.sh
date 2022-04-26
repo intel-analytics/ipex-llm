@@ -43,9 +43,6 @@ python ../../example/two_tower/train_2tower.py \
 now=$(date "+%s")
 time1=$((now - start))
 
-echo "#2 start example test for wnd train"
-#timer
-start=$(date "+%s")
 if [ -d data/recsys_sample ]; then
   echo "data/recsys_sample already exists"
 else
@@ -53,6 +50,9 @@ else
   tar -xvzf data/recsys_sample.tar.gz -C data
 fi
 
+echo "#2 start example test for wnd train"
+#timer
+start=$(date "+%s")
 python ../../example/wnd/train/wnd_train_recsys.py \
     --executor_cores 4 \
     --executor_memory 10g \
@@ -66,17 +66,13 @@ time2=$((now - start))
 echo "#3 start example test for xgboost train"
 #timer
 start=$(date "+%s")
-if [ -d data/input_wnd ]; then
-  echo "data/input_wnd already exists"
-else
-  wget -nv $FTP_URI/analytics-zoo-data/input_wnd.tar.gz -P data
-  tar -xvzf data/input_wnd.tar.gz -C data
-fi
-
+sed -i "s/\[0.1, 0.15, 0.2, 0.25, 0.3\]/\[0.1\]/g" ../../example/xgb/xgb_train.py
+sed -i "s/\[6, 8, 10, 12\]/\[6\]/g" ../../example/xgb/xgb_train.py
+sed -i "s/\[200, 400, 600, 800, 1000\]/\[200\]/g" ../../example/xgb/xgb_train.py
 python ../../example/xgb/xgb_train.py \
     --executor_cores 4 \
     --executor_memory 10g \
-    --data_dir ./data/input_wnd \
+    --data_dir ./data/recsys_sample \
     --model_dir ./result/xgb_res
 
 now=$(date "+%s")
