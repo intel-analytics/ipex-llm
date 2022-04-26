@@ -573,7 +573,7 @@ kubectl create secret generic spark-secret --from-literal secret=YOUR_SECRET
 **The secret created (`YOUR_SECRET`) should be the same as the password you specified in section 1.1**
 
 ### 1.3 Start the client container
-Configure the environment variables in the following script before running it.
+Configure the environment variables in the following script before running it. Check [Bigdl ppml SGX related configurations](#1-bigdl-ppml-sgx-related-configurations) for detailed memory configurations.
 ```bash
 export K8S_MASTER=k8s://$( sudo kubectl cluster-info | grep 'https.*' -o -m 1 )
 echo The k8s master is $K8S_MASTER .
@@ -606,10 +606,10 @@ sudo docker run -itd \
     -e RUNTIME_DRIVER_CORES=1 \
     -e RUNTIME_EXECUTOR_INSTANCES=1 \
     -e RUNTIME_EXECUTOR_CORES=8 \
-    -e RUNTIME_EXECUTOR_MEMORY=20g \
+    -e RUNTIME_EXECUTOR_MEMORY=1g \
     -e RUNTIME_TOTAL_EXECUTOR_CORES=4 \
     -e RUNTIME_DRIVER_CORES=4 \
-    -e RUNTIME_DRIVER_MEMORY=10g \
+    -e RUNTIME_DRIVER_MEMORY=1g \
     -e SGX_DRIVER_MEM=32g \
     -e SGX_DRIVER_JVM_MEM=8g \
     -e SGX_EXECUTOR_MEM=32g \
@@ -642,7 +642,7 @@ export TF_MKL_ALLOC_MAX_BYTES=10737418240 && \
   export SPARK_LOCAL_IP=$LOCAL_IP && \
   /opt/jdk8/bin/java \
     -cp '/ppml/trusted-big-data-ml/work/spark-3.1.2/conf/:/ppml/trusted-big-data-ml/work/spark-3.1.2/jars/*' \
-    -Xmx5g \
+    -Xmx8g \
     org.apache.spark.deploy.SparkSubmit \
     --master $RUNTIME_SPARK_MASTER \
     --deploy-mode $SPARK_MODE \
@@ -699,16 +699,42 @@ You can run your own Spark Appliction after changing `--class` and jar path.
 
 ### Configuration Explainations
 #### 1. Bigdl ppml SGX related configurations
+
+<img title="" src="../../../../docs/readthedocs/image/ppml_memory_config.png" alt="ppml_memory_config.png" data-align="center">
+
 The following parameters enable spark executor running on SGX.  
-`spark.kubernetes.sgx.enabled`: true -> enable spark executor running on sgx, false -> native on k8s withour SGX.  
+`spark.kubernetes.sgx.enabled`: true -> enable spark executor running on sgx, false -> native on k8s without SGX.  
+`spark.kubernetes.sgx.driver.mem`: Spark driver SGX epc memeory.  
+`spark.kubernetes.sgx.driver.jvm.mem`: Spark driver JVM memory, Recommended setting is less than half of epc memory.  
 `spark.kubernetes.sgx.executor.mem`: Spark executor SGX epc memeory.  
-`spark.kubernetes.sgx.executor.jvm.mem`: Spark executor JVM memory, Recommended setting is half of epc memory.  
+`spark.kubernetes.sgx.executor.jvm.mem`: Spark executor JVM memory, Recommended setting is less than half of epc memory.  
 `spark.kubernetes.sgx.log.level`: Spark executor on SGX log level, Supported values are error,all and debug.  
+The following is a recommended configuration in client mode.
 ```bash
     --conf spark.kubernetes.sgx.enabled=true
+    --conf spark.kubernetes.sgx.driver.mem=32g
+    --conf spark.kubernetes.sgx.driver.jvm.mem=10g
     --conf spark.kubernetes.sgx.executor.mem=32g
-    --conf spark.kubernetes.sgx.executor.jvm.mem=16g
+    --conf spark.kubernetes.sgx.executor.jvm.mem=12g
     --conf spark.kubernetes.sgx.log.level=error
+    --conf spark.driver.memory=10g
+    --conf spark.executor.memory=1g
+```
+The following is a recommended configuration in cluster mode.
+```bash
+    --conf spark.kubernetes.sgx.enabled=true
+    --conf spark.kubernetes.sgx.driver.mem=32g
+    --conf spark.kubernetes.sgx.driver.jvm.mem=10g
+    --conf spark.kubernetes.sgx.executor.mem=32g
+    --conf spark.kubernetes.sgx.executor.jvm.mem=12g
+    --conf spark.kubernetes.sgx.log.level=error
+    --conf spark.driver.memory=1g
+    --conf spark.executor.memory=1g
+```
+When SGX is not used, the configuration is the same as spark native.
+```bash
+    --conf spark.driver.memory=10g
+    --conf spark.executor.memory=12g
 ```
 #### 2. Spark security configurations
 Below is an explanation of these security configurations, Please refer to [Spark Security](https://spark.apache.org/docs/3.1.2/security.html) for detail.  
