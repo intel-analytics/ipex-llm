@@ -712,29 +712,29 @@ The following parameters enable spark executor running on SGX.
 The following is a recommended configuration in client mode.
 ```bash
     --conf spark.kubernetes.sgx.enabled=true
-	--conf spark.kubernetes.sgx.driver.mem=32g
-	--conf spark.kubernetes.sgx.driver.jvm.mem=10g
+    --conf spark.kubernetes.sgx.driver.mem=32g
+    --conf spark.kubernetes.sgx.driver.jvm.mem=10g
     --conf spark.kubernetes.sgx.executor.mem=32g
     --conf spark.kubernetes.sgx.executor.jvm.mem=12g
     --conf spark.kubernetes.sgx.log.level=error
-	--conf spark.driver.memory=10g
-	--conf spark.executor.memory=1g
+    --conf spark.driver.memory=10g
+    --conf spark.executor.memory=1g
 ```
 The following is a recommended configuration in cluster mode.
 ```bash
     --conf spark.kubernetes.sgx.enabled=true
-	--conf spark.kubernetes.sgx.driver.mem=32g
-	--conf spark.kubernetes.sgx.driver.jvm.mem=10g
+    --conf spark.kubernetes.sgx.driver.mem=32g
+    --conf spark.kubernetes.sgx.driver.jvm.mem=10g
     --conf spark.kubernetes.sgx.executor.mem=32g
     --conf spark.kubernetes.sgx.executor.jvm.mem=12g
     --conf spark.kubernetes.sgx.log.level=error
-	--conf spark.driver.memory=1g
-	--conf spark.executor.memory=1g
+    --conf spark.driver.memory=1g
+    --conf spark.executor.memory=1g
 ```
 When SGX is not used, the configuration is the same as spark native.
 ```bash
-	--conf spark.driver.memory=10g
-	--conf spark.executor.memory=12g
+    --conf spark.driver.memory=10g
+    --conf spark.executor.memory=12g
 ```
 #### 2. Spark security configurations
 Below is an explanation of these security configurations, Please refer to [Spark Security](https://spark.apache.org/docs/3.1.2/security.html) for detail.  
