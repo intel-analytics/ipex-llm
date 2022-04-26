@@ -14,7 +14,6 @@
 # limitations under the License.
 #
 from unittest import TestCase
-from torchmetrics import F1
 from bigdl.nano.pytorch.trainer import Trainer
 from torchvision.models.mobilenetv3 import mobilenet_v3_small
 import torch
@@ -22,8 +21,6 @@ from torch.utils.data.dataset import TensorDataset
 from torch.utils.data.dataloader import DataLoader
 import os
 import shutil
-from bigdl.nano.deps.openvino.pytorch.pytorch_openvino_model import PytorchOpenVINOModel
-
 
 class TestOpenVINO(TestCase):
     def test_trainer_trace_openvino(self):
