@@ -33,6 +33,6 @@ SparkContext.getOrCreate(spark_conf)
 prepare_env()
 creator_classes = JavaCreator.get_creator_class()[:]
 JavaCreator.set_creator_class([])
-JavaCreator.add_creator_class("com.intel.analytics.bigdl.ppml.python.PythonPPML")
+JavaCreator.add_creator_class("com.intel.analytics.bigdl.ppml.fl.python.PythonPPML")
 for clz in creator_classes:
     JavaCreator.add_creator_class(clz)
