@@ -90,7 +90,7 @@ now=$(date "+%s")
 time3=$((now - start))
 
 echo "#4 start example test for wnd recsys train data converting"
-mkdir -p data/recsys_sample/spark-parquet
+mkdir -p data/recsys_sample/spark_parquet
 #timer
 start=$(date "+%s")
 if [ -d data/recsys_sample ]; then
@@ -100,8 +100,8 @@ else
   tar -xvzf data/recsys_sample.tar.gz -C data
 fi
 python ../../example/wnd/train/convert_train.py \
-    --input_folder ./data/recsys_sample/parquet \
-    --output_folder ./data/recsys_sample/spark-parquet
+    --input_folder ./data/recsys_sample/raw_parquet \
+    --output_folder ./data/recsys_sample/spark_parquet
 now=$(date "+%s")
 time4=$((now - start))
 
