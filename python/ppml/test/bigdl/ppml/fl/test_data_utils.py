@@ -15,12 +15,22 @@
 #
 
 import unittest
-from bigdl.ppml import *
+import pandas as pd
+from bigdl.ppml.fl.data_utils import *
 
 
-class TestFlContext(unittest.TestCase):
-    def test_init_fl_context(self):
-        init_fl_context()
+class TestDataUtils(unittest.TestCase):
+    def test_pandas_api(self):
+        df = pd.DataFrame({"f1": [1, 2], "f2": [3, 4]})
+        array, _ = convert_to_jtensor(df, feature_columns=["f1"])
+        self.assert_(isinstance(array, JTensor))
+        self.assertEqual(array.storage.shape, (2, 2))
+
+    def test_numpy_api(self):
+        array = np.array([[1, 2], [3, 4]])
+        array, _ = convert_to_jtensor(array)
+        self.assert_(isinstance(array, JTensor))
+        self.assertEqual(array.storage.shape, (2, 2))
 
 
 if __name__ == '__main__':

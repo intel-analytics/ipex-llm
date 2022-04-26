@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 
-from bigdl.ppml import *
+from bigdl.ppml.fl import *
 
 
 class FLServer(JavaValue):

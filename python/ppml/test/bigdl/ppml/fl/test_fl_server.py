@@ -15,25 +15,18 @@
 #
 
 import unittest
-import numpy as np
-
-from bigdl.ppml import FLServer
-from bigdl.ppml.algorithms.fgboost_regression import FGBoostRegression
-from bigdl.ppml.utils import init_fl_context
+from bigdl.ppml.fl import FLServer
 
 
-class TestHflLogisticRegression(unittest.TestCase):
-    def setUp(self) -> None:
-        self.fl_server = FLServer()
-        self.fl_server.build()
-        self.fl_server.start()
-        init_fl_context()
 
-    def tearDown(self) -> None:
-        self.fl_server.stop()
+class TestFLServer(unittest.TestCase):
+    def test_fl_server_default_config(self):
+        fl_server = FLServer()
+        fl_server.build()
+        fl_server.start()
 
-    def test_dummy_data(self):
-        x, y = np.ones([2, 3]), np.ones([2])
+    def test_fl_server_custom_config(self):
+        pass
 
 
 if __name__ == '__main__':

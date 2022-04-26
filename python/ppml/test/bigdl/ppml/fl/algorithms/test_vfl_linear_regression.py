@@ -17,12 +17,12 @@
 import unittest
 import numpy as np
 
-from bigdl.ppml import FLServer
-from bigdl.ppml.algorithms.fgboost_regression import FGBoostRegression
-from bigdl.ppml.utils import init_fl_context
+from bigdl.ppml.fl import FLServer
+from bigdl.ppml.fl.algorithms.fgboost_regression import FGBoostRegression
+from bigdl.ppml.fl.utils import init_fl_context
 
 
-class TestHflNN(unittest.TestCase):
+class TestVflLinearRegression(unittest.TestCase):
     def setUp(self) -> None:
         self.fl_server = FLServer()
         self.fl_server.build()
