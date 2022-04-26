@@ -703,15 +703,38 @@ You can run your own Spark Appliction after changing `--class` and jar path.
 <img title="" src="../../../../docs/readthedocs/image/ppml_memory_config.png" alt="ppml_memory_config.png" data-align="center">
 
 The following parameters enable spark executor running on SGX.  
-`spark.kubernetes.sgx.enabled`: true -> enable spark executor running on sgx, false -> native on k8s withour SGX.  
+`spark.kubernetes.sgx.enabled`: true -> enable spark executor running on sgx, false -> native on k8s without SGX.  
+`spark.kubernetes.sgx.driver.mem`: Spark driver SGX epc memeory.  
+`spark.kubernetes.sgx.driver.jvm.mem`: Spark driver JVM memory, Recommended setting is less than half of epc memory.  
 `spark.kubernetes.sgx.executor.mem`: Spark executor SGX epc memeory.  
-`spark.kubernetes.sgx.executor.jvm.mem`: Spark executor JVM memory, Recommended setting is half of epc memory.  
+`spark.kubernetes.sgx.executor.jvm.mem`: Spark executor JVM memory, Recommended setting is less than half of epc memory.  
 `spark.kubernetes.sgx.log.level`: Spark executor on SGX log level, Supported values are error,all and debug.  
+The following is a recommended configuration in client mode.
 ```bash
     --conf spark.kubernetes.sgx.enabled=true
+	--conf spark.kubernetes.sgx.driver.mem=32g
+	--conf spark.kubernetes.sgx.driver.jvm.mem=10g
     --conf spark.kubernetes.sgx.executor.mem=32g
-    --conf spark.kubernetes.sgx.executor.jvm.mem=16g
+    --conf spark.kubernetes.sgx.executor.jvm.mem=12g
     --conf spark.kubernetes.sgx.log.level=error
+	--conf spark.driver.memory=10g
+	--conf spark.executor.memory=1g
+```
+The following is a recommended configuration in cluster mode.
+```bash
+    --conf spark.kubernetes.sgx.enabled=true
+	--conf spark.kubernetes.sgx.driver.mem=32g
+	--conf spark.kubernetes.sgx.driver.jvm.mem=10g
+    --conf spark.kubernetes.sgx.executor.mem=32g
+    --conf spark.kubernetes.sgx.executor.jvm.mem=12g
+    --conf spark.kubernetes.sgx.log.level=error
+	--conf spark.driver.memory=1g
+	--conf spark.executor.memory=1g
+```
+When SGX is not used, the configuration is the same as spark native.
+```bash
+	--conf spark.driver.memory=10g
+	--conf spark.executor.memory=12g
 ```
 #### 2. Spark security configurations
 Below is an explanation of these security configurations, Please refer to [Spark Security](https://spark.apache.org/docs/3.1.2/security.html) for detail.  
