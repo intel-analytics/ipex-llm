@@ -82,10 +82,11 @@ init_instance() {
     else
         sed -i "s/SGX_KERNEL_HEAP/${SGX_KERNEL_HEAP}/g" Occlum.json
     fi
-    if [[ -z "$PCCS_URL" ]]; then
-        echo "NO PCCS"
+
+    if [[ $PCCS == "" ]] && [[ $ATTESTATION == "true" ]]; then
+       echo "[ERROR] Attestation set to true but NO PCCS"
     else
-        sed -i "s#https://localhost:8081/sgx/certification/v3/#${PCCS_URL}#g" /etc/sgx_default_qcnl.conf
+       sed -i "s#https://localhost:8081/sgx/certification/v3/#${PCCS_URL}#g" /etc/sgx_default_qcnl.conf
     fi
     sed -i "s/#USE_SECURE_CERT=FALSE/USE_SECURE_CERT=FALSE/g" /etc/sgx_default_qcnl.conf
 }
@@ -129,8 +130,12 @@ build_spark() {
     mkdir -p image/bin/jars
     cp -f $BIGDL_HOME/jars/* image/bin/jars
     cp -rf /opt/spark-source image/opt/
-    occlum build --image-key /opt/occlum_spark/data/image_key
-    build_initfs
+    if [[ $ATTESTATION == "false" ]]; then
+       occlum build
+    else
+       occlum build --image-key /opt/occlum_spark/data/image_key
+       build_initfs
+    fi
 }
 
 build_initfs() {

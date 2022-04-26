@@ -15,4 +15,4 @@ sudo docker run -itd \
 	-e ATTESTATION_SERVER_IP=$ATTESTATION_SERVER_IP \
 	-e ATTESTATION_SERVER_PORT=$ATTESTATION_SERVER_PORT \
 	intelanalytics/bigdl-ppml-trusted-big-data-ml-scala-occlum:2.1.0-SNAPSHOT \
-	bash
+	bash /root/demos/remote_attestation/init_ra_flow/run_attestation_server.sh

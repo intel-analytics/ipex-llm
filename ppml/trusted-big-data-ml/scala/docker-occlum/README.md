@@ -36,9 +36,6 @@ or:
 Modify `PCCL_URL`, `ATTESTATION_SERVER_IP` and `ATTESTATION_SERVER_PORT` in `start-occlum-attestation-server.sh`, Then
 ```commandline
 bash start-occlum-attestation-server.sh
-sudo docker exec -it bigdl-ppml-trusted-big-data-ml-scala-occlum-attestation-server bash
-cd /root/demos/remote_attestation/init_ra_flow
-bash run_attestation_server.sh
 ```
 You will see:
 ```
