@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+import os
 from pytorch_lightning import LightningModule
 import torch
 import yaml
@@ -63,9 +64,24 @@ class AcceleratedLightningModule(LightningModule):
         with open(path + "/meta-data.yml", 'w') as f:
             yaml.safe_dump(self.status, f)
 
-    def save(self, path):
+    def save_model(self, path):
+        """
+        Save the model file to directory.
+
+        :param path: Path to saved model. Path should be a directory.
+        """
         raise NotImplementedError("Saving function is not implemented.")
 
+    def save(self, path):
+        """
+        Save the model to local file.
+
+        :param path: Path to saved model. Path should be a directory.
+        """
+        os.makedirs(path, exist_ok=True)
+        self.dump_status(path)
+        self.save_model(path)
+        
     @property
     def status(self):
         return {"ModelType": type(self).__name__}
