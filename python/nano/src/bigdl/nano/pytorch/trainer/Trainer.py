@@ -358,6 +358,7 @@ class Trainer(pl.Trainer):
             metadata = yaml.safe_load(f)
         model_type = metadata['ModelType']
         if model_type == 'PytorchOpenVINOModel':
+            assert model is None, "Argument 'model' must be None for OpenVINO loading."
             return load_openvino_model(path)
         # if model_type == 'PytorchONNXModel':
         # if model_type == 'PytorchQuantizedModel':
