@@ -21,7 +21,7 @@ export FTP_URI=$FTP_URI
 
 set -e
 mkdir -p result
-echo "#1 start example test for dien preprocessing inference"
+echo "#1 start example test for dien preprocessing"
 #timer
 start=$(date "+%s")
 if [ -f data/test.json ]; then
@@ -35,7 +35,7 @@ else
   wget -nv $FTP_URI/analytics-zoo-data/test -P data
 fi
 
-python ../../example/dien/preprocessing_inference.py \
+python ../../example/dien/dien_preprocessing.py \
     --cluster_mode standalone \
     --executor_cores 6 \
     --executor_memory 50g \
