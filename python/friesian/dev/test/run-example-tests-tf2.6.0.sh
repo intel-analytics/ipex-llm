@@ -95,6 +95,17 @@ python ../../example/ncf/ncf_train.py\
 now=$(date "+%s")
 time4=$((now - start))
 
+echo "#5 start example test for deepfm train"
+start=$(date "+%s")
+
+python ../../example/deep_fm/deepFM_train.py \
+    --data_dir ./data/recsys_sample \
+    --model_dir ./result/deepFM_model \
+    --frequency_limit 1
+
+now=$(date "+%s")
+time5=$((now - start))
+
 rm -rf data
 rm -rf result
 
@@ -102,3 +113,4 @@ echo "#1 two tower train time used: $time1 seconds"
 echo "#2 wnd train time used: $time2 seconds"
 echo "#3 xgboost train time used: $time3 seconds"
 echo "#4 ncf train time used: $time4 seconds"
+echo "#5 deepfm train time used: $time5 seconds"
