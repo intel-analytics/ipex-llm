@@ -181,7 +181,5 @@ if __name__ == '__main__':
                        feature_cols=["user", "item_id", "cate_id",
                                      "hist_item_id", "seq_length", "hist_cate_id"],
                        label_cols=["label"])
-    res = orca_estimator.evaluate(data=test_data.df)
-    for r in res:
-        print(r, ":", res[r])
+
     stop_orca_context()
