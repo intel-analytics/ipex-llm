@@ -120,6 +120,8 @@ class MTNetForecaster(Forecaster):
 
         :param batch_size: predict batch size. The value will not affect evaluate
                result but will affect resources cost(e.g. memory and time).
+
+        :return: A numpy.ndarray with shape of (num_samples, feature_dum).
         """
         if not self._fitted:
             raise RuntimeError("You must call fit or restore first before calling predict!")
@@ -140,6 +142,8 @@ class MTNetForecaster(Forecaster):
         :param multioutput: Defines aggregating of multiple output values.
                String in ['raw_values', 'uniform_average']. The value defaults to
                'raw_values'.
+        
+        :return: A list of evaluation results. Calculation results for each metrics.
         """
         if not self._fitted:
             raise RuntimeError("You must call fit or restore first before calling evaluate!")
