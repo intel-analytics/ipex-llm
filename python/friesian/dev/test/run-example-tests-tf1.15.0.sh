@@ -34,6 +34,7 @@ python ../../example/dien/pytorch/dien_train.py \
     --executor_cores 4 \
     --executor_memory 50g \
     --num_executors 2 \
+    --epochs 10 \
     --batch_size 128 \
     --data_dir ./data/dien_preprocessed/
 

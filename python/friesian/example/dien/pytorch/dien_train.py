@@ -71,8 +71,8 @@ if __name__ == '__main__':
     parser.add_argument('--driver_memory', type=str, default="36g",
                         help='The driver memory.')
     parser.add_argument('--lr', default=0.001, type=float, help='learning rate')
-    parser.add_argument('--epochs', default=1, type=int, help='train epoch')
-    parser.add_argument('--batch_size', default=8, type=int, help='batch size')
+    parser.add_argument('--epochs', default=100, type=int, help='train epoch')
+    parser.add_argument('--batch_size', default=512, type=int, help='batch size')
     parser.add_argument('--data_dir', type=str, default="./preprocessed", help='data directory')
     args = parser.parse_args()
 
@@ -176,8 +176,8 @@ if __name__ == '__main__':
 
     # Train model
     orca_estimator.fit(data=train_data.df,
-                       epochs=10,
-                       batch_size=512,
+                       epochs=args.epochs,
+                       batch_size=args.batch_size,
                        feature_cols=["user", "item_id", "cate_id",
                                      "hist_item_id", "seq_length", "hist_cate_id"],
                        label_cols=["label"])
