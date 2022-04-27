@@ -17,8 +17,6 @@
 import math
 import argparse
 import pandas as pd
-import tensorflow as tf
-from tensorflow.keras.layers import Input, Embedding, Dense, Flatten, concatenate, multiply
 
 from bigdl.dllib.feature.dataset import movielens
 from bigdl.orca import init_orca_context, stop_orca_context
@@ -27,6 +25,9 @@ from bigdl.friesian.feature import FeatureTable
 
 
 def build_model(num_users, num_items, class_num, layers=[20, 10], include_mf=True, mf_embed=20):
+    import tensorflow as tf
+    from tensorflow.keras.layers import Input, Embedding, Dense, Flatten, concatenate, multiply
+
     num_layer = len(layers)
     user_input = Input(shape=(1,), dtype='int32', name='user_input')
     item_input = Input(shape=(1,), dtype='int32', name='item_input')
@@ -122,6 +123,8 @@ if __name__ == '__main__':
     config = {"lr": 1e-3, "inter_op_parallelism": 4, "intra_op_parallelism": args.executor_cores}
 
     def model_creator(config):
+        import tensorflow as tf
+
         model = build_model(num_users, num_items, 5)
         print(model.summary())
         optimizer = tf.keras.optimizers.Adam(config["lr"])
@@ -145,6 +148,7 @@ if __name__ == '__main__':
                   validation_data=test.df,
                   validation_steps=val_steps)
 
+    import tensorflow as tf
     tf.saved_model.save(estimator.get_model(), args.model_dir)
 
     stop_orca_context()
