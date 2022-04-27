@@ -15,12 +15,25 @@
 #
 
 import unittest
-from bigdl.ppml import *
+import numpy as np
+
+from bigdl.ppml.fl import FLServer
+from bigdl.ppml.fl.algorithms.fgboost_regression import FGBoostRegression
+from bigdl.ppml.fl.utils import init_fl_context
 
 
-class TestFlContext(unittest.TestCase):
-    def test_init_fl_context(self):
+class TestHflNN(unittest.TestCase):
+    def setUp(self) -> None:
+        self.fl_server = FLServer()
+        self.fl_server.build()
+        self.fl_server.start()
         init_fl_context()
+
+    def tearDown(self) -> None:
+        self.fl_server.stop()
+
+    def test_dummy_data(self):
+        x, y = np.ones([2, 3]), np.ones([2])
 
 
 if __name__ == '__main__':

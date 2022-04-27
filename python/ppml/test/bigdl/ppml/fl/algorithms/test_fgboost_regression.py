@@ -22,11 +22,10 @@ import pandas as pd
 import os
 import math
 
-from bigdl.ppml import *
-from bigdl.ppml.algorithms.fgboost_regression import FGBoostRegression
-from bigdl.ppml.fl_server import FLServer
-from bigdl.ppml.utils import init_fl_context
-from bigdl.ppml.fl_client import FLClient
+from bigdl.ppml.fl import *
+from bigdl.ppml.fl.algorithms.fgboost_regression import FGBoostRegression
+from bigdl.ppml.fl.fl_server import FLServer
+from bigdl.ppml.fl.utils import init_fl_context
 
 resource_path = os.path.join(os.path.dirname(__file__), "../resources")
 

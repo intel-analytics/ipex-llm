@@ -16,7 +16,7 @@
 
 import pandas as pd
 import numpy as np
-from bigdl.ppml import *
+from bigdl.ppml.fl import *
 
 
 def get_input_type(x, y=None):
@@ -32,13 +32,26 @@ def get_input_type(x, y=None):
     else:
         raise ValueError(f"Supported argument types: DataFrame, NdArray, but got {type(x)}")
 
+
+def convert_to_numpy(x, columns=None):
+    if isinstance(x, pd.DataFrame):
+        if columns is not None:
+            return x[columns].to_numpy()
+        else:
+            return x.to_numpy()
+    elif isinstance(x, np.ndarray):
+        return x
+    else:
+        raise ValueError(f"{type(x)} can not be converted to numpy")
+
+
 def convert_to_jtensor(x, y=None, feature_columns=None, label_columns=None):
     arg_type = get_input_type(x, y)
     if arg_type == "DataFrame":
         if feature_columns is None or (y is not None and label_columns is None):
             raise ValueError("Input DataFrame type must have feature_columns and label_columns")
-        x = x.to_numpy()
-        y = y.to_numpy() if y is not None else None
+        x = x[feature_columns].to_numpy()
+        y = y[label_columns].to_numpy() if y is not None else None
     return JTensor.from_ndarray(x), JTensor.from_ndarray(y)
 
 

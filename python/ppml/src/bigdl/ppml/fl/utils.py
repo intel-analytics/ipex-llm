@@ -13,3 +13,17 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+
+from bigdl.dllib.utils.common import *
+
+
+def init_fl_context(bigdl_type="float"):
+    callBigDlFunc(bigdl_type, "initFLContext")
+
+class FLClientClosable(JavaValue):
+    def __init__(self, jvalue=None, bigdl_type="float", *args):
+        super().__init__(jvalue, bigdl_type, *args)
+
+    def set_fl_client(self, fl_client):
+        return callBigDlFunc(self.bigdl_type, "flClientClosableSetFLClient", self.value, fl_client)
+

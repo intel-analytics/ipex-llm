@@ -19,7 +19,7 @@ import numpy as np
 from sys import getsizeof
 import math
 from bigdl.dllib.utils.common import *
-from bigdl.ppml.data_utils import convert_to_jtensor
+from bigdl.ppml.fl.data_utils import convert_to_jtensor
 
 # 2 ** 32 is the JVM INT limit, we reserve 2 ^ 4 here to make it safer
 # e.g. some size compute step may multiply to cause bound exceed

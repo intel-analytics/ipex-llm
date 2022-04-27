@@ -17,9 +17,9 @@
 import unittest
 
 
-from bigdl.ppml.algorithms.psi import PSI
-from bigdl.ppml.fl_server import FLServer
-from bigdl.ppml import *
+from bigdl.ppml.fl.algorithms.psi import PSI
+from bigdl.ppml.fl.fl_server import FLServer
+from bigdl.ppml.fl import *
 
 
 class TestPSI(unittest.TestCase):

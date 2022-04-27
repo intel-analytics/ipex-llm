@@ -15,7 +15,7 @@
 #
 
 
-from bigdl.ppml import *
+from bigdl.ppml.fl import *
 
 from bigdl.dllib.utils.common import JavaValue
 
