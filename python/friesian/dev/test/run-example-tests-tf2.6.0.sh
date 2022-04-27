@@ -43,12 +43,12 @@ mkdir -p result/stats
 #now=$(date "+%s")
 #time1=$((now - start))
 #
-#if [ -d data/recsys_sample ]; then
-#  echo "data/recsys_sample already exists"
-#else
-#  wget -nv $FTP_URI/analytics-zoo-data/recsys_sample.tar.gz -P data
-#  tar -xvzf data/recsys_sample.tar.gz -C data
-#fi
+if [ -d data/recsys_sample ]; then
+  echo "data/recsys_sample already exists"
+else
+  wget -nv $FTP_URI/analytics-zoo-data/recsys_sample.tar.gz -P data
+  tar -xvzf data/recsys_sample.tar.gz -C data
+fi
 #
 #echo "#2 start example test for wnd train"
 ##timer
@@ -97,16 +97,11 @@ mkdir -p result/stats
 
 echo "#5 start example test for deepfm train"
 start=$(date "+%s")
-if [ -d data/input_deepFM ]; then
-  echo "data/input_deepFM already exists"
-else
-  wget -nv $FTP_URI/analytics-zoo-data/input_deepFM.tar.gz -P data
-  tar -xvzf data/input_deepFM.tar.gz -C data
-fi
 
 python ../../example/deep_fm/deepFM_train.py \
-    --data_dir ./data/input_deepFM \
-    --model_dir ./result/deepFM_model
+    --data_dir ./data/recsys_sample \
+    --model_dir ./result/deepFM_model \
+    --frequency_limit 1
 
 now=$(date "+%s")
 time5=$((now - start))

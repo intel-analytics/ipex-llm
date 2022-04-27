@@ -17,7 +17,6 @@
 from deepctr_torch.inputs import SparseFeat, DenseFeat, get_feature_names
 from deepctr_torch.models.deepfm import *
 from deepctr_torch.models.basemodel import *
-from evaluation import uAUC
 from bigdl.friesian.feature import FeatureTable
 from bigdl.orca import init_orca_context, stop_orca_context
 from bigdl.orca.learn.pytorch import Estimator
@@ -112,7 +111,7 @@ if __name__ == '__main__':
     parser.add_argument('--batch_size', default=8000, type=int, help='batch size')
     parser.add_argument('--model_dir', default='snapshot', type=str,
                         help='snapshot directory name (default: snapshot)')
-    parser.add_argument('--data_dir', type=str, help='data directory')
+    parser.add_argument('--data_dir', type=str, help='data directory', required=True)
     parser.add_argument('--frequency_limit', type=int, default=25, help='frequency limit')
     args = parser.parse_args()
 
@@ -149,8 +148,8 @@ if __name__ == '__main__':
     sparse_dims = {}
     for i, c, in enumerate(embed_cols):
         sparse_dims[c] = max(reindex_tbls[i].df.agg({c+"_new": "max"}).collect()[0]) + 1
-    cat_dims = full.max(cat_cols).to_dict()
-    cat_dims = dict(zip(cat_dims['column'], [dim + 1 for dim in cat_dims['max']]))
+    cat_dims = full.get_stats(cat_cols, "max")
+    cat_dims = {col: max + 1 for col, max in cat_dims.items()}
     sparse_dims.update(cat_dims)
 
     feature_columns = [SparseFeat(feat, int(sparse_dims[feat]), 16) for feat in sparse_dims] + \
