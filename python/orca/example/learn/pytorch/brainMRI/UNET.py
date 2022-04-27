@@ -14,28 +14,9 @@
 # limitations under the License.
 #
 
-import os
-from os.path import exists
-from os import makedirs
-import argparse
-import matplotlib.pyplot as plt
-import numpy as np
-import glob
-import random
-import cv2
-from PIL import Image
-import pandas as pd
-
 import torch
-import torchvision
-import torchvision.transforms as transforms
-from torchvision.utils import make_grid
-import torchvision.transforms as tt
 import torch.nn as nn
 import torch.nn.functional as F
-import torch.optim as optim
-import torch.utils.data as data
-from torch.utils.data import DataLoader
 
 class DoubleConv(nn.Module):
     """(convolution => [BN] => ReLU) * 2"""

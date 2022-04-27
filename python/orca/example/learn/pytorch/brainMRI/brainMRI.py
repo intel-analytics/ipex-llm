@@ -18,30 +18,17 @@ from __future__ import print_function
 from UNET import UNet
 from dataset import *
 
-import os
-from os.path import exists
-from os import makedirs
 import argparse
 import matplotlib.pyplot as plt
-import numpy as np
 import glob
-import random
-import cv2
-from PIL import Image
 import pandas as pd
+import albumentations as A
 from sklearn.model_selection import train_test_split
 
-
 import torch
-import torchvision
-import torchvision.transforms as transforms
 from torchvision.utils import make_grid
-import torchvision.transforms as tt
 import torch.nn as nn
-import torch.nn.functional as F
 import torch.optim as optim
-import torch.utils.data as data
-from torch.utils.data import DataLoader
 from torch.utils.tensorboard import SummaryWriter
 
 from bigdl.orca import init_orca_context, stop_orca_context
@@ -49,7 +36,6 @@ from bigdl.orca.learn.pytorch import Estimator
 from bigdl.orca.learn.metrics import Accuracy
 from bigdl.orca.learn.trigger import EveryEpoch
 
-import albumentations as A
 
 def dataset():
     ROOT_PATH = '/home/mingxuan/bigdl/python/orca/example/learn/pytorch/brainMRI/data/kaggle_3m/'
