@@ -19,7 +19,7 @@ from typing import List
 
 from torchmetrics.metric import Metric
 from pytorch_lightning import LightningModule
-from torch import nn, Tensor, fx
+from torch import nn, Tensor
 from torch.nn.modules.loss import _Loss
 from torch.optim import Optimizer
 from torch.optim.lr_scheduler import _LRScheduler
