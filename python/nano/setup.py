@@ -68,7 +68,8 @@ def setup_package():
 
     tensorflow_requires = ["intel-tensorflow==2.7.0",
                            "keras==2.7.0",
-                           "tensorflow-estimator==2.7.0"]
+                           "tensorflow-estimator==2.7.0",
+                           "cloudpickle"]
 
     pytorch_requires = ["torch==1.9.0",
                         "torchvision==0.10.0",
