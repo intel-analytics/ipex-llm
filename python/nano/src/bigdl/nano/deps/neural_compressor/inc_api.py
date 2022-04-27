@@ -42,9 +42,10 @@ def PytorchQuantizedModel(model):
     from .pytorch.quantized_model import PytorchQuantizedModel
     return PytorchQuantizedModel(model)
 
-def load(path, framework):
+def load_inc(path, model, framework):
     if framework == 'pytorch':
-        return PytorchQuantizedModel.load(path)
+        from .pytorch.quantized_model import PytorchQuantizedModel
+        return PytorchQuantizedModel._load(path, model)
     elif framework == 'tensorflow':
         raise NotImplementedError("QuantizedTensorflowModel loading is not implemented yet.")
     else:

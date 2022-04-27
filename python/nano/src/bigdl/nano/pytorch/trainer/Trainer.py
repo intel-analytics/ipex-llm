@@ -37,7 +37,7 @@ from bigdl.nano.deps.openvino.openvino_api import PytorchOpenVINOModel, load_ope
 from bigdl.nano.deps.onnxruntime.onnxruntime_api import bind_onnxrt_methods,\
     PytorchONNXRuntimeModel, load_onnxruntime_model
 from bigdl.nano.deps.neural_compressor.inc_api import QuantizationINC, PytorchQuantizedModel,\
-    check_pytorch_dataloaders
+    check_pytorch_dataloaders, load_inc
 distributed_backends = ["spawn", "ray", "subprocess"]
 
 
@@ -281,7 +281,7 @@ class Trainer(pl.Trainer):
             quantized_model = quantizer.post_training_quantize(model, calib_dataloader,
                                                                val_dataloader, metric)
             if not return_pl:
-                return QuantizedModel(quantized_model) if "pytorch" in framework \
+                return PytorchQuantizedModel(quantized_model) if "pytorch" in framework \
                     else quantized_model
             else:
                 quantized_pytorch_model = quantized_model if "pytorch" in framework else None
@@ -370,7 +370,8 @@ class Trainer(pl.Trainer):
         if model_type == 'PytorchONNXRuntimeModel':
             assert model is None, "Argument 'model' must be None for ONNX Runtime loading."
             return load_onnxruntime_model(path)
-        # if model_type == 'PytorchQuantizedModel':
+        if model_type == 'PytorchQuantizedModel':
+            return load_inc(path, model, 'pytorch')
         # ... to be implemented
         if isinstance(model, nn.Module):
             # typically for models of nn.Module, LightningModule and LightningModuleFromTorch type

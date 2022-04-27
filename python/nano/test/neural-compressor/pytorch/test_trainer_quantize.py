@@ -112,18 +112,27 @@ class TestTrainer(TestCase):
         out = qmodel(x)
         assert out.shape == torch.Size([256, 10])
 
+        # save and load
+        trainer.save(qmodel, 'saved_int8')
+        loaded_qmodel = trainer.load('saved_int8', pl_model.model)
+        assert loaded_qmodel
+        out = loaded_qmodel(x)
+        assert out.shape == torch.Size([256, 10])
+
     def test_trainer_quantize_inc_ptq_customized(self):
         # Test if a Lightning Module not compiled by nano works
         train_loader_iter = iter(self.train_loader)
+        x = next(train_loader_iter)[0]
         trainer = Trainer(max_epochs=1)
 
         qmodel = trainer.quantize(self.user_defined_pl_model, self.train_loader, return_pl=False)
         assert qmodel
-        out = qmodel(next(train_loader_iter)[0])
+        out = qmodel(x)
         assert out.shape == torch.Size([256, 10])
 
-        qmodel.save('saved_int8')
-        loaded_qmodel = qmodel.load('saved_int8', self.user_defined_pl_model)
-        assert qmodel
-        out = loaded_qmodel(next(train_loader_iter)[0])
+        # save and load
+        trainer.save(qmodel, 'saved_int8')
+        loaded_qmodel = trainer.load('saved_int8', self.user_defined_pl_model)
+        assert loaded_qmodel
+        out = loaded_qmodel(x)
         assert out.shape == torch.Size([256, 10])
