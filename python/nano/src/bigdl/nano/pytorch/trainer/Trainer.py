@@ -330,7 +330,7 @@ class Trainer(pl.Trainer):
             model._save(path)
         else:
             # typically for models of nn.Module, LightningModule and LightningModuleFromTorch type
-            meta_path = Path(path) / "meta-data.yml"
+            meta_path = Path(path) / "nano_model_meta.yml"
             with open(meta_path, 'w+') as f:
                 metadata = {
                     'ModelType': 'PytorchModel',
@@ -353,7 +353,7 @@ class Trainer(pl.Trainer):
         path = Path(path)
         if not path.exists():
             raise FileNotFoundError("{} doesn't exist.".format(path))
-        meta_path = path / "meta-data.yml"
+        meta_path = path / "nano_model_meta.yml"
         if not meta_path.exists():
             raise FileNotFoundError("File {} is required to load model.".format(str(meta_path)))
         with open(meta_path, 'r') as f:

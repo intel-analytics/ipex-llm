@@ -72,7 +72,7 @@ class PytorchOpenVINOModel(OpenVINOModel, AcceleratedLightningModule):
             xml_path = Path(status['xml_path'])
             assert xml_path.suffix == '.xml', "Path of openvino model must be with '.xml' suffix."
         else:
-            raise KeyError("meta-data.yml must specify 'xml_path' for loading.")
+            raise KeyError("nano_model_meta.yml must specify 'xml_path' for loading.")
         xml_path = Path(path) / status['xml_path']
         return PytorchOpenVINOModel(xml_path)
 

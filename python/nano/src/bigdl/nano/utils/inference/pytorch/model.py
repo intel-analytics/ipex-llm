@@ -60,7 +60,7 @@ class AcceleratedLightningModule(LightningModule):
         return tensors
 
     def _dump_status(self, path):
-        meta_path = Path(path) / "meta-data.yml"
+        meta_path = Path(path) / "nano_model_meta.yml"
         with open(meta_path, 'w') as f:
             yaml.safe_dump(self.status, f)
 
@@ -89,7 +89,7 @@ class AcceleratedLightningModule(LightningModule):
 
     @staticmethod
     def _load_status(path):
-        meta_path = Path(path) / "meta-data.yml"
+        meta_path = Path(path) / "nano_model_meta.yml"
         with open(meta_path, 'r') as f:
             metadata = yaml.safe_load(f)
         return metadata
