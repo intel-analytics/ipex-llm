@@ -14,11 +14,12 @@
 # limitations under the License.
 #
 from collections import OrderedDict
+import inspect
 from typing import List
 
 from torchmetrics.metric import Metric
 from pytorch_lightning import LightningModule
-from torch import nn, Tensor
+from torch import nn, Tensor, fx
 from torch.nn.modules.loss import _Loss
 from torch.optim import Optimizer
 from torch.optim.lr_scheduler import _LRScheduler
@@ -52,14 +53,13 @@ class LightningModuleFromTorch(LightningModule):
         self.scheduler = scheduler
         self.metrics = metrics
 
-    def forward(self, *args, **kwargs):
+    def forward(self, *args):
         """Same as torch.nn.Module.forward()."""
-        return self.model(*args, **kwargs)
+        flatten_args = []
+        for i in range(len(inspect.getfullargspec(self.model.forward).args[1:])):
+            flatten_args.append(args[i])
 
-    def _forward(self, batch):
-        # Handle different numbers of input for various models
-        nargs = self.model.forward.__code__.co_argcount
-        return self(*(batch[:nargs - 1]))
+        return self.model(*flatten_args)
 
     def on_train_start(self) -> None:
         """Called at the beginning of training after sanity check."""
@@ -68,14 +68,14 @@ class LightningModuleFromTorch(LightningModule):
 
     def training_step(self, batch, batch_idx):
         """Define a single training step, return a loss tensor."""
-        y_hat = self._forward(batch)
+        y_hat = self(*batch)
         loss = self.loss(y_hat, batch[-1])  # use last output as target
         self.log("train/loss", loss, on_step=True, logger=True)
         return loss
 
     def validation_step(self, batch, batch_idx):
         """Define a single validation step."""
-        y_hat = self._forward(batch)
+        y_hat = self(*batch)
         if self.loss:
             loss = self.loss(y_hat, batch[-1])  # use last output as target
             self.log("val/loss", loss, on_epoch=True,
@@ -87,7 +87,7 @@ class LightningModuleFromTorch(LightningModule):
 
     def test_step(self, batch, batch_idx):
         """Define a single test step."""
-        y_hat = self._forward(batch)
+        y_hat = self(*batch)
         if self.metrics:
             acc = {"test/{}_{}".format(type(metric).__name__, i): metric(y_hat, batch[-1])
                    for i, metric in enumerate(self.metrics)}

@@ -114,7 +114,7 @@ class TestTrainer(TestCase):
 
         # save and load
         trainer.save(qmodel, 'saved_int8')
-        loaded_qmodel = trainer.load('saved_int8', pl_model.model)
+        loaded_qmodel = trainer.load('saved_int8', pl_model)
         assert loaded_qmodel
         out = loaded_qmodel(x)
         assert out.shape == torch.Size([256, 10])

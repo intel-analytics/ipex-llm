@@ -258,10 +258,6 @@ class Trainer(pl.Trainer):
             if "pytorch" in framework:
                 # for 'pytorch'|'pytorch_fx'|'pytorch_ipex'
                 model: Any = pl_model  # state model to be 'Any' since we may have pl or onnx
-                if isinstance(pl_model, LightningModuleFromTorch):
-                    # LightningModuleFromTorch.forward fails to trace in FX
-                    # so replace it temporarily
-                    model = pl_model.model
             else:
                 # for 'onnxrt_integerops'|'onnxrt_qlinearops'
                 pl_model = bind_onnxrt_methods(pl_model)
