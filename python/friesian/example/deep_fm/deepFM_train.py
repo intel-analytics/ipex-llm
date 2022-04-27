@@ -121,8 +121,9 @@ if __name__ == '__main__':
         from deepctr_torch.inputs import SparseFeat, DenseFeat
         from model import DeepFM
 
-        feature_columns = [SparseFeat(feat, int(dim), 16) for feat, dim in config["sparse_dims"].items()] + \
-                          [DenseFeat(feat, 1) for feat in config["num_cols"]]
+        feature_columns = \
+            [SparseFeat(feat, int(dim), 16) for feat, dim in config["sparse_dims"].items()] + \
+            [DenseFeat(feat, 1) for feat in config["num_cols"]]
         model = DeepFM(linear_feature_columns=feature_columns,
                        dnn_feature_columns=feature_columns,
                        task='binary', l2_reg_embedding=1e-1)
@@ -131,6 +132,7 @@ if __name__ == '__main__':
         return model
 
     import torch
+
     def optim_creator(model, config):
         return torch.optim.Adam(model.parameters(), config['lr'])
 

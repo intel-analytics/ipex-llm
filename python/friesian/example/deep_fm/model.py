@@ -17,6 +17,7 @@
 from deepctr_torch.models.deepfm import *
 from deepctr_torch.models.basemodel import BaseModel
 
+
 class DeepFM(BaseModel):
     def __init__(self,
                  linear_feature_columns, dnn_feature_columns, use_fm=True,
