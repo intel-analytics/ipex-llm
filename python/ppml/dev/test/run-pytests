@@ -17,13 +17,19 @@
 #
 
 set -ex
-export PYTHONPATH=$PYTHONPATH:`pwd`/../../src
+SCRIPT_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" &> /dev/null && pwd)
+BIGDL_PYTHON_ROOT=$SCRIPT_DIR/../../..
+
+
+export PYTHONPATH=$PYTHONPATH:$BIGDL_PYTHON_ROOT/dllib/src:$BIGDL_PYTHON_ROOT/ppml/src
+
+export BIGDL_CLASSPATH=$(find $BIGDL_PYTHON_ROOT/../dist/lib/ -name bigdl-ppml-*-jar-with-dependencies.jar)
 
 cd "`dirname $0`"
 
-echo "Running Serving tests"
+echo "Running PPML tests"
 
 
 cd ../../
 
-for f in $(find test -name '*.py'); do python -m pytest -v $f; done
+for f in $(find test -name '*.py'); do python -m unittest -v $f; done
