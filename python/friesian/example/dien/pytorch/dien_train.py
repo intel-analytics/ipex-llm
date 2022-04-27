@@ -171,7 +171,7 @@ if __name__ == '__main__':
                                           optimizer=optim_creator,
                                           metrics=[Accuracy(), BinaryCrossEntropy()],
                                           loss=criterion,
-                                          backend="torch_distributed",
+                                          backend="ray",
                                           use_tqdm=True)
 
     # Train model
