@@ -13,11 +13,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+import copy
 from logging import warning
-from operator import xor
-import os
+from pathlib import Path
 from typing import Any, List, Optional
-
 import pytorch_lightning as pl
 import torch
 from pytorch_lightning import LightningModule
@@ -28,12 +27,13 @@ from torch.nn.modules.loss import _Loss
 from torch.utils.data import DataLoader
 from torchmetrics.metric import Metric
 from torch.optim.lr_scheduler import _LRScheduler
+import yaml
 from bigdl.nano.common import check_avx512
 from bigdl.nano.pytorch.lightning import LightningModuleFromTorch
 from bigdl.nano.pytorch.plugins.ddp_spawn import DDPSpawnPlugin
 from bigdl.nano.deps.ray.ray_api import distributed_ray
 from bigdl.nano.deps.ipex.ipex_api import create_IPEXAccelerator, ipex_device
-from bigdl.nano.deps.openvino.openvino_api import PytorchOpenVINOModel
+from bigdl.nano.deps.openvino.openvino_api import PytorchOpenVINOModel, load_openvino_model
 from bigdl.nano.deps.onnxruntime.onnxruntime_api import bind_onnxrt_methods
 
 distributed_backends = ["spawn", "ray", "subprocess"]
@@ -310,56 +310,74 @@ class Trainer(pl.Trainer):
                              model is a LightningModule with any dataloader attached.
         :param accelerator: The accelerator to use, defaults to None meaning staying in Pytorch
                             backend. Only 'openvino' is supported for now.
-        :return: A PytorchOpenVINOModel using openvino for inference if accelerator='openvino'
+        :return: Model with different acceleration(OpenVINO/ONNX).
         """
         if accelerator == 'openvino':
             return PytorchOpenVINOModel(model, input_sample)
 
     @staticmethod
-    def save(model, path, precision=None, accelerator=None, input_sample=None):
+    def save(model: LightningModule, path):
         """
-        Save the model to path with desired precision and format(by assigning 'accelerator').
+        Save the model to local file.
 
-        Using a pytorch model, you can export to ONNX, OpenVINO directly with
-        accelerator='openvino'/'onnx'.
-
-        :param model: Any model of torch.nn.Module, including PytorchOpenVINOModel
-        :param path: Path to saved model. You need to specify path suffix carefully.
-                     For example, 'model.xml' for OpenVINO, 'model.onnx' for ONNX.
-        :param precision: Precision of saved model, 'FP32', 'FP16', 'INT8', defaults to None,
-                          then the precision depends on the precision of model.
-        :param accelerator: Saved model format and its future accelerator, defaults to None.
-                            accelerator=None will save Pytorch model, accelerator='openvino' will
-                            save an IR to inference by OpenVINO. Same as ONNX.
-        :param input_sample: A set of inputs for trace, defaults to None if you have trace before or
-                             model is a LightningModule with any dataloader attached,
-                             defaults to None.
-                             Only ONNX and OpenVINO requires an input sample to export the model.
+        :param model: Any model of torch.nn.Module, including PytorchOpenVINOModel,
+         PytorchONNXModel.
+        :param path: Path to saved model. Path should be a directory.
         """
-        if accelerator == 'openvino':
-            if precision is None:
-                if not hasattr(model, "save") and isinstance(model, nn.Module):
-                    model = PytorchOpenVINOModel(model, input_sample=input_sample)
-                else:
-                    raise TypeError("Model type of {} can not be exported.".format(type(model)))
-                model.save(path)
+        path = Path(path)
+        Path.mkdir(path, exist_ok=True)
+        if hasattr(model, '_save'):
+            model._save(path)
+        else:
+            # typically for models of nn.Module, LightningModule and LightningModuleFromTorch type
+            meta_path = Path(path) / "nano_model_meta.yml"
+            with open(meta_path, 'w+') as f:
+                metadata = {
+                    'ModelType': 'PytorchModel',
+                    'checkpoint': 'saved_weight.pt'
+                }
+                yaml.safe_dump(metadata, f)
+            checkpoint_path = path / metadata['checkpoint']
+            torch.save(model.state_dict(), checkpoint_path)
 
     @staticmethod
-    def load(path, accelerator=None):
+    def load(path, model: LightningModule = None):
         """
         Load a model from local.
 
-        :param path: Path to model to be loaded. You need to specify path suffix carefully.
-                     For example, 'model.xml' for OpenVINO, 'model.onnx' for ONNX.
-        :param accelerator: Saved model format, defaults to None.
-                            accelerator=None will save Pytorch model, accelerator='openvino' will
-                            save an IR to inference by OpenVINO. Same as ONNX.
-        :return: A PytorchOpenVINOModel using openvino for inference if accelerator='openvino'
+        :param path: Path to model to be loaded. Path should be a directory.
+        :param model: Required FP32 model to load pytorch model. Optional for ONNX/OpenVINO.
+        :return: Model with different acceleration(None/OpenVINO/ONNX) or
+                 precision(FP32/FP16/BF16/INT8).
         """
-        if accelerator == 'openvino' or path.split('.')[-1] == 'xml':
-            # TODO: Need to fix this with lazy import class.
-            # The usage should be:
-            #   PytorchOpenVINOModel.load(path)
-            if not os.path.exists(path):
-                raise FileNotFoundError("{} doesn't exist.".format(path))
-            return PytorchOpenVINOModel(path)
+        path = Path(path)
+        if not path.exists():
+            raise FileNotFoundError("{} doesn't exist.".format(path))
+        meta_path = path / "nano_model_meta.yml"
+        if not meta_path.exists():
+            raise FileNotFoundError("File {} is required to load model.".format(str(meta_path)))
+        with open(meta_path, 'r') as f:
+            metadata = yaml.safe_load(f)
+        model_type = metadata.get('ModelType', None)
+        if model_type == 'PytorchOpenVINOModel':
+            assert model is None, "Argument 'model' must be None for OpenVINO loading."
+            return load_openvino_model(path)
+        # if model_type == 'PytorchONNXModel':
+        # if model_type == 'PytorchQuantizedModel':
+        # ... to be implemented
+        if isinstance(model, nn.Module):
+            # typically for models of nn.Module, LightningModule and LightningModuleFromTorch type
+            model = copy.deepcopy(model)
+            checkpoint_path = metadata.get('checkpoint', None)
+            if checkpoint_path:
+                checkpoint_path = path / metadata['checkpoint']
+                state_dict = torch.load(checkpoint_path, map_location='cpu')
+                model.load_state_dict(state_dict)
+                return model
+            else:
+                raise KeyError("Key 'checkpoint' must be specified.")
+        else:
+            raise ValueError(
+                "ModelType {} or argument 'model={}' is not acceptable for pytorch"
+                " loading.".format(model_type, type(model))
+            )

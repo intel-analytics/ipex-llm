@@ -53,9 +53,17 @@ def register_module(target_symtab,
                check_type,
                exclude_set):
         filtered = []
-        attrs = vars(module).items()
-        for name, attr in attrs:
-            if check_type(attr):
+        # attrs = vars(module).items()
+        # for name, attr in attrs:
+        #     if check_type(attr):
+        #         m = inspect.getmodule(attr)
+        #         if m.__name__.startswith(prefix) and name not in exclude_set:
+        #             filtered.append(name)
+
+        attrs = dir(module)
+        for name in attrs:
+            attr = getattr(module, name)
+            if not name.startswith('_') and check_type(attr):
                 m = inspect.getmodule(attr)
                 if m.__name__.startswith(prefix) and name not in exclude_set:
                     filtered.append(name)
@@ -63,11 +71,11 @@ def register_module(target_symtab,
 
     if include_types == COMPONENT_TYPE.CLASS:
         def type_checker(x):
-            inspect.isclass(x)
+            return inspect.isclass(x)
         decorator = decorate_cls
     elif include_types == COMPONENT_TYPE.FUNC:
         def type_checker(x):
-            inspect.isfunction(x)
+            return inspect.isfunction(x)
         decorator = decorate_func
     else:
         raise ValueError("Unknown Component Type",
@@ -108,7 +116,7 @@ def register_module_simple(target_symtab,
         decorator = decorate_func
     m = importlib.import_module(module)
     for c in subcomponents:
-        assert(c in vars(m).keys())
+        # assert(c in vars(m).keys())
         new_f = decorator(m, c)
         target_symtab[c] = new_f
 

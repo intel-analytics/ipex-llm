@@ -15,7 +15,9 @@
 #
 
 
+import copy
 import os
+import shutil
 from unittest import TestCase
 
 import pytest
@@ -76,6 +78,25 @@ class TestTrainer(TestCase):
         trainer = Trainer(max_epochs=1)
         pl_model = Trainer.compile(self.model, self.loss, self.optimizer)
         trainer.fit(pl_model, self.train_loader)
+
+    def test_trainer_save_load(self):
+        trainer = Trainer(max_epochs=1)
+        pl_model = Trainer.compile(self.model, self.loss, self.optimizer)
+        trainer.save(pl_model, "saved_model")
+        assert len(os.listdir('saved_model')) > 0
+
+        # save original parameters
+        original_state_dict = copy.deepcopy(pl_model.state_dict())
+
+        # update paramters
+        trainer.fit(pl_model, self.train_loader)
+
+        loaded_pl_model = trainer.load("saved_model", pl_model)
+        loaded_state_dict = loaded_pl_model.state_dict()
+        # check if parameters are updated
+        for k in original_state_dict.keys():
+            assert (original_state_dict[k] == loaded_state_dict[k]).all()
+        shutil.rmtree('saved_model')
         
 
 if __name__ == '__main__':

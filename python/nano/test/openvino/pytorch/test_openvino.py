@@ -14,14 +14,13 @@
 # limitations under the License.
 #
 from unittest import TestCase
-from torchmetrics import F1
 from bigdl.nano.pytorch.trainer import Trainer
 from torchvision.models.mobilenetv3 import mobilenet_v3_small
 import torch
 from torch.utils.data.dataset import TensorDataset
 from torch.utils.data.dataloader import DataLoader
 import os
-
+import shutil
 
 class TestOpenVINO(TestCase):
     def test_trainer_trace_openvino(self):
@@ -47,34 +46,16 @@ class TestOpenVINO(TestCase):
         y_hat = openvino_model(x)
         assert y_hat.shape == (10, 10)
 
-        openvino_model.save('saved_openvino_model.xml')
-        assert os.path.exists('saved_openvino_model.xml')
-        os.remove('saved_openvino_model.xml')
-
     def test_trainer_save_openvino(self):
         trainer = Trainer(max_epochs=1)
         model = mobilenet_v3_small(num_classes=10)
         x = torch.rand((10, 3, 256, 256))
-        y = torch.ones((10, ), dtype=torch.long)       
 
         # save and load pytorch model
-        Trainer.save(model, 'trainer_save_openvino_model.xml', accelerator='openvino', input_sample=x)
-        assert os.path.exists('trainer_save_openvino_model.xml')
-        openvino_model = Trainer.load('trainer_save_openvino_model.xml')
-        y_hat = openvino_model(x)
+        openvino_model = trainer.trace(model, accelerator='openvino', input_sample=x)
+        trainer.save(openvino_model, 'trainer_save_openvino_model')
+        assert len(os.listdir('trainer_save_openvino_model')) > 0
+        loaded_openvino_model = trainer.load('trainer_save_openvino_model')
+        y_hat = loaded_openvino_model(x)
         assert y_hat.shape == (10, 10)
-        os.remove('trainer_save_openvino_model.xml')
-
-        # save and load pytorch-lightning model
-        pl_model = Trainer.compile(model, loss=torch.nn.CrossEntropyLoss(),
-                                   optimizer=torch.optim.SGD(model.parameters(), lr=0.01))
-        ds = TensorDataset(x, y)
-        dataloader = DataLoader(ds, batch_size=2)
-        trainer.fit(pl_model, dataloader)
-
-        Trainer.save(pl_model, 'pl_trainer_save_openvino_model.xml', accelerator='openvino')
-        assert os.path.exists('pl_trainer_save_openvino_model.xml')
-        openvino_model = Trainer.load('pl_trainer_save_openvino_model.xml')
-        y_hat = openvino_model(x)
-        assert y_hat.shape == (10, 10)
-        os.remove('pl_trainer_save_openvino_model.xml')
+        shutil.rmtree('trainer_save_openvino_model')

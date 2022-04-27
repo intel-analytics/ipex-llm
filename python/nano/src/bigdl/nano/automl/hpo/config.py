@@ -54,13 +54,13 @@ class HPOConfig(object):
         try:
             import torch
             self.torch_available = True
-        except e:
+        except ImportError:
             pass
         self.tf_available = False
         try:
             import tensorflow
             self.tf_available = True
-        except e:
+        except ImportError:
             pass
 
         self.added_tf_activations = []

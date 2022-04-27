@@ -26,7 +26,6 @@ def set_parameter_requires_grad(model: nn.Module, exception: str):
     :param exception: (str) The name of the layer that does not need to be frozen.
     :return:
     """
-
     for name, param in model.named_parameters():
         if exception not in name:
             param.requires_grad = False

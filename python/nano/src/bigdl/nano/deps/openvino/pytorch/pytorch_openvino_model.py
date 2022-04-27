@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-import os
+from pathlib import Path
 from ..core.openvino_model import OpenVINOModel
 from bigdl.nano.utils.inference.pytorch.model import AcceleratedLightningModule
 from .pytorch_openvino_utils import export
@@ -35,10 +35,11 @@ class PytorchOpenVINOModel(OpenVINOModel, AcceleratedLightningModule):
         if isinstance(model, torch.nn.Module):
             export(model, input_sample, 'tmp.xml')
             ov_model_path = 'tmp.xml'
-        AcceleratedLightningModule.__init__(self, None)
         OpenVINOModel.__init__(self, ov_model_path)
-        if os.path.exists('tmp.xml'):
-            os.remove('tmp.xml')
+        AcceleratedLightningModule.__init__(self, None)
+        xml_path = Path('tmp.xml')
+        if xml_path.exists():
+            xml_path.unlink()
 
     def on_forward_start(self, inputs):
         if self.ie_network is None:
@@ -52,13 +53,29 @@ class PytorchOpenVINOModel(OpenVINOModel, AcceleratedLightningModule):
         outputs = self.numpy_to_tensors(outputs.values())
         return outputs
 
+    @property
+    def status(self):
+        status = super().status
+        status.update({"xml_path": 'ov_saved_model.xml', "weight_path": 'ov_saved_model.bin'})
+        return status
+
     @staticmethod
-    def load(path):
+    def _load(path):
         """
-        Load an OpenVINO model for inference.
+        Load an OpenVINO model for inference from directory.
 
         :param path: Path to model to be loaded.
         :return: PytorchOpenVINOModel model for OpenVINO inference.
         """
-        assert path.split('.')[-1] == "xml", "Path of openvino model must be with '.xml' suffix."
-        return PytorchOpenVINOModel(path)
+        status = PytorchOpenVINOModel._load_status(path)
+        if status.get('xml_path', None):
+            xml_path = Path(status['xml_path'])
+            assert xml_path.suffix == '.xml', "Path of openvino model must be with '.xml' suffix."
+        else:
+            raise KeyError("nano_model_meta.yml must specify 'xml_path' for loading.")
+        xml_path = Path(path) / status['xml_path']
+        return PytorchOpenVINOModel(xml_path)
+
+    def _save_model(self, path):
+        xml_path = Path(path) / self.status['xml_path']
+        super()._save_model(xml_path)
