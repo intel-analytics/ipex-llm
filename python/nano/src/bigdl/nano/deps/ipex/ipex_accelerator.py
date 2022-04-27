@@ -65,7 +65,7 @@ class IPEXAccelerator(Accelerator):
         super().__init__(precision_plugin=precision_plugin,
                          training_type_plugin=training_type_plugin)
 
-    def setup(self, trainer: 'pl.Trainer', model: 'pl.LightningModule') -> None:
+    def setup(self, trainer: 'pl.Trainer') -> None:
         """
         Raises:
             MisconfigurationException:
@@ -75,7 +75,7 @@ class IPEXAccelerator(Accelerator):
             raise MisconfigurationException(
                 "amp is not supported in bigdl-nano.")
 
-        return super().setup(trainer, model)
+        return super().setup(trainer)
 
     def training_step_end(self, output: _STEP_OUTPUT_TYPE) -> _STEP_OUTPUT_TYPE:
         """
