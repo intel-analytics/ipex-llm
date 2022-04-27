@@ -46,3 +46,7 @@ def PytorchONNXRuntimeModel(model, input_sample=None):
         """
     from .pytorch.pytorch_onnxruntime_model import PytorchONNXRuntimeModel
     return PytorchONNXRuntimeModel(model, input_sample)
+
+def load_onnxruntime_model(path):
+    from .pytorch.pytorch_onnxruntime_model import PytorchONNXRuntimeModel
+    return PytorchONNXRuntimeModel._load(path)

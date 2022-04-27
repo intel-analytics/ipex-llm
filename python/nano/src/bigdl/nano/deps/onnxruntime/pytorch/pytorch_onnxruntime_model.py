@@ -15,6 +15,7 @@
 #
 import torch
 import os
+from pathlib import Path
 from ..core.onnxruntime_model import ONNXRuntimeModel
 from bigdl.nano.utils.inference.pytorch.model import AcceleratedLightningModule
 from bigdl.nano.utils.inference.pytorch.model_utils import export_to_onnx, get_forward_args
@@ -64,13 +65,29 @@ class PytorchONNXRuntimeModel(ONNXRuntimeModel, AcceleratedLightningModule):
         outputs = self.numpy_to_tensors(outputs)
         return outputs
 
+    @property
+    def status(self):
+        status = super().status
+        status.update({"onnx_path": 'onnx_saved_model.onnx'})
+        return status
+
     @staticmethod
-    def load(path):
+    def _load(path):
         """
-        Load an OpenVINO model for inference.
+        Load an ONNX model for inference from directory.
 
         :param path: Path to model to be loaded.
-        :return: PytorchOpenVINOModel model for OpenVINO inference.
+        :return: PytorchONNXRuntimeModel model for ONNX Runtime inference.
         """
-        assert path.split('.')[-1] == "onnx", "Path of onnx model must be with '.onnx' suffix."
-        return PytorchONNXRuntimeModel(path)
+        status = PytorchONNXRuntimeModel._load_status(path)
+        if status.get('onnx_path', None):
+            onnx_path = Path(status['onnx_path'])
+            assert onnx_path.suffix == '.onnx', "Path of onnx model must be with '.onnx' suffix."
+        else:
+            raise KeyError("nano_model_meta.yml must specify 'onnx_path' for loading.")
+        onnx_path = Path(path) / status['onnx_path']
+        return PytorchONNXRuntimeModel(str(onnx_path))
+
+    def _save_model(self, path):
+        onnx_path = Path(path) / self.status['onnx_path']
+        super()._save_model(onnx_path)

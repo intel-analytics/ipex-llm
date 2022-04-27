@@ -102,7 +102,7 @@ class TestOnnx(TestCase):
         optimizer = torch.optim.Adam(model.parameters(), lr=0.01)
         trainer = Trainer(max_epochs=1)
 
-        pl_model = Trainer.compile(model, loss, optimizer, onnx=True)
+        pl_model = Trainer.compile(model, loss, optimizer)
         x = torch.rand((10, 3, 256, 256))
         y = torch.ones((10, ), dtype=torch.long)
         ds = TensorDataset(x, y)
@@ -156,7 +156,7 @@ class TestOnnx(TestCase):
         optimizer = torch.optim.Adam(model.parameters(), lr=0.01)
         trainer = Trainer(max_epochs=1)
 
-        pl_model = Trainer.compile(model, loss, optimizer, onnx=True)
+        pl_model = Trainer.compile(model, loss, optimizer)
         x1 = torch.randn(100, 28 * 28)
         x2 = torch.randn(100, 28 * 28)
         y = torch.zeros(100).long()
@@ -172,6 +172,30 @@ class TestOnnx(TestCase):
                 forward_res_pytorch = pl_model(x1, x2).numpy()
             forward_res_onnx = onnx_model(x1, x2).numpy()
             np.testing.assert_almost_equal(forward_res_onnx, forward_res_pytorch, decimal=5)
+
+    def test_onnx_trainer_save_load(self):
+        model = ResNet18(10, pretrained=False, include_top=False, freeze=True)
+        loss = nn.CrossEntropyLoss()
+        optimizer = torch.optim.Adam(model.parameters(), lr=0.01)
+        trainer = Trainer(max_epochs=1)
+
+        pl_model = Trainer.compile(model, loss, optimizer)
+        x = torch.rand((10, 3, 256, 256))
+        y = torch.ones((10, ), dtype=torch.long)
+        ds = TensorDataset(x, y)
+        train_loader = DataLoader(ds, batch_size=2)
+        trainer.fit(pl_model, train_loader)
+
+        onnx_model = trainer.trace(pl_model, accelerator="onnxruntime")
+
+        with tempfile.TemporaryDirectory() as tmp_dir_name:
+            Trainer.save(onnx_model, tmp_dir_name)
+            onnx_model_new = Trainer.load(tmp_dir_name)
+
+        for x, y in train_loader:
+            forward_res_onnx = onnx_model(x).numpy()
+            forward_res_onnx_new = onnx_model_new(x).numpy()
+            np.testing.assert_almost_equal(forward_res_onnx, forward_res_onnx_new, decimal=5)
 
 
 if __name__ == '__main__':

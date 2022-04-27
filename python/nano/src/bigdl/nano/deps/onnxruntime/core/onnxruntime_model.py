@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+from pathlib import Path
 import onnxruntime as ort
 import onnx
 
@@ -42,3 +43,14 @@ class ONNXRuntimeModel:
         self.onnx_model = onnx.load(self.onnx_filepath)
         self.ortsess = ort.InferenceSession(self.onnx_filepath, sess_options=sess_options)
         self._forward_args = list(map(lambda x: x.name, self.ortsess.get_inputs()))
+
+    def _save_model(self, path):
+        """
+        Save ONNXRuntimeModel to local as an onnx file
+
+        :param path: Path to save the model.
+        """
+        path = Path(path)
+        assert self.onnx_model, "self.ie_network shouldn't be None."
+        assert path.suffix == ".onnx", "Path of onnx model must be with '.onnx' suffix."
+        onnx.save(self.onnx_model, str(path))

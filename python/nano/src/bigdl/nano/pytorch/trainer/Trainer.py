@@ -35,7 +35,7 @@ from bigdl.nano.deps.ray.ray_api import distributed_ray
 from bigdl.nano.deps.ipex.ipex_api import create_IPEXAccelerator, ipex_device
 from bigdl.nano.deps.openvino.openvino_api import PytorchOpenVINOModel, load_openvino_model
 from bigdl.nano.deps.onnxruntime.onnxruntime_api import bind_onnxrt_methods,\
-    PytorchONNXRuntimeModel
+    PytorchONNXRuntimeModel, load_onnxruntime_model
 
 distributed_backends = ["spawn", "ray", "subprocess"]
 
@@ -365,7 +365,9 @@ class Trainer(pl.Trainer):
         if model_type == 'PytorchOpenVINOModel':
             assert model is None, "Argument 'model' must be None for OpenVINO loading."
             return load_openvino_model(path)
-        # if model_type == 'PytorchONNXModel':
+        if model_type == 'PytorchONNXRuntimeModel':
+            assert model is None, "Argument 'model' must be None for ONNX Runtime loading."
+            return load_onnxruntime_model(path)
         # if model_type == 'PytorchQuantizedModel':
         # ... to be implemented
         if isinstance(model, nn.Module):
