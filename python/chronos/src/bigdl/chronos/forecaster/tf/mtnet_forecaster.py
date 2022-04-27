@@ -142,7 +142,7 @@ class MTNetForecaster(Forecaster):
         :param multioutput: Defines aggregating of multiple output values.
                String in ['raw_values', 'uniform_average']. The value defaults to
                'raw_values'.
-        
+
         :return: A list of evaluation results. Calculation results for each metrics.
         """
         if not self._fitted:
