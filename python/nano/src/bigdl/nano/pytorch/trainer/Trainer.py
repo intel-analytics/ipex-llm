@@ -311,7 +311,7 @@ class Trainer(pl.Trainer):
                              model is a LightningModule with any dataloader attached.
         :param accelerator: The accelerator to use, defaults to None meaning staying in Pytorch
                             backend. 'openvino' and 'onnxruntime' are supported for now.
-        :return: Model with different acceleration(OpenVINO/ONNX).
+        :return: Model with different acceleration(OpenVINO/ONNX Runtime).
         """
         if accelerator == 'openvino':
             return PytorchOpenVINOModel(model, input_sample)
@@ -350,7 +350,7 @@ class Trainer(pl.Trainer):
 
         :param path: Path to model to be loaded. Path should be a directory.
         :param model: Required FP32 model to load pytorch model. Optional for ONNX/OpenVINO.
-        :return: Model with different acceleration(None/OpenVINO/ONNX) or
+        :return: Model with different acceleration(None/OpenVINO/ONNX Runtime) or
                  precision(FP32/FP16/BF16/INT8).
         """
         path = Path(path)
