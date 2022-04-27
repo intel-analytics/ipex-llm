@@ -105,7 +105,7 @@ class ProphetForecaster(Forecaster):
 
         :return: A pandas DataFrame of length horizon,
                  including "trend" and "seasonality" and inference values, etc.
-                 where the last column is the inference value.
+                 where the "yhat" column is the inference value.
         """
         if self.internal.model is None:
             raise RuntimeError(
