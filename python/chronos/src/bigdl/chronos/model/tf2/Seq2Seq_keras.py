@@ -21,9 +21,8 @@ from tensorflow.keras.layers import LSTM, Dense, Lambda, Reshape, Layer
 
 
 class Encoder(Layer):
-    def __init__(self, past_seq_len, input_feature_num,
+    def __init__(self, input_feature_num,
                  lstm_hidden_dim=128, lstm_layer_num=2, dropout=0.2):
-        self.past_seq_len = past_seq_len
         self.input_feature_num = input_feature_num
         self.lstm_hidden_dim = lstm_hidden_dim
         self.lstm_layer_num = lstm_layer_num
@@ -32,22 +31,21 @@ class Encoder(Layer):
         for i in range(lstm_layer_num):
             self.encoder_lstm.append(LSTM(self.lstm_hidden_dim,
                                           return_sequences=True,
-                                          input_shape=(past_seq_len, input_feature_num),
+                                          input_shape=(None, input_feature_num),
                                           return_state=True,
                                           dropout=dropout,
                                           name="cus_encoder"+str(i+1)))
         super(Encoder, self).__init__()
 
-    def call(self, enc_inp):
+    def call(self, enc_inp, training=False):
         enc_states = None
         for encoder in self.encoder_lstm:
-            enc_out, *enc_states = encoder(enc_inp, initial_state=enc_states)
+            enc_out, *enc_states = encoder(enc_inp, training=training, initial_state=enc_states)
             enc_inp = enc_out
         return enc_states
 
     def get_config(self):
-        return {"past_seq_len": self.past_seq_len,
-                "input_feature_num": self.input_feature_num,
+        return {"input_feature_num": self.input_feature_num,
                 "lstm_hidden_dim": self.lstm_hidden_dim,
                 "lstm_layer_num": self.lstm_layer_num,
                 "dropout": self.dropout,
@@ -75,10 +73,12 @@ class Decoder(Layer):
         self.fc = Dense(self.output_feature_num)
         super(Decoder, self).__init__()
 
-    def call(self, dec_inp, states):
+    def call(self, dec_inp, states, training=False):
         decoder_states = states
         for decoder in self.decoder_lstm:
-            dec_out, *decoder_states = decoder(dec_inp, initial_state=decoder_states)
+            dec_out, *decoder_states = decoder(dec_inp,
+                                               training=training,
+                                               initial_state=decoder_states)
             dec_inp = dec_out
         return dec_out
 
@@ -96,7 +96,6 @@ class Decoder(Layer):
 
 class LSTMSeq2Seq(Model):
     def __init__(self,
-                 past_seq_len,
                  future_seq_len,
                  input_feature_num,
                  output_feature_num,
@@ -105,7 +104,6 @@ class LSTMSeq2Seq(Model):
                  dropout=0.2,
                  teacher_forcing=False):
         super(LSTMSeq2Seq, self).__init__()
-        self.past_seq_len = past_seq_len
         self.future_seq_len = future_seq_len
         self.input_feature_num = input_feature_num
         self.output_feature_num = output_feature_num
@@ -115,12 +113,11 @@ class LSTMSeq2Seq(Model):
         self.teacher_forcing = teacher_forcing
         self.decoder_inputs = Reshape((1, output_feature_num),
                                       input_shape=(output_feature_num,))
-        self.encoder = Encoder(past_seq_len, input_feature_num,
-                               lstm_hidden_dim, lstm_layer_num, dropout)
+        self.encoder = Encoder(input_feature_num, lstm_hidden_dim, lstm_layer_num, dropout)
         self.decoder = Decoder(output_feature_num, lstm_hidden_dim, lstm_layer_num, dropout)
         self.fc = Dense(output_feature_num)
 
-    def call(self, inp, target_seq=None, training=True):
+    def call(self, inp, target_seq=None, training=False):
         decoder_inp = inp
         states = self.encoder(inp, training=training)
         decoder_inputs = self.decoder_inputs(decoder_inp[:, -1, :self.output_feature_num])
@@ -128,15 +125,14 @@ class LSTMSeq2Seq(Model):
         for seq_len in range(self.future_seq_len):
             if self.teacher_forcing and target_seq is not None:
                 decoder_inputs = target_seq[:, seq_len:seq_len+1, :]
-            dec_outputs = self.decoder(decoder_inputs, states)
+            dec_outputs = self.decoder(decoder_inputs, training=training, states=states)
             decoder_outputs = self.fc(dec_outputs)
             all_outputs.append(decoder_outputs)
         outputs = Lambda(lambda x: K.concatenate(x, axis=1))(all_outputs)
         return outputs
 
     def get_config(self):
-        return {"past_seq_len": self.past_seq_len,
-                "future_seq_len": self.future_seq_len,
+        return {"future_seq_len": self.future_seq_len,
                 "input_feature_num": self.input_feature_num,
                 "output_feature_num": self.output_feature_num,
                 "lstm_hidden_dim": self.lstm_hidden_dim,
@@ -152,7 +148,6 @@ class LSTMSeq2Seq(Model):
 def model_creator(config):
     model = LSTMSeq2Seq(input_feature_num=config["input_feature_num"],
                         output_feature_num=config["output_feature_num"],
-                        past_seq_len=config["past_seq_len"],
                         future_seq_len=config["future_seq_len"],
                         lstm_hidden_dim=config.get("lstm_hidden_dim", 128),
                         lstm_layer_num=config.get("lstm_layer_num", 2),

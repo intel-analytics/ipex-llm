@@ -61,18 +61,26 @@ class TestVanillaLSTM(TestCase):
         assert yhat.shape == self.test_data[1].shape
 
     def test_lstm_save_load(self):
-        checkpoint_file = tempfile.TemporaryDirectory().name
         self.model.fit(self.train_data[0],
                        self.train_data[1],
                        epochs=2,
                        validation_data=self.val_data)
-        self.model.save(checkpoint_file)
-        import keras
-        restore_model = keras.models.load_model(checkpoint_file, custom_objects={"LSTMModel": LSTMModel})
+        with tempfile.TemporaryDirectory() as tmp_dir_file:
+            self.model.save(tmp_dir_file)
+            import keras
+            restore_model = keras.models.load_model(tmp_dir_file,
+                                                    custom_objects={"LSTMModel": LSTMModel})
         model_res = self.model.evaluate(self.test_data[0], self.test_data[1])
         restore_model_res = restore_model.evaluate(self.test_data[0], self.test_data[1])
         np.testing.assert_almost_equal(model_res, restore_model_res, decimal=5)        
         assert isinstance(restore_model, LSTMModel)
+
+    def test_lstm_freeze_training(self):
+        yhat = self.model.predict(self.test_data[0], batch_size=32)
+        unfreeze_yhat = self.model(self.test_data[0], training=True)
+        freeze_yhat = self.model(self.test_data[0], training=False)
+        assert np.all(yhat == freeze_yhat)
+        assert np.any(yhat != unfreeze_yhat)
 
 if __name__ == '__main__':
     pytest.main([__file__])

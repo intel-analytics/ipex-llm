@@ -24,9 +24,9 @@ import types
 
 def check_tf_version():
     tf_version = tf.__version__
-    if tf_version <= "2.0":
-        raise RuntimeError(f"Currently running TensorFlow version {tf_version}. "
-                           "We only support TensorFlow 2.x for now.")
+    if tf_version >= "2.0":
+        raise RuntimeError(f"Currently running TensorFlow version {tf_version}. We only support"
+                           f"TensorFlow 1.x for now and has been tested on 1.15")
 
 
 class KerasBaseModel(BaseModel):
@@ -168,6 +168,7 @@ class KerasBaseModel(BaseModel):
         :param x: input
         :param y: target
         :param metrics: a list of metrics in string format
+        :param multioutput: output mode
         :return: a list of metric evaluation results
         """
         y_pred = self.predict(x, batch_size=batch_size)
@@ -177,6 +178,7 @@ class KerasBaseModel(BaseModel):
         """
         Prediction on x.
         :param x: input
+        :param batch_size: batch
         :return: predicted y
         """
         if not self.model_built:
@@ -208,7 +210,7 @@ class KerasBaseModel(BaseModel):
         self.model = self.model_creator(self.config)
         if self.model.layers[0].weights.__len__() == 0:
             input_shape = self._get_input_shape()
-            self.model(input_shape)
+            _, = self.model(input_shape)
         self.model.set_weights(state["weights"])
         self.model_built = True
         # self.model.optimizer.set_weights(state["optimizer_weights"])
