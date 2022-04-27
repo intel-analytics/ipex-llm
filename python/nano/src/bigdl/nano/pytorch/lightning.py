@@ -55,10 +55,8 @@ class LightningModuleFromTorch(LightningModule):
 
     def forward(self, *args):
         """Same as torch.nn.Module.forward()."""
-        flatten_args = []
-        for i in range(len(inspect.getfullargspec(self.model.forward).args[1:])):
-            flatten_args.append(args[i])
-
+        nargs = len(inspect.getfullargspec(self.model.forward).args[1:])
+        flatten_args = [args[i] for i in range(nargs)]
         return self.model(*flatten_args)
 
     def on_train_start(self) -> None:
