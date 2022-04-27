@@ -63,13 +63,13 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     if args.cluster_mode == "local":
-        sc = init_orca_context("local")
+        sc = init_orca_context("local", cores=args.executor_cores, memory=args.executor_memory)
     elif args.cluster_mode == "yarn":
         sc = init_orca_context("yarn-client", cores=args.executor_cores,
                                num_nodes=args.num_executor, memory=args.executor_memory,
                                driver_cores=args.driver_cores, driver_memory=args.driver_memory,
                                conf=spark_conf, object_store_memory="40g", init_ray_on_spark=True,
-                               extra_python_lib="evaluation.py")
+                               extra_python_lib="model.py,evaluation.py")
     elif args.cluster_mode == "spark-submit":
         sc = init_orca_context("spark-submit", object_store_memory="40g")
     else:
