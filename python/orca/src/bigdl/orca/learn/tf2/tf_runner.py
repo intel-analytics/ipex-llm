@@ -174,9 +174,6 @@ class TFDistributedDatasetHandler(DatasetHandler):
         import tensorflow as tf
         tf_dataset = ray_partitions_get_tf_dataset(ray.get(dataset))
 
-        # TODO: delete
-        print(tf_dataset.__len__())
-
         def dataset_fn(input_context):
             options = tf.data.Options()
             options.experimental_distribute.auto_shard_policy = \
