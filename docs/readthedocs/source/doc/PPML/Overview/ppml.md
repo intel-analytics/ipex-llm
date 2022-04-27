@@ -226,9 +226,9 @@ WARNING: If you want spark standalone mode, please refer to [standalone/README.m
 
 Follow the guide below to run Spark on Kubernetes manually. Alternatively, you can also use Helm to set everything up automatically. See [kubernetes/README.md](https://github.com/intel-analytics/BigDL/blob/main/ppml/trusted-big-data-ml/python/docker-graphene/kubernetes/README.md).
 
-##### 2.2.3.1 Prepare data, key and password
+##### 2.2.3.1 Configure the Environment
 
-Enter `BigDL/ppml/trusted-big-data-ml/python/docker-graphene` dir. Refer to the previous section about [preparing data, key and password](#2221-start-ppml-container). Then run the following commands to generate your enclave key and add it to your Kubernetes cluster as a secret. 
+1. Enter `BigDL/ppml/trusted-big-data-ml/python/docker-graphene` dir. Refer to the previous section about [preparing data, key and password](#2221-start-ppml-container). Then run the following commands to generate your enclave key and add it to your Kubernetes cluster as a secret. 
 
 ```bash
 kubectl apply -f keys/keys.yaml
@@ -236,29 +236,27 @@ kubectl apply -f password/password.yaml
 cd kubernetes
 bash enclave-key-to-secret.sh
 ```
-##### 2.2.3.2 Prepare the k8s configurations
-
-Create the RBAC:
+2. Create the [RBAC(Role-based access control)](https://spark.apache.org/docs/latest/running-on-kubernetes.html#rbac) :
 
 ```bash
 kubectl create serviceaccount spark
 kubectl create clusterrolebinding spark-role --clusterrole=edit --serviceaccount=default:spark --namespace=default
 ```
 
-Generate k8s config file:
+3. Generate k8s config file, modify `YOUR_DIR` to the location you want to store the config:
 
 ```bash
 kubectl config view --flatten --minify > /YOUR_DIR/kubeconfig
 ```
-Create k8s secret, the secret created `YOUR_SECRET` should be the same as the password you specified in section 2.2.3.1:
+4. Create k8s secret, the secret created `YOUR_SECRET` should be the same as the password you specified in step 1:
 
 ```bash
 kubectl create secret generic spark-secret --from-literal secret=YOUR_SECRET
 ```
 
-##### 2.2.3.3  Start the client container
+##### 2.2.3.2  Start the client container
 
-Configure the environment variables in the following script before running it. Check [Bigdl ppml SGX related configurations](https://github.com/intel-analytics/BigDL/tree/main/ppml/trusted-big-data-ml/python/docker-graphene#1-bigdl-ppml-sgx-related-configurations) for detailed memory configurations. 
+Configure the environment variables in the following script before running it. Check [Bigdl ppml SGX related configurations](https://github.com/intel-analytics/BigDL/tree/main/ppml/trusted-big-data-ml/python/docker-graphene#1-bigdl-ppml-sgx-related-configurations) for detailed memory configurations. Modify `YOUR_DIR` to the location you specify in section 2.2.3.1. Modify `$LOCAL_IP` to the IP address of your machine.
 
 ```bash
 export K8S_MASTER=k8s://$( sudo kubectl cluster-info | grep 'https.*' -o -m 1 )
@@ -307,28 +305,20 @@ sudo docker run -itd \
     $DOCKER_IMAGE bash
 ```
 
-##### 2.2.3.4 Init the client and run Spark applications on k8s
+##### 2.2.3.3 Init the client and run Spark applications on k8s
 
-##### 2.2.3.4.1 Init the Spark local k8s client
-
-First, run `docker exec -it spark-local-k8s-client bash` to entry the container. Then run the following command to init the Spark local k8s client
+1. Run `docker exec -it spark-local-k8s-client bash` to entry the container. Then run the following command to init the Spark local k8s client.
 
 ```bash
 ./init.sh
 ```
 
-##### 2.2.3.4.2 Configure spark-executor-template.yaml in the container
-
-We assume you have a working Network File System (NFS) configured for your Kubernetes cluster. Configure the `nfsvolumeclaim` on the last line to the name of the Persistent Volume Claim (PVC) of your NFS.
-
-Please prepare the following and put them in your NFS directory:
+2. We assume you have a working Network File System (NFS) configured for your Kubernetes cluster. Configure the `nfsvolumeclaim` on the last line to the name of the Persistent Volume Claim (PVC) of your NFS.Please prepare the following and put them in your NFS directory:
 
 - The data (in a directory called `data`)
 - The kubeconfig file.
 
-##### 2.2.3.4.3 Spark-Pi example
-
-Run the following command to start Spark-Pi example.
+3. Run the following command to start Spark-Pi example. When the appliction runs in `cluster` mode, you can run ` kubectl get pod ` to get the name and status of your k8s pod(e.g.  driver-xxxx). Then you can run ` kubectl logs -f driver-xxxx ` to get the output of your appliction.
 
 ```bash
 #!/bin/bash
