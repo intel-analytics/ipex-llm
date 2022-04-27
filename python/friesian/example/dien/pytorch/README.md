@@ -58,3 +58,6 @@ __Options:__
 * `num_executors`: The number of nodes to use in the cluster. Default to be 8.
 * `driver_cores`: The number of cores to use for the driver. Default to be 4.
 * `driver_memory`: The amount of memory to allocate for the driver. Default to be 36g.
+
+## Performance
+After 100 epochs' training, training accuracy is 0.73931, training AUC is 0.71903; test accurac is 0.68421, and test AUC is 0.65303. The training is conducted on yarn cluster, costing 1 hour and 31 minutes.
