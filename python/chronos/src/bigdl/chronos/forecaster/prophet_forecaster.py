@@ -78,6 +78,8 @@ class ProphetForecaster(Forecaster):
             and 2 columns, with column 'ds' indicating date and column 'y' indicating value
             and Td is the time dimension
         :param validation_data: evaluation data, should be the same type as data
+
+        :return: the evaluation metric value
         """
         self._check_data(data, validation_data)
         return self.internal.fit_eval(data=data,
@@ -100,6 +102,10 @@ class ProphetForecaster(Forecaster):
                the frequency can be anything from the pandas list of frequency strings here:
                https://pandas.pydata.org/pandas-docs/stable/user_guide/timeseries.html#timeseries-offset-aliases
         :param ds_data: a dataframe that has 1 column 'ds' indicating date.
+
+        :return: A pandas DataFrame of length horizon,
+                 including "trend" and "seasonality" and inference values, etc.
+                 where the "yhat" column is the inference value.
         """
         if self.internal.model is None:
             raise RuntimeError(
@@ -114,6 +120,8 @@ class ProphetForecaster(Forecaster):
             and 2 columns, with column 'ds' indicating date and column 'y' indicating value
             and Td is the time dimension
         :param metrics: A list contains metrics for test/valid data.
+
+        :return: A list of evaluation results. Calculation results for each metrics.
         """
         if data is None:
             raise ValueError("Input invalid data of None")
