@@ -55,11 +55,10 @@ else
 fi
 
 python ../../example/dien/pytorch/dien_train.py \
-    --cluster_mode yarn \
-    --executor_cores 8 \
+    --executor_cores 4 \
     --executor_memory 50g \
     --num_executors 2 \
-    --batch_size 512 \
+    --batch_size 128 \
     --data_dir ./data/dien_preprocessed/
 
 now=$(date "+%s")
