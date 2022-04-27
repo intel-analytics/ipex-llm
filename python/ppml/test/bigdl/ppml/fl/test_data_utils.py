@@ -24,7 +24,7 @@ class TestDataUtils(unittest.TestCase):
         df = pd.DataFrame({"f1": [1, 2], "f2": [3, 4]})
         array, _ = convert_to_jtensor(df, feature_columns=["f1"])
         self.assert_(isinstance(array, JTensor))
-        self.assertEqual(array.storage.shape, (2, 2))
+        self.assertEqual(array.storage.shape, (2, 1))
 
     def test_numpy_api(self):
         array = np.array([[1, 2], [3, 4]])
