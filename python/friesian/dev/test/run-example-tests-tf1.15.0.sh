@@ -58,7 +58,7 @@ python ../../example/dien/pytorch/dien_train.py \
     --executor_cores 4 \
     --executor_memory 50g \
     --batch_size 512 \
-    --data_dir ./data/dien_preprocessed \
+    --data_dir ./data/dien_preprocessed/
 
 now=$(date "+%s")
 time2=$((now - start))
