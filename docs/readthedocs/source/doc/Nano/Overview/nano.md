@@ -27,7 +27,7 @@ The `bigdl-nano-init` scripts will export a few environment variable according t
 
 In a conda environment, this will also add this script to `$CONDA_PREFIX/etc/conda/activate.d/`, which will automaticly run when you activate your current environment.
 
-In a pure pip environment, you need to run `source bigdl-nano-init` every time you open a new shell to get optimal performance.
+In a pure pip environment, you need to run `source bigdl-nano-init` every time you open a new shell to get optimal performance and run `source bigdl-nano-unset-env` if you want to unset these environment variables.
 
 #### **2.1.2 Usage**
 
@@ -66,7 +66,7 @@ The `bigdl-nano-init` scripts will export a few environment variable according t
 
 In a conda environment, this will also add this script to `$CONDA_PREFIX/etc/conda/activate.d/`, which will automaticly run when you activate your current environment.
 
-In a pure pip environment, you need to run `source bigdl-nano-init` every time you open a new shell to get optimal performance.
+In a pure pip environment, you need to run `source bigdl-nano-init` every time you open a new shell to get optimal performance and run `source bigdl-nano-unset-env` if you want to unset these environment variables.
 
 
 #### **2.2.2 Usage**
