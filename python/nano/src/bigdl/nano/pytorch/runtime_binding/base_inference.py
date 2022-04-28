@@ -16,7 +16,6 @@
 
 from pytorch_lightning import LightningModule
 import torch
-import onnxruntime as ort
 from functools import partial
 import warnings
 import math
