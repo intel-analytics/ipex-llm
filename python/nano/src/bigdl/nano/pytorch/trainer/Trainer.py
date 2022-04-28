@@ -292,10 +292,13 @@ class Trainer(pl.Trainer):
                     bind_base_inference_rt_methods
                 from bigdl.nano.pytorch.runtime_binding.quantization_inference import \
                     bind_quantize_methods
-                return bind_onnxrt_methods(
-                    bind_quantize_methods(
-                        bind_base_inference_rt_methods(pl_model), quantized_pytorch_model),
-                    quantized_onnx_model)
+                return_pl_model = bind_quantize_methods(
+                    bind_base_inference_rt_methods(pl_model), quantized_pytorch_model)
+                if quantized_onnx_model:
+                    return bind_onnxrt_methods(return_pl_model,
+                                               quantized_onnx_model)
+                else:
+                    return return_pl_model
         else:
             raise NotImplementedError("Backend {} is not implemented.".format(backend))
 
