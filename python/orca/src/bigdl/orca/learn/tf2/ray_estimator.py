@@ -172,7 +172,8 @@ class TensorFlow2Estimator(OrcaRayEstimator):
         )
 
         from bigdl.orca.data import SparkXShards
-        from bigdl.orca.data.tf.tf2_data import Dataset, TF2Dataset
+        from bigdl.orca.data.tf.data import Dataset
+        from bigdl.orca.data.tf.tf2_data import TF2Dataset
         data, validation_data = maybe_dataframe_to_xshards(data, validation_data,
                                                            feature_cols, label_cols,
                                                            mode="fit",
@@ -298,7 +299,8 @@ class TensorFlow2Estimator(OrcaRayEstimator):
             data_config=data_config,
         )
         from bigdl.orca.data import SparkXShards
-        from bigdl.orca.data.tf.tf2_data import Dataset, TF2Dataset
+        from bigdl.orca.data.tf.data import Dataset
+        from bigdl.orca.data.tf.tf2_data import TF2Dataset
 
         data, _ = maybe_dataframe_to_xshards(data,
                                              validation_data=None,

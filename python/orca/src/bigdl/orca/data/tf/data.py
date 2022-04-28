@@ -17,109 +17,7 @@ import tensorflow as tf
 
 from bigdl.orca.tfpark.tf_dataset import TensorMeta
 from bigdl.dllib.utils import nest
-from bigdl.dllib.nncontext import getOrCreateSparkContext
-from bigdl.dllib.utils.common import get_node_and_core_number
-from bigdl.dllib.utils.file_utils import callZooFunc
-from bigdl.dllib.feature.common import FeatureSet
 from bigdl.orca.data import SparkXShards
-from bigdl.orca.tfpark import TFDataset
-
-
-class TFDataDataset2(TFDataset):
-
-    def __init__(self, dataset, batch_size,
-                 batch_per_thread,
-                 validation_dataset=None, intra_threads=None, inter_threads=None):
-
-        node_num, core_num = get_node_and_core_number()
-
-        self.intra_threads = intra_threads
-        self.inter_threads = inter_threads
-        if intra_threads is None:
-            self.intra_threads = core_num
-
-        if inter_threads is None:
-            self.inter_threads = 1
-
-        if batch_size > 0:
-            num_parts = dataset.xshards.num_partitions()
-            if num_parts != node_num:
-                dataset.xshards = dataset.xshards.repartition(node_num)
-            assert batch_size % node_num == 0, \
-                "batch_size should be a multiple of num_shards, got" \
-                " batch_size {}, node_num {}".format(batch_size, node_num)
-            batch_per_shard = batch_size // node_num
-            self.drop_remainder = True
-        elif batch_per_thread > 0:
-            batch_per_shard = batch_per_thread
-            self.drop_remainder = False
-        else:
-            raise ValueError("one of batch_size or batch_per_thread must be larger than 0")
-
-        self.rdd = dataset.as_graph_rdd(batch_per_shard,
-                                        drop_remainder=self.drop_remainder).cache()
-        meta_info = self.rdd.map(lambda x: x[1]).first()
-        tensor_structure = meta_info["tensor_structure"]
-        self.init_op_name = meta_info["init_op_name"]
-        self.output_names = meta_info["output_names"]
-        self.output_types = meta_info["output_types"]
-        self.table_init_op = meta_info["table_init_op"]
-
-        if validation_dataset is not None:
-            self.val_rdd = validation_dataset.as_graph_rdd(batch_per_shard, False).cache()
-            meta_info = self.val_rdd.map(lambda x: x[1]).first()
-            self.val_init_op_name = meta_info["init_op_name"]
-            self.val_output_names = meta_info["output_names"]
-            self.val_output_types = meta_info["output_types"]
-        else:
-            self.val_rdd = None
-            self.val_init_op_name = None
-            self.val_output_names = None
-            self.val_output_types = None
-
-        super().__init__(tensor_structure, batch_size=batch_size,
-                         batch_per_thread=batch_per_thread,
-                         hard_code_batch_size=False)
-        self.shard_index_op_name = None
-        self.validation_dataset = validation_dataset
-
-    def _get_prediction_data(self):
-        assert not self.drop_remainder, \
-            "sanity check: drop_remainder should be false in this case," \
-            " otherwise please report a bug"
-        jvalue = callZooFunc("float", "createMiniBatchRDDFromTFDataset",
-                             self.rdd.map(lambda x: x[0]), self.init_op_name, self.table_init_op,
-                             self.output_names, self.output_types, self.shard_index_op_name)
-        rdd = jvalue.value().toJavaRDD()
-        return rdd
-
-    def _get_evaluation_data(self):
-        jvalue = callZooFunc("float", "createMiniBatchRDDFromTFDatasetEval",
-                             self.rdd.map(lambda x: x[0]), self.init_op_name, self.table_init_op,
-                             self.output_names,
-                             self.output_types, self.shard_index_op_name)
-        rdd = jvalue.value().toJavaRDD()
-        return rdd
-
-    def _get_training_data(self):
-        jvalue = callZooFunc("float", "createTFDataFeatureSet",
-                             self.rdd.map(lambda x: x[0]), self.init_op_name, self.table_init_op,
-                             self.output_names, self.output_types, self.shard_index_op_name,
-                             self.inter_threads, self.intra_threads)
-        return FeatureSet(jvalue=jvalue)
-
-    def _get_validation_data(self):
-        if self.validation_dataset is not None:
-            jvalue = callZooFunc("float", "createTFDataFeatureSet",
-                                 self.val_rdd.map(lambda x: x[0]), self.init_op_name,
-                                 self.table_init_op, self.output_names,
-                                 self.output_types, self.shard_index_op_name,
-                                 self.inter_threads, self.intra_threads)
-            return FeatureSet(jvalue=jvalue)
-        return None
-
-    def get_num_partitions(self):
-        return self.rdd.getNumPartitions()
 
 
 class Dataset(object):
@@ -187,8 +85,36 @@ class Dataset(object):
         graph_rdd_and_meta = self.xshards.rdd.mapPartitions(to_dataset)
         return graph_rdd_and_meta
 
+    def as_tf_dataset(self):
+        create_dataset_fn = self.create_dataset_fn
+
+        def to_dataset(iter):
+
+            data_list = list(iter)
+            if not data_list:
+                return []
+
+            from tensorflow.python.distribute.coordinator.values import serialize_dataset_to_graph
+            datasets = [create_dataset_fn(data) for data in data_list]
+            from functools import reduce
+            dataset = reduce(lambda x, y: x.concatenate(y), datasets)
+            ds_def = serialize_dataset_to_graph(dataset).numpy()
+            elem_spec = dataset.element_spec
+            return [{"ds_def": ds_def, "elem_spec": elem_spec}]
+
+        tf_dataset_rdd = self.xshards.rdd.mapPartitions(to_dataset)
+        return tf_dataset_rdd
+
     @staticmethod
     def from_tensor_slices(xshards):
+        return TensorSliceDataset(xshards)
+
+    @staticmethod
+    def from_tensor_slices_with_tbl(tbl):
+        from bigdl.friesian.feature import FeatureTable
+        from bigdl.friesian.feature.utils import featuretable_to_xshards
+        assert isinstance(tbl, FeatureTable), "only Friesian FeatureTable is supported"
+        xshards = featuretable_to_xshards(tbl)
         return TensorSliceDataset(xshards)
 
     def map(self, map_func):

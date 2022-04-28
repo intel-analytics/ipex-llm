@@ -13,3 +13,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+
+import pandas as pd
+
+data_dir = "path/to/ml-1m"
+
+ratings = pd.read_csv(data_dir + '/ratings.dat', sep='::', header=None,
+                      names=["user_id", "movie_id", "rating", "timestamp"], encoding='latin-1')
+users = pd.read_csv(data_dir + '/users.dat', sep='::', header=None,
+                    names=["user_id", "gender", "age", "occupation", "zip_code"], encoding='latin-1')
+total = ratings.join(users.set_index("user_id"), on="user_id")
+total.to_parquet(data_dir + "/total.parquet")

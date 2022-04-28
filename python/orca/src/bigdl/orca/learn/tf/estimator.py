@@ -21,7 +21,8 @@ from bigdl.orca.tfpark.tf_dataset import _standardize_keras_target_data
 from bigdl.dllib.utils.file_utils import enable_multi_fs_load, enable_multi_fs_load_static, \
     enable_multi_fs_save
 from bigdl.orca import OrcaContext
-from bigdl.orca.data.tf.data import Dataset, TFDataDataset2
+from bigdl.orca.data.tf.data import Dataset
+from bigdl.orca.data.tf.tf1_data import TFDataDataset2
 from bigdl.orca.data import SparkXShards
 from bigdl.orca.learn.tf.utils import *
 from bigdl.orca.learn.trigger import Trigger
