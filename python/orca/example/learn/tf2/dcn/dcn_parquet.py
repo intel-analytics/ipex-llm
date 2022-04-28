@@ -24,7 +24,6 @@ import tensorflow_recommenders as tfrs
 from bigdl.orca.learn.tf2.estimator import Estimator
 from pyspark.sql.types import IntegerType, StringType
 from pyspark.sql.functions import col
-from bigdl.friesian.feature.utils import featuretable_to_xshards
 from bigdl.orca.data.tf.data import Dataset
 from pyspark.sql.functions import spark_partition_id, asc, desc
 
@@ -76,7 +75,7 @@ class DCN(tfrs.Model):
         self._logit_layer = tf.keras.layers.Dense(1)
 
         self.task = tfrs.tasks.Ranking(
-            loss=tf.keras.losses.MeanSquaredError(reduction=tf.keras.losses.Reduction.NONE),
+            loss=tf.keras.losses.MeanSquaredError(),
             metrics=[tf.keras.metrics.RootMeanSquaredError("RMSE")]
         )
 
@@ -184,6 +183,8 @@ config = {
 
 def model_creator(config):
     model = DCN(use_cross_layer=True, deep_layer_sizes=[192, 192])
+    from bigdl.friesian.feature.utils import distribute_tfrs_model
+    model = distribute_tfrs_model(model)
     model.compile(optimizer=tf.keras.optimizers.Adam(config['lr']))
     return model
 
