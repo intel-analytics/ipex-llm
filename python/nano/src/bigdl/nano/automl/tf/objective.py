@@ -24,12 +24,12 @@ import copy
 from optuna.integration import TFKerasPruningCallback
 
 
-def is_creator(model):
+def _is_creator(model):
     return inspect.ismethod(model) or inspect.isfunction(model)
 
 
 class Objective(object):
-    """The Tuning objective for Optuna"""
+    """The Tuning objective for Optuna."""
 
     def __init__(self,
                  model=None,
@@ -37,17 +37,16 @@ class Objective(object):
                  pruning=False,
                  **kwargs,
                  ):
-        """Init the objective.
-
-        Args:
-            model (keras model or function): a model instance or creator function. Defaults to None.
-            model_compiler (function, optional): the compiler function. Defaults to None.
-            target_metric (str, optional): target metric to optimize. Defaults to None.
-
-        Raises:
-            ValueError: _description_
         """
-        if not is_creator(model) and not isinstance(model, tf.keras.Model):
+        Init the objective.
+
+        :param: model: a model instance or a creator function. Defaults to None.
+        :param: model_compiler: the compiler function. Defaults to None.
+        :param: target_metric: str(optional): target metric to optimize.
+            Defaults to None.
+        raises: ValueError: _description_
+        """
+        if not _is_creator(model) and not isinstance(model, tf.keras.Model):
             raise ValueError("You should either pass a Tensorflo Keras model, or \
                             a model_creator to the Tuning objective.")
 
@@ -58,9 +57,16 @@ class Objective(object):
 
     @property
     def target_metric(self):
+        """Get the target metric."""
         return self.target_metric_
 
-    def prepare_fit_args(self, trial):
+    @target_metric.setter
+    def target_metric(self, value):
+        """Set the target metric."""
+        # TODO add more validity check here
+        self.target_metric_ = value
+
+    def _prepare_fit_args(self, trial):
         # only do shallow copy and process/duplicate
         # specific args TODO: may need to handle more cases
         new_kwargs = copy.copy(self.kwargs)
@@ -78,11 +84,17 @@ class Objective(object):
         return new_kwargs
 
     def __call__(self, trial):
+        """
+        Execute Training and return target metric in each trial.
+
+        :param: trial: optuna trial which provides the hyperparameter combinition.
+        :return: the target metric value.
+        """
         # Clear clutter from previous Keras session graphs.
         clear_session()
         # TODO may add data creator here, e.g. refresh data, reset generators, etc.
         # create model
-        if is_creator(self.model_):
+        if _is_creator(self.model_):
             model = self.model_(trial)
         else:
             # copy model so that the original model is not changed
@@ -90,7 +102,7 @@ class Objective(object):
             model = clone_model(self.model_)
 
         # fit
-        new_kwargs = self.prepare_fit_args(trial)
+        new_kwargs = self._prepare_fit_args(trial)
         hist = model.fit(**new_kwargs)
 
         score = hist.history.get(self.target_metric, None)

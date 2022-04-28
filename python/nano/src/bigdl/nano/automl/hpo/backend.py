@@ -19,8 +19,7 @@ import optuna
 
 
 class SamplerType(Enum):
-    """Types of Samplers. Sampler are used for generating hyper parameters
-    """
+    """Types of Samplers. Sampler are used for generating hyper parameters."""
 
     TPE = 1  # the default
     CmaEs = 2
@@ -32,8 +31,8 @@ class SamplerType(Enum):
 
 
 class PrunerType(Enum):
-    """Types of Pruners. Pruners are used to stop non-promising trials early
-    """
+    """Types of Pruners. Pruners are used to stop non-promising trials early."""
+
     HyperBand = 1  # the default
     Median = 2
     Nop = 3
@@ -44,9 +43,9 @@ class PrunerType(Enum):
 
 
 class OptunaBackend(object):
-    """A Wrapper to shield user from Optuna specific configurations and API
-      Later may support other HPO search engines
-    """
+    """A Wrapper to shield user from Optuna specific configurations and API\
+      Later may support other HPO search engines."""
+
     pruner_map = {
         PrunerType.HyperBand: optuna.pruners.HyperbandPruner,
         PrunerType.Median: optuna.pruners.MedianPruner,
@@ -69,10 +68,12 @@ class OptunaBackend(object):
 
     @staticmethod
     def get_other_args(kwargs, kwspaces):
+        """Get key-word arguments which are not search spaces."""
         return{k: kwargs[k] for k in set(kwargs) - set(kwspaces)}
 
     @staticmethod
     def get_hpo_config(trial, configspace):
+        """Get hyper parameter suggestions from search space settings."""
         # TODO better ways to map ConfigSpace to optuna spaces
         # fix order of hyperparams in configspace.
         hp_ordering = configspace.get_hyperparameter_names()
@@ -105,11 +106,13 @@ class OptunaBackend(object):
 
     @staticmethod
     def instantiate(trial, lazyobj):
+        """Instantiate a lazyobject from a trial's sampled param set."""
         config = OptunaBackend.gen_config(trial, lazyobj)
         return lazyobj.sample(**config)
 
     @staticmethod
     def gen_config(trial, automl_obj):
+        """Generate the param config from a trial's sampled param set."""
         configspace = automl_obj.cs
         config = OptunaBackend.get_hpo_config(trial, configspace)
         other_kwargs = OptunaBackend.get_other_args(
@@ -119,14 +122,17 @@ class OptunaBackend(object):
 
     @staticmethod
     def create_sampler(sampler_type, kwargs):
+        """Create a hyperparameter sampler by type."""
         sampler_class = OptunaBackend.sampler_map.get(sampler_type)
         return sampler_class(**kwargs)
 
     @staticmethod
     def create_pruner(pruner_type, kwargs):
+        """Create a pruner by type."""
         pruner_class = OptunaBackend.pruner_map.get(pruner_type)
         return pruner_class(**kwargs)
 
     @staticmethod
     def create_study(**kwargs):
+        """create a study to drive the hyperparameter search."""
         return optuna.create_study(**kwargs)

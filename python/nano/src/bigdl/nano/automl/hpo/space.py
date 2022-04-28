@@ -213,7 +213,9 @@ class AutoObject(NestedSpace):
 
 class List(NestedSpace):
     """
-    Examples:
+    Examples.
+
+    ---------
         >>> sequence = space.List(
         >>>     space.space.Categorical('conv3x3', 'conv5x5', 'conv7x7'),
         >>>     space.space.Categorical('BatchNorm', 'InstanceNorm'),
@@ -308,7 +310,8 @@ class List(NestedSpace):
 
 class Dict(NestedSpace):
     """
-    Examples:
+    Examples.
+
         >>> g = space.Dict(
         >>>         hyperparam1 = space.Categorical('alpha', 'beta'),
         >>>         hyperparam2 = space.Int(0, 3)
@@ -397,7 +400,8 @@ class Dict(NestedSpace):
 
 class Categorical(NestedSpace):
     """
-    Examples:
+    Examples.
+
         >>> a = space.Categorical('a', 'b', 'c', 'd')
         >>> b = space.Categorical('resnet50', AutoObj())
     """
@@ -476,7 +480,8 @@ class Categorical(NestedSpace):
 
 class Real(SimpleSpace):
     """
-    Examples
+    Examples.
+
         >>> learning_rate = space.Real(0.01, 0.1, log=True)
     """
 
@@ -519,7 +524,8 @@ class Real(SimpleSpace):
 
 class Int(SimpleSpace):
     """
-    Examples
+    Examples.
+
         >>> range = space.Int(0, 100)
     """
 
@@ -554,7 +560,8 @@ class Int(SimpleSpace):
 
 class Bool(Int):
     """
-    Examples:
+    Examples.
+
         >>> pretrained = space.Bool()
     """
 

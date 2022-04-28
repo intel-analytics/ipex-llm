@@ -27,10 +27,12 @@ def _filter_tuner_args(kwargs, tuner_keys):
 
 
 def _search_summary(study):
-    """Retrive a summary of trials
+    """
+    Print statistics of trials and retrieve the summary for further analysis.
 
-    Returns:
-        dataframe: A summary of all the trials
+    :param study: the optuna study object
+    :return : the summary object (current we return the study directly, so that
+        it allows better flexiblity to do visualization and futher analysis)
     """
     if study is not None:
         print("Number of finished trials: {}".format(len(study.trials)))
@@ -48,15 +50,16 @@ def _search_summary(study):
 
 
 def _end_search(study, model_builder, use_trial_id=-1):
-    """ Put an end to tuning.
-        Use the specified trial or best trial to init and
-        compile the base model.
+    """
+    Put an end to tuning.
 
-    Args:
-        use_trial_id (int, optional): params of which trial to be used. Defaults to -1.
+    Use the specified trial or best trial to init and compile the base model.
 
-    Raises:
-        ValueError: error when tune is not called already.
+    :param study: the optuna study object.
+    :param model_builder: the function to build the model.
+    :param use_trial_id: int(optional) params of which trial to be used. Defaults to -1.
+    :raises ValueError: if study is None.
+    :return : the built model with best or specified trial hyperparams.
     """
     if study is None:
         raise ValueError("study is None.   \
