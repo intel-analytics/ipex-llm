@@ -185,7 +185,8 @@ class TensorFlow2Estimator(OrcaRayEstimator):
                 if data._get_class_name() == 'pandas.core.frame.DataFrame':
                     data, validation_data = process_xshards_of_pandas_dataframe(data, feature_cols,
                                                                                 label_cols,
-                                                                                validation_data, "fit")
+                                                                                validation_data,
+                                                                                "fit")
                 ray_xshards = process_spark_xshards(data, self.num_workers)
                 if validation_data is not None:
                     val_ray_xshards = process_spark_xshards(validation_data, self.num_workers)

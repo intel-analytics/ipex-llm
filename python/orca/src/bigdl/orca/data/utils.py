@@ -217,9 +217,11 @@ def ray_partitions_get_tf_dataset(partition_list, has_label=True):
                                                        allow_list=False)
             dataset = tf.data.Dataset.from_tensor_slices((data, label))
         elif "ds_def" in keys and "elem_spec" in keys:
-            from tensorflow.python.distribute.coordinator.values import deserialize_dataset_from_graph
+            from tensorflow.python.distribute.coordinator.values import \
+                deserialize_dataset_from_graph
             from functools import reduce
-            dataset_list = [deserialize_dataset_from_graph(serialized_dataset["ds_def"], serialized_dataset["elem_spec"])
+            dataset_list = [deserialize_dataset_from_graph(serialized_dataset["ds_def"],
+                                                           serialized_dataset["elem_spec"])
                             for serialized_dataset in partition_data]
             dataset = reduce(lambda x, y: x.concatenate(y), dataset_list)
         else:
