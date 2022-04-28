@@ -425,6 +425,7 @@ def tfmodel(**kwvars):
 
     """
     from bigdl.nano.automl.tf.mixin import HPOMixin
+
     def registered_class(Cls):
         objCls = obj(**kwvars)(Cls)
 
