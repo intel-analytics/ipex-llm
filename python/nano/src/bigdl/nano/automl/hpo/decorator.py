@@ -154,8 +154,10 @@ class _automl_method(object):
 
 def args(default=None, **kwvars):
     """
-    Decorator for a Python training script that registers its arguments as hyperparameters.
-    Each hyperparameter takes fixed value or is a searchable space.
+    Decorator for a Python script that registers its arguments as hyperparameters.
+
+    Each hyperparameter may take a fixed value or be a searchable space
+    (e.g. hpo.space.Int, hpo.space.Categorical).
 
     :param default: a dictionary of hyperparameter default values, defaults to None
     :return : a wrapped function.
@@ -180,7 +182,10 @@ def args(default=None, **kwvars):
 def func(**kwvars):
     """
     Decorator for a function that registers its arguments as hyperparameters.
-    Each hyperparameter may take a fixed value or be a searchable space (hpo.space).
+
+    Used for functions like: tf.cast, tf.keras.Input, tf.keras.activations.*.
+    Each hyperparameter may take a fixed value or be a searchable space
+    (e.g. hpo.space.Int, hpo.space.Categorical).
 
     :return: an AutoFunc object. The function body is not immediately executed at the time
              of user invocation. The actual execution is delayed until AutoFunc.sample()
@@ -304,8 +309,12 @@ def func(**kwvars):
 
 def obj(**kwvars):
     """
-    Decorator for a Python class that registers its arguments as hyperparameters.
-    Each hyperparameter may take a fixed value or be a searchable space (hpo.space).
+    Decorator for a class that registers its arguments as hyperparameters.
+
+    Used for classes like: tf.keras.layers.*
+    Each hyperparameter may take a fixed value or be a searchable space
+    (e.g. hpo.space.Int, hpo.space.Categorical).
+
 
     :return: an AutoCls object. The instantiation of the class object is delayed
              until AutoCls.sample() is called (usually in each trial).
@@ -402,10 +411,12 @@ def obj(**kwvars):
 
 
 def tfmodel(**kwvars):
-    from bigdl.nano.automl.tf.mixin import HPOMixin
     """
-    Decorator for a Custom Tensorflow model that registers its arguments as hyperparameters.
-    Each hyperparameter may take a fixed value or be a searchable space (hpo.space).
+    Decorator for a Tensorflow model that registers its arguments as hyperparameters.
+
+    Used for custom keras model subclassing from tf.keras.Model.
+    Each hyperparameter may take a fixed value or be a searchable space
+    (e.g. hpo.space.Int, hpo.space.Categorical).
 
     :return: a TFAutoMdl object. The instantiation of the class object is delayed
              until TFAutoMdl.sample() is called (usually in each trial). The difference
@@ -413,6 +424,7 @@ def tfmodel(**kwvars):
              methods.
 
     """
+    from bigdl.nano.automl.tf.mixin import HPOMixin
     def registered_class(Cls):
         objCls = obj(**kwvars)(Cls)
 
@@ -453,7 +465,10 @@ def tfmodel(**kwvars):
 def plmodel(**kwvars):
     """
     Decorator for a Custom PyTorch model that registers its arguments as hyperparameters.
-    Each hyperparameter may take a fixed value or be a searchable space (hpo.space).
+
+    Used for custom pytorch model subclassing from pytorch_lightning.LightningModule.
+    Each hyperparameter may take a fixed value or be a searchable space
+    (e.g. hpo.space.Int, hpo.space.Categorical).
 
     :return: a PlAutoMdl object. The instantiation of the class object is delayed
              until PlAutoMdl.sample() is called (usually in each trial). Unlike TFAutoMdl,
