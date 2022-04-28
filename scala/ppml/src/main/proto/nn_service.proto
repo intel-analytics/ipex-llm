@@ -17,7 +17,7 @@ syntax = 'proto3';
 package nn;
 import "fl_base.proto";
 //option java_multiple_files = true;
-option java_package = "com.intel.analytics.bigdl.ppml.generated";
+option java_package = "com.intel.analytics.bigdl.ppml.fl.generated";
 option java_outer_classname = "NNServiceProto";
 
 service NNService {

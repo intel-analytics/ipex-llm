@@ -153,33 +153,35 @@ class Model[T: ClassTag] private (private val _inputs : Seq[ModuleNode[T]],
 
   override def summary(
                         lineLength: Int = 120,
-                        positions: Array[Double] = Array(.33, .55, .67, 1)): String = {
-    val summary: ArrayBuffer[String] = ArrayBuffer[String]()
-    summary.append("Model Summary:")
-    println("Model Summary:")
-    KerasUtils.printSplitLine('-', lineLength, summary)
+                        positions: Array[Double] = Array(.33, .55, .67, 1),
+                        needPrint: Boolean = true): String = {
+    val summaryBuf = ArrayBuffer[String]()
+    summaryBuf.append("Model Summary:")
+    KerasUtils.printSplitLine('-', lineLength, summaryBuf)
 
     val toDisplay = Array("Layer (type)", "Output Shape", "Param #", "Connected to")
-    KerasUtils.printRow(toDisplay, lineLength, positions, splitChar = '=', summary = summary)
+    KerasUtils.printRow(toDisplay, lineLength, positions, splitChar = '=',
+      summaryBuf = summaryBuf)
     val nodes = labor.asInstanceOf[StaticGraph[T]].getSortedForwardExecutions()
     var totalParams = 0
     var trainableParams = 0
     for (node <- nodes) {
-      val (total, trainable) = KerasUtils.printNodeSummary(node, lineLength, positions, summary)
+      val (total, trainable) = KerasUtils.printNodeSummary(node, lineLength, positions,
+        summaryBuf = summaryBuf)
       totalParams += total
       trainableParams += trainable
     }
     val msgTotal = "Total params: " + "%,d".format(totalParams)
-    println(msgTotal)
-    summary.append(msgTotal)
+    summaryBuf.append(msgTotal)
     val msgTrain = "Trainable params: " + "%,d".format(trainableParams)
-    println(msgTrain)
-    summary.append(msgTrain)
+    summaryBuf.append(msgTrain)
     val msgNonTrain = "Non-trainable params: " + "%,d".format(totalParams - trainableParams)
-    println(msgNonTrain)
-    summary.append(msgNonTrain)
-    KerasUtils.printSplitLine('-', lineLength, summary)
-    val res = summary.mkString("\n")
+    summaryBuf.append(msgNonTrain)
+    KerasUtils.printSplitLine('-', lineLength, summaryBuf)
+    val res = summaryBuf.mkString("\n")
+    if (needPrint) {
+      InternalDistriOptimizer.logger.info(res)
+    }
     return res
   }
 }

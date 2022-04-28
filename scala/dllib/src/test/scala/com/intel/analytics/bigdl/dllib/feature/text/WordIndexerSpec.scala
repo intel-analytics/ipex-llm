@@ -16,6 +16,7 @@
 
 package com.intel.analytics.bigdl.dllib.feature.text
 
+import com.intel.analytics.bigdl.dllib.utils.TestUtils
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
 class WordIndexerSpec extends FlatSpec with Matchers with BeforeAndAfter {
@@ -28,6 +29,7 @@ class WordIndexerSpec extends FlatSpec with Matchers with BeforeAndAfter {
     val wordIndex = Map("friend" -> 1, "my" -> 2, "annotate" -> 3, "text" -> 4)
     val wordIndexer = WordIndexer(wordIndex)
     val transformed = wordIndexer.transform(feature)
-    require(transformed.getIndices.sameElements(Array(2.0f, 1.0f, 3.0f, 2.0f, 4.0f)))
+    TestUtils.conditionFailTest(
+      transformed.getIndices.sameElements(Array(2.0f, 1.0f, 3.0f, 2.0f, 4.0f)))
   }
 }

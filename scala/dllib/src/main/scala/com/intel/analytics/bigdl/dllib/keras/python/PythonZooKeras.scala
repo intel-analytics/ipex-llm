@@ -307,7 +307,7 @@ class PythonZooKeras[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonZ
       model: KerasNet[T],
       lineLength: Int = 120,
       positions: JList[Double]): String = {
-    return model.summary(lineLength, positions.asScala.toArray)
+    return model.summary(lineLength, positions.asScala.toArray, false)
   }
 
   def createZooKerasDense(

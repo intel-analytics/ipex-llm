@@ -20,7 +20,7 @@ RUN_SCRIPT_DIR=$(cd $(dirname $0) ; pwd)
 echo $RUN_SCRIPT_DIR
 BIGDL_DIR="$(cd ${RUN_SCRIPT_DIR}/../../..; pwd)"
 echo $BIGDL_DIR
-BIGDL_PYTHON_DIR="$(cd ${BIGDL_DIR}/python/nano/src; pwd)"
+BIGDL_PYTHON_DIR="$(cd ${BIGDL_DIR}/python/nano; pwd)"
 echo $BIGDL_PYTHON_DIR
 
 if (( $# < 3)); then
@@ -44,6 +44,7 @@ echo "The effective version is: ${bigdl_version}"
 
 if [ "$platform" ==  "mac" ]; then
     verbose_pname="macosx_10_11_x86_64"
+    sed -i 's/intel-tensorflow/tensorflow/' $BIGDL_PYTHON_DIR/setup.py
 
 elif [ "$platform" == "linux" ]; then
     verbose_pname="manylinux2010_x86_64"
@@ -55,16 +56,16 @@ else
     echo "Unsupported platform"
 fi
 
-if [ -d "${BIGDL_DIR}/python/nano/src/build" ]; then
-   rm -r ${BIGDL_DIR}/python/nano/src/build
+if [ -d "${BIGDL_DIR}/python/nano/build" ]; then
+   rm -r ${BIGDL_DIR}/python/nano/build
 fi
 
-if [ -d "${BIGDL_DIR}/python/nano/src/dist" ]; then
-   rm -r ${BIGDL_DIR}/python/nano/src/dist
+if [ -d "${BIGDL_DIR}/python/nano/dist" ]; then
+   rm -r ${BIGDL_DIR}/python/nano/dist
 fi
 
-if [ -d "${BIGDL_DIR}/python/nano/src/bigdl_nano.egg-info" ]; then
-   rm -r ${BIGDL_DIR}/python/nano/src/bigdl_nano.egg-info
+if [ -d "${BIGDL_DIR}/python/nano/bigdl_nano.egg-info" ]; then
+   rm -r ${BIGDL_DIR}/python/nano/bigdl_nano.egg-info
 fi
 
 
@@ -73,6 +74,10 @@ cd $BIGDL_PYTHON_DIR
 wheel_command="python setup.py bdist_wheel --plat-name ${verbose_pname} --python-tag py3"
 echo "Packing python distribution: $wheel_command"
 ${wheel_command}
+
+if [ "$platform" ==  "mac" ]; then
+    sed -i 's/"tensorflow==/"intel-tensorflow==/' $BIGDL_PYTHON_DIR/setup.py
+fi
 
 if [ ${upload} == true ]; then
     upload_command="twine upload  dist/bigdl_nano-${bigdl_version}-py3-none-${verbose_pname}.whl"

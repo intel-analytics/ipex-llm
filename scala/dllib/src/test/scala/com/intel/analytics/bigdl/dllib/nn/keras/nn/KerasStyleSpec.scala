@@ -35,8 +35,8 @@ class KerasStyleSpec extends BigDLSpecHelper {
     val model = Model[Float](input, d2)
     val inputData = Tensor[Float](Array(20, 10)).rand()
     val output = model.forward(inputData)
-    require(model.getOutputShape().toSingle().sameElements(Array(-1, 5)))
-    require(model.getInputShape().toSingle().sameElements(Array(-1, 10)))
+    TestUtils.conditionFailTest(model.getOutputShape().toSingle().sameElements(Array(-1, 5)))
+    TestUtils.conditionFailTest(model.getInputShape().toSingle().sameElements(Array(-1, 10)))
   }
 
   "Sequential: Dense" should "work correctly" in {
@@ -49,8 +49,8 @@ class KerasStyleSpec extends BigDLSpecHelper {
     seq.add(d3)
     val inputData = Tensor[Float](Array(20, 10)).rand()
     val output = seq.forward(inputData)
-    require(d3.getOutputShape().toSingle().sameElements(Array(-1, 6)))
-    require(d3.getInputShape().toSingle().sameElements(Array(-1, 5)))
+    TestUtils.conditionFailTest(d3.getOutputShape().toSingle().sameElements(Array(-1, 6)))
+    TestUtils.conditionFailTest(d3.getInputShape().toSingle().sameElements(Array(-1, 5)))
   }
 
   "Frozen sequential" should "be tested" in {
@@ -68,12 +68,12 @@ class KerasStyleSpec extends BigDLSpecHelper {
       val seq1 = KSequential[Float]()
       seq1.add(Dense[Float](20, inputShape = Shape(10)))
       seq1.add(sharedRelu)
-      assert(seq1.getOutputShape().toSingle().sameElements(Array(-1, 20)))
+      TestUtils.conditionFailTest(seq1.getOutputShape().toSingle().sameElements(Array(-1, 20)))
 
       val seq2 = KSequential[Float]()
       seq2.add(Dense[Float](5, inputShape = Shape(20)))
       seq2.add(sharedRelu)
-      assert(seq2.getOutputShape().toSingle().sameElements(Array(-1, 5)))
+      TestUtils.conditionFailTest(seq2.getOutputShape().toSingle().sameElements(Array(-1, 5)))
 
       val seq = KSequential[Float]()
       seq.add(seq1)
@@ -81,10 +81,10 @@ class KerasStyleSpec extends BigDLSpecHelper {
 
       val inputData = Tensor[Float](Array(20, 10)).rand()
       val output = seq.forward(inputData)
-      assert(seq.getInputShape().toSingle().sameElements(Array(-1, 10)))
-      assert(seq.getOutputShape().toSingle().sameElements(Array(-1, 5)))
+      TestUtils.conditionFailTest(seq.getInputShape().toSingle().sameElements(Array(-1, 10)))
+      TestUtils.conditionFailTest(seq.getOutputShape().toSingle().sameElements(Array(-1, 5)))
     }
-    assert(thrown.getMessage().contains("multiple times"))
+    TestUtils.conditionFailTest(thrown.getMessage().contains("multiple times"))
   }
 
   "Graph: shared relu" should "not work correctly" in {
@@ -99,7 +99,7 @@ class KerasStyleSpec extends BigDLSpecHelper {
       val out2 = seq.inputs(out1)
       val model = Model(input, out2)
     }
-    assert(thrown.getMessage().contains("multiple times"))
+    TestUtils.conditionFailTest(thrown.getMessage().contains("multiple times"))
   }
 
   "Graph: shared relu as dest" should "not work correctly" in {
@@ -109,7 +109,7 @@ class KerasStyleSpec extends BigDLSpecHelper {
       val out1 = sharedRelu.inputs(input)
       val out2 = sharedRelu.inputs(Input(inputShape = Shape(10, 20)))
     }
-    assert(thrown.getMessage().contains("multiple times"))
+    TestUtils.conditionFailTest(thrown.getMessage().contains("multiple times"))
   }
 
   "TSequential" should "work with alex" in {
@@ -149,7 +149,7 @@ class KerasStyleSpec extends BigDLSpecHelper {
       val seq = KSequential[Float]().add(dense1).inputs(node1)
       Model(input, seq)
     }
-    assert(thrown.getMessage().contains("multiple times"))
+    TestUtils.conditionFailTest(thrown.getMessage().contains("multiple times"))
   }
 
   "KGraph" should "not work with shared weights" in {
@@ -161,7 +161,7 @@ class KerasStyleSpec extends BigDLSpecHelper {
       val node2 = l.inputs(input2)
       Model(Array(input1, input2), Array(node1, node2))
     }
-    assert(thrown.getMessage().contains("multiple times"))
+    TestUtils.conditionFailTest(thrown.getMessage().contains("multiple times"))
   }
 
   "KGraph" should "work with shared input" in {
@@ -254,14 +254,14 @@ class KerasStyleSpec extends BigDLSpecHelper {
     val relu1 = Activation[Float]("relu").inputs(multiOutput(1))
     val model = Model[Float](Array(input3, input4), relu1)
     model.forward(T(Tensor[Float](Array(2, 10)).rand(), Tensor[Float](Array(2, 10)).rand()))
-    assert(model.getOutputShape().toSingle().sameElements(Array(-1, 20)))
+    TestUtils.conditionFailTest(model.getOutputShape().toSingle().sameElements(Array(-1, 20)))
   }
 
   "Empty inputs is not allow" should "be test" in {
     val thrown = intercept[Exception] {
       val d1 = Dense[Float](20).setName("dense1").inputs()
     }
-    assert(thrown.getMessage().contains("Empty input is not allow"))
+    TestUtils.conditionFailTest(thrown.getMessage().contains("Empty input is not allow"))
   }
 
   "InputLayer" should "be test" in {

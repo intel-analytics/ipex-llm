@@ -24,7 +24,7 @@ import com.intel.analytics.bigdl.dllib.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.serialization.Bigdl.{AttrValue, BigDLModule}
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.dllib.tensor.{Tensor, TensorNumericMath}
-import com.intel.analytics.bigdl.dllib.utils.BigDLSpecHelper
+import com.intel.analytics.bigdl.dllib.utils.{BigDLSpecHelper, TestUtils}
 import com.intel.analytics.bigdl.dllib.utils.serializer.converters.DataConverter
 import org.reflections.Reflections
 import org.reflections.scanners.SubTypesScanner
@@ -432,7 +432,8 @@ class SerializerSpec extends BigDLSpecHelper {
       try {
         val ins = Class.forName(clsWholeName)
         val testClass = ins.getConstructors()(0).newInstance()
-        require(testClass.isInstanceOf[ModuleSerializationTest], s"$clsWholeName should be a " +
+        TestUtils.conditionFailTest(testClass.isInstanceOf[ModuleSerializationTest],
+          s"$clsWholeName should be a " +
           s"subclass of com.intel.analytics.bigdl.dllib.utils.serializer.ModuleSerializationTest")
         testClass.asInstanceOf[ModuleSerializationTest].test()
       } catch {

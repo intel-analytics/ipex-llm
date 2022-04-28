@@ -19,6 +19,7 @@ package com.intel.analytics.bigdl.dllib.nn
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.dllib.tensor.{Storage, Tensor}
 import com.intel.analytics.bigdl.dllib.utils.RandomGenerator._
+import com.intel.analytics.bigdl.dllib.utils.TestUtils
 import com.intel.analytics.bigdl.dllib.utils.serializer.ModuleSerializationTest
 import org.scalatest.{FlatSpec, Matchers}
 
@@ -118,7 +119,7 @@ class SpatialWithinChannelLRNSpec extends FlatSpec with Matchers{
     val out = layer.forward(input)
 
     out.map(expected, (a, b) => {
-      assert(Math.abs(a - b) < 1e-6);
+      TestUtils.conditionFailTest(Math.abs(a - b) < 1e-6);
       a
     })
   }

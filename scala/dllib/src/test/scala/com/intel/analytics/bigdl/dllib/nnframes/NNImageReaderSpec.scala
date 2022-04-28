@@ -16,7 +16,7 @@
 
 package com.intel.analytics.bigdl.dllib.nnframes
 
-import com.intel.analytics.bigdl.dllib.utils.Engine
+import com.intel.analytics.bigdl.dllib.utils.{Engine, TestUtils}
 import com.intel.analytics.bigdl.dllib.utils.RandomGenerator.RNG
 import org.apache.spark.SparkContext
 import org.apache.spark.sql.{Row, SQLContext}
@@ -49,20 +49,20 @@ class NNImageReaderSpec extends FlatSpec with Matchers with BeforeAndAfter {
 
   "NNImageReader" should "has correct result for pascal" in {
     val imageDF = NNImageReader.readImages(pascalResource.getFile, sc)
-    assert(imageDF.count() == 1)
+    TestUtils.conditionFailTest(imageDF.count() == 1)
     val r = imageDF.head().getAs[Row](0)
-    assert(r.getString(0).endsWith("000025.jpg"))
-    assert(r.getInt(1) == 375)
-    assert(r.getInt(2) == 500)
-    assert(r.getInt(3) == 3)
-    assert(r.getInt(4) == CvType.CV_8UC3)
-    assert(r.getAs[Array[Byte]](5).length == 562500)
+    TestUtils.conditionFailTest(r.getString(0).endsWith("000025.jpg"))
+    TestUtils.conditionFailTest(r.getInt(1) == 375)
+    TestUtils.conditionFailTest(r.getInt(2) == 500)
+    TestUtils.conditionFailTest(r.getInt(3) == 3)
+    TestUtils.conditionFailTest(r.getInt(4) == CvType.CV_8UC3)
+    TestUtils.conditionFailTest(r.getAs[Array[Byte]](5).length == 562500)
   }
 
   "NNImageReader" should "has correct result for imageNet" in {
     val imageDirectory = imageNetResource + "n02110063/"
     val imageDF = NNImageReader.readImages(imageDirectory, sc)
-    assert(imageDF.count() == 3)
+    TestUtils.conditionFailTest(imageDF.count() == 3)
     val expectedRows = Seq(
       (imageDirectory + "n02110063_8651.JPEG", 99, 129, 3, CvType.CV_8UC3),
       (imageDirectory + "n02110063_11239.JPEG", 333, 500, 3, CvType.CV_8UC3),
@@ -71,13 +71,13 @@ class NNImageReaderSpec extends FlatSpec with Matchers with BeforeAndAfter {
     val actualRows = imageDF.rdd.collect().map(r => r.getAs[Row](0)).map { r =>
       (r.getString(0), r.getInt(1), r.getInt(2), r.getInt(3), r.getInt(4))
     }
-    assert (expectedRows.toSet == actualRows.toSet)
+    TestUtils.conditionFailTest (expectedRows.toSet == actualRows.toSet)
   }
 
   "NNImageReader" should "has correct result for imageNet with channel 1 and 4" in {
     val imageDirectory = imageNetResource + "n99999999/"
     val imageDF = NNImageReader.readImages(imageDirectory, sc)
-    assert(imageDF.count() == 3)
+    TestUtils.conditionFailTest(imageDF.count() == 3)
     val expectedRows = Seq(
       (imageDirectory + "n02105855_2933.JPEG", 189, 213, 4, CvType.CV_8UC4),
       (imageDirectory + "n02105855_test1.bmp", 527, 556, 1, CvType.CV_8UC1),
@@ -86,66 +86,66 @@ class NNImageReaderSpec extends FlatSpec with Matchers with BeforeAndAfter {
     val actualRows = imageDF.rdd.collect().map(r => r.getAs[Row](0)).map { r =>
       (r.getString(0), r.getInt(1), r.getInt(2), r.getInt(3), r.getInt(4))
     }
-    assert (expectedRows.toSet == actualRows.toSet)
+    TestUtils.conditionFailTest (expectedRows.toSet == actualRows.toSet)
   }
 
   "NNImageReader" should "read recursively by wildcard path" in {
     val imageDF = NNImageReader.readImages(imageNetResource.getFile + "*", sc)
-    assert(imageDF.count() == 11)
+    TestUtils.conditionFailTest(imageDF.count() == 11)
   }
 
   "NNImageReader" should "read from multiple path" in {
     val imageDirectory1 = imageNetResource + "n02110063/"
     val imageDirectory2 = imageNetResource + "n99999999/"
     val imageDF = NNImageReader.readImages(imageDirectory1 + "," + imageDirectory2, sc)
-    assert(imageDF.count() == 6)
+    TestUtils.conditionFailTest(imageDF.count() == 6)
   }
 
   "read png image" should "work with image_codec" in {
     val resource = getClass.getClassLoader.getResource("png/zoo.png")
     val df = NNImageReader.readImages(resource.getFile, sc, imageCodec = 1)
-    assert(df.count() == 1)
+    TestUtils.conditionFailTest(df.count() == 1)
     val r = df.head().getAs[Row](0)
-    assert(r.getString(0).endsWith("png/zoo.png"))
+    TestUtils.conditionFailTest(r.getString(0).endsWith("png/zoo.png"))
     // should only have 3 channels with image_codec
-    assert(r.getInt(3) == 3)
-    assert(r.getInt(4) == CvType.CV_8UC3)
+    TestUtils.conditionFailTest(r.getInt(3) == 3)
+    TestUtils.conditionFailTest(r.getInt(4) == CvType.CV_8UC3)
   }
 
   "read gray scale image" should "work" in {
     val resource = getClass.getClassLoader.getResource("gray/gray.bmp")
     val df = NNImageReader.readImages(resource.getFile, sc)
-    assert(df.count() == 1)
+    TestUtils.conditionFailTest(df.count() == 1)
     val r = df.head().getAs[Row](0)
-    assert(r.getString(0).endsWith("gray.bmp"))
-    assert(r.getInt(1) == 50)
-    assert(r.getInt(2) == 50)
-    assert(r.getInt(3) == 1)
-    assert(r.getInt(4) == CvType.CV_8UC1)
+    TestUtils.conditionFailTest(r.getString(0).endsWith("gray.bmp"))
+    TestUtils.conditionFailTest(r.getInt(1) == 50)
+    TestUtils.conditionFailTest(r.getInt(2) == 50)
+    TestUtils.conditionFailTest(r.getInt(3) == 1)
+    TestUtils.conditionFailTest(r.getInt(4) == CvType.CV_8UC1)
   }
 
   "read gray scale image with resize" should "work" in {
     val resource = getClass.getClassLoader.getResource("gray/gray.bmp")
     val df = NNImageReader.readImages(resource.getFile, sc, -1, 300, 300)
-    assert(df.count() == 1)
+    TestUtils.conditionFailTest(df.count() == 1)
     val r = df.head().getAs[Row](0)
-    assert(r.getString(0).endsWith("gray.bmp"))
-    assert(r.getInt(1) == 300)
-    assert(r.getInt(2) == 300)
-    assert(r.getInt(3) == 1)
-    assert(r.getInt(4) == CvType.CV_8UC1)
+    TestUtils.conditionFailTest(r.getString(0).endsWith("gray.bmp"))
+    TestUtils.conditionFailTest(r.getInt(1) == 300)
+    TestUtils.conditionFailTest(r.getInt(2) == 300)
+    TestUtils.conditionFailTest(r.getInt(3) == 1)
+    TestUtils.conditionFailTest(r.getInt(4) == CvType.CV_8UC1)
   }
 
   "read gray scale image with image_codec" should "work" in {
     val resource = getClass.getClassLoader.getResource("gray/gray.bmp")
     val df = NNImageReader.readImages(resource.getFile, sc, imageCodec = 1)
-    assert(df.count() == 1)
+    TestUtils.conditionFailTest(df.count() == 1)
     val r = df.head().getAs[Row](0)
-    assert(r.getString(0).endsWith("gray.bmp"))
-    assert(r.getInt(1) == 50)
-    assert(r.getInt(2) == 50)
-    assert(r.getInt(3) == 3)
-    assert(r.getInt(4) == CvType.CV_8UC3)
+    TestUtils.conditionFailTest(r.getString(0).endsWith("gray.bmp"))
+    TestUtils.conditionFailTest(r.getInt(1) == 50)
+    TestUtils.conditionFailTest(r.getInt(2) == 50)
+    TestUtils.conditionFailTest(r.getInt(3) == 3)
+    TestUtils.conditionFailTest(r.getInt(4) == CvType.CV_8UC3)
   }
 
   "NNImageReader" should "support withOriginColumn" in {
@@ -154,12 +154,12 @@ class NNImageReaderSpec extends FlatSpec with Matchers with BeforeAndAfter {
 
     val imageOrigin = imageDF.head().getAs[Row](0).getString(0)
     val extractedOrigin = withOriginDF.select("origin").head().getString(0)
-    assert(imageOrigin == extractedOrigin)
+    TestUtils.conditionFailTest(imageOrigin == extractedOrigin)
   }
 
   "image reader with resize" should "work" in {
     val imageDF = NNImageReader.readImages(pascalResource.getFile, sc,
       resizeH = 128, resizeW = 128)
-    assert(imageDF.count() == 1)
+    TestUtils.conditionFailTest(imageDF.count() == 1)
   }
 }

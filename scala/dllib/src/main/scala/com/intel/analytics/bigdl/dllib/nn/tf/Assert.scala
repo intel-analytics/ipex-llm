@@ -28,6 +28,7 @@ import scala.reflect.ClassTag
  * Assert will assert the first input to be true, if not, throw the message in the second
  * input. Assert has no output.
  */
+// scalastyle:off
 private[bigdl] class Assert[T: ClassTag]()
   (implicit ev: TensorNumeric[T]) extends Operation[Table, Activity, T] {
   override def updateOutput(input: Table): Tensor[T] = {
@@ -41,3 +42,4 @@ private[bigdl] class Assert[T: ClassTag]()
     null
   }
 }
+// scalastyle:on

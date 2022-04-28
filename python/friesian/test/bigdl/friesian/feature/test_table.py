@@ -1153,7 +1153,8 @@ class TestTable(TestCase):
         columns = feature_tbl.columns
         assert columns == ["line"]
         rows = feature_tbl.df.collect()
-        assert rows[0][0] == "col1,col2,col3"  # when read as text, header will be treated as the first row
+        # when read as text, header will be treated as the first row
+        assert rows[0][0] == "col1,col2,col3"
         assert rows[3][0] == "4.0,x,aaa"
 
     def test_category_encode_and_one_hot_encode(self):

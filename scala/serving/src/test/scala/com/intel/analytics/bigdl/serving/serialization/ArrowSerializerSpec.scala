@@ -25,6 +25,7 @@ import org.apache.arrow.vector.{FieldVector, Float4Vector, IntVector, VectorSche
 import org.scalatest.{FlatSpec, Matchers}
 import com.intel.analytics.bigdl.serving.serialization.ArrowSerializer.getSchema
 import scala.collection.JavaConverters._
+import com.intel.analytics.bigdl.serving.utils.AssertUtils
 
 class ArrowSerializerSpec extends FlatSpec with Matchers {
   "Arrow Serialization raw data" should "work" in {
@@ -51,7 +52,7 @@ class ArrowSerializerSpec extends FlatSpec with Matchers {
       val schemaRoot = reader.getVectorSchemaRoot
       schemaRoot
     }
-    require(schema.getFields.size() == 2, "schema number wrong.")
+    AssertUtils.conditionFailTest(schema.getFields.size() == 2, "schema number wrong.")
   }
   "Arrow example" should "work" in {
     val allocator = new RootAllocator(Int.MaxValue)
@@ -79,10 +80,10 @@ class ArrowSerializerSpec extends FlatSpec with Matchers {
     while (reader.loadNextBatch()) {
       val schemaRoot = reader.getVectorSchemaRoot
       schemaRoot.getFieldVectors.asScala.foreach(v => {
-        require(v.getValueCount == 5, "vector size wrong")
+        AssertUtils.conditionFailTest(v.getValueCount == 5, "vector size wrong")
       })
     }
-    require(schema.getFields.size() == 2, "schema number wrong.")
+    AssertUtils.conditionFailTest(schema.getFields.size() == 2, "schema number wrong.")
   }
 
 }

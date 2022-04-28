@@ -90,6 +90,22 @@
 
     We demonstrates how to leverage Chronos's built-in models ie. MTNet, to do time series forecasting. Then perform anomaly detection on predicted value with [ThresholdDetector][Threshold].
 
+---------------------------
+
+- [**Help pytorch-forecasting improve the training speed of DeepAR model**][pytorch_forecasting_deepar]
+
+    > ![](../../../../image/GitHub-Mark-32px.png)[View source on GitHub][pytorch_forecasting_deepar]
+
+    Chronos can help a 3rd party time series lib to improve the performance (both training and inferencing) and accuracy. This use-case shows Chronos can easily help pytorch-forecasting speed up the training of DeepAR model.
+
+---------------------------
+
+- [**Help pytorch-forecasting improve the training speed of TFT model**][pytorch_forecasting_tft]
+
+    > ![](../../../../image/GitHub-Mark-32px.png)[View source on GitHub][pytorch_forecasting_tft]
+
+    Chronos can help a 3rd party time series lib to improve the performance (both training and inferencing) and accuracy. This use-case shows Chronos can easily help pytorch-forecasting speed up the training of TFT model.
+
 
 [DBScan]: <../../PythonAPI/Chronos/anomaly_detectors.html#dbscandetector>
 [AE]: <../../PythonAPI/Chronos/anomaly_detectors.html#aedetector>
@@ -109,3 +125,5 @@
 [stock_prediction_prophet]: <https://github.com/intel-analytics/BigDL/blob/main/python/chronos/use-case/fsi/stock_prediction_prophet.ipynb>
 [AIOps_anomaly_detect_unsupervised]: <https://github.com/intel-analytics/BigDL/blob/main/python/chronos/use-case/AIOps/AIOps_anomaly_detect_unsupervised.ipynb>
 [AIOps_anomaly_detect_unsupervised_forecast_based]: <https://github.com/intel-analytics/BigDL/blob/main/python/chronos/use-case/AIOps/AIOps_anomaly_detect_unsupervised_forecast_based.ipynb>
+[pytorch_forecasting_deepar]: <https://github.com/intel-analytics/BigDL/tree/main/python/chronos/use-case/pytorch-forecasting/DeepAR>
+[pytorch_forecasting_tft]: <https://github.com/intel-analytics/BigDL/tree/main/python/chronos/use-case/pytorch-forecasting/TFT>

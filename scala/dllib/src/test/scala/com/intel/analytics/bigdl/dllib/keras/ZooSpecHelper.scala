@@ -153,7 +153,7 @@ abstract class ZooSpecHelper extends FlatSpec with Matchers with BeforeAndAfter 
 //    model.saveModel(serFile.getAbsolutePath, overWrite = true)
 //    val loadedModel = loader(serFile.getAbsolutePath, null)
 //      .asInstanceOf[ZooModel[Tensor[Float], Tensor[Float], Float]]
-//    require(loadedModel.modules.length == 1)
+//    TestUtils.conditionFailTest(loadedModel.modules.length == 1)
 //    compareOutputAndGradInput(model, loadedModel, input, precision)
 //  }
 //
@@ -165,7 +165,7 @@ abstract class ZooSpecHelper extends FlatSpec with Matchers with BeforeAndAfter 
 //    model.saveModel(serFile.getAbsolutePath, overWrite = true)
 //    val loadedModel = loader(serFile.getAbsolutePath, null)
 //      .asInstanceOf[ZooModel[Table, Tensor[Float], Float]]
-//    require(loadedModel.modules.length == 1)
+//    TestUtils.conditionFailTest(loadedModel.modules.length == 1)
 //    compareOutputAndGradInputTable2Tensor(model, loadedModel, input, precision)
 //  }
 }

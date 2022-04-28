@@ -32,8 +32,9 @@ class FriesianRedisSpec extends ZooSpecHelper {
     utils.MSet("", data)
     val keys = Array("a", "2tower_user", "standalone0a", "standalone0b")
     val result = utils.MGet("", keys)
-    assert(result.size() == 4)
-    assert(result.get(0) == "" && result.get(2) == "a" && result.get(3) == "b")
+    TestUtils.conditionFailTest(result.size() == 4)
+    TestUtils.conditionFailTest(result.get(0) == "" && result.get(2) == "a"
+      && result.get(3) == "b")
   }
 
   "Lettuce utils standalone 1 replica" should "work properly" in {
@@ -46,8 +47,9 @@ class FriesianRedisSpec extends ZooSpecHelper {
     utils.MSet("", data)
     val keys = Array("a", "2tower_user", "standalone1a", "standalone1b")
     val result = utils.MGet("", keys)
-    assert(result.size() == 4)
-    assert(result.get(0) == "" && result.get(2) == "1rea" && result.get(3) == "1reb")
+    TestUtils.conditionFailTest(result.size() == 4)
+    TestUtils.conditionFailTest(
+      result.get(0) == "" && result.get(2) == "1rea" && result.get(3) == "1reb")
   }
 
   "Lettuce utils sentinel 1 replica" should "work properly" in {
@@ -57,8 +59,9 @@ class FriesianRedisSpec extends ZooSpecHelper {
     utils.MSet("", data)
     val keys = Array("a", "2tower_user", "sentinel1a", "sentinel1b")
     val result = utils.MGet("", keys)
-    assert(result.size() == 4)
-    assert(result.get(0) == "" && result.get(2) == "1srea" && result.get(3) == "1sreb")
+    TestUtils.conditionFailTest(result.size() == 4)
+    TestUtils.conditionFailTest(
+      result.get(0) == "" && result.get(2) == "1srea" && result.get(3) == "1sreb")
   }
 
   "Lettuce utils cluster 0" should "work properly" in {
@@ -72,8 +75,9 @@ class FriesianRedisSpec extends ZooSpecHelper {
     utils.MSet("", data)
     val keys = Array("a", "2tower_user", "clustera", "clusterb")
     val result = utils.MGet("", keys)
-    assert(result.size() == 4)
-    assert(result.get(0) == "" && result.get(2) == "clua" && result.get(3) == "club")
+    TestUtils.conditionFailTest(result.size() == 4)
+    TestUtils.conditionFailTest(
+      result.get(0) == "" && result.get(2) == "clua" && result.get(3) == "club")
   }
 
   "Lettuce utils cluster 1" should "work properly" in {
@@ -89,8 +93,9 @@ class FriesianRedisSpec extends ZooSpecHelper {
     utils.MSet("item", data)
     val keys = Array("a", "2tower_user", "1", "2")
     val result = utils.MGet("item", keys)
-    assert(result.size() == 4)
-    assert(result.get(0) == "" && result.get(2) == "11" && result.get(3) == "12")
+    TestUtils.conditionFailTest(result.size() == 4)
+    TestUtils.conditionFailTest(
+      result.get(0) == "" && result.get(2) == "11" && result.get(3) == "12")
   }
 
   "Lettuce utils cluster 2" should "work properly" in {
@@ -107,7 +112,8 @@ class FriesianRedisSpec extends ZooSpecHelper {
     utils.MSet("user2", data)
     val keys = Array("1", "2", "3", "4", "5", "6", "7", "8", "9", "10")
     val result = utils.MGet("item", keys)
-    assert(result.size() == 10)
-    assert(result.get(0) == "21" && result.get(2) == "23" && result.get(3) == "24")
+    TestUtils.conditionFailTest(result.size() == 10)
+    TestUtils.conditionFailTest(
+      result.get(0) == "21" && result.get(2) == "23" && result.get(3) == "24")
   }
 }

@@ -17,6 +17,7 @@
 package com.intel.analytics.bigdl.dllib.feature.transform.vision.image.util
 
 import com.intel.analytics.bigdl.dllib.tensor.{Storage, Tensor}
+import com.intel.analytics.bigdl.dllib.utils.TestUtils
 import org.scalatest.{FlatSpec, Matchers}
 
 class BoundingBoxSpec extends FlatSpec with Matchers {
@@ -44,21 +45,21 @@ class BoundingBoxSpec extends FlatSpec with Matchers {
     val bbox1 = BoundingBox(0.2f, 0.3f, 0.3f, 0.5f)
     val bbox2 = BoundingBox(0.1f, 0.1f, 0.3f, 0.4f)
     val overlap = bbox1.jaccardOverlap(bbox2)
-    assert(Math.abs(overlap - 1.0 / 7) < 1e-6)
+    TestUtils.conditionFailTest(Math.abs(overlap - 1.0 / 7) < 1e-6)
   }
 
   "jaccardOverlap fully contain" should "work properly" in {
     val bbox1 = BoundingBox(0.2f, 0.3f, 0.3f, 0.5f)
     val bbox2 = BoundingBox(0.1f, 0.1f, 0.4f, 0.6f)
     val overlap = bbox1.jaccardOverlap(bbox2)
-    assert(Math.abs(overlap - 2.0 / 15) < 1e-6)
+    TestUtils.conditionFailTest(Math.abs(overlap - 2.0 / 15) < 1e-6)
   }
 
   "jaccardOverlap outside" should "work properly" in {
     val bbox1 = BoundingBox(0.2f, 0.3f, 0.3f, 0.5f)
     val bbox2 = BoundingBox(0f, 0f, 0.1f, 0.1f)
     val overlap = bbox1.jaccardOverlap(bbox2)
-    assert(Math.abs(overlap - 0) < 1e-6)
+    TestUtils.conditionFailTest(Math.abs(overlap - 0) < 1e-6)
   }
 
   "projectBbox" should "work properly" in {
@@ -67,10 +68,10 @@ class BoundingBoxSpec extends FlatSpec with Matchers {
     val projBox = new BoundingBox()
     val state = box1.projectBbox(box2, projBox)
     state should be(true)
-    assert(Math.abs(projBox.x1 - 0.509561f) < 1e-5)
-    assert(Math.abs(projBox.y1 - 0f) < 1e-5)
-    assert(Math.abs(projBox.x2 - 0.853014f) < 1e-5)
-    assert(Math.abs(projBox.y2 - 0.949717f) < 1e-5)
+    TestUtils.conditionFailTest(Math.abs(projBox.x1 - 0.509561f) < 1e-5)
+    TestUtils.conditionFailTest(Math.abs(projBox.y1 - 0f) < 1e-5)
+    TestUtils.conditionFailTest(Math.abs(projBox.x2 - 0.853014f) < 1e-5)
+    TestUtils.conditionFailTest(Math.abs(projBox.y2 - 0.949717f) < 1e-5)
   }
 
   "meetEmitCenterConstraint true" should "work properly" in {
@@ -112,12 +113,12 @@ class BoundingBoxSpec extends FlatSpec with Matchers {
 
     val out = BboxUtil.getLocPredictions(loc, numPredsPerClass, numLocClasses, shareLoc)
 
-    assert(out.length == num)
+    TestUtils.conditionFailTest(out.length == num)
 
     (0 until num).foreach(i => {
-      assert(out(i).length == 1)
+      TestUtils.conditionFailTest(out(i).length == 1)
       val bboxes = out(i)(0)
-      assert(bboxes.size(1) == numPredsPerClass)
+      TestUtils.conditionFailTest(bboxes.size(1) == numPredsPerClass)
       val startValue = i * numPredsPerClass * 0.1f
       var j = 0
       while (j < numPredsPerClass) {
@@ -131,7 +132,7 @@ class BoundingBoxSpec extends FlatSpec with Matchers {
   }
 
   def expectNear(v1: Float, v2: Double, eps: Double): Unit = {
-    assert(Math.abs(v1 - v2) < eps)
+    TestUtils.conditionFailTest(Math.abs(v1 - v2) < eps)
   }
 
   "decodeBoxes" should "work properly" in {
@@ -159,7 +160,7 @@ class BoundingBoxSpec extends FlatSpec with Matchers {
 
     val decodedBboxes = BboxUtil.decodeBoxes(priorBoxes, priorVariances, false, bboxes, true)
 
-    assert(decodedBboxes.size(1) == 4)
+    TestUtils.conditionFailTest(decodedBboxes.size(1) == 4)
 
     i = 1
     while (i < 5) {
@@ -190,8 +191,8 @@ class BoundingBoxSpec extends FlatSpec with Matchers {
     }
 
     val (boxes, variances) = BboxUtil.getPriorBboxes(prior, num_priors)
-    assert(boxes.size(1) == num_priors)
-    assert(variances.size(1) == num_priors)
+    TestUtils.conditionFailTest(boxes.size(1) == num_priors)
+    TestUtils.conditionFailTest(variances.size(1) == num_priors)
     for (i <- 0 until num_priors) {
       expectNear(boxes.valueAt(i + 1, 1), i * 0.1, 1e-5)
       expectNear(boxes.valueAt(i + 1, 2), i * 0.1, 1e-5)

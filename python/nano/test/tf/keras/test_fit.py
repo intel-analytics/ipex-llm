@@ -19,12 +19,15 @@ import tensorflow as tf
 from tensorflow.keras import layers
 from bigdl.nano.tf.keras import Sequential
 
-URI = os.environ['FTP_URI']
+if "FTP_URI" in os.environ:
+    URI = os.environ['FTP_URI']
+    dataset_url = URI + "/BigDL-data/flower_photos.tar.gz"
+else:
+    dataset_url = "http://download.tensorflow.org/example_images/flower_photos.tgz"
 batch_size, img_height, img_width = 32, 180, 180
 
 
 def dataset_generation():
-    dataset_url = URI + "/BigDL-data/flower_photos.tar.gz"
     data_dir = tf.keras.utils.get_file('flower_photos', origin=dataset_url, untar=True)
     data_dir = pathlib.Path(data_dir)
 

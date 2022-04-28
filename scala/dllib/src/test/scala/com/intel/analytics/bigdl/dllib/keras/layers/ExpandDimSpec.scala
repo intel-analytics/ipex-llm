@@ -17,7 +17,7 @@
 package com.intel.analytics.bigdl.dllib.keras.layers
 
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
-import com.intel.analytics.bigdl.dllib.utils.Shape
+import com.intel.analytics.bigdl.dllib.utils.{Shape, TestUtils}
 import com.intel.analytics.bigdl.dllib.keras.autograd.Parameter
 import com.intel.analytics.bigdl.dllib.keras.Model
 import com.intel.analytics.bigdl.dllib.keras.Sequential
@@ -34,7 +34,7 @@ class Expand_dimSpec extends KerasBaseSpec {
     seq.getOutputShape().toSingle().toArray should be(Array(1, 3))
     val inputData = Tensor[Float](Array(3)).randn()
     val out = seq.forward(inputData).toTensor[Float]
-    assert(out.size().deep == Array(1, 3).deep)
+    TestUtils.conditionFailTest(out.size().deep == Array(1, 3).deep)
     out.toTensor[Float].almostEqual(inputData.addSingletonDimension(dim = 1), 1e-4)
   }
 
@@ -45,7 +45,7 @@ class Expand_dimSpec extends KerasBaseSpec {
     seq.getOutputShape().toSingle().toArray should be(Array(3, 1, 4))
     val inputData = Tensor[Float](Array(2, 1, 6)).rand()
     val out = seq.forward(inputData).toTensor[Float]
-    assert(out.size().deep == Array(3, 1, 4).deep)
+    TestUtils.conditionFailTest(out.size().deep == Array(3, 1, 4).deep)
     out.toTensor[Float].almostEqual(inputData.addSingletonDimension(dim = 1), 1e-4)
   }
 }

@@ -13,18 +13,3 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-
-
-from bigdl.dllib.nncontext import *
-from bigdl.dllib.utils.engine import prepare_env
-from bigdl.dllib.utils.common import *
-from bigdl.ppml.fl_server import *
-from bigdl.ppml.utils import *
-import bigdl
-
-prepare_env()
-creator_classes = JavaCreator.get_creator_class()[:]
-JavaCreator.set_creator_class([])
-JavaCreator.add_creator_class("com.intel.analytics.bigdl.ppml.python.PythonPPML")
-for clz in creator_classes:
-    JavaCreator.add_creator_class(clz)

@@ -24,7 +24,7 @@ import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.integration.torch.{TH, TorchSpec}
 import com.intel.analytics.bigdl.dllib.models.Inception
 import com.intel.analytics.bigdl.dllib.utils.RandomGenerator._
-import com.intel.analytics.bigdl.dllib.utils.{T, Table}
+import com.intel.analytics.bigdl.dllib.utils.{T, Table, TestUtils}
 import com.intel.analytics.bigdl.numeric.NumericFloat
 
 import scala.math._
@@ -167,12 +167,13 @@ class InceptionSpec extends TorchSpec {
     val parameters = model.getParameters()._1.asInstanceOf[Tensor[Double]]
     println(s"model size: ${parameters.nElement()}")
     val parametersInitTorch = TH.map("parameters_initial", suffix).asInstanceOf[Tensor[Double]]
-    require(parameters == parametersInitTorch, "parameter compare failed")
+    TestUtils.conditionFailTest(parameters == parametersInitTorch, "parameter compare failed")
 
     val gradGarametersInitTorch = TH.map("gradParameters_initial", suffix)
       .asInstanceOf[Tensor[Double]]
     val gradparameters = model.getParameters()._2.asInstanceOf[Tensor[Double]]
-    require(gradparameters == gradGarametersInitTorch, "gradparameter compare failed")
+    TestUtils.conditionFailTest(gradparameters == gradGarametersInitTorch,
+      "gradparameter compare failed")
 
     val (weights, grad) = model.getParameters()
     val criterion = new ClassNLLCriterion[Double]()
@@ -188,7 +189,7 @@ class InceptionSpec extends TorchSpec {
     val errTorch = TH.map("err", suffix).asInstanceOf[Table][Double](1)
     val errTest = criterion.forward(outputTest, labels)
     println(s"err:${abs(errTest - errTorch)}")
-    assert(abs(errTest - errTorch) < 4e-15)
+    TestUtils.conditionFailTest(abs(errTest - errTorch) < 4e-15)
 
     val gradOutputTorch = TH.map("gradOutput", suffix).asInstanceOf[Tensor[Double]]
     val gradOutputTest = criterion.backward(outputTest, labels)
@@ -355,12 +356,13 @@ class InceptionSpec extends TorchSpec {
     model.zeroGradParameters()
     println(s"model size: ${parameters.nElement()}")
     val parameterTorch = TH.map("parameters_initial", suffix).asInstanceOf[Tensor[Double]]
-    require(parameters == parameterTorch, "parameter compare failed")
+    TestUtils.conditionFailTest(parameters == parameterTorch, "parameter compare failed")
 
     val gradparameters = model.getParameters()._2.asInstanceOf[Tensor[Double]]
     val parametersTorch = TH.map("parameters", suffix).asInstanceOf[Tensor[Double]]
     val gradparameterTorch = TH.map("gradParameters_initial", suffix).asInstanceOf[Tensor[Double]]
-    require(gradparameters == gradparameterTorch, "gradparameter compare failed")
+    TestUtils.conditionFailTest(
+      gradparameters == gradparameterTorch, "gradparameter compare failed")
 
     val (weights, grad) = model.getParameters()
     val criterion = new ClassNLLCriterion[Double]()
@@ -392,7 +394,7 @@ class InceptionSpec extends TorchSpec {
     val errTest = criterion.forward(outputTest, labels)
     val errTorch = TH.map("err", suffix).asInstanceOf[Table][Double](1)
     println(s"err:${abs(errTest - errTorch)}")
-    assert(abs(errTest - errTorch) == 0)
+    TestUtils.conditionFailTest(abs(errTest - errTorch) == 0)
 
     val gradOutputTest = criterion.backward(outputTest, labels)
     val gradOutputTorch = TH.map("gradOutput", suffix).asInstanceOf[Tensor[Double]]
@@ -541,12 +543,13 @@ class InceptionSpec extends TorchSpec {
     val parameters = model.getParameters()._1.asInstanceOf[Tensor[Double]]
     println(s"model size: ${parameters.nElement()}")
     val parametersInitTorch = TH.map("parameters_initial", suffix).asInstanceOf[Tensor[Double]]
-    require(parameters == parametersInitTorch, "parameter compare failed")
+    TestUtils.conditionFailTest(parameters == parametersInitTorch, "parameter compare failed")
 
     val gradGarametersInitTorch = TH.map("gradParameters_initial", suffix)
       .asInstanceOf[Tensor[Double]]
     val gradparameters = model.getParameters()._2.asInstanceOf[Tensor[Double]]
-    require(gradparameters == gradGarametersInitTorch, "gradparameter compare failed")
+    TestUtils.conditionFailTest(gradparameters == gradGarametersInitTorch,
+      "gradparameter compare failed")
 
     val (weights, grad) = model.getParameters()
     val criterion = new ClassNLLCriterion[Double]()
@@ -562,7 +565,7 @@ class InceptionSpec extends TorchSpec {
     val errTorch = TH.map("err", suffix).asInstanceOf[Table][Double](1)
     val errTest = criterion.forward(outputTest, labels)
     println(s"err:${abs(errTest - errTorch)}")
-    assert(abs(errTest - errTorch) < 4e-10)
+    TestUtils.conditionFailTest(abs(errTest - errTorch) < 4e-10)
 
     val gradOutputTorch = TH.map("gradOutput", suffix).asInstanceOf[Tensor[Double]]
     val gradOutputTest = criterion.backward(outputTest, labels)

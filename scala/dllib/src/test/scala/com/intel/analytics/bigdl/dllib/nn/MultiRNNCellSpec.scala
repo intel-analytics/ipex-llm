@@ -113,12 +113,12 @@ class MultiRNNCellSpec extends FlatSpec with BeforeAndAfter with Matchers {
 //    val gradInput2 = model2.backward(input, gradOutput).toTensor[Double]
 //
 //    output.map(output2, (v1, v2) => {
-//      assert(abs(v1 - v2) < 1e-6)
+//      TestUtils.conditionFailTest(abs(v1 - v2) < 1e-6)
 //      v1
 //    })
 //
 //    gradInput.map(gradInput2, (v1, v2) => {
-//      assert(abs(v1 - v2) < 1e-6)
+//      TestUtils.conditionFailTest(abs(v1 - v2) < 1e-6)
 //      v1
 //    })
 //  }
@@ -161,16 +161,16 @@ class MultiRNNCellSpec extends FlatSpec with BeforeAndAfter with Matchers {
 //    val gradient2 = model2.getParameters()._2
 //
 //    output.map(output2, (v1, v2) => {
-//      assert(abs(v1 - v2) < 1e-6)
+//      TestUtils.conditionFailTest(abs(v1 - v2) < 1e-6)
 //      v1
 //    })
 //
 //    gradInput.map(gradInput2, (v1, v2) => {
-//      assert(abs(v1 - v2) < 1e-6)
+//      TestUtils.conditionFailTest(abs(v1 - v2) < 1e-6)
 //      v1
 //    })
 //
-//    require(gradient.almostEqual(gradient2, 1e-8) == true)
+//    TestUtils.conditionFailTest(gradient.almostEqual(gradient2, 1e-8) == true)
 //  }
 
   "A MultiRNNCell " should "generate correct output with convlstm RecurrentDecoder" in {
@@ -220,7 +220,7 @@ class MultiRNNCellSpec extends FlatSpec with BeforeAndAfter with Matchers {
     val output2 = model2.forward(input2).toTensor[Double]
 
     output.map(output2, (v1, v2) => {
-      assert(abs(v1 - v2) < 1e-6)
+      TestUtils.conditionFailTest(abs(v1 - v2) < 1e-6)
       v1
     })
   }
@@ -327,17 +327,17 @@ class MultiRNNCellSpec extends FlatSpec with BeforeAndAfter with Matchers {
     val finalOutput = Tensor[Double](batchSize, seqLength, hiddenSize, 3, 3)
     finalOutput.narrow(2, 1, 1).copy(output4.toTable[Tensor[Double]](1))
     finalOutput.narrow(2, 2, 1).copy(output5.toTable[Tensor[Double]](1))
-    require(output.almostEqual(finalOutput, 1e-8) == true)
+    TestUtils.conditionFailTest(output.almostEqual(finalOutput, 1e-8) == true)
 
-    require(gradient.narrow(1, 1, gradient.nElement()/2)
+    TestUtils.conditionFailTest(gradient.narrow(1, 1, gradient.nElement()/2)
       .almostEqual(model2.getParameters()._2, 1e-8) == true)
-    require(gradient.narrow(1, gradient.nElement()/2 + 1, gradient.nElement()/2)
+    TestUtils.conditionFailTest(gradient.narrow(1, gradient.nElement()/2 + 1, gradient.nElement()/2)
       .almostEqual(model4.getParameters()._2, 1e-8) == true)
 
     val newGradInput = Tensor[Double](batchSize, seqLength, hiddenSize, 3, 3)
     newGradInput.narrow(2, 1, 1).copy(gradInput2.toTable[Tensor[Double]](1))
     newGradInput.narrow(2, 2, 1).copy(gradInput3.toTable[Tensor[Double]](1))
-    require(gradInput.almostEqual(newGradInput, 1e-8) == true)
+    TestUtils.conditionFailTest(gradInput.almostEqual(newGradInput, 1e-8) == true)
   }
 
   "A MultiRNNCell " should "generate correct output with lstm RecurrentDecoder" in {
@@ -377,7 +377,7 @@ class MultiRNNCellSpec extends FlatSpec with BeforeAndAfter with Matchers {
     val output2 = model2.forward(input2).toTensor[Double]
 
     output.map(output2, (v1, v2) => {
-      assert(abs(v1 - v2) < 1e-6)
+      TestUtils.conditionFailTest(abs(v1 - v2) < 1e-6)
       v1
     })
   }
@@ -482,17 +482,17 @@ class MultiRNNCellSpec extends FlatSpec with BeforeAndAfter with Matchers {
     val finalOutput = Tensor[Double](batchSize, seqLength, hiddenSize)
     finalOutput.narrow(2, 1, 1).copy(output4.toTable[Tensor[Double]](1))
     finalOutput.narrow(2, 2, 1).copy(output5.toTable[Tensor[Double]](1))
-    require(output.almostEqual(finalOutput, 1e-8) == true)
+    TestUtils.conditionFailTest(output.almostEqual(finalOutput, 1e-8) == true)
 
-    require(gradient.narrow(1, 1, gradient.nElement()/2)
+    TestUtils.conditionFailTest(gradient.narrow(1, 1, gradient.nElement()/2)
       .almostEqual(model2.getParameters()._2, 1e-8) == true)
-    require(gradient.narrow(1, gradient.nElement()/2 + 1, gradient.nElement()/2)
+    TestUtils.conditionFailTest(gradient.narrow(1, gradient.nElement()/2 + 1, gradient.nElement()/2)
       .almostEqual(model4.getParameters()._2, 1e-8) == true)
 
     val newGradInput = Tensor[Double](batchSize, seqLength, hiddenSize)
     newGradInput.narrow(2, 1, 1).copy(gradInput2.toTable[Tensor[Double]](1))
     newGradInput.narrow(2, 2, 1).copy(gradInput3.toTable[Tensor[Double]](1))
-    require(gradInput.almostEqual(newGradInput, 1e-8) == true)
+    TestUtils.conditionFailTest(gradInput.almostEqual(newGradInput, 1e-8) == true)
   }
 
   "A MultiRNCell updateGradInput/acc" should "work with lstm RecurrentDecoder" in {
@@ -538,9 +538,9 @@ class MultiRNNCellSpec extends FlatSpec with BeforeAndAfter with Matchers {
     model2.accGradParameters(input, gradOutput)
     val gradient2 = model2.getParameters()._2
 
-    require(output.almostEqual(output2, 1e-8) == true)
-    require(gradient.almostEqual(gradient2, 1e-8) == true)
-    require(gradInput.almostEqual(gradInput2, 1e-8) == true)
+    TestUtils.conditionFailTest(output.almostEqual(output2, 1e-8) == true)
+    TestUtils.conditionFailTest(gradient.almostEqual(gradient2, 1e-8) == true)
+    TestUtils.conditionFailTest(gradInput.almostEqual(gradInput2, 1e-8) == true)
   }
 
   "A MultiRNNCell " should "work with set/getHiddenState" in {
@@ -600,7 +600,7 @@ class MultiRNNCellSpec extends FlatSpec with BeforeAndAfter with Matchers {
     val output2 = model2.forward(input2).toTensor[Double]
 
     output.map(output2, (v1, v2) => {
-      assert(abs(v1 - v2) < 1e-6)
+      TestUtils.conditionFailTest(abs(v1 - v2) < 1e-6)
       v1
     })
 
@@ -612,7 +612,7 @@ class MultiRNNCellSpec extends FlatSpec with BeforeAndAfter with Matchers {
       val t1 = state_decoder0(k).asInstanceOf[Tensor[Double]]
       val t2 = stateGet0(k).asInstanceOf[Tensor[Double]]
       t1.map(t2, (v1, v2) => {
-        assert(abs(v1 - v2) <= 1e-8)
+        TestUtils.conditionFailTest(abs(v1 - v2) <= 1e-8)
         v1
       })
     }
@@ -621,7 +621,7 @@ class MultiRNNCellSpec extends FlatSpec with BeforeAndAfter with Matchers {
       val t1 = state_decoder1(k).asInstanceOf[Tensor[Double]]
       val t2 = stateGet1(k).asInstanceOf[Tensor[Double]]
       t1.map(t2, (v1, v2) => {
-        assert(abs(v1 - v2) <= 1e-8)
+        TestUtils.conditionFailTest(abs(v1 - v2) <= 1e-8)
         v1
       })
     }
@@ -629,7 +629,7 @@ class MultiRNNCellSpec extends FlatSpec with BeforeAndAfter with Matchers {
     // init states shoule remain unchanged
     initStates.get(1).get.asInstanceOf[Table].get(1).get
       .asInstanceOf[Tensor[Double]].map(hidden0, (v1, v2) => {
-      assert(v1 == v2)
+      TestUtils.conditionFailTest(v1 == v2)
       v1
     })
 

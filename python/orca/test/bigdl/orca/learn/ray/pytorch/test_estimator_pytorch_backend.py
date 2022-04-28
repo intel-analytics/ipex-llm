@@ -166,7 +166,7 @@ def get_estimator(workers_per_node=1, model_fn=get_model, sync_stats=False,
                                      metrics=Accuracy(),
                                      config={"lr": 1e-2},
                                      workers_per_node=workers_per_node,
-                                     backend="torch_distributed",
+                                     backend="ray",
                                      sync_stats=sync_stats,
                                      log_level=log_level)
     return estimator
@@ -204,10 +204,10 @@ class TestPyTorchEstimator(TestCase):
         estimator.shutdown()
 
     def test_spark_xshards(self):
-        from bigdl.dllib.nncontext import init_nncontext
+        from bigdl.orca import init_orca_context
         from bigdl.orca.data import SparkXShards
         estimator = get_estimator(workers_per_node=1)
-        sc = init_nncontext()
+        sc = init_orca_context(cores="*")
         x_rdd = sc.parallelize(np.random.rand(4000, 1, 50).astype(np.float32))
         # torch 1.7.1+ requires target size same as output size, which is (batch, 1)
         y_rdd = sc.parallelize(np.random.randint(0, 2, size=(4000, 1, 1)).astype(np.float32))
@@ -448,7 +448,7 @@ class TestPyTorchEstimator(TestCase):
                                          metrics=Accuracy(),
                                          config={},
                                          workers_per_node=2,
-                                         backend="torch_distributed",
+                                         backend="ray",
                                          sync_stats=False)
 
         stats = estimator.fit(df, batch_size=4, epochs=2,

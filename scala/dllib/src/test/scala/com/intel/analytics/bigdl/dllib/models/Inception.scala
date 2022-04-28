@@ -24,7 +24,7 @@ import com.intel.analytics.bigdl.dllib.optim.SGD
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric._
 import com.intel.analytics.bigdl.dllib.tensor._
-import com.intel.analytics.bigdl.dllib.utils.{Log4Error, T, Table}
+import com.intel.analytics.bigdl.dllib.utils.{Log4Error, T, Table, TestUtils}
 import com.intel.analytics.bigdl.dllib.models.inception.Inception_Layer_v2
 import com.intel.analytics.bigdl.dllib.nn.Graph._
 
@@ -412,7 +412,7 @@ object Inception {
   }
 
   def main(args: Array[String]): Unit = {
-    require(args.length >= 1)
+    TestUtils.conditionFailTest(args.length >= 1)
     args(0) match {
       case "perf" => args(3) match {
         case "double" => performanceDouble(args(1).toInt, args(2).toInt, "default")

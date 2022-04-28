@@ -284,11 +284,6 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, 
       updateParameter
       updateOutput(input)
     } catch {
-//      case l: LayerException =>
-//        l.layerMsg = this.toString() + "/" + l.layerMsg
-//        throw l
-//      case e: Throwable =>
-//        throw new LayerException(this.toString(), e)
       case l: IllegalArgumentException =>
         throw l
       case u: InvalidOperationException =>

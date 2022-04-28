@@ -32,7 +32,6 @@ def resnet18(pretrained: bool = False, include_top: bool = False, freeze: bool =
            then all layers will be frozen in the model to be returned. Defaults to False.
     :return: PyTorch model resnet18.
     """
-
     model = torchvision.models.resnet18(pretrained=pretrained)
     if freeze:
         set_parameter_requires_grad(model, "fc")
@@ -57,7 +56,6 @@ def resnet34(pretrained: bool = False, include_top: bool = False, freeze: bool =
            then all layers will be frozen in the model to be returned. Defaults to False.
     :return: PyTorch model resnet34.
     """
-
     model = torchvision.models.resnet34(pretrained)
     if freeze:
         set_parameter_requires_grad(model, "fc")
@@ -82,7 +80,6 @@ def resnet50(pretrained: bool = False, include_top: bool = False, freeze: bool =
            then all layers will be frozen in the model to be returned. Defaults to False.
     :return: PyTorch model resnet50.
     """
-
     model = torchvision.models.resnet50(pretrained)
     if freeze:
         set_parameter_requires_grad(model, "fc")
@@ -107,7 +104,6 @@ def mobilenet_v3_large(pretrained: bool = False, include_top: bool = False, free
            then all layers will be frozen in the model to be returned. Defaults to False.
     :return: PyTorch model mobilenet_v3_large.
     """
-
     model = torchvision.models.mobilenet_v3_large(pretrained)
     if freeze:
         set_parameter_requires_grad(model, "classifier")
@@ -132,7 +128,6 @@ def mobilenet_v3_small(pretrained: bool = False, include_top: bool = False, free
            then all layers will be frozen in the model to be returned. Defaults to False.
     :return: PyTorch model mobilenet_v3_small.
     """
-
     model = torchvision.models.mobilenet_v3_small(pretrained)
     if freeze:
         set_parameter_requires_grad(model, "classifier")
@@ -157,7 +152,6 @@ def mobilenet_v2(pretrained: bool = False, include_top: bool = False, freeze: bo
            then all layers will be frozen in the model to be returned. Defaults to False.
     :return: PyTorch model mobilenet_v2.
     """
-
     model = torchvision.models.mobilenet_v2(pretrained)
     if freeze:
         set_parameter_requires_grad(model, "classifier")
@@ -182,7 +176,6 @@ def shufflenet_v2_x1_0(pretrained: bool = False, include_top: bool = False, free
            then all layers will be frozen in the model to be returned. Defaults to False.
     :return: PyTorch model shufflenet_v2_x1_0.
     """
-
     model = torchvision.models.shufflenet_v2_x1_0(pretrained)
     if freeze:
         set_parameter_requires_grad(model, "fc")

@@ -19,7 +19,7 @@ package com.intel.analytics.bigdl.dllib.keras.layers
 import java.lang.reflect.InvocationTargetException
 
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
-import com.intel.analytics.bigdl.dllib.utils.Shape
+import com.intel.analytics.bigdl.dllib.utils.{Shape, TestUtils}
 import com.intel.analytics.bigdl.dllib.keras.Sequential
 import com.intel.analytics.bigdl.dllib.keras.serializer.ModuleSerializationTest
 
@@ -60,7 +60,7 @@ class BatchNormalizationSpec extends KerasBaseSpec {
       val output = seq.forward(input)
       val gradInput = seq.backward(input, output)
     }
-    assert(thrown.getTargetException.getMessage()
+    TestUtils.conditionFailTest(thrown.getTargetException.getMessage()
       .contains("BatchNormalization requires 4D or 2D input"))
   }
 

@@ -18,6 +18,7 @@ package com.intel.analytics.bigdl.dllib.nn
 
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.utils.RandomGenerator._
+import com.intel.analytics.bigdl.dllib.utils.TestUtils
 import com.intel.analytics.bigdl.dllib.utils.serializer.ModuleSerializationTest
 import org.scalatest.{FlatSpec, Matchers}
 
@@ -62,7 +63,7 @@ class GaussianNoiseSpec extends FlatSpec with Matchers {
     module.evaluate()
     val outputEval = module.forward(input)
     // output should be the same as input
-    assert(input equals outputEval)
+    TestUtils.conditionFailTest(input equals outputEval)
 
     intercept[com.intel.analytics.bigdl.dllib.utils.InvalidOperationException] {
       module.backward(input, gradOutput)
@@ -70,7 +71,7 @@ class GaussianNoiseSpec extends FlatSpec with Matchers {
   }
 
   def assertIntArrayEqual(a1: Array[Int], a2: Array[Int]): Unit = {
-    (a1 zip a2).foreach(x => assert(x._1 == x._2))
+    (a1 zip a2).foreach(x => TestUtils.conditionFailTest(x._1 == x._2))
   }
 }
 

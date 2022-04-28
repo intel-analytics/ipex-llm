@@ -17,6 +17,7 @@
 package com.intel.analytics.bigdl.dllib.nn
 
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
+import com.intel.analytics.bigdl.dllib.utils.TestUtils
 import com.intel.analytics.bigdl.dllib.utils.serializer.ModuleSerializationTest
 import org.scalatest.FlatSpec
 
@@ -36,10 +37,10 @@ class MulConstantSpec extends FlatSpec {
 
     val module = new MulConstant[Double](scalar)
     val output = module.forward(input)
-    assert(expectedOutput equals output)
+    TestUtils.conditionFailTest(expectedOutput equals output)
 
     val gradInput = module.backward(input, gradOutput)
-    assert(gradInput equals expectedGrad )
+    TestUtils.conditionFailTest(gradInput equals expectedGrad )
   }
 
   "MulConstant with inPlace = true" should "generate correct output and grad" in {
@@ -52,14 +53,14 @@ class MulConstantSpec extends FlatSpec {
     // Test forward
     val module = new MulConstant[Double](scalar, true)
     val output = module.forward(input)
-    assert(expectedOutput equals output)
+    TestUtils.conditionFailTest(expectedOutput equals output)
 
     // Test backward
     input = Tensor[Double](2, 2, 2).randn()
     val expectedInput = input.clone().apply1(_ / scalar)
     val gradInput = module.backward(input, gradOutput)
-    assert(gradInput equals expectedGrad)
-    assert(input equals expectedInput)
+    TestUtils.conditionFailTest(gradInput equals expectedGrad)
+    TestUtils.conditionFailTest(input equals expectedInput)
   }
 }
 

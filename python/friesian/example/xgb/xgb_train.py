@@ -34,7 +34,6 @@ spark_conf = {"spark.network.timeout": "10000000",
               "spark.task.cpus": "4",
               "spark.executor.heartbeatInterval": "200s",
               "spark.driver.maxResultSize": "40G",
-              "spark.eventLog.enabled": "true",
               "spark.app.name": "recsys-xgb"}
 
 if __name__ == '__main__':
@@ -60,7 +59,8 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     if args.cluster_mode == "local":
-        sc = init_orca_context("local", cores=4, conf=spark_conf)
+        sc = init_orca_context("local", cores=args.executor_cores,
+                               memory=args.executor_memory, conf=spark_conf)
     elif args.cluster_mode == "yarn":
         sc = init_orca_context("yarn-client", cores=args.executor_cores,
                                num_nodes=args.num_executor, memory=args.executor_memory,
@@ -81,8 +81,8 @@ if __name__ == '__main__':
     embed_cols = ["enaging_user_id", "engaged_with_user_id", "hashtags", "present_links",
                   "present_domains"]
 
-    features = num_cols + [col + "_te_label" for col in cat_cols] +\
-               [col + "_te_label" for col in embed_cols]
+    features = num_cols + [col + "_te_label" for col in cat_cols] + \
+        [col + "_te_label" for col in embed_cols]
     begin = time.time()
     train_tbl = FeatureTable.read_parquet(args.data_dir + "/train_parquet")\
         .drop("tweet_timestamp", "enaging_user_account_creation", "reply_timestamp", "text_tokens",

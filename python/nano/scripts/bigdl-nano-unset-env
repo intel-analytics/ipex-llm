@@ -1,0 +1,11 @@
+#!/bin/bash
+
+echo "Unset Nano envs"
+unset LD_PRELOAD
+unset MALLOC_CONF
+unset OMP_NUM_THREADS
+unset KMP_AFFINITY
+unset KMP_BLOCKTIME
+unset TF_ENABLE_ONEDNN_OPTS
+unset ENABLE_TF_OPTS
+unset NANO_TF_INTER_OP

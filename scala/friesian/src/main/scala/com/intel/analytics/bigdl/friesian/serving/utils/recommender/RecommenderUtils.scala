@@ -33,6 +33,7 @@ import org.apache.spark.sql.SparkSession
 
 import scala.collection.JavaConverters._
 import scala.collection.mutable
+import com.intel.analytics.bigdl.dllib.utils.Log4Error
 
 object RecommenderUtils {
   val logger: Logger = LogManager.getLogger(getClass)
@@ -40,10 +41,12 @@ object RecommenderUtils {
   def featuresToRankingInputSet(userFeatures: Features, itemFeatures: Features, batchSize: Int)
   : (Array[Int], Array[Table]) = {
     val userFeatureArr = FeatureUtils.getFeatures(userFeatures)
-    assert(userFeatureArr.length == 1, "userFeatures length should be 1")
+    Log4Error.invalidOperationError(userFeatureArr.length == 1,
+      "userFeatures length should be 1")
     val userSchema = userFeatures.getColNamesList.asScala
     if (userFeatureArr(0) == null) {
-      throw new Exception("Cannot find user feature, userid: " + userFeatures.getID(0))
+      Log4Error.invalidOperationError(false,
+        "Cannot find user feature, userid: " + userFeatures.getID(0))
     }
     val userFeature = userFeatureArr(0)
     // TODO: not found update
@@ -59,14 +62,16 @@ object RecommenderUtils {
       batchSize
     }
     if (batchSizeUse == 0) {
-      throw new Exception("The recommend service got 0 valid item features. Please make sure " +
+      Log4Error.unKnowExceptionError(false,
+        "The recommend service got 0 valid item features. Please make sure " +
         "your initial datasets are matched.")
     }
     val inferenceColumns = Utils.helper.inferenceColArr
     val featureSchema = itemSchema.++(userSchema)
     val idxArr = inferenceColumns.map(col => featureSchema.indexOf(col))
     if (idxArr.contains(-1)) {
-      throw new Exception("The feature " + inferenceColumns(idxArr.indexOf(-1)) + " doesn't exist" +
+      Log4Error.unKnowExceptionError(false,
+        "The feature " + inferenceColumns(idxArr.indexOf(-1)) + " doesn't exist" +
         " in features.")
     }
 
@@ -93,7 +98,8 @@ object RecommenderUtils {
             val arr2d = features.map(a =>
               a.asInstanceOf[mutable.WrappedArray[Any]].array.map(_.toString.toFloat))
             Tensor[Float](arr2d.flatten, dim :+ arr2d(0).length)
-          case d => throw new IllegalArgumentException(s"Illegal input: ${d}")
+          case d =>
+            Log4Error.invalidOperationError(false, s"Illegal input: ${d}")
         }
       })
       T.array(tensorArray)
@@ -128,12 +134,17 @@ object RecommenderUtils {
         try {
           tensor.toArray()
         } catch {
-          case _: Exception => throw new Exception("Not supported inference result type, please " +
+          case _: Exception =>
+            Log4Error.unKnowExceptionError(false,
+              "Not supported inference result type, please " +
             "modify method getTopK in RecommendUtils to ensure the ranking result is correct.")
+            null
         }
       } else {
-        throw new Exception("Not supported inference result type, please modify method getTopK " +
+        Log4Error.unKnowExceptionError(false,
+          "Not supported inference result type, please modify method getTopK " +
           "in RecommendUtils to ensure the ranking result is correct.")
+        null
       }
     }).toArray
     val flattenResult = resultArr.flatten

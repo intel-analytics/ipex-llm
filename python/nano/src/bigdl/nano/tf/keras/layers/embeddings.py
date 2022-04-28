@@ -20,6 +20,12 @@ from tensorflow.keras.layers import Embedding as TFEmbedding
 
 
 class Embedding(TFEmbedding):
+    """
+    A slightly modified version of tf.keras.Embedding layer.
+
+    This embedding layer only apply regularizer to the output of the embedding
+    layers, so that the gradient to embeddings is sparse.
+    """
 
     def __init__(self,
                  input_dim,
@@ -31,11 +37,11 @@ class Embedding(TFEmbedding):
                  mask_zero=False,
                  input_length=None,
                  **kwargs):
+        """
+        Create a slightly modified version of tf.keras.Embedding layer.
 
-        '''
-        This is a slightly modified version of tf.keras.Embedding,
-        which only apply regularizer to the output of the embedding
-        layers, such that the gradient to embeddings is sparse.
+        This embedding layer only applies regularizer to the output of the embedding
+        layer, so that the gradient to embeddings is sparse.
 
         :param input_sample: torch.Tensor or a list for the model tracing.
         :param file_path: The path to save onnx model file.
@@ -67,7 +73,7 @@ class Embedding(TFEmbedding):
             This argument is required if you are going to connect
             `Flatten` then `Dense` layers upstream
             (without it, the shape of the dense outputs cannot be computed).
-        '''
+        """
         if embeddings_regularizer is not None and activity_regularizer is None:
             warnings.warn(
                 'Apply regularizer directly on embeddings will make the sparse gradient dense and\

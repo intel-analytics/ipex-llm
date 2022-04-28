@@ -22,15 +22,18 @@ import org.apache.logging.log4j.{LogManager, Logger}
 import org.apache.spark.ml.linalg.DenseVector
 import org.apache.spark.sql.SparkSession
 import org.apache.spark.sql.functions.col
+import com.intel.analytics.bigdl.dllib.utils.Log4Error
 
 object RecallNearlineUtils {
   private val logger: Logger = LogManager.getLogger(classOf[RecallInitializer].getName)
 
   def loadItemData(indexService: IndexService, dataDir: String): Unit = {
     val spark = SparkSession.builder.getOrCreate
-    assert(NearlineUtils.helper.itemIDColumn != null, "itemIdColumn should be provided if " +
+    Log4Error.invalidOperationError(NearlineUtils.helper.itemIDColumn != null,
+      "itemIdColumn should be provided if " +
       "loadSavedIndex=false")
-    assert(NearlineUtils.helper.indexPath != null, "indexPath should be provided.")
+    Log4Error.invalidOperationError(NearlineUtils.helper.indexPath != null,
+      "indexPath should be provided.")
 
     val itemFeatureColumns = Array(NearlineUtils.helper.itemIDColumn,
       NearlineUtils.helper.itemEmbeddingColumn)

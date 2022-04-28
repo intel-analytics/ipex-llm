@@ -21,7 +21,7 @@ import numpy as np
 import tensorflow as tf
 
 
-def create_data():
+def create_data(tf_data=False, batch_size=32):
     train_num_samples = 1000
     test_num_samples = 400
     input_feature_num = 10
@@ -33,14 +33,24 @@ def create_data():
         x = np.random.randn(num_sample, past_seq_len, input_feature_num)
         y = np.random.randn(num_sample, future_seq_len, output_feature_num)
         return x, y
-    
+
     train_data = get_x_y(train_num_samples)
     test_data = get_x_y(test_num_samples)
+
+    if tf_data:
+        from_tensor_slices = tf.data.Dataset.from_tensor_slices
+        train_data = from_tensor_slices(train_data).cache()\
+                                                   .shuffle(train_num_samples)\
+                                                   .batch(batch_size)\
+                                                   .prefetch(tf.data.AUTOTUNE)
+        test_data = from_tensor_slices(test_data).cache()\
+                                                 .batch(batch_size)\
+                                                 .prefetch(tf.data.AUTOTUNE)
     return train_data, test_data
 
 
 @pytest.mark.skipif(tf.__version__ < '2.0.0', reason="Run only when tf > 2.0.0.")
-class TestSeq2SeqModel(TestCase):
+class TestSeq2SeqForecaster(TestCase):
     
     def setUp(self):
         from bigdl.chronos.forecaster.tf.seq2seq_forecaster import Seq2SeqForecaster
@@ -55,18 +65,25 @@ class TestSeq2SeqModel(TestCase):
     def test_seq2seq_fit_predict_evaluate(self):
         train_data, test_data = create_data()
         self.forecaster.fit(train_data,
-                       epochs=2,
-                       batch_size=32)
+                            epochs=2,
+                            batch_size=32)
         yhat = self.forecaster.predict(test_data[0])
         assert yhat.shape == (400, 2, 2)
         mse = self.forecaster.evaluate(test_data, multioutput="raw_values")
         assert mse[0].shape == test_data[-1].shape[1:]
+    
+    def test_seq2seq_fit_tf_data(self):
+        train_data, test_data = create_data(tf_data=True)
+        self.forecaster.fit(train_data,
+                            epochs=2)
+        yhat = self.forecaster.predict(test_data)
+        assert yhat.shape == (400, 2, 2)
 
     def test_seq2seq_save_load(self):
         train_data, test_data = create_data()
         self.forecaster.fit(train_data,
-                       epochs=2,
-                       batch_size=32)
+                            epochs=2,
+                            batch_size=32)
         yhat = self.forecaster.predict(test_data[0])
         with tempfile.TemporaryDirectory() as checkpoint_file:
             self.forecaster.save(checkpoint_file)

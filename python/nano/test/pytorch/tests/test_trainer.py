@@ -15,7 +15,9 @@
 #
 
 
+import copy
 import os
+import shutil
 from unittest import TestCase
 
 import pytest
@@ -77,60 +79,25 @@ class TestTrainer(TestCase):
         pl_model = Trainer.compile(self.model, self.loss, self.optimizer)
         trainer.fit(pl_model, self.train_loader)
 
-    def test_trainer_quantize_inc_ptq_compiled(self):
-        # Test if a Lightning Module compiled by nano works
-        train_loader_iter = iter(self.train_loader)
+    def test_trainer_save_load(self):
         trainer = Trainer(max_epochs=1)
         pl_model = Trainer.compile(self.model, self.loss, self.optimizer)
-        x = next(train_loader_iter)[0]
+        trainer.save(pl_model, "saved_model")
+        assert len(os.listdir('saved_model')) > 0
 
-        # Case 1: Default
-        qmodel = trainer.quantize(pl_model, self.train_loader)
-        assert qmodel
-        out = qmodel(x)
-        assert out.shape == torch.Size([256, 10])
+        # save original parameters
+        original_state_dict = copy.deepcopy(pl_model.state_dict())
 
-        # Case 2: Override by arguments
-        qmodel = trainer.quantize(pl_model, self.train_loader, self.train_loader,
-                                  metric=torchmetrics.F1(10), framework='pytorch_fx',
-                                  approach='static',
-                                  tuning_strategy='basic',
-                                  accuracy_criterion={'relative': 0.99,
-                                                      'higher_is_better': True})
+        # update paramters
+        trainer.fit(pl_model, self.train_loader)
 
-        assert qmodel
-        out = qmodel(x)
-        assert out.shape == torch.Size([256, 10])
-
-        # Case 3: Dynamic quantization
-        qmodel = trainer.quantize(pl_model, approach='dynamic')
-        assert qmodel
-        out = qmodel(x)
-        assert out.shape == torch.Size([256, 10])
-
-        # Case 4: Invalid approach
-        invalid_approach = 'qat'
-        with pytest.raises(ValueError, match="Approach should be 'static' or 'dynamic', "
-                                             "{} is invalid.".format(invalid_approach)):
-            trainer.quantize(pl_model, approach=invalid_approach)
-
-        # Case 5: Test if registered metric can be fetched successfully
-        qmodel = trainer.quantize(pl_model, self.train_loader, self.train_loader,
-                                  metric=torchmetrics.F1(10))
-        assert qmodel
-        out = qmodel(x)
-        assert out.shape == torch.Size([256, 10])
-
-    def test_trainer_quantize_inc_ptq_customized(self):
-        # Test if a Lightning Module not compiled by nano works
-        train_loader_iter = iter(self.train_loader)
-        trainer = Trainer(max_epochs=1)
-
-        qmodel = trainer.quantize(self.user_defined_pl_model, self.train_loader)
-        assert qmodel
-        out = qmodel(next(train_loader_iter)[0])
-        assert out.shape == torch.Size([256, 10])
-
+        loaded_pl_model = trainer.load("saved_model", pl_model)
+        loaded_state_dict = loaded_pl_model.state_dict()
+        # check if parameters are updated
+        for k in original_state_dict.keys():
+            assert (original_state_dict[k] == loaded_state_dict[k]).all()
+        shutil.rmtree('saved_model')
+        
 
 if __name__ == '__main__':
     pytest.main([__file__])
