@@ -6,7 +6,7 @@ In particular, we will show you:
 3. How to submit the application to Yarn.
 
 
-### Prepare Env
+# Prepare Env
 We need to first use conda to prepare the Python environment on the local machine where we submit our application. Create a conda environment, install BigDL and all the needed Python libraries in the created conda environment:
 
 ``` bash
@@ -26,7 +26,7 @@ Check the Hadoop setup and configurations of our cluster. Make sure we properly 
 export HADOOP_CONF_DIR=the directory of the hadoop and yarn configurations
 ```
 
-### Training the Fashion-Mnist Example
+# Training the Fashion-Mnist Example
 
 In this part, you will learn how to complete a BigDL PyTorch program with the following steps in order:
 1. Prepare the Fashion-Mnist Dataset
@@ -168,7 +168,7 @@ val_stats = orca_estimator.evaluate(validation_data_creator, batch_size=batch_si
 print("Validation stats: {}".format(val_stats))
 ```
 
-### Run BigDL Program on Yarn with Spark-Submit
+# Run BigDL Program on Yarn with Spark-Submit
 
 The BigDL supports submmiting application to Yarn cluster, we just need refer to the following steps in order:
 
