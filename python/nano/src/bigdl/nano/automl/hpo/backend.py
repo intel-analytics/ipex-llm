@@ -134,5 +134,5 @@ class OptunaBackend(object):
 
     @staticmethod
     def create_study(**kwargs):
-        """create a study to drive the hyperparameter search."""
+        """Create a study to drive the hyperparameter search."""
         return optuna.create_study(**kwargs)
