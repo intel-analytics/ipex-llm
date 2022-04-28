@@ -66,7 +66,6 @@ class AutoLSTM(BaseAutomodelMixin):
         :param dropout: float or hp sampling function from a float space. Learning rate. Dropout
                rate. e.g. hp.uniform(0.1, 0.3)
         :param backend: The backend of the lstm model. support "keras" and "torch".
-               Currently keras not support onnx.
         :param logs_dir: Local directory to save logs and results. It defaults to "/tmp/auto_lstm"
         :param cpus_per_trial: Int. Number of cpus for each trial. It defaults to 1.
         :param name: name of the AutoLSTM. It defaults to "auto_lstm"

@@ -68,7 +68,6 @@ class AutoSeq2Seq(BaseAutomodelMixin):
                rate. e.g. hp.uniform(0.1, 0.3)
         :param teacher_forcing: If use teacher forcing in training. e.g. hp.choice([True, False])
         :param backend: The backend of the Seq2Seq model. support "keras" and "torch".
-               Currently keras not support onnx.
         :param logs_dir: Local directory to save logs and results. It defaults to
                "/tmp/auto_seq2seq"
         :param cpus_per_trial: Int. Number of cpus for each trial. It defaults to 1.
