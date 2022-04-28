@@ -16,6 +16,7 @@
 from collections import OrderedDict
 import inspect
 from typing import List
+import torch
 
 from torchmetrics.metric import Metric
 from pytorch_lightning import LightningModule
@@ -56,8 +57,11 @@ class LightningModuleFromTorch(LightningModule):
     def forward(self, *args):
         """Same as torch.nn.Module.forward()."""
         nargs = len(inspect.getfullargspec(self.model.forward).args[1:])
-        flatten_args = [args[i] for i in range(nargs)]
-        return self.model(*flatten_args)
+        if isinstance(args, torch.fx.Proxy):
+            args = [args[i] for i in range(nargs)]
+        else:
+            args = args[:nargs]
+        return self.model(*args)
 
     def on_train_start(self) -> None:
         """Called at the beginning of training after sanity check."""
