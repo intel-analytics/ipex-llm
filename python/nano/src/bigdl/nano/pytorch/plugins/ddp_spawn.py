@@ -53,6 +53,7 @@ log = logging.getLogger(__name__)
 
 def start_processes_new(fn, args=(), nprocs=1, join=True, daemon=False,
                         start_method='spawn', cpu_procs=None):
+    """Start processess with optimized environment variables."""
     mp = multiprocessing.get_context(start_method)
     error_queues = []
     processes = []
@@ -92,6 +93,8 @@ def start_processes_new(fn, args=(), nprocs=1, join=True, daemon=False,
 
 
 class DDPSpawnPlugin(pl.plugins.DDPSpawnPlugin):
+    """Extending DDPSpawnPlugin to support launch subprocesses with optimized env variables."""
+
     distributed_backend = "ddp_spawn"
 
     def __init__(
@@ -106,6 +109,7 @@ class DDPSpawnPlugin(pl.plugins.DDPSpawnPlugin):
         cpu_for_each_process: Optional[List[List[int]]] = None,
         **kwargs: Any,
     ):
+        """Create a DDPSpawnPlugin, adding a cpu_for_each_process parameter."""
         super().__init__(parallel_devices,
                          num_nodes,
                          cluster_environment,
@@ -119,6 +123,7 @@ class DDPSpawnPlugin(pl.plugins.DDPSpawnPlugin):
 
     @property
     def mp_spawn_kwargs(self):
+        """Return the kwargs that will be passed to spawn to start a new process."""
         return {
             "args": (self.lightning_module.trainer, self.mp_queue),
             "nprocs": self.num_processes,
@@ -126,6 +131,7 @@ class DDPSpawnPlugin(pl.plugins.DDPSpawnPlugin):
         }
 
     def start_training(self, trainer):
+        """Setup start_training hook for the plugin."""
         # reset ortsess, since InferenceSession can not be pickled
         self.model._ortsess = None
         start_processes_new(self.new_process, **self.mp_spawn_kwargs)
@@ -134,14 +140,17 @@ class DDPSpawnPlugin(pl.plugins.DDPSpawnPlugin):
         trainer.optimizers = []
 
     def start_evaluating(self, trainer):
+        """Setup start_evaluting hook for the plugin."""
         print("evaluate")
         start_processes_new(self.new_process, **self.mp_spawn_kwargs)
 
     def start_predicting(self, trainer):
+        """Setup start_predicting hook for the plugin."""
         print("predict")
         start_processes_new(self.new_process, **self.mp_spawn_kwargs)
 
     def new_process(self, process_idx, trainer, mp_queue):
+        """The fucntion to run in each new process."""
         self.mp_queue = mp_queue
 
         reset_seed()
@@ -188,6 +197,7 @@ class DDPSpawnPlugin(pl.plugins.DDPSpawnPlugin):
         self.transfer_distrib_spawn_state_on_fit_end(results)
 
     def configure_ddp(self):
+        """Setup the configuration for pytorch ddp."""
         self.pre_configure_ddp()
         self._model = DistributedDataParallel(
             LightningDistributedModule(self.model),

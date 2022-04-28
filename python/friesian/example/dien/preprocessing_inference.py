@@ -108,7 +108,8 @@ if __name__ == "__main__":
 
     # item_tbl = FeatureTable.read_csv(args.input_meta, delimiter="\t", names=["item", "category"])
 
-    # Currently long id is not supported for add_negative_samples and add_value_features, cast to int.
+    # Currently long id is not supported for add_negative_samples and add_value_features,
+    # cast to int.
     with open(args.index_folder + "vocs/cat_voc.pkl", "rb") as f:
         category_df = sc.parallelize(list(pickle.load(f).items())).toDF(["category", "id"])
         category_index = StringIndex(category_df, "category").cast("id", "int")

@@ -69,7 +69,7 @@ RUN cd /opt && \
 
 # Download bigdl
 RUN cd /opt && \
-    wget https://raw.githubusercontent.com/intel-analytics/BigDL/branch-2.0/ppml/trusted-realtime-ml/scala/docker-graphene/download-bigdl-serving.sh && \
+    wget https://raw.githubusercontent.com/intel-analytics/BigDL/main/ppml/trusted-realtime-ml/scala/docker-graphene/download-bigdl-serving.sh && \
     chmod a+x download-bigdl-serving.sh && \
     ./download-bigdl-serving.sh
 
@@ -81,11 +81,11 @@ RUN cd /opt && \
     wget -c "https://sourceforge.net/projects/analytics-zoo/files/analytics-zoo-models/openvino/2018_R5/resnet_v1_50.xml/download" -O resnet_v1_50.xml
 # data and scripts for kubernets
 RUN cd /opt && \
-    wget https://raw.githubusercontent.com/intel-analytics/BigDL/branch-2.0/scala/serving/scripts/perf-benchmark/requirement.yml && \
+    wget https://raw.githubusercontent.com/intel-analytics/BigDL/main/scala/serving/scripts/perf-benchmark/requirement.yml && \
     wget -c "https://sourceforge.net/projects/analytics-zoo/files/analytics-zoo-data/ILSVRC2012_val_00000001.JPEG/download" -O ILSVRC2012_val_00000001.JPEG
 
 # stage.3 az ppml occlum
-FROM occlum/occlum:0.27.0-ubuntu20.04 as ppml
+FROM occlum/occlum:0.27.1-ubuntu20.04 as ppml
 
 ARG FLINK_VERSION
 ARG BIGDL_VERSION
@@ -96,7 +96,7 @@ ARG SCALA_SUB_VERSION_NUM
 ENV JAVA_HOME				/usr/lib/jvm/java-11-openjdk-amd64
 ENV PATH                    ${JAVA_HOME}/bin:${PATH}
 ENV LOCAL_IP				127.0.0.1
-ENV SGX_MEM_SIZE			32G
+ENV SGX_MEM_SIZE			32GB
 ENV REDIS_PORT				6379
 ENV FLINK_VERSION			${FLINK_VERSION}
 ENV FLINK_HOME				/opt/flink-${FLINK_VERSION}

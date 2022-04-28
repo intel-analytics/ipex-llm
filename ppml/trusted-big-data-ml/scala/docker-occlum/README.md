@@ -18,6 +18,8 @@ bash build-docker-image.sh
 ```
 
 ## Before run example
+
+### Check Device
 Before run any example, please make sure you have correctly set the --device option in the start-spark-local.sh according to your machine.
 
 For example:
@@ -29,6 +31,23 @@ or:
   --device=/dev/sgx/enclave
   --device=/dev/sgx/provision
 ```
+
+### Start BigDL PPML Occlum Attestation Server
+Modify `PCCL_URL`, `ATTESTATION_SERVER_IP` and `ATTESTATION_SERVER_PORT` in `start-occlum-attestation-server.sh`, Then
+```commandline
+bash start-occlum-attestation-server.sh
+```
+You will see:
+```
+Server listening on $ATTESTATION_SERVER_IP:$ATTESTATION_SERVER_PORT
+```
+
+Get `image_key`:
+```commandline
+docker cp bigdl-ppml-trusted-big-data-ml-scala-occlum-attestation-server:/root/demos/remote_attestation/init_ra_flow/image_key ./data
+```
+
+### Before you run examples, you need to mount this `image_key` to container's `/opt/occlum_spark/data/`.
 
 ## Spark 3.1.2 Pi example
 
@@ -86,7 +105,7 @@ The examples are run in the docker container. Attach it and see the results (`do
 
 ### Rebuild Image
 
-Enlarge these four configurations in [run_spark_on_occlum_glibc.sh](https://github.com/intel-analytics/BigDL/blob/branch-2.0/ppml/trusted-big-data-ml/scala/docker-occlum/run_spark_on_occlum_glibc.sh#L19) to:
+Enlarge these four configurations in [run_spark_on_occlum_glibc.sh](https://github.com/intel-analytics/BigDL/blob/main/ppml/trusted-big-data-ml/scala/docker-occlum/run_spark_on_occlum_glibc.sh#L19) to:
 ```
 .resource_limits.max_num_of_threads = 4096 |
 .process.default_heap_size = "4096MB" |
@@ -164,7 +183,7 @@ And the log files will be saved to `data/olog` folder.
 
 ### Rebuild Image
 
-Enlarge these four configurations in [run_spark_on_occlum_glibc.sh](https://github.com/intel-analytics/BigDL/blob/branch-2.0/ppml/trusted-big-data-ml/scala/docker-occlum/run_spark_on_occlum_glibc.sh#L19) to:
+Enlarge these four configurations in [run_spark_on_occlum_glibc.sh](https://github.com/intel-analytics/BigDL/blob/main/ppml/trusted-big-data-ml/scala/docker-occlum/run_spark_on_occlum_glibc.sh#L19) to:
 ```
 .resource_limits.max_num_of_threads = 4096 |
 .process.default_heap_size = "32GB" |

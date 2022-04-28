@@ -14,70 +14,48 @@
 # limitations under the License.
 #
 from unittest import TestCase
-from torchmetrics import F1
 from bigdl.nano.pytorch.trainer import Trainer
 from torchvision.models.mobilenetv3 import mobilenet_v3_small
 import torch
 from torch.utils.data.dataset import TensorDataset
 from torch.utils.data.dataloader import DataLoader
 import os
+import shutil
 
 class TestOpenVINO(TestCase):
-    def test_openvino(self):
-        model = mobilenet_v3_small(num_classes=10)
-        pl_model = Trainer.compile(model, openvino=True)
-        x = torch.rand((10, 3, 256, 256))
-        y = torch.ones((10, ), dtype=torch.long)
-
-        pl_model.eval_openvino(x)
-        assert pl_model.ov_infer_engine and pl_model.ov_infer_engine.ie_network
-        assert pl_model.forward != pl_model._torch_forward
-        y = pl_model(x)
-        assert y.shape == (10, 10)  
-
-        pl_model.exit_openvino()
-        assert pl_model.forward == pl_model._torch_forward
-
-        pl_model.eval_openvino()
-        assert pl_model.forward != pl_model._torch_forward
-        pl_model.eval()
-        assert pl_model.forward == pl_model._torch_forward
-
-        # Test if correctly fall back to pytorch backend
-        pl_model.eval_openvino()
-        assert pl_model.forward != pl_model._torch_forward
-        pl_model.train()
-        assert pl_model.forward == pl_model._torch_forward
-
-        pl_model.export_openvino(x, xml_path='test_export_openvino.xml')
-        assert os.path.exists('test_export_openvino.xml')
-        os.remove('test_export_openvino.xml')
-
-    def test_openvino_inputsample_from_trainloader(self):
+    def test_trainer_trace_openvino(self):
         trainer = Trainer(max_epochs=1)
         model = mobilenet_v3_small(num_classes=10)
-        pl_model = Trainer.compile(model, loss=torch.nn.CrossEntropyLoss(),
-                                   optimizer=torch.optim.SGD(model.parameters(), lr=0.01),
-                                   openvino=True)
+        
         x = torch.rand((10, 3, 256, 256))
         y = torch.ones((10, ), dtype=torch.long)
+
+        # trace a torch model 
+        openvino_model = trainer.trace(model, x, 'openvino')
+        y_hat = openvino_model(x)
+        assert y_hat.shape == (10, 10)
+
+        # trace pytorch-lightning model
+        pl_model = Trainer.compile(model, loss=torch.nn.CrossEntropyLoss(),
+                                   optimizer=torch.optim.SGD(model.parameters(), lr=0.01))
         ds = TensorDataset(x, y)
         dataloader = DataLoader(ds, batch_size=2)
         trainer.fit(pl_model, dataloader)
 
-        # Test if eval_openvino() and exit_openvino() work
-        pl_model.eval_openvino()
-        assert pl_model.ov_infer_engine and pl_model.ov_infer_engine.ie_network
-        assert pl_model.forward != pl_model._torch_forward
-        y = pl_model(x)
-        assert y.shape == (10, 10) 
-        
-        pl_model.exit_openvino()
-        assert pl_model.forward == pl_model._torch_forward
+        openvino_model = trainer.trace(model, accelerator='openvino')
+        y_hat = openvino_model(x)
+        assert y_hat.shape == (10, 10)
 
-        # Test if correctly fall back to training mode
-        pl_model.eval_openvino()
-        assert pl_model.forward != pl_model._torch_forward
-        trainer.fit(pl_model, dataloader)
-        assert pl_model.forward == pl_model._torch_forward 
-        assert  pl_model.ov_infer_engine is None
+    def test_trainer_save_openvino(self):
+        trainer = Trainer(max_epochs=1)
+        model = mobilenet_v3_small(num_classes=10)
+        x = torch.rand((10, 3, 256, 256))
+
+        # save and load pytorch model
+        openvino_model = trainer.trace(model, accelerator='openvino', input_sample=x)
+        trainer.save(openvino_model, 'trainer_save_openvino_model')
+        assert len(os.listdir('trainer_save_openvino_model')) > 0
+        loaded_openvino_model = trainer.load('trainer_save_openvino_model')
+        y_hat = loaded_openvino_model(x)
+        assert y_hat.shape == (10, 10)
+        shutil.rmtree('trainer_save_openvino_model')

@@ -24,15 +24,15 @@ import socket
 import tensorflow as tf
 
 
-def find_free_port():
+def _find_free_port():
     with closing(socket.socket(socket.AF_INET, socket.SOCK_STREAM)) as s:
         s.bind(("", 0))
         s.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
         return s.getsockname()[1]
 
 
-def train_func(model_dir, ds_graph, elem_spec,
-               val_ds_graph, val_elem_sepc, fit_kwargs):
+def _train_func(model_dir, ds_graph, elem_spec,
+                val_ds_graph, val_elem_sepc, fit_kwargs):
     import tensorflow as tf
     from tensorflow.python.distribute.coordinator.values import deserialize_dataset_from_graph
 
@@ -66,7 +66,7 @@ def train_func(model_dir, ds_graph, elem_spec,
 
 
 def distributed_train_keras(backend, model, nprocs, fit_kwargs=None):
-
+    """Run pseudo-distributed training on the keras model with the specified backend."""
     backend.setup()
 
     if fit_kwargs is None:
@@ -95,7 +95,7 @@ def distributed_train_keras(backend, model, nprocs, fit_kwargs=None):
 
     ports = set()
     while len(ports) < nprocs:
-        ports.add(find_free_port())
+        ports.add(_find_free_port())
     ports = list(ports)
     worker_list = [f"localhost:{p}" for p in ports]
 
@@ -122,7 +122,7 @@ def distributed_train_keras(backend, model, nprocs, fit_kwargs=None):
         train_args = (temp_dir, train_ds_def, train_elem_spec,
                       val_ds_def, val_elem_spec, fit_kwargs)
 
-        histrories = backend.run(target=train_func,
+        histrories = backend.run(target=_train_func,
                                  args=train_args,
                                  nprocs=nprocs,
                                  envs=envs)

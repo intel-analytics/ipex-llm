@@ -29,14 +29,12 @@ import com.intel.analytics.bigdl.dllib.keras.Net
 import com.intel.analytics.bigdl.dllib.keras.metrics.{AUC, Accuracy, BinaryAccuracy, CategoricalAccuracy, SparseCategoricalAccuracy, Top5Accuracy => ZooTop5Accuracy}
 import com.intel.analytics.bigdl.dllib.keras.models.KerasNet
 import com.intel.analytics.bigdl.dllib.keras.objectives._
-import org.apache.logging.log4j.LogManager
 import org.apache.spark.rdd.RDD
 
 import scala.collection.mutable.ArrayBuffer
 import scala.reflect.ClassTag
 
 object KerasUtils {
-  val logger = LogManager.getLogger(this.getClass)
   def getPadsFromBorderMode(borderMode: String = "valid",
       paddings: Array[Int] = null): (Int, Int) = {
     if (paddings != null && !paddings.isEmpty) {
@@ -399,8 +397,8 @@ object KerasUtils {
       node: ModuleNode[T],
       lineLength: Int = 120,
       positions: Array[Double] = Array(.33, .55, .67, 1),
-      summary: ArrayBuffer[String] = null): (Int, Int) = {
-    printRow(getNodeSummary(node), lineLength, positions, summary = summary)
+      summaryBuf: ArrayBuffer[String] = null): (Int, Int) = {
+    printRow(getNodeSummary(node), lineLength, positions, summaryBuf = summaryBuf)
     countParams(node.element.asInstanceOf[KerasLayer[Activity, Activity, T]])
   }
 
@@ -426,7 +424,7 @@ object KerasUtils {
       positions: Array[Double] = Array(.33, .55, .67, 1),
       includeSplitLine: Boolean = true,
       splitChar: Char = '_',
-      summary: ArrayBuffer[String] = null): Unit = {
+      summaryBuf: ArrayBuffer[String] = null): Unit = {
     val fieldLengths = ArrayBuffer[Int]()
     for (i <- positions.indices) {
       if (i > 0) {
@@ -459,23 +457,23 @@ object KerasUtils {
 
     }
 
-    summary.append(line)
+    summaryBuf.append(line)
     // If there are multiple connected to nodes, print the remaining each in a separate line
     // without the split line.
     for (node <- nodes.slice(1, nodes.length)) {
       printRow(Array("", "", "", node), lineLength, positions, includeSplitLine = false,
-        summary = summary)
+        summaryBuf = summaryBuf)
     }
-    if (includeSplitLine) printSplitLine(splitChar, lineLength, summary)
+    if (includeSplitLine) printSplitLine(splitChar, lineLength, summaryBuf)
   }
 
   /**
    * Print a split line that repeats the 'char' for 'lineLength' times.
    */
-  def printSplitLine(char: Char, lineLength: Int = 120, summary: ArrayBuffer[String]): Unit = {
+  def printSplitLine(char: Char, lineLength: Int = 120, summaryBuf: ArrayBuffer[String]): Unit = {
     val str = char.toString
     val message = str * lineLength
-    summary.append(message)
+    summaryBuf.append(message)
   }
 
   /**

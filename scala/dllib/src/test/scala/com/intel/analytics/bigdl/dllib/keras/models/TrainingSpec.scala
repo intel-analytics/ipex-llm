@@ -115,6 +115,7 @@ class TrainingSpec extends ZooSpecHelper {
     model.add(Dense[Float](2, activation = "softmax"))
     model.compile(optimizer = "sgd", loss = "sparse_categorical_crossentropy",
       metrics = List("accuracy"))
+    model.summary()
     val tmpLogDir = createTmpDir()
     val tmpCheckpointDir = createTmpDir()
     model.setTensorBoard(tmpLogDir.getAbsolutePath, "TrainingSpec")

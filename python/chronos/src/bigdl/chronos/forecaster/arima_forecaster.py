@@ -98,6 +98,8 @@ class ARIMAForecaster(Forecaster):
 
         :param horizon: the number of steps forward to predict
         :param rolling: whether to use rolling prediction
+
+        :return: A list in length of horizon reflects the predict result.
         """
         if self.internal.model is None:
             raise RuntimeError("You must call fit or restore first before calling predict!")
@@ -109,6 +111,8 @@ class ARIMAForecaster(Forecaster):
 
         :param validation_data: A 1-D numpy array as the evaluation data
         :param metrics: A list contains metrics for test/valid data.
+
+        :return: A list in length of len(metrics), where states the metrics in order.
         """
         if validation_data is None:
             raise ValueError("Input invalid validation_data of None")
