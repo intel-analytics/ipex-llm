@@ -46,6 +46,13 @@ logger = logging.getLogger(__name__)
 
 
 def sample_config(args, config):
+    """
+    Sample a set of hyperparams from given config.
+
+    :param args: The arguments with possbile search space params.
+    :param config: a combinition of hyperparams (e.g. obtained in each trial)
+    :return: a sampled set of hyperparams.
+    """
     args = copy.deepcopy(args)
     striped_keys = [k.split(SPLITTER)[0] for k in config.keys()]
     if isinstance(args, (argparse.Namespace, argparse.ArgumentParser)):
@@ -99,8 +106,7 @@ class _automl_method(object):
         self.update(**kwvars)
 
     def update(self, **kwargs):
-        """For searcher support ConfigSpace
-        """
+        # for searcher support ConfigSpace
         self.kwvars.update(kwargs)
         for k, v in self.kwvars.items():
             if isinstance(v, (NestedSpace)):
@@ -126,8 +132,6 @@ class _automl_method(object):
 
     @property
     def kwspaces(self):
-        """For RL searcher/controller
-        """
         kw_spaces = OrderedDict()
         for k, v in self.kwvars.items():
             if isinstance(v, NestedSpace):
@@ -149,18 +153,12 @@ class _automl_method(object):
 
 
 def args(default=None, **kwvars):
-    """Decorator for a Python training script that
-       registers its arguments as hyperparameters.
-       Each hyperparameter takes fixed value or is a searchable space,
-       and the arguments may either be:
-       built-in Python objects (e.g. floats, strings, lists, etc.),
-       AutoObject (see :func:`hpo.obj`),
-       or hpo search spaces (see :class:`hpo.space.Int`,
-       :class:`hpo.space.Real`, etc.).
+    """
+    Decorator for a Python training script that registers its arguments as hyperparameters.
+    Each hyperparameter takes fixed value or is a searchable space.
 
-    Examples
-    --------
-    >>>
+    :param default: a dictionary of hyperparameter default values, defaults to None
+    :return : a wrapped function.
     """
     if default is None:
         default = dict()
@@ -180,17 +178,13 @@ def args(default=None, **kwvars):
 
 
 def func(**kwvars):
-    """Decorator for a function that registers its arguments as hyperparameters.
-       Each hyperparameter may take a fixed value or be a searchable space (hpo.space).
+    """
+    Decorator for a function that registers its arguments as hyperparameters.
+    Each hyperparameter may take a fixed value or be a searchable space (hpo.space).
 
-    Returns
-    -------
-    Instance of :class:`hpo.space.AutoObject`:
-        A lazily initialized object, which allows for distributed training.
-
-    Examples
-    --------
-    >>>
+    :return: an AutoFunc object. The function body is not immediately executed at the time
+             of user invocation. The actual execution is delayed until AutoFunc.sample()
+             is called (usually in each trial).
     """
     from .callgraph import CallCache, CALLTYPE
 
@@ -309,17 +303,13 @@ def func(**kwvars):
 
 
 def obj(**kwvars):
-    """Decorator for a Python class that registers its arguments as hyperparameters.
-       Each hyperparameter may take a fixed value or be a searchable space (hpo.space).
+    """
+    Decorator for a Python class that registers its arguments as hyperparameters.
+    Each hyperparameter may take a fixed value or be a searchable space (hpo.space).
 
-    Returns
-    -------
-    Instance of :class:`hpo.space.AutoObject`:
-        A lazily initialized object, which allows distributed training.
+    :return: an AutoCls object. The instantiation of the class object is delayed
+             until AutoCls.sample() is called (usually in each trial).
 
-    Examples
-    --------
-    >>>
     """
     # def _automl_kwargs_obj(**kwvars):
     #     def registered_func(func):
@@ -413,17 +403,15 @@ def obj(**kwvars):
 
 def tfmodel(**kwvars):
     from bigdl.nano.automl.tf.mixin import HPOMixin
-    """Decorator for a custom model that registers its arguments as hyperparameters.
-       Each hyperparameter may take a fixed value or be a searchable space (hpo.space).
+    """
+    Decorator for a Custom Tensorflow model that registers its arguments as hyperparameters.
+    Each hyperparameter may take a fixed value or be a searchable space (hpo.space).
 
-    Returns
-    -------
-    Instance of :class:`hpo.space.AutomlModel`:
-        It contains a lazily initialized object.
+    :return: a TFAutoMdl object. The instantiation of the class object is delayed
+             until TFAutoMdl.sample() is called (usually in each trial). The difference
+             between a TFAutoMdl and a AutoCls is TFAutoMdl has search and search_summary
+             methods.
 
-    Examples
-    --------
-    >>>
     """
     def registered_class(Cls):
         objCls = obj(**kwvars)(Cls)
@@ -463,16 +451,13 @@ def tfmodel(**kwvars):
 
 
 def plmodel(**kwvars):
-    """Decorator for a custom model that registers its arguments as hyperparameters.
-       Each hyperparameter may take a fixed value or be a searchable space (hpo.space).
+    """
+    Decorator for a Custom PyTorch model that registers its arguments as hyperparameters.
+    Each hyperparameter may take a fixed value or be a searchable space (hpo.space).
 
-    Returns
-    -------
-    Instance of :class:`hpo.space.AutomlModel`:
-        It contains a lazily initialized object.
-
-    Examples
-    --------
+    :return: a PlAutoMdl object. The instantiation of the class object is delayed
+             until PlAutoMdl.sample() is called (usually in each trial). Unlike TFAutoMdl,
+             PlAutoMdl, does not have search and search_summary methods.
     >>>
     """
     def registered_class(Cls):
