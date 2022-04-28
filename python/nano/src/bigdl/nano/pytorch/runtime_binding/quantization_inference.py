@@ -104,10 +104,7 @@ def load_quantized_state_dict(self, state_dict):
         with open(tune_cfg_file, 'w') as f:
             yaml.dump(state_dict[1], f, default_flow_style=False)
         torch.save(state_dict[0], weight_file)
-        if isinstance(self, LightningModuleFromTorch):
-            qmodel = load(checkpoint_dir=tmp_dir_name, model=self.model)
-        else:
-            qmodel = load(checkpoint_dir=tmp_dir_name, model=self)
+        qmodel = load(checkpoint_dir=tmp_dir_name, model=self)
     self._quantized_model = qmodel
     self._quantized_model_inc = Model(qmodel)
     self._quantized_model_up_to_date = True  # set to true before training next time
