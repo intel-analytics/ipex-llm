@@ -26,15 +26,10 @@ class PytorchQuantizedModel(AcceleratedLightningModule):
         self.quantized = model
 
     def load_state_dict(self, state_dict):
-        load(state_dict, self.quantized.model)
+        self.quantized.model.load_state_dict(state_dict)
 
     def state_dict(self):
-        try:
-            stat_dict = self.quantized.model.state_dict()
-            stat_dict['best_configure'] = self.quantized.tune_cfg
-        except IOError as e:
-            raise IOError("Fail to dump configure and weights due to {}.".format(e))
-        return stat_dict
+        return self.quantized.model.state_dict()
 
     @staticmethod
     def _load(path, model):
