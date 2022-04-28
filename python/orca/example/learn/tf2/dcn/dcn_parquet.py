@@ -174,11 +174,8 @@ test_count = test_tbl.size()
 val_steps = math.ceil(test_count / 8192)
 print("test size: ", test_count, ", steps: ", val_steps)
 
-train_xshards = featuretable_to_xshards(train_tbl)
-val_xshards = featuretable_to_xshards(test_tbl)
-
-train_dataset = Dataset.from_tensor_slices(train_xshards)
-val_dataset = Dataset.from_tensor_slices(val_xshards)
+train_dataset = Dataset.from_tensor_slices_with_tbl(train_tbl)
+val_dataset = Dataset.from_tensor_slices_with_tbl(test_tbl)
 
 config = {
     "lr": 0.01
