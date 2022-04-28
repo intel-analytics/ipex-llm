@@ -14,8 +14,6 @@
 # limitations under the License.
 #
 
-import copy
-import warnings
 import importlib
 
 
@@ -27,25 +25,32 @@ from bigdl.nano.automl.utils.register_modules import (
 
 
 TF_LAYER_MODULES = [("tensorflow.keras.layers", "keras.layers"), ]
-
 NANO_DEFINED_TF_LAYERS = ['Embedding']
-
 TF_ACTIVATION_MODULE = [("tensorflow.keras.activations", "keras.activations")]
-
 TF_ACTIVATION_EXCLUDE = ['serialize', 'deserialize', 'get']
-
 TF_FUNCS = ['cast']
 TF_KERAS_FUNCS = ['Input']
 
 
 class HPOConfig(object):
-    """A global configuration object for HPO,
-    To access it, use "bigdl.nano.automl.hpo_config".
-    E.g., "use bigd.nano.automl.hpo_config.enable_hpo_tf() to enable tf hpo"
     """
+    A global configuration object for HPO.
+
+    To access the hpo config, use "bigdl.nano.automl.hpo_config".
+    E.g., to enable hpo tf, use "bigd.nano.automl.hpo_config.enable_hpo_tf()"
+    """
+
     def __init__(self,
                  hpo_tf=False,
                  hpo_pytorch=False):
+        """
+        Init the HPOConfig.
+
+        :param hpo_tf: boolean. whether to enable HPO for Tensorflow.
+            Defaults to False
+        :param hpo_pytorch: boolean. whether to enable HPO for PyTorch.
+            Defaults to False
+        """
         # configuraitons
         self.hpo_tf_ = hpo_tf
         self.hpo_pytorch_ = hpo_pytorch
@@ -68,6 +73,7 @@ class HPOConfig(object):
         self.backup_tf_layers = None
 
     def enable_hpo_tf(self):
+        """Enable HPO for tensorflow."""
         if self.hpo_tf:
             return
         self.hpo_tf_ = True if self.tf_available else False
@@ -76,34 +82,55 @@ class HPOConfig(object):
             self._add_decorated_nano_tf_modules()
 
     def enable_hpo_pytorch(self):
+        """Enable HPO for pytorch."""
+        if self.hpo_pytorch:
+            return
         self.hpo_pytorch_ = True if self.torch_available else False
         # TODO anything pytorch specific add here
 
     def disable_hpo_tf(self):
+        """Disable HPO for tensorflow."""
         if self.hpo_tf:
             self._clean_nano_tf_modules()
         # self._reload_modules()
         self.hpo_tf_ = False
 
     def disable_hpo_pytorch(self):
+        """Disable HPO for pytorch."""
         self.hpo_pytorch_ = False
 
     def reset(self):
+        """Reset the HPO Config to default values."""
         self._clean_nano_tf_modules()
         self._reload_modules()
+        self.hpo_tf_ = False
+        self.hpo_pytorch_ = False
 
     @property
     def hpo_tf(self):
+        """Get the status of hpo tensorflow."""
         return self.hpo_tf_
 
     @hpo_tf.setter
     def hpo_tf(self, value):
-        raise ValueError("Directly set hpo_tf value is not permitted. Please\
-            use enable_hpo_tf() or disable_hpo_tf() to enable/disable tensorflow hpo. ")
+        """Forbid setting hpo tensorflow variable directly. \
+        Should use enable_hpo_tf() instead."""
+        raise ValueError("Directly set hpo_tf value is not permitted. \
+            Please use enable_hpo_tf() or disable_hpo_tf() to \
+            enable/disable tensorflow hpo. ")
 
     @property
     def hpo_pytorch(self):
+        """Get the status of hpo pytorch."""
         return self.hpo_pytorch_
+
+    @hpo_pytorch.setter
+    def hpo_pytorch(self, value):
+        """Forbid setting hpo pytorch variable directly. \
+            Should use enable_hpo_pytorch() instead."""
+        raise ValueError("Directly set hpo_pytorch value is not permitted. \
+            Please use enable_hpo_pytorch() or disable_hpo_pytorch() to\
+            enable/disable pytorch hpo. ")
 
     def _backup_existing_components(self, symtab, subcomponents):
         self.backup_tf_layers = self.backup_tf_layers or {}

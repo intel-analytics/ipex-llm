@@ -24,8 +24,10 @@ from bigdl.nano.automl.hpo.callgraph import CallCache
 
 @proxy_methods
 class Model(HPOMixin, tf.keras.Model):
+    """Tf.keras.Model with HPO capabilities."""
 
     def __init__(self, **kwargs):
+        """Initializer."""
         # we only take keyword arguments for now
         # TODO check how args is used
         # TODO check why base class is keras.engine.training_v1.Model

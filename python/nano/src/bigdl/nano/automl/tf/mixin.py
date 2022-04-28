@@ -29,13 +29,14 @@ from bigdl.nano.automl.hpo.search import (
 
 
 class HPOMixin:
-    """HPOMixin is used to add hpo related search methods onto
-        tf.keras.Sequential, tf.keras.Model, as well as custom
-        model subclassing from tf.keras.Model.
-
-    Returns:
-        _type_: _description_
     """
+    A Minin object to add hpo related methods to models.
+
+    It is used to add hpo related search methods onto
+    tf.keras.Sequential, tf.keras.Model, as well as custom
+        model subclassing from tf.keras.Model.
+    """
+
     # argument keys for search, fit, tune creation, tune run.
     FIT_KEYS = {
         'x', 'y',
@@ -63,6 +64,7 @@ class HPOMixin:
                        'get_layer']
 
     def __init__(self, *args, **kwargs):
+        """Init the Mixin."""
         super().__init__(*args, **kwargs)
         self.objective = None
         self.study = None
@@ -109,14 +111,16 @@ class HPOMixin:
         target_metric=None,
         **kwargs
     ):
-        """ Do the hyper param tuning.
+        """
+        Do the hyper param search.
 
-        Args:
-            n_trails (int, optional): number of trials to run. Defaults to 1.
-            resume (bool, optional): whether to resume the previous tuning. Defaults to False.
-            target_metric (str, optional): the target metric to optimize. Defaults to "accuracy".
-            direction (str, optional): optimize direction. Defaults to "maximize".
-            pruning (bool, optional): whether to use pruning
+        :param resume: bool, optional. whether to resume the previous tuning.
+            Defaults to False.
+        :param target_metric: str, optional. the target metric to optimize.
+            Defaults to "accuracy".
+        :param kwargs: model.fit arguments (e.g. batch_size, validation_data, etc.)
+            and search backend (i.e.optuna) arguments (e.g. n_trials, pruner, etc.)
+            are allowed in kwargs.
         """
         _check_search_args(search_args=kwargs,
                            legal_keys=[HPOMixin.FIT_KEYS,
@@ -181,23 +185,23 @@ class HPOMixin:
         self.tune_end = False
 
     def search_summary(self):
-        """Retrive a summary of trials
+        """
+        Retrive a summary of trials.
 
-        Returns:
-            dataframe: A summary of all the trials
+        :return: A summary of all the trials. Currently the optuna study is
+            returned to allow more flexibility for further analysis and visualization.
         """
         return _search_summary(self.study)
 
     def end_search(self, use_trial_id=-1):
-        """ Put an end to tuning.
-            Use the specified trial or best trial to init and
-            compile the base model.
+        """
+        Put an end to tuning.
 
-        Args:
-            use_trial_id (int, optional): params of which trial to be used. Defaults to -1.
+        Use the specified trial or best trial to init and build the model.
 
-        Raises:
-            ValueError: error when tune is not called already.
+        :param use_trial_id: int(optional) params of which trial to be used.
+            Defaults to -1.
+        :raise: ValueError: error when tune is not called before end_search.
         """
         self._lazymodel = _end_search(study=self.study,
                                       model_builder=self._model_build,
@@ -206,10 +210,13 @@ class HPOMixin:
         self.tune_end = True
 
     def compile(self, *args, **kwargs):
+        """Collect compile arguments and delay it to each trial\
+            and end_search."""
         self.compile_args = args
         self.compile_kwargs = kwargs
 
     def fit(self, *args, **kwargs):
+        """Fit using the built-model form end_search."""
         if not self.tune_end:
             self.end_search()
         self._lazymodel.fit(*args, **kwargs)
