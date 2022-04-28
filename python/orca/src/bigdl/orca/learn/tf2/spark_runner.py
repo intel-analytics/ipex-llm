@@ -119,26 +119,16 @@ class TFDistributedDatasetHandler(DatasetHandler):
     def _handle_xshards(self, dataset, steps, local_batch_size, shuffle):
         import tensorflow as tf
 
-        is_normal_xshards = False
-        # try:
-        #     if isinstance(dataset[0], tf.data.Dataset):
-        #         is_normal_xshards = False
-        # except:
-        #     pass
-
-        if is_normal_xshards:
-            data, label = ray_partition_get_data_label(dataset,
-                                                       allow_tuple=True,
-                                                       allow_list=False)
-            tf_dataset = tf.data.Dataset.from_tensor_slices((data, label))
-        else:
-            tf_dataset = spark_partitions_get_tf_dataset(dataset)
+        data, label = ray_partition_get_data_label(dataset,
+                                                   allow_tuple=True,
+                                                   allow_list=False)
 
         def dataset_fn(input_context):
+            dataset = tf.data.Dataset.from_tensor_slices((data, label))
             options = tf.data.Options()
             options.experimental_distribute.auto_shard_policy = \
                 tf.data.experimental.AutoShardPolicy.OFF
-            dataset = tf_dataset.with_options(options)
+            dataset = dataset.with_options(options)
             dataset = dataset.repeat()
             dataset = dataset.take(steps * local_batch_size)
             if shuffle:
