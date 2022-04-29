@@ -233,17 +233,6 @@ def ray_partitions_get_tf_dataset(partition_list, has_label=True):
     return dataset
 
 
-def spark_partitions_get_tf_dataset(partition_list):
-    # from functools import reduce
-    # TODO: dataset = reduce(lambda x, y: x.concatenate(y), partition_list)
-    ds = partition_list[0]
-    ds_def = ds["ds_def"]
-    elem_spec = ds["elem_spec"]
-    from tensorflow.python.distribute.coordinator.values import deserialize_dataset_from_graph
-    dataset = deserialize_dataset_from_graph(ds_def, elem_spec)
-    return dataset
-
-
 # todo: this might be very slow
 def xshard_to_sample(data):
     from bigdl.dllib.utils.file_utils import Sample

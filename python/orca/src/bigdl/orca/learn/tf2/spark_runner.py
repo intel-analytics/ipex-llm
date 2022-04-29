@@ -23,7 +23,7 @@ import tensorflow as tf
 
 from pyspark import BarrierTaskContext, TaskContext
 
-from bigdl.orca.data.utils import ray_partition_get_data_label, spark_partitions_get_tf_dataset
+from bigdl.orca.data.utils import ray_partition_get_data_label
 from bigdl.orca.data.file import exists
 from bigdl.orca.learn.utils import save_pkl, duplicate_stdout_stderr_to_file,\
     get_specific_object_from_callbacks, get_replaced_path, get_rank, \

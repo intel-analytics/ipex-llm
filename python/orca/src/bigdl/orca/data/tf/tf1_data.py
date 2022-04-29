@@ -20,7 +20,7 @@ from bigdl.dllib.feature.common import FeatureSet
 from bigdl.orca.tfpark import TFDataset
 
 
-class TFDataDataset2(TFDataset):
+class TF1Dataset(TFDataset):
 
     def __init__(self, dataset, batch_size,
                  batch_per_thread,
