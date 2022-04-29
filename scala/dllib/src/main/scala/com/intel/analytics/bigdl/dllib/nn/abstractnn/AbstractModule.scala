@@ -285,9 +285,11 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, 
       updateOutput(input)
     } catch {
       case l: IllegalArgumentException =>
-        throw l
+        Log4Error.invalidOperationError(false, l.getMessage, cause = l)
+        null
       case u: InvalidOperationException =>
-        throw u
+        Log4Error.invalidOperationError(false, u.getMessage, cause = u)
+        null
       case e: Throwable =>
         val errormsg = this.toString() + "\n" + e.getMessage
         Log4Error.unKnowExceptionError(false, errormsg, cause = e)

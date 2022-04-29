@@ -33,7 +33,6 @@ import java.io.{File, FilenameFilter}
 import java.text.SimpleDateFormat
 import java.util.Calendar
 
-import org.apache.commons.lang.exception.ExceptionUtils
 import org.apache.logging.log4j.{LogManager, Logger}
 import org.apache.spark.TaskContext
 import org.apache.spark.rdd.RDD
@@ -945,7 +944,7 @@ class DistriOptimizer[T: ClassTag](
         retryNum = Int.MaxValue
       } catch {
         case e: IllegalArgumentException =>
-          throw e
+          Log4Error.invalidOperationError(false, e.getMessage, cause = e)
         case t: Throwable =>
 //          DistriOptimizer.logger.error("Error: " + ExceptionUtils.getStackTrace(t))
           if (checkpointPath.isDefined) {
@@ -956,7 +955,7 @@ class DistriOptimizer[T: ClassTag](
             if (System.nanoTime() - lastFailureTimestamp < maxRetry * retryTimeInterval * 1e9) {
               retryNum += 1
               if (retryNum == maxRetry) {
-                throw t
+                Log4Error.invalidOperationError(false, t.getMessage, cause = t)
               }
             } else {
               retryNum = 1
@@ -993,7 +992,7 @@ class DistriOptimizer[T: ClassTag](
             models = modelsAndBroadcast._1
             modelBroadcast = modelsAndBroadcast._2
           } else {
-            throw t
+            Log4Error.invalidOperationError(false, t.getMessage, cause = t)
           }
       }
     }

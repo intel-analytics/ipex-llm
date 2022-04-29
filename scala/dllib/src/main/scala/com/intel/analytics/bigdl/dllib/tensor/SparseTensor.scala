@@ -165,7 +165,7 @@ private[tensor] class SparseTensor[@specialized(Float, Double) T: ClassTag](
   }
 
   override def transpose(dim1: Int, dim2: Int): Tensor[T] = {
-    throw new UnsupportedOperationException(s"SparseTennewIndicesOffsetsor: Unimplemented method")
+    Log4Error.invalidOperationError(false, s"SparseTensor: Unimplemented method")
     null
   }
 
@@ -1244,7 +1244,8 @@ private[tensor] class SparseTensor[@specialized(Float, Double) T: ClassTag](
         castTensor.applyFun[T](this.asInstanceOf[SparseTensor[T]],
           x => ev.toType[Short](x).asInstanceOf[D])
       case _ =>
-        throw new RuntimeException("Unspported type")
+        Log4Error.invalidOperationError(false, s"SparseTensor: Unsupported type")
+        null
     }
     castTensor
   }
@@ -1657,7 +1658,7 @@ object SparseTensor{
           i += 1
         }
       case _ =>
-        throw new UnsupportedOperationException(s"${denseTensor.dim()}")
+        Log4Error.invalidOperationError(false, s"${denseTensor.dim()}")
     }
     SparseTensor(indices, storage, shape, shape.length)
   }

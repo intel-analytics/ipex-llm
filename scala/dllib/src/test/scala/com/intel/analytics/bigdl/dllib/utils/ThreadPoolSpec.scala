@@ -87,7 +87,9 @@ class ThreadPoolSpec extends FlatSpec with Matchers {
 
   "invokeAndWait2" should "catch the unsupported exception" in {
     val threadPool = new ThreadPool(1)
+    // scalastyle:off
     val task = () => { throw new UnsupportedOperationException(s"test invokeAndWait2") }
+    // scalastyle:on
 
     intercept[UnsupportedOperationException] {
       threadPool.invokeAndWait2( (0 until 1).map( i => task ))
@@ -96,7 +98,9 @@ class ThreadPoolSpec extends FlatSpec with Matchers {
 
   "invokeAndWait2" should "catch the interrupt exception" in {
     val threadPool = new ThreadPool(1)
+    // scalastyle:off
     val task = () => { throw new InterruptedException(s"test invokeAndWait2")}
+    // scalastyle:on
 
     intercept[InterruptedException] {
       threadPool.invokeAndWait2( (0 until 1).map( i => task ))
@@ -105,7 +109,9 @@ class ThreadPoolSpec extends FlatSpec with Matchers {
 
   "invokeAndWait" should "catch the exception" in {
     val threadPool = new ThreadPool(1)
+    // scalastyle:off
     val task = () => { throw new InterruptedException(s"test invokeAndWait")}
+    // scalastyle:on
 
     intercept[InterruptedException] {
       threadPool.invokeAndWait( (0 until 1).map( i => task ))
@@ -114,7 +120,9 @@ class ThreadPoolSpec extends FlatSpec with Matchers {
 
   "invoke" should "catch the exception" in {
     val threadPool = new ThreadPool(1)
+    // scalastyle:off
     val task = () => { throw new UnsupportedOperationException(s"test invoke2") }
+    // scalastyle:on
 
     intercept[ExecutionException] {
       val results = threadPool.invoke2( (0 until 1).map( i => task ))

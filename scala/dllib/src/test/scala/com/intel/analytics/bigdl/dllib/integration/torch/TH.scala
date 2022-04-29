@@ -137,7 +137,8 @@ object TH {
         case illegalArgumentException: IllegalArgumentException =>
           java.io.File.createTempFile(suffix, k, inputsRoot.toFile)
         case iOException: IOException =>
-          throw iOException
+          Log4Error.invalidOperationError(false, "failed to create file", cause = iOException)
+          null
       }
 
       val inputsPath = tmp.getAbsolutePath

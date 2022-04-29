@@ -69,7 +69,9 @@ object TestUtils {
    */
   def cancelOnWindows(): Unit = {
     if (System.getProperty("os.name").toLowerCase().contains("win")) {
+      // scalastyle:off
       throw new TestCanceledException("This case should not be run on windows", 3)
+      // scalastyle:on
     }
   }
 
@@ -123,9 +125,9 @@ object TestUtils {
   }
 
   def conditionFailTest(condition: Boolean, msg: String = null): Unit = {
-    // scalastyle:off
+//     scalastyle:off
     assert(condition, msg)
-    // scalastyle:on
+//     scalastyle:on
   }
 }
 
@@ -139,7 +141,7 @@ class ExceptionTest[T: ClassTag](failCountNumberLists: Array[Int], sleep: Boolea
       if (sleep) {
         Thread.sleep(10000)
       }
-      throw new Exception("Fail task")
+      Log4Error.invalidOperationError(false, "fail task")
     }
     this.output
   }

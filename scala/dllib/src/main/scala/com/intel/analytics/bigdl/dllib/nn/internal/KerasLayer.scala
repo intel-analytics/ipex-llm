@@ -257,9 +257,6 @@ abstract class KerasLayer[A <: Activity: ClassTag, B <: Activity: ClassTag, T: C
   }
 
   def labor: AbstractModule[A, B, T] = {
-//    if (this.modules.isEmpty) {
-//      throw new RuntimeException("This Layer hasn't been built")
-//    }
     Log4Error.invalidOperationError(!this.modules.isEmpty, "This Layer hasn't been built",
     "Please add this layer into a Sequential before use")
     Log4Error.invalidInputError(modules.length == 1,

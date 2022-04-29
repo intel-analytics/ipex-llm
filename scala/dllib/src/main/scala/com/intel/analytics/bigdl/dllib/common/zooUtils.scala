@@ -305,12 +305,6 @@ private[bigdl] object zooUtils {
     }
   }
 
-//  def logUsageErrorAndThrowException(errMessage: String, cause: Throwable = null): Unit = {
-//    logger.error(s"********************************Usage Error****************************\n"
-//      + errMessage)
-//    throw new AnalyticsZooException(errMessage, cause)
-//  }
-
   def createTmpDir(prefix: String = "Zoo", permissions: String = "rwx------"): JPath = {
     java.nio.file.Files.createTempDirectory(prefix,
       PosixFilePermissions.asFileAttribute(PosixFilePermissions.fromString(permissions)))

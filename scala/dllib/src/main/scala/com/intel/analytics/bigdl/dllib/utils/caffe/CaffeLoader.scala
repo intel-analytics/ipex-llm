@@ -576,7 +576,8 @@ object CaffeLoader {
           , cause = parseException)
         null
       case e =>
-        throw  e
+        Log4Error.unKnowExceptionError(false, e.getMessage, cause = e)
+        null
     }
   }
 }

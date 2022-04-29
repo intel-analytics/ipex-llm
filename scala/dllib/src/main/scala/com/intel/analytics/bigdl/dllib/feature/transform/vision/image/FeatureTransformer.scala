@@ -83,7 +83,8 @@ abstract class FeatureTransformer()
           logger.warn(s"failed ${path} in transformer ${getClass}")
           e.printStackTrace()
         } else {
-          throw e
+          Log4Error.unKnowExceptionError(false, s"failed in transformer ${getClass}",
+            cause = e)
         }
     }
     feature

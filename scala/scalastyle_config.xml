@@ -206,5 +206,10 @@ You can also disable only one rule, by specifying its rule id, as specified in:
         <customMessage>require is not allowed to use, please use Log4Error api instead</customMessage>
     </check>
 
+    <check customId="throwexception" level="error" class="org.scalastyle.file.RegexChecker" enabled="true">
+        <parameters><parameter name="regex">throw new \w+Exception\(</parameter></parameters>
+        <customMessage>throw exception is not allowed to use, please use Log4Error api instead</customMessage>
+    </check>
+
 
 </scalastyle>

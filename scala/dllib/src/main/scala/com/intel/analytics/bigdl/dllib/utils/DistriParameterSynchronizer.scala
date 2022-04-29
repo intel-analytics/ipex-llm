@@ -258,7 +258,7 @@ class BlockManagerParameterSynchronizer[T: ClassTag](val partitionID: Int, val t
                   } catch {
                     case t: Throwable =>
                       Log4Error.unKnowExceptionError(false, ExceptionUtils.getStackTrace(t))
-                      throw t
+                      0
                   }
                 }
               }
@@ -284,7 +284,7 @@ class BlockManagerParameterSynchronizer[T: ClassTag](val partitionID: Int, val t
                     } catch {
                       case t: Throwable =>
                         Log4Error.unKnowExceptionError(false, ExceptionUtils.getStackTrace(t))
-                        throw t
+                        0
                     }
                   }
                 }
@@ -343,7 +343,7 @@ class BlockManagerParameterSynchronizer[T: ClassTag](val partitionID: Int, val t
                   } catch {
                     case t: Throwable =>
                       Log4Error.unKnowExceptionError(false, ExceptionUtils.getStackTrace(t))
-                      throw t
+                      0
                   }
                 }
               }

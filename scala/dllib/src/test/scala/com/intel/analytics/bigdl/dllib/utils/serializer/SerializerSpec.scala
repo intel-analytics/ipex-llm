@@ -24,7 +24,7 @@ import com.intel.analytics.bigdl.dllib.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.serialization.Bigdl.{AttrValue, BigDLModule}
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.dllib.tensor.{Tensor, TensorNumericMath}
-import com.intel.analytics.bigdl.dllib.utils.{BigDLSpecHelper, TestUtils}
+import com.intel.analytics.bigdl.dllib.utils.{BigDLSpecHelper, Log4Error, TestUtils}
 import com.intel.analytics.bigdl.dllib.utils.serializer.converters.DataConverter
 import org.reflections.Reflections
 import org.reflections.scanners.SubTypesScanner
@@ -437,7 +437,8 @@ class SerializerSpec extends BigDLSpecHelper {
           s"subclass of com.intel.analytics.bigdl.dllib.utils.serializer.ModuleSerializationTest")
         testClass.asInstanceOf[ModuleSerializationTest].test()
       } catch {
-        case t: Throwable => throw t
+        case t: Throwable =>
+          Log4Error.unKnowExceptionError(false, t.getMessage, cause = t)
       }
     }
   })

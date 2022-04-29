@@ -189,7 +189,7 @@ class LookupTable[T: ClassTag]
           s"LookupTable updateOutput get exception:${e.getMessage}\n" +
           s"please ensure elements of your input will not exceed ${nIndex}")
       case e: Exception =>
-        throw e
+        Log4Error.unKnowExceptionError(false, e.getMessage, cause = e)
     }
 
     output

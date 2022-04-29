@@ -165,7 +165,7 @@ object Engine {
         gatewayServer.start()
       } catch {
         case ct: ControlThrowable =>
-          throw ct
+          Log4Error.unKnowExceptionError(false, ct.getMessage, cause = ct)
         case t: Throwable =>
           Log4Error.unKnowExceptionError(false, s"Uncaught exception " +
             s"in thread ${Thread.currentThread().getName}, when staring JavaGatewayServer",
@@ -517,7 +517,8 @@ object Engine {
             " Or if you want to run BigDL in a local JVM environment, you should set Java " +
             "property bigdl.localMode=true")
         }
-        throw s
+        Log4Error.unKnowExceptionError(false, s.getMessage, cause = s)
+        null
     }
   }
 

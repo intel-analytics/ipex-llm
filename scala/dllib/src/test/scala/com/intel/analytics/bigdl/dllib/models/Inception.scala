@@ -417,9 +417,11 @@ object Inception {
       case "perf" => args(3) match {
         case "double" => performanceDouble(args(1).toInt, args(2).toInt, "default")
         case "float" => performanceFloat(args(1).toInt, args(2).toInt, "default")
-        case _ => throw new IllegalArgumentException
+        case _ =>
+          Log4Error.invalidOperationError(false, "only support double and float")
       }
-      case _ => throw new IllegalArgumentException
+      case _ =>
+        Log4Error.invalidOperationError(false, s"only support perf, but got ${args(0)}")
     }
     System.exit(0)
   }

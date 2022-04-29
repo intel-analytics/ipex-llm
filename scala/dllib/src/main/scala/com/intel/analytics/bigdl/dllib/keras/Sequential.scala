@@ -55,9 +55,7 @@ import com.intel.analytics.bigdl.dllib.keras.layers.utils._
 import com.intel.analytics.bigdl.dllib.keras.models._
 import com.intel.analytics.bigdl.dllib.net.NetUtils
 // import com.intel.analytics.bigdl.dllib.Net.TorchModel
-import com.intel.analytics.bigdl.dllib.estimator.{AbstractEstimator, ConstantClipping, GradientClipping, L2NormClipping}
 // import com.intel.analytics.zoo.tfpark.{TFTrainingHelper, TFTrainingHelperV2}
-import org.apache.commons.lang.exception.ExceptionUtils
 import org.apache.commons.lang3.SerializationUtils
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.Path

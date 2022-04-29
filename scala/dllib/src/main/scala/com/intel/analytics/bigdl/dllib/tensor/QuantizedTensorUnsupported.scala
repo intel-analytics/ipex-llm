@@ -1562,8 +1562,10 @@ abstract class QuantizedTensorUnsupported[T: ClassTag] extends Tensor[T] {
    * @param y
    * @return current tensor reference
    */
-  override def maskedCopy(mask: Tensor[T], y: Tensor[T]): Tensor[T] =
-    throw new UnsupportedOperationException(errorString)
+  override def maskedCopy(mask: Tensor[T], y: Tensor[T]): Tensor[T] = {
+    Log4Error.invalidOperationError(false, errorString)
+    null
+  }
 
   /**
    * Returns a new Tensor which contains all elements aligned to a 1 in the corresponding mask.

@@ -77,7 +77,7 @@ class WordEmbedding[T: ClassTag] private(
           s"EmbeddingGloVe updateOutput get exception: ${e.getMessage}\n" +
             s"please ensure all elements of your input smaller than $inputDim.", cause = e)
       case e: Exception =>
-        throw e
+        Log4Error.invalidOperationError(false, e.getLocalizedMessage, cause = e)
     }
     output
   }

@@ -20,7 +20,7 @@ import java.lang.reflect.Modifier
 
 import com.intel.analytics.bigdl.dllib.nn.abstractnn.AbstractModule
 import com.intel.analytics.bigdl.dllib.keras.layers.NoKeras2
-import com.intel.analytics.bigdl.dllib.utils.TestUtils
+import com.intel.analytics.bigdl.dllib.utils.{Log4Error, TestUtils}
 import org.reflections.Reflections
 import org.reflections.scanners.SubTypesScanner
 import org.reflections.util.{ClasspathHelper, ConfigurationBuilder, FilterBuilder}
@@ -71,7 +71,8 @@ abstract class SerializerSpecHelper extends FlatSpec with Matchers with BeforeAn
             s"ModuleSerializationTest")
           testClass.asInstanceOf[ModuleSerializationTest].test()
         } catch {
-          case t: Throwable => throw t
+          case t: Throwable =>
+            Log4Error.invalidOperationError(false, t.getMessage, cause = t)
         }
       }
     })

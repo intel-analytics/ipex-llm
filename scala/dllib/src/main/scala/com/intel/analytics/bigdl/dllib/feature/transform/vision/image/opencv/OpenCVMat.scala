@@ -134,7 +134,8 @@ object OpenCVMat {
     } catch {
       case e: Exception =>
         if (null != result) result.release()
-        throw e
+        Log4Error.unKnowExceptionError(false, s"failed in imdecode mat",
+          cause = e)
     } finally {
       if (null != mat) mat.release()
       if (null != matOfByte) matOfByte.release()
