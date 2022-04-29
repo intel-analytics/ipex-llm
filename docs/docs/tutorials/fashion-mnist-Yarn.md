@@ -27,16 +27,16 @@ export HADOOP_CONF_DIR=the directory of the hadoop and yarn configurations
 # Training the Fashion-Mnist Example
 
 In this part, you will learn how to complete a BigDL PyTorch program with the following steps in order:
-1. Prepare the Fashion-Mnist Dataset
-2. Define a Convolutional Neural Network
-3. Define a Loss and optimizer function
-4. Initialize the OrcaContext
-5. Initialize the PyTorch Estimator
-6. Training and Test the Network
+1. Prepare the Fashion-MNIST Dataset;
+2. Define a Convolutional Neural Network;
+3. Define a Loss and optimizer function;
+4. Initialize the OrcaContext;
+5. Create an Orca Estimator for PyTorch;
+6. Training and Test the Network;
 
-## 1. Prepare the Fashion-Mnist Dataset
+## 1. Prepare the Fashion-MNIST Dataset
 
-For this tutorial, we will use the Fasion-Mnist dataset, it's easy to download and prepare using `torchvision`. The difference between PyTorch and BigDL is that the PyTorch estimator in BigDL need us to define a `data_creator` function which returns a PyTorch Dataloader instead.
+For this tutorial, we will use the Fasion-MNIST dataset, it's easy to download and prepare using `torchvision`. The difference between PyTorch and BigDL is that the PyTorch estimator in BigDL need us to define a `data_creator` function which returns a PyTorch Dataloader instead.
 
 ```python
 import torch
