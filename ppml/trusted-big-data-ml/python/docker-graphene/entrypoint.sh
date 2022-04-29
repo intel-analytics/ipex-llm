@@ -94,7 +94,7 @@ elif [ "$ATTESTATION" = "true" ]; then
     echo "[INFO] PPML Application Exit!"
     exit 1
   fi
-  ATTESTATION_COMMAND="/opt/jdk8/bin/java -Xmx1g -cp $SPARK_HOME/examples/jars/spark-encrypt-io.jar com.intel.analytics.bigdl.ppml.attestation.AttestationCLI -u ${ATTESTATION_URL} -i ${ATTESTATION_ID}  -k ${ATTESTATION_KEY}"
+  ATTESTATION_COMMAND="/opt/jdk8/bin/java -Xmx1g -cp $SPARK_CLASSPATH:$SPARK_HOME/examples/jars/* com.intel.analytics.bigdl.ppml.attestation.AttestationCLI -u ${ATTESTATION_URL} -i ${ATTESTATION_ID}  -k ${ATTESTATION_KEY}"
 fi
 
 
