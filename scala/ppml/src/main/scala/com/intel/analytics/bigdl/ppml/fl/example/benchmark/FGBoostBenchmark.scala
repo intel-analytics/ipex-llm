@@ -9,7 +9,7 @@ import scopt.OptionParser
 import scala.util.Random
 
 
-object FGBoostDummyDataBenchmark extends TimingSupportive {
+object FGBoostBenchmark extends TimingSupportive {
   case class Params(dataSize: Int = 100, dataDim: Int = 10, numRound: Int = 10)
   def main(args: Array[String]): Unit = {
     val parser = new OptionParser[Params]("Text Classification Example") {

@@ -44,7 +44,7 @@ class FGBoostRegression(FLClientClosable):
         return callBigDlFunc(self.bigdl_type, "fgBoostEvaluate", self.value, x, y)
 
     def predict(self, x, batchsize=4, **kargs):
-        i = 0
+        i = version = 0
         result = []
         while i + batchsize < len(x):
             x_batch = x[i:i+batchsize]
