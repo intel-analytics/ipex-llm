@@ -6,10 +6,32 @@ export KEYS_PATH=YOUR_LOCAL_KEYS_PATH
 export LOCAL_IP=YOUR_LOCAL_IP
 export DOCKER_IMAGE=intelanalytics/bigdl-ppml-trusted-fl-graphene:2.1.0-SNAPSHOT
 
-sudo docker run -itd \
+arg=$1
+case "$arg" in
+    hfl1)
+        export script=/ppml/trusted-big-data-ml/runHflClient1.sh
+        export pod_name=hfl-client1
+        ;;
+    hfl2)
+        export script=/ppml/trusted-big-data-ml/runHflClient2.sh
+        export pod_name=hfl-client2
+        ;;
+    vfl1)
+        export script=/ppml/trusted-big-data-ml/runVflClient1.sh
+        export pod_name=vfl-client1
+        ;;
+    vfl2)
+        export script=/ppml/trusted-big-data-ml/runVflClient2.sh
+        export pod_name=Vfl-client2
+        ;;
+esac
+
+sudo docker rm -f $pod_name
+sudo docker run -it \
     --privileged \
     --net=host \
-    --cpuset-cpus="0-19" \
+    --name=$pod_name \
+    --cpuset-cpus="20-39" \
     --oom-kill-disable \
     --device=/dev/gsgx \
     --device=/dev/sgx/enclave \
@@ -18,8 +40,7 @@ sudo docker run -itd \
     -v /var/run/aesmd/aesm.socket:/var/run/aesmd/aesm.socket \
     -v $DATA_PATH:/ppml/trusted-big-data-ml/work/data \
     -v $KEYS_PATH:/ppml/trusted-big-data-ml/work/keys \
-    --name=flDemo \
     -e LOCAL_IP=$LOCAL_IP \
     -e SGX_MEM_SIZE=32G \
     -e SGX_LOG_LEVEL=error \
-    $DOCKER_IMAGE bash
+    $DOCKER_IMAGE bash $script
