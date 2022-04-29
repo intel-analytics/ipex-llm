@@ -44,7 +44,7 @@ def PytorchQuantizedModel(model):
     return PytorchQuantizedModel(model)
 
 
-def load_inc(path, model, framework):
+def load_inc_model(path, model, framework):
     if framework == 'pytorch':
         from .pytorch.quantized_model import PytorchQuantizedModel
         return PytorchQuantizedModel._load(path, model)

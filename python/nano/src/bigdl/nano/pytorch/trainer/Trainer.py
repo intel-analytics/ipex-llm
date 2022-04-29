@@ -37,7 +37,7 @@ from bigdl.nano.deps.openvino.openvino_api import PytorchOpenVINOModel, load_ope
 from bigdl.nano.deps.onnxruntime.onnxruntime_api import bind_onnxrt_methods,\
     PytorchONNXRuntimeModel, load_onnxruntime_model
 from bigdl.nano.deps.neural_compressor.inc_api import QuantizationINC, PytorchQuantizedModel,\
-    check_pytorch_dataloaders, load_inc
+    check_pytorch_dataloaders, load_inc_model
 distributed_backends = ["spawn", "ray", "subprocess"]
 
 
@@ -367,8 +367,7 @@ class Trainer(pl.Trainer):
             assert model is None, "Argument 'model' must be None for ONNX Runtime loading."
             return load_onnxruntime_model(path)
         if model_type == 'PytorchQuantizedModel':
-            return load_inc(path, model, 'pytorch')
-        # ... to be implemented
+            return load_inc_model(path, model, 'pytorch')
         if isinstance(model, nn.Module):
             # typically for models of nn.Module, LightningModule and LightningModuleFromTorch type
             model = copy.deepcopy(model)
