@@ -94,7 +94,7 @@ class TestOnnx(TestCase):
                                       method='qlinear',
                                       calib_dataloader=train_loader,
                                       val_dataloader=train_loader,
-                                      metric=torchmetrics.F1(10),
+                                      metric=torchmetrics.F1Score(10),
                                       accuracy_criterion={'relative': 0.99,
                                                           'higher_is_better': True})
         for x, y in train_loader:

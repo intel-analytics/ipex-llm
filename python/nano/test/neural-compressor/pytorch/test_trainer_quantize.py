@@ -82,7 +82,7 @@ class TestTrainer(TestCase):
         qmodel = trainer.quantize(pl_model,
                                   calib_dataloader=self.train_loader,
                                   val_dataloader=self.train_loader,
-                                  metric=torchmetrics.F1(10),
+                                  metric=torchmetrics.F1Score(10),
                                   approach='static',
                                   tuning_strategy='basic',
                                   accuracy_criterion={'relative': 0.99,

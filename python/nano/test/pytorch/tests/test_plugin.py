@@ -50,7 +50,7 @@ class TestPlugin(TestCase):
     def test_trainer_subprocess_plugin(self):
         pl_model = LightningModuleFromTorch(
             self.model, self.loss, self.optimizer,
-            metrics=[torchmetrics.F1(num_classes), torchmetrics.Accuracy(num_classes=10)]
+            metrics=[torchmetrics.F1Score(num_classes), torchmetrics.Accuracy(num_classes=10)]
         )
         trainer = Trainer(num_processes=2, distributed_backend="subprocess",
                           max_epochs=4)

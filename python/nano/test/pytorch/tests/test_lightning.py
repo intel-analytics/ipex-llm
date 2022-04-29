@@ -54,7 +54,7 @@ class TestLightningModuleFromTorch(TestCase):
     def test_resnet18(self):
         pl_model = LightningModuleFromTorch(
             model, loss, optimizer,
-            metrics=[torchmetrics.F1(num_classes), torchmetrics.Accuracy(num_classes=10)]
+            metrics=[torchmetrics.F1Score(num_classes), torchmetrics.Accuracy(num_classes=10)]
         )
         data_loader = create_data_loader(data_dir, batch_size, num_workers, data_transform)
         trainer = Trainer(max_epochs=4, log_every_n_steps=1)
