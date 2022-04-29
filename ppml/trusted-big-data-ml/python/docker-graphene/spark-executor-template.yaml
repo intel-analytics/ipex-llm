@@ -9,7 +9,7 @@ spec:
       - name: ATTESTATION
         value: false
       - name: ATTESTATION_URL
-        value: 172.168.0.205:9000
+        value: your_attestation_url
       - name: ATTESTATION_ID
         valueFrom:
           secretKeyRef:
@@ -17,9 +17,9 @@ spec:
             key: app_id
       - name: ATTESTATION_KEY
         valueFrom:
-        secretKeyRef:
-          name: kms-secret
-          key: app_key
+          secretKeyRef:
+            name: kms-secret
+            key: app_key
     volumeMounts:
       - name: enclave-key
         mountPath: /graphene/Pal/src/host/Linux-SGX/signer/enclave-key.pem
