@@ -26,19 +26,19 @@ Check the Hadoop setup and configurations of our cluster. Make sure we properly 
 export HADOOP_CONF_DIR=the directory of the hadoop and yarn configurations
 ```
 
-# Training the Fashion-Mnist Example
+# Training the Fashion-MNIST Example
 
 In this part, you will learn how to complete a BigDL PyTorch program with the following steps in order:
-1. Prepare the Fashion-Mnist Dataset
-2. Define a Convolutional Neural Network
-3. Define a Loss and optimizer function
-4. Initialize the OrcaContext
-5. Create an Estimator for PyTorch
-6. Training and Test the Network
+1. Prepare the Fashion-MNIST Dataset;
+2. Define a Convolutional Neural Network;
+3. Define a Loss and optimizer function;
+4. Initialize the OrcaContext;
+5. Create an Estimator for PyTorch;
+6. Training and Test the Network.
 
-## 1. Prepare the Fashion-Mnist Dataset
+## 1. Prepare the Fashion-MNIST Dataset
 
-For this tutorial, we will use the Fasion-Mnist dataset, it's easy to download and prepare using `torchvision`. The difference between PyTorch and BigDL is that the PyTorch estimator in BigDL needs us to define a `data_creator` function that returns a PyTorch Dataloader instead.
+For this tutorial, we will use the Fasion-MNIST dataset, it's easy to download and prepare using `torchvision`. The difference between PyTorch and BigDL is that the PyTorch estimator in BigDL needs us to define a `data_creator` function that returns a PyTorch Dataloader instead.
 
 ```python
 import torch
@@ -241,7 +241,7 @@ export PYSPARK_DRIVER_PYTHON='which python'
 Then we can run the application on Yarn with the following `spark-submit` script:
 
 ```bash
-PYSPARK_PYTHON=environment/bin/python ${SPARK_HOME}/bin/spark-submit \
+PYSPARK_PYTHON=environment/bin/python spark-submit \
     --properties-file ${BIGDL_CONF} \
     --py-files ${BIGDL_PY_ZIP} \
     --conf spark.driver.extraClassPath=${BIGDL_HOME}/jars/* \
