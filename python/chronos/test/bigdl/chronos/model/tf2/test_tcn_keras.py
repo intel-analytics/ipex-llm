@@ -61,14 +61,15 @@ class TestTcnKeras(ZooTestCase):
         assert yhat.shape == self.test_data[1].shape
 
     def test_tcn_save_load(self):
-        checkpoint_file = tempfile.TemporaryDirectory().name
         self.model.fit(self.train_data[0],
                        self.train_data[1],
                        epochs=2,
                        validation_data=self.test_data)
-        self.model.save(checkpoint_file, overwrite=True, )
-        restore_model = keras.models.load_model(checkpoint_file,
-                                                custom_objects={"TemporalConvNet": TemporalConvNet})
+        with tempfile.TemporaryDirectory() as tmp_dir_name:
+            self.model.save(tmp_dir_name)
+            restore_model = tf.keras.models.load_model(tmp_dir_name,
+                                                       custom_objects={"TemporalConvNet": TemporalConvNet,
+                                                                       "TemporalBlock": TemporalBlock})
         model_res = self.model.evaluate(self.test_data[0], self.test_data[1])
         restore_model_res = restore_model.evaluate(self.test_data[0], self.test_data[1])
         np.testing.assert_almost_equal(model_res, restore_model_res, decimal=5)

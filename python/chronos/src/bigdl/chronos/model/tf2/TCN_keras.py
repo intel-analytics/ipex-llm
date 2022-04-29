@@ -39,17 +39,22 @@
 # https://github.com/locuslab/TCN/blob/master/TCN/tcn.py
 # https://github.com/locuslab/TCN/blob/master/TCN/adding_problem/add_test.py
 
-
+from tokenize import group
+import numpy as np
 import tensorflow as tf
 from bigdl.nano.tf.keras import Model
-from tensorflow.keras.layers import Conv1D, BatchNormalization, Activation,\
-    Dropout, Input, Layer, Permute, Dense
+from tensorflow.keras.layers import Conv1D, BatchNormalization,\
+    Activation, Dropout, Input, Layer
 
 
 class TemporalBlock(Layer):
     def __init__(self, dilation_rate, nb_filters, kernel_size=1, strides=1,
                  padding='casual', dropout_rate=0.0, repo_initialization=True):
         super(TemporalBlock, self).__init__()
+        if repo_initialization:
+            init = tf.keras.initializers.RandomNormal(mean=0.0, stddev=0.01)
+        else:
+            init = tf.keras.initializers.HeUniform()
 
         self.dilation_rate = dilation_rate
         self.nb_filters = nb_filters
@@ -58,11 +63,6 @@ class TemporalBlock(Layer):
         self.padding = padding
         self.dropout_rate = dropout_rate
         self.repo_initialization = repo_initialization
-
-        if repo_initialization:
-            init = tf.keras.initializers.RandomNormal(mean=0.0, stddev=0.01)
-        else:
-            init = tf.keras.initializers.HeUniform()
 
         # block1
         self.conv1 = Conv1D(filters=nb_filters, kernel_size=kernel_size, strides=strides,
@@ -84,7 +84,7 @@ class TemporalBlock(Layer):
                                  padding='same', kernel_initializer=init)
         self.ac3 = Activation('relu')
 
-    def call(self, x, training):
+    def call(self, x, training=False):
         prev_x = x
         out = self.conv1(x)
         out = self.batch1(out)
@@ -144,24 +144,26 @@ class TemporalConvNet(Model):
             init = tf.keras.initializers.HeUniform()
 
         # initialize model
-        model = tf.keras.Sequential([Input(shape=(self.past_seq_len, self.input_feature_num,))])
+        self.network = []
 
         # The model contains "num_levels" TemporalBlock
         num_levels = len(num_channels)
         for i in range(num_levels):
             dilation_rate = 2 ** i
-            model.add(TemporalBlock(dilation_rate, num_channels[i], kernel_size,
-                      padding='causal', dropout_rate=dropout))
-        model.add(TemporalBlock(dilation_rate, self.output_feature_num, kernel_size,
-                  padding='causal', dropout_rate=dropout))
+            self.network.append(TemporalBlock(dilation_rate, num_channels[i], kernel_size,
+                                              padding='causal', dropout_rate=dropout))
+        self.network.append(TemporalBlock(dilation_rate, self.output_feature_num, kernel_size,
+                                          padding='causal', dropout_rate=dropout))
 
-        self.network = model
-        self.network.add(Permute((2, 1)))
-        self.network.add(Dense(future_seq_len, kernel_initializer=init))
-        self.network.add(Permute((2, 1)))
+        self.linear = tf.keras.layers.Dense(future_seq_len, kernel_initializer=init)
+        self.permute = tf.keras.layers.Permute((2, 1))
 
-    def call(self, x, training):
-        y = self.network(x, training=training)
+    def call(self, x, training=False):
+        for layer in self.network:
+            y = layer(x, training=training)
+        y = self.permute(y)
+        y = self.linear(y)
+        y = self.permute(y)
         return y
 
     def get_config(self):
@@ -170,7 +172,7 @@ class TemporalConvNet(Model):
                 "input_feature_num": self.input_feature_num,
                 "output_feature_num": self.output_feature_num,
                 "kernel_size": self.kernel_size,
-                "num_channels": self.num_channels+[self.output_feature_num],
+                "num_channels": self.num_channels,
                 "dropout": self.dropout,
                 "repo_initialization": self.repo_initialization}
 
@@ -188,6 +190,9 @@ def model_creator(config):
                             kernel_size=config.get("kernel_size", 7),
                             dropout=config.get("dropout", 0.2),
                             repo_initialization=config.get("repo_initialization", True))
+    inputs = Input(shape=(config["past_seq_len"], config["input_feature_num"]))
+    # init weights matrix
+    _ = model(inputs)
     learning_rate = config.get('lr', 1e-3)
     model.compile(optimizer=getattr(tf.keras.optimizers,
                                     config.get("optim", "Adam"))(learning_rate),
