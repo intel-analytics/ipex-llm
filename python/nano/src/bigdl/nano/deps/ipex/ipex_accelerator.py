@@ -46,8 +46,9 @@ class IPEXAccelerator(Accelerator):
     def __init__(
         self,
         precision_plugin: PrecisionPlugin = PrecisionPlugin(),
-        training_type_plugin: TrainingTypePlugin = SingleDevicePlugin(
-            torch.device(ipex_device())),
+        # ! training type plugin now passed by strategy start from 1.5.0
+        # training_type_plugin: TrainingTypePlugin = SingleDevicePlugin(
+        #     torch.device(ipex_device())),
         enable_bf16=False,
     ) -> None:
         """
