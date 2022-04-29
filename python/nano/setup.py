@@ -72,7 +72,7 @@ def setup_package():
 
     pytorch_requires = ["torch==1.11.0",
                         "torchvision==0.12.0",
-                        "pytorch_lightning==1.5.10", # attempt upgrade
+                        "pytorch_lightning==1.6.2", # attempt upgrade
                         "neural_compressor==1.11.0", # for INC test  
                         "torchmetrics==0.7.2", # remove if not pl 1.4.2
                         "intel_extension_for_pytorch==1.11.0",
