@@ -34,7 +34,8 @@ from bigdl.nano.pytorch.plugins.ddp_spawn import DDPSpawnPlugin
 from bigdl.nano.deps.ray.ray_api import distributed_ray
 from bigdl.nano.deps.ipex.ipex_api import create_IPEXAccelerator, ipex_device
 from bigdl.nano.deps.openvino.openvino_api import PytorchOpenVINOModel, load_openvino_model
-from bigdl.nano.deps.onnxruntime.onnxruntime_api import bind_onnxrt_methods
+from bigdl.nano.deps.onnxruntime.onnxruntime_api import bind_onnxrt_methods,\
+    PytorchONNXRuntimeModel, load_onnxruntime_model
 
 distributed_backends = ["spawn", "ray", "subprocess"]
 
@@ -291,10 +292,13 @@ class Trainer(pl.Trainer):
                     bind_base_inference_rt_methods
                 from bigdl.nano.pytorch.runtime_binding.quantization_inference import \
                     bind_quantize_methods
-                return bind_onnxrt_methods(
-                    bind_quantize_methods(
-                        bind_base_inference_rt_methods(pl_model), quantized_pytorch_model),
-                    quantized_onnx_model)
+                return_pl_model = bind_quantize_methods(
+                    bind_base_inference_rt_methods(pl_model), quantized_pytorch_model)
+                if quantized_onnx_model:
+                    return bind_onnxrt_methods(return_pl_model,
+                                               quantized_onnx_model)
+                else:
+                    return return_pl_model
         else:
             raise NotImplementedError("Backend {} is not implemented.".format(backend))
 
@@ -309,11 +313,13 @@ class Trainer(pl.Trainer):
         :param input_sample: A set of inputs for trace, defaults to None if you have trace before or
                              model is a LightningModule with any dataloader attached.
         :param accelerator: The accelerator to use, defaults to None meaning staying in Pytorch
-                            backend. Only 'openvino' is supported for now.
-        :return: Model with different acceleration(OpenVINO/ONNX).
+                            backend. 'openvino' and 'onnxruntime' are supported for now.
+        :return: Model with different acceleration(OpenVINO/ONNX Runtime).
         """
         if accelerator == 'openvino':
             return PytorchOpenVINOModel(model, input_sample)
+        if accelerator == 'onnxruntime':
+            return PytorchONNXRuntimeModel(model, input_sample)
 
     @staticmethod
     def save(model: LightningModule, path):
@@ -347,7 +353,7 @@ class Trainer(pl.Trainer):
 
         :param path: Path to model to be loaded. Path should be a directory.
         :param model: Required FP32 model to load pytorch model. Optional for ONNX/OpenVINO.
-        :return: Model with different acceleration(None/OpenVINO/ONNX) or
+        :return: Model with different acceleration(None/OpenVINO/ONNX Runtime) or
                  precision(FP32/FP16/BF16/INT8).
         """
         path = Path(path)
@@ -362,7 +368,9 @@ class Trainer(pl.Trainer):
         if model_type == 'PytorchOpenVINOModel':
             assert model is None, "Argument 'model' must be None for OpenVINO loading."
             return load_openvino_model(path)
-        # if model_type == 'PytorchONNXModel':
+        if model_type == 'PytorchONNXRuntimeModel':
+            assert model is None, "Argument 'model' must be None for ONNX Runtime loading."
+            return load_onnxruntime_model(path)
         # if model_type == 'PytorchQuantizedModel':
         # ... to be implemented
         if isinstance(model, nn.Module):

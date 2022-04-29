@@ -28,7 +28,7 @@ def get_forward_args(model):
     return forward_args
 
 
-def get_input_example(model: LightningModuleFromTorch, input_sample):
+def get_input_example(model, input_sample):
     if isinstance(input_sample, DataLoader):
         # TODO: This assumpe the last output is y
         input_sample = tuple(next(iter(input_sample))[:-1])

@@ -76,9 +76,8 @@ def setup_package():
                         "torchmetrics==0.7.2",
                         "opencv-python-headless",
                         "PyTurboJPEG",
-                        "opencv-transforms",
-                        "onnx",
-                        "onnxruntime"]
+                        "opencv-transforms"]
+
     install_requires = ["intel-openmp", "cloudpickle"]
 
     package_data = [
