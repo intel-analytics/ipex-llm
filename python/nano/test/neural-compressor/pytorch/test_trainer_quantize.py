@@ -16,6 +16,7 @@
 
 
 import os
+import tempfile
 from unittest import TestCase
 
 import pytest
@@ -113,11 +114,12 @@ class TestTrainer(TestCase):
         assert out.shape == torch.Size([256, 10])
 
         # save and load
-        trainer.save(qmodel, 'saved_int8')
-        loaded_qmodel = trainer.load('saved_int8', pl_model)
-        assert loaded_qmodel
-        out = loaded_qmodel(x)
-        assert out.shape == torch.Size([256, 10])
+        with tempfile.TemporaryDirectory() as tmp_dir_name:
+            trainer.save(qmodel, tmp_dir_name)
+            loaded_qmodel = trainer.load(tmp_dir_name, pl_model)
+            assert loaded_qmodel
+            out = loaded_qmodel(x)
+            assert out.shape == torch.Size([256, 10])
 
     def test_trainer_quantize_inc_ptq_customized(self):
         # Test if a Lightning Module not compiled by nano works
@@ -131,8 +133,9 @@ class TestTrainer(TestCase):
         assert out.shape == torch.Size([256, 10])
 
         # save and load
-        trainer.save(qmodel, 'saved_int8')
-        loaded_qmodel = trainer.load('saved_int8', self.user_defined_pl_model)
-        assert loaded_qmodel
-        out = loaded_qmodel(x)
-        assert out.shape == torch.Size([256, 10])
+        with tempfile.TemporaryDirectory() as tmp_dir_name:
+            trainer.save(qmodel, tmp_dir_name)
+            loaded_qmodel = trainer.load(tmp_dir_name, self.user_defined_pl_model)
+            assert loaded_qmodel
+            out = loaded_qmodel(x)
+            assert out.shape == torch.Size([256, 10])
