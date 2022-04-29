@@ -132,7 +132,6 @@ class FGBoostAggregator(validationMethods: Array[ValidationMethod[Float]] = null
       .putTensorMap("hess", toFloatTensor(hess))
       .putTensorMap("predict", toFloatTensor(basePrediction))
       .putTensorMap("label", toFloatTensor(label))
-      .putTensorMap("loss", toFloatTensor(Array(loss)))
       .build()
     // Update gradient
     getLabelStorage().clearClientAndUpdateServer(aggregatedModel)
@@ -236,7 +235,6 @@ class FGBoostAggregator(validationMethods: Array[ValidationMethod[Float]] = null
       .putTensorMap("predict", toFloatTensor(predict))
       .putTensorMap("hess", toFloatTensor(gradients(1)))
       .putTensorMap("label", toFloatTensor(label))
-      .putTensorMap("loss", toFloatTensor(Array(loss)))
       .build()
     // Update gradient
 

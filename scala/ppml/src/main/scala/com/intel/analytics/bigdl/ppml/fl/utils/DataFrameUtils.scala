@@ -119,30 +119,4 @@ object DataFrameUtils {
         else "complex"
     }
   }
-  def toTensorArray(df: DataFrame, columns: Array[String] = null) = {
-    val col = if (columns == null) df.columns else columns
-
-    var rowNum = 0
-    df.collect().map(row => {
-      if (rowNum == 0) rowNum = row.length
-      val rowArray = new Array[Float](row.length)
-      col.indices.foreach(i => {
-        rowArray(i) = row.getAs[String](col(i)).toFloat
-      })
-      Tensor[Float](rowArray, Array(rowArray.length))
-    })
-  }
-
-  /**
-   * Convert a single numerical column to 1D Array
-   * @param df
-   * @param column
-   * @return
-   */
-  def toArray(df: DataFrame, column: String) = {
-    df.collect().map(row => {
-      row.getAs[String](column).toFloat
-    })
-  }
-
 }

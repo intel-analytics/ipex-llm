@@ -45,7 +45,6 @@ abstract class FGBoostModel(continuous: Boolean,
   protected val evaluateResults: mutable.Map[String, ArrayBuffer[Float]] = null
   var xTrainBuffer: ArrayBuffer[Tensor[Float]] = new ArrayBuffer[Tensor[Float]]()
   val trees = new mutable.Queue[RegressionTree]()
-  var curLoss: Float = Float.MaxValue
   def fit(feature: Array[Tensor[Float]],
           label: Array[Float],
           boostRound: Int) = {
@@ -182,7 +181,7 @@ abstract class FGBoostModel(continuous: Boolean,
 
   def trainRegressionTree(dataSet: Array[Tensor[Float]], indices: Array[Array[Int]], totalRound: Int): Unit = {
     for (i <- 0 until totalRound) {
-      logger.info(s"Round: $i/$totalRound, loss: $curLoss")
+      logger.info(s"Round: $i/$totalRound")
       val grads = downloadGrad(i)
       val currTree = RegressionTree(dataSet, indices, grads, i.toString)
       currTree.setLearningRate(learningRate).setMinChildSize(minChildSize)
@@ -274,7 +273,6 @@ abstract class FGBoostModel(continuous: Boolean,
     val gradTable = response.getData
     val grad = getTensor("grad", gradTable).toArray
     val hess = getTensor("hess", gradTable).toArray
-    curLoss = getTensor("loss", gradTable).value()
     Array(grad, hess)
   }
 
