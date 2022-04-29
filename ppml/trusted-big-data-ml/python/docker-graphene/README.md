@@ -575,7 +575,7 @@ kubectl create secret generic spark-secret --from-literal secret=YOUR_SECRET
 ### 1.3 Start the client container
 Configure the environment variables in the following script before running it. Check [Bigdl ppml SGX related configurations](#1-bigdl-ppml-sgx-related-configurations) for detailed memory configurations.
 ```bash
-export K8S_MASTER=k8s://$( sudo kubectl cluster-info | grep 'https.*' -o -m 1 )
+export K8S_MASTER=k8s://$(sudo kubectl cluster-info | grep 'https.*6443' -o -m 1)
 echo The k8s master is $K8S_MASTER .
 export ENCLAVE_KEY=/YOUR_DIR/enclave-key.pem
 export DATA_PATH=/YOUR_DIR/data
@@ -793,3 +793,4 @@ Below is an explanation of these security configurations, Please refer to [Spark
 ```
 [helmGuide]: https://github.com/intel-analytics/BigDL/blob/main/ppml/trusted-big-data-ml/python/docker-graphene/kubernetes/README.md
 [standalone]: https://github.com/intel-analytics/BigDL/blob/main/ppml/trusted-big-data-ml/python/docker-graphene/standalone/README.md
+
