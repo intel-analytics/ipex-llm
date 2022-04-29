@@ -116,20 +116,15 @@ class BaseTF2Forecaster(Forecaster):
         with open(checkpoint_file, "wb") as w:
             pickle.dump(self.internal.get_weights(), w)
 
-    def load(self, checkpoint_file, input_shape=None):
+    def load(self, checkpoint_file):
         """
         Load the forecaster.
 
         :params checkpoint_file: The checkpoint file location you want to load the forecaster.
-        :params input_shape: A numpy.ndarray tuple, shape is (batch_size, lookback, feature_dim),
-                For init model weight matrix only, Do not specify
-                if model weight is already created.
         """
 
         with open(checkpoint_file, 'rb') as r:
             weights = pickle.load(r)
         self.internal = self.model_creator(config={**self.model_config})
-        if input_shape:
-            _ = self.internal(input_shape)
         self.internal.set_weights(weights)
         self.fitted = True
