@@ -91,7 +91,7 @@ class ThreadPoolSpec extends FlatSpec with Matchers {
     val task = () => { throw new UnsupportedOperationException(s"test invokeAndWait2") }
     // scalastyle:on
 
-    intercept[UnsupportedOperationException] {
+    intercept[com.intel.analytics.bigdl.dllib.utils.UnKnownException] {
       threadPool.invokeAndWait2( (0 until 1).map( i => task ))
     }
   }
@@ -102,7 +102,7 @@ class ThreadPoolSpec extends FlatSpec with Matchers {
     val task = () => { throw new InterruptedException(s"test invokeAndWait2")}
     // scalastyle:on
 
-    intercept[InterruptedException] {
+    intercept[com.intel.analytics.bigdl.dllib.utils.UnKnownException] {
       threadPool.invokeAndWait2( (0 until 1).map( i => task ))
     }
   }
@@ -113,7 +113,7 @@ class ThreadPoolSpec extends FlatSpec with Matchers {
     val task = () => { throw new InterruptedException(s"test invokeAndWait")}
     // scalastyle:on
 
-    intercept[InterruptedException] {
+    intercept[com.intel.analytics.bigdl.dllib.utils.UnKnownException] {
       threadPool.invokeAndWait( (0 until 1).map( i => task ))
     }
   }
