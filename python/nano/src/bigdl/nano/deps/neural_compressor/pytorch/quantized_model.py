@@ -25,12 +25,6 @@ class PytorchQuantizedModel(AcceleratedLightningModule):
         super().__init__(model.model)
         self.quantized = model
 
-    def load_state_dict(self, state_dict):
-        self.quantized.model.load_state_dict(state_dict)
-
-    def state_dict(self):
-        return self.quantized.model.state_dict()
-
     @staticmethod
     def _load(path, model):
         qmodel = PyTorchModel(load(path, model))
