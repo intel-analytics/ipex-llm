@@ -744,7 +744,7 @@ class TSDataset:
                               batch_size=batch_size,
                               shuffle=True)
 
-    def to_tf_dataset(self, batch_size=32):
+    def to_tf_dataset(self, batch_size=32, shuffle=False):
         """
         Export a Dataset whose elements are slices of the given tensors.
 
@@ -761,6 +761,8 @@ class TSDataset:
                               "Please call 'roll' method "
                               "before transform a TSDataset to tf dataset!")
         data = tf.data.Dataset.from_tensor_slices((self.numpy_x, self.numpy_y))
+        if shuffle:
+            data = data.shuffle(self.numpy_x.shape[0])
         return data.cache().batch(batch_size).prefetch(tf.data.AUTOTUNE)
 
     def to_numpy(self):
