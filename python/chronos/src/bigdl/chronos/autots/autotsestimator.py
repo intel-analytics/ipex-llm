@@ -28,7 +28,7 @@ class AutoTSEstimator:
     """
     Automated TimeSeries Estimator for time series forecasting task, which supports
     TSDataset and customized data creator as data input on built-in model (only
-    "lstm", "tcn", "seq2seq" for now) and 3rd party model.
+    "lstm", "tcn", "seq2seq" for now) or 3rd party model.
 
     >>> # Here is a use case example:
     >>> # prepare train/valid/test tsdataset
@@ -203,10 +203,13 @@ class AutoTSEstimator:
 
         :param data: train data.
                For backend of "torch", data can be a TSDataset or a function that takes a
-               config dictionary as parameter and returns a PyTorch DataLoader. Please notice
-               that you should stick to the same data type when you predict/evaluate/fit on the
-               TSPipeline you get from `AutoTSEstimator.fit`.
-               For backend of "keras", data can be a TSDataset.
+               config dictionary as parameter and returns a PyTorch DataLoader.
+
+               For backend of "keras", data can be a TSDataset or a function that takes a
+               config dictionary as parameter and returns a Tensorflow Dataset.
+
+               Please notice that you should stick to the same data type when you
+               predict/evaluate/fit on the TSPipeline you get from `AutoTSEstimator.fit`.
         :param epochs: Max number of epochs to train in each trial. Defaults to 1.
                If you have also set metric_threshold, a trial will stop if either it has been
                optimized to the metric_threshold or it has been trained for {epochs} epochs.
