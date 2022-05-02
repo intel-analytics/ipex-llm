@@ -18,6 +18,7 @@ from bigdl.chronos.forecaster.abstract import Forecaster
 from bigdl.chronos.forecaster.utils import\
     np_to_creator, set_pytorch_seed, check_data, xshard_to_np, np_to_xshard, loader_to_creator
 from bigdl.chronos.metric.forecast_metrics import Evaluator
+from bigdl.chronos.pytorch.utils import _pytorch_fashion_inference
 
 import numpy as np
 import warnings
@@ -133,7 +134,7 @@ class BasePytorchForecaster(Forecaster):
                                      epochs=epochs,
                                      batch_size=batch_size)
         else:
-            from bigdl.nano.pytorch.trainer import Trainer
+            from bigdl.chronos.pytorch import TSTrainer as Trainer
 
             # numpy data shape checking
             if isinstance(data, tuple):
@@ -239,7 +240,7 @@ class BasePytorchForecaster(Forecaster):
         else:
             if self.onnxruntime_fp32 is None:
                 self.build_onnx()
-            return self._inference(self.onnxruntime_fp32, data, batch_size=batch_size)
+            return _pytorch_fashion_inference(self.onnxruntime_fp32, data, batch_size=batch_size)
 
     def evaluate(self, data, batch_size=32, multioutput="raw_values", quantize=False):
         """
@@ -350,7 +351,7 @@ class BasePytorchForecaster(Forecaster):
         else:
             if self.onnxruntime_fp32 is None:
                 self.build_onnx()
-            yhat = self._inference(self.onnxruntime_fp32, data[0], batch_size=batch_size)
+            yhat = _pytorch_fashion_inference(self.onnxruntime_fp32, data[0], batch_size=batch_size)
 
         aggregate = 'mean' if multioutput == 'uniform_average' else None
         return Evaluator.evaluate(self.metrics, data[1], yhat, aggregate=aggregate)
@@ -391,7 +392,7 @@ class BasePytorchForecaster(Forecaster):
             self.internal.load(checkpoint_file)
         else:
             from bigdl.nano.pytorch.lightning import LightningModuleFromTorch
-            from bigdl.nano.pytorch.trainer import Trainer
+            from bigdl.chronos.pytorch import TSTrainer as Trainer
 
             model = self.model_creator({**self.model_config, **self.data_config})
             loss = self.loss_creator(self.loss_config)
@@ -424,7 +425,7 @@ class BasePytorchForecaster(Forecaster):
 
         :return: a forecaster instance.
         """
-        from bigdl.nano.pytorch.trainer import Trainer
+        from bigdl.chronos.pytorch import TSTrainer as Trainer
 
         # TODO: optimizer is refreshed, which is not reasonable
         if not self.distributed:
@@ -483,7 +484,7 @@ class BasePytorchForecaster(Forecaster):
             >>> pred = forecaster.predict_with_onnx(data)
         '''
         import onnxruntime
-        from bigdl.nano.pytorch.trainer import Trainer
+        from bigdl.chronos.pytorch import TSTrainer as Trainer
 
         if sess_options is not None and not isinstance(sess_options, onnxruntime.SessionOptions):
             raise RuntimeError("sess_options should be an onnxruntime.SessionOptions instance"
@@ -511,7 +512,7 @@ class BasePytorchForecaster(Forecaster):
 
         :param dirname: The dir location you want to save the onnx file.
         """
-        from bigdl.nano.pytorch.trainer import Trainer
+        from bigdl.chronos.pytorch import TSTrainer as Trainer
 
         if self.distributed:
             raise NotImplementedError("export_onnx_file has not been supported for distributed "
@@ -635,35 +636,3 @@ class BasePytorchForecaster(Forecaster):
                 # TODO: delete once bigdl-nano has a stable inference API
                 if "_quantized_model" in dir(self.internal):
                     self.internal._quantized_model = temp_quantized_model
-
-    @staticmethod
-    def _inference(model, input_data, batch_size=None):
-        '''
-        This is an internal inference pattern for any models which can be used like:
-        `model(x)  # x is a pytorch tensor`
-        
-        :param model: The model to inference
-        :param input_data: numpy ndarray
-        :param batch_size: batch size
-
-        :return: numpy ndarray
-        '''
-        if isinstance(input_data, list):
-            input_sample_list = list(map(lambda x: torch.from_numpy(x), input_data))
-        else:
-            input_sample_list = [torch.from_numpy(input_data)]
-        if batch_size is None:
-            # this branch is only to speed up the inferencing when batch_size is set to None.
-            return model(*input_sample_list).numpy()
-        else:
-            yhat_list = []
-            sample_num = input_sample_list[0].shape[0]  # the first dim should be sample_num
-            batch_num = math.ceil(sample_num / batch_size)
-            for batch_id in range(batch_num):
-                yhat_list.append(model(
-                    *tuple(map(lambda x: x[batch_id * batch_size:
-                           (batch_id + 1) * batch_size],
-                        input_sample_list))))
-            # this operation may cause performance degradation
-            yhat = np.concatenate(yhat_list, axis=0)
-            return yhat
