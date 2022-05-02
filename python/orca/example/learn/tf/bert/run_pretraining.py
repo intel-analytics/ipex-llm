@@ -458,7 +458,7 @@ def run(_):
                            driver_cores=driver_cores, driver_memory=driver_memory,
                            conf=spark_conf, object_store_memory="30g", init_ray_on_spark=True,
                            include_webui=True,
-                           additional_archive="/home/shan/data/wiki_for_bert/tf1_ckpt.zip#ckpt",
+                           additional_archive="/path/to/tf1_ckpt.zip#ckpt",
                            extra_python_lib="optimization.py,modeling.py,deferred_grad_optimizer.py,lamb_optimizer_v1.py")
     num_workers = num_executor
   elif cluster_mode == "spark-submit":
