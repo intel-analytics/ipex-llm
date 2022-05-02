@@ -31,8 +31,6 @@ import absl
 import sys
 import modeling
 import optimization
-import mlp_logging as mllog
-from mlperf_logging.mllog import constants as mllog_constants
 
 import tensorflow.compat.v1 as tf
 # from tensorflow.contrib import cluster_resolver as contrib_cluster_resolver
@@ -105,15 +103,17 @@ flags.DEFINE_integer("max_eval_steps", 100, "Maximum number of eval steps.")
 
 flags.DEFINE_string("master", None, "[Optional] TensorFlow master URL.")
 
-# flags.DEFINE_integer(
-#     "num_gpus", 0,
-#     "Use the GPU backend if this value is set to more than zero.")
-
 flags.DEFINE_integer("steps_per_update", 1,
                      "The number of steps for accumulating gradients.")
 
 flags.DEFINE_integer("keep_checkpoint_max", 5,
                      "The maximum number of checkpoints to keep.")
+
+flags.DEFINE_string("cluster_mode", "local",
+                    "The mode for the Spark cluster. local, yarn or spark-submit.")
+
+flags.DEFINE_integer("num_executors", 10, "Total number of executors.")
+
 
 def model_fn_builder(bert_config, init_checkpoint, learning_rate,
                      num_train_steps, num_warmup_steps,
@@ -323,10 +323,6 @@ def get_next_sentence_output(bert_config, input_tensor, labels, global_batch_siz
     scaled_per_example_loss = per_example_loss * (1. / global_batch_size)
     scaled_loss = tf.nn.compute_average_loss(per_example_loss, global_batch_size=global_batch_size)
 
-    # print_op = tf.print("get_next_sentence_output", scaled_loss, output_stream=sys.stdout)
-    # with tf.control_dependencies([print_op]):
-    #   scaled_loss = scaled_loss + 0.0
-
     return (scaled_loss, per_example_loss, log_probs)
 
 
@@ -355,13 +351,15 @@ def input_fn_builder(input_files,
                      num_cpu_threads=4,
                      num_eval_steps=1):
   """Creates an `input_fn` closure to be passed to TPUEstimator."""
-  # print(f"*******batch_size in input_fn_builder is {batch_size}")
 
   def input_fn(params, input_context = None):
     """The actual input function."""
+    # For yarn mode only
+    # import os
+    # import subprocess
+    # os.environ["CLASSPATH"] = subprocess.check_output(["hadoop", "classpath", "--glob"]).decode()
 
     # batch_size = params["batch_size"]
-    print(f"*******batch_size in input_fn is {batch_size}")
 
     name_to_features = {
         "input_ids":
@@ -441,33 +439,35 @@ def _decode_record(record, name_to_features):
   return example
 
 
-class CheckpointHook(tf.train.CheckpointSaverHook):
-  """Add MLPerf logging to checkpoint saving."""
-
-  def __init__(self, num_train_steps, *args, **kwargs):
-    super(CheckpointHook, self).__init__(*args, **kwargs)
-    self.num_train_steps = num_train_steps
-    self.previous_step = None
-
-  def _save(self, session, step):
-    if self.previous_step:
-      mllog.mllog_end(key=mllog_constants.BLOCK_STOP,
-                      metadata={"first_step_num": self.previous_step + 1,
-                          "step_count": step - self.previous_step})
-    self.previous_step = step
-    mllog.mllog_start(key="checkpoint_start", metadata={"step_num" : step}) 
-    return_value = super(CheckpointHook, self)._save(session, step)
-    mllog.mllog_end(key="checkpoint_stop", metadata={"step_num" : step})
-    if step < self.num_train_steps:
-        mllog.mllog_start(key=mllog_constants.BLOCK_START,
-                          metadata={"first_step_num": step + 1})
-    return return_value
-
-
 def run(_):
   from bigdl.orca import init_orca_context
-  sc = init_orca_context()
-  num_workers = 2
+  cluster_mode = FLAGS.cluster_mode
+  if cluster_mode == "local":
+    init_orca_context(cluster_mode="local", cores="*", memory="100g")
+    num_workers = 1
+  elif cluster_mode.startswith("yarn"):
+    num_executor = FLAGS.num_executors
+    executor_cores = 44
+    executor_memory = "20g"
+    driver_cores = 20
+    driver_memory = "10g"
+    spark_conf = {"spark.executorEnv.LD_LIBRARY_PATH": "/opt/cloudera/parcels/CDH-5.15.2-1.cdh5.15.2.p0.3/lib64/:/usr/java/jdk1.8.0_181-amd64/jre/lib/amd64/server/",
+                  "spark.executor.memoryOverhead": "120g"}
+    sc = init_orca_context("yarn-client", cores=executor_cores,
+                           num_nodes=num_executor, memory=executor_memory,
+                           driver_cores=driver_cores, driver_memory=driver_memory,
+                           conf=spark_conf, object_store_memory="30g", init_ray_on_spark=True,
+                           include_webui=True,
+                           additional_archive="/home/shan/data/wiki_for_bert/tf1_ckpt.zip#ckpt",
+                           extra_python_lib="optimization.py,modeling.py,deferred_grad_optimizer.py,lamb_optimizer_v1.py")
+    num_workers = num_executor
+  elif cluster_mode == "spark-submit":
+    sc = init_orca_context(cluster_mode="spark-submit", init_ray_on_spark=True,object_store_memory="30g",include_webui=True)
+    instances = sc.getConf().get("spark.executor.instances")
+    num_workers = int(instances) if instances else 1
+  else:
+    print("init_orca_context failed. cluster_mode should be one of 'local', 'yarn' and \
+          'spark-submit' but got " + cluster_mode)
   bert_config = modeling.BertConfig.from_json_file(FLAGS.bert_config_file)
   input_files = []
   for input_pattern in FLAGS.input_file.split(","):
@@ -524,7 +524,7 @@ def run(_):
 
   config = dict(
     inter_op_parallelism=8,
-    log_step_count_steps=5,
+    log_step_count_steps=1,
     keep_checkpoint_max=flag_dict["keep_checkpoint_max"],
     save_checkpoints_steps=flag_dict["save_checkpoints_steps"],
   )
@@ -532,32 +532,15 @@ def run(_):
                           model_dir=flag_dict["output_dir"],
                           config=config,
                           params=hparams,
-                          workers_per_node=num_workers,
+                          # workers_per_node=num_workers,
                           )
-
-  checkpoint_hook = CheckpointHook(
-    num_train_steps=flag_dict["num_train_steps"],
-    checkpoint_dir=flag_dict["output_dir"],
-    save_steps=flag_dict["save_checkpoints_steps"])
   train_spec=tf.estimator.TrainSpec(input_fn=train_input_fn, 
                                     max_steps=flag_dict["num_train_steps"],
-                                    hooks=[checkpoint_hook]
                                     )
   eval_spec=tf.estimator.EvalSpec(input_fn=eval_input_fn,
                                   steps=flag_dict["max_eval_steps"])
-  mllog.mlperf_submission_log()
-  mllog.mlperf_run_param_log()
-  mllog.mllog_end(key=mllog_constants.INIT_STOP)
-  mllog.mllog_start(key=mllog_constants.RUN_START)
-  results = estimator.train_and_evaluate(train_spec, eval_spec)
-  print(results)
-  mllog.mllog_end(key=mllog_constants.RUN_STOP)
-  # output_eval_file = os.path.join(FLAGS.output_dir, "eval_results.txt")
-  # with tf.gfile.GFile(output_eval_file, "w") as writer:
-  #   tf.logging.info("***** Eval results *****")
-  #   for key in sorted(result.keys()):
-  #     tf.logging.info("  %s = %s", key, str(result[key]))
-  #     writer.write("%s = %s\n" % (key, str(result[key])))
+  estimator.train_and_evaluate(train_spec, eval_spec)
+  print("Finished!")
 
 
 if __name__ == "__main__":
