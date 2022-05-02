@@ -69,6 +69,8 @@ class TFRunner:
             verbose (bool): Outputs training data if true.
         """
         import tensorflow.compat.v1 as tf
+        tf.logging.set_verbosity(tf.logging.INFO)
+
         self.model_fn = model_fn
         tf.gfile.MakeDirs(model_dir)
         self.model_dir = model_dir
