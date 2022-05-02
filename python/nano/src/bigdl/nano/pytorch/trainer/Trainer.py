@@ -359,7 +359,10 @@ class Trainer(pl.Trainer):
             raise NotImplementedError("Backend {} is not implemented.".format(backend))
 
     @staticmethod
-    def trace(model: nn.Module, input_sample=None, accelerator=None):
+    def trace(model: nn.Module,
+              input_sample=None,
+              accelerator=None,
+              onnxruntime_session_options=None):
         """
         Trace a pytorch model and convert it into an accelerated module for inference.
 
@@ -370,12 +373,14 @@ class Trainer(pl.Trainer):
                              model is a LightningModule with any dataloader attached.
         :param accelerator: The accelerator to use, defaults to None meaning staying in Pytorch
                             backend. 'openvino' and 'onnxruntime' are supported for now.
+        :param onnxruntime_session_options: The session option for onnxruntime, only valid when
+                                            accelerator='onnxruntime', otherwise will be ignored.
         :return: Model with different acceleration(OpenVINO/ONNX Runtime).
         """
         if accelerator == 'openvino':
             return PytorchOpenVINOModel(model, input_sample)
         if accelerator == 'onnxruntime':
-            return PytorchONNXRuntimeModel(model, input_sample)
+            return PytorchONNXRuntimeModel(model, input_sample, onnxruntime_session_options)
 
     @staticmethod
     def save(model: LightningModule, path):

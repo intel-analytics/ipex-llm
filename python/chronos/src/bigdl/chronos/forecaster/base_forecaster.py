@@ -22,13 +22,14 @@ from bigdl.chronos.metric.forecast_metrics import Evaluator
 import numpy as np
 import warnings
 import torch
+import math
 from functools import partial
 from torch.utils.data import TensorDataset, DataLoader
 
 
 class BasePytorchForecaster(Forecaster):
     '''
-    Forecaster base model for lstm, seq2seq and tcn forecasters.
+    Forecaster base model for lstm, seq2seq, tcn and nbeats forecasters.
     '''
     def __init__(self, **kwargs):
         if self.distributed:
@@ -64,6 +65,10 @@ class BasePytorchForecaster(Forecaster):
             self.internal = Trainer.compile(model=model, loss=loss,
                                             optimizer=optimizer, onnx=self.onnx_available,
                                             quantize=True)
+            self.onnxruntime_fp32 = None  # onnxruntime session for fp32 precision
+            self.openvino_fp32 = None  # openvino session for fp32 precision
+            self.onnxruntime_int8 = None  # onnxruntime session for int8 precision
+            self.pytorch_int8 = None  # pytorch model for int8 precision
 
     def fit(self, data, epochs=1, batch_size=32):
         # TODO: give an option to close validation during fit to save time.
@@ -229,7 +234,12 @@ class BasePytorchForecaster(Forecaster):
                                       "forecaster to a non-distributed version.")
         if not self.fitted:
             raise RuntimeError("You must call fit or restore first before calling predict!")
-        return self.internal.inference(data, batch_size=batch_size, quantize=quantize)
+        if quantize:
+            return self.internal.inference(data, batch_size=batch_size, quantize=quantize)
+        else:
+            if self.onnxruntime_fp32 is None:
+                self.build_onnx()
+            return self._inference(self.onnxruntime_fp32, data, batch_size=batch_size)
 
     def evaluate(self, data, batch_size=32, multioutput="raw_values", quantize=False):
         """
@@ -335,7 +345,12 @@ class BasePytorchForecaster(Forecaster):
                                       "forecaster to a non-distributed version.")
         if not self.fitted:
             raise RuntimeError("You must call fit or restore first before calling evaluate!")
-        yhat = self.internal.inference(data[0], batch_size=batch_size, quantize=quantize)
+        if quantize:
+            yhat = self.internal.inference(data[0], batch_size=batch_size, quantize=quantize)
+        else:
+            if self.onnxruntime_fp32 is None:
+                self.build_onnx()
+            yhat = self._inference(self.onnxruntime_fp32, data[0], batch_size=batch_size)
 
         aggregate = 'mean' if multioutput == 'uniform_average' else None
         return Evaluator.evaluate(self.metrics, data[1], yhat, aggregate=aggregate)
@@ -425,6 +440,10 @@ class BasePytorchForecaster(Forecaster):
 
         self.distributed = False
         self.fitted = True
+        self.onnxruntime_fp32 = None  # onnxruntime session for fp32 precision
+        self.openvino_fp32 = None  # openvino session for fp32 precision
+        self.onnxruntime_int8 = None  # onnxruntime session for int8 precision
+        self.pytorch_int8 = None  # pytorch model for int8 precision
         return self
 
     def get_model(self):
@@ -464,6 +483,8 @@ class BasePytorchForecaster(Forecaster):
             >>> pred = forecaster.predict_with_onnx(data)
         '''
         import onnxruntime
+        from bigdl.nano.pytorch.trainer import Trainer
+
         if sess_options is not None and not isinstance(sess_options, onnxruntime.SessionOptions):
             raise RuntimeError("sess_options should be an onnxruntime.SessionOptions instance"
                                f", but found {type(sess_options)}")
@@ -477,8 +498,12 @@ class BasePytorchForecaster(Forecaster):
                                       "forecaster to a non-distributed version.")
         dummy_input = torch.rand(1, self.data_config["past_seq_len"],
                                  self.data_config["input_feature_num"])
-        self.internal.eval_onnx(dummy_input,
-                                sess_options=sess_options)
+        # self.internal.eval_onnx(dummy_input,
+        #                         sess_options=sess_options)
+        self.onnxruntime_fp32 = Trainer.trace(self.internal,
+                                              input_sample=dummy_input,
+                                              accelerator="onnxruntime",
+                                              onnxruntime_session_options=sess_options)
 
     def export_onnx_file(self, dirname="model.onnx", quantized_dirname="qmodel.onnx"):
         """
@@ -486,6 +511,8 @@ class BasePytorchForecaster(Forecaster):
 
         :param dirname: The dir location you want to save the onnx file.
         """
+        from bigdl.nano.pytorch.trainer import Trainer
+
         if self.distributed:
             raise NotImplementedError("export_onnx_file has not been supported for distributed "
                                       "forecaster. You can call .to_local() to transform the "
@@ -495,8 +522,9 @@ class BasePytorchForecaster(Forecaster):
         if quantized_dirname:
             self.internal.to_quantized_onnx(quantized_dirname)
         if dirname:
-            self.internal.eval_onnx(dummy_input,
-                                    file_path=dirname)
+            if self.onnxruntime_fp32 is None:
+                self.build_onnx()
+            Trainer.save(self.onnxruntime_fp32, dirname)
 
     def quantize(self, calib_data=None,
                  val_data=None,
@@ -607,3 +635,35 @@ class BasePytorchForecaster(Forecaster):
                 # TODO: delete once bigdl-nano has a stable inference API
                 if "_quantized_model" in dir(self.internal):
                     self.internal._quantized_model = temp_quantized_model
+
+    @staticmethod
+    def _inference(model, input_data, batch_size=None):
+        '''
+        This is an internal inference pattern for any models which can be used like:
+        `model(x)  # x is a pytorch tensor`
+        
+        :param model: The model to inference
+        :param input_data: numpy ndarray
+        :param batch_size: batch size
+
+        :return: numpy ndarray
+        '''
+        if isinstance(input_data, list):
+            input_sample_list = list(map(lambda x: torch.from_numpy(x), input_data))
+        else:
+            input_sample_list = [torch.from_numpy(input_data)]
+        if batch_size is None:
+            # this branch is only to speed up the inferencing when batch_size is set to None.
+            return model(*input_sample_list).numpy()
+        else:
+            yhat_list = []
+            sample_num = input_sample_list[0].shape[0]  # the first dim should be sample_num
+            batch_num = math.ceil(sample_num / batch_size)
+            for batch_id in range(batch_num):
+                yhat_list.append(model(
+                    *tuple(map(lambda x: x[batch_id * batch_size:
+                           (batch_id + 1) * batch_size],
+                        input_sample_list))))
+            # this operation may cause performance degradation
+            yhat = np.concatenate(yhat_list, axis=0)
+            return yhat
