@@ -221,18 +221,19 @@ def _generate_output_dict(feature_lists, label_lists, feature_cols=None, label_c
 def _generate_output_pandas_df(feature_lists, label_lists, feature_cols, label_cols=None):
     import pandas as pd
     feature_arrs = _merge_rows(feature_lists)
+    label_cols = [] if label_cols is None else label_cols
+    df = pd.DataFrame(columns=feature_cols + label_cols)
     if isinstance(feature_arrs, np.ndarray):
-        feature_arrs = feature_arrs.reshape(-1, 1)
+        feature_arrs = feature_arrs.reshape(-1)
     else:
-        feature_arrs = map(lambda x:x.reshape(-1, 1), feature_arrs)
-        feature_arrs = np.concatenate(list(feature_arrs), axis=1)
-    if label_cols is not None:
+        feature_arrs = list(map(lambda x:x.reshape(-1), feature_arrs))
+    for i, feature_col in enumerate(feature_cols):
+        df[feature_col] = feature_arrs[i]
+    if label_cols:
         label_arrs = _merge_rows(label_lists)
-        label_arrs = label_arrs.reshape(-1, 1)
-        return pd.DataFrame(np.concatenate([feature_arrs, label_arrs], axis=1),
-                                           columns=feature_cols + label_cols)
-    else:
-        return pd.DataFrame(feature_arrs, columns=feature_cols)
+    for i, label_col in enumerate(label_cols):
+        df[label_col] = label_arrs[i]
+    return df
 
 
 def arrays2others(iter, feature_cols, label_cols, shard_size=None, generate_func=None):
