@@ -486,7 +486,8 @@ class TSDataset:
              lookback='auto',
              feature_col=None,
              target_col=None,
-             id_sensitive=False):
+             id_sensitive=False,
+             time_enc=False):
         '''
         Sampling by rolling for machine learning/deep learning models.
 
@@ -519,6 +520,8 @@ class TSDataset:
                where num_sample is the sample number of the wide dataframe,
                new_num_feature_col is the product of the number of id and the number of feature_col.
                new_num_target_col is the product of the number of id and the number of target_col.
+        :param time_enc: bool,
+               This parameter is only useful when you are using Autoformer model.
 
         :return: the tsdataset instance.
 
@@ -592,6 +595,35 @@ class TSDataset:
                                           axis=concat_axis).astype(np.float32)
         else:
             self.numpy_y = None
+
+        # time_enc
+        if time_enc:
+            df_stamp = self.df[self.dt_col]
+            df_stamp['date'] = pd.to_datetime(df_stamp.date)
+            df_stamp['month'] = df_stamp.date.apply(lambda row: row.month, 1)
+            df_stamp['day'] = df_stamp.date.apply(lambda row: row.day, 1)
+            df_stamp['weekday'] = df_stamp.date.apply(lambda row: row.weekday(), 1)
+            df_stamp['hour'] = df_stamp.date.apply(lambda row: row.hour, 1)
+            data_stamp = df_stamp.drop(['date'], 1).values
+
+            rolling_result_timeenc = \
+            self.df.groupby([self.id_col]) \
+                .apply(lambda df: roll_timeseries_dataframe(df=df_stamp,
+                                                            roll_feature_df=None,
+                                                            lookback=lookback,
+                                                            horizon=horizon,
+                                                            feature_col=[],
+                                                            target_col=['month', 'day',
+                                                                        'weekday', 'hour']))
+
+            concat_axis = 2 if id_sensitive else 0
+            self.numpy_x_timeenc = np.concatenate([rolling_result_timeenc[i][0]
+                                                for i in self._id_list],
+                                                axis=concat_axis).astype(np.float32)
+            if horizon != 0:
+                self.numpy_y_timeenc = np.concatenate([rolling_result_timeenc[i][1]
+                                                    for i in self._id_list],
+                                                    axis=concat_axis).astype(np.float32)
 
         # target first
         if self.id_sensitive:
@@ -722,9 +754,11 @@ class TSDataset:
         data = tf.data.Dataset.from_tensor_slices((self.numpy_x, self.numpy_y))
         return data.cache().batch(batch_size).prefetch(tf.data.AUTOTUNE)
 
-    def to_numpy(self):
+    def to_numpy(self, time_enc=False):
         '''
         Export rolling result in form of a tuple of numpy ndarray (x, y).
+
+        :param time_enc: bool
 
         :return: a 2-dim tuple. each item is a 3d numpy ndarray. The ndarray
                  is casted to float32.
@@ -732,7 +766,10 @@ class TSDataset:
         if self.numpy_x is None:
             raise RuntimeError("Please call 'roll' method "
                                "before transform a TSDataset to numpy ndarray!")
-        return self.numpy_x, self.numpy_y
+        if time_enc:
+            return self.numpy_x, self.numpy_y, self.numpy_x_timeenc, self.numpy_y_timeenc
+        else:
+            return self.numpy_x, self.numpy_y
 
     def to_pandas(self):
         '''
