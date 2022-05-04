@@ -171,13 +171,13 @@ print("Validation stats: {}".format(val_stats))
 For now, we have completed a PyTorch example with BigDL, the program can be directly run as a typical python script:
 
 ```bash
-python fashion-mnist.py --cluster_mode yarn-client --data_dir data
+python fashion-mnist.py --cluster_mode yarn-client
 ```
 
 When the `cluster_mode` is `yarn-cluster`, we could run as:
 
 ```bash
-python fashion-mnist.py --cluster_mode yarn-cluster --data_dir hdfs://xxxx:port
+python fashion-mnist.py --cluster_mode yarn-cluster
 ```
 
 # What is Next?
