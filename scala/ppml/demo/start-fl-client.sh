@@ -3,7 +3,6 @@
 export ENCLAVE_KEY_PATH=YOUR_LOCAL_ENCLAVE_KEY_PATH
 export DATA_PATH=YOUR_LOCAL_DATA_PATH
 export KEYS_PATH=YOUR_LOCAL_KEYS_PATH
-export LOCAL_IP=YOUR_LOCAL_IP
 export DOCKER_IMAGE=intelanalytics/bigdl-ppml-trusted-fl-graphene:2.1.0-SNAPSHOT
 
 arg=$1
@@ -40,7 +39,6 @@ sudo docker run -it \
     -v /var/run/aesmd/aesm.socket:/var/run/aesmd/aesm.socket \
     -v $DATA_PATH:/ppml/trusted-big-data-ml/work/data \
     -v $KEYS_PATH:/ppml/trusted-big-data-ml/work/keys \
-    -e LOCAL_IP=$LOCAL_IP \
     -e SGX_MEM_SIZE=32G \
     -e SGX_LOG_LEVEL=error \
     $DOCKER_IMAGE bash $script
