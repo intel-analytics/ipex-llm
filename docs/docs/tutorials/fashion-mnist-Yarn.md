@@ -3,12 +3,12 @@ In this tutorial, you will learn how to build, submit and execute a PyTorch exam
 In particular, we will show you:
 1. How to prepare for the environment;
 2. How to use BigDL orca estimator to conduct a PyTorch example;
-3. How to run BigDL program on Yarn.
+3. How to run the BigDL program on Yarn.
 
 Let's get started!
 
 # Prepare Env
-We need to first use conda to prepare the Python environment on the local machine where we submit our application. Create a conda environment, install BigDL and all the needed Python libraries in the created conda environment:
+We need first to use conda to prepare the Python environment on the local machine where we submit our application. Create a conda environment, install BigDL and all the needed Python libraries in the created conda environment:
 
 ``` bash
 conda create -n bigdl python=3.7  # "bigdl" is conda environment name, you can use any name you like.
@@ -18,13 +18,13 @@ pip install bigdl
 # Use conda or pip to install all the needed Python dependencies in the created conda environment.
 ```
 
-Check the Hadoop setup and configurations of our cluster. Make sure we properly set the environment variable HADOOP_CONF_DIR, which is needed to initialize Spark on YARN:
+Check the Hadoop setup and configurations of our cluster. Make sure we correctly set the environment variable HADOOP_CONF_DIR, which is needed to initialize Spark on YARN:
 
 ```bash
 export HADOOP_CONF_DIR=the directory of the hadoop and yarn configurations
 ```
 
-# Training the Fashion-Mnist Example
+# Training the Fashion-MNIST Example
 
 In this part, you will learn how to complete a BigDL PyTorch program with the following steps in order:
 1. Prepare the Fashion-MNIST Dataset;
@@ -32,11 +32,11 @@ In this part, you will learn how to complete a BigDL PyTorch program with the fo
 3. Define a Loss and optimizer function;
 4. Initialize the OrcaContext;
 5. Create an Orca Estimator for PyTorch;
-6. Training and Test the Network;
+6. Training and Testing the Network;
 
 ## 1. Prepare the Fashion-MNIST Dataset
 
-For this tutorial, we will use the Fasion-MNIST dataset, it's easy to download and prepare using `torchvision`. The difference between PyTorch and BigDL is that the PyTorch estimator in BigDL need us to define a `data_creator` function which returns a PyTorch Dataloader instead.
+For this tutorial, we will use the Fasion-MNIST dataset, it's easy to download and prepare using `torchvision`. The difference between PyTorch and BigDL is that the PyTorch estimator in BigDL needs us to define a `data_creator` function that returns a PyTorch Dataloader instead.
 
 ```python
 import torch
@@ -69,7 +69,7 @@ def validation_data_creator(config={}, batch_size=4, download=True, data_dir='./
 
 ## 2. Define a Convolutional Neural Network
 
-we can define a network just the same as using PyTorch.
+We can define a network just the same as using PyTorch.
 
 ```python
 import torch.nn as nn
@@ -95,7 +95,7 @@ class Net(nn.Module):
         return x
 ```
 
-It's also necessary for us to define a `model_creator` function which returns the network for creating an estimator for PyTorch.
+It's also necessary for us to define a `model_creator` function that returns the network for creating an estimator for PyTorch.
 
 ```python
 def model_creator(config):
@@ -105,7 +105,7 @@ def model_creator(config):
 
 ## 3. Define a Loss and Optimizer Function
 
-Let’s use a Classification Cross-Entropy loss and SGD with momentum, by the way, the optimizer should also be defined as a `optimizer_creator`.
+Let’s use a Classification Cross-Entropy loss and SGD with momentum. By the way, the optimizer should also be defined as a `optimizer_creator`.
 
 ```python
 import torch.optim as optim
@@ -119,11 +119,11 @@ def optimizer_creator(model, config):
 
 ## 4. Initialize the OrcaContext
 
-The interesting things start from now, we will see the magic power of BigDL.
+The exciting things start from now, we will see the magic power of BigDL.
 
-An Orca program usually starts with the initialization of OrcaContext, we can easily specific the `runtime`(default is `spark`, `ray` is also a first-class backend) and `cluster_mode` to create or get a SparkContext or RayContext with optimized configurations for BigDL performance.
+An Orca program usually starts with the initialization of OrcaContext. We can easily specify the `runtime`(default is `spark`, `ray` is also a first-class backend) and `cluster_mode` to create or get a SparkContext or RayContext with optimized configurations for BigDL performance.
 
-Here we could specific `cluster_mode` argument as `yarn-client` or `yarn-cluster` as following to start running BigDL program on Yarn. We only need to create a conda environment and install the python dependencies in that environment beforehand on the driver machine, these dependencies would be automatically packaged and distributed to the whole Yarn cluster.
+Here we could specify `cluster_mode` argument as `yarn-client` or `yarn-cluster` as the following to start running a BigDL program on Yarn. We only need to create a conda environment and install the python dependencies in that environment beforehand on the driver machine, these dependencies would be automatically packaged and distributed to the whole Yarn cluster.
 
 ```python
 from bigdl.orca import init_orca_context, stop_orca_context
@@ -135,7 +135,7 @@ Note: For `yarn-client`, the Spark driver will run on the node where you start P
 
 ## 5. Create an Estimator for PyTorch
 
-We could simply create an estimator for PyTorch now, the estimator will replicate the model on each node in the cluster, feed the data partition on each node to the local model replica, and synchronize model parameters using various backend technologies.
+We could simply create an estimator for PyTorch now, and the estimator will replicate the model on each node in the cluster, feed the data partition on each node to the local model replica, and synchronize model parameters using various backend technologies.
 
 ```python
 from bigdl.orca.learn.pytorch import Estimator
@@ -149,7 +149,7 @@ orca_estimator = Estimator.from_torch(model=model_creator,
                                       backend="spark")
 ```
 
-The PyTorch Estimator supports backends include `spark`, `ray`, `bigdl` and `Horovod`, we could specific for `backend` argument as we need.
+The PyTorch Estimator supports backends including `spark`, `ray`, `bigdl` and `Horovod`, we could specify for `backend` argument as we need.
 
 ## 6. Training and Testing the Model
 
@@ -159,7 +159,7 @@ It's time to call `Estimator.fit` to train the network on the `training_data_cre
 stats = orca_estimator.fit(train_data_creator, epochs=epochs, batch_size=batch_size)
 print("Train stats: {}".format(stats))
 ```
-To evaluate the network on testing dataset, we can call `Estimator.evaluate` which will return a dictionary of metrics for the given data, including validation accuracy and loss.
+To evaluate the network on the testing dataset, we can call `Estimator.evaluate`, which will return a dictionary of metrics for the given data, including validation accuracy and loss.
 
 ```python
 val_stats = orca_estimator.evaluate(validation_data_creator, batch_size=batch_size)
@@ -168,7 +168,7 @@ print("Validation stats: {}".format(val_stats))
 
 # Run BigDL Program on Yarn with built-in function
 
-For now we have completed a PyTorch example with BigDL, we can directly run it as a normal python script:
+For now, we have completed a PyTorch example with BigDL, the program can be directly run as a typical python script:
 
 ```bash
 python fashion-mnist.py --cluster_mode yarn-client --data_dir data
@@ -182,4 +182,4 @@ python fashion-mnist.py --cluster_mode yarn-cluster --data_dir hdfs://xxxx:port
 
 # What is Next?
 
-This is a directly way to run BigDL program on Yarn, we also provide a tutorial for users who want to run the BigDL program on Yarn with spark-submit.
+This is a direct way to run the BigDL program on Yarn, and we also provide a tutorial for users who want to run the BigDL program on Yarn with `spark-submit`.
