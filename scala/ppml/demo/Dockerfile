@@ -6,7 +6,7 @@ RUN NIGHTLY_VERSION=$(echo $(echo `wget -qO - https://oss.sonatype.org/content/r
 
 ADD ppml-conf.yaml /ppml/trusted-big-data-ml
 ADD ./data/* /ppml/trusted-big-data-ml/work/data/
-ADD ./scripts/* /ppml/trusted-big-data-ml
+ADD ./scripts/* /ppml/trusted-big-data-ml/
 
 RUN rm $SPARK_HOME/jars/guava-14.0.1.jar && \
     chmod a+x runFlServer.sh && \
