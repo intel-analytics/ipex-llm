@@ -118,7 +118,7 @@ class CaffePersisterSpec extends FlatSpec with Matchers{
       .add(Convolution(4, 3, 2, 2).setName("conv2"))
       .add(View(27)).setName("view")
       .add(Linear(2, 27, withBias = false).setName("ip"))
-    intercept[CaffeConversionException] {
+    intercept[com.intel.analytics.bigdl.dllib.utils.InvalidOperationException] {
       CaffePersister.persist("/tmp/test.prototxt", "/tmp/test.caffemodel", module)
     }
 

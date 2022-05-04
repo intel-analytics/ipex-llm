@@ -116,7 +116,7 @@ private[tensor] class DenseTensor[@specialized T: ClassTag](
         castTensor.applyFun[T](this.asInstanceOf[Tensor[T]],
           x => ev.toType[Short](x).asInstanceOf[D])
       case _ =>
-        throw new RuntimeException("Unspported type")
+        Log4Error.invalidInputError(false, s"Unspported type ${castTensor.getType()}")
     }
     castTensor
   }
@@ -440,7 +440,8 @@ private[tensor] class DenseTensor[@specialized T: ClassTag](
         this.storage().copy(other.storage(), this.storageOffset() - 1, 0, other.nElement())
       case t: DenseTensor[_] =>
         DenseTensor.copy(this, other)
-      case _ => throw new UnsupportedOperationException(
+      case _ =>
+        Log4Error.invalidInputError(false, s"Unspported type ${other}",
         "only support copy from dense tensor or dnn tensor")
     }
     this
@@ -1422,7 +1423,7 @@ private[tensor] class DenseTensor[@specialized T: ClassTag](
         tensorSize(i) = sizes(i)
         tensorStride(i) = 0
       } else if (tensorSize(i) != sizes(i)) {
-        throw new UnsupportedOperationException(
+        Log4Error.unKnowExceptionError(false,
           "incorrect size: only supporting singleton expansion (size=1)")
       }
       i += 1
@@ -2288,10 +2289,11 @@ private[tensor] class DenseTensor[@specialized T: ClassTag](
     if (ev.getType() == env.getType()) {
       this.asInstanceOf[Tensor[D]]
     } else {
-      throw new IllegalArgumentException(s"The type ${env.getType().getClass}" +
-        s" in toTensor[${env.getType().getClass}] is not same" +
+      Log4Error.invalidOperationError(false, s"The type ${env.getType().getClass}" +
+        s" in toTensor[${env.getType().getClass}] is not same " +
         s"as the numeric type ${ev.getType().getClass} of the " +
         "corresponding module, please keep them same.")
+      null
     }
   }
 
@@ -2357,7 +2359,9 @@ private[tensor] class DenseTensor[@specialized T: ClassTag](
           val value = this.storage().array().asInstanceOf[Array[Double]]
           MKL.vdErf(this.nElement(), value, this.storageOffset() - 1,
             value, this.storageOffset() - 1)
-        case _ => throw new UnsupportedOperationException(s"Only Float/Double supported")
+        case _ =>
+          Log4Error.invalidInputError(false, s"${ev.getType()} is not supported",
+            "only support FloatType and DoubleType")
       }
       this
     } else {
@@ -2379,7 +2383,9 @@ private[tensor] class DenseTensor[@specialized T: ClassTag](
           val yValue = y.storage().array().asInstanceOf[Array[Double]]
           MKL.vdErf(this.nElement(), yValue, y.storageOffset() - 1,
             value, this.storageOffset() - 1)
-        case _ => throw new UnsupportedOperationException(s"Only Float/Double supported")
+        case _ =>
+          Log4Error.invalidInputError(false, s"${ev.getType()} is not supported",
+            "only support FloatType and DoubleType")
       }
       this
     } else {
@@ -2399,8 +2405,10 @@ private[tensor] class DenseTensor[@specialized T: ClassTag](
     this.apply1(a => ev.digamma(a))
   }
 
-  override private[bigdl] def toQuantizedTensor: QuantizedTensor[T] =
-    throw new IllegalArgumentException("DenseTensor cannot be cast to QuantizedTensor")
+  override private[bigdl] def toQuantizedTensor: QuantizedTensor[T] = {
+    Log4Error.invalidOperationError(false, "DenseTensor cannot be cast to QuantizedTensor")
+    null
+  }
 }
 
 object DenseTensor {

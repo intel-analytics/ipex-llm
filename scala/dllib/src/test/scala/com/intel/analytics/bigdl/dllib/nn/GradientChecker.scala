@@ -20,6 +20,7 @@ import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.dllib.nn.abstractnn.TensorCriterion
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.dllib.utils.Log4Error
 import org.apache.commons.lang.StringUtils
 
 import scala.reflect.ClassTag
@@ -45,7 +46,8 @@ class GradientChecker(stepSize: Double, threshold: Double = 1e-2) {
   } else if (StringUtils.isNumeric(status)) {
     PartCheck(status.toInt)
   } else {
-    throw new IllegalArgumentException(s"input wrong check number ${status}")
+    Log4Error.unKnowExceptionError(false,
+      s"input wrong check number ${status}")
   }
 
   def setType(isModel: Boolean = false): this.type = {

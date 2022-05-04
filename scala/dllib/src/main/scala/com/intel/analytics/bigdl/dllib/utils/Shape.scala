@@ -22,23 +22,35 @@ trait Shape {
   /**
    * Use this method if its only a single Shape
    */
-  def toSingle(): List[Int] = throw new RuntimeException("Invalid operation")
+  def toSingle(): List[Int] = {
+    Log4Error.invalidOperationError(false, "Invalid operation")
+    null
+  }
 
   /**
    * Use this method if the current Shape consist of multiple value
    */
-  def toMulti(): List[Shape] = throw new RuntimeException("Invalid operation")
+  def toMulti(): List[Shape] = {
+    Log4Error.invalidOperationError(false, "Invalid operation")
+    null
+  }
 
   /**
    * Update the given dim and return a new copy
    */
-  def copyAndUpdate(dim: Int, v: Int): Shape = throw new RuntimeException("Invalid operation")
+  def copyAndUpdate(dim: Int, v: Int): Shape = {
+    Log4Error.invalidOperationError(false, "Invalid operation")
+    null
+  }
 
   /**
    * Update the given dim and return a new copy
    */
   def copyAndUpdate(dim: Int, v: Shape): Shape
-    = throw new RuntimeException("Invalid operation")
+    = {
+    Log4Error.invalidOperationError(false, "Invalid operation")
+    null
+  }
 
 
   protected def getDim(dim: Int, length: Int): Int = {
@@ -109,7 +121,7 @@ object Shape {
 
   def apply(item : Array[Int]): Shape = {
     if (item == null) {
-      throw new IllegalArgumentException("Empty value")
+      Log4Error.invalidOperationError(false, "Empty value")
     }
     new SingleShape(item.toList)
   }
@@ -124,7 +136,8 @@ object Shape {
     } else if (shapes.length == 1) {
       shapes(0)
     } else {
-      throw new IllegalArgumentException("Empty value")
+      Log4Error.invalidOperationError(false, "Empty value")
+      shapes(0)
     }
   }
 }

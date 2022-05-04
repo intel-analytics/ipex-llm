@@ -134,7 +134,8 @@ class ThreadPool(private var poolSize: Int) {
       } catch {
         case t : Throwable =>
 //          logger.error("Error: " + ExceptionUtils.getStackTrace(t))
-          throw t
+          Log4Error.unKnowExceptionError(false, t.getMessage, cause = t)
+          null.asInstanceOf[T]
       }
     }(context)).map(future => {
       Await.result(future, timeout)
@@ -170,8 +171,8 @@ class ThreadPool(private var poolSize: Int) {
       try {
         resultFutures.get(i).get()
       } catch {
-        case t: ExecutionException => throw t.getCause
-        case i: InterruptedException => throw i.getCause
+        case t: Exception =>
+          Log4Error.unKnowExceptionError(false, t.getMessage, cause = t)
       }
       i += 1
     }
@@ -187,7 +188,8 @@ class ThreadPool(private var poolSize: Int) {
         } catch {
           case t : Throwable =>
 //            logger.error("Error: " + ExceptionUtils.getStackTrace(t))
-            throw t
+            Log4Error.unKnowExceptionError(false, t.getMessage, cause = t)
+            null.asInstanceOf[T]
         }
       }
     }).map(threadPool.submit(_))
@@ -205,7 +207,8 @@ class ThreadPool(private var poolSize: Int) {
       } catch {
         case t : Throwable =>
 //          logger.error("Error: " + ExceptionUtils.getStackTrace(t))
-          throw t
+          Log4Error.unKnowExceptionError(false, t.getMessage, cause = t)
+          null.asInstanceOf[T]
       }
     }(context))
   }
@@ -222,7 +225,8 @@ class ThreadPool(private var poolSize: Int) {
       } catch {
         case t : Throwable =>
 //          logger.error("Error: " + ExceptionUtils.getStackTrace(t))
-          throw t
+          Log4Error.unKnowExceptionError(false, t.getMessage, cause = t)
+          null.asInstanceOf[T]
       }
     }(context)
   }

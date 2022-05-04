@@ -89,7 +89,9 @@ trait InferShape {
    * We suppose the first dim is batch
    */
   private[bigdl] def computeOutputShape(inputShape: Shape): Shape = {
-    throw new RuntimeException("Haven't been implemented yet. Do not use it with Keras Layer")
+    Log4Error.invalidOperationError(false,
+      "Haven't been implemented yet. Do not use it with Keras Layer")
+    null
   }
 
   private[bigdl] def excludeInvalidLayers[T: ClassTag]
@@ -100,7 +102,8 @@ trait InferShape {
       modules.filter{_.isKerasStyle()}
     }
     if (invalidNodes.length > 0) {
-      throw new InvalidLayer(s"""Do not mix ${this}(isKerasStyle=${isKerasStyle()}) with Layer
+      Log4Error.invalidOperationError(false,
+        s"""Do not mix ${this}(isKerasStyle=${isKerasStyle()}) with Layer
                            (isKerasStyle=${invalidNodes(0).isKerasStyle()}):
          ${invalidNodes.mkString(",")}""")
     }

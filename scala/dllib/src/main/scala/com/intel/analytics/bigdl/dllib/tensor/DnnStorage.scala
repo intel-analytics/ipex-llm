@@ -40,7 +40,9 @@ private[tensor] class DnnStorage[T: ClassTag](size: Int) extends Storage[T] {
   } else if (checkIsInstanceOf(ClassTag.Int)) {
     DnnStorage.INT_BYTES
   } else {
-    throw new UnsupportedOperationException(s"Unsupported type for storage")
+    Log4Error.invalidInputError(false, s"Unsupported type for storage",
+    "DnnStorage only support Float, Byte, Int")
+    DnnStorage.INT_BYTES
   }
 
   private var _isReleased: Boolean = false
@@ -50,8 +52,10 @@ private[tensor] class DnnStorage[T: ClassTag](size: Int) extends Storage[T] {
 
   override def length(): Int = size
 
-  override def apply(index: Int): T =
-    throw new UnsupportedOperationException("Not support this operation in DnnStorage")
+  override def apply(index: Int): T = {
+    Log4Error.invalidOperationError(false, "Not support this operation in DnnStorage")
+    0.asInstanceOf[T]
+  }
 
   /**
    * Set the element at position index in the storage. Valid range of index is 1 to length()
@@ -59,8 +63,9 @@ private[tensor] class DnnStorage[T: ClassTag](size: Int) extends Storage[T] {
    * @param index
    * @param value
    */
-  override def update(index: Int, value: T): Unit =
-    throw new UnsupportedOperationException("Not support this operation in DnnStorage")
+  override def update(index: Int, value: T): Unit = {
+    Log4Error.invalidOperationError(false, "Not support update in DnnStorage")
+  }
 
   override def copy(source: Storage[T], offset: Int, sourceOffset: Int, length: Int)
   : this.type = {
@@ -74,25 +79,35 @@ private[tensor] class DnnStorage[T: ClassTag](size: Int) extends Storage[T] {
         Memory.CopyPtr2Ptr(s.ptr.address, sourceOffset, ptr.address, offset, length,
           bytes)
       case _ =>
-        throw new UnsupportedOperationException("Only support copy from ArrayStorage or DnnStorage")
+        Log4Error.invalidOperationError(false, "Only support copy from ArrayStorage or DnnStorage")
     }
     this
   }
 
-  override def fill(value: T, offset: Int, length: Int): DnnStorage.this.type =
-    throw new UnsupportedOperationException("Not support this operation in DnnStorage")
+  override def fill(value: T, offset: Int, length: Int): DnnStorage.this.type = {
+    Log4Error.invalidOperationError(false, "Not support this operation in DnnStorage")
+    this
+  }
 
-  override def resize(size: Long): DnnStorage.this.type =
-    throw new UnsupportedOperationException("Not support this operation in DnnStorage")
+  override def resize(size: Long): DnnStorage.this.type = {
+    Log4Error.invalidOperationError(false, "Not support this operation in DnnStorage")
+    this
+  }
 
-  override def array(): Array[T] =
-    throw new UnsupportedOperationException("Not support this operation in DnnStorage")
+  override def array(): Array[T] = {
+    Log4Error.invalidOperationError(false, "Not support this operation in DnnStorage")
+    null
+  }
 
-  override def set(other: Storage[T]): DnnStorage.this.type =
-    throw new UnsupportedOperationException("Not support this operation in DnnStorage")
+  override def set(other: Storage[T]): DnnStorage.this.type = {
+    Log4Error.invalidOperationError(false, "Not support this operation in DnnStorage")
+    this
+  }
 
-  override def iterator: Iterator[T] =
-    throw new UnsupportedOperationException("Not support this operation in DnnStorage")
+  override def iterator: Iterator[T] = {
+    Log4Error.invalidOperationError(false, "Not support this operation in DnnStorage")
+    null
+  }
 
   /**
    * Release the native array, the storage object is useless

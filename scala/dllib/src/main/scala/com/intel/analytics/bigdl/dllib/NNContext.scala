@@ -70,7 +70,7 @@ object NNContext {
         3
       }
       if (diffLevel <= level && !reportWarning) {
-        zooUtils.logUsageErrorAndThrowException(warnMessage + errorMessage)
+        Log4Error.unKnowExceptionError(false, warnMessage + errorMessage)
       }
       logger.warn(warnMessage)
     } else {
@@ -101,19 +101,22 @@ object NNContext {
         )
       } catch {
         case npe: NullPointerException =>
-          throw new RuntimeException("Error while locating file zoo-version-info.properties, " +
+          Log4Error.invalidOperationError(false, "Error while locating file" +
+            " zoo-version-info.properties, " +
             "if you are using an IDE to run your program, please make sure the mvn" +
             " generate-resources phase is executed and a zoo-version-info.properties file" +
-            " is located in zoo/target/extra-resources", npe)
+            " is located in zoo/target/extra-resources", cause = npe)
         case e: Exception =>
-          throw new RuntimeException("Error loading properties from zoo-version-info.properties", e)
+          Log4Error.unKnowExceptionError(false, "Error loading properties from" +
+            " zoo-version-info.properties", cause = e)
       } finally {
         if (resourceStream != null) {
           try {
             resourceStream.close()
           } catch {
             case e: Exception =>
-              throw new SparkException("Error closing zoo build info resource stream", e)
+              Log4Error.unKnowExceptionError(false, "Error closing zoo build" +
+                " info resource stream", cause = e)
           }
         }
       }

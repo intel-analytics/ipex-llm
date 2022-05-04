@@ -246,8 +246,10 @@ class SpatialFullConvolution[T: ClassTag](
           1, 1
         )
 
-        case _ => throw new UnsupportedOperationException(
-          "SpatialFullConvolution: only Float/Double type supported")
+        case _ =>
+          Log4Error.invalidInputError(false,
+            s"SpatialFullConvolution: ${ev.getType()} is not supported",
+            "only support FloatType and DoubleType")
       }
       col2imTime += System.nanoTime() - before
     }
@@ -397,8 +399,10 @@ class SpatialFullConvolution[T: ClassTag](
         1, 1
       )
 
-      case _ => throw new UnsupportedOperationException(
-        s"SpatialFullConvolution: only Float/Double type supported")
+      case _ =>
+        Log4Error.invalidInputError(false,
+          s"SpatialFullConvolution: ${ev.getType()} is not supported",
+          "only support FloatType and DoubleType")
     }
     im2colTime += System.nanoTime() - before
 
@@ -532,7 +536,10 @@ class SpatialFullConvolution[T: ClassTag](
         dH, dW,
         1, 1
       )
-      case t => throw new NotImplementedError(s"$t is not supported")
+      case t =>
+        Log4Error.invalidInputError(false,
+          s"SpatialFullConvolution: ${ev.getType()} is not supported",
+          "only support FloatType and DoubleType")
     }
     im2colTime += System.nanoTime() - before
 

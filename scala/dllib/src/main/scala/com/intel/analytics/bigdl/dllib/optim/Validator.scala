@@ -17,7 +17,7 @@
 package com.intel.analytics.bigdl.dllib.optim
 
 import com.intel.analytics.bigdl._
-import com.intel.analytics.bigdl.dllib.utils.Engine
+import com.intel.analytics.bigdl.dllib.utils.{Engine, Log4Error}
 import com.intel.analytics.bigdl.dllib.feature.dataset.{DistributedDataSet, LocalDataSet, MiniBatch}
 import org.apache.logging.log4j.LogManager
 
@@ -57,7 +57,9 @@ object Validator {
           dataSet = d.asInstanceOf[LocalDataSet[MiniBatch[T]]]
         ).asInstanceOf[Validator[T, D]]
       case _ =>
-        throw new UnsupportedOperationException
+        Log4Error.invalidOperationError(false, s"unexpected dataset ${dataset}",
+          "only support DistributedDataSet and LocalDataSet")
+        null
     }
   }
 }

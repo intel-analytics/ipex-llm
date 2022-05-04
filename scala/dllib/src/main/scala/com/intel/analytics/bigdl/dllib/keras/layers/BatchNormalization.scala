@@ -70,8 +70,10 @@ class BatchNormalization[T: ClassTag](
         weights
       case "normal" => RandomNormal(0.0, 0.05).init(weights)
         weights
-      case _ => throw new IllegalArgumentException(s"Unsupported initialization method: " +
-        s"${init.toLowerCase()}")
+      case _ =>
+        Log4Error.invalidInputError(false, s"Unsupported initialization method: " +
+          s"${init.toLowerCase()}", "only support zero, one, glorot_uniform, uniform, normal")
+        null
     }
   }
 
@@ -105,8 +107,10 @@ class BatchNormalization[T: ClassTag](
           affine = true,
           initWeight = getInit(gammaInit, nOutput),
           initBias = getInit(betaInit, nOutput))
-      case _ => throw new IllegalArgumentException(s"BatchNormalization requires 4D or 2D input," +
-        s" but got input dim ${input.length}")
+      case _ =>
+        Log4Error.invalidInputError(false, s"BatchNormalization requires 4D or 2D input," +
+          s" but got input dim ${input.length}")
+        null
     }
   }
 }

@@ -145,7 +145,9 @@ class SpatialMaxPooling[T: ClassTag](
               indices.asInstanceOf[Tensor[Float]],
               oWidth, oHeight, kW, kH, dW, dH, padLeft, padTop)
           } else {
-            throw new IllegalArgumentException
+            Log4Error.invalidInputError(false,
+              s"SpatialMaxPooling: ${ev.getType()} is not supported",
+              "only support Float and Double")
           }
         case DataFormat.NHWC =>
           output.resize(Array(oHeight, oWidth, nInputPlane))
@@ -164,7 +166,9 @@ class SpatialMaxPooling[T: ClassTag](
               indices.asInstanceOf[Tensor[Float]],
               oWidth, oHeight, kW, kH, dW, dH, padLeft, padTop)
           } else {
-            throw new IllegalArgumentException
+            Log4Error.invalidInputError(false,
+              s"SpatialMaxPooling: ${ev.getType()} is not supported",
+              "only support Float and Double")
           }
       }
     } else {
@@ -204,7 +208,9 @@ class SpatialMaxPooling[T: ClassTag](
               })
             )
           } else {
-            throw new IllegalArgumentException
+            Log4Error.invalidInputError(false,
+              s"SpatialMaxPooling: ${ev.getType()} is not supported",
+              "only support Float and Double")
           }
         case DataFormat.NHWC =>
           output.resize(Array(nbatch, oHeight, oWidth, nInputPlane))
@@ -240,7 +246,9 @@ class SpatialMaxPooling[T: ClassTag](
               })
             )
           } else {
-            throw new IllegalArgumentException
+            Log4Error.invalidInputError(false,
+              s"SpatialMaxPooling: ${ev.getType()} is not supported",
+              "only support Float and Double")
           }
       }
     }
@@ -271,7 +279,9 @@ class SpatialMaxPooling[T: ClassTag](
               indices.asInstanceOf[Tensor[Float]],
               oWidth, oHeight)
           } else {
-            throw new IllegalArgumentException
+            Log4Error.invalidInputError(false,
+              s"SpatialMaxPooling: ${ev.getType()} is not supported",
+              "only support Float and Double")
           }
         case DataFormat.NHWC =>
           if (classTag[T] == classTag[Double]) {
@@ -287,7 +297,9 @@ class SpatialMaxPooling[T: ClassTag](
               indices.asInstanceOf[Tensor[Float]],
               oWidth, oHeight)
           } else {
-            throw new IllegalArgumentException
+            Log4Error.invalidInputError(false,
+              s"SpatialMaxPooling: ${ev.getType()} is not supported",
+              "only support Float and Double")
           }
       }
     }
@@ -324,7 +336,9 @@ class SpatialMaxPooling[T: ClassTag](
               })
             )
           } else {
-            throw new IllegalArgumentException
+            Log4Error.invalidInputError(false,
+              s"SpatialMaxPooling: ${ev.getType()} is not supported",
+              "only support Float and Double")
           }
         case DataFormat.NHWC =>
           if (classTag[T] == classTag[Double]) {
@@ -356,7 +370,9 @@ class SpatialMaxPooling[T: ClassTag](
               })
             )
           } else {
-            throw new IllegalArgumentException
+            Log4Error.invalidInputError(false,
+              s"SpatialMaxPooling: ${ev.getType()} is not supported",
+              "only support Float and Double")
           }
       }
 

@@ -113,7 +113,10 @@ abstract class AbstractOptimizer {
     val _subModelNumber = Engine.getEngineType match {
       case MklBlas => coresPerNode
       case MklDnn => 1
-      case _ => throw new IllegalArgumentException
+      case _ =>
+        Log4Error.invalidInputError(false, s"unexpected engine type ${Engine.getEngineType}",
+        "only support MklBlas and MklDnn")
+        0
     }
     val start = System.nanoTime()
     val results = ZippedPartitionsWithLocalityRDD(models, validateRDD)((modelIter, dataIter) => {

@@ -20,6 +20,7 @@ import java.nio.ByteOrder
 import com.intel.analytics.bigdl.Module
 import com.intel.analytics.bigdl.dllib.nn.tf.{Log1p => Log1pOps}
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.dllib.utils.Log4Error
 import org.tensorflow.framework.{DataType, NodeDef}
 import com.intel.analytics.bigdl.dllib.utils.tf.Context
 
@@ -35,7 +36,8 @@ class Log1p extends TensorflowOpsLoader {
     } else if (t == DataType.DT_DOUBLE) {
       Log1pOps[T, Double]()
     } else {
-     throw new UnsupportedOperationException(s"Not support load Log1p when type is ${t}")
+      Log4Error.invalidOperationError(false, s"Not support load Log1p when type is ${t}")
+      null
     }
   }
 }

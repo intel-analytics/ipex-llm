@@ -18,7 +18,7 @@ package com.intel.analytics.bigdl.dllib.nn.ops
 import com.intel.analytics.bigdl.dllib.nn.abstractnn.Activity
 import com.intel.analytics.bigdl.dllib.tensor.{BooleanType, Tensor}
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.dllib.utils.Table
+import com.intel.analytics.bigdl.dllib.utils.{Log4Error, Table}
 
 import scala.reflect.ClassTag
 
@@ -32,7 +32,10 @@ class LogicalOr[T: ClassTag]()
     input[Tensor[_]](1).getType() match {
       case BooleanType =>
         output.map(input(2).asInstanceOf[Tensor[Boolean]], (a, b) => a || b)
-      case _ => throw new RuntimeException("LogicalOr only support boolean tensor")
+      case _ =>
+        Log4Error.invalidOperationError(false,
+          s"unexpected type ${input[Tensor[_]](1).getType()}",
+          "LogicalOr only support boolean tensor")
     }
 
     output

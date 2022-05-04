@@ -18,8 +18,9 @@ package com.intel.analytics.bigdl.dllib.tensor
 
 import breeze.linalg.{DenseMatrix => BrzDenseMatrix, DenseVector => BrzDenseVector}
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.dllib.utils.Table
+import com.intel.analytics.bigdl.dllib.utils.{Log4Error, Table}
 import org.apache.spark.mllib.linalg.{DenseMatrix, DenseVector, Matrix, Vector}
+
 import scala.reflect.ClassTag
 
 abstract class QuantizedTensorUnsupported[T: ClassTag] extends Tensor[T] {
@@ -31,14 +32,20 @@ abstract class QuantizedTensorUnsupported[T: ClassTag] extends Tensor[T] {
    * @param v value to fill the tensor
    * @return current tensor
    */
-  override def fill(v: T): Tensor[T] = throw new UnsupportedOperationException(errorString)
+  override def fill(v: T): Tensor[T] = {
+    Log4Error.invalidOperationError(false, errorString)
+    null
+  }
 
   /**
    * Fill with zero. It will change the value of the current tensor and return itself
    *
    * @return current tensor
    */
-  override def zero(): Tensor[T] = throw new UnsupportedOperationException(errorString)
+  override def zero(): Tensor[T] = {
+    Log4Error.invalidOperationError(false, errorString)
+    null
+  }
 
   /**
    * Fill with random value(normal gaussian distribution).
@@ -46,7 +53,10 @@ abstract class QuantizedTensorUnsupported[T: ClassTag] extends Tensor[T] {
    *
    * @return current tensor
    */
-  override def randn(): Tensor[T] = throw new UnsupportedOperationException(errorString)
+  override def randn(): Tensor[T] = {
+    Log4Error.invalidOperationError(false, errorString)
+    null
+  }
 
   /**
    * Fill with random value(normal gaussian distribution with the specified mean
@@ -55,8 +65,10 @@ abstract class QuantizedTensorUnsupported[T: ClassTag] extends Tensor[T] {
    *
    * @return current tensor
    */
-  override def randn(mean: Double, stdv: Double): Tensor[T] =
-    throw new UnsupportedOperationException(errorString)
+  override def randn(mean: Double, stdv: Double): Tensor[T] = {
+    Log4Error.invalidOperationError(false, errorString)
+    null
+  }
 
   /**
    * Fill with random value(uniform distribution).
@@ -64,7 +76,10 @@ abstract class QuantizedTensorUnsupported[T: ClassTag] extends Tensor[T] {
    *
    * @return current tensor
    */
-  override def rand(): Tensor[T] = throw new UnsupportedOperationException(errorString)
+  override def rand(): Tensor[T] = {
+    Log4Error.invalidOperationError(false, errorString)
+    null
+  }
 
   /**
    * Fill with random value(uniform distribution between [lowerBound, upperBound])
@@ -72,8 +87,10 @@ abstract class QuantizedTensorUnsupported[T: ClassTag] extends Tensor[T] {
    *
    * @return current tensor
    */
-  override def rand(lowerBound: Double, upperBound: Double): Tensor[T] =
-    throw new UnsupportedOperationException(errorString)
+  override def rand(lowerBound: Double, upperBound: Double): Tensor[T] = {
+    Log4Error.invalidOperationError(false, errorString)
+    null
+  }
 
   /**
    * Fill with random value(bernoulli distribution).
@@ -81,8 +98,10 @@ abstract class QuantizedTensorUnsupported[T: ClassTag] extends Tensor[T] {
    *
    * @return current tensor
    */
-  override def bernoulli(p: Double): Tensor[T] =
-    throw new UnsupportedOperationException(errorString)
+  override def bernoulli(p: Double): Tensor[T] = {
+    Log4Error.invalidOperationError(false, errorString)
+    null
+  }
 
   /** *
    * Create a new tensor which exchanges the given dimensions of the current tensor
@@ -91,15 +110,20 @@ abstract class QuantizedTensorUnsupported[T: ClassTag] extends Tensor[T] {
    * @param dim2 dimension to be exchanged, count from one
    * @return new tensor
    */
-  override def transpose(dim1: Int, dim2: Int): Tensor[T] =
-    throw new UnsupportedOperationException(errorString)
+  override def transpose(dim1: Int, dim2: Int): Tensor[T] = {
+    Log4Error.invalidOperationError(false, errorString)
+    null
+  }
 
   /**
    * Shortcut of transpose(1, 2) for 2D tensor
    *
    * @see transpose()
    */
-  override def t(): Tensor[T] = throw new UnsupportedOperationException(errorString)
+  override def t(): Tensor[T] = {
+    Log4Error.invalidOperationError(false, errorString)
+    null
+  }
 
   /**
    * Query tensor on a given index. Tensor should not be empty
@@ -107,7 +131,10 @@ abstract class QuantizedTensorUnsupported[T: ClassTag] extends Tensor[T] {
    * @param index count from 1
    * @return
    */
-  override def apply(index: Int): Tensor[T] = throw new UnsupportedOperationException(errorString)
+  override def apply(index: Int): Tensor[T] = {
+    Log4Error.invalidOperationError(false, errorString)
+    null
+  }
 
   /**
    * Query the value on a given index. Tensor should not be empty
@@ -116,7 +143,10 @@ abstract class QuantizedTensorUnsupported[T: ClassTag] extends Tensor[T] {
    *                value count from 1
    * @return the value on the given index
    */
-  override def apply(indexes: Array[Int]): T = throw new UnsupportedOperationException(errorString)
+  override def apply(indexes: Array[Int]): T = {
+    Log4Error.invalidOperationError(false, errorString)
+    0.asInstanceOf[T]
+  }
 
   /**
    * Query the value on a given position. The number of parameters
@@ -126,18 +156,30 @@ abstract class QuantizedTensorUnsupported[T: ClassTag] extends Tensor[T] {
    * @param d1 ,( d2, d3, d4, d5) the given position
    * @return the value on a given position
    */
-  override def valueAt(d1: Int): T = throw new UnsupportedOperationException(errorString)
+  override def valueAt(d1: Int): T = {
+    Log4Error.invalidOperationError(false, errorString)
+    0.asInstanceOf[T]
+  }
 
-  override def valueAt(d1: Int, d2: Int): T = throw new UnsupportedOperationException(errorString)
+  override def valueAt(d1: Int, d2: Int): T = {
+    Log4Error.invalidOperationError(false, errorString)
+    0.asInstanceOf[T]
+  }
 
-  override def valueAt(d1: Int, d2: Int, d3: Int): T =
-    throw new UnsupportedOperationException(errorString)
+  override def valueAt(d1: Int, d2: Int, d3: Int): T = {
+    Log4Error.invalidOperationError(false, errorString)
+    0.asInstanceOf[T]
+  }
 
-  override def valueAt(d1: Int, d2: Int, d3: Int, d4: Int): T =
-    throw new UnsupportedOperationException(errorString)
+  override def valueAt(d1: Int, d2: Int, d3: Int, d4: Int): T = {
+    Log4Error.invalidOperationError(false, errorString)
+    0.asInstanceOf[T]
+  }
 
-  override def valueAt(d1: Int, d2: Int, d3: Int, d4: Int, d5: Int): T =
-    throw new UnsupportedOperationException(errorString)
+  override def valueAt(d1: Int, d2: Int, d3: Int, d4: Int, d5: Int): T = {
+    Log4Error.invalidOperationError(false, errorString)
+    0.asInstanceOf[T]
+  }
 
   /**
    * Subset the tensor by apply the element of the given table to corresponding dimension of the
@@ -153,7 +195,10 @@ abstract class QuantizedTensorUnsupported[T: ClassTag] extends Tensor[T] {
    * @param t The table length should be less than or equal to the tensor dimensions
    * @return
    */
-  override def apply(t: Table): Tensor[T] = throw new UnsupportedOperationException(errorString)
+  override def apply(t: Table): Tensor[T] = {
+    Log4Error.invalidOperationError(false, errorString)
+    null
+  }
 
   /**
    * For tensor(i) = value. If tensor(i) is another tensor, it will fill the selected subset by
@@ -162,8 +207,9 @@ abstract class QuantizedTensorUnsupported[T: ClassTag] extends Tensor[T] {
    * @param index index
    * @param value value to write
    */
-  override def update(index: Int, value: T): Unit =
-    throw new UnsupportedOperationException(errorString)
+  override def update(index: Int, value: T): Unit = {
+    Log4Error.invalidOperationError(false, errorString)
+  }
 
   /**
    * Copy the give tensor value to the select subset of the current tensor by the given index.
@@ -173,8 +219,9 @@ abstract class QuantizedTensorUnsupported[T: ClassTag] extends Tensor[T] {
    * @param index index
    * @param src   tensor to write
    */
-  override def update(index: Int, src: Tensor[T]): Unit =
-    throw new UnsupportedOperationException(errorString)
+  override def update(index: Int, src: Tensor[T]): Unit = {
+    Log4Error.invalidOperationError(false, errorString)
+  }
 
   /**
    * Write the value to the value indexed by the given index array
@@ -182,8 +229,9 @@ abstract class QuantizedTensorUnsupported[T: ClassTag] extends Tensor[T] {
    * @param indexes index array. It should has same length with the tensor dimension
    * @param value   value to write
    */
-  override def update(indexes: Array[Int], value: T): Unit =
-    throw new UnsupportedOperationException(errorString)
+  override def update(indexes: Array[Int], value: T): Unit = {
+    Log4Error.invalidOperationError(false, errorString)
+  }
 
   /**
    * Write the value on a given position. The number of parameters
@@ -193,20 +241,31 @@ abstract class QuantizedTensorUnsupported[T: ClassTag] extends Tensor[T] {
    * @param value the written value
    * @return
    */
-  override def setValue(d1: Int, value: T): this.type =
-    throw new UnsupportedOperationException(errorString)
+  override def setValue(d1: Int, value: T): this.type = {
+    Log4Error.invalidOperationError(false, errorString)
+    this
+  }
 
-  override def setValue(d1: Int, d2: Int, value: T): this.type =
-    throw new UnsupportedOperationException(errorString)
+  override def setValue(d1: Int, d2: Int, value: T): this.type = {
+    Log4Error.invalidOperationError(false, errorString)
+    this
+  }
 
-  override def setValue(d1: Int, d2: Int, d3: Int, value: T): this.type =
-    throw new UnsupportedOperationException(errorString)
+  override def setValue(d1: Int, d2: Int, d3: Int, value: T): this.type = {
+    Log4Error.invalidOperationError(false, errorString)
+    this
+  }
 
-  override def setValue(d1: Int, d2: Int, d3: Int, d4: Int, value: T): this.type =
-    throw new UnsupportedOperationException(errorString)
+  override def setValue(d1: Int, d2: Int, d3: Int, d4: Int, value: T): this.type = {
+    Log4Error.invalidOperationError(false, errorString)
+    this
+  }
 
   override def setValue(d1: Int, d2: Int, d3: Int, d4: Int, d5: Int,
-    value: T): this.type = throw new UnsupportedOperationException(errorString)
+    value: T): this.type = {
+    Log4Error.invalidOperationError(false, errorString)
+    this
+  }
 
   /**
    * Fill the select subset of the current tensor with the given value.
@@ -219,8 +278,9 @@ abstract class QuantizedTensorUnsupported[T: ClassTag] extends Tensor[T] {
    * @param t     subset table
    * @param value value to write
    */
-  override def update(t: Table, value: T): Unit =
-    throw new UnsupportedOperationException(errorString)
+  override def update(t: Table, value: T): Unit = {
+    Log4Error.invalidOperationError(false, errorString)
+  }
 
   /**
    * Copy the given tensor value to the select subset of the current tensor
@@ -233,8 +293,9 @@ abstract class QuantizedTensorUnsupported[T: ClassTag] extends Tensor[T] {
    * @param t   subset table
    * @param src tensor to copy
    */
-  override def update(t: Table, src: Tensor[T]): Unit =
-    throw new UnsupportedOperationException(errorString)
+  override def update(t: Table, src: Tensor[T]): Unit = {
+    Log4Error.invalidOperationError(false, errorString)
+  }
 
   /**
    * Update the value meeting the filter criteria with the give value
@@ -242,15 +303,19 @@ abstract class QuantizedTensorUnsupported[T: ClassTag] extends Tensor[T] {
    * @param filter filter
    * @param value  value to update
    */
-  override def update(filter: (T) => Boolean, value: T): Unit =
-    throw new UnsupportedOperationException(errorString)
+  override def update(filter: (T) => Boolean, value: T): Unit = {
+    Log4Error.invalidOperationError(false, errorString)
+  }
 
   /**
    * Check if the tensor is contiguous on the storage
    *
    * @return true if it's contiguous
    */
-  override def isContiguous(): Boolean = throw new UnsupportedOperationException(errorString)
+  override def isContiguous(): Boolean = {
+    Log4Error.invalidOperationError(false, errorString)
+    false
+  }
 
   /**
    * Get a contiguous tensor from current tensor
@@ -258,7 +323,10 @@ abstract class QuantizedTensorUnsupported[T: ClassTag] extends Tensor[T] {
    * @return the current tensor if it's contiguous; or a new contiguous tensor with separated
    *         storage
    */
-  override def contiguous(): Tensor[T] = throw new UnsupportedOperationException(errorString)
+  override def contiguous(): Tensor[T] = {
+    Log4Error.invalidOperationError(false, errorString)
+    null
+  }
 
   /**
    * Check if the size is same with the give tensor
@@ -266,8 +334,10 @@ abstract class QuantizedTensorUnsupported[T: ClassTag] extends Tensor[T] {
    * @param other tensor to be compared
    * @return true if they have same size
    */
-  override def isSameSizeAs(other: Tensor[_]): Boolean =
-    throw new UnsupportedOperationException(errorString)
+  override def isSameSizeAs(other: Tensor[_]): Boolean = {
+    Log4Error.invalidOperationError(false, errorString)
+    false
+  }
 
   /**
    * Resize the current tensor to the same size of the given tensor. It will still use the same
@@ -277,8 +347,10 @@ abstract class QuantizedTensorUnsupported[T: ClassTag] extends Tensor[T] {
    * @param src target tensor
    * @return current tensor
    */
-  override def resizeAs(src: Tensor[_]): Tensor[T] =
-    throw new UnsupportedOperationException(errorString)
+  override def resizeAs(src: Tensor[_]): Tensor[T] = {
+    Log4Error.invalidOperationError(false, errorString)
+    null
+  }
 
   /**
    * Remove the dim-th dimension and return the subset part. For instance
@@ -293,24 +365,30 @@ abstract class QuantizedTensorUnsupported[T: ClassTag] extends Tensor[T] {
    * @param index
    * @return
    */
-  override def select(dim: Int, index: Int): Tensor[T] =
-    throw new UnsupportedOperationException(errorString)
+  override def select(dim: Int, index: Int): Tensor[T] = {
+    Log4Error.invalidOperationError(false, errorString)
+    null
+  }
 
   /**
    * Get the storage
    *
    * @return storage
    */
-  override def storage(): Storage[T] =
-    throw new UnsupportedOperationException(errorString)
+  override def storage(): Storage[T] = {
+    Log4Error.invalidOperationError(false, errorString)
+    null
+  }
 
   /**
    * tensor offset on the storage
    *
    * @return storage offset, count from 1
    */
-  override def storageOffset(): Int =
-    throw new UnsupportedOperationException(errorString)
+  override def storageOffset(): Int = {
+    Log4Error.invalidOperationError(false, errorString)
+    0
+  }
 
   /**
    * The Tensor is now going to "view" the given storage, starting at position storageOffset (>=1)
@@ -327,7 +405,10 @@ abstract class QuantizedTensorUnsupported[T: ClassTag] extends Tensor[T] {
    * @return current tensor
    */
   override def set(storage: Storage[T], storageOffset: Int, sizes: Array[Int],
-    strides: Array[Int]): Tensor[T] = throw new UnsupportedOperationException(errorString)
+    strides: Array[Int]): Tensor[T] = {
+    Log4Error.invalidOperationError(false, errorString)
+    null
+  }
 
   /**
    * Get a subset of the tensor on dim-th dimension. The offset is given by index, and length is
@@ -346,8 +427,10 @@ abstract class QuantizedTensorUnsupported[T: ClassTag] extends Tensor[T] {
    * @param size
    * @return
    */
-  override def narrow(dim: Int, index: Int, size: Int): Tensor[T] =
-    throw new UnsupportedOperationException(errorString)
+  override def narrow(dim: Int, index: Int, size: Int): Tensor[T] = {
+    Log4Error.invalidOperationError(false, errorString)
+    null
+  }
 
   /**
    * Apply a function to each element of the tensor and modified it value if it return a double
@@ -355,8 +438,10 @@ abstract class QuantizedTensorUnsupported[T: ClassTag] extends Tensor[T] {
    * @param func applied function
    * @return current tensor
    */
-  override def apply1(func: (T) => T): Tensor[T] =
-    throw new UnsupportedOperationException(errorString)
+  override def apply1(func: (T) => T): Tensor[T] = {
+    Log4Error.invalidOperationError(false, errorString)
+    null
+  }
 
   /**
    * Map value of another tensor to corresponding value of current tensor and apply function on
@@ -367,35 +452,45 @@ abstract class QuantizedTensorUnsupported[T: ClassTag] extends Tensor[T] {
    * @param func  applied function
    * @return current tensor
    */
-  override def map(other: Tensor[T], func: (T, T) => T): Tensor[T] =
-    throw new UnsupportedOperationException(errorString)
+  override def map(other: Tensor[T], func: (T, T) => T): Tensor[T] = {
+    Log4Error.invalidOperationError(false, errorString)
+    null
+  }
 
   /**
    * Removes all singleton dimensions of the tensor
    *
    * @return current tensor
    */
-  override def squeeze(): Tensor[T] =
-    throw new UnsupportedOperationException(errorString)
+  override def squeeze(): Tensor[T] = {
+    Log4Error.invalidOperationError(false, errorString)
+    null
+  }
 
   /**
    * Removes given dimensions of the tensor if it's singleton
    *
    * @return current tensor
    */
-  override def squeeze(dim: Int): Tensor[T] =
-    throw new UnsupportedOperationException(errorString)
+  override def squeeze(dim: Int): Tensor[T] = {
+    Log4Error.invalidOperationError(false, errorString)
+    null
+  }
 
   /**
    * Create a new tensor that removes all singleton dimensions of the tensor
    *
    * @return create a new tensor
    */
-  override def squeezeNewTensor(): Tensor[T] =
-    throw new UnsupportedOperationException(errorString)
+  override def squeezeNewTensor(): Tensor[T] = {
+    Log4Error.invalidOperationError(false, errorString)
+    null
+  }
 
-  override def view(sizes: Array[Int]): Tensor[T] =
-    throw new UnsupportedOperationException(errorString)
+  override def view(sizes: Array[Int]): Tensor[T] = {
+    Log4Error.invalidOperationError(false, errorString)
+    null
+  }
 
   /**
    *
@@ -407,8 +502,10 @@ abstract class QuantizedTensorUnsupported[T: ClassTag] extends Tensor[T] {
    * @param step Step between two slices
    * @return new tensor
    */
-  override def unfold(dim: Int, size: Int, step: Int): Tensor[T] =
-    throw new UnsupportedOperationException(errorString)
+  override def unfold(dim: Int, size: Int, step: Int): Tensor[T] = {
+    Log4Error.invalidOperationError(false, errorString)
+    null
+  }
 
   /**
    * Repeating a tensor allocates new memory, unless result is provided, in which case its memory
@@ -417,8 +514,10 @@ abstract class QuantizedTensorUnsupported[T: ClassTag] extends Tensor[T] {
    * @param sizes
    * @return
    */
-  override def repeatTensor(sizes: Array[Int]): Tensor[T] =
-    throw new UnsupportedOperationException(errorString)
+  override def repeatTensor(sizes: Array[Int]): Tensor[T] = {
+    Log4Error.invalidOperationError(false, errorString)
+    null
+  }
 
   /**
    * This is equivalent to this.expand(template.size())
@@ -426,8 +525,10 @@ abstract class QuantizedTensorUnsupported[T: ClassTag] extends Tensor[T] {
    * @param template the given tensor
    * @return
    */
-  override def expandAs(template: Tensor[T]): Tensor[T] =
-    throw new UnsupportedOperationException(errorString)
+  override def expandAs(template: Tensor[T]): Tensor[T] = {
+    Log4Error.invalidOperationError(false, errorString)
+    null
+  }
 
   /**
    * Expanding a tensor allocates new memory, tensor where singleton dimensions can be expanded
@@ -438,8 +539,10 @@ abstract class QuantizedTensorUnsupported[T: ClassTag] extends Tensor[T] {
    * @param sizes the size that tensor will expend to
    * @return
    */
-  override def expand(sizes: Array[Int]): Tensor[T] =
-    throw new UnsupportedOperationException(errorString)
+  override def expand(sizes: Array[Int]): Tensor[T] = {
+    Log4Error.invalidOperationError(false, errorString)
+    null
+  }
 
   /**
    * Splits current tensor along dimension dim into a result table of Tensors of size size
@@ -451,8 +554,10 @@ abstract class QuantizedTensorUnsupported[T: ClassTag] extends Tensor[T] {
    * @param dim
    * @return
    */
-  override def split(size: Int, dim: Int): Array[Tensor[T]] =
-    throw new UnsupportedOperationException(errorString)
+  override def split(size: Int, dim: Int): Array[Tensor[T]] = {
+    Log4Error.invalidOperationError(false, errorString)
+    null
+  }
 
   /**
    * spilt one tensor into multi tensor along the `dim` dimension
@@ -460,16 +565,20 @@ abstract class QuantizedTensorUnsupported[T: ClassTag] extends Tensor[T] {
    * @param dim the specific dimension
    * @return
    */
-  override def split(dim: Int): Array[Tensor[T]] =
-    throw new UnsupportedOperationException(errorString)
+  override def split(dim: Int): Array[Tensor[T]] = {
+    Log4Error.invalidOperationError(false, errorString)
+    null
+  }
 
   /**
    * convert the tensor to BreezeVector, the dimension of the tensor need to be 1.
    *
    * @return BrzDenseVector
    */
-  override def toBreezeVector(): BrzDenseVector[T] =
-    throw new UnsupportedOperationException(errorString)
+  override def toBreezeVector(): BrzDenseVector[T] = {
+    Log4Error.invalidOperationError(false, errorString)
+    null
+  }
 
   /**
    * convert the tensor to MLlibVector, the dimension of the
@@ -477,16 +586,20 @@ abstract class QuantizedTensorUnsupported[T: ClassTag] extends Tensor[T] {
    *
    * @return Vector
    */
-  override def toMLlibVector(): Vector =
-    throw new UnsupportedOperationException(errorString)
+  override def toMLlibVector(): Vector = {
+    Log4Error.invalidOperationError(false, errorString)
+    null
+  }
 
   /**
    * convert the tensor to BreezeMatrix, the dimension of the tensor need to be 2.
    *
    * @return BrzDenseMatrix
    */
-  override def toBreezeMatrix(): BrzDenseMatrix[T] =
-    throw new UnsupportedOperationException(errorString)
+  override def toBreezeMatrix(): BrzDenseMatrix[T] = {
+    Log4Error.invalidOperationError(false, errorString)
+    null
+  }
 
   /**
    * convert the tensor to MLlibMatrix, the dimension of the
@@ -494,16 +607,20 @@ abstract class QuantizedTensorUnsupported[T: ClassTag] extends Tensor[T] {
    *
    * @return Matrix
    */
-  override def toMLlibMatrix(): Matrix =
-    throw new UnsupportedOperationException(errorString)
+  override def toMLlibMatrix(): Matrix = {
+    Log4Error.invalidOperationError(false, errorString)
+    null
+  }
 
   /**
    * return the tensor datatype( DoubleType or FloatType)
    *
    * @return
    */
-  override def getType(): TensorDataType =
-    throw new UnsupportedOperationException(errorString)
+  override def getType(): TensorDataType = {
+    Log4Error.invalidOperationError(false, errorString)
+    null
+  }
 
   /**
    * Compare and print differences between two tensors
@@ -512,8 +629,10 @@ abstract class QuantizedTensorUnsupported[T: ClassTag] extends Tensor[T] {
    * @param count
    * @return true if there's difference, vice versa
    */
-  override def diff(other: Tensor[T], count: Int, reverse: Boolean): Boolean =
-    throw new UnsupportedOperationException(errorString)
+  override def diff(other: Tensor[T], count: Int, reverse: Boolean): Boolean = {
+    Log4Error.invalidOperationError(false, errorString)
+    false
+  }
 
   /**
    * view this.tensor and add a Singleton Dimension to `dim` dimension
@@ -522,8 +641,10 @@ abstract class QuantizedTensorUnsupported[T: ClassTag] extends Tensor[T] {
    * @param dim the specific dimension, default is 1
    * @return this
    */
-  override def addSingletonDimension(t: Tensor[T], dim: Int): Tensor[T] =
-    throw new UnsupportedOperationException(errorString)
+  override def addSingletonDimension(t: Tensor[T], dim: Int): Tensor[T] = {
+       Log4Error.invalidOperationError(false, errorString)
+       null
+     }
 
   /**
    * view this.tensor and add multiple Dimensions to `dim` dimension
@@ -532,8 +653,10 @@ abstract class QuantizedTensorUnsupported[T: ClassTag] extends Tensor[T] {
    * @param dim the specific dimension array, default is [1]
    * @return this
    */
-  override def addMultiDimension(t: Tensor[T], dims: Array[Int]): Tensor[T] =
-    throw new UnsupportedOperationException(errorString)
+  override def addMultiDimension(t: Tensor[T], dims: Array[Int]): Tensor[T] = {
+    Log4Error.invalidOperationError(false, errorString)
+    null
+  }
 
   /**
    * create a new tensor without any change of the tensor
@@ -541,8 +664,10 @@ abstract class QuantizedTensorUnsupported[T: ClassTag] extends Tensor[T] {
    * @param sizes the size of the new Tensor
    * @return
    */
-  override def reshape(sizes: Array[Int]): Tensor[T] =
-    throw new UnsupportedOperationException(errorString)
+  override def reshape(sizes: Array[Int]): Tensor[T] = {
+    Log4Error.invalidOperationError(false, errorString)
+    null
+  }
 
   /**
    * Save the tensor to given path
@@ -551,8 +676,10 @@ abstract class QuantizedTensorUnsupported[T: ClassTag] extends Tensor[T] {
    * @param overWrite
    * @return
    */
-  override def save(path: String, overWrite: Boolean): this.type =
-    throw new UnsupportedOperationException(errorString)
+  override def save(path: String, overWrite: Boolean): this.type = {
+    Log4Error.invalidOperationError(false, errorString)
+    null
+  }
 
   // scalastyle:off methodName
   /**
@@ -562,7 +689,10 @@ abstract class QuantizedTensorUnsupported[T: ClassTag] extends Tensor[T] {
    * @param s
    * @return
    */
-  override def +(s: T): Tensor[T] = throw new UnsupportedOperationException(errorString)
+  override def +(s: T): Tensor[T] = {
+    Log4Error.invalidOperationError(false, errorString)
+    null
+  }
 
   /**
    * Add a Tensor to another one, return the result in new allocated memory.
@@ -572,7 +702,10 @@ abstract class QuantizedTensorUnsupported[T: ClassTag] extends Tensor[T] {
    * @param t
    * @return
    */
-  override def +(t: Tensor[T]): Tensor[T] = throw new UnsupportedOperationException(errorString)
+  override def +(t: Tensor[T]): Tensor[T] = {
+    Log4Error.invalidOperationError(false, errorString)
+    null
+  }
 
   /**
    * subtract all elements of this with the value not in place.
@@ -581,7 +714,10 @@ abstract class QuantizedTensorUnsupported[T: ClassTag] extends Tensor[T] {
    * @param s
    * @return
    */
-  override def -(s: T): Tensor[T] = throw new UnsupportedOperationException(errorString)
+  override def -(s: T): Tensor[T] = {
+    Log4Error.invalidOperationError(false, errorString)
+    null
+  }
 
   /**
    * Subtract a Tensor from another one, return the result in new allocated memory.
@@ -591,11 +727,15 @@ abstract class QuantizedTensorUnsupported[T: ClassTag] extends Tensor[T] {
    * @param t
    * @return
    */
-  override def -(t: Tensor[T]): Tensor[T] =
-    throw new UnsupportedOperationException(errorString)
+  override def -(t: Tensor[T]): Tensor[T] = {
+    Log4Error.invalidOperationError(false, errorString)
+    null
+  }
 
-  override def unary_-(): Tensor[T] =
-    throw new UnsupportedOperationException(errorString)
+  override def unary_-(): Tensor[T] = {
+    Log4Error.invalidOperationError(false, errorString)
+    null
+  }
 
   /**
    * divide all elements of this with value not in place.
@@ -604,8 +744,10 @@ abstract class QuantizedTensorUnsupported[T: ClassTag] extends Tensor[T] {
    * @param s
    * @return
    */
-  override def /(s: T): Tensor[T] =
-    throw new UnsupportedOperationException(errorString)
+  override def /(s: T): Tensor[T] = {
+    Log4Error.invalidOperationError(false, errorString)
+    null
+  }
 
   /**
    * Divide a Tensor by another one, return the result in new allocated memory.
@@ -615,8 +757,10 @@ abstract class QuantizedTensorUnsupported[T: ClassTag] extends Tensor[T] {
    * @param t
    * @return
    */
-  override def /(t: Tensor[T]): Tensor[T] =
-    throw new UnsupportedOperationException(errorString)
+  override def /(t: Tensor[T]): Tensor[T] = {
+    Log4Error.invalidOperationError(false, errorString)
+    null
+  }
 
   /**
    * multiply all elements of this with value not in place.
@@ -625,8 +769,10 @@ abstract class QuantizedTensorUnsupported[T: ClassTag] extends Tensor[T] {
    * @param s
    * @return
    */
-  override def *(s: T): Tensor[T] =
-    throw new UnsupportedOperationException(errorString)
+  override def *(s: T): Tensor[T] = {
+    Log4Error.invalidOperationError(false, errorString)
+    null
+  }
 
   /**
    * Multiply a Tensor by another one, return the result in new allocated memory.
@@ -636,8 +782,10 @@ abstract class QuantizedTensorUnsupported[T: ClassTag] extends Tensor[T] {
    * @param t
    * @return
    */
-  override def *(t: Tensor[T]): Tensor[T] =
-    throw new UnsupportedOperationException(errorString)
+  override def *(t: Tensor[T]): Tensor[T] = {
+    Log4Error.invalidOperationError(false, errorString)
+    null
+  }
   // scalastyle:on methodName
 
   /**
@@ -645,8 +793,10 @@ abstract class QuantizedTensorUnsupported[T: ClassTag] extends Tensor[T] {
    *
    * @return
    */
-  override def sum(): T =
-    throw new UnsupportedOperationException(errorString)
+  override def sum(): T = {
+    Log4Error.invalidOperationError(false, errorString)
+    0.asInstanceOf[T]
+  }
 
   /**
    * performs the sum operation over the dimension dim
@@ -654,25 +804,35 @@ abstract class QuantizedTensorUnsupported[T: ClassTag] extends Tensor[T] {
    * @param dim
    * @return
    */
-  override def sum(dim: Int): Tensor[T] =
-    throw new UnsupportedOperationException(errorString)
+  override def sum(dim: Int): Tensor[T] = {
+    Log4Error.invalidOperationError(false, errorString)
+    null
+  }
 
-  override def sum(x: Tensor[T], dim: Int): Tensor[T] =
-    throw new UnsupportedOperationException(errorString)
+  override def sum(x: Tensor[T], dim: Int): Tensor[T] = {
+    Log4Error.invalidOperationError(false, errorString)
+    null
+  }
 
-  def prod(): T =
-    throw new UnsupportedOperationException(errorString)
+  def prod(): T = {
+    Log4Error.invalidOperationError(false, errorString)
+    0.asInstanceOf[T]
+  }
 
-  def prod(x: Tensor[T], dim: Int): Tensor[T] =
-    throw new UnsupportedOperationException(errorString)
+  def prod(x: Tensor[T], dim: Int): Tensor[T] = {
+    Log4Error.invalidOperationError(false, errorString)
+    null
+  }
 
   /**
    * returns the mean of all elements of this.
    *
    * @return
    */
-  override def mean(): T =
-    throw new UnsupportedOperationException(errorString)
+  override def mean(): T = {
+    Log4Error.invalidOperationError(false, errorString)
+    0.asInstanceOf[T]
+  }
 
   /**
    * performs the mean operation over the dimension dim.
@@ -680,16 +840,20 @@ abstract class QuantizedTensorUnsupported[T: ClassTag] extends Tensor[T] {
    * @param dim
    * @return
    */
-  override def mean(dim: Int): Tensor[T] =
-    throw new UnsupportedOperationException(errorString)
+  override def mean(dim: Int): Tensor[T] = {
+    Log4Error.invalidOperationError(false, errorString)
+    null
+  }
 
   /**
    * returns the single biggest element of x
    *
    * @return
    */
-  override def max(): T =
-    throw new UnsupportedOperationException(errorString)
+  override def max(): T = {
+    Log4Error.invalidOperationError(false, errorString)
+    0.asInstanceOf[T]
+  }
 
   /**
    * performs the max operation over the dimension n
@@ -697,8 +861,10 @@ abstract class QuantizedTensorUnsupported[T: ClassTag] extends Tensor[T] {
    * @param dim
    * @return
    */
-  override def max(dim: Int): (Tensor[T], Tensor[T]) =
-    throw new UnsupportedOperationException(errorString)
+  override def max(dim: Int): (Tensor[T], Tensor[T]) = {
+    Log4Error.invalidOperationError(false, errorString)
+    null
+  }
 
   /**
    * performs the max operation over the dimension n
@@ -708,16 +874,20 @@ abstract class QuantizedTensorUnsupported[T: ClassTag] extends Tensor[T] {
    * @param dim
    * @return
    */
-  override def max(values: Tensor[T], indices: Tensor[T], dim: Int): (Tensor[T], Tensor[T]) =
-    throw new UnsupportedOperationException(errorString)
+  override def max(values: Tensor[T], indices: Tensor[T], dim: Int): (Tensor[T], Tensor[T]) = {
+    Log4Error.invalidOperationError(false, errorString)
+    null
+  }
 
   /**
    * returns the single minimum element of x
    *
    * @return
    */
-  override def min(): T =
-    throw new UnsupportedOperationException(errorString)
+  override def min(): T = {
+    Log4Error.invalidOperationError(false, errorString)
+    0.asInstanceOf[T]
+  }
 
   /**
    * performs the min operation over the dimension n
@@ -725,8 +895,10 @@ abstract class QuantizedTensorUnsupported[T: ClassTag] extends Tensor[T] {
    * @param dim
    * @return
    */
-  override def min(dim: Int): (Tensor[T], Tensor[T]) =
-    throw new UnsupportedOperationException(errorString)
+  override def min(dim: Int): (Tensor[T], Tensor[T]) = {
+    Log4Error.invalidOperationError(false, errorString)
+    null
+  }
 
   /**
    * performs the min operation over the dimension n
@@ -736,8 +908,10 @@ abstract class QuantizedTensorUnsupported[T: ClassTag] extends Tensor[T] {
    * @param dim
    * @return
    */
-  override def min(values: Tensor[T], indices: Tensor[T], dim: Int): (Tensor[T], Tensor[T]) =
-    throw new UnsupportedOperationException(errorString)
+  override def min(values: Tensor[T], indices: Tensor[T], dim: Int): (Tensor[T], Tensor[T]) = {
+    Log4Error.invalidOperationError(false, errorString)
+    null
+  }
 
   /**
    * Writes all values from tensor src into this tensor at the specified indices
@@ -747,8 +921,10 @@ abstract class QuantizedTensorUnsupported[T: ClassTag] extends Tensor[T] {
    * @param src
    * @return this
    */
-  override def scatter(dim: Int, index: Tensor[T], src: Tensor[T]): Tensor[T] =
-    throw new UnsupportedOperationException(errorString)
+  override def scatter(dim: Int, index: Tensor[T], src: Tensor[T]): Tensor[T] = {
+    Log4Error.invalidOperationError(false, errorString)
+    null
+  }
 
   /**
    * change this tensor with values from the original tensor by gathering a number of values
@@ -759,8 +935,10 @@ abstract class QuantizedTensorUnsupported[T: ClassTag] extends Tensor[T] {
    * @param src
    * @return this
    */
-  override def gather(dim: Int, index: Tensor[T], src: Tensor[T]): Tensor[T] =
-    throw new UnsupportedOperationException(errorString)
+  override def gather(dim: Int, index: Tensor[T], src: Tensor[T]): Tensor[T] = {
+    Log4Error.invalidOperationError(false, errorString)
+    null
+  }
 
   /**
    * This function computes 2 dimensional convolution of a single image
@@ -773,8 +951,10 @@ abstract class QuantizedTensorUnsupported[T: ClassTag] extends Tensor[T] {
    * @param vf full ('F') or valid ('V') convolution.
    * @return
    */
-  override def conv2(kernel: Tensor[T], vf: Char): Tensor[T] =
-    throw new UnsupportedOperationException(errorString)
+  override def conv2(kernel: Tensor[T], vf: Char): Tensor[T] = {
+    Log4Error.invalidOperationError(false, errorString)
+    null
+  }
 
   /**
    * This function operates with same options and input/output configurations as conv2,
@@ -784,24 +964,30 @@ abstract class QuantizedTensorUnsupported[T: ClassTag] extends Tensor[T] {
    * @param vf full ('F') or valid ('V') convolution.
    * @return
    */
-  override def xcorr2(kernel: Tensor[T], vf: Char): Tensor[T] =
-    throw new UnsupportedOperationException(errorString)
+  override def xcorr2(kernel: Tensor[T], vf: Char): Tensor[T] = {
+    Log4Error.invalidOperationError(false, errorString)
+    null
+  }
 
   /**
    * replaces all elements in-place with the square root of the elements of this.
    *
    * @return
    */
-  override def sqrt(): Tensor[T] =
-    throw new UnsupportedOperationException(errorString)
+  override def sqrt(): Tensor[T] = {
+    Log4Error.invalidOperationError(false, errorString)
+    null
+  }
 
   /**
    * replaces all elements in-place with the absolute values of the elements of this.
    *
    * @return
    */
-  override def abs(): Tensor[T] =
-    throw new UnsupportedOperationException(errorString)
+  override def abs(): Tensor[T] = {
+    Log4Error.invalidOperationError(false, errorString)
+    null
+  }
 
   /**
    * x.add(value,y) multiply-accumulates values of y into x.
@@ -810,8 +996,10 @@ abstract class QuantizedTensorUnsupported[T: ClassTag] extends Tensor[T] {
    * @param y     other tensor
    * @return current tensor
    */
-  override def add(value: T, y: Tensor[T]): Tensor[T] =
-    throw new UnsupportedOperationException(errorString)
+  override def add(value: T, y: Tensor[T]): Tensor[T] = {
+    Log4Error.invalidOperationError(false, errorString)
+    null
+  }
 
   /**
    * accumulates all elements of y into this
@@ -819,8 +1007,10 @@ abstract class QuantizedTensorUnsupported[T: ClassTag] extends Tensor[T] {
    * @param y other tensor
    * @return current tensor
    */
-  override def add(y: Tensor[T]): Tensor[T] =
-    throw new UnsupportedOperationException(errorString)
+  override def add(y: Tensor[T]): Tensor[T] = {
+    Log4Error.invalidOperationError(false, errorString)
+    null
+  }
 
   /**
    * z.add(x, value, y) puts the result of x + value * y in z.
@@ -830,8 +1020,10 @@ abstract class QuantizedTensorUnsupported[T: ClassTag] extends Tensor[T] {
    * @param y
    * @return
    */
-  override def add(x: Tensor[T], value: T, y: Tensor[T]): Tensor[T] =
-    throw new UnsupportedOperationException(errorString)
+  override def add(x: Tensor[T], value: T, y: Tensor[T]): Tensor[T] = {
+    Log4Error.invalidOperationError(false, errorString)
+    null
+  }
 
   /**
    * x.add(value) : add value to all elements of x in place.
@@ -839,11 +1031,15 @@ abstract class QuantizedTensorUnsupported[T: ClassTag] extends Tensor[T] {
    * @param value
    * @return
    */
-  override def add(value: T): Tensor[T] =
-    throw new UnsupportedOperationException(errorString)
+  override def add(value: T): Tensor[T] = {
+    Log4Error.invalidOperationError(false, errorString)
+    null
+  }
 
-  override def add(x: Tensor[T], y: Tensor[T]): Tensor[T] =
-    throw new UnsupportedOperationException(errorString)
+  override def add(x: Tensor[T], y: Tensor[T]): Tensor[T] = {
+    Log4Error.invalidOperationError(false, errorString)
+    null
+  }
 
   /**
    * Performs the dot product. The number of elements must match: both Tensors are seen as a 1D
@@ -852,8 +1048,10 @@ abstract class QuantizedTensorUnsupported[T: ClassTag] extends Tensor[T] {
    * @param y
    * @return
    */
-  override def dot(y: Tensor[T]): T =
-    throw new UnsupportedOperationException(errorString)
+  override def dot(y: Tensor[T]): T = {
+    Log4Error.invalidOperationError(false, errorString)
+    0.asInstanceOf[T]
+  }
 
   /**
    * For each elements of the tensor, performs the max operation compared with the given value
@@ -862,8 +1060,10 @@ abstract class QuantizedTensorUnsupported[T: ClassTag] extends Tensor[T] {
    * @param value
    * @return
    */
-  override def cmax(value: T): Tensor[T] =
-    throw new UnsupportedOperationException(errorString)
+  override def cmax(value: T): Tensor[T] = {
+    Log4Error.invalidOperationError(false, errorString)
+    null
+  }
 
   /**
    * Performs the p-norm distance calculation between two tensors
@@ -872,8 +1072,10 @@ abstract class QuantizedTensorUnsupported[T: ClassTag] extends Tensor[T] {
    * @param norm the norm of distance
    * @return
    */
-  override def dist(y: Tensor[T], norm: Int): T =
-    throw new UnsupportedOperationException(errorString)
+  override def dist(y: Tensor[T], norm: Int): T = {
+    Log4Error.invalidOperationError(false, errorString)
+    0.asInstanceOf[T]
+  }
 
   /**
    * Performs the element-wise multiplication of tensor1 by tensor2, multiply the result by the
@@ -884,11 +1086,15 @@ abstract class QuantizedTensorUnsupported[T: ClassTag] extends Tensor[T] {
    * @param tensor1
    * @param tensor2
    */
-  override def addcmul(value: T, tensor1: Tensor[T], tensor2: Tensor[T]): Tensor[T] =
-    throw new UnsupportedOperationException(errorString)
+  override def addcmul(value: T, tensor1: Tensor[T], tensor2: Tensor[T]): Tensor[T] = {
+    Log4Error.invalidOperationError(false, errorString)
+    null
+  }
 
-  override def addcmul(tensor1: Tensor[T], tensor2: Tensor[T]): Tensor[T] =
-    throw new UnsupportedOperationException(errorString)
+  override def addcmul(tensor1: Tensor[T], tensor2: Tensor[T]): Tensor[T] = {
+    Log4Error.invalidOperationError(false, errorString)
+    null
+  }
 
   /**
    * Performs the element-wise division of tensor1 by tensor2, multiply the result by the scalar
@@ -900,14 +1106,20 @@ abstract class QuantizedTensorUnsupported[T: ClassTag] extends Tensor[T] {
    * @param tensor2
    * @return
    */
-  override def addcdiv(value: T, tensor1: Tensor[T], tensor2: Tensor[T]): Tensor[T] =
-    throw new UnsupportedOperationException(errorString)
+  override def addcdiv(value: T, tensor1: Tensor[T], tensor2: Tensor[T]): Tensor[T] = {
+    Log4Error.invalidOperationError(false, errorString)
+    null
+  }
 
-  override def sub(value: T, y: Tensor[T]): Tensor[T] =
-    throw new UnsupportedOperationException(errorString)
+  override def sub(value: T, y: Tensor[T]): Tensor[T] = {
+    Log4Error.invalidOperationError(false, errorString)
+    null
+  }
 
-  override def sub(x: Tensor[T], value: T, y: Tensor[T]): Tensor[T] =
-    throw new UnsupportedOperationException(errorString)
+  override def sub(x: Tensor[T], value: T, y: Tensor[T]): Tensor[T] = {
+    Log4Error.invalidOperationError(false, errorString)
+    null
+  }
 
   /**
    * subtracts all elements of y from this
@@ -915,14 +1127,20 @@ abstract class QuantizedTensorUnsupported[T: ClassTag] extends Tensor[T] {
    * @param y other tensor
    * @return current tensor
    */
-  override def sub(y: Tensor[T]): Tensor[T] =
-    throw new UnsupportedOperationException(errorString)
+  override def sub(y: Tensor[T]): Tensor[T] = {
+    Log4Error.invalidOperationError(false, errorString)
+    null
+  }
 
-  override def sub(x: Tensor[T], y: Tensor[T]): Tensor[T] =
-    throw new UnsupportedOperationException(errorString)
+  override def sub(x: Tensor[T], y: Tensor[T]): Tensor[T] = {
+    Log4Error.invalidOperationError(false, errorString)
+    null
+  }
 
-  override def sub(value: T): Tensor[T] =
-    throw new UnsupportedOperationException(errorString)
+  override def sub(value: T): Tensor[T] = {
+    Log4Error.invalidOperationError(false, errorString)
+    null
+  }
 
   /**
    * Element-wise multiply
@@ -932,8 +1150,10 @@ abstract class QuantizedTensorUnsupported[T: ClassTag] extends Tensor[T] {
    * @param y tensor
    * @return current tensor
    */
-  override def cmul(y: Tensor[T]): Tensor[T] =
-    throw new UnsupportedOperationException(errorString)
+  override def cmul(y: Tensor[T]): Tensor[T] = {
+    Log4Error.invalidOperationError(false, errorString)
+    null
+  }
 
   /**
    * Element-wise multiply
@@ -943,8 +1163,10 @@ abstract class QuantizedTensorUnsupported[T: ClassTag] extends Tensor[T] {
    * @param y tensor
    * @return current tensor
    */
-  override def cmul(x: Tensor[T], y: Tensor[T]): Tensor[T] =
-    throw new UnsupportedOperationException(errorString)
+  override def cmul(x: Tensor[T], y: Tensor[T]): Tensor[T] = {
+    Log4Error.invalidOperationError(false, errorString)
+    null
+  }
 
   /**
    * Element-wise divide
@@ -954,8 +1176,10 @@ abstract class QuantizedTensorUnsupported[T: ClassTag] extends Tensor[T] {
    * @param y tensor
    * @return current tensor
    */
-  override def cdiv(y: Tensor[T]): Tensor[T] =
-    throw new UnsupportedOperationException(errorString)
+  override def cdiv(y: Tensor[T]): Tensor[T] = {
+    Log4Error.invalidOperationError(false, errorString)
+    null
+  }
 
   /**
    * Element-wise divide
@@ -965,8 +1189,10 @@ abstract class QuantizedTensorUnsupported[T: ClassTag] extends Tensor[T] {
    * @param y tensor
    * @return current tensor
    */
-  override def cdiv(x: Tensor[T], y: Tensor[T]): Tensor[T] =
-    throw new UnsupportedOperationException(errorString)
+  override def cdiv(x: Tensor[T], y: Tensor[T]): Tensor[T] = {
+    Log4Error.invalidOperationError(false, errorString)
+    null
+  }
 
   /**
    * multiply all elements of this with value in-place.
@@ -974,8 +1200,10 @@ abstract class QuantizedTensorUnsupported[T: ClassTag] extends Tensor[T] {
    * @param value
    * @return
    */
-  override def mul(value: T): Tensor[T] =
-    throw new UnsupportedOperationException(errorString)
+  override def mul(value: T): Tensor[T] = {
+    Log4Error.invalidOperationError(false, errorString)
+    null
+  }
 
   /**
    * divide all elements of this with value in-place.
@@ -983,8 +1211,10 @@ abstract class QuantizedTensorUnsupported[T: ClassTag] extends Tensor[T] {
    * @param value
    * @return
    */
-  override def div(value: T): Tensor[T] =
-    throw new UnsupportedOperationException(errorString)
+  override def div(value: T): Tensor[T] = {
+    Log4Error.invalidOperationError(false, errorString)
+    null
+  }
 
   /**
    * put the result of x * value in current tensor
@@ -992,8 +1222,10 @@ abstract class QuantizedTensorUnsupported[T: ClassTag] extends Tensor[T] {
    * @param value
    * @return
    */
-  override def mul(x: Tensor[T], value: T): Tensor[T] =
-    throw new UnsupportedOperationException(errorString)
+  override def mul(x: Tensor[T], value: T): Tensor[T] = {
+    Log4Error.invalidOperationError(false, errorString)
+    null
+  }
 
   /**
    * Performs a matrix-matrix multiplication between mat1 (2D tensor) and mat2 (2D tensor).
@@ -1010,28 +1242,40 @@ abstract class QuantizedTensorUnsupported[T: ClassTag] extends Tensor[T] {
    * @param mat1
    * @param mat2
    */
-  override def addmm(v1: T, M: Tensor[T], v2: T, mat1: Tensor[T], mat2: Tensor[T]): Tensor[T] =
-    throw new UnsupportedOperationException(errorString)
+  override def addmm(v1: T, M: Tensor[T], v2: T, mat1: Tensor[T], mat2: Tensor[T]): Tensor[T] = {
+    Log4Error.invalidOperationError(false, errorString)
+    null
+  }
 
   /** res = M + (mat1*mat2) */
-  override def addmm(M: Tensor[T], mat1: Tensor[T], mat2: Tensor[T]): Tensor[T] =
-    throw new UnsupportedOperationException(errorString)
+  override def addmm(M: Tensor[T], mat1: Tensor[T], mat2: Tensor[T]): Tensor[T] = {
+    Log4Error.invalidOperationError(false, errorString)
+    null
+  }
 
   /** res = res + mat1 * mat2 */
-  override def addmm(mat1: Tensor[T], mat2: Tensor[T]): Tensor[T] =
-    throw new UnsupportedOperationException(errorString)
+  override def addmm(mat1: Tensor[T], mat2: Tensor[T]): Tensor[T] = {
+    Log4Error.invalidOperationError(false, errorString)
+    null
+  }
 
   /** res = res + v2 * mat1 * mat2 */
-  override def addmm(v2: T, mat1: Tensor[T], mat2: Tensor[T]): Tensor[T] =
-    throw new UnsupportedOperationException(errorString)
+  override def addmm(v2: T, mat1: Tensor[T], mat2: Tensor[T]): Tensor[T] = {
+    Log4Error.invalidOperationError(false, errorString)
+    null
+  }
 
   /** res = v1 * res + v2 * mat1*mat2 */
-  override def addmm(v1: T, v2: T, mat1: Tensor[T], mat2: Tensor[T]): Tensor[T] =
-    throw new UnsupportedOperationException(errorString)
+  override def addmm(v1: T, v2: T, mat1: Tensor[T], mat2: Tensor[T]): Tensor[T] = {
+    Log4Error.invalidOperationError(false, errorString)
+    null
+  }
 
   /** res = mat1*mat2 */
-  override def mm(mat1: Tensor[T], mat2: Tensor[T]): Tensor[T] =
-    throw new UnsupportedOperationException(errorString)
+  override def mm(mat1: Tensor[T], mat2: Tensor[T]): Tensor[T] = {
+    Log4Error.invalidOperationError(false, errorString)
+    null
+  }
 
   /**
    * Performs the outer-product between vec1 (1D tensor) and vec2 (1D tensor).
@@ -1043,14 +1287,20 @@ abstract class QuantizedTensorUnsupported[T: ClassTag] extends Tensor[T] {
    * @param t2
    * @return
    */
-  override def addr(t1: Tensor[T], t2: Tensor[T]): Tensor[T] =
-    throw new UnsupportedOperationException(errorString)
+  override def addr(t1: Tensor[T], t2: Tensor[T]): Tensor[T] = {
+    Log4Error.invalidOperationError(false, errorString)
+    null
+  }
 
-  override def addr(v1: T, t1: Tensor[T], t2: Tensor[T]): Tensor[T] =
-    throw new UnsupportedOperationException(errorString)
+  override def addr(v1: T, t1: Tensor[T], t2: Tensor[T]): Tensor[T] = {
+    Log4Error.invalidOperationError(false, errorString)
+    null
+  }
 
-  override def addr(v1: T, t1: Tensor[T], v2: T, t2: Tensor[T]): Tensor[T] =
-    throw new UnsupportedOperationException(errorString)
+  override def addr(v1: T, t1: Tensor[T], v2: T, t2: Tensor[T]): Tensor[T] = {
+    Log4Error.invalidOperationError(false, errorString)
+    null
+  }
 
   /**
    * Performs the outer-product between vec1 (1D Tensor) and vec2 (1D Tensor).
@@ -1064,8 +1314,10 @@ abstract class QuantizedTensorUnsupported[T: ClassTag] extends Tensor[T] {
    * @param t3
    * @return
    */
-  override def addr(v1: T, t1: Tensor[T], v2: T, t2: Tensor[T], t3: Tensor[T]): Tensor[T] =
-    throw new UnsupportedOperationException(errorString)
+  override def addr(v1: T, t1: Tensor[T], v2: T, t2: Tensor[T], t3: Tensor[T]): Tensor[T] = {
+    Log4Error.invalidOperationError(false, errorString)
+    null
+  }
 
   /**
    * return pseudo-random numbers, require 0<=args.length<=2
@@ -1075,8 +1327,10 @@ abstract class QuantizedTensorUnsupported[T: ClassTag] extends Tensor[T] {
    *
    * @param args
    */
-  override def uniform(args: T*): T =
-    throw new UnsupportedOperationException(errorString)
+  override def uniform(args: T*): T = {
+    Log4Error.invalidOperationError(false, errorString)
+    0.asInstanceOf[T]
+  }
 
   /**
    * Performs a matrix-vector multiplication between mat (2D Tensor) and vec2 (1D Tensor) and add
@@ -1089,19 +1343,28 @@ abstract class QuantizedTensorUnsupported[T: ClassTag] extends Tensor[T] {
    * vec2 must be vector of size m and vec1 must be a vector of size n.
    */
   override def addmv(beta: T, vec1: Tensor[T], alpha: T, mat: Tensor[T],
-    vec2: Tensor[T]): Tensor[T] = throw new UnsupportedOperationException(errorString)
+    vec2: Tensor[T]): Tensor[T] = {
+    Log4Error.invalidOperationError(false, errorString)
+    null
+  }
 
   /** res = beta * res + alpha * (mat * vec2) */
-  override def addmv(beta: T, alpha: T, mat: Tensor[T], vec2: Tensor[T]): Tensor[T] =
-    throw new UnsupportedOperationException(errorString)
+  override def addmv(beta: T, alpha: T, mat: Tensor[T], vec2: Tensor[T]): Tensor[T] = {
+    Log4Error.invalidOperationError(false, errorString)
+    null
+  }
 
   /** res = res + alpha * (mat * vec2) */
-  override def addmv(alpha: T, mat: Tensor[T], vec2: Tensor[T]): Tensor[T] =
-    throw new UnsupportedOperationException(errorString)
+  override def addmv(alpha: T, mat: Tensor[T], vec2: Tensor[T]): Tensor[T] = {
+    Log4Error.invalidOperationError(false, errorString)
+    null
+  }
 
   /** res = res + (mat * vec2) */
-  override def mv(mat: Tensor[T], vec2: Tensor[T]): Tensor[T] =
-    throw new UnsupportedOperationException(errorString)
+  override def mv(mat: Tensor[T], vec2: Tensor[T]): Tensor[T] = {
+    Log4Error.invalidOperationError(false, errorString)
+    null
+  }
 
   /**
    * Perform a batch matrix matrix multiplication of matrices and stored in batch1 and batch2
@@ -1113,19 +1376,28 @@ abstract class QuantizedTensorUnsupported[T: ClassTag] extends Tensor[T] {
    * res_i = (beta * M_i) + (alpha * batch1_i * batch2_i)
    */
   override def baddbmm(beta: T, M: Tensor[T], alpha: T, batch1: Tensor[T],
-    batch2: Tensor[T]): Tensor[T] = throw new UnsupportedOperationException(errorString)
+    batch2: Tensor[T]): Tensor[T] = {
+    Log4Error.invalidOperationError(false, errorString)
+    null
+  }
 
   /** res_i = (beta * res_i) + (alpha * batch1_i * batch2_i) */
-  override def baddbmm(beta: T, alpha: T, batch1: Tensor[T], batch2: Tensor[T]): Tensor[T] =
-    throw new UnsupportedOperationException(errorString)
+  override def baddbmm(beta: T, alpha: T, batch1: Tensor[T], batch2: Tensor[T]): Tensor[T] = {
+    Log4Error.invalidOperationError(false, errorString)
+    null
+  }
 
   /** res_i = res_i + (alpha * batch1_i * batch2_i) */
-  override def baddbmm(alpha: T, batch1: Tensor[T], batch2: Tensor[T]): Tensor[T] =
-    throw new UnsupportedOperationException(errorString)
+  override def baddbmm(alpha: T, batch1: Tensor[T], batch2: Tensor[T]): Tensor[T] = {
+    Log4Error.invalidOperationError(false, errorString)
+    null
+  }
 
   /** res_i = res_i + batch1_i * batch2_i */
-  override def bmm(batch1: Tensor[T], batch2: Tensor[T]): Tensor[T] =
-    throw new UnsupportedOperationException(errorString)
+  override def bmm(batch1: Tensor[T], batch2: Tensor[T]): Tensor[T] = {
+    Log4Error.invalidOperationError(false, errorString)
+    null
+  }
 
   /**
    * Replaces all elements in-place with the elements of x to the power of n
@@ -1134,14 +1406,20 @@ abstract class QuantizedTensorUnsupported[T: ClassTag] extends Tensor[T] {
    * @param n
    * @return current tensor reference
    */
-  override def pow(y: Tensor[T], n: T): Tensor[T] =
-    throw new UnsupportedOperationException(errorString)
+  override def pow(y: Tensor[T], n: T): Tensor[T] = {
+    Log4Error.invalidOperationError(false, errorString)
+    null
+  }
 
-  override def pow(n: T): Tensor[T] =
-    throw new UnsupportedOperationException(errorString)
+  override def pow(n: T): Tensor[T] = {
+    Log4Error.invalidOperationError(false, errorString)
+    null
+  }
 
-  override def square(): Tensor[T] =
-    throw new UnsupportedOperationException(errorString)
+  override def square(): Tensor[T] = {
+    Log4Error.invalidOperationError(false, errorString)
+    null
+  }
 
   /**
    * Get the top k smallest values and their indices.
@@ -1154,8 +1432,10 @@ abstract class QuantizedTensorUnsupported[T: ClassTag] extends Tensor[T] {
    * @return
    */
   override def topk(k: Int, dim: Int, increase: Boolean, result: Tensor[T],
-    indices: Tensor[T], sortedResult: Boolean = true): (Tensor[T], Tensor[T]) =
-    throw new UnsupportedOperationException(errorString)
+    indices: Tensor[T], sortedResult: Boolean = true): (Tensor[T], Tensor[T]) = {
+    Log4Error.invalidOperationError(false, errorString)
+    null
+  }
 
   /**
    * Replaces all elements in-place with the elements of lnx
@@ -1163,27 +1443,45 @@ abstract class QuantizedTensorUnsupported[T: ClassTag] extends Tensor[T] {
    * @param y
    * @return current tensor reference
    */
-  override def log(y: Tensor[T]): Tensor[T] =
-    throw new UnsupportedOperationException(errorString)
+  override def log(y: Tensor[T]): Tensor[T] = {
+    Log4Error.invalidOperationError(false, errorString)
+    null
+  }
 
-  override def exp(y: Tensor[T]): Tensor[T] =
-    throw new UnsupportedOperationException(errorString)
+  override def exp(y: Tensor[T]): Tensor[T] = {
+    Log4Error.invalidOperationError(false, errorString)
+    null
+  }
 
-  override def sqrt(y: Tensor[T]): Tensor[T] =
-    throw new UnsupportedOperationException(errorString)
+  override def sqrt(y: Tensor[T]): Tensor[T] = {
+    Log4Error.invalidOperationError(false, errorString)
+    null
+  }
 
-  override def log1p(y: Tensor[T]): Tensor[T] =
-    throw new UnsupportedOperationException(errorString)
-  override def log(): Tensor[T] =
-    throw new UnsupportedOperationException(errorString)
-  override def exp(): Tensor[T] =
-    throw new UnsupportedOperationException(errorString)
+  override def log1p(y: Tensor[T]): Tensor[T] = {
+    Log4Error.invalidOperationError(false, errorString)
+    null
+  }
 
-  override def log1p(): Tensor[T] =
-    throw new UnsupportedOperationException(errorString)
+  override def log1p(): Tensor[T] = {
+    Log4Error.invalidOperationError(false, errorString)
+    null
+  }
 
-  override def abs(x: Tensor[T]): Tensor[T] =
-    throw new UnsupportedOperationException(errorString)
+  override def log(): Tensor[T] = {
+    Log4Error.invalidOperationError(false, errorString)
+    null
+  }
+
+  override def exp(): Tensor[T] = {
+    Log4Error.invalidOperationError(false, errorString)
+    null
+  }
+
+  override def abs(x: Tensor[T]): Tensor[T] = {
+    Log4Error.invalidOperationError(false, errorString)
+    null
+  }
 
   /**
    * returns the p-norms of the Tensor x computed over the dimension dim.
@@ -1193,8 +1491,10 @@ abstract class QuantizedTensorUnsupported[T: ClassTag] extends Tensor[T] {
    * @param dim
    * @return
    */
-  override def norm(y: Tensor[T], value: Int, dim: Int): Tensor[T] =
-    throw new UnsupportedOperationException(errorString)
+  override def norm(y: Tensor[T], value: Int, dim: Int): Tensor[T] = {
+    Log4Error.invalidOperationError(false, errorString)
+    null
+  }
 
   /**
    * Implements > operator comparing each element in x with y
@@ -1203,8 +1503,10 @@ abstract class QuantizedTensorUnsupported[T: ClassTag] extends Tensor[T] {
    * @param y
    * @return current tensor reference
    */
-  override def gt(x: Tensor[T], y: Tensor[T]): Tensor[T] =
-    throw new UnsupportedOperationException(errorString)
+  override def gt(x: Tensor[T], y: Tensor[T]): Tensor[T] = {
+    Log4Error.invalidOperationError(false, errorString)
+    null
+  }
 
   /**
    * Implements < operator comparing each element in x with y
@@ -1213,8 +1515,10 @@ abstract class QuantizedTensorUnsupported[T: ClassTag] extends Tensor[T] {
    * @param y
    * @return current tensor reference
    */
-  override def lt(x: Tensor[T], y: Tensor[T]): Tensor[T] =
-    throw new UnsupportedOperationException(errorString)
+  override def lt(x: Tensor[T], y: Tensor[T]): Tensor[T] = {
+    Log4Error.invalidOperationError(false, errorString)
+    null
+  }
 
   /**
    * Implements <= operator comparing each element in x with y
@@ -1223,8 +1527,10 @@ abstract class QuantizedTensorUnsupported[T: ClassTag] extends Tensor[T] {
    * @param y
    * @return current tensor reference
    */
-  override def le(x: Tensor[T], y: Tensor[T]): Tensor[T] =
-    throw new UnsupportedOperationException(errorString)
+  override def le(x: Tensor[T], y: Tensor[T]): Tensor[T] = {
+    Log4Error.invalidOperationError(false, errorString)
+    null
+  }
 
   /**
    * Implements == operator comparing each element in x with y
@@ -1232,8 +1538,10 @@ abstract class QuantizedTensorUnsupported[T: ClassTag] extends Tensor[T] {
    * @param y
    * @return current tensor reference
    */
-  override def eq(x: Tensor[T], y: T): Tensor[T] =
-    throw new UnsupportedOperationException(errorString)
+  override def eq(x: Tensor[T], y: T): Tensor[T] = {
+    Log4Error.invalidOperationError(false, errorString)
+    null
+  }
 
   /**
    * Fills the masked elements of itself with value val
@@ -1242,8 +1550,10 @@ abstract class QuantizedTensorUnsupported[T: ClassTag] extends Tensor[T] {
    * @param e
    * @return current tensor reference
    */
-  override def maskedFill(mask: Tensor[T], e: T): Tensor[T] =
-    throw new UnsupportedOperationException(errorString)
+  override def maskedFill(mask: Tensor[T], e: T): Tensor[T] = {
+    Log4Error.invalidOperationError(false, errorString)
+    null
+  }
 
   /**
    * Copies the elements of tensor into mask locations of itself.
@@ -1252,8 +1562,10 @@ abstract class QuantizedTensorUnsupported[T: ClassTag] extends Tensor[T] {
    * @param y
    * @return current tensor reference
    */
-  override def maskedCopy(mask: Tensor[T], y: Tensor[T]): Tensor[T] =
-    throw new UnsupportedOperationException(errorString)
+  override def maskedCopy(mask: Tensor[T], y: Tensor[T]): Tensor[T] = {
+    Log4Error.invalidOperationError(false, errorString)
+    null
+  }
 
   /**
    * Returns a new Tensor which contains all elements aligned to a 1 in the corresponding mask.
@@ -1262,8 +1574,10 @@ abstract class QuantizedTensorUnsupported[T: ClassTag] extends Tensor[T] {
    * @param y
    * @return current tensor reference
    */
-  override def maskedSelect(mask: Tensor[T], y: Tensor[T]): Tensor[T] =
-    throw new UnsupportedOperationException(errorString)
+  override def maskedSelect(mask: Tensor[T], y: Tensor[T]): Tensor[T] = {
+    Log4Error.invalidOperationError(false, errorString)
+    null
+  }
 
   /**
    * returns the sum of the n-norms on the Tensor x
@@ -1271,16 +1585,20 @@ abstract class QuantizedTensorUnsupported[T: ClassTag] extends Tensor[T] {
    * @param value the n-norms
    * @return
    */
-  override def norm(value: Int): T =
-    throw new UnsupportedOperationException(errorString)
+  override def norm(value: Int): T = {
+    Log4Error.invalidOperationError(false, errorString)
+    0.asInstanceOf[T]
+  }
 
   /**
    * returns a new Tensor with the sign (+/- 1 or 0) of the elements of x.
    *
    * @return
    */
-  override def sign(): Tensor[T] =
-    throw new UnsupportedOperationException(errorString)
+  override def sign(): Tensor[T] = {
+    Log4Error.invalidOperationError(false, errorString)
+    null
+  }
 
   /**
    * Implements >= operator comparing each element in x with value
@@ -1289,8 +1607,10 @@ abstract class QuantizedTensorUnsupported[T: ClassTag] extends Tensor[T] {
    * @param value
    * @return
    */
-  override def ge(x: Tensor[T], value: Double): Tensor[T] =
-    throw new UnsupportedOperationException(errorString)
+  override def ge(x: Tensor[T], value: Double): Tensor[T] = {
+    Log4Error.invalidOperationError(false, errorString)
+    null
+  }
 
   /**
    * Accumulate the elements of tensor into the original tensor by adding to the indices
@@ -1302,8 +1622,10 @@ abstract class QuantizedTensorUnsupported[T: ClassTag] extends Tensor[T] {
    * @param y
    * @return
    */
-  override def indexAdd(dim: Int, index: Tensor[T], y: Tensor[T]): Tensor[T] =
-    throw new UnsupportedOperationException(errorString)
+  override def indexAdd(dim: Int, index: Tensor[T], y: Tensor[T]): Tensor[T] = {
+    Log4Error.invalidOperationError(false, errorString)
+    null
+  }
 
   /**
    * Accumulate the elements of tensor into the original tensor by adding to the indices
@@ -1315,8 +1637,10 @@ abstract class QuantizedTensorUnsupported[T: ClassTag] extends Tensor[T] {
    * @param y
    * @return
    */
-  override def index(dim: Int, index: Tensor[T], y: Tensor[T]): Tensor[T] =
-    throw new UnsupportedOperationException(errorString)
+  override def index(dim: Int, index: Tensor[T], y: Tensor[T]): Tensor[T] = {
+    Log4Error.invalidOperationError(false, errorString)
+    null
+  }
 
   /**
    * stores the element-wise maximum of x and y in x.
@@ -1325,8 +1649,10 @@ abstract class QuantizedTensorUnsupported[T: ClassTag] extends Tensor[T] {
    * @param y tensor
    * @return current tensor
    */
-  override def cmax(y: Tensor[T]): Tensor[T] =
-    throw new UnsupportedOperationException(errorString)
+  override def cmax(y: Tensor[T]): Tensor[T] = {
+    Log4Error.invalidOperationError(false, errorString)
+    null
+  }
 
   /**
    * stores the element-wise maximum of x and y in x.
@@ -1335,8 +1661,10 @@ abstract class QuantizedTensorUnsupported[T: ClassTag] extends Tensor[T] {
    * @param y tensor
    * @return current tensor
    */
-  override def cmin(y: Tensor[T]): Tensor[T] =
-    throw new UnsupportedOperationException(errorString)
+  override def cmin(y: Tensor[T]): Tensor[T] = {
+    Log4Error.invalidOperationError(false, errorString)
+    null
+  }
 
   /**
    * stores the element-wise maximum of x and y in z.
@@ -1345,8 +1673,10 @@ abstract class QuantizedTensorUnsupported[T: ClassTag] extends Tensor[T] {
    * @param x tensor
    * @param y tensor
    */
-  override def cmax(x: Tensor[T], y: Tensor[T]): Tensor[T] =
-    throw new UnsupportedOperationException(errorString)
+  override def cmax(x: Tensor[T], y: Tensor[T]): Tensor[T] = {
+    Log4Error.invalidOperationError(false, errorString)
+    null
+  }
 
   /**
    * stores the element-wise maximum of x and y in z.
@@ -1355,8 +1685,10 @@ abstract class QuantizedTensorUnsupported[T: ClassTag] extends Tensor[T] {
    * @param x tensor
    * @param y tensor
    */
-  override def cmin(x: Tensor[T], y: Tensor[T]): Tensor[T] =
-    throw new UnsupportedOperationException(errorString)
+  override def cmin(x: Tensor[T], y: Tensor[T]): Tensor[T] = {
+    Log4Error.invalidOperationError(false, errorString)
+    null
+  }
 
   /**
    * resize this tensor size to floor((xmax - xmin) / step) + 1 and set values from
@@ -1367,97 +1699,175 @@ abstract class QuantizedTensorUnsupported[T: ClassTag] extends Tensor[T] {
    * @param step
    * @return this tensor
    */
-  override def range(xmin: Double, xmax: Double, step: Int): Tensor[T] =
-    throw new UnsupportedOperationException(errorString)
+  override def range(xmin: Double, xmax: Double, step: Int): Tensor[T] = {
+    Log4Error.invalidOperationError(false, errorString)
+    null
+  }
 
-  override def toTensor[D](implicit ev: TensorNumeric[D]): Tensor[D] =
-    throw new UnsupportedOperationException(errorString)
+  override def toTensor[D](implicit ev: TensorNumeric[D]): Tensor[D] = {
+    Log4Error.invalidOperationError(false, errorString)
+    null
+  }
 
-  override def tanh(): Tensor[T] = throw new UnsupportedOperationException(errorString)
+  override def tanh(): Tensor[T] = {
+    Log4Error.invalidOperationError(false, errorString)
+    null
+  }
 
-  override def tanh(y: Tensor[T]): Tensor[T] = throw new UnsupportedOperationException(errorString)
+  override def tanh(y: Tensor[T]): Tensor[T] = {
+    Log4Error.invalidOperationError(false, errorString)
+    null
+  }
 
-  override def resize(sizes: Array[Int], strides: Array[Int]): this.type =
-    throw new UnsupportedOperationException(errorString)
+  override def resize(sizes: Array[Int], strides: Array[Int]): this.type = {
+    Log4Error.invalidOperationError(false, errorString)
+    null
+  }
 
-  override def resize(size1: Int): this.type = throw new UnsupportedOperationException(errorString)
+  override def resize(size1: Int): this.type = {
+    Log4Error.invalidOperationError(false, errorString)
+    null
+  }
 
-  override def resize(size1: Int, size2: Int): this.type =
-    throw new UnsupportedOperationException(errorString)
+  override def resize(size1: Int, size2: Int): this.type = {
+    Log4Error.invalidOperationError(false, errorString)
+    null
+  }
 
-  override def resize(size1: Int, size2: Int, size3: Int): this.type =
-    throw new UnsupportedOperationException(errorString)
+  override def resize(size1: Int, size2: Int, size3: Int): this.type = {
+    Log4Error.invalidOperationError(false, errorString)
+    null
+  }
 
-  override def resize(size1: Int, size2: Int, size3: Int, size4: Int): this.type =
-    throw new UnsupportedOperationException(errorString)
+  override def resize(size1: Int, size2: Int, size3: Int, size4: Int): this.type = {
+    Log4Error.invalidOperationError(false, errorString)
+    null
+  }
 
-  override def resize(size1: Int, size2: Int, size3: Int, size4: Int, size5: Int): this.type =
-    throw new UnsupportedOperationException(errorString)
+  override def resize(size1: Int, size2: Int, size3: Int, size4: Int, size5: Int): this.type = {
+    Log4Error.invalidOperationError(false, errorString)
+    null
+  }
 
-  override def isEmpty: Boolean =
-    throw new UnsupportedOperationException(errorString)
+  override def isEmpty: Boolean = {
+    Log4Error.invalidOperationError(false, errorString)
+    false
+  }
 
-  override def isScalar: Boolean =
-    throw new UnsupportedOperationException(errorString)
+  override def isScalar: Boolean = {
+    Log4Error.invalidOperationError(false, errorString)
+    false
+  }
 
-  override def value(): T =
-    throw new UnsupportedOperationException(errorString)
+  override def value(): T = {
+    Log4Error.invalidOperationError(false, errorString)
+    0.asInstanceOf[T]
+  }
 
-  override def setValue(value: T): this.type =
-    throw new UnsupportedOperationException(errorString)
+  override def setValue(value: T): this.type = {
+    Log4Error.invalidOperationError(false, errorString)
+    null
+  }
 
   override def zipWith[A: ClassTag, B: ClassTag](t1: Tensor[A], t2: Tensor[B],
-    func: (A, B) => T): Tensor[T] = throw new UnsupportedOperationException(errorString)
+    func: (A, B) => T): Tensor[T] = {
+    Log4Error.invalidOperationError(false, errorString)
+    null
+  }
 
-  override def forceFill(v: Any): Tensor[T] = throw new UnsupportedOperationException(errorString)
+  override def forceFill(v: Any): Tensor[T] = {
+    Log4Error.invalidOperationError(false, errorString)
+    null
+  }
 
-  override def emptyInstance(): Tensor[T] = throw new UnsupportedOperationException(errorString)
+  override def emptyInstance(): Tensor[T] = {
+    Log4Error.invalidOperationError(false, errorString)
+    null
+  }
 
-  override def applyFun[A: ClassTag](t: Tensor[A], func: (A) => T): Tensor[T] =
-    throw new UnsupportedOperationException(errorString)
+  override def applyFun[A: ClassTag](t: Tensor[A], func: (A) => T): Tensor[T] = {
+    Log4Error.invalidOperationError(false, errorString)
+    null
+  }
 
   override def cast[D: ClassTag](castTensor: Tensor[D])(implicit ev: TensorNumeric[D]): Tensor[D] =
-    throw new UnsupportedOperationException(errorString)
+  {
+    Log4Error.invalidOperationError(false, errorString)
+    null
+  }
 
-  override def div(y: Tensor[T]): Tensor[T] =
-    throw new UnsupportedOperationException(errorString)
+  override def div(y: Tensor[T]): Tensor[T] = {
+    Log4Error.invalidOperationError(false, errorString)
+    null
+  }
 
-  override def floor(y: Tensor[T]): Tensor[T] = throw new UnsupportedOperationException(errorString)
+  override def floor(y: Tensor[T]): Tensor[T] = {
+    Log4Error.invalidOperationError(false, errorString)
+    null
+  }
 
-  override def floor(): Tensor[T] = throw new UnsupportedOperationException(errorString)
+  override def floor(): Tensor[T] = {
+    Log4Error.invalidOperationError(false, errorString)
+    null
+  }
 
-  override def ceil(): Tensor[T] = throw new UnsupportedOperationException(errorString)
+  override def ceil(): Tensor[T] = {
+    Log4Error.invalidOperationError(false, errorString)
+    null
+  }
 
-  override def negative(x: Tensor[T]): Tensor[T] =
-    throw new UnsupportedOperationException(errorString)
+  override def negative(x: Tensor[T]): Tensor[T] = {
+    Log4Error.invalidOperationError(false, errorString)
+    null
+  }
 
-  override def inv(): Tensor[T] =
-    throw new UnsupportedOperationException(errorString)
+  override def inv(): Tensor[T] = {
+    Log4Error.invalidOperationError(false, errorString)
+    null
+  }
 
-  override def reduce(dim: Int, result: Tensor[T], reducer: (T, T) => T): Tensor[T] =
-    throw new UnsupportedOperationException(errorString)
+  override def reduce(dim: Int, result: Tensor[T], reducer: (T, T) => T): Tensor[T] = {
+    Log4Error.invalidOperationError(false, errorString)
+    null
+  }
 
-  override def toArray(): Array[T] =
-    throw new UnsupportedOperationException(errorString)
+  override def toArray(): Array[T] = {
+    Log4Error.invalidOperationError(false, errorString)
+    null
+  }
 
-  override def erf(): Tensor[T] =
-    throw new UnsupportedOperationException(errorString)
+  override def erf(): Tensor[T] = {
+    Log4Error.invalidOperationError(false, errorString)
+    null
+  }
 
-  override def erf(y: Tensor[T]): Tensor[T] =
-    throw new UnsupportedOperationException(errorString)
+  override def erf(y: Tensor[T]): Tensor[T] = {
+    Log4Error.invalidOperationError(false, errorString)
+    null
+  }
 
-  override def erfc(): Tensor[T] =
-    throw new UnsupportedOperationException(errorString)
+  override def erfc(): Tensor[T] = {
+    Log4Error.invalidOperationError(false, errorString)
+    null
+  }
 
-  override def logGamma(): Tensor[T] =
-    throw new UnsupportedOperationException(errorString)
+  override def logGamma(): Tensor[T] = {
+    Log4Error.invalidOperationError(false, errorString)
+    null
+  }
 
-  override def digamma(): Tensor[T] =
-    throw new UnsupportedOperationException(errorString)
+  override def digamma(): Tensor[T] = {
+    Log4Error.invalidOperationError(false, errorString)
+    null
+  }
 
-  override def clamp(minValue: Double, maxValue: Double): Tensor[T] =
-    throw new UnsupportedOperationException(errorString)
+  override def clamp(minValue: Double, maxValue: Double): Tensor[T] = {
+    Log4Error.invalidOperationError(false, errorString)
+    null
+  }
 
-  override def sumSquare(): T =
-    throw new UnsupportedOperationException(errorString)
+  override def sumSquare(): T = {
+    Log4Error.invalidOperationError(false, errorString)
+    0.asInstanceOf[T]
+  }
 }

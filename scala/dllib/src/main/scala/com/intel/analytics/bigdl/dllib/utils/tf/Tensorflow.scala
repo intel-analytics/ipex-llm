@@ -128,7 +128,8 @@ object Tensorflow {
     } else if (value.getType() == BooleanType) {
       DataType.DT_BOOL
     } else {
-      throw new UnsupportedOperationException(s"data type ${value.getType()} is not supported")
+      Log4Error.invalidOperationError(false, s"data type ${value.getType()} is not supported")
+      null
     }
 
     NodeDef.newBuilder()
@@ -587,7 +588,8 @@ object Tensorflow {
       }
       (buffer, DataType.DT_BOOL)
     } else {
-      throw new UnsupportedOperationException(s"")
+      Log4Error.invalidOperationError(false, s"unsupported type ${value.getType()}")
+      (null, DataType.DT_BOOL)
     }
 
     AttrValue.newBuilder().setTensor(
@@ -611,7 +613,9 @@ object Tensorflow {
     } else if (dtype == DoubleType) {
       AttrValue.newBuilder().setType(DataType.DT_DOUBLE).build()
     } else {
-      throw new NotImplementedError(s"type $dtype is not supported")
+      Log4Error.invalidOperationError(false, s"type $dtype is not supported",
+      "only support FloatType, DoubleType")
+      null
     }
   }
 
@@ -647,7 +651,8 @@ object Tensorflow {
       return attr
     }
 
-    throw new IllegalArgumentException("TensorflowSaver: Can not find data type")
+    Log4Error.invalidOperationError(false, "TensorflowSaver: Can not find data type")
+    attr
   }
 
   private def getPaddingType(padW: Int, padH: Int, kW: Int, kH: Int, sW: Int, sH: Int)

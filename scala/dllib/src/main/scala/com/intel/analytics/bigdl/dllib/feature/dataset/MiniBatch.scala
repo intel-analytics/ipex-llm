@@ -69,7 +69,9 @@ trait MiniBatch[T] extends Serializable{
    */
   @deprecated("Old interface, use getInput instead", "0.2.0")
   def data(): Tensor[T] = {
-    throw new UnsupportedOperationException("MiniBatch.data(): unimplemented deprecated method")
+    Log4Error.invalidInputError(false, "MiniBatch.data(): unimplemented deprecated method",
+    "use getInput instead")
+    null
   }
 
   /**
@@ -79,7 +81,9 @@ trait MiniBatch[T] extends Serializable{
    */
   @deprecated("Old interface, use getTarget instead", "0.2.0")
   def labels(): Tensor[T] = {
-    throw new UnsupportedOperationException("MiniBatch.labels(): unimplemented deprecated method")
+    Log4Error.invalidInputError(false, "MiniBatch.labels(): unimplemented deprecated method",
+    "use getTarget instead")
+    null
   }
 
   /**
@@ -666,8 +670,9 @@ class SparseMiniBatch[T: ClassTag](
           Tensor[Double](Array(batchSize) ++ s.size())
       }
     case s =>
-      throw new IllegalArgumentException(s"MiniBatchWithSparse: unsupported feature type " +
-        s"${s.getTensorType}")
+      Log4Error.invalidInputError(false, s"MiniBatchWithSparse: unsupported feature type " +
+        s"${s.getTensorType}", "Only support SparseType and DenseType")
+      null
   }
 
   def init(features: Array[Tensor[T]], labels: Array[Tensor[T]]): Unit = {
@@ -739,8 +744,8 @@ object SparseMiniBatch{
     } else if (res.getTensorType == DenseType) {
       denseBatch(dim, tensors, res)
     } else {
-      throw new IllegalArgumentException(s"MiniBatchWithSparse: unsupported tensor type " +
-        s"${res.getTensorType}")
+      Log4Error.invalidInputError(false, s"MiniBatchWithSparse: unsupported tensor type " +
+        s"${res.getTensorType}", "only support SparseType and DenseType")
     }
   }
 

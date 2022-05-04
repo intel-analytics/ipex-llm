@@ -28,10 +28,13 @@ import com.intel.analytics.bigdl.dllib.utils.{Log4Error, RandomGenerator}
  */
 trait VariableFormat {
   def getFanIn(shape: Array[Int]): Int = {
-    throw new Exception("FanIn is not defined in this format")
+    Log4Error.unKnowExceptionError(false, "FanIn is not defined in this format")
+    0
   }
+
   def getFanOut(shape: Array[Int]): Int = {
-    throw new Exception("FanOut is not defined in this format")
+    Log4Error.unKnowExceptionError(false, "FanOut is not defined in this format")
+    0
   }
 }
 

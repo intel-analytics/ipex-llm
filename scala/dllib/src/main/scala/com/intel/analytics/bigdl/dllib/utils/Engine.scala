@@ -165,10 +165,11 @@ object Engine {
         gatewayServer.start()
       } catch {
         case ct: ControlThrowable =>
-          throw ct
+          Log4Error.unKnowExceptionError(false, ct.getMessage, cause = ct)
         case t: Throwable =>
-          throw new Exception(s"Uncaught exception " +
-            s"in thread ${Thread.currentThread().getName}, when staring JavaGatewayServer", t)
+          Log4Error.unKnowExceptionError(false, s"Uncaught exception " +
+            s"in thread ${Thread.currentThread().getName}, when staring JavaGatewayServer",
+            cause = t)
       }
     })
     thread.setName("py4j-executor-gateway-init")
@@ -189,7 +190,8 @@ object Engine {
       createGatewayPortFile(gatewayServer.getListeningPort)
     } catch {
       case NonFatal(e) =>
-        throw new Exception("Could not create java gateway port file", e)
+        Log4Error.unKnowExceptionError(false, s"Could not create java gateway port file",
+          cause = e)
     }
   }
 
@@ -200,7 +202,9 @@ object Engine {
     System.getProperty("bigdl.localMode", "false").toLowerCase(Locale.ROOT) match {
       case "true" => true
       case "false" => false
-      case option => throw new IllegalArgumentException(s"Unknown bigdl.localMode $option")
+      case option =>
+        Log4Error.invalidOperationError(false, s"Unknown bigdl.localMode $option")
+        false
     }
   }
 
@@ -219,7 +223,9 @@ object Engine {
     System.getProperty("bigdl.engineType", "mklblas").toLowerCase(Locale.ROOT) match {
       case "mklblas" => MklBlas
       case "mkldnn" => MklDnn
-      case engineType => throw new IllegalArgumentException(s"Unknown engine type $engineType")
+      case engineType =>
+        Log4Error.invalidOperationError(false, s"Unknown engine type $engineType")
+        MklDnn
     }
   }
 
@@ -231,7 +237,9 @@ object Engine {
     System.getProperty("bigdl.optimizerVersion", "optimizerv1").toLowerCase(Locale.ROOT) match {
       case "optimizerv1" => OptimizerV1
       case "optimizerv2" => OptimizerV2
-      case optimizerVersion => throw new IllegalArgumentException(s"Unknown type $optimizerVersion")
+      case optimizerVersion =>
+        Log4Error.invalidOperationError(false, s"Unknown type $optimizerVersion")
+        OptimizerV2
     }
   }
 
@@ -374,8 +382,9 @@ object Engine {
 
   private[bigdl] def default: ThreadPool = {
     if (_default == null) {
-      throw new IllegalStateException(s"Engine.init: Thread engine is not " +
-        s"initialized. $NOT_INIT_ERROR")
+      Log4Error.invalidOperationError(false,
+        s"Engine.init: Thread engine is not " +
+          s"initialized. $NOT_INIT_ERROR")
     }
     _default
   }
@@ -441,7 +450,7 @@ object Engine {
     val existingSparkContext = !tmpContext.getConf.contains("bigdl.temp.context")
     if (!existingSparkContext) {
       tmpContext.stop()
-      throw new IllegalArgumentException("Engine.init: Cannot find an existing"
+      Log4Error.invalidOperationError(false, "Engine.init: Cannot find an existing"
         + " spark context. Do you call this method after create spark context?")
     }
     logger.info("Find existing spark context. Checking the spark conf...")
@@ -503,11 +512,13 @@ object Engine {
     } catch {
       case s: SparkException =>
         if (s.getMessage.contains("A master URL must be set in your configuration")) {
-          throw new IllegalArgumentException("A master URL must be set in your configuration." +
+          Log4Error.invalidOperationError(false,
+            "A master URL must be set in your configuration." +
             " Or if you want to run BigDL in a local JVM environment, you should set Java " +
             "property bigdl.localMode=true")
         }
-        throw s
+        Log4Error.unKnowExceptionError(false, s.getMessage, cause = s)
+        null
     }
   }
 
@@ -525,7 +536,9 @@ object Engine {
       master match {
         case patternLocalN(n) => Some(1, n.toInt)
         case patternLocalStar(_*) => Some(1, getNumMachineCores)
-        case _ => throw new IllegalArgumentException(s"Can't parser master $master")
+        case _ =>
+          Log4Error.invalidOperationError(false, s"Can't parser master $master")
+          Some(1, 0)
       }
     } else if (master.toLowerCase.startsWith("spark")) {
       // Spark standalone mode
@@ -608,7 +621,9 @@ object Engine {
       }
       Some(nodeNum, core)
     } else {
-      throw new IllegalArgumentException(s"Engine.init: Unsupported master format $master")
+      Log4Error.invalidOperationError(false,
+        s"Engine.init: Unsupported master format $master")
+      Some(1, 0)
     }
   }
 

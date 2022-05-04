@@ -1170,7 +1170,8 @@ class PythonZooKeras[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonZ
       case m: Container[Activity, Activity, T] =>
         m.modules.asJava
       case _ =>
-        throw new IllegalArgumentException(s"module $module does not have submodules")
+        Log4Error.unKnowExceptionError(false, s"module $module does not have submodules")
+        null
     }
   }
 

@@ -21,7 +21,7 @@ import com.intel.analytics.bigdl.dllib.feature.transform.vision.image.ImageFeatu
 import com.intel.analytics.bigdl.dllib.utils.RandomGenerator._
 import com.intel.analytics.bigdl.dllib.feature.common._
 import com.intel.analytics.bigdl.dllib.feature.image._
-import com.intel.analytics.bigdl.dllib.utils.TestUtils
+import com.intel.analytics.bigdl.dllib.utils.{Log4Error, TestUtils}
 import org.apache.spark.sql.Row
 import org.apache.spark.sql.types._
 import org.scalatest.{FlatSpec, Matchers}
@@ -120,7 +120,7 @@ class TransformerSpec extends FlatSpec with Matchers{
       val cvType = imf.getChannel()
       (cvType, bytesData)
     } else {
-      throw new IllegalArgumentException(s"ImageFeature should have imageTensor or bytes.")
+      Log4Error.invalidOperationError(false, s"ImageFeature should have imageTensor or bytes.")
     }
 
     Row(

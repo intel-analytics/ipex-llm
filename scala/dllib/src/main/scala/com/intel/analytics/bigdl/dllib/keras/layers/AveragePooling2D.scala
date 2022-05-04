@@ -21,7 +21,7 @@ import com.intel.analytics.bigdl.dllib.nn.abstractnn.{AbstractModule, Activity, 
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.nn.internal.{KerasLayer, Pooling2D}
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.dllib.utils.Shape
+import com.intel.analytics.bigdl.dllib.utils.{Log4Error, Shape}
 import com.intel.analytics.bigdl.dllib.keras.Net
 import com.intel.analytics.bigdl.dllib.keras.layers.utils.KerasUtils
 
@@ -79,8 +79,10 @@ object AveragePooling2D {
     pads: Array[Int] = null,
     countIncludePad: Boolean = false)(implicit ev: TensorNumeric[T]): AveragePooling2D[T] = {
     val poolSizeArray = poolSize match {
-      case null => throw new IllegalArgumentException("For AveragePooling2D, " +
-        "poolSize can not be null, please input int tuple of length 2")
+      case null =>
+        Log4Error.invalidInputError(false, "For AveragePooling2D, " +
+          "poolSize can not be null, please input int tuple of length 2")
+        null
       case _ => Array(poolSize._1, poolSize._2)
     }
     val strideArray = strides match {

@@ -18,6 +18,8 @@ package com.intel.analytics.bigdl.dllib.utils.tf
 import java.io.{BufferedInputStream, File, FileInputStream, InputStream}
 import java.nio.{ByteBuffer, ByteOrder}
 
+import com.intel.analytics.bigdl.dllib.utils.Log4Error
+
 /**
  * Internal use only.
  *
@@ -66,7 +68,8 @@ class TFRecordIterator(inputStream: InputStream) extends Iterator[Array[Byte]] {
       this.dataBuffer = null
       data
     } else {
-      throw new NoSuchElementException("next on empty iterator")
+      Log4Error.unKnowExceptionError(false, "next on empty iterator")
+      null
     }
   }
 }

@@ -17,6 +17,7 @@ package com.intel.analytics.bigdl.dllib.feature.common
 
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.dllib.utils.Log4Error
 
 import scala.reflect.ClassTag
 
@@ -32,7 +33,9 @@ class ArrayToTensor[T: ClassTag](size: Array[Int])(implicit ev: TensorNumeric[T]
       val feature = f.head match {
         case dd: Double => f.asInstanceOf[Seq[Double]].map(ev.fromType(_))
         case ff: Float => f.asInstanceOf[Seq[Float]].map(ev.fromType(_))
-        case _ => throw new IllegalArgumentException("SeqToTensor only supports Float and Double")
+        case _ =>
+          Log4Error.invalidInputError(false, "SeqToTensor only supports Float and Double")
+          null
       }
       Tensor(feature.toArray, size)
     }

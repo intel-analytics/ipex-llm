@@ -18,9 +18,8 @@ package com.intel.analytics.bigdl.dllib.nn
 import com.intel.analytics.bigdl.dllib.nn.abstractnn.{IdentityOutputShape, TensorModule}
 import com.intel.analytics.bigdl.dllib.tensor.{Storage, Tensor}
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.dllib.utils.Engine
+import com.intel.analytics.bigdl.dllib.utils.{Engine, Log4Error, Shape}
 import com.intel.analytics.bigdl.dllib.utils.RandomGenerator._
-import com.intel.analytics.bigdl.dllib.utils.Shape
 
 import scala.collection.mutable.ArrayBuffer
 import scala.concurrent.Future
@@ -182,7 +181,7 @@ class Dropout[T: ClassTag](
         this.gradInput.cmul(noise)
       }
     } else {
-      throw new IllegalArgumentException("backprop only defined while training")
+      Log4Error.invalidOperationError(false, "Dropout: backprop only defined while training")
     }
 
     this.gradInput

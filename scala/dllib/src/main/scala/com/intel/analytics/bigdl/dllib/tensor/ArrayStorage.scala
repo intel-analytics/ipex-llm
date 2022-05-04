@@ -47,7 +47,9 @@ private[tensor] class ArrayStorage[@specialized(Double, Float) T: ClassTag](
         Log4Error.unKnowExceptionError(sourceOffset == 0, "dnn storage offset should be 0")
         Memory.CopyPtr2Array(s.ptr.address, 0, values.asInstanceOf[Array[Float]], offset, length,
           DnnStorage.FLOAT_BYTES)
-      case _ => throw new UnsupportedOperationException("Only support dnn or array storage")
+      case _ =>
+        Log4Error.invalidInputError(false, s"${source} is not supported",
+          "Only support dnn or array storage")
     }
     this
   }
@@ -70,7 +72,9 @@ private[tensor] class ArrayStorage[@specialized(Double, Float) T: ClassTag](
         offset - 1, offset - 1 + length, v)
       case v: Short => util.Arrays.fill(values.asInstanceOf[Array[Short]],
         offset - 1, offset - 1 + length, v)
-      case _ => throw new IllegalArgumentException
+      case _ =>
+        Log4Error.invalidInputError(false, s"${value} is not supported",
+          "Only support Double, Float, Int, Long, Short")
     }
 
     this

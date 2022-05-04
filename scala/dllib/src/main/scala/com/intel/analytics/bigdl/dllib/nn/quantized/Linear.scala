@@ -92,14 +92,18 @@ private[bigdl] class Linear[T: ClassTag](
           batchSize, outputSize, 1, 1,
           QuantParams.FAULT_TOLERANCE)
 
-      case _ => throw new UnsupportedOperationException(s"Only support Float for quantized model")
+      case _ =>
+        Log4Error.invalidInputError(false, s"${ev.getType()} is not supported",
+          "only support Float for quantized model")
     }
 
     output
   }
 
   override def updateGradInput(input: Tensor[T], gradOutput: Tensor[T]): Tensor[T] = {
-    throw new UnsupportedOperationException(s"Doesn't updateGradInput for quantized model")
+    Log4Error.invalidOperationError(false,
+      s"Doesn't support updateGradInput for quantized model")
+    input
   }
 
   override def parameters(): (Array[Tensor[T]], Array[Tensor[T]]) = {

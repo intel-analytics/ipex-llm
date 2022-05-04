@@ -19,7 +19,7 @@ import com.google.protobuf.ByteString
 import com.intel.analytics.bigdl.dllib.nn.abstractnn.Activity
 import com.intel.analytics.bigdl.dllib.tensor._
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.dllib.utils.Table
+import com.intel.analytics.bigdl.dllib.utils.{Log4Error, Table}
 
 import scala.reflect.ClassTag
 
@@ -87,7 +87,9 @@ abstract class Compare[T: ClassTag]()
           input[Tensor[ByteString]](1),
           input[Tensor[ByteString]](2),
           (a, b) => compareByteString(a, b))
-      case _ => throw new RuntimeException("Unsupported tensor type")
+      case _ =>
+        Log4Error.invalidInputError(false,
+          s"${input[Tensor[_]](1).getType()} is not supported")
     }
 
     output

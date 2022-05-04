@@ -268,7 +268,7 @@ object SGD {
                 optimMethod.learningRates = config.get[Tensor[T]](keys(i)).get
               case "weightDecays" =>
                 optimMethod.weightDecays = config.get[Tensor[T]](keys(i)).get
-              case _ => throw new IllegalArgumentException(
+              case _ => Log4Error.invalidOperationError(false,
                 s"EpochSchedule: ${keys(i)} is not a member of SGD")
             }
             i += 1

@@ -20,6 +20,7 @@ import java.nio.ByteOrder
 import com.intel.analytics.bigdl.Module
 import com.intel.analytics.bigdl.dllib.nn.ops.{RandomUniform => RandomUniformOps}
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.dllib.utils.Log4Error
 import com.intel.analytics.bigdl.dllib.utils.tf.Context
 import org.tensorflow.framework.{DataType, NodeDef}
 
@@ -44,7 +45,8 @@ class RandomUniform extends TensorflowOpsLoader {
         val max = 1
         RandomUniformOps[T, Double](min, max, seed)
       case _ =>
-        throw new IllegalArgumentException("Not support data type")
+        Log4Error.invalidOperationError(false, "Not support data type")
+        null
     }
   }
 }

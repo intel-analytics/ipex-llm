@@ -35,8 +35,10 @@ trait VectorCompatibility {
     } else if (colType == new org.apache.spark.mllib.linalg.VectorUDT) {
       row.getAs[org.apache.spark.mllib.linalg.Vector](index).toArray.toSeq
     } else {
+      //     scalastyle:off
       throw new IllegalArgumentException(
         s"$colType is not a supported vector type.")
+      //     scalastyle:on
     }
   }
 }

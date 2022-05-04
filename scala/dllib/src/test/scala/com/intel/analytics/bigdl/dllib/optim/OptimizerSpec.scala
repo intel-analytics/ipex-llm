@@ -338,7 +338,7 @@ class OptimizerSpec extends FlatSpec with Matchers with BeforeAndAfter {
     val rdd = sc.parallelize(1 to (256 * nodeNumber), nodeNumber)
       .map(_ => Sample[Float](Tensor[Float](2, 3).fill(1.0f)))
 
-    intercept[UnsupportedOperationException] {
+    intercept[com.intel.analytics.bigdl.dllib.utils.InvalidOperationException] {
       opt.setTrainData(rdd, 16)
     }
 

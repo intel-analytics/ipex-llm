@@ -265,7 +265,7 @@ class CaffeLoaderSpec extends FlatSpec with Matchers {
   }
   "Customized converter with existing type" should " throw exception " in {
     convertMap("INNERPRODUCT") = new LoadDummy[Double]
-    intercept[IllegalArgumentException] {
+    intercept[com.intel.analytics.bigdl.dllib.utils.UnKnownException] {
       val (dynamicLoadedModule, dynamicLoadedCriterion) = CaffeLoader.loadCaffe(prototxt, modelPath,
         customizedConverters = convertMap)
     }

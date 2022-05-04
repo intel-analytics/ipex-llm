@@ -101,7 +101,8 @@ class MapTable[T: ClassTag](
   }
 
   override def getEndNodes(startNodes: Array[ModuleNode[T]]): Array[ModuleNode[T]] = {
-    throw new IllegalArgumentException("Can not transform Container MapTable to graph")
+    Log4Error.unKnowExceptionError(false, "Can not transform Container MapTable to graph")
+    null
   }
 
   override def toString(): String = {

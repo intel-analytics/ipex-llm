@@ -268,7 +268,7 @@ class TableSpec extends FlatSpec with Matchers {
       output.toTensor[Float]
       fail()
     } catch {
-      case ex: IllegalArgumentException =>
+      case ex: com.intel.analytics.bigdl.dllib.utils.InvalidOperationException =>
     }
   }
 

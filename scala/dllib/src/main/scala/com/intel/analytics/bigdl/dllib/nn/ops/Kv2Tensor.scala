@@ -18,7 +18,7 @@ package com.intel.analytics.bigdl.dllib.nn.ops
 import com.intel.analytics.bigdl.dllib.nn.abstractnn.Activity
 import com.intel.analytics.bigdl.dllib.tensor._
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.dllib.utils.Table
+import com.intel.analytics.bigdl.dllib.utils.{Log4Error, Table}
 
 import scala.collection.mutable.ArrayBuffer
 import scala.reflect.ClassTag
@@ -72,7 +72,9 @@ class Kv2Tensor[T: ClassTag, D: ClassTag](
             values += kv.split(itemDelimiter)(1).toDouble.asInstanceOf[D]
           case FloatType =>
             values += kv.split(itemDelimiter)(1).toFloat.asInstanceOf[D]
-          case t => throw new NotImplementedError(s"$t is not supported")
+          case t =>
+            Log4Error.invalidInputError(false, s"${ev.getType()} is not supported",
+              "only support FloatType and DoubleType")
         }
       }
       i += 1

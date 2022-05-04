@@ -17,6 +17,8 @@
 // package com.intel.analytics.bigdl.dllib.feature.pmem
 package com.intel.analytics.bigdl.dllib.feature
 
+ import com.intel.analytics.bigdl.dllib.utils.Log4Error
+
  import scala.collection.mutable.ArrayBuffer
 
  sealed trait MemoryType extends Serializable
@@ -44,8 +46,9 @@ package com.intel.analytics.bigdl.dllib.feature
 //      case "DIRECT" => DIRECT
       case diskPattern(num) => DISK_AND_DRAM(num.toInt)
       case default =>
-        throw new IllegalArgumentException(s"Unknown memory type $default," +
-              s"excepted DRAM or DISK_n.")
+        Log4Error.invalidInputError(false, s"Unknown memory type $default",
+          s"excepted DRAM or DISK_n.")
+        null
     }
   }
  }

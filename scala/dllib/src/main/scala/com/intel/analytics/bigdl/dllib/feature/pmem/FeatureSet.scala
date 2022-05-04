@@ -218,7 +218,7 @@
 //          new ImageFeatureConverter(memoryType),
 //          sequentialOrder, shuffle).asInstanceOf[DistributedFeatureSet[T]]
 //      case _ =>
-//        throw new IllegalArgumentException(
+//        Log4Error.invalidOperationError(false,
 //          s"${implicitly[ClassTag[T]].runtimeClass} is not supported for now")
 //    }
 //  }

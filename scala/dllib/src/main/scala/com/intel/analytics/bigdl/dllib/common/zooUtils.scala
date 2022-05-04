@@ -22,6 +22,7 @@ import java.nio.file.{Path => JPath}
 
 import com.intel.analytics.bigdl.dllib.nn.abstractnn.Activity
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
+import com.intel.analytics.bigdl.dllib.utils.Log4Error
 import org.apache.commons.io.filefilter.WildcardFileFilter
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.{FSDataInputStream, FSDataOutputStream, FileSystem, Path}
@@ -217,7 +218,8 @@ private[bigdl] object zooUtils {
   def appendPrefix(localPath: String): String = {
     if (!localPath.startsWith("file://")) {
       if (!localPath.startsWith("/")) {
-        throw new Exception("local path must be a absolute path")
+        Log4Error.invalidInputError(false, s"local path must be a absolute path")
+        null
       } else {
         "file://" + localPath
       }
@@ -301,12 +303,6 @@ private[bigdl] object zooUtils {
       if (null != out) out.close()
       if (null != fs) fs.close()
     }
-  }
-
-  def logUsageErrorAndThrowException(errMessage: String, cause: Throwable = null): Unit = {
-    logger.error(s"********************************Usage Error****************************\n"
-      + errMessage)
-    throw new AnalyticsZooException(errMessage, cause)
   }
 
   def createTmpDir(prefix: String = "Zoo", permissions: String = "rwx------"): JPath = {

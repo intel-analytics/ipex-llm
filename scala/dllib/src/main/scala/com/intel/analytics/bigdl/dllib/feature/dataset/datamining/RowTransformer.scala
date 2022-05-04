@@ -238,7 +238,10 @@ class ColsToNumeric[@specialized T: ClassTag](
         case _: ShortType => ev.fromType(input(i).asInstanceOf[Short])
         case _: IntegerType => ev.fromType(input(i).asInstanceOf[Int])
         case _: LongType => ev.fromType(input(i).asInstanceOf[Long])
-        case tpe => throw new IllegalArgumentException(s"Found unSupported DataType($tpe)!")
+        case tpe =>
+          Log4Error.invalidInputError(false, s"Found unSupported DataType($tpe)!",
+          "only support DoubleType, FloatType, ShortType, IntegerType, LongType")
+          ev.fromType(0)
       }
       tensor.setValue(i + 1, value)
       i += 1
@@ -307,7 +310,11 @@ class ColToTensor(
       case _: ShortType => Tensor[Short](1).setValue(1, value.asInstanceOf[Short])
       case _: IntegerType => Tensor[Int](1).setValue(1, value.asInstanceOf[Int])
       case _: LongType => Tensor[Long](1).setValue(1, value.asInstanceOf[Long])
-      case t => throw new IllegalArgumentException(s"Found unSupported DataType($t)!")
+      case t =>
+        Log4Error.invalidInputError(false, s"Found unSupported DataType($tpe)!",
+          "only support BooleanType, DoubleType, FloatType, StringType, ShortType," +
+            " IntegerType, LongType")
+        null
     }
     tensor.asInstanceOf[Tensor[NumericWildcard]]
   }

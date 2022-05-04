@@ -302,7 +302,10 @@ object NNClassifierModel extends MLReadable[NNClassifierModel[_]] {
           new NNClassifierModel[Float](model.asInstanceOf[Module[Float]], meta.uid)
             .setSamplePreprocessing(feaTran.asInstanceOf[Preprocessing[Any, Sample[Float]]])
         case _ =>
-          throw new Exception("Only support float and double for now")
+          Log4Error.invalidInputError(false,
+            s"NNClassifierModelReader.load: ${typeTag} is not supported",
+            "only support TensorDouble, TensorFloat")
+          null
       }
 
       DefaultParamsWriterWrapper.getAndSetParams(nnModel, meta)

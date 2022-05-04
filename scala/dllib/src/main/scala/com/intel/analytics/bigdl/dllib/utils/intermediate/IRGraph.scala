@@ -63,7 +63,8 @@ private[bigdl] class IRGraph[T: ClassTag](
 
   override def updateOutput(input: Activity): Activity = {
     if (graph == null) {
-      throw new UnsupportedOperationException("forward not supported, Please build graph first")
+      Log4Error.invalidOperationError(false,
+        "forward not supported, Please build graph first")
     }
     if (graph.isInstanceOf[DnnGraph]) {
       // if using multi MKL-DNN model, we just use current thread directly
@@ -84,7 +85,8 @@ private[bigdl] class IRGraph[T: ClassTag](
 
   override def updateGradInput(input: Activity, gradOutput: Activity): Activity = {
     if (graph == null) {
-      throw new UnsupportedOperationException("backward not supported, Please build graph first")
+      Log4Error.invalidOperationError(false,
+        "backward not supported, Please build graph first")
     }
     if (graph.isInstanceOf[DnnGraph]) {
       Engine.dnnComputing.invokeAndWait2(Array(0).map(_ => () => {
@@ -97,7 +99,8 @@ private[bigdl] class IRGraph[T: ClassTag](
 
   override def accGradParameters(input: Activity, gradOutput: Activity): Unit = {
     if (graph == null) {
-      throw new UnsupportedOperationException("backward not supported, Please build graph first")
+      Log4Error.invalidOperationError(false,
+        "backward not supported, Please build graph first")
     }
     if (graph.isInstanceOf[DnnGraph]) {
       Engine.dnnComputing.invokeAndWait2(Array(0).map(_ => () => {

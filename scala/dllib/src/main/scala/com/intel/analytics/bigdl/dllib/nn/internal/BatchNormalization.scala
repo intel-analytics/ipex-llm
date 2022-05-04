@@ -66,8 +66,10 @@ class BatchNormalization[T: ClassTag](
         weights
       case "normal" => RandomNormal(0.0, 0.05).init(weights)
         weights
-      case _ => throw new IllegalArgumentException(s"Unsupported initialization method: " +
+      case _ =>
+        Log4Error.invalidOperationError(false, s"Unsupported initialization method: " +
         s"${init.toLowerCase()}")
+        weights
     }
   }
 

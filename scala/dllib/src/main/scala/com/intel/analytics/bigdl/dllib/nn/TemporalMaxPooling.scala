@@ -141,8 +141,9 @@ class TemporalMaxPooling[T: ClassTag](
           indices.asInstanceOf[Tensor[Float]].storage().array(), indices.storageOffset() - 1,
           nOFrame, frameSize, kW, dW
         )
-        case _ => throw new UnsupportedOperationException(
-          "TemporalMaxPooling: only Float/Double type supported")
+        case _ =>
+          Log4Error.invalidInputError(false,
+            "TemporalMaxPooling: only Float/Double type supported")
       }
     } else {
       val nbFrame = input.size(1)
@@ -174,8 +175,9 @@ class TemporalMaxPooling[T: ClassTag](
             curIndices.storageOffset() - 1,
             nOFrame, frameSize, kW, dW
           )
-          case _ => throw new UnsupportedOperationException(
-            "TemporalMaxPooling: only Float/Double type supported")
+          case _ =>
+            Log4Error.invalidInputError(false,
+              "TemporalMaxPooling: only Float/Double type supported")
         }
         i += 1
       }
@@ -223,8 +225,9 @@ class TemporalMaxPooling[T: ClassTag](
           indices.storageOffset() - 1,
           nOFrame, frameSize, kW, dW
         )
-        case _ => throw new UnsupportedOperationException(
-          "TemporalMaxPooling: only Float/Double type supported")
+        case _ =>
+          Log4Error.invalidInputError(false,
+            "TemporalMaxPooling: only Float/Double type supported")
       }
     } else {
       val nBFrame = input.size(1)
@@ -253,8 +256,9 @@ class TemporalMaxPooling[T: ClassTag](
             curIndices.storageOffset() - 1,
             nOFrame, frameSize, kW, dW
           )
-          case _ => throw new UnsupportedOperationException(
-            "TemporalMaxPooling: only Float/Double type supported")
+          case _ =>
+            Log4Error.invalidInputError(false,
+              "TemporalMaxPooling: only Float/Double type supported")
         }
         i += 1
       }

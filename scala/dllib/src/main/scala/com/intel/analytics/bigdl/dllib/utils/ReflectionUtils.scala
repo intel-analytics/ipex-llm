@@ -156,7 +156,9 @@ private[bigdl] object ReflectionUtils {
       Class.forName(name)
     } catch {
       case ex: ClassNotFoundException => null
-      case e: Throwable => throw e
+      case e: Throwable =>
+        Log4Error.unKnowExceptionError(false, e.getMessage, cause = e)
+        null
     }
   }
 

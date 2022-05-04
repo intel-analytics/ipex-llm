@@ -18,6 +18,7 @@ package com.intel.analytics.bigdl.dllib.nn
 import com.intel.analytics.bigdl.dllib.nn.abstractnn.{DataFormat, IdentityOutputShape, TensorModule}
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.dllib.utils.Log4Error
 
 import scala.reflect.ClassTag
 
@@ -56,8 +57,8 @@ class SpatialDropout3D[T: ClassTag](
         } else if (format == DataFormat.NHWC) {
           noise.resize(Array(1, 1, 1, inputSize(3)))
         } else {
-          throw new RuntimeException("SpatialDropout3D: " +
-            "DataFormat: " + format + " is not supported")
+          Log4Error.invalidInputError(false, s"SpatialDropout3D:" +
+            " DataFormat: " + format + " is not supported", "only support NHWC and NCHW")
         }
       } else if (input.dim() == 5) {
         if (format == DataFormat.NCHW) {
@@ -65,12 +66,12 @@ class SpatialDropout3D[T: ClassTag](
         } else if (format == DataFormat.NHWC)  {
           noise.resize(Array(inputSize(0), 1, 1, 1, inputSize(4)))
         } else {
-          throw new RuntimeException("SpatialDropout3D: " +
-            "DataFormat: " + format + " is not supported")
+          Log4Error.invalidInputError(false, s"SpatialDropout3D:" +
+            " DataFormat: " + format + " is not supported", "only support NHWC and NCHW")
         }
       } else {
-        throw new RuntimeException("SpatialDropout3D: " +
-          "Input must be 4D or 3D")
+        Log4Error.invalidInputError(false, s"unsupported input dim ${input.dim()}",
+          "SpatialDropout3D: Input must be 4D or 5D")
       }
       noise.bernoulli(1 - p)
       output.cmul(noise.expandAs(input))
@@ -84,8 +85,8 @@ class SpatialDropout3D[T: ClassTag](
       gradInput.resizeAs(gradOutput).copy(gradOutput)
       gradInput.cmul(noise.expandAs(input))
     } else {
-      throw new RuntimeException("SpatialDropout3D: " +
-        "backprop only defined while training")
+      Log4Error.invalidOperationError(false,
+        "SpatialDropout3D: backprop only defined while training")
     }
 
     this.gradInput

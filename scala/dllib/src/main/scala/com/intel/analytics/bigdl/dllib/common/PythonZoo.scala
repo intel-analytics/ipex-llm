@@ -84,7 +84,8 @@ class PythonZoo[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonBigDLK
             .asInstanceOf[Tensor[T]]
         }
       case t: String =>
-        throw new IllegalArgumentException(s"Not supported type: ${t}")
+        Log4Error.invalidInputError(false, s"only support Double/Float. Not supported type: ${t}")
+        null
     }
   }
 
@@ -117,8 +118,9 @@ class PythonZoo[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonBigDLK
           result
         }
       case _ =>
-        throw new IllegalArgumentException(s"toJTensor: Unsupported tensor type" +
+        Log4Error.invalidInputError(false, s"toJTensor: Unsupported tensor type" +
           s" ${tensor.getTensorType}")
+        null
     }
   }
 
@@ -142,7 +144,7 @@ class PythonZoo[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonBigDLK
       } else if (item.isInstanceOf[Table]) {
         list.add(table2JList(item.asInstanceOf[Table]))
       } else {
-        throw new IllegalArgumentException(s"Table contains unrecognizable objects $item")
+        Log4Error.invalidInputError(false, s"Table contains unrecognizable objects $item")
       }
       i += 1
     }

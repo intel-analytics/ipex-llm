@@ -161,9 +161,10 @@ class ArrayBufferAccumulator extends AccumulatorV2[ArrayBuffer[Double], ArrayBuf
 
   def merge(other: AccumulatorV2[ArrayBuffer[Double], ArrayBuffer[Double]]): Unit = other match {
     case o: ArrayBufferAccumulator => values ++= o.values
-    case _ => throw new UnsupportedOperationException(
-      s"Cannot merge ${this.getClass.getName} with ${other.getClass.getName}"
-    )
+    case _ =>
+      Log4Error.invalidOperationError(false,
+        s"Cannot merge ${this.getClass.getName} with ${other.getClass.getName}",
+      "expect with same type")
   }
 
 }

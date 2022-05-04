@@ -178,17 +178,17 @@ object NetUtils {
   private[bigdl] def processTFFolder(folder: String): (String, Meta) = {
     val folderPath = Path(folder)
     if (!folderPath.exists) {
-      throw new IllegalArgumentException(s"$folder does not exist")
+      Log4Error.invalidInputError(false, s"$folder does not exist")
     }
 
     val modelPath = folderPath / Path("frozen_inference_graph.pb")
     if (!modelPath.exists) {
-      throw new IllegalArgumentException(
+      Log4Error.invalidOperationError(false,
         s"${modelPath.path} does not exist")
     }
     val metaPath = folderPath / Path("graph_meta.json")
     if (!metaPath.exists) {
-      throw new IllegalArgumentException(
+      Log4Error.invalidOperationError(false,
         s"${metaPath.path} does not exist")
     }
 

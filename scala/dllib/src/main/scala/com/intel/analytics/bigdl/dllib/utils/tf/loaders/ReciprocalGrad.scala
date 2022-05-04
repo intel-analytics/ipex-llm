@@ -20,6 +20,7 @@ import java.nio.ByteOrder
 import com.intel.analytics.bigdl.Module
 import com.intel.analytics.bigdl.dllib.nn.ops.{InvGrad => InvGradOps}
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.dllib.utils.Log4Error
 import com.intel.analytics.bigdl.dllib.utils.tf.Context
 import org.tensorflow.framework.{DataType, NodeDef}
 
@@ -38,7 +39,8 @@ class ReciprocalGrad extends TensorflowOpsLoader {
     } else if (t == DataType.DT_DOUBLE) {
       InvGradOps[T, Double]()
     } else {
-      throw new UnsupportedOperationException(s"Not support load Inv when type is ${t}")
+      Log4Error.invalidOperationError(false, s"Not support load Inv when type is ${t}")
+      null
     }
   }
 }

@@ -191,11 +191,14 @@ class RegionProposal(
   }
 
   override def updateGradInput(input: Table, gradOutput: Table): Table = {
-    throw new UnsupportedOperationException("RegionProposal only support inference")
+    Log4Error.invalidOperationError(false,
+      "RegionProposal only support inference")
+    null
   }
 
   override def accGradParameters(input: Table, gradOutput: Table): Unit = {
-    throw new UnsupportedOperationException("RegionProposal only support inference")
+    Log4Error.invalidOperationError(false,
+      "RegionProposal only support inference")
   }
 
   override def parameters(): (Array[Tensor[Float]], Array[Tensor[Float]]) = {
@@ -357,7 +360,9 @@ private[nn] class ProposalPostProcessor(
   }
 
   override def updateGradInput(input: Table, gradOutput: Table): Table = {
-    throw new UnsupportedOperationException("ProposalPostProcessor only support inference")
+    Log4Error.invalidOperationError(false,
+      "ProposalPostProcessor only support inference")
+    null
   }
 }
 

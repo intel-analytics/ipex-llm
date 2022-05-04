@@ -61,7 +61,7 @@ class BCECriterion[@specialized(Float, Double) T: ClassTag]
           s"weights size should be equal to input size or input size's tail, but got" +
             s" input size: ${input.size().toList}, weights size: ${weights.size().toList}")
       } else {
-        throw new IllegalArgumentException(
+        Log4Error.invalidInputError(false,
           s"weights size should be equal to input size or input size's tail, but got" +
           s" input size: ${input.size().toList}, weights size: ${weights.size().toList}")
       }

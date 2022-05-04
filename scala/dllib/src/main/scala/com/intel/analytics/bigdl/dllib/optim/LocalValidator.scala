@@ -19,7 +19,7 @@ package com.intel.analytics.bigdl.dllib.optim
 import com.intel.analytics.bigdl.dllib.feature.dataset.{LocalDataSet, MiniBatch}
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
-import com.intel.analytics.bigdl.dllib.utils.{Engine, MklBlas}
+import com.intel.analytics.bigdl.dllib.utils.{Engine, Log4Error, MklBlas}
 import org.apache.logging.log4j.LogManager
 
 object LocalValidator {
@@ -42,7 +42,10 @@ class LocalValidator[T] private[optim](model: Module[T], dataSet: LocalDataSet[M
 
   private val subModelNumber = Engine.getEngineType match {
     case MklBlas => coreNumber
-    case _ => throw new IllegalArgumentException
+    case _ =>
+      Log4Error.invalidInputError(false, s"unexpected engine type ${Engine.getEngineType}",
+        "only support MklBlas")
+      0
   }
 
   private val workingModels = (1 to subModelNumber).map(_ => model.cloneModule().evaluate()).toArray
