@@ -18,7 +18,7 @@ sudo docker run -it \
     -v /var/run/aesmd/aesm.socket:/var/run/aesmd/aesm.socket \
     -v $DATA_PATH:/ppml/trusted-big-data-ml/work/data \
     -v $KEYS_PATH:/ppml/trusted-big-data-ml/work/keys \
-    --name=flDemo \
+    --name=fl-server \
     -e LOCAL_IP=$LOCAL_IP \
     -e SGX_MEM_SIZE=32G \
     -e SGX_LOG_LEVEL=error \
