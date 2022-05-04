@@ -1,4 +1,4 @@
-In this tutorial, you will learn how to build, submit and execute a BigDL PyTorch example with `spark-submit`. 
+In this tutorial, you will learn how to build, submit and execute a PyTorch example with BigDL Orca PySpark Estimator on Yarn with `spark-submit` script. 
 
 In particular, we will show you:
 1. How to prepare for the environment;
@@ -38,7 +38,7 @@ In this part, you will learn how to complete a BigDL PyTorch program with the fo
 
 ## 1. Prepare the Fashion-MNIST Dataset
 
-For this tutorial, we will use the Fasion-MNIST dataset, it's easy to download and prepare using `torchvision`. The difference between PyTorch and BigDL is that the PyTorch estimator in BigDL needs us to define a `data_creator` function that returns a PyTorch Dataloader instead.
+For this tutorial, we will use the Fasion-MNIST dataset, it's easy to download and prepare using `torchvision`. The difference between PyTorch and BigDL is that the PyTorch Estimator on PySpark backend needs us to define a `data_creator` function that returns a PyTorch Dataloader instead.
 
 ```python
 import torch
@@ -97,7 +97,7 @@ class Net(nn.Module):
         return x
 ```
 
-It's also necessary for us to define a `model_creator` function which returns the network for creating an estimator for PyTorch.
+It's also necessary for us to define a `model_creator` function which returns the network for creating a PySpark Estimator for PyTorch.
 
 ```python
 def model_creator(config):
@@ -123,9 +123,9 @@ def optimizer_creator(model, config):
 
 The exciting things start from now, we will see the magic power of BigDL.
 
-An Orca program usually starts with the initialization of OrcaContext. We can easily specify the `runtime`(default is `spark`) and `cluster_mode` to create or get a SparkContext or RayContext with optimized configurations for BigDL performance.
+An Orca program usually starts with the initialization of OrcaContext. We can easily specify the `runtime` (default is spark, ray is also a first-class backend) and `cluster_mode` arguments to create or get a SparkContext or RayContext with optimized configurations for BigDL performance.
 
-To submit the BigDL program to Yarn with `spark_submit`, we just need to specify the `cluster_mode` to `spark-submit`. In this case, we should set the Spark configurations through command-line options or the properties file.
+To submit the BigDL program to Yarn with `spark_submit`, we need to specify the `cluster_mode` to `spark-submit`. In this case, we should set the Spark configurations through command-line options or the properties file.
 
 ```python
 from bigdl.orca import init_orca_context, stop_orca_context
@@ -135,7 +135,7 @@ init_orca_context(cluster_mode="spark-submit")
 
 ## 5. Create the PyTorch Estimator
 
-We could simply create a PyTorch estimator, and the Orca Estimator will replicate the model on each node in the cluster, feed the data partition on each node to the local model replica, and synchronize model parameters using various backend technologies.
+After initializing an OrcaContext, we could simply create a PyTorch estimator, and the Orca Estimator will replicate the model on each node in the cluster, feed the data partition on each node to the local model replica, and synchronize model parameters using various backend technologies.
 
 ```python
 from bigdl.orca.learn.pytorch import Estimator
@@ -149,9 +149,9 @@ orca_estimator = Estimator.from_torch(model=model_creator,
                                       backend="spark")
 ```
 
-The PyTorch Estimator supports backends including `spark`, `ray`, `bigdl` ,and `Horovod`, we could specify for `backend` argument as we need.
+The PyTorch Estimator supports backends including spark, ray, bigdl ,and horovod.
 
-Note: The backend of Estimator must not be `bigdl` when we are running with `spark-submit`. It's better to use the `bigdl` backend when we initialize  OrcaContext with `yarn-client` mode and run the program with the built-in function.
+`Note`: The backend of Estimator must not be `bigdl` when we are running with `spark-submit`. It's better to use the `bigdl` backend when we initialize  OrcaContext with `yarn-client` mode and run the program with the built-in function.
 
 ## 6. Training and Testing the Model
 
@@ -172,7 +172,7 @@ print("Validation stats: {}".format(val_stats))
 
 The BigDL supports submitting an application to the Yarn cluster, we could refer to the following steps in order:
 
-1. Pack the conda environment to an archive.
+1. Pack the Conda environment to an archive.
 
 ```bash
 conda pack -f -o environment.tar.gz
@@ -182,16 +182,20 @@ This archive file captures the Conda environment for Python and stores both Pyth
 
 2. Submit with `spark-sumit-with-bigdl` script.
 
-Now, let's submit our BigDL program to Yarn with `spark-sumit-with-bigdl` script. 
+Now, let's submit our BigDL program to Yarn with `spark-sumit-with-bigdl` script, which is basiclly a `spark-submit` script. 
 
-To load BigDL jars to Yarn Cluser, the script sets `spark.driver.extraClassPath` and `spark.executor.extraClassPath` to the location of jars files in BigDL package.
+In the `spark-sumit-with-bigdl` script:
+1. The script will automatically detect and setup the environment configuration file and jars files as `${BIGDL_CONF}` and `${BIGDL_JARS}` from the corrent environment seperately. 
+2. The script specifies the `--properties-file` argument to set the spark configuration by `${BIGDL_CONF}`.
+3. To load BigDL jars files to prepend to the classpath of the driver and executors on Yarn Cluser, the script has set the `spark.driver.extraClassPath` and `spark.executor.extraClassPath` arguments to the location of jars files in BigDL package.
 
 ## Run BigDL on Yarn-Client Mode
 
-For `yarn-client`, the Spark driver is running on local, and it will use the Python interpreter in the current active conda environment while the executors will use the Python interpreter in `environment.tar.gz`.
+For `yarn-client`, the Spark driver is running on local, and it will use the Python interpreter in the current active conda environment through `${PYSPARK_DRIVER_PYTHON}` while the executors will use the Python interpreter in `environment.tar.gz`.
 
 ```bash
 export PYSPARK_DRIVER_PYTHON='which python' # python location on driver
+
 PYSPARK_PYTHON=environment/bin/python spark-submit-with-bigdl \
     --master yarn \
     --deploy-mode client \
@@ -205,7 +209,7 @@ PYSPARK_PYTHON=environment/bin/python spark-submit-with-bigdl \
 
 ## Run BigDL on Yarn-Cluster Mode
 
-For `yarn-cluster` mode, the `PYSPARK_DRIVER_PYTHON` above should not be set, and the Spark driver is running in a YARN container. Thus both the driver and executors will use the Python interpreter in `environment.tar.gz` while automatically uploading the archive to remote resources like `HDFS`. 
+For `yarn-cluster` mode, the `PYSPARK_DRIVER_PYTHON` above should not be set, and the Spark driver is running in a YARN container. Thus both the driver and executors will use the Python interpreter in `environment.tar.gz` while automatically packaging and distributing the conda archive to the whole cluster.
 
 ```bash
 spark-submit-with-bigdl \
