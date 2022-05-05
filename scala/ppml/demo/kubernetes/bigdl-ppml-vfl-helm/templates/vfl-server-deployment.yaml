@@ -21,7 +21,7 @@ spec:
           imagePullPolicy: IfNotPresent
           command: ["/bin/sh","-c"]
           args: ["
-                sed -i \"s@serverPort: 8980@$VFL_SERVER_PORT@g\" /ppml/trusted-big-data-ml/ppml-conf.yaml;
+                sed -i \"s@serverPort: 8980@serverPort: $VFL_SERVER_PORT@g\" /ppml/trusted-big-data-ml/ppml-conf.yaml;
                 bash /ppml/trusted-big-data-ml/runFlServer.sh;
                 "]
           securityContext:
@@ -34,7 +34,7 @@ spec:
             - name: SGX_MEM_SIZE
               value: {{ .Values.sgxMemSize }}
             - name: VFL_SERVER_PORT
-              value: {{ .Values.serverPort }}
+              value: "8981"
             - name: VFL_SERVER_IP
               valueFrom:
                 configMapKeyRef:

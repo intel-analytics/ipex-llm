@@ -21,7 +21,6 @@ spec:
           imagePullPolicy: IfNotPresent
           command: ["/bin/sh","-c"]
           args: ["
-                sed -i \"s@serverPort: 8980@$HFL_SERVER_PORT@g\" /ppml/trusted-big-data-ml/ppml-conf.yaml;
                 bash /ppml/trusted-big-data-ml/runFlServer.sh;
                 "]
           securityContext:
@@ -33,8 +32,6 @@ spec:
               value: {{ .Values.sgxLog }}
             - name: SGX_MEM_SIZE
               value: {{ .Values.sgxMemSize }}
-            - name: HFL_SERVER_PORT
-              value: {{ .Values.flServerPort }}
             - name: HFL_SERVER_IP
               valueFrom:
                 configMapKeyRef:
