@@ -166,7 +166,7 @@ class TestChronosModelLSTMForecaster(TestCase):
         pred_q = forecaster.predict_with_onnx(test_data[0], quantize=True)
         eval_q = forecaster.evaluate_with_onnx(test_data, quantize=True)
         
-    def test_lstm_forecaster_quantization_onnx(self):
+    def test_lstm_forecaster_quantization_onnx_tuning(self):
         train_data, val_data, test_data = create_data()
         forecaster = LSTMForecaster(past_seq_len=24,
                                     input_feature_num=2,

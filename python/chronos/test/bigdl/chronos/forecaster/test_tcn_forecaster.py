@@ -189,8 +189,8 @@ class TestChronosModelTCNForecaster(TestCase):
         forecaster.quantize(train_data, framework=['onnxrt_qlinearops'])
         pred_q = forecaster.predict_with_onnx(test_data[0], quantize=True)
         eval_q = forecaster.evaluate_with_onnx(test_data, quantize=True)
-        
-    def test_tcn_forecaster_quantization_onnx(self):
+
+    def test_tcn_forecaster_quantization_onnx_tuning(self):
         train_data, val_data, test_data = create_data()
         forecaster = TCNForecaster(past_seq_len=24,
                                    future_seq_len=5,
