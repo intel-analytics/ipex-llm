@@ -265,7 +265,7 @@ class Trainer(pl.Trainer):
                             Combine with timeout field to decide when to exit.
                             "timeout=0, max_trials=1" means it will try quantization only once and
                             return satisfying best model.
-        :return:            A accelerated Pytorch-Lightning Model if quantization is sucessful. 
+        :return:            A accelerated Pytorch-Lightning Model if quantization is sucessful.
         """
         if backend == 'inc':
             # check if dataloader is of legal format
