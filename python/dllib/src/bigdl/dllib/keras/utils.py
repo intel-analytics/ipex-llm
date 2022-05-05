@@ -84,8 +84,9 @@ def to_bigdl_metric(metric, loss):
                 or loss_str == "binarycrossentropy":
             return metrics.BinaryAccuracy()
         else:
-            invalidInputError(False, 
-                "Not supported combination: metric {} and loss {}".format(metric, loss_str))
+            invalidInputError(False,
+                              "Not supported combination: metric {} and"
+                              " loss {}".format(metric, loss_str))
     elif metric == "top5accuracy" or metric == "top5acc":
         return metrics.Top5Accuracy()
     elif metric == "mae":

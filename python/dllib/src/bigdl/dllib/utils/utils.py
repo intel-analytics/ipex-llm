@@ -53,7 +53,7 @@ def get_node_ip():
     import errno
     s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     try:
-        # This command will raise an exception if there is no internet connection.
+        # This command will throw an exception if there is no internet connection.
         s.connect(("8.8.8.8", 80))
         node_ip_address = s.getsockname()[0]
     except OSError as e:
