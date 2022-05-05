@@ -3,4 +3,4 @@ image: intelanalytics/bigdl-ppml-trusted-fl-graphene:2.1.0-SNAPSHOT
 sgx: "true"
 sgxLog: "error"
 sgxMemSize: "32G"
-serverPort: "8981"
+serverPort: "serverPort: 8981"
