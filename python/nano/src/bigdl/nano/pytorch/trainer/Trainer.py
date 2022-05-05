@@ -146,9 +146,8 @@ class Trainer(pl.Trainer):
                 loss: _Loss = None,
                 optimizer: torch.optim.Optimizer = None,
                 scheduler: _LRScheduler = None,
-                metrics: List[Metric] = None,
-                onnx: bool = False,
-                quantize: bool = False):
+                metrics: List[Metric] = None
+                ):
         """
         Construct a pytorch-lightning model.
 
@@ -178,21 +177,6 @@ class Trainer(pl.Trainer):
             pl_model = model
         else:
             pl_model = LightningModuleFromTorch(model, loss, optimizer, scheduler, metrics)
-        if onnx:
-            try:
-                from bigdl.nano.pytorch.runtime_binding.base_inference import\
-                    bind_base_inference_rt_methods
-                pl_model = bind_onnxrt_methods(bind_base_inference_rt_methods(pl_model))
-            except ImportError:
-                raise RuntimeError("You should install onnx and onnxruntime to set `onnx=True`, "
-                                   "or just set `onnx=False`.")
-        if quantize:
-            from bigdl.nano.pytorch.runtime_binding.quantization_inference import\
-                bind_quantize_methods
-            from bigdl.nano.pytorch.runtime_binding.base_inference import\
-                bind_base_inference_rt_methods
-            pl_model = bind_quantize_methods(bind_base_inference_rt_methods(pl_model), None)
-
         return pl_model
 
     def search(self,
