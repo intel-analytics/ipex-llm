@@ -142,11 +142,11 @@ class AutoTSEstimator:
             from bigdl.orca.automl.auto_estimator import AutoEstimator
             if backend == "torch":
                 self.model = AutoEstimator.from_torch(model_creator=model,
-                                                    optimizer=optimizer,
-                                                    loss=loss,
-                                                    logs_dir=logs_dir,
-                                                    resources_per_trial={"cpu": cpus_per_trial},
-                                                    name=name)
+                                                      optimizer=optimizer,
+                                                      loss=loss,
+                                                      logs_dir=logs_dir,
+                                                      resources_per_trial={"cpu": cpus_per_trial},
+                                                      name=name)
             if backend == "keras":
                 self.model = AutoEstimator.from_keras(model_creator=model,
                                                       logs_dir=logs_dir,
@@ -283,14 +283,14 @@ class AutoTSEstimator:
         if self.backend == "torch":
             best_model = self._get_best_automl_model()
             return TSPipeline(model=best_model.model,
-                            loss=best_model.criterion,
-                            optimizer=best_model.optimizer,
-                            model_creator=best_model.model_creator,
-                            loss_creator=best_model.loss_creator,
-                            optimizer_creator=best_model.optimizer_creator,
-                            best_config=self.get_best_config(),
-                            scaler=self._scaler,
-                            scaler_index=self._scaler_index)
+                              loss=best_model.criterion,
+                              optimizer=best_model.optimizer,
+                              model_creator=best_model.model_creator,
+                              loss_creator=best_model.loss_creator,
+                              optimizer_creator=best_model.optimizer_creator,
+                              best_config=self.get_best_config(),
+                              scaler=self._scaler,
+                              scaler_index=self._scaler_index)
 
         if self.backend == "keras":
             best_model = self._get_best_automl_model()
@@ -337,6 +337,7 @@ class AutoTSEstimator:
         if self.backend == "torch":
             import torch
             from torch.utils.data import TensorDataset, DataLoader
+
             def train_data_creator(config):
                 train_d = ray.get(train_data_id)
 
@@ -347,21 +348,21 @@ class AutoTSEstimator:
 
                 return DataLoader(TensorDataset(torch.from_numpy(x).float(),
                                                 torch.from_numpy(y).float()),
-                                batch_size=config["batch_size"],
-                                shuffle=True)
+                                  batch_size=config["batch_size"],
+                                  shuffle=True)
 
             def val_data_creator(config):
                 val_d = ray.get(valid_data_id)
 
                 x, y = val_d.roll(lookback=config.get('past_seq_len'),
-                                horizon=self._future_seq_len,
-                                feature_col=config['selected_features']) \
+                                  horizon=self._future_seq_len,
+                                  feature_col=config['selected_features']) \
                             .to_numpy()
 
                 return DataLoader(TensorDataset(torch.from_numpy(x).float(),
                                                 torch.from_numpy(y).float()),
-                                batch_size=config["batch_size"],
-                                shuffle=True)
+                                  batch_size=config["batch_size"],
+                                  shuffle=True)
 
             return train_data_creator, val_data_creator
 
