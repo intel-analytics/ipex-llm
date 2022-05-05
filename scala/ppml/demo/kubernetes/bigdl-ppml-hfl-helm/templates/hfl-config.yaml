@@ -5,4 +5,4 @@ metadata:
   labels:
     app: hfldemo
 data:
-  fl.server.ip: hfl-server
+  hfl.server.ip: hfl-server

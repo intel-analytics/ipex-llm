@@ -5,4 +5,4 @@ metadata:
   labels:
     app: vfldemo
 data:
-  fl.server.ip: vfl-server
+  vfl.server.ip: vfl-server

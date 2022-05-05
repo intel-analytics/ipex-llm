@@ -40,8 +40,8 @@ spec:
             - name: HFL_SERVER_IP
               valueFrom:
                 configMapKeyRef:
-                  name: fl-config
-                  key: fl.server.ip
+                  name: hfl-config
+                  key: hfl.server.ip
           volumeMounts:
             - name: device-plugin
               mountPath: /var/lib/kubelet/device-plugins
