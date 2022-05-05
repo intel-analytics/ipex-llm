@@ -16,7 +16,6 @@
 import copy
 from logging import warning
 from pathlib import Path
-from tempfile import TemporaryFile
 from typing import Any, List, Optional
 import pytorch_lightning as pl
 import torch
@@ -30,7 +29,6 @@ from torchmetrics.metric import Metric
 from torch.optim.lr_scheduler import _LRScheduler
 import yaml
 from bigdl.nano.common import check_avx512
-from bigdl.nano.deps.onnxruntime.core.onnxruntime_model import ONNXRuntimeModel
 from bigdl.nano.pytorch.lightning import LightningModuleFromTorch
 from bigdl.nano.pytorch.plugins.ddp_spawn import DDPSpawnPlugin
 from bigdl.nano.deps.automl.hpo_api import create_hpo_searcher, check_hpo_status
@@ -298,11 +296,9 @@ class Trainer(pl.Trainer):
             }
             approach = approach_map.get(approach)
             if accelerator is None:
-                accelerator = 'pytorch'
-            framework = "{}_{}".format(accelerator, method)
+                framework = 'pytorch_{}'.format(method)
             if accelerator == 'onnxruntime':
-                framework += "ops"
-            quantized_model = None
+                framework = "{}_{}ops".format('onnxrt', method)
 
             quantizer = QuantizationINC(framework=framework, conf=conf, approach=approach,
                                         tuning_strategy=tuning_strategy,
@@ -317,12 +313,11 @@ class Trainer(pl.Trainer):
                 ).onnx_model
             quantized_model = quantizer.post_training_quantize(model, calib_dataloader,
                                                                val_dataloader, metric)
-            if accelerator == 'pytorch':
+            if accelerator is None:
                 return PytorchQuantizedModel(quantized_model)
             elif accelerator == 'onnxruntime':
-                with TemporaryFile() as f:
-                    quantized_model.save(self.onnx_model, f)
-                    return ONNXRuntimeModel(f)
+                quantized_model.save('tmp.onnx')
+                return PytorchONNXRuntimeModel('tmp.onnx')
         else:
             raise NotImplementedError("Backend {} is not implemented.".format(backend))
 
