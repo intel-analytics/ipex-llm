@@ -16,6 +16,7 @@
 import copy
 from logging import warning
 from pathlib import Path
+from tempfile import TemporaryFile
 from typing import Any, List, Optional
 import pytorch_lightning as pl
 import torch
@@ -29,6 +30,7 @@ from torchmetrics.metric import Metric
 from torch.optim.lr_scheduler import _LRScheduler
 import yaml
 from bigdl.nano.common import check_avx512
+from bigdl.nano.deps.onnxruntime.core.onnxruntime_model import ONNXRuntimeModel
 from bigdl.nano.pytorch.lightning import LightningModuleFromTorch
 from bigdl.nano.pytorch.plugins.ddp_spawn import DDPSpawnPlugin
 from bigdl.nano.deps.automl.hpo_api import create_hpo_searcher, check_hpo_status
@@ -231,23 +233,33 @@ class Trainer(pl.Trainer):
         return self.hposearcher.search_summary()
 
     def quantize(self, pl_model,  # remove the type requirement for type checking
+                 precision='int8',
+                 accelerator=None,
+                 method='fx',
                  calib_dataloader: DataLoader = None,
                  val_dataloader: DataLoader = None,
                  metric: Optional[Metric] = None,
                  backend='inc',
                  conf: Optional[str] = None,
-                 framework='pytorch_fx',
                  approach='static',
                  tuning_strategy='bayesian',
                  accuracy_criterion: dict = {'relative': 0.99, 'higher_is_better': True},
                  timeout=0,
                  max_trials=1,
-                 return_pl=True
                  ):
         """
         Calibrate a Pytorch-Lightning model for post-training quantization.
 
         :param pl_model:       A Pytorch-Lightning model to be quantized.
+        :param precision:       Global precision of quantized model,
+                                supported type: 'int8', 'bf16', 'fp16', defaults to 'int8'.
+        :param accelerator:     Use accelerator 'None', 'onnxruntime', 'openvino', defaults to None.
+                                None means staying in pytorch.
+        :param method:          Method to do quantization.
+                                When accelerator=None, supported methods: 'fx', 'eager', 'ipex',
+                                 defaults to 'fx'.
+                                When accelerator='onnxruntime', supported methods: 'qlinear',
+                                 'integer', defaults to 'qlinear'.
         :param calib_dataloader:    A torch.utils.data.dataloader.DataLoader object for calibration.
                                     Required for static quantization.
         :param val_dataloader:      A torch.utils.data.dataloader.DataLoader object for evaluation.
@@ -255,9 +267,6 @@ class Trainer(pl.Trainer):
         :param backend:             Only 'inc' is supported. Default: 'inc'.
         :param conf:        A path to conf yaml file for quantization.
                             Default: None, using default config.
-        :param framework:   string, one of 'pytorch'|'pytorch_fx'|'pytorch_ipex'|
-                            'onnxrt_integerops'|'onnxrt_qlinearops'. Default: 'pytorch_fx'.
-                            Consistent with Intel Neural Compressor.
         :param approach:    'static' or 'dynamic'.
                             'static': post_training_static_quant,
                             'dynamic': post_training_dynamic_quant.
@@ -274,9 +283,7 @@ class Trainer(pl.Trainer):
                             Combine with timeout field to decide when to exit.
                             "timeout=0, max_trials=1" means it will try quantization only once and
                             return satisfying best model.
-        :param return_pl:   Decide which type to return. If set to True, a GraphModule will be
-                            returned. If set to False, a pytorch lightning module will be returned.
-        :return:            A GraphModule. If there is no model found, return None.
+        :return:            A accelerated Pytorch-Lightning Model if quantization is sucessful. 
         """
         if backend == 'inc':
             # check if dataloader is of legal format
@@ -290,52 +297,32 @@ class Trainer(pl.Trainer):
                 'dynamic': 'post_training_dynamic_quant'
             }
             approach = approach_map.get(approach)
-
+            if accelerator is None:
+                accelerator = 'pytorch'
+            framework = "{}_{}".format(accelerator, method)
+            if accelerator == 'onnxruntime':
+                framework += "ops"
             quantized_model = None
-            # for framework_item in framework:
+
             quantizer = QuantizationINC(framework=framework, conf=conf, approach=approach,
                                         tuning_strategy=tuning_strategy,
                                         accuracy_criterion=accuracy_criterion,
                                         timeout=timeout, max_trials=max_trials)
-            if "pytorch" in framework:
-                # for 'pytorch'|'pytorch_fx'|'pytorch_ipex'
-                model: Any = pl_model  # state model to be 'Any' since we may have pl or onnx
-            else:
-                # for 'onnxrt_integerops'|'onnxrt_qlinearops'
-                pl_model = bind_onnxrt_methods(pl_model)
-                if approach == "post_training_static_quant":
-                    assert calib_dataloader, \
-                        "calib_calib_dataloader must not be None when approach is " \
-                        "post-training static quantization."
-                    pl_model.eval_onnx(input_sample=tuple(next(iter(
-                        calib_dataloader))[:-1]),
-                        file_path="model.onnx")
-                    model = pl_model.ort_infer_engine.onnx_model_fp32
-                else:
-                    assert pl_model.ort_infer_engine.onnx_model_fp32, \
-                        "Please call `eval_onnx` on model to " \
-                        "update/build your onnx structure."
-                    model = pl_model.ort_infer_engine.onnx_model_fp32
+            model = pl_model
+            if accelerator == "onnxruntime":
+                model = Trainer.trace(
+                    model,
+                    input_sample=tuple(next(iter(calib_dataloader))[:-1]),
+                    accelerator=accelerator
+                ).onnx_model
             quantized_model = quantizer.post_training_quantize(model, calib_dataloader,
                                                                val_dataloader, metric)
-            if not return_pl:
-                return PytorchQuantizedModel(quantized_model) if "pytorch" in framework \
-                    else quantized_model
-            else:
-                quantized_pytorch_model = quantized_model if "pytorch" in framework else None
-                quantized_onnx_model = quantized_model if "onnxrt" in framework else None
-
-                from bigdl.nano.pytorch.runtime_binding.base_inference import \
-                    bind_base_inference_rt_methods
-                from bigdl.nano.pytorch.runtime_binding.quantization_inference import \
-                    bind_quantize_methods
-                return_pl_model = bind_quantize_methods(
-                    bind_base_inference_rt_methods(pl_model), quantized_pytorch_model)
-                if quantized_onnx_model:
-                    return bind_onnxrt_methods(return_pl_model,
-                                               quantized_onnx_model)
-                else:
-                    return return_pl_model
+            if accelerator == 'pytorch':
+                return PytorchQuantizedModel(quantized_model)
+            elif accelerator == 'onnxruntime':
+                with TemporaryFile() as f:
+                    quantized_model.save(self.onnx_model, f)
+                    return ONNXRuntimeModel(f)
         else:
             raise NotImplementedError("Backend {} is not implemented.".format(backend))
 
