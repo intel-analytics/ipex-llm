@@ -13,18 +13,22 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+import requests
+import csv
+import argparse
+
 from bigdl.orca.common import init_orca_context, stop_orca_context, OrcaContext
 from bigdl.chronos.data.experimental import XShardsTSDataset
 from bigdl.chronos.forecaster import TCNForecaster
 import numpy as np
 
-def generate_spark_df():
+def generate_spark_df(dataset_path):
     sc = OrcaContext.get_spark_context()
     spark = OrcaContext.get_spark_session()
     df = spark.read.format("csv")\
                    .option("inferSchema", "true")\
                    .option("header", "true")\
-                   .load("/home/junweid/.chronos/dataset/nyc_taxi/nyc_taxi_data.csv")
+                   .load(dataset_path)
     tsdata_train, _, tsdata_test = XShardsTSDataset.from_sparkdf(df, dt_col="timestamp",
                                                target_col=["value"],
                                                with_split=True,
@@ -34,9 +38,55 @@ def generate_spark_df():
         tsdata.roll(lookback=100, horizon=10)
     return tsdata_train, tsdata_test
 
+
+def get_csv(args):
+    dataset_path = args.datadir
+    if args.datadir is None:
+        with requests.get(args.url) as r:
+            data = (line.decode('utf-8') for line in r.iter_lines())
+            data = csv.reader(data, delimiter=',')
+            f = open('nyc_taxi.csv', 'w', encoding='utf-8', newline='')
+            csv_writer = csv.writer(f)
+            for row in data:
+                csv_writer.writerow(row)
+            f.close()
+            dataset_path = 'nyc_taxi.csv'
+    return dataset_path
+
+
 if __name__ == '__main__':
-    init_orca_context(cores=8)
-    tsdata_train, tsdata_test = generate_spark_df()
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--cores', type=int, default=4,
+                        help="The number of cpu cores you want to use on each node."
+                        "You can change it depending on your own cluster setting.")
+    parser.add_argument('--memory', type=str, default="32g",
+                        help="The memory you want to use on each node."
+                        "You can change it depending on your own cluster setting.")
+    parser.add_argument('--cluster_mode', type=str, default='local',
+                        help="The mode for the Spark cluster.")
+    parser.add_argument('--num_workers', type=int, default=1,
+                        help="The number of nodes to be used in the cluster"
+                        "You can change it depending on your own cluster setting.")
+
+    parser.add_argument('--epochs', type=int, default=2,
+                        help="Max number of epochs to train in each trial.")
+    parser.add_argument('--workers_per_node', type=int, default=1,
+                        help="the number of worker you want to use."
+                        "The value defaults to 1. The param is only effective"
+                        "when distributed is set to True.")
+    parser.add_argument('--datadir', type=str,
+                        help="Use local csv file by default.")
+    parser.add_argument('--url', type=str, default="https://raw.githubusercontent.com/numenta/NAB"
+                        "/v1.0/data/realKnownCause/nyc_taxi.csv",
+                        help="Download link of dataset.")
+
+    args = parser.parse_args()
+    num_nodes = 1 if args.cluster_mode == 'local' else args.num_workers
+    init_orca_context(cluster_mode=args.cluster_mode, cores=args.cores,
+                      memory=args.memory, num_nodes=num_nodes)
+    dataset_path = get_csv(args)
+
+    tsdata_train, tsdata_test = generate_spark_df(dataset_path)
     data_train = tsdata_train.to_xshards()
     data_test = tsdata_test.to_xshards()
 
@@ -46,10 +96,10 @@ if __name__ == '__main__':
                                output_feature_num=1,
                                metrics=['mse', 'mae'],
                                distributed=True,
-                               workers_per_node=1,
-                               seed=0)
+                               workers_per_node=args.workers_per_node,
+                               seed=1)
 
-    forecaster.fit(data_train, epochs=20, batch_size=512)
+    forecaster.fit(data_train, epochs=args.epochs)
 
     evaluate_result = forecaster.evaluate(data_test, multioutput="uniform_average")
     print(evaluate_result)

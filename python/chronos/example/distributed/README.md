@@ -11,6 +11,7 @@ pip install --pre --upgrade bigdl-chronos[all]
 Please refer to [Chronos Install Guide](https://bigdl.readthedocs.io/en/latest/doc/Chronos/Overview/chronos.html#install)
 
 ## Prepare data
+### Local data - through Pandas
 we use the publicly available `network traffic` data repository maintained by the [WIDE project](http://mawi.wide.ad.jp/mawi/) and in particular, the network traffic traces aggregated every 2 hours (i.e. AverageRate in Mbps/Gbps and Total Bytes) in year 2018 and 2019 at the transit link of WIDE to the upstream ISP ([dataset link](http://mawi.wide.ad.jp/~agurim/dataset/))
 
 `get_public_dataset` automatically download the specified data set and return the tsdata that can be used directly after preprocessing.
@@ -29,6 +30,25 @@ for tsdata in [tsdata_train, tsdata_test]:
           .scale(minmax, fit=tsdata is tsdata_train)\
           .roll(lookback=100, horizon=10)
 ```
+### Distributed data - through Spark
+We also support our users to directly fetch and process their data natively under spark.
+Please find detailed information under `sparkdf_training_network_traffic.py`.
+```python
+sc = OrcaContext.get_spark_context()
+spark = OrcaContext.get_spark_session()
+df = spark.read.format("csv")\
+                .option("inferSchema", "true")\
+                .option("header", "true")\
+                .load(dataset_path)
+tsdata_train, _, tsdata_test = XShardsTSDataset.from_sparkdf(df, dt_col="timestamp",
+                                            target_col=["value"],
+                                            with_split=True,
+                                            val_ratio=0,
+                                            test_ratio=0.1)
+for tsdata in [tsdata_train, tsdata_test]:
+    tsdata.roll(lookback=100, horizon=10)
+```
+
 
 ## Initialize forecaster and fit
 Initialize a forecaster and set `distributed=True` and optionally `workers_per_node`.
