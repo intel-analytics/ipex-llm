@@ -1,29 +1,30 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: hfl-client1
+  name: hfl-client2
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: fldemo
-      component: client1
+      app: hfldemo
+      component: hflclient2
   template:
     metadata:
       labels:
-        app: fldemo
-        component: client1
+        app: hfldemo
+        component: hflclient2
     spec:
       restartPolicy: Always
       #hostNetwork: true
       containers:
-        - name: client1
+        - name: hflclient2
           image:  {{ .Values.image }}
           imagePullPolicy: IfNotPresent
           command: ["/bin/sh","-c"]
           args: ["
-                sed -i \"s@localhost@$FL_SERVER_IP@g\" /ppml/trusted-big-data-ml/ppml-conf.yaml;
-                bash /ppml/trusted-big-data-ml/runHflClient1.sh;
+                sed -i \"s@8980@$HFL_SERVER_PORT@g\" /ppml/trusted-big-data-ml/ppml-conf.yaml;
+                sed -i \"s@localhost@$HFL_SERVER_IP@g\" /ppml/trusted-big-data-ml/ppml-conf.yaml;
+                bash /ppml/trusted-big-data-ml/runHflClient2.sh;
                 "]
           securityContext:
             privileged: true
@@ -34,11 +35,13 @@ spec:
               value: {{ .Values.sgxLog }}
             - name: SGX_MEM_SIZE
               value: {{ .Values.sgxMemSize }}
-            - name: FL_SERVER_IP
+            - name: HFL_SERVER_PORT
+              value: { { .Values.serverPort } }
+            - name: HFL_SERVER_IP
               valueFrom:
                 configMapKeyRef:
-                  name: fl-config
-                  key: fl.server.ip
+                  name: hfl-config
+                  key: hfl.server.ip
           volumeMounts:
             - name: device-plugin
               mountPath: /var/lib/kubelet/device-plugins

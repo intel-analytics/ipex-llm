@@ -2,7 +2,7 @@
 clientNum: 2
 #privateKeyFilePath: /ppml/trusted-big-data-ml/work/keys/server.pem
 #certChainFilePath:  /ppml/trusted-big-data-ml/work/keys/server.crt
-# serverPort:
+serverPort: 8980
 
 ##### Client property
 clientTarget: localhost:8980
