@@ -228,6 +228,7 @@ def ray_partitions_get_tf_dataset(partition_list, has_label=True):
             raise ValueError("value of x and y should be a ndarray, "
                              "a tuple of ndarrays or a list of ndarrays")
     else:
+        # TODO: may cause error
         dataset = tf.data.Dataset.from_tensor_slices(([], []))
 
     return dataset

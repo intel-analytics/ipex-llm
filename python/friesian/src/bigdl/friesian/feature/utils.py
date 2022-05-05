@@ -219,6 +219,8 @@ def featuretable_to_xshards(tbl, convert_cols=None):
     from bigdl.orca.data import SparkXShards
     from pyspark.ml.linalg import DenseVector
     import numpy as np
+    from bigdl.orca import OrcaContext
+    shard_size = OrcaContext._shard_size
     assert isinstance(tbl, FeatureTable), "This function only supports friesian FeatureTable"
     # TODO: partition < node num
     if convert_cols is None:
@@ -235,28 +237,33 @@ def featuretable_to_xshards(tbl, convert_cols=None):
         if np_type:
             np_type_dict[col] = np_type
 
-    def to_numpy_dict(iter):
+    def to_numpy_dict(iter, shard_size=None):
         rows = list(iter)
-        result = dict()
-        for c in convert_cols:
-            result[c] = []
-        for row in rows:
+        result_list = []
+        if not shard_size:
+            shard_size = len(rows)
+        for i in range(0, len(rows), shard_size):
+            shard_data = rows[i: i + shard_size]
+            result = dict()
             for c in convert_cols:
-                result[c].append(row[c])
-        for c in convert_cols:
-            if c in np_type_dict:
-                result[c] = np.asarray(result[c], dtype=np_type_dict[c])
-            else:
-                data = result[c]
-                if len(data) > 0 and isinstance(data[0], DenseVector):
-                    # TODO: test
-                    result[c] = np.stack(list(map(lambda vector: vector.values.astype(np.float32),
-                                                  data)))
+                result[c] = []
+            for row in shard_data:
+                for c in convert_cols:
+                    result[c].append(row[c])
+            for c in convert_cols:
+                if c in np_type_dict:
+                    result[c] = np.asarray(result[c], dtype=np_type_dict[c])
                 else:
-                    "unsupported field {}".format(schema[c])
-        return [result]
+                    data = result[c]
+                    if len(data) > 0 and isinstance(data[0], DenseVector):
+                        result[c] = np.stack(list(map(lambda vector: vector.values.astype(np.float32),
+                                                      data)))
+                    else:
+                        "unsupported field {}".format(schema[c])
+            result_list.append(result)
+        return result_list
 
-    return SparkXShards(tbl.df.rdd.mapPartitions(to_numpy_dict))
+    return SparkXShards(tbl.df.rdd.mapPartitions(lambda x: to_numpy_dict(x, shard_size)))
 
 
 def df_type_to_np_type(dtype):
@@ -268,6 +275,8 @@ def df_type_to_np_type(dtype):
         return np.int32
     elif isinstance(dtype, df_types.StringType):
         return np.str
+    elif isinstance(dtype, df_types.DoubleType):
+        return np.double
     elif isinstance(dtype, df_types.ArrayType):
         return df_type_to_np_type(dtype.elementType)
     else:

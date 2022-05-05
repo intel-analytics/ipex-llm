@@ -141,59 +141,58 @@ if __name__ == "__main__":
         raise ValueError("cluster_mode should be one of 'local', 'yarn', "
                          "'standalone' and 'spark-submit', but got " + args.cluster_mode)
 
-cols = ["movie_id", "user_id", "gender", "age", "occupation", "zip_code", "rating"]
-str_features = ["movie_id", "user_id", "zip_code", "occupation"]
-int_features = ["gender", "age"]
+    cols = ["movie_id", "user_id", "gender", "age", "occupation", "zip_code", "rating"]
+    str_features = ["movie_id", "user_id", "zip_code", "occupation"]
+    int_features = ["gender", "age"]
 
-table = FeatureTable.read_parquet(data_dir)
-gender_dict = {'M': 0, 'F': 1}
-gender_to_int = lambda x: gender_dict[x]
-table = table.apply("gender", "gender", gender_to_int, dtype="int")
-table = table.ordinal_shuffle_partition()
-print(table.df.schema)
-# convert dtype
-train_df = table.df
-for c in str_features:
-    train_df = train_df.withColumn(c, col(c).cast(StringType()))
-for c in int_features:
-    train_df = train_df.withColumn(c, col(c).cast(IntegerType()))
-print(train_df.schema)
-table = FeatureTable(train_df)
-# generate vocab
-vocabularies = {}
-for col in cols:
-    vocabularies[col] = table.select(col).df.distinct().rdd.map(lambda row: row[col]).collect()
-table = FeatureTable(table.df.limit(100_000).repartition(options.num_executor * 2))
-table.df.withColumn("partitionId", spark_partition_id()).groupBy("partitionId").count().show()
-train_tbl, test_tbl = table.random_split([0.8, 0.2])
-train_count = train_tbl.size()
-steps = math.ceil(train_count / 8192)
-print("train size: ", train_count, ", steps: ", steps)
-test_count = test_tbl.size()
-val_steps = math.ceil(test_count / 8192)
-print("test size: ", test_count, ", steps: ", val_steps)
+    table = FeatureTable.read_parquet(data_dir)
+    gender_dict = {'M': 0, 'F': 1}
+    gender_to_int = lambda x: gender_dict[x]
+    table = table.apply("gender", "gender", gender_to_int, dtype="int")
+    table = table.ordinal_shuffle_partition()
+    print(table.df.schema)
+    # convert dtype
+    train_df = table.df
+    for c in str_features:
+        train_df = train_df.withColumn(c, col(c).cast(StringType()))
+    for c in int_features:
+        train_df = train_df.withColumn(c, col(c).cast(IntegerType()))
+    print(train_df.schema)
+    table = FeatureTable(train_df)
+    # generate vocab
+    vocabularies = {}
+    for col in cols:
+        vocabularies[col] = table.select(col).df.distinct().rdd.map(lambda row: row[col]).collect()
+    table = FeatureTable(table.df.limit(100_000).repartition(options.num_executor * 2))
+    table.df.withColumn("partitionId", spark_partition_id()).groupBy("partitionId").count().show()
+    train_tbl, test_tbl = table.random_split([0.8, 0.2])
+    train_count = train_tbl.size()
+    steps = math.ceil(train_count / 8192)
+    print("train size: ", train_count, ", steps: ", steps)
+    test_count = test_tbl.size()
+    val_steps = math.ceil(test_count / 8192)
+    print("test size: ", test_count, ", steps: ", val_steps)
+    train_dataset = Dataset.from_tensor_slices_with_tbl(train_tbl)
+    val_dataset = Dataset.from_tensor_slices_with_tbl(test_tbl)
 
-train_dataset = Dataset.from_tensor_slices_with_tbl(train_tbl)
-val_dataset = Dataset.from_tensor_slices_with_tbl(test_tbl)
-
-config = {
-    "lr": 0.01
-}
-
-
-def model_creator(config):
-    model = DCN(use_cross_layer=True, deep_layer_sizes=[192, 192])
-    from bigdl.friesian.feature.utils import distribute_tfrs_model
-    model = distribute_tfrs_model(model)
-    model.compile(optimizer=tf.keras.optimizers.Adam(config['lr']))
-    return model
+    config = {
+        "lr": 0.01
+    }
 
 
-estimator = Estimator.from_keras(model_creator=model_creator,
-                                 verbose=True,
-                                 config=config,
-                                 backend="tf2")
+    def model_creator(config):
+        model = DCN(use_cross_layer=True, deep_layer_sizes=[192, 192])
+        from bigdl.friesian.feature.utils import distribute_tfrs_model
+        model = distribute_tfrs_model(model)
+        model.compile(optimizer=tf.keras.optimizers.Adam(config['lr']))
+        return model
 
-estimator.fit(train_dataset, 8, batch_size=8192, steps_per_epoch=steps, validation_data=val_dataset,
-              validation_steps=val_steps)
-estimator.evaluate(val_dataset, batch_size=8192, num_steps=val_steps)
+
+    estimator = Estimator.from_keras(model_creator=model_creator,
+                                     verbose=True,
+                                     config=config,
+                                     backend="tf2")
+
+    estimator.fit(train_dataset, 8, batch_size=8192, steps_per_epoch=steps, validation_data=val_dataset,
+                  validation_steps=val_steps)
+    estimator.evaluate(val_dataset, batch_size=8192, num_steps=val_steps)
