@@ -1,9 +1,10 @@
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
-from layers.Embed import DataEmbedding, DataEmbedding_wo_pos
-from layers.AutoCorrelation import AutoCorrelation, AutoCorrelationLayer
-from layers.Autoformer_EncDec import Encoder, Decoder, EncoderLayer, DecoderLayer, my_Layernorm, series_decomp
+from .layers.Embed import DataEmbedding, DataEmbedding_wo_pos
+from .layers.AutoCorrelation import AutoCorrelation, AutoCorrelationLayer
+from .layers.Autoformer_EncDec import Encoder, Decoder, EncoderLayer, DecoderLayer, my_Layernorm, series_decomp
+import torch.optim as optim
 import math
 import numpy as np
 import pytorch_lightning as pl
@@ -16,7 +17,7 @@ class AutoFormer(pl.LightningModule):
     with inherent O(LlogL) complexity
     """
     def __init__(self, configs):
-        super(Model, self).__init__()
+        super().__init__()
         self.seq_len = configs.seq_len
         self.label_len = configs.label_len
         self.pred_len = configs.pred_len
@@ -101,29 +102,29 @@ class AutoFormer(pl.LightningModule):
             return dec_out[:, -self.pred_len:, :]  # [B, L, D]
 
     def training_step(self, batch, batch_idx):
-        x, y, x_mark, y_mark = batch
+        batch_x, batch_y, batch_x_mark, batch_y_mark = map(lambda x:x.float(), batch)
         dec_inp = torch.zeros_like(batch_y[:, -self.pred_len:, :]).float()
         dec_inp = torch.cat([batch_y[:, :self.label_len, :], dec_inp], dim=1).float()
-        outputs = self.model(batch_x, batch_x_mark, dec_inp, batch_y_mark, batch_y)
+        outputs = self(batch_x, batch_x_mark, dec_inp, batch_y_mark, batch_y)
 
         outputs = outputs[:, -self.pred_len:, :]
         batch_y = batch_y[:, -self.pred_len:, :]
-        loss = criterion(outputs, batch_y)
-        return loss
+        loss = nn.MSELoss()
+        return loss(outputs, batch_y)
     
     def validation_step(self, batch, batch_idx):
-        x, y, x_mark, y_mark = batch
+        batch_x, batch_y, batch_x_mark, batch_y_mark = map(lambda x:x.float(), batch)
         dec_inp = torch.zeros_like(batch_y[:, -self.pred_len:, :]).float()
         dec_inp = torch.cat([batch_y[:, :self.label_len, :], dec_inp], dim=1).float()
-        outputs = self.model(batch_x, batch_x_mark, dec_inp, batch_y_mark, batch_y)
+        outputs = self(batch_x.float(), batch_x_mark.float(), dec_inp, batch_y_mark.float(), batch_y)
 
         outputs = outputs[:, -self.pred_len:, :]
         batch_y = batch_y[:, -self.pred_len:, :]
-        loss = criterion(outputs, batch_y)
-        self.log("val_loss", loss)
+        loss = nn.MSELoss()
+        self.log("val_loss", loss(outputs, batch_y))
     
     def configure_optimizers(self):
-        return optim.Adam(self.parameters(), lr=self.learning_rate)
+        return optim.Adam(self.parameters(), lr=0.0001)
 
 
 def model_creator(config):
@@ -153,5 +154,6 @@ def model_creator(config):
     args.activation = config['activation']
     args.e_layers = config['e_layers']
     args.c_out = config['c_out']
+    args.d_layers = config['d_layers']
 
     return AutoFormer(args)
