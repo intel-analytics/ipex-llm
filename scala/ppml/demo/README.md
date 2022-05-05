@@ -51,10 +51,10 @@ java -cp $SPARK_HOME/jars/*:../target/bigdl-ppml-spark_3.1.2-2.1.0-SNAPSHOT-jar-
 ## Vertical Federated Learning (VFL) Logistic Regression
 ```bash
 # client 1
-java -cp $SPARK_HOME/jars/*:../target/bigdl-ppml-spark_3.1.2-2.1.0-SNAPSHOT-jar-with-dependencies.jar com.intel.analytics.bigdl.ppml.fl.example.VFLLogisticRegression -d data/diabetes-vfl-1.csv
+java -cp $SPARK_HOME/jars/*:../target/bigdl-ppml-spark_3.1.2-2.1.0-SNAPSHOT-jar-with-dependencies.jar com.intel.analytics.bigdl.ppml.fl.example.VFLLogisticRegression -d data/diabetes-vfl-1.csv -c 1
 
 # client 2
-java -cp $SPARK_HOME/jars/*:../target/bigdl-ppml-spark_3.1.2-2.1.0-SNAPSHOT-jar-with-dependencies.jar com.intel.analytics.bigdl.ppml.fl.example.VFLLogisticRegression -d data/diabetes-vfl-2.csv
+java -cp $SPARK_HOME/jars/*:../target/bigdl-ppml-spark_3.1.2-2.1.0-SNAPSHOT-jar-with-dependencies.jar com.intel.analytics.bigdl.ppml.fl.example.VFLLogisticRegression -d data/diabetes-vfl-2.csv -c 2
 ```
 
 
