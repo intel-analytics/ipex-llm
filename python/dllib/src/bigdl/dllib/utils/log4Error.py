@@ -31,6 +31,6 @@ def invalidInputError(condition, errMsg, fixMsg=None, cause=None):
     if not condition:
         outputUserMessage(errMsg, fixMsg)
         if cause:
-            raise cause
+            raise cause  # nopep8
         else:
-            raise RuntimeError(errMsg)
+            raise RuntimeError(errMsg)  # nopep8
