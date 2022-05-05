@@ -22,8 +22,7 @@ spec:
           imagePullPolicy: IfNotPresent
           command: ["/bin/sh","-c"]
           args: ["
-                sed -i \"s@serverPort: 8980@serverPort: $VFL_SERVER_PORT@g\" /ppml/trusted-big-data-ml/ppml-conf.yaml;
-                sed -i \"s@localhost@$VFL_SERVER_IP@g\" /ppml/trusted-big-data-ml/ppml-conf.yaml;
+                sed -i \"s@localhost:8980@$VFL_SERVER_IP:$VFL_SERVER_PORT@g\" /ppml/trusted-big-data-ml/ppml-conf.yaml;
                 bash /ppml/trusted-big-data-ml/runVflClient1.sh;
                 "]
           securityContext:
