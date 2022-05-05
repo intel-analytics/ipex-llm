@@ -16,6 +16,7 @@
 
 
 import os
+import tempfile
 from unittest import TestCase
 
 import pytest
@@ -72,7 +73,7 @@ class TestTrainer(TestCase):
         x = next(train_loader_iter)[0]
 
         # Case 1: Default
-        qmodel = trainer.quantize(pl_model, self.train_loader)
+        qmodel = trainer.quantize(pl_model, self.train_loader, return_pl=False)
         assert qmodel
         out = qmodel(x)
         assert out.shape == torch.Size([256, 10])
@@ -83,14 +84,15 @@ class TestTrainer(TestCase):
                                   approach='static',
                                   tuning_strategy='basic',
                                   accuracy_criterion={'relative': 0.99,
-                                                      'higher_is_better': True})
+                                                      'higher_is_better': True},
+                                  return_pl=False)
 
         assert qmodel
         out = qmodel(x)
         assert out.shape == torch.Size([256, 10])
 
         # Case 3: Dynamic quantization
-        qmodel = trainer.quantize(pl_model, approach='dynamic')
+        qmodel = trainer.quantize(pl_model, approach='dynamic', return_pl=False)
         assert qmodel
         out = qmodel(x)
         assert out.shape == torch.Size([256, 10])
@@ -103,17 +105,37 @@ class TestTrainer(TestCase):
 
         # Case 5: Test if registered metric can be fetched successfully
         qmodel = trainer.quantize(pl_model, self.train_loader, self.train_loader,
-                                  metric=torchmetrics.F1(10))
+                                  metric=torchmetrics.F1(10),
+                                  accuracy_criterion={'relative': 0.99,
+                                                      'higher_is_better': True},
+                                  return_pl=False)
         assert qmodel
         out = qmodel(x)
         assert out.shape == torch.Size([256, 10])
 
+        # save and load
+        with tempfile.TemporaryDirectory() as tmp_dir_name:
+            trainer.save(qmodel, tmp_dir_name)
+            loaded_qmodel = trainer.load(tmp_dir_name, pl_model)
+            assert loaded_qmodel
+            out = loaded_qmodel(x)
+            assert out.shape == torch.Size([256, 10])
+
     def test_trainer_quantize_inc_ptq_customized(self):
         # Test if a Lightning Module not compiled by nano works
         train_loader_iter = iter(self.train_loader)
+        x = next(train_loader_iter)[0]
         trainer = Trainer(max_epochs=1)
 
-        qmodel = trainer.quantize(self.user_defined_pl_model, self.train_loader)
+        qmodel = trainer.quantize(self.user_defined_pl_model, self.train_loader, return_pl=False)
         assert qmodel
-        out = qmodel(next(train_loader_iter)[0])
+        out = qmodel(x)
         assert out.shape == torch.Size([256, 10])
+
+        # save and load
+        with tempfile.TemporaryDirectory() as tmp_dir_name:
+            trainer.save(qmodel, tmp_dir_name)
+            loaded_qmodel = trainer.load(tmp_dir_name, self.user_defined_pl_model)
+            assert loaded_qmodel
+            out = loaded_qmodel(x)
+            assert out.shape == torch.Size([256, 10])

@@ -36,7 +36,8 @@ from bigdl.nano.deps.ipex.ipex_api import create_IPEXAccelerator, ipex_device
 from bigdl.nano.deps.openvino.openvino_api import PytorchOpenVINOModel, load_openvino_model
 from bigdl.nano.deps.onnxruntime.onnxruntime_api import bind_onnxrt_methods,\
     PytorchONNXRuntimeModel, load_onnxruntime_model
-
+from bigdl.nano.deps.neural_compressor.inc_api import QuantizationINC, PytorchQuantizedModel,\
+    check_pytorch_dataloaders, load_inc_model
 distributed_backends = ["spawn", "ray", "subprocess"]
 
 
@@ -236,9 +237,6 @@ class Trainer(pl.Trainer):
         :return:            A GraphModule. If there is no model found, return None.
         """
         if backend == 'inc':
-            from bigdl.nano.deps.neural_compressor.inc_api import QuantizationINC,\
-                check_pytorch_dataloaders
-
             # check if dataloader is of legal format
             check_pytorch_dataloaders(pl_model, [calib_dataloader, val_dataloader])
 
@@ -260,10 +258,6 @@ class Trainer(pl.Trainer):
             if "pytorch" in framework:
                 # for 'pytorch'|'pytorch_fx'|'pytorch_ipex'
                 model: Any = pl_model  # state model to be 'Any' since we may have pl or onnx
-                if isinstance(pl_model, LightningModuleFromTorch):
-                    # LightningModuleFromTorch.forward fails to trace in FX
-                    # so replace it temporarily
-                    model = pl_model.model
             else:
                 # for 'onnxrt_integerops'|'onnxrt_qlinearops'
                 pl_model = bind_onnxrt_methods(pl_model)
@@ -283,7 +277,8 @@ class Trainer(pl.Trainer):
             quantized_model = quantizer.post_training_quantize(model, calib_dataloader,
                                                                val_dataloader, metric)
             if not return_pl:
-                return quantized_model
+                return PytorchQuantizedModel(quantized_model) if "pytorch" in framework \
+                    else quantized_model
             else:
                 quantized_pytorch_model = quantized_model if "pytorch" in framework else None
                 quantized_onnx_model = quantized_model if "onnxrt" in framework else None
@@ -371,8 +366,8 @@ class Trainer(pl.Trainer):
         if model_type == 'PytorchONNXRuntimeModel':
             assert model is None, "Argument 'model' must be None for ONNX Runtime loading."
             return load_onnxruntime_model(path)
-        # if model_type == 'PytorchQuantizedModel':
-        # ... to be implemented
+        if model_type == 'PytorchQuantizedModel':
+            return load_inc_model(path, model, 'pytorch')
         if isinstance(model, nn.Module):
             # typically for models of nn.Module, LightningModule and LightningModuleFromTorch type
             model = copy.deepcopy(model)
