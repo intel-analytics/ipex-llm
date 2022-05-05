@@ -256,8 +256,8 @@ def featuretable_to_xshards(tbl, convert_cols=None):
                 else:
                     data = result[c]
                     if len(data) > 0 and isinstance(data[0], DenseVector):
-                        result[c] = np.stack(list(map(lambda vector: vector.values.astype(np.float32),
-                                                      data)))
+                        result[c] = np.stack(list(map(lambda vector:
+                                                      vector.values.astype(np.float32), data)))
                     else:
                         "unsupported field {}".format(schema[c])
             result_list.append(result)
