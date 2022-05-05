@@ -1,6 +1,4 @@
 #!/bin/bash
-OUTPUT=keys.yaml
-
 export VAULT_NAME=$1
 
 mkdir -p keys && cd keys
@@ -21,14 +19,14 @@ openssl pkcs12 -in keystore.pkcs12 -nodes -out server.pem
 openssl rsa -in server.pem -out server.key
 openssl x509 -in server.pem -out server.crt
 
-az keyvault secret set --vault-name $VAULT_NAME --name "keystore.jks" --value $(base64 -w 0 keystore.jks)
+az keyvault secret set --vault-name $VAULT_NAME --name "keystore-jks" --value $(base64 -w 0 keystore.jks)
 
-az keyvault secret set --vault-name $VAULT_NAME --name "keystore.pkcs12" --value $(base64 -w 0 keystore.pkcs12)
+az keyvault secret set --vault-name $VAULT_NAME --name "keystore-pkcs12" --value $(base64 -w 0 keystore.pkcs12)
 
-az keyvault secret set --vault-name $VAULT_NAME --name "server.pem" --value $(base64 -w 0 server.pem)
+az keyvault secret set --vault-name $VAULT_NAME --name "server-pem" --value $(base64 -w 0 server.pem)
 
-az keyvault secret set --vault-name $VAULT_NAME --name "server.crt" --value $(base64 -w 0 server.crt)
+az keyvault secret set --vault-name $VAULT_NAME --name "server-crt" --value $(base64 -w 0 server.crt)
 
-az keyvault secret set --vault-name $VAULT_NAME --name "server.csr" --value $(base64 -w 0 server.csr)
+az keyvault secret set --vault-name $VAULT_NAME --name "server-csr" --value $(base64 -w 0 server.csr)
 
-az keyvault secret set --vault-name $VAULT_NAME --name "server.key" --value $(base64 -w 0 server.key)
+az keyvault secret set --vault-name $VAULT_NAME --name "server-key" --value $(base64 -w 0 server.key)
