@@ -226,7 +226,7 @@ def _generate_output_pandas_df(feature_lists, label_lists, feature_cols, label_c
     if isinstance(feature_arrs, np.ndarray):
         feature_arrs = feature_arrs.reshape(-1)
     else:
-        feature_arrs = list(map(lambda x:x.reshape(-1), feature_arrs))
+        feature_arrs = list(map(lambda x: x.reshape(-1), feature_arrs))
     for i, feature_col in enumerate(feature_cols):
         df[feature_col] = feature_arrs[i]
     if label_cols:
