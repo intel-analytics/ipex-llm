@@ -27,6 +27,7 @@ import com.intel.analytics.bigdl.ppml.fl.base.Estimator
 import com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto._
 import com.intel.analytics.bigdl.ppml.fl.generated.NNServiceProto.EvaluateResponse
 import com.intel.analytics.bigdl.ppml.fl.FLContext
+import com.intel.analytics.bigdl.ppml.fl.utils.FLClientClosable
 import com.intel.analytics.bigdl.ppml.fl.utils.ProtoUtils._
 import org.apache.logging.log4j.LogManager
 
@@ -37,9 +38,8 @@ import scala.collection.mutable.ArrayBuffer
 class VFLNNEstimator(algorithm: String,
                      model: Module[Float],
                      optimMethod: OptimMethod[Float],
-                     threadNum: Int = 1) extends Estimator {
+                     threadNum: Int = 1) extends Estimator with FLClientClosable {
   val logger = LogManager.getLogger(getClass)
-  val flClient = FLContext.getClient()
   val (weight, grad) = getParametersFromModel(model)
 
   protected val evaluateResults = mutable.Map[String, ArrayBuffer[Float]]()
@@ -116,7 +116,6 @@ class VFLNNEstimator(algorithm: String,
     val data = dataSet.data(false)
     var count = 0
     var iteration = 0
-    var evaluateResult = ""
     while (count < dataSize) {
       logger.debug(s"evaluating next batch, progress: $count/$dataSize")
       model.evaluate()
@@ -129,11 +128,14 @@ class VFLNNEstimator(algorithm: String,
         .setName(s"${model.getName()}_output").setVersion(iteration).build
       val tableProto = outputTargetToTableProto(model.output, target, metadata)
       val hasReturn = if (!data.hasNext) true else false
-      evaluateResult = flClient.nnStub.evaluate(tableProto, algorithm, hasReturn).getMessage
+      val evaluateResponse = flClient.nnStub.evaluate(tableProto, algorithm, hasReturn)
+      logger.info(evaluateResponse.getResponse)
+      if (hasReturn) {
+        logger.info(s"Evaluate result: ${evaluateResponse.getMessage}")
+      }
       iteration += 1
       count += miniBatch.size()
     }
-    println(s"Evaluation result: $evaluateResult")
   }
 
   /**
@@ -167,9 +169,4 @@ class VFLNNEstimator(algorithm: String,
     }
     resultSeq.toArray
   }
-
-  def close(): Unit = {
-    flClient.shutdown()
-  }
-
 }
