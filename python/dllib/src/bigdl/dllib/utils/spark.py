@@ -264,7 +264,7 @@ class SparkRunner:
                 shell=True, env=SparkRunner.standalone_env)
             _, status = os.waitpid(start_master_pro.pid, 0)
             if status != 0:
-                raise RuntimeError("starting master failed")
+                invalidInputError(False, "starting master failed")
             master = "spark://{}:7077".format(node_ip)  # 7077 is the default port
             # Start worker
             if enable_numa_binding:
@@ -277,7 +277,7 @@ class SparkRunner:
                 shell=True, env=SparkRunner.standalone_env)
             _, status = os.waitpid(start_worker_pro.pid, 0)
             if status != 0:
-                raise RuntimeError("starting worker failed")
+                invalidInputError(False, "starting worker failed")
         else:  # A Spark standalone cluster has already been started by the user.
             invalidInputError(master.startswith("spark://"),
                               "Please input a valid master address for your Spark"

@@ -90,8 +90,8 @@ def concat(inputs, prev_modules, attrs, outputs):
         for j in range(len(data_tensor_shape)):
             if axis != j:
                 if curr_input_shape[i] != data_tensor_shape[i]:
-                    raise ValueError("Input shape mismatch. Expect receive input shape " +
-                                     data_tensor_shape[i] + " but got " + curr_input_shape[i])
+                    invalidInputError(False, "Input shape mismatch. Expect receive input shape " +
+                                      data_tensor_shape[i] + " but got " + curr_input_shape[i])
             else:
                 dim_rank += curr_input_shape[axis]
     out_tensor_shape = list(data_tensor_shape)
@@ -149,7 +149,7 @@ def gather(inputs, prev_modules, attrs, outputs):
     # extract attributes
     axis = int(attrs.get('axis', 0))
     if axis != 0:
-        raise ValueError("Gather layer axis value")
+        invalidInputError(False, "Gather layer axis value")
     # extract inputs
     data_tensor_val, data_tensor_shape = inputs[0]
     indices_val, indices = inputs[1]

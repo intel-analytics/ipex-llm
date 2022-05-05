@@ -29,6 +29,7 @@ from tensorflow.python.platform import gfile
 from bigdl.dllib.nn.layer import Model
 from bigdl.dllib.utils.common import JTensor
 from bigdl.dllib.utils.common import callBigDlFunc
+from bigdl.dllib.utils.log4Error import *
 import os
 
 
@@ -74,7 +75,7 @@ def convert(input_ops, output_ops, byte_order, bigdl_type):
         shutil.rmtree(temp)
     except OSError as e:
         if e.errno != errno.ENOENT:
-            raise
+            invalidInputError(False, str(e), cause=e)
 
     return model
 
@@ -133,7 +134,7 @@ def dump_model(path, graph=None, sess=None, ckpt_file=None, bigdl_type="float"):
     :return: nothing
     """
     if not os.path.isdir(path):
-        raise ValueError("Folder " + path + " does not exist")
+        invalidInputError(False, "Folder " + path + " does not exist")
 
     temp = None
     if ckpt_file is None:
@@ -160,7 +161,7 @@ def dump_model(path, graph=None, sess=None, ckpt_file=None, bigdl_type="float"):
             shutil.rmtree(temp)
         except OSError as e:
             if e.errno != errno.ENOENT:
-                raise
+                invalidInputError(False, str(e), cause=e)
 
 
 def merge_checkpoint(input_graph,

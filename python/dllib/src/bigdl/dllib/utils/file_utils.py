@@ -40,7 +40,7 @@ def to_list_of_numpy(elements):
     elif np.isscalar(elements):
         return [np.array(elements)]
     elif not isinstance(elements, list):
-        raise ValueError("Wrong type: %s" % type(elements))
+        invalidInputError(False, "Wrong type: %s" % type(elements))
 
     results = []
     for element in elements:
@@ -49,7 +49,7 @@ def to_list_of_numpy(elements):
         elif isinstance(element, np.ndarray):
             results.append(element)
         else:
-            raise ValueError("Wrong type: %s" % type(element))
+            invalidInputError(False, "Wrong type: %s" % type(element))
 
     return results
 
@@ -225,10 +225,10 @@ def callZooFunc(bigdl_type, name, *args):
             error = e
             if not ("does not exist" in str(e)
                     and "Method {}".format(name) in str(e)):
-                raise e
+                invalidInputError(False, str(e), cause=e)
         else:
             return result
-    raise error
+    invalidInputError(False, str(error), cause=error)
 
 
 class JTensor(BJTensor):

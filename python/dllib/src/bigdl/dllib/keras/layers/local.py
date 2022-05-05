@@ -17,6 +17,7 @@
 import sys
 
 from ..engine.topology import ZooKerasLayer
+from bigdl.dllib.utils.log4Error import *
 
 if sys.version >= '3':
     long = int
@@ -57,8 +58,8 @@ class LocallyConnected1D(ZooKerasLayer):
                  subsample_length=1, W_regularizer=None, b_regularizer=None,
                  bias=True, input_shape=None, **kwargs):
         if border_mode != "valid":
-            raise ValueError("For LocallyConnected1D, "
-                             "only border_mode='valid' is supported for now")
+            invalidInputError(False, "For LocallyConnected1D,"
+                                     " only border_mode='valid' is supported for now")
         super(LocallyConnected1D, self).__init__(None,
                                                  nb_filter,
                                                  filter_length,

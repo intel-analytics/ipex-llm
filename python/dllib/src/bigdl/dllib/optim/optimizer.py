@@ -623,7 +623,7 @@ class LBFGS(OptimMethod):
                  linesearch_options=None,
                  bigdl_type="float"):
         if linesearch or linesearch_options:
-            raise ValueError('linesearch and linesearch_options must be None in LBFGS')
+            invalidInputError(False, 'linesearch and linesearch_options must be None in LBFGS')
         super(LBFGS, self).__init__(None, bigdl_type, max_iter, max_eval, tolfun, tolx,
                                     ncorrection, learningrate, verbose, linesearch,
                                     linesearch_options)
@@ -988,7 +988,7 @@ class Optimizer(BaseOptimizer):
                                   cores=cores,
                                   bigdl_type="float")
         else:
-            raise Exception("Not supported training set: %s" % type(training_set))
+            invalidInputError(False, "Not supported training set: %s" % type(training_set))
 
     def set_validation(self, batch_size, val_rdd, trigger, val_method=None):
         """

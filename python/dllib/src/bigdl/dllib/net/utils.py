@@ -16,6 +16,7 @@
 
 import sys
 import warnings
+from bigdl.dllib.utils.log4Error import *
 
 if sys.version >= '3':
     long = int
@@ -53,7 +54,7 @@ def find_tensors(sources, predicate):
                 elif isinstance(node, tf.Operation):
                     inputs = list(node.inputs) + list(node.control_inputs)
                 else:
-                    raise ValueError("Unrecognized Node: {}".format(node))
+                    invalidInputError(False, "Unrecognized Node: {}".format(node))
                 for input_tensor in inputs:
                     # this is necessary because there may be a cycle in the graph
                     # such as tf.while_loop
@@ -77,13 +78,15 @@ def find_placeholders(grads):
 def _check_the_same(all_required_inputs, inputs_in_datasets):
     inputs_not_in_dataset = [i for i in all_required_inputs if i not in inputs_in_datasets]
     if inputs_not_in_dataset:
-        raise ValueError("You should not use any placeholder that are not defined in dataset, " +
-                         "found %s" % inputs_not_in_dataset)
+        invalidInputError(False,
+                          "You should not use any placeholder that are not defined in dataset,"
+                          " found %s" % inputs_not_in_dataset)
     if len(inputs_in_datasets) != len(all_required_inputs):
         inputs_not_require_by_loss = [i for i in inputs_in_datasets if i not in
                                       all_required_inputs]
-        raise ValueError("You should use all the placeholders that are defined in dataset, " +
-                         "%s are not used" % inputs_not_require_by_loss)
+        invalidInputError(False,
+                          "You should use all the placeholders that are defined in dataset,"
+                          " %s are not used" % inputs_not_require_by_loss)
 
 
 def to_bigdl_optim_method(koptim_method):
@@ -190,4 +193,4 @@ def to_bigdl_optim_method(koptim_method):
                 "For Adadelta, we don't support learning rate for now")
             return boptimizer.Adadelta(decayrate=rho, epsilon=epsilon)
 
-    raise ValueError("We don't support %s for now" % koptim_method)
+    invalidInputError(False, "We don't support %s for now" % koptim_method)

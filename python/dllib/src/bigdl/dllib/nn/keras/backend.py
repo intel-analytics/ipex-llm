@@ -53,9 +53,9 @@ class KerasModelWrapper:
                 return [r.result for r in
                         self.bmodel.evaluate(input, batch_size, self.metrics)]
             else:
-                raise Exception("No Metrics found.")
+                invalidInputError(False, "No Metrics found.")
         else:
-            raise Exception("We only support evaluation in distributed mode")
+            invalidInputError(False, "We only support evaluation in distributed mode")
 
     def predict(self, x, batch_size=None, verbose=None, is_distributed=False):
         """Generates output predictions for the input samples,
@@ -69,7 +69,7 @@ class KerasModelWrapper:
             A Numpy array or RDD[Sample] of predictions.
         """
         if batch_size or verbose:
-            raise Exception("we don't support batch_size or verbose for now")
+            invalidInputError(False, "we don't support batch_size or verbose for now")
         if is_distributed:
             if isinstance(x, np.ndarray):
                 input = to_sample_rdd(x, np.zeros([x.shape[0]]))
@@ -80,7 +80,7 @@ class KerasModelWrapper:
         else:
             if isinstance(x, np.ndarray):
                 return self.bmodel.predict_local(x)
-        raise Exception("not supported type: %s" % x)
+        invalidInputError(False, "not supported type: %s" % x)
 
     def fit(self, x, y=None, batch_size=32, nb_epoch=10, verbose=1, callbacks=None,
             validation_split=0., validation_data=None, shuffle=True,
@@ -97,7 +97,7 @@ class KerasModelWrapper:
             A Numpy array or RDD[Sample] of predictions.
         """
         if callbacks:
-            raise Exception("We don't support callbacks in fit for now")
+            invalidInputError(False, "We don't support callbacks in fit for now")
         if class_weight:
             unsupport_exp("class_weight")
         if sample_weight:
@@ -135,11 +135,11 @@ class KerasModelWrapper:
                                                      batch_size=batch_size,
                                                      nb_epoch=nb_epoch,
                                                      validation_data=validation_data)
-        raise Exception("not supported type: %s" % x)
+        invalidInputError(False, "not supported type: %s" % x)
 
     def __create_local_optimizer(self, x, y, batch_size=32, nb_epoch=10, validation_data=None):
         if validation_data:
-            raise unsupport_exp("validation_data")
+            unsupport_exp("validation_data")
         bopt = boptimizer.LocalOptimizer(
             X=x,
             Y=y,

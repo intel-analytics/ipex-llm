@@ -96,7 +96,7 @@ if __name__ == "__main__":
             .set("spark.driver.cores", 4)
         sc = init_nncontext(spark_conf, cluster_mode="local")
     else:
-        raise ValueError("please set cluster_mode as local, yarn-client or yarn-cluster")
+        invalidInputError(False, "please set cluster_mode as local, yarn-client or yarn-cluster")
 
     set_optimizer_version(options.optimizerVersion)
 
