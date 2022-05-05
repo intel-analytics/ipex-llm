@@ -237,31 +237,35 @@ def featuretable_to_xshards(tbl, convert_cols=None):
         if np_type:
             np_type_dict[col] = np_type
 
-    def to_numpy_dict(iter, shard_size=None):
-        rows = list(iter)
-        result_list = []
-        if not shard_size:
-            shard_size = len(rows)
-        for i in range(0, len(rows), shard_size):
-            shard_data = rows[i: i + shard_size]
-            result = dict()
-            for c in convert_cols:
-                result[c] = []
-            for row in shard_data:
-                for c in convert_cols:
-                    result[c].append(row[c])
-            for c in convert_cols:
-                if c in np_type_dict:
-                    result[c] = np.asarray(result[c], dtype=np_type_dict[c])
+    def init_result_dict():
+        return {c: [] for c in convert_cols}
+
+    def generate_output(result):
+        for c in convert_cols:
+            if c in np_type_dict:
+                result[c] = np.asarray(result[c], dtype=np_type_dict[c])
+            else:
+                data = result[c]
+                if len(data) > 0 and isinstance(data[0], DenseVector):
+                    result[c] = np.stack(list(map(lambda vector:
+                                                  vector.values.astype(np.float32), data)))
                 else:
-                    data = result[c]
-                    if len(data) > 0 and isinstance(data[0], DenseVector):
-                        result[c] = np.stack(list(map(lambda vector:
-                                                      vector.values.astype(np.float32), data)))
-                    else:
-                        "unsupported field {}".format(schema[c])
-            result_list.append(result)
-        return result_list
+                    "unsupported field {}".format(schema[c])
+        return result
+
+    def to_numpy_dict(iter, shard_size=None):
+        counter = 0
+        result = init_result_dict()
+        for row in iter:
+            counter += 1
+            for c in convert_cols:
+                result[c].append(row[c])
+            if shard_size and counter % shard_size == 0:
+                yield generate_output(result)
+                result = init_result_dict()
+
+        if len(convert_cols) > 0 and len(result[convert_cols[0]]) > 0:
+            yield generate_output(result)
 
     return SparkXShards(tbl.df.rdd.mapPartitions(lambda x: to_numpy_dict(x, shard_size)))
 

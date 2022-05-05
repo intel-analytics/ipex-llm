@@ -113,7 +113,7 @@ class Dataset(object):
     def from_tensor_slices_with_tbl(tbl):
         from bigdl.friesian.feature import FeatureTable
         from bigdl.friesian.feature.utils import featuretable_to_xshards
-        assert isinstance(tbl, FeatureTable), "only Friesian FeatureTable is supported"
+        assert isinstance(tbl, FeatureTable), "Only Friesian FeatureTable is supported"
         xshards = featuretable_to_xshards(tbl)
         return TensorSliceDataset(xshards)
 

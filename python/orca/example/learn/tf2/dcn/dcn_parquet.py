@@ -172,6 +172,7 @@ if __name__ == "__main__":
     test_count = test_tbl.size()
     val_steps = math.ceil(test_count / 8192)
     print("test size: ", test_count, ", steps: ", val_steps)
+
     train_dataset = Dataset.from_tensor_slices_with_tbl(train_tbl)
     val_dataset = Dataset.from_tensor_slices_with_tbl(test_tbl)
 
