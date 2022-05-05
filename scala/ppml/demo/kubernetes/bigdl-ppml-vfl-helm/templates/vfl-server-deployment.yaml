@@ -38,8 +38,8 @@ spec:
             - name: VFL_SERVER_IP
               valueFrom:
                 configMapKeyRef:
-                  name: fl-config
-                  key: fl.server.ip
+                  name: vfl-config
+                  key: vfl.server.ip
           volumeMounts:
             - name: device-plugin
               mountPath: /var/lib/kubelet/device-plugins
