@@ -25,12 +25,12 @@ object TensorUtils {
     if (columns == null) {
       null
     } else {
-      var rowNum = 0
-      val dataArray = df.collect().map(row => {
-        if (rowNum == 0) rowNum = row.length
-        val rowArray = new Array[Float](row.length)
+      val localDf = df.collect()
+      val rowNum = localDf.length
+      val dataArray = localDf.map(row => {
+        val rowArray = new Array[Float](columns.length)
         columns.indices.foreach(i => {
-          rowArray(i) = row.getAs[Float](columns(i))
+          rowArray(i) = row.getAs[String](columns(i)).toFloat
         })
         rowArray
       })
