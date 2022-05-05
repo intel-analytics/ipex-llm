@@ -344,7 +344,7 @@ class AutoTSEstimator:
                 x, y = train_d.roll(lookback=config.get('past_seq_len'),
                                     horizon=self._future_seq_len,
                                     feature_col=config['selected_features']) \
-                            .to_numpy()
+                              .to_numpy()
 
                 return DataLoader(TensorDataset(torch.from_numpy(x).float(),
                                                 torch.from_numpy(y).float()),
