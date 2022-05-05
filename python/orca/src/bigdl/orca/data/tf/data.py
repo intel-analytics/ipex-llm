@@ -85,7 +85,7 @@ class Dataset(object):
         graph_rdd_and_meta = self.xshards.rdd.mapPartitions(to_dataset)
         return graph_rdd_and_meta
 
-    def as_tf_dataset(self):
+    def as_tf_dataset_rdd(self):
         create_dataset_fn = self.create_dataset_fn
 
         def to_dataset(iter):

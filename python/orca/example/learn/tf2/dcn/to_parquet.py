@@ -15,12 +15,15 @@
 #
 
 import pandas as pd
+import os
 
-data_dir = "path/to/ml-1m"
+if __name__ == "__main__":
+    data_dir = "path/to/ml-1m"
 
-ratings = pd.read_csv(data_dir + '/ratings.dat', sep='::', header=None,
-                      names=["user_id", "movie_id", "rating", "timestamp"], encoding='latin-1')
-users = pd.read_csv(data_dir + '/users.dat', sep='::', header=None,
-                    names=["user_id", "gender", "age", "occupation", "zip_code"], encoding='latin-1')
-total = ratings.join(users.set_index("user_id"), on="user_id")
-total.to_parquet(data_dir + "/total.parquet")
+    ratings = pd.read_csv(os.path.join(data_dir, 'ratings.dat'), sep='::', header=None,
+                          names=["user_id", "movie_id", "rating", "timestamp"], encoding='latin-1')
+    users = pd.read_csv(os.path.join(data_dir, 'users.dat'), sep='::', header=None,
+                        names=["user_id", "gender", "age", "occupation", "zip_code"],
+                        encoding='latin-1')
+    total = ratings.join(users.set_index("user_id"), on="user_id")
+    total.to_parquet(os.path.join(data_dir, "total.parquet"))
