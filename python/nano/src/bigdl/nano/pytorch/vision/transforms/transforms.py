@@ -131,6 +131,81 @@ class ToTensor(object):
         return self.__class__.__name__ + '()'
 
 
+class RandomHorizontalFlip(object):
+    def __init__(self, p=0.5):
+        self.p = p
+        self.tv_F = tv_t.RandomHorizontalFlip(self.p)
+        self.cv_F = cv_t.RandomHorizontalFlip(self.p)
+
+    def __call__(self, img):
+        if type(img) == np.ndarray:
+            return self.cv_F.__call__(img)
+        else:
+            return self.tv_F.__call__(img)
+
+    def __repr__(self):
+        return self.__class__.__name__ + '(p={})'.format(self.p)
+
+
+class RandomCrop(object):
+    def __init__(self,
+                 size,
+                 padding=None,
+                 pad_if_needed=False,
+                 fill=0,
+                 padding_mode='constant'):
+        if isinstance(size, numbers.Number):
+            self.size = (int(size), int(size))
+        else:
+            self.size = size
+        self.padding = padding
+        self.pad_if_needed = pad_if_needed
+        self.fill = fill
+        self.padding_mode = padding_mode
+
+        self.tv_F = tv_t.RandomCrop(size, padding, pad_if_needed, fill, padding_mode)
+        self.cv_F = cv_t.RandomCrop(size, padding, pad_if_needed, fill, padding_mode)
+
+    def __call__(self, img):
+        if type(img) == np.ndarray:
+            return self.cv_F.__call__(img)
+        else:
+            return self.tv_F.__call__(img)
+
+    def __repr__(self):
+        return self.__class__.__name__ + '(size={0}, padding={1})'.format(
+            self.size, self.padding)
+
+
+class ColorJitter(object):
+    def __init__(self, brightness=0, contrast=0, saturation=0, hue=0):
+        self.brightness = brightness
+        self.contrast = contrast
+        self.saturation = saturation
+        self.hue = hue
+        self.tv_F = tv_t.ColorJitter(brightness, contrast, saturation, hue)
+        self.cv_F = cv_t.ColorJitter(brightness, contrast, saturation, hue)
+
+    def __call__(self, img):
+        if type(img) == np.ndarray:
+            return self.cv_F.__call__(img)
+        else:
+            return self.tv_F.__call__(img)
+
+    def __repr__(self):
+        format_string = self.__class__.__name__ + '('
+        format_string += 'brightness={0}'.format(self.brightness)
+        format_string += ', contrast={0}'.format(self.contrast)
+        format_string += ', saturation={0}'.format(self.saturation)
+        format_string += ', hue={0})'.format(self.hue)
+        return format_string
+
+
+class Normalize(tv_t.Normalize):
+    def __init__(self, mean, std, inplace=False) -> None:
+        super().__init__(mean, std, inplace)
+
+
 class PILToTensor(tv_t.PILToTensor):
     def __init__(self):
         super().__init__()
@@ -144,6 +219,14 @@ class ConvertImageDtype(tv_t.ConvertImageDtype):
 class ToPILImage(tv_t.ToPILImage):
     def __init__(self, mode=None):
         super().__init__(mode)
+
+
+class Scale(Resize):
+    def __init__(self, *args, **kwargs):
+        warnings.warn(
+            "The use of the transforms.Scale transform is deprecated, " +
+            "please use transforms.Resize instead.")
+        super(Scale, self).__init__(*args, **kwargs)
 
 
 class CenterCrop(object):
@@ -172,7 +255,7 @@ class Pad(object):
         assert padding_mode in ['constant', 'edge', 'reflect', 'symmetric']
         if isinstance(padding, collections.Sequence) and len(padding) not in [1, 2, 4]:
             raise ValueError(
-                "Padding must be an int or a 1, 2, or 4 element tuple, not a " +
+                "Padding must be an int or a 1, 2, or 4 element tuple, not a " + \
                 "{} element tuple".format(len(padding))
             )
 
@@ -197,7 +280,8 @@ class Pad(object):
 class Lambda(object):
     def __init__(self, lambd):
         if not callable(lambd):
-            raise TypeError("Argument lambd should be callable, got {0}". format(repr(type(lambd).__name__)))
+            raise TypeError("Argument lambd should be callable, got {0}". \
+                            format(repr(type(lambd).__name__)))
         self.lambd = lambd
 
     def __call__(self, img):
@@ -271,22 +355,6 @@ class RandomChoice(RandomTransforms):
         return super().__repr__() + '(p={0})'.format(self.p)
 
 
-class RandomHorizontalFlip(object):
-    def __init__(self, p=0.5):
-        self.p = p
-        self.tv_F = tv_t.RandomHorizontalFlip(self.p)
-        self.cv_F = cv_t.RandomHorizontalFlip(self.p)
-
-    def __call__(self, img):
-        if type(img) == np.ndarray:
-            return self.cv_F.__call__(img)
-        else:
-            return self.tv_F.__call__(img)
-
-    def __repr__(self):
-        return self.__class__.__name__ + '(p={})'.format(self.p)
-
-
 class RandomVerticalFlip(object):
     def __init__(self, p=0.5):
         self.p = p
@@ -302,40 +370,6 @@ class RandomVerticalFlip(object):
 
     def __repr__(self):
         return self.__class__.__name__ + '(p={})'.format(self.p)
-
-
-class RandomCrop(object):
-    def __init__(self,
-                 size,
-                 padding=None,
-                 pad_if_needed=False,
-                 fill=0,
-                 padding_mode='constant'):
-        if isinstance(size, numbers.Number):
-            self.size = (int(size), int(size))
-        else:
-            self.size = size
-        self.padding = padding
-        self.pad_if_needed = pad_if_needed
-        self.fill = fill
-        self.padding_mode = padding_mode
-
-        self.tv_F = tv_t.RandomCrop(size, padding, pad_if_needed, fill, padding_mode)
-        self.cv_F = cv_t.RandomCrop(size, padding, pad_if_needed, fill, padding_mode)
-
-    def __call__(self, img):
-        if type(img) == np.ndarray:
-            return self.cv_F.__call__(img)
-        else:
-            return self.tv_F.__call__(img)
-
-    def __repr__(self):
-        return self.__class__.__name__ + '(size={0}, padding={1})'.format(
-            self.size, self.padding)
-
-
-class RandomPerspective(object):
-    pass
 
 
 class RandomResizedCrop(object):
@@ -391,14 +425,27 @@ class RandomResizedCrop(object):
         return format_string
 
 
-class ColorJitter(object):
-    def __init__(self, brightness=0, contrast=0, saturation=0, hue=0):
-        self.brightness = brightness
-        self.contrast = contrast
-        self.saturation = saturation
-        self.hue = hue
-        self.tv_F = tv_t.ColorJitter(brightness, contrast, saturation, hue)
-        self.cv_F = cv_t.ColorJitter(brightness, contrast, saturation, hue)
+class RandomSizedCrop(RandomResizedCrop):
+    def __init__(self, *args, **kwargs):
+        warnings.warn(
+            "The use of the transforms.RandomSizedCrop transform is deprecated, "
+            + "please use transforms.RandomResizedCrop instead.")
+        super(RandomSizedCrop, self).__init__(*args, **kwargs)
+
+
+class FiveCrop(object):
+    def __init__(self, size):
+        self.size = size
+        if isinstance(size, numbers.Number):
+            self.size = (int(size), int(size))
+        else:
+            assert len(
+                size
+            ) == 2, "Please provide only two dimensions (h, w) for size."
+            self.size = size
+
+        self.tv_F = tv_t.FiveCrop(size)
+        self.cv_F = cv_t.FiveCrop(size)
 
     def __call__(self, img):
         if type(img) == np.ndarray:
@@ -407,14 +454,258 @@ class ColorJitter(object):
             return self.tv_F.__call__(img)
 
     def __repr__(self):
+        return self.__class__.__name__ + '(size={0})'.format(self.size)
+
+
+class TenCrop(object):
+    def __init__(self, size, vertical_flip=False):
+        self.size = size
+        if isinstance(size, numbers.Number):
+            self.size = (int(size), int(size))
+        else:
+            assert len(
+                size
+            ) == 2, "Please provide only two dimensions (h, w) for size."
+            self.size = size
+        self.vertical_flip = vertical_flip
+
+        self.tv_F = tv_t.TenCrop(self.size, self.vertical_flip)
+        self.cv_F = cv_t.TenCrop(self.size, self.vertical_flip)
+
+    def __call__(self, img):
+        if type(img) == np.ndarray:
+            return self.cv_F.__call__(img)
+        else:
+            return self.tv_F.__call__(img)
+
+    def __repr__(self):
+        return self.__class__.__name__ + '(size={0}, vertical_flip={1})'.format(
+            self.size, self.vertical_flip)
+
+
+class LinearTransformation(object):
+    # TODO: missing parameter "mean_vector"
+    def __init__(self, transformation_matrix):
+        if transformation_matrix.size(0) != transformation_matrix.size(1):
+            raise ValueError("transformation_matrix should be square. Got " +
+                             "[{} x {}] rectangular matrix.".format(
+                                 *transformation_matrix.size()))
+        self.transformation_matrix = transformation_matrix
+
+    # TODO: missing judgement
+    def __call__(self, tensor):
+        if tensor.size(0) * tensor.size(1) * tensor.size(
+                2) != self.transformation_matrix.size(0):
+            raise ValueError(
+                "tensor and transformation matrix have incompatible shape." +
+                "[{} x {} x {}] != ".format(*tensor.size()) +
+                "{}".format(self.transformation_matrix.size(0)))
+        flat_tensor = tensor.view(1, -1)
+        transformed_tensor = torch.mm(flat_tensor, self.transformation_matrix)
+        tensor = transformed_tensor.view(tensor.size())
+        return tensor
+
+    # TODO: missing
+    def __repr__(self):
         format_string = self.__class__.__name__ + '('
-        format_string += 'brightness={0}'.format(self.brightness)
-        format_string += ', contrast={0}'.format(self.contrast)
-        format_string += ', saturation={0}'.format(self.saturation)
-        format_string += ', hue={0})'.format(self.hue)
+        format_string += (str(self.transformation_matrix.numpy().tolist()) +
+                          ')')
         return format_string
 
 
-class Normalize(tv_t.Normalize):
-    def __init__(self, mean, std, inplace=False) -> None:
-        super().__init__(mean, std, inplace)
+class RandomRotation(object):
+    # TODO: missing parameter "interpolation"
+    def __init__(self, degrees, resample=False, expand=False, center=None):
+        if isinstance(degrees, numbers.Number):
+            if degrees < 0:
+                raise ValueError(
+                    "If degrees is a single number, it must be positive.")
+            self.degrees = (-degrees, degrees)
+        else:
+            if len(degrees) != 2:
+                raise ValueError(
+                    "If degrees is a sequence, it must be of len 2.")
+            self.degrees = degrees
+
+        self.resample = resample
+        self.expand = expand
+        self.center = center
+
+
+class RandomAffine(object):
+    # TODO: missing parameters
+    def __init__(self,
+                 degrees,
+                 translate=None,
+                 scale=None,
+                 shear=None,
+                 interpolation=cv2.INTER_LINEAR,
+                 fillcolor=0):
+        if isinstance(degrees, numbers.Number):
+            if degrees < 0:
+                raise ValueError(
+                    "If degrees is a single number, it must be positive.")
+            self.degrees = (-degrees, degrees)
+        else:
+            assert isinstance(degrees, (tuple, list)) and len(degrees) == 2, \
+                "degrees should be a list or tuple and it must be of length 2."
+            self.degrees = degrees
+
+        if translate is not None:
+            assert isinstance(translate, (tuple, list)) and len(translate) == 2, \
+                "translate should be a list or tuple and it must be of length 2."
+            for t in translate:
+                if not (0.0 <= t <= 1.0):
+                    raise ValueError(
+                        "translation values should be between 0 and 1")
+        self.translate = translate
+
+        if scale is not None:
+            assert isinstance(scale, (tuple, list)) and len(scale) == 2, \
+                "scale should be a list or tuple and it must be of length 2."
+            for s in scale:
+                if s <= 0:
+                    raise ValueError("scale values should be positive")
+        self.scale = scale
+
+        if shear is not None:
+            if isinstance(shear, numbers.Number):
+                if shear < 0:
+                    raise ValueError(
+                        "If shear is a single number, it must be positive.")
+                self.shear = (-shear, shear)
+            else:
+                assert isinstance(shear, (tuple, list)) and len(shear) == 2, \
+                    "shear should be a list or tuple and it must be of length 2."
+                self.shear = shear
+        else:
+            self.shear = shear
+
+        # self.resample = resample
+        self.interpolation = interpolation
+        self.fillcolor = fillcolor
+
+
+class Grayscale(object):
+    def __init__(self, num_output_channels=1):
+        self.num_output_channels = num_output_channels
+
+        self.tv_F = tv_t.Grayscale(self.num_output_channels)
+        self.cv_F = cv_t.Grayscale(self.num_output_channels)
+
+    def __call__(self, img):
+        if type(img) == np.ndarray:
+            return self.cv_F.__call__(img)
+        else:
+            return self.tv_F.__call__(img)
+
+    def __repr__(self):
+        return self.__class__.__name__ + '(num_output_channels={0})'.format(
+            self.num_output_channels)
+
+
+class RandomGrayscale(object):
+    def __init__(self, p=0.1):
+        self.p = p
+
+        self.tv_F = tv_t.Grayscale(self.size, self.vertical_flip)
+        self.cv_F = cv_t.Grayscale(self.size, self.vertical_flip)
+
+    def __call__(self, img):
+        if type(img) == np.ndarray:
+            return self.cv_F.__call__(img)
+        else:
+            return self.tv_F.__call__(img)
+
+    def __repr__(self):
+        return self.__class__.__name__ + '(p={0})'.format(self.p)
+
+
+class RandomPerspective(tv_t.RandomPerspective):
+
+    def __call__(self, img):
+        if type(img) == np.ndarray:
+            raise NotImplementedError("Input image must be PIL image or Tensor image for {0}".
+                                      format(self.__class__.__name__))
+        else:
+            return super(RandomPerspective, self).__call__(img)
+
+
+class RandomErasing(tv_t.RandomErasing):
+
+    def __call__(self, img):
+        if type(img) == np.ndarray:
+            raise NotImplementedError("Input image must be Tensor image for {0}".
+                                      format(self.__class__.__name__))
+        else:
+            return super(RandomErasing, self).__call__(img)
+
+
+class GaussianBlur(tv_t.GaussianBlur):
+
+    def __call__(self, img):
+        if type(img) == np.ndarray:
+            raise NotImplementedError("Input image must be PIL image or Tensor image for {0}".
+                                      format(self.__class__.__name__))
+        else:
+            return super(GaussianBlur, self).__call__(img)
+
+
+class RandomInvert(tv_t.RandomInvert):
+
+    def __call__(self, img):
+        if type(img) == np.ndarray:
+            raise NotImplementedError("Input image must be PIL image or Tensor image for {0}".
+                                      format(self.__class__.__name__))
+        else:
+            return super(RandomInvert, self).__call__(img)
+
+
+class RandomPosterize(tv_t.RandomPosterize):
+
+    def __call__(self, img):
+        if type(img) == np.ndarray:
+            raise NotImplementedError("Input image must be PIL image or Tensor image for {0}".
+                                      format(self.__class__.__name__))
+        else:
+            return super(RandomPosterize, self).__call__(img)
+
+
+class RandomSolarize(tv_t.RandomSolarize):
+
+    def __call__(self, img):
+        if type(img) == np.ndarray:
+            raise NotImplementedError("Input image must be PIL image or Tensor image for {0}".
+                                      format(self.__class__.__name__))
+        else:
+            return super(RandomSolarize, self).__call__(img)
+
+
+class RandomAdjustSharpness(tv_t.RandomAdjustSharpness):
+
+    def __call__(self, img):
+        if type(img) == np.ndarray:
+            raise NotImplementedError("Input image must be PIL image or Tensor image for {0}".
+                                      format(self.__class__.__name__))
+        else:
+            return super(RandomAdjustSharpness, self).__call__(img)
+
+
+class RandomAutocontrast(tv_t.RandomAutocontrast):
+
+    def __call__(self, img):
+        if type(img) == np.ndarray:
+            raise NotImplementedError("Input image must be PIL image or Tensor image for {0}".
+                                      format(self.__class__.__name__))
+        else:
+            return super(RandomAutocontrast, self).__call__(img)
+
+
+class RandomEqualize(tv_t.RandomEqualize):
+
+    def __call__(self, img):
+        if type(img) == np.ndarray:
+            raise NotImplementedError("Input image must be PIL image or Tensor image for {0}".
+                                      format(self.__class__.__name__))
+        else:
+            return super(RandomEqualize, self).__call__(img)
