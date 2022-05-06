@@ -15,6 +15,7 @@
 #
 
 from typing import Any, Dict, Optional, Union
+from numpy import isin
 import pytorch_lightning as pl
 
 
@@ -105,7 +106,6 @@ class HPOSearcher:
         study_optimize_kwargs['show_progress_bar'] = False
         # run optimize
         self.study.optimize(self.objective, **study_optimize_kwargs)
-        return self.study
 
     def _pre_search(self,
                     model,
@@ -162,11 +162,12 @@ class HPOSearcher:
         """
         Run HPO Searcher. It will be called in Trainer.search().
 
-        :param model: The model to be searched.
+        :param model: The model to be searched. It should be an automodel.
         :param resume: whether to resume the previous or start a new one,
             defaults to False.
         :param target_metric: the object metric to optimize,
             defaults to None.
+        :param return: the model with study meta info attached.
         """
         self.search_kwargs = kwargs or {}
         self.target_metric = target_metric
@@ -179,6 +180,12 @@ class HPOSearcher:
                          kwargs=self.search_kwargs)
 
         self._post_search()
+        # it is not possible to know the best trial before runing search,
+        # so just apply the best trial at end of each search
+        self._lazymodel = _end_search(study=self.study,
+                                      model_builder=model._model_build,
+                                      use_trial_id=-1)
+        return self._lazymodel
 
     def search_summary(self):
         """
@@ -204,6 +211,7 @@ class HPOSearcher:
                                       use_trial_id=use_trial_id)
         # TODO Next step: support retrive saved model instead of retrain from hparams
         self.tune_end = True
+        return self._lazymodel
 
     def _run(self, *args: Any, **kwargs: Any) -> None:
         """`_run` wrapper to set the proper state during tuning,\

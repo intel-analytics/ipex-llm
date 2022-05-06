@@ -18,16 +18,14 @@
 import pytest
 from unittest import TestCase
 
-import torch
 from bigdl.nano.pytorch.trainer import Trainer
 import bigdl.nano.automl.hpo.space as space
 
-from bigdl.nano.automl.pytorch import HPOSearcher
+import torch
 from _helper import BoringModel
 import bigdl.nano.automl.hpo as hpo
 
-
-class TestHPOSearcher(TestCase):
+class TestTrainer(TestCase):
 
     def test_simple_model(self):
 
@@ -56,25 +54,29 @@ class TestHPOSearcher(TestCase):
         model = CustomModel(
             out_dim1=space.Categorical(16,32),
             out_dim2=space.Categorical(16,32),
-            dropout_1=space.Real(0.1,0.5),
-            dropout_2 = 0.2)
+            dropout_1=space.Categorical(0.1, 0.2, 0.3, 0.4, 0.5),
+            dropout_2 = space.Categorical(0.1,0.2)
+            )
 
         trainer = Trainer(
             logger=True,
             checkpoint_callback=False,
-            max_epochs=3,
+            max_epochs=2,
+            use_hpo=True,
         )
-        searcher = HPOSearcher(trainer)
-        searcher.search(
+
+        best_model = trainer.search(
             model,
             target_metric='val_loss',
             direction='minimize',
-            n_trials=2,
-            max_epochs=2,
+            n_trials=3,
+            max_epochs=3,
         )
-        study = searcher.search_summary()
+        study = trainer.search_summary()
         assert(study)
         assert(study.best_trial)
+        assert(best_model.summarize())
+        trainer.fit(best_model)
         # score = trainer.callback_metrics["val_loss"].item()
         # print("final val_loss is:", score)
 
