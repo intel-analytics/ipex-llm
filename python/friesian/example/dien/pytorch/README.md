@@ -1,6 +1,6 @@
 # Train DIEN using the Amazon book review dataset
 This folder showcases how to use BigDL Friesian to preprocess and train a [DIEN](https://arxiv.org/pdf/1809.03672.pdf) model. 
-Model definition is based on [here](https://github.com/mouna99/dien) and
+Model definition in PyTorch is based on the implementation [here](https://github.com/mouna99/dien) and
 [Amazon Book Reviews](http://snap.stanford.edu/data/amazon/productGraph/categoryFiles/reviews_Books.json.gz) dataset is used in this example.
 
 ## Prepare the environment
@@ -12,11 +12,11 @@ pip install pytorch=1.11.0
 pip install --pre --upgrade bigdl-friesian
 ```
 
-## Prepare the data
-Data is preprocessed with ``../dien_preprocessing.py`` on yarn cluster.
+## Prepare and preprocess the data
+Follow the steps [here](../) to [prepare](../#prepare-the-environment) and [preprocess](../#preprocess-the-data) the Amazon Book Reviews dataset.
 
 
-## Train DIEN
+## Train PyTorch DIEN
 * Spark local:
 ```bash
 python dien_train.py \
