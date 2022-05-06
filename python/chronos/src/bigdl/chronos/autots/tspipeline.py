@@ -51,8 +51,7 @@ class TSPipeline:
         # for runtime fit/predict/evaluate
         self._best_model = Trainer.compile(model=model,
                                            loss=loss,
-                                           optimizer=optimizer,
-                                           onnx=True)
+                                           optimizer=optimizer)
         self._best_config = best_config
 
         # for data postprocessing
