@@ -292,7 +292,7 @@ class Trainer(pl.Trainer):
                                         timeout=timeout, max_trials=max_trials)
             model = pl_model
             if accelerator == "onnxruntime":
-                if not isinstance(model, PytorchONNXRuntimeModel):
+                if not type(model).__name__ == 'PytorchONNXRuntimeModel':
                     # try to establish onnx model
                     model = Trainer.trace(model,
                                           input_sample=input_sample,
