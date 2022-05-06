@@ -72,7 +72,7 @@ class TestOnnx(TestCase):
         optimizer = torch.optim.Adam(model.parameters(), lr=0.01)
         trainer = Trainer(max_epochs=1)
 
-        pl_model = Trainer.compile(model, loss, optimizer, onnx=True)
+        pl_model = Trainer.compile(model, loss, optimizer)
         x = torch.rand((10, 3, 256, 256))
         y = torch.ones((10, ), dtype=torch.long)
         ds = TensorDataset(x, y)
@@ -125,7 +125,7 @@ class TestOnnx(TestCase):
         optimizer = torch.optim.Adam(model.parameters(), lr=0.01)
         trainer = Trainer(max_epochs=1)
 
-        pl_model = Trainer.compile(model, loss, optimizer, onnx=True)
+        pl_model = Trainer.compile(model, loss, optimizer)
         x1 = torch.randn(100, 28 * 28)
         x2 = torch.randn(100, 28 * 28)
         y = torch.zeros(100).long()
