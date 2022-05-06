@@ -5,6 +5,11 @@ Use the error handling api instead, it will provide useful message for debugging
 
 **Scala**
 
+Import package
+```scala
+import com.intel.analytics.bigdl.dllib.utils.Log4Error
+```
+
 If user's input is invalid
 ```scala
 Log4Error.invalidInputError(condition: Boolean, errmsg: String, fixmsg: String = null)
@@ -36,7 +41,15 @@ Log4Error.unKnowExceptionError(condition: Boolean, errmsg: String, fixmsg: Strin
 
 Notes: This API is for future extension, in case we need distinct invalidOperation exception with unKnownException in python
 
+
 **Python**
+
+Import package
+```python
+from bigdl.dllib.utils.log4Error import *
+```
+
+If user's input is invalid
 ```python
 invalidInputError(condition, errMsg, fixMsg=None)
 ```
@@ -45,6 +58,7 @@ invalidInputError(condition, errMsg, fixMsg=None)
 * `errMsg`: Error message to be print.
 * `fixMsg`: Message about how to fix the error.
 
+If user call the api wrong
 ```python
 invalidOperationError(condition, errMsg, fixMsg=None, cause=None)
 ```
