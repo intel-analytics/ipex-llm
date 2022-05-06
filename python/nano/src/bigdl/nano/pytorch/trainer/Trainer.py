@@ -228,11 +228,12 @@ class Trainer(pl.Trainer):
                  accuracy_criterion: dict = {'relative': 0.99, 'higher_is_better': True},
                  timeout=0,
                  max_trials=1,
+                 input_sample=None
                  ):
         """
         Calibrate a Pytorch-Lightning model for post-training quantization.
 
-        :param pl_model:       A Pytorch-Lightning model to be quantized.
+        :param pl_model:        A Pytorch-Lightning model to be quantized.
         :param precision:       Global precision of quantized model,
                                 supported type: 'int8', 'bf16', 'fp16', defaults to 'int8'.
         :param accelerator:     Use accelerator 'None', 'onnxruntime', 'openvino', defaults to None.
@@ -265,6 +266,7 @@ class Trainer(pl.Trainer):
                             Combine with timeout field to decide when to exit.
                             "timeout=0, max_trials=1" means it will try quantization only once and
                             return satisfying best model.
+        :input_sample:      An input example to convert pytorch model into ONNX/OpenVINO.
         :return:            A accelerated Pytorch-Lightning Model if quantization is sucessful.
         """
         if backend == 'inc':
@@ -290,11 +292,12 @@ class Trainer(pl.Trainer):
                                         timeout=timeout, max_trials=max_trials)
             model = pl_model
             if accelerator == "onnxruntime":
-                model = Trainer.trace(
-                    model,
-                    input_sample=tuple(next(iter(calib_dataloader))[:-1]),
-                    accelerator=accelerator
-                ).onnx_model
+                if not isinstance(model, PytorchONNXRuntimeModel):
+                    # try to establish onnx model
+                    model = Trainer.trace(model,
+                                          input_sample=input_sample,
+                                          accelerator='onnxruntime')
+                model = model.onnx_model
             quantized_model = quantizer.post_training_quantize(model, calib_dataloader,
                                                                val_dataloader, metric)
             if accelerator is None:
