@@ -23,6 +23,7 @@ import numbers
 import random
 import warnings
 import torch
+import types
 from typing import Tuple, List, Optional
 import collections
 from torchvision.transforms.functional import InterpolationMode
@@ -52,6 +53,13 @@ _torch_strToModes_mapping = {
     'lanczos': InterpolationMode.LANCZOS,
 }
 
+_modes_torchToCV2_mapping = {
+    InterpolationMode.NEAREST: cv2.INTER_NEAREST,
+    InterpolationMode.BILINEAR: cv2.INTER_LINEAR,
+    InterpolationMode.BICUBIC: cv2.INTER_CUBIC,
+    InterpolationMode.LANCZOS: cv2.INTER_LANCZOS4
+}
+
 _torch_modesToStr_mapping = {
     v: k
     for k, v in _torch_strToModes_mapping.items()
@@ -77,9 +85,11 @@ class Compose(object):
 
 
 class Resize(object):
-    # TODO: miss parameters `max_size`, and `antialias` compared with torchvision.transforms.Resize
-    def __init__(self, size, interpolation=InterpolationMode.BILINEAR):
+    # TODO: Support cv2.INTER_AREA
+    def __init__(self, size, interpolation=InterpolationMode.BILINEAR, max_size=None, antialias=None):
         self.size = size
+        self.max_size = max_size
+        self.antialias = antialias
         if isinstance(interpolation, int):
             warnings.warn(
                 "Argument interpolation should be of type InterpolationMode instead of int."
@@ -93,26 +103,31 @@ class Resize(object):
                 "Please, use InterpolationMode enum."
             )
             interpolation = _torch_strToModes_mapping[interpolation]
-
-        if interpolation in _torch_intToModes_mapping.values():
-            self.tv_F = tv_t.Resize(size, interpolation)
-        else:
-            self.tv_F = tv_t.Resize(size, InterpolationMode.BILINEAR)
-        if interpolation in _cv_strToModes_mapping:
-            self.cv_F = cv_t.Resize(size, _cv_strToModes_mapping[interpolation])
-        else:
-            self.cv_F = cv_t.Resize(size, cv2.INTER_LINEAR)
         self.interpolation = interpolation
+
+        self.tv_F = tv_t.Resize(self.size, self.interpolation, self.max_size, self.antialias)
+
+        if self.interpolation in _modes_torchToCV2_mapping:
+            self.cv_F = cv_t.Resize(self.size, _modes_torchToCV2_mapping[self.interpolation])
+        else:
+            self.cv_F = cv_t.Resize(self.size, cv2.INTER_LINEAR)
 
     def __call__(self, img):
         if type(img) == np.ndarray:
+            if self.max_size or self.antialias:
+                warnings.warn(
+                    "Parameters \'max_size\' and \'antialias\' will be "
+                    "ignored for np.ndarray image."
+                )
             return self.cv_F.__call__(img)
         else:
             return self.tv_F.__call__(img)
 
     def __repr__(self):
         interpolation_str = self.__class__.__name__
-        interpolation_str += '(size={0}, interpolation={1})'.format(self.size, self.interpolation)
+        interpolation_str += '(size={0}, interpolation={1}, max_size={2}, antialias={3}'\
+            .format(self.size, self.interpolation, self.max_size, self.antialias)
+
         return interpolation_str
 
 
@@ -163,8 +178,10 @@ class RandomCrop(object):
         self.fill = fill
         self.padding_mode = padding_mode
 
-        self.tv_F = tv_t.RandomCrop(size, padding, pad_if_needed, fill, padding_mode)
-        self.cv_F = cv_t.RandomCrop(size, padding, pad_if_needed, fill, padding_mode)
+        self.tv_F = tv_t.RandomCrop(self.size, self.padding, self.pad_if_needed,
+                                    self.fill, self.padding_mode)
+        self.cv_F = cv_t.RandomCrop(self.size, self.padding, self.pad_if_needed,
+                                    self.fill, self.padding_mode)
 
     def __call__(self, img):
         if type(img) == np.ndarray:
@@ -183,8 +200,10 @@ class ColorJitter(object):
         self.contrast = contrast
         self.saturation = saturation
         self.hue = hue
-        self.tv_F = tv_t.ColorJitter(brightness, contrast, saturation, hue)
-        self.cv_F = cv_t.ColorJitter(brightness, contrast, saturation, hue)
+        self.tv_F = tv_t.ColorJitter(self.brightness, self.contrast,
+                                     self.saturation, self.hue)
+        self.cv_F = cv_t.ColorJitter(self.brightness, self.contrast,
+                                     self.saturation, self.hue)
 
     def __call__(self, img):
         if type(img) == np.ndarray:
@@ -221,22 +240,14 @@ class ToPILImage(tv_t.ToPILImage):
         super().__init__(mode)
 
 
-class Scale(Resize):
-    def __init__(self, *args, **kwargs):
-        warnings.warn(
-            "The use of the transforms.Scale transform is deprecated, " +
-            "please use transforms.Resize instead.")
-        super(Scale, self).__init__(*args, **kwargs)
-
-
 class CenterCrop(object):
     def __init__(self, size):
         if isinstance(size, numbers.Number):
             self.size = (int(size), int(size))
         else:
             self.size = size
-        self.tv_F = tv_t.CenterCrop(size)
-        self.cv_F = cv_t.CenterCrop(size)
+        self.tv_F = tv_t.CenterCrop(self.size)
+        self.cv_F = cv_t.CenterCrop(self.size)
 
     def __call__(self, img):
         if type(img) == np.ndarray:
@@ -253,9 +264,9 @@ class Pad(object):
         assert isinstance(padding, (numbers.Number, tuple, list))
         assert isinstance(fill, (numbers.Number, str, tuple))
         assert padding_mode in ['constant', 'edge', 'reflect', 'symmetric']
-        if isinstance(padding, collections.Sequence) and len(padding) not in [1, 2, 4]:
+        if isinstance(padding, collections.Sequence) and len(padding) not in [2, 4]:
             raise ValueError(
-                "Padding must be an int or a 1, 2, or 4 element tuple, not a " + \
+                "Padding must be an int or a 2, or 4 element tuple, not a " +
                 "{} element tuple".format(len(padding))
             )
 
@@ -263,8 +274,8 @@ class Pad(object):
         self.fill = fill
         self.padding_mode = padding_mode
 
-        self.tv_F = tv_t.Pad(padding, fill, padding_mode)
-        self.cv_F = cv_t.Pad(padding, fill, padding_mode)
+        self.tv_F = tv_t.Pad(self.padding, self.fill, self.padding_mode)
+        self.cv_F = cv_t.Pad(self.padding, self.fill, self.padding_mode)
 
     def __call__(self, img):
         if type(img) == np.ndarray:
@@ -279,9 +290,7 @@ class Pad(object):
 
 class Lambda(object):
     def __init__(self, lambd):
-        if not callable(lambd):
-            raise TypeError("Argument lambd should be callable, got {0}". \
-                            format(repr(type(lambd).__name__)))
+        assert isinstance(lambd, types.LambdaType)
         self.lambd = lambd
 
     def __call__(self, img):
@@ -373,13 +382,13 @@ class RandomVerticalFlip(object):
 
 
 class RandomResizedCrop(object):
+    # TODO: Support cv2.INTER_AREA
     def __init__(self,
                  size,
                  scale=(0.08, 1.0),
                  ratio=(3. / 4., 4. / 3.),
-                 interpolation=cv2.INTER_LINEAR):
+                 interpolation=InterpolationMode.BILINEAR):
 
-        # TODO: interpolation
         self.size = size
         self.scale = scale
         self.ratio = ratio
@@ -397,16 +406,15 @@ class RandomResizedCrop(object):
                 "Please, use InterpolationMode enum."
             )
             interpolation = _torch_strToModes_mapping[interpolation]
-
-        if interpolation in _torch_intToModes_mapping.values():
-            self.tv_F = tv_t.RandomResizedCrop(size, interpolation)
-        else:
-            self.tv_F = tv_t.RandomResizedCrop(size, InterpolationMode.BILINEAR)
-        if interpolation in _cv_strToModes_mapping:
-            self.cv_F = cv_t.RandomResizedCrop(size, _cv_strToModes_mapping[interpolation])
-        else:
-            self.cv_F = cv_t.RandomResizedCrop(size, cv2.INTER_LINEAR)
         self.interpolation = interpolation
+
+        self.tv_F = tv_t.RandomResizedCrop(self.size, self.scale, self.ratio, self.interpolation)
+
+        if self.interpolation in _modes_torchToCV2_mapping:
+            self.cv_F = cv_t.RandomResizedCrop(size, self.scale, self.ratio,
+                                               _modes_torchToCV2_mapping[self.interpolation])
+        else:
+            self.cv_F = cv_t.RandomResizedCrop(size, self.scale, self.ratio, cv2.INTER_LINEAR)
 
     def __call__(self, img):
         if type(img) == np.ndarray:
@@ -425,14 +433,6 @@ class RandomResizedCrop(object):
         return format_string
 
 
-class RandomSizedCrop(RandomResizedCrop):
-    def __init__(self, *args, **kwargs):
-        warnings.warn(
-            "The use of the transforms.RandomSizedCrop transform is deprecated, "
-            + "please use transforms.RandomResizedCrop instead.")
-        super(RandomSizedCrop, self).__init__(*args, **kwargs)
-
-
 class FiveCrop(object):
     def __init__(self, size):
         self.size = size
@@ -444,8 +444,8 @@ class FiveCrop(object):
             ) == 2, "Please provide only two dimensions (h, w) for size."
             self.size = size
 
-        self.tv_F = tv_t.FiveCrop(size)
-        self.cv_F = cv_t.FiveCrop(size)
+        self.tv_F = tv_t.FiveCrop(self.size)
+        self.cv_F = cv_t.FiveCrop(self.size)
 
     def __call__(self, img):
         if type(img) == np.ndarray:
@@ -484,37 +484,50 @@ class TenCrop(object):
 
 
 class LinearTransformation(object):
-    # TODO: missing parameter "mean_vector"
-    def __init__(self, transformation_matrix):
+    def __init__(self, transformation_matrix, mean_vector=None):
         if transformation_matrix.size(0) != transformation_matrix.size(1):
             raise ValueError("transformation_matrix should be square. Got " +
                              "[{} x {}] rectangular matrix.".format(
                                  *transformation_matrix.size()))
+
+        if mean_vector is not None:
+            if mean_vector.size(0) != transformation_matrix.size(0):
+                raise ValueError(
+                    "mean_vector should have the same length {} " +
+                    "as any one of the dimensions of the transformation_matrix [{}]"
+                    .format(mean_vector.size(0), tuple(transformation_matrix.size()))
+                )
+
+            if transformation_matrix.device != mean_vector.device:
+                raise ValueError(
+                    "Input tensors should be on the same device. Got {0} and {1}"
+                    .format(transformation_matrix.device, mean_vector.device)
+                )
+
         self.transformation_matrix = transformation_matrix
+        self.mean_vector = mean_vector
 
-    # TODO: missing judgement
+        self.cv_F = cv_t.LinearTransformation(self.transformation_matrix)
+        self.tv_F = tv_t.LinearTransformation(self.transformation_matrix, self.mean_vector)
+
     def __call__(self, tensor):
-        if tensor.size(0) * tensor.size(1) * tensor.size(
-                2) != self.transformation_matrix.size(0):
-            raise ValueError(
-                "tensor and transformation matrix have incompatible shape." +
-                "[{} x {} x {}] != ".format(*tensor.size()) +
-                "{}".format(self.transformation_matrix.size(0)))
-        flat_tensor = tensor.view(1, -1)
-        transformed_tensor = torch.mm(flat_tensor, self.transformation_matrix)
-        tensor = transformed_tensor.view(tensor.size())
-        return tensor
+        if self.mean_vector is None:
+            return self.cv_F.__call__(tensor)
+        else:
+            return self.tv_F.__call__(tensor)
 
-    # TODO: missing
     def __repr__(self):
         format_string = self.__class__.__name__ + '('
-        format_string += (str(self.transformation_matrix.numpy().tolist()) +
-                          ')')
+        format_string += (
+                "transformation_matrix=" +
+                str(self.transformation_matrix.numpy().tolist()) + ', '
+                + "mean_vector=" + str(self.mean_vector) + ')')
         return format_string
 
 
 class RandomRotation(object):
     # TODO: missing parameter "interpolation"
+    # Conflict: resample indexes of torchvision and opencv are different.
     def __init__(self, degrees, resample=False, expand=False, center=None):
         if isinstance(degrees, numbers.Number):
             if degrees < 0:
@@ -533,14 +546,30 @@ class RandomRotation(object):
 
 
 class RandomAffine(object):
-    # TODO: missing parameters
+    # TODO: Support cv2.INTER_AREA
     def __init__(self,
                  degrees,
                  translate=None,
                  scale=None,
                  shear=None,
                  interpolation=cv2.INTER_LINEAR,
-                 fillcolor=0):
+                 fill=0,
+                 center=None):
+        if isinstance(interpolation, int):
+            warnings.warn(
+                "Argument interpolation should be of type InterpolationMode instead of int."
+                "Please, use InterpolationMode enum."
+            )
+            interpolation = _torch_intToModes_mapping[interpolation]
+
+        if isinstance(interpolation, str):
+            warnings.warn(
+                "Argument interpolation should be of type InterpolationMode instead of str."
+                "Please, use InterpolationMode enum."
+            )
+            interpolation = _torch_strToModes_mapping[interpolation]
+        self.interpolation = interpolation
+
         if isinstance(degrees, numbers.Number):
             if degrees < 0:
                 raise ValueError(
@@ -581,9 +610,73 @@ class RandomAffine(object):
         else:
             self.shear = shear
 
+        # if fillcolor is not None:
+        #     warnings.warn(
+        #         "The parameter 'fillcolor' is deprecated since 0.12 and will be removed in 0.14. "
+        #         "Please use 'fill' instead."
+        #     )
+        #     fill = fillcolor
+
+        if fill is None:
+            fill = 0
+        elif not isinstance(fill, (collections.Sequence, numbers.Number)):
+            raise TypeError("Fill should be either a sequence or a number.")
+        self.fill = fill
+
+        if center is not None:
+            assert isinstance(center, (tuple, list)) and len(center) == 2, \
+                "center should be a list or tuple and it must be of length 2."
+
         # self.resample = resample
-        self.interpolation = interpolation
-        self.fillcolor = fillcolor
+        self.center = center
+
+        self.tv_F = tv_t.RandomAffine(degrees=self.degrees,
+                                      translate=self.translate,
+                                      scale=self.scale,
+                                      shear=self.shear,
+                                      interpolation=self.interpolation,
+                                      fill=self.fill,
+                                      center=self.center)
+
+        if self.interpolation in _modes_torchToCV2_mapping:
+            self.cv_F = cv_t.RandomAffine(degrees=self.degrees,
+                                          translate=self.translate,
+                                          scale=self.scale,
+                                          shear=self.shear,
+                                          interpolation=_modes_torchToCV2_mapping[
+                                              self.interpolation],
+                                          fillcolor=self.fill,
+                                          center=self.center)
+        else:
+            self.cv_F = cv_t.RandomAffine(degrees=self.degrees,
+                                          translate=self.translate,
+                                          scale=self.scale,
+                                          shear=self.shear,
+                                          interpolation=cv2.INTER_LINEAR,
+                                          fillcolor=self.fill,
+                                          center=self.center)
+
+    def __call__(self, img):
+        if type(img) == np.ndarray:
+            if self.center is None:
+                warnings.warn(
+                    "Parameters \'center\' will be ignored for np.ndarray image."
+                )
+            return self.cv_F.__call__(img)
+        else:
+            return self.tv_F.__call__(img)
+
+    def __repr__(self):
+        s = f"{self.__class__.__name__}(degrees={self.degrees}"
+        s += f", translate={self.translate}" if self.translate is not None else ""
+        s += f", scale={self.scale}" if self.scale is not None else ""
+        s += f", shear={self.shear}" if self.shear is not None else ""
+        s += f", interpolation={self.interpolation.value}" if self.interpolation != InterpolationMode.NEAREST else ""
+        s += f", fill={self.fill}" if self.fill != 0 else ""
+        s += f", center={self.center}" if self.center is not None else ""
+        s += ")"
+
+        return s
 
 
 class Grayscale(object):
