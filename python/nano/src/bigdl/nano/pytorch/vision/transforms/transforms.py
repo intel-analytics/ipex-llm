@@ -86,7 +86,9 @@ class Compose(object):
 
 class Resize(object):
     # TODO: Support cv2.INTER_AREA
-    def __init__(self, size, interpolation=InterpolationMode.BILINEAR, max_size=None, antialias=None):
+    def __init__(
+            self, size, interpolation=InterpolationMode.BILINEAR, max_size=None, antialias=None
+    ):
         self.size = size
         self.max_size = max_size
         self.antialias = antialias
@@ -266,7 +268,7 @@ class Pad(object):
         assert padding_mode in ['constant', 'edge', 'reflect', 'symmetric']
         if isinstance(padding, collections.Sequence) and len(padding) not in [2, 4]:
             raise ValueError(
-                "Padding must be an int or a 2, or 4 element tuple, not a " +
+                "Padding must be an int or a 2, or 4 element tuple, not a " \ 
                 "{} element tuple".format(len(padding))
             )
 
@@ -486,14 +488,15 @@ class TenCrop(object):
 class LinearTransformation(object):
     def __init__(self, transformation_matrix, mean_vector=None):
         if transformation_matrix.size(0) != transformation_matrix.size(1):
-            raise ValueError("transformation_matrix should be square. Got " +
-                             "[{} x {}] rectangular matrix.".format(
-                                 *transformation_matrix.size()))
+            raise ValueError(
+                "transformation_matrix should be square. Got [{} x {}] rectangular matrix."
+                .format(*transformation_matrix.size())
+            )
 
         if mean_vector is not None:
             if mean_vector.size(0) != transformation_matrix.size(0):
                 raise ValueError(
-                    "mean_vector should have the same length {} " +
+                    "mean_vector should have the same length {} " \ 
                     "as any one of the dimensions of the transformation_matrix [{}]"
                     .format(mean_vector.size(0), tuple(transformation_matrix.size()))
                 )
@@ -519,9 +522,8 @@ class LinearTransformation(object):
     def __repr__(self):
         format_string = self.__class__.__name__ + '('
         format_string += (
-                "transformation_matrix=" +
-                str(self.transformation_matrix.numpy().tolist()) + ', '
-                + "mean_vector=" + str(self.mean_vector) + ')')
+                "transformation_matrix=" + str(self.transformation_matrix.numpy().tolist()) +
+                ', mean_vector=' + str(self.mean_vector) + ')')
         return format_string
 
 
@@ -671,7 +673,8 @@ class RandomAffine(object):
         s += f", translate={self.translate}" if self.translate is not None else ""
         s += f", scale={self.scale}" if self.scale is not None else ""
         s += f", shear={self.shear}" if self.shear is not None else ""
-        s += f", interpolation={self.interpolation.value}" if self.interpolation != InterpolationMode.NEAREST else ""
+        if self.interpolation != InterpolationMode.NEAREST:
+            s += f", interpolation={self.interpolation.value}"
         s += f", fill={self.fill}" if self.fill != 0 else ""
         s += f", center={self.center}" if self.center is not None else ""
         s += ")"
