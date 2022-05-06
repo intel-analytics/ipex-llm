@@ -79,7 +79,7 @@ class Compose(object):
         format_string = self.__class__.__name__ + '('
         for t in self.transforms:
             format_string += '\n'
-            format_string += '    {0}'.format(t)
+            format_string += '    {}'.format(t)
         format_string += '\n)'
         return format_string
 
@@ -127,7 +127,7 @@ class Resize(object):
 
     def __repr__(self):
         interpolation_str = self.__class__.__name__
-        interpolation_str += '(size={0}, interpolation={1}, max_size={2}, antialias={3}'\
+        interpolation_str += '(size={}, interpolation={}, max_size={}, antialias={}'\
             .format(self.size, self.interpolation, self.max_size, self.antialias)
 
         return interpolation_str
@@ -192,7 +192,7 @@ class RandomCrop(object):
             return self.tv_F.__call__(img)
 
     def __repr__(self):
-        return self.__class__.__name__ + '(size={0}, padding={1})'.format(
+        return self.__class__.__name__ + '(size={}, padding={})'.format(
             self.size, self.padding)
 
 
@@ -215,10 +215,10 @@ class ColorJitter(object):
 
     def __repr__(self):
         format_string = self.__class__.__name__ + '('
-        format_string += 'brightness={0}'.format(self.brightness)
-        format_string += ', contrast={0}'.format(self.contrast)
-        format_string += ', saturation={0}'.format(self.saturation)
-        format_string += ', hue={0})'.format(self.hue)
+        format_string += 'brightness={}'.format(self.brightness)
+        format_string += ', contrast={}'.format(self.contrast)
+        format_string += ', saturation={}'.format(self.saturation)
+        format_string += ', hue={})'.format(self.hue)
         return format_string
 
 
@@ -258,7 +258,7 @@ class CenterCrop(object):
             return self.tv_F.__call__(img)
 
     def __repr__(self):
-        return self.__class__.__name__ + '(size={0})'.format(self.size)
+        return self.__class__.__name__ + '(size={})'.format(self.size)
 
 
 class Pad(object):
@@ -268,8 +268,8 @@ class Pad(object):
         assert padding_mode in ['constant', 'edge', 'reflect', 'symmetric']
         if isinstance(padding, collections.Sequence) and len(padding) not in [2, 4]:
             raise ValueError(
-                "Padding must be an int or a 2, or 4 element tuple, not a " \ 
-                "{} element tuple".format(len(padding))
+                "Padding must be an int or a 2, or 4 element tuple, not a {} element tuple"
+                .format(len(padding))
             )
 
         self.padding = padding
@@ -286,8 +286,8 @@ class Pad(object):
             return self.tv_F.__call__(img)
 
     def __repr__(self):
-        return self.__class__.__name__ + '(padding={0}, fill={1}, padding_mode={2})'. \
-            format(self.padding, self.fill, self.padding_mode)
+        return self.__class__.__name__ + '(padding={}, fill={}, padding_mode={})'\
+            .format(self.padding, self.fill, self.padding_mode)
 
 
 class Lambda(object):
@@ -314,7 +314,7 @@ class RandomTransforms(object):
         format_string = self.__class__.__name__ + '('
         for t in self.transforms:
             format_string += '\n'
-            format_string += '    {0}'.format(t)
+            format_string += '    {}'.format(t)
         format_string += '\n)'
         return format_string
 
@@ -336,7 +336,7 @@ class RandomApply(RandomTransforms):
         format_string += '\n    p={}'.format(self.p)
         for t in self.transforms:
             format_string += '\n'
-            format_string += '    {0}'.format(t)
+            format_string += '    {}'.format(t)
         format_string += '\n)'
         return format_string
 
@@ -363,7 +363,7 @@ class RandomChoice(RandomTransforms):
         return t(*args)
 
     def __repr__(self):
-        return super().__repr__() + '(p={0})'.format(self.p)
+        return super().__repr__() + '(p={})'.format(self.p)
 
 
 class RandomVerticalFlip(object):
@@ -426,12 +426,12 @@ class RandomResizedCrop(object):
 
     def __repr__(self):
         interpolate_str = _torch_modesToStr_mapping[self.interpolation]
-        format_string = self.__class__.__name__ + '(size={0}'.format(self.size)
-        format_string += ', scale={0}'.format(
+        format_string = self.__class__.__name__ + '(size={}'.format(self.size)
+        format_string += ', scale={}'.format(
             tuple(round(s, 4) for s in self.scale))
-        format_string += ', ratio={0}'.format(
+        format_string += ', ratio={}'.format(
             tuple(round(r, 4) for r in self.ratio))
-        format_string += ', interpolation={0})'.format(interpolate_str)
+        format_string += ', interpolation={})'.format(interpolate_str)
         return format_string
 
 
@@ -456,7 +456,7 @@ class FiveCrop(object):
             return self.tv_F.__call__(img)
 
     def __repr__(self):
-        return self.__class__.__name__ + '(size={0})'.format(self.size)
+        return self.__class__.__name__ + '(size={})'.format(self.size)
 
 
 class TenCrop(object):
@@ -481,7 +481,7 @@ class TenCrop(object):
             return self.tv_F.__call__(img)
 
     def __repr__(self):
-        return self.__class__.__name__ + '(size={0}, vertical_flip={1})'.format(
+        return self.__class__.__name__ + '(size={}, vertical_flip={})'.format(
             self.size, self.vertical_flip)
 
 
@@ -496,14 +496,14 @@ class LinearTransformation(object):
         if mean_vector is not None:
             if mean_vector.size(0) != transformation_matrix.size(0):
                 raise ValueError(
-                    "mean_vector should have the same length {} " \ 
+                    "mean_vector should have the same length {}"
                     "as any one of the dimensions of the transformation_matrix [{}]"
                     .format(mean_vector.size(0), tuple(transformation_matrix.size()))
                 )
 
             if transformation_matrix.device != mean_vector.device:
                 raise ValueError(
-                    "Input tensors should be on the same device. Got {0} and {1}"
+                    "Input tensors should be on the same device. Got {} and {}"
                     .format(transformation_matrix.device, mean_vector.device)
                 )
 
@@ -520,10 +520,8 @@ class LinearTransformation(object):
             return self.tv_F.__call__(tensor)
 
     def __repr__(self):
-        format_string = self.__class__.__name__ + '('
-        format_string += (
-                "transformation_matrix=" + str(self.transformation_matrix.numpy().tolist()) +
-                ', mean_vector=' + str(self.mean_vector) + ')')
+        format_string = self.__class__.__name__ + '(transformation_matrix={}, mean_vector={})'\
+            .format(self.transformation_matrix.numpy().tolist(), self.mean_vector)
         return format_string
 
 
@@ -696,7 +694,7 @@ class Grayscale(object):
             return self.tv_F.__call__(img)
 
     def __repr__(self):
-        return self.__class__.__name__ + '(num_output_channels={0})'.format(
+        return self.__class__.__name__ + '(num_output_channels={})'.format(
             self.num_output_channels)
 
 
@@ -714,15 +712,15 @@ class RandomGrayscale(object):
             return self.tv_F.__call__(img)
 
     def __repr__(self):
-        return self.__class__.__name__ + '(p={0})'.format(self.p)
+        return self.__class__.__name__ + '(p={})'.format(self.p)
 
 
 class RandomPerspective(tv_t.RandomPerspective):
 
     def __call__(self, img):
         if type(img) == np.ndarray:
-            raise NotImplementedError("Input image must be PIL image or Tensor image for {0}".
-                                      format(self.__class__.__name__))
+            raise NotImplementedError("Input image must be PIL image or Tensor image for {}"
+                                      .format(self.__class__.__name__))
         else:
             return super(RandomPerspective, self).__call__(img)
 
@@ -731,8 +729,8 @@ class RandomErasing(tv_t.RandomErasing):
 
     def __call__(self, img):
         if type(img) == np.ndarray:
-            raise NotImplementedError("Input image must be Tensor image for {0}".
-                                      format(self.__class__.__name__))
+            raise NotImplementedError("Input image must be Tensor image for {}"
+                                      .format(self.__class__.__name__))
         else:
             return super(RandomErasing, self).__call__(img)
 
@@ -741,8 +739,8 @@ class GaussianBlur(tv_t.GaussianBlur):
 
     def __call__(self, img):
         if type(img) == np.ndarray:
-            raise NotImplementedError("Input image must be PIL image or Tensor image for {0}".
-                                      format(self.__class__.__name__))
+            raise NotImplementedError("Input image must be PIL image or Tensor image for {}"
+                                      .format(self.__class__.__name__))
         else:
             return super(GaussianBlur, self).__call__(img)
 
@@ -751,8 +749,8 @@ class RandomInvert(tv_t.RandomInvert):
 
     def __call__(self, img):
         if type(img) == np.ndarray:
-            raise NotImplementedError("Input image must be PIL image or Tensor image for {0}".
-                                      format(self.__class__.__name__))
+            raise NotImplementedError("Input image must be PIL image or Tensor image for {}"
+                                      .format(self.__class__.__name__))
         else:
             return super(RandomInvert, self).__call__(img)
 
@@ -761,8 +759,8 @@ class RandomPosterize(tv_t.RandomPosterize):
 
     def __call__(self, img):
         if type(img) == np.ndarray:
-            raise NotImplementedError("Input image must be PIL image or Tensor image for {0}".
-                                      format(self.__class__.__name__))
+            raise NotImplementedError("Input image must be PIL image or Tensor image for {}"
+                                      .format(self.__class__.__name__))
         else:
             return super(RandomPosterize, self).__call__(img)
 
@@ -771,8 +769,8 @@ class RandomSolarize(tv_t.RandomSolarize):
 
     def __call__(self, img):
         if type(img) == np.ndarray:
-            raise NotImplementedError("Input image must be PIL image or Tensor image for {0}".
-                                      format(self.__class__.__name__))
+            raise NotImplementedError("Input image must be PIL image or Tensor image for {}"
+                                      .format(self.__class__.__name__))
         else:
             return super(RandomSolarize, self).__call__(img)
 
@@ -781,8 +779,8 @@ class RandomAdjustSharpness(tv_t.RandomAdjustSharpness):
 
     def __call__(self, img):
         if type(img) == np.ndarray:
-            raise NotImplementedError("Input image must be PIL image or Tensor image for {0}".
-                                      format(self.__class__.__name__))
+            raise NotImplementedError("Input image must be PIL image or Tensor image for {}"
+                                      .format(self.__class__.__name__))
         else:
             return super(RandomAdjustSharpness, self).__call__(img)
 
@@ -791,8 +789,8 @@ class RandomAutocontrast(tv_t.RandomAutocontrast):
 
     def __call__(self, img):
         if type(img) == np.ndarray:
-            raise NotImplementedError("Input image must be PIL image or Tensor image for {0}".
-                                      format(self.__class__.__name__))
+            raise NotImplementedError("Input image must be PIL image or Tensor image for {}"
+                                      .format(self.__class__.__name__))
         else:
             return super(RandomAutocontrast, self).__call__(img)
 
@@ -801,7 +799,7 @@ class RandomEqualize(tv_t.RandomEqualize):
 
     def __call__(self, img):
         if type(img) == np.ndarray:
-            raise NotImplementedError("Input image must be PIL image or Tensor image for {0}".
-                                      format(self.__class__.__name__))
+            raise NotImplementedError("Input image must be PIL image or Tensor image for {}"
+                                      .format(self.__class__.__name__))
         else:
             return super(RandomEqualize, self).__call__(img)
