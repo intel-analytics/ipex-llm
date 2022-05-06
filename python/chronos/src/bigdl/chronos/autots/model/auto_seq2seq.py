@@ -14,10 +14,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-from bigdl.orca.automl.auto_estimator import AutoEstimator
-from .base_automodel import BaseAutomodelMixin
+from .base_automodel import BaseAutomodelMixin, Dynamic_binding
 
 
+@Dynamic_binding
 class AutoSeq2Seq(BaseAutomodelMixin):
     def __init__(self,
                  input_feature_num,
@@ -90,15 +90,20 @@ class AutoSeq2Seq(BaseAutomodelMixin):
         )
         self.metric = metric
         self.metric_mode = metric_mode
-        # dynamic_binding and model_builder
         self.backend = backend
-        from bigdl.chronos.model.Seq2Seq_pytorch import model_creator as torch_model
-        from bigdl.chronos.model.tf2.Seq2Seq_keras import model_creator as keras_model
-        model_creator = torch_model if self.backend.startswith("torch") else keras_model
-        model_builder = BaseAutomodelMixin._dynamic_binding(self, model_creator, optimizer, loss)
+        self.optimizer = optimizer
+        self.loss = loss
 
-        self.auto_est = AutoEstimator(model_builder=model_builder,
-                                      logs_dir=logs_dir,
-                                      resources_per_trial={"cpu": cpus_per_trial},
-                                      remote_dir=remote_dir,
-                                      name=name)
+        self.auto_est_env = dict(logs_dir=logs_dir,
+                                 resources_per_trial={"cpu": cpus_per_trial},
+                                 remote_dir=remote_dir,
+                                 name=name)
+
+    def __call__(self, *args, **kwag):
+        if self.backend.startswith("torch"):
+            from bigdl.chronos.model.Seq2Seq_pytorch import model_creator
+        elif self.backend.startswith("keras"):
+            from bigdl.chronos.model.tf2.Seq2Seq_keras import model_creator
+        else:
+            raise TypeError(f"We only support keras and torch as backend, but got {self.backend}")
+        self.model_creator = model_creator

@@ -32,18 +32,16 @@ class LSTMModel(Model):
             self.lstm_sequential.add(LSTM(self.hidden_dim[layer],
                                           return_sequences=True,
                                           dropout=self.dropout[layer],
-                                          input_shape=(1, self.input_dim),
                                           name="lstm_" + str(layer+1)))
         self.lstm_sequential.add(LSTM(self.hidden_dim[-1],
                                       dropout=dropout[-1],
-                                      input_shape=(1, self.input_dim),
                                       name="lstm_" + str(layer_num)))
         self.lstm_sequential.add(Dense(self.output_dim))
         self.lstm_sequential.add(Reshape((1, self.output_dim), input_shape=(self.output_dim,)))
 
     def call(self, input_seq, training=False):
         if not training:
-            # freeeze all lstm layers
+            # freeeze all dropout in lstm layers
             for layer in self.lstm_sequential.layers[:-2]:
                 layer.trainable = False
         out = self.lstm_sequential(input_seq)

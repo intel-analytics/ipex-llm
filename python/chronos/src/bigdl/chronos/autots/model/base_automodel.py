@@ -105,7 +105,7 @@ class BaseAutomodelMixin:
 
         Be sure to install onnx and onnxruntime to enable this function. The method
         will give exactly the same result as .predict() but with higher throughput
-        and lower latency. keras will support onnx as soon as possible.
+        and lower latency. keras will support onnx later.
 
         :param data: a numpy ndarray x, where x's shape is (num_samples, lookback, feature_dim)
                where lookback and feature_dim should be the same as past_seq_len and
@@ -171,7 +171,7 @@ class BaseAutomodelMixin:
 
         Be sure to install onnx and onnxruntime to enable this function. The method
         will give exactly the same result as .evaluate() but with higher throughput
-        and lower latency. keras will support onnx as soon as possible.
+        and lower latency. keras will support onnx later.
 
         Please note that evaluate result is calculated by scaled y and yhat. If you scaled
         your data (e.g. use .scale() on the TSDataset) please follow the following code
@@ -317,29 +317,32 @@ class BaseAutomodelMixin:
     def _get_best_automl_model(self):
         return self.best_model
 
-    @staticmethod
-    def _dynamic_binding(obj, model_creator, optimizer, loss):
-        """
-        dynamic binding keras and pytorch method
-        :params obj: a AutoModel instance
-        :params model_creator: torch or kerasa model
-        :params optimizer: torch or keras optim
-        :prarms loss: torch or keras loss
-        """
-        if obj.backend.startswith("torch"):
+
+def Dynamic_binding(cls):
+    super_init = cls.__init__
+    super_call = cls.__call__
+
+    def __init__(cls, *args, **kwag):
+        super_init(cls, *args, **kwag)
+        super_call(cls, *args, **kwag)
+
+        # dynamic binding
+        if cls.backend.startswith("torch"):
             from bigdl.orca.automl.model.base_pytorch_model import PytorchModelBuilder
-            model_builder = PytorchModelBuilder(model_creator=model_creator,
-                                                optimizer_creator=optimizer,
-                                                loss_creator=loss)
-            obj._DEFAULT_BEST_MODEL_DIR = "best_model.ckpt"
-            obj._DEFAULT_BEST_CONFIG_DIR = "best_config.json"
-        elif obj.backend.startswith("keras"):
+            cls._DEFAULT_BEST_MODEL_DIR = "best_model.ckpt"
+            cls._DEFAULT_BEST_CONFIG_DIR = "best_config.json"
+            model_builder = PytorchModelBuilder(model_creator=cls.model_creator,
+                                                optimizer_creator=cls.optimizer,
+                                                loss_creator=cls.loss)
+        elif cls.backend.startswith("keras"):
             from bigdl.orca.automl.model.base_keras_model import KerasModelBuilder
-            model_builder = KerasModelBuilder(model_creator=model_creator,
-                                              optimizer=optimizer,
-                                              loss=loss)
-            obj._DEFAULT_BEST_MODEL_DIR = "best_keras_model.ckpt"
-            obj._DEFAULT_BEST_CONFIG_DIR = "best_keras_config.json"
-        else:
-            raise ValueError(f"We only support keras or torch as backend. Got {obj.backend}")
-        return model_builder
+            cls.search_space.update({"optimizer": cls.optimizer, "loss": cls.loss})
+            model_builder = KerasModelBuilder(model_creator=cls.model_creator)
+            cls._DEFAULT_BEST_MODEL_DIR = "best_keras_model.ckpt"
+            cls._DEFAULT_BEST_CONFIG_DIR = "best_keras_config.json"
+
+        from bigdl.orca.automl.auto_estimator import AutoEstimator
+        cls.auto_est = AutoEstimator(model_builder, **cls.auto_est_env)
+
+    cls.__init__ = __init__
+    return cls

@@ -32,12 +32,9 @@ def check_tf_version():
 class KerasBaseModel(BaseModel):
     def __init__(self,
                  model_creator,
-                 optimizer, loss,
                  check_optional_config=False):
         self.check_optional_config = check_optional_config
         self.model_creator = model_creator
-        self.optimizer = optimizer
-        self.loss = loss
         self.model = None
         self.config = None
         self.model_built = False
@@ -47,7 +44,6 @@ class KerasBaseModel(BaseModel):
         self._check_config(**config)
         self.config = config
         # build model
-        self.config.update({'optim': self.optimizer, 'loss': self.loss})
         self.model = self.model_creator(config)
         # check whether the model is a compiled model
         if self.model.optimizer is None:
@@ -208,9 +204,6 @@ class KerasBaseModel(BaseModel):
     def load_state_dict(self, state):
         self.config = state["config"]
         self.model = self.model_creator(self.config)
-        if self.model.layers[0].weights.__len__() == 0:
-            input_shape = self._get_input_shape()
-            _, = self.model(input_shape)
         self.model.set_weights(state["weights"])
         self.model_built = True
         # self.model.optimizer.set_weights(state["optimizer_weights"])
@@ -233,24 +226,13 @@ class KerasBaseModel(BaseModel):
     def _get_optional_parameters(self):
         return {"batch_size"}
 
-    def _get_input_shape(self):
-        past_seq_len = self.config['past_seq_len']
-        input_feature_num = self.config['input_feature_num']
-        batch_size = self.config.get('batch_size', 32)
-        input_shape = tf.random.normal((batch_size, past_seq_len, input_feature_num))
-        return input_shape
-
 
 class KerasModelBuilder(ModelBuilder):
 
-    def __init__(self, model_creator, optimizer, loss):
+    def __init__(self, model_creator):
         self.model_creator = model_creator
-        self.optimizer = optimizer
-        self.loss = loss
 
     def build(self, config):
-        model = KerasBaseModel(self.model_creator,
-                               self.optimizer,
-                               self.loss)
+        model = KerasBaseModel(self.model_creator)
         model.build(config)
         return model

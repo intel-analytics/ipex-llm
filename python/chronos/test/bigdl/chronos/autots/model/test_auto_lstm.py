@@ -61,7 +61,7 @@ def valid_dataloader_creator(config):
 
 
 def get_auto_estimator(backend='torch'):
-    loss = torch.nn.MSELoss() if backend.startswith('torch') else "mse"
+    loss = "mse" if backend.startswith('keras') else torch.nn.MSELoss()
     auto_lstm = AutoLSTM(input_feature_num=input_feature_dim,
                          output_target_num=output_feature_dim,
                          past_seq_len=5,
@@ -187,8 +187,8 @@ class TestAutoLSTM(TestCase):
                             validation_data=get_x_y(size=400),
                             n_sampling=1)
         with tempfile.TemporaryDirectory() as tmp_dir_name:
-            auto_keras_lstm.save('lstm_model')
-            auto_keras_lstm.load('lstm_model')
+            auto_keras_lstm.save(tmp_dir_name)
+            auto_keras_lstm.load(tmp_dir_name)
         test_data_x, test_data_y = get_x_y(size=100)
         pred = auto_keras_lstm.predict(test_data_x)
         eval_res = auto_keras_lstm.evaluate((test_data_x, test_data_y))

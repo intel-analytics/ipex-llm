@@ -17,7 +17,7 @@
 import tensorflow as tf
 from tensorflow.keras import backend as K
 from bigdl.nano.tf.keras import Model
-from tensorflow.keras.layers import LSTM, Dense, Lambda, Reshape, Layer
+from tensorflow.keras.layers import LSTM, Dense, Lambda, Reshape, Layer, Input
 
 
 class Encoder(Layer):
@@ -31,10 +31,9 @@ class Encoder(Layer):
         for i in range(lstm_layer_num):
             self.encoder_lstm.append(LSTM(self.lstm_hidden_dim,
                                           return_sequences=True,
-                                          input_shape=(None, input_feature_num),
                                           return_state=True,
                                           dropout=dropout,
-                                          name="cus_encoder"+str(i+1)))
+                                          name="lstm_encoder_"+str(i)))
         super(Encoder, self).__init__()
 
     def call(self, enc_inp, training=False):
@@ -67,9 +66,8 @@ class Decoder(Layer):
             self.decoder_lstm.append(LSTM(self.lstm_hidden_dim,
                                           return_sequences=True,
                                           return_state=True,
-                                          input_shape=(1, output_feature_num),
                                           dropout=dropout,
-                                          name="cus_decoder"+str(i+1)))
+                                          name="lstm_decoder_"+str(i)))
         self.fc = Dense(self.output_feature_num)
         super(Decoder, self).__init__()
 
@@ -118,9 +116,8 @@ class LSTMSeq2Seq(Model):
         self.fc = Dense(output_feature_num)
 
     def call(self, inp, target_seq=None, training=False):
-        decoder_inp = inp
+        decoder_inputs = self.decoder_inputs(inp[:, -1, :self.output_feature_num])
         states = self.encoder(inp, training=training)
-        decoder_inputs = self.decoder_inputs(decoder_inp[:, -1, :self.output_feature_num])
         all_outputs = []
         for seq_len in range(self.future_seq_len):
             if self.teacher_forcing and target_seq is not None:
@@ -153,6 +150,8 @@ def model_creator(config):
                         lstm_layer_num=config.get("lstm_layer_num", 2),
                         dropout=config.get("dropout", 0.25),
                         teacher_forcing=config.get("teacher_forcing", False))
+    inputs = Input(shape=(None, config['input_feature_num']))
+    model(inputs)
     learning_rate = config.get('lr', 1e-3)
     model.compile(optimizer=getattr(tf.keras.optimizers,
                                     config.get("optim", "Adam"))(learning_rate),

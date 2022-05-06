@@ -61,7 +61,7 @@ def valid_dataloader_creator(config):
 
 
 def get_auto_estimator(backend='torch'):
-    loss = torch.nn.MSELoss() if backend.startswith('torch') else "mse"
+    loss = "mse" if backend.startswith('keras') else torch.nn.MSELoss()
     auto_seq2seq = AutoSeq2Seq(input_feature_num=input_feature_dim,
                                output_target_num=output_feature_dim,
                                past_seq_len=past_seq_len,
