@@ -19,7 +19,7 @@ from typing import Any, Dict, Optional, Union
 import pytorch_lightning as pl
 
 from pytorch_lightning.utilities.exceptions import MisconfigurationException
-from pytorch_lightning.utilities.types import _EVALUATE_OUTPUT, _PREDICT_OUTPUT, EVAL_DATALOADERS, TRAIN_DATALOADERS
+from pytorch_lightning.utilities.types import EVAL_DATALOADERS, TRAIN_DATALOADERS
 from pytorch_lightning.utilities import rank_zero_deprecation
 from pytorch_lightning.core.datamodule import LightningDataModule
 
@@ -27,8 +27,10 @@ from optuna.integration import PyTorchLightningPruningCallback
 import inspect
 import copy
 
+
 def _is_creator(model):
     return inspect.ismethod(model) or inspect.isfunction(model)
+
 
 class Objective(object):
     """The Tuning objective for Optuna."""
@@ -69,7 +71,6 @@ class Objective(object):
     def _pre_train(self, model, trial):
         # only do shallow copy and process/duplicate
         # specific args TODO: may need to handle more cases
-
         if self.pruning:
             callbacks = self.searcher.trainer.callbacks or []
             pruning_cb = PyTorchLightningPruningCallback(trial, monitor=self.target_metric)
@@ -96,8 +97,10 @@ class Objective(object):
     ):
         if train_dataloader is not None:
             rank_zero_deprecation(
-                "`trainer.tune(train_dataloader)` is deprecated in v1.4 and will be removed in v1.6."
-                " Use `trainer.tune(train_dataloaders)` instead. HINT: added 's'"
+                "`trainer.search(train_dataloader)` is deprecated in v1.4"
+                "and will be removed in v1.6."
+                " Use `trainer.search(train_dataloaders)` instead. "
+                "HINT: added 's'"
             )
             train_dataloaders = train_dataloader
         # if a datamodule comes in as the second arg, then fix it for the user
@@ -105,13 +108,13 @@ class Objective(object):
             datamodule = train_dataloaders
             train_dataloaders = None
         # If you supply a datamodule you can't supply train_dataloader or val_dataloaders
-        if (train_dataloaders is not None or val_dataloaders is not None) and datamodule is not None:
+        if (train_dataloaders is not None or val_dataloaders is not None) and \
+                datamodule is not None:
             raise MisconfigurationException(
-                "You cannot pass `train_dataloader` or `val_dataloaders` to `trainer.tune(datamodule=...)`"
+                "You cannot pass `train_dataloader`"
+                "or `val_dataloaders` to `trainer.search(datamodule=...)`"
             )
         return train_dataloaders, val_dataloaders, datamodule
-
-
 
     def __call__(self, trial):
         """
