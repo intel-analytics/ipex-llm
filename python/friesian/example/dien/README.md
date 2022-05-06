@@ -1,4 +1,4 @@
-# Train DIEN using the Amazon book review dataset
+# Train DIEN using the Amazon Book Reviews dataset
 This folder showcases how to use BigDL Friesian to preprocess and train a [DIEN](https://arxiv.org/pdf/1809.03672.pdf) model. 
 Model definition is based on [ai-matrix](https://github.com/alibaba/ai-matrix/tree/master/macro_benchmark/DIEN) and
 [Amazon Book Reviews](http://snap.stanford.edu/data/amazon/productGraph/categoryFiles/reviews_Books.json.gz) dataset is used in this example.
@@ -105,7 +105,7 @@ python dien_train.py \
 ```
 
 __Options:__
-* `cluster_mode`: The cluster mode to run the data preprocessing, one of local, yarn, standalone, or spark-submit. Default to be local.
+* `cluster_mode`: The cluster mode to run the training, one of local, yarn, standalone, or spark-submit. Default to be local.
 * `master`: The master URL, only used when cluster_mode is standalone.
 * `executor_cores`: The number of cores to use on each node. Default to be 48.
 * `executor_memory`: The amount of memory to allocate on each node. Default to be 240g.
