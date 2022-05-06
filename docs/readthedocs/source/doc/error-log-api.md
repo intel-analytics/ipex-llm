@@ -15,7 +15,7 @@ If user's input is invalid
 Log4Error.invalidInputError(condition: Boolean, errmsg: String, fixmsg: String = null)
 ```
 
-* `condition`: Will throw exception and print errmsg if it's `true`. Otherwise will pass the function
+* `condition`: Will throw exception and print errmsg if it's `false`. Otherwise will pass the function
 * `errmsg`: Error message to be print.
 * `fixmsg`: Message about how to fix the error.
 
@@ -24,7 +24,7 @@ If user call the api wrong
 Log4Error.invalidOperationError(condition: Boolean, errmsg: String, fixmsg: String = null, cause: Throwable = null)
 ```
 
-* `condition`: Will throw exception and print errmsg if it's `true`. Otherwise will pass the function
+* `condition`: Will throw exception and print errmsg if it's `false`. Otherwise will pass the function
 * `errmsg`: Error message to be print.
 * `fixmsg`: Message about how to fix the error.
 * `cause`: Exception need to throw.
@@ -34,7 +34,7 @@ For unkown Exception:
 Log4Error.unKnowExceptionError(condition: Boolean, errmsg: String, fixmsg: String = null, cause: Throwable = null)
 ```
 
-* `condition`: Will throw exception and print errmsg if it's `true`. Otherwise will pass the function
+* `condition`: Will throw exception and print errmsg if it's `false`. Otherwise will pass the function
 * `errmsg`: Error message to be print.
 * `fixmsg`: Message about how to fix the error.
 * `cause`: Exception need to throw.
@@ -54,7 +54,7 @@ If user's input is invalid
 invalidInputError(condition, errMsg, fixMsg=None)
 ```
 
-* `condition`: Will throw exception and print errmsg if it's `true`. Otherwise will pass the function
+* `condition`: Will throw exception and print errmsg if it's `false`. Otherwise will pass the function
 * `errMsg`: Error message to be print.
 * `fixMsg`: Message about how to fix the error.
 
@@ -63,7 +63,7 @@ If user call the api wrong
 invalidOperationError(condition, errMsg, fixMsg=None, cause=None)
 ```
 
-* `condition`: Will throw exception and print errmsg if it's `true`. Otherwise will pass the function
+* `condition`: Will throw exception and print errmsg if it's `false`. Otherwise will pass the function
 * `errMsg`: Error message to be print.
 * `fixMsg`: Message about how to fix the error.
 * `cause`: Exception need to throw.
