@@ -2,7 +2,7 @@
 
 export ANALYTICS_ZOO_ROOT=${ANALYTICS_ZOO_ROOT}
 export NANO_HOME=${ANALYTICS_ZOO_ROOT}/python/nano/src
-export NANO_AUTOML_TF_TEST_DIR=${ANALYTICS_ZOO_ROOT}/python/nano/test/automl/common
+export NANO_AUTOML_TF_TEST_DIR=${ANALYTICS_ZOO_ROOT}/python/nano/test/automl/tf
 
 set -e
 
