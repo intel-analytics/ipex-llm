@@ -20,7 +20,7 @@ import json
 from bigdl.chronos.autots.utils import recalculate_n_sampling
 
 
-class BaseAutomodelMixin:
+class BaseAutomodelMix:
 
     def fit(self,
             data,
@@ -331,18 +331,18 @@ def Dynamic_binding(cls):
             from bigdl.orca.automl.model.base_pytorch_model import PytorchModelBuilder
             cls._DEFAULT_BEST_MODEL_DIR = "best_model.ckpt"
             cls._DEFAULT_BEST_CONFIG_DIR = "best_config.json"
-            model_builder = PytorchModelBuilder(model_creator=cls.model_creator,
+            model_builder = PytorchModelBuilder(model_creator=cls._model_creator,
                                                 optimizer_creator=cls.optimizer,
                                                 loss_creator=cls.loss)
         elif cls.backend.startswith("keras"):
             from bigdl.orca.automl.model.base_keras_model import KerasModelBuilder
             cls.search_space.update({"optimizer": cls.optimizer, "loss": cls.loss})
-            model_builder = KerasModelBuilder(model_creator=cls.model_creator)
+            model_builder = KerasModelBuilder(model_creator=cls._model_creator)
             cls._DEFAULT_BEST_MODEL_DIR = "best_keras_model.ckpt"
             cls._DEFAULT_BEST_CONFIG_DIR = "best_keras_config.json"
 
         from bigdl.orca.automl.auto_estimator import AutoEstimator
-        cls.auto_est = AutoEstimator(model_builder, **cls.auto_est_env)
+        cls.auto_est = AutoEstimator(model_builder, **cls.auto_est_config)
 
     cls.__init__ = __init__
     return cls

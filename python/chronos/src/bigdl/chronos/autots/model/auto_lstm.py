@@ -14,11 +14,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-from .base_automodel import BaseAutomodelMixin, Dynamic_binding
+from .base_automodel import BaseAutomodelMix, Dynamic_binding
 
 
 @Dynamic_binding
-class AutoLSTM(BaseAutomodelMixin):
+class AutoLSTM(BaseAutomodelMix):
     def __init__(self,
                  input_feature_num,
                  output_target_num,
@@ -90,10 +90,10 @@ class AutoLSTM(BaseAutomodelMixin):
         self.backend = backend
         self.optimizer = optimizer
         self.loss = loss
-        self.auto_est_env = dict(logs_dir=logs_dir,
-                                 resources_per_trial={"cpu": cpus_per_trial},
-                                 remote_dir=remote_dir,
-                                 name=name)
+        self._auto_est_config = dict(logs_dir=logs_dir,
+                                     resources_per_trial={"cpu": cpus_per_trial},
+                                     remote_dir=remote_dir,
+                                     name=name)
 
     def __call__(self, *args, **kwag):
         if self.backend.startswith("torch"):
@@ -102,4 +102,4 @@ class AutoLSTM(BaseAutomodelMixin):
             from bigdl.chronos.model.tf2.VanillaLSTM_keras import model_creator
         else:
             raise TypeError(f"We only support keras and torch as backend, but got {self.backend}")
-        self.model_creator = model_creator
+        self._model_creator = model_creator
