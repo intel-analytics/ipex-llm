@@ -22,10 +22,7 @@ from bigdl.friesian.feature import FeatureTable
 from bigdl.orca import init_orca_context
 import tensorflow_recommenders as tfrs
 from bigdl.orca.learn.tf2.estimator import Estimator
-from pyspark.sql.types import IntegerType, StringType
-from pyspark.sql.functions import col
 from bigdl.orca.data.tf.data import Dataset
-from pyspark.sql.functions import spark_partition_id, asc, desc
 
 
 class DCN(tfrs.Model):
@@ -138,8 +135,7 @@ if __name__ == "__main__":
                           driver_cores=options.driver_cores, driver_memory=options.driver_memory,
                           init_ray_on_spark=True)
     else:
-        raise ValueError("cluster_mode should be one of 'local', 'yarn', "
-                         "'standalone' and 'spark-submit', but got " + args.cluster_mode)
+        raise ValueError("cluster_mode should be 'local' or 'yarn', but got " + args.cluster_mode)
 
     cols = ["movie_id", "user_id", "gender", "age", "occupation", "zip_code", "rating"]
     str_features = ["movie_id", "user_id", "zip_code", "occupation"]
@@ -150,21 +146,16 @@ if __name__ == "__main__":
     gender_to_int = lambda x: gender_dict[x]
     table = table.apply("gender", "gender", gender_to_int, dtype="int")
     table = table.ordinal_shuffle_partition()
-    print(table.df.schema)
+    print(table.schema)
     # convert dtype
-    train_df = table.df
-    for c in str_features:
-        train_df = train_df.withColumn(c, col(c).cast(StringType()))
-    for c in int_features:
-        train_df = train_df.withColumn(c, col(c).cast(IntegerType()))
-    print(train_df.schema)
-    table = FeatureTable(train_df)
+    table = table.cast(str_features, "string")
+    table = table.cast(int_features, "int")
+    print(table.schema)
     # generate vocab
-    vocabularies = {}
-    for col in cols:
-        vocabularies[col] = table.select(col).df.distinct().rdd.map(lambda row: row[col]).collect()
-    table = FeatureTable(table.df.limit(100_000).repartition(options.num_executor * 2))
-    table.df.withColumn("partitionId", spark_partition_id()).groupBy("partitionId").count().show()
+    vocabularies = table.get_vocabularies(cols)
+    table = table.limit(100_000).repartition(options.num_executor * 2)
+    # show row number in each partition
+    table.get_partition_row_number().show()
     train_tbl, test_tbl = table.random_split([0.8, 0.2])
     train_count = train_tbl.size()
     steps = math.ceil(train_count / 8192)
@@ -173,8 +164,8 @@ if __name__ == "__main__":
     val_steps = math.ceil(test_count / 8192)
     print("test size: ", test_count, ", steps: ", val_steps)
 
-    train_dataset = Dataset.from_tensor_slices_with_tbl(train_tbl)
-    val_dataset = Dataset.from_tensor_slices_with_tbl(test_tbl)
+    train_dataset = Dataset.from_feature_table(train_tbl)
+    val_dataset = Dataset.from_feature_table(test_tbl)
 
     config = {
         "lr": 0.01
@@ -183,8 +174,8 @@ if __name__ == "__main__":
 
     def model_creator(config):
         model = DCN(use_cross_layer=True, deep_layer_sizes=[192, 192])
-        from bigdl.friesian.feature.utils import distribute_tfrs_model
-        model = distribute_tfrs_model(model)
+        from bigdl.friesian.learn.models import tfrs_model
+        model = tfrs_model(model)
         model.compile(optimizer=tf.keras.optimizers.Adam(config['lr']))
         return model
 

@@ -18,6 +18,7 @@ import tensorflow as tf
 from bigdl.orca.tfpark.tf_dataset import TensorMeta
 from bigdl.dllib.utils import nest
 from bigdl.orca.data import SparkXShards
+from  bigdl.dllib.utils import log4Error
 
 
 class Dataset(object):
@@ -110,10 +111,11 @@ class Dataset(object):
         return TensorSliceDataset(xshards)
 
     @staticmethod
-    def from_tensor_slices_with_tbl(tbl):
+    def from_feature_table(tbl):
         from bigdl.friesian.feature import FeatureTable
         from bigdl.friesian.feature.utils import featuretable_to_xshards
-        assert isinstance(tbl, FeatureTable), "Only Friesian FeatureTable is supported"
+        log4Error.invalidInputError(isinstance(tbl, FeatureTable),
+                                    "Only Friesian FeatureTable is supported")
         xshards = featuretable_to_xshards(tbl)
         return TensorSliceDataset(xshards)
 

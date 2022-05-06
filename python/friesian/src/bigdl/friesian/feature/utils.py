@@ -18,6 +18,8 @@ from bigdl.dllib.utils.file_utils import callZooFunc
 from pyspark.sql.types import IntegerType, ShortType, LongType, FloatType, DecimalType, \
     DoubleType, BooleanType
 from pyspark.sql.functions import broadcast, udf
+from bigdl.dllib.utils.log4Error import *
+import warnings
 
 
 def compute(df):
@@ -217,9 +219,10 @@ def str_to_list(arg, arg_name):
 def featuretable_to_xshards(tbl, convert_cols=None):
     from bigdl.friesian.feature import FeatureTable
     from bigdl.orca.data import SparkXShards
-    from pyspark.ml.linalg import DenseVector
+    from pyspark.ml.linalg import DenseVector, SparseVector
     import numpy as np
     from bigdl.orca import OrcaContext
+    from pyspark.ml.linalg import VectorUDT
     shard_size = OrcaContext._shard_size
     assert isinstance(tbl, FeatureTable), "This function only supports friesian FeatureTable"
     # TODO: partition < node num
@@ -228,7 +231,7 @@ def featuretable_to_xshards(tbl, convert_cols=None):
     if convert_cols and not isinstance(convert_cols, list):
         convert_cols = [convert_cols]
 
-    schema = tbl.df.schema
+    schema = tbl.schema
     np_type_dict = dict()
     for col in convert_cols:
         assert col in tbl.columns, "Column name " + col + " does not exist in the FeatureTable"
@@ -236,6 +239,9 @@ def featuretable_to_xshards(tbl, convert_cols=None):
         np_type = df_type_to_np_type(feature_type)
         if np_type:
             np_type_dict[col] = np_type
+        elif not isinstance(feature_type, VectorUDT):
+            warnings.warn("The type of column " + col + "(" + feature_type.simpleString() +
+                          ") is not supported, please confirm the result if it is expected.")
 
     def init_result_dict():
         return {c: [] for c in convert_cols}
@@ -246,11 +252,17 @@ def featuretable_to_xshards(tbl, convert_cols=None):
                 result[c] = np.asarray(result[c], dtype=np_type_dict[c])
             else:
                 data = result[c]
-                if len(data) > 0 and isinstance(data[0], DenseVector):
-                    result[c] = np.stack(list(map(lambda vector:
-                                                  vector.values.astype(np.float32), data)))
-                else:
-                    "unsupported field {}".format(schema[c])
+                if len(data) > 0:
+                    sample = data[0]
+                    if isinstance(sample, DenseVector):
+                        result[c] = np.stack(list(map(lambda vector:
+                                                      vector.values.astype(np.float32), data)))
+                    else:
+                        invalidInputError(not isinstance(sample, SparseVector),
+                                          "unsupported field {}, data {}".format(schema[c],
+                                                                                 sample))
+                        result[c] = np.asarray(result[c])
+
         return result
 
     def to_numpy_dict(iter, shard_size=None):
@@ -277,6 +289,8 @@ def df_type_to_np_type(dtype):
         return np.float32
     elif isinstance(dtype, df_types.IntegerType):
         return np.int32
+    elif isinstance(dtype, df_types.LongType):
+        return np.int64
     elif isinstance(dtype, df_types.StringType):
         return np.str
     elif isinstance(dtype, df_types.DoubleType):
@@ -285,30 +299,3 @@ def df_type_to_np_type(dtype):
         return df_type_to_np_type(dtype.elementType)
     else:
         return None
-
-
-def distribute_tfrs_model(model):
-    from tensorflow_recommenders.tasks import base
-    import tensorflow as tf
-    import warnings
-    import tensorflow_recommenders as tfrs
-
-    if not isinstance(model, tfrs.Model):
-        return model
-    attr = model.__dict__
-    task_dict = dict()
-    for k, v in attr.items():
-        if isinstance(v, base.Task):
-            task_dict[k] = v
-
-    for k, v in task_dict.items():
-        try:
-            v._loss.reduction = tf.keras.losses.Reduction.NONE
-        except:
-            warnings.warn("Model task " + k + " has no attribute _loss, please use "
-                                              "`tf.keras.losses.Reduction.SUM` or "
-                                              "`tf.keras.losses.Reduction.NONE` for "
-                                              "loss reduction in this task if the "
-                                              "Estimator raise an error.")
-
-    return model
