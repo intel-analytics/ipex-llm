@@ -51,7 +51,7 @@ python dien_train.py \
 
 __Options:__
 * `data_dir`: __Required.__ The path to preprocessed data, either a local path or an HDFS path.
-* `cluster_mode`: The cluster mode to run the data preprocessing, one of local, yarn, standalone or spark-submit. Default to be local.
+* `cluster_mode`: The cluster mode to run the training, one of local, yarn, standalone or spark-submit. Default to be local.
 * `master`: The master URL, only used when cluster_mode is standalone.
 * `executor_cores`: The number of cores to use on each node. Default to be 48.
 * `executor_memory`: The amount of memory to allocate on each node. Default to be 160g.
