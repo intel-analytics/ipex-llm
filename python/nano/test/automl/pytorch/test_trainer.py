@@ -62,9 +62,10 @@ class TestTrainer(TestCase):
             logger=True,
             checkpoint_callback=False,
             max_epochs=2,
+            use_hpo=True,
         )
 
-        best_model =trainer.search(
+        best_model = trainer.search(
             model,
             target_metric='val_loss',
             direction='minimize',

@@ -31,7 +31,7 @@ import yaml
 from bigdl.nano.common import check_avx512
 from bigdl.nano.pytorch.lightning import LightningModuleFromTorch
 from bigdl.nano.pytorch.plugins.ddp_spawn import DDPSpawnPlugin
-from bigdl.nano.automl.pytorch import HPOSearcher
+from bigdl.nano.deps.automl.hpo_api import create_hpo_searcher, check_hpo_status
 from bigdl.nano.deps.ray.ray_api import distributed_ray
 from bigdl.nano.deps.ipex.ipex_api import create_IPEXAccelerator, ipex_device
 from bigdl.nano.deps.openvino.openvino_api import PytorchOpenVINOModel, load_openvino_model
@@ -55,6 +55,7 @@ class Trainer(pl.Trainer):
                  enable_bf16=False,
                  distributed_backend="spawn",
                  cpu_for_each_process: Optional[List[List[int]]] = None,
+                 use_hpo=False,
                  *args: Any, **kwargs: Any) -> None:
         """
         A pytorch lightning trainer that uses bigdl-nano optimization.
@@ -82,7 +83,10 @@ class Trainer(pl.Trainer):
                                  f"{len(cpu_for_each_process)}) is not equal to the number of"
                                  f" processes {num_processes}.")
 
-        self.hposearcher = HPOSearcher(trainer=self)
+        if use_hpo:
+            self.hposearcher = create_hpo_searcher(trainer=self)
+        else:
+            self.hposearcher = None
 
         # Initialize trainer
         if use_ipex and not check_avx512():
@@ -206,6 +210,8 @@ class Trainer(pl.Trainer):
             defaults to None.
         :param return: the model with study meta info attached.
         """
+        if not check_hpo_status(self.hposearcher):
+            return None
         Trainer._log_api_event("search")
 
         return self.hposearcher.search(model,
@@ -220,6 +226,8 @@ class Trainer(pl.Trainer):
         :return: A summary of all the trials. Currently the optuna study is
             returned to allow more flexibility for further analysis and visualization.
         """
+        if not check_hpo_status(self.hposearcher):
+            return None
         return self.hposearcher.search_summary()
 
     def quantize(self, pl_model,  # remove the type requirement for type checking
