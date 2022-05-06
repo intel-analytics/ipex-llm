@@ -16,15 +16,18 @@
 
 import warnings
 
+
 def create_hpo_searcher(trainer):
+    """Create HPO Search for PyTorch."""
     from bigdl.nano.automl.pytorch import HPOSearcher
     return HPOSearcher(trainer)
 
+
 def check_hpo_status(searcher):
+    """Check the status of hpo."""
     if not searcher:
         warnings.warn(
             'HPO is not properly enabled or required \
                 dependency is not installed.', UserWarning)
         return False
     return True
-
