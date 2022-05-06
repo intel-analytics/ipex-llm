@@ -35,16 +35,21 @@ class Objective(object):
 
     def __init__(self,
                  searcher,
-                 model,
-                 target_metric,
+                 model=None,
+                 target_metric=None,
                  pruning=False,
                  **fit_kwargs):
-        """_summary_
+        """
+        Init the objective.
 
-        :param _type_ searcher: _description_
-        :param _type_ model: _description_
-        :param _type_ target_metric: _description_
-        :param bool pruning: _description_, defaults to False
+        :param: searcher: an HPOSearcher object which does the actual work.
+        :param: model: a model instance or a creator function.
+            Defaults to None.
+        :param: target_metric: str(optional): target metric to optimize.
+            Defaults to None.
+        :param: pruning: bool (optional): whether to enable pruning.
+            Defaults to False.
+        raises: ValueError: _description_
         """
         self.searcher = searcher
         self.model_ = model
@@ -58,6 +63,7 @@ class Objective(object):
 
     @property
     def model(self):
+        """Retrieve the model for tuning."""
         return self.model_
 
     def _pre_train(self, model, trial):
@@ -108,6 +114,12 @@ class Objective(object):
 
 
     def __call__(self, trial):
+        """
+        Execute Training and return target metric in each trial.
+
+        :param: trial: optuna trial which provides the hyperparameter combinition.
+        :return: the target metric value.
+        """
         # fit
         # hyperparameters = dict(n_layers=n_layers, dropout=dropout, output_dims=output_dims)
         # trainer.logger.log_hyperparams(hyperparameters)

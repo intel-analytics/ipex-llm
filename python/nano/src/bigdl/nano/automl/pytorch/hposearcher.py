@@ -18,7 +18,7 @@ from typing import Any, Dict, Optional, Union
 import pytorch_lightning as pl
 
 
-from pytorch_lightning.trainer.states import TrainerFn, TrainerState, TrainerStatus
+from pytorch_lightning.trainer.states import TrainerFn, TrainerStatus
 
 
 from bigdl.nano.automl.hpo.backend import OptunaBackend
@@ -32,7 +32,7 @@ from ..hpo.search import (
 )
 
 class HPOSearcher:
-    """Tuner class to tune your model."""
+    """Hyper Parameter Searcher. A Tuner-like class."""
 
     FIT_KEYS = {'train_dataloaders', 'val_dataloaders', 'datamodule','ckpt_path'}
     EXTRA_FIT_KEYS = {'max_epochs'}
@@ -46,15 +46,17 @@ class HPOSearcher:
 
 
     def __init__(self, trainer: "pl.Trainer") -> None:
+        """
+        Init a HPO Searcher.
+
+        :param trainer: The pl.Trainer object.
+        """
         self.trainer = trainer
         self.objective = None
         self.model_class = pl.LightningModule
         self.study = None
         self.tune_end = False
         self._lazymodel = None
-
-    def on_trainer_init(self) -> None:
-        pass
 
     def _run_search(self,
                     resume,
@@ -161,6 +163,15 @@ class HPOSearcher:
         target_metric = None,
         **kwargs,
     ) :
+        """
+        Run HPO Searcher. It will be called in Trainer.search().
+
+        :param model: The model to be searched.
+        :param resume: whether to resume the previous or start a new one,
+            defaults to False.
+        :param target_metric: the object metric to optimize,
+            defaults to None.
+        """
         self.search_kwargs = kwargs or {}
         self.target_metric = target_metric
 
@@ -175,23 +186,23 @@ class HPOSearcher:
 
 
     def search_summary(self):
-        """Retrive a summary of trials
+        """
+        Retrive a summary of trials.
 
-        Returns:
-            dataframe: A summary of all the trials
+        :return: A summary of all the trials. Currently the optuna study is
+            returned to allow more flexibility for further analysis and visualization.
         """
         return _search_summary(self.study)
 
     def end_search(self, use_trial_id=-1):
-        """ Put an end to tuning.
-            Use the specified trial or best trial to init and
-            compile the base model.
+        """
+        Put an end to tuning.
 
-        Args:
-            use_trial_id (int, optional): params of which trial to be used. Defaults to -1.
+        Use the specified trial or best trial to init and build the model.
 
-        Raises:
-            ValueError: error when tune is not called already.
+        :param use_trial_id: int(optional) params of which trial to be used.
+            Defaults to -1.
+        :raise: ValueError: error when tune is not called before end_search.
         """
         self._lazymodel = _end_search(study=self.study,
                                      model_builder=self._model_build,
