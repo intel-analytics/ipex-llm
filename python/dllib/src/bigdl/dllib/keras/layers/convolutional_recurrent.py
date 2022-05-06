@@ -17,6 +17,7 @@
 import sys
 
 from ..engine.topology import ZooKerasLayer
+from bigdl.dllib.utils.log4Error import *
 
 if sys.version >= '3':
     long = int
@@ -67,11 +68,12 @@ class ConvLSTM2D(ZooKerasLayer):
                  subsample=(1, 1), W_regularizer=None, U_regularizer=None, b_regularizer=None,
                  return_sequences=False, go_backwards=False, input_shape=None, **kwargs):
         if nb_row != nb_col:
-            raise ValueError("For ConvLSTM2D, only square kernel is supported for now")
+            invalidInputError(False, "For ConvLSTM2D, only square kernel is supported for now")
         if border_mode != "same" and border_mode != "valid":
-            raise ValueError("For ConvLSTM2D, only support border_mode as 'same' and 'valid'")
+            invalidInputError(False,
+                              "For ConvLSTM2D, only support border_mode as 'same' and 'valid'")
         if subsample[0] != subsample[1]:
-            raise ValueError("For ConvLSTM2D, only equal strides is supported for now")
+            invalidInputError(False, "For ConvLSTM2D, only equal strides is supported for now")
         super(ConvLSTM2D, self).__init__(None,
                                          nb_filter,
                                          nb_row,
@@ -128,11 +130,12 @@ class ConvLSTM3D(ZooKerasLayer):
                  subsample=(1, 1, 1), W_regularizer=None, U_regularizer=None, b_regularizer=None,
                  return_sequences=False, go_backwards=False, input_shape=None, **kwargs):
         if dim_ordering != "th":
-            raise ValueError("For ConvLSTM3D, only dim_ordering='th' is supported for now")
+            invalidInputError(False, "For ConvLSTM3D, only dim_ordering='th' is supported for now")
         if border_mode != "same" and border_mode != "valid":
-            raise ValueError("For ConvLSTM3D, only support border_mode as 'same' and 'valid'")
+            invalidInputError(False,
+                              "For ConvLSTM3D, only support border_mode as 'same' and 'valid'")
         if subsample[0] != subsample[1] or subsample[1] != subsample[2]:
-            raise ValueError("For ConvLSTM3D, only equal strides is supported for now")
+            invalidInputError(False, "For ConvLSTM3D, only equal strides is supported for now")
         super(ConvLSTM3D, self).__init__(None,
                                          nb_filter,
                                          nb_kernel,

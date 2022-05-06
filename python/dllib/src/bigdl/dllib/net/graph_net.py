@@ -23,6 +23,8 @@ from bigdl.dllib.keras.base import ZooKerasLayer
 from bigdl.dllib.keras.utils import *
 from bigdl.dllib.nn.layer import Layer
 from bigdl.dllib.utils.file_utils import callZooFunc
+from bigdl.dllib.utils.log4Error import *
+
 
 if sys.version >= '3':
     long = int
@@ -62,7 +64,7 @@ class GraphNet(BModel):
             elif isinstance(x, RDD):
                 data_rdd = x
             else:
-                raise TypeError("Unsupported prediction data type: %s" % type(x))
+                invalidInputError(False, "Unsupported prediction data type: %s" % type(x))
             results = callZooFunc(self.bigdl_type, "zooPredict",
                                   self.value,
                                   data_rdd,
@@ -76,7 +78,7 @@ class GraphNet(BModel):
                                       batch_per_thread)
                 return [Layer.convert_output(result) for result in results]
             else:
-                raise TypeError("Unsupported prediction data type: %s" % type(x))
+                invalidInputError(False, "Unsupported prediction data type: %s" % type(x))
 
     def flattened_layers(self, include_container=False):
         jlayers = callZooFunc(self.bigdl_type, "getFlattenSubModules", self, include_container)

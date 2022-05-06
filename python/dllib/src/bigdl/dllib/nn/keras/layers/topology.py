@@ -17,6 +17,7 @@
 from bigdl.dllib.nn.keras.layers.layer import KerasLayer
 from bigdl.dllib.optim.optimizer import *
 from bigdl.dllib.nn.criterion import *
+from bigdl.dllib.utils.log4Error import *
 import multiprocessing
 import warnings
 
@@ -44,7 +45,7 @@ class KerasModel(KerasLayer, Container, SharedStaticUtils):
         elif optimizer == "adamax":
             return Adamax(epsilon=1e-8)
         else:
-            raise TypeError("Unsupported optimizer: %s" % optimizer)
+            invalidInputError(False, "Unsupported optimizer: %s" % optimizer)
 
     def __convert_criterion(self, criterion):
         criterion = criterion.lower()
@@ -73,7 +74,7 @@ class KerasModel(KerasLayer, Container, SharedStaticUtils):
         elif criterion == "cosine_proximity" or criterion == "cosine":
             return CosineProximityCriterion()
         else:
-            raise TypeError("Unsupported loss: %s" % criterion)
+            invalidInputError(False, "Unsupported loss: %s" % criterion)
 
     def __convert_metrics(self, metrics):
         metrics = to_list(metrics)
@@ -82,7 +83,7 @@ class KerasModel(KerasLayer, Container, SharedStaticUtils):
             if metric.lower() == "accuracy":
                 bmetrics.append(Top1Accuracy())
             else:
-                raise TypeError("Unsupported metrics: %s" % metric)
+                invalidInputError(False, "Unsupported metrics: %s" % metric)
         return bmetrics
 
     def compile(self, optimizer, loss, metrics=None):
@@ -131,7 +132,7 @@ class KerasModel(KerasLayer, Container, SharedStaticUtils):
             elif (isinstance(x, RDD) or isinstance(x, DataSet)) and not y:
                 training_data = x
             else:
-                raise TypeError("Unsupported training data type: %s" % type(x))
+                invalidInputError(False, "Unsupported training data type: %s" % type(x))
             callBigDlFunc(self.bigdl_type, "fit",
                           self.value,
                           training_data,
@@ -168,7 +169,7 @@ class KerasModel(KerasLayer, Container, SharedStaticUtils):
         elif isinstance(x, RDD) and not y:
             evaluation_data = x
         else:
-            raise TypeError("Unsupported evaluation data type: %s" % type(x))
+            invalidInputError(False, "Unsupported evaluation data type: %s" % type(x))
         return callBigDlFunc(self.bigdl_type, "evaluate",
                              self.value,
                              evaluation_data,
@@ -189,13 +190,13 @@ class KerasModel(KerasLayer, Container, SharedStaticUtils):
             elif isinstance(x, RDD):
                 features = x
             else:
-                raise TypeError("Unsupported prediction data type: %s" % type(x))
+                invalidInputError(False, "Unsupported prediction data type: %s" % type(x))
             return self.predict_distributed(features)
         else:
             if isinstance(x, np.ndarray):
                 return self.predict_local(x)
             else:
-                raise TypeError("Unsupported prediction data type: %s" % type(x))
+                invalidInputError(False, "Unsupported prediction data type: %s" % type(x))
 
 
 class Sequential(KerasModel):

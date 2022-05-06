@@ -19,6 +19,7 @@ import sys
 from ..engine.topology import ZooKerasLayer
 from bigdl.dllib.utils.common import JTensor
 from bigdl.dllib.utils.file_utils import callZooFunc
+from bigdl.dllib.utils.log4Error import *
 
 if sys.version >= '3':
     long = int
@@ -56,13 +57,13 @@ class BatchNormalization(ZooKerasLayer):
     def __init__(self, epsilon=0.001, mode=0, axis=1, momentum=0.99, beta_init="zero",
                  gamma_init="one", dim_ordering="th", input_shape=None, **kwargs):
         if mode != 0:
-            raise ValueError("For BatchNormalization, only mode=0 is supported for now")
+            invalidInputError(False, "For BatchNormalization, only mode=0 is supported for now")
         if dim_ordering == "th" and axis != 1:
-            raise ValueError("For BatchNormalization with th dim ordering, "
-                             "only axis=1 is supported for now")
+            invalidInputError(False, "For BatchNormalization with th dim ordering, "
+                                     "only axis=1 is supported for now")
         if dim_ordering == "tf" and axis != -1 and axis != 3:
-            raise ValueError("For BatchNormalization with tf dim ordering, "
-                             "only axis=-1 is supported for now")
+            invalidInputError(False, "For BatchNormalization with tf dim ordering, "
+                                     "only axis=-1 is supported for now")
         super(BatchNormalization, self).__init__(None,
                                                  float(epsilon),
                                                  float(momentum),

@@ -53,7 +53,7 @@ def get_node_ip():
     import errno
     s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     try:
-        # This command will raise an exception if there is no internet connection.
+        # This command will throw an exception if there is no internet connection.
         s.connect(("8.8.8.8", 80))
         node_ip_address = s.getsockname()[0]
     except OSError as e:
@@ -92,8 +92,8 @@ def detect_conda_env_name():
     err = err.decode("utf-8")
     errorcode = pro.returncode
     if 0 != errorcode:
-        raise EnvironmentError(err +
-                               "Cannot find conda info. Please verify your conda installation")
+        invalidInputError(False, err +
+                          "Cannot find conda info. Please verify your conda installation")
     for line in out.split('\n'):
         item = line.split(':')
         if len(item) == 2:
@@ -103,8 +103,9 @@ def detect_conda_env_name():
     python_location = detect_python_location()
     if "envs" in python_location:
         return python_location.split("/")[-3]
-    raise EnvironmentError(err + "Failed to detect the current conda environment. Please verify"
-                                 "your conda installation and activate the env you want to use")
+        invalidInputError(False,
+                          err + "Failed to detect the current conda environment. Please verify "
+                                "your conda installation and activate the env you want to use")
 
 
 # This is adopted from conda-pack.
@@ -117,7 +118,7 @@ def pack_conda_main(conda_name, tmp_path):
         .format(conda_name, tmp_path)
     pro = subprocess.Popen(pack_cmd, shell=True, env=pack_env)
     if pro.wait() != 0:
-        raise RuntimeError(f"conda pack failed! Error executing command: {pack_cmd} ")
+        invalidInputError(False, f"conda pack failed! Error executing command: {pack_cmd} ")
 
 
 def pack_penv(conda_name, output_name):

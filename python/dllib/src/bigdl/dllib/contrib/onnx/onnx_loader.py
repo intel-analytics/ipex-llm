@@ -37,7 +37,7 @@ class OnnxLoader(object):
 
     def load_graph(self, graph_proto):
         if not graph_proto:
-            raise ValueError("Graph proto is required")
+            invalidInputError(False, "Graph proto is required")
 
         input_nodes = list()
         output_nodes = list()
@@ -49,7 +49,7 @@ class OnnxLoader(object):
 
         for tensor in graph_proto.initializer:
             if not tensor.name.strip():
-                raise ValueError("Tensor's name is required")
+                invalidInputError(False, "Tensor's name is required")
             initialized_tensors.add(tensor.name)
             tensor_data = parse_tensor_data(tensor)
             tensor_map[tensor.name] = (tensor_data, tensor_data.shape)
@@ -101,7 +101,7 @@ class OnnxLoader(object):
         if op_type in convert_map:
             module, out_shapes = convert_map[op_type](inputs, prev_modules, attrs, outputs)
         else:
-            raise NotImplemented(op_type)
+            invalidInputError(False, "not implement yet")
         return module, out_shapes
 
 

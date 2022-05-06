@@ -53,9 +53,9 @@ def parse_node_attr(node_proto):
                 attrs[attr.name] = getattr(attr, field)
         for field in ['tensors', 'graphs']:
             if list(getattr(attr, field)):
-                raise NotImplementedError()
+                invalidInputError(False, "Not implement yet")
         if attr.name not in attrs:
-            raise ValueError("Cannot parse attribute: \n{}\n.".format(attr))
+            invalidInputError(False, "Cannot parse attribute: \n{}\n.".format(attr))
 
     return attrs
 
@@ -64,7 +64,7 @@ def parse_tensor_data(tensor_proto):
     try:
         from onnx.numpy_helper import to_array
     except ImportError:
-        raise ImportError("Onnx and protobuf need to be installed.")
+        invalidInputError(False, "Onnx and protobuf need to be installed.")
     if len(tuple(tensor_proto.dims)) > 0:
         np_array = to_array(tensor_proto).reshape(tuple(tensor_proto.dims))
     else:

@@ -262,7 +262,7 @@ class LocalImageFrame(ImageFrame):
         return callBigDlFunc(self.bigdl_type, "localImageFrameToUri", self.value, key)
 
     def random_split(self, weights):
-        raise "random split not supported in LocalImageFrame"
+        invalidInputError(False, "random split not supported in LocalImageFrame")
 
 
 class DistributedImageFrame(ImageFrame):
