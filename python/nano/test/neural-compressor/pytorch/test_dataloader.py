@@ -74,7 +74,7 @@ class TestDataloader(TestCase):
 
         (x1, x2), (y1, y2) = next(iter(loader))
         assert isinstance(x1, torch.Tensor) and isinstance(x2, torch.Tensor) \
-               and isinstance(y1, torch.Tensor) and isinstance(y2, torch.Tensor)
+            and isinstance(y1, torch.Tensor) and isinstance(y2, torch.Tensor)
 
         trainer.quantize(model, calib_dataloader=loader)
 
