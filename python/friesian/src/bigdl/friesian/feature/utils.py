@@ -262,6 +262,8 @@ def featuretable_to_xshards(tbl, convert_cols=None):
                                           "unsupported field {}, data {}".format(schema[c],
                                                                                  sample))
                         result[c] = np.asarray(result[c])
+                else:
+                    result[c] = np.asarray([])
 
         return result
 

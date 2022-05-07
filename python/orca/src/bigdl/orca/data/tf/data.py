@@ -18,7 +18,7 @@ import tensorflow as tf
 from bigdl.orca.tfpark.tf_dataset import TensorMeta
 from bigdl.dllib.utils import nest
 from bigdl.orca.data import SparkXShards
-from  bigdl.dllib.utils import log4Error
+from bigdl.dllib.utils import log4Error
 
 
 class Dataset(object):
