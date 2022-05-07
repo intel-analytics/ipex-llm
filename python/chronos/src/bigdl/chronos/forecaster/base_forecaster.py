@@ -62,7 +62,8 @@ class BasePytorchForecaster(Forecaster):
             loss = self.loss_creator(self.loss_config)
             optimizer = self.optimizer_creator(model, self.optim_config)
             self.internal = Trainer.compile(model=model, loss=loss,
-                                            optimizer=optimizer)
+                                            optimizer=optimizer, onnx=self.onnx_available,
+                                            quantize=True)
 
     def fit(self, data, epochs=1, batch_size=32):
         # TODO: give an option to close validation during fit to save time.
@@ -384,7 +385,7 @@ class BasePytorchForecaster(Forecaster):
                                                                           model=model,
                                                                           loss=loss,
                                                                           optimizer=optimizer)
-            self.internal = Trainer.compile(self.internal, onnx=self.onnx_available)
+            self.internal = Trainer.compile(self.internal, onnx=self.onnx_available, quantize=True)
             self.fitted = True
             if quantize_checkpoint_file:
                 self.internal.load_quantized_state_dict(torch.load(quantize_checkpoint_file))
@@ -419,7 +420,8 @@ class BasePytorchForecaster(Forecaster):
         loss = self.loss_creator(self.loss_config)
         optimizer = self.optimizer_creator(model, self.optim_config)
         self.internal = Trainer.compile(model=model, loss=loss,
-                                        optimizer=optimizer, onnx=self.onnx_available)
+                                        optimizer=optimizer, onnx=self.onnx_available,
+                                        quantize=True)
 
         self.distributed = False
         self.fitted = True
