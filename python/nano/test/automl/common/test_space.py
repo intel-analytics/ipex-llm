@@ -35,14 +35,14 @@ class TestHPOSpace(TestCase):
         max = 0.1
         param = space.Real(min, max)
         assert(param.rand >= min and param.rand <= max )
-        assert(param.default >= min and param.rand <= max)
+        assert(param.default >= min and param.default <= max)
 
     def test_int(self):
         min = 1
         max = 1e6
         param = space.Real(min, max)
         assert(param.rand >= min and param.rand <= max )
-        assert(param.default >= min and param.rand <= max)
+        assert(param.default >= min and param.default <= max)
 
     def test_list(self):
         #TODO
