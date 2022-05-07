@@ -29,8 +29,8 @@ class LSTMForecaster(BaseTF2Forecaster):
         >>> forecaster.fit((x_train, y_train))
         >>> test_pred = forecaster.predict(x_test)
         >>> test_eval = forecaster.evaluate((x_test, y_test))
-        >>> forecaster.save({ckpt_name})
-        >>> forecaster.load({ckpt_name})
+        >>> forecaster.save({ckpt_dir_name})
+        >>> forecaster.load({ckpt_dir_name})
     """
 
     def __init__(self,

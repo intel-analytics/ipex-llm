@@ -192,7 +192,7 @@ def model_creator(config):
                             repo_initialization=config.get("repo_initialization", True))
     inputs = Input(shape=(config["past_seq_len"], config["input_feature_num"]))
     # init weights matrix
-    _ = model(inputs)
+    model(inputs)
     learning_rate = config.get('lr', 1e-3)
     model.compile(optimizer=getattr(tf.keras.optimizers,
                                     config.get("optim", "Adam"))(learning_rate),

@@ -90,7 +90,7 @@ class TestTCNForecaster(TestCase):
         self.forecaster.fit(train_data, epochs=2)
         yhat = self.forecaster.predict(test_data[0])
         with tempfile.TemporaryDirectory() as tmp_dir_file:
-            tmp_dir_file = os.path.join(tmp_dir_file, 'ckpt')
+            tmp_dir_file = os.path.join(tmp_dir_file, 'tcn.ckpt')
             self.forecaster.save(tmp_dir_file)
             self.forecaster.load(tmp_dir_file)
             from bigdl.chronos.model.tf2.TCN_keras import TemporalConvNet

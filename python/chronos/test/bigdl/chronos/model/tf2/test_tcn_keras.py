@@ -17,7 +17,6 @@
 import tempfile
 import numpy as np
 import pytest
-import keras
 import tensorflow as tf
 
 from bigdl.orca.test_zoo_utils import ZooTestCase
