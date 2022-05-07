@@ -47,7 +47,7 @@ class LSTMForecaster(BaseTF2Forecaster):
                  seed=None,
                  distributed=False,
                  workers_per_node=1,
-                 distributed_backend="tf_distributed"):
+                 distributed_backend="ray"):
         """
         Build a LSTM Forecast Model.
 
@@ -78,8 +78,8 @@ class LSTMForecaster(BaseTF2Forecaster):
         :param workers_per_node: int, the number of worker you want to use.
                The value defaults to 1. The param is only effective when
                distributed is set to True.
-        :param distributed_backend: str, select from "tf_distributed" or
-               "horovod". The value defaults to "tf_distributed".
+        :param distributed_backend: str, select from "ray" or
+               "horovod". The value defaults to "ray".
         """
         self.model_config = {
             "past_seq_len": past_seq_len,
@@ -96,6 +96,7 @@ class LSTMForecaster(BaseTF2Forecaster):
 
         # model creator settings
         self.model_creator = model_creator
+        self.custom_objects_config = {"LSTMModel": LSTMModel}
 
         # distributed settings
         # self.distributed = distributed

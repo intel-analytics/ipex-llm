@@ -15,7 +15,7 @@
 #
 
 from bigdl.chronos.forecaster.tf.base_forecaster import BaseTF2Forecaster
-from bigdl.chronos.model.tf2.TCN_keras import model_creator
+from bigdl.chronos.model.tf2.TCN_keras import model_creator, TemporalBlock, TemporalConvNet
 
 
 class TCNForecaster(BaseTF2Forecaster):
@@ -106,6 +106,8 @@ class TCNForecaster(BaseTF2Forecaster):
 
         # model creator settings
         self.model_creator = model_creator
+        self.custom_objects_config = {"TemporalBlock": TemporalBlock,
+                                      "TemporalConvNet": TemporalConvNet}
 
         # distributed settings
         # self.distributed = distributed
