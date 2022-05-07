@@ -22,6 +22,7 @@ from torch.utils.data.dataloader import DataLoader
 import os
 import shutil
 
+
 class TestOpenVINO(TestCase):
     def test_trainer_trace_openvino(self):
         trainer = Trainer(max_epochs=1)
