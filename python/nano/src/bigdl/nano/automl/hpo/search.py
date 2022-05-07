@@ -66,8 +66,7 @@ def _end_search(study, model_builder, use_trial_id=-1):
     :return : the built model with best or specified trial hyperparams.
     """
     if study is None:
-        warnings.warn("Study is None. "  \
-            "If you have set any searching space, you must call search before calling fit.")
+        warnings.warn("Study is None. If you have set any searching space, you must call search before calling fit.")
         trial = optuna.trial.FixedTrial({})
     elif use_trial_id == -1:
         trial = study.best_trial
