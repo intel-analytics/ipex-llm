@@ -31,6 +31,10 @@ object EncryptMode extends Enumeration {
   val AES_CBC_PKCS5PADDING = Value("AES/CBC/PKCS5Padding", "AES/CBC/PKCS5Padding")
   val UNKNOWN = Value("UNKNOWN", "UNKNOWN")
   class EncryptModeEnumVal(name: String, val value: String) extends Val(nextId, name)
-  protected final def Value(name: String, value: String): EncryptModeEnumVal = new EncryptModeEnumVal(name, value)
-  def parse(s: String) = values.find(_.toString.toLowerCase() == s.toLowerCase).getOrElse(EncryptMode.UNKNOWN)
+  protected final def Value(name: String, value: String): EncryptModeEnumVal = {
+    new EncryptModeEnumVal(name, value)
+  }
+  def parse(s: String): Value = {
+    values.find(_.toString.toLowerCase() == s.toLowerCase).getOrElse(EncryptMode.UNKNOWN)
+  }
 }

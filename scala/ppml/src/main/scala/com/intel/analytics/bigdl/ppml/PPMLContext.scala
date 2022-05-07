@@ -17,6 +17,7 @@
 package com.intel.analytics.bigdl.ppml
 
 import com.intel.analytics.bigdl.dllib.NNContext.{checkScalaVersion, checkSparkVersion, createSparkConf, initConf, initNNContext}
+import com.intel.analytics.bigdl.dllib.utils.Log4Error
 import com.intel.analytics.bigdl.ppml.encrypt.EncryptMode.EncryptMode
 import com.intel.analytics.bigdl.ppml.encrypt.{EncryptMode, EncryptRuntimeException, FernetEncrypt}
 import com.intel.analytics.bigdl.ppml.utils.Supportive
@@ -114,7 +115,7 @@ object PPMLContext{
                path: String,
                dataKeyPlaintext: String,
                minPartitions: Int = -1): RDD[String] = {
-    require(dataKeyPlaintext != "", "dataKeyPlainText should not be empty, please loadKeys first.")
+    Log4Error.unKnowExceptionError(dataKeyPlaintext != "", "dataKeyPlainText should not be empty, please loadKeys first.")
     val data: RDD[(String, PortableDataStream)] = if (minPartitions > 0) {
       sc.binaryFiles(path, minPartitions)
     } else {
@@ -209,7 +210,8 @@ object PPMLContext{
     }
     val kmsSc = new PPMLContext(kms, sparkSession)
     if (conf.contains("spark.bigdl.kms.key.primary")){
-      require(conf.contains("spark.bigdl.kms.key.data"), "Data key not found, please provide" +
+      Log4Error.unKnowExceptionError(conf.contains("spark.bigdl.kms.key.data"),
+        "Data key not found, please provide" +
         " both spark.bigdl.kms.key.primary and spark.bigdl.kms.key.data.")
       val primaryKey = conf.get("spark.bigdl.kms.key.primary")
       val dataKey = conf.get("spark.bigdl.kms.key.data")

@@ -16,53 +16,65 @@
 
 package com.intel.analytics.bigdl.ppml.utils
 
+import com.intel.analytics.bigdl.dllib.utils.Log4Error
+
 import scala.collection.mutable.HashMap
 import javax.crypto.Mac
 import javax.crypto.spec.SecretKeySpec
 import java.util.Base64
 
-class EHSMParams(appid: String, appkey: String, timestamp: String) {
+class EHSMParams(
+      appId: String,
+      appKey: String,
+      timeStamp: String) {
 
-  var payload = new HashMap[String, String]
+  protected val payLoad = new HashMap[String, String]
 
   def addPayloadElement(payloadElementKey: String, payloadElementVal: String) = {
-    payload(payloadElementKey) = payloadElementVal
+    payLoad(payloadElementKey) = payloadElementVal
   }
 
   def getPostJSONString(): String = {
 
-    var postJSONString: String = "{\"appid\":\"" + appid + "\""
+    var postJSONString: String = "{\"appid\":\"" + appId + "\""
     postJSONString = postJSONString + ",\"payload\":{"
-    for ((payloadElementKey, payloadElementVal) <- payload){
+    for ((payloadElementKey, payloadElementVal) <- payLoad){
       if(payloadElementKey == "keylen"){
-        postJSONString = postJSONString + "\"" + payloadElementKey + "\":" + payloadElementVal + ','
+        postJSONString = postJSONString + "\"" + payloadElementKey + "\":" +
+          payloadElementVal + ','
       }else{
-        postJSONString = postJSONString + "\"" + payloadElementKey + "\":\"" + payloadElementVal + "\","
+        postJSONString = postJSONString + "\"" + payloadElementKey + "\":\"" +
+          payloadElementVal + "\","
       }
     }
     postJSONString = postJSONString.dropRight(1)
     val signCiphertextString: String = getSignCiphertextString()
-    postJSONString = postJSONString + "},\"timestamp\":\"" + timestamp + "\",\"sign\":\"" + signCiphertextString + "\"}"
+    postJSONString = postJSONString + "},\"timestamp\":\"" + timeStamp +
+      "\",\"sign\":\"" + signCiphertextString + "\"}"
     postJSONString
   }
 
 
   private def getSignCiphertextString(): String = {
-    val secret = new SecretKeySpec(appkey.getBytes("UTF-8"), "SHA256")
+    val secret = new SecretKeySpec(appKey.getBytes("UTF-8"), "SHA256")
     val mac = Mac.getInstance("HmacSHA256")
     mac.init(secret)
     val signPlaintextString: String = getSignPlaintextString()
-    val signCiphertextString: String = Base64.getEncoder.encodeToString(mac.doFinal(signPlaintextString.getBytes("UTF-8")))
+    val signCiphertextString: String = Base64.getEncoder.encodeToString(
+      mac.doFinal(signPlaintextString.getBytes("UTF-8")))
     signCiphertextString
   }
 
   private def getSignPlaintextString(): String = {
 
-    require(appid != "" && appkey != "" && timestamp != "" && !payload.isEmpty, "Lack necessary param or payload!")
-    var signString: String = s"appid=$appid&payload="
-    val tmp = Map(payload.toSeq.sortWith(_._1 < _._1):_*)
-    for ((payloadElementKey, payloadElementVal) <- tmp) signString = signString + s"$payloadElementKey=$payloadElementVal&"
-    signString = signString + s"timestamp=$timestamp"
+    Log4Error.unKnowExceptionError(appId != "" && appKey != "" && timeStamp != ""
+      && !payLoad.isEmpty, "Lack necessary param or payload!")
+    var signString: String = s"appid=$appId&payload="
+    val tmp = Map(payLoad.toSeq.sortWith(_._1 < _._1):_*)
+    for ((payloadElementKey, payloadElementVal) <- tmp) {
+      signString = signString + s"$payloadElementKey=$payloadElementVal&"
+    }
+    signString = signString + s"timestamp=$timeStamp"
     signString
   }
 

@@ -31,8 +31,10 @@ object SimpleQuerySparkExample {
 
     // parse parameter
     val arguments = EncryptIOArguments.parser.parse(args, EncryptIOArguments()) match {
-        case Some(arguments) => logger.info(s"starting with $arguments"); arguments
-        case None => EncryptIOArguments.parser.failure("miss args, please see the usage info"); null
+        case Some(arguments) =>
+          logger.info(s"starting with $arguments"); arguments
+        case None =>
+          EncryptIOArguments.parser.failure("miss args, please see the usage info"); null
       }
 
     val sc = PPMLContext.initPPMLContext("SimpleQuery", arguments.ppmlArgs())
@@ -58,6 +60,7 @@ object SimpleQuerySparkExample {
     })
 
     // save data frame using spark kms context
-    sc.write(developers, mode = arguments.outputEncryptMode).mode("overwrite").option("header", true).csv(arguments.outputPath)
+    sc.write(developers, mode = arguments.outputEncryptMode).mode("overwrite")
+      .option("header", true).csv(arguments.outputPath)
   }
 }

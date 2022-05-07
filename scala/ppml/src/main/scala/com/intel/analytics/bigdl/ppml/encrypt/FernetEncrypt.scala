@@ -16,12 +16,13 @@
 
 package com.intel.analytics.bigdl.ppml.encrypt
 
+import com.intel.analytics.bigdl.dllib.utils.Log4Error
+
 import java.io._
 import java.nio.file.{Files, Paths}
 import java.security.SecureRandom
 import java.time.Instant
 import java.util.Arrays
-
 import javax.crypto.spec.{IvParameterSpec, SecretKeySpec}
 import javax.crypto.{Cipher, Mac}
 import org.apache.spark.input.PortableDataStream
@@ -29,7 +30,7 @@ import org.apache.spark.input.PortableDataStream
 class FernetEncrypt extends Encrypt {
 
   def encryptFile(binaryFilePath: String, savePath: String, dataKeyPlaintext: String) = {
-    require(savePath != null && savePath != "", "encrypted file save path should be specified")
+    Log4Error.unKnowExceptionError(savePath != null && savePath != "", "encrypted file save path should be specified")
     val content: Array[Byte] = readBinaryFile(binaryFilePath) // Plaintext original file is read as binary
     val encryptedBytes = timing("FernetCryptos encrypting a single file") {
       encryptContent(content, dataKeyPlaintext)
@@ -40,7 +41,7 @@ class FernetEncrypt extends Encrypt {
   }
 
   def decryptFile(binaryFilePath: String, savePath: String, dataKeyPlaintext: String) = {
-    require(savePath != null && savePath != "", "decrypted file save path should be specified")
+    Log4Error.unKnowExceptionError(savePath != null && savePath != "", "decrypted file save path should be specified")
     val content: Array[Byte] = readBinaryFile(binaryFilePath) // Ciphertext file is read into Bytes
     val decryptedBytes = timing("FernetCryptos decrypt a single file...") {
       decryptContent(content, dataKeyPlaintext)

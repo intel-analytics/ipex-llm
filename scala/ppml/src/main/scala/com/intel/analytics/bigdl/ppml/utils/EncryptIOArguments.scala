@@ -24,22 +24,21 @@ import com.intel.analytics.bigdl.ppml.kms.{EHSMKeyManagementService, KMS_CONVENT
 import java.io.File
 
 case class EncryptIOArguments(
-                               inputPath: String = "./input",
-                               outputPath: String = "./output",
-                               inputEncryptMode: EncryptMode = EncryptMode.PLAIN_TEXT,
-                               outputEncryptMode: EncryptMode = EncryptMode.PLAIN_TEXT,
-                               inputPartitionNum: Int = 4,
-                               outputPartitionNum: Int = 4,
-                               primaryKeyPath: String = "./primaryKeyPath",
-                               dataKeyPath: String = "./dataKeyPath",
-                               kmsType: String = KMS_CONVENTION.MODE_SIMPLE_KMS,
-                               kmsServerIP: String = "0.0.0.0",
-                               kmsServerPort: String = "5984",
-                               ehsmAPPID: String = "ehsmAPPID",
-                               ehsmAPPKEY: String = "ehsmAPPKEY",
-                               simpleAPPID: String = "simpleAPPID",
-                               simpleAPPKEY: String = "simpleAPPKEY"
-                             ) {
+      inputPath: String = "./input",
+      outputPath: String = "./output",
+      inputEncryptMode: EncryptMode = EncryptMode.PLAIN_TEXT,
+      outputEncryptMode: EncryptMode = EncryptMode.PLAIN_TEXT,
+      inputPartitionNum: Int = 4,
+      outputPartitionNum: Int = 4,
+      primaryKeyPath: String = "./primaryKeyPath",
+      dataKeyPath: String = "./dataKeyPath",
+      kmsType: String = KMS_CONVENTION.MODE_SIMPLE_KMS,
+      kmsServerIP: String = "0.0.0.0",
+      kmsServerPort: String = "5984",
+      ehsmAPPID: String = "ehsmAPPID",
+      ehsmAPPKEY: String = "ehsmAPPKEY",
+      simpleAPPID: String = "simpleAPPID",
+      simpleAPPKEY: String = "simpleAPPKEY") {
   def ppmlArgs(): Map[String, String] = {
     val kmsArgs = scala.collection.mutable.Map[String, String]()
     kmsArgs("spark.bigdl.kms.type") = kmsType
