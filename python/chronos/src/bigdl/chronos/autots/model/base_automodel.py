@@ -20,7 +20,26 @@ import json
 from bigdl.chronos.autots.utils import recalculate_n_sampling
 
 
-class BaseAutomodelMix:
+class BaseAutomodel:
+
+    def __init__(self, **kwargs):
+        if self.backend.startswith("torch"):
+            from bigdl.orca.automl.model.base_pytorch_model import PytorchModelBuilder
+            self._DEFAULT_BEST_MODEL_DIR = "best_model.ckpt"
+            self._DEFAULT_BEST_CONFIG_DIR = "best_config.json"
+            model_builder = PytorchModelBuilder(model_creator=self._model_creator,
+                                                optimizer_creator=self.optimizer,
+                                                loss_creator=self.loss)
+        elif self.backend.startswith("keras"):
+            from bigdl.orca.automl.model.base_keras_model import KerasModelBuilder
+            self.search_space.update({"optimizer": self.optimizer, "loss": self.loss})
+            model_builder = KerasModelBuilder(model_creator=self._model_creator)
+            self._DEFAULT_BEST_MODEL_DIR = "best_keras_model.ckpt"
+            self._DEFAULT_BEST_CONFIG_DIR = "best_keras_config.json"
+
+        from bigdl.orca.automl.auto_estimator import AutoEstimator
+        self.auto_est = AutoEstimator(model_builder, **self._auto_est_config)
+        self.best_model = None
 
     def fit(self,
             data,
@@ -118,6 +137,9 @@ class BaseAutomodelMix:
 
         :return: A numpy array with shape (num_samples, horizon, target_dim).
         '''
+        if self.backend.startswith("keras"):
+            raise RuntimeError("Currenctly, keras not support onnx method.")
+
         if self.best_model is None:
             raise RuntimeError("You must call fit or load first before calling predict!")
         return self.best_model.predict_with_onnx(data, batch_size=batch_size, dirname=dirname)
@@ -202,6 +224,9 @@ class BaseAutomodelMix:
 
         :return: A list of evaluation results. Each item represents a metric.
         '''
+        if self.backend.startswith("keras"):
+            raise RuntimeError("Currenctly, keras not support onnx method.")
+
         if self.best_model is None:
             raise RuntimeError("You must call fit or load first before calling predict!")
         return self.best_model.evaluate_with_onnx(data[0], data[1],
@@ -269,6 +294,9 @@ class BaseAutomodelMix:
             >>> # directly call onnx related method is also supported
             >>> pred = automodel.predict_with_onnx(data)
         '''
+        if self.backend.startswith("keras"):
+            raise RuntimeError("Currenctly, keras not support onnx method.")
+
         import onnxruntime
         if sess_options is not None and not isinstance(sess_options, onnxruntime.SessionOptions):
             raise RuntimeError("sess_options should be an onnxruntime.SessionOptions instance"
@@ -291,6 +319,9 @@ class BaseAutomodelMix:
 
         :param dirname: The dir location you want to save the onnx file.
         """
+        if self.backend.startswith("keras"):
+            raise RuntimeError("Currenctly, keras not support onnx method.")
+
         if self.distributed:
             raise NotImplementedError("export_onnx_file has not been supported for distributed "
                                       "forecaster. You can call .to_local() to transform the "
@@ -316,33 +347,3 @@ class BaseAutomodelMix:
 
     def _get_best_automl_model(self):
         return self.best_model
-
-
-def Dynamic_binding(cls):
-    super_init = cls.__init__
-    super_call = cls.__call__
-
-    def __init__(cls, *args, **kwag):
-        super_init(cls, *args, **kwag)
-        super_call(cls, *args, **kwag)
-
-        # dynamic binding
-        if cls.backend.startswith("torch"):
-            from bigdl.orca.automl.model.base_pytorch_model import PytorchModelBuilder
-            cls._DEFAULT_BEST_MODEL_DIR = "best_model.ckpt"
-            cls._DEFAULT_BEST_CONFIG_DIR = "best_config.json"
-            model_builder = PytorchModelBuilder(model_creator=cls._model_creator,
-                                                optimizer_creator=cls.optimizer,
-                                                loss_creator=cls.loss)
-        elif cls.backend.startswith("keras"):
-            from bigdl.orca.automl.model.base_keras_model import KerasModelBuilder
-            cls.search_space.update({"optimizer": cls.optimizer, "loss": cls.loss})
-            model_builder = KerasModelBuilder(model_creator=cls._model_creator)
-            cls._DEFAULT_BEST_MODEL_DIR = "best_keras_model.ckpt"
-            cls._DEFAULT_BEST_CONFIG_DIR = "best_keras_config.json"
-
-        from bigdl.orca.automl.auto_estimator import AutoEstimator
-        cls.auto_est = AutoEstimator(model_builder, **cls.auto_est_config)
-
-    cls.__init__ = __init__
-    return cls

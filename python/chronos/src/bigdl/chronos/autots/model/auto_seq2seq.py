@@ -14,11 +14,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-from .base_automodel import BaseAutomodelMix, Dynamic_binding
+from .base_automodel import BaseAutomodel
 
 
-@Dynamic_binding
-class AutoSeq2Seq(BaseAutomodelMix):
+class AutoSeq2Seq(BaseAutomodel):
     def __init__(self,
                  input_feature_num,
                  output_target_num,
@@ -99,7 +98,6 @@ class AutoSeq2Seq(BaseAutomodelMix):
                                      remote_dir=remote_dir,
                                      name=name)
 
-    def __call__(self, *args, **kwag):
         if self.backend.startswith("torch"):
             from bigdl.chronos.model.Seq2Seq_pytorch import model_creator
         elif self.backend.startswith("keras"):
@@ -107,3 +105,5 @@ class AutoSeq2Seq(BaseAutomodelMix):
         else:
             raise TypeError(f"We only support keras and torch as backend, but got {self.backend}")
         self._model_creator = model_creator
+
+        super().__init__()
