@@ -57,7 +57,7 @@ class SimpleKeyManagementService(simpleAPPID:String = "", simpleAPPKEY:String = 
       require(primaryKeyPath != null && primaryKeyPath != "", "primaryKeyPath should be specified")
       require(dataKeyPath != null && dataKeyPath != "", "dataKeyPath should be specified")
       val primaryKeyCiphertext:String = keyReaderWriter.readKeyFromFile(primaryKeyPath)
-      require(primaryKeyCiphertext.substring(12) == _appid, "appid and primarykey should be matched!")
+      require(primaryKeyCiphertext.substring(0, 12) == _appid, "appid and primarykey should be matched!")
       val dataKeyCiphertext:String = keyReaderWriter.readKeyFromFile(dataKeyPath)
       var dataKeyPlaintext:String = ""
       for(i <- 0 until 16){
