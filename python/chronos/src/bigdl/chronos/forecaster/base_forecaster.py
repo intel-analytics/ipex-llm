@@ -586,6 +586,7 @@ class BasePytorchForecaster(Forecaster):
             if accelerator == 'pytorch':
                 accelerator = None
             else:
+                accelerator = 'onnxruntime'
                 method = method[:-3]
             self.internal = self.trainer.quantize(self.internal,
                                                   precision='int8',

@@ -460,6 +460,7 @@ class TSPipeline:
             if accelerator == 'pytorch':
                 accelerator = None
             else:
+                accelerator = 'onnxruntime'
                 method = method[:-3]
             self._best_model = self._trainer.quantize(self._best_model,
                                                       precision='int8',
