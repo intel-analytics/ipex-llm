@@ -14,18 +14,18 @@
 # limitations under the License.
 #
 
-import warnings
+
+import pytest
+from unittest import TestCase
 import os
 
-try:
-    from .autotsestimator import AutoTSEstimator
-except ImportError:
-    warnings.warn("Please install `bigdl-nano[all]` to use AutoTSEstimator")
+class TestLD(TestCase):
+    def test_ld_preload(self):
+        try:
+            LD = os.environ["LD_PRELOAD"]
+        except:
+            pass
 
-try:
-    LD = os.environ["LD_PRELOAD"]
-except:
-    warnings.warn("No need to unset variables")
-else:
-    del os.environ["LD_PRELOAD"]
-    warnings.warn("'LD_PRELOAD' has been unset to support AutoTS")
+
+if __name__ == '__main__':
+    pytest.main([__file__])
