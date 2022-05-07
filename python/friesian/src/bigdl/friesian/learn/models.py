@@ -15,8 +15,8 @@
 #
 
 
-# TODO: to friesian estimator
 def tfrs_model(model):
+    # TODO: to friesian estimator
     from tensorflow_recommenders.tasks import base
     import tensorflow as tf
     import warnings
