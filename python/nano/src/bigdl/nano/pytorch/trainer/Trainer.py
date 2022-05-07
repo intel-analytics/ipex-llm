@@ -320,7 +320,7 @@ class Trainer(pl.Trainer):
                         if val_dataloader:
                             dataloader = val_dataloader
                         if dataloader:
-                            input_sample = tuple(next(iter(calib_dataloader)))
+                            input_sample = tuple(next(iter(dataloader)))[:-1]
                     model = Trainer.trace(model,
                                           input_sample=input_sample,
                                           accelerator='onnxruntime')
