@@ -1,3 +1,19 @@
+/*
+ * Copyright 2016 The BigDL Authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ */
+
 package com.intel.analytics.bigdl.ppml
 
 import com.intel.analytics.bigdl.dllib.NNContext.{checkScalaVersion, checkSparkVersion, createSparkConf, initConf, initNNContext}
@@ -13,16 +29,36 @@ import com.intel.analytics.bigdl.ppml.dataframe.EncryptedDataFrameReader
 
 import java.nio.file.Paths
 
-class PPMLContext(kms: KeyManagementService, sparkSession: SparkSession) {
+/**
+ * PPMLContext who wraps a SparkSession and provides read functions to
+ * read encrypted data files to plain-text RDD or DataFrame, also provides
+ * write functions to save DataFrame to encrypted data files.
+ * @param kms
+ * @param sparkSession
+ */
+class PPMLContext protected(kms: KeyManagementService, sparkSession: SparkSession) {
 
-  private var dataKeyPlainText: String = ""
+  protected var dataKeyPlainText: String = ""
 
+  /**
+   * Load keys from a local file system.
+   * @param primaryKeyPath
+   * @param dataKeyPath
+   * @return
+   */
   def loadKeys(primaryKeyPath: String, dataKeyPath: String): this.type = {
     dataKeyPlainText = kms.retrieveDataKeyPlainText(
       Paths.get(primaryKeyPath).toString, Paths.get(dataKeyPath).toString)
     this
   }
 
+  /**
+   * Read data files into RDD[String]
+   * @param path data file path
+   * @param minPartitions min partitions
+   * @param mode encrypt mode, such as PLAIN_TEXT or AES_CBC_PKCS5PADDING
+   * @return
+   */
   def textFile(path: String,
                minPartitions: Int = sparkSession.sparkContext.defaultMinPartitions,
                mode: EncryptMode = EncryptMode.PLAIN_TEXT): RDD[String] = {
@@ -36,10 +72,21 @@ class PPMLContext(kms: KeyManagementService, sparkSession: SparkSession) {
     }
   }
 
+  /**
+   * Interface for loading data in external storage to Dataset.
+   * @param mode encrypt mode, such as PLAIN_TEXT or AES_CBC_PKCS5PADDING
+   * @return a EncryptedDataFrameReader
+   */
   def read(mode: EncryptMode): EncryptedDataFrameReader = {
     new EncryptedDataFrameReader(sparkSession, mode, dataKeyPlainText)
   }
 
+  /**
+   * Interface for saving the content of the non-streaming Dataset out into external storage.
+   * @param dataFrame dataframe to save.
+   * @param mode encrypt mode, such as PLAIN_TEXT or AES_CBC_PKCS5PADDING
+   * @return a DataFrameWriter[Row]
+   */
   def write(dataFrame: DataFrame, mode: EncryptMode): DataFrameWriter[Row] = {
     mode match {
       case EncryptMode.PLAIN_TEXT =>
@@ -53,27 +100,7 @@ class PPMLContext(kms: KeyManagementService, sparkSession: SparkSession) {
 }
 
 object PPMLContext{
-  def apply(): PPMLContext = {
-    val sparkSession: SparkSession = SparkSession.builder().getOrCreate()
-    apply(sparkSession)
-  }
-
-  def apply(sparkSession: SparkSession): PPMLContext = {
-    val skms = new SimpleKeyManagementService()
-    apply(skms, sparkSession)
-  }
-
-  def apply(kms: KeyManagementService): PPMLContext = {
-    val sparkSession: SparkSession = SparkSession.builder().getOrCreate()
-    new PPMLContext(kms, sparkSession)
-  }
-
-  def apply(kms: KeyManagementService, sparkSession: SparkSession): PPMLContext = {
-    new PPMLContext(kms, sparkSession)
-  }
-
-
-  def registerUDF(spark: SparkSession,
+  private[bigdl] def registerUDF(spark: SparkSession,
                   dataKeyPlaintext: String) = {
     val bcKey = spark.sparkContext.broadcast(dataKeyPlaintext)
     val convertCase = (x: String) => {
@@ -83,7 +110,7 @@ object PPMLContext{
     spark.udf.register("convertUDF", convertCase)
   }
 
-  def textFile(sc: SparkContext,
+  private[bigdl] def textFile(sc: SparkContext,
                path: String,
                dataKeyPlaintext: String,
                minPartitions: Int = -1): RDD[String] = {
@@ -100,7 +127,7 @@ object PPMLContext{
     }}.flatMap(_.split("\n"))
   }
 
-  def write(sparkSession: SparkSession,
+  private[bigdl] def write(sparkSession: SparkSession,
                dataKeyPlaintext: String,
                dataFrame: DataFrame): DataFrameWriter[Row] = {
     val tableName = "ppml_save_table"
@@ -114,21 +141,6 @@ object PPMLContext{
     df.write
   }
 
-  def writeCsv(sparkSession: SparkSession,
-               dataKeyPlaintext: String,
-               dataFrame: DataFrame,
-               path: String): Unit = {
-    val tableName = "save"
-    dataFrame.createOrReplaceTempView(tableName)
-    PPMLContext.registerUDF(sparkSession, dataKeyPlaintext)
-    // Select all and encrypt columns.
-    val convertSql = "select " + dataFrame.schema.map(column =>
-      "convertUDF(" + column.name + ") as " + column.name).mkString(", ") +
-      " from " + tableName
-    val df = sparkSession.sql(convertSql)
-    df.write.mode("overwrite").option("header", true).csv(Paths.get(path, tableName).toString)
-  }
-
   def initPPMLContext(appName: String): PPMLContext = {
     initPPMLContext(null, appName)
   }
@@ -137,45 +149,43 @@ object PPMLContext{
     initPPMLContext(conf)
   }
 
+  /**
+   * init ppml context with app name and ppml args
+   * @param appName the name of this Application
+   * @param ppmlArgs ppml arguments in a Map
+   * @return a PPMLContext
+   */
   def initPPMLContext(
         appName: String,
         ppmlArgs: Map[String, String]): PPMLContext = {
     initPPMLContext(null, appName, ppmlArgs)
   }
 
+  /**
+   * init ppml context with app name, SparkConf and ppml args
+   * @param sparkConf a SparkConf
+   * @param appName the name of this Application
+   * @param ppmlArgs ppml arguments in a Map
+   * @return a PPMLContext
+   */
   def initPPMLContext(
         sparkConf: SparkConf,
         appName: String,
         ppmlArgs: Map[String, String]): PPMLContext = {
     val conf = createSparkConf(sparkConf)
-    val sc = initNNContext(conf, appName)
-    val sparkSession: SparkSession = SparkSession.builder().getOrCreate()
-    val kmsType = ppmlArgs.get("spark.bigdl.kms.type").get
-    val kms = kmsType match {
-      case KMS_CONVENTION.MODE_EHSM_KMS =>
-        val ip = ppmlArgs.getOrElse("spark.bigdl.kms.ehs.ip", "0.0.0.0")
-        val port = ppmlArgs.getOrElse("spark.bigdl.kms.ehs.port", "5984")
-        val appId = ppmlArgs.getOrElse("spark.bigdl.kms.ehs.id", "ehsmAPPID")
-        val appKey = ppmlArgs.getOrElse("spark.bigdl.kms.ehs.key", "ehsmAPPKEY")
-        new EHSMKeyManagementService(ip, port, appId, appKey)
-      case KMS_CONVENTION.MODE_SIMPLE_KMS =>
-        val id = ppmlArgs.getOrElse("spark.bigdl.kms.simple.id", "simpleAPPID")
-        val key = ppmlArgs.getOrElse("spark.bigdl.kms.simple.key", "simpleAPPKEY")
-        new SimpleKeyManagementService(id, key)
-      case _ =>
-        throw new EncryptRuntimeException("Wrong kms type")
+    ppmlArgs.foreach{arg =>
+      conf.set(arg._1, arg._2)
     }
-    val kmsSc = new PPMLContext(kms, sparkSession)
-    if (ppmlArgs.contains("spark.bigdl.kms.key.primary")){
-      require(ppmlArgs.contains("spark.bigdl.kms.key.data"), "Data key not found, please provide" +
-        " both spark.bigdl.kms.key.primary and spark.bigdl.kms.key.data.")
-      val primaryKey = ppmlArgs.get("spark.bigdl.kms.key.primary").get
-      val dataKey = ppmlArgs.get("spark.bigdl.kms.key.data").get
-      kmsSc.loadKeys(primaryKey, dataKey)
-    }
-    kmsSc
+    initPPMLContext(conf, appName)
   }
 
+  /**
+   * init ppml context with app name, SparkConf
+   * @param sparkConf a SparkConf, ppml arguments are passed by this sparkconf.
+   * @param appName the name of this Application
+   * @param ppmlArgs ppml arguments in a Map
+   * @return a PPMLContext
+   */
   def initPPMLContext(sparkConf: SparkConf, appName: String): PPMLContext = {
     val conf = createSparkConf(sparkConf)
     val sc = initNNContext(conf, appName)
