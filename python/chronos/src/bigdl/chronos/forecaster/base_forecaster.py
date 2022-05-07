@@ -595,7 +595,6 @@ class BasePytorchForecaster(Forecaster):
                                                   val_dataloader=val_data,
                                                   metric=metric,
                                                   conf=conf,
-                                                  framework=framework_item,
                                                   approach=approach,
                                                   tuning_strategy=tuning_strategy,
                                                   accuracy_criterion=accuracy_criterion,
