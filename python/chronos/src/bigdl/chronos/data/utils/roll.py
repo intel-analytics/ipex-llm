@@ -114,7 +114,10 @@ def _roll_timeseries_dataframe_train(df,
     y = df.iloc[lookback-label_len:].loc[:, target_col].values.astype(np.float32)
 
     output_x, mask_x = _roll_timeseries_ndarray(x, lookback)
-    output_y, mask_y = _roll_timeseries_ndarray(y, horizon+label_len)
+    if isinstance(horizon, list):
+        output_y, mask_y = _roll_timeseries_ndarray(y, horizon)
+    else:
+        output_y, mask_y = _roll_timeseries_ndarray(y, horizon+label_len)
     mask = (mask_x == 1) & (mask_y == 1)
 
     x = _append_rolling_feature_df(output_x[mask], roll_feature_df)
