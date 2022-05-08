@@ -92,7 +92,8 @@ class EncoderLayer(nn.Module):
     """
     Autoformer encoder layer with the progressive decomposition architecture
     """
-    def __init__(self, attention, d_model, d_ff=None, moving_avg=25, dropout=0.1, activation="relu"):
+    def __init__(self, attention, d_model, d_ff=None,
+                 moving_avg=25, dropout=0.1, activation="relu"):
         super(EncoderLayer, self).__init__()
         d_ff = d_ff or 4 * d_model
         self.attention = attention
@@ -163,7 +164,8 @@ class DecoderLayer(nn.Module):
         self.decomp2 = series_decomp(moving_avg)
         self.decomp3 = series_decomp(moving_avg)
         self.dropout = nn.Dropout(dropout)
-        self.projection = nn.Conv1d(in_channels=d_model, out_channels=c_out, kernel_size=3, stride=1, padding=1,
+        self.projection = nn.Conv1d(in_channels=d_model, out_channels=c_out,
+                                    kernel_size=3, stride=1, padding=1,
                                     padding_mode='circular', bias=False)
         self.activation = F.relu if activation == "relu" else F.gelu
 

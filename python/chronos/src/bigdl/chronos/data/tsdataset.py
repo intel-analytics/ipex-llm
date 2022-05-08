@@ -606,8 +606,10 @@ class TSDataset:
             data_stamp = time_features(pd.to_datetime(self.df[self.dt_col].values), freq=self._freq)
             self.data_stamp = data_stamp.transpose(1, 0)
             max_horizon = horizon if isinstance(horizon, int) else max(horizon)
-            self.numpy_x_timeenc, _ = _roll_timeseries_ndarray(self.data_stamp[:-max_horizon], lookback)
-            self.numpy_y_timeenc, _ = _roll_timeseries_ndarray(self.data_stamp[lookback-label_len:], horizon+label_len)
+            self.numpy_x_timeenc, _ = _roll_timeseries_ndarray(self.data_stamp[:-max_horizon],
+                                                               lookback)
+            self.numpy_y_timeenc, _ = _roll_timeseries_ndarray(self.data_stamp[lookback-label_len:],
+                                                               horizon+label_len)
         else:
             self.numpy_x_timeenc = None
             self.numpy_y_timeenc = None

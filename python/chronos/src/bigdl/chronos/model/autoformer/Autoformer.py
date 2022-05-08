@@ -44,7 +44,8 @@ import torch.nn as nn
 import torch.nn.functional as F
 from .layers.Embed import DataEmbedding, DataEmbedding_wo_pos
 from .layers.AutoCorrelation import AutoCorrelation, AutoCorrelationLayer
-from .layers.Autoformer_EncDec import Encoder, Decoder, EncoderLayer, DecoderLayer, my_Layernorm, series_decomp
+from .layers.Autoformer_EncDec import Encoder, Decoder, EncoderLayer,\
+    DecoderLayer, my_Layernorm, series_decomp
 import torch.optim as optim
 import math
 import numpy as np
@@ -72,10 +73,10 @@ class AutoFormer(pl.LightningModule):
         # Embedding
         # The series-wise connection inherently contains the sequential information.
         # Thus, we can discard the position embedding of transformers.
-        self.enc_embedding = DataEmbedding_wo_pos(configs.enc_in, configs.d_model, configs.embed, configs.freq,
-                                                  configs.dropout)
-        self.dec_embedding = DataEmbedding_wo_pos(configs.dec_in, configs.d_model, configs.embed, configs.freq,
-                                                  configs.dropout)
+        self.enc_embedding = DataEmbedding_wo_pos(configs.enc_in, configs.d_model, configs.embed,
+                                                  configs.freq, configs.dropout)
+        self.dec_embedding = DataEmbedding_wo_pos(configs.dec_in, configs.d_model, configs.embed,
+                                                  configs.freq, configs.dropout)
 
         # Encoder
         self.encoder = Encoder(
@@ -133,8 +134,8 @@ class AutoFormer(pl.LightningModule):
         enc_out, attns = self.encoder(enc_out, attn_mask=enc_self_mask)
         # dec
         dec_out = self.dec_embedding(seasonal_init, x_mark_dec)
-        seasonal_part, trend_part = self.decoder(dec_out, enc_out, x_mask=dec_self_mask, cross_mask=dec_enc_mask,
-                                                 trend=trend_init)
+        seasonal_part, trend_part = self.decoder(dec_out, enc_out, x_mask=dec_self_mask,
+                                                 cross_mask=dec_enc_mask, trend=trend_init)
         # final
         dec_out = trend_part + seasonal_part
 
@@ -144,7 +145,7 @@ class AutoFormer(pl.LightningModule):
             return dec_out[:, -self.pred_len:, :]  # [B, L, D]
 
     def training_step(self, batch, batch_idx):
-        batch_x, batch_y, batch_x_mark, batch_y_mark = map(lambda x:x.float(), batch)
+        batch_x, batch_y, batch_x_mark, batch_y_mark = map(lambda x: x.float(), batch)
         dec_inp = torch.zeros_like(batch_y[:, -self.pred_len:, :]).float()
         dec_inp = torch.cat([batch_y[:, :self.label_len, :], dec_inp], dim=1).float()
         outputs = self(batch_x, batch_x_mark, dec_inp, batch_y_mark, batch_y)
@@ -153,26 +154,28 @@ class AutoFormer(pl.LightningModule):
         batch_y = batch_y[:, -self.pred_len:, :]
         loss = nn.MSELoss()
         return loss(outputs, batch_y)
-    
+
     def validation_step(self, batch, batch_idx):
-        batch_x, batch_y, batch_x_mark, batch_y_mark = map(lambda x:x.float(), batch)
+        batch_x, batch_y, batch_x_mark, batch_y_mark = map(lambda x: x.float(), batch)
         dec_inp = torch.zeros_like(batch_y[:, -self.pred_len:, :]).float()
         dec_inp = torch.cat([batch_y[:, :self.label_len, :], dec_inp], dim=1).float()
-        outputs = self(batch_x.float(), batch_x_mark.float(), dec_inp, batch_y_mark.float(), batch_y)
+        outputs = self(batch_x.float(), batch_x_mark.float(), dec_inp,
+                       batch_y_mark.float(), batch_y)
 
         outputs = outputs[:, -self.pred_len:, :]
         batch_y = batch_y[:, -self.pred_len:, :]
         loss = nn.MSELoss()
         self.log("val_loss", loss(outputs, batch_y))
-    
+
     def predict_step(self, batch, batch_idx):
-        batch_x, batch_y, batch_x_mark, batch_y_mark = map(lambda x:x.float(), batch)
+        batch_x, batch_y, batch_x_mark, batch_y_mark = map(lambda x: x.float(), batch)
         dec_inp = torch.zeros_like(batch_y[:, -self.pred_len:, :]).float()
         dec_inp = torch.cat([batch_y[:, :self.label_len, :], dec_inp], dim=1).float()
-        outputs = self(batch_x.float(), batch_x_mark.float(), dec_inp, batch_y_mark.float(), batch_y)
+        outputs = self(batch_x.float(), batch_x_mark.float(), dec_inp,
+                       batch_y_mark.float(), batch_y)
         outputs = outputs[:, -self.pred_len:, :]
         return outputs
-    
+
     def configure_optimizers(self):
         return optim.Adam(self.parameters(), lr=0.0001)
 
@@ -190,20 +193,20 @@ def model_creator(config):
     args.seq_len = config['seq_len']
     args.label_len = config['label_len']
     args.pred_len = config['pred_len']
-    args.output_attention = config['output_attention']
-    args.moving_avg = config['moving_avg']
+    args.output_attention = config.get('output_attention', False)
+    args.moving_avg = config.get('moving_avg', 25)
     args.enc_in = config['enc_in']
-    args.d_model = config['d_model']
-    args.embed = config['embed']
+    args.d_model = config.get('d_model', 512)
+    args.embed = config.get('embed', 'timeF')
     args.freq = config['freq']
-    args.dropout = config['dropout']
+    args.dropout = config.get('dropout', 0.05)
     args.dec_in = config['dec_in']
-    args.factor = config['factor']
-    args.n_heads = config['n_heads']
-    args.d_ff = config['d_ff']
-    args.activation = config['activation']
-    args.e_layers = config['e_layers']
+    args.factor = config.get('factor', 3)
+    args.n_heads = config.get('n_heads', 8)
+    args.d_ff = config.get('d_ff', 2048)
+    args.activation = config.get('activation', 'gelu')
+    args.e_layers = config.get('e_layers', 2)
     args.c_out = config['c_out']
-    args.d_layers = config['d_layers']
+    args.d_layers = config.get('d_layers', 1)
 
     return AutoFormer(args)

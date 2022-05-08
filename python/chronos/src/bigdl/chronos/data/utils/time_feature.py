@@ -143,7 +143,7 @@ def time_features_from_frequency_str(offset) -> List[TimeFeature]:
     )
 
     for offset_type, feature_classes in features_by_offsets:
-        if offset < offset_type:
+        if offset <= offset_type:
             return [cls() for cls in feature_classes]
 
 
