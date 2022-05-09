@@ -22,6 +22,9 @@
 # https://github.com/awslabs/autogluon/blob/master/LICENSE
 
 
+import optuna
+
+
 def _filter_tuner_args(kwargs, tuner_keys):
     return {k: v for k, v in kwargs.items() if k in tuner_keys}
 
