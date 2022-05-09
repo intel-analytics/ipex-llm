@@ -322,6 +322,13 @@ class Trainer(pl.Trainer):
                                           input_sample=input_sample,
                                           accelerator='onnxruntime')
                 model = model.onnx_model
+            """
+            If accelerator==None, quantized model returned should be an object of PytorchModel
+            which is defined by neural-compressor containing a `GraphModule` for inference.
+            Otherwise accelerator=='onnxruntime', it returns an ONNXModel object. A supported
+            model which is able to run on Pytorch or ONNXRuntime can be fetched by
+            `quantized_model.model`.
+            """
             quantized_model = quantizer.post_training_quantize(model, calib_dataloader,
                                                                val_dataloader, metric)
             if not return_pl:
