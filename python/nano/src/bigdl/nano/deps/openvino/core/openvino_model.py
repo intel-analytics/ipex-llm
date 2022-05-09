@@ -24,12 +24,7 @@ class OpenVINOModel:
         self.read_network(ie_network)
 
     def forward_step(self, *inputs):
-        try:
-            return self.infer_request.infer(list(inputs))
-        except RuntimeError:
-            for in_tensor, input in zip(self.infer_request.inputs, inputs):
-                in_tensor.shape == input.shape
-            return self.infer_request.infer(list(inputs))
+        return self.infer_request.infer(list(inputs))
 
     def read_network(self, model: str):
         core = Core()
