@@ -31,7 +31,7 @@ from bigdl.nano.automl.tf.keras import Model, Sequential
 
 from tensorflow.keras.optimizers import Adam, RMSprop
 import bigdl.nano.automl.hpo as hpo
-from bigdl.nano.automl.hpo.backend import PrunerType
+from bigdl.nano.automl.hpo.backend import PrunerType, SamplerType
 
 @hpo.tfmodel()
 class MyModel(tf.keras.Model):
@@ -98,6 +98,9 @@ class TestUseCases(TestCase):
         model.search(n_trials=2,
                      target_metric='accuracy',
                      direction="maximize",
+                     sampler=SamplerType.Random,
+                     pruner=PrunerType.HyperBand,
+                     pruner_kwargs={'min_resource':1, 'max_resource':100, 'reduction_factor':3},
                      x=x_train,
                      y=y_train,
                     batch_size=128,
