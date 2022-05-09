@@ -79,7 +79,8 @@ class OptunaBackend(object):
                         hp_dimension = trial.suggest_categorical(
                             name=hp_name, choices=hp_obj.sequence)
                 except (ValueError):
-                    raise ValueError("If you set search space in model, you must call model.search before model.fit.")
+                    raise ValueError("If you set search space in model, \
+                        you must call model.search before model.fit.")
             else:
                 raise ValueError("unknown hyperparameter type: %s" % hp)
             config[hp_name] = hp_dimension
