@@ -634,11 +634,13 @@ Please prepare the following and put them in your NFS directory:
 - The data (in a directory called `data`),
 - The kubeconfig file.
 
-#### 1.4.2 Prepare secured-argvs
+#### 1.4.2 Prepare secured-argvs for client
+
+Note: If you are running this client in trusted env, please skip this step. Then, directly run this command without `/graphene/Tools/argv_serializer bash -c`.
 
 ```bash
-/graphene/Tools/argv_serializer bash -c "export TF_MKL_ALLOC_MAX_BYTES=10737418240 && \
-    export SPARK_LOCAL_IP=$LOCAL_IP && \
+/graphene/Tools/argv_serializer bash -c "secure_password=`openssl rsautl -inkey /ppml/trusted-big-data-ml/work/password/key.txt -decrypt </ppml/trusted-big-data-ml/work/password/output.bin` && TF_MKL_ALLOC_MAX_BYTES=10737418240 && \
+    SPARK_LOCAL_IP=$LOCAL_IP && \
     /opt/jdk8/bin/java \
         -cp '/ppml/trusted-big-data-ml/work/spark-3.1.2/conf/:/ppml/trusted-big-data-ml/work/spark-3.1.2/jars/*' \
         -Xmx8g \
@@ -707,7 +709,7 @@ Note that: you can run your own Spark Appliction after changing `--class` and ja
 #### 1.4.3 Spark-Pi example
 
 ```bash
-secure_password=`openssl rsautl -inkey /ppml/trusted-big-data-ml/work/password/key.txt -decrypt </ppml/trusted-big-data-ml/work/password/output.bin` && SGX=1 ./pal_loader bash 2>&1 | tee spark-pi-sgx-$SPARK_MODE.log
+SGX=1 ./pal_loader bash 2>&1 | tee spark-pi-sgx-$SPARK_MODE.log
 ```
 
 ### Configuration Explainations
