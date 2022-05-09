@@ -25,6 +25,7 @@ from bigdl.dllib.utils.utils import detect_python_location, pack_penv, get_node_
 from bigdl.dllib.utils.utils import get_executor_conda_zoo_classpath
 from bigdl.dllib.utils.utils import get_zoo_bigdl_classpath_on_driver
 from bigdl.dllib.utils.utils import get_bigdl_class_version
+from bigdl.dllib.utils.utils import get_bigdl_image_workdir
 from bigdl.dllib.utils.engine import get_bigdl_jars
 from bigdl.dllib.utils.log4Error import *
 
@@ -364,7 +365,8 @@ class SparkRunner:
             preload_so = executor_python_env + "/lib/libpython" + py_version + "m.so"
             ld_path = executor_python_env + "/lib:" + executor_python_env + "/lib/python" + \
                 py_version + "/lib-dynload"
-            tf_libs_path = "/opt/spark/work-dir/" + executor_python_env + "/lib/python" + \
+            image_workdir = get_bigdl_image_workdir()
+            tf_libs_path = image_workdir + executor_python_env + "/lib/python" + \
                 py_version + "/site-packages/bigdl/share/tflibs"
             if "spark.executor.extraLibraryPath" in conf:
                 ld_path = "{}:{}".format(ld_path, conf["spark.executor.extraLibraryPath"])
