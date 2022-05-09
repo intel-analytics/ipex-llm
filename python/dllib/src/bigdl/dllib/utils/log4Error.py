@@ -27,10 +27,16 @@ def outputUserMessage(errMsg, fixMsg=None):
     logger.error(f"\n\n****************************Call Stack*************************")
 
 
-def invalidInputError(condition, errMsg, fixMsg=None, cause=None):
+def invalidInputError(condition, errMsg, fixMsg=None):
+    if not condition:
+        outputUserMessage(errMsg, fixMsg)
+        raise RuntimeError(errMsg)
+
+
+def invalidOperationError(condition, errMsg, fixMsg=None, cause=None):
     if not condition:
         outputUserMessage(errMsg, fixMsg)
         if cause:
-            raise cause  # noqa
+            raise cause
         else:
-            raise RuntimeError(errMsg)  # noqa
+            raise RuntimeError(errMsg)

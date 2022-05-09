@@ -628,10 +628,10 @@ def callBigDlFunc(bigdl_type, name, *args):
         except Exception as e:
             error = e
             if "does not exist" not in str(e):
-                invalidInputError(False, "e is not a does not exist exception", cause=e)
+                invalidOperationError(False, "e is not a does not exist exception", cause=e)
         else:
             return result
-    invalidInputError(False, "Cannot find function: %s" % name, cause=error)
+    invalidOperationError(False, "Cannot find function: %s" % name, cause=error)
 
 
 def _java2py(gateway, r, encoding="bytes"):

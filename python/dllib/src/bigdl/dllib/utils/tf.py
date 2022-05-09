@@ -454,6 +454,6 @@ def load_tf_checkpoint(sess, checkpoint_path, saver=None):
         try:
             saver.restore(sess, os.path.join(temp, ckpt_name))
         except Exception as e:
-            invalidInputError(False, str(e), cause=e)
+            invalidOperationError(False, str(e), cause=e)
         finally:
             shutil.rmtree(temp)

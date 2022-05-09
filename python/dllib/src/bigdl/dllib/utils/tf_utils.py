@@ -75,7 +75,7 @@ def convert(input_ops, output_ops, byte_order, bigdl_type):
         shutil.rmtree(temp)
     except OSError as e:
         if e.errno != errno.ENOENT:
-            invalidInputError(False, str(e), cause=e)
+            invalidOperationError(False, str(e), cause=e)
 
     return model
 
@@ -161,7 +161,7 @@ def dump_model(path, graph=None, sess=None, ckpt_file=None, bigdl_type="float"):
             shutil.rmtree(temp)
         except OSError as e:
             if e.errno != errno.ENOENT:
-                invalidInputError(False, str(e), cause=e)
+                invalidOperationError(False, str(e), cause=e)
 
 
 def merge_checkpoint(input_graph,
