@@ -230,7 +230,7 @@ class Trainer(pl.Trainer):
             return None
         return self.hposearcher.search_summary()
 
-    def quantize(self, pl_model,  # remove the type requirement for type checking
+    def quantize(self, model,  # remove the type requirement for type checking
                  precision='int8',
                  accelerator=None,
                  method='fx',
@@ -250,15 +250,15 @@ class Trainer(pl.Trainer):
         """
         Calibrate a Pytorch-Lightning model for post-training quantization.
 
-        :param pl_model:        A model to be quantized. Model type can be nn.Module,
-             LightningModule, PytorchONNXRuntimeModel, PytorchOpenVINOModel, etc.
+        :param model:           A model to be quantized. Model type should be an instance of
+                                nn.Module.
         :param precision:       Global precision of quantized model,
                                 supported type: 'int8', 'bf16', 'fp16', defaults to 'int8'.
         :param accelerator:     Use accelerator 'None', 'onnxruntime', 'openvino', defaults to None.
                                 None means staying in pytorch.
         :param method:          Method to do quantization. When accelerator=None, supported
             methods: 'fx', 'eager', 'ipex', defaults to 'fx'. If you don't use ipex, suggest using
-            'fx' which execute automatic optimizations like fusion. For more information, please
+            'fx' which executes automatic optimizations like fusion. For more information, please
             refer to https://pytorch.org/docs/stable/quantization.html#eager-mode-quantization.
             When accelerator='onnxruntime', supported methods: 'qlinear', 'integer', defaults
             to 'qlinear'. Suggest 'qlinear' for lower accuracy drop if using static quantization.
@@ -293,7 +293,7 @@ class Trainer(pl.Trainer):
         """
         if backend == 'inc':
             # check if dataloader is of legal format
-            check_pytorch_dataloaders(pl_model, [calib_dataloader, val_dataloader])
+            check_pytorch_dataloaders(model, [calib_dataloader, val_dataloader])
 
             if approach not in ['static', 'dynamic']:
                 raise ValueError("Approach should be 'static' or 'dynamic', "
@@ -312,7 +312,6 @@ class Trainer(pl.Trainer):
                                         tuning_strategy=tuning_strategy,
                                         accuracy_criterion=accuracy_criterion,
                                         timeout=timeout, max_trials=max_trials)
-            model = pl_model
             if accelerator == "onnxruntime":
                 if not type(model).__name__ == 'PytorchONNXRuntimeModel':
                     # try to establish onnx model
@@ -340,7 +339,7 @@ class Trainer(pl.Trainer):
                 from bigdl.nano.pytorch.runtime_binding.quantization_inference import \
                     bind_quantize_methods
                 return_pl_model = bind_quantize_methods(
-                    bind_base_inference_rt_methods(pl_model), quantized_pytorch_model)
+                    bind_base_inference_rt_methods(model), quantized_pytorch_model)
                 if quantized_onnx_model:
                     return bind_onnxrt_methods(return_pl_model,
                                                quantized_onnx_model)
