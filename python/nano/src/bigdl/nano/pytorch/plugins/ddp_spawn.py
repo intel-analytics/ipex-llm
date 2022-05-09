@@ -92,7 +92,7 @@ def start_processes_new(fn, args=(), nprocs=1, join=True, daemon=False,
     os.environ["OMP_NUM_THREADS"] = init_OMP_NUM_THREADS
 
 
-class DDPSpawnPlugin(pl.plugins.DDPSpawnPlugin):
+class DDPSpawnPlugin(pl.strategies.DDPSpawnStrategy):
     """Extending DDPSpawnPlugin to support launch subprocesses with optimized env variables."""
 
     distributed_backend = "ddp_spawn"
