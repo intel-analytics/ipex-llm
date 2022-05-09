@@ -32,24 +32,3 @@ TF_ENABLE_ONEDNN_OPTS=
 +++++++++++++++++++++++++
 Complete.
 ```
-#### Ipex
-Install ipex if you want to use ipex as as accelerator for nano trainer.
-- Install IPEX via wheel file
-
-```bash
-python -m pip install torch_ipex==1.9.0 -f https://software.intel.com/ipex-whl-stable
-```
-
-- Install IPEX by compiling from source
-
-```bash
-git clone --recursive https://github.com/intel/intel-extension-for-pytorch
-cd intel-extension-for-pytorch
-
-# if you are updating an existing checkout
-git submodule sync
-git submodule update --init --recursive
-
-# run setup.py to compile IPEX and install the binaries
-python setup.py install
-```
