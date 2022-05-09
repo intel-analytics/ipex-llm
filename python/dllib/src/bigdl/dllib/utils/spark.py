@@ -355,6 +355,7 @@ class SparkRunner:
             submit_args = submit_args + gen_submit_args(
                 driver_cores, driver_memory, num_executors, executor_cores,
                 executor_memory, extra_python_lib, jars)
+            submit_args = submit_args + " --jars " + ",".join(get_bigdl_jars())
 
             conf = enrich_conf_for_spark(conf, driver_cores, driver_memory, num_executors,
                                          executor_cores, executor_memory,
@@ -363,10 +364,13 @@ class SparkRunner:
             preload_so = executor_python_env + "/lib/libpython" + py_version + "m.so"
             ld_path = executor_python_env + "/lib:" + executor_python_env + "/lib/python" + \
                 py_version + "/lib-dynload"
+            tf_libs_path = "/opt/spark/work-dir/" + executor_python_env + "/lib/python" + \
+                py_version + "/site-packages/bigdl/share/tflibs"
             if "spark.executor.extraLibraryPath" in conf:
                 ld_path = "{}:{}".format(ld_path, conf["spark.executor.extraLibraryPath"])
             conf.update({"spark.cores.max": num_executors * executor_cores,
                          "spark.executorEnv.PYTHONHOME": executor_python_env,
+                         "spark.executorEnv.TF_LIBS_PATH": tf_libs_path,
                          "spark.executor.extraLibraryPath": ld_path,
                          "spark.executorEnv.LD_PRELOAD": preload_so,
                          "spark.kubernetes.container.image": container_image})
@@ -374,13 +378,6 @@ class SparkRunner:
                 conf["spark.driver.host"] = get_node_ip()
             if "spark.driver.port" not in conf:
                 conf["spark.driver.port"] = random.randint(10000, 65535)
-            zoo_bigdl_path_on_executor = ":".join(
-                list(get_executor_conda_zoo_classpath(executor_python_env)))
-            if "spark.executor.extraClassPath" in conf:
-                conf["spark.executor.extraClassPath"] = "{}:{}".format(
-                    zoo_bigdl_path_on_executor, conf["spark.executor.extraClassPath"])
-            else:
-                conf["spark.executor.extraClassPath"] = zoo_bigdl_path_on_executor
 
             sc = self.create_sc(submit_args, conf)
         finally:
