@@ -50,7 +50,7 @@ class Seq2SeqForecaster(BaseTF2Forecaster):
                  seed=None,
                  distributed=False,
                  workers_per_node=1,
-                 distributed_backend="ray"):
+                 distributed_backend="tf2"):
         """
         Build a Seq2Seq Forecast Model.
 
@@ -88,8 +88,8 @@ class Seq2SeqForecaster(BaseTF2Forecaster):
         :param workers_per_node: int, the number of worker you want to use.
                The value defaults to 1. The param is only effective when
                distributed is set to True.
-        :param distributed_backend: str, select from "ray" or
-               "horovod". The value defaults to "ray".
+        :param distributed_backend: str, select from "tf2" or
+               "horovod". The value defaults to "tf2".
         """
         # config setting
         self.model_config = {
