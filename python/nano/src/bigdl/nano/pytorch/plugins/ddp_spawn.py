@@ -109,6 +109,7 @@ class DDPSpawnPlugin(pl.strategies.DDPSpawnStrategy):
         cpu_for_each_process: Optional[List[List[int]]] = None,
         **kwargs: Any,
     ):
+        print(">>>>>> parallel device",parallel_devices)
         """Create a DDPSpawnPlugin, adding a cpu_for_each_process parameter."""
         super().__init__(parallel_devices,
                          num_nodes,
