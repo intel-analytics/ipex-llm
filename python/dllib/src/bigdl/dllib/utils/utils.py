@@ -216,7 +216,7 @@ def convert_row_to_numpy(row, schema, feature_cols, label_cols, accept_str_col=F
             elif isinstance(row[name], DenseVector):
                 result.append(row[name].values.astype(np.float32))
             else:
-                invalidInputError(not isinstance(row[name], SparseVector),
+                invalidInputError(isinstance(row[name], SparseVector),
                                   "unsupported field {}, data {}".format(schema[name], row[name]))
                 result.append(row[name].toArray())
         if len(result) == 1:
