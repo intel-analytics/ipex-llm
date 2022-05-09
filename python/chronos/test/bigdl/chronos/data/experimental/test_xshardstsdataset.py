@@ -194,6 +194,8 @@ class TestXShardsTSDataset(TestCase):
 
     def test_xshardstsdataset_sparkdf(self):
         df = generate_spark_df()
+
+        # with id
         tsdata = XShardsTSDataset.from_sparkdf(df, dt_col="date",
                                                target_col="feature",
                                                id_col="id")
@@ -204,3 +206,14 @@ class TestXShardsTSDataset(TestCase):
         assert data[0]['y'].shape[1] == 2
         assert data[0]['y'].shape[2] == 1
         assert tsdata.shards.num_partitions() == 2
+
+        # with only 1 id
+        tsdata = XShardsTSDataset.from_sparkdf(df, dt_col="date",
+                                               target_col="feature")
+        tsdata.roll(lookback=4, horizon=2)
+        data = tsdata.to_xshards().collect()
+        assert data[0]['x'].shape[1] == 4
+        assert data[0]['x'].shape[2] == 1
+        assert data[0]['y'].shape[1] == 2
+        assert data[0]['y'].shape[2] == 1
+        assert tsdata.shards.num_partitions() == 1

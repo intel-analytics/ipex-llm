@@ -316,7 +316,18 @@ def _dataframe_to_xshards(data, feature_cols, label_cols=None, accept_str_col=Fa
     return SparkXShards(shard_rdd)
 
 
-def _dataframe_to_xshards_of_pandas_df(data, feature_cols, label_cols=None, accept_str_col=False):
+def dataframe_to_xshards_of_pandas_df(data, feature_cols, label_cols=None, accept_str_col=False):
+    '''
+    This function transform a spark dataframe to xshards of pandas dataframe.
+    :param data: a spark dataframe
+    :param feature_cols: the col names you would like to select and transform to pandas
+    :param label_cols: the target col name you would like to select and transform to pandas
+           typically, you may leave this to None since there is no difference to use
+           feature_cols directly.
+    :param accept_str_col: bool, states if allow str to be a valid type.
+
+    :return: a sparkxshards of pandas dataframe with feature_cols+label_cols as header.
+    '''
     from bigdl.orca import OrcaContext
     schema = data.schema
     shard_size = OrcaContext._shard_size

@@ -16,7 +16,7 @@
 
 
 from bigdl.orca.data.shard import SparkXShards
-from bigdl.orca.learn.utils import _dataframe_to_xshards_of_pandas_df
+from bigdl.orca.learn.utils import dataframe_to_xshards_of_pandas_df
 from bigdl.chronos.data.utils.utils import _to_list, _check_type
 from bigdl.chronos.data.utils.roll import roll_timeseries_dataframe
 from bigdl.chronos.data.utils.split import split_timeseries_dataframe
@@ -192,10 +192,10 @@ class XShardsTSDataset:
         feature_col = _to_list(extra_feature_col, name="extra_feature_col")
         all_col = target_col + feature_col + _to_list(id_col, name="id_col") + [dt_col]
 
-        shards = _dataframe_to_xshards_of_pandas_df(df,
-                                                    feature_cols=all_col,
-                                                    label_cols=None,
-                                                    accept_str_col=False)
+        shards = dataframe_to_xshards_of_pandas_df(df,
+                                                   feature_cols=all_col,
+                                                   label_cols=None,
+                                                   accept_str_col=False)
 
         if id_col is None:
             shards = shards.transform_shard(add_row,
