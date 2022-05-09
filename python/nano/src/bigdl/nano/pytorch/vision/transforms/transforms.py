@@ -28,6 +28,45 @@ from typing import Tuple, List, Optional
 import collections
 from torchvision.transforms.functional import InterpolationMode
 
+__all__ = [
+    'Compose',
+    'Resize',
+    'Scale',
+    'ToTensor',
+    'RandomHorizontalFlip',
+    'RandomCrop',
+    'ColorJitter',
+    'Normalize',
+    'PILToTensor',
+    'ConvertImageDtype',
+    'ToPILImage',
+    'CenterCrop',
+    'Pad',
+    'Lambda',
+    'RandomApply',
+    'RandomOrder',
+    'RandomChoice',
+    'RandomVerticalFlip',
+    'RandomResizedCrop',
+    'FiveCrop',
+    'TenCrop',
+    'LinearTransformation',
+    'RandomRotation',
+    'RandomAffine',
+    'Grayscale',
+    'RandomGrayscale',
+    'RandomPerspective',
+    'RandomErasing',
+    'GaussianBlur',
+    'RandomInvert',
+    'RandomPosterize',
+    'RandomSolarize',
+    'RandomAdjustSharpness',
+    'RandomAutocontrast',
+    'RandomEqualize',
+    'InterpolationMode'
+]
+
 _cv_strToModes_mapping = {
     'nearest': cv2.INTER_NEAREST,
     'bilinear': cv2.INTER_LINEAR,
@@ -85,18 +124,19 @@ class Compose(object):
 
 
 class Resize(object):
-    # TODO: Support cv2.INTER_AREA
     def __init__(
             self, size, interpolation=InterpolationMode.BILINEAR, max_size=None, antialias=None
     ):
         self.size = size
         self.max_size = max_size
         self.antialias = antialias
+        self.cv_F = None
         if isinstance(interpolation, int):
             warnings.warn(
                 "Argument interpolation should be of type InterpolationMode instead of int."
                 "Please, use InterpolationMode enum."
             )
+            self.cv_F = cv_t.Resize(self.size, interpolation)
             interpolation = _torch_intToModes_mapping[interpolation]
 
         if isinstance(interpolation, str):
@@ -109,10 +149,11 @@ class Resize(object):
 
         self.tv_F = tv_t.Resize(self.size, self.interpolation, self.max_size, self.antialias)
 
-        if self.interpolation in _modes_torchToCV2_mapping:
-            self.cv_F = cv_t.Resize(self.size, _modes_torchToCV2_mapping[self.interpolation])
-        else:
-            self.cv_F = cv_t.Resize(self.size, cv2.INTER_LINEAR)
+        if self.cv_F is None:
+            if self.interpolation in _modes_torchToCV2_mapping:
+                self.cv_F = cv_t.Resize(self.size, _modes_torchToCV2_mapping[self.interpolation])
+            else:
+                self.cv_F = cv_t.Resize(self.size, cv2.INTER_LINEAR)
 
     def __call__(self, img):
         if type(img) == np.ndarray:
@@ -131,6 +172,16 @@ class Resize(object):
             .format(self.size, self.interpolation, self.max_size, self.antialias)
 
         return interpolation_str
+
+
+class Scale(Resize):
+    """
+    Note: This transform is deprecated in favor of Resize.
+    """
+    def __init__(self, *args, **kwargs):
+        warnings.warn("The use of the transforms.Scale transform is deprecated, " +
+                      "please use transforms.Resize instead.")
+        super(Scale, self).__init__(*args, **kwargs)
 
 
 class ToTensor(object):
@@ -384,7 +435,6 @@ class RandomVerticalFlip(object):
 
 
 class RandomResizedCrop(object):
-    # TODO: Support cv2.INTER_AREA
     def __init__(self,
                  size,
                  scale=(0.08, 1.0),
@@ -400,6 +450,7 @@ class RandomResizedCrop(object):
                 "Argument interpolation should be of type InterpolationMode instead of int."
                 "Please, use InterpolationMode enum."
             )
+            self.cv_F = cv_t.RandomResizedCrop(self.size, self.scale, self.ratio, interpolation)
             interpolation = _torch_intToModes_mapping[interpolation]
 
         if isinstance(interpolation, str):
@@ -412,11 +463,12 @@ class RandomResizedCrop(object):
 
         self.tv_F = tv_t.RandomResizedCrop(self.size, self.scale, self.ratio, self.interpolation)
 
-        if self.interpolation in _modes_torchToCV2_mapping:
-            self.cv_F = cv_t.RandomResizedCrop(size, self.scale, self.ratio,
-                                               _modes_torchToCV2_mapping[self.interpolation])
-        else:
-            self.cv_F = cv_t.RandomResizedCrop(size, self.scale, self.ratio, cv2.INTER_LINEAR)
+        if self.cv_F is None:
+            if self.interpolation in _modes_torchToCV2_mapping:
+                self.cv_F = cv_t.RandomResizedCrop(self.size, self.scale, self.ratio,
+                                                   _modes_torchToCV2_mapping[self.interpolation])
+            else:
+                self.cv_F = cv_t.RandomResizedCrop(self.size, self.scale, self.ratio, cv2.INTER_LINEAR)
 
     def __call__(self, img):
         if type(img) == np.ndarray:
@@ -433,6 +485,16 @@ class RandomResizedCrop(object):
             tuple(round(r, 4) for r in self.ratio))
         format_string += ', interpolation={})'.format(interpolate_str)
         return format_string
+
+
+class RandomSizedCrop(RandomResizedCrop):
+    """
+    Note: This transform is deprecated in favor of RandomResizedCrop.
+    """
+    def __init__(self, *args, **kwargs):
+        warnings.warn("The use of the transforms.RandomSizedCrop transform is deprecated, " +
+                      "please use transforms.RandomResizedCrop instead.")
+        super(RandomSizedCrop, self).__init__(*args, **kwargs)
 
 
 class FiveCrop(object):
@@ -525,28 +587,19 @@ class LinearTransformation(object):
         return format_string
 
 
-class RandomRotation(object):
-    # TODO: missing parameter "interpolation"
+class RandomRotation(tv_t.RandomRotation):
+    # TODO: opencv_transforms.RandomRotation misses parameter "interpolation"
     # Conflict: resample indexes of torchvision and opencv are different.
-    def __init__(self, degrees, resample=False, expand=False, center=None):
-        if isinstance(degrees, numbers.Number):
-            if degrees < 0:
-                raise ValueError(
-                    "If degrees is a single number, it must be positive.")
-            self.degrees = (-degrees, degrees)
-        else:
-            if len(degrees) != 2:
-                raise ValueError(
-                    "If degrees is a sequence, it must be of len 2.")
-            self.degrees = degrees
 
-        self.resample = resample
-        self.expand = expand
-        self.center = center
+    def __call__(self, img):
+        if type(img) == np.ndarray:
+            raise NotImplementedError("Input image must be PIL image or Tensor image for {}"
+                                      .format(self.__class__.__name__))
+        else:
+            return super(RandomRotation, self).__call__(img)
 
 
 class RandomAffine(object):
-    # TODO: Support cv2.INTER_AREA
     def __init__(self,
                  degrees,
                  translate=None,
@@ -555,21 +608,6 @@ class RandomAffine(object):
                  interpolation=cv2.INTER_LINEAR,
                  fill=0,
                  center=None):
-        if isinstance(interpolation, int):
-            warnings.warn(
-                "Argument interpolation should be of type InterpolationMode instead of int."
-                "Please, use InterpolationMode enum."
-            )
-            interpolation = _torch_intToModes_mapping[interpolation]
-
-        if isinstance(interpolation, str):
-            warnings.warn(
-                "Argument interpolation should be of type InterpolationMode instead of str."
-                "Please, use InterpolationMode enum."
-            )
-            interpolation = _torch_strToModes_mapping[interpolation]
-        self.interpolation = interpolation
-
         if isinstance(degrees, numbers.Number):
             if degrees < 0:
                 raise ValueError(
@@ -630,6 +668,30 @@ class RandomAffine(object):
         # self.resample = resample
         self.center = center
 
+        self.cv_F = None
+        if isinstance(interpolation, int):
+            warnings.warn(
+                "Argument interpolation should be of type InterpolationMode instead of int."
+                "Please, use InterpolationMode enum."
+            )
+            self.cv_F = cv_t.RandomAffine(
+                degrees=self.degrees,
+                translate=self.translate,
+                scale=self.scale,
+                shear=self.shear,
+                interpolation=interpolation,
+                fillcolor=self.fill
+            )
+            interpolation = _torch_intToModes_mapping[interpolation]
+
+        if isinstance(interpolation, str):
+            warnings.warn(
+                "Argument interpolation should be of type InterpolationMode instead of str."
+                "Please, use InterpolationMode enum."
+            )
+            interpolation = _torch_strToModes_mapping[interpolation]
+        self.interpolation = interpolation
+
         self.tv_F = tv_t.RandomAffine(degrees=self.degrees,
                                       translate=self.translate,
                                       scale=self.scale,
@@ -637,24 +699,22 @@ class RandomAffine(object):
                                       interpolation=self.interpolation,
                                       fill=self.fill,
                                       center=self.center)
-
-        if self.interpolation in _modes_torchToCV2_mapping:
-            self.cv_F = cv_t.RandomAffine(degrees=self.degrees,
-                                          translate=self.translate,
-                                          scale=self.scale,
-                                          shear=self.shear,
-                                          interpolation=_modes_torchToCV2_mapping[
-                                              self.interpolation],
-                                          fillcolor=self.fill,
-                                          center=self.center)
-        else:
-            self.cv_F = cv_t.RandomAffine(degrees=self.degrees,
-                                          translate=self.translate,
-                                          scale=self.scale,
-                                          shear=self.shear,
-                                          interpolation=cv2.INTER_LINEAR,
-                                          fillcolor=self.fill,
-                                          center=self.center)
+        if self.cv_F is None:
+            if self.interpolation in _modes_torchToCV2_mapping:
+                self.cv_F = cv_t.RandomAffine(degrees=self.degrees,
+                                              translate=self.translate,
+                                              scale=self.scale,
+                                              shear=self.shear,
+                                              interpolation=_modes_torchToCV2_mapping[
+                                                  self.interpolation],
+                                              fillcolor=self.fill)
+            else:
+                self.cv_F = cv_t.RandomAffine(degrees=self.degrees,
+                                              translate=self.translate,
+                                              scale=self.scale,
+                                              shear=self.shear,
+                                              interpolation=cv2.INTER_LINEAR,
+                                              fillcolor=self.fill)
 
     def __call__(self, img):
         if type(img) == np.ndarray:
