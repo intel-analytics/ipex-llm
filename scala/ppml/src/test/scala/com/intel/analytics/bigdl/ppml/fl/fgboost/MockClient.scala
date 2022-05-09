@@ -14,10 +14,11 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.ppml.fl.utils
+package com.intel.analytics.bigdl.ppml.fl.fgboost
 
 import com.intel.analytics.bigdl.ppml.fl.algorithms.FGBoostRegression
 import com.intel.analytics.bigdl.ppml.fl.data.PreprocessUtil
+import com.intel.analytics.bigdl.ppml.fl.utils.FlContextForTest
 import org.apache.log4j.LogManager
 
 import scala.io.Source
@@ -46,7 +47,7 @@ class MockClient(dataPath: String,
       PreprocessUtil.preprocessing(sources, testSources, rowKeyName, labelName)
     val fgBoostRegression = new FGBoostRegression(
       learningRate = 0.1f, maxDepth = 7, minChildSize = 5)
-    val testFlContext= new FlContextForTest()
+    val testFlContext = new FlContextForTest()
     testFlContext.initFLContext()
     fgBoostRegression.setFlClient(testFlContext.getClient())
     logger.debug(s"Client2 calling fit...")

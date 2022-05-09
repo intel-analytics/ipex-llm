@@ -22,6 +22,9 @@
 # https://github.com/awslabs/autogluon/blob/master/LICENSE
 
 
+import optuna
+
+
 def _filter_tuner_args(kwargs, tuner_keys):
     return {k: v for k, v in kwargs.items() if k in tuner_keys}
 
@@ -30,7 +33,7 @@ def _search_summary(study):
     """
     Print statistics of trials and retrieve the summary for further analysis.
 
-    :param study: the optuna study object
+    :param study: the hpo study object
     :return : the summary object (current we return the study directly, so that
         it allows better flexiblity to do visualization and futher analysis)
     """
@@ -55,16 +58,15 @@ def _end_search(study, model_builder, use_trial_id=-1):
 
     Use the specified trial or best trial to init and compile the base model.
 
-    :param study: the optuna study object.
+    :param study: the hpo study object.
     :param model_builder: the function to build the model.
     :param use_trial_id: int(optional) params of which trial to be used. Defaults to -1.
     :raises ValueError: if study is None.
     :return : the built model with best or specified trial hyperparams.
     """
     if study is None:
-        raise ValueError("study is None.   \
-                            Please call search before calling end_search. ")
-    if use_trial_id == -1:
+        trial = optuna.trial.FixedTrial({})
+    elif use_trial_id == -1:
         trial = study.best_trial
     else:
         trial = study.trials[use_trial_id]

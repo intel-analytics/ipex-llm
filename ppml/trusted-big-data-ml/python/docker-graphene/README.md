@@ -14,17 +14,17 @@ Before running the following command, please modify the paths in `build-docker-i
 ./build-docker-image.sh
 ```
 
-#### <span id="prepare-data">2. Prepare data, key and password</span>
+#### 2. Prepare data, key and password
 
-*  ##### Prepare the Data
+##### Prepare the Data
 
-  To train a model with ppml in bigdl, you need to prepare the data first. The Docker image is taking lenet and mnist as example.You can download the MNIST Data from [here](http://yann.lecun.com/exdb/mnist/). Unzip all the files and put them in one folder(e.g. mnist).
+  To train a model with ppml in BigDL, you need to prepare the data first. The Docker image is taking lenet and mnist as example.You can download the MNIST Data from [here](http://yann.lecun.com/exdb/mnist/). Unzip all the files and put them in one folder(e.g. mnist).
 
   There are four files. **train-images-idx3-ubyte** contains train images, **train-labels-idx1-ubyte** is train label file, **t10k-images-idx3-ubyte** has validation images and **t10k-labels-idx1-ubyte** contains validation labels. For more detail, please refer to the download page.
 
   After you decompress the gzip files, these files may be renamed by some decompress tools, e.g. **train-images-idx3-ubyte** is renamed to **train-images.idx3-ubyte**. Please change the name back before you run the example.
 
-* ##### Prepare the Key
+##### Prepare the Key
 
   The ppml in bigdl needs secured keys to enable spark security such as Authentication, RPC Encryption, Local Storage Encryption and TLS, you need to prepare the secure keys and keystores. In this tutorial, you can generate keys and keystores with root permission (test only, need input security password for keys).
 
@@ -40,7 +40,7 @@ Before running the following command, please modify the paths in `build-docker-i
   openssl genrsa -3 -out enclave-key.pem 3072
   ```
 
-* ##### Prepare the Password
+##### Prepare the Password
 
   Next, you need to store the password you used for key generation, i.e., `generate-keys.sh`, in a secured file.
 
@@ -48,7 +48,7 @@ Before running the following command, please modify the paths in `build-docker-i
   sudo bash ../../../scripts/generate-password.sh used_password_when_generate_keys
   ```
 
-## Run Your Pyspark Program
+## Run Your PySpark Program
 
 #### 1. Start the container to run native python examples
 
@@ -60,7 +60,7 @@ sudo docker exec -it spark-local bash
 cd /ppml/trusted-big-data-ml
 ```
 
- #### 2. Run your pyspark program
+#### 2. Run your pyspark program
 
 To run your pyspark program, first you need to prepare your own pyspark program and put it under the trusted directory in SGX  `/ppml/trusted-big-data-ml/work`. Then run with `ppml-spark-submit.sh` using the command:
 
@@ -135,7 +135,7 @@ sudo docker exec -it spark-local bash
 cd /ppml/trusted-big-data-ml
 ```
 
- #### 2. Run pyspark examples
+#### 2. Run PySpark examples
 
 ##### Example 1: `pi.py`
 
@@ -575,7 +575,7 @@ kubectl create secret generic spark-secret --from-literal secret=YOUR_SECRET
 ### 1.3 Start the client container
 Configure the environment variables in the following script before running it. Check [Bigdl ppml SGX related configurations](#1-bigdl-ppml-sgx-related-configurations) for detailed memory configurations.
 ```bash
-export K8S_MASTER=k8s://$( sudo kubectl cluster-info | grep 'https.*' -o -m 1 )
+export K8S_MASTER=k8s://$(sudo kubectl cluster-info | grep 'https.*6443' -o -m 1)
 echo The k8s master is $K8S_MASTER .
 export ENCLAVE_KEY=/YOUR_DIR/enclave-key.pem
 export DATA_PATH=/YOUR_DIR/data
@@ -620,84 +620,100 @@ sudo docker run -itd \
     -e LOCAL_IP=$LOCAL_IP \
     $DOCKER_IMAGE bash
 ```
-### <span id="spark-example">1.4 Init the client and run Spark applications on k8s</span>
+
+### 1.4 Init the client and run Spark applications on k8s
+
 First, run `docker exec -it spark-local-k8s-client bash` to entry the container.
-#### 1.4.1 Init the Spark local k8s client
-```bash
-./init.sh
-```
-#### 1.4.2 Configure `spark-executor-template.yaml` in the container
+
+#### 1.4.1 Configure `spark-executor-template.yaml` in the container
 
 We assume you have a working Network File System (NFS) configured for your Kubernetes cluster. Configure the `nfsvolumeclaim` on the last line to the name of the Persistent Volume Claim (PVC) of your NFS.
 
 Please prepare the following and put them in your NFS directory:
+
 - The data (in a directory called `data`),
 - The kubeconfig file.
 
-#### 1.4.3 Spark-Pi example
+#### 1.4.2 Prepare secured-argvs for client
+
+Note: If you are running this client in trusted env, please skip this step. Then, directly run this command without `/graphene/Tools/argv_serializer bash -c`.
+
 ```bash
-#!/bin/bash
-secure_password=`openssl rsautl -inkey /ppml/trusted-big-data-ml/work/password/key.txt -decrypt </ppml/trusted-big-data-ml/work/password/output.bin` && \
-export TF_MKL_ALLOC_MAX_BYTES=10737418240 && \
-  export SPARK_LOCAL_IP=$LOCAL_IP && \
-  /opt/jdk8/bin/java \
-    -cp '/ppml/trusted-big-data-ml/work/spark-3.1.2/conf/:/ppml/trusted-big-data-ml/work/spark-3.1.2/jars/*' \
-    -Xmx8g \
-    org.apache.spark.deploy.SparkSubmit \
-    --master $RUNTIME_SPARK_MASTER \
-    --deploy-mode $SPARK_MODE \
-    --name spark-pi-sgx \
-    --conf spark.driver.host=$SPARK_LOCAL_IP \
-    --conf spark.driver.port=$RUNTIME_DRIVER_PORT \
-    --conf spark.driver.memory=$RUNTIME_DRIVER_MEMORY \
-    --conf spark.driver.cores=$RUNTIME_DRIVER_CORES \
-    --conf spark.executor.cores=$RUNTIME_EXECUTOR_CORES \
-    --conf spark.executor.memory=$RUNTIME_EXECUTOR_MEMORY \
-    --conf spark.executor.instances=$RUNTIME_EXECUTOR_INSTANCES \
-    --conf spark.kubernetes.authenticate.driver.serviceAccountName=spark \
-    --conf spark.kubernetes.container.image=$RUNTIME_K8S_SPARK_IMAGE \
-    --conf spark.kubernetes.driver.podTemplateFile=/ppml/trusted-big-data-ml/spark-driver-template.yaml \
-    --conf spark.kubernetes.executor.podTemplateFile=/ppml/trusted-big-data-ml/spark-executor-template.yaml \
-    --conf spark.kubernetes.executor.deleteOnTermination=false \
-    --conf spark.network.timeout=10000000 \
-    --conf spark.executor.heartbeatInterval=10000000 \
-    --conf spark.python.use.daemon=false \
-    --conf spark.python.worker.reuse=false \
-    --conf spark.kubernetes.sgx.enabled=$SGX_ENABLED \
-    --conf spark.kubernetes.sgx.driver.mem=$SGX_DRIVER_MEM \
-    --conf spark.kubernetes.sgx.driver.jvm.mem=$SGX_DRIVER_JVM_MEM \
-    --conf spark.kubernetes.sgx.executor.mem=$SGX_EXECUTOR_MEM \
-    --conf spark.kubernetes.sgx.executor.jvm.mem=$SGX_EXECUTOR_JVM_MEM \
-    --conf spark.kubernetes.sgx.log.level=$SGX_LOG_LEVEL \
-    --conf spark.authenticate=true \
-    --conf spark.authenticate.secret=$secure_password \
-    --conf spark.kubernetes.executor.secretKeyRef.SPARK_AUTHENTICATE_SECRET="spark-secret:secret" \
-    --conf spark.kubernetes.driver.secretKeyRef.SPARK_AUTHENTICATE_SECRET="spark-secret:secret" \
-    --conf spark.authenticate.enableSaslEncryption=true \
-    --conf spark.network.crypto.enabled=true \
-    --conf spark.network.crypto.keyLength=128 \
-    --conf spark.network.crypto.keyFactoryAlgorithm=PBKDF2WithHmacSHA1 \
-    --conf spark.io.encryption.enabled=true \
-    --conf spark.io.encryption.keySizeBits=128 \
-    --conf spark.io.encryption.keygen.algorithm=HmacSHA1 \
-    --conf spark.ssl.enabled=true \
-    --conf spark.ssl.port=8043 \
-    --conf spark.ssl.keyPassword=$secure_password \
-    --conf spark.ssl.keyStore=/ppml/trusted-big-data-ml/work/keys/keystore.jks \
-    --conf spark.ssl.keyStorePassword=$secure_password \
-    --conf spark.ssl.keyStoreType=JKS \
-    --conf spark.ssl.trustStore=/ppml/trusted-big-data-ml/work/keys/keystore.jks \
-    --conf spark.ssl.trustStorePassword=$secure_password \
-    --conf spark.ssl.trustStoreType=JKS \
-    --class org.apache.spark.examples.SparkPi \
-    --verbose \
-    local:///ppml/trusted-big-data-ml/work/spark-3.1.2/examples/jars/spark-examples_2.12-3.1.2.jar 100 2>&1 | tee spark-pi-sgx-$SPARK_MODE.log
+/graphene/Tools/argv_serializer bash -c "secure_password=`openssl rsautl -inkey /ppml/trusted-big-data-ml/work/password/key.txt -decrypt </ppml/trusted-big-data-ml/work/password/output.bin` && TF_MKL_ALLOC_MAX_BYTES=10737418240 && \
+    SPARK_LOCAL_IP=$LOCAL_IP && \
+    /opt/jdk8/bin/java \
+        -cp '/ppml/trusted-big-data-ml/work/spark-3.1.2/conf/:/ppml/trusted-big-data-ml/work/spark-3.1.2/jars/*' \
+        -Xmx8g \
+        org.apache.spark.deploy.SparkSubmit \
+        --master $RUNTIME_SPARK_MASTER \
+        --deploy-mode $SPARK_MODE \
+        --name spark-pi-sgx \
+        --conf spark.driver.host=$SPARK_LOCAL_IP \
+        --conf spark.driver.port=$RUNTIME_DRIVER_PORT \
+        --conf spark.driver.memory=$RUNTIME_DRIVER_MEMORY \
+        --conf spark.driver.cores=$RUNTIME_DRIVER_CORES \
+        --conf spark.executor.cores=$RUNTIME_EXECUTOR_CORES \
+        --conf spark.executor.memory=$RUNTIME_EXECUTOR_MEMORY \
+        --conf spark.executor.instances=$RUNTIME_EXECUTOR_INSTANCES \
+        --conf spark.kubernetes.authenticate.driver.serviceAccountName=spark \
+        --conf spark.kubernetes.container.image=$RUNTIME_K8S_SPARK_IMAGE \
+        --conf spark.kubernetes.driver.podTemplateFile=/ppml/trusted-big-data-ml/spark-driver-template.yaml \
+        --conf spark.kubernetes.executor.podTemplateFile=/ppml/trusted-big-data-ml/spark-executor-template.yaml \
+        --conf spark.kubernetes.executor.deleteOnTermination=false \
+        --conf spark.network.timeout=10000000 \
+        --conf spark.executor.heartbeatInterval=10000000 \
+        --conf spark.python.use.daemon=false \
+        --conf spark.python.worker.reuse=false \
+        --conf spark.kubernetes.sgx.enabled=$SGX_ENABLED \
+        --conf spark.kubernetes.sgx.driver.mem=$SGX_DRIVER_MEM \
+        --conf spark.kubernetes.sgx.driver.jvm.mem=$SGX_DRIVER_JVM_MEM \
+        --conf spark.kubernetes.sgx.executor.mem=$SGX_EXECUTOR_MEM \
+        --conf spark.kubernetes.sgx.executor.jvm.mem=$SGX_EXECUTOR_JVM_MEM \
+        --conf spark.kubernetes.sgx.log.level=$SGX_LOG_LEVEL \
+        --conf spark.authenticate=true \
+        --conf spark.authenticate.secret=$secure_password \
+        --conf spark.kubernetes.executor.secretKeyRef.SPARK_AUTHENTICATE_SECRET="spark-secret:secret" \
+        --conf spark.kubernetes.driver.secretKeyRef.SPARK_AUTHENTICATE_SECRET="spark-secret:secret" \
+        --conf spark.authenticate.enableSaslEncryption=true \
+        --conf spark.network.crypto.enabled=true \
+        --conf spark.network.crypto.keyLength=128 \
+        --conf spark.network.crypto.keyFactoryAlgorithm=PBKDF2WithHmacSHA1 \
+        --conf spark.io.encryption.enabled=true \
+        --conf spark.io.encryption.keySizeBits=128 \
+        --conf spark.io.encryption.keygen.algorithm=HmacSHA1 \
+        --conf spark.ssl.enabled=true \
+        --conf spark.ssl.port=8043 \
+        --conf spark.ssl.keyPassword=$secure_password \
+        --conf spark.ssl.keyStore=/ppml/trusted-big-data-ml/work/keys/keystore.jks \
+        --conf spark.ssl.keyStorePassword=$secure_password \
+        --conf spark.ssl.keyStoreType=JKS \
+        --conf spark.ssl.trustStore=/ppml/trusted-big-data-ml/work/keys/keystore.jks \
+        --conf spark.ssl.trustStorePassword=$secure_password \
+        --conf spark.ssl.trustStoreType=JKS \
+        --class org.apache.spark.examples.SparkPi \
+        --verbose \
+        local:///ppml/trusted-big-data-ml/work/spark-3.1.2/examples/jars/spark-examples_2.12-3.1.2.jar" > /ppml/trusted-big-data-ml/secured-argvs
 ```
-You can run your own Spark Appliction after changing `--class` and jar path.
+
+Init Graphene command.
+
+```bash
+./init.sh
+```
+
+Note that: you can run your own Spark Appliction after changing `--class` and jar path.
+
 1. `local:///ppml/trusted-big-data-ml/work/spark-3.1.2/examples/jars/spark-examples_2.12-3.1.2.jar` => `your_jar_path`
 2. `--class org.apache.spark.examples.SparkPi` => `--class your_class_path`
 
+#### 1.4.3 Spark-Pi example
+
+```bash
+SGX=1 ./pal_loader bash 2>&1 | tee spark-pi-sgx-$SPARK_MODE.log
+```
+
 ### Configuration Explainations
+
 #### 1. Bigdl ppml SGX related configurations
 
 <img title="" src="../../../../docs/readthedocs/image/ppml_memory_config.png" alt="ppml_memory_config.png" data-align="center">
@@ -793,3 +809,4 @@ Below is an explanation of these security configurations, Please refer to [Spark
 ```
 [helmGuide]: https://github.com/intel-analytics/BigDL/blob/main/ppml/trusted-big-data-ml/python/docker-graphene/kubernetes/README.md
 [standalone]: https://github.com/intel-analytics/BigDL/blob/main/ppml/trusted-big-data-ml/python/docker-graphene/standalone/README.md
+

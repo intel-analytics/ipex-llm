@@ -177,6 +177,11 @@ def get_bigdl_class_version():
     return bigdl_class_version
 
 
+def get_bigdl_image_workdir():
+    bigdl_image_workdir = "/opt/spark/work-dir"  # WORKDIR defined in dockerfile
+    return bigdl_image_workdir
+
+
 def _is_scalar_type(dtype, accept_str_col=False):
     import pyspark.sql.types as df_types
     if isinstance(dtype, df_types.FloatType):

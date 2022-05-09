@@ -31,6 +31,7 @@ from bigdl.nano.automl.tf.keras import Model, Sequential
 
 from tensorflow.keras.optimizers import Adam, RMSprop
 import bigdl.nano.automl.hpo as hpo
+from bigdl.nano.automl.hpo.backend import PrunerType
 
 @hpo.tfmodel()
 class MyModel(tf.keras.Model):
@@ -203,6 +204,59 @@ class TestUseCases(TestCase):
         # print(model.summary())
         score = model.evaluate(x_valid, y_valid, verbose=0)
         # print("The final score is on test data is", score[1])
+
+    def test_fit_without_search_with_space(self):
+        n_samples_train=self.TRAIN_TOTAL_SAMPLES
+        n_samples_test=self.TEST_TOTAL_SAMPLES
+        # prepare data
+        x_train = self.x_train[:n_samples_train].reshape(n_samples_train, 784)
+        x_test = self.x_test[:n_samples_test].reshape(n_samples_test, 784)
+        y_train = self.y_train[:n_samples_train]
+        y_test = self.y_test[:n_samples_test]
+
+        #define the model
+        inputs = Input(shape=(784,))
+        x = Dense(units=space.Categorical(8,16), activation="linear")(inputs)
+        x = Dense(units=space.Categorical(32,64), activation="tanh")(x)
+        outputs = Dense(units=10)(x)
+        model = Model(inputs=inputs, outputs=outputs, name="mnist_model")
+        model.compile(
+            loss=keras.losses.SparseCategoricalCrossentropy(from_logits=True),
+            optimizer=keras.optimizers.RMSprop(),
+            metrics=["accuracy"],
+        )
+
+        # run fit
+        with self.assertRaises(ValueError):
+            history = model.fit(x_train, y_train,
+                    batch_size=128, epochs=2, validation_split=0.2)
+                    
+
+    def test_fit_without_search_without_space(self):
+        n_samples_train=self.TRAIN_TOTAL_SAMPLES
+        n_samples_test=self.TEST_TOTAL_SAMPLES
+        # prepare data
+        x_train = self.x_train[:n_samples_train].reshape(n_samples_train, 784)
+        x_test = self.x_test[:n_samples_test].reshape(n_samples_test, 784)
+        y_train = self.y_train[:n_samples_train]
+        y_test = self.y_test[:n_samples_test]
+
+        #define the model
+        inputs = Input(shape=(784,))
+        x = Dense(units=8, activation="linear")(inputs)
+        x = Dense(units=32, activation="tanh")(x)
+        outputs = Dense(units=10)(x)
+        model = Model(inputs=inputs, outputs=outputs, name="mnist_model")
+        model.compile(
+            loss=keras.losses.SparseCategoricalCrossentropy(from_logits=True),
+            optimizer=keras.optimizers.RMSprop(),
+            metrics=["accuracy"],
+        )
+
+        # run fit
+        history = model.fit(x_train, y_train,
+                    batch_size=128, epochs=2, validation_split=0.2)
+        test_scores = model.evaluate(x_test, y_test, verbose=2)
 
 if __name__ == '__main__':
     pytest.main([__file__])

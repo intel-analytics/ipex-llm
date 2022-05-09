@@ -17,6 +17,8 @@
 
 package com.intel.analytics.bigdl.ppml.fl.nn
 
+import com.intel.analytics.bigdl.dllib.nn.abstractnn.Activity
+
 import java.util
 import java.util.Map
 import com.intel.analytics.bigdl.dllib.nn.{BCECriterion, MSECriterion, Sigmoid, View}
@@ -30,6 +32,7 @@ import io.grpc.stub.StreamObserver
 import org.apache.commons.lang3.exception.ExceptionUtils
 import org.apache.logging.log4j.LogManager
 
+import java.util.concurrent.ConcurrentHashMap
 import collection.JavaConverters._
 import collection.JavaConversions._
 
@@ -37,7 +40,6 @@ class NNServiceImpl(clientNum: Int) extends NNServiceGrpc.NNServiceImplBase {
   private val logger = LogManager.getLogger(getClass)
   private var aggregatorMap: Map[String, NNAggregator] = null
   initAggregatorMap()
-
 
   private def initAggregatorMap(): Unit = {
     aggregatorMap = new util.HashMap[String, NNAggregator]

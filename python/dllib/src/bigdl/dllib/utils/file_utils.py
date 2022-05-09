@@ -225,10 +225,10 @@ def callZooFunc(bigdl_type, name, *args):
             error = e
             if not ("does not exist" in str(e)
                     and "Method {}".format(name) in str(e)):
-                invalidInputError(False, str(e), cause=e)
+                invalidOperationError(False, str(e), cause=e)
         else:
             return result
-    invalidInputError(False, str(error), cause=error)
+    invalidOperationError(False, str(error), cause=error)
 
 
 class JTensor(BJTensor):

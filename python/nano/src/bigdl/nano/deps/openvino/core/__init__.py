@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 try:
-    from openvino.inference_engine import IECore
+    from openvino.runtime import Core
 except ImportError:
     raise ImportError("To enable openvino inference, you need to install it by:\n"
                       "\t\t pip install openvino-dev")

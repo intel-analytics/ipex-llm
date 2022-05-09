@@ -31,12 +31,14 @@ import yaml
 from bigdl.nano.common import check_avx512
 from bigdl.nano.pytorch.lightning import LightningModuleFromTorch
 from bigdl.nano.pytorch.plugins.ddp_spawn import DDPSpawnPlugin
+from bigdl.nano.deps.automl.hpo_api import create_hpo_searcher, check_hpo_status
 from bigdl.nano.deps.ray.ray_api import distributed_ray
 from bigdl.nano.deps.ipex.ipex_api import create_IPEXAccelerator, ipex_device
 from bigdl.nano.deps.openvino.openvino_api import PytorchOpenVINOModel, load_openvino_model
 from bigdl.nano.deps.onnxruntime.onnxruntime_api import bind_onnxrt_methods,\
     PytorchONNXRuntimeModel, load_onnxruntime_model
-
+from bigdl.nano.deps.neural_compressor.inc_api import QuantizationINC, PytorchQuantizedModel,\
+    check_pytorch_dataloaders, load_inc_model
 distributed_backends = ["spawn", "ray", "subprocess"]
 
 
@@ -53,6 +55,7 @@ class Trainer(pl.Trainer):
                  enable_bf16=False,
                  distributed_backend="spawn",
                  cpu_for_each_process: Optional[List[List[int]]] = None,
+                 use_hpo=False,
                  *args: Any, **kwargs: Any) -> None:
         """
         A pytorch lightning trainer that uses bigdl-nano optimization.
@@ -79,6 +82,11 @@ class Trainer(pl.Trainer):
                 raise ValueError(f"The length of `cpu_for_each_process` ("
                                  f"{len(cpu_for_each_process)}) is not equal to the number of"
                                  f" processes {num_processes}.")
+
+        if use_hpo:
+            self.hposearcher = create_hpo_searcher(trainer=self)
+        else:
+            self.hposearcher = None
 
         # Initialize trainer
         if use_ipex and not check_avx512():
@@ -187,6 +195,41 @@ class Trainer(pl.Trainer):
 
         return pl_model
 
+    def search(self,
+               model,
+               resume: bool = False,
+               target_metric=None,
+               **kwargs):
+        """
+        Run HPO search. It will be called in Trainer.search().
+
+        :param model: The model to be searched. It should be an auto model.
+        :param resume: whether to resume the previous or start a new one,
+            defaults to False.
+        :param target_metric: the object metric to optimize,
+            defaults to None.
+        :param return: the model with study meta info attached.
+        """
+        if not check_hpo_status(self.hposearcher):
+            return None
+        Trainer._log_api_event("search")
+
+        return self.hposearcher.search(model,
+                                       resume=resume,
+                                       target_metric=target_metric,
+                                       **kwargs)
+
+    def search_summary(self):
+        """
+        Retrive a summary of trials.
+
+        :return: A summary of all the trials. Currently the entire study is
+            returned to allow more flexibility for further analysis and visualization.
+        """
+        if not check_hpo_status(self.hposearcher):
+            return None
+        return self.hposearcher.search_summary()
+
     def quantize(self, pl_model,  # remove the type requirement for type checking
                  calib_dataloader: DataLoader = None,
                  val_dataloader: DataLoader = None,
@@ -236,9 +279,6 @@ class Trainer(pl.Trainer):
         :return:            A GraphModule. If there is no model found, return None.
         """
         if backend == 'inc':
-            from bigdl.nano.deps.neural_compressor.inc_api import QuantizationINC,\
-                check_pytorch_dataloaders
-
             # check if dataloader is of legal format
             check_pytorch_dataloaders(pl_model, [calib_dataloader, val_dataloader])
 
@@ -260,10 +300,6 @@ class Trainer(pl.Trainer):
             if "pytorch" in framework:
                 # for 'pytorch'|'pytorch_fx'|'pytorch_ipex'
                 model: Any = pl_model  # state model to be 'Any' since we may have pl or onnx
-                if isinstance(pl_model, LightningModuleFromTorch):
-                    # LightningModuleFromTorch.forward fails to trace in FX
-                    # so replace it temporarily
-                    model = pl_model.model
             else:
                 # for 'onnxrt_integerops'|'onnxrt_qlinearops'
                 pl_model = bind_onnxrt_methods(pl_model)
@@ -283,7 +319,8 @@ class Trainer(pl.Trainer):
             quantized_model = quantizer.post_training_quantize(model, calib_dataloader,
                                                                val_dataloader, metric)
             if not return_pl:
-                return quantized_model
+                return PytorchQuantizedModel(quantized_model) if "pytorch" in framework \
+                    else quantized_model
             else:
                 quantized_pytorch_model = quantized_model if "pytorch" in framework else None
                 quantized_onnx_model = quantized_model if "onnxrt" in framework else None
@@ -371,8 +408,8 @@ class Trainer(pl.Trainer):
         if model_type == 'PytorchONNXRuntimeModel':
             assert model is None, "Argument 'model' must be None for ONNX Runtime loading."
             return load_onnxruntime_model(path)
-        # if model_type == 'PytorchQuantizedModel':
-        # ... to be implemented
+        if model_type == 'PytorchQuantizedModel':
+            return load_inc_model(path, model, 'pytorch')
         if isinstance(model, nn.Module):
             # typically for models of nn.Module, LightningModule and LightningModuleFromTorch type
             model = copy.deepcopy(model)
