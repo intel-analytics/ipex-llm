@@ -15,6 +15,7 @@
 #
 from torch.utils.data import Dataset, DataLoader
 import torch
+import tensorflow as tf
 import numpy as np
 from unittest import TestCase
 import pytest
@@ -102,7 +103,8 @@ class TestAutoLSTM(TestCase):
         assert best_config['batch_size'] in (32, 64)
         assert 1 <= best_config['layer_num'] < 3
 
-        # keras
+    @pytest.mark.skipif(tf.__version__ < '2.0.0', reason="Run only when tf > 2.0.0.")
+    def test_fit_np_keras(self):
         keras_auto_lstm = get_auto_estimator(backend='keras')
         keras_auto_lstm.fit(data=get_x_y(size=1000),
                             epochs=2,
@@ -179,7 +181,8 @@ class TestAutoLSTM(TestCase):
         except ImportError:
             pass
 
-        # keras
+    @pytest.mark.skipif(tf.__version__ < '2.0.0', reason="Run only when tf > 2.0.0.")
+    def test_save_load_keras(self):
         auto_keras_lstm = get_auto_estimator(backend='keras')
         auto_keras_lstm.fit(data=get_x_y(size=1000),
                             epochs=2,

@@ -15,6 +15,7 @@
 #
 from torch.utils.data import Dataset, DataLoader
 import torch
+import tensorflow as tf
 import numpy as np
 from unittest import TestCase
 import pytest
@@ -106,6 +107,8 @@ class TestAutoSeq2Seq(TestCase):
         assert best_config['lstm_hidden_dim'] in (32, 64, 128)
         assert best_config['lstm_layer_num'] in (1, 2, 3, 4)
 
+    @pytest.mark.skipif(tf.__version__ < '2.0.0', reason="Run only when tf > 2.0.0.")
+    def test_fit_np_keras(self):
         # keras
         keras_auto_s2s = get_auto_estimator(backend='keras')
         keras_auto_s2s.fit(data=get_x_y(size=1000),
@@ -185,8 +188,9 @@ class TestAutoSeq2Seq(TestCase):
             np.testing.assert_almost_equal(eval_res, eval_res_onnx, decimal=5)
         except ImportError:
             pass
-    
-        # keras
+
+    @pytest.mark.skipif(tf.__version__ < '2.0.0', reason="Run only when tf > 2.0.0.")
+    def test_save_load_keras(self):
         auto_keras_s2s = get_auto_estimator(backend='keras')
         auto_keras_s2s.fit(data=get_x_y(size=1000),
                            epochs=1,

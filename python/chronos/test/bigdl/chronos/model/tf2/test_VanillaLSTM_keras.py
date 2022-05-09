@@ -76,11 +76,14 @@ class TestVanillaLSTM(TestCase):
         assert isinstance(restore_model, LSTMModel)
 
     def test_lstm_freeze_training(self):
-        yhat = self.model.predict(self.test_data[0], batch_size=32)
-        unfreeze_yhat = self.model(self.test_data[0], training=True)
+        # freeze dropout in layers
+        _freeze_yhat = self.model(self.test_data[0], training=False)
         freeze_yhat = self.model(self.test_data[0], training=False)
-        assert np.all(yhat == freeze_yhat)
-        assert np.any(yhat != unfreeze_yhat)
+        assert np.all(_freeze_yhat == freeze_yhat)
+
+        _unfreeze_yhat = self.model(self.test_data[0], training=True)
+        unfreeze_yhat = self.model(self.test_data[0], training=True)
+        assert np.any(_unfreeze_yhat != unfreeze_yhat)
 
 if __name__ == '__main__':
     pytest.main([__file__])
