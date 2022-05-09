@@ -22,6 +22,9 @@
 # https://github.com/awslabs/autogluon/blob/master/LICENSE
 
 
+import optuna
+
+
 def _filter_tuner_args(kwargs, tuner_keys):
     return {k: v for k, v in kwargs.items() if k in tuner_keys}
 
@@ -62,9 +65,8 @@ def _end_search(study, model_builder, use_trial_id=-1):
     :return : the built model with best or specified trial hyperparams.
     """
     if study is None:
-        raise ValueError("study is None.   \
-                            Please call search before calling end_search. ")
-    if use_trial_id == -1:
+        trial = optuna.trial.FixedTrial({})
+    elif use_trial_id == -1:
         trial = study.best_trial
     else:
         trial = study.trials[use_trial_id]
