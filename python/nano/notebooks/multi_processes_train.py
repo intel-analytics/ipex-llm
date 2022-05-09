@@ -112,7 +112,7 @@ def multi_train():
     multi_trainer = Trainer(num_processes=2,
                             use_ipex=False,
                             progress_bar_refresh_rate=10,
-                            max_epochs=3,
+                            max_epochs=30,
                             logger=TensorBoardLogger("lightning_logs/", name="multi"),
                             callbacks=[LearningRateMonitor(logging_interval="step")])
     start = time()
