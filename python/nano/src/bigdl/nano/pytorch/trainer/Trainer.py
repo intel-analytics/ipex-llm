@@ -255,7 +255,7 @@ class Trainer(pl.Trainer):
                                 supported type: 'int8', 'bf16', 'fp16', defaults to 'int8'.
         :param accelerator:     Use accelerator 'None', 'onnxruntime', 'openvino', defaults to None.
                                 None means staying in pytorch.
-        :param method:          Method to do quantization. When accelerator=None, supported 
+        :param method:          Method to do quantization. When accelerator=None, supported
             methods: 'fx', 'eager', 'ipex', defaults to 'fx'. If you don't use ipex, suggest using
             'fx' which execute automatic optimizations like fusion. For more information, please
             refer to https://pytorch.org/docs/stable/quantization.html#eager-mode-quantization.
