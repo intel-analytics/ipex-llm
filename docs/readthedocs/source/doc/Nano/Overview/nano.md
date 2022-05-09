@@ -12,12 +12,16 @@ BigDL-Nano can be installed using pip and we recommend installing BigDL-Nano in 
 For PyTorch Users, you can install bigdl-nano along with some dependencies specific to PyTorch using the following command.
 
 ```bash
+conda create -n env
+conda activate env
 pip install bigdl-nano[pytorch]
 ```
 
 For TensorFlow users, you can install bigdl-nano along with some dependencies specific to TensorFlow using the following command.
 
 ```bash
+conda create -n env
+conda activate env
 pip install bigdl-nano[tensorflow]
 ```
 
