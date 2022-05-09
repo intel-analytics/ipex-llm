@@ -83,8 +83,8 @@ class OptunaBackend(object):
             hp_prefix = hp_obj.meta.setdefault('prefix', None)
             hp_name = hp_prefix + ':' + hp if hp_prefix else hp
             hp_type = str(type(hp_obj)).lower()  # type of hyperparam
-            if 'integer' in hp_type or 'float' in hp_type or\
-                 'categorical' in hp_type or 'ordinal' in hp_type:
+            if 'integer' in hp_type or 'float' in hp_type or \
+                'categorical' in hp_type or 'ordinal' in hp_type:
                 try:
                     if 'integer' in hp_type:
                         hp_dimension = trial.suggest_int(
