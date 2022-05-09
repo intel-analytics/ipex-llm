@@ -4,12 +4,6 @@
 
 Numpy.ndarray size changed, may indicate binary incompatibility. Expected 88 from C header, got 80 from PyObject. 
 
-**Version**
-
-* `Python` --> 3.7 (Only 3.7)
-* `Pycocotools` --> 2.0.2
-* `Neural_compressor` --> 1.8.1
-
 **Solution**
 * `pip install -y pycocotools`
 * `pip install pycocotools --no-cache-dir --no-binary :all:`
@@ -22,10 +16,6 @@ Numpy.ndarray size changed, may indicate binary incompatibility. Expected 88 fro
 
 NotImplementedError: Cannot convert a symbolic Tensor (encoder_lstm_8/strided_slice:0) to a numpy array. 
 
-**Version**
-
-* `Numpy` --> 1.19.5
-
 **Solution**
 
 * `pip install numpy==1.19.5`
@@ -37,11 +27,6 @@ NotImplementedError: Cannot convert a symbolic Tensor (encoder_lstm_8/strided_sl
 **Problem description**
 
 StanModel object has no attribute 'fit_class', cause of pip, may be. 
-
-**Version**
-
-* `Prophet` --> 1.0.1
-* `Pystan` --> 2.19.1.1
 
 **Solution**
 
@@ -75,14 +60,3 @@ Exception: No active RayContext. Please call init_orca_context to create a RayCo
 * `apt-get install libunwind8-dev` 
 
 ---------------------------
-
-## **6. Issue 6**
-**Problem description**
-
-ERROR: ld.so: object '/your_path/libs/libtcmalloc.so' from LD_PRELOAD cannot be preloaded (cannot open shared object file): ignored. 
-> Only happens when you run `source bigdl-nano-init`. 
-
-**Solution**
-* Reopen bash command and Move to the bigdl-nano-init file path (e.g. `which bigdl-nano-init`).
-* Replace `bigdl-nano-init` ln115 with `NANO_DIR="$(dirname "$(python3 -c "from bigdl import nano; print(nano.__file__)")")"`.
-* `source bigdl-nano-init`
