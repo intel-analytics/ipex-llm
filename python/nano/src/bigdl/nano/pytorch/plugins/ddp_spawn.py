@@ -111,7 +111,7 @@ class DDPSpawnPlugin(pl.strategies.DDPSpawnStrategy):
     ):
         print(">>>>>> parallel device",parallel_devices)
         """Create a DDPSpawnPlugin, adding a cpu_for_each_process parameter."""
-        super().__init__(accelerator=None
+        super().__init__(accelerator=None,
                          parallel_devices=parallel_devices,
                          num_nodes=num_nodes,
                          cluster_environment=cluster_environment,
