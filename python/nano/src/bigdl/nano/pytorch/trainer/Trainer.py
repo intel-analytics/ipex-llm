@@ -250,7 +250,8 @@ class Trainer(pl.Trainer):
         """
         Calibrate a Pytorch-Lightning model for post-training quantization.
 
-        :param pl_model:        A Pytorch-Lightning model to be quantized.
+        :param pl_model:        A model to be quantized. Model type can be nn.Module,
+             LightningModule, PytorchONNXRuntimeModel, PytorchOpenVINOModel, etc.
         :param precision:       Global precision of quantized model,
                                 supported type: 'int8', 'bf16', 'fp16', defaults to 'int8'.
         :param accelerator:     Use accelerator 'None', 'onnxruntime', 'openvino', defaults to None.
