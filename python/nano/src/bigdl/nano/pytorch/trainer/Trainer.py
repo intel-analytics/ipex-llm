@@ -316,13 +316,8 @@ class Trainer(pl.Trainer):
                 if not type(model).__name__ == 'PytorchONNXRuntimeModel':
                     # try to establish onnx model
                     if not input_sample:
-                        dataloader = val_dataloader
-                        if calib_dataloader:
-                            dataloader = calib_dataloader
-                        if val_dataloader:
-                            dataloader = val_dataloader
-                        if dataloader:
-                            input_sample = tuple(next(iter(dataloader)))[:-1]
+                        # input_sample can be a dataloader
+                        input_sample = calib_dataloader or val_dataloader
                     model = Trainer.trace(model,
                                           input_sample=input_sample,
                                           accelerator='onnxruntime')
