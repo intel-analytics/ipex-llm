@@ -120,7 +120,7 @@ class HPOMixin:
         :param target_metric: str, optional. the target metric to optimize.
             Defaults to "accuracy".
         :param kwargs: model.fit arguments (e.g. batch_size, validation_data, etc.)
-            and search backend (i.e.optuna) arguments (e.g. n_trials, pruner, etc.)
+            and search backend arguments (e.g. n_trials, pruner, etc.)
             are allowed in kwargs.
         """
         _check_search_args(search_args=kwargs,
@@ -189,7 +189,7 @@ class HPOMixin:
         """
         Retrive a summary of trials.
 
-        :return: A summary of all the trials. Currently the optuna study is
+        :return: A summary of all the trials. Currently the entire study is
             returned to allow more flexibility for further analysis and visualization.
         """
         return _search_summary(self.study)

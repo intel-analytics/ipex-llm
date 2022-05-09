@@ -15,7 +15,6 @@
 #
 
 from enum import Enum
-from bigdl.nano.deps.automl.hpo_api import create_optuna_backend
 
 
 class SamplerType(Enum):
@@ -42,11 +41,19 @@ class PrunerType(Enum):
     Threshold = 7
 
 
-def create_hpo_backend(backend="optuna"):
-    """
-    Create HPO Search Backend.
-
-    Currently we only support Optuna Backend, no matter what backend
-    is specified in argument.
-    """
+def create_hpo_backend():
+    """Create HPO Search Backend. Only Optuna is supported."""
+    from bigdl.nano.deps.automl.hpo_api import create_optuna_backend
     return create_optuna_backend()
+
+
+def create_tfkeras_pruning_callback(*args, **kwargs):
+    """Create Tensorflow Pruning Callback. Optuna Only."""
+    from bigdl.nano.deps.automl.hpo_api import create_optuna_tfkeras_pruning_callback
+    return create_optuna_tfkeras_pruning_callback()
+
+
+def create_pl_pruning_callback(*args, **kwargs):
+    """Create PyTorchLightning Pruning Callback. Optuna Only."""
+    from bigdl.nano.deps.automl.hpo_api import create_optuna_pl_pruning_callback
+    return create_optuna_pl_pruning_callback()

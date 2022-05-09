@@ -23,7 +23,7 @@ from pytorch_lightning.utilities.types import EVAL_DATALOADERS, TRAIN_DATALOADER
 from pytorch_lightning.utilities import rank_zero_deprecation
 from pytorch_lightning.core.datamodule import LightningDataModule
 
-from optuna.integration import PyTorchLightningPruningCallback
+from bigdl.nano.automl.hpo.backend import create_pl_pruning_callback
 import inspect
 import copy
 
@@ -33,7 +33,7 @@ def _is_creator(model):
 
 
 class Objective(object):
-    """The Tuning objective for Optuna."""
+    """The Tuning objective for HPO."""
 
     def __init__(self,
                  searcher,
@@ -73,7 +73,7 @@ class Objective(object):
         # specific args TODO: may need to handle more cases
         if self.pruning:
             callbacks = self.searcher.trainer.callbacks or []
-            pruning_cb = PyTorchLightningPruningCallback(trial, monitor=self.target_metric)
+            pruning_cb = create_pl_pruning_callback(trial, monitor=self.target_metric)
             callbacks.append(pruning_cb)
             self.searcher.trainer.callbacks = callbacks
 
@@ -120,7 +120,7 @@ class Objective(object):
         """
         Execute Training and return target metric in each trial.
 
-        :param: trial: optuna trial which provides the hyperparameter combinition.
+        :param: trial: a trial object which provides the hyperparameter combinition.
         :return: the target metric value.
         """
         # fit

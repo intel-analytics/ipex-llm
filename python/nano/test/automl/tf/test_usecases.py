@@ -31,6 +31,7 @@ from bigdl.nano.automl.tf.keras import Model, Sequential
 
 from tensorflow.keras.optimizers import Adam, RMSprop
 import bigdl.nano.automl.hpo as hpo
+from bigdl.nano.automl.hpo.backend import PrunerType
 
 @hpo.tfmodel()
 class MyModel(tf.keras.Model):
