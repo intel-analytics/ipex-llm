@@ -223,7 +223,7 @@ class Trainer(pl.Trainer):
         """
         Retrive a summary of trials.
 
-        :return: A summary of all the trials. Currently the optuna study is
+        :return: A summary of all the trials. Currently the entire study is
             returned to allow more flexibility for further analysis and visualization.
         """
         if not check_hpo_status(self.hposearcher):

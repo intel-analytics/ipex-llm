@@ -31,7 +31,6 @@ import numpy as np
 import multiprocessing as mp
 import ConfigSpace as CS
 
-from .backend import OptunaBackend
 
 from .space import *
 from .space import _add_hp, _add_cs, _rm_hp, _strip_config_space, SPLITTER
@@ -39,6 +38,7 @@ from .callgraph import CallCache
 
 from bigdl.nano.automl.utils import EasyDict as ezdict
 from bigdl.nano.automl.utils import proxy_methods
+from bigdl.nano.automl.hpo.backend import create_hpo_backend
 
 __all__ = ['args', 'obj', 'func', 'tfmodel', 'plmodel', 'sample_config']
 
@@ -454,7 +454,7 @@ def tfmodel(**kwvars):
                 # override _model_build to build
                 # the model directly instead of using
                 # modeld_init and model_compile
-                model = OptunaBackend.instantiate(trial, self._lazyobj)
+                model = self.backend.instantiate(trial, self._lazyobj)
                 self._model_compile(model, trial)
                 return model
 
@@ -495,6 +495,7 @@ def plmodel(**kwvars):
                     elif k in default_config:
                         super_kwargs[k] = default_config[k]
                 super().__init__(**super_kwargs)
+                self.backend = create_hpo_backend()
 
             def __repr__(self):
                 return 'PlAutoMdl -- ' + Cls.__name__
@@ -503,7 +504,7 @@ def plmodel(**kwvars):
                 # override _model_build to build
                 # the model directly instead of using
                 # modeld_init and model_compile
-                model = OptunaBackend.instantiate(trial, self._lazyobj)
+                model = self.backend.instantiate(trial, self._lazyobj)
                 # self._model_compile(model, trial)
                 return model
 

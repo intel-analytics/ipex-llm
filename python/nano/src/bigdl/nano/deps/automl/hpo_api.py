@@ -31,3 +31,21 @@ def check_hpo_status(searcher):
                 dependency is not installed.', UserWarning)
         return False
     return True
+
+
+def create_optuna_backend():
+    """Create an Optuna Backend."""
+    from bigdl.nano.deps.automl.optuna_backend import OptunaBackend
+    return OptunaBackend()
+
+
+def create_optuna_pl_pruning_callback(*args, **kwargs):
+    """Create PyTorchLightning Pruning Callback."""
+    from optuna.integration import PyTorchLightningPruningCallback
+    return PyTorchLightningPruningCallback(*args, **kwargs)
+
+
+def create_optuna_tfkeras_pruning_callback(*args, **kwargs):
+    """Create Tensorflow Keras Pruning Callback."""
+    from optuna.integration import TFKerasPruningCallback
+    return TFKerasPruningCallback(*args, **kwargs)

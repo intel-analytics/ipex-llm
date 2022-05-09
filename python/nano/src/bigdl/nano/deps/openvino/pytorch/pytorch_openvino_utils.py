@@ -28,7 +28,8 @@ def export(model, input_sample=None, xml_path="model.xml"):
     :param input_sample: torch.Tensor or a list for the model tracing.
     :param xml_path: The path to save openvino model file.
     '''
-    export_to_onnx(model, input_sample, 'tmp.onnx', dynamic_axes=False)
+    # export a model with dynamic axes to enable IR to accept different batches and resolutions
+    export_to_onnx(model, input_sample, 'tmp.onnx', dynamic_axes=True)
     convert_onnx_to_xml('tmp.onnx', xml_path)
     if os.path.exists('tmp.onnx'):
         os.remove('tmp.onnx')

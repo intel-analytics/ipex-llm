@@ -16,7 +16,6 @@
 
 
 from .space import AutoObject
-from .backend import OptunaBackend
 from enum import Enum
 
 
@@ -130,7 +129,7 @@ class CallCache(object):
         return cur_cache
 
     @staticmethod
-    def execute(inputs, outputs, trial):
+    def execute(inputs, outputs, trial, backend):
         """
         Execute the function calls and construct the tensor graph.
 
@@ -173,7 +172,7 @@ class CallCache(object):
                     arguments, out_cache)
                 # layer is an auto object
                 assert(isinstance(caller, AutoObject))
-                instance = OptunaBackend.instantiate(trial, caller)
+                instance = backend.instantiate(trial, caller)
                 # the actual excution of the functional API
                 out_tensor = instance(new_arguments)
             elif call_type == CALLTYPE.FUNC_SLICE:
@@ -183,7 +182,7 @@ class CallCache(object):
                 # the actual excution of the functional API
                 out_tensor = source_tensor.__getitem__(*slice_args, **slice_kwargs)
             elif call_type == CALLTYPE.FUNC_CALL:
-                # out_tensor = OptunaBackend.instantiate(trial, caller)
+                # out_tensor = backend.instantiate(trial, caller)
                 new_arguments = _process_arguments(
                     arguments, out_cache)
                 assert(isinstance(caller, AutoObject))
@@ -191,7 +190,7 @@ class CallCache(object):
                 # replace only the non-kwargs with new_arguments
                 # TODO revisit to validate the parent tensors in kwargs
                 caller.args, caller.kwargs = new_arguments
-                out_tensor = OptunaBackend.instantiate(trial, caller)
+                out_tensor = backend.instantiate(trial, caller)
             else:
                 raise ValueError("Unexpected CallType: %s" % type)
             out_cache.add_tensor(caller, out_tensor)
