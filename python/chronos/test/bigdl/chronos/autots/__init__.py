@@ -14,18 +14,3 @@
 # limitations under the License.
 #
 
-import warnings
-import os
-
-try:
-    from .autotsestimator import AutoTSEstimator
-except ImportError:
-    warnings.warn("Please install `bigdl-nano[all]` to use AutoTSEstimator")
-
-try:
-    LD = os.environ["LD_PRELOAD"]
-except:
-    warnings.warn("No need to unset variables")
-else:
-    del os.environ["LD_PRELOAD"]
-    warnings.warn("'LD_PRELOAD' has been unset to support AutoTS")

@@ -14,17 +14,19 @@
 # limitations under the License.
 #
 
-
 import pytest
 from unittest import TestCase
 import os
 
+
 class TestLD(TestCase):
     def test_ld_preload(self):
-        try:
-            LD = os.environ["LD_PRELOAD"]
-        except:
-            pass
+        # set LD_PRELOAD first
+        os.environ["LD_PRELOAD"] = "123"
+
+        # check if autots can unset LD_PRELOAD automatically
+        from bigdl.chronos.autots import AutoTSEstimator
+        assert os.getenv("LD_PRELOAD", "null") == "null"
 
 
 if __name__ == '__main__':

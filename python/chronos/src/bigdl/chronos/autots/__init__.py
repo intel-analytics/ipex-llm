@@ -13,10 +13,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+
 import warnings
+import os
 
 try:
     from .autotsestimator import AutoTSEstimator
 except ImportError:
     warnings.warn("Please install `bigdl-nano[all]` to use AutoTSEstimator")
 from .tspipeline import TSPipeline
+
+if os.getenv("LD_PRELOAD", "null") != "null":
+    del os.environ["LD_PRELOAD"]
+    warnings.warn("'LD_PRELOAD' has been unset to support AutoTS")
