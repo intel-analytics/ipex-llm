@@ -16,6 +16,7 @@
 import copy
 from logging import warning
 from pathlib import Path
+from tempfile import TemporaryDirectory
 from typing import Any, List, Optional
 import pytorch_lightning as pl
 import torch
@@ -335,8 +336,10 @@ class Trainer(pl.Trainer):
                 if accelerator is None:
                     return PytorchQuantizedModel(quantized_model)
                 elif accelerator == 'onnxruntime':
-                    quantized_model.save('tmp.onnx')
-                    return PytorchONNXRuntimeModel('tmp.onnx')
+                    with TemporaryDirectory() as dir:
+                        saved_onnx = Path(dir) / 'tmp.onnx'
+                        quantized_model.save(saved_onnx)
+                        return PytorchONNXRuntimeModel(str(saved_onnx))
             else:
                 quantized_pytorch_model = quantized_model if "pytorch" in framework else None
                 quantized_onnx_model = quantized_model if "onnxrt" in framework else None
