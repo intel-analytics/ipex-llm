@@ -48,6 +48,7 @@ __all__ = [
     'RandomChoice',
     'RandomVerticalFlip',
     'RandomResizedCrop',
+    'RandomSizedCrop',
     'FiveCrop',
     'TenCrop',
     'LinearTransformation',
@@ -175,12 +176,11 @@ class Resize(object):
 
 
 class Scale(Resize):
-    """
-    Note: This transform is deprecated in favor of Resize.
-    """
     def __init__(self, *args, **kwargs):
-        warnings.warn("The use of the transforms.Scale transform is deprecated, " +
-                      "please use transforms.Resize instead.")
+        warnings.warn(
+            "The use of the transforms.Scale transform is deprecated, "
+            "please use transforms.Resize instead."
+        )
         super(Scale, self).__init__(*args, **kwargs)
 
 
@@ -468,7 +468,8 @@ class RandomResizedCrop(object):
                 self.cv_F = cv_t.RandomResizedCrop(self.size, self.scale, self.ratio,
                                                    _modes_torchToCV2_mapping[self.interpolation])
             else:
-                self.cv_F = cv_t.RandomResizedCrop(self.size, self.scale, self.ratio, cv2.INTER_LINEAR)
+                self.cv_F = cv_t.RandomResizedCrop(self.size, self.scale, self.ratio,
+                                                   cv2.INTER_LINEAR)
 
     def __call__(self, img):
         if type(img) == np.ndarray:
@@ -488,12 +489,11 @@ class RandomResizedCrop(object):
 
 
 class RandomSizedCrop(RandomResizedCrop):
-    """
-    Note: This transform is deprecated in favor of RandomResizedCrop.
-    """
     def __init__(self, *args, **kwargs):
-        warnings.warn("The use of the transforms.RandomSizedCrop transform is deprecated, " +
-                      "please use transforms.RandomResizedCrop instead.")
+        warnings.warn(
+            "The use of the transforms.RandomSizedCrop transform is deprecated, "
+            "please use transforms.RandomResizedCrop instead."
+        )
         super(RandomSizedCrop, self).__init__(*args, **kwargs)
 
 
