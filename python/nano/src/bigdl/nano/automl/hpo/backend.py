@@ -52,6 +52,7 @@ def create_tfkeras_pruning_callback(*args, **kwargs):
     from bigdl.nano.deps.automl.hpo_api import create_optuna_tfkeras_pruning_callback
     return create_optuna_tfkeras_pruning_callback()
 
+
 def create_pl_pruning_callback(*args, **kwargs):
     """Create PyTorchLightning Pruning Callback. Optuna Only."""
     from bigdl.nano.deps.automl.hpo_api import create_optuna_pl_pruning_callback
