@@ -178,7 +178,7 @@ def get_bigdl_class_version():
 
 
 def get_bigdl_image_workdir():
-    bigdl_image_workdir = "/opt/spark/work-dir" # WORKDIR defined in dockerfile
+    bigdl_image_workdir = "/opt/spark/work-dir"  # WORKDIR defined in dockerfile
     return bigdl_image_workdir
 
 
