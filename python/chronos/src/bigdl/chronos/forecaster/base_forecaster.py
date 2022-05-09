@@ -144,6 +144,8 @@ class BasePytorchForecaster(Forecaster):
 
             # data transformation
             if isinstance(data, tuple):
+                print("batch_size is:", batch_size)
+                print("number of processes is:", self.num_processes)
                 if batch_size % self.num_processes != 0:
                     warnings.warn("'batch_size' cannot be divided with no remainder by "
                                   "'self.num_processes'.")
