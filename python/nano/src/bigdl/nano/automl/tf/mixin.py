@@ -17,7 +17,7 @@
 import copy
 
 from .objective import Objective
-from bigdl.nano.automl.hpo.backend import OptunaBackend
+from bigdl.nano.automl.hpo.backend import create_hpo_backend
 from bigdl.nano.automl.hpo.search import (
     _search_summary,
     _end_search,
@@ -70,6 +70,7 @@ class HPOMixin:
         self.study = None
         self.tune_end = False
         self._lazymodel = None
+        self.backend = create_hpo_backend()
 
     def _fix_target_metric(self, target_metric, fit_kwargs):
         compile_metrics = self.compile_kwargs.get('metrics', None)
@@ -159,20 +160,20 @@ class HPOMixin:
             sampler_type = study_create_kwargs.get('sampler', None)
             if sampler_type:
                 sampler_args = study_create_kwargs.get('sampler_kwargs', {})
-                sampler = OptunaBackend.create_sampler(sampler_type, sampler_args)
+                sampler = self.backend.create_sampler(sampler_type, sampler_args)
                 study_create_kwargs['sampler'] = sampler
                 study_create_kwargs.pop('sampler_kwargs', None)
 
             pruner_type = study_create_kwargs.get('pruner', None)
             if pruner_type:
                 pruner_args = study_create_kwargs.get('pruner_kwargs', {})
-                pruner = OptunaBackend.create_pruner(pruner_type, pruner_args)
+                pruner = self.backend.create_pruner(pruner_type, pruner_args)
                 study_create_kwargs['pruner'] = pruner
                 study_create_kwargs.pop('pruner_kwargs', None)
 
             study_create_kwargs['load_if_exists'] = load_if_exists
             # create study
-            self.study = OptunaBackend.create_study(**study_create_kwargs)
+            self.study = self.backend.create_study(**study_create_kwargs)
 
         # renamed callbacks to tune_callbacks to avoid conflict with fit param
         study_optimize_kwargs = _filter_tuner_args(kwargs, HPOMixin.TUNE_RUN_KEYS)
@@ -224,7 +225,7 @@ class HPOMixin:
     def _model_compile(self, model, trial):
         # for lazy model compile
         # TODO support searable compile args
-        # config = OptunaBackend.sample_config(trial, kwspaces)
+        # config = self.backend.sample_config(trial, kwspaces)
         # TODO objects like Optimizers has internal states so
         # each trial needs to have a copy of its own.
         # should allow users to pass a creator function

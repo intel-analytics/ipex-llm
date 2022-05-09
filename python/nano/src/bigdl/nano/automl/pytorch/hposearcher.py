@@ -15,14 +15,11 @@
 #
 
 from typing import Any, Dict, Optional, Union
-from numpy import isin
 import pytorch_lightning as pl
-
 
 from pytorch_lightning.trainer.states import TrainerFn, TrainerStatus
 
-
-from bigdl.nano.automl.hpo.backend import OptunaBackend
+from bigdl.nano.automl.hpo.backend import create_hpo_backend
 from .objective import Objective
 from ..hpo.search import (
     _search_summary,
@@ -57,6 +54,7 @@ class HPOSearcher:
         self.study = None
         self.tune_end = False
         self._lazymodel = None
+        self.backend = create_hpo_backend()
 
     def _run_search(self,
                     resume,
@@ -84,20 +82,20 @@ class HPOSearcher:
             sampler_type = study_create_kwargs.get('sampler', None)
             if sampler_type:
                 sampler_args = study_create_kwargs.get('sampler_kwargs', {})
-                sampler = OptunaBackend.create_sampler(sampler_type, sampler_args)
+                sampler = self.backend.create_sampler(sampler_type, sampler_args)
                 study_create_kwargs['sampler'] = sampler
                 study_create_kwargs.pop('sampler_kwargs', None)
 
             pruner_type = study_create_kwargs.get('pruner', None)
             if pruner_type:
                 pruner_args = study_create_kwargs.get('pruner_kwargs', {})
-                pruner = OptunaBackend.create_pruner(pruner_type, pruner_args)
+                pruner = self.backend.create_pruner(pruner_type, pruner_args)
                 study_create_kwargs['pruner'] = pruner
                 study_create_kwargs.pop('pruner_kwargs', None)
 
             study_create_kwargs['load_if_exists'] = load_if_exists
             # create study
-            self.study = OptunaBackend.create_study(**study_create_kwargs)
+            self.study = self.backend.create_study(**study_create_kwargs)
 
         # renamed callbacks to tune_callbacks to avoid conflict with fit param
         study_optimize_kwargs = _filter_tuner_args(kwargs, run_keys)
