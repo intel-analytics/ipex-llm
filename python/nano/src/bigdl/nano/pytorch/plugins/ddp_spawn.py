@@ -113,7 +113,7 @@ class DDPSpawnPlugin(pl.strategies.DDPSpawnStrategy):
         """Create a DDPSpawnPlugin, adding a cpu_for_each_process parameter."""
         super().__init__(accelerator=None,
                          parallel_devices=parallel_devices,
-                         num_nodes=num_nodes,
+                         #num_nodes=num_nodes,
                          cluster_environment=cluster_environment,
                          # sync_batchnorm,
                          ddp_comm_state=ddp_comm_state,
