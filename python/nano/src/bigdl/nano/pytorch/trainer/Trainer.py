@@ -255,11 +255,13 @@ class Trainer(pl.Trainer):
                                 supported type: 'int8', 'bf16', 'fp16', defaults to 'int8'.
         :param accelerator:     Use accelerator 'None', 'onnxruntime', 'openvino', defaults to None.
                                 None means staying in pytorch.
-        :param method:          Method to do quantization.
-                                When accelerator=None, supported methods: 'fx', 'eager', 'ipex',
-                                 defaults to 'fx'.
-                                When accelerator='onnxruntime', supported methods: 'qlinear',
-                                 'integer', defaults to 'qlinear'.
+        :param method:          Method to do quantization. When accelerator=None, supported 
+            methods: 'fx', 'eager', 'ipex', defaults to 'fx'. If you don't use ipex, suggest using
+            'fx' which execute automatic optimizations like fusion. For more information, please
+            refer to https://pytorch.org/docs/stable/quantization.html#eager-mode-quantization.
+            When accelerator='onnxruntime', supported methods: 'qlinear', 'integer', defaults
+            to 'qlinear'. Suggest 'qlinear' for lower accuracy drop if using static quantization.
+            More details in https://onnxruntime.ai/docs/performance/quantization.html.
         :param calib_dataloader:    A torch.utils.data.dataloader.DataLoader object for calibration.
                                     Required for static quantization.
         :param val_dataloader:      A torch.utils.data.dataloader.DataLoader object for evaluation.
