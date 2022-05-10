@@ -14,11 +14,11 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.ppml.dataframe
+package com.intel.analytics.bigdl.ppml.crypto.dataframe
 
 import com.intel.analytics.bigdl.ppml.PPMLContext
-import com.intel.analytics.bigdl.ppml.encrypt.CryptoMode
-import com.intel.analytics.bigdl.ppml.encrypt.CryptoMode.CryptoMode
+import com.intel.analytics.bigdl.ppml.crypto.CryptoMode
+import com.intel.analytics.bigdl.ppml.crypto.CryptoMode.CryptoMode
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.types.{StringType, StructField, StructType}
 import org.apache.spark.sql.{DataFrame, Row, SparkSession}

@@ -18,15 +18,15 @@ package com.intel.analytics.bigdl.ppml
 
 import com.intel.analytics.bigdl.dllib.NNContext.{checkScalaVersion, checkSparkVersion, createSparkConf, initConf, initNNContext}
 import com.intel.analytics.bigdl.dllib.utils.Log4Error
-import com.intel.analytics.bigdl.ppml.encrypt.CryptoMode.CryptoMode
-import com.intel.analytics.bigdl.ppml.encrypt.{CryptoMode, EncryptRuntimeException, FernetEncrypt}
+import com.intel.analytics.bigdl.ppml.crypto.CryptoMode.CryptoMode
+import com.intel.analytics.bigdl.ppml.crypto.{CryptoMode, EncryptRuntimeException, FernetEncrypt}
 import com.intel.analytics.bigdl.ppml.utils.Supportive
 import org.apache.spark.{SparkConf, SparkContext}
 import org.apache.spark.input.PortableDataStream
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.{DataFrame, DataFrameReader, DataFrameWriter, Row, SparkSession}
 import com.intel.analytics.bigdl.ppml.kms.{EHSMKeyManagementService, KMS_CONVENTION, KeyManagementService, SimpleKeyManagementService}
-import com.intel.analytics.bigdl.ppml.dataframe.EncryptedDataFrameReader
+import com.intel.analytics.bigdl.ppml.crypto.dataframe.EncryptedDataFrameReader
 
 import java.nio.file.Paths
 

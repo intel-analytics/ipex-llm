@@ -17,8 +17,8 @@
 package com.intel.analytics.bigdl.ppml.utils
 
 import com.intel.analytics.bigdl.ppml.PPMLContext
-import com.intel.analytics.bigdl.ppml.encrypt.{CryptoMode, EncryptRuntimeException}
-import com.intel.analytics.bigdl.ppml.encrypt.CryptoMode.CryptoMode
+import com.intel.analytics.bigdl.ppml.crypto.{CryptoMode, EncryptRuntimeException}
+import com.intel.analytics.bigdl.ppml.crypto.CryptoMode.CryptoMode
 import com.intel.analytics.bigdl.ppml.kms.{EHSMKeyManagementService, KMS_CONVENTION, SimpleKeyManagementService}
 
 import java.io.File

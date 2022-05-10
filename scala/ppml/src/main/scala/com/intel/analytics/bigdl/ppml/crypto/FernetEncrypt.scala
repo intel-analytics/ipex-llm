@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-package com.intel.analytics.bigdl.ppml.encrypt
+package com.intel.analytics.bigdl.ppml.crypto
 
 import com.intel.analytics.bigdl.dllib.utils.Log4Error
 
