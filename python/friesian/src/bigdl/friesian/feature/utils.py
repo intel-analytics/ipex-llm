@@ -217,87 +217,10 @@ def str_to_list(arg, arg_name):
 
 
 def featuretable_to_xshards(tbl, convert_cols=None):
-    from bigdl.friesian.feature import FeatureTable
-    from bigdl.orca.data import SparkXShards
-    from pyspark.ml.linalg import DenseVector, SparseVector
-    import numpy as np
-    from bigdl.orca import OrcaContext
-    from pyspark.ml.linalg import VectorUDT
-    shard_size = OrcaContext._shard_size
-    assert isinstance(tbl, FeatureTable), "This function only supports friesian FeatureTable"
+    from bigdl.orca.learn.utils import _dataframe_to_xshards_of_feature_dict
     # TODO: partition < node num
     if convert_cols is None:
         convert_cols = tbl.columns
     if convert_cols and not isinstance(convert_cols, list):
         convert_cols = [convert_cols]
-
-    schema = tbl.schema
-    np_type_dict = dict()
-    for col in convert_cols:
-        assert col in tbl.columns, "Column name " + col + " does not exist in the FeatureTable"
-        feature_type = schema[col].dataType
-        np_type = df_type_to_np_type(feature_type)
-        if np_type:
-            np_type_dict[col] = np_type
-        elif not isinstance(feature_type, VectorUDT):
-            warnings.warn("The type of column " + col + "(" + feature_type.simpleString() +
-                          ") is not supported, please confirm the result if it is expected.")
-
-    def init_result_dict():
-        return {c: [] for c in convert_cols}
-
-    def generate_output(result):
-        for c in convert_cols:
-            if c in np_type_dict:
-                result[c] = np.asarray(result[c], dtype=np_type_dict[c])
-            else:
-                data = result[c]
-                if len(data) > 0:
-                    sample = data[0]
-                    if isinstance(sample, DenseVector):
-                        result[c] = np.stack(list(map(lambda vector:
-                                                      vector.values.astype(np.float32), data)))
-                    else:
-                        invalidInputError(not isinstance(sample, SparseVector),
-                                          "unsupported field {}, data {}".format(schema[c],
-                                                                                 sample))
-                        result[c] = np.asarray(result[c])
-                else:
-                    result[c] = np.asarray([])
-
-        return result
-
-    def to_numpy_dict(iter, shard_size=None):
-        counter = 0
-        result = init_result_dict()
-        for row in iter:
-            counter += 1
-            for c in convert_cols:
-                result[c].append(row[c])
-            if shard_size and counter % shard_size == 0:
-                yield generate_output(result)
-                result = init_result_dict()
-
-        if len(convert_cols) > 0 and len(result[convert_cols[0]]) > 0:
-            yield generate_output(result)
-
-    return SparkXShards(tbl.df.rdd.mapPartitions(lambda x: to_numpy_dict(x, shard_size)))
-
-
-def df_type_to_np_type(dtype):
-    import pyspark.sql.types as df_types
-    import numpy as np
-    if isinstance(dtype, df_types.FloatType):
-        return np.float32
-    elif isinstance(dtype, df_types.IntegerType):
-        return np.int32
-    elif isinstance(dtype, df_types.LongType):
-        return np.int64
-    elif isinstance(dtype, df_types.StringType):
-        return np.str
-    elif isinstance(dtype, df_types.DoubleType):
-        return np.double
-    elif isinstance(dtype, df_types.ArrayType):
-        return df_type_to_np_type(dtype.elementType)
-    else:
-        return None
+    return _dataframe_to_xshards_of_feature_dict(tbl.df, convert_cols, accept_str_col=True)

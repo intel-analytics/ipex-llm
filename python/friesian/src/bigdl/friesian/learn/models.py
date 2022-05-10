@@ -32,7 +32,7 @@ def tfrs_model(model):
 
     for k, v in task_dict.items():
         try:
-            v._loss.reduction = tf.keras.losses.Reduction.NONE
+            v._loss.reduction = tf.keras.losses.Reduction.SUM
         except:
             warnings.warn("Model task " + k + " has no attribute _loss, please use "
                                               "`tf.keras.losses.Reduction.SUM` or "

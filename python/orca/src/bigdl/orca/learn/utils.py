@@ -26,6 +26,7 @@ from bigdl.orca.data.utils import get_size
 from bigdl.orca.data.file import put_local_dir_tree_to_remote, put_local_file_to_remote,\
     get_remote_file_to_local, get_remote_dir_to_local
 from bigdl.dllib.utils.utils import convert_row_to_numpy
+from functools import partial
 import numpy as np
 import pickle
 import os
@@ -199,7 +200,43 @@ def convert_predict_rdd_to_dataframe(df, prediction_rdd):
     return result_df
 
 
-def arrays2dict(iter, feature_cols, label_cols, shard_size=None):
+def _merge_rows(results):
+    result_arrs = [np.stack(l) for l in results]
+    if len(result_arrs) == 1:
+        result_arrs = result_arrs[0]
+    else:
+        result_arrs = tuple(result_arrs)
+    return result_arrs
+
+
+def _generate_output_dict(feature_lists, label_lists, feature_cols=None, label_cols=None):
+    feature_arrs = _merge_rows(feature_lists)
+    if label_cols is not None:
+        label_arrs = _merge_rows(label_lists)
+        return {"x": feature_arrs, "y": label_arrs}
+    else:
+        return {"x": feature_arrs}
+
+
+def _generate_feature_dict(feature_lists, label_lists, feature_cols=None, label_cols=None):
+    cols = feature_cols
+    feature_arrs = _merge_rows(feature_lists)
+    if feature_cols and len(feature_cols) == 1:
+        feature_arrs = tuple(feature_arrs)
+    data = feature_arrs
+    if label_cols is not None:
+        cols = cols + label_cols
+        label_arrs = _merge_rows(label_lists)
+        if len(label_cols) == 1:
+            label_arrs = tuple(label_arrs)
+        data = data + label_arrs
+    result = dict()
+    for i in range(0, len(cols)):
+        result[cols[i]] = data[i]
+    return result
+
+
+def arrays2others(iter, feature_cols, label_cols, shard_size=None, generate_func=None):
     def init_result_lists():
         feature_lists = [[] for col in feature_cols]
         if label_cols is not None:
@@ -217,22 +254,6 @@ def arrays2dict(iter, feature_cols, label_cols, shard_size=None):
         for i, arr in enumerate(arrays):
             results[i].append(arr)
 
-    def merge_rows(results):
-        result_arrs = [np.stack(l) for l in results]
-        if len(result_arrs) == 1:
-            result_arrs = result_arrs[0]
-        else:
-            result_arrs = tuple(result_arrs)
-        return result_arrs
-
-    def generate_output(feature_lists, label_lists):
-        feature_arrs = merge_rows(feature_lists)
-        if label_cols is not None:
-            label_arrs = merge_rows(label_lists)
-            return {"x": feature_arrs, "y": label_arrs}
-        else:
-            return {"x": feature_arrs}
-
     feature_lists, label_lists = init_result_lists()
     counter = 0
 
@@ -243,11 +264,15 @@ def arrays2dict(iter, feature_cols, label_cols, shard_size=None):
             add_row(row[1], label_lists)
 
         if shard_size and counter % shard_size == 0:
-            yield generate_output(feature_lists, label_lists)
+            yield generate_func(feature_lists, label_lists, feature_cols, label_cols)
             feature_lists, label_lists = init_result_lists()
 
     if feature_lists[0]:
-        yield generate_output(feature_lists, label_lists)
+        yield generate_func(feature_lists, label_lists, feature_cols, label_cols)
+
+
+arrays2dict = partial(arrays2others, generate_func=_generate_output_dict)
+arrays2featuredict = partial(arrays2others, generate_func=_generate_feature_dict)
 
 
 def transform_to_shard_dict(data, feature_cols, label_cols=None):
@@ -288,6 +313,23 @@ def _dataframe_to_xshards(data, feature_cols, label_cols=None, accept_str_col=Fa
                                                               feature_cols,
                                                               label_cols,
                                                               shard_size))
+    return SparkXShards(shard_rdd)
+
+
+def _dataframe_to_xshards_of_feature_dict(data, feature_cols, label_cols=None,
+                                          accept_str_col=False):
+    from bigdl.orca import OrcaContext
+    schema = data.schema
+    shard_size = OrcaContext._shard_size
+    numpy_rdd = data.rdd.map(lambda row: convert_row_to_numpy(row,
+                                                              schema,
+                                                              feature_cols,
+                                                              label_cols,
+                                                              accept_str_col))
+    shard_rdd = numpy_rdd.mapPartitions(lambda x: arrays2featuredict(x,
+                                                                     feature_cols,
+                                                                     label_cols,
+                                                                     shard_size))
     return SparkXShards(shard_rdd)
 
 
