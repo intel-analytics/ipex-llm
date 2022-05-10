@@ -1,6 +1,6 @@
 # BigDL-Nano PyTorch Overview
 
-BigDL-Nano can be used to accelerate PyTorch or PyTorch-Lightning applications on both training and inference workloads. The optimizations in BigDL-Nano are delivered through a extended version of PyTorch-Lightning `Trainer`. These optimizations are either enabled by default, or can be easily turned on by setting a parameter or calling a method.
+BigDL-Nano can be used to accelerate PyTorch or PyTorch-Lightning applications on both training and inference workloads. The optimizations in BigDL-Nano are delivered through an extended version of PyTorch-Lightning `Trainer`. These optimizations are either enabled by default or can be easily turned on by setting a parameter or calling a method.
 
 ## PyTorch Training
 
@@ -8,7 +8,7 @@ We will briefly describe here the major features in BigDL-Nano for PyTorch train
 
 ### Best Known Configurations
 
-When you run `source bigdl-nano-init`, BigDL-Nano will export a few environment variables, such as OMP_NUM_THREADS and KMP_AFFINITY, according to your current hardware. Emprically, these environment variables work best for most PyTorch applications. After setting these environment variables, you can just run your applications as usual (`python app.py`) and no additional changes are required.
+When you run `source bigdl-nano-init`, BigDL-Nano will export a few environment variables, such as OMP_NUM_THREADS and KMP_AFFINITY, according to your current hardware. Empirically, these environment variables work best for most PyTorch applications. After setting these environment variables, you can just run your applications as usual (`python app.py`) and no additional changes are required.
 
 ### BigDL-Nano PyTorch Trainer
 
@@ -29,7 +29,7 @@ trainer = Trainer(max_epoch=10)
 trainer.fit(lightning_module, train_loader)
 ```
 
-For regulare pytorch modules, we also provides a "compile" methods, that takes in a PyTorch module, an optimizer, and other PyTorch objects and "compile" them into a `LightningModule`.
+For regular PyTorch modules, we also provide a "compile" method, that takes in a PyTorch module, an optimizer, and other PyTorch objects and "compiles" them into a `LightningModule`.
 
 For example,
 
@@ -42,7 +42,7 @@ trainer.fit(lightning_module, train_loader)
 
 #### Intel® Extension for PyTorch
 
-Intel Extension for Pytorch (a.k.a. IPEX) extends PyTorch with optimizations for extra performance boost on Intel hardware. BigDL-Nano integrates IPEX through the `Trainer`. Users can turn on IPEX by setting `use_ipex=True`.
+Intel Extension for Pytorch (a.k.a. IPEX) extends PyTorch with optimizations for an extra performance boost on Intel hardware. BigDL-Nano integrates IPEX through the `Trainer`. Users can turn on IPEX by setting `use_ipex=True`.
 
 ```python
 from bigdl.nano.pytorch import Trainer
@@ -51,20 +51,20 @@ trainer = Trainer(max_epoch=10, use_ipex=True)
 
 #### Multi-instance Training
 
-When training on server with dozens of CPU cores, it is often beneficial to use multiple training instances in a data parallel fashion to make full use the CPU cores. However, using pytorch's DDP API is a little cumbersome and error-prone, and if not configured correctly, it will make the training even slow.
+When training on a server with dozens of CPU cores, it is often beneficial to use multiple training instances in a data-parallel fashion to make full use of the CPU cores. However, using PyTorch's DDP API is a little cumbersome and error-prone, and if not configured correctly, it will make the training even slow.
 
-BigDL-Nano makes it very easy to to conduct multi-instance training. You can just set the `num_processes` parameter in the `Trainer` constructor and BigDL-Nano will launch the specific number of processes to perform data parallel training. Each process will be automaticall pinned to a different subset of CPU cores to avoid conflict and maximize training throughput.
+BigDL-Nano makes it very easy to conduct multi-instance training. You can just set the `num_processes` parameter in the `Trainer` constructor and BigDL-Nano will launch the specific number of processes to perform data-parallel training. Each process will be automatically pinned to a different subset of CPU cores to avoid conflict and maximize training throughput.
 
 ```python
 from bigdl.nano.pytorch import Trainer
 trainer = Trainer(max_epoch=10, num_processes=4)
 ```
 
-Note that the effective batch size multi-instance training is the `batch_size` in your dataloader times `num_processes` so the number of iterations of each epoch will be reduced `num_processes` fold. A common practice to compensate that is to gradually increase the learning rate to `num_processes` times. You can find more details of this trick in the [facebook paper](https://arxiv.org/abs/1706.02677).
+Note that the effective batch size multi-instance training is the `batch_size` in your `dataloader` times `num_processes` so the number of iterations of each epoch will be reduced `num_processes` fold. A common practice to compensate for that is to gradually increase the learning rate to `num_processes` times. You can find more details of this trick in the [Facebook paper](https://arxiv.org/abs/1706.02677).
 
 ### Optimized Data pipeline
 
-Computer Vision task often needs a data processing pipeline that sometimes consitute a non-trivial part the whole training pipeline. Leveraging OpenCV and libjpeg-turbo, BigDL-Nano can accelerate computer vision data pipelines by providing a drop-in replacement of torch_vision's `datasets` and `transforms`.
+Computer Vision task often needs a data processing pipeline that sometimes constitutes a non-trivial part of the whole training pipeline. Leveraging OpenCV and libjpeg-turbo, BigDL-Nano can accelerate computer vision data pipelines by providing a drop-in replacement of torch_vision's `datasets` and `transforms`.
 
 ```python
 from bigdl.nano.pytorch.vision.datasets import ImageFolder
@@ -86,7 +86,7 @@ trainer.fit(module, train_loader)
 
 ## PyTorch Inference
 
-add link for examples here.
+add a link for examples here.
 
 ### Runtime Acceleration
 
