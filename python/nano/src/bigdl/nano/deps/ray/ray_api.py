@@ -26,5 +26,5 @@ def create_ray_envbase(world_size):
 
 
 def distributed_ray(*args, **kwargs):
-    from ray_distributed import RayPlugin
+    from bigdl.nano.deps.ray.ray_distributed import RayPlugin
     return RayPlugin(*args, **kwargs)
