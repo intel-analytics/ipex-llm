@@ -83,6 +83,14 @@ sed -i 's/epochs=10/epochs=1/' "${BIGDL_ROOT}/python/chronos/example/quantizatio
 execute_ray_test quantization_tcnforecaster_nyc_taxi "${BIGDL_ROOT}/python/chronos/example/quantization/quantization_tcnforecaster_nyc_taxi.py"
 time7=$?
 
+if [ ! -f ~/.chronos/dataset/nyc_taxi/nyc_taxi_data.csv ]; then
+  wget -nv $FTP_URI/analytics-zoo-data/apps/nyc-taxi/nyc_taxi.csv -P ~/.chronos/dataset/nyc_taxi/
+  mv ~/.chronos/dataset/nyc_taxi/nyc_taxi.csv ~/.chronos/dataset/nyc_taxi/nyc_taxi_data.csv
+fi
+
+execute_ray_test sparkdf_training_nyc_taxi.py "${BIGDL_ROOT}/python/chronos/example/distributed/sparkdf_training_nyc_taxi.py"
+time8=$?
+
 echo "#1 autolstm_nyc_taxi time used:$time1 seconds"
 echo "#2 autoprophet_nyc_taxi time used:$time2 seconds"
 echo "#3 dpgansimulator_wwt time used:$time3 seconds"
@@ -90,5 +98,6 @@ echo "#4 distributed_training_network_traffic time used:$time4 seconds"
 echo "#5 onnx_autotsestimator_nyc_taxi time used:$time5 seconds"
 echo "#6 onnx_forecaster_network_traffic used:$time6 seconds"
 echo "#7 quantization_tcnforecaster_nyc_taxi used:$time7 seconds"
+echo "#8 sparkdf_training_nyc_taxi used:$time8 seconds"
 
 clear_up
