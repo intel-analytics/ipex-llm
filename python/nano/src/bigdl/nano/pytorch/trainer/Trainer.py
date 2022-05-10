@@ -308,7 +308,7 @@ class Trainer(pl.Trainer):
                 framework = 'pytorch_{}'.format(method)
             if accelerator == 'onnxruntime':
                 framework = "{}_{}ops".format('onnxrt', method)
-
+            pl_model = model
             quantizer = QuantizationINC(framework=framework, conf=conf, approach=approach,
                                         tuning_strategy=tuning_strategy,
                                         accuracy_criterion=accuracy_criterion,
@@ -349,7 +349,7 @@ class Trainer(pl.Trainer):
                 from bigdl.nano.pytorch.runtime_binding.quantization_inference import \
                     bind_quantize_methods
                 return_pl_model = bind_quantize_methods(
-                    bind_base_inference_rt_methods(model), quantized_pytorch_model)
+                    bind_base_inference_rt_methods(pl_model), quantized_pytorch_model)
                 if quantized_onnx_model:
                     return bind_onnxrt_methods(return_pl_model,
                                                quantized_onnx_model)
