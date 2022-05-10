@@ -20,10 +20,6 @@ import logging
 from bigdl.nano.deps.ipex.ipex_api import ipex_device
 # import intel_pytorch_extension as ipex
 import intel_extension_for_pytorch as ipex
-<<<<<<< HEAD
-=======
-
->>>>>>> ipex upgrade
 import torch
 from torch.optim import Optimizer
 
@@ -38,7 +34,6 @@ from .ipex_torchfunctional import to_cpu
 
 _STEP_OUTPUT_TYPE = Union[torch.Tensor, Dict[str, Any]]
 
-# ipex_device = 'xpu:0'
 
 class IPEXAccelerator(Accelerator):
     """ Accelerator for XPU devices. """
