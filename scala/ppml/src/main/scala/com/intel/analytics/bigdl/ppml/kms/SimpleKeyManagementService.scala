@@ -96,6 +96,8 @@ class SimpleKeyManagementService(
 
 object SimpleKeyManagementService {
   def apply(): SimpleKeyManagementService = {
-    new SimpleKeyManagementService()
+    val appid:String = (1 to 12).map(x => Random.nextInt(10)).mkString
+    val appkey:String = (1 to 12).map(x => Random.nextInt(10)).mkString
+    new SimpleKeyManagementService(appid, appkey)
   }
 }
