@@ -121,3 +121,38 @@ def train_torch_lightning(model, batch_size, num_workers, data_dir, accelerator=
             if not torch.all(torch.eq(para1, para2)):
                 raise Exception(name1 + " freeze failed.")
     print("pass")
+
+
+def train_torch_lighting_ipex(model_without_top, batch_size, num_workers, data_dir, use_ipex=False, enable_bf16=False):
+    from bigdl.nano.pytorch.trainer import Trainer
+    model = Net(model_without_top)
+    orig_parameters = deepcopy(list(model.named_parameters()))
+
+    train_loader = create_data_loader(
+    data_dir, batch_size, num_workers, data_transform)
+
+    
+    trainer = Trainer(max_epochs=1)
+
+    model = Trainer.compile(model, use_ipex=use_ipex, enable_bf16=enable_bf16)
+
+    trainer.fit(model, train_loader)
+
+    trained_parameters = list(model.named_parameters())
+
+    # Check if the training and the freeze operation is successful
+    for i in range(len(orig_parameters)):
+        name1, para1 = orig_parameters[i]
+        name2, para2 = trained_parameters[i]
+        if name1 == "model.1.bias" or name1 == "model.1.weight" or \
+                name1 == "new_classifier.1.bias" or name1 == "new_classifier.1.weight":
+            # Top layer is trained
+            if torch.all(torch.eq(para1, para2)):
+                raise Exception("Parameter " + name1 +
+                                " remains the same after training.")
+        else:
+            # Frozen parameters should not change
+            if not torch.all(torch.eq(para1, para2)):
+                raise Exception(name1 + " freeze failed.")
+    print("pass")
+    return 

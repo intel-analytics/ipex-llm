@@ -70,10 +70,12 @@ def setup_package():
                            "keras==2.7.0",
                            "tensorflow-estimator==2.7.0"]
 
-    pytorch_requires = ["torch==1.9.0",
-                        "torchvision==0.10.0",
+    pytorch_requires = ["torch==1.11.0",
+                        "torchvision==0.12.0",
                         "pytorch_lightning==1.4.2",
-                        "torchmetrics==0.7.2",
+                        "neural_compressor==1.11.0", # for INC test  
+                        "torchmetrics==0.7.2", # remove if not pl 1.4.2
+                        "intel_extension_for_pytorch==1.11.0",
                         "opencv-python-headless",
                         "PyTurboJPEG",
                         "opencv-transforms"]

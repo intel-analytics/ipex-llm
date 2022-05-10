@@ -17,8 +17,9 @@
 
 from typing import Union, Dict, Any, Optional
 import logging
-import intel_pytorch_extension as ipex
-
+from bigdl.nano.deps.ipex.ipex_api import ipex_device
+# import intel_pytorch_extension as ipex
+import intel_extension_for_pytorch as ipex
 import torch
 from torch.optim import Optimizer
 
@@ -33,6 +34,8 @@ from .ipex_torchfunctional import to_cpu
 
 _STEP_OUTPUT_TYPE = Union[torch.Tensor, Dict[str, Any]]
 
+# ipex_device = 'xpu:0'
+
 
 class IPEXAccelerator(Accelerator):
     """ Accelerator for XPU devices. """
@@ -41,7 +44,7 @@ class IPEXAccelerator(Accelerator):
         self,
         precision_plugin: PrecisionPlugin = PrecisionPlugin(),
         training_type_plugin: TrainingTypePlugin = SingleDevicePlugin(
-            torch.device(ipex.DEVICE)),
+            torch.device(ipex_device())),
         enable_bf16=False,
     ) -> None:
         """
@@ -54,7 +57,7 @@ class IPEXAccelerator(Accelerator):
             # Automatically mix precision
             ipex.enable_auto_mixed_precision(mixed_dtype=torch.bfloat16)
 
-        self.device = ipex.DEVICE
+        self.device = ipex_device()
 
         super().__init__(precision_plugin=precision_plugin,
                          training_type_plugin=training_type_plugin)
