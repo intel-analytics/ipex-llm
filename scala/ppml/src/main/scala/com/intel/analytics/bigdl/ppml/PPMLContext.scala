@@ -18,8 +18,8 @@ package com.intel.analytics.bigdl.ppml
 
 import com.intel.analytics.bigdl.dllib.NNContext.{checkScalaVersion, checkSparkVersion, createSparkConf, initConf, initNNContext}
 import com.intel.analytics.bigdl.dllib.utils.Log4Error
-import com.intel.analytics.bigdl.ppml.encrypt.EncryptMode.EncryptMode
-import com.intel.analytics.bigdl.ppml.encrypt.{EncryptMode, EncryptRuntimeException, FernetEncrypt}
+import com.intel.analytics.bigdl.ppml.encrypt.CryptoMode.CryptoMode
+import com.intel.analytics.bigdl.ppml.encrypt.{CryptoMode, EncryptRuntimeException, FernetEncrypt}
 import com.intel.analytics.bigdl.ppml.utils.Supportive
 import org.apache.spark.{SparkConf, SparkContext}
 import org.apache.spark.input.PortableDataStream
@@ -57,45 +57,45 @@ class PPMLContext protected(kms: KeyManagementService, sparkSession: SparkSessio
    * Read data files into RDD[String]
    * @param path data file path
    * @param minPartitions min partitions
-   * @param mode encrypt mode, such as PLAIN_TEXT or AES_CBC_PKCS5PADDING
+   * @param cryptoMode crypto mode, such as PLAIN_TEXT or AES_CBC_PKCS5PADDING
    * @return
    */
   def textFile(path: String,
                minPartitions: Int = sparkSession.sparkContext.defaultMinPartitions,
-               mode: EncryptMode = EncryptMode.PLAIN_TEXT): RDD[String] = {
-    mode match {
-      case EncryptMode.PLAIN_TEXT =>
+               cryptoMode: CryptoMode = CryptoMode.PLAIN_TEXT): RDD[String] = {
+    cryptoMode match {
+      case CryptoMode.PLAIN_TEXT =>
         sparkSession.sparkContext.textFile(path, minPartitions)
-      case EncryptMode.AES_CBC_PKCS5PADDING =>
+      case CryptoMode.AES_CBC_PKCS5PADDING =>
         PPMLContext.textFile(sparkSession.sparkContext, path, dataKeyPlainText, minPartitions)
       case _ =>
-        throw new IllegalArgumentException("unknown EncryptMode " + mode.toString)
+        throw new IllegalArgumentException("unknown EncryptMode " + cryptoMode.toString)
     }
   }
 
   /**
    * Interface for loading data in external storage to Dataset.
-   * @param mode encrypt mode, such as PLAIN_TEXT or AES_CBC_PKCS5PADDING
+   * @param cryptoMode crypto mode, such as PLAIN_TEXT or AES_CBC_PKCS5PADDING
    * @return a EncryptedDataFrameReader
    */
-  def read(mode: EncryptMode): EncryptedDataFrameReader = {
-    new EncryptedDataFrameReader(sparkSession, mode, dataKeyPlainText)
+  def read(cryptoMode: CryptoMode): EncryptedDataFrameReader = {
+    new EncryptedDataFrameReader(sparkSession, cryptoMode, dataKeyPlainText)
   }
 
   /**
    * Interface for saving the content of the non-streaming Dataset out into external storage.
    * @param dataFrame dataframe to save.
-   * @param mode encrypt mode, such as PLAIN_TEXT or AES_CBC_PKCS5PADDING
+   * @param cryptoMode crypto mode, such as PLAIN_TEXT or AES_CBC_PKCS5PADDING
    * @return a DataFrameWriter[Row]
    */
-  def write(dataFrame: DataFrame, mode: EncryptMode): DataFrameWriter[Row] = {
-    mode match {
-      case EncryptMode.PLAIN_TEXT =>
+  def write(dataFrame: DataFrame, cryptoMode: CryptoMode): DataFrameWriter[Row] = {
+    cryptoMode match {
+      case CryptoMode.PLAIN_TEXT =>
         dataFrame.write
-      case EncryptMode.AES_CBC_PKCS5PADDING =>
+      case CryptoMode.AES_CBC_PKCS5PADDING =>
         PPMLContext.write(sparkSession, dataKeyPlainText, dataFrame)
       case _ =>
-        throw new IllegalArgumentException("unknown EncryptMode " + mode.toString)
+        throw new IllegalArgumentException("unknown EncryptMode " + cryptoMode.toString)
     }
   }
 }
@@ -115,7 +115,7 @@ object PPMLContext{
                path: String,
                dataKeyPlaintext: String,
                minPartitions: Int = -1): RDD[String] = {
-    Log4Error.unKnowExceptionError(dataKeyPlaintext != "", "dataKeyPlainText should not be empty, please loadKeys first.")
+    Log4Error.invalidInputError(dataKeyPlaintext != "", "dataKeyPlainText should not be empty, please loadKeys first.")
     val data: RDD[(String, PortableDataStream)] = if (minPartitions > 0) {
       sc.binaryFiles(path, minPartitions)
     } else {
@@ -208,16 +208,16 @@ object PPMLContext{
       case _ =>
         throw new EncryptRuntimeException("Wrong kms type")
     }
-    val kmsSc = new PPMLContext(kms, sparkSession)
+    val ppmlSc = new PPMLContext(kms, sparkSession)
     if (conf.contains("spark.bigdl.kms.key.primary")){
-      Log4Error.unKnowExceptionError(conf.contains("spark.bigdl.kms.key.data"),
+      Log4Error.invalidInputError(conf.contains("spark.bigdl.kms.key.data"),
         "Data key not found, please provide" +
         " both spark.bigdl.kms.key.primary and spark.bigdl.kms.key.data.")
       val primaryKey = conf.get("spark.bigdl.kms.key.primary")
       val dataKey = conf.get("spark.bigdl.kms.key.data")
-      kmsSc.loadKeys(primaryKey, dataKey)
+      ppmlSc.loadKeys(primaryKey, dataKey)
     }
-    kmsSc
+    ppmlSc
   }
 
 }

@@ -43,7 +43,7 @@ object SimpleQuerySparkExample {
     // val sc = PPMLContext.initPPMLContext("SimpleQuery")
 
     // load csv file to data frame with ppmlcontext.
-    val df = sc.read(mode = arguments.inputEncryptMode).csv(arguments.inputPath + "/people.csv")
+    val df = sc.read(cryptoMode = arguments.inputEncryptMode).csv(arguments.inputPath + "/people.csv")
 
     // Select only the "name" column
     df.select("name").count()
@@ -60,7 +60,7 @@ object SimpleQuerySparkExample {
     })
 
     // save data frame using spark kms context
-    sc.write(developers, mode = arguments.outputEncryptMode).mode("overwrite")
+    sc.write(developers, cryptoMode = arguments.outputEncryptMode).mode("overwrite")
       .option("header", true).csv(arguments.outputPath)
   }
 }

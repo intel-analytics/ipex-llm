@@ -27,10 +27,10 @@ import javax.crypto.spec.{IvParameterSpec, SecretKeySpec}
 import javax.crypto.{Cipher, Mac}
 import org.apache.spark.input.PortableDataStream
 
-class FernetEncrypt extends Encrypt {
+class FernetEncrypt extends Crypto {
 
   def encryptFile(binaryFilePath: String, savePath: String, dataKeyPlaintext: String) = {
-    Log4Error.unKnowExceptionError(savePath != null && savePath != "", "encrypted file save path should be specified")
+    Log4Error.invalidInputError(savePath != null && savePath != "", "encrypted file save path should be specified")
     val content: Array[Byte] = readBinaryFile(binaryFilePath) // Plaintext original file is read as binary
     val encryptedBytes = timing("FernetCryptos encrypting a single file") {
       encryptContent(content, dataKeyPlaintext)
@@ -41,7 +41,7 @@ class FernetEncrypt extends Encrypt {
   }
 
   def decryptFile(binaryFilePath: String, savePath: String, dataKeyPlaintext: String) = {
-    Log4Error.unKnowExceptionError(savePath != null && savePath != "", "decrypted file save path should be specified")
+    Log4Error.invalidInputError(savePath != null && savePath != "", "decrypted file save path should be specified")
     val content: Array[Byte] = readBinaryFile(binaryFilePath) // Ciphertext file is read into Bytes
     val decryptedBytes = timing("FernetCryptos decrypt a single file...") {
       decryptContent(content, dataKeyPlaintext)
@@ -98,7 +98,7 @@ class FernetEncrypt extends Encrypt {
     val encryptKey: Array[Byte] = Arrays.copyOfRange(secret, 16, 32)
     val encryptionKeySpec: SecretKeySpec = new SecretKeySpec(encryptKey, "AES")
 
-    val cipher: Cipher = Cipher.getInstance(EncryptMode.AES_CBC_PKCS5PADDING.value)
+    val cipher: Cipher = Cipher.getInstance(CryptoMode.AES_CBC_PKCS5PADDING.value)
     cipher.init(Cipher.ENCRYPT_MODE, encryptionKeySpec, ivParameterSpec)
 
     val cipherText: Array[Byte] = cipher.doFinal(content)

@@ -67,7 +67,7 @@ class EHSMParams(
 
   private def getSignPlaintextString(): String = {
 
-    Log4Error.unKnowExceptionError(appId != "" && appKey != "" && timeStamp != ""
+    Log4Error.invalidInputError(appId != "" && appKey != "" && timeStamp != ""
       && !payLoad.isEmpty, "Lack necessary param or payload!")
     var signString: String = s"appid=$appId&payload="
     val tmp = Map(payLoad.toSeq.sortWith(_._1 < _._1):_*)

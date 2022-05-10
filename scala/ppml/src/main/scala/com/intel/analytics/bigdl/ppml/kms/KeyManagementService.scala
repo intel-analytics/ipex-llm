@@ -27,7 +27,6 @@ trait KeyManagementService extends Supportive {
   var _appId:String = _
   var _appKey:String = _
 
-  def enroll():(String,String)
   def retrievePrimaryKey(primaryKeySavePath: String)
   def retrieveDataKey(primaryKeyPath: String, dataKeySavePath: String)
   def retrieveDataKeyPlainText(primaryKeyPath: String, dataKeyPath: String): String

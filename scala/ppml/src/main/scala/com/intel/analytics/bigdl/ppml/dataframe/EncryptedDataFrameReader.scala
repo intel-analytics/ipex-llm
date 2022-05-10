@@ -17,8 +17,8 @@
 package com.intel.analytics.bigdl.ppml.dataframe
 
 import com.intel.analytics.bigdl.ppml.PPMLContext
-import com.intel.analytics.bigdl.ppml.encrypt.EncryptMode
-import com.intel.analytics.bigdl.ppml.encrypt.EncryptMode.EncryptMode
+import com.intel.analytics.bigdl.ppml.encrypt.CryptoMode
+import com.intel.analytics.bigdl.ppml.encrypt.CryptoMode.CryptoMode
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.types.{StringType, StructField, StructType}
 import org.apache.spark.sql.{DataFrame, Row, SparkSession}
@@ -29,18 +29,18 @@ import org.apache.spark.sql.{DataFrame, Row, SparkSession}
  * @param encryptMode
  * @param dataKeyPlainText
  */
-class EncryptedDataFrameReader(sparkSession: SparkSession, encryptMode: EncryptMode, dataKeyPlainText: String){
+class EncryptedDataFrameReader(sparkSession: SparkSession, encryptMode: CryptoMode, dataKeyPlainText: String){
   def csv(path: String): DataFrame = {
-    val rdd = encryptMode match {
-      case EncryptMode.PLAIN_TEXT =>
-        sparkSession.sparkContext.textFile(path)
-      case EncryptMode.AES_CBC_PKCS5PADDING =>
-        PPMLContext.textFile(sparkSession.sparkContext, path,
+    encryptMode match {
+      case CryptoMode.PLAIN_TEXT =>
+        sparkSession.read.csv(path)
+      case CryptoMode.AES_CBC_PKCS5PADDING =>
+        val rdd = PPMLContext.textFile(sparkSession.sparkContext, path,
           dataKeyPlainText)
+        EncryptedDataFrameReader.toDataFrame(rdd)
       case _ =>
-        throw new IllegalArgumentException("unknown EncryptMode " + EncryptMode.toString)
+        throw new IllegalArgumentException("unknown EncryptMode " + CryptoMode.toString)
     }
-    EncryptedDataFrameReader.toDataFrame(rdd)
   }
 }
 

@@ -17,28 +17,28 @@
 package com.intel.analytics.bigdl.ppml.utils
 
 import com.intel.analytics.bigdl.ppml.PPMLContext
-import com.intel.analytics.bigdl.ppml.encrypt.{EncryptMode, EncryptRuntimeException}
-import com.intel.analytics.bigdl.ppml.encrypt.EncryptMode.EncryptMode
+import com.intel.analytics.bigdl.ppml.encrypt.{CryptoMode, EncryptRuntimeException}
+import com.intel.analytics.bigdl.ppml.encrypt.CryptoMode.CryptoMode
 import com.intel.analytics.bigdl.ppml.kms.{EHSMKeyManagementService, KMS_CONVENTION, SimpleKeyManagementService}
 
 import java.io.File
 
 case class EncryptIOArguments(
-      inputPath: String = "./input",
-      outputPath: String = "./output",
-      inputEncryptMode: EncryptMode = EncryptMode.PLAIN_TEXT,
-      outputEncryptMode: EncryptMode = EncryptMode.PLAIN_TEXT,
-      inputPartitionNum: Int = 4,
-      outputPartitionNum: Int = 4,
-      primaryKeyPath: String = "./primaryKeyPath",
-      dataKeyPath: String = "./dataKeyPath",
-      kmsType: String = KMS_CONVENTION.MODE_SIMPLE_KMS,
-      kmsServerIP: String = "0.0.0.0",
-      kmsServerPort: String = "5984",
-      ehsmAPPID: String = "ehsmAPPID",
-      ehsmAPPKEY: String = "ehsmAPPKEY",
-      simpleAPPID: String = "simpleAPPID",
-      simpleAPPKEY: String = "simpleAPPKEY") {
+                               inputPath: String = "./input",
+                               outputPath: String = "./output",
+                               inputEncryptMode: CryptoMode = CryptoMode.PLAIN_TEXT,
+                               outputEncryptMode: CryptoMode = CryptoMode.PLAIN_TEXT,
+                               inputPartitionNum: Int = 4,
+                               outputPartitionNum: Int = 4,
+                               primaryKeyPath: String = "./primaryKeyPath",
+                               dataKeyPath: String = "./dataKeyPath",
+                               kmsType: String = KMS_CONVENTION.MODE_SIMPLE_KMS,
+                               kmsServerIP: String = "0.0.0.0",
+                               kmsServerPort: String = "5984",
+                               ehsmAPPID: String = "ehsmAPPID",
+                               ehsmAPPKEY: String = "ehsmAPPKEY",
+                               simpleAPPID: String = "simpleAPPID",
+                               simpleAPPKEY: String = "simpleAPPKEY") {
   def ppmlArgs(): Map[String, String] = {
     val kmsArgs = scala.collection.mutable.Map[String, String]()
     kmsArgs("spark.bigdl.kms.type") = kmsType
@@ -74,10 +74,10 @@ object EncryptIOArguments {
       .action((x, c) => c.copy(outputPath = x))
       .text("outputPath")
     opt[String]('a', "inputEncryptModeValue")
-      .action((x, c) => c.copy(inputEncryptMode = EncryptMode.parse(x)))
+      .action((x, c) => c.copy(inputEncryptMode = CryptoMode.parse(x)))
       .text("inputEncryptModeValue: plain_text/aes_cbc_pkcs5padding")
     opt[String]('b', "outputEncryptModeValue")
-      .action((x, c) => c.copy(outputEncryptMode = EncryptMode.parse(x)))
+      .action((x, c) => c.copy(outputEncryptMode = CryptoMode.parse(x)))
       .text("outputEncryptModeValue: plain_text/aes_cbc_pkcs5padding")
     opt[String]('c', "outputPath")
       .action((x, c) => c.copy(outputPath = x))

@@ -50,17 +50,12 @@ class EHSMKeyManagementService(
 
   val keyReaderWriter = new KeyReaderWriter
 
-  enroll()
-
-  def enroll(): (String, String) = {
-    timing("EHSMKeyManagementService enroll") {
-      setAppIdAndKey(ehsmAPPID, ehsmAPPKEY)
-      (ehsmAPPID, ehsmAPPKEY)
-    }
-  }
+  Log4Error.invalidInputError(ehsmAPPID != "", s"ehsmAPPID should not be empty string.")
+  Log4Error.invalidInputError(ehsmAPPKEY != "", s"ehsmAPPKEY should not be empty string.")
+  setAppIdAndKey(ehsmAPPID, ehsmAPPKEY)
 
   def retrievePrimaryKey(primaryKeySavePath: String) = {
-    Log4Error.unKnowExceptionError(primaryKeySavePath != null && primaryKeySavePath != "",
+    Log4Error.invalidInputError(primaryKeySavePath != null && primaryKeySavePath != "",
       "primaryKeySavePath should be specified")
     val action: String = EHSM_CONVENTION.ACTION_CREATE_KEY
     val currentTime = System.currentTimeMillis() // ms
@@ -81,9 +76,9 @@ class EHSMKeyManagementService(
   }
 
   def retrieveDataKey(primaryKeyPath: String, dataKeySavePath: String) = {
-    Log4Error.unKnowExceptionError(primaryKeyPath != null && primaryKeyPath != "",
+    Log4Error.invalidInputError(primaryKeyPath != null && primaryKeyPath != "",
       "primaryKeyPath should be specified")
-    Log4Error.unKnowExceptionError(dataKeySavePath != null && dataKeySavePath != "",
+    Log4Error.invalidInputError(dataKeySavePath != null && dataKeySavePath != "",
       "dataKeySavePath should be specified")
     val action = EHSM_CONVENTION.ACTION_GENERATE_DATAKEY_WO_PLAINTEXT
     val encryptedPrimaryKey: String = keyReaderWriter.readKeyFromFile(primaryKeyPath)
@@ -105,9 +100,9 @@ class EHSMKeyManagementService(
 
 
   override def retrieveDataKeyPlainText(primaryKeyPath: String, dataKeyPath: String): String = {
-    Log4Error.unKnowExceptionError(primaryKeyPath != null && primaryKeyPath != "",
+    Log4Error.invalidInputError(primaryKeyPath != null && primaryKeyPath != "",
       "primaryKeyPath should be specified")
-    Log4Error.unKnowExceptionError(dataKeyPath != null && dataKeyPath != "",
+    Log4Error.invalidInputError(dataKeyPath != null && dataKeyPath != "",
       "dataKeyPath should be specified")
     val action: String = EHSM_CONVENTION.ACTION_DECRYPT
     val encryptedPrimaryKey: String = keyReaderWriter.readKeyFromFile(primaryKeyPath)

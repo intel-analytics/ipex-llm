@@ -23,32 +23,19 @@ import scala.util.Random
 import com.intel.analytics.bigdl.ppml.utils.KeyReaderWriter
 
 class SimpleKeyManagementService(
-      simpleAPPID: String = "",
-      simpleAPPKEY: String = "") extends KeyManagementService {
+      simpleAPPID: String,
+      simpleAPPKEY: String) extends KeyManagementService {
   var enrollMap: HashMap[String,String] = new HashMap[String,String]
   val keyReaderWriter = new KeyReaderWriter
-  
-  if (simpleAPPID != "" && simpleAPPID != "") {
-    setAppIdAndKey(simpleAPPID, simpleAPPKEY)
-  } else {
-    enroll()
-  }
 
-  def enroll(): (String, String) = {
-    val appid:String = (1 to 12).map(x => Random.nextInt(10)).mkString
-    val appkey:String = (1 to 12).map(x => Random.nextInt(10)).mkString
-    enrollMap.contains(appid) match {
-      case true => setAppIdAndKey(appid, appkey) //TODO
-      case false => setAppIdAndKey(appid, appkey)
-    }
-    (appid, appkey)
-  }
+  Log4Error.invalidInputError(simpleAPPID != "", s"simpleAPPID should not be empty string.")
+  Log4Error.invalidInputError(simpleAPPKEY != "", s"simpleAPPKEY should not be empty string.")
 
   def retrievePrimaryKey(primaryKeySavePath: String): Unit = {
     timing("SimpleKeyManagementService retrievePrimaryKey") {
-      Log4Error.unKnowExceptionError(enrollMap.keySet.contains(_appId) &&
+      Log4Error.invalidInputError(enrollMap.keySet.contains(_appId) &&
         enrollMap(_appId) == _appKey, "appid and appkey do not match!")
-      Log4Error.unKnowExceptionError(primaryKeySavePath != null && primaryKeySavePath != "",
+      Log4Error.invalidInputError(primaryKeySavePath != null && primaryKeySavePath != "",
         "primaryKeySavePath should be specified")
       val suffix:String = (1 to 4).map { x => Random.nextInt(10) }.mkString
       val encryptedPrimaryKey:String = _appId + suffix
@@ -58,14 +45,14 @@ class SimpleKeyManagementService(
 
   def retrieveDataKey(primaryKeyPath: String, dataKeySavePath: String) = {
     timing("SimpleKeyManagementService retrieveDataKey") {
-      Log4Error.unKnowExceptionError(enrollMap.keySet.contains(_appId) &&
+      Log4Error.invalidInputError(enrollMap.keySet.contains(_appId) &&
         enrollMap(_appId) == _appKey, "appid and appkey do not match!")
-      Log4Error.unKnowExceptionError(primaryKeyPath != null && primaryKeyPath != "",
+      Log4Error.invalidInputError(primaryKeyPath != null && primaryKeyPath != "",
         "primaryKeyPath should be specified")
-      Log4Error.unKnowExceptionError(dataKeySavePath != null && dataKeySavePath != "",
+      Log4Error.invalidInputError(dataKeySavePath != null && dataKeySavePath != "",
         "dataKeySavePath should be specified")
       val primaryKeyPlaintext:String = keyReaderWriter.readKeyFromFile(primaryKeyPath)
-      Log4Error.unKnowExceptionError(primaryKeyPlaintext.substring(0, 12) == _appId,
+      Log4Error.invalidInputError(primaryKeyPlaintext.substring(0, 12) == _appId,
         "appid and primarykey should be matched!")
       val randVect = (1 to 16).map { x => Random.nextInt(10) }
       val dataKeyPlaintext:String = randVect.mkString
@@ -80,14 +67,14 @@ class SimpleKeyManagementService(
 
   def retrieveDataKeyPlainText(primaryKeyPath: String, dataKeyPath: String): String = {
     timing("SimpleKeyManagementService retrieveDataKeyPlaintext") {
-      Log4Error.unKnowExceptionError(enrollMap.keySet.contains(_appId) &&
+      Log4Error.invalidInputError(enrollMap.keySet.contains(_appId) &&
         enrollMap(_appId) == _appKey, "appid and appkey do not match!")
-      Log4Error.unKnowExceptionError(primaryKeyPath != null && primaryKeyPath != "",
+      Log4Error.invalidInputError(primaryKeyPath != null && primaryKeyPath != "",
         "primaryKeyPath should be specified")
-      Log4Error.unKnowExceptionError(dataKeyPath != null && dataKeyPath != "",
+      Log4Error.invalidInputError(dataKeyPath != null && dataKeyPath != "",
         "dataKeyPath should be specified")
       val primaryKeyCiphertext:String = keyReaderWriter.readKeyFromFile(primaryKeyPath)
-      Log4Error.unKnowExceptionError(primaryKeyCiphertext.substring(0, 12) == _appId,
+      Log4Error.invalidInputError(primaryKeyCiphertext.substring(0, 12) == _appId,
         "appid and primarykey should be matched!")
       val dataKeyCiphertext:String = keyReaderWriter.readKeyFromFile(dataKeyPath)
       var dataKeyPlaintext:String = ""
