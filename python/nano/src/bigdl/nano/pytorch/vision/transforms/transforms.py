@@ -15,18 +15,19 @@
 #
 
 
-import torchvision.transforms as tv_t
-import opencv_transforms.transforms as cv_t
 import cv2
-import numpy as np
+import collections
 import numbers
 import random
-import warnings
 import torch
 import types
-from typing import Tuple, List, Optional
-import collections
+import warnings
+
+import numpy as np
+import torchvision.transforms as tv_t
 from torchvision.transforms.functional import InterpolationMode
+import opencv_transforms.transforms as cv_t
+
 
 __all__ = [
     'Compose',
@@ -593,10 +594,9 @@ class RandomRotation(tv_t.RandomRotation):
 
     def __call__(self, img):
         if type(img) == np.ndarray:
-            raise NotImplementedError("Input image must be PIL image or Tensor image for {}"
-                                      .format(self.__class__.__name__))
-        else:
-            return super(RandomRotation, self).__call__(img)
+            img = tv_t.ToTensor(img)
+
+        return super(RandomRotation, self).__call__(img)
 
 
 class RandomAffine(object):
@@ -779,87 +779,78 @@ class RandomPerspective(tv_t.RandomPerspective):
 
     def __call__(self, img):
         if type(img) == np.ndarray:
-            raise NotImplementedError("Input image must be PIL image or Tensor image for {}"
-                                      .format(self.__class__.__name__))
-        else:
-            return super(RandomPerspective, self).__call__(img)
+            img = tv_t.ToTensor(img)
+
+        return super(RandomPerspective, self).__call__(img)
 
 
 class RandomErasing(tv_t.RandomErasing):
 
     def __call__(self, img):
         if type(img) == np.ndarray:
-            raise NotImplementedError("Input image must be Tensor image for {}"
-                                      .format(self.__class__.__name__))
-        else:
-            return super(RandomErasing, self).__call__(img)
+            img = tv_t.ToTensor(img)
+
+        return super(RandomErasing, self).__call__(img)
 
 
 class GaussianBlur(tv_t.GaussianBlur):
 
     def __call__(self, img):
         if type(img) == np.ndarray:
-            raise NotImplementedError("Input image must be PIL image or Tensor image for {}"
-                                      .format(self.__class__.__name__))
-        else:
-            return super(GaussianBlur, self).__call__(img)
+            img = tv_t.ToTensor(img)
+
+        return super(GaussianBlur, self).__call__(img)
 
 
 class RandomInvert(tv_t.RandomInvert):
 
     def __call__(self, img):
         if type(img) == np.ndarray:
-            raise NotImplementedError("Input image must be PIL image or Tensor image for {}"
-                                      .format(self.__class__.__name__))
-        else:
-            return super(RandomInvert, self).__call__(img)
+            img = tv_t.ToTensor(img)
+
+        return super(RandomInvert, self).__call__(img)
 
 
 class RandomPosterize(tv_t.RandomPosterize):
 
     def __call__(self, img):
         if type(img) == np.ndarray:
-            raise NotImplementedError("Input image must be PIL image or Tensor image for {}"
-                                      .format(self.__class__.__name__))
-        else:
-            return super(RandomPosterize, self).__call__(img)
+            img = tv_t.ToTensor(img)
+
+        return super(RandomPosterize, self).__call__(img)
 
 
 class RandomSolarize(tv_t.RandomSolarize):
 
     def __call__(self, img):
         if type(img) == np.ndarray:
-            raise NotImplementedError("Input image must be PIL image or Tensor image for {}"
-                                      .format(self.__class__.__name__))
-        else:
-            return super(RandomSolarize, self).__call__(img)
+            img = tv_t.ToTensor(img)
+
+        return super(RandomSolarize, self).__call__(img)
 
 
 class RandomAdjustSharpness(tv_t.RandomAdjustSharpness):
 
     def __call__(self, img):
         if type(img) == np.ndarray:
-            raise NotImplementedError("Input image must be PIL image or Tensor image for {}"
-                                      .format(self.__class__.__name__))
-        else:
-            return super(RandomAdjustSharpness, self).__call__(img)
+            img = tv_t.ToTensor(img)
+
+        return super(RandomAdjustSharpness, self).__call__(img)
 
 
 class RandomAutocontrast(tv_t.RandomAutocontrast):
 
     def __call__(self, img):
         if type(img) == np.ndarray:
-            raise NotImplementedError("Input image must be PIL image or Tensor image for {}"
-                                      .format(self.__class__.__name__))
-        else:
-            return super(RandomAutocontrast, self).__call__(img)
+            img = tv_t.ToTensor(img)
+
+        return super(RandomAutocontrast, self).__call__(img)
 
 
 class RandomEqualize(tv_t.RandomEqualize):
 
     def __call__(self, img):
         if type(img) == np.ndarray:
-            raise NotImplementedError("Input image must be PIL image or Tensor image for {}"
-                                      .format(self.__class__.__name__))
-        else:
-            return super(RandomEqualize, self).__call__(img)
+            img = tv_t.ToTensor(img)
+
+        return super(RandomEqualize, self).__call__(img)
