@@ -18,7 +18,6 @@
 from typing import Union, Dict, Any, Optional
 import logging
 from bigdl.nano.deps.ipex.ipex_api import ipex_device
-# import intel_pytorch_extension as ipex
 import intel_extension_for_pytorch as ipex
 import torch
 from torch.optim import Optimizer
@@ -41,9 +40,6 @@ class IPEXAccelerator(Accelerator):
     def __init__(
         self,
         precision_plugin: PrecisionPlugin = PrecisionPlugin(),
-        # ! training type plugin now passed by strategy start from 1.5.0
-        # training_type_plugin: TrainingTypePlugin = SingleDevicePlugin(
-        #     torch.device(ipex_device())),
         enable_bf16=False,
     ) -> None:
         """
@@ -58,8 +54,7 @@ class IPEXAccelerator(Accelerator):
 
         self.device = ipex_device()
 
-        super().__init__(precision_plugin=precision_plugin,
-                         training_type_plugin=training_type_plugin)
+        super().__init__(precision_plugin=precision_plugin)
 
     def setup(self, trainer: 'pl.Trainer') -> None:
         """
