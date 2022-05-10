@@ -22,7 +22,7 @@ import scala.collection.mutable.HashMap
 import scala.util.Random
 import com.intel.analytics.bigdl.ppml.utils.KeyReaderWriter
 
-class SimpleKeyManagementService(
+class SimpleKeyManagementService protected(
       simpleAPPID: String,
       simpleAPPKEY: String) extends KeyManagementService {
   var enrollMap: HashMap[String,String] = new HashMap[String,String]
@@ -99,5 +99,9 @@ object SimpleKeyManagementService {
     val appid:String = (1 to 12).map(x => Random.nextInt(10)).mkString
     val appkey:String = (1 to 12).map(x => Random.nextInt(10)).mkString
     new SimpleKeyManagementService(appid, appkey)
+  }
+
+  def apply(appID: String, appKey: String): SimpleKeyManagementService = {
+    new SimpleKeyManagementService(appID, appKey)
   }
 }
