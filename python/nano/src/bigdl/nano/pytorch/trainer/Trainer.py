@@ -16,6 +16,7 @@
 import copy
 from logging import warning
 from pathlib import Path
+from tempfile import TemporaryDirectory
 from typing import Any, List, Optional
 import pytorch_lightning as pl
 import torch
@@ -230,24 +231,39 @@ class Trainer(pl.Trainer):
             return None
         return self.hposearcher.search_summary()
 
-    def quantize(self, pl_model,  # remove the type requirement for type checking
+    def quantize(self, model,  # remove the type requirement for type checking
+                 precision='int8',
+                 accelerator=None,
+                 method='fx',
                  calib_dataloader: DataLoader = None,
                  val_dataloader: DataLoader = None,
                  metric: Optional[Metric] = None,
                  backend='inc',
                  conf: Optional[str] = None,
-                 framework='pytorch_fx',
                  approach='static',
                  tuning_strategy='bayesian',
                  accuracy_criterion: dict = {'relative': 0.99, 'higher_is_better': True},
                  timeout=0,
                  max_trials=1,
-                 return_pl=True
+                 input_sample=None,
+                 return_pl=False
                  ):
         """
         Calibrate a Pytorch-Lightning model for post-training quantization.
 
-        :param pl_model:       A Pytorch-Lightning model to be quantized.
+        :param model:           A model to be quantized. Model type should be an instance of
+                                nn.Module.
+        :param precision:       Global precision of quantized model,
+                                supported type: 'int8', 'bf16', 'fp16', defaults to 'int8'.
+        :param accelerator:     Use accelerator 'None', 'onnxruntime', 'openvino', defaults to None.
+                                None means staying in pytorch.
+        :param method:          Method to do quantization. When accelerator=None, supported
+            methods: 'fx', 'eager', 'ipex', defaults to 'fx'. If you don't use ipex, suggest using
+            'fx' which executes automatic optimizations like fusion. For more information, please
+            refer to https://pytorch.org/docs/stable/quantization.html#eager-mode-quantization.
+            When accelerator='onnxruntime', supported methods: 'qlinear', 'integer', defaults
+            to 'qlinear'. Suggest 'qlinear' for lower accuracy drop if using static quantization.
+            More details in https://onnxruntime.ai/docs/performance/quantization.html.
         :param calib_dataloader:    A torch.utils.data.dataloader.DataLoader object for calibration.
                                     Required for static quantization.
         :param val_dataloader:      A torch.utils.data.dataloader.DataLoader object for evaluation.
@@ -255,9 +271,6 @@ class Trainer(pl.Trainer):
         :param backend:             Only 'inc' is supported. Default: 'inc'.
         :param conf:        A path to conf yaml file for quantization.
                             Default: None, using default config.
-        :param framework:   string, one of 'pytorch'|'pytorch_fx'|'pytorch_ipex'|
-                            'onnxrt_integerops'|'onnxrt_qlinearops'. Default: 'pytorch_fx'.
-                            Consistent with Intel Neural Compressor.
         :param approach:    'static' or 'dynamic'.
                             'static': post_training_static_quant,
                             'dynamic': post_training_dynamic_quant.
@@ -276,11 +289,12 @@ class Trainer(pl.Trainer):
                             return satisfying best model.
         :param return_pl:   Decide which type to return. If set to True, a GraphModule will be
                             returned. If set to False, a pytorch lightning module will be returned.
-        :return:            A GraphModule. If there is no model found, return None.
+        :input_sample:      An input example to convert pytorch model into ONNX/OpenVINO.
+        :return:            A accelerated Pytorch-Lightning Model if quantization is sucessful.
         """
         if backend == 'inc':
             # check if dataloader is of legal format
-            check_pytorch_dataloaders(pl_model, [calib_dataloader, val_dataloader])
+            check_pytorch_dataloaders(model, [calib_dataloader, val_dataloader])
 
             if approach not in ['static', 'dynamic']:
                 raise ValueError("Approach should be 'static' or 'dynamic', "
@@ -290,37 +304,42 @@ class Trainer(pl.Trainer):
                 'dynamic': 'post_training_dynamic_quant'
             }
             approach = approach_map.get(approach)
-
-            quantized_model = None
-            # for framework_item in framework:
+            if accelerator is None:
+                framework = 'pytorch_{}'.format(method)
+            if accelerator == 'onnxruntime':
+                framework = "{}_{}ops".format('onnxrt', method)
+            pl_model = model
             quantizer = QuantizationINC(framework=framework, conf=conf, approach=approach,
                                         tuning_strategy=tuning_strategy,
                                         accuracy_criterion=accuracy_criterion,
                                         timeout=timeout, max_trials=max_trials)
-            if "pytorch" in framework:
-                # for 'pytorch'|'pytorch_fx'|'pytorch_ipex'
-                model: Any = pl_model  # state model to be 'Any' since we may have pl or onnx
-            else:
-                # for 'onnxrt_integerops'|'onnxrt_qlinearops'
-                pl_model = bind_onnxrt_methods(pl_model)
-                if approach == "post_training_static_quant":
-                    assert calib_dataloader, \
-                        "calib_calib_dataloader must not be None when approach is " \
-                        "post-training static quantization."
-                    pl_model.eval_onnx(input_sample=tuple(next(iter(
-                        calib_dataloader))[:-1]),
-                        file_path="model.onnx")
-                    model = pl_model.ort_infer_engine.onnx_model_fp32
-                else:
-                    assert pl_model.ort_infer_engine.onnx_model_fp32, \
-                        "Please call `eval_onnx` on model to " \
-                        "update/build your onnx structure."
-                    model = pl_model.ort_infer_engine.onnx_model_fp32
+            if accelerator == "onnxruntime":
+                if not type(model).__name__ == 'PytorchONNXRuntimeModel':
+                    # try to establish onnx model
+                    if not input_sample:
+                        # input_sample can be a dataloader
+                        input_sample = calib_dataloader or val_dataloader
+                    model = Trainer.trace(model,
+                                          input_sample=input_sample,
+                                          accelerator='onnxruntime')
+                model = model.onnx_model
+            """
+            If accelerator==None, quantized model returned should be an object of PytorchModel
+            which is defined by neural-compressor containing a `GraphModule` for inference.
+            Otherwise accelerator=='onnxruntime', it returns an ONNXModel object. A supported
+            model which is able to run on Pytorch or ONNXRuntime can be fetched by
+            `quantized_model.model`.
+            """
             quantized_model = quantizer.post_training_quantize(model, calib_dataloader,
                                                                val_dataloader, metric)
             if not return_pl:
-                return PytorchQuantizedModel(quantized_model) if "pytorch" in framework \
-                    else quantized_model
+                if accelerator is None:
+                    return PytorchQuantizedModel(quantized_model)
+                elif accelerator == 'onnxruntime':
+                    with TemporaryDirectory() as dir:
+                        saved_onnx = Path(dir) / 'tmp.onnx'
+                        quantized_model.save(saved_onnx)
+                        return PytorchONNXRuntimeModel(str(saved_onnx))
             else:
                 quantized_pytorch_model = quantized_model if "pytorch" in framework else None
                 quantized_onnx_model = quantized_model if "onnxrt" in framework else None

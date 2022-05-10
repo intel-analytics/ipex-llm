@@ -456,12 +456,20 @@ class TSPipeline:
                 if "_quantized_model" in dir(self._best_model):
                     temp_quantized_model = self._best_model._quantized_model
                     self._best_model._quantized_model = None
+            accelerator, method = framework_item.split('_')
+            if accelerator == 'pytorch':
+                accelerator = None
+            else:
+                accelerator = 'onnxruntime'
+                method = method[:-3]
             self._best_model = self._trainer.quantize(self._best_model,
+                                                      precision='int8',
+                                                      accelerator=accelerator,
+                                                      method=method,
                                                       calib_dataloader=calib_data,
                                                       val_dataloader=val_data,
                                                       metric=metric,
                                                       conf=conf,
-                                                      framework=framework_item,
                                                       approach=approach,
                                                       tuning_strategy=tuning_strategy,
                                                       accuracy_criterion=accuracy_criterion,
