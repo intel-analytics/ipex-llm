@@ -19,6 +19,7 @@ import com.intel.analytics.bigdl.dllib.feature.dataset.Transformer
 import com.intel.analytics.bigdl.dllib.feature.transform.vision.image.ImageFeature
 import com.intel.analytics.bigdl.dllib.feature.image.ImageSet
 import com.intel.analytics.bigdl.dllib.feature.text.{TextFeature, TextSet}
+import com.intel.analytics.bigdl.dllib.utils.Log4Error
 import org.apache.commons.lang3.SerializationUtils
 
 /**
@@ -46,7 +47,7 @@ trait Preprocessing[A, B] extends Transformer[A, B] {
 //    if (this.isInstanceOf[Preprocessing[ImageFeature, ImageFeature]]) {
 //      imageSet.transform(this.asInstanceOf[Preprocessing[ImageFeature, ImageFeature]])
 //    } else {
-//      throw new IllegalArgumentException("We expect " +
+//      Log4Error.invalidOperationError(false,"We expect " +
 //        "Preprocessing[ImageFeature, ImageFeature] here")
 //    }
 //  }
@@ -57,13 +58,15 @@ def apply(imageSet: ImageSet): ImageSet = {
       bigdl.dllib.feature.transform.vision.image.ImageFeature, com.intel.analytics.bigdl.dllib.
       feature.transform.vision.image.ImageFeature] =>
         imageSet.transform(this.asInstanceOf[Preprocessing[ImageFeature, ImageFeature]])
-      case _ => throw new IllegalArgumentException("We expect " +
-        "Preprocessing[ImageFeature, ImageFeature] here")
+      case _ =>
+        Log4Error.unKnowExceptionError(false,
+          "We expect Preprocessing[ImageFeature, ImageFeature] here")
+        null
 }
 //    if (this.isInstanceOf[Preprocessing[ImageFeature, ImageFeature]]) {
 //      imageSet.transform(this.asInstanceOf[Preprocessing[ImageFeature, ImageFeature]])
 //    } else {
-//      throw new IllegalArgumentException("We expect " +
+//      Log4Error.invalidOperationError(false,"We expect " +
 //        "Preprocessing[ImageFeature, ImageFeature] here")
 //    }
   }
@@ -73,8 +76,10 @@ def apply(imageSet: ImageSet): ImageSet = {
     this match {
       case textTransformer: Preprocessing[TextFeature, TextFeature] =>
         textSet.transform(textTransformer)
-      case _ => throw new IllegalArgumentException("We expect " +
-        "Preprocessing[TextFeature, TextFeature] here")
+      case _ =>
+        Log4Error.unKnowExceptionError(false,
+          "We expect Preprocessing[TextFeature, TextFeature] here")
+        null
     }
   }
 }

@@ -275,7 +275,8 @@ object ResNet {
       model.add(View(64).setNumInputDims(3))
       model.add(Linear(64, 10))
     } else {
-      throw new IllegalArgumentException(s"Invalid dataset ${dataSet}")
+      Log4Error.invalidInputError(false, s"Invalid dataset ${dataSet}",
+        "only support DatasetType.CIFAR10 as dataset")
     }
     model
   }
@@ -410,7 +411,9 @@ object ResNet {
       val output = Linear(64, 10).inputs(view)
       Graph(input, output)
     } else {
-      throw new IllegalArgumentException(s"Invalid dataset ${dataset}")
+      Log4Error.invalidInputError(false, s"Invalid dataset ${dataSet}",
+        "only support DatasetType.CIFAR10 as dataset")
+      null
     }
     model
   }

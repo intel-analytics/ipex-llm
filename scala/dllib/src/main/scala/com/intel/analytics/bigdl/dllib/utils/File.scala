@@ -130,7 +130,7 @@ object File {
         if (overwrite) {
           fs.delete(dest, true)
         } else {
-          throw new RuntimeException(s"file $fileName already exists")
+          Log4Error.invalidInputError(false, s"file $fileName already exists")
         }
       }
       out = fs.create(dest)

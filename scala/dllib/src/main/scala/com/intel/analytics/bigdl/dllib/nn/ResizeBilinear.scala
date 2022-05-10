@@ -90,7 +90,7 @@ class ResizeBilinear[T: ClassTag](val outputHeight: Int, val outputWidth: Int,
             output.storage().array(),
             outputOffset)
         } else {
-          throw new IllegalArgumentException(
+          Log4Error.invalidOperationError(false,
             s"ResizeBilinear does not support type ${input.getType()}")
         }
 
@@ -137,7 +137,7 @@ class ResizeBilinear[T: ClassTag](val outputHeight: Int, val outputWidth: Int,
           output.storage().array(),
           output.storageOffset() - 1)
       } else {
-        throw new IllegalArgumentException(
+        Log4Error.invalidOperationError(false,
           s"ResizeBilinear does not support type ${input.getType()}")
       }
 
@@ -190,7 +190,7 @@ class ResizeBilinear[T: ClassTag](val outputHeight: Int, val outputWidth: Int,
         gradInputData, gradInputOffset,
         gradOutputData, gradOutputOffset)
     } else {
-      throw new IllegalArgumentException(
+      Log4Error.invalidOperationError(false,
         s"ResizeBilinear does not support type ${input.getType()}")
     }
 
@@ -233,7 +233,7 @@ class ResizeBilinear[T: ClassTag](val outputHeight: Int, val outputWidth: Int,
           gradInputData, inOffset,
           gradOutputData, outOffset)
       } else {
-        throw new IllegalArgumentException(
+        Log4Error.invalidOperationError(false,
           s"ResizeBilinear does not support type ${input.getType()}")
       }
       i += 1

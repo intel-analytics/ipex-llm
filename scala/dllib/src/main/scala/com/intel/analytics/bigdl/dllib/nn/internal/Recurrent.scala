@@ -45,7 +45,9 @@ abstract class Recurrent[T: ClassTag](
   }
 
   def buildCell(input: Array[Int]): Cell[T] = {
-    throw new RuntimeException("Recurrent cell haven't been implemented yet.")
+    Log4Error.invalidOperationError(false,
+      "Recurrent cell haven't been implemented yet.")
+    null
   }
 
   override def doBuild(inputShape: Shape): AbstractModule[Tensor[T], Tensor[T], T] = {

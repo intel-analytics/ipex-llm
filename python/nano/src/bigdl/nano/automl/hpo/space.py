@@ -43,16 +43,17 @@ class classproperty(object):
 
 
 class Space(object):
-    """Basic search space describing set of possible
-       candidate values for hyperparameter.
     """
+    Base search space.
+
+    Describing set of candidate values for hyperparameters.
+    """
+
     pass
 
 
 class SimpleSpace(Space):
-    """Non-nested search space
-    (i.e. corresponds to a single simple hyperparameter).
-    """
+    """Non-nested search space. (i.e. a single simple hyperparameter)."""
 
     def __repr__(self):
         reprstr = self.__class__.__name__
@@ -63,139 +64,123 @@ class SimpleSpace(Space):
         return reprstr
 
     def get_hp(self, name):
-        """Fetch particular hyperparameter based on its name.
-        """
+        """Fetch particular hyperparameter based on its name."""
         raise NotImplementedError
 
     @property
     def hp(self):
-        """ Return hyperparameter corresponding to this search space.
-        """
+        """Return hyperparameter corresponding to this search space."""
         return self.get_hp(name='')
 
     @property
     def prefix(self):
-        """Set default value for hyperparameter corresponding to
-           this search space. The default value is always tried
-           in the first trial of HPO.
-        """
+        """Set default value for hyperparameter corresponding to\
+           this search space. The default value is always tried\
+           in the first trial of HPO."""
         return self.hp.meta.setdefault('prefix', None)
 
     @prefix.setter
     def prefix(self, value):
-        """Set default value for hyperparameter corresponding to
-           this search space. The default value is always tried
-           in the first trial of HPO.
-        """
+        """Set default value for hyperparameter corresponding to\
+           this search space. The default value is always tried\
+           in the first trial of HPO."""
         self.hp.meta['prefix'] = value
 
     @property
     def default(self):
-        """Return default value of hyperparameter corresponding to
-           this search space. This value is tried first during
-           hyperparameter optimization.
-        """
+        """Return default value of hyperparameter corresponding to\
+           this search space. This value is tried first during\
+           hyperparameter optimization."""
         default = self._default if self._default else self.hp.default_value
         return default
 
     @default.setter
     def default(self, value):
-        """Set default value for hyperparameter corresponding to
-           this search space. The default value is always tried
-           in the first trial of HPO.
-        """
+        """Set default value for hyperparameter corresponding to\
+           this search space. The default value is always tried\
+           in the first trial of HPO."""
         self._default = value
 
     @property
     def rand(self):
-        """Return randomly sampled (but valid) value from this search space.
-        """
+        """Return randomly sampled (but valid) value from this search space."""
         cs = CS.ConfigurationSpace()
         cs.add_hyperparameter(self.hp)
         return cs.sample_configuration().get_dictionary()['']
 
 
 class NestedSpace(Space):
-    """Nested hyperparameter search space, which is a search space that
-       itself contains multiple search spaces.
-    """
+    """Nested hyperparameter search space, which is a search space that\
+       itself contains multiple search spaces."""
 
     def sample(self, **config):
-        """Sample a configuration from this search space.
-        """
+        """Sample a configuration from this search space."""
         pass
 
     @property
     def cs(self):
-        """ ConfigSpace representation of this search space.
-        """
+        """`ConfigSpace` representation of this search space."""
         raise NotImplementedError
 
     @property
     def prefix(self):
-        """Set default value for hyperparameter corresponding to
-           this search space. The default value is always tried
-           in the first trial of HPO.
-        """
+        """Set default value for hyperparameter corresponding to\
+           this search space. The default value is always tried\
+           in the first trial of HPO."""
         return self.cs.meta.setdefault('prefix', None)
 
     @prefix.setter
     def prefix(self, value):
-        """Set default value for hyperparameter corresponding to
-           this search space. The default value is always tried
-           in the first trial of HPO.
-        """
+        """Set default value for hyperparameter corresponding to\
+           this search space. The default value is always tried\
+           in the first trial of HPO."""
         self.cs.meta['prefix'] = value
 
     @property
     def kwspaces(self):
-        """ OrderedDict representation of this search space.
-        """
+        """`OrderedDict` representation of this search space."""
         raise NotImplementedError
 
     @property
     def default(self):
-        """Return default value for hyperparameter corresponding to
-           this search space. The default value is always tried
-           in the first trial of HPO.
-        """
+        """Return default value for hyperparameter corresponding to\
+           this search space. The default value is always tried\
+           in the first trial of HPO."""
         config = self.cs.get_default_configuration().get_dictionary()
         return self.sample(**config)
 
     @property
     def rand(self):
-        """Randomly sample configuration from this nested search space.
-        """
+        """Randomly sample configuration from this nested search space."""
         config = self.cs.sample_configuration().get_dictionary()
         return self.sample(**config)
 
 
 class AutoObject(NestedSpace):
-    r"""Searchable objects,
-    created by decorating a custom Python class or function using the
-    :func:`hpo.obj` or :func:`hpo.func` decorators.
+    """
+    Searchable objects.
+
+    Created by decorating a custom Python class or function using the
+    `hpo.obj` or `hpo.func` decorators.
     """
 
     def __call__(self, *args, **kwargs):
-        """Convenience method for interacting with AutoObject.
-        """
+        """Convenience method for interacting with AutoObject."""
         if not self._inited:
             self._inited = True
             self._instance = self.init()
         return self._instance.__call__(*args, **kwargs)
 
     def init(self):
-        """Instantiate an actual instance of this `AutoObject`.
-            In order to interact with such an `object`,
-            you must always first call: `object.init()`.
-        """
+        """Instantiate an actual instance of this `AutoObject`.\
+            In order to interact with such an `object`,\
+            you must always first call: `object.init()`."""
         config = self.cs.get_default_configuration().get_dictionary()
         return self.sample(**config)
 
     @property
     def cs(self):
-        """ ConfigSpace representation of this search space.
-        """
+        """`ConfigSpace` representation of this search space."""
         cs = CS.ConfigurationSpace()
         for k, v in self.kwvars.items():
             if isinstance(v, NestedSpace):
@@ -209,8 +194,7 @@ class AutoObject(NestedSpace):
 
     @property
     def kwspaces(self):
-        """ OrderedDict representation of this search space.
-        """
+        """`OrderedDict` representation of this search space."""
         raise NotImplementedError
 
     # @classproperty
@@ -220,8 +204,7 @@ class AutoObject(NestedSpace):
     #     return cls.__init__.kwspaces
 
     def sample(self):
-        """Sample a configuration from this search space.
-        """
+        """Sample a configuration from this search space."""
         raise NotImplementedError
 
     def __repr__(self):
@@ -229,25 +212,24 @@ class AutoObject(NestedSpace):
 
 
 class List(NestedSpace):
-    r"""Nested search space corresponding to
-        an ordered list of hyperparameters.
+    """
+    Examples.
 
-    Parameters
-    ----------
-
-    args : list
-        a list of search spaces.
-
-    Examples
-    --------
-    >>> sequence = space.List(
-    >>>     space.space.Categorical('conv3x3', 'conv5x5', 'conv7x7'),
-    >>>     space.space.Categorical('BatchNorm', 'InstanceNorm'),
-    >>>     space.space.Categorical('relu', 'sigmoid'),
-    >>> )
+    ---------
+        >>> sequence = space.List(
+        >>>     space.space.Categorical('conv3x3', 'conv5x5', 'conv7x7'),
+        >>>     space.space.Categorical('BatchNorm', 'InstanceNorm'),
+        >>>     space.space.Categorical('relu', 'sigmoid'),
+        >>> )
     """
 
     def __init__(self, *args):
+        """
+        Nested search space corresponding to an ordered list of hyperparameters.
+
+        :param args: a list of search spaces.
+            e.g.space.List(space.Int(1,2), space.Int(4,5),...)
+        """
         self.data = [*args]
 
     def __iter__(self):
@@ -280,8 +262,7 @@ class List(NestedSpace):
         return x
 
     def sample(self, **config):
-        """Sample a configuration from this search space.
-        """
+        """Sample a configuration from this search space."""
         ret = []
         kwspaces = self.kwspaces
         striped_keys = [k.split(SPLITTER)[0] for k in config.keys()]
@@ -297,8 +278,7 @@ class List(NestedSpace):
 
     @property
     def cs(self):
-        """ ConfigSpace representation of this search space.
-        """
+        """`ConfigSpace` representation of this search space."""
         cs = CS.ConfigurationSpace()
         for k, v in enumerate(self.data):
             if isinstance(v, NestedSpace):
@@ -310,8 +290,7 @@ class List(NestedSpace):
 
     @property
     def kwspaces(self):
-        """ OrderedDict representation of this search space.
-        """
+        """`OrderedDict` representation of this search space."""
         kw_spaces = OrderedDict()
         for idx, obj in enumerate(self.data):
             k = str(idx)
@@ -330,18 +309,23 @@ class List(NestedSpace):
 
 
 class Dict(NestedSpace):
-    """Nested search space for dictionary containing multiple hyperparameters.
+    """
+    Examples.
 
-    Examples
-    --------
-    >>> g = space.Dict(
-    >>>         hyperparam1 = space.Categorical('alpha', 'beta'),
-    >>>         hyperparam2 = space.Int(0, 3)
-    >>>     )
-    >>> print(g)
+        >>> g = space.Dict(
+        >>>         hyperparam1 = space.Categorical('alpha', 'beta'),
+        >>>         hyperparam2 = space.Int(0, 3)
+        >>>     )
+        >>> print(g)
     """
 
     def __init__(self, **kwargs):
+        """
+        Nested search space for dictionary containing multiple hyperparameters.
+
+        :param kwargs: specify key and space values in form of keywork arguments.
+            e.g.space.Dict(hp1=space.Int(1,2), hp2=space.Int(4,5))
+        """
         self.data = EasyDict(kwargs)
 
     def __getattribute__(self, s):
@@ -368,8 +352,7 @@ class Dict(NestedSpace):
 
     @property
     def cs(self):
-        """ ConfigSpace representation of this search space.
-        """
+        """`ConfigSpace` representation of this search space."""
         cs = CS.ConfigurationSpace()
         for k, v in self.data.items():
             if isinstance(v, NestedSpace):
@@ -381,8 +364,7 @@ class Dict(NestedSpace):
 
     @property
     def kwspaces(self):
-        """ OrderedDict representation of this search space.
-        """
+        """`OrderedDict` representation of this search space."""
         kw_spaces = OrderedDict()
         for k, obj in self.data.items():
             if isinstance(obj, NestedSpace):
@@ -396,8 +378,7 @@ class Dict(NestedSpace):
         return kw_spaces
 
     def sample(self, **config):
-        """Sample a configuration from this search space.
-        """
+        """Sample a configuration from this search space."""
         ret = {}
         ret.update(self.data)
         kwspaces = self.kwspaces
@@ -418,24 +399,28 @@ class Dict(NestedSpace):
 
 
 class Categorical(NestedSpace):
-    """Nested search space for hyperparameters which are categorical.
-       Such a hyperparameter takes one value out of the discrete set
-       of provided options. The first value in the list of options
-       will be the default value that gets tried first during HPO.
+    """
+    Examples.
 
-    Parameters
-    ----------
-    data : Space or python built-in objects
-        the choice candidates
-
-    Examples
-    --------
-    a = space.Categorical('a', 'b', 'c', 'd')  # 'a' will be default value
-    tried first during HPO
-    b = space.Categorical('resnet50', AutoObj())
+        >>> a = space.Categorical('a', 'b', 'c', 'd')
+        >>> b = space.Categorical('resnet50', AutoObj())
     """
 
     def __init__(self, *data, prefix=None):
+        """
+        Nested search space for hyperparameters which are categorical.
+
+        Such a hyperparameter takes one value out of the discrete set
+        of provided options. The first value in the list of options
+        will be the default value that gets tried first during HPO.
+
+        param: data : search space or python built-in objects.
+            The first value will be the default value tried first during HPO.
+            e.g.space.Dict(hp1=space.Int(1,2), hp2=space.Int(4,5))
+        param: prefix: string (optional). This is useful for distinguishing
+            the same hyperparameter in the same layer when a layer is
+            used more than once in the model. Defaults to None.
+        """
         self.data = [*data]
         self._prefix = prefix
 
@@ -454,8 +439,7 @@ class Categorical(NestedSpace):
 
     @property
     def cs(self):
-        """ ConfigSpace representation of this search space.
-        """
+        """`ConfigSpace` representation of this search space."""
         cs = CS.ConfigurationSpace(meta={'prefix': self._prefix})
         if len(self.data) == 0:
             return CS.ConfigurationSpace(meta={'prefix': self._prefix})
@@ -469,8 +453,7 @@ class Categorical(NestedSpace):
         return cs
 
     def sample(self, **config):
-        """Sample a configuration from this search space.
-        """
+        """Sample a configuration from this search space."""
         choice = config.pop('choice')
         if isinstance(self.data[choice], NestedSpace):
             # nested space: Categorical of AutoObjects
@@ -481,8 +464,7 @@ class Categorical(NestedSpace):
 
     @property
     def kwspaces(self):
-        """OrderedDict representation of this search space.
-        """
+        """`OrderedDict` representation of this search space."""
         kw_spaces = OrderedDict()
         for idx, obj in enumerate(self.data):
             if isinstance(obj, NestedSpace):
@@ -497,29 +479,32 @@ class Categorical(NestedSpace):
 
 
 class Real(SimpleSpace):
-    """Search space for numeric hyperparameter that takes continuous values.
+    """
+    Examples.
 
-    Parameters
-    ----------
-    lower : float
-        The lower bound of the search space
-        (minimum possible value of hyperparameter)
-    upper : float
-        The upper bound of the search space
-        (maximum possible value of hyperparameter)
-    default : float (optional)
-        Default value tried first during hyperparameter optimization
-    log : (True/False)
-        Whether to search the values on a logarithmic rather than linear scale.
-        This is useful for numeric hyperparameters (such as learning rates)
-        whose search space spans many orders of magnitude.
-
-    Examples
-    --------
-    >>> learning_rate = space.Real(0.01, 0.1, log=True)
+        >>> learning_rate = space.Real(0.01, 0.1, log=True)
     """
 
     def __init__(self, lower, upper, default=None, log=False, prefix=None):
+        """
+        Search space for numeric hyperparameter that takes continuous values.
+
+        Example: space.Real(0.01, 0.1, log=True)
+
+        :param lower: a float. The lower bound of the search space
+            (minimum possible value of hyperparameter)
+        :param upper: a float. The upper bound of the search space
+            (maximum possible value of hyperparameter)
+        :param default: a float (optional)
+            Default value tried first during hyperparameter optimization
+        :param log: boolean (optional). whether to search the values on
+            a logarithmic rather than linear scale. This is useful for
+            numeric hyperparameters (such as learning rates) whose
+            search space spans many orders of magnitude.
+        :param prefix: string (optional). This is useful for distinguishing
+            the same hyperparameter in the same layer when a layer is
+            used more than once in the model. Defaults to None.
+        """
         self.lower = lower
         self.upper = upper
         self.log = log
@@ -527,7 +512,7 @@ class Real(SimpleSpace):
         self._prefix = prefix
 
     def get_hp(self, name):
-
+        """Fetch particular hyperparameter based on its name."""
         return CSH.UniformFloatHyperparameter(
             name=name,
             lower=self.lower,
@@ -538,32 +523,33 @@ class Real(SimpleSpace):
 
 
 class Int(SimpleSpace):
-    """Search space for numeric hyperparameter that takes integer values.
+    """
+    Examples.
 
-    Parameters
-    ----------
-    lower : int
-        The lower bound of the search space
-        (minimum possible value of hyperparameter)
-    upper : int
-        The upper bound of the search space
-        (maximum possible value of hyperparameter)
-    default : int (optional)
-        Default value tried first during hyperparameter optimization
-
-
-    Examples
-    --------
-    >>> range = space.Int(0, 100)
+        >>> range = space.Int(0, 100)
     """
 
     def __init__(self, lower, upper, default=None, prefix=None):
+        """
+        Search space for numeric hyperparameter that takes integer values.
+
+        :param lower: int. The lower bound of the search space
+            (minimum possible value of hyperparameter)
+        :param upper: int. The upper bound of the search space
+            (maximum possible value of hyperparameter)
+        :param default: int (optional) Default value tried first time
+            during hyperparameter optimization
+        :param prefix: string (optional). This is useful for distinguishing
+            the same hyperparameter in the same layer when a layer is
+            used more than once in the model. Defaults to None.
+        """
         self.lower = lower
         self.upper = upper
         self._default = default
         self._prefix = prefix
 
     def get_hp(self, name):
+        """Fetch particular hyperparameter based on its name."""
         return CSH.UniformIntegerHyperparameter(
             name=name,
             lower=self.lower,
@@ -573,15 +559,18 @@ class Int(SimpleSpace):
 
 
 class Bool(Int):
-    """Search space for hyperparameter that is either True or False.
-       `space.Bool()` serves as shorthand for: `space.Categorical(True, False)`
+    """
+    Examples.
 
-    Examples
-    --------
-    pretrained = space.Bool()
+        >>> pretrained = space.Bool()
     """
 
     def __init__(self):
+        """
+        Search space for hyperparameter that is either True or False.
+
+        `space.Bool()` serves as shorthand for: `space.Categorical(True, False)`
+        """
         super(Bool, self).__init__(0, 1)
 
 

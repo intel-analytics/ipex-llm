@@ -544,7 +544,8 @@ class TensorTree[T: ClassTag](val content: Tensor[T])
       }
     }
 
-    throw new RuntimeException("There is no root in the tensor tree")
+    Log4Error.unKnowExceptionError(false, "There is no root in the tensor tree")
+    0
   }
 
   def markAsLeaf(index: Int, leafIndex: Int): Unit = {

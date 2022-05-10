@@ -217,10 +217,10 @@ def str_to_list(arg, arg_name):
 
 
 def featuretable_to_xshards(tbl, convert_cols=None):
-    from bigdl.orca.learn.utils import _dataframe_to_xshards_of_feature_dict
+    from bigdl.orca.learn.utils import dataframe_to_xshards_of_feature_dict
     # TODO: partition < node num
     if convert_cols is None:
         convert_cols = tbl.columns
     if convert_cols and not isinstance(convert_cols, list):
         convert_cols = [convert_cols]
-    return _dataframe_to_xshards_of_feature_dict(tbl.df, convert_cols, accept_str_col=True)
+    return dataframe_to_xshards_of_feature_dict(tbl.df, convert_cols, accept_str_col=True)

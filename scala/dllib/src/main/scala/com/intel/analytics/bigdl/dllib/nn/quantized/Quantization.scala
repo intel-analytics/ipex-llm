@@ -129,7 +129,9 @@ object Quantization {
         val end = start + length
         val (max, min) = quantize(input.storage().array(), start, end, buffer, offset, size)
         (max, min)
-      case _ => throw new UnsupportedOperationException(s"unsupported input")
+      case _ =>
+        Log4Error.invalidOperationError(false, s"unsupported input dim ${input.dim()}")
+        null
     }
   }
 
@@ -144,9 +146,8 @@ object Quantization {
       case x if x > 1 =>
         dequantize(input.storage().array(), start, end, buffer,
           offset, max, min, get2Dim(input.size()))
-      case _ => throw new UnsupportedOperationException {
-        s"unsupported input dim ${input.dim()}"
-      }
+      case _ =>
+        Log4Error.invalidOperationError(false, s"unsupported input dim ${input.dim()}")
     }
   }
 

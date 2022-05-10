@@ -23,8 +23,7 @@ import com.intel.analytics.bigdl.dllib.nn.{Module => _, _}
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.dllib.feature.transform.vision.image.util.BboxUtil
-import com.intel.analytics.bigdl.dllib.utils.Table
-import com.intel.analytics.bigdl.dllib.utils.Shape
+import com.intel.analytics.bigdl.dllib.utils.{Log4Error, Shape, Table}
 import DetectionOutputSSD.logger
 import org.apache.logging.log4j.LogManager
 
@@ -281,7 +280,10 @@ class DetectionOutputSSD[T: ClassTag](val nClasses: Int = 21,
     if (isTraining()) {
       return inputShape
     }
-    throw new RuntimeException("Not support computeOutputShape for DetectionOutputSSD Inference")
+    Log4Error.invalidOperationError(false,
+      "Not support computeOutputShape for DetectionOutputSSD Inference")
+
+    null
   }
 }
 

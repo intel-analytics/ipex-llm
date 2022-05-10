@@ -396,7 +396,7 @@ class TextSet(JavaValue):
         elif isinstance(relations, list):
             relations = [relation.to_tuple() for relation in relations]
         else:
-            raise TypeError("relations should be RDD or list of Relation")
+            invalidInputError(False, "relations should be RDD or list of Relation")
         jvalue = callZooFunc(bigdl_type, "textSetFromRelationPairs", relations, corpus1, corpus2)
         return TextSet(jvalue=jvalue)
 
@@ -430,7 +430,7 @@ class TextSet(JavaValue):
         elif isinstance(relations, list):
             relations = [relation.to_tuple() for relation in relations]
         else:
-            raise TypeError("relations should be RDD or list of Relation")
+            invalidInputError(False, "relations should be RDD or list of Relation")
         jvalue = callZooFunc(bigdl_type, "textSetFromRelationLists", relations, corpus1, corpus2)
         return TextSet(jvalue=jvalue)
 

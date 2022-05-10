@@ -110,7 +110,9 @@ class BinaryThreshold[T: ClassTag](
             })
             t += 1
           }
-        case _ => throw new UnsupportedOperationException(s"Only Float/Double supported")
+        case _ =>
+          Log4Error.invalidInputError(false, s"got unexpected type ${ev.getType()}",
+            s"Only Float/Double supported")
       }
       input
     }
@@ -170,7 +172,9 @@ class BinaryThreshold[T: ClassTag](
             })
             t += 1
           }
-        case _ => throw new UnsupportedOperationException(s"Only Float/Double supported")
+        case _ =>
+          Log4Error.invalidInputError(false, s"got unexpected type ${ev.getType()}",
+            s"Only Float/Double supported")
       }
     }
     Engine.model.sync(results)
@@ -188,7 +192,8 @@ class BinaryThreshold[T: ClassTag](
           gradInput.asInstanceOf[Tensor[Float]].map(input.asInstanceOf[Tensor[Float]], (g, i) =>
             if (i <= threshold) 0 else g)
         case _ =>
-          throw new UnsupportedOperationException(s"Only Float/Double supported")
+          Log4Error.invalidInputError(false, s"got unexpected type ${ev.getType()}",
+            s"Only Float/Double supported")
       }
     }
     else {
@@ -201,7 +206,9 @@ class BinaryThreshold[T: ClassTag](
         case FloatType =>
           gradInput.asInstanceOf[Tensor[Float]].map(input.asInstanceOf[Tensor[Float]], (g, i) =>
             if (i > threshold) g else 0)
-        case _ => throw new UnsupportedOperationException(s"Only Float/Double supported")
+        case _ =>
+          Log4Error.invalidInputError(false, s"got unexpected type ${ev.getType()}",
+            s"Only Float/Double supported")
       }
     }
     gradInput
@@ -289,7 +296,9 @@ class BinaryThreshold[T: ClassTag](
             })
             t += 1
           }
-        case _ => throw new UnsupportedOperationException(s"Only Float/Double supported")
+        case _ =>
+          Log4Error.invalidInputError(false, s"got unexpected type ${ev.getType()}",
+            s"Only Float/Double supported")
       }
     }
     else {
@@ -348,7 +357,9 @@ class BinaryThreshold[T: ClassTag](
             })
             t += 1
           }
-        case _ => throw new UnsupportedOperationException(s"Only Float/Double supported")
+        case _ =>
+          Log4Error.invalidInputError(false, s"got unexpected type ${ev.getType()}",
+            s"Only Float/Double supported")
       }
     }
 

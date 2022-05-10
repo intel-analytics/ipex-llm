@@ -74,9 +74,9 @@ class TestDataloader(TestCase):
 
         (x1, x2), (y1, y2) = next(iter(loader))
         assert isinstance(x1, torch.Tensor) and isinstance(x2, torch.Tensor) \
-               and isinstance(y1, torch.Tensor) and isinstance(y2, torch.Tensor)
+            and isinstance(y1, torch.Tensor) and isinstance(y2, torch.Tensor)
 
-        trainer.quantize(model, loader)
+        trainer.quantize(model, calib_dataloader=loader)
 
     def test_illegal_data_format(self):
         # illegal dataloader: torch.Tensor, torch.Tensor, torch.Tensor, torch.Tensor
@@ -84,10 +84,9 @@ class TestDataloader(TestCase):
         dataloader = DataLoader(dataset, batch_size=5)
         trainer = Trainer()
         model = ModelWithMultipleInputs()
-        model = trainer.compile(model)
 
         with pytest.raises(ValueError, match="Dataloader for quantization should yield data *"):
-            trainer.quantize(model, dataloader)
+            trainer.quantize(model, calib_dataloader=dataloader)
 
 
 if __name__ == '__main__':

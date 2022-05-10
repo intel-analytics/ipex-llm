@@ -69,7 +69,8 @@ class GaussianDropout[T: ClassTag](
       noise.randn(1.0, stddev)
       this.gradInput.cmul(noise)
     } else {
-      throw new IllegalArgumentException("backprop only defined while training")
+      Log4Error.invalidOperationError(false,
+        "GaussianDropout: backprop only defined while training")
     }
     this.gradInput
   }

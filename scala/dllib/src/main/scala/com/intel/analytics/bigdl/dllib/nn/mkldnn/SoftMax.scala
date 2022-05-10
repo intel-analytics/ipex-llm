@@ -22,7 +22,7 @@ import com.intel.analytics.bigdl.dllib.nn.abstractnn.Activity
 import com.intel.analytics.bigdl.dllib.nn.mkldnn.Phase.{InferencePhase, TrainingPhase}
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.dllib.tensor.{DenseType, Tensor}
-import com.intel.analytics.bigdl.dllib.utils.Shape
+import com.intel.analytics.bigdl.dllib.utils.{Log4Error, Shape}
 
 import scala.collection.mutable.ArrayBuffer
 
@@ -49,7 +49,10 @@ class SoftMax(val axis: Int = -1) extends MklDnnLayer {
     shape.length match {
       case 2 => Memory.Format.nc
       case 4 => Memory.Format.nchw
-      case _ => throw new UnsupportedOperationException(s"${getName()} unsupported input shape")
+      case _ =>
+        Log4Error.invalidInputError(false, s"${getName()} unsupported input shape ${shape}",
+        "only support shape with length 2, 4")
+        0
     }
   }
 
@@ -60,7 +63,10 @@ class SoftMax(val axis: Int = -1) extends MklDnnLayer {
       case 2 => 1
       case 3 => 0
       case 4 => 1
-      case _ => throw new UnsupportedOperationException("1D, 2D, 3D or 4D tensor expected")
+      case _ =>
+        Log4Error.invalidInputError(false, s"unexpected shape ${inputs(0).shape}",
+          "1D, 2D, 3D or 4D tensor expected")
+        0
     }
 
     _inputFormats = Array(NativeData(inputs(0).shape, inputs(0).layout, DataType.F32))

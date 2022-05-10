@@ -124,8 +124,10 @@ object Convolution2D {
     val initValue = KerasUtils.getInitMethod(init)
     val activationValue = KerasUtils.getKerasActivation(activation)
     val subsampleArray = subsample match {
-      case null => throw new IllegalArgumentException("For Convolution2D, " +
-        "subsample can not be null, please input int tuple of length 2")
+      case null =>
+        Log4Error.invalidInputError(false, "For Convolution2D, " +
+          "subsample can not be null, please input int tuple of length 2")
+        null
       case _ => Array(subsample._1, subsample._2)
     }
     val dimOrderingValue = KerasUtils.toBigDLFormat(dimOrdering)

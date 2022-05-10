@@ -86,5 +86,5 @@ def test_fit_function():
     model_multiprocess = model_init(num_classes)
     history_multiprocess = model_multiprocess.fit(train_ds, epochs=1,
                                                   validation_data=val_ds,
-                                                  nprocs=1, backend="ray")
+                                                  num_processes=1, backend="ray")
 

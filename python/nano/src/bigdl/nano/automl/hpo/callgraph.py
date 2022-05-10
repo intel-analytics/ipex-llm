@@ -16,37 +16,52 @@
 
 
 from .space import AutoObject
-from .backend import OptunaBackend
 from enum import Enum
 
 
 class CALLTYPE(Enum):
+    """Type of Function Calls."""
+
     LAYER_CALL = 1  # e.g. all keras layers such as Conv2D, etc.
     FUNC_CALL = 2  # such as keras.Input
     FUNC_SLICE = 3  # slices on output of a func, e.g. keras.Input(...)[:,:,]
 
 
 class CallCache(object):
-    """A data structure to cache the sequence of functional calls.
     """
+    A data structure to cache the sequence of functional calls.
+
+    Each autoobject contains a callcache object. The call sequences will
+    be gradually passed down to the last function call.
+    Internally, it containes a callqueue which collects the function calls in\
+    order and a tensors table which is used to collect the resulting\
+    tensors from function execution.
+    """
+
     def __init__(self):
+        """Create a Call Cache."""
         self.callqueue_ = []
         self.tensors_ = dict()
         self.skip = False
 
     def update_tensors(self, other):
+        """Merge the tensortable from another CallCache."""
         self.tensors_.update(other.tensors_)
 
     def update_calls(self, other):
+        """Merge the callqueues from another CallCache."""
         self.callqueue_ += other.callqueue_
 
     def append_call(self, caller, arguments, type):
+        """Add one function call into the call queue."""
         self.callqueue_.append((type, caller, arguments))
 
     def add_tensor(self, node, tensor):
+        """Update the resulting tensor a layer call execution."""
         self.tensors_[node] = tensor
 
     def get_tensor(self, n):
+        """Get the resulting tensor of a layer call execution."""
         if isinstance(n, list):
             return [self.tensors_.get(one_n, None) for one_n in n]
         else:
@@ -54,18 +69,30 @@ class CallCache(object):
 
     @property
     def calls(self):
+        """Get all the call queue."""
         return self.callqueue_
 
     @staticmethod
     def create():
+        """Create a call Cache."""
         cache = CallCache()
         return cache
 
     @staticmethod
     def update(arguments, current, ctype=CALLTYPE.LAYER_CALL):
-        def update_cache_from_input(cache, inp):
-            '''loop over all arguments to find any autoobjects
-            in input and merge down the callcache'''
+        """
+        Update the current autoobject's callcache from its input arguments.
+
+        If the argument is also an autoobject, merge the callcache of
+        the argument into current autoobject's callcache.
+
+        :param arguments: input arguments of current layers
+        :param current: the current autoobject
+        :param ctype: the type of current call. Defaults to CALLTYPE.LAYER_CALL
+        """
+        def _update_cache_from_input(cache, inp):
+            """Loop over all arguments to find any autoobjects\
+            in input and merge down the callcache."""
             if isinstance(inp, AutoObject):
                 assert(inp._callgraph is not None)
                 input_callgraph = inp._callgraph
@@ -76,10 +103,10 @@ class CallCache(object):
                     input_callgraph.skip = True
             elif isinstance(inp, list) or isinstance(inp, tuple):
                 for item in inp:
-                    update_cache_from_input(cache, item)
+                    _update_cache_from_input(cache, item)
             elif isinstance(inp, dict):
                 for _, item in inp.items():
-                    update_cache_from_input(cache, item)
+                    _update_cache_from_input(cache, item)
             else:
                 # ignore other arguments
                 pass
@@ -88,11 +115,11 @@ class CallCache(object):
 
         if ctype == CALLTYPE.LAYER_CALL or ctype == CALLTYPE.FUNC_CALL:
 
-            update_cache_from_input(cur_cache, arguments)
+            _update_cache_from_input(cur_cache, arguments)
             cur_cache.append_call(current, arguments, ctype)
         elif ctype == CALLTYPE.FUNC_SLICE:
             (source, slice_args) = arguments
-            update_cache_from_input(cur_cache, source)
+            _update_cache_from_input(cur_cache, source)
             cur_cache.append_call(current,
                                   arguments,
                                   CALLTYPE.FUNC_SLICE)
@@ -102,7 +129,15 @@ class CallCache(object):
         return cur_cache
 
     @staticmethod
-    def execute(inputs, outputs, trial):
+    def execute(inputs, outputs, trial, backend):
+        """
+        Execute the function calls and construct the tensor graph.
+
+        :param inputs: model input
+        :param outputs: model outputs
+        :param trial: the current trial which provides the sampled
+            hyperparameters.
+        """
         def _replace_autoobj(n, cache):
             if isinstance(n, AutoObject):
                 new_n = cache.get_tensor(n)
@@ -137,7 +172,7 @@ class CallCache(object):
                     arguments, out_cache)
                 # layer is an auto object
                 assert(isinstance(caller, AutoObject))
-                instance = OptunaBackend.instantiate(trial, caller)
+                instance = backend.instantiate(trial, caller)
                 # the actual excution of the functional API
                 out_tensor = instance(new_arguments)
             elif call_type == CALLTYPE.FUNC_SLICE:
@@ -147,7 +182,7 @@ class CallCache(object):
                 # the actual excution of the functional API
                 out_tensor = source_tensor.__getitem__(*slice_args, **slice_kwargs)
             elif call_type == CALLTYPE.FUNC_CALL:
-                # out_tensor = OptunaBackend.instantiate(trial, caller)
+                # out_tensor = backend.instantiate(trial, caller)
                 new_arguments = _process_arguments(
                     arguments, out_cache)
                 assert(isinstance(caller, AutoObject))
@@ -155,7 +190,7 @@ class CallCache(object):
                 # replace only the non-kwargs with new_arguments
                 # TODO revisit to validate the parent tensors in kwargs
                 caller.args, caller.kwargs = new_arguments
-                out_tensor = OptunaBackend.instantiate(trial, caller)
+                out_tensor = backend.instantiate(trial, caller)
             else:
                 raise ValueError("Unexpected CallType: %s" % type)
             out_cache.add_tensor(caller, out_tensor)
@@ -170,6 +205,7 @@ class CallCache(object):
         return (in_tensors, out_tensors)
 
     def plot(self, save_path=None):
+        """Dump the call cache for debugging purpose."""
         print("dumping call cache...............start")
         print("===============dumpping call queue============")
         for call in self.callqueue_:

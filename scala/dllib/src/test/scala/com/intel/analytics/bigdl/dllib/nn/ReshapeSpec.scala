@@ -53,11 +53,11 @@ class ReshapeSpec extends FlatSpec {
       TestUtils.conditionFailTest(gradOutput == gradOutputOrg)
     }
 
-    intercept[IllegalArgumentException] {
+    intercept[com.intel.analytics.bigdl.dllib.utils.InvalidOperationException] {
       module.forward(Tensor[Double](2, 2))
     }
 
-    intercept[IllegalArgumentException] {
+    intercept[com.intel.analytics.bigdl.dllib.utils.InvalidOperationException] {
       module.forward(Tensor[Double](3, 2, 2))
     }
   }
@@ -140,7 +140,7 @@ class ReshapeSpec extends FlatSpec {
       TestUtils.conditionFailTest(gradOutput == gradOutputOrg)
     }
 
-    intercept[IllegalArgumentException] {
+    intercept[com.intel.analytics.bigdl.dllib.utils.InvalidOperationException] {
       module.forward(Tensor[Double](3, 2))
     }
   }

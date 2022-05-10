@@ -115,8 +115,9 @@ class TimeDistributedMaskCriterion[T : ClassTag](
           ev.times(cells(t).output, sumBuffer(Array(1, t + 1)))
         case SizeAverageStatus.False => cells(t).output
         case SizeAverageStatus.None =>
-          throw new RuntimeException("Using TimeDistributedMaskCriterion," +
+          Log4Error.invalidInputError(false, "Using TimeDistributedMaskCriterion," +
             " the embedded criterion should be set to True or False")
+          ev.fromType(0)
       }
       sum = ev.plus(sum, loss)
     })
@@ -153,8 +154,9 @@ class TimeDistributedMaskCriterion[T : ClassTag](
                 sumBuffer(Array(1, _i)))
             case SizeAverageStatus.False => _iGradInput
             case SizeAverageStatus.None =>
-              throw new RuntimeException("Using TimeDistributedMaskCriterion," +
+              Log4Error.invalidInputError(false, "Using TimeDistributedMaskCriterion," +
                 " the embedded criterion should be set to True or False")
+              null
           })
       })
       i += 1

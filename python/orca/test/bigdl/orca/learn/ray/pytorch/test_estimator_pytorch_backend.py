@@ -204,10 +204,10 @@ class TestPyTorchEstimator(TestCase):
         estimator.shutdown()
 
     def test_spark_xshards(self):
-        from bigdl.dllib.nncontext import init_nncontext
+        from bigdl.orca import init_orca_context
         from bigdl.orca.data import SparkXShards
         estimator = get_estimator(workers_per_node=1)
-        sc = init_nncontext()
+        sc = init_orca_context(cores="*")
         x_rdd = sc.parallelize(np.random.rand(4000, 1, 50).astype(np.float32))
         # torch 1.7.1+ requires target size same as output size, which is (batch, 1)
         y_rdd = sc.parallelize(np.random.randint(0, 2, size=(4000, 1, 1)).astype(np.float32))

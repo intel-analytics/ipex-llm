@@ -340,7 +340,8 @@ object BGRImage {
       case ex: Exception =>
 //        ex.printStackTrace()
 //        System.err.println("Can't read file " + path)
-        throw ex
+        Log4Error.unKnowExceptionError(false, s"Can't read file $path", cause = ex)
+        null
     } finally {
       if (fis != null) {
         fis.close()

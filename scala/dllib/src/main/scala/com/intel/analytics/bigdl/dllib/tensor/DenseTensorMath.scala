@@ -317,8 +317,10 @@ object DenseTensorMath {
       addmm[T](result, ev.fromType[Int](0), result, ev.fromType[Int](1), self, t)
       result
     } else {
-      throw new UnsupportedOperationException(s"multiplication between ${self.nDimension()}D and " +
+      Log4Error.unKnowExceptionError(false,
+        s"multiplication between ${self.nDimension()}D and " +
         s"${t.nDimension()}D not yet supported")
+      null
     }
   }
 

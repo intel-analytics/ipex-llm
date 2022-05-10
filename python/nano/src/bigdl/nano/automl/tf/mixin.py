@@ -17,7 +17,7 @@
 import copy
 
 from .objective import Objective
-from bigdl.nano.automl.hpo.backend import OptunaBackend
+from bigdl.nano.automl.hpo.backend import create_hpo_backend
 from bigdl.nano.automl.hpo.search import (
     _search_summary,
     _end_search,
@@ -29,13 +29,14 @@ from bigdl.nano.automl.hpo.search import (
 
 
 class HPOMixin:
-    """HPOMixin is used to add hpo related search methods onto
-        tf.keras.Sequential, tf.keras.Model, as well as custom
-        model subclassing from tf.keras.Model.
-
-    Returns:
-        _type_: _description_
     """
+    A Minin object to add hpo related methods to models.
+
+    It is used to add hpo related search methods onto
+    tf.keras.Sequential, tf.keras.Model, as well as custom
+        model subclassing from tf.keras.Model.
+    """
+
     # argument keys for search, fit, tune creation, tune run.
     FIT_KEYS = {
         'x', 'y',
@@ -63,11 +64,13 @@ class HPOMixin:
                        'get_layer']
 
     def __init__(self, *args, **kwargs):
+        """Init the Mixin."""
         super().__init__(*args, **kwargs)
         self.objective = None
         self.study = None
         self.tune_end = False
         self._lazymodel = None
+        self.backend = create_hpo_backend()
 
     def _fix_target_metric(self, target_metric, fit_kwargs):
         compile_metrics = self.compile_kwargs.get('metrics', None)
@@ -109,14 +112,16 @@ class HPOMixin:
         target_metric=None,
         **kwargs
     ):
-        """ Do the hyper param tuning.
+        """
+        Do the hyper param search.
 
-        Args:
-            n_trails (int, optional): number of trials to run. Defaults to 1.
-            resume (bool, optional): whether to resume the previous tuning. Defaults to False.
-            target_metric (str, optional): the target metric to optimize. Defaults to "accuracy".
-            direction (str, optional): optimize direction. Defaults to "maximize".
-            pruning (bool, optional): whether to use pruning
+        :param resume: bool, optional. whether to resume the previous tuning.
+            Defaults to False.
+        :param target_metric: str, optional. the target metric to optimize.
+            Defaults to "accuracy".
+        :param kwargs: model.fit arguments (e.g. batch_size, validation_data, etc.)
+            and search backend arguments (e.g. n_trials, pruner, etc.)
+            are allowed in kwargs.
         """
         _check_search_args(search_args=kwargs,
                            legal_keys=[HPOMixin.FIT_KEYS,
@@ -155,20 +160,20 @@ class HPOMixin:
             sampler_type = study_create_kwargs.get('sampler', None)
             if sampler_type:
                 sampler_args = study_create_kwargs.get('sampler_kwargs', {})
-                sampler = OptunaBackend.create_sampler(sampler_type, sampler_args)
+                sampler = self.backend.create_sampler(sampler_type, sampler_args)
                 study_create_kwargs['sampler'] = sampler
                 study_create_kwargs.pop('sampler_kwargs', None)
 
             pruner_type = study_create_kwargs.get('pruner', None)
             if pruner_type:
                 pruner_args = study_create_kwargs.get('pruner_kwargs', {})
-                pruner = OptunaBackend.create_pruner(pruner_type, pruner_args)
+                pruner = self.backend.create_pruner(pruner_type, pruner_args)
                 study_create_kwargs['pruner'] = pruner
                 study_create_kwargs.pop('pruner_kwargs', None)
 
             study_create_kwargs['load_if_exists'] = load_if_exists
             # create study
-            self.study = OptunaBackend.create_study(**study_create_kwargs)
+            self.study = self.backend.create_study(**study_create_kwargs)
 
         # renamed callbacks to tune_callbacks to avoid conflict with fit param
         study_optimize_kwargs = _filter_tuner_args(kwargs, HPOMixin.TUNE_RUN_KEYS)
@@ -181,23 +186,23 @@ class HPOMixin:
         self.tune_end = False
 
     def search_summary(self):
-        """Retrive a summary of trials
+        """
+        Retrive a summary of trials.
 
-        Returns:
-            dataframe: A summary of all the trials
+        :return: A summary of all the trials. Currently the entire study is
+            returned to allow more flexibility for further analysis and visualization.
         """
         return _search_summary(self.study)
 
     def end_search(self, use_trial_id=-1):
-        """ Put an end to tuning.
-            Use the specified trial or best trial to init and
-            compile the base model.
+        """
+        Put an end to tuning.
 
-        Args:
-            use_trial_id (int, optional): params of which trial to be used. Defaults to -1.
+        Use the specified trial or best trial to init and build the model.
 
-        Raises:
-            ValueError: error when tune is not called already.
+        :param use_trial_id: int(optional) params of which trial to be used.
+            Defaults to -1.
+        :raise: ValueError: error when tune is not called before end_search.
         """
         self._lazymodel = _end_search(study=self.study,
                                       model_builder=self._model_build,
@@ -206,10 +211,13 @@ class HPOMixin:
         self.tune_end = True
 
     def compile(self, *args, **kwargs):
+        """Collect compile arguments and delay it to each trial\
+            and end_search."""
         self.compile_args = args
         self.compile_kwargs = kwargs
 
     def fit(self, *args, **kwargs):
+        """Fit using the built-model form end_search."""
         if not self.tune_end:
             self.end_search()
         self._lazymodel.fit(*args, **kwargs)
@@ -217,7 +225,7 @@ class HPOMixin:
     def _model_compile(self, model, trial):
         # for lazy model compile
         # TODO support searable compile args
-        # config = OptunaBackend.sample_config(trial, kwspaces)
+        # config = self.backend.sample_config(trial, kwspaces)
         # TODO objects like Optimizers has internal states so
         # each trial needs to have a copy of its own.
         # should allow users to pass a creator function

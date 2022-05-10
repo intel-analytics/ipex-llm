@@ -176,7 +176,8 @@ abstract class Container[A <: Activity : ClassTag,
       names.foreach(name => {
         this (name) match {
           case Some(x) => x.freeze()
-          case _ => throw new Exception(s"cannot match module named $name")
+          case _ =>
+            Log4Error.unKnowExceptionError(false, s"cannot match module named $name")
         }
       })
     }
@@ -190,7 +191,8 @@ abstract class Container[A <: Activity : ClassTag,
       names.foreach(name => {
         this (name) match {
           case Some(x) => x.unFreeze()
-          case _ => throw new Exception(s"cannot match module named $name")
+          case _ =>
+            Log4Error.unKnowExceptionError(false, s"cannot match module named $name")
         }
       })
     }

@@ -402,7 +402,7 @@ class CachedDistributedFeatureSet[T: ClassTag]
 //          Array()
 //        }
 //      case _ =>
-//        throw new IllegalArgumentException(s"supported type ${data.getClass()}")
+//        Log4Error.invalidOperationError(false,s"supported type ${data.getClass()}")
 //    }
 //  }
 //
@@ -588,9 +588,10 @@ class DiskFeatureSet[T: ClassTag]
   override def data(train: Boolean): RDD[T] = {
     if (numSlice == 0) {
       if (train) {
-        throw new IllegalArgumentException("No training data in memory," +
+        Log4Error.unKnowExceptionError(false, "No training data in memory," +
           "because numSlice is zero. numSlice should >= 2 " +
           "in a training FeatureSet.")
+        null
       } else {
         buffer
       }
@@ -673,22 +674,21 @@ object FeatureSet {
 //            PmemFeatureSet.rdd[T](repartitionedData, DIRECT, sequentialOrder, shuffle)
         case diskM: DISK_AND_DRAM =>
           logger.info(s"~~~~~~~ Caching with DISK_AND_DRAM(${diskM.numSlice}) ~~~~~~~")
-          if (sequentialOrder) {
-            throw new IllegalArgumentException("DiskFeatureSet does not support" +
-              " sequentialOrder.")
-          }
-
-          if (!shuffle) {
-            throw new IllegalArgumentException("DiskFeatureSet must use shuffle.")
-          }
+          Log4Error.invalidInputError(!sequentialOrder, "DiskFeatureSet does not support" +
+            " sequentialOrder.", "Please set sequentialOrder to false" +
+            "with memoryType=DISK_AND_DRAM")
+          Log4Error.invalidInputError(shuffle, "DiskFeatureSet must use shuffle",
+            "Please set shuffle to true with memoryType=DISK_AND_DRAM")
           new DiskFeatureSet[T](data, diskM.numSlice)
         case _ =>
-          throw new IllegalArgumentException(
-            s"MemoryType: ${memoryType} is not supported at the moment")
+          Log4Error.invalidInputError(false, s"MemoryType: ${memoryType} is not" +
+            s" supported at the moment",
+            "memoryType can only be (DISK_AND_DRAM, DRAM)")
+          null
       }
 
 //      case _ =>
-//        throw new IllegalArgumentException(
+//        Log4Error.invalidOperationError(false,
 //          s"DataStrategy ${dataStrategy} is not supported at the moment")
 
     }

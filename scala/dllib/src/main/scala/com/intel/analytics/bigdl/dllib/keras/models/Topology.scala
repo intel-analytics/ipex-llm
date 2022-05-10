@@ -53,11 +53,10 @@ import com.intel.analytics.bigdl.dllib.keras.layers.Input
 import com.intel.analytics.bigdl.dllib.keras.layers.utils._
 import com.intel.analytics.bigdl.dllib.keras.Model
 import com.intel.analytics.bigdl.dllib.net.NetUtils
-import com.intel.analytics.bigdl.dllib.estimator.{AbstractEstimator, ConstantClipping, GradientClipping, L2NormClipping}
+import com.intel.analytics.bigdl.dllib.estimator.{AbstractEstimator}
 import com.intel.analytics.bigdl.dllib.feature.common._
 import com.intel.analytics.bigdl.dllib.feature.transform.vision.image.ImageFeature
 import com.intel.analytics.bigdl.dllib.nnframes.NNImageSchema
-import org.apache.commons.lang.exception.ExceptionUtils
 import org.apache.commons.lang3.SerializationUtils
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.fs.Path
@@ -116,8 +115,9 @@ abstract class KerasNet[T](implicit val tag: ClassTag[T], implicit val ev: Tenso
           dataset = distriFeatureSet.toDistributed(),
           criterion = this.criterion)
       case _ =>
-        throw new IllegalArgumentException(s"Unsupported DataSet type ${x.getClass.getName}," +
+        Log4Error.unKnowExceptionError(false, s"Unsupported DataSet type ${x.getClass.getName}," +
           s" excepted LocalDataSet, DistributedDataSet and DistributedFeatureSet.")
+        null
     }
 
     if (this.checkpointPath != null) {
@@ -1049,8 +1049,9 @@ private[bigdl] class InternalDistriOptimizer[T: ClassTag] (
       } else if (optimMethods.contains(trainingModel.getName())) {
         Map(trainingModel.getName() -> (1, modelParameters._1.nElement()))
       } else {
-        throw new IllegalArgumentException(s"${trainingModel.getName()} doesn't " +
+        Log4Error.unKnowExceptionError(false, s"${trainingModel.getName()} doesn't " +
           s"have corresponding OptimMethod")
+        null
       }
 
       // TODO: Enable LarsSGD
@@ -1108,7 +1109,7 @@ private[bigdl] class InternalDistriOptimizer[T: ClassTag] (
         retryNum = Int.MaxValue
       } catch {
         case e: IllegalArgumentException =>
-          throw e
+          Log4Error.invalidOperationError(false, e.getMessage, cause = e)
         case t: Throwable =>
 //          DistriOptimizer.logger.error("Error: " + ExceptionUtils.getStackTrace(t))
           if (checkpointPath.isDefined) {
@@ -1119,7 +1120,7 @@ private[bigdl] class InternalDistriOptimizer[T: ClassTag] (
             if (System.nanoTime() - lastFailureTimestamp < maxRetry * retryTimeInterval * 1e9) {
               retryNum += 1
               if (retryNum == maxRetry) {
-                throw t
+                Log4Error.invalidOperationError(false, t.getMessage, cause = t)
               }
             } else {
               retryNum = 1
@@ -1157,7 +1158,7 @@ private[bigdl] class InternalDistriOptimizer[T: ClassTag] (
             cachedModels = modelsAndBroadcast._1
             modelBroadcast = modelsAndBroadcast._2
           } else {
-            throw t
+            Log4Error.invalidOperationError(false, t.getMessage, cause = t)
           }
       }
     }
@@ -1266,7 +1267,7 @@ private[bigdl] class InternalDistriOptimizer[T: ClassTag] (
             validationTrigger.get.asInstanceOf[ZooTrigger].setZooState(state)
           }
         } else {
-          throw new IllegalArgumentException(
+          Log4Error.invalidInputError(false,
             s"Excepted com.intel.analytics.bigdl.dllib.common.ZooTrigger." +
             s" Please change your trigger to an instance of ZooTrigger.")
         }
@@ -1318,7 +1319,11 @@ private[bigdl] class InternalDistriOptimizer[T: ClassTag] (
         coresPerNode
       }
       case MklDnn => 1
-      case _ => throw new IllegalArgumentException
+      case _ =>
+        Log4Error.invalidInputError(false,
+          s"got unsupported engine type ${EngineRef.getEngineType()}",
+        "only expect MklBlas, MklDnn")
+        1
     }
 
     val models = if (null != cachedModels) {
@@ -1469,7 +1474,7 @@ private[bigdl] class InternalDistriOptimizerV2[T: ClassTag] (
         if (checkPointTrigger.get.isInstanceOf[ZooTrigger]) {
           checkPointTrigger.get.asInstanceOf[ZooTrigger].setZooState(state)
         } else {
-          throw new IllegalArgumentException(
+          Log4Error.invalidInputError(false,
             s"Excepted com.intel.analytics.bigdl.dllib.common.ZooTrigger." +
             s" Please change your trigger to an instance of ZooTrigger.")
         }

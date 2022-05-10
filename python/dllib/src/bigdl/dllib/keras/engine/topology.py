@@ -30,7 +30,7 @@ if sys.version >= '3':
 
 class KerasNet(ZooKerasLayer):
     def save(self, path, over_write=False):
-        raise Exception("This is a deprecated method. Please use saveModel instead.")
+        invalidInputError(False, "This is a deprecated method. Please use saveModel instead.")
 
     def saveModel(self, modelPath, weightPath=None, over_write=False):
         """
@@ -104,8 +104,9 @@ class KerasNet(ZooKerasLayer):
         """
         # exception handle
         if tag != "Loss" and tag != "LearningRate" and tag != "Throughput":
-            raise TypeError('Only "Loss", "LearningRate", "Throughput"'
-                            + 'are supported in train summary')
+            invalidInputError(False,
+                              'Only "Loss", "LearningRate", "Throughput"'
+                              + 'are supported in train summary')
 
         return callZooFunc(self.bigdl_type, "zooGetScalarFromSummary",
                            self.value, tag, "Train")
@@ -251,7 +252,7 @@ class KerasNet(ZooKerasLayer):
                     validation_data = to_sample_rdd(*validation_data)
                 elif validation_split != 0:
                     if validation_split > 1 or validation_split < 0:
-                        raise TypeError("validation split must in range [0, 1]")
+                        invalidInputError(False, "validation split must in range [0, 1]")
                     split_index = int(len(x) * (1 - validation_split))
                     validation_data = (x[split_index:], y[split_index:])
                     x, y = x[:split_index], y[:split_index]
@@ -262,10 +263,10 @@ class KerasNet(ZooKerasLayer):
                 training_data = x
             elif isinstance(x, DataFrame):
                 if not label_cols:
-                    raise TypeError("Please set label_cols")
+                    invalidInputError(False, "Please set label_cols")
                 if "image" not in x.columns:
                     if not feature_cols:
-                        raise TypeError("Please set feature_cols")
+                        invalidInputError(False, "Please set feature_cols")
                     callBigDlFunc(self.bigdl_type, "zooFit",
                                   self.value,
                                   x,
@@ -287,7 +288,7 @@ class KerasNet(ZooKerasLayer):
                                   )
                     return
             else:
-                raise TypeError("Unsupported training data type: %s" % type(x))
+                invalidInputError(False, "Unsupported training data type: %s" % type(x))
             callZooFunc(self.bigdl_type, "zooFit",
                         self.value,
                         training_data,
@@ -328,10 +329,10 @@ class KerasNet(ZooKerasLayer):
             data = x
         elif isinstance(x, DataFrame):
             if not label_cols:
-                raise TypeError("Please set label_cols")
+                invalidInputError(False, "Please set label_cols")
             if "image" not in x.columns:
                 if not feature_cols:
-                    raise TypeError("Please set feature_cols")
+                    invalidInputError(False, "Please set feature_cols")
                 return callBigDlFunc(self.bigdl_type, "zooEvaluate",
                                      self.value,
                                      x,
@@ -346,7 +347,7 @@ class KerasNet(ZooKerasLayer):
                                      transform,
                                      batch_size)
         else:
-            raise TypeError("Unsupported evaluation data type: %s" % type(x))
+            invalidInputError(False, "Unsupported evaluation data type: %s" % type(x))
         return callZooFunc(self.bigdl_type, "zooEvaluate",
                            self.value,
                            data,
@@ -401,7 +402,7 @@ class KerasNet(ZooKerasLayer):
             return ImageSet(results) if isinstance(x, ImageSet) else TextSet(results)
         if isinstance(x, DataFrame):
             if not prediction_col:
-                raise TypeError("Please set prediction_col")
+                invalidInputError(False, "Please set prediction_col")
             if "image" not in x.columns:
                 results = callZooFunc(self.bigdl_type, "zooPredict",
                                       self.value,
@@ -425,7 +426,7 @@ class KerasNet(ZooKerasLayer):
             elif isinstance(x, RDD):
                 data_rdd = x
             else:
-                raise TypeError("Unsupported prediction data type: %s" % type(x))
+                invalidInputError(False, "Unsupported prediction data type: %s" % type(x))
             results = callZooFunc(self.bigdl_type, "zooPredict",
                                   self.value,
                                   data_rdd,
@@ -439,7 +440,7 @@ class KerasNet(ZooKerasLayer):
                                       batch_per_thread)
                 return [Layer.convert_output(result) for result in results]
             else:
-                raise TypeError("Unsupported prediction data type: %s" % type(x))
+                invalidInputError(False, "Unsupported prediction data type: %s" % type(x))
 
     def predict_classes(self, x, batch_per_thread=4, zero_based_label=True):
         """
@@ -459,7 +460,7 @@ class KerasNet(ZooKerasLayer):
         elif isinstance(x, RDD):
             data_rdd = x
         else:
-            raise TypeError("Unsupported prediction data type: %s" % type(x))
+            invalidInputError(False, "Unsupported prediction data type: %s" % type(x))
         return callZooFunc(self.bigdl_type, "zooPredictClasses",
                            self.value,
                            data_rdd,
@@ -469,9 +470,9 @@ class KerasNet(ZooKerasLayer):
     def get_layer(self, name):
         layer = [l for l in self.layers if l.name() == name]
         if (len(layer) == 0):
-            raise Exception("Could not find a layer named: %s" + name)
+            invalidInputError(False, "Could not find a layer named: %s" + name)
         elif (len(layer) > 1):
-            raise Exception("There are multiple layers named: %s" + name)
+            invalidInputError(False, "There are multiple layers named: %s" + name)
         else:
             return layer[0]
 

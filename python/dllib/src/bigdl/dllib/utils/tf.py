@@ -23,6 +23,7 @@ import re
 import shutil
 from bigdl.dllib.utils.file_utils import put_local_file_to_remote, get_remote_file_to_local,\
     get_file_list, is_local_path
+from bigdl.dllib.utils.log4Error import *
 
 
 def process_grad(grad):
@@ -122,15 +123,15 @@ def export_tf(sess, folder, inputs, outputs,
 
     if error_input_nodes:
         error_nodes_name = " and ".join(error_input_nodes)
-        raise ValueError("Node %s doesn't exist in the graph" % str(error_nodes_name))
+        invalidInputError(False, "Node %s doesn't exist in the graph" % str(error_nodes_name))
 
     # check all placeholder in the graph are listed in the new_input_names:
     new_input_nodes = {name.split(":")[0] for name in new_input_names}
     for node in optimized_graph_def.node:
         if node.op == "Placeholder" and node.name not in new_input_nodes:
-            raise ValueError(
-                "Node %s is a Placeholder but not listed in inputs, inputs are %s"
-                % (node.name, inputs))
+            invalidInputError(False,
+                              "Node %s is a Placeholder but not listed in inputs, inputs are %s"
+                              % (node.name, inputs))
 
     temp_tensors = None
     used_variables = []
@@ -173,8 +174,9 @@ def export_tf(sess, folder, inputs, outputs,
                         zero_grad = tf.zeros(shape=tf.shape(input_tensor))
                         grad_inputs.append(zero_grad.name)
                     else:
-                        raise ValueError(
-                            "input tensor: %s is not differentiable" % input_tensor.name)
+                        invalidInputError(False,
+                                          "input tensor: %s is not differentiable"
+                                          % input_tensor.name)
 
             optimized_graph_def = g.as_graph_def()
 
@@ -264,8 +266,9 @@ def strip_unused(input_graph_def, input_tensor_names, output_tensor_names,
     from tensorflow.core.framework import node_def_pb2
     for name in input_tensor_names:
         if ":" not in name:
-            raise ValueError("Input '%s' appears to refer to a Operation, "
-                             "not a Tensor." % name)
+            invalidInputError(False,
+                              "Input '%s' appears to refer to a Operation,"
+                              " not a Tensor." % name)
 
     old2new = {}
 
@@ -303,7 +306,8 @@ def strip_unused(input_graph_def, input_tensor_names, output_tensor_names,
             inputs_replaced_graph_def.node.extend([copy.deepcopy(node)])
 
     if not_found:
-        raise KeyError("The following input nodes were not found: %s\n" % not_found)
+        invalidInputError(False,
+                          "The following input nodes were not found: %s\n" % not_found)
     import bigdl.dllib.utils.tf_graph_util as graph_util
     output_graph_def = graph_util.extract_sub_graph(inputs_replaced_graph_def,
                                                     output_node_names)
@@ -450,6 +454,6 @@ def load_tf_checkpoint(sess, checkpoint_path, saver=None):
         try:
             saver.restore(sess, os.path.join(temp, ckpt_name))
         except Exception as e:
-            raise e
+            invalidOperationError(False, str(e), cause=e)
         finally:
             shutil.rmtree(temp)

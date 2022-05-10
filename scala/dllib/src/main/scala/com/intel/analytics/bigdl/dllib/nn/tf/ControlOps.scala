@@ -33,7 +33,8 @@ import scala.reflect.ClassTag
 sealed abstract class ControlOps[T: ClassTag]()(implicit ev: TensorNumeric[T])
   extends Operation[Activity, Activity, T] {
   override def accGradParameters(input: Activity, gradOutput: Activity): Unit = {
-    throw new UnsupportedOperationException("Operation does not support updateGradInput() method")
+    Log4Error.invalidOperationError(false,
+      "Operation does not support updateGradInput() method")
   }
 }
 

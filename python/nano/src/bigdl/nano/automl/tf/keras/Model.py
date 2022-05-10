@@ -24,8 +24,10 @@ from bigdl.nano.automl.hpo.callgraph import CallCache
 
 @proxy_methods
 class Model(HPOMixin, tf.keras.Model):
+    """Tf.keras.Model with HPO capabilities."""
 
     def __init__(self, **kwargs):
+        """Initializer."""
         # we only take keyword arguments for now
         # TODO check how args is used
         # TODO check why base class is keras.engine.training_v1.Model
@@ -42,7 +44,8 @@ class Model(HPOMixin, tf.keras.Model):
         in_tensors, out_tensors = CallCache.execute(
             self.lazyinputs_,
             self.lazyoutputs_,
-            trial)
+            trial,
+            self.backend)
         self.kwargs['inputs'] = in_tensors
         self.kwargs['outputs'] = out_tensors
         return self.kwargs

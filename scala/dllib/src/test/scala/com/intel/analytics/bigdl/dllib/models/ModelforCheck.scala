@@ -19,7 +19,7 @@ package com.intel.analytics.bigdl.dllib.models
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.dllib.nn._
 import com.intel.analytics.bigdl.numeric.NumericDouble
-import com.intel.analytics.bigdl.dllib.utils.{T, Table}
+import com.intel.analytics.bigdl.dllib.utils.{Log4Error, T, Table}
 
 /**
  * models in this file is only for gradient check
@@ -375,7 +375,8 @@ object GoogleNet_v2_test {
         }
       case "avg" => pool.add(SpatialAveragePooling(3, 3, 1, 1, 1, 1).ceil()
         .setName(namePrefix + "pool"))
-      case _ => throw new IllegalArgumentException
+      case _ =>
+        Log4Error.invalidOperationError(false, "only support max and avg")
     }
 
     if (config[Table](4)[Int](2) != 0) {
@@ -442,7 +443,8 @@ object GoogleNet_v2_test {
         }
       case "avg" => pool.add(SpatialAveragePooling(3, 3, 1, 1, 1, 1).ceil()
         .setName(namePrefix + "pool"))
-      case _ => throw new IllegalArgumentException
+      case _ =>
+        Log4Error.invalidOperationError(false, "only support add and avg")
     }
 
     if (config[Table](4)[Int](2) != 0) {

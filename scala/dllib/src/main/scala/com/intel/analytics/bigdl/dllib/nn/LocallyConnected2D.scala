@@ -555,7 +555,9 @@ class LocallyConnected2D[T: ClassTag](
                 padLeft, padTop, padRight, padBottom,
                 outputWidth, outputHeight)
               im2colTime += System.nanoTime() - before
-            case _ => throw new UnsupportedOperationException(s"Only Float/Double supported")
+            case _ =>
+              Log4Error.invalidInputError(false, s"${ev.getType()} is not supported",
+                "only support FloatType and DoubleType")
           }
         }
         var j = 1
@@ -584,7 +586,9 @@ class LocallyConnected2D[T: ClassTag](
                 padLeft, padTop, padRight, padBottom,
                 outputWidth, outputHeight)
               im2colTime += System.nanoTime() - before
-            case _ => throw new UnsupportedOperationException(s"Only Float/Double supported")
+            case _ =>
+              Log4Error.invalidInputError(false, s"${ev.getType()} is not supported",
+                "only support FloatType and DoubleType")
           }
         }
         var j = 1
@@ -700,7 +704,9 @@ class LocallyConnected2D[T: ClassTag](
               col2imTime += System.nanoTime() - before
             }
         }
-      case _ => throw new UnsupportedOperationException(s"Only Float/Double supported")
+      case _ =>
+        Log4Error.invalidInputError(false, s"${ev.getType()} is not supported",
+          "only support FloatType and DoubleType")
     }
   }
 
@@ -816,7 +822,9 @@ class LocallyConnected2D[T: ClassTag](
             }
         }
 
-      case _ => throw new UnsupportedOperationException(s"Only Float/Double supported")
+      case _ =>
+        Log4Error.invalidInputError(false, s"${ev.getType()} is not supported",
+          "only support FloatType and DoubleType")
     }
   }
 
@@ -917,7 +925,9 @@ class LocallyConnected2D[T: ClassTag](
             }
         }
 
-      case _ => throw new UnsupportedOperationException(s"Only Float/Double supported")
+      case _ =>
+        Log4Error.invalidInputError(false, s"${ev.getType()} is not supported",
+          "only support FloatType and DoubleType")
     }
   }
 }

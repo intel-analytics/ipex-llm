@@ -108,7 +108,7 @@ class JavaCreator(SingletonMixin):
             elif bigdl_type == "double":
                 self.value.append(getattr(jclass, "ofDouble")())
             else:
-                raise Exception("Not supported bigdl_type: %s" % bigdl_type)
+                invalidInputError(False, "Not supported bigdl_type: %s" % bigdl_type)
 
 
 class JavaValue(object):
@@ -596,10 +596,11 @@ def _get_port():
             port = int(f.readline())
     except IOError as e:
         traceback.print_exc()
-        raise RuntimeError("Could not open the file %s, which contains the listening port of"
-                           " local Java Gateway, please make sure the init_executor_gateway()"
-                           " function is called before any call of java function on the"
-                           " executor side." % e.filename)
+        invalidInputError(False,
+                          "Could not open the file %s, which contains the listening port of"
+                          " local Java Gateway, please make sure the init_executor_gateway()"
+                          " function is called before any call of java function on the"
+                          " executor side." % e.filename)
     return port
 
 
@@ -627,16 +628,10 @@ def callBigDlFunc(bigdl_type, name, *args):
         except Exception as e:
             error = e
             if "does not exist" not in str(e):
-                # from bigdl.dllib.utils.errorutils import convert_exception, UnknownException
-                # converted = convert_exception(e.java_exception)
-                # if not isinstance(converted, UnknownException):
-                #     raise converted from None
-                # else:
-                #     raise e
-                raise e
+                invalidOperationError(False, "e is not a does not exist exception", cause=e)
         else:
             return result
-    raise error
+    invalidOperationError(False, "Cannot find function: %s" % name, cause=error)
 
 
 def _java2py(gateway, r, encoding="bytes"):
@@ -775,7 +770,7 @@ def get_activation_by_name(activation_name, activation_id=None):
     elif activation_name == "linear":
         activation = BLayer.Identity()
     else:
-        raise Exception("Unsupported activation type: %s" % activation_name)
+        invalidInputError(False, "Unsupported activation type: %s" % activation_name)
     if not activation_id:
         activation.set_name(activation_id)
     return activation

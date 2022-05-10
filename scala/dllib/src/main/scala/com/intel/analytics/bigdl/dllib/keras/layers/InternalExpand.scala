@@ -47,10 +47,9 @@ private[bigdl] class InternalExpand[T: ClassTag](tgtSizes: Array[Int])
           tensorSize(i) = tgtSizes(i)
           tensorStride(i) = 0
         } else if (tensorSize(i) != tgtSizes(i)) {
-          throw new UnsupportedOperationException(
-            "incorrect size: only supporting singleton expansion (size=1)," +
-              s"tensorSize: ${tensorSize.mkString(" ")}  " +
-              s"tgtSize: ${tgtSizes.mkString(" ")}")
+          Log4Error.invalidInputError(false, s"incorrect size: only supporting singleton " +
+            s"expansion (size=1), tensorSize: ${tensorSize.mkString(" ")}. " +
+            s"tgtSize: ${tgtSizes.mkString(" ")}")
         }
       }
       i += 1

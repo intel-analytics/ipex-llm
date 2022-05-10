@@ -494,8 +494,9 @@ trait Predictable[T] extends VectorCompatibility{
           } else if (batchResult.size().length == 1) {
             Array(outputToPrediction(batchResult))
           } else {
-            throw new RuntimeException(
+            Log4Error.unKnowExceptionError(false,
               "unexpected batchResult dimension: " + batchResult.size().mkString(", "))
+            null
           }
           }
         }
@@ -512,7 +513,10 @@ trait Predictable[T] extends VectorCompatibility{
         SchemaUtils.appendColumn(x.schema, predictionCol, ArrayType(sqlDoubleType, false))
       case FloatType =>
         SchemaUtils.appendColumn(x.schema, predictionCol, ArrayType(sqlFloatType, false))
-      case _ => throw new Exception("Only support Double and Float for now")
+      case _ =>
+        Log4Error.invalidInputError(false, s"unsupported type ${ev.getType()}",
+          "Only support Double and Float for now")
+        null
     }
 
     x.sqlContext.createDataFrame(resultRDD, resultSchema)

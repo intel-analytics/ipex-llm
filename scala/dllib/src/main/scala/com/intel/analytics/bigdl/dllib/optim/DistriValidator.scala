@@ -19,7 +19,7 @@ package com.intel.analytics.bigdl.dllib.optim
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.dllib.feature.dataset.{DistributedDataSet, MiniBatch}
 import com.intel.analytics.bigdl.dllib.optim.DistriValidator._
-import com.intel.analytics.bigdl.dllib.utils.{Engine, MklBlas}
+import com.intel.analytics.bigdl.dllib.utils.{Engine, Log4Error, MklBlas}
 import org.apache.logging.log4j.LogManager
 
 object DistriValidator {
@@ -49,7 +49,10 @@ class DistriValidator[T] private[optim](
     val broadcastModel = rdd.sparkContext.broadcast(model.evaluate(), vMethods)
     val _subModelNumber = Engine.getEngineType match {
       case MklBlas => Engine.coreNumber()
-      case _ => throw new IllegalArgumentException
+      case _ =>
+        Log4Error.invalidInputError(false, s"unexpected engine type ${Engine.getEngineType}",
+          "only support MklBlas")
+        0
     }
     val nExecutor = Engine.nodeNumber()
     val executorCores = Engine.coreNumber()

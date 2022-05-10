@@ -24,14 +24,19 @@ object Log4Error {
   def invalidInputError(condition: Boolean, errmsg: String, fixmsg: String = null): Unit = {
     if (!condition) {
       outputUserMessage(errmsg, fixmsg)
+      // scalastyle:off
       throw new IllegalArgumentException(errmsg)
+      // scalastyle:on
     }
   }
 
-  def invalidOperationError(condition: Boolean, errmsg: String, fixmsg: String = null): Unit = {
+  def invalidOperationError(condition: Boolean, errmsg: String, fixmsg: String = null,
+                            cause: Throwable = null): Unit = {
     if (!condition) {
       outputUserMessage(errmsg, fixmsg)
-      throw new InvalidOperationException(errmsg)
+      // scalastyle:off
+      throw new InvalidOperationException(errmsg, cause)
+      // scalastyle:on
     }
   }
 
@@ -51,13 +56,17 @@ object Log4Error {
     fixmsg: String = null, cause: Throwable = null): Unit = {
     if (!condition) {
       outputUserMessage(errmsg, fixmsg)
+      // scalastyle:off
       throw new UnKnownException(errmsg, cause)
+      // scalastyle:on
     }
   }
 }
 
-class InvalidOperationException(message: String)
-  extends Exception(message) {
+class InvalidOperationException(message: String, cause: Throwable = null)
+  extends Exception(message, cause) {
+
+  def this(message: String) = this(message, null)
 }
 
 class UnKnownException(message: String, cause: Throwable = null)

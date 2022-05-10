@@ -17,4 +17,4 @@ done
 if [ -z "${config_path// }" ]; then
   config_path=ppml-conf.yaml
 fi
-java -cp $BIGDL_PPML_JAR_PATH com.intel.analytics.bigdl.ppml.FLServer -c $config_path > fl-server.log &
+java -cp $BIGDL_PPML_JAR_PATH com.intel.analytics.bigdl.ppml.fl.FLServer -c $config_path > fl-server.log &

@@ -20,7 +20,6 @@ import com.intel.analytics.bigdl.ppml.fl.algorithms.FGBoostRegression
 import com.intel.analytics.bigdl.ppml.fl.data.PreprocessUtil
 import com.intel.analytics.bigdl.ppml.fl.example.DebugLogger
 import com.intel.analytics.bigdl.ppml.fl.fgboost.common.{XGBoostFormatNode, XGBoostFormatSerializer, XGBoostFormatValidator}
-import com.intel.analytics.bigdl.ppml.fl.utils.MockClient
 import com.intel.analytics.bigdl.ppml.fl.{FLContext, FLServer}
 import ml.dmlc.xgboost4j.scala.{DMatrix, XGBoost}
 import org.apache.log4j.LogManager
@@ -200,7 +199,6 @@ class CorrectnessSpec extends FlatSpec with Matchers with BeforeAndAfter with De
       TestUtils.conditionFailTest(cnt > 900,
         s"Should get over 900 results similar with XGBoost, but got only: $cnt")
     } catch {
-          // TODO: sometimes this UT (random fail) throws IndexOutOfRange Exception, need to check
       case e: Exception => throw e
     } finally {
       flServer.stop()
@@ -270,7 +268,6 @@ class CorrectnessSpec extends FlatSpec with Matchers with BeforeAndAfter with De
       TestUtils.conditionFailTest(cnt > 900,
         s"Should get over 900 results similar with XGBoost, but got only: $cnt")
     } catch {
-      // TODO: sometimes this UT (random fail) throws IndexOutOfRange Exception, need to check
       case e: Exception => throw e
     } finally {
       flServer.stop()

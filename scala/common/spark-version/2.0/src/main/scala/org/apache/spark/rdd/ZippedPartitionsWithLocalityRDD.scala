@@ -65,11 +65,15 @@ class ZippedPartitionsWithLocalityRDD[A: ClassTag, B: ClassTag, V: ClassTag](
 
   override def getPartitions: Array[Partition] = {
     if (rdds.length != 2) {
+      //     scalastyle:off
       throw new IllegalArgumentException("this is only for 2 rdd zip")
+      //     scalastyle:on
     }
     val numParts = rdds.head.partitions.length
     if (!rdds.forall(rdd => rdd.partitions.length == numParts)) {
+      //     scalastyle:off
       throw new IllegalArgumentException("Can't zip RDDs with unequal numbers of partitions")
+      //     scalastyle:on
     }
 
     val candidateLocs = new ArrayBuffer[(Int, Seq[String])]()
@@ -106,8 +110,10 @@ class ZippedPartitionsWithLocalityRDD[A: ClassTag, B: ClassTag, V: ClassTag](
     }
 
     if (nonmatchPartitionId.size != candidateLocs.size) {
+      //     scalastyle:off
       throw new IllegalArgumentException("unmatched partition size should be the same" +
         "with candidateLocs size")
+      //     scalastyle:on
     }
     nonmatchPartitionId.foreach { i =>
       val locs = rdds(0).context.getPreferredLocs(rdds(0), i).map(_.toString).distinct

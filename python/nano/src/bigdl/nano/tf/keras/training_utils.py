@@ -43,7 +43,7 @@ class TrainingUtils:
             max_queue_size=10,
             workers=1,
             use_multiprocessing=False,
-            nprocs=None,
+            num_processes=None,
             backend="multiprocessing"):
         """
         Override tf.keras.Model.fit to add more parameters.
@@ -52,12 +52,12 @@ class TrainingUtils:
         tf.keras.Model.fit.
 
         Additional parameters:
-        :param nprocs: when nprocs is not None, it specifies how many sub-processes to launch to
-                       run pseudo-distributed training; when nprocs is None, training will run
-                       in the current process.
-        :param backend: when nprocs is not None, it specifies which backend to use when launching
-                       sub-processes to run psedu-distributed training; when nprocs is None, this
-                       parameter takes no effect.
+        :param num_processes: when num_processes is not None, it specifies how many sub-processes
+                       to launch to run pseudo-distributed training; when num_processes is None,
+                       training will run in the current process.
+        :param backend: when num_processes is not None, it specifies which backend to use when
+                       launching sub-processes to run psedu-distributed training; when
+                       num_processes is None, this parameter takes no effect.
         """
         fit_kwargs = dict(
             x=x,
@@ -81,7 +81,7 @@ class TrainingUtils:
             use_multiprocessing=use_multiprocessing,
         )
 
-        if nprocs is not None:
+        if num_processes is not None:
             if validation_data is not None:
                 msg = "validataion_data must be a tf.data.Dataset for multi-process training"
                 assert isinstance(x, (tf.compat.v1.data.Dataset, tf.data.Dataset)), msg
@@ -92,7 +92,7 @@ class TrainingUtils:
                 _backend = create_horovod_multiprocessing_backend()
                 history = distributed_train_keras_horovod(_backend,
                                                           model=self,
-                                                          nprocs=nprocs,
+                                                          nprocs=num_processes,
                                                           fit_kwargs=fit_kwargs)
                 return history
 
@@ -109,7 +109,7 @@ class TrainingUtils:
                 from bigdl.nano.tf.keras.distributed_utils import distributed_train_keras
                 history = distributed_train_keras(_backend,
                                                   model=self,
-                                                  nprocs=nprocs,
+                                                  nprocs=num_processes,
                                                   fit_kwargs=fit_kwargs)
                 return history
         else:

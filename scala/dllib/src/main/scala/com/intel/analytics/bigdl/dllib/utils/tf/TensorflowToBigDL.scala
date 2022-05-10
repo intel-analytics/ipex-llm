@@ -202,8 +202,9 @@ object TensorflowToBigDL {
       return Tensor(Storage(tmp), 1, shape)
     }
 
-    throw new UnsupportedOperationException(
+    Log4Error.invalidOperationError(false,
       s"Not support load tensorflow tensor when type is ${tfTensor.getDtype}")
+    null
   }
 
   private var patternList : ArrayBuffer[TensorflowToBigDL] = {
@@ -343,7 +344,8 @@ object Conv1D extends TensorflowToBigDL {
       case "NCHW" =>
         strideList(3)
       case _ =>
-        throw new IllegalArgumentException(s"not supported data format: $format")
+        Log4Error.invalidOperationError(false, s"not supported data format: $format")
+        0
     }
 
     val biasNode = tfGraph.source.prevNodes(1).prevNodes.head.element
@@ -361,7 +363,7 @@ object Conv1D extends TensorflowToBigDL {
     gradWeights.resizeAs(weights)
 
     if (attributes.get("padding").getS.toString(Charset.defaultCharset()) == "SAME") {
-      throw new IllegalArgumentException("SAME padding is not supported")
+      Log4Error.invalidOperationError(false, "SAME padding is not supported")
     }
 
     val tconv = TemporalConvolution[T](
@@ -459,7 +461,7 @@ object Conv2DWithoutBias extends TensorflowToBigDL{
           withBias = false
         )
       case _ =>
-        throw new IllegalArgumentException(s"not supported data format: $format")
+        Log4Error.invalidOperationError(false, s"not supported data format: $format")
     }
     conv.asInstanceOf[AbstractModule[Activity, Activity, T]]
   }
@@ -541,7 +543,7 @@ object Conv2D extends TensorflowToBigDL{
           initGradWeight = gradWeights,
           initGradBias = gradBias, format = DataFormat.NCHW)
       case _ =>
-        throw new IllegalArgumentException(s"not supported data format: $format")
+        Log4Error.invalidOperationError(false, s"not supported data format: $format")
     }
     conv.asInstanceOf[AbstractModule[Activity, Activity, T]]
   }

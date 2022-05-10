@@ -497,8 +497,9 @@ object Transformer extends ModuleSerializable {
     val transformerType = tag match {
       case 1 => LanguageModel
       case 2 => Translation
-      case _ => throw new UnsupportedOperationException(
+      case _ => Log4Error.invalidInputError(false,
         s"Only support transformer tag 1 and 2, but get ${tag}")
+        null
     }
 
     val transformer = Transformer(vocabSize, hiddenSize, numHeads, filterSize,
@@ -574,7 +575,7 @@ object Transformer extends ModuleSerializable {
     val tag = transformer.transformerType match {
       case LanguageModel => 1
       case Translation => 2
-      case _ => throw new UnsupportedOperationException(s"Only support LanguageModel" +
+      case _ => Log4Error.invalidInputError(false, s"Only support LanguageModel" +
         s"and Translation transformer type, but get ${transformer.transformerType}")
     }
     val transformerTypeBuilder = AttrValue.newBuilder

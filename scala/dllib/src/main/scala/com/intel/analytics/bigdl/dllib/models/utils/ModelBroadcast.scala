@@ -25,7 +25,7 @@ import com.intel.analytics.bigdl.dllib.nn.abstractnn.Activity
 import com.intel.analytics.bigdl.dllib.nn.mkldnn.{MklDnnLayer, TensorMMap}
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.dllib.tensor._
-import com.intel.analytics.bigdl.dllib.utils.{Engine, MklDnn}
+import com.intel.analytics.bigdl.dllib.utils.{Engine, Log4Error, MklDnn}
 import com.intel.analytics.bigdl.dllib.utils.Util._
 import com.intel.analytics.bigdl.dllib.utils.intermediate.IRGraph
 import org.apache.commons.lang3.SerializationUtils
@@ -52,7 +52,8 @@ trait ModelBroadcast[T] extends Serializable {
 
   private[bigdl] def broadcast(sc: SparkContext, model: Module[T],
     dummyInput: Activity): this.type = {
-    throw new UnimplementedException
+    Log4Error.invalidOperationError(false, "not implemented broadcast")
+    null
   }
 
   /**
@@ -66,7 +67,8 @@ trait ModelBroadcast[T] extends Serializable {
 
   private[bigdl] def value(initGradient: Boolean, shareWeight: Boolean,
     dummyInput: Activity): Module[T] = {
-    throw new UnimplementedException
+    Log4Error.invalidOperationError(false, "not implemented value")
+    null
   }
 
   def uuid(): String = _uuid

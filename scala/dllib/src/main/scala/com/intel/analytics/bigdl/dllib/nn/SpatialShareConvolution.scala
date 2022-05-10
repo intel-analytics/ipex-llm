@@ -261,7 +261,10 @@ class SpatialShareConvolution[T: ClassTag](
           input.asInstanceOf[Tensor[Float]], kW, kH, dW, dH, padW, padH, padW, padH,
           outputWidth, outputHeight)
         im2colTime += System.nanoTime() - before
-      case _ => throw new UnsupportedOperationException(s"Only Float/Double supported")
+      case _ =>
+        Log4Error.invalidInputError(false,
+          s"SpatialShareConvolution: ${ev.getType()} is not supported",
+          "only support Float and Double")
     }
   }
 }

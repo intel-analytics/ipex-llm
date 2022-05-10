@@ -50,8 +50,9 @@ class DnnTensor[T: ClassTag](
         Log4Error.unKnowExceptionError(this.nElement() == other.nElement(),
           "tensor elements number must be same")
         this._storage.copy(other.storage(), 0, 0, this.nElement())
-      case _ => throw new UnsupportedOperationException(
-        "Only support copy from dense tensor and dnn tensor")
+      case _ =>
+        Log4Error.invalidOperationError(false, s"unexpected type ${other}",
+          "Only support copy from dense tensor and dnn tensor")
     }
     this
   }
@@ -204,7 +205,8 @@ class DnnTensor[T: ClassTag](
 object DnnTensor {
   // scalastyle:off
   private def ???(): Nothing = {
-    throw new UnsupportedOperationException("DnnTensor doesn't support this operation")
+    Log4Error.invalidOperationError(false, "DnnTensor doesn't support this operation")
+    null.asInstanceOf[Nothing]
   }
   // scalastyle:on
 

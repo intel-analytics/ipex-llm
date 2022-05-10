@@ -17,6 +17,7 @@
 import sys
 
 from ..engine.topology import ZooKerasLayer
+from bigdl.dllib.utils.log4Error import *
 
 if sys.version >= '3':
     long = int
@@ -187,7 +188,8 @@ class MaxPooling3D(ZooKerasLayer):
     def __init__(self, pool_size=(2, 2, 2), strides=None, border_mode="valid",
                  dim_ordering="th", input_shape=None, **kwargs):
         if border_mode != "valid":
-            raise ValueError("For MaxPooling3D, only border_mode='valid' is supported for now")
+            invalidInputError(False,
+                              "For MaxPooling3D, only border_mode='valid' is supported for now")
         super(MaxPooling3D, self).__init__(None,
                                            pool_size,
                                            strides,
@@ -223,7 +225,8 @@ class AveragePooling3D(ZooKerasLayer):
     def __init__(self, pool_size=(2, 2, 2), strides=None, border_mode="valid",
                  dim_ordering="th", input_shape=None, **kwargs):
         if border_mode != "valid":
-            raise ValueError("For AveragePooling3D, only border_mode='valid' is supported for now")
+            invalidInputError(False,
+                              "For AveragePooling3D, only border_mode='valid' is supported for now")
         super(AveragePooling3D, self).__init__(None,
                                                pool_size,
                                                strides,

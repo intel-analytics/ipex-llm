@@ -205,6 +205,4 @@ You can also disable only one rule, by specifying its rule id, as specified in:
         </parameters>
         <customMessage>require is not allowed to use, please use Log4Error api instead</customMessage>
     </check>
-
-
 </scalastyle>

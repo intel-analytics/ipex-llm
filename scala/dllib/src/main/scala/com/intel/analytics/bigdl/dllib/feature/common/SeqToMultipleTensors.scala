@@ -33,8 +33,10 @@ class SeqToMultipleTensors[T: ClassTag](multiSizes: Array[Array[Int]])
     prev.map { f =>
       val tensors = f match {
         case sd: Seq[Any] => matchSeq(sd)
-        case _ => throw new IllegalArgumentException("SeqToTensor only supports Float, Double, " +
-          s"Array[Float], Array[Double] or MLlib Vector but got $f")
+        case _ =>
+          Log4Error.invalidInputError(false, "SeqToTensor only supports Float, Double, " +
+            s"Array[Float], Array[Double] or MLlib Vector but got $f")
+          null
       }
       tensors
     }
@@ -45,8 +47,10 @@ class SeqToMultipleTensors[T: ClassTag](multiSizes: Array[Array[Int]])
       case dd: Double => list.asInstanceOf[Seq[Double]].map(ev.fromType(_)).toArray
       case ff: Float => list.asInstanceOf[Seq[Float]].map(ev.fromType(_)).toArray
       case ii: Int => list.asInstanceOf[Seq[Int]].map(ev.fromType(_)).toArray
-      case _ => throw new IllegalArgumentException(s"SeqToTensor only supports Array[Int], " +
-        s"Array[Float] and Array[Double] for ArrayType, but got $list")
+      case _ =>
+        Log4Error.invalidInputError(false, s"SeqToTensor only supports Array[Int], " +
+          s"Array[Float] and Array[Double] for ArrayType, but got $list")
+        null
     }
 
     Log4Error.unKnowExceptionError(multiSizes.map(s => s.product).sum == rawData.length,

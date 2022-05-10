@@ -68,8 +68,7 @@ def setup_package():
 
     tensorflow_requires = ["intel-tensorflow==2.7.0",
                            "keras==2.7.0",
-                           "tensorflow-estimator==2.7.0",
-                           "cloudpickle"]
+                           "tensorflow-estimator==2.7.0"]
 
     pytorch_requires = ["torch==1.9.0",
                         "torchvision==0.10.0",
@@ -77,10 +76,9 @@ def setup_package():
                         "torchmetrics==0.7.2",
                         "opencv-python-headless",
                         "PyTurboJPEG",
-                        "opencv-transforms",
-                        "onnx",
-                        "onnxruntime"]
-    install_requires = ["intel-openmp"]
+                        "opencv-transforms"]
+
+    install_requires = ["intel-openmp", "cloudpickle"]
 
     package_data = [
         "libs/libjemalloc.so",

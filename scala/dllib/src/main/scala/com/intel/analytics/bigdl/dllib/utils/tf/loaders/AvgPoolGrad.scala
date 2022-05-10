@@ -63,7 +63,7 @@ class AvgPoolGrad extends TensorflowOpsLoader {
         val kH = kernelSize(3)
         AvgPoolGradOps[T](kW, kH, strideW, strideH, pW, pH, DataFormat.NCHW)
       case _ =>
-        throw new IllegalArgumentException(s"not supported data format: $format")
+        Log4Error.invalidOperationError(false, s"not supported data format: $format")
     }
     poolgrad.asInstanceOf[Module[T]]
   }

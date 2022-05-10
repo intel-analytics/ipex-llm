@@ -20,7 +20,7 @@ import com.intel.analytics.bigdl.dllib.nn.abstractnn.{AbstractModule, Activity, 
 import com.intel.analytics.bigdl.dllib.nn.internal.Pooling2D
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.dllib.utils.Shape
+import com.intel.analytics.bigdl.dllib.utils.{Log4Error, Shape}
 import com.intel.analytics.bigdl.dllib.keras.Net
 import com.intel.analytics.bigdl.dllib.keras.layers.utils.KerasUtils
 
@@ -76,8 +76,10 @@ object MaxPooling2D {
     inputShape: Shape = null)
     (implicit ev: TensorNumeric[T]): MaxPooling2D[T] = {
     val poolSizeArray = poolSize match {
-      case null => throw new IllegalArgumentException("For MaxPooling2D, " +
+      case null =>
+        Log4Error.invalidInputError(false, "For MaxPooling2D, " +
         "poolSize can not be null, please input int tuple of length 2")
+        null
       case _ => Array(poolSize._1, poolSize._2)
     }
     val stridesArray = strides match {

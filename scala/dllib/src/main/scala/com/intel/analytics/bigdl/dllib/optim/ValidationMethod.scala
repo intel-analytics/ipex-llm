@@ -160,7 +160,8 @@ class TreeNNAccuracy[T: ClassTag]()(
       })
       count += 1
     } else {
-      throw new IllegalArgumentException
+      Log4Error.unKnowExceptionError(false, s"unexpected output dim ${_output.dim}",
+        "only support output dim with 3 or 2")
     }
 
     new AccuracyResult(correct, count)
@@ -202,7 +203,7 @@ class Top1Accuracy[T: ClassTag](
       })
       count += _output.size(1)
     } else if (_output.dim == 1) {
-      Log4Error.invalidInputError(_target.size(1) == 1,
+      Log4Error.unKnowExceptionError(_target.size(1) == 1,
         s"TreeNNAccuracy expect _target.size(1) ${_target.size(1)} to be 1")
       (if (_output.size(1) == 1) {
         _output.clone().apply1(x => if (ev.isGreater(ev.fromType(0.5), x)) ev.zero else ev.one)
@@ -216,7 +217,8 @@ class Top1Accuracy[T: ClassTag](
       })
       count += 1
     } else {
-      throw new IllegalArgumentException
+      Log4Error.unKnowExceptionError(false, s"unexpected output dim ${_output.dim}",
+        "only support output dim with 1 or 2")
     }
 
     new AccuracyResult(correct, count)
@@ -874,7 +876,7 @@ class Top5Accuracy[T: ClassTag](
       }
       count += _output.size(1)
     } else if (_output.dim == 1) {
-      Log4Error.invalidInputError(_target.size(1) == 1,
+      Log4Error.unKnowExceptionError(_target.size(1) == 1,
         s"expect _target.size(1) be 1, but get ${_target.size(1)}")
       val indices = _output.topk(5, 1, false)._2
       if (indices.valueAt(1) == _target.valueAt(1) || indices.valueAt(2) == _target.valueAt(1)
@@ -884,7 +886,8 @@ class Top5Accuracy[T: ClassTag](
       }
       count += 1
     } else {
-      throw new IllegalArgumentException
+      Log4Error.unKnowExceptionError(false, s"unexpected output dim ${_output.dim}",
+        "only support output dim with 1 or 2")
     }
 
     new AccuracyResult(correct, count)

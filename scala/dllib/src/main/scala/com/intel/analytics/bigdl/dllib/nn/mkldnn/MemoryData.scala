@@ -106,7 +106,10 @@ sealed trait MemoryData extends Serializable {
       case DataType.S32 => DnnStorage.INT_BYTES
       case DataType.S8 => DnnStorage.INT8_BYTES
       case DataType.U8 => DnnStorage.INT8_BYTES
-      case _ => throw new UnsupportedOperationException(s"unsupported data type")
+      case _ =>
+        Log4Error.invalidInputError(false, s"unsupported data type ${dataType}",
+          "only support DataType.F32, DataType.S32, DataType.S8, DataType.U8")
+        DnnStorage.INT8_BYTES
     }
   }
 

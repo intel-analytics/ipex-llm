@@ -17,6 +17,7 @@
 import sys
 
 from ..engine.topology import ZooKerasLayer
+from bigdl.dllib.utils.log4Error import *
 
 if sys.version >= '3':
     long = int
@@ -111,11 +112,11 @@ class AtrousConvolution1D(ZooKerasLayer):
                  border_mode="valid", subsample_length=1, atrous_rate=1, W_regularizer=None,
                  b_regularizer=None, bias=True, input_shape=None, **kwargs):
         if border_mode != "valid":
-            raise ValueError("For AtrousConvolution1D, "
-                             "only border_mode='valid' is supported for now")
+            invalidInputError(False, "For AtrousConvolution1D, "
+                                     "only border_mode='valid' is supported for now")
         if not bias:
-            raise ValueError("For AtrousConvolution1D, "
-                             "only bias=True is supported for now")
+            invalidInputError(False, "For AtrousConvolution1D,"
+                                     " only bias=True is supported for now")
         super(AtrousConvolution1D, self).__init__(None,
                                                   nb_filter,
                                                   filter_length,
@@ -231,7 +232,8 @@ class Deconvolution2D(ZooKerasLayer):
                  activation=None, border_mode="valid", subsample=(1, 1), dim_ordering="th",
                  W_regularizer=None, b_regularizer=None, bias=True, input_shape=None, **kwargs):
         if border_mode != "valid":
-            raise ValueError("For Deconvolution2D, only border_mode='valid' is supported for now")
+            invalidInputError(False,
+                              "For Deconvolution2D, only border_mode='valid' is supported for now")
         super(Deconvolution2D, self).__init__(None,
                                               nb_filter,
                                               nb_row,
@@ -291,10 +293,11 @@ class AtrousConvolution2D(ZooKerasLayer):
                  atrous_rate=(1, 1), dim_ordering="th", W_regularizer=None,
                  b_regularizer=None, bias=True, input_shape=None, **kwargs):
         if border_mode != "valid":
-            raise ValueError("For AtrousConvolution2D, "
-                             "only border_mode='valid' is supported for now")
+            invalidInputError(False, "For AtrousConvolution2D, "
+                                     "only border_mode='valid' is supported for now")
         if not bias:
-            raise ValueError("For AtrousConvolution2D, only bias=True is supported for now")
+            invalidInputError(False,
+                              "For AtrousConvolution2D, only bias=True is supported for now")
         super(AtrousConvolution2D, self).__init__(None,
                                                   nb_filter,
                                                   nb_row,

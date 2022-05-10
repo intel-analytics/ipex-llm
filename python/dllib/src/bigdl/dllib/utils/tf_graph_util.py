@@ -197,10 +197,10 @@ def extract_sub_graph(graph_def, dest_nodes):
     """
 
     if not isinstance(graph_def, graph_pb2.GraphDef):
-        raise TypeError("graph_def must be a graph_pb2.GraphDef proto.")
+        invalidInputError(False, "graph_def must be a graph_pb2.GraphDef proto.")
 
     if isinstance(dest_nodes, six.string_types):
-        raise TypeError("dest_nodes must be a list.")
+        invalidInputError(False, "dest_nodes must be a list.")
 
     name_to_input_name, name_to_node, name_to_seq_num = _extract_graph_summary(
         graph_def)
@@ -278,8 +278,8 @@ def convert_variables_to_constants(sess,
             if op_name in control_ops or op_name == "Identity":
                 curr_input_name = _node_name(current_node.input[0])
             else:
-                raise ValueError("Op type %s should not be in the path " +
-                                 "between ReadVariableOp and VarHandleOp" % current_node.op)
+                invalidInputError(False, "Op type %s should not be in the path "
+                                         "between ReadVariableOp and VarHandleOp" % current_node.op)
             current_name = curr_input_name
 
         return current_name, nodes_in_path
@@ -371,7 +371,7 @@ def convert_variables_to_constants(sess,
             # constants, so we need to convert the associated ResourceGather to Gather
             # ops with a Const axis feeding into it.
             if input_node.attr["batch_dims"].i != 0:
-                raise ValueError("batch_dims != 0 is not supported by freeze_graph.")
+                invalidInputError(False, "batch_dims != 0 is not supported by freeze_graph.")
             axis_data = input_node.attr["batch_dims"].i
             axis_node_name = input_node.name + "/axis"
             axis_dtype = input_node.attr["Tindices"]

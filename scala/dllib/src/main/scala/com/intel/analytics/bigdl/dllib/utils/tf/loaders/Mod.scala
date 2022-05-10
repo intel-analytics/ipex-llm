@@ -20,6 +20,7 @@ import java.nio.ByteOrder
 import com.intel.analytics.bigdl.Module
 import com.intel.analytics.bigdl.dllib.nn.ops.{Mod => ModOps}
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.dllib.utils.Log4Error
 import com.intel.analytics.bigdl.dllib.utils.tf.Context
 import org.tensorflow.framework.{DataType, NodeDef}
 
@@ -39,7 +40,8 @@ class Mod extends TensorflowOpsLoader {
     } else if (t == DataType.DT_INT32) {
       ModOps[T, Int]()
     } else {
-      throw new UnsupportedOperationException(s"Not support load Mod when type is ${t}")
+      Log4Error.invalidOperationError(false, s"Not support load Mod when type is ${t}")
+      null
     }
   }
 }

@@ -19,7 +19,7 @@ package com.intel.analytics.bigdl.dllib.keras.optimizers
 import com.intel.analytics.bigdl.dllib.optim.{OptimMethod, SGD}
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.dllib.utils.Table
+import com.intel.analytics.bigdl.dllib.utils.{Log4Error, Table}
 import com.intel.analytics.bigdl.dllib.keras.layers.utils.SGDRef
 
 import scala.reflect.ClassTag
@@ -61,7 +61,8 @@ class AdamWeightDecay[@specialized(Float, Double) T: ClassTag](
     } else if (schedule.equalsIgnoreCase("linear")) {
       1.0 - x
     } else {
-      throw new UnsupportedOperationException("Only support cosine|constant|linear schedules")
+      Log4Error.invalidInputError(false, "Only support cosine|constant|linear schedules")
+      0
     }
   }
 

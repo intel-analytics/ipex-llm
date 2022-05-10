@@ -18,7 +18,7 @@ package com.intel.analytics.bigdl.dllib.keras.layers
 
 import com.intel.analytics.bigdl.dllib.nn.internal.{Cropping1D => BigDLCropping1D}
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.dllib.utils.Shape
+import com.intel.analytics.bigdl.dllib.utils.{Log4Error, Shape}
 import com.intel.analytics.bigdl.dllib.keras.Net
 
 import scala.reflect.ClassTag
@@ -47,8 +47,10 @@ object Cropping1D {
     cropping: (Int, Int) = (1, 1),
     inputShape: Shape = null)(implicit ev: TensorNumeric[T]): Cropping1D[T] = {
     val croppingArray = cropping match {
-      case null => throw new IllegalArgumentException("For Cropping1D, " +
-        "cropping can not be null, please input int tuple of length 2")
+      case null =>
+        Log4Error.invalidInputError(false, "For Cropping1D cropping can not be null",
+          "please input int tuple of length 2")
+        null
       case _ => Array(cropping._1, cropping._2)
     }
     new Cropping1D[T](croppingArray, inputShape)

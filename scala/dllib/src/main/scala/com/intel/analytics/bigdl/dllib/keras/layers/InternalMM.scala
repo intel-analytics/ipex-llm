@@ -166,7 +166,7 @@ private[bigdl] class InternalMM[T: ClassTag](
       } else if (mb.size(1) == 1) {
         gradInput(2) = expandLayer.backward(mb, gradInput[Tensor[T]](2)).toTensor
       } else {
-        throw new InvalidParameterException("inputs must contain the same number of" +
+        Log4Error.invalidInputError(false, "inputs must contain the same number of" +
           "minibatches. The minibatces of each are ${ma.size(1)} and ${mb.size(1)}\"")
       }
     }
@@ -208,8 +208,9 @@ private[bigdl] class InternalMM[T: ClassTag](
       expandLayer = InternalExpand(ma.size())
       (ma, expandLayer.forward(mb))
     } else {
-      throw new InvalidParameterException("inputs must contain the same number of" +
+      Log4Error.invalidInputError(false, "inputs must contain the same number of" +
         "minibatches. The minibatces of each are ${ma.size(1)} and ${mb.size(1)}\"")
+      null
     }
     (newA, newB)
   }

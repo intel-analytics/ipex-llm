@@ -24,7 +24,7 @@ import com.intel.analytics.bigdl.dllib.optim.SGD
 import com.intel.analytics.bigdl.dllib.tensor.{Storage, Tensor}
 import com.intel.analytics.bigdl.dllib.utils.RandomGenerator._
 import com.intel.analytics.bigdl.dllib.utils.TorchObject.TYPE_DOUBLE_TENSOR
-import com.intel.analytics.bigdl.dllib.utils.{T, Table, TestUtils, TorchFile}
+import com.intel.analytics.bigdl.dllib.utils._
 
 import scala.collection.mutable.ArrayBuffer
 import scala.math._
@@ -669,7 +669,7 @@ class LSTMPeepholeSpec  extends TorchRNNSpec {
         v1
       })
       case _ =>
-        throw new UnsupportedOperationException("unsupported $key and $value type")
+        Log4Error.invalidOperationError(false, "unsupported $key and $value type")
     }
 
     luaOutput.map(output, (v1, v2) => {

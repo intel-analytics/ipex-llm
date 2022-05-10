@@ -276,7 +276,8 @@ class Sequential[T: ClassTag]()
   private def triggerBuilding(module: AbstractModule[_ <: Activity, _ <: Activity, T]): Unit = {
     if (!this.isBuilt()) {
       if (module.getInputShape() == null) {
-        throw new RuntimeException("The first layer should explicitly declare inputshape")
+        Log4Error.invalidOperationError(false,
+          "The first layer should explicitly declare inputshape")
       } else {
         val outputShape = module.build(module.getInputShape())
         // The inputShape of Sequential should only be init here.
@@ -297,7 +298,7 @@ class Sequential[T: ClassTag]()
    */
   def add(module: AbstractModule[_ <: Activity, _ <: Activity, T]): this.type = {
     if (frozen) {
-      throw new RuntimeException(
+      Log4Error.invalidOperationError(false,
         "This Sequential has been frozen, as it has been added into other container")
     }
     if (module.isInstanceOf[Sequential[T]]) {

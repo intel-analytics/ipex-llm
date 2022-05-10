@@ -20,6 +20,7 @@ import com.intel.analytics.bigdl.mkl.{Memory, MklDnn}
 import com.intel.analytics.bigdl.dllib.nn.abstractnn.Activity
 import com.intel.analytics.bigdl.dllib.nn.{Dropout => NNDropout}
 import com.intel.analytics.bigdl.dllib.tensor.DnnTensor
+import com.intel.analytics.bigdl.dllib.utils.Log4Error
 
 class Dropout(
   val initP: Double = 0.5,
@@ -34,7 +35,10 @@ class Dropout(
       // reminder: for 3 dimension, we should keep original layout (ntc or tnc)
       case 3 => layout
       case 4 => Memory.Format.nchw
-      case _ => throw new UnsupportedOperationException(s"${getName()} unsupported input shape")
+      case _ =>
+        Log4Error.invalidOperationError(false, s"${getName()} unsupported input shape ${shape}",
+        "only support shape with length 2, 3, 4")
+        0
     }
   }
 

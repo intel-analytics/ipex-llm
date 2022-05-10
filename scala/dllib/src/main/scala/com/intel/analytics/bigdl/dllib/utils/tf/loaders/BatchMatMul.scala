@@ -20,6 +20,7 @@ import java.nio.ByteOrder
 import com.intel.analytics.bigdl.Module
 import com.intel.analytics.bigdl.dllib.nn.ops.{BatchMatMul => BatchMatMulOps}
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.dllib.utils.Log4Error
 import com.intel.analytics.bigdl.dllib.utils.tf.Context
 import org.tensorflow.framework.{DataType, NodeDef}
 
@@ -39,7 +40,8 @@ class BatchMatMul extends TensorflowOpsLoader {
     } else if (t == DataType.DT_DOUBLE) {
       BatchMatMulOps[T, Double](adjX, adjY)
     } else {
-      throw new UnsupportedOperationException(s"Not support load ReLU6 when type is $t")
+      Log4Error.invalidOperationError(false, s"Not support load ReLU6 when type is $t")
+      null
     }
   }
 }

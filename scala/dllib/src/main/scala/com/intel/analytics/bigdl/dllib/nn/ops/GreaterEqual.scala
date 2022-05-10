@@ -18,6 +18,7 @@ package com.intel.analytics.bigdl.dllib.nn.ops
 import com.google.protobuf.ByteString
 import com.intel.analytics.bigdl.dllib.nn.abstractnn.Activity
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.dllib.utils.Log4Error
 
 import scala.reflect.ClassTag
 
@@ -36,11 +37,13 @@ class GreaterEqual[T: ClassTag]()
   override def compareInt(a: Int, b: Int): Boolean = a >= b
 
   override def compareBoolean(a: Boolean, b: Boolean): Boolean = {
-    throw new UnsupportedOperationException("Does not support GreaterEqual on Boolean")
+    Log4Error.invalidOperationError(false, "Does not support GreaterEqual on Boolean")
+    true
   }
 
   override def compareByteString(a: ByteString, b: ByteString): Boolean = {
-    throw new UnsupportedOperationException("Does not support GreaterEqual on ByteString")
+    Log4Error.invalidOperationError(false, "Does not support GreaterEqual on ByteString")
+    true
   }
 }
 

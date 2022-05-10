@@ -20,6 +20,7 @@ import java.nio.ByteOrder
 import com.intel.analytics.bigdl.Module
 import com.intel.analytics.bigdl.dllib.nn.ops.{Exp => ExpOps}
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.dllib.utils.Log4Error
 import com.intel.analytics.bigdl.dllib.utils.tf.Context
 import org.tensorflow.framework.{DataType, NodeDef}
 
@@ -37,7 +38,8 @@ class Exp extends TensorflowOpsLoader {
     } else if (t == DataType.DT_DOUBLE) {
       ExpOps[T, Double]()
     } else {
-      throw new UnsupportedOperationException(s"Not support load Exp when type is ${t}")
+      Log4Error.invalidOperationError(false, s"Not support load Exp when type is ${t}")
+      null
     }
   }
 }

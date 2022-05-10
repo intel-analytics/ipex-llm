@@ -159,8 +159,9 @@ class SampleToBatch[T: ClassTag]
         util.Arrays.fill(data.asInstanceOf[Array[Double]], start, end, ev.toType[Double](padValue))
       case FloatType =>
         util.Arrays.fill(data.asInstanceOf[Array[Float]], start, end, ev.toType[Float](padValue))
-      case _ => throw new UnsupportedOperationException(
-        "SampleToBatch: Only Float/Double supported")
+      case _ =>
+        Log4Error.invalidInputError(false, "SampleToBatch: Only Float/Double supported, but got" +
+          s" ${ev.getType()}")
     }
   }
 
@@ -179,7 +180,9 @@ class SampleToBatch[T: ClassTag]
         .asInstanceOf[Array[Float]],
         srcPos, dest
           .asInstanceOf[Array[Float]], destPos, length)
-      case _ => throw new UnsupportedOperationException(s"Only Float/Double supported")
+      case _ =>
+        Log4Error.invalidInputError(false, "Only Float/Double supported, but got" +
+          s" ${ev.getType()}")
     }
   }
 

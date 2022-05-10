@@ -30,7 +30,7 @@ class DnnTensorSpec extends BigDLSpecHelper{
   }
 
   "DnnTensor" should "does not support double" in {
-    intercept[UnsupportedOperationException] {
+    intercept[java.lang.IllegalArgumentException] {
       val t = DnnTensor[Double](3, 4, 5)
     }
   }

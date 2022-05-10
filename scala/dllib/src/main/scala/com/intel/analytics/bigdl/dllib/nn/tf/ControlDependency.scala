@@ -19,6 +19,7 @@ import com.intel.analytics.bigdl.dllib.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.dllib.nn.ops.Operation
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.dllib.utils.Log4Error
 
 import scala.reflect.ClassTag
 
@@ -27,6 +28,7 @@ private[bigdl] class ControlDependency[T: ClassTag]()(implicit ev: TensorNumeric
   extends Operation[Activity, Tensor[T], T] {
   override def updateOutput(input: Activity): Tensor[T] = {
     val msg = "forward method on ControlDependency should not be called"
-    throw new UnsupportedOperationException(msg)
+    Log4Error.invalidOperationError(false, msg)
+    null
   }
 }

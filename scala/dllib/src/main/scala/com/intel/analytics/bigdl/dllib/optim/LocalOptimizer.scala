@@ -58,7 +58,10 @@ class LocalOptimizer[T: ClassTag] (
   private val subModelNumber = Engine.getEngineType match {
     case MklBlas => coreNumber
     case MklDnn => 1
-    case _ => throw new IllegalArgumentException
+    case _ =>
+      Log4Error.invalidInputError(false, s"unexpected engine type ${Engine.getEngineType}",
+        "only support MklBlas and MklDnn")
+      0
   }
 
   private val workingModels = {

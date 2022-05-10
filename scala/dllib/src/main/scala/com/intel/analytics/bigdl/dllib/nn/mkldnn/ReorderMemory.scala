@@ -44,7 +44,10 @@ class ReorderMemory(inputFormat: MemoryData, outputFormat: MemoryData,
     val ret = src match {
       case h: HeapData => Array(HeapData(shape, layout, src.dataType))
       case n: NativeData => Array(NativeData(shape, layout, src.dataType))
-      case _ => throw new UnsupportedOperationException("Not support such memory format")
+      case _ =>
+        Log4Error.invalidInputError(false, s"memory format $src is not supported",
+          "only support NativeData and HeapData")
+        null
     }
 
     ret(0).setMask(src.mask)

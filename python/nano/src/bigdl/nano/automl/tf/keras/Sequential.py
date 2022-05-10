@@ -19,14 +19,20 @@ import copy
 
 from bigdl.nano.automl.utils import proxy_methods
 from bigdl.nano.automl.tf.mixin import HPOMixin
-from bigdl.nano.automl.hpo.backend import OptunaBackend
 from bigdl.nano.automl.hpo.space import AutoObject
 
 
 @proxy_methods
 class Sequential(HPOMixin, tf.keras.Sequential):
+    """Tf.keras.Sequential with HPO capabilities."""
 
     def __init__(self, layers=None, name=None):
+        """
+        Initialzier.
+
+        :param layers: a list of layers (optional). Defults to None.
+        :param name: str(optional), name of the model. Defaults to None
+        """
         super().__init__(layers=None, name=name)
         # TODO add more flexibility for args parsing
         # self.init_args = args
@@ -36,6 +42,11 @@ class Sequential(HPOMixin, tf.keras.Sequential):
         self.lazylayers_ = layers if layers is not None else []
 
     def add(self, layer):
+        """
+        Add a layer.
+
+        :param layer: the layer to be added.
+        """
         # just add all layers into a cache
         # and layer will be instantiated later
         self.lazylayers_.append(layer)
@@ -47,7 +58,7 @@ class Sequential(HPOMixin, tf.keras.Sequential):
         instantiated_layers = []
         for layer in self.lazylayers_:
             if isinstance(layer, AutoObject):
-                newl = OptunaBackend.instantiate(trial, layer)
+                newl = self.backend.instantiate(trial, layer)
             else:
                 newl = copy.deepcopy(layer)
             instantiated_layers.append(newl)

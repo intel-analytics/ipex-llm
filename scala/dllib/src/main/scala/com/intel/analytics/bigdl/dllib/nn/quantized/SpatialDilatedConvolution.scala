@@ -19,6 +19,7 @@ package com.intel.analytics.bigdl.dllib.nn.quantized
 import com.intel.analytics.bigdl.dllib.nn.abstractnn.DataFormat
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.dllib.tensor.{FloatType, QuantizedTensor, Tensor}
+import com.intel.analytics.bigdl.dllib.utils.Log4Error
 import com.intel.analytics.bigdl.dllib.utils.serializer.converters.DataConverter
 import com.intel.analytics.bigdl.dllib.utils.serializer.{DeserializeContext, ModuleData, SerializeContext}
 import com.intel.analytics.bigdl.serialization.Bigdl.{AttrValue, BigDLModule}
@@ -89,7 +90,9 @@ object SpatialDilatedConvolution extends QuantSerializer {
       case FloatType =>
         DataConverter.setAttributeValue(context, weightBuilder, conv.weight,
           universe.typeOf[Array[Tensor[Float]]])
-      case _ => throw new UnsupportedOperationException(s"Only support Float for quantized model")
+      case _ =>
+        Log4Error.invalidOperationError(false,
+          s"Doesn't support updateGradInput for quantized model")
     }
     modelBuilder.putAttr("weights", weightBuilder.build)
   }

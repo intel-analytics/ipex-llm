@@ -83,7 +83,7 @@ class ConcatSpec extends FlatSpec with Matchers {
     model.add(Reshape[Float](Array(5, 2)))
     model.add(Reshape[Float](Array(2, 5)))
     val input = Tensor[Float](10)
-    val caught = intercept[IllegalArgumentException] {
+    val caught = intercept[com.intel.analytics.bigdl.dllib.utils.InvalidOperationException] {
       model.forward(input)
     }
     val contains = caught.getMessage().contains("output size at dimension 1 mismatch")

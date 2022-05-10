@@ -25,8 +25,7 @@ import com.intel.analytics.bigdl.dllib.nn.mkldnn.Phase.{InferencePhase, Training
 import com.intel.analytics.bigdl.dllib.nn.mkldnn.ResNet.DatasetType.ImageNet
 import com.intel.analytics.bigdl.numeric.NumericFloat
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
-import com.intel.analytics.bigdl.dllib.utils.{T}
-import com.intel.analytics.bigdl.dllib.utils.RandomGenerator
+import com.intel.analytics.bigdl.dllib.utils.{Log4Error, RandomGenerator, T}
 import org.scalatest.{FlatSpec, Matchers}
 
 class TopologySpec extends FlatSpec with Matchers {
@@ -1072,7 +1071,8 @@ class TopologySpec extends FlatSpec with Matchers {
           .add(SpatialConvolution(nInputPlane, nOutputPlane, 1, 1, stride, stride)
             .setName(s"res${name}_branch1"))
       } else if (nInputPlane != nOutputPlane) {
-        throw new IllegalArgumentException(s"useConv false")
+        Log4Error.invalidOperationError(false, s"useConv false")
+        null
       } else {
         Identity()
       }
@@ -1140,7 +1140,8 @@ class TopologySpec extends FlatSpec with Matchers {
           Convolution(nInputPlane, nOutputPlane, 1, 1, stride, stride)
             .setName(s"res${name}_branch1").inputs(input)
         } else if (nInputPlane != nOutputPlane) {
-          throw new IllegalArgumentException(s"useConv false")
+          Log4Error.invalidOperationError(false, s"useConv false")
+          null
         } else {
           Identity().inputs(input)
         }

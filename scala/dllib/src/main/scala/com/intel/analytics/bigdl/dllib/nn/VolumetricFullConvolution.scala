@@ -262,8 +262,9 @@ class VolumetricFullConvolution[T: ClassTag](
           output2d.asInstanceOf[Tensor[Float]]
         )
 
-        case _ => throw new UnsupportedOperationException(
-          "VolumetricFullConvolution: only Float/Double type supported")
+        case _ =>
+          Log4Error.invalidInputError(false, s"${ev.getType()} is not supported",
+            "only support FloatType and DoubleType")
       }
     }
 
@@ -423,8 +424,9 @@ class VolumetricFullConvolution[T: ClassTag](
         columns.asInstanceOf[Tensor[Float]]
       )
 
-      case _ => throw new UnsupportedOperationException(
-        s"VolumetricFullConvolution: only Float/Double type supported")
+      case _ =>
+        Log4Error.invalidInputError(false, s"${ev.getType()} is not supported",
+          "only support FloatType and DoubleType")
     }
 
     // M,N,K are dims of matrix A and B
@@ -573,7 +575,9 @@ class VolumetricFullConvolution[T: ClassTag](
         1, 1, 1,
         columns.asInstanceOf[Tensor[Float]]
       )
-      case t => throw new NotImplementedError(s"$t is not supported")
+      case t =>
+        Log4Error.invalidInputError(false, s"${ev.getType()} is not supported",
+          "only support FloatType and DoubleType")
     }
 
     // M,N,K are dims of matrix A and B
