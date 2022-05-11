@@ -366,7 +366,7 @@ class SparkRunner:
             ld_path = executor_python_env + "/lib:" + executor_python_env + "/lib/python" + \
                 py_version + "/lib-dynload"
             image_workdir = get_bigdl_image_workdir()
-            tf_libs_path = image_workdir + executor_python_env + "/lib/python" + \
+            tf_libs_path = image_workdir + "/" + executor_python_env + "/lib/python" + \
                 py_version + "/site-packages/bigdl/share/tflibs"
             if "spark.executor.extraLibraryPath" in conf:
                 ld_path = "{}:{}".format(ld_path, conf["spark.executor.extraLibraryPath"])
