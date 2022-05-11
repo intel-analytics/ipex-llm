@@ -88,7 +88,7 @@ if [ ! -f ~/.chronos/dataset/nyc_taxi/nyc_taxi_data.csv ]; then
   mv ~/.chronos/dataset/nyc_taxi/nyc_taxi.csv ~/.chronos/dataset/nyc_taxi/nyc_taxi_data.csv
 fi
 
-execute_ray_test sparkdf_training_nyc_taxi.py "${BIGDL_ROOT}/python/chronos/example/distributed/sparkdf_training_nyc_taxi.py"
+execute_ray_test sparkdf_training_nyc_taxi.py "${BIGDL_ROOT}/python/chronos/example/distributed/sparkdf_training_nyc_taxi.py" --datadir ~/.chronos/dataset/nyc_taxi/nyc_taxi_data.csv
 time8=$?
 
 echo "#1 autolstm_nyc_taxi time used:$time1 seconds"
