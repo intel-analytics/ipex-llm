@@ -488,7 +488,8 @@ def _read_stream(fd, fn):
         # and greater than a single system page.
         buff = fd.read(8192)
         if buff:
-            fn(buff.decode('utf-8'))
+            # fn(buff.decode('utf-8'))
+            fn(buff)
 
 
 def init_nncontext(conf=None, cluster_mode="spark-submit", spark_log_level="WARN",
@@ -647,28 +648,40 @@ def init_internal_nncontext(conf=None, spark_log_level="WARN", redirect_spark_lo
     # The following code copied and modified from
     # https://github.com/Valassis-Digital-Media/spylon-kernel/blob/master/
     # spylon_kernel/scala_interpreter.py
-    if ZooContext.log_output and not has_activate_sc:
-        import subprocess
-        import pyspark.java_gateway
-        spark_jvm_proc = None
-
-        def Popen(*args, **kwargs):
-            """Wraps subprocess.Popen to force stdout and stderr from the child process
-            to pipe to this process without buffering.
-            """
-            nonlocal spark_jvm_proc
-            # Override these in kwargs to avoid duplicate value errors
-            # Set streams to unbuffered so that we read whatever bytes are available
-            # when ready, https://docs.python.org/3.6/library/subprocess.html#popen-constructor
-            kwargs['bufsize'] = 0
-            # Capture everything from stdout for display in the notebook
-            kwargs['stdout'] = subprocess.PIPE
-            # Optionally capture stderr, otherwise it'll go to the kernel log
-            kwargs['stderr'] = subprocess.PIPE
-            spark_jvm_proc = subprocess.Popen(*args, **kwargs)
-            return spark_jvm_proc
-
-        pyspark.java_gateway.Popen = Popen
+    if ZooContext.log_output:
+        log_path = "/tmp/logs/bigdl.log"
+        try:
+            os.remove(log_path)
+        except OSError:
+            pass
+        stderr_reader = threading.Thread(target=_read_stream,
+                                         daemon=True,
+                                         kwargs=dict(
+                                             fd=open(log_path, 'w+'),
+                                             fn=sys.stdout.write))
+        stderr_reader.start()
+    # if ZooContext.log_output and not has_activate_sc:
+    #     import subprocess
+    #     import pyspark.java_gateway
+    #     spark_jvm_proc = None
+    #
+    #     def Popen(*args, **kwargs):
+    #         """Wraps subprocess.Popen to force stdout and stderr from the child process
+    #         to pipe to this process without buffering.
+    #         """
+    #         nonlocal spark_jvm_proc
+    #         # Override these in kwargs to avoid duplicate value errors
+    #         # Set streams to unbuffered so that we read whatever bytes are available
+    #         # when ready, https://docs.python.org/3.6/library/subprocess.html#popen-constructor
+    #         kwargs['bufsize'] = 0
+    #         # Capture everything from stdout for display in the notebook
+    #         kwargs['stdout'] = subprocess.PIPE
+    #         # Optionally capture stderr, otherwise it'll go to the kernel log
+    #         kwargs['stderr'] = subprocess.PIPE
+    #         spark_jvm_proc = subprocess.Popen(*args, **kwargs)
+    #         return spark_jvm_proc
+    #
+    #     pyspark.java_gateway.Popen = Popen
 
     if isinstance(conf, six.string_types):
         sc = getOrCreateSparkContext(conf=None, appName=conf)
@@ -676,25 +689,25 @@ def init_internal_nncontext(conf=None, spark_log_level="WARN", redirect_spark_lo
         sc = getOrCreateSparkContext(conf=conf)
     sc.setLogLevel(spark_log_level)
 
-    if ZooContext.log_output and not has_activate_sc and spark_jvm_proc is not None:
-        if spark_jvm_proc.stdout is not None:
-            stdout_reader = threading.Thread(target=_read_stream,
-                                             daemon=True,
-                                             kwargs=dict(
-                                                 fd=spark_jvm_proc.stdout,
-                                                 fn=sys.stdout.write))
-            stdout_reader.start()
-        if spark_jvm_proc.stderr is not None:
-            stderr_reader = threading.Thread(target=_read_stream,
-                                             daemon=True,
-                                             kwargs=dict(
-                                                 fd=spark_jvm_proc.stderr,
-                                                 fn=sys.stderr.write))
-            stderr_reader.start()
+    # if ZooContext.log_output and not has_activate_sc and spark_jvm_proc is not None:
+    #     if spark_jvm_proc.stdout is not None:
+    #         stdout_reader = threading.Thread(target=_read_stream,
+    #                                          daemon=True,
+    #                                          kwargs=dict(
+    #                                              fd=spark_jvm_proc.stdout,
+    #                                              fn=sys.stdout.write))
+    #         stdout_reader.start()
+    #     if spark_jvm_proc.stderr is not None:
+    #         stderr_reader = threading.Thread(target=_read_stream,
+    #                                          daemon=True,
+    #                                          kwargs=dict(
+    #                                              fd=spark_jvm_proc.stderr,
+    #                                              fn=sys.stderr.write))
+    #         stderr_reader.start()
     check_version()
-    if redirect_spark_log:
-        redire_spark_logs()
-        show_bigdl_info_logs()
+    # if redirect_spark_log:
+    #     redire_spark_logs()
+    #     show_bigdl_info_logs()
     init_engine()
     set_python_home()
     return sc
