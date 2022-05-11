@@ -624,10 +624,7 @@ class TestTFRayEstimator(TestCase):
             history = est.fit(create_train_datasets,
                               epochs=2,
                               batch_size=batch_size,
-                              steps_per_epoch=5,
-                              callbacks=callbacks,
-                              validation_data=create_test_dataset,
-                              validation_steps=1)
+                              callbacks=callbacks)
             assert len(os.listdir(os.path.join(temp_dir, "ckpt_2"))) > 0
 
             callbacks = [
