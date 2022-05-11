@@ -28,11 +28,6 @@ class PytorchQuantizedModel(AcceleratedLightningModule):
     @staticmethod
     def _load(path, model):
         qmodel = PyTorchModel(load(path, model))
-        path = Path(path)
-        tune_cfg_file = path / 'best_configure.yaml'
-        with open(tune_cfg_file, 'r') as f:
-            tune_cfg = yaml.safe_load(f)
-            qmodel.tune_cfg = tune_cfg
         return PytorchQuantizedModel(qmodel)
 
     def _save_model(self, path):
