@@ -34,7 +34,7 @@ from bigdl.nano.pytorch.lightning import LightningModuleFromTorch
 from bigdl.nano.pytorch.plugins.ddp_spawn import DDPSpawnPlugin
 from bigdl.nano.deps.automl.hpo_api import create_hpo_searcher, check_hpo_status
 from bigdl.nano.deps.ray.ray_api import distributed_ray
-from bigdl.nano.deps.ipex.ipex_api import create_IPEXAccelerator, ipex_device, ipex_optimize
+from bigdl.nano.deps.ipex.ipex_api import create_IPEXAccelerator
 from bigdl.nano.deps.openvino.openvino_api import PytorchOpenVINOModel, load_openvino_model
 from bigdl.nano.deps.onnxruntime.onnxruntime_api import bind_onnxrt_methods,\
     PytorchONNXRuntimeModel, load_onnxruntime_model
@@ -91,13 +91,6 @@ class Trainer(pl.Trainer):
         else:
             self.hposearcher = None
 
-        # Initialize trainer
-        if use_ipex and not check_avx512():
-            warning("Enable ipex in a cpu instruction set"
-                    " without avx512 may cause some random error."
-                    "Fall back to cpu device.")
-            use_ipex = False
-
         if num_processes == 1:
             accelerator = None
             if use_ipex:
@@ -109,20 +102,14 @@ class Trainer(pl.Trainer):
                 f"Distributed backends supported now are spawn and ray," \
                 " but get {distributed_backend}."
             if distributed_backend == "spawn":
-                if use_ipex:
-                    device = ipex_device()
-                else:
-                    device = "cpu"
+                device = "cpu"
                 plugin = DDPSpawnPlugin(parallel_devices=[
                     torch.device(device) for _ in range(num_processes)],
                     cpu_for_each_process=cpu_for_each_process,
                     cluster_environment=LightningEnvironment())
             elif distributed_backend == "subprocess":
                 from bigdl.nano.pytorch.plugins.ddp_subprocess import DDPSubprocessPlugin
-                if use_ipex:
-                    device = ipex_device()
-                else:
-                    device = "cpu"
+                device = "cpu"
                 plugin = DDPSubprocessPlugin(parallel_devices=[
                     torch.device(device) for _ in range(num_processes)],
                     cpu_for_each_process=cpu_for_each_process,
@@ -131,9 +118,10 @@ class Trainer(pl.Trainer):
                 # Import RayPlugins may entangle with openmp even if it has not been used,
                 # which leads to an unacceptably low performance.
                 # So we import when we need.
+                device = "cpu"
                 plugin = distributed_ray(num_workers=num_processes,  # type: ignore
                                          use_ipex=use_ipex,
-                                         device=ipex_device())
+                                         device=device)
 
             accelerator = None
             if use_ipex:

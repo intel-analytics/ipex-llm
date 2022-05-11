@@ -17,13 +17,3 @@
 def create_IPEXAccelerator(*args, **kwargs):
     from bigdl.nano.deps.ipex.ipex_accelerator import IPEXAccelerator
     return IPEXAccelerator(*args, **kwargs)
-
-
-def ipex_device():
-    ipex_device = 'xpu:0'  # DeprecationWarning after ipex 1.9.0
-    return ipex_device
-
-
-def ipex_optimize(*args, **kwargs):
-    from intel_extension_for_pytorch import optimize
-    return optimize(*args, **kwargs)
