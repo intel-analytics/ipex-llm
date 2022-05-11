@@ -608,7 +608,7 @@ class TestTFRayEstimator(TestCase):
             print("save success")
         finally:
             os.remove("/tmp/cifar10_keras.ckpt")
-    
+
     def test_checkpoint_model(self):
         import tempfile
         batch_size = 320
@@ -625,19 +625,22 @@ class TestTFRayEstimator(TestCase):
                               epochs=2,
                               batch_size=batch_size,
                               steps_per_epoch=5,
-                              callbacks=callbacks)
+                              callbacks=callbacks,
+                              validation_data=create_test_dataset,
+                              validation_steps=1)
             assert len(os.listdir(os.path.join(temp_dir, "ckpt_2"))) > 0
 
             callbacks = [
                 tf.keras.callbacks.ModelCheckpoint(filepath=os.path.join(temp_dir, "best"),
-                                                   save_best_only=True)]
+                                                    save_weights_only=True,
+                                                    save_best_only=False)]
             history = est.fit(create_train_datasets,
-                              epochs=2,
-                              batch_size=batch_size,
-                              steps_per_epoch=5,
-                              callbacks=callbacks,
-                              validation_data=create_test_dataset,
-                              validation_steps=1)
+                                epochs=1,
+                                batch_size=batch_size,
+                                steps_per_epoch=5,
+                                callbacks=callbacks,
+                                validation_data=create_test_dataset,
+                                validation_steps=1)
             assert len(os.listdir(os.path.join(temp_dir, "best"))) > 0
         finally:
             shutil.rmtree(temp_dir)
