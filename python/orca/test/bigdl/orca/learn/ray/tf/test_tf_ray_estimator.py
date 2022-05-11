@@ -632,8 +632,8 @@ class TestTFRayEstimator(TestCase):
 
             callbacks = [
                 tf.keras.callbacks.ModelCheckpoint(filepath=os.path.join(temp_dir, "best"),
-                                                    save_weights_only=True,
-                                                    save_best_only=False)]
+                                                    save_weights_only=False,
+                                                    save_best_only=True)]
             history = est.fit(create_train_datasets,
                                 epochs=1,
                                 batch_size=batch_size,
