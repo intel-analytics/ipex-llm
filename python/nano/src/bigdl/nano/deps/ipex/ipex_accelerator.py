@@ -26,7 +26,6 @@ from pytorch_lightning.plugins.training_type import TrainingTypePlugin
 from pytorch_lightning.plugins.precision import PrecisionPlugin
 
 
-
 class IPEXAccelerator(Accelerator):
     """ Accelerator for XPU devices. """
 
