@@ -40,6 +40,8 @@ import logging
 import socket
 
 from bigdl.orca.data.utils import ray_partitions_get_data_label
+from bigdl.orca.learn.utils import replace_specific_object_from_callbacks
+from bigdl.orca.learn.tf2.callbacks import ModelCheckpoint
 
 logger = logging.getLogger(__name__)
 
@@ -359,6 +361,12 @@ class TFRunner:
         elif self.backend == "tf-distributed":
             if self.strategy.cluster_resolver.task_id != 0:
                 verbose = 0
+            if callbacks is not None:
+                import tensorflow as tf
+                replace_specific_object_from_callbacks(callbacks,
+                                                       tf.keras.callbacks.ModelCheckpoint,
+                                                       ModelCheckpoint,
+                                                       self.rank)
 
         history = self.model.fit(train_dataset,
                                  epochs=self.epoch + epochs,
