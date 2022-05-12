@@ -607,6 +607,7 @@ class RandomAffine(object):
                  shear=None,
                  interpolation=cv2.INTER_LINEAR,
                  fill=0,
+                 fillcolor=0,
                  center=None):
         if isinstance(degrees, numbers.Number):
             if degrees < 0:
@@ -648,12 +649,12 @@ class RandomAffine(object):
         else:
             self.shear = shear
 
-        # if fillcolor is not None:
-        #     warnings.warn(
-        #         "The parameter 'fillcolor' is deprecated since 0.12 and will be removed in 0.14. "
-        #         "Please use 'fill' instead."
-        #     )
-        #     fill = fillcolor
+        if fillcolor is not None:
+            warnings.warn(
+                "The parameter 'fillcolor' is deprecated since 0.12 and will be removed in 0.14. "
+                "Please use 'fill' instead."
+            )
+            fill = fillcolor
 
         if fill is None:
             fill = 0
