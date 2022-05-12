@@ -55,7 +55,7 @@ class BasePytorchForecaster(Forecaster):
         else:
             # seed setting
             from pytorch_lightning import seed_everything
-            from bigdl.nano.pytorch.trainer import Trainer
+            from bigdl.chronos.pytorch import TSTrainer as Trainer
             seed_everything(seed=self.seed)
 
             # Model preparation
