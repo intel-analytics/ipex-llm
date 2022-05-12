@@ -32,15 +32,22 @@ class DummyAttestationService extends AttestationService {
 
     override def setPolicy(policy: JSONObject): String = "true"
 
-    // generate a quote randomly
+    /**
+     * Generate a quote randomly
+     * @return a quote of String type
+     */
     def getQuoteFromServer(): String = {
         val userReportData = new Array[Byte](16)
         Random.nextBytes(userReportData)
         new String(userReportData)
     }
 
-    // do a quote verification
-    // if the quote contains the substring "true" then return true, else return false
+    /**
+     * Do a quote verification
+     * @param quote the quote generated before
+     * @return the result and response of quote verify. If the quote contains the substring "true" then return true,
+     *         else return false
+     */
     override def attestWithServer(quote: String): (Boolean, String) = {
         timing("DummyAttestationService retrieveVerifyQuoteResult") {
             if (quote == null) {
