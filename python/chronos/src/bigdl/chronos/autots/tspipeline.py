@@ -162,7 +162,7 @@ class TSPipeline:
             else:
                 if self._onnxruntime_fp32 is None:
                     self._onnxruntime_fp32 = Trainer.trace(self._best_model,
-                                                           input_sample=x[0:1],
+                                                           input_sample=torch.from_numpy(x[0:1]),
                                                            accelerator="onnxruntime")
                 yhat = _pytorch_fashion_inference(model=self._onnxruntime_fp32,
                                                   input_data=x,
@@ -265,7 +265,7 @@ class TSPipeline:
             else:
                 if self._onnxruntime_fp32 is None:
                     self._onnxruntime_fp32 = Trainer.trace(self._best_model,
-                                                           input_sample=x[0:1],
+                                                           input_sample=torch.from_numpy(x[0:1]),
                                                            accelerator="onnxruntime")
                 yhat = _pytorch_fashion_inference(model=self._onnxruntime_fp32,
                                                   input_data=x,
