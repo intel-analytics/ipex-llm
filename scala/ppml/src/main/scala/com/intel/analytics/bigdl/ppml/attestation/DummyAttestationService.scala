@@ -35,7 +35,7 @@ class DummyAttestationService extends AttestationService {
     def getQuoteFromServer(): String = {
         val userReportData = new Array[Byte](16)
         Random.nextBytes(userReportData)
-        userReportData.toString
+        new String(userReportData)
     }
 
     override def attestWithServer(quote: String): (Boolean, String) = {
