@@ -147,9 +147,7 @@ class Trainer(pl.Trainer):
                 loss: _Loss = None,
                 optimizer: torch.optim.Optimizer = None,
                 scheduler: _LRScheduler = None,
-                metrics: List[Metric] = None,
-                onnx: bool = False,
-                quantize: bool = False):
+                metrics: List[Metric] = None):
         """
         Construct a pytorch-lightning model.
 
@@ -163,10 +161,6 @@ class Trainer(pl.Trainer):
         :param optimizer:   Optimizer to construct pytorch-lightning model Should be None.
                             if model is instance of pl.LightningModule.
         :param metrics:     A list of torchmetrics to validate/test performance.
-        :param onnx:        Indicates if onnxruntime support should be binded to the
-                            returned model.
-        :param quantize:    Indicates if quantization support should be binded to the
-                            returned model.
         :return:            A LightningModule object.
         """
         assert isinstance(model, nn.Module), \
@@ -179,20 +173,6 @@ class Trainer(pl.Trainer):
             pl_model = model
         else:
             pl_model = LightningModuleFromTorch(model, loss, optimizer, scheduler, metrics)
-        if onnx:
-            try:
-                from bigdl.nano.pytorch.runtime_binding.base_inference import\
-                    bind_base_inference_rt_methods
-                pl_model = bind_onnxrt_methods(bind_base_inference_rt_methods(pl_model))
-            except ImportError:
-                raise RuntimeError("You should install onnx and onnxruntime to set `onnx=True`, "
-                                   "or just set `onnx=False`.")
-        if quantize:
-            from bigdl.nano.pytorch.runtime_binding.quantization_inference import\
-                bind_quantize_methods
-            from bigdl.nano.pytorch.runtime_binding.base_inference import\
-                bind_base_inference_rt_methods
-            pl_model = bind_quantize_methods(bind_base_inference_rt_methods(pl_model), None)
 
         return pl_model
 
@@ -245,8 +225,7 @@ class Trainer(pl.Trainer):
                  accuracy_criterion: dict = {'relative': 0.99, 'higher_is_better': True},
                  timeout=0,
                  max_trials=1,
-                 input_sample=None,
-                 return_pl=False
+                 input_sample=None
                  ):
         """
         Calibrate a Pytorch-Lightning model for post-training quantization.
@@ -287,8 +266,6 @@ class Trainer(pl.Trainer):
                             Combine with timeout field to decide when to exit.
                             "timeout=0, max_trials=1" means it will try quantization only once and
                             return satisfying best model.
-        :param return_pl:   Decide which type to return. If set to True, a GraphModule will be
-                            returned. If set to False, a pytorch lightning module will be returned.
         :input_sample:      An input example to convert pytorch model into ONNX/OpenVINO.
         :return:            A accelerated Pytorch-Lightning Model if quantization is sucessful.
         """
@@ -332,29 +309,13 @@ class Trainer(pl.Trainer):
             """
             quantized_model = quantizer.post_training_quantize(model, calib_dataloader,
                                                                val_dataloader, metric)
-            if not return_pl:
-                if accelerator is None:
-                    return PytorchQuantizedModel(quantized_model)
-                elif accelerator == 'onnxruntime':
-                    with TemporaryDirectory() as dir:
-                        saved_onnx = Path(dir) / 'tmp.onnx'
-                        quantized_model.save(saved_onnx)
-                        return PytorchONNXRuntimeModel(str(saved_onnx))
-            else:
-                quantized_pytorch_model = quantized_model if "pytorch" in framework else None
-                quantized_onnx_model = quantized_model if "onnxrt" in framework else None
-
-                from bigdl.nano.pytorch.runtime_binding.base_inference import \
-                    bind_base_inference_rt_methods
-                from bigdl.nano.pytorch.runtime_binding.quantization_inference import \
-                    bind_quantize_methods
-                return_pl_model = bind_quantize_methods(
-                    bind_base_inference_rt_methods(pl_model), quantized_pytorch_model)
-                if quantized_onnx_model:
-                    return bind_onnxrt_methods(return_pl_model,
-                                               quantized_onnx_model)
-                else:
-                    return return_pl_model
+            if accelerator is None:
+                return PytorchQuantizedModel(quantized_model)
+            elif accelerator == 'onnxruntime':
+                with TemporaryDirectory() as dir:
+                    saved_onnx = Path(dir) / 'tmp.onnx'
+                    quantized_model.save(saved_onnx)
+                    return PytorchONNXRuntimeModel(str(saved_onnx))
         else:
             raise NotImplementedError("Backend {} is not implemented.".format(backend))
 

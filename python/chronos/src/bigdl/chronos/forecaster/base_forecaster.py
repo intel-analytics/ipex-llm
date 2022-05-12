@@ -64,10 +64,9 @@ class BasePytorchForecaster(Forecaster):
             loss = self.loss_creator(self.loss_config)
             optimizer = self.optimizer_creator(model, self.optim_config)
             self.internal = Trainer.compile(model=model, loss=loss,
-                                            optimizer=optimizer, onnx=self.onnx_available,
-                                            quantize=True)
+                                            optimizer=optimizer)
             self.onnxruntime_fp32 = None  # onnxruntime session for fp32 precision
-            self.openvino_fp32 = None  # openvino session for fp32 precision
+            self.openvino_fp32 = None  # placeholader openvino session for fp32 precision
             self.onnxruntime_int8 = None  # onnxruntime session for int8 precision
             self.pytorch_int8 = None  # pytorch model for int8 precision
 
@@ -201,9 +200,15 @@ class BasePytorchForecaster(Forecaster):
         else:
             if not self.fitted:
                 raise RuntimeError("You must call fit or restore first before calling predict!")
-            yhat = self.internal.inference(data,
-                                           backend=None,
-                                           quantize=quantize).numpy()
+            if quantize:
+                yhat = _pytorch_fashion_inference(model=self.pytorch_int8,
+                                                  input_data=data,
+                                                  batch_size=batch_size)
+            else:
+                self.internal.eval()
+                yhat = _pytorch_fashion_inference(model=self.internal,
+                                                  input_data=data,
+                                                  batch_size=batch_size)
             if not is_local_data:
                 yhat = np_to_xshard(yhat, prefix="prediction")
             return yhat
@@ -236,11 +241,15 @@ class BasePytorchForecaster(Forecaster):
         if not self.fitted:
             raise RuntimeError("You must call fit or restore first before calling predict!")
         if quantize:
-            return self.internal.inference(data, batch_size=batch_size, quantize=quantize)
+            return _pytorch_fashion_inference(model=self.onnxruntime_int8,
+                                              input_data=data,
+                                              batch_size=batch_size)
         else:
             if self.onnxruntime_fp32 is None:
                 self.build_onnx()
-            return _pytorch_fashion_inference(self.onnxruntime_fp32, data, batch_size=batch_size)
+            return _pytorch_fashion_inference(model=self.onnxruntime_fp32,
+                                              input_data=data,
+                                              batch_size=batch_size)
 
     def evaluate(self, data, batch_size=32, multioutput="raw_values", quantize=False):
         """
@@ -294,13 +303,19 @@ class BasePytorchForecaster(Forecaster):
         else:
             if not self.fitted:
                 raise RuntimeError("You must call fit or restore first before calling evaluate!")
-            yhat_torch = self.internal.inference(data[0],
-                                                 backend=None,
-                                                 quantize=quantize)
+            if quantize:
+                yhat = _pytorch_fashion_inference(model=self.pytorch_int8,
+                                                  input_data=data[0],
+                                                  batch_size=batch_size)
+            else:
+                self.internal.eval()
+                yhat = _pytorch_fashion_inference(model=self.internal,
+                                                  input_data=data[0],
+                                                  batch_size=batch_size)
 
             aggregate = 'mean' if multioutput == 'uniform_average' else None
             return Evaluator.evaluate(self.metrics, data[1],
-                                      yhat_torch.numpy(), aggregate=aggregate)
+                                      yhat, aggregate=aggregate)
 
     def evaluate_with_onnx(self, data,
                            batch_size=32,
@@ -347,11 +362,15 @@ class BasePytorchForecaster(Forecaster):
         if not self.fitted:
             raise RuntimeError("You must call fit or restore first before calling evaluate!")
         if quantize:
-            yhat = self.internal.inference(data[0], batch_size=batch_size, quantize=quantize)
+            yhat = _pytorch_fashion_inference(model=self.onnxruntime_int8,
+                                              input_data=data[0],
+                                              batch_size=batch_size)
         else:
             if self.onnxruntime_fp32 is None:
                 self.build_onnx()
-            yhat = _pytorch_fashion_inference(self.onnxruntime_fp32, data[0], batch_size=batch_size)
+            yhat = _pytorch_fashion_inference(model=self.onnxruntime_fp32,
+                                              input_data=data[0],
+                                              batch_size=batch_size)
 
         aggregate = 'mean' if multioutput == 'uniform_average' else None
         return Evaluator.evaluate(self.metrics, data[1], yhat, aggregate=aggregate)
@@ -367,6 +386,8 @@ class BasePytorchForecaster(Forecaster):
         :param checkpoint_file: The location you want to save the forecaster.
         :param quantize_checkpoint_file: The location you want to save quantized forecaster.
         """
+        from bigdl.chronos.pytorch import TSTrainer as Trainer
+
         if self.distributed:
             self.internal.save(checkpoint_file)
         else:
@@ -375,7 +396,7 @@ class BasePytorchForecaster(Forecaster):
             self.trainer.save_checkpoint(checkpoint_file)  # save current status
             if quantize_checkpoint_file:
                 try:
-                    torch.save(self.internal.quantized_state_dict(), quantize_checkpoint_file)
+                    Trainer.save(self.pytorch_int8, quantize_checkpoint_file)
                 except RuntimeError:
                     warnings.warn("Please call .quantize() method to build "
                                   "an up-to-date quantized model")
@@ -388,6 +409,8 @@ class BasePytorchForecaster(Forecaster):
         :param quantize_checkpoint_file: The checkpoint file location you want to
                load the quantized forecaster.
         """
+        from bigdl.chronos.pytorch import TSTrainer as Trainer
+
         if self.distributed:
             self.internal.load(checkpoint_file)
         else:
@@ -401,10 +424,12 @@ class BasePytorchForecaster(Forecaster):
                                                                           model=model,
                                                                           loss=loss,
                                                                           optimizer=optimizer)
-            self.internal = Trainer.compile(self.internal, onnx=self.onnx_available, quantize=True)
+            self.internal = Trainer.compile(self.internal)
             self.fitted = True
             if quantize_checkpoint_file:
-                self.internal.load_quantized_state_dict(torch.load(quantize_checkpoint_file))
+                # self.internal.load_quantized_state_dict(torch.load(quantize_checkpoint_file))
+                self.pytorch_int8 = Trainer.load(quantize_checkpoint_file,
+                                                 self.internal)
             # This trainer is only for quantization, once the user call `fit`, it will be
             # replaced according to the new training config
             self.trainer = Trainer(logger=False, max_epochs=1,
@@ -436,8 +461,7 @@ class BasePytorchForecaster(Forecaster):
         loss = self.loss_creator(self.loss_config)
         optimizer = self.optimizer_creator(model, self.optim_config)
         self.internal = Trainer.compile(model=model, loss=loss,
-                                        optimizer=optimizer, onnx=self.onnx_available,
-                                        quantize=True)
+                                        optimizer=optimizer)
 
         self.distributed = False
         self.fitted = True
@@ -499,8 +523,6 @@ class BasePytorchForecaster(Forecaster):
                                       "forecaster to a non-distributed version.")
         dummy_input = torch.rand(1, self.data_config["past_seq_len"],
                                  self.data_config["input_feature_num"])
-        # self.internal.eval_onnx(dummy_input,
-        #                         sess_options=sess_options)
         self.onnxruntime_fp32 = Trainer.trace(self.internal,
                                               input_sample=dummy_input,
                                               accelerator="onnxruntime",
@@ -521,7 +543,7 @@ class BasePytorchForecaster(Forecaster):
         dummy_input = torch.rand(1, self.data_config["past_seq_len"],
                                  self.data_config["input_feature_num"])
         if quantized_dirname:
-            self.internal.to_quantized_onnx(quantized_dirname)
+            Trainer.save(self.onnxruntime_int8, dirname)
         if dirname:
             if self.onnxruntime_fp32 is None:
                 self.build_onnx()
@@ -605,34 +627,32 @@ class BasePytorchForecaster(Forecaster):
         framework = [framework] if isinstance(framework, str) else framework
         temp_quantized_model = None
         for framework_item in framework:
-            if "onnxrt" in framework_item:
+            # if "onnxrt" in framework_item:
                 # Temp patch to developing bigdl-nano
                 # TODO: delete once bigdl-nano has a stable inference API
-                if "_quantized_model" in dir(self.internal):
-                    temp_quantized_model = self.internal._quantized_model
-                    self.internal._quantized_model = None
+                # if "_quantized_model" in dir(self.internal):
+                #     temp_quantized_model = self.internal._quantized_model
+                #     self.internal._quantized_model = None
             accelerator, method = framework_item.split('_')
             if accelerator == 'pytorch':
                 accelerator = None
             else:
                 accelerator = 'onnxruntime'
                 method = method[:-3]
-            self.internal = self.trainer.quantize(self.internal,
-                                                  precision='int8',
-                                                  accelerator=accelerator,
-                                                  method=method,
-                                                  calib_dataloader=calib_data,
-                                                  val_dataloader=val_data,
-                                                  metric=metric,
-                                                  conf=conf,
-                                                  approach=approach,
-                                                  tuning_strategy=tuning_strategy,
-                                                  accuracy_criterion=accuracy_criterion,
-                                                  timeout=timeout,
-                                                  max_trials=max_trials,
-                                                  return_pl=True)
-            if "onnxrt" in framework_item:
-                # Temp patch to developing bigdl-nano
-                # TODO: delete once bigdl-nano has a stable inference API
-                if "_quantized_model" in dir(self.internal):
-                    self.internal._quantized_model = temp_quantized_model
+            q_model = self.trainer.quantize(self.internal,
+                                            precision='int8',
+                                            accelerator=accelerator,
+                                            method=method,
+                                            calib_dataloader=calib_data,
+                                            val_dataloader=val_data,
+                                            metric=metric,
+                                            conf=conf,
+                                            approach=approach,
+                                            tuning_strategy=tuning_strategy,
+                                            accuracy_criterion=accuracy_criterion,
+                                            timeout=timeout,
+                                            max_trials=max_trials)
+            if accelerator == 'onnxruntime':
+                self.onnxruntime_int8 = q_model
+            if accelerator is None:
+                self.pytorch_int8 = q_model
