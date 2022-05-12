@@ -592,11 +592,62 @@ class RandomRotation(tv_t.RandomRotation):
     # TODO: opencv_transforms.RandomRotation misses parameter "interpolation"
     # Conflict: resample indexes of torchvision and opencv are different.
 
+    def __init__(
+        self, degrees, interpolation=InterpolationMode.NEAREST, expand=False, center=None, fill=0, resample=None
+    ):
+        if resample is not None:
+            warnings.warn(
+                "The parameter 'resample' is deprecated"
+                "Please use 'interpolation' instead."
+            )
+            self.resample = resample
+            interpolation = _torch_intToModes_mapping(resample)
+
+        if isinstance(interpolation, int):
+            warnings.warn(
+                "Argument interpolation should be of type InterpolationMode instead of int. "
+                "Please, use InterpolationMode enum."
+            )
+            interpolation = _torch_intToModes_mapping(interpolation)
+
+        self.degrees = degrees
+        self.center = center
+        self.interpolation = interpolation
+        self.expand = expand
+        self.fill = fill
+
+        self.cv_F = cv_t.RandomRotation(
+            degrees=self.degrees,
+            resample=self.resample,
+            expand=self.expand,
+            center=self.center
+        )
+
+        self.tv_F = tv_t.RandomRotation(
+            degrees=self.degrees,
+            interpolation=self.interpolation,
+            expand=self.expand,
+            center=self.center,
+            fill=self.fill
+        )
+
     def __call__(self, img):
         if type(img) == np.ndarray:
-            img = tv_t.ToTensor(img)
+            return self.cv_F.__call__(img)
+        else:
+            return self.tv_F.__call__(img)
 
-        return super(RandomRotation, self).__call__(img)
+    def __repr__(self):
+        interpolate_str = self.interpolation.value
+        format_string = self.__class__.__name__ + f"(degrees={self.degrees}"
+        format_string += f", interpolation={interpolate_str}"
+        format_string += f", expand={self.expand}"
+        if self.center is not None:
+            format_string += f", center={self.center}"
+        if self.fill is not None:
+            format_string += f", fill={self.fill}"
+        format_string += ")"
+        return format_string
 
 
 class RandomAffine(object):
