@@ -32,3 +32,35 @@ TF_ENABLE_ONEDNN_OPTS=
 +++++++++++++++++++++++++
 Complete.
 ```
+#### Jupyter Notebook
+Install jupyter notebook
+```bash
+pip install jupyter
+```
+Configure jupyter notebook
+- generate the jupyter configuration file
+    ```ipython```
+    ```bash
+    In [1]: from notebook.auth import passwd
+    In [2]: passwd()
+    Enter password: ******
+    Verify password: ******
+    Out [2]: 'sha1:...'
+    ```
+    Save the generated key
+- Modify the configuration file
+   ```bash
+   vim ~/.jupyter/jupyter_notebook_config.py
+   ```
+- Make the following changes in the file or add them directly at the end of the file
+  ```bash
+  c.NotebookApp.allow_remote_access = True 
+  c.NotebookApp.ip='*'
+  c.NotebookApp.password = u'sha:..' # The key previously generated
+  c.NotebookApp.open_browser = False 
+  c.NotebookApp.port =8888 # Specify any port
+  ```
+Start jupyter notebook
+  ```bash
+  jupyter notebook
+  ```
