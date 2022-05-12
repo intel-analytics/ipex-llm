@@ -18,8 +18,6 @@
 package com.intel.analytics.bigdl.ppml.attestation
 
 import org.apache.logging.log4j.LogManager
-
-import java.math.BigInteger
 import org.json.JSONObject
 
 import scala.util.Random
@@ -34,10 +32,22 @@ class DummyAttestationService extends AttestationService {
 
     override def setPolicy(policy: JSONObject): String = "true"
 
+    /**
+     * Generate a quote randomly
+     * @return a quote of String type
+     */
     def getQuoteFromServer(): String = {
-        "test"
+        val userReportData = new Array[Byte](16)
+        Random.nextBytes(userReportData)
+        new String(userReportData)
     }
 
+    /**
+     * Do a quote verification
+     * @param quote the quote generated before
+     * @return the result and response of quote verify. If the quote contains the substring "true" then return true,
+     *         else return false
+     */
     override def attestWithServer(quote: String): (Boolean, String) = {
         timing("DummyAttestationService retrieveVerifyQuoteResult") {
             if (quote == null) {
@@ -46,15 +56,10 @@ class DummyAttestationService extends AttestationService {
             }
             val nonce: String = "test"
             val response: JSONObject = new JSONObject()
-            val number = new BigInteger(quote)
-            val zero = new BigInteger("0")
-            var verifyQuoteResult = true
             response.put("code", 200)
             response.put("message", "success")
             response.put("nonce", nonce)
-            if(number.compareTo(zero) != 1) {
-                verifyQuoteResult = false
-            }
+            val verifyQuoteResult = quote.indexOf("true") >= 0
             response.put("result", verifyQuoteResult)
             val sign = (1 to 16).map(x => Random.nextInt(10)).mkString
             response.put("sign", sign)
