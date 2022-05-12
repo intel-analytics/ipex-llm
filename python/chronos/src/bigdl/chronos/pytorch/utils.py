@@ -17,6 +17,7 @@ import math
 import torch
 import numpy as np
 
+
 def _pytorch_fashion_inference(model, input_data, batch_size=None):
     '''
     This is an internal inference pattern for any models which can be used like:
@@ -44,8 +45,8 @@ def _pytorch_fashion_inference(model, input_data, batch_size=None):
             for batch_id in range(batch_num):
                 yhat_list.append(model(
                     *tuple(map(lambda x: x[batch_id * batch_size:
-                            (batch_id + 1) * batch_size],
-                        input_sample_list))).numpy())
+                                           (batch_id + 1) * batch_size],
+                               input_sample_list))).numpy())
         # this operation may cause performance degradation
         yhat = np.concatenate(yhat_list, axis=0)
         return yhat
