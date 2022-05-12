@@ -17,13 +17,11 @@
 package com.intel.analytics.bigdl.ppml.crypto.dataframe
 
 import com.intel.analytics.bigdl.dllib.common.zooUtils
-import com.intel.analytics.bigdl.dllib.feature.dataset.LocalDataSet
 import com.intel.analytics.bigdl.ppml.PPMLContext
 import com.intel.analytics.bigdl.ppml.crypto.{CryptoMode, FernetEncrypt}
-import com.intel.analytics.bigdl.ppml.fl.utils.{DataFrameUtils, TestUtils}
 import com.intel.analytics.bigdl.ppml.kms.SimpleKeyManagementService
-import org.apache.commons.io.FileUtils
 import org.apache.spark.SparkConf
+import org.apache.spark.sql.SparkSession
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
 import java.io.FileWriter
@@ -79,6 +77,17 @@ class EncryptDataFrameSpec extends FlatSpec with Matchers with BeforeAndAfter{
     file2.mkString("\n") should be (data)
   }
 
+  "sparkSession.read" should "work" in {
+    val sparkSession: SparkSession = SparkSession.builder().getOrCreate()
+    val df = sparkSession.read.csv(plainFileName)
+    val d = df.collect().map(v => s"${v.get(0)},${v.get(1)},${v.get(2)}").mkString("\n")
+    d should be (data)
+    val df2 = sparkSession.read.option("header", "true").csv(plainFileName)
+    val d2 = df2.schema.map(_.name).mkString(",") + "\n" +
+      df2.collect().map(v => s"${v.get(0)},${v.get(1)},${v.get(2)}").mkString("\n")
+    d2 should be (data)
+  }
+
   "read from plain csv with header" should "work" in {
     val df = sc.read(cryptoMode = CryptoMode.PLAIN_TEXT)
       .option("header", "true").csv(plainFileName)
@@ -106,5 +115,6 @@ class EncryptDataFrameSpec extends FlatSpec with Matchers with BeforeAndAfter{
     val d = df.collect().map(v => s"${v.get(0)},${v.get(1)},${v.get(2)}").mkString("\n")
     d should be (data)
   }
+
 }
 
