@@ -52,10 +52,11 @@ class TSPipeline:
         # for runtime fit/predict/evaluate
         self._best_model = Trainer.compile(model=model,
                                            loss=loss,
-                                           optimizer=optimizer,
-                                           onnx=True)
+                                           optimizer=optimizer)
         self._best_config = best_config
         self._onnxruntime_fp32 = None
+        self._onnxruntime_int8 = None
+        self._pytorch_int8 = None
 
         # for data postprocessing
         self._scaler = None
@@ -92,10 +93,15 @@ class TSPipeline:
         # predict
         if isinstance(data, TSDataset):
             x, y = self._tsdataset_to_numpy(data, is_predict=False)
-            yhat = self._best_model.inference(x,
-                                              batch_size=batch_size,
-                                              backend=None,
-                                              quantize=quantize).numpy()
+            if quantize:
+                yhat = _pytorch_fashion_inference(model=self._pytorch_int8,
+                                                  input_data=x,
+                                                  batch_size=batch_size)
+            else:
+                self._best_model.eval()
+                yhat = _pytorch_fashion_inference(model=self._best_model,
+                                                  input_data=x,
+                                                  batch_size=batch_size)
             # unscale
             yhat = self._tsdataset_unscale(yhat)
             y = self._tsdataset_unscale(y)
@@ -103,12 +109,16 @@ class TSPipeline:
             yhat_list, y_list = [], []
             self._best_config.update({'batch_size': batch_size})
             for x, y in data(self._best_config):
-                yhat = self._best_model.inference(x.numpy(),
-                                                  backend=None,
-                                                  quantize=quantize)
+                if quantize:
+                    yhat = _pytorch_fashion_inference(model=self._pytorch_int8,
+                                                      input_data=x.numpy())
+                else:
+                    self._best_model.eval()
+                    yhat = _pytorch_fashion_inference(model=self._best_model,
+                                                      input_data=x.numpy())
                 yhat_list.append(yhat)
                 y_list.append(y)
-            yhat = torch.cat(yhat_list, dim=0).numpy()
+            yhat = np.concatenate(yhat_list, axis=0)
             y = torch.cat(y_list, dim=0).numpy()
         else:
             raise RuntimeError("We only support input tsdataset or data creator, "
@@ -146,17 +156,16 @@ class TSPipeline:
             x, y = self._tsdataset_to_numpy(data, is_predict=False)
             yhat = None
             if quantize:
-                yhat = self._best_model.inference(x,
-                                                  batch_size=batch_size,
-                                                  backend="onnx",
-                                                  quantize=quantize)
+                yhat = _pytorch_fashion_inference(model=self._onnxruntime_int8,
+                                                  input_data=x,
+                                                  batch_size=batch_size)
             else:
                 if self._onnxruntime_fp32 is None:
                     self._onnxruntime_fp32 = Trainer.trace(self._best_model,
                                                            input_sample=x[0:1],
                                                            accelerator="onnxruntime")
-                yhat = _pytorch_fashion_inference(self._onnxruntime_fp32,
-                                                  x,
+                yhat = _pytorch_fashion_inference(model=self._onnxruntime_fp32,
+                                                  input_data=x,
                                                   batch_size=batch_size)
             yhat = self._tsdataset_unscale(yhat)
             # unscale
@@ -167,16 +176,16 @@ class TSPipeline:
             yhat = None
             for x, y in data(self._best_config):
                 if quantize:
-                    yhat = self._best_model.inference(x.numpy(),
-                                                    backend="onnx",
-                                                    quantize=quantize)
+                    yhat = _pytorch_fashion_inference(model=self._onnxruntime_int8,
+                                                      input_data=x.numpy(),
+                                                      batch_size=batch_size)
                 else:
                     if self._onnxruntime_fp32 is None:
                         self._onnxruntime_fp32 = Trainer.trace(self._best_model,
                                                                input_sample=x[0:1],
                                                                accelerator="onnxruntime")
-                    yhat = _pytorch_fashion_inference(self._onnxruntime_fp32,
-                                                      x.numpy(),
+                    yhat = _pytorch_fashion_inference(model=self._onnxruntime_fp32,
+                                                      input_data=x.numpy(),
                                                       batch_size=batch_size)
                 yhat_list.append(yhat)
                 y_list.append(y)
@@ -204,18 +213,27 @@ class TSPipeline:
         '''
         if isinstance(data, TSDataset):
             x, _ = self._tsdataset_to_numpy(data, is_predict=True)
-            yhat = self._best_model.inference(x,
-                                              batch_size=batch_size,
-                                              backend=None,
-                                              quantize=quantize)
+            if quantize:
+                yhat = _pytorch_fashion_inference(model=self._pytorch_int8,
+                                                  input_data=x,
+                                                  batch_size=batch_size)
+            else:
+                self._best_model.eval()
+                yhat = _pytorch_fashion_inference(model=self._best_model,
+                                                  input_data=x,
+                                                  batch_size=batch_size)
             yhat = self._tsdataset_unscale(yhat)
         elif isinstance(data, types.FunctionType):
             yhat_list = []
             self._best_config.update({'batch_size': batch_size})
             for x, _ in data(self._best_config):
-                yhat = self._best_model.inference(x.numpy(),
-                                                  backend=None,
-                                                  quantize=quantize)
+                if quantize:
+                    yhat = _pytorch_fashion_inference(model=self._pytorch_int8,
+                                                      input_data=x.numpy())
+                else:
+                    self._best_model.eval()
+                    yhat = _pytorch_fashion_inference(model=self._best_model,
+                                                      input_data=x.numpy())
                 yhat_list.append(yhat)
             yhat = np.concatenate(yhat_list, axis=0)
         else:
@@ -241,18 +259,17 @@ class TSPipeline:
             x, _ = self._tsdataset_to_numpy(data, is_predict=True)
             yhat = None
             if quantize:
-                yhat = self._best_model.inference(x,
-                                                  batch_size=batch_size,
-                                                  backend="onnx",
-                                                  quantize=quantize)
+                yhat = _pytorch_fashion_inference(model=self._onnxruntime_int8,
+                                                  input_data=x,
+                                                  batch_size=batch_size)
             else:
                 if self._onnxruntime_fp32 is None:
                     self._onnxruntime_fp32 = Trainer.trace(self._best_model,
                                                            input_sample=x[0:1],
                                                            accelerator="onnxruntime")
-                yhat = _pytorch_fashion_inference(self._onnxruntime_fp32,
-                                                    x,
-                                                    batch_size=batch_size)
+                yhat = _pytorch_fashion_inference(model=self._onnxruntime_fp32,
+                                                  input_data=x,
+                                                  batch_size=batch_size)
             yhat = self._tsdataset_unscale(yhat)
         elif isinstance(data, types.FunctionType):
             yhat = None
@@ -260,17 +277,17 @@ class TSPipeline:
             self._best_config.update({'batch_size': batch_size})
             for x, _ in data(self._best_config):
                 if quantize:
-                    yhat = self._best_model.inference(x.numpy(),
-                                                    backend="onnx",
-                                                    quantize=quantize)
+                    yhat = _pytorch_fashion_inference(model=self._onnxruntime_int8,
+                                                      input_data=x.numpy(),
+                                                      batch_size=batch_size)
                 else:
                     if self._onnxruntime_fp32 is None:
                         self._onnxruntime_fp32 = Trainer.trace(self._best_model,
                                                                input_sample=x[0:1],
                                                                accelerator="onnxruntime")
-                    yhat = _pytorch_fashion_inference(self._onnxruntime_fp32,
-                                                        x.numpy(),
-                                                        batch_size=batch_size)
+                    yhat = _pytorch_fashion_inference(model=self._onnxruntime_fp32,
+                                                      input_data=x.numpy(),
+                                                      batch_size=batch_size)
                 yhat_list.append(yhat)
             yhat = np.concatenate(yhat_list, axis=0)
         else:
@@ -496,37 +513,29 @@ class TSPipeline:
         framework = [framework] if isinstance(framework, str) else framework
         temp_quantized_model = None
         for framework_item in framework:
-            if "onnxrt" in framework_item:
-                # Temp patch to developing bigdl-nano
-                # TODO: delete once bigdl-nano has a stable inference API
-                if "_quantized_model" in dir(self._best_model):
-                    temp_quantized_model = self._best_model._quantized_model
-                    self._best_model._quantized_model = None
             accelerator, method = framework_item.split('_')
             if accelerator == 'pytorch':
                 accelerator = None
             else:
                 accelerator = 'onnxruntime'
                 method = method[:-3]
-            self._best_model = self._trainer.quantize(self._best_model,
-                                                      precision='int8',
-                                                      accelerator=accelerator,
-                                                      method=method,
-                                                      calib_dataloader=calib_data,
-                                                      val_dataloader=val_data,
-                                                      metric=metric,
-                                                      conf=conf,
-                                                      approach=approach,
-                                                      tuning_strategy=tuning_strategy,
-                                                      accuracy_criterion=accuracy_criterion,
-                                                      timeout=timeout,
-                                                      max_trials=max_trials,
-                                                      return_pl=True)
-            if "onnxrt" in framework_item:
-                # Temp patch to developing bigdl-nano
-                # TODO: delete once bigdl-nano has a stable inference API
-                if "_quantized_model" in dir(self._best_model):
-                    self._best_model._quantized_model = temp_quantized_model
+            q_model = self._trainer.quantize(self._best_model,
+                                             precision='int8',
+                                             accelerator=accelerator,
+                                             method=method,
+                                             calib_dataloader=calib_data,
+                                             val_dataloader=val_data,
+                                             metric=metric,
+                                             conf=conf,
+                                             approach=approach,
+                                             tuning_strategy=tuning_strategy,
+                                             accuracy_criterion=accuracy_criterion,
+                                             timeout=timeout,
+                                             max_trials=max_trials)
+            if accelerator == "onnxruntime":
+                self._onnxruntime_int8 = q_model
+            if accelerator is None:
+                self._pytorch_int8 = q_model
 
     def _tsdataset_to_loader(self, data, is_predict=False, batch_size=32):
         self._check_mixed_data_type_usage()
