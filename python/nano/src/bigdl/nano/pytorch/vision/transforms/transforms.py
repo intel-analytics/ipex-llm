@@ -651,7 +651,7 @@ class RandomAffine(object):
 
         if fillcolor is not None:
             warnings.warn(
-                "The parameter 'fillcolor' is deprecated since 0.12 and will be removed in 0.14. "
+                "The parameter 'fillcolor' is deprecated. "
                 "Please use 'fill' instead."
             )
             fill = fillcolor
