@@ -588,7 +588,7 @@ class LinearTransformation(object):
         return format_string
 
 
-class RandomRotation(tv_t.RandomRotation):
+class RandomRotation(object):
     # TODO: opencv_transforms.RandomRotation misses parameter "interpolation"
     # Conflict: resample indexes of torchvision and opencv are different.
 
