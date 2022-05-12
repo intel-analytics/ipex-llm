@@ -49,10 +49,7 @@ class DummyAttestationService extends AttestationService {
             response.put("code", 200)
             response.put("message", "success")
             response.put("nonce", nonce)
-            var verifyQuoteResult = false
-            if (quote.indexOf("true") >= 0) {
-                verifyQuoteResult = true
-            }
+            var verifyQuoteResult = quote.indexOf("true") >= 0
             response.put("result", verifyQuoteResult)
             val sign = (1 to 16).map(x => Random.nextInt(10)).mkString
             response.put("sign", sign)
