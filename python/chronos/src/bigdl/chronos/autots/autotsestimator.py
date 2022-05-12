@@ -86,16 +86,18 @@ class AutoTSEstimator:
         :param metric: String or customized evaluation metric function.
                If string, metric is the evaluation metric name to optimize, e.g. "mse".
                If callable function, it signature should be func(y_true, y_pred), where y_true and
-               y_pred are numpy ndarray. The function should return a float value as evaluation result.
+               y_pred are numpy ndarray. The function should return a float value as evaluation
+               result.
         :param metric_mode: One of ["min", "max"]. "max" means greater metric value is better.
                You have to specify metric_mode if you use a customized metric function.
                You don't have to specify metric_mode if you use the built-in metric in
                bigdl.orca.automl.metrics.Evaluator.
         :param loss: String or pytorch loss instance or pytorch loss creator function. The
-               default loss function for pytorch backend is nn.MSELoss(). If users use backend="keras"
-               and 3rd parth model this parameter will be ignored.
-        :param optimizer: String or pyTorch optimizer creator function or tf.keras optimizer instance.
-               If users use backend="keras" and 3rd parth model, this parameter will be ignored.
+               default loss function for pytorch backend is nn.MSELoss(). If users use
+               backend="keras" and 3rd parth model this parameter will be ignored.
+        :param optimizer: String or pyTorch optimizer creator function or tf.keras optimizer
+               instance. If users use backend="keras" and 3rd parth model, this parameter will
+               be ignored.
         :param past_seq_len: Int or or hp sampling function. The number of historical steps (i.e.
                lookback) used for forecasting. For hp sampling, see bigdl.orca.automl.hp for more
                details. The values defaults to 'auto', which will automatically infer the
