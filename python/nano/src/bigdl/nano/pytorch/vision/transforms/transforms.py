@@ -593,7 +593,8 @@ class RandomRotation(object):
     # Conflict: resample indexes of torchvision and opencv are different.
 
     def __init__(
-        self, degrees, interpolation=InterpolationMode.NEAREST, expand=False, center=None, fill=0, resample=None
+        self, degrees, interpolation=InterpolationMode.NEAREST,
+            expand=False, center=None, fill=0, resample=None
     ):
         if resample is not None:
             warnings.warn(
