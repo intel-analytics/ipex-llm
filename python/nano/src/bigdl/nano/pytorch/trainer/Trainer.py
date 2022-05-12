@@ -214,15 +214,15 @@ class Trainer(pl.Trainer):
     def quantize(self, model,  # remove the type requirement for type checking
                  precision='int8',
                  accelerator=None,
-                 method='fx',
                  calib_dataloader: DataLoader = None,
                  val_dataloader: DataLoader = None,
                  metric: Optional[Metric] = None,
+                 accuracy_criterion: dict = {'relative': 0.99, 'higher_is_better': True},
+                 approach='static',
+                 method='fx',
                  backend='inc',
                  conf: Optional[str] = None,
-                 approach='static',
                  tuning_strategy='bayesian',
-                 accuracy_criterion: dict = {'relative': 0.99, 'higher_is_better': True},
                  timeout=0,
                  max_trials=1,
                  input_sample=None
@@ -236,6 +236,19 @@ class Trainer(pl.Trainer):
                                 supported type: 'int8', 'bf16', 'fp16', defaults to 'int8'.
         :param accelerator:     Use accelerator 'None', 'onnxruntime', 'openvino', defaults to None.
                                 None means staying in pytorch.
+        :param calib_dataloader:    A torch.utils.data.dataloader.DataLoader object for calibration.
+                                    Required for static quantization.
+        :param val_dataloader:      A torch.utils.data.dataloader.DataLoader object for evaluation.
+        :param metric:              A torchmetrics.metric.Metric object for evaluation.
+        :param accuracy_criterion:  Tolerable accuracy drop.
+                                    accuracy_criterion = {'relative': 0.1, 'higher_is_better': True}
+                                    allows relative accuracy loss: 1%. accuracy_criterion =
+                                    {'absolute': 0.99, 'higher_is_better':False} means accuracy
+                                    must be smaller than 0.99.
+        :param approach:    'static' or 'dynamic'.
+                            'static': post_training_static_quant,
+                            'dynamic': post_training_dynamic_quant.
+                            Default: 'static'.
         :param method:          Method to do quantization. When accelerator=None, supported
             methods: 'fx', 'eager', 'ipex', defaults to 'fx'. If you don't use ipex, suggest using
             'fx' which executes automatic optimizations like fusion. For more information, please
@@ -243,23 +256,10 @@ class Trainer(pl.Trainer):
             When accelerator='onnxruntime', supported methods: 'qlinear', 'integer', defaults
             to 'qlinear'. Suggest 'qlinear' for lower accuracy drop if using static quantization.
             More details in https://onnxruntime.ai/docs/performance/quantization.html.
-        :param calib_dataloader:    A torch.utils.data.dataloader.DataLoader object for calibration.
-                                    Required for static quantization.
-        :param val_dataloader:      A torch.utils.data.dataloader.DataLoader object for evaluation.
-        :param metric:              A torchmetrics.metric.Metric object for evaluation.
         :param backend:             Only 'inc' is supported. Default: 'inc'.
         :param conf:        A path to conf yaml file for quantization.
                             Default: None, using default config.
-        :param approach:    'static' or 'dynamic'.
-                            'static': post_training_static_quant,
-                            'dynamic': post_training_dynamic_quant.
-                            Default: 'static'.
         :param tuning_strategy:    'bayesian', 'basic', 'mse', 'sigopt'. Default: 'bayesian'.
-        :param accuracy_criterion:  Tolerable accuracy drop.
-                                    accuracy_criterion = {'relative': 0.1, 'higher_is_better': True}
-                                    allows relative accuracy loss: 1%. accuracy_criterion =
-                                    {'absolute': 0.99, 'higher_is_better':False} means accuracy
-                                    must be smaller than 0.99.
         :param timeout:     Tuning timeout (seconds). Default: 0,  which means early stop.
                             Combine with max_trials field to decide when to exit.
         :param max_trials:  Max tune times. Default: 1.
@@ -267,6 +267,7 @@ class Trainer(pl.Trainer):
                             "timeout=0, max_trials=1" means it will try quantization only once and
                             return satisfying best model.
         :input_sample:      An input example to convert pytorch model into ONNX/OpenVINO.
+
         :return:            A accelerated Pytorch-Lightning Model if quantization is sucessful.
         """
         if backend == 'inc':
