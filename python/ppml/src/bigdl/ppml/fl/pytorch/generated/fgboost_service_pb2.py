@@ -15,7 +15,7 @@ _sym_db = _symbol_database.Default()
 import fl_base_pb2 as fl__base__pb2
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x15\x66gboost_service.proto\x12\x07\x66gboost\x1a\rfl_base.proto\"U\n\x12UploadLabelRequest\x12\x12\n\nclientuuid\x18\x01 \x01(\t\x12\x18\n\x04\x64\x61ta\x18\x02 \x01(\x0b\x32\n.TensorMap\x12\x11\n\talgorithm\x18\x03 \x01(\t\"F\n\x14\x44ownloadLabelRequest\x12\x1b\n\x08metaData\x18\x01 \x01(\x0b\x32\t.MetaData\x12\x11\n\talgorithm\x18\x02 \x01(\t\"L\n\x10\x44ownloadResponse\x12\x18\n\x04\x64\x61ta\x18\x01 \x01(\x0b\x32\n.TensorMap\x12\x10\n\x08response\x18\x02 \x01(\t\x12\x0c\n\x04\x63ode\x18\x03 \x01(\x05\"R\n\x08TreeLeaf\x12\x0e\n\x06treeID\x18\x01 \x01(\t\x12\x11\n\tleafIndex\x18\x02 \x03(\x05\x12\x12\n\nleafOutput\x18\x03 \x03(\x02\x12\x0f\n\x07version\x18\x04 \x01(\x05\"P\n\x15UploadTreeLeafRequest\x12\x12\n\nclientuuid\x18\x01 \x01(\t\x12#\n\x08treeLeaf\x18\x02 \x01(\x0b\x32\x11.fgboost.TreeLeaf\"\xa8\x01\n\tDataSplit\x12\x0e\n\x06treeID\x18\x01 \x01(\t\x12\x0e\n\x06nodeID\x18\x02 \x01(\t\x12\x11\n\tfeatureID\x18\x03 \x01(\x05\x12\x12\n\nsplitValue\x18\x04 \x01(\x02\x12\x0c\n\x04gain\x18\x05 \x01(\x02\x12\x11\n\tsetLength\x18\x06 \x01(\x05\x12\x0f\n\x07itemSet\x18\x07 \x03(\x05\x12\x11\n\tclientUid\x18\x08 \x01(\t\x12\x0f\n\x07version\x18\t \x01(\x05\"0\n\x0eUploadResponse\x12\x10\n\x08response\x18\x01 \x01(\t\x12\x0c\n\x04\x63ode\x18\x02 \x01(\x05\"/\n\x0bTreePredict\x12\x0e\n\x06treeID\x18\x01 \x01(\t\x12\x10\n\x08predicts\x18\x02 \x03(\x08\"6\n\x0c\x42oostPredict\x12&\n\x08predicts\x18\x01 \x03(\x0b\x32\x14.fgboost.TreePredict\"4\n\tBoostEval\x12\'\n\tevaluates\x18\x01 \x03(\x0b\x32\x14.fgboost.TreePredict\"4\n\x0fRegisterRequest\x12\x12\n\nclientuuid\x18\x01 \x01(\t\x12\r\n\x05token\x18\x02 \x01(\t\"2\n\x10RegisterResponse\x12\x10\n\x08response\x18\x01 \x01(\t\x12\x0c\n\x04\x63ode\x18\x02 \x01(\x05\"b\n\x15UploadTreeEvalRequest\x12\x12\n\nclientuuid\x18\x01 \x01(\t\x12\x0f\n\x07version\x18\x02 \x01(\x05\x12$\n\x08treeEval\x18\x03 \x03(\x0b\x32\x12.fgboost.BoostEval\"^\n\x0f\x45valuateRequest\x12\x12\n\nclientuuid\x18\x01 \x01(\t\x12$\n\x08treeEval\x18\x02 \x03(\x0b\x32\x12.fgboost.BoostEval\x12\x11\n\tbsVersion\x18\x03 \x01(\x05\"]\n\x10\x45valuateResponse\x12\x10\n\x08response\x18\x01 \x01(\t\x12\x18\n\x04\x64\x61ta\x18\x02 \x01(\x0b\x32\n.TensorMap\x12\x0c\n\x04\x63ode\x18\x03 \x01(\x05\x12\x0f\n\x07message\x18\x04 \x01(\t\"]\n\x0ePredictRequest\x12\x12\n\nclientuuid\x18\x01 \x01(\t\x12$\n\x08treeEval\x18\x02 \x03(\x0b\x32\x12.fgboost.BoostEval\x12\x11\n\tbsVersion\x18\x03 \x01(\x05\"E\n\x0cSplitRequest\x12\x12\n\nclientuuid\x18\x01 \x01(\t\x12!\n\x05split\x18\x02 \x01(\x0b\x32\x12.fgboost.DataSplit\"K\n\x0fPredictResponse\x12\x10\n\x08response\x18\x01 \x01(\t\x12\x18\n\x04\x64\x61ta\x18\x02 \x01(\x0b\x32\n.TensorMap\x12\x0c\n\x04\x63ode\x18\x03 \x01(\x05\"R\n\rSplitResponse\x12!\n\x05split\x18\x01 \x01(\x0b\x32\x12.fgboost.DataSplit\x12\x10\n\x08response\x18\x02 \x01(\t\x12\x0c\n\x04\x63ode\x18\x03 \x01(\x05\x32\xf1\x03\n\x0e\x46GBoostService\x12\x45\n\x0buploadLabel\x12\x1b.fgboost.UploadLabelRequest\x1a\x17.fgboost.UploadResponse\"\x00\x12K\n\rdownloadLabel\x12\x1d.fgboost.DownloadLabelRequest\x1a\x19.fgboost.DownloadResponse\"\x00\x12\x38\n\x05split\x12\x15.fgboost.SplitRequest\x1a\x16.fgboost.SplitResponse\"\x00\x12\x41\n\x08register\x12\x18.fgboost.RegisterRequest\x1a\x19.fgboost.RegisterResponse\"\x00\x12K\n\x0euploadTreeLeaf\x12\x1e.fgboost.UploadTreeLeafRequest\x1a\x17.fgboost.UploadResponse\"\x00\x12\x41\n\x08\x65valuate\x12\x18.fgboost.EvaluateRequest\x1a\x19.fgboost.EvaluateResponse\"\x00\x12>\n\x07predict\x12\x17.fgboost.PredictRequest\x1a\x18.fgboost.PredictResponse\"\x00\x42?\n(com.intel.analytics.bigdl.ppml.generatedB\x13\x46GBoostServiceProtob\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x15\x66gboost_service.proto\x12\x07\x66gboost\x1a\rfl_base.proto\"U\n\x12UploadLabelRequest\x12\x12\n\nclientuuid\x18\x01 \x01(\t\x12\x18\n\x04\x64\x61ta\x18\x02 \x01(\x0b\x32\n.TensorMap\x12\x11\n\talgorithm\x18\x03 \x01(\t\"F\n\x14\x44ownloadLabelRequest\x12\x1b\n\x08metaData\x18\x01 \x01(\x0b\x32\t.MetaData\x12\x11\n\talgorithm\x18\x02 \x01(\t\"L\n\x10\x44ownloadResponse\x12\x18\n\x04\x64\x61ta\x18\x01 \x01(\x0b\x32\n.TensorMap\x12\x10\n\x08response\x18\x02 \x01(\t\x12\x0c\n\x04\x63ode\x18\x03 \x01(\x05\"R\n\x08TreeLeaf\x12\x0e\n\x06treeID\x18\x01 \x01(\t\x12\x11\n\tleafIndex\x18\x02 \x03(\x05\x12\x12\n\nleafOutput\x18\x03 \x03(\x02\x12\x0f\n\x07version\x18\x04 \x01(\x05\"P\n\x15UploadTreeLeafRequest\x12\x12\n\nclientuuid\x18\x01 \x01(\t\x12#\n\x08treeLeaf\x18\x02 \x01(\x0b\x32\x11.fgboost.TreeLeaf\"\xa8\x01\n\tDataSplit\x12\x0e\n\x06treeID\x18\x01 \x01(\t\x12\x0e\n\x06nodeID\x18\x02 \x01(\t\x12\x11\n\tfeatureID\x18\x03 \x01(\x05\x12\x12\n\nsplitValue\x18\x04 \x01(\x02\x12\x0c\n\x04gain\x18\x05 \x01(\x02\x12\x11\n\tsetLength\x18\x06 \x01(\x05\x12\x0f\n\x07itemSet\x18\x07 \x03(\x05\x12\x11\n\tclientUid\x18\x08 \x01(\t\x12\x0f\n\x07version\x18\t \x01(\x05\"0\n\x0eUploadResponse\x12\x10\n\x08response\x18\x01 \x01(\t\x12\x0c\n\x04\x63ode\x18\x02 \x01(\x05\"/\n\x0bTreePredict\x12\x0e\n\x06treeID\x18\x01 \x01(\t\x12\x10\n\x08predicts\x18\x02 \x03(\x08\"6\n\x0c\x42oostPredict\x12&\n\x08predicts\x18\x01 \x03(\x0b\x32\x14.fgboost.TreePredict\"4\n\tBoostEval\x12\'\n\tevaluates\x18\x01 \x03(\x0b\x32\x14.fgboost.TreePredict\"4\n\x0fRegisterRequest\x12\x12\n\nclientuuid\x18\x01 \x01(\t\x12\r\n\x05token\x18\x02 \x01(\t\"2\n\x10RegisterResponse\x12\x10\n\x08response\x18\x01 \x01(\t\x12\x0c\n\x04\x63ode\x18\x02 \x01(\x05\"b\n\x15UploadTreeEvalRequest\x12\x12\n\nclientuuid\x18\x01 \x01(\t\x12\x0f\n\x07version\x18\x02 \x01(\x05\x12$\n\x08treeEval\x18\x03 \x03(\x0b\x32\x12.fgboost.BoostEval\"o\n\x0f\x45valuateRequest\x12\x12\n\nclientuuid\x18\x01 \x01(\t\x12$\n\x08treeEval\x18\x02 \x03(\x0b\x32\x12.fgboost.BoostEval\x12\x0f\n\x07version\x18\x03 \x01(\x05\x12\x11\n\tlastBatch\x18\x04 \x01(\x08\"]\n\x10\x45valuateResponse\x12\x10\n\x08response\x18\x01 \x01(\t\x12\x18\n\x04\x64\x61ta\x18\x02 \x01(\x0b\x32\n.TensorMap\x12\x0c\n\x04\x63ode\x18\x03 \x01(\x05\x12\x0f\n\x07message\x18\x04 \x01(\t\"n\n\x0ePredictRequest\x12\x12\n\nclientuuid\x18\x01 \x01(\t\x12$\n\x08treeEval\x18\x02 \x03(\x0b\x32\x12.fgboost.BoostEval\x12\x0f\n\x07version\x18\x03 \x01(\x05\x12\x11\n\tlastBatch\x18\x04 \x01(\x08\"E\n\x0cSplitRequest\x12\x12\n\nclientuuid\x18\x01 \x01(\t\x12!\n\x05split\x18\x02 \x01(\x0b\x32\x12.fgboost.DataSplit\"K\n\x0fPredictResponse\x12\x10\n\x08response\x18\x01 \x01(\t\x12\x18\n\x04\x64\x61ta\x18\x02 \x01(\x0b\x32\n.TensorMap\x12\x0c\n\x04\x63ode\x18\x03 \x01(\x05\"R\n\rSplitResponse\x12!\n\x05split\x18\x01 \x01(\x0b\x32\x12.fgboost.DataSplit\x12\x10\n\x08response\x18\x02 \x01(\t\x12\x0c\n\x04\x63ode\x18\x03 \x01(\x05\x32\xf1\x03\n\x0e\x46GBoostService\x12\x45\n\x0buploadLabel\x12\x1b.fgboost.UploadLabelRequest\x1a\x17.fgboost.UploadResponse\"\x00\x12K\n\rdownloadLabel\x12\x1d.fgboost.DownloadLabelRequest\x1a\x19.fgboost.DownloadResponse\"\x00\x12\x38\n\x05split\x12\x15.fgboost.SplitRequest\x1a\x16.fgboost.SplitResponse\"\x00\x12\x41\n\x08register\x12\x18.fgboost.RegisterRequest\x1a\x19.fgboost.RegisterResponse\"\x00\x12K\n\x0euploadTreeLeaf\x12\x1e.fgboost.UploadTreeLeafRequest\x1a\x17.fgboost.UploadResponse\"\x00\x12\x41\n\x08\x65valuate\x12\x18.fgboost.EvaluateRequest\x1a\x19.fgboost.EvaluateResponse\"\x00\x12>\n\x07predict\x12\x17.fgboost.PredictRequest\x1a\x18.fgboost.PredictResponse\"\x00\x42\x42\n+com.intel.analytics.bigdl.ppml.fl.generatedB\x13\x46GBoostServiceProtob\x06proto3')
 
 
 
@@ -175,7 +175,7 @@ _FGBOOSTSERVICE = DESCRIPTOR.services_by_name['FGBoostService']
 if _descriptor._USE_C_DESCRIPTORS == False:
 
   DESCRIPTOR._options = None
-  DESCRIPTOR._serialized_options = b'\n(com.intel.analytics.bigdl.ppml.generatedB\023FGBoostServiceProto'
+  DESCRIPTOR._serialized_options = b'\n+com.intel.analytics.bigdl.ppml.fl.generatedB\023FGBoostServiceProto'
   _UPLOADLABELREQUEST._serialized_start=49
   _UPLOADLABELREQUEST._serialized_end=134
   _DOWNLOADLABELREQUEST._serialized_start=136
@@ -203,17 +203,17 @@ if _descriptor._USE_C_DESCRIPTORS == False:
   _UPLOADTREEEVALREQUEST._serialized_start=938
   _UPLOADTREEEVALREQUEST._serialized_end=1036
   _EVALUATEREQUEST._serialized_start=1038
-  _EVALUATEREQUEST._serialized_end=1132
-  _EVALUATERESPONSE._serialized_start=1134
-  _EVALUATERESPONSE._serialized_end=1227
-  _PREDICTREQUEST._serialized_start=1229
-  _PREDICTREQUEST._serialized_end=1322
-  _SPLITREQUEST._serialized_start=1324
-  _SPLITREQUEST._serialized_end=1393
-  _PREDICTRESPONSE._serialized_start=1395
-  _PREDICTRESPONSE._serialized_end=1470
-  _SPLITRESPONSE._serialized_start=1472
-  _SPLITRESPONSE._serialized_end=1554
-  _FGBOOSTSERVICE._serialized_start=1557
-  _FGBOOSTSERVICE._serialized_end=2054
+  _EVALUATEREQUEST._serialized_end=1149
+  _EVALUATERESPONSE._serialized_start=1151
+  _EVALUATERESPONSE._serialized_end=1244
+  _PREDICTREQUEST._serialized_start=1246
+  _PREDICTREQUEST._serialized_end=1356
+  _SPLITREQUEST._serialized_start=1358
+  _SPLITREQUEST._serialized_end=1427
+  _PREDICTRESPONSE._serialized_start=1429
+  _PREDICTRESPONSE._serialized_end=1504
+  _SPLITRESPONSE._serialized_start=1506
+  _SPLITRESPONSE._serialized_end=1588
+  _FGBOOSTSERVICE._serialized_start=1591
+  _FGBOOSTSERVICE._serialized_end=2088
 # @@protoc_insertion_point(module_scope)

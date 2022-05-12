@@ -22,10 +22,10 @@ import pandas as pd
 import os
 
 from bigdl.ppml.fl import *
-from bigdl.ppml.fl.algorithms.fgboost_regression import FGBoostRegression
 from bigdl.ppml.fl.pytorch.fl_server import FLServer
 from bigdl.ppml.fl.pytorch.fl_client import FLClient
-from bigdl.ppml.fl.utils import init_fl_context
+from torch import nn
+import torch.nn.functional as F
 
 resource_path = os.path.join(os.path.dirname(__file__), "../resources")
 
@@ -42,11 +42,29 @@ class TestProtobufUtils(unittest.TestCase):
         # (to be verified)
 
     def test_ndarray_tensor(self) -> None:
-        logging.debug('client initializing')
         cli = FLClient()
         logging.debug('client initialized, start train with server')
         cli.train({'input': np.array([[1, 2], [3, 4]])})
 
+    def test_upload_model(self) -> None:
+        cli = FLClient()
+        model = SimpleNNModel()
+        logging.debug('uploading model to server')
+        cli.upload_model(model)
+
+
+class SimpleNNModel(nn.Module):
+    def __init__(self, input_features=8, hidden1=20, hidden2=10, out_features=2):
+        super().__init__()
+        self.fc1 = nn.Linear(input_features, hidden1)
+        self.fc2 = nn.Linear(hidden1, hidden2)
+        self.out = nn.Linear(hidden2, out_features)
+        
+    def forward(self,x):
+        x = F.relu(self.fc1(x))
+        x = F.relu(self.fc2(x))
+        x = self.out(x)
+        return x
 
 if __name__ == '__main__':
     unittest.main()

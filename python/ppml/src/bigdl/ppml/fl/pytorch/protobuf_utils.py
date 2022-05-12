@@ -15,5 +15,6 @@ def tensor_map_to_ndarray_map(tensor_map: TensorMap):
     for (k, v) in tensor_map.items():
         if not isinstance(v, FloatTensor):
             raise Exception("tensor map element should be protobuf type FloatTensor")
-        ndarray_map[k] = np.array(v.tensor).reshape(v.shape)
+        dtype = "long" if k == 'target' else "float32"
+        ndarray_map[k] = np.array(v.tensor, dtype=dtype).reshape(v.shape)
     return ndarray_map

@@ -1,10 +1,11 @@
 
 from bigdl.ppml.fl.pytorch.aggregator import Aggregator
 from bigdl.ppml.fl.pytorch.generated.fl_base_pb2 import TensorMap
-from bigdl.ppml.fl.pytorch.generated.nn_service_pb2 import TrainRequest, TrainResponse
+from bigdl.ppml.fl.pytorch.generated.nn_service_pb2 import TrainRequest, TrainResponse, UploadModelResponse
 from bigdl.ppml.fl.pytorch.generated.nn_service_pb2_grpc import *
 from bigdl.ppml.fl.pytorch.protobuf_utils import tensor_map_to_ndarray_map
-
+import pickle
+import traceback
 
 
 class NNServiceImpl(NNServiceServicer):
@@ -13,9 +14,17 @@ class NNServiceImpl(NNServiceServicer):
 
     def train(self, request: TrainRequest, context):
         tensor_map = request.data.tensorMap
-        tensor_map_to_ndarray_map(tensor_map)
-        print("tensor map decoded at server")
-        return TrainResponse()
+        client_id = request.clientuuid
+        ndarray_map = tensor_map_to_ndarray_map(tensor_map)
+        try:
+            self.aggregator.put_client_data(client_id, ndarray_map)            
+            msg = f'[client {client_id} batch trained]'
+            code = 0
+        except Exception as e:
+            msg = traceback.format_exc()
+            code = 1
+        
+        return TrainResponse(response=msg, data=self.aggregator.server_data, code=code)
 
     def evaluate(self, request, context):
         return super().evaluate(request, context)
@@ -23,3 +32,7 @@ class NNServiceImpl(NNServiceServicer):
     def predict(self, request, context):
         return super().predict(request, context)
         
+    def upload_model(self, request, context):
+        model = pickle.loads(request.model_bytes)
+        self.aggregator.add_server_model(model)
+        return UploadModelResponse(message="Upload sucess")

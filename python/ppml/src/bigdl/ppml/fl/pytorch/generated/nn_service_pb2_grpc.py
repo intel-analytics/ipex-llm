@@ -29,6 +29,11 @@ class NNServiceStub(object):
                 request_serializer=nn__service__pb2.PredictRequest.SerializeToString,
                 response_deserializer=nn__service__pb2.PredictResponse.FromString,
                 )
+        self.upload_model = channel.unary_unary(
+                '/nn.NNService/upload_model',
+                request_serializer=nn__service__pb2.UploadModelRequest.SerializeToString,
+                response_deserializer=nn__service__pb2.UploadModelResponse.FromString,
+                )
 
 
 class NNServiceServicer(object):
@@ -52,6 +57,12 @@ class NNServiceServicer(object):
         context.set_details('Method not implemented!')
         raise NotImplementedError('Method not implemented!')
 
+    def upload_model(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        raise NotImplementedError('Method not implemented!')
+
 
 def add_NNServiceServicer_to_server(servicer, server):
     rpc_method_handlers = {
@@ -69,6 +80,11 @@ def add_NNServiceServicer_to_server(servicer, server):
                     servicer.predict,
                     request_deserializer=nn__service__pb2.PredictRequest.FromString,
                     response_serializer=nn__service__pb2.PredictResponse.SerializeToString,
+            ),
+            'upload_model': grpc.unary_unary_rpc_method_handler(
+                    servicer.upload_model,
+                    request_deserializer=nn__service__pb2.UploadModelRequest.FromString,
+                    response_serializer=nn__service__pb2.UploadModelResponse.SerializeToString,
             ),
     }
     generic_handler = grpc.method_handlers_generic_handler(
@@ -128,5 +144,22 @@ class NNService(object):
         return grpc.experimental.unary_unary(request, target, '/nn.NNService/predict',
             nn__service__pb2.PredictRequest.SerializeToString,
             nn__service__pb2.PredictResponse.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def upload_model(request,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.unary_unary(request, target, '/nn.NNService/upload_model',
+            nn__service__pb2.UploadModelRequest.SerializeToString,
+            nn__service__pb2.UploadModelResponse.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)

@@ -14,15 +14,20 @@
 # limitations under the License.
 #
 
+from copyreg import pickle
+import logging
 from grpc import server
+from numpy import gradient
 import torch
 from torch import nn
 from bigdl.dllib.utils.common import JTensor, callBigDlFunc
+from bigdl.ppml.fl.pytorch.fl_client import FLClient
 from bigdl.ppml.fl.utils import init_fl_context
-
+from torch.utils.data import DataLoader
+from bigdl.ppml.fl.pytorch.protobuf_utils import tensor_map_to_ndarray_map
 
 class PytorchPipeline:
-    def __init__(self, model: nn.Module, loss_fn, optimizer: torch.optim.Optimizer, algorithm,
+    def __init__(self, model: nn.Module, loss_fn, optimizer: torch.optim.Optimizer, algorithm=None,
             bigdl_type="float"):
         self.bigdl_type = bigdl_type
         self.model = model
@@ -30,39 +35,38 @@ class PytorchPipeline:
         self.optimizer = optimizer
         self.version = 0
         self.algorithm = algorithm
-        init_fl_context()
+        self.fl_client = FLClient()
+        # init_fl_context()
 
     
-    def add_server_model(model: nn.Module):
+    def add_server_model(self, model: nn.Module):
         # add model and pickle to server
-        pass 
+        self.fl_client.upload_model(model)
 
-    def server_train_step(self, y_pred_local: torch.Tensor, y_true_global: torch.Tensor = None):
+    def train_step(self, x, y):
         """
         Get the loss data from FLServer and construct the identical Pytorch Tensor
         """
-        y_pred_local = JTensor.from_ndarray(y_pred_local.detach().numpy())
-        y_true_global = JTensor.from_ndarray(y_true_global.numpy())
-        server_loss = callBigDlFunc(self.bigdl_type, "pytorchTrainStep",
-            y_pred_local, y_true_global, self.version, self.algorithm)
-        server_loss = server_loss.to_ndarray()
-        return torch.from_numpy(server_loss)
+        y_pred_local = self.model(x)
+        y_true_global = y
+        data_map = {'input': y_pred_local.detach().numpy(), 'target': y_true_global.detach().numpy()}
+        response = self.fl_client.train(data_map)
+        grad = tensor_map_to_ndarray_map(response.data.tensorMap)['grad']
+        y_pred_local.backward(gradient=torch.tensor(grad))
+        self.optimizer.step()
 
-    def fit(self, x, y, epoch=2):
+    def fit(self, x, y=None, epoch=1):
         for i in range(epoch):
             self.model.train()
-            pred = self.model(x)
-            # In this step, loss is calculated from FLServer instead of local
-            # when local loss_fn is called, return is a Pytorch Tensor
-            # so get the tensor from FLServer, and transform to Pytorch Tensor
-            server_loss = self.server_train_step(pred, y)
-            loss = self.loss_fn(pred, pred)
-            loss.data = server_loss
-            print("Epoch number: {} and the loss : {}".format(i,loss.item()))
-
-            # back propagation
-            self.optimizer.zero_grad()
-            loss.backward()
-            self.optimizer.step()
+            if isinstance(x, DataLoader):
+                size = len(x.dataset)
+                for batch, (X, y) in enumerate(x):
+                    self.train_step(X, y)
+                    current = batch * len(X)
+                    logging.info(f"[{current:>5d}/{size:>5d}]")
+                    
             
+            
+
+    
         
