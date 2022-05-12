@@ -23,15 +23,15 @@ class Aggregator(object):
 
     def put_client_data(self, client_id, data):
         self.client_data[client_id] = data
-        logging.info(f'server receive data {len(self.client_data)}/{self.client_num}')
+        logging.debug(f'server receive data {len(self.client_data)}/{self.client_num}')
         if len(self.client_data) == self.client_num:
             self.condition.acquire()
-            logging.info('server received all client data, start aggregate')
+            logging.debug('server received all client data, start aggregate')
             self.aggregate()
             self.condition.notify_all()
             self.condition.release()
         else:
-            logging.info('waiting')
+            logging.debug('waiting')
             self.condition.wait()
 
     def aggregate(self):
@@ -49,11 +49,10 @@ class Aggregator(object):
         x.requires_grad = True
         pred = self.model(x)
         loss = self.loss_fn(pred, target)
-        logging.info(f'loss: {loss:>7f}')
         self.optimizer.zero_grad()
         loss.backward()
         self.optimizer.step()
-        grad_map = {'grad': x.grad.numpy()}
+        grad_map = {'grad': x.grad.numpy(), 'loss': loss.detach().numpy()}
         self.server_data = ndarray_map_to_tensor_map(grad_map)
 
     

@@ -51,19 +51,23 @@ class PytorchPipeline:
         y_true_global = y
         data_map = {'input': y_pred_local.detach().numpy(), 'target': y_true_global.detach().numpy()}
         response = self.fl_client.train(data_map)
-        grad = tensor_map_to_ndarray_map(response.data.tensorMap)['grad']
+        response_map = tensor_map_to_ndarray_map(response.data.tensorMap)
+        grad = response_map['grad']
+        self.optimizer.zero_grad()
         y_pred_local.backward(gradient=torch.tensor(grad))
         self.optimizer.step()
+        return response_map['loss']
 
-    def fit(self, x, y=None, epoch=1):
+    def fit(self, x, y=None, epoch=5):
         for i in range(epoch):
             self.model.train()
             if isinstance(x, DataLoader):
                 size = len(x.dataset)
                 for batch, (X, y) in enumerate(x):
-                    self.train_step(X, y)
+                    loss = self.train_step(X, y)
                     current = batch * len(X)
-                    logging.info(f"[{current:>5d}/{size:>5d}]")
+                    if batch % 100 == 0:
+                        logging.info(f"loss: {loss:>7f}  [{current:>5d}/{size:>5d}]")
                     
             
             
