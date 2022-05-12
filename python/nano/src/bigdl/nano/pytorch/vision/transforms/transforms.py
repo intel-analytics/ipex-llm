@@ -589,9 +589,6 @@ class LinearTransformation(object):
 
 
 class RandomRotation(object):
-    # TODO: opencv_transforms.RandomRotation misses parameter "interpolation"
-    # Conflict: resample indexes of torchvision and opencv are different.
-
     def __init__(
         self, degrees, interpolation=InterpolationMode.NEAREST,
             expand=False, center=None, fill=0, resample=None
