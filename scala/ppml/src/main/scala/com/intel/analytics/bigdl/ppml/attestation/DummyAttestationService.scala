@@ -18,8 +18,6 @@
 package com.intel.analytics.bigdl.ppml.attestation
 
 import org.apache.logging.log4j.LogManager
-
-import java.math.BigInteger
 import org.json.JSONObject
 
 import scala.util.Random
@@ -35,7 +33,9 @@ class DummyAttestationService extends AttestationService {
     override def setPolicy(policy: JSONObject): String = "true"
 
     def getQuoteFromServer(): String = {
-        "test"
+        val userReportData = new Array[Byte](16)
+        Random.nextBytes(userReportData)
+        userReportData.toString
     }
 
     override def attestWithServer(quote: String): (Boolean, String) = {
@@ -46,15 +46,10 @@ class DummyAttestationService extends AttestationService {
             }
             val nonce: String = "test"
             val response: JSONObject = new JSONObject()
-            val number = new BigInteger(quote)
-            val zero = new BigInteger("0")
-            var verifyQuoteResult = true
+            val verifyQuoteResult = Random.nextBoolean()
             response.put("code", 200)
             response.put("message", "success")
             response.put("nonce", nonce)
-            if(number.compareTo(zero) != 1) {
-                verifyQuoteResult = false
-            }
             response.put("result", verifyQuoteResult)
             val sign = (1 to 16).map(x => Random.nextInt(10)).mkString
             response.put("sign", sign)
