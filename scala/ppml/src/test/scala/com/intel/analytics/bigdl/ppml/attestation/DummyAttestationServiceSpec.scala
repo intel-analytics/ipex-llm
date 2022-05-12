@@ -1,17 +1,27 @@
 package com.intel.analytics.bigdl.ppml.attestation
 
+import org.apache.logging.log4j.Logger
 import org.scalatest.{FlatSpec, Matchers}
 
 class DummyAttestationServiceSpec extends FlatSpec with Matchers {
-    "Dummy Attestation " should "work" in {
-        val dummyAttestationService = new DummyAttestationService()
-        val logger = dummyAttestationService.logger
-        val quote = dummyAttestationService.getQuoteFromServer()
-        val result = dummyAttestationService.attestWithServer(quote)
-        val verifyQuoteResult = result._1
-        val response = result._2
+
+    val dummyAttestationService = new DummyAttestationService()
+    val logger: Logger = dummyAttestationService.logger
+    var quote: String = ""
+
+    "Get Quote " should "work" in {
+        quote = dummyAttestationService.getQuoteFromServer()
+        quote shouldNot equal ("")
         logger.info(quote)
-        logger.info(response)
-        logger.info(verifyQuoteResult)
+    }
+
+    "Attest With Server " should "work" in {
+        var result = dummyAttestationService.attestWithServer(quote)._1
+        val quoteResult = quote.indexOf("true") >= 0
+        result should equal (quoteResult)
+        result = dummyAttestationService.attestWithServer("a_true_quote")._1
+        result should equal (true)
+        result = dummyAttestationService.attestWithServer("a_test_quote")._1
+        result should equal (false)
     }
 }
