@@ -14,6 +14,8 @@
 # limitations under the License.
 #
 from pathlib import Path
+from .dataloader import PytorchOpenVINODataLoader
+from .metric import PytorchOpenVINOMetric
 from ..core.openvino_model import OpenVINOModel
 from bigdl.nano.utils.inference.pytorch.model import AcceleratedLightningModule
 from .pytorch_openvino_utils import export
@@ -78,6 +80,21 @@ class PytorchOpenVINOModel(OpenVINOModel, AcceleratedLightningModule):
         xml_path = Path(path) / status['xml_path']
         return PytorchOpenVINOModel(xml_path)
 
-    def _save_model(self, path):
-        xml_path = Path(path) / self.status['xml_path']
-        super()._save_model(xml_path)
+    def pot(self,
+            dataloader,
+            metric=None,
+            higher_better=True,
+            drop_type="relative",
+            maximal_drop=0.999,
+            max_iter_num=1,
+            n_requests=None,
+            sample_size=300):
+        # convert torch metric/dataloader to openvino format
+        if metric:
+            metric = PytorchOpenVINOMetric(metric=metric, higher_better=higher_better)
+        dataloader = PytorchOpenVINODataLoader(dataloader, collate_fn=self.tensors_to_numpy)
+        model_paths = super().pot(dataloader, metric=metric, drop_type=drop_type,
+                                  maximal_drop=maximal_drop, max_iter_num=max_iter_num,
+                                  n_requests=n_requests, sample_size=sample_size)
+        model_path = model_paths[0]['model']
+        return PytorchOpenVINOModel(model_path)
