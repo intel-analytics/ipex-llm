@@ -43,6 +43,20 @@ def create_data():
     return train_data, val_data, test_data
 
 
+class CustomLearningRateScheduler(tf.keras.callbacks.Callback):
+    def __init__(self, schedule):
+        super(CustomLearningRateScheduler, self).__init__()
+        self.schedule = schedule
+    
+    def on_epoch_begin(self, epochs, logs=None):
+        lr = float(tf.keras.backend.get_value(self.model.optimizer.learning_rate))
+        scheduled_lr = self.schedule(epochs, lr)
+        tf.keras.backend.set_value(self.model.optimizer.lr, scheduled_lr)
+
+
+LR_SCHEDULE = [(2, 1e-2), (4, 5e-3)]
+
+
 @pytest.mark.skipif(tf.__version__ < '2.0.0', reason="Run only when tf > 2.0.0.")
 class TestVanillaLSTM(TestCase):
     train_data, val_data, test_data = create_data()
@@ -84,6 +98,48 @@ class TestVanillaLSTM(TestCase):
         _unfreeze_yhat = self.model(self.test_data[0], training=True)
         unfreeze_yhat = self.model(self.test_data[0], training=True)
         assert np.any(_unfreeze_yhat != unfreeze_yhat)
+
+    def test_transfer_learning_fine_tuning(self):
+        # transfer_learning
+        base_layer = self.model.layers[0]
+        output_feature = self.test_data[0].shape[-1]
+        base_layer.trainable = False
+        inputs = tf.keras.Input(shape=(None, output_feature))
+        x = base_layer(inputs, training=False)
+        x = tf.keras.layers.Dense(output_feature)(x)
+        outputs = tf.keras.layers.Reshape((1, output_feature),
+                                          input_shape=(output_feature,))(x)
+        new_model = tf.keras.Model(inputs, outputs)
+        new_model.compile(loss="mse", optimizer=tf.keras.optimizers.Adam(1e-3), metrics=["mse"])
+        new_model.fit(x=np.random.randn(100, 7, 4),
+                      y=np.random.randn(100, 1, output_feature),
+                      epochs=2, batch_size=32)
+
+        # fine_tuning
+        new_model.layers[0].trainable = True
+        new_model.compile(loss="mse", optimizer=tf.keras.optimizers.Adam(1e-5), metrics=["mse"])
+        new_model.fit(x=np.random.randn(100, 7, 4),
+                      y=np.random.randn(100, 1, output_feature),
+                      epochs=2, batch_size=32)
+    
+    def test_custom_callback(self):
+        model = model_creator(config={"input_feature_num": 4,
+                                      "output_feature_num": self.train_data[-1].shape[-1]})
+        np.testing.assert_array_almost_equal(model.optimizer.lr.numpy(), np.asarray(1e-3))
+        def lr_schedule(epoch, lr):
+            if epoch<LR_SCHEDULE[0][0] or epoch>LR_SCHEDULE[-1][0]:
+                return lr
+            for i in range(len(LR_SCHEDULE)):
+                if epoch==LR_SCHEDULE[i][0]:
+                    return LR_SCHEDULE[i][1]
+            return lr
+        model.fit(self.train_data[0],
+                  self.train_data[1],
+                  batch_size=32,
+                  epochs=5,
+                  callbacks=[CustomLearningRateScheduler(lr_schedule)])
+        np.testing.assert_array_almost_equal(model.optimizer.lr.numpy(), np.asarray(5e-3))
+
 
 if __name__ == '__main__':
     pytest.main([__file__])
