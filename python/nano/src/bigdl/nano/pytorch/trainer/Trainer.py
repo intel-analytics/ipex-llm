@@ -322,9 +322,30 @@ class Trainer(pl.Trainer):
                     saved_onnx = Path(dir) / 'tmp.onnx'
                     quantized_model.save(saved_onnx)
                     return PytorchONNXRuntimeModel(str(saved_onnx))
+        elif backend == 'pot' or accelerator == 'openvino':
+            model_type = type(model).__name__
+            if not model_type == 'PytorchOpenVINOModel':
+                if not input_sample:
+                    # input_sample can be a dataloader
+                    input_sample = calib_dataloader
+                model = Trainer.trace(model,
+                                      input_sample=input_sample,
+                                      accelerator='openvino')
+            assert type(model).__name__ == 'PytorchOpenVINOModel'
+            drop_type = 'relative' if 'relative' in accuracy_criterion else 'absolute'
+            kwargs = {
+                "metric": metric,
+                "higher_better": accuracy_criterion['higher_is_better'],
+                "drop_type": drop_type,
+                "maximal_drop": accuracy_criterion[drop_type],
+                "max_iter_num": max_trials,
+                # n_requests: None,
+                # sample_size: 300
+            }
+            return model.pot(calib_dataloader, **kwargs)
         else:
             invalidInputError(False,
-                              "Backend {} is not implemented.".format(backend))
+                              "Backend {} is invalid.".format(backend))
 
     @staticmethod
     def trace(model: nn.Module,
