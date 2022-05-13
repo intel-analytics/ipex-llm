@@ -172,6 +172,8 @@ class TensorFlow2Estimator(OrcaRayEstimator):
         )
 
         from bigdl.orca.data import SparkXShards
+        from bigdl.orca.data.tf.data import Dataset
+        from bigdl.orca.data.tf.tf2_data import TF2Dataset
         data, validation_data = maybe_dataframe_to_xshards(data, validation_data,
                                                            feature_cols, label_cols,
                                                            mode="fit",
@@ -182,28 +184,24 @@ class TensorFlow2Estimator(OrcaRayEstimator):
             if data._get_class_name() == 'pandas.core.frame.DataFrame':
                 data, validation_data = process_xshards_of_pandas_dataframe(data, feature_cols,
                                                                             label_cols,
-                                                                            validation_data, "fit")
+                                                                            validation_data,
+                                                                            "fit")
             ray_xshards = process_spark_xshards(data, self.num_workers)
-
-            if validation_data is None:
-                def transform_func(worker, partition_refs):
-                    params["data_creator"] = make_data_creator(partition_refs)
-                    return worker.step.remote(**params)
-
-                worker_stats = ray_xshards.reduce_partitions_for_actors(self.remote_workers,
-                                                                        transform_func)
-            else:
+            val_ray_xshards = None
+            if validation_data is not None:
                 val_ray_xshards = process_spark_xshards(validation_data, self.num_workers)
 
-                def zip_func(worker, this_partition_refs, that_partition_refs):
-                    params["data_creator"] = make_data_creator(this_partition_refs)
-                    params["validation_data_creator"] = \
-                        make_data_creator(that_partition_refs)
-                    return worker.step.remote(**params)
+            worker_stats = self._fit_ray_xshards(ray_xshards, val_ray_xshards, params)
+        elif isinstance(data, Dataset):
+            ray_xshards = TF2Dataset(data).get_ray_xshards(self.num_workers)
+            val_ray_xshards = None
+            if validation_data is not None:
+                assert isinstance(validation_data, Dataset), \
+                    "Validation data type should be the same as train data, " \
+                    "but got type: {}".format(type(validation_data))
+                val_ray_xshards = TF2Dataset(validation_data).get_ray_xshards(self.num_workers)
 
-                worker_stats = ray_xshards.zip_reduce_shards_with_actors(val_ray_xshards,
-                                                                         self.remote_workers,
-                                                                         zip_func)
+            worker_stats = self._fit_ray_xshards(ray_xshards, val_ray_xshards, params)
         elif isinstance(data, ray.data.Dataset):
             shards = data.split(n=self.num_workers, locality_hints=self.remote_workers)
 
@@ -245,6 +243,26 @@ class TensorFlow2Estimator(OrcaRayEstimator):
             worker_stats = list(itertools.chain.from_iterable(worker_stats))
         stats = worker_stats[0].copy()
         return stats
+
+    def _fit_ray_xshards(self, train_shards, val_shards, params):
+        if val_shards is None:
+            def transform_func(worker, partition_refs):
+                params["data_creator"] = make_data_creator(partition_refs)
+                return worker.step.remote(**params)
+
+            worker_stats = train_shards.reduce_partitions_for_actors(self.remote_workers,
+                                                                     transform_func)
+        else:
+            def zip_func(worker, this_partition_refs, that_partition_refs):
+                params["data_creator"] = make_data_creator(this_partition_refs)
+                params["validation_data_creator"] = \
+                    make_data_creator(that_partition_refs)
+                return worker.step.remote(**params)
+
+            worker_stats = train_shards.zip_reduce_shards_with_actors(val_shards,
+                                                                      self.remote_workers,
+                                                                      zip_func)
+        return worker_stats
 
     def evaluate(self, data, batch_size=32, num_steps=None, verbose=1,
                  sample_weight=None, callbacks=None, data_config=None,
@@ -289,6 +307,8 @@ class TensorFlow2Estimator(OrcaRayEstimator):
             data_config=data_config,
         )
         from bigdl.orca.data import SparkXShards
+        from bigdl.orca.data.tf.data import Dataset
+        from bigdl.orca.data.tf.tf2_data import TF2Dataset
 
         data, _ = maybe_dataframe_to_xshards(data,
                                              validation_data=None,
@@ -302,18 +322,15 @@ class TensorFlow2Estimator(OrcaRayEstimator):
             if data._get_class_name() == 'pandas.core.frame.DataFrame':
                 data = process_xshards_of_pandas_dataframe(data, feature_cols, label_cols)
 
-            data = data
             if data.num_partitions() != self.num_workers:
                 data = data.repartition(self.num_workers)
 
             ray_xshards = RayXShards.from_spark_xshards(data)
-
-            def transform_func(worker, partition_refs):
-                params["data_creator"] = make_data_creator(partition_refs)
-                return worker.validate.remote(**params)
-
-            worker_stats = ray_xshards.reduce_partitions_for_actors(self.remote_workers,
-                                                                    transform_func)
+            worker_stats = self._evaluate_ray_xshards(ray_xshards, params)
+        elif isinstance(data, Dataset):
+            # TODO: repartition?
+            ray_xshards = TF2Dataset(data).get_ray_xshards(self.num_workers)
+            worker_stats = self._evaluate_ray_xshards(ray_xshards, params)
         elif isinstance(data, ray.data.Dataset):
             shards = data.split(n=self.num_workers, locality_hints=self.remote_workers)
 
@@ -335,6 +352,15 @@ class TensorFlow2Estimator(OrcaRayEstimator):
             worker_stats = list(itertools.chain.from_iterable(worker_stats))
         stats = worker_stats[0].copy()
         return stats
+
+    def _evaluate_ray_xshards(self, ray_xshards, params):
+        def transform_func(worker, partition_refs):
+            params["data_creator"] = make_data_creator(partition_refs)
+            return worker.validate.remote(**params)
+
+        worker_stats = ray_xshards.reduce_partitions_for_actors(self.remote_workers,
+                                                                transform_func)
+        return worker_stats
 
     def process_ray_dataset(self, shard, label_cols, feature_cols, data_config):
         assert label_cols is not None, "label_cols param must be specified" \

@@ -21,7 +21,8 @@ from bigdl.orca.tfpark.tf_dataset import _standardize_keras_target_data
 from bigdl.dllib.utils.file_utils import enable_multi_fs_load, enable_multi_fs_load_static, \
     enable_multi_fs_save
 from bigdl.orca import OrcaContext
-from bigdl.orca.data.tf.data import Dataset, TFDataDataset2
+from bigdl.orca.data.tf.data import Dataset
+from bigdl.orca.data.tf.tf1_data import TF1Dataset
 from bigdl.orca.data import SparkXShards
 from bigdl.orca.learn.tf.utils import *
 from bigdl.orca.learn.trigger import Trigger
@@ -396,9 +397,9 @@ def to_dataset(data, batch_size, batch_per_thread, validation_data,
                                         sequential_order=sequential_order,
                                         shuffle=shuffle)
     elif isinstance(data, Dataset):
-        dataset = TFDataDataset2(data, batch_size=batch_size,
-                                 batch_per_thread=batch_per_thread,
-                                 validation_dataset=validation_data)
+        dataset = TF1Dataset(data, batch_size=batch_size,
+                             batch_per_thread=batch_per_thread,
+                             validation_dataset=validation_data)
     elif isinstance(data, DataFrame):
         dataset = TFDataset.from_dataframe(data, feature_cols, label_cols,
                                            batch_size,
