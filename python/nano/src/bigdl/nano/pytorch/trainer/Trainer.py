@@ -124,7 +124,6 @@ class Trainer(pl.Trainer):
                 plugin = distributed_ray(num_workers=num_processes,  # type: ignore
                                          use_ipex=use_ipex,
                                          device=device)
-            plugin = None
             strategy = None
             if use_ipex:
                 accelerator = create_IPEXAccelerator()
