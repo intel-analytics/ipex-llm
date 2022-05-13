@@ -34,7 +34,7 @@ from bigdl.nano.pytorch.lightning import LightningModuleFromTorch
 from bigdl.nano.pytorch.plugins.ddp_spawn import DDPSpawnPlugin
 from bigdl.nano.deps.automl.hpo_api import create_hpo_searcher, check_hpo_status
 from bigdl.nano.deps.ray.ray_api import distributed_ray
-from bigdl.nano.deps.ipex.ipex_api import create_IPEXAccelerator
+from bigdl.nano.deps.ipex.ipex_api import create_IPEXAccelerator, ipex_optimize, ipex_strategy
 from bigdl.nano.deps.openvino.openvino_api import PytorchOpenVINOModel, load_openvino_model
 from bigdl.nano.deps.onnxruntime.onnxruntime_api import bind_onnxrt_methods,\
     PytorchONNXRuntimeModel, load_onnxruntime_model
@@ -94,8 +94,9 @@ class Trainer(pl.Trainer):
         if num_processes == 1:
             accelerator = None
             if use_ipex:
-                accelerator = create_IPEXAccelerator(enable_bf16=enable_bf16)
-            super().__init__(accelerator=accelerator, *args, **kwargs)
+                accelerator = create_IPEXAccelerator()
+                strategy = ipex_strategy(accelerator=accelerator, enable_bf16=enable_bf16)
+            super().__init__(strategy, *args, **kwargs)
         else:
             plugin = None
             assert distributed_backend in distributed_backends, \
@@ -122,12 +123,12 @@ class Trainer(pl.Trainer):
                 plugin = distributed_ray(num_workers=num_processes,  # type: ignore
                                          use_ipex=use_ipex,
                                          device=device)
-
-            accelerator = None
+            plugin = None
+            strategy = None
             if use_ipex:
-                accelerator = create_IPEXAccelerator(enable_bf16=enable_bf16)
-
-            super().__init__(accelerator=accelerator,
+                accelerator = create_IPEXAccelerator()
+                strategy = ipex_strategy(accelerator=accelerator, enable_bf16=enable_bf16)
+            super().__init__(strategy=strategy,
                              plugins=[plugin], *args, **kwargs)
 
     @staticmethod

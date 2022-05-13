@@ -15,54 +15,33 @@
 #
 
 
-from typing import Union, Dict, Any
-import intel_extension_for_pytorch as ipex
-
 import torch
-import pytorch_lightning as pl
-from pytorch_lightning.plugins import SingleDevicePlugin
 from pytorch_lightning.accelerators.accelerator import Accelerator
-from pytorch_lightning.plugins.training_type import TrainingTypePlugin
-from pytorch_lightning.plugins.precision import PrecisionPlugin
-
+from bigdl.nano.common import check_avx512
+from pytorch_lightning.utilities.exceptions import MisconfigurationException
 
 class IPEXAccelerator(Accelerator):
     """ Accelerator for XPU devices. """
 
-    def __init__(
-        self,
-        training_type_plugin: TrainingTypePlugin = SingleDevicePlugin(
-            torch.device('cpu')),
-        enable_bf16=False,
-    ) -> None:
+    def setup_environment(self, root_device: torch.device) -> None:
         """
-        Args:
-            precision_plugin: the plugin to handle precision-specific parts
-            training_type_plugin: the plugin to handle different training routines
+        Raises:
+            MisconfigurationException:
+                If the selected device is not CPU.
         """
-        self.enable_bf16 = enable_bf16
-        if enable_bf16:
-            # Automatically mix precision
-            ipex.enable_auto_mixed_precision(mixed_dtype=torch.bfloat16)
+        super().setup_environment(root_device)
+        if root_device.type != "cpu":
+            raise MisconfigurationException(f"Device should be CPU, got {root_device} instead.")
 
-        super().__init__(precision_plugin=PrecisionPlugin(),
-                         training_type_plugin=training_type_plugin)
 
-    def setup(self, trainer: "pl.Trainer", model: "pl.LightningModule") -> None:
-        """
-        Setup plugins for the trainer fit and creates optimizers.
-        Args:
-            trainer: the trainer instance
-            model: the LightningModule
-        """
-        self.setup_training_type_plugin(model)
-        if not self.training_type_plugin.setup_optimizers_in_pre_dispatch:
-            self.setup_optimizers(trainer)
-        self.setup_precision_plugin()
-
-        if len(self.optimizers) > 1:
-            raise RuntimeError("Ipex does not support more than one optimizers.")
-        dtype = torch.bfloat16 if self.enable_bf16 else None
-        model, optimizer = ipex.optimize(model, optimizer=self.optimizers[0],
-                                         inplace=True, dtype=dtype)
-        self.optimizers = [optimizer]
+    def is_available() -> bool:
+        '''
+        return: if IPEX accelerator is available 
+        '''
+        # TODO: no device check api available so far, just check instruction set
+        if not check_avx512():
+            warning("Enable ipex in a cpu instruction set"
+                    " without avx512 may cause some random error."
+                    "Fall back to cpu device.")
+            return False
+    
