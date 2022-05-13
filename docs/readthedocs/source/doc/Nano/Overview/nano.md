@@ -57,7 +57,7 @@ trainer = Trainer(max_epochs=1, use_ipex=True, num_processes=4)
 trainer.fit(net, train_loader)
 ```
 
-For more details on the BigDL-Nano's PyTorch usage, please refer to the [PyTorch](../QuickStart/pytorch.md) page.
+For more details on the BigDL-Nano's PyTorch usage, please refer to the [PyTorch Training](../QuickStart/pytorch_train.md) and [PyTorch Inference](../QuickStart/pytorch_inference.md) page.
 
 ### **3.2 TensorFlow**
 
