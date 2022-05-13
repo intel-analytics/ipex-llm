@@ -93,10 +93,11 @@ class Trainer(pl.Trainer):
 
         if num_processes == 1:
             accelerator = None
+            strategy = None
             if use_ipex:
                 accelerator = create_IPEXAccelerator()
                 strategy = ipex_strategy(accelerator=accelerator, enable_bf16=enable_bf16)
-            super().__init__(strategy, *args, **kwargs)
+            super().__init__(strategy=strategy, *args, **kwargs)
         else:
             plugin = None
             assert distributed_backend in distributed_backends, \
