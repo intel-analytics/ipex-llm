@@ -242,7 +242,8 @@ class TorchRunner:
                 and not_iterable)
 
     def train_epochs(self, data_creator, epochs=1, batch_size=32, profile=False,
-                     info=None, wrap_dataloader=None, callbacks=None):
+                     info=None, wrap_dataloader=None, callbacks=None,
+                     validation_data_creator=None):
         config = self.config.copy()
         if OrcaContext.serialize_data_creator:
             with FileLock(
@@ -256,6 +257,23 @@ class TorchRunner:
                 loader = self.with_sampler(loader)
         elif wrap_dataloader is True:
             loader = self.with_sampler(loader)
+
+        if validation_data_creator:
+            if OrcaContext.serialize_data_creator:
+                with FileLock(
+                        os.path.join(tempfile.gettempdir(), ".orca_val_data.lock")):
+                    val_loader = validation_data_creator(config, batch_size)
+            else:
+                val_loader = validation_data_creator(config, batch_size)
+
+            if wrap_dataloader is None:
+                if TorchRunner.should_wrap_dataloader(val_loader):
+                    val_loader = self.with_sampler(val_loader)
+            elif wrap_dataloader is True:
+                val_loader = self.with_sampler(val_loader)
+        else:
+            val_loader = None
+
         if callbacks is not None:
             for callback in callbacks:
                 callback.set_trainer(self)
@@ -265,7 +283,8 @@ class TorchRunner:
             if callbacks is not None:
                 for callback in callbacks:
                     callback.on_epoch_begin(epoch=self.epochs)
-            stats = self.train_epoch(loader, profile=profile, info=info, callbacks=callbacks)
+            stats = self.train_epoch(loader, profile=profile, info=info, callbacks=callbacks,
+                                     val_loader=val_loader)
             if self.rank == 0:
                 if self.sync_stats:
                     self.logger.info(f"Finished training epoch {i + 1}, " +
@@ -287,7 +306,8 @@ class TorchRunner:
                     data_loader,
                     profile=False,
                     info=None,
-                    callbacks=None):
+                    callbacks=None,
+                    val_loader=None):
         """Runs a training epoch and updates the model parameters."""
         if hasattr(self.train_loader, "sampler") and hasattr(
                 self.train_loader.sampler, "set_epoch"):
@@ -303,9 +323,26 @@ class TorchRunner:
         with self.timers.record("train_epoch"):
             data_loader = iter(data_loader)
             train_stats = self.training_operator.train_epoch(data_loader, info, callbacks)
+    
+        if val_loader:
+            with self.timers.record("validation"):
+                info = info or {}
+                validation_results = self.training_operator.validate(val_loader,
+                                                                     info=info,
+                                                                     metrics=self.metrics)
+                # add prefix of "val_" for validation_stats
+                validation_stats = {}
+                for name, value in validation_results.items():
+                    if not name.startswith("val_"):
+                        name = "val_" + name
+                    validation_stats[name] = value
+
+        else:
+            validation_stats = {}
+
         self.epochs += 1
         # This is so that `epochs` is first in ordering.
-        stats = dict(epoch=self.epochs, **train_stats)
+        stats = dict(epoch=self.epochs, **train_stats, **validation_stats)
 
         if profile:
             stats.update(profile=self.timers.stats())
