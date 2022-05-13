@@ -24,6 +24,7 @@ from pytorch_lightning.utilities import rank_zero_deprecation
 from pytorch_lightning.core.datamodule import LightningDataModule
 
 from bigdl.nano.automl.hpo.backend import create_pl_pruning_callback
+from bigdl.nano.utils.log4Error import *
 import inspect
 import copy
 
@@ -51,7 +52,7 @@ class Objective(object):
             Defaults to None.
         :param: pruning: bool (optional): whether to enable pruning.
             Defaults to False.
-        raises: ValueError: _description_
+        throw: ValueError: _description_
         """
         self.searcher = searcher
         self.model_ = model
@@ -110,10 +111,9 @@ class Objective(object):
         # If you supply a datamodule you can't supply train_dataloader or val_dataloaders
         if (train_dataloaders is not None or val_dataloaders is not None) and \
                 datamodule is not None:
-            raise MisconfigurationException(
-                "You cannot pass `train_dataloader`"
-                "or `val_dataloaders` to `trainer.search(datamodule=...)`"
-            )
+            invalidInputError(False,
+                              "You cannot pass `train_dataloader`"
+                              "or `val_dataloaders` to `trainer.search(datamodule=...)`")
         return train_dataloaders, val_dataloaders, datamodule
 
     def __call__(self, trial):

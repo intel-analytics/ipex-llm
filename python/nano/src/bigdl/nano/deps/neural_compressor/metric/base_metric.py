@@ -14,6 +14,7 @@
 # limitations under the License.
 #
 from abc import ABC, abstractmethod
+from bigdl.nano.utils.log4Error import *
 
 
 class INCMetric(ABC):
@@ -28,7 +29,7 @@ class INCMetric(ABC):
         try:
             return getattr(self, '_metric')
         except AttributeError:
-            raise RuntimeError("Attribute 'metric' must be set.")
+            invalidInputError(False, "Attribute 'metric' must be set.")
 
     @metric.setter
     def metric(self, framework_metric):

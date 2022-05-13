@@ -21,6 +21,8 @@ from io import BytesIO
 import torch
 from bigdl.nano.pytorch.lightning import LightningModuleFromTorch
 from pytorch_lightning import LightningModule
+from bigdl.nano.utils.log4Error import *
+
 
 QUANTIZATION_BINDED_COMPONENTS = ['_quantized_model',
                                   '_quantized_model_up_to_date',
@@ -52,8 +54,9 @@ def _fx_quantize_eval(self, quantize=False):
         if self._quantized_model_up_to_date:
             self.forward = self._forward_fx_quantize
         else:
-            raise RuntimeError("Please call trainer.quantize again since the quantized model is"
-                               " not up-to-date")
+            invalidInputError(False,
+                              "Please call trainer.quantize again since the quantized model is"
+                              " not up-to-date")
     else:
         self.forward = self._torch_forward
 
@@ -64,8 +67,9 @@ def quantized_state_dict(self):
         # TODO: change to a better implementation
         return self._quantized_model.state_dict(), self._quantized_model_inc.tune_cfg
     else:
-        raise RuntimeError("Please call trainer.quantize again since the quantized model is"
-                           " not up-to-date.")
+        invalidInputError(False,
+                          "Please call trainer.quantize again since the quantized model is"
+                          " not up-to-date.")
 
 
 def quantized_model_size(self):

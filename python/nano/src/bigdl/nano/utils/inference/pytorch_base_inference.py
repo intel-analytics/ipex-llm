@@ -17,6 +17,7 @@ from bigdl.nano.pytorch.lightning import LightningModuleFromTorch
 import inspect
 from torch.utils.data import DataLoader
 import torch
+from bigdl.nano.utils.log4Error import *
 
 
 class PytorchBaseInference:
@@ -58,10 +59,10 @@ class PytorchBaseInference:
         return outputs
 
     def forward_step(self, *inputs):
-        raise NotImplementedError
+        invalidInputError(False, "forward_step not implement for PytorchBaseInference")
 
     def forward_step_int8(self, *inputs):
-        raise NotImplementedError
+        invalidInputError(False, "forward_step_int8 not implement for PytorchBaseInference")
 
 
 def get_forward_args(model):
@@ -88,8 +89,9 @@ def get_input_example(model: LightningModuleFromTorch, input_sample):
             if input_sample is None and model.predict_dataloader():
                 input_sample = tuple(next(iter(model.predict_dataloader())))
         else:
-            raise RuntimeError("You must specify an input_sample or call `Trainer.fit` "
-                               "on the model first to use `eval_openvino`")
+            invalidInputError(False,
+                              "You must specify an input_sample or call `Trainer.fit` "
+                              "on the model first to use `eval_openvino`")
 
     model.example_input_array = input_sample
     return input_sample
@@ -104,8 +106,8 @@ def export(model, input_sample=None, onnx_path="model.onnx", dynamic_axes=True):
     :param **kwargs: will be passed to torch.onnx.export function.
     '''
     input_sample = get_input_example(model, input_sample)
-    assert input_sample is not None,\
-        'You should set either input_sample or model.example_input_array'
+    invalidInputError(input_sample is not None,
+                      'You should set either input_sample or model.example_input_array')
     forward_args = get_forward_args(model)
     if dynamic_axes:
         dynamic_axes = {}

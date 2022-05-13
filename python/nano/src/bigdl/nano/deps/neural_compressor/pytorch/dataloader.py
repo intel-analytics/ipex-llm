@@ -14,6 +14,7 @@
 # limitations under the License.
 #
 import torch
+from bigdl.nano.utils.log4Error import *
 
 
 def _check_data_type(data):
@@ -22,7 +23,7 @@ def _check_data_type(data):
     else:
         for x in data:
             if not isinstance(x, torch.Tensor):
-                raise ValueError
+                invalidInputError(False, "expect torch.Tensor here")
 
 
 def _check_loader(model, loader):
@@ -43,15 +44,14 @@ def _check_loader(model, loader):
             # Each one must be of torch.Tensor
             _check_data_type(sample)
             # check if datalader yields data complied with what model requires
-            # TypeError will be raised if it fails
+            # TypeError will throw if it fails
             model(*sample)
     except (ValueError, TypeError):
-        raise ValueError(
-            "Dataloader for quantization should yield data in format below:\n"
-            "- (tuple or Tensor, tuple or Tensor)\n"
-            "- (Tensor, Tensor, ..., Tensor). \n"
-            "Please confirm number of inputs comply with model.forward."
-        )
+        invalidInputError(False,
+                          "Dataloader for quantization should yield data in format below:\n"
+                          "- (tuple or Tensor, tuple or Tensor)\n"
+                          "- (Tensor, Tensor, ..., Tensor). \n"
+                          "Please confirm number of inputs comply with model.forward.")
 
 
 def check_loaders(model, loaders):

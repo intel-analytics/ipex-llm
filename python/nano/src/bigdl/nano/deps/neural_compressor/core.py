@@ -18,11 +18,13 @@ try:
     from neural_compressor.experimental import Quantization, common
     from neural_compressor.experimental.common import Metric
 except ImportError:
-    raise ImportError("Intel Neural Compressor must be installed to use quantization."
+    invalidInputError(False,
+                      "Intel Neural Compressor must be installed to use quantization."
                       "Please install INC by: pip install neural-compressor.")
 
 
 from .metric import METRICS
+from bigdl.nano.utils.log4Error import *
 
 
 class QuantizationINC(Quantization):
@@ -96,8 +98,8 @@ class QuantizationINC(Quantization):
                 self.calib_dataloader = calib_dataloader
             if "onnx" in self.cfg.model.framework:
                 import torch
-                assert isinstance(calib_dataloader, torch.utils.data.DataLoader), \
-                    "Only torch dataloader is supported for onnx quantization."
+                invalidInputError(isinstance(calib_dataloader, torch.utils.data.DataLoader),
+                                  "Only torch dataloader is supported for onnx quantization.")
                 # add a collate_fn to transform torch dataloader to a numpy dataloader
                 calib_dataloader.collate_fn = func
                 self.calib_dataloader = calib_dataloader
@@ -106,8 +108,8 @@ class QuantizationINC(Quantization):
                 self.eval_dataloader = val_dataloader
             if "onnx" in self.cfg.model.framework:
                 import torch
-                assert isinstance(val_dataloader, torch.utils.data.DataLoader), \
-                    "Only torch dataloader is supported for onnx quantization."
+                invalidInputError(isinstance(val_dataloader, torch.utils.data.DataLoader),
+                                  "Only torch dataloader is supported for onnx quantization.")
                 # add a collate_fn to transform torch dataloader to a numpy dataloader
                 val_dataloader.collate_fn = func
                 self.eval_dataloader = val_dataloader
@@ -150,7 +152,8 @@ class QuantizationINC(Quantization):
         if quantized:
             return quantized
         else:
-            raise RuntimeError("Found no quantized model satisfying accuracy criterion.")
+            invalidInputError(False,
+                              "Found no quantized model satisfying accuracy criterion.")
 
     def check(self, calib_dataloader, val_dataloader, metric):
         """
@@ -158,14 +161,15 @@ class QuantizationINC(Quantization):
         for quantization.
         """
         if self.cfg.quantization.approach == 'post_training_static_quant':
-            assert calib_dataloader, \
-                "calib_calib_dataloader must not be None when approach is " \
-                "post-training static quantization."
+            invalidInputError(calib_dataloader,
+                              "calib_calib_dataloader must not be None"
+                              " when approach is post-training static quantization.")
 
         if self.cfg.quantization.approach == 'post_training_dynamic_quant':
-            assert calib_dataloader is None, \
-                "calib_calib_dataloader must be None when approach is " \
-                "post-training dynamic quantization."
+            invalidInputError(calib_dataloader is None,
+                              "calib_calib_dataloader must be None when approach is"
+                              " post-training dynamic quantization.")
 
         if metric and not val_dataloader:
-            raise RuntimeError("val_dataloader must be specified when metric is not None.")
+            invalidInputError(False,
+                              "val_dataloader must be specified when metric is not None.")

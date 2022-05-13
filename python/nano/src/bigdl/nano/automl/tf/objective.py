@@ -22,6 +22,7 @@ import inspect
 import copy
 
 from bigdl.nano.automl.hpo.backend import create_tfkeras_pruning_callback
+from bigdl.nano.utils.log4Error import *
 
 
 def _is_creator(model):
@@ -46,11 +47,12 @@ class Objective(object):
             Defaults to None.
         :param: pruning: bool (optional): whether to enable pruning.
             Defaults to False.
-        raises: ValueError: _description_
+        throw: ValueError: _description_
         """
         if not _is_creator(model) and not isinstance(model, tf.keras.Model):
-            raise ValueError("You should either pass a Tensorflo Keras model, or \
-                            a model_creator to the Tuning objective.")
+            invalidInputError(False,
+                              "You should either pass a Tensorflo Keras model, or "
+                              "a model_creator to the Tuning objective.")
 
         self.model_ = model
         self.target_metric_ = target_metric

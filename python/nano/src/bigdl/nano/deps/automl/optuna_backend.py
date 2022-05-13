@@ -15,6 +15,7 @@
 #
 
 from bigdl.nano.automl.hpo.backend import PrunerType, SamplerType
+from bigdl.nano.utils.log4Error import *
 import optuna
 
 
@@ -79,10 +80,10 @@ class OptunaBackend(object):
                         hp_dimension = trial.suggest_categorical(
                             name=hp_name, choices=hp_obj.sequence)
                 except (ValueError):
-                    raise ValueError("If you set search space in model, \
-                        you must call model.search before model.fit.")
+                    invalidInputError(False, "If you set search space in model, "
+                                             "you must call model.search before model.fit.")
             else:
-                raise ValueError("unknown hyperparameter type: %s" % hp)
+                invalidInputError(False, "unknown hyperparameter type: %s" % hp)
             config[hp_name] = hp_dimension
         return config
 

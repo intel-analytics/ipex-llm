@@ -45,6 +45,7 @@ from ray.util.sgd.utils import find_free_port
 from torch.nn import Module
 
 from bigdl.nano.deps.ray.ray_envbase import RayEnvironment
+from bigdl.nano.utils.log4Error import *
 
 
 @ray.remote
@@ -59,7 +60,8 @@ class RayExecutor:
 
     def set_env_vars(self, keys: List[str], values: List[str]):
         """Sets multiple env vars with the provided values"""
-        assert len(keys) == len(values)
+        invalidInputError(len(keys) == len(values),
+                          "keys length doesn't mathcc values length")
         for key, value in zip(keys, values):
             self.set_env_var(key, value)
 
@@ -145,8 +147,8 @@ class RayPlugin(DDPSpawnPlugin):
         self.use_ipex = use_ipex
         self.ipex_device = ipex_device
 
-        assert not self.use_gpu or not self.use_ipex, \
-            "You can not specify gpu and ipex at the same time."
+        invalidInputError(not self.use_gpu or not self.use_ipex,
+                          "You can not specify gpu and ipex at the same time.")
 
         self.workers: List[Any] = []
         self.init_hook = init_hook
@@ -302,14 +304,15 @@ class RayPlugin(DDPSpawnPlugin):
                        global_rank: int
                        ):
         """Train/test/eval function to be executed on each remote worker."""
-        assert isinstance(self, RayPlugin)
+        invalidInputError(isinstance(self, RayPlugin), "expect ray plugin here")
         # This method should be executed remotely in each worker.
         self._model = model  # type: ignore
         self.lightning_module.trainer.accelerator_connector\
             ._training_type_plugin = self
         self.lightning_module.trainer.accelerator.training_type_plugin = self
 
-        assert isinstance(self.cluster_environment, RayEnvironment)
+        invalidInputError(isinstance(self.cluster_environment, RayEnvironment),
+                          "expect ray environment here")
         self.cluster_environment.set_global_rank(global_rank)
         self.cluster_environment.set_remote_execution(True)
 
@@ -347,8 +350,9 @@ class RayPlugin(DDPSpawnPlugin):
 
     def set_world_ranks(self, process_idx: int = 0):
         """Set the appropriate rank attribues for the trainer."""
-        assert self.cluster_environment is not None and \
-            isinstance(self.cluster_environment, RayEnvironment)
+        invalidInputError(self.cluster_environment is not None and
+                          isinstance(self.cluster_environment, RayEnvironment),
+                          "expect ray environment here")
         if self.cluster_environment.is_remote():
             self._local_rank = self.global_to_local[self.global_rank]
             self.cluster_environment.set_global_rank(self.global_rank)

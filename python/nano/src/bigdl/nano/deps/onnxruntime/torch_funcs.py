@@ -18,6 +18,7 @@ from functools import partial
 from .base_onnxruntime import BaseORTInference, save_onnx_to_file
 from bigdl.nano.utils.inference.pytorch_base_inference import PytorchBaseInference, get_forward_args
 from bigdl.nano.utils.inference.pytorch_base_inference import export as export_to_onnx
+from bigdl.nano.utils.log4Error import *
 import torch
 
 
@@ -91,7 +92,8 @@ def eval_onnx(model, input_sample=None, file_path="model.onnx",
         first_time_after_fitting = not model.ort_infer_engine.ortsess_int8
         if first_time_after_fitting:
             # not in8 ortsess, can't help, return an error
-            raise RuntimeError("Please call trainer.quantize before using eval_onnx(quantize=True)")
+            invalidInputError(False,
+                              "Please call trainer.quantize before using eval_onnx(quantize=True)")
         model.ort_infer_engine.attach(model, precision="int8")
     else:
         first_time_after_fitting = not model.ort_infer_engine.ortsess_fp32
@@ -112,5 +114,6 @@ def to_quantized_onnx(model, file_path):
     if model.ort_infer_engine.onnx_model_int8:
         save_onnx_to_file(model.ort_infer_engine.onnx_model_int8, file_path)
     else:
-        raise RuntimeError("Please run trainer.quantize again since "
-                           "the quantized onnxruntime session is out-of-date.")
+        invalidInputError(False,
+                          "Please run trainer.quantize again since "
+                          "the quantized onnxruntime session is out-of-date.")

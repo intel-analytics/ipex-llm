@@ -14,6 +14,7 @@
 # limitations under the License.
 #
 
+from bigdl.nano.utils.log4Error import *
 from pytorch_lightning import LightningModule
 import torch
 from functools import partial
@@ -103,8 +104,9 @@ def inference(self,
                 self.eval_onnx(input_sample=tuple(input_sample_list), sess_options=sess_options)
         else:
             if not self.ort_infer_engine.ortsess_int8:
-                raise RuntimeError("Please run trainer.quantize again since "
-                                   "the quantized onnxruntime session is out-of-date.")
+                invalidInputError(False,
+                                  "Please run trainer.quantize again since "
+                                  "the quantized onnxruntime session is out-of-date.")
         # generate ort_inputs
         self.eval_onnx(quantize=quantize)
         if batch_size is None:
