@@ -26,6 +26,14 @@ loader.env.SPARK_SCALA_VERSION = "2.12"
 loader.env.SPARK_HOME = "$(SPARK_HOME)"
 loader.env.SPARK_MASTER_OPTS = "'-Dspark.worker.timeout=60'"
 
+sgx.ioctl_structs.ifconf  = [ {name = "ifc_len", size = 8, align = 8, type= "out" }, { ptr=[ {name="ifcu_req", size= "ifc_len", type="inout"} ] } ]
+sgx.allowed_ioctls.io1.request = 0x8912
+sgx.allowed_ioctls.io1.struct = "ifconf"
+
+sgx.ioctl_structs.ifreq = [ {  name ="ifreq", size=40, type="inout"} ]
+sgx.allowed_ioctls.io2.request = 0x8927
+sgx.allowed_ioctls.io2.struct = "ifreq"
+
 fs.mount.lib.type = "chroot"
 fs.mount.lib.path = "/lib"
 fs.mount.lib.uri = "file:$(GRAPHENEDIR)/Runtime"
