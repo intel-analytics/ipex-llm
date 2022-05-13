@@ -323,7 +323,7 @@ class TorchRunner:
         with self.timers.record("train_epoch"):
             data_loader = iter(data_loader)
             train_stats = self.training_operator.train_epoch(data_loader, info, callbacks)
-    
+
         if val_loader:
             with self.timers.record("validation"):
                 info = info or {}
