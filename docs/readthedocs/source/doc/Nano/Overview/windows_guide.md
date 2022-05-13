@@ -42,10 +42,12 @@ You can install BigDL nano from Pypi with `pip`. Specifically, for PyTroch exten
 
 ```
 pip install bigdl-nano[pytorch]
+source bigdl-nano-init
 ```
 
 For Tensorflow:
 
 ```
 pip install bigdl-nano[tensorflow]
+source bigdl-nano-init
 ```
