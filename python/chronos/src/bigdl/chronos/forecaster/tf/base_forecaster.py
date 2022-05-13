@@ -55,7 +55,7 @@ class BaseTF2Forecaster(Forecaster):
             self.internal.fit(x=data, epochs=epochs)
         self.fitted = True
 
-    def predict(self, data, batch_size=32):
+    def predict(self, data, batch_size=32, training=False):
         """
         :params data: The data support following formats:
 
@@ -68,9 +68,15 @@ class BaseTF2Forecaster(Forecaster):
         """
         from bigdl.nano.utils.log4Error import invalidInputError
         if not self.fitted:
+<<<<<<< HEAD
             invalidInputError(False,
                               "You must call fit or restore first before calling predict!")
         yhat = self.internal.predict(data, batch_size=batch_size)
+=======
+            raise RuntimeError("You must call fit or restore first before calling predict!")
+        # yhat = self.internal.predict(data, batch_size=batch_size)
+        yhat = self.internal(data, training=training).numpy()
+>>>>>>> modify predict method
         return yhat
 
     def evaluate(self, data, batch_size=32, multioutput="raw_values"):
