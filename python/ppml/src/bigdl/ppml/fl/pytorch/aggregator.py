@@ -4,6 +4,7 @@ import logging
 from torch import nn
 import torch
 from bigdl.ppml.fl.pytorch.protobuf_utils import ndarray_map_to_tensor_map
+from bigdl.ppml.fl.pytorch.utils import set_one_like_parameter
 from threading import Condition
 
 class Aggregator(object):
@@ -33,6 +34,7 @@ class Aggregator(object):
         else:
             logging.debug('waiting')
             self.condition.wait()
+
 
     def aggregate(self):
         input, target = [], None        

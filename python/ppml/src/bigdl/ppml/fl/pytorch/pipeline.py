@@ -14,15 +14,12 @@
 # limitations under the License.
 #
 
-from copyreg import pickle
 import logging
-from grpc import server
-from numpy import gradient
+from numpy import ndarray
 import torch
 from torch import nn
-from bigdl.dllib.utils.common import JTensor, callBigDlFunc
+import torch
 from bigdl.ppml.fl.pytorch.fl_client import FLClient
-from bigdl.ppml.fl.utils import init_fl_context
 from torch.utils.data import DataLoader
 from bigdl.ppml.fl.pytorch.protobuf_utils import tensor_map_to_ndarray_map
 
@@ -49,7 +46,9 @@ class PytorchPipeline:
         """
         y_pred_local = self.model(x)
         y_true_global = y
-        data_map = {'input': y_pred_local.detach().numpy(), 'target': y_true_global.detach().numpy()}
+        data_map = {'input': y_pred_local.detach().numpy()}
+        if y_true_global is not None:
+            data_map['target'] = y_true_global.detach().numpy()
         response = self.fl_client.train(data_map)
         response_map = tensor_map_to_ndarray_map(response.data.tensorMap)
         grad = response_map['grad']
@@ -58,7 +57,7 @@ class PytorchPipeline:
         self.optimizer.step()
         return response_map['loss']
 
-    def fit(self, x, y=None, epoch=5):
+    def fit(self, x, y=None, epoch=1):
         for i in range(epoch):
             self.model.train()
             if isinstance(x, DataLoader):
@@ -67,7 +66,21 @@ class PytorchPipeline:
                     loss = self.train_step(X, y)
                     current = batch * len(X)
                     if batch % 100 == 0:
-                        logging.info(f"loss: {loss:>7f}  [{current:>5d}/{size:>5d}]")
+                        logging.info(f"loss: {loss:>7f}  [{current:>5d}/{size:>5d}]  \
+                            epoch {i}/{epoch}")
+            elif isinstance(x, ndarray):
+                x = torch.from_numpy(x)
+                y = torch.from_numpy(y) if y is not None else None
+                self.train_step(x, y)
+            else:
+                raise Exception(f'got unsupported data input type: {type(x)}')
+            
+
+    def predict(self, x):
+        y_pred_local = self.model(x)
+        data_map = {'input': y_pred_local.detach().numpy()}
+        response = self.fl_client.predict(data_map)
+        return response.data.tensorMap['result']
                     
             
             
