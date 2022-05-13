@@ -33,7 +33,7 @@ class PytorchPipeline:
         self.version = 0
         self.algorithm = algorithm
         self.fl_client = FLClient()
-        # init_fl_context()
+        self.loss_history = []
 
     
     def add_server_model(self, model: nn.Module):
@@ -68,6 +68,7 @@ class PytorchPipeline:
                     if batch % 100 == 0:
                         logging.info(f"loss: {loss:>7f}  [{current:>5d}/{size:>5d}]  \
                             epoch {i}/{epoch}")
+                        self.loss_history.append(loss)
             elif isinstance(x, ndarray):
                 x = torch.from_numpy(x)
                 y = torch.from_numpy(y) if y is not None else None

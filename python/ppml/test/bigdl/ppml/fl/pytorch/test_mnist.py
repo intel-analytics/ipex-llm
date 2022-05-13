@@ -81,6 +81,9 @@ class TestCorrectness(unittest.TestCase):
         set_one_like_parameter(model)
         loss_fn = nn.CrossEntropyLoss()
         optimizer = torch.optim.SGD(model.parameters(), lr=1e-3)
+
+        # list for result validation
+        pytorch_loss_list = []
         def train(dataloader, model, loss_fn, optimizer):
             size = len(dataloader.dataset)
             model.train()
@@ -96,17 +99,22 @@ class TestCorrectness(unittest.TestCase):
 
                 if batch % 100 == 0:
                     loss, current = loss.item(), batch * len(X)
+                    pytorch_loss_list.append(np.array(loss))
                     print(f"loss: {loss:>7f}  [{current:>5d}/{size:>5d}]")
-        train(train_dataloader, model, loss_fn, optimizer)
 
-        # vfl_model_1 = NeuralNetworkPart1()
-        # set_one_like_parameter(vfl_model_1)
-        # vfl_client_ppl = PytorchPipeline(vfl_model_1, loss_fn, optimizer)
-        # vfl_model_2 = NeuralNetworkPart2()
-        # set_one_like_parameter(vfl_model_2)
-        # vfl_client_ppl.add_server_model(vfl_model_2)
-        # vfl_client_ppl.fit(train_dataloader)
-        pass
+        
+        train(train_dataloader, model, loss_fn, optimizer)
+        
+        vfl_model_1 = NeuralNetworkPart1()
+        optimizer1 = torch.optim.SGD(vfl_model_1.parameters(), lr=1e-3)
+        set_one_like_parameter(vfl_model_1)
+        vfl_client_ppl = PytorchPipeline(vfl_model_1, loss_fn, optimizer1)
+        vfl_model_2 = NeuralNetworkPart2()
+        set_one_like_parameter(vfl_model_2)
+        vfl_client_ppl.add_server_model(vfl_model_2)
+        vfl_client_ppl.fit(train_dataloader)
+        assert np.allclose(pytorch_loss_list, vfl_client_ppl.loss_history), \
+            "Validation failed, correctness of PPML and native Pytorch not the same"
     
 
 class NeuralNetwork(nn.Module):
