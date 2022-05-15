@@ -114,10 +114,8 @@ class BasePytorchForecaster(Forecaster):
         # fit on internal
         if self.distributed:
             # for cluster mode
-            from bigdl.orca.common import OrcaContext
-            sc = OrcaContext.get_spark_context().getConf()
-            num_nodes = 1 if sc.get('spark.master').startswith('local') \
-                else int(sc.get('spark.executor.instances'))
+            from bigdl.orca import OrcaContext
+            num_nodes = OrcaContext.get_ray_context().num_ray_nodes
             if batch_size % self.workers_per_node != 0:
                 raise RuntimeError("Please make sure that batch_size can be divisible by "
                                    "the product of worker_per_node and num_nodes, "
@@ -176,6 +174,10 @@ class BasePytorchForecaster(Forecaster):
                  if data is a xshard item.
         """
         # data transform
+        if isinstance(data, DataLoader) and self.distributed:
+            data = loader_to_creator(data)
+        if isinstance(data, tuple) and self.distributed:
+            data = np_to_creator(data)
         is_local_data = isinstance(data, np.ndarray)
         if is_local_data and self.distributed:
             data = np_to_xshard(data)

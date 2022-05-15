@@ -46,6 +46,11 @@ if __name__ == '__main__':
                         "You can change it depending on your own cluster setting.")
     parser.add_argument('--cluster_mode', type=str, default='local',
                         help="The mode for the Spark cluster.")
+    parser.add_argument('--runtime', type=str, default="spark",
+                        help="The runtime for backend. One of spark or ray")
+    parser.add_argument('--address', type=str, default="",
+                        help="The cluster address if the driver connects to an existing ray cluster. "
+                        "If it is empty, a new ray cluster will be created.")
     parser.add_argument('--num_workers', type=int, default=1,
                         help="The number of nodes to be used in the cluster"
                         "You can change it depending on your own cluster setting.")
@@ -58,9 +63,12 @@ if __name__ == '__main__':
                         "when distributed is set to True.")
 
     args = parser.parse_args()
-    num_nodes = 1 if args.cluster_mode == 'local' else args.num_workers
-    init_orca_context(cluster_mode=args.cluster_mode, cores=args.cores,
-                      memory=args.memory, num_nodes=num_nodes)
+    if args.runtime == "ray":
+        init_orca_context(runtime=args.runtime, address=args.address)
+    else:
+        num_nodes = 1 if args.cluster_mode == 'local' else args.num_workers
+        init_orca_context(cluster_mode=args.cluster_mode, cores=args.cores,
+                        memory=args.memory, num_nodes=num_nodes)
 
     tsdata_train, tsdata_test = get_tsdata()
     x_train, y_train = tsdata_train.to_numpy()
