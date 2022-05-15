@@ -129,6 +129,65 @@ def create_linear_search_space():
     }
 
 
+# for spark dataframe input and model of single input/output
+def simple_model(config):
+    import tensorflow as tf
+    model = tf.keras.models.Sequential([tf.keras.layers.Dense(config["dense"], input_shape=(1,)),
+                                        tf.keras.layers.Dense(1)])
+    return model
+
+
+def compile_args(config):
+    import tensorflow as tf
+    if "lr" in config:
+        lr = config["lr"]
+    else:
+        lr = 1e-3
+    args = {
+        "optimizer": tf.keras.optimizers.SGD(lr),
+        "loss": "mean_squared_error",
+        "metrics": ["mean_squared_error"]
+    }
+    return args
+
+
+def single_input_model_creator(config):
+    model = simple_model(config)
+    model.compile(**compile_args(config))
+    return model
+
+
+def get_search_space():
+    from bigdl.orca.automl import hp
+    return {
+        "dense": hp.choice([8, 16]),
+        "lr": hp.choice([0.001, 0.003, 0.01]),
+        "batch_size": hp.choice([32, 64])
+    }
+
+def get_spark_dataframes():
+    import tensorflow as tf
+    def get_df(size):
+        rdd = sc.range(0, size)
+        from pyspark.sql import SparkSession
+        spark = SparkSession(sc)
+        df = rdd.map(lambda x: (np.random.randn(1,).tolist(),
+                                int(np.random.randint(0, 1, size=())))).toDF(["feature", "label"])
+        return df
+
+    from pyspark.sql import SparkSession
+    from bigdl.orca import OrcaContext
+    sc = OrcaContext.get_spark_context()
+    spark = SparkSession(sc)
+    feature_cols = ["feature"]
+    label_cols = "label"
+    train_df = get_df(size=100)
+    val_df = get_df(size=30)
+    output_signature = (tf.TensorSpec(shape=(None, 1), dtype=tf.float32),
+                        tf.TensorSpec(shape=(None), dtype=tf.float32))
+    return train_df, val_df, feature_cols, label_cols, output_signature
+
+
 class TestTFKerasAutoEstimator(TestCase):
     def setUp(self) -> None:
         from bigdl.orca import init_orca_context
@@ -250,28 +309,52 @@ class TestTFKerasAutoEstimator(TestCase):
                      metric=pyrmsle,
                      metric_mode="min")
 
-    def test_multiple_inputs_model(self):
-        auto_est = AutoEstimator.from_keras(model_creator=model_creator_multi_inputs_outputs,
-                                            logs_dir="/tmp/zoo_automl_logs",
-                                            resources_per_trial={"cpu": 2},
-                                            name="test_fit")
+    # def test_multiple_inputs_model(self):
+    #     auto_est = AutoEstimator.from_keras(model_creator=model_creator_multi_inputs_outputs,
+    #                                         logs_dir="/tmp/zoo_automl_logs",
+    #                                         resources_per_trial={"cpu": 2},
+    #                                         name="test_fit")
 
-        data, validation_data, feature_cols, label_cols = get_multi_inputs_outputs_data()
+    #     data, validation_data, feature_cols, label_cols = get_multi_inputs_outputs_data()
+    #     auto_est.fit(data=data,
+    #                  validation_data=validation_data,
+    #                  search_space=get_search_space_multi_inputs_outputs(),
+    #                  n_sampling=2,
+    #                  epochs=5,
+    #                  metric='output_acc',
+    #                  metric_threshold=0.7,
+    #                  metric_mode="max",
+    #                  feature_cols=feature_cols,
+    #                  label_cols=label_cols,
+    #                  )
+    #     assert auto_est.get_best_model()
+    #     best_config = auto_est.get_best_config()
+    #     assert "lr" in best_config
+    #     assert all(k in best_config.keys() for k in get_search_space_multi_inputs_outputs().keys())
+
+    def test_spark_df_single_input_model(self):
+        auto_est = AutoEstimator.from_keras(model_creator=single_input_model_creator,
+                                        logs_dir="/tmp/zoo_automl_logs",
+                                        resources_per_trial={"cpu": 2},
+                                        name="test_fit")
+
+        data, validation_data, feature_cols, label_cols, output_signature = get_spark_dataframes()
         auto_est.fit(data=data,
                      validation_data=validation_data,
-                     search_space=get_search_space_multi_inputs_outputs(),
+                     search_space=get_search_space(),
                      n_sampling=2,
                      epochs=5,
-                     metric='output_acc',
-                     metric_threshold=0.7,
-                     metric_mode="max",
+                     metric="mean_squared_error",
+                     metric_threshold=0.01,
+                     metric_mode="min",
                      feature_cols=feature_cols,
                      label_cols=label_cols,
+                     output_signature=output_signature,
                      )
         assert auto_est.get_best_model()
         best_config = auto_est.get_best_config()
         assert "lr" in best_config
-        assert all(k in best_config.keys() for k in get_search_space_multi_inputs_outputs().keys())
+        assert all(k in best_config.keys() for k in get_search_space().keys())
 
 
 if __name__ == "__main__":

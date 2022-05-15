@@ -56,11 +56,24 @@ class KerasBaseModel(BaseModel):
         dataset = dataset.batch(batch_size)
         return dataset
 
+    @staticmethod
+    def _ray_dataset_ppl_to_tf_dataset(dataset, config):
+        label_cols = config["label_cols"]
+        if len(label_cols) > 1:
+            raise ValueError("We don't support model with multiple ouputs yet!")
+        label_col = label_cols[0]
+        dataset = dataset.to_tf(label_column=label_col,
+                                feature_columns=config["feature_cols"],
+                                output_signature=config["output_signature"],
+                                batch_size=int(config.get("batch_size", 32))
+                                )
+        return dataset
+
     def fit_eval(self, data, validation_data=None, mc=False, verbose=0, epochs=1, metric=None,
                  metric_func=None, resources_per_trial=None,
                  **config):
         """
-        :param data: could be a tuple with numpy ndarray with form (x, y) or
+        :param data: could be a tuple with numpy ndarray with form (x, y) or a tensorflow Dataset
                a data creator takes a config dict as parameter and returns a tf.data.Dataset.
         :param validation_data: could be a tuple with numpy ndarray with form (x, y)
         fit_eval will build a model at the first time it is built
@@ -68,6 +81,8 @@ class KerasBaseModel(BaseModel):
         params be functional
         TODO: check the updated params and decide if the model is needed to be rebuilt
         """
+        from ray.data.dataset_pipeline import DatasetPipeline
+
         def update_config():
             if isinstance(data, tuple) and isinstance(data[0], np.ndarray):
                 x, y = data
@@ -85,13 +100,26 @@ class KerasBaseModel(BaseModel):
             self._check_config(**tmp_config)
             self.config.update(config)
 
+        validation_dataset = None
         # get train_dataset and validation_dataset
         if isinstance(data, types.FunctionType):
             train_dataset = data(self.config)
             if validation_data:
                 validation_dataset = validation_data(self.config)
-            else:
-                validation_dataset = validation_data
+
+        elif isinstance(data, tf.data.Dataset):
+            train_dataset = data
+            validation_dataset = validation_data
+        elif isinstance(data, DatasetPipeline):
+            assert "feature_cols" in config, "'feature_cols' must be provided in config if input \
+                data is a Ray Dataset or DataPipeline."
+            assert "label_cols" in config, "'label_cols' must be provided in config if input \
+                data is a Ray Dataset or DataPipeline."
+            train_dataset = KerasBaseModel._ray_dataset_ppl_to_tf_dataset(data, self.config)
+            if validation_data:
+                validation_dataset = KerasBaseModel._ray_dataset_ppl_to_tf_dataset(validation_data,
+                                                                                   self.config)
+
         else:
             if not isinstance(data, tuple):
                 raise ValueError(f"data/validation_data should be a tuple of numpy array "
@@ -105,8 +133,6 @@ class KerasBaseModel(BaseModel):
             train_dataset = KerasBaseModel._np_to_dataset(data, batch_size=batch_size)
             if validation_data:
                 validation_dataset = KerasBaseModel._np_to_dataset(validation_data, batch_size)
-            else:
-                validation_dataset = validation_data
 
         hist = self.model.fit(train_dataset,
                               validation_data=validation_dataset,

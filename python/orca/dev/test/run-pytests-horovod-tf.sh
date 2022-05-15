@@ -29,3 +29,4 @@ python -m pytest -v test/bigdl/orca/learn/ray/tf/ \
     --ignore=test/bigdl/orca/learn/ray/tf/test_ray_tf2estimator.py \
     --ignore=test/bigdl/orca/learn/ray/tf/test_tf2estimator_ray_dataset.py
 python -m pytest -v test/bigdl/orca/data/test_read_parquet_images.py
+python -m pytest -v test/bigdl/orca/automl/autoestimator/test_autoestimator_keras.py::TestTFKerasAutoEstimator::test_spark_df_single_input_model

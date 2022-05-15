@@ -137,6 +137,7 @@ class AutoEstimator:
             scheduler_params=None,
             feature_cols=None,
             label_cols=None,
+            output_signature=None,
             ):
         """
         Automatically fit the model and search for the best hyperparameters.
@@ -146,7 +147,7 @@ class AutoEstimator:
             ndarrays or a PyTorch DataLoader or a function that takes a config dictionary as
             parameter and returns a PyTorch DataLoader.
             If the AutoEstimator is created with from_keras, data can be a tuple of
-            ndarrays or a function that takes a config dictionary as
+            ndarrays, Spark DataFrame, or a function that takes a config dictionary as
             parameter and returns a Tensorflow Dataset.
             If data is a tuple of ndarrays, it should be in the form of (x, y),
             where x is training input data and y is training target data.
@@ -203,7 +204,9 @@ class AutoEstimator:
                               scheduler=scheduler,
                               scheduler_params=scheduler_params,
                               feature_cols=feature_cols,
-                              label_cols=label_cols)
+                              label_cols=label_cols,
+                              output_signature=output_signature,
+                              )
         self.searcher.run()
         self._fitted = True
 
