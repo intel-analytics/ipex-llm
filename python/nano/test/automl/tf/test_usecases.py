@@ -29,7 +29,7 @@ from bigdl.nano.tf.keras import Input
 from bigdl.nano.tf.keras.layers import Dense, Conv2D, Flatten
 from bigdl.nano.automl.tf.keras import Model, Sequential
 
-from tensorflow.keras.optimizers import Adam, RMSprop
+from bigdl.nano.tf.optimizers import Adam, RMSprop
 import bigdl.nano.automl.hpo as hpo
 from bigdl.nano.automl.hpo.backend import PrunerType, SamplerType
 
@@ -91,7 +91,7 @@ class TestUseCases(TestCase):
         model = Model(inputs=inputs, outputs=outputs, name="mnist_model")
         model.compile(
             loss=keras.losses.SparseCategoricalCrossentropy(from_logits=True),
-            optimizer=keras.optimizers.RMSprop(),
+            optimizer=RMSprop(lr=space.Real(0.0001, 0.01, log=True)),
             metrics=["accuracy"],
         )
         # run hpo
@@ -103,9 +103,9 @@ class TestUseCases(TestCase):
                      pruner_kwargs={'min_resource':1, 'max_resource':100, 'reduction_factor':3},
                      x=x_train,
                      y=y_train,
-                    batch_size=128,
-                    epochs=2,
-                    validation_split=0.2)
+                     batch_size=128,
+                     epochs=2,
+                     validation_split=0.2)
         # run fit
         history = model.fit(x_train, y_train,
                     batch_size=128, epochs=2, validation_split=0.2)
@@ -134,7 +134,7 @@ class TestUseCases(TestCase):
         model.add(Dense(10, activation="softmax"))
         model.compile(
             loss="sparse_categorical_crossentropy",
-            optimizer=RMSprop(learning_rate=0.0001),
+            optimizer=Adam(learning_rate=0.0001),
             metrics=["accuracy"]
         )
         # run hpo
@@ -233,7 +233,7 @@ class TestUseCases(TestCase):
         with self.assertRaises(ValueError):
             history = model.fit(x_train, y_train,
                     batch_size=128, epochs=2, validation_split=0.2)
-                    
+
 
     def test_fit_without_search_without_space(self):
         n_samples_train=self.TRAIN_TOTAL_SAMPLES
