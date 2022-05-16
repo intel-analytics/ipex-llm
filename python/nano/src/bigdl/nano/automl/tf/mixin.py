@@ -139,6 +139,7 @@ class HPOMixin:
                 model=self._model_build,
                 target_metric=target_metric,
                 pruning=pruning,
+                backend=self.backend,
                 **fit_kwargs,
             )
 

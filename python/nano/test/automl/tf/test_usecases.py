@@ -85,13 +85,13 @@ class TestUseCases(TestCase):
 
         #define the model
         inputs = Input(shape=(784,))
-        x = Dense(units=space.Categorical(8,16), activation="linear")(inputs)
-        x = Dense(units=space.Categorical(32,64), activation="tanh")(x)
+        x = Dense(units=space.Categorical(8,16,prefix='dense_1'), activation="linear")(inputs)
+        x = Dense(units=space.Categorical(32,64,prefix='dense_2'), activation="tanh")(x)
         outputs = Dense(units=10)(x)
         model = Model(inputs=inputs, outputs=outputs, name="mnist_model")
         model.compile(
             loss=keras.losses.SparseCategoricalCrossentropy(from_logits=True),
-            optimizer=RMSprop(lr=space.Real(0.0001, 0.01, log=True)),
+            optimizer=RMSprop(learning_rate=space.Real(0.0001, 0.01, log=True)),
             metrics=["accuracy"],
         )
         # run hpo
@@ -103,7 +103,7 @@ class TestUseCases(TestCase):
                      pruner_kwargs={'min_resource':1, 'max_resource':100, 'reduction_factor':3},
                      x=x_train,
                      y=y_train,
-                     batch_size=128,
+                     batch_size=space.Categorical(128,64),
                      epochs=2,
                      validation_split=0.2)
         study = model.search_summary()
@@ -148,7 +148,8 @@ class TestUseCases(TestCase):
             y=y_train,
             validation_data=(x_valid, y_valid),
             shuffle=True,
-            batch_size=128,
+            # batch_size=128,
+            batch_size=space.Int(128,256),
             epochs=2
         )
         model.fit(
