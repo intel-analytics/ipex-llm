@@ -56,6 +56,21 @@ class EncryptedDataFrameReader(sparkSession: SparkSession, encryptMode: CryptoMo
           val schema = StructType(fields)
           sparkSession.createDataFrame(rows, schema)
         }
+      case CryptoMode.SM4_ECB_PKCS5PADDING =>
+        val rdd = PPMLContext.textFileSM4(sparkSession.sparkContext, path,
+          dataKeyPlainText)
+        // TODO: support more options
+        if (extraOptions.contains("header") &&
+          extraOptions("header").toLowerCase() == "true") {
+          EncryptedDataFrameReader.toDataFrame(rdd)
+        } else {
+          val rows = rdd.map(_.split(",")).map(Row.fromSeq(_))
+          val fields = (0 until  rows.first().length).map(i =>
+            StructField(s"_c$i", StringType, true)
+          )
+          val schema = StructType(fields)
+          sparkSession.createDataFrame(rows, schema)
+        }
       case _ =>
         throw new IllegalArgumentException("unknown EncryptMode " + CryptoMode.toString)
     }

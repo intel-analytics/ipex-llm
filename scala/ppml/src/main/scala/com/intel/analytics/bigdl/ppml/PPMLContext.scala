@@ -19,7 +19,7 @@ package com.intel.analytics.bigdl.ppml
 import com.intel.analytics.bigdl.dllib.NNContext.{checkScalaVersion, checkSparkVersion, createSparkConf, initConf, initNNContext}
 import com.intel.analytics.bigdl.dllib.utils.Log4Error
 import com.intel.analytics.bigdl.ppml.crypto.CryptoMode.CryptoMode
-import com.intel.analytics.bigdl.ppml.crypto.{CryptoMode, EncryptRuntimeException, FernetEncrypt}
+import com.intel.analytics.bigdl.ppml.crypto.{CryptoMode, EncryptRuntimeException, FernetEncrypt, Sm4Encrypt}
 import com.intel.analytics.bigdl.ppml.utils.Supportive
 import org.apache.spark.{SparkConf, SparkContext}
 import org.apache.spark.input.PortableDataStream
@@ -68,6 +68,8 @@ class PPMLContext protected(kms: KeyManagementService, sparkSession: SparkSessio
         sparkSession.sparkContext.textFile(path, minPartitions)
       case CryptoMode.AES_CBC_PKCS5PADDING =>
         PPMLContext.textFile(sparkSession.sparkContext, path, dataKeyPlainText, minPartitions)
+      case CryptoMode.SM4_ECB_PKCS5PADDING =>
+        PPMLContext.textFileSM4(sparkSession.sparkContext, path, dataKeyPlainText, minPartitions)
       case _ =>
         throw new IllegalArgumentException("unknown EncryptMode " + cryptoMode.toString)
     }
@@ -125,6 +127,23 @@ object PPMLContext{
     data.mapPartitions { iterator => {
       Supportive.logger.info("Decrypting bytes with JavaAESCBC...")
       fernetCryptos.decryptBigContent(iterator, dataKeyPlaintext)
+    }}.flatMap(_.split("\n"))
+  }
+
+    private[bigdl] def textFileSM4(sc: SparkContext,
+               path: String,
+               dataKeyPlaintext: String,
+               minPartitions: Int = -1): RDD[String] = {
+    Log4Error.invalidInputError(dataKeyPlaintext != "", "dataKeyPlainText should not be empty, please loadKeys first.")
+    val data: RDD[(String, PortableDataStream)] = if (minPartitions > 0) {
+      sc.binaryFiles(path, minPartitions)
+    } else {
+      sc.binaryFiles(path)
+    }
+    val sm4Cryptos = new Sm4Encrypt
+    data.mapPartitions { iterator => {
+      Supportive.logger.info("Decrypting bytes with JavaAESCBC...")
+      sm4Cryptos.decryptBigContent(iterator, dataKeyPlaintext)
     }}.flatMap(_.split("\n"))
   }
 
