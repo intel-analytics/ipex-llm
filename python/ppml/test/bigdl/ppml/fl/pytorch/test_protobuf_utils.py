@@ -40,11 +40,9 @@ class TestProtobufUtils(unittest.TestCase):
         # this explicit set is needed, default value is 'fork' on Unix
         # if 'fork', the resources would be inherited and thread crash would occur
         # (to be verified)
-
-    def test_ndarray_tensor(self) -> None:
-        cli = FLClient()
-        logging.debug('client initialized, start train with server')
-        cli.train({'input': np.array([[1, 2], [3, 4]])})
+    
+    def tearDown(self) -> None:
+        self.fl_server.stop()
 
     def test_upload_model(self) -> None:
         cli = FLClient()
