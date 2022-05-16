@@ -193,6 +193,7 @@ class TestAutoTrainer(TestCase):
         # use tspipeline to incrementally train
         new_ts_pipeline.fit(tsdata_valid)
 
+    @pytest.mark.skipif(tf.__version__ < '2.0.0', reason="run only when tf>2.0.0")
     def test_fit_third_party_feature_tf2(self):
         search_space = {'hidden_dim': hp.grid_search([32, 64]),
                         'layer_num': hp.randint(1, 3),
@@ -246,6 +247,7 @@ class TestAutoTrainer(TestCase):
         config = auto_estimator.get_best_config()
         assert config["past_seq_len"] == 7
 
+    @pytest.mark.skipif(tf.__version__ < '2.0.0', reason="run only when tf>2.0.0")
     def test_fit_third_party_data_creator_tf2(self):
         search_space = {'hidden_dim': hp.grid_search([32, 64]),
                         'layer_num': hp.randint(1, 3),
