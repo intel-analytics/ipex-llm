@@ -23,7 +23,7 @@ import torchmetrics
 from torch import nn
 
 from bigdl.nano.pytorch.lightning import LightningModuleFromTorch
-from bigdl.nano.pytorch.trainer import Trainer
+from bigdl.nano.pytorch import Trainer
 
 from test.pytorch.utils._train_torch_lightning import create_data_loader, data_transform
 from test.pytorch.tests.test_lightning import ResNet18

@@ -19,7 +19,7 @@ import pytest
 from unittest import TestCase
 
 import torch
-from bigdl.nano.pytorch.trainer import Trainer
+from bigdl.nano.pytorch import Trainer
 import bigdl.nano.automl.hpo.space as space
 
 from bigdl.nano.automl.pytorch import HPOSearcher
