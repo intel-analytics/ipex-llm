@@ -114,3 +114,13 @@ class LightningModuleFromTorch(LightningModule):
             super().load_state_dict(state_dict)
         except RuntimeError:
             self.model.load_state_dict(state_dict)
+
+    def test_dataloader(self):
+        '''Handle Not-implement '''
+        return None 
+
+    def val_dataloader(self):
+        return None 
+    
+    def train_dataloader(self):
+        return None 
