@@ -117,16 +117,16 @@ class LightningModuleFromTorch(LightningModule):
 
     def test_dataloader(self):
         """Handle Not-implement Exception in pl.datahooks."""
-        return None
+        return getattr(self.trainer, "test_dataloader", None)
 
     def val_dataloader(self):
         """Handle Not-implement Exception in pl.datahooks."""
-        return None
+        return getattr(self.trainer, "val_dataloader", None)
 
     def train_dataloader(self):
         """Handle Not-implement Exception in pl.datahooks."""
-        return None
+        return getattr(self.trainer, "train_dataloader", None)
 
     def predict_dataloader(self):
         """Handle Not-implement Exception in pl.datahooks."""
-        return None
+        return getattr(self.trainer, "predict_dataloader", None)

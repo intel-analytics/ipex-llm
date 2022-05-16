@@ -36,7 +36,6 @@ def get_input_example(model, input_sample):
         if getattr(model, "example_input_array", None) is not None:
             input_sample = model.example_input_array
         elif getattr(model, "trainer", None):
-            print("model.trainer == None: ", model.trainer==None)
             dataloaders: Any = [model.test_dataloader(), model.train_dataloader(),
                                 model.val_dataloader()]
             for dataloader in dataloaders:
