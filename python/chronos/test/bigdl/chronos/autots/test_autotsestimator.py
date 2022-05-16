@@ -25,6 +25,7 @@ from bigdl.chronos.autots import AutoTSEstimator, TSPipeline
 from bigdl.chronos.data import TSDataset
 from bigdl.orca.automl import hp
 import pandas as pd
+import tensorflow as tf
 
 
 def get_ts_df():
