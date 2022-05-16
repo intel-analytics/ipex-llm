@@ -174,8 +174,8 @@ if __name__ == "__main__":
 
     def model_creator(config):
         model = DCN(use_cross_layer=True, deep_layer_sizes=[192, 192])
-        from bigdl.friesian.learn.friesianTFRSModel import FriesianTFRSModel
-        model = FriesianTFRSModel(model)
+        from bigdl.friesian.models import TFRSModel
+        model = TFRSModel(model)
         model.compile(optimizer=tf.keras.optimizers.Adam(config['lr']))
         return model
 

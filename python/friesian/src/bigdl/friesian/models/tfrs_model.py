@@ -21,7 +21,7 @@ from tensorflow_recommenders.tasks import base
 from bigdl.dllib.utils import log4Error
 
 
-class FriesianTFRSModel(tf.keras.Model):
+class TFRSModel(tf.keras.Model):
     def __init__(self, tfrs_model):
         super().__init__()
         log4Error.invalidInputError(isinstance(tfrs_model, tfrs.Model),
