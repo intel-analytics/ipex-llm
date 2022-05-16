@@ -60,6 +60,16 @@ spec:
             value: {{ .Values.sgxExecutorMem }}
           - name: SGX_EXECUTOR_JVM_MEM
             value: {{ .Values.sgxExecutorJvmMem }}
+          - name: ATTESTATION_ID
+            valueFrom:
+              secretKeyRef:
+                name: kms-secret
+                key: app_id
+          - name: ATTESTATION_KEY
+            valueFrom:
+            secretKeyRef:
+              name: kms-secret
+              key: app_key
         resources:
           requests:
             cpu: 1
