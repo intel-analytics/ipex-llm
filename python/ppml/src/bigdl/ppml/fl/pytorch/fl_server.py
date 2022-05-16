@@ -36,7 +36,7 @@ class FLServer(object):
         # self.server.wait_for_termination()
 
     def stop(self):
-        self.server.stop()
+        self.server.stop(None)
 
     
 if __name__ == '__main__':
