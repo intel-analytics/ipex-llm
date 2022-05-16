@@ -170,7 +170,7 @@ def get_bigdl_class_version():
     from bigdl.dllib.utils.engine import get_bigdl_jars
     bigdl_jars = get_bigdl_jars()
     try:
-        bigdl_class_version = re.search('spark_(.+?)-jar', bigdl_jars[0]).group(1)[6:]
+        bigdl_class_version = re.search('spark_(.+?)-jar', bigdl_jars[1]).group(1)[6:]
     except AttributeError:
         # not found
         bigdl_class_version = 'Cannot find BigDL classpath, please check your installation'

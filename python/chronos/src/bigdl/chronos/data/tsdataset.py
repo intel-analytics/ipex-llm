@@ -21,7 +21,8 @@ import functools
 from bigdl.chronos.data.utils.feature import generate_dt_features, generate_global_features
 from bigdl.chronos.data.utils.impute import impute_timeseries_dataframe
 from bigdl.chronos.data.utils.deduplicate import deduplicate_timeseries_dataframe
-from bigdl.chronos.data.utils.roll import roll_timeseries_dataframe
+from bigdl.chronos.data.utils.roll import roll_timeseries_dataframe, _roll_timeseries_ndarray
+from bigdl.chronos.data.utils.time_feature import time_features
 from bigdl.chronos.data.utils.scale import unscale_timeseries_numpy
 from bigdl.chronos.data.utils.resample import resample_timeseries_dataframe
 from bigdl.chronos.data.utils.split import split_timeseries_dataframe
@@ -486,7 +487,9 @@ class TSDataset:
              lookback='auto',
              feature_col=None,
              target_col=None,
-             id_sensitive=False):
+             id_sensitive=False,
+             time_enc=False,
+             label_len=0):
         '''
         Sampling by rolling for machine learning/deep learning models.
 
@@ -519,6 +522,10 @@ class TSDataset:
                where num_sample is the sample number of the wide dataframe,
                new_num_feature_col is the product of the number of id and the number of feature_col.
                new_num_target_col is the product of the number of id and the number of target_col.
+        :param time_enc: bool,
+               This parameter is only useful when you are using Autoformer model.
+        :param label_len: int,
+               This parameter is only useful when you are using Autoformer model.
 
         :return: the tsdataset instance.
 
@@ -579,7 +586,8 @@ class TSDataset:
                                                             lookback=lookback,
                                                             horizon=horizon,
                                                             feature_col=feature_col,
-                                                            target_col=target_col))
+                                                            target_col=target_col,
+                                                            label_len=label_len))
 
         # concat the result on required axis
         concat_axis = 2 if id_sensitive else 0
@@ -592,6 +600,19 @@ class TSDataset:
                                           axis=concat_axis).astype(np.float32)
         else:
             self.numpy_y = None
+
+        # time_enc
+        if time_enc:
+            data_stamp = time_features(pd.to_datetime(self.df[self.dt_col].values), freq=self._freq)
+            self.data_stamp = data_stamp.transpose(1, 0)
+            max_horizon = horizon if isinstance(horizon, int) else max(horizon)
+            self.numpy_x_timeenc, _ = _roll_timeseries_ndarray(self.data_stamp[:-max_horizon],
+                                                               lookback)
+            self.numpy_y_timeenc, _ = _roll_timeseries_ndarray(self.data_stamp[lookback-label_len:],
+                                                               horizon+label_len)
+        else:
+            self.numpy_x_timeenc = None
+            self.numpy_y_timeenc = None
 
         # target first
         if self.id_sensitive:
@@ -732,7 +753,10 @@ class TSDataset:
         if self.numpy_x is None:
             raise RuntimeError("Please call 'roll' method "
                                "before transform a TSDataset to numpy ndarray!")
-        return self.numpy_x, self.numpy_y
+        if self.numpy_x_timeenc is None:
+            return self.numpy_x, self.numpy_y
+        else:
+            return self.numpy_x, self.numpy_y, self.numpy_x_timeenc, self.numpy_y_timeenc
 
     def to_pandas(self):
         '''

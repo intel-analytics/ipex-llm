@@ -23,7 +23,8 @@ def roll_timeseries_dataframe(df,
                               lookback,
                               horizon,
                               feature_col,
-                              target_col):
+                              target_col,
+                              label_len=0):
     """
     roll dataframe into numpy ndarray sequence samples.
 
@@ -60,7 +61,8 @@ def roll_timeseries_dataframe(df,
                                                 lookback,
                                                 horizon,
                                                 feature_col,
-                                                target_col)
+                                                target_col,
+                                                label_len)
     else:
         return _roll_timeseries_dataframe_test(df,
                                                roll_feature_df,
@@ -103,13 +105,19 @@ def _roll_timeseries_dataframe_train(df,
                                      lookback,
                                      horizon,
                                      feature_col,
-                                     target_col):
+                                     target_col,
+                                     label_len):
+    if label_len != 0 and isinstance(horizon, list):
+        raise ValueError("horizon should be an integer if label_len is set to larger than 0.")
     max_horizon = horizon if isinstance(horizon, int) else max(horizon)
     x = df[:-max_horizon].loc[:, target_col+feature_col].values.astype(np.float32)
-    y = df.iloc[lookback:].loc[:, target_col].values.astype(np.float32)
+    y = df.iloc[lookback-label_len:].loc[:, target_col].values.astype(np.float32)
 
     output_x, mask_x = _roll_timeseries_ndarray(x, lookback)
-    output_y, mask_y = _roll_timeseries_ndarray(y, horizon)
+    if isinstance(horizon, list):
+        output_y, mask_y = _roll_timeseries_ndarray(y, horizon)
+    else:
+        output_y, mask_y = _roll_timeseries_ndarray(y, horizon+label_len)
     mask = (mask_x == 1) & (mask_y == 1)
 
     x = _append_rolling_feature_df(output_x[mask], roll_feature_df)
