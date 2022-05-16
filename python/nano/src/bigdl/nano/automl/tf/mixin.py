@@ -26,6 +26,7 @@ from bigdl.nano.automl.hpo.search import (
     _check_search_args,
     _strip_val_prefix,
 )
+from bigdl.nano.automl.hpo.space import AutoObject
 
 
 class HPOMixin:
@@ -224,14 +225,18 @@ class HPOMixin:
 
     def _model_compile(self, model, trial):
         # for lazy model compile
-        # TODO support searable compile args
-        # config = self.backend.sample_config(trial, kwspaces)
-        # TODO objects like Optimizers has internal states so
+        # objects like Optimizers has internal states so
         # each trial needs to have a copy of its own.
-        # should allow users to pass a creator function
+        # TODO may allow users to pass a creator function
         # to avoid deep copy of objects
         compile_args = copy.deepcopy(self.compile_args)
         compile_kwargs = copy.deepcopy(self.compile_kwargs)
+
+        # instantiate optimizers if it is autoobj
+        optimizer = compile_kwargs.get('optimizer', None)
+        if optimizer and isinstance(optimizer, AutoObject):
+            optimizer = self.backend.instantiate(trial, optimizer)
+            compile_kwargs['optimizer'] = optimizer
         model.compile(*compile_args, **compile_kwargs)
 
     def _model_build(self, trial):
