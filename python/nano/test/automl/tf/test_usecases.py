@@ -106,6 +106,8 @@ class TestUseCases(TestCase):
                      batch_size=128,
                      epochs=2,
                      validation_split=0.2)
+        study = model.search_summary()
+        assert(study.best_trial)
         # run fit
         history = model.fit(x_train, y_train,
                     batch_size=128, epochs=2, validation_split=0.2)
