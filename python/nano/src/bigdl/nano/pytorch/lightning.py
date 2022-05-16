@@ -116,11 +116,17 @@ class LightningModuleFromTorch(LightningModule):
             self.model.load_state_dict(state_dict)
 
     def test_dataloader(self):
-        '''Handle Not-implement '''
-        return None 
+        """Handle Not-implement Exception in pl.datahooks."""
+        return None
 
     def val_dataloader(self):
-        return None 
-    
-    def train_dataloader(self):
-        return None 
+        """Handle Not-implement Exception in pl.datahooks."""
+        return None
+
+    # def train_dataloader(self):
+    #     """Handle Not-implement Exception in pl.datahooks."""
+    #     return None
+
+    def predict_dataloader(self):
+        """Handle Not-implement Exception in pl.datahooks."""
+        return None
