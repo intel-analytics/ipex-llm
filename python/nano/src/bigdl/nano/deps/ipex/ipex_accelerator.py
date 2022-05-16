@@ -20,6 +20,7 @@ from pytorch_lightning.accelerators.accelerator import Accelerator
 from bigdl.nano.common import check_avx512
 from pytorch_lightning.utilities.exceptions import MisconfigurationException
 
+
 class IPEXAccelerator(Accelerator):
     """ Accelerator for XPU devices. """
 
@@ -33,10 +34,9 @@ class IPEXAccelerator(Accelerator):
         if root_device.type != "cpu":
             raise MisconfigurationException(f"Device should be CPU, got {root_device} instead.")
 
-
     def is_available() -> bool:
         '''
-        return: if IPEX accelerator is available 
+        return: if IPEX accelerator is available
         '''
         # TODO: no device check api available so far, just check instruction set
         if not check_avx512():
@@ -44,4 +44,3 @@ class IPEXAccelerator(Accelerator):
                     " without avx512 may cause some random error."
                     "Fall back to cpu device.")
             return False
-    

@@ -6,6 +6,7 @@ from pytorch_lightning.strategies.strategy import Strategy
 from pytorch_lightning.plugins.precision import PrecisionPlugin
 import intel_extension_for_pytorch as ipex
 
+
 class IPEX_Strategy(Strategy):
     def __init__(
         self,
@@ -28,7 +29,6 @@ class IPEX_Strategy(Strategy):
         else:
             super().__init__(accelerator=accelerator, precision_plugin=precision_plugin)
 
-
     def setup(self, trainer: "pl.Trainer", model: "pl.LightningModule") -> None:
         """
         Setup plugins for the trainer fit and creates optimizers.
@@ -38,7 +38,7 @@ class IPEX_Strategy(Strategy):
         """
         self.setup_precision_plugin()
         self.setup_optimizers(trainer)
-        
+
         if len(self.optimizers) > 1:
             raise RuntimeError("Ipex does not support more than one optimizers.")
         dtype = torch.bfloat16 if self.enable_bf16 else None
