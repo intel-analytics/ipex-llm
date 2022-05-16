@@ -1,8 +1,6 @@
-# BigDL-Nano PyTorch Overview
+# BigDL-Nano PyTorch Training Overview
 
-BigDL-Nano can be used to accelerate PyTorch or PyTorch-Lightning applications on both training and inference workloads. The optimizations in BigDL-Nano are delivered through an extended version of PyTorch-Lightning `Trainer`. These optimizations are either enabled by default or can be easily turned on by setting a parameter or calling a method.
-
-## PyTorch Training
+BigDL-Nano can be used to accelerate PyTorch or PyTorch-Lightning applications on training workloads. The optimizations in BigDL-Nano are delivered through an extended version of PyTorch-Lightning `Trainer`. These optimizations are either enabled by default or can be easily turned on by setting a parameter or calling a method.
 
 We will briefly describe here the major features in BigDL-Nano for PyTorch training. You can find complete examples here [links to be added]().
 
@@ -35,7 +33,7 @@ For example,
 
 ```python
 from bigdl.nano.pytorch import Trainer
-lightning_module = Trainer.compile(pytorch_module, optimizer, scheduler)
+lightning_module = Trainer.compile(pytorch_module, loss, optimizer, scheduler)
 trainer = Trainer(max_epoch=10)
 trainer.fit(lightning_module, train_loader)
 ```
@@ -83,13 +81,3 @@ train_set = ImageFolder(train_path, data_transform)
 train_loader = DataLoader(train_set, batch_size=batch_size, shuffle=True)
 trainer.fit(module, train_loader)
 ```
-
-## PyTorch Inference
-
-add a link for examples here.
-
-### Runtime Acceleration
-
-onnx runtime, openvino
-
-### Quantization
