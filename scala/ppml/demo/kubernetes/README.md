@@ -17,29 +17,43 @@ bash enclave-key-to-secret.sh
 to generate your enclave key and add it to your Kubernetes cluster as a secret.
 
 
-## 3 Deploy HFL Demo for Kubernetes
+## 3 Deploy FL Demo for Kubernetes
 
 ### 3.1 Helm install
 Using helm to deploy hfl-demo. Run:
 ```commandline
-helm install <name> ./bigdl-ppml-hfl-helm
+helm install <name> ./bigdl-ppml-fl-helm
 ```
 
 ### 3.2 Debugging
-To check the logs of the Fl server, run
+To check the logs of the Hfl server, run
 ```commandline
-sudo kubectl logs $( sudo kubectl get pod | grep hfl-server | cut -d " " -f1 ) -f
+sudo kubectl logs $( sudo kubectl get pod | grep fl-server | cut -d " " -f1 ) hflserver -f
 ```
 
 To check the logs of the Hfl client1, run
 ```commandline
-sudo kubectl logs $( sudo kubectl get pod | grep hfl-client1 | cut -d " " -f1 ) -f
+sudo kubectl logs $( sudo kubectl get pod | grep fl-client | cut -d " " -f1 ) hflclient1 -f
 ```
 
 To check the logs of the Hfl client2, run
 ```commandline
-sudo kubectl logs $( sudo kubectl get pod | grep hfl-client2 | cut -d " " -f1 ) -f
+sudo kubectl logs $( sudo kubectl get pod | grep fl-client | cut -d " " -f1 ) hflclient2 -f
 ```
+
+To check the logs of the Vfl server, run
+```commandline
+sudo kubectl logs $( sudo kubectl get pod | grep fl-server | cut -d " " -f1 ) vflserver -f
+```
+
+To check the logs of the Hfl client1, run
+```commandline
+sudo kubectl logs $( sudo kubectl get pod | grep fl-client | cut -d " " -f1 ) vflclient1 -f
+```
+
+To check the logs of the Hfl client2, run
+```commandline
+sudo kubectl logs $( sudo kubectl get pod | grep fl-client | cut -d " " -f1 ) vflclient2 -f
 
 ### 3.3 Helm Uninstall
 To uninstall the helm chart, run
@@ -48,36 +62,3 @@ helm uninstall <name>
 ```
 
 Note that the <name> must be the same as the one you set in section 3.1.
-
-
-## 4 Deploy VFL Demo for Kubernetes
-
-### 3.1 Helm install
-Using helm to deploy vfl-demo. Run:
-```commandline
-helm install <name> ./bigdl-ppml-vfl-helm
-```
-
-### 3.2 Debugging
-To check the logs of the Fl server, run
-```commandline
-sudo kubectl logs $( sudo kubectl get pod | grep vfl-server | cut -d " " -f1 ) -f
-```
-
-To check the logs of the Hfl client1, run
-```commandline
-sudo kubectl logs $( sudo kubectl get pod | grep vfl-client1 | cut -d " " -f1 ) -f
-```
-
-To check the logs of the Hfl client2, run
-```commandline
-sudo kubectl logs $( sudo kubectl get pod | grep vfl-client2 | cut -d " " -f1 ) -f
-```
-
-### 3.3 Helm Uninstall
-To uninstall the helm chart, run
-```commandline
-helm uninstall <name>
-```
-
-Note that the <name> must be the same as the one you set in section 4.1.

@@ -10,7 +10,4 @@ ADD ./scripts/* /ppml/trusted-big-data-ml/
 
 RUN rm $SPARK_HOME/jars/guava-14.0.1.jar && \
     chmod a+x runFlServer.sh && \
-    chmod a+x runHflClient1.sh && \
-    chmod a+x runHflClient2.sh && \
-    chmod a+x runVflClient1.sh && \
-    chmod a+x runVflClient2.sh
+    chmod a+x runClient.sh

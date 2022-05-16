@@ -8,19 +8,15 @@ export DOCKER_IMAGE=intelanalytics/bigdl-ppml-trusted-fl-graphene:2.1.0-SNAPSHOT
 arg=$1
 case "$arg" in
     hfl1)
-        export script=/ppml/trusted-big-data-ml/runHflClient1.sh
         export pod_name=hfl-client1
         ;;
     hfl2)
-        export script=/ppml/trusted-big-data-ml/runHflClient2.sh
         export pod_name=hfl-client2
         ;;
     vfl1)
-        export script=/ppml/trusted-big-data-ml/runVflClient1.sh
         export pod_name=vfl-client1
         ;;
     vfl2)
-        export script=/ppml/trusted-big-data-ml/runVflClient2.sh
         export pod_name=Vfl-client2
         ;;
 esac
@@ -41,4 +37,4 @@ sudo docker run -it \
     -v $KEYS_PATH:/ppml/trusted-big-data-ml/work/keys \
     -e SGX_MEM_SIZE=32G \
     -e SGX_LOG_LEVEL=error \
-    $DOCKER_IMAGE bash $script
+    $DOCKER_IMAGE bash $1
