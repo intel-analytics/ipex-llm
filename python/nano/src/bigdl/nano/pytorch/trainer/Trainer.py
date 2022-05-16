@@ -97,7 +97,7 @@ class Trainer(pl.Trainer):
             if use_ipex:
                 accelerator = create_IPEXAccelerator()
                 strategy = ipex_strategy(accelerator=accelerator, enable_bf16=enable_bf16)
-            super().__init__(strategy=strategy, *args, **kwargs)
+            super().__init__(*args, **kwargs)
         else:
             plugin = None
             assert distributed_backend in distributed_backends, \
@@ -128,8 +128,7 @@ class Trainer(pl.Trainer):
             if use_ipex:
                 accelerator = create_IPEXAccelerator()
                 strategy = ipex_strategy(accelerator=accelerator, enable_bf16=enable_bf16)
-            super().__init__(strategy=strategy,
-                             plugins=[plugin], *args, **kwargs)
+            super().__init__(*args, **kwargs)
 
     @staticmethod
     def compile(model: nn.Module,

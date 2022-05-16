@@ -34,13 +34,15 @@ class IPEXAccelerator(Accelerator):
         if root_device.type != "cpu":
             raise MisconfigurationException(f"Device should be CPU, got {root_device} instead.")
 
+    @staticmethod
     def is_available() -> bool:
         '''
         return: if IPEX accelerator is available
         '''
         # TODO: no device check api available so far, just check instruction set
         if not check_avx512():
-            warning("Enable ipex in a cpu instruction set"
+            Warning("Enable ipex in a cpu instruction set"
                     " without avx512 may cause some random error."
                     "Fall back to cpu device.")
             return False
+        return True

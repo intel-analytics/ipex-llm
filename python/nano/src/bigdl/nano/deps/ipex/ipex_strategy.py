@@ -44,16 +44,17 @@ class IPEX_Strategy(Strategy):
         else:
             super().__init__(accelerator=accelerator, precision_plugin=precision_plugin)
 
-    def setup(self, trainer: "pl.Trainer", model: "pl.LightningModule") -> None:
+    def setup(self, trainer: "pl.Trainer", *args, **kwargs) -> None:
         """
         Setup plugins for the trainer fit and creates optimizers.
         Args:
             trainer: the trainer instance
-            model: the LightningModule
+            kwargs['model']: pl.LightningModule
         """
         self.setup_precision_plugin()
         self.setup_optimizers(trainer)
-
+        model = kwargs['model']
+        
         if len(self.optimizers) > 1:
             raise RuntimeError("Ipex does not support more than one optimizers.")
         dtype = torch.bfloat16 if self.enable_bf16 else None
