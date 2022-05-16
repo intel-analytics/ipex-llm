@@ -23,7 +23,7 @@ spec:
           command: ["/bin/sh","-c"]
           args: ["
                 sed -i \"s@localhost@$HFL_SERVER_IP@g\" /ppml/trusted-big-data-ml/ppml-conf.yaml;
-                bash /ppml/trusted-big-data-ml/runClient.sh hfl1;
+                bash /ppml/trusted-big-data-ml/runClient.sh hfl 1;
                 "]
           securityContext:
             privileged: true
@@ -58,7 +58,7 @@ spec:
           command: ["/bin/sh","-c"]
           args: ["
                 sed -i \"s@localhost@$HFL_SERVER_IP@g\" /ppml/trusted-big-data-ml/ppml-conf.yaml;
-                bash /ppml/trusted-big-data-ml/runClient.sh hfl2;
+                bash /ppml/trusted-big-data-ml/runClient.sh hfl 2;
                 "]
           securityContext:
             privileged: true
@@ -92,7 +92,7 @@ spec:
           command: ["/bin/sh","-c"]
           args: ["
                 sed -i \"s@localhost:8980@$VFL_SERVER_IP:$VFL_SERVER_PORT@g\" /ppml/trusted-big-data-ml/ppml-conf.yaml;
-                bash /ppml/trusted-big-data-ml/runClient.sh vfl1;
+                bash /ppml/trusted-big-data-ml/runClient.sh vfl 1;
                 "]
           securityContext:
             privileged: true
@@ -128,7 +128,7 @@ spec:
           command: ["/bin/sh","-c"]
           args: ["
                 sed -i \"s@localhost:8980@$VFL_SERVER_IP:$VFL_SERVER_PORT@g\" /ppml/trusted-big-data-ml/ppml-conf.yaml;
-                bash /ppml/trusted-big-data-ml/runClient.sh vfl2;
+                bash /ppml/trusted-big-data-ml/runClient.sh vfl 2;
                 "]
           securityContext:
             privileged: true

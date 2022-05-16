@@ -118,20 +118,20 @@ sudo bash start-fl-server.sh
 Open two new terminals, run respectively:
 
 ```bash
-sudo bash start-fl-client.sh hfl1
+sudo bash start-fl-client.sh hfl 1
 ```
 
 ```bash
-sudo bash start-fl-client.sh hfl2
+sudo bash start-fl-client.sh hfl 2
 ```
 
 ## Run Vertical FL Demo
 Open two new terminals, run respectively:
 
 ```bash
-sudo bash start-fl-client.sh vfl1
+sudo bash start-fl-client.sh vfl 1
 ```
 
 ```bash
-sudo bash start-fl-client.sh vfl2
+sudo bash start-fl-client.sh vfl 2
 ```

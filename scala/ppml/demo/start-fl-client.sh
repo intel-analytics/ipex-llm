@@ -5,19 +5,14 @@ export DATA_PATH=YOUR_LOCAL_DATA_PATH
 export KEYS_PATH=YOUR_LOCAL_KEYS_PATH
 export DOCKER_IMAGE=intelanalytics/bigdl-ppml-trusted-fl-graphene:2.1.0-SNAPSHOT
 
-arg=$1
-case "$arg" in
-    hfl1)
-        export pod_name=hfl-client1
+clientType=$1
+clientId=$2
+case "$clientType" in
+    hfl)
+        export pod_name=hfl-client
         ;;
-    hfl2)
-        export pod_name=hfl-client2
-        ;;
-    vfl1)
-        export pod_name=vfl-client1
-        ;;
-    vfl2)
-        export pod_name=Vfl-client2
+    vfl)
+        export pod_name=vfl-client
         ;;
 esac
 
@@ -25,7 +20,7 @@ sudo docker rm -f $pod_name
 sudo docker run -it \
     --privileged \
     --net=host \
-    --name=$pod_name \
+    --name=$pod_name$clientId \
     --cpuset-cpus="20-39" \
     --oom-kill-disable \
     --device=/dev/gsgx \
@@ -37,4 +32,4 @@ sudo docker run -it \
     -v $KEYS_PATH:/ppml/trusted-big-data-ml/work/keys \
     -e SGX_MEM_SIZE=32G \
     -e SGX_LOG_LEVEL=error \
-    $DOCKER_IMAGE bash $1
+    $DOCKER_IMAGE bash $1 $2
