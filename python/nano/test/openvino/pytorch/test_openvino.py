@@ -61,7 +61,7 @@ class TestOpenVINO(TestCase):
             trainer.save(openvino_model, saved_root)
             assert len(os.listdir(saved_root)) > 0
             loaded_openvino_model = trainer.load(saved_root)
-            y_hat = openvino_model(x[0:3])
+            y_hat = loaded_openvino_model(x[0:3])
             assert y_hat.shape == (3, 10)
-            y_hat = openvino_model(x)
+            y_hat = loaded_openvino_model(x)
             assert y_hat.shape == (10, 10)
