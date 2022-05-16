@@ -218,6 +218,24 @@ def _generate_output_dict(feature_lists, label_lists, feature_cols=None, label_c
         return {"x": feature_arrs}
 
 
+def _generate_feature_dict(feature_lists, label_lists, feature_cols=None, label_cols=None):
+    cols = feature_cols
+    feature_arrs = _merge_rows(feature_lists)
+    if feature_cols and len(feature_cols) == 1:
+        feature_arrs = tuple(feature_arrs)
+    data = feature_arrs
+    if label_cols is not None:
+        cols = cols + label_cols
+        label_arrs = _merge_rows(label_lists)
+        if len(label_cols) == 1:
+            label_arrs = tuple(label_arrs)
+        data = data + label_arrs
+    result = dict()
+    for i in range(0, len(cols)):
+        result[cols[i]] = data[i]
+    return result
+
+
 def _generate_output_pandas_df(feature_lists, label_lists, feature_cols, label_cols=None):
     import pandas as pd
     feature_arrs = _merge_rows(feature_lists)
@@ -272,6 +290,7 @@ def arrays2others(iter, feature_cols, label_cols, shard_size=None, generate_func
 
 
 arrays2dict = partial(arrays2others, generate_func=_generate_output_dict)
+arrays2feature_dict = partial(arrays2others, generate_func=_generate_feature_dict)
 arrays2pandas = partial(arrays2others, generate_func=_generate_output_pandas_df)
 
 
@@ -313,6 +332,35 @@ def _dataframe_to_xshards(data, feature_cols, label_cols=None, accept_str_col=Fa
                                                               feature_cols,
                                                               label_cols,
                                                               shard_size))
+    return SparkXShards(shard_rdd)
+
+
+def dataframe_to_xshards_of_feature_dict(data, feature_cols, label_cols=None,
+                                         accept_str_col=False):
+    '''
+    This function transforms a spark dataframe to xshards of feature dict (all feature_cols
+    and label_cols will be merged to one dictionary).
+    :param data: a spark dataframe
+    :param feature_cols: the col names you would like to select and transform to ndarray
+    :param label_cols: the target col name you would like to select and transform to ndarray
+           typically, you may leave this to None since there is no difference to use
+           feature_cols directly.
+    :param accept_str_col: bool, states if allow str to be a valid type.
+
+    :return: a sparkxshards of ndarray dictionary with feature_cols+label_cols as keys.
+    '''
+    from bigdl.orca import OrcaContext
+    schema = data.schema
+    shard_size = OrcaContext._shard_size
+    numpy_rdd = data.rdd.map(lambda row: convert_row_to_numpy(row,
+                                                              schema,
+                                                              feature_cols,
+                                                              label_cols,
+                                                              accept_str_col))
+    shard_rdd = numpy_rdd.mapPartitions(lambda x: arrays2feature_dict(x,
+                                                                      feature_cols,
+                                                                      label_cols,
+                                                                      shard_size))
     return SparkXShards(shard_rdd)
 
 

@@ -1,0 +1,94 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: fl-server
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: fldemo
+      component: flserver
+  template:
+    metadata:
+      labels:
+        app: fldemo
+        component: flserver
+    spec:
+      restartPolicy: Always
+      containers:
+        - name: hflserver
+          image:  {{ .Values.image }}
+          imagePullPolicy: IfNotPresent
+          command: ["/bin/sh","-c"]
+          args: ["
+                bash /ppml/trusted-big-data-ml/runFlServer.sh;
+                "]
+          securityContext:
+            privileged: true
+          env:
+            - name: SGX_ENABLED
+              value: !!str {{ .Values.sgx }}
+            - name: SGX_LOG_LEVEL
+              value: {{ .Values.sgxLog }}
+            - name: SGX_MEM_SIZE
+              value: {{ .Values.sgxMemSize }}
+          volumeMounts:
+            - name: device-plugin
+              mountPath: /var/lib/kubelet/device-plugins
+            - name: dev-gsgx
+              mountPath: /dev/gsgx
+            - name: aesm-socket
+              mountPath: /var/run/aesmd/aesm.socket
+            - name: enclave-key
+              mountPath: /graphene/Pal/src/host/Linux-SGX/signer/enclave-key.pem
+              subPath: enclave-key.pem
+            - name: secure-keys
+              mountPath: /ppml/trusted-big-data-ml/work/keys
+
+        - name: vflserver
+          image:  {{ .Values.image }}
+          imagePullPolicy: IfNotPresent
+          command: ["/bin/sh","-c"]
+          args: ["
+                sed -i \"s@serverPort: 8980@serverPort: $VFL_SERVER_PORT@g\" /ppml/trusted-big-data-ml/ppml-conf.yaml;
+                bash /ppml/trusted-big-data-ml/runFlServer.sh;
+                "]
+          securityContext:
+            privileged: true
+          env:
+            - name: SGX_ENABLED
+              value: !!str {{ .Values.sgx }}
+            - name: SGX_LOG_LEVEL
+              value: {{ .Values.sgxLog }}
+            - name: SGX_MEM_SIZE
+              value: {{ .Values.sgxMemSize }}
+            - name: VFL_SERVER_PORT
+              value: "8981"
+          volumeMounts:
+            - name: device-plugin
+              mountPath: /var/lib/kubelet/device-plugins
+            - name: dev-gsgx
+              mountPath: /dev/gsgx
+            - name: aesm-socket
+              mountPath: /var/run/aesmd/aesm.socket
+            - name: enclave-key
+              mountPath: /graphene/Pal/src/host/Linux-SGX/signer/enclave-key.pem
+              subPath: enclave-key.pem
+            - name: secure-keys
+              mountPath: /ppml/trusted-big-data-ml/work/keys
+      volumes:
+        - name: device-plugin
+          hostPath:
+            path: /var/lib/kubelet/device-plugins
+        - name: dev-gsgx
+          hostPath:
+            path: /dev/gsgx
+        - name: aesm-socket
+          hostPath:
+            path: /var/run/aesmd/aesm.socket
+        - name: enclave-key
+          secret:
+            secretName: enclave-key
+        - name: secure-keys
+          secret:
+            secretName: ssl-keys

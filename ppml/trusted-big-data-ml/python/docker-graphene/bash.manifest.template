@@ -14,6 +14,9 @@ sgx.debug = 0
 sgx.isvprodid = 1
 sgx.isvsvn = 3
 
+sgx.remote_attestation = 1
+sgx.ra_client_spid = ""
+
 loader.env.LD_LIBRARY_PATH = "/usr/lib/python3.8/lib:/lib:/lib/x86_64-linux-gnu:/usr/lib:/usr/lib/x86_64-linux-gnu:$(JDK_HOME):$(JDK_HOME)/lib/amd64/jli:/ppml/trusted-big-data-ml/work/lib"
 loader.env.PATH = "/usr/lib/python3.8/bin:/:$(EXECDIR):/usr/sbin:/usr/bin:/sbin:/bin:$(JDK_HOME)/bin"
 loader.env.PYTHONHOME = "/usr/lib/python3.8"
@@ -25,6 +28,15 @@ loader.env.SPARK_USER = "$(SPARK_USER)"
 loader.env.SPARK_SCALA_VERSION = "2.12"
 loader.env.SPARK_HOME = "$(SPARK_HOME)"
 loader.env.SPARK_MASTER_OPTS = "'-Dspark.worker.timeout=60'"
+loader.env.BIGDL_HOME = "$(BIGDL_HOME)"
+
+sgx.ioctl_structs.ifconf  =  [ {name = "ifc_len",size = 4, align = 4, type= "inout" }, {size = 4, type= "inout"}, { ptr=[ {name="ifcu_req", size= "ifc_len", type="in"} ] } ]
+sgx.allowed_ioctls.io1.request = 0x8912
+sgx.allowed_ioctls.io1.struct = "ifconf"
+
+sgx.ioctl_structs.ifreq = [ {  name ="ifreq", size=40, type="inout"} ]
+sgx.allowed_ioctls.io2.request = 0x8927
+sgx.allowed_ioctls.io2.struct = "ifreq"
 
 fs.mount.lib.type = "chroot"
 fs.mount.lib.path = "/lib"

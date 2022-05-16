@@ -20,7 +20,7 @@ import pytest
 import torch
 from torch.utils.data import TensorDataset, DataLoader, Dataset
 from torch import nn
-from bigdl.nano.pytorch.trainer import Trainer
+from bigdl.nano.pytorch import Trainer
 
 input1 = TensorDataset(torch.ones(10, 3))
 input2 = TensorDataset(torch.ones(10, 4))

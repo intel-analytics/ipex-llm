@@ -41,7 +41,7 @@ import torch.nn as nn
 import torch.nn.functional as F
 import torchvision
 from pytorch_lightning import LightningModule, seed_everything
-from bigdl.nano.pytorch.trainer import Trainer
+from bigdl.nano.pytorch import Trainer
 from pytorch_lightning.callbacks import LearningRateMonitor
 from pytorch_lightning.loggers import TensorBoardLogger
 from torch.optim.lr_scheduler import OneCycleLR

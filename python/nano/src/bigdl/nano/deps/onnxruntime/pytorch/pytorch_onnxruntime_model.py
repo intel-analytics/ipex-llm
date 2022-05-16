@@ -31,7 +31,7 @@ class PytorchONNXRuntimeModel(ONNXRuntimeModel, AcceleratedLightningModule):
         This PytorchONNXRuntimeModel will serve for all precision models.
     '''
 
-    def __init__(self, model, input_sample=None):
+    def __init__(self, model, input_sample=None, onnxruntime_session_options=None):
         """
         Create a ONNX Runtime model from pytorch.
 
@@ -50,7 +50,7 @@ class PytorchONNXRuntimeModel(ONNXRuntimeModel, AcceleratedLightningModule):
             export_to_onnx(model, input_sample=input_sample, onnx_path='tmp.onnx')
             onnx_path = 'tmp.onnx'
         AcceleratedLightningModule.__init__(self, None)
-        ONNXRuntimeModel.__init__(self, onnx_path)
+        ONNXRuntimeModel.__init__(self, onnx_path, session_options=onnxruntime_session_options)
         if os.path.exists('tmp.onnx'):
             os.remove('tmp.onnx')
 

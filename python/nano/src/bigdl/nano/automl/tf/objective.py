@@ -15,6 +15,7 @@
 #
 
 
+from selectors import EpollSelector
 from tensorflow.keras.backend import clear_session
 from tensorflow.keras.models import clone_model
 import tensorflow as tf
@@ -36,6 +37,7 @@ class Objective(object):
                  model=None,
                  target_metric=None,
                  pruning=False,
+                 backend=None,
                  **kwargs,
                  ):
         """
@@ -57,6 +59,7 @@ class Objective(object):
         self.model_ = model
         self.target_metric_ = target_metric
         self.pruning = pruning
+        self.backend = backend
         self.kwargs = kwargs
 
     @property
@@ -76,6 +79,10 @@ class Objective(object):
         new_kwargs = copy.copy(self.kwargs)
         new_kwargs['verbose'] = 2
 
+        # process batch size
+        new_kwargs = self.backend.instantiate_param(trial, new_kwargs, 'batch_size')
+
+        # process callbacks
         callbacks = new_kwargs.get('callbacks', None)
         callbacks = callbacks() if inspect.isfunction(callbacks) else callbacks
 

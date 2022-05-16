@@ -43,7 +43,8 @@ object SimpleQuerySparkExample {
     // val sc = PPMLContext.initPPMLContext("SimpleQuery")
 
     // load csv file to data frame with ppmlcontext.
-    val df = sc.read(cryptoMode = arguments.inputEncryptMode).csv(arguments.inputPath + "/people.csv")
+    val df = sc.read(cryptoMode = arguments.inputEncryptMode).option("header", "true")
+      .csv(arguments.inputPath + "/people.csv")
 
     // Select only the "name" column
     df.select("name").count()

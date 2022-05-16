@@ -16,6 +16,7 @@
 from pathlib import Path
 import yaml
 from bigdl.nano.utils.inference.pytorch.model import AcceleratedLightningModule
+import neural_compressor
 from neural_compressor.utils.pytorch import load
 from neural_compressor.model.model import PyTorchModel
 
@@ -28,6 +29,13 @@ class PytorchQuantizedModel(AcceleratedLightningModule):
     @staticmethod
     def _load(path, model):
         qmodel = PyTorchModel(load(path, model))
+        from packaging import version
+        if version.parse(neural_compressor.__version__) < version.parse("1.11"):
+            path = Path(path)
+            tune_cfg_file = path / 'best_configure.yaml'
+            with open(tune_cfg_file, 'r') as f:
+                tune_cfg = yaml.safe_load(f)
+                qmodel.tune_cfg = tune_cfg
         return PytorchQuantizedModel(qmodel)
 
     def _save_model(self, path):

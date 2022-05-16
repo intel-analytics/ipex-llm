@@ -20,15 +20,15 @@ from bigdl.nano.utils.log4Error import *
 
 
 class ONNXRuntimeModel:
-    def __init__(self, onnx_filepath):
+    def __init__(self, onnx_filepath, session_options=None):
         self.onnx_filepath = onnx_filepath  # onnx filepath
         self.onnx_model = None  # onnx model
         self.ortsess = None  # onnxruntime session
-        self._build_ortsess()
+        self._build_ortsess(session_options)
 
     def forward_step(self, *inputs):
         '''
-            This function run through the onnxruntime forwarding step
+        This function run through the onnxruntime forwarding step
         '''
         inputs = dict(zip(self._forward_args, inputs))
         ort_outs = self.ortsess.run(None, inputs)

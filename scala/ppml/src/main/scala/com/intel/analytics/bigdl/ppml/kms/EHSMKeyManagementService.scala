@@ -1,7 +1,3 @@
-package com.intel.analytics.bigdl.ppml.kms
-
-import com.intel.analytics.bigdl.dllib.utils.Log4Error
-import com.intel.analytics.bigdl.ppml.utils.HTTPUtil.postRequest
 /*
  * Copyright 2016 The BigDL Authors.
  *
@@ -18,6 +14,11 @@ import com.intel.analytics.bigdl.ppml.utils.HTTPUtil.postRequest
  * limitations under the License.
  */
 
+
+package com.intel.analytics.bigdl.ppml.kms
+
+import com.intel.analytics.bigdl.dllib.utils.Log4Error
+import com.intel.analytics.bigdl.ppml.utils.HTTPUtil.postRequest
 import com.intel.analytics.bigdl.ppml.utils.{EHSMParams, KeyReaderWriter}
 
 object EHSM_CONVENTION {
