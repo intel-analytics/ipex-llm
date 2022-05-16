@@ -315,7 +315,7 @@ class MyLightningCLI(LightningCLI):
 
 
 def cli_main():
-    from bigdl.nano.pytorch.trainer import Trainer
+    from bigdl.nano.pytorch import Trainer
 
     MyLightningCLI(TransferLearningModel, CatDogImageDataModule,
                    seed_everything_default=1234, trainer_class=Trainer)

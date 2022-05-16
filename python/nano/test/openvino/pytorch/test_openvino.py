@@ -15,7 +15,7 @@
 #
 from tempfile import TemporaryDirectory
 from unittest import TestCase
-from bigdl.nano.pytorch.trainer import Trainer
+from bigdl.nano.pytorch import Trainer
 from torchvision.models.mobilenetv3 import mobilenet_v3_small
 import torch
 from torch.utils.data.dataset import TensorDataset
