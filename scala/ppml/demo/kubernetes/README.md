@@ -20,7 +20,7 @@ to generate your enclave key and add it to your Kubernetes cluster as a secret.
 ## 3 Deploy FL Demo for Kubernetes
 
 ### 3.1 Helm install
-Using helm to deploy hfl-demo. Run:
+Using helm to deploy fl-demo. Run:
 ```commandline
 helm install <name> ./bigdl-ppml-fl-helm
 ```
@@ -46,12 +46,12 @@ To check the logs of the Vfl server, run
 sudo kubectl logs $( sudo kubectl get pod | grep fl-server | cut -d " " -f1 ) vflserver -f
 ```
 
-To check the logs of the Hfl client1, run
+To check the logs of the Vfl client1, run
 ```commandline
 sudo kubectl logs $( sudo kubectl get pod | grep fl-client | cut -d " " -f1 ) vflclient1 -f
 ```
 
-To check the logs of the Hfl client2, run
+To check the logs of the Vfl client2, run
 ```commandline
 sudo kubectl logs $( sudo kubectl get pod | grep fl-client | cut -d " " -f1 ) vflclient2 -f
 
