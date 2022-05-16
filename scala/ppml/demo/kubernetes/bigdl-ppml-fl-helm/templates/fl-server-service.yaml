@@ -5,7 +5,7 @@ metadata:
 spec:
   type: ClusterIP
   ports:
-    - name: rpc
+    - name: rpchfl
       port: 8980
     - name: rpcvfl
       port: 8981
