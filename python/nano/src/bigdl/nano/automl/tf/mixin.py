@@ -96,8 +96,8 @@ class HPOMixin:
             stripped_target_metric = _strip_val_prefix(target_metric)
             if compile_metrics is None:
                 if stripped_target_metric not in ['loss', 'val_loss']:
-                    invalidInputError(False, "target metric is should be loss or val_loss",
-                                     "if metrics is not provided in compile")
+                    invalidInputError(False, "target metric is should be loss or val_loss"
+                                             " if metrics is not provided in compile")
             elif isinstance(compile_metrics, list):
                 target_not_in = stripped_target_metric not in ['loss', 'val_loss']
                 if stripped_target_metric not in compile_metrics and target_not_in:
