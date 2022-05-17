@@ -106,7 +106,6 @@ def schedule_workers(num_workers: int,
           " equal than the physical cores available"
     invalidInputError(cores_per_worker * num_workers <= len(p_cores), msg)
 
-
     schedule = []
     for i in range(num_workers):
         schedule.append([p2l[core] for core in
