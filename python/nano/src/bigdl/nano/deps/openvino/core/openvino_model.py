@@ -83,8 +83,8 @@ class OpenVINOModel:
         self.ie_network.reshape(static_shape)
 
         # pot has its own model format, so we need to save and reload by pot
-        with TemporaryDirectory() as dir:
-            dir = Path(dir)
+        with TemporaryDirectory() as root:
+            dir = Path(root)
             save(self.ie_network, str(dir / 'model.xml'))
 
             # Convert model back to original shape
@@ -133,10 +133,10 @@ class OpenVINOModel:
 
         # To use runtime, we need to save and reload
         # returned a list of paths, but for now there is only one model path in list
-        with TemporaryDirectory() as dir:
+        with TemporaryDirectory() as root:
             compressed_model_paths = save_model(
                 model=compressed_model,
-                save_path=dir,
+                save_path=root,
                 model_name='model'
             )
             # set batch for compressed model
