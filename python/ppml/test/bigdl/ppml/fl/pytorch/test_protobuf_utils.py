@@ -37,9 +37,6 @@ class TestProtobufUtils(unittest.TestCase):
         self.fl_server = FLServer()
         self.fl_server.build()
         self.fl_server.start()
-        # this explicit set is needed, default value is 'fork' on Unix
-        # if 'fork', the resources would be inherited and thread crash would occur
-        # (to be verified)
     
     def tearDown(self) -> None:
         self.fl_server.stop()
