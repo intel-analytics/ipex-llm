@@ -29,6 +29,15 @@ def convert_onnx_to_xml(onnx_file_path, xml_path, batch_size=1):
                           "ModelOptimizer fails to convert {}.".format(str(onnx_file_path)))
 
 
+def save_model(model, xml_path):
+    xml_path = Path(xml_path)
+    pass_manager = Manager()
+    pass_manager.register_pass(pass_name="Serialize",
+                               xml_path=str(xml_path),
+                               bin_path=str(xml_path.with_suffix(".bin")))
+    pass_manager.run_passes(model)
+
+
 def validate_dataloader(model, dataloader):
     n_inputs = len(model.ie_network.inputs)
     sample = dataloader[0][:n_inputs]

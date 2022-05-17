@@ -51,11 +51,7 @@ class OpenVINOModel:
                           "Path of openvino model must be with '.xml' suffix.")
         path.mkdir(exist_ok=True)
         xml_path = path / self.status['xml_path']
-        pass_manager = Manager()
-        pass_manager.register_pass(pass_name="Serialize",
-                                   xml_path=str(xml_path),
-                                   bin_path=str(xml_path.with_suffix(".bin")))
-        pass_manager.run_passes(self.ie_network)
+        save_model(self.ie_network, xml_path)
 
     def pot(self,
             dataloader,
