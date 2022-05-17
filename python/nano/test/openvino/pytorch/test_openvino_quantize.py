@@ -41,7 +41,7 @@ class TestOpenVINO(TestCase):
                                            metric=F1(10),
                                            backend='pot')
 
-        y_hat = optimized_model(x[0:1])
-        assert y_hat.shape == (1, 10)
-        # y_hat = optimized_model(x)
-        # assert y_hat.shape == (10, 10)
+        y_hat = optimized_model(x[0:3])
+        assert y_hat.shape == (3, 10)
+        y_hat = optimized_model(x)
+        assert y_hat.shape == (10, 10)
