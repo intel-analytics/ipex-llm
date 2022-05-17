@@ -27,3 +27,14 @@ def convert_onnx_to_xml(onnx_file_path, xml_path, batch_size=1):
     else:
         invalidInputError(False,
                           "ModelOptimizer fails to convert {}.".format(str(onnx_file_path)))
+
+
+def validate_dataloader(model, dataloader):
+    n_inputs = len(model.ie_network.inputs)
+    sample = dataloader[0][:n_inputs]
+    try:
+        model(*sample)
+    except RuntimeError:
+        invalidInputError(False,
+                          "Invalid dataloader, please check if the model inputs are compatible"
+                          "with the model.")

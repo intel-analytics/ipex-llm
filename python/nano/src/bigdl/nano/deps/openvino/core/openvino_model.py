@@ -65,6 +65,7 @@ class OpenVINOModel:
             max_iter_num=1,
             n_requests=None,
             sample_size=300):
+        validate_dataloader(self, dataloader)
         # pot has its own model format, so we need to save and reload by pot
         with TemporaryDirectory() as dir:
             dir = Path(dir)
