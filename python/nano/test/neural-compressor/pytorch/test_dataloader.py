@@ -85,7 +85,7 @@ class TestDataloader(TestCase):
         trainer = Trainer()
         model = ModelWithMultipleInputs()
 
-        with pytest.raises(ValueError, match="Dataloader for quantization should yield data *"):
+        with pytest.raises(RuntimeError, match="Dataloader for quantization should yield data *"):
             trainer.quantize(model, calib_dataloader=dataloader)
 
 
