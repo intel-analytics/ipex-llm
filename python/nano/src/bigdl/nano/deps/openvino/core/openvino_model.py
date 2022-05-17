@@ -17,28 +17,35 @@ from pathlib import Path
 from tempfile import TemporaryDirectory
 from openvino.runtime import Core
 from bigdl.nano.utils.log4Error import invalidInputError
+from openvino.runtime import Model
 from openvino.tools.pot.graph import load_model, save_model
 from openvino.tools.pot.engines.ie_engine import IEEngine
 from openvino.tools.pot.pipeline.initializer import create_pipeline
 from openvino.tools.pot.graph.model_utils import compress_model_weights
 from .openvino_utils import save
 from .openvino_utils import validate_dataloader
-import copy
 
 
 class OpenVINOModel:
     def __init__(self, ie_network: str):
-        self.ie_network = None
-        self.read_network(ie_network)
+        self._ie = Core()
+        self.ie_network = ie_network
 
     def forward_step(self, *inputs):
-        return self.infer_request.infer(list(inputs))
+        return self._infer_request.infer(list(inputs))
 
-    def read_network(self, model: str):
-        core = Core()
-        self.ie_network = core.read_model(model=model)
-        self.exec_model = core.compile_model(model=self.ie_network, device_name='CPU')
-        self.infer_request = self.exec_model.create_infer_request()
+    @property
+    def ie_network(self):
+        return self._ie_network
+
+    @ie_network.setter
+    def ie_network(self, model):
+        if isinstance(model, (str, Path)):
+            self._ie_network = self._ie.read_model(model=str(model))
+        else:
+            self._ie_network = model
+        self._compiled_model = self._ie.compile_model(model=self.ie_network, device_name='CPU')
+        self._infer_request = self._compiled_model.create_infer_request()
 
     def _save_model(self, path):
         """
@@ -62,7 +69,7 @@ class OpenVINOModel:
             maximal_drop=0.999,
             max_iter_num=1,
             n_requests=None,
-            sample_size=300):
+            sample_size=300) -> Model:
 
         # set batch as 1 if it's dynaminc or larger than 1
         orig_shape = dict()
@@ -136,5 +143,5 @@ class OpenVINOModel:
         model_path = compressed_model_paths[0]['model']
         model = Core().read_model(model_path)
         model.reshape(orig_shape)
-        save(model, model_path)
-        return model_path
+
+        return model

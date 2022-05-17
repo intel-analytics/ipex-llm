@@ -93,7 +93,7 @@ class PytorchOpenVINOModel(OpenVINOModel, AcceleratedLightningModule):
         if metric:
             metric = PytorchOpenVINOMetric(metric=metric, higher_better=higher_better)
         dataloader = PytorchOpenVINODataLoader(dataloader, collate_fn=self.tensors_to_numpy)
-        model_path = super().pot(dataloader, metric=metric, drop_type=drop_type,
-                                 maximal_drop=maximal_drop, max_iter_num=max_iter_num,
-                                 n_requests=n_requests, sample_size=sample_size)
-        return PytorchOpenVINOModel(model_path)
+        model = super().pot(dataloader, metric=metric, drop_type=drop_type,
+                            maximal_drop=maximal_drop, max_iter_num=max_iter_num,
+                            n_requests=n_requests, sample_size=sample_size)
+        return PytorchOpenVINOModel(model)
