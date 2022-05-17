@@ -22,8 +22,7 @@ logger = logging.getLogger(__name__)
 def outputUserMessage(errMsg, fixMsg=None):
     logger.error(f"\n\n****************************Usage Error************************\n" + errMsg)
     if fixMsg:
-        logger.error(f"\n\n****************************How to fix*************************\n"
-                     + fixMsg)
+        logger.error(f"\n\n**************************How to fix***********************\n" + fixMsg)
     logger.error(f"\n\n****************************Call Stack*************************")
 
 
