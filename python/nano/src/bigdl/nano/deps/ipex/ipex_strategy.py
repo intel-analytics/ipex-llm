@@ -54,7 +54,7 @@ class IPEX_Strategy(Strategy):
         self.setup_precision_plugin()
         self.setup_optimizers(trainer)
         model = kwargs['model']
-        
+
         if len(self.optimizers) > 1:
             raise RuntimeError("Ipex does not support more than one optimizers.")
         dtype = torch.bfloat16 if self.enable_bf16 else None

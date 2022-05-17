@@ -260,9 +260,12 @@ class RayPlugin(DDPSpawnPlugin):
 
         self._model = model  # type: ignore
         self._model.load_state_dict(state_dict)  # type: ignore
-        if self.lightning_module.trainer.checkpoint_callback:
-            self.lightning_module.trainer.checkpoint_callback \
-                .best_model_path = best_path
+
+        if self.lightning_module:
+            if self.lightning_module.trainer:
+                if self.lightning_module.trainer.checkpoint_callback:
+                    self.lightning_module.trainer.checkpoint_callback \
+                        .best_model_path = best_path
 
         return results
 
@@ -305,9 +308,9 @@ class RayPlugin(DDPSpawnPlugin):
         assert isinstance(self, RayPlugin)
         # This method should be executed remotely in each worker.
         self._model = model  # type: ignore
-        self.lightning_module.trainer.accelerator_connector\
-            ._training_type_plugin = self
-        self.lightning_module.trainer.accelerator.training_type_plugin = self
+        if self.lightning_module and self.lightning_module.trainer:
+            self.lightning_module.trainer._accelerator_connector\
+            ._strategy_flag = self
 
         assert isinstance(self.cluster_environment, RayEnvironment)
         self.cluster_environment.set_global_rank(global_rank)
@@ -319,11 +322,11 @@ class RayPlugin(DDPSpawnPlugin):
         # Then we can just return those attributes here.
         self.new_process(
             process_idx=global_rank,
-            trainer=self.lightning_module.trainer,
+            trainer=self.lightning_module.trainer if self.lightning_module else None,
             mp_queue=None)
         # Only need results from worker 0.
         if self.global_rank == 0:
-            return self.results, self.best_model_path, self.model_state_dict
+            return self._results, self.best_model_path, self.model_state_dict
         else:
             return None
 
