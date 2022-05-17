@@ -23,7 +23,6 @@ from openvino.tools.pot.engines.ie_engine import IEEngine
 from openvino.tools.pot.pipeline.initializer import create_pipeline
 from openvino.tools.pot.graph.model_utils import compress_model_weights
 from .openvino_utils import save
-from .openvino_utils import validate_dataloader
 
 
 class OpenVINOModel:
