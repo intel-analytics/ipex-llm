@@ -29,7 +29,7 @@ class FLServer(object):
     def build(self):
         add_NNServiceServicer_to_server(NNServiceImpl(), self.server)
         self.server.add_insecure_port(f'[::]:{self.port}')
-        print(f'gRPC server starts listening port: {self.port}')
+        logging.info(f'gRPC server starts listening port: {self.port}')
 
     def start(self):
         self.server.start()
