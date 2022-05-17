@@ -118,6 +118,7 @@ if __name__ == "__main__":
 
     (options, args) = parser.parse_args(sys.argv)
     data_dir = options.data_dir
+    executor_data = data_dir
 
     if options.cluster_mode == "local":
         sc = init_orca_context("local", cores=options.executor_cores,
@@ -152,7 +153,8 @@ if __name__ == "__main__":
 
     def model_creator(config):
         from bigdl.friesian.learn.friesianTFRSModel import FriesianTFRSModel
-        model = RankingModel(tf.keras.losses.MeanSquaredError())
+        # model = RankingModel(tf.keras.losses.MeanSquaredError())
+        model = RankingModel(tfr.keras.losses.ListMLELoss())
         model = FriesianTFRSModel(model)
         model.compile(optimizer=tf.keras.optimizers.Adagrad(config['lr']))
         return model
