@@ -111,8 +111,8 @@ def model_creator_keras(config):
     '''
     Keras(tf2) customized model creator
     '''
-    import tensorflow as tf
-    model = tf.keras.models.Sequential([
+    from bigdl.nano.tf.keras import Sequential
+    model = Sequential([
                 tf.keras.layers.Input(shape=(config["past_seq_len"], config["input_feature_num"])),
                 tf.keras.layers.Dense(config["hidden_dim"], activation='relu'),
                 tf.keras.layers.Dropout(config["dropout"]),
