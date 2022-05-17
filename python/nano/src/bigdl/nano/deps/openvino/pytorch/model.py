@@ -16,9 +16,9 @@
 from pathlib import Path
 from .dataloader import PytorchOpenVINODataLoader
 from .metric import PytorchOpenVINOMetric
-from ..core.openvino_model import OpenVINOModel
+from ..core.model import OpenVINOModel
 from bigdl.nano.utils.inference.pytorch.model import AcceleratedLightningModule
-from .pytorch_openvino_utils import export
+from .utils import export
 import torch
 from bigdl.nano.utils.log4Error import invalidInputError
 

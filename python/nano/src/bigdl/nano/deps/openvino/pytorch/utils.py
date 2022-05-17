@@ -15,7 +15,7 @@
 #
 
 import os
-from ..core.openvino_utils import convert_onnx_to_xml
+from ..core.utils import convert_onnx_to_xml
 from bigdl.nano.utils.inference.pytorch.model_utils import export_to_onnx
 
 
