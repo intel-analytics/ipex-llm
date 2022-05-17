@@ -48,7 +48,7 @@ BigDL Documentation
    doc/Nano/Overview/nano.md
    doc/Nano/Overview/windows_guide.md
    doc/Nano/QuickStart/pytorch_train.md
-   doc/Nano/QuickStart/pytorch_train.md
+   doc/Nano/QuickStart/pytorch_inference.md
    doc/Nano/QuickStart/tensorflow_train.md
    doc/Nano/QuickStart/tensorflow_inference.md
    
