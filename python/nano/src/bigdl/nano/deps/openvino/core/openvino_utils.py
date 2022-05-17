@@ -16,6 +16,7 @@
 import os
 from pathlib import Path
 from bigdl.nano.utils.log4Error import invalidInputError
+from openvino.runtime.passes import Manager
 
 
 def convert_onnx_to_xml(onnx_file_path, xml_path, batch_size=1):
@@ -29,7 +30,7 @@ def convert_onnx_to_xml(onnx_file_path, xml_path, batch_size=1):
                           "ModelOptimizer fails to convert {}.".format(str(onnx_file_path)))
 
 
-def save_model(model, xml_path):
+def save(model, xml_path):
     xml_path = Path(xml_path)
     pass_manager = Manager()
     pass_manager.register_pass(pass_name="Serialize",
@@ -42,7 +43,7 @@ def validate_dataloader(model, dataloader):
     n_inputs = len(model.ie_network.inputs)
     sample = dataloader[0][:n_inputs]
     try:
-        model(*sample)
+        model.forward_step(*sample)
     except RuntimeError:
         invalidInputError(False,
                           "Invalid dataloader, please check if the model inputs are compatible"

@@ -29,7 +29,7 @@ class TestOpenVINO(TestCase):
     def test_trainer_trace_openvino(self):
         trainer = Trainer(max_epochs=1)
         model = mobilenet_v3_small(num_classes=10)
-        
+
         x = torch.rand((10, 3, 256, 256))
         y = torch.ones((10, ), dtype=torch.long)
 

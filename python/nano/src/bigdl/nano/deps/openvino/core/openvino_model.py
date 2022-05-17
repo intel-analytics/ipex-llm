@@ -16,12 +16,14 @@
 from pathlib import Path
 from tempfile import TemporaryDirectory
 from openvino.runtime import Core
-from openvino.runtime.passes import Manager
 from bigdl.nano.utils.log4Error import invalidInputError
 from openvino.tools.pot.graph import load_model, save_model
 from openvino.tools.pot.engines.ie_engine import IEEngine
 from openvino.tools.pot.pipeline.initializer import create_pipeline
 from openvino.tools.pot.graph.model_utils import compress_model_weights
+from .openvino_utils import save
+from .openvino_utils import validate_dataloader
+import copy
 
 
 class OpenVINOModel:
@@ -51,7 +53,7 @@ class OpenVINOModel:
                           "Path of openvino model must be with '.xml' suffix.")
         path.mkdir(exist_ok=True)
         xml_path = path / self.status['xml_path']
-        save_model(self.ie_network, xml_path)
+        save(self.ie_network, xml_path)
 
     def pot(self,
             dataloader,
@@ -61,54 +63,73 @@ class OpenVINOModel:
             max_iter_num=1,
             n_requests=None,
             sample_size=300):
-        validate_dataloader(self, dataloader)
+
+        # set batch as 1 if it's dynaminc or larger than 1
+        orig_shape = dict()
+        static_shape = dict()
+        for i, input_obj in enumerate(self.ie_network.inputs):
+            orig_shape[i] = input_obj.get_partial_shape()
+            shape = input_obj.get_partial_shape()
+            # modify dynamic axis to 1 if it's batch dimension
+            shape[0] = 1
+            static_shape[i] = shape
+        self.ie_network.reshape(static_shape)
+
         # pot has its own model format, so we need to save and reload by pot
         with TemporaryDirectory() as dir:
             dir = Path(dir)
-            self._save_model(dir)
+            save(self.ie_network, str(dir / 'model.xml'))
+
+            # Convert model back to original shape
+            self.ie_network.reshape(orig_shape)
+
             model_config = {
                 "model_name": "model",
-                "model": str(dir / 'ov_saved_model.xml'),
-                "weights": str(dir / 'ov_saved_model.bin')
+                "model": str(dir / 'model.xml'),
+                "weights": str(dir / 'model.bin')
             }
             model = load_model(model_config)
-            engine_config = {"device": "CPU",
-                             "stat_requests_number": n_requests,
-                             "eval_requests_number": n_requests}
+
+        engine_config = {"device": "CPU",
+                         "stat_requests_number": n_requests,
+                         "eval_requests_number": n_requests}
+        engine = IEEngine(config=engine_config, data_loader=dataloader, metric=metric)
+
+        algorithms = [
+            {
+                "name": "DefaultQuantization",
+                "params": {
+                    "target_device": "CPU",
+                    "preset": "performance",
+                    "stat_subset_size": sample_size,
+                },
+            }
+        ]
+        if metric:
             algorithms = [
                 {
-                    "name": "DefaultQuantization",
+                    "name": "AccuracyAwareQuantization",
                     "params": {
                         "target_device": "CPU",
                         "preset": "performance",
                         "stat_subset_size": sample_size,
+                        "maximal_drop": maximal_drop,
+                        "max_iter_num": max_iter_num,
+                        "drop_type": drop_type,
                     },
                 }
             ]
-            if metric:
-                algorithms = [
-                    {
-                        "name": "AccuracyAwareQuantization",
-                        "params": {
-                            "target_device": "CPU",
-                            "preset": "performance",
-                            "stat_subset_size": sample_size,
-                            "maximal_drop": maximal_drop,
-                            "max_iter_num": max_iter_num,
-                            "drop_type": drop_type,
-                        },
-                    }
-                ]
-            engine = IEEngine(config=engine_config, data_loader=dataloader, metric=metric)
-            pipeline = create_pipeline(algorithms, engine)
-            compressed_model = pipeline.run(model=model)
-            compress_model_weights(model=compressed_model)
-            # To use runtime, we need to save and reload
-            # returned a list of paths
-            dir = "optimized_model"
-            compressed_model_paths = save_model(
-                model=compressed_model,
-                save_path=dir,
-                model_name='model'
-            )
-            return compressed_model_paths
+
+        pipeline = create_pipeline(algorithms, engine)
+        compressed_model = pipeline.run(model=model)
+        compress_model_weights(model=compressed_model)
+
+        # To use runtime, we need to save and reload
+        # returned a list of paths
+        dir = "optimized_model"
+        compressed_model_paths = save_model(
+            model=compressed_model,
+            save_path=dir,
+            model_name='model'
+        )
+        return compressed_model_paths
