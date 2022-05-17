@@ -140,6 +140,23 @@ class TestVanillaLSTM(TestCase):
                   callbacks=[CustomLearningRateScheduler(lr_schedule)])
         np.testing.assert_array_almost_equal(model.optimizer.lr.numpy(), np.asarray(5e-3))
 
+    def test_custom_callback(self):
+        model = model_creator(config={"input_feature_num": 4,
+                                      "output_feature_num": self.train_data[-1].shape[-1]})
+        np.testing.assert_array_almost_equal(model.optimizer.lr.numpy(), np.asarray(1e-3))
+        def lr_schedule(epoch, lr):
+            if epoch<LR_SCHEDULE[0][0] or epoch>LR_SCHEDULE[-1][0]:
+                return lr
+            for i in range(len(LR_SCHEDULE)):
+                if epoch==LR_SCHEDULE[i][0]:
+                    return LR_SCHEDULE[i][1]
+            return lr
+        model.fit(self.train_data[0],
+                  self.train_data[1],
+                  batch_size=32,
+                  epochs=5,
+                  callbacks=[CustomLearningRateScheduler(lr_schedule)])
+        np.testing.assert_array_almost_equal(model.optimizer.lr.numpy(), np.asarray(5e-3))
 
 if __name__ == '__main__':
     pytest.main([__file__])
