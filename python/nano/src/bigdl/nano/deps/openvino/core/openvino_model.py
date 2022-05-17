@@ -133,15 +133,14 @@ class OpenVINOModel:
 
         # To use runtime, we need to save and reload
         # returned a list of paths, but for now there is only one model path in list
-        dir = "optimized_model"
-        compressed_model_paths = save_model(
-            model=compressed_model,
-            save_path=dir,
-            model_name='model'
-        )
-        # set batch for compressed model
-        model_path = compressed_model_paths[0]['model']
-        model = Core().read_model(model_path)
-        model.reshape(orig_shape)
-
+        with TemporaryDirectory() as dir:
+            compressed_model_paths = save_model(
+                model=compressed_model,
+                save_path=dir,
+                model_name='model'
+            )
+            # set batch for compressed model
+            model_path = compressed_model_paths[0]['model']
+            model = Core().read_model(model_path)
+            model.reshape(orig_shape)
         return model
