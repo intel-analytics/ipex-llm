@@ -223,9 +223,9 @@ class PublicDataset:
             download_file = os.path.join(self.dir_path, DATASET_NAME[self.name][0].split('.')[0])
             os.rename(download_file+'.txt', self.final_file_path)
         self.df = pd.read_csv(self.final_file_path,
-                         delimiter=';',
-                         parse_dates=['Unnamed: 0'],
-                         low_memory=False).rename(columns={'Unnamed: 0': 'timestamp'})
+                              delimiter=';',
+                              parse_dates=['Unnamed: 0'],
+                              low_memory=False).rename(columns={'Unnamed: 0': 'timestamp'})
         for column in self.df.columns.tolist()[1:]:
             self.df[column] = self.df[column].apply(lambda x: str(x).replace(",", ""))\
                                   .astype(np.float32)
