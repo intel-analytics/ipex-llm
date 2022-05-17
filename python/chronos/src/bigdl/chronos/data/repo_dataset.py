@@ -86,5 +86,6 @@ def get_public_dataset(name, path='~/.chronos/dataset', redownload=False, **kwar
                                       .get_tsdata(dt_col='timestamp',
                                                   target_col=target)
     else:
-        raise NameError("Only network_traffic, AIOps, fsi, nyc_taxi, uci_electricity, uci_electricity_wide "
+        raise NameError("Only network_traffic, AIOps, fsi, nyc_taxi, uci_electricity,"
+                        f" uci_electricity_wide "
                         f"are supported in Chronos built-in dataset, while get {name}.")
