@@ -218,7 +218,7 @@ class PublicDataset:
         if not os.path.exists(self.final_file_path):
             zip_file = zipfile.ZipFile(os.path.join(
                                        os.path.expanduser(self.dir_path),
-                                       DATASET_NAME[self.name[:-5]][0]))
+                                       DATASET_NAME[self.name][0]))
             zip_file.extractall(os.path.join(os.path.expanduser(self.dir_path)))
             download_file = os.path.join(self.dir_path, DATASET_NAME[self.name][0].split('.')[0])
             os.rename(download_file+'.txt', self.final_file_path)
