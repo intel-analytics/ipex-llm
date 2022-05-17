@@ -115,7 +115,8 @@ object PPMLContext{
                path: String,
                dataKeyPlaintext: String,
                minPartitions: Int = -1): RDD[String] = {
-    Log4Error.invalidInputError(dataKeyPlaintext != "", "dataKeyPlainText should not be empty, please loadKeys first.")
+    Log4Error.invalidInputError(dataKeyPlaintext != "",
+      "dataKeyPlainText should not be empty, please loadKeys first.")
     val data: RDD[(String, PortableDataStream)] = if (minPartitions > 0) {
       sc.binaryFiles(path, minPartitions)
     } else {
@@ -209,7 +210,7 @@ object PPMLContext{
         throw new EncryptRuntimeException("Wrong kms type")
     }
     val ppmlSc = new PPMLContext(kms, sparkSession)
-    if (conf.contains("spark.bigdl.kms.key.primary")){
+    if (conf.contains("spark.bigdl.kms.key.primary")) {
       Log4Error.invalidInputError(conf.contains("spark.bigdl.kms.key.data"),
         "Data key not found, please provide" +
         " both spark.bigdl.kms.key.primary and spark.bigdl.kms.key.data.")

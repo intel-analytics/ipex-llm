@@ -30,7 +30,7 @@ class EHSMParams(
 
   protected val payLoad = new HashMap[String, String]
 
-  def addPayloadElement(payloadElementKey: String, payloadElementVal: String) = {
+  def addPayloadElement(payloadElementKey: String, payloadElementVal: String): Unit = {
     payLoad(payloadElementKey) = payloadElementVal
   }
 
@@ -38,11 +38,11 @@ class EHSMParams(
 
     var postJSONString: String = "{\"appid\":\"" + appId + "\""
     postJSONString = postJSONString + ",\"payload\":{"
-    for ((payloadElementKey, payloadElementVal) <- payLoad){
-      if(payloadElementKey == "keylen"){
+    for ((payloadElementKey, payloadElementVal) <- payLoad) {
+      if (payloadElementKey == "keylen") {
         postJSONString = postJSONString + "\"" + payloadElementKey + "\":" +
           payloadElementVal + ','
-      }else{
+      } else {
         postJSONString = postJSONString + "\"" + payloadElementKey + "\":\"" +
           payloadElementVal + "\","
       }
@@ -70,7 +70,7 @@ class EHSMParams(
     Log4Error.invalidInputError(appId != "" && appKey != "" && timeStamp != ""
       && !payLoad.isEmpty, "Lack necessary param or payload!")
     var signString: String = s"appid=$appId&payload="
-    val tmp = Map(payLoad.toSeq.sortWith(_._1 < _._1):_*)
+    val tmp = Map(payLoad.toSeq.sortWith(_._1 < _._1): _*)
     for ((payloadElementKey, payloadElementVal) <- tmp) {
       signString = signString + s"$payloadElementKey=$payloadElementVal&"
     }
