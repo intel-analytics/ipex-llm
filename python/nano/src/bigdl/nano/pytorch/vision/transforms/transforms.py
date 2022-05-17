@@ -563,7 +563,7 @@ class LinearTransformation(object):
                                   "as any one of the dimensions of the transformation_matrix"
                                   " [{}]"
                                   .format(mean_vector.size(0), tuple(transformation_matrix.size()))
-                )
+                                  )
 
             if transformation_matrix.device != mean_vector.device:
                 invalidInputError(False,
@@ -714,8 +714,8 @@ class RandomAffine(object):
         self.fill = fill
 
         if center is not None:
-            assert isinstance(center, (tuple, list)) and len(center) == 2, \
-                "center should be a list or tuple and it must be of length 2."
+            invalidInputError(isinstance(center, (tuple, list)) and len(center) == 2,
+                              "center should be a list or tuple and it must be of length 2.")
 
         # self.resample = resample
         self.center = center
