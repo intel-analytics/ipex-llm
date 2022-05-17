@@ -24,7 +24,7 @@ def get_public_dataset(name, path='~/.chronos/dataset', redownload=False, **kwar
     >>> tsdata_network_traffic = get_public_dataset(name="network_traffic")
 
     :param name: str, public dataset name, e.g. "network_traffic".
-           We only support network_traffic, AIOps, fsi, nyc_taxi, uci_electricity.
+           We only support network_traffic, AIOps, fsi, nyc_taxi, uci_electricity, uci_electricity_wide.
     :param path: str, download path, the value defatults to "~/.chronos/dataset/".
     :param redownload: bool, if redownload the raw dataset file(s).
     :param kwargs: extra arguments passed to initialize the tsdataset,
@@ -86,5 +86,5 @@ def get_public_dataset(name, path='~/.chronos/dataset', redownload=False, **kwar
                                       .get_tsdata(dt_col='timestamp',
                                                   target_col=target)
     else:
-        raise NameError("Only network_traffic, AIOps, fsi, nyc_taxi, uci_electricity "
+        raise NameError("Only network_traffic, AIOps, fsi, nyc_taxi, uci_electricity, uci_electricity_wide "
                         f"are supported in Chronos built-in dataset, while get {name}.")
