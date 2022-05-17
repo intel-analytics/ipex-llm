@@ -227,7 +227,8 @@ class PublicDataset:
                          parse_dates=['Unnamed: 0'],
                          low_memory=False).rename(columns={'Unnamed: 0': 'timestamp'})
         for column in self.df.columns.tolist()[1:]:
-            self.df[column] = self.df[column].apply(lambda x: str(x).replace(",", "")).astype(np.float32)
+            self.df[column] = self.df[column].apply(lambda x: str(x).replace(",", ""))\
+                                  .astype(np.float32)
         return self
 
     def get_tsdata(self,
