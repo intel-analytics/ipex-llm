@@ -45,7 +45,7 @@ from ray.util.sgd.utils import find_free_port
 from torch.nn import Module
 
 from bigdl.nano.deps.ray.ray_envbase import RayEnvironment
-from bigdl.nano.utils.log4Error import *
+from bigdl.nano.utils.log4Error import invalidInputError
 
 
 @ray.remote

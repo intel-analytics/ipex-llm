@@ -48,9 +48,11 @@ class RayEnvironment(ClusterEnvironment):
 
     def master_address(self) -> str:
         invalidInputError(False, "master_address not implemented for RayEnvironment")
+        return ""
 
     def master_port(self) -> int:
         invalidInputError(False, "master_port not implemented for RayEnvironment")
+        return 0
 
     def world_size(self) -> int:
         return self._world_size
@@ -73,6 +75,8 @@ class RayEnvironment(ClusterEnvironment):
 
     def local_rank(self) -> int:
         invalidInputError(False, "local_rank not implemented for RayEnvironment")
+        return 0
 
     def node_rank(self) -> int:
         invalidInputError(False, "node_rank not implemented for RayEnvironment")
+        return 0

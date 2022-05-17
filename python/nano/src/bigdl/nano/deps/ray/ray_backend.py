@@ -16,7 +16,7 @@
 
 from bigdl.nano.common.multiprocessing.backend import Backend
 import ray
-from bigdl.nano.utils.log4Error import *
+from bigdl.nano.utils.log4Error import invalidInputError
 
 
 class RayBackend(Backend):

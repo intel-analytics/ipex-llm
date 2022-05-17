@@ -19,7 +19,7 @@ import subprocess
 import re
 from typing import Optional
 import platform
-from bigdl.nano.utils.log4Error import *
+from bigdl.nano.utils.log4Error import invalidInputError
 
 
 def get_cgroup_cpuset():
