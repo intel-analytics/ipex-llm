@@ -44,6 +44,7 @@ from typing import Union
 import pytorch_lightning as pl
 from pl_examples import cli_lightning_logo
 from pl_examples.domain_templates.unet import UNet
+from pytorch_lightning.utilities.argparse import ParseArgparserDataType
 from pytorch_lightning.utilities.argparse import from_argparse_args
 from bigdl.nano.pytorch.trainer import Trainer
 
@@ -169,7 +170,7 @@ class KITTI(Dataset):
         return files_list
 
 
-class SegModel(pl.LightningModule):
+class SegModel(pl.LightningModule, ParseArgparserDataType):
     """
     Semantic Segmentation Module
     This is a basic semantic segmentation module implemented with Lightning.

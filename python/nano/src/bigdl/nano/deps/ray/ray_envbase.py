@@ -75,3 +75,20 @@ class RayEnvironment(ClusterEnvironment):
 
     def node_rank(self) -> int:
         raise NotImplementedError
+
+    @property
+    def creates_processes_externally(self) -> bool:
+        """Whether the environment creates the subprocesses or not."""
+
+    @property
+    def main_address(self) -> str:
+        """The main address through which all processes connect and communicate."""
+
+    @property
+    def main_port(self) -> int:
+        """An open and configured port in the main node through which all processes communicate."""
+
+    @staticmethod
+    def detect() -> bool:
+        """Detects the environment settings corresponding to this cluster \
+        and returns ``True`` if they match."""

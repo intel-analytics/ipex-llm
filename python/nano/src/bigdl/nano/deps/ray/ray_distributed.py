@@ -309,8 +309,7 @@ class RayPlugin(DDPSpawnPlugin):
         # This method should be executed remotely in each worker.
         self._model = model  # type: ignore
         if self.lightning_module and self.lightning_module.trainer:
-            self.lightning_module.trainer._accelerator_connector\
-            ._strategy_flag = self
+            self.lightning_module.trainer._accelerator_connector._strategy_flag = self
 
         assert isinstance(self.cluster_environment, RayEnvironment)
         self.cluster_environment.set_global_rank(global_rank)
