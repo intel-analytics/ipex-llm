@@ -86,11 +86,12 @@ class OptunaBackend(object):
         # fix order of hyperparams in configspace.
         hp_ordering = configspace.get_hyperparameter_names()
         config = {}
-        for hp in hp_ordering:
-            hp_obj = configspace.get_hyperparameter(hp)
-            hp_prefix = hp_obj.meta.setdefault('prefix', None)
-            hp_name = hp_prefix + ':' + hp if hp_prefix else hp
-            hp_dimension = OptunaBackend._sample_space(trial, hp_name, hp_obj)
+        for hp_name in hp_ordering:
+            cs_param = configspace.get_hyperparameter(hp_name)
+            hp_prefix = cs_param.meta.setdefault('prefix', None)
+            # TODO generate meaningful prefix for user
+            optuna_hp_name = hp_prefix + ':' + hp_name if hp_prefix else hp_name
+            hp_dimension = OptunaBackend._sample_space(trial, optuna_hp_name, cs_param)
             config[hp_name] = hp_dimension
         return config
 
