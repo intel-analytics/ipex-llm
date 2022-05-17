@@ -27,6 +27,7 @@ import numpy as np
 import torchvision.transforms as tv_t
 from torchvision.transforms.functional import InterpolationMode
 import opencv_transforms.transforms as cv_t
+from bigdl.nano.utils.log4Error import *
 
 
 __all__ = [
@@ -319,10 +320,9 @@ class Pad(object):
         assert isinstance(fill, (numbers.Number, str, tuple))
         assert padding_mode in ['constant', 'edge', 'reflect', 'symmetric']
         if isinstance(padding, collections.Sequence) and len(padding) not in [2, 4]:
-            raise ValueError(
-                "Padding must be an int or a 2, or 4 element tuple, not a {} element tuple"
-                .format(len(padding))
-            )
+            invalidInputError(False,
+                              f"Padding must be an int or a 2, or 4 element tuple,"
+                              f" not a {len(padding)} element tuple")
 
         self.padding = padding
         self.fill = fill
@@ -360,7 +360,7 @@ class RandomTransforms(object):
         self.transforms = transforms
 
     def __call__(self, *args, **kwargs):
-        raise NotImplementedError()
+        invalidInputError(False, "not implemented")
 
     def __repr__(self):
         format_string = self.__class__.__name__ + '('
@@ -407,7 +407,8 @@ class RandomChoice(RandomTransforms):
     def __init__(self, transforms, p=None):
         super().__init__(transforms)
         if p is not None and not isinstance(p, collections.Sequence):
-            raise TypeError("Argument p should be a sequence")
+            invalidInputError(False,
+                              "Argument p should be a sequence")
         self.p = p
 
     def __call__(self, *args):
@@ -551,24 +552,24 @@ class TenCrop(object):
 class LinearTransformation(object):
     def __init__(self, transformation_matrix, mean_vector=None):
         if transformation_matrix.size(0) != transformation_matrix.size(1):
-            raise ValueError(
-                "transformation_matrix should be square. Got [{} x {}] rectangular matrix."
-                .format(*transformation_matrix.size())
-            )
+            invalidInputError(False,
+                              "transformation_matrix should be square. Got [{} x {}]"
+                              " rectangular matrix.".format(*transformation_matrix.size()))
 
         if mean_vector is not None:
             if mean_vector.size(0) != transformation_matrix.size(0):
-                raise ValueError(
-                    "mean_vector should have the same length {}"
-                    "as any one of the dimensions of the transformation_matrix [{}]"
-                    .format(mean_vector.size(0), tuple(transformation_matrix.size()))
+                invalidInputError(False,
+                                  "mean_vector should have the same length {}"
+                                  "as any one of the dimensions of the transformation_matrix"
+                                  " [{}]"
+                                  .format(mean_vector.size(0), tuple(transformation_matrix.size()))
                 )
 
             if transformation_matrix.device != mean_vector.device:
-                raise ValueError(
-                    "Input tensors should be on the same device. Got {} and {}"
-                    .format(transformation_matrix.device, mean_vector.device)
-                )
+                invalidInputError(False,
+                                  "Input tensors should be on the same device. Got {} and {}"
+                                  .format(transformation_matrix.device, mean_vector.device)
+                                  )
 
         self.transformation_matrix = transformation_matrix
         self.mean_vector = mean_vector
@@ -660,8 +661,8 @@ class RandomAffine(object):
                  center=None):
         if isinstance(degrees, numbers.Number):
             if degrees < 0:
-                raise ValueError(
-                    "If degrees is a single number, it must be positive.")
+                invalidInputError(False,
+                                  "If degrees is a single number, it must be positive.")
             self.degrees = (-degrees, degrees)
         else:
             assert isinstance(degrees, (tuple, list)) and len(degrees) == 2, \
@@ -673,8 +674,8 @@ class RandomAffine(object):
                 "translate should be a list or tuple and it must be of length 2."
             for t in translate:
                 if not (0.0 <= t <= 1.0):
-                    raise ValueError(
-                        "translation values should be between 0 and 1")
+                    invalidInputError(False,
+                                      "translation values should be between 0 and 1")
         self.translate = translate
 
         if scale is not None:
@@ -682,14 +683,14 @@ class RandomAffine(object):
                 "scale should be a list or tuple and it must be of length 2."
             for s in scale:
                 if s <= 0:
-                    raise ValueError("scale values should be positive")
+                    invalidInputError(False, "scale values should be positive")
         self.scale = scale
 
         if shear is not None:
             if isinstance(shear, numbers.Number):
                 if shear < 0:
-                    raise ValueError(
-                        "If shear is a single number, it must be positive.")
+                    invalidInputError(False,
+                                      "If shear is a single number, it must be positive.")
                 self.shear = (-shear, shear)
             else:
                 assert isinstance(shear, (tuple, list)) and len(shear) == 2, \
@@ -708,7 +709,8 @@ class RandomAffine(object):
         if fill is None:
             fill = 0
         elif not isinstance(fill, (collections.Sequence, numbers.Number)):
-            raise TypeError("Fill should be either a sequence or a number.")
+            invalidInputError(False,
+                              "Fill should be either a sequence or a number.")
         self.fill = fill
 
         if center is not None:

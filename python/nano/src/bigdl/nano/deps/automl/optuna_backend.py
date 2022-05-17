@@ -71,13 +71,15 @@ class OptunaBackend(object):
                 elif 'ordinal' in hp_type:
                     hp_dimension = trial.suggest_categorical(
                         name=hp_name, choices=hp_obj.sequence)
-            except (ValueError):
-                # TODO ValueErrors might be raised due to other reasons.
-                raise ValueError("If you set search space in model, \
-                    you must call model.search before model.fit.")
+            except (RuntimeError):
+                # TODO ValueErrors might be throw due to other reasons.
+                invalidInputError(False,
+                                  "If you set search space in model, "
+                                  "you must call model.search before model.fit.")
         else:
-            raise ValueError("unknown hyperparameter type %s for param %s" %
-                             (hp_type, hp_name))
+            invalidInputError(False,
+                              "unknown hyperparameter type %s for param %s" %
+                              (hp_type, hp_name))
         return hp_dimension
 
     @staticmethod
