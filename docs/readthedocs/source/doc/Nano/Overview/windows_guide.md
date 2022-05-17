@@ -1,4 +1,4 @@
-# Windows User Guide (WSL2)
+# Windows User Guide
 
 ## Step 1: Install WSL2
 

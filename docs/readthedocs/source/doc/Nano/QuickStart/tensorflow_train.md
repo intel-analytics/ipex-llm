@@ -1,4 +1,4 @@
-# Nano TensorFlow Training Overview
+# bigDL-Nano TensorFlow Training Overview
 
 BigDL-Nano can be used to accelerate TensorFlow Keras applications on training workloads. The optimizations in BigDL-Nano are delivered through BigDL-Nano's `Model` and `Sequential` classes, which have identical APIs with `tf.keras.Model` and `tf.keras.Sequential`. For most cases, you can just replace your `tf.keras.Model` to `bigdl.nano.tf.keras.Model` and `tf.keras.Sequential` to `bigdl.nano.tf.keras.Sequential` to benefits from BigDL-Nano.
 
