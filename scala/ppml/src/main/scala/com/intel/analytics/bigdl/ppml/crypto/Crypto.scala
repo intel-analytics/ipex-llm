@@ -29,6 +29,7 @@ object CryptoMode extends Enumeration {
   type CryptoMode = Value
   val PLAIN_TEXT = Value("plain_text", "plain_text")
   val AES_CBC_PKCS5PADDING = Value("AES/CBC/PKCS5Padding", "AES/CBC/PKCS5Padding")
+  val SM4_ECB_PKCS5PADDING = Value("SM4/ECB/PKCS5Padding", "SM4/ECB/PKCS5Padding")
   val UNKNOWN = Value("UNKNOWN", "UNKNOWN")
   class EncryptModeEnumVal(name: String, val value: String) extends Val(nextId, name)
   protected final def Value(name: String, value: String): EncryptModeEnumVal = {
