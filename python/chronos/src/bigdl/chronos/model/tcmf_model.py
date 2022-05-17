@@ -21,6 +21,7 @@ from bigdl.orca.data import SparkXShards, XShards
 import pickle
 import numpy as np
 import pandas as pd
+from bigdl.nano.utils.log4Error import *
 
 
 class TCMF(BaseModel):
@@ -107,10 +108,12 @@ class TCMF(BaseModel):
         :return:
         """
         if x is None:
-            raise ValueError("Input invalid x of None")
+            invalidInputError(False,
+                              "Input invalid x of None")
         if self.model is None:
-            raise Exception("Needs to call fit_eval or restore first before calling "
-                            "fit_incremental")
+            invalidInputError(False,
+                              "Needs to call fit_eval or restore first before calling "
+                              "fit_incremental")
         self._check_covariates_dti(covariates=covariates_new, dti=dti_new, ts_len=x.shape[1],
                                    method_name='fit_incremental')
         self.model.inject_new(x,
@@ -143,9 +146,11 @@ class TCMF(BaseModel):
         :return:
         """
         if x is not None:
-            raise ValueError("We don't support input x directly.")
+            invalidInputError(False,
+                              "We don't support input x directly.")
         if self.model is None:
-            raise Exception("Needs to call fit_eval or restore first before calling predict")
+            invalidInputError(False,
+                              "Needs to call fit_eval or restore first before calling predict")
         self._check_covariates_dti(covariates=future_covariates, dti=future_dti, ts_len=horizon,
                                    method_name="predict")
         if num_workers is None:
@@ -160,10 +165,11 @@ class TCMF(BaseModel):
                     # detect whether ray has been started.
                     ray.put(None)
                 except:
-                    raise RuntimeError(f"There must be an activate ray context while running with "
-                                       f"{num_workers} workers. You can either start and init a "
-                                       f"RayContext by init_orca_context(..., init_ray_on_spark="
-                                       f"True) or start Ray with ray.init()")
+                    invalidInputError(False,
+                                      f"There must be an activate ray context while running with "
+                                      f"{num_workers} workers. You can either start and init a "
+                                      f"RayContext by init_orca_context(..., init_ray_on_spark="
+                                      f"True) or start Ray with ray.init()")
 
         out = self.model.predict_horizon(
             future=horizon,
@@ -198,11 +204,14 @@ class TCMF(BaseModel):
         :return: a list of metric evaluation results
         """
         if x is not None:
-            raise ValueError("We don't support input x directly.")
+            invalidInputError(False,
+                              "We don't support input x directly.")
         if y is None:
-            raise ValueError("Input invalid y of None")
+            invalidInputError(False,
+                              "Input invalid y of None")
         if self.model is None:
-            raise Exception("Needs to call fit_eval or restore first before calling predict")
+            invalidInputError(False,
+                              "Needs to call fit_eval or restore first before calling predict")
         if len(y.shape) == 1:
             y = np.expand_dims(y, axis=1)
             horizon = 1
@@ -235,38 +244,48 @@ class TCMF(BaseModel):
 
     def _check_covariates_dti(self, covariates=None, dti=None, ts_len=24, method_name='fit'):
         if covariates is not None and not isinstance(covariates, np.ndarray):
-            raise ValueError("Input covariates must be a ndarray. Got", type(covariates))
+            invalidInputError(False,
+                              "Input covariates must be a ndarray. Got", type(covariates))
         if covariates is not None and not covariates.ndim == 2:
-            raise ValueError("You should input a 2-D ndarray of covariates. But Got dimension of",
-                             covariates.ndim)
+            invalidInputError(False,
+                              f"You should input a 2-D ndarray of covariates. But Got dimension"
+                              f" of ${covariates.ndim)}")
         if covariates is not None and not covariates.shape[1] == ts_len:
-            raise ValueError(f"The second dimension shape of covariates should be {ts_len}, "
-                             f"but got {covariates.shape[1]} instead.")
+            invalidInputError(False,
+                              f"The second dimension shape of covariates should be {ts_len}, "
+                              f"but got {covariates.shape[1]} instead.")
         if dti is not None and not isinstance(dti, pd.DatetimeIndex):
-            raise ValueError("Input dti must be a pandas DatetimeIndex. Got", type(dti))
+            invalidInputError(False,
+                              "Input dti must be a pandas DatetimeIndex. Got", type(dti))
         if dti is not None and len(dti) != ts_len:
-            raise ValueError(f"Input dti length should be equal to {ts_len}, "
-                             f"but got {len(dti)} instead.")
+            invalidInputError(False,
+                              f"Input dti length should be equal to {ts_len}, "
+                              f"but got {len(dti)} instead.")
 
         if method_name != 'fit':
             # covariates and dti should be consistent with that in fit
             if self.model.covariates is None and covariates is not None:
-                raise ValueError(f"Find valid covariates in {method_name} but invalid covariates "
-                                 f"in fit. Please keep them in consistence!")
+                invalidInputError(False,
+                                  f"Find valid covariates in {method_name} but invalid covariates "
+                                  f"in fit. Please keep them in consistence!")
             if self.model.covariates is not None and covariates is None:
-                raise ValueError(f"Find valid covariates in fit but invalid covariates in "
-                                 f"{method_name}. Please keep them in consistence!")
+                invalidInputError(False,
+                                  f"Find valid covariates in fit but invalid covariates in "
+                                  f"{method_name}. Please keep them in consistence!")
             if self.model.covariates is not None \
                     and self.model.covariates.shape[0] != covariates.shape[0]:
-                raise ValueError(f"The input covariates number in {method_name} should be the same "
-                                 f"as the input covariates number in fit. Got {covariates.shape[0]}"
-                                 f"and {self.model.covariates.shape[0]} respectively.")
+                invalidInputError(False,
+                                  f"The input covariates number in {method_name} should be the same "
+                                  f"as the input covariates number in fit. Got {covariates.shape[0]}"
+                                  f"and {self.model.covariates.shape[0]} respectively.")
             if self.model.dti is None and dti is not None:
-                raise ValueError(f"Find valid dti in {method_name} but invalid dti in fit. "
-                                 f"Please keep them in consistence!")
+                invalidInputError(False,
+                                  f"Find valid dti in {method_name} but invalid dti in fit. "
+                                  f"Please keep them in consistence!")
             if self.model.dti is not None and dti is None:
-                raise ValueError(f"Find valid dti in fit but invalid dti in {method_name}. "
-                                 f"Please keep them in consistence!")
+                invalidInputError(False,
+                                  f"Find valid dti in fit but invalid dti in {method_name}. "
+                                  f"Please keep them in consistence!")
 
 
 class ModelWrapper(metaclass=ABCMeta):
@@ -303,8 +322,9 @@ class TCMFXshardsModelWrapper(ModelWrapper):
 
     def fit(self, x, num_workers=None, **fit_params):
         if num_workers:
-            raise ValueError("We don't support passing num_workers in fit "
-                             "with input of xShards of dict")
+            invalidInputError(False,
+                              "We don't support passing num_workers in fit "
+                              "with input of xShards of dict")
 
         def orca_train_model(d, config):
             tcmf = TCMF()
@@ -317,14 +337,16 @@ class TCMFXshardsModelWrapper(ModelWrapper):
             if x._get_class_name() == "dict":
                 self.internal = x.transform_shard(orca_train_model, self.config)
             else:
-                raise ValueError("value of x should be an xShards of dict, "
-                                 "but is an xShards of " + x._get_class_name())
+                invalidInputError(False,
+                                  "value of x should be an xShards of dict, "
+                                  "but is an xShards of " + x._get_class_name())
         else:
-            raise ValueError("value of x should be an xShards of dict, "
-                             "but isn't an xShards")
+            invalidInputError(False,
+                              "value of x should be an xShards of dict, "
+                              "but isn't an xShards")
 
     def fit_incremental(self, x_incr, covariates_incr=None, dti_incr=None):
-        raise NotImplementedError
+        invalidInputError(False, "fit_incremental not implemented")
 
     def evaluate(self, y, metric=None, target_covariates=None,
                  target_dti=None, num_workers=None):
@@ -338,7 +360,7 @@ class TCMFXshardsModelWrapper(ModelWrapper):
         :param target_dti:
         :return: a list of metric evaluation results
         """
-        raise NotImplementedError
+        invalidInputError(False, "not implemented")
 
     def predict(self, horizon=24,
                 future_covariates=None,
@@ -353,8 +375,9 @@ class TCMFXshardsModelWrapper(ModelWrapper):
         :return: result
         """
         if num_workers and num_workers != 1:
-            raise ValueError("We don't support passing num_workers in predict "
-                             "with input of xShards of dict")
+            invalidInputError(False,
+                              "We don't support passing num_workers in predict "
+                              "with input of xShards of dict")
 
         def orca_predict(data):
             id_arr = data[0]
@@ -403,15 +426,18 @@ class TCMFNdarrayModelWrapper(ModelWrapper):
             self.id_arr, train_data = split_id_and_data(x, False)
             self.internal.fit_eval((train_data, None), num_workers=num_workers, **fit_params)
         else:
-            raise ValueError("value of x should be a dict of ndarray")
+            invalidInputError(False,
+                              "value of x should be a dict of ndarray")
 
     def _rearrange_data_by_id(self, id_new, data_new, method_name="fit_incremental"):
         if np.array_equal(self.id_arr, id_new) or id_new is None:
             return data_new
         if self.id_arr is None:
-            raise ValueError(f"Got valid id in {method_name} and invalid id in fit.")
+            invalidInputError(False,
+                              f"Got valid id in {method_name} and invalid id in fit.")
         if set(id_new) != set(self.id_arr):
-            raise ValueError(f"The input ids in {method_name} differs from input ids in fit.")
+            invalidInputError(False,
+                              f"The input ids in {method_name} differs from input ids in fit.")
         return data_new[[id_new.index(_) for _ in self.id_arr]]
 
     def fit_incremental(self, x_incr, covariates_incr=None, dti_incr=None):
@@ -439,7 +465,8 @@ class TCMFNdarrayModelWrapper(ModelWrapper):
                                           covariates_new=covariates_incr,
                                           dti_new=dti_incr)
         else:
-            raise ValueError("value of x should be a dict of ndarray")
+            invalidInputError(False,
+                              "value of x should be a dict of ndarray")
 
     def evaluate(self, y, metric=None, target_covariates=None,
                  target_dti=None, num_workers=None):
@@ -460,7 +487,8 @@ class TCMFNdarrayModelWrapper(ModelWrapper):
                                           target_dti=target_dti,
                                           num_workers=num_workers)
         else:
-            raise ValueError("value of y should be a dict of ndarray")
+            invalidInputError(False,
+                              "value of y should be a dict of ndarray")
 
     def predict(self, horizon=24,
                 future_covariates=None,
@@ -512,15 +540,19 @@ def split_id_and_data(d, is_xshards_distributed=False):
     if 'y' in d:
         train_data = d['y']
         if not isinstance(train_data, np.ndarray):
-            raise ValueError("the value of y should be an ndarray")
+            invalidInputError(False,
+                              "the value of y should be an ndarray")
     else:
-        raise ValueError("key `y` doesn't exist in x")
+        invalidInputError(False,
+                          "key `y` doesn't exist in x")
     id_arr = None
     if 'id' in d:
         id_arr = d['id']
         if len(id_arr) != train_data.shape[0]:
-            raise ValueError("the length of the id array should be equal to the number of "
-                             "rows in the y")
+            invalidInputError(False,
+                              "the length of the id array should be equal to the number of "
+                              "rows in the y")
     elif is_xshards_distributed:
-        raise ValueError("key `id` doesn't exist in x")
+        invalidInputError(False,
+                          "key `id` doesn't exist in x")
     return id_arr, train_data

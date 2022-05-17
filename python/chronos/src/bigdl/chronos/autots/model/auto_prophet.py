@@ -20,6 +20,7 @@ import pandas as pd
 import warnings
 from bigdl.chronos.model.prophet import ProphetBuilder, ProphetModel
 from bigdl.chronos.autots.utils import recalculate_n_sampling
+from bigdl.nano.utils.log4Error import *
 
 
 # -
@@ -164,9 +165,11 @@ class AutoProphet:
         if expect_horizon is None:
             expect_horizon = int(0.1*len(data))
         if freq is None:
-            assert len(data) >= 2, "The training dataframe should contains more than 2 records."
-            assert pd.api.types.is_datetime64_any_dtype(data["ds"].dtypes), \
-                "The 'ds' col should be in datetime 64 type, or you need to set `freq` in fit."
+            invalidInputError(len(data) >= 2,
+                              "The training dataframe should contains more than 2 records.")
+            invalidInputError(pd.api.types.is_datetime64_any_dtype(data["ds"].dtypes),
+                              "The 'ds' col should be in datetime 64 type,"
+                              " or you need to set `freq` in fit.")
             self._freq = data["ds"].iloc[1] - data["ds"].iloc[0]
         else:
             self._freq = pd.Timedelta(freq)
@@ -204,8 +207,8 @@ class AutoProphet:
         :param ds_data: a dataframe that has 1 column 'ds' indicating date.
         """
         if self.best_model.model is None:
-            raise RuntimeError(
-                "You must call fit or restore first before calling predict!")
+            invalidInputError(False,
+                              "You must call fit or restore first before calling predict!")
         return self.best_model.predict(horizon=horizon, freq=freq, ds_data=ds_data)
 
     def evaluate(self, data, metrics=['mse']):
@@ -221,10 +224,10 @@ class AutoProphet:
                result.
         """
         if data is None:
-            raise ValueError("Input invalid data of None")
+            invalidInputError(False, "Input invalid data of None")
         if self.best_model.model is None:
-            raise RuntimeError(
-                "You must call fit or restore first before calling evaluate!")
+            invalidInputError(False,
+                              "You must call fit or restore first before calling evaluate!")
         return self.best_model.evaluate(target=data,
                                         metrics=metrics)
 
@@ -235,8 +238,8 @@ class AutoProphet:
         :param checkpoint_file: The location you want to save the best model, should be a json file
         """
         if self.best_model.model is None:
-            raise RuntimeError(
-                "You must call fit or restore first before calling save!")
+            invalidInputError(False,
+                              "You must call fit or restore first before calling save!")
         self.best_model.save(checkpoint_file)
 
     def restore(self, checkpoint_file):

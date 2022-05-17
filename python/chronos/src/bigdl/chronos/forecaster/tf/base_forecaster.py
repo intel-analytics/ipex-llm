@@ -17,6 +17,7 @@
 from bigdl.chronos.forecaster.abstract import Forecaster
 from bigdl.chronos.metric.forecast_metrics import Evaluator
 import keras
+from bigdl.nano.utils.log4Error import *
 
 
 class BaseTF2Forecaster(Forecaster):
@@ -67,7 +68,8 @@ class BaseTF2Forecaster(Forecaster):
                 result but will affect resources cost(e.g. memory and time).
         """
         if not self.fitted:
-            raise RuntimeError("You must call fit or restore first before calling predict!")
+            invalidInputError(False,
+                              "You must call fit or restore first before calling predict!")
         yhat = self.internal.predict(data, batch_size=batch_size)
         return yhat
 
@@ -99,7 +101,8 @@ class BaseTF2Forecaster(Forecaster):
                 non-distribtued version.
         """
         if not self.fitted:
-            raise RuntimeError("You must call fit or restore first before calling evaluate!")
+            invalidInputError(False,
+                              "You must call fit or restore first before calling evaluate!")
         yhat = self.internal.predict(data[0], batch_size=batch_size)
 
         aggregate = 'mean' if multioutput == 'uniform_average' else None
@@ -112,7 +115,8 @@ class BaseTF2Forecaster(Forecaster):
         :params checkpoint_file: The location you want to save the forecaster.
         """
         if not self.fitted:
-            raise RuntimeError("You must call fit or restore first before calling save!")
+            invalidInputError(False,
+                              "You must call fit or restore first before calling save!")
         self.internal.save(checkpoint_file)
 
     def load(self, checkpoint_file):

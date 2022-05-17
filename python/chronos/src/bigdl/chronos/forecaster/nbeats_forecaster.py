@@ -17,6 +17,7 @@
 import torch
 from bigdl.chronos.forecaster.base_forecaster import BasePytorchForecaster
 from bigdl.chronos.model.nbeats_pytorch import model_creator, loss_creator, optimizer_creator
+from bigdl.nano.utils.log4Error import *
 
 
 class NBeatsForecaster(BasePytorchForecaster):
@@ -95,9 +96,10 @@ class NBeatsForecaster(BasePytorchForecaster):
         """
         # ("generic", "generic") not support orca distributed.
         if stack_types[-1] == "generic" and distributed:
-            raise RuntimeError("Please set distributed=False or change the type "
-                               "of 'stack_types' to 'trend', 'seasonality', "
-                               "e.g. ('generic', 'seasonality').")
+            invalidInputError(False,
+                              "Please set distributed=False or change the type "
+                              "of 'stack_types' to 'trend', 'seasonality', "
+                              "e.g. ('generic', 'seasonality').")
 
         self.data_config = {
             "past_seq_len": past_seq_len,

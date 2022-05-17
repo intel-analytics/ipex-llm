@@ -20,6 +20,7 @@ from pmdarima.arima import ndiffs
 from pmdarima.arima import nsdiffs
 
 from bigdl.chronos.metric.forecast_metrics import Evaluator
+from bigdl.nano.utils.log4Error import *
 
 
 class ARIMAModel:
@@ -99,11 +100,13 @@ class ARIMAModel:
         :return: predicted result of length horizon
         """
         if x is not None:
-            raise ValueError("x should be None")
+            invalidInputError(False, "x should be None")
         if update and not rolling:
-            raise Exception("We don't support updating model without rolling prediction currently")
+            invalidInputError(False,
+                              "We don't support updating model without rolling prediction currently")
         if self.model is None:
-            raise Exception("Needs to call fit_eval or restore first before calling predict")
+            invalidInputError(False,
+                              "Needs to call fit_eval or restore first before calling predict")
 
         if not update and not rolling:
             forecasts = self.model.predict(n_periods=horizon)
@@ -140,11 +143,14 @@ class ARIMAModel:
         :return: a list of metric evaluation results
         """
         if x is not None:
-            raise ValueError("We don't support input x currently")
+            invalidInputError(False,
+                              "We don't support input x currently")
         if target is None:
-            raise ValueError("Input invalid target of None")
+            invalidInputError(False,
+                              "Input invalid target of None")
         if self.model is None:
-            raise Exception("Needs to call fit_eval or restore first before calling evaluate")
+            invalidInputError(False,
+                              "Needs to call fit_eval or restore first before calling evaluate")
 
         forecasts = self.predict(horizon=len(target), rolling=rolling)
 
@@ -152,7 +158,8 @@ class ARIMAModel:
 
     def save(self, checkpoint_file):
         if self.model is None:
-            raise Exception("Needs to call fit_eval or restore first before calling save")
+            invalidInputError(False,
+                              "Needs to call fit_eval or restore first before calling save")
         with open(checkpoint_file, 'wb') as fout:
             pickle.dump(self.model, fout)
 

@@ -22,6 +22,7 @@ import tensorflow.keras as keras
 
 from bigdl.orca.automl.model.abstract import BaseModel
 from bigdl.orca.automl.metrics import Evaluator
+from bigdl.nano.utils.log4Error import *
 
 
 class LSTMSeq2Seq(BaseModel):
@@ -253,9 +254,10 @@ class LSTMSeq2Seq(BaseModel):
         elif self.metric in compiled_metric_names:
             metric_name = self.metric
         else:
-            raise ValueError(f"Input metric in fit_eval should be one of the metrics that are used "
-                             f"to compile the model. Got metric value of {self.metric} and "
-                             f"the metrics in compile are {compiled_metric_names}")
+            invalidInputError(False,
+                              f"Input metric in fit_eval should be one of the metrics that are used "
+                              f"to compile the model. Got metric value of {self.metric} and "
+                              f"the metrics in compile are {compiled_metric_names}")
         if validation_data is None:
             result = hist.history.get(metric_name)[-1]
         else:

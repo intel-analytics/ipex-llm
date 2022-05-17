@@ -15,6 +15,7 @@
 #
 
 import math
+from bigdl.nano.utils.log4Error import *
 
 
 def recalculate_n_sampling(search_space, n_sampling):
@@ -37,7 +38,7 @@ def recalculate_n_sampling(search_space, n_sampling):
 def check_quantize_available(model):
     from bigdl.chronos.model.Seq2Seq_pytorch import LSTMSeq2Seq
     if isinstance(model, LSTMSeq2Seq):
-        raise NotImplementedError(f"This {model.__class__} has not supported quantization.")
+        invalidInputError(False, f"This {model.__class__} has not supported quantization.")
 
 
 def preprocess_quantize_data(self, data):

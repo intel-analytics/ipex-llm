@@ -21,6 +21,7 @@ from prophet.diagnostics import performance_metrics
 from prophet.diagnostics import cross_validation
 
 from bigdl.chronos.metric.forecast_metrics import Evaluator
+from bigdl.nano.utils.log4Error import *
 
 
 class ProphetModel:
@@ -122,7 +123,8 @@ class ProphetModel:
         :return: predicted result of length horizon
         """
         if self.model is None:
-            raise Exception("Needs to call fit_eval or restore first before calling predict")
+            invalidInputError(False,
+                              "Needs to call fit_eval or restore first before calling predict")
         if ds_data is not None:
             return self.model.predict(ds_data)
         future = self.model.make_future_dataframe(periods=horizon, freq=freq)
@@ -145,11 +147,14 @@ class ProphetModel:
         :return: a list of metric evaluation results
         """
         if data is not None:
-            raise ValueError("We don't support input data currently")
+            invalidInputError(False,
+                              "We don't support input data currently")
         if target is None:
-            raise ValueError("Input invalid target of None")
+            invalidInputError(False,
+                              "Input invalid target of None")
         if self.model is None:
-            raise Exception("Needs to call fit_eval or restore first before calling evaluate")
+            invalidInputError(False,
+                              "Needs to call fit_eval or restore first before calling evaluate")
 
         target_pred = self.model.predict(target)
         return Evaluator.evaluate(metrics, target.y.values,
@@ -157,7 +162,8 @@ class ProphetModel:
 
     def save(self, checkpoint):
         if self.model is None:
-            raise Exception("Needs to call fit_eval or restore first before calling save")
+            invalidInputError(False,
+                              "Needs to call fit_eval or restore first before calling save")
         with open(checkpoint, 'w') as fout:
             json.dump(model_to_json(self.model), fout)
 

@@ -29,6 +29,8 @@ from bigdl.chronos.data.utils.split import split_timeseries_dataframe
 from bigdl.chronos.data.utils.cycle_detection import cycle_length_est
 from bigdl.chronos.data.utils.utils import _to_list, _check_type,\
     _check_col_within, _check_col_no_na, _check_is_aligned, _check_dt_is_sorted
+from bigdl.nano.utils.log4Error import *
+
 
 _DEFAULT_ID_COL_NAME = "id"
 _DEFAULT_ID_PLACEHOLDER = "0"
@@ -278,9 +280,10 @@ class TSDataset:
 
         :return: the tsdataset instance.
         '''
-        assert self._is_pd_datetime,\
-            "The time series data does not have a Pandas datetime format "\
-            "(you can use pandas.to_datetime to convert a string into a datetime format)."
+        invalidInputError(self._is_pd_datetime,
+                          "The time series data does not have a Pandas datetime format "
+                          "(you can use pandas.to_datetime to convert a string"
+                          " into a datetime format).")
         from pandas.api.types import is_numeric_dtype
         type_error_list = [val for val in self.target_col + self.feature_col
                            if not is_numeric_dtype(self.df[val])]
@@ -288,8 +291,9 @@ class TSDataset:
             for val in type_error_list:
                 self.df[val] = self.df[val].astype(np.float32)
         except Exception:
-            raise RuntimeError("All the columns of target_col "
-                               "and extra_feature_col should be of numeric type.")
+            invalidInputError(False,
+                              "All the columns of target_col "
+                              "and extra_feature_col should be of numeric type.")
         self.df = self.df.groupby([self.id_col]) \
             .apply(lambda df: resample_timeseries_dataframe(df=df,
                                                             dt_col=self.dt_col,
@@ -335,8 +339,10 @@ class TSDataset:
 
         :return: the tsdataset instance.
         '''
-        assert self._is_pd_datetime, "The time series data does not have a Pandas datetime format"\
-            "(you can use pandas.to_datetime to convert a string into a datetime format.)"
+        invalidInputError(self._is_pd_datetime,
+                          "The time series data does not have a Pandas datetime format"
+                          "(you can use pandas.to_datetime to convert a string into"
+                          " a datetime format.)")
         features_generated = []
         self.df = generate_dt_features(input_df=self.df,
                                        dt_col=self.dt_col,
@@ -369,15 +375,17 @@ class TSDataset:
             from tsfresh.feature_extraction import ComprehensiveFCParameters, \
                 MinimalFCParameters, EfficientFCParameters
         except ImportError:
-            raise ImportError("Please install tsfresh by `pip install tsfresh` to use "
+            invalidInputError(False,
+                              "Please install tsfresh by `pip install tsfresh` to use "
                               "`gen_global_feature` method.")
 
         DEFAULT_PARAMS = {"comprehensive": ComprehensiveFCParameters(),
                           "minimal": MinimalFCParameters(),
                           "efficient": EfficientFCParameters()}
 
-        assert not self._has_generate_agg_feature, \
-            "Only one of gen_global_feature and gen_rolling_feature should be called."
+        invalidInputError(not self._has_generate_agg_feature,
+                          "Only one of gen_global_feature and gen_rolling_feature"
+                          " should be called.")
         if full_settings is not None:
             self.df,\
                 addtional_feature =\
@@ -390,9 +398,9 @@ class TSDataset:
             return self
 
         if isinstance(settings, str):
-            assert settings in ['comprehensive', 'minimal', 'efficient'], \
-                "settings str should be one of 'comprehensive', 'minimal', 'efficient'"\
-                f", but found {settings}."
+            invalidInputError(settings in ['comprehensive', 'minimal', 'efficient'],
+                              "settings str should be one of 'comprehensive', 'minimal',"
+                              " 'efficient', but found {settings}.")
             default_fc_parameters = DEFAULT_PARAMS[settings]
         else:
             default_fc_parameters = settings
@@ -438,25 +446,27 @@ class TSDataset:
             from tsfresh.feature_extraction import ComprehensiveFCParameters, \
                 MinimalFCParameters, EfficientFCParameters
         except ImportError:
-            raise ImportError("Please install tsfresh by `pip install tsfresh` to use "
+            invalidInputError(False,
+                              "Please install tsfresh by `pip install tsfresh` to use "
                               "`gen_rolling_feature` method.")
 
         DEFAULT_PARAMS = {"comprehensive": ComprehensiveFCParameters(),
                           "minimal": MinimalFCParameters(),
                           "efficient": EfficientFCParameters()}
 
-        assert not self._has_generate_agg_feature,\
-            "Only one of gen_global_feature and gen_rolling_feature should be called."
+        invalidInputError(not self._has_generate_agg_feature,
+                          "Only one of gen_global_feature and gen_rolling_feature"
+                          " should be called.")
         if isinstance(settings, str):
-            assert settings in ['comprehensive', 'minimal', 'efficient'], \
-                "settings str should be one of 'comprehensive', 'minimal', 'efficient'"\
-                f", but found {settings}."
+            invalidInputError(settings in ['comprehensive', 'minimal', 'efficient'],
+                              "settings str should be one of 'comprehensive', 'minimal',"
+                              " 'efficient', but found {settings}.")
             default_fc_parameters = DEFAULT_PARAMS[settings]
         else:
             default_fc_parameters = settings
-
-        assert window_size < self.df.groupby(self.id_col).size().min() + 1, "gen_rolling_feature "\
-            "should have a window_size smaller than shortest time series length."
+        invalidInputError(window_size < self.df.groupby(self.id_col).size().min() + 1,
+                          "gen_rolling_feature should have a window_size smaller"
+                          " than shortest time series length.")
         df_rolled = roll_time_series(self.df,
                                      column_id=self.id_col,
                                      column_sort=self.dt_col,
@@ -553,8 +563,9 @@ class TSDataset:
 
         '''
         if id_sensitive and not _check_is_aligned(self.df, self.id_col, self.dt_col):
-            raise AssertionError("The time series data should be "
-                                 "aligned if id_sensitive is set to True.")
+            invalidInputError(False,
+                              "The time series data should be "
+                              "aligned if id_sensitive is set to True.")
         feature_col = _to_list(feature_col, "feature_col") if feature_col is not None \
             else self.feature_col
         target_col = _to_list(target_col, "target_col") if target_col is not None \
@@ -695,7 +706,8 @@ class TSDataset:
         import torch
         if roll:
             if horizon is None:
-                raise ValueError("You must input horizon if roll is True")
+                invalidInputError(False,
+                                  "You must input horizon if roll is True")
             from bigdl.chronos.data.utils.roll_dataset import RollDataset
             feature_col = _to_list(feature_col, "feature_col") if feature_col is not None \
                 else self.feature_col
@@ -718,8 +730,9 @@ class TSDataset:
                               shuffle=True)
         else:
             if self.numpy_x is None:
-                raise RuntimeError("Please call 'roll' method before transforming a TSDataset to "
-                                   "torch DataLoader without rolling (default roll=False)!")
+                invalidInputError(False,
+                                  "Please call 'roll' method before transforming a TSDataset to "
+                                  "torch DataLoader without rolling (default roll=False)!")
             x, y = self.to_numpy()
             return DataLoader(TensorDataset(torch.from_numpy(x).float(),
                                             torch.from_numpy(y).float()),
@@ -738,8 +751,9 @@ class TSDataset:
         # TODO Requires a tf dataset creator method and can be use less memory.
         import tensorflow as tf
         if self.numpy_x is None:
-            raise RuntimeError("Please call 'roll' method "
-                               "before transform a TSDataset to tf dataset!")
+            invalidInputError(False,
+                              "Please call 'roll' method "
+                              "before transform a TSDataset to tf dataset!")
         data = tf.data.Dataset.from_tensor_slices((self.numpy_x, self.numpy_y))
         return data.cache().batch(batch_size).prefetch(tf.data.AUTOTUNE)
 
@@ -751,8 +765,9 @@ class TSDataset:
                  is casted to float32.
         '''
         if self.numpy_x is None:
-            raise RuntimeError("Please call 'roll' method "
-                               "before transform a TSDataset to numpy ndarray!")
+            invalidInputError(False,
+                              "Please call 'roll' method "
+                              "before transform a TSDataset to numpy ndarray!")
         if self.numpy_x_timeenc is None:
             return self.numpy_x, self.numpy_y
         else:
@@ -799,10 +814,11 @@ class TSDataset:
         else:
             from sklearn.utils.validation import check_is_fitted
             try:
-                assert not check_is_fitted(scaler)
+                invalidInputError(not check_is_fitted(scaler), "scaler is not fittedd")
             except Exception:
-                raise AssertionError("When calling scale for the first time, "
-                                     "you need to set fit=True.")
+                invalidInputError(False,
+                                  "When calling scale for the first time, "
+                                  "you need to set fit=True.")
             self.df[self.target_col + feature_col] = \
                 scaler.transform(self.df[self.target_col + feature_col])
         self.scaler = scaler
@@ -881,12 +897,13 @@ class TSDataset:
         Returns:
             Describe the value of the time period distribution.
         """
-        assert isinstance(top_k, int),\
-            f"top_k type must be int, but found {type(top_k)}."
-        assert isinstance(aggregate, str),\
-            f"aggregate type must be str, but found {type(aggregate)}."
-        assert aggregate.lower().strip() in ['min', 'max', 'mode', 'median', 'mean'], \
-            f"We Only support 'min' 'max' 'mode' 'median' 'mean', but found {aggregate}."
+        invalidInputError(isinstance(top_k, int),
+                          f"top_k type must be int, but found {type(top_k)}.")
+        invalidInputError(isinstance(aggregate, str),
+                          f"aggregate type must be str, but found {type(aggregate)}.")
+        invalidInputError(aggregate.lower().strip() in ['min', 'max', 'mode', 'median', 'mean'],
+                          f"We Only support 'min' 'max' 'mode' 'median' 'mean',"
+                          f" but found {aggregate}.")
 
         if len(self.target_col) == 1:
             res = self.df.groupby(self.id_col)\

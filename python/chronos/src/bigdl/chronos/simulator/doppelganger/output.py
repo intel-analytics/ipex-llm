@@ -43,6 +43,8 @@
 # POSSIBILITY OF SUCH DAMAGE.
 
 from enum import Enum
+from bigdl.nano.utils.log4Error import *
+
 
 '''
 Exactly the same as gan.output
@@ -69,4 +71,5 @@ class Output(object):
         self.is_gen_flag = is_gen_flag
 
         if type_ == OutputType.CONTINUOUS and normalization is None:
-            raise Exception("normalization must be set for continuous output")
+            invalidInputError(False,
+                              "normalization must be set for continuous output")

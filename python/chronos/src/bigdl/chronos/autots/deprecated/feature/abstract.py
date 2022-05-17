@@ -15,6 +15,7 @@
 #
 
 from abc import ABC, abstractmethod
+from bigdl.nano.utils.log4Error import *
 
 
 class BaseFeatureTransformer(ABC):
@@ -88,10 +89,12 @@ class BaseFeatureTransformer(ABC):
         """
         config_parameters = set(config.keys())
         if not config_parameters.issuperset(self._get_required_parameters()):
-            raise ValueError("Missing required parameters in configuration. " +
-                             "Required parameters are: " + str(self._get_required_parameters()))
+            invalidInputError(False,
+                              "Missing required parameters in configuration. " +
+                              "Required parameters are: " + str(self._get_required_parameters()))
         if self.check_optional_config and \
                 not config_parameters.issuperset(self._get_optional_parameters()):
-            raise ValueError("Missing optional parameters in configuration. " +
-                             "Optional parameters are: " + str(self._get_optional_parameters()))
+            invalidInputError(False,
+                              "Missing optional parameters in configuration. " +
+                              "Optional parameters are: " + str(self._get_optional_parameters()))
         return True

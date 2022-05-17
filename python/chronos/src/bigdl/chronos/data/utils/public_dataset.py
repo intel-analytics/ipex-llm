@@ -23,6 +23,7 @@ import tqdm
 import pandas as pd
 import numpy as np
 from bigdl.chronos.data.tsdataset import TSDataset
+from bigdl.nano.utils.log4Error import *
 
 
 DATASET_NAME = {'network_traffic': ['2018%02d.agr' % i for i in range(1, 13)]
@@ -64,7 +65,7 @@ class PublicDataset:
         Complete path stitching and download files.
         param chunk_size: Byte size of a single read, preferably an integer multiple of 2.
         '''
-        assert isinstance(chunk_size, int), "chunk_size must be int."
+        invalidInputError(isinstance(chunk_size, int), "chunk_size must be int.")
         if not os.path.exists(self.dir_path):
             os.makedirs(self.dir_path)
 
@@ -244,7 +245,7 @@ def download(url, path, chunk_size):
     """
     req = requests.get(url, stream=True)
     file_size = int(req.headers['content-length'])
-    assert req.status_code == 200, "download failure, please check the network."
+    invalidInputError(req.status_code == 200, "download failure, please check the network.")
     file_name = url.split('/')[-1]
     pbar = tqdm.tqdm(total=file_size, unit='B', unit_scale=True, desc=file_name)
     with open(os.path.join(path, file_name), 'wb') as f:

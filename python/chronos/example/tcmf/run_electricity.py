@@ -21,6 +21,7 @@ import tempfile
 import logging
 import sys
 import os
+from bigdl.nano.utils.log4Error import *
 
 
 def get_dummy_data():
@@ -75,7 +76,8 @@ if __name__ == "__main__":
                       memory=args.memory, init_ray_on_spark=True)
 
     if not args.use_dummy_data:
-        assert args.data_dir is not None, "--data_dir must be provided if not using dummy data"
+        invalidInputError(args.data_dir is not None,
+                          "--data_dir must be provided if not using dummy data")
 
     logger.info('Initalizing TCMFForecaster.')
     model = TCMFForecaster(

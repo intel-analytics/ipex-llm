@@ -15,6 +15,7 @@
 #
 
 import pandas as pd
+from bigdl.nano.utils.log4Error import *
 
 
 def deduplicate_timeseries_dataframe(df,
@@ -24,7 +25,7 @@ def deduplicate_timeseries_dataframe(df,
     :param df: input dataframe.
     :param dt_col: name of datetime colomn.
     '''
-    assert dt_col in df.columns, f"dt_col {dt_col} can not be found in df."
-    assert pd.isna(df[dt_col]).sum() == 0, "There is N/A in datetime col"
+    invalidInputError(dt_col in df.columns, f"dt_col {dt_col} can not be found in df.")
+    invalidInputError(pd.isna(df[dt_col]).sum() == 0, "There is N/A in datetime col")
     res_df = df.drop_duplicates()
     return res_df

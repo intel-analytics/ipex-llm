@@ -14,6 +14,7 @@
 # limitations under the License.
 #
 from bigdl.chronos.data.utils.public_dataset import PublicDataset
+from bigdl.nano.utils.log4Error import *
 
 
 def get_public_dataset(name, path='~/.chronos/dataset', redownload=False, **kwargs):
@@ -30,8 +31,8 @@ def get_public_dataset(name, path='~/.chronos/dataset', redownload=False, **kwar
     :param kwargs: extra arguments passed to initialize the tsdataset,
            including with_split, val_ratio and test_ratio.
     """
-    assert isinstance(name, str) and isinstance(path, str),\
-        "Name and path must be string."
+    invalidInputError(isinstance(name, str) and isinstance(path, str),
+                      "Name and path must be string.")
 
     if name.lower().strip() == 'network_traffic':
         return PublicDataset(name='network_traffic',
@@ -75,5 +76,6 @@ def get_public_dataset(name, path='~/.chronos/dataset', redownload=False, **kwar
                                                   target_col=['value'],
                                                   id_col='id')
     else:
-        raise NameError("Only network_traffic, AIOps, fsi, nyc_taxi, uci_electricity "
-                        f"are supported in Chronos built-in dataset, while get {name}.")
+        invalidInputError(False,
+                          "Only network_traffic, AIOps, fsi, nyc_taxi, uci_electricity "
+                          f"are supported in Chronos built-in dataset, while get {name}.")

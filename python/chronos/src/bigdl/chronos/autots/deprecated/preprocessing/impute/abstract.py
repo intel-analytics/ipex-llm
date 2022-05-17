@@ -18,6 +18,7 @@ import numpy as np
 import pandas as pd
 import sklearn.metrics as metrics
 from abc import ABC, abstractmethod
+from bigdl.nano.utils.log4Error import *
 
 
 # migrate from automl/input
@@ -69,7 +70,7 @@ class BaseImpute(ABC):
         :param df: dataframe containing missing values
         :return: dataframe without missing values
         """
-        raise NotImplementError
+        invalidInputError(False, "not implemented")
 
     def evaluate(self, df, drop_rate):
         """

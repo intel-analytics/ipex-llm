@@ -19,6 +19,7 @@ import torch.nn as nn
 
 from .utils import PYTORCH_REGRESSION_LOSS_MAP
 import numpy as np
+from bigdl.nano.utils.log4Error import *
 
 
 class LSTMSeq2Seq(nn.Module):
@@ -86,8 +87,9 @@ def loss_creator(config):
     if loss_name in PYTORCH_REGRESSION_LOSS_MAP:
         loss_name = PYTORCH_REGRESSION_LOSS_MAP[loss_name]
     else:
-        raise RuntimeError(f"Got '{loss_name}' for loss name, "
-                           "where 'mse', 'mae' or 'huber_loss' is expected")
+        invalidInputError(False,
+                          f"Got '{loss_name}' for loss name, "
+                          "where 'mse', 'mae' or 'huber_loss' is expected")
     return getattr(torch.nn, loss_name)()
 
 
@@ -103,14 +105,17 @@ try:
 
         def _input_check(self, x, y):
             if len(x.shape) < 3:
-                raise RuntimeError(f"Invalid data x with {len(x.shape)} "
-                                   "dim where 3 dim is required.")
+                invalidInputError(False,
+                                  f"Invalid data x with {len(x.shape)} "
+                                  "dim where 3 dim is required.")
             if len(y.shape) < 3:
-                raise RuntimeError(f"Invalid data y with {len(y.shape)} dim "
-                                   "where 3 dim is required.")
+                invalidInputError(False,
+                                  f"Invalid data y with {len(y.shape)} dim "
+                                  "where 3 dim is required.")
             if y.shape[-1] > x.shape[-1]:
-                raise RuntimeError("output dim should not larger than input dim "
-                                   f"while we get {y.shape[-1]} > {x.shape[-1]}.")
+                invalidInputError(False,
+                                  "output dim should not larger than input dim "
+                                  f"while we get {y.shape[-1]} > {x.shape[-1]}.")
 
         def _forward(self, x, y):
             self._input_check(x, y)

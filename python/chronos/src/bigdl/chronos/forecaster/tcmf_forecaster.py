@@ -156,8 +156,9 @@ class TCMFForecaster(Forecaster):
             elif isinstance(x, dict):
                 self.internal = TCMFNdarrayModelWrapper(self.config)
             else:
-                raise ValueError("value of x should be a dict of ndarray or "
-                                 "an xShards of dict of ndarray")
+                invalidInputError(False,
+                                  "value of x should be a dict of ndarray or "
+                                  "an xShards of dict of ndarray")
 
             try:
                 self.internal.fit(x,
@@ -176,10 +177,11 @@ class TCMFForecaster(Forecaster):
                                   )
             except Exception as inst:
                 self.internal = None
-                raise inst
+                invalidOperationError(False, str(inst), cause=inst)
         else:
-            raise Exception("This model has already been fully trained, "
-                            "you can only run full training once.")
+            invalidInputError(False,
+                              "This model has already been fully trained, "
+                              "you can only run full training once.")
 
     def fit_incremental(self, x_incr, covariates_incr=None, dti_incr=None):
         """
@@ -265,7 +267,8 @@ class TCMFForecaster(Forecaster):
             of time series as input x in fit_eval.
         """
         if self.internal is None:
-            raise Exception("You should run fit before calling predict()")
+            invalidInputError(False,
+                              "You should run fit before calling predict()")
         else:
             return self.internal.predict(horizon,
                                          future_covariates=future_covariates,
@@ -279,7 +282,8 @@ class TCMFForecaster(Forecaster):
         :param path: Path to target saved file.
         """
         if self.internal is None:
-            raise Exception("You should run fit before calling save()")
+            invalidInputError(False,
+                              "You should run fit before calling save()")
         else:
             self.internal.save(path)
 
@@ -290,8 +294,8 @@ class TCMFForecaster(Forecaster):
         :return: True if the model is distributed by input xshards
         """
         if self.internal is None:
-            raise ValueError(
-                "You should run fit before calling is_xshards_distributed()")
+            invalidInputError(False,
+                              "You should run fit before calling is_xshards_distributed()")
         else:
             return self.internal.is_xshards_distributed()
 

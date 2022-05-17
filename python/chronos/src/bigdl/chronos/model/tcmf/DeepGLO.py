@@ -62,6 +62,8 @@ import copy
 
 import pickle
 import logging
+from bigdl.nano.utils.log4Error import *
+
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
@@ -635,8 +637,9 @@ class DeepGLO(object):
                    covariates_new=None,
                    dti_new=None):
         if self.Ymat.shape[0] != Ymat_new.shape[0]:
-            raise ValueError("Expected incremental input with {} time series, got {} instead."
-                             .format(self.Ymat.shape[0], Ymat_new.shape[0]))
+            invalidInputError(False,
+                              "Expected incremental input with {} time series, got {} instead."
+                              .format(self.Ymat.shape[0], Ymat_new.shape[0]))
         self.append_new_y(Ymat_new, covariates_new=covariates_new, dti_new=dti_new)
         n, T = self.Ymat.shape
         rank, XT = self.X.shape

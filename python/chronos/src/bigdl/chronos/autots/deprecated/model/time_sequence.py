@@ -31,6 +31,8 @@ import tempfile
 import shutil
 import zipfile
 import json
+from bigdl.nano.utils.log4Error import *
+
 
 MODEL_MAP = {"LSTM": VanillaLSTM,
              "Seq2seq": LSTMSeq2Seq,
@@ -136,7 +138,8 @@ class TimeSequenceModel(BaseModel):
             x, _ = self.ft.transform(df, is_train=False)
             data_np = x
         else:
-            raise ValueError(f"Mode should be among ['train', 'val', 'test']. Got {mode}")
+            invalidInputError(False,
+                              f"Mode should be among ['train', 'val', 'test']. Got {mode}")
         return data_np
 
     def fit_eval(self, data, validation_data=None, **kwargs):
@@ -148,13 +151,15 @@ class TimeSequenceModel(BaseModel):
         Otherwise, train metric will be the optimization target.
         :return: the resulting metric
         """
-        assert self.built, "You must call setup or restore before calling fit_eval"
+        invalidInputError(self.built, "You must call setup or restore before calling fit_eval")
         if not isinstance(data, pd.DataFrame):
-            raise ValueError(f"We only support data of pd.DataFrame. "
-                             f"Got data of {data.__class__.__name__}")
+            invalidInputError(False,
+                              f"We only support data of pd.DataFrame. "
+                              f"Got data of {data.__class__.__name__}")
         if validation_data is not None and not isinstance(validation_data, pd.DataFrame):
-            raise ValueError(f"We only support validation_data of pd.DataFrame. "
-                             f"Got validation_data of {data.__class__.__name__}")
+            invalidInputError(False,
+                              f"We only support validation_data of pd.DataFrame. "
+                              f"Got validation_data of {data.__class__.__name__}")
         data_np = self._process_data(data, mode="train")
         is_val_valid = isinstance(validation_data, pd.DataFrame) and not validation_data.empty
         if is_val_valid:
@@ -167,13 +172,15 @@ class TimeSequenceModel(BaseModel):
                                    **kwargs)
 
     def fit_incr(self, data, validation_data=None, **kwargs):
-        assert self.built, "You must call setup or restore before calling fit_eval"
+        invalidInputError(self.built, "You must call setup or restore before calling fit_eval")
         if not isinstance(data, pd.DataFrame):
-            raise ValueError(f"We only support data of pd.DataFrame. "
-                             f"Got data of {data.__class__.__name__}")
+            invalidInputError(False,
+                              f"We only support data of pd.DataFrame. "
+                              f"Got data of {data.__class__.__name__}")
         if validation_data is not None and not isinstance(validation_data, pd.DataFrame):
-            raise ValueError(f"We only support validation_data of pd.DataFrame. "
-                             f"Got validation_data of {data.__class__.__name__}")
+            invalidInputError(False,
+                              f"We only support validation_data of pd.DataFrame. "
+                              f"Got validation_data of {data.__class__.__name__}")
         data_np = self._process_data(data, mode="val")
         is_val_valid = isinstance(validation_data, pd.DataFrame) and not validation_data.empty
         if is_val_valid:
@@ -251,7 +258,8 @@ class TimeSequenceModel(BaseModel):
                 for dirpath, dirnames, filenames in os.walk(dirname):
                     for filename in filenames:
                         f.write(os.path.join(dirpath, filename), filename)
-            assert os.path.isfile(checkpoint_file)
+            invalidInputError(os.path.isfile(checkpoint_file),
+                              "checkpoint_file doesn't exist")
         finally:
             shutil.rmtree(dirname)
 

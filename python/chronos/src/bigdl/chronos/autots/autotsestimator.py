@@ -22,6 +22,7 @@ import bigdl.orca.automl.hp as hp
 from bigdl.chronos.autots.model import AutoModelFactory
 from bigdl.chronos.autots.tspipeline import TSPipeline
 from bigdl.chronos.autots.utils import recalculate_n_sampling
+from bigdl.nano.utils.log4Error import *
 
 
 class AutoTSEstimator:
@@ -126,7 +127,7 @@ class AutoTSEstimator:
         """
         # check backend and set default loss
         if backend != "torch":
-            raise ValueError(f"We only support backend as torch. Got {backend}")
+            invalidInputError(False, f"We only support backend as torch. Got {backend}")
         else:
             import torch
             if loss is None:
@@ -309,8 +310,8 @@ class AutoTSEstimator:
         # TODO: more flexible setting
         all_features = train_data.feature_col
         if self.selected_features not in ('all', 'auto'):
-            raise ValueError("Only 'all' and 'auto' are supported for selected_features, "
-                             f"but found {self.selected_features}")
+            invalidInputError(False, "Only 'all' and 'auto' are supported for selected_features, "
+                                     f"but found {self.selected_features}")
         if self.selected_features == "auto":
             if len(all_features) == 0:
                 search_space['selected_features'] = all_features

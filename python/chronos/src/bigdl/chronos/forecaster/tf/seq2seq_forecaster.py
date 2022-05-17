@@ -16,6 +16,7 @@
 
 from bigdl.chronos.forecaster.tf.base_forecaster import BaseTF2Forecaster
 from bigdl.chronos.model.tf2.Seq2Seq_keras import model_creator, LSTMSeq2Seq
+from bigdl.nano.utils.log4Error import *
 
 
 class Seq2SeqForecaster(BaseTF2Forecaster):
@@ -115,9 +116,10 @@ class Seq2SeqForecaster(BaseTF2Forecaster):
         # self.distributed_backend = distributed_backend
         # self.workers_per_node = workers_per_node
         if distributed:
-            raise NotImplementedError("We will add distributed support in subsequent releases, "
-                                      "the feature is currently unavailable, "
-                                      "Please set distributed=False.")
+            invalidInputError(False,
+                              "We will add distributed support in subsequent releases, "
+                              "the feature is currently unavailable, "
+                              "Please set distributed=False.")
 
         # other settings
         self.lr = lr

@@ -22,6 +22,8 @@ import numpy as np
 from bigdl.chronos.data import TSDataset
 from bigdl.chronos.metric.forecast_metrics import Evaluator
 from bigdl.chronos.pytorch.utils import _pytorch_fashion_inference
+from bigdl.nano.utils.log4Error import *
+
 
 DEFAULT_MODEL_INIT_DIR = "model_init.ckpt"
 DEFAULT_BEST_MODEL_DIR = "best_model.ckpt"
@@ -121,8 +123,9 @@ class TSPipeline:
             yhat = np.concatenate(yhat_list, axis=0)
             y = torch.cat(y_list, dim=0).numpy()
         else:
-            raise RuntimeError("We only support input tsdataset or data creator, "
-                               f"but found {data.__class__.__name__}.")
+            invalidInputError(False,
+                              "We only support input tsdataset or data creator, "
+                              f"but found {data.__class__.__name__}.")
 
         # evaluate
         aggregate = 'mean' if multioutput == 'uniform_average' else None
@@ -192,8 +195,9 @@ class TSPipeline:
             yhat = np.concatenate(yhat_list, axis=0)
             y = torch.cat(y_list, dim=0).numpy()
         else:
-            raise RuntimeError("We only support input tsdataset or data creator, "
-                               f"but found {data.__class__.__name__}.")
+            invalidInputError(False,
+                              "We only support input tsdataset or data creator, "
+                              f"but found {data.__class__.__name__}.")
         # evaluate
         aggregate = 'mean' if multioutput == 'uniform_average' else None
         eval_result = Evaluator.evaluate(metrics, y, yhat, aggregate=aggregate)
@@ -237,8 +241,9 @@ class TSPipeline:
                 yhat_list.append(yhat)
             yhat = np.concatenate(yhat_list, axis=0)
         else:
-            raise RuntimeError("We only support input tsdataset or data creator, "
-                               f"but found {data.__class__.__name__}")
+            invalidInputError(False,
+                              "We only support input tsdataset or data creator, " 
+                              f"but found {data.__class__.__name__}")
         return yhat
 
     def predict_with_onnx(self, data, batch_size=32, quantize=False):
@@ -291,8 +296,9 @@ class TSPipeline:
                 yhat_list.append(yhat)
             yhat = np.concatenate(yhat_list, axis=0)
         else:
-            raise RuntimeError("We only support input tsdataset or data creator, "
-                               f"but found {data.__class__.__name__}")
+            invalidInputError(False,
+                              "We only support input tsdataset or data creator, " 
+                              f"but found {data.__class__.__name__}")
         return yhat
 
     def fit(self,
@@ -337,8 +343,9 @@ class TSPipeline:
             if validation_data:
                 valid_loader = validation_data(self._best_config)
         else:
-            raise RuntimeError("We only support input TSDataset or data creator, "
-                               f"but found {data.__class__.__name__}.")
+            invalidInputError(False,
+                              "We only support input TSDataset or data creator, "
+                              f"but found {data.__class__.__name__}.")
 
         self.trainer = Trainer(max_epochs=epochs, **kwargs)
         self.trainer.fit(self._best_model,
@@ -480,10 +487,12 @@ class TSPipeline:
         check_quantize_available(self._best_model.model)
         # calib data should be set if the forecaster is just loaded
         if calib_data is None and approach.startswith("static"):
-            raise RuntimeError("You must set a `calib_data` "
-                               "for quantization When you use 'static'.")
+            invalidInputError(False,
+                              "You must set a `calib_data` "
+                              "for quantization When you use 'static'.")
         elif calib_data and approach.startswith("dynamic"):
-            raise RuntimeError("`calib_data` should be None When you use 'dynamic'.")
+            invalidInputError(False,
+                              "`calib_data` should be None When you use 'dynamic'.")
 
         # preprocess data.
         from .utils import preprocess_quantize_data
@@ -498,7 +507,7 @@ class TSPipeline:
         # init acc criterion
         accuracy_criterion = None
         if relative_drop and absolute_drop:
-            raise ValueError("Please unset either `relative_drop` or `absolute_drop`.")
+            invalidInputError(False, "Please unset either `relative_drop` or `absolute_drop`.")
         if relative_drop:
             accuracy_criterion = {'relative': relative_drop, 'higher_is_better': False}
         if absolute_drop:
@@ -562,9 +571,10 @@ class TSPipeline:
     def _check_mixed_data_type_usage(self):
         for key in ("past_seq_len", "future_seq_len", "selected_features"):
             if key not in self._best_config:
-                raise TypeError("You use a data creator to fit your AutoTSEstimator, "
-                                "and use a TSDataset to predict/evaluate/fit on the TSPipeline. "
-                                "Please stick to the same data type.")
+                invalidInputError(False,
+                                  "You use a data creator to fit your AutoTSEstimator, "
+                                  "and use a TSDataset to predict/evaluate/fit on the TSPipeline. " 
+                                  "Please stick to the same data type.")
 
     def _tsdataset_unscale(self, y):
         if self._scaler:

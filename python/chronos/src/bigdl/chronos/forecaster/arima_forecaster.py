@@ -16,6 +16,8 @@
 
 from bigdl.chronos.forecaster.abstract import Forecaster
 from bigdl.chronos.model.arima import ARIMAModel
+from bigdl.nano.utils.log4Error import *
+from bigdl.nano.utils.log4Error import *
 
 
 class ARIMAForecaster(Forecaster):
@@ -83,14 +85,12 @@ class ARIMAForecaster(Forecaster):
                                       **self.model_config)
 
     def _check_data(self, data, validation_data):
-        assert data.ndim == 1, \
-            "data should be an 1-D array), \
-            Got data dimension of {}."\
-            .format(data.ndim)
-        assert validation_data.ndim == 1, \
-            "validation_data should be an 1-D array), \
-            Got validation_data dimension of {}."\
-            .format(validation_data.ndim)
+        invalidInputError(data.ndim == 1,
+                          "data should be an 1-D array),"
+                          "Got data dimension of {}.".format(data.ndim))
+        invalidInputError(validation_data.ndim == 1,
+                          "validation_data should be an 1-D array),"
+                          "Got validation_data dimension of {}.".format(validation_data.ndim))
 
     def predict(self, horizon, rolling=False):
         """
@@ -102,7 +102,8 @@ class ARIMAForecaster(Forecaster):
         :return: A list in length of horizon reflects the predict result.
         """
         if self.internal.model is None:
-            raise RuntimeError("You must call fit or restore first before calling predict!")
+            invalidInputError(False,
+                              "You must call fit or restore first before calling predict!")
         return self.internal.predict(horizon=horizon, rolling=rolling)
 
     def evaluate(self, validation_data, metrics=['mse'], rolling=False):
@@ -115,9 +116,11 @@ class ARIMAForecaster(Forecaster):
         :return: A list in length of len(metrics), where states the metrics in order.
         """
         if validation_data is None:
-            raise ValueError("Input invalid validation_data of None")
+            invalidInputError(False,
+                              "Input invalid validation_data of None")
         if self.internal.model is None:
-            raise RuntimeError("You must call fit or restore first before calling evaluate!")
+            invalidInputError(False,
+                              "You must call fit or restore first before calling evaluate!")
         return self.internal.evaluate(validation_data, metrics=metrics, rolling=rolling)
 
     def save(self, checkpoint_file):
@@ -127,7 +130,8 @@ class ARIMAForecaster(Forecaster):
         :param checkpoint_file: The location you want to save the forecaster.
         """
         if self.internal.model is None:
-            raise RuntimeError("You must call fit or restore first before calling save!")
+            invalidInputError(False,
+                              "You must call fit or restore first before calling save!")
         self.internal.save(checkpoint_file)
 
     def restore(self, checkpoint_file):

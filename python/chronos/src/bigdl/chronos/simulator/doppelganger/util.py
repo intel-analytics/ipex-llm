@@ -45,6 +45,7 @@
 
 from .output import OutputType, Output, Normalization
 import numpy as np
+from bigdl.nano.utils.log4Error import *
 
 
 def renormalize_per_sample(data_feature, data_attribute, data_feature_outputs,
@@ -146,15 +147,17 @@ def add_gen_flag(data_feature, data_gen_flag, data_feature_outputs,
                  sample_len):
     for output in data_feature_outputs:
         if output.is_gen_flag:
-            raise Exception("is_gen_flag should be False for all "
-                            "feature_outputs")
+            invalidInputError(False,
+                              "is_gen_flag should be False for all feature_outputs")
 
     if (data_feature.shape[2] !=
             np.sum([t.dim for t in data_feature_outputs])):
-        raise Exception("feature dimension does not match feature_outputs")
+        invalidInputError(False,
+                          "feature dimension does not match feature_outputs")
 
     if len(data_gen_flag.shape) != 2:
-        raise Exception("data_gen_flag should be 2 dimension")
+        invalidInputError(False,
+                          "data_gen_flag should be 2 dimension")
 
     num_sample, length = data_gen_flag.shape
 
@@ -170,7 +173,8 @@ def add_gen_flag(data_feature, data_gen_flag, data_feature_outputs,
          np.zeros((data_gen_flag.shape[0], 1, 1))],
         axis=1)
     if length % sample_len != 0:
-        raise Exception("length must be a multiple of sample_len")
+        invalidInputError(False,
+                          "length must be a multiple of sample_len")
     data_gen_flag_t = np.reshape(
         data_gen_flag,
         [num_sample, int(length / sample_len), sample_len])
