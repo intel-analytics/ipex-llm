@@ -313,7 +313,8 @@ class RayPlugin(DDPSpawnPlugin):
 
         invalidInputError(isinstance(self.cluster_environment, RayEnvironment),
                           "expect ray environment here")
-        isinstance(self.cluster_environment, RayEnvironment)
+        if not isinstance(self.cluster_environment, RayEnvironment):
+            return
         self.cluster_environment.set_global_rank(global_rank)
         self.cluster_environment.set_remote_execution(True)
 
@@ -355,7 +356,9 @@ class RayPlugin(DDPSpawnPlugin):
             self.cluster_environment is not None and isinstance(self.cluster_environment,
                                                                 RayEnvironment),
             "expect ray environment here")
-        isinstance(self.cluster_environment, RayEnvironment)
+        if not (self.cluster_environment is not None and isinstance(self.cluster_environment,
+                                                                    RayEnvironment)):
+            return
         if self.cluster_environment.is_remote():
             self._local_rank = self.global_to_local[self.global_rank]
             self.cluster_environment.set_global_rank(self.global_rank)
