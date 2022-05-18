@@ -1,5 +1,3 @@
-#!/usr/bin/env bash
-
 #
 # Copyright 2016 The BigDL Authors.
 #
@@ -16,20 +14,9 @@
 # limitations under the License.
 #
 
-set -ex
-SCRIPT_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" &> /dev/null && pwd)
-BIGDL_PYTHON_ROOT=$SCRIPT_DIR/../../..
+import torch
+from torch import nn
 
-
-export PYTHONPATH=$PYTHONPATH:$BIGDL_PYTHON_ROOT/dllib/src:$BIGDL_PYTHON_ROOT/ppml/src:$BIGDL_PYTHON_ROOT/ppml/src/bigdl/ppml/fl/pytorch/generated
-
-export BIGDL_CLASSPATH=$(find $BIGDL_PYTHON_ROOT/../dist/lib/ -name bigdl-ppml-*-jar-with-dependencies.jar)
-
-cd "`dirname $0`"
-
-echo "Running PPML tests"
-
-
-cd ../../
-
-for f in $(find test -name '*.py'); do python -m unittest -v $f; done
+def set_one_like_parameter(model: nn.Module):
+    for param in model.parameters():
+        param.data = nn.parameter.Parameter(torch.ones_like(param))

@@ -13,15 +13,3 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-
-import unittest
-from bigdl.ppml.fl import *
-
-
-class TestFlContext(unittest.TestCase):
-    def test_init_fl_context(self):
-        init_fl_context()
-
-
-if __name__ == '__main__':
-    unittest.main()

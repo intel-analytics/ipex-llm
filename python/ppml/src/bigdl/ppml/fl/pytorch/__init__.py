@@ -13,21 +13,3 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-
-import unittest
-from bigdl.ppml.fl import FLServer
-
-
-
-class TestFLServer(unittest.TestCase):
-    def test_fl_server_default_config(self):
-        fl_server = FLServer()
-        fl_server.build()
-        fl_server.start()
-
-    def test_fl_server_custom_config(self):
-        pass
-
-
-if __name__ == '__main__':
-    unittest.main()
