@@ -17,6 +17,7 @@
 
 package com.intel.analytics.bigdl.ppml.attestation
 
+import com.intel.analytics.bigdl.dllib.utils.Log4Error
 import com.intel.analytics.bigdl.ppml.utils.EHSMParams
 import com.intel.analytics.bigdl.ppml.utils.HTTPUtil.postRequest
 import org.apache.logging.log4j.LogManager
@@ -59,8 +60,8 @@ class EHSMAttestationService(kmsServerIP: String, kmsServerPort: String,
     // TODO nonce
     val nonce: String = "test"
     if (quote == null) {
-      logger.error("Quote should be specified")
-      throw new AttestationRuntimeException("Quote is null")
+      Log4Error.invalidInputError(false,
+        "Quote should be specified")
     }
     val action: String = ACTION_VERIFY_QUOTE
     val currentTime = System.currentTimeMillis() // ms

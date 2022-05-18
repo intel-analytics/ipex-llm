@@ -17,6 +17,7 @@
 
 package com.intel.analytics.bigdl.ppml.attestation
 
+import com.intel.analytics.bigdl.dllib.utils.Log4Error
 import org.apache.logging.log4j.LogManager
 import org.json.JSONObject
 
@@ -56,8 +57,8 @@ class DummyAttestationService extends AttestationService {
     override def attestWithServer(quote: String): (Boolean, String) = {
         timing("DummyAttestationService retrieveVerifyQuoteResult") {
             if (quote == null) {
-                logger.error("Quote should be specified")
-                throw new AttestationRuntimeException("Quote is null")
+                Log4Error.invalidInputError(false,
+                    "Quote should be specified")
             }
             val nonce: String = "test"
             val response: JSONObject = new JSONObject()
