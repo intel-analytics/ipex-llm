@@ -14,6 +14,7 @@
 # limitations under the License.
 #
 from pathlib import Path
+from tempfile import TemporaryDirectory
 from .dataloader import PytorchOpenVINODataLoader
 from .metric import PytorchOpenVINOMetric
 from ..core.model import OpenVINOModel
@@ -35,14 +36,13 @@ class PytorchOpenVINOModel(OpenVINOModel, AcceleratedLightningModule):
                              defaults to None.
         """
         ov_model_path = model
-        if isinstance(model, torch.nn.Module):
-            export(model, input_sample, 'tmp.xml')
-            ov_model_path = 'tmp.xml'
-        OpenVINOModel.__init__(self, ov_model_path)
-        AcceleratedLightningModule.__init__(self, None)
-        xml_path = Path('tmp.xml')
-        if xml_path.exists():
-            xml_path.unlink()
+        with TemporaryDirectory() as dir:
+            dir = Path(dir)
+            if isinstance(model, torch.nn.Module):
+                export(model, input_sample, str(dir / 'tmp.xml'))
+                ov_model_path = dir / 'tmp.xml'
+            OpenVINOModel.__init__(self, ov_model_path)
+            AcceleratedLightningModule.__init__(self, None)
 
     def on_forward_start(self, inputs):
         if self.ie_network is None:

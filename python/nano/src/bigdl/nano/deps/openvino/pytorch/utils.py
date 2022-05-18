@@ -13,10 +13,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-
-import os
+from tempfile import TemporaryDirectory
 from ..core.utils import convert_onnx_to_xml
 from bigdl.nano.utils.inference.pytorch.model_utils import export_to_onnx
+from pathlib import Path
 
 
 def export(model, input_sample=None, xml_path="model.xml"):
@@ -29,7 +29,8 @@ def export(model, input_sample=None, xml_path="model.xml"):
     :param xml_path: The path to save openvino model file.
     '''
     # export a model with dynamic axes to enable IR to accept different batches and resolutions
-    export_to_onnx(model, input_sample, 'tmp.onnx', dynamic_axes=True)
-    convert_onnx_to_xml('tmp.onnx', xml_path)
-    if os.path.exists('tmp.onnx'):
-        os.remove('tmp.onnx')
+    with TemporaryDirectory() as folder:
+        folder = Path(folder)
+        onnx_path = str(folder / 'tmp.onnx')
+        export_to_onnx(model, input_sample, onnx_path, dynamic_axes=True)
+        convert_onnx_to_xml(onnx_path, xml_path)
