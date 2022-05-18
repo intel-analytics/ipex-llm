@@ -24,6 +24,7 @@ service NNService {
     rpc train(TrainRequest) returns (TrainResponse) {}
     rpc evaluate(EvaluateRequest) returns (EvaluateResponse) {}
     rpc predict(PredictRequest) returns (PredictResponse) {}
+    rpc upload_model(UploadModelRequest) returns (UploadModelResponse) {}
 }
 
 message TrainRequest {
@@ -59,6 +60,13 @@ message PredictResponse {
     string response = 1;
     TensorMap data = 2;
     int32 code = 3;
+}
+message UploadModelRequest {
+    string client_uuid = 1;
+    bytes model_bytes = 2;
+}
+message UploadModelResponse {
+    string message = 1;
 }
 
 

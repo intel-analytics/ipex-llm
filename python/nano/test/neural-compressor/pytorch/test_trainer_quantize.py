@@ -26,7 +26,7 @@ from _train_torch_lightning import create_data_loader, data_transform
 from torch import nn
 import torchmetrics
 
-from bigdl.nano.pytorch.trainer import Trainer
+from bigdl.nano.pytorch import Trainer
 from bigdl.nano.pytorch.vision.models import vision
 
 batch_size = 256

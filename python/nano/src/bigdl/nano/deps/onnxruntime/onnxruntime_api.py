@@ -32,7 +32,7 @@ def bind_onnxrt_methods(pl_model: LightningModule, q_onnx_model=None, sess_optio
     return pl_model
 
 
-def PytorchONNXRuntimeModel(model, input_sample=None):
+def PytorchONNXRuntimeModel(model, input_sample=None, onnxruntime_session_options=None):
     """
         Create a ONNX Runtime model from pytorch.
 
@@ -41,11 +41,13 @@ def PytorchONNXRuntimeModel(model, input_sample=None):
         :param input_sample: A set of inputs for trace, defaults to None if you have trace before or
                              model is a LightningModule with any dataloader attached,
                              defaults to None.
+        :param onnxruntime_session_options: A session option for onnxruntime accelerator.
 
         :return: A PytorchONNXRuntimeModel instance
         """
     from .pytorch.pytorch_onnxruntime_model import PytorchONNXRuntimeModel
-    return PytorchONNXRuntimeModel(model, input_sample)
+    return PytorchONNXRuntimeModel(model, input_sample,
+                                   onnxruntime_session_options=onnxruntime_session_options)
 
 
 def load_onnxruntime_model(path):

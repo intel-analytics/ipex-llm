@@ -43,18 +43,18 @@ java -cp $SPARK_HOME/jars/*:../target/bigdl-ppml-spark_3.1.2-2.1.0-SNAPSHOT-jar-
 ## Horizontal Federated Learning (HFL) Logistic Regression
 ```bash
 # client 1
-java -cp $SPARK_HOME/jars/*:../target/bigdl-ppml-spark_3.1.2-2.1.0-SNAPSHOT-jar-with-dependencies.jar com.intel.analytics.bigdl.ppml.fl.example.HflLogisticRegression -d data/diabetes-hfl-1.csv
+java -cp $SPARK_HOME/jars/*:../target/bigdl-ppml-spark_3.1.2-2.1.0-SNAPSHOT-jar-with-dependencies.jar com.intel.analytics.bigdl.ppml.fl.example.HFLLogisticRegression -d data/diabetes-hfl-1.csv
 
 # client 2
-java -cp $SPARK_HOME/jars/*:../target/bigdl-ppml-spark_3.1.2-2.1.0-SNAPSHOT-jar-with-dependencies.jar com.intel.analytics.bigdl.ppml.fl.example.HflLogisticRegression -d data/diabetes-hfl-2.csv
+java -cp $SPARK_HOME/jars/*:../target/bigdl-ppml-spark_3.1.2-2.1.0-SNAPSHOT-jar-with-dependencies.jar com.intel.analytics.bigdl.ppml.fl.example.HFLLogisticRegression -d data/diabetes-hfl-2.csv
 ```
 ## Vertical Federated Learning (VFL) Logistic Regression
 ```bash
 # client 1
-java -cp $SPARK_HOME/jars/*:../target/bigdl-ppml-spark_3.1.2-2.1.0-SNAPSHOT-jar-with-dependencies.jar com.intel.analytics.bigdl.ppml.fl.example.VflLogisticRegression -d data/diabetes-vfl-1.csv
+java -cp $SPARK_HOME/jars/*:../target/bigdl-ppml-spark_3.1.2-2.1.0-SNAPSHOT-jar-with-dependencies.jar com.intel.analytics.bigdl.ppml.fl.example.VFLLogisticRegression -d data/diabetes-vfl-1.csv -c 1
 
 # client 2
-java -cp $SPARK_HOME/jars/*:../target/bigdl-ppml-spark_3.1.2-2.1.0-SNAPSHOT-jar-with-dependencies.jar com.intel.analytics.bigdl.ppml.fl.example.VflLogisticRegression -d data/diabetes-vfl-2.csv
+java -cp $SPARK_HOME/jars/*:../target/bigdl-ppml-spark_3.1.2-2.1.0-SNAPSHOT-jar-with-dependencies.jar com.intel.analytics.bigdl.ppml.fl.example.VFLLogisticRegression -d data/diabetes-vfl-2.csv -c 2
 ```
 
 
@@ -88,7 +88,7 @@ It will generate a file `enclave-key.pem` in your present working directory, whi
 openssl genrsa -3 -out enclave-key.pem 3072
 ```
 
-Then modify `ENCLAVE_KEY_PATH` in `deploy_fl_container.sh` with your path to `enclave-key.pem`.
+Then modify `ENCLAVE_KEY_PATH` in `start-fl-server.sh` and `start-fl-client.sh` with your path to `enclave-key.pem`.
 
 #### TLS certificate
 If you want to build the TLS channel with the certificate, you need to prepare the secure keys. In this tutorial, you can generate keys with root permission (test only, need input security password for keys).
@@ -99,64 +99,39 @@ If you want to build the TLS channel with the certificate, you need to prepare t
 sudo bash ../../../ppml/scripts/generate-keys.sh
 ```
 
-If run in container, please modify `KEYS_PATH` to `keys/` you generated in last step in `deploy_fl_container.sh`. This dir will mount to container's `/ppml/trusted-big-data-ml/work/keys`, then modify the `privateKeyFilePath` to `keys/server.pem` and `certChainFilePath` to `keys/server.crt` in `ppml-conf.yaml` with container's absolute path.
+If run in container, please modify `KEYS_PATH` to `keys/` you generated in last step in `start-fl-server.sh` and `start-fl-client.sh`. This dir will mount to container's `/ppml/trusted-big-data-ml/work/keys`, then modify the `privateKeyFilePath` to `keys/server.pem` and `certChainFilePath` to `keys/server.crt` in `ppml-conf.yaml` with container's absolute path.
 
 If not in container, just modify the `privateKeyFilePath` to `keys/server.pem` and `certChainFilePath` to `keys/server.crt` in `ppml-conf.yaml` with your local path.
 
 If you don't want to build the TLS channel with the certificate, just delete the `privateKeyFilePath` and `certChainFilePath` in `ppml-conf.yaml`.
 
-Then modify `DATA_PATH` to `./data` with absolute path in your machine and your local IP in `deploy_fl_container.sh`. The `./data` path will mount to container's `/ppml/trusted-big-data-ml/work/data`, so if you don't run in the container, you need to modify the data path in `runH_VflClient1_2.sh`.
+Then modify `DATA_PATH` to `./data` with absolute path in your machine and your local IP in `start-fl-server.sh` and `start-fl-client.sh`. The `./data` path will mount to container's `/ppml/trusted-big-data-ml/work/data`, so if you don't run in the container, you need to modify the data path in `scripts/runH_Or_VflClient1_Or_2.sh`.
 
-## Start container
-run:
-
-```bash
-bash deploy_fl_container.sh
-sudo docker exec -it flDemo bash
-./init.sh
-```
 
 ## Start FLServer
-In container run:
 
 ```bash
-./runFlServer.sh
+sudo bash start-fl-server.sh 
 ```
 
 ## Run Horizontal FL Demo
-Open two new terminals, run:
+Open two new terminals, run respectively:
 
 ```bash
-sudo docker exec -it flDemo bash
+sudo bash start-fl-client.sh hfl 1
 ```
 
-to enter the container, then in a terminal run:
-
 ```bash
-./runHflClient1.sh
-```
-
-in another terminal run:
-
-```bash
-./runHflClient2.sh
+sudo bash start-fl-client.sh hfl 2
 ```
 
 ## Run Vertical FL Demo
-Open two new windows, run:
+Open two new terminals, run respectively:
 
 ```bash
-sudo docker exec -it flDemo bash
+sudo bash start-fl-client.sh vfl 1
 ```
 
-to enter the container, then in a terminal run:
-
 ```bash
-./runVflClient1.sh
-```
-
-in another terminal run:
-
-```bash
-./runVflClient2.sh
+sudo bash start-fl-client.sh vfl 2
 ```

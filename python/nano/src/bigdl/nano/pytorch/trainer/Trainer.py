@@ -54,7 +54,7 @@ class Trainer(pl.Trainer):
     def __init__(self, num_processes: int = 1,
                  use_ipex: bool = False,
                  enable_bf16=False,
-                 distributed_backend="spawn",
+                 distributed_backend="subprocess",
                  cpu_for_each_process: Optional[List[List[int]]] = None,
                  use_hpo=False,
                  *args: Any, **kwargs: Any) -> None:
@@ -147,9 +147,7 @@ class Trainer(pl.Trainer):
                 loss: _Loss = None,
                 optimizer: torch.optim.Optimizer = None,
                 scheduler: _LRScheduler = None,
-                metrics: List[Metric] = None,
-                onnx: bool = False,
-                quantize: bool = False):
+                metrics: List[Metric] = None):
         """
         Construct a pytorch-lightning model.
 
@@ -163,10 +161,6 @@ class Trainer(pl.Trainer):
         :param optimizer:   Optimizer to construct pytorch-lightning model Should be None.
                             if model is instance of pl.LightningModule.
         :param metrics:     A list of torchmetrics to validate/test performance.
-        :param onnx:        Indicates if onnxruntime support should be binded to the
-                            returned model.
-        :param quantize:    Indicates if quantization support should be binded to the
-                            returned model.
         :return:            A LightningModule object.
         """
         assert isinstance(model, nn.Module), \
@@ -179,20 +173,6 @@ class Trainer(pl.Trainer):
             pl_model = model
         else:
             pl_model = LightningModuleFromTorch(model, loss, optimizer, scheduler, metrics)
-        if onnx:
-            try:
-                from bigdl.nano.pytorch.runtime_binding.base_inference import\
-                    bind_base_inference_rt_methods
-                pl_model = bind_onnxrt_methods(bind_base_inference_rt_methods(pl_model))
-            except ImportError:
-                raise RuntimeError("You should install onnx and onnxruntime to set `onnx=True`, "
-                                   "or just set `onnx=False`.")
-        if quantize:
-            from bigdl.nano.pytorch.runtime_binding.quantization_inference import\
-                bind_quantize_methods
-            from bigdl.nano.pytorch.runtime_binding.base_inference import\
-                bind_base_inference_rt_methods
-            pl_model = bind_quantize_methods(bind_base_inference_rt_methods(pl_model), None)
 
         return pl_model
 
@@ -234,19 +214,18 @@ class Trainer(pl.Trainer):
     def quantize(self, model,  # remove the type requirement for type checking
                  precision='int8',
                  accelerator=None,
-                 method='fx',
                  calib_dataloader: DataLoader = None,
                  val_dataloader: DataLoader = None,
                  metric: Optional[Metric] = None,
+                 accuracy_criterion: dict = {'relative': 0.99, 'higher_is_better': True},
+                 approach='static',
+                 method='fx',
                  backend='inc',
                  conf: Optional[str] = None,
-                 approach='static',
                  tuning_strategy='bayesian',
-                 accuracy_criterion: dict = {'relative': 0.99, 'higher_is_better': True},
                  timeout=0,
                  max_trials=1,
-                 input_sample=None,
-                 return_pl=False
+                 input_sample=None
                  ):
         """
         Calibrate a Pytorch-Lightning model for post-training quantization.
@@ -257,6 +236,19 @@ class Trainer(pl.Trainer):
                                 supported type: 'int8', 'bf16', 'fp16', defaults to 'int8'.
         :param accelerator:     Use accelerator 'None', 'onnxruntime', 'openvino', defaults to None.
                                 None means staying in pytorch.
+        :param calib_dataloader:    A torch.utils.data.dataloader.DataLoader object for calibration.
+                                    Required for static quantization.
+        :param val_dataloader:      A torch.utils.data.dataloader.DataLoader object for evaluation.
+        :param metric:              A torchmetrics.metric.Metric object for evaluation.
+        :param accuracy_criterion:  Tolerable accuracy drop.
+                                    accuracy_criterion = {'relative': 0.1, 'higher_is_better': True}
+                                    allows relative accuracy loss: 1%. accuracy_criterion =
+                                    {'absolute': 0.99, 'higher_is_better':False} means accuracy
+                                    must be smaller than 0.99.
+        :param approach:    'static' or 'dynamic'.
+                            'static': post_training_static_quant,
+                            'dynamic': post_training_dynamic_quant.
+                            Default: 'static'.
         :param method:          Method to do quantization. When accelerator=None, supported
             methods: 'fx', 'eager', 'ipex', defaults to 'fx'. If you don't use ipex, suggest using
             'fx' which executes automatic optimizations like fusion. For more information, please
@@ -264,32 +256,18 @@ class Trainer(pl.Trainer):
             When accelerator='onnxruntime', supported methods: 'qlinear', 'integer', defaults
             to 'qlinear'. Suggest 'qlinear' for lower accuracy drop if using static quantization.
             More details in https://onnxruntime.ai/docs/performance/quantization.html.
-        :param calib_dataloader:    A torch.utils.data.dataloader.DataLoader object for calibration.
-                                    Required for static quantization.
-        :param val_dataloader:      A torch.utils.data.dataloader.DataLoader object for evaluation.
-        :param metric:              A torchmetrics.metric.Metric object for evaluation.
         :param backend:             Only 'inc' is supported. Default: 'inc'.
         :param conf:        A path to conf yaml file for quantization.
                             Default: None, using default config.
-        :param approach:    'static' or 'dynamic'.
-                            'static': post_training_static_quant,
-                            'dynamic': post_training_dynamic_quant.
-                            Default: 'static'.
         :param tuning_strategy:    'bayesian', 'basic', 'mse', 'sigopt'. Default: 'bayesian'.
-        :param accuracy_criterion:  Tolerable accuracy drop.
-                                    accuracy_criterion = {'relative': 0.1, 'higher_is_better': True}
-                                    allows relative accuracy loss: 1%. accuracy_criterion =
-                                    {'absolute': 0.99, 'higher_is_better':False} means accuracy
-                                    must be smaller than 0.99.
         :param timeout:     Tuning timeout (seconds). Default: 0,  which means early stop.
                             Combine with max_trials field to decide when to exit.
         :param max_trials:  Max tune times. Default: 1.
                             Combine with timeout field to decide when to exit.
                             "timeout=0, max_trials=1" means it will try quantization only once and
                             return satisfying best model.
-        :param return_pl:   Decide which type to return. If set to True, a GraphModule will be
-                            returned. If set to False, a pytorch lightning module will be returned.
         :input_sample:      An input example to convert pytorch model into ONNX/OpenVINO.
+
         :return:            A accelerated Pytorch-Lightning Model if quantization is sucessful.
         """
         if backend == 'inc':
@@ -332,34 +310,21 @@ class Trainer(pl.Trainer):
             """
             quantized_model = quantizer.post_training_quantize(model, calib_dataloader,
                                                                val_dataloader, metric)
-            if not return_pl:
-                if accelerator is None:
-                    return PytorchQuantizedModel(quantized_model)
-                elif accelerator == 'onnxruntime':
-                    with TemporaryDirectory() as dir:
-                        saved_onnx = Path(dir) / 'tmp.onnx'
-                        quantized_model.save(saved_onnx)
-                        return PytorchONNXRuntimeModel(str(saved_onnx))
-            else:
-                quantized_pytorch_model = quantized_model if "pytorch" in framework else None
-                quantized_onnx_model = quantized_model if "onnxrt" in framework else None
-
-                from bigdl.nano.pytorch.runtime_binding.base_inference import \
-                    bind_base_inference_rt_methods
-                from bigdl.nano.pytorch.runtime_binding.quantization_inference import \
-                    bind_quantize_methods
-                return_pl_model = bind_quantize_methods(
-                    bind_base_inference_rt_methods(pl_model), quantized_pytorch_model)
-                if quantized_onnx_model:
-                    return bind_onnxrt_methods(return_pl_model,
-                                               quantized_onnx_model)
-                else:
-                    return return_pl_model
+            if accelerator is None:
+                return PytorchQuantizedModel(quantized_model)
+            elif accelerator == 'onnxruntime':
+                with TemporaryDirectory() as dir:
+                    saved_onnx = Path(dir) / 'tmp.onnx'
+                    quantized_model.save(saved_onnx)
+                    return PytorchONNXRuntimeModel(str(saved_onnx))
         else:
             raise NotImplementedError("Backend {} is not implemented.".format(backend))
 
     @staticmethod
-    def trace(model: nn.Module, input_sample=None, accelerator=None):
+    def trace(model: nn.Module,
+              input_sample=None,
+              accelerator=None,
+              onnxruntime_session_options=None):
         """
         Trace a pytorch model and convert it into an accelerated module for inference.
 
@@ -370,12 +335,14 @@ class Trainer(pl.Trainer):
                              model is a LightningModule with any dataloader attached.
         :param accelerator: The accelerator to use, defaults to None meaning staying in Pytorch
                             backend. 'openvino' and 'onnxruntime' are supported for now.
+        :param onnxruntime_session_options: The session option for onnxruntime, only valid when
+                                            accelerator='onnxruntime', otherwise will be ignored.
         :return: Model with different acceleration(OpenVINO/ONNX Runtime).
         """
         if accelerator == 'openvino':
             return PytorchOpenVINOModel(model, input_sample)
         if accelerator == 'onnxruntime':
-            return PytorchONNXRuntimeModel(model, input_sample)
+            return PytorchONNXRuntimeModel(model, input_sample, onnxruntime_session_options)
 
     @staticmethod
     def save(model: LightningModule, path):

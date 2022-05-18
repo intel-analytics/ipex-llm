@@ -23,13 +23,14 @@ import torchmetrics
 from torch import nn
 
 from bigdl.nano.pytorch.lightning import LightningModuleFromTorch
-from bigdl.nano.pytorch.trainer import Trainer
+from bigdl.nano.pytorch import Trainer
 
 from test.pytorch.utils._train_torch_lightning import create_data_loader, data_transform
 from test.pytorch.tests.test_lightning import ResNet18
 
 num_classes = 10
-batch_size = 256
+batch_size = 32
+dataset_size = 256
 num_workers = 0
 data_dir = os.path.join(os.path.dirname(__file__), "../data")
 
@@ -38,7 +39,8 @@ class TestPlugin(TestCase):
     model = ResNet18(pretrained=False, include_top=False, freeze=True)
     loss = nn.CrossEntropyLoss()
     optimizer = torch.optim.Adam(model.parameters(), lr=0.01)
-    data_loader = create_data_loader(data_dir, batch_size, num_workers, data_transform)
+    data_loader = create_data_loader(data_dir, batch_size, num_workers,
+                                     data_transform, subset=dataset_size)
 
     def setUp(self):
         test_dir = os.path.dirname(__file__)

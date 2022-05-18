@@ -18,7 +18,7 @@
 import pytest
 from unittest import TestCase
 
-from bigdl.nano.pytorch.trainer import Trainer
+from bigdl.nano.pytorch import Trainer
 import bigdl.nano.automl.hpo.space as space
 
 import torch

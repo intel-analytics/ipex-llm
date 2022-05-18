@@ -15,6 +15,7 @@
 #
 
 from bigdl.nano.automl.hpo.backend import PrunerType, SamplerType
+from bigdl.nano.automl.hpo.space import SimpleSpace, NestedSpace, AutoObject
 import optuna
 
 
@@ -48,43 +49,73 @@ class OptunaBackend(object):
         return{k: kwargs[k] for k in set(kwargs) - set(kwspaces)}
 
     @staticmethod
+    def _sample_space(trial, hp_name, hp_obj):
+        hp_type = str(type(hp_obj)).lower()  # type of hyperparam
+        if 'integer' in hp_type or 'float' in hp_type or \
+                'categorical' in hp_type or 'ordinal' in hp_type:
+            try:
+                if 'integer' in hp_type:
+                    hp_dimension = trial.suggest_int(
+                        name=hp_name, low=int(hp_obj.lower), high=int(hp_obj.upper))
+                elif 'float' in hp_type:
+                    if hp_obj.log:  # log10-scale hyperparmeter
+                        hp_dimension = trial.suggest_loguniform(
+                            name=hp_name, low=float(hp_obj.lower), high=float(hp_obj.upper))
+                    else:
+                        hp_dimension = trial.suggest_float(
+                            name=hp_name, low=float(hp_obj.lower), high=float(hp_obj.upper))
+                elif 'categorical' in hp_type:
+                    hp_dimension = trial.suggest_categorical(
+                        name=hp_name, choices=hp_obj.choices)
+                elif 'ordinal' in hp_type:
+                    hp_dimension = trial.suggest_categorical(
+                        name=hp_name, choices=hp_obj.sequence)
+            except (ValueError):
+                # TODO ValueErrors might be raised due to other reasons.
+                raise ValueError("If you set search space in model, \
+                    you must call model.search before model.fit.")
+        else:
+            raise ValueError("unknown hyperparameter type %s for param %s" %
+                             (hp_type, hp_name))
+        return hp_dimension
+
+    @staticmethod
     def get_hpo_config(trial, configspace):
         """Get hyper parameter suggestions from search space settings."""
         # TODO better ways to map ConfigSpace to optuna spaces
         # fix order of hyperparams in configspace.
         hp_ordering = configspace.get_hyperparameter_names()
         config = {}
-        for hp in hp_ordering:
-            hp_obj = configspace.get_hyperparameter(hp)
-            hp_prefix = hp_obj.meta.setdefault('prefix', None)
-            hp_name = hp_prefix + ':' + hp if hp_prefix else hp
-            hp_type = str(type(hp_obj)).lower()  # type of hyperparam
-            if 'integer' in hp_type or 'float' in hp_type or \
-                    'categorical' in hp_type or 'ordinal' in hp_type:
-                try:
-                    if 'integer' in hp_type:
-                        hp_dimension = trial.suggest_int(
-                            name=hp_name, low=int(hp_obj.lower), high=int(hp_obj.upper))
-                    elif 'float' in hp_type:
-                        if hp_obj.log:  # log10-scale hyperparmeter
-                            hp_dimension = trial.suggest_loguniform(
-                                name=hp_name, low=float(hp_obj.lower), high=float(hp_obj.upper))
-                        else:
-                            hp_dimension = trial.suggest_float(
-                                name=hp_name, low=float(hp_obj.lower), high=float(hp_obj.upper))
-                    elif 'categorical' in hp_type:
-                        hp_dimension = trial.suggest_categorical(
-                            name=hp_name, choices=hp_obj.choices)
-                    elif 'ordinal' in hp_type:
-                        hp_dimension = trial.suggest_categorical(
-                            name=hp_name, choices=hp_obj.sequence)
-                except (ValueError):
-                    raise ValueError("If you set search space in model, \
-                        you must call model.search before model.fit.")
-            else:
-                raise ValueError("unknown hyperparameter type: %s" % hp)
+        for hp_name in hp_ordering:
+            cs_param = configspace.get_hyperparameter(hp_name)
+            hp_prefix = cs_param.meta.setdefault('prefix', None)
+            # TODO generate meaningful prefix for user
+            optuna_hp_name = hp_prefix + ':' + hp_name if hp_prefix else hp_name
+            hp_dimension = OptunaBackend._sample_space(trial, optuna_hp_name, cs_param)
             config[hp_name] = hp_dimension
         return config
+
+    @staticmethod
+    def instantiate_param(trial, kwargs, hparam):
+        """
+        Instantiate auto objects in kwargs with trial params at runtime.
+
+        Note the params are replaced IN-PLACE
+        """
+        # instantiate auto objects in runtime params a
+        v = kwargs.get(hparam, None)
+        if v:
+            if isinstance(v, SimpleSpace):
+                value = OptunaBackend._sample_space(trial, hparam, v.hp)
+            elif isinstance(v, NestedSpace):
+                config = OptunaBackend.get_hpo_config(trial, v.cs)
+                value = v.sample(**config)
+            elif isinstance(v, AutoObject):
+                value = OptunaBackend.instantiate(trial, v)
+            else:
+                value = v
+            kwargs[hparam] = value
+        return kwargs
 
     @staticmethod
     def instantiate(trial, lazyobj):

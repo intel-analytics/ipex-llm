@@ -1,7 +1,3 @@
-package com.intel.analytics.bigdl.ppml.kms
-
-import com.intel.analytics.bigdl.dllib.utils.Log4Error
-import com.intel.analytics.bigdl.ppml.utils.HTTPUtil.postRequest
 /*
  * Copyright 2016 The BigDL Authors.
  *
@@ -18,6 +14,11 @@ import com.intel.analytics.bigdl.ppml.utils.HTTPUtil.postRequest
  * limitations under the License.
  */
 
+
+package com.intel.analytics.bigdl.ppml.kms
+
+import com.intel.analytics.bigdl.dllib.utils.Log4Error
+import com.intel.analytics.bigdl.ppml.utils.HTTPUtil.postRequest
 import com.intel.analytics.bigdl.ppml.utils.{EHSMParams, KeyReaderWriter}
 
 object EHSM_CONVENTION {
@@ -54,7 +55,7 @@ class EHSMKeyManagementService(
   Log4Error.invalidInputError(ehsmAPPKEY != "", s"ehsmAPPKEY should not be empty string.")
   setAppIdAndKey(ehsmAPPID, ehsmAPPKEY)
 
-  def retrievePrimaryKey(primaryKeySavePath: String) = {
+  def retrievePrimaryKey(primaryKeySavePath: String): Unit = {
     Log4Error.invalidInputError(primaryKeySavePath != null && primaryKeySavePath != "",
       "primaryKeySavePath should be specified")
     val action: String = EHSM_CONVENTION.ACTION_CREATE_KEY
@@ -75,7 +76,7 @@ class EHSMKeyManagementService(
     keyReaderWriter.writeKeyToFile(primaryKeySavePath, primaryKeyCiphertext)
   }
 
-  def retrieveDataKey(primaryKeyPath: String, dataKeySavePath: String) = {
+  def retrieveDataKey(primaryKeyPath: String, dataKeySavePath: String): Unit = {
     Log4Error.invalidInputError(primaryKeyPath != null && primaryKeyPath != "",
       "primaryKeyPath should be specified")
     Log4Error.invalidInputError(dataKeySavePath != null && dataKeySavePath != "",

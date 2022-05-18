@@ -28,7 +28,7 @@ from pytorch_lightning.callbacks import Callback
 from bigdl.nano.pytorch.vision.models import resnet50 
 from bigdl.nano.pytorch.vision.models import ImageClassifier 
 from bigdl.nano.common import init_nano 
-from bigdl.nano.pytorch.trainer import Trainer
+from bigdl.nano.pytorch import Trainer
 
 DATA_URL = "https://storage.googleapis.com/mledu-datasets/cats_and_dogs_filtered.zip"
 

@@ -25,8 +25,9 @@ import com.intel.analytics.bigdl.ppml.utils.KeyReaderWriter
 class SimpleKeyManagementService protected(
       simpleAPPID: String,
       simpleAPPKEY: String) extends KeyManagementService {
-  var enrollMap: HashMap[String,String] = new HashMap[String,String]
+  val enrollMap = new HashMap[String, String]
   val keyReaderWriter = new KeyReaderWriter
+  setAppIdAndKey(simpleAPPID, simpleAPPKEY)
 
   Log4Error.invalidInputError(simpleAPPID != "", s"simpleAPPID should not be empty string.")
   Log4Error.invalidInputError(simpleAPPKEY != "", s"simpleAPPKEY should not be empty string.")
@@ -37,13 +38,13 @@ class SimpleKeyManagementService protected(
         enrollMap(_appId) == _appKey, "appid and appkey do not match!")
       Log4Error.invalidInputError(primaryKeySavePath != null && primaryKeySavePath != "",
         "primaryKeySavePath should be specified")
-      val suffix:String = (1 to 4).map { x => Random.nextInt(10) }.mkString
-      val encryptedPrimaryKey:String = _appId + suffix
+      val suffix = (1 to 4).map { x => Random.nextInt(10) }.mkString
+      val encryptedPrimaryKey = _appId + suffix
       keyReaderWriter.writeKeyToFile(primaryKeySavePath, encryptedPrimaryKey)
     }
   }
 
-  def retrieveDataKey(primaryKeyPath: String, dataKeySavePath: String) = {
+  def retrieveDataKey(primaryKeyPath: String, dataKeySavePath: String): Unit = {
     timing("SimpleKeyManagementService retrieveDataKey") {
       Log4Error.invalidInputError(enrollMap.keySet.contains(_appId) &&
         enrollMap(_appId) == _appKey, "appid and appkey do not match!")
@@ -51,13 +52,13 @@ class SimpleKeyManagementService protected(
         "primaryKeyPath should be specified")
       Log4Error.invalidInputError(dataKeySavePath != null && dataKeySavePath != "",
         "dataKeySavePath should be specified")
-      val primaryKeyPlaintext:String = keyReaderWriter.readKeyFromFile(primaryKeyPath)
+      val primaryKeyPlaintext = keyReaderWriter.readKeyFromFile(primaryKeyPath)
       Log4Error.invalidInputError(primaryKeyPlaintext.substring(0, 12) == _appId,
         "appid and primarykey should be matched!")
       val randVect = (1 to 16).map { x => Random.nextInt(10) }
-      val dataKeyPlaintext:String = randVect.mkString
-      var dataKeyCiphertext:String = ""
-      for(i <- 0 until 16){
+      val dataKeyPlaintext = randVect.mkString
+      var dataKeyCiphertext = ""
+      for(i <- 0 until 16) {
         dataKeyCiphertext += '0' + ((primaryKeyPlaintext(i) - '0') +
           (dataKeyPlaintext(i) - '0')) % 10
       }
@@ -73,12 +74,12 @@ class SimpleKeyManagementService protected(
         "primaryKeyPath should be specified")
       Log4Error.invalidInputError(dataKeyPath != null && dataKeyPath != "",
         "dataKeyPath should be specified")
-      val primaryKeyCiphertext:String = keyReaderWriter.readKeyFromFile(primaryKeyPath)
+      val primaryKeyCiphertext = keyReaderWriter.readKeyFromFile(primaryKeyPath)
       Log4Error.invalidInputError(primaryKeyCiphertext.substring(0, 12) == _appId,
         "appid and primarykey should be matched!")
-      val dataKeyCiphertext:String = keyReaderWriter.readKeyFromFile(dataKeyPath)
-      var dataKeyPlaintext:String = ""
-      for(i <- 0 until 16){
+      val dataKeyCiphertext = keyReaderWriter.readKeyFromFile(dataKeyPath)
+      var dataKeyPlaintext = ""
+      for(i <- 0 until 16) {
         dataKeyPlaintext += '0' + ((dataKeyCiphertext(i) - '0') -
           (primaryKeyCiphertext(i) - '0') + 10) % 10
       }
@@ -86,7 +87,7 @@ class SimpleKeyManagementService protected(
     }
   }
 
-  private def setAppIdAndKey(appId:String, appKey:String) = {
+  private def setAppIdAndKey(appId: String, appKey: String): Unit = {
     _appId = appId
     _appKey = appKey
     enrollMap(_appId) = _appKey
@@ -96,8 +97,8 @@ class SimpleKeyManagementService protected(
 
 object SimpleKeyManagementService {
   def apply(): SimpleKeyManagementService = {
-    val appid:String = (1 to 12).map(x => Random.nextInt(10)).mkString
-    val appkey:String = (1 to 12).map(x => Random.nextInt(10)).mkString
+    val appid = (1 to 12).map(x => Random.nextInt(10)).mkString
+    val appkey = (1 to 12).map(x => Random.nextInt(10)).mkString
     new SimpleKeyManagementService(appid, appkey)
   }
 
