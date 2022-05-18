@@ -44,7 +44,8 @@ class FGBoostServiceImpl(clientNum: Int) extends FGBoostServiceGrpc.FGBoostServi
     logger.debug(s"Server received downloadLabel request of version: $version")
     synchronized {
       if (aggregator.getLabelStorage().version < version) {
-        logger.debug(s"Download label: server version is ${aggregator.getLabelStorage().version}, waiting")
+        logger.debug(s"Download label: server version is " +
+          s"${aggregator.getLabelStorage().version}, waiting")
         wait()
       } else if (aggregator.getLabelStorage().version > version) {
         logger.error(s"Server version could never advance client version, something is wrong.")
@@ -124,7 +125,8 @@ class FGBoostServiceImpl(clientNum: Int) extends FGBoostServiceGrpc.FGBoostServi
 
     try {
       val response = "Upload tree leaf successfully"
-      aggregator.putClientData(FLPhase.TREE_LEAF, clientUUID, treeLeaf.getVersion, new DataHolder(treeLeaf))
+      aggregator.putClientData(FLPhase.TREE_LEAF,
+        clientUUID, treeLeaf.getVersion, new DataHolder(treeLeaf))
       responseObserver.onNext(UploadResponse.newBuilder.setResponse(response).setCode(0).build)
       responseObserver.onCompleted()
     } catch {
@@ -161,24 +163,28 @@ class FGBoostServiceImpl(clientNum: Int) extends FGBoostServiceGrpc.FGBoostServi
         logger.info(s"Last batch data received, put buffer to clientData map in server")
         synchronized {
           if (aggregator.getEvalStorage().version != version) {
-            logger.debug(s"Evaluate: server version is ${aggregator.getEvalStorage().version}, waiting")
+            logger.debug(s"Evaluate: server version is " +
+              s"${aggregator.getEvalStorage().version}, waiting")
             wait()
           } else {
             notifyAll()
           }
         }
-        aggregator.putClientData(FLPhase.EVAL, clientUUID, request.getVersion, new DataHolder(evalBuffer))
+        aggregator.putClientData(FLPhase.EVAL,
+          clientUUID, request.getVersion, new DataHolder(evalBuffer))
         evalBuffer.clear()
         val result = aggregator.getResultStorage().serverData
         if (result == null) {
           val response = "Server evaluate complete"
-          responseObserver.onNext(EvaluateResponse.newBuilder.setResponse(response).setCode(0).build)
+          responseObserver.onNext(EvaluateResponse.newBuilder
+            .setResponse(response).setCode(0).build)
           responseObserver.onCompleted()
         }
         else {
           val response = "Download data successfully"
           responseObserver.onNext(
-            EvaluateResponse.newBuilder.setResponse(response).setData(result).setCode(1).build)
+            EvaluateResponse.newBuilder
+              .setResponse(response).setData(result).setCode(1).build)
           responseObserver.onCompleted()
         }
       }

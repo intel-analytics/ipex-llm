@@ -104,7 +104,7 @@ object ProtoUtils {
     toFloatTensor(data, Array(data.length))
   }
 
-  def getModelWeightTable(model: Module[Float], version: Int, name: String = "test") = {
+  def getModelWeightTable(model: Module[Float], version: Int, name: String = "test"): TensorMap = {
     val weights = getParametersFromModel(model)._1
     val metadata = MetaData.newBuilder
       .setName(name).setVersion(version).build
@@ -149,7 +149,7 @@ object ProtoUtils {
     val counts = lens.map(_ => 0)
     data.foreach{d =>
       var indx = random.nextInt(weight.length)
-      while(counts(indx) == lens(indx)){
+      while(counts(indx) == lens(indx)) {
         indx = (indx + 1) % weight.length
       }
       splits(indx)(counts(indx)) = d
@@ -176,9 +176,10 @@ object ProtoUtils {
   }
 
   def almostEqual(v1: Float, v2: Float): Boolean = {
-    if (math.abs(v1 - v2) <= 1e-1f)
+    if (math.abs(v1 - v2) <= 1e-1f) {
       true
-    else
+    } else {
       false
+    }
   }
 }

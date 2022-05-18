@@ -87,7 +87,7 @@ class RegressionTree(
     bestLocalSplit
   }
 
-  def findBestSplitValue(treeNode: TreeNode): Split  = {
+  def findBestSplitValue(treeNode: TreeNode): Split = {
     // TODO: make minChildSize a parameter
     // For each feature
     val (gradSum, hessSum) = (sum(grads(0), treeNode.recordSet.toArray),
@@ -95,7 +95,7 @@ class RegressionTree(
     val bestGainByFeature = sortedIndex.indices.par.map{fIndex =>
       val sortedFeatureIndex = sortedIndex(fIndex).filter(treeNode.recordSet.contains)
       var leftGradSum = 0.0
-      var leftHessSum  = 0.0
+      var leftHessSum = 0.0
       var rightGradSum = gradSum.toDouble
       var rightHessSum = hessSum.toDouble
       var rStartIndex = 0
@@ -245,7 +245,8 @@ class RegressionTree(
     depth
   }
 
-  override def toString = s"RegressionTree($treeID, depth $depth, local node $localNodes, leaves $leaves)"
+  override def toString: String = s"RegressionTree($treeID," +
+    s" depth $depth, local node $localNodes, leaves $leaves)"
 }
 
 object RegressionTree {

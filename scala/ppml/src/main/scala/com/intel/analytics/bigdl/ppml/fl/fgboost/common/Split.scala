@@ -33,14 +33,14 @@ class Split (
   protected var version = -1
   protected var clientID = "";
   protected var featureName = "";
-  def getClientID: String= clientID
+  def getClientID: String = clientID
 
-  def setVersion(version: Int) = {
+  def setVersion(version: Int): Split = {
     this.version = version
     this
   }
   def getFeatureName() = featureName
-  def setFeatureName(featureName: String) = {
+  def setFeatureName(featureName: String): Split = {
     this.featureName = featureName
     this
   }
@@ -49,7 +49,8 @@ class Split (
     this
   }
 
-  override def toString = s"Split($clientID, $treeID, $nodeID, $featureID, $splitValue, gain $gain, left size ${itemSet.size})"
+  override def toString: String = s"Split($clientID," +
+    s" $treeID, $nodeID, $featureID, $splitValue, gain $gain, left size ${itemSet.size})"
 
 
   def canEqual(other: Any): Boolean = other.isInstanceOf[Split]

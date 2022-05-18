@@ -51,9 +51,9 @@ class StorageHolder(flDataType: FLDataType) {
     else throw new NotImplementedError()
   }
 
-  def getClientDataSize() = this.clientDataSize
+  def getClientDataSize(): Int = this.clientDataSize
 
-  def putClientData(clientID: String, dataHolder: DataHolder) = {
+  def putClientData(clientID: String, dataHolder: DataHolder): Unit = {
     if (dataHolder.tensorMap != null) {
       tensorMapStorage.clientData.put(clientID, dataHolder.tensorMap)
       clientDataSize = tensorMapStorage.clientData.size()
@@ -70,8 +70,8 @@ class StorageHolder(flDataType: FLDataType) {
       throw new IllegalArgumentException("Data is empty, could not uploaded to server.")
     }
   }
-  def getTensorMapStorage() = this.tensorMapStorage
-  def getSplitStorage() = this.treeSplitStorage
-  def getLeafStorage() = this.treeLeafStorage
-  def getTreeEvalStorage() = this.treeEvalStorage
+  def getTensorMapStorage(): Storage[TensorMap] = this.tensorMapStorage
+  def getSplitStorage(): Storage[DataSplit] = this.treeSplitStorage
+  def getLeafStorage(): Storage[TreeLeaf] = this.treeLeafStorage
+  def getTreeEvalStorage(): Storage[java.util.List[BoostEval]] = this.treeEvalStorage
 }

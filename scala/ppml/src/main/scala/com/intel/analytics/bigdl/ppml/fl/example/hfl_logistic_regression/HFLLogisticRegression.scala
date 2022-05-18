@@ -13,19 +13,20 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
 package com.intel.analytics.bigdl.ppml.fl.example
 
 import com.intel.analytics.bigdl.ppml.fl.algorithms.HFLLogisticRegression
 import com.intel.analytics.bigdl.ppml.fl.FLContext
+import org.apache.spark.sql.DataFrame
 import scopt.OptionParser
 
 import collection.JavaConverters._
-import collection.JavaConversions._
 
 
 object HFLLogisticRegression extends DebugLogger {
 
-  def getData(dataPath: String, rowKeyName: String, batchSize: Int = 4) = {
+  def getData(dataPath: String, rowKeyName: String, batchSize: Int = 4): (DataFrame, DataFrame, DataFrame) = {
     val spark = FLContext.getSparkSession()
     import spark.implicits._
     val df = spark.read.csv(dataPath)
