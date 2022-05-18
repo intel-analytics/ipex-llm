@@ -68,7 +68,9 @@ class Merge[T: ClassTag](
         "Concatenate"
       case "dot" => "Dot"
       case _ =>
-        throw new IllegalArgumentException(s"Merge ${mode} is not supported in Keras2")
+        Log4Error.invalidInputError(false, s"Merge ${mode} is not supported in Keras2",
+        "only support sum,mul,max,ave,sub,min,concat,dot")
+        null
     }
     Net.kerasDef(kerasLayerName, params)
   }

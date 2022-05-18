@@ -114,7 +114,9 @@ class Threshold[T: ClassTag](
             })
             t += 1
           }
-        case _ => throw new UnsupportedOperationException(s"Only Float/Double supported")
+        case _ =>
+          Log4Error.invalidInputError(false,
+            "TemporalMaxPooling: only Float/Double type supported")
       }
       input
     }
@@ -175,7 +177,9 @@ class Threshold[T: ClassTag](
             })
             t += 1
           }
-        case _ => throw new UnsupportedOperationException(s"Only Float/Double supported")
+        case _ =>
+          Log4Error.invalidInputError(false,
+            "TemporalMaxPooling: only Float/Double type supported")
       }
     }
     Engine.model.sync(results)
@@ -194,7 +198,8 @@ class Threshold[T: ClassTag](
           gradInput.asInstanceOf[Tensor[Float]].map(input.asInstanceOf[Tensor[Float]], (g, i) =>
             if (i <= threshold) 0 else g)
         case _ =>
-          throw new UnsupportedOperationException(s"Only Float/Double supported")
+          Log4Error.invalidInputError(false,
+            "TemporalMaxPooling: only Float/Double type supported")
       }
     }
     else {
@@ -207,7 +212,9 @@ class Threshold[T: ClassTag](
         case FloatType =>
           gradInput.asInstanceOf[Tensor[Float]].map(input.asInstanceOf[Tensor[Float]], (g, i) =>
             if (i > threshold) g else 0)
-        case _ => throw new UnsupportedOperationException(s"Only Float/Double supported")
+        case _ =>
+          Log4Error.invalidInputError(false,
+            "TemporalMaxPooling: only Float/Double type supported")
       }
     }
     gradInput
@@ -296,7 +303,9 @@ class Threshold[T: ClassTag](
             })
             t += 1
           }
-        case _ => throw new UnsupportedOperationException(s"Only Float/Double supported")
+        case _ =>
+          Log4Error.invalidInputError(false,
+            "TemporalMaxPooling: only Float/Double type supported")
       }
     }
     else {
@@ -355,7 +364,9 @@ class Threshold[T: ClassTag](
             })
             t += 1
           }
-        case _ => throw new UnsupportedOperationException(s"Only Float/Double supported")
+        case _ =>
+          Log4Error.invalidInputError(false,
+            "TemporalMaxPooling: only Float/Double type supported")
       }
     }
 

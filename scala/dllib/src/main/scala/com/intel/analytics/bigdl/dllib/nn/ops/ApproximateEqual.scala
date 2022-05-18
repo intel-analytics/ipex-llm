@@ -19,7 +19,7 @@ import com.google.protobuf.ByteString
 import com.intel.analytics.bigdl.dllib.nn.abstractnn.Activity
 import com.intel.analytics.bigdl.dllib.tensor._
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.dllib.utils.Table
+import com.intel.analytics.bigdl.dllib.utils.{Log4Error, Table}
 
 import scala.reflect.ClassTag
 
@@ -38,11 +38,13 @@ class ApproximateEqual[T: ClassTag](tolerance: Float)
   override def compareInt(a: Int, b: Int): Boolean = math.abs(a - b) < tolerance
 
   override def compareBoolean(a: Boolean, b: Boolean): Boolean = {
-    throw new UnsupportedOperationException("Does not support ApproximateEqual on Boolean")
+    Log4Error.invalidOperationError(false, "Does not support ApproximateEqual on Boolean")
+    false
   }
 
   override def compareByteString(a: ByteString, b: ByteString): Boolean = {
-    throw new UnsupportedOperationException("Does not support ApproximateEqual on ByteString")
+    Log4Error.invalidOperationError(false, "Does not support ApproximateEqual on ByteString")
+    false
   }
 }
 

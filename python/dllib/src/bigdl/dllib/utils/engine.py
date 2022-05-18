@@ -62,9 +62,9 @@ def __prepare_spark_env():
     else:
         # use SPARK_HOME as the spark source
         if not spark_home:
-            raise ValueError(
-                """Could not find Spark. Please make sure SPARK_HOME env is set:
-                   export SPARK_HOME=path to your spark home directory.""")
+            invalidInputError(False,
+                              """Could not find Spark. Please make sure SPARK_HOME env is set:
+                              export SPARK_HOME=path to your spark home directory.""")
         log.info(f"Using {spark_home}")
         py4j = glob.glob(os.path.join(spark_home, 'python/lib', 'py4j-*.zip'))[0]
         pyspark = glob.glob(os.path.join(spark_home, 'python/lib', 'pyspark*.zip'))[0]

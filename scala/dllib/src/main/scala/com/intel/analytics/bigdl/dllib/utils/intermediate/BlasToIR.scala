@@ -19,7 +19,7 @@ package com.intel.analytics.bigdl.dllib.utils.intermediate
 import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.dllib.nn.abstractnn.{AbstractModule, Activity}
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.dllib.utils.ReflectionUtils
+import com.intel.analytics.bigdl.dllib.utils.{Log4Error, ReflectionUtils}
 
 import scala.reflect.ClassTag
 
@@ -45,7 +45,8 @@ private[bigdl] class BlasToIR[T: ClassTag] extends ConvertBase[Module[T], IRElem
         layer.asInstanceOf[AbstractModule[Activity, Activity, T]])
       IRElement(layer.getName(), op)
     } else {
-      throw new UnsupportedOperationException(s"can not convert $layer to IRelement ")
+      Log4Error.invalidOperationError(false, s"can not convert $layer to IRelement ")
+      null
     }
   }
 }

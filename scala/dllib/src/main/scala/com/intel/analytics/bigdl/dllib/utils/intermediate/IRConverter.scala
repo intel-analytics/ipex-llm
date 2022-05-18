@@ -70,8 +70,11 @@ private[bigdl] class IRConverter[T: ClassTag](IRgraph: IRGraph[T])(implicit ev: 
         allNodes.toArray.asInstanceOf[Array[Node[IRElement[Float]]]]),
         "IR graph can not be converted to Dnn layer")
       toDnnGraph()
-    } else throw new UnsupportedOperationException(
-      s"Only support engineType mkldnn/mklblas, but get ${Engine.getEngineType()}")
+    } else {
+      Log4Error.invalidOperationError(false,
+        s"Only support engineType mkldnn/mklblas, but get ${Engine.getEngineType()}")
+      null
+    }
   }
 
   private def toDnnGraph(): Graph[T] = {

@@ -19,6 +19,7 @@ package com.intel.analytics.bigdl.dllib.optim.parameters
 import java.nio.ByteBuffer
 
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
+import com.intel.analytics.bigdl.dllib.utils.Log4Error
 
 import scala.reflect.ClassTag
 
@@ -57,7 +58,9 @@ object SerializerInstance {
     pm.toLowerCase match {
       case "fp16" => new FP16CompressedTensor[T](data)
       case "none" => new UncompressedTensor[T](data)
-      case _ => throw new IllegalArgumentException("Unsupported parameter type")
+      case _ =>
+        Log4Error.invalidOperationError(false, "Unsupported parameter type")
+        null
     }
   }
 
@@ -65,7 +68,9 @@ object SerializerInstance {
     pm.toLowerCase() match {
       case "fp16" => new FP16CompressedTensor[T](length)
       case "none" => new UncompressedTensor[T](length)
-      case _ => throw new IllegalArgumentException("Unsupported parameter type")
+      case _ =>
+        Log4Error.invalidOperationError(false, "Unsupported parameter type")
+        null
     }
   }
 
@@ -73,7 +78,9 @@ object SerializerInstance {
     pm.toLowerCase() match {
       case "fp16" => new FP16CompressedTensor[T](data)
       case "none" => new UncompressedTensor[T](data)
-      case _ => throw new IllegalArgumentException("Unsupported parameter type")
+      case _ =>
+        Log4Error.invalidOperationError(false, "Unsupported parameter type")
+        null
     }
   }
 }

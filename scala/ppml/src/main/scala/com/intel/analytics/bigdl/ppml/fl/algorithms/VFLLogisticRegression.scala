@@ -28,7 +28,7 @@ import com.intel.analytics.bigdl.ppml.fl.utils.FLClientClosable
  * @param learningRate
  */
 class VFLLogisticRegression(featureNum: Int,
-                            learningRate: Float = 0.005f) extends NNModel() with FLClientClosable {
+                            learningRate: Float = 0.005f) extends NNModel() {
   val model = Sequential[Float]().add(Linear(featureNum, 1))
   override val estimator = new VFLNNEstimator(
     "vfl_logistic_regression", model, new Adam(learningRate))

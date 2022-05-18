@@ -24,7 +24,7 @@ import com.intel.analytics.bigdl.dllib.optim.SGD
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric._
 import com.intel.analytics.bigdl.dllib.tensor._
-import com.intel.analytics.bigdl.dllib.utils.{T, Table, TestUtils}
+import com.intel.analytics.bigdl.dllib.utils.{Log4Error, T, Table, TestUtils}
 import com.intel.analytics.bigdl.dllib.models.inception.Inception_Layer_v2
 import com.intel.analytics.bigdl.dllib.nn.Graph._
 
@@ -78,7 +78,9 @@ object Inception {
           config[Table](4)[String](1) match {
             case "max" => pool.add(SpatialMaxPooling[D](3, 3, 1, 1).ceil())
             case "avg" => pool.add(SpatialAveragePooling[D](3, 3, 1, 1).ceil())
-            case _ => throw new IllegalArgumentException
+            case _ =>
+              Log4Error.invalidInputError(false, s"got unexpected ${config[Table](4)[String](1)}",
+                "only support max, avg")
           }
 
           if (config[Table](4)[Int](2) != 0) {
@@ -224,7 +226,9 @@ object Inception {
     config[Table](4)[String](1) match {
       case "max" => pool.add(SpatialMaxPooling[D](3, 3, 1, 1).ceil())
       case "avg" => pool.add(SpatialAveragePooling[D](3, 3, 1, 1).ceil())
-      case _ => throw new IllegalArgumentException
+      case _ =>
+        Log4Error.invalidInputError(false, s"got unexpected ${config[Table](4)[String](1)}",
+          "only support max, avg")
     }
 
     if (config[Table](4)[Int](2) != 0) {
@@ -413,9 +417,11 @@ object Inception {
       case "perf" => args(3) match {
         case "double" => performanceDouble(args(1).toInt, args(2).toInt, "default")
         case "float" => performanceFloat(args(1).toInt, args(2).toInt, "default")
-        case _ => throw new IllegalArgumentException
+        case _ =>
+          Log4Error.invalidOperationError(false, "only support double and float")
       }
-      case _ => throw new IllegalArgumentException
+      case _ =>
+        Log4Error.invalidOperationError(false, s"only support perf, but got ${args(0)}")
     }
     System.exit(0)
   }

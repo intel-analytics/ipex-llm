@@ -36,7 +36,7 @@ class InternalCAddTable[T: ClassTag, D: ClassTag](override val inplace: Boolean 
         input.size()(i) == gradOutput.size()(i)) {
         i += 1
       } else {
-        throw new IllegalArgumentException(s"input and gradOutput should have the same dims," +
+        Log4Error.invalidInputError(false, s"input and gradOutput should have the same dims," +
           s"but got ${input.dim()} and ${gradOutput.dim()}")
       }
     }

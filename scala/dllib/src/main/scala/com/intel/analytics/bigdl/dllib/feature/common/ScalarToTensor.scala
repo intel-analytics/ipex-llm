@@ -17,6 +17,7 @@ package com.intel.analytics.bigdl.dllib.feature.common
 
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.dllib.utils.Log4Error
 
 import scala.reflect.ClassTag
 
@@ -32,7 +33,8 @@ class ScalarToTensor[T: ClassTag]()(implicit ev: TensorNumeric[T])
         case dd: Double => ev.fromType(f.asInstanceOf[Double])
         case ff: Float => ev.fromType(f.asInstanceOf[Float])
         case _ =>
-          throw new IllegalArgumentException("ScalarToTensor only supports Float and Double")
+          Log4Error.invalidInputError(false, "ScalarToTensor only supports Float and Double")
+          ev.fromType(f.asInstanceOf[Float])
       }
       Tensor(Array(feature), Array(1))
     }

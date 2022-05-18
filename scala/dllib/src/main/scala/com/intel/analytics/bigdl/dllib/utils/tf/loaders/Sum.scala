@@ -20,6 +20,7 @@ import java.nio.ByteOrder
 import com.intel.analytics.bigdl.Module
 import com.intel.analytics.bigdl.dllib.nn.ops.{Sum => SumOps}
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.dllib.utils.Log4Error
 import com.intel.analytics.bigdl.dllib.utils.tf.Context
 import org.tensorflow.framework.{DataType, NodeDef}
 
@@ -51,7 +52,9 @@ class Sum extends TensorflowOpsLoader {
         SumOps[T, Float](keepDims, startFromZero = true)
       case DataType.DT_DOUBLE =>
         SumOps[T, Double](keepDims, startFromZero = true)
-      case _ => throw new UnsupportedOperationException()
+      case _ =>
+        Log4Error.invalidOperationError(false, s"unsupported type ${dataType}")
+        null
     }
   }
 }

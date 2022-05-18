@@ -113,7 +113,10 @@ class Cropping3D[T: ClassTag](
     val (dim1, dim2, dim3) = dataFormat match {
       case Cropping3D.CHANNEL_FIRST => (3, 4, 5)
       case Cropping3D.CHANNEL_LAST => (2, 3, 4)
-      case _ => throw new IllegalArgumentException(s"$dataFormat is not a supported format")
+      case _ =>
+        Log4Error.invalidInputError(false, s"$dataFormat is not a supported format",
+          "only support NCHW and NHWC")
+        (1, 1, 1)
     }
 
     val dim1Start = dim1Crop(0) + 1

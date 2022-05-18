@@ -101,7 +101,7 @@ object TorchFile {
     if (file.exists()) {
       Log4Error.invalidInputError(file.isFile(), s"$fileName is not a file")
       if (!overWrite) {
-        throw new FileAlreadyExistsException(fileName)
+        Log4Error.invalidOperationError(false, s"${fileName} already exists")
       } else { // clear the file
         val fw = new java.io.FileWriter(file)
         fw.write("")
@@ -182,7 +182,7 @@ object TorchFile {
         createInstanceFor(bigDlName, args)
       } catch {
         case _: Throwable =>
-          throw new IllegalArgumentException(s"unsupported module $moduleName")
+          Log4Error.invalidOperationError(false, s"unsupported module $moduleName")
       }
     }
     module
@@ -199,7 +199,8 @@ object TorchFile {
     } else if (moduleType == "torch.DoubleTensor" || moduleType == "torch.CudaDoubleTensor") {
       readModuleWithType[Double](moduleName, elements)
     } else {
-      throw new Error(s"unkown module type $moduleType")
+      Log4Error.invalidOperationError(false, s"unkown module type $moduleType",
+      "only support FloatTensor, DoubleTensor, CudaTensor, CudaDoubleTensor")
     }
 
   }
@@ -258,7 +259,8 @@ object TorchFile {
       case TYPE_NUMBER => readNumber(rawData)
       case TYPE_STRING => readString(rawData)
       case TYPE_BOOLEAN => readBoolean(rawData)
-      case _ => throw new UnsupportedOperationException(typeId.toString)
+      case _ =>
+        Log4Error.invalidOperationError(false, s"unsupported ${typeId.toString}")
     }
   }
 
@@ -299,7 +301,8 @@ object TorchFile {
       case m: SpatialCrossMapLRN[_] =>
         writeVersionAndClass("V 1", "nn.SpatialCrossMapLRN", rawData, path)
         writeSpatialCrossMapLRN(m, rawData, path)
-      case _ => throw new Error(s"Unimplemented module $module")
+      case _ =>
+        Log4Error.invalidOperationError(false, s"Unsupported module $module")
     }
 
   }
@@ -349,9 +352,11 @@ object TorchFile {
         source match {
           case s: Table =>
             writeTable(source.asInstanceOf[Table], rawData, path)
-          case _ => throw new Error(s"Unknown table $source")
+          case _ =>
+            Log4Error.invalidOperationError(false, s"unsupported type ${source}",
+            "only support Table")
         }
-      case _ => throw new IllegalArgumentException(objectType.toString)
+      case _ => Log4Error.invalidOperationError(false, objectType.toString)
 
     }
     byteWrite(rawData, path)
@@ -460,7 +465,7 @@ object TorchFile {
       case DoubleType => "torch.DoubleTensor"
       case FloatType => "torch.FloatTensor"
       case _ =>
-        throw new IllegalArgumentException(s"Unknown type ${source.getNumericType()}")
+        Log4Error.invalidOperationError(false, s"Unknown type ${source.getNumericType()}")
     }
     table
   }
@@ -608,7 +613,10 @@ object TorchFile {
     tensor.getType() match {
       case FloatType => false
       case DoubleType => true
-      case _ => throw new IllegalArgumentException
+      case _ =>
+        Log4Error.invalidInputError(false, s"${tensor.getType()} is not supported",
+          "only support FloatType and DoubleType")
+        false
     }
   }
 

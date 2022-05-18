@@ -257,7 +257,9 @@ class SpatialDilatedConvolution[T: ClassTag](
           dH, dW,
           dilationH, dilationW
         )
-        case t => throw new NotImplementedError(s"$t is not supported")
+        case t =>
+          Log4Error.invalidOperationError(false,
+            s"$t is not supported", "only support DoubleType and FloatType")
       }
       im2colTime += System.nanoTime() - before
 
@@ -358,7 +360,9 @@ class SpatialDilatedConvolution[T: ClassTag](
           dH, dW,
           dilationH, dilationW
         )
-        case t => throw new NotImplementedError(s"$t is not supported")
+        case t =>
+          Log4Error.invalidOperationError(false,
+            s"$t is not supported", "only support DoubleType and FloatType")
       }
       col2imTime += System.nanoTime() - before
       elt += 1
@@ -433,7 +437,9 @@ class SpatialDilatedConvolution[T: ClassTag](
           dH, dW,
           dilationH, dilationW
         )
-        case t => throw new NotImplementedError(s"$t is not supported")
+        case t =>
+          Log4Error.invalidOperationError(false,
+            s"$t is not supported", "only support DoubleType and FloatType")
       }
       im2colTime += System.nanoTime() - before
 

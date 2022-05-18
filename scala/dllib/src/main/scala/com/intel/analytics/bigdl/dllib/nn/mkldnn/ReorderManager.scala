@@ -99,7 +99,10 @@ private[mkldnn] class ReorderManager() (implicit owner: MemoryOwner) {
         to match {
           case hh: HeapData => h.layout != hh.layout
           case nn: NativeData => true
-          case _ => throw new UnsupportedOperationException("Not support such memory format")
+          case _ =>
+            Log4Error.invalidInputError(false, s"memory format $to is not supported",
+              "only support NativeData and HeapData")
+            true
         }
       case n: NativeData =>
         to match {
@@ -112,9 +115,15 @@ private[mkldnn] class ReorderManager() (implicit owner: MemoryOwner) {
                 (n.dataType == DataType.U8 && nn.dataType == DataType.S8)) // skip the s8->u8
 
             !doNotReorderIt
-          case _ => throw new UnsupportedOperationException("Not support such memory format")
+          case _ =>
+            Log4Error.invalidInputError(false, s"memory format $to is not supported",
+              "only support NativeData and HeapData")
+            true
         }
-      case _ => throw new UnsupportedOperationException("Not support such memory format")
+      case _ =>
+        Log4Error.invalidInputError(false, s"memory format $from is not supported",
+          "only support NativeData and HeapData")
+        true
     }
   }
 

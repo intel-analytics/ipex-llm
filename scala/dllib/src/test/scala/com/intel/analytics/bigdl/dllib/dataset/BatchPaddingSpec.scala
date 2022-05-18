@@ -21,7 +21,7 @@ import java.util
 import com.intel.analytics.bigdl.dllib.feature.dataset.text._
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.dllib.tensor.{DoubleType, FloatType, Storage, Tensor}
-import com.intel.analytics.bigdl.dllib.utils.Engine
+import com.intel.analytics.bigdl.dllib.utils.{Engine, Log4Error}
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
 import scala.collection.Iterator
@@ -264,7 +264,8 @@ class SampleToBatchNoPadding[T: ClassTag]
         .asInstanceOf[Array[Float]],
         srcPos, dest
           .asInstanceOf[Array[Float]], destPos, length)
-      case _ => throw new UnsupportedOperationException(s"Only Float/Double supported")
+      case _ =>
+        Log4Error.invalidOperationError(false, s"Only Float/Double supported")
     }
   }
 
@@ -287,7 +288,7 @@ class SampleToBatchNoPadding[T: ClassTag]
           while (i < batchSize && prev.hasNext) {
             val sample = prev.next()
             if(!sample.feature.isContiguous() || !sample.label.isContiguous()) {
-              throw new IllegalArgumentException(
+              Log4Error.invalidOperationError(false,
                 "Only support contiguous tensor, pls use tensor.contiguous() before batching")
             }
             if (featureData == null) {

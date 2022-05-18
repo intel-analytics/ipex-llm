@@ -21,6 +21,7 @@ import com.intel.analytics.bigdl.dllib.nn.abstractnn.{AbstractModule, Activity, 
 import com.intel.analytics.bigdl.dllib.optim.Regularizer
 import com.intel.analytics.bigdl.dllib.tensor.{Tensor, TensorNumericMath}
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.dllib.utils.Log4Error
 
 import scala.reflect.ClassTag
 
@@ -30,7 +31,9 @@ sealed class IROperator[T: ClassTag] extends Serializable {
     tag match {
       case ClassTag.Float => TensorNumeric.NumericFloat.asInstanceOf[TensorNumeric[T]]
       case ClassTag.Double => TensorNumeric.NumericDouble.asInstanceOf[TensorNumeric[T]]
-      case _ => throw new IllegalArgumentException(s"not supported class tag: ${tag}")
+      case _ =>
+        Log4Error.invalidOperationError(false, s"not supported class tag: ${tag}")
+        TensorNumeric.NumericFloat.asInstanceOf[TensorNumeric[T]]
     }
   }
   def getClassTagNumerics() : (Array[ClassTag[_]], Array[TensorNumeric[_]]) = {

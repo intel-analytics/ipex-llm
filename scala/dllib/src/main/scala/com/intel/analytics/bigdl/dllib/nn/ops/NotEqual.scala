@@ -19,7 +19,7 @@ import com.google.protobuf.ByteString
 import com.intel.analytics.bigdl.dllib.nn.abstractnn.Activity
 import com.intel.analytics.bigdl.dllib.tensor._
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.dllib.utils.Table
+import com.intel.analytics.bigdl.dllib.utils.{Log4Error, Table}
 
 import scala.reflect.ClassTag
 
@@ -71,7 +71,9 @@ class NotEqual[T: ClassTag]()
           input[Tensor[Int]](1),
           input[Tensor[Int]](2),
           (a, b) => a != b)
-      case _ => throw new RuntimeException("Unsupported tensor type")
+      case _ =>
+        Log4Error.invalidInputError(false,
+          s"Unsupported tensor type ${input[Tensor[_]](1).getType()}")
     }
 
     output

@@ -46,7 +46,8 @@ class TopKV2 extends TensorflowOpsLoader {
     } else if (t == DataType.DT_DOUBLE) {
       "Double"
     } else {
-      throw new UnsupportedOperationException(s"Not support load Inv when type is ${t}")
+      Log4Error.invalidOperationError(false, s"Not support load Inv when type is ${t}")
+      ""
     }
 
     new TopKV2LoadTF[T](s, ts)
@@ -65,7 +66,8 @@ class TopKV2LoadTF[T: ClassTag](s: Boolean, t: String)(implicit ev: TensorNumeri
     } else if (t == "Double") {
       TopKOps[T, Double](k, s, startIndex = 0)
     } else {
-      throw new UnsupportedOperationException(s"Not support load Inv when type is ${t}")
+      Log4Error.invalidOperationError(false, s"Not support load Inv when type is ${t}")
+      null
     }
   }
 }

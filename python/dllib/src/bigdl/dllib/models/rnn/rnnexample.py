@@ -132,7 +132,7 @@ def build_model(input_size, hidden_size, output_size, model_type):
 
         # Simple RNN with MKL-DNN backend is unsupported for now.
         if get_bigdl_engine_type() == "MklDnn":
-            raise Exception("Simple RNN is unsupported with MKL-DNN backend")
+            invalidInputError(False, "Simple RNN is unsupported with MKL-DNN backend")
 
     # Model Type is LSTM
     elif model_type == "lstm":

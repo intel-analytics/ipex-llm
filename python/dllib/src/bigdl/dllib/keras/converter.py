@@ -18,6 +18,7 @@ import numpy as np
 import bigdl.dllib.nn.layer as BLayer
 import bigdl.dllib.utils.common as BCommon
 from bigdl.dllib.utils.common import get_activation_by_name
+from bigdl.dllib.utils.log4Error import *
 from keras.models import model_from_json
 from keras.models import Sequential, Model, Layer
 import keras
@@ -26,7 +27,7 @@ from bigdl.dllib.keras.ToBigDLHelper import *
 
 
 def unsupport_exp(name):
-    raise Exception("We don't support %s for now" % name)
+    invalidInputError(False, "We don't support %s for now" % name)
 
 
 class WeightLoader:
@@ -48,7 +49,7 @@ class WeightLoader:
                     blayer.set_running_mean(keras.backend.eval(klayer.running_mean))
                     blayer.set_running_std(keras.backend.eval(klayer.running_std))
             else:
-                raise Exception("should not enter here, klayer: %s", klayer)
+                invalidInputError(False, "should not enter here, klayer: %s", klayer)
 
     @staticmethod
     def load_weights_from_json_hdf5(def_json, weights_hdf5, by_name=False):
@@ -120,7 +121,7 @@ class WeightsConverter:
     def get_converter(class_name):
         function_name = "convert_" + class_name.lower()
         if not hasattr(WeightsConverter, function_name):
-            raise unsupport_exp(class_name)
+            unsupport_exp(class_name)
         converter = getattr(WeightsConverter, function_name)
         return converter
 
@@ -323,7 +324,7 @@ class DefinitionLoader:
         elif isinstance(kmodel, Layer):
             node_id_to_config_layer[kmodel.name] = kmodel.get_config()
         else:
-            raise Exception("should not enter here: %s" % kmodel)
+            invalidInputError(False, "should not enter here: %s" % kmodel)
 
     def __init__(self, kmodel):
         self.node_id_to_instance = {}
@@ -344,7 +345,7 @@ class DefinitionLoader:
             bigdlmodel = LayerConverter(self.kmodel,
                                         self.node_id_to_config_layer[self.kmodel.name]).create()
         else:
-            raise Exception("Should not enter here: %s" % self.kmodel)
+            invalidInputError(False, "Should not enter here: %s" % self.kmodel)
         return bigdlmodel
 
     @classmethod
@@ -465,9 +466,9 @@ class LayerConverter:
         #                      ]
         #                  ],
         if "inbound_nodes" in self.kclayer and len(self.kclayer["inbound_nodes"]) > 1:
-            raise Exception(
-                "%s doesn't support multiple inputs with shared weights" % self.kclayer[
-                    "class_name"])
+            invalidInputError(False,
+                              "%s doesn't support multiple inputs with shared"
+                              " weights" % self.kclayer["class_name"])
 
     def create(self):
         class_name = self.klayer.__class__.__name__
@@ -476,14 +477,14 @@ class LayerConverter:
 
         if (hasattr(self.klayer, "b_constraint") and self.klayer.b_constraint) or \
                 (hasattr(self.klayer, "W_constraint") and self.klayer.W_constraint):
-            raise Exception("We don't support constraint for now")
+            invalidInputError(False, "We don't support constraint for now")
 
         if hasattr(self.klayer, "activity_regularizer") and self.klayer.activity_regularizer:
-            raise Exception("We don't support activity_regularizer for now")
+            invalidInputError(False, "We don't support activity_regularizer for now")
 
         function_name = "create_" + class_name.lower()
         if not hasattr(self, function_name):
-            raise Exception("We don't support layer: %s for now" % class_name)
+            invalidInputError(False, "We don't support layer: %s for now" % class_name)
 
         blayer_creator = getattr(self, function_name)
         blayer = blayer_creator()
@@ -541,7 +542,7 @@ class LayerConverter:
 
     def create_bidirectional(self):
         if not self.klayer.layer.return_sequences:
-            raise Exception("Only return_sequences=True is supported for RNNs for now")
+            invalidInputError(False, "Only return_sequences=True is supported for RNNs for now")
         recurrent_name = "generate_" + self.klayer.layer.__class__.__name__.lower() + "_cell"
 
         recurrent_creator = getattr(self, recurrent_name)
@@ -555,21 +556,22 @@ class LayerConverter:
         elif self.klayer.merge_mode == "ave":
             merge = BLayer.CAveTable()
         else:
-            raise Exception("Invalid merge mode: %s" % self.klayer.merge_mode)
+            invalidInputError(False, "Invalid merge mode: %s" % self.klayer.merge_mode)
         blayer = BLayer.BiRecurrent(merge).add(recurrent)
         return blayer
 
     def create_embedding(self):
         seq_len = int(self.input_shape[1])
         if self.klayer.input_length and self.klayer.input_length != seq_len:
-            raise Exception(
-                "The input_length doesn't match: %s vs %s" % (seq_len, self.klayer.input_length))
+            invalidInputError(False,
+                              "The input_length doesn't match: %s vs %s"
+                              % (seq_len, self.klayer.input_length))
 
         if hasattr(self.klayer, "dropout") and self.klayer.dropout != 0:
-            raise Exception("We don't support dropout for now")
+            invalidInputError(False, "We don't support dropout for now")
 
         if hasattr(self.klayer, "mask_zero") and self.klayer.mask_zero is not False:
-            raise Exception("We don't support mask_zero for now")
+            invalidInputError(False, "We don't support mask_zero for now")
 
         bseq = BLayer.Sequential()
         blayer = BLayer.LookupTable(
@@ -661,7 +663,8 @@ class LayerConverter:
 
     def create_merge(self):
         if self.klayer.output_shape and not isinstance(self.klayer.output_shape, tuple):
-            raise Exception("Only output_shape=None or a shape tuple is supported for now")
+            invalidInputError(False,
+                              "Only output_shape=None or a shape tuple is supported for now")
         if self.klayer.node_indices and not all(0 == i for i in self.klayer.node_indices):
             unsupport_exp("node_indices")
         if self.klayer.output_mask:
@@ -681,9 +684,12 @@ class LayerConverter:
             blayer = BLayer.CMaxTable(bigdl_type="float")
         elif self.klayer.mode == "dot":
             if len(self.input_shape[0]) >= 3:
-                raise Exception("For merge mode dot, 3D input or above is not supported for now.")
+                invalidInputError(False,
+                                  "For merge mode dot,"
+                                  " 3D input or above is not supported for now.")
             if self.klayer.dot_axes != [1, 1]:
-                raise Exception("For merge mode dot, only dot_axes=1 is supported for now.")
+                invalidInputError(False,
+                                  "For merge mode dot, only dot_axes=1 is supported for now.")
             model = BLayer.Sequential()
             blayer = model.add(BLayer.DotProduct(bigdl_type="float")) \
                 .add(BLayer.Reshape([1], True))
@@ -693,15 +699,19 @@ class LayerConverter:
                 bigdl_type="float")
         elif self.klayer.mode in ['cos']:
             if len(self.input_shape[0]) >= 3:
-                raise Exception("For merge mode cos, 3D input or above is not supported for now.")
+                invalidInputError(False,
+                                  "For merge mode cos, 3D input or above is"
+                                  " not supported for now.")
             if self.klayer.dot_axes != [1, 1]:
-                raise Exception("For merge mode cos, only dot_axes=1 is supported for now.")
+                invalidInputError(False, "For merge mode cos, only dot_axes=1"
+                                         " is supported for now.")
             blayer = BLayer.Sequential()
             blayer.add(BLayer.CosineDistance(bigdl_type="float")).add(BLayer.Reshape([1, 1], True))
         else:  # invalid mode or lambda functions
-            raise Exception(
-                "Invalid merge mode: `%s`. Lambda/function as merge mode is not supported for now."
-                % self.klayer.mode)
+            invalidInputError(False,
+                              "Invalid merge mode: `%s`. Lambda/function as merge mode"
+                              " is not supported for now."
+                              % self.klayer.mode)
         if self.__is_from_sequential():
             bseq = BLayer.Sequential()
             parallel_table = BLayer.ParallelTable()
@@ -737,7 +747,7 @@ class LayerConverter:
             return BLayer.SoftPlus(beta=beta,
                                    bigdl_type="float")
         else:
-            raise Exception("Only alpha_init = 1/beta_init is supported for now")
+            invalidInputError(False, "Only alpha_init = 1/beta_init is supported for now")
 
     def create_thresholdedrelu(self):
         return BLayer.Threshold(th=float(self.klayer.theta),
@@ -896,9 +906,10 @@ class LayerConverter:
 
     def __check_recurrent_parameters(self, klayer):
         if klayer.stateful:
-            raise Exception("Only stateful=False for recurrent layers is supported for now")
+            invalidInputError(False,
+                              "Only stateful=False for recurrent layers is supported for now")
         if hasattr(klayer, "consume_less") and klayer.consume_less == "gpu":
-            raise Exception("consume_less=gpu is not supported for now")
+            invalidInputError(False, "consume_less=gpu is not supported for now")
 
     def __process_recurrent_layer(self, return_sequences, go_backwards, blayer):
         # For recurrent layers,
@@ -990,16 +1001,19 @@ class LayerConverter:
     def create_convlstm2d(self):
         # TODO: border_mode = 'valid'
         if self.config["border_mode"] != 'same':
-            raise Exception("Unsupported border_mode: valid")
+            invalidInputError(False, "Unsupported border_mode: valid")
 
         if self.klayer.dim_ordering != "th":
-            raise Exception("Please use `th` for `dim_ordering`. `%s` is not supported for now."
-                            % self.klayer.dim_ordering)
+            invalidInputError(False,
+                              "Please use `th` for `dim_ordering`. `%s` is not supported for now."
+                              % self.klayer.dim_ordering)
         if self.config["nb_row"] != self.config["nb_col"]:
-            raise Exception("Only square kernel is supported for now. Please set nb_row=nb_col.")
+            invalidInputError(False,
+                              "Only square kernel is supported for now. Please set nb_row=nb_col.")
         if self.klayer.subsample[0] != self.klayer.subsample[1]:
-            raise Exception("Only equal stride is supported for now. "
-                            "Please set subsample to be a tuple with equal values.")
+            invalidInputError(False,
+                              "Only equal stride is supported for now. "
+                              "Please set subsample to be a tuple with equal values.")
 
         rec = BLayer.Recurrent()
         convlstm = self.generate_convlstm2d_cell(self.klayer,
@@ -1034,25 +1048,30 @@ class LayerConverter:
 
     def create_batchnormalization(self):
         if len(self.input_shape) != 4:
-            raise Exception("Only 4D input is supported for now, but the current input dim is %s",
-                            len(self.input_shape))
+            invalidInputError(False,
+                              "Only 4D input is supported for now,"
+                              " but the current input dim is %s",
+                              len(self.input_shape))
         if keras.backend.image_dim_ordering() == "th" and self.klayer.axis != 1:
-            raise Exception("""For BatchNormalization with th image ordering, we only support """ +
-                            """axis = 1 for now, but the current axis is %s
-                            """ % self.klayer.axis)  # noqa
+            invalidInputError(False,
+                              """For BatchNormalization with th image ordering, we only """ +
+                              """support axis = 1 for now, but the current axis is %s
+                              """ % self.klayer.axis)  # noqa
         if keras.backend.image_dim_ordering() == "tf" and self.klayer.axis != -1:
-            raise Exception("""For BatchNormalization with tf image ordering, we only support """ +
-                            """axis = -1 for now, but the current axis is %s
-                            """ % self.klayer.axis)
+            invalidInputError(False,
+                              """For BatchNormalization with tf image ordering, we only """ +
+                              """support axis = -1 for now, but the current axis is %s
+                              """ % self.klayer.axis)
         if self.klayer.mode != 0:
-            raise Exception(
-                "Only support mode = 0 for now, but the current mode is: %s", self.klayer.mode)
+            invalidInputError(False,
+                              "Only support mode = 0 for now, but the current mode is: %s",
+                              self.klayer.mode)
 
         if self.config["gamma_regularizer"]:
-            raise Exception("We don't support gamma_regularizer for now")
+            invalidInputError(False, "We don't support gamma_regularizer for now")
 
         if self.config["beta_regularizer"]:
-            raise Exception("We don't support beta_regularizer for now")
+            invalidInputError(False, "We don't support beta_regularizer for now")
 
         bigdl_order = to_bigdl_2d_ordering(keras.backend.image_dim_ordering())
         n_input_channel = int(self.input_shape[self.klayer.axis])
@@ -1156,9 +1175,9 @@ class LayerConverter:
 
     def create_convolution3d(self):
         if self.klayer.dim_ordering != "th":
-            raise Exception(
-                "Please use `th` for `dim_ordering`. `%s` is not supported for now."
-                % self.klayer.dim_ordering)
+            invalidInputError(False,
+                              "Please use `th` for `dim_ordering`. `%s` is not supported for now."
+                              % self.klayer.dim_ordering)
 
         bpadT, bpadW, bpadH = to_bigdl_3d_padding(self.klayer.border_mode)
         blayer = BLayer.VolumetricConvolution(
@@ -1182,7 +1201,7 @@ class LayerConverter:
 
     def create_atrousconvolution1d(self):
         if not self.config["bias"]:
-            raise Exception("Only bias=True is supported for AtrousConvolution1D")
+            invalidInputError(False, "Only bias=True is supported for AtrousConvolution1D")
 
         h = int(self.input_shape[1])
         kh = self.config["filter_length"]
@@ -1214,11 +1233,11 @@ class LayerConverter:
 
     def create_atrousconvolution2d(self):
         if self.klayer.dim_ordering != "th":
-            raise Exception(
-                "Please use `th` for `dim_ordering`. `%s` is not supported for now."
-                % self.klayer.dim_ordering)
+            invalidInputError(False,
+                              "Please use `th` for `dim_ordering`. `%s` is not supported for now."
+                              % self.klayer.dim_ordering)
         if not self.config["bias"]:
-            raise Exception("Only bias=True is supported for AtrousConvolution2D")
+            invalidInputError(False, "Only bias=True is supported for AtrousConvolution2D")
 
         h = int(self.input_shape[2])
         w = int(self.input_shape[3])
@@ -1249,9 +1268,9 @@ class LayerConverter:
 
     def create_deconvolution2d(self):
         if self.klayer.dim_ordering != "th":
-            raise Exception(
-                "Please use `th` for `dim_ordering`. `%s` is not supported for now."
-                % self.klayer.dim_ordering)
+            invalidInputError(False,
+                              "Please use `th` for `dim_ordering`. `%s` is not supported for now."
+                              % self.klayer.dim_ordering)
         output_shape = self.config["output_shape"]
 
         h = int(self.input_shape[2])
@@ -1270,15 +1289,17 @@ class LayerConverter:
             if two_pad_h % 2 == 0:  # we only support pad_h as an int
                 pad_h = int(two_pad_h / 2)
             else:
-                raise Exception("For same padding, we only support padding on both sides for now. "
-                                "Please make `(input_row - 1) * subsample[0] + nb_row - output_row`"
-                                " an even integer.")
+                invalidInputError(False,
+                                  "For same padding, we only support padding on both sides"
+                                  " for now. Please make `(input_row - 1) * subsample[0] +"
+                                  " nb_row - output_row` an even integer.")
             if two_pad_w % 2 == 0:  # we only support pad_w as an int
                 pad_w = int(two_pad_w / 2)
             else:
-                raise Exception("For same padding, we only support padding on both sides for now. "
-                                "Please make `(input_col - 1) * subsample[1] + nb_col - output_col`"
-                                " an even integer.")
+                invalidInputError(False,
+                                  "For same padding, we only support padding on both sides for"
+                                  " now. Please make `(input_col - 1) * subsample[1] + nb_col"
+                                  " - output_col` an even integer.")
         blayer = BLayer.SpatialFullConvolution(
             n_input_plane=int(self.input_shape[1]),
             n_output_plane=self.klayer.nb_filter,
@@ -1300,12 +1321,12 @@ class LayerConverter:
 
     def create_maxpooling3d(self):
         if self.klayer.dim_ordering != "th":
-            raise Exception(
-                "Please use `th` for `dim_ordering`. `%s` is not supported for now."
-                % klayer.dim_ordering)
+            invalidInputError(False,
+                              "Please use `th` for `dim_ordering`. `%s` is not supported for now."
+                              % klayer.dim_ordering)
         # TODO: border_mode = 'same'
         if self.klayer.border_mode == 'same':
-            raise Exception("Unsupported border_mode: same")
+            invalidInputError(False, "Unsupported border_mode: same")
 
         bpadT, bpadW, bpadH = to_bigdl_3d_padding(self.klayer.border_mode)
         blayer = BLayer.VolumetricMaxPooling(
@@ -1342,9 +1363,9 @@ class LayerConverter:
             b_kw = int(self.input_shape[4])
             b_kh = int(self.input_shape[3])
         else:
-            raise Exception(
-                "Please use `th` for dim_ordering. `%s` is not supported for now." %
-                self.klayer.dim_ordering)
+            invalidInputError(False,
+                              "Please use `th` for dim_ordering. `%s` is not supported for now." %
+                              self.klayer.dim_ordering)
 
         seq = BLayer.Sequential()
         blayer = BLayer.VolumetricMaxPooling(
@@ -1372,9 +1393,9 @@ class LayerConverter:
             b_kw = int(self.input_shape[4])
             b_kh = int(self.input_shape[3])
         else:
-            raise Exception(
-                "Please use `th` for dim_ordering. `%s` is not supported for now." %
-                self.klayer.dim_ordering)
+            invalidInputError(False,
+                              "Please use `th` for dim_ordering. `%s` is not supported for now." %
+                              self.klayer.dim_ordering)
 
         seq = BLayer.Sequential()
         blayer = BLayer.VolumetricAveragePooling(
@@ -1418,12 +1439,12 @@ class LayerConverter:
 
     def create_averagepooling3d(self):
         if self.klayer.dim_ordering != "th":
-            raise Exception(
-                "Please use `th` for `dim_ordering`. `%s` is not supported for now."
-                % klayer.dim_ordering)
+            invalidInputError(False,
+                              "Please use `th` for `dim_ordering`. `%s` is not supported for now."
+                              % klayer.dim_ordering)
         # TODO: border_mode = 'same'
         if self.klayer.border_mode == 'same':
-            raise Exception("Unsupported border_mode: same")
+            invalidInputError(False, "Unsupported border_mode: same")
 
         bpadT, bpadW, bpadH = to_bigdl_3d_padding(self.klayer.border_mode)
         blayer = BLayer.VolumetricAveragePooling(
@@ -1603,9 +1624,9 @@ class LayerConverter:
 
     def create_upsampling3d(self):
         if self.klayer.dim_ordering != "th":
-            raise Exception(
-                "Please use th for dim_ordering. %s is not supported for now."
-                % self.klayer.dim_ordering)
+            invalidInputError(False,
+                              "Please use th for dim_ordering. %s is not supported for now."
+                              % self.klayer.dim_ordering)
         if "dim_ordering" not in self.config:
             warnings.warn(
                 "Cannot find dim_ordering from json definition. Using the default instead."
@@ -1663,8 +1684,8 @@ class LayerConverter:
 
     def create_separableconvolution2d(self):
         if keras.backend.backend() != 'tensorflow':
-            raise Exception('Please use tensorflow backend for keras 1.2.2 '
-                            'if you want to load SeparableConv2D')
+            invalidInputError(False, 'Please use tensorflow backend for keras 1.2.2 '
+                                     'if you want to load SeparableConv2D')
         bigdl_order = self.get_bdim_order()
 
         if bigdl_order == "NCHW":
@@ -1797,7 +1818,7 @@ class LayerConverter:
         elif kinit_method == "one":
             return np.ones(shape)
         else:
-            raise Exception("We don't support % for now", kinit_method)
+            invalidInputError(False, "We don't support % for now", kinit_method)
 
     def fuse(self, src_blayer, activation):  # activation is a layer
         seq = BLayer.Sequential()

@@ -18,6 +18,7 @@ package com.intel.analytics.bigdl.dllib.nn.ops
 import com.intel.analytics.bigdl.dllib.nn.abstractnn.Activity
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.dllib.tensor._
+import com.intel.analytics.bigdl.dllib.utils.Log4Error
 
 import scala.reflect.ClassTag
 
@@ -52,7 +53,9 @@ class L2Loss[T: ClassTag]()
         output.asInstanceOf[Tensor[Double]].setValue(1,
           buffer.asInstanceOf[Tensor[Double]].applyFun[Double](
             input.asInstanceOf[Tensor[Double]], x => x * x).sum() / 2)
-      case _ => throw new RuntimeException("Unsupported tensor type")
+      case _ =>
+        Log4Error.invalidInputError(false, s"${ev.getType()} is not supported",
+          "only support FloatType and DoubleType")
     }
 
     output

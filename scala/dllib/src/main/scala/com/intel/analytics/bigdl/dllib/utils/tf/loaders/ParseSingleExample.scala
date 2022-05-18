@@ -22,6 +22,7 @@ import com.intel.analytics.bigdl.Module
 import com.intel.analytics.bigdl.dllib.nn.tf.{ParseSingleExample => ParseSingleExampleOperation}
 import com.intel.analytics.bigdl.dllib.tensor._
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.dllib.utils.Log4Error
 import com.intel.analytics.bigdl.dllib.utils.tf.Context
 import org.tensorflow.framework.{DataType, NodeDef}
 
@@ -42,7 +43,9 @@ class ParseSingleExample extends TensorflowOpsLoader {
         case DataType.DT_FLOAT => FloatType
         case DataType.DT_DOUBLE => DoubleType
         case DataType.DT_STRING => StringType
-        case _ => throw new IllegalArgumentException()
+        case _ =>
+          Log4Error.invalidOperationError(false, s"unsupported type")
+          null
       }
     val denseKeysByteArray = nodeDef.getAttrMap.get("dense_keys").getList.
       getSList.asScala.map(_.toByteArray)

@@ -17,6 +17,7 @@
 from bigdl.dllib.utils.common import JavaValue
 
 from bigdl.dllib.utils.file_utils import callZooFunc
+from bigdl.dllib.utils.log4Error import *
 
 
 class Estimator(JavaValue):
@@ -87,8 +88,8 @@ class Estimator(JavaValue):
         """
         # exception handle
         if tag != "Loss" and tag != "LearningRate" and tag != "Throughput":
-            raise TypeError('Only "Loss", "LearningRate", "Throughput"'
-                            + 'are supported in train summary')
+            invalidInputError(False, 'Only "Loss", "LearningRate", "Throughput"'
+                              + 'are supported in train summary')
 
         return callZooFunc("float", "estimatorGetScalarFromSummary",
                            self.value, tag, "Train")

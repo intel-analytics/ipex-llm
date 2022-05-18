@@ -18,6 +18,7 @@ import gzip
 import numpy
 
 from bigdl.dllib.feature.dataset import base
+from bigdl.dllib.utils.log4Error import *
 
 
 SOURCE_URL = 'http://yann.lecun.com/exdb/mnist/'
@@ -45,9 +46,9 @@ def extract_images(f):
     with gzip.GzipFile(fileobj=f) as bytestream:
         magic = _read32(bytestream)
         if magic != 2051:
-            raise ValueError(
-                'Invalid magic number %d in MNIST image file: %s' %
-                (magic, f.name))
+            invalidInputError(False,
+                              'Invalid magic number %d in MNIST image file: %s' %
+                              (magic, f.name))
         num_images = _read32(bytestream)
         rows = _read32(bytestream)
         cols = _read32(bytestream)
@@ -62,9 +63,9 @@ def extract_labels(f):
     with gzip.GzipFile(fileobj=f) as bytestream:
         magic = _read32(bytestream)
         if magic != 2049:
-            raise ValueError(
-                'Invalid magic number %d in MNIST label file: %s' %
-                (magic, f.name))
+            invalidInputError(False,
+                              'Invalid magic number %d in MNIST label file: %s' %
+                              (magic, f.name))
         num_items = _read32(bytestream)
         buf = bytestream.read(num_items)
         labels = numpy.frombuffer(buf, dtype=numpy.uint8)

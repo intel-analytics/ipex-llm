@@ -157,7 +157,8 @@ private[nn] class MaskPostProcessor()(implicit ev: TensorNumeric[Float])
   }
 
   override def updateGradInput(input: Table, gradOutput: Tensor[Float]): Table = {
-    throw new UnsupportedOperationException("MaskPostProcessor only support inference")
+    Log4Error.invalidOperationError(false, "MaskPostProcessor only support inference")
+    null
   }
 }
 

@@ -20,6 +20,7 @@ import com.intel.analytics.bigdl.Module
 import com.intel.analytics.bigdl.dllib.nn.Graph.ModuleNode
 import com.intel.analytics.bigdl.dllib.nn.abstractnn.Activity
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
+import com.intel.analytics.bigdl.dllib.utils.Log4Error
 
 import scala.reflect.ClassTag
 
@@ -113,7 +114,8 @@ class FPN[T : ClassTag](
   }
 
   override def updateGradInput(input: Activity, gradOutput: Activity): Activity = {
-    throw new UnsupportedOperationException("Not support backward propagation")
+    Log4Error.invalidOperationError(false, "FPN: Not support backward propagation")
+    null
   }
 
   override def canEqual(other: Any): Boolean = other.isInstanceOf[FPN[T]]

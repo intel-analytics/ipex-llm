@@ -20,6 +20,7 @@ import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.feature.transform.vision.image.{ImageFeature, MatToFloats, MatToTensor}
 import com.intel.analytics.bigdl.dllib.feature.transform.vision.image
+import com.intel.analytics.bigdl.dllib.utils.Log4Error
 
 import scala.reflect.ClassTag
 
@@ -47,8 +48,10 @@ class ImageMatToTensor[T: ClassTag](
     format match {
       case DataFormat.NHWC => transformWithNHWC(feature)
       case DataFormat.NCHW => internalMatToTensor.transform(feature)
-      case other => throw new IllegalArgumentException(s"Unsupported format:" +
-        s" $format. Only NCHW and NHWC are supported.")
+      case other =>
+        Log4Error.invalidInputError(false, s"Unsupported format:" +
+          s" $format. Only NCHW and NHWC are supported.")
+        null
     }
   }
 

@@ -33,7 +33,6 @@ import java.io.{File, FilenameFilter}
 import java.text.SimpleDateFormat
 import java.util.Calendar
 
-import org.apache.commons.lang.exception.ExceptionUtils
 import org.apache.logging.log4j.{LogManager, Logger}
 import org.apache.spark.TaskContext
 import org.apache.spark.rdd.RDD
@@ -580,7 +579,10 @@ object DistriOptimizer extends AbstractOptimizer {
     val _subModelNumber = Engine.getEngineType match {
       case MklBlas => coresPerNode
       case MklDnn => 1
-      case _ => throw new IllegalArgumentException
+      case _ =>
+        Log4Error.invalidInputError(false, s"unexpected engine type ${Engine.getEngineType}",
+          "only support MklBlas and MklDnn")
+        0
     }
 
     Log4Error.invalidOperationError(dataset.originRDD().partitions.length == nodeNumber,
@@ -879,8 +881,10 @@ class DistriOptimizer[T: ClassTag](
     } else if (optimMethods.contains(trainingModel.getName())) {
       Map(trainingModel.getName() -> (1, modelParameters._1.nElement()))
     } else {
-      throw new IllegalArgumentException(s"${trainingModel.getName()} doesn't " +
+      Log4Error.invalidOperationError(false,
+        s"${trainingModel.getName()} doesn't " +
         s"have corresponding OptimMethod")
+      null
     }
 
     LarsSGD.containsLarsSGD(optimMethods).foreach(weightDecay =>
@@ -940,7 +944,7 @@ class DistriOptimizer[T: ClassTag](
         retryNum = Int.MaxValue
       } catch {
         case e: IllegalArgumentException =>
-          throw e
+          Log4Error.invalidOperationError(false, e.getMessage, cause = e)
         case t: Throwable =>
 //          DistriOptimizer.logger.error("Error: " + ExceptionUtils.getStackTrace(t))
           if (checkpointPath.isDefined) {
@@ -951,7 +955,7 @@ class DistriOptimizer[T: ClassTag](
             if (System.nanoTime() - lastFailureTimestamp < maxRetry * retryTimeInterval * 1e9) {
               retryNum += 1
               if (retryNum == maxRetry) {
-                throw t
+                Log4Error.invalidOperationError(false, t.getMessage, cause = t)
               }
             } else {
               retryNum = 1
@@ -988,7 +992,7 @@ class DistriOptimizer[T: ClassTag](
             models = modelsAndBroadcast._1
             modelBroadcast = modelsAndBroadcast._2
           } else {
-            throw t
+            Log4Error.invalidOperationError(false, t.getMessage, cause = t)
           }
       }
     }

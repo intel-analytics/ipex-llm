@@ -739,7 +739,9 @@ private[bigdl] class MaxPool[T: ClassTag](
           format = format
         )
       } else {
-        throw new RuntimeException("Padding can only support SAME and VALID padding")
+        Log4Error.invalidOperationError(false,
+          "Padding can only support SAME and VALID padding")
+        null
       }
     case DataFormat.NCHW =>
       if (padding == "SAME") {
@@ -761,7 +763,9 @@ private[bigdl] class MaxPool[T: ClassTag](
           format = format
         )
       } else {
-        throw new RuntimeException("Padding can only support SAME and VALID padding")
+        Log4Error.invalidOperationError(false,
+          "Padding can only support SAME and VALID padding")
+        null
       }
   }
 

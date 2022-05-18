@@ -47,7 +47,7 @@ class LeNetSpec extends FlatSpec with Matchers {
   }
 
   "LeNet forward with incompatible input tensor" should "raise an exception" in {
-    intercept[RuntimeException] {
+    intercept[com.intel.analytics.bigdl.dllib.utils.InvalidOperationException] {
       val lenet = LeNet5.kerasLayer(classNum = 10)
       val input = Tensor[Float](Array(28, 28, 1)).rand()
       val output = lenet.forward(input)

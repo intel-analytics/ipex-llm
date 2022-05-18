@@ -238,7 +238,7 @@ object Util {
    */
   def deserialize[T: ClassTag](objectData: Array[Byte]): T = {
     if (objectData == null) {
-      throw new IllegalArgumentException("The byte[] must not be null")
+      Log4Error.invalidOperationError(false, "The byte[] must not be null")
     }
     deserialize[T](new ByteArrayInputStream(objectData))
   }
@@ -250,7 +250,7 @@ object Util {
    */
   def deserialize[T: ClassTag](inputStream: InputStream): T = {
     if (inputStream == null) {
-      throw new IllegalArgumentException("The InputStream must not be null")
+      Log4Error.invalidOperationError(false, "The InputStream must not be null")
     }
     var in: ObjectInputStream = null
     try {
@@ -263,9 +263,15 @@ object Util {
       }
       in.readObject().asInstanceOf[T]
     } catch {
-      case ex: ClassCastException => throw new SerializationException(ex)
-      case ex: ClassNotFoundException => throw new SerializationException(ex)
-      case ex: IOException => throw new SerializationException(ex)
+      case ex: ClassCastException =>
+        Log4Error.unKnowExceptionError(false, "class cast error", cause = ex)
+        0.asInstanceOf[T]
+      case ex: ClassNotFoundException =>
+        Log4Error.unKnowExceptionError(false, "class not found", cause = ex)
+        0.asInstanceOf[T]
+      case ex: IOException =>
+        Log4Error.unKnowExceptionError(false, "io exception", cause = ex)
+        0.asInstanceOf[T]
     } finally {
       if (in != null) Try(in.close())
     }

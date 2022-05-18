@@ -22,7 +22,7 @@ import com.intel.analytics.bigdl._
 import com.intel.analytics.bigdl.dllib.nn.Graph._
 import com.intel.analytics.bigdl.dllib.nn._
 import com.intel.analytics.bigdl.numeric.NumericFloat
-import com.intel.analytics.bigdl.dllib.utils.{T, Table}
+import com.intel.analytics.bigdl.dllib.utils.{Log4Error, T, Table}
 
 object Inception_Layer_v2 {
   def apply(inputSize: Int, config: Table, namePrefix : String): Module[Float] = {
@@ -90,7 +90,9 @@ object Inception_Layer_v2 {
         }
       case "avg" => pool.add(SpatialAveragePooling(3, 3, 1, 1, 1, 1).ceil()
         .setName(namePrefix + "pool"))
-      case _ => throw new IllegalArgumentException
+      case _ =>
+        Log4Error.invalidInputError(false, s"got unexpected ${config[Table](4)[String](1)}",
+          "only support max, avg")
     }
 
     if (config[Table](4)[Int](2) != 0) {
@@ -163,7 +165,10 @@ object Inception_Layer_v2 {
         }
       case "avg" => SpatialAveragePooling(3, 3, 1, 1, 1, 1).ceil()
         .setName(namePrefix + "pool").inputs(input)
-      case _ => throw new IllegalArgumentException
+      case _ =>
+        Log4Error.invalidInputError(false, s"got unexpected ${config[Table](4)[String](1)}",
+          "only support max, avg")
+        null
     }
     val reluPool = if (config[Table](4)[Int](2) != 0) {
       val conv = SpatialConvolution(inputSize, config[Table](4)[Int](2), 1, 1, 1, 1)

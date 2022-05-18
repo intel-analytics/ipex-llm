@@ -81,7 +81,10 @@ object Perf {
         case "vgg16_graph" => Vgg_16.graph(batchSize, classNum, true)
         case "resnet50_graph" =>
           ResNet.graph(batchSize, classNum, T("depth" -> 50, "dataSet" -> ImageNet))
-        case _ => throw new UnsupportedOperationException(s"Unkown model ${params.model}")
+        case _ =>
+          Log4Error.invalidInputError(false, s"Unkown model ${params.model}",
+            "only support vgg16, resnet50, vgg16_graph, resnet50_graph")
+          null
       }
 
       val criterion = CrossEntropyCriterion()
@@ -190,7 +193,8 @@ object ResNet {
             .setName(s"res${name}_branch1"))
           .add(SbnDnn(nOutputPlane).setName(s"bn${name}_branch1"))
       } else if (nInputPlane != nOutputPlane) {
-        throw new IllegalArgumentException(s"useConv false")
+        Log4Error.invalidOperationError(false, s"useConv false")
+        null
       } else {
         Identity()
       }
@@ -268,7 +272,7 @@ object ResNet {
           "fc1000"))
         .add(ReorderMemory(HeapData(Array(batchSize, classNum), Memory.Format.nc)))
     } else {
-      throw new IllegalArgumentException(s"Invalid dataset ${dataSet}")
+      Log4Error.invalidOperationError(false, s"Invalid dataset ${dataSet}")
     }
 
     modelInit(model)
@@ -320,7 +324,8 @@ object ResNet {
             .setName(s"res${name}_branch1").inputs(input)
         SbnDnn(nOutputPlane).setName(s"bn${name}_branch1").inputs(conv)
       } else if (nInputPlane != nOutputPlane) {
-        throw new IllegalArgumentException(s"useConv false")
+        Log4Error.invalidOperationError(false, s"useConv false")
+        null
       } else {
         Identity().inputs(input)
       }
@@ -405,7 +410,8 @@ object ResNet {
       modelInit(model)
       model
     } else {
-      throw new IllegalArgumentException(s"Invalid dataset ${dataSet}")
+      Log4Error.invalidOperationError(false, s"Invalid dataset ${dataSet}")
+      null
     }
   }
 

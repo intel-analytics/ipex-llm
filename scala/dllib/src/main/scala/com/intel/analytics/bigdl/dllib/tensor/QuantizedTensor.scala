@@ -159,7 +159,8 @@ private[bigdl] class QuantizedTensor[T: ClassTag](
       case FloatType =>
         Quantization.quantize(tensor.asInstanceOf[Tensor[Float]], bytes, bytesOffset)
       case _ =>
-        throw new UnsupportedOperationException(s"Only support Float for quantized model")
+        Log4Error.invalidInputError(false, s"${ev.getType()} is not supported",
+          "Only support Float for quantized model")
     }
 
     bytes
@@ -231,7 +232,8 @@ private[bigdl] class QuantizedTensor[T: ClassTag](
       this.nDimension = o.nDimension
 
     } else {
-      throw new UnsupportedOperationException(s"can't set from other type of tensor.")
+      Log4Error.invalidOperationError(false,
+        s"QuantizedTensor doesn't support set from other type of tensor.")
     }
     this
   }
@@ -266,7 +268,8 @@ private[bigdl] class QuantizedTensor[T: ClassTag](
 
       this.desc = Desc.get(params, internalStorage, 0, this.maxOfRow, this.minOfRow)
     } else {
-      throw new UnsupportedOperationException(s"can't set from other type of tensor.")
+      Log4Error.invalidOperationError(false,
+        s"QuantizedTensor doesn't support copy from other type of tensor.")
     }
 
     this

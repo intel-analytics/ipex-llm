@@ -221,19 +221,19 @@ class Layer(JavaValue, SharedStaticUtils):
             elif isinstance(i, JTensor):
                 return i
             else:
-                raise Exception("Error unknown input type %s" % type(i))
+                invalidInputError(False, "Error unknown input type %s" % type(i))
 
         def check_list(input):
             if type(input) is list:
                 if len(input) == 0:
-                    raise Exception('Error when checking: empty input')
+                    invalidInputError(False, 'Error when checking: empty input')
                 return list(map(lambda i: check_list(i), input))
             else:
                 return to_jtensor(input)
 
         if type(input) is list:
             if len(input) == 0:
-                raise Exception('Error when checking: empty input')
+                invalidInputError(False, 'Error when checking: empty input')
             return list(map(lambda i: check_list(i), input)), True
         else:
             return [to_jtensor(input)], False
@@ -361,9 +361,9 @@ class Layer(JavaValue, SharedStaticUtils):
                                      self.value,
                                      dataset, batch_size, val_methods)
         else:
-            raise Exception(
-                "Error when calling evaluate(): it takes no argument or exactly three arguments"
-                " only")
+            invalidInputError(False,
+                              "Error when calling evaluate(): it takes no argument or"
+                              " exactly three arguments only")
 
     def _to_jtensors(self, x):
         x = to_list(x)
@@ -372,7 +372,7 @@ class Layer(JavaValue, SharedStaticUtils):
         elif isinstance(x[0], JTensor):
             return x
         else:
-            raise Exception("Not supported type: %s" % type(x[0]))
+            invalidInputError(False, "Not supported type: %s" % type(x[0]))
 
     def predict_local(self, X, batch_size=-1):
         """
@@ -801,8 +801,9 @@ class Model(Container):
                 # Make theano backend compatible with Python3
                 from theano import ifelse
             except ImportError:
-                raise Exception("No backend is found for Keras. "
-                                "Please install either tensorflow or theano.")
+                invalidInputError(False,
+                                  "No backend is found for Keras."
+                                  " Please install either tensorflow or theano.")
         from bigdl.dllib.keras.converter import DefinitionLoader, WeightLoader
         if json_path and not hdf5_path:
             return DefinitionLoader.from_json_path(json_path)
@@ -4947,7 +4948,7 @@ class Unsqueeze(Layer):
         elif isinstance(pos, list):
             super(Unsqueeze, self).__init__(None, bigdl_type, to_list(pos), num_input_dims)
         else:
-            raise Exception("Error invalid input")
+            invalidInputError(False, "Error invalid input")
 
 
 class Reshape(Layer):

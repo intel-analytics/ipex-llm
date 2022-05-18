@@ -16,6 +16,7 @@
 
 
 import os
+import tempfile
 from unittest import TestCase
 
 import pytest
@@ -25,7 +26,7 @@ from _train_torch_lightning import create_data_loader, data_transform
 from torch import nn
 import torchmetrics
 
-from bigdl.nano.pytorch.trainer import Trainer
+from bigdl.nano.pytorch import Trainer
 from bigdl.nano.pytorch.vision.models import vision
 
 batch_size = 256
@@ -72,14 +73,16 @@ class TestTrainer(TestCase):
         x = next(train_loader_iter)[0]
 
         # Case 1: Default
-        qmodel = trainer.quantize(pl_model, self.train_loader)
+        qmodel = trainer.quantize(pl_model, calib_dataloader=self.train_loader)
         assert qmodel
         out = qmodel(x)
         assert out.shape == torch.Size([256, 10])
 
         # Case 2: Override by arguments
-        qmodel = trainer.quantize(pl_model, self.train_loader, self.train_loader,
-                                  metric=torchmetrics.F1(10), framework='pytorch_fx',
+        qmodel = trainer.quantize(pl_model,
+                                  calib_dataloader=self.train_loader,
+                                  val_dataloader=self.train_loader,
+                                  metric=torchmetrics.F1(10),
                                   approach='static',
                                   tuning_strategy='basic',
                                   accuracy_criterion={'relative': 0.99,
@@ -102,18 +105,40 @@ class TestTrainer(TestCase):
             trainer.quantize(pl_model, approach=invalid_approach)
 
         # Case 5: Test if registered metric can be fetched successfully
-        qmodel = trainer.quantize(pl_model, self.train_loader, self.train_loader,
-                                  metric=torchmetrics.F1(10))
+        qmodel = trainer.quantize(pl_model,
+                                  calib_dataloader=self.train_loader,
+                                  val_dataloader=self.train_loader,
+                                  metric=torchmetrics.F1(10),
+                                  accuracy_criterion={'relative': 0.99,
+                                                      'higher_is_better': True})
         assert qmodel
         out = qmodel(x)
         assert out.shape == torch.Size([256, 10])
 
+        # save and load
+        with tempfile.TemporaryDirectory() as tmp_dir_name:
+            trainer.save(qmodel, tmp_dir_name)
+            loaded_qmodel = trainer.load(tmp_dir_name, pl_model)
+            assert loaded_qmodel
+            out = loaded_qmodel(x)
+            assert out.shape == torch.Size([256, 10])
+
     def test_trainer_quantize_inc_ptq_customized(self):
         # Test if a Lightning Module not compiled by nano works
         train_loader_iter = iter(self.train_loader)
+        x = next(train_loader_iter)[0]
         trainer = Trainer(max_epochs=1)
 
-        qmodel = trainer.quantize(self.user_defined_pl_model, self.train_loader)
+        qmodel = trainer.quantize(self.user_defined_pl_model,
+                                  calib_dataloader=self.train_loader)
         assert qmodel
-        out = qmodel(next(train_loader_iter)[0])
+        out = qmodel(x)
         assert out.shape == torch.Size([256, 10])
+
+        # save and load
+        with tempfile.TemporaryDirectory() as tmp_dir_name:
+            trainer.save(qmodel, tmp_dir_name)
+            loaded_qmodel = trainer.load(tmp_dir_name, self.user_defined_pl_model)
+            assert loaded_qmodel
+            out = loaded_qmodel(x)
+            assert out.shape == torch.Size([256, 10])

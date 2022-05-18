@@ -16,13 +16,21 @@
 
 package com.intel.analytics.bigdl.dllib.feature.common
 
+import com.intel.analytics.bigdl.dllib.utils.Log4Error
+
 import scala.reflect.ClassTag
 
 
 private[bigdl] abstract class ArrayLike[T: ClassTag] extends Serializable {
-  def length: Int = throw new Error()
+  def length: Int = {
+    Log4Error.invalidOperationError(false, "doesn't support lenght on ArrayLike abstract class")
+    0
+  }
 
-  def apply(i: Int): T = throw new Error()
+  def apply(i: Int): T = {
+    Log4Error.invalidOperationError(false, "doesn't support apply on ArrayLike abstract class")
+    null.asInstanceOf[T]
+  }
 
   def free(): Unit = {}
 }

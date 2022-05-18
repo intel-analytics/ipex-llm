@@ -14,6 +14,7 @@
     <properties>
         <spark-scope>provided</spark-scope>
         <grpc.version>1.37.0</grpc.version>
+        <bigdl.basedir>${project.parent.basedir}</bigdl.basedir>
     </properties>
 
 
@@ -102,6 +103,16 @@
             <groupId>io.grpc</groupId>
             <artifactId>grpc-stub</artifactId>
             <version>${grpc.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.json</groupId>
+            <artifactId>json</artifactId>
+            <version>20220320</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.httpcomponents</groupId>
+            <artifactId>httpclient</artifactId>
+            <version>4.5.13</version>
         </dependency>
         <dependency>
             <groupId>com.google.protobuf</groupId>

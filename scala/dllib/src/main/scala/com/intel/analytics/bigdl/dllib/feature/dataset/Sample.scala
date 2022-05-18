@@ -109,7 +109,8 @@ abstract class Sample[T: ClassTag] extends Serializable {
         labelData: Array[T],
         featureSize: Array[Int],
         labelSize: Array[Int])(implicit ev: TensorNumeric[T]): Sample[T] = {
-    throw new UnsupportedOperationException("Sample.set(): unimplemented deprecated method")
+    Log4Error.invalidInputError(false, "Sample.set(): unimplemented deprecated method")
+    null
   }
 
   /**
@@ -258,7 +259,9 @@ object ArraySample {
           s"tensor in ArraySample should be contiguous," +
           s" Please check your input.")
       case _ =>
-        throw new IllegalArgumentException(s"ArraySample doesn't support ${tensor.getTensorType}")
+        Log4Error.invalidInputError(false, s"ArraySample doesn't support ${tensor.getTensorType}",
+        "only support DenseType")
+        null
     }
   }
 
@@ -478,7 +481,8 @@ class TensorSample[T: ClassTag] private[bigdl] (
   }
 
   def getData(): Array[T] = {
-    throw new UnimplementedException()
+    Log4Error.invalidOperationError(false, "Not implemented api")
+    null
   }
 
   override def feature()(implicit ev: TensorNumeric[T]): Tensor[T] = {
@@ -512,7 +516,9 @@ object TensorSample {
           s"tensor in TensorSample should be contiguous. Please check your input.")
       case SparseType =>
       case _ =>
-        throw new IllegalArgumentException(s"TensorSample doesn't support ${tensor.getTensorType}")
+        Log4Error.invalidInputError(false, s"TensorSample doesn't support" +
+          s" ${tensor.getTensorType}", "Only support DenseType and SparseType")
+        null
     }
   }
 

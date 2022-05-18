@@ -240,7 +240,8 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, 
       names.foreach(name => {
         this (name) match {
           case Some(x) => x.freeze()
-          case _ => throw new Exception(s"cannot match module named $name")
+          case _ =>
+            Log4Error.invalidOperationError(false, s"cannot match module named $name")
         }
       })
     }
@@ -262,7 +263,8 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, 
       names.foreach(name => {
         this (name) match {
           case Some(x) => x.unFreeze()
-          case _ => throw new Exception(s"cannot match module named $name")
+          case _ =>
+            Log4Error.invalidOperationError(false, s"cannot match module named $name")
         }
       })
     }
@@ -283,9 +285,11 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, 
       updateOutput(input)
     } catch {
       case l: IllegalArgumentException =>
-        throw l
+        Log4Error.invalidOperationError(false, l.getMessage, cause = l)
+        null
       case u: InvalidOperationException =>
-        throw u
+        Log4Error.invalidOperationError(false, u.getMessage, cause = u)
+        null
       case e: Throwable =>
         val errormsg = this.toString() + "\n" + e.getMessage
         Log4Error.unKnowExceptionError(false, errormsg, cause = e)
@@ -406,8 +410,9 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, 
     } else if (extraParam == null && currentExtraParam == null) {
       this
     } else {
-      throw new IllegalArgumentException(s"module's extraParameter is $currentExtraParam" +
+      Log4Error.invalidOperationError(false, s"module's extraParameter is $currentExtraParam" +
         s", while setting param is ${extraParam}")
+      this
     }
   }
 
@@ -795,7 +800,8 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, 
           wb("bias") = params("bias")
         }
         weightsBiasTable(name) = wb
-      case _ => throw new UnsupportedOperationException("invalid parameter table")
+      case _ =>
+        Log4Error.invalidOperationError(false, "invalid parameter table")
     }
     weightsBiasTable.save(path, overWrite)
   }
@@ -1009,7 +1015,9 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, 
   private[nn] final def allocateAs(dest: Activity): Activity = dest match {
     case tensor: Tensor[T] => Tensor[T]()
     case table: Table => T()
-    case _ => throw new IllegalArgumentException("Activity only support tensor and table now")
+    case _ =>
+      Log4Error.invalidOperationError(false, "Activity only support tensor and table now")
+      null
   }
 
   /**
@@ -1084,7 +1092,10 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, 
    */
   private[bigdl] def checkEngineType(): this.type = {
     if (engineType != Engine.getEngineType()) {
-      throw new Error("Module's EngineType doesn't march global EngineType")
+      Log4Error.invalidInputError(false,
+        s"Module's EngineType ${engineType} doesn't match global" +
+          s" EngineType ${Engine.getEngineType()}",
+        "Module's EngineType should be same with global EngineType")
     }
     this
   }
@@ -1102,7 +1113,7 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, 
           setLayerWeightAndBias(params,
             copiedModuleParamTable.get(name).get.asInstanceOf[Table], deepCopy)
         case _ =>
-          throw new UnsupportedOperationException("unsupported $name and $params")
+          Log4Error.invalidOperationError(false, "unsupported $name and $params")
       }
     }
   }
@@ -1165,7 +1176,7 @@ abstract class AbstractModule[A <: Activity: ClassTag, B <: Activity: ClassTag, 
           if (matchAll) new Exception(s"module $name cannot find corresponding weight bias")
         }
       case _ =>
-        throw new UnsupportedOperationException("unsupported $name and $targetParams")
+        Log4Error.invalidOperationError(false, "unsupported $name and $targetParams")
     }
   }
 

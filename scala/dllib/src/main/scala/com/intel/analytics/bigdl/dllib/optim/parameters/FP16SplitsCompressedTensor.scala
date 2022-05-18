@@ -77,7 +77,8 @@ class FP16SplitsCompressedTensor[T: ClassTag](buffers: Array[Array[Byte]], size:
             FP16CompressedTensor.toFP16(src.storage().array().asInstanceOf[Array[Float]],
               tOffset + start, buffers(i), splitOffset, overlapLength)
           } else {
-            throw new IllegalArgumentException
+            Log4Error.invalidInputError(false, s"${classTag[T]} is not supported",
+              "only support Float and Double")
           }
         case _ =>
       }
@@ -120,7 +121,8 @@ class FP16SplitsCompressedTensor[T: ClassTag](buffers: Array[Array[Byte]], size:
             FP16CompressedTensor.fromFP16(buffers(i), splitOffset * 2, overlapLength * 2,
               tdata, toffset + start)
           } else {
-            throw new IllegalArgumentException
+            Log4Error.invalidInputError(false, s"${classTag[T]} is not supported",
+              "only support Float and Double")
           }
         case _ =>
       }
@@ -143,7 +145,8 @@ class FP16SplitsCompressedTensor[T: ClassTag](buffers: Array[Array[Byte]], size:
       }
       i += 1
     }
-    throw new IllegalArgumentException("Offset and length not match")
+    Log4Error.invalidOperationError(false, "Offset and length not match")
+    null
   }
 
   override def bytes(): ByteBuffer = bytes(0, size)

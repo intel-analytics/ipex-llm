@@ -29,6 +29,7 @@ import com.intel.analytics.bigdl.dllib.nn.abstractnn.Activity
 import com.intel.analytics.bigdl.dllib.nn.mkldnn.Phase.TrainingPhase
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
 import com.intel.analytics.bigdl.dllib.tensor.{DenseTensorMath, Storage, Tensor}
+import com.intel.analytics.bigdl.dllib.utils.Log4Error
 
 import scala.collection.mutable.ArrayBuffer
 import scala.reflect.ClassTag
@@ -320,7 +321,8 @@ object Tools {
       val tt = t.asInstanceOf[Tensor[Float]]
       Tensor[Float]().resize(tt.size()).copy(tt)
     } else {
-      throw new UnsupportedOperationException
+      Log4Error.invalidOperationError(false, "unsupport dense operation for table")
+      null
     }
 
     ret
@@ -414,7 +416,8 @@ object Collect {
     }
 
     if (! hasCollect) {
-      throw new RuntimeException(s"Can't find collect command. Have you copy to the PATH?")
+      Log4Error.invalidOperationError(false,
+        s"Can't find collect command. Have you copy to the PATH?")
     }
 
     val file = saveToFile(prototxt, "UnitTest.") // UnitTest ends with dot for getting random number

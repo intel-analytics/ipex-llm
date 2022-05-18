@@ -267,7 +267,8 @@ class MaskRCNN(val inChannels: Int,
   }
 
   override def updateGradInput(input: Activity, gradOutput: Activity): Activity = {
-    throw new UnsupportedOperationException("MaskRCNN model only support inference now")
+    Log4Error.invalidInputError(false, "MaskRCNN model only support inference now")
+    null
   }
 }
 

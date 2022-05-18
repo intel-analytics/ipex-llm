@@ -25,7 +25,7 @@ import java.util.{ArrayList => JArrayList, HashMap => JHashMap, List => JList, M
 
 import com.intel.analytics.bigdl.dllib.nn.abstractnn.Activity
 import com.intel.analytics.bigdl.dllib.utils.python.api._
-import com.intel.analytics.bigdl.dllib.utils.Table
+import com.intel.analytics.bigdl.dllib.utils.{Log4Error, Table}
 import net.razorvine.pickle._
 import org.apache.spark.api.java.JavaRDD
 import org.apache.spark.api.python.SerDeUtil
@@ -217,7 +217,7 @@ object BigDLSerDe extends BigDLSerDeBase with Serializable {
 
     def construct(args: Array[Object]): Object = {
       if (args.length != 3) {
-        throw new PickleException("should be 3, not : " + args.length)
+        Log4Error.unKnowExceptionError(false, s"should be 3, not ${args.length}")
       }
       Sample(args(0).asInstanceOf[JList[JTensor]],
         args(1).asInstanceOf[JList[JTensor]],
@@ -229,7 +229,7 @@ object BigDLSerDe extends BigDLSerDeBase with Serializable {
     private def doConvertTable(table: Table): Any = {
       val valuesOrderByKey = table.toSeq[Activity]
       if (valuesOrderByKey.isEmpty) {
-        throw new RuntimeException("Found empty table")
+        Log4Error.unKnowExceptionError(false, "Found empty table")
       }
       return valuesOrderByKey.map { item => doConvertActivity(item) }.asJava
     }
@@ -239,8 +239,9 @@ object BigDLSerDe extends BigDLSerDeBase with Serializable {
       } else if (activity.isTensor) {
         return PythonBigDL.ofFloat().toJTensor(activity.toTensor)
       } else {
-        throw new RuntimeException(s"""not supported type:
-          ${activity.getClass.getSimpleName}""")
+        Log4Error.invalidOperationError(false, s"""not supported type:
+          ${activity.getClass.getSimpleName}""",
+        "only support Table and Tensor")
       }
     }
 
@@ -252,7 +253,8 @@ object BigDLSerDe extends BigDLSerDeBase with Serializable {
     }
 
     def construct(args: Array[Object]): Object = {
-      throw new RuntimeException("haven't be implemented")
+      Log4Error.invalidOperationError(false, "construct haven't be implemented")
+      null
     }
   }
 
@@ -269,7 +271,7 @@ object BigDLSerDe extends BigDLSerDeBase with Serializable {
 
     def construct(args: Array[Object]): Object = {
       if (args.length != 3) {
-        throw new PickleException("should be 3, not : " + args.length)
+        Log4Error.unKnowExceptionError(false, "should be 3, not : " + args.length)
       }
       new EvaluatedResult(args(0).asInstanceOf[Float],
         args(1).asInstanceOf[Int],
@@ -292,7 +294,7 @@ object BigDLSerDe extends BigDLSerDeBase with Serializable {
 
     def construct(args: Array[Object]): Object = {
       if (args.length != 3 && args.length != 4) {
-        throw new PickleException("should be 3 or 4, not : " + args.length)
+        Log4Error.unKnowExceptionError(false, "should be 3 or 4, not : " + args.length)
       }
       val storage = objToFloatArray(args(0))
       val shape = objToInt32Array(args(1))

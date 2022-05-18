@@ -19,7 +19,7 @@ import com.intel.analytics.bigdl.{Criterion, Module}
 import com.intel.analytics.bigdl.dllib.feature.dataset.MiniBatch
 import com.intel.analytics.bigdl.dllib.optim._
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.dllib.utils.{OptimizerV1, OptimizerV2}
+import com.intel.analytics.bigdl.dllib.utils.{Log4Error, OptimizerV1, OptimizerV2}
 import com.intel.analytics.bigdl.dllib.visualization.{TrainSummary, ValidationSummary}
 import com.intel.analytics.bigdl.dllib.feature.{DiskFeatureSet, DistributedFeatureSet, FeatureSet}
 import com.intel.analytics.bigdl.dllib.keras.models.{InternalDistriOptimizer, InternalDistriOptimizerV2}
@@ -167,7 +167,8 @@ class Estimator[T: ClassTag] private[bigdl](
               .setValidationSummary(valSummary)
           }
         }
-      case _ => throw new IllegalArgumentException("Unsupported FeatureSet type.")
+      case _ => Log4Error.unKnowExceptionError(false, "Unsupported FeatureSet type.",
+        "Pleasea use DistributedFeatureSet[MiniBatch[T]] type")
     }
     if (gradientClipping.nonEmpty) {
       // as internalEstimator will deal with the duplicated type of clipping,
@@ -182,7 +183,8 @@ class Estimator[T: ClassTag] private[bigdl](
             internalEstimator.asInstanceOf[Optimizer[_, _]]
               .setGradientClippingByl2Norm(l2norm.l2Norm)
           case other =>
-            throw new IllegalArgumentException(s"Unsupported gradient clipping type ${other}")
+            Log4Error.invalidInputError(false, s"Unsupported gradient clipping type ${other}",
+              "Pleasea use constant or l2norm as gradient clipping type")
       }
     } else {
       internalEstimator.asInstanceOf[Optimizer[_, _]].disableGradientClipping()
@@ -214,7 +216,10 @@ class Estimator[T: ClassTag] private[bigdl](
                 .setCheckpointDir(modelDir)
                 .setOptimMethods(optimMethods)
           }
-        case _ => throw new IllegalArgumentException("Unsupported FeatureSet type.")
+        case _ =>
+          Log4Error.unKnowExceptionError(false, "Unsupported FeatureSet type.",
+            "Pleasea use DistributedFeatureSet[MiniBatch[T]] type")
+          null
       }
     }
     internalEstimator.evaluate(validationSet, validationMethod)

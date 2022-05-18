@@ -26,7 +26,7 @@ from _train_torch_lightning import train_with_linear_top_layer
 from torch import nn
 import torchmetrics
 
-from bigdl.nano.pytorch.trainer import Trainer
+from bigdl.nano.pytorch import Trainer
 from bigdl.nano.pytorch.vision.models import vision
 
 batch_size = 256

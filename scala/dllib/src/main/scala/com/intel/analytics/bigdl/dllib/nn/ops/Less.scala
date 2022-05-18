@@ -19,7 +19,7 @@ import com.google.protobuf.ByteString
 import com.intel.analytics.bigdl.dllib.nn.abstractnn.Activity
 import com.intel.analytics.bigdl.dllib.tensor._
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.dllib.utils.Table
+import com.intel.analytics.bigdl.dllib.utils.{Log4Error, Table}
 
 import scala.reflect.ClassTag
 
@@ -38,11 +38,13 @@ class Less[T: ClassTag]()
   override def compareInt(a: Int, b: Int): Boolean = a < b
 
   override def compareBoolean(a: Boolean, b: Boolean): Boolean = {
-    throw new UnsupportedOperationException("Does not support Less on Boolean")
+    Log4Error.invalidOperationError(false, "Does not support Less on Boolean")
+    true
   }
 
   override def compareByteString(a: ByteString, b: ByteString): Boolean = {
-    throw new UnsupportedOperationException("Does not support Less on ByteString")
+    Log4Error.invalidOperationError(false, "Does not support Less on ByteString")
+    true
   }
 }
 

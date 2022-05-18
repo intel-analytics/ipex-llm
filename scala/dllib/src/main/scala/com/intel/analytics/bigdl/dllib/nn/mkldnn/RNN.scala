@@ -96,7 +96,9 @@ class RNN(
     case AlgKind.VanillaLstm => (4, 2)
     case AlgKind.VanillaGru => (3, 1)
     case _ =>
-      throw new UnsupportedOperationException("Not support such RNN Cell. Cell type: " + mode)
+      Log4Error.invalidInputError(false, "Not support such RNN Cell. Cell type: " + mode,
+      "only support AlgKind.VanillaLstm and AlgKind.VanillaGru")
+      (0, 0)
   }
 
   /** TODO: Multi-layer Bidirectional Sum RNN is available in MKLDNN,
@@ -112,7 +114,11 @@ class RNN(
         "layers = " + layers)
       (2, 2)
     case Direction.BidirectionalSum => (2, 1)
-    case _ => throw new UnsupportedOperationException("Not support such direction")
+    case _ =>
+      Log4Error.invalidInputError(false, s"Not support such direction $direction",
+      "only support Direction.UnidirectionalLeft2Right, Direction.BidirectionalConcat" +
+        " and Direction.BidirectionalSum")
+      (1, 1)
   }
 
   /**
@@ -189,8 +195,8 @@ class RNN(
         batchSize = inputs(0).shape(0)
         stepSize = inputs(0).shape(1)
       case _ =>
-        throw new UnsupportedOperationException("Unsupported input format: " +
-          inputs(0).layout)
+        Log4Error.invalidInputError(false, s"Unsupported input format: " +
+          inputs(0).layout, "only support tnc and ntc")
     }
 
     inputShape = Array(stepSize, batchSize, inputSize)
@@ -218,8 +224,10 @@ class RNN(
         MklDnnMemory.RNNCellDescInit(AlgKind.VanillaLstm, f, flags, alpha, clipping)
       case AlgKind.VanillaGru =>
         MklDnnMemory.RNNCellDescInit(AlgKind.VanillaGru, f, flags, alpha, clipping)
-      case _ => throw new UnsupportedOperationException("Not support such RNN cell. " +
-        "Cell type: " + mode)
+      case _ =>
+        Log4Error.invalidInputError(false, s"Not support such RNN cell. " +
+        s"Cell type: ${mode}", "only support VanillaLstm and VanillaGru")
+        MklDnnMemory.RNNCellDescInit(AlgKind.VanillaGru, f, flags, alpha, clipping)
     }
 
     val description = MklDnnMemory.RNNForwardDescInit(kind, rnnCellDesc, direction, src_layer_MD,

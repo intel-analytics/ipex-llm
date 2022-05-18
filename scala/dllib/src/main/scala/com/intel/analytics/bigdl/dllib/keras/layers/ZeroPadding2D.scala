@@ -24,7 +24,7 @@ import com.intel.analytics.bigdl.dllib.nn.{Sequential => TSequential}
 import com.intel.analytics.bigdl.dllib.nn.abstractnn.{AbstractModule, DataFormat}
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.dllib.utils.Shape
+import com.intel.analytics.bigdl.dllib.utils.{Log4Error, Shape}
 import com.intel.analytics.bigdl.dllib.keras.Net
 
 import scala.reflect.ClassTag
@@ -57,8 +57,10 @@ object ZeroPadding2D {
     dimOrdering: String = "th",
     inputShape: Shape = null)(implicit ev: TensorNumeric[T]): ZeroPadding2D[T] = {
     val paddingArray = padding match {
-      case null => throw new IllegalArgumentException("For ZeroPadding2D, " +
-        "padding can not be null, please input int tuple of length 2")
+      case null =>
+        Log4Error.invalidInputError(false, "For ZeroPadding2D, " +
+        "padding can not be null", "please input int tuple of length 2")
+        null
       case _ => Array(padding._1, padding._1, padding._2, padding._2)
     }
     new ZeroPadding2D[T](

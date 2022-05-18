@@ -19,7 +19,7 @@ package com.intel.analytics.bigdl.dllib.nn.abstractnn
 import com.intel.analytics.bigdl.dllib.nn.abstractnn.SizeAverageStatus.SizeAverageStatus
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.dllib.utils.{T, Table}
+import com.intel.analytics.bigdl.dllib.utils.{Log4Error, T, Table}
 import org.apache.commons.lang3.SerializationUtils
 
 import scala.reflect.ClassTag
@@ -58,7 +58,9 @@ abstract class AbstractCriterion[A <: Activity: ClassTag, B <: Activity: ClassTa
   private[bigdl] def allocateAs[D <: Activity](dest: D): D = dest match {
     case tensor: Tensor[T] => Tensor[T]().asInstanceOf[D]
     case table: Table => T().asInstanceOf[D]
-    case _ => throw new IllegalArgumentException("Activity only support tensor and table now")
+    case _ =>
+      Log4Error.invalidOperationError(false, "Activity only support tensor and table now")
+      null.asInstanceOf[D]
   }
 
   /**

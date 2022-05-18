@@ -52,7 +52,10 @@ private[bigdl] class BlasWrapper(val module: AbstractModule[Activity, Activity, 
       case 3 => Memory.Format.ntc
       case 2 => Memory.Format.nc
       case 1 => Memory.Format.x
-      case _ => throw new UnsupportedOperationException(s"UnSupported dims ${dims}")
+      case _ =>
+        Log4Error.invalidInputError(false,
+        s"UnSupported dims ${dims}", "only support dim with 1, 2, 3, 4")
+        Memory.Format.x
     }
   }
 
@@ -116,7 +119,8 @@ private[bigdl] class BlasWrapper(val module: AbstractModule[Activity, Activity, 
     initEnv = true
     val multiThread = System.getProperty("multiThread", "false").toBoolean
     if (this.train && multiThread) {
-      throw new IllegalArgumentException("Please not set multiThread to true for model training")
+      Log4Error.invalidOperationError(false,
+        "Please not set multiThread to true for model training")
     }
     if (this.train
       || !multiThread

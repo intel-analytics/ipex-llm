@@ -396,8 +396,8 @@ class FeatureSet(DataSet):
                                  True, features, labels)
             return cls(jvalue=jvalue)
         else:
-            raise ValueError("Unsupported dataloader type, please pass pytorch dataloader" +
-                             " or a function to create pytorch dataloader.")
+            invalidInputError(False, "Unsupported dataloader type, please pass pytorch dataloader" +
+                              " or a function to create pytorch dataloader.")
 
     def transform(self, transformer):
         """

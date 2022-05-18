@@ -21,7 +21,7 @@ import com.intel.analytics.bigdl.dllib.nn.abstractnn.AbstractModule
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.nn.internal.Pooling3D
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.dllib.utils.Shape
+import com.intel.analytics.bigdl.dllib.utils.{Log4Error, Shape}
 import com.intel.analytics.bigdl.dllib.keras.Net
 import com.intel.analytics.bigdl.dllib.keras.layers.utils.KerasUtils
 
@@ -71,8 +71,10 @@ object AveragePooling3D {
     dimOrdering: String = "th",
     inputShape: Shape = null)(implicit ev: TensorNumeric[T]): AveragePooling3D[T] = {
     val poolSizeArray = poolSize match {
-      case null => throw new IllegalArgumentException("For AveragePooling3D, " +
-        "poolSize can not be null, please input int tuple of length 3")
+      case null =>
+        Log4Error.invalidInputError(false, "For AveragePooling3D, " +
+          "poolSize can not be null, please input int tuple of length 3")
+        null
       case _ => Array(poolSize._1, poolSize._2, poolSize._3)
     }
     val strideArray = strides match {

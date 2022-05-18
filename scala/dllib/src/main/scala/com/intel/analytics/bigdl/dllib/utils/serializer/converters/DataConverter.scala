@@ -128,8 +128,9 @@ object DataConverter extends DataConverter{
       case DataType.DATA_FORMAT => DataFormatConverter.getAttributeValue(context, attribute)
       case DataType.CUSTOM => CustomConverterDelegator.getAttributeValue(context, attribute)
       case DataType.SHAPE => ShapeConverter.getAttributeValue(context, attribute)
-      case _ => throw new IllegalArgumentException
-        (s"${attribute.getDataType} can not be recognized")
+      case _ => Log4Error.invalidOperationError(false,
+        s"${attribute.getDataType} can not be recognized")
+        null
     }
   }
 
@@ -401,7 +402,9 @@ object DataConverter extends DataConverter{
             ShapeConverter.getAttributeValue(context, attrValue.build).asInstanceOf[BigDLShape]
           }).toArray
 
-        case _ => throw new UnsupportedOperationException("Unsupported data type: " + listType)
+        case _ =>
+          Log4Error.invalidOperationError(false, "Unsupported data type: " + listType)
+          null
       }
       arr
     }

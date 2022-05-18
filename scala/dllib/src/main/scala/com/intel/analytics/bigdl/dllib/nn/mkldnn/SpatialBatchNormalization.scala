@@ -249,7 +249,9 @@ class SpatialBatchNormalization(
           val _updateOutputPrimitives = Array(primitive)
           (_updateOutputMemoryPrimitives, _updateOutputPrimitives)
         })
-      case _ => throw new UnsupportedOperationException
+      case _ =>
+        Log4Error.invalidOperationError(false, s"unexpected phase ${modelPhase}",
+        "only support InferencePhase and TrainingPhase")
     }
 
     // init once
@@ -350,7 +352,10 @@ class SpatialBatchNormalization(
           inputFormats()(0).getMemoryDescription(),
           inputFormats()(0).getMemoryDescription(), eps.toFloat,
           MklDnn.BatchNormFlag.mkldnn_use_scaleshift)
-      case _ => throw new UnsupportedOperationException
+      case _ =>
+        Log4Error.invalidOperationError(false, s"unexpected phase ${modelPhase}",
+          "SpatialBatchNormalization backward only support TrainingPhase")
+        0
     }
 
     val gradWeightAndBias: NativeData = NativeData(Array(nOutput * 2), Memory.Format.x)

@@ -73,11 +73,11 @@ class WordEmbedding[T: ClassTag] private(
       output = output.view(inputBuffer.size(1), inputBuffer.size(2), weight.size(2))
     } catch {
       case e: IllegalArgumentException =>
-        throw new IllegalArgumentException(
+        Log4Error.unKnowExceptionError(false,
           s"EmbeddingGloVe updateOutput get exception: ${e.getMessage}\n" +
-            s"please ensure all elements of your input smaller than $inputDim.", e)
+            s"please ensure all elements of your input smaller than $inputDim.", cause = e)
       case e: Exception =>
-        throw e
+        Log4Error.invalidOperationError(false, e.getLocalizedMessage, cause = e)
     }
     output
   }
@@ -198,8 +198,10 @@ object WordEmbedding {
       case "glove.6B.300d.txt" => 300
       case "glove.42B.300d.txt" => 300
       case "glove.840B.300d.txt" => 300
-      case _ => throw new IllegalArgumentException(s"Unsupported embeddingFile: " +
+      case _ =>
+        Log4Error.invalidInputError(false, s"Unsupported embeddingFile: " +
         s"$embeddingFile")
+        1
     }
   }
 

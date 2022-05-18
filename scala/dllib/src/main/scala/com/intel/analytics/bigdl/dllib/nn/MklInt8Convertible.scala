@@ -90,8 +90,9 @@ trait MklInt8Convertible {
           calcModuleScales(inputActvt, outputActvt)
         case caddTable: mkldnn.CAddTable =>
           calcModuleScales(inputActvt, outputActvt)
-        case _ => throw new UnsupportedOperationException(
-          "Int8 conversion is not supported for module: " + module.getName()
+        case _ =>
+          Log4Error.invalidOperationError(false,
+            "Int8 conversion is not supported for module: " + module.getName()
         )
       }
     }
@@ -147,7 +148,10 @@ trait MklInt8Convertible {
           val tensor: Tensor[Float] = elem._2.asInstanceOf[Tensor[Float]]
           calcTensorScale(tensor, mask)
         }).toArray
-      case _ => throw new IllegalArgumentException("Invalid activity " + activity)
+      case _ =>
+        Log4Error.unKnowExceptionError(false, s"Invalid activity ${activity}",
+        "only support Tensor and Table")
+        null
     }
   }
 

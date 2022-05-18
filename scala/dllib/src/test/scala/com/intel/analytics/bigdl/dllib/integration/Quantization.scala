@@ -25,7 +25,7 @@ import com.intel.analytics.bigdl.dllib.models.resnet.{Utils => ResNetUtils}
 import com.intel.analytics.bigdl.dllib.nn.Module
 import com.intel.analytics.bigdl.numeric.NumericFloat
 import com.intel.analytics.bigdl.dllib.optim.{Top1Accuracy, Top5Accuracy, ValidationMethod, ValidationResult}
-import com.intel.analytics.bigdl.dllib.utils.{Engine, LoggerFilter, TestUtils}
+import com.intel.analytics.bigdl.dllib.utils.{Engine, Log4Error, LoggerFilter, TestUtils}
 import org.apache.logging.log4j.Level
 import org.apache.logging.log4j.core.config.Configurator
 import org.apache.spark.SparkContext
@@ -64,7 +64,9 @@ class QuantizationSpec extends FlatSpec with Matchers with BeforeAndAfter{
       case "resnet" =>
         sc.parallelize(ResNetUtils.loadTest(folder), partitionNum)
 
-      case _ => throw new UnsupportedOperationException(s"unknown model: $model")
+      case _ =>
+        Log4Error.invalidInputError(false, s"unknown model: $model", "only support lenet, resnet")
+        null
     }
   }
 
@@ -80,7 +82,10 @@ class QuantizationSpec extends FlatSpec with Matchers with BeforeAndAfter{
         BytesToBGRImg() -> BGRImgNormalizer(Cifar10DataSet.trainMean,
           Cifar10DataSet.trainStd) -> BGRImgToSample()
 
-      case _ => throw new UnsupportedOperationException(s"unknown model: $model")
+      case _ =>
+        Log4Error.invalidInputError(false, s"unknown model: $model",
+          "only support lenet, resnet")
+        null
     }
   }
 

@@ -19,7 +19,7 @@ package com.intel.analytics.bigdl.dllib.nn.abstractnn
 import com.google.protobuf.ByteString
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
-import com.intel.analytics.bigdl.dllib.utils.{T, Table}
+import com.intel.analytics.bigdl.dllib.utils.{Log4Error, T, Table}
 
 import scala.reflect._
 
@@ -49,21 +49,29 @@ trait Activity {
  */
 class EmptyGradInput private[abstractnn](moduleName: String) extends Activity with Serializable {
 
-  override def toTensor[D](implicit ev: TensorNumeric[D]): Tensor[D] =
-    throw new UnsupportedOperationException(s"The gradInput of $moduleName is empty. You should" +
+  override def toTensor[D](implicit ev: TensorNumeric[D]): Tensor[D] = {
+    Log4Error.invalidOperationError(false, s"The gradInput of $moduleName is empty. You should" +
       s"not use it anywhere")
+    null
+  }
 
-  override def toTable: Table =
-    throw new UnsupportedOperationException(s"The gradInput of $moduleName is empty. You should" +
+  override def toTable: Table = {
+    Log4Error.invalidOperationError(false, s"The gradInput of $moduleName is empty. You should" +
       s"not use it anywhere")
+    null
+  }
 
-  override def isTensor: Boolean =
-    throw new UnsupportedOperationException(s"The gradInput of $moduleName is empty. You should" +
+  override def isTensor: Boolean = {
+    Log4Error.invalidOperationError(false, s"The gradInput of $moduleName is empty. You should" +
       s"not use it anywhere")
+    true
+  }
 
-  override def isTable: Boolean =
-    throw new UnsupportedOperationException(s"The gradInput of $moduleName is empty. You should" +
+  override def isTable: Boolean = {
+    Log4Error.invalidOperationError(false, s"The gradInput of $moduleName is empty. You should" +
       s"not use it anywhere")
+    true
+  }
 }
 
 object Activity {
@@ -105,7 +113,7 @@ object Activity {
         import com.intel.analytics.bigdl.dllib.utils.tf.TFTensorNumeric.NumericByteString
         Tensor[ByteString]()
       } else {
-        throw new IllegalArgumentException("Type T activity is not supported")
+        Log4Error.invalidOperationError(false, "Type T activity is not supported")
       }
     } else {
       null

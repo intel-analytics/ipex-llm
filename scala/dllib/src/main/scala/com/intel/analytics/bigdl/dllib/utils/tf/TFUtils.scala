@@ -19,7 +19,7 @@ import java.nio.{ByteBuffer, ByteOrder}
 
 import com.google.protobuf.ByteString
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
-import com.intel.analytics.bigdl.dllib.utils.T
+import com.intel.analytics.bigdl.dllib.utils.{Log4Error, T}
 import org.apache.hadoop.io.{BytesWritable, NullWritable}
 import org.apache.spark.SparkContext
 import org.tensorflow.framework.{DataType, TensorProto}
@@ -146,7 +146,9 @@ object TFUtils {
           j += 1
         }
         Tensor(tmp, shape)
-      case t => throw new IllegalArgumentException(s"DataType: $t not supported yet")
+      case t =>
+        Log4Error.invalidOperationError(false, s"DataType: $t not supported yet")
+        null
     }
   }
 
@@ -183,7 +185,9 @@ object TFUtils {
       case DataType.DT_UINT16 =>
         val tmp = tfTensor.getIntValList.asScala.map(_.toInt).toArray
         Tensor(tmp, shape)
-      case t => throw new IllegalArgumentException(s"DataType: $t not supported yet")
+      case t =>
+        Log4Error.invalidOperationError(false, s"DataType: $t not supported yet")
+        null
     }
   }
 

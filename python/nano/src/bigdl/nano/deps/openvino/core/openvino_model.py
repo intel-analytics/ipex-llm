@@ -14,31 +14,23 @@
 # limitations under the License.
 #
 from pathlib import Path
-from openvino.inference_engine import IECore
+from openvino.runtime import Core
+from openvino.runtime.passes import Manager
 
 
 class OpenVINOModel:
     def __init__(self, ie_network: str):
         self.ie_network = None
         self.read_network(ie_network)
-        self.exec_model = None
 
     def forward_step(self, *inputs):
-        self.compile_executable(inputs)
-        inputs = dict(zip(self.exec_model.input_info, inputs))
-        return self.exec_model.infer(inputs)
-
-    def compile_executable(self, inputs):
-        input_batch_size = inputs[0].shape[0]
-        if self.exec_model and input_batch_size == self.exec_model.input_info[0].shape[0]:
-            return
-        else:
-            assert self.ie_network, "self.ie_network shouldn't be None."
-            self.ie_network.batch_size = input_batch_size
-            self.exec_model = IECore().load_network(network=self.ie_network, device_name='CPU')
+        return self.infer_request.infer(list(inputs))
 
     def read_network(self, model: str):
-        self.ie_network = IECore().read_network(model=model)
+        core = Core()
+        self.ie_network = core.read_model(model=model)
+        self.exec_model = core.compile_model(model=self.ie_network, device_name='CPU')
+        self.infer_request = self.exec_model.create_infer_request()
 
     def _save_model(self, path):
         """
@@ -49,4 +41,8 @@ class OpenVINOModel:
         path = Path(path)
         assert self.ie_network, "self.ie_network shouldn't be None."
         assert path.suffix == ".xml", "Path of openvino model must be with '.xml' suffix."
-        self.ie_network.serialize(str(path))
+        pass_manager = Manager()
+        pass_manager.register_pass(pass_name="Serialize",
+                                   xml_path=str(path),
+                                   bin_path=str(path.with_suffix(".bin")))
+        pass_manager.run_passes(self.ie_network)

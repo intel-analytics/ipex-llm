@@ -71,7 +71,8 @@ class BucketizedCol[T: ClassTag](
           input.asInstanceOf[Tensor[Double]],
           x => math.abs(binarySearch(boundariesImpl.asInstanceOf[Array[Double]], x) + 1))
       case _ =>
-        throw new RuntimeException("Unsupported tensor type")
+        Log4Error.invalidInputError(false, s"${ev.getType()} is not supported",
+          "only support FloatType and DoubleType")
     }
 
     output = resTensor

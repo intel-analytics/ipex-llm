@@ -339,7 +339,8 @@ class RoiMiniBatch(val input: Tensor[Float], val target: Array[RoiLabel],
 
   override def set(samples: Seq[Sample[Float]])(implicit ev: TensorNumeric[Float])
   : RoiMiniBatch.this.type = {
-    throw new NotImplementedError("do not use Sample here")
+    Log4Error.invalidInputError(false, "do not use Sample here, not implemented yet")
+    null
   }
 }
 

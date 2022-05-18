@@ -44,7 +44,6 @@ object VFLLogisticRegression extends DebugLogger{
     case class Params(clientId: Int = 0,
                       dataPath: String = null,
                       rowKeyName: String = "ID",
-                      hasLabel: Boolean = true,
                       learningRate: Float = 0.005f,
                       batchSize: Int = 4)
     val parser: OptionParser[Params] = new OptionParser[Params]("VFL Logistic Regression") {
@@ -59,9 +58,6 @@ object VFLLogisticRegression extends DebugLogger{
       opt[String]('r', "rowKeyName")
         .text("row key name of data")
         .action((x, params) => params.copy(rowKeyName = x))
-      opt[Boolean]('y', "hasLabel")
-        .text("this party has label or not")
-        .action((x, params) => params.copy(hasLabel = x))
       opt[String]('l', "learningRate")
         .text("learning rate of training")
         .action((x, params) => params.copy(learningRate = x.toFloat))
@@ -83,8 +79,7 @@ object VFLLogisticRegression extends DebugLogger{
     val (trainData, valData, testData) = getData(pSI, dataPath, rowKeyName)
 
     // create LogisticRegression object to train the model
-    val featureNum = if (argv.hasLabel) trainData.columns.size - 1 else trainData.columns.size
-    val lr = new VFLLogisticRegression(featureNum, learningRate)
+
 
     // Data pipeline from DataFrame to Tensor, and call fit, evaluate, predict
     val (featureColumns, labelColumns) = argv.clientId match {
@@ -96,8 +91,11 @@ object VFLLogisticRegression extends DebugLogger{
     val xEval = TensorUtils.fromDataFrame(valData, featureColumns)
     val xTest = TensorUtils.fromDataFrame(testData, featureColumns)
     val yTrain = TensorUtils.fromDataFrame(trainData, labelColumns)
+    val yEval = TensorUtils.fromDataFrame(valData, labelColumns)
+
+    val lr = new VFLLogisticRegression(featureColumns.length, learningRate)
     lr.fit(xTrain, yTrain, epoch = 5)
-    lr.evaluate(xEval)
+    lr.evaluate(xEval, yEval)
     lr.predict(xTest)
   }
 

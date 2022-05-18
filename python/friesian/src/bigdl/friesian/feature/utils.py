@@ -18,6 +18,8 @@ from bigdl.dllib.utils.file_utils import callZooFunc
 from pyspark.sql.types import IntegerType, ShortType, LongType, FloatType, DecimalType, \
     DoubleType, BooleanType
 from pyspark.sql.functions import broadcast, udf
+from bigdl.dllib.utils.log4Error import *
+import warnings
 
 
 def compute(df):
@@ -214,28 +216,11 @@ def str_to_list(arg, arg_name):
     return arg
 
 
-def distribute_tfrs_model(model):
-    from tensorflow_recommenders.tasks import base
-    import tensorflow as tf
-    import warnings
-    import tensorflow_recommenders as tfrs
-
-    if not isinstance(model, tfrs.Model):
-        return model
-    attr = model.__dict__
-    task_dict = dict()
-    for k, v in attr.items():
-        if isinstance(v, base.Task):
-            task_dict[k] = v
-
-    for k, v in task_dict.items():
-        try:
-            v._loss.reduction = tf.keras.losses.Reduction.NONE
-        except:
-            warnings.warn("Model task " + k + " has no attribute _loss, please use "
-                                              "`tf.keras.losses.Reduction.SUM` or "
-                                              "`tf.keras.losses.Reduction.NONE` for "
-                                              "loss reduction in this task if the "
-                                              "Estimator raise an error.")
-
-    return model
+def featuretable_to_xshards(tbl, convert_cols=None):
+    from bigdl.orca.learn.utils import dataframe_to_xshards_of_feature_dict
+    # TODO: partition < node num
+    if convert_cols is None:
+        convert_cols = tbl.columns
+    if convert_cols and not isinstance(convert_cols, list):
+        convert_cols = [convert_cols]
+    return dataframe_to_xshards_of_feature_dict(tbl.df, convert_cols, accept_str_col=True)

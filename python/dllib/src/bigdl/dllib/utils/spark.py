@@ -25,6 +25,7 @@ from bigdl.dllib.utils.utils import detect_python_location, pack_penv, get_node_
 from bigdl.dllib.utils.utils import get_executor_conda_zoo_classpath
 from bigdl.dllib.utils.utils import get_zoo_bigdl_classpath_on_driver
 from bigdl.dllib.utils.utils import get_bigdl_class_version
+from bigdl.dllib.utils.utils import get_bigdl_image_workdir
 from bigdl.dllib.utils.engine import get_bigdl_jars
 from bigdl.dllib.utils.log4Error import *
 
@@ -264,7 +265,7 @@ class SparkRunner:
                 shell=True, env=SparkRunner.standalone_env)
             _, status = os.waitpid(start_master_pro.pid, 0)
             if status != 0:
-                raise RuntimeError("starting master failed")
+                invalidInputError(False, "starting master failed")
             master = "spark://{}:7077".format(node_ip)  # 7077 is the default port
             # Start worker
             if enable_numa_binding:
@@ -277,7 +278,7 @@ class SparkRunner:
                 shell=True, env=SparkRunner.standalone_env)
             _, status = os.waitpid(start_worker_pro.pid, 0)
             if status != 0:
-                raise RuntimeError("starting worker failed")
+                invalidInputError(False, "starting worker failed")
         else:  # A Spark standalone cluster has already been started by the user.
             invalidInputError(master.startswith("spark://"),
                               "Please input a valid master address for your Spark"
@@ -355,6 +356,7 @@ class SparkRunner:
             submit_args = submit_args + gen_submit_args(
                 driver_cores, driver_memory, num_executors, executor_cores,
                 executor_memory, extra_python_lib, jars)
+            submit_args = submit_args + " --jars " + ",".join(get_bigdl_jars())
 
             conf = enrich_conf_for_spark(conf, driver_cores, driver_memory, num_executors,
                                          executor_cores, executor_memory,
@@ -363,10 +365,14 @@ class SparkRunner:
             preload_so = executor_python_env + "/lib/libpython" + py_version + "m.so"
             ld_path = executor_python_env + "/lib:" + executor_python_env + "/lib/python" + \
                 py_version + "/lib-dynload"
+            image_workdir = get_bigdl_image_workdir()
+            tf_libs_path = image_workdir + "/" + executor_python_env + "/lib/python" + \
+                py_version + "/site-packages/bigdl/share/tflibs"
             if "spark.executor.extraLibraryPath" in conf:
                 ld_path = "{}:{}".format(ld_path, conf["spark.executor.extraLibraryPath"])
             conf.update({"spark.cores.max": num_executors * executor_cores,
                          "spark.executorEnv.PYTHONHOME": executor_python_env,
+                         "spark.executorEnv.TF_LIBS_PATH": tf_libs_path,
                          "spark.executor.extraLibraryPath": ld_path,
                          "spark.executorEnv.LD_PRELOAD": preload_so,
                          "spark.kubernetes.container.image": container_image})
@@ -374,13 +380,6 @@ class SparkRunner:
                 conf["spark.driver.host"] = get_node_ip()
             if "spark.driver.port" not in conf:
                 conf["spark.driver.port"] = random.randint(10000, 65535)
-            zoo_bigdl_path_on_executor = ":".join(
-                list(get_executor_conda_zoo_classpath(executor_python_env)))
-            if "spark.executor.extraClassPath" in conf:
-                conf["spark.executor.extraClassPath"] = "{}:{}".format(
-                    zoo_bigdl_path_on_executor, conf["spark.executor.extraClassPath"])
-            else:
-                conf["spark.executor.extraClassPath"] = zoo_bigdl_path_on_executor
 
             sc = self.create_sc(submit_args, conf)
         finally:
@@ -440,7 +439,8 @@ class SparkRunner:
         else:
             # BigDL Class path in k8s image
             bigdl_class_version = get_bigdl_class_version()
-            conf["spark.executor.extraClassPath"] = "/opt/" + bigdl_class_version + "/jars/*"
+            conf["spark.executor.extraClassPath"] = "/opt/" + bigdl_class_version + "bigdl-" \
+                + "/jars/*"
         conf["spark.driver.extraClassPath"] = conf["spark.executor.extraClassPath"]
         sys_args = "local://" + " ".join(sys.argv)
         conf = " --conf " + " --conf ".join("{}={}".format(*i) for i in conf.items())

@@ -18,14 +18,20 @@
 import pytest
 from unittest import TestCase
 
-from bigdl.nano.automl.hpo.backend import OptunaBackend
-from bigdl.nano.automl.hpo.backend import SamplerType
+from bigdl.nano.automl.hpo.backend import create_hpo_backend
+from bigdl.nano.automl.hpo.backend import SamplerType,PrunerType
 
 class TestHPOBackend(TestCase):
 
     def test_create_sampler(self):
-        sampler = OptunaBackend.create_sampler(SamplerType.TPE,{})
+        backend = create_hpo_backend()
+        sampler = backend.create_sampler(SamplerType.TPE,{})
         assert(sampler)
+
+    def test_create_pruner(self):
+        backend = create_hpo_backend()
+        pruner = backend.create_pruner(PrunerType.HyperBand,{})
+        assert(pruner)
 
     def test_instantiate(self):
         #TODO

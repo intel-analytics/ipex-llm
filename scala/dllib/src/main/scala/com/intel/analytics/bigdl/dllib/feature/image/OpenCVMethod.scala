@@ -18,7 +18,7 @@ package com.intel.analytics.bigdl.dllib.feature.image
 
 import com.intel.analytics.bigdl.opencv.OpenCV
 import com.intel.analytics.bigdl.dllib.feature.transform.vision.image.opencv.OpenCVMat
-
+import com.intel.analytics.bigdl.dllib.utils.Log4Error
 import org.opencv.core.{Mat, MatOfByte}
 import org.opencv.imgcodecs.Imgcodecs
 
@@ -45,7 +45,7 @@ private[bigdl] object OpenCVMethod {
     } catch {
       case e: Exception =>
         if (null != result) result.release()
-        throw e
+        Log4Error.unKnowExceptionError(false, s"Error in decode mat", cause = e)
     } finally {
       if (null != mat) mat.release()
       if (null != matOfByte) matOfByte.release()

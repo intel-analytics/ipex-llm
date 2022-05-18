@@ -617,9 +617,10 @@ def init_nncontext(conf=None, cluster_mode="spark-submit", spark_log_level="WARN
         sc = init_spark_standalone(num_executors=num_nodes, executor_cores=cores,
                                    executor_memory=memory, **spark_args)
     else:
-        raise ValueError("cluster_mode can only be local, yarn-client, yarn-cluster, standalone or"
-                         " spark-submit, "
-                         "but got: %s".format(cluster_mode))
+        invalidInputError(False,
+                          "cluster_mode can only be local, yarn-client, yarn-cluster, standalone "
+                          "or spark-submit, "
+                          "but got: %s".format(cluster_mode))
     return sc
 
 
@@ -864,10 +865,10 @@ def _get_bigdl_verion_conf():
                     if sys.version_info >= (3,):
                         content = str(content, 'latin-1')
                     return load_conf(content, "=")
-    raise RuntimeError("Error while locating file zoo-version-info.properties, " +
-                       "please make sure the mvn generate-resources phase" +
-                       " is executed and a zoo-version-info.properties file" +
-                       " is located in zoo/target/extra-resources")
+    invalidInputError(False, "Error while locating file zoo-version-info.properties, "
+                             "please make sure the mvn generate-resources phase is"
+                             " executed and a zoo-version-info.properties file is"
+                             " located in zoo/target/extra-resources")
 
 
 def load_conf(conf_str, split_char=None):

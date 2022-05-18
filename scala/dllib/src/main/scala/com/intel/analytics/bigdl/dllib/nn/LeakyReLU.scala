@@ -53,7 +53,9 @@ class LeakyReLU[T: ClassTag](
         negval.toFloat, inplace)
       case DoubleType => updateOutputDouble(input.toTensor[Double], output.toTensor[Double],
         negval, inplace)
-      case t => throw new NotImplementedError(s"$t is not supported")
+      case t =>
+        Log4Error.invalidInputError(false, s"$t is not supported",
+          "only support FloatType and DoubleType")
     }
     output
   }
@@ -69,7 +71,9 @@ class LeakyReLU[T: ClassTag](
         gradInput.toTensor[Float], negval.toFloat, inplace)
       case DoubleType => updateGradInputDouble(input.toTensor[Double], gradOutput.toTensor[Double],
         gradInput.toTensor[Double], negval, inplace)
-      case t => throw new NotImplementedError(s"$t is not supported")
+      case t =>
+        Log4Error.invalidInputError(false, s"$t is not supported",
+          "only support FloatType and DoubleType")
     }
     gradInput
   }

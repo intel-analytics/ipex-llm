@@ -260,7 +260,7 @@ class CaffeLoader[T: ClassTag](prototxtPath: String, modelPath: String,
       case (name: String, params: Table) =>
         copyParameter(name, params)
       case _ =>
-        throw new UnsupportedOperationException("unsupported $name and $params")
+        Log4Error.invalidOperationError(false, "unsupported $name and $params")
     }
     model
   }
@@ -268,8 +268,10 @@ class CaffeLoader[T: ClassTag](prototxtPath: String, modelPath: String,
   private def copyParameter(name: String, params: Table): Unit = {
     if (params == null || (!params.contains("weight") && !params.contains("bias"))) return
     if (!name2LayerV2.contains(name) && !name2LayerV1.contains(name)) {
-      if (matchAll) throw new CaffeConversionException(s"module $name " +
-        s"cannot map a layer in caffe model")
+      if (matchAll) {
+        Log4Error.invalidOperationError(false, s"module $name " +
+          s"cannot map a layer in caffe model")
+      }
       logger.info(s"$name uses initialized parameters")
       return
     }
@@ -569,11 +571,13 @@ object CaffeLoader {
       caffeLoader.createCaffeModel(outputNames)
     } catch {
       case parseException : ParseException =>
-        throw new CaffeConversionException("Parsing caffe model error," +
+        Log4Error.invalidOperationError(false, "Parsing caffe model error," +
           "only standard Caffe format is supported"
-          , parseException)
-      case conversionExcepion : CaffeConversionException =>
-        throw  conversionExcepion
+          , cause = parseException)
+        null
+      case e =>
+        Log4Error.unKnowExceptionError(false, e.getMessage, cause = e)
+        null
     }
   }
 }

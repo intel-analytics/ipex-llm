@@ -150,7 +150,10 @@ object TensorflowLoader{
           tensor.size(), "float")
         case DoubleType => new JTensor(tensor.asInstanceOf[Tensor[Double]].storage().array()
           .map(_.toFloat), tensor.size(), "double")
-        case t => throw new NotImplementedError(s"$t is not supported")
+        case t =>
+          Log4Error.invalidInputError(false, s"${ev.getType()} is not supported",
+          "only support FloatType and DoubleType")
+          null
       }
       save.put(n, saveTensor)
     })
@@ -164,7 +167,10 @@ object TensorflowLoader{
       val tensor = ev.getType() match {
         case FloatType => PythonBigDLUtils.toTensor(m(k), "float")
         case DoubleType => PythonBigDLUtils.toTensor(m(k), "double")
-        case t => throw new NotImplementedError(s"$t is not supported")
+        case t =>
+          Log4Error.invalidInputError(false, s"${ev.getType()} is not supported",
+            "only support FloatType and DoubleType")
+          null
       }
 
       map(k) = (tensor, tensor.clone(), None)
@@ -401,7 +407,8 @@ object TensorflowLoader{
               (builder.build[T](n.element, byteOrder, context), Seq(n).asJava, Seq(n))
             } catch {
               case e: Throwable =>
-                throw new UnsupportedOperationException(errorMsg, e)
+                Log4Error.unKnowExceptionError(false, errorMsg, cause = e)
+                (null, Seq(n).asJava, Seq(n))
             }
           })
 
@@ -468,9 +475,15 @@ object TensorflowLoader{
     connect(outputModules)
 
     val inputNodes = inputs
-      .map(n => nameToNode.getOrElse(n, throw new IllegalArgumentException(s"Can't find node $n")))
+      .map(n => nameToNode.getOrElse(n, {
+        Log4Error.invalidOperationError(false, s"Can't find node $n")
+        null
+      }))
     val outputNodes = outputs
-      .map(n => nameToNode.getOrElse(n, throw new IllegalArgumentException(s"Can't find node $n")))
+      .map(n => nameToNode.getOrElse(n, {
+        Log4Error.invalidOperationError(false, s"Can't find node $n")
+        null
+      }))
 
 
     val weights = ArrayBuffer[Tensor[T]]()

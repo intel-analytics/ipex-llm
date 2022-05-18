@@ -15,13 +15,14 @@
 #
 
 
+from selectors import EpollSelector
 from tensorflow.keras.backend import clear_session
 from tensorflow.keras.models import clone_model
 import tensorflow as tf
 import inspect
 import copy
 
-from optuna.integration import TFKerasPruningCallback
+from bigdl.nano.automl.hpo.backend import create_tfkeras_pruning_callback
 
 
 def _is_creator(model):
@@ -29,21 +30,24 @@ def _is_creator(model):
 
 
 class Objective(object):
-    """The Tuning objective for Optuna."""
+    """The Tuning objective for HPO."""
 
     def __init__(self,
                  model=None,
                  target_metric=None,
                  pruning=False,
+                 backend=None,
                  **kwargs,
                  ):
         """
         Init the objective.
 
-        :param: model: a model instance or a creator function. Defaults to None.
-        :param: model_compiler: the compiler function. Defaults to None.
+        :param: model: a model instance or a creator function.
+            Defaults to None.
         :param: target_metric: str(optional): target metric to optimize.
             Defaults to None.
+        :param: pruning: bool (optional): whether to enable pruning.
+            Defaults to False.
         raises: ValueError: _description_
         """
         if not _is_creator(model) and not isinstance(model, tf.keras.Model):
@@ -53,6 +57,7 @@ class Objective(object):
         self.model_ = model
         self.target_metric_ = target_metric
         self.pruning = pruning
+        self.backend = backend
         self.kwargs = kwargs
 
     @property
@@ -72,12 +77,16 @@ class Objective(object):
         new_kwargs = copy.copy(self.kwargs)
         new_kwargs['verbose'] = 2
 
+        # process batch size
+        new_kwargs = self.backend.instantiate_param(trial, new_kwargs, 'batch_size')
+
+        # process callbacks
         callbacks = new_kwargs.get('callbacks', None)
         callbacks = callbacks() if inspect.isfunction(callbacks) else callbacks
 
         if self.pruning:
             callbacks = callbacks or []
-            prune_callback = TFKerasPruningCallback(trial, self.target_metric)
+            prune_callback = create_tfkeras_pruning_callback(trial, self.target_metric)
             callbacks.append(prune_callback)
 
         new_kwargs['callbacks'] = callbacks
@@ -87,7 +96,7 @@ class Objective(object):
         """
         Execute Training and return target metric in each trial.
 
-        :param: trial: optuna trial which provides the hyperparameter combinition.
+        :param: trial: the trial object which provides the hyperparameter combinition.
         :return: the target metric value.
         """
         # Clear clutter from previous Keras session graphs.

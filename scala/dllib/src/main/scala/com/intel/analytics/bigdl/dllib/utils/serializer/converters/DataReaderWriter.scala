@@ -19,6 +19,7 @@ import java.io.{DataInputStream, DataOutputStream}
 
 import com.google.protobuf.ByteString
 import com.intel.analytics.bigdl.dllib.tensor.Storage
+import com.intel.analytics.bigdl.dllib.utils.Log4Error
 import com.intel.analytics.bigdl.dllib.utils.serializer.BigDLDataType
 import com.intel.analytics.bigdl.dllib.utils.serializer.BigDLDataType.BigDLDataType
 
@@ -217,7 +218,9 @@ object DataReaderWriter {
       case longs : Array[Long] => LongReaderWriter
       case bytestrs : Array[ByteString] => ByteStringReaderWriter
       case bytes : Array[Byte] => ByteReaderWriter
-      case _ => throw new RuntimeException("Unsupported Type")
+      case _ =>
+        Log4Error.invalidOperationError(false, s"Unsupported data type: ${datas}")
+        null
     }
   }
 
@@ -233,7 +236,9 @@ object DataReaderWriter {
       case BigDLDataType.LONG => LongReaderWriter
       case BigDLDataType.BYTESTRING => ByteStringReaderWriter
       case BigDLDataType.BYTE => ByteReaderWriter
-      case _ => throw new RuntimeException("Unsupported Type")
+      case _ =>
+        Log4Error.invalidOperationError(false, s"Unsupported data type: ${dataType}")
+        null
     }
   }
 }

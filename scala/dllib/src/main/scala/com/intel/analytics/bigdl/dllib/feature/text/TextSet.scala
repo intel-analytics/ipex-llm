@@ -222,7 +222,7 @@ abstract class TextSet {
    */
   def saveWordIndex(path: String): Unit = {
     if (wordIndex == null) {
-      throw new Exception("wordIndex is null, nothing to save. " +
+      Log4Error.invalidOperationError(false, "wordIndex is null, nothing to save.",
         "Please transform from word to index first")
     }
   }
@@ -665,7 +665,8 @@ class LocalTextSet(var array: Array[TextFeature]) extends TextSet {
   }
 
   override def randomSplit(weights: Array[Double]): Array[TextSet] = {
-    throw new UnsupportedOperationException("LocalTextSet doesn't support randomSplit for now")
+    Log4Error.invalidInputError(false, "LocalTextSet doesn't support randomSplit for now")
+    null
   }
 
   override def generateWordIndexMap(

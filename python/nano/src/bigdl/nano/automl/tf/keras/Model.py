@@ -44,7 +44,8 @@ class Model(HPOMixin, tf.keras.Model):
         in_tensors, out_tensors = CallCache.execute(
             self.lazyinputs_,
             self.lazyoutputs_,
-            trial)
+            trial,
+            self.backend)
         self.kwargs['inputs'] = in_tensors
         self.kwargs['outputs'] = out_tensors
         return self.kwargs

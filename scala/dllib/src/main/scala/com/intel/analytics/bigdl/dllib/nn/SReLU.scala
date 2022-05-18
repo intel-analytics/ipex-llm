@@ -309,8 +309,9 @@ class SReLU[T: ClassTag](val shape: Array[Int], val sharedAxes: Array[Int] = nul
 
   override def setInitMethod(weightInitMethod: InitializationMethod = null,
     biasInitMethod: InitializationMethod = null): this.type = {
-    throw new UnsupportedOperationException(
+    Log4Error.invalidOperationError(false,
       s"SReLU should call setInitMethod(initMethods: Array[InitializationMethod])")
+    this
   }
 }
 

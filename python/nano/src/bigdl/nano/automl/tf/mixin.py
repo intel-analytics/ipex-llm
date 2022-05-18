@@ -17,7 +17,7 @@
 import copy
 
 from .objective import Objective
-from bigdl.nano.automl.hpo.backend import OptunaBackend
+from bigdl.nano.automl.hpo.backend import create_hpo_backend
 from bigdl.nano.automl.hpo.search import (
     _search_summary,
     _end_search,
@@ -26,6 +26,7 @@ from bigdl.nano.automl.hpo.search import (
     _check_search_args,
     _strip_val_prefix,
 )
+from bigdl.nano.automl.hpo.space import AutoObject
 
 
 class HPOMixin:
@@ -70,6 +71,7 @@ class HPOMixin:
         self.study = None
         self.tune_end = False
         self._lazymodel = None
+        self.backend = create_hpo_backend()
 
     def _fix_target_metric(self, target_metric, fit_kwargs):
         compile_metrics = self.compile_kwargs.get('metrics', None)
@@ -119,7 +121,7 @@ class HPOMixin:
         :param target_metric: str, optional. the target metric to optimize.
             Defaults to "accuracy".
         :param kwargs: model.fit arguments (e.g. batch_size, validation_data, etc.)
-            and search backend (i.e.optuna) arguments (e.g. n_trials, pruner, etc.)
+            and search backend arguments (e.g. n_trials, pruner, etc.)
             are allowed in kwargs.
         """
         _check_search_args(search_args=kwargs,
@@ -137,6 +139,7 @@ class HPOMixin:
                 model=self._model_build,
                 target_metric=target_metric,
                 pruning=pruning,
+                backend=self.backend,
                 **fit_kwargs,
             )
 
@@ -159,20 +162,20 @@ class HPOMixin:
             sampler_type = study_create_kwargs.get('sampler', None)
             if sampler_type:
                 sampler_args = study_create_kwargs.get('sampler_kwargs', {})
-                sampler = OptunaBackend.create_sampler(sampler_type, sampler_args)
+                sampler = self.backend.create_sampler(sampler_type, sampler_args)
                 study_create_kwargs['sampler'] = sampler
                 study_create_kwargs.pop('sampler_kwargs', None)
 
             pruner_type = study_create_kwargs.get('pruner', None)
             if pruner_type:
                 pruner_args = study_create_kwargs.get('pruner_kwargs', {})
-                pruner = OptunaBackend.create_pruner(pruner_type, pruner_args)
+                pruner = self.backend.create_pruner(pruner_type, pruner_args)
                 study_create_kwargs['pruner'] = pruner
                 study_create_kwargs.pop('pruner_kwargs', None)
 
             study_create_kwargs['load_if_exists'] = load_if_exists
             # create study
-            self.study = OptunaBackend.create_study(**study_create_kwargs)
+            self.study = self.backend.create_study(**study_create_kwargs)
 
         # renamed callbacks to tune_callbacks to avoid conflict with fit param
         study_optimize_kwargs = _filter_tuner_args(kwargs, HPOMixin.TUNE_RUN_KEYS)
@@ -188,7 +191,7 @@ class HPOMixin:
         """
         Retrive a summary of trials.
 
-        :return: A summary of all the trials. Currently the optuna study is
+        :return: A summary of all the trials. Currently the entire study is
             returned to allow more flexibility for further analysis and visualization.
         """
         return _search_summary(self.study)
@@ -223,14 +226,18 @@ class HPOMixin:
 
     def _model_compile(self, model, trial):
         # for lazy model compile
-        # TODO support searable compile args
-        # config = OptunaBackend.sample_config(trial, kwspaces)
-        # TODO objects like Optimizers has internal states so
+        # objects like Optimizers has internal states so
         # each trial needs to have a copy of its own.
-        # should allow users to pass a creator function
+        # TODO may allow users to pass a creator function
         # to avoid deep copy of objects
         compile_args = copy.deepcopy(self.compile_args)
         compile_kwargs = copy.deepcopy(self.compile_kwargs)
+
+        # instantiate optimizers if it is autoobj
+        optimizer = compile_kwargs.get('optimizer', None)
+        if optimizer and isinstance(optimizer, AutoObject):
+            optimizer = self.backend.instantiate(trial, optimizer)
+            compile_kwargs['optimizer'] = optimizer
         model.compile(*compile_args, **compile_kwargs)
 
     def _model_build(self, trial):
