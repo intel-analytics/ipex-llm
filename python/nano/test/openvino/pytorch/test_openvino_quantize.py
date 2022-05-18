@@ -36,8 +36,7 @@ class TestOpenVINO(TestCase):
 
         optimized_model = trainer.quantize(model, accelerator='openvino',
                                            calib_dataloader=dataloader,
-                                           metric=F1(10),
-                                           backend='pot')
+                                           metric=F1(10))
 
         y_hat = optimized_model(x[0:3])
         assert y_hat.shape == (3, 10)
