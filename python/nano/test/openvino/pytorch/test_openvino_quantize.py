@@ -14,7 +14,6 @@
 # limitations under the License.
 #
 from unittest import TestCase
-
 from torchmetrics import F1
 from bigdl.nano.pytorch.trainer import Trainer
 from torchvision.models.mobilenetv3 import mobilenet_v3_small
@@ -24,7 +23,7 @@ from torch.utils.data.dataloader import DataLoader
 
 
 class TestOpenVINO(TestCase):
-    def test_trainer_trace_openvino(self):
+    def test_trainer_quantize_openvino(self):
         trainer = Trainer()
         model = mobilenet_v3_small(num_classes=10)
 
@@ -32,8 +31,18 @@ class TestOpenVINO(TestCase):
         y = torch.ones((10, ), dtype=torch.long)
 
         ds = TensorDataset(x, y)
-        dataloader = DataLoader(ds, batch_size=1)
+        dataloader = DataLoader(ds, batch_size=2)
 
+        # Case1: Trace and quantize
+        openvino_model = trainer.trace(model, accelerator='openvino', input_sample=x)
+        optimized_model = trainer.quantize(openvino_model, accelerator='openvino',
+                                           calib_dataloader=dataloader)
+        y_hat = optimized_model(x[0:3])
+        assert y_hat.shape == (3, 10)
+        y_hat = optimized_model(x)
+        assert y_hat.shape == (10, 10)
+
+        # Case2: Quantize directly from pytorch
         optimized_model = trainer.quantize(model, accelerator='openvino',
                                            calib_dataloader=dataloader)
 
@@ -42,7 +51,7 @@ class TestOpenVINO(TestCase):
         y_hat = optimized_model(x)
         assert y_hat.shape == (10, 10)
 
-    def test_trainer_trace_openvino_with_tuning(self):
+    def test_trainer_quantize_openvino_with_tuning(self):
         trainer = Trainer()
         model = mobilenet_v3_small(num_classes=10)
 
@@ -50,7 +59,7 @@ class TestOpenVINO(TestCase):
         y = torch.ones((10, ), dtype=torch.long)
 
         ds = TensorDataset(x, y)
-        dataloader = DataLoader(ds, batch_size=1)
+        dataloader = DataLoader(ds, batch_size=2)
 
         optimized_model = trainer.quantize(model, accelerator='openvino',
                                            calib_dataloader=dataloader,
