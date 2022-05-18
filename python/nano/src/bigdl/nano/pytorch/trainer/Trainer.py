@@ -259,7 +259,6 @@ class Trainer(pl.Trainer):
             When accelerator='onnxruntime', supported methods: 'qlinear', 'integer', defaults
             to 'qlinear'. Suggest 'qlinear' for lower accuracy drop if using static quantization.
             More details in https://onnxruntime.ai/docs/performance/quantization.html.
-        :param backend:             Only 'inc' is supported. Default: 'inc'.
         :param conf:        A path to conf yaml file for quantization.
                             Default: None, using default config.
         :param tuning_strategy:    'bayesian', 'basic', 'mse', 'sigopt'. Default: 'bayesian'.
