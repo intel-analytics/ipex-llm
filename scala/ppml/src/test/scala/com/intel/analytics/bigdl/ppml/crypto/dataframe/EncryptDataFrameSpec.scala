@@ -40,8 +40,8 @@ class EncryptDataFrameSpec extends FlatSpec with Matchers with BeforeAndAfter{
   val (plainFileName, encryptFileName, data) = generateCsvData()
 
   def generateKeys(): (String, String) = {
-    val appid:String = (1 to 12).map(x => Random.nextInt(10)).mkString
-    val appkey:String = (1 to 12).map(x => Random.nextInt(10)).mkString
+    val appid: String = (1 to 12).map(x => Random.nextInt(10)).mkString
+    val appkey: String = (1 to 12).map(x => Random.nextInt(10)).mkString
     (appid, appkey)
   }
 
@@ -115,6 +115,5 @@ class EncryptDataFrameSpec extends FlatSpec with Matchers with BeforeAndAfter{
     val d = df.collect().map(v => s"${v.get(0)},${v.get(1)},${v.get(2)}").mkString("\n")
     d should be (data)
   }
-
 }
 

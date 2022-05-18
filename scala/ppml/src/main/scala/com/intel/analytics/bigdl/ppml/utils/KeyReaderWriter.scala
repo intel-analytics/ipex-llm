@@ -20,12 +20,14 @@ import scala.io.Source
 
 class KeyReaderWriter {
 
-  def writeKeyToFile(encryptedKeyPath: String, encryptedKeyContent: String) = {
-    new PrintWriter(encryptedKeyPath) { write(encryptedKeyContent); close }
+  def writeKeyToFile(encryptedKeyPath: String, encryptedKeyContent: String): PrintWriter = {
+    new PrintWriter(encryptedKeyPath) {
+      write(encryptedKeyContent); close
+    }
   }
 
-  def readKeyFromFile(encryptedKeyPath: String):String = {
-    val encryptedKeyCiphertext:String = Source.fromFile(encryptedKeyPath).getLines.next()
+  def readKeyFromFile(encryptedKeyPath: String): String = {
+    val encryptedKeyCiphertext: String = Source.fromFile(encryptedKeyPath).getLines.next()
     encryptedKeyCiphertext
   }
 
