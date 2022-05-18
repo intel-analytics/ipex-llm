@@ -352,7 +352,6 @@ class RayPlugin(DDPSpawnPlugin):
 
     def set_world_ranks(self, process_idx: int = 0):
         """Set the appropriate rank attribues for the trainer."""
-        assert self.cluster_environment is not None
         invalidInputError(
             self.cluster_environment is not None and isinstance(self.cluster_environment,
                                                                 RayEnvironment),
