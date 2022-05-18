@@ -316,9 +316,13 @@ class CenterCrop(object):
 
 class Pad(object):
     def __init__(self, padding, fill=0, padding_mode="constant"):
-        assert isinstance(padding, (numbers.Number, tuple, list))
-        assert isinstance(fill, (numbers.Number, str, tuple))
-        assert padding_mode in ['constant', 'edge', 'reflect', 'symmetric']
+        invalidInputError(isinstance(padding, (numbers.Number, tuple, list)),
+                          "padding is expected to be (numbers.Number, tuple, list)")
+        invalidInputError(isinstance(fill, (numbers.Number, str, tuple)),
+                          "fill is expected to be (numbers.Number, str, tuple)")
+        invalidInputError(padding_mode in ['constant', 'edge', 'reflect', 'symmetric'],
+                          "padding_mode is expected to be ['constant', 'edge',"
+                          " 'reflect', 'symmetric']")
         if isinstance(padding, collections.Sequence) and len(padding) not in [2, 4]:
             invalidInputError(False,
                               f"Padding must be an int or a 2, or 4 element tuple,"
@@ -344,7 +348,8 @@ class Pad(object):
 
 class Lambda(object):
     def __init__(self, lambd):
-        assert isinstance(lambd, types.LambdaType)
+        invalidInputError((lambd, types.LambdaType),
+                          "lambd is expected to types.LambdaType")
         self.lambd = lambd
 
     def __call__(self, img):
@@ -356,7 +361,8 @@ class Lambda(object):
 
 class RandomTransforms(object):
     def __init__(self, transforms):
-        assert isinstance(transforms, (list, tuple))
+        invalidInputError(isinstance(transforms, (list, tuple)),
+                          "transforms is expected to be (list, tuple)")
         self.transforms = transforms
 
     def __call__(self, *args, **kwargs):
@@ -505,9 +511,8 @@ class FiveCrop(object):
         if isinstance(size, numbers.Number):
             self.size = (int(size), int(size))
         else:
-            assert len(
-                size
-            ) == 2, "Please provide only two dimensions (h, w) for size."
+            invalidInputError(len(size) == 2,
+                              "Please provide only two dimensions (h, w) for size.")
             self.size = size
 
         self.tv_F = tv_t.FiveCrop(self.size)
@@ -529,9 +534,8 @@ class TenCrop(object):
         if isinstance(size, numbers.Number):
             self.size = (int(size), int(size))
         else:
-            assert len(
-                size
-            ) == 2, "Please provide only two dimensions (h, w) for size."
+            invalidInputError(len(size) == 2,
+                              "Please provide only two dimensions (h, w) for size.")
             self.size = size
         self.vertical_flip = vertical_flip
 
@@ -665,13 +669,13 @@ class RandomAffine(object):
                                   "If degrees is a single number, it must be positive.")
             self.degrees = (-degrees, degrees)
         else:
-            assert isinstance(degrees, (tuple, list)) and len(degrees) == 2, \
-                "degrees should be a list or tuple and it must be of length 2."
+            invalidInputError(isinstance(degrees, (tuple, list)) and len(degrees) == 2,
+                              "degrees should be a list or tuple and it must be of length 2.")
             self.degrees = degrees
 
         if translate is not None:
-            assert isinstance(translate, (tuple, list)) and len(translate) == 2, \
-                "translate should be a list or tuple and it must be of length 2."
+            invalidInputError(isinstance(translate, (tuple, list)) and len(translate) == 2,
+                              "translate should be a list or tuple and it must be of length 2.")
             for t in translate:
                 if not (0.0 <= t <= 1.0):
                     invalidInputError(False,
@@ -679,8 +683,8 @@ class RandomAffine(object):
         self.translate = translate
 
         if scale is not None:
-            assert isinstance(scale, (tuple, list)) and len(scale) == 2, \
-                "scale should be a list or tuple and it must be of length 2."
+            invalidInputError(isinstance(scale, (tuple, list)) and len(scale) == 2,
+                              "scale should be a list or tuple and it must be of length 2.")
             for s in scale:
                 if s <= 0:
                     invalidInputError(False, "scale values should be positive")
@@ -693,8 +697,8 @@ class RandomAffine(object):
                                       "If shear is a single number, it must be positive.")
                 self.shear = (-shear, shear)
             else:
-                assert isinstance(shear, (tuple, list)) and len(shear) == 2, \
-                    "shear should be a list or tuple and it must be of length 2."
+                invalidInputError(isinstance(shear, (tuple, list)) and len(shear) == 2,
+                                  "shear should be a list or tuple and it must be of length 2.")
                 self.shear = shear
         else:
             self.shear = shear
