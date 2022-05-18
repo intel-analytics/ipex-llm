@@ -22,6 +22,9 @@ import scopt.OptionParser
 
 import java.util.Base64
 
+/**
+ * Simple Attestation Command Line tool for attestation service
+ */
 object AttestationCLI {
     def main(args: Array[String]): Unit = {
 
