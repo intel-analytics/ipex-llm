@@ -19,11 +19,21 @@ package com.intel.analytics.bigdl.ppml.attestation
 
 import com.intel.analytics.bigdl.ppml.utils.EHSMParams
 import com.intel.analytics.bigdl.ppml.utils.HTTPUtil.postRequest
+import org.apache.logging.log4j.LogManager
 import org.json.JSONObject
 
+/**
+ * Attestation Service provided by ehsm
+ * @param kmsServerIP ehsm IP
+ * @param kmsServerPort ehsm port
+ * @param ehsmAPPID application ID
+ * @param ehsmAPPKEY application Key
+ */
 class EHSMAttestationService(kmsServerIP: String, kmsServerPort: String,
                              ehsmAPPID: String, ehsmAPPKEY: String)
   extends AttestationService {
+
+  val logger = LogManager.getLogger(getClass)
 
   // Quote
   val PAYLOAD_QUOTE = "quote"
@@ -41,13 +51,17 @@ class EHSMAttestationService(kmsServerIP: String, kmsServerPort: String,
   override def setPolicy(policy: JSONObject): String = "true"
 
   def getQuoteFromServer(): String = {
+    // TODO Get qutoe from ehsm
     "test"
   }
 
   override def attestWithServer(quote: String): (Boolean, String) = {
     // TODO nonce
     val nonce: String = "test"
-    require(quote != null, "quote should be specified")
+    if (quote == null) {
+      logger.error("Quote should be specified")
+      throw new AttestationRuntimeException("Quote is null")
+    }
     val action: String = ACTION_VERIFY_QUOTE
     val currentTime = System.currentTimeMillis() // ms
     val timestamp = s"$currentTime"

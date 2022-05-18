@@ -35,6 +35,17 @@ trait AttestationService extends Supportive {
   def getPolicy(appID: String): String
   def setPolicy(policy: JSONObject): String
   // App
+
+  /**
+   * Get Quote from Attestation Service
+   * @return quote in string
+   */
   def getQuoteFromServer(): String
+
+  /**
+   * Send quote to Attestation Service, get attestation result
+   * @param quote application's quote
+   * @return attestation result/token
+   */
   def attestWithServer(quote: String): (Boolean, String)
 }
