@@ -44,7 +44,7 @@ class PythonPPML[T: ClassTag](implicit ev: TensorNumeric[T])
   def initFLContext(): Unit = {
     FLContext.initFLContext()
   }
-  def createFLServer() = {
+  def createFLServer(): FLServer = {
     new FLServer()
   }
   def createHflNN(): Unit = {
@@ -63,7 +63,8 @@ class PythonPPML[T: ClassTag](implicit ev: TensorNumeric[T])
 
   }
 
-  def createFGBoostRegression(learningRate: Double, maxDepth: Int, minChildSize: Int) = {
+  def createFGBoostRegression(learningRate: Double,
+                              maxDepth: Int, minChildSize: Int): FGBoostRegression = {
     new FGBoostRegression(learningRate.toFloat, maxDepth, minChildSize)
   }
   def createFGBoostClassification(): Unit = {
@@ -91,15 +92,16 @@ class PythonPPML[T: ClassTag](implicit ev: TensorNumeric[T])
    * @param target the FlClient target Url
    * @return
    */
-  def createFLClient(target: String) = {
+  def createFLClient(target: String): FLClient = {
     val flClient = new FLClient()
     if (target != null) flClient.setTarget(target)
     flClient
   }
-  def flClientClosableSetFLClient(flClientClosable: FLClientClosable, flClient: FLClient) = {
+  def flClientClosableSetFLClient(flClientClosable: FLClientClosable,
+                                  flClient: FLClient): FLClientClosable = {
     flClientClosable.setFlClient(flClient)
   }
-  def createPSI() = {
+  def createPSI(): PSI = {
     new PSI()
   }
   def psiGetSalt(psi: PSI, secureCode: String = ""): String = {
@@ -108,7 +110,8 @@ class PythonPPML[T: ClassTag](implicit ev: TensorNumeric[T])
   def psiUploadSet(psi: PSI, ids: JList[String], salt: String): Unit = {
     psi.uploadSet(ids, salt)
   }
-  def psiDownloadIntersection(psi: PSI, maxtry: Int = 100, retry: Int = 3000): java.util.List[String] = {
+  def psiDownloadIntersection(psi: PSI,
+                              maxtry: Int = 100, retry: Int = 3000): java.util.List[String] = {
     psi.downloadIntersection(maxtry, retry)
   }
   def jTensorToTensorArray(jTensor: JTensor): Array[Tensor[Float]] = {
@@ -143,7 +146,8 @@ class PythonPPML[T: ClassTag](implicit ev: TensorNumeric[T])
     val labelArray = if (label != null) label.storage else null
     model.fit(tensorArray, labelArray, boostRound)
   }
-  def fgBoostEvaluate(model: FGBoostModel, feature: JTensor, label: JTensor): Array[ValidationResult] = {
+  def fgBoostEvaluate(model: FGBoostModel,
+                      feature: JTensor, label: JTensor): Array[ValidationResult] = {
     val tensorArray = jTensorToTensorArray(feature)
     val labelArray = if (label != null) label.storage else null
     model.evaluate(tensorArray, labelArray)

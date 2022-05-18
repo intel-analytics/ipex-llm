@@ -23,7 +23,8 @@ import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import scala.collection.mutable.ArrayBuffer
 
 object DataSetUtils {
-  def localDataSetToArray(dataSet: LocalDataSet[MiniBatch[Float]]): (Array[Tensor[Float]], Array[Float]) = {
+  def localDataSetToArray(dataSet: LocalDataSet[MiniBatch[Float]]):
+  (Array[Tensor[Float]], Array[Float]) = {
     val featureBuffer = new ArrayBuffer[Tensor[Float]]()
     val labelBuffer = new ArrayBuffer[Float]()
     var count = 0

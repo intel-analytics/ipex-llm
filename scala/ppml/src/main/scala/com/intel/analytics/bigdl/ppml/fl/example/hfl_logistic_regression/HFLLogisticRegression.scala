@@ -26,7 +26,8 @@ import collection.JavaConverters._
 
 object HFLLogisticRegression extends DebugLogger {
 
-  def getData(dataPath: String, rowKeyName: String, batchSize: Int = 4): (DataFrame, DataFrame, DataFrame) = {
+  def getData(dataPath: String, rowKeyName: String, batchSize: Int = 4):
+  (DataFrame, DataFrame, DataFrame) = {
     val spark = FLContext.getSparkSession()
     import spark.implicits._
     val df = spark.read.csv(dataPath)

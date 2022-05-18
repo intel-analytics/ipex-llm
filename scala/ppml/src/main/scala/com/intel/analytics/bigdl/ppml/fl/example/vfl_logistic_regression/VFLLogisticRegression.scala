@@ -83,7 +83,8 @@ object VFLLogisticRegression extends DebugLogger{
 
     // Data pipeline from DataFrame to Tensor, and call fit, evaluate, predict
     val (featureColumns, labelColumns) = argv.clientId match {
-      case 1 => (Array("Pregnancies", "Glucose", "BloodPressure", "SkinThickness"), Array("Outcome"))
+      case 1 => (Array("Pregnancies", "Glucose", "BloodPressure", "SkinThickness"),
+        Array("Outcome"))
       case 2 => (Array("Insulin", "BMI", "DiabetesPedigreeFunction"), null)
       case _ => throw new IllegalArgumentException("clientId only support 1, 2 in this example")
     }

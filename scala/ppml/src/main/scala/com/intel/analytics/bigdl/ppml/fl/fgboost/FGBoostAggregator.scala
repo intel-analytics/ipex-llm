@@ -47,12 +47,18 @@ class FGBoostAggregator(validationMethods: Array[ValidationMethod[Float]] = null
   var validationResult = Array[ValidationResult]()
 
   // wrapper methods to simplify data access
-  def getLabelStorage(): Storage[TensorMap] = aggregateTypeMap.get(FLPhase.LABEL).getTensorMapStorage()
-  def getSplitStorage(): Storage[DataSplit] = aggregateTypeMap.get(FLPhase.SPLIT).getSplitStorage()
-  def getTreeLeafStorage(): Storage[TreeLeaf] = aggregateTypeMap.get(FLPhase.TREE_LEAF).getLeafStorage()
-  def getEvalStorage(): Storage[java.util.List[BoostEval]] = aggregateTypeMap.get(FLPhase.EVAL).getTreeEvalStorage()
-  def getPredictStorage(): Storage[java.util.List[BoostEval]] = aggregateTypeMap.get(FLPhase.PREDICT).getTreeEvalStorage()
-  def getResultStorage(): Storage[TensorMap] = aggregateTypeMap.get(FLPhase.RESULT).getTensorMapStorage()
+  def getLabelStorage(): Storage[TensorMap] =
+    aggregateTypeMap.get(FLPhase.LABEL).getTensorMapStorage()
+  def getSplitStorage(): Storage[DataSplit] =
+    aggregateTypeMap.get(FLPhase.SPLIT).getSplitStorage()
+  def getTreeLeafStorage(): Storage[TreeLeaf] =
+    aggregateTypeMap.get(FLPhase.TREE_LEAF).getLeafStorage()
+  def getEvalStorage(): Storage[java.util.List[BoostEval]] =
+    aggregateTypeMap.get(FLPhase.EVAL).getTreeEvalStorage()
+  def getPredictStorage(): Storage[java.util.List[BoostEval]] =
+    aggregateTypeMap.get(FLPhase.PREDICT).getTreeEvalStorage()
+  def getResultStorage(): Storage[TensorMap] =
+    aggregateTypeMap.get(FLPhase.RESULT).getTensorMapStorage()
 
   override def initStorage(): Unit = {
     aggregateTypeMap.put(FLPhase.LABEL, new StorageHolder(FLDataType.TENSOR_MAP))

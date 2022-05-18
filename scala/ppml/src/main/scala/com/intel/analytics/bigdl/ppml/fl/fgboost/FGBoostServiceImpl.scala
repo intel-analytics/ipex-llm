@@ -205,7 +205,8 @@ class FGBoostServiceImpl(clientNum: Int) extends FGBoostServiceGrpc.FGBoostServi
     val predicts: java.util.List[BoostEval] = request.getTreeEvalList
     // TODO: add same logic with evaluate
     try {
-      aggregator.putClientData(FLPhase.PREDICT, clientUUID, request.getVersion, new DataHolder(predicts))
+      aggregator.putClientData(FLPhase.PREDICT, clientUUID, request.getVersion,
+        new DataHolder(predicts))
       val result = aggregator.getResultStorage().serverData
       if (result == null) {
         val response = "Your required data doesn't exist"

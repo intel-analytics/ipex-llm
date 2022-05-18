@@ -39,7 +39,7 @@ class Split (
     this.version = version
     this
   }
-  def getFeatureName() = featureName
+  def getFeatureName(): String = featureName
   def setFeatureName(featureName: String): Split = {
     this.featureName = featureName
     this

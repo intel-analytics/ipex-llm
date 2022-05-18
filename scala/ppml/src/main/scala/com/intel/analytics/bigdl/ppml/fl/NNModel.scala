@@ -96,7 +96,7 @@ abstract class NNModel() {
                         batchSize: Int = 4,
                         featureColumn: Array[String] = null,
                         labelColumn: Array[String] = null,
-                        hasLabel: Boolean = true):Unit = {
+                        hasLabel: Boolean = true): Unit = {
     if (data == null) {
       estimator.getEvaluateResults().foreach{r =>
         println(r._1 + ":" + r._2.mkString(","))
@@ -114,7 +114,7 @@ abstract class NNModel() {
    * @param batchSize
    * @return
    */
-  def predict(x: Tensor[Float], batchSize: Int = 4):Array[Activity] = {
+  def predict(x: Tensor[Float], batchSize: Int = 4): Array[Activity] = {
     estimator.predict(VFLTensorUtils.featureLabelToMiniBatch(x, null, batchSize))
   }
   /**
