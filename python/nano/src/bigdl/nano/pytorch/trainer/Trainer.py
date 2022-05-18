@@ -224,7 +224,6 @@ class Trainer(pl.Trainer):
                  accuracy_criterion: dict = {'relative': 0.99, 'higher_is_better': True},
                  approach='static',
                  method='fx',
-                 backend='inc',
                  conf: Optional[str] = None,
                  tuning_strategy='bayesian',
                  timeout=0,
@@ -274,7 +273,7 @@ class Trainer(pl.Trainer):
 
         :return:            A accelerated Pytorch-Lightning Model if quantization is sucessful.
         """
-        if backend == 'inc':
+        if not accelerator or accelerator == 'onnxruntime':
             # check if dataloader is of legal format
             check_pytorch_dataloaders(model, [calib_dataloader, val_dataloader])
 
@@ -291,7 +290,6 @@ class Trainer(pl.Trainer):
                 framework = 'pytorch_{}'.format(method)
             if accelerator == 'onnxruntime':
                 framework = "{}_{}ops".format('onnxrt', method)
-            pl_model = model
             quantizer = QuantizationINC(framework=framework, conf=conf, approach=approach,
                                         tuning_strategy=tuning_strategy,
                                         accuracy_criterion=accuracy_criterion,
@@ -322,7 +320,7 @@ class Trainer(pl.Trainer):
                     saved_onnx = Path(dir) / 'tmp.onnx'
                     quantized_model.save(saved_onnx)
                     return PytorchONNXRuntimeModel(str(saved_onnx))
-        elif backend == 'pot' or accelerator == 'openvino':
+        elif accelerator == 'openvino':
             model_type = type(model).__name__
             if not model_type == 'PytorchOpenVINOModel':
                 if not input_sample:
@@ -339,13 +337,13 @@ class Trainer(pl.Trainer):
                 "drop_type": drop_type,
                 "maximal_drop": accuracy_criterion[drop_type],
                 "max_iter_num": max_trials,
-                # n_requests: None,
-                # sample_size: 300
+                "n_requests": None,
+                "sample_size": 300
             }
             return model.pot(calib_dataloader, **kwargs)
         else:
             invalidInputError(False,
-                              "Backend {} is invalid.".format(backend))
+                              "Accelerator {} is invalid.".format(accelerator))
 
     @staticmethod
     def trace(model: nn.Module,
