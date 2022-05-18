@@ -311,8 +311,8 @@ class RayPlugin(DDPSpawnPlugin):
             ._training_type_plugin = self
         self.lightning_module.trainer.accelerator.training_type_plugin = self
 
-        invalidInputError(isinstance(self.cluster_environment, RayEnvironment),
-                          "expect ray environment here")
+        # invalidInputError(isinstance(self.cluster_environment, RayEnvironment),
+        #                   "expect ray environment here")
         self.cluster_environment.set_global_rank(global_rank)
         self.cluster_environment.set_remote_execution(True)
 
@@ -350,10 +350,10 @@ class RayPlugin(DDPSpawnPlugin):
 
     def set_world_ranks(self, process_idx: int = 0):
         """Set the appropriate rank attribues for the trainer."""
-        invalidInputError(
-            self.cluster_environment is not None and isinstance(self.cluster_environment,
-                                                                RayEnvironment),
-            "expect ray environment here")
+        # invalidInputError(
+        #     self.cluster_environment is not None and isinstance(self.cluster_environment,
+        #                                                         RayEnvironment),
+        #     "expect ray environment here")
         if self.cluster_environment.is_remote():
             self._local_rank = self.global_to_local[self.global_rank]
             self.cluster_environment.set_global_rank(self.global_rank)
