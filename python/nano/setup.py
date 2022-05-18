@@ -73,7 +73,6 @@ def setup_package():
     pytorch_requires = ["torch==1.11.0",
                         "torchvision==0.12.0",
                         "pytorch_lightning==1.6.2",
-                        "neural_compressor==1.11.0", 
                         "intel_extension_for_pytorch==1.11.0",
                         "opencv-python-headless",
                         "PyTurboJPEG",

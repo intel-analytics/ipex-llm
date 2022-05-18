@@ -135,9 +135,7 @@ class Trainer(pl.Trainer):
                 loss: _Loss = None,
                 optimizer: torch.optim.Optimizer = None,
                 scheduler: _LRScheduler = None,
-                metrics: List[Metric] = None,
-                use_ipex: bool = False,
-                enable_bf16: bool = False):
+                metrics: List[Metric] = None):
         """
         Construct a pytorch-lightning model.
 
@@ -162,12 +160,6 @@ class Trainer(pl.Trainer):
                 "Loss and optimizer should be None if model is a pytorch-lightning model."
             pl_model = model
         else:
-            if use_ipex:
-                if enable_bf16:
-                    model, optimizer = ipex_optimize(model, optimizer=optimizer,
-                                                     dtype=torch.bfloat16)
-                else:
-                    model, optimizer = ipex_optimize(model, optimizer=optimizer)
             pl_model = LightningModuleFromTorch(model, loss, optimizer, scheduler, metrics)
 
         return pl_model
