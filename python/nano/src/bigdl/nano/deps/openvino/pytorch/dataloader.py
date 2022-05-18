@@ -14,10 +14,13 @@
 # limitations under the License.
 #
 from openvino.tools.pot import DataLoader
+from torch.utils.data.dataloader import DataLoader as TorchLoader
 
 
 class PytorchOpenVINODataLoader(DataLoader):
     def __init__(self, dataloader, collate_fn=None):
+        assert isinstance(dataloader, TorchLoader),\
+            "Please provide an instance of torch.utils.data.dataloader.Dataloader."
         self.dataset = dataloader.dataset
         self.collate_fn = collate_fn
 

@@ -15,9 +15,15 @@
 #
 from ..core.metric import BaseOpenVINOMetric
 import torch
+from torchmetrics import Metric
 
 
 class PytorchOpenVINOMetric(BaseOpenVINOMetric):
+    def __init__(self, metric, higher_better=True):
+        assert isinstance(metric, Metric),\
+            "Please provide an instance of torchmetrics.Metric."
+        super().__init__(metric, higher_better)
+
     def stack(self, output):
         return torch.stack(output)
 
