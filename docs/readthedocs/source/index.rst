@@ -40,6 +40,17 @@ BigDL Documentation
    doc/UserGuide/k8s.md
    doc/UserGuide/databricks.md
    doc/UserGuide/develop.md
+
+.. toctree::
+   :maxdepth: 1
+   :caption: Nano Overview
+
+   doc/Nano/Overview/nano.md
+   doc/Nano/Overview/windows_guide.md
+   doc/Nano/QuickStart/pytorch_train.md
+   doc/Nano/QuickStart/pytorch_inference.md
+   doc/Nano/QuickStart/tensorflow_train.md
+   doc/Nano/QuickStart/tensorflow_inference.md
    
 .. toctree::
    :maxdepth: 1
