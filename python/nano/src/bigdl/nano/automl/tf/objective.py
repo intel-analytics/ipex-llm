@@ -23,7 +23,7 @@ import inspect
 import copy
 
 from bigdl.nano.automl.hpo.backend import create_tfkeras_pruning_callback
-from bigdl.nano.utils.log4Error import *
+from bigdl.nano.utils.log4Error import invalidInputError
 
 
 def _is_creator(model):

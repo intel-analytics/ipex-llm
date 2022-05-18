@@ -22,7 +22,7 @@ from typing import Union, Optional
 import warnings
 
 from bigdl.nano.common.cpu_schedule import schedule_workers, get_cpu_info
-from bigdl.nano.utils.log4Error import *
+from bigdl.nano.utils.log4Error import invalidInputError
 
 
 parser = argparse.ArgumentParser()

@@ -42,7 +42,7 @@
 import math
 import torch
 from torch.optim.optimizer import Optimizer
-from bigdl.nano.utils.log4Error import *
+from bigdl.nano.utils.log4Error import invalidInputError
 
 
 class SparseAdam(Optimizer):

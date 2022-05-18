@@ -27,7 +27,7 @@ from bigdl.nano.automl.hpo.search import (
     _strip_val_prefix,
 )
 from bigdl.nano.automl.hpo.space import AutoObject
-from bigdl.nano.utils.log4Error import *
+from bigdl.nano.utils.log4Error import invalidInputError
 
 
 class HPOMixin:

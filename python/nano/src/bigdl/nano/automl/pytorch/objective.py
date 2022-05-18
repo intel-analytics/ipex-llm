@@ -24,7 +24,7 @@ from pytorch_lightning.utilities import rank_zero_deprecation
 from pytorch_lightning.core.datamodule import LightningDataModule
 
 from bigdl.nano.automl.hpo.backend import create_pl_pruning_callback
-from bigdl.nano.utils.log4Error import *
+from bigdl.nano.utils.log4Error import invalidInputError
 import inspect
 import copy
 

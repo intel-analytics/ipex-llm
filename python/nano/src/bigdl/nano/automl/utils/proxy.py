@@ -15,7 +15,7 @@
 #
 
 import functools
-from bigdl.nano.utils.log4Error import *
+from bigdl.nano.utils.log4Error import invalidInputError
 
 
 def proxy_method(cls, name):

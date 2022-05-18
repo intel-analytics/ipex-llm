@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 import torch
-from bigdl.nano.utils.log4Error import *
+from bigdl.nano.utils.log4Error import invalidInputError
 
 
 def _check_data_type(data):

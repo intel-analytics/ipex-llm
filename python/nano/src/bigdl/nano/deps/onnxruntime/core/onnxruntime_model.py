@@ -16,7 +16,7 @@
 from pathlib import Path
 import onnxruntime as ort
 import onnx
-from bigdl.nano.utils.log4Error import *
+from bigdl.nano.utils.log4Error import invalidInputError
 
 
 class ONNXRuntimeModel:

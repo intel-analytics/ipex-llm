@@ -19,7 +19,7 @@ from pathlib import Path
 from ..core.onnxruntime_model import ONNXRuntimeModel
 from bigdl.nano.utils.inference.pytorch.model import AcceleratedLightningModule
 from bigdl.nano.utils.inference.pytorch.model_utils import export_to_onnx, get_forward_args
-from bigdl.nano.utils.log4Error import *
+from bigdl.nano.utils.log4Error import invalidInputError
 
 
 class PytorchONNXRuntimeModel(ONNXRuntimeModel, AcceleratedLightningModule):

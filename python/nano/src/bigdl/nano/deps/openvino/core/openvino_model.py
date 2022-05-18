@@ -16,7 +16,7 @@
 from pathlib import Path
 from openvino.runtime import Core
 from openvino.runtime.passes import Manager
-from bigdl.nano.utils.log4Error import *
+from bigdl.nano.utils.log4Error import invalidInputError
 
 
 class OpenVINOModel:

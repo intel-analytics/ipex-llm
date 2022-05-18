@@ -22,7 +22,7 @@ from bigdl.nano.automl.utils.register_modules import (
     register_module,
     register_module_simple,
     clean_modules_simple,)
-from bigdl.nano.utils.log4Error import *
+from bigdl.nano.utils.log4Error import invalidInputError
 
 
 class HPOConfig(object):

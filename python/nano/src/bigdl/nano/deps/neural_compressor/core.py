@@ -13,6 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+from bigdl.nano.utils.log4Error import invalidInputError
+
+
 try:
     from neural_compressor.conf.config import Quantization_Conf
     from neural_compressor.experimental import Quantization, common
@@ -24,7 +27,6 @@ except ImportError:
 
 
 from .metric import METRICS
-from bigdl.nano.utils.log4Error import *
 
 
 class QuantizationINC(Quantization):

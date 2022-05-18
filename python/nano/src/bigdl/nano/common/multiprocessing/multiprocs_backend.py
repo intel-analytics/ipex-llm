@@ -19,7 +19,7 @@ from tempfile import TemporaryDirectory
 from typing import Any
 
 from bigdl.nano.common.multiprocessing.backend import Backend
-from bigdl.nano.utils.log4Error import *
+from bigdl.nano.utils.log4Error import invalidInputError
 
 
 class MultiprocessingBackend(Backend):

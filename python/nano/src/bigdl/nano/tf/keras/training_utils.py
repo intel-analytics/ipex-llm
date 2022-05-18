@@ -18,7 +18,7 @@ import tensorflow as tf
 from bigdl.nano.deps.ray.ray_api import create_ray_multiprocessing_backend
 from bigdl.nano.deps.horovod.horovod_api import create_horovod_multiprocessing_backend
 from bigdl.nano.deps.horovod.horovod_api import distributed_train_keras_horovod
-from bigdl.nano.utils.log4Error import *
+from bigdl.nano.utils.log4Error import invalidInputError
 
 
 class TrainingUtils:

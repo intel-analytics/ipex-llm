@@ -18,7 +18,7 @@
 from .space import AutoObject
 from enum import Enum
 
-from bigdl.nano.utils.log4Error import *
+from bigdl.nano.utils.log4Error import invalidInputError
 
 
 class CALLTYPE(Enum):

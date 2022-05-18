@@ -15,7 +15,7 @@
 #
 
 from bigdl.nano.automl.hpo.backend import PrunerType, SamplerType
-from bigdl.nano.utils.log4Error import *
+from bigdl.nano.utils.log4Error import invalidInputError
 from bigdl.nano.automl.hpo.space import SimpleSpace, NestedSpace, AutoObject
 import optuna
 

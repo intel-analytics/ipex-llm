@@ -18,7 +18,7 @@ import torch
 import yaml
 from pathlib import Path
 from .model_utils import get_forward_args
-from bigdl.nano.utils.log4Error import *
+from bigdl.nano.utils.log4Error import invalidInputError
 
 
 class AcceleratedLightningModule(LightningModule):

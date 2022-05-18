@@ -27,7 +27,7 @@ from collections import OrderedDict
 import ConfigSpace as CS
 import ConfigSpace.hyperparameters as CSH
 from bigdl.nano.automl.utils import EasyDict
-from bigdl.nano.utils.log4Error import *
+from bigdl.nano.utils.log4Error import invalidInputError
 
 
 __all__ = ['Space', 'NestedSpace', 'AutoObject', 'List', 'Dict',

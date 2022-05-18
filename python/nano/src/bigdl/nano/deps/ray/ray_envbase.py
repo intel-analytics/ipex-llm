@@ -32,7 +32,7 @@
 
 from pytorch_lightning.plugins.environments import ClusterEnvironment
 from pytorch_lightning.utilities import rank_zero_only
-from bigdl.nano.utils.log4Error import *
+from bigdl.nano.utils.log4Error import invalidInputError
 
 
 class RayEnvironment(ClusterEnvironment):

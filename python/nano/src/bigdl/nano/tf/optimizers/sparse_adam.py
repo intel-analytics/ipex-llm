@@ -19,7 +19,7 @@ from keras import backend_config
 from keras.optimizer_v2 import optimizer_v2
 from tensorflow.python.util.tf_export import keras_export
 import tensorflow
-from bigdl.nano.utils.log4Error import *
+from bigdl.nano.utils.log4Error import invalidInputError
 
 
 class SparseAdam(tensorflow.keras.optimizers.Adam):
