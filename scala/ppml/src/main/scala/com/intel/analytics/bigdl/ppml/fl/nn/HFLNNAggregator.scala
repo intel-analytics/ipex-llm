@@ -65,8 +65,7 @@ class HFLNNAggregator extends NNAggregator {
     }
     // average
     val averagedDataMap = new mutable.HashMap[String, FloatTensor]
-    import scala.collection.JavaConversions._
-    for (tensorName <- sumedDataMap.keySet) {
+    for (tensorName <- sumedDataMap.asScala.keySet) {
       val shapeList = sumedDataMap.get(tensorName).getShapeList
       val dataList = sumedDataMap.get(tensorName).getTensorList
       val averagedDataList = new java.util.ArrayList[java.lang.Float]
@@ -81,7 +80,7 @@ class HFLNNAggregator extends NNAggregator {
     val metaData = MetaData.newBuilder
       .setName(modelName).setVersion(storage.version + 1).build
     val aggregatedTable = TensorMap.newBuilder
-      .setMetaData(metaData).putAllTensorMap(averagedDataMap).build
+      .setMetaData(metaData).putAllTensorMap(averagedDataMap.asJava).build
     storage.clearClientAndUpdateServer(aggregatedTable)
   }
 }
