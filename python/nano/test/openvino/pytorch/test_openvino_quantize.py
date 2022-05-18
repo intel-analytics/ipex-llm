@@ -35,6 +35,24 @@ class TestOpenVINO(TestCase):
         dataloader = DataLoader(ds, batch_size=1)
 
         optimized_model = trainer.quantize(model, accelerator='openvino',
+                                           calib_dataloader=dataloader)
+
+        y_hat = optimized_model(x[0:3])
+        assert y_hat.shape == (3, 10)
+        y_hat = optimized_model(x)
+        assert y_hat.shape == (10, 10)
+
+    def test_trainer_trace_openvino_with_tuning(self):
+        trainer = Trainer()
+        model = mobilenet_v3_small(num_classes=10)
+
+        x = torch.rand((10, 3, 256, 256))
+        y = torch.ones((10, ), dtype=torch.long)
+
+        ds = TensorDataset(x, y)
+        dataloader = DataLoader(ds, batch_size=1)
+
+        optimized_model = trainer.quantize(model, accelerator='openvino',
                                            calib_dataloader=dataloader,
                                            metric=F1(10))
 
