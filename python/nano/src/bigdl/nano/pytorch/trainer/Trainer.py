@@ -364,6 +364,8 @@ class Trainer(pl.Trainer):
                                             accelerator='onnxruntime', otherwise will be ignored.
         :return: Model with different acceleration(OpenVINO/ONNX Runtime).
         """
+        assert isinstance(model, nn.Module), "Expect a nn.Module instance, but got type {}"\
+            .format(type(model))
         if accelerator == 'openvino':
             return PytorchOpenVINOModel(model, input_sample)
         if accelerator == 'onnxruntime':
