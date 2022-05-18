@@ -41,7 +41,7 @@ from bigdl.nano.deps.onnxruntime.onnxruntime_api import bind_onnxrt_methods,\
 from bigdl.nano.deps.neural_compressor.inc_api import QuantizationINC, PytorchQuantizedModel,\
     check_pytorch_dataloaders, load_inc_model
 from bigdl.nano.utils.log4Error import invalidInputError
-
+from bigdl.nano.utils.inference.pytorch.model import AcceleratedLightningModule
 distributed_backends = ["spawn", "ray", "subprocess"]
 
 
@@ -364,8 +364,9 @@ class Trainer(pl.Trainer):
                                             accelerator='onnxruntime', otherwise will be ignored.
         :return: Model with different acceleration(OpenVINO/ONNX Runtime).
         """
-        assert isinstance(model, nn.Module), "Expect a nn.Module instance, but got type {}"\
-            .format(type(model))
+        assert isinstance(model, nn.Module) and not isinstance(model, AcceleratedLightningModule),\
+            "Expect a nn.Module instance that is not traced or quantized\
+                but got type {}".format(type(model))
         if accelerator == 'openvino':
             return PytorchOpenVINOModel(model, input_sample)
         if accelerator == 'onnxruntime':
