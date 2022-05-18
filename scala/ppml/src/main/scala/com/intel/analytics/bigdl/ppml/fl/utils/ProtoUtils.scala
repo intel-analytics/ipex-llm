@@ -30,7 +30,6 @@ import org.apache.logging.log4j.LogManager
 
 import scala.reflect.ClassTag
 import scala.util.Random
-import scala.collection.JavaConversions._
 import scala.collection.JavaConverters._
 import com.intel.analytics.bigdl.dllib.utils.Log4Error
 import com.intel.analytics.bigdl.ppml.fl.FLClient
@@ -110,8 +109,8 @@ object ProtoUtils {
       .setName(name).setVersion(version).build
     val tensor =
       FloatTensor.newBuilder()
-        .addAllTensor(weights.storage.toList.map(v => float2Float(v)))
-        .addAllShape(weights.size.toList.map(v => int2Integer(v)))
+        .addAllTensor(weights.storage.toList.map(v => float2Float(v)).asJava)
+        .addAllShape(weights.size.toList.map(v => int2Integer(v)).asJava)
         .build()
     val metamodel = TensorMap.newBuilder
       .putTensorMap("weights", tensor)

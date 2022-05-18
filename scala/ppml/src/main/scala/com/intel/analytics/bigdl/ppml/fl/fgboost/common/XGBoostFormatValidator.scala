@@ -31,7 +31,7 @@ object XGBoostFormatValidator {
   def setXGBoostHeaders(headers: Array[String]): Unit = {
     xGBoostHeaders = headers
   }
-  def clearHeaders():Unit = {
+  def clearHeaders(): Unit = {
     fGBoostHeaders.clear()
   }
   def addHeaders(headers: Array[String]): Unit = {

@@ -22,7 +22,6 @@ import java.util
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.ppml.fl.fgboost.common.TreeUtils._
 import com.intel.analytics.bigdl.dllib.utils.Log4Error
-import scala.collection.JavaConversions.asScalaBuffer
 import scala.collection.JavaConverters._
 import scala.collection.mutable.HashSet
 import scala.collection.mutable
@@ -227,7 +226,7 @@ class RegressionTree(
   }
 
   def splitToNodes(split: Split, treeNode: TreeNode): (TreeNode, TreeNode) = {
-    val leftSet = split.itemSet.map(Integer2int).toSet
+    val leftSet = split.itemSet.asScala.map(Integer2int).toSet
     val rightSet = treeNode.recordSet.diff(leftSet)
     // Left nodeID = parentNodeID * 2 + 1
     // Right nodeID = parentNodeID * 2 + 2
