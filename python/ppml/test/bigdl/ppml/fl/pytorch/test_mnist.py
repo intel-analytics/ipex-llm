@@ -40,6 +40,7 @@ resource_path = os.path.join(os.path.dirname(__file__), "../resources")
 class TestCorrectness(unittest.TestCase):
     fmt = '%(asctime)s %(levelname)s {%(module)s:%(lineno)d} - %(message)s'
     logging.basicConfig(format=fmt, level=logging.INFO)
+    os.unsetenv()
     def setUp(self) -> None:
         self.fl_server = FLServer()
         self.fl_server.build()
