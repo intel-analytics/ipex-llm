@@ -337,8 +337,9 @@ class Trainer(pl.Trainer):
                 "drop_type": drop_type,
                 "maximal_drop": accuracy_criterion[drop_type],
                 "max_iter_num": max_trials,
-                "n_requests": None,
-                "sample_size": 300
+                # TODO following two keys are optional, if there is need, we can add them
+                # "n_requests": None,
+                # "sample_size": 300
             }
             return model.pot(calib_dataloader, **kwargs)
         else:
