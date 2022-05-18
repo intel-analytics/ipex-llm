@@ -115,10 +115,5 @@ class EncryptDataFrameSpec extends FlatSpec with Matchers with BeforeAndAfter{
     val d = df.collect().map(v => s"${v.get(0)},${v.get(1)},${v.get(2)}").mkString("\n")
     d should be (data)
   }
-
-  "write to local" should "work" in {
-
-  }
-
 }
 
