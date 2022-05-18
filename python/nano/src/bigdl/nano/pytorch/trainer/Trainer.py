@@ -372,6 +372,7 @@ class Trainer(pl.Trainer):
             return PytorchOpenVINOModel(model, input_sample)
         if accelerator == 'onnxruntime':
             return PytorchONNXRuntimeModel(model, input_sample, onnxruntime_session_options)
+        raise ValueError("Accelerator {} is invalid.".format(accelerator))
 
     @staticmethod
     def save(model: LightningModule, path):
