@@ -25,8 +25,8 @@ import traceback
 
 
 class NNServiceImpl(NNServiceServicer):
-    def __init__(self) -> None:
-        self.aggregator = Aggregator()
+    def __init__(self, **kargs) -> None:
+        self.aggregator = Aggregator(**kargs)
 
     def train(self, request: TrainRequest, context):
         tensor_map = request.data.tensorMap

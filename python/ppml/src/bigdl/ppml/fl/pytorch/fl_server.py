@@ -22,12 +22,19 @@ from bigdl.ppml.fl.pytorch.service.nn_service import NNServiceImpl
 
 
 class FLServer(object):
-    def __init__(self, jvalue=None, *args):
-        self.server = grpc.server(futures.ThreadPoolExecutor(max_workers=2))
+    def __init__(self, loss_fn, optimizer, client_num=1):
+        self.server = grpc.server(futures.ThreadPoolExecutor(max_workers=5))
         self.port = 8980 # TODO: set from config file
+        self.loss_fn = loss_fn
+        self.optimizer = optimizer
+        self.client_num = client_num
 
     def build(self):
-        add_NNServiceServicer_to_server(NNServiceImpl(), self.server)
+        add_NNServiceServicer_to_server(
+            NNServiceImpl(client_num=self.client_num,
+                          loss_fn=self.loss_fn,
+                          optimizer=self.optimizer),            
+            self.server)
         self.server.add_insecure_port(f'[::]:{self.port}')
         logging.info(f'gRPC server starts listening port: {self.port}')
 

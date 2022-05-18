@@ -13,8 +13,3 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-<<<<<<<< HEAD:python/ppml/src/bigdl/ppml/fl/pytorch/__init__.py
-========
-
-from .tfrs_model import TFRSModel
->>>>>>>> bcb92a92eda883e0fec0fb97914afb85e85f6738:python/friesian/src/bigdl/friesian/models/__init__.py
