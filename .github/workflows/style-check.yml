@@ -72,3 +72,6 @@ jobs:
 
       - name: Chronos style checking
         run: bash python/chronos/dev/test/lint-python
+
+      - name: Nano style checking
+        run: bash python/nano/dev/lint-python
