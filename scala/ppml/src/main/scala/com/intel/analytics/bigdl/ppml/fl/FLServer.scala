@@ -51,7 +51,7 @@ class FLServer private[ppml](val _args: Array[String] = null) extends GrpcServer
   configPath = "ppml-conf.yaml"
   var clientNum: Int = 1
 
-  def setClientNum(clientNum: Int) = {
+  def setClientNum(clientNum: Int): Unit = {
     this.clientNum = clientNum
   }
   @throws[IOException]
