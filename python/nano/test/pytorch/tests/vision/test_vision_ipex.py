@@ -19,7 +19,6 @@ import pytest
 import os
 from unittest import TestCase
 from bigdl.nano.pytorch.vision.models import vision
-# from bigdl.nano.deps.ipex.ipex_api import create_IPEXAccelerator as IPEXAccelerator
 from test.pytorch.utils._train_torch_lightning import train_with_linear_top_layer
 from test.pytorch.utils._train_torch_lightning import train_torch_lighting_ipex
 
