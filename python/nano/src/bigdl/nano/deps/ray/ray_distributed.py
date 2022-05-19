@@ -119,6 +119,7 @@ class RayPlugin(DDPSpawnPlugin):
                  num_cpus_per_worker: int = 1,
                  use_gpu: bool = False,
                  use_ipex: bool = False,
+                 enable_bf16: bool = False,
                  init_hook: Callable = None,
                  ipex_device: str = None,
                  **ddp_kwargs: Union[Any, Dict[str, Any]]):
@@ -139,6 +140,8 @@ class RayPlugin(DDPSpawnPlugin):
             sync_batchnorm=False,
             parallel_devices=[],
             cluster_environment=RayEnvironment(world_size=num_workers),
+            use_ipex=use_ipex,
+            enable_bf16=enable_bf16,
             **ddp_kwargs)  # type: ignore
         self.nickname = "ddp_ray"
         self.num_workers = num_workers
@@ -419,9 +422,6 @@ class RayPlugin(DDPSpawnPlugin):
     def root_device(self):
         if self.use_gpu and torch.cuda.is_available():
             return torch.device("cuda", 0)
-        elif self.use_ipex and self.ipex_device is not None:
-            # Add ipex option.
-            return torch.device(self.ipex_device)
         else:
             return torch.device("cpu")
 
@@ -436,12 +436,6 @@ class RayPlugin(DDPSpawnPlugin):
         if self.global_rank == 0:
             # Save training results as attributes.
             self._results = results
-
-            # unsupported Storage type for ipex
-            # Convert xpu tensor back to cpu
-            # refer to https://github.com/intel/intel-extension-for-pytorch/issues/158
-            if self.use_ipex:
-                self.lightning_module.to("cpu")
 
             self.model_state_dict = self.lightning_module.state_dict()
             best_model_path = None

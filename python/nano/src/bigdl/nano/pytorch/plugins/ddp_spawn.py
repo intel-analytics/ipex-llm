@@ -180,6 +180,13 @@ class DDPSpawnPlugin(pl.plugins.DDPSpawnPlugin):
         self.dist.rank = self.global_rank
         self.dist.device = self.root_device
 
+        if self.use_ipex:
+            dtype = torch.bfloat16 if self.enable_bf16 else None
+            import intel_extension_for_pytorch as ipex
+            optimizer = self.lightning_module.trainer.accelerator.optimizers[0]
+            ipex.optimize(self.model, optimizer=optimizer,
+                          inplace=True, dtype=dtype)
+
         if self.sync_batchnorm:
             self.model = self.configure_sync_batchnorm(self.model)
 
