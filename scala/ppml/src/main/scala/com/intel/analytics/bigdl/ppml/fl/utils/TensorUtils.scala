@@ -21,7 +21,7 @@ import org.apache.spark.sql.DataFrame
 
 object TensorUtils {
   def fromDataFrame(df: DataFrame,
-                    columns: Array[String]) = {
+                    columns: Array[String]): Tensor[Float] = {
     if (columns == null) {
       null
     } else {

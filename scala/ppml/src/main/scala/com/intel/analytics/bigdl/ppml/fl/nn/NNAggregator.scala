@@ -25,7 +25,8 @@ import com.intel.analytics.bigdl.ppml.fl.common.{Aggregator, FLDataType, FLPhase
 import com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.TensorMap
 
 abstract class NNAggregator extends Aggregator {
-  def getStorage(flPhase: FLPhase) = aggregateTypeMap.get(flPhase).getTensorMapStorage()
+  def getStorage(flPhase: FLPhase): Storage[TensorMap] =
+    aggregateTypeMap.get(flPhase).getTensorMapStorage()
   protected var shouldReturn = false
 
   def setShouldReturn(shouldReturn: Boolean): Unit = {

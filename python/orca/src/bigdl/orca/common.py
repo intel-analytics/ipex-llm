@@ -175,23 +175,20 @@ def init_orca_context(cluster_mode=None, runtime="spark", cores=2, memory="2g", 
 
     :param runtime: The runtime for backend. One of "ray" and "spark". Default to be "spark".
     :param cluster_mode: The mode for the Spark cluster. One of "local", "yarn-client",
-           "yarn-cluster", "k8s-client" and "standalone". Default to be None and in this case
-           there is supposed to be an existing SparkContext in your application.
+           "yarn-cluster", "k8s-client", "k8s-cluster" and "standalone".
+           You are highly recommended to install and run bigdl through pip, which is more
+           convenient.
+
+           Default to be None and in this case there is supposed to be an existing
+           SparkContext in your application from `spark-submit` and you need to set the Spark
+           configurations through command line options or the properties file. To make things
+           easier, you are recommended to use `spark-submit-with-bigdl` after pip install bigdl.
 
            For "yarn-client" and "yarn-cluster", you are supposed to use conda environment
            and set the environment variable HADOOP_CONF_DIR.
 
-           For "k8s-client", you are supposed to additionally specify the arguments master
-           and container_image.
-           For "k8s-cluster", you are supposed to use spark-submit to submit the application
-           and use the default cluster_mode instead.
-           In this case, please set the Spark configurations through command line options or
-           the properties file.
-           To make things easier, you are recommended to use the launch scripts we provide:
-           https://github.com/intel-analytics/BigDL/tree/branch-2.0/scripts.
-
-           For other cluster modes, you are recommended to install and run bigdl through
-           pip, which is more convenient.
+           For "k8s-client" and "k8s-cluster", you are supposed to additionally specify the
+           arguments master and container_image.
     :param runtime: The runtime for backend. One of "ray" and "spark". Default to be "spark".
     :param cores: The number of cores to be used on each node. Default to be 2.
     :param memory: The memory allocated for each node. Default to be '2g'.

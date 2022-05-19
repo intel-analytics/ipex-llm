@@ -16,6 +16,7 @@
 
 package com.intel.analytics.bigdl.ppml.fl.nn
 
+import com.intel.analytics.bigdl.dllib.nn.abstractnn.Activity
 import com.intel.analytics.bigdl.ppml.fl.FLContext
 import com.intel.analytics.bigdl.ppml.fl.algorithms.{FGBoostRegression, VFLLogisticRegression}
 import com.intel.analytics.bigdl.ppml.fl.utils.{FlContextForTest, TensorUtils}
@@ -35,7 +36,7 @@ class MockClient(dataPath: String,
     rawDataPipeline()
   }
 
-  def rawDataPipeline() = {
+  def rawDataPipeline(): Array[Activity] = {
     val sources = Source.fromFile(dataPath, "utf-8").getLines()
     val spark = FLContext.getSparkSession()
     val dfTrain = spark.read.option("header", "true").csv(dataPath)
