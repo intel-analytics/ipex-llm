@@ -629,18 +629,65 @@ class TestTFRayEstimator(TestCase):
 
             callbacks = [
                 tf.keras.callbacks.ModelCheckpoint(filepath=os.path.join(temp_dir, "best"),
-                                                    save_weights_only=False,
-                                                    save_best_only=True)]
+                                                   save_weights_only=False,
+                                                   save_best_only=True)]
             history = est.fit(create_train_datasets,
-                                epochs=1,
-                                batch_size=batch_size,
-                                steps_per_epoch=5,
-                                callbacks=callbacks,
-                                validation_data=create_test_dataset,
-                                validation_steps=1)
+                              epochs=1,
+                              batch_size=batch_size,
+                              steps_per_epoch=5,
+                              callbacks=callbacks,
+                              validation_data=create_test_dataset,
+                              validation_steps=1)
             assert len(os.listdir(os.path.join(temp_dir, "best"))) > 0
         finally:
             shutil.rmtree(temp_dir)
+
+    def test_checkpoint_only_weights(self):
+        import tempfile
+        batch_size = 320
+        try:
+            temp_dir = tempfile.mkdtemp()
+            est = Estimator.from_keras(model_creator=model_creator,
+                                       workers_per_node=2,
+                                       backend="tf2")
+
+            callbacks = [
+                tf.keras.callbacks.ModelCheckpoint(filepath=os.path.join(temp_dir, "ckpt_{epoch}"),
+                                                   save_weights_only=True)]
+            train_stats = est.fit(create_train_datasets,
+                                  epochs=2,
+                                  batch_size=batch_size,
+                                  steps_per_epoch=5,
+                                  callbacks=callbacks,
+                                  validation_data=create_test_dataset,
+                                  validation_steps=1)
+            latest_checkpoint = Estimator.latest_checkpoint(temp_dir)
+            est.load_weights(latest_checkpoint)
+            eval_stats = est.evaluate(create_test_dataset, batch_size=batch_size, num_steps=5)
+            print(eval_stats)
+        finally:
+            shutil.rmtree(temp_dir)
+
+    def test_save_load_model_weights(self):
+        batch_size = 320
+        try:
+            est = Estimator.from_keras(model_creator=model_creator,
+                                       workers_per_node=2,
+                                       backend="tf2")
+
+            train_stats = est.fit(create_train_datasets,
+                                  epochs=2,
+                                  batch_size=batch_size,
+                                  steps_per_epoch=5,
+                                  validation_data=create_test_dataset,
+                                  validation_steps=1)
+            print("start saving")
+            est.save_weights("/tmp/model_weights.h5")
+            est.load_weights("/tmp/model_weights.h5")
+            eval_stats = est.evaluate(create_test_dataset, batch_size=batch_size, num_steps=5)
+            print("save success")
+        finally:
+            os.remove("/tmp/model_weights.h5")
 
     def test_string_input(self):
 
