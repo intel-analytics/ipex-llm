@@ -43,6 +43,8 @@ from torch import nn
 from torch.nn import functional as F
 
 from tensorflow.python.keras.callbacks import History, CallbackList
+from bigdl.dllib.utils.log4Error import *
+
 
 DEFAULT_GROUP_NAME = "default_group"
 
@@ -147,7 +149,8 @@ def build_input_features(feature_columns):
                 features[feat.length_name] = (start, start + 1)
                 start += 1
         else:
-            raise TypeError("Invalid feature column type,got", type(feat))
+            invalidInputError(False,
+                              "Invalid feature column type,got", type(feat))
     return features
 
 
@@ -199,7 +202,7 @@ def combined_dnn_input(sparse_embedding_list, dense_value_list):
     elif len(dense_value_list) > 0:
         return torch.flatten(torch.cat(dense_value_list, dim=-1), start_dim=1)
     else:
-        raise NotImplementedError
+        invalidInputError(False, "not implemented yet")
 
 
 def varlen_embedding_lookup(X, embedding_dict, sequence_input_dict, varlen_sparse_feature_columns):
@@ -301,7 +304,8 @@ def build_input_features(feature_columns):
                 features[feat.length_name] = (start, start + 1)
                 start += 1
         else:
-            raise TypeError("Invalid feature column type,got", type(feat))
+            invalidInputError(False,
+                              "Invalid feature column type,got", type(feat))
     return features
 
 # DeepCTR.utils
@@ -345,8 +349,9 @@ def slice_arrays(arrays, start=None, stop=None):
         arrays = [arrays]
 
     if isinstance(start, list) and stop is not None:
-        raise ValueError('The stop argument has to be None if the value of start '
-                         'is a list.')
+        invalidInputError(False,
+                          'The stop argument has to be None if the value of start '
+                          'is a list.')
     elif isinstance(arrays, list):
         if hasattr(start, '__len__'):
             # hdf5 datasets only support list objects as indices
@@ -392,7 +397,7 @@ class Dice(nn.Module):
 
     def __init__(self, emb_size, dim=2, epsilon=1e-8, device='cpu'):
         super(Dice, self).__init__()
-        assert dim == 2 or dim == 3
+        invalidInputError(dim == 2 or dim == 3, "dim is expected to b 2 or 3")
 
         self.bn = nn.BatchNorm1d(emb_size, eps=epsilon)
         self.sigmoid = nn.Sigmoid()
@@ -405,7 +410,7 @@ class Dice(nn.Module):
             self.alpha = nn.Parameter(torch.zeros((emb_size, 1)).to(device))
 
     def forward(self, x):
-        assert x.dim() == self.dim
+        invalidInputError(x.dim() == self.dim, "x.dim doesn't match self.dim")
         if self.dim == 2:
             x_p = self.sigmoid(self.bn(x))
             out = self.alpha * (1 - x_p) * x + x_p * x
@@ -435,7 +440,8 @@ class PredictionLayer(nn.Module):
 
     def __init__(self, task='binary', use_bias=True, **kwargs):
         if task not in ["binary", "multiclass", "regression"]:
-            raise ValueError("task must be binary,multiclass or regression")
+            invalidInputError(False,
+                              "task must be binary,multiclass or regression")
 
         super(PredictionLayer, self).__init__()
         self.use_bias = use_bias
@@ -475,7 +481,8 @@ class SequencePoolingLayer(nn.Module):
     def __init__(self, mode='mean', supports_masking=False, device='cpu'):
         super(SequencePoolingLayer, self).__init__()
         if mode not in ['sum', 'mean', 'max']:
-            raise ValueError('parameter mode should in [sum, mean, max]')
+            invalidInputError(False,
+                              'parameter mode should in [sum, mean, max]')
         self.supports_masking = supports_masking
         self.mode = mode
         self.device = device
@@ -544,21 +551,22 @@ def activation_layer(act_name, hidden_size=None, dice_dim=2):
         elif act_name.lower() == 'relu':
             act_layer = nn.ReLU(inplace=True)
         elif act_name.lower() == 'dice':
-            assert dice_dim
+            invalidInputError(dice_dim, "expect dice_dim not 0")
             act_layer = Dice(hidden_size, dice_dim)
         elif act_name.lower() == 'prelu':
             act_layer = nn.PReLU()
     elif issubclass(act_name, nn.Module):
         act_layer = act_name()
     else:
-        raise NotImplementedError
+        invalidInputError(False, "not implemented yet")
 
     return act_layer
 
 
 def maxlen_lookup(X, sparse_input_dict, maxlen_column):
     if maxlen_column is None or len(maxlen_column) == 0:
-        raise ValueError('please add max length column for VarLenSparseFeat of DIN/DIEN input')
+        invalidInputError(False,
+                          'please add max length column for VarLenSparseFeat of DIN/DIEN input')
     lookup_idx = np.array(sparse_input_dict[maxlen_column[0]])
     return X[:, lookup_idx[0]:lookup_idx[1]].long()
 
@@ -672,7 +680,7 @@ class DNN(nn.Module):
         self.l2_reg = l2_reg
         self.use_bn = use_bn
         if len(hidden_units) == 0:
-            raise ValueError("hidden_units is empty!!")
+            invalidInputError(False, "hidden_units is empty!!")
         hidden_units = [inputs_dim] + list(hidden_units)
 
         self.linears = nn.ModuleList(
@@ -821,7 +829,7 @@ class DynamicGRU(nn.Module):
     def forward(self, inputs, att_scores=None, hx=None):
         if not isinstance(inputs, PackedSequence) or \
            not isinstance(att_scores, PackedSequence):
-            raise NotImplementedError("DynamicGRU only supports packed input and att_scores")
+            invalidInputError(False, "DynamicGRU only supports packed input and att_scores")
 
         inputs, batch_sizes, sorted_indices, unsorted_indices = inputs
         att_scores, _, _, _ = att_scores
@@ -964,7 +972,7 @@ class AttentionSequencePoolingLayer(nn.Module):
         # Mask
         if self.supports_masking:
             if mask is None:
-                raise ValueError("When supports_masking=True,input must support masking")
+                invalidInputError(False, "When supports_masking=True,input must support masking")
             keys_masks = mask.unsqueeze(1)
         else:
             keys_masks = torch.arange(max_length, device=keys_length.device,
@@ -1111,7 +1119,7 @@ class InterestEvolving(nn.Module):
                  att_weight_normalization=False):
         super(InterestEvolving, self).__init__()
         if gru_type not in InterestEvolving.__SUPPORTED_GRU_TYPE__:
-            raise NotImplementedError("gru_type: {gru_type} is not supported")
+            invalidInputError(False, "gru_type: {gru_type} is not supported")
         self.gru_type = gru_type
         self.use_neg = use_neg
 
@@ -1266,8 +1274,8 @@ class DIEN(nn.Module):
         self.device = device
         self.gpus = gpus
         if gpus and str(self.gpus[0]) not in self.device:
-            raise ValueError(
-                "`gpus[0]` should be the same gpu with `device`")
+            invalidInputError(False,
+                              "`gpus[0]` should be the same gpu with `device`")
         self.weight_path = weight_path
 
         self.feature_index = build_input_features(
@@ -1327,7 +1335,7 @@ class DIEN(nn.Module):
             elif optimizer == "rmsprop":
                 optim = torch.optim.RMSprop(self.parameters())
             else:
-                raise NotImplementedError
+                invalidInputError(False, "not implemented yet")
         else:
             optim = optimizer
         return optim
@@ -1341,7 +1349,7 @@ class DIEN(nn.Module):
             elif loss == "mae":
                 loss_func = F.l1_loss
             else:
-                raise NotImplementedError
+                invalidInputError(False, "not implemented")
         else:
             loss_func = loss
         return loss_func
@@ -1393,13 +1401,13 @@ class DIEN(nn.Module):
             elif len(validation_data) == 3:
                 val_x, val_y, val_sample_weight = validation_data
             else:
-                raise ValueError(
-                    'When passing a `validation_data` argument, '
-                    'it must contain either 2 items (x_val, y_val), '
-                    'or 3 items (x_val, y_val, val_sample_weights), '
-                    'or alternatively it could be a dataset or a '
-                    'dataset or a dataset iterator. '
-                    'However we received `validation_data=%s`' % validation_data)
+                invalidInputError(False,
+                                  'When passing a `validation_data` argument, '
+                                  'it must contain either 2 items (x_val, y_val), '
+                                  'or 3 items (x_val, y_val, val_sample_weights), '
+                                  'or alternatively it could be a dataset or a '
+                                  'dataset or a dataset iterator. '
+                                  'However we received `validation_data=%s`' % validation_data)
             if isinstance(val_x, dict):
                 val_x = [val_x[feature] for feature in self.feature_index]
 
@@ -1483,7 +1491,7 @@ class DIEN(nn.Module):
                                     y_pred.cpu().data.numpy().astype("float64")))
             except KeyboardInterrupt:
                 t.close()
-                raise
+                invalidInputError(False, "keyboardInterrupt")
             t.close()
 
             # save on each epoch
@@ -1521,7 +1529,8 @@ class DIEN(nn.Module):
         return self.history
 
     def evaluate(self, xy, batch_size=256):
-        assert len(xy) == 2 and isinstance(xy, tuple)
+        invalidInputError(len(xy) == 2 and isinstance(xy, tuple),
+                          "expect len(xy)==2 and xy is tuple")
         val_x, val_y = xy
         pred_ans = self.predict(val_x, batch_size)
         eval_result = {}
