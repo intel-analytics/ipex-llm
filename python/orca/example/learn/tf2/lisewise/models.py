@@ -92,10 +92,3 @@ class Padded2RaggedModel(tfrs.Model):
             labels=labels,
             predictions=scores,
         )
-
-    def compile_model(self, optimizer):
-        self.compile(
-            optimizer=optimizer,
-            loss=self._loss,
-            metrics=self._metrics,
-        )

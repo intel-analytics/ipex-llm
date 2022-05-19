@@ -15,10 +15,10 @@ from models import Padded2RaggedModel
 # OrcaContext._shard_size = 1000
 
 cluster_mode = "local"
-data_path = "/Users/yita/Documents/intel/data"
+data_path = "/home/yina/Documents/data/movielen/ml-1m"
 
 if cluster_mode == "local":
-    init_orca_context(cluster_mode="local", cores=1)
+    init_orca_context(cluster_mode="local", cores=18, memory="20g")
 elif cluster_mode == "yarn":
     init_orca_context(cluster_mode="yarn-client", num_nodes=2, cores=2)
 
@@ -64,6 +64,7 @@ print(unique_userids[0:2])
 
 arr_count = lambda x: len(x)
 train_tbl = train_tbl.apply("ratings", "len", arr_count, dtype="int")
+test_tbl = test_tbl.apply("ratings", "len", arr_count, dtype="int")
 
 min_len = train_tbl.get_stats("len", "min")["len"]
 max_len = train_tbl.get_stats("len", "max")["len"]
@@ -81,6 +82,11 @@ train_tbl = train_tbl.apply("ratings", "pad_ratings", lambda x: pad_list(x, max_
 train_tbl = train_tbl.apply("titles", "pad_titles", lambda x: pad_list(x, max_len, "<MSK>"),
                             ArrayType(StringType()))
 train_tbl = train_tbl.drop("ratings", "titles")
+test_tbl = test_tbl.apply("ratings", "pad_ratings", lambda x: pad_list(x, max_len, -1),
+                          ArrayType(IntegerType()))
+test_tbl = test_tbl.apply("titles", "pad_titles", lambda x: pad_list(x, max_len, "<MSK>"),
+                          ArrayType(StringType()))
+test_tbl = test_tbl.drop("ratings", "titles")
 
 model_config = {
     "learning_rate": 0.1,
@@ -92,10 +98,11 @@ model_config = {
 
 
 def create_model(config):
-    # loss = tfr.keras.losses.MeanSquaredLoss(tf.losses.Reduction.SUM, ragged=True)
-    # loss = tfr.keras.losses.ListMLELoss(tf.losses.Reduction.SUM, ragged=True)
-    loss = tfr.keras.losses.ApproxNDCGLoss(reduction=tf.losses.Reduction.SUM, ragged=True)
-    # loss = tf.keras.losses.MeanSquaredError(tf.keras.losses.Reduction.SUM)
+    # loss = tfr.keras.losses.MeanSquaredLoss(ragged=True)
+    # loss = tfr.keras.losses.ListMLELoss(ragged=True)
+    loss = tfr.keras.losses.PairwiseHingeLoss(ragged=True)
+    # loss = tfr.keras.losses.ApproxNDCGLoss(ragged=True)
+    # loss = tf.keras.losses.MeanSquaredError()
 
     model = Padded2RaggedModel(
         config["userid_vocab"],
@@ -103,9 +110,11 @@ def create_model(config):
         config["max_len"],
         loss
     )
-
-    model.compile_model(
-        optimizer=tf.keras.optimizers.Adam(learning_rate=config["learning_rate"]),
+    from bigdl.friesian.models import TFRSModel
+    model = TFRSModel(model)
+    model.compile(
+        # optimizer=tf.keras.optimizers.Adam(learning_rate=config["learning_rate"]),
+        optimizer=tf.keras.optimizers.Adagrad(learning_rate=0.1),
     )
 
     return model
@@ -118,13 +127,19 @@ est = Estimator.from_keras(
 )
 
 train_count = train_tbl.size()
+test_count = test_tbl.size()
 
 batch_size = 256
 train_steps = train_count // batch_size
+test_steps = test_count // batch_size
 
 print(train_count, train_steps)
+print(test_count, test_steps)
 
 est.fit(train_tbl.df, epochs=16,
         batch_size=batch_size,
         feature_cols=["userid", "pad_titles", "len"],
-        label_cols=["pad_ratings"], steps_per_epoch=train_steps)
+        label_cols=["pad_ratings"],
+        steps_per_epoch=train_steps,
+        validation_data=test_tbl.df,
+        validation_steps=test_steps)
