@@ -19,7 +19,7 @@ package com.intel.analytics.bigdl.ppml.crypto
 import com.intel.analytics.bigdl.dllib.utils.Log4Error
 
 import java.io._
-import java.nio.file.{Files, Paths}
+import java.nio.file.{Files, Path, Paths}
 import java.security.SecureRandom
 import java.time.Instant
 import java.util.Arrays
@@ -29,9 +29,11 @@ import org.apache.spark.input.PortableDataStream
 
 class FernetEncrypt extends Crypto {
 
-  def encryptFile(binaryFilePath: String, savePath: String, dataKeyPlaintext: String) = {
-    Log4Error.invalidInputError(savePath != null && savePath != "", "encrypted file save path should be specified")
-    val content: Array[Byte] = readBinaryFile(binaryFilePath) // Plaintext original file is read as binary
+  def encryptFile(binaryFilePath: String, savePath: String, dataKeyPlaintext: String): Unit = {
+    Log4Error.invalidInputError(savePath != null && savePath != "",
+      "encrypted file save path should be specified")
+    // Plaintext original file is read as binary
+    val content: Array[Byte] = readBinaryFile(binaryFilePath)
     val encryptedBytes = timing("FernetCryptos encrypting a single file") {
       encryptContent(content, dataKeyPlaintext)
     }
@@ -40,8 +42,9 @@ class FernetEncrypt extends Crypto {
     }
   }
 
-  def decryptFile(binaryFilePath: String, savePath: String, dataKeyPlaintext: String) = {
-    Log4Error.invalidInputError(savePath != null && savePath != "", "decrypted file save path should be specified")
+  def decryptFile(binaryFilePath: String, savePath: String, dataKeyPlaintext: String): Unit = {
+    Log4Error.invalidInputError(savePath != null && savePath != "",
+      "decrypted file save path should be specified")
     val content: Array[Byte] = readBinaryFile(binaryFilePath) // Ciphertext file is read into Bytes
     val decryptedBytes = timing("FernetCryptos decrypt a single file...") {
       decryptContent(content, dataKeyPlaintext)
@@ -65,11 +68,11 @@ class FernetEncrypt extends Crypto {
     Files.readAllBytes(Paths.get(binaryFilePath))
   }
 
-  private def writeBinaryFile(savePath: String, content: Array[Byte]) = {
+  private def writeBinaryFile(savePath: String, content: Array[Byte]): Path = {
     Files.write(Paths.get(savePath), content)
   }
 
-  private def writeStringToFile(savePath: String, content: String) = {
+  private def writeStringToFile(savePath: String, content: String): Unit = {
     val bw = new BufferedWriter(new FileWriter(new File(savePath)))
     bw.write(content)
   }
@@ -180,7 +183,9 @@ class FernetEncrypt extends Crypto {
     cipher.doFinal(cipherText)
   }
 
-  def decryptBigContent(ite: Iterator[(String, PortableDataStream)], dataKeyPlaintext: String): Iterator[String] = {
+  def decryptBigContent(
+        ite: Iterator[(String, PortableDataStream)],
+        dataKeyPlaintext: String): Iterator[String] = {
     val secret: Array[Byte] = dataKeyPlaintext.getBytes()
     var result: Iterator[String] = Iterator[String]()
 

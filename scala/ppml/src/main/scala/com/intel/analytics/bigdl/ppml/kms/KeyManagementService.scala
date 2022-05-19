@@ -24,8 +24,8 @@ object KMS_CONVENTION {
 }
 
 trait KeyManagementService extends Supportive {
-  var _appId:String = _
-  var _appKey:String = _
+  var _appId: String = _
+  var _appKey: String = _
 
   def retrievePrimaryKey(primaryKeySavePath: String)
   def retrieveDataKey(primaryKeyPath: String, dataKeySavePath: String)

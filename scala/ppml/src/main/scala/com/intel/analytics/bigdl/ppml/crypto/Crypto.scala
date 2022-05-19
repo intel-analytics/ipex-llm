@@ -19,19 +19,19 @@ package com.intel.analytics.bigdl.ppml.crypto
 import com.intel.analytics.bigdl.ppml.utils.Supportive
 
 trait Crypto extends Supportive with Serializable {
-  def encryptFile(sourceFilePath:String, saveFilePath:String, dataKeyPlaintext:String)
-  def decryptFile(sourceFilePath:String, saveFilePath:String, dataKeyPlaintext:String)
-  def encryptBytes(sourceBytes:Array[Byte], dataKeyPlaintext:String): Array[Byte]
-  def decryptBytes(sourceBytes:Array[Byte], dataKeyPlaintext:String): Array[Byte]
+  def encryptFile(sourceFilePath: String, saveFilePath: String, dataKeyPlaintext: String)
+  def decryptFile(sourceFilePath: String, saveFilePath: String, dataKeyPlaintext: String)
+  def encryptBytes(sourceBytes: Array[Byte], dataKeyPlaintext: String): Array[Byte]
+  def decryptBytes(sourceBytes: Array[Byte], dataKeyPlaintext: String): Array[Byte]
 }
 
 object CryptoMode extends Enumeration {
   type CryptoMode = Value
-  val PLAIN_TEXT = Value("plain_text", "plain_text")
-  val AES_CBC_PKCS5PADDING = Value("AES/CBC/PKCS5Padding", "AES/CBC/PKCS5Padding")
-  val UNKNOWN = Value("UNKNOWN", "UNKNOWN")
+  val PLAIN_TEXT = value("plain_text", "plain_text")
+  val AES_CBC_PKCS5PADDING = value("AES/CBC/PKCS5Padding", "AES/CBC/PKCS5Padding")
+  val UNKNOWN = value("UNKNOWN", "UNKNOWN")
   class EncryptModeEnumVal(name: String, val value: String) extends Val(nextId, name)
-  protected final def Value(name: String, value: String): EncryptModeEnumVal = {
+  protected final def value(name: String, value: String): EncryptModeEnumVal = {
     new EncryptModeEnumVal(name, value)
   }
   def parse(s: String): Value = {

@@ -30,7 +30,10 @@ import org.apache.spark.sql.{DataFrame, Row, SparkSession}
  * @param encryptMode
  * @param dataKeyPlainText
  */
-class EncryptedDataFrameReader(sparkSession: SparkSession, encryptMode: CryptoMode, dataKeyPlainText: String){
+class EncryptedDataFrameReader(
+      sparkSession: SparkSession,
+      encryptMode: CryptoMode,
+      dataKeyPlainText: String) {
   protected val extraOptions = new scala.collection.mutable.HashMap[String, String]
 
   def option(key: String, value: String): this.type = {

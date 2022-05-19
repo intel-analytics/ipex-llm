@@ -24,7 +24,6 @@ from bigdl.chronos.metric.forecast_metrics import Evaluator
 from bigdl.chronos.pytorch.utils import _pytorch_fashion_inference
 from bigdl.nano.utils.log4Error import *
 
-
 DEFAULT_MODEL_INIT_DIR = "model_init.ckpt"
 DEFAULT_BEST_MODEL_DIR = "best_model.ckpt"
 DEFAULT_DATA_PROCESS_DIR = "data_process.ckpt"
@@ -92,6 +91,8 @@ class TSPipeline:
                effective when data is a TSDataset. The values defaults to 32.
         :param quantize: if use the quantized model to predict.
         '''
+        from bigdl.chronos.pytorch.utils import _pytorch_fashion_inference
+
         # predict
         if isinstance(data, TSDataset):
             x, y = self._tsdataset_to_numpy(data, is_predict=False)
@@ -153,6 +154,7 @@ class TSPipeline:
         :param quantize: if use the quantized model to predict.
         '''
         from bigdl.chronos.pytorch import TSTrainer as Trainer
+        from bigdl.chronos.pytorch.utils import _pytorch_fashion_inference
 
         # predict with onnx
         if isinstance(data, TSDataset):
@@ -215,6 +217,8 @@ class TSPipeline:
                effective when data is a TSDataset. The values defaults to 32.
         :param quantize: if use the quantized model to predict.
         '''
+        from bigdl.chronos.pytorch.utils import _pytorch_fashion_inference
+
         if isinstance(data, TSDataset):
             x, _ = self._tsdataset_to_numpy(data, is_predict=True)
             if quantize:
@@ -259,6 +263,7 @@ class TSPipeline:
         :param quantize: if use the quantized model to predict.
         '''
         from bigdl.chronos.pytorch import TSTrainer as Trainer
+        from bigdl.chronos.pytorch.utils import _pytorch_fashion_inference
 
         if isinstance(data, TSDataset):
             x, _ = self._tsdataset_to_numpy(data, is_predict=True)

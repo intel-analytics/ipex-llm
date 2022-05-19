@@ -18,7 +18,6 @@ from bigdl.chronos.forecaster.abstract import Forecaster
 from bigdl.chronos.forecaster.utils import\
     np_to_creator, set_pytorch_seed, check_data, xshard_to_np, np_to_xshard, loader_to_creator
 from bigdl.chronos.metric.forecast_metrics import Evaluator
-from bigdl.chronos.pytorch.utils import _pytorch_fashion_inference
 
 import numpy as np
 import warnings
@@ -182,6 +181,8 @@ class BasePytorchForecaster(Forecaster):
                  where result is a numpy array with shape (num_samples, horizon, target_dim)
                  if data is a xshard item.
         """
+        from bigdl.chronos.pytorch.utils import _pytorch_fashion_inference
+
         # data transform
         is_local_data = isinstance(data, np.ndarray)
         if is_local_data and self.distributed:
@@ -237,6 +238,8 @@ class BasePytorchForecaster(Forecaster):
 
         :return: A numpy array with shape (num_samples, horizon, target_dim).
         """
+        from bigdl.chronos.pytorch.utils import _pytorch_fashion_inference
+
         if self.distributed:
             invalidInputError(False,
                               "ONNX inference has not been supported for distributed "
@@ -294,6 +297,8 @@ class BasePytorchForecaster(Forecaster):
 
         :return: A list of evaluation results. Each item represents a metric.
         """
+        from bigdl.chronos.pytorch.utils import _pytorch_fashion_inference
+
         # data transform
         is_local_data = isinstance(data, tuple)
         if not is_local_data and not self.distributed:
@@ -361,6 +366,8 @@ class BasePytorchForecaster(Forecaster):
 
         :return: A list of evaluation results. Each item represents a metric.
         """
+        from bigdl.chronos.pytorch.utils import _pytorch_fashion_inference
+
         if self.distributed:
             invalidInputError(False,
                               "ONNX inference has not been supported for distributed "

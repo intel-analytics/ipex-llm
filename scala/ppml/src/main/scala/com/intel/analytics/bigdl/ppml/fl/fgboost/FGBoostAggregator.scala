@@ -20,14 +20,13 @@ package com.intel.analytics.bigdl.ppml.fl.fgboost
 import com.intel.analytics.bigdl.dllib.optim.{ValidationMethod, ValidationResult}
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.ppml.fl.base.StorageHolder
-import com.intel.analytics.bigdl.ppml.fl.common.{Aggregator, FLDataType, FLPhase}
+import com.intel.analytics.bigdl.ppml.fl.common.{Aggregator, FLDataType, FLPhase, Storage}
 import com.intel.analytics.bigdl.ppml.fl.fgboost.common.{RMSEObjective, TreeObjective}
 import com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto._
 import com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto._
 import com.intel.analytics.bigdl.ppml.fl.utils.ProtoUtils._
 import org.apache.logging.log4j.LogManager
 
-import scala.collection.JavaConversions._
 import scala.collection.JavaConverters._
 import scala.collection.mutable.ArrayBuffer
 import com.intel.analytics.bigdl.dllib.utils.Log4Error
@@ -47,12 +46,18 @@ class FGBoostAggregator(validationMethods: Array[ValidationMethod[Float]] = null
   var validationResult = Array[ValidationResult]()
 
   // wrapper methods to simplify data access
-  def getLabelStorage() = aggregateTypeMap.get(FLPhase.LABEL).getTensorMapStorage()
-  def getSplitStorage() = aggregateTypeMap.get(FLPhase.SPLIT).getSplitStorage()
-  def getTreeLeafStorage() = aggregateTypeMap.get(FLPhase.TREE_LEAF).getLeafStorage()
-  def getEvalStorage() = aggregateTypeMap.get(FLPhase.EVAL).getTreeEvalStorage()
-  def getPredictStorage() = aggregateTypeMap.get(FLPhase.PREDICT).getTreeEvalStorage()
-  def getResultStorage() = aggregateTypeMap.get(FLPhase.RESULT).getTensorMapStorage()
+  def getLabelStorage(): Storage[TensorMap] =
+    aggregateTypeMap.get(FLPhase.LABEL).getTensorMapStorage()
+  def getSplitStorage(): Storage[DataSplit] =
+    aggregateTypeMap.get(FLPhase.SPLIT).getSplitStorage()
+  def getTreeLeafStorage(): Storage[TreeLeaf] =
+    aggregateTypeMap.get(FLPhase.TREE_LEAF).getLeafStorage()
+  def getEvalStorage(): Storage[java.util.List[BoostEval]] =
+    aggregateTypeMap.get(FLPhase.EVAL).getTreeEvalStorage()
+  def getPredictStorage(): Storage[java.util.List[BoostEval]] =
+    aggregateTypeMap.get(FLPhase.PREDICT).getTreeEvalStorage()
+  def getResultStorage(): Storage[TensorMap] =
+    aggregateTypeMap.get(FLPhase.RESULT).getTensorMapStorage()
 
   override def initStorage(): Unit = {
     aggregateTypeMap.put(FLPhase.LABEL, new StorageHolder(FLDataType.TENSOR_MAP))
@@ -75,7 +80,7 @@ class FGBoostAggregator(validationMethods: Array[ValidationMethod[Float]] = null
   }
 
   def getBestSplit(treeID: String, nodeID: String): DataSplit = {
-    synchronized(bestSplit) {
+    synchronized(bestSplit.asScala) {
       val id = getTreeNodeId(treeID, nodeID)
       while ( {
         !bestSplit.containsKey(id)
@@ -102,7 +107,7 @@ class FGBoostAggregator(validationMethods: Array[ValidationMethod[Float]] = null
   def initGradient(): Unit = {
     logger.debug(s"Server init gradiant from label")
     val labelClientData = getLabelStorage().clientData
-    val aggData = labelClientData.mapValues(_.getTensorMapMap).values.flatMap(_.asScala)
+    val aggData = labelClientData.asScala.mapValues(_.getTensorMapMap).values.flatMap(_.asScala)
       .map { data =>
         (data._1, data._2.getTensorList.asScala.toArray.map(_.toFloat))
       }.toMap
@@ -176,7 +181,8 @@ class FGBoostAggregator(validationMethods: Array[ValidationMethod[Float]] = null
   }
 
 
-  def predictWithTree(aggPredict: Array[Array[(String, Array[java.lang.Boolean])]]): Array[Float] = {
+  def predictWithTree(
+        aggPredict: Array[Array[(String, Array[java.lang.Boolean])]]): Array[Float] = {
     logger.info("Predict with new Tree")
     if (aggPredict.head.length == 1) {
       // Last tree
@@ -194,10 +200,10 @@ class FGBoostAggregator(validationMethods: Array[ValidationMethod[Float]] = null
 
   def aggregateTreeLeaf(): Unit = {
     logger.info(s"Add new Tree ${serverTreeLeaf.length}")
-    val leafMap = getTreeLeafStorage().clientData
+    val leafMap = getTreeLeafStorage().clientData.asScala
 
-    val treeIndexes = leafMap.values.head.getLeafIndexList.map(Integer2int).toArray
-    val treeOutputs = leafMap.values.head.getLeafOutputList.map(Float2float).toArray
+    val treeIndexes = leafMap.values.head.getLeafIndexList.asScala.map(Integer2int).toArray
+    val treeOutputs = leafMap.values.head.getLeafOutputList.asScala.map(Float2float).toArray
     val treeLeaf = treeIndexes.zip(treeOutputs).toMap
     // Add new tree leaves to server
     serverTreeLeaf += treeLeaf
@@ -249,7 +255,7 @@ class FGBoostAggregator(validationMethods: Array[ValidationMethod[Float]] = null
     val splitMap = getSplitStorage().clientData
     var bestGain = Float.MinValue
     bestSplit.synchronized {
-      splitMap.values.foreach { split =>
+      splitMap.values.asScala.foreach { split =>
         if (split.getGain > bestGain) {
           val id = getTreeNodeId(split.getTreeID, split.getNodeID);
           bestSplit.put(id, split)
@@ -273,14 +279,14 @@ class FGBoostAggregator(validationMethods: Array[ValidationMethod[Float]] = null
         getPredictStorage().clientData
       case _ => throw new IllegalArgumentException()
     }
-    val evalResults = boostEvalBranchMap.mapValues { list =>
+    val evalResults = boostEvalBranchMap.asScala.mapValues { list =>
       list.asScala.toArray.map { be =>
         be.getEvaluatesList.asScala.toArray.map { treePredict =>
           (treePredict.getTreeID, treePredict.getPredictsList.asScala.toArray)
         }
       }
     }
-    val clientsIterator = boostEvalBranchMap.keys.toIterator
+    val clientsIterator = boostEvalBranchMap.asScala.keys.toIterator
     val result = evalResults(clientsIterator.next())
     while (clientsIterator.hasNext) {
       result.zip(evalResults(clientsIterator.next())).foreach { be =>
