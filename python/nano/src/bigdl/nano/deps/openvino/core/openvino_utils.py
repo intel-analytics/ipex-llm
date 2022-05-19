@@ -15,7 +15,7 @@
 #
 import os
 from pathlib import Path
-from bigdl.nano.utils.log4Error import *
+from bigdl.nano.utils.log4Error import invalidInputError
 
 
 def convert_onnx_to_xml(onnx_file_path, xml_path, batch_size=1):

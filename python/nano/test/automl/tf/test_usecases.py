@@ -233,7 +233,7 @@ class TestUseCases(TestCase):
         )
 
         # run fit
-        with self.assertRaises(ValueError):
+        with self.assertRaises(RuntimeError):
             history = model.fit(x_train, y_train,
                     batch_size=128, epochs=2, validation_split=0.2)
 

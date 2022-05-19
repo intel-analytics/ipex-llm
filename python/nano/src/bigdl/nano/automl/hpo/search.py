@@ -23,7 +23,7 @@
 
 
 import optuna
-from bigdl.nano.utils.log4Error import *
+from bigdl.nano.utils.log4Error import invalidInputError
 
 
 def _filter_tuner_args(kwargs, tuner_keys):

@@ -18,7 +18,7 @@ from functools import partial
 from .base_onnxruntime import BaseORTInference, save_onnx_to_file
 from bigdl.nano.utils.inference.pytorch_base_inference import PytorchBaseInference, get_forward_args
 from bigdl.nano.utils.inference.pytorch_base_inference import export as export_to_onnx
-from bigdl.nano.utils.log4Error import *
+from bigdl.nano.utils.log4Error import invalidInputError
 import torch
 
 

@@ -17,7 +17,7 @@ from bigdl.nano.pytorch.lightning import LightningModuleFromTorch
 import inspect
 from torch.utils.data import DataLoader
 import torch
-from bigdl.nano.utils.log4Error import *
+from bigdl.nano.utils.log4Error import invalidInputError
 
 
 class PytorchBaseInference:

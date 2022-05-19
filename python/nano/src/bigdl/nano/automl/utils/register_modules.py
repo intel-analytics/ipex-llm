@@ -16,7 +16,7 @@
 
 import importlib
 from bigdl.nano.automl.hpo import obj, func
-from bigdl.nano.utils.log4Error import *
+from bigdl.nano.utils.log4Error import invalidInputError
 import inspect
 from enum import Enum
 import copy

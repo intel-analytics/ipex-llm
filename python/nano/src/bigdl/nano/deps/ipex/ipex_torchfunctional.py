@@ -22,7 +22,7 @@ from typing import Callable, Dict, List, Tuple
 import pickle
 import copy
 from logging import warning
-from bigdl.nano.utils.log4Error import *
+from bigdl.nano.utils.log4Error import invalidInputError
 
 
 _cross_entropy = F.cross_entropy

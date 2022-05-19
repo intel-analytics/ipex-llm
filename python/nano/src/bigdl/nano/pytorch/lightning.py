@@ -24,7 +24,7 @@ from torch import nn, Tensor
 from torch.nn.modules.loss import _Loss
 from torch.optim import Optimizer
 from torch.optim.lr_scheduler import _LRScheduler
-from bigdl.nano.utils.log4Error import *
+from bigdl.nano.utils.log4Error import invalidInputError
 
 
 class LightningModuleFromTorch(LightningModule):

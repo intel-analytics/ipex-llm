@@ -45,7 +45,7 @@ from ray.util.sgd.utils import find_free_port
 from torch.nn import Module
 
 from bigdl.nano.deps.ray.ray_envbase import RayEnvironment
-from bigdl.nano.utils.log4Error import *
+from bigdl.nano.utils.log4Error import invalidInputError
 
 
 @ray.remote
@@ -313,6 +313,8 @@ class RayPlugin(DDPSpawnPlugin):
 
         invalidInputError(isinstance(self.cluster_environment, RayEnvironment),
                           "expect ray environment here")
+        if not isinstance(self.cluster_environment, RayEnvironment):
+            return
         self.cluster_environment.set_global_rank(global_rank)
         self.cluster_environment.set_remote_execution(True)
 
@@ -350,9 +352,13 @@ class RayPlugin(DDPSpawnPlugin):
 
     def set_world_ranks(self, process_idx: int = 0):
         """Set the appropriate rank attribues for the trainer."""
-        invalidInputError(self.cluster_environment is not None and
-                          isinstance(self.cluster_environment, RayEnvironment),
-                          "expect ray environment here")
+        invalidInputError(
+            self.cluster_environment is not None and isinstance(self.cluster_environment,
+                                                                RayEnvironment),
+            "expect ray environment here")
+        if not (self.cluster_environment is not None and isinstance(self.cluster_environment,
+                                                                    RayEnvironment)):
+            return
         if self.cluster_environment.is_remote():
             self._local_rank = self.global_to_local[self.global_rank]
             self.cluster_environment.set_global_rank(self.global_rank)

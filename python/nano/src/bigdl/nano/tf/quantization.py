@@ -17,7 +17,7 @@ from typing import List, Optional
 from bigdl.nano.deps.neural_compressor.inc_api import QuantizationINC, tf_dataset_to_inc_dataloader
 import tensorflow as tf
 from tensorflow.keras.metrics import Metric
-from bigdl.nano.utils.log4Error import *
+from bigdl.nano.utils.log4Error import invalidInputError
 
 
 def quantize(self,

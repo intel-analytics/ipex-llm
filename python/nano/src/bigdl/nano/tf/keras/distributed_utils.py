@@ -22,7 +22,7 @@ from tempfile import TemporaryDirectory
 from contextlib import closing
 import socket
 import tensorflow as tf
-from bigdl.nano.utils.log4Error import *
+from bigdl.nano.utils.log4Error import invalidInputError
 
 
 def _find_free_port():

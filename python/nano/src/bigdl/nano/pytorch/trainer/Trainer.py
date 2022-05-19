@@ -40,7 +40,8 @@ from bigdl.nano.deps.onnxruntime.onnxruntime_api import bind_onnxrt_methods,\
     PytorchONNXRuntimeModel, load_onnxruntime_model
 from bigdl.nano.deps.neural_compressor.inc_api import QuantizationINC, PytorchQuantizedModel,\
     check_pytorch_dataloaders, load_inc_model
-from bigdl.nano.utils.log4Error import *
+from bigdl.nano.utils.log4Error import invalidInputError
+
 distributed_backends = ["spawn", "ray", "subprocess"]
 
 
