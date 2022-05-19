@@ -31,7 +31,6 @@
 import logging
 import json
 import os
-from tabnanny import check
 
 import numpy as np
 

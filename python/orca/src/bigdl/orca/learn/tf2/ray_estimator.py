@@ -428,7 +428,7 @@ class TensorFlow2Estimator(OrcaRayEstimator):
         return self._get_model_from_state(state)
 
     @enable_multi_fs_save
-    def save(self, checkpoint, save_weights_only=False):
+    def save(self, checkpoint):
         """
         Saves the model at the provided checkpoint.
 
