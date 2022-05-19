@@ -31,6 +31,7 @@
 import logging
 import json
 import os
+from tabnanny import check
 
 import numpy as np
 
@@ -479,6 +480,10 @@ class TFRunner:
         """Sets the state of the model."""
         self.epoch = state["epoch"]
         self.model.set_weights(state["weights"])
+    
+    def load_weights(self, filepath, by_name, skip_mismatch, option):
+        """Loads all layer weights from a TensorFlow or an HDF5 weight file."""
+        self.model.load_weights(filepath, by_name, skip_mismatch, option)
 
     def shutdown(self):
         """Attempts to shut down the worker."""

@@ -428,7 +428,7 @@ class TensorFlow2Estimator(OrcaRayEstimator):
         return self._get_model_from_state(state)
 
     @enable_multi_fs_save
-    def save(self, checkpoint):
+    def save(self, checkpoint, save_weights_only=False):
         """
         Saves the model at the provided checkpoint.
 
@@ -479,3 +479,45 @@ class TensorFlow2Estimator(OrcaRayEstimator):
         model.set_weights(state["weights"])
 
         return model
+
+    def save_weights(self, filepath, overwrite=True, save_format=None, options=None):
+        """
+        Save the model weights at the provided filepath.
+
+        param filepath: String or PathLike, path to the file to save the weights to.
+              When saving in TensorFlow format, this is the prefix used for checkpoint files
+              (multiple files are generated). Note that the '.h5' suffix causes weights to be
+              saved in HDF5 format.
+        param overwrite: Whether to silently overwrite any existing file at the target location,
+              or provide the user with a manual prompt.
+        param save_format: Either 'tf' or 'h5'.
+              A filepath ending in '.h5' or '.keras' will default to HDF5 if save_format is None.
+              Otherwise None defaults to 'tf'.
+        param options: Optional tf.train.CheckpointOptions object that specifies options for saving
+              weights.
+        :return:
+        """
+        model = self.get_model()
+        model.save_weights(filepath, overwrite, save_format, options)
+
+    def load_weights(self, filepath, by_name=False, skip_mismatch=False, option=None):
+        """
+        Load the model weights at the provided filepath.
+
+        param filepath: String, path to the weights file to load. For weight files in TensorFlow
+              format, this is the file prefix (the same as was passed to save_weights). This can
+              also be a path to a SavedModel saved from model.save.
+        param by_name: Boolean, whether to load weights by name or by topological order.
+              Only topological loading is supported for weight files in TensorFlow format.
+        param skip_mismatch: Boolean, whether to skip loading of layers where there is a mismatch
+              in the number of weights, or a mismatch in the shape of the weight
+              (only valid when by_name=True).
+        param options: Optional tf.train.CheckpointOptions object that specifies options for loading
+              weights.
+        :return:
+        """
+        results = [
+            worker.load_weights.remote(filepath, by_name, skip_mismatch, option)
+            for worker in self.remote_workers
+        ]
+        ray.get(results)
