@@ -5,13 +5,14 @@ SPARK_JOB_MAIN_CLASS=
 ARGS=
 DATA_LAKE_NAME=
 DATA_LAKE_ACCESS_KEY=
+KEY_VAULT_NAME=
 
 INPUT_DIR_PATH=$1
 ENCRYPT_KEYS_PATH=$2
 OUTPUT_DIR_PATH=$3
 LOCAL_IP=$4
 
-secure_password=`az keyvault secret show --name "key-pass" --vault-name $KEY_VAULT_NAME --query "value"`
+secure_password=`az keyvault secret show --name "key-pass" --vault-name $KEY_VAULT_NAME --query "value" | sed -e 's/^"//' -e 's/"$//'`
 
 export TF_MKL_ALLOC_MAX_BYTES=10737418240 && \
   /opt/jdk8/bin/java \
