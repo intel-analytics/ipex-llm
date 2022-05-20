@@ -41,6 +41,10 @@ class PPMLContext protected(kms: KeyManagementService, sparkSession: SparkSessio
 
   protected var dataKeyPlainText: String = ""
 
+  def getContext: SparkContext = {
+    sparkSession.sparkContext
+  }
+
   /**
    * Load keys from a local file system.
    * @param primaryKeyPath

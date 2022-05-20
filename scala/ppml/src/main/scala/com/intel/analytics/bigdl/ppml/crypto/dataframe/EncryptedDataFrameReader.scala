@@ -20,6 +20,7 @@ import com.intel.analytics.bigdl.ppml.PPMLContext
 import com.intel.analytics.bigdl.ppml.crypto.CryptoMode
 import com.intel.analytics.bigdl.ppml.crypto.CryptoMode.CryptoMode
 import com.intel.analytics.bigdl.ppml.crypto.dataframe.EncryptedDataFrameReader.toDataFrame
+import com.intel.analytics.bigdl.ppml.utils.KeyReaderWriter
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.types.{StringType, StructField, StructType}
 import org.apache.spark.sql.{DataFrame, Row, SparkSession}
@@ -59,6 +60,25 @@ class EncryptedDataFrameReader(
           val schema = StructType(fields)
           sparkSession.createDataFrame(rows, schema)
         }
+      case _ =>
+        throw new IllegalArgumentException("unknown EncryptMode " + CryptoMode.toString)
+    }
+  }
+  def parquet(path: String, primaryKeyPath: String): DataFrame = {
+    encryptMode match {
+      case CryptoMode.PLAIN_TEXT =>
+        sparkSession.read.options(extraOptions).parquet(path)
+      case CryptoMode.AES_CBC_PKCS5PADDING =>
+        val keyReaderWriter = new KeyReaderWriter
+        val primaryKeyPlaintext = keyReaderWriter.readKeyFromFile(primaryKeyPath)
+        val sc = sparkSession.sparkContext
+        sc.hadoopConfiguration.set("parquet.encryption.kms.client.class" ,
+          "com.intel.analytics.bigdl.ppml.utils.InMemoryKMS")
+        sc.hadoopConfiguration.set("parquet.encryption.key.list" ,
+          "primaryKey:" + primaryKeyPlaintext)
+        sc.hadoopConfiguration.set("parquet.crypto.factory.class" ,
+          "org.apache.parquet.crypto.keytools.PropertiesDrivenCryptoFactory")
+        sparkSession.read.options(extraOptions).parquet(path)
       case _ =>
         throw new IllegalArgumentException("unknown EncryptMode " + CryptoMode.toString)
     }

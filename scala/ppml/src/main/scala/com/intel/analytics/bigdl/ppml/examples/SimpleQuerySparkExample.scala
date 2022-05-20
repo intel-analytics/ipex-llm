@@ -18,7 +18,7 @@ package com.intel.analytics.bigdl.ppml.examples
 
 import com.intel.analytics.bigdl.ppml.PPMLContext
 import com.intel.analytics.bigdl.ppml.kms.{EHSMKeyManagementService, KMS_CONVENTION, SimpleKeyManagementService}
-import com.intel.analytics.bigdl.ppml.utils.EncryptIOArguments
+import com.intel.analytics.bigdl.ppml.utils.{EncryptIOArguments, KeyReaderWriter}
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.types.{StringType, StructField, StructType}
 import org.apache.spark.sql.{DataFrame, Row, SparkSession}
@@ -63,5 +63,36 @@ object SimpleQuerySparkExample {
     // save data frame using spark kms context
     sc.write(developers, cryptoMode = arguments.outputEncryptMode).mode("overwrite")
       .option("header", true).csv(arguments.outputPath)
+
+    // sava data frame to parquet
+    // writeParquet(arguments, sc, df)
+  }
+
+  def writeParquet(arguments: EncryptIOArguments, sc: PPMLContext, df: DataFrame): Unit = {
+    val keyReaderWriter = new KeyReaderWriter
+    val primaryKeyPlaintext = keyReaderWriter.readKeyFromFile(arguments.primaryKeyPath)
+    val sparkContext = sc.getContext
+    sparkContext.hadoopConfiguration.set("parquet.encryption.kms.client.class" ,
+      "com.intel.analytics.bigdl.ppml.utils.InMemoryKMS")
+    sparkContext.hadoopConfiguration.set("parquet.encryption.key.list" ,
+      "primaryKey:" + primaryKeyPlaintext)
+    sparkContext.hadoopConfiguration.set("parquet.crypto.factory.class" ,
+      "org.apache.parquet.crypto.keytools.PropertiesDrivenCryptoFactory")
+    val schema = df.schema
+    var encryptColumn = ""
+    var fieldNum = 0
+    schema.foreach(field => {
+      if(fieldNum == 0) {
+        encryptColumn += ":"
+      } else{
+        encryptColumn += ","
+      }
+      encryptColumn += field.name
+      fieldNum += 1
+    })
+    df.write.
+      option("parquet.encryption.column.keys" , "primaryKey"+encryptColumn).
+      option("parquet.encryption.footer.key" , "primaryKey").
+      parquet("table.parquet.encrypted")
   }
 }
