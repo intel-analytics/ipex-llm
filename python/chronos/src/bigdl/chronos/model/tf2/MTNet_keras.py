@@ -434,8 +434,8 @@ class MTNetKeras(BaseModel):
         else:
             if config:
                 invalidInputError(False,
-                                  "You can only pass new configuations for 'mc', 'epochs' and " 
-                                  "'metric' during incremental fitting. "
+                                  "You can only pass new configuations for 'mc', 'epochs' and" 
+                                  " 'metric' during incremental fitting. "
                                   "Additional configs passed are {}".format(config))
 
         if new_attributes["metric"] is None:

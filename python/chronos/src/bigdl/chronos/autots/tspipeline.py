@@ -246,7 +246,7 @@ class TSPipeline:
             yhat = np.concatenate(yhat_list, axis=0)
         else:
             invalidInputError(False,
-                              "We only support input tsdataset or data creator, " 
+                              "We only support input tsdataset or data creator, "
                               f"but found {data.__class__.__name__}")
         return yhat
 
@@ -302,7 +302,7 @@ class TSPipeline:
             yhat = np.concatenate(yhat_list, axis=0)
         else:
             invalidInputError(False,
-                              "We only support input tsdataset or data creator, " 
+                              "We only support input tsdataset or data creator, "
                               f"but found {data.__class__.__name__}")
         return yhat
 
@@ -578,7 +578,7 @@ class TSPipeline:
             if key not in self._best_config:
                 invalidInputError(False,
                                   "You use a data creator to fit your AutoTSEstimator, "
-                                  "and use a TSDataset to predict/evaluate/fit on the TSPipeline. " 
+                                  "and use a TSDataset to predict/evaluate/fit on the TSPipeline." 
                                   "Please stick to the same data type.")
 
     def _tsdataset_unscale(self, y):

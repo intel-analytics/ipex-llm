@@ -465,7 +465,7 @@ class TimeSequenceFeatureTransformer(BaseFeatureTransformer):
             y = dataframe.iloc[past_seq_len:, list(range(0, len(self.target_col)))].values
         output_x, mask_x = self._roll_data(x, past_seq_len)
         output_y, mask_y = self._roll_data(y, future_seq_len)
-        # assert output_x.shape[0] == output_y.shape[0],
+        # output_x.shape[0] == output_y.shape[0],
         # "The shape of output_x and output_y doesn't match! "
         mask = (mask_x == 1) & (mask_y == 1)
         return output_x[mask], output_y[mask]
@@ -484,7 +484,7 @@ class TimeSequenceFeatureTransformer(BaseFeatureTransformer):
         """
         x = dataframe.values
         output_x, mask_x = self._roll_data(x, past_seq_len)
-        # assert output_x.shape[0] == output_y.shape[0],
+        # output_x.shape[0] == output_y.shape[0],
         # "The shape of output_x and output_y doesn't match! "
         mask = (mask_x == 1)
         return output_x[mask]
