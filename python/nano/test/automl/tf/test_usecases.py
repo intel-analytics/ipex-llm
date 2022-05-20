@@ -105,16 +105,16 @@ class TestUseCases(TestCase):
                      pruner_kwargs={'min_resource':1, 'max_resource':100, 'reduction_factor':3},
                      x=x_train,
                      y=y_train,
-                     batch_size=space.Categorical(128,64, prefix='batch_size'),
+                     batch_size=space.Categorical(128,64),
                      epochs=2,
                      validation_split=0.2)
         study = model.search_summary()
         assert(study.best_trial)
-        assert('dense_1:units▁choice' in study.best_trial.params)
-        assert('dense_2:units▁choice' in study.best_trial.params)
+        assert('dense_1:units'+space.SPLITTER+'choice' in study.best_trial.params)
+        assert('dense_2:units'+space.SPLITTER+'choice' in study.best_trial.params)
         assert('dropout:rate' in study.best_trial.params)
         assert('learning_rate' in study.best_trial.params)
-        # assert('batch_size_choice' in study.best_trial.params)
+        assert('batch_size'+space.SPLITTER+'choice' in study.best_trial.params)
         # run fit
         history = model.fit(x_train, y_train,
                     batch_size=128, epochs=2, validation_split=0.2)
@@ -155,9 +155,15 @@ class TestUseCases(TestCase):
             validation_data=(x_valid, y_valid),
             shuffle=True,
             # batch_size=128,
-            batch_size=space.Int(128,256),
+            batch_size=space.Int(128,256, prefix='global'),
             epochs=2
         )
+        study = model.search_summary()
+        assert(study.best_trial)
+        assert('filters'+space.SPLITTER+'choice' in study.best_trial.params)
+        assert('kernel_size'+space.SPLITTER+'choice' in study.best_trial.params)
+        assert('strides'+space.SPLITTER+'choice' in study.best_trial.params)
+        assert('global:batch_size' in study.best_trial.params)
         model.fit(
             x_train,
             y_train,
@@ -167,6 +173,7 @@ class TestUseCases(TestCase):
             epochs=2,
             verbose=False
         )
+
         # print(model.summary())
         score = model.evaluate(x_valid, y_valid, verbose=0)
 
@@ -200,10 +207,16 @@ class TestUseCases(TestCase):
             y=y_train,
             validation_data=(x_valid, y_valid),
             shuffle=True,
-            batch_size=128,
+            batch_size=space.Categorical(128,64, prefix='fit'),
             epochs=2,
             verbose=False,
         )
+        study = model.search_summary()
+        assert(study.best_trial)
+        assert('filters'+space.SPLITTER+'choice' in study.best_trial.params)
+        assert('kernel_size'+space.SPLITTER+'choice' in study.best_trial.params)
+        assert('strides'+space.SPLITTER+'choice' in study.best_trial.params)
+        assert('fit:batch_size'+space.SPLITTER+'choice' in study.best_trial.params)
         model.fit(
             x_train,
             y_train,
