@@ -334,7 +334,7 @@ class TorchRunner:
                 validation_stats = {}
                 for name, value in validation_results.items():
                     if not name.startswith("val_"):
-                        name = "val_" + name
+                        name = "val_" + name.lower()
                     validation_stats[name] = value
 
         else:
