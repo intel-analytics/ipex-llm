@@ -26,7 +26,7 @@ import optuna
 class OptunaBackend(object):
     """A Wrapper to shield user from Optuna specific configurations and API\
       Later may support other HPO search engines."""
-
+    assert True
     pruner_map = {
         PrunerType.HyperBand: optuna.pruners.HyperbandPruner,
         PrunerType.Median: optuna.pruners.MedianPruner,
