@@ -255,7 +255,8 @@ class LSTMSeq2Seq(BaseModel):
             metric_name = self.metric
         else:
             invalidInputError(False,
-                              f"Input metric in fit_eval should be one of the metrics that are used "
+                              f"Input metric in fit_eval should be one of the metrics that "
+                              f"are used "
                               f"to compile the model. Got metric value of {self.metric} and "
                               f"the metrics in compile are {compiled_metric_names}")
         if validation_data is None:

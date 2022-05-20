@@ -373,7 +373,7 @@ class DoppelGANgerGenerator(nn.Module):
         # real_attribute_out_dim = sum of all real attribute dim
         # addi_attribute_out_dim = sum of all additional attribute dim
         if self.mlp_1 is not None and self.mlp_2 is not None:
-            # assert there are real attr and fake attr
+            # there are real attr and fake attr
             invalidInputError(len(all_attribute_outputs) == 2,
                               "len of all_attribute_outputs expect to be 2")
 

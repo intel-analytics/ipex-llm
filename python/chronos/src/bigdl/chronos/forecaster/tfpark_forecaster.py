@@ -33,7 +33,7 @@ class TFParkForecaster(TFParkKerasModel, Forecaster, metaclass=ABCMeta):
         """
         self.model = self._build()
         invalidInputError((isinstance(self.model, tf.keras.Model),
-                           "expect model is tf.keras.Model")
+                           "expect model is tf.keras.Model"))
         super().__init__(self.model)
 
     @abstractmethod

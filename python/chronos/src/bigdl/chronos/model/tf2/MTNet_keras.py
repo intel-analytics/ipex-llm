@@ -275,8 +275,6 @@ class MTNetKeras(BaseModel):
             config_names = set(config.keys())
             invalidInputError(config_names.issuperset(self.saved_configs),
                               "expect config_names contains saved_configs")
-            # assert config_names.issuperset(self.lr_decay_configs) or \
-            #        config_names.issuperset(self.lr_configs)
         self.epochs = config.get("epochs")
         self.metric = config.get("metric", "mean_squared_error")
         self.mc = config.get("mc")

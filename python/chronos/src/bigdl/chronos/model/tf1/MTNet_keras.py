@@ -276,8 +276,6 @@ class MTNetKeras(BaseModel):
             config_names = set(config.keys())
             invalidInputError(config_names.issuperset(self.saved_configs),
                               "expect config_names contains saved_configs")
-            # assert config_names.issuperset(self.lr_decay_configs) or \
-            #        config_names.issuperset(self.lr_configs)
         self.epochs = config.get("epochs")
         self.metric = config.get("metric") or "mean_squared_error"
         self.mc = config.get("mc")
@@ -586,19 +584,6 @@ class MTNetKeras(BaseModel):
         state_dict = self.state_dict()
         with open(checkpoint_file, "wb") as f:
             pickle.dump(state_dict, f)
-        # if self.decay_epochs > 0:
-        #     lr_decay_configs = {"min_lr": self.min_lr,
-        #                         "max_lr": self.max_lr}
-        #     assert set(lr_decay_configs.keys()) == self.lr_decay_configs, \
-        #         "The keys in lr_decay_configs is not the same as self.lr_decay_configs." \
-        #         "Please keep them consistent"
-        #     config_to_save.update(lr_decay_configs)
-        # else:
-        #     lr_configs = {"lr": self.lr_value}
-        #     assert set(lr_configs.keys()) == self.lr_configs, \
-        #         "The keys in lr_configs is not the same as self.lr_configs." \
-        #         "Please keep them consistent"
-        #     config_to_save.update(lr_configs)
 
     def restore(self, checkpoint_file, **config):
         """

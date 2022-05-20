@@ -275,8 +275,9 @@ class TCMF(BaseModel):
             if self.model.covariates is not None \
                     and self.model.covariates.shape[0] != covariates.shape[0]:
                 invalidInputError(False,
-                                  f"The input covariates number in {method_name} should be the same "
-                                  f"as the input covariates number in fit. Got {covariates.shape[0]}"
+                                  f"The input covariates number in {method_name} should be"
+                                  f" the same as the input covariates number in fit. Got"
+                                  f" {covariates.shape[0]}"
                                   f"and {self.model.covariates.shape[0]} respectively.")
             if self.model.dti is None and dti is not None:
                 invalidInputError(False,

@@ -103,7 +103,8 @@ class ARIMAModel:
             invalidInputError(False, "x should be None")
         if update and not rolling:
             invalidInputError(False,
-                              "We don't support updating model without rolling prediction currently")
+                              "We don't support updating model without"
+                              " rolling prediction currently")
         if self.model is None:
             invalidInputError(False,
                               "Needs to call fit_eval or restore first before calling predict")

@@ -50,7 +50,7 @@ class TimeSequenceFeatureTransformer(BaseFeatureTransformer):
         :extra_features_col: name of extra feature columns that needs to predict the target column.
         :param drop_missing: whether to drop missing values in the curve, if this is set to False,
                              an error will be reported if missing values are found. If True, will
-                             drop the missing values and won't raise errors.
+                             drop the missing values and won't throw errors.
         """
         # self.scaler = MinMaxScaler()
         self.scaler = StandardScaler()
@@ -371,7 +371,6 @@ class TimeSequenceFeatureTransformer(BaseFeatureTransformer):
         for name in feature_config_names:
             if name not in config:
                 continue
-                # raise KeyError("Can not find " + name + " in config!")
             feat_config[name] = config[name]
         self.past_seq_len = feat_config.get("past_seq_len", 2)
         return feat_config

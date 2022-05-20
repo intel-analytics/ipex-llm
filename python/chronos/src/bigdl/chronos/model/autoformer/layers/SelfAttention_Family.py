@@ -224,7 +224,7 @@ class ReformerLayer(nn.Module):
         )
 
     def fit_length(self, queries):
-        # inside reformer: assert N % (bucket_size * 2) == 0
+        # inside reformer: N % (bucket_size * 2) == 0
         B, N, C = queries.shape
         if N % (self.bucket_size * 2) == 0:
             return queries
