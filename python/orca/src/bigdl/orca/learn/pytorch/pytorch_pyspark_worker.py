@@ -40,6 +40,8 @@ import tempfile
 from pyspark import BarrierTaskContext, TaskContext
 from bigdl.orca.learn.utils import save_pkl, duplicate_stdout_stderr_to_file, get_rank
 from bigdl.orca.learn.log_monitor import LogMonitor
+from bigdl.dllib.utils.log4Error import *
+
 
 logger = logging.getLogger(__name__)
 
@@ -79,7 +81,7 @@ class PytorchPysparkWorker(TorchRunner):
         self.mode = mode
         self.backend = backend
         self.cluster_info = cluster_info
-        assert model_dir
+        invalidInputError(model_dir, "model_dir cannot be null")
         self.model_dir = model_dir
         self.log_to_driver = log_to_driver
 

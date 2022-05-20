@@ -17,6 +17,7 @@
 import os
 import subprocess
 from bigdl.orca.ray.utils import is_local
+from bigdl.dllib.utils.log4Error import *
 
 
 class ProcessInfo(object):
@@ -101,8 +102,8 @@ class ProcessMonitor:
                 self.master.append(process_info)
             else:
                 self.slaves.append(process_info)
-        assert len(self.master) == 1, \
-            "We should got 1 master only, but we got {}".format(len(self.master))
+        invalidInputError(len(self.master) == 1,
+                          "We should got 1 master only, but we got {}".format(len(self.master)))
         self.master = self.master[0]
         if not is_local(self.sc):
             self.print_ray_remote_err_out()

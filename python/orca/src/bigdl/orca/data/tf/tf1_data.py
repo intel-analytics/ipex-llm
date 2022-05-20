@@ -18,6 +18,7 @@ from bigdl.dllib.utils.common import get_node_and_core_number
 from bigdl.dllib.utils.file_utils import callZooFunc
 from bigdl.dllib.feature.common import FeatureSet
 from bigdl.orca.tfpark import TFDataset
+from bigdl.dllib.utils.log4Error import *
 
 
 class TF1Dataset(TFDataset):
@@ -40,9 +41,9 @@ class TF1Dataset(TFDataset):
             num_parts = dataset.xshards.num_partitions()
             if num_parts != node_num:
                 dataset.xshards = dataset.xshards.repartition(node_num)
-            assert batch_size % node_num == 0, \
-                "batch_size should be a multiple of num_shards, got" \
-                " batch_size {}, node_num {}".format(batch_size, node_num)
+            invalidInputError(batch_size % node_num == 0,
+                              "batch_size should be a multiple of num_shards, got"
+                              " batch_size {}, node_num {}".format(batch_size, node_num))
             batch_per_shard = batch_size // node_num
             self.drop_remainder = True
         elif batch_per_thread > 0:
@@ -79,9 +80,9 @@ class TF1Dataset(TFDataset):
         self.validation_dataset = validation_dataset
 
     def _get_prediction_data(self):
-        assert not self.drop_remainder, \
-            "sanity check: drop_remainder should be false in this case," \
-            " otherwise please report a bug"
+        invalidInputError(not self.drop_remainder,
+                          "sanity check: drop_remainder should be false in this case,"
+                          " otherwise please report a bug")
         jvalue = callZooFunc("float", "createMiniBatchRDDFromTFDataset",
                              self.rdd.map(lambda x: x[0]), self.init_op_name, self.table_init_op,
                              self.output_names, self.output_types, self.shard_index_op_name)

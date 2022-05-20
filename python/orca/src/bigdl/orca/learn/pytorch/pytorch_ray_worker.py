@@ -36,6 +36,7 @@ from torch.utils.data import IterableDataset
 
 
 import logging
+from bigdl.dllib.utils.log4Error import *
 
 try:
     from collections.abc import Iterable
@@ -94,8 +95,8 @@ class PytorchRayWorker(TorchRunner):
         else:
             raise ValueError("only support single model for now")
 
-        assert all(isinstance(model, nn.Module) for model in self.models), (
-            "All models must be PyTorch models: {}.".format(self.models))
+        invalidInputError(all(isinstance(model, nn.Module) for model in self.models),
+                          ("All models must be PyTorch models: {}.".format(self.models)))
 
         self.logger.debug("Creating optimizer.")
         self.optimizers = self.optimizer_creator(self.given_models,

@@ -16,6 +16,7 @@
 
 import ray
 import os
+from bigdl.dllib.utils.log4Error import *
 
 
 class HorovodWorker:
@@ -33,7 +34,8 @@ class HorovodWorker:
             for addr in intf_addresses:
                 if addr.family == socket.AF_INET and addr.address == ip_addr:
                     iface_name = intf
-        assert iface_name is not None, "Cannot find network interface with ip {}".format(ip_addr)
+        invalidInputError(iface_name is not None,
+                          "Cannot find network interface with ip {}".format(ip_addr))
 
         os.environ["HOROVOD_GLOO_IFACE"] = iface_name
         return iface_name

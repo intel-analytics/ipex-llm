@@ -31,6 +31,7 @@ from bigdl.orca.tfpark.tf_dataset import TFImageDataset, TFDataset
 import logging
 
 from bigdl.dllib.utils.utils import to_sample_rdd
+from bigdl.dllib.utils.log4Error import *
 
 if sys.version >= '3':
     long = int
@@ -48,7 +49,8 @@ class TFNet(Layer):
         config_bytes = None
         if tf_session_config is not None:
             import tensorflow as tf
-            assert isinstance(tf_session_config, tf.ConfigProto)
+            invalidInputError(isinstance(tf_session_config, tf.ConfigProto),
+                              "expect tf_session_config is tf.ConfigProto type")
             tf_session_config.use_per_session_threads = True
             config_bytes = bytearray(tf_session_config.SerializeToString())
         if input_names is None and output_names is None:
@@ -220,7 +222,8 @@ class TFNet(Layer):
         config_bytes = None
         if tf_session_config is not None:
             import tensorflow as tf
-            assert isinstance(tf_session_config, tf.ConfigProto)
+            invalidInputError(isinstance(tf_session_config, tf.ConfigProto),
+                              "expect tf_session_config is tf.ConfigProto type")
             tf_session_config.use_per_session_threads = True
             config_bytes = bytearray(tf_session_config.SerializeToString())
 

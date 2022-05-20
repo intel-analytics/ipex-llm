@@ -18,6 +18,7 @@ import numpy as np
 
 from bigdl.dllib.utils.file_utils import get_file_list
 from bigdl.dllib.utils.utils import convert_row_to_numpy
+from bigdl.dllib.utils.log4Error import *
 
 
 def list_s3_file(file_path, env):
@@ -90,8 +91,8 @@ def check_type_and_convert(data, allow_tuple=True, allow_list=True):
                              "a tuple of ndarrays or a list of ndarrays")
 
     result = {}
-    assert isinstance(data, dict), "each shard should be an dict"
-    assert "x" in data, "key x should in each shard"
+    invalidInputError(isinstance(data, dict), "each shard should be an dict")
+    invalidInputError("x" in data, "key x should in each shard")
     x = data["x"]
     result["x"] = check_and_convert(x)
     if "y" in data:
@@ -211,7 +212,7 @@ def ray_partitions_get_tf_dataset(partition_list, has_label=True):
         keys = sample.keys()
         if "x" in keys:
             if has_label:
-                assert "y" in keys, "key y should in each shard if has_label=True"
+                invalidInputError("y" in keys, "key y should in each shard if has_label=True")
             data, label = ray_partition_get_data_label(partition_data,
                                                        allow_tuple=True,
                                                        allow_list=False)

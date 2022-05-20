@@ -35,6 +35,7 @@ from bigdl.orca.tfpark.utils import evaluate_metrics
 from bigdl.dllib.utils import nest
 from bigdl.dllib.utils.tf import save_tf_checkpoint, load_tf_checkpoint
 from bigdl.orca.learn.spark_estimator import Estimator as SparkEstimator
+from bigdl.dllib.utils.log4Error import *
 
 
 class Estimator(SparkEstimator):
@@ -319,7 +320,7 @@ class Estimator(SparkEstimator):
         :param backend: backend for estimator. Now it only can be "bigdl".
         :return: an Estimator object.
         """
-        assert backend == "bigdl", "only bigdl backend is supported for now"
+        invalidInputError(backend == "bigdl", "only bigdl backend is supported for now")
         return TensorFlowEstimator(inputs=inputs,
                                    outputs=outputs,
                                    labels=labels,
@@ -346,7 +347,7 @@ class Estimator(SparkEstimator):
         :param backend: backend for estimator. Now it only can be "bigdl".
         :return: an Estimator object.
         """
-        assert backend == "bigdl", "only bigdl backend is supported for now"
+        invalidInputError(backend == "bigdl", "only bigdl backend is supported for now")
         return KerasEstimator(keras_model, metrics, model_dir, optimizer)
 
     @staticmethod
@@ -375,17 +376,18 @@ def to_dataset(data, batch_size, batch_per_thread, validation_data,
     # todo wrap argument into kwargs
     if validation_data:
         if isinstance(data, SparkXShards):
-            assert isinstance(validation_data, SparkXShards), \
-                "train data and validation data should be both SparkXShards"
+            invalidInputError(isinstance(validation_data, SparkXShards),
+                              "train data and validation data should be both SparkXShards")
         if isinstance(data, Dataset):
-            assert isinstance(validation_data, Dataset), \
-                "train data and validation data should be both orca.data.tf.Dataset"
+            invalidInputError(isinstance(validation_data, Dataset),
+                              "train data and validation data should be both"
+                              " orca.data.tf.Dataset")
         if isinstance(data, DataFrame):
-            assert isinstance(validation_data, DataFrame), \
-                "train data and validation data should be both Spark DataFrame"
+            invalidInputError(isinstance(validation_data, DataFrame),
+                              "train data and validation data should be both Spark DataFrame")
         if isinstance(data, tf.data.Dataset):
-            assert isinstance(validation_data, tf.data.Dataset), \
-                "train data and validation data should be both tf.data.Dataset"
+            invalidInputError(isinstance(validation_data, tf.data.Dataset),
+                              "train data and validation data should be both tf.data.Dataset")
 
     if isinstance(data, SparkXShards):
         dataset = xshards_to_tf_dataset(data,
@@ -443,9 +445,9 @@ class TensorFlowEstimator(Estimator):
                 self.optimizer = optimizer.get_optimizer()
                 self.use_bigdl_optim = True
             else:
-                assert isinstance(optimizer, tf.train.Optimizer), \
-                    "optimizer is of type {}, ".format(type(optimizer)) + \
-                    "it should be an instance of tf.train.Optimizer"
+                invalidInputError(isinstance(optimizer, tf.train.Optimizer),
+                                  "optimizer is of type {}, ".format(type(optimizer)) + \
+                                  "it should be an instance of tf.train.Optimizer")
                 self.optimizer = ZooOptimizer(optimizer)
                 if clip_norm or clip_value:
                     gvs = self.optimizer.compute_gradients(self.loss)
@@ -453,12 +455,13 @@ class TensorFlowEstimator(Estimator):
                         gvs = [(tf.clip_by_norm(g_v[0], clip_norm), g_v[1]) for g_v in gvs]
                     if clip_value:
                         if isinstance(clip_value, tuple):
-                            assert len(clip_value) == 2 and clip_value[0] < clip_value[1], \
-                                "clip value should be (clip_min, clip_max)"
+                            invalidInputError(len(clip_value) == 2 and clip_value[0] < clip_value[1],
+                                              "clip value should be (clip_min, clip_max)")
                             gvs = [(tf.clip_by_value(g_v[0], clip_value[0], clip_value[1]), g_v[1])
                                    for g_v in gvs]
                         if isinstance(clip_value, (int, float)):
-                            assert clip_value > 0, "clip value should be larger than 0"
+                            invalidInputError(clip_value > 0,
+                                              "clip value should be larger than 0")
                             gvs = [(tf.clip_by_value(g_v[0], -clip_value, clip_value), g_v[1])
                                    for g_v in gvs]
                         else:
@@ -522,25 +525,25 @@ class TensorFlowEstimator(Estimator):
                num_iterations),etc.
         """
 
-        assert self.labels is not None, \
-            "labels is None; it should not be None in training"
-        assert self.loss is not None, \
-            "loss is None; it should not be None in training"
-        assert self.optimizer is not None, \
-            "optimizer is None; it should not be None in training"
+        invalidInputError(self.labels is not None,
+                          "labels is None; it should not be None in training")
+        invalidInputError(self.loss is not None,
+                          "loss is None; it should not be None in training")
+        invalidInputError(self.optimizer is not None,
+                          "optimizer is None; it should not be None in training")
 
         if isinstance(data, DataFrame):
-            assert feature_cols is not None, \
-                "feature columns is None; it should not be None in training"
-            assert label_cols is not None, \
-                "label columns is None; it should not be None in training"
+            invalidInputError(feature_cols is not None,
+                              "feature columns is None; it should not be None in training")
+            invalidInputError(label_cols is not None,
+                              "label columns is None; it should not be None in training")
 
         if isinstance(data, SparkXShards):
             if data._get_class_name() == 'pandas.core.frame.DataFrame':
-                assert feature_cols is not None, \
-                    "feature columns is None; it should not be None in training"
-                assert label_cols is not None, \
-                    "label columns is None; it should not be None in training"
+                invalidInputError(feature_cols is not None,
+                                  "feature columns is None; it should not be None in training")
+                invalidInputError(label_cols is not None,
+                                  "label columns is None; it should not be None in training")
                 data, validation_data = process_xshards_of_pandas_dataframe(data, feature_cols,
                                                                             label_cols,
                                                                             validation_data, "fit")
@@ -618,19 +621,18 @@ class TensorFlowEstimator(Estimator):
                  FloatType, VectorUDT or Array of VectorUDT depending on model outputs shape.
         """
 
-        assert self.outputs is not None, \
-            "output is None, it should not be None in prediction"
+        invalidInputError(self.outputs is not None,
+                          "output is None, it should not be None in prediction")
         if isinstance(data, DataFrame):
-            assert feature_cols is not None, \
-                "feature columns is None; it should not be None in prediction"
+            invalidInputError(feature_cols is not None,
+                              "feature columns is None; it should not be None in prediction")
         if isinstance(data, SparkXShards):
             if data._get_class_name() == 'pandas.core.frame.DataFrame':
-                assert feature_cols is not None, \
-                    "feature columns is None; it should not be None in prediction"
+                invalidInputError(feature_cols is not None,
+                                  "feature columns is None; it should not be None in prediction")
                 data = process_xshards_of_pandas_dataframe(data, feature_cols)
-
-        assert not is_tf_data_dataset(data), "tf.data.Dataset currently cannot be used for" \
-                                             "estimator prediction"
+        invalidInputError(not is_tf_data_dataset(data),
+                          "tf.data.Dataset currently cannot be used for estimator prediction")
 
         dataset = to_dataset(data, batch_size=-1, batch_per_thread=batch_size,
                              validation_data=None,
@@ -675,21 +677,21 @@ class TensorFlowEstimator(Estimator):
         :return: evaluation result as a dictionary of {'metric name': metric value}
         """
 
-        assert self.metrics is not None, \
-            "metrics is None, it should not be None in evaluate"
+        invalidInputError(self.metrics is not None,
+                          "metrics is None, it should not be None in evaluate")
 
         if isinstance(data, DataFrame):
-            assert feature_cols is not None, \
-                "feature columns is None; it should not be None in evaluation"
-            assert label_cols is not None, \
-                "label columns is None; it should not be None in evaluation"
+            invalidInputError(feature_cols is not None,
+                              "feature columns is None; it should not be None in evaluation")
+            invalidInputError(label_cols is not None,
+                              "label columns is None; it should not be None in evaluation")
 
         if isinstance(data, SparkXShards):
             if data._get_class_name() == 'pandas.core.frame.DataFrame':
-                assert feature_cols is not None, \
-                    "feature columns is None; it should not be None in evaluation"
-                assert label_cols is not None, \
-                    "label columns is None; it should not be None in evaluation"
+                invalidInputError(feature_cols is not None,
+                                  "feature columns is None; it should not be None in evaluation")
+                invalidInputError(label_cols is not None,
+                                  "label columns is None; it should not be None in evaluation")
                 data = process_xshards_of_pandas_dataframe(data, feature_cols, label_cols)
 
         dataset = to_dataset(data, batch_size=-1, batch_per_thread=batch_size,
@@ -826,30 +828,31 @@ class KerasEstimator(Estimator):
         """
 
         if isinstance(data, DataFrame):
-            assert feature_cols is not None, \
-                "feature columns is None; it should not be None in training"
-            assert label_cols is not None, \
-                "label columns is None; it should not be None in training"
+            invalidInputError(feature_cols is not None,
+                              "feature columns is None; it should not be None in training")
+            invalidInputError(label_cols is not None,
+                              "label columns is None; it should not be None in training")
 
         if isinstance(data, tf.data.Dataset):
-            assert isinstance(data.element_spec, tuple), \
-                "If data is tf.data.Dataset, each element should be " \
-                "(feature tensors, label tensor), where each feature/label tensor can be " \
-                "either a single tensor or a tuple of tensors"
+            invalidInputError(isinstance(data.element_spec, tuple),
+                              "If data is tf.data.Dataset, each element should be"
+                              " (feature tensors, label tensor), where each feature/label"
+                              " tensor can be either a single tensor or a tuple of tensors")
             if validation_data is not None:
-                assert isinstance(validation_data, tf.data.Dataset), \
-                    "train data and validation data should be both tf.data.Dataset"
-                assert isinstance(validation_data.element_spec, tuple), \
-                    "If validation_data is tf.data.Dataset, each element should be " \
-                    "(feature tensors, label tensor), where each feature/label tensor can be " \
-                    "either a single tensor or a tuple of tensors"
+                invalidInputError(isinstance(validation_data, tf.data.Dataset),
+                                  "train data and validation data should be both"
+                                  " tf.data.Dataset")
+                invalidInputError(isinstance(validation_data.element_spec, tuple),
+                                  "If validation_data is tf.data.Dataset, each element should be"
+                                  " (feature tensors, label tensor), where each feature/label"
+                                  " tensor can be either a single tensor or a tuple of tensors")
 
         if isinstance(data, SparkXShards):
             if data._get_class_name() == 'pandas.core.frame.DataFrame':
-                assert feature_cols is not None, \
-                    "feature columns is None; it should not be None in training"
-                assert label_cols is not None, \
-                    "label columns is None; it should not be None in training"
+                invalidInputError(feature_cols is not None,
+                                  "feature columns is None; it should not be None in training")
+                invalidInputError(label_cols is not None,
+                                  "label columns is None; it should not be None in training")
                 data, validation_data = process_xshards_of_pandas_dataframe(data, feature_cols,
                                                                             label_cols,
                                                                             validation_data,
@@ -919,17 +922,17 @@ class KerasEstimator(Estimator):
         """
 
         if isinstance(data, DataFrame):
-            assert feature_cols is not None, \
-                "feature columns is None; it should not be None in prediction"
+            invalidInputError(feature_cols is not None,
+                              "feature columns is None; it should not be None in prediction")
 
         if isinstance(data, SparkXShards):
             if data._get_class_name() == 'pandas.core.frame.DataFrame':
-                assert feature_cols is not None, \
-                    "feature columns is None; it should not be None in prediction"
+                invalidInputError(feature_cols is not None,
+                                  "feature columns is None; it should not be None in prediction")
                 data = process_xshards_of_pandas_dataframe(data, feature_cols)
 
-        assert not is_tf_data_dataset(data), "tf.data.Dataset currently cannot be used for" \
-                                             "estimator prediction"
+        invalidInputError(not is_tf_data_dataset(data),
+                          "tf.data.Dataset currently cannot be used for estimator prediction")
 
         dataset = to_dataset(data, batch_size=-1, batch_per_thread=batch_size,
                              validation_data=None,
@@ -972,17 +975,17 @@ class KerasEstimator(Estimator):
         """
 
         if isinstance(data, DataFrame):
-            assert feature_cols is not None, \
-                "feature columns is None; it should not be None in evaluation"
-            assert label_cols is not None, \
-                "label columns is None; it should not be None in evaluation"
+            invalidInputError(feature_cols is not None,
+                              "feature columns is None; it should not be None in evaluation")
+            invalidInputError(label_cols is not None,
+                              "label columns is None; it should not be None in evaluation")
 
         if isinstance(data, SparkXShards):
             if data._get_class_name() == 'pandas.core.frame.DataFrame':
-                assert feature_cols is not None, \
-                    "feature columns is None; it should not be None in evaluation"
-                assert label_cols is not None, \
-                    "label columns is None; it should not be None in evaluation"
+                invalidInputError(feature_cols is not None,
+                                  "feature columns is None; it should not be None in evaluation")
+                invalidInputError(label_cols is not None,
+                                  "label columns is None; it should not be None in evaluation")
                 data = process_xshards_of_pandas_dataframe(data, feature_cols, label_cols)
 
         dataset = to_dataset(data, batch_size=-1, batch_per_thread=batch_size,
@@ -1055,8 +1058,8 @@ class KerasEstimator(Estimator):
         :param max: The maximum value to clip by.
         :return:
         """
-        assert min > 0, "clip value should be larger than 0"
-        assert min < max, "clip max should be larger than clip min"
+        invalidInputError(min > 0, "clip value should be larger than 0")
+        invalidInputError(min < max, "clip max should be larger than clip min")
         self.clip_min = min
         self.clip_max = max
 

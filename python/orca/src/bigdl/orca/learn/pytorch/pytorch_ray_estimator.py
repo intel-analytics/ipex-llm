@@ -33,6 +33,8 @@ from bigdl.dllib.utils.file_utils import enable_multi_fs_load, enable_multi_fs_s
 
 import ray
 from ray.exceptions import RayActorError
+from bigdl.dllib.utils.log4Error import *
+
 
 logger = logging.getLogger(__name__)
 
@@ -277,9 +279,10 @@ class PyTorchRayEstimator(OrcaRayEstimator):
             else:
                 worker_stats = None
         else:
-            assert isinstance(data, types.FunctionType), \
-                "data should be either an instance of SparkXShards, Ray Dataset " \
-                "or a callable function, but got type: {}".format(type(data))
+            invalidInputError(isinstance(data, types.FunctionType),
+                              "data should be either an instance of SparkXShards,"
+                              " Ray Dataset or a callable function, but"
+                              " got type: {}".format(type(data)))
 
             success, worker_stats = self._train_epochs(data,
                                                        epochs=epochs,
@@ -423,9 +426,9 @@ class PyTorchRayEstimator(OrcaRayEstimator):
                 remote_worker_stats.append(stats)
             worker_stats = ray.get(remote_worker_stats)
         else:
-            assert isinstance(data, types.FunctionType), \
-                "data should be either an instance of SparkXShards or a callable function, but " \
-                "got type: {}".format(type(data))
+            invalidInputError(isinstance(data, types.FunctionType),
+                              "data should be either an instance of SparkXShards or a callable"
+                              " function, but got type: {}".format(type(data)))
 
             params = dict(data_creator=data, batch_size=batch_size, num_steps=num_steps,
                           profile=profile, info=info)

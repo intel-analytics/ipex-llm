@@ -30,6 +30,7 @@ from bigdl.dllib.feature.common import FeatureSet, SampleToMiniBatch, Preprocess
 from bigdl.dllib.feature.image import ImagePreprocessing, ImageFeatureToSample
 from bigdl.dllib.utils import nest
 from bigdl.dllib.utils.utils import convert_row_to_numpy
+from bigdl.dllib.utils.log4Error import *
 
 if sys.version >= '3':
     long = int
@@ -279,7 +280,8 @@ class TFDataset(object):
         :return: an object that can be used for TFNet.predict
         e.g. an RDD of Sample or a ImageSet
         """
-        assert self.batch_per_thread > 0, "batch_per_thread must be set when used in prediction"
+        invalidInputError(self.batch_per_thread > 0,
+                          "batch_per_thread must be set when used in prediction")
         return self._get_prediction_data()
 
     def get_evaluation_data(self):
@@ -287,7 +289,8 @@ class TFDataset(object):
         :return: an object that can be used for TFNet.evaluate,
         e.g. an RDD of Sample or a ImageSet
         """
-        assert self.batch_per_thread > 0, "batch_per_thread must be set when used in evaluation"
+        invalidInputError(self.batch_per_thread > 0,
+                          "batch_per_thread must be set when used in evaluation")
         return self._get_evaluation_data()
 
     def get_training_data(self):
@@ -295,7 +298,8 @@ class TFDataset(object):
         :return: an object that can be used to create a BigDL optimizer,
         e.g. an RDD of Sample or a DataSet
         """
-        assert self.batch_size > 0, "batch_size must be set when used in training"
+        invalidInputError(self.batch_size > 0,
+                          "batch_size must be set when used in training")
         return self._get_training_data()
 
     def get_validation_data(self):
@@ -303,7 +307,8 @@ class TFDataset(object):
         :return: an object that can be used to set validation in a BigDL optimizer,
         e.g. an RDD of Sample or a DataSet
         """
-        assert self.batch_size > 0, "batch_size must be set when used in training"
+        invalidInputError(self.batch_size > 0,
+                          "batch_size must be set when used in training")
         return self._get_validation_data()
 
     def _get_prediction_data(self):
@@ -712,7 +717,7 @@ class TFDataDataset(TFDataset):
             TFDataDataset.check_rules(dataset._dataset, rules, is_training)
         else:
             for rule, message in rules:
-                assert not rule(dataset, is_training), message
+                invalidInputError(not rule(dataset, is_training), message)
             else:
                 for dt in dataset._inputs():
                     TFDataDataset.check_rules(dt, rules, is_training)
@@ -1224,11 +1229,12 @@ class DataFrameDataset(TFNdarrayDataset):
                  batch_per_thread=-1, hard_code_batch_size=False,
                  validation_df=None, memory_type="DRAM",
                  sequential_order=False, shuffle=True):
-        assert isinstance(feature_cols, list), "feature_cols should be a list"
+        invalidInputError(isinstance(feature_cols, list), "feature_cols should be a list")
         if labels_cols is not None:
-            assert isinstance(labels_cols, list), "label_cols should be a list"
+            invalidInputError(isinstance(labels_cols, list), "label_cols should be a list")
         import pyspark
-        assert isinstance(df, pyspark.sql.DataFrame)
+        invalidInputError(isinstance(df, pyspark.sql.DataFrame),
+                          "expect df is spark DataFrame")
 
         if labels_cols is None:
             labels_cols = []
@@ -1282,14 +1288,15 @@ def _check_compatible(names, structure, data_type="model_input"):
     if isinstance(structure, dict):
         err_msg = f"all {data_type} names should exist in data, " \
                   f"got {data_type} {names}, data {structure}"
-        assert all([name in structure for name in names]), err_msg
+        invalidInputError(all([name in structure for name in names]), err_msg)
     elif isinstance(structure, list) or isinstance(structure, tuple):
         err_msg = f"{data_type} number does not match data number, " \
                   f"got {data_type} {names}, data {structure}"
-        assert len(nest.flatten(structure)) == len(names), err_msg
+        invalidInputError(len(nest.flatten(structure)) == len(names), err_msg)
     else:
-        assert len(names) == 1, f"data does not match {data_type}, " \
-                                f"data {structure}, {data_type} {names}"
+        invalidInputError(len(names) == 1,
+                          f"data does not match {data_type},"
+                          f" data {structure}, {data_type} {names}")
 
 
 def check_data_compatible(dataset, model, mode):
@@ -1298,7 +1305,7 @@ def check_data_compatible(dataset, model, mode):
     err_msg = f"each element in dataset should be a tuple for {mode}, " \
               f"but got {dataset.tensor_structure}"
     if mode == "train" or mode == "evaluate":
-        assert isinstance(dataset.tensor_structure, tuple), err_msg
+        invalidInputError(isinstance(dataset.tensor_structure, tuple), err_msg)
 
         feature = dataset.tensor_structure[0]
         _check_compatible(input_names, feature, data_type="model_input")
@@ -1324,7 +1331,7 @@ def _standarize_feature_label_dataset(dataset, model):
             return np.expand_dims(ys, axis=-1) if ys.ndim == 0 else ys
 
     def _training_reorder(x, input_names, output_names):
-        assert isinstance(x, tuple)
+        invalidInputError(isinstance(x, tuple), "expect x to be tuple")
 
         return (_reorder(x[0], input_names), _reorder(x[1], output_names))
 

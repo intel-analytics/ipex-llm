@@ -35,6 +35,7 @@ from bigdl.dllib.utils.triggers import EveryEpoch as ZEveryEpoch
 from bigdl.dllib.utils.triggers import ZooTrigger
 from bigdl.orca.tfpark.tf_dataset import TFNdarrayDataset, check_data_compatible
 from bigdl.orca.tfpark.tf_dataset import _standarize_feature_label_dataset
+from bigdl.dllib.utils.log4Error import *
 
 if sys.version >= '3':
     long = int
@@ -78,8 +79,8 @@ class TFTrainingHelper(Layer):
 
         if config_proto is not None:
             import tensorflow as tf
-            assert isinstance(config_proto, tf.ConfigProto), \
-                "session_config should be a tf.ConfigProto"
+            invalidInputError(isinstance(config_proto, tf.ConfigProto),
+                              "session_config should be a tf.ConfigProto")
             config_proto.use_per_session_threads = True
             byte_arr = bytearray(config_proto.SerializeToString())
         else:
@@ -136,9 +137,8 @@ class TFModel(object):
     def _process_session_config(session_config):
         import tensorflow as tf
         if session_config is not None:
-
-            assert isinstance(session_config, tf.ConfigProto), \
-                "session_config should be a tf.ConfigProto"
+            invalidInputError(isinstance(session_config, tf.ConfigProto),
+                              "session_config should be a tf.ConfigProto")
             session_config.use_per_session_threads = True
         return session_config
 
@@ -631,11 +631,10 @@ class TFOptimizer:
             dataset = _standarize_feature_label_dataset(dataset, keras_model)
 
         flatten_inputs = nest.flatten(dataset.feature_tensors)
-        assert len(model_inputs) == len(flatten_inputs), \
-            ("the keras model and TFDataset should have the same number of tensors" +
-             " keras model has {} inputs " +
-             "while TFDataset has {} inputs").format(len(model_inputs),
-                                                     len(flatten_inputs))
+        invalidInputError(len(model_inputs) == len(flatten_inputs),
+                          "the keras model and TFDataset should have the same number of tensors"
+                          " keras model has {} inputs while TFDataset has {} "
+                          "inputs".format(len(model_inputs), len(flatten_inputs)))
         for i in range(len(flatten_inputs)):
             if not TFOptimizer._shape_match(model_inputs[i].shape, flatten_inputs[i].shape):
                 raise ValueError(("The {}th input in keras model {}"
@@ -645,11 +644,10 @@ class TFOptimizer:
                                                      flatten_inputs[i]))
 
         flatten_targets = nest.flatten(dataset.label_tensors)
-        assert len(model_targets) == len(flatten_targets), \
-            ("the keras model and TFDataset should have the same number of tensors" +
-             " keras model has {} targets " +
-             "while TFDataset has {} labels").format(len(model_targets),
-                                                     len(flatten_inputs))
+        invalidInputError(len(model_targets) == len(flatten_targets),
+                          "the keras model and TFDataset should have the same number"
+                          " of tensors keras model has {} targets while TFDataset has"
+                          " {} labels".format(len(model_targets), len(flatten_inputs)))
         # todo check targets shape, currently checking target shape will
         # cause too much false alarm.
 

@@ -41,6 +41,8 @@ from bigdl.orca.learn.pytorch.utils import (TimerCollection, AverageMeterCollect
 from bigdl.orca.learn.pytorch.constants import (SCHEDULER_STEP_EPOCH, NUM_STEPS,
                                                 SCHEDULER_STEP_BATCH, SCHEDULER_STEP)
 from torch.nn.parallel import DistributedDataParallel as DDP
+from bigdl.dllib.utils.log4Error import *
+
 
 tqdm = None
 try:
@@ -90,23 +92,17 @@ class TrainingOperator:
                  dist_backend=None):
         # You are not expected to override this method.
         self._models = models  # List of models
-        assert isinstance(
-            models,
-            collections.Iterable), ("Components need to be iterable. Got: {}".format(
-                type(models)))
+        invalidInputError(isinstance(models, collections.Iterable),
+                          "Components need to be iterable. Got: {}".format(type(models)))
         self._optimizers = optimizers  # List of optimizers
-        assert isinstance(
-            optimizers,
-            collections.Iterable), ("Components need to be iterable. Got: {}".format(
-                type(optimizers)))
+        invalidInputError(isinstance(optimizers, collections.Iterable),
+                          "Components need to be iterable. Got: {}".format(type(optimizers)))
         self._world_rank = world_rank
         self._criterion = criterion
         self._schedulers = schedulers
         if schedulers:
-            assert isinstance(
-                schedulers,
-                collections.Iterable), ("Components need to be iterable. Got: {}".format(
-                    type(schedulers)))
+            invalidInputError(isinstance(schedulers, collections.Iterable),
+                              "Components need to be iterable. Got: {}".format(type(schedulers)))
         self._config = config
         self._use_fp16 = use_fp16
         if tqdm is None and use_tqdm:

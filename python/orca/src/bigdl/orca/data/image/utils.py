@@ -24,6 +24,7 @@ from itertools import chain, islice
 
 from enum import Enum
 import json
+from bigdl.dllib.utils.log4Error import *
 
 
 class DType(Enum):
@@ -129,7 +130,7 @@ def dict_to_row(schema, row_dict):
     import pyspark
     err_msg = 'Dictionary fields \n{}\n do not match schema fields \n{}'\
         .format('\n'.join(sorted(row_dict.keys())), '\n'.join(schema.keys()))
-    assert set(row_dict.keys()) == set(schema.keys()), err_msg
+    invalidInputError(set(row_dict.keys()) == set(schema.keys()), err_msg)
 
     row = {}
     for k, v in row_dict.items():

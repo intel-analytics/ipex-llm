@@ -35,6 +35,7 @@ from bigdl.orca.learn.log_monitor import start_log_server
 
 from bigdl.orca.learn.utils import find_free_port, find_ip_and_free_port
 from bigdl.dllib.utils.utils import get_node_ip
+from bigdl.dllib.utils.log4Error import *
 
 
 def partition_to_creator(partition):
@@ -247,9 +248,9 @@ class PyTorchPySparkEstimator(BaseEstimator):
                 lambda iter: transform_func(iter, init_params, params)).collect()
 
         else:
-            assert isinstance(data, types.FunctionType), \
-                "data should be either an instance of SparkXShards or a callable function, but " \
-                "got type: {}".format(type(data))
+            invalidInputError(isinstance(data, types.FunctionType),
+                              "data should be either an instance of SparkXShards or a callable"
+                              " function, but got type: {}".format(type(data)))
 
             params["data_creator"] = data
 

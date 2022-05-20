@@ -20,6 +20,7 @@ import pickle
 import tensorflow as tf
 from tensorflow.keras import backend as K
 import types
+from bigdl.dllib.utils.log4Error import *
 
 
 def check_tf_version():
@@ -97,9 +98,9 @@ class KerasBaseModel(BaseModel):
                 raise ValueError(f"data/validation_data should be a tuple of numpy array "
                                  f"or a data creator function but found {type(data)}")
             if validation_data:
-                assert isinstance(validation_data, tuple),\
-                    f"validation_data should be a tuple or\
-                    data creator function but found {type(validation_data)}"
+                invalidInputError(isinstance(validation_data, tuple),
+                                  f"validation_data should be a tuple or"
+                                  f" data creator function but found {type(validation_data)}")
 
             batch_size = int(self.config.get("batch_size", 32))
             train_dataset = KerasBaseModel._np_to_dataset(data, batch_size=batch_size)

@@ -31,6 +31,7 @@ import random
 import pyarrow.parquet as pq
 import io
 import math
+from bigdl.dllib.utils.log4Error import *
 
 
 class ParquetDataset:
@@ -162,14 +163,14 @@ class ParquetIterable:
             filter_row_group_indexed = [
                 index for index in list(range(len(self.row_group)))]
         else:
-            assert self.num_shards <= len(
-                self.row_group), "num_shards should be not larger than partitions." \
-                                 "but got num_shards {} with partitions {}." \
-                .format(self.num_shards, len(self.row_group))
-            assert self.rank < self.num_shards, \
-                "shard index should be included in [0,num_shard)," \
-                "but got rank {} with num_shard {}.".format(
-                    self.rank, self.num_shards)
+            invalidInputError(self.num_shards <= len(self.row_group),
+                              "num_shards should be not larger than partitions. but got"
+                              " num_shards {} with "
+                              "partitions {}.".format(self.num_shards, len(self.row_group)))
+            invalidInputError(self.rank < self.num_shards,
+                              "shard index should be included in [0,num_shard),"
+                              "but got rank {} with "
+                              "num_shard {}.".format(self.rank, self.num_shards))
             filter_row_group_indexed = [index for index in list(range(len(self.row_group)))
                                         if index % self.num_shards == self.rank]
 
@@ -320,7 +321,8 @@ def write_voc(voc_root_path, splits_names, output_path, **kwargs):
 
 def _check_arguments(_format, kwargs, args):
     for keyword in args:
-        assert keyword in kwargs, keyword + " is not specified for format " + _format + "."
+        invalidInputError(keyword in kwargs,
+                          keyword + " is not specified for format " + _format + ".")
 
 
 def write_parquet(format, output_path, *args, **kwargs):

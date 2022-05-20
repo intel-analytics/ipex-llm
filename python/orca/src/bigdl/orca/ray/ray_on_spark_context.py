@@ -31,6 +31,7 @@ from bigdl.orca.ray.process import session_execute, ProcessMonitor
 from bigdl.orca.ray.utils import is_local
 from bigdl.orca.ray.utils import resource_to_bytes
 from bigdl.orca.ray.utils import get_parent_pid
+from bigdl.dllib.utils.log4Error import *
 
 
 def kill_redundant_log_monitors(redis_address):
@@ -372,7 +373,8 @@ class RayOnSparkContext(object):
         {"object_spilling_config":"{\"type\":\"filesystem\",
                                    \"params\":{\"directory_path\":\"/tmp/spill\"}}"}
         """
-        assert sc is not None, "sc cannot be None, please create a SparkContext first"
+        invalidInputError(sc is not None,
+                          "sc cannot be None, please create a SparkContext first")
         self.sc = sc
         self.initialized = False
         self.is_local = is_local(sc)
@@ -384,8 +386,8 @@ class RayOnSparkContext(object):
         self.extra_params = extra_params
         self.system_config = system_config
         if extra_params:
-            assert isinstance(extra_params, dict), \
-                "extra_params should be a dict for extra options to launch ray"
+            invalidInputError(isinstance(extra_params, dict),
+                              "extra_params should be a dict for extra options to launch ray")
             if self.system_config:
                 self.extra_params.pop("system_config", None)
                 self.extra_params.pop("_system_config", None)
@@ -589,17 +591,17 @@ class RayOnSparkContext(object):
             master_process_infos = ray_rdd.mapPartitionsWithIndex(
                 self.ray_service.gen_ray_master_start()).collect()
             master_process_infos = [process for process in master_process_infos if process]
-            assert len(master_process_infos) == 1, \
-                "There should be only one ray master launched, but got {}"\
-                .format(len(master_process_infos))
+            invalidInputError(len(master_process_infos) == 1,
+                              "There should be only one ray master launched,"
+                              " but got {}".format(len(master_process_infos)))
             master_process_info = master_process_infos[0]
             redis_address = master_process_info.master_addr
             raylet_process_infos = ray_rdd.mapPartitions(
                 self.ray_service.gen_raylet_start(redis_address)).collect()
             raylet_process_infos = [process for process in raylet_process_infos if process]
-            assert len(raylet_process_infos) == self.num_ray_nodes - 1, \
-                "There should be {} raylets launched across the cluster, but got {}"\
-                .format(self.num_ray_nodes - 1, len(raylet_process_infos))
+            invalidInputError(len(raylet_process_infos) == self.num_ray_nodes - 1,
+                              "There should be {} raylets launched across the cluster, but got"
+                              " {}".format(self.num_ray_nodes - 1, len(raylet_process_infos)))
             process_infos = master_process_infos + raylet_process_infos
 
         self.ray_processesMonitor = ProcessMonitor(process_infos, self.sc, ray_rdd, self,

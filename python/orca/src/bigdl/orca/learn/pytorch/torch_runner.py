@@ -46,6 +46,7 @@ from bigdl.orca.learn.pytorch.constants import SCHEDULER_STEP, NUM_STEPS
 from bigdl.orca.learn.pytorch.training_operator import TrainingOperator
 from bigdl.orca.learn.pytorch import utils
 from bigdl.orca.learn.pytorch.utils import get_filesystem
+from bigdl.dllib.utils.log4Error import *
 
 try:
     from collections.abc import Iterable
@@ -138,8 +139,8 @@ class TorchRunner:
             self.criterion = self.loss_creator
         else:  # Torch loss is also callable.
             import types
-            assert isinstance(self.loss_creator, types.FunctionType), \
-                "Must provide a torch loss instance or a loss_creator function"
+            invalidInputError(isinstance(self.loss_creator, types.FunctionType),
+                              "Must provide a torch loss instance or a loss_creator function")
             self.criterion = self.loss_creator(self.config)
 
     def _create_schedulers_if_available(self):
@@ -181,8 +182,8 @@ class TorchRunner:
         self.models = self.model_creator(self.config)
         if isinstance(self.models, nn.Sequential) or not isinstance(self.models, Iterable):
             self.models = [self.models]
-        assert all(isinstance(model, nn.Module) for model in self.models), (
-            "All models must be PyTorch models: {}.".format(self.models))
+        invalidInputError(all(isinstance(model, nn.Module) for model in self.models),
+                          ("All models must be PyTorch models: {}.".format(self.models)))
 
         self.logger.debug("Creating optimizer.")
         self.optimizers = self.optimizer_creator(self.given_models,

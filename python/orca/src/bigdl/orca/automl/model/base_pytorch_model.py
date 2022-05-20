@@ -27,6 +27,8 @@ from bigdl.orca.automl.model.abstract import BaseModel, ModelBuilder
 from bigdl.orca.automl.metrics import Evaluator
 
 from bigdl.orca.automl.pytorch_utils import LR_NAME, DEFAULT_LR
+from bigdl.dllib.utils.log4Error import *
+
 
 PYTORCH_REGRESSION_LOSS_MAP = {"mse": "MSELoss",
                                "mae": "L1Loss",
@@ -113,7 +115,7 @@ class PytorchBaseModel(BaseModel):
         TODO: check the updated params and decide if the model is needed to be rebuilt
         """
         # todo: support input validation data None
-        assert validation_data is not None, "You must input validation data!"
+        invalidInputError(validation_data is not None, "You must input validation data!")
 
         if not metric:
             raise ValueError("You must input a valid metric value for fit_eval.")
@@ -148,18 +150,21 @@ class PytorchBaseModel(BaseModel):
             validation_loader = validation_data(self.config)
         elif isinstance(data, DataLoader):
             train_loader = data
-            assert isinstance(validation_data, DataLoader)
+            invalidInputError(isinstance(validation_data, DataLoader),
+                              "expect validation_data be DataLoader")
             validation_loader = validation_data
         else:
-            assert isinstance(data, tuple) and isinstance(validation_data, tuple),\
-                f"data/validation_data should be a tuple or\
-                 data creator function but found {type(data)}"
-            assert isinstance(data[0], np.ndarray) and isinstance(validation_data[0], np.ndarray),\
-                f"Data and validation_data should be a tuple of np.ndarray " \
-                f"but found {type(data[0])} as the first element of data."
-            assert isinstance(data[1], np.ndarray) and isinstance(validation_data[1], np.ndarray),\
-                f"Data and validation_data should be a tuple of np.ndarray " \
-                f"but found {type(data[1])} as the second element of data."
+            invalidInputError(isinstance(data, tuple) and isinstance(validation_data, tuple),
+                              f"data/validation_data should be a tuple or data creator"
+                              f" function but found {type(data)}")
+            invalidInputError(
+                isinstance(data[0], np.ndarray) and isinstance(validation_data[0], np.ndarray),
+                f"Data and validation_data should be a tuple of np.ndarray "
+                f"but found {type(data[0])} as the first element of data.")
+            invalidInputError(
+                isinstance(data[1], np.ndarray) and isinstance(validation_data[1], np.ndarray),
+                f"Data and validation_data should be a tuple of np.ndarray "
+                f"but found {type(data[1])} as the second element of data.")
             train_data_creator = self._np_to_creator(data)
             valid_data_creator = self._np_to_creator(validation_data)
             train_loader = train_data_creator(self.config)
@@ -208,7 +213,7 @@ class PytorchBaseModel(BaseModel):
 
     def _validate(self, validation_loader, metric_name, metric_func=None):
         if not metric_name:
-            assert metric_func, "You must input valid metric_func or metric_name"
+            invalidInputError(metric_func, "You must input valid metric_func or metric_name")
             metric_name = metric_func.__name__
         self.model.eval()
         with torch.no_grad():

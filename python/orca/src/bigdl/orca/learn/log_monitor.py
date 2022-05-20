@@ -17,6 +17,8 @@
 import logging
 import os
 import time
+from bigdl.dllib.utils.log4Error import *
+
 
 logger = logging.getLogger(__name__)
 
@@ -60,7 +62,7 @@ class LogMonitor:
         """
         anything_published = False
         if self.log_fd:
-            assert not self.log_fd.closed
+            invalidInputError(not self.log_fd.closed, "expect log is not closed here")
 
             lines_to_publish = []
             max_num_lines_to_read = 50

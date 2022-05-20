@@ -25,6 +25,7 @@ from ray.tune import Stopper
 from bigdl.orca.automl.model.abstract import ModelBuilder
 from bigdl.orca.data import ray_xshards
 from ray.tune.progress_reporter import TrialProgressCallback
+from bigdl.dllib.utils.log4Error import *
 
 
 class RayTuneSearchEngine(SearchEngine):
@@ -260,8 +261,8 @@ class RayTuneSearchEngine(SearchEngine):
 
     def test_run(self):
         def mock_reporter(**kwargs):
-            assert self.metric_name in kwargs, "Did not report proper metric"
-            assert "checkpoint" in kwargs, "Accidentally removed `checkpoint`?"
+            invalidInputError(self.metric_name in kwargs, "Did not report proper metric")
+            invalidInputError("checkpoint" in kwargs, "Accidentally removed `checkpoint`?")
             raise GoodError("This works.")
 
         try:

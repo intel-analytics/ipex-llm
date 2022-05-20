@@ -29,6 +29,7 @@ from torch.utils.data import DataLoader
 from pyspark.sql import DataFrame
 import torch
 import types
+from bigdl.dllib.utils.log4Error import *
 
 
 class PyTorchSparkEstimator(OrcaSparkEstimator):
@@ -72,8 +73,8 @@ class PyTorchSparkEstimator(OrcaSparkEstimator):
         if validation_data is None:
             val_feature_set = None
         else:
-            assert isinstance(validation_data, DataFrame), "validation_data should also be a " \
-                                                           "DataFrame"
+            invalidInputError(isinstance(validation_data, DataFrame),
+                              "validation_data should also be a DataFrame")
             val_feature_set = FeatureSet.sample_rdd(validation_data.rdd.map(
                 lambda row: row_to_sample(row, schema, feature_cols, label_cols)))
 
@@ -85,8 +86,8 @@ class PyTorchSparkEstimator(OrcaSparkEstimator):
         if validation_data is None:
             val_feature_set = None
         else:
-            assert isinstance(validation_data, SparkXShards), "validation_data should be a " \
-                                                              "SparkXShards"
+            invalidInputError(isinstance(validation_data, SparkXShards),
+                              "validation_data should be a SparkXShards")
             val_feature_set = FeatureSet.sample_rdd(validation_data.rdd.flatMap(xshard_to_sample))
         return train_feature_set, val_feature_set
 
@@ -95,8 +96,9 @@ class PyTorchSparkEstimator(OrcaSparkEstimator):
         if validation_data is None:
             val_feature_set = None
         else:
-            assert isinstance(validation_data, DataLoader) or callable(data), \
-                "validation_data should be a pytorch DataLoader or a callable data_creator"
+            invalidInputError(isinstance(validation_data, DataLoader) or callable(data),
+                              "validation_data should be a pytorch DataLoader or a"
+                              " callable data_creator")
             val_feature_set = FeatureSet.pytorch_dataloader(validation_data)
 
         return train_feature_set, val_feature_set
@@ -131,21 +133,22 @@ class PyTorchSparkEstimator(OrcaSparkEstimator):
 
         end_trigger = MaxEpoch(epochs)
         if isinstance(data, DataLoader):
-            assert batch_size is None and data.batch_size > 0, "When using PyTorch Dataloader as " \
-                                                               "input, you need to specify the " \
-                                                               "batch size in DataLoader and " \
-                                                               "don't specify batch_size " \
-                                                               "in the fit method."
+            invalidInputError(batch_size is None and data.batch_size > 0,
+                              "When using PyTorch Dataloader as input, you need to specify"
+                              " the batch size in DataLoader and don't specify batch_size"
+                              " in the fit method.")
         else:
-            assert batch_size is not None and batch_size > 0, "batch_size should be greater than 0"
+            invalidInputError(batch_size is not None and batch_size > 0,
+                              "batch_size should be greater than 0")
         checkpoint_trigger = Trigger.convert_trigger(checkpoint_trigger)
 
         if self.log_dir is not None and self.app_name is not None:
             self.estimator.set_tensorboard(self.log_dir, self.app_name)
 
         if validation_data:
-            assert self.metrics is not None, "You should provide metrics when creating this " \
-                                             "estimator if you provide validation_data."
+            invalidInputError(self.metrics is not None,
+                              "You should provide metrics when creating this estimator"
+                              " if you provide validation_data.")
 
         if isinstance(data, SparkXShards):
             if data._get_class_name() == 'pandas.core.frame.DataFrame':
@@ -230,17 +233,18 @@ class PyTorchSparkEstimator(OrcaSparkEstimator):
         """
         from bigdl.orca.data.utils import xshard_to_sample
 
-        assert data is not None, "validation data shouldn't be None"
-        assert self.metrics is not None, "metrics shouldn't be None, please specify the metrics" \
-                                         " argument when creating this estimator."
+        invalidInputError(data is not None, "validation data shouldn't be None")
+        invalidInputError(self.metrics is not None,
+                          "metrics shouldn't be None, please specify the metrics argument"
+                          " when creating this estimator.")
         if isinstance(data, DataLoader):
-            assert batch_size is None and data.batch_size > 0, "When using PyTorch Dataloader as " \
-                                                               "input, you need to specify the " \
-                                                               "batch size in DataLoader and " \
-                                                               "don't specify batch_size " \
-                                                               "in the fit method."
+            invalidInputError(batch_size is None and data.batch_size > 0,
+                              "When using PyTorch Dataloader as input, you need to specify"
+                              " the batch size in DataLoader and don't specify batch_size"
+                              " in the fit method.")
         else:
-            assert batch_size is not None and batch_size > 0, "batch_size should be greater than 0"
+            invalidInputError(batch_size is not None and batch_size > 0,
+                              "batch_size should be greater than 0")
 
         if isinstance(data, SparkXShards):
             if data._get_class_name() == 'pandas.core.frame.DataFrame':
@@ -357,8 +361,9 @@ class PyTorchSparkEstimator(OrcaSparkEstimator):
                 raise ValueError("Cannot find PyTorch checkpoint, please check your checkpoint"
                                  " path.")
         else:
-            assert prefix is not None, "You should provide optimMethod prefix, " \
-                                       "for example 'optimMethod-TorchModelf53bddcc'"
+            invalidInputError(prefix is not None,
+                              "You should provide optimMethod prefix,"
+                              " for example 'optimMethod-TorchModelf53bddcc'")
 
         try:
             loaded_model = self.__load_bigdl_model(os.path.join(path, "model.{}".format(version)))

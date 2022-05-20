@@ -20,6 +20,7 @@ from bigdl.orca import OrcaContext
 from bigdl.dllib.nncontext import init_nncontext, ZooContext
 from bigdl.dllib.utils.common import get_node_and_core_number
 from bigdl.dllib.utils import nest
+from bigdl.dllib.utils.log4Error import *
 
 
 class XShards(object):
@@ -101,7 +102,7 @@ But got data of type {}
             arrays = np.array_split(data, shard_num)
             rdd = sc.parallelize(arrays)
         else:
-            assert type(data) in supported_types, type_err_msg
+            invalidInputError(type(data) in supported_types, type_err_msg)
             flattened = nest.flatten(data)
             data_length = len(flattened[0])
             data_to_be_shard = []
@@ -112,9 +113,10 @@ But got data of type {}
             for i in range(shard_num):
                 data_to_be_shard.append([])
             for x in flattened:
-                assert len(x) == data_length, \
-                    "the ndarrays in data must all have the same size in first dimension, " \
-                    "got first ndarray of size {} and another {}".format(data_length, len(x))
+                invalidInputError(len(x) == data_length,
+                                  "the ndarrays in data must all have the same size in first"
+                                  " dimension, got first ndarray of size {} and"
+                                  " another {}".format(data_length, len(x)))
                 x_parts = np.array_split(x, shard_num)
                 for idx, x_part in enumerate(x_parts):
                     data_to_be_shard[idx].append(x_part)
@@ -397,9 +399,9 @@ class SparkXShards(XShards):
         :param other: another SparkXShards
         :return: zipped SparkXShards
         """
-        assert isinstance(other, SparkXShards), "other should be a SparkXShards"
-        assert self.num_partitions() == other.num_partitions(), \
-            "The two SparkXShards should have the same number of partitions"
+        invalidInputError(isinstance(other, SparkXShards), "other should be a SparkXShards")
+        invalidInputError(self.num_partitions() == other.num_partitions(),
+                          "The two SparkXShards should have the same number of partitions")
         try:
             rdd = self.rdd.zip(other.rdd)
             zipped_shard = SparkXShards(rdd)
@@ -431,8 +433,8 @@ class SparkXShards(XShards):
 
     def __getitem__(self, key):
         def get_data(data):
-            assert hasattr(data, '__getitem__'), \
-                "No selection operation available for this XShards"
+            invalidInputError(hasattr(data, '__getitem__'),
+                              "No selection operation available for this XShards")
             try:
                 value = data[key]
             except:

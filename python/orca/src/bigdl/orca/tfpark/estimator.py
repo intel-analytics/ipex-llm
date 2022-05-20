@@ -25,6 +25,7 @@ from bigdl.orca.tfpark.tf_dataset import TFDataset
 from bigdl.dllib.utils import nest
 import six
 import os
+from bigdl.dllib.utils.log4Error import *
 
 
 class TFEstimator(object):
@@ -232,14 +233,14 @@ class TFEstimator(object):
                             key = prediction_keys.PredictionKeys.PREDICTIONS
                             msg = "{} is required for evaluating mse,".format(key) + \
                                   " please add it in your model_fn predictions"
-                            assert key in spec.prediction, msg
+                            invalidInputError(key in spec.prediction, msg)
                             outputs = [
                                 spec.predictions[prediction_keys.PredictionKeys.PREDICTIONS]]
                         else:
                             key = prediction_keys.PredictionKeys.LOGITS
                             msg = "{} is required in for evaluating,".format(key) + \
                                   " please add it in your model_fn predictions"
-                            assert key in spec.predictions, msg
+                            invalidInputError(key in spec.predictions, msg)
                             outputs = [
                                 spec.predictions[prediction_keys.PredictionKeys.LOGITS]]
                     else:
@@ -320,7 +321,7 @@ class TFEstimator(object):
                             if isinstance(outs, list):
                                 error_msg = "output length is " \
                                     + "{} but keys length is {}".format(len(outs), len(keys))
-                                assert len(outs) == len(keys), error_msg
+                                invalidInputError(len(outs) == len(keys), error_msg)
                             else:
                                 outs = [outs]
                             res_dict = {}

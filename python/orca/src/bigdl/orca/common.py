@@ -16,6 +16,7 @@
 
 import os
 from bigdl.dllib.nncontext import ZooContext
+from bigdl.dllib.utils.log4Error import *
 
 
 class OrcaContextMeta(type):
@@ -51,8 +52,8 @@ class OrcaContextMeta(type):
     @pandas_read_backend.setter
     def pandas_read_backend(cls, value):
         value = value.lower()
-        assert value == "spark" or value == "pandas", \
-            "pandas_read_backend must be either spark or pandas"
+        invalidInputError(value == "spark" or value == "pandas",
+                          "pandas_read_backend must be either spark or pandas")
         cls._pandas_read_backend = value
 
     @property
@@ -65,7 +66,8 @@ class OrcaContextMeta(type):
 
     @_eager_mode.setter
     def _eager_mode(cls, value):
-        assert isinstance(value, bool), "_eager_mode should either be True or False"
+        invalidInputError(isinstance(value, bool),
+                          "_eager_mode should either be True or False")
         cls.__eager_mode = value
 
     @property
@@ -80,7 +82,8 @@ class OrcaContextMeta(type):
 
     @serialize_data_creator.setter
     def serialize_data_creator(cls, value):
-        assert isinstance(value, bool), "serialize_data_creator should either be True or False"
+        invalidInputError(isinstance(value, bool),
+                          "serialize_data_creator should either be True or False")
         cls._serialize_data_creator = value
 
     @property
@@ -98,8 +101,8 @@ class OrcaContextMeta(type):
     def train_data_store(cls, value):
         value = value.upper()
         import re
-        assert value == "DRAM" or value == "PMEM" or re.match("DISK_\d+", value), \
-            "train_data_store must be either DRAM or PMEM or DIRECT or DISK_n"
+        invalidInputError(value == "DRAM" or value == "PMEM" or re.match("DISK_\d+", value),
+                          "train_data_store must be either DRAM or PMEM or DIRECT or DISK_n")
         cls._train_data_store = value
 
     @property
@@ -116,8 +119,8 @@ class OrcaContextMeta(type):
     @_shard_size.setter
     def _shard_size(cls, value):
         if value is not None:
-            assert isinstance(value, int) and value > 0, \
-                "shard size should be either None or a positive integer."
+            invalidInputError(isinstance(value, int) and value > 0,
+                              "shard size should be either None or a positive integer.")
         cls.__shard_size = value
 
     @property
@@ -209,12 +212,14 @@ def init_orca_context(cluster_mode=None, runtime="spark", cores=2, memory="2g", 
     import atexit
     atexit.register(stop_orca_context)
     if runtime == "ray":
-        assert cluster_mode is None, "Currently, cluster_mode is not supported for ray runtime " \
-                                     "and you must connect to an exiting ray cluster."
+        invalidInputError(cluster_mode is None,
+                          "Currently, cluster_mode is not supported for ray runtime and"
+                          " you must connect to an exiting ray cluster.")
         from bigdl.orca.ray import RayContext
         ray_ctx = RayContext(runtime="ray", cores=cores, num_nodes=num_nodes,
                              **kwargs)
-        assert "address" in kwargs, "ray_address must be specified if the runtime is ray."
+        invalidInputError("address" in kwargs,
+                          "ray_address must be specified if the runtime is ray.")
         ray_ctx.init()
         return ray_ctx
     elif runtime == "spark":
@@ -250,10 +255,10 @@ def init_orca_context(cluster_mode=None, runtime="spark", cores=2, memory="2g", 
             elif cluster_mode.startswith("yarn"):  # yarn, yarn-client or yarn-cluster
                 hadoop_conf = os.environ.get("HADOOP_CONF_DIR")
                 if not hadoop_conf:
-                    assert "hadoop_conf" in kwargs, (
-                           "Directory path to hadoop conf not found for yarn-client mode. "
-                           "Please either specify argument hadoop_conf or set the environment"
-                           " variable HADOOP_CONF_DIR")
+                    invalidInputError("hadoop_conf" in kwargs,
+                                      ("Directory path to hadoop conf not found for yarn-client"
+                                       " mode. Please either specify argument hadoop_conf or set"
+                                       " the environment variable HADOOP_CONF_DIR"))
                     hadoop_conf = kwargs["hadoop_conf"]
                 from bigdl.dllib.utils.utils import detect_conda_env_name
                 conda_env_name = detect_conda_env_name()
@@ -276,9 +281,10 @@ def init_orca_context(cluster_mode=None, runtime="spark", cores=2, memory="2g", 
                                             num_executors=num_nodes, executor_cores=cores,
                                             executor_memory=memory, **spark_args)
             elif cluster_mode.startswith("k8s"):  # k8s or k8s-client
-                assert "master" in kwargs, "Please specify master for k8s mode"
-                assert "container_image" in kwargs, ("Please specify container_image "
-                                                     "for k8s mode")
+                invalidInputError("master" in kwargs,
+                                  "Please specify master for k8s mode")
+                invalidInputError("container_image" in kwargs,
+                                  "Please specify container_image for k8s mode")
                 for key in ["driver_cores", "driver_memory", "extra_executor_memory_for_ray",
                             "extra_python_lib", "penv_archive", "jars", "python_location"]:
                     if key in kwargs:

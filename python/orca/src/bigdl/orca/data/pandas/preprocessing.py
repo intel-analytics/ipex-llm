@@ -19,6 +19,7 @@ from bigdl.dllib.nncontext import init_nncontext
 from bigdl.orca import OrcaContext
 from bigdl.orca.data import SparkXShards
 from bigdl.orca.data.utils import *
+from bigdl.dllib.utils.log4Error import *
 
 
 def read_csv(file_path, **kwargs):
@@ -87,8 +88,9 @@ def read_file_spark(file_path, file_type, **kwargs):
 
             pd_rdd = rdd.mapPartitions(loadFile)
     else:  # Spark backend; spark.read.csv/json accepts a folder path as input
-        assert file_type == "json" or file_type == "csv", \
-            "Unsupported file type: %s. Only csv and json files are supported for now" % file_type
+        invalidInputError(file_type == "json" or file_type == "csv",
+                          "Unsupported file type: %s. Only csv and json files are"
+                          " supported for now" % file_type)
         spark = OrcaContext.get_spark_session()
         # TODO: add S3 confidentials
 
@@ -97,10 +99,11 @@ def read_file_spark(file_path, file_type, **kwargs):
         # with some modifications.
 
         if "mangle_dupe_cols" in kwargs:
-            assert kwargs["mangle_dupe_cols"], "mangle_dupe_cols can only be True"
+            invalidInputError(kwargs["mangle_dupe_cols"],
+                              "mangle_dupe_cols can only be True")
             kwargs.pop("mangle_dupe_cols")
         if "parse_dates" in kwargs:
-            assert not kwargs["parse_dates"], "parse_dates can only be False"
+            invalidInputError(not kwargs["parse_dates"], "parse_dates can only be False")
             kwargs.pop("parse_dates")
 
         names = kwargs.get("names", None)
