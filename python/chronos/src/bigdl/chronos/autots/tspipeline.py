@@ -578,7 +578,7 @@ class TSPipeline:
             if key not in self._best_config:
                 invalidInputError(False,
                                   "You use a data creator to fit your AutoTSEstimator, "
-                                  "and use a TSDataset to predict/evaluate/fit on the TSPipeline." 
+                                  "and use a TSDataset to predict/evaluate/fit on the TSPipeline."
                                   "Please stick to the same data type.")
 
     def _tsdataset_unscale(self, y):
