@@ -78,13 +78,14 @@ object SimpleQuerySparkExample {
       "primaryKey:" + primaryKeyPlaintext)
     sparkContext.hadoopConfiguration.set("parquet.crypto.factory.class" ,
       "org.apache.parquet.crypto.keytools.PropertiesDrivenCryptoFactory")
+    // get the column need to encrypt
     val schema = df.schema
     var encryptColumn = ""
     var fieldNum = 0
     schema.foreach(field => {
       if(fieldNum == 0) {
         encryptColumn += ":"
-      } else{
+      } else {
         encryptColumn += ","
       }
       encryptColumn += field.name
