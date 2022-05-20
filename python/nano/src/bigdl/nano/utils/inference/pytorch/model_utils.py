@@ -18,12 +18,14 @@ from bigdl.nano.pytorch.lightning import LightningModuleFromTorch
 import inspect
 from torch.utils.data import DataLoader
 import torch
+import pytorch_lightning as pl
 from bigdl.nano.utils.log4Error import invalidInputError
 
 
 def get_forward_args(model):
     forward_args = inspect.getfullargspec(model.forward).args[1:]
-    if isinstance(model, LightningModuleFromTorch):
+    if isinstance(model, LightningModuleFromTorch)\
+         or isinstance(model, FP32InferenceModelWrapped):
         # forward param list for compiled model
         forward_args = get_forward_args(model.model)
     return forward_args
@@ -82,3 +84,37 @@ def export_to_onnx(model, input_sample=None, onnx_path="model.onnx", dynamic_axe
                                 }
     default_onnx_export_args.update(kwargs)
     torch.onnx.export(model, input_sample, onnx_path, **default_onnx_export_args)
+
+
+class FP32InferenceModelWrapped(pl.LightningModule):
+    def __init__(self, model, inference_method_name="forward"):
+        super().__init__()
+        self.model = model
+        self.inference_method_name = inference_method_name
+
+    def forward(self, *args):
+        method_to_call = getattr(self.model, self.inference_method_name)
+        args = self.__inspect_methods_args(method_to_call, args)
+        return method_to_call(*args)
+
+    def __inspect_methods_args(self, method_to_call, args):
+        nargs = len(inspect.getfullargspec(method_to_call).args[1:])
+        if isinstance(args, torch.fx.Proxy):
+            args = [args[i] for i in range(nargs)]
+        else:
+            args = args[:nargs]
+        return args
+
+
+def fp32_inference_model_wrapper(model, inference_method_name="forward"):
+    '''
+    This function is used when users call `trainer.quantize` or
+    `trainer.trace` to change the inference route of the fp32 model.
+    In some cases, users would use another method other than `forward`
+    to carry out the inference process.
+    '''
+    # return the original model when users use forward to do the inference
+    if inference_method_name == "forward":
+        return model
+
+    return FP32InferenceModelWrapped(model, inference_method_name=inference_method_name)

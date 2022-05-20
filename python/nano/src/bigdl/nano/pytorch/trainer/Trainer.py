@@ -42,6 +42,8 @@ from bigdl.nano.deps.neural_compressor.inc_api import QuantizationINC, PytorchQu
     check_pytorch_dataloaders, load_inc_model
 from bigdl.nano.utils.log4Error import invalidInputError
 from bigdl.nano.utils.inference.pytorch.model import AcceleratedLightningModule
+from bigdl.nano.utils.inference.pytorch.model_utils import fp32_inference_model_wrapper
+
 distributed_backends = ["spawn", "ray", "subprocess"]
 
 
@@ -219,6 +221,7 @@ class Trainer(pl.Trainer):
                  precision='int8',
                  accelerator=None,
                  calib_dataloader: DataLoader = None,
+                 inference_method_name = "forward",
                  val_dataloader: DataLoader = None,
                  metric: Optional[Metric] = None,
                  accuracy_criterion: dict = {'relative': 0.99, 'higher_is_better': True},
@@ -241,6 +244,8 @@ class Trainer(pl.Trainer):
                                 None means staying in pytorch.
         :param calib_dataloader:    A torch.utils.data.dataloader.DataLoader object for calibration.
                                     Required for static quantization.
+        :param inference_method_name: The inference route for the model to be quantized. Typically,
+                                      this is default to "forward".
         :param val_dataloader:      A torch.utils.data.dataloader.DataLoader object for evaluation.
         :param metric:              A torchmetrics.metric.Metric object for evaluation.
         :param accuracy_criterion:  Tolerable accuracy drop.
@@ -273,6 +278,7 @@ class Trainer(pl.Trainer):
         :return:            A accelerated Pytorch-Lightning Model if quantization is sucessful.
         """
         if not accelerator or accelerator == 'onnxruntime':
+            model = fp32_inference_model_wrapper(model, inference_method_name)
             # check if dataloader is of legal format
             check_pytorch_dataloaders(model, [calib_dataloader, val_dataloader])
 
@@ -351,6 +357,7 @@ class Trainer(pl.Trainer):
     def trace(model: nn.Module,
               input_sample=None,
               accelerator=None,
+              inference_method_name="forward",
               onnxruntime_session_options=None):
         """
         Trace a pytorch model and convert it into an accelerated module for inference.
@@ -362,6 +369,8 @@ class Trainer(pl.Trainer):
                              model is a LightningModule with any dataloader attached.
         :param accelerator: The accelerator to use, defaults to None meaning staying in Pytorch
                             backend. 'openvino' and 'onnxruntime' are supported for now.
+        :param inference_method_name: The inference route for the model to be quantized. Typically,
+                                      this is default to "forward".
         :param onnxruntime_session_options: The session option for onnxruntime, only valid when
                                             accelerator='onnxruntime', otherwise will be ignored.
         :return: Model with different acceleration(OpenVINO/ONNX Runtime).
@@ -371,6 +380,7 @@ class Trainer(pl.Trainer):
             "Expect a nn.Module instance that is not traced or quantized"
             "but got type {}".format(type(model))
         )
+        model = fp32_inference_model_wrapper(model, inference_method_name)
         if accelerator == 'openvino':
             return PytorchOpenVINOModel(model, input_sample)
         if accelerator == 'onnxruntime':
@@ -403,15 +413,18 @@ class Trainer(pl.Trainer):
             torch.save(model.state_dict(), checkpoint_path)
 
     @staticmethod
-    def load(path, model: LightningModule = None):
+    def load(path, model: LightningModule = None, inference_method_name = "forward"):
         """
         Load a model from local.
 
         :param path: Path to model to be loaded. Path should be a directory.
         :param model: Required FP32 model to load pytorch model. Optional for ONNX/OpenVINO.
+        :param inference_method_name: The inference route for the model to be quantized. Typically,
+                                      this is default to "forward".
         :return: Model with different acceleration(None/OpenVINO/ONNX Runtime) or
                  precision(FP32/FP16/BF16/INT8).
         """
+        model = fp32_inference_model_wrapper(model, inference_method_name)
         path = Path(path)
         if not path.exists():
             invalidInputError(False, "{} doesn't exist.".format(path))

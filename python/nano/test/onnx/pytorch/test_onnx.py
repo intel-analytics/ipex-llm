@@ -47,6 +47,21 @@ class ResNet18(nn.Module):
         return self.model(x)
 
 
+class ResNet18_no_forward(nn.Module):
+    def __init__(self, num_classes, pretrained=True, include_top=False, freeze=True):
+        super().__init__()
+        backbone = vision.resnet18(pretrained=pretrained, include_top=include_top, freeze=freeze)
+        output_size = backbone.get_output_size()
+        head = nn.Linear(output_size, num_classes)
+        self.model = nn.Sequential(backbone, head)
+
+    def forward(self, x):
+        return self.model(x)
+
+    def predict(self, x):
+        return self.model(x) + 1
+
+
 class MultiInputModel(nn.Module):
     def __init__(self):
         super().__init__()
@@ -84,6 +99,31 @@ class TestOnnx(TestCase):
             with torch.no_grad():
                 forward_res_pytorch = pl_model(x).numpy()
             forward_res_onnx = onnx_model(x).numpy()
+            np.testing.assert_almost_equal(forward_res_onnx, forward_res_pytorch, decimal=5)
+
+    def test_trainer_trace_onnx_no_forward(self):
+        model = ResNet18_no_forward(10, pretrained=False, include_top=False, freeze=True)
+        loss = nn.CrossEntropyLoss()
+        optimizer = torch.optim.Adam(model.parameters(), lr=0.01)
+        trainer = Trainer(max_epochs=1)
+
+        pl_model = Trainer.compile(model, loss, optimizer)
+        x = torch.rand((10, 3, 256, 256))
+        y = torch.ones((10, ), dtype=torch.long)
+        ds = TensorDataset(x, y)
+        train_loader = DataLoader(ds, batch_size=2)
+        trainer.fit(pl_model, train_loader)
+
+        onnx_model = trainer.trace(pl_model.model,
+                                   accelerator="onnxruntime",
+                                   inference_method_name="predict",
+                                   input_sample=x)
+
+        for x, y in train_loader:
+            model.eval()
+            with torch.no_grad():
+                forward_res_pytorch = pl_model(x).numpy()
+            forward_res_onnx = onnx_model(x).numpy() - 1
             np.testing.assert_almost_equal(forward_res_onnx, forward_res_pytorch, decimal=5)
 
     def test_trainer_trace_multiple_input_onnx(self):
