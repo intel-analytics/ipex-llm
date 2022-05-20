@@ -68,6 +68,10 @@ def quantize(self,
     :return:           A TensorflowBaseModel for INC. If there is no model found, return None.
     """
     if backend == 'inc':
+        assert self.inputs is not None and self.outputs is not None,\
+            ("A keras.Model for quantization must include Input layers."
+             "Please create the model by keras.Model(inputs=.., outputs=..).")
+
         def get_tensors_name(tensors):
             return [tensor.name for tensor in tensors]
 
