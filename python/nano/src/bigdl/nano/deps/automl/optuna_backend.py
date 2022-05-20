@@ -17,6 +17,9 @@
 from bigdl.nano.automl.hpo.backend import PrunerType, SamplerType
 from bigdl.nano.utils.log4Error import invalidInputError
 from bigdl.nano.automl.hpo.space import SimpleSpace, NestedSpace, AutoObject
+from bigdl.nano.automl.hpo.space import (
+    AutoObject, Space, SingleParam,
+    _get_hp_prefix)
 import optuna
 
 
@@ -43,6 +46,8 @@ class OptunaBackend(object):
         SamplerType.NSGAII: optuna.samplers.NSGAIISampler,
         SamplerType.MOTPE: optuna.samplers.MOTPESampler,
     }
+
+    SPLITTER = u':'  # For splitting prefix and names of hyperparam
 
     @staticmethod
     def get_other_args(kwargs, kwspaces):
@@ -86,37 +91,49 @@ class OptunaBackend(object):
     def get_hpo_config(trial, configspace):
         """Get hyper parameter suggestions from search space settings."""
         # TODO better ways to map ConfigSpace to optuna spaces
-        # fix order of hyperparams in configspace.
         hp_ordering = configspace.get_hyperparameter_names()
         config = {}
-        for hp in hp_ordering:
-            hp_obj = configspace.get_hyperparameter(hp)
-            hp_prefix = hp_obj.meta.setdefault('prefix', None)
-            hp_name = hp_prefix + ':' + hp if hp_prefix else hp
-            hp_dimension = OptunaBackend._sample_space(trial, hp_name, hp_obj)
+        # hp_prefix = _get_cs_prefix(configspace)
+        for hp_name in hp_ordering:
+            hp = configspace.get_hyperparameter(hp_name)
+            # TODO generate meaningful prefix for user in AutoObj
+            hp_prefix = _get_hp_prefix(hp)
+            optuna_hp_name = OptunaBackend._format_hp_name(hp_prefix, hp_name)
+            hp_dimension = OptunaBackend._sample_space(trial, optuna_hp_name, hp)
             config[hp_name] = hp_dimension
         return config
 
     @staticmethod
-    def instantiate_param(trial, kwargs, hparam):
+    def _format_hp_name(prefix, hp_name):
+        if prefix:
+            return "{}{}{}".format(
+                prefix, OptunaBackend.SPLITTER, hp_name)
+        else:
+            return hp_name
+
+    @staticmethod
+    def instantiate_param(trial, kwargs, arg_name):
         """
         Instantiate auto objects in kwargs with trial params at runtime.
 
         Note the params are replaced IN-PLACE
         """
         # instantiate auto objects in runtime params a
-        v = kwargs.get(hparam, None)
-        if v:
-            if isinstance(v, SimpleSpace):
-                value = OptunaBackend._sample_space(trial, hparam, v.hp)
-            elif isinstance(v, NestedSpace):
-                config = OptunaBackend.get_hpo_config(trial, v.cs)
-                value = v.sample(**config)
-            elif isinstance(v, AutoObject):
-                value = OptunaBackend.instantiate(trial, v)
-            else:
-                value = v
-            kwargs[hparam] = value
+        v = kwargs.get(arg_name, None)
+
+        if not v:
+            return kwargs
+
+        if not isinstance(v, Space):
+            value = v
+        elif isinstance(v, AutoObject):
+            value = OptunaBackend.instantiate(trial, v)
+        else:
+            pobj = SingleParam(arg_name, v)
+            config = OptunaBackend.get_hpo_config(trial, pobj.cs)
+            value = pobj.sample(**config)
+
+        kwargs[arg_name] = value
         return kwargs
 
     @staticmethod

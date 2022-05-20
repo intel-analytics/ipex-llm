@@ -17,16 +17,20 @@ import requests
 import csv
 import argparse
 
+from pyspark.sql.types import StructType, StructField, FloatType, TimestampType
 from bigdl.orca.common import init_orca_context, stop_orca_context, OrcaContext
 from bigdl.chronos.data.experimental import XShardsTSDataset
 from bigdl.chronos.forecaster import TCNForecaster
 import numpy as np
 
 def generate_spark_df(dataset_path):
-    sc = OrcaContext.get_spark_context()
     spark = OrcaContext.get_spark_session()
+    schema = StructType([
+        StructField("timestamp", TimestampType()),
+        StructField("value", FloatType()),
+    ])
     df = spark.read.format("csv")\
-                   .option("inferSchema", "true")\
+                   .schema(schema)\
                    .option("header", "true")\
                    .load(dataset_path)
     tsdata_train, _, tsdata_test = XShardsTSDataset.from_sparkdf(df, dt_col="timestamp",

@@ -75,7 +75,8 @@ object FGBoostRealDataBenchmark extends TimingSupportive {
       trainLabelStacked,
       param.numRound)
 
-    val fGBoostResult = fGBoostRegression.predict(DataFrameUtils.toTensorArray(testDf)).map(tensor => tensor.value())
+    val fGBoostResult = fGBoostRegression.predict(DataFrameUtils.toTensorArray(testDf))
+      .map(tensor => tensor.value())
       .map(math.exp(_))
 
   }

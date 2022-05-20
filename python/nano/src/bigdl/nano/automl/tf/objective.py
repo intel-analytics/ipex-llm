@@ -38,7 +38,7 @@ class Objective(object):
                  target_metric=None,
                  pruning=False,
                  backend=None,
-                 **kwargs,
+                 **kwargs
                  ):
         """
         Init the objective.

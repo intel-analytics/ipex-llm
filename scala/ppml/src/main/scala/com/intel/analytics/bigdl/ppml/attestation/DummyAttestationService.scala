@@ -17,11 +17,16 @@
 
 package com.intel.analytics.bigdl.ppml.attestation
 
+import com.intel.analytics.bigdl.dllib.utils.Log4Error
 import org.apache.logging.log4j.LogManager
 import org.json.JSONObject
 
 import scala.util.Random
 
+/**
+ * Dummy Attestation Service for Test
+ * If Quote String contains, "true" then return true
+ */
 class DummyAttestationService extends AttestationService {
 
     val logger = LogManager.getLogger(getClass)
@@ -45,14 +50,15 @@ class DummyAttestationService extends AttestationService {
     /**
      * Do a quote verification
      * @param quote the quote generated before
-     * @return the result and response of quote verify. If the quote contains the substring "true" then return true,
+     * @return the result and response of quote verify.
+     *         If the quote contains the substring "true" then return true,
      *         else return false
      */
     override def attestWithServer(quote: String): (Boolean, String) = {
         timing("DummyAttestationService retrieveVerifyQuoteResult") {
             if (quote == null) {
-                logger.error("Quote should be specified")
-                throw new AttestationRuntimeException("Quote is null")
+                Log4Error.invalidInputError(false,
+                    "Quote should be specified")
             }
             val nonce: String = "test"
             val response: JSONObject = new JSONObject()

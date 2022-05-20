@@ -56,7 +56,7 @@ class Trainer(pl.Trainer):
     def __init__(self, num_processes: int = 1,
                  use_ipex: bool = False,
                  enable_bf16=False,
-                 distributed_backend="spawn",
+                 distributed_backend="subprocess",
                  cpu_for_each_process: Optional[List[List[int]]] = None,
                  use_hpo=False,
                  *args: Any, **kwargs: Any) -> None:

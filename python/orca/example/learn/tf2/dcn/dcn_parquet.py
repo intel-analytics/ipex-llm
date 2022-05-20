@@ -174,17 +174,16 @@ if __name__ == "__main__":
 
     def model_creator(config):
         model = DCN(use_cross_layer=True, deep_layer_sizes=[192, 192])
-        from bigdl.friesian.learn.models import tfrs_model
-        model = tfrs_model(model)
+        from bigdl.friesian.models import TFRSModel
+        model = TFRSModel(model)
         model.compile(optimizer=tf.keras.optimizers.Adam(config['lr']))
         return model
-
 
     estimator = Estimator.from_keras(model_creator=model_creator,
                                      verbose=True,
                                      config=config,
                                      backend="tf2")
 
-    estimator.fit(train_dataset, 8, batch_size=8192, steps_per_epoch=steps, validation_data=val_dataset,
-                  validation_steps=val_steps)
+    estimator.fit(train_dataset, 8, batch_size=8192, steps_per_epoch=steps,
+                  validation_data=val_dataset, validation_steps=val_steps)
     estimator.evaluate(val_dataset, batch_size=8192, num_steps=val_steps)

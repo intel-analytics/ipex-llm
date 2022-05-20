@@ -20,6 +20,7 @@
         <tagsToExclude>com.intel.analytics.bigdl.tags.Integration</tagsToExclude>
         <core.artifactId>zoo-core-dist-all</core.artifactId>
         <core.dependencyType>jar</core.dependencyType>
+        <bigdl.basedir>${project.parent.basedir}</bigdl.basedir>
     </properties>
 
     <dependencies>

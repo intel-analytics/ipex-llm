@@ -26,6 +26,7 @@
         <core.scope>compile</core.scope>
         <serving.scope>compile</serving.scope>
         <spark-scope>compile</spark-scope>
+        <bigdl.basedir>${project.parent.basedir}</bigdl.basedir>
     </properties>
 
     <repositories>
