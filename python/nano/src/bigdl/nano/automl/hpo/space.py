@@ -27,6 +27,8 @@ from collections import OrderedDict
 import ConfigSpace as CS
 import ConfigSpace.hyperparameters as CSH
 from bigdl.nano.automl.utils import EasyDict
+from bigdl.nano.utils.log4Error import invalidInputError
+
 
 __all__ = ['Space', 'NestedSpace', 'AutoObject', 'List', 'Dict',
            'Categorical', 'Real', 'Int', 'Bool']
@@ -69,7 +71,7 @@ class SimpleSpace(Space):
 
     def get_hp(self, name):
         """Fetch particular hyperparameter based on its name."""
-        raise NotImplementedError
+        invalidInputError(False, "not implement get_hp for SimpleSpace")
 
     @property
     def hp(self):
@@ -124,7 +126,7 @@ class NestedSpace(Space):
     @property
     def cs(self):
         """`ConfigSpace` representation of this search space."""
-        raise NotImplementedError
+        invalidInputError(False, "not implement cs for NestedSpace")
 
     @property
     def prefix(self):
@@ -139,7 +141,7 @@ class NestedSpace(Space):
     @property
     def kwspaces(self):
         """`OrderedDict` representation of this search space."""
-        raise NotImplementedError
+        invalidInputError(False, "not implement kwspaces for NestedSpace")
 
     @property
     def default(self):
@@ -195,7 +197,7 @@ class AutoObject(NestedSpace):
     @property
     def kwspaces(self):
         """`OrderedDict` representation of this search space."""
-        raise NotImplementedError
+        invalidInputError(False, "not implement kwspaces for AutoObject")
 
     # @classproperty
     # def kwspaces(cls):
@@ -205,7 +207,7 @@ class AutoObject(NestedSpace):
 
     def sample(self):
         """Sample a configuration from this search space."""
-        raise NotImplementedError
+        invalidInputError(False, "not implement sample for AutoObject")
 
     def __repr__(self):
         return 'AutoObject'

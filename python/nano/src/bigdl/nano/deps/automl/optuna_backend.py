@@ -15,6 +15,8 @@
 #
 
 from bigdl.nano.automl.hpo.backend import PrunerType, SamplerType
+from bigdl.nano.utils.log4Error import invalidInputError
+from bigdl.nano.automl.hpo.space import SimpleSpace, NestedSpace, AutoObject
 from bigdl.nano.automl.hpo.space import (
     AutoObject, Space, SingleParam,
     _get_hp_prefix)
@@ -24,7 +26,6 @@ import optuna
 class OptunaBackend(object):
     """A Wrapper to shield user from Optuna specific configurations and API\
       Later may support other HPO search engines."""
-
     pruner_map = {
         PrunerType.HyperBand: optuna.pruners.HyperbandPruner,
         PrunerType.Median: optuna.pruners.MedianPruner,
@@ -74,13 +75,15 @@ class OptunaBackend(object):
                 elif 'ordinal' in hp_type:
                     hp_dimension = trial.suggest_categorical(
                         name=hp_name, choices=hp_obj.sequence)
-            except (ValueError):
-                # TODO ValueErrors might be raised due to other reasons.
-                raise ValueError("If you set search space in model, \
-                    you must call model.search before model.fit.")
+            except (RuntimeError):
+                # TODO ValueErrors might be throw due to other reasons.
+                invalidInputError(False,
+                                  "If you set search space in model, "
+                                  "you must call model.search before model.fit.")
         else:
-            raise ValueError("unknown hyperparameter type %s for param %s" %
-                             (hp_type, hp_name))
+            invalidInputError(False,
+                              "unknown hyperparameter type %s for param %s" %
+                              (hp_type, hp_name))
         return hp_dimension
 
     @staticmethod

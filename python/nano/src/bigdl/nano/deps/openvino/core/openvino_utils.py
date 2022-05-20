@@ -15,6 +15,7 @@
 #
 import os
 from pathlib import Path
+from bigdl.nano.utils.log4Error import invalidInputError
 
 
 def convert_onnx_to_xml(onnx_file_path, xml_path, batch_size=1):
@@ -24,4 +25,5 @@ def convert_onnx_to_xml(onnx_file_path, xml_path, batch_size=1):
     if os.system(mo_cmd) == 0:
         return
     else:
-        raise RuntimeError("ModelOptimizer fails to convert {}.".format(str(onnx_file_path)))
+        invalidInputError(False,
+                          "ModelOptimizer fails to convert {}.".format(str(onnx_file_path)))

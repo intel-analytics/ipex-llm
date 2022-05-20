@@ -22,6 +22,7 @@ from bigdl.nano.automl.utils.register_modules import (
     register_module,
     register_module_simple,
     clean_modules_simple,)
+from bigdl.nano.utils.log4Error import invalidInputError
 
 
 class HPOConfig(object):
@@ -119,9 +120,9 @@ class HPOConfig(object):
     def hpo_tf(self, value):
         """Forbid setting hpo tensorflow variable directly. \
         Should use enable_hpo_tf() instead."""
-        raise ValueError("Directly set hpo_tf value is not permitted. \
-            Please use enable_hpo_tf() or disable_hpo_tf() to \
-            enable/disable tensorflow hpo. ")
+        invalidInputError(False, "Directly set hpo_tf value is not permitted."
+                                 "Please use enable_hpo_tf() or disable_hpo_tf() to "
+                                 "enable/disable tensorflow hpo. ")
 
     @property
     def hpo_pytorch(self):
@@ -132,9 +133,9 @@ class HPOConfig(object):
     def hpo_pytorch(self, value):
         """Forbid setting hpo pytorch variable directly. \
             Should use enable_hpo_pytorch() instead."""
-        raise ValueError("Directly set hpo_pytorch value is not permitted. \
-            Please use enable_hpo_pytorch() or disable_hpo_pytorch() to\
-            enable/disable pytorch hpo. ")
+        invalidInputError(False, "Directly set hpo_pytorch value is not permitted."
+                                 "Please use enable_hpo_pytorch() or disable_hpo_pytorch()"
+                                 " to enable/disable pytorch hpo. ")
 
     def _backup_existing_components(self, symtab, subcomponents, namespace='default'):
         self.backup_tf_components = self.backup_tf_components or {}

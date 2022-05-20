@@ -17,6 +17,7 @@ from typing import List, Optional
 from bigdl.nano.deps.neural_compressor.inc_api import QuantizationINC, tf_dataset_to_inc_dataloader
 import tensorflow as tf
 from tensorflow.keras.metrics import Metric
+from bigdl.nano.utils.log4Error import invalidInputError
 
 
 def quantize(self,
@@ -71,8 +72,9 @@ def quantize(self,
             return [tensor.name for tensor in tensors]
 
         if approach not in ['static']:
-            raise ValueError("Approach should be 'static', "
-                             "{} is invalid.".format(approach))
+            invalidInputError(False,
+                              "Approach should be 'static', "
+                              "{} is invalid.".format(approach))
         approach_map = {
             'static': 'post_training_static_quant',
             'dynamic': 'post_training_dynamic_quant'
@@ -98,4 +100,4 @@ def quantize(self,
                                                      val_loader, metric)
         return quantized
     else:
-        raise NotImplementedError("Backend {} is not implemented.".format(backend))
+        invalidInputError(False, "Backend {} is not implemented.".format(backend))

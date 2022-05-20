@@ -40,6 +40,8 @@ from bigdl.nano.deps.onnxruntime.onnxruntime_api import bind_onnxrt_methods,\
     PytorchONNXRuntimeModel, load_onnxruntime_model
 from bigdl.nano.deps.neural_compressor.inc_api import QuantizationINC, PytorchQuantizedModel,\
     check_pytorch_dataloaders, load_inc_model
+from bigdl.nano.utils.log4Error import invalidInputError
+
 distributed_backends = ["spawn", "ray", "subprocess"]
 
 
@@ -80,9 +82,10 @@ class Trainer(pl.Trainer):
             kwargs.pop('plugins')
         if cpu_for_each_process is not None:
             if len(cpu_for_each_process) != num_processes:
-                raise ValueError(f"The length of `cpu_for_each_process` ("
-                                 f"{len(cpu_for_each_process)}) is not equal to the number of"
-                                 f" processes {num_processes}.")
+                invalidInputError(False,
+                                  f"The length of `cpu_for_each_process` ("
+                                  f"{len(cpu_for_each_process)}) is not equal to the number of"
+                                  f" processes {num_processes}.")
 
         if use_hpo:
             self.hposearcher = create_hpo_searcher(trainer=self)
@@ -103,9 +106,9 @@ class Trainer(pl.Trainer):
             super().__init__(accelerator=accelerator, *args, **kwargs)
         else:
             plugin = None
-            assert distributed_backend in distributed_backends, \
-                f"Distributed backends supported now are spawn and ray," \
-                " but get {distributed_backend}."
+            invalidInputError(distributed_backend in distributed_backends,
+                              f"Distributed backends supported now are spawn and ray,"
+                              f" but get {distributed_backend}.")
             if distributed_backend == "spawn":
                 if use_ipex:
                     device = ipex_device()
@@ -163,13 +166,14 @@ class Trainer(pl.Trainer):
         :param metrics:     A list of torchmetrics to validate/test performance.
         :return:            A LightningModule object.
         """
-        assert isinstance(model, nn.Module), \
-            "Model must be instance of nn.Module but got {}".format(model.__class__)
+        invalidInputError(isinstance(model, nn.Module),
+                          "Model must be instance of nn.Module but got {}".format(model.__class__))
 
         pl_model = None
         if isinstance(model, pl.LightningModule):
-            assert not (loss or optimizer), \
-                "Loss and optimizer should be None if model is a pytorch-lightning model."
+            invalidInputError(not (loss or optimizer),
+                              "Loss and optimizer should be None if model"
+                              " is a pytorch-lightning model.")
             pl_model = model
         else:
             pl_model = LightningModuleFromTorch(model, loss, optimizer, scheduler, metrics)
@@ -275,8 +279,9 @@ class Trainer(pl.Trainer):
             check_pytorch_dataloaders(model, [calib_dataloader, val_dataloader])
 
             if approach not in ['static', 'dynamic']:
-                raise ValueError("Approach should be 'static' or 'dynamic', "
-                                 "{} is invalid.".format(approach))
+                invalidInputError(False,
+                                  "Approach should be 'static' or 'dynamic', "
+                                  "{} is invalid.".format(approach))
             approach_map = {
                 'static': 'post_training_static_quant',
                 'dynamic': 'post_training_dynamic_quant'
@@ -318,7 +323,8 @@ class Trainer(pl.Trainer):
                     quantized_model.save(saved_onnx)
                     return PytorchONNXRuntimeModel(str(saved_onnx))
         else:
-            raise NotImplementedError("Backend {} is not implemented.".format(backend))
+            invalidInputError(False,
+                              "Backend {} is not implemented.".format(backend))
 
     @staticmethod
     def trace(model: nn.Module,
@@ -381,18 +387,20 @@ class Trainer(pl.Trainer):
         """
         path = Path(path)
         if not path.exists():
-            raise FileNotFoundError("{} doesn't exist.".format(path))
+            invalidInputError(False, "{} doesn't exist.".format(path))
         meta_path = path / "nano_model_meta.yml"
         if not meta_path.exists():
-            raise FileNotFoundError("File {} is required to load model.".format(str(meta_path)))
+            invalidInputError(False, "File {} is required to load model.".format(str(meta_path)))
         with open(meta_path, 'r') as f:
             metadata = yaml.safe_load(f)
         model_type = metadata.get('ModelType', None)
         if model_type == 'PytorchOpenVINOModel':
-            assert model is None, "Argument 'model' must be None for OpenVINO loading."
+            invalidInputError(model is None,
+                              "Argument 'model' must be None for OpenVINO loading.")
             return load_openvino_model(path)
         if model_type == 'PytorchONNXRuntimeModel':
-            assert model is None, "Argument 'model' must be None for ONNX Runtime loading."
+            invalidInputError(model is None,
+                              "Argument 'model' must be None for ONNX Runtime loading.")
             return load_onnxruntime_model(path)
         if model_type == 'PytorchQuantizedModel':
             return load_inc_model(path, model, 'pytorch')
@@ -406,9 +414,8 @@ class Trainer(pl.Trainer):
                 model.load_state_dict(state_dict)
                 return model
             else:
-                raise KeyError("Key 'checkpoint' must be specified.")
+                invalidInputError(False, "Key 'checkpoint' must be specified.")
         else:
-            raise ValueError(
-                "ModelType {} or argument 'model={}' is not acceptable for pytorch"
-                " loading.".format(model_type, type(model))
-            )
+            invalidInputError(False,
+                              "ModelType {} or argument 'model={}' is not acceptable for pytorch"
+                              " loading.".format(model_type, type(model)))

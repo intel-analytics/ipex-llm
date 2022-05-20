@@ -18,6 +18,7 @@ from ..core.openvino_model import OpenVINOModel
 from bigdl.nano.utils.inference.pytorch.model import AcceleratedLightningModule
 from .pytorch_openvino_utils import export
 import torch
+from bigdl.nano.utils.log4Error import invalidInputError
 
 
 class PytorchOpenVINOModel(OpenVINOModel, AcceleratedLightningModule):
@@ -43,9 +44,9 @@ class PytorchOpenVINOModel(OpenVINOModel, AcceleratedLightningModule):
 
     def on_forward_start(self, inputs):
         if self.ie_network is None:
-            raise RuntimeError(
-                "Please create an instance by PytorchOpenVINOModel() or PytorchOpenVINOModel.load()"
-            )
+            invalidInputError(False,
+                              "Please create an instance by PytorchOpenVINOModel()"
+                              " or PytorchOpenVINOModel.load()")
         inputs = self.tensors_to_numpy(inputs)
         return inputs
 
@@ -70,9 +71,10 @@ class PytorchOpenVINOModel(OpenVINOModel, AcceleratedLightningModule):
         status = PytorchOpenVINOModel._load_status(path)
         if status.get('xml_path', None):
             xml_path = Path(status['xml_path'])
-            assert xml_path.suffix == '.xml', "Path of openvino model must be with '.xml' suffix."
+            invalidInputError(xml_path.suffix == '.xml',
+                              "Path of openvino model must be with '.xml' suffix.")
         else:
-            raise KeyError("nano_model_meta.yml must specify 'xml_path' for loading.")
+            invalidInputError(False, "nano_model_meta.yml must specify 'xml_path' for loading.")
         xml_path = Path(path) / status['xml_path']
         return PytorchOpenVINOModel(xml_path)
 

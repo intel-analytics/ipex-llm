@@ -84,7 +84,7 @@ def start_processes_new(fn, args=(), nprocs=1, join=True, daemon=False,
     if not join:
         return context
 
-    # Loop on join until it returns True or raises an exception.
+    # Loop on join until it returns True or throw an exception.
     while not context.join():
         pass
 

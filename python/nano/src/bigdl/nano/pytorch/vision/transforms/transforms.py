@@ -27,6 +27,7 @@ import numpy as np
 import torchvision.transforms as tv_t
 from torchvision.transforms.functional import InterpolationMode
 import opencv_transforms.transforms as cv_t
+from bigdl.nano.utils.log4Error import invalidInputError
 
 
 __all__ = [
@@ -315,14 +316,17 @@ class CenterCrop(object):
 
 class Pad(object):
     def __init__(self, padding, fill=0, padding_mode="constant"):
-        assert isinstance(padding, (numbers.Number, tuple, list))
-        assert isinstance(fill, (numbers.Number, str, tuple))
-        assert padding_mode in ['constant', 'edge', 'reflect', 'symmetric']
+        invalidInputError(isinstance(padding, (numbers.Number, tuple, list)),
+                          "padding is expected to be (numbers.Number, tuple, list)")
+        invalidInputError(isinstance(fill, (numbers.Number, str, tuple)),
+                          "fill is expected to be (numbers.Number, str, tuple)")
+        invalidInputError(padding_mode in ['constant', 'edge', 'reflect', 'symmetric'],
+                          "padding_mode is expected to be ['constant', 'edge',"
+                          " 'reflect', 'symmetric']")
         if isinstance(padding, collections.Sequence) and len(padding) not in [2, 4]:
-            raise ValueError(
-                "Padding must be an int or a 2, or 4 element tuple, not a {} element tuple"
-                .format(len(padding))
-            )
+            invalidInputError(False,
+                              f"Padding must be an int or a 2, or 4 element tuple,"
+                              f" not a {len(padding)} element tuple")
 
         self.padding = padding
         self.fill = fill
@@ -344,7 +348,8 @@ class Pad(object):
 
 class Lambda(object):
     def __init__(self, lambd):
-        assert isinstance(lambd, types.LambdaType)
+        invalidInputError((lambd, types.LambdaType),
+                          "lambd is expected to types.LambdaType")
         self.lambd = lambd
 
     def __call__(self, img):
@@ -356,11 +361,12 @@ class Lambda(object):
 
 class RandomTransforms(object):
     def __init__(self, transforms):
-        assert isinstance(transforms, (list, tuple))
+        invalidInputError(isinstance(transforms, (list, tuple)),
+                          "transforms is expected to be (list, tuple)")
         self.transforms = transforms
 
     def __call__(self, *args, **kwargs):
-        raise NotImplementedError()
+        invalidInputError(False, "not implemented")
 
     def __repr__(self):
         format_string = self.__class__.__name__ + '('
@@ -407,7 +413,8 @@ class RandomChoice(RandomTransforms):
     def __init__(self, transforms, p=None):
         super().__init__(transforms)
         if p is not None and not isinstance(p, collections.Sequence):
-            raise TypeError("Argument p should be a sequence")
+            invalidInputError(False,
+                              "Argument p should be a sequence")
         self.p = p
 
     def __call__(self, *args):
@@ -504,9 +511,8 @@ class FiveCrop(object):
         if isinstance(size, numbers.Number):
             self.size = (int(size), int(size))
         else:
-            assert len(
-                size
-            ) == 2, "Please provide only two dimensions (h, w) for size."
+            invalidInputError(len(size) == 2,
+                              "Please provide only two dimensions (h, w) for size.")
             self.size = size
 
         self.tv_F = tv_t.FiveCrop(self.size)
@@ -528,9 +534,8 @@ class TenCrop(object):
         if isinstance(size, numbers.Number):
             self.size = (int(size), int(size))
         else:
-            assert len(
-                size
-            ) == 2, "Please provide only two dimensions (h, w) for size."
+            invalidInputError(len(size) == 2,
+                              "Please provide only two dimensions (h, w) for size.")
             self.size = size
         self.vertical_flip = vertical_flip
 
@@ -551,24 +556,24 @@ class TenCrop(object):
 class LinearTransformation(object):
     def __init__(self, transformation_matrix, mean_vector=None):
         if transformation_matrix.size(0) != transformation_matrix.size(1):
-            raise ValueError(
-                "transformation_matrix should be square. Got [{} x {}] rectangular matrix."
-                .format(*transformation_matrix.size())
-            )
+            invalidInputError(False,
+                              "transformation_matrix should be square. Got [{} x {}]"
+                              " rectangular matrix.".format(*transformation_matrix.size()))
 
         if mean_vector is not None:
             if mean_vector.size(0) != transformation_matrix.size(0):
-                raise ValueError(
-                    "mean_vector should have the same length {}"
-                    "as any one of the dimensions of the transformation_matrix [{}]"
-                    .format(mean_vector.size(0), tuple(transformation_matrix.size()))
-                )
+                invalidInputError(False,
+                                  "mean_vector should have the same length {}"
+                                  "as any one of the dimensions of the transformation_matrix"
+                                  " [{}]"
+                                  .format(mean_vector.size(0), tuple(transformation_matrix.size()))
+                                  )
 
             if transformation_matrix.device != mean_vector.device:
-                raise ValueError(
-                    "Input tensors should be on the same device. Got {} and {}"
-                    .format(transformation_matrix.device, mean_vector.device)
-                )
+                invalidInputError(False,
+                                  "Input tensors should be on the same device. Got {} and {}"
+                                  .format(transformation_matrix.device, mean_vector.device)
+                                  )
 
         self.transformation_matrix = transformation_matrix
         self.mean_vector = mean_vector
@@ -660,40 +665,40 @@ class RandomAffine(object):
                  center=None):
         if isinstance(degrees, numbers.Number):
             if degrees < 0:
-                raise ValueError(
-                    "If degrees is a single number, it must be positive.")
+                invalidInputError(False,
+                                  "If degrees is a single number, it must be positive.")
             self.degrees = (-degrees, degrees)
         else:
-            assert isinstance(degrees, (tuple, list)) and len(degrees) == 2, \
-                "degrees should be a list or tuple and it must be of length 2."
+            invalidInputError(isinstance(degrees, (tuple, list)) and len(degrees) == 2,
+                              "degrees should be a list or tuple and it must be of length 2.")
             self.degrees = degrees
 
         if translate is not None:
-            assert isinstance(translate, (tuple, list)) and len(translate) == 2, \
-                "translate should be a list or tuple and it must be of length 2."
+            invalidInputError(isinstance(translate, (tuple, list)) and len(translate) == 2,
+                              "translate should be a list or tuple and it must be of length 2.")
             for t in translate:
                 if not (0.0 <= t <= 1.0):
-                    raise ValueError(
-                        "translation values should be between 0 and 1")
+                    invalidInputError(False,
+                                      "translation values should be between 0 and 1")
         self.translate = translate
 
         if scale is not None:
-            assert isinstance(scale, (tuple, list)) and len(scale) == 2, \
-                "scale should be a list or tuple and it must be of length 2."
+            invalidInputError(isinstance(scale, (tuple, list)) and len(scale) == 2,
+                              "scale should be a list or tuple and it must be of length 2.")
             for s in scale:
                 if s <= 0:
-                    raise ValueError("scale values should be positive")
+                    invalidInputError(False, "scale values should be positive")
         self.scale = scale
 
         if shear is not None:
             if isinstance(shear, numbers.Number):
                 if shear < 0:
-                    raise ValueError(
-                        "If shear is a single number, it must be positive.")
+                    invalidInputError(False,
+                                      "If shear is a single number, it must be positive.")
                 self.shear = (-shear, shear)
             else:
-                assert isinstance(shear, (tuple, list)) and len(shear) == 2, \
-                    "shear should be a list or tuple and it must be of length 2."
+                invalidInputError(isinstance(shear, (tuple, list)) and len(shear) == 2,
+                                  "shear should be a list or tuple and it must be of length 2.")
                 self.shear = shear
         else:
             self.shear = shear
@@ -708,12 +713,13 @@ class RandomAffine(object):
         if fill is None:
             fill = 0
         elif not isinstance(fill, (collections.Sequence, numbers.Number)):
-            raise TypeError("Fill should be either a sequence or a number.")
+            invalidInputError(False,
+                              "Fill should be either a sequence or a number.")
         self.fill = fill
 
         if center is not None:
-            assert isinstance(center, (tuple, list)) and len(center) == 2, \
-                "center should be a list or tuple and it must be of length 2."
+            invalidInputError(isinstance(center, (tuple, list)) and len(center) == 2,
+                              "center should be a list or tuple and it must be of length 2.")
 
         # self.resample = resample
         self.center = center
