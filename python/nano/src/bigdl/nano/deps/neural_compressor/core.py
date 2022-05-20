@@ -86,15 +86,16 @@ class QuantizationINC(Quantization):
         self.check(calib_dataloader, val_dataloader, metric)
         self.model = common.Model(model)
 
-        def func(data):
-            # TODO: only x, y are supported here for onnx quantization
-            import torch
-            x, y = zip(*data)
-            if isinstance(x[0], torch.Tensor):
-                x = torch.stack(x, dim=0).numpy()
-            if isinstance(y[0], torch.Tensor):
-                y = torch.stack(y, dim=0).numpy()
-            return x, y
+        def numpy_collate_fn_wrapper(func):
+            def transform_tensor_to_numpy(item):
+                if isinstance(item, torch.Tensor):
+                    return item.numpy()
+                return item
+            def collate_fn(batch):
+                res = func(batch)
+                return tuple(map(lambda x:transform_tensor_to_numpy(x), res))
+            return collate_fn
+
         if calib_dataloader:
             if "pytorch" in self.cfg.model.framework or "tensorflow" in self.cfg.model.framework:
                 self.calib_dataloader = calib_dataloader
@@ -103,7 +104,7 @@ class QuantizationINC(Quantization):
                 invalidInputError(isinstance(calib_dataloader, torch.utils.data.DataLoader),
                                   "Only torch dataloader is supported for onnx quantization.")
                 # add a collate_fn to transform torch dataloader to a numpy dataloader
-                calib_dataloader.collate_fn = func
+                calib_dataloader.collate_fn = numpy_collate_fn_wrapper(calib_dataloader.collate_fn)
                 self.calib_dataloader = calib_dataloader
         if val_dataloader:
             if "pytorch" in self.cfg.model.framework or "tensorflow" in self.cfg.model.framework:
@@ -113,7 +114,7 @@ class QuantizationINC(Quantization):
                 invalidInputError(isinstance(val_dataloader, torch.utils.data.DataLoader),
                                   "Only torch dataloader is supported for onnx quantization.")
                 # add a collate_fn to transform torch dataloader to a numpy dataloader
-                val_dataloader.collate_fn = func
+                val_dataloader.collate_fn = numpy_collate_fn_wrapper(val_dataloader.collate_fn)
                 self.eval_dataloader = val_dataloader
             if metric:
                 framework = self.cfg.model.framework
@@ -141,15 +142,6 @@ class QuantizationINC(Quantization):
                 )
 
         quantized = self()
-
-        # unset the collate_fn and set back to default_collate
-        # TODO: use users' original collate function
-        if "onnx" in self.cfg.model.framework:
-            from torch.utils.data.dataloader import default_collate
-            if calib_dataloader:
-                calib_dataloader.collate_fn = default_collate
-            if val_dataloader:
-                val_dataloader.collate_fn = default_collate
 
         if quantized:
             return quantized
