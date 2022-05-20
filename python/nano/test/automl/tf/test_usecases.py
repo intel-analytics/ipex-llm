@@ -26,7 +26,7 @@ import tensorflow.keras as keras
 import numpy as np
 import bigdl.nano.automl.hpo.space as space
 from bigdl.nano.tf.keras import Input
-from bigdl.nano.tf.keras.layers import Dense, Conv2D, Flatten
+from bigdl.nano.tf.keras.layers import Dense, Conv2D, Flatten, Dropout
 from bigdl.nano.automl.tf.keras import Model, Sequential
 
 from bigdl.nano.tf.optimizers import Adam, RMSprop
@@ -47,7 +47,7 @@ class MyModel(tf.keras.Model):
         self.gap   = tf.keras.layers.GlobalAveragePooling2D()
         self.dense = tf.keras.layers.Dense(num_classes)
 
-    def call(self, inputs, trainig=False):
+    def call(self, inputs, training=False):
         x = self.conv1(inputs)
         x = self.max1(x)
         x = self.bn1(x)
@@ -87,11 +87,13 @@ class TestUseCases(TestCase):
         inputs = Input(shape=(784,))
         x = Dense(units=space.Categorical(8,16,prefix='dense_1'), activation="linear")(inputs)
         x = Dense(units=space.Categorical(32,64,prefix='dense_2'), activation="tanh")(x)
+        x = Dropout(rate=space.Real(0.1,0.5, prefix='dropout'))(x)
         outputs = Dense(units=10)(x)
         model = Model(inputs=inputs, outputs=outputs, name="mnist_model")
         model.compile(
             loss=keras.losses.SparseCategoricalCrossentropy(from_logits=True),
-            optimizer=RMSprop(learning_rate=space.Real(0.0001, 0.01, log=True)),
+            optimizer=RMSprop(
+                learning_rate=space.Real(0.0001, 0.01, log=True)),
             metrics=["accuracy"],
         )
         # run hpo
@@ -103,16 +105,20 @@ class TestUseCases(TestCase):
                      pruner_kwargs={'min_resource':1, 'max_resource':100, 'reduction_factor':3},
                      x=x_train,
                      y=y_train,
-                     batch_size=space.Categorical(128,64),
+                     batch_size=space.Categorical(128,64, prefix='batch_size'),
                      epochs=2,
                      validation_split=0.2)
         study = model.search_summary()
         assert(study.best_trial)
+        assert('dense_1:units▁choice' in study.best_trial.params)
+        assert('dense_2:units▁choice' in study.best_trial.params)
+        assert('dropout:rate' in study.best_trial.params)
+        assert('learning_rate' in study.best_trial.params)
+        # assert('batch_size_choice' in study.best_trial.params)
         # run fit
         history = model.fit(x_train, y_train,
                     batch_size=128, epochs=2, validation_split=0.2)
         test_scores = model.evaluate(x_test, y_test, verbose=2)
-
 
     def test_sequential(self):
         n_samples_train=self.TRAIN_TOTAL_SAMPLES
