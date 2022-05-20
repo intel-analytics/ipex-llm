@@ -577,6 +577,33 @@ class Bool(Int):
         super(Bool, self).__init__(0, 1, default=default, prefix=prefix)
 
 
+class SingleParam(object):
+    """A object to hold single params spaces which does not belong to\
+    any AutoObject."""
+
+    delimiter = u'.'
+
+    def __init__(self, argname, param):
+        self.argname = argname
+        self.param = param
+        self.cs = _new_cs()
+        if isinstance(self.param, SimpleSpace):
+            _add_hp(self.cs, param.get_hp(argname))
+        elif isinstance(self.param, NestedSpace):
+            _add_cs(self.cs, param.cs, self.argname, delimiter='.', parent_hp=None)
+        else:
+            # usually should not fall to this path
+            self.cs = param.cs
+
+    def sample(self, **config):
+        if isinstance(self.param, SimpleSpace):
+            new_params = config.get(self.argname, None)
+        elif isinstance(self.param, NestedSpace):
+            sub_config = _strip_config_space(config, prefix=self.argname)
+            new_params = self.param.sample(**sub_config)
+        return new_params
+
+
 def _strip_config_space(config, prefix):
     # filter out the config with the corresponding prefix
     new_config = {}

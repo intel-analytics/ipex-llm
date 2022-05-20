@@ -16,8 +16,8 @@
 
 from bigdl.nano.automl.hpo.backend import PrunerType, SamplerType
 from bigdl.nano.automl.hpo.space import (
-    SimpleSpace, NestedSpace, AutoObject,
-    _get_cs_prefix, _get_hp_prefix)
+    AutoObject, Space, SingleParam,
+    _get_hp_prefix)
 import optuna
 
 
@@ -116,17 +116,20 @@ class OptunaBackend(object):
         """
         # instantiate auto objects in runtime params a
         v = kwargs.get(arg_name, None)
-        if v:
-            if isinstance(v, SimpleSpace):
-                value = OptunaBackend._sample_space(trial, arg_name, v.hp)
-            elif isinstance(v, NestedSpace):
-                config = OptunaBackend.get_hpo_config(trial, v.cs)
-                value = v.sample(**config)
-            elif isinstance(v, AutoObject):
-                value = OptunaBackend.instantiate(trial, v)
-            else:
-                value = v
-            kwargs[arg_name] = value
+
+        if not v:
+            return kwargs
+
+        if not isinstance(v, Space):
+            value = v
+        elif isinstance(v, AutoObject):
+            value = OptunaBackend.instantiate(trial, v)
+        else:
+            pobj = SingleParam(arg_name, v)
+            config = OptunaBackend.get_hpo_config(trial, pobj.cs)
+            value = pobj.sample(**config)
+
+        kwargs[arg_name] = value
         return kwargs
 
     @staticmethod
