@@ -14,8 +14,7 @@
 # limitations under the License.
 #
 
-from bigdl.chronos.model.tcmf_model import TCMFNdarrayModelWrapper, \
-    TCMFXshardsModelWrapper
+from bigdl.chronos.model.tcmf_model import TCMFNdarrayModelWrapper, TCMFXshardsModelWrapper
 from bigdl.orca.data import SparkXShards
 from bigdl.chronos.forecaster.abstract import Forecaster
 from bigdl.nano.utils.log4Error import *

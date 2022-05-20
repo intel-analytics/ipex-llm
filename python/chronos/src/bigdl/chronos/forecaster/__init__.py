@@ -30,7 +30,7 @@ except:
                   "TCNForecaster, LSTMForecaster, Seq2SeqForecaster.")
 try:
     import tensorflow as tf
-    assert tf.__version__ > "2.0.0", "need tensorflow version > 2.0.0"
+    assert tf.__version__ > "2.0.0"
     tf_available = True
 except:
     warnings.warn("Please install `tensorflow>2.0.0` to use MTNetForecaster.")

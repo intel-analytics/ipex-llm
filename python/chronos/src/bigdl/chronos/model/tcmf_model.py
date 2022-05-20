@@ -249,7 +249,7 @@ class TCMF(BaseModel):
         if covariates is not None and not covariates.ndim == 2:
             invalidInputError(False,
                               f"You should input a 2-D ndarray of covariates. But Got dimension"
-                              f" of ${covariates.ndim)}")
+                              f" of ${covariates.ndim}")
         if covariates is not None and not covariates.shape[1] == ts_len:
             invalidInputError(False,
                               f"The second dimension shape of covariates should be {ts_len}, "
