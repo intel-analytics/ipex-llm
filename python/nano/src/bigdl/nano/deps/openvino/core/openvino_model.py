@@ -16,6 +16,7 @@
 from pathlib import Path
 from openvino.runtime import Core
 from openvino.runtime.passes import Manager
+from bigdl.nano.utils.log4Error import invalidInputError
 
 
 class OpenVINOModel:
@@ -39,8 +40,10 @@ class OpenVINOModel:
         :param path: Path to save the model.
         """
         path = Path(path)
-        assert self.ie_network, "self.ie_network shouldn't be None."
-        assert path.suffix == ".xml", "Path of openvino model must be with '.xml' suffix."
+        invalidInputError(self.ie_network,
+                          "self.ie_network shouldn't be None.")
+        invalidInputError(path.suffix == ".xml",
+                          "Path of openvino model must be with '.xml' suffix.")
         pass_manager = Manager()
         pass_manager.register_pass(pass_name="Serialize",
                                    xml_path=str(path),

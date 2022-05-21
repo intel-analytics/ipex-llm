@@ -43,12 +43,12 @@ class CorrectnessSpec extends FlatSpec with Matchers with BeforeAndAfter with De
       flServer.start()
       val mockClient1 = new MockClient(
         dataPath = dataPath1,
-        featureColumns = Array("Pregnancies","Glucose","BloodPressure","SkinThickness"),
+        featureColumns = Array("Pregnancies", "Glucose", "BloodPressure", "SkinThickness"),
         labelColumns = Array("Outcome")
       )
       val mockClient2 = new MockClient(
         dataPath = dataPath2,
-        featureColumns = Array("Insulin","BMI","DiabetesPedigreeFunction"),
+        featureColumns = Array("Insulin", "BMI", "DiabetesPedigreeFunction"),
         labelColumns = null
       )
       @volatile var errorFlag = false

@@ -39,7 +39,7 @@ from contextlib import closing
 import logging
 import socket
 
-from bigdl.orca.data.utils import ray_partitions_get_data_label
+from bigdl.orca.data.utils import ray_partitions_get_data_label, ray_partitions_get_tf_dataset
 
 logger = logging.getLogger(__name__)
 
@@ -172,17 +172,13 @@ class TFDistributedDatasetHandler(DatasetHandler):
 
     def _handle_xshards(self, dataset, steps, local_batch_size, shuffle):
         import tensorflow as tf
-
-        data, label = ray_partitions_get_data_label(ray.get(dataset),
-                                                    allow_tuple=True,
-                                                    allow_list=False)
+        tf_dataset = ray_partitions_get_tf_dataset(ray.get(dataset))
 
         def dataset_fn(input_context):
-            dataset = tf.data.Dataset.from_tensor_slices((data, label))
             options = tf.data.Options()
             options.experimental_distribute.auto_shard_policy = \
                 tf.data.experimental.AutoShardPolicy.OFF
-            dataset = dataset.with_options(options)
+            dataset = tf_dataset.with_options(options)
             dataset = dataset.repeat()
             dataset = dataset.take(steps * local_batch_size)
             if shuffle:

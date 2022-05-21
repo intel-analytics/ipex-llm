@@ -152,32 +152,34 @@ class KerasBaseModel(BaseModel):
                 val_x = validation_data[0]
                 val_y = validation_data[1]
             else:
-                val_x = x
-                val_y = y
+                val_x = data[0]
+                val_y = data[1]
             y_pred = self.predict(val_x)
             result = metric_func(val_y, y_pred)
             return {metric_name: result}
 
-    def evaluate(self, x, y, metrics=['mse']):
+    def evaluate(self, x, y, batch_size=32, metrics=['mse'], multioutput='raw_values'):
         """
         Evaluate on x, y
         :param x: input
         :param y: target
         :param metrics: a list of metrics in string format
+        :param multioutput: output mode
         :return: a list of metric evaluation results
         """
-        y_pred = self.predict(x)
-        return [Evaluator.evaluate(m, y, y_pred) for m in metrics]
+        y_pred = self.predict(x, batch_size=batch_size)
+        return [Evaluator.evaluate(m, y, y_pred, multioutput=multioutput) for m in metrics]
 
-    def predict(self, x):
+    def predict(self, x, batch_size=32):
         """
         Prediction on x.
         :param x: input
+        :param batch_size: batch
         :return: predicted y
         """
         if not self.model_built:
             raise RuntimeError("You must call fit_eval or restore first before calling predict!")
-        return self.model.predict(x, batch_size=self.config.get("batch_size", 32))
+        return self.model.predict(x, batch_size=batch_size)
 
     def predict_with_uncertainty(self, x, n_iter=100):
         if not self.model_built:

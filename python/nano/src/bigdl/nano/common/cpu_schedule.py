@@ -19,6 +19,7 @@ import subprocess
 import re
 from typing import Optional
 import platform
+from bigdl.nano.utils.log4Error import invalidInputError
 
 
 def get_cgroup_cpuset():
@@ -103,7 +104,7 @@ def schedule_workers(num_workers: int,
 
     msg = "total number of cores requested must be smaller or" \
           " equal than the physical cores available"
-    assert cores_per_worker * num_workers <= len(p_cores), msg
+    invalidInputError(cores_per_worker * num_workers <= len(p_cores), msg)
 
     schedule = []
     for i in range(num_workers):

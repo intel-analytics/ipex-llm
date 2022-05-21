@@ -19,6 +19,7 @@ from keras import backend_config
 from keras.optimizer_v2 import optimizer_v2
 from tensorflow.python.util.tf_export import keras_export
 import tensorflow
+from bigdl.nano.utils.log4Error import invalidInputError
 
 
 class SparseAdam(tensorflow.keras.optimizers.Adam):
@@ -119,7 +120,7 @@ class SparseAdam(tensorflow.keras.optimizers.Adam):
                 )
                 return tf.group(*[var_update, m_t, v_t])
         else:
-            raise ValueError("do not support amsgrad for now")
+            invalidInputError(False, "do not support amsgrad for now")
             v_hat = self.get_slot(var, 'vhat')
             v_hat_t = math_ops.maximum(v_hat, v_t)
             with ops.control_dependencies([v_hat_t]):

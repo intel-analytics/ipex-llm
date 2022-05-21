@@ -26,7 +26,7 @@ from _train_torch_lightning import create_data_loader, data_transform
 from torch import nn
 import torchmetrics
 
-from bigdl.nano.pytorch.trainer import Trainer
+from bigdl.nano.pytorch import Trainer
 from bigdl.nano.pytorch.vision.models import vision
 
 batch_size = 256
@@ -73,42 +73,44 @@ class TestTrainer(TestCase):
         x = next(train_loader_iter)[0]
 
         # Case 1: Default
-        qmodel = trainer.quantize(pl_model, self.train_loader, return_pl=False)
+        qmodel = trainer.quantize(pl_model, calib_dataloader=self.train_loader)
         assert qmodel
         out = qmodel(x)
         assert out.shape == torch.Size([256, 10])
 
         # Case 2: Override by arguments
-        qmodel = trainer.quantize(pl_model, self.train_loader, self.train_loader,
-                                  metric=torchmetrics.F1(10), framework='pytorch_fx',
+        qmodel = trainer.quantize(pl_model,
+                                  calib_dataloader=self.train_loader,
+                                  val_dataloader=self.train_loader,
+                                  metric=torchmetrics.F1(10),
                                   approach='static',
                                   tuning_strategy='basic',
                                   accuracy_criterion={'relative': 0.99,
-                                                      'higher_is_better': True},
-                                  return_pl=False)
+                                                      'higher_is_better': True})
 
         assert qmodel
         out = qmodel(x)
         assert out.shape == torch.Size([256, 10])
 
         # Case 3: Dynamic quantization
-        qmodel = trainer.quantize(pl_model, approach='dynamic', return_pl=False)
+        qmodel = trainer.quantize(pl_model, approach='dynamic')
         assert qmodel
         out = qmodel(x)
         assert out.shape == torch.Size([256, 10])
 
         # Case 4: Invalid approach
         invalid_approach = 'qat'
-        with pytest.raises(ValueError, match="Approach should be 'static' or 'dynamic', "
-                                             "{} is invalid.".format(invalid_approach)):
+        with pytest.raises(RuntimeError, match="Approach should be 'static' or 'dynamic', "
+                                               "{} is invalid.".format(invalid_approach)):
             trainer.quantize(pl_model, approach=invalid_approach)
 
         # Case 5: Test if registered metric can be fetched successfully
-        qmodel = trainer.quantize(pl_model, self.train_loader, self.train_loader,
+        qmodel = trainer.quantize(pl_model,
+                                  calib_dataloader=self.train_loader,
+                                  val_dataloader=self.train_loader,
                                   metric=torchmetrics.F1(10),
                                   accuracy_criterion={'relative': 0.99,
-                                                      'higher_is_better': True},
-                                  return_pl=False)
+                                                      'higher_is_better': True})
         assert qmodel
         out = qmodel(x)
         assert out.shape == torch.Size([256, 10])
@@ -127,7 +129,8 @@ class TestTrainer(TestCase):
         x = next(train_loader_iter)[0]
         trainer = Trainer(max_epochs=1)
 
-        qmodel = trainer.quantize(self.user_defined_pl_model, self.train_loader, return_pl=False)
+        qmodel = trainer.quantize(self.user_defined_pl_model,
+                                  calib_dataloader=self.train_loader)
         assert qmodel
         out = qmodel(x)
         assert out.shape == torch.Size([256, 10])

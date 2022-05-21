@@ -19,6 +19,7 @@ from pathlib import Path
 from ..core.onnxruntime_model import ONNXRuntimeModel
 from bigdl.nano.utils.inference.pytorch.model import AcceleratedLightningModule
 from bigdl.nano.utils.inference.pytorch.model_utils import export_to_onnx, get_forward_args
+from bigdl.nano.utils.log4Error import invalidInputError
 
 
 class PytorchONNXRuntimeModel(ONNXRuntimeModel, AcceleratedLightningModule):
@@ -30,7 +31,7 @@ class PytorchONNXRuntimeModel(ONNXRuntimeModel, AcceleratedLightningModule):
         This PytorchONNXRuntimeModel will serve for all precision models.
     '''
 
-    def __init__(self, model, input_sample=None):
+    def __init__(self, model, input_sample=None, onnxruntime_session_options=None):
         """
         Create a ONNX Runtime model from pytorch.
 
@@ -49,15 +50,14 @@ class PytorchONNXRuntimeModel(ONNXRuntimeModel, AcceleratedLightningModule):
             export_to_onnx(model, input_sample=input_sample, onnx_path='tmp.onnx')
             onnx_path = 'tmp.onnx'
         AcceleratedLightningModule.__init__(self, None)
-        ONNXRuntimeModel.__init__(self, onnx_path)
+        ONNXRuntimeModel.__init__(self, onnx_path, session_options=onnxruntime_session_options)
         if os.path.exists('tmp.onnx'):
             os.remove('tmp.onnx')
 
     def on_forward_start(self, inputs):
         if self.ortsess is None:
-            raise RuntimeError(
-                "Please create an instance by PytorchONNXRuntimeModel()"
-            )
+            invalidInputError(False,
+                              "Please create an instance by PytorchONNXRuntimeModel()")
         inputs = self.tensors_to_numpy(inputs)
         return inputs
 
@@ -82,9 +82,11 @@ class PytorchONNXRuntimeModel(ONNXRuntimeModel, AcceleratedLightningModule):
         status = PytorchONNXRuntimeModel._load_status(path)
         if status.get('onnx_path', None):
             onnx_path = Path(status['onnx_path'])
-            assert onnx_path.suffix == '.onnx', "Path of onnx model must be with '.onnx' suffix."
+            invalidInputError(onnx_path.suffix == '.onnx',
+                              "Path of onnx model must be with '.onnx' suffix.")
         else:
-            raise KeyError("nano_model_meta.yml must specify 'onnx_path' for loading.")
+            invalidInputError(False,
+                              "nano_model_meta.yml must specify 'onnx_path' for loading.")
         onnx_path = Path(path) / status['onnx_path']
         return PytorchONNXRuntimeModel(str(onnx_path))
 

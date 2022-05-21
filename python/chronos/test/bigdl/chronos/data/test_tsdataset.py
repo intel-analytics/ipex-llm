@@ -352,6 +352,20 @@ class TestTSDataset(ZooTestCase):
         assert y.dtype == np.float32
         tsdata._check_basic_invariants()
 
+    def test_tsdata_roll_timeenc(self):
+        horizon = random.randint(1, 9)
+        lookback = random.randint(10, 20)
+        df = get_int_target_df()
+        tsdata = TSDataset.from_pandas(df, dt_col='datetime', target_col='value', id_col="id")
+        x, y, x_time, y_time =\
+            tsdata.roll(lookback=lookback, horizon=horizon,
+                        time_enc=True, label_len=lookback-horizon).to_numpy()
+        assert x.shape[1:] == (lookback, 1)
+        assert y.shape[1:] == (lookback, 1)
+        assert x_time.shape[1:] == (lookback, 3)
+        assert y_time.shape[1:] == (lookback, 3)
+
+
     def test_tsdataset_to_torch_loader_roll(self):
         df_single_id = get_ts_df()
         df_multi_id = get_multi_id_ts_df()

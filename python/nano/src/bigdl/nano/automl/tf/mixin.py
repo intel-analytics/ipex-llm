@@ -26,6 +26,8 @@ from bigdl.nano.automl.hpo.search import (
     _check_search_args,
     _strip_val_prefix,
 )
+from bigdl.nano.automl.hpo.space import AutoObject
+from bigdl.nano.utils.log4Error import invalidInputError
 
 
 class HPOMixin:
@@ -89,21 +91,21 @@ class HPOMixin:
             else:
                 target_metric = prefix + str(compile_metrics)
         elif isinstance(target_metric, list):
-            raise ValueError("multiple objective metric is not supported.")
+            invalidInputError(False, "multiple objective metric is not supported.")
         else:
             stripped_target_metric = _strip_val_prefix(target_metric)
             if compile_metrics is None:
                 if stripped_target_metric not in ['loss', 'val_loss']:
-                    raise ValueError("target metric is should be loss or val_loss",
-                                     "if metrics is not provided in compile")
+                    invalidInputError(False, "target metric is should be loss or val_loss"
+                                             " if metrics is not provided in compile")
             elif isinstance(compile_metrics, list):
                 target_not_in = stripped_target_metric not in ['loss', 'val_loss']
                 if stripped_target_metric not in compile_metrics and target_not_in:
-                    raise ValueError("invalid target metric")
+                    invalidInputError(False, "invalid target metric")
             else:
                 target_not_in = stripped_target_metric not in ['loss', 'val_loss']
                 if stripped_target_metric != compile_metrics and target_not_in:
-                    raise ValueError("invalid target metric")
+                    invalidInputError(False, "invalid target metric")
         return target_metric
 
     def search(
@@ -138,6 +140,7 @@ class HPOMixin:
                 model=self._model_build,
                 target_metric=target_metric,
                 pruning=pruning,
+                backend=self.backend,
                 **fit_kwargs,
             )
 
@@ -202,7 +205,7 @@ class HPOMixin:
 
         :param use_trial_id: int(optional) params of which trial to be used.
             Defaults to -1.
-        :raise: ValueError: error when tune is not called before end_search.
+        :throw: ValueError: error when tune is not called before end_search.
         """
         self._lazymodel = _end_search(study=self.study,
                                       model_builder=self._model_build,
@@ -224,14 +227,18 @@ class HPOMixin:
 
     def _model_compile(self, model, trial):
         # for lazy model compile
-        # TODO support searable compile args
-        # config = self.backend.sample_config(trial, kwspaces)
-        # TODO objects like Optimizers has internal states so
+        # objects like Optimizers has internal states so
         # each trial needs to have a copy of its own.
-        # should allow users to pass a creator function
+        # TODO may allow users to pass a creator function
         # to avoid deep copy of objects
         compile_args = copy.deepcopy(self.compile_args)
         compile_kwargs = copy.deepcopy(self.compile_kwargs)
+
+        # instantiate optimizers if it is autoobj
+        optimizer = compile_kwargs.get('optimizer', None)
+        if optimizer and isinstance(optimizer, AutoObject):
+            optimizer = self.backend.instantiate(trial, optimizer)
+            compile_kwargs['optimizer'] = optimizer
         model.compile(*compile_args, **compile_kwargs)
 
     def _model_build(self, trial):
@@ -253,8 +260,8 @@ class HPOMixin:
         # NOTE: keep the unused "method" argument so that
         # only the methods which are actually called are created
         if not self._lazymodel:
-            raise ValueError(
-                "Model is not actually built yet. Please call \
-                'end_search' before calling '" + name + "'")
+            invalidInputError(False,
+                              "Model is not actually built yet. Please call \
+                              'end_search' before calling '" + name + "'")
         internal_m = getattr(self._lazymodel, name)
         return internal_m(*args, **kwargs)

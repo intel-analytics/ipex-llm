@@ -42,6 +42,10 @@ class Table:
         self.df = df
         self.__column_names = self.df.schema.names
 
+    @property
+    def schema(self):
+        return self.df.schema
+
     @staticmethod
     def _read_parquet(paths):
         if not isinstance(paths, list):
@@ -155,6 +159,34 @@ class Table:
         :return: A new Table that drops the specified column.
         """
         return self._clone(self.df.drop(*cols))
+
+    def limit(self, num):
+        """
+        Limits the result count to the number specified.
+
+        :param num: int that specifies the number of results.
+        :return: A new Table that contains `num` counts of rows.
+        """
+        return self._clone(self.df.limit(num))
+
+    def repartition(self, num_partitions):
+        """
+        Return a new Table that has exactly num_partitions partitions.
+
+        :param num_partitions: target number of partitions
+        :return: a new Table that has num_partitions partitions.
+        """
+        return self._clone(self.df.repartition(num_partitions))
+
+    def get_partition_row_number(self):
+        """
+        Return a Table that contains partitionId and corresponding row number.
+
+        :return: a new Table that contains partitionId and corresponding row number.
+        """
+        from pyspark.sql.functions import spark_partition_id
+        return self._clone(self.df.withColumn("partitionId", spark_partition_id())
+                           .groupBy("partitionId").count())
 
     def fillna(self, value, columns):
         """
@@ -1995,6 +2027,21 @@ class FeatureTable(Table):
                 if drop:
                     df_buck = df_buck.drop(column)
         return self._clone(df_buck)
+
+    def get_vocabularies(self, columns):
+        """
+        Create vocabulary for each column, and return dict of vocabularies
+
+        :param columns: str or a list of str. Columns to generate vocabularies.
+
+        :return: A dict of vocabularies.
+        """
+        columns = str_to_list(columns, "columns")
+        vocabularies = {}
+        for col in columns:
+            vocabularies[col] = self.df.select(col)\
+                .distinct().rdd.map(lambda row: row[col]).collect()
+        return vocabularies
 
 
 class StringIndex(Table):

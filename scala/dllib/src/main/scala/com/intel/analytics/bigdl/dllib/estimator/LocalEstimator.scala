@@ -1,4 +1,4 @@
- /*
+/*
  * Copyright 2016 The BigDL Authors.
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -13,6 +13,7 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
+
  package com.intel.analytics.bigdl.dllib.estimator
 
  import com.intel.analytics.bigdl.dllib.feature.dataset.MiniBatch

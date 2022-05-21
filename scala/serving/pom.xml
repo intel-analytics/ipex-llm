@@ -16,6 +16,7 @@
         <akka.http.version>10.1.15</akka.http.version>
         <akka.actor.version>2.5.31</akka.actor.version>
         <spark-scope>compile</spark-scope>
+        <bigdl.basedir>${project.parent.basedir}</bigdl.basedir>
     </properties>
 
     <dependencies>

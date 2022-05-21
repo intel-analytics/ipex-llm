@@ -170,7 +170,7 @@ def get_bigdl_class_version():
     from bigdl.dllib.utils.engine import get_bigdl_jars
     bigdl_jars = get_bigdl_jars()
     try:
-        bigdl_class_version = re.search('spark_(.+?)-jar', bigdl_jars[0]).group(1)[6:]
+        bigdl_class_version = re.search('spark_(.+?)-jar', bigdl_jars[1]).group(1)[6:]
     except AttributeError:
         # not found
         bigdl_class_version = 'Cannot find BigDL classpath, please check your installation'
@@ -192,6 +192,8 @@ def _is_scalar_type(dtype, accept_str_col=False):
         return True
     if isinstance(dtype, df_types.DoubleType):
         return True
+    if isinstance(dtype, df_types.TimestampType):
+        return True
     if accept_str_col and isinstance(dtype, df_types.StringType):
         return True
     return False
@@ -206,6 +208,8 @@ def convert_row_to_numpy(row, schema, feature_cols, label_cols, accept_str_col=F
             if _is_scalar_type(feature_type, accept_str_col):
                 if isinstance(feature_type, df_types.FloatType):
                     result.append(np.array(row[name]).astype(np.float32))
+                elif isinstance(feature_type, df_types.TimestampType):
+                    result.append(np.array(row[name]).astype('datetime64[ns]'))
                 elif isinstance(feature_type, df_types.IntegerType):
                     result.append(np.array(row[name]).astype(np.int32))
                 else:
