@@ -170,7 +170,7 @@ class TestChronosModelTCMFForecaster(TestCase):
 
         # fit_incremental
         data_id_diff = {'id': self.id - 1, 'y': self.data_new}
-        with self.assertRaises(ValueError) as context:
+        with self.assertRaises(RuntimeError) as context:
             self.model.fit_incremental(data_id_diff)
         self.assertTrue('The input ids in fit_incremental differs from input ids in fit'
                         in str(context.exception))

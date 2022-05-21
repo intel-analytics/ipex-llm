@@ -44,25 +44,25 @@ class TestResampleTimeSeries(ZooTestCase):
         pass
 
     def test_resample_timeseries_dataframe(self):
-        with pytest.raises(AssertionError):
+        with pytest.raises(RuntimeError):
             resample_timeseries_dataframe(self.df, dt_col="z",
                                           interval="1D",
                                           start_time='1/1/2019',
                                           end_time='1/5/2019',
                                           merge_mode='max')
-        with pytest.raises(AssertionError):
+        with pytest.raises(RuntimeError):
             resample_timeseries_dataframe(self.df, dt_col="z",
                                           interval="1D",
                                           start_time='1/1/2019',
                                           end_time='1/5/2019',
                                           merge_mode='dummy')
-        with pytest.raises(AssertionError):
+        with pytest.raises(RuntimeError):
             resample_timeseries_dataframe(self.df, dt_col="a",
                                           interval="1D",
                                           start_time='1/1/2019',
                                           end_time='1/5/2019',
                                           merge_mode='max')
-        with pytest.raises(AssertionError):
+        with pytest.raises(RuntimeError):
             resample_timeseries_dataframe(self.df, dt_col="datetime",
                                           interval="1D",
                                           start_time='1/10/2019',
