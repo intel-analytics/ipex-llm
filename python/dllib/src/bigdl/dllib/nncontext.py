@@ -439,11 +439,6 @@ class ZooContextMeta(type):
 
     @log_output.setter
     def log_output(cls, value):
-        if SparkContext._active_spark_context is not None:
-            msg = "Setting log_output takes no effect after the context has been initialized." \
-                  " You need to set log_output before initializing the context" \
-                  " (e.g., before calling init_orca_context, init_nncontext, etc.)"
-            warnings.warn(msg)
         invalidInputError(isinstance(value, bool),
                           "log_output should either be True or False")
         cls._log_output = value
@@ -705,9 +700,9 @@ def init_internal_nncontext(conf=None, spark_log_level="WARN", redirect_spark_lo
     #                                              fn=sys.stderr.write))
     #         stderr_reader.start()
     check_version()
-    # if redirect_spark_log:
-    #     redire_spark_logs()
-    #     show_bigdl_info_logs()
+    if redirect_spark_log:
+        redire_spark_logs()
+        show_bigdl_info_logs()
     init_engine()
     set_python_home()
     return sc
