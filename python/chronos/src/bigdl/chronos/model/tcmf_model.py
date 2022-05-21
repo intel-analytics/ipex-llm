@@ -245,7 +245,7 @@ class TCMF(BaseModel):
     def _check_covariates_dti(self, covariates=None, dti=None, ts_len=24, method_name='fit'):
         if covariates is not None and not isinstance(covariates, np.ndarray):
             invalidInputError(False,
-                              "Input covariates must be a ndarray. Got", type(covariates))
+                              f"Input covariates must be a ndarray. Got ${type(covariates)}")
         if covariates is not None and not covariates.ndim == 2:
             invalidInputError(False,
                               f"You should input a 2-D ndarray of covariates. But Got dimension"

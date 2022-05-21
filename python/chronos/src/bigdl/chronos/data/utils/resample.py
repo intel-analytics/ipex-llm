@@ -15,6 +15,7 @@
 #
 
 import pandas as pd
+from bigdl.nano.utils.log4Error import *
 
 
 def resample_timeseries_dataframe(df,

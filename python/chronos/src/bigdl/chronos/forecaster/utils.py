@@ -19,7 +19,6 @@ import random
 import numpy
 from torch.utils.data import TensorDataset, DataLoader
 import numpy as np
-from bigdl.nano.utils.log4Error import *
 
 
 def loader_to_creator(loader):
@@ -74,6 +73,7 @@ def np_to_xshard(x, prefix="x"):
 
 
 def check_data(x, y, data_config):
+    from bigdl.nano.utils.log4Error import *
     invalidInputError(data_config["past_seq_len"] == x.shape[-2],
                       "The x shape should be (batch_size, past_seq_len, input_feature_num), "
                       "Got past_seq_len of {} in config while x input shape of {}."

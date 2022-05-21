@@ -151,7 +151,7 @@ def detect_anomaly(y,
                                   " should be larger than min")
             return detect_range_arr(y, th)
         else:
-            invalidInputError(False, "Threshold format", str(th), "is not supported")
+            invalidInputError(False, f"Threshold format ${str(th)} is not supported")
     else:
         invalidInputError(False,
                           f"Threshold format ${str(th)} is not supported")

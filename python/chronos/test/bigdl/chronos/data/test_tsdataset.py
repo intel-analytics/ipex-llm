@@ -408,7 +408,7 @@ class TestTSDataset(ZooTestCase):
                 break
 
             # Non-subset relationship
-            with pytest.raises(RuntimeError):
+            with pytest.raises(ValueError):
                 tsdata.to_torch_data_loader(batch_size=batch_size,
                                             roll=True,
                                             lookback=lookback,
@@ -682,9 +682,9 @@ class TestTSDataset(ZooTestCase):
             tsdata.scale(scaler)
             tsdata_test.scale(scaler, fit=False)
 
-            with pytest.raises(RuntimeError):
+            with pytest.raises(AssertionError):
                 assert_frame_equal(tsdata.to_pandas(), df)
-            with pytest.raises(RuntimeError):
+            with pytest.raises(AssertionError):
                 assert_frame_equal(tsdata_test.to_pandas(), df_test)
 
             tsdata.unscale()
