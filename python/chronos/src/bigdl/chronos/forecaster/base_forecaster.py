@@ -31,8 +31,6 @@ class BasePytorchForecaster(Forecaster):
     '''
     Forecaster base model for lstm, seq2seq, tcn and nbeats forecasters.
     '''
-    from bigdl.nano.utils.log4Error import invalidInputError
-
     def __init__(self, **kwargs):
         if self.distributed:
             from bigdl.orca.learn.pytorch.estimator import Estimator
@@ -125,6 +123,7 @@ class BasePytorchForecaster(Forecaster):
             num_nodes = 1 if sc.get('spark.master').startswith('local') \
                 else int(sc.get('spark.executor.instances'))
             if batch_size % self.workers_per_node != 0:
+                from bigdl.nano.utils.log4Error import invalidInputError
                 invalidInputError(False,
                                   "Please make sure that batch_size can be divisible by "
                                   "the product of worker_per_node and num_nodes, "
@@ -203,6 +202,7 @@ class BasePytorchForecaster(Forecaster):
             return yhat
         else:
             if not self.fitted:
+                from bigdl.nano.utils.log4Error import invalidInputError
                 invalidInputError(False,
                                   "You must call fit or restore first before calling predict!")
             if quantize:
@@ -240,7 +240,7 @@ class BasePytorchForecaster(Forecaster):
         :return: A numpy array with shape (num_samples, horizon, target_dim).
         """
         from bigdl.chronos.pytorch.utils import _pytorch_fashion_inference
-
+        from bigdl.nano.utils.log4Error import invalidInputError
         if self.distributed:
             invalidInputError(False,
                               "ONNX inference has not been supported for distributed "
@@ -313,6 +313,7 @@ class BasePytorchForecaster(Forecaster):
                                               batch_size=batch_size)
         else:
             if not self.fitted:
+                from bigdl.nano.utils.log4Error import invalidInputError
                 invalidInputError(False,
                                   "You must call fit or restore first before calling evaluate!")
             if quantize:
@@ -368,7 +369,7 @@ class BasePytorchForecaster(Forecaster):
         :return: A list of evaluation results. Each item represents a metric.
         """
         from bigdl.chronos.pytorch.utils import _pytorch_fashion_inference
-
+        from bigdl.nano.utils.log4Error import invalidInputError
         if self.distributed:
             invalidInputError(False,
                               "ONNX inference has not been supported for distributed "
@@ -408,6 +409,7 @@ class BasePytorchForecaster(Forecaster):
             self.internal.save(checkpoint_file)
         else:
             if not self.fitted:
+                from bigdl.nano.utils.log4Error import invalidInputError
                 invalidInputError(False,
                                   "You must call fit or restore first before calling save!")
             self.trainer.save_checkpoint(checkpoint_file)  # save current status
@@ -468,7 +470,7 @@ class BasePytorchForecaster(Forecaster):
         :return: a forecaster instance.
         """
         from bigdl.chronos.pytorch import TSTrainer as Trainer
-
+        from bigdl.nano.utils.log4Error import invalidInputError
         # TODO: optimizer is refreshed, which is not reasonable
         if not self.distributed:
             invalidInputError(False, "The forecaster has become local.")
@@ -526,7 +528,7 @@ class BasePytorchForecaster(Forecaster):
         '''
         import onnxruntime
         from bigdl.chronos.pytorch import TSTrainer as Trainer
-
+        from bigdl.nano.utils.log4Error import invalidInputError
         if sess_options is not None and not isinstance(sess_options, onnxruntime.SessionOptions):
             invalidInputError(False,
                               "sess_options should be an onnxruntime.SessionOptions instance"
@@ -554,7 +556,7 @@ class BasePytorchForecaster(Forecaster):
         :param dirname: The dir location you want to save the onnx file.
         """
         from bigdl.chronos.pytorch import TSTrainer as Trainer
-
+        from bigdl.nano.utils.log4Error import invalidInputError
         if self.distributed:
             invalidInputError(False,
                               "export_onnx_file has not been supported for distributed "
@@ -606,6 +608,7 @@ class BasePytorchForecaster(Forecaster):
                only once and return satisfying best model.
         """
         # check model support for quantization
+        from bigdl.nano.utils.log4Error import invalidInputError
         if not self.quantize_available:
             invalidInputError(False,
                               "This model has not supported quantization.")
