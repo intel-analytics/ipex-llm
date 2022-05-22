@@ -32,6 +32,7 @@ class BasePytorchForecaster(Forecaster):
     Forecaster base model for lstm, seq2seq, tcn and nbeats forecasters.
     '''
     from bigdl.nano.utils.log4Error import invalidInputError
+
     def __init__(self, **kwargs):
         if self.distributed:
             from bigdl.orca.learn.pytorch.estimator import Estimator
