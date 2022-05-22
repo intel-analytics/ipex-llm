@@ -23,6 +23,7 @@ from bigdl.ppml.fl.pytorch.generated.nn_service_pb2_grpc import *
 from bigdl.ppml.fl.pytorch.protobuf_utils import ndarray_map_to_tensor_map
 import uuid
 from torch.utils.data import DataLoader
+from bigdl.dllib.utils.log4Error import invalidInputError
 
 class FLClient(object):
     def __init__(self) -> None:
@@ -38,7 +39,8 @@ class FLClient(object):
         
         response = self.nn_stub.train(train_request)
         if response.code == 1:
-            raise Exception(response.response)
+            invalidInputError(False,
+                              response.response)
         return response
 
     def upload_model(self, model):

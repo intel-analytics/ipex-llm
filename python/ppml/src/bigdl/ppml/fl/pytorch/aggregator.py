@@ -20,6 +20,7 @@ import torch
 from bigdl.ppml.fl.pytorch.protobuf_utils import ndarray_map_to_tensor_map
 from bigdl.ppml.fl.pytorch.utils import set_one_like_parameter
 from threading import Condition
+from bigdl.dllib.utils.log4Error import invalidInputError
 
 class Aggregator(object):
     def __init__(self, client_num=1) -> None:
@@ -31,7 +32,8 @@ class Aggregator(object):
         
     def add_server_model(self, model):
         if self.model is not None:
-            raise Exception("model already exists on server")
+            invalidInputError(False,
+                              "model already exists on server")
         self.model = model
         self.loss_fn = nn.CrossEntropyLoss()
         self.optimizer = torch.optim.SGD(self.model.parameters(), lr=1e-3)
@@ -59,7 +61,9 @@ class Aggregator(object):
                 elif k == 'target':
                     target = torch.from_numpy(v)
                 else:
-                    raise Exception(f'Invalid type of tensor map key: {k}, should be input/target')
+                    invalidInputError(False,
+                                      f'Invalid type of tensor map key: {k},'
+                                      f' should be input/target')
         x = torch.stack(input)
         x = torch.sum(x, dim=0)
         x.requires_grad = True

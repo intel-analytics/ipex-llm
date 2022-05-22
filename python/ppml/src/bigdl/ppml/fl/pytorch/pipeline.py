@@ -22,6 +22,7 @@ import torch
 from bigdl.ppml.fl.pytorch.fl_client import FLClient
 from torch.utils.data import DataLoader
 from bigdl.ppml.fl.pytorch.protobuf_utils import tensor_map_to_ndarray_map
+from bigdl.dllib.utils.log4Error import invalidInputError
 
 class PytorchPipeline:
     def __init__(self, model: nn.Module, loss_fn, optimizer: torch.optim.Optimizer, algorithm=None,
@@ -74,7 +75,8 @@ class PytorchPipeline:
                 y = torch.from_numpy(y) if y is not None else None
                 self.train_step(x, y)
             else:
-                raise Exception(f'got unsupported data input type: {type(x)}')
+                invalidInputError(False,
+                                  f'got unsupported data input type: {type(x)}')
             
 
     def predict(self, x):
