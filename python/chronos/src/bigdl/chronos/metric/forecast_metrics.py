@@ -19,7 +19,6 @@ from numpy import ndarray
 from functools import partial
 from torchmetrics.functional import mean_squared_error, mean_absolute_error,\
     mean_absolute_percentage_error, r2_score, symmetric_mean_absolute_percentage_error
-from bigdl.nano.utils.log4Error import *
 
 
 TORCHMETRICS_REGRESSION_MAP = {
@@ -42,6 +41,7 @@ def _standard_input(metrics, y_true, y_pred):
         metrics = [metrics]
     if isinstance(metrics[0], str):
         metrics = list(map(lambda x: x.lower(), metrics))
+        from bigdl.nano.utils.log4Error import invalidInputError
         invalidInputError(all(metric in TORCHMETRICS_REGRESSION_MAP.keys() for metric in metrics),
                           f"metric should be one of {TORCHMETRICS_REGRESSION_MAP.keys()},"
                           f" but get {metrics}.")
@@ -50,6 +50,7 @@ def _standard_input(metrics, y_true, y_pred):
                           f" but found {type(y_pred)} and {type(y_true)}.")
         y_true, y_pred = torch.from_numpy(y_true), torch.from_numpy(y_pred)
 
+    from bigdl.nano.utils.log4Error import invalidInputError
     invalidInputError(y_true.shape == y_pred.shape,
                       "y_true and y_pred should have the same shape, "
                       f"but get {y_true.shape} and {y_pred.shape}.")

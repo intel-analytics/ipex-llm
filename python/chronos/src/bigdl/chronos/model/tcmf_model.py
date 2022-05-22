@@ -256,7 +256,7 @@ class TCMF(BaseModel):
                               f"but got {covariates.shape[1]} instead.")
         if dti is not None and not isinstance(dti, pd.DatetimeIndex):
             invalidInputError(False,
-                              "Input dti must be a pandas DatetimeIndex. Got", type(dti))
+                              f"Input dti must be a pandas DatetimeIndex. Got ${type(dti)}")
         if dti is not None and len(dti) != ts_len:
             invalidInputError(False,
                               f"Input dti length should be equal to {ts_len}, "
