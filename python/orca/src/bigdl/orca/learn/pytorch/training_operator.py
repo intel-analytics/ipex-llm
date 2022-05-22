@@ -106,7 +106,8 @@ class TrainingOperator:
         self._config = config
         self._use_fp16 = use_fp16
         if tqdm is None and use_tqdm:
-            raise ValueError("tqdm must be installed to use tqdm in training.")
+            invalidInputError(False,
+                              "tqdm must be installed to use tqdm in training.")
         self._use_tqdm = use_tqdm
         self.global_step = 0
         self.sync_stats = sync_stats
@@ -115,10 +116,10 @@ class TrainingOperator:
         if type(self) is TrainingOperator:
             for component in (models, schedulers, optimizers):
                 if _is_multiple(component):
-                    raise ValueError(
-                        "Need to provide a custom operator subclassing "
-                        "TrainingOperator if using multi-scheduler, "
-                        "multi-model or multi-optimizer training/validation.")
+                    invalidInputError(False,
+                                      "Need to provide a custom operator subclassing "
+                                      "TrainingOperator if using multi-scheduler, "
+                                      "multi-model or multi-optimizer training/validation.")
         self.timers = TimerCollection()
         self.setup(config)
 

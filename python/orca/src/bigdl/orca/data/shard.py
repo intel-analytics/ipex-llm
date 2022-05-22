@@ -96,9 +96,10 @@ But got data of type {}
         supported_types = {list, tuple, dict}
         if isinstance(data, np.ndarray):
             if data.shape[0] < shard_num:
-                raise ValueError("The length of data {} is smaller than the total number "
-                                 "of shards {}. Please adjust the num_shards option to be "
-                                 "at most {}.".format(data.shape[0], shard_num, data.shape[0]))
+                invalidInputError(False,
+                                  "The length of data {} is smaller than the total number "
+                                  "of shards {}. Please adjust the num_shards option to be "
+                                  "at most {}.".format(data.shape[0], shard_num, data.shape[0]))
             arrays = np.array_split(data, shard_num)
             rdd = sc.parallelize(arrays)
         else:
@@ -107,9 +108,10 @@ But got data of type {}
             data_length = len(flattened[0])
             data_to_be_shard = []
             if data_length < shard_num:
-                raise ValueError("The length of data {} is smaller than the total number "
-                                 "of shards {}. Please adjust the num_shards option to be "
-                                 "at most {}.".format(data_length, shard_num, data_length))
+                invalidInputError(False,
+                                  "The length of data {} is smaller than the total number "
+                                  "of shards {}. Please adjust the num_shards option to be "
+                                  "at most {}.".format(data_length, shard_num, data_length))
             for i in range(shard_num):
                 data_to_be_shard.append([])
             for x in flattened:
@@ -311,7 +313,8 @@ class SparkXShards(XShards):
             # if partition by a column
             if isinstance(cols, str):
                 if cols not in schema['columns']:
-                    raise Exception("The partition column is not in the DataFrame")
+                    invalidInputError(False,
+                                      "The partition column is not in the DataFrame")
                 # change data to key value pairs
                 rdd = self.rdd.flatMap(
                     lambda df: df.apply(lambda row: (row[cols], row.values.tolist()), axis=1)
@@ -322,7 +325,8 @@ class SparkXShards(XShards):
                 # partition with key
                 partitioned_rdd = rdd.partitionBy(partition_num)
             else:
-                raise Exception("Only support partition by a column name")
+                invalidInputError(False,
+                                  "Only support partition by a column name")
 
             def merge(iterator):
                 data = [value[1] for value in list(iterator)]
@@ -337,8 +341,9 @@ class SparkXShards(XShards):
             self._uncache()
             return partitioned_shard
         else:
-            raise Exception("Currently only support partition by for XShards"
-                            " of Pandas DataFrame")
+            invalidInputError(False,
+                              "Currently only support partition by for XShards"
+                              " of Pandas DataFrame")
 
     def unique(self):
         """
@@ -357,7 +362,8 @@ class SparkXShards(XShards):
             return result
         else:
             # we may support numpy or other types later
-            raise Exception("Currently only support unique() on XShards of Pandas Series")
+            invalidInputError(False,
+                              "Currently only support unique() on XShards of Pandas Series")
 
     def split(self):
         """
@@ -373,8 +379,9 @@ class SparkXShards(XShards):
                                          isinstance(data, tuple) else 1).collect()
         # check if each element has same splits
         if list_split_length.count(list_split_length[0]) != len(list_split_length):
-            raise Exception("Cannot split this XShards because its partitions "
-                            "have different split length")
+            invalidInputError(False,
+                              "Cannot split this XShards because its partitions "
+                              "have different split length")
         else:
             if list_split_length[0] > 1:
                 def get_data(order):
@@ -409,8 +416,9 @@ class SparkXShards(XShards):
             self._uncache()
             return zipped_shard
         except Exception:
-            raise ValueError("The two SparkXShards should have the same number of elements "
-                             "in each partition")
+            invalidInputError(False,
+                              "The two SparkXShards should have the same number of elements "
+                              "in each partition")
 
     def __len__(self):
         return self.rdd.map(lambda data: len(data) if hasattr(data, '__len__') else 1)\
@@ -438,7 +446,8 @@ class SparkXShards(XShards):
             try:
                 value = data[key]
             except:
-                raise Exception("Invalid key for this XShards")
+                invalidInputError(False,
+                                  "Invalid key for this XShards")
             return value
         return SparkXShards(self.rdd.map(get_data), transient=True)
 

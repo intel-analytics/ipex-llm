@@ -98,8 +98,9 @@ class HorovodRayRunner:
         major, minor, patch, version_str = get_horovod_version()
 
         if major == 0 and minor < 19:
-            raise RuntimeError(f"We only support horovod versions newer "
-                               f"than 0.19.0, but got {version_str}")
+            invalidInputError(False,
+                              f"We only support horovod versions newer "
+                              f"than 0.19.0, but got {version_str}")
         if major == 0 and minor == 19:
             from horovod.run.gloo_run import RendezvousServer, _allocate
             self.host_alloc_plan = _allocate(",".join(hosts_spec), self.num_nodes)

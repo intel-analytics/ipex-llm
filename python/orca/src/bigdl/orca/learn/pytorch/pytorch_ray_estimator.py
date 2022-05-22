@@ -109,15 +109,17 @@ class PyTorchRayEstimator(OrcaRayEstimator):
             sync_stats=True,
             log_level=logging.INFO):
         if config is not None and "batch_size" in config:
-            raise Exception("Please do not specify batch_size in config. Input batch_size in the"
-                            " fit/evaluate/predict function of the estimator instead.")
+            invalidInputError(False,
+                              "Please do not specify batch_size in config. Input batch_size in the"
+                              " fit/evaluate/predict function of the estimator instead.")
 
         # todo remove ray_ctx to run on workers
         ray_ctx = RayContext.get()
         if not (isinstance(model_creator, types.FunctionType) and
                 isinstance(optimizer_creator, types.FunctionType)):  # Torch model is also callable.
-            raise ValueError(
-                "Must provide a function for both model_creator and optimizer_creator")
+            invalidInputError(False,
+                              "Must provide a function for both model_creator and"
+                              " optimizer_creator")
 
         self.model_creator = model_creator
         self.optimizer_creator = optimizer_creator
@@ -129,8 +131,9 @@ class PyTorchRayEstimator(OrcaRayEstimator):
         self.sync_stats = sync_stats
 
         if not training_operator_cls and not loss_creator:
-            raise ValueError("If a loss_creator is not provided, you must "
-                             "provide a custom training operator.")
+            invalidInputError(False,
+                              "If a loss_creator is not provided, you must "
+                              "provide a custom training operator.")
 
         self.initialization_hook = initialization_hook
         self.config = {} if config is None else config
@@ -189,8 +192,9 @@ class PyTorchRayEstimator(OrcaRayEstimator):
                 for i, worker in enumerate(self.remote_workers)
             ])
         else:
-            raise Exception("Only \"ray\" and \"horovod\" are supported "
-                            "values of backend, but got {}".format(backend))
+            invalidInputError(False,
+                              "Only \"ray\" and \"horovod\" are supported "
+                              "values of backend, but got {}".format(backend))
         self.num_workers = len(self.remote_workers)
 
     def fit(self,
@@ -349,8 +353,9 @@ class PyTorchRayEstimator(OrcaRayEstimator):
             result = ray.data.from_numpy(remote_worker_stats).map(
                 lambda r: {"prediction_result": r["value"]})
         else:
-            raise ValueError("Only xshards, Spark DataFrame or Ray Dataset"
-                             " is supported for predict")
+            invalidInputError(False,
+                              "Only xshards, Spark DataFrame or Ray Dataset"
+                              " is supported for predict")
 
         return result
 

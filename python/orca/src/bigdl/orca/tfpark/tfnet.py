@@ -90,11 +90,13 @@ class TFNet(Layer):
             elif isinstance(i, JTensor):
                 return i
             else:
-                raise Exception("Error unknown input type %s" % type(i))
+                invalidInputError(False,
+                                  "Error unknown input type %s" % type(i))
 
         if type(input) is list:
             if len(input) == 0:
-                raise Exception('Error when checking: empty input')
+                invalidInputError(False,
+                                  'Error when checking: empty input')
             return list(map(lambda i: to_jtensor(i), input)), True
         else:
             return [to_jtensor(input)], False
@@ -135,7 +137,8 @@ class TFNet(Layer):
             elif isinstance(x, RDD):
                 data_rdd = x
             else:
-                raise TypeError("Unsupported prediction data type: %s" % type(x))
+                invalidInputError(False,
+                                  "Unsupported prediction data type: %s" % type(x))
             results = callZooFunc(self.bigdl_type, "zooPredict",
                                   self.value,
                                   data_rdd,
@@ -192,7 +195,8 @@ class TFNet(Layer):
         :return: a TFNet
         """
         if not os.path.isdir(folder):
-            raise ValueError(folder + " does not exist")
+            invalidInputError(False,
+                              folder + " does not exist")
         return TFNet(folder, tf_session_config=tf_session_config)
 
     @staticmethod

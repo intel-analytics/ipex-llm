@@ -265,31 +265,31 @@ class MXNetEstimator(OrcaRayEstimator):
         """
         Predict is not supported in MXNetEstimator
         """
-        raise NotImplementedError
+        invalidInputError(False, "not implemented")
 
     def evaluate(self, data, batch_size=32, num_steps=None):
         """
         Evaluate is not supported in MXNetEstimator
         """
-        raise NotImplementedError
+        invalidInputError(False, "not implemented")
 
     def get_model(self):
         """
         Get_model is not supported in MXNetEstimator
         """
-        raise NotImplementedError
+        invalidInputError(False, "not implemented")
 
     def save(self, checkpoint):
         """
         Save is not supported in MXNetEstimator
         """
-        raise NotImplementedError
+        invalidInputError(False, "not implemented")
 
     def load(self, checkpoint):
         """
         Load is not supported in MXNetEstimator
         """
-        raise NotImplementedError
+        invalidInputError(False, "not implemented")
 
 # TODO: add model save and restore
 # TODO: add predict, evaluate

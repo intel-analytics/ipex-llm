@@ -142,7 +142,7 @@ class RayXShards(XShards):
         self.partition2ip = {idx: ip for idx, ip, _ in self.id_ip_store}
 
     def transform_shard(self, func, *args):
-        raise Exception("Transform is not supported for RayXShards")
+        invalidInputError(False, "Transform is not supported for RayXShards")
 
     def num_partitions(self):
         return len(self.partition2ip)

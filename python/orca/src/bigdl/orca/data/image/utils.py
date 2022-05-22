@@ -46,7 +46,7 @@ def ndarray_dtype_to_dtype(dtype):
     if dtype == np.uint8:
         return DType.UINT8
 
-    raise ValueError(f"{dtype} is not supported")
+    invalidInputError(False, f"{dtype} is not supported")
 
 
 class FeatureType(Enum):
@@ -168,7 +168,7 @@ def pa_fs(path):
         path = path[len("hdfs://"):]
         return path, fs
     elif path.startswith("s3"):
-        raise ValueError("aws s3 is not supported for now")
+        invalidInputError(False, "aws s3 is not supported for now")
     else:  # Local path
         if path.startswith("file://"):
             path = path[len("file://"):]

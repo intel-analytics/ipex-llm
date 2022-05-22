@@ -113,9 +113,10 @@ class ZooTestCase(TestCase):
             func()
         except Exception as e:
             if error_message not in str(e):
-                raise Exception("error_message not in the exception raised. " +
-                                "error_message: %s, exception: %s" % (error_message, e))
+                invalidInputError(False,
+                                  "error_message not in the exception raised. " +
+                                  "error_message: %s, exception: %s" % (error_message, e))
             error = True
 
         if not error:
-            raise Exception("exception is not raised")
+            invalidInputError(False, "exception is not throw")

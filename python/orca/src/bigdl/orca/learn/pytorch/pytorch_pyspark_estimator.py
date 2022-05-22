@@ -97,21 +97,24 @@ class PyTorchPySparkEstimator(BaseEstimator):
                             )
         self.logger = logging.getLogger(__name__)
         if config is not None and "batch_size" in config:
-            raise Exception("Please do not specify batch_size in config. Input batch_size in the"
-                            " fit/evaluate/predict function of the estimator instead.")
+            invalidInputError(False,
+                              "Please do not specify batch_size in config. Input batch_size in the"
+                              " fit/evaluate/predict function of the estimator instead.")
         self.config = {} if config is None else config
 
         sc = OrcaContext.get_spark_context()
         if not (isinstance(model_creator, types.FunctionType) and
                 isinstance(optimizer_creator, types.FunctionType)):  # Torch model is also callable.
-            raise ValueError(
-                "Must provide a function for both model_creator and optimizer_creator")
+            invalidInputError(False,
+                              "Must provide a function for both model_creator and optimizer_creator")
 
         if not training_operator_cls and not loss_creator:
-            raise ValueError("If a loss_creator is not provided, you must "
-                             "provide a custom training operator.")
+            invalidInputError(False,
+                              "If a loss_creator is not provided, you must "
+                              "provide a custom training operator.")
         if not model_dir:
-            raise ValueError("Please specify model directory when using spark backend")
+            invalidInputError(False,
+                              "Please specify model directory when using spark backend")
         self.model_dir = model_dir
 
         self.model_creator = model_creator
@@ -361,7 +364,8 @@ class PyTorchPySparkEstimator(BaseEstimator):
             pred_shards = self._predict_spark_xshards(data, init_params, params)
             result = update_predict_xshards(data, pred_shards)
         else:
-            raise ValueError("Only xshards or Spark DataFrame is supported for predict")
+            invalidInputError(False,
+                              "Only xshards or Spark DataFrame is supported for predict")
 
         return result
 

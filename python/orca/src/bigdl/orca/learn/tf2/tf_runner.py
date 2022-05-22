@@ -119,13 +119,13 @@ class DatasetHandler:
         return dataset
 
     def _handle_xshards(self, dataset, steps, local_batch_size, shuffle):
-        raise NotImplementedError
+        invalidInputError(False, "not implemented")
 
     def _handle_sharding(self, dataset):
-        raise NotImplementedError
+        invalidInputError(False, "not implemented")
 
     def _handle_batch_size(self, config):
-        raise NotImplementedError
+        invalidInputError(False, "not implemented")
 
     @staticmethod
     def get_handler(backend, rank, size):
@@ -139,7 +139,7 @@ class DatasetHandler:
         if backend == "tf-local":
             return LocalDatasetHandler(rank, size)
 
-        raise Exception(f"invalid backend: {backend}")
+        invalidInputError(False, f"invalid backend: {backend}")
 
 
 class HorovodDatasetHanlder(DatasetHandler):
@@ -434,7 +434,7 @@ class TFRunner:
 
         dataset = data_creator(config, batch_size)
         if not isinstance(dataset, ray.ObjectID):
-            raise ValueError("Only xshards is supported for predict")
+            invalidInputError(False, "Only xshards is supported for predict")
 
         partition = ray.get(dataset)
         params = dict(

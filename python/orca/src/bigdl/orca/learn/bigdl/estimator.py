@@ -183,11 +183,13 @@ class BigDLEstimator(OrcaSparkEstimator):
                                      val_feature_set, self.metrics, batch_size)
                 self.is_nnframe_fit = False
             else:
-                raise ValueError("Data and validation data should be XShards, but get " +
-                                 data.__class__.__name__)
+                invalidInputError(False,
+                                  "Data and validation data should be XShards, but get " +
+                                  data.__class__.__name__)
         else:
-            raise ValueError("Data should be XShards or Spark DataFrame, but get " +
-                             data.__class__.__name__)
+            invalidInputError(False,
+                              "Data should be XShards or Spark DataFrame, but get " +
+                              data.__class__.__name__)
         return self
 
     def predict(self, data, batch_size=4, feature_cols="features", sample_preprocessing=None):
@@ -226,8 +228,9 @@ class BigDLEstimator(OrcaSparkEstimator):
             result_rdd = self.model.predict(sample_rdd)
             return convert_predict_rdd_to_xshard(data, result_rdd)
         else:
-            raise ValueError("Data should be XShards or Spark DataFrame, but get " +
-                             data.__class__.__name__)
+            invalidInputError(False,
+                              "Data should be XShards or Spark DataFrame, but get " +
+                              data.__class__.__name__)
 
     def evaluate(self, data, batch_size=32, feature_cols="features", label_cols="label"):
         """
@@ -275,8 +278,9 @@ class BigDLEstimator(OrcaSparkEstimator):
             val_feature_set = FeatureSet.sample_rdd(data.rdd.flatMap(xshard_to_sample))
             result = self.estimator.evaluate(val_feature_set, self.metrics, batch_size)
         else:
-            raise ValueError("Data should be XShards or Spark DataFrame, but get " +
-                             data.__class__.__name__)
+            invalidInputError(False,
+                              "Data should be XShards or Spark DataFrame, but get " +
+                              data.__class__.__name__)
 
         return bigdl_metric_results_to_dict(result)
 
@@ -299,7 +303,8 @@ class BigDLEstimator(OrcaSparkEstimator):
             model = self.get_model()
             model.saveModel(model_path + ".bigdl", model_path + ".bin", True)
         except ValueError:
-            raise ValueError("You should fit before calling save")
+            invalidInputError(False,
+                              "You should fit before calling save")
 
     def load(self, checkpoint, optimizer=None, loss=None, feature_preprocessing=None,
              label_preprocessing=None, model_dir=None, is_checkpoint=False):
@@ -390,8 +395,9 @@ class BigDLEstimator(OrcaSparkEstimator):
         if version is None:
             path, prefix, version = find_latest_checkpoint(path, model_type="bigdl")
             if path is None:
-                raise ValueError("Cannot find BigDL checkpoint, please check your checkpoint"
-                                 " path.")
+                invalidInputError(False,
+                                  "Cannot find BigDL checkpoint, please check your checkpoint"
+                                  " path.")
         else:
             invalidInputError(prefix is not None,
                               "You should provide optimMethod prefix, "
@@ -405,8 +411,9 @@ class BigDLEstimator(OrcaSparkEstimator):
             self.optimizer = OptimMethod.load(os.path.join(path,
                                                            "{}.{}".format(prefix, version)))
         except Exception:
-            raise ValueError("Cannot load BigDL checkpoint, please check your checkpoint path "
-                             "and checkpoint type.")
+            invalidInputError(False,
+                              "Cannot load BigDL checkpoint, please check your checkpoint path "
+                              "and checkpoint type.")
         self.estimator = SparkEstimator(self.model, self.optimizer, self.model_dir)
         self.nn_estimator = NNEstimator(self.model, self.loss, self.feature_preprocessing,
                                         self.label_preprocessing)
@@ -458,8 +465,9 @@ class BigDLEstimator(OrcaSparkEstimator):
         """
         # Exception handle
         if tag != "Loss" and tag != "LearningRate" and tag != "Throughput":
-            raise TypeError('Only "Loss", "LearningRate", "Throughput"'
-                            + 'are supported in train summary')
+            invalidInputError(False,
+                              'Only "Loss", "LearningRate", "Throughput"'
+                              + 'are supported in train summary')
         if self.is_nnframe_fit:
             train_summary = self.nn_estimator.getTrainSummary()
             return train_summary.read_scalar(tag=tag)

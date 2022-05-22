@@ -94,8 +94,9 @@ def bert_input_fn(rdd, max_seq_length, batch_size,
             for label in labels:
                 res_labels[label] = (tf.int32, label_size)
     else:
-        raise ValueError("Wrong labels. "
-                         "labels should be a set of label names if you have multiple labels")
+        invalidInputError(False,
+                          "Wrong labels. labels should be a set of label names"
+                          " if you have multiple labels")
 
     def input_fn(mode):
         if mode == tf.estimator.ModeKeys.TRAIN:

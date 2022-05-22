@@ -46,8 +46,9 @@ class RayContext(object):
             self.num_ray_nodes = num_nodes
             self.ray_node_cpu_cores = cores
         else:
-            raise ValueError(f"Unsupported runtime: {runtime}. "
-                             f"Runtime must be spark or ray")
+            invalidInputError(False,
+                              f"Unsupported runtime: {runtime}. "
+                              f"Runtime must be spark or ray")
 
         RayContext._active_ray_context = self
 
@@ -83,5 +84,6 @@ class RayContext(object):
                 ray_ctx.init()
             return ray_ctx
         else:
-            raise Exception("No active RayContext. "
-                            "Please call init_orca_context to create a RayContext.")
+            invalidInputError(False,
+                              "No active RayContext. "
+                              "Please call init_orca_context to create a RayContext.")

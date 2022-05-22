@@ -26,8 +26,9 @@ from bigdl.dllib.utils.log4Error import *
 def check_tf_version():
     tf_version = tf.__version__
     if tf_version >= "2.0":
-        raise RuntimeError(f"Currently running TensorFlow version {tf_version}. We only support"
-                           f"TensorFlow 1.x for now and has been tested on 1.15")
+        invalidInputError(False,
+                          f"Currently running TensorFlow version {tf_version}. We only support"
+                          f"TensorFlow 1.x for now and has been tested on 1.15")
 
 
 class KerasBaseModel(BaseModel):
@@ -48,7 +49,8 @@ class KerasBaseModel(BaseModel):
         self.model = self.model_creator(config)
         # check whether the model is a compiled model
         if self.model.optimizer is None:
-            raise ValueError("You must create a compiled model in model_creator")
+            invalidInputError(False,
+                              "You must create a compiled model in model_creator")
         self.model_built = True
 
     @staticmethod
@@ -95,8 +97,9 @@ class KerasBaseModel(BaseModel):
                 validation_dataset = validation_data
         else:
             if not isinstance(data, tuple):
-                raise ValueError(f"data/validation_data should be a tuple of numpy array "
-                                 f"or a data creator function but found {type(data)}")
+                invalidInputError(False,
+                                  f"data/validation_data should be a tuple of numpy array "
+                                  f"or a data creator function but found {type(data)}")
             if validation_data:
                 invalidInputError(isinstance(validation_data, tuple),
                                   f"validation_data should be a tuple or"
@@ -125,8 +128,9 @@ class KerasBaseModel(BaseModel):
                     metric = compiled_metric_names[0]
                     metric_name = metric
                 else:
-                    raise ValueError(f"Got multiple metrics in compile: {compiled_metric_names}. "
-                                     f"Please choose one target metric for automl optimization")
+                    invalidInputError(False,
+                                      f"Got multiple metrics in compile: {compiled_metric_names}. "
+                                      f"Please choose one target metric for automl optimization")
             else:
                 if metric in compiled_metric_names:
                     metric_name = metric
@@ -134,14 +138,16 @@ class KerasBaseModel(BaseModel):
                     try:
                         hist_metric_name = tf.keras.metrics.get(metric).__name__
                     except:
-                        raise ValueError(f"get invalid metric name {metric} for tf.keras")
+                        invalidInputError(False,
+                                          f"get invalid metric name {metric} for tf.keras")
                     if hist_metric_name in compiled_metric_names:
                         metric_name = hist_metric_name
                     else:
-                        raise ValueError(f"Input metric in fit_eval should be one of the metrics "
-                                         f"that are used to compile the model. Got metric value of "
-                                         f"{metric} and the metrics in compile are "
-                                         f"{compiled_metric_names}")
+                        invalidInputError(False,
+                                          f"Input metric in fit_eval should be one of the metrics "
+                                          f"that are used to compile the model. Got metric value of "
+                                          f"{metric} and the metrics in compile are "
+                                          f"{compiled_metric_names}")
             if validation_data is None:
                 result = hist.history.get(metric_name)[-1]
             else:
@@ -179,12 +185,14 @@ class KerasBaseModel(BaseModel):
         :return: predicted y
         """
         if not self.model_built:
-            raise RuntimeError("You must call fit_eval or restore first before calling predict!")
+            invalidInputError(False,
+                              "You must call fit_eval or restore first before calling predict!")
         return self.model.predict(x, batch_size=batch_size)
 
     def predict_with_uncertainty(self, x, n_iter=100):
         if not self.model_built:
-            raise RuntimeError("You must call fit_eval or restore first before calling predict!")
+            invalidInputError(False,
+                              "You must call fit_eval or restore first before calling predict!")
         check_tf_version()
         f = K.function([self.model.layers[0].input, K.learning_phase()],
                        [self.model.layers[-1].output])
@@ -211,7 +219,8 @@ class KerasBaseModel(BaseModel):
 
     def save(self, checkpoint):
         if not self.model_built:
-            raise RuntimeError("You must call fit_eval or restore first before calling save!")
+            invalidInputError(False,
+                              "You must call fit_eval or restore first before calling save!")
         state_dict = self.state_dict()
         with open(checkpoint, "wb") as f:
             pickle.dump(state_dict, f)

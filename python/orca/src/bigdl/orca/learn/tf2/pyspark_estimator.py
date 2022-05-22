@@ -41,6 +41,7 @@ from bigdl.orca.learn.utils import maybe_dataframe_to_xshards, dataframe_to_xsha
 from bigdl.orca.learn.log_monitor import start_log_server
 from bigdl.orca.data.shard import SparkXShards
 from bigdl.orca import OrcaContext
+from bigdl.dllib.utils.log4Error import invalidInputError
 
 logger = logging.getLogger(__name__)
 
@@ -78,8 +79,9 @@ class SparkTFEstimator():
         self.model_weights = None
 
         if "batch_size" in self.config:
-            raise Exception("Please do not specify batch_size in config. Input batch_size in the"
-                            " fit/evaluate function of the estimator instead.")
+            invalidInputError(False,
+                              "Please do not specify batch_size in config. Input batch_size in the"
+                              " fit/evaluate function of the estimator instead.")
         self.model_dir = model_dir
         master = sc.getConf().get("spark.master")
         if not master.startswith("local"):
@@ -372,7 +374,8 @@ class SparkTFEstimator():
                 lambda iter: transform_func(iter, init_params, params)))
             result = convert_predict_xshards_to_dataframe(pre_predict_data, pred_shards)
         else:
-            raise ValueError("Only xshards or Spark DataFrame is supported for predict")
+            invalidInputError(False,
+                              "Only xshards or Spark DataFrame is supported for predict")
 
         return result
 

@@ -31,7 +31,7 @@ if sys.version < '3.7':
           "exception on yarn, please update your python to 3.7")
 
 if find_spec('jep') is None:
-    raise Exception("jep not found, please install jep first.")
+    invalidInputError(False, "jep not found, please install jep first.")
 
 
 class TorchModel(Layer):

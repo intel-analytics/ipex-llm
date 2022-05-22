@@ -143,8 +143,9 @@ class TFEstimator(object):
             result = self.estimator._call_input_fn(input_fn, tf.estimator.ModeKeys.TRAIN)
             if isinstance(result, TFDataset):
                 if not result.has_batch:
-                    raise ValueError("The batch_size of TFDataset must be " +
-                                     "specified when used for training.")
+                    invalidInputError(False,
+                                      "The batch_size of TFDataset must be " +
+                                      "specified when used for training.")
                 spec = self._call_model_fn(result.feature_tensors,
                                            result.label_tensors,
                                            tf.estimator.ModeKeys.TRAIN,
@@ -207,7 +208,8 @@ class TFEstimator(object):
           name.
         """
         if not all(isinstance(metric, six.string_types) for metric in eval_methods):
-            raise ValueError("All metrics should be string types")
+            invalidInputError(False,
+                              "All metrics should be string types")
         from tensorflow_estimator.python.estimator.canned import prediction_keys
         import tensorflow as tf
         with tf.Graph().as_default() as g:
@@ -246,8 +248,9 @@ class TFEstimator(object):
                     else:
                         outputs = nest.flatten(spec.predictions)
                         if len(outputs) > 1:
-                            raise Exception("Evaluate on more than one output is not " +
-                                            "supported now")
+                            invalidInputError(False,
+                                              "Evaluate on more than one output is not " +
+                                              "supported now")
 
                     all_inputs = result._original_tensors
                     if isinstance(all_inputs, tuple) and len(all_inputs) == 2:
@@ -351,4 +354,5 @@ class TFEstimator(object):
         elif metric == "treennaccuracy":
             return TreeNNAccuracy()
         else:
-            raise TypeError("Unsupported metric: %s" % metric)
+            invalidInputError(False,
+                              "Unsupported metric: %s" % metric)

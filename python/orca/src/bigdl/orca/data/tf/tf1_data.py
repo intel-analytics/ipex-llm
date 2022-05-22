@@ -50,7 +50,8 @@ class TF1Dataset(TFDataset):
             batch_per_shard = batch_per_thread
             self.drop_remainder = False
         else:
-            raise ValueError("one of batch_size or batch_per_thread must be larger than 0")
+            invalidInputError(False,
+                              "one of batch_size or batch_per_thread must be larger than 0")
 
         self.rdd = dataset.as_graph_rdd(batch_per_shard,
                                         drop_remainder=self.drop_remainder).cache()

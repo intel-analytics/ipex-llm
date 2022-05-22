@@ -51,8 +51,9 @@ class TensorFlow2Estimator(OrcaRayEstimator):
 
         ray_ctx = RayContext.get()
         if "batch_size" in self.config:
-            raise Exception("Please do not specify batch_size in config. Input batch_size in the"
-                            " fit/evaluate function of the estimator instead.")
+            invalidInputError(False,
+                              "Please do not specify batch_size in config. Input batch_size in the"
+                              " fit/evaluate function of the estimator instead.")
 
         if "inter_op_parallelism" not in self.config:
             self.config["inter_op_parallelism"] = 1
@@ -110,8 +111,9 @@ class TensorFlow2Estimator(OrcaRayEstimator):
                 worker.setup_horovod.remote()
                 for i, worker in enumerate(self.remote_workers)])
         else:
-            raise Exception("Only \"tf2\" and \"horovod\" are legal "
-                            "values of backend, but got {}".format(backend))
+            invalidInputError(False,
+                              "Only \"tf2\" and \"horovod\" are legal "
+                              "values of backend, but got {}".format(backend))
 
         self.num_workers = len(self.remote_workers)
 
@@ -369,7 +371,8 @@ class TensorFlow2Estimator(OrcaRayEstimator):
                           "label_cols param must be specified when convert"
                           " ray dataset to tf dataset.")
         if "output_signature" not in data_config:
-            raise ValueError("output_signature should be specified in data_config")
+            invalidInputError(False,
+                              "output_signature should be specified in data_config")
         import tensorflow as tf
 
         def data_creator(config, batch_size):
@@ -442,7 +445,8 @@ class TensorFlow2Estimator(OrcaRayEstimator):
             pred_shards = self._predict_spark_xshards(data, params)
             result = update_predict_xshards(data, pred_shards)
         else:
-            raise ValueError("Only xshards or Spark DataFrame is supported for predict")
+            invalidInputError(False,
+                              "Only xshards or Spark DataFrame is supported for predict")
 
         return result
 

@@ -158,7 +158,7 @@ class VOCDatasets:
             img = img.astype(np.uint8)
             return img
         except FileNotFoundError as e:
-            raise e
+            invalidOperationError(False, str(e), cause=e)
 
     @property
     def classes_label(self):

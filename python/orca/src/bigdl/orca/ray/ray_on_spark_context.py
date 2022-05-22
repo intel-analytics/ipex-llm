@@ -64,7 +64,7 @@ def kill_redundant_log_monitors(redis_address):
             if psutil.MACOS:
                 continue
             else:
-                raise Exception("List process with list2cmdline failed!")
+                invalidInputError(False, "List process with list2cmdline failed!")
 
     if len(log_monitor_processes) > 1:
         for proc in log_monitor_processes[1:]:
@@ -425,9 +425,10 @@ class RayOnSparkContext(object):
             elif executor_cores:
                 self.ray_node_cpu_cores = executor_cores
             else:
-                raise Exception("spark.executor.cores not detected in the SparkContext, "
-                                "you need to manually specify num_ray_nodes and ray_node_cpu_cores "
-                                "for RayOnSparkContext to start ray services")
+                invalidInputError(False,
+                                  "spark.executor.cores not detected in the SparkContext, you need"
+                                  " to manually specify num_ray_nodes and ray_node_cpu_cores for"
+                                  " RayOnSparkContext to start ray services")
             if self.sc.getConf().contains("spark.executor.instances"):
                 num_executors = int(self.sc.getConf().get("spark.executor.instances"))
             elif self.sc.getConf().contains("spark.cores.max"):
@@ -445,9 +446,10 @@ class RayOnSparkContext(object):
             elif num_executors:
                 self.num_ray_nodes = num_executors
             else:
-                raise Exception("spark.executor.cores not detected in the SparkContext, "
-                                "you need to manually specify num_ray_nodes and ray_node_cpu_cores "
-                                "for RayOnSparkContext to start ray services")
+                invalidInputError(False,
+                                  "spark.executor.cores not detected in the SparkContext, you need"
+                                  " to manually specify num_ray_nodes and ray_node_cpu_cores for"
+                                  " RayOnSparkContext to start ray services")
 
             from bigdl.dllib.utils.utils import detect_python_location
             self.python_loc = os.environ.get("PYSPARK_PYTHON", detect_python_location())
@@ -474,8 +476,9 @@ class RayOnSparkContext(object):
                 ray_ctx.init()
             return ray_ctx
         else:
-            raise Exception("No active RayOnSparkContext. "
-                            "Please create a RayOnSparkContext and init it first")
+            invalidInputError(False,
+                              "No active RayOnSparkContext. "
+                              "Please create a RayOnSparkContext and init it first")
 
     def _gather_cluster_ips(self):
         """
@@ -571,7 +574,8 @@ class RayOnSparkContext(object):
         if self._address_info:
             return self._address_info
         else:
-            raise Exception("The Ray cluster has not been launched yet. Please call init first")
+            invalidInputError(False,
+                              "The Ray cluster has not been launched yet. Please call init first")
 
     @property
     def redis_address(self):

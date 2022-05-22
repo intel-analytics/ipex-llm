@@ -147,8 +147,9 @@ class RayTuneSearchEngine(SearchEngine):
     def _set_search_alg(search_alg, search_alg_params, metric, mode):
         if search_alg:
             if not isinstance(search_alg, str):
-                raise ValueError(f"search_alg should be of type str."
-                                 f" Got {search_alg.__class__.__name__}")
+                invalidInputError(False,
+                                  f"search_alg should be of type str."
+                                  f" Got {search_alg.__class__.__name__}")
             params = search_alg_params.copy() if search_alg_params else dict()
             if metric and "metric" not in params:
                 params["metric"] = metric
@@ -161,8 +162,9 @@ class RayTuneSearchEngine(SearchEngine):
     def _set_scheduler(scheduler, scheduler_params, metric, mode):
         if scheduler:
             if not isinstance(scheduler, str):
-                raise ValueError(f"Scheduler should be of type str. "
-                                 f"Got {scheduler.__class__.__name__}")
+                invalidInputError(False,
+                                  f"Scheduler should be of type str. "
+                                  f"Got {scheduler.__class__.__name__}")
             params = scheduler_params.copy() if scheduler_params else dict()
             if metric and "metric" not in params:
                 params["metric"] = metric
@@ -263,7 +265,8 @@ class RayTuneSearchEngine(SearchEngine):
         def mock_reporter(**kwargs):
             invalidInputError(self.metric_name in kwargs, "Did not report proper metric")
             invalidInputError("checkpoint" in kwargs, "Accidentally removed `checkpoint`?")
-            raise GoodError("This works.")
+            invalidInputError(False,
+                              "This works.")
 
         try:
             self.train_func({'out_units': 1,
@@ -273,11 +276,11 @@ class RayTuneSearchEngine(SearchEngine):
 
         except TypeError as e:
             print("Forgot to modify function signature?")
-            raise e
+            invalidOperationError(False, str(e), cause=e)
         except GoodError:
             print("Works!")
             return 1
-        raise Exception("Didn't call reporter...")
+        invalidInputError(False, "Didn't call reporter...")
 
     @staticmethod
     def _prepare_train_func(data,

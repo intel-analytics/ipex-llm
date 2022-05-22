@@ -461,7 +461,8 @@ class TorchRunner:
     def load_checkpoint(self, filepath):
         fs = get_filesystem(filepath)
         if not fs.exists(filepath):
-            raise FileNotFoundError(f"Checkpoint at {filepath} not found. Aborting training.")
+            invalidInputError(False,
+                              f"Checkpoint at {filepath} not found. Aborting training.")
         with fs.open(filepath, "rb") as f:
             state_dict = torch.load(f)
         self.load_state_dict(state_dict)

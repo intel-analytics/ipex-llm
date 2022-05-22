@@ -14,17 +14,21 @@
 # limitations under the License.
 #
 import torch
+from bigdl.dllib.utils.log4Error import invalidInputError
+
 try:
     import torchmetrics
 except ImportError:
-    raise ImportError("please install torchmetrics: pip install torchmetrics")
+    invalidInputError(False,
+                      "please install torchmetrics: pip install torchmetrics")
 
 from abc import ABC, abstractmethod
 
 
 def _unify_input_formats(preds, target):
     if not (preds.ndim == target.ndim or preds.ndim == target.ndim + 1):
-        raise ValueError("preds the same or one more dimensions than targets")
+        invalidInputError(False,
+                          "preds the same or one more dimensions than targets")
 
     if preds.ndim == target.ndim + 1:
         preds = torch.argmax(preds, dim=-1)
@@ -36,7 +40,8 @@ def _unify_input_formats(preds, target):
 
 def _check_same_shape(preds, targets):
     if preds.shape != targets.shape:
-        raise RuntimeError("preds and targets are expected to have the same shape")
+        invalidInputError(False,
+                          "preds and targets are expected to have the same shape")
 
 
 class PytorchMetric(ABC):

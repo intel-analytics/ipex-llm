@@ -66,7 +66,7 @@ class Estimator(SparkEstimator):
         :param auto_shard_files: whether to automatically detect if the dataset is file-based and
                and apply sharding on files, otherwise sharding on records. Default is False.
         """
-        raise NotImplementedError
+        invalidInputError(False, "not implemented")
 
     def predict(self, data, batch_size=4, feature_cols=None, auto_shard_files=False):
         """
@@ -88,7 +88,7 @@ class Estimator(SparkEstimator):
                  original columns plus 'prediction' column. The 'prediction' column can be
                  FloatType, VectorUDT or Array of VectorUDT depending on model outputs shape.
         """
-        raise NotImplementedError
+        invalidInputError(False, "not implemented")
 
     def evaluate(self, data, batch_size=32, feature_cols=None, label_cols=None,
                  auto_shard_files=False):
@@ -109,7 +109,7 @@ class Estimator(SparkEstimator):
                and apply sharding on files, otherwise sharding on records. Default is False.
         :return: evaluation result as a dictionary of {'metric name': metric value}
         """
-        raise NotImplementedError
+        invalidInputError(False, "not implemented")
 
     def get_model(self):
         """
@@ -117,7 +117,7 @@ class Estimator(SparkEstimator):
 
         :return: Trained model
         """
-        raise NotImplementedError
+        invalidInputError(False, "not implemented")
 
     def save(self, model_path):
         """
@@ -126,7 +126,7 @@ class Estimator(SparkEstimator):
         :param model_path: path to save the trained model.
         :return:
         """
-        raise NotImplementedError
+        invalidInputError(False, "not implemented")
 
     def load(self, model_path):
         """
@@ -135,7 +135,7 @@ class Estimator(SparkEstimator):
         :param model_path: Path to the existing model.
         :return:
         """
-        raise NotImplementedError
+        invalidInputError(False, "not implemented")
 
     def clear_gradient_clipping(self):
         """
@@ -144,7 +144,7 @@ class Estimator(SparkEstimator):
 
         :return:
         """
-        raise NotImplementedError
+        invalidInputError(False, "not implemented")
 
     def set_constant_gradient_clipping(self, min, max):
         """
@@ -155,7 +155,7 @@ class Estimator(SparkEstimator):
         :param max: The maximum value to clip by.
         :return:
         """
-        raise NotImplementedError
+        invalidInputError(False, "not implemented")
 
     def set_l2_norm_gradient_clipping(self, clip_norm):
         """
@@ -165,7 +165,7 @@ class Estimator(SparkEstimator):
         :param clip_norm: Gradient L2-Norm threshold.
         :return:
         """
-        raise NotImplementedError
+        invalidInputError(False, "not implemented")
 
     def get_train_summary(self, tag=None):
         """
@@ -228,7 +228,7 @@ class Estimator(SparkEstimator):
 
         :param path: tensorflow checkpoint path.
         """
-        raise NotImplementedError
+        invalidInputError(False, "not implemented")
 
     def load_tf_checkpoint(self, path):
         """
@@ -236,7 +236,7 @@ class Estimator(SparkEstimator):
 
         :param path: tensorflow checkpoint path.
         """
-        raise NotImplementedError
+        invalidInputError(False, "not implemented")
 
     def save_keras_model(self, path, overwrite=True):
         """
@@ -245,7 +245,7 @@ class Estimator(SparkEstimator):
         :param path: keras model save path.
         :param overwrite: Whether to silently overwrite any existing file at the target location.
         """
-        raise NotImplementedError
+        invalidInputError(False, "not implemented")
 
     def save_keras_weights(self, filepath, overwrite=True, save_format=None):
         """
@@ -257,7 +257,7 @@ class Estimator(SparkEstimator):
                '.keras' will default to HDF5 if `save_format` is `None`. Otherwise
                `None` defaults to 'tf'.
         """
-        raise NotImplementedError
+        invalidInputError(False, "not implemented")
 
     def load_keras_weights(self, filepath, by_name=False):
         """
@@ -268,7 +268,7 @@ class Estimator(SparkEstimator):
                order. Only topological loading is supported for weight files in
                TensorFlow format.
         """
-        raise NotImplementedError
+        invalidInputError(False, "not implemented")
 
     def load_orca_checkpoint(self, path, version=None):
         """
@@ -283,8 +283,9 @@ class Estimator(SparkEstimator):
         if version is None:
             path, _, version = find_latest_checkpoint(path, model_type="tf")
             if path is None:
-                raise ValueError("Cannot find tf checkpoint, please check your checkpoint"
-                                 " path.")
+                invalidInputError(False,
+                                  "Cannot find tf checkpoint, please check your checkpoint"
+                                  " path.")
 
         self.load_checkpoint = True
         self.checkpoint_path = path
@@ -421,8 +422,9 @@ def to_dataset(data, batch_size, batch_per_thread, validation_data,
                                                  sequential_order,
                                                  shuffle, auto_shard_files=auto_shard_files)
     else:
-        raise ValueError("data must be SparkXShards or orca.data.tf.Dataset or "
-                         "Spark DataFrame or tf.data.Dataset")
+        invalidInputError(False,
+                          "data must be SparkXShards or orca.data.tf.Dataset or "
+                          "Spark DataFrame or tf.data.Dataset")
 
     return dataset
 
@@ -465,7 +467,8 @@ class TensorFlowEstimator(Estimator):
                             gvs = [(tf.clip_by_value(g_v[0], -clip_value, clip_value), g_v[1])
                                    for g_v in gvs]
                         else:
-                            raise Exception("clip_value should be a tuple or one number")
+                            invalidInputError(False,
+                                              "clip_value should be a tuple or one number")
                     self.train_op = self.optimizer.apply_gradients(gvs)
                 else:
                     self.train_op = self.optimizer.minimize(self.loss)
@@ -729,7 +732,7 @@ class TensorFlowEstimator(Estimator):
         """
         Get_model is not supported in tensorflow graph estimator
         """
-        raise NotImplementedError
+        invalidInputError(False, "not implemented")
 
     def save(self, model_path):
         """
@@ -752,21 +755,21 @@ class TensorFlowEstimator(Estimator):
         """
         Clear gradient clipping is not supported in TensorFlowEstimator.
         """
-        raise NotImplementedError
+        invalidInputError(False, "not implemented")
 
     def set_constant_gradient_clipping(self, min, max):
         """
         Set constant gradient clipping is not supported in TensorFlowEstimator. Please pass the
         clip_value to Estimator.from_graph.
         """
-        raise NotImplementedError
+        invalidInputError(False, "not implemented")
 
     def set_l2_norm_gradient_clipping(self, clip_norm):
         """
         Set l2 norm gradient clipping is not supported in TensorFlowEstimator. Please pass the
         clip_norm to Estimator.from_graph.
         """
-        raise NotImplementedError
+        invalidInputError(False, "not implemented")
 
     def shutdown(self):
         """

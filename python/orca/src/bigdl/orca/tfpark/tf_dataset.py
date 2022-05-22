@@ -49,8 +49,9 @@ def _to_tensor_structure(tensors):
         for key, value in tensors.items():
             tensor_structure[key] = TensorMeta(dtype=value[0], shape=value[1], name=key)
     else:
-        raise ValueError("In TFDataset.from_rdd, features and labels should be a tuple, "
-                         "a list of tuples or a dict of tuples")
+        invalidInputError(False,
+                          "In TFDataset.from_rdd, features and labels should be a tuple, "
+                          "a list of tuples or a dict of tuples")
     return tensor_structure
 
 
@@ -139,7 +140,8 @@ class TFDataset(object):
         """
 
         if batch_size > 0 and batch_per_thread > 0:
-            raise ValueError("bath_size and batch_per_thread should not be set simultaneously")
+            invalidInputError(False,
+                              "bath_size and batch_per_thread should not be set simultaneously")
 
         self.has_batch = True
         node_num, core_num = get_node_and_core_number()
@@ -148,10 +150,11 @@ class TFDataset(object):
         self.core_num = core_num
         if batch_size > 0:
             if batch_size % self.total_core_num != 0:
-                raise ValueError("batch_size should be a multiple " +
-                                 "of total core number, but got batch_size: " +
-                                 "%s where total core number is %s" % (batch_size,
-                                                                       self.total_core_num))
+                invalidInputError(False,
+                                  "batch_size should be a multiple " +
+                                  "of total core number, but got batch_size: " +
+                                  "%s where total core number is %s" % (batch_size,
+                                                                        self.total_core_num))
         if batch_size <= 0 and batch_per_thread <= 0:
             batch_per_thread = 1
             batch_size = self.total_core_num
@@ -245,9 +248,10 @@ class TFDataset(object):
             self._create_placeholders()
 
         if not isinstance(self._tensors, tuple):
-            raise ValueError("To use feature_tensors, " +
-                             "the element in TFDataset must be a tuple of two components. " +
-                             "Please use TFDataset.from_rdd(rdd, features=..., labels=...). ")
+            invalidInputError(False,
+                              "To use feature_tensors, " +
+                              "the element in TFDataset must be a tuple of two components. " +
+                              "Please use TFDataset.from_rdd(rdd, features=..., labels=...). ")
 
         return self._tensors[0]
 
@@ -258,9 +262,10 @@ class TFDataset(object):
             self._create_placeholders()
 
         if not isinstance(self._tensors, tuple):
-            raise ValueError("To use label_tensors, " +
-                             "the element in TFDataset must be a tuple of two components. " +
-                             "Please use TFDataset.from_rdd(rdd, features=..., labels=...). ")
+            invalidInputError(False,
+                              "To use label_tensors, " +
+                              "the element in TFDataset must be a tuple of two components. " +
+                              "Please use TFDataset.from_rdd(rdd, features=..., labels=...). ")
 
         return self._tensors[1]
 
@@ -312,22 +317,22 @@ class TFDataset(object):
         return self._get_validation_data()
 
     def _get_prediction_data(self):
-        raise NotImplementedError
+        invalidInputError(False, "not implemented")
 
     def _get_evaluation_data(self):
-        raise NotImplementedError
+        invalidInputError(False, "not implemented")
 
     def _get_training_data(self):
-        raise NotImplementedError
+        invalidInputError(False, "not implemented")
 
     def _get_validation_data(self):
-        raise NotImplementedError
+        invalidInputError(False, "not implemented")
 
     def get_num_partitions(self):
         """
         :return: the num of partitions of the underlying RDD
         """
-        raise NotImplementedError
+        invalidInputError(False, "not implemented")
 
     @staticmethod
     def from_rdd(*args, **kwargs):
@@ -703,8 +708,9 @@ class TFDataDataset(TFDataset):
         if isinstance(dataset, dataset_ops.DatasetV1Adapter):
             TFDataDataset._assert_not_batched(dataset._dataset)
         elif isinstance(dataset, dataset_ops.BatchDataset):
-            raise ValueError("Dataset should not be batched,"
-                             "please use a dataset without the batch operation")
+            invalidInputError(False,
+                              "Dataset should not be batched,"
+                              "please use a dataset without the batch operation")
         else:
             for dt in dataset._inputs():
                 TFDataDataset._assert_not_batched(dt)
@@ -756,8 +762,9 @@ class TFDataDataset(TFDataset):
         for node in tf.get_default_graph().as_graph_def().node:
             op_type = node.op
             if op_type in py_func_ops:
-                raise ValueError("tf.py_func, tf.py_function, tf.numpy_function and" +
-                                 " Dataset.from_generators are not supported in TFPark")
+                invalidInputError(False,
+                                  "tf.py_func, tf.py_function, tf.numpy_function and" +
+                                  " Dataset.from_generators are not supported in TFPark")
 
         if shuffle:
             from tensorflow.python.keras.engine import training_utils
@@ -861,7 +868,8 @@ class TFDataDataset(TFDataset):
         self.graph_def = bytearray(self.graph.as_graph_def().SerializeToString())
 
     def _get_prediction_data(self):
-        raise Exception("TFDataDataset cannot be used for prediction")
+        invalidInputError(False,
+                          "TFDataDataset cannot be used for prediction")
 
     def _get_evaluation_data(self):
 
@@ -899,10 +907,12 @@ class TFFeatureDataset(TFDataset):
         self.validation_dataset = validation_dataset
 
     def _get_prediction_data(self):
-        raise Exception("TFFeatureDataset is only supported in training")
+        invalidInputError(False,
+                          "TFFeatureDataset is only supported in training")
 
     def _get_evaluation_data(self):
-        raise Exception("TFFeatureDataset is only supported in training")
+        invalidInputError(False,
+                          "TFFeatureDataset is only supported in training")
 
     def _get_training_data(self):
         fs = self.dataset.transform(MergeFeatureLabelFeatureTransformer())
@@ -918,7 +928,8 @@ class TFFeatureDataset(TFDataset):
         return None
 
     def get_num_partitions(self):
-        raise Exception("TFFeatureDataset is only supported in training")
+        invalidInputError(False,
+                          "TFFeatureDataset is only supported in training")
 
 
 class TFBytesDataset(TFDataset):
@@ -1246,8 +1257,9 @@ class DataFrameDataset(TFNdarrayDataset):
             name = field.name
             data_type = field.dataType
             if DataFrameDataset.df_datatype_to_tf(data_type) is None:
-                raise ValueError(
-                    "data type {} of col {} is not supported for now".format(data_type, name))
+                invalidInputError(False,
+                                  "data type {} of col {} is not supported for"
+                                  " now".format(data_type, name))
             tf_type, tf_shape = DataFrameDataset.df_datatype_to_tf(data_type)
             feature_meta.append(TensorMeta(tf_type, name=name, shape=tf_shape))
 
@@ -1258,8 +1270,9 @@ class DataFrameDataset(TFNdarrayDataset):
                 name = field.name
                 data_type = field.dataType
                 if DataFrameDataset.df_datatype_to_tf(data_type) is None:
-                    raise ValueError(
-                        "data type {} of col {} is not supported for now".format(data_type, name))
+                    invalidInputError(False,
+                                      "data type {} of col {} is not supported for"
+                                      " now".format(data_type, name))
                 tf_type, tf_shape = DataFrameDataset.df_datatype_to_tf(data_type)
                 label_meta.append(TensorMeta(tf_type, name=name, shape=tf_shape))
 

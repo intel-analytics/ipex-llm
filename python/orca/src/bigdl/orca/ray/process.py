@@ -72,7 +72,7 @@ def session_execute(command, env=None, tag=None, fail_fast=False, timeout=120):
     errorcode = pro.returncode
     if errorcode != 0:
         if fail_fast:
-            raise Exception(err)
+            invalidOperationError(False, str(err), cause=err)
         print(err)
     else:
         print(out)
@@ -110,10 +110,10 @@ class ProcessMonitor:
 
     def print_ray_remote_err_out(self):
         if self.master.errorcode != 0:
-            raise Exception(str(self.master))
+            invalidInputError(False, str(self.master))
         for slave in self.slaves:
             if slave.errorcode != 0:
-                raise Exception(str(slave))
+                invalidInputError(False, str(slave))
         if self.verbose:
             print(self.master)
             for slave in self.slaves:

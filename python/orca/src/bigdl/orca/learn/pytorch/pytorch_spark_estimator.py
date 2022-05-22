@@ -56,7 +56,8 @@ class PyTorchSparkEstimator(OrcaSparkEstimator):
         elif isinstance(self.optimizer, OrcaOptimizer):
             self.optimizer = self.optimizer.get_optimizer()
         else:
-            raise ValueError("Only PyTorch optimizer and orca optimizer are supported")
+            invalidInputError(False,
+                              "Only PyTorch optimizer and orca optimizer are supported")
         from bigdl.orca.learn.metrics import Metric
         self.metrics = Metric.convert_metrics_list(metrics)
         self.log_dir = None
@@ -172,8 +173,9 @@ class PyTorchSparkEstimator(OrcaSparkEstimator):
             self.estimator.train_minibatch(train_fset, self.loss, end_trigger,
                                            checkpoint_trigger, val_fset, self.metrics)
         else:
-            raise ValueError("Data and validation data should be SparkXShards, DataLoaders or "
-                             "callable data_creators but get " + data.__class__.__name__)
+            invalidInputError(False,
+                              "Data and validation data should be SparkXShards, DataLoaders or "
+                              "callable data_creators but get " + data.__class__.__name__)
 
         return self
 
@@ -203,8 +205,9 @@ class PyTorchSparkEstimator(OrcaSparkEstimator):
             data_rdd = data.rdd.map(lambda row: row_to_sample(row, schema,
                                                               feature_cols, None))
         else:
-            raise ValueError("Data should be XShards, each element needs to be {'x': a feature "
-                             "numpy array}.")
+            invalidInputError(False,
+                              "Data should be XShards, each element needs to be {'x': a feature "
+                              "numpy array}.")
         predicted_rdd = self.model.predict(data_rdd, batch_size=batch_size)
 
         if isinstance(data, SparkXShards):
@@ -262,8 +265,9 @@ class PyTorchSparkEstimator(OrcaSparkEstimator):
             val_feature_set = FeatureSet.pytorch_dataloader(data)
             result = self.estimator.evaluate_minibatch(val_feature_set, self.metrics)
         else:
-            raise ValueError("Data should be a SparkXShards, a DataLoader or a callable "
-                             "data_creator, but get " + data.__class__.__name__)
+            invalidInputError(False,
+                              "Data should be a SparkXShards, a DataLoader or a callable "
+                              "data_creator, but get " + data.__class__.__name__)
         return bigdl_metric_results_to_dict(result)
 
     def get_model(self):
@@ -317,15 +321,17 @@ class PyTorchSparkEstimator(OrcaSparkEstimator):
             pytorch_model.load_state_dict(torch.load(model_path))
             self.model = TorchModel.from_pytorch(pytorch_model)
         except Exception:
-            raise ValueError("Cannot load the PyTorch model. Please check your model path.")
+            invalidInputError(False,
+                              "Cannot load the PyTorch model. Please check your model path.")
 
         optim_path = self._get_optimizer_path(model_path)
         if os.path.isfile(optim_path):
             try:
                 self.optimizer = OptimMethod.load(optim_path)
             except Exception:
-                raise ValueError("Cannot load the optimizer. Only `bigdl.dllib.optim.optimizer."
-                                 "OptimMethod` is supported for loading.")
+                invalidInputError(False,
+                                  "Cannot load the optimizer. Only `bigdl.dllib.optim.optimizer."
+                                  "OptimMethod` is supported for loading.")
         else:
             self.optimizer = None
 
@@ -358,8 +364,9 @@ class PyTorchSparkEstimator(OrcaSparkEstimator):
         if version is None:
             path, prefix, version = find_latest_checkpoint(path, model_type="pytorch")
             if path is None:
-                raise ValueError("Cannot find PyTorch checkpoint, please check your checkpoint"
-                                 " path.")
+                invalidInputError(False,
+                                  "Cannot find PyTorch checkpoint, please check your checkpoint"
+                                  " path.")
         else:
             invalidInputError(prefix is not None,
                               "You should provide optimMethod prefix,"
@@ -370,8 +377,9 @@ class PyTorchSparkEstimator(OrcaSparkEstimator):
             self.model = TorchModel.from_value(loaded_model.value)
             self.optimizer = OptimMethod.load(os.path.join(path, "{}.{}".format(prefix, version)))
         except Exception as e:
-            raise ValueError("Cannot load PyTorch checkpoint, please check your checkpoint path "
-                             "and checkpoint type." + str(e))
+            invalidInputError(False,
+                              "Cannot load PyTorch checkpoint, please check your checkpoint path "
+                              "and checkpoint type." + str(e))
         self.estimator = SparkEstimator(self.model, self.optimizer, self.model_dir)
 
     def get_train_summary(self, tag=None):

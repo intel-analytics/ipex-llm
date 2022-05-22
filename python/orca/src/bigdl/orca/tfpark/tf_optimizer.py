@@ -127,7 +127,7 @@ class TFModel(object):
             for t, v in tensors_with_value.items():
                 if t.name in names:
                     msg = f"tensor {t} already in inputs, cannot put it in tensor_with_value"
-                    raise ValueError(msg)
+                    invalidInputError(False, msg)
                 additional_inputs.append(t)
                 additional_values.append(v)
 
@@ -373,11 +373,13 @@ class TFOptimizer:
 
         self.clip_norm = clip_norm
         if clip_value is not None and not isinstance(clip_value, tuple):
-            raise ValueError("The clip_value argument should be a tuple (min_value, max_value)")
+            invalidInputError(False,
+                              "The clip_value argument should be a tuple (min_value, max_value)")
         self.clip_constant = clip_value
 
         if self.dataset.batch_size <= 0:
-            raise ValueError("You should set batch_size instead of batch_per_thread for training")
+            invalidInputError(False,
+                              "You should set batch_size instead of batch_per_thread for training")
 
         self.model_dir = model_dir
 
@@ -548,7 +550,7 @@ class TFOptimizer:
             inputs = dataset._original_tensors
         else:
             if inputs is None:
-                raise ValueError("please specify inputs")
+                invalidInputError(False, "please specify inputs")
             _ = dataset.tensors  # trigger creating placeholders
 
         if isinstance(inputs, tuple) and len(inputs) == 2:
@@ -566,10 +568,11 @@ class TFOptimizer:
                 clip_value = (-float(clip_value), float(clip_value))
 
             if not isinstance(clip_value, tuple):
-                raise ValueError("The clip_value argument should be" +
-                                 " a positive float/int which clips to" +
-                                 " (-clip_value, clip_value); " +
-                                 "or a tuple which clips to (min_value, max_value)")
+                invalidInputError(False,
+                                  "The clip_value argument should be" +
+                                  " a positive float/int which clips to" +
+                                  " (-clip_value, clip_value); " +
+                                  "or a tuple which clips to (min_value, max_value)")
 
         if val_method is not None:
             val_methods = to_list(val_method)
@@ -637,11 +640,12 @@ class TFOptimizer:
                           "inputs".format(len(model_inputs), len(flatten_inputs)))
         for i in range(len(flatten_inputs)):
             if not TFOptimizer._shape_match(model_inputs[i].shape, flatten_inputs[i].shape):
-                raise ValueError(("The {}th input in keras model {}"
-                                  " does not match the TFDataset"
-                                  "input {}").format(i,
-                                                     model_inputs[i],
-                                                     flatten_inputs[i]))
+                invalidInputError(False,
+                                  ("The {}th input in keras model {}"
+                                   " does not match the TFDataset"
+                                   "input {}").format(i,
+                                                      model_inputs[i],
+                                                      flatten_inputs[i]))
 
         flatten_targets = nest.flatten(dataset.label_tensors)
         invalidInputError(len(model_targets) == len(flatten_targets),
@@ -670,12 +674,15 @@ class TFOptimizer:
 
         if keras_model.metrics and (dataset.get_validation_data() is not None):
             if isinstance(keras_model.metrics, dict):
-                raise ValueError(
-                    "different metrics for different outputs are not supported right now")
+                invalidInputError(False,
+                                  "different metrics for different outputs are not"
+                                  " supported right now")
 
             if len(keras_model.outputs) > 1:
                 if not all([name.endswith("loss") for name in keras_model.metrics_names]):
-                    raise ValueError("metrics (except loss) for multi-head model is not supported")
+                    invalidInputError(False,
+                                      "metrics (except loss) for multi-head model is not"
+                                      " supported")
                 else:
                     bigdl_val_methods = [Loss()]
                     val_outputs = keras_model.outputs
@@ -765,7 +772,8 @@ class TFOptimizer:
                 if isinstance(checkpoint_trigger, EveryEpoch):
                     checkpoint_trigger = ZEveryEpoch()
                 elif not isinstance(checkpoint_trigger, ZooTrigger):
-                    raise Exception("Please use a trigger defined in bigdl.dllib.utils.triggers")
+                    invalidInputError(False,
+                                      "Please use a trigger defined in bigdl.dllib.utils.triggers")
 
         if self.tf_model.val_methods and self.val_data is not None:
             self.estimator.train_minibatch(train_set=self.train_data,

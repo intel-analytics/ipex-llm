@@ -34,7 +34,8 @@ def to_bigdl_metric(metric):
         from bigdl.dllib.optim.optimizer import TreeNNAccuracy
         return TreeNNAccuracy()
     else:
-        raise TypeError("Unsupported metric: %s" % metric)
+        invalidInputError(False,
+                          "Unsupported metric: %s" % metric)
 
 
 def evaluate_string_metrics(*,

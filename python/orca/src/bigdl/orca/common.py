@@ -144,7 +144,8 @@ class OrcaContext(metaclass=OrcaContextMeta):
         if SparkContext._active_spark_context is not None:
             return SparkContext.getOrCreate()
         else:
-            raise Exception("No active SparkContext. Please create a SparkContext first")
+            invalidInputError(False,
+                              "No active SparkContext. Please create a SparkContext first")
 
     @staticmethod
     def get_sql_context():
@@ -166,8 +167,9 @@ def _check_python_micro_version():
     # (https://github.com/ray-project/ray/issues/19938)
     import sys
     if sys.version_info[2] < 3:
-        raise RuntimeError(f"Found python version {sys.version[:5]}. We only support python"
-                           f"with micro version >= 10 (e.g. 3.{sys.version_info[1]}.10)")
+        invalidInputError(False,
+                          f"Found python version {sys.version[:5]}. We only support python"
+                          f"with micro version >= 10 (e.g. 3.{sys.version_info[1]}.10)")
 
 
 def init_orca_context(cluster_mode=None, runtime="spark", cores=2, memory="2g", num_nodes=1,
@@ -317,9 +319,10 @@ def init_orca_context(cluster_mode=None, runtime="spark", cores=2, memory="2g", 
                 sc = init_spark_standalone(num_executors=num_nodes, executor_cores=cores,
                                            executor_memory=memory, **spark_args)
             else:
-                raise ValueError("cluster_mode can only be local, yarn-client, yarn-cluster,"
-                                 "k8s-client or standalone, "
-                                 "but got: %s".format(cluster_mode))
+                invalidInputError(False,
+                                  "cluster_mode can only be local, yarn-client, yarn-cluster,"
+                                  "k8s-client or standalone, "
+                                  "but got: %s".format(cluster_mode))
             ray_args = {}
             for key in ["redis_port", "password", "object_store_memory", "verbose", "env",
                         "extra_params", "num_ray_nodes", "ray_node_cpu_cores", "include_webui",
@@ -334,7 +337,8 @@ def init_orca_context(cluster_mode=None, runtime="spark", cores=2, memory="2g", 
                 ray_ctx.init(driver_cores=driver_cores)
         return sc
     else:
-        raise ValueError("runtime can only be spark or ray, but got %s".format(runtime))
+        invalidInputError(False,
+                          "runtime can only be spark or ray, but got %s".format(runtime))
 
 
 def stop_orca_context():

@@ -64,7 +64,8 @@ def read_file_spark(file_path, file_type, **kwargs):
             file_paths = extract_one_path(file_path, os.environ)
 
         if not file_paths:
-            raise Exception("The file path is invalid or empty, please check your data")
+            invalidInputError(False,
+                              "The file path is invalid or empty, please check your data")
 
         num_files = len(file_paths)
         total_cores = node_num * core_num
@@ -135,7 +136,8 @@ def read_file_spark(file_path, file_type, **kwargs):
             elif header is None:
                 kwargs["header"] = False
             else:
-                raise ValueError("Unknown header argument {}".format(header))
+                invalidInputError(False,
+                                  "Unknown header argument {}".format(header))
             if "quotechar" in kwargs:
                 quotechar = kwargs["quotechar"]
                 kwargs.pop("quotechar")
@@ -148,7 +150,8 @@ def read_file_spark(file_path, file_type, **kwargs):
             if "comment" in kwargs:
                 comment = kwargs["comment"]
                 if not isinstance(comment, str) or len(comment) != 1:
-                    raise ValueError("Only length-1 comment characters supported")
+                    invalidInputError(False,
+                                      "Only length-1 comment characters supported")
             df = spark.read.csv(file_path, **kwargs)
             if header is None:
                 df = df.selectExpr(
@@ -162,14 +165,14 @@ def read_file_spark(file_path, file_type, **kwargs):
         renamed = False
         if isinstance(names, list):
             if len(set(names)) != len(names):
-                raise ValueError("Found duplicate names, please check your names input")
+                invalidInputError(False,
+                                  "Found duplicate names, please check your names input")
             if usecols is not None:
                 if not callable(usecols):
                     # usecols is list
                     if len(names) != len(usecols) and len(names) != len(df.schema):
-                        raise ValueError(
-                            "Passed names did not match usecols"
-                        )
+                        invalidInputError(False,
+                                          "Passed names did not match usecols")
                 if len(names) == len(df.schema):
                     df = df.selectExpr(
                         *["`%s` as `%s`" % (field.name, name) for field, name
@@ -179,11 +182,10 @@ def read_file_spark(file_path, file_type, **kwargs):
 
             else:
                 if len(names) != len(df.schema):
-                    raise ValueError(
-                        "The number of names [%s] does not match the number "
-                        "of columns [%d]. Try names by a Spark SQL DDL-formatted "
-                        "string." % (len(names), len(df.schema))
-                    )
+                    invalidInputError(False,
+                                      "The number of names [%s] does not match the number "
+                                      "of columns [%d]. Try names by a Spark SQL DDL-formatted "
+                                      "string." % (len(names), len(df.schema)))
                 df = df.selectExpr(
                     *["`%s` as `%s`" % (field.name, name) for field, name
                       in zip(df.schema, names)]
@@ -208,12 +210,13 @@ def read_file_spark(file_path, file_type, **kwargs):
                 else:
                     missing = [col for col in usecols if col not in cols]
             else:
-                raise ValueError(
-                    "usecols must only be list-like of all strings, "
-                    "all unicode, all integers or a callable.")
+                invalidInputError(False,
+                                  "usecols must only be list-like of all strings, "
+                                  "all unicode, all integers or a callable.")
             if len(missing) > 0:
-                raise ValueError(
-                    "usecols do not match columns, columns expected but not found: %s" % missing)
+                invalidInputError(False,
+                                  "usecols do not match columns, columns expected but"
+                                  " not found: %s" % missing)
             if len(cols) > 0:
                 df = df.select(cols)
                 if isinstance(names, list):
@@ -239,13 +242,15 @@ def read_file_spark(file_path, file_type, **kwargs):
                         for col, type in dtype.items():
                             if isinstance(col, str):
                                 if col not in pd_df.columns:
-                                    raise ValueError("column to be set type is not"
-                                                     " in current dataframe")
+                                    invalidInputError(False,
+                                                      "column to be set type is not"
+                                                      " in current dataframe")
                                 pd_df[col] = pd_df[col].astype(type)
                             elif isinstance(col, int):
                                 if index_map[col] not in pd_df.columns:
-                                    raise ValueError("column index to be set type is not"
-                                                     " in current dataframe")
+                                    invalidInputError(False,
+                                                      "column index to be set type is not"
+                                                      " in current dataframe")
                                 pd_df[index_map[col]] = pd_df[index_map[col]].astype(type)
                     else:
                         pd_df = pd_df.astype(dtype)
@@ -267,7 +272,7 @@ def read_file_spark(file_path, file_type, **kwargs):
         print("An error occurred when reading files with '%s' backend, you may switch to '%s' "
               "backend for another try. You can set the backend using "
               "OrcaContext.pandas_read_backend" % (backend, alternative_backend))
-        raise e
+        invalidInputError(False, str(e))
     return data_shards
 
 
@@ -307,5 +312,5 @@ def read_parquet(file_path, columns=None, schema=None, **options):
         data_shards = SparkXShards(pd_rdd)
     except Exception as e:
         print("An error occurred when reading parquet files")
-        raise e
+        invalidInputError(False, str(e))
     return data_shards

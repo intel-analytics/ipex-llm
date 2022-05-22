@@ -51,7 +51,7 @@ class OpenvinoEstimator(SparkEstimator):
         """
         Fit is not supported in OpenVINOEstimator
         """
-        raise NotImplementedError
+        invalidInputError(False, "not implemented")
 
     def predict(self, data, feature_cols=None, batch_size=4):
         """
@@ -139,7 +139,8 @@ class OpenvinoEstimator(SparkEstimator):
                                       " be less than the model batch size, otherwise some inputs"
                                       " will be ignored.")
             else:
-                raise ValueError("x in each shard should be a ndarray or a list of ndarray.")
+                invalidInputError(False,
+                                  "x in each shard should be a ndarray or a list of ndarray.")
             return feature_data
 
         if isinstance(data, DataFrame):
@@ -202,26 +203,27 @@ class OpenvinoEstimator(SparkEstimator):
                 result_arr = np.concatenate(result_arr_list, axis=0)
             return result_arr
         else:
-            raise ValueError("Only XShards, Spark DataFrame, a numpy array and a list of numpy arr"
-                             "ays are supported as input data, but get " + data.__class__.__name__)
+            invalidInputError(False,
+                              "Only XShards, Spark DataFrame, a numpy array and a list of numpy"
+                              " arrays are supported as input data, but get " + data.__class__.__name__)
 
     def evaluate(self, data, batch_size=32, feature_cols=None, label_cols=None):
         """
         Evaluate is not supported in OpenVINOEstimator
         """
-        raise NotImplementedError
+        invalidInputError(False, "not implemented")
 
     def get_model(self):
         """
         Get_model is not supported in OpenVINOEstimator
         """
-        raise NotImplementedError
+        invalidInputError(False, "not implemented")
 
     def save(self, model_path):
         """
         Save is not supported in OpenVINOEstimator
         """
-        raise NotImplementedError
+        invalidInputError(False, "not implemented")
 
     def load(self, model_path):
         """
@@ -243,40 +245,40 @@ class OpenvinoEstimator(SparkEstimator):
         """
         Set_tensorboard is not supported in OpenVINOEstimator
         """
-        raise NotImplementedError
+        invalidInputError(False, "not implemented")
 
     def clear_gradient_clipping(self):
         """
         Clear_gradient_clipping is not supported in OpenVINOEstimator
         """
-        raise NotImplementedError
+        invalidInputError(False, "not implemented")
 
     def set_constant_gradient_clipping(self, min, max):
         """
         Set_constant_gradient_clipping is not supported in OpenVINOEstimator
         """
-        raise NotImplementedError
+        invalidInputError(False, "not implemented")
 
     def set_l2_norm_gradient_clipping(self, clip_norm):
         """
         Set_l2_norm_gradient_clipping is not supported in OpenVINOEstimator
         """
-        raise NotImplementedError
+        invalidInputError(False, "not implemented")
 
     def get_train_summary(self, tag=None):
         """
         Get_train_summary is not supported in OpenVINOEstimator
         """
-        raise NotImplementedError
+        invalidInputError(False, "not implemented")
 
     def get_validation_summary(self, tag=None):
         """
         Get_validation_summary is not supported in OpenVINOEstimator
         """
-        raise NotImplementedError
+        invalidInputError(False, "not implemented")
 
     def load_orca_checkpoint(self, path, version):
         """
         Load_orca_checkpoint is not supported in OpenVINOEstimator
         """
-        raise NotImplementedError
+        invalidInputError(False, "not implemented")

@@ -93,7 +93,8 @@ class PytorchRayWorker(TorchRunner):
         if not isinstance(self.models, Iterable):
             self.models = [self.models]
         else:
-            raise ValueError("only support single model for now")
+            invalidInputError(False,
+                              "only support single model for now")
 
         invalidInputError(all(isinstance(model, nn.Module) for model in self.models),
                           ("All models must be PyTorch models: {}.".format(self.models)))
@@ -109,7 +110,8 @@ class PytorchRayWorker(TorchRunner):
                                                        named_parameters=parameters)
             self.optimizers = [self.optimizers]
         else:
-            raise ValueError("only support one optimizer for now")
+            invalidInputError(False,
+                              "only support one optimizer for now")
 
         self._create_schedulers_if_available()
         self._create_loss()
@@ -128,7 +130,8 @@ class PytorchRayWorker(TorchRunner):
             worker_stats = pred_stat["prediction"]
         else:
             if not isinstance(shards_ref, ray.ObjectID):
-                raise ValueError("Only xshards and Ray Dataset is supported for predict")
+                invalidInputError(False,
+                                  "Only xshards and Ray Dataset is supported for predict")
             partition = ray.get(shards_ref)
             worker_stats = super().predict(partition=partition, batch_size=batch_size,
                                            profile=profile)
