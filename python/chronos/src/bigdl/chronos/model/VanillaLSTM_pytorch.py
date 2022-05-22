@@ -16,7 +16,6 @@
 
 import torch
 import torch.nn as nn
-from bigdl.nano.utils.log4Error import *
 
 
 class LSTMModel(nn.Module):
@@ -56,6 +55,7 @@ def model_creator(config):
     hidden_dim = config.get("hidden_dim", 32)
     dropout = config.get("dropout", 0.2)
     layer_num = config.get("layer_num", 2)
+    from bigdl.nano.utils.log4Error import invalidInputError
     if isinstance(hidden_dim, list):
         invalidInputError(len(hidden_dim) == layer_num,
                           "length of hidden_dim should be equal to layer_num")
