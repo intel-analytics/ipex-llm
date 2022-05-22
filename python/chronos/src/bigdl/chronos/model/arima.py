@@ -20,7 +20,6 @@ from pmdarima.arima import ndiffs
 from pmdarima.arima import nsdiffs
 
 from bigdl.chronos.metric.forecast_metrics import Evaluator
-from bigdl.nano.utils.log4Error import *
 
 
 class ARIMAModel:
@@ -99,6 +98,7 @@ class ARIMAModel:
         :param rolling: whether to use rolling prediction
         :return: predicted result of length horizon
         """
+        from bigdl.nano.utils.log4Error import invalidInputError
         if x is not None:
             invalidInputError(False, "x should be None")
         if update and not rolling:
@@ -143,6 +143,7 @@ class ARIMAModel:
         :param rolling: whether to use rolling prediction
         :return: a list of metric evaluation results
         """
+        from bigdl.nano.utils.log4Error import invalidInputError
         if x is not None:
             invalidInputError(False,
                               "We don't support input x currently")
@@ -158,6 +159,7 @@ class ARIMAModel:
         return Evaluator.evaluate(metrics, target, forecasts, aggregate="mean")
 
     def save(self, checkpoint_file):
+        from bigdl.nano.utils.log4Error import invalidInputError
         if self.model is None:
             invalidInputError(False,
                               "Needs to call fit_eval or restore first before calling save")

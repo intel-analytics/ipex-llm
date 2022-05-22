@@ -162,6 +162,7 @@ def loss_creator(config):
     if loss_name in PYTORCH_REGRESSION_LOSS_MAP:
         loss_name = PYTORCH_REGRESSION_LOSS_MAP[loss_name]
     else:
+        from bigdl.nano.utils.log4Error import invalidInputError
         invalidInputError(False,
                           f"Got '{loss_name}' for loss name, "
                           "where 'mse', 'mae' or 'huber_loss' is expected")

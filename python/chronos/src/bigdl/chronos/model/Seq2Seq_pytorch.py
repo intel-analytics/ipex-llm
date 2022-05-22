@@ -19,7 +19,6 @@ import torch.nn as nn
 
 from .utils import PYTORCH_REGRESSION_LOSS_MAP
 import numpy as np
-from bigdl.nano.utils.log4Error import *
 
 
 class LSTMSeq2Seq(nn.Module):
@@ -87,6 +86,7 @@ def loss_creator(config):
     if loss_name in PYTORCH_REGRESSION_LOSS_MAP:
         loss_name = PYTORCH_REGRESSION_LOSS_MAP[loss_name]
     else:
+        from bigdl.nano.utils.log4Error import invalidInputError
         invalidInputError(False,
                           f"Got '{loss_name}' for loss name, "
                           "where 'mse', 'mae' or 'huber_loss' is expected")
@@ -104,6 +104,7 @@ try:
                              check_optional_config=check_optional_config)
 
         def _input_check(self, x, y):
+            from bigdl.nano.utils.log4Error import invalidInputError
             if len(x.shape) < 3:
                 invalidInputError(False,
                                   f"Invalid data x with {len(x.shape)} "

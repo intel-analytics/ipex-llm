@@ -21,7 +21,6 @@ from prophet.diagnostics import performance_metrics
 from prophet.diagnostics import cross_validation
 
 from bigdl.chronos.metric.forecast_metrics import Evaluator
-from bigdl.nano.utils.log4Error import *
 
 
 class ProphetModel:
@@ -122,6 +121,7 @@ class ProphetModel:
 
         :return: predicted result of length horizon
         """
+        from bigdl.nano.utils.log4Error import invalidInputError
         if self.model is None:
             invalidInputError(False,
                               "Needs to call fit_eval or restore first before calling predict")
@@ -146,6 +146,7 @@ class ProphetModel:
 
         :return: a list of metric evaluation results
         """
+        from bigdl.nano.utils.log4Error import invalidInputError
         if data is not None:
             invalidInputError(False,
                               "We don't support input data currently")
@@ -161,6 +162,7 @@ class ProphetModel:
                                   target_pred.yhat.values, aggregate="mean")
 
     def save(self, checkpoint):
+        from bigdl.nano.utils.log4Error import invalidInputError
         if self.model is None:
             invalidInputError(False,
                               "Needs to call fit_eval or restore first before calling save")
