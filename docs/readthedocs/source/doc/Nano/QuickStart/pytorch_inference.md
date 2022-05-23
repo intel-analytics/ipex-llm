@@ -1,8 +1,162 @@
 # BigDL-Nano PyTorch Inference Overview
 
-add a link for examples here.
+BigDL-Nano provides serveral APIs which can easily apply optimizations on inference pipeline to improve latency and througput. Currently, performance accelerations are achieved by integrating extra runtime as inference backend engine or using quantization methods on full-precision trained models to reduce computation during inference. Trainer (`bigdl.nano.pytorch.Trainer`) provides the APIs for all optimizations you need for inference.
 
-###  Runtime Acceleration
-onnx runtime, openvino
+For runtime acceleration, BigDL-Nano has enabled two kinds of runtime for users in `Trainer.trace()`, ONNXRuntime and OpenVINO.
 
-### Quantization
+For quantization, BigDL-Nano provides only post-training quantization `trainer.quantize()` for users to inference with models of 8-bit precision. Quantization-Aware Training is not available for now. Model conversion to 16-bit like BF16, FP16 will be coming soon.
+
+Before you go ahead with these APIs, you have to make sure BigDL-Nano is correctly installed for pytorch. If not, please follow [this](../Overview/nano.md) to setup your environment.
+
+##  Runtime Acceleration
+All available runtime accelerations are integrated in `Trainer.trace(accelerator='onnxruntime'/'openvino')` with different accelerator value. Before you know about BigDL-Nano and any optimizations on inference, taking mobilenetv3 as example, you may have one script for training and inference like this:
+```python
+from torchvision.models.mobilenetv3 import mobilenet_v3_small
+import torch
+from torch.utils.data.dataset import TensorDataset
+from torch.utils.data.dataloader import DataLoader
+from bigdl.nano.pytorch import Trainer
+# step 1: create your model
+model = mobilenet_v3_small(num_classes=10)
+
+# step 2: prepare your data and dataloader
+x = torch.rand((10, 3, 256, 256))
+y = torch.ones((10, ), dtype=torch.long)
+ds = TensorDataset(x, y)
+dataloader = DataLoader(ds, batch_size=2)
+
+# (Optional) step 3: Something else, like training ...
+trainer = Trainer()
+trainer.fit(model, dataloader)
+...
+...
+
+# Inference/Prediction
+trainer.validate(ort_model, dataloader)
+trainer.test(ort_model, dataloader)
+trainer.predict(ort_model, dataloader)
+```
+### ONNXRuntime Acceleration
+Before you start with any BigDL-Nano usage, you are required to install some onnx packages as follow to setup your environment with ONNXRuntime acceleration.
+```shell
+pip install onnx onnxruntime
+```
+When you're ready, you can simple append following part to enable your onnxruntime acceleration.
+```python
+# step 4: trace your model as a onnxruntime model
+# if you have run `trainer.fit` before trace, then argument `input_sample` is not required.
+ort_model = Trainer.trace(model, accelerator='onnruntime', input_sample=x)
+
+# step 5: use returned model for transparent acceleration
+# The usage is almost the same with any pytorch module
+y_hat = ort_model(x)
+
+# validate, predict, test in Trainer also support acceleration
+trainer.validate(ort_model, dataloader)
+trainer.test(ort_model, dataloader)
+trainer.predict(ort_model, dataloader)
+# note that `ort_model` is not trainable any more, so you can't use like 
+# trainer.fit(ort_model, dataloader) # this is illegal
+```
+### OpenVINO Acceleration
+To use OpenVINO acceleration, you have to install openvino toolkit:
+```shell
+pip install openvino-dev
+```
+The OpenVINO usage is quite similar to ONNXRuntime, following usage is for openvino:
+```python
+# step 4: trace your model as a openvino model
+# if you have run `trainer.fit` before trace, then argument `input_sample` is not required.
+ov_model = Trainer.trace(model, accelerator='openvino', input_sample=x)
+
+# step 5: use returned model for transparent acceleration
+# The usage is almost the same with any pytorch module
+y_hat = ov_model(x)
+
+# validate, predict, test in Trainer also support acceleration
+trainer = Trainer()
+trainer.validate(ort_model, dataloader)
+trainer.test(ort_model, dataloader)
+trainer.predict(ort_model, dataloader)
+# note that `ort_model` is not trainable any more, so you can't use like 
+# trainer.fit(ort_model, dataloader) # this is illegal
+```
+
+## Quantization
+Quantization is widely used to compress models to lower precision which not only reduces the model size but also accelerates inference speed. BigDL-Nano provides `Trainer.quantize()` API for users to quickly obtain a quantized model with accuracy control by specifying a few arguments. Intel Neural Compressor (INC) and Post-training Optimization Tools (POT) from OpenVINO toolkit are enabled as options. At the meantime, runtime acceleration is also included directly in quantization pipeline when using accelerator='onnxruntime'/'openvino' so you don't have to run `Trainer.trace` before quantization.
+
+To use INC as your quantization engine, you can choose accelerator as None or 'onnxruntime'. Otherwise, accelerator='openvino' means using OpenVINO POT to do quantization.
+### Quantization using Intel Neural Compressor
+By default, Intel Neural Compressor is not installed with BigDL-Nano. So if you determine to use it as your quantization backend, you'll need to install it first:
+```shell
+pip install neural-compressor
+```
+**Quantization without extra accelerator**  
+Without extra accelerator, `Trainer.quantize()` returns a pytorch module with desired precision and accuracy. Following the example in [Runtime Acceleration](#runtime-acceleration), you can add quantization as below:
+```python
+q_model = trainer.quanize(model, calib_dataloader=dataloader)
+# run simple prediction with transparent acceleration
+y_hat = q_model(x)
+
+# validate, predict, test in Trainer also support acceleration
+trainer.validate(q_model, dataloader)
+trainer.test(q_model, dataloader)
+trainer.predict(q_model, dataloader)
+```
+This is a most basic usage to quantize a model with defaults, INT8 precision and without search tuning space to control accuracy drop.  
+
+**Quantization with ONNXRuntime accelerator**  
+Without ONNXRuntime accelerator, `Trainer.quantize()` will return a model with compressed precision but runing inference in ONNXRuntime engine. If your INC version >= 1.11, it's also required to install onnxruntime-extensions as a dependency of INC when using ONNXRuntime as backend as well as the dependencies required in [ONNXRuntime Acceleration](#onnxruntime-acceleration):
+```shell
+pip install onnx onnxruntime onnxruntime-extensions
+```
+Still taking the example in [Runtime Acceleration](pytorch_inference.md#runtime-acceleration), you can add quantization as below:
+```python
+ort_q_model = trainer.quanize(model, accelerator='onnxruntime', calib_dataloader=dataloader)
+# run simple prediction with transparent acceleration
+y_hat = ort_q_model(x)
+
+# validate, predict, test in Trainer also support acceleration
+trainer.validate(ort_q_model, dataloader)
+trainer.test(ort_q_model, dataloader)
+trainer.predict(ort_q_model, dataloader)
+```
+Using accelerator='onnxruntime' actually equals to converting the model from Pytorch to ONNX firstly and then do quantization on the converted ONNX model:
+```python
+ort_model = Trainer.trace(model, accelerator='onnruntime', input_sample=x):
+ort_q_model = trainer.quanize(ort_model, accelerator='onnxruntime', calib_dataloader=dataloader)
+
+# run inference with transparent acceleration 
+y_hat = ort_q_model(x)
+trainer.validate(ort_q_model, dataloader)
+trainer.test(ort_q_model, dataloader)
+trainer.predict(ort_q_model, dataloader)
+```
+
+### Quantization using Post-training Optimization Tools
+Post-training Optimization Tools is provided by OpenVINO toolkit. To use POT, you need to install OpenVINO same in [OpenVINO acceleration](#openvino-acceleration):
+```shell
+pip install openvino-dev
+```
+Take the example in [Runtime Acceleration](#runtime-acceleration), add quantization:
+```python
+ov_q_model = trainer.quanize(model, accelerator='openvino', calib_dataloader=dataloader)
+# run simple prediction with transparent acceleration
+y_hat = ov_q_model(x)
+
+# validate, predict, test in Trainer also support acceleration
+trainer.validate(ov_q_model, dataloader)
+trainer.test(ov_q_model, dataloader)
+trainer.predict(ov_q_model, dataloader)
+```
+Same as ONNXRuntime, it equals to converting the model from Pytorch to OpenVINO firstly and then do quantization on the converted OpenVINO model:
+```python
+ov_model = Trainer.trace(model, accelerator='openvino', input_sample=x):
+ov_q_model = trainer.quanize(ov_model, accelerator='onnxruntime', calib_dataloader=dataloader)
+
+# run inference with transparent acceleration 
+y_hat = ov_q_model(x)
+trainer.validate(ov_q_model, dataloader)
+trainer.test(ov_q_model, dataloader)
+trainer.predict(ov_q_model, dataloader)
+```
