@@ -100,8 +100,8 @@ class TestTrainer(TestCase):
 
         # Case 4: Invalid approach
         invalid_approach = 'qat'
-        with pytest.raises(ValueError, match="Approach should be 'static' or 'dynamic', "
-                                             "{} is invalid.".format(invalid_approach)):
+        with pytest.raises(RuntimeError, match="Approach should be 'static' or 'dynamic', "
+                                               "{} is invalid.".format(invalid_approach)):
             trainer.quantize(pl_model, approach=invalid_approach)
 
         # Case 5: Test if registered metric can be fetched successfully

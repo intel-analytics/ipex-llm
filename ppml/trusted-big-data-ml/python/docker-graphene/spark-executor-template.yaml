@@ -10,16 +10,16 @@ spec:
         value: false
       - name: ATTESTATION_URL
         value: your_attestation_url
-      - name: ATTESTATION_ID
-        valueFrom:
-          secretKeyRef:
-            name: kms-secret
-            key: app_id
-      - name: ATTESTATION_KEY
-        valueFrom:
-          secretKeyRef:
-            name: kms-secret
-            key: app_key
+      #- name: ATTESTATION_ID
+      #  valueFrom:
+      #    secretKeyRef:
+      #      name: kms-secret
+      #      key: app_id
+      #- name: ATTESTATION_KEY
+      #  valueFrom:
+      #    secretKeyRef:
+      #      name: kms-secret
+      #      key: app_key
     volumeMounts:
       - name: enclave-key
         mountPath: /graphene/Pal/src/host/Linux-SGX/signer/enclave-key.pem

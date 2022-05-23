@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+from bigdl.nano.utils.log4Error import invalidInputError
 
 
 def QuantizationINC(framework: str,
@@ -49,7 +50,8 @@ def load_inc_model(path, model, framework):
         from .pytorch.quantized_model import PytorchQuantizedModel
         return PytorchQuantizedModel._load(path, model)
     elif framework == 'tensorflow':
-        raise NotImplementedError("QuantizedTensorflowModel loading is not implemented yet.")
+        invalidInputError(False, "QuantizedTensorflowModel loading is not implemented yet.")
     else:
-        raise ValueError("The value {} for framework is not supported. "
-                         "Please choose from 'pytorch'/'tensorflow'.")
+        invalidInputError(False,
+                          "The value {} for framework is not supported."
+                          " Please choose from 'pytorch'/'tensorflow'.")

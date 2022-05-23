@@ -51,7 +51,8 @@ class TreeNode (
   }
 
 
-  override def toString = s"TreeNode($nodeID, $isLeaf, score $similarScore, depth $depth, size ${recordSet.size})"
+  override def toString: String = s"TreeNode($nodeID," +
+    s" $isLeaf, score $similarScore, depth $depth, size ${recordSet.size})"
 }
 
 

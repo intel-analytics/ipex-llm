@@ -57,6 +57,6 @@ class TestModelQuantize(TestCase):
 
         # Case 3: Invalid approach, dynamic or qat is not supported
         invalid_approach = 'dynamic'
-        with pytest.raises(ValueError, match="Approach should be 'static', "
-                                             "{} is invalid.".format(invalid_approach)):
+        with pytest.raises(RuntimeError, match="Approach should be 'static', "
+                                               "{} is invalid.".format(invalid_approach)):
             model.quantize(approach=invalid_approach)

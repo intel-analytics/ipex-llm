@@ -28,7 +28,7 @@ import org.apache.spark.sql.SparkSession
 class FlContextForTest {
   var flClient: FLClient = null
   var sparkSession: SparkSession = null
-  def initFLContext(target: String = null) = {
+  def initFLContext(target: String = null): Unit = {
     createSparkSession()
     Engine.init
     this.synchronized {
