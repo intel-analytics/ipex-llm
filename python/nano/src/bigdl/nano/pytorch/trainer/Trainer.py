@@ -107,7 +107,7 @@ class Trainer(pl.Trainer):
         else:
             plugin = None
             invalidInputError(distributed_backend in distributed_backends,
-                              f"Distributed backends supported now are spawn and ray,"
+                              f"Distributed backends supported now are subprocess, spawn and ray,"
                               f" but get {distributed_backend}.")
             if distributed_backend == "spawn":
                 if use_ipex:
