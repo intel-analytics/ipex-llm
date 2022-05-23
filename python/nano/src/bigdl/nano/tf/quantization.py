@@ -68,6 +68,10 @@ def quantize(self,
     :return:           A TensorflowBaseModel for INC. If there is no model found, return None.
     """
     if backend == 'inc':
+        invalidInputError(self.inputs is not None and self.outputs is not None,
+                          "A keras.Model for quantization must include Input layers. "
+                          "Please create the model by functional API keras.Model(inputs=.., outputs=..).\n"
+                          "More details in https://keras.io/api/models/model/")
         assert self.inputs is not None and self.outputs is not None,\
             ("A keras.Model for quantization must include Input layers."
              "Please create the model by functional API keras.Model(inputs=.., outputs=..).\n"
