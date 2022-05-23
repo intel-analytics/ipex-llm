@@ -41,7 +41,7 @@
 
 import torch
 from bigdl.chronos.forecaster.base_forecaster import BasePytorchForecaster
-from bigdl.chronos.model.autoformer import model_creator, 
+from bigdl.chronos.model.autoformer import model_creator
 
 
 class AutoformerForecaster(BasePytorchForecaster):
@@ -77,6 +77,6 @@ class AutoformerForecaster(BasePytorchForecaster):
 
     def predict(self, batch, batch_idx):
         return self.internal.predict_step(self, batch, batch_idx)
-    
+
     def configure_optimizers(self):
         return self.internal.configure_optimizers(self)
