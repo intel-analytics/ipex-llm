@@ -42,7 +42,8 @@ class Aggregator(object):
         logging.info(f"""
             Initialized aggregator [client_num: {client_num} 
             loss_fn: {loss_fn}, optimizer: {optimizer}]""")
-        
+
+    # deprecated, use set_server_model for fully customized NN Model
     def add_server_model(self, model):
         with self._lock:
             if self.model is not None:
@@ -62,7 +63,8 @@ class Aggregator(object):
                 optimizer_cls = pickle.loads(optimizer.cls)
                 optimizer_args = pickle.loads(optimizer.args)
                 self.set_optimizer(optimizer_cls, optimizer_args)
-            
+
+    # deprecated, use set_loss_fn for fully customized NN Model
     def init_loss_fn(self):
         # match-case is supported only from Python 3.10
         if self.loss_fn == 'cross_entropy':
@@ -81,6 +83,7 @@ class Aggregator(object):
             return
         self.optimizer = optimizer_cls(self.model.parameters(), **optimizer_args)
 
+    # deprecated, use set_optimizer for fully customized NN Model
     def init_optimizer(self):
         if len(list(self.model.parameters())) == 0:
             self.optimizer = None
