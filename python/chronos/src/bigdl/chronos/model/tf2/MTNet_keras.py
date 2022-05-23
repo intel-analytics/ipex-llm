@@ -48,7 +48,6 @@ import tensorflow.keras.backend as K
 import tensorflow as tf
 from bigdl.orca.automl.metrics import Evaluator
 from bigdl.orca.automl.model.abstract import BaseModel
-from bigdl.nano.utils.log4Error import *
 
 
 class AttentionRNNWrapper(Wrapper):

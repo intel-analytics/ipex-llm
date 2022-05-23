@@ -15,7 +15,6 @@
 #
 
 from abc import ABC, abstractmethod
-from bigdl.nano.utils.log4Error import *
 
 
 class BaseFeatureTransformer(ABC):
@@ -88,6 +87,7 @@ class BaseFeatureTransformer(ABC):
         :return:
         """
         config_parameters = set(config.keys())
+        from bigdl.nano.utils.log4Error import invalidInputError
         if not config_parameters.issuperset(self._get_required_parameters()):
             invalidInputError(False,
                               "Missing required parameters in configuration. " +

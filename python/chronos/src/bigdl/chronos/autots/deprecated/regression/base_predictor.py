@@ -24,7 +24,6 @@ from bigdl.orca.automl.search.utils import process
 from bigdl.chronos.autots.deprecated.config.recipe import *
 from bigdl.orca.ray import RayContext
 from bigdl.orca.automl.auto_estimator import AutoEstimator
-from bigdl.nano.utils.log4Error import *
 
 
 ALLOWED_FIT_METRICS = ("mse", "mae", "r2")
@@ -50,14 +49,17 @@ class BasePredictor(object):
 
     @abstractmethod
     def get_model_builder(self):
+        from bigdl.nano.utils.log4Error import invalidInputError
         invalidInputError(False, "get_model_builder not implement")
 
     def _check_df(self, df):
+        from bigdl.nano.utils.log4Error import invalidInputError
         invalidInputError(isinstance(df, pd.DataFrame) and df.empty is False,
                           "You should input a valid data frame")
 
     @staticmethod
     def _check_fit_metric(metric):
+        from bigdl.nano.utils.log4Error import invalidInputError
         if metric not in ALLOWED_FIT_METRICS:
             invalidInputError(False,
                               f"metric {metric} is not supported for fit. "

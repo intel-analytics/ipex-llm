@@ -17,7 +17,6 @@
 from bigdl.chronos.model.tf2.MTNet_keras import MTNetKeras as MTNetKerasModel
 from bigdl.chronos.forecaster.abstract import Forecaster
 from bigdl.chronos.metric.forecast_metrics import Evaluator
-from bigdl.nano.utils.log4Error import *
 
 
 class MTNetForecaster(Forecaster):
@@ -124,6 +123,7 @@ class MTNetForecaster(Forecaster):
 
         :return: A numpy.ndarray with shape of (num_samples, feature_dum).
         """
+        from bigdl.nano.utils.log4Error import invalidInputError
         if not self._fitted:
             invalidInputError(False,
                               "You must call fit or restore first before calling predict!")
@@ -147,6 +147,7 @@ class MTNetForecaster(Forecaster):
 
         :return: A list of evaluation results. Calculation results for each metrics.
         """
+        from bigdl.nano.utils.log4Error import invalidInputError
         if not self._fitted:
             invalidInputError(False,
                               "You must call fit or restore first before calling evaluate!")
@@ -160,6 +161,7 @@ class MTNetForecaster(Forecaster):
 
         :param checkpoint_file: The location you want to save the forecaster.
         """
+        from bigdl.nano.utils.log4Error import invalidInputError
         if not self.fitted:
             invalidInputError(False,
                               "You must call fit or restore first before calling save!")

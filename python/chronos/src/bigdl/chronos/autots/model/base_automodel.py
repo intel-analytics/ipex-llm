@@ -18,7 +18,6 @@
 import os
 import json
 from bigdl.chronos.autots.utils import recalculate_n_sampling
-from bigdl.nano.utils.log4Error import *
 
 
 class BaseAutomodel:
@@ -115,6 +114,7 @@ class BaseAutomodel:
 
         :return: A numpy array with shape (num_samples, horizon, target_dim).
         '''
+        from bigdl.nano.utils.log4Error import invalidInputError
         if self.best_model is None:
             invalidInputError(False,
                               "You must call fit or load first before calling predict!")
@@ -139,6 +139,7 @@ class BaseAutomodel:
 
         :return: A numpy array with shape (num_samples, horizon, target_dim).
         '''
+        from bigdl.nano.utils.log4Error import invalidInputError
         if self.backend.startswith("keras"):
             invalidInputError(False,
                               "Currenctly, keras not support onnx method.")
@@ -182,6 +183,7 @@ class BaseAutomodel:
 
         :return: A list of evaluation results. Each item represents a metric.
         '''
+        from bigdl.nano.utils.log4Error import invalidInputError
         if self.best_model is None:
             invalidInputError(False,
                               "You must call fit or load first before calling predict!")
@@ -229,6 +231,7 @@ class BaseAutomodel:
 
         :return: A list of evaluation results. Each item represents a metric.
         '''
+        from bigdl.nano.utils.log4Error import invalidInputError
         if self.backend.startswith("keras"):
             invalidInputError(False,
                               "Currenctly, keras not support onnx method.")
@@ -254,6 +257,7 @@ class BaseAutomodel:
 
         :param checkpoint_path: The location you want to save the best model.
         """
+        from bigdl.nano.utils.log4Error import invalidInputError
         if self.best_model is None:
             invalidInputError(False,
                               "You must call fit or load first before calling predict!")
@@ -302,6 +306,7 @@ class BaseAutomodel:
             >>> # directly call onnx related method is also supported
             >>> pred = automodel.predict_with_onnx(data)
         '''
+        from bigdl.nano.utils.log4Error import invalidInputError
         if self.backend.startswith("keras"):
             invalidInputError(False,
                               "Currenctly, keras not support onnx method.")
@@ -330,6 +335,7 @@ class BaseAutomodel:
 
         :param dirname: The dir location you want to save the onnx file.
         """
+        from bigdl.nano.utils.log4Error import invalidInputError
         if self.backend.startswith("keras"):
             invalidInputError(False,
                               "Currenctly, keras not support onnx method.")

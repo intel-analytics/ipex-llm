@@ -19,7 +19,6 @@ import numpy as np
 from bigdl.chronos.detector.anomaly.abstract import AnomalyDetector
 
 from abc import ABC, abstractmethod
-from bigdl.nano.utils.log4Error import *
 
 
 class Distance(ABC):
@@ -68,6 +67,7 @@ def estimate_th(y,
     :param dist_measure: measure of distance
     :return: the threshold
     """
+    from bigdl.nano.utils.log4Error import invalidInputError
     invalidInputError(y.shape == yhat.shape, "y shape doesn't match yhat shape")
     diff = [dist_measure.abs_dist(m, n) for m, n in zip(y, yhat)]
     if mode == "default":
@@ -129,6 +129,7 @@ def detect_anomaly(y,
     :param dist_measure: measure of distance
     :return: the anomaly values indexes in the samples, i.e. num_samples dimension.
     """
+    from bigdl.nano.utils.log4Error import invalidInputError
     if isinstance(th, int) or isinstance(th, float):
         if yhat is None:
             invalidInputError(False,
@@ -238,6 +239,7 @@ class ThresholdDetector(AnomalyDetector):
 
         :return: anomaly score for each sample, in an array format with the same size as input
         """
+        from bigdl.nano.utils.log4Error import invalidInputError
         if y is None:
             if self.anomaly_scores_ is None:
                 invalidInputError(False, "please call fit before calling score")
@@ -254,6 +256,7 @@ class ThresholdDetector(AnomalyDetector):
 
         :return: the indexes of the anomalies.
         """
+        from bigdl.nano.utils.log4Error import invalidInputError
         if self.anomaly_indexes_ is None:
             invalidInputError(False, "Please call fit first")
         return self.anomaly_indexes_

@@ -20,7 +20,6 @@ import pandas as pd
 import warnings
 from bigdl.chronos.model.prophet import ProphetBuilder, ProphetModel
 from bigdl.chronos.autots.utils import recalculate_n_sampling
-from bigdl.nano.utils.log4Error import *
 
 
 # -
@@ -162,6 +161,7 @@ class AutoProphet:
         :param scheduler: str, all supported scheduler provided by ray tune
         :param scheduler_params: parameters for scheduler
         """
+        from bigdl.nano.utils.log4Error import invalidInputError
         if expect_horizon is None:
             expect_horizon = int(0.1*len(data))
         if freq is None:
@@ -206,6 +206,7 @@ class AutoProphet:
                https://pandas.pydata.org/pandas-docs/stable/user_guide/timeseries.html#timeseries-offset-aliases
         :param ds_data: a dataframe that has 1 column 'ds' indicating date.
         """
+        from bigdl.nano.utils.log4Error import invalidInputError
         if self.best_model.model is None:
             invalidInputError(False,
                               "You must call fit or restore first before calling predict!")
@@ -223,6 +224,7 @@ class AutoProphet:
                y_pred are numpy ndarray. The function should return a float value as evaluation
                result.
         """
+        from bigdl.nano.utils.log4Error import invalidInputError
         if data is None:
             invalidInputError(False, "Input invalid data of None")
         if self.best_model.model is None:
@@ -237,6 +239,7 @@ class AutoProphet:
 
         :param checkpoint_file: The location you want to save the best model, should be a json file
         """
+        from bigdl.nano.utils.log4Error import invalidInputError
         if self.best_model.model is None:
             invalidInputError(False,
                               "You must call fit or restore first before calling save!")

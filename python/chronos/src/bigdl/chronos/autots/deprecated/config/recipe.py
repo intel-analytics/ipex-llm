@@ -17,7 +17,6 @@
 from bigdl.chronos.autots.deprecated.config.base import Recipe
 from bigdl.orca.automl import hp
 from bigdl.chronos.utils import deprecated
-from bigdl.nano.utils.log4Error import *
 
 
 @deprecated('Please use `bigdl.orca.automl.hp` instead.')
@@ -119,6 +118,7 @@ class PastSeqParamHandler(object):
         :param look_back: look_back configuration
         :return: search configuration for past sequence
         """
+        from bigdl.nano.utils.log4Error import invalidInputError
         if isinstance(
             look_back,
             tuple) and len(look_back) == 2 and isinstance(
@@ -265,6 +265,7 @@ class LSTMSeq2SeqRandomRecipe(Recipe):
             teacher_forcing, "teacher_forcing")
 
     def _gen_sample_func(self, ranges, param_name):
+        from bigdl.nano.utils.log4Error import invalidInputError
         if isinstance(ranges, tuple):
             invalidInputError(len(ranges) == 2,
                               f"length of tuple {param_name} should be"
@@ -626,6 +627,7 @@ class BayesRecipe(Recipe):
         :param epochs: no. of epochs to train in each iteration
         """
         super(self.__class__, self).__init__()
+        from bigdl.nano.utils.log4Error import invalidInputError
         self.num_samples = num_samples
         self.reward_metric = reward_metric
         self.training_iteration = training_iteration

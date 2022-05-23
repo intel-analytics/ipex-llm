@@ -29,7 +29,6 @@ from bigdl.chronos.data.utils.split import split_timeseries_dataframe
 from bigdl.chronos.data.utils.cycle_detection import cycle_length_est
 from bigdl.chronos.data.utils.utils import _to_list, _check_type,\
     _check_col_within, _check_col_no_na, _check_is_aligned, _check_dt_is_sorted
-from bigdl.nano.utils.log4Error import *
 
 
 _DEFAULT_ID_COL_NAME = "id"
@@ -280,6 +279,7 @@ class TSDataset:
 
         :return: the tsdataset instance.
         '''
+        from bigdl.nano.utils.log4Error import invalidInputError
         invalidInputError(self._is_pd_datetime,
                           "The time series data does not have a Pandas datetime format "
                           "(you can use pandas.to_datetime to convert a string"
@@ -339,6 +339,7 @@ class TSDataset:
 
         :return: the tsdataset instance.
         '''
+        from bigdl.nano.utils.log4Error import invalidInputError
         invalidInputError(self._is_pd_datetime,
                           "The time series data does not have a Pandas datetime format"
                           "(you can use pandas.to_datetime to convert a string into"
@@ -370,6 +371,7 @@ class TSDataset:
 
         :return: the tsdataset instance.
         '''
+        from bigdl.nano.utils.log4Error import invalidInputError
         try:
             from tsfresh import extract_features
             from tsfresh.feature_extraction import ComprehensiveFCParameters, \
@@ -439,6 +441,7 @@ class TSDataset:
 
         :return: the tsdataset instance.
         '''
+        from bigdl.nano.utils.log4Error import invalidInputError
         try:
             from tsfresh.utilities.dataframe_functions import roll_time_series
             from tsfresh.utilities.dataframe_functions import impute as impute_tsfresh
@@ -562,6 +565,7 @@ class TSDataset:
         >>> print(x.shape, y.shape) # x.shape = (1, 1, 6) y.shape = (1, 1, 2)
 
         '''
+        from bigdl.nano.utils.log4Error import invalidInputError
         if id_sensitive and not _check_is_aligned(self.df, self.id_col, self.dt_col):
             invalidInputError(False,
                               "The time series data should be "
@@ -704,6 +708,7 @@ class TSDataset:
         """
         from torch.utils.data import TensorDataset, DataLoader
         import torch
+        from bigdl.nano.utils.log4Error import invalidInputError
         if roll:
             if horizon is None:
                 invalidInputError(False,
@@ -750,6 +755,7 @@ class TSDataset:
         """
         # TODO Requires a tf dataset creator method and can be use less memory.
         import tensorflow as tf
+        from bigdl.nano.utils.log4Error import invalidInputError
         if self.numpy_x is None:
             invalidInputError(False,
                               "Please call 'roll' method "
@@ -764,6 +770,7 @@ class TSDataset:
         :return: a 2-dim tuple. each item is a 3d numpy ndarray. The ndarray
                  is casted to float32.
         '''
+        from bigdl.nano.utils.log4Error import invalidInputError
         if self.numpy_x is None:
             invalidInputError(False,
                               "Please call 'roll' method "
@@ -813,6 +820,7 @@ class TSDataset:
                 scaler.fit_transform(self.df[self.target_col + feature_col])
         else:
             from sklearn.utils.validation import check_is_fitted
+            from bigdl.nano.utils.log4Error import invalidInputError
             try:
                 invalidInputError(not check_is_fitted(scaler), "scaler is not fittedd")
             except Exception:
@@ -897,6 +905,7 @@ class TSDataset:
         Returns:
             Describe the value of the time period distribution.
         """
+        from bigdl.nano.utils.log4Error import invalidInputError
         invalidInputError(isinstance(top_k, int),
                           f"top_k type must be int, but found {type(top_k)}.")
         invalidInputError(isinstance(aggregate, str),

@@ -14,8 +14,6 @@
 # limitations under the License.
 #
 
-from bigdl.nano.utils.log4Error import *
-
 
 def _to_list(item, name, expect_type=str):
     if isinstance(item, list):
@@ -27,16 +25,19 @@ def _to_list(item, name, expect_type=str):
 
 
 def _check_type(item, name, expect_type):
+    from bigdl.nano.utils.log4Error import invalidInputError
     invalidInputError(isinstance(item, expect_type),
                       f"a {str(expect_type)} is expected for {name} but found {type(item)}")
 
 
 def _check_col_within(df, col_name):
+    from bigdl.nano.utils.log4Error import invalidInputError
     invalidInputError(col_name in df.columns,
                       f"{col_name} is expected in dataframe while not found")
 
 
 def _check_col_no_na(df, col_name):
+    from bigdl.nano.utils.log4Error import invalidInputError
     _check_col_within(df, col_name)
     invalidInputError(df[col_name].isna().sum() == 0,
                       f"{col_name} column should not have N/A.")
@@ -60,6 +61,7 @@ def _check_dt_is_sorted(df, dt_col):
     try:
         res = (np.diff(df[dt_col].values.astype(np.float32)) >= 0).all()
         if not res:
+            from bigdl.nano.utils.log4Error import invalidInputError
             invalidInputError(False,
                               f"{dt_col} must be sorted.")
     except (ValueError, TypeError):

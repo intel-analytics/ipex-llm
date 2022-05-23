@@ -15,7 +15,6 @@
 # limitations under the License.
 #
 from .base_automodel import BaseAutomodel
-from bigdl.nano.utils.log4Error import *
 
 
 class AutoLSTM(BaseAutomodel):
@@ -100,6 +99,7 @@ class AutoLSTM(BaseAutomodel):
         elif self.backend.startswith("keras"):
             from bigdl.chronos.model.tf2.VanillaLSTM_keras import model_creator
         else:
+            from bigdl.nano.utils.log4Error import invalidInputError
             invalidInputError(False,
                               f"We only support keras and torch as backend,"
                               f" but got {self.backend}")

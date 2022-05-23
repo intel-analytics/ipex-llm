@@ -22,7 +22,6 @@ import bigdl.orca.automl.hp as hp
 from bigdl.chronos.autots.model import AutoModelFactory
 from bigdl.chronos.autots.tspipeline import TSPipeline
 from bigdl.chronos.autots.utils import recalculate_n_sampling
-from bigdl.nano.utils.log4Error import *
 
 
 class AutoTSEstimator:
@@ -126,6 +125,7 @@ class AutoTSEstimator:
                cluster, it defaults to "hdfs:///tmp/{name}".
         """
         # check backend and set default loss
+        from bigdl.nano.utils.log4Error import invalidInputError
         if backend != "torch":
             invalidInputError(False, f"We only support backend as torch. Got {backend}")
         else:

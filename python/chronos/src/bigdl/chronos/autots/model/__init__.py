@@ -15,7 +15,6 @@
 #
 
 import bigdl.orca.automl.hp as hp
-from bigdl.nano.utils.log4Error import *
 
 
 AUTO_MODEL_SUPPORT_LIST = ["lstm", "tcn", "seq2seq"]
@@ -72,6 +71,7 @@ class AutoModelFactory:
     @staticmethod
     def create_auto_model(name, search_space):
         name = name.lower()
+        from bigdl.nano.utils.log4Error import invalidInputError
         if name == "lstm":
             from .auto_lstm import AutoLSTM
             revised_search_space = search_space.copy()

@@ -16,7 +16,6 @@
 
 from bigdl.chronos.forecaster.tf.base_forecaster import BaseTF2Forecaster
 from bigdl.chronos.model.tf2.VanillaLSTM_keras import model_creator, LSTMModel
-from bigdl.nano.utils.log4Error import *
 
 
 class LSTMForecaster(BaseTF2Forecaster):
@@ -103,6 +102,7 @@ class LSTMForecaster(BaseTF2Forecaster):
         # self.distributed = distributed
         # self.distributed_backend = distributed_backend
         # self.workers_per_node = workers_per_node
+        from bigdl.nano.utils.log4Error import invalidInputError
         if distributed:
             invalidInputError(False,
                               "We will add distributed support in subsequent releases, "

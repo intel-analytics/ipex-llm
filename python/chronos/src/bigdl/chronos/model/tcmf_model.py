@@ -21,7 +21,6 @@ from bigdl.orca.data import SparkXShards, XShards
 import pickle
 import numpy as np
 import pandas as pd
-from bigdl.nano.utils.log4Error import *
 
 
 class TCMF(BaseModel):
@@ -107,6 +106,7 @@ class TCMF(BaseModel):
         :param dti_new: dti corresponding to the incremental x
         :return:
         """
+        from bigdl.nano.utils.log4Error import invalidInputError
         if x is None:
             invalidInputError(False,
                               "Input invalid x of None")
@@ -145,6 +145,7 @@ class TCMF(BaseModel):
             RayContext if num_workers > 1.
         :return:
         """
+        from bigdl.nano.utils.log4Error import invalidInputError
         if x is not None:
             invalidInputError(False,
                               "We don't support input x directly.")
@@ -203,6 +204,7 @@ class TCMF(BaseModel):
         :param num_workers: the number of workers to use in evaluate. It defaults to 1.
         :return: a list of metric evaluation results
         """
+        from bigdl.nano.utils.log4Error import invalidInputError
         if x is not None:
             invalidInputError(False,
                               "We don't support input x directly.")
@@ -243,6 +245,7 @@ class TCMF(BaseModel):
         return {}
 
     def _check_covariates_dti(self, covariates=None, dti=None, ts_len=24, method_name='fit'):
+        from bigdl.nano.utils.log4Error import invalidInputError
         if covariates is not None and not isinstance(covariates, np.ndarray):
             invalidInputError(False,
                               f"Input covariates must be a ndarray. Got ${type(covariates)}")
@@ -322,6 +325,7 @@ class TCMFXshardsModelWrapper(ModelWrapper):
         self.config = config
 
     def fit(self, x, num_workers=None, **fit_params):
+        from bigdl.nano.utils.log4Error import invalidInputError
         if num_workers:
             invalidInputError(False,
                               "We don't support passing num_workers in fit "
@@ -347,6 +351,7 @@ class TCMFXshardsModelWrapper(ModelWrapper):
                               "but isn't an xShards")
 
     def fit_incremental(self, x_incr, covariates_incr=None, dti_incr=None):
+        from bigdl.nano.utils.log4Error import invalidInputError
         invalidInputError(False, "fit_incremental not implemented")
 
     def evaluate(self, y, metric=None, target_covariates=None,
@@ -361,6 +366,7 @@ class TCMFXshardsModelWrapper(ModelWrapper):
         :param target_dti:
         :return: a list of metric evaluation results
         """
+        from bigdl.nano.utils.log4Error import invalidInputError
         invalidInputError(False, "not implemented")
 
     def predict(self, horizon=24,
@@ -375,6 +381,7 @@ class TCMFXshardsModelWrapper(ModelWrapper):
         :param num_workers
         :return: result
         """
+        from bigdl.nano.utils.log4Error import invalidInputError
         if num_workers and num_workers != 1:
             invalidInputError(False,
                               "We don't support passing num_workers in predict "
@@ -427,6 +434,7 @@ class TCMFNdarrayModelWrapper(ModelWrapper):
             self.id_arr, train_data = split_id_and_data(x, False)
             self.internal.fit_eval((train_data, None), num_workers=num_workers, **fit_params)
         else:
+            from bigdl.nano.utils.log4Error import invalidInputError
             invalidInputError(False,
                               "value of x should be a dict of ndarray")
 
@@ -434,6 +442,7 @@ class TCMFNdarrayModelWrapper(ModelWrapper):
         if np.array_equal(self.id_arr, id_new) or id_new is None:
             return data_new
         if self.id_arr is None:
+            from bigdl.nano.utils.log4Error import invalidInputError
             invalidInputError(False,
                               f"Got valid id in {method_name} and invalid id in fit.")
         if set(id_new) != set(self.id_arr):
@@ -466,6 +475,7 @@ class TCMFNdarrayModelWrapper(ModelWrapper):
                                           covariates_new=covariates_incr,
                                           dti_new=dti_incr)
         else:
+            from bigdl.nano.utils.log4Error import invalidInputError
             invalidInputError(False,
                               "value of x should be a dict of ndarray")
 
@@ -488,6 +498,7 @@ class TCMFNdarrayModelWrapper(ModelWrapper):
                                           target_dti=target_dti,
                                           num_workers=num_workers)
         else:
+            from bigdl.nano.utils.log4Error import invalidInputError
             invalidInputError(False,
                               "value of y should be a dict of ndarray")
 
@@ -538,6 +549,7 @@ class TCMFNdarrayModelWrapper(ModelWrapper):
 
 
 def split_id_and_data(d, is_xshards_distributed=False):
+    from bigdl.nano.utils.log4Error import invalidInputError
     if 'y' in d:
         train_data = d['y']
         if not isinstance(train_data, np.ndarray):

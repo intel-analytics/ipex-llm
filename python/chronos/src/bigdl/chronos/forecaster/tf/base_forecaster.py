@@ -17,7 +17,6 @@
 from bigdl.chronos.forecaster.abstract import Forecaster
 from bigdl.chronos.metric.forecast_metrics import Evaluator
 import keras
-from bigdl.nano.utils.log4Error import *
 
 
 class BaseTF2Forecaster(Forecaster):
@@ -67,6 +66,7 @@ class BaseTF2Forecaster(Forecaster):
         :params batch_size: predict batch size. The value will not affect evaluate
                 result but will affect resources cost(e.g. memory and time).
         """
+        from bigdl.nano.utils.log4Error import invalidInputError
         if not self.fitted:
             invalidInputError(False,
                               "You must call fit or restore first before calling predict!")
@@ -100,6 +100,7 @@ class BaseTF2Forecaster(Forecaster):
                 'raw_values'.The param is only effective when the forecaster is a
                 non-distribtued version.
         """
+        from bigdl.nano.utils.log4Error import invalidInputError
         if not self.fitted:
             invalidInputError(False,
                               "You must call fit or restore first before calling evaluate!")
@@ -114,6 +115,7 @@ class BaseTF2Forecaster(Forecaster):
 
         :params checkpoint_file: The location you want to save the forecaster.
         """
+        from bigdl.nano.utils.log4Error import invalidInputError
         if not self.fitted:
             invalidInputError(False,
                               "You must call fit or restore first before calling save!")

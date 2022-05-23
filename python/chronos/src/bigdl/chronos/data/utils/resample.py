@@ -15,7 +15,6 @@
 #
 
 import pandas as pd
-from bigdl.nano.utils.log4Error import *
 
 
 def resample_timeseries_dataframe(df,
@@ -37,6 +36,7 @@ def resample_timeseries_dataframe(df,
         we need to merge the values in a mode. "max", "min", "mean"
         or "sum" are supported for now.
     '''
+    from bigdl.nano.utils.log4Error import invalidInputError
     invalidInputError(dt_col in df.columns, f"dt_col {dt_col} can not be found in df.")
     invalidInputError(pd.isna(df[dt_col]).sum() == 0, "There is N/A in datetime col")
     invalidInputError(merge_mode in ['max', 'min', 'mean', 'sum'],

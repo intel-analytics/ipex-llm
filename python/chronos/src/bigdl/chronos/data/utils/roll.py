@@ -16,7 +16,6 @@
 
 import numpy as np
 import pandas as pd
-from bigdl.nano.utils.log4Error import *
 
 
 def roll_timeseries_dataframe(df,
@@ -45,6 +44,7 @@ def roll_timeseries_dataframe(df,
         y: 3-d numpy array in format (no. of samples, horizon, target_col length)
     Note: Specially, if `horizon` is set to 0, then y will be None.
     """
+    from bigdl.nano.utils.log4Error import invalidInputError
     invalidInputError(isinstance(df, pd.DataFrame), "df is expected to be pandas dataframe")
     invalidInputError(isinstance(lookback, int), "lookback is expected to be int")
     invalidInputError(isinstance(feature_col, list), "feature_col is expected to be list")
@@ -109,6 +109,7 @@ def _roll_timeseries_dataframe_train(df,
                                      feature_col,
                                      target_col,
                                      label_len):
+    from bigdl.nano.utils.log4Error import invalidInputError
     if label_len != 0 and isinstance(horizon, list):
         invalidInputError(False,
                           "horizon should be an integer if label_len is set to larger than 0.")
@@ -149,6 +150,7 @@ def _roll_timeseries_ndarray(data, window):
     first dim is timestamp
     second dim is feature
     '''
+    from bigdl.nano.utils.log4Error import invalidInputError
     invalidInputError(data.ndim == 2,
                       "data dim is expected to be 2")  # (num_timestep, num_feature)
     data = np.expand_dims(data, axis=1)  # (num_timestep, 1, num_feature)

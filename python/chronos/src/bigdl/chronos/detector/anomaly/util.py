@@ -16,7 +16,6 @@
 
 import numpy as np
 from logging import warning
-from bigdl.nano.utils.log4Error import *
 
 
 def sklearn_install_check():
@@ -64,5 +63,6 @@ def scale_arr(arr, mode="minmax"):
         from sklearn.preprocessing import StandardScaler
         scaled = StandardScaler().fit_transform(arr).astype('float32')
     else:
+        from bigdl.nano.utils.log4Error import invalidInputError
         invalidInputError(False, "Unrecognized Mode")
     return scaled

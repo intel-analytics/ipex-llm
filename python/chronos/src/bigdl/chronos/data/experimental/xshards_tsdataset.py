@@ -21,7 +21,6 @@ from bigdl.chronos.data.utils.utils import _to_list, _check_type
 from bigdl.chronos.data.utils.roll import roll_timeseries_dataframe
 from bigdl.chronos.data.utils.split import split_timeseries_dataframe
 from bigdl.chronos.data.experimental.utils import add_row, transform_to_dict
-from bigdl.nano.utils.log4Error import *
 
 
 _DEFAULT_ID_COL_NAME = "id"
@@ -258,6 +257,7 @@ class XShardsTSDataset:
 
         :return: the xshardtsdataset instance.
         '''
+        from bigdl.nano.utils.log4Error import invalidInputError
         if id_sensitive:
             invalidInputError(False,
                               "id_sensitive option has not been implemented.")
@@ -277,6 +277,7 @@ class XShardsTSDataset:
         :return: a 2-element dict xshard. each value is a 3d numpy ndarray. The ndarray
                  is casted to float32.
         '''
+        from bigdl.nano.utils.log4Error import invalidInputError
         if self.numpy_shards is None:
             invalidInputError(False,
                               "Please call 'roll' method "

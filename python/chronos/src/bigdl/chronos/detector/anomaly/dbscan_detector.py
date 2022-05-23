@@ -18,7 +18,6 @@ from bigdl.chronos.detector.anomaly.abstract import AnomalyDetector
 from bigdl.chronos.detector.anomaly.util import INTEL_EXT_DBSCAN
 
 import numpy as np
-from bigdl.nano.utils.log4Error import *
 
 
 class DBScanDetector(AnomalyDetector):
@@ -56,6 +55,7 @@ class DBScanDetector(AnomalyDetector):
 
     def check_data(self, arr):
         if len(arr.shape) > 1:
+            from bigdl.nano.utils.log4Error import invalidInputError
             invalidInputError(False,
                               "Only univariate time series is supported")
 
@@ -87,6 +87,7 @@ class DBScanDetector(AnomalyDetector):
         :return: anomaly score for each sample, in an array format with the same size as input
         """
         if self.anomaly_indexes_ is None:
+            from bigdl.nano.utils.log4Error import invalidInputError
             invalidInputError(False,
                               "Please call fit first")
         return self.anomaly_scores_
@@ -98,6 +99,7 @@ class DBScanDetector(AnomalyDetector):
         :return: the indexes of the anomalies.
         """
         if self.anomaly_indexes_ is None:
+            from bigdl.nano.utils.log4Error import invalidInputError
             invalidInputError(False,
                               "Please call fit first")
         return self.anomaly_indexes_

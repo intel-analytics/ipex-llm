@@ -17,7 +17,6 @@
 from bigdl.chronos.detector.anomaly.abstract import AnomalyDetector
 from bigdl.chronos.detector.anomaly.util import roll_arr, scale_arr
 import numpy as np
-from bigdl.nano.utils.log4Error import *
 
 
 def create_tf_model(compress_rate,
@@ -116,12 +115,14 @@ class AEDetector(AnomalyDetector):
 
     def check_rolled(self, arr):
         if arr.size == 0:
+            from bigdl.nano.utils.log4Error import invalidInputError
             invalidInputError(False,
                               "rolled array is empty, "
                               "please check if roll_len is larger than the total series length")
 
     def check_data(self, arr):
         if len(arr.shape) > 1:
+            from bigdl.nano.utils.log4Error import invalidInputError
             invalidInputError(False,
                               "Only univariate time series is supported")
 
@@ -177,6 +178,7 @@ class AEDetector(AnomalyDetector):
                 y_pred_list.append(ae_model(x_batch).detach().numpy())
             y_pred = np.concatenate(y_pred_list, axis=0)
         else:
+            from bigdl.nano.utils.log4Error import invalidInputError
             invalidInputError(False,
                               "backend type can only be 'keras' or 'torch'")
         # calculate the recon err for each data point in rolled array
@@ -195,6 +197,7 @@ class AEDetector(AnomalyDetector):
 
         :return: the anomaly scores, in an array format with the same size as input
         """
+        from bigdl.nano.utils.log4Error import invalidInputError
         if self.anomaly_scores_ is None:
             invalidInputError(False,
                               "please call fit before calling score")

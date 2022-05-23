@@ -22,7 +22,6 @@ import numpy as np
 from bigdl.chronos.data import TSDataset
 from bigdl.chronos.metric.forecast_metrics import Evaluator
 from bigdl.chronos.pytorch.utils import _pytorch_fashion_inference
-from bigdl.nano.utils.log4Error import *
 
 DEFAULT_MODEL_INIT_DIR = "model_init.ckpt"
 DEFAULT_BEST_MODEL_DIR = "best_model.ckpt"
@@ -124,6 +123,7 @@ class TSPipeline:
             yhat = np.concatenate(yhat_list, axis=0)
             y = torch.cat(y_list, dim=0).numpy()
         else:
+            from bigdl.nano.utils.log4Error import invalidInputError
             invalidInputError(False,
                               "We only support input tsdataset or data creator, "
                               f"but found {data.__class__.__name__}.")
@@ -155,7 +155,7 @@ class TSPipeline:
         '''
         from bigdl.chronos.pytorch import TSTrainer as Trainer
         from bigdl.chronos.pytorch.utils import _pytorch_fashion_inference
-
+        from bigdl.nano.utils.log4Error import invalidInputError
         # predict with onnx
         if isinstance(data, TSDataset):
             x, y = self._tsdataset_to_numpy(data, is_predict=False)
@@ -218,7 +218,7 @@ class TSPipeline:
         :param quantize: if use the quantized model to predict.
         '''
         from bigdl.chronos.pytorch.utils import _pytorch_fashion_inference
-
+        from bigdl.nano.utils.log4Error import invalidInputError
         if isinstance(data, TSDataset):
             x, _ = self._tsdataset_to_numpy(data, is_predict=True)
             if quantize:
@@ -264,7 +264,7 @@ class TSPipeline:
         '''
         from bigdl.chronos.pytorch import TSTrainer as Trainer
         from bigdl.chronos.pytorch.utils import _pytorch_fashion_inference
-
+        from bigdl.nano.utils.log4Error import invalidInputError
         if isinstance(data, TSDataset):
             x, _ = self._tsdataset_to_numpy(data, is_predict=True)
             yhat = None
@@ -332,7 +332,7 @@ class TSPipeline:
         :param **kwargs: args to be passed to bigdl-nano trainer.
         '''
         from bigdl.chronos.pytorch import TSTrainer as Trainer
-
+        from bigdl.nano.utils.log4Error import invalidInputError
         train_loader = None
         valid_loader = None
         if isinstance(data, TSDataset):
@@ -487,6 +487,7 @@ class TSPipeline:
         """
         from torch.utils.data import DataLoader, TensorDataset
         from bigdl.chronos.data import TSDataset
+        from bigdl.nano.utils.log4Error import invalidInputError
         # check model support for quantization
         from bigdl.chronos.autots.utils import check_quantize_available
         check_quantize_available(self._best_model.model)
@@ -574,6 +575,7 @@ class TSPipeline:
         return data.to_numpy()
 
     def _check_mixed_data_type_usage(self):
+        from bigdl.nano.utils.log4Error import invalidInputError
         for key in ("past_seq_len", "future_seq_len", "selected_features"):
             if key not in self._best_config:
                 invalidInputError(False,
