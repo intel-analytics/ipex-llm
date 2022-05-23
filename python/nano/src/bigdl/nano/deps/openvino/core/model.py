@@ -50,14 +50,12 @@ class OpenVINOModel:
         """
         Save PytorchOpenVINOModel to local as xml and bin file
 
-        :param path: Path to save the model.
+        :param path: Directory to save the model.
         """
         path = Path(path)
+        path.mkdir(exist_ok=True)
         invalidInputError(self.ie_network,
                           "self.ie_network shouldn't be None.")
-        invalidInputError(path.suffix == ".xml",
-                          "Path of openvino model must be with '.xml' suffix.")
-        path.mkdir(exist_ok=True)
         xml_path = path / self.status['xml_path']
         save(self.ie_network, xml_path)
 
