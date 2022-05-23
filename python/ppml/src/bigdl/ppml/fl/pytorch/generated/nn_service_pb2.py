@@ -15,7 +15,7 @@ _sym_db = _symbol_database.Default()
 import fl_base_pb2 as fl__base__pb2
 
 
-DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x10nn_service.proto\x12\x02nn\x1a\rfl_base.proto\"O\n\x0cTrainRequest\x12\x12\n\nclientuuid\x18\x01 \x01(\t\x12\x18\n\x04\x64\x61ta\x18\x02 \x01(\x0b\x32\n.TensorMap\x12\x11\n\talgorithm\x18\x03 \x01(\t\"I\n\rTrainResponse\x12\x10\n\x08response\x18\x01 \x01(\t\x12\x18\n\x04\x64\x61ta\x18\x02 \x01(\x0b\x32\n.TensorMap\x12\x0c\n\x04\x63ode\x18\x03 \x01(\x05\"b\n\x0f\x45valuateRequest\x12\x12\n\nclientuuid\x18\x01 \x01(\t\x12\x18\n\x04\x64\x61ta\x18\x02 \x01(\x0b\x32\n.TensorMap\x12\x11\n\talgorithm\x18\x03 \x01(\t\x12\x0e\n\x06return\x18\x04 \x01(\x08\"]\n\x10\x45valuateResponse\x12\x10\n\x08response\x18\x01 \x01(\t\x12\x18\n\x04\x64\x61ta\x18\x02 \x01(\x0b\x32\n.TensorMap\x12\x0c\n\x04\x63ode\x18\x03 \x01(\x05\x12\x0f\n\x07message\x18\x04 \x01(\t\"Q\n\x0ePredictRequest\x12\x12\n\nclientuuid\x18\x01 \x01(\t\x12\x18\n\x04\x64\x61ta\x18\x02 \x01(\x0b\x32\n.TensorMap\x12\x11\n\talgorithm\x18\x03 \x01(\t\"K\n\x0fPredictResponse\x12\x10\n\x08response\x18\x01 \x01(\t\x12\x18\n\x04\x64\x61ta\x18\x02 \x01(\x0b\x32\n.TensorMap\x12\x0c\n\x04\x63ode\x18\x03 \x01(\x05\">\n\x12UploadModelRequest\x12\x13\n\x0b\x63lient_uuid\x18\x01 \x01(\t\x12\x13\n\x0bmodel_bytes\x18\x02 \x01(\x0c\"&\n\x13UploadModelResponse\x12\x0f\n\x07message\x18\x01 \x01(\t2\xed\x01\n\tNNService\x12.\n\x05train\x12\x10.nn.TrainRequest\x1a\x11.nn.TrainResponse\"\x00\x12\x37\n\x08\x65valuate\x12\x13.nn.EvaluateRequest\x1a\x14.nn.EvaluateResponse\"\x00\x12\x34\n\x07predict\x12\x12.nn.PredictRequest\x1a\x13.nn.PredictResponse\"\x00\x12\x41\n\x0cupload_model\x12\x16.nn.UploadModelRequest\x1a\x17.nn.UploadModelResponse\"\x00\x42=\n+com.intel.analytics.bigdl.ppml.fl.generatedB\x0eNNServiceProtob\x06proto3')
+DESCRIPTOR = _descriptor_pool.Default().AddSerializedFile(b'\n\x10nn_service.proto\x12\x02nn\x1a\rfl_base.proto\"O\n\x0cTrainRequest\x12\x12\n\nclientuuid\x18\x01 \x01(\t\x12\x18\n\x04\x64\x61ta\x18\x02 \x01(\x0b\x32\n.TensorMap\x12\x11\n\talgorithm\x18\x03 \x01(\t\"I\n\rTrainResponse\x12\x10\n\x08response\x18\x01 \x01(\t\x12\x18\n\x04\x64\x61ta\x18\x02 \x01(\x0b\x32\n.TensorMap\x12\x0c\n\x04\x63ode\x18\x03 \x01(\x05\"b\n\x0f\x45valuateRequest\x12\x12\n\nclientuuid\x18\x01 \x01(\t\x12\x18\n\x04\x64\x61ta\x18\x02 \x01(\x0b\x32\n.TensorMap\x12\x11\n\talgorithm\x18\x03 \x01(\t\x12\x0e\n\x06return\x18\x04 \x01(\x08\"]\n\x10\x45valuateResponse\x12\x10\n\x08response\x18\x01 \x01(\t\x12\x18\n\x04\x64\x61ta\x18\x02 \x01(\x0b\x32\n.TensorMap\x12\x0c\n\x04\x63ode\x18\x03 \x01(\x05\x12\x0f\n\x07message\x18\x04 \x01(\t\"Q\n\x0ePredictRequest\x12\x12\n\nclientuuid\x18\x01 \x01(\t\x12\x18\n\x04\x64\x61ta\x18\x02 \x01(\x0b\x32\n.TensorMap\x12\x11\n\talgorithm\x18\x03 \x01(\t\"K\n\x0fPredictResponse\x12\x10\n\x08response\x18\x01 \x01(\t\x12\x18\n\x04\x64\x61ta\x18\x02 \x01(\x0b\x32\n.TensorMap\x12\x0c\n\x04\x63ode\x18\x03 \x01(\x05\"t\n\x12UploadModelRequest\x12\x13\n\x0b\x63lient_uuid\x18\x01 \x01(\t\x12\x13\n\x0bmodel_bytes\x18\x02 \x01(\x0c\x12\x0f\n\x07loss_fn\x18\x03 \x01(\x0c\x12#\n\toptimizer\x18\x04 \x01(\x0b\x32\x10.nn.ClassAndArgs\")\n\x0c\x43lassAndArgs\x12\x0b\n\x03\x63ls\x18\x01 \x01(\x0c\x12\x0c\n\x04\x61rgs\x18\x02 \x01(\x0c\"&\n\x13UploadModelResponse\x12\x0f\n\x07message\x18\x01 \x01(\t2\xed\x01\n\tNNService\x12.\n\x05train\x12\x10.nn.TrainRequest\x1a\x11.nn.TrainResponse\"\x00\x12\x37\n\x08\x65valuate\x12\x13.nn.EvaluateRequest\x1a\x14.nn.EvaluateResponse\"\x00\x12\x34\n\x07predict\x12\x12.nn.PredictRequest\x1a\x13.nn.PredictResponse\"\x00\x12\x41\n\x0cupload_model\x12\x16.nn.UploadModelRequest\x1a\x17.nn.UploadModelResponse\"\x00\x42=\n+com.intel.analytics.bigdl.ppml.fl.generatedB\x0eNNServiceProtob\x06proto3')
 
 
 
@@ -26,6 +26,7 @@ _EVALUATERESPONSE = DESCRIPTOR.message_types_by_name['EvaluateResponse']
 _PREDICTREQUEST = DESCRIPTOR.message_types_by_name['PredictRequest']
 _PREDICTRESPONSE = DESCRIPTOR.message_types_by_name['PredictResponse']
 _UPLOADMODELREQUEST = DESCRIPTOR.message_types_by_name['UploadModelRequest']
+_CLASSANDARGS = DESCRIPTOR.message_types_by_name['ClassAndArgs']
 _UPLOADMODELRESPONSE = DESCRIPTOR.message_types_by_name['UploadModelResponse']
 TrainRequest = _reflection.GeneratedProtocolMessageType('TrainRequest', (_message.Message,), {
   'DESCRIPTOR' : _TRAINREQUEST,
@@ -76,6 +77,13 @@ UploadModelRequest = _reflection.GeneratedProtocolMessageType('UploadModelReques
   })
 _sym_db.RegisterMessage(UploadModelRequest)
 
+ClassAndArgs = _reflection.GeneratedProtocolMessageType('ClassAndArgs', (_message.Message,), {
+  'DESCRIPTOR' : _CLASSANDARGS,
+  '__module__' : 'nn_service_pb2'
+  # @@protoc_insertion_point(class_scope:nn.ClassAndArgs)
+  })
+_sym_db.RegisterMessage(ClassAndArgs)
+
 UploadModelResponse = _reflection.GeneratedProtocolMessageType('UploadModelResponse', (_message.Message,), {
   'DESCRIPTOR' : _UPLOADMODELRESPONSE,
   '__module__' : 'nn_service_pb2'
@@ -101,9 +109,11 @@ if _descriptor._USE_C_DESCRIPTORS == False:
   _PREDICTRESPONSE._serialized_start=473
   _PREDICTRESPONSE._serialized_end=548
   _UPLOADMODELREQUEST._serialized_start=550
-  _UPLOADMODELREQUEST._serialized_end=612
-  _UPLOADMODELRESPONSE._serialized_start=614
-  _UPLOADMODELRESPONSE._serialized_end=652
-  _NNSERVICE._serialized_start=655
-  _NNSERVICE._serialized_end=892
+  _UPLOADMODELREQUEST._serialized_end=666
+  _CLASSANDARGS._serialized_start=668
+  _CLASSANDARGS._serialized_end=709
+  _UPLOADMODELRESPONSE._serialized_start=711
+  _UPLOADMODELRESPONSE._serialized_end=749
+  _NNSERVICE._serialized_start=752
+  _NNSERVICE._serialized_end=989
 # @@protoc_insertion_point(module_scope)

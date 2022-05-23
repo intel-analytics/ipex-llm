@@ -14,6 +14,7 @@
 # limitations under the License.
 #
 
+import pickle
 import logging
 import threading
 from torch import nn
@@ -50,6 +51,17 @@ class Aggregator(object):
                 self.model = model
                 self.init_loss_fn()
                 self.init_optimizer()
+
+    def set_server_model(self, model, loss_fn, optimizer):
+        with self._lock:
+            if self.model is not None:
+                logging.warn("model exists on server, the add model operation is skipped")
+            else:
+                self.model = model
+                self.set_loss_fn(loss_fn)
+                optimizer_cls = pickle.loads(optimizer.cls)
+                optimizer_args = pickle.loads(optimizer.args)
+                self.set_optimizer(optimizer_cls, optimizer_args)
             
     def init_loss_fn(self):
         # match-case is supported only from Python 3.10
@@ -59,6 +71,15 @@ class Aggregator(object):
             self.loss_fn = nn.BCELoss()
         else:
             raise Exception(f"Illigal loss function: {self.loss_fn}")
+
+    def set_loss_fn(self, loss_fn):
+        self.loss_fn = loss_fn
+
+    def set_optimizer(self, optimizer_cls, optimizer_args):
+        if len(list(self.model.parameters())) == 0:
+            self.optimizer = None
+            return
+        self.optimizer = optimizer_cls(self.model.parameters(), **optimizer_args)
 
     def init_optimizer(self):
         if len(list(self.model.parameters())) == 0:

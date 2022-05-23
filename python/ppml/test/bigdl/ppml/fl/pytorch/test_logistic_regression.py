@@ -48,10 +48,18 @@ def mock_process(data_train):
     optimizer = torch.optim.SGD(model.parameters(), lr=1e-3)
     server_model = LogisticRegressionNetwork2()
     ppl = PytorchPipeline(model, loss_fn, optimizer)
-    ppl.add_server_model(server_model)
+    ppl.add_server_model(server_model, loss_fn, torch.optim.SGD, {'lr':1e-3})
     response = ppl.fit(x, y)
     logging.info(response)
     return ppl
+
+
+def tmp():
+    model = LogisticRegressionNetwork1(1)
+    loss_fn = nn.BCELoss()
+    optimizer = torch.optim.SGD(model.parameters(), lr=1e-3)
+    pass
+
 
 
 class TestLogisticRegression(unittest.TestCase):

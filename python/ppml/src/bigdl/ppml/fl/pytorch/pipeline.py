@@ -36,9 +36,20 @@ class PytorchPipeline:
         self.loss_history = []
 
     
-    def add_server_model(self, model: nn.Module):
+    
+    def add_server_model(self, model: nn.Module, loss_fn=None, optimizer_cls=None, optimizer_args={}):
         # add model and pickle to server
-        self.fl_client.upload_model(model)
+        if loss_fn is None:
+            logging.info(f'loss_fn on FLServer not specified, \
+                using same as client: {self.loss_fn}')
+            loss_fn = self.loss_fn
+        if optimizer_cls is None:
+            logging.info(f'optimizer on FLServer not specified, \
+                using same as client: {self.optimizer} (with no args)')
+            optimizer_cls = self.optimizer.__class__
+
+        msg = self.fl_client.upload_model(model, loss_fn, optimizer_cls, optimizer_args).message
+        logging.info(msg)
 
     def train_step(self, x, y):
         """
@@ -69,7 +80,7 @@ class PytorchPipeline:
                     current = batch * len(X)
                     if batch % 100 == 0:
                         logging.info(f"loss: {loss:>7f}  [{current:>5d}/{size:>5d}]  \
-                            epoch {i}/{epoch}")
+                            epoch {e}/{epoch}")
                         self.loss_history.append(loss)
             elif isinstance(x, ndarray):
                 i, size = 0, len(x)
