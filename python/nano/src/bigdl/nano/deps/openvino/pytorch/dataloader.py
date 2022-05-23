@@ -16,11 +16,13 @@
 from openvino.tools.pot import DataLoader
 from torch.utils.data.dataloader import DataLoader as TorchLoader
 
+from bigdl.nano.utils.log4Error import invalidInputError
+
 
 class PytorchOpenVINODataLoader(DataLoader):
     def __init__(self, dataloader, collate_fn=None):
-        assert isinstance(dataloader, TorchLoader),\
-            "Please provide an instance of torch.utils.data.dataloader.Dataloader."
+        invalidInputError(isinstance(dataloader, TorchLoader),
+                          "Please provide an instance of torch.utils.data.dataloader.Dataloader.")
         self.dataset = dataloader.dataset
         self.collate_fn = collate_fn
 

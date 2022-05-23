@@ -328,7 +328,9 @@ class Trainer(pl.Trainer):
                 model = Trainer.trace(model,
                                       input_sample=input_sample,
                                       accelerator='openvino')
-            assert type(model).__name__ == 'PytorchOpenVINOModel'
+            invalidInputError(type(model).__name__ == 'PytorchOpenVINOModel',
+                              "Invalid model to quantize. Please use a nn.Module or a model "
+                              "from trainer.trance(accelerator=='openvino')")
             drop_type = 'relative' if 'relative' in accuracy_criterion else 'absolute'
             kwargs = {
                 "metric": metric,
@@ -364,14 +366,16 @@ class Trainer(pl.Trainer):
                                             accelerator='onnxruntime', otherwise will be ignored.
         :return: Model with different acceleration(OpenVINO/ONNX Runtime).
         """
-        assert isinstance(model, nn.Module) and not isinstance(model, AcceleratedLightningModule),\
-            "Expect a nn.Module instance that is not traced or quantized\
-                but got type {}".format(type(model))
+        invalidInputError(
+            isinstance(model, nn.Module) and not isinstance(model, AcceleratedLightningModule),
+            "Expect a nn.Module instance that is not traced or quantized"
+            "but got type {}".format(type(model))
+        )
         if accelerator == 'openvino':
             return PytorchOpenVINOModel(model, input_sample)
         if accelerator == 'onnxruntime':
             return PytorchONNXRuntimeModel(model, input_sample, onnxruntime_session_options)
-        raise ValueError("Accelerator {} is invalid.".format(accelerator))
+        invalidInputError(False, "Accelerator {} is invalid.".format(accelerator))
 
     @staticmethod
     def save(model: LightningModule, path):
