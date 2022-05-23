@@ -58,7 +58,7 @@ class TestLogisticRegression(unittest.TestCase):
     fmt = '%(asctime)s %(levelname)s {%(module)s:%(lineno)d} - %(message)s'
     logging.basicConfig(format=fmt, level=logging.INFO)
     def setUp(self) -> None:
-        self.fl_server = FLServer(loss_fn='binary_cross_entropy', optimizer='sgd', client_num=2)
+        self.fl_server = FLServer(client_num=2)
         self.fl_server.build() 
         self.fl_server.start()
 
@@ -77,7 +77,7 @@ class TestLogisticRegression(unittest.TestCase):
         model = LogisticRegressionNetwork(len(df_x1.columns), len(df_x2.columns))
         set_one_like_parameter(model)
         loss_fn = nn.BCELoss()
-        optimizer = torch.optim.SGD(model.parameters(), lr=1e-4)
+        optimizer = torch.optim.SGD(model.parameters(), lr=1e-3)
         
         x1 = torch.tensor(df_x1.to_numpy(dtype="float32"))
         x2 = torch.tensor(df_x2.to_numpy(dtype="float32"))

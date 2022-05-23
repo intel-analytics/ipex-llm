@@ -41,7 +41,7 @@ class TestCorrectness(unittest.TestCase):
     fmt = '%(asctime)s %(levelname)s {%(module)s:%(lineno)d} - %(message)s'
     logging.basicConfig(format=fmt, level=logging.INFO)
     def setUp(self) -> None:
-        self.fl_server = FLServer(loss_fn='cross_entropy', optimizer='sgd')
+        self.fl_server = FLServer()
         self.fl_server.build()
         self.fl_server.start()
     

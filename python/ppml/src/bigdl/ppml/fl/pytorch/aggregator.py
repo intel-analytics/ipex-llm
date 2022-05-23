@@ -25,23 +25,14 @@ from threading import Condition
 
 class Aggregator(object):
     def __init__(self,
-                 loss_fn,
-                 optimizer, 
-                 learning_rate=1e-3,
                  client_num=1) -> None:
-
         self.model = None
         self.client_data = {}
         self.server_data = None
         self.client_num = client_num
         self.condition = Condition()
-        self.loss_fn = loss_fn
-        self.optimizer = optimizer
-        self.learning_rate = learning_rate
         self._lock = threading.Lock()
-        logging.info(f"""
-            Initialized aggregator [client_num: {client_num} 
-            loss_fn: {loss_fn}, optimizer: {optimizer}]""")
+        logging.info(f"Initialized aggregator [client_num: {client_num}")
 
     # deprecated, use set_server_model for fully customized NN Model
     def add_server_model(self, model):
