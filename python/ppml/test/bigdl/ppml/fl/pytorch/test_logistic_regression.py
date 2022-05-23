@@ -62,6 +62,9 @@ class TestLogisticRegression(unittest.TestCase):
         self.fl_server.build() 
         self.fl_server.start()
 
+    def tearDown(self) -> None:
+        self.fl_server.stop()
+
 
     def test_two_party_logistic_regression(self) -> None:
         df_train = pd.read_csv(
