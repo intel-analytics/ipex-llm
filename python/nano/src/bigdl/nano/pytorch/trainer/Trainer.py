@@ -41,7 +41,7 @@ from bigdl.nano.deps.onnxruntime.onnxruntime_api import bind_onnxrt_methods,\
 from bigdl.nano.deps.neural_compressor.inc_api import QuantizationINC, PytorchQuantizedModel,\
     check_pytorch_dataloaders, load_inc_model
 from bigdl.nano.utils.log4Error import invalidInputError
-
+from bigdl.nano.utils.inference.pytorch.model import AcceleratedLightningModule
 distributed_backends = ["spawn", "ray", "subprocess"]
 
 
@@ -224,7 +224,6 @@ class Trainer(pl.Trainer):
                  accuracy_criterion: dict = {'relative': 0.99, 'higher_is_better': True},
                  approach='static',
                  method='fx',
-                 backend='inc',
                  conf: Optional[str] = None,
                  tuning_strategy='bayesian',
                  timeout=0,
@@ -260,7 +259,6 @@ class Trainer(pl.Trainer):
             When accelerator='onnxruntime', supported methods: 'qlinear', 'integer', defaults
             to 'qlinear'. Suggest 'qlinear' for lower accuracy drop if using static quantization.
             More details in https://onnxruntime.ai/docs/performance/quantization.html.
-        :param backend:             Only 'inc' is supported. Default: 'inc'.
         :param conf:        A path to conf yaml file for quantization.
                             Default: None, using default config.
         :param tuning_strategy:    'bayesian', 'basic', 'mse', 'sigopt'. Default: 'bayesian'.
@@ -274,7 +272,7 @@ class Trainer(pl.Trainer):
 
         :return:            A accelerated Pytorch-Lightning Model if quantization is sucessful.
         """
-        if backend == 'inc':
+        if not accelerator or accelerator == 'onnxruntime':
             # check if dataloader is of legal format
             check_pytorch_dataloaders(model, [calib_dataloader, val_dataloader])
 
@@ -291,7 +289,6 @@ class Trainer(pl.Trainer):
                 framework = 'pytorch_{}'.format(method)
             if accelerator == 'onnxruntime':
                 framework = "{}_{}ops".format('onnxrt', method)
-            pl_model = model
             quantizer = QuantizationINC(framework=framework, conf=conf, approach=approach,
                                         tuning_strategy=tuning_strategy,
                                         accuracy_criterion=accuracy_criterion,
@@ -322,9 +319,33 @@ class Trainer(pl.Trainer):
                     saved_onnx = Path(dir) / 'tmp.onnx'
                     quantized_model.save(saved_onnx)
                     return PytorchONNXRuntimeModel(str(saved_onnx))
+        elif accelerator == 'openvino':
+            model_type = type(model).__name__
+            if not model_type == 'PytorchOpenVINOModel':
+                if not input_sample:
+                    # input_sample can be a dataloader
+                    input_sample = calib_dataloader
+                model = Trainer.trace(model,
+                                      input_sample=input_sample,
+                                      accelerator='openvino')
+            invalidInputError(type(model).__name__ == 'PytorchOpenVINOModel',
+                              "Invalid model to quantize. Please use a nn.Module or a model "
+                              "from trainer.trance(accelerator=='openvino')")
+            drop_type = 'relative' if 'relative' in accuracy_criterion else 'absolute'
+            kwargs = {
+                "metric": metric,
+                "higher_better": accuracy_criterion['higher_is_better'],
+                "drop_type": drop_type,
+                "maximal_drop": accuracy_criterion[drop_type],
+                "max_iter_num": max_trials,
+                # TODO following two keys are optional, if there is need, we can add them
+                # "n_requests": None,
+                # "sample_size": 300
+            }
+            return model.pot(calib_dataloader, **kwargs)
         else:
             invalidInputError(False,
-                              "Backend {} is not implemented.".format(backend))
+                              "Accelerator {} is invalid.".format(accelerator))
 
     @staticmethod
     def trace(model: nn.Module,
@@ -345,10 +366,16 @@ class Trainer(pl.Trainer):
                                             accelerator='onnxruntime', otherwise will be ignored.
         :return: Model with different acceleration(OpenVINO/ONNX Runtime).
         """
+        invalidInputError(
+            isinstance(model, nn.Module) and not isinstance(model, AcceleratedLightningModule),
+            "Expect a nn.Module instance that is not traced or quantized"
+            "but got type {}".format(type(model))
+        )
         if accelerator == 'openvino':
             return PytorchOpenVINOModel(model, input_sample)
         if accelerator == 'onnxruntime':
             return PytorchONNXRuntimeModel(model, input_sample, onnxruntime_session_options)
+        invalidInputError(False, "Accelerator {} is invalid.".format(accelerator))
 
     @staticmethod
     def save(model: LightningModule, path):
