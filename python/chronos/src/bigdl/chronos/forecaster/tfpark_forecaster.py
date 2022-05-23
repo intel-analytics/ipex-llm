@@ -18,7 +18,6 @@ from abc import ABCMeta, abstractmethod
 from bigdl.orca.tfpark import KerasModel as TFParkKerasModel
 import tensorflow as tf
 from bigdl.chronos.forecaster.abstract import Forecaster
-from bigdl.nano.utils.log4Error import *
 
 
 class TFParkForecaster(TFParkKerasModel, Forecaster, metaclass=ABCMeta):
@@ -32,6 +31,7 @@ class TFParkForecaster(TFParkKerasModel, Forecaster, metaclass=ABCMeta):
         Turns the tf.keras model returned from _build into a tfpark.KerasModel
         """
         self.model = self._build()
+        from bigdl.nano.utils.log4Error import invalidInputError
         invalidInputError((isinstance(self.model, tf.keras.Model),
                            "expect model is tf.keras.Model"))
         super().__init__(self.model)

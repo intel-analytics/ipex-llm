@@ -17,7 +17,6 @@
 from bigdl.chronos.model.tcmf_model import TCMFNdarrayModelWrapper, TCMFXshardsModelWrapper
 from bigdl.orca.data import SparkXShards
 from bigdl.chronos.forecaster.abstract import Forecaster
-from bigdl.nano.utils.log4Error import *
 
 
 class TCMFForecaster(Forecaster):
@@ -150,6 +149,7 @@ class TCMFForecaster(Forecaster):
         :param num_workers: the number of workers you want to use for fit. If None, it defaults to
             num_ray_nodes in the created RayContext or 1 if there is no active RayContext.
         """
+        from bigdl.nano.utils.log4Error import invalidInputError
         if self.internal is None:
             if isinstance(x, SparkXShards):
                 self.internal = TCMFXshardsModelWrapper(self.config)

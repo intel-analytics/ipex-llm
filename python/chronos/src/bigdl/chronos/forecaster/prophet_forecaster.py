@@ -16,7 +16,6 @@
 
 from bigdl.chronos.forecaster.abstract import Forecaster
 from bigdl.chronos.model.prophet import ProphetModel
-from bigdl.nano.utils.log4Error import *
 
 
 class ProphetForecaster(Forecaster):
@@ -88,6 +87,7 @@ class ProphetForecaster(Forecaster):
                                       **self.model_config)
 
     def _check_data(self, data, validation_data):
+        from bigdl.nano.utils.log4Error import invalidInputError
         invalidInputError('ds' in data.columns and 'y' in data.columns,
                           "data should be a pandas dataframe that has at"
                           " least 2 columns 'ds' and 'y'.")
@@ -111,6 +111,7 @@ class ProphetForecaster(Forecaster):
                  where the "yhat" column is the inference value.
         """
         if self.internal.model is None:
+            from bigdl.nano.utils.log4Error import invalidInputError
             invalidInputError(False,
                               "You must call fit or restore first before calling predict!")
         return self.internal.predict(horizon=horizon, freq=freq, ds_data=ds_data)
@@ -126,6 +127,7 @@ class ProphetForecaster(Forecaster):
 
         :return: A list of evaluation results. Calculation results for each metrics.
         """
+        from bigdl.nano.utils.log4Error import invalidInputError
         if data is None:
             invalidInputError(False, "Input invalid data of None")
         if self.internal.model is None:
@@ -141,6 +143,7 @@ class ProphetForecaster(Forecaster):
         :param checkpoint_file: The location you want to save the forecaster, should be a json file
         """
         if self.internal.model is None:
+            from bigdl.nano.utils.log4Error import invalidInputError
             invalidInputError(False,
                               "You must call fit or restore first before calling save!")
         self.internal.save(checkpoint_file)
