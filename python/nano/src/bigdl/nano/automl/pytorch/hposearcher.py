@@ -18,7 +18,7 @@ from typing import Any, Dict, Optional, Union
 import pytorch_lightning as pl
 
 from pytorch_lightning.trainer.states import TrainerFn, TrainerStatus
-
+from bigdl.nano.utils.log4Error import invalidInputError
 from bigdl.nano.automl.hpo.backend import create_hpo_backend
 from .objective import Objective
 from ..hpo.search import (
