@@ -72,10 +72,6 @@ def quantize(self,
                           "A keras.Model for quantization must include Input layers. "
                           "Please create the model by functional API keras.Model(inputs=.., outputs=..).\n"
                           "More details in https://keras.io/api/models/model/")
-        assert self.inputs is not None and self.outputs is not None,\
-            ("A keras.Model for quantization must include Input layers."
-             "Please create the model by functional API keras.Model(inputs=.., outputs=..).\n"
-             "More details in https://keras.io/api/models/model/")
 
         def get_tensors_name(tensors):
             return [tensor.name for tensor in tensors]
