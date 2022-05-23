@@ -1,16 +1,16 @@
 # AutoML Overview
 
-Nano provides built-in AutoML support through hyperparameter optimization (referred to as  _Nano-HPO_ below).
+Nano provides built-in AutoML support through hyperparameter optimization.
 
-By simply changing imports, you are able to search the model architecture (e.g. by specifying search spaces in layer/activation/function arguments when defining the model), or the training procedure (e.g. by specifying search spaces in `learning_rate` or `batch_size`). Use `model.search` (tensorflow) or `Trainer.search`(pytorch) to launch trials, and `model.search_summary` or `Trainer.search_summary`(pytorch) to review the search results.
+By simply changing imports, you are able to search the model architecture (e.g. by specifying search spaces in layer/activation/function arguments when defining the model), or the training procedure (e.g. by specifying search spaces in `learning_rate` or `batch_size`). You can simply use `model.search` (tensorflow)/`Trainer.search`(pytorch) to launch trials, and `model.search_summary`(tensorflow)/`Trainer.search_summary`(pytorch) to review the search results.
 
-Under the hood, the objects (layers, activations, model, etc.) are implicitly turned into searchable objects at creation, which allows search spaces to be specified in their init arguments. Nano-HPO collects those search spaces and pass them to the underlying HPO engine (i.e. Optuna) which generates hyperparameter suggestions accordingly. The instantiation and execution of the corresponding objects is delayed until the hyperparameter values are available in each trial.
+Under the hood, the objects (layers, activations, model, etc.) are implicitly turned into searchable objects at creation, which allows search spaces to be specified in their init arguments. Nano HPO collects those search spaces and pass them to the underlying HPO engine (i.e. Optuna) which generates hyperparameter suggestions accordingly. The instantiation and execution of the corresponding objects are delayed until the hyperparameter values are available in each trial.
 
 ### Install
 
-If you have not installed BigDL-Nano yet, follow the [Nano Install Guide](../Overview/nano.md#2-install) to install it according to your system and the framework (i.e. tensorflow or pytorch).
+If you have not installed BigDL-Nano yet, follow the [Nano Install Guide](../Overview/nano.md#install) to install it according to your system and framework (i.e. tensorflow or pytorch).
 
-Next, install a few extra dependencies required for Nano HPO using below commands.
+Next, install a few dependencies required for Nano HPO using below commands.
 
 ```bash
 pip install ConfigSpace
@@ -19,7 +19,7 @@ pip install optuna
 
 ### Search Spaces
 
-Search spaces are value range specs that the search engine use for sampling hyperparameters. The available search spaces in Nano HPO is defined in `bigdl.nano.automl.hpo.space`. Refer to [Search Space API doc]() for more details.
+Search spaces are value range specifications that the search engine use for sampling hyperparameters. The available search spaces in Nano HPO is defined in `bigdl.nano.automl.hpo.space`. Refer to [Search Space API doc]() for more details.
 
 ### Tensorflow HPO
 
@@ -28,21 +28,21 @@ Search spaces are value range specs that the search engine use for sampling hype
 
 For tensorflow training, you should call `hpo_config.enable_hpo_tf` before using Nano HPO.
 
-`hpo_config.enable_hpo_tf` dynamically adds searchable layers, activations, functions, optimizers, etc into the `bigdl.nano.tf` module. You will need to change the imports from `tf.keras.layers` to `bigdl.nano.tf.keras.layers` in your program so that you can specify search spaces in their init arguments.
+`hpo_config.enable_hpo_tf` will dynamically add searchable layers, activations, functions, optimizers, etc into the `bigdl.nano.tf` module. When importing layers, you need to change the imports from `tf.keras.layers` to `bigdl.nano.tf.keras.layers`, so that you can specify search spaces in their init arguments. Note that even if you don't need to search the model architecture, you still need to change the imports.
 
 ```python
 import bigdl.nano.automl as nano_automl
 nano_automl.hpo_config.enable_hpo_tf()
 ```
 
-To disable HPO, use `hpo_config.disable_hpo_tf`.
+To disable HPO, use `hpo_config.disable_hpo_tf`. This will remove the searchable objects from `bigdl.nano.tf` module.
 ```python
 import bigdl.nano.automl as nano_automl
 nano_automl.hpo_config.disable_hpo_tf()
 ```
 
 #### Search the learning rate
-To search the learning rate, specify search space in `learning_rate` argument in the optimizer in `model.compile`. Remember to import the optimizer from `nano.tf.optimizers` instead of `tf.keras.optimizers`.
+To search the learning rate, specify search space in `learning_rate` argument in the optimizer in `model.compile`. Remember to import the optimizer from `bigdl.nano.tf.optimizers` instead of `tf.keras.optimizers`.
 
 ```python
 import bigdl.nano.automl.hpo.space as space
@@ -58,14 +58,18 @@ model.compile(
 To search the batch size, specify search space in `batch_size` argument in `model.fit`.
 ```python
 import bigdl.nano.automl.hpo.space as space
-model.search(n_trials=2,target_metric='accuracy', direction="maximize", x=x_train, y=y_train, validation_data=(x_valid, y_valid), batch_size=space.Categorical(128,64, prefix='fit'))
+model.search(n_trials=2, target_metric='accuracy', direction="maximize",
+    x=x_train, y=y_train,validation_data=(x_valid, y_valid),
+    batch_size=space.Categorical(128,64))
 ```
 
 ####  Search the Model Architecture
 
-You can specify search spaces when defining the model using either sequential API, functional API or subclassing from `tf.keras.Model`.
+To search different versions of model, you can specify search spaces when defining the model using either sequential API, functional API or by subclassing `tf.keras.Model`.
 
 ##### using Sequential API
+
+You can specify search spaces in layer arguments. Note that search spaces can only be specified in key-word argument (which means `Dense(space.xxx)` should be changes to `Dense(units=space.xxx)`).
 
 ```python
 from bigdl.nano.tf.keras.layers import Dense, Conv2D, Flatten
@@ -83,6 +87,8 @@ model.add(Dense(10, activation="softmax"))
 
 ##### using Functional API
 
+You can specify search spaces in layer arguments. Note that if a layer is used more than once in the model, we strongly suggest you to specify a `prefix` for each of the search space in the layer to distinguish them, or they will share the same search space (the last space will override all previous definition), as shown in the below example.
+
 ```python
 import bigdl.nano.automl.hpo.space as space
 from bigdl.nano.tf.keras import Input
@@ -97,7 +103,9 @@ outputs = Dense(units=10)(x)
 model = Model(inputs=inputs, outputs=outputs, name="mnist_model")
 ```
 
-##### modeling by Subclassing tf.keras.Model
+##### by subclassing tf.keras.Model
+
+For models defined by subclassing tf.keras.Model, use the decorator `@hpo.tfmodel` to turn the model into a searchable object. Then you will able to specify either search spaces or normal values in the model init arguments.
 
 ```python
 import bigdl.nano.automl.hpo.space as space
@@ -132,27 +140,30 @@ model = MyModel(
 
 #### Launch Hyperparameter Search and Review the Results
 
-* To launch hyperparameter search, call `model.search` after compile, as shown below. `model.search` runs the `n_trials` number of trials (meaning `n_trials` set of hyperparameter combinations are searched), and optimizes the `target_metric` in the specified `direction`. Besides search arguments, you also need to specify fit arguments in `model.search` which will be used in the fitting process in each trial. Refer to (API docs)[] for details.
+To launch hyperparameter search, call `model.search` after compile, as shown below. `model.search` runs the `n_trials` number of trials (meaning `n_trials` set of hyperparameter combinations are searched), and optimizes the `target_metric` in the specified `direction`. Besides search arguments, you also need to specify fit arguments in `model.search` which will be used in the fitting process in each trial. Refer to (API docs)[] for details.
 
-* Use `model.search_summary` to retrieve the search results, which you can use to review in data frames, pick the best trial, or do visualizations.  Examples of search results analysis and visualization can be found [here]().
+Use `model.search_summary` to retrieve the search results, which you can use to review in data frames, pick the best trial, or do visualizations.  Examples of search results analysis and visualization can be found [here]().
+
+Finally, `model.fit` will automatically fit the model using the best set of hyper parameters found in the search. You can also use a set of hyperparameters from a trial other than the best one. Refer to [API docs]() for details.
 
 ```python
 model = ... # define the model
 model.compile(...)
-model.search(n_trials=100, target_metric='accuracy',direction="maximize", x=x_train, y=y_train, batch_size=32, epochs=20, validation_split=0.2)
-study = model.search_summary()
+model.search(n_trials=100, target_metric='accuracy', direction="maximize",
+    x=x_train, y=y_train, batch_size=32, epochs=20, validation_split=0.2)
+    study = model.search_summary()
 model.fit(...)
 ```
 
 ---
 
-### PyTorch
+### PyTorch HPO
 
 Nano-HPO now only support hyperparameter search for pytorch-lightning modules.
 
 ####  Search the Model Architecture
 
-To search the model architecture, use a decorator `@hpo.plmodel()` to decorate the your model. This decorator will turn the model into a searchable object. Put the arguments that needs to be searched in the init arguments, and use the argument to construct the model. The argument can be either space or non-space value, as shown below.
+To search the model architecture, use the decorator `@hpo.plmodel()` to turn the model into a searchable object. Put the arguments that needs to be searched in the init arguments and use the arguments to construct the model. The arguments can be either space or non-space values, as shown below.
 
 ```python
 import bigdl.nano.automl.hpo.space as space
@@ -184,7 +195,7 @@ model = MyModel(
 ```
 #### Search the learning rate
 
-`learning_rate` can also be specified in the init arguments of your model. You can use `learning_rate` to construct the optimizer in `configure_optimizers()`, as shown below.
+`learning_rate` can be specified in the init arguments of your model. You can use `learning_rate` to construct the optimizer in `configure_optimizers()`, as shown below.
 
 ```python
 import bigdl.nano.automl.hpo.space as space
@@ -203,7 +214,7 @@ model = MyModel(..., learning_rate=space.Real(0.001,0.01,log=True))
 ```
 #### Search the batch size
 
-`batch_size` can also be specified in the init arguments of your model. You can use the `batch_size` to construct the train `DataLoader` in `train_dataloader()`, as shown below.
+`batch_size` can be specified in the init arguments of your model. You can use the `batch_size` to construct the train `DataLoader` in `train_dataloader()`, as shown below.
 
 ```python
 import bigdl.nano.automl.hpo.space as space
@@ -224,7 +235,11 @@ model = MyModel(..., batch_size = space.Categorical(32,64))
 
 To launch hyperparameter search, call `Trainer.search` after model is defined. Remember to set `use_hpo=True` in when initializing the `Trainer`.
 
-`Trainer.search` takes the decorated model as input. Similar to tensorflow, `trainer.search` runs the `n_trials` number of trials (meaning `n_trials` set of hyperparameter combinations are searched), and optimizes the `target_metric` in the specified `direction`. There's an extra argument `max_epochs` which is only use only in fitting process in search trials.
+`Trainer.search` takes the decorated model as input. Similar to tensorflow, `trainer.search` runs the `n_trials` number of trials (meaning `n_trials` set of hyperparameter combinations are searched), and optimizes the `target_metric` in the specified `direction`. There's an extra argument `max_epochs` which is only used for the fitting process in search trials (do not affect the `Trainer.fit`). `Trainer.search` returns a model configured with the best set of hyper parameters.
+
+Use `model.search_summary` to retrieve the search results, which you can use to review in data frames, pick the best trial, or do visualizations.  Examples of search results analysis and visualization can be found [here]().
+
+Finally you can use `Trainer.fit()` to fit the best model. You may get models constructed with hyperparameters of a specific trial. Refer to [Trainer.search API doc]() for more details.
 
 ```python
 from bigdl.nano.pytorch import Trainer
@@ -238,7 +253,7 @@ best_model = trainer.search(
     max_epochs=20,
 )
 study = trainer.search_summary()
-        trainer.fit(best_model)
+trainer.fit(best_model)
 ```
 
 
