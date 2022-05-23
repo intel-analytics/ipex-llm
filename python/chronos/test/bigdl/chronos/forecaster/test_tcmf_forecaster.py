@@ -141,6 +141,7 @@ class TestChronosModelTCMFForecaster(TestCase):
         # is_xshards_distributed
         with self.assertRaises(Exception) as context:
             self.model.is_xshards_distributed()
+        print(str(context.exception))
         self.assertTrue('You should run fit before calling is_xshards_distributed()'
                         in str(context.exception))
 
