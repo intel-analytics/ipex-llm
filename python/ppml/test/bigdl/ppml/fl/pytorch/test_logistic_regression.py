@@ -54,14 +54,6 @@ def mock_process(data_train):
     return ppl
 
 
-def tmp():
-    model = LogisticRegressionNetwork1(1)
-    loss_fn = nn.BCELoss()
-    optimizer = torch.optim.SGD(model.parameters(), lr=1e-3)
-    pass
-
-
-
 class TestLogisticRegression(unittest.TestCase):
     fmt = '%(asctime)s %(levelname)s {%(module)s:%(lineno)d} - %(message)s'
     logging.basicConfig(format=fmt, level=logging.INFO)
