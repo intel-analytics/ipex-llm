@@ -22,7 +22,6 @@ import tensorflow.keras as keras
 
 from bigdl.orca.automl.model.abstract import BaseModel
 from bigdl.orca.automl.metrics import Evaluator
-from bigdl.nano.utils.log4Error import *
 
 
 class LSTMSeq2Seq(BaseModel):
@@ -254,6 +253,7 @@ class LSTMSeq2Seq(BaseModel):
         elif self.metric in compiled_metric_names:
             metric_name = self.metric
         else:
+            from bigdl.nano.utils.log4Error import invalidInputError
             invalidInputError(False,
                               f"Input metric in fit_eval should be one of the metrics that "
                               f"are used "

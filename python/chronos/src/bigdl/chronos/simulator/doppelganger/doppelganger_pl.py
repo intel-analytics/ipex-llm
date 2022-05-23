@@ -61,7 +61,6 @@ from .network import RNNInitialStateType
 from .loss import doppelganger_loss
 from .util import gen_attribute_input_noise, gen_feature_input_noise,\
     gen_feature_input_data_free, renormalize_per_sample
-from bigdl.nano.utils.log4Error import *
 
 
 class DoppelGANger_pl(LightningModule):
@@ -125,6 +124,7 @@ class DoppelGANger_pl(LightningModule):
                                     [False] * (len(data_attribute_outputs)-num_real_attribute))
         self.gen_flag_dims = []
         dim = 0
+        from bigdl.nano.utils.log4Error import invalidInputError
         for output in self.data_feature_outputs:
             if output.is_gen_flag:
                 if output.dim != 2:

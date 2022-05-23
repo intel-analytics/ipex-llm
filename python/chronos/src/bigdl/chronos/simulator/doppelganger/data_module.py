@@ -52,7 +52,6 @@ from torch.utils.data import DataLoader, Dataset
 from pytorch_lightning import LightningDataModule
 
 from .util import add_gen_flag, normalize_per_sample, renormalize_per_sample
-from bigdl.nano.utils.log4Error import *
 
 
 class DoppelGANgerDataModule(LightningDataModule):
@@ -103,6 +102,7 @@ class DoppelGANgerDataModule(LightningDataModule):
         # prepare input meta data
         # ===================================================================================
         total_generate_num_sample = data_feature.shape[0]
+        from bigdl.nano.utils.log4Error import invalidInputError
         if data_feature.shape[1] % self.sample_len != 0:
             invalidInputError(False, "length must be a multiple of sample_len")
         self.length = int(data_feature.shape[1] / self.sample_len)

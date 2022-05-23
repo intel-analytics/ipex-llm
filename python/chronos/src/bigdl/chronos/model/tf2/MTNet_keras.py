@@ -68,6 +68,7 @@ class AttentionRNNWrapper(Wrapper):
     """
 
     def __init__(self, layer, weight_initializer="glorot_uniform", **kwargs):
+        from bigdl.nano.utils.log4Error import invalidInputError
         invalidInputError(isinstance(layer, RNN), "expect RNN layer here")
         self.layer = layer
         self.supports_masking = True
@@ -76,6 +77,7 @@ class AttentionRNNWrapper(Wrapper):
         super(AttentionRNNWrapper, self).__init__(layer, **kwargs)
 
     def _validate_input_shape(self, input_shape):
+        from bigdl.nano.utils.log4Error import invalidInputError
         if len(input_shape) != 3:
             invalidInputError(False,
                               "Layer received an input with shape {0} but expected a Tensor"
@@ -150,6 +152,7 @@ class AttentionRNNWrapper(Wrapper):
     def call(self, x, constants=None, mask=None, initial_state=None):
         # input shape: (n_samples, time (padded with zeros), input_dim)
         input_shape = self.input_spec.shape
+        from bigdl.nano.utils.log4Error import invalidInputError
 
         if self.layer.stateful:
             initial_states = self.layer.states
@@ -273,6 +276,7 @@ class MTNetKeras(BaseModel):
         super()._check_config(**config)
         if rs:
             config_names = set(config.keys())
+            from bigdl.nano.utils.log4Error import invalidInputError
             invalidInputError(config_names.issuperset(self.saved_configs),
                               "expect config_names contains saved_configs")
         self.epochs = config.get("epochs")
@@ -295,6 +299,7 @@ class MTNetKeras(BaseModel):
         self._check_configs()
 
     def _check_configs(self):
+        from bigdl.nano.utils.log4Error import invalidInputError
         invalidInputError(self.time_step >= 1,
                           "Invalid configuration value. 'time_step' must be larger than 1")
         invalidInputError(self.time_step >= self.ar_window,
@@ -433,6 +438,7 @@ class MTNetKeras(BaseModel):
             self.config = config
         else:
             if config:
+                from bigdl.nano.utils.log4Error import invalidInputError
                 invalidInputError(False,
                                   "You can only pass new configuations for 'mc', 'epochs' and"
                                   " 'metric' during incremental fitting. "
@@ -445,6 +451,7 @@ class MTNetKeras(BaseModel):
     def _check_input(self, x, y):
         input_feature_num = x.shape[-1]
         input_output_dim = y.shape[-1]
+        from bigdl.nano.utils.log4Error import invalidInputError
         if input_feature_num is None:
             invalidInputError(False,
                               "input x is None!")
@@ -498,6 +505,7 @@ class MTNetKeras(BaseModel):
         elif metric in compiled_metric_names:
             metric_name = metric
         else:
+            from bigdl.nano.utils.log4Error import invalidInputError
             invalidInputError(False,
                               f"Input metric in fit_eval should be one of the metrics that are "
                               f"used to compile the model. Got metric value of {metric} and the "

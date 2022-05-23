@@ -52,7 +52,6 @@ import sys
 import torch
 import torch.nn as nn
 from .network import Discriminator, AttrDiscriminator, DoppelGANgerGenerator, RNNInitialStateType
-from bigdl.nano.utils.log4Error import *
 
 
 class DoppelGANger(nn.Module):
@@ -135,6 +134,7 @@ class DoppelGANger(nn.Module):
         self.data_attribute = data_attribute
 
         if self.data_feature[0].shape[1] % self.sample_len != 0:
+            from bigdl.nano.utils.log4Error import invalidInputError
             invalidInputError(False,
                               "length must be a multiple of sample_len")
         self.sample_time = int(self.data_feature[0].shape[1] / self.sample_len)
@@ -200,6 +200,7 @@ class DoppelGANger(nn.Module):
         gen_flags = []
         lengths = []
         round_ = int(math.ceil(float(feature_input_noise.shape[0]) / batch_size))
+        from bigdl.nano.utils.log4Error import invalidInputError
         invalidInputError(self.training is False, "please call .eval() on the model")
         self.generator.eval()
         for i in range(round_):

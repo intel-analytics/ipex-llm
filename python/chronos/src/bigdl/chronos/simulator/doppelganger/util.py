@@ -45,7 +45,6 @@
 
 from .output import OutputType, Output, Normalization
 import numpy as np
-from bigdl.nano.utils.log4Error import *
 
 
 def renormalize_per_sample(data_feature, data_attribute, data_feature_outputs,
@@ -145,6 +144,7 @@ def normalize_per_sample(data_feature, data_attribute, data_feature_outputs,
 
 def add_gen_flag(data_feature, data_gen_flag, data_feature_outputs,
                  sample_len):
+    from bigdl.nano.utils.log4Error import invalidInputError
     for output in data_feature_outputs:
         if output.is_gen_flag:
             invalidInputError(False,
