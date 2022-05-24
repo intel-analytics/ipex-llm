@@ -86,6 +86,9 @@ trainer.predict(ort_model, dataloader)
 Quantization is widely used to compress models to lower precision which not only reduces the model size but also accelerates inference speed. BigDL-Nano provides `Trainer.quantize()` API for users to quickly obtain a quantized model with accuracy control by specifying a few arguments. Intel Neural Compressor (INC) and Post-training Optimization Tools (POT) from OpenVINO toolkit are enabled as options. At the meantime, runtime acceleration is also included directly in quantization pipeline when using accelerator='onnxruntime'/'openvino' so you don't have to run `Trainer.trace` before quantization.
 
 To use INC as your quantization engine, you can choose accelerator as None or 'onnxruntime'. Otherwise, accelerator='openvino' means using OpenVINO POT to do quantization.
+
+By default, `Trainer.quantize()` doesn't search the tuning space and returns the fully-quantized model without considering the accuracy drop. If you need to search quantization tuning space for a model with accuracy control, you'll have to specify a few arguments to define the tuning space. More instructions in [Quantization with Accuracy control](#quantization-with-accuracy-control)
+
 ### Quantization using Intel Neural Compressor
 By default, Intel Neural Compressor is not installed with BigDL-Nano. So if you determine to use it as your quantization backend, you'll need to install it first:
 ```shell
@@ -159,4 +162,54 @@ y_hat = ov_q_model(x)
 trainer.validate(ov_q_model, dataloader)
 trainer.test(ov_q_model, dataloader)
 trainer.predict(ov_q_model, dataloader)
+```
+
+### Quantization with Accuracy Control
+A set of arguments that helps to tune the results for both INC and POT quantization:
+
+- `calib_dataloader`: Calibration dataloader is required for static post-training quantization. And for POT, it's also used as `val_dataloader` for evaluation
+- `metric`: A metric of `torchmetric` to run evaluation and compare with baseline
+
+- `accuracy_criterion`: A dictionary to specify the acceptable accuracy drop, e.g. `{'relative': 0.01, 'higher_is_better': True}`
+
+    - `relative` / `absolute`: Drop type, the accuracy drop should be relative or absolute to baseline
+    - `higher_is_better`: Indicate if larger value of metric means better accuracy
+- `max_trials`: Maximum trails on the search, if the algorithm can't find a satisfying model, it will exit and raise error.
+
+**Accuracy Control with INC**
+There are a few arguments that requires only by INC, don't specify or modify any of them if you use `accelerator='openvino'`.
+- `val_dataloader`: The dataloader that we will run evaluation on.
+- `tuning_strategy`(optional): it specifies the algorithm to search the tuning space. In most cases, you don't need to chage it.
+- `timeout`: Timeout of your tuning. Defaults 0 means endless time for tuning.
+
+Here is an example to use INC with accuracy control as below. It will search for a model within 1% accuracy drop with 10 trials.
+```python
+from torchmetrics.classification import Accuracy
+trainer.quantize(model,
+                 precision='int8',
+                 accelerator=None,
+                 calib_dataloader= dataloader,
+                 val_dataloader= dataloader,
+                 metric=Accuracy()
+                 accuracy_criterion={'relative': 0.01, 'higher_is_better': True},
+                 approach='static',
+                 method='fx',
+                 tuning_strategy='bayesian',
+                 timeout=0,
+                 max_trials=10,
+                ):
+```
+**Accuracy Control with POT**
+Similar to INC, we can run quantization like:
+```python
+from torchmetrics.classification import Accuracy
+trainer.quantize(model,
+                 precision='int8',
+                 accelerator=`openvino`,
+                 calib_dataloader= dataloader,
+                 metric=Accuracy()
+                 accuracy_criterion={'relative': 0.01, 'higher_is_better': True},
+                 approach='static',
+                 max_trials=10,
+                ):
 ```
