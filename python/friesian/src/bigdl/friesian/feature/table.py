@@ -1414,21 +1414,22 @@ class FeatureTable(Table):
         df = mask(self.df, mask_cols, seq_len)
         return FeatureTable(df)
 
-    def pad(self, cols, seq_len=100, mask_cols=None):
+    def pad(self, cols, seq_len=100, mask_cols=None, mask_token=0):
         """
         Add padding on specified column(s).
 
-        :param cols: str or a list of str, the column(s) to be padded with 0s. Each column
+        :param cols: str or a list of str, the column(s) to be padded with mask_tokens. Each column
                should be of list type.
         :param seq_len: int, the length to be padded to for cols. Default is 100.
         :param mask_cols: str or a list of str, the column(s) to be masked with 1s and 0s.
+        :param mask_token: numeric types or str, should be consistent with element's type of cols.
 
         :return: A new FeatureTable with padded columns.
         """
         cols = str_to_list(cols, "cols")
         if mask_cols:
             mask_cols = str_to_list(mask_cols, "mask_cols")
-        df = pad(self.df, cols, seq_len, mask_cols)
+        df = pad(self.df, cols, seq_len, mask_cols, mask_token)
         return FeatureTable(df)
 
     def apply(self, in_col, out_col, func, dtype="string"):

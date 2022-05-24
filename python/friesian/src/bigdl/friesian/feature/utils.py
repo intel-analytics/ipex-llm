@@ -86,9 +86,9 @@ def mask(df, mask_cols, seq_len):
     return callZooFunc("float", "mask", df, mask_cols, seq_len)
 
 
-def pad(df, cols, seq_len, mask_cols):
+def pad(df, cols, seq_len, mask_cols, mask_token):
     df = callZooFunc("float", "mask", df, mask_cols, seq_len) if mask_cols else df
-    df = callZooFunc("float", "postPad", df, cols, seq_len)
+    df = callZooFunc("float", "postPad", df, cols, seq_len, mask_token)
     return df
 
 

@@ -85,7 +85,6 @@ class Padded2RaggedModel(tfrs.Model):
         lengths = features[-1]
 
         labels = tf.RaggedTensor.from_tensor(labels, lengths)
-        # print(labels)
         labels = tf.cast(labels, dtype=tf.float32)
         scores = self.call(features, padding_output=False)
         return self.task(
