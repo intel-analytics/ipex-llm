@@ -21,7 +21,7 @@ pip install optuna
 
 Search spaces are value range specifications that the search engine uses for sampling hyperparameters. The available search spaces in Nano HPO is defined in `bigdl.nano.automl.hpo.space`. Refer to [Search Space API doc]() for more details.
 
-### Tensorflow HPO
+### For Tensorflow Users
 
 
 #### Enable/Disable HPO for tensorflow
@@ -158,7 +158,7 @@ model.fit(...)
 
 ---
 
-### PyTorch HPO
+### For PyTorch Users
 
 Nano-HPO now only supports hyperparameter search for [pytorch-lightning]() modules.
 
