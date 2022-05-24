@@ -716,7 +716,7 @@ class Table:
         :return: A new Table with the appended column.
         """
         invalidInputError((isinstance(column, Column),
-                           "column should be a pyspark.sql.column.Column")
+                           "column should be a pyspark.sql.column.Column"))
         return self._clone(self.df.withColumn(name, column))
 
     def subtract(self, other):
