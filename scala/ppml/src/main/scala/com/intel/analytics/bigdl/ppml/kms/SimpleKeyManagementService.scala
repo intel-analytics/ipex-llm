@@ -75,4 +75,8 @@ class SimpleKeyManagementService extends KeyManagementService {
   }
 }
 
-object SimpleKeyManagementService = new SimpleKeyManagementService
+object SimpleKeyManagementService {
+  def apply(): SimpleKeyManagementService = {
+    new SimpleKeyManagementService(appid, appkey)
+  }
+}
