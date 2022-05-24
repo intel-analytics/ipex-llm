@@ -18,6 +18,7 @@ import torch
 import yaml
 from pathlib import Path
 from .model_utils import get_forward_args
+from bigdl.nano.utils.log4Error import invalidInputError
 
 
 class AcceleratedLightningModule(LightningModule):
@@ -32,7 +33,7 @@ class AcceleratedLightningModule(LightningModule):
 
     def train(self, mode=True):
         if mode:
-            raise RuntimeError("This model is not trainable!")
+            invalidInputError(False, "This model is not trainable!")
         super().train(mode)
 
     def on_forward_start(self, inputs):
@@ -70,7 +71,7 @@ class AcceleratedLightningModule(LightningModule):
 
         :param path: Path to saved model. Path should be a directory.
         """
-        raise NotImplementedError("Saving function is not implemented.")
+        invalidInputError(False, "Saving function is not implemented.")
 
     def _save(self, path):
         """
@@ -96,4 +97,4 @@ class AcceleratedLightningModule(LightningModule):
 
     @staticmethod
     def _load(path, model=None):
-        raise NotImplementedError("Loading function is not implemented.")
+        invalidInputError(False, "Loading function is not implemented.")

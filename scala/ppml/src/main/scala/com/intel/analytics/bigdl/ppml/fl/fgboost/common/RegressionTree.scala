@@ -22,7 +22,6 @@ import java.util
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.ppml.fl.fgboost.common.TreeUtils._
 import com.intel.analytics.bigdl.dllib.utils.Log4Error
-import scala.collection.JavaConversions.asScalaBuffer
 import scala.collection.JavaConverters._
 import scala.collection.mutable.HashSet
 import scala.collection.mutable
@@ -87,7 +86,7 @@ class RegressionTree(
     bestLocalSplit
   }
 
-  def findBestSplitValue(treeNode: TreeNode): Split  = {
+  def findBestSplitValue(treeNode: TreeNode): Split = {
     // TODO: make minChildSize a parameter
     // For each feature
     val (gradSum, hessSum) = (sum(grads(0), treeNode.recordSet.toArray),
@@ -95,7 +94,7 @@ class RegressionTree(
     val bestGainByFeature = sortedIndex.indices.par.map{fIndex =>
       val sortedFeatureIndex = sortedIndex(fIndex).filter(treeNode.recordSet.contains)
       var leftGradSum = 0.0
-      var leftHessSum  = 0.0
+      var leftHessSum = 0.0
       var rightGradSum = gradSum.toDouble
       var rightHessSum = hessSum.toDouble
       var rStartIndex = 0
@@ -227,7 +226,7 @@ class RegressionTree(
   }
 
   def splitToNodes(split: Split, treeNode: TreeNode): (TreeNode, TreeNode) = {
-    val leftSet = split.itemSet.map(Integer2int).toSet
+    val leftSet = split.itemSet.asScala.map(Integer2int).toSet
     val rightSet = treeNode.recordSet.diff(leftSet)
     // Left nodeID = parentNodeID * 2 + 1
     // Right nodeID = parentNodeID * 2 + 2
@@ -245,7 +244,8 @@ class RegressionTree(
     depth
   }
 
-  override def toString = s"RegressionTree($treeID, depth $depth, local node $localNodes, leaves $leaves)"
+  override def toString: String = s"RegressionTree($treeID," +
+    s" depth $depth, local node $localNodes, leaves $leaves)"
 }
 
 object RegressionTree {

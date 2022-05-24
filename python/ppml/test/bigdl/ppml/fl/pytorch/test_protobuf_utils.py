@@ -24,6 +24,7 @@ import os
 from bigdl.ppml.fl import *
 from bigdl.ppml.fl.pytorch.fl_server import FLServer
 from bigdl.ppml.fl.pytorch.fl_client import FLClient
+import torch
 from torch import nn
 import torch.nn.functional as F
 
@@ -44,8 +45,9 @@ class TestProtobufUtils(unittest.TestCase):
     def test_upload_model(self) -> None:
         cli = FLClient()
         model = SimpleNNModel()
+        loss_fn = nn.BCELoss()
         logging.debug('uploading model to server')
-        cli.upload_model(model)
+        cli.upload_model(model, loss_fn, torch.optim.SGD, {})
 
 
 class SimpleNNModel(nn.Module):

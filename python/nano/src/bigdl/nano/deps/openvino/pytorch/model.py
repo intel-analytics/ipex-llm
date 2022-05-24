@@ -14,10 +14,14 @@
 # limitations under the License.
 #
 from pathlib import Path
-from ..core.openvino_model import OpenVINOModel
+from tempfile import TemporaryDirectory
+from .dataloader import PytorchOpenVINODataLoader
+from .metric import PytorchOpenVINOMetric
+from ..core.model import OpenVINOModel
 from bigdl.nano.utils.inference.pytorch.model import AcceleratedLightningModule
-from .pytorch_openvino_utils import export
+from .utils import export
 import torch
+from bigdl.nano.utils.log4Error import invalidInputError
 
 
 class PytorchOpenVINOModel(OpenVINOModel, AcceleratedLightningModule):
@@ -32,20 +36,19 @@ class PytorchOpenVINOModel(OpenVINOModel, AcceleratedLightningModule):
                              defaults to None.
         """
         ov_model_path = model
-        if isinstance(model, torch.nn.Module):
-            export(model, input_sample, 'tmp.xml')
-            ov_model_path = 'tmp.xml'
-        OpenVINOModel.__init__(self, ov_model_path)
-        AcceleratedLightningModule.__init__(self, None)
-        xml_path = Path('tmp.xml')
-        if xml_path.exists():
-            xml_path.unlink()
+        with TemporaryDirectory() as dir:
+            dir = Path(dir)
+            if isinstance(model, torch.nn.Module):
+                export(model, input_sample, str(dir / 'tmp.xml'))
+                ov_model_path = dir / 'tmp.xml'
+            OpenVINOModel.__init__(self, ov_model_path)
+            AcceleratedLightningModule.__init__(self, None)
 
     def on_forward_start(self, inputs):
         if self.ie_network is None:
-            raise RuntimeError(
-                "Please create an instance by PytorchOpenVINOModel() or PytorchOpenVINOModel.load()"
-            )
+            invalidInputError(False,
+                              "Please create an instance by PytorchOpenVINOModel()"
+                              " or PytorchOpenVINOModel.load()")
         inputs = self.tensors_to_numpy(inputs)
         return inputs
 
@@ -70,12 +73,27 @@ class PytorchOpenVINOModel(OpenVINOModel, AcceleratedLightningModule):
         status = PytorchOpenVINOModel._load_status(path)
         if status.get('xml_path', None):
             xml_path = Path(status['xml_path'])
-            assert xml_path.suffix == '.xml', "Path of openvino model must be with '.xml' suffix."
+            invalidInputError(xml_path.suffix == '.xml',
+                              "Path of openvino model must be with '.xml' suffix.")
         else:
-            raise KeyError("nano_model_meta.yml must specify 'xml_path' for loading.")
+            invalidInputError(False, "nano_model_meta.yml must specify 'xml_path' for loading.")
         xml_path = Path(path) / status['xml_path']
         return PytorchOpenVINOModel(xml_path)
 
-    def _save_model(self, path):
-        xml_path = Path(path) / self.status['xml_path']
-        super()._save_model(xml_path)
+    def pot(self,
+            dataloader,
+            metric=None,
+            higher_better=True,
+            drop_type="relative",
+            maximal_drop=0.999,
+            max_iter_num=1,
+            n_requests=None,
+            sample_size=300):
+        # convert torch metric/dataloader to openvino format
+        if metric:
+            metric = PytorchOpenVINOMetric(metric=metric, higher_better=higher_better)
+        dataloader = PytorchOpenVINODataLoader(dataloader, collate_fn=self.tensors_to_numpy)
+        model = super().pot(dataloader, metric=metric, drop_type=drop_type,
+                            maximal_drop=maximal_drop, max_iter_num=max_iter_num,
+                            n_requests=n_requests, sample_size=sample_size)
+        return PytorchOpenVINOModel(model)

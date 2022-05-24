@@ -25,8 +25,8 @@ import traceback
 
 
 class NNServiceImpl(NNServiceServicer):
-    def __init__(self) -> None:
-        self.aggregator = Aggregator()
+    def __init__(self, **kargs) -> None:
+        self.aggregator = Aggregator(**kargs)
 
     def train(self, request: TrainRequest, context):
         tensor_map = request.data.tensorMap
@@ -49,6 +49,11 @@ class NNServiceImpl(NNServiceServicer):
         return super().predict(request, context)
         
     def upload_model(self, request, context):
-        model = pickle.loads(request.model_bytes)
-        self.aggregator.add_server_model(model)
-        return UploadModelResponse(message="Upload sucess")
+        try:
+            model = pickle.loads(request.model_bytes)
+            loss_fn = pickle.loads(request.loss_fn)
+            self.aggregator.set_server_model(model, loss_fn, request.optimizer)
+            msg = "Upload sucess"
+        except Exception as e:
+            msg = traceback.format_exc()
+        return UploadModelResponse(message=msg)

@@ -14,7 +14,9 @@
 # limitations under the License.
 #
 
+import pickle
 import logging
+import threading
 from torch import nn
 import torch
 from bigdl.ppml.fl.pytorch.protobuf_utils import ndarray_map_to_tensor_map
@@ -22,32 +24,82 @@ from bigdl.ppml.fl.pytorch.utils import set_one_like_parameter
 from threading import Condition
 
 class Aggregator(object):
-    def __init__(self, client_num=1) -> None:
+    def __init__(self,
+                 client_num=1) -> None:
         self.model = None
         self.client_data = {}
         self.server_data = None
         self.client_num = client_num
         self.condition = Condition()
-        
+        self._lock = threading.Lock()
+        logging.info(f"Initialized aggregator [client_num: {client_num}")
+
+    # deprecated, use set_server_model for fully customized NN Model
     def add_server_model(self, model):
-        if self.model is not None:
-            raise Exception("model already exists on server")
-        self.model = model
-        self.loss_fn = nn.CrossEntropyLoss()
-        self.optimizer = torch.optim.SGD(self.model.parameters(), lr=1e-3)
+        with self._lock:
+            if self.model is not None:
+                logging.warn("model exists on server, the add model operation is skipped")
+            else:
+                self.model = model
+                self.init_loss_fn()
+                self.init_optimizer()
+
+    def set_server_model(self, model, loss_fn, optimizer):
+        with self._lock:
+            if self.model is not None:
+                logging.warn("model exists on server, the add model operation is skipped")
+            else:
+                self.model = model
+                self.set_loss_fn(loss_fn)
+                optimizer_cls = pickle.loads(optimizer.cls)
+                optimizer_args = pickle.loads(optimizer.args)
+                self.set_optimizer(optimizer_cls, optimizer_args)
+
+    # deprecated, use set_loss_fn for fully customized NN Model
+    def init_loss_fn(self):
+        # match-case is supported only from Python 3.10
+        if self.loss_fn == 'cross_entropy':
+            self.loss_fn = nn.CrossEntropyLoss()
+        elif self.loss_fn == 'binary_cross_entropy':
+            self.loss_fn = nn.BCELoss()
+        else:
+            raise Exception(f"Illigal loss function: {self.loss_fn}")
+
+    def set_loss_fn(self, loss_fn):
+        self.loss_fn = loss_fn
+
+    def set_optimizer(self, optimizer_cls, optimizer_args):
+        if len(list(self.model.parameters())) == 0:
+            self.optimizer = None
+            return
+        self.optimizer = optimizer_cls(self.model.parameters(), **optimizer_args)
+
+    # deprecated, use set_optimizer for fully customized NN Model
+    def init_optimizer(self):
+        if len(list(self.model.parameters())) == 0:
+            self.optimizer = None
+            return
+        if self.optimizer == 'sgd':
+            self.optimizer = torch.optim.SGD(self.model.parameters(), lr=self.learning_rate)
+        else:
+            raise Exception(f"Illigal optimizer: {self.optimizer}")
 
     def put_client_data(self, client_id, data):
+        self.condition.acquire()
         self.client_data[client_id] = data
-        logging.debug(f'server receive data {len(self.client_data)}/{self.client_num}')
-        if len(self.client_data) == self.client_num:
-            self.condition.acquire()
+        logging.debug(f'server receive data [{client_id}], \
+got {len(self.client_data)}/{self.client_num}')
+        
+        if len(self.client_data) == self.client_num:            
             logging.debug('server received all client data, start aggregate')
             self.aggregate()
-            self.condition.notify_all()
-            self.condition.release()
+            logging.debug('clearing client data')
+            self.client_data = {}
+            self.condition.notify_all()            
         else:
-            logging.debug('waiting')
+            logging.debug(f'[{client_id}] waiting')
             self.condition.wait()
+        self.condition.release()
 
 
     def aggregate(self):
@@ -65,9 +117,11 @@ class Aggregator(object):
         x.requires_grad = True
         pred = self.model(x)
         loss = self.loss_fn(pred, target)
-        self.optimizer.zero_grad()
+        if self.optimizer is not None:
+            self.optimizer.zero_grad()
         loss.backward()
-        self.optimizer.step()
+        if self.optimizer is not None:
+            self.optimizer.step()
         grad_map = {'grad': x.grad.numpy(), 'loss': loss.detach().numpy()}
         self.server_data = ndarray_map_to_tensor_map(grad_map)
 
