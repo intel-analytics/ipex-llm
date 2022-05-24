@@ -22,12 +22,12 @@ import pandas as pd
 import os
 
 import torch
-from bigdl.ppml.fl.pytorch.utils import set_one_like_parameter
-from bigdl.ppml.fl.pytorch.fl_server import FLServer
+from bigdl.ppml.fl.nn.pytorch.utils import set_one_like_parameter
+from bigdl.ppml.fl.nn.fl_server import FLServer
 from torch import nn
 import logging
 
-from bigdl.ppml.fl.pytorch.pipeline import PytorchPipeline
+from bigdl.ppml.fl.nn.pytorch.pipeline import PytorchPipeline
 
 resource_path = os.path.join(os.path.dirname(__file__), "../resources")
 

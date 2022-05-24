@@ -18,13 +18,13 @@
 import pickle
 import grpc
 from numpy import ndarray
-from bigdl.ppml.fl.pytorch.generated.nn_service_pb2 import TrainRequest, UploadModelRequest
-from bigdl.ppml.fl.pytorch.generated.nn_service_pb2_grpc import *
-from bigdl.ppml.fl.pytorch.protobuf_utils import ndarray_map_to_tensor_map
+from bigdl.ppml.fl.nn.generated.nn_service_pb2 import TrainRequest, UploadModelRequest
+from bigdl.ppml.fl.nn.generated.nn_service_pb2_grpc import *
+from bigdl.ppml.fl.nn.utils import ndarray_map_to_tensor_map
 import uuid
 from torch.utils.data import DataLoader
 
-from bigdl.ppml.fl.pytorch.utils import ClassAndArgsWrapper
+from bigdl.ppml.fl.nn.utils import ClassAndArgsWrapper
 
 class FLClient(object):
     def __init__(self) -> None:

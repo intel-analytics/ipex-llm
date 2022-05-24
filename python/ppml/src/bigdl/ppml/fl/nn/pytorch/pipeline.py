@@ -19,9 +19,9 @@ from numpy import ndarray
 import torch
 from torch import nn
 import torch
-from bigdl.ppml.fl.pytorch.fl_client import FLClient
+from bigdl.ppml.fl.nn.fl_client import FLClient
 from torch.utils.data import DataLoader
-from bigdl.ppml.fl.pytorch.protobuf_utils import tensor_map_to_ndarray_map
+from bigdl.ppml.fl.nn.utils import tensor_map_to_ndarray_map
 
 class PytorchPipeline:
     def __init__(self, model: nn.Module, loss_fn, optimizer: torch.optim.Optimizer, algorithm=None,

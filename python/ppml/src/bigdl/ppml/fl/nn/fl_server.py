@@ -17,8 +17,8 @@
 from concurrent import futures
 import grpc
 from bigdl.ppml.fl import *
-from bigdl.ppml.fl.pytorch.generated.nn_service_pb2_grpc import *
-from bigdl.ppml.fl.pytorch.service.nn_service import NNServiceImpl
+from bigdl.ppml.fl.nn.generated.nn_service_pb2_grpc import *
+from bigdl.ppml.fl.nn.nn_service import NNServiceImpl
 
 
 class FLServer(object):
