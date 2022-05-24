@@ -275,8 +275,8 @@ class PyTorchRayEstimator(OrcaRayEstimator):
                                                                         transform_func)
             else:
                 if self.backend == "horovod":
-                    raise ValueError("We don't support validation during fit with horovod backend" \
-                                     "for now.")
+                    raise ValueError("Currently, we don't support input validation_data for horovod"
+                                     " backend")
                 val_ray_xshards = process_spark_xshards(validation_data, self.num_workers)
 
                 def zip_func(worker, this_partition_refs, that_partition_refs):
@@ -308,8 +308,8 @@ class PyTorchRayEstimator(OrcaRayEstimator):
                     remote_worker_stats.append(stats)
             else:
                 if self.backend == "horovod":
-                    raise ValueError("We don't support validation during fit with horovod backend" \
-                                     "for now.")
+                    raise ValueError("Currently, we don't support input validation_data for horovod"
+                                     " backend")
                 if not isinstance(validation_data, ray.data.Dataset):
                     raise ValueError("Validation data type should be the same as train data, "
                                      "but got type: {}".format(type(validation_data)))
