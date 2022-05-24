@@ -64,7 +64,7 @@ class AutoformerForecaster(BasePytorchForecaster):
         self.model_creator = model_creator
 
         super().__init__()
-    
+
     def fit(self, data, epochs=1, batch_size=32):
         # input transform
         if isinstance(data, DataLoader) and self.distributed:
