@@ -29,10 +29,11 @@ def create_data(tf_data=False, batch_size=32):
     input_feature_num = 10
     output_feature_num = 2
     past_seq_len = 10
+    future_seq_len = 2
     
     def get_x_y(num_sample):
         x = np.random.randn(num_sample, past_seq_len, input_feature_num)
-        y = np.random.randn(num_sample, 1, output_feature_num)
+        y = np.random.randn(num_sample, future_seq_len, output_feature_num)
         return x, y
     
     train_data = get_x_y(train_num_samples)
@@ -51,49 +52,51 @@ def create_data(tf_data=False, batch_size=32):
 
 
 @pytest.mark.skipif(tf.__version__ < '2.0.0', reason="Run only when tf > 2.0.0.")
-class TestLSTMForecaster(TestCase):
+class TestTCNForecaster(TestCase):
     def setUp(self):
-        from bigdl.chronos.forecaster.tf.lstm_forecaster import LSTMForecaster
-        self. forecaster = LSTMForecaster(past_seq_len=10,
-                                          input_feature_num=10,
-                                          output_feature_num=2)
+        from bigdl.chronos.forecaster.tf.tcn_forecaster import TCNForecaster
+        self.forecaster = TCNForecaster(past_seq_len=10,
+                                        future_seq_len=2,
+                                        input_feature_num=10,
+                                        output_feature_num=2,
+                                        num_channels=[15]*7)
 
     def tearDown(self):
         pass
 
-    def test_lstm_forecaster_fit_predict_evaluate(self):
+    def test_tcn_forecaster_fit_predict_evaluate(self):
         train_data, test_data = create_data()
         self.forecaster.fit(train_data,
-                       epochs=2,
-                       batch_size=32)
+                            epochs=2,
+                            batch_size=32)
         yhat = self.forecaster.predict(test_data[0],
-                                  batch_size=32)
-        assert yhat.shape == (400, 1, 2)
+                                       batch_size=32)
+        assert yhat.shape == (400, 2, 2)
         mse = self.forecaster.evaluate(test_data,
-                                  batch_size=32,
-                                  multioutput="raw_values")
+                                       batch_size=32,
+                                       multioutput="raw_values")
         assert mse[0].shape == test_data[1].shape[1:]
 
-    def test_lstm_forecaster_fit_tf_data(self):
+    def test_tcn_forecaster_fit_tf_data(self):
         train_data, test_data = create_data(tf_data=True)
         self.forecaster.fit(train_data,
                             epochs=2,
                             batch_size=32)
         yhat = self.forecaster.predict(test_data)
-        assert yhat.shape == (400, 1, 2)
+        assert yhat.shape == (400, 2, 2)
 
-    def test_lstm_forecaster_save_load(self):
+    def test_tcn_forecaster_save_load(self):
         train_data, test_data = create_data()
         self.forecaster.fit(train_data, epochs=2)
         yhat = self.forecaster.predict(test_data[0])
         with tempfile.TemporaryDirectory() as tmp_dir_file:
-            tmp_dir_file = os.path.join(tmp_dir_file, 'lstm.ckpt')
+            tmp_dir_file = os.path.join(tmp_dir_file, 'tcn.ckpt')
             self.forecaster.save(tmp_dir_file)
             self.forecaster.load(tmp_dir_file)
-            from bigdl.chronos.model.tf2.VanillaLSTM_keras import LSTMModel
-            assert isinstance(self.forecaster.internal, LSTMModel)
+            from bigdl.chronos.model.tf2.TCN_keras import TemporalConvNet
+            assert isinstance(self.forecaster.internal, TemporalConvNet)
         load_model_yhat = self.forecaster.predict(test_data[0])
-        assert yhat.shape == (400, 1, 2)
+        assert yhat.shape == (400, 2, 2)
         np.testing.assert_almost_equal(yhat, load_model_yhat, decimal=5)
 
 if __name__ == '__main__':

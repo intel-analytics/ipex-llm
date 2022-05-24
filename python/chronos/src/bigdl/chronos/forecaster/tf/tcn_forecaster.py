@@ -15,33 +15,30 @@
 #
 
 from bigdl.chronos.forecaster.tf.base_forecaster import BaseTF2Forecaster
-from bigdl.chronos.model.tf2.Seq2Seq_keras import model_creator, LSTMSeq2Seq
+from bigdl.chronos.model.tf2.TCN_keras import model_creator, TemporalBlock, TemporalConvNet
 
 
-class Seq2SeqForecaster(BaseTF2Forecaster):
+class TCNForecaster(BaseTF2Forecaster):
     """
-        Example:
-            >>> #The dataset is split into x_train, x_val, x_test, y_train, y_val, y_test
-            >>> forecaster = Seq2SeqForecaster(past_seq_len=24,
-                                               future_seq_len=2,
-                                               input_feature_num=1,
-                                               output_feature_num=1,
-                                               ...)
-            >>> forecaster.fit((x_train, y_train))
-            >>> test_pred = forecaster.predict(x_test)
-            >>> test_eval = forecaster.evaluate((x_test, y_test))
-            >>> forecaster.save({ckpt_dir_name})
-            >>> forecaster.load({ckpt_dir_name})
+    Example:
+        >>> #The dataset is split into x_train, x_val, x_test, y_train, y_val, y_test
+        >>> forecaster = TCNForecaster(past_seq_len=24,
+                                       future_seq_len=5,
+                                       input_feature_num=1,
+                                       output_feature_num=1,
+                                       ...)
+        >>> forecaster.fit((x_train, y_train))
+        >>> forecaster.save({ckpt_name})
+        >>> forecaster.load({ckpt_name})
     """
-
     def __init__(self,
                  past_seq_len,
                  future_seq_len,
                  input_feature_num,
                  output_feature_num,
-                 lstm_hidden_dim=64,
-                 lstm_layer_num=2,
-                 teacher_forcing=False,
+                 num_channels=[30]*7,
+                 kernel_size=3,
+                 repo_initialization=True,
                  dropout=0.1,
                  optimizer="Adam",
                  loss="mse",
@@ -52,18 +49,23 @@ class Seq2SeqForecaster(BaseTF2Forecaster):
                  workers_per_node=1,
                  distributed_backend="tf2"):
         """
-        Build a Seq2Seq Forecast Model.
+        Build a TCN Forecast Model.
+
+        TCN Forecast may fall into local optima. Please set repo_initialization
+        to False to alleviate the issue. You can also change a random seed to
+        work around.
 
         :param past_seq_len: Specify the history time steps (i.e. lookback).
         :param future_seq_len: Specify the output time steps (i.e. horizon).
         :param input_feature_num: Specify the feature dimension.
         :param output_feature_num: Specify the output dimension.
-        :param lstm_hidden_dim: LSTM hidden channel for decoder and encoder.
-               The value defaults to 64.
-        :param lstm_layer_num: LSTM layer number for decoder and encoder.
-               The value defaults to 2.
-        :param teacher_forcing: If use teacher forcing in training. The value
-               defaults to False.
+        :param num_channels: Specify the convolutional layer filter number in
+               TCN's encoder. This value defaults to [30]*7.
+        :param kernel_size: Specify convolutional layer filter height in TCN's
+               encoder. This value defaults to 3.
+        :param repo_initialization: if to use framework default initialization,
+               True to use paper author's initialization and False to use the
+               framework's default initialization. The value defaults to True.
         :param dropout: Specify the dropout close possibility (i.e. the close
                possibility to a neuron). This value defaults to 0.1.
         :param optimizer: Specify the optimizer used for training. This value
@@ -79,7 +81,7 @@ class Seq2SeqForecaster(BaseTF2Forecaster):
         :param seed: int, random seed for training. This value defaults to None.
         :param distributed: bool, if init the forecaster in a distributed
                fashion. If True, the internal model will use an Orca Estimator.
-               If False, the internal model will use a Keras model. The value
+               If False, the internal model will use a pytorch model. The value
                defaults to False.
         :param workers_per_node: int, the number of worker you want to use.
                The value defaults to 1. The param is only effective when
@@ -93,9 +95,9 @@ class Seq2SeqForecaster(BaseTF2Forecaster):
             "future_seq_len": future_seq_len,
             "input_feature_num": input_feature_num,
             "output_feature_num": output_feature_num,
-            "lstm_hidden_dim": lstm_hidden_dim,
-            "lstm_layer_num": lstm_layer_num,
-            "teacher_forcing": teacher_forcing,
+            "num_channels": num_channels,
+            "kernel_size": kernel_size,
+            "repo_initialization": repo_initialization,
             "dropout": dropout,
             "loss": loss,
             "lr": lr,
@@ -104,7 +106,8 @@ class Seq2SeqForecaster(BaseTF2Forecaster):
 
         # model creator settings
         self.model_creator = model_creator
-        self.custom_objects_config = {"LSTMSeq2Seq": LSTMSeq2Seq}
+        self.custom_objects_config = {"TemporalBlock": TemporalBlock,
+                                      "TemporalConvNet": TemporalConvNet}
 
         # distributed settings
         # self.distributed = distributed
@@ -123,7 +126,9 @@ class Seq2SeqForecaster(BaseTF2Forecaster):
         # nano setting
         # current_num_threads = torch.get_num_threads()
         # self.num_processes = max(1, current_num_threads//8)  # 8 is a magic num
+        # self.use_ipex = False  # TCN has worse performance on ipex
         # self.onnx_available = True
-        # self.quantize_available = False
+        # self.quantize_available = True
         # self.checkpoint_callback = False
-        super(Seq2SeqForecaster, self).__init__()
+
+        super().__init__()
