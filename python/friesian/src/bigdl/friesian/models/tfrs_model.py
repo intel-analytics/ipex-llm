@@ -49,7 +49,6 @@ class TFRSModel(tf.keras.Model):
 
         with tf.GradientTape() as tape:
             loss = self.model.compute_loss(inputs, training=True)
-            tf.print("loss: ", loss)
             loss_rank = loss.shape.rank
             if loss_rank is not None and loss_rank != 0:
                 loss = tf.nn.compute_average_loss(loss)

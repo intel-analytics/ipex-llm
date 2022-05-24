@@ -32,7 +32,7 @@ from models import Padded2RaggedModel
 if __name__ == "__main__":
     parser = OptionParser()
     parser.add_option('--cluster_mode', type=str, default="local",
-                      help='The cluster mode, such as local, yarn or standalone.')
+                      help='The cluster mode, such as local or yarn.')
     parser.add_option('--executor_cores', type=int, default=18,
                       help='The executor core number.')
     parser.add_option('--executor_memory', type=str, default="10g",
@@ -43,8 +43,8 @@ if __name__ == "__main__":
                       help='The driver core number.')
     parser.add_option('--driver_memory', type=str, default="36g",
                       help='The driver memory.')
-    parser.add_option("--data_dir", dest="data_dir", default="./total.parquet",
-                      help='The directory to read/write data')
+    parser.add_option("--data_dir", dest="data_dir", default="./ml-1m",
+                      help='The directory to ml-1m .dat files')
 
     (options, args) = parser.parse_args(sys.argv)
     data_dir = options.data_dir
@@ -56,7 +56,7 @@ if __name__ == "__main__":
         init_orca_context("yarn-client", cores=options.executor_cores,
                           num_nodes=options.num_executor, memory=options.executor_memory,
                           driver_cores=options.driver_cores, driver_memory=options.driver_memory,
-                          init_ray_on_spark=True)
+                          init_ray_on_spark=True, extra_python_lib="models.py")
     else:
         raise ValueError("cluster_mode should be 'local' or 'yarn', but got " + args.cluster_mode)
 
