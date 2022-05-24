@@ -16,7 +16,7 @@
 
 import torch
 from bigdl.chronos.forecaster.base_forecaster import BasePytorchForecaster
-from bigdl.chronos.model.VanillaLSTM_pytorch import model_creator
+from bigdl.chronos.model.autoformer import model_creator
 
 
 class AutoformerForecaster(BasePytorchForecaster):
