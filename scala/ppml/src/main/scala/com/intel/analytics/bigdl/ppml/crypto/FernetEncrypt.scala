@@ -312,7 +312,7 @@ class FernetEncrypt extends Crypto {
       }
 
       val lastCipherText: Array[Byte] = read(inputStream, inputStream.available() - 32)
-      content += lastCipherText
+      content += new String(cipher.doFinal(lastCipherText))
 
       result = result ++ readParquet(content.getBytes())
 
