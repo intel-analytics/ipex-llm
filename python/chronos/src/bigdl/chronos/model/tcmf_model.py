@@ -430,6 +430,7 @@ class TCMFNdarrayModelWrapper(ModelWrapper):
         self.id_arr = None
 
     def fit(self, x, num_workers=None, **fit_params):
+        from bigdl.nano.utils.log4Error import invalidInputError
         if isinstance(x, dict):
             self.id_arr, train_data = split_id_and_data(x, False)
             self.internal.fit_eval((train_data, None), num_workers=num_workers, **fit_params)
@@ -439,6 +440,7 @@ class TCMFNdarrayModelWrapper(ModelWrapper):
                               "value of x should be a dict of ndarray")
 
     def _rearrange_data_by_id(self, id_new, data_new, method_name="fit_incremental"):
+        from bigdl.nano.utils.log4Error import invalidInputError
         if np.array_equal(self.id_arr, id_new) or id_new is None:
             return data_new
         if self.id_arr is None:
