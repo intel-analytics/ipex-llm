@@ -48,7 +48,7 @@ To search different versions of your model, you can specify search spaces when d
 
 ##### using Sequential API
 
-You can specify search spaces in layer arguments. Note that search spaces can only be specified in key-word argument (which means `Dense(space.Int(...))` should be changed to `Dense(units=space.Int(...))`).
+You can specify search spaces in layer arguments. Note that search spaces can only be specified in key-word argument (which means `Dense(space.Int(...))` should be changed to `Dense(units=space.Int(...))`). Remember to import `Sequential` from `bigdl.nano.automl.tf.keras` instead of `tensorflow.keras`
 
 ```python
 from bigdl.nano.tf.keras.layers import Dense, Conv2D, Flatten
@@ -66,7 +66,7 @@ model.add(Dense(10, activation="softmax"))
 
 ##### using Functional API
 
-You can specify search spaces in layer arguments. Note that if a layer is used more than once in the model, we strongly suggest you specify a `prefix` for each search space in such layers to distinguish them, or they will share the same search space (the last space will override all previous definition), as shown in the below example.
+You can specify search spaces in layer arguments. Note that if a layer is used more than once in the model, we strongly suggest you specify a `prefix` for each search space in such layers to distinguish them, or they will share the same search space (the last space will override all previous definition), as shown in the below example. Remember to import `Model` from `bigdl.nano.automl.tf.keras` instead of `tensorflow.keras`
 
 ```python
 import bigdl.nano.automl.hpo.space as space
@@ -152,7 +152,7 @@ model = ... # define the model
 model.compile(...)
 model.search(n_trials=100, target_metric='accuracy', direction="maximize",
     x=x_train, y=y_train, batch_size=32, epochs=20, validation_split=0.2)
-    study = model.search_summary()
+study = model.search_summary()
 model.fit(...)
 ```
 
@@ -164,7 +164,7 @@ Nano-HPO now only supports hyperparameter search for [pytorch-lightning]() modul
 
 ####  Search the Model Architecture
 
-To search the model architecture, use the decorator `@hpo.plmodel()` to turn the model into a searchable object. Put the arguments that needs to be searched in the init arguments and use the arguments to construct the model. The arguments can be either space or non-space values, as shown below.
+To search the model architecture, use the decorator `@hpo.plmodel()` to turn the model into a searchable object. Put the arguments that you want to search in the init arguments and use the arguments to construct the model. The arguments can be either space or non-space values, as shown below.
 
 ```python
 import bigdl.nano.automl.hpo.space as space
@@ -234,11 +234,11 @@ model = MyModel(..., batch_size = space.Categorical(32,64))
 
 #### Launch Hyperparameter Search and Review the Results
 
-To launch hyperparameter search, call `Trainer.search` after model is defined. Remember to set `use_hpo=True` in when initializing the `Trainer`.
+First of all, import `Trainer` from `bigdl.nano.pytorch` instead of `pytorch_lightning`. Remember to set `use_hpo=True` when initializing the `Trainer`.
 
-`Trainer.search` takes the decorated model as input. Similar to tensorflow, `trainer.search` runs the `n_trials` number of trials (meaning `n_trials` set of hyperparameter combinations are searched), and optimizes the `target_metric` in the specified `direction`. There's an extra argument `max_epochs` which is used only in the fitting process in search trials without affecting `Trainer.fit`. `Trainer.search` returns a model configured with the best set of hyper parameters.
+To launch hyperparameter search, call `Trainer.search` after model is defined. `Trainer.search` takes the decorated model as input. Similar to tensorflow, `trainer.search` runs the `n_trials` number of trials (meaning `n_trials` set of hyperparameter combinations are searched), and optimizes the `target_metric` in the specified `direction`. There's an extra argument `max_epochs` which is used only in the fitting process in search trials without affecting `Trainer.fit`. `Trainer.search` returns a model configured with the best set of hyper parameters.
 
-Use `model.search_summary` to retrieve the search results, which you can use to get all trial statistics in pandas dataframe format, pick the best trial, or do visualizations.  Examples of search results analysis and visualization can be found [here](#analysis-and-visualization).
+Call `model.search_summary` to retrieve the search results, which you can use to get all trial statistics in pandas dataframe format, pick the best trial, or do visualizations.  Examples of search results analysis and visualization can be found [here](#analysis-and-visualization).
 
 Finally you can use `Trainer.fit()` to fit the best model. You can also get a model constructed with hyperparameters from a particular trial other than the best one. Refer to [Trainer.search API doc]() for more details.
 
