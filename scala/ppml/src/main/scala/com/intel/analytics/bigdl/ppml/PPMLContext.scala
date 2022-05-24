@@ -201,7 +201,7 @@ object PPMLContext{
         val appKey = conf.get("spark.bigdl.kms.ehs.key", defaultValue = "ehsmAPPKEY")
         new EHSMKeyManagementService(ip, port, appId, appKey)
       case KMS_CONVENTION.MODE_SIMPLE_KMS =>
-        SimpleKeyManagementService
+        new SimpleKeyManagementService
       case _ =>
         throw new EncryptRuntimeException("Wrong kms type")
     }
