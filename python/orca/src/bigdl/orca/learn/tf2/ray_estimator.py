@@ -29,7 +29,7 @@ from bigdl.orca.learn.utils import maybe_dataframe_to_xshards, dataframe_to_xsha
     convert_predict_xshards_to_dataframe, update_predict_xshards, \
     process_xshards_of_pandas_dataframe, make_data_creator
 from bigdl.orca.data.utils import process_spark_xshards
-from bigdl.orca.ray import RayContext
+from bigdl.orca.ray import OrcaRayContext
 
 logger = logging.getLogger(__name__)
 
@@ -48,7 +48,7 @@ class TensorFlow2Estimator(OrcaRayEstimator):
         self.config = {} if config is None else config
         self.verbose = verbose
 
-        ray_ctx = RayContext.get()
+        ray_ctx = OrcaRayContext.get()
         if "batch_size" in self.config:
             raise Exception("Please do not specify batch_size in config. Input batch_size in the"
                             " fit/evaluate function of the estimator instead.")
