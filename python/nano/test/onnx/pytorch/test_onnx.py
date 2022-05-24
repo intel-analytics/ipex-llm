@@ -123,7 +123,7 @@ class TestOnnx(TestCase):
             model.eval()
             with torch.no_grad():
                 forward_res_pytorch = pl_model(x).numpy()
-            forward_res_onnx = onnx_model(x).numpy() - 1
+            forward_res_onnx = onnx_model.predict(x).numpy() - 1
             np.testing.assert_almost_equal(forward_res_onnx, forward_res_pytorch, decimal=5)
 
     def test_trainer_trace_multiple_input_onnx(self):

@@ -319,12 +319,14 @@ class Trainer(pl.Trainer):
             quantized_model = quantizer.post_training_quantize(model, calib_dataloader,
                                                                val_dataloader, metric)
             if accelerator is None:
-                return PytorchQuantizedModel(quantized_model)
+                return PytorchQuantizedModel(quantized_model,
+                                             inference_method_name=inference_method_name)
             elif accelerator == 'onnxruntime':
                 with TemporaryDirectory() as dir:
                     saved_onnx = Path(dir) / 'tmp.onnx'
                     quantized_model.save(saved_onnx)
-                    return PytorchONNXRuntimeModel(str(saved_onnx))
+                    return PytorchONNXRuntimeModel(str(saved_onnx),
+                                                   inference_method_name=inference_method_name)
         elif accelerator == 'openvino':
             model_type = type(model).__name__
             if not model_type == 'PytorchOpenVINOModel':
@@ -382,9 +384,11 @@ class Trainer(pl.Trainer):
         )
         model = fp32_inference_model_wrapper(model, inference_method_name)
         if accelerator == 'openvino':
-            return PytorchOpenVINOModel(model, input_sample)
+            return PytorchOpenVINOModel(model, input_sample,
+                                        inference_method_name=inference_method_name)
         if accelerator == 'onnxruntime':
-            return PytorchONNXRuntimeModel(model, input_sample, onnxruntime_session_options)
+            return PytorchONNXRuntimeModel(model, input_sample, onnxruntime_session_options,
+                                           inference_method_name=inference_method_name)
         invalidInputError(False, "Accelerator {} is invalid.".format(accelerator))
 
     @staticmethod

@@ -22,9 +22,10 @@ from neural_compressor.model.model import PyTorchModel
 
 
 class PytorchQuantizedModel(AcceleratedLightningModule):
-    def __init__(self, model):
+    def __init__(self, model, inference_method_name="forward"):
         super().__init__(model.model)
         self.quantized = model
+        self._add_mirror_method(inference_method_name)
 
     @staticmethod
     def _load(path, model):

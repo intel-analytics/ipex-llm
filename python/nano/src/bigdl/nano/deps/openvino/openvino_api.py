@@ -16,7 +16,7 @@
 from functools import partial
 
 
-def PytorchOpenVINOModel(model, input_sample=None):
+def PytorchOpenVINOModel(model, input_sample=None, inference_method_name="forward"):
     """
     Create a OpenVINO model from pytorch.
 
@@ -24,10 +24,13 @@ def PytorchOpenVINOModel(model, input_sample=None):
                   path to Openvino saved model.
     :param input_sample: A set of inputs for trace, defaults to None if you have trace before or
                          model is a LightningModule with any dataloader attached, defaults to None
+    :param inference_method_name: The method users will call for their inference route.
+
     :return: PytorchOpenVINOModel model for OpenVINO inference.
     """
     from .pytorch.model import PytorchOpenVINOModel
-    return PytorchOpenVINOModel(model, input_sample)
+    return PytorchOpenVINOModel(model, input_sample,
+                                inference_method_name=inference_method_name)
 
 
 def load_openvino_model(path):

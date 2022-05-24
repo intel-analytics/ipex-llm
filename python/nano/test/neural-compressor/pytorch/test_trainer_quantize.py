@@ -169,7 +169,7 @@ class TestTrainer(TestCase):
                                   calib_dataloader=self.train_loader,
                                   inference_method_name="predict")
         assert qmodel
-        out = qmodel(x)
+        out = qmodel.predict(x)
         assert out.shape == torch.Size([256, 10])
 
         # save and load
@@ -179,5 +179,5 @@ class TestTrainer(TestCase):
                                          self.user_defined_pl_model_no_forward,
                                          inference_method_name="predict")
             assert loaded_qmodel
-            out = loaded_qmodel(x)
+            out = loaded_qmodel.predict(x)
             assert out.shape == torch.Size([256, 10])

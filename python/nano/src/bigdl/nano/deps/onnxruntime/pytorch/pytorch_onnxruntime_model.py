@@ -31,7 +31,9 @@ class PytorchONNXRuntimeModel(ONNXRuntimeModel, AcceleratedLightningModule):
         This PytorchONNXRuntimeModel will serve for all precision models.
     '''
 
-    def __init__(self, model, input_sample=None, onnxruntime_session_options=None):
+    def __init__(self, model, input_sample=None,
+                 onnxruntime_session_options=None,
+                 inference_method_name="forward"):
         """
         Create a ONNX Runtime model from pytorch.
 
@@ -40,6 +42,8 @@ class PytorchONNXRuntimeModel(ONNXRuntimeModel, AcceleratedLightningModule):
         :param input_sample: A set of inputs for trace, defaults to None if you have trace before or
                              model is a LightningModule with any dataloader attached,
                              defaults to None.
+        :param onnxruntime_session_options: A session option for onnxruntime accelerator.
+        :param inference_method_name: The method users will call for their inference route.
         """
         # Typically, when model is int8, we use this path
         # TODO: self._forward_args should be set externally
@@ -53,6 +57,7 @@ class PytorchONNXRuntimeModel(ONNXRuntimeModel, AcceleratedLightningModule):
         ONNXRuntimeModel.__init__(self, onnx_path, session_options=onnxruntime_session_options)
         if os.path.exists('tmp.onnx'):
             os.remove('tmp.onnx')
+        self._add_mirror_method(inference_method_name)
 
     def on_forward_start(self, inputs):
         if self.ortsess is None:

@@ -98,3 +98,16 @@ class AcceleratedLightningModule(LightningModule):
     @staticmethod
     def _load(path, model=None):
         invalidInputError(False, "Loading function is not implemented.")
+
+    def _add_mirror_method(self, inference_method_name):
+        '''
+        This method will add a mirror method(inference_method_name) to the
+        AcceleratedLightningModule, this means that calling `model.inference_method_name`
+        is same to calling `model.forward`.
+        NOTE: This method will not disable the usage of model.forward
+
+        :param inference_method_name: str, the name of the mirror call.
+        '''
+        if inference_method_name == "forward":
+            return
+        setattr(self, inference_method_name, self.forward)

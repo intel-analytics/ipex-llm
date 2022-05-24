@@ -25,7 +25,7 @@ from bigdl.nano.utils.log4Error import invalidInputError
 
 
 class PytorchOpenVINOModel(OpenVINOModel, AcceleratedLightningModule):
-    def __init__(self, model, input_sample=None):
+    def __init__(self, model, input_sample=None, inference_method_name="forward"):
         """
         Create a OpenVINO model from pytorch.
 
@@ -34,6 +34,7 @@ class PytorchOpenVINOModel(OpenVINOModel, AcceleratedLightningModule):
         :param input_sample: A set of inputs for trace, defaults to None if you have trace before or
                              model is a LightningModule with any dataloader attached,
                              defaults to None.
+        :param inference_method_name: The method users will call for their inference route.
         """
         ov_model_path = model
         with TemporaryDirectory() as dir:
@@ -43,6 +44,7 @@ class PytorchOpenVINOModel(OpenVINOModel, AcceleratedLightningModule):
                 ov_model_path = dir / 'tmp.xml'
             OpenVINOModel.__init__(self, ov_model_path)
             AcceleratedLightningModule.__init__(self, None)
+            self._add_mirror_method(inference_method_name)
 
     def on_forward_start(self, inputs):
         if self.ie_network is None:

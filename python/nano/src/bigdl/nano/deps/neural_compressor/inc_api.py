@@ -40,9 +40,9 @@ def tf_dataset_to_inc_dataloader(tf_dataset, batchsize):
     return common.DataLoader(tf_dataset, batchsize)
 
 
-def PytorchQuantizedModel(model):
+def PytorchQuantizedModel(model, inference_method_name="forward"):
     from .pytorch.quantized_model import PytorchQuantizedModel
-    return PytorchQuantizedModel(model)
+    return PytorchQuantizedModel(model, inference_method_name=inference_method_name)
 
 
 def load_inc_model(path, model, framework):
