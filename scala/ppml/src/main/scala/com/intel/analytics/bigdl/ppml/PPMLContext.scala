@@ -67,7 +67,7 @@ class PPMLContext protected(kms: KeyManagementService, sparkSession: SparkSessio
       case CryptoMode.PLAIN_TEXT =>
         sparkSession.sparkContext.textFile(path, minPartitions)
       case CryptoMode.AES_CBC_PKCS5PADDING =>
-        PPMLContext.textFile(sparkSession.sparkContext, path, dataKeyPlainText, minPartitions)
+        PPMLContext.textFile(sparkSession.sparkContext, path, dataKeyPlainText, "csv", minPartitions)
       case _ =>
         throw new IllegalArgumentException("unknown EncryptMode " + cryptoMode.toString)
     }
@@ -114,6 +114,7 @@ object PPMLContext{
   private[bigdl] def textFile(sc: SparkContext,
                path: String,
                dataKeyPlaintext: String,
+               fileType: String,
                minPartitions: Int = -1): RDD[String] = {
     Log4Error.invalidInputError(dataKeyPlaintext != "",
       "dataKeyPlainText should not be empty, please loadKeys first.")
@@ -125,7 +126,10 @@ object PPMLContext{
     val fernetCryptos = new FernetEncrypt
     data.mapPartitions { iterator => {
       Supportive.logger.info("Decrypting bytes with JavaAESCBC...")
-      fernetCryptos.decryptBigContent(iterator, dataKeyPlaintext)
+      fileType match {
+        case "csv" => fernetCryptos.decryptBigContent(iterator, dataKeyPlaintext)
+        case "parquet" => fernetCryptos.decryptParquetBigContent(iterator, dataKeyPlaintext)
+      }
     }}.flatMap(_.split("\n"))
   }
 

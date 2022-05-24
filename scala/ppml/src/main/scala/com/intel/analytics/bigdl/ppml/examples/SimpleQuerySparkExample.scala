@@ -63,5 +63,9 @@ object SimpleQuerySparkExample {
     // save data frame using spark kms context
     sc.write(developers, cryptoMode = arguments.outputEncryptMode).mode("overwrite")
       .option("header", true).csv(arguments.outputPath)
+
+    // save to parquet format
+    // sc.write(developers, cryptoMode = arguments.outputEncryptMode).mode("overwrite")
+    //   .option("header", true).parquet(arguments.outputPath)
   }
 }

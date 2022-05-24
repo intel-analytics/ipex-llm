@@ -17,6 +17,7 @@
 package com.intel.analytics.bigdl.ppml.crypto
 
 import com.intel.analytics.bigdl.dllib.utils.Log4Error
+import com.intel.analytics.bigdl.ppml.utils.ParquetStream
 
 import java.io._
 import java.nio.file.{Files, Path, Paths}
@@ -26,6 +27,10 @@ import java.util.Arrays
 import javax.crypto.spec.{IvParameterSpec, SecretKeySpec}
 import javax.crypto.{Cipher, Mac}
 import org.apache.spark.input.PortableDataStream
+import org.apache.parquet.column.page.PageReadStore
+import org.apache.parquet.example.data.simple.convert.GroupRecordConverter
+import org.apache.parquet.hadoop.ParquetFileReader
+import org.apache.parquet.io.ColumnIOFactory
 
 class FernetEncrypt extends Crypto {
 
@@ -220,6 +225,96 @@ class FernetEncrypt extends Crypto {
       val lastDecryptString = lastString + (new String(cipher.doFinal(lastCipherText)))
       val splitDecryptStringArray = lastDecryptString.split("\r").flatMap(_.split("\n"))
       result = result ++ splitDecryptStringArray
+
+      val hmac: Array[Byte] = read(inputStream, 32)
+      if (initializationVector.length != 16) {
+        throw new EncryptRuntimeException("Initialization Vector must be 128 bits")
+      }
+      if (hmac == null || hmac.length != 32) {
+        throw new EncryptRuntimeException("hmac must be 256 bits")
+      }
+      if (inputStream.available > 0) {
+        throw new EncryptRuntimeException("inputStream still has contents")
+      }
+    }
+    result
+
+  }
+
+  def readParquet(content: Array[Byte]): Iterator[String] = {
+    var result: Iterator[String] = Iterator[String]()
+    val parquetStream = new ParquetStream(content)
+    val reader = ParquetFileReader.open(parquetStream)
+    val metaData = reader.getFooter.getFileMetaData.getSchema
+    val fieldSize = metaData.getFields.size()
+    val headArray: Array[String] = new Array[String](1)
+    var headString = ""
+    val fields = metaData.getFields
+    for(fieldIndex <- 0 until fieldSize){
+      headString += fields.get(fieldIndex).getName
+      if (fieldIndex != fieldSize - 1){
+        headString += ","
+      }
+    }
+    headArray(0) = headString  // store the first line(fields) in a string array
+    result = result ++ headArray  // store the first line in the result iterator
+    var rowGroup: PageReadStore = reader.readNextRowGroup()
+    // read per row group
+    while (rowGroup != null) {
+      val rowSize = rowGroup.getRowCount.toInt
+      val rowArray: Array[String] = new Array[String](rowSize)
+      val columnIO = new ColumnIOFactory().getColumnIO(metaData)
+      val recordReader = columnIO.getRecordReader(rowGroup, new GroupRecordConverter(metaData))
+      // get per row in this row group
+      for (i <- 0 until rowSize){
+        val simpleGroup = recordReader.read()
+        var row = ""
+        for (j <- 0 until fieldSize){
+          row += simpleGroup.getValueToString(j, 0)
+          if (j != fieldSize - 1){
+            row += ","
+          }
+        }
+        rowArray(i) = row
+      }
+      result = result ++ rowArray
+      rowGroup = reader.readNextRowGroup()
+    }
+    result
+
+  }
+
+  def decryptParquetBigContent(ite: Iterator[(String, PortableDataStream)], dataKeyPlaintext: String): Iterator[String] = {
+    val secret: Array[Byte] = dataKeyPlaintext.getBytes()
+    var result: Iterator[String] = Iterator[String]()
+
+    while (ite.hasNext) {
+      val inputStream: DataInputStream = ite.next._2.open()
+      val version: Byte = inputStream.readByte()
+      if (version.compare((0x80).toByte) != 0) {
+        throw new EncryptRuntimeException("Version error!")
+      }
+      val encryptKey: Array[Byte] = Arrays.copyOfRange(secret, 16, 32)
+
+      val initializationVector: Array[Byte] = read(inputStream, 16)
+      val ivParameterSpec = new IvParameterSpec(initializationVector)
+
+      val secretKeySpec = new SecretKeySpec(encryptKey, "AES")
+      val cipher = Cipher.getInstance("AES/CBC/PKCS5Padding")
+      cipher.init(Cipher.DECRYPT_MODE, secretKeySpec, ivParameterSpec)
+
+      val blockSize = 102400000  // 100m per update
+      var content = ""
+      while (inputStream.available() > blockSize + 32) {
+        val splitEncryptedBytes = read(inputStream, blockSize)
+        val currentSplitDecryptString = new String(cipher.update(splitEncryptedBytes))
+        content += currentSplitDecryptString
+      }
+
+      val lastCipherText: Array[Byte] = read(inputStream, inputStream.available() - 32)
+      content += lastCipherText
+
+      result = result ++ readParquet(content.getBytes())
 
       val hmac: Array[Byte] = read(inputStream, 32)
       if (initializationVector.length != 16) {
