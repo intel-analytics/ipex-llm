@@ -1544,7 +1544,7 @@ class FeatureTable(Table):
             index_tbls = [index_tbls]
         invalidInputError(isinstance(index_tbls, list),
                           "index_dicts should be table or a list of table,"
-                          " but get a " + type(index_tbls))
+                          f" but get a {str(type(index_tbls))}")
         invalidInputError(len(columns) == len(index_tbls),
                           "each column of columns should have one corresponding index_dict")
 
@@ -1933,10 +1933,9 @@ class FeatureTable(Table):
         columns = str_to_list(columns, "columns")
         sort_cols = str_to_list(sort_cols, "sort_cols")
         nonnumeric_col_type = get_nonnumeric_col_type(self.df, columns)
-        invalidInputError(not nonnumeric_col_type,
-                          "columns should be numeric but "
-                          "get , ".join(list(map(lambda x: x[0] + " of type " + x[1],
-                                                 nonnumeric_col_type))))
+        msg = "columns should be numeric but get " + \
+              ", ".join(list(map(lambda x: x[0] + " of type " + x[1], nonnumeric_col_type)))
+        invalidInputError(not nonnumeric_col_type, msg)
         if isinstance(shifts, int):
             shifts = [shifts]
         elif isinstance(shifts, list):

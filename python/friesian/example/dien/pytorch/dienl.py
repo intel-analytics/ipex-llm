@@ -305,7 +305,7 @@ def build_input_features(feature_columns):
                 start += 1
         else:
             invalidInputError(False,
-                              "Invalid feature column type,got", type(feat))
+                              f"Invalid feature column type,got {str(type(feat))}")
     return features
 
 # DeepCTR.utils
