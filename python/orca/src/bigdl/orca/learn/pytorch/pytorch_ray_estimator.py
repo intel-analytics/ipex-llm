@@ -125,6 +125,7 @@ class PyTorchRayEstimator(OrcaRayEstimator):
         self.scheduler_step_freq = scheduler_step_freq
         self.use_tqdm = use_tqdm
         self.sync_stats = sync_stats
+        self.backend = backend
 
         if not training_operator_cls and not loss_creator:
             raise ValueError("If a loss_creator is not provided, you must "
@@ -273,6 +274,9 @@ class PyTorchRayEstimator(OrcaRayEstimator):
                 worker_stats = ray_xshards.reduce_partitions_for_actors(self.remote_workers,
                                                                         transform_func)
             else:
+                if self.backend == "horovod":
+                    raise ValueError("We don't support validation during fit with horovod backend" \
+                                     "for now.")
                 val_ray_xshards = process_spark_xshards(validation_data, self.num_workers)
 
                 def zip_func(worker, this_partition_refs, that_partition_refs):
@@ -303,6 +307,9 @@ class PyTorchRayEstimator(OrcaRayEstimator):
                     stats = worker.train_epochs.remote(**params)
                     remote_worker_stats.append(stats)
             else:
+                if self.backend == "horovod":
+                    raise ValueError("We don't support validation during fit with horovod backend" \
+                                     "for now.")
                 if not isinstance(validation_data, ray.data.Dataset):
                     raise ValueError("Validation data type should be the same as train data, "
                                      "but got type: {}".format(type(validation_data)))
