@@ -14,13 +14,12 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-#
 
 # Originally from Spark
 SCRIPT_DIR="$( cd "$( dirname "$0" )" && pwd )"
 PYTHON_ROOT_DIR="$SCRIPT_DIR/.."
 echo $PYTHON_ROOT_DIR
-PATHS_TO_CHECK="$SCRIPT_DIR/../.."
+PATHS_TO_CHECK="$SCRIPT_DIR/../src"
 PEP8_REPORT_PATH="$PYTHON_ROOT_DIR/test/pep8-report.txt"
 PYLINT_REPORT_PATH="$PYTHON_ROOT_DIR/test/pylint-report.txt"
 PYLINT_INSTALL_INFO="$PYTHON_ROOT_DIR/test/pylint-info.txt"
