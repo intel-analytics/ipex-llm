@@ -308,6 +308,11 @@ RUN rm $SPARK_HOME/jars/okhttp-*.jar && \
     chmod +x /sbin/tini && \
     cp /sbin/tini /usr/bin/tini
 
+# Azure support
+RUN curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash
+RUN mkdir /ppml/trusted-big-data-ml/azure
+ADD azure /ppml/trusted-big-data-ml/azure
+
 WORKDIR /ppml/trusted-big-data-ml
 
 ENTRYPOINT [ "/opt/entrypoint.sh" ]
