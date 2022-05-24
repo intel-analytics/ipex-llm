@@ -118,3 +118,34 @@ class AutoformerForecaster(BasePytorchForecaster):
             self.trainer = Trainer(max_epochs=epochs)
             self.trainer.fit(self.internal, data)
             self.fitted = True
+
+    def load(self, checkpoint_file, quantize_checkpoint_file=None):
+        """
+        restore the forecaster.
+        :param checkpoint_file: The checkpoint file location you want to load the forecaster.
+        :param quantize_checkpoint_file: The checkpoint file location you want to
+               load the quantized forecaster.
+        """
+        from bigdl.chronos.pytorch import TSTrainer as Trainer
+
+        if self.distributed:
+            self.internal.load(checkpoint_file)
+        else:
+            from bigdl.nano.pytorch.lightning import LightningModuleFromTorch
+            from bigdl.chronos.pytorch import TSTrainer as Trainer
+
+            model = self.model_creator(self.config)
+            self.internal = LightningModuleFromTorch.load_from_checkpoint(checkpoint_file,
+                                                                          model=model,
+                                                                          )
+            self.internal = Trainer.compile(self.internal)
+            self.fitted = True
+            if quantize_checkpoint_file:
+                # self.internal.load_quantized_state_dict(torch.load(quantize_checkpoint_file))
+                self.pytorch_int8 = Trainer.load(quantize_checkpoint_file,
+                                                 self.internal)
+            # This trainer is only for quantization, once the user call `fit`, it will be
+            # replaced according to the new training config
+            self.trainer = Trainer(logger=False, max_epochs=1,
+                                   checkpoint_callback=self.checkpoint_callback,
+                                   num_processes=self.num_processes, use_ipex=self.use_ipex)
