@@ -21,11 +21,11 @@ import pandas as pd
 import os
 
 from bigdl.ppml.fl import *
-from bigdl.ppml.fl.pytorch.fl_server import FLServer
-from bigdl.ppml.fl.pytorch.fl_client import FLClient
-from bigdl.ppml.fl.pytorch.utils import set_one_like_parameter
+from bigdl.ppml.fl.nn.fl_server import FLServer
+from bigdl.ppml.fl.nn.fl_client import FLClient
+from bigdl.ppml.fl.nn.pytorch.utils import set_one_like_parameter
 from bigdl.ppml.fl.utils import init_fl_context
-from bigdl.ppml.fl.pytorch.pipeline import PytorchPipeline
+from bigdl.ppml.fl.nn.pytorch.pipeline import PytorchPipeline
 
 from torch import nn
 import torch

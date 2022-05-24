@@ -22,8 +22,8 @@ import pandas as pd
 import os
 
 from bigdl.ppml.fl import *
-from bigdl.ppml.fl.pytorch.fl_server import FLServer
-from bigdl.ppml.fl.pytorch.fl_client import FLClient
+from bigdl.ppml.fl.nn.fl_server import FLServer
+from bigdl.ppml.fl.nn.fl_client import FLClient
 import torch
 from torch import nn
 import torch.nn.functional as F
