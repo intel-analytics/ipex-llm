@@ -64,6 +64,12 @@ message PredictResponse {
 message UploadModelRequest {
     string client_uuid = 1;
     bytes model_bytes = 2;
+    bytes loss_fn = 3;
+    ClassAndArgs optimizer = 4;
+}
+message ClassAndArgs {
+    bytes cls = 1;
+    bytes args = 2;
 }
 message UploadModelResponse {
     string message = 1;
