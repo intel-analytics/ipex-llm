@@ -715,8 +715,8 @@ class Table:
 
         :return: A new Table with the appended column.
         """
-        invalidInputError((isinstance(column, Column),
-                           "column should be a pyspark.sql.column.Column"))
+        invalidInputError(isinstance(column, Column),
+                          "column should be a pyspark.sql.column.Column")
         return self._clone(self.df.withColumn(name, column))
 
     def subtract(self, other):
@@ -1525,7 +1525,7 @@ class FeatureTable(Table):
         if isinstance(columns, str):
             columns = [columns]
         invalidInputError(isinstance(columns, list),
-                          "columns should be str or a list of str, but get a " + type(columns))
+                          f"columns should be str or a list of str, but get a {str(type(columns))}")
         df = add_value_features(self.df, columns, dict_tbl.df, key, value)
         return FeatureTable(df)
 
@@ -1568,7 +1568,7 @@ class FeatureTable(Table):
         if isinstance(freq_limit, int):
             freq_limit = {col: freq_limit for col in columns}
         invalidInputError(isinstance(freq_limit, dict),
-                          "freq_limit should be int or dict, but get a " + type(freq_limit))
+                          f"freq_limit should be int or dict, but get a {str(type(freq_limit))}")
         index_tbls = []
         for c in columns:
             c_count = self.select(c).group_by(c, agg={c: "count"}).rename(
