@@ -242,7 +242,6 @@ class PyTorchRayEstimator(OrcaRayEstimator):
             batch_size=batch_size,
             profile=profile,
             info=info,
-            wrap_dataloader=False,
             callbacks=callbacks,
         )
 
@@ -257,6 +256,8 @@ class PyTorchRayEstimator(OrcaRayEstimator):
                                                            num_workers=self.num_workers)
 
         if isinstance(data, SparkXShards):
+            # Should not wrap DistributedSampler on DataLoader for SparkXShards input.
+            params["wrap_dataloader"] = False
             if data._get_class_name() == 'pandas.core.frame.DataFrame':
                 data, validation_data = process_xshards_of_pandas_dataframe(data, feature_cols,
                                                                             label_cols,
@@ -268,7 +269,6 @@ class PyTorchRayEstimator(OrcaRayEstimator):
                 def transform_func(worker, partition_refs):
                     data_creator = partition_refs_to_creator(partition_refs)
                     params["data_creator"] = data_creator
-                    # Should not wrap DistributedSampler on DataLoader for SparkXShards input.
                     return worker.train_epochs.remote(**params)
 
                 worker_stats = ray_xshards.reduce_partitions_for_actors(self.remote_workers,
@@ -289,7 +289,8 @@ class PyTorchRayEstimator(OrcaRayEstimator):
                                                                          self.remote_workers,
                                                                          zip_func)
         elif isinstance(data, Dataset):
-            # need to refactor to align with tf2 code
+            # todo: need to refactor to align with tf2 code
+            params["wrap_dataloader"] = False
             shards = data.split(n=self.num_workers, locality_hints=self.remote_workers)
 
             def make_data_creator(shard, feature_cols, label_cols):
