@@ -32,6 +32,7 @@
 
 from pytorch_lightning.plugins.environments import ClusterEnvironment
 from pytorch_lightning.utilities import rank_zero_only
+from bigdl.nano.utils.log4Error import invalidInputError
 
 
 class RayEnvironment(ClusterEnvironment):
@@ -46,10 +47,12 @@ class RayEnvironment(ClusterEnvironment):
         return False
 
     def master_address(self) -> str:
-        raise NotImplementedError
+        invalidInputError(False, "master_address not implemented for RayEnvironment")
+        return ""
 
     def master_port(self) -> int:
-        raise NotImplementedError
+        invalidInputError(False, "master_port not implemented for RayEnvironment")
+        return 0
 
     def world_size(self) -> int:
         return self._world_size
@@ -71,7 +74,9 @@ class RayEnvironment(ClusterEnvironment):
         return self._is_remote
 
     def local_rank(self) -> int:
-        raise NotImplementedError
+        invalidInputError(False, "local_rank not implemented for RayEnvironment")
+        return 0
 
     def node_rank(self) -> int:
-        raise NotImplementedError
+        invalidInputError(False, "node_rank not implemented for RayEnvironment")
+        return 0

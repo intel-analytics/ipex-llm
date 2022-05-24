@@ -22,6 +22,8 @@ from typing import Callable, Dict, List, Tuple
 import pickle
 import copy
 from logging import warning
+from bigdl.nano.utils.log4Error import invalidInputError
+
 
 _cross_entropy = F.cross_entropy
 _torch_save = torch.save
@@ -31,11 +33,12 @@ _torch_save = torch.save
 try:
     from intel_pytorch_extension.ops.save import *
 except ImportError:
-    warning("IPEXAccelerator requires intel_pytorch_extension installed, \
+    msg = "IPEXAccelerator requires intel_pytorch_extension installed, \
     please run `pip install torch_ipex -f https://software.intel.com/ipex-whl-stable` \
-    to get IPEX ready.")
+    to get IPEX ready."
+    warning(msg)
     # process needs to stop here
-    raise ImportError
+    invalidInputError(False, msg)
 
 
 def replace_torch_function(function_name: str, replace_func: Callable):

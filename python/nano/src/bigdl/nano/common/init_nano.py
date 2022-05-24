@@ -22,6 +22,8 @@ from typing import Union, Optional
 import warnings
 
 from bigdl.nano.common.cpu_schedule import schedule_workers, get_cpu_info
+from bigdl.nano.utils.log4Error import invalidInputError
+
 
 parser = argparse.ArgumentParser()
 parser.add_argument("-o", "--openmp", action="store_false", default=True,
@@ -122,7 +124,7 @@ def main():
                                             shell=True).splitlines()[0].decode("utf-8")
         conda_env_name = conda_dir.split("/")[-1]
     except subprocess.CalledProcessError:
-        raise LookupError("Conda is not found on your computer.")
+        invalidInputError(False, "Conda is not found on your computer.")
 
     # Unset old conda env variables
     _unset_env_var(*["OMP_NUM_THREADS", "KMP_AFFINITY",

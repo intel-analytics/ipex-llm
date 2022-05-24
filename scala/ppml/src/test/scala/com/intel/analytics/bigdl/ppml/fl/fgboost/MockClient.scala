@@ -16,6 +16,7 @@
 
 package com.intel.analytics.bigdl.ppml.fl.fgboost
 
+import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.ppml.fl.algorithms.FGBoostRegression
 import com.intel.analytics.bigdl.ppml.fl.data.PreprocessUtil
 import com.intel.analytics.bigdl.ppml.fl.utils.FlContextForTest
@@ -38,7 +39,7 @@ class MockClient(dataPath: String,
     }
 
   }
-  def rawDataPipeline() = {
+  def rawDataPipeline(): Array[Tensor[Float]] = {
     val sources = Source.fromFile(dataPath, "utf-8").getLines()
     val testSources = if (testPath != null) {
       Source.fromFile(testPath, "utf-8").getLines()

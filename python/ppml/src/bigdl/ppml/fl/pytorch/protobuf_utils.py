@@ -22,7 +22,7 @@ def ndarray_map_to_tensor_map(array_map: dict):
     for (k, v) in array_map.items():
         if not isinstance(v, np.ndarray):
             raise Exception("ndarray map element should be Numpy ndarray")
-        tensor_map[k] = FloatTensor(tensor=v.flatten().tolist(),shape=v.shape)
+        tensor_map[k] = FloatTensor(tensor=v.flatten().tolist(), shape=v.shape, dtype=str(v.dtype))
     return TensorMap(tensorMap=tensor_map)
 
 
@@ -31,6 +31,6 @@ def tensor_map_to_ndarray_map(tensor_map: TensorMap):
     for (k, v) in tensor_map.items():
         if not isinstance(v, FloatTensor):
             raise Exception("tensor map element should be protobuf type FloatTensor")
-        dtype = "long" if k == 'target' else "float32"
+        dtype = "float32" if v.dtype is None else v.dtype
         ndarray_map[k] = np.array(v.tensor, dtype=dtype).reshape(v.shape)
     return ndarray_map

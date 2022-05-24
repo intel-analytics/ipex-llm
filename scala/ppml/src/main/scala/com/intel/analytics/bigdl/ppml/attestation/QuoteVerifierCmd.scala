@@ -30,7 +30,8 @@ object QuoteVerifierCmd {
             quoteOutputPath: String = "./quoteOutputDump"
         )
 
-        val cmdParser = new OptionParser[CmdParams]("PPML Attestation Quote Verification Cmd tool") {
+        val cmdParser =
+            new OptionParser[CmdParams]("PPML Attestation Quote Verification Cmd tool") {
             opt[String]('q', "quote")
             .text("quoteOutputPath, default is ./quoteOutputDump")
             .action((x, c) => c.copy(quoteOutputPath = x))
@@ -54,7 +55,8 @@ object QuoteVerifierCmd {
     def verifyQuote(quote: Array[Byte]): Int = {
         val number = new BigInteger(quote)
         val zero = new BigInteger("0")
-        // If the quoteOutput is greater than 0,then 1 will be return, if it is equal to 0, then 0 will be return,
+        // If the quoteOutput is greater than 0,then 1 will be return,
+        // if it is equal to 0, then 0 will be return,
         // else -1 will be return
         number.compareTo(zero)
     }
