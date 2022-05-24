@@ -76,7 +76,7 @@ class SimpleKeyManagementService extends KeyManagementService {
 }
 
 object SimpleKeyManagementService {
-  def apply(dummyAppid:String="", dummyAppkey:String=""): SimpleKeyManagementService = {
+  def apply(dummyAppid : String = "", dummyAppkey : String=""): SimpleKeyManagementService = {
     new SimpleKeyManagementService
   }
 }
