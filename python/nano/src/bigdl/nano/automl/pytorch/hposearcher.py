@@ -18,7 +18,7 @@ from typing import Any, Dict, Optional, Union
 import pytorch_lightning as pl
 
 from pytorch_lightning.trainer.states import TrainerFn, TrainerStatus
-
+from bigdl.nano.utils.log4Error import invalidInputError
 from bigdl.nano.automl.hpo.backend import create_hpo_backend
 from .objective import Objective
 from ..hpo.search import (
@@ -109,13 +109,6 @@ class HPOSearcher:
                     model,
                     target_metric,
                     **kwargs):
-        # self.trainer.strategy.connect(model)
-
-        # if self.trainer._accelerator_connector.is_distributed:
-        #     raise MisconfigurationException(
-        #         "`trainer.search()` is currently not supported with"
-        #         f" `Trainer(strategy={self.trainer.strategy.strategy_name!r})`."
-        #     )
         _check_search_args(
             search_args=self.search_kwargs,
             legal_keys=[
@@ -150,7 +143,8 @@ class HPOSearcher:
         # self.trainer.reset_train_dataloader(model)
         # self.trainer.reset_val_dataloader(model)
         self.trainer.state.status = TrainerStatus.FINISHED
-        assert self.trainer.state.stopped
+        invalidInputError(self.trainer.state.stopped,
+                          "trainer state should be stopped")
 
     def search(self,
                model,
@@ -202,7 +196,7 @@ class HPOSearcher:
 
         :param use_trial_id: int(optional) params of which trial to be used.
             Defaults to -1.
-        :raise: ValueError: error when tune is not called before end_search.
+        :throw: ValueError: error when tune is not called before end_search.
         """
         self._lazymodel = _end_search(study=self.study,
                                       model_builder=self._model_build,

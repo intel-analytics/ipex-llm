@@ -13,8 +13,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+from bigdl.nano.utils.log4Error import invalidInputError
+
+
 try:
     from openvino.runtime import Core
 except ImportError:
-    raise ImportError("To enable openvino inference, you need to install it by:\n"
+    invalidInputError(False,
+                      "To enable openvino inference, you need to install it by:\n"
                       "\t\t pip install openvino-dev")

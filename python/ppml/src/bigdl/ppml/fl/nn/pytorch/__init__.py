@@ -13,15 +13,3 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-import os
-from pathlib import Path
-
-
-def convert_onnx_to_xml(onnx_file_path, xml_path, batch_size=1):
-    xml_path = Path(xml_path)
-    model_name, output_dir = str(xml_path.stem), str(xml_path.parent)
-    mo_cmd = "mo -m {} -n {} -o {}".format(str(onnx_file_path), model_name, output_dir)
-    if os.system(mo_cmd) == 0:
-        return
-    else:
-        raise RuntimeError("ModelOptimizer fails to convert {}.".format(str(onnx_file_path)))

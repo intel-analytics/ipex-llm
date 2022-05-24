@@ -41,7 +41,7 @@ abstract class NNModel() {
           epoch: Int = 1,
           batchSize: Int = 4,
           xValidate: Tensor[Float] = null,
-          yValidate: Tensor[Float] = null) = {
+          yValidate: Tensor[Float] = null): Any = {
     estimator.train(epoch,
       VFLTensorUtils.featureLabelToMiniBatch(xTrain, yTrain, batchSize),
       VFLTensorUtils.featureLabelToMiniBatch(xValidate, yValidate, batchSize))
@@ -64,7 +64,7 @@ abstract class NNModel() {
                    featureColumn: Array[String] = null,
                    labelColumn: Array[String] = null,
                    valData: DataFrame = null,
-                   hasLabel: Boolean = true) = {
+                   hasLabel: Boolean = true): Any = {
     val _trainData = DataFrameUtils.dataFrameToMiniBatch(trainData, featureColumn, labelColumn,
       hasLabel = hasLabel, batchSize = batchSize)
     val _valData = DataFrameUtils.dataFrameToMiniBatch(valData, featureColumn, labelColumn,
@@ -80,7 +80,7 @@ abstract class NNModel() {
    */
   def evaluate(x: Tensor[Float],
                y: Tensor[Float] = null,
-               batchSize: Int = 4) = {
+               batchSize: Int = 4): Unit = {
     estimator.evaluate(VFLTensorUtils.featureLabelToMiniBatch(x, y, batchSize))
   }
   /**
@@ -96,7 +96,7 @@ abstract class NNModel() {
                         batchSize: Int = 4,
                         featureColumn: Array[String] = null,
                         labelColumn: Array[String] = null,
-                        hasLabel: Boolean = true) = {
+                        hasLabel: Boolean = true): Unit = {
     if (data == null) {
       estimator.getEvaluateResults().foreach{r =>
         println(r._1 + ":" + r._2.mkString(","))
@@ -114,7 +114,7 @@ abstract class NNModel() {
    * @param batchSize
    * @return
    */
-  def predict(x: Tensor[Float], batchSize: Int = 4) = {
+  def predict(x: Tensor[Float], batchSize: Int = 4): Array[Activity] = {
     estimator.predict(VFLTensorUtils.featureLabelToMiniBatch(x, null, batchSize))
   }
   /**

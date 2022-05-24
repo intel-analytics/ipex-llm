@@ -16,6 +16,7 @@
 from pathlib import Path
 import onnxruntime as ort
 import onnx
+from bigdl.nano.utils.log4Error import invalidInputError
 
 
 class ONNXRuntimeModel:
@@ -51,6 +52,8 @@ class ONNXRuntimeModel:
         :param path: Path to save the model.
         """
         path = Path(path)
-        assert self.onnx_model, "self.ie_network shouldn't be None."
-        assert path.suffix == ".onnx", "Path of onnx model must be with '.onnx' suffix."
+        invalidInputError(self.onnx_model,
+                          "self.ie_network shouldn't be None.")
+        invalidInputError(path.suffix == ".onnx",
+                          "Path of onnx model must be with '.onnx' suffix.")
         onnx.save(self.onnx_model, str(path))

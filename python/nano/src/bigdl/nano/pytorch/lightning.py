@@ -24,6 +24,7 @@ from torch import nn, Tensor
 from torch.nn.modules.loss import _Loss
 from torch.optim import Optimizer
 from torch.optim.lr_scheduler import _LRScheduler
+from bigdl.nano.utils.log4Error import invalidInputError
 
 
 class LightningModuleFromTorch(LightningModule):
@@ -65,7 +66,7 @@ class LightningModuleFromTorch(LightningModule):
 
     def on_train_start(self) -> None:
         """Called at the beginning of training after sanity check."""
-        assert self.loss, "Loss must not be None for training."
+        invalidInputError(self.loss, "Loss must not be None for training.")
         return super().on_train_start()
 
     def training_step(self, batch, batch_idx):

@@ -28,6 +28,8 @@ from pytorch_lightning.accelerators.accelerator import Accelerator
 from pytorch_lightning.plugins.training_type import TrainingTypePlugin
 from pytorch_lightning.plugins.precision import PrecisionPlugin, MixedPrecisionPlugin
 from pytorch_lightning.utilities.exceptions import MisconfigurationException
+from bigdl.nano.utils.log4Error import invalidInputError
+from bigdl.nano.utils.log4Error import invalidInputError
 
 from .ipex_torchfunctional import to_cpu
 
@@ -61,13 +63,13 @@ class IPEXAccelerator(Accelerator):
 
     def setup(self, trainer: 'pl.Trainer', model: 'pl.LightningModule') -> None:
         """
-        Raises:
+        throw:
             MisconfigurationException:
                 If AMP is used with XPU.
         """
         if isinstance(self.precision_plugin, MixedPrecisionPlugin):
-            raise MisconfigurationException(
-                "amp is not supported in bigdl-nano.")
+            invalidInputError(False,
+                              "amp is not supported in bigdl-nano.")
 
         return super().setup(trainer, model)
 

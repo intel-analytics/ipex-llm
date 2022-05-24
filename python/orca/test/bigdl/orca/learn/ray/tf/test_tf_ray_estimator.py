@@ -25,7 +25,7 @@ from bigdl.orca.data import XShards
 
 import bigdl.orca.data.pandas
 from bigdl.orca.learn.tf2 import Estimator
-from bigdl.orca.ray import RayContext
+from bigdl.orca.ray import OrcaRayContext
 import ray
 
 NUM_TRAIN_SAMPLES = 1000
@@ -167,7 +167,7 @@ class LRChecker(tf.keras.callbacks.Callback):
 class TestTFRayEstimator(TestCase):
     def impl_test_fit_and_evaluate(self, backend):
         import tensorflow as tf
-        ray_ctx = RayContext.get()
+        ray_ctx = OrcaRayContext.get()
         batch_size = 32
         global_batch_size = batch_size * ray_ctx.num_ray_nodes
 
@@ -233,7 +233,7 @@ class TestTFRayEstimator(TestCase):
         # the former case will return 0, and the latter
         # case will return non-zero.
 
-        ray_ctx = RayContext.get()
+        ray_ctx = OrcaRayContext.get()
         trainer = Estimator.from_keras(
             model_creator=auto_shard_model_creator,
             verbose=True,
@@ -251,7 +251,7 @@ class TestTFRayEstimator(TestCase):
         # the former case will return 0, and the latter
         # case will return non-zero.
 
-        ray_ctx = RayContext.get()
+        ray_ctx = OrcaRayContext.get()
         trainer = Estimator.from_keras(
             model_creator=create_auto_shard_model,
             compile_args_creator=create_auto_shard_compile_args,
@@ -270,7 +270,7 @@ class TestTFRayEstimator(TestCase):
         larger_patch = int(major) == 0 and int(minor) == 19 and int(patch) >= 2
 
         if larger_major or larger_minor or larger_patch:
-            ray_ctx = RayContext.get()
+            ray_ctx = OrcaRayContext.get()
             batch_size = 32
             workers_per_node = 4
             global_batch_size = batch_size * workers_per_node

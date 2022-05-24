@@ -17,17 +17,20 @@
 from concurrent import futures
 import grpc
 from bigdl.ppml.fl import *
-from bigdl.ppml.fl.pytorch.generated.nn_service_pb2_grpc import *
-from bigdl.ppml.fl.pytorch.service.nn_service import NNServiceImpl
+from bigdl.ppml.fl.nn.generated.nn_service_pb2_grpc import *
+from bigdl.ppml.fl.nn.nn_service import NNServiceImpl
 
 
 class FLServer(object):
-    def __init__(self, jvalue=None, *args):
-        self.server = grpc.server(futures.ThreadPoolExecutor(max_workers=2))
+    def __init__(self, client_num=1):
+        self.server = grpc.server(futures.ThreadPoolExecutor(max_workers=5))
         self.port = 8980 # TODO: set from config file
+        self.client_num = client_num
 
     def build(self):
-        add_NNServiceServicer_to_server(NNServiceImpl(), self.server)
+        add_NNServiceServicer_to_server(
+            NNServiceImpl(client_num=self.client_num),            
+            self.server)
         self.server.add_insecure_port(f'[::]:{self.port}')
         logging.info(f'gRPC server starts listening port: {self.port}')
 
