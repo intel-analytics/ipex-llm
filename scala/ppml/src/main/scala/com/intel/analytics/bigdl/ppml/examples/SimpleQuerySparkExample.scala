@@ -43,6 +43,7 @@ object SimpleQuerySparkExample {
     // val sc = PPMLContext.initPPMLContext("SimpleQuery")
 
     // load csv file to data frame with ppmlcontext.
+    // change method csv to parquet when load parquet file
     val df = sc.read(cryptoMode = arguments.inputEncryptMode).option("header", "true")
       .csv(arguments.inputPath + "/people.csv")
 
@@ -61,11 +62,8 @@ object SimpleQuerySparkExample {
     })
 
     // save data frame using spark kms context
+    // if you want to save the content in parquet format, change method csv to parquet
     sc.write(developers, cryptoMode = arguments.outputEncryptMode).mode("overwrite")
       .option("header", true).csv(arguments.outputPath)
-
-    // save to parquet format
-    // sc.write(developers, cryptoMode = arguments.outputEncryptMode).mode("overwrite")
-    //   .option("header", true).parquet(arguments.outputPath)
   }
 }
