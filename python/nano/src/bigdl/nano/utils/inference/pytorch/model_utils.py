@@ -116,5 +116,9 @@ def fp32_inference_model_wrapper(model, inference_method_name="forward"):
     # return the original model when users use forward to do the inference
     if inference_method_name == "forward":
         return model
+    if getattr(model, inference_method_name, None) is None:
+        invalidInputError(False,
+                          "You should input an inference_method_name that "
+                          "is contained by the model to be quantized/traced.") 
 
     return FP32InferenceModelWrapped(model, inference_method_name=inference_method_name)

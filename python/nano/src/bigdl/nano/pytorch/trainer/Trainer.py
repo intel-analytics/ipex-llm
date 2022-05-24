@@ -221,10 +221,10 @@ class Trainer(pl.Trainer):
                  precision='int8',
                  accelerator=None,
                  calib_dataloader: DataLoader = None,
-                 inference_method_name = "forward",
                  val_dataloader: DataLoader = None,
                  metric: Optional[Metric] = None,
                  accuracy_criterion: dict = {'relative': 0.99, 'higher_is_better': True},
+                 inference_method_name = "forward",
                  approach='static',
                  method='fx',
                  conf: Optional[str] = None,
@@ -244,8 +244,6 @@ class Trainer(pl.Trainer):
                                 None means staying in pytorch.
         :param calib_dataloader:    A torch.utils.data.dataloader.DataLoader object for calibration.
                                     Required for static quantization.
-        :param inference_method_name: The inference route for the model to be quantized. Typically,
-                                      this is default to "forward".
         :param val_dataloader:      A torch.utils.data.dataloader.DataLoader object for evaluation.
         :param metric:              A torchmetrics.metric.Metric object for evaluation.
         :param accuracy_criterion:  Tolerable accuracy drop.
@@ -253,6 +251,8 @@ class Trainer(pl.Trainer):
                                     allows relative accuracy loss: 1%. accuracy_criterion =
                                     {'absolute': 0.99, 'higher_is_better':False} means accuracy
                                     must be smaller than 0.99.
+        :param inference_method_name: The inference route for the model to be quantized. Typically,
+                                      this is default to "forward".
         :param approach:    'static' or 'dynamic'.
                             'static': post_training_static_quant,
                             'dynamic': post_training_dynamic_quant.
