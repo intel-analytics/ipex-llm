@@ -242,7 +242,7 @@ class TestPyTorchEstimator(TestCase):
 
         estimator = get_estimator(workers_per_node=2)
         estimator.fit(df, batch_size=4, epochs=2,
-                      validation_data=df,
+                      validation_data=val_df,
                       feature_cols=["feature"],
                       label_cols=["label"])
         estimator.evaluate(df, batch_size=4,
@@ -277,6 +277,7 @@ class TestPyTorchEstimator(TestCase):
         assert df.rdd.getNumPartitions() < estimator.num_workers
 
         estimator.fit(df, batch_size=4, epochs=2,
+                      validation_data=df,
                       feature_cols=["feature"],
                       label_cols=["label"])
         estimator.evaluate(df, batch_size=4,
@@ -323,6 +324,7 @@ class TestPyTorchEstimator(TestCase):
 
         estimator = get_estimator(model_fn=lambda config: SimpleModel())
         estimator.fit(data_shard, batch_size=2, epochs=2,
+                      validation_data=data_shard,
                       feature_cols=["user", "item"],
                       label_cols=["label"])
 
@@ -345,6 +347,7 @@ class TestPyTorchEstimator(TestCase):
         estimator = get_estimator(workers_per_node=2,
                                   model_fn=lambda config: MultiInputNet())
         estimator.fit(df, batch_size=4, epochs=2,
+                      validation_data=df,
                       feature_cols=["f1", "f2"],
                       label_cols=["label"])
         estimator.evaluate(df, batch_size=4,
@@ -367,6 +370,7 @@ class TestPyTorchEstimator(TestCase):
                                   model_fn=lambda config: LinearModel(),
                                   loss=nn.MSELoss())
         stats = estimator.fit(df, batch_size=4, epochs=2,
+                              validation_data=df,
                               feature_cols=["feature"],
                               label_cols=["label"])
         estimator.evaluate(df, batch_size=4,
