@@ -24,8 +24,7 @@ from bigdl.nano.utils.log4Error import invalidInputError
 
 def get_forward_args(model):
     forward_args = inspect.getfullargspec(model.forward).args[1:]
-    if isinstance(model, LightningModuleFromTorch)\
-        or isinstance(model, FP32InferenceModelWrapped):
+    if isinstance(model, (LightningModuleFromTorch, FP32InferenceModelWrapped)):
         # forward param list for compiled model
         forward_args = get_forward_args(model.model)
     return forward_args
