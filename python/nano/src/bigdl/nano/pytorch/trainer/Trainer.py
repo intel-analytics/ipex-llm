@@ -39,8 +39,7 @@ from bigdl.nano.deps.ipex.ipex_api import create_IPEXAccelerator, create_IPEXAcc
 from bigdl.nano.deps.openvino.openvino_api import PytorchOpenVINOModel, load_openvino_model
 from bigdl.nano.deps.onnxruntime.onnxruntime_api import PytorchONNXRuntimeModel, \
     load_onnxruntime_model
-from bigdl.nano.deps.neural_compressor.inc_api import QuantizationINC, PytorchQuantizedModel,\
-    check_pytorch_dataloaders, load_inc_model, quantize
+from bigdl.nano.deps.neural_compressor.inc_api import load_inc_model, quantize
 from bigdl.nano.utils.log4Error import invalidInputError
 from bigdl.nano.utils.inference.pytorch.model import AcceleratedLightningModule
 distributed_backends = ["spawn", "ray", "subprocess"]

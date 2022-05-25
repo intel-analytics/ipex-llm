@@ -61,7 +61,7 @@ def quantize(*args, **kwargs):
     if kwargs['approach'] not in ['static', 'dynamic']:
         invalidInputError(False,
                           "Approach should be 'static' or 'dynamic', "
-                          "{} is invalid.".format(approach))
+                          "{} is invalid.".format(kwargs['approach']))
     not_none_kwargs = {}
     for k, v in kwargs.items():
         # pop None values to use default
@@ -73,8 +73,6 @@ def quantize(*args, **kwargs):
     }
     not_none_kwargs['approach'] = approach_map.get(kwargs['approach'], None)
     if 'pytorch' in not_none_kwargs['framework']:
-        print(not_none_kwargs)
         from .pytorch.quantization import PytorchQuantization
         quantier = PytorchQuantization(**not_none_kwargs)
-    print(args)
     return quantier.post_training_quantize(*args)
