@@ -132,7 +132,7 @@ class VOCDatasets:
             label = label[..., :5]
         try:
             self._check_label(label, width, height)
-        except AssertionError as e:
+        except RuntimeError as e:
             logging.warning("Invalid label at %s, %s", anno_path, e)
         return label
 
