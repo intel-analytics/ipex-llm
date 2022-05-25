@@ -13,11 +13,21 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+from ..core.base_metric import INCMetric
+import numpy as np
 
-from .metrics import *
 
-METRICS = {
-    'pytorch': PytorchINCMetric,
-    'tensorflow': TensorflowINCMetric,
-    'onnx': ONNXRuntimeINCMetic
-}
+class ONNXRuntimeINCMetic(INCMetric):
+    '''
+    ONNXRuntime will use numpy as data type.
+    ONNXRuntime quantization in torch will use torchmetrics
+    '''
+
+    def stack(self, preds, labels):
+        # calculate accuracy
+        preds = np.concatenate(preds)
+        labels = np.concatenate(labels)
+        return preds, labels
+
+    def to_scalar(self, tensor):
+        return tensor.item()
