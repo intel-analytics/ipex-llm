@@ -18,6 +18,7 @@ from bigdl.nano.pytorch.lightning import LightningModuleFromTorch
 import inspect
 from torch.utils.data import DataLoader
 import torch
+from torch import fx
 import pytorch_lightning as pl
 from bigdl.nano.utils.log4Error import invalidInputError
 
@@ -86,6 +87,11 @@ def export_to_onnx(model, input_sample=None, onnx_path="model.onnx", dynamic_axe
 
 
 class FP32InferenceModelWrapped(pl.LightningModule):
+    '''
+    Internal class for input model to quantize/trace.
+    This model currently is internal-only, no instance of this
+    class or any of it's subclass should be returned to users.
+    '''
     def __init__(self, model, inference_method_name="forward"):
         super().__init__()
         self.model = model
@@ -98,7 +104,7 @@ class FP32InferenceModelWrapped(pl.LightningModule):
 
     def __inspect_methods_args(self, method_to_call, args):
         nargs = len(inspect.getfullargspec(method_to_call).args[1:])
-        if isinstance(args, torch.fx.Proxy):
+        if isinstance(args, fx.Proxy):
             args = [args[i] for i in range(nargs)]
         else:
             args = args[:nargs]
@@ -115,9 +121,8 @@ def fp32_inference_model_wrapper(model, inference_method_name="forward"):
     # return the original model when users use forward to do the inference
     if inference_method_name == "forward":
         return model
-    if getattr(model, inference_method_name, None) is None:
-        invalidInputError(False,
-                          "You should input an inference_method_name that "
-                          "is contained by the model to be quantized/traced.")
+    invalidInputError(hasattr(model, inference_method_name),
+                      "You should input an inference_method_name that "
+                      "is contained by the model to be quantized/traced.")
 
     return FP32InferenceModelWrapped(model, inference_method_name=inference_method_name)
