@@ -477,6 +477,8 @@ def save_pkl(data, path):
     else:
         if path.startswith("file://"):
             path = path[len("file://"):]
+        elif path.startswith("dbfs:/"):
+            path = "/dbfs/" + path[len("dbfs:/"):]
         with open(path, 'wb') as f:
             pickle.dump(data, f)
 
