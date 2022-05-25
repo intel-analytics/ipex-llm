@@ -200,8 +200,10 @@ class AutoformerForecaster(BasePytorchForecaster):
             batch_y_mark = batch_y_mark.float()
 
             # decoder input
-            dec_inp = torch.zeros([batch_y.shape[0], self.config['pred_len'], batch_y.shape[2]]).float()
-            dec_inp = torch.cat([batch_y[:, :self.config['label_len'], :], dec_inp], dim=1).float()
+            dec_inp = torch.zeros([batch_y.shape[0],
+                                  self.config['pred_len'], batch_y.shape[2]]).float()
+            dec_inp = torch.cat([batch_y[:, :self.config['label_len'], :], dec_inp],
+                                dim=1).float()
             # encoder - decoder
             if self.use_amp:
                 with torch.cuda.amp.autocast():
