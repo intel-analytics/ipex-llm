@@ -31,11 +31,11 @@ For size of the VM, please choose DC-Series VM with more than 4 vCPU cores.
 
 #### 2.1.3 Pull BigDL PPML image and start
 * Login to the created VM, pull BigDL PPML image using such command:
-```aidl
+```bash
 docker pull intelanalytics/bigdl-ppml-trusted-big-data-ml-python-graphene:2.1.0-SNAPSHOT
 ```
 * Start container of this image
-```aidl
+```bash
 #!/bin/bash
 
 export LOCAL_IP=YOUR_LOCAL_IP
@@ -61,12 +61,12 @@ Create AKS or use existing one.
 
 The steps to create AKS is as below
 * Create Service Principle
-```aidl
+```bash
 az ad sp create-for-rbac
 
 ```
 The output is like below, please note down the 'appId'.
-```aidl
+```bash
 {
 "appId": "b1876d8d-66bc-4352-9ce4-8f0192b2546d",
 "displayName": "azure-cli-2022-03-04-01-21-55",
@@ -75,14 +75,14 @@ The output is like below, please note down the 'appId'.
 }
 ```
 * Assign your service princile to the VNet
-```aidl
+```bash
 VNET_ID=$(az network vnet show --resource-group myResourceGroup --name myAKSVnet --query id -o tsv)
 SUBNET_ID=$(az network vnet subnet show --resource-group myResourceGroup --vnet-name myAKSVnet --name myAKSSubnet --query id -o tsv)
 az role assignment create --assignee <appId> --scope "/subscriptions/xxx/resourceGroups/myResourceGroup/providers/Microsoft.Network/virtualNetworks/myAKSSubnet" --role "Network Contributor"
 ```
 * Create AKS
 Example command to create AKS:
-```aidl
+```bash
 az aks create \
     --resource-group myResourceGroup \
     --name myAKSCluster \
@@ -97,33 +97,33 @@ az aks create \
 ```
 
 * Enable Confidential Computing addon on AKS
-```aidl
+```bash
 az aks enable-addons --addons confcom --name myAKSCluster--resource-group myResourceGroup
 ```
 
 ## 2.3 Create Azure Data Lake Store Gen 2
 ### 2.3.1 Create Data Lake Storage account or use existing one.
 The example command to create Data Lake store is as below:
-```aidl
+```bash
 az dls account create --account myDataLakeAccount --location myLocation --resource-group myResourceGroup
 ```
 * Create Container to put user data
 Example command to create container
-```aidl
+```bash
 az storage fs create -n myFS --account-name myDataLakeAccount --auth-mode login
 ```
 * Create folder, upload file/folder
 Example command to create folder:
-```aidl
+```bash
 az storage fs directory create -n myDirectory -f myFS --account-name myDataLakeAccount --auth-mode login
 ```
 
 Example command to upload file
-```aidl
+```bash
 az storage fs file upload -s "path/to/file" -p myDirectory/file  -f  myFS --account-name myDataLakeAccount --auth-mode login
 ```
 Example command to upload directory
-```aidl
+```bash
 az storage fs directory upload -f myFS --account-name myDataLakeAccount -s "path/to/directory" -d myDirectory --recursive
 ```
 ### 2.3.2  Access data in Hadoop through ABFS(Azure Blob Filesystem) driver
@@ -136,7 +136,7 @@ The ABFS driver supports two forms of authentication so that the Hadoop applicat
 
 By default, in our solution, we use shared key authentication.
 - Get Access key list of storage account:
-```aidl
+```bash
 az storage account keys list -g MyResourceGroup -n myDataLakeAccount
 ``` 
 Use one of the keys in authentication.
@@ -144,7 +144,7 @@ Use one of the keys in authentication.
 ## 2.4 Create Azure Key Vault
 ### 2.4.1 Create or use an existing Azure key vault
 Example command to create key vault
-```aidl
+```bash
 az keyvault create -n myKeyVault -g myResourceGroup -l location
 ```
 Take note of the following properties for use in the next section:
@@ -156,11 +156,11 @@ Take note of the following properties for use in the next section:
 
 ### 2.4.2 Set access policy for the client VM
 * Login to the client VM, and get the system identity:
-```aidl
+```bash
 az vm identity assign -g myResourceGroup -n myVM
 ```
 The output would be like this:
-```aidl
+```bash
 {
   "systemAssignedIdentity": "ff5505d6-8f72-4b99-af68-baff0fbd20f5",
   "userAssignedIdentities": {}
@@ -170,18 +170,18 @@ Take note of the systemAssignedIdentity of the client VM.
 
 * Set access policy for client VM
 Example command:
-```aidl
+```bash
 az keyvault set-policy --name myKeyVault --object-id <mySystemAssignedIdentity> --secret-permissions all --key-permissions all --certificate-permissions all
 ```
 
 ### 2.4.3 AKS access key vault
 #### 2.4.3.1 Set access for AKS VM ScaleSet
 ##### a. Find your VM ScaleSet in your AKS, and assign system managed identity to VM scale set.
-```aidl
+```bash
 az vm identity assign -g myResourceGroup -n myAKSVMSS
 ```
 The output would be like below:
-```aidl
+```bash
 principalId: xxxxxxxxx
 tenantId: xxxxxxxxxxx
 type: SystemAssigned, UserAssigned
@@ -193,44 +193,44 @@ userAssignedIdentities:
 Take note of principalId of the first line as System Managed Identity of your VMSS.
 ##### b. Set access policy for AKS VM ScaleSet
 Example command:
-```aidl
+```bash
 az keyvault set-policy --name myKeyVault --object-id <systemManagedIdentityOfVMSS> --secret-permissions get --key-permissions all --certificate-permissions all
 ```
 #### 2.4.3.2 Set access for AKS
 ##### a. Enable Azure Key Vault Provider for Secrets Store CSI Driver support
 Example command:
-```aidl
+```bash
 az aks enable-addons --addons azure-keyvault-secrets-provider --name myAKSCluster --resource-group myResourceGroup
 ```
 * Verify the Azure Key Vault Provider for Secrets Store CSI Driver installation
 Example command:
-```aidl
+```bash
 kubectl get pods -n kube-system -l 'app in (secrets-store-csi-driver, secrets-store-provider-azure)'
 ```
 Be sure that a Secrets Store CSI Driver pod and an Azure Key Vault Provider pod are running on each node in your cluster's node pools.
 * Enable Azure Key Vault Provider for Secrets Store CSI Driver to track of secret update in key vault
-```aidl
+```bash
 az aks update -g myResourceGroup -n myAKSCluster --enable-secret-rotation
 ```
 #### b. Provide an identity to access the Azure key vault
 There are several ways to provide identity for Azure Key Vault Provider for Secrets Store CSI Driver to access Azure Key Vault: `An Azure Active Directory pod identity`, `user-assigned identity` or `system-assigned managed identity`. In our solution, we use user-assigned managed identity.
 * Enable managed identity in AKS
-```aidl
+```bash
 az aks update -g myResourceGroup -n myAKSCluster --enable-managed-identity
 ```
 * Get user-assigned managed identity that you created when you enabled a managed identity on your AKS cluster
 Run:
-```aidl
+```bash
 az aks show -g myResourceGroup -n myAKSCluster --query addonProfiles.azureKeyvaultSecretsProvider.identity.clientId -o tsv
 ```
 The output would be like:
-```aidl
+```bash
 f95519c1-3fe8-441b-a7b9-368d5e13b534
 ```
 Take note of this output as your user-assigned managed identity of Azure KeyVault Secrets Provider
 * Grant your user-assigned managed identity permissions that enable it to read your key vault and view its contents
 Example command:
-```aidl
+```bash
 az keyvault set-policy -n myKeyVault --key-permissions get --spn f95519c1-3fe8-441b-a7b9-368d5e13b534
 az keyvault set-policy -n myKeyVault --secret-permissions get --spn f95519c1-3fe8-441b-a7b9-368d5e13b534
 ```
@@ -238,14 +238,14 @@ az keyvault set-policy -n myKeyVault --secret-permissions get --spn f95519c1-3fe
 On your client docker container, edit `/ppml/trusted-big-data-ml/azure/secretProviderClass.yaml` file, modify `<client-id>` to your user-assigned managed identity of Azure KeyVault Secrets Provider, and modify `<key-vault-name>` and  `<tenant-id>` to your real key vault name and tenant id.
 
 Then run:
-```aidl
+```bash
 kubectl apply -f /ppml/trusted-big-data-ml/azure/secretProviderClass.yaml
 ```
 to create secretProviderClass in your AKS.
 
 ## 3. Run Spark PPML jobs
 Login to your client VM and enter your BigDL PPML container:
-```aidl
+```bash
 docker exec -it park-local bash
 ```
 Then run `az login` to login to Azure system.
@@ -257,27 +257,27 @@ Run such script to generate enclave key
 ```
 ### 3.2 Generate keys
 Run such scripts to generate keys:
-```aidl
+```bash
 /ppml/trusted-big-data-ml/azure/generate-keys.sh
 ```
 When entering the passphrase or password, you could input the same password by yourself; and these passwords could also be used for the next step of generating other passwords. Password should be longer than 6 bits and contain numbers and letters, and one sample password is "3456abcd". These passwords would be used for future remote attestations and to start SGX enclaves more securely.
 
 ### 3.3 Generate password
 Run such script to save password to Azure Key Vault
-```aidl
+```bash
 /ppml/trusted-big-data-ml/azure/generate-password-az.sh myKeyVault used_password_when_generate_keys
 ```
 ### 3.4 Save kube config to secret
 Login to AKS use such command:
-```aidl
+```bash
 az aks get-credentials --resource-group  myResourceGroup --name myAKSCluster
 ```
 Run such script to save kube config to secret
-```aidl
+```bash
 /ppml/trusted-big-data-ml/azure/kubeconfig-secret.sh
 ```
 ### 3.5 Create the RBAC
-```aidl
+```bash
 kubectl create serviceaccount spark
 kubectl create clusterrolebinding spark-role --clusterrole=edit --serviceaccount=default:spark --namespace=default
 ```
