@@ -291,8 +291,8 @@ class BasePytorchForecaster(Forecaster):
         if self.openvino_fp32 is None:
             self.build_openvino()
         return _pytorch_fashion_inference(model=self.openvino_fp32,
-                                            input_data=data,
-                                            batch_size=batch_size)
+                                          input_data=data,
+                                          batch_size=batch_size)
 
     def evaluate(self, data, batch_size=32, multioutput="raw_values", quantize=False):
         """
