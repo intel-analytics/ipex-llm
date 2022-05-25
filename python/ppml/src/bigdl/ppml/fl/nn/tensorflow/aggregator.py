@@ -17,12 +17,12 @@
 import pickle
 import logging
 import threading
-from torch import nn
-import torch
 from bigdl.ppml.fl.nn.utils import ndarray_map_to_tensor_map
-from bigdl.dllib.utils.log4Error import invalidInputError
 from threading import Condition
 
+import tensorflow as tf
+
+# TODO: tf and pytorch aggregator could be integrated to one using inherit
 class Aggregator(object):
     def __init__(self,
                  client_num=1) -> None:
@@ -32,7 +32,7 @@ class Aggregator(object):
         self.client_num = client_num
         self.condition = Condition()
         self._lock = threading.Lock()
-        logging.info(f"Initialized Pytorch aggregator [client_num: {client_num}]")
+        logging.info(f"Initialized Tensorflow aggregator [client_num: {client_num}]")
 
     # deprecated, use set_server_model for fully customized NN Model
     def add_server_model(self, model):
@@ -53,18 +53,7 @@ class Aggregator(object):
                 self.set_loss_fn(loss_fn)
                 optimizer_cls = pickle.loads(optimizer.cls)
                 optimizer_args = pickle.loads(optimizer.args)
-                self.set_optimizer(optimizer_cls, optimizer_args)
-
-    # deprecated, use set_loss_fn for fully customized NN Model
-    def init_loss_fn(self):
-        # match-case is supported only from Python 3.10
-        if self.loss_fn == 'cross_entropy':
-            self.loss_fn = nn.CrossEntropyLoss()
-        elif self.loss_fn == 'binary_cross_entropy':
-            self.loss_fn = nn.BCELoss()
-        else:
-            invalidInputError(False,
-                              f"Illigal loss function: {self.loss_fn}")
+                self.set_optimizer(optimizer_cls, optimizer_args)   
 
     def set_loss_fn(self, loss_fn):
         self.loss_fn = loss_fn
@@ -74,17 +63,6 @@ class Aggregator(object):
             self.optimizer = None
             return
         self.optimizer = optimizer_cls(self.model.parameters(), **optimizer_args)
-
-    # deprecated, use set_optimizer for fully customized NN Model
-    def init_optimizer(self):
-        if len(list(self.model.parameters())) == 0:
-            self.optimizer = None
-            return
-        if self.optimizer == 'sgd':
-            self.optimizer = torch.optim.SGD(self.model.parameters(), lr=self.learning_rate)
-        else:
-            invalidInputError(False,
-                              f"Illigal optimizer: {self.optimizer}")
 
     def put_client_data(self, client_id, data):
         self.condition.acquire()
@@ -109,24 +87,22 @@ got {len(self.client_data)}/{self.client_num}')
         for ndarray_map in self.client_data.values():
             for k, v in ndarray_map.items():
                 if k == 'input':
-                    input.append(torch.from_numpy(v))
+                    input.append(tf.convert_to_tensor(v))
                 elif k == 'target':
-                    target = torch.from_numpy(v)
+                    target = tf.convert_to_tensor(v)
                 else:
-                    invalidInputError(False,
-                                      f'Invalid type of tensor map key: {k},'
-                                      f' should be input/target')
-        x = torch.stack(input)
-        x = torch.sum(x, dim=0)
-        x.requires_grad = True
-        pred = self.model(x)
-        loss = self.loss_fn(pred, target)
+                    raise Exception(f'Invalid type of tensor map key: {k}, should be input/target')
+        x = tf.stack(input)
+        x = tf.add(x, dim=0)
+        with tf.GradientTape() as tape:
+            tape.watch(x)
+            pred = self.model(x)
+            loss = self.loss_fn(pred, target)
+        gradients = tape.gradient(loss, self.model.trainable_variables)
         if self.optimizer is not None:
-            self.optimizer.zero_grad()
-        loss.backward()
-        if self.optimizer is not None:
-            self.optimizer.step()
-        grad_map = {'grad': x.grad.numpy(), 'loss': loss.detach().numpy()}
+            self.optimizer.apply_gradients(zip(gradients, self.model.trainable_variables))
+        x_grad = tape.gradient(loss, x)
+        grad_map = {'grad': x_grad.numpy(), 'loss': loss.numpy()}
         self.server_data = ndarray_map_to_tensor_map(grad_map)
 
     

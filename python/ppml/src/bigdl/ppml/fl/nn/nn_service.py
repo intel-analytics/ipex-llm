@@ -15,7 +15,9 @@
 #
 
 
-from bigdl.ppml.fl.nn.pytorch.aggregator import Aggregator
+import bigdl.ppml.fl.nn.pytorch.aggregator as pt_agg
+import bigdl.ppml.fl.nn.tensorflow.aggregator as tf_agg
+
 from bigdl.ppml.fl.nn.generated.fl_base_pb2 import TensorMap
 from bigdl.ppml.fl.nn.generated.nn_service_pb2 import TrainRequest, TrainResponse, UploadModelResponse
 from bigdl.ppml.fl.nn.generated.nn_service_pb2_grpc import *
@@ -26,21 +28,24 @@ import traceback
 
 class NNServiceImpl(NNServiceServicer):
     def __init__(self, **kargs) -> None:
-        self.aggregator = Aggregator(**kargs)
+        self.aggregator_map = {
+            'tf': tf_agg.Aggregator(**kargs),
+            'pt': pt_agg.Aggregator(**kargs)}
 
     def train(self, request: TrainRequest, context):
         tensor_map = request.data.tensorMap
         client_id = request.clientuuid
         ndarray_map = tensor_map_to_ndarray_map(tensor_map)
+        aggregator = self.aggregator_map[request.algorithm]
         try:
-            self.aggregator.put_client_data(client_id, ndarray_map)            
+            aggregator.put_client_data(client_id, ndarray_map)            
             msg = f'[client {client_id} batch trained]'
             code = 0
         except Exception as e:
             msg = traceback.format_exc()
             code = 1
         
-        return TrainResponse(response=msg, data=self.aggregator.server_data, code=code)
+        return TrainResponse(response=msg, data=aggregator.server_data, code=code)
 
     def evaluate(self, request, context):
         return super().evaluate(request, context)
@@ -52,7 +57,8 @@ class NNServiceImpl(NNServiceServicer):
         try:
             model = pickle.loads(request.model_bytes)
             loss_fn = pickle.loads(request.loss_fn)
-            self.aggregator.set_server_model(model, loss_fn, request.optimizer)
+            aggregator = self.aggregator_map[request.aggregator]
+            aggregator.set_server_model(model, loss_fn, request.optimizer)
             msg = "Upload sucess"
         except Exception as e:
             msg = traceback.format_exc()

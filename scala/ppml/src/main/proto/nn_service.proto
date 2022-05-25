@@ -66,6 +66,7 @@ message UploadModelRequest {
     bytes model_bytes = 2;
     bytes loss_fn = 3;
     ClassAndArgs optimizer = 4;
+    string aggregator = 5;
 }
 message ClassAndArgs {
     bytes cls = 1;

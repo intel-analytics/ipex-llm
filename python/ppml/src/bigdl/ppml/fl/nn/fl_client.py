@@ -28,18 +28,21 @@ from bigdl.dllib.utils.log4Error import invalidInputError
 from bigdl.ppml.fl.nn.utils import ClassAndArgsWrapper
 
 class FLClient(object):
-    def __init__(self, target="localhost:8980") -> None:
-        self.channel = grpc.insecure_channel(target)
-        self.nn_stub = NNServiceStub(self.channel)
+    channel = None
+    nn_stub = NNServiceStub(channel)
+    def __init__(self, aggregator, target="localhost:8980") -> None: 
+        if FLClient.channel == None:
+            FLClient.channel = grpc.insecure_channel(target)
         self.client_uuid = str(uuid.uuid4())
-
+        self.aggregator = aggregator
     
     def train(self, x):
         tensor_map = ndarray_map_to_tensor_map(x)
         train_request = TrainRequest(clientuuid=self.client_uuid,
-                                     data=tensor_map)
+                                     data=tensor_map,
+                                     algorithm=self.aggregator)
         
-        response = self.nn_stub.train(train_request)
+        response = FLClient.nn_stub.train(train_request)
         if response.code == 1:
             invalidInputError(False,
                               response.response)
@@ -53,7 +56,8 @@ class FLClient(object):
         request = UploadModelRequest(client_uuid=self.client_uuid,
                                      model_bytes=model,
                                      loss_fn=loss_fn,
-                                     optimizer=optimizer)
+                                     optimizer=optimizer,
+                                     aggregator=self.aggregator)
         return self.nn_stub.upload_model(request)
 
 

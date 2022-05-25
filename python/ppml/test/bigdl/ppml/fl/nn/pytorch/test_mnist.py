@@ -34,7 +34,7 @@ from torchvision import datasets
 from torchvision.transforms import ToTensor
 from bigdl.ppml.fl.utils import FLTest
 
-resource_path = os.path.join(os.path.dirname(__file__), "../resources")
+resource_path = os.path.join(os.path.dirname(__file__), "../../resources")
 
 
 class TestCorrectness(FLTest):
