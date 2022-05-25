@@ -13,11 +13,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-from ..core.base_metric import INCMetric
+from . import BaseINCMetric
 import numpy as np
 
 
-class ONNXRuntimeINCMetic(INCMetric):
+class ONNXRuntimeINCMetic(BaseINCMetric):
     '''
     ONNXRuntime will use numpy as data type.
     ONNXRuntime quantization in torch will use torchmetrics
