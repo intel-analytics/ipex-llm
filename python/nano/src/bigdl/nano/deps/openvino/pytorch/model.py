@@ -80,7 +80,8 @@ class PytorchOpenVINOModel(OpenVINOModel, AcceleratedLightningModule):
         else:
             invalidInputError(False, "nano_model_meta.yml must specify 'xml_path' for loading.")
         xml_path = Path(path) / status['xml_path']
-        return PytorchOpenVINOModel(xml_path)
+        inference_method_name = status.get('inference_method_name', 'forward')
+        return PytorchOpenVINOModel(xml_path, inference_method_name=inference_method_name)
 
     def pot(self,
             dataloader,

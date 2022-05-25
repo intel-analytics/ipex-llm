@@ -25,6 +25,7 @@ class AcceleratedLightningModule(LightningModule):
     def __init__(self, model):
         super().__init__()
         self.model = model
+        self.inference_method_name = "forward"
 
     def forward(self, *inputs):
         inputs = self.on_forward_start(inputs)
@@ -86,7 +87,8 @@ class AcceleratedLightningModule(LightningModule):
 
     @property
     def status(self):
-        return {"ModelType": type(self).__name__}
+        return {"ModelType": type(self).__name__,
+                "inference_method_name": self.inference_method_name}
 
     @staticmethod
     def _load_status(path):
@@ -111,3 +113,4 @@ class AcceleratedLightningModule(LightningModule):
         if inference_method_name == "forward":
             return
         setattr(self, inference_method_name, self.forward)
+        self.inference_method_name = inference_method_name

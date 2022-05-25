@@ -93,7 +93,8 @@ class PytorchONNXRuntimeModel(ONNXRuntimeModel, AcceleratedLightningModule):
             invalidInputError(False,
                               "nano_model_meta.yml must specify 'onnx_path' for loading.")
         onnx_path = Path(path) / status['onnx_path']
-        return PytorchONNXRuntimeModel(str(onnx_path))
+        inference_method_name = status.get('inference_method_name', 'forward')
+        return PytorchONNXRuntimeModel(str(onnx_path), inference_method_name=inference_method_name)
 
     def _save_model(self, path):
         onnx_path = Path(path) / self.status['onnx_path']
