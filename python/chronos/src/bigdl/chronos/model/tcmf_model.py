@@ -122,9 +122,9 @@ class TCMF(BaseModel):
 
     @staticmethod
     def get_default_num_workers():
-        from bigdl.orca.ray import RayContext
+        from bigdl.orca.ray import OrcaRayContext
         try:
-            ray_ctx = RayContext.get(initialize=False)
+            ray_ctx = OrcaRayContext.get(initialize=False)
             num_workers = ray_ctx.num_ray_nodes
         except:
             num_workers = 1
@@ -142,7 +142,7 @@ class TCMF(BaseModel):
         :param future_covariates: covariates corresponding to future horizon steps data to predict.
         :param future_dti: dti corresponding to future horizon steps data to predict.
         :param num_workers: the number of workers to use. Note that there has to be an activate
-            RayContext if num_workers > 1.
+               OrcaRayContext if num_workers > 1.
         :return:
         """
         from bigdl.nano.utils.log4Error import invalidInputError
@@ -158,9 +158,9 @@ class TCMF(BaseModel):
             num_workers = TCMF.get_default_num_workers()
         if num_workers > 1:
             import ray
-            from bigdl.orca.ray import RayContext
+            from bigdl.orca.ray import OrcaRayContext
             try:
-                RayContext.get(initialize=False)
+                OrcaRayContext.get(initialize=False)
             except:
                 try:
                     # detect whether ray has been started.

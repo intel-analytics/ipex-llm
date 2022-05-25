@@ -13,17 +13,14 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-import os
-from pathlib import Path
-from bigdl.nano.utils.log4Error import invalidInputError
 
 
-def convert_onnx_to_xml(onnx_file_path, xml_path, batch_size=1):
-    xml_path = Path(xml_path)
-    model_name, output_dir = str(xml_path.stem), str(xml_path.parent)
-    mo_cmd = "mo -m {} -n {} -o {}".format(str(onnx_file_path), model_name, output_dir)
-    if os.system(mo_cmd) == 0:
-        return
-    else:
-        invalidInputError(False,
-                          "ModelOptimizer fails to convert {}.".format(str(onnx_file_path)))
+import torch
+from torch import nn
+
+
+def set_one_like_parameter(model: nn.Module):
+    for param in model.parameters():
+        param.data = nn.parameter.Parameter(torch.ones_like(param))
+
+

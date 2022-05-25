@@ -44,7 +44,9 @@ class TestTcnKeras(ZooTestCase):
 
     train_data, test_data = create_data()
     model = model_creator(config={
+        "past_seq_len": 20,
         "future_seq_len": 10,
+        "input_feature_num": 10,
         "output_feature_num": 2
     })
 
@@ -58,19 +60,19 @@ class TestTcnKeras(ZooTestCase):
         assert yhat.shape == self.test_data[1].shape
 
     def test_tcn_save_load(self):
-        checkpoint_file = tempfile.TemporaryDirectory().name
         self.model.fit(self.train_data[0],
                        self.train_data[1],
                        epochs=2,
                        validation_data=self.test_data)
-        self.model.save(checkpoint_file)
-        restore_model = tf.keras.models.load_model(checkpoint_file, custom_objects={"TemporalConvNet": TemporalConvNet,
-                                                                                    "TemporalBlock": TemporalBlock})
+        with tempfile.TemporaryDirectory() as tmp_dir_name:
+            self.model.save(tmp_dir_name)
+            restore_model = tf.keras.models.load_model(tmp_dir_name,
+                                                       custom_objects={"TemporalConvNet": TemporalConvNet,
+                                                                       "TemporalBlock": TemporalBlock})
         model_res = self.model.evaluate(self.test_data[0], self.test_data[1])
-        # TODO: Some issue happens in test system (no issue on local)
-        # restore_model_res = restore_model.evaluate(self.test_data[0], self.test_data[1])
-        # np.testing.assert_almost_equal(model_res, restore_model_res, decimal=5)
-        # assert isinstance(restore_model, TemporalConvNet)
+        restore_model_res = restore_model.evaluate(self.test_data[0], self.test_data[1])
+        np.testing.assert_almost_equal(model_res, restore_model_res, decimal=5)
+        assert isinstance(restore_model, TemporalConvNet)
 
 
 if __name__ == '__main__':

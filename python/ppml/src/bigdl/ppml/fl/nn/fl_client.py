@@ -18,11 +18,13 @@
 import pickle
 import grpc
 from numpy import ndarray
-from bigdl.ppml.fl.pytorch.generated.nn_service_pb2 import TrainRequest, UploadModelRequest
-from bigdl.ppml.fl.pytorch.generated.nn_service_pb2_grpc import *
-from bigdl.ppml.fl.pytorch.protobuf_utils import ndarray_map_to_tensor_map
+from bigdl.ppml.fl.nn.generated.nn_service_pb2 import TrainRequest, UploadModelRequest
+from bigdl.ppml.fl.nn.generated.nn_service_pb2_grpc import *
+from bigdl.ppml.fl.nn.utils import ndarray_map_to_tensor_map
 import uuid
 from torch.utils.data import DataLoader
+
+from bigdl.ppml.fl.nn.utils import ClassAndArgsWrapper
 
 class FLClient(object):
     def __init__(self) -> None:
@@ -41,10 +43,16 @@ class FLClient(object):
             raise Exception(response.response)
         return response
 
-    def upload_model(self, model):
+    def upload_model(self, model, loss_fn, optimizer_cls, optimizer_args):
         # upload model to server
-        model = pickle.dumps(model)        
-        self.nn_stub.upload_model(UploadModelRequest(model_bytes=model))
+        model = pickle.dumps(model)
+        loss_fn = pickle.dumps(loss_fn)
+        optimizer = ClassAndArgsWrapper(optimizer_cls, optimizer_args).to_protobuf()
+        request = UploadModelRequest(client_uuid=self.client_uuid,
+                                     model_bytes=model,
+                                     loss_fn=loss_fn,
+                                     optimizer=optimizer)
+        return self.nn_stub.upload_model(request)
 
 
     

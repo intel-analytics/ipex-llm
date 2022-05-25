@@ -15,18 +15,18 @@
 #
 
 
-from bigdl.ppml.fl.pytorch.aggregator import Aggregator
-from bigdl.ppml.fl.pytorch.generated.fl_base_pb2 import TensorMap
-from bigdl.ppml.fl.pytorch.generated.nn_service_pb2 import TrainRequest, TrainResponse, UploadModelResponse
-from bigdl.ppml.fl.pytorch.generated.nn_service_pb2_grpc import *
-from bigdl.ppml.fl.pytorch.protobuf_utils import tensor_map_to_ndarray_map
+from bigdl.ppml.fl.nn.pytorch.aggregator import Aggregator
+from bigdl.ppml.fl.nn.generated.fl_base_pb2 import TensorMap
+from bigdl.ppml.fl.nn.generated.nn_service_pb2 import TrainRequest, TrainResponse, UploadModelResponse
+from bigdl.ppml.fl.nn.generated.nn_service_pb2_grpc import *
+from bigdl.ppml.fl.nn.utils import tensor_map_to_ndarray_map
 import pickle
 import traceback
 
 
 class NNServiceImpl(NNServiceServicer):
-    def __init__(self) -> None:
-        self.aggregator = Aggregator()
+    def __init__(self, **kargs) -> None:
+        self.aggregator = Aggregator(**kargs)
 
     def train(self, request: TrainRequest, context):
         tensor_map = request.data.tensorMap
@@ -49,6 +49,11 @@ class NNServiceImpl(NNServiceServicer):
         return super().predict(request, context)
         
     def upload_model(self, request, context):
-        model = pickle.loads(request.model_bytes)
-        self.aggregator.add_server_model(model)
-        return UploadModelResponse(message="Upload sucess")
+        try:
+            model = pickle.loads(request.model_bytes)
+            loss_fn = pickle.loads(request.loss_fn)
+            self.aggregator.set_server_model(model, loss_fn, request.optimizer)
+            msg = "Upload sucess"
+        except Exception as e:
+            msg = traceback.format_exc()
+        return UploadModelResponse(message=msg)

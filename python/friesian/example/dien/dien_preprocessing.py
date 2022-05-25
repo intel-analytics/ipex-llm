@@ -19,6 +19,7 @@ from argparse import ArgumentParser
 
 from bigdl.orca import init_orca_context, stop_orca_context
 from bigdl.friesian.feature import FeatureTable
+from bigdl.dllib.utils.log4Error import *
 
 
 conf = {"spark.network.timeout": "10000000",
@@ -79,9 +80,9 @@ if __name__ == "__main__":
     elif args.cluster_mode == "spark-submit":
         init_orca_context("spark-submit")
     else:
-        raise ValueError(
-            "cluster_mode should be one of 'local', 'yarn', 'standalone' and 'spark-submit'"
-            ", but got " + args.cluster_mode)
+        invalidInputError(False,
+                          "cluster_mode should be one of 'local', 'yarn', 'standalone' and"
+                          " 'spark-submit', but got " + args.cluster_mode)
 
     begin = time.time()
     transaction_tbl = FeatureTable.read_json(args.input_transaction).select(

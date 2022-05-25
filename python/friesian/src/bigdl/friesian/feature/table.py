@@ -23,6 +23,7 @@ from functools import reduce
 import numpy as np
 import pyspark.sql.functions as F
 from bigdl.friesian.feature.utils import *
+from bigdl.dllib.utils.log4Error import *
 from bigdl.orca import OrcaContext
 from py4j.protocol import Py4JError
 from pyspark.ml import Pipeline
@@ -32,6 +33,7 @@ from pyspark.sql.column import Column
 from pyspark.sql.functions import col as pyspark_col, concat, udf, array, broadcast, \
     lit, rank, monotonically_increasing_id, row_number, desc
 from pyspark.sql.types import ArrayType, DataType, StructType, StringType, StructField
+
 
 JAVA_INT_MIN = -2147483648
 JAVA_INT_MAX = 2147483647
@@ -66,7 +68,8 @@ class Table:
             elif isinstance(cols, str):
                 df = df.select(cols)
             else:
-                raise Exception("cols should be a column name or list of column names")
+                invalidInputError(False,
+                                  "cols should be a column name or list of column names")
         return df
 
     @staticmethod
@@ -79,8 +82,8 @@ class Table:
         if names:
             if not isinstance(names, list):
                 names = [names]
-            assert len(names) == len(columns), \
-                "names should have the same length as the number of columns"
+            invalidInputError(len(names) == len(columns),
+                              "names should have the same length as the number of columns")
             for i in range(len(names)):
                 df = df.withColumnRenamed(columns[i], names[i])
         tbl = Table(df)
@@ -92,12 +95,13 @@ class Table:
                 tbl = tbl.cast(columns=None, dtype=dtype)
             elif isinstance(dtype, list):
                 columns = df.columns
-                assert len(dtype) == len(columns), \
-                    "dtype should have the same length as the number of columns"
+                invalidInputError(len(dtype) == len(columns),
+                                  "dtype should have the same length as the number of columns")
                 for i in range(len(columns)):
                     tbl = tbl.cast(columns=columns[i], dtype=dtype[i])
             else:
-                raise ValueError("dtype should be str or a list of str or dict")
+                invalidInputError(False,
+                                  "dtype should be str or a list of str or dict")
         return tbl.df
 
     def _clone(self, df):
@@ -142,10 +146,11 @@ class Table:
 
         :return: A new Table that contains the specified columns.
         """
-        # If cols is None, it makes more sense to raise error
+        # If cols is None, it makes more sense to throw error
         # instead of returning an empty Table.
         if not cols:
-            raise ValueError("cols should be str or a list of str, but got None.")
+            invalidInputError(False,
+                              "cols should be str or a list of str, but got None.")
         return self._clone(self.df.select(*cols))
 
     def drop(self, *cols):
@@ -261,7 +266,8 @@ class Table:
         """
         for w in weights:
             if w < 0.0:
-                raise ValueError("Weights must be positive. Found weight value: %s" % w)
+                invalidInputError(False,
+                                  "Weights must be positive. Found weight value: %s" % w)
         seed = seed if seed is not None else random.randint(0, sys.maxsize)
         df_array = self.df.randomSplit(weights, seed)
         return [self._clone(df) for df in df_array]
@@ -280,9 +286,11 @@ class Table:
         :return: A new Table that replaced the value less than `min` with specified `min` and the
                  value greater than `max` with specified `max`.
         """
-        assert min is not None or max is not None, "at least one of min and max should be not None"
+        invalidInputError(min is not None or max is not None,
+                          "at least one of min and max should be not None")
         if columns is None:
-            raise ValueError("columns should be str or a list of str, but got None.")
+            invalidInputError(False,
+                              "columns should be str or a list of str, but got None.")
         if not isinstance(columns, list):
             columns = [columns]
         check_col_exists(self.df, columns)
@@ -300,7 +308,8 @@ class Table:
         :return: A new Table that replaced value in columns with logged value.
         """
         if columns is None:
-            raise ValueError("columns should be str or a list of str, but got None.")
+            invalidInputError(False,
+                              "columns should be str or a list of str, but got None.")
         if not isinstance(columns, list):
             columns = [columns]
         check_col_exists(self.df, columns)
@@ -349,7 +358,8 @@ class Table:
 
         :return: A new Table that replaces columns with a new target column of merged list values.
         """
-        assert isinstance(columns, list), "columns must be a list of column names"
+        invalidInputError(isinstance(columns, list),
+                          "columns must be a list of column names")
         return self._clone(self.df.withColumn(target, array(columns)).drop(*columns))
 
     def rename(self, columns):
@@ -361,8 +371,9 @@ class Table:
 
         :return: A new Table with new column names.
         """
-        assert isinstance(columns, dict), "columns should be a dictionary of {'old_name1': " \
-                                          "'new_name1', 'old_name2': 'new_name2'}"
+        invalidInputError(isinstance(columns, dict),
+                          "columns should be a dictionary of"
+                          " {'old_name1': 'new_name1', 'old_name2': 'new_name2'}")
         new_df = self.df
         for old_name, new_name in columns.items():
             new_df = new_df.withColumnRenamed(old_name, new_name)
@@ -404,18 +415,21 @@ class Table:
                 aggr_strs = aggr
             elif isinstance(aggr, dict):
                 if column not in aggr:
-                    raise ValueError("aggregate function not defined for the column {}.".
-                                     format(column))
+                    invalidInputError(False,
+                                      "aggregate function not defined for the column {}.".
+                                      format(column))
                 aggr_strs = aggr[column]
             else:
-                raise ValueError("aggr must have type str or a list or dict.")
+                invalidInputError(False,
+                                  "aggr must have type str or a list or dict.")
             if isinstance(aggr_strs, str):
                 aggr_strs = [aggr_strs]
             values = []
             for aggr_str in aggr_strs:
                 if aggr_str not in ["min", "max", "avg", "sum", "count"]:
-                    raise ValueError("aggregate function must be one of min/max/avg/sum/count, \
-                        but got {}.".format(aggr_str))
+                    invalidInputError(False,
+                                      "aggregate function must be one of min/max/avg/sum/count,"
+                                      " but got {}.".format(aggr_str))
                 values.append(self.df.agg({column: aggr_str}).collect()[0][0])
             stats[column] = values[0] if len(values) == 1 else values
         return stats
@@ -464,7 +478,8 @@ class Table:
         :return: list, contains all values of the target column.
         """
         if not isinstance(column, str):
-            raise ValueError("Column must have type str.")
+            invalidInputError(False,
+                              "Column must have type str.")
         check_col_exists(self.df, [column])
         return self.df.select(column).rdd.flatMap(lambda x: x).collect()
 
@@ -492,7 +507,8 @@ class Table:
         :return: A new Table with updated numeric values on specified columns.
         """
         if columns is None:
-            raise ValueError("Columns should be str or a list of str, but got None")
+            invalidInputError(False,
+                              "Columns should be str or a list of str, but got None")
         if not isinstance(columns, list):
             columns = [columns]
         check_col_exists(self.df, columns)
@@ -501,8 +517,9 @@ class Table:
             if new_df.schema[column].dataType not in [IntegerType(), ShortType(),
                                                       LongType(), FloatType(),
                                                       DecimalType(), DoubleType()]:
-                raise ValueError("Column type should be numeric, but have type {} \
-                    for column {}".format(new_df.schema[column].dataType, column))
+                invalidInputError(False,
+                                  "Column type should be numeric, but have type {} "
+                                  "for column {}".format(new_df.schema[column].dataType, column))
             new_df = new_df.withColumn(column, pyspark_col(column) + lit(value))
         return self._clone(new_df)
 
@@ -570,8 +587,8 @@ class Table:
                        "integer", "long", "short", "float", "double"]
         if not (isinstance(dtype, str) and (dtype in valid_types)) \
                 and not isinstance(dtype, DataType):
-            raise ValueError(
-                "dtype should be string, boolean, int, long, short, float, double.")
+            invalidInputError(False,
+                              "dtype should be string, boolean, int, long, short, float, double.")
         transform_dict = {"str": "string", "bool": "boolean", "integer": "int"}
         dtype = transform_dict[dtype] if dtype in transform_dict else dtype
         df_cast = self._clone(self.df)
@@ -638,8 +655,9 @@ class Table:
         :return: A single concatenated Table.
         """
         if mode not in ["outer", "inner"]:
-            raise ValueError("concat mode should be either outer or inner,\
-                                     but got {}.".format(mode))
+            invalidInputError(False,
+                              "concat mode should be either outer or inner,"
+                              "but got {}.".format(mode))
         if not isinstance(tables, list):
             tables = [tables]
         dfs = [table.df for table in tables] + [self.df]
@@ -681,7 +699,8 @@ class Table:
             window = Window.partitionBy(subset).orderBy(*[self.df[sort_col].desc()
                                                           for sort_col in sort_cols], 'id')
         else:
-            raise ValueError("keep should be either min or max, but got {}.".format(keep))
+            invalidInputError(False,
+                              "keep should be either min or max, but got {}.".format(keep))
         df = self.df.withColumn('id', monotonically_increasing_id()) \
             .withColumn('rank', rank().over(window))
         df = df.filter(pyspark_col('rank') == 1).drop('rank', 'id')
@@ -696,7 +715,8 @@ class Table:
 
         :return: A new Table with the appended column.
         """
-        assert(isinstance(column, Column), "column should be a pyspark.sql.column.Column")
+        invalidInputError(isinstance(column, Column),
+                          "column should be a pyspark.sql.column.Column")
         return self._clone(self.df.withColumn(name, column))
 
     def subtract(self, other):
@@ -731,7 +751,8 @@ class Table:
                If a list is specified, length of the list must equal length of the `cols`.
         """
         if not cols:
-            raise ValueError("cols should be str or a list of str, but got None.")
+            invalidInputError(False,
+                              "cols should be str or a list of str, but got None.")
         return self._clone(self.df.sort(*cols, **kwargs))
 
     order_by = sort
@@ -872,7 +893,8 @@ class FeatureTable(Table):
             columns = [columns]
         if not isinstance(indices, list):
             indices = [indices]
-        assert len(columns) == len(indices)
+        invalidInputError(len(columns) == len(indices),
+                          "columns len doesn't match indices lenngth")
         if isinstance(indices[0], dict):
             indices = list(map(lambda x: StringIndex.from_dict(x[1], columns[x[0]]),
                                enumerate(indices)))
@@ -964,8 +986,8 @@ class FeatureTable(Table):
         :return: A new FeatureTable with the target cross column.
         """
         cross_hash_df = self.df
-        assert isinstance(columns, list), "columns should be a list of column names"
-        assert len(columns) >= 2, "cross_hash_encode should have >= 2 columns"
+        invalidInputError(isinstance(columns, list), "columns should be a list of column names")
+        invalidInputError(len(columns) >= 2, "cross_hash_encode should have >= 2 columns")
         if cross_col_name is None:
             cross_string = ''
             for column in columns:
@@ -1060,11 +1082,13 @@ class FeatureTable(Table):
             # The vector size is 1 + max (i.e. from 0 to max).
             sizes = [self.select(col_name).group_by(agg="max").df.collect()[0][0] + 1
                      for col_name in columns]
-        assert len(columns) == len(sizes), "columns and sizes should have the same length"
+        invalidInputError(len(columns) == len(sizes),
+                          "columns and sizes should have the same length")
         if prefix:
             if not isinstance(prefix, list):
                 prefix = [prefix]
-            assert len(columns) == len(prefix), "columns and prefix should have the same length"
+            invalidInputError(len(columns) == len(prefix),
+                              "columns and prefix should have the same length")
         data_df = self.df
 
         def one_hot(columns, sizes):
@@ -1125,7 +1149,8 @@ class FeatureTable(Table):
         :return: A StringIndex or a list of StringIndex.
         """
         if columns is None:
-            raise ValueError("columns should be str or a list of str, but got None.")
+            invalidInputError(False,
+                              "columns should be str or a list of str, but got None.")
         is_single_column = False
         if not isinstance(columns, list):
             is_single_column = True
@@ -1144,8 +1169,9 @@ class FeatureTable(Table):
             elif isinstance(freq_limit, dict):
                 freq_limit = ",".join(str(k) + ":" + str(v) for k, v in freq_limit.items())
             else:
-                raise ValueError("freq_limit only supports int, dict or None, but get " +
-                                 freq_limit.__class__.__name__)
+                invalidInputError(False,
+                                  "freq_limit only supports int, dict or None, but get " +
+                                  freq_limit.__class__.__name__)
         out_columns = []
         simple_columns = []
         df_id_list = []
@@ -1155,7 +1181,8 @@ class FeatureTable(Table):
                 if 'src_cols' in c:
                     src_cols = c['src_cols']
                 else:
-                    raise ValueError("Union columns must has argument 'src_cols'")
+                    invalidInputError(False,
+                                      "Union columns must has argument 'src_cols'")
                 if 'col_name' in c:
                     col_name = c['col_name']
                 else:
@@ -1446,12 +1473,12 @@ class FeatureTable(Table):
         :return: A new FeatureTable after column transformation.
         """
         udf_func = udf(func, dtype)
-        assert isinstance(out_col, str), "out_col must be a single column"
+        invalidInputError(isinstance(out_col, str), "out_col must be a single column")
         if isinstance(in_col, str):
             df = self.df.withColumn(out_col, udf_func(pyspark_col(in_col)))
         else:
-            assert isinstance(in_col, list), \
-                "in_col must be a single column of a list of columns"
+            invalidInputError(isinstance(in_col, list),
+                              "in_col must be a single column of a list of columns")
             df = self.df.withColumn(out_col, udf_func(array(in_col)))
         return FeatureTable(df)
 
@@ -1469,7 +1496,7 @@ class FeatureTable(Table):
 
         :return: A joined FeatureTable.
         """
-        assert isinstance(table, Table), "the joined table should be a Table"
+        invalidInputError(isinstance(table, Table), "the joined table should be a Table")
         if not isinstance(on, list):
             on = [on]
         overlap_columns = list(set(self.df.schema.names).
@@ -1497,8 +1524,8 @@ class FeatureTable(Table):
          """
         if isinstance(columns, str):
             columns = [columns]
-        assert isinstance(columns, list), \
-            "columns should be str or a list of str, but get a " + type(columns)
+        invalidInputError(isinstance(columns, list),
+                          f"columns should be str or a list of str, but get a {str(type(columns))}")
         df = add_value_features(self.df, columns, dict_tbl.df, key, value)
         return FeatureTable(df)
 
@@ -1515,10 +1542,11 @@ class FeatureTable(Table):
 
         if isinstance(index_tbls, dict):
             index_tbls = [index_tbls]
-        assert isinstance(index_tbls, list), \
-            "index_dicts should be table or a list of table, but get a " + type(index_tbls)
-        assert len(columns) == len(index_tbls), \
-            "each column of columns should have one corresponding index_dict"
+        invalidInputError(isinstance(index_tbls, list),
+                          "index_dicts should be table or a list of table,"
+                          f" but get a {str(type(index_tbls))}")
+        invalidInputError(len(columns) == len(index_tbls),
+                          "each column of columns should have one corresponding index_dict")
 
         tbl = FeatureTable(self.df)
         for i, c in enumerate(columns):
@@ -1539,8 +1567,8 @@ class FeatureTable(Table):
         str_to_list(columns, "columns")
         if isinstance(freq_limit, int):
             freq_limit = {col: freq_limit for col in columns}
-        assert isinstance(freq_limit, dict), \
-            "freq_limit should be int or dict, but get a " + type(freq_limit)
+        invalidInputError(isinstance(freq_limit, dict),
+                          f"freq_limit should be int or dict, but get a {str(type(freq_limit))}")
         index_tbls = []
         for c in columns:
             c_count = self.select(c).group_by(c, agg={c: "count"}).rename(
@@ -1587,7 +1615,7 @@ class FeatureTable(Table):
         """
         if isinstance(columns, str):
             columns = [columns]
-        assert isinstance(columns, list), "columns should be str or a list of str"
+        invalidInputError(isinstance(columns, list), "columns should be str or a list of str")
         grouped_data = self.df.groupBy(columns)
 
         if isinstance(agg, str):
@@ -1609,16 +1637,18 @@ class FeatureTable(Table):
                 for agg_column, stats in agg.items():
                     if isinstance(stats, str):
                         stats = [stats]
-                    assert isinstance(stats, list), "value in agg should be str or a list of str"
+                    invalidInputError(isinstance(stats, list),
+                                      "value in agg should be str or a list of str")
                     for stat in stats:
                         stat_func = getattr(F, stat)
                         agg_exprs_list += [stat_func(agg_column)]
                 agg_df = grouped_data.agg(*agg_exprs_list)
         else:
-            raise TypeError("agg should be str, list of str, or dict")
+            invalidInputError(False,
+                              "agg should be str, list of str, or dict")
 
         if join:
-            assert columns, "columns can not be empty if join is True"
+            invalidInputError(columns, "columns can not be empty if join is True")
             result_df = self.df.join(agg_df, on=columns, how="left")
             return FeatureTable(result_df)
         else:
@@ -1682,28 +1712,31 @@ class FeatureTable(Table):
         :return: A tuple of a new FeatureTable with target encoded columns and a list of TargetCodes
                  which contains the target encode values of the whole FeatureTable.
         """
-        assert isinstance(kfold, int) and kfold > 0, "kfold should be an integer larger than 0"
+        invalidInputError(isinstance(kfold, int) and kfold > 0,
+                          "kfold should be an integer larger than 0")
         if isinstance(cat_cols, str):
             cat_cols = [cat_cols]
-        assert isinstance(cat_cols, list), "cat_cols should be str or list"
+        invalidInputError(isinstance(cat_cols, list), "cat_cols should be str or list")
         for cat_col in cat_cols:
             check_col_str_list_exists(self.df, cat_col, "cat_cols")
         if isinstance(target_cols, str):
             target_cols = [target_cols]
-        assert isinstance(target_cols, list), "target_cols should be str or list"
+        invalidInputError(isinstance(target_cols, list), "target_cols should be str or list")
         check_col_exists(self.df, target_cols)
         nonnumeric_target_col_type = get_nonnumeric_col_type(self.df, target_cols)
-        assert not nonnumeric_target_col_type, "target_cols should be numeric but get " + ", ".join(
-            list(map(lambda x: x[0] + " of type " + x[1], nonnumeric_target_col_type)))
+        invalidInputError(not nonnumeric_target_col_type,
+                          "target_cols should be numeric but get " + ", ".join(
+                              list(map(lambda x: x[0] + " of type " + x[1],
+                                       nonnumeric_target_col_type))))
 
         if out_cols is None:
             out_cols = [[gen_cols_name(cat_col, "_") + "_te_" + target_col
                          for target_col in target_cols] for cat_col in cat_cols]
         else:
             if isinstance(out_cols, str):
-                assert len(cat_cols) == 1 and len(target_cols) == 1, \
-                    "out_cols can be string only if both cat_cols and target_cols has only one" + \
-                    " element"
+                invalidInputError(len(cat_cols) == 1 and len(target_cols) == 1,
+                                  "out_cols can be string only if both cat_cols and"
+                                  " target_cols has only one element")
                 out_cols = [[out_cols]]
             elif isinstance(out_cols, list):
                 if all(isinstance(out_col, str) for out_col in out_cols):
@@ -1712,35 +1745,40 @@ class FeatureTable(Table):
                     elif len(target_cols) == 1:
                         out_cols = [[out_col] for out_col in out_cols]
                     else:
-                        raise TypeError("out_cols should be a nested list of str when both " +
-                                        "cat_cols and target_cols have more than one elements")
+                        invalidInputError(False,
+                                          "out_cols should be a nested list of str when both " +
+                                          "cat_cols and target_cols have more than one elements")
                 else:
                     for outs in out_cols:
-                        assert isinstance(outs, list), "out_cols should be str, a list of str, " \
-                                                       "or a nested list of str"
+                        invalidInputError(isinstance(outs, list),
+                                          "out_cols should be str, a list of str,"
+                                          " or a nested list of str")
             else:
-                raise TypeError("out_cols should be str, a list of str, or a nested list of str")
-            assert len(out_cols) == len(cat_cols), "length of out_cols should be equal to " \
-                                                   "length of cat_cols"
+                invalidInputError(False,
+                                  "out_cols should be str, a list of str, or a nested list of str")
+            invalidInputError(len(out_cols) == len(cat_cols),
+                              "length of out_cols should be equal to length of cat_cols")
             for outs in out_cols:
-                assert len(outs) == len(target_cols), "length of element in out_cols should be " \
-                                                      "equal to length of target_cols"
+                invalidInputError(len(outs) == len(target_cols),
+                                  "length of element in out_cols should"
+                                  " be equal to length of target_cols")
 
         # calculate global mean for each target column
         target_mean_dict = {}
         if target_mean is not None:
-            assert isinstance(target_mean, dict), "target_mean should be a dict"
+            invalidInputError(isinstance(target_mean, dict), "target_mean should be a dict")
             for target_col in target_cols:
-                assert target_col in target_mean, \
-                    "target column " + target_col + " should be in target_mean " + str(target_mean)
+                invalidInputError(target_col in target_mean,
+                                  "target column " + target_col + " should be in target_mean"
+                                                                  " " + str(target_mean))
                 target_mean_dict[target_col] = target_mean[target_col]
         else:
             global_mean_list = [F.mean(pyspark_col(target_col)).alias(target_col)
                                 for target_col in target_cols]
             target_mean_dict = self.df.select(*global_mean_list).collect()[0].asDict()
         for target_col in target_mean_dict:
-            assert target_mean_dict[target_col] is not None, "mean of target column {} should " \
-                                                             "not be None".format(target_col)
+            invalidInputError(target_mean_dict[target_col] is not None,
+                              "mean of target column {} should not be None".format(target_col))
 
         # generate fold_col
         result_df = self.df
@@ -1755,9 +1793,9 @@ class FeatureTable(Table):
                     result_df = result_df.withColumn(
                         fold_col, (F.rand(seed=fold_seed) * kfold).cast(IntegerType()))
             else:
-                assert list(filter(lambda x: x[0] == fold_col and x[1] == "int",
-                                   self.df.dtypes)), \
-                    "fold_col should be integer type but get " + fold_col
+                invalidInputError(
+                    list(filter(lambda x: x[0] == fold_col and x[1] == "int", self.df.dtypes)),
+                    "fold_col should be integer type but get " + fold_col)
         else:
             fold_col = None
 
@@ -1852,16 +1890,19 @@ class FeatureTable(Table):
             targets = [targets]
         elif isinstance(targets, list):
             for target_code in targets:
-                assert isinstance(target_code, TargetCode), \
-                    "element in targets should be TargetCode but get {}".format(type(target_code))
+                invalidInputError(isinstance(target_code, TargetCode),
+                                  "element in targets should be TargetCode"
+                                  " but get {}".format(type(target_code)))
         else:
-            raise TypeError("targets should be TargetCode or list of TargetCode")
+            invalidInputError(False,
+                              "targets should be TargetCode or list of TargetCode")
         for target_code in targets:
-            check_col_str_list_exists(self.df, target_code.cat_col, "TargetCode.cat_col in targets")
+            check_col_str_list_exists(self.df, target_code.cat_col,
+                                      "TargetCode.cat_col in targets")
         if target_cols is not None:
             if isinstance(target_cols, str):
                 target_cols = [target_cols]
-            assert isinstance(target_cols, list), "target_cols should be str or list"
+            invalidInputError(isinstance(target_cols, list), "target_cols should be str or list")
 
         result_tbl = FeatureTable(self.df)
         result_tbl = encode_target_(result_tbl, targets, target_cols=target_cols,
@@ -1892,16 +1933,18 @@ class FeatureTable(Table):
         columns = str_to_list(columns, "columns")
         sort_cols = str_to_list(sort_cols, "sort_cols")
         nonnumeric_col_type = get_nonnumeric_col_type(self.df, columns)
-        assert not nonnumeric_col_type, \
-            "columns should be numeric but get " + \
-            ", ".join(list(map(lambda x: x[0] + " of type " + x[1], nonnumeric_col_type)))
+        msg = "columns should be numeric but get " + \
+              ", ".join(list(map(lambda x: x[0] + " of type " + x[1], nonnumeric_col_type)))
+        invalidInputError(not nonnumeric_col_type, msg)
         if isinstance(shifts, int):
             shifts = [shifts]
         elif isinstance(shifts, list):
             for s in shifts:
-                assert isinstance(s, int), "elements in shift should be integer but get " + str(s)
+                invalidInputError(isinstance(s, int),
+                                  "elements in shift should be integer but get " + str(s))
         else:
-            raise TypeError("shift should be either int or a list of int")
+            invalidInputError(False,
+                              "shift should be either int or a list of int")
         if partition_cols is not None:
             partition_cols = str_to_list(partition_cols, "partition_cols")
         if out_cols is None:
@@ -1910,8 +1953,9 @@ class FeatureTable(Table):
                          for shift in shifts] for column in columns]
         else:
             if isinstance(out_cols, str):
-                assert len(columns) == 1 and len(shifts) == 1, \
-                    "out_cols can be string only if both columns and shifts has only one element"
+                invalidInputError(len(columns) == 1 and len(shifts) == 1,
+                                  "out_cols can be string only if both columns"
+                                  " and shifts has only one element")
                 out_cols = [[out_cols]]
             elif isinstance(out_cols, list):
                 if all(isinstance(out_col, str) for out_col in out_cols):
@@ -1920,19 +1964,24 @@ class FeatureTable(Table):
                     elif len(shifts) == 1:
                         out_cols = [[out_col] for out_col in out_cols]
                     else:
-                        raise TypeError("out_cols should be a list of list of str when both " +
-                                        "columns shifts have more than one elements")
+                        invalidInputError(False,
+                                          "out_cols should be a list of list of str when both " +
+                                          "columns shifts have more than one elements")
                 else:
                     for outs in out_cols:
-                        assert isinstance(outs, list), "out_cols should be str, a list of str, " \
-                                                       "or a list of lists of str"
+                        invalidInputError(isinstance(outs, list),
+                                          "out_cols should be str, a list of str,"
+                                          " or a list of lists of str")
             else:
-                raise TypeError("out_cols should be str, a list of str, or a list of lists of str")
-            assert len(out_cols) == len(columns), "length of out_cols should be equal to length " \
-                                                  "of columns"
+                invalidInputError(False,
+                                  "out_cols should be str, a list of str, or a list"
+                                  " of lists of str")
+            invalidInputError(len(out_cols) == len(columns),
+                              "length of out_cols should be equal to length of columns")
             for outs in out_cols:
-                assert len(outs) == len(shifts), "length of element in out_cols should be " \
-                                                 "equal to length of shifts"
+                invalidInputError(len(outs) == len(shifts),
+                                  "length of element in out_cols should be equal"
+                                  " to length of shifts")
 
         result_df = self.df
         if partition_cols is None:
@@ -1985,7 +2034,8 @@ class FeatureTable(Table):
         columns = str_to_list(columns, "columns")
         if out_cols:
             out_cols = str_to_list(out_cols, "out_cols")
-            assert len(columns) == len(out_cols), "columns and out_cols should have the same length"
+            invalidInputError(len(columns) == len(out_cols),
+                              "columns and out_cols should have the same length")
         check_col_exists(self.df, columns)
         df_buck = self.df
         for i in range(len(columns)):
@@ -1994,14 +2044,15 @@ class FeatureTable(Table):
             bin = bins[column] if isinstance(bins, dict) else bins
             label = labels[column] if isinstance(labels, dict) else labels
             if not check_column_numeric(self.df, column):
-                raise ValueError("{} should be a numeric column".format(column))
+                invalidInputError(False, "{} should be a numeric column".format(column))
             if isinstance(bin, int):
                 col_max = self.get_stats(column, "max")[column]
                 col_min = self.get_stats(column, "min")[column]
                 bin = np.linspace(col_min, col_max, bin + 1, endpoint=True).tolist()
             elif not isinstance(bin, list):
-                raise ValueError("bins should int, a list of int or dict with column name "
-                                 "as the key and int or a list of int as the value")
+                invalidInputError(False,
+                                  "bins should int, a list of int or dict with column name "
+                                  "as the key and int or a list of int as the value")
             bin = [float("-inf")] + bin + [float("inf")]
             # For Bucketizer, inputCol and outputCol must be different.
             bucketizer = Bucketizer(splits=bin, inputCol=column, outputCol=temp_out_col)
@@ -2009,11 +2060,12 @@ class FeatureTable(Table):
             # The output of Buckerizer is float, cast to int.
             df_buck = df_buck.withColumn(temp_out_col, pyspark_col(temp_out_col).cast("int"))
             if label is not None:
-                assert isinstance(label, list), \
-                    "labels should be a list of str or a dict with column name as the " \
-                    "key and a list of str as the value"
-                assert len(label) == len(bin) - 1, \
-                    "labels should be of length {} to match bins".format(len(bin) - 1)
+                invalidInputError(isinstance(label, list),
+                                  "labels should be a list of str or a dict with column name as"
+                                  " the key and a list of str as the value")
+                invalidInputError(len(label) == len(bin) - 1,
+                                  "labels should be of length {} to match"
+                                  " bins".format(len(bin) - 1))
                 to_label = {i: l for (i, l) in enumerate(label)}
                 udf_label = udf(lambda i: to_label[i], StringType())
                 df_buck = df_buck.withColumn(temp_out_col, udf_label(temp_out_col))
@@ -2048,10 +2100,10 @@ class StringIndex(Table):
     def __init__(self, df, col_name):
         super().__init__(df)
         cols = df.columns
-        assert len(cols) >= 2, "StringIndex should have >= 2 columns: col_name, id and other " \
-                               "columns"
-        assert "id" in cols, "id should be a column of the DataFrame"
-        assert col_name in cols, col_name + " should be a column of the DataFrame"
+        invalidInputError(len(cols) >= 2,
+                          "StringIndex should have >= 2 columns: col_name, id and other columns")
+        invalidInputError("id" in cols, "id should be a column of the DataFrame")
+        invalidInputError(col_name in cols, col_name + " should be a column of the DataFrame")
         self.col_name = col_name
 
     @classmethod
@@ -2085,11 +2137,14 @@ class StringIndex(Table):
         """
         spark = OrcaContext.get_spark_session()
         if not isinstance(indices, dict):
-            raise ValueError('indices should be dict, but get ' + indices.__class__.__name__)
+            invalidInputError(False,
+                              'indices should be dict, but get ' + indices.__class__.__name__)
         if not col_name:
-            raise ValueError('col_name should be str, but get None')
+            invalidInputError(False,
+                              'col_name should be str, but get None')
         if not isinstance(col_name, str):
-            raise ValueError('col_name should be str, but get ' + col_name.__class__.__name__)
+            invalidInputError(False,
+                              'col_name should be str, but get ' + col_name.__class__.__name__)
         indices = map(lambda x: {col_name: x[0], 'id': x[1]}, indices.items())
         schema = StructType([StructField(col_name, StringType(), False),
                              StructField("id", IntegerType(), False)])
@@ -2156,14 +2211,15 @@ class TargetCode(Table):
 
         check_col_str_list_exists(df, cat_col, "cat_col")
 
-        assert isinstance(out_target_mean, dict), "out_target_mean should be dict"
+        invalidInputError(isinstance(out_target_mean, dict), "out_target_mean should be dict")
 
     def _clone(self, df):
         return TargetCode(df, self.cat_col, self.out_target_mean)
 
     def rename(self, columns):
-        assert isinstance(columns, dict), "columns should be a dictionary of {'old_name1': " \
-                                          "'new_name1', 'old_name2': 'new_name2'}"
+        invalidInputError(isinstance(columns, dict),
+                          "columns should be a dictionary of "
+                          "{'old_name1': 'new_name1', 'old_name2': 'new_name2'}")
         new_df = self.df
         new_cat_col = self.cat_col
         new_out_target_mean = self.out_target_mean

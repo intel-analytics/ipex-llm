@@ -24,7 +24,7 @@ from bigdl.orca.data.image.parquet_dataset import ParquetDataset, read_parquet
 from bigdl.orca.data.image.utils import DType, FeatureType, SchemaField
 import tensorflow as tf
 
-from bigdl.orca.ray import RayContext
+from bigdl.orca.ray import OrcaRayContext
 
 resource_path = os.path.join(os.path.split(__file__)[0], "../resources")
 WIDTH, HEIGHT, NUM_CHANNELS = 224, 224, 3
@@ -124,7 +124,7 @@ class TestReadParquet(TestCase):
                 dataset = dataset.batch(batch_size)
                 return dataset
 
-            ray_ctx = RayContext.get()
+            ray_ctx = OrcaRayContext.get()
             trainer = Estimator.from_keras(model_creator=model_creator)
             trainer.fit(data=data_creator,
                         epochs=1,

@@ -4,6 +4,7 @@ import grpc
 
 from google.protobuf import empty_pb2 as google_dot_protobuf_dot_empty__pb2
 import recall_pb2 as recall__pb2
+from bigdl.dllib.utils.log4Error import *
 
 
 class RecallStub(object):
@@ -46,25 +47,25 @@ class RecallServicer(object):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
-        raise NotImplementedError('Method not implemented!')
+        invalidInputError(False, 'Method not implemented!')
 
     def addItem(self, request, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
-        raise NotImplementedError('Method not implemented!')
+        invalidInputError(False, 'Method not implemented!')
 
     def getMetrics(self, request, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
-        raise NotImplementedError('Method not implemented!')
+        invalidInputError(False, 'Method not implemented!')
 
     def resetMetrics(self, request, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
-        raise NotImplementedError('Method not implemented!')
+        invalidInputError(False, 'Method not implemented!')
 
 
 def add_RecallServicer_to_server(servicer, server):

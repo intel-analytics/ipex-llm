@@ -22,7 +22,7 @@ from bigdl.orca.automl.metrics import Evaluator
 from bigdl.chronos.autots.deprecated.pipeline.time_sequence import TimeSequencePipeline
 from bigdl.orca.automl.search.utils import process
 from bigdl.chronos.autots.deprecated.config.recipe import *
-from bigdl.orca.ray import RayContext
+from bigdl.orca.ray import OrcaRayContext
 from bigdl.orca.automl.auto_estimator import AutoEstimator
 
 
@@ -100,7 +100,7 @@ class BasePredictor(object):
         if validation_df is not None:
             self._check_df(validation_df)
 
-        ray_ctx = RayContext.get()
+        ray_ctx = OrcaRayContext.get()
         is_local = ray_ctx.is_local
         # BasePredictor._check_fit_metric(metric)
         if not is_local:

@@ -22,7 +22,7 @@ import pytest
 import ray
 
 from bigdl.dllib.nncontext import init_spark_on_local
-from bigdl.orca.ray import RayContext
+from bigdl.orca.ray import OrcaRayContext
 
 np.random.seed(1337)  # for reproducibility
 
@@ -39,7 +39,7 @@ class TestUtil(TestCase):
         def test_local(self):
             node_num = 4
             sc = init_spark_on_local(cores=node_num)
-            ray_ctx = RayContext(sc=sc, object_store_memory="1g")
+            ray_ctx = OrcaRayContext(sc=sc, object_store_memory="1g")
             ray_ctx.init()
             actors = [TestRay.remote() for i in range(0, node_num)]
             print(ray.get([actor.hostname.remote() for actor in actors]))
@@ -47,7 +47,7 @@ class TestUtil(TestCase):
             time.sleep(3)
             # repeat
             print("-------------------first repeat begin!------------------")
-            ray_ctx = RayContext(sc=sc, object_store_memory="1g")
+            ray_ctx = OrcaRayContext(sc=sc, object_store_memory="1g")
             ray_ctx.init()
             actors = [TestRay.remote() for i in range(0, node_num)]
             print(ray.get([actor.hostname.remote() for actor in actors]))
