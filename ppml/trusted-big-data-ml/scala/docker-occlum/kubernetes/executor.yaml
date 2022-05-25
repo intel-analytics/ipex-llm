@@ -14,7 +14,7 @@ spec:
     - name: sgx-provision
       mountPath: /dev/sgx/provision
     - name: aesm
-      mountPath: /var/run/aesmd/aesm.socket
+      mountPath: /var/run/aesmd/
     - name: data-exchange
       mountPath: /opt/occlum_spark/data
     securityContext:
@@ -39,7 +39,7 @@ spec:
       path: /dev/sgx_provision
   - name: aesm
     hostPath:
-      path: /var/run/aesmd/aesm.socket
+      path: /var/run/aesmd/
   - name: data-exchange
     hostPath:
       path: /tmp
