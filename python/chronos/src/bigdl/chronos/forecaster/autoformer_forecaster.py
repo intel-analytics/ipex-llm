@@ -21,6 +21,7 @@ from torch.utils.data import TensorDataset, DataLoader
 from bigdl.chronos.model.autoformer.Autoformer import AutoFormer
 import torch.nn as nn
 import numpy as np
+import os
 
 
 class AutoformerForecaster(BasePytorchForecaster):
@@ -73,6 +74,7 @@ class AutoformerForecaster(BasePytorchForecaster):
         self.use_ipex = False
         self.onnx_available = True
         self.quantize_available = True
+        self.use_amp = False
 
         self.model_creator = model_creator
         self.internal = model_creator(self.config)
@@ -188,3 +190,39 @@ class AutoformerForecaster(BasePytorchForecaster):
             total_loss.append(loss_result)
         total_loss = torch.mean(torch.stack(total_loss))
         return total_loss
+
+    def predict(self, data, load=False):
+        preds = []
+        for i, (batch_x, batch_y, batch_x_mark, batch_y_mark) in enumerate(data):
+            batch_x = batch_x.float()
+            batch_y = batch_y.float()
+            batch_x_mark = batch_x_mark.float()
+            batch_y_mark = batch_y_mark.float()
+
+            # decoder input
+            dec_inp = torch.zeros([batch_y.shape[0], self.config['pred_len'], batch_y.shape[2]]).float()
+            dec_inp = torch.cat([batch_y[:, :self.config['label_len'], :], dec_inp], dim=1).float()
+            # encoder - decoder
+            if self.use_amp:
+                with torch.cuda.amp.autocast():
+                    if self.config['output_attention']:
+                        outputs = self.internal(batch_x, batch_x_mark, dec_inp, batch_y_mark)[0]
+                    else:
+                        outputs = self.internal(batch_x, batch_x_mark, dec_inp, batch_y_mark)
+            else:
+                if self.config['output_attention']:
+                    outputs = self.internal(batch_x, batch_x_mark, dec_inp, batch_y_mark)[0]
+                else:
+                    outputs = self.internal(batch_x, batch_x_mark, dec_inp, batch_y_mark)
+            preds.append(outputs)
+
+        preds = np.array(preds)
+
+        # result save
+        folder_path = './results/'
+        if not os.path.exists(folder_path):
+            os.makedirs(folder_path)
+
+        np.save(folder_path + 'real_prediction.npy', preds)
+
+        return
