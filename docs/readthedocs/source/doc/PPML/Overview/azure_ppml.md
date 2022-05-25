@@ -246,7 +246,7 @@ to create secretProviderClass in your AKS.
 ## 3. Run Spark PPML jobs
 Login to your client VM and enter your BigDL PPML container:
 ```bash
-docker exec -it park-local bash
+docker exec -it spark-local bash
 ```
 Then run `az login` to login to Azure system.
 
