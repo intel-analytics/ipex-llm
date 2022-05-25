@@ -13,7 +13,7 @@ spec:
       name: bigdl-notebook
       labels:
         app: bigdl-notebook
-        appType: mlpNotebook
+        appType: bigdl
     spec:
       containers:
         - image: intelanalytics/bigdl:2.1.0-SNAPSHOT
