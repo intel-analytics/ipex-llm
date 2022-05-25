@@ -17,6 +17,10 @@
 import torch
 from bigdl.chronos.forecaster.base_forecaster import BasePytorchForecaster
 from bigdl.chronos.model.autoformer import model_creator
+from torch.utils.data import TensorDataset, DataLoader
+from bigdl.chronos.model.autoformer.Autoformer import AutoFormer
+import torch.nn as nn
+import numpy as np
 
 
 class AutoformerForecaster(BasePytorchForecaster):
@@ -24,20 +28,20 @@ class AutoformerForecaster(BasePytorchForecaster):
                  seq_len,
                  label_len,
                  pred_len,
+                 enc_in,
+                 freq,
+                 dec_in,
+                 c_out,
                  output_attention=False,
                  moving_avg=25,
-                 enc_in,
                  d_model=512,
                  embed='timeF',
-                 freq,
                  dropout=0.05,
-                 dec_in,
                  factor=3,
                  n_head=8,
                  d_ff=2048,
                  activation='gelu',
                  e_layer=2,
-                 c_out,
                  d_layers=1):
         # config setting
         self.config = {
@@ -61,9 +65,17 @@ class AutoformerForecaster(BasePytorchForecaster):
             "d_layers": d_layers
         }
 
-        self.model_creator = model_creator
+        self.distributed = False
+        self.seed = None
+        self.checkpoint_callback = False
+        current_num_threads = torch.get_num_threads()
+        self.num_processes = max(1, current_num_threads//8)
+        self.use_ipex = False
+        self.onnx_available = True
+        self.quantize_available = True
 
-        super().__init__()
+        self.model_creator = model_creator
+        self.internal = model_creator(self.config)
 
     def fit(self, data, epochs=1, batch_size=32):
         # input transform
@@ -149,3 +161,30 @@ class AutoformerForecaster(BasePytorchForecaster):
             self.trainer = Trainer(logger=False, max_epochs=1,
                                    checkpoint_callback=self.checkpoint_callback,
                                    num_processes=self.num_processes, use_ipex=self.use_ipex)
+
+    def evaluate(self, batch):
+        total_loss = []
+        self.internal.eval()
+
+        for i, (batch_x, batch_y, batch_x_mark, batch_y_mark) in enumerate(batch):
+            batch_x = batch_x.float()
+            batch_y = batch_y.float()
+
+            batch_x_mark = batch_x_mark.float()
+            batch_y_mark = batch_y_mark.float()
+
+            dec_inp = torch.zeros_like(batch_y[:, -self.config['pred_len']:, :]).float()
+            dec_inp = torch.cat([batch_y[:, :self.config['label_len'], :], dec_inp], dim=1).float()
+
+            outputs = self.internal(batch_x, batch_x_mark, dec_inp,
+                       batch_y_mark, batch_y)
+
+            outputs = outputs[:, -self.config['pred_len']:, :]
+            batch_y = batch_y[:, -self.config['pred_len']:, :]
+
+            loss = nn.MSELoss()
+
+            loss_result = loss(outputs, batch_y)
+            total_loss.append(loss_result)
+        total_loss = torch.mean(torch.stack(total_loss))
+        return total_loss
