@@ -91,9 +91,10 @@ class QuantizationINC(Quantization):
                 if isinstance(item, torch.Tensor):
                     return item.numpy()
                 return item
+
             def collate_fn(batch):
                 res = func(batch)
-                return tuple(map(lambda x:transform_tensor_to_numpy(x), res))
+                return tuple(map(lambda x: transform_tensor_to_numpy(x), res))
             return collate_fn
 
         if calib_dataloader:
