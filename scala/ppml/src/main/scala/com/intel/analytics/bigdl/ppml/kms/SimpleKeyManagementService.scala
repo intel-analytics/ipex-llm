@@ -29,8 +29,7 @@ class SimpleKeyManagementService extends KeyManagementService {
     timing("SimpleKeyManagementService retrievePrimaryKey") {
       Log4Error.invalidInputError(primaryKeySavePath != null && primaryKeySavePath != "",
         "primaryKeySavePath should be specified")
-      val suffix = (1 to 4).map { x => Random.nextInt(10) }.mkString
-      val encryptedPrimaryKey = _appId + suffix
+      val encryptedPrimaryKey = (1 to 16).map { x => Random.nextInt(10) }.mkString
       keyReaderWriter.writeKeyToFile(primaryKeySavePath, encryptedPrimaryKey)
     }
   }
@@ -44,8 +43,7 @@ class SimpleKeyManagementService extends KeyManagementService {
       val primaryKeyPlaintext = keyReaderWriter.readKeyFromFile(primaryKeyPath)
       Log4Error.invalidInputError(primaryKeyPlaintext.substring(0, 12) == _appId,
         "appid and primarykey should be matched!")
-      val randVect = (1 to 16).map { x => Random.nextInt(10) }
-      val dataKeyPlaintext = randVect.mkString
+      val dataKeyPlaintext = (1 to 16).map { x => Random.nextInt(10) }.mkString
       var dataKeyCiphertext = ""
       for(i <- 0 until 16) {
         dataKeyCiphertext += '0' + ((primaryKeyPlaintext(i) - '0') +
