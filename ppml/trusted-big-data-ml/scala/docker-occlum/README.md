@@ -228,3 +228,8 @@ You can find XGBoost model under folder `/path/to/data/`.
     ├── part-00000
     └── _SUCCESS
 ```
+
+## How to debug
+Modify the `SGX_LOG_LEVEL` to one of `off, error, warn, debug, info, and trace` in `start-spark-local.sh`. 
+The default value is off, showing no log messages at all. The most verbose level is trace.
+When you use attestation, `SGX_LOG_LEVEL` will be set to `off`.

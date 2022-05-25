@@ -238,6 +238,7 @@ ADD ./log4j2.xml /opt/spark/conf/log4j2.xml
 COPY ./entrypoint.sh /opt/
 
 RUN chmod a+x /opt/entrypoint.sh && \
-    chmod a+x /opt/run_spark_on_occlum_glibc.sh
+    chmod a+x /opt/run_spark_on_occlum_glibc.sh && \
+    chmod a+x /root/demos/remote_attestation/init_ra_flow/run_attestation_server.sh
 
 ENTRYPOINT [ "/opt/entrypoint.sh" ]

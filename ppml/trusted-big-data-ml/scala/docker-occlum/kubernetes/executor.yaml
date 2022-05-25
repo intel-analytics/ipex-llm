@@ -28,6 +28,8 @@ spec:
       value: "512MB"
     - name: SGX_KERNEL_HEAP
       value: "1GB"
+    - name: SGX_LOG_LEVEL
+        value: "off"
   volumes:
   - name: sgx-enclave
     hostPath:

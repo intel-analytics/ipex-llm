@@ -18,6 +18,14 @@ if [ -z "$uidentry" ] ; then
     fi
 fi
 
+# check occlum log level
+if [[ -z "$SGX_LOG_LEVEL" ]]; then
+    echo "No SGX_LOG_LEVEL specified, set to off."
+else
+    echo "Set SGX_LOG_LEVEL to $SGX_LOG_LEVEL"
+    export OCCLUM_LOG_LEVEL=$SGX_LOG_LEVEL
+fi
+
 SPARK_K8S_CMD="$1"
 case "$SPARK_K8S_CMD" in
     driver | executor)
