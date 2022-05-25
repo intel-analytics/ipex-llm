@@ -294,7 +294,6 @@ class BasePytorchForecaster(Forecaster):
                                             input_data=data,
                                             batch_size=batch_size)
 
-
     def evaluate(self, data, batch_size=32, multioutput="raw_values", quantize=False):
         """
         Evaluate using a trained forecaster.
@@ -600,7 +599,6 @@ class BasePytorchForecaster(Forecaster):
         self.openvino_fp32 = Trainer.trace(self.internal,
                                            input_sample=dummy_input,
                                            accelerator="openvino")
-
 
     def export_onnx_file(self, dirname="model.onnx", quantized_dirname="qmodel.onnx"):
         """
