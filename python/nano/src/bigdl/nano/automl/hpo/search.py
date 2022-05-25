@@ -23,6 +23,7 @@
 
 
 import optuna
+from bigdl.nano.utils.log4Error import invalidInputError
 
 
 def _filter_tuner_args(kwargs, tuner_keys):
@@ -61,7 +62,7 @@ def _end_search(study, model_builder, use_trial_id=-1):
     :param study: the hpo study object.
     :param model_builder: the function to build the model.
     :param use_trial_id: int(optional) params of which trial to be used. Defaults to -1.
-    :raises ValueError: if study is None.
+    :throw ValueError: if study is None.
     :return : the built model with best or specified trial hyperparams.
     """
     if study is None:
@@ -81,8 +82,8 @@ def _check_search_args(search_args, legal_keys):
     allkeys = set().union(*legal_keys)
     illegal_args = search_arg_keys.difference(allkeys)
     if len(illegal_args) > 0:
-        raise ValueError('Invalid Arguments found for \'search\':',
-                         ', '.join(illegal_args))
+        invalidInputError(False,
+                          'Invalid Arguments found for \'search\':')
 
 
 def _strip_val_prefix(metric):
@@ -103,9 +104,9 @@ def _check_optimize_direction(direction, directions, metric):
     stripped_metric = _strip_val_prefix(metric).lower()
     if stripped_metric in max_metrics:
         if direction != 'maximize':
-            raise ValueError('metric', metric,
-                             'should use maximize direction for optmize')
+            invalidInputError(False,
+                              'should use maximize direction for optmize')
     elif stripped_metric in min_metrics:
         if direction != 'minimize':
-            raise ValueError('metric', metric,
-                             'should use minimize direction for optmize')
+            invalidInputError(False,
+                              'should use minimize direction for optmize')

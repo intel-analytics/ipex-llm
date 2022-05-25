@@ -58,6 +58,8 @@ from tensorflow.python.ops import rnn_cell_impl
 from tensorflow.python.ops import tensor_array_ops
 from tensorflow.python.ops import variable_scope as vs
 from tensorflow.python.util import nest
+from bigdl.dllib.utils.log4Error import *
+
 
 # pylint: disable=protected-access
 _concat = rnn_cell_impl._concat
@@ -83,9 +85,9 @@ def _transpose_batch_time(x):
     """
     x_static_shape = x.get_shape()
     if x_static_shape.ndims is not None and x_static_shape.ndims < 2:
-        raise ValueError(
-            "Expected input tensor %s to have rank at least 2, but saw shape: %s" %
-            (x, x_static_shape))
+        invalidInputError(False,
+                          "Expected input tensor %s to have rank at least 2, but saw shape: %s" %
+                          (x, x_static_shape))
     x_rank = array_ops.rank(x)
     x_t = array_ops.transpose(
         x, array_ops.concat(
@@ -115,8 +117,8 @@ def _best_effort_input_batch_size(flat_input):
         if shape.ndims is None:
             continue
         if shape.ndims < 2:
-            raise ValueError(
-                "Expected input tensor %s to have rank at least 2" % input_)
+            invalidInputError(False,
+                              "Expected input tensor %s to have rank at least 2" % input_)
         batch_size = shape[1].value
         if batch_size is not None:
             return batch_size
@@ -143,12 +145,12 @@ def _infer_state_dtype(explicit_dtype, state):
     elif nest.is_sequence(state):
         inferred_dtypes = [element.dtype for element in nest.flatten(state)]
         if not inferred_dtypes:
-            raise ValueError("Unable to infer dtype from empty state.")
+            invalidInputError(False, "Unable to infer dtype from empty state.")
         all_same = all([x == inferred_dtypes[0] for x in inferred_dtypes])
         if not all_same:
-            raise ValueError(
-                "State has tensors of different inferred_dtypes. Unable to infer a "
-                "single representative dtype.")
+            invalidInputError(False,
+                              "State has tensors of different inferred_dtypes. Unable to infer a "
+                              "single representative dtype.")
         return inferred_dtypes[0]
     else:
         return state.dtype
@@ -267,8 +269,9 @@ def _rnn_step(time, sequence_length, min_sequence_length, max_sequence_length,
             _maybe_copy_some_through)
 
     if len(final_output_and_state) != len(flat_zero_output) + len(flat_state):
-        raise ValueError("Internal error: state and output were not concatenated "
-                         "correctly.")
+        invalidInputError(False,
+                          "Internal error: state and output were not concatenated "
+                          "correctly.")
     final_output = final_output_and_state[:len(flat_zero_output)]
     final_state = final_output_and_state[len(flat_zero_output):]
 
@@ -583,9 +586,9 @@ def dynamic_rnn(cell, inputs, att_scores=None, sequence_length=None, initial_sta
     if sequence_length is not None:
         sequence_length = math_ops.to_int32(sequence_length)
         if sequence_length.get_shape().ndims not in (None, 1):
-            raise ValueError(
-                "sequence_length must be a vector of length batch_size, "
-                "but saw shape: %s" % sequence_length.get_shape())
+            invalidInputError(False,
+                              "sequence_length must be a vector of length batch_size, "
+                              "but saw shape: %s" % sequence_length.get_shape())
         sequence_length = array_ops.identity(  # Just to find it in the graph.
             sequence_length, name="sequence_length")
 
@@ -601,7 +604,8 @@ def dynamic_rnn(cell, inputs, att_scores=None, sequence_length=None, initial_sta
             state = initial_state
         else:
             if not dtype:
-                raise ValueError("If there is no initial_state, you must give a dtype.")
+                invalidInputError(False,
+                                  "If there is no initial_state, you must give a dtype.")
             state = cell.zero_state(batch_size, dtype)
 
         def _assert_has_shape(x, shape):
@@ -679,7 +683,7 @@ def _dynamic_rnn_loop(cell,
         from the inputs.
     """
     state = initial_state
-    assert isinstance(parallel_iterations, int), "parallel_iterations must be int"
+    invalidInputError(isinstance(parallel_iterations, int), "parallel_iterations must be int")
 
     state_size = cell.state_size
 
@@ -698,18 +702,18 @@ def _dynamic_rnn_loop(cell,
 
     for shape in inputs_got_shape:
         if not shape[2:].is_fully_defined():
-            raise ValueError(
-                "Input size (depth of inputs) must be accessible via shape inference,"
-                " but saw value None.")
+            invalidInputError(False,
+                              "Input size (depth of inputs) must be accessible via shape"
+                              " inference, but saw value None.")
         got_time_steps = shape[0].value
         got_batch_size = shape[1].value
         if const_time_steps != got_time_steps:
-            raise ValueError(
-                "Time steps is not the same for all the elements in the input in a "
-                "batch.")
+            invalidInputError(False,
+                              "Time steps is not the same for all the elements in the input"
+                              " in a batch.")
         if const_batch_size != got_batch_size:
-            raise ValueError(
-                "Batch_size is not the same for all the elements in the input.")
+            invalidInputError(False,
+                              "Batch_size is not the same for all the elements in the input.")
 
     # Prepare dynamic conditional copying of state & output
     def _create_zero_arrays(size):
@@ -990,7 +994,7 @@ def raw_rnn(cell, loop_fn,
 
     assert_like_rnncell(cell.name, cell)
     if not callable(loop_fn):
-        raise TypeError("loop_fn must be a callable")
+        invalidInputError(False, "loop_fn must be a callable")
 
     parallel_iterations = parallel_iterations or 32
 
@@ -1189,9 +1193,9 @@ def static_rnn(cell,
 
     assert_like_rnncell(cell.name, cell)
     if not nest.is_sequence(inputs):
-        raise TypeError("inputs must be a sequence")
+        invalidInputError(False, "inputs must be a sequence")
     if not inputs:
-        raise ValueError("inputs must not be empty")
+        invalidInputError(False, "inputs must not be empty")
 
     outputs = []
     # Create a new scope in which the caching device is either
@@ -1220,9 +1224,9 @@ def static_rnn(cell,
                 fixed_batch_size.merge_with(batch_size)
                 for i, size in enumerate(input_size):
                     if size.value is None:
-                        raise ValueError(
-                            "Input size (dimension %d of inputs) must be accessible via "
-                            "shape inference, but saw value None." % i)
+                        invalidInputError(False,
+                                          "Input size (dimension %d of inputs) must be accessible"
+                                          " via shape inference, but saw value None." % i)
         else:
             fixed_batch_size = first_input.get_shape().with_rank_at_least(1)[0]
 
@@ -1234,16 +1238,17 @@ def static_rnn(cell,
             state = initial_state
         else:
             if not dtype:
-                raise ValueError("If no initial_state is provided, "
-                                 "dtype must be specified")
+                invalidInputError(False,
+                                  "If no initial_state is provided, "
+                                  "dtype must be specified")
             state = cell.zero_state(batch_size, dtype)
 
         if sequence_length is not None:  # Prepare variables
             sequence_length = ops.convert_to_tensor(
                 sequence_length, name="sequence_length")
             if sequence_length.get_shape().ndims not in (None, 1):
-                raise ValueError(
-                    "sequence_length must be a vector of length batch_size")
+                invalidInputError(False,
+                                  "sequence_length must be a vector of length batch_size")
 
             def _create_zero_output(output_size):
                 # convert int to TensorShape if necessary
@@ -1326,17 +1331,19 @@ def static_state_saving_rnn(cell,
     state_name_tuple = nest.is_sequence(state_name)
 
     if state_is_tuple != state_name_tuple:
-        raise ValueError("state_name should be the same type as cell.state_size.  "
-                         "state_name: %s, cell.state_size: %s" % (str(state_name),
-                                                                  str(state_size)))
+        invalidInputError(False,
+                          "state_name should be the same type as cell.state_size.  "
+                          "state_name: %s, cell.state_size: %s" % (str(state_name),
+                                                                   str(state_size)))
 
     if state_is_tuple:
         state_name_flat = nest.flatten(state_name)
         state_size_flat = nest.flatten(state_size)
 
         if len(state_name_flat) != len(state_size_flat):
-            raise ValueError("#elems(state_name) != #elems(state_size): %d vs. %d" %
-                             (len(state_name_flat), len(state_size_flat)))
+            invalidInputError(False,
+                              "#elems(state_name) != #elems(state_size): %d vs. %d" %
+                              (len(state_name_flat), len(state_size_flat)))
 
         initial_state = nest.pack_sequence_as(
             structure=state_size,
@@ -1426,9 +1433,9 @@ def static_bidirectional_rnn(cell_fw,
     assert_like_rnncell(cell_fw.name, cell_fw)
     assert_like_rnncell(cell_bw.name, cell_bw)
     if not nest.is_sequence(inputs):
-        raise TypeError("inputs must be a sequence")
+        invalidInputError(False, "inputs must be a sequence")
     if not inputs:
-        raise ValueError("inputs must not be empty")
+        invalidInputError(False, "inputs must not be empty")
 
     with vs.variable_scope(scope or "bidirectional_rnn"):
         # Forward direction

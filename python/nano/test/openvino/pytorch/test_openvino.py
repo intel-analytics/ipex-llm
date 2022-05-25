@@ -28,11 +28,11 @@ class TestOpenVINO(TestCase):
     def test_trainer_trace_openvino(self):
         trainer = Trainer(max_epochs=1)
         model = mobilenet_v3_small(num_classes=10)
-        
+
         x = torch.rand((10, 3, 256, 256))
         y = torch.ones((10, ), dtype=torch.long)
 
-        # trace a torch model 
+        # trace a torch model
         openvino_model = trainer.trace(model, x, 'openvino')
         y_hat = openvino_model(x)
         assert y_hat.shape == (10, 10)
@@ -61,7 +61,7 @@ class TestOpenVINO(TestCase):
             trainer.save(openvino_model, saved_root)
             assert len(os.listdir(saved_root)) > 0
             loaded_openvino_model = trainer.load(saved_root)
-            y_hat = openvino_model(x[0:3])
+            y_hat = loaded_openvino_model(x[0:3])
             assert y_hat.shape == (3, 10)
-            y_hat = openvino_model(x)
+            y_hat = loaded_openvino_model(x)
             assert y_hat.shape == (10, 10)

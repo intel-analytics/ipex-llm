@@ -18,7 +18,7 @@
 import ray
 
 from bigdl.dllib.nncontext import init_spark_on_yarn
-from bigdl.orca.ray import RayContext
+from bigdl.orca.ray import OrcaRayContext
 
 slave_num = 2
 
@@ -33,11 +33,11 @@ sc = init_spark_on_yarn(
     extra_executor_memory_for_ray="30g",
     conf={"hello": "world"})
 
-ray_ctx = RayContext(sc=sc,
-                     object_store_memory="25g",
-                     extra_params={"temp-dir": "/tmp/hello/"},
-                     env={"http_proxy": "http://child-prc.intel.com:913",
-                          "http_proxys": "http://child-prc.intel.com:913"})
+ray_ctx = OrcaRayContext(sc=sc,
+                         object_store_memory="25g",
+                         extra_params={"temp-dir": "/tmp/hello/"},
+                         env={"http_proxy": "http://child-prc.intel.com:913",
+                              "http_proxys": "http://child-prc.intel.com:913"})
 ray_ctx.init()
 
 

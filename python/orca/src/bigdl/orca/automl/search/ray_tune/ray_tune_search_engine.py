@@ -55,9 +55,9 @@ class RayTuneSearchEngine(SearchEngine):
 
     @staticmethod
     def get_default_remote_dir(name):
-        from bigdl.orca.ray import RayContext
+        from bigdl.orca.ray import OrcaRayContext
         from bigdl.orca.automl.search.utils import process
-        ray_ctx = RayContext.get()
+        ray_ctx = OrcaRayContext.get()
         if ray_ctx.is_local:
             return None
         else:

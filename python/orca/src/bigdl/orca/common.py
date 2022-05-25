@@ -158,8 +158,8 @@ class OrcaContext(metaclass=OrcaContextMeta):
 
     @staticmethod
     def get_ray_context():
-        from bigdl.orca.ray import RayContext
-        return RayContext.get()
+        from bigdl.orca.ray import OrcaRayContext
+        return OrcaRayContext.get()
 
 
 def _check_python_micro_version():
@@ -176,27 +176,24 @@ def init_orca_context(cluster_mode=None, runtime="spark", cores=2, memory="2g", 
                       init_ray_on_spark=False, **kwargs):
     """
     Creates or gets a SparkContext for different Spark cluster modes (and launch Ray services
-    across the cluster if necessary) or a RayContext when the runtime is ray.
+    across the cluster if necessary) or an OrcaRayContext when the runtime is ray.
 
     :param runtime: The runtime for backend. One of "ray" and "spark". Default to be "spark".
     :param cluster_mode: The mode for the Spark cluster. One of "local", "yarn-client",
-           "yarn-cluster", "k8s-client" and "standalone". Default to be None and in this case
-           there is supposed to be an existing SparkContext in your application.
+           "yarn-cluster", "k8s-client", "k8s-cluster" and "standalone".
+           You are highly recommended to install and run bigdl through pip, which is more
+           convenient.
+
+           Default to be None and in this case there is supposed to be an existing
+           SparkContext in your application from `spark-submit` and you need to set the Spark
+           configurations through command line options or the properties file. To make things
+           easier, you are recommended to use `spark-submit-with-bigdl` after pip install bigdl.
 
            For "yarn-client" and "yarn-cluster", you are supposed to use conda environment
            and set the environment variable HADOOP_CONF_DIR.
 
-           For "k8s-client", you are supposed to additionally specify the arguments master
-           and container_image.
-           For "k8s-cluster", you are supposed to use spark-submit to submit the application
-           and use the default cluster_mode instead.
-           In this case, please set the Spark configurations through command line options or
-           the properties file.
-           To make things easier, you are recommended to use the launch scripts we provide:
-           https://github.com/intel-analytics/BigDL/tree/branch-2.0/scripts.
-
-           For other cluster modes, you are recommended to install and run bigdl through
-           pip, which is more convenient.
+           For "k8s-client" and "k8s-cluster", you are supposed to additionally specify the
+           arguments master and container_image.
     :param runtime: The runtime for backend. One of "ray" and "spark". Default to be "spark".
     :param cores: The number of cores to be used on each node. Default to be 2.
     :param memory: The memory allocated for each node. Default to be '2g'.
@@ -208,7 +205,7 @@ def init_orca_context(cluster_mode=None, runtime="spark", cores=2, memory="2g", 
     :param kwargs: The extra keyword arguments used for creating SparkContext and
            launching Ray if any.
 
-    :return: An instance of SparkContext or RayContext.
+    :return: An instance of SparkContext or OrcaRayContext.
     """
     print("Initializing orca context")
     import atexit
@@ -217,9 +214,9 @@ def init_orca_context(cluster_mode=None, runtime="spark", cores=2, memory="2g", 
         invalidInputError(cluster_mode is None,
                           "Currently, cluster_mode is not supported for ray runtime and"
                           " you must connect to an exiting ray cluster.")
-        from bigdl.orca.ray import RayContext
-        ray_ctx = RayContext(runtime="ray", cores=cores, num_nodes=num_nodes,
-                             **kwargs)
+        from bigdl.orca.ray import OrcaRayContext
+        ray_ctx = OrcaRayContext(runtime="ray", cores=cores, num_nodes=num_nodes,
+                                 **kwargs)
         invalidInputError("address" in kwargs,
                           "ray_address must be specified if the runtime is ray.")
         ray_ctx.init()
@@ -329,12 +326,12 @@ def init_orca_context(cluster_mode=None, runtime="spark", cores=2, memory="2g", 
                         "system_config"]:
                 if key in kwargs:
                     ray_args[key] = kwargs[key]
-            from bigdl.orca.ray import RayContext
-            ray_ctx = RayContext(runtime="spark", cores=cores, num_nodes=num_nodes,
-                                 sc=sc, **ray_args)
-            if init_ray_on_spark:
-                driver_cores = 0  # This is the default value.
-                ray_ctx.init(driver_cores=driver_cores)
+            from bigdl.orca.ray import OrcaRayContext
+            ray_ctx = OrcaRayContext(runtime="spark", cores=cores, num_nodes=num_nodes,
+                                     sc=sc, **ray_args)
+        if init_ray_on_spark:
+            driver_cores = 0  # This is the default value.
+            ray_ctx.init(driver_cores=driver_cores)
         return sc
     else:
         invalidInputError(False,
@@ -344,28 +341,28 @@ def init_orca_context(cluster_mode=None, runtime="spark", cores=2, memory="2g", 
 def stop_orca_context():
     """
     Stop the SparkContext (and stop Ray services across the cluster if necessary) or
-    stop the RayContext.
+    stop the OrcaRayContext.
     """
     from pyspark import SparkContext
-    from bigdl.orca.ray import RayContext
+    from bigdl.orca.ray import OrcaRayContext
     # If users successfully call stop_orca_context after the program finishes,
     # namely when there is no active SparkContext, the registered exit function
     # should do nothing.
     if SparkContext._active_spark_context is not None:
         print("Stopping orca context")
-        ray_ctx = RayContext.get(initialize=False)
+        ray_ctx = OrcaRayContext.get(initialize=False)
         if ray_ctx.initialized:
             ray_ctx.stop()
         else:
-            RayContext._active_ray_context = None
+            OrcaRayContext._active_ray_context = None
         sc = SparkContext.getOrCreate()
         if sc.getConf().get("spark.master").startswith("spark://"):
             from bigdl.dllib.nncontext import stop_spark_standalone
             stop_spark_standalone()
         sc.stop()
     else:
-        if RayContext._active_ray_context is not None:
+        if OrcaRayContext._active_ray_context is not None:
             print("Stopping ray_orca context")
-            ray_ctx = RayContext.get(initialize=False)
+            ray_ctx = OrcaRayContext.get(initialize=False)
             if ray_ctx.initialized:
                 ray_ctx.stop()

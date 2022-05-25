@@ -294,7 +294,7 @@ class TrainingOperator:
 
         return {"train_loss": loss.item(), NUM_SAMPLES: features[0].size(0)}
 
-    def validate(self, val_iterator, info, metrics):
+    def validate(self, val_iterator, info, metrics, num_steps=None):
         """Runs one standard validation pass over the val_iterator.
 
         This will call ``model.eval()`` and ``torch.no_grad`` when iterating
@@ -324,6 +324,8 @@ class TrainingOperator:
         total_samples = 0
         with torch.no_grad():
             for batch_idx, batch in enumerate(val_iterator):
+                if num_steps and batch_idx == num_steps:
+                    break
                 batch_info = {"batch_idx": batch_idx}
                 batch_info.update(info)
                 output, target, loss = self.forward_batch(batch, batch_info)

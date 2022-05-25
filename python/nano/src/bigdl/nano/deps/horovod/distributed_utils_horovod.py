@@ -22,6 +22,7 @@ from tempfile import TemporaryDirectory
 from contextlib import closing
 import socket
 import tensorflow as tf
+from bigdl.nano.utils.log4Error import invalidInputError
 
 
 def find_free_port():
@@ -129,7 +130,7 @@ def distributed_train_keras(backend, model, nprocs, fit_kwargs=None):
 
     # this is to work around a tensorflow bug: https://github.com/keras-team/keras/issues/16023
     model.evaluate(train_dataset, verbose=0, steps=1)
-    assert model.compiled_metrics.built
+    invalidInputError(model.compiled_metrics.built, "model.compiled_metrics.built should be True")
     with TemporaryDirectory() as temp_dir:
         model.save(os.path.join(temp_dir, 'temp_model'))
         envs = []

@@ -26,6 +26,8 @@ from pyspark.sql.window import Window
 from pyspark.sql.functions import desc, rank, col
 
 import argparse
+from bigdl.dllib.utils.log4Error import *
+
 
 EMBEDDING_DIM = 18
 MAX_HIST_LEN = 100
@@ -98,9 +100,9 @@ if __name__ == '__main__':
     elif args.cluster_mode == "spark-submit":
         init_orca_context("spark-submit")
     else:
-        raise ValueError(
-            "cluster_mode should be one of 'local', 'yarn', 'standalone' and 'spark-submit'"
-            ", but got " + args.cluster_mode)
+        invalidInputError(False,
+                          "cluster_mode should be one of 'local', 'yarn', 'standalone' and"
+                          " 'spark-submit', but got " + args.cluster_mode)
 
     # Read Data
     tbl = FeatureTable.read_parquet(args.data_dir + "data") \

@@ -22,7 +22,7 @@ import ray
 from dmlc_tracker.tracker import get_host_ip
 
 from bigdl.orca.data.utils import ray_partitions_get_data_label, process_spark_xshards
-from bigdl.orca.ray import RayContext
+from bigdl.orca.ray import OrcaRayContext
 from bigdl.orca.learn.mxnet.mxnet_runner import MXNetRunner
 from bigdl.orca.learn.mxnet.utils import find_free_port
 from bigdl.orca.learn.ray_estimator import Estimator as OrcaRayEstimator
@@ -99,7 +99,7 @@ class MXNetEstimator(OrcaRayEstimator):
     def __init__(self, config, model_creator, loss_creator=None,
                  eval_metrics_creator=None, validation_metrics_creator=None,
                  num_workers=None, num_servers=None, runner_cores=None):
-        ray_ctx = RayContext.get()
+        ray_ctx = OrcaRayContext.get()
         if not num_workers:
             num_workers = ray_ctx.num_ray_nodes
         self.config = {} if config is None else config
