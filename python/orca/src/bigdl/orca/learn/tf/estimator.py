@@ -775,6 +775,8 @@ class TensorFlowEstimator(Estimator):
 
 class KerasEstimator(Estimator):
     def __init__(self, keras_model, metrics, model_dir, optimizer):
+        if model_dir.startswith("dbfs:/"):
+            model_dir = "/dbfs/" + model_dir[len("dbfs:/"):]
         self.model = KerasModel(keras_model, model_dir)
         self.load_checkpoint = False
         self.metrics = metrics
