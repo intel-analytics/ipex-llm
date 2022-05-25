@@ -119,9 +119,9 @@ class TCMF(BaseModel):
 
     @staticmethod
     def get_default_num_workers():
-        from bigdl.orca.ray import RayContext
+        from bigdl.orca.ray import OrcaRayContext
         try:
-            ray_ctx = RayContext.get(initialize=False)
+            ray_ctx = OrcaRayContext.get(initialize=False)
             num_workers = ray_ctx.num_ray_nodes
         except:
             num_workers = 1
@@ -139,7 +139,7 @@ class TCMF(BaseModel):
         :param future_covariates: covariates corresponding to future horizon steps data to predict.
         :param future_dti: dti corresponding to future horizon steps data to predict.
         :param num_workers: the number of workers to use. Note that there has to be an activate
-            RayContext if num_workers > 1.
+               OrcaRayContext if num_workers > 1.
         :return:
         """
         if x is not None:
@@ -152,9 +152,9 @@ class TCMF(BaseModel):
             num_workers = TCMF.get_default_num_workers()
         if num_workers > 1:
             import ray
-            from bigdl.orca.ray import RayContext
+            from bigdl.orca.ray import OrcaRayContext
             try:
-                RayContext.get(initialize=False)
+                OrcaRayContext.get(initialize=False)
             except:
                 try:
                     # detect whether ray has been started.
@@ -162,8 +162,8 @@ class TCMF(BaseModel):
                 except:
                     raise RuntimeError(f"There must be an activate ray context while running with "
                                        f"{num_workers} workers. You can either start and init a "
-                                       f"RayContext by init_orca_context(..., init_ray_on_spark="
-                                       f"True) or start Ray with ray.init()")
+                                       f"OrcaRayContext by init_orca_context(...,"
+                                       f"init_ray_on_spark=True) or start Ray with ray.init()")
 
         out = self.model.predict_horizon(
             future=horizon,

@@ -48,7 +48,7 @@ class TestChronosModelTCMFForecaster(TestCase):
     def tearDownClass(cls):
         # stop possible active_spark_context
         from pyspark import SparkContext
-        from bigdl.orca.ray import RayContext
+        from bigdl.orca.ray import OrcaRayContext
         if SparkContext._active_spark_context is not None:
             print("Stopping spark_orca context")
             sc = SparkContext.getOrCreate()
@@ -56,9 +56,9 @@ class TestChronosModelTCMFForecaster(TestCase):
                 from bigdl.dllib.nncontext import stop_spark_standalone
                 stop_spark_standalone()
             sc.stop()
-        if RayContext._active_ray_context is not None:
+        if OrcaRayContext._active_ray_context is not None:
             print("Stopping ray_orca context")
-            ray_ctx = RayContext.get(initialize=False)
+            ray_ctx = OrcaRayContext.get(initialize=False)
             if ray_ctx.initialized:
                 ray_ctx.stop()
 

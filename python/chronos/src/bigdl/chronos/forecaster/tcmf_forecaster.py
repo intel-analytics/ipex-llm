@@ -148,7 +148,7 @@ class TCMFForecaster(Forecaster):
         :param alt_iters: int, default is 10.
             Number of iterations while alternate training.
         :param num_workers: the number of workers you want to use for fit. If None, it defaults to
-            num_ray_nodes in the created RayContext or 1 if there is no active RayContext.
+            num_ray_nodes in the created OrcaRayContext or 1 if there is no active OrcaRayContext.
         """
         if self.internal is None:
             if isinstance(x, SparkXShards):
@@ -228,7 +228,7 @@ class TCMFForecaster(Forecaster):
             If None, use default fixed frequency DatetimeIndex generated with the last date of x in
             fit and freq.
         :param num_workers: the number of workers to use in evaluate. If None, it defaults to
-            num_ray_nodes in the created RayContext or 1 if there is no active RayContext.
+            num_ray_nodes in the created OrcaRayContext or 1 if there is no active OrcaRayContext.
 
         :return: A list of evaluation results. Each item represents a metric.
         """
@@ -259,7 +259,7 @@ class TCMFForecaster(Forecaster):
             If None, use default fixed frequency DatetimeIndex generated with the last date of x in
             fit and freq.
         :param num_workers: the number of workers to use in predict. If None, it defaults to
-            num_ray_nodes in the created RayContext or 1 if there is no active RayContext.
+            num_ray_nodes in the created OrcaRayContext or 1 if there is no active OrcaRayContext.
 
         :return: A numpy ndarray with shape of (nd, horizon), where nd is the same number
             of time series as input x in fit_eval.
