@@ -116,7 +116,7 @@ class TestAutoXGBRegressor(TestCase):
                              metric="logloss",
                              search_space=get_xgb_search_space(),
                              n_sampling=4)
-        assert "metric_mode" in str(exeinfo)
+        assert "metric logloss" in str(exeinfo)
         auto_xgb_reg.fit(data=data,
                          epochs=1,
                          validation_data=validation_data,
