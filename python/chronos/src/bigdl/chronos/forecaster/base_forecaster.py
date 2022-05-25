@@ -58,7 +58,7 @@ class BasePytorchForecaster(Forecaster):
             seed_everything(seed=self.seed)
 
             # Model preparation
-            self.fitted = True
+            self.fitted = False
             model = self.model_creator({**self.model_config, **self.data_config})
             loss = self.loss_creator(self.loss_config)
             optimizer = self.optimizer_creator(model, self.optim_config)
