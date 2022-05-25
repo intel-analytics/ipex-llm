@@ -448,8 +448,8 @@ class TensorFlowEstimator(Estimator):
                 self.use_bigdl_optim = True
             else:
                 invalidInputError(isinstance(optimizer, tf.train.Optimizer),
-                                  "optimizer is of type {}, ".format(type(optimizer)) + \
-                                  "it should be an instance of tf.train.Optimizer")
+                                  f"optimizer is of type {str(type(optimizer))},"
+                                  f" it should be an instance of tf.train.Optimizer")
                 self.optimizer = ZooOptimizer(optimizer)
                 if clip_norm or clip_value:
                     gvs = self.optimizer.compute_gradients(self.loss)
@@ -457,8 +457,9 @@ class TensorFlowEstimator(Estimator):
                         gvs = [(tf.clip_by_norm(g_v[0], clip_norm), g_v[1]) for g_v in gvs]
                     if clip_value:
                         if isinstance(clip_value, tuple):
-                            invalidInputError(len(clip_value) == 2 and clip_value[0] < clip_value[1],
-                                              "clip value should be (clip_min, clip_max)")
+                            invalidInputError(
+                                len(clip_value) == 2 and clip_value[0] < clip_value[1],
+                                "clip value should be (clip_min, clip_max)")
                             gvs = [(tf.clip_by_value(g_v[0], clip_value[0], clip_value[1]), g_v[1])
                                    for g_v in gvs]
                         if isinstance(clip_value, (int, float)):

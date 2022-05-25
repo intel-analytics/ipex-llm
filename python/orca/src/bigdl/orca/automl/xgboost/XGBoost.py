@@ -177,8 +177,9 @@ class XGBoost(BaseModel):
             if len(data) != 2:
                 invalidInputError(False,
                                   f"You must input a data create function which returns a tuple"
-                                  f" or a list containing two elements of (x, y) for {name} in XGBoost."
-                                  f"Your data create function returns {len(data)} elements instead")
+                                  f" or a list containing two elements of (x, y) for {name} in"
+                                  f" XGBoost. Your data create function returns {len(data)}"
+                                  f" elements instead")
 
         if not (isinstance(data, tuple) or isinstance(data, list)):
             invalidInputError(False,
@@ -201,7 +202,8 @@ class XGBoost(BaseModel):
         if x is None:
             invalidInputError(False, "Input invalid x of None")
         if self.model is None:
-            invalidInputError(False, "Needs to call fit_eval or restore first before calling predict")
+            invalidInputError(False,
+                              "Needs to call fit_eval or restore first before calling predict")
         self.model.n_jobs = self.n_jobs
         out = self.model.predict(x)
         return out
@@ -263,7 +265,7 @@ class XGBoostModelBuilder(ModelBuilder):
         if 'n_jobs' in xgb_configs and xgb_configs['n_jobs'] != cpus_per_trial:
             logger.warning(f"Found n_jobs={xgb_configs['n_jobs']} in xgb_configs. It will not take "
                            f"effect since we assign cpus_per_trials(={cpus_per_trial}) to xgboost "
-                           f"n_jobs. Please raise an issue if you do need different values for "
+                           f"n_jobs. Please throw an issue if you do need different values for "
                            f"xgboost n_jobs and cpus_per_trials.")
         self.model_config['n_jobs'] = cpus_per_trial
 

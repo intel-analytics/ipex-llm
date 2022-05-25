@@ -145,8 +145,8 @@ class KerasBaseModel(BaseModel):
                     else:
                         invalidInputError(False,
                                           f"Input metric in fit_eval should be one of the metrics "
-                                          f"that are used to compile the model. Got metric value of "
-                                          f"{metric} and the metrics in compile are "
+                                          f"that are used to compile the model. Got metric value"
+                                          f" of {metric} and the metrics in compile are "
                                           f"{compiled_metric_names}")
             if validation_data is None:
                 result = hist.history.get(metric_name)[-1]

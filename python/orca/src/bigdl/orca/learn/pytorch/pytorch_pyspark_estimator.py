@@ -106,7 +106,8 @@ class PyTorchPySparkEstimator(BaseEstimator):
         if not (isinstance(model_creator, types.FunctionType) and
                 isinstance(optimizer_creator, types.FunctionType)):  # Torch model is also callable.
             invalidInputError(False,
-                              "Must provide a function for both model_creator and optimizer_creator")
+                              "Must provide a function for both model_creator and"
+                              " optimizer_creator")
 
         if not training_operator_cls and not loss_creator:
             invalidInputError(False,

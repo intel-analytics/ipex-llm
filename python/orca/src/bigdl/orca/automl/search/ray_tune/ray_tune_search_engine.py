@@ -336,9 +336,6 @@ class RayTuneSearchEngine(SearchEngine):
                 train_data = ray.get(data_ref)
                 val_data = ray.get(validation_data_ref)
             config = convert_bayes_configs(config).copy()
-            # This check is turned off to support ducking typing
-            # if not isinstance(model_builder, ModelBuilder):
-            #     raise ValueError(f"You must input a ModelBuilder instance for model_builder")
             trial_model = model_builder.build(config)
 
             # no need to call build since it is called the first time fit_eval is called.

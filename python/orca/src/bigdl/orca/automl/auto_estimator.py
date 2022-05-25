@@ -261,8 +261,9 @@ class AutoEstimator:
                 pass
             if not mode:
                 invalidInputError(False,
-                                  f"We cannot infer metric mode with metric name of {metric}. Please"
-                                  f" specify the `metric_mode` parameter in AutoEstimator.fit().")
+                                  f"We cannot infer metric mode with metric name of {metric}."
+                                  f" Please specify the `metric_mode` parameter in"
+                                  f" AutoEstimator.fit().")
         if mode not in ["min", "max"]:
             invalidInputError(False,
                               "`mode` has to be one of ['min', 'max']")
@@ -278,7 +279,8 @@ class AutoEstimator:
         def check_cols(cols, cols_name):
             if not cols:
                 invalidInputError(False,
-                                  f"You must input valid {cols_name} for Spark DataFrame data input")
+                                  f"You must input valid {cols_name} for Spark DataFrame"
+                                  f" data input")
             if isinstance(cols, list):
                 return cols
             if not isinstance(cols, str):

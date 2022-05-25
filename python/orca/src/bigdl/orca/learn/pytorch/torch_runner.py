@@ -285,7 +285,7 @@ class TorchRunner:
                 # Truncate validation by the min step for all workers (data may distribute unevenly)
                 # Or it results in error in next epoch of training (op.preamble.length <= op.nbytes)
                 validation_tensor = torch.tensor(len(val_loader))
-                assert self.backend != "horovod", "Sanity check failed!"
+                invalidInputError(self.backend != "horovod", "Sanity check failed!")
                 self.dist_backend.all_reduce_min(validation_tensor)
                 val_steps = validation_tensor.item()
             else:
