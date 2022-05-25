@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 from bigdl.nano.utils.log4Error import invalidInputError
-from ..core.quantization import BaseQuantization
+from . import BaseQuantization
 from .utils import _check_loader
 from .metric import PytorchINCMetric
 from .quantized_model import PytorchQuantizedModel

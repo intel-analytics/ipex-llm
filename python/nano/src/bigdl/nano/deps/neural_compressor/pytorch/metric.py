@@ -13,11 +13,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-from ..core.base_metric import INCMetric
+from . import BaseINCMetric
 import torch
 
 
-class PytorchINCMetric(INCMetric):
+class PytorchINCMetric(BaseINCMetric):
     def stack(self, preds, labels):
         # calculate accuracy
         preds = torch.stack(preds)

@@ -22,3 +22,7 @@ except ImportError:
         errMsg="Intel Neural Compressor must be installed to use quantization.",
         fixMsg="Please install INC by: pip install neural-compressor."
     )
+
+version = neural_compressor.__version__
+from .quantization import BaseQuantization
+from .base_metric import BaseINCMetric
