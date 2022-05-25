@@ -213,13 +213,13 @@ private[friesian] object Utils {
 
   def castValueFromNum[T](num: T, value: Any): T = {
     val targetType = value match {
-      case _: Double | _: Long | _: Int | _:Float  => "numeric"
+      case _: Double | _: Long | _: Int | _: Float => "numeric"
       case _: String => "string"
       case _ => throw new IllegalArgumentException(
         s"Unsupported value type ${value.getClass.getName} ($value).")
     }
     val out: Any = num match {
-      case _: Double | _: Long | _: Int | _:Float =>
+      case _: Double | _: Long | _: Int | _: Float =>
         if (targetType == "numeric") {
           val valueNumber = value.asInstanceOf[Number]
           num match {
@@ -229,8 +229,9 @@ private[friesian] object Utils {
             case _: Float => valueNumber.floatValue()
           }
         } else {
-          throw new IllegalArgumentException(s"Failed to convert mask_token type ${value.getClass.getName} to " +
-            s"the element type of column ${num.getClass.getName}. Please provide right mask_token.")
+          throw new IllegalArgumentException(s"Failed to convert mask_token type " +
+            s"${value.getClass.getName} to the element type of column ${num.getClass.getName}. " +
+            s"Please provide right mask_token.")
         }
       case _: String => value.toString
       case _ => throw new IllegalArgumentException(

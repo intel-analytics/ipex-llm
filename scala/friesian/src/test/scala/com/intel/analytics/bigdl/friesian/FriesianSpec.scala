@@ -240,10 +240,11 @@ class FriesianSpec extends ZooSpecHelper {
     ))
     val df = sqlContext.createDataFrame(data, schema)
     assertThrows[SparkException] {
-      val df2 = friesian.postPad(df, Array("history", "history_list").toList.asJava, 4, maskToken="5.6")
+      val df2 = friesian.postPad(df, Array("history", "history_list").toList.asJava,
+        4, "5.6")
       df2.show(3, false)
     }
-    val dft = friesian.postPad(df, Array("history", "history_list").toList.asJava, 4, maskToken=6.5)
+    val dft = friesian.postPad(df, Array("history", "history_list").toList.asJava, 4, 6.5)
     dft.schema.fields.map(x => x.dataType).foreach(println(_))
 
     TestUtils.conditionFailTest(dft.filter("size(history) = 4").count() == 3)
@@ -264,7 +265,7 @@ class FriesianSpec extends ZooSpecHelper {
       StructField("history_list", ArrayType(ArrayType(LongType)), true)
     ))
     val df = sqlContext.createDataFrame(data, schema)
-    val dft = friesian.postPad(df, Array("history", "history_list").toList.asJava, 4, maskToken=5.6)
+    val dft = friesian.postPad(df, Array("history", "history_list").toList.asJava, 4, 5.6)
     dft.show(3, false)
 //    dft.schema.fields.map(x => x.dataType).foreach(println(_))
     TestUtils.conditionFailTest(dft.filter("size(history) = 4").count() == 3)
@@ -285,7 +286,7 @@ class FriesianSpec extends ZooSpecHelper {
       StructField("history_list", ArrayType(ArrayType(StringType)), true)
     ))
     val df = sqlContext.createDataFrame(data, schema)
-    val df2 = friesian.postPad(df, Array("history", "history_list").toList.asJava, 4, maskToken="<MSK>")
+    val df2 = friesian.postPad(df, Array("history", "history_list").toList.asJava, 4, "<MSK>")
     val dft = friesian.postPad(df2, Array("history", "history_list").toList.asJava, 5, 2)
     dft.show(3, false)
     dft.schema.fields.map(x => x.dataType).foreach(println(_))

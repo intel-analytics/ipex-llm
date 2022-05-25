@@ -366,7 +366,8 @@ class PythonFriesian[T: ClassTag](implicit ev: TensorNumeric[T]) extends PythonZ
     negativedf.select(selectColumns: _*)
   }
 
-  def postPad(df: DataFrame, cols: JList[String], maxLength: Int = 100, maskToken: Any = 0): DataFrame = {
+  def postPad(df: DataFrame, cols: JList[String], maxLength: Int = 100,
+              maskToken: Any = 0): DataFrame = {
 
     val colFields = df.schema.fields.filter(x => cols.contains(x.name))
 
