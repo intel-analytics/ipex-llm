@@ -179,7 +179,7 @@ class AutoformerForecaster(BasePytorchForecaster):
             dec_inp = torch.cat([batch_y[:, :self.config['label_len'], :], dec_inp], dim=1).float()
 
             outputs = self.internal(batch_x, batch_x_mark, dec_inp,
-                       batch_y_mark, batch_y)
+                                    batch_y_mark, batch_y)
 
             outputs = outputs[:, -self.config['pred_len']:, :]
             batch_y = batch_y[:, -self.config['pred_len']:, :]
