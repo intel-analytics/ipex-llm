@@ -25,7 +25,7 @@ from bigdl.nano.utils.log4Error import invalidInputError
 def get_forward_args(model):
     forward_args = inspect.getfullargspec(model.forward).args[1:]
     if isinstance(model, LightningModuleFromTorch)\
-         or isinstance(model, FP32InferenceModelWrapped):
+        or isinstance(model, FP32InferenceModelWrapped):
         # forward param list for compiled model
         forward_args = get_forward_args(model.model)
     return forward_args
@@ -119,6 +119,6 @@ def fp32_inference_model_wrapper(model, inference_method_name="forward"):
     if getattr(model, inference_method_name, None) is None:
         invalidInputError(False,
                           "You should input an inference_method_name that "
-                          "is contained by the model to be quantized/traced.") 
+                          "is contained by the model to be quantized/traced.")
 
     return FP32InferenceModelWrapped(model, inference_method_name=inference_method_name)

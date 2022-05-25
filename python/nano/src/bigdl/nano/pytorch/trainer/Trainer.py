@@ -224,7 +224,7 @@ class Trainer(pl.Trainer):
                  val_dataloader: DataLoader = None,
                  metric: Optional[Metric] = None,
                  accuracy_criterion: dict = {'relative': 0.99, 'higher_is_better': True},
-                 inference_method_name = "forward",
+                 inference_method_name="forward",
                  approach='static',
                  method='fx',
                  conf: Optional[str] = None,
@@ -417,7 +417,7 @@ class Trainer(pl.Trainer):
             torch.save(model.state_dict(), checkpoint_path)
 
     @staticmethod
-    def load(path, model: LightningModule = None, inference_method_name = "forward"):
+    def load(path, model: LightningModule = None, inference_method_name="forward"):
         """
         Load a model from local.
 
