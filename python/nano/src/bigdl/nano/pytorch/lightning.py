@@ -20,7 +20,7 @@ import torch
 
 from torchmetrics.metric import Metric
 from pytorch_lightning import LightningModule
-from torch import nn, Tensor
+from torch import nn, Tensor, fx
 from torch.nn.modules.loss import _Loss
 from torch.optim import Optimizer
 from torch.optim.lr_scheduler import _LRScheduler
@@ -58,7 +58,7 @@ class LightningModuleFromTorch(LightningModule):
     def forward(self, *args):
         """Same as torch.nn.Module.forward()."""
         nargs = len(inspect.getfullargspec(self.model.forward).args[1:])
-        if isinstance(args, torch.fx.Proxy):
+        if isinstance(args, fx.Proxy):
             args = [args[i] for i in range(nargs)]
         else:
             args = args[:nargs]
