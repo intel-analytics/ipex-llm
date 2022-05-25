@@ -110,10 +110,12 @@ class Seq2SeqForecaster(BaseTF2Forecaster):
         # self.distributed = distributed
         # self.distributed_backend = distributed_backend
         # self.workers_per_node = workers_per_node
+        from bigdl.nano.utils.log4Error import invalidInputError
         if distributed:
-            raise NotImplementedError("We will add distributed support in subsequent releases, "
-                                      "the feature is currently unavailable, "
-                                      "Please set distributed=False.")
+            invalidInputError(False,
+                              "We will add distributed support in subsequent releases, "
+                              "the feature is currently unavailable, "
+                              "Please set distributed=False.")
 
         # other settings
         self.lr = lr

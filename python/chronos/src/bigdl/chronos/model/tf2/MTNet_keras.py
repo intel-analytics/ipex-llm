@@ -67,7 +67,8 @@ class AttentionRNNWrapper(Wrapper):
     """
 
     def __init__(self, layer, weight_initializer="glorot_uniform", **kwargs):
-        assert isinstance(layer, RNN)
+        from bigdl.nano.utils.log4Error import invalidInputError
+        invalidInputError(isinstance(layer, RNN), "expect RNN layer here")
         self.layer = layer
         self.supports_masking = True
         self.weight_initializer = weight_initializer
@@ -75,10 +76,11 @@ class AttentionRNNWrapper(Wrapper):
         super(AttentionRNNWrapper, self).__init__(layer, **kwargs)
 
     def _validate_input_shape(self, input_shape):
+        from bigdl.nano.utils.log4Error import invalidInputError
         if len(input_shape) != 3:
-            raise ValueError(
-                "Layer received an input with shape {0} but expected a Tensor of rank 3.".format(
-                    input_shape[0]))
+            invalidInputError(False,
+                              "Layer received an input with shape {0} but expected a Tensor"
+                              " of rank 3.".format(input_shape[0]))
 
     def build(self, input_shape):
         self._validate_input_shape(input_shape)
@@ -149,6 +151,7 @@ class AttentionRNNWrapper(Wrapper):
     def call(self, x, constants=None, mask=None, initial_state=None):
         # input shape: (n_samples, time (padded with zeros), input_dim)
         input_shape = self.input_spec.shape
+        from bigdl.nano.utils.log4Error import invalidInputError
 
         if self.layer.stateful:
             initial_states = self.layer.states
@@ -159,19 +162,21 @@ class AttentionRNNWrapper(Wrapper):
 
             base_initial_state = self.layer.get_initial_state(x)
             if len(base_initial_state) != len(initial_states):
-                raise ValueError(
-                    "initial_state does not have the correct length. Received length {0} "
-                    "but expected {1}".format(len(initial_states), len(base_initial_state)))
+                invalidInputError(False,
+                                  "initial_state does not have the correct length."
+                                  " Received length {0} but expected {1}"
+                                  .format(len(initial_states), len(base_initial_state)))
             else:
                 # check the state' shape
                 for i in range(len(initial_states)):
                     # initial_states[i][j] != base_initial_state[i][j]:
                     if not initial_states[i].shape.is_compatible_with(base_initial_state[i].shape):
-                        raise ValueError(
-                            "initial_state does not match the default base state of the layer. "
-                            "Received {0} but expected {1}".format(
-                                [x.shape for x in initial_states],
-                                [x.shape for x in base_initial_state]))
+                        invalidInputError(False,
+                                          "initial_state does not match the default base state"
+                                          " of the layer. Received {0} but expected {1}"
+                                          .format(
+                                              [x.shape for x in initial_states],
+                                              [x.shape for x in base_initial_state]))
         else:
             initial_states = self.layer.get_initial_state(x)
 
@@ -270,9 +275,9 @@ class MTNetKeras(BaseModel):
         super()._check_config(**config)
         if rs:
             config_names = set(config.keys())
-            assert config_names.issuperset(self.saved_configs)
-            # assert config_names.issuperset(self.lr_decay_configs) or \
-            #        config_names.issuperset(self.lr_configs)
+            from bigdl.nano.utils.log4Error import invalidInputError
+            invalidInputError(config_names.issuperset(self.saved_configs),
+                              "expect config_names contains saved_configs")
         self.epochs = config.get("epochs")
         self.metric = config.get("metric", "mean_squared_error")
         self.mc = config.get("mc")
@@ -293,15 +298,14 @@ class MTNetKeras(BaseModel):
         self._check_configs()
 
     def _check_configs(self):
-        assert self.time_step >= 1, \
-            "Invalid configuration value. 'time_step' must be larger than 1"
-        assert self.time_step >= self.ar_window, \
-            "Invalid configuration value. 'ar_window' must not exceed 'time_step'"
-        assert isinstance(self.rnn_hid_sizes, list), \
-            "Invalid configuration value. 'rnn_hid_sizes' must be a list of integers"
-        # assert self.cnn_hid_size == self.last_rnn_size,\
-        #     "Invalid configuration value. 'cnn_hid_size' must be equal to the last element of " \
-        #     "'rnn_hid_sizes'"
+        from bigdl.nano.utils.log4Error import invalidInputError
+        invalidInputError(self.time_step >= 1,
+                          "Invalid configuration value. 'time_step' must be larger than 1")
+        invalidInputError(self.time_step >= self.ar_window,
+                          "Invalid configuration value. 'ar_window' must not exceed 'time_step'")
+        invalidInputError(isinstance(self.rnn_hid_sizes, list),
+                          "Invalid configuration value."
+                          " 'rnn_hid_sizes' must be a list of integers")
 
     def build(self, config):
         """
@@ -433,9 +437,11 @@ class MTNetKeras(BaseModel):
             self.config = config
         else:
             if config:
-                raise ValueError("You can only pass new configuations for 'mc', 'epochs' and "
-                                 "'metric' during incremental fitting. "
-                                 "Additional configs passed are {}".format(config))
+                from bigdl.nano.utils.log4Error import invalidInputError
+                invalidInputError(False,
+                                  "You can only pass new configuations for 'mc', 'epochs' and"
+                                  " 'metric' during incremental fitting. "
+                                  "Additional configs passed are {}".format(config))
 
         if new_attributes["metric"] is None:
             del new_attributes["metric"]
@@ -444,19 +450,24 @@ class MTNetKeras(BaseModel):
     def _check_input(self, x, y):
         input_feature_num = x.shape[-1]
         input_output_dim = y.shape[-1]
+        from bigdl.nano.utils.log4Error import invalidInputError
         if input_feature_num is None:
-            raise ValueError("input x is None!")
+            invalidInputError(False,
+                              "input x is None!")
         if input_output_dim is None:
-            raise ValueError("input y is None!")
+            invalidInputError(False,
+                              "input y is None!")
 
         if self.feature_num is not None and self.feature_num != input_feature_num:
-            raise ValueError("input x has different feature number (the shape of last dimension) "
-                             "{} with the fitted model, which is {}."
-                             .format(input_feature_num, self.feature_num))
+            invalidInputError(False,
+                              "input x has different feature number (the shape of last dimension) "
+                              "{} with the fitted model, which is {}."
+                              .format(input_feature_num, self.feature_num))
         if self.output_dim is not None and self.output_dim != input_output_dim:
-            raise ValueError("input y has different prediction size (the shape of last dimension) "
-                             "of {} with the fitted model, which is {}."
-                             .format(input_output_dim, self.output_dim))
+            invalidInputError(False,
+                              "input y has different prediction size (the shape of last dimension)"
+                              " of {} with the fitted model, which is {}."
+                              .format(input_output_dim, self.output_dim))
         return input_feature_num, input_output_dim
 
     def fit_eval(self, data, validation_data=None, mc=False, metric=None,
@@ -493,9 +504,11 @@ class MTNetKeras(BaseModel):
         elif metric in compiled_metric_names:
             metric_name = metric
         else:
-            raise ValueError(f"Input metric in fit_eval should be one of the metrics that are "
-                             f"used to compile the model. Got metric value of {metric} and the "
-                             f"metrics in compile are {compiled_metric_names}")
+            from bigdl.nano.utils.log4Error import invalidInputError
+            invalidInputError(False,
+                              f"Input metric in fit_eval should be one of the metrics that are "
+                              f"used to compile the model. Got metric value of {metric} and the "
+                              f"metrics in compile are {compiled_metric_names}")
         if validation_data is None:
             result = hist.history.get(metric_name)[-1]
         else:

@@ -98,12 +98,16 @@ class ARIMAModel:
         :param rolling: whether to use rolling prediction
         :return: predicted result of length horizon
         """
+        from bigdl.nano.utils.log4Error import invalidInputError
         if x is not None:
-            raise ValueError("x should be None")
+            invalidInputError(False, "x should be None")
         if update and not rolling:
-            raise Exception("We don't support updating model without rolling prediction currently")
+            invalidInputError(False,
+                              "We don't support updating model without"
+                              " rolling prediction currently")
         if self.model is None:
-            raise Exception("Needs to call fit_eval or restore first before calling predict")
+            invalidInputError(False,
+                              "Needs to call fit_eval or restore first before calling predict")
 
         if not update and not rolling:
             forecasts = self.model.predict(n_periods=horizon)
@@ -139,20 +143,26 @@ class ARIMAModel:
         :param rolling: whether to use rolling prediction
         :return: a list of metric evaluation results
         """
+        from bigdl.nano.utils.log4Error import invalidInputError
         if x is not None:
-            raise ValueError("We don't support input x currently")
+            invalidInputError(False,
+                              "We don't support input x currently")
         if target is None:
-            raise ValueError("Input invalid target of None")
+            invalidInputError(False,
+                              "Input invalid target of None")
         if self.model is None:
-            raise Exception("Needs to call fit_eval or restore first before calling evaluate")
+            invalidInputError(False,
+                              "Needs to call fit_eval or restore first before calling evaluate")
 
         forecasts = self.predict(horizon=len(target), rolling=rolling)
 
         return Evaluator.evaluate(metrics, target, forecasts, aggregate="mean")
 
     def save(self, checkpoint_file):
+        from bigdl.nano.utils.log4Error import invalidInputError
         if self.model is None:
-            raise Exception("Needs to call fit_eval or restore first before calling save")
+            invalidInputError(False,
+                              "Needs to call fit_eval or restore first before calling save")
         with open(checkpoint_file, 'wb') as fout:
             pickle.dump(self.model, fout)
 

@@ -95,10 +95,10 @@ class TestChronosForecastMetrics(TestCase):
         y_true = np.random.randn(100, 2, 2)
         y_pred = np.random.randn(100, 2, 2)
 
-        with pytest.raises(AssertionError):
+        with pytest.raises(RuntimeError):
             Evaluator.evaluate("test_smape", y_true, y_pred, aggregate=None)
-        with pytest.raises(AssertionError):
+        with pytest.raises(RuntimeError):
             Evaluator.evaluate("mse", y_true, y_pred.reshape(100, 4))
         y_true = [10, 2, 5]
-        with pytest.raises(AssertionError):
+        with pytest.raises(RuntimeError):
             Evaluator.evaluate('mse', y_true, y_true)

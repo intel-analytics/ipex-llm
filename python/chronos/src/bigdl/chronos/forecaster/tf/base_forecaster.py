@@ -66,8 +66,10 @@ class BaseTF2Forecaster(Forecaster):
         :params batch_size: predict batch size. The value will not affect evaluate
                 result but will affect resources cost(e.g. memory and time).
         """
+        from bigdl.nano.utils.log4Error import invalidInputError
         if not self.fitted:
-            raise RuntimeError("You must call fit or restore first before calling predict!")
+            invalidInputError(False,
+                              "You must call fit or restore first before calling predict!")
         yhat = self.internal.predict(data, batch_size=batch_size)
         return yhat
 
@@ -98,8 +100,10 @@ class BaseTF2Forecaster(Forecaster):
                 'raw_values'.The param is only effective when the forecaster is a
                 non-distribtued version.
         """
+        from bigdl.nano.utils.log4Error import invalidInputError
         if not self.fitted:
-            raise RuntimeError("You must call fit or restore first before calling evaluate!")
+            invalidInputError(False,
+                              "You must call fit or restore first before calling evaluate!")
         yhat = self.internal.predict(data[0], batch_size=batch_size)
 
         aggregate = 'mean' if multioutput == 'uniform_average' else None
@@ -111,8 +115,10 @@ class BaseTF2Forecaster(Forecaster):
 
         :params checkpoint_file: The location you want to save the forecaster.
         """
+        from bigdl.nano.utils.log4Error import invalidInputError
         if not self.fitted:
-            raise RuntimeError("You must call fit or restore first before calling save!")
+            invalidInputError(False,
+                              "You must call fit or restore first before calling save!")
         self.internal.save(checkpoint_file)
 
     def load(self, checkpoint_file):
