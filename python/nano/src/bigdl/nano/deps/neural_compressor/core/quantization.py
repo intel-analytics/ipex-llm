@@ -21,7 +21,7 @@ from neural_compressor.experimental import Quantization, common
 class BaseQuantization(Quantization):
     def __init__(self,
                  framework: str,
-                 conf='',
+                 conf=None,
                  approach='post_training_static_quant',
                  tuning_strategy='bayesian',
                  accuracy_criterion: dict = {'relative': 0.99, 'higher_is_better': True},
@@ -74,15 +74,15 @@ class BaseQuantization(Quantization):
         cfg.model.outputs = outputs
         super().__init__(qconf)
 
-    def post_training_quantize(self, model, calib_dataloader=None, metric=None):
-        self.sanity_check_before_execution(calib_dataloader, metric)
+    def post_training_quantize(self, model, calib_dataloader=None, metric_kwargs=None):
+        self.sanity_check_before_execution(model, calib_dataloader, metric_kwargs)
         self.model = common.Model(model)
 
         if self.cfg.quantization.approach == 'post_training_static_quant':
             self.calib_dataloader = calib_dataloader
-        if metric:
+        if metric_kwargs:
             self.eval_dataloader = calib_dataloader
-            self.metric = metric
+            self.metric = common.Metric(**metric_kwargs)
         quantized = self()
 
         if quantized:
@@ -91,7 +91,7 @@ class BaseQuantization(Quantization):
             invalidInputError(False,
                               "Found no quantized model satisfying accuracy criterion.")
 
-    def sanity_check_before_execution(self, calib_dataloader, metric):
+    def sanity_check_before_execution(self, model, calib_dataloader, metric):
         """
         Call before self.__call__() to check if the object is well-initialized
         for quantization.

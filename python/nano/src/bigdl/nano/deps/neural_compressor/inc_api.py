@@ -25,14 +25,14 @@ def QuantizationINC(framework: str,
                     max_trials=1,
                     inputs=None,
                     outputs=None):
-    from .core import QuantizationINC as Quantization
+    from .core.quantization import BaseQuantization as Quantization
     return Quantization(framework, conf, approach, tuning_strategy, accuracy_criterion,
                         timeout, max_trials, inputs, outputs)
 
 
-def check_pytorch_dataloaders(model, loaders, metric=None):
-    from .pytorch.dataloader import check_loaders
-    return check_loaders(model, loaders, metric=None)
+def check_pytorch_dataloaders(model, loaders):
+    from .pytorch.utils import check_loaders
+    return check_loaders(model, loaders)
 
 
 def tf_dataset_to_inc_dataloader(tf_dataset, batchsize):
@@ -55,3 +55,26 @@ def load_inc_model(path, model, framework):
         invalidInputError(False,
                           "The value {} for framework is not supported."
                           " Please choose from 'pytorch'/'tensorflow'.")
+
+
+def quantize(*args, **kwargs):
+    if kwargs['approach'] not in ['static', 'dynamic']:
+        invalidInputError(False,
+                          "Approach should be 'static' or 'dynamic', "
+                          "{} is invalid.".format(approach))
+    not_none_kwargs = {}
+    for k, v in kwargs.items():
+        # pop None values to use default
+        if v is not None:
+            not_none_kwargs[k] = v
+    approach_map = {
+        'static': 'post_training_static_quant',
+        'dynamic': 'post_training_dynamic_quant'
+    }
+    not_none_kwargs['approach'] = approach_map.get(kwargs['approach'], None)
+    if 'pytorch' in not_none_kwargs['framework']:
+        print(not_none_kwargs)
+        from .pytorch.quantization import PytorchQuantization
+        quantier = PytorchQuantization(**not_none_kwargs)
+    print(args)
+    return quantier.post_training_quantize(*args)

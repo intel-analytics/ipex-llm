@@ -40,7 +40,7 @@ from bigdl.nano.deps.openvino.openvino_api import PytorchOpenVINOModel, load_ope
 from bigdl.nano.deps.onnxruntime.onnxruntime_api import PytorchONNXRuntimeModel, \
     load_onnxruntime_model
 from bigdl.nano.deps.neural_compressor.inc_api import QuantizationINC, PytorchQuantizedModel,\
-    check_pytorch_dataloaders, load_inc_model
+    check_pytorch_dataloaders, load_inc_model, quantize
 from bigdl.nano.utils.log4Error import invalidInputError
 from bigdl.nano.utils.inference.pytorch.model import AcceleratedLightningModule
 distributed_backends = ["spawn", "ray", "subprocess"]
@@ -210,15 +210,14 @@ class Trainer(pl.Trainer):
                  precision='int8',
                  accelerator=None,
                  calib_dataloader: DataLoader = None,
-                 val_dataloader: DataLoader = None,
                  metric: Optional[Metric] = None,
-                 accuracy_criterion: dict = {'relative': 0.99, 'higher_is_better': True},
+                 accuracy_criterion: dict = None,
                  approach='static',
-                 method='fx',
+                 method=None,
                  conf: Optional[str] = None,
-                 tuning_strategy='bayesian',
-                 timeout=0,
-                 max_trials=1,
+                 tuning_strategy=None,
+                 timeout=None,
+                 max_trials=None,
                  input_sample=None
                  ):
         """
@@ -232,9 +231,9 @@ class Trainer(pl.Trainer):
                                 None means staying in pytorch.
         :param calib_dataloader:    A torch.utils.data.dataloader.DataLoader object for calibration.
                                     Required for static quantization.
-        :param val_dataloader:      A torch.utils.data.dataloader.DataLoader object for evaluation.
         :param metric:              A torchmetrics.metric.Metric object for evaluation.
-        :param accuracy_criterion:  Tolerable accuracy drop.
+        :param accuracy_criterion:  Tolerable accuracy drop, defaults to None meaning no
+                                    accuracy control.
                                     accuracy_criterion = {'relative': 0.1, 'higher_is_better': True}
                                     allows relative accuracy loss: 1%. accuracy_criterion =
                                     {'absolute': 0.99, 'higher_is_better':False} means accuracy
@@ -242,7 +241,7 @@ class Trainer(pl.Trainer):
         :param approach:    'static' or 'dynamic'.
                             'static': post_training_static_quant,
                             'dynamic': post_training_dynamic_quant.
-                            Default: 'static'.
+                            Default: 'static'. OpenVINO supports static mode only.
         :param method:          Method to do quantization. When accelerator=None, supported
             methods: 'fx', 'eager', 'ipex', defaults to 'fx'. If you don't use ipex, suggest using
             'fx' which executes automatic optimizations like fusion. For more information, please
@@ -250,12 +249,13 @@ class Trainer(pl.Trainer):
             When accelerator='onnxruntime', supported methods: 'qlinear', 'integer', defaults
             to 'qlinear'. Suggest 'qlinear' for lower accuracy drop if using static quantization.
             More details in https://onnxruntime.ai/docs/performance/quantization.html.
+            This argument doesn't take effect for OpenVINO, don't change it for OpenVINO.
         :param conf:        A path to conf yaml file for quantization.
                             Default: None, using default config.
         :param tuning_strategy:    'bayesian', 'basic', 'mse', 'sigopt'. Default: 'bayesian'.
-        :param timeout:     Tuning timeout (seconds). Default: 0,  which means early stop.
+        :param timeout:     Tuning timeout (seconds). Default: None,  which means early stop.
                             Combine with max_trials field to decide when to exit.
-        :param max_trials:  Max tune times. Default: 1.
+        :param max_trials:  Max tune times. Default: None, which means no tuning.
                             Combine with timeout field to decide when to exit.
                             "timeout=0, max_trials=1" means it will try quantization only once and
                             return satisfying best model.
@@ -264,41 +264,29 @@ class Trainer(pl.Trainer):
         :return:            A accelerated Pytorch-Lightning Model if quantization is sucessful.
         """
         if not accelerator or accelerator == 'onnxruntime':
-            calib_dataloader = copy.deepcopy(calib_dataloader)
-            val_dataloader = copy.deepcopy(val_dataloader)
-            # check if dataloader is of legal format
-            check_pytorch_dataloaders(model, [calib_dataloader, val_dataloader],
-                                      metric=metric)
-
-            model.eval()
-
-            if approach not in ['static', 'dynamic']:
-                invalidInputError(False,
-                                  "Approach should be 'static' or 'dynamic', "
-                                  "{} is invalid.".format(approach))
-            approach_map = {
-                'static': 'post_training_static_quant',
-                'dynamic': 'post_training_dynamic_quant'
+            method_map = {
+                None: {
+                    'fx': 'pytorch_fx',
+                    'eager': 'pytorch',
+                    'ipex': 'pytorch_ipex',
+                    None: 'pytorch_fx'  # default
+                },
+                'onnxruntime': {
+                    'qlinear': 'onnxrt_qlinearops',
+                    'integer': 'onnxrt_integerops',
+                    None: 'onnxrt_qlinearops'   # default
+                }
             }
-            approach = approach_map.get(approach)
-            if accelerator is None:
-                framework = 'pytorch_{}'.format(method)
-            if accelerator == 'onnxruntime':
-                framework = "{}_{}ops".format('onnxrt', method)
-            quantizer = QuantizationINC(framework=framework, conf=conf, approach=approach,
-                                        tuning_strategy=tuning_strategy,
-                                        accuracy_criterion=accuracy_criterion,
-                                        timeout=timeout, max_trials=max_trials)
+            framework = method_map[accelerator].get(method, None)
             if accelerator == "onnxruntime":
                 if not type(model).__name__ == 'PytorchONNXRuntimeModel':
                     # try to establish onnx model
                     if not input_sample:
                         # input_sample can be a dataloader
-                        input_sample = calib_dataloader or val_dataloader
+                        input_sample = calib_dataloader
                     model = Trainer.trace(model,
                                           input_sample=input_sample,
                                           accelerator='onnxruntime')
-                model = model.onnx_model
             """
             If accelerator==None, quantized model returned should be an object of PytorchModel
             which is defined by neural-compressor containing a `GraphModule` for inference.
@@ -306,15 +294,15 @@ class Trainer(pl.Trainer):
             model which is able to run on Pytorch or ONNXRuntime can be fetched by
             `quantized_model.model`.
             """
-            quantized_model = quantizer.post_training_quantize(model, calib_dataloader,
-                                                               val_dataloader, metric)
-            if accelerator is None:
-                return PytorchQuantizedModel(quantized_model)
-            elif accelerator == 'onnxruntime':
-                with TemporaryDirectory() as dir:
-                    saved_onnx = Path(dir) / 'tmp.onnx'
-                    quantized_model.save(saved_onnx)
-                    return PytorchONNXRuntimeModel(str(saved_onnx))
+            return quantize(model, calib_dataloader, metric,
+                            framework=framework,
+                            conf=conf,
+                            approach=approach,
+                            tuning_strategy=tuning_strategy,
+                            accuracy_criterion=accuracy_criterion,
+                            timeout=timeout,
+                            max_trials=max_trials)
+
         elif accelerator == 'openvino':
             model_type = type(model).__name__
             if not model_type == 'PytorchOpenVINOModel':
