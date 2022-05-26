@@ -81,11 +81,31 @@ class BaseQuantization(Quantization):
         q_model = self._execution(model, calib_dataloader, metric_kwargs)
         return self._post_execution(q_model)
 
-    def _pre_execution(model, calib_dataloader, metric):
+    def _pre_execution(self, model, calib_dataloader, metric):
         return model, calib_dataloader, metric
 
-    def _execution(self, model, calib_dataloader, metric_kwargs):
+    def _execution(self, model, calib_dataloader, metric):
         self.model = common.Model(model)
+        
+        class MyMetric(self._inc_metric_cls):
+            def __init__(self):
+                """
+                This local class is to resolve dumping issue in tensorflow.
+                In tensorflow, INC will try to dump the metric to yaml which
+                somehow causes unexpected error. So we moved metric assignment
+                to the new local class to avoid that.
+                """
+                self.metric = metric
+
+        metric_kwargs = None
+        if metric:
+            metric_name = type(metric).__name__
+            metric_id = self._inc_metric_cls.get_next_metric_id()
+            metric_kwargs = {
+                "metric_cls": MyMetric,
+                "name": f"pytorch_{metric_name}_{metric_id}"
+            }
+
         if self.cfg.quantization.approach == 'post_training_static_quant':
             self.calib_dataloader = calib_dataloader
         if metric_kwargs:

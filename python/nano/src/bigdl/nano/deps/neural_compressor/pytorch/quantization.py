@@ -29,27 +29,7 @@ class PytorchQuantization(BaseQuantization):
         """
         kwargs['framework'] = framework
         super().__init__(**kwargs)
-
-    def _pre_execution(self, model, calib_dataloader=None, metric=None):
-        class MyMetric(PytorchINCMetric):
-            def __init__(self):
-                """
-                This local class is to resolve dumping issue in tensorflow.
-                In tensorflow, INC will try to dump the metric to yaml which
-                somehow causes unexpected error. So we moved metric assignment
-                to the new local class to avoid that.
-                """
-                self.metric = metric
-
-        metric_kwargs = None
-        if metric:
-            metric_name = type(metric).__name__
-            metric_id = PytorchINCMetric.get_next_metric_id()
-            metric_kwargs = {
-                "metric_cls": MyMetric,
-                "name": f"pytorch_{metric_name}_{metric_id}"
-            }
-        return model, calib_dataloader, metric_kwargs
+        self._inc_metric_cls = PytorchINCMetric
 
     def _post_execution(self, q_model):
         return PytorchQuantizedModel(q_model)
@@ -59,6 +39,8 @@ class PytorchQuantization(BaseQuantization):
         return ('pytorch_fx', 'pytorch', 'pytorch_ipex')
 
     def sanity_check_before_execution(self, model, calib_dataloader, metric):
+        invalidInputError(isinstance(model, torch.nn.Module),
+                          "model should be an instance of torch.nn.Module.")
         if calib_dataloader:
             _check_loader(model=model, loader=calib_dataloader, metric=metric)
             invalidInputError(isinstance(calib_dataloader, torch.utils.data.DataLoader),
