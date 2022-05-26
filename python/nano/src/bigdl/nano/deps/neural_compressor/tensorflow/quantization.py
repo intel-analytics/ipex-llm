@@ -62,5 +62,5 @@ class TensorflowQuantization(BaseQuantization):
                           "Please create the model by functional API"
                           " keras.Model(inputs=.., outputs=..).\n"
                           "More details in https://keras.io/api/models/model/")
-        
+
         super().sanity_check_before_execution(model, calib_dataloader, metric)

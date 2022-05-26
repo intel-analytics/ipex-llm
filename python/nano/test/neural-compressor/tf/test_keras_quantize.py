@@ -45,7 +45,7 @@ class TestModelQuantize(TestCase):
         q_model = model.quantize(calib_dataset=train_dataset,
                                  metric=tf.keras.metrics.CategoricalAccuracy(),
                                  tuning_strategy='basic',
-                                 accuracy_criterion={'relative':         0.99,
+                                 accuracy_criterion={'relative': 0.99,
                                                      'higher_is_better': True})
         assert q_model
         with q_model.sess as sess:
