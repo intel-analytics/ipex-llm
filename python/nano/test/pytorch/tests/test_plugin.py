@@ -79,6 +79,9 @@ class TestPlugin(TestCase):
         res1 = trainer_single.test(pl_model, self.data_loader)
         res2 = trainer_dis.test(pl_model, self.data_loader)
         
+        print("single result", res1)
+        print("distributed result", res2)
+        
         acc1 = res1['test/Accuracy_1']
         acc2 = res2['test/Accuracy_1']
 
