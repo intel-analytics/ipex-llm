@@ -1,0 +1,58 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: bigdl-notebook
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: bigdl-notebook
+  template:
+    metadata:
+      name: bigdl-notebook
+      labels:
+        app: bigdl-notebook
+        appType: bigdl
+    spec:
+      containers:
+        - image: intelanalytics/bigdl:2.1.0-SNAPSHOT
+          ports:
+            - name: jupyter-address
+              containerPort: 8888
+          name: bigdl-notebook
+          env:
+            - name: CONTAINER_NAME
+              value: bigdl-notebook
+          volumeMounts:
+            - name: bigdl-notebook-volume
+              mountPath: /data/jupyter
+            - name: cache-volume
+              mountPath: /dev/shm
+          command: [ "/opt/work/start-notebook.sh" ]
+      volumes:
+        - name: bigdl-notebook-volume
+          persistentVolumeClaim:
+            claimName: nfsvolumeclaim
+            readOnly: false
+        - name: cache-volume
+          emptyDir:
+            medium: Memory
+            sizeLimit: "1024Mi"
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: bigdl-notebook
+  namespace: default
+  labels:
+    app: bigdl-notebook
+spec:
+  ports:
+    - port: 8888
+      protocol: TCP
+      name: jupyter-address
+  type: NodePort
+  selector:
+    app: bigdl-notebook
