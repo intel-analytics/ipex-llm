@@ -19,6 +19,7 @@ from .utils import _check_loader
 from .metric import PytorchINCMetric
 from .quantized_model import PytorchQuantizedModel
 from torchmetrics import Metric
+import torch
 
 
 class PytorchQuantization(BaseQuantization):
@@ -60,6 +61,8 @@ class PytorchQuantization(BaseQuantization):
     def sanity_check_before_execution(self, model, calib_dataloader, metric):
         if calib_dataloader:
             _check_loader(model=model, loader=calib_dataloader, metric=metric)
+            invalidInputError(isinstance(calib_dataloader, torch.utils.data.DataLoader),
+                              "Only torch dataloader is supported for onnx quantization.")
         if metric:
             invalidInputError(
                 isinstance(metric, Metric),
