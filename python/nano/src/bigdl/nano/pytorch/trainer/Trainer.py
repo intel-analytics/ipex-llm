@@ -205,7 +205,8 @@ class Trainer(pl.Trainer):
             return None
         return self.hposearcher.search_summary()
 
-    def quantize(self, model,  # remove the type requirement for type checking
+    @staticmethod
+    def quantize(model,  # remove the type requirement for type checking
                  precision='int8',
                  accelerator=None,
                  calib_dataloader: DataLoader = None,
