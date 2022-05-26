@@ -48,7 +48,7 @@ class FGBoostRegression(learningRate: Float = 0.005f,
         trees.zipWithIndex.sortBy(_._2).map(v => (v._2.toString, v._1.toJson())): _*)
       (Ordering.by(_.toInt)).toMap)))
   }
-  def saveModel(dest: String) = {
+  def saveModel(dest: String): Unit = {
     val file = new File(dest)
     val bufferedWriter = new BufferedWriter(new FileWriter(file))
     bufferedWriter.write(this.toJSON().toString())
@@ -73,7 +73,7 @@ object FGBoostRegression {
     }
     gbr
   }
-  def loadModel(src: String) = {
+  def loadModel(src: String): FGBoostRegression = {
     val jsonStr = Source.fromFile(src, "utf-8").mkString
     logger.info(s"loading model from $src")
     fromJson(jsonStr)

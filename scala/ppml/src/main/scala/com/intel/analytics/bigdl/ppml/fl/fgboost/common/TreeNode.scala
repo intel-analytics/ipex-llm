@@ -93,7 +93,7 @@ object TreeNode {
   }
   def fromJson(json: JSONObject): TreeNode = {
     val nodeID = json.obj.get("nodeID").get.asInstanceOf[String]
-    val similarScore= json.obj.get("similarScore").get.asInstanceOf[Double].toFloat
+    val similarScore = json.obj.get("similarScore").get.asInstanceOf[Double].toFloat
     val isLeaf = json.obj.get("isLeaf").get.asInstanceOf[Boolean]
     val recordSet = json.obj.get("recordSet").get.asInstanceOf[JSONArray].list
       .map(_.asInstanceOf[Double].toInt).toSet
