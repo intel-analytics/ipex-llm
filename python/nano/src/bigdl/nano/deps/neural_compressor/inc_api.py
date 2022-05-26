@@ -16,35 +16,6 @@
 from bigdl.nano.utils.log4Error import invalidInputError
 
 
-def QuantizationINC(framework: str,
-                    conf='',
-                    approach='post_training_static_quant',
-                    tuning_strategy='bayesian',
-                    accuracy_criterion: dict = {'relative': 0.99, 'higher_is_better': True},
-                    timeout=0,
-                    max_trials=1,
-                    inputs=None,
-                    outputs=None):
-    from .core.quantization import BaseQuantization as Quantization
-    return Quantization(framework, conf, approach, tuning_strategy, accuracy_criterion,
-                        timeout, max_trials, inputs, outputs)
-
-
-def check_pytorch_dataloaders(model, loaders):
-    from .pytorch.utils import check_loaders
-    return check_loaders(model, loaders)
-
-
-def tf_dataset_to_inc_dataloader(tf_dataset, batchsize):
-    from neural_compressor.experimental import common
-    return common.DataLoader(tf_dataset, batchsize)
-
-
-def PytorchQuantizedModel(model):
-    from .pytorch.quantized_model import PytorchQuantizedModel
-    return PytorchQuantizedModel(model)
-
-
 def load_inc_model(path, model, framework):
     if framework == 'pytorch':
         from .pytorch.quantized_model import PytorchQuantizedModel
