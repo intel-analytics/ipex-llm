@@ -16,7 +16,7 @@ You can use _Chronos_ to do:
 
 Install `bigdl-chronos` from PyPI. We recommened to install with a conda virtual environment. To install Conda, please refer to https://docs.conda.io/en/latest/miniconda.html#.
 ```bash
-conda create -n my_env python=3.7
+conda create -n my_env python=3.7 setuptools=58.0.4
 conda activate my_env
 pip install bigdl-chronos
 ```
@@ -36,6 +36,7 @@ pip install bigdl-nano[tensorflow]
 pip install pmdarima==1.8.2
 pip install prophet==1.0.1
 pip install neural-compressor==1.8.1
+pip install pyarrow=6.0.1
 ```
 ```eval_rst
 .. note:: 
