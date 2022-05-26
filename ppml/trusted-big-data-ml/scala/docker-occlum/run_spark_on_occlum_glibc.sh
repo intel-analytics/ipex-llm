@@ -44,7 +44,7 @@ init_instance() {
     new_json="$(jq '.resource_limits.user_space_size = "SGX_MEM_SIZE" |
         .resource_limits.max_num_of_threads = "SGX_THREAD" |
         .process.default_heap_size = "SGX_HEAP" |
-        .metadata.debuggable = $ENABLE_SGX_DEBUG |
+        .metadata.debuggable = "ENABLE_SGX_DEBUG" |
         .resource_limits.kernel_space_heap_size="SGX_KERNEL_HEAP" |
         .entry_points = [ "/usr/lib/jvm/java-11-openjdk-amd64/bin" ] |
         .env.untrusted = [ "DMLC_TRACKER_URI", "SPARK_DRIVER_URL", "SPARK_TESTING" ] |
@@ -94,11 +94,12 @@ init_instance() {
            echo "[ERROR] Attestation set to true but NO PCCS"
            exit 1
         else
-           sed -i "s/true/false/g" Occlum.json
+           export ENABLE_SGX_DEBUG=false
            sed -i "s#https://localhost:8081/sgx/certification/v3/#${PCCS_URL}#g" /etc/sgx_default_qcnl.conf
         fi
     fi
 
+    sed -i "s/\"ENABLE_SGX_DEBUG\"/$ENABLE_SGX_DEBUG/g" Occlum.json
     sed -i "s/#USE_SECURE_CERT=FALSE/USE_SECURE_CERT=FALSE/g" /etc/sgx_default_qcnl.conf
 }
 
