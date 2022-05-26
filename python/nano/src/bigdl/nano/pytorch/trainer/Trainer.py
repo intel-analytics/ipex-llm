@@ -315,11 +315,16 @@ class Trainer(pl.Trainer):
                               "Invalid model to quantize. Please use a nn.Module or a model "
                               "from trainer.trance(accelerator=='openvino')")
             drop_type = 'relative' if 'relative' in accuracy_criterion else 'absolute'
+            higher_is_better = None
+            maximal_drop = None
+            if isinstance(accuracy_criterion, dict):
+                higher_is_better = accuracy_criterion.get('higher_is_better', None)
+                maximal_drop = accuracy_criterion.get(drop_type, None),
             kwargs = {
                 "metric": metric,
-                "higher_better": accuracy_criterion['higher_is_better'],
+                "higher_better": higher_is_better,
                 "drop_type": drop_type,
-                "maximal_drop": accuracy_criterion[drop_type],
+                "maximal_drop": maximal_drop,
                 "max_iter_num": max_trials,
                 # TODO following two keys are optional, if there is need, we can add them
                 # "n_requests": None,

@@ -17,9 +17,8 @@ from copy import deepcopy
 from pathlib import Path
 from tempfile import TemporaryDirectory
 from bigdl.nano.deps.onnxruntime.pytorch.pytorch_onnxruntime_model import PytorchONNXRuntimeModel
-from bigdl.nano.utils.log4Error import invalidInputError
 from ..quantization import BaseONNXRuntimeQuantization
-from ...pytorch.quantization import PytorchQuantization
+from ...pytorch import PytorchQuantization
 from .metric import PytorchONNXRuntimeINCMetic
 import torch
 
