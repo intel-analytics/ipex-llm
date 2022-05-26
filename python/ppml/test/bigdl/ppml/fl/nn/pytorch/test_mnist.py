@@ -167,6 +167,7 @@ class NeuralNetworkPart2(nn.Module):
         )
 
     def forward(self, x):
+        x = x[0] # this act as interactive layer, take the first tensor
         x = self.sequential_2(x)
         return x
 

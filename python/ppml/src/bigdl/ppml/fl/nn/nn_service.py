@@ -45,11 +45,11 @@ class NNServiceImpl(NNServiceServicer):
             aggregator.put_client_data(client_id, ndarray_map)            
             msg = f'[client {client_id} batch trained]'
             code = 0
-        except Exception as e:
+        except Exception as e:            
             msg = traceback.format_exc()
+            logging.error(msg)
             code = 1
-        
-        return TrainResponse(response=msg, data=aggregator.server_data, code=code)
+        return TrainResponse(response=msg, data=self.aggregator.server_data[client_id], code=code)
 
     def evaluate(self, request, context):
         return super().evaluate(request, context)

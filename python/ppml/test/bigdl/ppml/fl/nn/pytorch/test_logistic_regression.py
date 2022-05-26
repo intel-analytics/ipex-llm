@@ -131,6 +131,8 @@ class LogisticRegressionNetwork2(nn.Module):
         self.sigmoid = nn.Sigmoid()
 
     def forward(self, x):
+        x = torch.stack(x)
+        x = torch.sum(x, dim=0) # above two act as interactive layer, CAddTable
         x = self.sigmoid(x)
         return x
 

@@ -28,7 +28,7 @@ class Aggregator(object):
                  client_num=1) -> None:
         self.model = None
         self.client_data = {}
-        self.server_data = None
+        self.server_data = {}
         self.client_num = client_num
         self.condition = Condition()
         self._lock = threading.Lock()
@@ -109,14 +109,18 @@ got {len(self.client_data)}/{self.client_num}')
 
 
     def aggregate(self):
-        input, target = [], None        
-        for ndarray_map in self.client_data.values():
+        input, target = [], None
+        # to record the order of tensors with client ID
+        client_ids = []
+        for cid, ndarray_map in self.client_data.items():
             for k, v in ndarray_map.items():
                 if k == 'input':
                     input.append(torch.from_numpy(v))
+                    client_ids.append(cid)
                 elif k == 'target':
                     target = torch.from_numpy(v)
                 else:
+<<<<<<< HEAD
                     invalidInputError(False,
                                       f'Invalid type of tensor map key: {k},'
                                       f' should be input/target')
@@ -124,14 +128,29 @@ got {len(self.client_data)}/{self.client_num}')
         x = torch.sum(x, dim=0)
         x.requires_grad = True
         pred = self.model(x)
+=======
+                    raise Exception(f'Invalid type of tensor map key: {k}, should be input/target')
+        # input is a list of tensors
+
+        # x = torch.stack(input)
+        # x = torch.sum(x, dim=0)
+        # x.requires_grad = True
+        # pred = self.model(x)
+        for input_tensor in input:
+            input_tensor.requires_grad = True
+        pred = self.model(input)
+>>>>>>> 88bf42cfa (change interactive layer to customizable)
         loss = self.loss_fn(pred, target)
         if self.optimizer is not None:
             self.optimizer.zero_grad()
         loss.backward()
         if self.optimizer is not None:
             self.optimizer.step()
-        grad_map = {'grad': x.grad.numpy(), 'loss': loss.detach().numpy()}
-        self.server_data = ndarray_map_to_tensor_map(grad_map)
+
+        for idx, input_tensor in enumerate(input):
+            grad_map = {'grad': input_tensor.grad.numpy(), 'loss': loss.detach().numpy()}
+            cid = client_ids[idx]
+            self.server_data[cid] = ndarray_map_to_tensor_map(grad_map)
 
     
 
