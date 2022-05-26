@@ -16,6 +16,7 @@
 
 import pytest
 import tempfile
+import os
 
 from unittest import TestCase
 import numpy as np
@@ -85,9 +86,10 @@ class TestLSTMForecaster(TestCase):
         train_data, test_data = create_data()
         self.forecaster.fit(train_data, epochs=2)
         yhat = self.forecaster.predict(test_data[0])
-        with tempfile.TemporaryDirectory() as checkpoint_file:
-            self.forecaster.save(checkpoint_file)
-            self.forecaster.load(checkpoint_file)
+        with tempfile.TemporaryDirectory() as tmp_dir_file:
+            tmp_dir_file = os.path.join(tmp_dir_file, 'lstm.ckpt')
+            self.forecaster.save(tmp_dir_file)
+            self.forecaster.load(tmp_dir_file)
             from bigdl.chronos.model.tf2.VanillaLSTM_keras import LSTMModel
             assert isinstance(self.forecaster.internal, LSTMModel)
         load_model_yhat = self.forecaster.predict(test_data[0])

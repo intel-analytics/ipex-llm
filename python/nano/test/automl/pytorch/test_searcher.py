@@ -69,8 +69,8 @@ class TestHPOSearcher(TestCase):
             model,
             target_metric='val_loss',
             direction='minimize',
-            n_trials=2,
-            max_epochs=2,
+            n_trials=3,
+            max_epochs=3,
         )
         study = searcher.search_summary()
         assert(study)

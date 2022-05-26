@@ -125,8 +125,9 @@ class AutoTSEstimator:
                cluster, it defaults to "hdfs:///tmp/{name}".
         """
         # check backend and set default loss
+        from bigdl.nano.utils.log4Error import invalidInputError
         if backend != "torch":
-            raise ValueError(f"We only support backend as torch. Got {backend}")
+            invalidInputError(False, f"We only support backend as torch. Got {backend}")
         else:
             import torch
             if loss is None:
@@ -136,8 +137,9 @@ class AutoTSEstimator:
             search_space = AutoModelFactory.get_default_search_space(model, search_space)
 
         self._future_seq_len = future_seq_len  # for support future_seq_len list input.
-        assert isinstance(future_seq_len, int) or isinstance(future_seq_len, list),\
-            f"future_seq_len only support int or List, but found {type(future_seq_len)}"
+        invalidInputError(isinstance(future_seq_len, int) or isinstance(future_seq_len, list),
+                          f"future_seq_len only support int or List, but found"
+                          f" {type(future_seq_len)}")
         future_seq_len = future_seq_len if isinstance(future_seq_len, int) else len(future_seq_len)
 
         if isinstance(model, types.FunctionType) and backend == "torch":
@@ -309,8 +311,8 @@ class AutoTSEstimator:
         # TODO: more flexible setting
         all_features = train_data.feature_col
         if self.selected_features not in ('all', 'auto'):
-            raise ValueError("Only 'all' and 'auto' are supported for selected_features, "
-                             f"but found {self.selected_features}")
+            invalidInputError(False, "Only 'all' and 'auto' are supported for selected_features, "
+                                     f"but found {self.selected_features}")
         if self.selected_features == "auto":
             if len(all_features) == 0:
                 search_space['selected_features'] = all_features

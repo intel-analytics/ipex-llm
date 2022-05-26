@@ -52,7 +52,7 @@ class TestXShardsTSDataset(TestCase):
     def tearDownClass(cls):
         # stop possible active_spark_context
         from pyspark import SparkContext
-        from bigdl.orca.ray import RayContext
+        from bigdl.orca.ray import OrcaRayContext
         if SparkContext._active_spark_context is not None:
             print("Stopping spark_orca context")
             sc = SparkContext.getOrCreate()

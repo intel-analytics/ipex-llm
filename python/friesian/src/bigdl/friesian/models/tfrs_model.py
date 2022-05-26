@@ -41,7 +41,7 @@ class TFRSModel(tf.keras.Model):
                                                   "`tf.keras.losses.Reduction.SUM` or "
                                                   "`tf.keras.losses.Reduction.NONE` for "
                                                   "loss reduction in this task if the "
-                                                  "Estimator raise an error.")
+                                                  "Estimator throw an error.")
         self.model = tfrs_model
 
     def train_step(self, inputs):

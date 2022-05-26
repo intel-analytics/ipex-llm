@@ -130,8 +130,10 @@ case "$SPARK_K8S_CMD" in
     if [ "$SGX_ENABLED" == "false" ]; then
         $SPARK_HOME/bin/spark-submit --conf spark.driver.bindAddress=$SPARK_DRIVER_BIND_ADDRESS --deploy-mode client "$@"
     elif [ "$SGX_ENABLED" == "true" ]; then
+        export driverExtraClassPath=`echo "${CMD[*]}" | grep -P -o "(?<=spark.driver.extraClassPath=).*(?= --)"` && \
+        echo $driverExtraClassPath && \
         export SGX_MEM_SIZE=$SGX_DRIVER_MEM_SIZE && \
-        export spark_commnd="/opt/jdk8/bin/java -Dlog4j.configurationFile=/ppml/trusted-big-data-ml/work/spark-3.1.2/conf/log4j2.xml -Xms1G -Xmx$SGX_DRIVER_JVM_MEM_SIZE -cp "$SPARK_CLASSPATH" org.apache.spark.deploy.SparkSubmit --conf spark.driver.bindAddress=$SPARK_DRIVER_BIND_ADDRESS --deploy-mode client "$@"" && \
+        export spark_commnd="/opt/jdk8/bin/java -Dlog4j.configurationFile=/ppml/trusted-big-data-ml/work/spark-3.1.2/conf/log4j2.xml -Xms1G -Xmx$SGX_DRIVER_JVM_MEM_SIZE -cp "$SPARK_CLASSPATH:$driverExtraClassPath" org.apache.spark.deploy.SparkSubmit --conf spark.driver.bindAddress=$SPARK_DRIVER_BIND_ADDRESS --deploy-mode client "$@"" && \
         if [ "$ATTESTATION" = "true" ]; then
           spark_commnd=$ATTESTATION_COMMAND" && "$spark_commnd
         fi

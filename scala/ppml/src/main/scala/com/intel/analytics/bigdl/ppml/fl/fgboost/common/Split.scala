@@ -18,8 +18,10 @@ package com.intel.analytics.bigdl.ppml.fl.fgboost.common
 
 import com.intel.analytics.bigdl.ppml.fl.generated.FGBoostServiceProto.DataSplit
 import org.apache.logging.log4j.LogManager
-import java.util
 
+import java.util
+import scala.util.parsing.json.{JSONArray, JSONObject}
+import scala.collection.JavaConverters._
 
 class Split (
               val treeID: String,
@@ -84,6 +86,16 @@ class Split (
       .setVersion(version)
       .addAllItemSet(itemSet).build
   }
+
+  def toJSON(): JSONObject = {
+    JSONObject(Map("treeID" -> treeID,
+      "nodeID" -> nodeID,
+      "featureID" -> featureID,
+      "splitValue" -> splitValue,
+      "gain" -> gain,
+      "itemSet" -> JSONArray(itemSet.asScala.toList)
+    ))
+  }
 }
 
 object Split {
@@ -111,6 +123,16 @@ object Split {
             version: Int = -1): Split = {
     new Split(treeID, nodeID, featureID, splitValue, gain, bitSet).setVersion(version)
 
+  }
+  def fromJson(json: JSONObject): Split = {
+    val treeID = json.obj.get("treeID").get.asInstanceOf[String]
+    val nodeID = json.obj.get("nodeID").get.asInstanceOf[String]
+    val featureID = json.obj.get("featureID").get.asInstanceOf[Double].toInt
+    val splitValue = json.obj.get("splitValue").get.asInstanceOf[Double].toFloat
+    val gain = json.obj.get("gain").get.asInstanceOf[Double].toFloat
+    val itemSet = json.obj.get("itemSet").get.asInstanceOf[JSONArray].list
+      .map(_.asInstanceOf[Double].toInt).map(int2Integer)
+    apply(treeID, nodeID, featureID, splitValue, gain, itemSet.asJava)
   }
 }
 

@@ -118,6 +118,7 @@ class PastSeqParamHandler(object):
         :param look_back: look_back configuration
         :return: search configuration for past sequence
         """
+        from bigdl.nano.utils.log4Error import invalidInputError
         if isinstance(
             look_back,
             tuple) and len(look_back) == 2 and isinstance(
@@ -126,8 +127,8 @@ class PastSeqParamHandler(object):
                 look_back[1],
                 int):
             if look_back[1] < 2:
-                raise ValueError(
-                    "The max look back value should be at least 2")
+                invalidInputError(False,
+                                  "The max look back value should be at least 2")
             if look_back[0] < 2:
                 print(
                     "The input min look back value is smaller than 2. "
@@ -136,15 +137,15 @@ class PastSeqParamHandler(object):
             past_seq_config = hp.randint(look_back[0], look_back[1] + 1)
         elif isinstance(look_back, int):
             if look_back < 2:
-                raise ValueError(
-                    "look back value should not be smaller than 2. "
-                    "Current value is ", look_back)
+                invalidInputError(False,
+                                  "look back value should not be smaller than 2. "
+                                  "Current value is ", look_back)
             past_seq_config = look_back
         else:
-            raise ValueError(
-                "look back is {}.\n "
-                "look_back should be either a tuple with 2 int values:"
-                " (min_len, max_len) or a single int".format(look_back))
+            invalidInputError(False,
+                              "look back is {}.\n "
+                              "look_back should be either a tuple with 2 int values:"
+                              " (min_len, max_len) or a single int".format(look_back))
         return past_seq_config
 
 
@@ -264,11 +265,13 @@ class LSTMSeq2SeqRandomRecipe(Recipe):
             teacher_forcing, "teacher_forcing")
 
     def _gen_sample_func(self, ranges, param_name):
+        from bigdl.nano.utils.log4Error import invalidInputError
         if isinstance(ranges, tuple):
-            assert len(ranges) == 2, \
-                f"length of tuple {param_name} should be 2 while get {len(ranges)} instead."
-            assert param_name != "teacher_forcing", \
-                f"type of {param_name} can only be a list while get a tuple"
+            invalidInputError(len(ranges) == 2,
+                              f"length of tuple {param_name} should be"
+                              f" 2 while get {len(ranges)} instead.")
+            invalidInputError(param_name != "teacher_forcing",
+                              f"type of {param_name} can only be a list while get a tuple")
             if param_name in ["lr"]:
                 return hp.loguniform(lower=ranges[0], upper=ranges[1])
             if param_name in ["lstm_hidden_dim",
@@ -278,7 +281,7 @@ class LSTMSeq2SeqRandomRecipe(Recipe):
                 return hp.uniform(lower=ranges[0], upper=ranges[1])
         if isinstance(ranges, list):
             return hp.grid_search(ranges)
-        raise RuntimeError(f"{param_name} should be either a list or a tuple.")
+            invalidInputError(False, f"{param_name} should be either a list or a tuple.")
 
     def search_space(self):
         return {
@@ -624,6 +627,7 @@ class BayesRecipe(Recipe):
         :param epochs: no. of epochs to train in each iteration
         """
         super(self.__class__, self).__init__()
+        from bigdl.nano.utils.log4Error import invalidInputError
         self.num_samples = num_samples
         self.reward_metric = reward_metric
         self.training_iteration = training_iteration
@@ -631,8 +635,8 @@ class BayesRecipe(Recipe):
         if isinstance(look_back, tuple) and len(look_back) == 2 and \
                 isinstance(look_back[0], int) and isinstance(look_back[1], int):
             if look_back[1] < 2:
-                raise ValueError(
-                    "The max look back value should be at least 2")
+                invalidInputError(False,
+                                  "The max look back value should be at least 2")
             if look_back[0] < 2:
                 print("The input min look back value is smaller than 2. "
                       "We sample from range (2, {}) instead.".format(look_back[1]))
@@ -640,15 +644,15 @@ class BayesRecipe(Recipe):
                 {"past_seq_len_float": hp.uniform(look_back[0], look_back[1])}
         elif isinstance(look_back, int):
             if look_back < 2:
-                raise ValueError(
-                    "look back value should not be smaller than 2. "
-                    "Current value is ", look_back)
+                invalidInputError(False,
+                                  "look back value should not be smaller than 2. "
+                                  "Current value is ", look_back)
             self.bayes_past_seq_config = {"past_seq_len": look_back}
         else:
-            raise ValueError(
-                "look back is {}.\n "
-                "look_back should be either a tuple with 2 int values:"
-                " (min_len, max_len) or a single int".format(look_back))
+            invalidInputError(False,
+                              "look back is {}.\n "
+                              "look_back should be either a tuple with 2 int values:"
+                              " (min_len, max_len) or a single int".format(look_back))
 
     def search_space(self):
         total_params = {

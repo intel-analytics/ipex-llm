@@ -14,5 +14,5 @@
 # limitations under the License.
 #
 
-from .raycontext import RayContext
+from .raycontext import OrcaRayContext
 from .ray_on_spark_context import RayOnSparkContext

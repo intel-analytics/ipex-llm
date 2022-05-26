@@ -40,9 +40,9 @@ class TestDeduplicateTimeSeries(ZooTestCase):
         pass
 
     def test_deduplicate_timeseries_dataframe(self):
-        with pytest.raises(AssertionError):
+        with pytest.raises(RuntimeError):
             deduplicate_timeseries_dataframe(self.df, dt_col="z")
-        with pytest.raises(AssertionError):
+        with pytest.raises(RuntimeError):
             deduplicate_timeseries_dataframe(self.df, dt_col="a")
         res_df = deduplicate_timeseries_dataframe(
             self.df, dt_col="datetime")

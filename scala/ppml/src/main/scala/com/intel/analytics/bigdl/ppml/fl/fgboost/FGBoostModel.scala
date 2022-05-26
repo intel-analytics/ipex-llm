@@ -30,6 +30,7 @@ import org.apache.logging.log4j.LogManager
 import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
 import collection.JavaConverters._
+import scala.util.parsing.json.{JSONObject, JSON}
 
 abstract class FGBoostModel(continuous: Boolean,
                             nLabel: Int = 1,
@@ -188,6 +189,7 @@ abstract class FGBoostModel(continuous: Boolean,
       logger.info(s"Round: $i/$totalRound, loss: $curLoss")
       val grads = downloadGrad(i)
       val currTree = RegressionTree(dataSet, indices, grads, i.toString)
+      currTree.init()
       currTree.setLearningRate(learningRate).setMinChildSize(minChildSize)
       val continueBoosting = boostRound(i, currTree)
       if (!continueBoosting) return
@@ -203,6 +205,7 @@ abstract class FGBoostModel(continuous: Boolean,
       for (gID <- 0 until nLabel) {
         if (!labelEarlyStop(gID)) {
           val currTree = RegressionTree(dataSet, indices, nGrads(gID), i.toString)
+          currTree.init()
           currTree.setLearningRate(learningRate).setMinChildSize(minChildSize)
           val continueBoosting = boostRound(i, currTree)
           if (!continueBoosting) labelEarlyStop(gID) = true
@@ -303,4 +306,7 @@ abstract class FGBoostModel(continuous: Boolean,
     }
 
   }
+
 }
+
+

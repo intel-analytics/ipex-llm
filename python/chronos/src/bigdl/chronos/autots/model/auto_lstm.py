@@ -99,7 +99,10 @@ class AutoLSTM(BaseAutomodel):
         elif self.backend.startswith("keras"):
             from bigdl.chronos.model.tf2.VanillaLSTM_keras import model_creator
         else:
-            raise TypeError(f"We only support keras and torch as backend, but got {self.backend}")
+            from bigdl.nano.utils.log4Error import invalidInputError
+            invalidInputError(False,
+                              f"We only support keras and torch as backend,"
+                              f" but got {self.backend}")
         self._model_creator = model_creator
 
         super().__init__()

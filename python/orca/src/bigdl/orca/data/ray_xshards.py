@@ -22,7 +22,7 @@ import random
 from packaging import version
 
 from bigdl.orca.data import XShards
-from bigdl.orca.ray import RayContext
+from bigdl.orca.ray import OrcaRayContext
 
 import logging
 logger = logging.getLogger(__name__)
@@ -177,7 +177,7 @@ class RayXShards(XShards):
 
     def to_spark_xshards(self):
         from bigdl.orca.data import SparkXShards
-        ray_ctx = RayContext.get()
+        ray_ctx = OrcaRayContext.get()
         sc = ray_ctx.sc
         address = ray_ctx.redis_address
         password = ray_ctx.redis_password
@@ -362,7 +362,7 @@ class RayXShards(XShards):
 
     @staticmethod
     def from_partition_refs(ip2part_id, part_id2ref, old_rdd):
-        ray_ctx = RayContext.get()
+        ray_ctx = OrcaRayContext.get()
         uuid_str = str(uuid.uuid4())
         id2store_name = {}
         partition_stores = {}
@@ -388,7 +388,7 @@ class RayXShards(XShards):
 
     @staticmethod
     def _from_spark_xshards_ray_api(spark_xshards):
-        ray_ctx = RayContext.get()
+        ray_ctx = OrcaRayContext.get()
         address = ray_ctx.redis_address
         password = ray_ctx.redis_password
         driver_ip = ray._private.services.get_node_ip_address()

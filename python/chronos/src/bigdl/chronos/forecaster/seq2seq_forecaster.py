@@ -55,10 +55,6 @@ class Seq2SeqForecaster(BasePytorchForecaster):
         """
         Build a Seq2Seq Forecast Model.
 
-        Seq2Seq Forecast may fall into local optima. Please set repo_initialization
-        to False to alleviate the issue. You can also change a random seed to
-        work around.
-
         :param past_seq_len: Specify the history time steps (i.e. lookback).
         :param future_seq_len: Specify the output time steps (i.e. horizon).
         :param input_feature_num: Specify the feature dimension.

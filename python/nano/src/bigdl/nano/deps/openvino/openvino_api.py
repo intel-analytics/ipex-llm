@@ -26,10 +26,10 @@ def PytorchOpenVINOModel(model, input_sample=None):
                          model is a LightningModule with any dataloader attached, defaults to None
     :return: PytorchOpenVINOModel model for OpenVINO inference.
     """
-    from .pytorch.pytorch_openvino_model import PytorchOpenVINOModel
+    from .pytorch.model import PytorchOpenVINOModel
     return PytorchOpenVINOModel(model, input_sample)
 
 
 def load_openvino_model(path):
-    from .pytorch.pytorch_openvino_model import PytorchOpenVINOModel
+    from .pytorch.model import PytorchOpenVINOModel
     return PytorchOpenVINOModel._load(path)

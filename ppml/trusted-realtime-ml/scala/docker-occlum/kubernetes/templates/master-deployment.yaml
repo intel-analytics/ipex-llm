@@ -53,7 +53,7 @@ spec:
           - name: entry
             mountPath: /ppml/trusted-realtime-ml/start-all-but-flink.sh
           - name: aesm-socket
-            mountPath: /var/run/aesmd/aesm.socket
+            mountPath: /var/run/aesmd
           - name: enclave-keys
             mountPath: /occlum/Pal/src/host/Linux-SGX/signer/enclave-key.pem
           - name: redis-secure-keys
@@ -70,7 +70,7 @@ spec:
           path: /var/lib/kubelet/device-plugins
       - name: aesm-socket
         hostPath:
-          path: /var/run/aesmd/aesm.socket
+          path: /var/run/aesmd
       - name: enclave-keys
         hostPath:
           path: {{ .Values.enclaveKeysPath }}

@@ -61,17 +61,17 @@ class TestVanillaLSTM(TestCase):
                   "dropouts": 0.2}
         self.model.fit_eval((self.train_data[0], self.train_data[1]), self.val_data, **config)
 
-        with pytest.raises(ValueError):
+        with pytest.raises(RuntimeError):
             config = {"lstm_units": 0.1,
                       "dropouts": 0.2}
             self.model.fit_eval((self.train_data[0], self.train_data[1]), self.val_data, **config)
 
-        with pytest.raises(ValueError):
+        with pytest.raises(RuntimeError):
             config = {"lstm_units": [128] * 2,
                       "dropouts": [0.2] * 3}
             self.model.fit_eval((self.train_data[0], self.train_data[1]), self.val_data, **config)
 
-        with pytest.raises(ValueError):
+        with pytest.raises(RuntimeError):
             config = {"lstm_units": 128,
                       "dropouts": [0.2] * 2}
             self.model.fit_eval((self.train_data[0], self.train_data[1]), self.val_data, **config)
