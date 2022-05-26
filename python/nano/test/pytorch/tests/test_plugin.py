@@ -76,9 +76,13 @@ class TestPlugin(TestCase):
         trainer_single.tune(model=pl_model, train_dataloaders=self.data_loader, scale_batch_size_kwargs={'max_trials':3})
         trainer_single.fit(pl_model, self.data_loader, self.data_loader)
 
-        trainer_dis.test(pl_model, self.data_loader)
-        trainer_single.test(pl_model, self.data_loader)
+        res1 = trainer_single.test(pl_model, self.data_loader)
+        res2 = trainer_dis.test(pl_model, self.data_loader)
+        
+        acc1 = res1['test/Accuracy_1']
+        acc2 = res2['test/Accuracy_1']
 
+        assert (acc1-acc2)/acc1 < 0.1, "distributed trained model accuracy should be close to non-distributed-trained model"
         return 
 
 if __name__ == '__main__':
