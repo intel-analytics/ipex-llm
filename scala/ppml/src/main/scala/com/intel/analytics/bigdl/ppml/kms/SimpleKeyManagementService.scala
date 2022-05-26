@@ -22,32 +22,20 @@ import scala.collection.mutable.HashMap
 import scala.util.Random
 import com.intel.analytics.bigdl.ppml.utils.KeyReaderWriter
 
-class SimpleKeyManagementService protected(
-      simpleAPPID: String,
-      simpleAPPKEY: String) extends KeyManagementService {
-  val enrollMap = new HashMap[String, String]
+class SimpleKeyManagementService extends KeyManagementService {
   val keyReaderWriter = new KeyReaderWriter
-  setAppIdAndKey(simpleAPPID, simpleAPPKEY)
-
-  Log4Error.invalidInputError(simpleAPPID != "", s"simpleAPPID should not be empty string.")
-  Log4Error.invalidInputError(simpleAPPKEY != "", s"simpleAPPKEY should not be empty string.")
 
   def retrievePrimaryKey(primaryKeySavePath: String): Unit = {
     timing("SimpleKeyManagementService retrievePrimaryKey") {
-      Log4Error.invalidInputError(enrollMap.keySet.contains(_appId) &&
-        enrollMap(_appId) == _appKey, "appid and appkey do not match!")
       Log4Error.invalidInputError(primaryKeySavePath != null && primaryKeySavePath != "",
         "primaryKeySavePath should be specified")
-      val suffix = (1 to 4).map { x => Random.nextInt(10) }.mkString
-      val encryptedPrimaryKey = _appId + suffix
+      val encryptedPrimaryKey = (1 to 16).map { x => Random.nextInt(10) }.mkString
       keyReaderWriter.writeKeyToFile(primaryKeySavePath, encryptedPrimaryKey)
     }
   }
 
   def retrieveDataKey(primaryKeyPath: String, dataKeySavePath: String): Unit = {
     timing("SimpleKeyManagementService retrieveDataKey") {
-      Log4Error.invalidInputError(enrollMap.keySet.contains(_appId) &&
-        enrollMap(_appId) == _appKey, "appid and appkey do not match!")
       Log4Error.invalidInputError(primaryKeyPath != null && primaryKeyPath != "",
         "primaryKeyPath should be specified")
       Log4Error.invalidInputError(dataKeySavePath != null && dataKeySavePath != "",
@@ -55,8 +43,7 @@ class SimpleKeyManagementService protected(
       val primaryKeyPlaintext = keyReaderWriter.readKeyFromFile(primaryKeyPath)
       Log4Error.invalidInputError(primaryKeyPlaintext.substring(0, 12) == _appId,
         "appid and primarykey should be matched!")
-      val randVect = (1 to 16).map { x => Random.nextInt(10) }
-      val dataKeyPlaintext = randVect.mkString
+      val dataKeyPlaintext = (1 to 16).map { x => Random.nextInt(10) }.mkString
       var dataKeyCiphertext = ""
       for(i <- 0 until 16) {
         dataKeyCiphertext += '0' + ((primaryKeyPlaintext(i) - '0') +
@@ -68,8 +55,6 @@ class SimpleKeyManagementService protected(
 
   def retrieveDataKeyPlainText(primaryKeyPath: String, dataKeyPath: String): String = {
     timing("SimpleKeyManagementService retrieveDataKeyPlaintext") {
-      Log4Error.invalidInputError(enrollMap.keySet.contains(_appId) &&
-        enrollMap(_appId) == _appKey, "appid and appkey do not match!")
       Log4Error.invalidInputError(primaryKeyPath != null && primaryKeyPath != "",
         "primaryKeyPath should be specified")
       Log4Error.invalidInputError(dataKeyPath != null && dataKeyPath != "",
@@ -86,23 +71,10 @@ class SimpleKeyManagementService protected(
       dataKeyPlaintext
     }
   }
-
-  private def setAppIdAndKey(appId: String, appKey: String): Unit = {
-    _appId = appId
-    _appKey = appKey
-    enrollMap(_appId) = _appKey
-  }
-
 }
 
 object SimpleKeyManagementService {
-  def apply(): SimpleKeyManagementService = {
-    val appid = (1 to 12).map(x => Random.nextInt(10)).mkString
-    val appkey = (1 to 12).map(x => Random.nextInt(10)).mkString
-    new SimpleKeyManagementService(appid, appkey)
-  }
-
-  def apply(appID: String, appKey: String): SimpleKeyManagementService = {
-    new SimpleKeyManagementService(appID, appKey)
+  def apply(dummyAppid: String = "", dummyAppkey: String = ""): SimpleKeyManagementService = {
+    new SimpleKeyManagementService
   }
 }
