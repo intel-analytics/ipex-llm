@@ -13,17 +13,22 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-from ..core import *
-from packaging import version as v
-from bigdl.nano.utils.log4Error import invalidInputError
+from ..metric import ONNXRuntimeINCMetic
+import torch
 
 
-if v.parse(version) >= v.parse("1.11"):
-    try:
-        import onnxruntime_extensions
-    except ImportError:
-        invalidInputError(
-            False,
-            errMsg="Neural Compressor >=1.11 requires onnxruntime_extensions.",
-            fixMsg="Please run installation:\n\t pip install onnxruntime-extensions"
-        )
+class PytorchONNXRuntimeINCMetic(ONNXRuntimeINCMetic):
+    '''
+    ONNXRuntime will use numpy as data type.
+    ONNXRuntime quantization in torch will use torchmetrics
+    '''
+
+    def stack(self, preds, labels):
+        # calculate accuracy
+        preds, labels = super().stack(preds, labels)
+        preds = torch.from_numpy(preds)
+        labels = torch.from_numpy(labels)
+        return preds, labels
+
+    def to_scalar(self, tensor):
+        return tensor.item()
