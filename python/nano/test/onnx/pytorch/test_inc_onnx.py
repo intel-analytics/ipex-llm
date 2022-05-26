@@ -101,7 +101,6 @@ class TestOnnx(TestCase):
                                       accelerator='onnxruntime',
                                       method='qlinear',
                                       calib_dataloader=train_loader,
-                                      val_dataloader=train_loader,
                                       metric=torchmetrics.F1(10),
                                       accuracy_criterion={'relative': 0.99,
                                                           'higher_is_better': True})
