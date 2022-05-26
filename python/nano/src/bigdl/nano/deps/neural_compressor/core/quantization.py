@@ -74,10 +74,18 @@ class BaseQuantization(Quantization):
         cfg.model.outputs = outputs
         super().__init__(qconf)
 
-    def post_training_quantize(self, model, calib_dataloader=None, metric_kwargs=None):
-        self.sanity_check_before_execution(model, calib_dataloader, metric_kwargs)
-        self.model = common.Model(model)
+    def post_training_quantize(self, model, calib_dataloader=None, metric=None):
+        self.sanity_check_before_execution(model, calib_dataloader, metric)
+        model, calib_dataloader, metric_kwargs = self._pre_execution(model, calib_dataloader,
+                                                                     metric)
+        q_model = self._execution(model, calib_dataloader, metric_kwargs)
+        return self._post_execution(q_model)
 
+    def _pre_execution(model, calib_dataloader, metric):
+        return model, calib_dataloader, metric
+
+    def _execution(self, model, calib_dataloader, metric_kwargs):
+        self.model = common.Model(model)
         if self.cfg.quantization.approach == 'post_training_static_quant':
             self.calib_dataloader = calib_dataloader
         if metric_kwargs:
@@ -90,6 +98,9 @@ class BaseQuantization(Quantization):
         else:
             invalidInputError(False,
                               "Found no quantized model satisfying accuracy criterion.")
+
+    def _post_execution(self, q_model):
+        return q_model
 
     def sanity_check_before_execution(self, model, calib_dataloader, metric):
         """

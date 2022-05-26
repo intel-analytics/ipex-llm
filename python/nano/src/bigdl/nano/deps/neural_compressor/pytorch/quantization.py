@@ -29,7 +29,7 @@ class PytorchQuantization(BaseQuantization):
         kwargs['framework'] = framework
         super().__init__(**kwargs)
 
-    def post_training_quantize(self, model, calib_dataloader=None, metric=None):
+    def _pre_execution(self, model, calib_dataloader=None, metric=None):
         class MyMetric(PytorchINCMetric):
             def __init__(self):
                 """
@@ -42,19 +42,15 @@ class PytorchQuantization(BaseQuantization):
 
         metric_kwargs = None
         if metric:
-            invalidInputError(
-                isinstance(metric, Metric),
-                errMsg="Metric of type {} is invalid".format(type(metric)),
-                fixMsg="Use instance of `torchmetrics.Metric` instead."
-            )
             metric_name = type(metric).__name__
             metric_id = PytorchINCMetric.get_next_metric_id()
             metric_kwargs = {
                 "metric_cls": MyMetric,
                 "name": f"pytorch_{metric_name}_{metric_id}"
             }
-        q_model = super().post_training_quantize(model, calib_dataloader=calib_dataloader,
-                                                 metric_kwargs=metric_kwargs)
+        return model, calib_dataloader, metric_kwargs
+
+    def _post_execution(self, q_model):
         return PytorchQuantizedModel(q_model)
 
     @property
@@ -64,4 +60,10 @@ class PytorchQuantization(BaseQuantization):
     def sanity_check_before_execution(self, model, calib_dataloader, metric):
         if calib_dataloader:
             _check_loader(model=model, loader=calib_dataloader, metric=metric)
+        if metric:
+            invalidInputError(
+                isinstance(metric, Metric),
+                errMsg="Metric of type {} is invalid".format(type(metric)),
+                fixMsg="Use instance of `torchmetrics.Metric` instead."
+            )
         super().sanity_check_before_execution(model, calib_dataloader, metric)
