@@ -78,7 +78,7 @@ def setup_package():
                         "PyTurboJPEG",
                         "opencv-transforms"]
 
-    install_requires = ["intel-openmp", "cloudpickle"]
+    install_requires = ["intel-openmp", "cloudpickle", "protobuf==3.20.1"]
 
     package_data = [
         "libs/libjemalloc.so",
