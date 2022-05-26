@@ -68,12 +68,12 @@ class TestPlugin(TestCase):
             metrics=[torchmetrics.F1(num_classes), torchmetrics.Accuracy(num_classes=10)]
         )
         trainer_dis = Trainer(num_processes=2, distributed_backend="subprocess", max_epochs=4)
-        trainer_dis.turn(model=pl_model, train_dataloaders=self.data_loader, scale_batch_size_kwargs={'max_trials':2})
+        trainer_dis.tune(model=pl_model, train_dataloaders=self.data_loader, scale_batch_size_kwargs={'max_trials':2})
         trainer_dis.fit(pl_model, self.data_loader, self.data_loader)
         
 
         trainer_single = Trainer(num_processes=1, max_epochs=4)
-        trainer_single.turn(model=pl_model, train_dataloaders=self.data_loader, scale_batch_size_kwargs={'max_trials':3})
+        trainer_single.tune(model=pl_model, train_dataloaders=self.data_loader, scale_batch_size_kwargs={'max_trials':3})
         trainer_single.fit(pl_model, self.data_loader, self.data_loader)
 
         trainer_dis.test(pl_model, self.data_loader)
