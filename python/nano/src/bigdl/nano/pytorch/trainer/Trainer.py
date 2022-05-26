@@ -315,12 +315,17 @@ class Trainer(pl.Trainer):
             invalidInputError(type(model).__name__ == 'PytorchOpenVINOModel',
                               "Invalid model to quantize. Please use a nn.Module or a model "
                               "from trainer.trance(accelerator=='openvino')")
-            drop_type = 'relative' if 'relative' in accuracy_criterion else 'absolute'
+            drop_type = None
             higher_is_better = None
             maximal_drop = None
-            if isinstance(accuracy_criterion, dict):
+            if metric:
+                if not isinstance(accuracy_criterion, dict):
+                    accuracy_criterion = {'relative': 0.99, 'higher_is_better': True}
+
+                drop_type = 'relative' if 'relative' in accuracy_criterion else 'absolute'
                 higher_is_better = accuracy_criterion.get('higher_is_better', None)
-                maximal_drop = accuracy_criterion.get(drop_type, None),
+                maximal_drop = accuracy_criterion.get(drop_type, None)
+
             kwargs = {
                 "metric": metric,
                 "higher_better": higher_is_better,
