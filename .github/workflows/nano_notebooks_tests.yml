@@ -48,7 +48,6 @@ jobs:
           pip install pytest nbmake
           python -m pip install torch_ipex==1.9.0 -f https://software.intel.com/ipex-whl-stable
           pip install lightning-bolts
-          pip install protobuf==3.20.1
           bash python/nano/test/run-nano-notebooks-trainer-pytorch-tests.sh
           source $CONDA/bin/deactivate
           $CONDA/bin/conda remove -n notebooks-pytorch --all
@@ -70,7 +69,6 @@ jobs:
           pip install openvino-dev==2022.1.0
           pip uninstall opencv-python
           pip install opencv-contrib-python-headless
-          pip install protobuf==3.20.1
           bash python/nano/test/run-nano-notebooks-inference-pytorch-tests.sh
           source $CONDA/bin/deactivate
           $CONDA/bin/conda remove -n notebooks-infer-pytorch --all
