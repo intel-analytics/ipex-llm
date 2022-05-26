@@ -14,8 +14,7 @@
 # limitations under the License.
 #
 from bigdl.nano.deps.onnxruntime.core.onnxruntime_model import ONNXRuntimeModel
-from bigdl.nano.utils.log4Error import invalidInputError
-from . import BaseQuantization
+from ..core import BaseQuantization
 
 
 class BaseONNXRuntimeQuantization(BaseQuantization):

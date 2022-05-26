@@ -16,7 +16,7 @@
 from pathlib import Path
 import yaml
 from bigdl.nano.utils.inference.pytorch.model import AcceleratedLightningModule
-from . import version as inc_version
+from ..core import version as inc_version
 from neural_compressor.utils.pytorch import load
 from neural_compressor.model.model import PyTorchModel
 

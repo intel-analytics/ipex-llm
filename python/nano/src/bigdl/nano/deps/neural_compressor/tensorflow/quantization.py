@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 from bigdl.nano.utils.log4Error import invalidInputError
-from . import BaseQuantization
+from ..core import BaseQuantization
 from .metric import TensorflowINCMetric
 from tensorflow.keras.metrics import Metric
 from .utils import Dataloader

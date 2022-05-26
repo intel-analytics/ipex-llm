@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-from ..core import *
+from ..core import version
 from packaging import version as v
 from bigdl.nano.utils.log4Error import invalidInputError
 
