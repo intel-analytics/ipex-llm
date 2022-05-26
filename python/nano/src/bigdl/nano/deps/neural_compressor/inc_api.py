@@ -57,7 +57,7 @@ def load_inc_model(path, model, framework):
                           " Please choose from 'pytorch'/'tensorflow'.")
 
 
-def quantize(*args, **kwargs):
+def quantize(model, dataloader=None, metric=None, **kwargs):
     if kwargs['approach'] not in ['static', 'dynamic']:
         invalidInputError(False,
                           "Approach should be 'static' or 'dynamic', "
@@ -72,7 +72,20 @@ def quantize(*args, **kwargs):
         'dynamic': 'post_training_dynamic_quant'
     }
     not_none_kwargs['approach'] = approach_map.get(kwargs['approach'], None)
+    quantizer = None
     if 'pytorch' in not_none_kwargs['framework']:
         from .pytorch.quantization import PytorchQuantization
-        quantier = PytorchQuantization(**not_none_kwargs)
-    return quantier.post_training_quantize(*args)
+        quantizer = PytorchQuantization(**not_none_kwargs)
+    if 'onnx' in not_none_kwargs['framework']:
+        invalidInputError('torch' in str(type(dataloader)),
+                          errMsg="ONNXRuntime quantization only support in Pytorch.")
+        from .onnx.pytorch.quantization import PytorchONNXRuntimeQuantization
+        quantizer = PytorchONNXRuntimeQuantization(**not_none_kwargs)
+    if 'tensorflow' in not_none_kwargs['framework']:
+        from .tensorflow.quantization import TensorflowQuantization
+        quantizer = TensorflowQuantization(**not_none_kwargs)
+    if not quantizer:
+        # default quantization
+        from .core import BaseQuantization
+        quantizer = BaseQuantization(**not_none_kwargs)
+    return quantizer.post_training_quantize(model, dataloader, metric)

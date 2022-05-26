@@ -76,9 +76,9 @@ class BaseQuantization(Quantization):
 
     def post_training_quantize(self, model, calib_dataloader=None, metric=None):
         self.sanity_check_before_execution(model, calib_dataloader, metric)
-        model, calib_dataloader, metric_kwargs = self._pre_execution(model, calib_dataloader,
-                                                                     metric)
-        q_model = self._execution(model, calib_dataloader, metric_kwargs)
+        model, calib_dataloader, metric = self._pre_execution(model, calib_dataloader,
+                                                              metric)
+        q_model = self._execution(model, calib_dataloader, metric)
         return self._post_execution(q_model)
 
     def _pre_execution(self, model, calib_dataloader, metric):
@@ -86,7 +86,7 @@ class BaseQuantization(Quantization):
 
     def _execution(self, model, calib_dataloader, metric):
         self.model = common.Model(model)
-        
+
         class MyMetric(self._inc_metric_cls):
             def __init__(self):
                 """

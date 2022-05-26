@@ -13,17 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-from . import BaseINCMetric
-import tensorflow as tf
+from neural_compressor.experimental import common
 
 
-class TensorflowINCMetric(BaseINCMetric):
-    def stack(self, preds, labels):
-
-        # calculate accuracy
-        preds = tf.stack(preds)
-        labels = tf.stack(labels)
-        return preds, labels
-
-    def to_scalar(self, tensor):
-        return tensor.numpy()
+def Dataloader(tf_dataset, batchsize):
+    return common.DataLoader(tf_dataset, batchsize)

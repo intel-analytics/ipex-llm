@@ -13,17 +13,4 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-from . import BaseINCMetric
-import tensorflow as tf
-
-
-class TensorflowINCMetric(BaseINCMetric):
-    def stack(self, preds, labels):
-
-        # calculate accuracy
-        preds = tf.stack(preds)
-        labels = tf.stack(labels)
-        return preds, labels
-
-    def to_scalar(self, tensor):
-        return tensor.numpy()
+from ..core import *

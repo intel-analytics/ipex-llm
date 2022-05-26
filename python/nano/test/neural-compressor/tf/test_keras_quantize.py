@@ -43,8 +43,6 @@ class TestModelQuantize(TestCase):
 
         # Case 2: Override by arguments
         q_model = model.quantize(calib_dataset=train_dataset,
-                                 val_dataset=train_dataset,
-                                 batch=10,
                                  metric=tf.keras.metrics.CategoricalAccuracy(),
                                  tuning_strategy='basic',
                                  accuracy_criterion={'relative':         0.99,
@@ -57,6 +55,5 @@ class TestModelQuantize(TestCase):
 
         # Case 3: Invalid approach, dynamic or qat is not supported
         invalid_approach = 'dynamic'
-        with pytest.raises(RuntimeError, match="Approach should be 'static', "
-                                               "{} is invalid.".format(invalid_approach)):
+        with pytest.raises(RuntimeError, match="post_training_dynamic_quant is invalid."):
             model.quantize(approach=invalid_approach)
