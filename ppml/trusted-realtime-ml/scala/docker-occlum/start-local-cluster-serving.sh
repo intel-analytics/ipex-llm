@@ -7,7 +7,7 @@ sudo docker run -itd \
     --cpuset-cpus="0-4" \
     --oom-kill-disable \
     --device=/dev/sgx/enclave \
-	  --device=/dev/sgx/provision \
+    --device=/dev/sgx/provision \
     -v /var/run/aesmd:/var/run/aesmd \
     -v $KEYS_PATH:/opt/keys \
     -v $PWD/conf:/opt/conf \
