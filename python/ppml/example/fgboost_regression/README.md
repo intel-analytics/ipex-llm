@@ -44,4 +44,5 @@ result
 ```
 
 ### Model Save and Load
-//TODO
+fgboost_regression.save_model(dest_file_path)
+fgboost_regression.load_model(src_file_path)
