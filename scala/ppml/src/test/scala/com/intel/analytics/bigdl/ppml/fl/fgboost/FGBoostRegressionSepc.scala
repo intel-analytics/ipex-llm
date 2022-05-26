@@ -16,12 +16,69 @@
 
 package com.intel.analytics.bigdl.ppml.fl.fgboost
 
+import com.intel.analytics.bigdl.ppml.fl.{FLContext, FLServer}
+import com.intel.analytics.bigdl.ppml.fl.algorithms.FGBoostRegression
+import com.intel.analytics.bigdl.ppml.fl.data.PreprocessUtil
 import com.intel.analytics.bigdl.ppml.fl.example.DebugLogger
+import com.intel.analytics.bigdl.ppml.fl.fgboost.common.XGBoostFormatValidator
+import org.apache.log4j.LogManager
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
+import java.util.UUID
+import scala.io.Source
+
 class FGBoostRegressionSepc extends FlatSpec with Matchers with BeforeAndAfter with DebugLogger{
+  val logger = LogManager.getLogger(getClass)
+  before {
+    val dataPath = getClass.getClassLoader.getResource("house-prices-train.csv").getPath
+    val testPath = getClass.getClassLoader.getResource("house-prices-test.csv").getPath
+    val sources = Source.fromFile(dataPath, "utf-8").getLines()
+    val testSources = Source.fromFile(testPath, "utf-8").getLines()
+    val rowkeyName = "Id"
+    val labelName = "SalePrice"
+    val (trainFeatures, testFeatures, trainLabels, flattenHeaders) = {
+      PreprocessUtil.preprocessing(sources, testSources, rowkeyName, labelName)
+    }
+
+    XGBoostFormatValidator.setXGBoostHeaders(flattenHeaders)
+    val trainFeatureArray = trainFeatures.map(tensor => tensor.toArray()).flatten
+    val testFeatureArray = testFeatures.map(tensor => tensor.toArray()).flatten
+    val params = Map("eta" -> 0.1, "max_depth" -> 7, "objective" -> "reg:squarederror",
+      "min_child_weight" -> 5)
+  }
   // House pricing dataset compared with xgboost training and prediction result
-  "FGBoost Regression single party" should "work" in {
+  // TODO: use DataFrame API to do the same validation
+  "FGBoostRegression save and load" should "work" in {
+    val flServer = new FLServer()
+    try {
+      val rowkeyName = "Id"
+      val labelName = "SalePrice"
+      val dataPath = getClass.getClassLoader.getResource("house-prices-train.csv").getPath
+      val testPath = getClass.getClassLoader.getResource("house-prices-test.csv").getPath
+      val sources = Source.fromFile(dataPath, "utf-8").getLines()
+      val testSources = Source.fromFile(testPath, "utf-8").getLines()
+      val (trainFeatures, testFeatures, trainLabels, flattenHeaders) =
+        PreprocessUtil.preprocessing(sources, testSources, rowkeyName, labelName)
+      XGBoostFormatValidator.clearHeaders()
+      XGBoostFormatValidator.addHeaders(flattenHeaders)
+      flServer.build()
+      flServer.start()
+      FLContext.initFLContext()
+      val fGBoostRegression = new FGBoostRegression(
+        learningRate = 0.1f, maxDepth = 7, minChildSize = 5)
+      fGBoostRegression.fit(trainFeatures, trainLabels, 1)
+      val tmpFileName = s"/tmp/${UUID.randomUUID().toString}"
+      fGBoostRegression.saveModel(tmpFileName)
+
+      val fGBoostRegressionLoaded = FGBoostRegression.loadModel(tmpFileName)
+
+
+      var cnt = 0
+    } catch {
+      case e: Exception => throw e
+    } finally {
+      flServer.stop()
+    }
 
   }
 }
