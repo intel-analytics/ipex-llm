@@ -30,9 +30,9 @@ def QuantizationINC(framework: str,
                         timeout, max_trials, inputs, outputs)
 
 
-def check_pytorch_dataloaders(model, loaders):
+def check_pytorch_dataloaders(model, loaders, check_output_format=True):
     from .pytorch.dataloader import check_loaders
-    return check_loaders(model, loaders)
+    return check_loaders(model, loaders, check_output_format=check_output_format)
 
 
 def tf_dataset_to_inc_dataloader(tf_dataset, batchsize):

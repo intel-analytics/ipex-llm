@@ -26,7 +26,7 @@ def _check_data_type(data):
                 invalidInputError(False, "expect torch.Tensor here")
 
 
-def _check_loader(model, loader):
+def _check_loader(model, loader, check_output_format=True):
     if loader is None:
         return
     sample = next(iter(loader))
@@ -34,7 +34,8 @@ def _check_loader(model, loader):
         if len(sample) == 2:
             x, y = sample
             _check_data_type(x)
-            _check_data_type(y)
+            if check_output_format:
+                _check_data_type(y)
             if isinstance(x, torch.Tensor):
                 model(x)
             else:
@@ -54,9 +55,9 @@ def _check_loader(model, loader):
                           "Please confirm number of inputs comply with model.forward.")
 
 
-def check_loaders(model, loaders):
+def check_loaders(model, loaders, check_output_format=True):
     if isinstance(loaders, list):
         for loader in loaders:
-            _check_loader(model, loader)
+            _check_loader(model, loader, check_output_format=check_output_format)
     else:
-        _check_loader(model, loaders)
+        _check_loader(model, loaders, check_output_format=check_output_format)
