@@ -14,18 +14,18 @@
 # limitations under the License.
 #
 from typing import Any
-from bigdl.nano.pytorch.lightning import LightningModuleFromTorch
 import inspect
-from torch.utils.data import DataLoader
+
 import torch
-from torch import fx
-import pytorch_lightning as pl
+from torch.utils.data import DataLoader
 from bigdl.nano.utils.log4Error import invalidInputError
+from bigdl.nano.utils.inference.pytorch.model import\
+    NanoPytorchWrapper, FP32InferenceModelWrapped
 
 
 def get_forward_args(model):
     forward_args = inspect.getfullargspec(model.forward).args[1:]
-    if isinstance(model, (LightningModuleFromTorch, FP32InferenceModelWrapped)):
+    if isinstance(model, NanoPytorchWrapper):
         # forward param list for compiled model
         forward_args = get_forward_args(model.model)
     return forward_args
@@ -84,31 +84,6 @@ def export_to_onnx(model, input_sample=None, onnx_path="model.onnx", dynamic_axe
                                 }
     default_onnx_export_args.update(kwargs)
     torch.onnx.export(model, input_sample, onnx_path, **default_onnx_export_args)
-
-
-class FP32InferenceModelWrapped(pl.LightningModule):
-    '''
-    Internal class for input model to quantize/trace.
-    This model currently is internal-only, no instance of this
-    class or any of it's subclass should be returned to users.
-    '''
-    def __init__(self, model, inference_method_name="forward"):
-        super().__init__()
-        self.model = model
-        self.inference_method_name = inference_method_name
-
-    def forward(self, *args):
-        method_to_call = getattr(self.model, self.inference_method_name)
-        args = self.__inspect_methods_args(method_to_call, args)
-        return method_to_call(*args)
-
-    def __inspect_methods_args(self, method_to_call, args):
-        nargs = len(inspect.getfullargspec(method_to_call).args[1:])
-        if isinstance(args, fx.Proxy):
-            args = [args[i] for i in range(nargs)]
-        else:
-            args = args[:nargs]
-        return args
 
 
 def fp32_inference_model_wrapper(model, inference_method_name="forward"):
