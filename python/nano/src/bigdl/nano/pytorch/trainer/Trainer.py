@@ -128,7 +128,7 @@ class Trainer(pl.Trainer):
                     accelerator = create_IPEXAccelerator(training_type_plugin=plugin,
                                                          enable_bf16=enable_bf16)
                 else:
-                    invalidInputError("We currently do not support ipex above 1.9.0")
+                    accelerator = None
             super().__init__(accelerator=accelerator,
                              plugins=[plugin], *args, **kwargs)
 
