@@ -184,6 +184,7 @@ class Trainer(pl.Trainer):
                model,
                resume: bool = False,
                target_metric=None,
+               n_parallels=1,
                **kwargs):
         """
         Run HPO search. It will be called in Trainer.search().
@@ -193,6 +194,7 @@ class Trainer(pl.Trainer):
             defaults to False.
         :param target_metric: the object metric to optimize,
             defaults to None.
+        :param n_parallels: the number of parallel processes for running trials.
         :param return: the model with study meta info attached.
         """
         if not check_hpo_status(self.hposearcher):
@@ -202,6 +204,7 @@ class Trainer(pl.Trainer):
         return self.hposearcher.search(model,
                                        resume=resume,
                                        target_metric=target_metric,
+                                       n_parallels=n_parallels,
                                        **kwargs)
 
     def search_summary(self):

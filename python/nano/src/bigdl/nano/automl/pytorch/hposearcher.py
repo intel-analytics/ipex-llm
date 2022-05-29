@@ -174,7 +174,7 @@ class HPOSearcher:
         if self.objective is None:
             self._create_objective(model, target_metric, self.create_kwargs, self.fit_kwargs)
 
-        if n_parallels:
+        if n_parallels and n_parallels > 1:
             self._run_search_n_procs(n_parallels)
         else:
             self._run_search()
