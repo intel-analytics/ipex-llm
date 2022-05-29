@@ -16,36 +16,20 @@
 
 from typing import Any, Dict, Optional, Union
 import pytorch_lightning as pl
-
+import copy
+import math
 from pytorch_lightning.trainer.states import TrainerFn, TrainerStatus
 from bigdl.nano.utils.log4Error import invalidInputError
 from bigdl.nano.automl.hpo.backend import create_hpo_backend
 from .objective import Objective
-from ..hpo.search import (
+from .parallel import run_parallel
+from bigdl.nano.automl.hpo.search import (
     _search_summary,
     _end_search,
     _check_optimize_direction,
     _filter_tuner_args,
     _check_search_args,
 )
-
-
-def _validate_args(target_metric, **search_kwargs):
-    _check_search_args(
-        search_args=search_kwargs,
-        legal_keys=[
-            HPOSearcher.FIT_KEYS,
-            HPOSearcher.EXTRA_FIT_KEYS,
-            HPOSearcher.TUNE_CREATE_KEYS,
-            HPOSearcher.TUNE_RUN_KEYS
-        ])
-
-    direction = search_kwargs.get('direction', None),
-    directions = search_kwargs.get('directions', None),
-    _check_optimize_direction(
-        direction=direction,
-        directions=directions,
-        metric=target_metric)
 
 
 class HPOSearcher:
@@ -132,14 +116,14 @@ class HPOSearcher:
             **fit_kwargs,
         )
 
-    def _run_search(self, run_kwargs):
+    def _run_search(self):
         # TODO do we need to set these trainer states?
         self.trainer.state.fn = TrainerFn.TUNING
         self.trainer.state.status = TrainerStatus.RUNNING
         self.trainer.tuning = True
 
         # run optimize
-        self.study.optimize(self.objective, **run_kwargs)
+        self.study.optimize(self.objective, **self.run_kwargs)
 
         self.tune_end = False
         self.trainer.tuning = False
@@ -150,10 +134,19 @@ class HPOSearcher:
         invalidInputError(self.trainer.state.stopped,
                           "trainer state should be stopped")
 
+    def _run_search_n_procs(self, n_procs=4):
+        new_searcher = copy.deepcopy(self)
+        n_trials = new_searcher.run_kwargs.get('n_trials', None)
+        if n_trials:
+            subp_n_trials = math.ceil(n_trials / n_procs)
+            new_searcher.run_kwargs['n_trials'] = subp_n_trials
+        run_parallel(args=new_searcher, n_procs=n_procs)
+
     def search(self,
                model,
                resume=False,
                target_metric=None,
+               n_parallels=None,
                **kwargs):
         """
         Run HPO Searcher. It will be called in Trainer.search().
@@ -181,7 +174,10 @@ class HPOSearcher:
         if self.objective is None:
             self._create_objective(model, target_metric, self.create_kwargs, self.fit_kwargs)
 
-        self._run_search(self.run_kwargs)
+        if n_parallels:
+            self._run_search_n_procs(n_parallels)
+        else:
+            self._run_search()
 
         # it is not possible to know the best trial before runing search,
         # so just apply the best trial at end of each search
@@ -224,3 +220,21 @@ class HPOSearcher:
         self.trainer.training = True
         self.trainer._run(*args, **kwargs)
         self.trainer.tuning = True
+
+
+def _validate_args(target_metric, **search_kwargs):
+    _check_search_args(
+        search_args=search_kwargs,
+        legal_keys=[
+            HPOSearcher.FIT_KEYS,
+            HPOSearcher.EXTRA_FIT_KEYS,
+            HPOSearcher.TUNE_CREATE_KEYS,
+            HPOSearcher.TUNE_RUN_KEYS
+        ])
+
+    direction = search_kwargs.get('direction', None),
+    directions = search_kwargs.get('directions', None),
+    _check_optimize_direction(
+        direction=direction,
+        directions=directions,
+        metric=target_metric)
