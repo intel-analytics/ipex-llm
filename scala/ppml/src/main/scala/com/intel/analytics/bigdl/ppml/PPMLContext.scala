@@ -18,8 +18,7 @@ package com.intel.analytics.bigdl.ppml
 
 import com.intel.analytics.bigdl.dllib.NNContext.{checkScalaVersion, checkSparkVersion, createSparkConf, initConf, initNNContext}
 import com.intel.analytics.bigdl.dllib.utils.Log4Error
-import com.intel.analytics.bigdl.ppml.crypto.CryptoMode.CryptoMode
-import com.intel.analytics.bigdl.ppml.crypto.{CryptoMode, EncryptRuntimeException, FernetEncrypt}
+import com.intel.analytics.bigdl.ppml.crypto.{AES_CBC_PKCS5PADDING, Crypto, CryptoMode, EncryptRuntimeException, FernetEncrypt, PLAIN_TEXT}
 import com.intel.analytics.bigdl.ppml.utils.Supportive
 import org.apache.spark.{SparkConf, SparkContext}
 import org.apache.spark.input.PortableDataStream
@@ -62,14 +61,13 @@ class PPMLContext protected(kms: KeyManagementService, sparkSession: SparkSessio
    */
   def textFile(path: String,
                minPartitions: Int = sparkSession.sparkContext.defaultMinPartitions,
-               cryptoMode: CryptoMode = CryptoMode.PLAIN_TEXT): RDD[String] = {
+               cryptoMode: CryptoMode = PLAIN_TEXT): RDD[String] = {
     cryptoMode match {
-      case CryptoMode.PLAIN_TEXT =>
+      case PLAIN_TEXT =>
         sparkSession.sparkContext.textFile(path, minPartitions)
-      case CryptoMode.AES_CBC_PKCS5PADDING =>
-        PPMLContext.textFile(sparkSession.sparkContext, path, dataKeyPlainText, minPartitions)
       case _ =>
-        throw new IllegalArgumentException("unknown EncryptMode " + cryptoMode.toString)
+        PPMLContext.textFile(sparkSession.sparkContext, path, dataKeyPlainText,
+          cryptoMode, minPartitions)
     }
   }
 
@@ -90,9 +88,9 @@ class PPMLContext protected(kms: KeyManagementService, sparkSession: SparkSessio
    */
   def write(dataFrame: DataFrame, cryptoMode: CryptoMode): DataFrameWriter[Row] = {
     cryptoMode match {
-      case CryptoMode.PLAIN_TEXT =>
+      case PLAIN_TEXT =>
         dataFrame.write
-      case CryptoMode.AES_CBC_PKCS5PADDING =>
+      case AES_CBC_PKCS5PADDING =>
         PPMLContext.write(sparkSession, dataKeyPlainText, dataFrame)
       case _ =>
         throw new IllegalArgumentException("unknown EncryptMode " + cryptoMode.toString)
@@ -114,6 +112,7 @@ object PPMLContext{
   private[bigdl] def textFile(sc: SparkContext,
                path: String,
                dataKeyPlaintext: String,
+               cryptoMode: CryptoMode,
                minPartitions: Int = -1): RDD[String] = {
     Log4Error.invalidInputError(dataKeyPlaintext != "",
       "dataKeyPlainText should not be empty, please loadKeys first.")
@@ -122,10 +121,10 @@ object PPMLContext{
     } else {
       sc.binaryFiles(path)
     }
-    val fernetCryptos = new FernetEncrypt
+    val crypto = Crypto(cryptoMode)
     data.mapPartitions { iterator => {
       Supportive.logger.info("Decrypting bytes with JavaAESCBC...")
-      fernetCryptos.decryptBigContent(iterator, dataKeyPlaintext)
+      crypto.decryptBigContent(iterator, dataKeyPlaintext)
     }}.flatMap(_.split("\n"))
   }
 

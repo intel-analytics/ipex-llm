@@ -18,7 +18,7 @@ package com.intel.analytics.bigdl.ppml.crypto.dataframe
 
 import com.intel.analytics.bigdl.dllib.common.zooUtils
 import com.intel.analytics.bigdl.ppml.PPMLContext
-import com.intel.analytics.bigdl.ppml.crypto.{CryptoMode, FernetEncrypt}
+import com.intel.analytics.bigdl.ppml.crypto.{AES_CBC_PKCS5PADDING, CryptoMode, FernetEncrypt, PLAIN_TEXT}
 import com.intel.analytics.bigdl.ppml.kms.SimpleKeyManagementService
 import org.apache.spark.SparkConf
 import org.apache.spark.sql.SparkSession
@@ -73,7 +73,7 @@ class EncryptDataFrameSpec extends FlatSpec with Matchers with BeforeAndAfter{
   "textfile read from plaint text file" should "work" in {
     val file = sc.textFile(plainFileName).collect()
     file.mkString("\n") should be (data)
-    val file2 = sc.textFile(encryptFileName, cryptoMode = CryptoMode.AES_CBC_PKCS5PADDING).collect()
+    val file2 = sc.textFile(encryptFileName, cryptoMode = AES_CBC_PKCS5PADDING).collect()
     file2.mkString("\n") should be (data)
   }
 
@@ -89,7 +89,7 @@ class EncryptDataFrameSpec extends FlatSpec with Matchers with BeforeAndAfter{
   }
 
   "read from plain csv with header" should "work" in {
-    val df = sc.read(cryptoMode = CryptoMode.PLAIN_TEXT)
+    val df = sc.read(cryptoMode = PLAIN_TEXT)
       .option("header", "true").csv(plainFileName)
     val d = df.schema.map(_.name).mkString(",") + "\n" +
       df.collect().map(v => s"${v.get(0)},${v.get(1)},${v.get(2)}").mkString("\n")
@@ -97,7 +97,7 @@ class EncryptDataFrameSpec extends FlatSpec with Matchers with BeforeAndAfter{
   }
 
   "read from encrypted csv with header" should "work" in {
-    val df = sc.read(cryptoMode = CryptoMode.AES_CBC_PKCS5PADDING)
+    val df = sc.read(cryptoMode = AES_CBC_PKCS5PADDING)
       .option("header", "true").csv(encryptFileName)
     val d = df.schema.map(_.name).mkString(",") + "\n" +
       df.collect().map(v => s"${v.get(0)},${v.get(1)},${v.get(2)}").mkString("\n")
@@ -105,13 +105,13 @@ class EncryptDataFrameSpec extends FlatSpec with Matchers with BeforeAndAfter{
   }
 
   "read from plain csv without header" should "work" in {
-    val df = sc.read(cryptoMode = CryptoMode.PLAIN_TEXT).csv(plainFileName)
+    val df = sc.read(cryptoMode = PLAIN_TEXT).csv(plainFileName)
     val d = df.collect().map(v => s"${v.get(0)},${v.get(1)},${v.get(2)}").mkString("\n")
     d should be (data)
   }
 
   "read from encrypted csv without header" should "work" in {
-    val df = sc.read(cryptoMode = CryptoMode.AES_CBC_PKCS5PADDING).csv(encryptFileName)
+    val df = sc.read(cryptoMode = AES_CBC_PKCS5PADDING).csv(encryptFileName)
     val d = df.collect().map(v => s"${v.get(0)},${v.get(1)},${v.get(2)}").mkString("\n")
     d should be (data)
   }
