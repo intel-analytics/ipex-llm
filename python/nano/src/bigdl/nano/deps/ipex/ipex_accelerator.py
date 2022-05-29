@@ -24,12 +24,13 @@ from pytorch_lightning.plugins import SingleDevicePlugin
 from pytorch_lightning.accelerators.accelerator import Accelerator
 from pytorch_lightning.plugins.training_type import TrainingTypePlugin
 from pytorch_lightning.plugins.precision import PrecisionPlugin
+from bigdl.nano.utils.log4Error import invalidInputError
+
 
 _STEP_OUTPUT_TYPE = Union[torch.Tensor, Dict[str, Any]]
 
 
 class IPEXAccelerator(Accelerator):
-    """ Accelerator for XPU devices. """
 
     def __init__(
         self,
@@ -61,7 +62,7 @@ class IPEXAccelerator(Accelerator):
         self.setup_precision_plugin()
 
         if len(self.optimizers) > 1:
-            raise RuntimeError("Ipex does not support more than one optimizers.")
+            raise invalidInputError("IPEX does not support more than one optimizers.")
         dtype = torch.bfloat16 if self.enable_bf16 else None
         model, optimizer = ipex.optimize(model, optimizer=self.optimizers[0],
                                          inplace=True, dtype=dtype)

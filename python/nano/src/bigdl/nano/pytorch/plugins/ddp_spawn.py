@@ -181,7 +181,7 @@ class DDPSpawnPlugin(pl.plugins.DDPSpawnPlugin):
         self.dist.rank = self.global_rank
         self.dist.device = self.root_device
 
-        if self.use_ipex:
+        if self.use_ipex and not TORCH_VERSION_LESS_1_10:
             dtype = torch.bfloat16 if self.enable_bf16 else None
             num_optimizers = len(self.lightning_module.trainer.accelerator.optimizers)
             if num_optimizers == 1:
