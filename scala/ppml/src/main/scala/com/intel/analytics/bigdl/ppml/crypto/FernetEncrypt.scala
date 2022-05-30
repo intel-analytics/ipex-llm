@@ -16,11 +16,11 @@
 
 package com.intel.analytics.bigdl.ppml.crypto
 
-import com.intel.analytics.bigdl.dllib.utils.Log4Error
+import com.intel.analytics.bigdl.dllib.utils.{File, Log4Error}
 import com.intel.analytics.bigdl.ppml.crypto.CryptoMode
+import org.apache.hadoop.fs.Path
 
 import java.io._
-import java.nio.file.{Files, Path, Paths}
 import java.security.SecureRandom
 import java.time.Instant
 import java.util.Arrays
@@ -29,6 +29,7 @@ import javax.crypto.{Cipher, Mac}
 import org.apache.spark.input.PortableDataStream
 
 import java.nio.ByteBuffer
+import scala.util.Random
 
 class FernetEncrypt extends Crypto {
   protected var cipher: Cipher = null
@@ -42,7 +43,9 @@ class FernetEncrypt extends Crypto {
     // key encrypt
     val signingKey = Arrays.copyOfRange(secret, 0, 16)
     val encryptKey = Arrays.copyOfRange(secret, 16, 32)
-    initializationVector = Arrays.copyOfRange(secret, 0, 16)
+//    initializationVector = Arrays.copyOfRange(secret, 0, 16)
+    val r = new Random(signingKey.sum)
+    initializationVector = Array.tabulate(16)(_ => (r.nextInt(256) - 128).toByte)
     ivParameterSpec = new IvParameterSpec(initializationVector)
     val encryptionKeySpec = new SecretKeySpec(encryptKey, cryptoMode.secretKeyAlgorithm)
     cipher = Cipher.getInstance(cryptoMode.encryptionAlgorithm)
@@ -67,16 +70,17 @@ class FernetEncrypt extends Crypto {
   }
 
   def verifyFileHeader(header: Array[Byte]): Unit = {
-    val inputStream: ByteArrayInputStream = new ByteArrayInputStream(header)
-    val dataStream: DataInputStream = new DataInputStream(inputStream)
-    val version: Byte = dataStream.readByte()
+    val headerBuffer = ByteBuffer.wrap(header)
+    val version: Byte = headerBuffer.get()
     if (version.compare((0x80).toByte) != 0) {
       throw new EncryptRuntimeException("File header version error!")
     }
-    val timestampSeconds: Long = dataStream.readLong()
-    val initializationVector: Array[Byte] = read(dataStream, 16)
+    val timestampSeconds: Long = headerBuffer.getLong
+    val initializationVector: Array[Byte] = header.slice(1 + 8, header.length)
     if (!initializationVector.sameElements(this.initializationVector)) {
-      throw new EncryptRuntimeException("File header not match!")
+      throw new EncryptRuntimeException("File header not match!" +
+        "expected: " + this.initializationVector.mkString(",") +
+        ", but got: " + initializationVector.mkString(", "))
     }
   }
 
@@ -117,6 +121,7 @@ class FernetEncrypt extends Crypto {
     val (lastSlice, hmac) = doFinal(byteBuffer, 0, last)
     outputStream.write(lastSlice)
     outputStream.write(hmac)
+    outputStream.flush()
   }
 
   val hmacSize = 32
@@ -134,18 +139,29 @@ class FernetEncrypt extends Crypto {
       throw new EncryptRuntimeException("hmac not match")
     }
     outputStream.write(lastSlice)
+    outputStream.flush()
   }
 
-  def decryptFile(binaryFilePath: String, savePath: String, dataKeyPlaintext: String): Unit = {
+  def decryptFile(binaryFilePath: String, savePath: String): Unit = {
     Log4Error.invalidInputError(savePath != null && savePath != "",
       "decrypted file save path should be specified")
-    val content: Array[Byte] = readBinaryFile(binaryFilePath) // Ciphertext file is read into Bytes
-    val decryptedBytes = timing("FernetCryptos decrypt a single file...") {
-      decryptContent(content, dataKeyPlaintext)
-    }
-    timing("FernetCryptos save a decrypted file") {
-      writeBinaryFile(savePath, decryptedBytes)
-    }
+    val fs = File.getFileSystem(binaryFilePath)
+    val bis = fs.open(new Path(binaryFilePath))
+    val outs = fs.create(new Path(savePath))
+    encryptStream(bis, outs)
+    bis.close()
+    outs.close()
+  }
+
+  def encryptFile(binaryFilePath: String, savePath: String): Unit = {
+    Log4Error.invalidInputError(savePath != null && savePath != "",
+      "decrypted file save path should be specified")
+    val fs = File.getFileSystem(binaryFilePath)
+    val bis = fs.open(new Path(binaryFilePath))
+    val outs = fs.create(new Path(savePath))
+    decryptStream(bis, outs)
+    bis.close()
+    outs.close()
   }
 
   def encryptBytes(sourceBytes: Array[Byte], dataKeyPlaintext: String): Array[Byte] = {
@@ -156,19 +172,6 @@ class FernetEncrypt extends Crypto {
     timing("FernetCryptos decrypting bytes") {
       decryptContent(sourceBytes, dataKeyPlaintext)
     }
-  }
-
-  private def readBinaryFile(binaryFilePath: String): Array[Byte] = {
-    Files.readAllBytes(Paths.get(binaryFilePath))
-  }
-
-  private def writeBinaryFile(savePath: String, content: Array[Byte]): Path = {
-    Files.write(Paths.get(savePath), content)
-  }
-
-  private def writeStringToFile(savePath: String, content: String): Unit = {
-    val bw = new BufferedWriter(new FileWriter(new File(savePath)))
-    bw.write(content)
   }
 
   private def read(stream: DataInputStream, numBytes: Int): Array[Byte] = {

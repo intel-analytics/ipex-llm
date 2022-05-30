@@ -66,23 +66,26 @@ class EncryptSpec extends FlatSpec with Matchers with BeforeAndAfter {
   }
 
   "encrypt stream" should "work" in {
-    {
-      val fernetCryptos = new FernetEncrypt()
-      fernetCryptos.init(AES_CBC_PKCS5PADDING, ENCRYPT, dataKeyPlaintext)
-      val bis = fs.open(new Path(plainFileName))
-      val outs = fs.create(new Path(dir + "/en_o.csv"))
-      fernetCryptos.encryptStream(bis, outs)
-      bis.close()
-      outs.close()
-    }
-    {
-      val fernetCryptos = new FernetEncrypt()
-      fernetCryptos.init(AES_CBC_PKCS5PADDING, DECRYPT, dataKeyPlaintext)
-      val bis = fs.open(new Path(dir + "/en_o.csv"))
-      val outs = fs.create(new Path(dir + "/de_o.csv"))
-      fernetCryptos.decryptStream(bis, outs)
-      outs.close()
-      bis.close()
-    }
+    val encrypt = new FernetEncrypt()
+    encrypt.init(AES_CBC_PKCS5PADDING, ENCRYPT, dataKeyPlaintext)
+    val bis = fs.open(new Path(plainFileName))
+    val outs = fs.create(new Path(dir + "/en_o.csv"))
+    encrypt.encryptStream(bis, outs)
+    bis.close()
+    outs.flush()
+    outs.close()
+    Thread.sleep(1000)
+
+    val decrypt = new FernetEncrypt()
+    decrypt.init(AES_CBC_PKCS5PADDING, DECRYPT, dataKeyPlaintext)
+    val bis2 = fs.open(new Path(dir + "/en_o.csv"))
+    val outs2 = fs.create(new Path(dir + "/de_o.csv"))
+    decrypt.decryptStream(bis2, outs2)
+    outs2.close()
+    outs2.flush()
+    bis2.close()
+    val originFile = Files.readAllBytes(Paths.get(plainFileName))
+    val deFile = Files.readAllBytes(Paths.get(dir.toString, "/de_o.csv"))
+    originFile.sameElements(deFile) should be (true)
   }
 }
