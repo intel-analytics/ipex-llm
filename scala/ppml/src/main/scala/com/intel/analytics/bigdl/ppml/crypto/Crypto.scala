@@ -120,4 +120,4 @@ case object PLAIN_TEXT extends CryptoMode {
 //  def parse(s: String): Value = {
 //    values.find(_.toString.toLowerCase() == s.toLowerCase).getOrElse(CryptoMode.UNKNOWN)
 //  }
-//}
+// }
