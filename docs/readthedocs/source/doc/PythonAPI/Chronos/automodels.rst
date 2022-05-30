@@ -59,6 +59,6 @@ BasePytorchAutomodel
 ------------------------------------------------------------
 AutoLSTM, AutoSeq2Seq and AutoTCN all follow the same API as stated below.
 
-.. autoclass:: bigdl.chronos.autots.model.base_automodel.BasePytorchAutomodel
+.. autoclass:: bigdl.chronos.autots.model.base_automodel.BaseAutomodel
     :members:
     :show-inheritance:
