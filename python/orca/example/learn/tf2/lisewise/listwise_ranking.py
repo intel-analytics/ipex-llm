@@ -86,7 +86,8 @@ class RankingModel(tfrs.Model):
 
 
 if __name__ == "__main__":
-    data_dir = "/home/yina/Documents/data/movielen/ml-1m"
+    # data_dir = "/home/yina/Documents/data/movielen/ml-1m"
+    data_dir = "/Users/yita/Documents/intel/data"
     init_orca_context(memory="20g", cores=18, init_ray_on_spark=False)
     dataset = {
         "ratings": ['userid', 'movieid', 'rating', 'timestamp'],
@@ -125,50 +126,37 @@ if __name__ == "__main__":
     #         sample_lists.append([sampled_movies, sampled_ratings])
     #     return sample_lists
 
-    def sample_idx(length):
-        random_state = np.random.RandomState(42)
-        # return [[length]]
-        sampled_indices_list = []
-        for _ in range(num_list_per_user):
-            sampled_indices = random_state.choice(range(length), size=num_example_per_list,
-                                                  replace=False)
-            sampled_indices_list.append(sampled_indices.tolist())
-        return sampled_indices_list
 
-    def sample(num_ex)
+    def sample(num_list_per_user, num_example_per_list):
+        def sample_idx(length):
+            random_state = np.random.RandomState(42)
+            sampled_indices_list = []
+            for _ in range(num_list_per_user):
+                sampled_indices = random_state.choice(range(length), size=num_example_per_list,
+                                                      replace=False)
+                sampled_indices_list.append(sampled_indices.tolist())
+            return sampled_indices_list
+        return sample_idx
 
     def sample_feature(feature_idx_list):
         feature_list, indices = feature_idx_list
         return [feature_list[int(idx)] for idx in indices]
 
-    from pyspark.sql.types import ArrayType, IntegerType, StringType
-    import pyspark.sql.functions as F
 
-    def preprocess(tbl, feature_cols):
+    def preprocess(tbl, feature_cols, num_list_per_user, num_examples_per_list):
         col_dict = {"collect_list(" + c + ")": c + "s" for c in feature_cols}
         tbl = tbl.group_by("userid", agg="collect_list")
         tbl = tbl.rename(col_dict)
 
         # TODO: Drop the user if they don't have enough ratings
-
-        arr_len = lambda x: len(x)
-        tbl = tbl.apply("ratings", "len", arr_len, dtype="int")
-        tbl = tbl.filter("len >= " + str(num_example_per_list))
-        tbl = tbl.apply("len", "sample_list", sample_idx,
-                        dtype=ArrayType(ArrayType(IntegerType())))
-        tbl.show(2, False)
-        tbl = FeatureTable(tbl.df.withColumn("idx", F.explode("sample_list")))
-        tbl = tbl.apply(["ratings", "idx"], "ratings", sample_feature,
-                        dtype=ArrayType(IntegerType()))
-        a = StringType()
-        tbl = tbl.apply(["titles", "idx"], "titles", sample_feature, dtype=ArrayType(a))\
-            .select("userid", "titles", "ratings")
+        tbl = tbl.sample_listwise(["ratings", "titles"], num_list_per_user,
+                                  num_examples_per_list, 42)
         return tbl
 
     import math
 
-    train_tbl = preprocess(train_tbl, ["title", "rating"])
-    test_tbl = preprocess(test_tbl, ["title", "rating"])
+    train_tbl = preprocess(train_tbl, ["title", "rating"], 50, 5)
+    test_tbl = preprocess(test_tbl, ["title", "rating"], 1, 5)
     train_tbl.show(truncate=False)
     print(train_tbl.schema)
 

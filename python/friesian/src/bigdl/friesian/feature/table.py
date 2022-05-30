@@ -2095,6 +2095,60 @@ class FeatureTable(Table):
                 .distinct().rdd.map(lambda row: row[col]).collect()
         return vocabularies
 
+    def sample_listwise(self, cols, num_list_per_key, num_example_per_list, random_seed=None,
+                        replace=True):
+        schema = self.schema
+        cols = str_to_list(cols, "cols")
+        for c in cols:
+            invalidInputError(c in self.df.columns, "Column '" + c +
+                              "' does not exist in this FeatureTable.")
+            c_type = schema[c].dataType
+            invalidInputError(isinstance(c_type, ArrayType),
+                              "Each column should be of list type, but the type of column '" + c +
+                              "' is " + c_type.simpleString())
+            if not replace:
+                c_schema = StructField("sampled_" + c, c_type, True)
+                schema.add(c_schema)
+
+        def sample_feature(row):
+            indices = row["sample_idx"]
+            sampled_feature = row.asDict()
+            for c in cols:
+                sampled_list = [sampled_feature[c][idx] for idx in indices]
+                if replace:
+                    sampled_feature[c] = sampled_list
+                else:
+                    sampled_feature["sampled_" + c] = sampled_list
+            return sampled_feature
+
+        def sample_indices(row, random_state):
+            row = row.asDict()
+            len_set = set([len(row[c]) for c in cols])
+            invalidInputError(len(len_set) == 1,
+                              "Each row of the FeatureTable should "
+                              "have the same array length in the specified cols.")
+            length = len_set.pop()
+            if length < num_example_per_list:
+                row["sample_list"] = None
+            else:
+                sampled_indices_list = []
+                for _ in range(num_list_per_key):
+                    sampled_indices = random_state.choice(range(length), size=num_example_per_list,
+                                                          replace=False)
+                    sampled_indices_list.append(sampled_indices.tolist())
+                row["sample_list"] = sampled_indices_list
+            return row
+
+        random_state = np.random.RandomState(seed=random_seed)
+        df = self.df.rdd.map(lambda x: sample_indices(x, random_state)).toDF()
+        df = df.dropna('any', None, subset="sample_list")
+        df = df.withColumn("sample_idx", F.explode("sample_list"))
+        spark = OrcaContext.get_spark_session()
+        df = spark.createDataFrame(df.rdd.map(lambda x: sample_feature(x)), schema)
+        df = df.drop("sample_idx", "sample_list")
+
+        return FeatureTable(df)
+
 
 class StringIndex(Table):
     def __init__(self, df, col_name):
