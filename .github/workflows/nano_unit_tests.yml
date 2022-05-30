@@ -48,7 +48,9 @@ jobs:
           source $CONDA/bin/activate bigdl-init
           $CONDA/bin/conda info
           bash python/nano/dev/build_and_install.sh linux default false pytorch
-          pip install ${{matrix.pytorch-version}} -f https://download.pytorch.org/whl/torch_stable.html
+          if [ ! -z ${{matrix.pytorch-version}} ]; then
+            pip install ${{matrix.pytorch-version}} -f https://download.pytorch.org/whl/torch_stable.html
+          fi
           source bigdl-nano-init
           if [ 0"$LD_PRELOAD" = "0" ]; then
             exit 1
