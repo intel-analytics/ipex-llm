@@ -144,9 +144,14 @@ class BasePytorchForecaster(Forecaster):
 
             # data transformation
             if isinstance(data, tuple):
+                if batch_size % self.num_processes != 0:
+                    warnings.warn("'batch_size' cannot be divided with no remainder by "
+                                  "'self.num_processes'. We got 'batch_size' = {} and "
+                                  "'self.num_processes' = {}".
+                                  format(batch_size, self.num_processes))
                 data = DataLoader(TensorDataset(torch.from_numpy(data[0]),
                                                 torch.from_numpy(data[1])),
-                                  batch_size=batch_size,
+                                  batch_size=max(1, batch_size//self.num_processes),
                                   shuffle=True)
 
             # Trainer init and fitting
