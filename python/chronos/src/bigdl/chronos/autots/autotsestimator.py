@@ -125,6 +125,8 @@ class AutoTSEstimator:
                defaults to None and doesn't take effects while running in local. While running in
                cluster, it defaults to "hdfs:///tmp/{name}".
         """
+        from bigdl.nano.utils.log4Error import invalidInputError
+
         # check backend and set default loss MSE
         if backend == "torch":
             import torch
@@ -308,6 +310,7 @@ class AutoTSEstimator:
         :return: data creators from train and validation data
         """
         import ray
+        from bigdl.nano.utils.log4Error import invalidInputError
 
         # automatically inference output_feature_num
         # input_feature_num will be set by base pytorch model according to selected features.
