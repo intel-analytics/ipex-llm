@@ -31,7 +31,7 @@ import org.apache.spark.input.PortableDataStream
 import java.nio.ByteBuffer
 import scala.util.Random
 
-class FernetEncrypt extends Crypto {
+class BigDLEncrypt extends Crypto {
   protected var cipher: Cipher = null
   protected var mac: Mac = null
   protected var ivParameterSpec: IvParameterSpec = null
@@ -59,7 +59,7 @@ class FernetEncrypt extends Crypto {
 
   override def genFileHeader(): Array[Byte] = {
     Log4Error.invalidOperationError(cipher != null,
-      s"you should init FernetEncrypt first.")
+      s"you should init BigDLEncrypt first.")
     val timestamp: Instant = Instant.now()
     val signingByteBuffer = ByteBuffer.allocate(1 + 8 + ivParameterSpec.getIV.length)
     val version: Byte = (0x80).toByte

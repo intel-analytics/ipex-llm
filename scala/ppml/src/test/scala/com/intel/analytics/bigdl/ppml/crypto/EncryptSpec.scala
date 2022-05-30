@@ -57,18 +57,18 @@ class EncryptSpec extends FlatSpec with Matchers with BeforeAndAfter {
     fw.append(data)
     fw.close()
 
-    val fernetCryptos = new FernetEncrypt()
+    val crypto = new BigDLEncrypt()
     val dataKeyPlaintext = simpleKms.retrieveDataKeyPlainText(primaryKeyPath, dataKeyPath)
-    fernetCryptos.init(AES_CBC_PKCS5PADDING, ENCRYPT, dataKeyPlaintext)
-    Files.write(Paths.get(encryptFileName), fernetCryptos.genFileHeader())
-    val encryptedBytes = fernetCryptos.doFinal(data.toString().getBytes)
+    crypto.init(AES_CBC_PKCS5PADDING, ENCRYPT, dataKeyPlaintext)
+    Files.write(Paths.get(encryptFileName), crypto.genFileHeader())
+    val encryptedBytes = crypto.doFinal(data.toString().getBytes)
     Files.write(Paths.get(encryptFileName), encryptedBytes._1, StandardOpenOption.APPEND)
     Files.write(Paths.get(encryptFileName), encryptedBytes._2, StandardOpenOption.APPEND)
     (fileName, encryptFileName, data.toString())
   }
 
   "encrypt stream" should "work" in {
-    val encrypt = new FernetEncrypt()
+    val encrypt = new BigDLEncrypt()
     encrypt.init(AES_CBC_PKCS5PADDING, ENCRYPT, dataKeyPlaintext)
     val bis = fs.open(new Path(plainFileName))
     val outs = fs.create(new Path(dir + "/en_o.csv"))
@@ -78,7 +78,7 @@ class EncryptSpec extends FlatSpec with Matchers with BeforeAndAfter {
     outs.close()
     Thread.sleep(1000)
 
-    val decrypt = new FernetEncrypt()
+    val decrypt = new BigDLEncrypt()
     decrypt.init(AES_CBC_PKCS5PADDING, DECRYPT, dataKeyPlaintext)
     val bis2 = fs.open(new Path(dir + "/en_o.csv"))
     val outs2 = fs.create(new Path(dir + "/de_o.csv"))

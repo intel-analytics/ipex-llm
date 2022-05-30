@@ -53,7 +53,7 @@ object Crypto {
   def apply(cryptoMode: CryptoMode): Crypto = {
     cryptoMode match {
       case AES_CBC_PKCS5PADDING =>
-        new FernetEncrypt()
+        new BigDLEncrypt()
       case default =>
         throw new EncryptRuntimeException("No such crypto mode!")
     }

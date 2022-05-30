@@ -18,7 +18,7 @@ package com.intel.analytics.bigdl.ppml.crypto.dataframe
 
 import com.intel.analytics.bigdl.dllib.common.zooUtils
 import com.intel.analytics.bigdl.ppml.PPMLContext
-import com.intel.analytics.bigdl.ppml.crypto.{AES_CBC_PKCS5PADDING, CryptoMode, ENCRYPT, FernetEncrypt, PLAIN_TEXT}
+import com.intel.analytics.bigdl.ppml.crypto.{AES_CBC_PKCS5PADDING, CryptoMode, ENCRYPT, BigDLEncrypt, PLAIN_TEXT}
 import com.intel.analytics.bigdl.ppml.kms.SimpleKeyManagementService
 import org.apache.spark.SparkConf
 import org.apache.spark.sql.SparkSession
@@ -55,11 +55,11 @@ class EncryptDataFrameSpec extends FlatSpec with Matchers with BeforeAndAfter{
     fw.append(data)
     fw.close()
 
-    val fernetCryptos = new FernetEncrypt()
+    val crypto = new BigDLEncrypt()
     val dataKeyPlaintext = simpleKms.retrieveDataKeyPlainText(primaryKeyPath, dataKeyPath)
-    fernetCryptos.init(AES_CBC_PKCS5PADDING, ENCRYPT, dataKeyPlaintext)
-    Files.write(Paths.get(encryptFileName), fernetCryptos.genFileHeader())
-    val encryptedBytes = fernetCryptos.doFinal(data.toString().getBytes)
+    crypto.init(AES_CBC_PKCS5PADDING, ENCRYPT, dataKeyPlaintext)
+    Files.write(Paths.get(encryptFileName), crypto.genFileHeader())
+    val encryptedBytes = crypto.doFinal(data.toString().getBytes)
     Files.write(Paths.get(encryptFileName), encryptedBytes._1, StandardOpenOption.APPEND)
     Files.write(Paths.get(encryptFileName), encryptedBytes._2, StandardOpenOption.APPEND)
     (fileName, encryptFileName, data.toString())
