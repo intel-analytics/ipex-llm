@@ -62,13 +62,7 @@ jobs:
           $CONDA/bin/conda info
           bash python/nano/dev/build_and_install.sh linux default false pytorch
           source bigdl-nano-init
-          pip install pytest nbmake
-          pip install lightning-bolts
-          pip install neural-compressor==1.11
-          pip install onnxruntime==1.10.0 onnx==1.11.0
-          pip install openvino-dev==2022.1.0
-          pip uninstall -y opencv-python
-          pip install opencv-contrib-python-headless
+          pip install -r python/nano/notebooks/pytorch/requirements.txt
           bash python/nano/test/run-nano-notebooks-inference-pytorch-tests.sh
           source $CONDA/bin/deactivate
           $CONDA/bin/conda remove -n notebooks-infer-pytorch --all
