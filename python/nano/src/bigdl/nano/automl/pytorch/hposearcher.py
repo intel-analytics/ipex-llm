@@ -96,7 +96,9 @@ class HPOSearcher:
         if n_trials:
             subp_n_trials = math.ceil(n_trials / n_procs)
             new_searcher.run_kwargs['n_trials'] = subp_n_trials
-        run_parallel(args=new_searcher, n_procs=n_procs)
+        run_parallel(func=new_searcher._run_search,
+                     kwargs={},
+                     n_procs=n_procs)
 
     def search(self,
                model,

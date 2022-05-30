@@ -110,26 +110,79 @@ class HPOMixin:
                     invalidInputError(False, "invalid target metric")
         return target_metric
 
-    def _create_objective(self, target_metric, create_kwargs, fit_kwargs):
-        isprune = True if create_kwargs.get('pruner', None) else False
-        self.objective = Objective(
-            model=self._model_build,
+    @staticmethod
+    def _create_objective(model_builder,
+                          target_metric,
+                          isprune,
+                          fit_kwargs,
+                          backend):
+        objective = Objective(
+            model=model_builder,
             target_metric=target_metric,
             pruning=isprune,
-            backend=self.backend,
+            backend=backend,
             **fit_kwargs,
         )
+        return objective
 
-    # def _run_search_n_procs(self, n_procs=4):
-    #     new_searcher = copy.deepcopy(self)
-    #     n_trials = new_searcher.run_kwargs.get('n_trials', None)
-    #     if n_trials:
-    #         subp_n_trials = math.ceil(n_trials / n_procs)
-    #         new_searcher.run_kwargs['n_trials'] = subp_n_trials
-    #     run_parallel(args=new_searcher, n_procs=n_procs)
-
-    def _run_search(self):
+    @staticmethod
+    def _run_search_subproc(study,
+                            get_model_builder_func,
+                            get_model_builder_func_args,
+                            backend,
+                            target_metric,
+                            isprune,
+                            fit_kwargs,
+                            run_kwargs):
+        """A stand-alone function for running parallel search."""
         # # run optimize
+        model_builder = get_model_builder_func(**get_model_builder_func_args)
+
+        objective = HPOMixin._create_objective(model_builder,
+                                               target_metric,
+                                               isprune,
+                                               fit_kwargs,
+                                               backend)
+
+        study.optimize(objective, **run_kwargs)
+
+    def _run_search_n_procs(self, isprune, n_procs=4):
+
+        # subp_study = copy.deepcopy(self.study)
+        # subp_objective = copy.deepcopy(self.objective)
+        subp_run_kwargs = copy.deepcopy(self.run_kwargs)
+        n_trials = subp_run_kwargs.get('n_trials', None)
+        if n_trials:
+            subp_n_trials = math.ceil(n_trials / n_procs)
+            subp_run_kwargs['n_trials'] = subp_n_trials
+
+        subp_kwargs = {'study': self.study,
+                       'get_model_builder_func': self._get_model_builder,
+                       'get_model_builder_func_args': {
+                           'model_build_args': self._get_model_build_args(),
+                           'compile_args': self.compile_args,
+                           'compile_kwargs': self.compile_kwargs,
+                           'backend': self.backend},
+                       'backend': self.backend,
+                       'target_metric': self.target_metric,
+                       'isprune': isprune,
+                       'fit_kwargs': self.fit_kwargs,
+                       'run_kwargs': subp_run_kwargs}
+
+        # set_loky_pickler('pickle')
+        # Parallel(n_jobs=2)(_run_search(**subp_kwargs) for _ in range(1))
+        # set_loky_pickler()
+        run_parallel(func=self._run_search_subproc,
+                     kwargs=subp_kwargs,
+                     n_procs=n_procs)
+
+    def _run_search(self, isprune):
+        if self.objective is None:
+            self.objective = self._create_objective(self._model_build,
+                                                    self.target_metric,
+                                                    isprune,
+                                                    self.fit_kwargs,
+                                                    self.backend)
         self.study.optimize(self.objective, **self.run_kwargs)
 
     def search(
@@ -170,13 +223,11 @@ class HPOMixin:
         if self.study is None:
             self.study = _create_study(resume, self.create_kwargs, self.backend)
 
-        if self.objective is None:
-            self._create_objective(self.target_metric, self.create_kwargs, self.fit_kwargs)
-
+        isprune = True if self.create_kwargs.get('pruner', None) else False
         if n_parallels and n_parallels > 1:
-            self._run_search_n_procs(n_parallels)
+            self._run_search_n_procs(isprune, n_procs=n_parallels)
         else:
-            self._run_search()
+            self._run_search(isprune)
 
         self.tune_end = False
 
