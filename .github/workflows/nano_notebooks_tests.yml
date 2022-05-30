@@ -67,11 +67,10 @@ jobs:
           pip install neural-compressor==1.11
           pip install onnxruntime==1.10.0 onnx==1.11.0
           pip install openvino-dev==2022.1.0
-          pip uninstall opencv-python
+          pip uninstall -y opencv-python
           pip install opencv-contrib-python-headless
           bash python/nano/test/run-nano-notebooks-inference-pytorch-tests.sh
           source $CONDA/bin/deactivate
           $CONDA/bin/conda remove -n notebooks-infer-pytorch --all
         env:
           ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
-      
