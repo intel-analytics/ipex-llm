@@ -21,6 +21,12 @@ jobs:
       matrix:
         os: ["ubuntu-20.04"]
         python-version: ["3.7"]
+        pytorch-version: [
+          "torch==1.11.0+cpu torchvision==0.12.0+cpu",
+          "torch==1.10.1+cpu torchvision==0.11.2+cpu",
+          "torch==1.9.0+cpu, torchvision==0.10.0+cpu"
+          ]
+
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
@@ -43,8 +49,8 @@ jobs:
           source $CONDA/bin/activate onnx-pytorch
           $CONDA/bin/conda info
           bash python/nano/dev/build_and_install.sh linux default false pytorch
+          pip install ${{matrix.pytorch-version}} -f https://download.pytorch.org/whl/torch_stable.html
           pip install pytest
-          pip install neural-compressor==1.11
           pip install onnxruntime onnxruntime-extensions onnx
           source bigdl-nano-init
           bash python/nano/test/run-nano-pytorch-onnx-tests.sh
