@@ -111,12 +111,10 @@ got {len(self.client_data)}/{self.client_num}')
     def aggregate(self):
         input, target = [], None
         # to record the order of tensors with client ID
-        client_ids = []
         for cid, ndarray_map in self.client_data.items():
             for k, v in ndarray_map.items():
                 if k == 'input':
-                    input.append(torch.from_numpy(v))
-                    client_ids.append(cid)
+                    input.append((cid, torch.from_numpy(v)))
                 elif k == 'target':
                     target = torch.from_numpy(v)
                 else:
@@ -136,10 +134,23 @@ got {len(self.client_data)}/{self.client_num}')
         # x = torch.sum(x, dim=0)
         # x.requires_grad = True
         # pred = self.model(x)
-        for input_tensor in input:
+
+        # sort the input tensor list in order to keep the order info of client ID
+        def sort_by_key(kv_tuple):
+            return kv_tuple[0]
+        
+        input.sort(key=sort_by_key)
+        tensor_list = []
+        for cid, input_tensor in input:
             input_tensor.requires_grad = True
+<<<<<<< HEAD
         pred = self.model(input)
 >>>>>>> 88bf42cfa (change interactive layer to customizable)
+=======
+            tensor_list.append(input_tensor)
+
+        pred = self.model(tensor_list)
+>>>>>>> 74101b2bd (add order-info support of fl aggregator)
         loss = self.loss_fn(pred, target)
         if self.optimizer is not None:
             self.optimizer.zero_grad()
@@ -147,9 +158,8 @@ got {len(self.client_data)}/{self.client_num}')
         if self.optimizer is not None:
             self.optimizer.step()
 
-        for idx, input_tensor in enumerate(input):
-            grad_map = {'grad': input_tensor.grad.numpy(), 'loss': loss.detach().numpy()}
-            cid = client_ids[idx]
+        for cid, input_tensor in input:
+            grad_map = {'grad': input_tensor.grad.numpy(), 'loss': loss.detach().numpy()}            
             self.server_data[cid] = ndarray_map_to_tensor_map(grad_map)
 
     
