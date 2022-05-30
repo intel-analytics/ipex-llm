@@ -121,6 +121,21 @@ class TestChronosModelLSTMForecaster(TestCase):
         except ImportError:
             pass
 
+    def test_lstm_forecaster_openvino_methods(self):
+        train_data, val_data, test_data = create_data()
+        forecaster = LSTMForecaster(past_seq_len=24,
+                                    input_feature_num=2,
+                                    output_feature_num=2,
+                                    loss="mae",
+                                    lr=0.01)
+        forecaster.fit(train_data, epochs=2)
+        try:
+            pred = forecaster.predict(test_data[0])
+            pred_openvino = forecaster.predict_with_openvino(test_data[0])
+            np.testing.assert_almost_equal(pred, pred_openvino, decimal=5)
+        except ImportError:
+            pass
+
     def test_lstm_forecaster_quantization(self):
         train_data, val_data, test_data = create_data()
         forecaster = LSTMForecaster(past_seq_len=24,
