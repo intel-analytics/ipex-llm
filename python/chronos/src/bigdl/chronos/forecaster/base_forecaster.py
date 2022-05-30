@@ -283,11 +283,13 @@ class BasePytorchForecaster(Forecaster):
         from bigdl.chronos.pytorch.utils import _pytorch_fashion_inference
 
         if self.distributed:
-            raise NotImplementedError("Openvino inference has not been supported for distributed "
-                                      "forecaster. You can call .to_local() to transform the "
-                                      "forecaster to a non-distributed version.")
+            invalidInputError(False,
+                              "Openvino inference has not been supported for distributed "
+                              "forecaster. You can call .to_local() to transform the "
+                              "forecaster to a non-distributed version.")
         if not self.fitted:
-            raise RuntimeError("You must call fit or restore first before calling predict!")
+            invalidInputError(False,
+                              "You must call fit or restore first before calling predict!")
         if self.openvino_fp32 is None:
             self.build_openvino()
         return _pytorch_fashion_inference(model=self.openvino_fp32,
@@ -591,9 +593,10 @@ class BasePytorchForecaster(Forecaster):
         from bigdl.chronos.pytorch import TSTrainer as Trainer
 
         if self.distributed:
-            raise NotImplementedError("build_openvino has not been supported for distributed "
-                                      "forecaster. You can call .to_local() to transform the "
-                                      "forecaster to a non-distributed version.")
+            invalidInputError(False,
+                              "build_openvino has not been supported for distributed "
+                              "forecaster. You can call .to_local() to transform the "
+                              "forecaster to a non-distributed version.")
         dummy_input = torch.rand(1, self.data_config["past_seq_len"],
                                  self.data_config["input_feature_num"])
         self.openvino_fp32 = Trainer.trace(self.internal,
