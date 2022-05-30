@@ -16,7 +16,6 @@
 import copy
 from logging import warning
 from pathlib import Path
-from tempfile import TemporaryDirectory
 from typing import Any, List, Optional
 import pytorch_lightning as pl
 import torch
@@ -39,7 +38,7 @@ from bigdl.nano.deps.ipex.ipex_api import create_IPEXAccelerator, create_IPEXAcc
 from bigdl.nano.deps.openvino.openvino_api import PytorchOpenVINOModel, load_openvino_model
 from bigdl.nano.deps.onnxruntime.onnxruntime_api import PytorchONNXRuntimeModel, \
     load_onnxruntime_model
-from bigdl.nano.deps.neural_compressor.inc_api import load_inc_model, quantize
+from bigdl.nano.deps.neural_compressor.inc_api import load_inc_model, quantize as inc_quantize
 from bigdl.nano.utils.log4Error import invalidInputError
 from bigdl.nano.utils.inference.pytorch.model import AcceleratedLightningModule
 distributed_backends = ["spawn", "ray", "subprocess"]
@@ -294,14 +293,14 @@ class Trainer(pl.Trainer):
             model which is able to run on Pytorch or ONNXRuntime can be fetched by
             `quantized_model.model`.
             """
-            return quantize(model, calib_dataloader, metric,
-                            framework=framework,
-                            conf=conf,
-                            approach=approach,
-                            tuning_strategy=tuning_strategy,
-                            accuracy_criterion=accuracy_criterion,
-                            timeout=timeout,
-                            max_trials=max_trials)
+            return inc_quantize(model, calib_dataloader, metric,
+                                framework=framework,
+                                conf=conf,
+                                approach=approach,
+                                tuning_strategy=tuning_strategy,
+                                accuracy_criterion=accuracy_criterion,
+                                timeout=timeout,
+                                max_trials=max_trials)
 
         elif accelerator == 'openvino':
             model_type = type(model).__name__
