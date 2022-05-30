@@ -2095,10 +2095,25 @@ class FeatureTable(Table):
                 .distinct().rdd.map(lambda row: row[col]).collect()
         return vocabularies
 
-    def sample_listwise(self, cols, num_list_per_key, num_example_per_list, random_seed=None,
+    def sample_listwise(self, columns, num_list_per_key, num_examples_per_list, random_seed=None,
                         replace=True):
+        """
+        Convert the FeatureTable to a listwise FeatureTable. The FeatureTable should be
+        grouped by key before calling sample_listwise.
+
+        :param columns: str or a list of str. Columns to convert to sampled list. Each column
+               should be of list type.
+        :param num_list_per_key: int. The number of lists that should be sampled for each key.
+        :param num_examples_per_list: int. The number of elements to be sampled for each list from
+               the list of each column.
+        :param random_seed: int. The number for creating 'np.random.RandomState'. Default: None.
+        :param replace: bool. Indicates whether to replace the original columns. If replace=False,
+               a corresponding column "sampled_col" will be generated for each sampled column.
+
+        :return: A new sampled listwise FeatureTable.
+        """
         schema = self.schema
-        cols = str_to_list(cols, "cols")
+        cols = str_to_list(columns, "cols")
         for c in cols:
             invalidInputError(c in self.df.columns, "Column '" + c +
                               "' does not exist in this FeatureTable.")
@@ -2128,12 +2143,12 @@ class FeatureTable(Table):
                               "Each row of the FeatureTable should "
                               "have the same array length in the specified cols.")
             length = len_set.pop()
-            if length < num_example_per_list:
+            if length < num_examples_per_list:
                 row["sample_list"] = None
             else:
                 sampled_indices_list = []
                 for _ in range(num_list_per_key):
-                    sampled_indices = random_state.choice(range(length), size=num_example_per_list,
+                    sampled_indices = random_state.choice(range(length), size=num_examples_per_list,
                                                           replace=False)
                     sampled_indices_list.append(sampled_indices.tolist())
                 row["sample_list"] = sampled_indices_list

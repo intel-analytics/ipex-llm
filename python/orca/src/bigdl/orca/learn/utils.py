@@ -20,6 +20,7 @@ import sys
 import tempfile
 import shutil
 
+from bigdl.dllib.utils import log4Error
 from bigdl.dllib.utils.file_utils import get_file_list, is_local_path
 from bigdl.orca.data import SparkXShards
 from bigdl.orca.data.utils import get_size
@@ -201,7 +202,12 @@ def convert_predict_rdd_to_dataframe(df, prediction_rdd):
 
 
 def _merge_rows(results):
-    result_arrs = [np.stack(l) for l in results]
+    try:
+        result_arrs = [np.stack(l) for l in results]
+    except ValueError:
+        log4Error.invalidInputError(False, "Elements in the same column must have the same "
+                                           "shape, please drop, pad or truncate the columns "
+                                           "that do not meet this requirement.")
     if len(result_arrs) == 1:
         result_arrs = result_arrs[0]
     else:

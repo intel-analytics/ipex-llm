@@ -1354,19 +1354,19 @@ class TestTable(TestCase):
         tbl = FeatureTable(spark.createDataFrame(data, schema))
         tbl.show()
         with self.assertRaises(Exception) as context:
-            tbl.sample_listwise(["name"], num_list_per_key=1, num_example_per_list=1)
+            tbl.sample_listwise(["name"], num_list_per_key=1, num_examples_per_list=1)
         self.assertTrue("Each column should be of list type" in str(context.exception))
         with self.assertRaises(Exception) as context:
-            tbl.sample_listwise(["aa"], num_list_per_key=1, num_example_per_list=1)
+            tbl.sample_listwise(["aa"], num_list_per_key=1, num_examples_per_list=1)
         self.assertTrue("does not exist in this FeatureTable." in str(context.exception))
         with self.assertRaises(Exception) as context:
             tbl2 = tbl.sample_listwise(["int_arr", "str_arr"], num_list_per_key=3,
-                                       num_example_per_list=2)
+                                       num_examples_per_list=2)
             tbl2.show()
         self.assertTrue("Each row of the FeatureTable should" in str(context.exception))
         tbl = tbl.filter("name != 'd'")
         tbl3 = tbl.sample_listwise(["int_arr", "str_arr"], num_list_per_key=3,
-                                   num_example_per_list=2)
+                                   num_examples_per_list=2)
         assert tbl3.size() == 6
         assert tbl3.filter("size(int_arr) = 2").size() == 6
         arr = tbl3.df.collect()
@@ -1374,11 +1374,11 @@ class TestTable(TestCase):
             assert(r["int_arr"] == [int(elem) for elem in r["str_arr"]])
 
         tbl4 = tbl.sample_listwise(["int_arr", "str_arr", "int_arr_arr"], num_list_per_key=4,
-                                   num_example_per_list=2)
+                                   num_examples_per_list=2)
         assert tbl4.size() == 8
         assert tbl4.filter("size(int_arr_arr) = 2").size() == 8
         tbl5 = tbl.sample_listwise(["int_arr", "str_arr"], num_list_per_key=2,
-                                   num_example_per_list=2, replace=False)
+                                   num_examples_per_list=2, replace=False)
         assert tbl5.size() == 4
         assert tbl5.filter("size(int_arr) = 2").size() == 0
         assert tbl5.filter("size(sampled_int_arr) = 2").size() == 4
