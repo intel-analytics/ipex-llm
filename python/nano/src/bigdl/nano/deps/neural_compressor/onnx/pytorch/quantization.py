@@ -35,19 +35,21 @@ class PytorchONNXRuntimeQuantization(BaseONNXRuntimeQuantization, PytorchQuantiz
     def _pre_execution(self, model, calib_dataloader=None, metric=None):
 
         if calib_dataloader:
+            
+            def numpy_collate_fn_wrapper(func):
+                def transform_tensor_to_numpy(item):
+                    if isinstance(item, torch.Tensor):
+                        return item.numpy()
+                    return item
 
-            def func(data):
-                # TODO: only x, y are supported here for onnx quantization
-                x, y = zip(*data)
-                if isinstance(x[0], torch.Tensor):
-                    x = torch.stack(x, dim=0).numpy()
-                if isinstance(y[0], torch.Tensor):
-                    y = torch.stack(y, dim=0).numpy()
-                return x, y
+                def collate_fn(batch):
+                    res = func(batch)
+                    return tuple(map(lambda x: transform_tensor_to_numpy(x), res))
+                return collate_fn
 
             # add a collate_fn to transform torch dataloader to a numpy dataloader
             calib_dataloader = deepcopy(calib_dataloader)
-            calib_dataloader.collate_fn = func
+            calib_dataloader.collate_fn = numpy_collate_fn_wrapper(calib_dataloader.collate_fn)
 
         if isinstance(model, PytorchONNXRuntimeModel):
             model = model.onnx_model
