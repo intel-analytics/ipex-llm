@@ -62,7 +62,7 @@ class IPEXAccelerator(Accelerator):
         self.setup_precision_plugin()
 
         if len(self.optimizers) > 1:
-            raise invalidInputError("IPEX does not support more than one optimizers.")
+            invalidInputError("IPEX does not support more than one optimizers.")
         dtype = torch.bfloat16 if self.enable_bf16 else None
         model, optimizer = ipex.optimize(model, optimizer=self.optimizers[0],
                                          inplace=True, dtype=dtype)
