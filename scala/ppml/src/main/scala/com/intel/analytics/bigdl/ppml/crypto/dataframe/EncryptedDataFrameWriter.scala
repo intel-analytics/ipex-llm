@@ -16,7 +16,7 @@
 
 package com.intel.analytics.bigdl.ppml.crypto.dataframe
 
-import com.intel.analytics.bigdl.ppml.crypto.CryptoMode.CryptoMode
+import com.intel.analytics.bigdl.ppml.crypto.CryptoMode
 import org.apache.spark.sql.SparkSession
 
 class EncryptedDataFrameWriter(

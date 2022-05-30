@@ -34,13 +34,9 @@ class EncryptSpec extends FlatSpec with Matchers with BeforeAndAfter {
   val dataKeyPath = dir + "/data.key"
   simpleKms.retrievePrimaryKey(primaryKeyPath)
   simpleKms.retrieveDataKey(primaryKeyPath, dataKeyPath)
+  var dataKeyPlaintext: String = null
   val (plainFileName, encryptFileName, data) = generateCsvData()
   val fs = File.getFileSystem(plainFileName)
-  var dataKeyPlaintext: String = null
-
-  before {
-    generateCsvData()
-  }
 
   def generateKeys(): (String, String) = {
     val appid: String = (1 to 12).map(x => Random.nextInt(10)).mkString
@@ -58,7 +54,7 @@ class EncryptSpec extends FlatSpec with Matchers with BeforeAndAfter {
     fw.close()
 
     val crypto = new BigDLEncrypt()
-    val dataKeyPlaintext = simpleKms.retrieveDataKeyPlainText(primaryKeyPath, dataKeyPath)
+    dataKeyPlaintext = simpleKms.retrieveDataKeyPlainText(primaryKeyPath, dataKeyPath)
     crypto.init(AES_CBC_PKCS5PADDING, ENCRYPT, dataKeyPlaintext)
     Files.write(Paths.get(encryptFileName), crypto.genFileHeader())
     val encryptedBytes = crypto.doFinal(data.toString().getBytes)
