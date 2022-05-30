@@ -25,9 +25,10 @@ from torch.nn.modules.loss import _Loss
 from torch.optim import Optimizer
 from torch.optim.lr_scheduler import _LRScheduler
 from bigdl.nano.utils.log4Error import invalidInputError
+from bigdl.nano.utils.inference.pytorch.model import NanoPytorchWrapper
 
 
-class LightningModuleFromTorch(LightningModule):
+class LightningModuleFromTorch(NanoPytorchWrapper):
     """
     A wrapper LightningMoudle for common PyTorch models.
 

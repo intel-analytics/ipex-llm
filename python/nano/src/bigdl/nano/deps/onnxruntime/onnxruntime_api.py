@@ -32,7 +32,9 @@ def bind_onnxrt_methods(pl_model: LightningModule, q_onnx_model=None, sess_optio
     return pl_model
 
 
-def PytorchONNXRuntimeModel(model, input_sample=None, onnxruntime_session_options=None):
+def PytorchONNXRuntimeModel(model, input_sample=None,
+                            onnxruntime_session_options=None,
+                            inference_method_name="forward"):
     """
         Create a ONNX Runtime model from pytorch.
 
@@ -42,12 +44,14 @@ def PytorchONNXRuntimeModel(model, input_sample=None, onnxruntime_session_option
                              model is a LightningModule with any dataloader attached,
                              defaults to None.
         :param onnxruntime_session_options: A session option for onnxruntime accelerator.
+        :param inference_method_name: The method users will call for their inference route.
 
         :return: A PytorchONNXRuntimeModel instance
         """
     from .pytorch.pytorch_onnxruntime_model import PytorchONNXRuntimeModel
     return PytorchONNXRuntimeModel(model, input_sample,
-                                   onnxruntime_session_options=onnxruntime_session_options)
+                                   onnxruntime_session_options=onnxruntime_session_options,
+                                   inference_method_name=inference_method_name)
 
 
 def load_onnxruntime_model(path):

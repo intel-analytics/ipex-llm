@@ -13,18 +13,32 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-from pytorch_lightning import LightningModule
-import torch
+import inspect
 import yaml
 from pathlib import Path
-from .model_utils import get_forward_args
+
+import torch
+from torch import fx
+from pytorch_lightning import LightningModule
 from bigdl.nano.utils.log4Error import invalidInputError
 
 
-class AcceleratedLightningModule(LightningModule):
+class NanoPytorchWrapper(LightningModule):
+    '''
+    This class is only a base class for nano's pytorch wrappers.
+    Currently, these classes are inherited from this class
+    1. LightningModuleFromTorch(training model wrapper for nn.module)
+    2. AcceleratedLightningModule(inference model wrapper for traced/quantized model)
+    3. FP32InferenceModelWrapped(pre(to-be)-traced/quantized fp32 model wrapper)
+    '''
+    pass
+
+
+class AcceleratedLightningModule(NanoPytorchWrapper):
     def __init__(self, model):
         super().__init__()
         self.model = model
+        self.inference_method_name = "forward"
 
     def forward(self, *inputs):
         inputs = self.on_forward_start(inputs)
@@ -46,6 +60,8 @@ class AcceleratedLightningModule(LightningModule):
         return outputs
 
     def get_forward_args(self):
+        # this import is put here to avoid cross import
+        from bigdl.nano.utils.inference.pytorch.model_utils import get_forward_args
         return get_forward_args(self)
 
     @staticmethod
@@ -86,7 +102,8 @@ class AcceleratedLightningModule(LightningModule):
 
     @property
     def status(self):
-        return {"ModelType": type(self).__name__}
+        return {"ModelType": type(self).__name__,
+                "inference_method_name": self.inference_method_name}
 
     @staticmethod
     def _load_status(path):
@@ -98,3 +115,42 @@ class AcceleratedLightningModule(LightningModule):
     @staticmethod
     def _load(path, model=None):
         invalidInputError(False, "Loading function is not implemented.")
+
+    def _add_mirror_method(self, inference_method_name):
+        '''
+        This method will add a mirror method(inference_method_name) to the
+        AcceleratedLightningModule, this means that calling `model.inference_method_name`
+        is same to calling `model.forward`.
+        NOTE: This method will not disable the usage of model.forward
+
+        :param inference_method_name: str, the name of the mirror call.
+        '''
+        if inference_method_name == "forward":
+            return
+        setattr(self, inference_method_name, self.forward)
+        self.inference_method_name = inference_method_name
+
+
+class FP32InferenceModelWrapped(NanoPytorchWrapper):
+    '''
+    Internal class for input model to quantize/trace.
+    This model currently is internal-only, no instance of this
+    class or any of it's subclass should be returned to users.
+    '''
+    def __init__(self, model, inference_method_name="forward"):
+        super().__init__()
+        self.model = model
+        self.inference_method_name = inference_method_name
+
+    def forward(self, *args):
+        method_to_call = getattr(self.model, self.inference_method_name)
+        args = self.__inspect_methods_args(method_to_call, args)
+        return method_to_call(*args)
+
+    def __inspect_methods_args(self, method_to_call, args):
+        nargs = len(inspect.getfullargspec(method_to_call).args[1:])
+        if isinstance(args, fx.Proxy):
+            args = [args[i] for i in range(nargs)]
+        else:
+            args = args[:nargs]
+        return args

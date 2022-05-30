@@ -54,8 +54,23 @@ class LitResNet18(LightningModule):
         head = nn.Linear(output_size, num_classes)
         self.classify = nn.Sequential(backbone, head)
 
-    def forward(self, *args):
-        return self.classify(args[0])
+    def forward(self, x):
+        return self.classify(x)
+
+
+class LitResNet18_no_forward(LightningModule):
+    def __init__(self, num_classes, pretrained=True, include_top=False, freeze=True):
+        super().__init__()
+        backbone = vision.resnet18(pretrained=pretrained, include_top=include_top, freeze=freeze)
+        output_size = backbone.get_output_size()
+        head = nn.Linear(output_size, num_classes)
+        self.classify = nn.Sequential(backbone, head)
+
+    def forward(self, x):
+        raise RuntimeError("LitResNet18_predict's forward method should not be called.")
+
+    def predict(self, x):
+        return self.classify(x)
 
 
 class TestTrainer(TestCase):
@@ -64,6 +79,7 @@ class TestTrainer(TestCase):
     optimizer = torch.optim.Adam(model.parameters(), lr=0.01)
     train_loader = create_data_loader(data_dir, batch_size, num_workers, data_transform)
     user_defined_pl_model = LitResNet18(10)
+    user_defined_pl_model_no_forward = LitResNet18_no_forward(10)
 
     def test_trainer_quantize_inc_ptq_compiled(self):
         # Test if a Lightning Module compiled by nano works
@@ -141,4 +157,27 @@ class TestTrainer(TestCase):
             loaded_qmodel = trainer.load(tmp_dir_name, self.user_defined_pl_model)
             assert loaded_qmodel
             out = loaded_qmodel(x)
+            assert out.shape == torch.Size([256, 10])
+
+    def test_trainer_quantize_inc_ptq_customized_no_forward(self):
+        # Test if a Lightning Module not compiled by nano works
+        train_loader_iter = iter(self.train_loader)
+        x = next(train_loader_iter)[0]
+        trainer = Trainer(max_epochs=1)
+
+        qmodel = trainer.quantize(self.user_defined_pl_model_no_forward,
+                                  calib_dataloader=self.train_loader,
+                                  inference_method_name="predict")
+        assert qmodel
+        out = qmodel.predict(x)
+        assert out.shape == torch.Size([256, 10])
+
+        # save and load
+        with tempfile.TemporaryDirectory() as tmp_dir_name:
+            trainer.save(qmodel, tmp_dir_name)
+            loaded_qmodel = trainer.load(tmp_dir_name,
+                                         self.user_defined_pl_model_no_forward,
+                                         inference_method_name="predict")
+            assert loaded_qmodel
+            out = loaded_qmodel.predict(x)
             assert out.shape == torch.Size([256, 10])

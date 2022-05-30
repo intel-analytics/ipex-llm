@@ -14,16 +14,18 @@
 # limitations under the License.
 #
 from typing import Any
-from bigdl.nano.pytorch.lightning import LightningModuleFromTorch
 import inspect
-from torch.utils.data import DataLoader
+
 import torch
+from torch.utils.data import DataLoader
 from bigdl.nano.utils.log4Error import invalidInputError
+from bigdl.nano.utils.inference.pytorch.model import\
+    NanoPytorchWrapper, FP32InferenceModelWrapped
 
 
 def get_forward_args(model):
     forward_args = inspect.getfullargspec(model.forward).args[1:]
-    if isinstance(model, LightningModuleFromTorch):
+    if isinstance(model, NanoPytorchWrapper):
         # forward param list for compiled model
         forward_args = get_forward_args(model.model)
     return forward_args
@@ -82,3 +84,20 @@ def export_to_onnx(model, input_sample=None, onnx_path="model.onnx", dynamic_axe
                                 }
     default_onnx_export_args.update(kwargs)
     torch.onnx.export(model, input_sample, onnx_path, **default_onnx_export_args)
+
+
+def fp32_inference_model_wrapper(model, inference_method_name="forward"):
+    '''
+    This function is used when users call `trainer.quantize` or
+    `trainer.trace` to change the inference route of the fp32 model.
+    In some cases, users would use another method other than `forward`
+    to carry out the inference process.
+    '''
+    # return the original model when users use forward to do the inference
+    if inference_method_name == "forward":
+        return model
+    invalidInputError(hasattr(model, inference_method_name),
+                      "You should input an inference_method_name that "
+                      "is contained by the model to be quantized/traced.")
+
+    return FP32InferenceModelWrapped(model, inference_method_name=inference_method_name)
