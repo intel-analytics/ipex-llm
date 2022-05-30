@@ -259,6 +259,7 @@ class PyTorchPySparkEstimator(BaseEstimator):
                     param["validation_data_creator"] = partition_to_creator(valid_list)
                     runner = PytorchPysparkWorker(**init_params)
                     result = runner.train_epochs(**param)
+                    runner.shutdown()
                     return result
 
                 train_rdd = data.rdd.mapPartitions(lambda iter: [list(iter)])
