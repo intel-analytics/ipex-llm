@@ -29,6 +29,7 @@
 # limitations under the License.
 
 
+from subprocess import call
 from pyspark import BarrierTaskContext
 from bigdl.orca.learn.pytorch.torch_runner import TorchRunner
 import torch.distributed as dist
@@ -120,10 +121,17 @@ class PytorchPysparkWorker(TorchRunner):
             self.setup_operator(self.models)
 
     def train_epochs(self, data_creator, epochs=1, batch_size=32, profile=False,
-                     info=None, wrap_dataloader=None, callbacks=None):
+                     info=None, wrap_dataloader=None, callbacks=None,
+                     validation_data_creator=None):
         self.load_state_dict(self.state_dict.value)
-        stats_list = super().train_epochs(data_creator, epochs, batch_size, profile, info,
-                                          wrap_dataloader, callbacks)
+        stats_list = super().train_epochs(data_creator=data_creator,
+                                          epochs=epochs,
+                                          batch_size=batch_size,
+                                          profile=profile,
+                                          info=info,
+                                          wrap_dataloader=wrap_dataloader,
+                                          callbacks=callbacks,
+                                          validation_data_creator=validation_data_creator)
         state_dict = self.get_state_dict()
 
         if self.log_to_driver:
