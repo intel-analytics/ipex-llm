@@ -94,12 +94,12 @@ class Trainer(pl.Trainer):
             self.hposearcher = None
 
         accelerator = None
-        if use_ipex:
-            if TORCH_VERSION_LESS_1_10:
-                accelerator = create_IPEXAccelerator(enable_bf16=enable_bf16)
-            else:
-                invalidInputError("We currently do not support ipex above 1.9.0")
         if num_processes == 1:
+            if use_ipex:
+                if TORCH_VERSION_LESS_1_10:
+                    accelerator = create_IPEXAccelerator(enable_bf16=enable_bf16)
+                else:
+                    invalidInputError("We currently do not support ipex above 1.9.0")
             super().__init__(accelerator=accelerator, *args, **kwargs)
         else:
             plugin = None
@@ -123,6 +123,12 @@ class Trainer(pl.Trainer):
                 plugin = distributed_ray(num_workers=num_processes,  # type: ignore
                                          use_ipex=use_ipex,
                                          enable_bf16=enable_bf16)
+            if use_ipex:
+                if TORCH_VERSION_LESS_1_10:
+                    accelerator = create_IPEXAccelerator(training_type_plugin=plugin,
+                                                         enable_bf16=enable_bf16)
+                else:
+                    invalidInputError("We currently do not support ipex above 1.9.0")
             super().__init__(accelerator=accelerator,
                              plugins=[plugin], *args, **kwargs)
 
