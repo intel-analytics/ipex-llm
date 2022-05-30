@@ -23,7 +23,7 @@ import org.apache.hadoop.fs.Path
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
 import java.io.{BufferedReader, BufferedWriter, FileReader, FileWriter}
-import java.nio.file.{Files, Paths}
+import java.nio.file.{Files, Paths, StandardOpenOption}
 import scala.util.Random
 
 class EncryptSpec extends FlatSpec with Matchers with BeforeAndAfter {
@@ -58,10 +58,12 @@ class EncryptSpec extends FlatSpec with Matchers with BeforeAndAfter {
     fw.close()
 
     val fernetCryptos = new FernetEncrypt()
-    dataKeyPlaintext = simpleKms.retrieveDataKeyPlainText(primaryKeyPath, dataKeyPath)
+    val dataKeyPlaintext = simpleKms.retrieveDataKeyPlainText(primaryKeyPath, dataKeyPath)
     fernetCryptos.init(AES_CBC_PKCS5PADDING, ENCRYPT, dataKeyPlaintext)
-    val encryptedBytes = fernetCryptos.encryptBytes(data.toString().getBytes, dataKeyPlaintext)
-    Files.write(Paths.get(encryptFileName), encryptedBytes)
+    Files.write(Paths.get(encryptFileName), fernetCryptos.genFileHeader())
+    val encryptedBytes = fernetCryptos.doFinal(data.toString().getBytes)
+    Files.write(Paths.get(encryptFileName), encryptedBytes._1, StandardOpenOption.APPEND)
+    Files.write(Paths.get(encryptFileName), encryptedBytes._2, StandardOpenOption.APPEND)
     (fileName, encryptFileName, data.toString())
   }
 

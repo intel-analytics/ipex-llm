@@ -20,14 +20,33 @@ import com.intel.analytics.bigdl.dllib.nn.NormMode.Value
 import com.intel.analytics.bigdl.ppml.utils.Supportive
 import org.apache.spark.input.PortableDataStream
 
+import java.io.{DataInputStream, DataOutputStream}
 import javax.crypto.Cipher
 
 trait Crypto extends Supportive with Serializable {
-  def encryptBytes(sourceBytes: Array[Byte], dataKeyPlaintext: String): Array[Byte]
-
-  def decryptBytes(sourceBytes: Array[Byte], dataKeyPlaintext: String): Array[Byte]
+  def init(cryptoMode: CryptoMode, mode: OperationMode, dataKeyPlaintext: String): Unit
 
   def decryptBigContent(ite: Iterator[(String, PortableDataStream)]): Iterator[String]
+
+  def genFileHeader(): Array[Byte]
+
+  def verifyFileHeader(header: Array[Byte]): Unit
+
+  def update(content: Array[Byte]): Array[Byte]
+
+  def update(content: Array[Byte], offset: Int, len: Int): Array[Byte]
+
+  def doFinal(content: Array[Byte]): (Array[Byte], Array[Byte])
+
+  def doFinal(content: Array[Byte], offset: Int, len: Int): (Array[Byte], Array[Byte])
+
+  def encryptStream(inputStream: DataInputStream, outputStream: DataOutputStream): Unit
+
+  def decryptStream(inputStream: DataInputStream, outputStream: DataOutputStream): Unit
+
+  def decryptFile(binaryFilePath: String, savePath: String): Unit
+
+  def encryptFile(binaryFilePath: String, savePath: String): Unit
 }
 
 object Crypto {

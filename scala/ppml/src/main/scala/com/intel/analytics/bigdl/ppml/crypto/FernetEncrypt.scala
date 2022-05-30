@@ -37,7 +37,7 @@ class FernetEncrypt extends Crypto {
   protected var ivParameterSpec: IvParameterSpec = null
   protected var opMode: OperationMode = null
   protected var initializationVector: Array[Byte] = null
-  def init(cryptoMode: CryptoMode, mode: OperationMode, dataKeyPlaintext: String): Unit = {
+  override def init(cryptoMode: CryptoMode, mode: OperationMode, dataKeyPlaintext: String): Unit = {
     opMode = mode
     val secret = dataKeyPlaintext.getBytes()
     // key encrypt
@@ -57,7 +57,7 @@ class FernetEncrypt extends Crypto {
 
   protected var signingDataStream: DataOutputStream = null
 
-  def genFileHeader(): Array[Byte] = {
+  override def genFileHeader(): Array[Byte] = {
     Log4Error.invalidOperationError(cipher != null,
       s"you should init FernetEncrypt first.")
     val timestamp: Instant = Instant.now()
@@ -69,7 +69,7 @@ class FernetEncrypt extends Crypto {
     signingByteBuffer.array()
   }
 
-  def verifyFileHeader(header: Array[Byte]): Unit = {
+  override def verifyFileHeader(header: Array[Byte]): Unit = {
     val headerBuffer = ByteBuffer.wrap(header)
     val version: Byte = headerBuffer.get()
     if (version.compare((0x80).toByte) != 0) {
@@ -84,25 +84,25 @@ class FernetEncrypt extends Crypto {
     }
   }
 
-  def update(content: Array[Byte]): Array[Byte] = {
+  override def update(content: Array[Byte]): Array[Byte] = {
     val cipherText: Array[Byte] = cipher.update(content)
     mac.update(cipherText)
     cipherText
   }
 
-  def update(content: Array[Byte], offset: Int, len: Int): Array[Byte] = {
+  override def update(content: Array[Byte], offset: Int, len: Int): Array[Byte] = {
     val cipherText: Array[Byte] = cipher.update(content, offset, len)
     mac.update(cipherText, offset, len)
     cipherText
   }
 
-  def doFinal(content: Array[Byte]): (Array[Byte], Array[Byte]) = {
+  override def doFinal(content: Array[Byte]): (Array[Byte], Array[Byte]) = {
     val cipherText: Array[Byte] = cipher.doFinal(content)
     val hmac: Array[Byte] = mac.doFinal(cipherText)
     (cipherText, hmac)
   }
 
-  def doFinal(content: Array[Byte], offset: Int, len: Int): (Array[Byte], Array[Byte]) = {
+  override def doFinal(content: Array[Byte], offset: Int, len: Int): (Array[Byte], Array[Byte]) = {
     val cipherText: Array[Byte] = cipher.doFinal(content, offset, len)
     val hmac: Array[Byte] = mac.doFinal(cipherText.slice(offset, offset + len))
     (cipherText, hmac)
@@ -110,7 +110,7 @@ class FernetEncrypt extends Crypto {
 
   val blockSize = 1024 * 1024 // 1m per update
   val byteBuffer = new Array[Byte](blockSize)
-  def encryptStream(inputStream: DataInputStream, outputStream: DataOutputStream): Unit = {
+  override def encryptStream(inputStream: DataInputStream, outputStream: DataOutputStream): Unit = {
     val header = genFileHeader()
     outputStream.write(header)
     while (inputStream.available() > blockSize) {
@@ -125,7 +125,7 @@ class FernetEncrypt extends Crypto {
   }
 
   val hmacSize = 32
-  def decryptStream(inputStream: DataInputStream, outputStream: DataOutputStream): Unit = {
+  override def decryptStream(inputStream: DataInputStream, outputStream: DataOutputStream): Unit = {
     val header = read(inputStream, 25)
     verifyFileHeader(header)
     while (inputStream.available() > blockSize) {
@@ -142,7 +142,7 @@ class FernetEncrypt extends Crypto {
     outputStream.flush()
   }
 
-  def decryptFile(binaryFilePath: String, savePath: String): Unit = {
+  override def decryptFile(binaryFilePath: String, savePath: String): Unit = {
     Log4Error.invalidInputError(savePath != null && savePath != "",
       "decrypted file save path should be specified")
     val fs = File.getFileSystem(binaryFilePath)
@@ -153,7 +153,7 @@ class FernetEncrypt extends Crypto {
     outs.close()
   }
 
-  def encryptFile(binaryFilePath: String, savePath: String): Unit = {
+  override def encryptFile(binaryFilePath: String, savePath: String): Unit = {
     Log4Error.invalidInputError(savePath != null && savePath != "",
       "decrypted file save path should be specified")
     val fs = File.getFileSystem(binaryFilePath)
@@ -162,16 +162,6 @@ class FernetEncrypt extends Crypto {
     decryptStream(bis, outs)
     bis.close()
     outs.close()
-  }
-
-  def encryptBytes(sourceBytes: Array[Byte], dataKeyPlaintext: String): Array[Byte] = {
-    encryptContent(sourceBytes, dataKeyPlaintext)
-  }
-
-  def decryptBytes(sourceBytes: Array[Byte], dataKeyPlaintext: String): Array[Byte] = {
-    timing("FernetCryptos decrypting bytes") {
-      decryptContent(sourceBytes, dataKeyPlaintext)
-    }
   }
 
   private def read(stream: DataInputStream, numBytes: Int): Array[Byte] = {
@@ -183,103 +173,6 @@ class FernetEncrypt extends Crypto {
     retval
   }
 
-  private def encryptContent(content: Array[Byte], dataKeyPlaintext: String): Array[Byte] = {
-
-    val secret = dataKeyPlaintext.getBytes()
-
-    //  get IV
-    val random = new SecureRandom()
-    val initializationVector: Array[Byte] = new Array[Byte](16)
-    random.nextBytes(initializationVector)
-    val ivParameterSpec: IvParameterSpec = new IvParameterSpec(initializationVector)
-
-    // key encrypt
-    val signingKey: Array[Byte] = Arrays.copyOfRange(secret, 0, 16)
-    val encryptKey: Array[Byte] = Arrays.copyOfRange(secret, 16, 32)
-    val encryptionKeySpec: SecretKeySpec = new SecretKeySpec(encryptKey, "AES")
-
-    val cipher: Cipher = Cipher.getInstance(AES_CBC_PKCS5PADDING.encryptionAlgorithm)
-    cipher.init(Cipher.ENCRYPT_MODE, encryptionKeySpec, ivParameterSpec)
-
-    val cipherText: Array[Byte] = cipher.doFinal(content)
-    val timestamp: Instant = Instant.now()
-
-    // sign
-    val byteStream: ByteArrayOutputStream = new ByteArrayOutputStream(25 + cipherText.length)
-    val dataStream: DataOutputStream = new DataOutputStream(byteStream)
-
-    val version: Byte = (0x80).toByte
-    dataStream.writeByte(version)
-    dataStream.writeLong(timestamp.getEpochSecond())
-    dataStream.write(ivParameterSpec.getIV())
-    dataStream.write(cipherText)
-
-    val mac: Mac = Mac.getInstance("HmacSHA256")
-    val signingKeySpec = new SecretKeySpec(signingKey, "HmacSHA256")
-    mac.init(signingKeySpec)
-    val hmac: Array[Byte] = mac.doFinal(byteStream.toByteArray())
-
-    // to bytes
-    val outByteStream: ByteArrayOutputStream = new ByteArrayOutputStream(57 + cipherText.length)
-    val dataOutStream: DataOutputStream = new DataOutputStream(outByteStream)
-    dataOutStream.writeByte(version)
-    dataOutStream.writeLong(timestamp.getEpochSecond())
-    dataOutStream.write(ivParameterSpec.getIV())
-    dataOutStream.write(cipherText)
-    dataOutStream.write(hmac)
-
-    if (timestamp == null) {
-      throw new EncryptRuntimeException("Timestamp cannot be null")
-    }
-    if (ivParameterSpec == null || ivParameterSpec.getIV().length != 16) {
-      throw new EncryptRuntimeException("Initialization Vector must be 128 bits")
-    }
-    if (cipherText == null || cipherText.length % 16 != 0) {
-      throw new EncryptRuntimeException("Ciphertext must be a multkmsServerIPle of 128 bits")
-    }
-    if (hmac == null || hmac.length != 32) {
-      throw new EncryptRuntimeException("Hmac must be 256 bits")
-    }
-
-    outByteStream.toByteArray()
-  }
-
-  private def decryptContent(content: Array[Byte], dataKeyPlaintext: String): Array[Byte] = {
-
-    val secret: Array[Byte] = dataKeyPlaintext.getBytes()
-
-    val inputStream: ByteArrayInputStream = new ByteArrayInputStream(content)
-    val dataStream: DataInputStream = new DataInputStream(inputStream)
-    val version: Byte = dataStream.readByte()
-    if (version.compare((0x80).toByte) != 0) {
-      throw new EncryptRuntimeException("Version error!")
-    }
-    val encryptKey: Array[Byte] = Arrays.copyOfRange(secret, 16, 32)
-
-    val timestampSeconds: Long = dataStream.readLong()
-
-    val initializationVector: Array[Byte] = read(dataStream, 16)
-    val ivParameterSpec = new IvParameterSpec(initializationVector)
-
-    val cipherText: Array[Byte] = read(dataStream, content.length - 57)
-
-    val hmac: Array[Byte] = read(dataStream, 32)
-    if (initializationVector.length != 16) {
-      throw new EncryptRuntimeException("Initialization Vector must be 128 bits")
-    }
-    if (cipherText == null || cipherText.length % 16 != 0) {
-      throw new EncryptRuntimeException("Ciphertext must be a multkmsServerIPle of 128 bits")
-    }
-    if (hmac == null || hmac.length != 32) {
-      throw new EncryptRuntimeException("hmac must be 256 bits")
-    }
-
-    val secretKeySpec = new SecretKeySpec(encryptKey, "AES")
-    val cipher = Cipher.getInstance("AES/CBC/PKCS5Padding")
-    cipher.init(Cipher.DECRYPT_MODE, secretKeySpec, ivParameterSpec)
-    cipher.doFinal(cipherText)
-  }
-
   override def decryptBigContent(
         ite: Iterator[(String, PortableDataStream)]): Iterator[String] = {
     var result: Iterator[String] = Iterator[String]()
@@ -288,6 +181,7 @@ class FernetEncrypt extends Crypto {
       val inputStream: DataInputStream = ite.next._2.open()
       verifyFileHeader(read(inputStream, 25))
 
+      // do first
       var lastString = ""
       while (inputStream.available() > blockSize) {
         val readLen = inputStream.read(byteBuffer)

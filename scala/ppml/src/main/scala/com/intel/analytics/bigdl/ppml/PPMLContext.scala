@@ -18,7 +18,7 @@ package com.intel.analytics.bigdl.ppml
 
 import com.intel.analytics.bigdl.dllib.NNContext.{checkScalaVersion, checkSparkVersion, createSparkConf, initConf, initNNContext}
 import com.intel.analytics.bigdl.dllib.utils.Log4Error
-import com.intel.analytics.bigdl.ppml.crypto.{AES_CBC_PKCS5PADDING, Crypto, CryptoMode, DECRYPT, EncryptRuntimeException, FernetEncrypt, PLAIN_TEXT}
+import com.intel.analytics.bigdl.ppml.crypto.{AES_CBC_PKCS5PADDING, Crypto, CryptoMode, DECRYPT, ENCRYPT, EncryptRuntimeException, FernetEncrypt, PLAIN_TEXT}
 import com.intel.analytics.bigdl.ppml.utils.Supportive
 import org.apache.spark.{SparkConf, SparkContext}
 import org.apache.spark.input.PortableDataStream
@@ -91,7 +91,7 @@ class PPMLContext protected(kms: KeyManagementService, sparkSession: SparkSessio
       case PLAIN_TEXT =>
         dataFrame.write
       case AES_CBC_PKCS5PADDING =>
-        PPMLContext.write(sparkSession, dataKeyPlainText, dataFrame)
+        PPMLContext.write(sparkSession, cryptoMode, dataKeyPlainText, dataFrame)
       case _ =>
         throw new IllegalArgumentException("unknown EncryptMode " + cryptoMode.toString)
     }
@@ -99,12 +99,15 @@ class PPMLContext protected(kms: KeyManagementService, sparkSession: SparkSessio
 }
 
 object PPMLContext{
-  private[bigdl] def registerUDF(spark: SparkSession,
-                  dataKeyPlaintext: String) = {
+  private[bigdl] def registerUDF(
+        spark: SparkSession,
+        cryptoMode: CryptoMode,
+        dataKeyPlaintext: String) = {
     val bcKey = spark.sparkContext.broadcast(dataKeyPlaintext)
     val convertCase = (x: String) => {
-      val fernetCryptos = new FernetEncrypt()
-      new String(fernetCryptos.encryptBytes(x.getBytes, bcKey.value))
+      val crypto = Crypto(cryptoMode)
+      crypto.init(cryptoMode, ENCRYPT, dataKeyPlaintext)
+      new String(crypto.doFinal(x.getBytes)._1)
     }
     spark.udf.register("convertUDF", convertCase)
   }
@@ -123,18 +126,20 @@ object PPMLContext{
     }
     data.mapPartitions { iterator => {
       Supportive.logger.info("Decrypting bytes with JavaAESCBC...")
-      val crypto = new FernetEncrypt()
+      val crypto = Crypto(cryptoMode)
       crypto.init(cryptoMode, DECRYPT, dataKeyPlaintext)
       crypto.decryptBigContent(iterator)
     }}.flatMap(_.split("\n"))
   }
 
-  private[bigdl] def write(sparkSession: SparkSession,
-               dataKeyPlaintext: String,
-               dataFrame: DataFrame): DataFrameWriter[Row] = {
+  private[bigdl] def write(
+        sparkSession: SparkSession,
+        cryptoMode: CryptoMode,
+        dataKeyPlaintext: String,
+        dataFrame: DataFrame): DataFrameWriter[Row] = {
     val tableName = "ppml_save_table"
     dataFrame.createOrReplaceTempView(tableName)
-    PPMLContext.registerUDF(sparkSession, dataKeyPlaintext)
+    PPMLContext.registerUDF(sparkSession, cryptoMode, dataKeyPlaintext)
     // Select all and encrypt columns.
     val convertSql = "select " + dataFrame.schema.map(column =>
       "convertUDF(" + column.name + ") as " + column.name).mkString(", ") +
