@@ -21,7 +21,7 @@ import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.dllib.tensor.TensorNumericMath.TensorNumeric
 import org.slf4j.LoggerFactory
 
-import scala.reflect.ClassTaCryptoModeg
+import scala.reflect.ClassTag
 
 /**
  * EstimateSupportive trait to provide some AOP methods as utils
