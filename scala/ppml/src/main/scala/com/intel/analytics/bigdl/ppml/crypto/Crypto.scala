@@ -27,8 +27,7 @@ trait Crypto extends Supportive with Serializable {
 
   def decryptBytes(sourceBytes: Array[Byte], dataKeyPlaintext: String): Array[Byte]
 
-  def decryptBigContent(ite: Iterator[(String, PortableDataStream)],
-                        dataKeyPlaintext: String): Iterator[String]
+  def decryptBigContent(ite: Iterator[(String, PortableDataStream)]): Iterator[String]
 }
 
 object Crypto {

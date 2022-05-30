@@ -281,53 +281,33 @@ class FernetEncrypt extends Crypto {
   }
 
   override def decryptBigContent(
-        ite: Iterator[(String, PortableDataStream)],
-        dataKeyPlaintext: String): Iterator[String] = {
-    val secret: Array[Byte] = dataKeyPlaintext.getBytes()
+        ite: Iterator[(String, PortableDataStream)]): Iterator[String] = {
     var result: Iterator[String] = Iterator[String]()
 
     while (ite.hasNext == true) {
       val inputStream: DataInputStream = ite.next._2.open()
-      val version: Byte = inputStream.readByte()
-      if (version.compare((0x80).toByte) != 0) {
-        throw new EncryptRuntimeException("Version error!")
-      }
-      val encryptKey: Array[Byte] = Arrays.copyOfRange(secret, 16, 32)
+      verifyFileHeader(read(inputStream, 25))
 
-      val timestampSeconds: Long = inputStream.readLong()
-      val initializationVector: Array[Byte] = read(inputStream, 16)
-      val ivParameterSpec = new IvParameterSpec(initializationVector)
-
-      val secretKeySpec = new SecretKeySpec(encryptKey, "AES")
-      val cipher = Cipher.getInstance("AES/CBC/PKCS5Padding")
-      cipher.init(Cipher.DECRYPT_MODE, secretKeySpec, ivParameterSpec)
-
-      val blockSize = 102400000 // 100m per update
       var lastString = ""
-      while (inputStream.available() > blockSize + 32) {
-        val splitEncryptedBytes = read(inputStream, blockSize)
-        val currentSplitDecryptString = new String(cipher.update(splitEncryptedBytes))
+      while (inputStream.available() > blockSize) {
+        val readLen = inputStream.read(byteBuffer)
+        Log4Error.unKnowExceptionError(readLen != blockSize)
+        val currentSplitDecryptString = new String(byteBuffer, 0, readLen)
         val splitDecryptString = lastString + currentSplitDecryptString
         val splitDecryptStringArray = splitDecryptString.split("\r").flatMap(_.split("\n"))
         lastString = splitDecryptStringArray.last
         result = result ++ splitDecryptStringArray.dropRight(1)
       }
-
-      val lastCipherText: Array[Byte] = read(inputStream, inputStream.available() - 32)
-      val lastDecryptString = lastString + (new String(cipher.doFinal(lastCipherText)))
+      // do last
+      val last = inputStream.read(byteBuffer)
+      val inputHmac = byteBuffer.slice(last - hmacSize, last)
+      val (lastSlice, streamHmac) = doFinal(byteBuffer, 0, last - hmacSize)
+      if (inputHmac.sameElements(streamHmac)) {
+        throw new EncryptRuntimeException("hmac not match")
+      }
+      val lastDecryptString = lastString + new String(lastSlice)
       val splitDecryptStringArray = lastDecryptString.split("\r").flatMap(_.split("\n"))
       result = result ++ splitDecryptStringArray
-
-      val hmac: Array[Byte] = read(inputStream, 32)
-      if (initializationVector.length != 16) {
-        throw new EncryptRuntimeException("Initialization Vector must be 128 bits")
-      }
-      if (hmac == null || hmac.length != 32) {
-        throw new EncryptRuntimeException("hmac must be 256 bits")
-      }
-      if (inputStream.available > 0) {
-        throw new EncryptRuntimeException("inputStream still has contents")
-      }
     }
     result
 

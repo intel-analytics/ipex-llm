@@ -18,7 +18,7 @@ package com.intel.analytics.bigdl.ppml
 
 import com.intel.analytics.bigdl.dllib.NNContext.{checkScalaVersion, checkSparkVersion, createSparkConf, initConf, initNNContext}
 import com.intel.analytics.bigdl.dllib.utils.Log4Error
-import com.intel.analytics.bigdl.ppml.crypto.{AES_CBC_PKCS5PADDING, Crypto, CryptoMode, EncryptRuntimeException, FernetEncrypt, PLAIN_TEXT}
+import com.intel.analytics.bigdl.ppml.crypto.{AES_CBC_PKCS5PADDING, Crypto, CryptoMode, DECRYPT, EncryptRuntimeException, FernetEncrypt, PLAIN_TEXT}
 import com.intel.analytics.bigdl.ppml.utils.Supportive
 import org.apache.spark.{SparkConf, SparkContext}
 import org.apache.spark.input.PortableDataStream
@@ -121,10 +121,11 @@ object PPMLContext{
     } else {
       sc.binaryFiles(path)
     }
-    val crypto = Crypto(cryptoMode)
     data.mapPartitions { iterator => {
       Supportive.logger.info("Decrypting bytes with JavaAESCBC...")
-      crypto.decryptBigContent(iterator, dataKeyPlaintext)
+      val crypto = new FernetEncrypt()
+      crypto.init(cryptoMode, DECRYPT, dataKeyPlaintext)
+      crypto.decryptBigContent(iterator)
     }}.flatMap(_.split("\n"))
   }
 
