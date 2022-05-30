@@ -37,8 +37,11 @@ fi
 
 python ../../example/dien/dien_preprocessing.py \
     --cluster_mode standalone \
-    --executor_cores 6 \
-    --executor_memory 50g \
+    --executor_cores 4 \
+    --num_executors 2 \
+    --executor_memory 2g \
+    --driver_cores 2 \
+    --driver_memory 1g \
     --input_meta ./data/test \
     --input_transaction ./data/test.json \
     --output ./result/
