@@ -21,13 +21,15 @@ from bigdl.nano.automl.hpo.backend import create_hpo_backend
 from bigdl.nano.automl.hpo.search import (
     _search_summary,
     _end_search,
-    _check_optimize_direction,
-    _filter_tuner_args,
-    _check_search_args,
+    _create_study,
+    _validate_args,
     _strip_val_prefix,
+    _prepare_args,
 )
 from bigdl.nano.automl.hpo.space import AutoObject
 from bigdl.nano.utils.log4Error import invalidInputError
+from bigdl.nano.automl.utils.parallel import run_parallel
+import math
 
 
 class HPOMixin:
@@ -108,10 +110,33 @@ class HPOMixin:
                     invalidInputError(False, "invalid target metric")
         return target_metric
 
+    def _create_objective(self, target_metric, create_kwargs, fit_kwargs):
+        isprune = True if create_kwargs.get('pruner', None) else False
+        self.objective = Objective(
+            model=self._model_build,
+            target_metric=target_metric,
+            pruning=isprune,
+            backend=self.backend,
+            **fit_kwargs,
+        )
+
+    # def _run_search_n_procs(self, n_procs=4):
+    #     new_searcher = copy.deepcopy(self)
+    #     n_trials = new_searcher.run_kwargs.get('n_trials', None)
+    #     if n_trials:
+    #         subp_n_trials = math.ceil(n_trials / n_procs)
+    #         new_searcher.run_kwargs['n_trials'] = subp_n_trials
+    #     run_parallel(args=new_searcher, n_procs=n_procs)
+
+    def _run_search(self):
+        # # run optimize
+        self.study.optimize(self.objective, **self.run_kwargs)
+
     def search(
         self,
         resume=False,
         target_metric=None,
+        n_parallels=1,
         **kwargs
     ):
         """
@@ -125,66 +150,33 @@ class HPOMixin:
             and search backend arguments (e.g. n_trials, pruner, etc.)
             are allowed in kwargs.
         """
-        _check_search_args(search_args=kwargs,
-                           legal_keys=[HPOMixin.FIT_KEYS,
-                                       HPOMixin.TUNE_CREATE_KEYS,
-                                       HPOMixin.TUNE_RUN_KEYS])
+        search_kwargs = kwargs or {}
+        self.target_metric = self._fix_target_metric(target_metric, kwargs)
 
-        pruning = True if kwargs.get('pruner', None) else False
+        _validate_args(search_kwargs,
+                       self.target_metric,
+                       legal_keys=[HPOMixin.FIT_KEYS,
+                                   HPOMixin.TUNE_CREATE_KEYS,
+                                   HPOMixin.TUNE_RUN_KEYS])
 
-        # # create objective
-        if self.objective is None:
-            target_metric = self._fix_target_metric(target_metric, kwargs)
-            fit_kwargs = _filter_tuner_args(kwargs, HPOMixin.FIT_KEYS)
-            self.objective = Objective(
-                model=self._model_build,
-                target_metric=target_metric,
-                pruning=pruning,
-                backend=self.backend,
-                **fit_kwargs,
-            )
+        (self.create_kwargs, self.run_kwargs, self.fit_kwargs) \
+            = _prepare_args(search_kwargs,
+                            HPOMixin.TUNE_CREATE_KEYS,
+                            HPOMixin.TUNE_RUN_KEYS,
+                            HPOMixin.FIT_KEYS,
+                            self.backend)
 
-        # # create study
+        # create study
         if self.study is None:
-            if not resume:
-                load_if_exists = False
-                print("Starting a new tuning")
-            else:
-                load_if_exists = True
-                print("Resume the last tuning...")
+            self.study = _create_study(resume, self.create_kwargs, self.backend)
 
-            study_create_kwargs = _filter_tuner_args(kwargs, HPOMixin.TUNE_CREATE_KEYS)
-            _check_optimize_direction(
-                direction=study_create_kwargs.get('direction', None),
-                directions=study_create_kwargs.get('directions', None),
-                metric=target_metric)
+        if self.objective is None:
+            self._create_objective(self.target_metric, self.create_kwargs, self.fit_kwargs)
 
-            # prepare sampler and pruner args
-            sampler_type = study_create_kwargs.get('sampler', None)
-            if sampler_type:
-                sampler_args = study_create_kwargs.get('sampler_kwargs', {})
-                sampler = self.backend.create_sampler(sampler_type, sampler_args)
-                study_create_kwargs['sampler'] = sampler
-                study_create_kwargs.pop('sampler_kwargs', None)
-
-            pruner_type = study_create_kwargs.get('pruner', None)
-            if pruner_type:
-                pruner_args = study_create_kwargs.get('pruner_kwargs', {})
-                pruner = self.backend.create_pruner(pruner_type, pruner_args)
-                study_create_kwargs['pruner'] = pruner
-                study_create_kwargs.pop('pruner_kwargs', None)
-
-            study_create_kwargs['load_if_exists'] = load_if_exists
-            # create study
-            self.study = self.backend.create_study(**study_create_kwargs)
-
-        # renamed callbacks to tune_callbacks to avoid conflict with fit param
-        study_optimize_kwargs = _filter_tuner_args(kwargs, HPOMixin.TUNE_RUN_KEYS)
-        study_optimize_kwargs['callbacks'] = study_optimize_kwargs.get('tune_callbacks', None)
-        study_optimize_kwargs.pop('tune_callbacks', None)
-        study_optimize_kwargs['show_progress_bar'] = False
-        # # run optimize
-        self.study.optimize(self.objective, **study_optimize_kwargs)
+        if n_parallels and n_parallels > 1:
+            self._run_search_n_procs(n_parallels)
+        else:
+            self._run_search()
 
         self.tune_end = False
 

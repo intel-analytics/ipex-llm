@@ -14,12 +14,11 @@
 # limitations under the License.
 #
 
-import cloudpickle
+
 import os
 import subprocess
 import sys
 import copy
-from tempfile import TemporaryDirectory
 
 import logging
 log = logging.getLogger(__name__)
@@ -32,12 +31,15 @@ def run_parallel(args, n_procs):
     :param  args: the arges to be passed to subprocess
     :param num_processes: number of processes to run.
     """
+    import cloudpickle
+    from tempfile import TemporaryDirectory
+
     log.info("-" * 100)
     log.info(f"Starting {n_procs} parallel processes")
     log.info("-" * 100)
 
     with TemporaryDirectory() as temp_dir:
-        with open(os.path.join(temp_dir, "args.pkl"), 'wb') as f:
+        with open(os.path.join(temp_dir, "searcher.pkl"), 'wb') as f:
             cloudpickle.dump(args, f)
 
         processes = _run_subprocess(temp_dir, n_procs)
@@ -64,7 +66,7 @@ def _run_subprocess(tmpdir, num_processes):
             # "PROCESS_IDX": str(i),
         })
 
-        processes.append(subprocess.Popen([sys.executable, f"{cwd_path}/worker.py",
+        processes.append(subprocess.Popen([sys.executable, f"{cwd_path}/parallel_worker.py",
                                            tmpdir], env=env))
 
     return processes
