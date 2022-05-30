@@ -21,23 +21,23 @@ from typing import Any, List, Optional
 import pytorch_lightning as pl
 import torch
 from pytorch_lightning import LightningModule
-from pytorch_lightning.plugins.environments import LightningEnvironment
 from torch import nn
-from torch.fx.graph_module import GraphModule
 from torch.nn.modules.loss import _Loss
 from torch.utils.data import DataLoader
 from torchmetrics.metric import Metric
 from torch.optim.lr_scheduler import _LRScheduler
 import yaml
-from bigdl.nano.common import check_avx512
+from bigdl.nano.pytorch.utils import TORCH_VERSION_LESS_1_10
 from bigdl.nano.pytorch.lightning import LightningModuleFromTorch
 from bigdl.nano.pytorch.plugins.ddp_spawn import DDPSpawnPlugin
+from bigdl.nano.pytorch.plugins.ddp_subprocess import DDPSubprocessPlugin
+
 from bigdl.nano.deps.automl.hpo_api import create_hpo_searcher, check_hpo_status
 from bigdl.nano.deps.ray.ray_api import distributed_ray
-from bigdl.nano.deps.ipex.ipex_api import create_IPEXAccelerator, ipex_device
+from bigdl.nano.deps.ipex.ipex_api import create_IPEXAccelerator
 from bigdl.nano.deps.openvino.openvino_api import PytorchOpenVINOModel, load_openvino_model
-from bigdl.nano.deps.onnxruntime.onnxruntime_api import bind_onnxrt_methods,\
-    PytorchONNXRuntimeModel, load_onnxruntime_model
+from bigdl.nano.deps.onnxruntime.onnxruntime_api import PytorchONNXRuntimeModel, \
+    load_onnxruntime_model
 from bigdl.nano.deps.neural_compressor.inc_api import QuantizationINC, PytorchQuantizedModel,\
     check_pytorch_dataloaders, load_inc_model
 from bigdl.nano.utils.log4Error import invalidInputError
@@ -92,56 +92,38 @@ class Trainer(pl.Trainer):
         else:
             self.hposearcher = None
 
-        # Initialize trainer
-        if use_ipex and not check_avx512():
-            warning("Enable ipex in a cpu instruction set"
-                    " without avx512 may cause some random error."
-                    "Fall back to cpu device.")
-            use_ipex = False
-
         if num_processes == 1:
             accelerator = None
             if use_ipex:
-                accelerator = create_IPEXAccelerator(enable_bf16=enable_bf16)
+                if TORCH_VERSION_LESS_1_10:
+                    accelerator = create_IPEXAccelerator(enable_bf16=enable_bf16)
+                else:
+                    invalidInputError("We currently do not support ipex above 1.9.0")
+
             super().__init__(accelerator=accelerator, *args, **kwargs)
         else:
             plugin = None
             invalidInputError(distributed_backend in distributed_backends,
-                              f"Distributed backends supported now are subprocess, spawn and ray,"
+                              f"Distributed backends supported now are {distributed_backends},"
                               f" but get {distributed_backend}.")
             if distributed_backend == "spawn":
-                if use_ipex:
-                    device = ipex_device()
-                else:
-                    device = "cpu"
-                plugin = DDPSpawnPlugin(parallel_devices=[
-                    torch.device(device) for _ in range(num_processes)],
-                    cpu_for_each_process=cpu_for_each_process,
-                    cluster_environment=LightningEnvironment())
+                plugin = DDPSpawnPlugin(num_processes=num_processes,
+                                        cpu_for_each_process=cpu_for_each_process,
+                                        use_ipex=use_ipex,
+                                        enable_bf16=enable_bf16)
             elif distributed_backend == "subprocess":
-                from bigdl.nano.pytorch.plugins.ddp_subprocess import DDPSubprocessPlugin
-                if use_ipex:
-                    import intel_pytorch_extension as ipex
-                    device = ipex.DEVICE
-                else:
-                    device = "cpu"
-                plugin = DDPSubprocessPlugin(parallel_devices=[
-                    torch.device(device) for _ in range(num_processes)],
-                    cpu_for_each_process=cpu_for_each_process,
-                    cluster_environment=LightningEnvironment())
+                plugin = DDPSubprocessPlugin(num_processes=num_processes,
+                                             cpu_for_each_process=cpu_for_each_process,
+                                             use_ipex=use_ipex,
+                                             enable_bf16=enable_bf16)
             elif distributed_backend == "ray":
                 # Import RayPlugins may entangle with openmp even if it has not been used,
                 # which leads to an unacceptably low performance.
                 # So we import when we need.
                 plugin = distributed_ray(num_workers=num_processes,  # type: ignore
                                          use_ipex=use_ipex,
-                                         device=ipex_device())
-
+                                         enable_bf16=enable_bf16)
             accelerator = None
-            if use_ipex:
-                accelerator = create_IPEXAccelerator(training_type_plugin=plugin,  # type: ignore
-                                                     enable_bf16=enable_bf16)
-
             super().__init__(accelerator=accelerator,
                              plugins=[plugin], *args, **kwargs)
 
@@ -276,10 +258,10 @@ class Trainer(pl.Trainer):
         :return:            A accelerated Pytorch-Lightning Model if quantization is sucessful.
         """
         if not accelerator or accelerator == 'onnxruntime':
-            calib_dataloader = copy.deepcopy(calib_dataloader)
-            val_dataloader = copy.deepcopy(val_dataloader)
             # check if dataloader is of legal format
             check_pytorch_dataloaders(model, [calib_dataloader, val_dataloader])
+
+            model.eval()
 
             if approach not in ['static', 'dynamic']:
                 invalidInputError(False,
