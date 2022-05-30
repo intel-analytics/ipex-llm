@@ -49,7 +49,7 @@ jobs:
           $CONDA/bin/conda info
           bash python/nano/dev/build_and_install.sh linux default false pytorch
           pip install pytest
-          if [ ! -z ${{matrix.pytorch-version}} ]; then
+          if [ ! -z "${{matrix.pytorch-version}}" ]; then
             pip install ${{matrix.pytorch-version}} -f https://download.pytorch.org/whl/torch_stable.html
           fi
           pip install neural-compressor==1.11
