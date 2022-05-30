@@ -25,11 +25,11 @@ from pytorch_lightning.utilities.seed import reset_seed
 if __name__ == '__main__':
     temp_dir = sys.argv[1]
 
-    with open(os.path.join(temp_dir, "args.pkl"), 'rb') as f:
+    with open(os.path.join(temp_dir, "searcher.pkl"), 'rb') as f:
         args = cloudpickle.load(f)
 
-    hposearcher = args
+    searcher = args
     # do we need to reset seed?
-    reset_seed()
+    # reset_seed()
 
-    hposearcher._run_search()
+    searcher._run_search()
