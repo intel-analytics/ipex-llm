@@ -98,6 +98,10 @@ class PPMLContext protected(kms: KeyManagementService, sparkSession: SparkSessio
         throw new IllegalArgumentException("unknown EncryptMode " + cryptoMode.toString)
     }
   }
+
+  def getSparkSession(): SparkSession = {
+    sparkSession
+  }
 }
 
 object PPMLContext{
