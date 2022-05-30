@@ -151,7 +151,7 @@ class BasePytorchForecaster(Forecaster):
                                   format(batch_size, self.num_processes))
                 data = DataLoader(TensorDataset(torch.from_numpy(data[0]),
                                                 torch.from_numpy(data[1])),
-                                  batch_size=batch_size//self.num_processes,
+                                  batch_size=max(1, batch_size//self.num_processes),
                                   shuffle=True)
 
             # Trainer init and fitting
