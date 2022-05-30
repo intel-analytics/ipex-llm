@@ -24,7 +24,7 @@ import logging
 log = logging.getLogger(__name__)
 
 
-def run_parallel(args, n_procs):
+def run_parallel(func, kwargs, n_procs):
     """
     Utility to Run a number of parallel processes.
 
@@ -39,8 +39,10 @@ def run_parallel(args, n_procs):
     log.info("-" * 100)
 
     with TemporaryDirectory() as temp_dir:
-        with open(os.path.join(temp_dir, "searcher.pkl"), 'wb') as f:
-            cloudpickle.dump(args, f)
+        with open(os.path.join(temp_dir, "search_kwargs.pkl"), 'wb') as f:
+            cloudpickle.dump(kwargs, f)
+        with open(os.path.join(temp_dir, "search_func.pkl"), 'wb') as f:
+            cloudpickle.dump(func, f)
 
         processes = _run_subprocess(temp_dir, n_procs)
 

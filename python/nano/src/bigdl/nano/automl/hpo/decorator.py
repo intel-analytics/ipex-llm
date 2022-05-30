@@ -458,6 +458,29 @@ def tfmodel(**kwvars):
                 self._model_compile(model, trial)
                 return model
 
+            def _get_model_build_args(self):
+                return {'lazyobj': self._lazyobj}
+
+            @staticmethod
+            def _get_model_builder(model_build_args,
+                                   compile_args,
+                                   compile_kwargs,
+                                   backend):
+
+                lazyobj = model_build_args.get('lazyobj')
+
+                def model_builder(trial):
+                    model = backend.instantiate(trial, lazyobj)
+                    # self._model_compile(model, trial)
+                    # instantiate optimizers if it is autoobj
+                    optimizer = compile_kwargs.get('optimizer', None)
+                    if optimizer and isinstance(optimizer, AutoObject):
+                        optimizer = backend.instantiate(trial, optimizer)
+                        compile_kwargs['optimizer'] = optimizer
+                    model.compile(*compile_args, **compile_kwargs)
+                    return model
+                return model_builder
+
         return TFAutoMdl
 
     return registered_class
