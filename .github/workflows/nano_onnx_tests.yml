@@ -24,7 +24,7 @@ jobs:
         pytorch-version: [
           "torch==1.11.0+cpu torchvision==0.12.0+cpu",
           "torch==1.10.1+cpu torchvision==0.11.2+cpu",
-          "torch==1.9.0+cpu, torchvision==0.10.0+cpu"
+          ""
           ]
 
 
@@ -49,8 +49,11 @@ jobs:
           source $CONDA/bin/activate onnx-pytorch
           $CONDA/bin/conda info
           bash python/nano/dev/build_and_install.sh linux default false pytorch
-          pip install ${{matrix.pytorch-version}} -f https://download.pytorch.org/whl/torch_stable.html
+          if [ ! -z ${{matrix.pytorch-version}} ]; then
+            pip install ${{matrix.pytorch-version}} -f https://download.pytorch.org/whl/torch_stable.html
+          fi
           pip install pytest
+          pip install neural-compressor==1.11
           pip install onnxruntime onnxruntime-extensions onnx
           source bigdl-nano-init
           bash python/nano/test/run-nano-pytorch-onnx-tests.sh

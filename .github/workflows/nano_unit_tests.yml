@@ -24,7 +24,7 @@ jobs:
         pytorch-version: [
           "torch==1.11.0+cpu torchvision==0.12.0+cpu",
           "torch==1.10.1+cpu torchvision==0.11.2+cpu",
-          "torch==1.9.0+cpu, torchvision==0.10.0+cpu"
+          ""
           ]
 
     # Steps represent a sequence of tasks that will be executed as part of the job
@@ -82,7 +82,9 @@ jobs:
           $CONDA/bin/conda info
           bash python/nano/dev/build_and_install.sh linux default false pytorch
           pip install pytest
-          pip install ${{matrix.pytorch-version}} -f https://download.pytorch.org/whl/torch_stable.html
+          if [ ! -z ${{matrix.pytorch-version}} ]; then
+            pip install ${{matrix.pytorch-version}} -f https://download.pytorch.org/whl/torch_stable.html
+          fi
           source bigdl-nano-init
           bash python/nano/test/run-nano-pytorch-tests.sh
           source $CONDA/bin/deactivate
@@ -99,7 +101,9 @@ jobs:
           bash python/nano/dev/build_and_install.sh linux default false pytorch
           pip install pytest
           pip install ray[default]==1.11.0 prometheus_client==0.13.0
-          pip install ${{matrix.pytorch-version}} -f https://download.pytorch.org/whl/torch_stable.html
+          if [ ! -z ${{matrix.pytorch-version}} ]; then
+            pip install ${{matrix.pytorch-version}} -f https://download.pytorch.org/whl/torch_stable.html
+          fi
           source bigdl-nano-init
           bash python/nano/test/run-nano-pytorch-ray-tests.sh
           source $CONDA/bin/deactivate
@@ -115,7 +119,10 @@ jobs:
           $CONDA/bin/conda info
           bash python/nano/dev/build_and_install.sh linux default false pytorch
           pip install pytest
-          pip install ${{matrix.pytorch-version}} -f https://download.pytorch.org/whl/torch_stable.html
+          if [ ! -z ${{matrix.pytorch-version}} ]; then
+            pip install ${{matrix.pytorch-version}} -f https://download.pytorch.org/whl/torch_stable.html
+          fi
+          pip install openvino-dev
           source bigdl-nano-init
           bash python/nano/test/run-nano-pytorch-openvino-tests.sh
           source $CONDA/bin/deactivate
