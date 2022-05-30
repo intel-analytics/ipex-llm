@@ -104,7 +104,7 @@ if _compare_version("torch", operator.lt, "1.10"):
         return obj
 
     def nano_save(obj, f, pickle_module=pickle, pickle_protocol=DEFAULT_PROTOCOL,
-                 _use_new_zipfile_serialization=False):
+                  _use_new_zipfile_serialization=False):
         # Extend original `save` defined in ipex.ops.save
         # to support converting a list of xpu tensor to cpu in torch.save
         if isinstance(obj, RESTORE_TYPE):
