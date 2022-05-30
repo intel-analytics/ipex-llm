@@ -29,6 +29,12 @@ import org.apache.spark.input.PortableDataStream
 
 class FernetEncrypt extends Crypto {
 
+  /**
+   * Encrypt a single file
+   * @param binaryFilePath The file needs to be encrypted
+   * @param savePath The path where encrypted file to be saved
+   * @param dataKeyPlaintext The secret key
+   */
   def encryptFile(binaryFilePath: String, savePath: String, dataKeyPlaintext: String): Unit = {
     Log4Error.invalidInputError(savePath != null && savePath != "",
       "encrypted file save path should be specified")
@@ -42,6 +48,12 @@ class FernetEncrypt extends Crypto {
     }
   }
 
+  /**
+   * Decrypt a single file
+   * @param binaryFilePath The file needs to be decrypted
+   * @param savePath The path where decrypted file to be saved
+   * @param dataKeyPlaintext The secret key
+   */
   def decryptFile(binaryFilePath: String, savePath: String, dataKeyPlaintext: String): Unit = {
     Log4Error.invalidInputError(savePath != null && savePath != "",
       "decrypted file save path should be specified")
@@ -77,6 +89,12 @@ class FernetEncrypt extends Crypto {
     bw.write(content)
   }
 
+  /**
+   * Read some bytes from a DataInputStream
+   * @param stream A DataInputStream
+   * @param numBytes The number of bytes needs to be read
+   * @return Array of bytes read from DataInputStream
+   */
   private def read(stream: DataInputStream, numBytes: Int): Array[Byte] = {
     val retval = new Array[Byte](numBytes)
     val bytesRead: Int = stream.read(retval)
@@ -86,6 +104,12 @@ class FernetEncrypt extends Crypto {
     retval
   }
 
+  /**
+   * Encrypt bytes
+   * @param content The plaintext content
+   * @param dataKeyPlaintext The secret key
+   * @return Array of encrypted bytes
+   */
   private def encryptContent(content: Array[Byte], dataKeyPlaintext: String): Array[Byte] = {
 
     val secret = dataKeyPlaintext.getBytes()
@@ -147,6 +171,12 @@ class FernetEncrypt extends Crypto {
     outByteStream.toByteArray()
   }
 
+  /**
+   * Decrypt bytes
+   * @param content The encrypted content
+   * @param dataKeyPlaintext The secrey key
+   * @return Array of decrypted bytes
+   */
   private def decryptContent(content: Array[Byte], dataKeyPlaintext: String): Array[Byte] = {
 
     val secret: Array[Byte] = dataKeyPlaintext.getBytes()
@@ -183,6 +213,12 @@ class FernetEncrypt extends Crypto {
     cipher.doFinal(cipherText)
   }
 
+  /**
+   * Decrypt huge content
+   * @param ite Iterator of (String, PortableDataStream), comes from sparkContext.binaryfiles.mapPartitions
+   * @param dataKeyPlaintext The secret key
+   * @return Iterator of String
+   */
   def decryptBigContent(
         ite: Iterator[(String, PortableDataStream)],
         dataKeyPlaintext: String): Iterator[String] = {

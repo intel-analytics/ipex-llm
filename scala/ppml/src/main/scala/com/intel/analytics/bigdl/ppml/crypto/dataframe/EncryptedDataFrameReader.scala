@@ -66,6 +66,12 @@ class EncryptedDataFrameReader(
 }
 
 object EncryptedDataFrameReader {
+
+  /**
+   * Convert RDD to DataFrame, assume the first element of RDD is the header
+   * @param dataRDD The original RDD
+   * @return a DataFrame
+   */
   private[bigdl] def toDataFrame(dataRDD: RDD[String]): DataFrame = {
     // get schema
     val sparkSession: SparkSession = SparkSession.builder().getOrCreate()
