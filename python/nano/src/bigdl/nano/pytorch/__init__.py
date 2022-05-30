@@ -13,8 +13,5 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+from bigdl.nano.pytorch.utils import TORCH_VERSION_LESS_1_10
 from bigdl.nano.pytorch.trainer import Trainer
-import operator
-from pytorch_lightning.utilities.imports import _compare_version
-
-TORCH_VERSION_LESS_1_10 = _compare_version("torch", operator.lt, "1.10")

@@ -36,7 +36,7 @@ import os
 from collections import defaultdict
 from bigdl.nano.deps.ipex.ipex_api import ipex_device, ipex_optimize
 
-from bigdl.nano.pytorch import TORCH_VERSION_LESS_1_10
+from bigdl.nano.pytorch.utils import TORCH_VERSION_LESS_1_10
 
 import ray
 import torch
