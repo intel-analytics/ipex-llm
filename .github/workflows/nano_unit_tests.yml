@@ -22,7 +22,7 @@ jobs:
         os: ["ubuntu-20.04"]
         python-version: ["3.7"]
         pytorch-version: [
-          "torch==1.9.1+cpu torchvision==0.10.1+cpu",
+          "torch==1.11.0+cpu torchvision==0.12.0+cpu",
           "torch==1.10.1+cpu torchvision==0.11.2+cpu",
           ""
           ]
@@ -140,6 +140,11 @@ jobs:
       matrix:
         os: ["ubuntu-20.04"]
         python-version: ["3.7"]
+        pytorch-version: [
+          "torch==1.11.0+cpu torchvision==0.12.0+cpu intel_extension_for_pytorch==1.11.0",
+          # "torch==1.10.1+cpu torchvision==0.11.2+cpu",
+          # ""
+          ]
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
@@ -163,6 +168,9 @@ jobs:
           $CONDA/bin/conda info
           bash python/nano/dev/build_and_install.sh linux default false pytorch
           pip install pytest
+          if [ ! -z "${{matrix.pytorch-version}}" ]; then
+            pip install ${{matrix.pytorch-version}} --extra-index-url https://download.pytorch.org/whl/torch_stable.html
+          fi
           source bigdl-nano-init
           bash python/nano/test/run-nano-pytorch-tests-ipex.sh
           source $CONDA/bin/deactivate
