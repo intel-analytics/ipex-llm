@@ -274,9 +274,8 @@ class Trainer(pl.Trainer):
         """
         if not accelerator or accelerator == 'onnxruntime':
             # check if dataloader is of legal format
-            check_output_format = (metric is not None) and (val_dataloader is not None)
             check_pytorch_dataloaders(model, [calib_dataloader, val_dataloader],
-                                      check_output_format=check_output_format)
+                                      metric=metric)
 
             if approach not in ['static', 'dynamic']:
                 invalidInputError(False,
