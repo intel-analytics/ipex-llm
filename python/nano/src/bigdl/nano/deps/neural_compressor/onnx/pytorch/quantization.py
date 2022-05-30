@@ -35,7 +35,7 @@ class PytorchONNXRuntimeQuantization(BaseONNXRuntimeQuantization, PytorchQuantiz
     def _pre_execution(self, model, calib_dataloader=None, metric=None):
 
         if calib_dataloader:
-            
+
             def numpy_collate_fn_wrapper(func):
                 def transform_tensor_to_numpy(item):
                     if isinstance(item, torch.Tensor):
