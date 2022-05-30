@@ -37,8 +37,8 @@ from bigdl.nano.deps.automl.hpo_api import create_hpo_searcher, check_hpo_status
 from bigdl.nano.deps.ray.ray_api import distributed_ray
 from bigdl.nano.deps.ipex.ipex_api import create_IPEXAccelerator
 from bigdl.nano.deps.openvino.openvino_api import PytorchOpenVINOModel, load_openvino_model
-from bigdl.nano.deps.onnxruntime.onnxruntime_api import PytorchONNXRuntimeModel, \
-    load_onnxruntime_model
+from bigdl.nano.deps.onnxruntime.onnxruntime_api import bind_onnxrt_methods,\
+    PytorchONNXRuntimeModel, load_onnxruntime_model
 from bigdl.nano.deps.neural_compressor.inc_api import QuantizationINC, PytorchQuantizedModel,\
     check_pytorch_dataloaders, load_inc_model
 from bigdl.nano.utils.log4Error import invalidInputError
