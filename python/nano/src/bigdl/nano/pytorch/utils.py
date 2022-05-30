@@ -14,17 +14,7 @@
 # limitations under the License.
 #
 
+import operator
+from pytorch_lightning.utilities.imports import _compare_version
 
-def create_ray_multiprocessing_backend():
-    from bigdl.nano.deps.ray.ray_backend import RayBackend
-    return RayBackend()
-
-
-def create_ray_envbase(world_size):
-    from bigdl.nano.deps.ray.ray_envbase import RayEnvironment
-    return RayEnvironment(world_size)
-
-
-def distributed_ray(*args, **kwargs):
-    from .ray_distributed import RayPlugin
-    return RayPlugin(*args, **kwargs)
+TORCH_VERSION_LESS_1_10 = _compare_version("torch", operator.lt, "1.10")
