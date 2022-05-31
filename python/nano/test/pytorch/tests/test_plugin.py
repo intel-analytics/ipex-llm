@@ -67,27 +67,30 @@ class TestPlugin(TestCase):
             self.model, self.loss, self.optimizer,
             metrics=[torchmetrics.F1(num_classes), torchmetrics.Accuracy(num_classes=10)]
         )
-        data_loader_non_shuffle = create_data_loader(data_dir, batch_size, num_workers,
+        dataloader_1 = create_data_loader(data_dir, batch_size, num_workers,
+                                     data_transform, subset=dataset_size, shuffle=False)
+        dataloader_2 = create_data_loader(data_dir, batch_size, num_workers,
                                      data_transform, subset=dataset_size, shuffle=False)
         trainer_dis = Trainer(num_processes=2, distributed_backend="subprocess", max_epochs=4)
-        trainer_dis.tune(model=pl_model, train_dataloaders=data_loader_non_shuffle, scale_batch_size_kwargs={'max_trials':2})
-        trainer_dis.fit(pl_model, data_loader_non_shuffle, data_loader_non_shuffle)
+        trainer_dis.tune(model=pl_model, train_dataloaders=dataloader_1, scale_batch_size_kwargs={'max_trials':2})
+        trainer_dis.fit(pl_model, dataloader_1, dataloader_1)
         
 
         trainer_single = Trainer(num_processes=1, max_epochs=4)
-        trainer_single.tune(model=pl_model, train_dataloaders=data_loader_non_shuffle, scale_batch_size_kwargs={'max_trials':3})
-        trainer_single.fit(pl_model, data_loader_non_shuffle, data_loader_non_shuffle)
+        trainer_single.tune(model=pl_model, train_dataloaders=dataloader_2, scale_batch_size_kwargs={'max_trials':3})
+        trainer_single.fit(pl_model, dataloader_2, dataloader_2)
 
-        res1 = trainer_single.test(pl_model, data_loader_non_shuffle)
-        res2 = trainer_dis.test(pl_model, data_loader_non_shuffle)
+        res_dis = trainer_dis.test(pl_model, dataloader_1)
+        res_single = trainer_single.test(pl_model, dataloader_2)
         
-        print("single result", res1)
-        print("distributed result", res2)
+        
+        print("single result", res_single)
+        print("distributed result", res_dis)
 
-        acc1 = res1[0]['test/Accuracy_1']
-        acc2 = res2[0]['test/Accuracy_1']
+        acc_single = res_single[0]['test/Accuracy_1']
+        acc_dis = res_dis[0]['test/Accuracy_1']
 
-        assert abs((acc1-acc2))/max(acc1, acc2) < 0.3, "distributed trained model accuracy should be close to non-distributed-trained model"
+        assert abs((acc_single-acc_dis))/max(acc_dis, acc_single) < 0.3, "distributed trained model accuracy should be close to non-distributed-trained model"
         return 
 
 if __name__ == '__main__':
