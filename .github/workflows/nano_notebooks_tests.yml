@@ -37,32 +37,17 @@ jobs:
           python -m pip install --upgrade setuptools==58.0.4
           python -m pip install --upgrade wheel
 
-      - name: Run notebooks trainer PyTorch unit tests
+      - name: Run notebooks PyTorch unit tests
         shell: bash
         run: |
-          $CONDA/bin/conda create -n notebooks-trainer-pytorch -y python==3.7.10 setuptools=58.0.4
-          source $CONDA/bin/activate notebooks-trainer-pytorch
-          $CONDA/bin/conda info
-          bash python/nano/dev/build_and_install.sh linux default false pytorch
-          source bigdl-nano-init
-          pip install -r python/nano/notebooks/pytorch/requirements.txt
-          bash python/nano/test/run-nano-notebooks-trainer-pytorch-tests.sh
-          source $CONDA/bin/deactivate
-          $CONDA/bin/conda remove -n notebooks-pytorch --all
+            $CONDA/bin/conda create -n notebooks-trainer-pytorch -y python==3.7.10 setuptools=58.0.4
+            source $CONDA/bin/activate notebooks-trainer-pytorch
+            $CONDA/bin/conda info
+            bash python/nano/dev/build_and_install.sh linux default false pytorch
+            source bigdl-nano-init
+            pip install -r python/nano/notebooks/pytorch/requirements.txt
+            bash python/nano/test/run-nano-notebooks-pytorch-tests.sh
+            source $CONDA/bin/deactivate
+            $CONDA/bin/conda remove -n notebooks-pytorch --all
         env:
-          ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
-          
-      - name: Run notebooks inference Pytorch unit test
-        shell: bash
-        run: |
-          $CONDA/bin/conda create -n notebooks-infer-pytorch -y python==3.7.10 setuptools=58.0.4
-          source $CONDA/bin/activate notebooks-infer-pytorch
-          $CONDA/bin/conda info
-          bash python/nano/dev/build_and_install.sh linux default false pytorch
-          source bigdl-nano-init
-          pip install -r python/nano/notebooks/pytorch/requirements.txt
-          bash python/nano/test/run-nano-notebooks-inference-pytorch-tests.sh
-          source $CONDA/bin/deactivate
-          $CONDA/bin/conda remove -n notebooks-infer-pytorch --all
-        env:
-          ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
+            ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
