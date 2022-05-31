@@ -44,6 +44,10 @@ class KerasBaseModel(BaseModel):
         self._check_config(**config)
         self.config = config
         # build model
+        # TODO: move this to Chronos
+        if "selected_features" in config:
+            config["input_feature_num"] = len(config['selected_features'])\
+                + config['output_feature_num']
         self.model = self.model_creator(config)
         # check whether the model is a compiled model
         if self.model.optimizer is None:
