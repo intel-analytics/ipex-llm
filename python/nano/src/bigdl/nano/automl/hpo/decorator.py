@@ -458,16 +458,17 @@ def tfmodel(**kwvars):
                 self._model_compile(model, trial)
                 return model
 
-            def _get_model_build_args(self):
-                return {'lazyobj': self._lazyobj}
+            def _get_model_builder_args(self):
+                return {'lazyobj': self._lazyobj,
+                        'compile_args': self.compile_args,
+                        'compile_kwargs': self.compile_kwargs,
+                        'backend': self.backend}
 
             @staticmethod
-            def _get_model_builder(model_build_args,
+            def _get_model_builder(lazyobj,
                                    compile_args,
                                    compile_kwargs,
                                    backend):
-
-                lazyobj = model_build_args.get('lazyobj')
 
                 def model_builder(trial):
                     model = backend.instantiate(trial, lazyobj)

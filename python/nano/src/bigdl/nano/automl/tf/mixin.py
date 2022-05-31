@@ -125,6 +125,36 @@ class HPOMixin:
         )
         return objective
 
+    def _get_model_builder_args(self):
+        return {'model_init_args_func': self._model_init_args_func,
+                'model_init_args_func_kwargs': self._get_model_init_args_func_kwargs(),
+                'modelcls': self.model_class,
+                'compile_args': self.compile_args,
+                'compile_kwargs': self.compile_kwargs,
+                'backend': self.backend}
+
+    @staticmethod
+    def _get_model_builder(model_init_args_func,
+                           model_init_args_func_kwargs,
+                           modelcls,
+                           compile_args,
+                           compile_kwargs,
+                           backend):
+
+        def model_builder(trial):
+            model = modelcls(**model_init_args_func(
+                trial,
+                **model_init_args_func_kwargs))
+            # self._model_compile(model, trial)
+            # instantiate optimizers if it is autoobj
+            optimizer = compile_kwargs.get('optimizer', None)
+            if optimizer and isinstance(optimizer, AutoObject):
+                optimizer = backend.instantiate(trial, optimizer)
+                compile_kwargs['optimizer'] = optimizer
+            model.compile(*compile_args, **compile_kwargs)
+            return model
+        return model_builder
+
     @staticmethod
     def _run_search_subproc(study,
                             get_model_builder_func,
@@ -158,11 +188,7 @@ class HPOMixin:
 
         subp_kwargs = {'study': self.study,
                        'get_model_builder_func': self._get_model_builder,
-                       'get_model_builder_func_args': {
-                           'model_build_args': self._get_model_build_args(),
-                           'compile_args': self.compile_args,
-                           'compile_kwargs': self.compile_kwargs,
-                           'backend': self.backend},
+                       'get_model_builder_func_args': self._get_model_builder_args(),
                        'backend': self.backend,
                        'target_metric': self.target_metric,
                        'isprune': isprune,
