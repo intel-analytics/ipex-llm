@@ -77,13 +77,8 @@ class TestPlugin(TestCase):
         res_dis = trainer_dis.test(pl_model_dis, dataloader_1)
         print("distributed result", res_dis)
 
-        # dataloader_2 = create_data_loader(data_dir, batch_size, num_workers,
-        #                              data_transform, subset=dataset_size, shuffle=False)
+ 
         dataloader_2 = copy.deepcopy(dataloader_1)
-        # pl_model_single = LightningModuleFromTorch(
-        #     self.model, self.loss, self.optimizer,
-        #     metrics=[torchmetrics.F1(num_classes), torchmetrics.Accuracy(num_classes=10)]
-        # )
         pl_model_single = copy.deepcopy(pl_model_dis)
         trainer_single = Trainer(num_processes=1, max_epochs=4)
         trainer_single.tune(model=pl_model_single, train_dataloaders=dataloader_2, scale_batch_size_kwargs={'max_trials':3})
@@ -95,7 +90,7 @@ class TestPlugin(TestCase):
         acc_single = res_single[0]['test/Accuracy_1']
         acc_dis = res_dis[0]['test/Accuracy_1']
 
-        assert abs((acc_single-acc_dis))/max(acc_dis, acc_single) < 0.3, "distributed trained model accuracy should be close to non-distributed-trained model"
+        assert abs((acc_single-acc_dis)) < 0.1, "distributed trained model accuracy should be close to non-distributed-trained model"
         return 
 
 if __name__ == '__main__':
