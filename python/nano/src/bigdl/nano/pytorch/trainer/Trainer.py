@@ -126,7 +126,7 @@ class Trainer(pl.Trainer):
                                          enable_bf16=enable_bf16)
             if use_ipex:
                 if TORCH_VERSION_LESS_1_10:
-                    accelerator = create_IPEXAccelerator(training_type_plugin=plugin,
+                    accelerator = create_IPEXAccelerator_1_9(training_type_plugin=plugin,
                                                          enable_bf16=enable_bf16)
                 else:
                     accelerator = None
