@@ -56,7 +56,7 @@ if [ -f data/amazon_books_vocs.tar.gz ]; then
   echo "data/amazon_books_vocs.tar.gz already exists"
 else
   wget -nv $FTP_URI/analytics-zoo-data/amazon_books_vocs.tar.gz -P data
-  tar -xf data/amazon_books_vocs.tar.gz -C data/vocs
+  tar -xf data/amazon_books_vocs.tar.gz -C data
 fi
 if [ -f data/reviews_Books.json ]; then
   echo "data/reviews_Books.json already exists"
