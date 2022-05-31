@@ -81,8 +81,8 @@ BigDL mainly supports 3 ways to submit our job and run it on Yarn:
 This is the easiest and most recommended way to run BigDL on YARN, we only need to prepare the environment on the driver machine, all dependencies would be automatically packaged and distributed to the whole Yarn cluster.
 
 ### Note: 
-* When running on Yarn-Client mode, the `cluster_mode` of OrcaContext should be `yarn` or `yarn-client`. 
-* When running on Yarn-Cluster mode, the `cluster_mode` of OrcaContext should be `yarn-cluster`.
+* When running on Yarn-Client mode, the `cluster_mode` of `init_orca_context( )` should be `yarn` or `yarn-client`. 
+* When running on Yarn-Cluster mode, the `cluster_mode` of `init_orca_context( )` should be `yarn-cluster`.
 
 Let's run the program as a python script:
 ```bash
@@ -92,16 +92,17 @@ python script.py
 # Run Programs with BigDL Provided Scripts
 For `spark-submit` users, BigDL provided a `bigdl-submit` script which could automatically detect and setup configuration and jars files from the current conda environment. Before submitting our program to Yarn with `bigdl-submit`, we need to pack the Conda environment to an archive, which captures the Conda environment for Python and stores both Python interpreter and all its relevant dependencies.
 ```bash
-conda pack -o environment.tar.gz#env 
+conda pack -o environment.tar.gz#environment 
 ```
 ### Note:
-* If `environment.tar.gz` is not under the same directory with script.py, we should modify its path in `--archives` in the running command below.
+* If `environment.tar.gz` is not under the same directory with script.py, we should modify its path in `--archives` in the running command below;
+* The `cluster_mode` of `init_orca_context( )` must be `spark-submit` when you use `bigdl-submit` to run programs.
 
 ## Yarn Client
 When running programs with `bigdl-submit`, we need:
 * Set the Python environment as the local Python location. For `yarn-client` mode, the Spark driver is running on local and it will use the Python interpreter in the current active conda environment.
 ```bash
-export PYSPARK_DRIVER_PYTHON='which python' # python location on driver
+export PYSPARK_DRIVER_PYTHON='which python' # Do not set in yarn cluster modes.
 ```
 * Set the `archives` argument to the location of the Conda archive, which will be upload to remote clusters(i.e. HDFS) and distributed between all executors.
 ```bash
@@ -125,23 +126,28 @@ PYSPARK_PYTHON=environment/bin/python bigdl-submit \
     script.py
 ```
 
-# Run with Spark Submit Script
+# Run Programs with Spark Submit Script
 When the dirver node on the Yarn Cluster is not able to install conda environment, it's recommended for us to use `spark-submit` script to run our program instead of `bigdl-submit`. Before running with `spark-submit`, we need:
 * Install all the dependency files that BigDL required (refer to prepare environment part) on the node which could install conda;
 * Pack the conda environment to an archive on the node with conda then send it to the driver node; 
-* Download and unzip a BigDL assembly package from BigDL Release Page;
+* Download and unzip a BigDL assembly package from BigDL Release Page(https://bigdl.readthedocs.io/en/latest/doc/release.html);
 * Set the location of unzipped BigDL package as `${BIGDL_HOME}`;
+
+### Note:
+* The `cluster_mode` of `init_orca_context( )` must be `spark-submit` when you use `bigdl-submit` to run programs.
 
 ## Yarn Client
 When running with `spark-submit` script, we need make preparation with the following steps:
+### Runtime Environment Preparation
 * Set the driver Python environment to the local Python location, since Spark driver is running on local and it will use the Python interpreter in the current active Conda environment.
 ```bash
-export PYSPARK_DRIVER_PYTHON='which python' # python location on driver
+export PYSPARK_DRIVER_PYTHON='which python' # Do not set in yarn cluster modes.
 ```
 * Set the executor Python environment to the location in the Conda archive, since executors will use the Python interpreter and relevant libraries in the conda archive.
 ```bash
-PYSPARK_PYTHON=environment/bin/python
+export PYSPARK_PYTHON=environment/bin/python
 ```
+### Spark-Submit Script Preparation
 * Set the `archives` argument to the location of the archive which was sent from the other node;
 ```bash
 --archives environment.tar.gz#environment
@@ -165,7 +171,7 @@ PYSPARK_PYTHON=environment/bin/python
 
 Once all preparation works are done, you could submit and execute the BigDL program with `spark-submit` script:
 ```bash
-PYSPARK_PYTHON=environment/bin/python spark-submit \
+spark-submit \
     --properties-file ${BIGDL_HOME}/conf/spark-bigdl.conf \
     --py-files ${BIGDL_HOME}/python -name bigdl-spark_*-python-api.zip \
     --conf spark.driver.extraClassPath=${BIGDL_HOME}/jars/* \
