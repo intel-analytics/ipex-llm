@@ -29,6 +29,8 @@ from test.pytorch.utils._train_torch_lightning import create_data_loader, data_t
 from test.pytorch.utils._train_torch_lightning import create_test_data_loader
 from test.pytorch.tests.test_lightning import ResNet18
 
+import copy
+
 num_classes = 10
 batch_size = 32
 dataset_size = 256
@@ -72,22 +74,22 @@ class TestPlugin(TestCase):
         trainer_dis = Trainer(num_processes=2, distributed_backend="subprocess", max_epochs=4)
         trainer_dis.tune(model=pl_model_dis, train_dataloaders=dataloader_1, scale_batch_size_kwargs={'max_trials':2})
         trainer_dis.fit(pl_model_dis, dataloader_1, dataloader_1)
-        
+        res_dis = trainer_dis.test(pl_model_dis, dataloader_1)
+        print("distributed result", res_dis)
 
-        dataloader_2 = create_data_loader(data_dir, batch_size, num_workers,
-                                     data_transform, subset=dataset_size, shuffle=False)
-        pl_model_single = LightningModuleFromTorch(
-            self.model, self.loss, self.optimizer,
-            metrics=[torchmetrics.F1(num_classes), torchmetrics.Accuracy(num_classes=10)]
-        )
+        # dataloader_2 = create_data_loader(data_dir, batch_size, num_workers,
+        #                              data_transform, subset=dataset_size, shuffle=False)
+        dataloader_2 = copy.deepcopy(dataloader_1)
+        # pl_model_single = LightningModuleFromTorch(
+        #     self.model, self.loss, self.optimizer,
+        #     metrics=[torchmetrics.F1(num_classes), torchmetrics.Accuracy(num_classes=10)]
+        # )
+        pl_model_single = copy.deepcopy(pl_model_dis)
         trainer_single = Trainer(num_processes=1, max_epochs=4)
         trainer_single.tune(model=pl_model_single, train_dataloaders=dataloader_2, scale_batch_size_kwargs={'max_trials':3})
         trainer_single.fit(pl_model_single, dataloader_2, dataloader_2)
-
-
-        res_dis = trainer_dis.test(pl_model_dis, dataloader_1)
+        
         res_single = trainer_single.test(pl_model_single, dataloader_2)
-        print("distributed result", res_dis)
         print("single result", res_single)
 
         acc_single = res_single[0]['test/Accuracy_1']
