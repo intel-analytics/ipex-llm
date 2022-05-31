@@ -133,37 +133,37 @@ When the dirver node on the Yarn Cluster is not able to install conda environmen
 * Set the location of unzipped BigDL package as `${BIGDL_HOME}`;
 
 ## Yarn Client
-When running with `spark-submit` script, we need make preparison with the following steps:
-* 1. Set the driver Python environment to the local Python location, since Spark driver is running on local and it will use the Python interpreter in the current active Conda environment.
+When running with `spark-submit` script, we need make preparation with the following steps:
+* Set the driver Python environment to the local Python location, since Spark driver is running on local and it will use the Python interpreter in the current active Conda environment.
 ```bash
 export PYSPARK_DRIVER_PYTHON='which python' # python location on driver
 ```
-* 2. Set the executor Python environment to the location in the Conda archive, since executors will use the Python interpreter and relevant libraries in the conda archive.
+* Set the executor Python environment to the location in the Conda archive, since executors will use the Python interpreter and relevant libraries in the conda archive.
 ```bash
 PYSPARK_PYTHON=environment/bin/python
 ```
-* 3. Set the `archives` argument to the location of the archive which was sent from the other node;
+* Set the `archives` argument to the location of the archive which was sent from the other node;
 ```bash
 --archives environment.tar.gz#env
 ```
-* 4. Set the `properties-file` argument to override spark configuration by BigDL configuration file;
+* Set the `properties-file` argument to override spark configuration by BigDL configuration file;
 ```bash
 --properties-file ${BIGDL_HOME}/conf/spark-bigdl.conf
 ```
-* 5. Set the `py-files` argument as the BigDL Python zip file to distribute dependency libraries;
+* Set the `py-files` argument as the BigDL Python zip file to distribute dependency libraries;
 ```bash
 --py-files ${BIGDL_HOME}/python -name bigdl-spark_*-python-api.zip
 ```
-* 6. Set the `spark.driver.extraClassPath` argument to register the BigDL jars files to the classpath of driver;
+* Set the `spark.driver.extraClassPath` argument to register the BigDL jars files to the classpath of driver;
 ```bash
 --conf spark.driver.extraClassPath=${BIGDL_HOME}/jars/*
 ```
-* 7. Set the `spark.executor.extraClassPath` argument to register the BigDL jars files to the classpath of executors;
+* Set the `spark.executor.extraClassPath` argument to register the BigDL jars files to the classpath of executors;
 ```bash
 --conf spark.executor.extraClassPath=${BIGDL_HOME}/jars/*
 ```
 
-Once all preparison works are done, you could submit and execute the BigDL program with `spark-submit` script:
+Once all preparation works are done, you could submit and execute the BigDL program with `spark-submit` script:
 ```bash
 PYSPARK_PYTHON=environment/bin/python spark-submit \
     --properties-file ${BIGDL_HOME}/conf/spark-bigdl.conf \
