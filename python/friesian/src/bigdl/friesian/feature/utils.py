@@ -13,11 +13,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-# from bigdl.friesian.feature import FeatureTable
 
 from bigdl.dllib.utils.file_utils import callZooFunc
 from pyspark.sql.types import IntegerType, ShortType, LongType, FloatType, DecimalType, \
-    DoubleType, BooleanType, ArrayType
+    DoubleType, BooleanType
 from pyspark.sql.functions import broadcast, udf
 from bigdl.dllib.utils.log4Error import *
 import warnings
