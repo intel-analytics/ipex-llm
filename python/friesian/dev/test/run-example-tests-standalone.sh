@@ -52,17 +52,21 @@ time1=$((now - start))
 echo "#2 start example test for preprocessing inference"
 #timer
 start=$(date "+%s")
+if [ -f data/amazon_books_vocs.tar.gz ]; then
+  echo "data/amazon_books_vocs.tar.gz already exists"
+else
+  wget -nv $FTP_URI/analytics-zoo-data/amazon_books_vocs.tar.gz -P data
+  tar -xf data/amazon_books_vocs.tar.gz -C data/vocs
+fi
 if [ -f data/reviews_Books.json ]; then
   echo "data/reviews_Books.json already exists"
 else
-  wget -nv $FTP_URI/analytics-zoo-data/amazon_books_vocs.tar.gz -P data
-  tar -xf data/amazon_books_vocs.tar.gz -C data
+  wget -nv $FTP_URI/analytics-zoo-data/reviews_Books.json -P data
 fi
 if [ -f data/meta_Books.json ]; then
   echo "data/meta_Books.json already exists"
 else
-  wget -nv $FTP_URI/analytics-zoo-data/amazon_books_vocs.tar.gz -P data
-  tar -xf data/amazon_books_vocs.tar.gz -C data
+  wget -nv $FTP_URI/analytics-zoo-data/meta_Books.json -P data
 fi
 
 python ../../example/dien/preprocessing_inference.py \
@@ -74,7 +78,7 @@ python ../../example/dien/preprocessing_inference.py \
     --driver_memory 1g \
     --input_transaction reviews_Books.json \
     --input_meta meta_Books.json \
-    --index_folder ./ --num_save_files 80
+    --index_folder ./data --num_save_files 80
 
 now=$(date "+%s")
 time2=$((now - start))
