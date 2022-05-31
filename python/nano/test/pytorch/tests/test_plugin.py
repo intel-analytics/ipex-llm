@@ -87,6 +87,7 @@ class TestPlugin(TestCase):
         res_single = trainer_single.test(pl_model_single, dataloader_2)
         print("single result", res_single)
 
+
         acc_single = res_single[0]['test/Accuracy_1']
         acc_dis = res_dis[0]['test/Accuracy_1']
 
