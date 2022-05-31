@@ -55,13 +55,13 @@ class Net(ImageClassifier):
         return optimizer
 
 
-def create_data_loader(dir, batch_size, num_workers, transform, subset=50):
+def create_data_loader(dir, batch_size, num_workers, transform, subset=50, shuffle=True):
     train_set = CIFAR10(root=dir, train=True,
                         download=True, transform=transform)
     # `subset` is the number of subsets. The larger the number, the smaller the training set.
     mask = list(range(0, len(train_set), subset))
     train_subset = torch.utils.data.Subset(train_set, mask)
-    data_loader = DataLoader(train_subset, batch_size=batch_size, shuffle=True,
+    data_loader = DataLoader(train_subset, batch_size=batch_size, shuffle=shuffle,
                              num_workers=num_workers)
     return data_loader
 

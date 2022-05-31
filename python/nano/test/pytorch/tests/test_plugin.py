@@ -67,17 +67,19 @@ class TestPlugin(TestCase):
             self.model, self.loss, self.optimizer,
             metrics=[torchmetrics.F1(num_classes), torchmetrics.Accuracy(num_classes=10)]
         )
+        data_loader_non_shuffle = create_data_loader(data_dir, batch_size, num_workers,
+                                     data_transform, subset=dataset_size, shuffle=False)
         trainer_dis = Trainer(num_processes=2, distributed_backend="subprocess", max_epochs=4)
-        trainer_dis.tune(model=pl_model, train_dataloaders=self.data_loader, scale_batch_size_kwargs={'max_trials':2})
-        trainer_dis.fit(pl_model, self.data_loader, self.data_loader)
+        trainer_dis.tune(model=pl_model, train_dataloaders=data_loader_non_shuffle, scale_batch_size_kwargs={'max_trials':2})
+        trainer_dis.fit(pl_model, data_loader_non_shuffle, data_loader_non_shuffle)
         
 
         trainer_single = Trainer(num_processes=1, max_epochs=4)
-        trainer_single.tune(model=pl_model, train_dataloaders=self.data_loader, scale_batch_size_kwargs={'max_trials':3})
-        trainer_single.fit(pl_model, self.data_loader, self.data_loader)
+        trainer_single.tune(model=pl_model, train_dataloaders=data_loader_non_shuffle, scale_batch_size_kwargs={'max_trials':3})
+        trainer_single.fit(pl_model, data_loader_non_shuffle, data_loader_non_shuffle)
 
-        res1 = trainer_single.test(pl_model, self.data_loader)
-        res2 = trainer_dis.test(pl_model, self.data_loader)
+        res1 = trainer_single.test(pl_model, data_loader_non_shuffle)
+        res2 = trainer_dis.test(pl_model, data_loader_non_shuffle)
         
         print("single result", res1)
         print("distributed result", res2)
@@ -85,7 +87,7 @@ class TestPlugin(TestCase):
         acc1 = res1[0]['test/Accuracy_1']
         acc2 = res2[0]['test/Accuracy_1']
 
-        assert (acc1-acc2)/max(acc1, acc2) < 0.3, "distributed trained model accuracy should be close to non-distributed-trained model"
+        assert abs((acc1-acc2))/max(acc1, acc2) < 0.3, "distributed trained model accuracy should be close to non-distributed-trained model"
         return 
 
 if __name__ == '__main__':
