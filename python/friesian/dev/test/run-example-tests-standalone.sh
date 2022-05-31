@@ -49,7 +49,38 @@ python ../../example/dien/dien_preprocessing.py \
 now=$(date "+%s")
 time1=$((now - start))
 
+echo "#2 start example test for preprocessing inference"
+#timer
+start=$(date "+%s")
+if [ -f data/reviews_Books.json ]; then
+  echo "data/reviews_Books.json already exists"
+else
+  wget -nv $FTP_URI/analytics-zoo-data/amazon_books_vocs.tar.gz -P data
+  tar -xf data/amazon_books_vocs.tar.gz -C data
+fi
+if [ -f data/meta_Books.json ]; then
+  echo "data/meta_Books.json already exists"
+else
+  wget -nv $FTP_URI/analytics-zoo-data/amazon_books_vocs.tar.gz -P data
+  tar -xf data/amazon_books_vocs.tar.gz -C data
+fi
+
+python ../../example/dien/preprocessing_inference.py \
+    --cluster_mode standalone \
+    --executor_cores 4 \
+    --num_executors 2 \
+    --executor_memory 10g \
+    --driver_cores 2 \
+    --driver_memory 1g \
+    --input_transaction reviews_Books.json \
+    --input_meta meta_Books.json \
+    --index_folder ./ --num_save_files 80
+
+now=$(date "+%s")
+time2=$((now - start))
+
 rm -rf data
 rm -rf result
 
-echo "#1 dien preprocessing inference time used: $time1 seconds"
+echo "#1 dien preprocessing time used: $time1 seconds"
+echo "#2 preprocessing inference time used: $time2 seconds"
