@@ -92,7 +92,8 @@ By default, `Trainer.quantize()` doesn't search the tuning space and returns the
 ### Quantization using Intel Neural Compressor
 By default, Intel Neural Compressor is not installed with BigDL-Nano. So if you determine to use it as your quantization backend, you'll need to install it first:
 ```shell
-pip install neural-compressor
+# We have tested on neural-compressor>=1.8.1,<=1.11.0
+pip install 'neural-compressor>=1.8.1,<=1.11.0'
 ```
 **Quantization without extra accelerator**  
 Without extra accelerator, `Trainer.quantize()` returns a pytorch module with desired precision and accuracy. Following the example in [Runtime Acceleration](#runtime-acceleration), you can add quantization as below:
