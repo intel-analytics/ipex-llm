@@ -32,29 +32,10 @@ if __name__ == '__main__':
 
     plugin = args
     trainer = plugin.lightning_module.trainer
-    plugin.mp_queue = multiprocessing.SimpleQueue()
     process_idx = int(os.environ["PROCESS_IDX"])
 
-    reset_seed()
-    plugin.set_world_ranks(process_idx)
-    # rank_zero_only.rank = plugin.global_rank
+    plugin.new_processes(process_idx, trainer, multiprocessing.SimpleQueue())
 
-    plugin.init_ddp_connection(plugin.global_rank, plugin.world_size)
-
-    plugin.dist.rank = plugin.global_rank
-    plugin.dist.device = plugin.root_device
-
-    if plugin.sync_batchnorm:
-        plugin.model = plugin.configure_sync_batchnorm(plugin.model)
-
-    plugin.configure_ddp()
-
-    plugin.model_to_device()
-
-    plugin.barrier()
-    results = trainer.run_stage()
-
-    plugin.transfer_distrib_spawn_state_on_fit_end(results)
     if plugin.global_rank == 0:
         with open(os.path.join(temp_dir,
                                "results.pkl"), "wb") as f:
