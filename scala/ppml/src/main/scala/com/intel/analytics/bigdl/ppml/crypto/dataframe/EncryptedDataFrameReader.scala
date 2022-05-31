@@ -17,8 +17,7 @@
 package com.intel.analytics.bigdl.ppml.crypto.dataframe
 
 import com.intel.analytics.bigdl.ppml.PPMLContext
-import com.intel.analytics.bigdl.ppml.crypto.CryptoMode
-import com.intel.analytics.bigdl.ppml.crypto.CryptoMode.CryptoMode
+import com.intel.analytics.bigdl.ppml.crypto.{AES_CBC_PKCS5PADDING, CryptoMode, PLAIN_TEXT}
 import com.intel.analytics.bigdl.ppml.crypto.dataframe.EncryptedDataFrameReader.toDataFrame
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.types.{StringType, StructField, StructType}
@@ -42,11 +41,11 @@ class EncryptedDataFrameReader(
   }
   def csv(path: String): DataFrame = {
     encryptMode match {
-      case CryptoMode.PLAIN_TEXT =>
+      case PLAIN_TEXT =>
         sparkSession.read.options(extraOptions).csv(path)
-      case CryptoMode.AES_CBC_PKCS5PADDING =>
+      case AES_CBC_PKCS5PADDING =>
         val rdd = PPMLContext.textFile(sparkSession.sparkContext, path,
-          dataKeyPlainText)
+           dataKeyPlainText, encryptMode)
         // TODO: support more options
         if (extraOptions.contains("header") &&
           extraOptions("header").toLowerCase() == "true") {

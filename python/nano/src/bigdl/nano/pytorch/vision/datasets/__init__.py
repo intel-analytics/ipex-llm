@@ -14,4 +14,8 @@
 # limitations under the License.
 #
 
+from torchvision.datasets import *
+del ImageFolder
+
+
 from .datasets import ImageFolder, SegmentationImageFolder

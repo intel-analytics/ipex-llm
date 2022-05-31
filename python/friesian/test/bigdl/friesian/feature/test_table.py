@@ -594,21 +594,31 @@ class TestTable(TestCase):
     def test_pad(self):
         spark = OrcaContext.get_spark_session()
         data = [
-            ("jack", [1, 2, 3, 4, 5], [[1, 2, 3], [1, 2, 3]]),
-            ("alice", [4, 5, 6, 7, 8], [[1, 2, 3], [1, 2, 3]]),
-            ("rose", [1, 2], [[1, 2, 3]])]
+            ("jack", [1, 2, 3, 4, 5], [[1, 2, 3], [1, 2, 3]], ["a", "b"]),
+            ("alice", [4, 5, 6, 7, 8], [[1, 2, 3], [1, 2, 3]], ["a", "b", "c"]),
+            ("rose", [1, 2], [[1, 2, 3]], ["a"])]
         schema = StructType([StructField("name", StringType(), True),
                              StructField("list", ArrayType(IntegerType()), True),
-                             StructField("matrix", ArrayType(ArrayType(IntegerType())))])
+                             StructField("matrix", ArrayType(ArrayType(IntegerType()))),
+                             StructField("str_list", ArrayType(StringType()), True)])
         df = spark.createDataFrame(data, schema)
         tbl1 = FeatureTable(df).pad(["list", "matrix"], seq_len=4)
         dft1 = tbl1.df
         tbl2 = FeatureTable(df).pad(cols=["list", "matrix"], mask_cols=["list"], seq_len=4)
+        tbl3 = FeatureTable(df).pad(cols=["str_list"], mask_token="<MSK>", seq_len=2)
+        with self.assertRaises(Exception) as context:
+            tbl4 = FeatureTable(df).pad(cols=["list"], mask_token="2", seq_len=5)
+            tbl4.show(truncate=False)
+        self.assertTrue('Failed to convert mask_token type java.lang.String to the element '
+                        'type of column java.lang.Integer' in
+                        str(context.exception))
+
         assert dft1.filter("size(matrix) = 4").count() == 3
         assert dft1.filter("size(list) = 4").count() == 3
         assert tbl2.df.filter("size(list_mask) = 4").count() == 3
         assert tbl2.df.filter("size(list_mask) = 2").count() == 0
         assert "list_mask" in tbl2.df.columns
+        assert tbl3.df.filter("size(str_list) = 2").count() == 3
 
     def test_median(self):
         file_path = os.path.join(self.resource_path, "parquet/data1.parquet")

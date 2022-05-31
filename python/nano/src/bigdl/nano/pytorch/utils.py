@@ -14,10 +14,7 @@
 # limitations under the License.
 #
 
-from .metrics import *
+import operator
+from pytorch_lightning.utilities.imports import _compare_version
 
-METRICS = {
-    'pytorch': PytorchINCMetric,
-    'tensorflow': TensorflowINCMetric,
-    'onnx': ONNXRuntimeINCMetic
-}
+TORCH_VERSION_LESS_1_10 = _compare_version("torch", operator.lt, "1.10")

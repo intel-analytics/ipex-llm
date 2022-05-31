@@ -107,6 +107,8 @@ ENV RUNTIME_TOTAL_EXECUTOR_CORES    ${RUNTIME_TOTAL_EXECUTOR_CORES}
 ENV SPARK_HOME                      /opt/work/spark-${SPARK_VERSION}
 ENV BIGDL_HOME                      /opt/work/bigdl-${BIGDL_VERSION}
 ENV JAVA_HOME                       /opt/jdk
+ENV BIGDL_CLASSPATH                 ${BIGDL_HOME}/jars/*
+ENV PYTHONPATH                      ${BIGDL_HOME}/python/bigdl-spark_${SPARK_VERSION}-${BIGDL_VERSION}-python-api.zip:${BIGDL_HOME}/conf/spark-bigdl.conf:${SPARK_HOME}/python/lib/pyspark.zip:${SPARK_HOME}/python/lib/py4j-*.zip
 ENV PATH                            ${JAVA_HOME}/bin:${PATH}
 
 WORKDIR /opt/work

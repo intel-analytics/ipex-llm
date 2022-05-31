@@ -46,12 +46,12 @@ class TestImputeTimeSeries(ZooTestCase):
         pass
 
     def test_impute_timeseries_dataframe(self):
-        with pytest.raises(AssertionError):
+        with pytest.raises(RuntimeError):
             impute_timeseries_dataframe(self.df, dt_col="z")
-        with pytest.raises(AssertionError):
+        with pytest.raises(RuntimeError):
             impute_timeseries_dataframe(
                 self.df, dt_col="datetime", mode="dummy")
-        with pytest.raises(AssertionError):
+        with pytest.raises(RuntimeError):
             impute_timeseries_dataframe(self.df, dt_col="a")
         last_res_df = impute_timeseries_dataframe(
             self.df, dt_col="datetime", mode="last")

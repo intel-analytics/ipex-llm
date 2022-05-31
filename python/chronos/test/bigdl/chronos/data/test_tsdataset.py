@@ -133,19 +133,19 @@ class TestTSDataset(ZooTestCase):
         assert tsdata._is_pd_datetime
 
         # illegal input
-        with pytest.raises(AssertionError):
+        with pytest.raises(RuntimeError):
             tsdata = TSDataset.from_pandas(df, dt_col="datetime", target_col=["value"],
                                            extra_feature_col="extra feature", id_col=0)
-        with pytest.raises(AssertionError):
+        with pytest.raises(RuntimeError):
             tsdata = TSDataset.from_pandas(df, dt_col=0, target_col=["value"],
                                            extra_feature_col="extra feature", id_col="id")
-        with pytest.raises(AssertionError):
+        with pytest.raises(RuntimeError):
             tsdata = TSDataset.from_pandas(df, dt_col="datetime", target_col=0,
                                            extra_feature_col="extra feature", id_col="id")
-        with pytest.raises(AssertionError):
+        with pytest.raises(RuntimeError):
             tsdata = TSDataset.from_pandas(0, dt_col="datetime", target_col=["value"],
                                            extra_feature_col="extra feature", id_col="id")
-        with pytest.raises(AssertionError):
+        with pytest.raises(RuntimeError):
             tsdata = TSDataset.from_pandas(df, dt_col="datetime", target_col=["value1"],
                                            extra_feature_col="extra feature", id_col="id")
 
@@ -198,19 +198,19 @@ class TestTSDataset(ZooTestCase):
         assert tsdata._is_pd_datetime
 
         # illegael input
-        with pytest.raises(AssertionError):
+        with pytest.raises(RuntimeError):
             tsdata = TSDataset.from_pandas(df, dt_col="datetime", target_col=["value"],
                                            extra_feature_col="extra feature", id_col=0)
-        with pytest.raises(AssertionError):
+        with pytest.raises(RuntimeError):
             tsdata = TSDataset.from_pandas(df, dt_col=0, target_col=["value"],
                                            extra_feature_col="extra feature", id_col="id")
-        with pytest.raises(AssertionError):
+        with pytest.raises(RuntimeError):
             tsdata = TSDataset.from_pandas(df, dt_col="datetime", target_col=0,
                                            extra_feature_col="extra feature", id_col="id")
-        with pytest.raises(AssertionError):
+        with pytest.raises(RuntimeError):
             tsdata = TSDataset.from_pandas(0, dt_col="datetime", target_col=["value"],
                                            extra_feature_col="extra feature", id_col="id")
-        with pytest.raises(AssertionError):
+        with pytest.raises(RuntimeError):
             tsdata = TSDataset.from_pandas(df, dt_col="datetime", target_col=["value1"],
                                            extra_feature_col="extra feature", id_col="id")
 
@@ -927,13 +927,13 @@ class TestTSDataset(ZooTestCase):
                                                             test_ratio=0.1)
         from sklearn.preprocessing import StandardScaler
         stand = StandardScaler()
-        with pytest.raises(AssertionError):
+        with pytest.raises(RuntimeError):
             for tsdata in [td_train, td_valid, td_test]:
                 tsdata.scale(stand, fit=False)
             tsdata._check_basic_invariants()
 
         # remove due to the possible large cost on test sys
-        # with pytest.raises(AssertionError):
+        # with pytest.raises(RuntimeError):
         #     tsdata.gen_global_feature(settings="minimal")\
         #           .gen_rolling_feature(settings="minimal", window_size=5)
 
@@ -944,11 +944,11 @@ class TestTSDataset(ZooTestCase):
                                        extra_feature_col="extra feature",
                                        id_col="id")
 
-        with pytest.raises(AssertionError):
+        with pytest.raises(RuntimeError):
             tsdata.resample('2D')
-        with pytest.raises(AssertionError):
+        with pytest.raises(RuntimeError):
             tsdata.gen_dt_feature()
-        with pytest.raises(AssertionError):
+        with pytest.raises(RuntimeError):
             tsdata.gen_rolling_feature(settings="minimal", window_size=1000)
 
         tsdata._check_basic_invariants()
@@ -959,7 +959,7 @@ class TestTSDataset(ZooTestCase):
                                        dt_col="datetime",
                                        extra_feature_col="extra feature",
                                        id_col="id")
-        with pytest.raises(AssertionError):
+        with pytest.raises(RuntimeError):
             tsdata.roll(lookback=5, horizon=2, id_sensitive=True)
         tsdata._check_basic_invariants()
 
@@ -981,13 +981,13 @@ class TestTSDataset(ZooTestCase):
                                        extra_feature_col='extra feature',
                                        id_col='id')
 
-        with pytest.raises(AssertionError):
+        with pytest.raises(RuntimeError):
             tsdata.get_cycle_length(aggregate="normal")
-        with pytest.raises(AssertionError):
+        with pytest.raises(RuntimeError):
             tsdata.get_cycle_length(aggregate=10)
-        with pytest.raises(AssertionError):
+        with pytest.raises(RuntimeError):
             tsdata.get_cycle_length(top_k='3')
-        with pytest.raises(AssertionError):
+        with pytest.raises(RuntimeError):
             tsdata.get_cycle_length(top_k=24)
         
         df = pd.DataFrame({"datetime": pd.date_range('1/1/2019', periods=100),
@@ -1011,5 +1011,5 @@ class TestTSDataset(ZooTestCase):
         tsdata = TSDataset.from_pandas(df,
                                        target_col='value',
                                        dt_col='datetime')
-        with pytest.raises(AssertionError):
+        with pytest.raises(RuntimeError):
             tsdata.get_cycle_length(aggregate='min', top_k=3)

@@ -102,8 +102,9 @@ class DoppelGANgerDataModule(LightningDataModule):
         # prepare input meta data
         # ===================================================================================
         total_generate_num_sample = data_feature.shape[0]
+        from bigdl.nano.utils.log4Error import invalidInputError
         if data_feature.shape[1] % self.sample_len != 0:
-            raise Exception("length must be a multiple of sample_len")
+            invalidInputError(False, "length must be a multiple of sample_len")
         self.length = int(data_feature.shape[1] / self.sample_len)
 
         # will be used in dataset init

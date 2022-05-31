@@ -73,6 +73,7 @@ class PytorchBaseModel(BaseModel):
         self._check_config(**config)
         self.config = config
         # build model
+        # TODO: move this to Chronos
         if "selected_features" in config:
             config["input_feature_num"] = len(config['selected_features'])\
                 + config['output_feature_num']

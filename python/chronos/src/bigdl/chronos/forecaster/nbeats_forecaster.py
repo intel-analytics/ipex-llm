@@ -95,9 +95,11 @@ class NBeatsForecaster(BasePytorchForecaster):
         """
         # ("generic", "generic") not support orca distributed.
         if stack_types[-1] == "generic" and distributed:
-            raise RuntimeError("Please set distributed=False or change the type "
-                               "of 'stack_types' to 'trend', 'seasonality', "
-                               "e.g. ('generic', 'seasonality').")
+            from bigdl.nano.utils.log4Error import invalidInputError
+            invalidInputError(False,
+                              "Please set distributed=False or change the type "
+                              "of 'stack_types' to 'trend', 'seasonality', "
+                              "e.g. ('generic', 'seasonality').")
 
         self.data_config = {
             "past_seq_len": past_seq_len,

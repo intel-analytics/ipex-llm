@@ -26,23 +26,25 @@ def _check_data_type(data):
                 invalidInputError(False, "expect torch.Tensor here")
 
 
-def _check_loader(model, loader):
+def _check_loader(model, loader, metric=None):
     if loader is None:
         return
     sample = next(iter(loader))
     try:
+        if metric is not None:
+            # only check the type when tunning
+            # TODO: not only check type, but also if metric(y, yhat)
+            # can return a valid result.
+            # Each one must be of torch.Tensor
+            _check_data_type(sample)
         if len(sample) == 2:
             x, y = sample
-            _check_data_type(x)
-            _check_data_type(y)
             if isinstance(x, torch.Tensor):
                 model(x)
             else:
                 model(*x)
         else:
             # If sample is not tuple of length 2, then it should be (x1, x2, x3, ...).
-            # Each one must be of torch.Tensor
-            _check_data_type(sample)
             # check if datalader yields data complied with what model requires
             # TypeError will throw if it fails
             model(*sample)
@@ -52,11 +54,3 @@ def _check_loader(model, loader):
                           "- (tuple or Tensor, tuple or Tensor)\n"
                           "- (Tensor, Tensor, ..., Tensor). \n"
                           "Please confirm number of inputs comply with model.forward.")
-
-
-def check_loaders(model, loaders):
-    if isinstance(loaders, list):
-        for loader in loaders:
-            _check_loader(model, loader)
-    else:
-        _check_loader(model, loaders)

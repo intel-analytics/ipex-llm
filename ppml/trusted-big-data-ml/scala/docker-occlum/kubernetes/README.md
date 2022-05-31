@@ -144,3 +144,6 @@ Then run the script.
 ./run_spark_tpch.sh
 ```
 
+## How to debug
+Modify the `SGX_LOG_LEVEL` to one of `off, error, warn, debug, info, and trace` in `executor.yaml`.
+

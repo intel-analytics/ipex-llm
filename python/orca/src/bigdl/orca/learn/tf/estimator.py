@@ -429,6 +429,12 @@ def to_dataset(data, batch_size, batch_per_thread, validation_data,
     return dataset
 
 
+def save_model_dir(model_dir):
+    if model_dir.startswith("dbfs:/"):
+        model_dir = "/dbfs/" + model_dir[len("dbfs:/"):]
+    return model_dir
+
+
 class TensorFlowEstimator(Estimator):
     def __init__(self, *, inputs, outputs, labels, loss,
                  optimizer, clip_norm, clip_value,
@@ -781,6 +787,8 @@ class TensorFlowEstimator(Estimator):
 
 class KerasEstimator(Estimator):
     def __init__(self, keras_model, metrics, model_dir, optimizer):
+        if model_dir and model_dir.startswith("dbfs:/"):
+            model_dir = save_model_dir(model_dir)
         self.model = KerasModel(keras_model, model_dir)
         self.load_checkpoint = False
         self.metrics = metrics
