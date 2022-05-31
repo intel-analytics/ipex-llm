@@ -40,6 +40,7 @@ import logging
 import socket
 
 from bigdl.orca.data.utils import ray_partitions_get_data_label, ray_partitions_get_tf_dataset
+from bigdl.dllib.utils.log4Error import *
 
 logger = logging.getLogger(__name__)
 
@@ -74,7 +75,8 @@ class DatasetHandler:
         train_dataset = data_creator(config, config["batch_size"])
         if isinstance(train_dataset, list) and \
                 all([isinstance(x, ray.ObjectID) for x in train_dataset]):
-            assert steps_per_epoch is not None, "steps_per_epoch must be provided for xshard"
+            invalidInputError(steps_per_epoch is not None,
+                              "steps_per_epoch must be provided for xshard")
             train_dataset = self._handle_xshards(train_dataset,
                                                  steps=steps_per_epoch * epochs,
                                                  local_batch_size=local_batch_size,
@@ -86,8 +88,9 @@ class DatasetHandler:
             test_dataset = validation_data_creator(config, config["batch_size"])
             if isinstance(test_dataset, list) and \
                     all([isinstance(x, ray.ObjectID) for x in test_dataset]):
-                assert validation_steps is not None, "validation_steps must be provided" \
-                                                     "when use xshards for evaluate"
+                invalidInputError(validation_steps is not None,
+                                  "validation_steps must be provided when"
+                                  " use xshards for evaluate")
                 test_dataset = self._handle_xshards(test_dataset,
                                                     steps=validation_steps,
                                                     local_batch_size=local_batch_size,
@@ -105,7 +108,7 @@ class DatasetHandler:
         config['size'] = self.size
         dataset = data_creator(config, config["batch_size"])
         if isinstance(dataset, list) and all([isinstance(x, ray.ObjectID) for x in dataset]):
-            assert steps is not None, "steps must be provided for xshard"
+            invalidInputError(steps is not None, "steps must be provided for xshard")
             dataset = self._handle_xshards(dataset,
                                            steps=steps,
                                            local_batch_size=local_batch_size,
@@ -116,13 +119,13 @@ class DatasetHandler:
         return dataset
 
     def _handle_xshards(self, dataset, steps, local_batch_size, shuffle):
-        raise NotImplementedError
+        invalidInputError(False, "not implemented")
 
     def _handle_sharding(self, dataset):
-        raise NotImplementedError
+        invalidInputError(False, "not implemented")
 
     def _handle_batch_size(self, config):
-        raise NotImplementedError
+        invalidInputError(False, "not implemented")
 
     @staticmethod
     def get_handler(backend, rank, size):
@@ -136,7 +139,7 @@ class DatasetHandler:
         if backend == "tf-local":
             return LocalDatasetHandler(rank, size)
 
-        raise Exception(f"invalid backend: {backend}")
+        invalidInputError(False, f"invalid backend: {backend}")
 
 
 class HorovodDatasetHanlder(DatasetHandler):
@@ -163,7 +166,7 @@ class HorovodDatasetHanlder(DatasetHandler):
         return dataset
 
     def _handle_batch_size(self, config):
-        assert "batch_size" in config, "batch_size must be set in config"
+        invalidInputError("batch_size" in config, "batch_size must be set in config")
         config["batch_size"] = config["batch_size"] // self.size
         return config, config["batch_size"]
 
@@ -195,7 +198,7 @@ class TFDistributedDatasetHandler(DatasetHandler):
         return dataset
 
     def _handle_batch_size(self, config):
-        assert "batch_size" in config, "batch_size must be set in config"
+        invalidInputError("batch_size" in config, "batch_size must be set in config")
         local_batch_size = config["batch_size"] // self.size
         return config, local_batch_size
 
@@ -219,7 +222,7 @@ class LocalDatasetHandler(DatasetHandler):
         return dataset
 
     def _handle_batch_size(self, config):
-        assert "batch_size" in config, "batch_size must be set in config"
+        invalidInputError("batch_size" in config, "batch_size must be set in config")
         return config, config["batch_size"]
 
 
@@ -284,7 +287,7 @@ class TFRunner:
             world_rank (int): the index of the runner.
             world_size (int): the total number of runners.
         """
-        assert len(urls) == world_size
+        invalidInputError(len(urls) == world_size, "expect len(urls) == world_size")
         tf_config = {
             "cluster": {
                 "worker": urls
@@ -431,7 +434,7 @@ class TFRunner:
 
         dataset = data_creator(config, batch_size)
         if not isinstance(dataset, ray.ObjectID):
-            raise ValueError("Only xshards is supported for predict")
+            invalidInputError(False, "Only xshards is supported for predict")
 
         partition = ray.get(dataset)
         params = dict(

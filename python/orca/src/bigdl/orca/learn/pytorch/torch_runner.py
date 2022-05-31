@@ -46,6 +46,7 @@ from bigdl.orca.learn.pytorch.constants import SCHEDULER_STEP, NUM_STEPS
 from bigdl.orca.learn.pytorch.training_operator import TrainingOperator
 from bigdl.orca.learn.pytorch import utils
 from bigdl.orca.learn.pytorch.utils import get_filesystem
+from bigdl.dllib.utils.log4Error import *
 
 try:
     from collections.abc import Iterable
@@ -143,8 +144,8 @@ class TorchRunner:
             self.criterion = self.loss_creator
         else:  # Torch loss is also callable.
             import types
-            assert isinstance(self.loss_creator, types.FunctionType), \
-                "Must provide a torch loss instance or a loss_creator function"
+            invalidInputError(isinstance(self.loss_creator, types.FunctionType),
+                              "Must provide a torch loss instance or a loss_creator function")
             self.criterion = self.loss_creator(self.config)
 
     def _create_schedulers_if_available(self):
@@ -186,8 +187,8 @@ class TorchRunner:
         self.models = self.model_creator(self.config)
         if isinstance(self.models, nn.Sequential) or not isinstance(self.models, Iterable):
             self.models = [self.models]
-        assert all(isinstance(model, nn.Module) for model in self.models), (
-            "All models must be PyTorch models: {}.".format(self.models))
+        invalidInputError(all(isinstance(model, nn.Module) for model in self.models),
+                          ("All models must be PyTorch models: {}.".format(self.models)))
 
         self.logger.debug("Creating optimizer.")
         self.optimizers = self.optimizer_creator(self.given_models,
@@ -284,7 +285,7 @@ class TorchRunner:
                 # Truncate validation by the min step for all workers (data may distribute unevenly)
                 # Or it results in error in next epoch of training (op.preamble.length <= op.nbytes)
                 validation_tensor = torch.tensor(len(val_loader))
-                assert self.backend != "horovod", "Sanity check failed!"
+                invalidInputError(self.backend != "horovod", "Sanity check failed!")
                 self.dist_backend.all_reduce_min(validation_tensor)
                 val_steps = validation_tensor.item()
             else:
@@ -519,7 +520,8 @@ class TorchRunner:
     def load_checkpoint(self, filepath):
         fs = get_filesystem(filepath)
         if not fs.exists(filepath):
-            raise FileNotFoundError(f"Checkpoint at {filepath} not found. Aborting training.")
+            invalidInputError(False,
+                              f"Checkpoint at {filepath} not found. Aborting training.")
         with fs.open(filepath, "rb") as f:
             state_dict = torch.load(f)
         self.load_state_dict(state_dict)

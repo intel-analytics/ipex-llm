@@ -20,6 +20,7 @@ import logging
 import shutil
 import glob
 from distutils.dir_util import copy_tree
+from bigdl.dllib.utils.log4Error import *
 
 logger = logging.getLogger(__name__)
 
@@ -151,7 +152,7 @@ def exists(path):
         except Exception as ex:
             if ex.response['Error']['Code'] == 'NoSuchKey':
                 return False
-            raise ex
+            invalidOperationError(False, str(ex), cause=ex)
         return True
     elif path.startswith("hdfs://"):
         import pyarrow as pa
@@ -264,7 +265,7 @@ def is_file(path):
             else:
                 return False
         except Exception as ex:
-            raise ex
+            invalidOperationError(False, str(ex), cause=ex)
     elif path.startswith("hdfs://"):
         import pyarrow as pa
         host_port = path.split("://")[1].split("/")[0].split(":")
@@ -503,8 +504,7 @@ def get_remote_dir_to_local(remote_dir, local_dir):
             [s3_client.download_file(bucket, key, os.path.join(local_dir, os.path.basename(keys)))
              for key in keys]
         except Exception as e:
-            print(str(e))
-            raise e
+            invalidOperationError(False, str(e), cause=e)
         return 0
     else:
         if remote_dir.startswith("file://"):
@@ -535,6 +535,5 @@ def get_remote_files_with_prefix_to_local(remote_path_prefix, local_dir):
             [s3_client.download_file(bucket, key, os.path.join(local_dir, os.path.basename(keys)))
              for key in keys]
         except Exception as e:
-            print(str(e))
-            raise e
+            invalidOperationError(False, str(e), cause=e)
     return os.path.join(local_dir, prefix)

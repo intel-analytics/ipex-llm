@@ -16,6 +16,7 @@
 
 from bigdl.dllib.optim.optimizer import OptimMethod
 from bigdl.dllib.utils.tf import process_grad
+from bigdl.dllib.utils.log4Error import invalidInputError
 
 
 class FakeOptimMethod(OptimMethod):
@@ -46,11 +47,12 @@ def get_gradients_for_keras(optimizer, loss, params):
         all_reduced_grads = []
         for grad, param in zip(grads, params):
             if grad is None:
-                raise ValueError("Variable {} has `None` for gradient. "
-                                 "Please make sure that all of your ops have a "
-                                 "gradient defined (i.e. are differentiable). "
-                                 "Common ops without gradient: "
-                                 "K.argmax, K.round, K.eval.".format(param))
+                invalidInputError(False,
+                                  "Variable {} has `None` for gradient. "
+                                  "Please make sure that all of your ops have a "
+                                  "gradient defined (i.e. are differentiable). "
+                                  "Common ops without gradient: "
+                                  "K.argmax, K.round, K.eval.".format(param))
             grad = process_grad(grad)
 
             with tf.control_dependencies([param]):

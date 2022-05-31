@@ -18,6 +18,7 @@ import logging
 import numpy as np
 
 from bigdl.orca.learn.utils import get_latest_checkpoint
+from bigdl.dllib.utils.log4Error import invalidInputError
 
 
 logger = logging.getLogger(__name__)
@@ -69,9 +70,11 @@ class Estimator(object):
                                         cpu_binding=cpu_binding)
         elif backend == "spark":
             if cpu_binding:
-                raise ValueError("cpu_binding should not be True when using spark backend")
+                invalidInputError(False,
+                                  "cpu_binding should not be True when using spark backend")
             if not model_dir:
-                raise ValueError("Please specify model directory when using spark backend")
+                invalidInputError(False,
+                                  "Please specify model directory when using spark backend")
             from bigdl.orca.learn.tf2.pyspark_estimator import SparkTFEstimator
             return SparkTFEstimator(model_creator=model_creator,
                                     config=config, verbose=verbose,
@@ -81,8 +84,9 @@ class Estimator(object):
                                     model_dir=model_dir,
                                     **kwargs)
         else:
-            raise ValueError("Only horovod, tf2 and spark backends are supported"
-                             f" for now, got backend: {backend}")
+            invalidInputError(False,
+                              "Only horovod, tf2 and spark backends are supported"
+                              f" for now, got backend: {backend}")
 
     @staticmethod
     def latest_checkpoint(checkpoint_dir):

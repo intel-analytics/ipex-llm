@@ -196,7 +196,7 @@ class TestPyTorchAutoEstimator(TestCase):
 
     def test_fit_invalid_optimizer_name(self):
         invalid_optimizer_name = "ADAM"
-        with pytest.raises(ValueError) as excinfo:
+        with pytest.raises(RuntimeError) as excinfo:
             auto_est = AutoEstimator.from_torch(model_creator=model_creator,
                                                 optimizer=invalid_optimizer_name,
                                                 loss="BCELoss",
@@ -207,7 +207,7 @@ class TestPyTorchAutoEstimator(TestCase):
 
     def test_fit_invalid_loss_name(self):
         invalid_loss_name = "MAELoss"
-        with pytest.raises(ValueError) as excinfo:
+        with pytest.raises(RuntimeError) as excinfo:
             auto_est = AutoEstimator.from_torch(model_creator=model_creator,
                                                 optimizer="SGD",
                                                 loss=invalid_loss_name,
@@ -261,7 +261,7 @@ class TestPyTorchAutoEstimator(TestCase):
                     y_pred = np.argmax(y_pred, axis=1)
             return fbeta_score(y_true, y_pred, beta=0.75)
 
-        with pytest.raises(ValueError) as exeinfo:
+        with pytest.raises(RuntimeError) as exeinfo:
             auto_est.fit(data=data,
                          validation_data=validation_data,
                          search_space=create_linear_search_space(),

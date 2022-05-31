@@ -18,6 +18,7 @@ import tensorflow as tf
 
 from bigdl.dllib.utils.tf import export_tf
 from optparse import OptionParser
+from bigdl.dllib.utils.log4Error import *
 
 
 def ckpt_to_frozen_graph(options):
@@ -66,8 +67,8 @@ if __name__ == "__main__":
     parser.add_option("-o", "--outputDir", dest="outputDir", default=".")
     import sys
     (options, args) = parser.parse_args(sys.argv)
-    assert options.pbPath is not None, "--pbPath must be provided"
-    assert options.ckptPath is not None, "--ckptPath must be provided"
-    assert options.inputsName is not None, "--inputsName must be provided"
-    assert options.outputsName is not None, "--outputsName must be provided"
+    invalidInputError(options.pbPath is not None, "--pbPath must be provided")
+    invalidInputError(options.ckptPath is not None, "--ckptPath must be provided")
+    invalidInputError(options.inputsName is not None, "--inputsName must be provided")
+    invalidInputError(options.outputsName is not None, "--outputsName must be provided")
     ckpt_to_frozen_graph(options)
