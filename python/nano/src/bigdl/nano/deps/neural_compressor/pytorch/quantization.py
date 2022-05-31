@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+from typing import Callable
 from bigdl.nano.utils.log4Error import invalidInputError
 from ..core import BaseQuantization
 from .utils import _check_loader
@@ -47,7 +48,7 @@ class PytorchQuantization(BaseQuantization):
                               "Only torch dataloader is supported for onnx quantization.")
         if metric:
             invalidInputError(
-                isinstance(metric, Metric),
+                isinstance(metric, Metric) or isinstance(metric, Callable),
                 errMsg="Metric of type {} is invalid".format(type(metric)),
                 fixMsg="Use instance of `torchmetrics.Metric` instead."
             )

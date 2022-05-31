@@ -499,7 +499,6 @@ class TSPipeline:
         # preprocess data.
         from .utils import preprocess_quantize_data
         calib_data = preprocess_quantize_data(self, calib_data)
-        val_data = preprocess_quantize_data(self, val_data)
 
         # map metric str to function
         from bigdl.chronos.metric.forecast_metrics import TORCHMETRICS_REGRESSION_MAP
