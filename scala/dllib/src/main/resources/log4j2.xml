@@ -1,68 +1,27 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!DOCTYPE log4j:configuration SYSTEM "log4j.dtd">
-<log4j:configuration xmlns:log4j="http://jakarta.apache.org/log4j/" debug="true">
-<!--<Configuration status="WARN">-->
-    <!--<Appenders>-->
-        <!--<Console name="Console" target="SYSTEM_OUT">-->
-            <!--<PatternLayout pattern="%d{yy-MM-dd HH:mm:ss} [%t] %-5p %c{1}:%L - %msg%n"/>-->
-        <!--</Console>-->
+<Configuration status="WARN">
+    <Appenders>
+        <Console name="Console" target="SYSTEM_OUT">
+            <PatternLayout pattern="%d{yy-MM-dd HH:mm:ss} [%t] %-5p %c{1}:%L - %msg%n"/>
+        </Console>
 
-        <!--<RollingFile name="RollingFile" filename="log/test.log"-->
-                     <!--filepattern="log/test-%d{yyMMddHHmmss}.log">-->
-            <!--<PatternLayout pattern="%d{yy-MM-dd HH:mm:ss} [%t] %-5p %c{1}:%L - %msg%n"/>-->
-            <!--<Policies>-->
-                <!--<SizeBasedTriggeringPolicy size="100 MB"/>-->
-            <!--</Policies>-->
-            <!--<DefaultRolloverStrategy max="20"/>-->
-        <!--</RollingFile>-->
-    <!--</Appenders>-->
-    <!--<Loggers>-->
-        <!--<Root level="info">-->
-            <!--<AppenderRef ref="Console"/>-->
-        <!--</Root>-->
-<!--&lt;!&ndash;        <Logger name="com.intel.analytics.zoo.faiss.examples.Examples" level="info"&ndash;&gt;-->
-<!--&lt;!&ndash;                additivity="false">&ndash;&gt;-->
-<!--&lt;!&ndash;            <AppenderRef ref="Console"/>&ndash;&gt;-->
-<!--&lt;!&ndash;            <AppenderRef ref="RollingFile"/>&ndash;&gt;-->
-<!--&lt;!&ndash;        </Logger>&ndash;&gt;-->
-    <!--</Loggers>-->
-    <appender name="console" class="org.apache.log4j.ConsoleAppender">
-        <param name="Target" value="System.out" />
-        <layout class="org.apache.log4j.PatternLayout">
-            <param name="ConversionPattern" value="%-5p | %d{yyyy-MM-dd HH:mm:ss} | [%t] %C{2} (%F:%L) - %m%n" />
-        </layout>
-    </appender>
-    <!-- Info Log File Appender -->
-    <appender name="info-log" class="org.apache.log4j.FileAppender">
-        <param name="File" value="/tmp/logs/bigdl-info.log" />
-        <layout class="org.apache.log4j.PatternLayout">
-            <param name="ConversionPattern" value="%-5p | %d{yyyy-MM-dd HH:mm:ss} | [%t] %C{2} (%F:%L) - %m%n" />
-        </layout>
-        <filter class="org.apache.log4j.varia.LevelRangeFilter">
-            <param name="LevelMin" value="debug" />
-            <param name="LevelMax" value="info" />
-            <param name="AcceptOnMatch" value="true" />
-        </filter>
-    </appender>
-    <!-- Error Log File Appender -->
-    <appender name="error-log" class="org.apache.log4j.FileAppender">
-        <param name="Append" value="false" />
-        <param name="File" value="/tmp/logs/bigdl-error.log" />
-        <layout class="org.apache.log4j.PatternLayout">
-            <param name="ConversionPattern" value="%-5p | %d{yyyy-MM-dd HH:mm:ss} | [%t] %C{2} (%F:%L) - %m%n" />
-        </layout>
-        <filter class="org.apache.log4j.varia.LevelRangeFilter">
-            <param name="LevelMin" value="error" />
-            <param name="LevelMax" value="fatal" />
-            <param name="AcceptOnMatch" value="true" />
-        </filter>
-    </appender>
-    <logger name="com.jcg.log4j.example">
-        <appender-ref ref="info-log" />
-        <appender-ref ref="error-log" />
-    </logger>
-    <root>
-        <level value="info" />
-        <appender-ref ref="console" />
-    </root>
-</log4j:configuration>
+        <RollingFile name="RollingFile" filename="log/test.log"
+                     filepattern="log/test-%d{yyMMddHHmmss}.log">
+            <PatternLayout pattern="%d{yy-MM-dd HH:mm:ss} [%t] %-5p %c{1}:%L - %msg%n"/>
+            <Policies>
+                <SizeBasedTriggeringPolicy size="100 MB"/>
+            </Policies>
+            <DefaultRolloverStrategy max="20"/>
+        </RollingFile>
+    </Appenders>
+    <Loggers>
+        <Root level="info">
+            <AppenderRef ref="Console"/>
+        </Root>
+        <!--        <Logger name="com.intel.analytics.zoo.faiss.examples.Examples" level="info"-->
+        <!--                additivity="false">-->
+        <!--            <AppenderRef ref="Console"/>-->
+        <!--            <AppenderRef ref="RollingFile"/>-->
+        <!--        </Logger>-->
+    </Loggers>
+</Configuration>
