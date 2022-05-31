@@ -246,7 +246,7 @@ class HPOMixin:
                             self.backend)
 
         # create study
-        if not resume or kwargs.storage != "":
+        if not resume or search_kwargs['storage'] != "":
             self.study = _create_study(resume, self.create_kwargs, self.backend)
 
         isprune = True if self.create_kwargs.get('pruner', None) else False
