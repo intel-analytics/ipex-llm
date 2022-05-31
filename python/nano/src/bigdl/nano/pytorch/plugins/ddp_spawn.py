@@ -49,10 +49,11 @@ from pytorch_lightning.utilities.distributed import rank_zero_only
 from pytorch_lightning.utilities.seed import reset_seed
 
 from bigdl.nano.common.cpu_schedule import schedule_workers
-from bigdl.nano.deps.ipex.ipex_api import ipex_device
+from bigdl.nano.deps.ipex.ipex_api import ipex_device, ipex_optimize
 import logging
 
 import warnings
+
 log = logging.getLogger(__name__)
 
 
@@ -179,6 +180,19 @@ class DDPSpawnPlugin(pl.plugins.DDPSpawnPlugin):
         # set the ranks and devices
         self.dist.rank = self.global_rank
         self.dist.device = self.root_device
+
+        if self.use_ipex and not TORCH_VERSION_LESS_1_10:
+            dtype = torch.bfloat16 if self.enable_bf16 else None
+            num_optimizers = len(self.lightning_module.trainer.accelerator.optimizers)
+            if num_optimizers == 1:
+                optimizer = self.lightning_module.trainer.accelerator.optimizers[0]
+                ipex_optimize(self.model, optimizer=optimizer,
+                              inplace=True, dtype=dtype)
+            elif num_optimizers == 0:
+                ipex_optimize(self.model, inplace=True, dtype=dtype)
+            else:
+                warnings.warn(f"IPEX currently only support single optimizers, "
+                              f"but got {num_optimizers}. Skip IPEX")
 
         if self.sync_batchnorm:
             self.model = self.configure_sync_batchnorm(self.model)

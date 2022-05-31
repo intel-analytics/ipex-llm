@@ -14,21 +14,5 @@
 # limitations under the License.
 #
 
-def create_IPEXAccelerator(*args, **kwargs):
-    from bigdl.nano.deps.ipex.ipex_accelerator import IPEXAccelerator
-    return IPEXAccelerator(*args, **kwargs)
-
-
-def create_IPEXAccelerator_1_9(*args, **kwargs):
-    from bigdl.nano.deps.ipex.version_1_9.ipex_accelerator_1_9 import IPEXAccelerator
-    return IPEXAccelerator(*args, **kwargs)
-
-
-def ipex_optimize(*args, **kwargs):
-    import intel_extension_for_pytorch as ipex
-    ipex.optimize(*args, **kwargs)
-
-
-def ipex_device():
-    from bigdl.nano.deps.ipex.version_1_9 import DEVICE
-    return DEVICE
+import intel_pytorch_extension as ipex
+DEVICE = ipex.DEVICE

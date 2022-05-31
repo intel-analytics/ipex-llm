@@ -35,10 +35,10 @@ from bigdl.nano.pytorch.plugins.ddp_subprocess import DDPSubprocessPlugin
 
 from bigdl.nano.deps.automl.hpo_api import create_hpo_searcher, check_hpo_status
 from bigdl.nano.deps.ray.ray_api import distributed_ray
-from bigdl.nano.deps.ipex.ipex_api import create_IPEXAccelerator
+from bigdl.nano.deps.ipex.ipex_api import create_IPEXAccelerator, create_IPEXAccelerator_1_9
 from bigdl.nano.deps.openvino.openvino_api import PytorchOpenVINOModel, load_openvino_model
-from bigdl.nano.deps.onnxruntime.onnxruntime_api import bind_onnxrt_methods,\
-    PytorchONNXRuntimeModel, load_onnxruntime_model
+from bigdl.nano.deps.onnxruntime.onnxruntime_api import PytorchONNXRuntimeModel, \
+    load_onnxruntime_model
 from bigdl.nano.deps.neural_compressor.inc_api import QuantizationINC, PytorchQuantizedModel,\
     check_pytorch_dataloaders, load_inc_model
 from bigdl.nano.utils.log4Error import invalidInputError
@@ -97,9 +97,10 @@ class Trainer(pl.Trainer):
         if num_processes == 1:
             if use_ipex:
                 if TORCH_VERSION_LESS_1_10:
-                    accelerator = create_IPEXAccelerator(enable_bf16=enable_bf16)
+                    accelerator = create_IPEXAccelerator_1_9(enable_bf16=enable_bf16)
                 else:
-                    invalidInputError("We currently do not support ipex above 1.9.0")
+                    accelerator = create_IPEXAccelerator(enable_bf16=enable_bf16)
+
             super().__init__(accelerator=accelerator, *args, **kwargs)
         else:
             plugin = None
@@ -125,10 +126,10 @@ class Trainer(pl.Trainer):
                                          enable_bf16=enable_bf16)
             if use_ipex:
                 if TORCH_VERSION_LESS_1_10:
-                    accelerator = create_IPEXAccelerator(training_type_plugin=plugin,
-                                                         enable_bf16=enable_bf16)
+                    accelerator = create_IPEXAccelerator_1_9(training_type_plugin=plugin,
+                                                             enable_bf16=enable_bf16)
                 else:
-                    invalidInputError("We currently do not support ipex above 1.9.0")
+                    accelerator = None
             super().__init__(accelerator=accelerator,
                              plugins=[plugin], *args, **kwargs)
 
