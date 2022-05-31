@@ -91,7 +91,7 @@ class BigDLEncrypt extends Crypto {
   override def verifyHeader(header: Array[Byte]): Unit = {
     val headerBuffer = ByteBuffer.wrap(header)
     val version: Byte = headerBuffer.get()
-    Log4Error.invalidInputError(version.compare((0x80).toByte) != 0,
+    Log4Error.invalidInputError(version.compare((0x80).toByte) == 0,
       "File header version error!")
     val timestampSeconds: Long = headerBuffer.getLong
     val initializationVector: Array[Byte] = header.slice(1 + 8, header.length)
@@ -214,7 +214,7 @@ class BigDLEncrypt extends Crypto {
     val last = inputStream.read(byteBuffer)
     val inputHmac = byteBuffer.slice(last - hmacSize, last)
     val (lastSlice, streamHmac) = doFinal(byteBuffer, 0, last - hmacSize)
-    Log4Error.invalidInputError(inputHmac.sameElements(streamHmac), "hmac not match")
+    Log4Error.invalidInputError(!inputHmac.sameElements(streamHmac), "hmac not match")
     outputStream.write(lastSlice)
     outputStream.flush()
   }
@@ -244,8 +244,9 @@ class BigDLEncrypt extends Crypto {
   private def read(stream: DataInputStream, numBytes: Int): Array[Byte] = {
     val retval = new Array[Byte](numBytes)
     val bytesRead: Int = stream.read(retval)
-    Log4Error.invalidOperationError(bytesRead < numBytes,
-      "Not enough bits to read!")
+    println(bytesRead)
+    Log4Error.invalidOperationError(bytesRead == numBytes,
+      s"Not enough bits to read!, excepted $numBytes, but got $bytesRead.")
     retval
   }
 
