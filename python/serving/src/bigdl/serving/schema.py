@@ -18,7 +18,7 @@ import pyarrow as pa
 import numpy as np
 import cv2
 import base64
-from bigdl.dllib.utils.log4Error import invalidInputError
+from bigdl.serving.log4Error import invalidInputError
 
 
 def get_field_and_data(key, value):

@@ -20,7 +20,7 @@ from bigdl.serving.schema import *
 import httpx
 import json
 import uuid
-from bigdl.dllib.utils.log4Error import invalidInputError
+from bigdl.serving.log4Error import invalidInputError
 
 
 RESULT_PREFIX = "cluster-serving_"

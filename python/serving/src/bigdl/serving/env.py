@@ -18,7 +18,7 @@ import subprocess
 import shutil
 import glob
 import os
-from bigdl.dllib.utils.log4Error import invalidInputError
+from bigdl.serving.log4Error import invalidInputError
 
 
 class ClusterServing:

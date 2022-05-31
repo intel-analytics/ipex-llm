@@ -17,7 +17,7 @@ from kafka import KafkaProducer, KafkaConsumer
 from kafka.errors import kafka_errors
 import json
 from bigdl.serving.schema import *
-from bigdl.dllib.utils.log4Error import invalidInputError
+from bigdl.serving.log4Error import invalidInputError
 
 
 RESULT_PREFIX = "cluster-serving_"
