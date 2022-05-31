@@ -1,7 +1,7 @@
 # XGBoost Example
 
-## Install or download Analytics Zoo
-Follow the instructions [here](https://analytics-zoo.github.io/master/#PythonUserGuide/install/) to install analytics-zoo via __pip__ or __download the prebuilt package__.
+## Install or download BigDL
+Follow the instructions [here](https://bigdl.readthedocs.io/en/latest/doc/UserGuide/python.html#install) to install bigdl via __pip__ or __download the prebuilt package__.
 
 ## XGBoostRegressor
 1. If demo mode is specified, no download is needed.
