@@ -266,7 +266,8 @@ class Trainer(pl.Trainer):
             calib_dataloader = copy.deepcopy(calib_dataloader)
             val_dataloader = copy.deepcopy(val_dataloader)
             # check if dataloader is of legal format
-            check_pytorch_dataloaders(model, [calib_dataloader, val_dataloader])
+            check_pytorch_dataloaders(model, [calib_dataloader, val_dataloader],
+                                      metric=metric)
 
             model.eval()
 
