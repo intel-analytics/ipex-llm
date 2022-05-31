@@ -122,8 +122,10 @@ class TSPipeline:
             yhat = np.concatenate(yhat_list, axis=0)
             y = torch.cat(y_list, dim=0).numpy()
         else:
-            raise RuntimeError("We only support input tsdataset or data creator, "
-                               f"but found {data.__class__.__name__}.")
+            from bigdl.nano.utils.log4Error import invalidInputError
+            invalidInputError(False,
+                              "We only support input tsdataset or data creator, "
+                              f"but found {data.__class__.__name__}.")
 
         # evaluate
         aggregate = 'mean' if multioutput == 'uniform_average' else None
@@ -152,7 +154,7 @@ class TSPipeline:
         '''
         from bigdl.chronos.pytorch import TSTrainer as Trainer
         from bigdl.chronos.pytorch.utils import _pytorch_fashion_inference
-
+        from bigdl.nano.utils.log4Error import invalidInputError
         # predict with onnx
         if isinstance(data, TSDataset):
             x, y = self._tsdataset_to_numpy(data, is_predict=False)
@@ -194,8 +196,9 @@ class TSPipeline:
             yhat = np.concatenate(yhat_list, axis=0)
             y = torch.cat(y_list, dim=0).numpy()
         else:
-            raise RuntimeError("We only support input tsdataset or data creator, "
-                               f"but found {data.__class__.__name__}.")
+            invalidInputError(False,
+                              "We only support input tsdataset or data creator, "
+                              f"but found {data.__class__.__name__}.")
         # evaluate
         aggregate = 'mean' if multioutput == 'uniform_average' else None
         eval_result = Evaluator.evaluate(metrics, y, yhat, aggregate=aggregate)
@@ -214,7 +217,7 @@ class TSPipeline:
         :param quantize: if use the quantized model to predict.
         '''
         from bigdl.chronos.pytorch.utils import _pytorch_fashion_inference
-
+        from bigdl.nano.utils.log4Error import invalidInputError
         if isinstance(data, TSDataset):
             x, _ = self._tsdataset_to_numpy(data, is_predict=True)
             if quantize:
@@ -241,8 +244,9 @@ class TSPipeline:
                 yhat_list.append(yhat)
             yhat = np.concatenate(yhat_list, axis=0)
         else:
-            raise RuntimeError("We only support input tsdataset or data creator, "
-                               f"but found {data.__class__.__name__}")
+            invalidInputError(False,
+                              "We only support input tsdataset or data creator, "
+                              f"but found {data.__class__.__name__}")
         return yhat
 
     def predict_with_onnx(self, data, batch_size=32, quantize=False):
@@ -259,7 +263,7 @@ class TSPipeline:
         '''
         from bigdl.chronos.pytorch import TSTrainer as Trainer
         from bigdl.chronos.pytorch.utils import _pytorch_fashion_inference
-
+        from bigdl.nano.utils.log4Error import invalidInputError
         if isinstance(data, TSDataset):
             x, _ = self._tsdataset_to_numpy(data, is_predict=True)
             yhat = None
@@ -296,8 +300,9 @@ class TSPipeline:
                 yhat_list.append(yhat)
             yhat = np.concatenate(yhat_list, axis=0)
         else:
-            raise RuntimeError("We only support input tsdataset or data creator, "
-                               f"but found {data.__class__.__name__}")
+            invalidInputError(False,
+                              "We only support input tsdataset or data creator, "
+                              f"but found {data.__class__.__name__}")
         return yhat
 
     def fit(self,
@@ -326,7 +331,7 @@ class TSPipeline:
         :param **kwargs: args to be passed to bigdl-nano trainer.
         '''
         from bigdl.chronos.pytorch import TSTrainer as Trainer
-
+        from bigdl.nano.utils.log4Error import invalidInputError
         train_loader = None
         valid_loader = None
         if isinstance(data, TSDataset):
@@ -342,8 +347,9 @@ class TSPipeline:
             if validation_data:
                 valid_loader = validation_data(self._best_config)
         else:
-            raise RuntimeError("We only support input TSDataset or data creator, "
-                               f"but found {data.__class__.__name__}.")
+            invalidInputError(False,
+                              "We only support input TSDataset or data creator, "
+                              f"but found {data.__class__.__name__}.")
 
         self.trainer = Trainer(max_epochs=epochs, **kwargs)
         self.trainer.fit(self._best_model,
@@ -480,15 +486,18 @@ class TSPipeline:
         """
         from torch.utils.data import DataLoader, TensorDataset
         from bigdl.chronos.data import TSDataset
+        from bigdl.nano.utils.log4Error import invalidInputError
         # check model support for quantization
         from bigdl.chronos.autots.utils import check_quantize_available
         check_quantize_available(self._best_model.model)
         # calib data should be set if the forecaster is just loaded
         if calib_data is None and approach.startswith("static"):
-            raise RuntimeError("You must set a `calib_data` "
-                               "for quantization When you use 'static'.")
+            invalidInputError(False,
+                              "You must set a `calib_data` "
+                              "for quantization When you use 'static'.")
         elif calib_data and approach.startswith("dynamic"):
-            raise RuntimeError("`calib_data` should be None When you use 'dynamic'.")
+            invalidInputError(False,
+                              "`calib_data` should be None When you use 'dynamic'.")
 
         # preprocess data.
         from .utils import preprocess_quantize_data
@@ -503,7 +512,7 @@ class TSPipeline:
         # init acc criterion
         accuracy_criterion = None
         if relative_drop and absolute_drop:
-            raise ValueError("Please unset either `relative_drop` or `absolute_drop`.")
+            invalidInputError(False, "Please unset either `relative_drop` or `absolute_drop`.")
         if relative_drop:
             accuracy_criterion = {'relative': relative_drop, 'higher_is_better': False}
         if absolute_drop:
@@ -565,11 +574,13 @@ class TSPipeline:
         return data.to_numpy()
 
     def _check_mixed_data_type_usage(self):
+        from bigdl.nano.utils.log4Error import invalidInputError
         for key in ("past_seq_len", "future_seq_len", "selected_features"):
             if key not in self._best_config:
-                raise TypeError("You use a data creator to fit your AutoTSEstimator, "
-                                "and use a TSDataset to predict/evaluate/fit on the TSPipeline. "
-                                "Please stick to the same data type.")
+                invalidInputError(False,
+                                  "You use a data creator to fit your AutoTSEstimator, "
+                                  "and use a TSDataset to predict/evaluate/fit on the TSPipeline."
+                                  "Please stick to the same data type.")
 
     def _tsdataset_unscale(self, y):
         if self._scaler:

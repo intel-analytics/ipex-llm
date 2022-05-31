@@ -20,7 +20,7 @@ commonmark==0.8.1
 recommonmark==0.5.0
 readthedocs-sphinx-ext<2.2
 sphinx_rtd_theme==0.5.2
-scikit-learn==0.22.2.post1
+scikit-learn==1.0.2
 pystan==2.19.1.1
 prophet
 pmdarima
@@ -28,3 +28,5 @@ sphinx_markdown_tables
 numpy==1.21.2
 xgboost
 torchmetrics
+pickle5==0.0.12
+protobuf~=3.19.0

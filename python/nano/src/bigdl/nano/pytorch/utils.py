@@ -14,22 +14,7 @@
 # limitations under the License.
 #
 
+import operator
+from pytorch_lightning.utilities.imports import _compare_version
 
-import torch
-from torch import nn
-import pickle
-from bigdl.ppml.fl.pytorch.generated.nn_service_pb2 import *
-
-def set_one_like_parameter(model: nn.Module):
-    for param in model.parameters():
-        param.data = nn.parameter.Parameter(torch.ones_like(param))
-
-class ClassAndArgsWrapper(object):
-    def __init__(self, cls, args) -> None:
-        self.cls = cls
-        self.args = args
-
-    def to_protobuf(self):
-        cls = pickle.dumps(self.cls)
-        args = pickle.dumps(self.args)
-        return ClassAndArgs(cls=cls, args=args)
+TORCH_VERSION_LESS_1_10 = _compare_version("torch", operator.lt, "1.10")

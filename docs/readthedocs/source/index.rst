@@ -52,6 +52,7 @@ BigDL Documentation
    doc/Nano/QuickStart/tensorflow_train.md
    doc/Nano/QuickStart/tensorflow_inference.md
    doc/Nano/QuickStart/hpo.md
+   doc/Nano/Overview/known_issues.md
 
 .. toctree::
    :maxdepth: 1

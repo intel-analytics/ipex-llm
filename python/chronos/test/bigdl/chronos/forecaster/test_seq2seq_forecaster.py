@@ -125,7 +125,7 @@ class TestChronosModelSeq2SeqForecaster(TestCase):
                                        loss="mae",
                                        lr=0.01)
         forecaster.fit(train_data, epochs=2)
-        with pytest.raises(NotImplementedError):
+        with pytest.raises(RuntimeError):
             forecaster.quantize(train_data)
 
     def test_s2s_forecaster_save_load(self):
@@ -170,7 +170,7 @@ class TestChronosModelSeq2SeqForecaster(TestCase):
                                        output_feature_num=2,
                                        loss="mae",
                                        lr=0.01)
-        with pytest.raises(AssertionError):
+        with pytest.raises(RuntimeError):
             forecaster.fit(train_data, epochs=2)
 
     def test_s2s_forecaster_xshard_input(self):

@@ -20,7 +20,7 @@ import numpy as np
 import ray
 
 from bigdl.dllib.nncontext import init_spark_on_yarn
-from bigdl.orca.ray import RayContext
+from bigdl.orca.ray import OrcaRayContext
 
 np.random.seed(1337)  # for reproducibility
 
@@ -42,13 +42,13 @@ sc = init_spark_on_yarn(
     driver_memory="2g",
     driver_cores=4,
     extra_executor_memory_for_ray="30g")
-ray_ctx = RayContext(sc=sc, object_store_memory="2g")
+ray_ctx = OrcaRayContext(sc=sc, object_store_memory="2g")
 ray_ctx.init()
 actors = [TestRay.remote() for i in range(0, node_num)]
 print(ray.get([actor.hostname.remote() for actor in actors]))
 ray_ctx.stop()
 # repeat
-ray_ctx = RayContext(sc=sc, object_store_memory="1g")
+ray_ctx = OrcaRayContext(sc=sc, object_store_memory="1g")
 ray_ctx.init()
 actors = [TestRay.remote() for i in range(0, node_num)]
 print(ray.get([actor.hostname.remote() for actor in actors]))

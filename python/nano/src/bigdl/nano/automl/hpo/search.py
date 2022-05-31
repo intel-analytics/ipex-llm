@@ -77,6 +77,19 @@ def _end_search(study, model_builder, use_trial_id=-1):
     return _lazymodel
 
 
+def _create_study(resume, create_kwargs, backend):
+
+    if not resume:
+        load_if_exists = False
+        print("Starting a new tuning")
+    else:
+        load_if_exists = True
+        print("Resume the last tuning...")
+    create_kwargs['load_if_exists'] = load_if_exists
+    # create study
+    return backend.create_study(**create_kwargs)
+
+
 def _check_search_args(search_args, legal_keys):
     search_arg_keys = set(search_args.keys())
     allkeys = set().union(*legal_keys)
@@ -84,6 +97,53 @@ def _check_search_args(search_args, legal_keys):
     if len(illegal_args) > 0:
         invalidInputError(False,
                           'Invalid Arguments found for \'search\':')
+
+
+def _prepare_args(kwargs,
+                  create_keys,
+                  run_keys,
+                  fit_keys,
+                  backend):
+
+    create_kwargs = _filter_tuner_args(kwargs, create_keys)
+    run_kwargs = _filter_tuner_args(kwargs, run_keys)
+    fit_kwargs = _filter_tuner_args(kwargs, fit_keys)
+    # prepare sampler and pruner args
+    sampler_type = create_kwargs.get('sampler', None)
+    if sampler_type:
+        sampler_args = create_kwargs.get('sampler_kwargs', {})
+        sampler = backend.create_sampler(sampler_type, sampler_args)
+        create_kwargs['sampler'] = sampler
+        create_kwargs.pop('sampler_kwargs', None)
+
+    pruner_type = create_kwargs.get('pruner', None)
+    if pruner_type:
+        pruner_args = create_kwargs.get('pruner_kwargs', {})
+        pruner = backend.create_pruner(pruner_type, pruner_args)
+        create_kwargs['pruner'] = pruner
+        create_kwargs.pop('pruner_kwargs', None)
+
+    # renamed callbacks to tune_callbacks to avoid conflict with fit param
+    run_kwargs['callbacks'] = run_kwargs.get('tune_callbacks', None)
+    run_kwargs.pop('tune_callbacks', None)
+    run_kwargs['show_progress_bar'] = False
+
+    return create_kwargs, run_kwargs, fit_kwargs
+
+
+def _validate_args(search_kwargs,
+                   target_metric,
+                   legal_keys):
+    _check_search_args(
+        search_args=search_kwargs,
+        legal_keys=legal_keys)
+
+    direction = search_kwargs.get('direction', None),
+    directions = search_kwargs.get('directions', None),
+    _check_optimize_direction(
+        direction=direction,
+        directions=directions,
+        metric=target_metric)
 
 
 def _strip_val_prefix(metric):

@@ -138,7 +138,7 @@ class TestChronosModelTCNForecaster(TestCase):
         forecaster.internal.train()
         forecaster.internal.eval()
         # dynamic quantization does not need calib data
-        with pytest.raises(ValueError):
+        with pytest.raises(RuntimeError):
             forecaster.quantize(train_data, approach="dynamic")
 
     def test_tcn_forecaster_quantization(self):
@@ -254,7 +254,7 @@ class TestChronosModelTCNForecaster(TestCase):
                                    output_feature_num=2,
                                    kernel_size=3,
                                    lr=0.01)
-        with pytest.raises(AssertionError):
+        with pytest.raises(RuntimeError):
             forecaster.fit(train_data, epochs=2)
 
     def test_tcn_forecaster_xshard_input(self):

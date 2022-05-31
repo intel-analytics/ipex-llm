@@ -79,7 +79,7 @@ spec:
         - name: device-plugin
           mountPath: /var/lib/kubelet/device-plugins
         - name: aesm-socket
-          mountPath: /var/run/aesmd/aesm.socket
+          mountPath: /var/run/aesmd
       volumes:
       - name: enclave-keys
         hostPath:
@@ -95,4 +95,4 @@ spec:
           path: /var/lib/kubelet/device-plugins
       - name: aesm-socket
         hostPath:
-          path: /var/run/aesmd/aesm.socket
+          path: /var/run/aesmd

@@ -14,7 +14,7 @@ function disable-openmp-var {
 }
 
 function enable-jemalloc-var {
-	echo "Option: Disable jemalloc and unset related variables"
+	echo "Option: Enable jemalloc and unset related variables"
 	export ENABLE_JEMALLOC_VAR=1
 }
 
@@ -44,7 +44,7 @@ function display-help {
         echo "    -h, --help                Display this help message and exit."
         echo "    -o, --disable-openmp      Disable openMP and unset related variables"
         echo "    -j, --enable-jemalloc     Enable jemalloc and unset related variables"
-		echo "	  -c, --disable-tcmalloc   Disable tcmalloc and unset related variables"
+		echo "    -c, --disable-tcmalloc   Disable tcmalloc and unset related variables"
 }
 
 while getopts ":ojhc-:" opt; do
@@ -205,7 +205,6 @@ if [ ! -z "${DISABLE_OPENMP_VAR:-}" ]; then
 	export LD_PRELOAD=`echo $LD_PRELOAD | sed "s/\s.*libiomp5\.so//g" | sed "s/.*libiomp5\.so\s*//g"`
 fi
 if [ -z "${ENABLE_JEMALLOC_VAR:-}" ]; then
-	unset ENABLE_JEMALLOC_VAR
 	unset MALLOC_CONF
 	export LD_PRELOAD=`echo $LD_PRELOAD | sed "s/\s.*libjemalloc\.so//g" | sed "s/.*libjemalloc\.so\s*//g"`
 fi

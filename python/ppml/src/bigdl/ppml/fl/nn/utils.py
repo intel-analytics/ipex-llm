@@ -14,8 +14,22 @@
 # limitations under the License.
 #
 
+import pickle
+from bigdl.ppml.fl.nn.generated.nn_service_pb2 import *
+
+
+class ClassAndArgsWrapper(object):
+    def __init__(self, cls, args) -> None:
+        self.cls = cls
+        self.args = args
+
+    def to_protobuf(self):
+        cls = pickle.dumps(self.cls)
+        args = pickle.dumps(self.args)
+        return ClassAndArgs(cls=cls, args=args)
+
 import numpy as np
-from bigdl.ppml.fl.pytorch.generated.fl_base_pb2 import FloatTensor, TensorMap
+from bigdl.ppml.fl.nn.generated.fl_base_pb2 import FloatTensor, TensorMap
 
 def ndarray_map_to_tensor_map(array_map: dict):
     tensor_map = {}

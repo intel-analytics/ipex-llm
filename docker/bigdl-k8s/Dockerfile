@@ -129,8 +129,6 @@ RUN mkdir -p /opt/bigdl-examples/python && \
     mkdir -p /opt/bigdl-examples/scala && \
     apt-get update --fix-missing && \
     apt-get install -y apt-utils vim curl nano wget unzip git && \
-    apt-get install -y gcc g++ make && \
-    apt-get install -y libsm6 libxext6 libxrender-dev && \
     rm /bin/sh && \
     ln -sv /bin/bash /bin/sh && \
     echo "auth required pam_wheel.so use_uid" >> /etc/pam.d/su && \

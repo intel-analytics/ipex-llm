@@ -17,6 +17,7 @@
 
 from multiprocessing import Process
 import unittest
+from uuid import uuid4
 import numpy as np
 import pandas as pd
 import os
@@ -76,7 +77,7 @@ class TestFGBoostRegression(unittest.TestCase):
         result = fgboost_regression.predict(x)
         result
 
-    def test_one_party(self):
+    def test_save_load(self):
         self.fl_server.build()
         self.fl_server.start()
         df_train = pd.read_csv(
@@ -87,10 +88,13 @@ class TestFGBoostRegression(unittest.TestCase):
         df_y = df_train.filter(items=['SalePrice'])
         
         fgboost_regression.fit(df_x, df_y,
-            feature_columns=df_x.columns, label_columns=['SalePrice'], num_round=15)
+            feature_columns=df_x.columns, label_columns=['SalePrice'], num_round=1)
+        tmp_file_name = f'/tmp/{str(uuid4())}'
+        fgboost_regression.save_model(tmp_file_name)
+        model_loaded = FGBoostRegression.load_model(tmp_file_name)
         
         df_test = pd.read_csv(os.path.join(resource_path, "house-prices-test-preprocessed.csv"))
-        result = fgboost_regression.predict(df_test, feature_columns=df_x.columns)
+        result = model_loaded.predict(df_test, feature_columns=df_x.columns)
         result = list(map(lambda x: math.exp(x), result))
         result
 

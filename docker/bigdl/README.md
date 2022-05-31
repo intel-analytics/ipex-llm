@@ -1,4 +1,4 @@
---------
+---------
 # Docker images and builders for BigDL
 
 ## BigDL in Docker
@@ -151,3 +151,21 @@
         -e RUNTIME_EXECUTOR_MEMORY=20g \
         -e RUNTIME_TOTAL_EXECUTOR_CORES=4 \
         intelanalytics/bigdl:latest
+
+
+## Run Notebook On K8s With Deployment
+### Deploy notebook
+Execute the command to deploy notebook service
+```bash
+kubectl apply -f deployment.yaml
+```
+
+> you should replace the nfs `claimName` with your nfs `claimName` on `deployment.yaml` file.
+
+### Port forward
+you can execute `kubectl get pods | grep bigdl` to find the pod name likes `bigdl-notebook-XXX`, then to forward the port:
+```bash
+kubectl port-forward --namespace default bigdl-notebook-XXX 12345:12345 --address 0.0.0.0
+```
+
+

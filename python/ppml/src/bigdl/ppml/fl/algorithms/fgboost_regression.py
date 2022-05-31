@@ -56,3 +56,12 @@ class FGBoostRegression(FLClientClosable):
         x_batch, _ = convert_to_jtensor(x_batch, **kargs)
         result_batch = callBigDlFunc(self.bigdl_type, "fgBoostPredict", self.value, x_batch).to_ndarray()
         return np.array(result_batch)
+
+    def save_model(self, dest):
+        callBigDlFunc(self.bigdl_type, "fgBoostRegressionSave", self.value, dest)
+
+    @classmethod
+    def load_model(cls, src):
+        # the jvalue exists here so JVM constructor would not be called again
+        # thus the parameters would remain the same as model loaded
+        return cls(jvalue=callBigDlFunc("float", "fgBoostRegressionLoad", src))

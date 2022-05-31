@@ -20,7 +20,7 @@ import numpy as np
 import pytest
 import ray
 
-from bigdl.orca.ray import RayContext
+from bigdl.orca.ray import OrcaRayContext
 from bigdl.orca.common import stop_orca_context
 
 np.random.seed(1337)  # for reproducibility
@@ -35,7 +35,7 @@ class TestRay():
 
 class TestUtil(TestCase):
     def setUp(self):
-        self.ray_ctx = RayContext("ray", cores=2, num_nodes=1)
+        self.ray_ctx = OrcaRayContext("ray", cores=2, num_nodes=1)
         self.node_num = 4
     
     def tearDown(self):
@@ -51,8 +51,8 @@ class TestUtil(TestCase):
     
     def test_reinit(self):
         print("-------------------first repeat begin!------------------")
-        self.ray_ctx = RayContext("ray", cores=2, num_nodes=1)
-        assert RayContext._active_ray_context, ("Please create a RayContext First.")
+        self.ray_ctx = OrcaRayContext("ray", cores=2, num_nodes=1)
+        assert OrcaRayContext._active_ray_context, ("Please create an OrcaRayContext First.")
         assert not self.ray_ctx.initialized, ("The Ray cluster has not been launched.")
         self.ray_ctx.init()
         actors = [TestRay.remote() for i in range(0, self.node_num)]

@@ -157,6 +157,12 @@ class PythonPPML[T: ClassTag](implicit ev: TensorNumeric[T])
     val result = model.predict(tensorArray).map(_.storage().array())
     JTensor(result.flatten, Array(result.length, result(0).length), bigdlType = "float")
   }
+  def fgBoostRegressionSave(model: FGBoostRegression, dest: String): Unit = {
+    model.saveModel(dest)
+  }
+  def fgBoostRegressionLoad(src: String): FGBoostRegression = {
+    FGBoostRegression.loadModel(src)
+  }
   def nnFit(model: NNModel): Unit = {
 
   }

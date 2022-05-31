@@ -49,3 +49,23 @@ class Model(HPOMixin, tf.keras.Model):
         self.kwargs['inputs'] = in_tensors
         self.kwargs['outputs'] = out_tensors
         return self.kwargs
+
+    def _get_model_init_args_func_kwargs(self):
+        """Return the kwargs of _model_init_args_func except trial."""
+        return {
+            'lazyinputs': self.lazyinputs_,
+            'lazyoutputs': self.lazyoutputs_,
+            'kwargs': self.kwargs,
+            'backend': self.backend
+        }
+
+    @staticmethod
+    def _model_init_args_func(trial, lazyinputs, lazyoutputs, kwargs, backend):
+        in_tensors, out_tensors = CallCache.execute(
+            lazyinputs,
+            lazyoutputs,
+            trial,
+            backend)
+        kwargs['inputs'] = in_tensors
+        kwargs['outputs'] = out_tensors
+        return kwargs

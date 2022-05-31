@@ -224,7 +224,7 @@ class TestChronosModelLSTMForecaster(TestCase):
                                     output_feature_num=1,
                                     loss="mae",
                                     lr=0.01)
-        with pytest.raises(AssertionError):
+        with pytest.raises(RuntimeError):
             forecaster.fit(train_data, epochs=2)
 
     def test_lstm_forecaster_xshard_input(self):

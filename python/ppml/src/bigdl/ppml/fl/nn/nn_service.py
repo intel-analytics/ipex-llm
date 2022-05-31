@@ -15,11 +15,11 @@
 #
 
 
-from bigdl.ppml.fl.pytorch.aggregator import Aggregator
-from bigdl.ppml.fl.pytorch.generated.fl_base_pb2 import TensorMap
-from bigdl.ppml.fl.pytorch.generated.nn_service_pb2 import TrainRequest, TrainResponse, UploadModelResponse
-from bigdl.ppml.fl.pytorch.generated.nn_service_pb2_grpc import *
-from bigdl.ppml.fl.pytorch.protobuf_utils import tensor_map_to_ndarray_map
+from bigdl.ppml.fl.nn.pytorch.aggregator import Aggregator
+from bigdl.ppml.fl.nn.generated.fl_base_pb2 import TensorMap
+from bigdl.ppml.fl.nn.generated.nn_service_pb2 import TrainRequest, TrainResponse, UploadModelResponse
+from bigdl.ppml.fl.nn.generated.nn_service_pb2_grpc import *
+from bigdl.ppml.fl.nn.utils import tensor_map_to_ndarray_map
 import pickle
 import traceback
 

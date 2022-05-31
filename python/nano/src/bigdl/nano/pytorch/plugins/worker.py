@@ -23,6 +23,11 @@ import cloudpickle
 from pytorch_lightning.utilities.seed import reset_seed
 
 from bigdl.nano.pytorch.plugins.ddp_subprocess import queue_dumper
+from bigdl.nano.pytorch.utils import TORCH_VERSION_LESS_1_10
+from bigdl.nano.deps.ipex.ipex_api import ipex_device, ipex_optimize
+import torch
+import warnings
+
 
 if __name__ == '__main__':
     temp_dir = sys.argv[1]
@@ -43,6 +48,20 @@ if __name__ == '__main__':
 
     plugin.dist.rank = plugin.global_rank
     plugin.dist.device = plugin.root_device
+
+    if plugin.use_ipex and not TORCH_VERSION_LESS_1_10:
+        dtype = torch.bfloat16 if plugin.enable_bf16 else None
+        num_optimizers = len(plugin.lightning_module.trainer.accelerator.optimizers)
+        if num_optimizers == 1:
+            optimizer = plugin.lightning_module.trainer.accelerator.optimizers[0]
+            ipex_optimize(plugin.model, optimizer=optimizer,
+                          inplace=True, dtype=dtype)
+        elif num_optimizers == 0:
+            plugin.model.eval()
+            ipex_optimize(plugin.model, inplace=True, dtype=dtype)
+        else:
+            warnings.warn(f"IPEX currently only support single optimizers, "
+                          f"but got {num_optimizers}. Skip IPEX")
 
     if plugin.sync_batchnorm:
         plugin.model = plugin.configure_sync_batchnorm(plugin.model)
