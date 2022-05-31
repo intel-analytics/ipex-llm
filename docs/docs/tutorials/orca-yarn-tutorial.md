@@ -121,7 +121,7 @@ PYSPARK_PYTHON=environment/bin/python bigdl-submit \
     --driver-memory 10g \
     --executor-cores 8 \
     --num-executors 2 \
-    --archives environment.tar.gz#env \
+    --archives environment.tar.gz#environment \
     script.py
 ```
 
@@ -144,7 +144,7 @@ PYSPARK_PYTHON=environment/bin/python
 ```
 * Set the `archives` argument to the location of the archive which was sent from the other node;
 ```bash
---archives environment.tar.gz#env
+--archives environment.tar.gz#environment
 ```
 * Set the `properties-file` argument to override spark configuration by BigDL configuration file;
 ```bash
@@ -176,6 +176,6 @@ PYSPARK_PYTHON=environment/bin/python spark-submit \
     --driver-memory 10g \
     --executor-cores 8 \
     --num-executors 2 \
-    --archives environment.tar.gz#env \
+    --archives environment.tar.gz#environment \
     script.py
 ```
