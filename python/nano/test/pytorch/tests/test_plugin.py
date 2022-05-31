@@ -66,7 +66,7 @@ class TestPlugin(TestCase):
 
     def test_trainer_subprocess_correctness(self):
         dataloader_1 = create_data_loader(data_dir, batch_size, num_workers,
-                                     data_transform, subset=dataset_size, shuffle=False)
+                                     data_transform, subset=dataset_size, shuffle=False, sampler=True)
         pl_model_dis = LightningModuleFromTorch(
             self.model, self.loss, self.optimizer,
             metrics=[torchmetrics.F1(num_classes), torchmetrics.Accuracy(num_classes=10)]
