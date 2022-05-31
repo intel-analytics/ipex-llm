@@ -1,10 +1,10 @@
 Nano PyTorch Trainer API
 ==================
 
-bigdl.nano.pytorch.trainer
+bigdl.nano.pytorch.Trainer
 ---------------------------
 
-.. automodule:: bigdl.nano.pytorch.trainer.Trainer
+.. autoclass:: bigdl.nano.pytorch.Trainer
     :members:
     :undoc-members:
-    :show-inheritance:
+    :no-undoc-members:
