@@ -57,6 +57,7 @@ if __name__ == '__main__':
             ipex_optimize(plugin.model, optimizer=optimizer,
                           inplace=True, dtype=dtype)
         elif num_optimizers == 0:
+            plugin.model.eval()
             ipex_optimize(plugin.model, inplace=True, dtype=dtype)
         else:
             warnings.warn(f"IPEX currently only support single optimizers, "
