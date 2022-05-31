@@ -13,6 +13,7 @@ Let's get started!
 # Prepare Environment
 Before submitting the BigDL program to Yarn Cluster, we need to setup the environment as the following steps:
 * Setup JAVA Environment
+* Setup Spark Environment
 * Setup Hadoop Environment
 * Install All Needed Python Libraries 
 * For CDH Users
@@ -79,7 +80,7 @@ BigDL mainly supports 3 ways to submit our job and run it on Yarn:
 # Run Programs with built-in function
 This is the easiest and most recommended way to run BigDL on YARN, we only need to prepare the environment on the driver machine, all dependencies would be automatically packaged and distributed to the whole Yarn cluster.
 
-Note: 
+### Note: 
 * When running on Yarn-Client mode, the `cluster_mode` of OrcaContext should be `yarn` or `yarn-client`. 
 * When running on Yarn-Cluster mode, the `cluster_mode` of OrcaContext should be `yarn-cluster`.
 
@@ -93,7 +94,8 @@ For `spark-submit` users, BigDL provided a `bigdl-submit` script which could aut
 ```bash
 conda pack -o environment.tar.gz#env 
 ```
-Note: If `environment.tar.gz` is not under the same directory with script.py, we should modify its path in `--archives` in the running command below.
+### Note:
+* If `environment.tar.gz` is not under the same directory with script.py, we should modify its path in `--archives` in the running command below.
 
 ## Yarn Client
 When running programs with `bigdl-submit`, we need:
@@ -161,7 +163,7 @@ PYSPARK_PYTHON=environment/bin/python
 --conf spark.executor.extraClassPath=${BIGDL_HOME}/jars/*
 ```
 
-Now, let's submit and execute the BigDL program with `spark-submit` script:
+Once all preparison works are done, you could submit and execute the BigDL program with `spark-submit` script:
 ```bash
 PYSPARK_PYTHON=environment/bin/python spark-submit \
     --properties-file ${BIGDL_HOME}/conf/spark-bigdl.conf \
