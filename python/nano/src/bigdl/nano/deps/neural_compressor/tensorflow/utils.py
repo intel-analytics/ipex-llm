@@ -13,4 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-from .quantization import PytorchQuantization
+from neural_compressor.experimental import common
+
+
+def Dataloader(tf_dataset, batchsize):
+    return common.DataLoader(tf_dataset, batchsize)

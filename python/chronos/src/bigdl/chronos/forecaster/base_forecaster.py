@@ -674,7 +674,6 @@ class BasePytorchForecaster(Forecaster):
                                             accelerator=accelerator,
                                             method=method,
                                             calib_dataloader=calib_data,
-                                            val_dataloader=val_data,
                                             metric=metric,
                                             conf=conf,
                                             approach=approach,

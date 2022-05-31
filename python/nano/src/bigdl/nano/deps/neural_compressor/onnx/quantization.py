@@ -13,4 +13,18 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-from .quantization import PytorchQuantization
+from bigdl.nano.deps.onnxruntime.core.onnxruntime_model import ONNXRuntimeModel
+from ..core import BaseQuantization
+
+
+class BaseONNXRuntimeQuantization(BaseQuantization):
+    def __init__(self, framework='onnxrt_qlinear', **kwargs):
+        """
+        Create a Intel Neural Compressor Quantization object for ONNXRuntime.
+        """
+        kwargs['framework'] = framework
+        super().__init__(**kwargs)
+
+    @property
+    def valid_frameworks(self):
+        return ('onnxrt_qlinearops', 'onnxrt_integerops')

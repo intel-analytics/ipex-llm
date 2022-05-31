@@ -54,11 +54,3 @@ def _check_loader(model, loader, metric=None):
                           "- (tuple or Tensor, tuple or Tensor)\n"
                           "- (Tensor, Tensor, ..., Tensor). \n"
                           "Please confirm number of inputs comply with model.forward.")
-
-
-def check_loaders(model, loaders, metric=None):
-    if isinstance(loaders, list):
-        for loader in loaders:
-            _check_loader(model, loader, metric=None)
-    else:
-        _check_loader(model, loaders, metric=None)

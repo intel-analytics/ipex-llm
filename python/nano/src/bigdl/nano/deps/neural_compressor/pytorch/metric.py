@@ -13,4 +13,16 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-from .quantization import PytorchQuantization
+from ..core import BaseINCMetric
+import torch
+
+
+class PytorchINCMetric(BaseINCMetric):
+    def stack(self, preds, labels):
+        # calculate accuracy
+        preds = torch.stack(preds)
+        labels = torch.stack(labels)
+        return preds, labels
+
+    def to_scalar(self, tensor):
+        return tensor.item()
