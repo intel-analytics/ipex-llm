@@ -130,14 +130,15 @@ PYSPARK_PYTHON=environment/bin/python bigdl-submit \
 When the dirver node on the Yarn Cluster is not able to install conda environment, it's recommended for us to use `spark-submit` script to run our program instead of `bigdl-submit`. Before running with `spark-submit`, we need:
 * Install all the dependency files that BigDL required (refer to prepare environment part) on the node which could install conda;
 * Pack the conda environment to an archive on the node with conda then send it to the driver node; 
-* Download and unzip a BigDL assembly package from BigDL Release Page(https://bigdl.readthedocs.io/en/latest/doc/release.html);
-* Set the location of unzipped BigDL package as `${BIGDL_HOME}`;
+* Download and unzip a BigDL assembly package from [BigDL Release Page](https://bigdl.readthedocs.io/en/latest/doc/release.html);
+* Set the unzipped BigDL package as `${BIGDL_HOME}`;
+* Set environment variables `${SPARK_VERSION}` and `${BIGDL_VERSION}` as the version you downloaded.
 
 ### Note:
-* The `cluster_mode` of `init_orca_context( )` must be `spark-submit` when you use `bigdl-submit` to run programs.
+* The `cluster_mode` of `init_orca_context( )` must be `spark-submit` when using `bigdl-submit` to run programs.
 
 ## Yarn Client
-When running with `spark-submit` script, we need make preparation with the following steps:
+When running with `spark-submit` script, we need to make preparation with the following steps:
 ### Runtime Environment Preparation
 * Set the driver Python environment to the local Python location, since Spark driver is running on local and it will use the Python interpreter in the current active Conda environment.
 ```bash
@@ -173,7 +174,7 @@ Once all preparation works are done, you could submit and execute the BigDL prog
 ```bash
 spark-submit \
     --properties-file ${BIGDL_HOME}/conf/spark-bigdl.conf \
-    --py-files ${BIGDL_HOME}/python -name bigdl-spark_*-python-api.zip \
+    --py-files ${BIGDL_HOME}/bigdl-spark_${SPARK_VERSION}-${BIGDL_VERSION}-python-api.zip \
     --conf spark.driver.extraClassPath=${BIGDL_HOME}/jars/* \
     --conf spark.executor.extraClassPath=${BIGDL_HOME}/jars/* \
     --master yarn \
