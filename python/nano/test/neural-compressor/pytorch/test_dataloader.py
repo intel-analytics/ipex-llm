@@ -121,7 +121,7 @@ class TestDataloader(TestCase):
         # tuning
         with pytest.raises(RuntimeError):
             trainer.quantize(model, calib_dataloader=loader,
-                             val_dataloader=loader, metric=torchmetrics.F1(10))
+                             metric=torchmetrics.F1(10))
 
 
 if __name__ == '__main__':
