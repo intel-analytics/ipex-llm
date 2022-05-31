@@ -23,7 +23,6 @@ do
  then
  read_dir $1"/"$file
  else
- echo $1"/"$file
  if [ "${file##*.}"x = "ipynb"x ] && [[ ! "$train_notebooks" =~ "$1/$file" ]] && [[ ! "$inference_notebooks" =~ "$1/$file" ]]
  then
  echo "$file is added but the notebook test is not config"
@@ -35,25 +34,19 @@ done
 
 read_dir ${PYTORCH_NANO_NOTEBOOKS_DIR}
 
-for file in ${train_notebooks[*]}
-do
-  echo "# Start Testing ${file}"
-  start=$(date "+%s")
+echo "# Start Testing ${train_notebooks}"
+start=$(date "+%s")
 
-  python -m pytest --nbmake --nbmake-timeout=1000 --nbmake-kernel=python3 $file
+python -m pytest --nbmake --nbmake-timeout=1000 --nbmake-kernel=python3 ${train_notebooks}
 
-  now=$(date "+%s")
-  time=$((now-start))
-done
+now=$(date "+%s")
+time=$((now-start))
 
-for file in ${inference_notebooks[*]}
-do
-  echo "# Start Testing ${file}"
-  start=$(date "+%s")
+echo "# Start Testing ${inference_notebooks}"
+start=$(date "+%s")
 
-  python -m pytest --nbmake --nbmake-timeout=1000 --nbmake-kernel=python3 $file
+python -m pytest --nbmake --nbmake-timeout=1000 --nbmake-kernel=python3 ${inference_notebooks}
 
-  now=$(date "+%s")
-  time=$((now-start))
-done
+now=$(date "+%s")
+time=$((now-start))
 
