@@ -6,6 +6,8 @@ By simply changing imports, you are able to search the model architecture (e.g. 
 
 Under the hood, the objects (layers, activations, model, etc.) are implicitly turned into searchable objects at creation, which allows search spaces to be specified in their init arguments. Nano HPO collects those search spaces and passes them to the underlying HPO engine (i.e. Optuna) which generates hyperparameter suggestions accordingly. The instantiation and execution of the corresponding objects are delayed until the hyperparameter values are available in each trial.
 
+---
+
 ### Install
 
 If you have not installed BigDL-Nano, follow [Nano Install Guide](../Overview/nano.md#2-install) to install it according to your system and framework (i.e. tensorflow or pytorch).
@@ -17,9 +19,13 @@ pip install ConfigSpace
 pip install optuna
 ```
 
+---
+
 ### Search Spaces
 
 Search spaces are value range specifications that the search engine uses for sampling hyperparameters. The available search spaces in Nano HPO is defined in `bigdl.nano.automl.hpo.space`. Refer to [Search Space API doc]() for more details.
+
+---
 
 ### For Tensorflow Users
 
@@ -256,10 +262,113 @@ best_model = trainer.search(
 study = trainer.search_summary()
 trainer.fit(best_model)
 ```
+---
 
 ### Resume Search
 
+You can call `search` once again (or several times) with flag `resume=True` to resume from a previous search instead of starting a new one.
 
+The _resumed_ search will take into consideration all trials in the previous search when doing hyperparameter sampling. The trials in the resumed search will be stored in the same repo as the first search, and all trials will be retrieved as a whole by `search_summary`.
+
+Note that the flag `resume` is by default set to `False`, which means each search will by default start from scratch and any previous search results will be overridden and can no longer be retrieved.
+
+
+
+#### Use a Persistent Storage
+
+By default, the trials repo is created in-memory, so when the process is gone the trial statistics can not be retrieved anymore. If you are expecting to run search for a long time and may resume search several times, it is highly recommended to use a persistent storage instead of the default in-memory storage. Therefore when the process is accidentally shutdown, you can still resume the search from a new process.
+
+To use a persistent storage, specify `storage` with an RDB url (e.g SQLlite, MySQL, etc.) in `search`. The simplest way is to specify a sqllite url, as shown in the example below. It will automatically create a db file in the specified path. Also specify `study_name` so that all the search with the same name will be gathered into the same repo.
+
+##### Tensorflow Example
+
+Specify SQLlite `storage` and a `study_name` in search.
+```python
+name = "resume-example"
+storage = "sqlite:///example.db"
+#the first search from scratch
+model.search(study_name=name, storage=storage,...)
+# the resumed search
+model.search(study_name=name, storage=storage, resume=True,...)
+```
+##### PyTorch Example
+Specify SQLlite `storage` and a `study_name` in search.
+```python
+name = "resume-example"
+storage = "sqlite:///example.db"
+#the first search from scratch
+trainer.search(study_name=name, storage=storage,...)
+# the resumed search
+trainer.search(study_name=name, storage=storage, resume=True,..)
+```
+
+If the model/trainer object is still accessible along the searches (e.g. in a running jupyter notebook), the specification of `storage` and `study_name` can be omitted. Simply call `search` with `resume=True` to resume anytime.
+
+---
+
+### Parallel Search
+
+Parallel search allows trials to be run in multiple processes simultaneously. To use parallel search, you need to prepare an RDB database as storage. Then in `search`, specify the database url for `storage` and specify `study_name`, and set `n_parallels` to the number of parallel processes you want to run.
+
+We do not recommend SQLite for parallel search as it may cause deadlocks and performance issues. Here we provide an example using MySQL as storage.
+
+#### Setup MySQL database
+
+If you already know how to create a database in MySQL, you can skip this step. We assume MySQL service is already installed and started in your local machine.
+
+Create a new file with name `setup_db.sql`, paste the below contents.
+
+```sql
+CREATE DATABASE IF NOT EXISTS example;
+CREATE USER IF NOT EXISTS bigdlhpo ;
+GRANT ALL PRIVILEGEs ON example.* TO bigdlhpo;
+FLUSH PRIVILEGES;
+```
+
+Run below command
+```bash
+sudo mysql -u root < setup_db.sql
+```
+
+This creates a new user `bigdlhpo` and a new database `example`, and grants all access of the `example` database to `bigdlhpo`.
+
+#### Install MySQL client for python
+
+Install mysqlclient so that search can access MySQL database from python.
+
+```python
+pip install mysqlclient
+```
+#### Tensorflow Example
+
+Specify `storage` to the MySQL database `example` we just created as user bigdlhpo, specify `study_name` and also set `n_parallels=8`.
+
+```python
+name = "parallel-example-tf"
+storage = "mysql://bigdlhpo@localhost/example"
+#the first search from scratch
+model.search(study_name=name,
+             storage=storage,
+             n_parallels=8,
+             ...)
+```
+#### PyTorch Example
+
+Specify `storage` to the MySQL database `example` we just created as user bigdlhpo, specify `study_name` and also set `n_parallels=8`.
+
+```python
+name = "parallel-example-torch"
+storage = "mysql://bigdlhpo@localhost/example"
+#the first search from scratch
+trainer.search(study_name=name,
+               storage=storage,
+               n_parallels=8,
+               ...)
+
+```
+
+
+---
 ### Analysis and Visualization
 
 
