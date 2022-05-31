@@ -167,7 +167,7 @@ trainer.predict(ov_q_model, dataloader)
 ### Quantization with Accuracy Control
 A set of arguments that helps to tune the results for both INC and POT quantization:
 
-- `calib_dataloader`: A calibration dataloader is required for static post-training quantization. And for POT, it's also used as `val_dataloader` for evaluation
+- `calib_dataloader`: A calibration dataloader is required for static post-training quantization. And for POT, it's also used for evaluation
 - `metric`: A metric of `torchmetric` to run evaluation and compare with baseline
 
 - `accuracy_criterion`: A dictionary to specify the acceptable accuracy drop, e.g. `{'relative': 0.01, 'higher_is_better': True}`
@@ -178,7 +178,6 @@ A set of arguments that helps to tune the results for both INC and POT quantizat
 
 **Accuracy Control with INC**
 There are a few arguments that require only by INC, and you should not specify or modify any of them if you use `accelerator='openvino'`.
-- `val_dataloader`: The dataloader that we will run evaluation on.
 - `tuning_strategy`(optional): it specifies the algorithm to search the tuning space. In most cases, you don't need to change it.
 - `timeout`: Timeout of your tuning. Defaults 0 means endless time for tuning.
 
@@ -189,7 +188,6 @@ trainer.quantize(model,
                  precision='int8',
                  accelerator=None,
                  calib_dataloader= dataloader,
-                 val_dataloader= dataloader,
                  metric=Accuracy()
                  accuracy_criterion={'relative': 0.01, 'higher_is_better': True},
                  approach='static',
