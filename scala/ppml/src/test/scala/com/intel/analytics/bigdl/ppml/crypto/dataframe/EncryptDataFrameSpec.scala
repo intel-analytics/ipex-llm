@@ -58,7 +58,7 @@ class EncryptDataFrameSpec extends FlatSpec with Matchers with BeforeAndAfter{
     val crypto = new BigDLEncrypt()
     val dataKeyPlaintext = simpleKms.retrieveDataKeyPlainText(primaryKeyPath, dataKeyPath)
     crypto.init(AES_CBC_PKCS5PADDING, ENCRYPT, dataKeyPlaintext)
-    Files.write(Paths.get(encryptFileName), crypto.genFileHeader())
+    Files.write(Paths.get(encryptFileName), crypto.genHeader())
     val encryptedBytes = crypto.doFinal(data.toString().getBytes)
     Files.write(Paths.get(encryptFileName), encryptedBytes._1, StandardOpenOption.APPEND)
     Files.write(Paths.get(encryptFileName), encryptedBytes._2, StandardOpenOption.APPEND)
