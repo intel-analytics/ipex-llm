@@ -78,7 +78,7 @@ python ../../example/dien/preprocessing_inference.py \
     --driver_memory 1g \
     --input_transaction ./data/reviews_Books.json \
     --input_meta ./data/meta_Books.json \
-    --index_folder ./data --num_save_files 80
+    --index_folder ./data/ --num_save_files 80
 
 now=$(date "+%s")
 time2=$((now - start))
