@@ -2095,16 +2095,67 @@ class FeatureTable(Table):
                 .distinct().rdd.map(lambda row: row[col]).collect()
         return vocabularies
 
-    def sample_listwise(self, columns, num_list_per_key, num_examples_per_list, random_seed=None,
+    def sample_listwise(self, columns, num_sampled_list, num_sampled_item, random_seed=None,
                         replace=True):
         """
-        Convert the FeatureTable to a listwise FeatureTable. The FeatureTable should be
-        grouped by key before calling sample_listwise.
+        Convert the FeatureTable to a sample listwise FeatureTable. The columns should be of list
+        type. Note that the rows with list length < num_sampled_item will be dropped since
+        they don't have enough examples.
+
+        You can use groupby to aggregate records under the same key before calling sample_listwise.
+        >>> tbl
+        +----+----+----+
+        |name|   a|   b|
+        +----+----+----+
+        |   a|   1|   1|
+        |   a|   2|   2|
+        |   b|   1|   1|
+        +----+----+----+
+        >>> tbl.group_by("name", agg="collect_list")
+        +----+------------------+------------------+
+        |name|   collect_list(a)|   collect_list(b)|
+        +----+------------------+------------------+
+        |   a|            [1, 2]|            [1, 2]|
+        |   b|               [1]|               [1]|
+        +----+------------------+------------------+
+        >>> tbl
+        +----+------------+------------+--------------------+
+        |name|     int_arr|     str_arr|         int_arr_arr|
+        +----+------------+------------+--------------------+
+        |   a|   [1, 2, 3]|   [1, 2, 3]|     [[1], [2], [3]]|
+        |   b|[1, 2, 3, 4]|[1, 2, 3, 4]|[[1], [2], [3], [4]]|
+        |   c|         [1]|         [1]|               [[1]]|
+        +----+------------+------------+--------------------+
+        >>> tbl.sample_listwise(["int_arr", "str_arr", "int_arr_arr"], num_sampled_list=4,
+        >>>                     num_sampled_item=2)
+        +----+-------+-------+-----------+
+        |name|int_arr|str_arr|int_arr_arr|
+        +----+-------+-------+-----------+
+        |   a| [1, 3]| [1, 3]| [[1], [3]]|
+        |   a| [2, 1]| [2, 1]| [[2], [1]]|
+        |   a| [3, 2]| [3, 2]| [[3], [2]]|
+        |   a| [2, 3]| [2, 3]| [[2], [3]]|
+        |   b| [4, 1]| [4, 1]| [[4], [1]]|
+        |   b| [2, 3]| [2, 3]| [[2], [3]]|
+        |   b| [2, 3]| [2, 3]| [[2], [3]]|
+        |   b| [2, 3]| [2, 3]| [[2], [3]]|
+        +----+-------+-------+-----------+
+        >>> tbl.sample_listwise(["int_arr", "str_arr"], num_sampled_list=2,
+        >>>                     num_sampled_item=2, replace=False)
+        +----+------------+------------+--------------------+---------------+---------------+
+        |name|     int_arr|     str_arr|         int_arr_arr|sampled_int_arr|sampled_str_arr|
+        +----+------------+------------+--------------------+---------------+---------------+
+        |   a|   [1, 2, 3]|   [1, 2, 3]|     [[1], [2], [3]]|         [3, 2]|         [3, 2]|
+        |   a|   [1, 2, 3]|   [1, 2, 3]|     [[1], [2], [3]]|         [2, 1]|         [2, 1]|
+        |   b|[1, 2, 3, 4]|[1, 2, 3, 4]|[[1], [2], [3], [4]]|         [2, 4]|         [2, 4]|
+        |   b|[1, 2, 3, 4]|[1, 2, 3, 4]|[[1], [2], [3], [4]]|         [4, 2]|         [4, 2]|
+        +----+------------+------------+--------------------+---------------+---------------+
 
         :param columns: str or a list of str. Columns to convert to sampled list. Each column
-               should be of list type.
-        :param num_list_per_key: int. The number of lists that should be sampled for each key.
-        :param num_examples_per_list: int. The number of elements to be sampled for each list from
+               should be of list type. The list length of specified columns in the same row must
+               be the same.
+        :param num_sampled_list: int. The number of lists that should be sampled for each row.
+        :param num_sampled_item: int. The number of elements to be sampled for each list from
                the list of each column.
         :param random_seed: int. The number for creating 'np.random.RandomState'. Default: None.
         :param replace: bool. Indicates whether to replace the original columns. If replace=False,
@@ -2143,12 +2194,12 @@ class FeatureTable(Table):
                               "Each row of the FeatureTable should "
                               "have the same array length in the specified cols.")
             length = len_set.pop()
-            if length < num_examples_per_list:
+            if length < num_sampled_item:
                 row["sample_list"] = None
             else:
                 sampled_indices_list = []
-                for _ in range(num_list_per_key):
-                    sampled_indices = random_state.choice(range(length), size=num_examples_per_list,
+                for _ in range(num_sampled_list):
+                    sampled_indices = random_state.choice(range(length), size=num_sampled_item,
                                                           replace=False)
                     sampled_indices_list.append(sampled_indices.tolist())
                 row["sample_list"] = sampled_indices_list

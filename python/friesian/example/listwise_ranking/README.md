@@ -1,5 +1,6 @@
 # Running Friesian listwise example
 
+This example is based on Tensorflow Recommenders example [Listwise ranking](https://github.com/tensorflow/recommenders/blob/main/docs/examples/listwise_ranking.ipynb)
 
 ## Environment
 
