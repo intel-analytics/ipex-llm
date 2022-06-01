@@ -1352,7 +1352,6 @@ class TestTable(TestCase):
                              StructField("str_arr", ArrayType(StringType()), True),
                              StructField("int_arr_arr", ArrayType(ArrayType(IntegerType())), True)])
         tbl = FeatureTable(spark.createDataFrame(data, schema))
-        tbl.show()
         with self.assertRaises(Exception) as context:
             tbl.sample_listwise(["name"], num_sampled_list=1, num_sampled_item=1)
         self.assertTrue("Each column should be of list type" in str(context.exception))

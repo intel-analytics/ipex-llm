@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-
+import copy
 import hashlib
 import os
 import random
@@ -2176,42 +2176,32 @@ class FeatureTable(Table):
                 c_schema = StructField("sampled_" + c, c_type, True)
                 schema.add(c_schema)
 
-        def sample_feature(row):
-            indices = row["sample_idx"]
-            sampled_feature = row.asDict()
-            for c in cols:
-                sampled_list = [sampled_feature[c][idx] for idx in indices]
-                if replace:
-                    sampled_feature[c] = sampled_list
-                else:
-                    sampled_feature["sampled_" + c] = sampled_list
-            return sampled_feature
-
-        def sample_indices(row, random_state):
+        def sample_features(row, random_state):
             row = row.asDict()
             len_set = set([len(row[c]) for c in cols])
             invalidInputError(len(len_set) == 1,
                               "Each row of the FeatureTable should "
                               "have the same array length in the specified cols.")
             length = len_set.pop()
-            if length < num_sampled_item:
-                row["sample_list"] = None
-            else:
-                sampled_indices_list = []
+            sampled_rows = []
+            if length >= num_sampled_item:
                 for _ in range(num_sampled_list):
+                    new_row = copy.deepcopy(row)
                     sampled_indices = random_state.choice(range(length), size=num_sampled_item,
                                                           replace=False)
-                    sampled_indices_list.append(sampled_indices.tolist())
-                row["sample_list"] = sampled_indices_list
-            return row
+                    for c in cols:
+                        sampled_list = [new_row[c][idx] for idx in sampled_indices]
+                        if replace:
+                            new_row[c] = sampled_list
+                        else:
+                            new_row["sampled_" + c] = sampled_list
+                    sampled_rows.append(new_row)
+            return sampled_rows
 
         random_state = np.random.RandomState(seed=random_seed)
-        df = self.df.rdd.map(lambda x: sample_indices(x, random_state)).toDF()
-        df = df.dropna('any', None, subset="sample_list")
-        df = df.withColumn("sample_idx", F.explode("sample_list"))
         spark = OrcaContext.get_spark_session()
-        df = spark.createDataFrame(df.rdd.map(lambda x: sample_feature(x)), schema)
-        df = df.drop("sample_idx", "sample_list")
+        df = spark.createDataFrame(self.df.rdd.flatMap(lambda x: sample_features(x, random_state))
+                                   , schema)
 
         return FeatureTable(df)
 
