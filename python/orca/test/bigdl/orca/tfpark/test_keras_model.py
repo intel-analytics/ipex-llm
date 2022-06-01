@@ -73,13 +73,13 @@ class TestTFParkModel(ZooTestCase):
         val_x, val_y = self.create_training_data()
 
         # Number doesn't match
-        with pytest.raises(AssertionError) as excinfo:
+        with pytest.raises(RuntimeError) as excinfo:
             model.fit([x, x], [y, y, y], batch_size=4, distributed=True)
 
         assert "model_target number does not match data number" in str(excinfo.value)
 
         # Dict as input
-        with pytest.raises(AssertionError) as excinfo:
+        with pytest.raises(RuntimeError) as excinfo:
             model.fit({"input_1": x}, [y, y], batch_size=4, distributed=True)
 
         assert "all model_input names should exist in data" in str(excinfo.value)

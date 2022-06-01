@@ -211,8 +211,6 @@ object PPMLContext{
         val key = conf.get("spark.bigdl.kms.simple.key", defaultValue = "simpleAPPKEY")
         // println(key + "=-------------------")
         SimpleKeyManagementService(id, key)
-      case _ =>
-        throw new EncryptRuntimeException("Wrong kms type")
     }
     val ppmlSc = new PPMLContext(kms, sparkSession)
     if (conf.contains("spark.bigdl.kms.key.primary")) {

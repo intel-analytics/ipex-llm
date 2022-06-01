@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 from typing import List, Optional
-from bigdl.nano.deps.neural_compressor.inc_api import QuantizationINC, tf_dataset_to_inc_dataloader
+from bigdl.nano.deps.neural_compressor.inc_api import quantize as inc_quantzie
 import tensorflow as tf
 from tensorflow.keras.metrics import Metric
 from bigdl.nano.utils.log4Error import invalidInputError
@@ -22,8 +22,6 @@ from bigdl.nano.utils.log4Error import invalidInputError
 
 def quantize(self,
              calib_dataset: tf.data.Dataset = None,
-             val_dataset: tf.data.Dataset = None,
-             batch=1,
              metric: Optional[Metric] = None,
              backend='inc',
              conf: Optional[str] = None,
@@ -68,42 +66,15 @@ def quantize(self,
     :return:           A TensorflowBaseModel for INC. If there is no model found, return None.
     """
     if backend == 'inc':
-        invalidInputError(self.inputs is not None and self.outputs is not None,
-                          "A keras.Model for quantization must include Input layers. "
-                          "Please create the model by functional API"
-                          " keras.Model(inputs=.., outputs=..).\n"
-                          "More details in https://keras.io/api/models/model/")
-
-        def get_tensors_name(tensors):
-            return [tensor.name for tensor in tensors]
-
-        if approach not in ['static']:
-            invalidInputError(False,
-                              "Approach should be 'static', "
-                              "{} is invalid.".format(approach))
-        approach_map = {
-            'static': 'post_training_static_quant',
-            'dynamic': 'post_training_dynamic_quant'
-        }
-        approach = approach_map.get(approach)
-
-        quantizer = QuantizationINC(
-            framework='tensorflow', conf=conf, approach=approach,
-            tuning_strategy=tuning_strategy,
-            accuracy_criterion=accuracy_criterion,
-            timeout=timeout, max_trials=max_trials,
-            inputs=inputs if inputs else get_tensors_name(self.inputs),
-            outputs=outputs if outputs else get_tensors_name(self.outputs)
-        )
-
-        val_loader = None
-        if val_dataset:
-            val_loader = tf_dataset_to_inc_dataloader(val_dataset, batch)
-        calib_loader = None
-        if calib_dataset:
-            calib_loader = tf_dataset_to_inc_dataloader(calib_dataset, batch)
-        quantized = quantizer.post_training_quantize(self, calib_loader,
-                                                     val_loader, metric)
-        return quantized
+        return inc_quantzie(self, dataloader=calib_dataset, metric=metric,
+                            framework='tensorflow',
+                            conf=conf,
+                            approach=approach,
+                            tuning_strategy=tuning_strategy,
+                            accuracy_criterion=accuracy_criterion,
+                            timeout=timeout,
+                            max_trials=max_trials,
+                            inputs=inputs,
+                            outputs=outputs)
     else:
         invalidInputError(False, "Backend {} is not implemented.".format(backend))

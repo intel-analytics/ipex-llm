@@ -431,7 +431,6 @@ class TSPipeline:
 
     def quantize(self,
                  calib_data,
-                 val_data=None,
                  metric=None,
                  conf=None,
                  framework='pytorch_fx',
@@ -444,7 +443,7 @@ class TSPipeline:
         """
         Quantization TSPipeline.
 
-        :param calib_data: Required for static quantization.
+        :param calib_data: Required for static quantization or evaluation.
 
                | 1. data creator:
                | a function that takes a config dictionary as parameter and
@@ -463,8 +462,6 @@ class TSPipeline:
                | y's shape is (num_samples, future_seq_len, output_feature_dim).
                | They can be found in TSPipeline._best_config.
 
-        :param val_data: Same as calib_data,
-               should be data creator or TSDataset or DataLoader or numpy.ndarray.
         :param metric: A str represent the metrics for tunning the quality of
                quantization. You may choose from "mse", "mae", "rmse", "r2", "mape", "smape".
         :param conf: A path to conf yaml file for quantization. Default to None,
@@ -502,7 +499,6 @@ class TSPipeline:
         # preprocess data.
         from .utils import preprocess_quantize_data
         calib_data = preprocess_quantize_data(self, calib_data)
-        val_data = preprocess_quantize_data(self, val_data)
 
         # map metric str to function
         from bigdl.chronos.metric.forecast_metrics import TORCHMETRICS_REGRESSION_MAP
@@ -538,7 +534,6 @@ class TSPipeline:
                                              accelerator=accelerator,
                                              method=method,
                                              calib_dataloader=calib_data,
-                                             val_dataloader=val_data,
                                              metric=metric,
                                              conf=conf,
                                              approach=approach,

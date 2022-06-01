@@ -31,6 +31,7 @@ from bigdl.orca.tfpark.tf_dataset import TFImageDataset, TFDataset
 import logging
 
 from bigdl.dllib.utils.utils import to_sample_rdd
+from bigdl.dllib.utils.log4Error import *
 
 if sys.version >= '3':
     long = int
@@ -48,7 +49,8 @@ class TFNet(Layer):
         config_bytes = None
         if tf_session_config is not None:
             import tensorflow as tf
-            assert isinstance(tf_session_config, tf.ConfigProto)
+            invalidInputError(isinstance(tf_session_config, tf.ConfigProto),
+                              "expect tf_session_config is tf.ConfigProto type")
             tf_session_config.use_per_session_threads = True
             config_bytes = bytearray(tf_session_config.SerializeToString())
         if input_names is None and output_names is None:
@@ -88,11 +90,13 @@ class TFNet(Layer):
             elif isinstance(i, JTensor):
                 return i
             else:
-                raise Exception("Error unknown input type %s" % type(i))
+                invalidInputError(False,
+                                  "Error unknown input type %s" % type(i))
 
         if type(input) is list:
             if len(input) == 0:
-                raise Exception('Error when checking: empty input')
+                invalidInputError(False,
+                                  'Error when checking: empty input')
             return list(map(lambda i: to_jtensor(i), input)), True
         else:
             return [to_jtensor(input)], False
@@ -133,7 +137,8 @@ class TFNet(Layer):
             elif isinstance(x, RDD):
                 data_rdd = x
             else:
-                raise TypeError("Unsupported prediction data type: %s" % type(x))
+                invalidInputError(False,
+                                  "Unsupported prediction data type: %s" % type(x))
             results = callZooFunc(self.bigdl_type, "zooPredict",
                                   self.value,
                                   data_rdd,
@@ -190,7 +195,8 @@ class TFNet(Layer):
         :return: a TFNet
         """
         if not os.path.isdir(folder):
-            raise ValueError(folder + " does not exist")
+            invalidInputError(False,
+                              folder + " does not exist")
         return TFNet(folder, tf_session_config=tf_session_config)
 
     @staticmethod
@@ -220,7 +226,8 @@ class TFNet(Layer):
         config_bytes = None
         if tf_session_config is not None:
             import tensorflow as tf
-            assert isinstance(tf_session_config, tf.ConfigProto)
+            invalidInputError(isinstance(tf_session_config, tf.ConfigProto),
+                              "expect tf_session_config is tf.ConfigProto type")
             tf_session_config.use_per_session_threads = True
             config_bytes = bytearray(tf_session_config.SerializeToString())
 
