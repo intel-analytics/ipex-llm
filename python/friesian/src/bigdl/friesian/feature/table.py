@@ -2200,8 +2200,8 @@ class FeatureTable(Table):
 
         random_state = np.random.RandomState(seed=random_seed)
         spark = OrcaContext.get_spark_session()
-        df = spark.createDataFrame(self.df.rdd.flatMap(lambda x: sample_features(x, random_state))
-                                   , schema)
+        df = spark.createDataFrame(self.df.rdd.flatMap(lambda x:
+                                                       sample_features(x, random_state)), schema)
 
         return FeatureTable(df)
 
