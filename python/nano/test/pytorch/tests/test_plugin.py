@@ -75,8 +75,6 @@ class TestPlugin(TestCase):
         trainer_dis.tune(model=pl_model_dis, train_dataloaders=dataloader_1, scale_batch_size_kwargs={'max_trials':2})
         trainer_dis.fit(pl_model_dis, dataloader_1, dataloader_1)
         res_dis = trainer_dis.test(pl_model_dis, dataloader_1)
-        print("distributed result", res_dis)
-
  
         dataloader_2 = copy.deepcopy(dataloader_1)
         pl_model_single = copy.deepcopy(pl_model_dis)
@@ -85,7 +83,6 @@ class TestPlugin(TestCase):
         trainer_single.fit(pl_model_single, dataloader_2, dataloader_2)
         
         res_single = trainer_single.test(pl_model_single, dataloader_2)
-        print("single result", res_single)
 
         acc_single = res_single[0]['test/Accuracy_1']
         acc_dis = res_dis[0]['test/Accuracy_1']
