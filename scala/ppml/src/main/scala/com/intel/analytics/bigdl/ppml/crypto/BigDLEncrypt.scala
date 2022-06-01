@@ -31,12 +31,23 @@ import org.apache.spark.input.PortableDataStream
 import java.nio.ByteBuffer
 import scala.util.Random
 
+/**
+ * BigDL general crypto for encrypt and decrypt data.
+ */
 class BigDLEncrypt extends Crypto {
   protected var cipher: Cipher = null
   protected var mac: Mac = null
   protected var ivParameterSpec: IvParameterSpec = null
+  protected var encryptionKeySpec: SecretKeySpec = null
   protected var opMode: OperationMode = null
   protected var initializationVector: Array[Byte] = null
+
+  /**
+   * Init this crypto with crypto mode, operation mode and keys.
+   * @param cryptoMode cryptoMode to en/decrypt data, such as AES_CBC_PKCS5PADDING.
+   * @param mode en/decrypt mode, one of ENCRYPT or DECRYPT.
+   * @param dataKeyPlaintext signing key and data key.
+   */
   override def init(cryptoMode: CryptoMode, mode: OperationMode, dataKeyPlaintext: String): Unit = {
     opMode = mode
     val secret = dataKeyPlaintext.getBytes()
@@ -47,7 +58,7 @@ class BigDLEncrypt extends Crypto {
     val r = new Random(signingKey.sum)
     initializationVector = Array.tabulate(16)(_ => (r.nextInt(256) - 128).toByte)
     ivParameterSpec = new IvParameterSpec(initializationVector)
-    val encryptionKeySpec = new SecretKeySpec(encryptKey, cryptoMode.secretKeyAlgorithm)
+    encryptionKeySpec = new SecretKeySpec(encryptKey, cryptoMode.secretKeyAlgorithm)
     cipher = Cipher.getInstance(cryptoMode.encryptionAlgorithm)
     cipher.init(mode.opmode, encryptionKeySpec, ivParameterSpec)
     mac = Mac.getInstance(cryptoMode.signingAlgorithm)
@@ -57,7 +68,11 @@ class BigDLEncrypt extends Crypto {
 
   protected var signingDataStream: DataOutputStream = null
 
-  override def genFileHeader(): Array[Byte] = {
+  /**
+   * If encrypt data, should generate header and put return value to the head.
+   * @return header bytes
+   */
+  override def genHeader(): Array[Byte] = {
     Log4Error.invalidOperationError(cipher != null,
       s"you should init BigDLEncrypt first.")
     val timestamp: Instant = Instant.now()
@@ -69,49 +84,111 @@ class BigDLEncrypt extends Crypto {
     signingByteBuffer.array()
   }
 
-  override def verifyFileHeader(header: Array[Byte]): Unit = {
+  /**
+   * Verify the header bytes when decrypt.
+   * @param header header bytes
+   */
+  override def verifyHeader(header: Array[Byte]): Unit = {
     val headerBuffer = ByteBuffer.wrap(header)
     val version: Byte = headerBuffer.get()
-    if (version.compare((0x80).toByte) != 0) {
-      throw new EncryptRuntimeException("File header version error!")
-    }
+    Log4Error.invalidInputError(version.compare((0x80).toByte) == 0,
+      "File header version error!")
     val timestampSeconds: Long = headerBuffer.getLong
     val initializationVector: Array[Byte] = header.slice(1 + 8, header.length)
     if (!initializationVector.sameElements(this.initializationVector)) {
-      throw new EncryptRuntimeException("File header not match!" +
-        "expected: " + this.initializationVector.mkString(",") +
-        ", but got: " + initializationVector.mkString(", "))
+      ivParameterSpec = new IvParameterSpec(initializationVector)
+      cipher.init(opMode.opmode, encryptionKeySpec, ivParameterSpec)
     }
   }
 
+  /**
+   * Continues a multiple-part encryption or decryption operation
+   * (depending on how this crypto was initialized).
+   * @param content byte to be encrypted or decrypted.
+   * @return encrypted or decrypted bytes.
+   */
   override def update(content: Array[Byte]): Array[Byte] = {
     val cipherText: Array[Byte] = cipher.update(content)
     mac.update(cipherText)
     cipherText
   }
 
+  /**
+   * Continues a multiple-part encryption or decryption operation
+   * (depending on how this crypto was initialized).
+   * @param content bytes to be encrypted or decrypted.
+   * @param offset bytes offset of content.
+   * @param len bytes len of content.
+   * @return encrypted or decrypted bytes.
+   */
   override def update(content: Array[Byte], offset: Int, len: Int): Array[Byte] = {
     val cipherText: Array[Byte] = cipher.update(content, offset, len)
     mac.update(cipherText, offset, len)
     cipherText
   }
 
+  /**
+   * Encrypts or decrypts data in a single-part operation,
+   * or finishes a multiple-part operation. The data is encrypted
+   * or decrypted, depending on how this crypto was initialized.
+   * @param content bytes to be encrypted or decrypted.
+   * @return (encrypted or decrypted bytes, Message Authentication Code)
+   */
   override def doFinal(content: Array[Byte]): (Array[Byte], Array[Byte]) = {
     val cipherText: Array[Byte] = cipher.doFinal(content)
     val hmac: Array[Byte] = mac.doFinal(cipherText)
     (cipherText, hmac)
   }
 
+  /**
+   * Encrypts or decrypts data in a single-part operation,
+   * or finishes a multiple-part operation. The data is encrypted
+   * or decrypted, depending on how this crypto was initialized.
+   * @param content bytes to be encrypted or decrypted.
+   * @param offset bytes offset of content.
+   * @param len bytes len of content.
+   * @return (encrypted or decrypted bytes, Message Authentication Code)
+   */
   override def doFinal(content: Array[Byte], offset: Int, len: Int): (Array[Byte], Array[Byte]) = {
     val cipherText: Array[Byte] = cipher.doFinal(content, offset, len)
     val hmac: Array[Byte] = mac.doFinal(cipherText.slice(offset, offset + len))
     (cipherText, hmac)
   }
 
+  /**
+   * Encrypts or decrypts a byte stream. The data is encrypted
+   * or decrypted, depending on how this crypto was initialized.
+   * @param inputStream input stream
+   * @param outputStream output stream
+   */
+  def doFinal(inputStream: DataInputStream, outputStream: DataOutputStream): Unit = {
+    if (opMode == ENCRYPT) {
+      encryptStream(inputStream, outputStream)
+    } else {
+      decryptStream(inputStream, outputStream)
+    }
+  }
+
+  /**
+   * Encrypts or decrypts a file. The data is encrypted
+   * or decrypted, depending on how this crypto was initialized.
+   * @param binaryFilePath
+   * @param savePath
+   */
+  def doFinal(binaryFilePath: String, savePath: String): Unit = {
+    if (opMode == ENCRYPT) {
+      encryptFile(binaryFilePath, savePath)
+    } else {
+      decryptFile(binaryFilePath, savePath)
+    }
+  }
+
   val blockSize = 1024 * 1024 // 1m per update
   val byteBuffer = new Array[Byte](blockSize)
-  override def encryptStream(inputStream: DataInputStream, outputStream: DataOutputStream): Unit = {
-    val header = genFileHeader()
+  protected def encryptStream(
+        inputStream: DataInputStream,
+        outputStream: DataOutputStream): Unit = {
+    val header = genHeader()
     outputStream.write(header)
     while (inputStream.available() > blockSize) {
       val readLen = inputStream.read(byteBuffer)
@@ -125,9 +202,11 @@ class BigDLEncrypt extends Crypto {
   }
 
   val hmacSize = 32
-  override def decryptStream(inputStream: DataInputStream, outputStream: DataOutputStream): Unit = {
+  protected def decryptStream(
+        inputStream: DataInputStream,
+        outputStream: DataOutputStream): Unit = {
     val header = read(inputStream, 25)
-    verifyFileHeader(header)
+    verifyHeader(header)
     while (inputStream.available() > blockSize) {
       val readLen = inputStream.read(byteBuffer)
       outputStream.write(update(byteBuffer, 0, readLen))
@@ -135,14 +214,12 @@ class BigDLEncrypt extends Crypto {
     val last = inputStream.read(byteBuffer)
     val inputHmac = byteBuffer.slice(last - hmacSize, last)
     val (lastSlice, streamHmac) = doFinal(byteBuffer, 0, last - hmacSize)
-    if(inputHmac.sameElements(streamHmac)) {
-      throw new EncryptRuntimeException("hmac not match")
-    }
+    Log4Error.invalidInputError(!inputHmac.sameElements(streamHmac), "hmac not match")
     outputStream.write(lastSlice)
     outputStream.flush()
   }
 
-  override def decryptFile(binaryFilePath: String, savePath: String): Unit = {
+  protected def decryptFile(binaryFilePath: String, savePath: String): Unit = {
     Log4Error.invalidInputError(savePath != null && savePath != "",
       "decrypted file save path should be specified")
     val fs = File.getFileSystem(binaryFilePath)
@@ -153,7 +230,7 @@ class BigDLEncrypt extends Crypto {
     outs.close()
   }
 
-  override def encryptFile(binaryFilePath: String, savePath: String): Unit = {
+  protected def encryptFile(binaryFilePath: String, savePath: String): Unit = {
     Log4Error.invalidInputError(savePath != null && savePath != "",
       "decrypted file save path should be specified")
     val fs = File.getFileSystem(binaryFilePath)
@@ -167,19 +244,23 @@ class BigDLEncrypt extends Crypto {
   private def read(stream: DataInputStream, numBytes: Int): Array[Byte] = {
     val retval = new Array[Byte](numBytes)
     val bytesRead: Int = stream.read(retval)
-    if (bytesRead < numBytes) {
-      throw new EncryptRuntimeException("Not enough bits to read!")
-    }
+    Log4Error.invalidOperationError(bytesRead == numBytes,
+      s"Not enough bits to read!, excepted $numBytes, but got $bytesRead.")
     retval
   }
 
+  /**
+   * decrypt big data stream.
+   * @param ite stream iterator.
+   * @return iterator of String.
+   */
   override def decryptBigContent(
         ite: Iterator[(String, PortableDataStream)]): Iterator[String] = {
     var result: Iterator[String] = Iterator[String]()
 
     while (ite.hasNext == true) {
       val inputStream: DataInputStream = ite.next._2.open()
-      verifyFileHeader(read(inputStream, 25))
+      verifyHeader(read(inputStream, 25))
 
       // do first
       var lastString = ""
@@ -196,9 +277,8 @@ class BigDLEncrypt extends Crypto {
       val last = inputStream.read(byteBuffer)
       val inputHmac = byteBuffer.slice(last - hmacSize, last)
       val (lastSlice, streamHmac) = doFinal(byteBuffer, 0, last - hmacSize)
-      if (inputHmac.sameElements(streamHmac)) {
-        throw new EncryptRuntimeException("hmac not match")
-      }
+      Log4Error.invalidInputError(!inputHmac.sameElements(streamHmac),
+        "hmac not match")
       val lastDecryptString = lastString + new String(lastSlice)
       val splitDecryptStringArray = lastDecryptString.split("\r").flatMap(_.split("\n"))
       result = result ++ splitDecryptStringArray
