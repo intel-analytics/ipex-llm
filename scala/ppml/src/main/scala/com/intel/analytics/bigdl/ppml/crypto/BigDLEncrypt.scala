@@ -292,6 +292,11 @@ class BigDLEncrypt extends Crypto {
 
   }
 
+  /**
+   * read parquet from byte array.
+   * @param content plaintext of data stream.
+   * @return iterator of String.
+   */
   override def readParquet(content: Array[Byte]): Iterator[String] = {
     var result: Iterator[String] = Iterator[String]()
     val parquetStream = new ParquetStream(content)
@@ -335,6 +340,11 @@ class BigDLEncrypt extends Crypto {
 
   }
 
+  /**
+   * decrypt big parquet data stream.
+   * @param ite stream iterator.
+   * @return iterator of String.
+   */
   override def decryptParquetContent(ite: Iterator[(String, PortableDataStream)]): Iterator[String] = {
     var result: Iterator[String] = Iterator[String]()
 
