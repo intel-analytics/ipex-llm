@@ -244,7 +244,6 @@ class BigDLEncrypt extends Crypto {
   private def read(stream: DataInputStream, numBytes: Int): Array[Byte] = {
     val retval = new Array[Byte](numBytes)
     val bytesRead: Int = stream.read(retval)
-    println(bytesRead)
     Log4Error.invalidOperationError(bytesRead == numBytes,
       s"Not enough bits to read!, excepted $numBytes, but got $bytesRead.")
     retval
