@@ -21,7 +21,6 @@ import pytorch_lightning as pl
 import torch
 from pytorch_lightning import LightningModule
 from torch import nn
-from torch.fx.graph_module import GraphModule
 from torch.nn.modules.loss import _Loss
 from torch.utils.data import DataLoader
 from torchmetrics.metric import Metric
