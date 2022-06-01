@@ -142,6 +142,8 @@ class TrainingSpec extends ZooSpecHelper {
     model.fit(localData, nbEpoch = 2)
     model.clearGradientClipping()
     model.fit(localData, nbEpoch = 2)
+    val logPath = "/tmp/logs/bigdl.log"
+    TestUtils.conditionFailTest(new java.io.File(logPath).exists(), f"${logPath} should exists")
     val accuracy = model.evaluate(localData)
     val predictResults = model.predict(localData, 32)
   }

@@ -25,7 +25,7 @@ from bigdl.dllib.optim.optimizer import *
 from bigdl.dllib.utils.common import EvaluatedResult
 from test.bigdl.test_zoo_utils import ZooTestCase
 from bigdl.dllib.feature.common import FeatureSet
-from bigdl.dllib.nncontext import init_nncontext, init_spark_conf
+from bigdl.dllib.nncontext import init_nncontext, init_spark_conf, ZooContext
 from bigdl.dllib.utils.file_utils import Sample
 
 
@@ -34,6 +34,7 @@ class TestEstimator(ZooTestCase):
         """ setup any state tied to the execution of the given method in a
         class.  setup_method is invoked for every test method of a class.
         """
+        ZooContext.log_output = True
         sparkConf = init_spark_conf().setMaster("local[1]").setAppName("testEstimator")
         self.sc = init_nncontext(sparkConf)
         #test model not equal to testEstimator
@@ -129,6 +130,9 @@ class TestEstimator(ZooTestCase):
         assert len(eval_result) == 1
         predict_result = model.predict(sample_rdd)
         assert (predict_result.count(), 8)
+
+        logPath = "/tmp/logs/bigdl.log"
+        assert (os.path.exists(logPath) and os.path.getsize(logPath) > 0)
 
 
 if __name__ == "__main__":

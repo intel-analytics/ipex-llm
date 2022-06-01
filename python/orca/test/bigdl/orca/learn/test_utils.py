@@ -22,7 +22,7 @@ import pytest
 import numpy as np
 from pyspark.sql.types import ArrayType, DoubleType
 
-from bigdl.orca import init_orca_context, stop_orca_context
+from bigdl.orca import init_orca_context, stop_orca_context, OrcaContext
 from bigdl.orca.data import SparkXShards
 from bigdl.orca.data.image.utils import chunks
 from bigdl.orca.learn.utils import convert_predict_rdd_to_dataframe, _dataframe_to_xshards, \
@@ -37,6 +37,7 @@ class TestUtil(TestCase):
         """ setup any state tied to the execution of the given method in a
         class.  setup_method is invoked for every test method of a class.
         """
+        OrcaContext.log_output = True
         self.sc = init_orca_context(cores=4)
 
         def to_array_(v):
