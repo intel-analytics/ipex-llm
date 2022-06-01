@@ -139,9 +139,6 @@ class TestEstimatorForKeras(TestCase):
             assert abs(res5_c[idx]["prediction"][0][0] - res6_c[idx]["prediction"][0]) == 0
             assert abs(res5_c[idx]["prediction"][0][1] - res6_c[idx]["prediction"][1]) == 0
 
-        logPath = "/tmp/logs/bigdl.log"
-        assert (os.path.exists(logPath) and os.path.getsize(logPath) > 0)
-
     def test_nnEstimator_evaluation(self):
         df = self.get_estimator_df2()
         linear_model = Sequential().add(Linear(2, 2)).add(LogSoftMax())
