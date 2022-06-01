@@ -16,36 +16,20 @@
 
 from typing import Any, Dict, Optional, Union
 import pytorch_lightning as pl
-
+import copy
+import math
 from pytorch_lightning.trainer.states import TrainerFn, TrainerStatus
 from bigdl.nano.utils.log4Error import invalidInputError
 from bigdl.nano.automl.hpo.backend import create_hpo_backend
 from .objective import Objective
-from ..hpo.search import (
+from bigdl.nano.automl.utils.parallel import run_parallel
+from bigdl.nano.automl.hpo.search import (
     _search_summary,
     _end_search,
-    _check_optimize_direction,
-    _filter_tuner_args,
-    _check_search_args,
+    _create_study,
+    _validate_args,
+    _prepare_args,
 )
-
-
-def _validate_args(target_metric, **search_kwargs):
-    _check_search_args(
-        search_args=search_kwargs,
-        legal_keys=[
-            HPOSearcher.FIT_KEYS,
-            HPOSearcher.EXTRA_FIT_KEYS,
-            HPOSearcher.TUNE_CREATE_KEYS,
-            HPOSearcher.TUNE_RUN_KEYS
-        ])
-
-    direction = search_kwargs.get('direction', None),
-    directions = search_kwargs.get('directions', None),
-    _check_optimize_direction(
-        direction=direction,
-        directions=directions,
-        metric=target_metric)
 
 
 class HPOSearcher:
@@ -77,50 +61,6 @@ class HPOSearcher:
         self.run_kwargs = None
         self.fit_kwargs = None
 
-    def _prepare_args(self, kwargs):
-
-        create_kwargs = _filter_tuner_args(kwargs, HPOSearcher.TUNE_CREATE_KEYS)
-        run_kwargs = _filter_tuner_args(kwargs, HPOSearcher.TUNE_RUN_KEYS)
-        fit_kwargs = _filter_tuner_args(kwargs, HPOSearcher.FIT_KEYS)
-        # prepare sampler and pruner args
-        sampler_type = create_kwargs.get('sampler', None)
-        if sampler_type:
-            sampler_args = create_kwargs.get('sampler_kwargs', {})
-            sampler = self.backend.create_sampler(sampler_type, sampler_args)
-            create_kwargs['sampler'] = sampler
-            create_kwargs.pop('sampler_kwargs', None)
-
-        pruner_type = create_kwargs.get('pruner', None)
-        if pruner_type:
-            pruner_args = create_kwargs.get('pruner_kwargs', {})
-            pruner = self.backend.create_pruner(pruner_type, pruner_args)
-            create_kwargs['pruner'] = pruner
-            create_kwargs.pop('pruner_kwargs', None)
-
-        # renamed callbacks to tune_callbacks to avoid conflict with fit param
-        run_kwargs['callbacks'] = run_kwargs.get('tune_callbacks', None)
-        run_kwargs.pop('tune_callbacks', None)
-        run_kwargs['show_progress_bar'] = False
-
-        # renamed callbacks to tune_callbacks to avoid conflict with fit param
-        run_kwargs['callbacks'] = run_kwargs.get('tune_callbacks', None)
-        run_kwargs.pop('tune_callbacks', None)
-        run_kwargs['show_progress_bar'] = False
-
-        return create_kwargs, run_kwargs, fit_kwargs
-
-    def _create_study(self, resume, create_kwargs):
-
-        if not resume:
-            load_if_exists = False
-            print("Starting a new tuning")
-        else:
-            load_if_exists = True
-            print("Resume the last tuning...")
-        self.create_kwargs['load_if_exists'] = load_if_exists
-        # create study
-        self.study = self.backend.create_study(**create_kwargs)
-
     def _create_objective(self, model, target_metric, create_kwargs, fit_kwargs):
         # target_metric = self._fix_target_metric(target_metric, search_kwargs)
         isprune = True if create_kwargs.get('pruner', None) else False
@@ -132,14 +72,14 @@ class HPOSearcher:
             **fit_kwargs,
         )
 
-    def _run_search(self, run_kwargs):
+    def _run_search(self):
         # TODO do we need to set these trainer states?
         self.trainer.state.fn = TrainerFn.TUNING
         self.trainer.state.status = TrainerStatus.RUNNING
         self.trainer.tuning = True
 
         # run optimize
-        self.study.optimize(self.objective, **run_kwargs)
+        self.study.optimize(self.objective, **self.run_kwargs)
 
         self.tune_end = False
         self.trainer.tuning = False
@@ -150,10 +90,21 @@ class HPOSearcher:
         invalidInputError(self.trainer.state.stopped,
                           "trainer state should be stopped")
 
+    def _run_search_n_procs(self, n_procs=4):
+        new_searcher = copy.deepcopy(self)
+        n_trials = new_searcher.run_kwargs.get('n_trials', None)
+        if n_trials:
+            subp_n_trials = math.ceil(n_trials / n_procs)
+            new_searcher.run_kwargs['n_trials'] = subp_n_trials
+        run_parallel(func=new_searcher._run_search,
+                     kwargs={},
+                     n_procs=n_procs)
+
     def search(self,
                model,
                resume=False,
                target_metric=None,
+               n_parallels=1,
                **kwargs):
         """
         Run HPO Searcher. It will be called in Trainer.search().
@@ -168,20 +119,31 @@ class HPOSearcher:
         search_kwargs = kwargs or {}
         self.target_metric = target_metric
 
-        _validate_args(target_metric, **search_kwargs)
+        _validate_args(search_kwargs,
+                       self.target_metric,
+                       legal_keys=[HPOSearcher.FIT_KEYS,
+                                   HPOSearcher.EXTRA_FIT_KEYS,
+                                   HPOSearcher.TUNE_CREATE_KEYS,
+                                   HPOSearcher.TUNE_RUN_KEYS])
 
-        (self.create_kwargs,
-            self.run_kwargs,
-            self.fit_kwargs) = self._prepare_args(search_kwargs)
+        (self.create_kwargs, self.run_kwargs, self.fit_kwargs) \
+            = _prepare_args(search_kwargs,
+                            HPOSearcher.TUNE_CREATE_KEYS,
+                            HPOSearcher.TUNE_RUN_KEYS,
+                            HPOSearcher.FIT_KEYS,
+                            self.backend)
 
         # create study
         if self.study is None:
-            self._create_study(resume, self.create_kwargs)
+            self.study = _create_study(resume, self.create_kwargs, self.backend)
 
         if self.objective is None:
-            self._create_objective(model, target_metric, self.create_kwargs, self.fit_kwargs)
+            self._create_objective(model, self.target_metric, self.create_kwargs, self.fit_kwargs)
 
-        self._run_search(self.run_kwargs)
+        if n_parallels and n_parallels > 1:
+            self._run_search_n_procs(n_parallels)
+        else:
+            self._run_search()
 
         # it is not possible to know the best trial before runing search,
         # so just apply the best trial at end of each search

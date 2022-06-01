@@ -25,6 +25,8 @@ from bigdl.orca.data import XShards
 from bigdl.orca.ray import OrcaRayContext
 
 import logging
+from bigdl.dllib.utils.log4Error import *
+
 logger = logging.getLogger(__name__)
 
 
@@ -140,7 +142,7 @@ class RayXShards(XShards):
         self.partition2ip = {idx: ip for idx, ip, _ in self.id_ip_store}
 
     def transform_shard(self, func, *args):
-        raise Exception("Transform is not supported for RayXShards")
+        invalidInputError(False, "Transform is not supported for RayXShards")
 
     def num_partitions(self):
         return len(self.partition2ip)
@@ -245,9 +247,10 @@ class RayXShards(XShards):
         :param return_refs: Whether to return ray objects refs or ray objects. If True, return a
         list of ray object refs, otherwise return a list of ray objects. Defaults to be False,
         """
-        assert self.num_partitions() >= len(actors), \
-            f"Get number of partitions ({self.num_partitions()}) smaller than " \
-            f"number of actors ({len(actors)}). Please submit an issue to analytics zoo."
+        invalidInputError(self.num_partitions() >= len(actors),
+                          f"Get number of partitions ({self.num_partitions()}) smaller than "
+                          f"number of actors ({len(actors)}). Please submit an issue to"
+                          f" analytics zoo.")
         assigned_partitions, _, _ = self.assign_partitions_to_actors(actors)
         result_refs = []
         for actor, part_ids in zip(actors, assigned_partitions):
@@ -261,11 +264,12 @@ class RayXShards(XShards):
 
     def zip_reduce_shards_with_actors(self, xshards, actors, reduce_partitions_func,
                                       return_refs=False):
-        assert self.num_partitions() == xshards.num_partitions(),\
-            "the rdds to be zipped must have the same number of partitions"
-        assert self.num_partitions() >= len(actors), \
-            f"Get number of partitions ({self.num_partitions()}) smaller than " \
-            f"number of actors ({len(actors)}). Please submit an issue to analytics zoo."
+        invalidInputError(self.num_partitions() == xshards.num_partitions(),
+                          "the rdds to be zipped must have the same number of partitions")
+        invalidInputError(self.num_partitions() >= len(actors),
+                          f"Get number of partitions ({self.num_partitions()}) smaller than"
+                          f" number of actors ({len(actors)}). Please submit an issue"
+                          f" to analytics zoo.")
         assigned_partitions, _, _ = self.assign_partitions_to_actors(actors)
         result_refs = []
         for actor, part_ids in zip(actors, assigned_partitions):
@@ -302,7 +306,8 @@ class RayXShards(XShards):
         # todo extract this algorithm to other functions for unit tests.
         actor_ips = []
         for actor in actors:
-            assert hasattr(actor, "get_node_ip"), "each actor should have a get_node_ip method"
+            invalidInputError(hasattr(actor, "get_node_ip"),
+                              "each actor should have a get_node_ip method")
             actor_ip = actor.get_node_ip.remote()
             actor_ips.append(actor_ip)
 

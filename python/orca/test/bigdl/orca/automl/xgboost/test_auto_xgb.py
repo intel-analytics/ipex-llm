@@ -109,14 +109,14 @@ class TestAutoXGBRegressor(TestCase):
                                         name="auto_xgb_regressor",
                                         tree_method='hist')
         data, validation_data = get_data()
-        with pytest.raises(ValueError) as exeinfo:
+        with pytest.raises(RuntimeError) as exeinfo:
             auto_xgb_reg.fit(data=data,
                              epochs=1,
                              validation_data=validation_data,
                              metric="logloss",
                              search_space=get_xgb_search_space(),
                              n_sampling=4)
-        assert "metric_mode" in str(exeinfo)
+        assert "metric logloss" in str(exeinfo)
         auto_xgb_reg.fit(data=data,
                          epochs=1,
                          validation_data=validation_data,
@@ -136,7 +136,7 @@ class TestAutoXGBRegressor(TestCase):
             elements = np.power(np.log1p(y_true) - np.log1p(y_pred), 2)
             return float(np.sqrt(np.sum(elements) / len(y_true)))
 
-        with pytest.raises(ValueError) as exeinfo:
+        with pytest.raises(RuntimeError) as exeinfo:
             auto_xgb_reg.fit(data=data,
                              epochs=1,
                              validation_data=validation_data,

@@ -33,6 +33,8 @@ from bigdl.dllib.utils.file_utils import enable_multi_fs_load, enable_multi_fs_s
 
 import ray
 from ray.exceptions import RayActorError
+from bigdl.dllib.utils.log4Error import *
+
 
 logger = logging.getLogger(__name__)
 
@@ -107,15 +109,17 @@ class PyTorchRayEstimator(OrcaRayEstimator):
             sync_stats=True,
             log_level=logging.INFO):
         if config is not None and "batch_size" in config:
-            raise Exception("Please do not specify batch_size in config. Input batch_size in the"
-                            " fit/evaluate/predict function of the estimator instead.")
+            invalidInputError(False,
+                              "Please do not specify batch_size in config. Input batch_size in the"
+                              " fit/evaluate/predict function of the estimator instead.")
 
         # todo remove ray_ctx to run on workers
         ray_ctx = OrcaRayContext.get()
         if not (isinstance(model_creator, types.FunctionType) and
                 isinstance(optimizer_creator, types.FunctionType)):  # Torch model is also callable.
-            raise ValueError(
-                "Must provide a function for both model_creator and optimizer_creator")
+            invalidInputError(False,
+                              "Must provide a function for both model_creator and"
+                              " optimizer_creator")
 
         self.model_creator = model_creator
         self.optimizer_creator = optimizer_creator
@@ -128,8 +132,9 @@ class PyTorchRayEstimator(OrcaRayEstimator):
         self.backend = backend
 
         if not training_operator_cls and not loss_creator:
-            raise ValueError("If a loss_creator is not provided, you must "
-                             "provide a custom training operator.")
+            invalidInputError(False,
+                              "If a loss_creator is not provided, you must "
+                              "provide a custom training operator.")
 
         self.initialization_hook = initialization_hook
         self.config = {} if config is None else config
@@ -188,8 +193,9 @@ class PyTorchRayEstimator(OrcaRayEstimator):
                 for i, worker in enumerate(self.remote_workers)
             ])
         else:
-            raise Exception("Only \"ray\" and \"horovod\" are supported "
-                            "values of backend, but got {}".format(backend))
+            invalidInputError(False,
+                              "Only \"ray\" and \"horovod\" are supported "
+                              "values of backend, but got {}".format(backend))
         self.num_workers = len(self.remote_workers)
 
     def fit(self,
@@ -275,8 +281,9 @@ class PyTorchRayEstimator(OrcaRayEstimator):
                                                                         transform_func)
             else:
                 if self.backend == "horovod":
-                    raise ValueError("Currently, we don't support input validation_data for horovod"
-                                     " backend")
+                    invalidInputError(False,
+                                      "Currently, we don't support input validation_data"
+                                      " for horovod backend")
                 val_ray_xshards = process_spark_xshards(validation_data, self.num_workers)
 
                 def zip_func(worker, this_partition_refs, that_partition_refs):
@@ -309,11 +316,13 @@ class PyTorchRayEstimator(OrcaRayEstimator):
                     remote_worker_stats.append(stats)
             else:
                 if self.backend == "horovod":
-                    raise ValueError("Currently, we don't support input validation_data for horovod"
-                                     " backend")
+                    invalidInputError(False,
+                                      "Currently, we don't support input validation_data for"
+                                      " horovod backend")
                 if not isinstance(validation_data, ray.data.Dataset):
-                    raise ValueError("Validation data type should be the same as train data, "
-                                     "but got type: {}".format(type(validation_data)))
+                    invalidInputError(False,
+                                      "Validation data type should be the same as train data,"
+                                      " but got type: {}".format(type(validation_data)))
 
                 val_shards = validation_data.split(n=self.num_workers,
                                                    locality_hints=self.remote_workers)
@@ -332,9 +341,10 @@ class PyTorchRayEstimator(OrcaRayEstimator):
             else:
                 worker_stats = None
         else:
-            if not isinstance(data, types.FunctionType):
-                raise ValueError("data should be either an instance of SparkXShards, Ray Dataset "
-                                 "or a callable function, but got type: {}".format(type(data)))
+            invalidInputError(isinstance(data, types.FunctionType),
+                              "data should be either an instance of SparkXShards,"
+                              " Ray Dataset or a callable function, but"
+                              " got type: {}".format(type(data)))
 
             params["data_creator"] = data
             params["validation_data_creator"] = validation_data
@@ -398,8 +408,9 @@ class PyTorchRayEstimator(OrcaRayEstimator):
             result = ray.data.from_numpy(remote_worker_stats).map(
                 lambda r: {"prediction_result": r["value"]})
         else:
-            raise ValueError("Only xshards, Spark DataFrame or Ray Dataset"
-                             " is supported for predict")
+            invalidInputError(False,
+                              "Only xshards, Spark DataFrame or Ray Dataset"
+                              " is supported for predict")
 
         return result
 
@@ -475,9 +486,9 @@ class PyTorchRayEstimator(OrcaRayEstimator):
                 remote_worker_stats.append(stats)
             worker_stats = ray.get(remote_worker_stats)
         else:
-            if not isinstance(data, types.FunctionType):
-                raise ValueError("data should be either an instance of SparkXShards or a callable"
-                                 " function, but got type: {}".format(type(data)))
+            invalidInputError(isinstance(data, types.FunctionType),
+                              "data should be either an instance of SparkXShards or a callable"
+                              " function, but got type: {}".format(type(data)))
 
             params = dict(data_creator=data, batch_size=batch_size, num_steps=num_steps,
                           profile=profile, info=info)

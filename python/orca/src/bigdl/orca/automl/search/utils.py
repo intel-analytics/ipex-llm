@@ -34,8 +34,9 @@ def process(command, fail_fast=True, timeout=120):
     print(err)
     errorcode = pro.returncode
     if errorcode != 0:
+        from bigdl.dllib.utils.log4Error import invalidInputError
         if fail_fast:
-            raise Exception(err)
+            invalidInputError(False, err)
         print(err)
     else:
         print(out)

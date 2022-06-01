@@ -26,6 +26,7 @@ from bigdl.nano.pytorch.lightning import LightningModuleFromTorch
 from bigdl.nano.pytorch import Trainer
 
 from test.pytorch.utils._train_torch_lightning import create_data_loader, data_transform
+from test.pytorch.utils._train_torch_lightning import create_test_data_loader
 from test.pytorch.tests.test_lightning import ResNet18
 
 num_classes = 10
@@ -41,6 +42,8 @@ class TestPlugin(TestCase):
     optimizer = torch.optim.Adam(model.parameters(), lr=0.01)
     data_loader = create_data_loader(data_dir, batch_size, num_workers,
                                      data_transform, subset=dataset_size)
+    test_data_loader = create_test_data_loader(data_dir, batch_size, num_workers,
+                                               data_transform, subset=dataset_size)
 
     def setUp(self):
         test_dir = os.path.dirname(__file__)
@@ -56,8 +59,8 @@ class TestPlugin(TestCase):
         )
         trainer = Trainer(num_processes=2, distributed_backend="subprocess",
                           max_epochs=4)
-        trainer.fit(pl_model, self.data_loader, self.data_loader)
-        trainer.test(pl_model, self.data_loader)
+        trainer.fit(pl_model, self.data_loader, self.test_data_loader)
+        trainer.test(pl_model, self.test_data_loader)
 
 
 if __name__ == '__main__':

@@ -13,45 +13,21 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-from .base_metric import INCMetric
+from ..metric import ONNXRuntimeINCMetic
+import torch
 
 
-class PytorchINCMetric(INCMetric):
-    def stack(self, preds, labels):
-        import torch
-        # calculate accuracy
-        preds = torch.stack(preds)
-        labels = torch.stack(labels)
-        return preds, labels
-
-    def to_scalar(self, tensor):
-        return tensor.item()
-
-
-class TensorflowINCMetric(INCMetric):
-    def stack(self, preds, labels):
-        import tensorflow as tf
-        # calculate accuracy
-        preds = tf.stack(preds)
-        labels = tf.stack(labels)
-        return preds, labels
-
-    def to_scalar(self, tensor):
-        return tensor.numpy()
-
-
-class ONNXRuntimeINCMetic(INCMetric):
+class PytorchONNXRuntimeINCMetic(ONNXRuntimeINCMetic):
     '''
     ONNXRuntime will use numpy as data type.
     ONNXRuntime quantization in torch will use torchmetrics
     '''
 
     def stack(self, preds, labels):
-        import torch
-        import numpy as np
         # calculate accuracy
-        preds = torch.from_numpy(np.concatenate(preds))
-        labels = torch.from_numpy(np.concatenate(labels))
+        preds, labels = super().stack(preds, labels)
+        preds = torch.from_numpy(preds)
+        labels = torch.from_numpy(labels)
         return preds, labels
 
     def to_scalar(self, tensor):

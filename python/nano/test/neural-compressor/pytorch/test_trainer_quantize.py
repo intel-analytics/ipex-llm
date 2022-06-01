@@ -81,7 +81,6 @@ class TestTrainer(TestCase):
         # Case 2: Override by arguments
         qmodel = trainer.quantize(pl_model,
                                   calib_dataloader=self.train_loader,
-                                  val_dataloader=self.train_loader,
                                   metric=torchmetrics.F1(10),
                                   approach='static',
                                   tuning_strategy='basic',
@@ -107,7 +106,6 @@ class TestTrainer(TestCase):
         # Case 5: Test if registered metric can be fetched successfully
         qmodel = trainer.quantize(pl_model,
                                   calib_dataloader=self.train_loader,
-                                  val_dataloader=self.train_loader,
                                   metric=torchmetrics.F1(10),
                                   accuracy_criterion={'relative': 0.99,
                                                       'higher_is_better': True})
