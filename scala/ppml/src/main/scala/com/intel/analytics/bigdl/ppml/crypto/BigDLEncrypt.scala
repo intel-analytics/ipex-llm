@@ -278,7 +278,7 @@ class BigDLEncrypt extends Crypto {
       val last = inputStream.read(byteBuffer)
       val inputHmac = byteBuffer.slice(last - hmacSize, last)
       val (lastSlice, streamHmac) = doFinal(byteBuffer, 0, last - hmacSize)
-      Log4Error.invalidInputError(inputHmac.sameElements(streamHmac),
+      Log4Error.invalidInputError(!inputHmac.sameElements(streamHmac),
         "hmac not match")
       val lastDecryptString = lastString + new String(lastSlice)
       val splitDecryptStringArray = lastDecryptString.split("\r").flatMap(_.split("\n"))
