@@ -21,8 +21,8 @@ from unittest import TestCase
 import pytest
 import torch
 from pytorch_lightning import LightningModule
-from test.pytorch.utils._train_torch_lightning import create_data_loader, data_transform
-from test.pytorch.utils._train_torch_lightning import train_with_linear_top_layer
+from python.nano.test.pytorch.utils._train_torch_lightning import create_data_loader, data_transform
+from python.nano.test.pytorch.utils._train_torch_lightning import train_with_linear_top_layer
 from torch import nn
 import torchmetrics
 
