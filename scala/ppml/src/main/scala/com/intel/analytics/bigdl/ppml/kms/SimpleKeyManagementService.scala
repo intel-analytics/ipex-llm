@@ -27,6 +27,9 @@ class SimpleKeyManagementService protected(
       simpleAPPKEY: String) extends KeyManagementService {
   val enrollMap = new HashMap[String, String]
   val keyReaderWriter = new KeyReaderWriter
+  var _appId: String = _
+  var _appKey: String = _
+
   setAppIdAndKey(simpleAPPID, simpleAPPKEY)
 
   Log4Error.invalidInputError(simpleAPPID != "", s"simpleAPPID should not be empty string.")
