@@ -10,7 +10,7 @@ wget -nv ${FTP_URI}/analytics-zoo-data/cifar-10-python.tar.gz -P ${PYTORCH_NANO_
 
 set -e
 
-echo "# Start Testing ${train_notebooks}"
+echo "# Start Testing cifar10 train notebook"
 start=$(date "+%s")
 
 python -m pytest --nbmake --nbmake-timeout=180 --nbmake-kernel=python3 ${PYTORCH_NANO_NOTEBOOKS_DIR}/nano-trainer-example.ipynb
@@ -18,7 +18,7 @@ python -m pytest --nbmake --nbmake-timeout=180 --nbmake-kernel=python3 ${PYTORCH
 now=$(date "+%s")
 time=$((now-start))
 
-echo "# Start Testing ${inference_notebooks}"
+echo "# Start Testing cifar10 inference notebook"
 start=$(date "+%s")
 
 python -m pytest --nbmake --nbmake-timeout=180 --nbmake-kernel=python3 ${PYTORCH_NANO_NOTEBOOKS_DIR}/nano-inference-example.ipynb

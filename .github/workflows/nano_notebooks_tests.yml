@@ -37,7 +37,7 @@ jobs:
           python -m pip install --upgrade setuptools==58.0.4
           python -m pip install --upgrade wheel
 
-      - name: Run notebooks PyTorch unit tests
+      - name: Run cifar10 notebooks PyTorch unit tests
         shell: bash
         run: |
             $CONDA/bin/conda create -n notebooks-trainer-pytorch -y python==3.7.10 setuptools=58.0.4
