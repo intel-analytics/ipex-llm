@@ -20,6 +20,13 @@ import numpy
 from torch.utils.data import TensorDataset, DataLoader
 import numpy as np
 
+__all__ = ['loader_to_creator',
+           'np_to_creator',
+           'xshard_to_np',
+           'np_dataloader_to_xshard',
+           'set_pytorch_seed',
+           'check_data']
+
 
 def loader_to_creator(loader):
     # Warning, this data creator will not respect the batch_size changing.
@@ -92,7 +99,3 @@ def check_data(x, y, data_config):
                       "The y shape should be (batch_size, future_seq_len, output_feature_num),"
                       " Got output_feature_num of {} in config while y input shape of {}."
                       .format(data_config["output_feature_num"], y.shape[-1]))
-
-
-__all__ = ['loader_to_creator', 'np_to_creator', 'xshard_to_np',
-           'np_dataloader_to_xshard', 'set_pytorch_seed', 'check_data']
