@@ -13,6 +13,9 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+# This example is based on Tensorflow Recommenders example [Listwise ranking]
+# (https://github.com/tensorflow/recommenders/blob/main/docs/examples/listwise_ranking.ipynb)
+#
 
 import os
 import sys
@@ -28,10 +31,6 @@ from bigdl.orca import OrcaContext
 from bigdl.friesian.feature import FeatureTable
 from bigdl.orca.learn.tf2 import Estimator
 from bigdl.orca.data.tf.data import Dataset
-
-
-# This example is based on Tensorflow Recommenders example [Listwise ranking]
-# (https://github.com/tensorflow/recommenders/blob/main/docs/examples/listwise_ranking.ipynb)
 
 
 class RankingModel(tfrs.Model):
