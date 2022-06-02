@@ -2099,8 +2099,8 @@ class FeatureTable(Table):
                         replace=True):
         """
         Convert the FeatureTable to a sample listwise FeatureTable. The columns should be of list
-        type. Note that the rows with list length < num_sampled_item will be dropped since
-        they don't have enough examples.
+        type and have the same length. Note that the rows with list length < num_sampled_item will
+        be dropped since they don't have enough examples.
 
         You can use groupby to aggregate records under the same key before calling sample_listwise.
         >>> tbl

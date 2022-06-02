@@ -30,6 +30,10 @@ from bigdl.orca.learn.tf2 import Estimator
 from bigdl.orca.data.tf.data import Dataset
 
 
+# This example is based on Tensorflow Recommenders example [Listwise ranking]
+# (https://github.com/tensorflow/recommenders/blob/main/docs/examples/listwise_ranking.ipynb)
+
+
 class RankingModel(tfrs.Model):
 
     def __init__(self, loss):
