@@ -15,11 +15,11 @@
 */
 package com.intel.analytics.bigdl.ppml.examples
 
-import com.intel.analytics.bigdl.ppml.crypto.{AES_CBC_PKCS5PADDING, ENCRYPT, EncryptRuntimeException, BigDLEncrypt, PLAIN_TEXT}
+import com.intel.analytics.bigdl.ppml.crypto.{AES_CBC_PKCS5PADDING, BigDLEncrypt, ENCRYPT, EncryptRuntimeException, PLAIN_TEXT}
 import com.intel.analytics.bigdl.ppml.utils.EncryptIOArguments
 import com.intel.analytics.bigdl.dllib.utils.{File, Log4Error}
 import com.intel.analytics.bigdl.ppml.kms.{EHSMKeyManagementService, KMS_CONVENTION, SimpleKeyManagementService}
-import org.apache.hadoop.fs.{Path, RemoteIterator}
+import org.apache.hadoop.fs.{Path, RemoteIterator, FSDataOutputStream}
 import org.slf4j.LoggerFactory
 
 import java.io.{BufferedReader, InputStreamReader}
@@ -55,77 +55,96 @@ object Upload {
 
     val dataKeyPlaintext = kms.retrieveDataKeyPlainText(arguments.primaryKeyPath, arguments.dataKeyPath)
 
-    inputFiles.par.map{ file => {
+    inputFiles.foreach{ file => {
+      val begin = System.currentTimeMillis
+      val thread = arguments.outputPartitionNum
+      val outCryptos: Array[BigDLEncrypt] = Array.tabulate(thread)(_ => new BigDLEncrypt())
+      (0 until thread).par.map { i =>
+        outCryptos(i).init(arguments.outputEncryptMode, ENCRYPT, dataKeyPlaintext)
+      }
+      val bufferedLinesFirst = new Array[String](thread)
+      val bufferedLinesSecond = new Array[String](thread)
+
       val filePrefix: String = file.getPath.getName()
       if (fs.exists(new Path(arguments.outputPath)) == false) {
         fs.mkdirs(new Path(arguments.outputPath))
       }
-      val splitNum = arguments.outputPartitionNum
-      var inputStream = fs.open(file.getPath)
-      var bufferedReader = new BufferedReader(new InputStreamReader(inputStream), 1024 * 1024)
-      val header =  bufferedReader.readLine()
-      val numLines = bufferedReader.lines().count()
 
-      inputStream.close()
-      inputStream = fs.open(file.getPath)
-      bufferedReader = new BufferedReader(new InputStreamReader(inputStream), 1024 * 1024)
-      bufferedReader.readLine()
-
-      val linesPerFile: Long = numLines / splitNum  // lines per split file
-      val splitArray = new Array[Long](splitNum) // split-point
-      for(i <- 0 to splitNum-1) {
-        splitArray(i) = linesPerFile
+      val inputStream = fs.open(file.getPath)
+      val outputStreamArray = new Array[FSDataOutputStream](thread)
+      (0 until thread).par.map { i =>
+        outputStreamArray(i) =  fs.create(Path.mergePaths(
+          new Path(arguments.outputPath), new Path("/" + filePrefix + "/split_" + i.toString + ".csv")), true)
       }
-      splitArray(splitNum-1) += numLines % linesPerFile // for last part
+      val bufferedReader = new BufferedReader(new InputStreamReader(inputStream), 1024 * 1024)
 
-      var currentSplitNum: Int = 0
-      val rtl: Lock = new ReentrantLock()
-      val begin = System.currentTimeMillis
-      splitArray.par.map{
-        num => {
-          var splitContentString = ""
-          var splitFileName = ""
-          rtl.lock()
-          try { // get split content
-            splitContentString = header + "\n" + read(bufferedReader, num.toInt)
-            splitFileName = filePrefix + "/split_" + currentSplitNum.toString + ".csv"
-            currentSplitNum += 1
-          } finally {
-            rtl.unlock()
-          }
-          val outputStream = fs.create(Path.mergePaths(
-            new Path(arguments.outputPath), new Path("/" + splitFileName)), true)
+      // write header
+      val header =  bufferedReader.readLine() + "\n"
+      if(outputEncryptMode == AES_CBC_PKCS5PADDING) {
+        (0 until thread).par.map { i =>
+          val encryptedBytes = outCryptos(i).update(header.getBytes)
+          outputStreamArray(i).write(encryptedBytes)
+        }
+      } else {
+        (0 until thread).par.map { i =>
+          outputStreamArray(i).write(header.getBytes)
+        }
+      }
 
+      var readLineNum = read(bufferedReader, bufferedLinesFirst)
+      readLineNum = read(bufferedReader, bufferedLinesSecond)
+      while(readLineNum == thread) {
+        (0 until readLineNum).par.map { i =>
           outputEncryptMode match {
             case AES_CBC_PKCS5PADDING => {
-              val crypto = new BigDLEncrypt()
-              crypto.init(arguments.outputEncryptMode, ENCRYPT, dataKeyPlaintext)
-              val encryptedBytes = crypto.doFinal(splitContentString.getBytes)
-              val header = crypto.genHeader()
-              outputStream.write(header)
-              outputStream.write(encryptedBytes._1)
-              outputStream.write(encryptedBytes._2)
-              outputStream.flush()
-              outputStream.close()
-              println("Successfully save encrypted text " + filePrefix + "  " + splitFileName)
+              val encryptedBytes = outCryptos(i).update(bufferedLinesFirst(i).getBytes)
+              outputStreamArray(i).write(encryptedBytes)
             }
             case PLAIN_TEXT => {
-              outputStream.write(splitContentString.getBytes)
-              outputStream.flush()
-              outputStream.close()
-              println("Successfully save plain text " + filePrefix + "  " + splitFileName)
+              val outputStream = outputStreamArray(i)
+              outputStream.write(bufferedLinesFirst(i).getBytes)
             }
             case default => {
               throw new EncryptRuntimeException("No such crypto mode!")
             }
           }
+          bufferedLinesFirst(i) = bufferedLinesSecond(i)
+        }
+        readLineNum = read(bufferedReader, bufferedLinesSecond)
+      }
+      // last part
+      if(outputEncryptMode == AES_CBC_PKCS5PADDING) {
+        (0 until readLineNum).par.map { i =>
+          val encryptedBytes = outCryptos(i).update(bufferedLinesFirst(i).getBytes)
+          outputStreamArray(i).write(encryptedBytes)
 
+          val (finalBytes, hmac) = outCryptos(i).doFinal(bufferedLinesSecond(i).getBytes)
+          outputStreamArray(i).write(finalBytes)
+          outputStreamArray(i).write(hmac)
+        }
+        (readLineNum until thread).par.map { i =>
+          val (finalBytes, hmac) = outCryptos(i).doFinal(bufferedLinesFirst(i).getBytes)
+          outputStreamArray(i).write(finalBytes)
+          outputStreamArray(i).write(hmac)
+        }
+      } else {
+        (0 until readLineNum).par.map { i =>
+          outputStreamArray(i).write(bufferedLinesFirst(i).getBytes)
+          outputStreamArray(i).write(bufferedLinesSecond(i).getBytes)
+        }
+        (readLineNum until thread).par.map { i =>
+          outputStreamArray(i).write(bufferedLinesSecond(i).getBytes)
         }
       }
+      (0 until thread).par.map { i =>
+        outputStreamArray(i).flush()
+        outputStreamArray(i).close()
+      }
+      inputStream.close()
+
       val end = System.currentTimeMillis
       val cost = (end - begin)
       println(s"Encrypt time elapsed $cost ms.")
-      inputStream.close()
     }}
 
   }
@@ -138,13 +157,18 @@ object Upload {
     buffer.toArray
   }
 
-  def read(br: BufferedReader, numLines: Int): String = {
+  def read(br: BufferedReader, buffer: Array[String]): Int = {
     var i = 0
-    var result = ""
-    while(i  < numLines) {
+    var line = br.readLine()
+    while(line != null) {
+      buffer(i) = line
       i += 1
-      result += (br.readLine() + "\n")
+      if (i < buffer.length) {
+        line = br.readLine() + "\n"
+      } else {
+        line = null
+      }
     }
-    result
+    i
   }
 }
