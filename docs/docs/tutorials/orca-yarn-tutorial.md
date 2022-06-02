@@ -158,8 +158,12 @@ When running programs on yarn-cluster mode with `bigdl-submit`, we need:
 --conf spark.yarn.appMasterEnv.PYSPARK_PYTHON=environment/bin/python \
 --conf spark.executorEnv.PYSPARK_PYTHON=environment/bin/python
 ```
+* Set the `py-files` argument for dependency libraries.
+```
+--py-files ./model.py
+```
 
-When you understand and complete these preparations, you could submit and run programs as below: 
+When you complete these preparations, you could submit and run programs as below: 
 ```bash
 bigdl-submit \
     --conf spark.yarn.appMasterEnv.PYSPARK_PYTHON=environment/bin/python \
