@@ -194,7 +194,7 @@ class ParquetIterable:
             else:
                 return elem
         else:
-            invalidInputError(False, "stop iteration")
+            raise StopIteration
 
     def __call__(self):
         self.cur = 0
