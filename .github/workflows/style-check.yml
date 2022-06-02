@@ -3,7 +3,7 @@ name: code style checking
 # Controls when the action will run.
 on:
   push:
-    branches: [ test-nano-test-code ]
+    branches: [ main ]
   pull_request:
     branches: [ main ]
 
