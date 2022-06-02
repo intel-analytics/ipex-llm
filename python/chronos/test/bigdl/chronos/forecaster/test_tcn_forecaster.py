@@ -85,7 +85,7 @@ class TestChronosModelTCNForecaster(TestCase):
         assert test_mse[0].shape == test_data[1].shape[1:]
 
     def test_tcn_forecaster_fit_loader(self):
-        train_loader, _, _ = create_data(loader=True)
+        train_loader, val_loader, test_loader = create_data(loader=True)
         forecaster = TCNForecaster(past_seq_len=24,
                                    future_seq_len=5,
                                    input_feature_num=1,
@@ -95,6 +95,17 @@ class TestChronosModelTCNForecaster(TestCase):
                                    loss="mae",
                                    lr=0.01)
         train_loss = forecaster.fit(train_loader, epochs=2)
+        forecaster.quantize(calib_data=train_loader,
+                            val_data=val_loader,
+                            metric="mae",
+                            framework=['onnxrt_qlinearops', 'pytorch_fx'])
+        yhat = forecaster.predict(data=test_loader)
+        q_yhat = forecaster.predict(data=test_loader, quantize=True)
+        q_onnx_yhat = forecaster.predict_with_onnx(data=test_loader, quantize=True)
+        assert yhat.shape == q_onnx_yhat.shape == q_yhat.shape == (400, 5, 1)
+        forecaster.evaluate(test_loader, batch_size=32)
+        forecaster.evaluate_with_onnx(test_loader)
+        forecaster.evaluate_with_onnx(test_loader, batch_size=32, quantize=True)
 
 
     def test_tcn_forecaster_tune(self):
@@ -333,6 +344,7 @@ class TestChronosModelTCNForecaster(TestCase):
     def test_tcn_forecaster_distributed(self):
         from bigdl.orca import init_orca_context, stop_orca_context
         train_data, val_data, test_data = create_data()
+        _train_loader, _, _test_loader = create_data(loader=True)
 
         init_orca_context(cores=4, memory="2g")
 
@@ -346,7 +358,9 @@ class TestChronosModelTCNForecaster(TestCase):
 
         forecaster.fit(train_data, epochs=2)
         distributed_pred = forecaster.predict(test_data[0])
+        distributed_loader_pred = forecaster.predict(_test_loader)
         distributed_eval = forecaster.evaluate(val_data)
+        distributed_loader_eval = forecaster.evaluate(_test_loader)
 
         model = forecaster.get_model()
         assert isinstance(model, torch.nn.Module)
@@ -361,7 +375,9 @@ class TestChronosModelTCNForecaster(TestCase):
             import onnx
             import onnxruntime
             local_pred_onnx = forecaster.predict_with_onnx(test_data[0])
+            distributed_pred_onnx = forecaster.predict_with_onnx(_test_loader)
             local_eval_onnx = forecaster.evaluate_with_onnx(val_data)
+            distributed_eval_onnx = forecaster.evaluate_with_onnx(_test_loader)
             np.testing.assert_almost_equal(distributed_pred, local_pred_onnx, decimal=5)
         except ImportError:
             pass

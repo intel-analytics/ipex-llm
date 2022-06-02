@@ -15,8 +15,7 @@
 #
 
 from bigdl.chronos.forecaster.abstract import Forecaster
-from bigdl.chronos.forecaster.utils import\
-    np_to_creator, set_pytorch_seed, check_data, xshard_to_np, np_to_xshard, loader_to_creator
+from bigdl.chronos.forecaster.utils import *
 from bigdl.chronos.metric.forecast_metrics import Evaluator
 
 import numpy as np
@@ -314,22 +313,28 @@ class BasePytorchForecaster(Forecaster):
                | 2. a xshard item:
                | each partition can be a dictionary of {'x': x}, where x's shape
                | should follow the shape stated before.
+               | 3. pytorch dataloader:
+               | the dataloader needs to return at least x in each iteration
+               | with the shape as following:
+               | x's shape is (num_samples, lookback, feature_dim) where lookback and feature_dim
+               | should be the same as past_seq_len and input_feature_num.
+               | If returns x and y only get x.
 
         :param batch_size: predict batch size. The value will not affect predict
                result but will affect resources cost(e.g. memory and time).
         :param quantize: if use the quantized model to predict.
 
         :return: A numpy array with shape (num_samples, horizon, target_dim)
-                 if data is a numpy ndarray. A xshard item with format {‘prediction’: result},
+                 if data is a numpy ndarray. A xshard item with format {'prediction': result},
                  where result is a numpy array with shape (num_samples, horizon, target_dim)
                  if data is a xshard item.
         """
         from bigdl.chronos.pytorch.utils import _pytorch_fashion_inference
 
         # data transform
-        is_local_data = isinstance(data, np.ndarray)
+        is_local_data = isinstance(data, (np.ndarray, DataLoader))
         if is_local_data and self.distributed:
-            data = np_to_xshard(data)
+            data = np_dataloader_to_xshard(data)
         if not is_local_data and not self.distributed:
             data = xshard_to_np(data, mode="predict")
 
@@ -348,6 +353,7 @@ class BasePytorchForecaster(Forecaster):
                 from bigdl.nano.utils.log4Error import invalidInputError
                 invalidInputError(False,
                                   "You must call fit or restore first before calling predict!")
+            data = data.dataset.tensors[0].numpy() if isinstance(data, DataLoader) else data
             if quantize:
                 yhat = _pytorch_fashion_inference(model=self.pytorch_int8,
                                                   input_data=data,
@@ -358,7 +364,7 @@ class BasePytorchForecaster(Forecaster):
                                                   input_data=data,
                                                   batch_size=batch_size)
             if not is_local_data:
-                yhat = np_to_xshard(yhat, prefix="prediction")
+                yhat = np_dataloader_to_xshard(yhat, prefix="prediction")
             return yhat
 
     def predict_with_onnx(self, data, batch_size=32, quantize=False):
@@ -374,6 +380,12 @@ class BasePytorchForecaster(Forecaster):
                | 1. a numpy ndarray x:
                | x's shape is (num_samples, lookback, feature_dim) where lookback and feature_dim
                | should be the same as past_seq_len and input_feature_num.
+               | 2. pytorch dataloader:
+               | the dataloader needs to return at least x in each iteration
+               | with the shape as following:
+               | x's shape is (num_samples, lookback, feature_dim) where lookback and feature_dim
+               | should be the same as past_seq_len and input_feature_num.
+               | If returns x and y only get x.
 
         :param batch_size: predict batch size. The value will not affect predict
                result but will affect resources cost(e.g. memory and time). Defaults
@@ -392,6 +404,7 @@ class BasePytorchForecaster(Forecaster):
         if not self.fitted:
             invalidInputError(False,
                               "You must call fit or restore first before calling predict!")
+        data = data.dataset.tensors[0].numpy() if isinstance(data, DataLoader) else data
         if quantize:
             return _pytorch_fashion_inference(model=self.onnxruntime_int8,
                                               input_data=data,
@@ -467,6 +480,12 @@ class BasePytorchForecaster(Forecaster):
                | 2. a xshard item:
                | each partition can be a dictionary of {'x': x, 'y': y}, where x and y's shape
                | should follow the shape stated before.
+               | 3. pytorch dataloader:
+               | the dataloader should return x, y in each iteration with the shape as following:
+               | x's shape is (num_samples, lookback, feature_dim) where lookback and feature_dim
+               | should be the same as past_seq_len and input_feature_num.
+               | y's shape is (num_samples, horizon, target_dim), where horizon and target_dim
+               | should be the same as future_seq_len and output_feature_num.
 
         :param batch_size: evaluate batch size. The value will not affect evaluate
                result but will affect resources cost(e.g. memory and time).
@@ -481,12 +500,13 @@ class BasePytorchForecaster(Forecaster):
         from bigdl.chronos.pytorch.utils import _pytorch_fashion_inference
 
         # data transform
-        is_local_data = isinstance(data, tuple)
+        is_local_data = isinstance(data, (tuple, DataLoader))
         if not is_local_data and not self.distributed:
             data = xshard_to_np(data, mode="fit")
         if self.distributed:
             if is_local_data:
-                return self.internal.evaluate(data=np_to_creator(data),
+                data = np_to_creator(data) if isinstance(data, tuple) else loader_to_creator(data)
+                return self.internal.evaluate(data=data,
                                               batch_size=batch_size)
             else:
                 return self.internal.evaluate(data=data,
@@ -496,6 +516,8 @@ class BasePytorchForecaster(Forecaster):
                 from bigdl.nano.utils.log4Error import invalidInputError
                 invalidInputError(False,
                                   "You must call fit or restore first before calling evaluate!")
+            if isinstance(data, DataLoader):
+                data = data.dataset.tensors[0].numpy(), data.dataset.tensors[1].numpy()
             if quantize:
                 yhat = _pytorch_fashion_inference(model=self.pytorch_int8,
                                                   input_data=data[0],
@@ -538,6 +560,12 @@ class BasePytorchForecaster(Forecaster):
                | should be the same as past_seq_len and input_feature_num.
                | y's shape is (num_samples, horizon, target_dim), where horizon and target_dim
                | should be the same as future_seq_len and output_feature_num.
+               | 2. pytorch dataloader:
+               | should be the same as future_seq_len and output_feature_num.
+               | the dataloader should return x, y in each iteration with the shape as following:
+               | x's shape is (num_samples, lookback, feature_dim) where lookback and feature_dim
+               | should be the same as past_seq_len and input_feature_num.
+               | y's shape is (num_samples, horizon, target_dim), where horizon and target_dim
 
         :param batch_size: evaluate batch size. The value will not affect evaluate
                result but will affect resources cost(e.g. memory and time).
@@ -558,6 +586,8 @@ class BasePytorchForecaster(Forecaster):
         if not self.fitted:
             invalidInputError(False,
                               "You must call fit or restore first before calling evaluate!")
+        if isinstance(data, DataLoader):
+            data = data.dataset.tensors[0].numpy(), data.dataset.tensors[1].numpy()
         if quantize:
             yhat = _pytorch_fashion_inference(model=self.onnxruntime_int8,
                                               input_data=data[0],
