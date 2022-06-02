@@ -23,6 +23,7 @@ from bigdl.ppml.fl.nn.generated.nn_service_pb2 import TrainRequest, TrainRespons
 from bigdl.ppml.fl.nn.generated.nn_service_pb2_grpc import *
 from bigdl.ppml.fl.nn.utils import tensor_map_to_ndarray_map
 import tensorflow as tf
+from bigdl.dllib.utils.log4Error import invalidInputError
 import pickle
 import tempfile
 import traceback
@@ -31,10 +32,10 @@ import logging
 
 
 class NNServiceImpl(NNServiceServicer):
-    def __init__(self, **kargs) -> None:
+    def __init__(self, client_num, **kargs) -> None:
         self.aggregator_map = {
-            'tf': tf_agg.Aggregator(**kargs),
-            'pt': pt_agg.Aggregator(**kargs)}
+            'tf': tf_agg.Aggregator(client_num, **kargs),
+            'pt': pt_agg.Aggregator(client_num, **kargs)}
 
     def train(self, request: TrainRequest, context):
         tensor_map = request.data.tensorMap
@@ -89,3 +90,8 @@ class NNServiceImpl(NNServiceServicer):
         return UploadModelResponse(message=msg)
 
             
+    def validate_client_id(self, client_id):
+        client_id = str(client_id)
+        if client_id <= 0 or client_id > self.client_num:
+            invalidInputError(False, f"invalid client ID received: {client_id}, \
+                must be in range of client number [1, {self.client_num}]")

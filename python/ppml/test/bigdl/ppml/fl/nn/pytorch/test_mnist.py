@@ -112,7 +112,7 @@ class TestCorrectness(FLTest):
 
         
         train(train_dataloader, model, loss_fn, optimizer)
-        FLContext.init_fl_context()
+        FLContext.init_fl_context('1')
         vfl_model_1 = NeuralNetworkPart1()
         set_one_like_parameter(vfl_model_1)
         vfl_model_2 = NeuralNetworkPart2()

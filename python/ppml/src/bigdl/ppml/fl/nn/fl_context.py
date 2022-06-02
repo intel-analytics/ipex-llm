@@ -24,7 +24,7 @@ class FLContext():
     fl_client = None
     _lock = threading.Lock()
     @staticmethod
-    def init_fl_context(client_id=None):
+    def init_fl_context(client_id):
         """
         Make sure a global FLClient exists, will create one if not
         """
