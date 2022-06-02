@@ -44,25 +44,33 @@ class Aggregator(object):
                 self.init_loss_fn()
                 self.init_optimizer()
 
-    def set_server_model(self, model, loss_fn, optimizer):
+    def set_server(self, model, loss_fn, optimizer):
         with self._lock:
             if self.model is not None:
                 logging.warn("model exists on server, the add model operation is skipped")
             else:
-                self.model = model
+                if model is not None:
+                    self.model = model
                 self.set_loss_fn(loss_fn)
                 optimizer_cls = pickle.loads(optimizer.cls)
                 optimizer_args = pickle.loads(optimizer.args)
-                self.set_optimizer(optimizer_cls, optimizer_args)   
+                self.set_optimizer(optimizer_cls, optimizer_args)
 
-    def set_loss_fn(self, loss_fn):
-        self.loss_fn = loss_fn
+    def set_server_model(self, model):
+        with self._lock:
+            if self.model is not None:
+                logging.warn("model exists on server, the add model operation is skipped")
+            self.model = model
 
-    def set_optimizer(self, optimizer_cls, optimizer_args):
-        if len(list(self.model.parameters())) == 0:
-            self.optimizer = None
-            return
-        self.optimizer = optimizer_cls(self.model.parameters(), **optimizer_args)
+    def set_server_loss(self, loss_fn):
+        with self._lock:
+            self.set_loss_fn(loss_fn)
+
+    def set_server_optimizer(self, optimizer):
+        with self._lock:
+            optimizer_cls = pickle.loads(optimizer.cls)
+            optimizer_args = pickle.loads(optimizer.args)
+            self.set_optimizer(optimizer_cls, optimizer_args)
 
     def put_client_data(self, client_id, data):
         self.condition.acquire()
@@ -92,10 +100,11 @@ got {len(self.client_data)}/{self.client_num}')
                     target = tf.convert_to_tensor(v)
                 else:
                     raise Exception(f'Invalid type of tensor map key: {k}, should be input/target')
-        x = tf.stack(input)
-        x = tf.add(x, dim=0)
+        # TODO: to be consistent with Pytorch, custom API
+        x = input
         with tf.GradientTape() as tape:
-            tape.watch(x)
+            for tensor in x:
+                tape.watch(tensor)
             pred = self.model(x)
             loss = self.loss_fn(pred, target)
         gradients = tape.gradient(loss, self.model.trainable_variables)

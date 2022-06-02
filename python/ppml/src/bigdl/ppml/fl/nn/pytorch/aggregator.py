@@ -44,16 +44,20 @@ class Aggregator(object):
                 self.init_loss_fn()
                 self.init_optimizer()
 
-    def set_server_model(self, model, loss_fn, optimizer):
+    def set_server(self, model, loss_fn, optimizer):
         with self._lock:
             if self.model is not None:
                 logging.warn("model exists on server, the add model operation is skipped")
             else:
-                self.model = model
+                if model is not None:
+                    self.model = model
                 self.set_loss_fn(loss_fn)
                 optimizer_cls = pickle.loads(optimizer.cls)
                 optimizer_args = pickle.loads(optimizer.args)
                 self.set_optimizer(optimizer_cls, optimizer_args)
+
+    
+        
 
     # deprecated, use set_loss_fn for fully customized NN Model
     def init_loss_fn(self):

@@ -15,15 +15,18 @@
 #
 
 import logging
+import os
+import shutil
+import tempfile
 from numpy import ndarray
 
 from bigdl.ppml.fl.nn.fl_client import FLClient
-from bigdl.ppml.fl.nn.utils import tensor_map_to_ndarray_map
+from bigdl.ppml.fl.nn.utils import print_file_size_in_dir, tensor_map_to_ndarray_map
 
 import tensorflow as tf
 from tensorflow.keras.layers import Dense, Flatten, Conv2D
 from tensorflow.keras import Model
-
+from bigdl.ppml.fl.nn.generated.nn_service_pb2 import ByteChunk
 
 class TensorflowPipeline:
     def __init__(self, model, loss_fn, optimizer, algorithm=None,
@@ -37,9 +40,37 @@ class TensorflowPipeline:
         self.fl_client = FLClient(aggregator='tf')
         self.loss_history = []
 
-    
-    
+    @staticmethod
+    def file_chunk_generate(file_path):
+        CHUNK_SIZE = 4 * 1024 * 1024
+        with open(file_path, 'rb') as f:
+            while True:
+                piece = f.read(CHUNK_SIZE);
+                if not piece:
+                    return
+                yield ByteChunk(buffer=piece)
+
+    @staticmethod
+    def load_model_as_bytes(model):
+        model_path = os.path.join(tempfile.mkdtemp(), "tf_vfl_server_model.h5")
+
+        j = model.to_json()
+        # print_file_size_in_dir(tmpdir)
+        # print("0", os.listdir(tmpdir))
+        # zip_path = os.path.join(tempfile.mkdtemp(), "tf_vfl_server_model")
+        # shutil.make_archive(zip_path, 'zip', tmpdir)
+        # size = os.path.getsize(f'{zip_path}.zip')
+        logging.info(f"Client packed model file, length: {os.path.getsize(model_path)}")
+        # file_chunk_generator = TensorflowPipeline.file_chunk_generate(model_path)
+        # return file_chunk_generator
+        return j
+        
+        
+
+
     def add_server_model(self, model, loss_fn=None, optimizer_cls=None, optimizer_args={}):
+        
+        
         # add model and pickle to server
         if loss_fn is None:
             logging.info(f'loss_fn on FLServer not specified, \
@@ -50,7 +81,11 @@ class TensorflowPipeline:
                 using same as client: {self.optimizer} (with no args)')
             optimizer_cls = self.optimizer.__class__
 
-        msg = self.fl_client.upload_model(model, loss_fn, optimizer_cls, optimizer_args).message
+        msg_model = self.fl_client.nn_stub.upload_file(
+            TensorflowPipeline.load_model_as_bytes(model))
+        msg = self.fl_client.upload_model(None, loss_fn, optimizer_cls, optimizer_args).message
+        
+        logging.info(msg_model)
         logging.info(msg)
 
     def train_step(self, x, y):
@@ -59,9 +94,9 @@ class TensorflowPipeline:
         """
         y_pred_local = self.model(x)
         y_true_global = y
-        data_map = {'input': y_pred_local.detach().numpy()}
+        data_map = {'input': y_pred_local.numpy()}
         if y_true_global is not None:
-            data_map['target'] = y_true_global.detach().numpy()
+            data_map['target'] = y_true_global.numpy()
         logging.debug(f'[{self.fl_client.client_uuid}] client sending train data to server')
         response = self.fl_client.train(data_map)
         logging.debug(f'[{self.fl_client.client_uuid}] client got response from server')
@@ -74,9 +109,8 @@ class TensorflowPipeline:
 
     def fit(self, x, y=None, epoch=1, batch_size=4):
         for e in range(epoch):
-            self.model.train()
             if isinstance(x, tf.data.Dataset):
-                size = len(x.dataset)
+                size = len(x)
                 for batch, (X, y) in enumerate(x):
                     loss = self.train_step(X, y)
                     current = batch * len(X)
@@ -103,7 +137,7 @@ class TensorflowPipeline:
 
     def predict(self, x):
         y_pred_local = self.model(x)
-        data_map = {'input': y_pred_local.detach().numpy()}
+        data_map = {'input': y_pred_local.numpy()}
         response = self.fl_client.predict(data_map)
         return response.data.tensorMap['result']
                     

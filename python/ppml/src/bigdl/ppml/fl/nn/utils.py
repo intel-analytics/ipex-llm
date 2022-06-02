@@ -51,3 +51,15 @@ def tensor_map_to_ndarray_map(tensor_map: TensorMap):
         dtype = "float32" if v.dtype is None else v.dtype
         ndarray_map[k] = np.array(v.tensor, dtype=dtype).reshape(v.shape)
     return ndarray_map
+<<<<<<< HEAD
+=======
+
+def print_file_size_in_dir(path='.'):
+    import os
+    with os.scandir(path) as it:
+        for entry in it:
+            if entry.is_file():
+                print(entry, entry.stat().st_size)
+            elif entry.is_dir():
+                print_file_size_in_dir(entry.path)
+>>>>>>> 55805ad2a (tmp commit)

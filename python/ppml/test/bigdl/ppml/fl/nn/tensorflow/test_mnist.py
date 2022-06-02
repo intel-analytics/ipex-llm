@@ -30,7 +30,7 @@ from bigdl.ppml.fl.nn.tensorflow.pipeline import TensorflowPipeline
 import tensorflow as tf
 print("TensorFlow version:", tf.__version__)
 
-from tensorflow.keras.layers import Dense, Flatten, Conv2D
+from tensorflow.keras.layers import Dense, Flatten, Conv2D, InputLayer
 from tensorflow.keras import Model
 
 
@@ -101,27 +101,27 @@ class TestCorrectness(unittest.TestCase):
             test_accuracy(labels, predictions)
 
 
-        EPOCHS = 1
-        for epoch in range(EPOCHS):
-            # Reset the metrics at the start of the next epoch
-            train_loss.reset_states()
-            train_accuracy.reset_states()
-            test_loss.reset_states()
-            test_accuracy.reset_states()
+        # EPOCHS = 1
+        # for epoch in range(EPOCHS):
+        #     # Reset the metrics at the start of the next epoch
+        #     train_loss.reset_states()
+        #     train_accuracy.reset_states()
+        #     test_loss.reset_states()
+        #     test_accuracy.reset_states()
 
-            for images, labels in train_ds:
-                train_step(images, labels)
+        #     for images, labels in train_ds:
+        #         train_step(images, labels)
 
-            for test_images, test_labels in test_ds:
-                test_step(test_images, test_labels)
+        #     for test_images, test_labels in test_ds:
+        #         test_step(test_images, test_labels)
 
-            print(
-                f'Epoch {epoch + 1}, '
-                f'Loss: {train_loss.result()}, '
-                f'Accuracy: {train_accuracy.result() * 100}, '
-                f'Test Loss: {test_loss.result()}, '
-                f'Test Accuracy: {test_accuracy.result() * 100}'
-            )
+        #     print(
+        #         f'Epoch {epoch + 1}, '
+        #         f'Loss: {train_loss.result()}, '
+        #         f'Accuracy: {train_accuracy.result() * 100}, '
+        #         f'Test Loss: {test_loss.result()}, '
+        #         f'Test Accuracy: {test_accuracy.result() * 100}'
+        #     )
 
         
         # TODO: set fixed parameters
@@ -131,6 +131,7 @@ class TestCorrectness(unittest.TestCase):
         vfl_client_ppl = TensorflowPipeline(vfl_model_1, loss_object, optimizer)
         vfl_model_2 = NeuralNetworkPart2()
         vfl_client_ppl.add_server_model(vfl_model_2, loss_object, tf.keras.optimizers.Adam)
+        
         vfl_client_ppl.fit(train_ds)
         # assert np.allclose(pytorch_loss_list, vfl_client_ppl.loss_history), \
         #     "Validation failed, correctness of PPML and native Pytorch not the same"
@@ -156,7 +157,7 @@ class NeuralNetworkPart1(Model):
         self.conv1 = Conv2D(32, 3, activation='relu')
         self.flatten = Flatten()
 
-    def forward(self, x):
+    def call(self, x):
         x = self.conv1(x)
         x = self.flatten(x)
         return x
@@ -167,7 +168,9 @@ class NeuralNetworkPart2(Model):
         self.d1 = Dense(128, activation='relu')
         self.d2 = Dense(10)
 
-    def forward(self, x):
+    @tf.function(input_signature=[tf.TensorSpec(shape=[], dtype=tf.float32)])
+    def call(self, x):
+        x = x[0]
         x = self.d1(x)
         return self.d2(x)
 

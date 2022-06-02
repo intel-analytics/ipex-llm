@@ -50,7 +50,7 @@ class FLClient(object):
 
     def upload_model(self, model, loss_fn, optimizer_cls, optimizer_args):
         # upload model to server
-        model = pickle.dumps(model)
+        model = pickle.dumps(model) if model is not None else None
         loss_fn = pickle.dumps(loss_fn)
         optimizer = ClassAndArgsWrapper(optimizer_cls, optimizer_args).to_protobuf()
         request = UploadModelRequest(client_uuid=self.client_uuid,
