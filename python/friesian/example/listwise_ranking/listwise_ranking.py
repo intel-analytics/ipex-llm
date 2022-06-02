@@ -20,8 +20,6 @@
 import os
 import sys
 import math
-import tensorflow as tf
-import tensorflow_ranking as tfr
 from optparse import OptionParser
 import tensorflow as tf
 import tensorflow_ranking as tfr
