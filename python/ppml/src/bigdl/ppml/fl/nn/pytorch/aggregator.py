@@ -118,16 +118,9 @@ got {len(self.client_data)}/{self.client_num}')
                 elif k == 'target':
                     target = torch.from_numpy(v)
                 else:
-<<<<<<< HEAD
                     invalidInputError(False,
                                       f'Invalid type of tensor map key: {k},'
                                       f' should be input/target')
-        x = torch.stack(input)
-        x = torch.sum(x, dim=0)
-        x.requires_grad = True
-        pred = self.model(x)
-=======
-                    raise Exception(f'Invalid type of tensor map key: {k}, should be input/target')
         # input is a list of tensors
 
         # x = torch.stack(input)
@@ -143,14 +136,9 @@ got {len(self.client_data)}/{self.client_num}')
         tensor_list = []
         for cid, input_tensor in input:
             input_tensor.requires_grad = True
-<<<<<<< HEAD
-        pred = self.model(input)
->>>>>>> 88bf42cfa (change interactive layer to customizable)
-=======
             tensor_list.append(input_tensor)
 
         pred = self.model(tensor_list)
->>>>>>> 74101b2bd (add order-info support of fl aggregator)
         loss = self.loss_fn(pred, target)
         if self.optimizer is not None:
             self.optimizer.zero_grad()
