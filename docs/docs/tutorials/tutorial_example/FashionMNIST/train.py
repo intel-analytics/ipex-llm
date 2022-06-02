@@ -12,8 +12,8 @@ from bigdl.orca.learn.metrics import Accuracy
 
 from model import model_creator, optimizer_creator
 
-parser = argparse.ArgumentParser(description='PyTorch Tensorboard Example')
-parser.add_argument('--cluster_mode', type=str, default="yarn-client",
+parser = argparse.ArgumentParser(description='PyTorch Example')
+parser.add_argument('--cluster_mode', type=str, default="spark-submit",
                     help='The cluster mode, such as local, yarn-client, yarn-cluster, spark-submit or k8s.')
 parser.add_argument('--backend', type=str, default="spark",
                     help='The backend of PyTorch Estimator; '
@@ -27,7 +27,8 @@ parser.add_argument('--no-download', dest='download', action='store_false', help
 parser.add_argument('--extra-python-lib', type=str, default='model.py', help='Load dependency when running on yarn')
 args = parser.parse_args()
 
-if args.cluster_mode == "yarn-cluster":
+if args.remote_dir is not None:
+    args.download = False
     from bigdl.orca.data.file import get_remote_file_to_local
     get_remote_file_to_local(args.remote_dir, args.data_dir)
 
