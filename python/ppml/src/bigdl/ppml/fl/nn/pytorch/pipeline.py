@@ -21,6 +21,7 @@ from torch import nn
 import torch
 from bigdl.ppml.fl.nn.fl_client import FLClient
 from torch.utils.data import DataLoader
+from bigdl.dllib.utils.log4Error import invalidInputError
 from bigdl.ppml.fl.nn.utils import tensor_map_to_ndarray_map
 
 class PytorchPipeline:
@@ -96,7 +97,8 @@ class PytorchPipeline:
                             epoch {e}/{epoch}")
                         self.loss_history.append(loss)
             else:
-                raise Exception(f'got unsupported data input type: {type(x)}')
+                invalidInputError(False,
+                                  f'got unsupported data input type: {type(x)}')
             
 
     def predict(self, x):

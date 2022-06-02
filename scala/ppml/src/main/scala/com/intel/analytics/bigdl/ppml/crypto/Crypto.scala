@@ -16,25 +16,217 @@
 
 package com.intel.analytics.bigdl.ppml.crypto
 
+import com.intel.analytics.bigdl.dllib.nn.NormMode.Value
+import com.intel.analytics.bigdl.dllib.utils.Log4Error
 import com.intel.analytics.bigdl.ppml.utils.Supportive
+import org.apache.spark.input.PortableDataStream
 
+import java.io.{DataInputStream, DataOutputStream}
+import javax.crypto.Cipher
+
+/**
+ * BigDL crypto interface for encrypt and decrypt data.
+ */
 trait Crypto extends Supportive with Serializable {
-  def encryptFile(sourceFilePath: String, saveFilePath: String, dataKeyPlaintext: String)
-  def decryptFile(sourceFilePath: String, saveFilePath: String, dataKeyPlaintext: String)
-  def encryptBytes(sourceBytes: Array[Byte], dataKeyPlaintext: String): Array[Byte]
-  def decryptBytes(sourceBytes: Array[Byte], dataKeyPlaintext: String): Array[Byte]
+  /**
+   * Init this crypto with crypto mode, operation mode and keys.
+   * @param cryptoMode cryptoMode to en/decrypt data, such as AES_CBC_PKCS5PADDING.
+   * @param mode en/decrypt mode, one of ENCRYPT or DECRYPT.
+   * @param dataKeyPlaintext signing key and data key.
+   */
+  def init(cryptoMode: CryptoMode, mode: OperationMode, dataKeyPlaintext: String): Unit
+
+  /**
+   * decrypt big data stream.
+   * @param ite stream iterator.
+   * @return iterator of String.
+   */
+  def decryptBigContent(ite: Iterator[(String, PortableDataStream)]): Iterator[String]
+
+  /**
+   * If encrypt data, should generate header and put return value to the head.
+   * @return header bytes
+   */
+  def genHeader(): Array[Byte]
+
+  /**
+   * Verify the header bytes when decrypt.
+   * @param header header bytes
+   */
+  def verifyHeader(header: Array[Byte]): Unit
+
+  /**
+   * Continues a multiple-part encryption or decryption operation
+   * (depending on how this crypto was initialized).
+   * @param content byte to be encrypted or decrypted.
+   * @return encrypted or decrypted bytes.
+   */
+  def update(content: Array[Byte]): Array[Byte]
+
+  /**
+   * Continues a multiple-part encryption or decryption operation
+   * (depending on how this crypto was initialized).
+   * @param content bytes to be encrypted or decrypted.
+   * @param offset bytes offset of content.
+   * @param len bytes len of content.
+   * @return encrypted or decrypted bytes.
+   */
+  def update(content: Array[Byte], offset: Int, len: Int): Array[Byte]
+
+  /**
+   * Encrypts or decrypts data in a single-part operation,
+   * or finishes a multiple-part operation. The data is encrypted
+   * or decrypted, depending on how this crypto was initialized.
+   * @param content bytes to be encrypted or decrypted.
+   * @return (encrypted or decrypted bytes, Message Authentication Code)
+   */
+  def doFinal(content: Array[Byte]): (Array[Byte], Array[Byte])
+
+  /**
+   * Encrypts or decrypts data in a single-part operation,
+   * or finishes a multiple-part operation. The data is encrypted
+   * or decrypted, depending on how this crypto was initialized.
+   * @param content bytes to be encrypted or decrypted.
+   * @param offset bytes offset of content.
+   * @param len bytes len of content.
+   * @return (encrypted or decrypted bytes, Message Authentication Code)
+   */
+  def doFinal(content: Array[Byte], offset: Int, len: Int): (Array[Byte], Array[Byte])
+
+  /**
+   * Encrypts or decrypts a byte stream. The data is encrypted
+   * or decrypted, depending on how this crypto was initialized.
+   * @param inputStream input stream
+   * @param outputStream output stream
+   */
+  def doFinal(inputStream: DataInputStream, outputStream: DataOutputStream): Unit
+
+  /**
+   * Encrypts or decrypts a file. The data is encrypted
+   * or decrypted, depending on how this crypto was initialized.
+   * @param binaryFilePath
+   * @param savePath
+   */
+  def doFinal(binaryFilePath: String, savePath: String): Unit
 }
 
-object CryptoMode extends Enumeration {
-  type CryptoMode = Value
-  val PLAIN_TEXT = value("plain_text", "plain_text")
-  val AES_CBC_PKCS5PADDING = value("AES/CBC/PKCS5Padding", "AES/CBC/PKCS5Padding")
-  val UNKNOWN = value("UNKNOWN", "UNKNOWN")
-  class EncryptModeEnumVal(name: String, val value: String) extends Val(nextId, name)
-  protected final def value(name: String, value: String): EncryptModeEnumVal = {
-    new EncryptModeEnumVal(name, value)
+object Crypto {
+  /**
+   * create a crypto with cryptoMode.
+   * @param cryptoMode CryptoMode
+   * @return crypto
+   */
+  def apply(cryptoMode: CryptoMode): Crypto = {
+    val supportedCryptos = Array(AES_CBC_PKCS5PADDING)
+    Log4Error.unKnowExceptionError(supportedCryptos.contains(cryptoMode),
+      s"unsupported cryptoMode, $cryptoMode")
+    cryptoMode match {
+      case AES_CBC_PKCS5PADDING =>
+        new BigDLEncrypt()
+    }
   }
-  def parse(s: String): Value = {
-    values.find(_.toString.toLowerCase() == s.toLowerCase).getOrElse(CryptoMode.UNKNOWN)
-  }
+}
+
+/**
+ * Operation Mode for crypto
+ */
+sealed trait OperationMode extends Serializable {
+  def opmode: Int
+}
+
+/**
+ * Encrypt Operation Mode for crypto
+ */
+case object ENCRYPT extends OperationMode {
+  override def opmode: Int = Cipher.ENCRYPT_MODE
+}
+
+/**
+ * Decrypt Operation Mode for crypto
+ */
+case object DECRYPT extends OperationMode {
+  override def opmode: Int = Cipher.DECRYPT_MODE
+}
+
+/**
+ * CryptoMode
+ */
+trait CryptoMode extends Serializable {
+  /**
+   * encryption algorithm of crypto
+   * @return encryption algorithm.
+   */
+  def encryptionAlgorithm: String
+
+  /**
+   * signing algorithm of crypto
+   * @return signing algorithm.
+   */
+  def signingAlgorithm: String
+
+  /**
+   * secret key algorithm of crypto.
+   * @return secret key algorithm.
+   */
+  def secretKeyAlgorithm: String
+}
+
+object CryptoMode {
+  /**
+   * Create cryptoMode by string.
+   */
+   def parse(s: String): CryptoMode = {
+     s.toLowerCase() match {
+       case "aes/cbc/pkcs5padding" =>
+         AES_CBC_PKCS5PADDING
+       case "plain_text" =>
+         PLAIN_TEXT
+     }
+   }
+}
+
+/**
+ * CryptoMode AES_CBC_PKCS5PADDING.
+ */
+case object AES_CBC_PKCS5PADDING extends CryptoMode {
+  /**
+   * encryption algorithm of crypto
+   * @return AES/CBC/PKCS5Padding
+   */
+  override def encryptionAlgorithm: String = "AES/CBC/PKCS5Padding"
+
+  /**
+   * signing algorithm of crypto
+   * @return HmacSHA256
+   */
+  override def signingAlgorithm: String = "HmacSHA256"
+
+  /**
+   * secret key algorithm of crypto.
+   * @return AES
+   */
+  override def secretKeyAlgorithm: String = "AES"
+}
+
+/**
+ * CryptoMode PLAIN_TEXT.
+ */
+case object PLAIN_TEXT extends CryptoMode {
+  /**
+   * encryption algorithm of crypto
+   * @return plain_text
+   */
+  override def encryptionAlgorithm: String = "plain_text"
+
+  /**
+   * signing algorithm of crypto
+   * @return
+   */
+  override def signingAlgorithm: String = ""
+
+  /**
+   * secret key algorithm of crypto.
+   * @return
+   */
+  override def secretKeyAlgorithm: String = ""
 }

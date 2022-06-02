@@ -81,26 +81,20 @@ def create_test_data_loader(dir, batch_size, num_workers, transform, subset=50):
 
 
 def train_with_linear_top_layer(model_without_top, batch_size, num_workers, data_dir,
-                                accelerator=None, use_orca_lite_trainer=False):
+                                use_ipex=False):
     model = Net(model_without_top)
     train_torch_lightning(model, batch_size, num_workers,
-                          data_dir, accelerator=accelerator,
-                          use_orca_lite_trainer=use_orca_lite_trainer)
+                          data_dir, use_ipex=use_ipex)
 
 
-def train_torch_lightning(model, batch_size, num_workers, data_dir, accelerator=None,
-                          use_orca_lite_trainer=False):
+def train_torch_lightning(model, batch_size, num_workers, data_dir, use_ipex=False):
     orig_parameters = deepcopy(list(model.named_parameters()))
 
     train_loader = create_data_loader(
         data_dir, batch_size, num_workers, data_transform)
 
-    if use_orca_lite_trainer:
-        from bigdl.nano.pytorch import Trainer
-
-        trainer = Trainer(max_epochs=1)
-    else:
-        trainer = pl.Trainer(max_epochs=1, accelerator=accelerator)
+    from bigdl.nano.pytorch import Trainer
+    trainer = Trainer(max_epochs=1, use_ipex=use_ipex)
 
     trainer.fit(model, train_loader)
 

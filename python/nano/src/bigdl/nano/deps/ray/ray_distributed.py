@@ -34,6 +34,9 @@ from typing import Callable, Dict, List, Union, Any, Optional
 
 import os
 from collections import defaultdict
+from bigdl.nano.deps.ipex.ipex_api import ipex_device, ipex_optimize
+
+from bigdl.nano.pytorch.utils import TORCH_VERSION_LESS_1_10
 
 import ray
 import torch
@@ -42,10 +45,9 @@ from pytorch_lightning import _logger as log, LightningModule
 from pytorch_lightning.utilities import rank_zero_only
 from pytorch_lightning.utilities.seed import reset_seed
 from ray.util.sgd.utils import find_free_port
-from torch.nn import Module
-
 from bigdl.nano.deps.ray.ray_envbase import RayEnvironment
 from bigdl.nano.utils.log4Error import invalidInputError
+import warnings
 
 
 @ray.remote
@@ -119,8 +121,8 @@ class RayPlugin(DDPSpawnPlugin):
                  num_cpus_per_worker: int = 1,
                  use_gpu: bool = False,
                  use_ipex: bool = False,
+                 enable_bf16: bool = False,
                  init_hook: Callable = None,
-                 ipex_device: str = None,
                  **ddp_kwargs: Union[Any, Dict[str, Any]]):
 
         # Unset MKL setting as bigdl.nano would give default values when init env.
@@ -145,7 +147,6 @@ class RayPlugin(DDPSpawnPlugin):
         self.num_cpus_per_worker = num_cpus_per_worker
         self.use_gpu = use_gpu
         self.use_ipex = use_ipex
-        self.ipex_device = ipex_device
 
         invalidInputError(not self.use_gpu or not self.use_ipex,
                           "You can not specify gpu and ipex at the same time.")
@@ -396,6 +397,19 @@ class RayPlugin(DDPSpawnPlugin):
         self.dist.rank = self.global_rank
         self.dist.device = self.root_device
 
+        if self.use_ipex and not TORCH_VERSION_LESS_1_10:
+            dtype = torch.bfloat16 if self.enable_bf16 else None
+            num_optimizers = len(self.lightning_module.trainer.accelerator.optimizers)
+            if num_optimizers == 1:
+                optimizer = self.lightning_module.trainer.accelerator.optimizers[0]
+                ipex_optimize(self.model, optimizer=optimizer,
+                              inplace=True, dtype=dtype)
+            elif num_optimizers == 0:
+                ipex_optimize(self.model, inplace=True, dtype=dtype)
+            else:
+                warnings.warn(f"IPEX currently only support single optimizers, "
+                              f"but got {num_optimizers}. Skip IPEX")
+
         if self.sync_batchnorm:
             self.model = self.configure_sync_batchnorm(self.model)
 
@@ -417,11 +431,9 @@ class RayPlugin(DDPSpawnPlugin):
 
     @property
     def root_device(self):
-        if self.use_gpu and torch.cuda.is_available():
-            return torch.device("cuda", 0)
-        elif self.use_ipex and self.ipex_device is not None:
+        if self.use_ipex and TORCH_VERSION_LESS_1_10:
             # Add ipex option.
-            return torch.device(self.ipex_device)
+            return torch.device(ipex_device())
         else:
             return torch.device("cpu")
 
@@ -437,10 +449,10 @@ class RayPlugin(DDPSpawnPlugin):
             # Save training results as attributes.
             self._results = results
 
-            # unsupported Storage type for ipex
-            # Convert xpu tensor back to cpu
-            # refer to https://github.com/intel/intel-extension-for-pytorch/issues/158
-            if self.use_ipex:
+            if self.use_ipex and TORCH_VERSION_LESS_1_10:
+                # unsupported Storage type for ipex
+                # Convert xpu tensor back to cpu
+                # refer to https://github.com/intel/intel-extension-for-pytorch/issues/158
                 self.lightning_module.to("cpu")
 
             self.model_state_dict = self.lightning_module.state_dict()

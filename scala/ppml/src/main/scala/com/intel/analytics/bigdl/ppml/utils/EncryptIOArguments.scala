@@ -17,8 +17,7 @@
 package com.intel.analytics.bigdl.ppml.utils
 
 import com.intel.analytics.bigdl.ppml.PPMLContext
-import com.intel.analytics.bigdl.ppml.crypto.{CryptoMode, EncryptRuntimeException}
-import com.intel.analytics.bigdl.ppml.crypto.CryptoMode.CryptoMode
+import com.intel.analytics.bigdl.ppml.crypto.{CryptoMode, EncryptRuntimeException, PLAIN_TEXT}
 import com.intel.analytics.bigdl.ppml.kms.{EHSMKeyManagementService, KMS_CONVENTION, SimpleKeyManagementService}
 
 import java.io.File
@@ -26,8 +25,8 @@ import java.io.File
 case class EncryptIOArguments(
                                inputPath: String = "./input",
                                outputPath: String = "./output",
-                               inputEncryptMode: CryptoMode = CryptoMode.PLAIN_TEXT,
-                               outputEncryptMode: CryptoMode = CryptoMode.PLAIN_TEXT,
+                               inputEncryptMode: CryptoMode = PLAIN_TEXT,
+                               outputEncryptMode: CryptoMode = PLAIN_TEXT,
                                inputPartitionNum: Int = 4,
                                outputPartitionNum: Int = 4,
                                primaryKeyPath: String = "./primaryKeyPath",

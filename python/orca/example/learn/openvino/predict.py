@@ -24,6 +24,7 @@ import math
 from bigdl.orca.learn.openvino import Estimator
 
 from bigdl.orca import init_orca_context, stop_orca_context
+from bigdl.dllib.utils.log4Error import *
 
 
 def crop(img, w, h):
@@ -73,8 +74,11 @@ if __name__ == "__main__":
     result = est.predict(images, batch_size=args.batch_size)
     end = time.time()
     print("Throughput: ", args.data_num / (end - start))
-    assert isinstance(result, list)
-    assert result[0].shape == (args.data_num, 255, 13, 13)
-    assert result[1].shape == (args.data_num, 255, 26, 26)
-    assert result[2].shape == (args.data_num, 255, 52, 52)
+    invalidInputError(isinstance(result, list), "expect result is list")
+    invalidInputError(result[0].shape == (args.data_num, 255, 13, 13),
+                      "expect result[0] shape is (args.data_num, 255, 13, 13)")
+    invalidInputError(result[1].shape == (args.data_num, 255, 26, 26),
+                      "expect result[1] shape is (args.data_num, 255, 26, 26)")
+    invalidInputError(result[2].shape == (args.data_num, 255, 52, 52),
+                      "expect result[2] shape is (args.data_num, 255, 52, 52)")
     stop_orca_context()

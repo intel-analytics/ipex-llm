@@ -17,13 +17,14 @@ import sys
 from bigdl.dllib.nn.criterion import Criterion
 from pyspark.serializers import CloudPickleSerializer
 from importlib.util import find_spec
+from bigdl.dllib.utils.log4Error import invalidInputError
 
 if sys.version < '3.7':
     print("WARN: detect python < 3.7, if you meet zlib not available " +
           "exception on yarn, please update your python to 3.7")
 
 if find_spec('jep') is None:
-    raise Exception("jep not found, please install jep first.")
+    invalidInputError(False, "jep not found, please install jep first.")
 
 
 class TorchLoss(Criterion):

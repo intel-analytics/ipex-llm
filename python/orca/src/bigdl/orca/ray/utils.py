@@ -15,6 +15,7 @@
 #
 
 import re
+from bigdl.dllib.utils.log4Error import invalidInputError
 
 
 def to_list(input):
@@ -30,8 +31,9 @@ def resource_to_bytes(resource_str):
     matched = re.compile("([0-9]+)([a-z]+)?").match(resource_str.lower())
     fraction_matched = re.compile("([0-9]+\\.[0-9]+)([a-z]+)?").match(resource_str.lower())
     if fraction_matched:
-        raise Exception(
-            "Fractional values are not supported. Input was: {}".format(resource_str))
+        invalidInputError(False,
+                          "Fractional values are not supported. Input"
+                          " was: {}".format(resource_str))
     try:
         value = int(matched.group(1))
         postfix = matched.group(2)
@@ -44,12 +46,14 @@ def resource_to_bytes(resource_str):
         elif postfix == 'g':
             value = value * 1000 * 1000 * 1000
         else:
-            raise Exception("Not supported type: {}".format(resource_str))
+            invalidInputError(False,
+                              "Not supported type: {}".format(resource_str))
         return value
     except Exception:
-        raise Exception("Size must be specified as bytes(b),"
-                        "kilobytes(k), megabytes(m), gigabytes(g). "
-                        "E.g. 50b, 100k, 250m, 30g")
+        invalidInputError(False,
+                          "Size must be specified as bytes(b),"
+                          "kilobytes(k), megabytes(m), gigabytes(g). "
+                          "E.g. 50b, 100k, 250m, 30g")
 
 
 def is_local(sc):

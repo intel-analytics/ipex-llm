@@ -14,6 +14,7 @@
 # limitations under the License.
 #
 from bigdl.orca.tfpark.text.estimator import *
+from bigdl.dllib.utils.log4Error import invalidInputError
 
 
 def make_bert_ner_model_fn(optimizer):
@@ -44,7 +45,8 @@ def make_bert_ner_model_fn(optimizer):
             predict = tf.argmax(probabilities, axis=-1)
             return tf.estimator.EstimatorSpec(mode=mode, predictions=predict)
         else:
-            raise ValueError("Currently only TRAIN and PREDICT modes are supported for NER")
+            invalidInputError(False,
+                              "Currently only TRAIN and PREDICT modes are supported for NER")
     return _bert_ner_model_fn
 
 

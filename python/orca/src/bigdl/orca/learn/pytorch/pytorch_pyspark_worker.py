@@ -29,6 +29,7 @@
 # limitations under the License.
 
 
+from subprocess import call
 from pyspark import BarrierTaskContext
 from bigdl.orca.learn.pytorch.torch_runner import TorchRunner
 import torch.distributed as dist
@@ -40,6 +41,8 @@ import tempfile
 from pyspark import BarrierTaskContext, TaskContext
 from bigdl.orca.learn.utils import save_pkl, duplicate_stdout_stderr_to_file, get_rank
 from bigdl.orca.learn.log_monitor import LogMonitor
+from bigdl.dllib.utils.log4Error import *
+
 
 logger = logging.getLogger(__name__)
 
@@ -79,7 +82,7 @@ class PytorchPysparkWorker(TorchRunner):
         self.mode = mode
         self.backend = backend
         self.cluster_info = cluster_info
-        assert model_dir
+        invalidInputError(model_dir, "model_dir cannot be null")
         self.model_dir = model_dir
         self.log_to_driver = log_to_driver
 
@@ -120,10 +123,17 @@ class PytorchPysparkWorker(TorchRunner):
             self.setup_operator(self.models)
 
     def train_epochs(self, data_creator, epochs=1, batch_size=32, profile=False,
-                     info=None, wrap_dataloader=None, callbacks=None):
+                     info=None, wrap_dataloader=None, callbacks=None,
+                     validation_data_creator=None):
         self.load_state_dict(self.state_dict.value)
-        stats_list = super().train_epochs(data_creator, epochs, batch_size, profile, info,
-                                          wrap_dataloader, callbacks)
+        stats_list = super().train_epochs(data_creator=data_creator,
+                                          epochs=epochs,
+                                          batch_size=batch_size,
+                                          profile=profile,
+                                          info=info,
+                                          wrap_dataloader=wrap_dataloader,
+                                          callbacks=callbacks,
+                                          validation_data_creator=validation_data_creator)
         state_dict = self.get_state_dict()
 
         if self.log_to_driver:

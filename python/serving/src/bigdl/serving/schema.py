@@ -18,11 +18,12 @@ import pyarrow as pa
 import numpy as np
 import cv2
 import base64
+from bigdl.serving.log4Error import invalidInputError
 
 
 def get_field_and_data(key, value):
     if isinstance(value, list):
-        assert len(value) > 0, "empty list is not supported"
+        invalidInputError(len(value) > 0, "empty list is not supported")
         sample = value[0]
         if isinstance(sample, str):
             # list of string will be converted to Tensor of String
@@ -33,9 +34,9 @@ def get_field_and_data(key, value):
             return field, data
 
         elif isinstance(sample, np.ndarray):
-            assert len(value) == 3, "Sparse Tensor must have list of ndarray" \
-                                    "with length 3, which represent indices, " \
-                                    "values, shape respectively"
+            invalidInputError(len(value) == 3,
+                              "Sparse Tensor must have list of ndarray with length 3, which"
+                              " represent indices, values, shape respectively")
             indices_field = pa.field("indiceData", pa.list_(pa.int32()))
             indices_shape_field = pa.field("indiceShape", pa.list_(pa.int32()))
             value_field = pa.field("data", pa.list_(pa.float32()))
@@ -54,8 +55,9 @@ def get_field_and_data(key, value):
                              {'shape': shape}], type=sparse_tensor_type)
             return field, data
         else:
-            raise TypeError("List of string and ndarray is supported,"
-                            "but your input does not match")
+            invalidInputError(False,
+                              "List of string and ndarray is supported,"
+                              "but your input does not match")
 
     elif isinstance(value, str):
         # str value will be considered as image path
@@ -72,8 +74,9 @@ def get_field_and_data(key, value):
         elif "b64" in value.keys():
             data = value["b64"]
         else:
-            raise TypeError("Your input dict must contain"
-                            " either 'path' or 'b64' key")
+            invalidInputError(False,
+                              "Your input dict must contain"
+                              " either 'path' or 'b64' key")
         field = pa.field(key, pa.string())
         data = pa.array([data])
         return field, data
@@ -99,8 +102,9 @@ def get_field_and_data(key, value):
         return field, data
 
     else:
-        raise TypeError("Your request does not match any schema, "
-                        "please check.")
+        invalidInputError(False,
+                          "Your request does not match any schema, "
+                          "please check.")
 
 
 def encode_image(img):

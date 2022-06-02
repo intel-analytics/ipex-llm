@@ -2,9 +2,11 @@
 
 Nano provides built-in AutoML support through hyperparameter optimization.
 
-By simply changing imports, you are able to search the model architecture (e.g. by specifying search spaces in layer/activation/function arguments when defining the model), or the training procedure (e.g. by specifying search spaces in `learning_rate` or `batch_size`). You can simply use `model.search` (tensorflow) / `Trainer.search`(pytorch) to launch search trials, and `model.search_summary`(tensorflow) / `Trainer.search_summary`(pytorch) to review the search results.
+By simply changing imports, you are able to search the model architecture (e.g. by specifying search spaces in layer/activation/function arguments when defining the model), or the training procedure (e.g. by specifying search spaces in `learning_rate` or `batch_size`). You can simply use `search` on Model (for tensorflow) or on Trainier (for pytorch) to launch search trials, and `search_summary` to review the search results.
 
 Under the hood, the objects (layers, activations, model, etc.) are implicitly turned into searchable objects at creation, which allows search spaces to be specified in their init arguments. Nano HPO collects those search spaces and passes them to the underlying HPO engine (i.e. Optuna) which generates hyperparameter suggestions accordingly. The instantiation and execution of the corresponding objects are delayed until the hyperparameter values are available in each trial.
+
+---
 
 ### Install
 
@@ -17,9 +19,13 @@ pip install ConfigSpace
 pip install optuna
 ```
 
+---
+
 ### Search Spaces
 
 Search spaces are value range specifications that the search engine uses for sampling hyperparameters. The available search spaces in Nano HPO is defined in `bigdl.nano.automl.hpo.space`. Refer to [Search Space API doc]() for more details.
+
+---
 
 ### For Tensorflow Users
 
@@ -256,10 +262,112 @@ best_model = trainer.search(
 study = trainer.search_summary()
 trainer.fit(best_model)
 ```
+---
 
 ### Resume Search
 
+You can call `search` more than once with flag `resume=True` to resume from a previous search instead of starting a new one.
 
+The _resumed_ search will take into consideration all trials in the previous search when sampling hyperparameters. The trials in the resumed search will be stored in the same repo as the first search, and all trials will be retrieved as a whole by `search_summary`.
+
+Note that the flag `resume` is by default set to `False`, which means each search will by default start from scratch and any previous search results will be overridden and can no longer be retrieved.
+
+
+#### Use a Persistent Storage
+
+By default, the storage used for storing trial info is created in-memory, so once the process is stopped the trial statistics can not be retrieved anymore. If you are expecting to run search for a long time and may resume search several times, it is highly recommended to use a persistent storage instead of the default in-memory storage.
+
+To use a persistent storage, specify `storage` with an RDB url (e.g SQLlite, MySQL, etc.) in `search`. The simplest way is to specify a sqllite url, as shown in the example below. It will automatically create a db file in the specified path. Also specify `study_name` so that all the search with the same name will be gathered into the same repo.
+
+#### Tensorflow Example
+
+Specify SQLlite `storage` and a `study_name` in search.
+```python
+name = "resume-example"
+storage = "sqlite:///example.db"
+#the first search from scratch
+model.search(study_name=name, storage=storage,...)
+# the resumed search
+model.search(study_name=name, storage=storage, resume=True,...)
+```
+#### PyTorch Example
+Specify SQLlite `storage` and a `study_name` in search.
+```python
+name = "resume-example"
+storage = "sqlite:///example.db"
+#the first search from scratch
+trainer.search(study_name=name, storage=storage,...)
+# the resumed search
+trainer.search(study_name=name, storage=storage, resume=True,..)
+```
+
+If the model/trainer object is still accessible along the searches (e.g. in a running jupyter notebook), the specification of `storage` and `study_name` can be omitted. Simply call `search` with `resume=True` to resume search.
+
+---
+
+### Parallel Search
+
+Parallel search allows trials to be run in multiple processes simultaneously. To use parallel search, you need to prepare an RDB database as storage. Then in `search`, specify the database url for `storage`, specify `study_name`, and set `n_parallels` to the number of parallel processes you want to run.
+
+We do not recommend SQLite as storage for parallel search as it may cause deadlocks and performance issues. Here we provide an example using MySQL.
+
+#### Setup MySQL database
+
+If you already know how to create a database in MySQL, you can skip this step. We assume MySQL service is already installed and started in your local machine.
+
+Create a new file with name `setup_db.sql`, paste the below contents.
+
+```sql
+CREATE DATABASE IF NOT EXISTS example;
+CREATE USER IF NOT EXISTS bigdlhpo ;
+GRANT ALL PRIVILEGEs ON example.* TO bigdlhpo;
+FLUSH PRIVILEGES;
+```
+
+Run below command
+```bash
+sudo mysql -u root < setup_db.sql
+```
+
+The above command creates a new user `bigdlhpo` and a new database `example`, and grants all access privileges on the `example` database to `bigdlhpo`.
+
+#### Install MySQL client for python
+
+Install mysqlclient so that search can access MySQL databases from python.
+
+```python
+pip install mysqlclient
+```
+#### Tensorflow Example
+
+Specify `storage` to the MySQL database `example` we just created as user `bigdlhpo`, specify `study_name` and also set `n_parallels=8`.
+
+```python
+name = "parallel-example-tf"
+storage = "mysql://bigdlhpo@localhost/example"
+#the first search from scratch
+model.search(study_name=name,
+             storage=storage,
+             n_parallels=8,
+             ...)
+```
+#### PyTorch Example
+
+Specify `storage` to the MySQL database `example` we just created as user `bigdlhpo`, specify `study_name` and also set `n_parallels=8`.
+
+```python
+name = "parallel-example-torch"
+storage = "mysql://bigdlhpo@localhost/example"
+#the first search from scratch
+trainer.search(study_name=name,
+               storage=storage,
+               n_parallels=8,
+               ...)
+
+```
+
+
+---
 ### Analysis and Visualization
 
 

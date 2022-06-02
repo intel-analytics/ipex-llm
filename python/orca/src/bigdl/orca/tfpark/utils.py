@@ -16,6 +16,7 @@
 from bigdl.orca.tfpark.tfnet import TFNet
 from bigdl.orca.tfpark.tf_optimizer import BigDLMetric, TFModel
 from bigdl.dllib.keras import metrics as zmetrics
+from bigdl.dllib.utils.log4Error import *
 
 
 def to_bigdl_metric(metric):
@@ -33,7 +34,8 @@ def to_bigdl_metric(metric):
         from bigdl.dllib.optim.optimizer import TreeNNAccuracy
         return TreeNNAccuracy()
     else:
-        raise TypeError("Unsupported metric: %s" % metric)
+        invalidInputError(False,
+                          "Unsupported metric: %s" % metric)
 
 
 def evaluate_string_metrics(*,
@@ -43,17 +45,20 @@ def evaluate_string_metrics(*,
                             inputs,
                             targets=None,
                             outputs=None,
-                            loss=None,
+                            loss=None
                             ):
 
     metrics = {}
     for i, metric in enumerate(string_metrics):
         if metric == "loss":
-            assert loss is not None, "loss tensor should not be None if one of the metrics is loss"
+            invalidInputError(loss is not None,
+                              "loss tensor should not be None if one of the metrics is loss")
             metrics["loss"] = loss
         else:
-            assert outputs is not None, "outputs should not be None if non loss metrics exists"
-            assert targets is not None, "targets should not be None if non loss metrics exists"
+            invalidInputError(outputs is not None,
+                              "outputs should not be None if non loss metrics exists")
+            invalidInputError(targets is not None,
+                              "targets should not be None if non loss metrics exists")
 
             method = to_bigdl_metric(metric)
             metrics[metric] = BigDLMetric(method,
