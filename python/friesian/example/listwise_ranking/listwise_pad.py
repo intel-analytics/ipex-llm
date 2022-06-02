@@ -13,12 +13,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+# This example is based on Tensorflow Recommenders example [Listwise ranking]
+# (https://github.com/tensorflow/recommenders/blob/main/docs/examples/listwise_ranking.ipynb)
+#
 
 import os
 import sys
 import math
-import tensorflow as tf
-import tensorflow_ranking as tfr
 from optparse import OptionParser
 import tensorflow as tf
 import tensorflow_ranking as tfr
