@@ -16,9 +16,15 @@
 
 from bigdl.dllib.utils.common import *
 
+<<<<<<< HEAD
 
 def init_fl_context(target="localhost:8980"):
     callBigDlFunc("float", "initFLContext", target)
+=======
+# this is Py4J FLContext, to be deprecated in future
+def init_fl_context(bigdl_type="float"):
+    callBigDlFunc(bigdl_type, "initFLContext")
+>>>>>>> ecab9fe82 (set client ID in init_fl_context)
 
 class FLClientClosable(JavaValue):
     def __init__(self, jvalue=None, bigdl_type="float", *args):

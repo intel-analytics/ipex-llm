@@ -22,17 +22,26 @@ from bigdl.ppml.fl.nn.fl_client import FLClient
 from torch.utils.data import DataLoader
 from bigdl.dllib.utils.log4Error import invalidInputError
 from bigdl.ppml.fl.nn.utils import tensor_map_to_ndarray_map
+from bigdl.ppml.fl.nn.fl_context import FLContext
 
 class PytorchEstimator:
     def __init__(self, model: nn.Module, loss_fn, optimizer: torch.optim.Optimizer, algorithm=None,
+<<<<<<< HEAD:python/ppml/src/bigdl/ppml/fl/nn/pytorch/estimator.py
             bigdl_type="float", target="localhost:8980"):
+=======
+            bigdl_type="float", fl_client=None):
+>>>>>>> ecab9fe82 (set client ID in init_fl_context):python/ppml/src/bigdl/ppml/fl/nn/pytorch/pipeline.py
         self.bigdl_type = bigdl_type
         self.model = model
         self.loss_fn = loss_fn
         self.optimizer = optimizer
         self.version = 0
         self.algorithm = algorithm
+<<<<<<< HEAD:python/ppml/src/bigdl/ppml/fl/nn/pytorch/estimator.py
         self.fl_client = FLClient(aggregator='pt', target=target)
+=======
+        self.fl_client = fl_client if fl_client is not None else FLContext.fl_client
+>>>>>>> ecab9fe82 (set client ID in init_fl_context):python/ppml/src/bigdl/ppml/fl/nn/pytorch/pipeline.py
         self.loss_history = []
     
     def add_server_model(self, model: nn.Module, loss_fn=None, optimizer_cls=None, optimizer_args={}):

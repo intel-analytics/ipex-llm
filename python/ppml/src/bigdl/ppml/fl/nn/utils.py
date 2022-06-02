@@ -15,7 +15,10 @@
 #
 
 import pickle
+import numpy as np
+
 from bigdl.ppml.fl.nn.generated.nn_service_pb2 import *
+from bigdl.ppml.fl.nn.generated.fl_base_pb2 import FloatTensor, TensorMap
 
 
 class ClassAndArgsWrapper(object):
@@ -28,9 +31,12 @@ class ClassAndArgsWrapper(object):
         args = pickle.dumps(self.args)
         return ClassAndArgs(cls=cls, args=args)
 
+<<<<<<< HEAD
 import numpy as np
 from bigdl.dllib.utils.log4Error import invalidInputError
 from bigdl.ppml.fl.nn.generated.fl_base_pb2 import FloatTensor, TensorMap
+=======
+>>>>>>> ecab9fe82 (set client ID in init_fl_context)
 
 def ndarray_map_to_tensor_map(array_map: dict):
     tensor_map = {}
@@ -52,6 +58,7 @@ def tensor_map_to_ndarray_map(tensor_map: TensorMap):
         ndarray_map[k] = np.array(v.tensor, dtype=dtype).reshape(v.shape)
     return ndarray_map
 
+<<<<<<< HEAD
 
 def print_file_size_in_dir(path='.'):
     import os
@@ -61,3 +68,5 @@ def print_file_size_in_dir(path='.'):
                 print(entry, entry.stat().st_size)
             elif entry.is_dir():
                 print_file_size_in_dir(entry.path)
+=======
+>>>>>>> ecab9fe82 (set client ID in init_fl_context)

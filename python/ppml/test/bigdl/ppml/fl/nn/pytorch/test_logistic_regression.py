@@ -22,6 +22,7 @@ import pandas as pd
 import os
 
 import torch
+from bigdl.ppml.fl.nn.fl_client import FLClient
 from bigdl.ppml.fl.nn.pytorch.utils import set_one_like_parameter
 from bigdl.ppml.fl.nn.fl_server import FLServer
 from torch import nn
@@ -33,6 +34,7 @@ from bigdl.ppml.fl.utils import FLTest
 resource_path = os.path.join(os.path.dirname(__file__), "../../resources")
 
 def mock_process(data_train, target):
+    # set new_fl_client to True will create a FLClient with new ID for multi-party test
     df_train = pd.read_csv(os.path.join(resource_path, data_train))
     if 'Outcome' in df_train:
         df_x = df_train.drop('Outcome', 1)
@@ -50,9 +52,9 @@ def mock_process(data_train, target):
     ppl = Estimator.from_torch(client_model=model, 
                                loss_fn=loss_fn,
                                optimizer_cls=torch.optim.SGD,
-                             optimizer_args={'lr':1e-3},
-                            target=target,
-                            server_model=server_model)
+                               optimizer_args={'lr':1e-3},
+                               target=target,
+                               server_model=server_model)
     response = ppl.fit(x, y)
     logging.info(response)
     return ppl
@@ -110,7 +112,11 @@ class TestLogisticRegression(FLTest):
         mock_party2 = threading.Thread(target=mock_process, 
             args=('diabetes-vfl-2.csv', self.target))
         mock_party2.start()        
+<<<<<<< HEAD:python/ppml/test/bigdl/ppml/fl/nn/pytorch/test_logistic_regression.py
         ppl = mock_process(data_train='diabetes-vfl-1.csv', target=self.target)
+=======
+        ppl = mock_process(data_train='diabetes-vfl-1.csv', new_fl_client=True)
+>>>>>>> ecab9fe82 (set client ID in init_fl_context):python/ppml/test/bigdl/ppml/fl/pytorch/test_logistic_regression.py
         mock_party2.join()
         assert np.allclose(pytorch_loss_list, ppl.loss_history), \
             "Validation failed, correctness of PPML and native Pytorch not the same"
