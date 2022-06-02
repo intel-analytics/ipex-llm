@@ -4,7 +4,7 @@ name: Nano Unit Tests For OnnxRuntime
 on:
   # Triggers the workflow on push or pull request events but only for the main branch
   push:
-    branches: [ main ]
+    branches: [ test-nano-test-code ]
   pull_request:
     branches: [ main ]
     paths:
