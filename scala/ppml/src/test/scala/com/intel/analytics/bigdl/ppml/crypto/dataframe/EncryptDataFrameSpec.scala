@@ -118,5 +118,21 @@ class EncryptDataFrameSpec extends FlatSpec with Matchers with BeforeAndAfter{
     val d = df.collect().map(v => s"${v.get(0)},${v.get(1)},${v.get(2)}").mkString("\n")
     d should be (data)
   }
+
+  "save df" should "work" in {
+    val enWriteCsvPath = dir + "/en_write_csv"
+    val writeCsvPath = dir + "/write_csv"
+    val df = sc.read(cryptoMode = AES_CBC_PKCS5PADDING).csv(encryptFileName)
+    sc.write(df, cryptoMode = AES_CBC_PKCS5PADDING).csv(enWriteCsvPath)
+    sc.write(df, cryptoMode = PLAIN_TEXT).csv(writeCsvPath)
+
+    val readEn = sc.read(cryptoMode = AES_CBC_PKCS5PADDING).csv(enWriteCsvPath)
+    readEn.collect()
+      .map(v => s"${v.get(0)},${v.get(1)},${v.get(2)}").mkString("\n") should be (data)
+
+    val readPlain = sc.read(cryptoMode = PLAIN_TEXT).csv(writeCsvPath)
+    readPlain.collect()
+      .map(v => s"${v.get(0)},${v.get(1)},${v.get(2)}").mkString("\n") should be (data)
+  }
 }
 
