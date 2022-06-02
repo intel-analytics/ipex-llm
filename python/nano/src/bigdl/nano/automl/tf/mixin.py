@@ -202,6 +202,10 @@ class HPOMixin:
                      kwargs=subp_kwargs,
                      n_procs=n_procs)
 
+    def _run_search_n_threads(self, isprune, n_threads=1):
+        self.run_kwargs['n_jobs'] = n_threads
+        self._run_search(isprune)
+
     def _run_search(self, isprune):
         if self.objective is None:
             self.objective = self._create_objective(self._model_build,
@@ -209,6 +213,7 @@ class HPOMixin:
                                                     isprune,
                                                     self.fit_kwargs,
                                                     self.backend)
+
         self.study.optimize(self.objective, **self.run_kwargs)
 
     def search(
@@ -251,7 +256,12 @@ class HPOMixin:
 
         isprune = True if self.create_kwargs.get('pruner', None) else False
         if n_parallels and n_parallels > 1:
-            self._run_search_n_procs(isprune, n_procs=n_parallels)
+            # if storage is in-memory, use parallel threads instead of multi-process
+            # this may suffer form python's GIL.
+            if self.create_kwargs.get('storage', "").strip() == "":
+                self._run_search_n_threads(isprune, n_threads=n_parallels)
+            else:
+                self._run_search_n_procs(isprune, n_procs=n_parallels)
         else:
             self._run_search(isprune)
 
