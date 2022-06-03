@@ -43,7 +43,7 @@ class NBeatsForecaster(BasePytorchForecaster):
                  optimizer="Adam",
                  loss="mse",
                  lr=0.001,
-                 metircs=["mse"],
+                 metrics=["mse"],
                  seed=None,
                  distributed=False,
                  workers_per_node=1,
@@ -81,7 +81,10 @@ class NBeatsForecaster(BasePytorchForecaster):
         :param metrics: A list contains metrics for evaluating the quality of
                forecasting. You may only choose from "mse" and "mae" for a
                distributed forecaster. You may choose from "mse", "mae",
-               "rmse", "r2", "mape", "smape", for a non-distributed forecaster.
+               "rmse", "r2", "mape", "smape" or a callable function for a
+               non-distributed forecaster. If callable function, it signature
+               should be func(y_true, y_pred), where y_true and y_pred are numpy
+               ndarray.
         :param seed: int, random seed for training. This value defaults to None.
         :param distributed: bool, if init the forecaster in a distributed
                fashion. If True, the internal model will use an Orca Estimator.
@@ -144,7 +147,7 @@ class NBeatsForecaster(BasePytorchForecaster):
         # other settings
         self.lr = lr
         self.seed = seed
-        self.metrics = metircs
+        self.metrics = metrics
 
         # nano settings
         current_num_threads = torch.get_num_threads()

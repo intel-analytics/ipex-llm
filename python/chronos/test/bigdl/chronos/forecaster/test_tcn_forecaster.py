@@ -340,16 +340,21 @@ class TestChronosModelTCNForecaster(TestCase):
         forecaster.fit(train_loader, epochs=2)
         stop_orca_context()
 
-    def test_tcn_customized_loss(self):
+    def test_tcn_customized_loss_metric(self):
+        from torchmetrics.functional import mean_squared_error
         train_loader, _, _ = create_data(loader=True)
         _, _, test_data = create_data()
         loss = torch.nn.L1Loss()
+        def customized_metric(y_true, y_pred):
+            return mean_squared_error(torch.from_numpy(y_pred),
+                                      torch.from_numpy(y_true)).numpy()
         forecaster = TCNForecaster(past_seq_len=24,
                                    future_seq_len=5,
                                    input_feature_num=1,
                                    output_feature_num=1,
                                    kernel_size=3,
                                    loss=loss,
+                                   metrics=[customized_metric],
                                    lr=0.01)
         forecaster.fit(train_loader, epochs=2)
         with tempfile.TemporaryDirectory() as tmp_dir_name:
