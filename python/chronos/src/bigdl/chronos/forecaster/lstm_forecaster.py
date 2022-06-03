@@ -106,7 +106,12 @@ class LSTMForecaster(BasePytorchForecaster):
         # model creator settings
         self.model_creator = model_creator
         self.optimizer_creator = optimizer_creator
-        self.loss_creator = loss_creator
+        if isinstance(loss, str):
+            self.loss_creator = loss_creator
+        else:
+            def customized_loss_creator(config):
+                return config["loss"]
+            self.loss_creator = customized_loss_creator
 
         # distributed settings
         self.distributed = distributed
