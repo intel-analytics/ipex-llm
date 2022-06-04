@@ -1,6 +1,8 @@
 # Use Chronos to help pytorch-forecasting improve the training/inference speed of TFT model
 Chronos can help a 3rd party time series lib to improve the performance (both training and inferencing) and accuracy. This use-case shows nano can easily help pytorch-forecasting speed up the training/inference of TFT (Temporal Fusion Transformers) model.
 
+More detailed information please refer to: https://bigdl.readthedocs.io/en/latest/doc/Chronos/Overview/speed_up.html
+
 ## Prepare the environment
 We recommend you to use conda to prepare the environment, especially if you want to run on a yarn cluster:
 ```bash
