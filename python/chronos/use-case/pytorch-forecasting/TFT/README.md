@@ -55,4 +55,4 @@ Then you may enjoy the accleration provided by `TSTrainer`
 best_tft = TSTrainer.optimize(best_tft)
 best_tft(x)
 ```
-For an input of (128, 24, 7) and output of (128, 6, 7), the acceleration is ~1.5X.
+For an input of (128, 24, 7) and output of (128, 6, 7), the acceleration is ~1.5X on a single core.
