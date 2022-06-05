@@ -218,7 +218,8 @@ object PPMLContext{
         SimpleKeyManagementService(id, key)
       case KMS_CONVENTION.MODE_AZURE_KMS =>
         val vaultName = conf.get("spark.bigdl.kms.azure.vault", defaultValue = "keyVaultName")
-        new AzureKeyManagementService(vaultName)
+        val clientId = conf.get("spark.bigdl.kms.azure.clientId", defaultValue = "")
+        new AzureKeyManagementService(vaultName, clientId)
       case _ =>
         throw new EncryptRuntimeException("Wrong kms type")
     }

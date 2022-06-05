@@ -39,6 +39,7 @@ class AzureKeyManagementService(keyVaultName: String, managedIdentityClientId : 
 
   private var defaultCredential: DefaultAzureCredential = null
 
+  // support user managed identity
   if (managedIdentityClientId != null && managedIdentityClientId != "") {
     defaultCredential = new DefaultAzureCredentialBuilder()
       .managedIdentityClientId(managedIdentityClientId)

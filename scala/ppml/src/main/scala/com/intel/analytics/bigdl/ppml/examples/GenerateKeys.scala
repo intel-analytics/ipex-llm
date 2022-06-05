@@ -41,7 +41,7 @@ object GenerateKeys extends App {
     case KMS_CONVENTION.MODE_SIMPLE_KMS =>
       SimpleKeyManagementService(arguments.simpleAPPID, arguments.simpleAPPKEY)
     case KMS_CONVENTION.MODE_AZURE_KMS =>
-      new AzureKeyManagementService(arguments.keyVaultName)
+      new AzureKeyManagementService(arguments.keyVaultName, arguments.managedIdentityClientId)
     case _ =>
       throw new EncryptRuntimeException("Wrong kms type")
   }
