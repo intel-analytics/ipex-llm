@@ -16,7 +16,6 @@
         <bigdl.basedir>${project.parent.basedir}</bigdl.basedir>
     </properties>
 
-<<<<<<< HEAD
     <dependencyManagement>
         <dependencies>
             <dependency>

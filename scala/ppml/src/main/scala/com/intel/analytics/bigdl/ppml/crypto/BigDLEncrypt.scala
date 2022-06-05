@@ -225,7 +225,7 @@ class BigDLEncrypt extends Crypto {
     val fs = File.getFileSystem(binaryFilePath)
     val bis = fs.open(new Path(binaryFilePath))
     val outs = fs.create(new Path(savePath))
-    encryptStream(bis, outs)
+    decryptStream(bis, outs)
     bis.close()
     outs.close()
   }
@@ -236,7 +236,7 @@ class BigDLEncrypt extends Crypto {
     val fs = File.getFileSystem(binaryFilePath)
     val bis = fs.open(new Path(binaryFilePath))
     val outs = fs.create(new Path(savePath))
-    decryptStream(bis, outs)
+    encryptStream(bis, outs)
     bis.close()
     outs.close()
   }

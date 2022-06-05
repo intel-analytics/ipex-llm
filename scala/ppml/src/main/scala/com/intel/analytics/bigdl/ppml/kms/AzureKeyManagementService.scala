@@ -24,22 +24,29 @@ import com.intel.analytics.bigdl.ppml.utils.KeyReaderWriter
 import scala.collection.mutable
 import scala.collection.mutable.HashMap
 import scala.util.Random
-
-import com.azure.identity.DefaultAzureCredentialBuilder
+import com.azure.identity.{DefaultAzureCredential, DefaultAzureCredentialBuilder}
 import com.azure.security.keyvault.keys.KeyClientBuilder
 import com.azure.security.keyvault.keys.cryptography.{CryptographyClient, CryptographyClientBuilder}
 import com.azure.security.keyvault.keys.models.KeyType
 import com.azure.security.keyvault.keys.cryptography.models.WrapResult
 import com.azure.security.keyvault.keys.cryptography.models.KeyWrapAlgorithm
 
-class AzureKeyManagementService(keyVaultName: String) extends KeyManagementService {
+class AzureKeyManagementService(keyVaultName: String, managedIdentityClientId : String = null)
+  extends KeyManagementService {
   private val keyReaderWriter = new KeyReaderWriter
   private val cryptoClientMap: HashMap[String, CryptographyClient] =
     new mutable.HashMap[String, CryptographyClient]()
 
-  private val defaultCredential = new DefaultAzureCredentialBuilder()
-    .build()
+  private var defaultCredential: DefaultAzureCredential = null
 
+  if (managedIdentityClientId != null && managedIdentityClientId != "") {
+    defaultCredential = new DefaultAzureCredentialBuilder()
+      .managedIdentityClientId(managedIdentityClientId)
+      .build()
+  } else {
+    defaultCredential = new DefaultAzureCredentialBuilder()
+      .build()
+  }
   private val keyClient = new KeyClientBuilder()
     .vaultUrl(s"https://${keyVaultName}.vault.azure.net/")
     .credential(defaultCredential)
@@ -63,7 +70,7 @@ class AzureKeyManagementService(keyVaultName: String) extends KeyManagementServi
     // get crypto client for primary key
     val cryptoClient = getCryptoClient(primaryKeyId)
     // create aes data key
-    val aesKey = new Array[Byte](128)
+    val aesKey = new Array[Byte](32)
     Random.nextBytes(aesKey)
     val keyString = Base64.getEncoder.encodeToString(aesKey)
     // wrap data key content.
