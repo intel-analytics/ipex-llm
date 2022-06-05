@@ -132,7 +132,6 @@ class EncryptDataFrameSpec extends FlatSpec with Matchers with BeforeAndAfter{
     val enWriteCsvPath = dir + "/en_write_csv"
     val writeCsvPath = dir + "/write_csv"
     val df = sc.read(cryptoMode = AES_CBC_PKCS5PADDING).csv(encryptFileName)
-//    val df = sc.read(cryptoMode = PLAIN_TEXT).csv(plainFileName)
     df.count() should be (totalNum)
     sc.write(df, cryptoMode = AES_CBC_PKCS5PADDING).csv(enWriteCsvPath)
     sc.write(df, cryptoMode = PLAIN_TEXT).csv(writeCsvPath)

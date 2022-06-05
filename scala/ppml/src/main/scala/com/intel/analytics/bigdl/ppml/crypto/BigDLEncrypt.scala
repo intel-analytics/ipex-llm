@@ -278,10 +278,10 @@ class BigDLEncrypt extends Crypto {
               val plainText = update(byteBuffer, 0, readLen)
               val currentSplitDecryptString = new String(plainText)
               val splitDecryptString = lastString + currentSplitDecryptString
-//              val splitDecryptStringArray = splitDecryptString.split("\r").flatMap(_.split("\n"))
               val splitDecryptStringArray = splitDecryptString.split("\n")
               lastString = splitDecryptStringArray.last
-              // If the last string is \n, we should append it to the end of splitDecryptString
+              // If the last string is lineDelimiter, we should append the delimiter
+              // to the end of lastString
               if (splitDecryptString.last == '\n') {
                 lastString = lastString + "\n"
               }
