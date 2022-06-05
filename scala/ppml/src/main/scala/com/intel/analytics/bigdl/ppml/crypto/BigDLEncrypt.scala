@@ -123,7 +123,7 @@ class BigDLEncrypt extends Crypto {
    */
   override def update(content: Array[Byte], offset: Int, len: Int): Array[Byte] = {
     val cipherText: Array[Byte] = cipher.update(content, offset, len)
-    mac.update(cipherText, offset, len)
+    mac.update(cipherText)
     cipherText
   }
 
@@ -225,7 +225,7 @@ class BigDLEncrypt extends Crypto {
     val fs = File.getFileSystem(binaryFilePath)
     val bis = fs.open(new Path(binaryFilePath))
     val outs = fs.create(new Path(savePath))
-    encryptStream(bis, outs)
+    decryptStream(bis, outs)
     bis.close()
     outs.close()
   }
@@ -236,7 +236,7 @@ class BigDLEncrypt extends Crypto {
     val fs = File.getFileSystem(binaryFilePath)
     val bis = fs.open(new Path(binaryFilePath))
     val outs = fs.create(new Path(savePath))
-    decryptStream(bis, outs)
+    encryptStream(bis, outs)
     bis.close()
     outs.close()
   }
@@ -256,35 +256,61 @@ class BigDLEncrypt extends Crypto {
    */
   override def decryptBigContent(
         ite: Iterator[(String, PortableDataStream)]): Iterator[String] = {
-    var result: Iterator[String] = Iterator[String]()
-
-    while (ite.hasNext == true) {
-      val inputStream: DataInputStream = ite.next._2.open()
+    ite.flatMap{ part =>
+      val inputStream: DataInputStream = part._2.open()
       verifyHeader(read(inputStream, 25))
+      new Iterator[String] {
+        var cachedArray: Array[String] = null
+        var pointer = Int.MaxValue
+        var lastString = ""
 
-      // do first
-      var lastString = ""
-      while (inputStream.available() > blockSize) {
-        val readLen = inputStream.read(byteBuffer)
-        Log4Error.unKnowExceptionError(readLen != blockSize)
-        val currentSplitDecryptString = new String(byteBuffer, 0, readLen)
-        val splitDecryptString = lastString + currentSplitDecryptString
-        val splitDecryptStringArray = splitDecryptString.split("\r").flatMap(_.split("\n"))
-        lastString = splitDecryptStringArray.last
-        result = result ++ splitDecryptStringArray.dropRight(1)
+        override def hasNext: Boolean = {
+          inputStream.available() > 0 ||
+            (cachedArray != null && pointer < cachedArray.length)
+        }
+
+        override def next: String = {
+          if (cachedArray == null || pointer >= cachedArray.length) {
+            Log4Error.invalidOperationError(inputStream.available() > 0,
+              "next on empty iterator.")
+            val readLen = inputStream.read(byteBuffer)
+            if (inputStream.available() > hmacSize) {
+              val plainText = update(byteBuffer, 0, readLen)
+              val currentSplitDecryptString = new String(plainText)
+              val splitDecryptString = lastString + currentSplitDecryptString
+//              val splitDecryptStringArray = splitDecryptString.split("\r").flatMap(_.split("\n"))
+              val splitDecryptStringArray = splitDecryptString.split("\n")
+              lastString = splitDecryptStringArray.last
+              // If the last string is \n, we should append it to the end of splitDecryptString
+              if (splitDecryptString.last == '\n') {
+                lastString = lastString + "\n"
+              }
+              cachedArray = splitDecryptStringArray.dropRight(1)
+            } else {
+              // do last, read all
+              val last = if (inputStream.available() < hmacSize) {
+                val l = new Array[Byte](inputStream.available())
+                inputStream.read(l)
+                l
+              } else {
+                new Array[Byte](0)
+              }
+              val inputHmac = byteBuffer.slice(readLen - hmacSize + last.length, readLen) ++ last
+              val (lastSlice, streamHmac) = doFinal(byteBuffer, 0, readLen - hmacSize + last.length)
+              Log4Error.invalidInputError(!inputHmac.sameElements(streamHmac),
+                "hmac not match")
+              val lastDecryptString = lastString + new String(lastSlice)
+              cachedArray = lastDecryptString.split("\n")
+            }
+            pointer = 0
+          }
+
+          pointer += 1
+          cachedArray(pointer - 1)
+        }
+
       }
-      // do last
-      val last = inputStream.read(byteBuffer)
-      val inputHmac = byteBuffer.slice(last - hmacSize, last)
-      val (lastSlice, streamHmac) = doFinal(byteBuffer, 0, last - hmacSize)
-      Log4Error.invalidInputError(!inputHmac.sameElements(streamHmac),
-        "hmac not match")
-      val lastDecryptString = lastString + new String(lastSlice)
-      val splitDecryptStringArray = lastDecryptString.split("\r").flatMap(_.split("\n"))
-      result = result ++ splitDecryptStringArray
     }
-    result
-
   }
 
 }

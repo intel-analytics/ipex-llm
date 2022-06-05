@@ -122,7 +122,7 @@ object PPMLContext{
       val crypto = Crypto(cryptoMode)
       crypto.init(cryptoMode, DECRYPT, dataKeyPlaintext)
       crypto.decryptBigContent(iterator)
-    }}.flatMap(_.split("\n"))
+    }} // .flatMap(_.split("\n")).flatMap(_.split("\r"))
   }
 
   private[bigdl] def write(

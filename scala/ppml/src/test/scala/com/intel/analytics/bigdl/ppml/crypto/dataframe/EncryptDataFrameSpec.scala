@@ -18,9 +18,9 @@ package com.intel.analytics.bigdl.ppml.crypto.dataframe
 
 import com.intel.analytics.bigdl.dllib.common.zooUtils
 import com.intel.analytics.bigdl.ppml.PPMLContext
-import com.intel.analytics.bigdl.ppml.crypto.{AES_CBC_PKCS5PADDING, CryptoMode, ENCRYPT, BigDLEncrypt, PLAIN_TEXT}
+import com.intel.analytics.bigdl.ppml.crypto.{AES_CBC_PKCS5PADDING, BigDLEncrypt, CryptoMode, DECRYPT, ENCRYPT, PLAIN_TEXT}
 import com.intel.analytics.bigdl.ppml.kms.SimpleKeyManagementService
-import org.apache.spark.SparkConf
+import org.apache.spark.{SparkConf, SparkContext}
 import org.apache.spark.sql.SparkSession
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
@@ -38,6 +38,8 @@ class EncryptDataFrameSpec extends FlatSpec with Matchers with BeforeAndAfter{
   simpleKms.retrievePrimaryKey(primaryKeyPath)
   simpleKms.retrieveDataKey(primaryKeyPath, dataKeyPath)
   val (plainFileName, encryptFileName, data) = generateCsvData()
+  val repeatedNum = 500000
+  val totalNum = repeatedNum * 3 + 1
 
   def generateKeys(): (String, String) = {
     val appid: String = (1 to 12).map(x => Random.nextInt(10)).mkString
@@ -51,17 +53,24 @@ class EncryptDataFrameSpec extends FlatSpec with Matchers with BeforeAndAfter{
     val fw = new FileWriter(fileName)
     val data = new StringBuilder()
     data.append(s"name,age,job\n")
-    data.append(s"yvomq,59,Developer\ngdni,40,Engineer\npglyal,33,Engineer")
+    (0 until 500000).foreach {i =>
+//    (0 to 500).foreach {i =>
+      data.append(s"yvomq,$i,Developer\ngdni,$i,Engineer\npglyal,$i,Engineer\n")
+    }
+//    data.append(s"yvomq,59,Developer\ngdni,40,Engineer\npglyal,33,Engineer")
     fw.append(data)
     fw.close()
 
     val crypto = new BigDLEncrypt()
     val dataKeyPlaintext = simpleKms.retrieveDataKeyPlainText(primaryKeyPath, dataKeyPath)
     crypto.init(AES_CBC_PKCS5PADDING, ENCRYPT, dataKeyPlaintext)
-    Files.write(Paths.get(encryptFileName), crypto.genHeader())
-    val encryptedBytes = crypto.doFinal(data.toString().getBytes)
-    Files.write(Paths.get(encryptFileName), encryptedBytes._1, StandardOpenOption.APPEND)
-    Files.write(Paths.get(encryptFileName), encryptedBytes._2, StandardOpenOption.APPEND)
+    crypto.doFinal(fileName, encryptFileName)
+//    Files.write(Paths.get(encryptFileName), crypto.genHeader())
+//    val encryptedBytes = crypto.doFinal(data.toString().getBytes)
+//    Files.write(Paths.get(encryptFileName), encryptedBytes._1, StandardOpenOption.APPEND)
+//    Files.write(Paths.get(encryptFileName), encryptedBytes._2, StandardOpenOption.APPEND)
+    crypto.init(AES_CBC_PKCS5PADDING, DECRYPT, dataKeyPlaintext)
+    crypto.doFinal(encryptFileName, "/tmp/123.csv")
     (fileName, encryptFileName, data.toString())
   }
   val ppmlArgs = Map(
@@ -123,16 +132,20 @@ class EncryptDataFrameSpec extends FlatSpec with Matchers with BeforeAndAfter{
     val enWriteCsvPath = dir + "/en_write_csv"
     val writeCsvPath = dir + "/write_csv"
     val df = sc.read(cryptoMode = AES_CBC_PKCS5PADDING).csv(encryptFileName)
+//    val df = sc.read(cryptoMode = PLAIN_TEXT).csv(plainFileName)
+    df.count() should be (totalNum)
     sc.write(df, cryptoMode = AES_CBC_PKCS5PADDING).csv(enWriteCsvPath)
     sc.write(df, cryptoMode = PLAIN_TEXT).csv(writeCsvPath)
 
     val readEn = sc.read(cryptoMode = AES_CBC_PKCS5PADDING).csv(enWriteCsvPath)
-    readEn.collect()
-      .map(v => s"${v.get(0)},${v.get(1)},${v.get(2)}").mkString("\n") should be (data)
+    val readEnCollect = readEn.collect().map(v =>
+      s"${v.get(0)},${v.get(1)},${v.get(2)}").mkString("\n")
+    readEnCollect + "\n" should be (data)
 
     val readPlain = sc.read(cryptoMode = PLAIN_TEXT).csv(writeCsvPath)
-    readPlain.collect()
-      .map(v => s"${v.get(0)},${v.get(1)},${v.get(2)}").mkString("\n") should be (data)
+    val readPlainCollect = readPlain.collect().map(v =>
+      s"${v.get(0)},${v.get(1)},${v.get(2)}").mkString("\n")
+    readPlainCollect + "\n" should be (data)
   }
 }
 

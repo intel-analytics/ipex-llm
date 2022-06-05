@@ -81,30 +81,34 @@ object EncryptedDataFrameWriter {
     val confBroadcast = sc.broadcast(
       new SerializableWritable(sc.hadoopConfiguration)
     )
-    rdd.foreachPartition{ rows => {
-      val hadoopConf = confBroadcast.value.value
-      val fs = FileSystem.get(hadoopConf)
-      val partId = TaskContext.getPartitionId()
-      // TODO
-      val output = fs.create(new Path(path + "/part-" + partId), true)
-      val cypto = Crypto(cryptoMode = encryptMode)
-      cypto.init(encryptMode, ENCRYPT, dataKeyPlainText)
-      val header = cypto.genHeader()
+    rdd.mapPartitions{ rows => {
+      if (rows.nonEmpty) {
+        val hadoopConf = confBroadcast.value.value
+        val fs = FileSystem.get(hadoopConf)
+        val partId = TaskContext.getPartitionId()
+        // TODO
+        val output = fs.create(new Path(path + "/part-" + partId), true)
+        val cypto = Crypto(cryptoMode = encryptMode)
+        cypto.init(encryptMode, ENCRYPT, dataKeyPlainText)
+        val header = cypto.genHeader()
 
-      output.write(header)
-      var row = rows.next()
-      while(rows.hasNext) {
-        val line = row.toSeq.mkString(",") + "\n"
-        output.write(cypto.update(line.getBytes))
-        row = rows.next()
+        output.write(header)
+        var row = rows.next()
+        while (rows.hasNext) {
+          val line = row.toSeq.mkString(",") + "\n"
+          output.write(cypto.update(line.getBytes))
+//          print(rows.hasNext)
+          row = rows.next()
+        }
+        val lastLine = row.toSeq.mkString(",")
+        val (lBytes, hmac) = cypto.doFinal(lastLine.getBytes)
+        output.write(lBytes)
+        output.write(hmac)
+        output.flush()
+        output.close()
       }
-      val lastLine = row.toSeq.mkString(",")
-      val (lBytes, hmac) = cypto.doFinal(lastLine.getBytes)
-      output.write(lBytes)
-      output.write(hmac)
-      output.flush()
-      output.close()
-    }}
+      Iterator.single(1)
+    }}.count()
 
   }
 }
