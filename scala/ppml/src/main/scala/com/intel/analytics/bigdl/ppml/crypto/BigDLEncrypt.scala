@@ -151,7 +151,7 @@ class BigDLEncrypt extends Crypto {
    */
   override def doFinal(content: Array[Byte], offset: Int, len: Int): (Array[Byte], Array[Byte]) = {
     val cipherText: Array[Byte] = cipher.doFinal(content, offset, len)
-    val hmac: Array[Byte] = mac.doFinal(cipherText.slice(offset, offset + len))
+    val hmac: Array[Byte] = mac.doFinal(cipherText)
     (cipherText, hmac)
   }
 
