@@ -205,17 +205,17 @@ class Trainer(pl.Trainer):
 
     @staticmethod
     def quantize(model,  # remove the type requirement for type checking
-                 precision='int8',
+                 precision: str = 'int8',
                  accelerator=None,
                  calib_dataloader: DataLoader = None,
-                 metric: Optional[Metric] = None,
+                 metric: Metric = None,
                  accuracy_criterion: dict = None,
-                 approach='static',
-                 method=None,
-                 conf: Optional[str] = None,
-                 tuning_strategy=None,
-                 timeout=None,
-                 max_trials=None,
+                 approach: str = 'static',
+                 method: str = None,
+                 conf: str = None,
+                 tuning_strategy: str = None,
+                 timeout: int = None,
+                 max_trials: int = None,
                  input_sample=None
                  ):
         """

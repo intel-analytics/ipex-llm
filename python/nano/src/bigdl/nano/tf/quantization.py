@@ -21,17 +21,17 @@ from bigdl.nano.utils.log4Error import invalidInputError
 
 
 def quantize(self,
-             precision='int8',
-             accelerator=None,
+             precision: str = 'int8',
+             accelerator: str = None,
              calib_dataset: tf.data.Dataset = None,
-             metric: Optional[Metric] = None,
-             accuracy_criterion: dict = {'relative': 0.99, 'higher_is_better': True},
-             approach='static',
-             method=None,
-             conf: Optional[str] = None,
-             tuning_strategy=None,
-             timeout=None,
-             max_trials=None,
+             metric: Metric = None,
+             accuracy_criterion: dict = None,
+             approach: str = 'static',
+             method: str = None,
+             conf: str = None,
+             tuning_strategy: str = None,
+             timeout: int = None,
+             max_trials: int = None,
              inputs: List[str] = None,
              outputs: List[str] = None):
     """
