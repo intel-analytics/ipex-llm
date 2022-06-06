@@ -90,7 +90,8 @@ def get_nano_env_var(use_malloc: str = "tc", use_openmp: bool = True,
         openmp and related environment variables.
     :param print_environment: If this is set to True, print all environment variables after
         setting.
-    :return: Dict[str, str], indicates the 
+    :return: Dict[str, str], indicates the key-value map of environment variables to be set by
+             nano.
     """
 
     # Get a copy of os environment
@@ -172,6 +173,7 @@ def get_nano_env_var(use_malloc: str = "tc", use_openmp: bool = True,
         print(nano_env)
 
     return nano_env
+
 
 def init_nano(use_malloc: str = "tc", use_openmp: bool = True,
               print_environment: bool = False) -> None:
