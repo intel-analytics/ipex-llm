@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-from typing import List, Optional
+from typing import List
 from bigdl.nano.deps.neural_compressor.inc_api import quantize as inc_quantzie
 import tensorflow as tf
 from tensorflow.keras.metrics import Metric
