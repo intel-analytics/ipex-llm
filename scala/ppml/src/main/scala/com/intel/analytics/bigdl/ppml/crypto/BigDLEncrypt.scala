@@ -262,11 +262,9 @@ class BigDLEncrypt extends Crypto {
   override def decryptBigContent(
         ite: Iterator[(String, PortableDataStream)]): Iterator[String] = {
     var result: Iterator[String] = Iterator[String]()
-
     while (ite.hasNext == true) {
       val inputStream: DataInputStream = ite.next._2.open()
       verifyHeader(read(inputStream, 25))
-
       // do first
       var lastString = ""
       while (inputStream.available() > blockSize) {
@@ -352,12 +350,11 @@ class BigDLEncrypt extends Crypto {
       val inputStream: DataInputStream = ite.next._2.open()
       verifyHeader(read(inputStream, 25))
 
-      var content = ""
+      var content: Array[Byte] = Array[Byte]()
       while (inputStream.available() > blockSize) {
         val readLen = inputStream.read(byteBuffer)
         Log4Error.unKnowExceptionError(readLen != blockSize)
-        val currentSplitDecryptString = new String(byteBuffer, 0, readLen)
-        content += currentSplitDecryptString
+        content ++= update(byteBuffer, 0, readLen)
       }
 
       val last = inputStream.read(byteBuffer)
@@ -365,9 +362,8 @@ class BigDLEncrypt extends Crypto {
       val (lastSlice, streamHmac) = doFinal(byteBuffer, 0, last - hmacSize)
       Log4Error.invalidInputError(!inputHmac.sameElements(streamHmac),
         "hmac not match")
-      val lastCipherText: Array[Byte] = read(inputStream, inputStream.available() - 32)
-      content += new String(lastSlice)
-      result = result ++ readParquet(content.getBytes())
+      content ++= lastSlice
+      result = result ++ readParquet(content)
     }
     result
 

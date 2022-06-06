@@ -18,13 +18,13 @@ package com.intel.analytics.bigdl.ppml.crypto.dataframe
 
 import com.intel.analytics.bigdl.dllib.common.zooUtils
 import com.intel.analytics.bigdl.ppml.PPMLContext
-import com.intel.analytics.bigdl.ppml.crypto.{AES_CBC_PKCS5PADDING, CryptoMode, ENCRYPT, BigDLEncrypt, PLAIN_TEXT}
+import com.intel.analytics.bigdl.ppml.crypto.{AES_CBC_PKCS5PADDING, BigDLEncrypt, CryptoMode, ENCRYPT, PLAIN_TEXT}
 import com.intel.analytics.bigdl.ppml.kms.SimpleKeyManagementService
 import org.apache.spark.SparkConf
 import org.apache.spark.sql.SparkSession
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
-import java.io.FileWriter
+import java.io.{File, FileInputStream, FileWriter}
 import java.nio.file.{Files, Paths, StandardOpenOption}
 import scala.util.Random
 
@@ -32,12 +32,12 @@ class EncryptDataFrameSpec extends FlatSpec with Matchers with BeforeAndAfter{
   val (appid, appkey) = generateKeys()
   val simpleKms = SimpleKeyManagementService(appid, appkey)
   val dir = zooUtils.createTmpDir("PPMLUT", "rwx------").toFile()
-
   val primaryKeyPath = dir + "/primary.key"
   val dataKeyPath = dir + "/data.key"
   simpleKms.retrievePrimaryKey(primaryKeyPath)
   simpleKms.retrieveDataKey(primaryKeyPath, dataKeyPath)
   val (plainFileName, encryptFileName, data) = generateCsvData()
+  val (plainParquetFileName, encryptParquetFileName, parquetData) = generateParquetData()
 
   def generateKeys(): (String, String) = {
     val appid: String = (1 to 12).map(x => Random.nextInt(10)).mkString
@@ -54,7 +54,6 @@ class EncryptDataFrameSpec extends FlatSpec with Matchers with BeforeAndAfter{
     data.append(s"yvomq,59,Developer\ngdni,40,Engineer\npglyal,33,Engineer")
     fw.append(data)
     fw.close()
-
     val crypto = new BigDLEncrypt()
     val dataKeyPlaintext = simpleKms.retrieveDataKeyPlainText(primaryKeyPath, dataKeyPath)
     crypto.init(AES_CBC_PKCS5PADDING, ENCRYPT, dataKeyPlaintext)
@@ -63,6 +62,35 @@ class EncryptDataFrameSpec extends FlatSpec with Matchers with BeforeAndAfter{
     Files.write(Paths.get(encryptFileName), encryptedBytes._1, StandardOpenOption.APPEND)
     Files.write(Paths.get(encryptFileName), encryptedBytes._2, StandardOpenOption.APPEND)
     (fileName, encryptFileName, data.toString())
+  }
+  def generateParquetData(): (String, String, String) = {
+    val spark = SparkSession.builder.config("spark.master", "local").config("spark.driver.bindAddress", "127.0.0.1").getOrCreate
+    import spark.implicits._
+    val df = Seq(
+      ("yvomq","59","Developer"),
+      ("gdni","40","Engineer"),
+      ("pglyal","33","Engineer")
+    ).toDF("name", "age", "job")
+    df.show()
+    df.write.parquet("./parquets")
+    val fileName = dir + new File("./parquets").listFiles.filter(f => f.getPath.endsWith(".parquet"))(0).toString.substring(1)
+    val fileInputStream = new FileInputStream(new File(fileName))
+    val size = fileInputStream.available()
+    val parquetBuffer = new Array[Byte](size)
+    fileInputStream.read(parquetBuffer)
+    fileInputStream.close()
+
+    val encryptFileName = dir + "/en_people.parquet"
+    val crypto = new BigDLEncrypt()
+    val dataKeyPlaintext = simpleKms.retrieveDataKeyPlainText(primaryKeyPath, dataKeyPath)
+    crypto.init(AES_CBC_PKCS5PADDING, ENCRYPT, dataKeyPlaintext)
+    Files.write(Paths.get(encryptFileName), crypto.genHeader())
+    val encryptedBytes = crypto.doFinal(parquetBuffer)
+    Files.write(Paths.get(encryptFileName), encryptedBytes._1, StandardOpenOption.APPEND)
+    Files.write(Paths.get(encryptFileName), encryptedBytes._2, StandardOpenOption.APPEND)
+    val d = df.schema.map(_.name).mkString(",") + "\n" +
+      df.collect().map(v => s"${v.get(0)},${v.get(1)},${v.get(2)}").mkString("\n")
+    (fileName, encryptFileName, d)
   }
   val ppmlArgs = Map(
       "spark.bigdl.kms.simple.id" -> appid,
@@ -117,6 +145,28 @@ class EncryptDataFrameSpec extends FlatSpec with Matchers with BeforeAndAfter{
     val df = sc.read(cryptoMode = AES_CBC_PKCS5PADDING).csv(encryptFileName)
     val d = df.collect().map(v => s"${v.get(0)},${v.get(1)},${v.get(2)}").mkString("\n")
     d should be (data)
+  }
+
+  "read from plain parquet with header" should "work" in {
+    val df = sc.read(cryptoMode = PLAIN_TEXT)
+      .option("header", "true").parquet(plainParquetFileName)
+    val d = df.schema.map(_.name).mkString(",") + "\n" +
+      df.collect().map(v => s"${v.get(0)},${v.get(1)},${v.get(2)}").mkString("\n")
+    d should be (parquetData)
+  }
+
+  "read from encrypted parquet with header" should "work" in {
+    val df = sc.read(cryptoMode = AES_CBC_PKCS5PADDING)
+      .option("header", "true").parquet(encryptParquetFileName)
+    val d = df.schema.map(_.name).mkString(",") + "\n" +
+      df.collect().map(v => s"${v.get(0)},${v.get(1)},${v.get(2)}").mkString("\n")
+    d should be (parquetData)
+  }
+
+  "read from encrypted parquet without header" should "work" in {
+    val df = sc.read(cryptoMode = AES_CBC_PKCS5PADDING).parquet(encryptParquetFileName)
+    val d = df.collect().map(v => s"${v.get(0)},${v.get(1)},${v.get(2)}").mkString("\n")
+    d should be (parquetData)
   }
 }
 
