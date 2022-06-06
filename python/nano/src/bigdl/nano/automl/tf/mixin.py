@@ -240,7 +240,7 @@ class HPOMixin:
                             Creating a new search study', UserWarning)
                 else:
                     do_create = False
-        
+                           
         if kwargs['storage'].strip() == "":
             del kwargs['storage']
 
