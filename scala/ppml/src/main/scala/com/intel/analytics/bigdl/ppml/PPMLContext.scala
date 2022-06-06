@@ -66,7 +66,7 @@ class PPMLContext protected(kms: KeyManagementService, sparkSession: SparkSessio
       case PLAIN_TEXT =>
         sparkSession.sparkContext.textFile(path, minPartitions)
       case _ =>
-        PPMLContext.textFile(sparkSession.sparkContext, path, dataKeyPlainText,
+        PPMLContext.textFile(sparkSession.sparkContext, path, dataKeyPlainText, "csv",
           cryptoMode, minPartitions)
     }
   }
@@ -115,6 +115,7 @@ object PPMLContext{
   private[bigdl] def textFile(sc: SparkContext,
                path: String,
                dataKeyPlaintext: String,
+               fileType: String,
                cryptoMode: CryptoMode,
                minPartitions: Int = -1): RDD[String] = {
     Log4Error.invalidInputError(dataKeyPlaintext != "",
@@ -128,7 +129,10 @@ object PPMLContext{
       Supportive.logger.info("Decrypting bytes with JavaAESCBC...")
       val crypto = Crypto(cryptoMode)
       crypto.init(cryptoMode, DECRYPT, dataKeyPlaintext)
-      crypto.decryptBigContent(iterator)
+      fileType match {
+        case "csv" => crypto.decryptBigContent(iterator)
+        case "parquet" => crypto.decryptParquetContent(iterator)
+      }
     }}.flatMap(_.split("\n"))
   }
 

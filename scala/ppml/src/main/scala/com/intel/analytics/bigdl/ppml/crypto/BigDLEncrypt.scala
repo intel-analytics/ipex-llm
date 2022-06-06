@@ -17,6 +17,7 @@
 package com.intel.analytics.bigdl.ppml.crypto
 
 import com.intel.analytics.bigdl.dllib.utils.{File, Log4Error}
+import com.intel.analytics.bigdl.ppml.utils.ParquetStream
 import com.intel.analytics.bigdl.ppml.crypto.CryptoMode
 import org.apache.hadoop.fs.Path
 
@@ -27,6 +28,10 @@ import java.util.Arrays
 import javax.crypto.spec.{IvParameterSpec, SecretKeySpec}
 import javax.crypto.{Cipher, Mac}
 import org.apache.spark.input.PortableDataStream
+import org.apache.parquet.column.page.PageReadStore
+import org.apache.parquet.example.data.simple.convert.GroupRecordConverter
+import org.apache.parquet.hadoop.ParquetFileReader
+import org.apache.parquet.io.ColumnIOFactory
 
 import java.nio.ByteBuffer
 import scala.util.Random
@@ -282,6 +287,85 @@ class BigDLEncrypt extends Crypto {
       val lastDecryptString = lastString + new String(lastSlice)
       val splitDecryptStringArray = lastDecryptString.split("\r").flatMap(_.split("\n"))
       result = result ++ splitDecryptStringArray
+    }
+    result
+
+  }
+
+  /**
+   * read parquet from byte array.
+   * @param content plaintext of data stream.
+   * @return iterator of String.
+   */
+  override def readParquet(content: Array[Byte]): Iterator[String] = {
+    var result: Iterator[String] = Iterator[String]()
+    val parquetStream = new ParquetStream(content)
+    val reader = ParquetFileReader.open(parquetStream)
+    val metaData = reader.getFooter.getFileMetaData.getSchema
+    val fieldSize = metaData.getFields.size()
+    val headArray: Array[String] = new Array[String](1)
+    var headString = ""
+    val fields = metaData.getFields
+    for(fieldIndex <- 0 until fieldSize){
+      headString += fields.get(fieldIndex).getName
+      if (fieldIndex != fieldSize - 1){
+        headString += ","
+      }
+    }
+    headArray(0) = headString  // store the first line(fields) in a string array
+    result = result ++ headArray  // store the first line in the result iterator
+    var rowGroup: PageReadStore = reader.readNextRowGroup()
+    // read per row group
+    while (rowGroup != null) {
+      val rowSize = rowGroup.getRowCount.toInt
+      val rowArray: Array[String] = new Array[String](rowSize)
+      val columnIO = new ColumnIOFactory().getColumnIO(metaData)
+      val recordReader = columnIO.getRecordReader(rowGroup, new GroupRecordConverter(metaData))
+      // get per row in this row group
+      for (i <- 0 until rowSize){
+        val simpleGroup = recordReader.read()
+        var row = ""
+        for (j <- 0 until fieldSize){
+          row += simpleGroup.getValueToString(j, 0)
+          if (j != fieldSize - 1){
+            row += ","
+          }
+        }
+        rowArray(i) = row
+      }
+      result = result ++ rowArray
+      rowGroup = reader.readNextRowGroup()
+    }
+    result
+
+  }
+
+  /**
+   * decrypt big parquet data stream.
+   * @param ite stream iterator.
+   * @return iterator of String.
+   */
+  override def decryptParquetContent(ite: Iterator[(String, PortableDataStream)]): Iterator[String] = {
+    var result: Iterator[String] = Iterator[String]()
+
+    while (ite.hasNext) {
+      val inputStream: DataInputStream = ite.next._2.open()
+      verifyHeader(read(inputStream, 25))
+
+      var content: Array[Byte] = Array[Byte]()
+      while (inputStream.available() > blockSize) {
+        val readLen = inputStream.read(byteBuffer)
+        Log4Error.unKnowExceptionError(readLen != blockSize)
+        content ++= update(byteBuffer, 0, readLen)
+      }
+
+      val last = inputStream.read(byteBuffer)
+      val inputHmac = byteBuffer.slice(last - hmacSize, last)
+      val (lastSlice, streamHmac) = doFinal(byteBuffer, 0, last - hmacSize)
+      Log4Error.invalidInputError(!inputHmac.sameElements(streamHmac),
+        "hmac not match")
+      content ++= lastSlice
+      result = result ++ readParquet(content)
     }
     result
 

@@ -44,6 +44,20 @@ trait Crypto extends Supportive with Serializable {
   def decryptBigContent(ite: Iterator[(String, PortableDataStream)]): Iterator[String]
 
   /**
+   * read parquet from byte array.
+   * @param content plaintext of data stream.
+   * @return iterator of String.
+   */
+  def readParquet(content: Array[Byte]): Iterator[String]
+
+  /**
+   * decrypt big parquet data stream.
+   * @param ite stream iterator.
+   * @return iterator of String.
+   */
+  def decryptParquetContent(ite: Iterator[(String, PortableDataStream)]): Iterator[String]
+
+  /**
    * If encrypt data, should generate header and put return value to the head.
    * @return header bytes
    */
