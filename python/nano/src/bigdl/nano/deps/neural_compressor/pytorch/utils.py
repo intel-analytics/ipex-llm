@@ -46,7 +46,7 @@ def _check_loader(model, loader, metric=None):
             else:
                 # If sample is not tuple of length 2, then it should be (x1, x2, x3, ...).
                 # check if datalader yields data complied with what model requires
-                # TypeError will throw if it fails
+                # TypeError will throw if it fails.
                 model(*sample)
     except (ValueError, TypeError):
         invalidInputError(False,
