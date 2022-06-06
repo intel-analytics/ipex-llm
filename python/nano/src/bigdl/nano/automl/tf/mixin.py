@@ -235,8 +235,8 @@ class HPOMixin:
             if 'storage' not in kwargs.keys() or kwargs['storage'].strip() == "":
                 if self.study is None:
                     warnings.warn(
-                        'You did not specify storage path and your study is None. \
-                            Creating a new search study', UserWarning)
+                        "A new study is created since there's no existing study to resume from." \
+                        , UserWarning)
                 else:
                     do_create = False
 
