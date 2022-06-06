@@ -31,7 +31,7 @@ import com.azure.security.keyvault.keys.models.KeyType
 import com.azure.security.keyvault.keys.cryptography.models.WrapResult
 import com.azure.security.keyvault.keys.cryptography.models.KeyWrapAlgorithm
 
-class AzureKeyManagementService(keyVaultName: String, managedIdentityClientId : String = null)
+class AzureKeyManagementService(keyVaultName: String, managedIdentityClientId : String = "")
   extends KeyManagementService {
   private val keyReaderWriter = new KeyReaderWriter
   private val cryptoClientMap: HashMap[String, CryptographyClient] =
