@@ -91,6 +91,7 @@ class RankingModel(tfrs.Model):
             [user_embedding_repeated, movie_embeddings], 2)
 
         scores = self.score_model(concatenated_embeddings)
+        scores = tf.squeeze(scores, axis=-1)
         if ragged_output:
             ragged_scores = tf.RaggedTensor.from_tensor(scores, ragged_length)
             return ragged_scores
@@ -106,7 +107,7 @@ class RankingModel(tfrs.Model):
 
         return self.task(
             labels=ragged_labels,
-            predictions=tf.squeeze(scores, axis=-1),
+            predictions=scores,
         )
 
 
@@ -220,4 +221,12 @@ if __name__ == "__main__":
     est.fit(train_dataset, 16, batch_size=256, steps_per_epoch=steps,
             validation_data=test_dataset, validation_steps=test_steps)
     est.evaluate(test_dataset, 256, num_steps=test_steps)
+
+    def del_ratings(d):
+        del d["ratings"]
+        return d
+    pred_dataset = train_dataset.map(del_ratings)
+    pred_shards = est.predict(pred_dataset, 256)
+    pred_collect = pred_shards.collect()
+
     stop_orca_context()

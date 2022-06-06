@@ -442,13 +442,24 @@ class TFRunner:
         )
 
         if self.backend == "tf-distributed":
-            local_model = self.model_creator(self.config)
-            local_model.set_weights(self.model.get_weights())
+            try:
+                local_model = self.model_creator(self.config)
+                local_model.set_weights(self.model.get_weights())
+            except Exception:
+                local_model = self.model
         else:
             local_model = self.model
 
         def predict_fn(shard):
-            y = local_model.predict(shard["x"], **params)
+            if "x" in shard:
+                y = local_model.predict(shard["x"], **params)
+            else:
+                from tensorflow.python.distribute.coordinator.values import \
+                    deserialize_dataset_from_graph
+                ds = deserialize_dataset_from_graph(shard["ds_def"],
+                                                    shard["elem_spec"])
+                ds = ds.batch(batch_size)
+                y = local_model.predict(ds, **params)
             return {"prediction": y}
 
         new_part = [predict_fn(shard) for shard in partition]

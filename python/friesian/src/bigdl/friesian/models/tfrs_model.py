@@ -44,6 +44,9 @@ class TFRSModel(tf.keras.Model):
                                                   "Estimator throw an error.")
         self.model = tfrs_model
 
+    def call(self, features):
+        return self.model.call(features)
+
     def train_step(self, inputs):
         """Custom train step using the `compute_loss` method."""
 

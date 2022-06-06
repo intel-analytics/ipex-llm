@@ -423,6 +423,8 @@ class TensorFlow2Estimator(OrcaRayEstimator):
         )
         from bigdl.orca.data import SparkXShards
         from pyspark.sql import DataFrame
+        from bigdl.orca.data.tf.data import Dataset
+        from bigdl.orca.data.tf.tf2_data import TF2Dataset
 
         if isinstance(data, DataFrame):
             xshards, _ = dataframe_to_xshards(data,
@@ -438,6 +440,11 @@ class TensorFlow2Estimator(OrcaRayEstimator):
                 data = process_xshards_of_pandas_dataframe(data, feature_cols)
             pred_shards = self._predict_spark_xshards(data, params)
             result = update_predict_xshards(data, pred_shards)
+        elif isinstance(data, Dataset):
+            data = TF2Dataset(data)
+            input_shards = data.get_xshards()
+            pred_shards = self._predict_spark_xshards(input_shards, params)
+            result = update_predict_xshards(data.get_origin_xshards(), pred_shards)
         else:
             raise ValueError("Only xshards or Spark DataFrame is supported for predict")
 
