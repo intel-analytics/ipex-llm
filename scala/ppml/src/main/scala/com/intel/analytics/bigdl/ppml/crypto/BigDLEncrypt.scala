@@ -262,7 +262,7 @@ class BigDLEncrypt extends Crypto {
   override def decryptBigContent(
         ite: Iterator[(String, PortableDataStream)]): Iterator[String] = {
     var result: Iterator[String] = Iterator[String]()
-    
+
     while (ite.hasNext == true) {
       val inputStream: DataInputStream = ite.next._2.open()
       verifyHeader(read(inputStream, 25))
