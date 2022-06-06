@@ -21,41 +21,49 @@ from bigdl.nano.utils.log4Error import invalidInputError
 
 
 def quantize(self,
+             precision='int8',
+             accelerator=None,
              calib_dataset: tf.data.Dataset = None,
              metric: Optional[Metric] = None,
-             backend='inc',
-             conf: Optional[str] = None,
-             approach='static',
-             tuning_strategy='bayesian',
              accuracy_criterion: dict = {'relative': 0.99, 'higher_is_better': True},
-             timeout=0,
-             max_trials=1,
+             approach='static',
+             method=None,
+             conf: Optional[str] = None,
+             tuning_strategy=None,
+             timeout=None,
+             max_trials=None,
              inputs: List[str] = None,
              outputs: List[str] = None):
     """
     Post-training quantization on a keras model.
 
-    :param calib_dataset:  A tf.data.Dataset object for calibration. Required for
-                            static quantization.
-    :param val_dataset:    A tf.data.Dataset object for evaluation.
-    :param batch:          Batch size of dataloader for both calib_dataset and val_dataset.
-    :param metric:         A Metric object for evaluation.
-    :param backend:        Only support 'inc' for now. Default: 'inc'.
-    :param conf:           A path to conf yaml file for quantization.
-                            Default: None, using default config.
-    :param approach:       'static' or 'dynamic'.
-                            'static': post_training_static_quant,
-                            'dynamic': post_training_dynamic_quant.
-                            Default: 'static'.
-    :param tuning_strategy:    'bayesian', 'basic', 'mse', 'sigopt'. Default: 'bayesian'.
-    :param accuracy_criterion: Tolerable accuracy drop.
+    :param calib_dataset:   A tf.data.Dataset object for calibration. Required for
+                            static quantization. It's also used as validation dataloader.
+    :param precision:       Global precision of quantized model,
+                            supported type: 'int8', 'bf16', 'fp16', defaults to 'int8'.
+    :param accelerator:     Use accelerator 'None', 'onnxruntime', 'openvino', defaults to None.
+                            None means staying in tensorflow.
+    :param metric:          A tensorflow.keras.metrics.Metric object for evaluation.
+    :param accuracy_criterion:  Tolerable accuracy drop.
                                 accuracy_criterion = {'relative': 0.1, 'higher_is_better': True}
                                 allows relative accuracy loss: 1%. accuracy_criterion =
                                 {'absolute': 0.99, 'higher_is_better':False} means accuracy
                                 must be smaller than 0.99.
-    :param timeout:    Tuning timeout (seconds). Default: 0,  which means early stop.
+    :param approach:        'static' or 'dynamic'.
+                            'static': post_training_static_quant,
+                            'dynamic': post_training_dynamic_quant.
+                            Default: 'static'. OpenVINO supports static mode only.
+    :param method:      Method to do quantization. When accelerator=None, supported methods: None.
+            When accelerator='onnxruntime', supported methods: 'qlinear', 'integer', defaults
+            to 'qlinear'. Suggest 'qlinear' for lower accuracy drop if using static quantization.
+            More details in https://onnxruntime.ai/docs/performance/quantization.html.
+            This argument doesn't take effect for OpenVINO, don't change it for OpenVINO.
+    :param conf:        A path to conf yaml file for quantization.
+                            Default: None, using default config.
+    :param tuning_strategy:    'bayesian', 'basic', 'mse', 'sigopt'. Default: 'bayesian'.
+    :param timeout:     Tuning timeout (seconds). Default: None,  which means early stop.
                         Combine with max_trials field to decide when to exit.
-    :param max_trials: Max tune times. Default: 1.
+    :param max_trials:  Max tune times. Default: None, which means no tuning.
                         Combine with timeout field to decide when to exit.
                         "timeout=0, max_trials=1" means it will try quantization only once and
                         return satisfying best model.
@@ -65,7 +73,7 @@ def quantize(self,
                         Default: None, automatically get names from graph.
     :return:           A TensorflowBaseModel for INC. If there is no model found, return None.
     """
-    if backend == 'inc':
+    if accelerator is None:
         return inc_quantzie(self, dataloader=calib_dataset, metric=metric,
                             framework='tensorflow',
                             conf=conf,
@@ -77,4 +85,4 @@ def quantize(self,
                             inputs=inputs,
                             outputs=outputs)
     else:
-        invalidInputError(False, "Backend {} is not implemented.".format(backend))
+        invalidInputError(False, "Accelerator {} is invalid.".format(accelerator))

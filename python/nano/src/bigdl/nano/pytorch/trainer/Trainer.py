@@ -229,6 +229,7 @@ class Trainer(pl.Trainer):
                                 None means staying in pytorch.
         :param calib_dataloader:    A torch.utils.data.dataloader.DataLoader object for calibration.
                                     Required for static quantization.
+                                    It's also used as validation dataloader.
         :param metric:              A torchmetrics.metric.Metric object for evaluation.
         :param accuracy_criterion:  Tolerable accuracy drop, defaults to None meaning no
                                     accuracy control.
