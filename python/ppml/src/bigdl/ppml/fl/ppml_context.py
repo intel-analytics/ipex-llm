@@ -13,9 +13,12 @@ class PPMLContext(JavaValue):
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
-    parser.add_argument("primary_key_path")
-    parser.add_argument("data_key_path")
+    parser.add_argument("--simple_app_id", type=str, help="simple app id")
+    parser.add_argument("--simple_app_key", type=str, help="simple app key")
+    parser.add_argument("--primary_key_path", type=str, help="primary key path")
+    parser.add_argument("--data_key_path", type=str, help="data key path")
     args = parser.parse_args()
+    arg_dict = vars(args)
 
-    ppml_context = PPMLContext()
-    ppml_context.load_keys(args.primary_key_path, args.data_key_path)
+    ppml_context = PPMLContext(None, 'testApp', arg_dict)
+    # ppml_context.load_keys(args.primary_key_path, args.data_key_path)

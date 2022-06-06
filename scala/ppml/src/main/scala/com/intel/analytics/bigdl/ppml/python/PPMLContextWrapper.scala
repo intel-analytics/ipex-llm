@@ -12,9 +12,16 @@ object PPMLContextWrapper {
 class PPMLContextWrapper[T]() {
   val logger: Logger = LoggerFactory.getLogger(getClass)
 
-  def createPPMLContext(): PPMLContext = {
-    logger.info("create PPMLContextWrapper")
-    PPMLContext.initPPMLContext("testApp")
+  def createPPMLContext(appName: String): PPMLContext = {
+    logger.info("create PPMLContextWrapper with appName")
+    PPMLContext.initPPMLContext(appName)
+  }
+
+  def createPPMLContext(appName: String, ppmlArgs: Map[String, String]): PPMLContext = {
+    logger.info("create PPMLContextWrapper with appName & ppmlArgs")
+    logger.info("appName: " + appName)
+    logger.info("ppmlArgs: " + ppmlArgs)
+    PPMLContext.initPPMLContext(appName, ppmlArgs)
   }
 
   def loadKeys(sc: PPMLContext,
