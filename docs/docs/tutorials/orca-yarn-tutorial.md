@@ -94,11 +94,10 @@ python train.py --cluster_mode yarn-client
 When running programs on yarn cluster mode, we need,
 * Set `--cluster_mode` parameter to `yarn-cluster`, which could create an OrcaContext on yarn for yarn-cluster mode.
 * Set `--remote_dir` parameter to the datasets path on remote resources. We recommand you to use datasets from remote resources like HDFS and S3 to instead of downloading these datasets, since there may get connection errors on `yarn-cluster` mode.
-* Set `--data_dir` to a local file to store datasets and load by `data_creator` function. BigDL provides a function to reach datasets from remote resources, which could help executors on yarn to load data.
 
 Now, we could refer to the following script to run the example.
 ```bash
-python train.py --cluster_mode yarn-cluster --remote_dir hdfs://path/to/remote_data --data_dir /tmp/dataset
+python train.py --cluster_mode yarn-cluster --remote_dir hdfs://path/to/remote_data
 ```
 
 # Run Programs with BigDL Provided Scripts
@@ -158,6 +157,7 @@ When running programs on yarn-cluster mode with `bigdl-submit`, we need:
 ```bash
 --py-files ./model.py
 ```
+* For yarn-cluster mode, we recommend that you use the datasets stored in remote resources like HDFS instead of downloading to avoid possible network connection errors. You can directly set `remote_dir` argument to the remote datasets path.
 
 When you complete all required preparations, you could submit and run the program as below: 
 ```bash
@@ -172,7 +172,7 @@ bigdl-submit \
     --num-executors 2 \
     --archives environment.tar.gz#environment \
     --py-files ./model.py \
-    train.py --remote_dir hdfs://path/to/remote_data --data_dir /tmp/dataset
+    train.py --remote_dir hdfs://path/to/remote_data
 ```
 
 # Run Programs with Spark Submit Script
@@ -253,9 +253,11 @@ When running programs on yarn cluster mode with `spark-submit` script, you could
 ```bash
 --jars ${BIGDL_HOME}/bigdl-dllib-spark_${SPAKR_VERSION}-${BIGDL_VERSION}-jar-with-dependencies.jar,${BIGDL_HOME}/bigdl-orca-spark_${SPAKR_VERSION}-${BIGDL_VERSION}-jar-with-dependencies.jar
 ```
+* For yarn-cluster mode, we recommend that you use the datasets stored in remote resources like HDFS instead of downloading to avoid possible network connection errors. You can directly set `remote_dir` argument to the remote datasets path.
 ### Note:
 * Do not set `${PYSPARK_DRIVER_PYTHON}` when running programs on yarn-cluster mode.
 
+Now, let's run the example on yarn-cluster mode with the following script:
 ```bash
 spark-submit \
     --conf spark.yarn.appMasterEnv.PYSPARK_PYTHON=environment/bin/python \
@@ -269,5 +271,5 @@ spark-submit \
     --driver-memory 10g \
     --executor-cores 4 \
     --num-executors 2 \
-    train.py --remote_dir hdfs://path/to/remote_data --data_dir /tmp/dataset 
+    train.py --remote_dir hdfs://path/to/remote_data
 ```

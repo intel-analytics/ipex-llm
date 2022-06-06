@@ -20,7 +20,7 @@ parser.add_argument('--backend', type=str, default="spark",
                          'bigdl, ray and spark are supported.')
 parser.add_argument('--batch_size', type=int, default=4, help='The training batch size')
 parser.add_argument('--epochs', type=int, default=2, help='The number of epochs to train for')
-parser.add_argument('--data_dir', type=str, default="./data", help='The path of dataset')
+parser.add_argument('--data_dir', type=str, default="/tmp/dataset", help='The path of dataset')
 parser.add_argument('--remote_dir', type=str, help='The path to load data from remote resources like HDFS or S3')
 parser.add_argument('--download', default=True, action='store_true', help='Download dataset or not')
 parser.add_argument('--extra-python-lib', type=str, default='model.py', help='Load dependency when running on yarn')
