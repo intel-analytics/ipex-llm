@@ -237,7 +237,7 @@ class HPOMixin:
                 if self.study is None:
                     warnings.warn(
                         'You did not specify storage path and your study is None. \
-                            Will create a new search study', UserWarning)
+                            Creating a new search study', UserWarning)
                 else:
                     do_create = False
         
