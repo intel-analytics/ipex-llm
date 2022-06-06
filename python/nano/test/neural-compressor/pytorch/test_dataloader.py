@@ -105,8 +105,8 @@ class TestDataloader(TestCase):
         model = ModelWithMultipleInputs()
 
         with pytest.raises(RuntimeError, match="Dataloader for quantization should yield data *"):
-            trainer.quantize(model, calib_dataloader=dataloader)
-    
+            trainer.quantize(model, calib_dataloader=dataloader, metric=torchmetrics.F1(10))
+
     def test_no_output_check(self):
         # dataloader 1: torch.Tensor, numpy.ndarray
         dataset = TensorDataset(torch.ones(10, 3), torch.ones(10))
