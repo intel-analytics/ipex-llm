@@ -19,6 +19,11 @@ class PPMLContextWrapper[T]() {
 
   def loadKeys(sc: PPMLContext,
                primaryKeyPath: String, dataKeyPath: String): Unit = {
+    logger.info("load keys...")
+    logger.info("primaryKeyPath: " + primaryKeyPath)
+    logger.info("dataKeyPath: " + dataKeyPath)
     sc.loadKeys(primaryKeyPath, dataKeyPath)
+    logger.info("dataKeyPlainText: " + sc.dataKeyPlainText)
+
   }
 }
