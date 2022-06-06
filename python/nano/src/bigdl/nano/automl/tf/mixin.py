@@ -230,7 +230,6 @@ class HPOMixin:
             and search backend arguments (e.g. n_trials, pruner, etc.)
             are allowed in kwargs.
         """
-
         do_create = True
         if resume:
             if 'storage' not in kwargs.keys() or kwargs['storage'].strip() == "":
