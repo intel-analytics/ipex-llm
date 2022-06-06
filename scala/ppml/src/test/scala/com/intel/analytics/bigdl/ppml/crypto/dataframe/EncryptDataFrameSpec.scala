@@ -32,6 +32,7 @@ class EncryptDataFrameSpec extends FlatSpec with Matchers with BeforeAndAfter{
   val (appid, appkey) = generateKeys()
   val simpleKms = SimpleKeyManagementService(appid, appkey)
   val dir = zooUtils.createTmpDir("PPMLUT", "rwx------").toFile()
+
   val primaryKeyPath = dir + "/primary.key"
   val dataKeyPath = dir + "/data.key"
   simpleKms.retrievePrimaryKey(primaryKeyPath)
@@ -54,6 +55,7 @@ class EncryptDataFrameSpec extends FlatSpec with Matchers with BeforeAndAfter{
     data.append(s"yvomq,59,Developer\ngdni,40,Engineer\npglyal,33,Engineer")
     fw.append(data)
     fw.close()
+
     val crypto = new BigDLEncrypt()
     val dataKeyPlaintext = simpleKms.retrieveDataKeyPlainText(primaryKeyPath, dataKeyPath)
     crypto.init(AES_CBC_PKCS5PADDING, ENCRYPT, dataKeyPlaintext)
