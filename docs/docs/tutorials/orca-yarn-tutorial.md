@@ -2,8 +2,7 @@ In this tutorial, we prepare a PyTorch Fashion-MNIST example which completed by 
 * How to prepare for the environment before submit the program to Yarn;
 * How to run the BigDL program on Yarn through multiple ways;
 
-BigDL Orca example code can be found here 
-https://github.com/intel-analytics/BigDL/tree/main/docs/docs/tutorials/tutorial_example/Fashion_MNIST/
+BigDL Orca example code can be found here [Fashion_MNIST Example](https://github.com/intel-analytics/BigDL/tree/main/docs/docs/tutorials/tutorial_example/Fashion_MNIST/).
 
 # Key Concepts
 ## OrcaContext
@@ -125,7 +124,7 @@ export PYSPARK_PYTHON=environment/bin/python
 ```bash
 --archives environment.tar.gz#environment
 ```
-* Set the `py-files` argument for dependency libraries.
+* Set the `py-files` argument to load and distribute dependency library on cluster.
 ```
 --py-files ./model.py
 ```
@@ -155,7 +154,7 @@ When running programs on yarn-cluster mode with `bigdl-submit`, we need:
 --conf spark.yarn.appMasterEnv.PYSPARK_PYTHON=environment/bin/python \
 --conf spark.executorEnv.PYSPARK_PYTHON=environment/bin/python
 ```
-* Set the `py-files` argument to load dependency libraries to cluster and distribute between executors.
+* Set the `py-files` argument to load dependency library to cluster and distribute between executors.
 ```bash
 --py-files ./model.py
 ```
@@ -181,7 +180,7 @@ When the dirver node on the Yarn Cluster is not able to install conda environmen
 * Install all the dependency files that BigDL required (refer to prepare environment part) on the node which could install conda;
 * Pack the conda environment to an archive on the node with conda then send it to the driver node; 
 * Download and unzip a BigDL assembly package from [BigDL Release Page](https://bigdl.readthedocs.io/en/latest/doc/release.html);
-* Set the unzipped BigDL package as `${BIGDL_HOME}`;
+* Set the path of unzipped BigDL package as `${BIGDL_HOME}`;
 * Set environment variables `${SPARK_VERSION}` and `${BIGDL_VERSION}` as the version in your environment.
 
 ### Note:
@@ -207,17 +206,14 @@ export PYSPARK_PYTHON=environment/bin/python
 ```bash
 --properties-file ${BIGDL_HOME}/conf/spark-bigdl.conf \
 ```
-* Set the `py-files` argument as the BigDL Python zip file to load and distribute required dependency libraries in the cluster;
+* Load and distribute required dependency libraries in cluster through setting the `py-files` argument as BigDL Python zip file and local dependent Python file;
 ```bash
 --py-files ${BIGDL_HOME}/python/bigdl-spark_${SPARK_VERSION}-${BIGDL_VERSION}-python-api.zip,model.py \
 ```
-* Set the `spark.driver.extraClassPath` argument to register the BigDL jars files to the classpath of driver;
+* We need to register the BigDL jars files to the classpath of both driver and executors on yarn cluster.
 ```bash
 --conf spark.driver.extraClassPath=${BIGDL_HOME}/jars/* \
-```
-* Set the `spark.executor.extraClassPath` argument to register the BigDL jars files to the classpath of executors;
-```bash
---conf spark.executor.extraClassPath=${BIGDL_HOME}/jars/* \
+--conf spark.executor.extraClassPath=${BIGDL_HOME}/jars/*
 ```
 
 Once all preparation works are completed, you could submit and execute the program with `spark-submit` script as below:
