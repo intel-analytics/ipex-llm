@@ -2,13 +2,14 @@ In this tutorial, we prepare a PyTorch Fashion-MNIST example which completed by 
 * How to prepare for the environment before submit the program to Yarn;
 * How to run the BigDL program on Yarn through multiple ways;
 
-BigDL Orca example code can be found here https://github.com/intel-analytics/BigDL/tree/main/docs/docs/tutorials/tutorial_example/Fashion_MNIST/
+BigDL Orca example code can be found here 
+https://github.com/intel-analytics/BigDL/tree/main/docs/docs/tutorials/tutorial_example/Fashion_MNIST/
 
 # Key Concepts
-* OrcaContext
+## OrcaContext
 A BigDL Orca program usually starts with the initialization of OrcaContext. We can specify the `runtime` (default is spark, ray is also a first-class backend) and `cluster_mode` arguments to create or get a SparkContext or RayContext with optimized configurations for BigDL performance.
 
-* Orca Estimator
+## Orca Estimator
 After initializing the OrcaContext, we could simply create an Estimatornow, and the Estimator will replicate the model on each node in the cluster, feed the data partition on each node to the local model replica, and synchronize the model parameters using various backend technologies.
 
 Let's get started!
@@ -93,7 +94,6 @@ python train.py --cluster_mode yarn-client
 ## Yarn Cluster
 When running programs on yarn cluster mode, we need,
 * Set `--cluster_mode` parameter to `yarn-cluster`, which could create an OrcaContext on yarn for yarn-cluster mode.
-* Set `--no-download` to bind downloading dataset when creating PyTorch DataLoader.
 * Set `--remote_dir` parameter to the datasets path on remote resources. We recommand you to use datasets from remote resources like HDFS and S3 to instead of downloading these datasets, since there may get connection errors on `yarn-cluster` mode.
 * Set `--data_dir` to a local file to store datasets and load by `data_creator` function. BigDL provides a function to reach datasets from remote resources, which could help executors on yarn to load data.
 
@@ -156,7 +156,7 @@ When running programs on yarn-cluster mode with `bigdl-submit`, we need:
 --conf spark.executorEnv.PYSPARK_PYTHON=environment/bin/python
 ```
 * Set the `py-files` argument to load dependency libraries to cluster and distribute between executors.
-```
+```bash
 --py-files ./model.py
 ```
 
@@ -173,7 +173,7 @@ bigdl-submit \
     --num-executors 2 \
     --archives environment.tar.gz#environment \
     --py-files ./model.py \
-    train.py --no-download --remote_dir hdfs://path/to/remote_data --data_dir /tmp/dataset
+    train.py --remote_dir hdfs://path/to/remote_data --data_dir /tmp/dataset
 ```
 
 # Run Programs with Spark Submit Script
@@ -273,5 +273,5 @@ spark-submit \
     --driver-memory 10g \
     --executor-cores 4 \
     --num-executors 2 \
-    train.py
+    train.py --remote_dir hdfs://path/to/remote_data --data_dir /tmp/dataset 
 ```
