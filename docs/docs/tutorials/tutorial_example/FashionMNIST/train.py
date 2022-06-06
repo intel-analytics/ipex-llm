@@ -23,7 +23,6 @@ parser.add_argument('--epochs', type=int, default=2, help='The number of epochs 
 parser.add_argument('--data_dir', type=str, default="./data", help='The path of dataset')
 parser.add_argument('--remote_dir', type=str, help='The path to load data from remote resources like HDFS or S3')
 parser.add_argument('--download', default=True, action='store_true', help='Download dataset or not')
-parser.add_argument('--no-download', dest='download', action='store_false', help='Download dataset or not')
 parser.add_argument('--extra-python-lib', type=str, default='model.py', help='Load dependency when running on yarn')
 args = parser.parse_args()
 
