@@ -244,3 +244,42 @@ spark-submit \
     --archives environment.tar.gz#environment \
     train.py
 ```
+
+## Yarn-Cluster
+When running programs on yarn cluster mode with `spark-submit` script, you could refer to steps as below:
+### Spark-Submit Script Preparation
+* Set the `archives` argument to the location of the Conda archive, which will be upload to remote clusters(i.e. HDFS) and distributed between all executors.
+```bash
+--archives environment.tar.gz#environment
+```
+* For yarn-cluster mode, both driver and executors will use the Python interpreter in `environment.tar.gz`, 
+```bash
+--conf spark.yarn.appMasterEnv.PYSPARK_PYTHON=environment/bin/python \
+--conf spark.executorEnv.PYSPARK_PYTHON=environment/bin/python
+```
+* Set the `py-files` argument for loading BigDL and other dependency libraries.
+```bash
+--py-files ${BIGDL_HOME}/python/bigdl-spark_${SPARK_VERSION}-${BIGDL_VERSION}-python-api.zip,model.py
+```
+* This tutorial mainly provided a BigDL Orca example, please download jars files from [BigDL Dllib](https://repo1.maven.org/maven2/com/intel/analytics/bigdl/bigdl-dllib-spark_2.4.6/2.0.0/bigdl-dllib-spark_2.4.6-2.0.0-jar-with-dependencies.jar) and [BigDL Orca](https://repo1.maven.org/maven2/com/intel/analytics/bigdl/bigdl-orca-spark_2.4.6/2.0.0/bigdl-orca-spark_2.4.6-2.0.0-jar-with-dependencies.jar) separately, then set the `jars` argument as below to register and transfer the BigDL jars files to the cluster.
+```bash
+--jars ${BIGDL_HOME}/bigdl-dllib-spark_${SPAKR_VERSION}-${BIGDL_VERSION}-jar-with-dependencies.jar,${BIGDL_HOME}/bigdl-orca-spark_${SPAKR_VERSION}-${BIGDL_VERSION}-jar-with-dependencies.jar
+```
+### Note:
+* Do not set `${PYSPARK_DRIVER_PYTHON}` when running programs on yarn-cluster mode.
+
+```bash
+spark-submit \
+    --conf spark.yarn.appMasterEnv.PYSPARK_PYTHON=environment/bin/python \
+    --conf spark.executorEnv.PYSPARK_PYTHON=environment/bin/python \
+    --archives environment.tar.gz#environment \
+    --py-files ${BIGDL_HOME}/python/bigdl-spark_${SPARK_VERSION}-${BIGDL_VERSION}-python-api.zip,model.py \
+    --jars ${BIGDL_HOME}/bigdl-dllib-spark_${SPAKR_VERSION}-${BIGDL_VERSION}-jar-with-dependencies.jar,${BIGDL_HOME}/bigdl-orca-spark_${SPAKR_VERSION}-${BIGDL_VERSION}-jar-with-dependencies.jar \
+    --master yarn \
+    --deploy-mode cluster \
+    --executor-memory 10g \
+    --driver-memory 10g \
+    --executor-cores 4 \
+    --num-executors 2 \
+    train.py
+```
