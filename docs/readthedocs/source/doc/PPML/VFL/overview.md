@@ -1,5 +1,5 @@
 # Vertical Federated Learning
-Vertical Federated Learning (VFL) is a federated machine learning case where two data sets share the same sample ID space but differ in feature space. 
+Vertical Federated Learning (VFL) is a federated machine learning case where multiple data sets share the same sample ID space but differ in feature space. 
 
 VFL is supported in BigDL PPML. It allows users to train a federated machine learning model where data features are held by different parties. In BigDL PPML, the following VFL scenarios are supported.
 * **Private Set Intersection**: To get data intersection of different VFL parties.
