@@ -3,6 +3,8 @@ package com.intel.analytics.bigdl.ppml.python
 import com.intel.analytics.bigdl.ppml.PPMLContext
 import org.slf4j.{Logger, LoggerFactory}
 
+import java.util
+
 object PPMLContextWrapper {
   def ofFloat: PPMLContextWrapper[Float] = new PPMLContextWrapper[Float]()
 
@@ -17,11 +19,12 @@ class PPMLContextWrapper[T]() {
     PPMLContext.initPPMLContext(appName)
   }
 
-  def createPPMLContext(appName: String, ppmlArgs: Map[String, String]): PPMLContext = {
+  def createPPMLContext(appName: String, ppmlArgs: util.Map[String, String]): PPMLContext = {
     logger.info("create PPMLContextWrapper with appName & ppmlArgs")
     logger.info("appName: " + appName)
     logger.info("ppmlArgs: " + ppmlArgs)
-    PPMLContext.initPPMLContext(appName, ppmlArgs)
+    import scala.collection.JavaConverters._
+    PPMLContext.initPPMLContext(appName, ppmlArgs.asScala.toMap)
   }
 
   def loadKeys(sc: PPMLContext,
