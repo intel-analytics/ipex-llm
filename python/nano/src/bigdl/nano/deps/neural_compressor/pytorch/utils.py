@@ -32,22 +32,22 @@ def _check_loader(model, loader, metric=None):
     sample = next(iter(loader))
     try:
         if metric is not None:
-            # only check the type when tunning
+            # only check the data when tunning
             # TODO: not only check type, but also if metric(y, yhat)
             # can return a valid result.
             # Each one must be of torch.Tensor
             _check_data_type(sample)
-        if len(sample) == 2:
-            x, y = sample
-            if isinstance(x, torch.Tensor):
-                model(x)
+            if len(sample) == 2:
+                x, y = sample
+                if isinstance(x, torch.Tensor):
+                    model(x)
+                else:
+                    model(*x)
             else:
-                model(*x)
-        else:
-            # If sample is not tuple of length 2, then it should be (x1, x2, x3, ...).
-            # check if datalader yields data complied with what model requires
-            # TypeError will throw if it fails
-            model(*sample)
+                # If sample is not tuple of length 2, then it should be (x1, x2, x3, ...).
+                # check if datalader yields data complied with what model requires
+                # TypeError will throw if it fails
+                model(*sample)
     except (ValueError, TypeError):
         invalidInputError(False,
                           "Dataloader for quantization should yield data in format below:\n"
