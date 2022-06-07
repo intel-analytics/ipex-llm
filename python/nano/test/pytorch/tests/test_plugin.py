@@ -124,7 +124,8 @@ class TestPlugin(TestCase):
             loss=torch.nn.MSELoss(),
             metrics=[torchmetrics.MeanSquaredError()]
         )
-        trainer = Trainer(num_processes=2, distributed_backend="subprocess", max_epochs=2)
+        # trainer = Trainer(num_processes=2, distributed_backend="subprocess", max_epochs=2)
+        trainer = Trainer(num_processes=1, max_epochs=2)
 
         features = torch.tensor([[0],[0],[1],[1]])
         labels = torch.tensor([[0],[0],[0],[0]])
