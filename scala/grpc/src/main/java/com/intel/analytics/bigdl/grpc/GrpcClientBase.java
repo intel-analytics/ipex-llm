@@ -53,6 +53,7 @@ public class GrpcClientBase extends AbstractGrpcBase {
     public void setTarget(String target) {
         this.target = target;
     }
+    public String getTarget() {return this.target;}
 
     /**
      * Channel could be set so that same channel could be used for multiple clients

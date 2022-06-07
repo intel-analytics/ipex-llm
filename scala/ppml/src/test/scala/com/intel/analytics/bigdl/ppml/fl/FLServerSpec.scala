@@ -23,12 +23,10 @@ class FLServerSpec extends FLSpec {
   "start server from config" should "work" in {
     val flServer = new FLServer(Array("-c",
       getClass.getClassLoader.getResource("ppml-conf-2-party.yaml").getPath))
-    flServer.build()
-    flServer.start()
+    require(flServer.getPort == 8980, "reading ppml-conf.yaml got wrong config")
     val flClient = new FLClient(Array("-c",
       getClass.getClassLoader.getResource("ppml-conf-2-party.yaml").getPath))
-    flClient.build()
-    flServer.stop()
+    require(flClient.getTarget == "localhost:8980", "reading ppml-conf.yaml got wrong config")
   }
 
 }
