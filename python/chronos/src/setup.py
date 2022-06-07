@@ -57,7 +57,8 @@ def setup_package():
         install_requires=['bigdl-orca=='+VERSION, 'bigdl-nano[pytorch]=='+VERSION,
                           'pandas>=1.0.5, <1.3.0', 'scikit-learn>=0.22.0, <=1.0.2', 'statsmodels',
                           'onnx>=1.8.0, <=1.11.0', 'onnxruntime>=1.6.0, <=1.11.1', 'pmdarima~=1.8.4',
-                          'tsfresh==0.17.0', 'pyarrow~=6.0.1'],
+                          'tsfresh==0.17.0', 'pyarrow~=6.0.1', 'torch>=1.9.0', #  only for test latest torch, will be removed soon
+                          'torchvision>=0.10.0'],
         extras_require={'all': ['bigdl-orca[automl]=='+VERSION]},
         dependency_links=['https://d3kbcqa49mib13.cloudfront.net/spark-2.0.0-bin-hadoop2.7.tgz'],
         include_package_data=True,
