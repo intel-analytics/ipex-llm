@@ -245,7 +245,7 @@ class HPOMixin:
                 else:
                     do_create = False
 
-        if kwargs['storage'].strip() == "":
+        if 'storage' in kwargs.keys() and kwargs['storage'].strip() == "":
             del kwargs['storage']
 
         search_kwargs = kwargs or {}
