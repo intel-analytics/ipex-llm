@@ -16,19 +16,39 @@
 
 package com.intel.analytics.bigdl.ppml.utils
 import java.io.PrintWriter
+import java.net.URI
+
+import org.apache.hadoop.conf.Configuration
+import org.apache.hadoop.fs.{FileSystem, Path}
+import org.apache.hadoop.io.IOUtils
+
 import scala.io.Source
 
 class KeyReaderWriter {
 
-  def writeKeyToFile(encryptedKeyPath: String, encryptedKeyContent: String): PrintWriter = {
-    new PrintWriter(encryptedKeyPath) {
-      write(encryptedKeyContent); close
-    }
+  def writeKeyToFile(encryptedKeyPath: String, encryptedKeyContent: String,
+                     config: Configuration = null): Unit = {
+//    new PrintWriter(encryptedKeyPath) {
+//      write(encryptedKeyContent); close
+//    }
+    val hadoopConfig = if (config != null) config else new Configuration()
+    val fs: FileSystem = FileSystem.get(new URI(encryptedKeyPath), hadoopConfig)
+    val outputStream = fs.create(new Path(encryptedKeyPath))
+    println(s"write key to file: ${encryptedKeyContent}")
+    outputStream.writeBytes(encryptedKeyContent + "\n")
+    outputStream.close()
   }
 
-  def readKeyFromFile(encryptedKeyPath: String): String = {
-    val encryptedKeyCiphertext: String = Source.fromFile(encryptedKeyPath).getLines.next()
-    encryptedKeyCiphertext
+  def readKeyFromFile(encryptedKeyPath: String, config: Configuration = null): String = {
+//    val encryptedKeyCiphertext: String = Source.fromFile(encryptedKeyPath).getLines.next()
+//    encryptedKeyCiphertext
+    val hadoopConfig = if (config != null) config else new Configuration()
+    val fs = FileSystem.get(new URI(encryptedKeyPath), hadoopConfig)
+    val inStream = fs.open(new Path(encryptedKeyPath))
+    val content = scala.io.Source.fromInputStream(inStream).getLines().next()
+//    val content = IOUtils.toString(inStream, "UTF-8")
+    println(s"read keycontent from file: ${content}")
+    content
   }
 
 }

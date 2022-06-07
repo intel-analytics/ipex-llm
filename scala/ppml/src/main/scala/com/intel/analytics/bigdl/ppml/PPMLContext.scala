@@ -24,7 +24,9 @@ import org.apache.spark.{SparkConf, SparkContext}
 import org.apache.spark.input.PortableDataStream
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.{DataFrame, DataFrameReader, DataFrameWriter, Row, SparkSession}
-import com.intel.analytics.bigdl.ppml.kms.{EHSMKeyManagementService, KMS_CONVENTION, KeyManagementService, SimpleKeyManagementService}
+
+import com.intel.analytics.bigdl.ppml.kms.{EHSMKeyManagementService, KMS_CONVENTION,
+KeyManagementService, SimpleKeyManagementService, AzureKeyManagementService}
 import com.intel.analytics.bigdl.ppml.crypto.dataframe.{EncryptedDataFrameReader, EncryptedDataFrameWriter}
 
 import java.nio.file.Paths
@@ -88,6 +90,10 @@ class PPMLContext protected(kms: KeyManagementService, sparkSession: SparkSessio
    */
   def write(dataFrame: DataFrame, cryptoMode: CryptoMode): EncryptedDataFrameWriter = {
     new EncryptedDataFrameWriter(sparkSession, dataFrame, cryptoMode, dataKeyPlainText)
+  }
+
+  def getSparkSession(): SparkSession = {
+    sparkSession
   }
 }
 
@@ -204,6 +210,12 @@ object PPMLContext{
         val key = conf.get("spark.bigdl.kms.simple.key", defaultValue = "simpleAPPKEY")
         // println(key + "=-------------------")
         SimpleKeyManagementService(id, key)
+      case KMS_CONVENTION.MODE_AZURE_KMS =>
+        val vaultName = conf.get("spark.bigdl.kms.azure.vault", defaultValue = "keyVaultName")
+        val clientId = conf.get("spark.bigdl.kms.azure.clientId", defaultValue = "")
+        new AzureKeyManagementService(vaultName, clientId)
+      case _ =>
+        throw new EncryptRuntimeException("Wrong kms type")
     }
     val ppmlSc = new PPMLContext(kms, sparkSession)
     if (conf.contains("spark.bigdl.kms.key.primary")) {
