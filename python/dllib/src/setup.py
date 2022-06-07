@@ -44,7 +44,7 @@ After the build:
 """
 
 
-if os.path.exists(dllib_src_path + "/bigdl_dllib_spark2.egg-info"):
+if os.path.exists(dllib_src_path + "/bigdl_dllib.egg-info"):
     build_from_source = False
 else:
     build_from_source = True
@@ -87,7 +87,7 @@ def setup_package():
     copyfile(dllib_src_path + "/bigdl/dllib/nn/__init__.py",
              SCRIPTS_TARGET + "__init__.py")
     metadata = dict(
-        name='bigdl-dllib-spark2',
+        name='bigdl-dllib',
         version=VERSION,
         description='Distributed Deep Learning Library for Apache Spark',
         author='BigDL Authors',
