@@ -39,7 +39,7 @@ import java.nio.file.Paths
  */
 class PPMLContext protected(kms: KeyManagementService, sparkSession: SparkSession) {
 
-  var dataKeyPlainText: String = ""
+  protected var dataKeyPlainText: String = ""
 
   /**
    * Load keys from a local file system.

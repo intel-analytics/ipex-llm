@@ -48,12 +48,11 @@ class PPMLContextWrapper[T]() {
       kmsArgs("spark.bigdl.kms.key.data") = ppmlArgs.get("data_key_path")
     }
     logger.info("kmsArgs: " + kmsArgs)
-    val sc = PPMLContext.initPPMLContext(appName, kmsArgs.toMap)
-    logger.info("load keys result: " + sc.dataKeyPlainText)
-    sc
+    PPMLContext.initPPMLContext(appName, kmsArgs.toMap)
   }
 
   def read(sc: PPMLContext, cryptoModeStr: String): EncryptedDataFrameReader = {
+    logger.info("read...")
     val cryptoMode = CryptoMode.parse(cryptoModeStr)
     sc.read(cryptoMode)
   }
@@ -72,10 +71,12 @@ class PPMLContextWrapper[T]() {
 
   def option(encryptedDataFrameReader: EncryptedDataFrameReader,
              key: String, value: String): EncryptedDataFrameReader = {
+    logger.info("option...")
     encryptedDataFrameReader.option(key, value)
   }
 
   def csv(encryptedDataFrameReader: EncryptedDataFrameReader, path: String): DataFrame = {
+    logger.info("csv...")
     encryptedDataFrameReader.csv(path)
   }
 }
