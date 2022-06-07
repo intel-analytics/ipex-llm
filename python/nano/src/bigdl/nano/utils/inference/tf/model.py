@@ -13,41 +13,23 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-from pytorch_lightning import LightningModule
+import tensorflow as tf
 from ..model import AcceleratedModel
-import torch
-from pathlib import Path
-from .model_utils import get_forward_args
-from bigdl.nano.utils.log4Error import invalidInputError
 
 
-class AcceleratedLightningModule(AcceleratedModel, LightningModule):
+class AcceleratedKerasModel(AcceleratedModel, tf.keras.Model):
+    """A wrapper class for tf.keras.Model with accelerators."""
+
     def __init__(self, model):
         super().__init__()
         self.model = model
-        self.train(False)
 
-    def forward(self, *inputs):
+    def call(self, *inputs):
         inputs = self.on_forward_start(inputs)
         outputs = self.forward_step(*inputs)
         return self.on_forward_end(outputs)
 
-    def train(self, mode=True):
-        if mode:
-            invalidInputError(False, "This model is not trainable!")
-        super().train(mode)
-
-    def forward_step(self, *inputs):
-        return self.model(*inputs)
-
     @staticmethod
     def tensors_to_numpy(tensors):
-        np_data = tuple(map(lambda x: x.cpu().numpy(), tensors))
+        np_data = tuple(map(lambda x: x.numpy(), tensors))
         return np_data
-
-    @staticmethod
-    def numpy_to_tensors(np_arrays):
-        tensors = tuple(map(lambda x: torch.from_numpy(x), np_arrays))
-        if len(tensors) == 1:
-            tensors = tensors[0]
-        return tensors
