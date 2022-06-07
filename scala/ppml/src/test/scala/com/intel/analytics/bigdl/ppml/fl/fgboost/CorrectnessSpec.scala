@@ -104,7 +104,7 @@ class CorrectnessSpec extends FLSpec {
       XGBoostFormatValidator.addHeaders(flattenHeaders)
       flServer.build()
       flServer.start()
-      FLContext.initFLContext()
+      FLContext.initFLContext(target)
       val fGBoostRegression = new FGBoostRegression(
         learningRate = 0.1f, maxDepth = 7, minChildSize = 5)
       fGBoostRegression.fit(trainFeatures, trainLabels, 15)
@@ -178,7 +178,7 @@ class CorrectnessSpec extends FLSpec {
       flServer.setClientNum(2)
       flServer.build()
       flServer.start()
-      FLContext.initFLContext()
+      FLContext.initFLContext(target)
       val mockClient = new MockClient(
         dataPath = getClass.getClassLoader
           .getResource("two-party/house-prices-train-2.csv").getPath,

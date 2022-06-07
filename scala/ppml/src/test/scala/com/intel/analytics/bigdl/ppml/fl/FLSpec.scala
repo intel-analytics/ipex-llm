@@ -24,7 +24,7 @@ import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 class FLSpec extends FlatSpec with Matchers with BeforeAndAfter with DebugLogger {
   var port: Int = 8980
   var target: String = "localhost:8980"
-  val logger = LogManager.getLogger(getClass)
+  val logger = LogManager.getLogger(classOf[FLSpec])
   before {
     // try only next 3 ports, if failed, it may well be
     // that server holds the port and fails to release
