@@ -121,8 +121,10 @@ class Estimator(object):
                                            log_to_driver=log_to_driver,
                                            )
         else:
-            raise ValueError("Only horovod, ray, bigdl and spark backends are "
-                             f"supported for now, got backend: {backend}")
+            from bigdl.dllib.utils.log4Error import invalidInputError
+            invalidInputError(False,
+                              "Only horovod, ray, bigdl and spark backends are "
+                              f"supported for now, got backend: {backend}")
 
     @staticmethod
     def latest_checkpoint(checkpoint_dir):

@@ -31,6 +31,7 @@ from bigdl.orca.learn.utils import save_pkl, duplicate_stdout_stderr_to_file,\
     replace_specific_object_from_callbacks
 from bigdl.orca.learn.log_monitor import LogMonitor
 from bigdl.orca.learn.tf2.callbacks import ModelCheckpoint
+from bigdl.dllib.utils.log4Error import *
 
 logger = logging.getLogger(__name__)
 
@@ -52,7 +53,8 @@ class DatasetHandler:
         train_dataset = data_creator(config, config["batch_size"])
         if isinstance(train_dataset, list) and \
            all([isinstance(x, dict) for x in train_dataset]):
-            assert steps_per_epoch is not None, "steps_per_epoch must be provided for xshard"
+            invalidInputError(steps_per_epoch is not None,
+                              "steps_per_epoch must be provided for xshard")
             train_dataset = self._handle_xshards(train_dataset,
                                                  steps=steps_per_epoch * epochs,
                                                  local_batch_size=local_batch_size,
@@ -64,8 +66,9 @@ class DatasetHandler:
             test_dataset = validation_data_creator(config, config["batch_size"])
             if isinstance(test_dataset, list) and \
                     all([isinstance(x, dict) for x in test_dataset]):
-                assert validation_steps is not None, "validation_steps must be provided" \
-                                                     "when use xshards for evaluate"
+                invalidInputError(validation_steps is not None,
+                                  "validation_steps must be provided"
+                                  " when use xshards for evaluate")
                 test_dataset = self._handle_xshards(test_dataset,
                                                     steps=validation_steps,
                                                     local_batch_size=local_batch_size,
@@ -83,7 +86,8 @@ class DatasetHandler:
         config['size'] = self.size
         dataset = data_creator(config, config["batch_size"])
         if isinstance(dataset, list) and all([isinstance(x, dict) for x in dataset]):
-            assert steps is not None, "steps must be provided for xshard"
+            invalidInputError(steps is not None,
+                              "steps must be provided for xshard")
             dataset = self._handle_xshards(dataset,
                                            steps=steps,
                                            local_batch_size=local_batch_size,
@@ -94,13 +98,13 @@ class DatasetHandler:
         return dataset
 
     def _handle_xshards(self, dataset, steps, local_batch_size, shuffle):
-        raise NotImplementedError
+        invalidInputError(False, "not implemented")
 
     def _handle_sharding(self, dataset):
-        raise NotImplementedError
+        invalidInputError(False, "not implemented")
 
     def _handle_batch_size(self, config):
-        raise NotImplementedError
+        invalidInputError(False, "not implemented")
 
     @staticmethod
     def get_handler(backend, rank, size):
@@ -111,7 +115,8 @@ class DatasetHandler:
         if backend == "tf-local":
             return LocalDatasetHandler(rank, size)
 
-        raise Exception(f"invalid backend: {backend}")
+        invalidInputError(False,
+                          f"invalid backend: {backend}")
 
 
 class TFDistributedDatasetHandler(DatasetHandler):
@@ -145,7 +150,7 @@ class TFDistributedDatasetHandler(DatasetHandler):
         return dataset
 
     def _handle_batch_size(self, config):
-        assert "batch_size" in config, "batch_size must be set in config"
+        invalidInputError("batch_size" in config, "batch_size must be set in config")
         local_batch_size = config["batch_size"] // self.size
         return config, local_batch_size
 
@@ -169,7 +174,7 @@ class LocalDatasetHandler(DatasetHandler):
         return dataset
 
     def _handle_batch_size(self, config):
-        assert "batch_size" in config, "batch_size must be set in config"
+        invalidInputError("batch_size" in config, "batch_size must be set in config")
         return config, config["batch_size"]
 
 

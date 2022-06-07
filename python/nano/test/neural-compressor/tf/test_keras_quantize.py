@@ -36,27 +36,20 @@ class TestModelQuantize(TestCase):
         # Case 1: Default
         q_model = model.quantize(calib_dataset=train_dataset)
         assert q_model
-        with q_model.sess as sess:
-            output = sess.run(q_model.output_tensor,
-                              feed_dict={q_model.input_tensor[0]: train_examples[0:10]})
-        assert output[0].shape == (10, 10)
+        output = q_model(train_examples[0:10])
+        assert output.shape == (10, 10)
 
         # Case 2: Override by arguments
         q_model = model.quantize(calib_dataset=train_dataset,
-                                 val_dataset=train_dataset,
-                                 batch=10,
                                  metric=tf.keras.metrics.CategoricalAccuracy(),
                                  tuning_strategy='basic',
-                                 accuracy_criterion={'relative':         0.99,
+                                 accuracy_criterion={'relative': 0.99,
                                                      'higher_is_better': True})
         assert q_model
-        with q_model.sess as sess:
-            output = sess.run(q_model.output_tensor,
-                              feed_dict={q_model.input_tensor[0]: train_examples[0:10]})
-        assert output[0].shape == (10, 10)
+        output = q_model(train_examples[0:10])
+        assert output.shape == (10, 10)
 
         # Case 3: Invalid approach, dynamic or qat is not supported
         invalid_approach = 'dynamic'
-        with pytest.raises(RuntimeError, match="Approach should be 'static', "
-                                               "{} is invalid.".format(invalid_approach)):
+        with pytest.raises(RuntimeError, match="post_training_dynamic_quant is invalid."):
             model.quantize(approach=invalid_approach)

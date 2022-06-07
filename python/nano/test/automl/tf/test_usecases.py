@@ -98,6 +98,7 @@ class TestUseCases(TestCase):
         )
         # run hpo
         model.search(n_trials=2,
+                     n_parallels = 2,
                      target_metric='accuracy',
                      direction="maximize",
                      sampler=SamplerType.Random,
@@ -148,6 +149,7 @@ class TestUseCases(TestCase):
         # run hpo
         model.search(
             n_trials=2,
+            n_parallels = 2,
             target_metric='accuracy',
             direction="maximize",
             x=x_train,
@@ -201,6 +203,7 @@ class TestUseCases(TestCase):
         # run hpo
         model.search(
             n_trials=2,
+            n_parallels = 2,
             target_metric='accuracy',
             direction="maximize",
             x=x_train,
