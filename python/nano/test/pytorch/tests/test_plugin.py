@@ -76,30 +76,30 @@ class TestPlugin(TestCase):
         trainer.test(pl_model, self.test_data_loader)
 
     def test_trainer_subprocess_correctness(self):
-        # dataloader_1 = create_data_loader(data_dir, batch_size, num_workers,
-        #                              data_transform, subset=dataset_size, shuffle=False, sampler=True)
-        # pl_model_dis = LightningModuleFromTorch(
-        #     self.model, self.loss, self.optimizer,
-        #     metrics=[torchmetrics.F1(num_classes), torchmetrics.Accuracy(num_classes=10)]
-        # )
-        # trainer_dis = Trainer(num_processes=2, distributed_backend="subprocess", max_epochs=4)
-        # trainer_dis.tune(model=pl_model_dis, train_dataloaders=dataloader_1, scale_batch_size_kwargs={'max_trials':2})
-        # trainer_dis.fit(pl_model_dis, dataloader_1, dataloader_1)
-        # res_dis = trainer_dis.test(pl_model_dis, dataloader_1)
+        dataloader_1 = create_data_loader(data_dir, batch_size, num_workers,
+                                     data_transform, subset=dataset_size, shuffle=False, sampler=True)
+        pl_model_dis = LightningModuleFromTorch(
+            self.model, self.loss, self.optimizer,
+            metrics=[torchmetrics.F1(num_classes), torchmetrics.Accuracy(num_classes=10)]
+        )
+        trainer_dis = Trainer(num_processes=4, distributed_backend="subprocess", max_epochs=4)
+        trainer_dis.tune(model=pl_model_dis, train_dataloaders=dataloader_1, scale_batch_size_kwargs={'max_trials':2})
+        trainer_dis.fit(pl_model_dis, dataloader_1, dataloader_1)
+        res_dis = trainer_dis.test(pl_model_dis, dataloader_1)
  
-        # dataloader_2 = copy.deepcopy(dataloader_1)
-        # pl_model_single = copy.deepcopy(pl_model_dis)
-        # trainer_single = Trainer(num_processes=1, max_epochs=4)
-        # trainer_single.tune(model=pl_model_single, train_dataloaders=dataloader_2, scale_batch_size_kwargs={'max_trials':3})
-        # trainer_single.fit(pl_model_single, dataloader_2, dataloader_2)
+        dataloader_2 = copy.deepcopy(dataloader_1)
+        pl_model_single = copy.deepcopy(pl_model_dis)
+        trainer_single = Trainer(num_processes=1, max_epochs=4)
+        trainer_single.tune(model=pl_model_single, train_dataloaders=dataloader_2, scale_batch_size_kwargs={'max_trials':3})
+        trainer_single.fit(pl_model_single, dataloader_2, dataloader_2)
         
-        # res_single = trainer_single.test(pl_model_single, dataloader_2)
+        res_single = trainer_single.test(pl_model_single, dataloader_2)
 
-        # acc_single = res_single[0]['test/Accuracy_1']
-        # acc_dis = res_dis[0]['test/Accuracy_1']
+        acc_single = res_single[0]['test/Accuracy_1']
+        acc_dis = res_dis[0]['test/Accuracy_1']
 
-        # assert abs((acc_single-acc_dis)) < 0.1, "distributed trained model accuracy should be close to non-distributed-trained model"
-        # return 
+        assert abs((acc_single-acc_dis)) < 0.1, "distributed trained model accuracy should be close to non-distributed-trained model"
+        return 
 
         # partition 0: [(0, 0), (0, 0)]
         # partition 1: [(1, 0), (1, 0)]
@@ -117,22 +117,22 @@ class TestPlugin(TestCase):
         #    avg_grad = avg([0, 0, 1, 1]) = 0.5
         #    weight = 0.5 - 0.5 * avg_grad = 0.25
 
-        linear = LinearModel()
-        pl_model = LightningModuleFromTorch(
-            model = linear,
-            optimizer = torch.optim.SGD(linear.parameters(), lr=0.5),
-            loss=torch.nn.MSELoss(),
-            metrics=[torchmetrics.MeanSquaredError()],
-        )
-        trainer = Trainer(num_processes=2, distributed_backend="subprocess", max_epochs=2)
+        # linear = LinearModel()
+        # pl_model = LightningModuleFromTorch(
+        #     model = linear,
+        #     optimizer = torch.optim.SGD(linear.parameters(), lr=0.5),
+        #     loss=torch.nn.MSELoss(),
+        #     metrics=[torchmetrics.MeanSquaredError()],
+        # )
+        # trainer = Trainer(num_processes=2, distributed_backend="subprocess", max_epochs=2)
 
-        features = torch.tensor([[0],[0],[1],[1]])
-        labels = torch.tensor([[0],[0],[0],[0]])
-        dataset = TensorDataset(features,labels)
-        train_loader = DataLoader(dataset=dataset, batch_size=2, shuffle=False)
-        trainer.fit(pl_model, train_loader, train_loader)
-        print(pl_model.model.parameters())
-        return 
+        # features = torch.tensor([[0],[0],[1],[1]])
+        # labels = torch.tensor([[0],[0],[0],[0]])
+        # dataset = TensorDataset(features,labels)
+        # train_loader = DataLoader(dataset=dataset, batch_size=2, shuffle=False)
+        # trainer.fit(pl_model, train_loader, train_loader)
+        # print(pl_model.model.parameters())
+        # return 
 
 if __name__ == '__main__':
     pytest.main([__file__])
