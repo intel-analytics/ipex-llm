@@ -31,7 +31,6 @@ object GenerateKeys extends App {
       case None => EncryptIOArguments.parser.failure("miss args, please see the usage info"); null
     }
   }
-  
   val primaryKeySavePath = arguments.primaryKeyPath
   val dataKeySavePath = arguments.dataKeyPath
   val kms = arguments.kmsType match {
