@@ -17,6 +17,7 @@
 package com.intel.analytics.bigdl.ppml.crypto.dataframe
 
 import com.intel.analytics.bigdl.dllib.common.zooUtils
+import com.intel.analytics.bigdl.ppml.BigDLSpecHelper
 import com.intel.analytics.bigdl.ppml.crypto.{AES_CBC_PKCS5PADDING, BigDLEncrypt, ENCRYPT}
 import com.intel.analytics.bigdl.ppml.kms.SimpleKeyManagementService
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
@@ -24,12 +25,13 @@ import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 import java.io.FileWriter
 import scala.util.Random
 
-class DataFrameHelper extends FlatSpec with Matchers with BeforeAndAfter {
+class DataFrameHelper extends BigDLSpecHelper {
   val repeatedNum = 100000
   val totalNum = repeatedNum * 3
+  val header = "name,age,job\n"
   val (appid, appkey) = generateKeys()
   val simpleKms = SimpleKeyManagementService(appid, appkey)
-  val dir = zooUtils.createTmpDir("PPMLUT", "rwx------").toFile()
+  val dir = createTmpDir("rwx------")
 
   val primaryKeyPath = dir + "/primary.key"
   val dataKeyPath = dir + "/data.key"
@@ -49,9 +51,9 @@ class DataFrameHelper extends FlatSpec with Matchers with BeforeAndAfter {
     val encryptFileName = dir + "/en_people.csv"
     val fw = new FileWriter(fileName)
     val data = new StringBuilder()
-    data.append(s"name,age,job\n")
+    data.append(header)
     (0 until repeatedNum).foreach {i =>
-      data.append(s"yvomq,$i,Developer\ngdni,$i,Engineer\npglyal,$i,Engineer\n")
+      data.append(s"gdni,$i,Engineer\npglyal,$i,Engineer\nyvomq,$i,Developer\n")
     }
     fw.append(data)
     fw.close()
