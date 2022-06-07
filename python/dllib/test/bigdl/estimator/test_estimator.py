@@ -67,37 +67,37 @@ class TestEstimator(ZooTestCase):
             labels.append(label)
         return images, labels
 
-    # def test_estimator_train_imagefeature(self):
-    #     batch_size = 8
-    #     epoch_num = 5
-    #     images, labels = TestEstimator._generate_image_data(data_num=8, img_shape=(200, 200, 3))
-    #
-    #     image_frame = DistributedImageFrame(self.sc.parallelize(images),
-    #                                         self.sc.parallelize(labels))
-    #
-    #     transformer = Pipeline([BytesToMat(), Resize(256, 256), CenterCrop(224, 224),
-    #                             ChannelNormalize(0.485, 0.456, 0.406, 0.229, 0.224, 0.225),
-    #                             MatToTensor(), ImageFrameToSample(target_keys=['label'])])
-    #     data_set = FeatureSet.image_frame(image_frame).transform(transformer)
-    #
-    #     model = TestEstimator._create_cnn_model()
-    #
-    #     optim_method = SGD(learningrate=0.01)
-    #
-    #     estimator = Estimator(model, optim_method, "")
-    #     estimator.set_constant_gradient_clipping(0.1, 1.2)
-    #     estimator.train_imagefeature(train_set=data_set, criterion=ClassNLLCriterion(),
-    #                                  end_trigger=MaxEpoch(epoch_num),
-    #                                  checkpoint_trigger=EveryEpoch(),
-    #                                  validation_set=data_set,
-    #                                  validation_method=[Top1Accuracy()],
-    #                                  batch_size=batch_size)
-    #     eval_result = estimator.evaluate_imagefeature(validation_set=data_set,
-    #                                                   validation_method=[Top1Accuracy()])
-    #     assert isinstance(eval_result[0], EvaluatedResult)
-    #     assert len(eval_result) == 1
-    #     predict_result = model.predict_image(image_frame.transform(transformer))
-    #     assert (predict_result.get_predict().count(), 8)
+    def test_estimator_train_imagefeature(self):
+        batch_size = 8
+        epoch_num = 5
+        images, labels = TestEstimator._generate_image_data(data_num=8, img_shape=(200, 200, 3))
+
+        image_frame = DistributedImageFrame(self.sc.parallelize(images),
+                                            self.sc.parallelize(labels))
+
+        transformer = Pipeline([BytesToMat(), Resize(256, 256), CenterCrop(224, 224),
+                                ChannelNormalize(0.485, 0.456, 0.406, 0.229, 0.224, 0.225),
+                                MatToTensor(), ImageFrameToSample(target_keys=['label'])])
+        data_set = FeatureSet.image_frame(image_frame).transform(transformer)
+
+        model = TestEstimator._create_cnn_model()
+
+        optim_method = SGD(learningrate=0.01)
+
+        estimator = Estimator(model, optim_method, "")
+        estimator.set_constant_gradient_clipping(0.1, 1.2)
+        estimator.train_imagefeature(train_set=data_set, criterion=ClassNLLCriterion(),
+                                     end_trigger=MaxEpoch(epoch_num),
+                                     checkpoint_trigger=EveryEpoch(),
+                                     validation_set=data_set,
+                                     validation_method=[Top1Accuracy()],
+                                     batch_size=batch_size)
+        eval_result = estimator.evaluate_imagefeature(validation_set=data_set,
+                                                      validation_method=[Top1Accuracy()])
+        assert isinstance(eval_result[0], EvaluatedResult)
+        assert len(eval_result) == 1
+        predict_result = model.predict_image(image_frame.transform(transformer))
+        assert (predict_result.get_predict().count(), 8)
 
     def test_estimator_train(self):
         batch_size = 8
