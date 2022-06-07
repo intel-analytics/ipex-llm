@@ -32,6 +32,7 @@ def quantize(self,
              tuning_strategy: str = None,
              timeout: int = None,
              max_trials: int = None,
+             batch=None,
              inputs: List[str] = None,
              outputs: List[str] = None):
     """
@@ -67,13 +68,18 @@ def quantize(self,
                         Combine with timeout field to decide when to exit.
                         "timeout=0, max_trials=1" means it will try quantization only once and
                         return satisfying best model.
-    :param inputs:     A list of input names.
+    :param batch:       Batch size of dataloader for calib_dataset. Defaults to None, if the
+                        dataset is not a BatchDataset, batchsize equals to 1. Otherwise,
+                        batchsize complies with the dataset._batch_size.
+    :param inputs:      A list of input names.
                         Default: None, automatically get names from graph.
-    :param outputs:    A list of output names.
+    :param outputs:     A list of output names.
                         Default: None, automatically get names from graph.
-    :return:           A TensorflowBaseModel for INC. If there is no model found, return None.
+    :return:            A TensorflowBaseModel for INC. If there is no model found, return None.
     """
     if accelerator is None:
+        if batch:
+            calib_dataset = calib_dataset.batch(batch)
         return inc_quantzie(self, dataloader=calib_dataset, metric=metric,
                             framework='tensorflow',
                             conf=conf,
