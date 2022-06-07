@@ -78,7 +78,7 @@ def quantize(self,
     :return:            A TensorflowBaseModel for INC. If there is no model found, return None.
     """
     if accelerator is None:
-        if batch:
+        if batch and calib_dataset:
             calib_dataset = calib_dataset.batch(batch)
         return inc_quantzie(self, dataloader=calib_dataset, metric=metric,
                             framework='tensorflow',
