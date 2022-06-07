@@ -3,7 +3,8 @@
 export ANALYTICS_ZOO_ROOT=${ANALYTICS_ZOO_ROOT}
 export NANO_HOME=${ANALYTICS_ZOO_ROOT}/python/nano/src
 export PYTORCH_NANO_NOTEBOOKS_DIR=${ANALYTICS_ZOO_ROOT}/python/nano/notebooks/pytorch/cifar10
-export LIMIT_BATCHES=0.01
+export LIMIT_TRAIN_BATCHES=0.005
+export LIMIT_VAL_BATCHES=0.01
 export FIT_EPOCHS=3
 export SUBSET=50
 
@@ -19,6 +20,9 @@ python -m pytest --nbmake --nbmake-timeout=180 --nbmake-kernel=python3 ${PYTORCH
 now=$(date "+%s")
 time=$((now-start))
 
+echo "Bigdl-nano cifar10 train notebook test finished"
+echo "Time used:$time seconds"
+
 echo "# Start Testing cifar10 inference notebook"
 start=$(date "+%s")
 
@@ -27,3 +31,5 @@ python -m pytest --nbmake --nbmake-timeout=180 --nbmake-kernel=python3 ${PYTORCH
 now=$(date "+%s")
 time=$((now-start))
 
+echo "Bigdl-nano cifar10 inference notebook tests finished"
+echo "Time used:$time seconds"
