@@ -141,7 +141,11 @@ class HPOSearcher:
             self._create_objective(model, self.target_metric, self.create_kwargs, self.fit_kwargs)
 
         if n_parallels and n_parallels > 1:
-            self._run_search_n_procs(n_parallels)
+            invalidInputError(self.create_kwargs.get('storage', "").strip() != "",
+                              "parallel search is not supported"
+                              " when in-mem storage is used (n_parallels must be 1)")
+
+            self._run_search_n_procs(n_procs=n_parallels)
         else:
             self._run_search()
 

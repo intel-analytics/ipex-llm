@@ -13,11 +13,3 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-
-from .metrics import *
-
-METRICS = {
-    'pytorch': PytorchINCMetric,
-    'tensorflow': TensorflowINCMetric,
-    'onnx': ONNXRuntimeINCMetic
-}

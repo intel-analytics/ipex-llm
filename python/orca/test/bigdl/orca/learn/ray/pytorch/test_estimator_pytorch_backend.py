@@ -543,7 +543,7 @@ class TestPyTorchEstimator(TestCase):
         finally:
             shutil.rmtree(temp_dir)
 
-        with pytest.raises(FileNotFoundError):
+        with pytest.raises(RuntimeError):
             Estimator.latest_checkpoint(temp_dir)
 
     def test_manual_ckpt(self):

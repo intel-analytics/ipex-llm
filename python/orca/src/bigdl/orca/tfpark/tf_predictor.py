@@ -20,6 +20,7 @@ from bigdl.dllib.net.utils import find_placeholders, _check_the_same
 from bigdl.orca.tfpark.tfnet import TFNet
 from bigdl.orca.tfpark.tf_dataset import TFNdarrayDataset, check_data_compatible
 from bigdl.orca.tfpark.tf_dataset import _standarize_feature_dataset
+from bigdl.dllib.utils.log4Error import invalidInputError
 
 if sys.version >= '3':
     long = int
@@ -46,8 +47,9 @@ class TFPredictor:
         self.inputs = inputs
         self.tfnet = TFNet.from_session(sess, self.inputs, outputs)
         if self.dataset.batch_per_thread <= 0:
-            raise ValueError("You should set batch_per_thread on TFDataset " +
-                             "instead of batch_size for prediction")
+            invalidInputError(False,
+                              "You should set batch_per_thread on TFDataset " +
+                              "instead of batch_size for prediction")
 
     @staticmethod
     def _get_datasets_and_inputs(outputs):

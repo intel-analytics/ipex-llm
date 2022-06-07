@@ -25,6 +25,7 @@ from bigdl.orca.tfpark.tf_dataset import TFDataset
 from bigdl.dllib.utils import nest
 import six
 import os
+from bigdl.dllib.utils.log4Error import *
 
 
 class TFEstimator(object):
@@ -142,8 +143,9 @@ class TFEstimator(object):
             result = self.estimator._call_input_fn(input_fn, tf.estimator.ModeKeys.TRAIN)
             if isinstance(result, TFDataset):
                 if not result.has_batch:
-                    raise ValueError("The batch_size of TFDataset must be " +
-                                     "specified when used for training.")
+                    invalidInputError(False,
+                                      "The batch_size of TFDataset must be " +
+                                      "specified when used for training.")
                 spec = self._call_model_fn(result.feature_tensors,
                                            result.label_tensors,
                                            tf.estimator.ModeKeys.TRAIN,
@@ -206,7 +208,8 @@ class TFEstimator(object):
           name.
         """
         if not all(isinstance(metric, six.string_types) for metric in eval_methods):
-            raise ValueError("All metrics should be string types")
+            invalidInputError(False,
+                              "All metrics should be string types")
         from tensorflow_estimator.python.estimator.canned import prediction_keys
         import tensorflow as tf
         with tf.Graph().as_default() as g:
@@ -232,21 +235,22 @@ class TFEstimator(object):
                             key = prediction_keys.PredictionKeys.PREDICTIONS
                             msg = "{} is required for evaluating mse,".format(key) + \
                                   " please add it in your model_fn predictions"
-                            assert key in spec.prediction, msg
+                            invalidInputError(key in spec.prediction, msg)
                             outputs = [
                                 spec.predictions[prediction_keys.PredictionKeys.PREDICTIONS]]
                         else:
                             key = prediction_keys.PredictionKeys.LOGITS
                             msg = "{} is required in for evaluating,".format(key) + \
                                   " please add it in your model_fn predictions"
-                            assert key in spec.predictions, msg
+                            invalidInputError(key in spec.predictions, msg)
                             outputs = [
                                 spec.predictions[prediction_keys.PredictionKeys.LOGITS]]
                     else:
                         outputs = nest.flatten(spec.predictions)
                         if len(outputs) > 1:
-                            raise Exception("Evaluate on more than one output is not " +
-                                            "supported now")
+                            invalidInputError(False,
+                                              "Evaluate on more than one output is not " +
+                                              "supported now")
 
                     all_inputs = result._original_tensors
                     if isinstance(all_inputs, tuple) and len(all_inputs) == 2:
@@ -320,7 +324,7 @@ class TFEstimator(object):
                             if isinstance(outs, list):
                                 error_msg = "output length is " \
                                     + "{} but keys length is {}".format(len(outs), len(keys))
-                                assert len(outs) == len(keys), error_msg
+                                invalidInputError(len(outs) == len(keys), error_msg)
                             else:
                                 outs = [outs]
                             res_dict = {}
@@ -350,4 +354,5 @@ class TFEstimator(object):
         elif metric == "treennaccuracy":
             return TreeNNAccuracy()
         else:
-            raise TypeError("Unsupported metric: %s" % metric)
+            invalidInputError(False,
+                              "Unsupported metric: %s" % metric)
