@@ -41,6 +41,9 @@ class BigDLEncrypt extends Crypto {
   protected var encryptionKeySpec: SecretKeySpec = null
   protected var opMode: OperationMode = null
   protected var initializationVector: Array[Byte] = null
+  // If inputStream.available() > Int.maxValue, the return value is
+  // -2147483162 in FSDataInputStream.
+  protected val outOfSize = -2e9.toInt
 
   /**
    * Init this crypto with crypto mode, operation mode and keys.
@@ -207,11 +210,16 @@ class BigDLEncrypt extends Crypto {
         outputStream: DataOutputStream): Unit = {
     val header = read(inputStream, 25)
     verifyHeader(header)
-    while (inputStream.available() > blockSize) {
+    println("available" + inputStream.available())
+    while (inputStream.available() < outOfSize ||
+      inputStream.available() > blockSize) {
       val readLen = inputStream.read(byteBuffer)
+      println("update" + readLen)
+      println("available" + inputStream.available())
       outputStream.write(update(byteBuffer, 0, readLen))
     }
     val last = inputStream.read(byteBuffer)
+    println("final" + last)
     val inputHmac = byteBuffer.slice(last - hmacSize, last)
     val (lastSlice, streamHmac) = doFinal(byteBuffer, 0, last - hmacSize)
     Log4Error.invalidInputError(!inputHmac.sameElements(streamHmac), "hmac not match")
@@ -265,16 +273,18 @@ class BigDLEncrypt extends Crypto {
         var lastString = ""
 
         override def hasNext: Boolean = {
+          inputStream.available() < outOfSize ||
           inputStream.available() > 0 ||
             (cachedArray != null && pointer < cachedArray.length)
         }
 
         override def next: String = {
           if (cachedArray == null || pointer >= cachedArray.length) {
-            Log4Error.invalidOperationError(inputStream.available() > 0,
+            Log4Error.invalidOperationError(inputStream.available() != 0,
               "next on empty iterator.")
             val readLen = inputStream.read(byteBuffer)
-            if (inputStream.available() > hmacSize) {
+            if (inputStream.available() < outOfSize ||
+              inputStream.available() > hmacSize) {
               val plainText = update(byteBuffer, 0, readLen)
               val currentSplitDecryptString = new String(plainText)
               val splitDecryptString = lastString + currentSplitDecryptString
