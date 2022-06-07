@@ -28,10 +28,11 @@ from torch import nn
 import logging
 
 from bigdl.ppml.fl.nn.pytorch.pipeline import PytorchPipeline
+from bigdl.ppml.fl.utils import FLTest
 
 resource_path = os.path.join(os.path.dirname(__file__), "../resources")
 
-def mock_process(data_train):
+def mock_process(data_train, target):
     df_train = pd.read_csv(os.path.join(resource_path, data_train))
     if 'Outcome' in df_train:
         df_x = df_train.drop('Outcome', 1)
@@ -47,18 +48,19 @@ def mock_process(data_train):
     loss_fn = nn.BCELoss()
     optimizer = torch.optim.SGD(model.parameters(), lr=1e-3)
     server_model = LogisticRegressionNetwork2()
-    ppl = PytorchPipeline(model, loss_fn, optimizer)
+    ppl = PytorchPipeline(model, loss_fn, optimizer, target=target)
     ppl.add_server_model(server_model, loss_fn, torch.optim.SGD, {'lr':1e-3})
     response = ppl.fit(x, y)
     logging.info(response)
     return ppl
 
 
-class TestLogisticRegression(unittest.TestCase):
+class TestLogisticRegression(FLTest):
     fmt = '%(asctime)s %(levelname)s {%(module)s:%(lineno)d} - %(message)s'
     logging.basicConfig(format=fmt, level=logging.INFO)
     def setUp(self) -> None:
         self.fl_server = FLServer(client_num=2)
+        self.fl_server.set_port(self.port)
         self.fl_server.build() 
         self.fl_server.start()
 
@@ -103,9 +105,9 @@ class TestLogisticRegression(unittest.TestCase):
                 pytorch_loss_list.append(np.array(loss))
         
         mock_party2 = threading.Thread(target=mock_process, 
-            args=('diabetes-vfl-2.csv',))
+            args=('diabetes-vfl-2.csv', self.target))
         mock_party2.start()        
-        ppl = mock_process(data_train='diabetes-vfl-1.csv')
+        ppl = mock_process(data_train='diabetes-vfl-1.csv', target=self.target)
         mock_party2.join()
         assert np.allclose(pytorch_loss_list, ppl.loss_history), \
             "Validation failed, correctness of PPML and native Pytorch not the same"

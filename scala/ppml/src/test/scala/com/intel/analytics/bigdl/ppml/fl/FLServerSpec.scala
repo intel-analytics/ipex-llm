@@ -19,7 +19,7 @@ package com.intel.analytics.bigdl.ppml.fl
 import com.intel.analytics.bigdl.ppml.fl.example.DebugLogger
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
-class FLServerSpec extends FlatSpec with Matchers with BeforeAndAfter with DebugLogger {
+class FLServerSpec extends FLSpec {
   "start server from config" should "work" in {
     val flServer = new FLServer(Array("-c",
       getClass.getClassLoader.getResource("ppml-conf-2-party.yaml").getPath))

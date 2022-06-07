@@ -24,15 +24,7 @@ import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 import scala.collection.JavaConverters._
 import scala.concurrent.TimeoutException
 
-class PSISpec extends FlatSpec with Matchers with BeforeAndAfter{
-  var port: Int = 8980
-  var target: String = "localhost:8980"
-  val logger = LogManager.getLogger(getClass)
-  before {
-    port = PortUtils.findNextPortAvailable(port)
-    target = "localhost:" + port
-    logger.info(s"Running test on port: $port, target: $target")
-  }
+class PSISpec extends FLSpec {
   "PSI get salt" should "work" in {
     val flServer = new FLServer()
     flServer.setPort(port)

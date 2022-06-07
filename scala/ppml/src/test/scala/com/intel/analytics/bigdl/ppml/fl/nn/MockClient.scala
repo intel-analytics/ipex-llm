@@ -27,11 +27,12 @@ import scala.io.Source
 class MockClient(dataPath: String,
                  featureColumns: Array[String] = null,
                  labelColumns: Array[String] = null,
-                 learningRate: Float = 0.005f) extends Thread {
+                 learningRate: Float = 0.005f,
+                 target: String = null) extends Thread {
 
   val logger = LogManager.getLogger(getClass)
   val testFlContext = new FlContextForTest()
-  testFlContext.initFLContext()
+  testFlContext.initFLContext(target)
   override def run(): Unit = {
     rawDataPipeline()
   }

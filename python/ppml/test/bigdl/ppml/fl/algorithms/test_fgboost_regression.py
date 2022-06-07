@@ -27,6 +27,7 @@ from bigdl.ppml.fl import *
 from bigdl.ppml.fl.algorithms.fgboost_regression import FGBoostRegression
 from bigdl.ppml.fl.fl_server import FLServer
 from bigdl.ppml.fl.utils import init_fl_context
+from bigdl.ppml.fl.utils import FLTest
 
 resource_path = os.path.join(os.path.dirname(__file__), "../resources")
 
@@ -49,7 +50,7 @@ def mock_process(data_train, data_test):
     result = fgboost_regression.predict(df_test, feature_columns=df_test.columns)
 
 
-class TestFGBoostRegression(unittest.TestCase):    
+class TestFGBoostRegression(FLTest):    
     xgboost_result = pd.read_csv(os.path.join(
             resource_path, "house-price-xgboost-submission.csv"))
     xgboost_result = xgboost_result['SalePrice'].to_numpy()
@@ -59,7 +60,8 @@ class TestFGBoostRegression(unittest.TestCase):
 
     def setUp(self) -> None:
         self.fl_server = FLServer()
-        init_fl_context()
+        self.fl_server.set_port(self.port)
+        init_fl_context(self.target)
         # this explicit set is needed, default value is 'fork' on Unix
         # if 'fork', the resources would be inherited and thread crash would occur
         # (to be verified)
