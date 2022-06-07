@@ -27,7 +27,9 @@ class PPMLContextWrapper[T]() {
     logger.info("appName: " + appName)
     logger.info("ppmlArgs: " + ppmlArgs)
     import scala.collection.JavaConverters._
-    PPMLContext.initPPMLContext(appName, ppmlArgs.asScala.toMap)
+    val sc = PPMLContext.initPPMLContext(appName, ppmlArgs.asScala.toMap)
+    logger.info("load keys result: " + sc.dataKeyPlainText)
+    sc
   }
 
   def read(sc: PPMLContext, cryptoModeStr: String): EncryptedDataFrameReader = {
