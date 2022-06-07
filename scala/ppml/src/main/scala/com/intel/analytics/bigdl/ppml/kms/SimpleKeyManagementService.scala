@@ -22,12 +22,9 @@ import scala.collection.mutable.HashMap
 import scala.util.Random
 import com.intel.analytics.bigdl.ppml.utils.KeyReaderWriter
 
-import org.slf4j.{Logger, LoggerFactory}
-
 class SimpleKeyManagementService protected(
       simpleAPPID: String,
       simpleAPPKEY: String) extends KeyManagementService {
-  val logger: Logger = LoggerFactory.getLogger(getClass)
   val enrollMap = new HashMap[String, String]
   val keyReaderWriter = new KeyReaderWriter
   setAppIdAndKey(simpleAPPID, simpleAPPKEY)
@@ -80,16 +77,12 @@ class SimpleKeyManagementService protected(
       val primaryKeyCiphertext = keyReaderWriter.readKeyFromFile(primaryKeyPath)
       Log4Error.invalidInputError(primaryKeyCiphertext.substring(0, 12) == _appId,
         "appid and primarykey should be matched!")
-      logger.info("primaryKeyPath: " + primaryKeyPath)
-      logger.info("dataKeyPath: " + dataKeyPath)
       val dataKeyCiphertext = keyReaderWriter.readKeyFromFile(dataKeyPath)
-      logger.info("dataKeyCiphertext: " + dataKeyCiphertext)
       var dataKeyPlaintext = ""
       for(i <- 0 until 16) {
         dataKeyPlaintext += '0' + ((dataKeyCiphertext(i) - '0') -
           (primaryKeyCiphertext(i) - '0') + 10) % 10
       }
-      logger.info("dataKeyPlaintext: " + dataKeyPlaintext)
       dataKeyPlaintext
     }
   }
