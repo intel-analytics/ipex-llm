@@ -129,18 +129,23 @@ class EncryptDataFrameSpec extends DataFrameHelper {
   "encrypt/Decrypt BigFile" should "work" in {
     val bigFile = dir + "/big_file.csv"
     val outFile = dir + "/plain_big_file.csv"
+    val enFile = dir + "/en_big_file.csv"
     val fw = new FileWriter(bigFile)
-    (0 until 40000000).foreach {i =>
+    val genNum = 40000000
+    (0 until genNum).foreach {i =>
       fw.append(s"gdni,$i,Engineer\npglyal,$i,Engineer\nyvomq,$i,Developer\n")
     }
     fw.close()
     val crypto = new BigDLEncrypt()
     crypto.init(AES_CBC_PKCS5PADDING, ENCRYPT, dataKeyPlaintext)
-    crypto.doFinal(bigFile, dir + "/en_big_file.csv")
+    crypto.doFinal(bigFile, enFile)
 
     crypto.init(AES_CBC_PKCS5PADDING, DECRYPT, dataKeyPlaintext)
-    crypto.doFinal(dir + "/en_big_file.csv", outFile)
+    crypto.doFinal(enFile, outFile)
     new File(bigFile).length() should be (new File(outFile).length())
+
+    val read = sc.read(AES_CBC_PKCS5PADDING).csv(enFile)
+    read.count() should be (genNum * 3)
   }
 
 }

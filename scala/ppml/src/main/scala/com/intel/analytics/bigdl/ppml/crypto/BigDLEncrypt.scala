@@ -210,16 +210,12 @@ class BigDLEncrypt extends Crypto {
         outputStream: DataOutputStream): Unit = {
     val header = read(inputStream, 25)
     verifyHeader(header)
-    println("available" + inputStream.available())
     while (inputStream.available() < outOfSize ||
       inputStream.available() > blockSize) {
       val readLen = inputStream.read(byteBuffer)
-      println("update" + readLen)
-      println("available" + inputStream.available())
       outputStream.write(update(byteBuffer, 0, readLen))
     }
     val last = inputStream.read(byteBuffer)
-    println("final" + last)
     val inputHmac = byteBuffer.slice(last - hmacSize, last)
     val (lastSlice, streamHmac) = doFinal(byteBuffer, 0, last - hmacSize)
     Log4Error.invalidInputError(!inputHmac.sameElements(streamHmac), "hmac not match")
