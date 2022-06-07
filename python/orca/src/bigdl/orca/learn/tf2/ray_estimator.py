@@ -494,7 +494,7 @@ class TensorFlow2Estimator(OrcaRayEstimator):
             state = pickle.load(f)
 
         state_id = ray.put(state)
-        ray.get([worker.set_state.remote(state_id) for worker in self.remote_workers])
+        ray.get([worker.set_state.remote(state_id, **kwargs) for worker in self.remote_workers])
 
     def shutdown(self):
         """

@@ -39,6 +39,7 @@ from contextlib import closing
 import logging
 import socket
 
+from bigdl.dllib.utils import log4Error
 from bigdl.orca.data.utils import ray_partitions_get_data_label, ray_partitions_get_tf_dataset
 
 logger = logging.getLogger(__name__)
@@ -456,8 +457,13 @@ class TFRunner:
             else:
                 from tensorflow.python.distribute.coordinator.values import \
                     deserialize_dataset_from_graph
+                import tensorflow as tf
                 ds = deserialize_dataset_from_graph(shard["ds_def"],
                                                     shard["elem_spec"])
+                options = tf.data.Options()
+                options.experimental_distribute.auto_shard_policy = \
+                    tf.data.experimental.AutoShardPolicy.DATA
+                ds = ds.with_options(options)
                 ds = ds.batch(batch_size)
                 y = local_model.predict(ds, **params)
             return {"prediction": y}
@@ -474,10 +480,18 @@ class TFRunner:
             "optimizer_weights": self.model.optimizer.get_weights()
         }
 
-    def set_state(self, state):
+    def set_state(self, state, sample_input=None):
         """Sets the state of the model."""
         self.epoch = state["epoch"]
-        self.model.set_weights(state["weights"])
+        if sample_input:
+            self.model(sample_input)
+        try:
+            self.model.set_weights(state["weights"])
+        except Exception:
+            log4Error.invalidInputError(False,
+                                        "Failed to set model weights, please provide real tensor "
+                                        "data (of the correct dtype) as sample_input in load "
+                                        "method")
 
     def shutdown(self):
         """Attempts to shut down the worker."""
