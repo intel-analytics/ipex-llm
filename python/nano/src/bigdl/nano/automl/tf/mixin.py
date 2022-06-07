@@ -15,6 +15,7 @@
 #
 
 import copy
+import warnings
 
 from .objective import Objective
 from bigdl.nano.automl.hpo.backend import create_hpo_backend
@@ -234,6 +235,19 @@ class HPOMixin:
             and search backend arguments (e.g. n_trials, pruner, etc.)
             are allowed in kwargs.
         """
+        do_create = True
+        if resume:
+            if 'storage' not in kwargs.keys() or kwargs['storage'].strip() == "":
+                if self.study is None:
+                    warnings.warn(
+                        "A new study is created since there's no existing study to resume from.",
+                        UserWarning)
+                else:
+                    do_create = False
+
+        if 'storage' in kwargs.keys() and kwargs['storage'].strip() == "":
+            del kwargs['storage']
+
         search_kwargs = kwargs or {}
         self.target_metric = self._fix_target_metric(target_metric, kwargs)
 
@@ -251,7 +265,7 @@ class HPOMixin:
                             self.backend)
 
         # create study
-        if self.study is None:
+        if do_create:
             self.study = _create_study(resume, self.create_kwargs, self.backend)
 
         isprune = True if self.create_kwargs.get('pruner', None) else False
