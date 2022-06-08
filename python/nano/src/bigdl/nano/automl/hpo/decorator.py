@@ -29,7 +29,6 @@ import functools
 from collections import OrderedDict
 import numpy as np
 import multiprocessing as mp
-import ConfigSpace as CS
 
 
 from .space import *
@@ -38,7 +37,7 @@ from .callgraph import CallCache
 
 from bigdl.nano.automl.utils import EasyDict as ezdict
 from bigdl.nano.automl.utils import proxy_methods
-from bigdl.nano.automl.hpo.backend import create_hpo_backend
+from bigdl.nano.automl.hpo.backend import create_hpo_backend, create_configuration_space
 
 __all__ = ['args', 'obj', 'func', 'tfmodel', 'plmodel', 'sample_config']
 
@@ -119,7 +118,7 @@ class _automl_method(object):
 
     @property
     def cs(self):
-        cs = CS.ConfigurationSpace()
+        cs = create_configuration_space()
         for k, v in self.kwvars.items():
             if isinstance(v, NestedSpace):
                 _add_cs(cs, v.cs, k)
