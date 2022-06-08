@@ -249,7 +249,7 @@ class CorrectnessSpec extends FLSpec {
       flServer.setClientNum(3)
       flServer.build()
       flServer.start()
-      FLContext.initFLContext()
+      FLContext.initFLContext(target)
       val mockClient2 = new MockClient(
         dataPath = getClass.getClassLoader
           .getResource("three-party/house-prices-train-1.csv").getPath,
