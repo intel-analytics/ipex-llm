@@ -14,6 +14,9 @@ class PPMLContext(JavaValue):
         df_reader = callBigDlFunc(self.bigdl_type, "read", self.value, crypto_mode)
         return EncryptedDataFrameReader(self.bigdl_type, df_reader)
 
+    def write(self, dataframe, crypto_mode):
+        return callBigDlFunc(self.bigdl_type, "write", self.value, dataframe, crypto_mode)
+
 
 class EncryptedDataFrameReader:
     def __init__(self, bigdl_type, df_reader):
@@ -35,14 +38,26 @@ if __name__ == '__main__':
     parser.add_argument("--primary_key_path", type=str, required=True, help="primary key path")
     parser.add_argument("--data_key_path", type=str, required=True, help="data key path")
     parser.add_argument("--input_encrypt_mode", type=str, required=True, help="input encrypt mode")
+    parser.add_argument("--output_encrypt_mode", type=str, required=True, help="output encrypt mode")
     parser.add_argument("--input_path", type=str, required=True, help="input path")
+    parser.add_argument("--output_path", type=str, required=True, help="output path")
     parser.add_argument("--kms_type", type=str, default="SimpleKeyManagementService",
                         help="SimpleKeyManagementService or EHSMKeyManagementService")
     args = parser.parse_args()
     arg_dict = vars(args)
 
-    ppml_context = PPMLContext(None, 'testApp', arg_dict)
-    df = ppml_context.read(args.input_encrypt_mode) \
+    sc = PPMLContext(None, 'testApp', arg_dict)
+    df = sc.read(args.input_encrypt_mode) \
         .option("header", "true") \
         .csv(args.input_path)
     print(type(df))
+
+    developers = df.filter((df["job"] == "Developer") & df["age"].between(20, 40)).toDF()
+
+    sc.write(developers, args.output_encrypt_mode)\
+        .mode('overwrite')\
+        .option("header", True)\
+        .csv(args.output_path)
+
+
+
