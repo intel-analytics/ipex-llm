@@ -3,7 +3,7 @@
 export ANALYTICS_ZOO_ROOT=${ANALYTICS_ZOO_ROOT}
 export NANO_HOME=${ANALYTICS_ZOO_ROOT}/python/nano/src
 export TENSORFLOW_NANO_NOTEBOOKS_DIR=${ANALYTICS_ZOO_ROOT}/python/nano/notebooks/tensorflow/stanford_dogs
-export FIT_STEPS=5
+export FIT_STEPS=4
 export VAL_STEPS=2
 export FREEZE_EPOCHS=2
 export UNFREEZE_EPOCHS=1
