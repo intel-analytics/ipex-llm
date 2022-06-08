@@ -27,7 +27,7 @@ from bigdl.ppml.fl.nn.fl_server import FLServer
 from torch import nn
 import logging
 
-from bigdl.ppml.fl.nn.pytorch.pipeline import PytorchPipeline
+from bigdl.ppml.fl.nn.pytorch.estimator import PytorchEstimator
 from bigdl.ppml.fl.utils import FLTest
 
 resource_path = os.path.join(os.path.dirname(__file__), "../resources")
@@ -48,7 +48,7 @@ def mock_process(data_train, target):
     loss_fn = nn.BCELoss()
     optimizer = torch.optim.SGD(model.parameters(), lr=1e-3)
     server_model = LogisticRegressionNetwork2()
-    ppl = PytorchPipeline(model, loss_fn, optimizer, target=target)
+    ppl = PytorchEstimator(model, loss_fn, optimizer, target=target)
     ppl.add_server_model(server_model, loss_fn, torch.optim.SGD, {'lr':1e-3})
     response = ppl.fit(x, y)
     logging.info(response)
