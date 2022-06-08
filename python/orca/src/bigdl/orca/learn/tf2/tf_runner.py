@@ -27,7 +27,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
+import copy
 import logging
 import json
 import os
@@ -435,6 +435,8 @@ class TFRunner:
             raise ValueError("Only xshards is supported for predict")
 
         partition = ray.get(dataset)
+        if len(partition) == 0:
+            return []
         params = dict(
             batch_size=batch_size,
             verbose=verbose,
@@ -443,11 +445,18 @@ class TFRunner:
         )
 
         if self.backend == "tf-distributed":
+            local_model = self.model_creator(self.config)
             try:
-                local_model = self.model_creator(self.config)
                 local_model.set_weights(self.model.get_weights())
             except Exception:
-                local_model = self.model
+                logger.warning("Get a sample input from input data to init the model.")
+                sample_shard = copy.deepcopy(partition[0])
+                log4Error.invalidInputError(isinstance(sample_shard, dict),
+                                            "Only dictionary is supported in tf_runner predict")
+                for k, v in sample_shard.items():
+                    sample_shard[k] = v[0:1]
+                local_model(sample_shard)
+                local_model.set_weights(self.model.get_weights())
         else:
             local_model = self.model
 
@@ -455,17 +464,7 @@ class TFRunner:
             if "x" in shard:
                 y = local_model.predict(shard["x"], **params)
             else:
-                from tensorflow.python.distribute.coordinator.values import \
-                    deserialize_dataset_from_graph
-                import tensorflow as tf
-                ds = deserialize_dataset_from_graph(shard["ds_def"],
-                                                    shard["elem_spec"])
-                options = tf.data.Options()
-                options.experimental_distribute.auto_shard_policy = \
-                    tf.data.experimental.AutoShardPolicy.DATA
-                ds = ds.with_options(options)
-                ds = ds.batch(batch_size)
-                y = local_model.predict(ds, **params)
+                y = local_model.predict(shard, **params)
             return {"prediction": y}
 
         new_part = [predict_fn(shard) for shard in partition]
@@ -490,7 +489,7 @@ class TFRunner:
         except Exception:
             log4Error.invalidInputError(False,
                                         "Failed to set model weights, please provide real tensor "
-                                        "data (of the correct dtype) as sample_input in load "
+                                        "data (of the correct dtype) as sample_input in the load "
                                         "method")
 
     def shutdown(self):

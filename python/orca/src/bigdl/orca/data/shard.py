@@ -308,6 +308,8 @@ class SparkXShards(XShards):
 
                     def to_batched_dict(iter):
                         batch_values = list(zip(*iter))
+                        if not batch_values:
+                            return []
                         batch_ndarrays = [np.stack(v, axis=0).astype(dtype)
                                           for v, dtype in zip(batch_values, dtypes)]
                         return [dict(zip(keys, batch_ndarrays))]
