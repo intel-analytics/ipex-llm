@@ -2,7 +2,7 @@
 
 export ANALYTICS_ZOO_ROOT=${ANALYTICS_ZOO_ROOT}
 export NANO_HOME=${ANALYTICS_ZOO_ROOT}/python/nano/src
-export INC_PYTORCH_NANO_TEST_DIR=${ANALYTICS_ZOO_ROOT}/python/nano/test/neuralCompressor/pytorch
+export INC_PYTORCH_NANO_TEST_DIR=${ANALYTICS_ZOO_ROOT}/python/nano/test/neural_compressor/pytorch
 
 wget -nv ${FTP_URI}/analytics-zoo-data/cifar-10-python.tar.gz -P ${INC_PYTORCH_NANO_TEST_DIR}/data
 
