@@ -16,7 +16,7 @@
 from bigdl.nano.utils.log4Error import invalidInputError
 from ..core import BaseQuantization
 from .metric import TensorflowINCMetric
-from tensorflow.keras.metrics import Metric
+from .model import KerasQuantizedModel
 from .utils import Dataloader
 
 
@@ -46,7 +46,7 @@ class TensorflowQuantization(BaseQuantization):
 
     def _post_execution(self, q_model):
         # TODO: Need to wrapp q_model similar to Pytorch
-        return q_model
+        return KerasQuantizedModel(q_model)
 
     @property
     def valid_frameworks(self):

@@ -59,7 +59,7 @@ class EncryptedDataFrameWriter(
   def csv(path: String): Unit = {
     encryptMode match {
       case PLAIN_TEXT =>
-        df.write.options(extraOptions).csv(path)
+        df.write.options(extraOptions).mode(mode).csv(path)
       case AES_CBC_PKCS5PADDING =>
         writeCsv(df.rdd, sparkSession.sparkContext, path, encryptMode, dataKeyPlainText)
       case _ =>

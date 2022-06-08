@@ -20,6 +20,7 @@ import com.intel.analytics.bigdl.dllib.utils.File
 import com.intel.analytics.bigdl.ppml.crypto.dataframe.DataFrameHelper
 import org.apache.hadoop.fs.Path
 
+import java.io.FileWriter
 import java.nio.file.{Files, Paths}
 import scala.io.Source
 
@@ -27,7 +28,7 @@ class EncryptSpec extends DataFrameHelper {
   val fs = File.getFileSystem(plainFileName)
 
   "decrypt file" should "work" in {
-    val decryptFile = dir + "decrypt_file.csv"
+    val decryptFile = dir + "/decrypt_file.csv"
     val crypto = new BigDLEncrypt()
     crypto.init(AES_CBC_PKCS5PADDING, DECRYPT, dataKeyPlaintext)
     crypto.doFinal(encryptFileName, decryptFile)

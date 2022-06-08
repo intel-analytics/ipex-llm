@@ -14,6 +14,7 @@ ${SPARK_HOME}/bin/spark-submit \
     --conf spark.kubernetes.executor.podTemplateFile=./executor.yaml \
     --conf spark.kubernetes.file.upload.path=file:///tmp \
     --conf spark.kubernetes.executor.podNamePrefix="sparktpch" \
+    --conf spark.kubernetes.sgx.log.level=off \
     --num-executors 1 \
     --executor-cores 8 \
     --executor-memory 16g \

@@ -17,9 +17,11 @@
 package com.intel.analytics.bigdl.ppml.crypto.dataframe
 
 import com.intel.analytics.bigdl.ppml.PPMLContext
-import com.intel.analytics.bigdl.ppml.crypto.{AES_CBC_PKCS5PADDING, PLAIN_TEXT}
+import com.intel.analytics.bigdl.ppml.crypto.{AES_CBC_PKCS5PADDING, BigDLEncrypt, DECRYPT, ENCRYPT, PLAIN_TEXT}
 import org.apache.spark.{SparkConf, SparkContext}
 import org.apache.spark.sql.SparkSession
+
+import java.io.{File, FileWriter}
 
 class EncryptDataFrameSpec extends DataFrameHelper {
 
@@ -96,5 +98,55 @@ class EncryptDataFrameSpec extends DataFrameHelper {
       s"${v.get(0)},${v.get(1)},${v.get(2)}").mkString("\n")
     readPlainCollect + "\n" should be (data)
   }
+
+  "save df with multi-partition" should "work" in {
+    val enWriteCsvPath = dir + "/en_write_csv_multi"
+    val writeCsvPath = dir + "/write_csv_multi"
+    val df = sc.read(cryptoMode = AES_CBC_PKCS5PADDING)
+      .option("header", "true").csv(encryptFileName).repartition(4)
+    df.count() should be (totalNum) // with header
+    sc.write(df, cryptoMode = AES_CBC_PKCS5PADDING).csv(enWriteCsvPath)
+    sc.write(df, cryptoMode = PLAIN_TEXT).csv(writeCsvPath)
+
+    val readEn = sc.read(cryptoMode = AES_CBC_PKCS5PADDING).csv(enWriteCsvPath)
+    readEn.count() should be (totalNum)
+    val readEnCollect = readEn.collect()
+      .sortWith((a, b) => a.get(0).toString < b.get(0).toString)
+      .sortWith((a, b) => a.get(1).toString.toInt < b.get(1).toString.toInt)
+      .map(v => s"${v.get(0)},${v.get(1)},${v.get(2)}")
+      .mkString("\n")
+    header + readEnCollect + "\n" should be (data)
+
+    val readPlain = sc.read(cryptoMode = PLAIN_TEXT).csv(writeCsvPath)
+    readPlain.count() should be (totalNum)
+    val readPlainCollect = readPlain.collect()
+      .sortWith((a, b) => a.get(0).toString < b.get(0).toString)
+      .sortWith((a, b) => a.get(1).toString.toInt < b.get(1).toString.toInt)
+      .map(v => s"${v.get(0)},${v.get(1)},${v.get(2)}").mkString("\n")
+    header + readPlainCollect + "\n" should be (data)
+  }
+
+  "encrypt/Decrypt BigFile" should "work" in {
+    val bigFile = dir + "/big_file.csv"
+    val outFile = dir + "/plain_big_file.csv"
+    val enFile = dir + "/en_big_file.csv"
+    val fw = new FileWriter(bigFile)
+    val genNum = 40000000
+    (0 until genNum).foreach {i =>
+      fw.append(s"gdni,$i,Engineer\npglyal,$i,Engineer\nyvomq,$i,Developer\n")
+    }
+    fw.close()
+    val crypto = new BigDLEncrypt()
+    crypto.init(AES_CBC_PKCS5PADDING, ENCRYPT, dataKeyPlaintext)
+    crypto.doFinal(bigFile, enFile)
+
+    crypto.init(AES_CBC_PKCS5PADDING, DECRYPT, dataKeyPlaintext)
+    crypto.doFinal(enFile, outFile)
+    new File(bigFile).length() should be (new File(outFile).length())
+
+    val read = sc.read(AES_CBC_PKCS5PADDING).csv(enFile)
+    read.count() should be (genNum * 3)
+  }
+
 }
 
