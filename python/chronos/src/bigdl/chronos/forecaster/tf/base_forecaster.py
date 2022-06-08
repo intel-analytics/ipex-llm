@@ -64,19 +64,19 @@ class BaseTF2Forecaster(Forecaster):
                 | should be the same as past_seq_len and input_feature_num.
 
         :params batch_size: predict batch size. The value will not affect evaluate
-                result but will affect resources cost(e.g. memory and time).
+                result but will affect resources cost(e.g. memory and time). The default to 32.
+                If set to None, the model will be used directly for inference.
+        :params training: Only takes effect when batch_size is None,
+                whether to update the weight value of the model, the default is False.
         """
         from bigdl.nano.utils.log4Error import invalidInputError
         if not self.fitted:
-<<<<<<< HEAD
             invalidInputError(False,
                               "You must call fit or restore first before calling predict!")
-        yhat = self.internal.predict(data, batch_size=batch_size)
-=======
-            raise RuntimeError("You must call fit or restore first before calling predict!")
-        # yhat = self.internal.predict(data, batch_size=batch_size)
-        yhat = self.internal(data, training=training).numpy()
->>>>>>> modify predict method
+        if batch_size:
+            yhat = self.internal.predict(data, batch_size=batch_size)
+        else:
+            yhat = self.internal(data, training=training)
         return yhat
 
     def evaluate(self, data, batch_size=32, multioutput="raw_values"):
