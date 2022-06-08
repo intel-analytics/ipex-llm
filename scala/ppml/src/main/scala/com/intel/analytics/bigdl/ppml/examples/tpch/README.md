@@ -29,17 +29,9 @@ Encrypt data with specified Key Management Service (`SimpleKeyManagementService`
 
 The example code of encrypt data with `SimpleKeyManagementService` is like below:
 ```
-spark-submit \
-	--master MASTER \
-	--class "com.intel.analytics.bigdl.ppml.examples.tpch.SplitAndEncrypt" \
-	--conf spark.bigdl.kms.type=SimpleKeyManagementService \
-	--conf spark.bigdl.kms.simple.id=simpleAPPID \
-	--conf spark.bigdl.kms.simple.key=simpleAPPKEY \
-	--conf spark.bigdl.kms.key.primary=xxxx/primaryKey \
-	--conf spark.bigdl.kms.key.data=xxxx/dataKey \
-	/ppml/trusted-big-data-ml/work/bigdl-2.1.0-SNAPSHOT/lib/bigdl-ppml-spark_3.1.2-2.1.0-SNAPSHOT-jar-with-dependencies.jar \
-   --outputEncryptModeValue aes_cbc_pkcs5padding \
-   --outputPartitionNum 8 \
+java -cp '/ppml/trusted-big-data-ml/work/bigdl-2.1.0-SNAPSHOT/lib/bigdl-ppml-spark_3.1.2-2.1.0-SNAPSHOT-jar-with-dependencies.jar:/ppml/trusted-big-data-ml/work/spark-3.1.2/conf/:/ppml/trusted-big-data-ml/work/spark-3.1.2/jars/* \
+   -Xmx10g \
+   com.intel.analytics.bigdl.ppml.examples.tpch.EncryptFiles \
    --inputPath xxx/dbgen \
    --outputPath xxx/dbgen-encrypted
 ```
