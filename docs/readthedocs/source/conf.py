@@ -18,7 +18,7 @@ import glob
 import shutil
 import urllib
 
-autodoc_mock_imports = ["openvino", "pytorch-lightning"]
+autodoc_mock_imports = ["openvino", "pytorch_lightning"]
 
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 #sys.path.insert(0, '.')
