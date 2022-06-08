@@ -46,10 +46,13 @@ def mock_process(data_train, target):
     model = LogisticRegressionNetwork1(len(df_x.columns))
     set_one_like_parameter(model)
     loss_fn = nn.BCELoss()
-    optimizer = torch.optim.SGD(model.parameters(), lr=1e-3)
     server_model = LogisticRegressionNetwork2()
-    ppl = PytorchEstimator(model, loss_fn, optimizer, target=target)
-    ppl.add_server_model(server_model, loss_fn, torch.optim.SGD, {'lr':1e-3})
+    ppl = PytorchEstimator.from_torch(client_model=model, 
+                                      loss_fn=loss_fn,
+                                      optimizer_cls=torch.optim.SGD,
+                                      optimizer_args={'lr':1e-3},
+                                      target=target,
+                                      server_model=server_model)
     response = ppl.fit(x, y)
     logging.info(response)
     return ppl
