@@ -52,6 +52,10 @@ Note: BigDL-Nano does not install IPEX by default. You can install IPEX using th
 ```bash
 python -m pip install torch_ipex==1.9.0 -f https://software.intel.com/ipex-whl-stable
 ```
+Note: `IPEX 1.9.0` depends on `torch 1.9.0+cpu` while BigDL-Nano install `torchvision 0.10.0` by default. You should install `torchvision 0.10.0+cpu` using the following command:
+```bash
+python -m pip install torchvision==0.10.0+cpu -f https://download.pytorch.org/whl/torch_stable.html
+```
 
 #### Multi-instance Training
 
