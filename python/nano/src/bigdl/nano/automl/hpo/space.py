@@ -24,7 +24,6 @@
 
 import copy
 from collections import OrderedDict
-import ConfigSpace.hyperparameters as CSH
 from bigdl.nano.automl.utils import EasyDict
 from bigdl.nano.deps.automl.hpo_api import create_configuration_space
 from bigdl.nano.deps.automl.hpo_api import (
