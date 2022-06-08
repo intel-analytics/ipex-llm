@@ -34,7 +34,7 @@ class TestEstimator(ZooTestCase):
         """ setup any state tied to the execution of the given method in a
         class.  setup_method is invoked for every test method of a class.
         """
-        ZooContext.log_output = True
+        # ZooContext.log_output = True
         sparkConf = init_spark_conf().setMaster("local[1]").setAppName("testEstimator")
         self.sc = init_nncontext(sparkConf)
         #test model not equal to testEstimator
@@ -131,11 +131,11 @@ class TestEstimator(ZooTestCase):
         assert len(eval_result) == 1
         predict_result = model.predict(sample_rdd)
         assert (predict_result.count(), 8)
-        import time
-        time.sleep(10)
-        logPath = SparkContext._jvm.java.lang.System.getProperty("logFilename")
-        absPath = "/tmp/" + logPath
-        assert os.path.exists(absPath) and os.path.getsize(absPath) > 0
+        # import time
+        # time.sleep(10)
+        # logPath = SparkContext._jvm.java.lang.System.getProperty("logFilename")
+        # absPath = "/tmp/" + logPath
+        # assert os.path.exists(absPath) and os.path.getsize(absPath) > 0
 
 if __name__ == "__main__":
     pytest.main([__file__])
