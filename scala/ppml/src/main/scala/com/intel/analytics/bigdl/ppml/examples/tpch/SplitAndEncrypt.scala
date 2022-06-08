@@ -16,14 +16,13 @@
 */
 package com.intel.analytics.bigdl.ppml.examples.tpch
 
-import com.intel.analytics.bigdl.ppml.crypto.{AES_CBC_PKCS5PADDING, BigDLEncrypt, ENCRYPT, EncryptRuntimeException, PLAIN_TEXT}
+import org.apache.spark.SparkConf
+import com.intel.analytics.bigdl.ppml.crypto.{AES_CBC_PKCS5PADDING, PLAIN_TEXT}
 import com.intel.analytics.bigdl.ppml.utils.EncryptIOArguments
 import com.intel.analytics.bigdl.dllib.utils.{File, Log4Error}
 import com.intel.analytics.bigdl.ppml.kms.{EHSMKeyManagementService, KMS_CONVENTION, SimpleKeyManagementService}
 import org.apache.hadoop.fs.{FSDataOutputStream, Path, RemoteIterator}
 import org.slf4j.LoggerFactory
-import java.io.{BufferedReader, InputStreamReader}
-import java.util.concurrent.locks.{Lock, ReentrantLock}
 
 import com.intel.analytics.bigdl.ppml.PPMLContext
 
@@ -56,9 +55,9 @@ object SplitAndEncrypt {
       }
       val df = sc.read(PLAIN_TEXT)
         .option("sep", "|")
-        .csv(file.getPath)
+        .csv(file.getPath.toString)
         .repartition(arguments.outputPartitionNum)
-      sc.write(df, AES_CBC_PKCS5PADDING).csv(new Path(arguments.outputPath, filePrefix))
+      sc.write(df, AES_CBC_PKCS5PADDING).csv(new Path(arguments.outputPath, filePrefix).toString)
     }
     }
   }

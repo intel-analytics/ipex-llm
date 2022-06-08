@@ -2,7 +2,7 @@
 
 TPC-H queries implemented in Spark using the DataFrames API running with BigDL PPML.
 
-### Generating tables
+## Generating tables
 
 Go to [TPC Download](https://www.tpc.org/tpc_documents_current_versions/current_specifications5.asp) site, choose `TPC-H` source code, then download the TPC-H toolkits.
 After you download the tpc-h tools zip and uncompressed the zip file. Go to `dbgen` directory, and create a makefile based on `makefile.suite`, and run `make`.
@@ -124,9 +124,13 @@ export OUTPUT_DIR=xxx/output \
     --class com.intel.analytics.bigdl.ppml.examples.tpch.TpchQuery \
     --verbose \
     /ppml/trusted-big-data-ml/work/bigdl-2.1.0-SNAPSHOT/lib/bigdl-ppml-spark_3.1.2-2.1.0-SNAPSHOT-jar-with-dependencies.jar \
-    $INPUT_DIR $OUTPUT_DIR [QUERY]
+    $INPUT_DIR $OUTPUT_DIR aes_cbc_pkcs5padding plain_text [QUERY]
 ```
 
 INPUT_DIR is the tpch's data dir.
 OUTPUT_DIR is the dir to write the query result.
 The optional parameter [QUERY] is the number of the query to run e.g 1, 2, ..., 22
+
+----------------
+This project is based on [Savvas Savvides's tpch-spark](https://github.com/ssavvides/tpch-spark).
+
