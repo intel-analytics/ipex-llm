@@ -19,6 +19,7 @@ from bigdl.orca.data.shard import SparkXShards
 from bigdl.orca.learn.utils import dataframe_to_xshards_of_pandas_df
 from bigdl.chronos.data.utils.utils import _to_list, _check_type
 from bigdl.chronos.data.utils.roll import roll_timeseries_dataframe
+from bigdl.chronos.data.utils.impute import impute_timeseries_dataframe
 from bigdl.chronos.data.utils.split import split_timeseries_dataframe
 from bigdl.chronos.data.experimental.utils import add_row, transform_to_dict
 
