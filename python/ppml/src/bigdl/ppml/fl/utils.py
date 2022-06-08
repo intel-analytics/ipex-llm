@@ -35,7 +35,7 @@ class FLTest(unittest.TestCase):
     def __init__(self, methodName='FLTest') -> None:
         super().__init__(methodName)
         self.port = 8980
-        self.port = self.get_available_port(self.port, self.port + 3)
+        self.port = self.get_available_port(self.port, self.port + 10)
         self.target = f"localhost:{self.port}"
 
     def get_available_port(self, port_start, port_end):
