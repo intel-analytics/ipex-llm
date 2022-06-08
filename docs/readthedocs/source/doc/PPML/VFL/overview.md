@@ -1,10 +1,10 @@
 # Vertical Federated Learning
 Vertical Federated Learning (VFL) is a federated machine learning case where multiple data sets share the same sample ID space but differ in feature space. 
 
-VFL of multi-parties is supported in BigDL PPML. It allows users to train a federated machine learning model where data features are held by different parties. In BigDL PPML, the following VFL scenarios are supported.
+VFL is supported in BigDL PPML. It allows users to train a federated machine learning model where data features are held by different parties. In BigDL PPML, the following VFL scenarios are supported.
 * **Private Set Intersection**: To get data intersection of different VFL parties.
 * **Neural Network Model**: To train common neural network model with Pytorch or Tensorflow backend across VFL parties.
-* **FGBoost Model**: To train gradient boosted decision tree (GBDT) model across VFL parties.
+* **FGBoost Model**: To train gradient boosted decision tree (GBDT) model across multiple VFL parties.
 
 ## Key Concepts
 A **FL Server** is a gRPC server to handle requests from FL Client. A **FL Client** is a gRPC client to send requests to FL Server. These requests include:
