@@ -68,6 +68,8 @@ class BaseTF2Forecaster(Forecaster):
                 If set to None, the model will be used directly for inference.
         :params training: Only takes effect when batch_size is None,
                 whether to update the weight value of the model, the default is False.
+        
+        :return: A numpy array with shape (num_samples, horizon, target_dim).
         """
         from bigdl.nano.utils.log4Error import invalidInputError
         if not self.fitted:
@@ -76,10 +78,10 @@ class BaseTF2Forecaster(Forecaster):
         if batch_size:
             yhat = self.internal.predict(data, batch_size=batch_size)
         else:
-            yhat = self.internal(data, training=training)
+            yhat = self.internal(data, training=training).numpy()
         return yhat
 
-    def evaluate(self, data, batch_size=32, multioutput="raw_values"):
+    def evaluate(self, data, batch_size=32, multioutput="raw_values", training=False):
         """
         Please note that evaluate result is calculated by scaled y and yhat. If you scaled
         your data (e.g. use .scale() on the TSDataset) please follow the following code
@@ -105,12 +107,16 @@ class BaseTF2Forecaster(Forecaster):
                 String in ['raw_values', 'uniform_average']. The value defaults to
                 'raw_values'.The param is only effective when the forecaster is a
                 non-distribtued version.
+        :params training: Only takes effect when batch_size is None,
+                whether to update the weight value of the model, the default is False.
+        
+        :return: A list of evaluation results. Each item represents a metric.
         """
         from bigdl.nano.utils.log4Error import invalidInputError
         if not self.fitted:
             invalidInputError(False,
                               "You must call fit or restore first before calling evaluate!")
-        yhat = self.internal.predict(data[0], batch_size=batch_size)
+        yhat = self.internal.predict(data[0], batch_size=batch_size, training=training)
 
         aggregate = 'mean' if multioutput == 'uniform_average' else None
         return Evaluator.evaluate(self.metrics, y_true=data[1], y_pred=yhat, aggregate=aggregate)
