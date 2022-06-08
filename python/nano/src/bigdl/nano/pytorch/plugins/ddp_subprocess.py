@@ -129,6 +129,9 @@ class DDPSubprocessPlugin(DDPSpawnPlugin):
             for _, process in enumerate(processes):
                 process.wait()
 
+            for _, process in enumerate(processes):
+                print(">>>>>>>>>>>>>>returncode: ", process.returncode)
+
             with open(os.path.join(temp_dir, "results.pkl"), "rb") as f:
                 queue_list = cloudpickle.load(f)
                 self.mp_queue = queue_loader(queue_list)
