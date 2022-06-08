@@ -136,7 +136,7 @@ jobs:
         shell: bash
         run: |
       
-          $CONDA/bin/conda create -n nano-automl-pytorch -y python=3.7.10 setuptools=58.0.4
+          $CONDA/bin/conda create -n nano-automl-pytorch -y python==3.7.10 setuptools=58.0.4
           source $CONDA/bin/activate nano-automl-pytorch
           $CONDA/bin/conda info
           bash python/nano/dev/build_and_install.sh linux default false pytorch
@@ -269,7 +269,7 @@ jobs:
       - name: Run tensorflow automl unit tests
         shell: bash
         run: |
-          $CONDA/bin/conda create -n nano-automl-tf -y python=3.7.10 setuptools=58.0.4
+          $CONDA/bin/conda create -n nano-automl-tf -y python==3.7.10 setuptools=58.0.4
           source $CONDA/bin/activate nano-automl-tf
           $CONDA/bin/conda info
           bash python/nano/dev/build_and_install.sh linux default false tensorflow
