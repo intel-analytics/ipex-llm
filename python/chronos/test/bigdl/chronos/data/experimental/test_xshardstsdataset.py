@@ -192,6 +192,33 @@ class TestXShardsTSDataset(TestCase):
         x = np.concatenate([collected_numpy[i]['x'] for i in range(len(collected_numpy))], axis=0)
         assert x.shape == ((50-lookback-horizon+1)*2, lookback, 2)
 
+    def test_xshardstsdataset_impute_multiple_id(self):
+        shards_multiple = read_csv(os.path.join(self.resource_path, "multiple.csv"))
+
+        tsdata = XShardsTSDataset.from_xshards(shards_multiple, dt_col="datetime",
+                                               target_col="value",
+                                               extra_feature_col=["extra feature"], id_col="id")
+
+        with pytest.raises(RuntimeError):
+            tsdata.to_xshards()
+
+        # impute train
+        tsdata.impute("datetime", 'last')
+        horizon = random.randint(1, 10)
+        lookback = random.randint(1, 20)
+        tsdata.roll(lookback=lookback, horizon=horizon)
+        shards_numpy = tsdata.to_xshards()
+        collected_numpy = shards_numpy.collect()  # collect and valid
+        x = np.concatenate([collected_numpy[i]['x'] for i in range(len(collected_numpy))], axis=0)
+        y = np.concatenate([collected_numpy[i]['y'] for i in range(len(collected_numpy))], axis=0)
+
+
+        # impute test
+        tsdata.impute("datetime", 'last')
+        shards_numpy = tsdata.to_xshards()
+        collected_numpy = shards_numpy.collect()  # collect and valid
+        x = np.concatenate([collected_numpy[i]['x'] for i in range(len(collected_numpy))], axis=0)
+
     def test_xshardstsdataset_sparkdf(self):
         df = generate_spark_df()
 

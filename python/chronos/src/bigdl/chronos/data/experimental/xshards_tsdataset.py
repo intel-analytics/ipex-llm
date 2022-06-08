@@ -269,6 +269,29 @@ class XShardsTSDataset:
                                                         None, lookback, horizon,
                                                         feature_col, target_col)
         return self
+    def impute(self,
+               dt_col,
+               mode="last",
+               const_num=0):
+        '''
+        Sampling by imputing for machine learning/deep learning models.
+        :param dt_col: name of datetime colomn.
+        :param mode: imputation mode, select from "last", "const" or "linear".
+               "last": impute by propagating the last non N/A number to its following N/A.
+                      if there is no non N/A number ahead, 0 is filled instead.
+               "const": impute by a const value input by user.
+               "linear": impute by linear interpolation.
+        :param const_num: only effective when mode is set to "const".
+
+        :return: the xshardtsdataset instance.
+        '''
+        
+        self.shards = self.shards.transform_shard(impute_timeseries_dataframe,
+                                                        dt_col, mode,
+                                                        const_num)
+       #  self.shards.reset_index(drop=True, inplace=True)
+       
+        return self
 
     def to_xshards(self):
         '''
