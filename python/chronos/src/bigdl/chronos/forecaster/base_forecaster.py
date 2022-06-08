@@ -25,7 +25,9 @@ import torch
 import math
 from functools import partial
 from torch.utils.data import TensorDataset, DataLoader
-
+from bigdl.nano.automl.hpo.space import Space
+from .utils_hpo import GenericLightningModule
+from bigdl.nano.utils.log4Error import invalidOperationError, invalidInputError
 
 class BasePytorchForecaster(Forecaster):
     '''
@@ -59,15 +61,84 @@ class BasePytorchForecaster(Forecaster):
 
             # Model preparation
             self.fitted = False
-            model = self.model_creator({**self.model_config, **self.data_config})
-            loss = self.loss_creator(self.loss_config)
-            optimizer = self.optimizer_creator(model, self.optim_config)
-            self.internal = Trainer.compile(model=model, loss=loss,
-                                            optimizer=optimizer)
+
+            if self.use_hpo and \
+                self._config_has_search_space(
+                    {**self.model_config, **self.optim_config, **self.loss_config}):
+                # check if there's any searchspace in arguments
+                # if no space, disable hpo and follow the normal path
+                # delay the model build to search to incorporate data
+                # TODO shall we build a default model for model.summary?
+                # self.internal = self._build_automodel()
+                pass
+            else:
+                self.use_hpo = False
+                model = self.model_creator({**self.model_config, **self.data_config})
+                loss = self.loss_creator(self.loss_config)
+                optimizer = self.optimizer_creator(model, self.optim_config)
+                self.internal = Trainer.compile(model=model, loss=loss,
+                                                optimizer=optimizer)
             self.onnxruntime_fp32 = None  # onnxruntime session for fp32 precision
             self.openvino_fp32 = None  # placeholader openvino session for fp32 precision
             self.onnxruntime_int8 = None  # onnxruntime session for int8 precision
             self.pytorch_int8 = None  # pytorch model for int8 precision
+
+    @staticmethod
+    def _config_has_search_space(**config):
+        """Check if there's any search space in configuration."""
+        for _, v in config.items():
+            if isinstance(v, Space):
+                return True
+            if isinstance(v, list):
+                for item in v:
+                    if isinstance(item, Space):
+                        return True
+        return False
+
+    def _build_automodel(self, data, validation_data=None):
+        return GenericLightningModule(
+            model_creator=self.model_creator,
+            model_config=self.model_config, data_config=self.data_config,
+            optim_creator=self.optimizer_creator, optim_config=self.optim_config,
+            loss_creator=self.loss_creator, loss_config=self.loss_config,
+            data=data, validation_data=validation_data)
+
+    def tune(self,
+               data,
+               target_metric,
+               direction,
+               n_trials=2,
+               n_parallels=1,
+               epochs=1,
+               batch_size=32,
+               validation_data=None,
+               **kwargs):
+        """
+        Search the hyper parameter.
+
+        :param data: The data supports either dataloader or numpy
+        :param int epochs: _description_, defaults to 1
+        :param int batch_size: _description_, defaults to 32
+        """
+        invalidInputError(not self.distributed,
+                          "HPO is not supported in distributed mode."
+                          "Please use AutoTS instead.")
+        invalidOperationError(self.use_hpo,
+                              "HPO is disabled for this forecaster."
+                              "You may specify search space in hyper parameters to enable it.")
+
+        # prepare data
+        from bigdl.chronos.pytorch import TSTrainer as Trainer
+
+        # data transformation
+        if isinstance(data, tuple):
+            check_data(data[0], data[1], self.data_config)
+
+
+            if validation_data and isinstance(data, tuple):
+                validation_data = DataLoader(validation_data)
+        else:
+            invalidInputError(False, "HPO only supports numpy input.")
 
     def fit(self, data, epochs=1, batch_size=32):
         # TODO: give an option to close validation during fit to save time.

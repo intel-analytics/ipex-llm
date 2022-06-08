@@ -22,7 +22,7 @@ import torch
 from bigdl.chronos.forecaster.tcn_forecaster import TCNForecaster
 from unittest import TestCase
 import pytest
-
+import unittest
 
 def create_data(loader=False):
     num_train_samples = 1000
@@ -91,6 +91,20 @@ class TestChronosModelTCNForecaster(TestCase):
                                    loss="mae",
                                    lr=0.01)
         train_loss = forecaster.fit(train_loader, epochs=2)
+
+
+    def test_tcn_forecaster_tune(self):
+        train_loader, _, _ = create_data(loader=True)
+        forecaster = TCNForecaster(past_seq_len=24,
+                                   future_seq_len=5,
+                                   input_feature_num=1,
+                                   output_feature_num=1,
+                                   kernel_size=4,
+                                   num_channels=[16, 16],
+                                   loss="mae",
+                                   lr=0.01)
+        forecaster.tune(n_trials=2, target_metric='mae', direction="minimize")
+        #train_loss = forecaster.fit(train_loader, epochs=2)
 
     def test_tcn_forecaster_onnx_methods(self):
         train_data, val_data, test_data = create_data()
