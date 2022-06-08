@@ -64,10 +64,11 @@ class BaseTF2Forecaster(Forecaster):
                 | should be the same as past_seq_len and input_feature_num.
 
         :params batch_size: predict batch size. The value will not affect evaluate
-                result but will affect resources cost(e.g. memory and time). The default to 32.
-                If set to None, the model will be used directly for inference.
+                result but will affect resources cost(e.g. memory and time).
+                The value default to 32. If set to None,
+                the model will be used directly for inference.
         :params training: Only takes effect when batch_size is None,
-                whether to update the weight value of the model, the default is False.
+                whether to update the weight value of the model, the value default is False.
         
         :return: A numpy array with shape (num_samples, horizon, target_dim).
         """
@@ -108,7 +109,7 @@ class BaseTF2Forecaster(Forecaster):
                 'raw_values'.The param is only effective when the forecaster is a
                 non-distribtued version.
         :params training: Only takes effect when batch_size is None,
-                whether to update the weight value of the model, the default is False.
+                whether to update the weight value of the model, the value default is False.
         
         :return: A list of evaluation results. Each item represents a metric.
         """
