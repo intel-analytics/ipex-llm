@@ -184,7 +184,7 @@ class CorrectnessSpec extends FLSpec {
           .getResource("two-party/house-prices-train-2.csv").getPath,
         testPath = getClass.getClassLoader
           .getResource("two-party/house-prices-test-2.csv").getPath,
-        rowKeyName = "Id", labelName = "SalePrice", dataFormat = "raw")
+        rowKeyName = "Id", labelName = "SalePrice", dataFormat = "raw", target = target)
       mockClient.start()
       val fGBoostRegression = new FGBoostRegression(
         learningRate = 0.1f, maxDepth = 7, minChildSize = 5)
@@ -249,20 +249,20 @@ class CorrectnessSpec extends FLSpec {
       flServer.setClientNum(3)
       flServer.build()
       flServer.start()
-      FLContext.initFLContext()
+      FLContext.initFLContext(target)
       val mockClient2 = new MockClient(
         dataPath = getClass.getClassLoader
           .getResource("three-party/house-prices-train-1.csv").getPath,
         testPath = getClass.getClassLoader
           .getResource("three-party/house-prices-test-1.csv").getPath,
-        rowKeyName = "Id", labelName = "SalePrice", dataFormat = "raw")
+        rowKeyName = "Id", labelName = "SalePrice", dataFormat = "raw", target = target)
       mockClient2.start()
       val mockClient3 = new MockClient(
         dataPath = getClass.getClassLoader
           .getResource("three-party/house-prices-train-2.csv").getPath,
         testPath = getClass.getClassLoader
           .getResource("three-party/house-prices-test-2.csv").getPath,
-        rowKeyName = "Id", labelName = "SalePrice", dataFormat = "raw")
+        rowKeyName = "Id", labelName = "SalePrice", dataFormat = "raw", target = target)
       mockClient3.start()
 
 
