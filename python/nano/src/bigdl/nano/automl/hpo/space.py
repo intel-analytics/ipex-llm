@@ -24,9 +24,10 @@
 
 import copy
 from collections import OrderedDict
-import ConfigSpace as CS
-import ConfigSpace.hyperparameters as CSH
 from bigdl.nano.automl.utils import EasyDict
+from bigdl.nano.deps.automl.hpo_api import create_configuration_space
+from bigdl.nano.deps.automl.hpo_api import (
+    create_uniform_float_hp, create_uniform_int_hp, create_categorical_hp)
 from bigdl.nano.utils.log4Error import invalidInputError
 
 
@@ -448,7 +449,7 @@ class Categorical(NestedSpace):
         cs = _new_cs(prefix=self.prefix)
         if len(self.data) == 0:
             return cs
-        hp = CSH.CategoricalHyperparameter(
+        hp = create_categorical_hp(
             name='choice', choices=range(len(self.data)),
             meta={})
         _add_hp(cs, hp)
@@ -518,7 +519,7 @@ class Real(SimpleSpace):
 
     def get_hp(self, name):
         """Fetch particular hyperparameter based on its name."""
-        return CSH.UniformFloatHyperparameter(
+        return create_uniform_float_hp(
             name=name,
             lower=self.lower,
             upper=self.upper,
@@ -555,7 +556,7 @@ class Int(SimpleSpace):
 
     def get_hp(self, name):
         """Fetch particular hyperparameter based on its name."""
-        return CSH.UniformIntegerHyperparameter(
+        return create_uniform_int_hp(
             name=name,
             lower=self.lower,
             upper=self.upper,
@@ -616,7 +617,7 @@ def _strip_config_space(config, prefix):
 
 
 def _new_cs(prefix=None):
-    return CS.ConfigurationSpace(meta={'prefix': prefix})
+    return create_configuration_space(meta={'prefix': prefix})
 
 
 def _get_cs_prefix(cs):
