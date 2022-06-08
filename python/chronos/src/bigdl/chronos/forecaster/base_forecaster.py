@@ -29,6 +29,7 @@ from bigdl.nano.automl.hpo.space import Space
 from .utils_hpo import GenericLightningModule
 from bigdl.nano.utils.log4Error import invalidOperationError, invalidInputError
 
+
 class BasePytorchForecaster(Forecaster):
     '''
     Forecaster base model for lstm, seq2seq, tcn and nbeats forecasters.
@@ -95,24 +96,25 @@ class BasePytorchForecaster(Forecaster):
                         return True
         return False
 
-    def _build_automodel(self, data, validation_data=None):
+    def _build_automodel(self, data, validation_data=None, batch_size=32, epochs=1):
         return GenericLightningModule(
             model_creator=self.model_creator,
             model_config=self.model_config, data_config=self.data_config,
             optim_creator=self.optimizer_creator, optim_config=self.optim_config,
             loss_creator=self.loss_creator, loss_config=self.loss_config,
-            data=data, validation_data=validation_data)
+            data=data, validation_data=validation_data,
+            batch_size=batch_size, epochs=epochs)
 
     def tune(self,
-               data,
-               target_metric,
-               direction,
-               n_trials=2,
-               n_parallels=1,
-               epochs=1,
-               batch_size=32,
-               validation_data=None,
-               **kwargs):
+             data,
+             target_metric,
+             direction,
+             n_trials=2,
+             n_parallels=1,
+             epochs=1,
+             batch_size=32,
+             validation_data=None,
+             **kwargs):
         """
         Search the hyper parameter.
 
@@ -133,12 +135,26 @@ class BasePytorchForecaster(Forecaster):
         # data transformation
         if isinstance(data, tuple):
             check_data(data[0], data[1], self.data_config)
-
-
-            if validation_data and isinstance(data, tuple):
-                validation_data = DataLoader(validation_data)
+            if validation_data and isinstance(validation_data, tuple):
+                check_data(validation_data[0], validation_data[1], self.data_config)
+            else:
+                invalidInputError(False,
+                                  "To use tuning, you must provide validation_data"
+                                  "as numpy arrays.")
         else:
-            invalidInputError(False, "HPO only supports numpy input.")
+            invalidInputError(False, "HPO only supports numpy train input data.")
+
+        self.tune_internal = self._build_automodel(data, validation_data, batch_size, epochs)
+        from bigdl.chronos.pytorch import TSTrainer as Trainer
+        # shall we use the same trainier
+        self.tune_trainer = Trainer(logger=False, max_epochs=epochs,
+                                    checkpoint_callback=self.checkpoint_callback,
+                                    num_processes=self.num_processes, use_ipex=self.use_ipex)
+        self.internal = self.tune_trainer.search(n_trials=n_trials,
+                                                 target_metric=target_metric,
+                                                 direction=direction,
+                                                 n_parallels=n_parallels,
+                                                 **kwargs)
 
     def fit(self, data, epochs=1, batch_size=32):
         # TODO: give an option to close validation during fit to save time.
