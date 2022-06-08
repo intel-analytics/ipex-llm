@@ -26,14 +26,14 @@ from bigdl.ppml.fl.nn.utils import tensor_map_to_ndarray_map
 
 class PytorchPipeline:
     def __init__(self, model: nn.Module, loss_fn, optimizer: torch.optim.Optimizer, algorithm=None,
-            bigdl_type="float"):
+            bigdl_type="float", target="localhost:8980"):
         self.bigdl_type = bigdl_type
         self.model = model
         self.loss_fn = loss_fn
         self.optimizer = optimizer
         self.version = 0
         self.algorithm = algorithm
-        self.fl_client = FLClient()
+        self.fl_client = FLClient(target)
         self.loss_history = []
 
     

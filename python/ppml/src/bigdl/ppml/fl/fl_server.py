@@ -34,6 +34,9 @@ class FLServer(JavaValue):
     def set_client_num(self, client_num):
         callBigDlFunc(self.bigdl_type, "flServerSetClientNum", self.value, client_num)
 
+    def set_port(self, port):
+        callBigDlFunc(self.bigdl_type, "flServerSetPort", self.value, port)
+
     def block_until_shutdown(self):
         callBigDlFunc(self.bigdl_type, "flServerBlockUntilShutdown", self.value)
 

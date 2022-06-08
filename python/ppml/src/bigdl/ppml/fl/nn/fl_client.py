@@ -28,8 +28,8 @@ from bigdl.dllib.utils.log4Error import invalidInputError
 from bigdl.ppml.fl.nn.utils import ClassAndArgsWrapper
 
 class FLClient(object):
-    def __init__(self) -> None:
-        self.channel = grpc.insecure_channel("localhost:8980")
+    def __init__(self, target="localhost:8980") -> None:
+        self.channel = grpc.insecure_channel(target)
         self.nn_stub = NNServiceStub(self.channel)
         self.client_uuid = str(uuid.uuid4())
 
