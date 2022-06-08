@@ -22,8 +22,8 @@ from unittest import TestCase
 import pytest
 import torch
 from pytorch_lightning import LightningModule
-from test.pytorch.utils._train_torch_lightning import create_data_loader, data_transform
 from torch import nn
+from test.pytorch.utils._train_torch_lightning import create_data_loader, data_transform
 import torchmetrics
 
 from bigdl.nano.pytorch import Trainer
