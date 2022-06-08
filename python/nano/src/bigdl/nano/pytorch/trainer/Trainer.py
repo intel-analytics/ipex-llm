@@ -180,7 +180,7 @@ class Trainer(pl.Trainer):
         :param target_metric: the object metric to optimize,
             defaults to None.
         :param n_parallels: the number of parallel processes for running trials.
-        :param return: the model with study meta info attached.
+        :return: the model with study meta info attached.
         """
         if not check_hpo_status(self.hposearcher):
             return None
@@ -258,7 +258,7 @@ class Trainer(pl.Trainer):
                             Combine with timeout field to decide when to exit.
                             "timeout=0, max_trials=1" means it will try quantization only once and
                             return satisfying best model.
-        :input_sample:      An input example to convert pytorch model into ONNX/OpenVINO.
+        :param input_sample:      An input example to convert pytorch model into ONNX/OpenVINO.
 
         :return:            A accelerated Pytorch-Lightning Model if quantization is sucessful.
         """
