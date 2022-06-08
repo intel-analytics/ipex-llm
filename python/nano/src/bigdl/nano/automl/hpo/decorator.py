@@ -37,7 +37,8 @@ from .callgraph import CallCache
 
 from bigdl.nano.automl.utils import EasyDict as ezdict
 from bigdl.nano.automl.utils import proxy_methods
-from bigdl.nano.automl.hpo.backend import create_hpo_backend, create_configuration_space
+from bigdl.nano.automl.hpo.backend import create_hpo_backend
+from bigdl.nano.deps.automl.hpo_api import create_configuration_space
 
 __all__ = ['args', 'obj', 'func', 'tfmodel', 'plmodel', 'sample_config']
 
