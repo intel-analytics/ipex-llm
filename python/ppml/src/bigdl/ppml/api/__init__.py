@@ -2,7 +2,7 @@ from bigdl.dllib.nncontext import *
 from bigdl.dllib.utils.engine import prepare_env
 from bigdl.dllib.utils.common import *
 from bigdl.ppml.fl.utils import *
-from bigdl.ppml.api.ppml_context import *
+from bigdl.ppml.ppml_context import *
 import bigdl
 
 import psutil

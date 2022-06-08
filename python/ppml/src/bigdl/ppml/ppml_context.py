@@ -52,7 +52,7 @@ if __name__ == '__main__':
         .csv(args.input_path)
     print(type(df))
 
-    developers = df.filter((df["job"] == "Developer") & df["age"].between(20, 40)).toDF()
+    developers = df.filter((df["job"] == "Developer") & df["age"].between(20, 40)).toDF("name", "age", "job")
 
     sc.write(developers, args.output_encrypt_mode)\
         .mode('overwrite')\
