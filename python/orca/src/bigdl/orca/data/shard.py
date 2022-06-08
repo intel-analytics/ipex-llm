@@ -13,6 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+import numpy
 from py4j.protocol import Py4JError
 
 from bigdl.orca.data.utils import *
@@ -285,6 +286,46 @@ class SparkXShards(XShards):
                     from functools import reduce
                     repartitioned_shard = SparkXShards(rdd.mapPartitions(
                         lambda iter: [np.concatenate(list(iter), axis=0)]))
+            else:
+                repartitioned_shard = SparkXShards(self.rdd.repartition(num_partitions))
+        elif self._get_class_name() == "dict":
+            elem = self.rdd.first()
+            keys = list(elem.keys())
+            dtypes = []
+            dict_of_batched_ndarray = True
+            # Check if all values are ndarray and shape > 1
+            for v in elem.values():
+                if v.__class__.__name__ != "ndarray" or len(v.shape) == 0:
+                    dict_of_batched_ndarray = False
+                    break
+                else:
+                    dtypes.append(v.dtype)
+            if dict_of_batched_ndarray:
+                if num_partitions > self.rdd.getNumPartitions():
+                    def dict_to_unbatched_list(d):
+                        values = [list(d[k]) for k in keys]
+                        return list(zip(*values))
+
+                    def to_batched_dict(iter):
+                        batch_values = list(zip(*iter))
+                        batch_ndarrays = [np.stack(v, axis=0).astype(dtype)
+                                          for v, dtype in zip(batch_values, dtypes)]
+                        return [dict(zip(keys, batch_ndarrays))]
+
+                    # If number of records in a partition <= 10, may produce empty partition
+                    rdd = self.rdd.flatMap(lambda data: dict_to_unbatched_list(data))\
+                        .repartition(num_partitions)
+                    repartitioned_shard = SparkXShards(rdd.mapPartitions(
+                        lambda iter: to_batched_dict(iter)))
+                else:
+                    rdd = self.rdd.coalesce(num_partitions)
+
+                    def merge_list_of_dict(iter):
+                        iter_list = list(iter)
+                        return [{k: np.concatenate([d[k] for d in iter_list], axis=0)
+                                 for k in keys}]
+                    repartitioned_shard = SparkXShards(rdd.mapPartitions(
+                        lambda iter: merge_list_of_dict(iter)))
             else:
                 repartitioned_shard = SparkXShards(self.rdd.repartition(num_partitions))
         else:

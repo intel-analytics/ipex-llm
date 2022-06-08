@@ -136,7 +136,7 @@ if __name__ == "__main__":
 
     if options.cluster_mode == "local":
         init_orca_context("local", cores=options.executor_cores, memory=options.executor_memory,
-                          init_ray_on_spark=True, conf=conf)
+                          init_ray_on_spark=False, conf=conf)
     elif options.cluster_mode == "yarn":
         init_orca_context("yarn-client", cores=options.executor_cores,
                           num_nodes=options.num_executor, memory=options.executor_memory,
@@ -189,34 +189,34 @@ if __name__ == "__main__":
     test_tbl = preprocess(test_tbl, ["title", "rating"])
     train_tbl.sort("len", ascending=False).show(3, truncate=False)
 
-    train_count = train_tbl.size()
-    steps = math.ceil(train_count / 256)
-    print("train size: ", train_count, ", steps: ", steps)
-
-    test_count = test_tbl.size()
-    test_steps = math.ceil(test_count / 256)
-    print("test size: ", test_count, ", steps: ", test_steps)
-
-    train_dataset = Dataset.from_feature_table(train_tbl)
-    test_dataset = Dataset.from_feature_table(test_tbl)
-
-    unique_movie_titles = tbl_dict["movies"].get_vocabularies(["title"])["title"]
-    tbl_dict["users"] = tbl_dict["users"].cast("userid", "string")
-    unique_user_ids = tbl_dict["users"].get_vocabularies(["userid"])["userid"]
-    print(len(unique_movie_titles), len(unique_user_ids))
-    print(unique_movie_titles[0:2])
-    print(unique_user_ids[0:2])
-
-    def model_creator(config):
-        model = RankingModel(tfr.keras.losses.ListMLELoss(ragged=True))
-        from bigdl.friesian.models import TFRSModel
-        model = TFRSModel(model)
-        model.compile(optimizer=tf.keras.optimizers.Adagrad(config["lr"]))
-        return model
-
-    config = {
-        "lr": 0.1
-    }
+    # train_count = train_tbl.size()
+    # steps = math.ceil(train_count / 256)
+    # print("train size: ", train_count, ", steps: ", steps)
+    #
+    # test_count = test_tbl.size()
+    # test_steps = math.ceil(test_count / 256)
+    # print("test size: ", test_count, ", steps: ", test_steps)
+    #
+    # train_dataset = Dataset.from_feature_table(train_tbl)
+    # test_dataset = Dataset.from_feature_table(test_tbl)
+    #
+    # unique_movie_titles = tbl_dict["movies"].get_vocabularies(["title"])["title"]
+    # tbl_dict["users"] = tbl_dict["users"].cast("userid", "string")
+    # unique_user_ids = tbl_dict["users"].get_vocabularies(["userid"])["userid"]
+    # print(len(unique_movie_titles), len(unique_user_ids))
+    # print(unique_movie_titles[0:2])
+    # print(unique_user_ids[0:2])
+    #
+    # def model_creator(config):
+    #     model = RankingModel(tfr.keras.losses.ListMLELoss(ragged=True))
+    #     from bigdl.friesian.models import TFRSModel
+    #     model = TFRSModel(model)
+    #     model.compile(optimizer=tf.keras.optimizers.Adagrad(config["lr"]))
+    #     return model
+    #
+    # config = {
+    #     "lr": 0.1
+    # }
 
     # est = Estimator.from_keras(model_creator=model_creator,
     #                            verbose=True,
@@ -226,26 +226,32 @@ if __name__ == "__main__":
     # # est.evaluate(test_dataset, 256, num_steps=test_steps)
     # est.save("/home/yina/Documents/models/listwise/pad.ckpt")
 
-    pred_tbl = train_tbl.limit(2000).repartition(4)
+    pred_tbl = train_tbl.limit(200).repartition(4)
     pred_tbl.show()
     pred_dataset = Dataset.from_feature_table(pred_tbl)
 
-    def del_ratings(d):
-        del d["ratings"]
-        return d
-    pred_dataset = pred_dataset.map(del_ratings)
+    # def del_ratings(d):
+    #     del d["ratings"]
+    #     return d
+    # pred_dataset = pred_dataset.map(del_ratings)
+
+    # repartition test
+    shard = pred_dataset.xshards
+    c = shard.collect()
+    shard = shard.repartition(6)
+    a = shard.collect()
 
     # pred_shards = est.predict(pred_dataset, 1024)
     # pred_collect = pred_shards.collect()
     # est.shutdown()
 
-    est2 = Estimator.from_keras(model_creator=model_creator,
-                                verbose=True,
-                                config=config, backend="tf2", workers_per_node=1)
-    est2.load("/home/yina/Documents/models/listwise/pad.ckpt",
-              sample_input={"userid": np.asarray(["1"]), "titles": np.asarray([["a", "b", "c", "d"]])})
-    pred_shards2 = est2.predict(pred_dataset, 1000)
-    pred_collect2 = pred_shards2.collect()
+    # est2 = Estimator.from_keras(model_creator=model_creator,
+    #                             verbose=True,
+    #                             config=config, backend="tf2", workers_per_node=1)
+    # est2.load("/home/yina/Documents/models/listwise/pad.ckpt",
+    #           sample_input={"userid": np.asarray(["1"]), "titles": np.asarray([["a", "b", "c", "d"]])})
+    # pred_shards2 = est2.predict(pred_dataset, 1000)
+    # pred_collect2 = pred_shards2.collect()
 
     # est.save("/home/yina/Documents/models/listwise/pad.ckpt")
 
