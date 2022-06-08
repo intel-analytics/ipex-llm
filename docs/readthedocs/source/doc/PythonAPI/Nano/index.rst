@@ -4,4 +4,4 @@ Nano API
 .. toctree::
     :maxdepth: 2
 
-    trainer.rst
+    pytorch.rst

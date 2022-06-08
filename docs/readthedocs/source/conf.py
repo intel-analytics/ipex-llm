@@ -18,6 +18,8 @@ import glob
 import shutil
 import urllib
 
+autodoc_mock_imports = ["openvino", "pytorch-lightning"]
+
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 #sys.path.insert(0, '.')
 sys.path.insert(0, os.path.abspath('.'))
