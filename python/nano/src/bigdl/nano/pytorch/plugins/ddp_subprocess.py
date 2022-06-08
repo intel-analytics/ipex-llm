@@ -130,7 +130,8 @@ class DDPSubprocessPlugin(DDPSpawnPlugin):
                 process.wait()
 
             for _, process in enumerate(processes):
-                assert process.returncode == 0, "Subprocess incorrectly exit, check the trainer configure or usage"
+                assert process.returncode == 0, "Subprocess incorrectly exit, \
+                                                check the trainer configure or usage"
 
             with open(os.path.join(temp_dir, "results.pkl"), "rb") as f:
                 queue_list = cloudpickle.load(f)

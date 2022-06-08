@@ -95,8 +95,8 @@ class TestPlugin(TestCase):
             metrics=[torchmetrics.MeanSquaredError()]
         )
         trainer = Trainer(num_processes=2, distributed_backend="subprocess", max_epochs=2)
-        features = torch.tensor([[0],[0],[1],[1]])
-        labels = torch.tensor([[0],[0],[0],[0]])
+        features = torch.tensor([[0.0],[0.0],[1.0],[1.0]])
+        labels = torch.tensor([[0.0],[0.0],[0.0],[0.0]])
 
         dataset = TensorDataset(features,labels)
         train_loader = DataLoader(dataset=dataset, batch_size=2, shuffle=False)
