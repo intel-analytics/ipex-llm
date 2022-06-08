@@ -328,7 +328,12 @@ class TensorFlow2Estimator(OrcaRayEstimator):
             ray_xshards = RayXShards.from_spark_xshards(data)
             worker_stats = self._evaluate_ray_xshards(ray_xshards, params)
         elif isinstance(data, Dataset):
-            # TODO: repartition?
+            internal_shards = data.xshards
+            if internal_shards.num_partitions() != self.num_workers:
+                internal_shards = internal_shards.repartition(self.num_workers)
+                data.xshards = internal_shards
+            # TODO: delete
+            b = TF2Dataset(data).get_xshards().num_partitions()
             ray_xshards = TF2Dataset(data).get_ray_xshards(self.num_workers)
             worker_stats = self._evaluate_ray_xshards(ray_xshards, params)
         elif isinstance(data, ray.data.Dataset):
@@ -441,6 +446,12 @@ class TensorFlow2Estimator(OrcaRayEstimator):
             pred_shards = self._predict_spark_xshards(data, params)
             result = update_predict_xshards(data, pred_shards)
         elif isinstance(data, Dataset):
+            internal_shards = data.xshards
+            if internal_shards.num_partitions() != self.num_workers:
+                internal_shards = internal_shards.repartition(self.num_workers)
+                c = internal_shards.collect()
+                b = internal_shards.num_partitions()
+                data.xshards = internal_shards
             data = TF2Dataset(data)
             input_shards = data.get_xshards()
             pred_shards = self._predict_spark_xshards(input_shards, params)
