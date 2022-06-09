@@ -24,6 +24,9 @@ import org.apache.spark.sql.types.{StringType, StructField, StructType}
 import org.apache.spark.sql.{DataFrame, Row, SparkSession}
 import org.slf4j.LoggerFactory
 
+/**
+ * A simple query example with encryption and decryption on spark.
+ */
 object SimpleQuerySparkExample extends Supportive {
 
   def main(args: Array[String]): Unit = {
