@@ -22,7 +22,7 @@ import bigdl.nano.automl as nano_automl
 
 class TestVisualization(TestCase):
 
-    def _import_should_okay(self):
+    def test_import_should_okay(self):
         try:
             from bigdl.nano.automl.hpo.visualization import plot_optimization_history
         except ImportError:
@@ -43,26 +43,6 @@ class TestVisualization(TestCase):
             from bigdl.nano.automl.hpo.visualization import plot_param_importances
         except ImportError:
             self.fail("cannot import plot_param_importances from nano.aotoml.hpo.visualization.")
-
-    def test_multi_enable_disable(self):
-        nano_automl.hpo_config.disable_hpo_tf()
-        self._import_should_okay()
-        nano_automl.hpo_config.enable_hpo_tf()
-        self._import_should_okay()
-        nano_automl.hpo_config.disable_hpo_tf()
-        self._import_should_okay()
-        nano_automl.hpo_config.enable_hpo_tf()
-        self._import_should_okay()
-        nano_automl.hpo_config.disable_hpo_tf()
-        self._import_should_okay()
-
-    def test_multi_enable_disable2(self):
-        nano_automl.hpo_config.enable_hpo_tf()
-        self._import_should_okay()
-        nano_automl.hpo_config.disable_hpo_tf()
-        self._import_should_okay()
-        nano_automl.hpo_config.enable_hpo_tf()
-        self._import_should_okay()
 
 if __name__ == '__main__':
     pytest.main([__file__])
