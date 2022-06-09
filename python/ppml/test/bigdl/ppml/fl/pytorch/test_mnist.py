@@ -25,7 +25,7 @@ from bigdl.ppml.fl.nn.fl_server import FLServer
 from bigdl.ppml.fl.nn.fl_client import FLClient
 from bigdl.ppml.fl.nn.pytorch.utils import set_one_like_parameter
 from bigdl.ppml.fl.utils import init_fl_context
-from bigdl.ppml.fl.nn.pytorch.estimator import PytorchEstimator
+from bigdl.ppml.fl.estimator import Estimator
 
 from torch import nn
 import torch
@@ -112,7 +112,7 @@ class TestCorrectness(FLTest):
         set_one_like_parameter(vfl_model_1)
         vfl_model_2 = NeuralNetworkPart2()
         set_one_like_parameter(vfl_model_2)
-        vfl_client_ppl = PytorchEstimator.from_torch(client_model=vfl_model_1, 
+        vfl_client_ppl = Estimator.from_torch(client_model=vfl_model_1, 
                                                      loss_fn=loss_fn,
                                                      optimizer_cls=torch.optim.SGD,
                                                      optimizer_args={'lr':1e-3},
