@@ -1,4 +1,7 @@
 /*
+ * This file is copied from:
+ * https://github.com/ssavvides/tpch-spark/blob/master/src/main/scala/Q12.scala
+ *
  * Copyright (c) 2015 Savvas Savvides, ssavvides@us.ibm.com, savvas@purdue.edu
  *
  * Licensed under the The MIT License:
