@@ -1,5 +1,5 @@
 # BigDL-Nano TensorFlow Inference Overview
-BigDL-Nano provides several APIs which can help users easily apply optimizations on inference pipelines to improve latency and throughput. Currently, performance accelerations are achieved by integrating extra runtimes as inference backend engines or using quantization methods on full-precision trained models to reduce computation during inference. Keras Model (`bigdl.nano.tensorflow.keras.Model`) provides the APIs for all optimizations you need for inference.
+BigDL-Nano provides several APIs which can help users easily apply optimizations on inference pipelines to improve latency and throughput. Currently, performance accelerations are achieved by integrating extra runtimes as inference backend engines or using quantization methods on full-precision trained models to reduce computation during inference. Keras Model (`bigdl.nano.tf.keras.Model`) provides the APIs for all optimizations you need for inference.
 
 For quantization, BigDL-Nano provides only post-training quantization in `Model.quantize()` for users to infer with models of 8-bit precision. Quantization-Aware Training is not available for now. Model conversion to 16-bit like BF16, and FP16 will be coming soon.
 
@@ -19,7 +19,7 @@ By default, Intel Neural Compressor is not installed with BigDL-Nano. So if you 
 pip install 'neural-compressor>=1.8.1,<=1.11.0'
 ```
 **Quantization without extra accelerator**  
-Without extra accelerator, `Model.quantize()` returns a keras module with desired precision and accuracy. Taking MobileNetV2 as an example, you can add quantization as below:
+Without extra accelerators, `Model.quantize()` returns a Keras module with desired precision and accuracy. Taking MobileNetV2 as an example, you can add quantization as below:
 ```python
 import tensorflow as tf
 from tensorflow.keras.applications.mobilenet_v2 import MobileNetV2
@@ -56,7 +56,7 @@ of INC.
 ### Quantization with Accuracy Control
 A set of arguments that helps to tune the results for both INC and POT quantization:
 
-- `calib_dataset`: A tf.data.Dataset object for calibration. Required for static quantization. It's also used as validation dataloader.
+- `calib_dataset`: A tf.data.Dataset object for calibration. Required for static quantization. It's also used as a validation dataloader.
 - `metric`:  A `tensorflow.keras.metrics.Metric` object for evaluation.
 
 - `accuracy_criterion`: A dictionary to specify the acceptable accuracy drop, e.g. `{'relative': 0.01, 'higher_is_better': True}`
@@ -70,8 +70,8 @@ A set of arguments that helps to tune the results for both INC and POT quantizat
 There are a few arguments that require only by INC.
 - `tuning_strategy`(optional): it specifies the algorithm to search the tuning space. In most cases, you don't need to change it.
 - `timeout`: Timeout of your tuning. Defaults 0 means endless time for tuning.
-- `inputs`:      A list of input names. Default: None, automatically get names from graph.
-- `outputs`:     A list of output names. Default: None, automatically get names from graph.
+- `inputs`:      A list of input names. Default: None, automatically get names from the graph.
+- `outputs`:     A list of output names. Default: None, automatically get names from the graph.
 Here is an example to use INC with accuracy control as below. It will search for a model within 1% accuracy drop with 10 trials.
 ```python
 from torchmetrics.classification import Accuracy
