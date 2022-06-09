@@ -3,6 +3,7 @@
 import grpc
 
 import nn_service_pb2 as nn__service__pb2
+from bigdl.dllib.utils.log4Error import invalidInputError
 
 
 class NNServiceStub(object):
@@ -43,25 +44,25 @@ class NNServiceServicer(object):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
-        raise NotImplementedError('Method not implemented!')
+        invalidInputError(False, 'Method not implemented!')
 
     def evaluate(self, request, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
-        raise NotImplementedError('Method not implemented!')
+        invalidInputError(False, 'Method not implemented!')
 
     def predict(self, request, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
-        raise NotImplementedError('Method not implemented!')
+        invalidInputError(False, 'Method not implemented!')
 
     def upload_model(self, request, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
-        raise NotImplementedError('Method not implemented!')
+        invalidInputError(False, 'Method not implemented!')
 
 
 def add_NNServiceServicer_to_server(servicer, server):

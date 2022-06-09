@@ -20,6 +20,7 @@ import threading
 from torch import nn
 import torch
 from bigdl.ppml.fl.nn.utils import ndarray_map_to_tensor_map
+from bigdl.dllib.utils.log4Error import invalidInputError
 from threading import Condition
 
 class Aggregator(object):
@@ -62,7 +63,8 @@ class Aggregator(object):
         elif self.loss_fn == 'binary_cross_entropy':
             self.loss_fn = nn.BCELoss()
         else:
-            raise Exception(f"Illigal loss function: {self.loss_fn}")
+            invalidInputError(False,
+                              f"Illigal loss function: {self.loss_fn}")
 
     def set_loss_fn(self, loss_fn):
         self.loss_fn = loss_fn
@@ -81,7 +83,8 @@ class Aggregator(object):
         if self.optimizer == 'sgd':
             self.optimizer = torch.optim.SGD(self.model.parameters(), lr=self.learning_rate)
         else:
-            raise Exception(f"Illigal optimizer: {self.optimizer}")
+            invalidInputError(False,
+                              f"Illigal optimizer: {self.optimizer}")
 
     def put_client_data(self, client_id, data):
         self.condition.acquire()
@@ -110,7 +113,9 @@ got {len(self.client_data)}/{self.client_num}')
                 elif k == 'target':
                     target = torch.from_numpy(v)
                 else:
-                    raise Exception(f'Invalid type of tensor map key: {k}, should be input/target')
+                    invalidInputError(False,
+                                      f'Invalid type of tensor map key: {k},'
+                                      f' should be input/target')
         x = torch.stack(input)
         x = torch.sum(x, dim=0)
         x.requires_grad = True

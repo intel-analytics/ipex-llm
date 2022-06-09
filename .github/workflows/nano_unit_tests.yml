@@ -131,7 +131,25 @@ jobs:
           $CONDA/bin/conda remove -n openvino-pytorch --all
         env:
           ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
-
+    
+      - name: Run pytorch automl unit tests
+        shell: bash
+        run: |
+      
+          $CONDA/bin/conda create -n nano-automl-pytorch -y python=3.7.10 setuptools=58.0.4
+          source $CONDA/bin/activate nano-automl-pytorch
+          $CONDA/bin/conda info
+          bash python/nano/dev/build_and_install.sh linux default false pytorch
+          pip install pytest
+          pip install ConfigSpace
+          pip install optuna
+          source bigdl-nano-init
+          bash python/nano/test/run-nano-automl-pytorch-tests.sh
+          source $CONDA/bin/deactivate
+          $CONDA/bin/conda remove -n nano-automl-pytorch --all
+        env:
+          ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
+          
   nano-unit-test-ipex:
     # The type of runner that the job will run on
     runs-on: ${{ matrix.os }}
@@ -247,3 +265,5 @@ jobs:
           $CONDA/bin/conda remove -n horovod-tf --all
         env:
           ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
+          
+

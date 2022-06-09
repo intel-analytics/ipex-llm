@@ -29,6 +29,7 @@ from bigdl.orca.learn.utils import maybe_dataframe_to_xshards, dataframe_to_xsha
     convert_predict_xshards_to_dataframe, update_predict_xshards, \
     process_xshards_of_pandas_dataframe, make_data_creator
 from bigdl.orca.data.utils import process_spark_xshards
+from bigdl.dllib.utils.log4Error import *
 from bigdl.orca.ray import OrcaRayContext
 
 logger = logging.getLogger(__name__)
@@ -50,8 +51,9 @@ class TensorFlow2Estimator(OrcaRayEstimator):
 
         ray_ctx = OrcaRayContext.get()
         if "batch_size" in self.config:
-            raise Exception("Please do not specify batch_size in config. Input batch_size in the"
-                            " fit/evaluate function of the estimator instead.")
+            invalidInputError(False,
+                              "Please do not specify batch_size in config. Input batch_size in the"
+                              " fit/evaluate function of the estimator instead.")
 
         if "inter_op_parallelism" not in self.config:
             self.config["inter_op_parallelism"] = 1
@@ -60,8 +62,9 @@ class TensorFlow2Estimator(OrcaRayEstimator):
             self.config["intra_op_parallelism"] = ray_ctx.ray_node_cpu_cores // workers_per_node
 
         if backend == "horovod":
-            assert compile_args_creator is not None, "compile_args_creator should not be None," \
-                                                     " when backend is set to horovod"
+            invalidInputError(compile_args_creator is not None,
+                              "compile_args_creator should not be None,"
+                              " when backend is set to horovod")
 
         params = {
             "model_creator": model_creator,
@@ -108,8 +111,9 @@ class TensorFlow2Estimator(OrcaRayEstimator):
                 worker.setup_horovod.remote()
                 for i, worker in enumerate(self.remote_workers)])
         else:
-            raise Exception("Only \"tf2\" and \"horovod\" are legal "
-                            "values of backend, but got {}".format(backend))
+            invalidInputError(False,
+                              "Only \"tf2\" and \"horovod\" are legal "
+                              "values of backend, but got {}".format(backend))
 
         self.num_workers = len(self.remote_workers)
 
@@ -196,9 +200,9 @@ class TensorFlow2Estimator(OrcaRayEstimator):
             ray_xshards = TF2Dataset(data).get_ray_xshards(self.num_workers)
             val_ray_xshards = None
             if validation_data is not None:
-                assert isinstance(validation_data, Dataset), \
-                    "Validation data type should be the same as train data, " \
-                    "but got type: {}".format(type(validation_data))
+                invalidInputError(isinstance(validation_data, Dataset),
+                                  "Validation data type should be the same as train data,"
+                                  " but got type: {}".format(type(validation_data)))
                 val_ray_xshards = TF2Dataset(validation_data).get_ray_xshards(self.num_workers)
 
             worker_stats = self._fit_ray_xshards(ray_xshards, val_ray_xshards, params)
@@ -215,9 +219,9 @@ class TensorFlow2Estimator(OrcaRayEstimator):
                 worker_stats = ray.get(remote_worker_stats)
                 worker_stats = list(itertools.chain.from_iterable(worker_stats))
             else:
-                assert isinstance(validation_data, ray.data.Dataset), \
-                    "Validation data type should be the same as train data, " \
-                    "but got type: {}".format(type(validation_data))
+                invalidInputError(isinstance(validation_data, ray.data.Dataset),
+                                  "Validation data type should be the same as train data,"
+                                  " but got type: {}".format(type(validation_data)))
 
                 val_shards = validation_data.split(n=self.num_workers,
                                                    locality_hints=self.remote_workers)
@@ -362,10 +366,12 @@ class TensorFlow2Estimator(OrcaRayEstimator):
         return worker_stats
 
     def process_ray_dataset(self, shard, label_cols, feature_cols, data_config):
-        assert label_cols is not None, "label_cols param must be specified" \
-                                       " when convert ray dataset to tf dataset."
+        invalidInputError(label_cols is not None,
+                          "label_cols param must be specified when convert"
+                          " ray dataset to tf dataset.")
         if "output_signature" not in data_config:
-            raise ValueError("output_signature should be specified in data_config")
+            invalidInputError(False,
+                              "output_signature should be specified in data_config")
         import tensorflow as tf
 
         def data_creator(config, batch_size):
@@ -453,7 +459,8 @@ class TensorFlow2Estimator(OrcaRayEstimator):
             pred_shards = self._predict_spark_xshards(data, params)
             result = update_predict_xshards(data, pred_shards)
         else:
-            raise ValueError("Only xshards or Spark DataFrame is supported for predict")
+            invalidInputError(False,
+                              "Only xshards or Spark DataFrame is supported for predict")
 
         return result
 

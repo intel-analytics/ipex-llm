@@ -19,6 +19,7 @@ import re
 import warnings
 
 from bigdl.orca.learn.pytorch.utils import get_filesystem
+from bigdl.dllib.utils.log4Error import invalidInputError
 
 
 class ModelCheckpoint(Callback):
@@ -105,7 +106,8 @@ class ModelCheckpoint(Callback):
             files = [x for x in files if "ckpt" in x]
             if len(files) == 0:
                 return None
-            raise ValueError(f"Find non-empty dirname with filepath of {self.filepath}.")
+            invalidInputError(False,
+                              f"Find non-empty dirname with filepath of {self.filepath}.")
         else:
             fs.mkdirs(dirname)
 
@@ -139,7 +141,8 @@ class ModelCheckpoint(Callback):
         ckpt_path = cls._format_checkpoint_name(dirname, filename=cls.CHECKPOINT_NAME_LAST)
         fs = get_filesystem(ckpt_path)
         if not fs.exists(ckpt_path):
-            raise FileNotFoundError(f"Latest checkpoint at {ckpt_path} not found.")
+            invalidInputError(False,
+                              f"Latest checkpoint at {ckpt_path} not found.")
         return ckpt_path
 
     @classmethod

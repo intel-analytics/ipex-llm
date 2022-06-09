@@ -28,7 +28,8 @@ class MockClient(dataPath: String,
                  testPath: String = null,
                  rowKeyName: String = null,
                  labelName: String = null,
-                 dataFormat: String = "raw") extends Thread {
+                 dataFormat: String = "raw",
+                 target: String = "localhost:8980") extends Thread {
 
   val logger = LogManager.getLogger(getClass)
 
@@ -49,7 +50,7 @@ class MockClient(dataPath: String,
     val fgBoostRegression = new FGBoostRegression(
       learningRate = 0.1f, maxDepth = 7, minChildSize = 5)
     val testFlContext = new FlContextForTest()
-    testFlContext.initFLContext()
+    testFlContext.initFLContext(target)
     fgBoostRegression.setFlClient(testFlContext.getClient())
     logger.debug(s"Client2 calling fit...")
     fgBoostRegression.fit(trainFeatures, trainLabels, 15)

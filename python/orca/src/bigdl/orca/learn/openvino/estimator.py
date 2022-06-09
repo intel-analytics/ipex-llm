@@ -26,6 +26,7 @@ from bigdl.dllib.nncontext import init_nncontext
 
 from openvino.inference_engine import IECore
 import numpy as np
+from bigdl.dllib.utils.log4Error import *
 
 
 class Estimator(object):
@@ -50,7 +51,7 @@ class OpenvinoEstimator(SparkEstimator):
         """
         Fit is not supported in OpenVINOEstimator
         """
-        raise NotImplementedError
+        invalidInputError(False, "not implemented")
 
     def predict(self, data, feature_cols=None, batch_size=4):
         """
@@ -88,7 +89,7 @@ class OpenvinoEstimator(SparkEstimator):
                                           num_requests=data_num)
             inputs = list(iter(local_model.requests[0].input_blobs))
             outputs = list(iter(local_model.requests[0].output_blobs))
-            assert len(outputs) != 0, "The number of model outputs should not be 0."
+            invalidInputError(len(outputs) != 0, "The number of model outputs should not be 0.")
 
             def add_elem(d):
                 d_len = len(d)
@@ -120,24 +121,26 @@ class OpenvinoEstimator(SparkEstimator):
             return results
 
         def predict_transform(dict_data, batch_size):
-            assert isinstance(dict_data, dict), "each shard should be an dict"
-            assert "x" in dict_data, "key x should in each shard"
+            invalidInputError(isinstance(dict_data, dict), "each shard should be an dict")
+            invalidInputError("x" in dict_data, "key x should in each shard")
             feature_data = dict_data["x"]
             if isinstance(feature_data, np.ndarray):
-                assert feature_data.shape[0] <= batch_size, \
-                    "The batch size of input data (the second dim) should be less than the model " \
-                    "batch size, otherwise some inputs will be ignored."
+                invalidInputError(feature_data.shape[0] <= batch_size,
+                                  "The batch size of input data (the second dim) should be less"
+                                  " than the model batch size, otherwise some inputs will"
+                                  " be ignored.")
             elif isinstance(feature_data, list):
                 for elem in feature_data:
-                    assert isinstance(elem, np.ndarray), "Each element in the x list should be " \
-                                                         "a ndarray, but get " + \
-                                                         elem.__class__.__name__
-                    assert elem.shape[0] <= batch_size, "The batch size of each input data (the " \
-                                                        "second dim) should be less than the " \
-                                                        "model batch size, otherwise some inputs " \
-                                                        "will be ignored."
+                    invalidInputError(isinstance(elem, np.ndarray),
+                                      "Each element in the x list should be a ndarray,"
+                                      " but get " + elem.__class__.__name__)
+                    invalidInputError(elem.shape[0] <= batch_size,
+                                      "The batch size of each input data (the second dim) should"
+                                      " be less than the model batch size, otherwise some inputs"
+                                      " will be ignored.")
             else:
-                raise ValueError("x in each shard should be a ndarray or a list of ndarray.")
+                invalidInputError(False,
+                                  "x in each shard should be a ndarray or a list of ndarray.")
             return feature_data
 
         if isinstance(data, DataFrame):
@@ -175,12 +178,13 @@ class OpenvinoEstimator(SparkEstimator):
                 for i in range(split_num):
                     data_to_be_rdd.append([])
                 for x in flattened:
-                    assert isinstance(x, np.ndarray), "the data in the data list should be " \
-                                                      "ndarrays, but get " + \
-                                                      x.__class__.__name__
-                    assert len(x) == data_length, \
-                        "the ndarrays in data must all have the same size in first dimension" \
-                        ", got first ndarray of size {} and another {}".format(data_length, len(x))
+                    invalidInputError(isinstance(x, np.ndarray),
+                                      "the data in the data list should be ndarrays,"
+                                      " but get " + x.__class__.__name__)
+                    invalidInputError(len(x) == data_length,
+                                      "the ndarrays in data must all have the same"
+                                      " size in first dimension, got first ndarray"
+                                      " of size {} and another {}".format(data_length, len(x)))
                     x_parts = np.array_split(x, split_num)
                     for idx, x_part in enumerate(x_parts):
                         data_to_be_rdd[idx].append(x_part)
@@ -199,26 +203,28 @@ class OpenvinoEstimator(SparkEstimator):
                 result_arr = np.concatenate(result_arr_list, axis=0)
             return result_arr
         else:
-            raise ValueError("Only XShards, Spark DataFrame, a numpy array and a list of numpy arr"
-                             "ays are supported as input data, but get " + data.__class__.__name__)
+            invalidInputError(False,
+                              "Only XShards, Spark DataFrame, a numpy array and a list of numpy"
+                              " arrays are supported as input data, but"
+                              " get " + data.__class__.__name__)
 
     def evaluate(self, data, batch_size=32, feature_cols=None, label_cols=None):
         """
         Evaluate is not supported in OpenVINOEstimator
         """
-        raise NotImplementedError
+        invalidInputError(False, "not implemented")
 
     def get_model(self):
         """
         Get_model is not supported in OpenVINOEstimator
         """
-        raise NotImplementedError
+        invalidInputError(False, "not implemented")
 
     def save(self, model_path):
         """
         Save is not supported in OpenVINOEstimator
         """
-        raise NotImplementedError
+        invalidInputError(False, "not implemented")
 
     def load(self, model_path):
         """
@@ -228,8 +234,8 @@ class OpenvinoEstimator(SparkEstimator):
         :return:
         """
         self.node_num, self.core_num = get_node_and_core_number()
-        assert isinstance(model_path, str), "The model_path should be string."
-        assert os.path.exists(model_path), "The model_path should be exist."
+        invalidInputError(isinstance(model_path, str), "The model_path should be string.")
+        invalidInputError(os.path.exists(model_path), "The model_path should be exist.")
         with open(model_path, 'rb') as file:
             self.model_bytes = file.read()
 
@@ -240,40 +246,40 @@ class OpenvinoEstimator(SparkEstimator):
         """
         Set_tensorboard is not supported in OpenVINOEstimator
         """
-        raise NotImplementedError
+        invalidInputError(False, "not implemented")
 
     def clear_gradient_clipping(self):
         """
         Clear_gradient_clipping is not supported in OpenVINOEstimator
         """
-        raise NotImplementedError
+        invalidInputError(False, "not implemented")
 
     def set_constant_gradient_clipping(self, min, max):
         """
         Set_constant_gradient_clipping is not supported in OpenVINOEstimator
         """
-        raise NotImplementedError
+        invalidInputError(False, "not implemented")
 
     def set_l2_norm_gradient_clipping(self, clip_norm):
         """
         Set_l2_norm_gradient_clipping is not supported in OpenVINOEstimator
         """
-        raise NotImplementedError
+        invalidInputError(False, "not implemented")
 
     def get_train_summary(self, tag=None):
         """
         Get_train_summary is not supported in OpenVINOEstimator
         """
-        raise NotImplementedError
+        invalidInputError(False, "not implemented")
 
     def get_validation_summary(self, tag=None):
         """
         Get_validation_summary is not supported in OpenVINOEstimator
         """
-        raise NotImplementedError
+        invalidInputError(False, "not implemented")
 
     def load_orca_checkpoint(self, path, version):
         """
         Load_orca_checkpoint is not supported in OpenVINOEstimator
         """
-        raise NotImplementedError
+        invalidInputError(False, "not implemented")

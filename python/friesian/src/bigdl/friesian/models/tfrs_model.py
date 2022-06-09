@@ -27,6 +27,8 @@ class TFRSModel(tf.keras.Model):
         log4Error.invalidInputError(isinstance(tfrs_model, tfrs.Model),
                                     "FriesianTFRSModel only support tfrs.Model, but got " +
                                     tfrs_model.__class__.__name__)
+        log4Error.invalidInputError(not tfrs_model._is_compiled,
+                                    "TFRSModel should be initialized before compiling.")
         attr = tfrs_model.__dict__
         task_dict = dict()
         for k, v in attr.items():
