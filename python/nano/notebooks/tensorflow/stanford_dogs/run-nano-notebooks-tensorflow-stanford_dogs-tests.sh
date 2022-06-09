@@ -9,6 +9,7 @@ export FREEZE_EPOCHS=2
 export UNFREEZE_EPOCHS=1
 export BATCH_SIZE=8
 export TEST_STEPS=128
+export NUM_PROCESSES=2
 
 set -e
 
