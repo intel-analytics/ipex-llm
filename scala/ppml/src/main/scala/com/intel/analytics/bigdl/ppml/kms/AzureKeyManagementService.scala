@@ -31,6 +31,11 @@ import com.azure.security.keyvault.keys.models.KeyType
 import com.azure.security.keyvault.keys.cryptography.models.WrapResult
 import com.azure.security.keyvault.keys.cryptography.models.KeyWrapAlgorithm
 
+/**
+ * KeyManagementService of Intel Azure.
+ * @param keyVaultName the name of KMS.
+ * @param managedIdentityClientId the Id of client.
+ */
 class AzureKeyManagementService(keyVaultName: String, managedIdentityClientId : String = "")
   extends KeyManagementService {
   private val keyReaderWriter = new KeyReaderWriter
@@ -53,6 +58,10 @@ class AzureKeyManagementService(keyVaultName: String, managedIdentityClientId : 
     .credential(defaultCredential)
     .buildClient()
 
+  /**
+   * Generate a primary key.
+   * @param primaryKeySavePath the path to save primary key.
+   */
   def retrievePrimaryKey(primaryKeySavePath: String = ""): Unit = {
     Log4Error.invalidInputError(primaryKeySavePath != null && primaryKeySavePath != "",
       "primaryKeySavePath should be specified")
@@ -62,6 +71,11 @@ class AzureKeyManagementService(keyVaultName: String, managedIdentityClientId : 
     keyReaderWriter.writeKeyToFile(primaryKeySavePath, keyId)
   }
 
+  /**
+   * Generate a data key and use primary key to encrypt it.
+   * @param primaryKeyPath the path of primary key.
+   * @param dataKeySavePath the path to save encrypted data key.
+   */
   def retrieveDataKey(primaryKeyPath: String, dataKeySavePath: String): Unit = {
     Log4Error.invalidInputError(primaryKeyPath != null && primaryKeyPath != "",
       "primaryKeyPath should be specified")
@@ -80,6 +94,12 @@ class AzureKeyManagementService(keyVaultName: String, managedIdentityClientId : 
     keyReaderWriter.writeKeyToFile(dataKeySavePath, dataKeyCiphertext)
   }
 
+  /**
+   * Use primary key to decrypt data key.
+   * @param primaryKeyPath the path of primary key.
+   * @param dataKeyPath the path of encrypted data key.
+   * @return the plaintext of data key.
+   */
   def retrieveDataKeyPlainText(primaryKeyPath: String, dataKeyPath: String): String = {
     Log4Error.invalidInputError(primaryKeyPath != null && primaryKeyPath != "",
       "primaryKeyPath should be specified")
@@ -95,6 +115,11 @@ class AzureKeyManagementService(keyVaultName: String, managedIdentityClientId : 
     dataKeyPlaintext
   }
 
+  /**
+   * Get the client by KeyId.
+   * @param keyId the Id to find the client.
+   * @return the client.
+   */
   private def getCryptoClient(keyId: String): CryptographyClient = {
     if (cryptoClientMap.contains(keyId)) {
       cryptoClientMap(keyId)

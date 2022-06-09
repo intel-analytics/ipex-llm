@@ -43,6 +43,13 @@ object EHSM_CONVENTION {
 }
 
 
+/**
+ * KeyManagementService of Intel EHSM.
+ * @param kmsServerIP the IP address of KMS server.
+ * @param kmsServerPort the port od KMS server.
+ * @param ehsmAPPID the APPId of your application.
+ * @param ehsmAPPKEY the APPKey of your application.
+ */
 class EHSMKeyManagementService(
       kmsServerIP: String,
       kmsServerPort: String,
@@ -54,6 +61,10 @@ class EHSMKeyManagementService(
   Log4Error.invalidInputError(ehsmAPPID != "", s"ehsmAPPID should not be empty string.")
   Log4Error.invalidInputError(ehsmAPPKEY != "", s"ehsmAPPKEY should not be empty string.")
 
+  /**
+   * Generate a primary key.
+   * @param primaryKeySavePath the path to save primary key.
+   */
   def retrievePrimaryKey(primaryKeySavePath: String): Unit = {
     Log4Error.invalidInputError(primaryKeySavePath != null && primaryKeySavePath != "",
       "primaryKeySavePath should be specified")
@@ -75,6 +86,11 @@ class EHSMKeyManagementService(
     keyReaderWriter.writeKeyToFile(primaryKeySavePath, primaryKeyCiphertext)
   }
 
+  /**
+   * Generate a data key and use primary key to encrypt it.
+   * @param primaryKeyPath the path of primary key.
+   * @param dataKeySavePath the path to save encrypted data key.
+   */
   def retrieveDataKey(primaryKeyPath: String, dataKeySavePath: String): Unit = {
     Log4Error.invalidInputError(primaryKeyPath != null && primaryKeyPath != "",
       "primaryKeyPath should be specified")
@@ -98,7 +114,12 @@ class EHSMKeyManagementService(
     keyReaderWriter.writeKeyToFile(dataKeySavePath, dataKeyCiphertext)
   }
 
-
+  /**
+   * Use primary key to decrypt data key.
+   * @param primaryKeyPath the path of primary key.
+   * @param dataKeyPath the path of encrypted data key.
+   * @return the plaintext of data key.
+   */
   override def retrieveDataKeyPlainText(primaryKeyPath: String, dataKeyPath: String): String = {
     Log4Error.invalidInputError(primaryKeyPath != null && primaryKeyPath != "",
       "primaryKeyPath should be specified")
@@ -122,7 +143,11 @@ class EHSMKeyManagementService(
     dataKeyPlaintext
   }
 
-
+  /**
+   * Generate the url for http request.
+   * @param action the action of request.
+   * @return the request url.
+   */
   private def constructUrl(action: String): String = {
     s"http://$kmsServerIP:$kmsServerPort/ehsm?Action=$action"
   }

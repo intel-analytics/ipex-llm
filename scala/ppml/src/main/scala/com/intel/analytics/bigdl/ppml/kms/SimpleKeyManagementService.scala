@@ -22,6 +22,11 @@ import scala.collection.mutable.HashMap
 import scala.util.Random
 import com.intel.analytics.bigdl.ppml.utils.KeyReaderWriter
 
+/**
+ * A simple KeyManagementService for local test.
+ * @param simpleAPPID the APPId of your application.
+ * @param simpleAPPKEY the APPKey of your application.
+ */
 class SimpleKeyManagementService protected(
       simpleAPPID: String,
       simpleAPPKEY: String) extends KeyManagementService {
@@ -35,6 +40,10 @@ class SimpleKeyManagementService protected(
   Log4Error.invalidInputError(simpleAPPID != "", s"simpleAPPID should not be empty string.")
   Log4Error.invalidInputError(simpleAPPKEY != "", s"simpleAPPKEY should not be empty string.")
 
+  /**
+   * Generate a primary key.
+   * @param primaryKeySavePath the path to save primary key.
+   */
   def retrievePrimaryKey(primaryKeySavePath: String): Unit = {
     timing("SimpleKeyManagementService retrievePrimaryKey") {
       Log4Error.invalidInputError(enrollMap.keySet.contains(_appId) &&
@@ -47,6 +56,11 @@ class SimpleKeyManagementService protected(
     }
   }
 
+  /**
+   * Generate a data key and use primary key to encrypt it.
+   * @param primaryKeyPath the path of primary key.
+   * @param dataKeySavePath the path to save encrypted data key.
+   */
   def retrieveDataKey(primaryKeyPath: String, dataKeySavePath: String): Unit = {
     timing("SimpleKeyManagementService retrieveDataKey") {
       Log4Error.invalidInputError(enrollMap.keySet.contains(_appId) &&
@@ -69,6 +83,12 @@ class SimpleKeyManagementService protected(
     }
   }
 
+  /**
+   * Use primary key to decrypt data key.
+   * @param primaryKeyPath the path of primary key.
+   * @param dataKeyPath the path of encrypted data key.
+   * @return the plaintext of data key.
+   */
   def retrieveDataKeyPlainText(primaryKeyPath: String, dataKeyPath: String): String = {
     timing("SimpleKeyManagementService retrieveDataKeyPlaintext") {
       Log4Error.invalidInputError(enrollMap.keySet.contains(_appId) &&
@@ -90,6 +110,11 @@ class SimpleKeyManagementService protected(
     }
   }
 
+  /**
+   * Set APPId and APPKey, and enroll them.
+   * @param appId the APPId of your application.
+   * @param appKey the APPKey of your application.
+   */
   private def setAppIdAndKey(appId: String, appKey: String): Unit = {
     _appId = appId
     _appKey = appKey
@@ -98,13 +123,26 @@ class SimpleKeyManagementService protected(
 
 }
 
+/**
+ * A simple KeyManagementService for local test.
+ */
 object SimpleKeyManagementService {
+  /**
+   * Create a SimpleKey ManagementService with a random APPId and APPKey.
+   * @return a SimpleKey ManagementService.
+   */
   def apply(): SimpleKeyManagementService = {
     val appid = (1 to 12).map(x => Random.nextInt(10)).mkString
     val appkey = (1 to 12).map(x => Random.nextInt(10)).mkString
     new SimpleKeyManagementService(appid, appkey)
   }
 
+  /**
+   * Create a SimpleKey ManagementService with APPId and APPKey.
+   * @param appID the APPId of your application.
+   * @param appKey the APPKey of your application.
+   * @return a SimpleKey ManagementService.
+   */
   def apply(appID: String, appKey: String): SimpleKeyManagementService = {
     new SimpleKeyManagementService(appID, appKey)
   }
