@@ -1,18 +1,16 @@
 # BigDL-Nano TensorFlow Inference Overview
 BigDL-Nano provides several APIs which can help users easily apply optimizations on inference pipelines to improve latency and throughput. Currently, performance accelerations are achieved by integrating extra runtimes as inference backend engines or using quantization methods on full-precision trained models to reduce computation during inference. Keras Model (`bigdl.nano.tensorflow.keras.Model`) provides the APIs for all optimizations you need for inference.
 
-[comment]: <To_Add> (For runtime acceleration, BigDL-Nano has enabled two kinds of runtime for users in `Trainer.trace&#40;&#41;`, ONNXRuntime and OpenVINO.)
-
 For quantization, BigDL-Nano provides only post-training quantization in `Model.quantize()` for users to infer with models of 8-bit precision. Quantization-Aware Training is not available for now. Model conversion to 16-bit like BF16, and FP16 will be coming soon.
 
 Before you go ahead with these APIs, you have to make sure BigDL-Nano is correctly installed for Tensorflow. If not, please follow [this](../Overview/nano.md) to set up your environment.
 
 ## Quantization
-Quantization is widely used to compress models to a lower precision, which not only reduces the model size but also accelerates inference. BigDL-Nano provides `Model.quantize()` API for users to quickly obtain a quantized model with accuracy control by specifying a few arguments. Intel Neural Compressor (INC) and Post-training Optimization Tools (POT) from OpenVINO toolkit are enabled as options. In the meantime, runtime acceleration is also included directly in the quantization pipeline when using accelerator='onnxruntime'/'openvino' so you don't have to run `Trainer.trace` before quantization.
+Quantization is widely used to compress models to a lower precision, which not only reduces the model size but also accelerates inference. BigDL-Nano provides `Model.quantize()` API for users to quickly obtain a quantized model with accuracy control by specifying a few arguments.
 
 To use INC as your quantization engine, you can choose accelerator as None or 'onnxruntime'. Otherwise, accelerator='openvino' means using OpenVINO POT to do quantization.
 
-By default, `Trainer.quantize()` doesn't search the tuning space and returns the fully-quantized model without considering the accuracy drop. If you need to search quantization tuning space for a model with accuracy control, you'll have to specify a few arguments to define the tuning space. More instructions in [Quantization with Accuracy control](#quantization-with-accuracy-control)
+By default, `Model.quantize()` doesn't search the tuning space and returns the fully-quantized model without considering the accuracy drop. If you need to search quantization tuning space for a model with accuracy control, you'll have to specify a few arguments to define the tuning space. More instructions in [Quantization with Accuracy control](#quantization-with-accuracy-control)
 
 ### Quantization using Intel Neural Compressor
 By default, Intel Neural Compressor is not installed with BigDL-Nano. So if you determine to use it as your quantization backend, you'll need to install it first:
@@ -31,16 +29,21 @@ from bigdl.nano.tf.keras import Model
 # step 1: create your model
 model = MobileNetV2(weights=None, input_shape=[40, 40, 3], classes=10)
 model = Model(inputs=model.inputs, outputs=model.outputs)
+
 # step 2: prepare your data and dataloader
 train_examples = np.random.random((100, 40, 40, 3))
 train_labels = np.random.randint(0, 10, size=(100,))
 train_dataset = tf.data.Dataset.from_tensor_slices((train_examples, train_labels))
+
 # (Optional) step 3: Something else, like training ...
 model.fit(train_dataset)
+
 # step 4: execute quantization
 q_model = model.quantize(calib_dataset=train_dataset)
+
 # run simple prediction
 y_hat = q_model(train_examples)
+
 # evaluate, predict also support acceleration
 q_model.evaluate(train_dataset)
 q_model.predict(train_dataset)
@@ -83,8 +86,10 @@ q_model = model.quantize(precision='int8',
                          timeout=0,
                          max_trials=10,
                          )
+
 # run simple prediction
 y_hat = q_model(train_examples)
+
 # evaluate, predict also support acceleration
 q_model.evaluate(train_dataset)
 q_model.predict(train_dataset)
