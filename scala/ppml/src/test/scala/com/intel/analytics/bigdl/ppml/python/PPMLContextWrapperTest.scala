@@ -10,9 +10,11 @@ class PPMLContextWrapperTest extends FunSuite {
 
   def initArgs(): util.Map[String, String] = {
     val args = new util.HashMap[String, String]()
-    args.put("spark.bigdl.kms.type", "SimpleKeyManagementService")
-    args.put("spark.bigdl.kms.simple.id", "465227134889")
-    args.put("spark.bigdl.kms.simple.key", "799072978028")
+    args.put("kms_type", "SimpleKeyManagementService")
+    args.put("simple_app_id", "465227134889")
+    args.put("simple_app_key", "799072978028")
+    args.put("primary_key_path", this.getClass.getClassLoader.getResource("primaryKey").getPath)
+    args.put("data_key_path", this.getClass.getClassLoader.getResource("dataKey").getPath)
     args
   }
 
@@ -32,7 +34,7 @@ class PPMLContextWrapperTest extends FunSuite {
     val args = initArgs()
     val cryptoMode = "plain_text"
     val path = this.getClass.getClassLoader.getResource("people.csv").getPath
-    
+
     val sc = ppmlContextWrapper.createPPMLContext(appName, args)
     val encryptedDataFrameReader = ppmlContextWrapper.read(sc, cryptoMode)
     ppmlContextWrapper.option(encryptedDataFrameReader, "header", "true")
