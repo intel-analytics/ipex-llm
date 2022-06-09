@@ -434,7 +434,6 @@ class TensorFlow2Estimator(OrcaRayEstimator):
         from bigdl.orca.data import SparkXShards
         from pyspark.sql import DataFrame
         from bigdl.orca.data.tf.data import Dataset
-        from bigdl.orca.data.tf.tf2_data import TF2Dataset
 
         if isinstance(data, DataFrame):
             xshards, _ = dataframe_to_xshards(data,
@@ -451,7 +450,7 @@ class TensorFlow2Estimator(OrcaRayEstimator):
             pred_shards = self._predict_spark_xshards(data, params)
             result = update_predict_xshards(data, pred_shards)
         elif isinstance(data, Dataset):
-            data = TF2Dataset(data).get_origin_xshards()
+            data = data.get_xshards()
             if min_partition_num:
                 partition_num = max(min_partition_num, self.num_workers)
                 if data.num_partitions() != partition_num:
