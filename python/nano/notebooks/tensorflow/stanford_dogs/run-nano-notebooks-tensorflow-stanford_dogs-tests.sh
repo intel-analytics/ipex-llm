@@ -7,7 +7,7 @@ export FIT_STEPS=2
 export VAL_STEPS=2
 export FREEZE_EPOCHS=2
 export UNFREEZE_EPOCHS=1
-export BATCH_SIZE=2
+export BATCH_SIZE=8
 export TEST_STEPS=128
 
 set -e
