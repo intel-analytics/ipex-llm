@@ -18,6 +18,19 @@ class PPMLContextWrapperTest extends FunSuite {
     args
   }
 
+  def initAndRead(encryptMode: String, path: String): Unit = {
+    val appName = "test"
+    val args = initArgs()
+    val cryptoMode = encryptMode
+
+    val sc = ppmlContextWrapper.createPPMLContext(appName, args)
+    val encryptedDataFrameReader = ppmlContextWrapper.read(sc, cryptoMode)
+    ppmlContextWrapper.option(encryptedDataFrameReader, "header", "true")
+    val df = ppmlContextWrapper.csv(encryptedDataFrameReader, path)
+
+    assert(df.count() == 100)
+  }
+
   test("init PPMLContext with app name") {
     val appName = "test"
     ppmlContextWrapper.createPPMLContext(appName)
@@ -30,17 +43,17 @@ class PPMLContextWrapperTest extends FunSuite {
   }
 
   test("read plain text csv file") {
-    val appName = "test"
-    val args = initArgs()
     val cryptoMode = "plain_text"
     val path = this.getClass.getClassLoader.getResource("people.csv").getPath
 
-    val sc = ppmlContextWrapper.createPPMLContext(appName, args)
-    val encryptedDataFrameReader = ppmlContextWrapper.read(sc, cryptoMode)
-    ppmlContextWrapper.option(encryptedDataFrameReader, "header", "true")
-    val df = ppmlContextWrapper.csv(encryptedDataFrameReader, path)
+    initAndRead(cryptoMode, path)
+  }
 
-    assert(df.count() == 100)
+  test("read encrypted csv file") {
+    val cryptoMode = "AES/CBC/PKCS5Padding"
+    val path = this.getClass.getClassLoader.getResource("encrypt-people").getPath
+
+    initAndRead(cryptoMode, path)
   }
 
 }
