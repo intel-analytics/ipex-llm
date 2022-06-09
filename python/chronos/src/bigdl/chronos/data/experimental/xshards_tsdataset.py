@@ -271,26 +271,34 @@ class XShardsTSDataset:
                                                         feature_col, target_col)
         return self
     def impute(self,
-               dt_col,
                mode="last",
                const_num=0):
         '''
-        Sampling by imputing for machine learning/deep learning models.
-        :param dt_col: name of datetime colomn.
-        :param mode: imputation mode, select from "last", "const" or "linear".
-               "last": impute by propagating the last non N/A number to its following N/A.
-                      if there is no non N/A number ahead, 0 is filled instead.
-               "const": impute by a const value input by user.
-               "linear": impute by linear interpolation.
-        :param const_num: only effective when mode is set to "const".
+        Impute the tsdataset by imputing each univariate time series
+        distinguished by id_col and feature_col.
 
-        :return: the xshardtsdataset instance.
+        :param mode: imputation mode, select from "last", "const" or "linear".
+
+            "last": impute by propagating the last non N/A number to its following N/A.
+            if there is no non N/A number ahead, 0 is filled instead.
+
+            "const": impute by a const value input by user.
+
+            "linear": impute by linear interpolation.
+        :param const_num:  indicates the const number to fill, which is only effective when mode
+            is set to "const".
+
+        :return: the tsdataset instance.
         '''
         
+        def df_reset_index(df):
+              df.reset_index(drop=True, inplace=True)
+              return df
+       
         self.shards = self.shards.transform_shard(impute_timeseries_dataframe,
-                                                        dt_col, mode,
+                                                        self.dt_col, mode,
                                                         const_num)
-       #  self.shards.reset_index(drop=True, inplace=True)
+        self.shards.transform_shard(df_reset_index)
        
         return self
 
