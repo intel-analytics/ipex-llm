@@ -13,9 +13,9 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- * ===============================================================================================================
  * This file is adapted from
- * https://github.com/intel-analytics/zoo-tutorials/blob/master/tpch-spark/src/main/scala/TpchSchemaProvider.scala
+ * https://github.com/intel-analytics/zoo-tutorials/blob/master/tpch-spark/
+ * src/main/scala/TpchSchemaProvider.scala
  *
  * MIT License
  *

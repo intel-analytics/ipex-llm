@@ -93,9 +93,9 @@ class PPMLContext protected(kms: KeyManagementService, sparkSession: SparkSessio
   }
 
   /**
-    * Get SparkSession from PPMLContext
-    * @return SparkSession in PPMLContext
-    */
+   * Get SparkSession from PPMLContext
+   * @return SparkSession in PPMLContext
+   */
   def getSparkSession(): SparkSession = {
     sparkSession
   }

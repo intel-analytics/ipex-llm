@@ -13,7 +13,6 @@
  * See the License for the specific language governing permissions and
  * limitations under the License.
  *
- * ====================================================================================
  * This file is adapted from
  * https://github.com/ssavvides/tpch-spark/blob/master/src/main/scala/TpchQuery.scala
  *
@@ -144,7 +143,7 @@ object TpchQuery {
     val queryNums = if (args.length > 4) {
       args.slice(4, args.length).map(_.toInt)
     } else {
-      (1 to 22).toArray 
+      (1 to 22).toArray
     }
     println(s"Will run ${queryNums.mkString(" ")}")
 

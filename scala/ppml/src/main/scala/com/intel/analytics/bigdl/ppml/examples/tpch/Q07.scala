@@ -1,4 +1,18 @@
 /*
+ * Copyright 2016 The BigDL Authors.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ *     http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
+ *
  * This file is copied from:
  * https://github.com/ssavvides/tpch-spark/blob/master/src/main/scala/Q07.scala
  *
@@ -61,7 +75,8 @@ class Q07 extends TpchQuery {
 
     val supNation = fnation.join(supplier, $"n_nationkey" === supplier("s_nationkey"))
       .join(fline, $"s_suppkey" === fline("l_suppkey"))
-      .select($"n_name".as("supp_nation"), $"l_orderkey", $"l_extendedprice", $"l_discount", $"l_shipdate")
+      .select($"n_name".as("supp_nation"), $"l_orderkey", $"l_extendedprice",
+        $"l_discount", $"l_shipdate")
 
     fnation.join(customer, $"n_nationkey" === customer("c_nationkey"))
       .join(order, $"c_custkey" === order("o_custkey"))
