@@ -81,12 +81,12 @@ jobs:
         shell: bash
         run: |
             $CONDA/bin/conda create -n notebooks-tensorflow -y python==3.7.10 setuptools=58.0.4
-            source $CONDA/bin/activate notebooks-trainer-pytorch
+            source $CONDA/bin/activate notebooks-tensorflow
             $CONDA/bin/conda info
             bash python/nano/dev/build_and_install.sh linux default false tensorflow
             source bigdl-nano-init
             pip install -r pyhton/nano/notebooks/tensorflow/stanford_dogs/requirements.txt
             source $CONDA/bin/deactivate
-            $CONDA/bin/conda remove -n notebooks-pytorch --all
+            $CONDA/bin/conda remove -n notebooks-tensorflow --all
         env:
             ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
