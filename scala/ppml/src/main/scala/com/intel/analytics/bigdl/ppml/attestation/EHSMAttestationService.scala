@@ -45,17 +45,41 @@ class EHSMAttestationService(kmsServerIP: String, kmsServerPort: String,
   val RES_RESULT = "result"
   val RES_SIGN = "sign"
 
+  /**
+   * Register application.
+   * @param appID the APPId of your application.
+   * @return the result of registration.
+   */
   override def register(appID: String): String = "true"
 
+  /**
+   * Get policy.
+   * @param appID the APPId of your application.
+   * @return the policy.
+   */
   override def getPolicy(appID: String): String = "true"
 
+  /**
+   * Set policy.
+   * @param policy the policy.
+   * @return the result of setting policy.
+   */
   override def setPolicy(policy: JSONObject): String = "true"
 
+  /**
+   * Get Quote from Attestation Service
+   * @return quote in string
+   */
   def getQuoteFromServer(): String = {
     // TODO Get qutoe from ehsm
     "test"
   }
 
+  /**
+   * Send quote to Attestation Service, get attestation result
+   * @param quote application's quote
+   * @return attestation result/token
+   */
   override def attestWithServer(quote: String): (Boolean, String) = {
     // TODO nonce
     val nonce: String = "test"
@@ -79,6 +103,11 @@ class EHSMAttestationService(kmsServerIP: String, kmsServerPort: String,
     (verifyQuoteResult, postResult.toString)
   }
 
+  /**
+   * Generate the url for http request.
+   * @param action the action of request.
+   * @return the request url.
+   */
   private def constructUrl(action: String): String = {
     s"http://$kmsServerIP:$kmsServerPort/ehsm?Action=$action"
   }

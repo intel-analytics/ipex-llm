@@ -32,7 +32,7 @@ import com.azure.security.keyvault.keys.cryptography.models.WrapResult
 import com.azure.security.keyvault.keys.cryptography.models.KeyWrapAlgorithm
 
 /**
- * KeyManagementService of Intel Azure.
+ * KeyManagementService provided by Azure.
  * @param keyVaultName the name of KMS.
  * @param managedIdentityClientId the Id of client.
  */

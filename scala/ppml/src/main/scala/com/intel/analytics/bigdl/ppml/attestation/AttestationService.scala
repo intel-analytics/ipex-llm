@@ -28,11 +28,32 @@ object ATTESTATION_CONVENTION {
   val MODE_AZURE = "AzureAttestationService"
 }
 
+/**
+ * Attestation interface.
+ */
 trait AttestationService extends Supportive {
   // Admin
   // TODO split to admin API
+
+  /**
+   * Register application.
+   * @param appID the APPId of your application.
+   * @return the result of registration.
+   */
   def register(appID: String): String
+
+  /**
+   * Get policy.
+   * @param appID the APPId of your application.
+   * @return the policy.
+   */
   def getPolicy(appID: String): String
+
+  /**
+   * Set policy.
+   * @param policy the policy.
+   * @return the result of setting policy.
+   */
   def setPolicy(policy: JSONObject): String
   // App
 

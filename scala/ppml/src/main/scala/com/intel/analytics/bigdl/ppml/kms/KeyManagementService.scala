@@ -26,7 +26,7 @@ object KMS_CONVENTION {
 
 
 /**
- * KeyManagementService interface
+ * KeyManagementService interface.
  */
 trait KeyManagementService extends Supportive {
   /**

@@ -44,7 +44,7 @@ object EHSM_CONVENTION {
 
 
 /**
- * KeyManagementService of Intel EHSM.
+ * KeyManagementService provided by Intel EHSM.
  * @param kmsServerIP the IP address of KMS server.
  * @param kmsServerPort the port od KMS server.
  * @param ehsmAPPID the APPId of your application.
