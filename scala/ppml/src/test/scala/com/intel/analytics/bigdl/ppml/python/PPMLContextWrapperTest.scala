@@ -1,6 +1,7 @@
 package com.intel.analytics.bigdl.ppml.python
 
 import com.intel.analytics.bigdl.ppml.PPMLContext
+import org.apache.spark.sql.{DataFrame, SparkSession}
 import org.scalatest.FunSuite
 
 import java.util
@@ -18,10 +19,9 @@ class PPMLContextWrapperTest extends FunSuite {
     args
   }
 
-  def initAndRead(encryptMode: String, path: String): Unit = {
+  def initAndRead(cryptoMode: String, path: String): Unit = {
     val appName = "test"
     val args = initArgs()
-    val cryptoMode = encryptMode
 
     val sc = ppmlContextWrapper.createPPMLContext(appName, args)
     val encryptedDataFrameReader = ppmlContextWrapper.read(sc, cryptoMode)
@@ -29,6 +29,17 @@ class PPMLContextWrapperTest extends FunSuite {
     val df = ppmlContextWrapper.csv(encryptedDataFrameReader, path)
 
     assert(df.count() == 100)
+  }
+
+  def initAndWrite(df: DataFrame, encryptMode: String): Unit = {
+    val appName = "test"
+    val args = initArgs()
+
+    val sc = ppmlContextWrapper.createPPMLContext(appName, args)
+    ppmlContextWrapper.write(sc, df, encryptMode)
+      .mode("overwrite")
+      .option("header", true)
+      .csv(this.getClass.getClassLoader.getResource("out").getPath)
   }
 
   test("init PPMLContext with app name") {
@@ -54,6 +65,30 @@ class PPMLContextWrapperTest extends FunSuite {
     val path = this.getClass.getClassLoader.getResource("encrypt-people").getPath
 
     initAndRead(cryptoMode, path)
+  }
+
+  test(" write plain text csv file") {
+    val spark: SparkSession = SparkSession.builder()
+      .master("local[1]").appName("testData")
+      .getOrCreate()
+
+    val data = Seq(("Java", "20000"), ("Python", "100000"), ("Scala", "3000"))
+
+    val df = spark.createDataFrame(data).toDF("language", "user")
+
+    initAndWrite(df, "plain_text")
+  }
+
+  test(" write encrypted csv file") {
+    val spark: SparkSession = SparkSession.builder()
+      .master("local[1]").appName("testData")
+      .getOrCreate()
+
+    val data = Seq(("Java", "20000"), ("Python", "100000"), ("Scala", "3000"))
+
+    val df = spark.createDataFrame(data).toDF("language", "user")
+
+    initAndWrite(df, "AES/CBC/PKCS5Padding")
   }
 
 }
