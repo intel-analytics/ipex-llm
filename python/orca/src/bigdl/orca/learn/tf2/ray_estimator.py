@@ -395,13 +395,14 @@ class TensorFlow2Estimator(OrcaRayEstimator):
 
     def predict(self, data, batch_size=None, verbose=1,
                 steps=None, callbacks=None, data_config=None,
-                feature_cols=None):
+                feature_cols=None, min_partition_num=None):
         """
         Predict the input data
 
-        :param data: predict input data.  It can be XShards or Spark DataFrame.
-               If data is XShards, each partition can be a Pandas DataFrame or a dictionary of
-               {'x': feature}, where feature is a numpy array or a tuple of numpy arrays.
+        :param data: predict input data.  It can be XShards, Spark DataFrame or
+               orca.data.tf.data.Dataset. If data is XShards, each partition can be a Pandas
+               DataFrame or a dictionary of {'x': feature}, where feature is a numpy array or a
+               tuple of numpy arrays.
         :param batch_size: Batch size used for inference. Default: None.
         :param verbose: Prints output of one model if true.
         :param steps: Total number of steps (batches of samples) before declaring the prediction
@@ -410,6 +411,10 @@ class TensorFlow2Estimator(OrcaRayEstimator):
         :param data_config: An optional dictionary that can be passed to data creator function.
         :param feature_cols: Feature column name(s) of data. Only used when data is a Spark
                DataFrame or an XShards of Pandas DataFrame. Default: None.
+        :param min_partition_num: Int. An optional param for repartition the input data when data
+               is an **orca.data.tf.data.Dataset**. If min_partition_num != None, the input data
+               will be repartitioned to max(min_partition_num, worker_num) partitions.
+               Default: None.
         :return:
         """
         logger.info("Starting predict step.")
@@ -440,9 +445,13 @@ class TensorFlow2Estimator(OrcaRayEstimator):
             pred_shards = self._predict_spark_xshards(data, params)
             result = update_predict_xshards(data, pred_shards)
         elif isinstance(data, Dataset):
-            data = TF2Dataset(data)
-            pred_shards = self._predict_spark_xshards(data.get_origin_xshards(), params)
-            result = update_predict_xshards(data.get_origin_xshards(), pred_shards)
+            data = TF2Dataset(data).get_origin_xshards()
+            if min_partition_num:
+                partition_num = max(min_partition_num, self.num_workers)
+                if data.num_partitions() != partition_num:
+                    data = data.repartition(partition_num)
+            pred_shards = self._predict_spark_xshards(data, params)
+            result = update_predict_xshards(data, pred_shards)
         else:
             raise ValueError("Only xshards or Spark DataFrame is supported for predict")
 

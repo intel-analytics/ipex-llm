@@ -192,14 +192,14 @@ if __name__ == "__main__":
     train_count = train_tbl.size()
     steps = math.ceil(train_count / 256)
     print("train size: ", train_count, ", steps: ", steps)
-    #
-    # test_count = test_tbl.size()
-    # test_steps = math.ceil(test_count / 256)
-    # print("test size: ", test_count, ", steps: ", test_steps)
-    #
-    # train_dataset = Dataset.from_feature_table(train_tbl)
-    # test_dataset = Dataset.from_feature_table(test_tbl)
-    #
+
+    test_count = test_tbl.size()
+    test_steps = math.ceil(test_count / 256)
+    print("test size: ", test_count, ", steps: ", test_steps)
+
+    train_dataset = Dataset.from_feature_table(train_tbl)
+    test_dataset = Dataset.from_feature_table(test_tbl)
+
     unique_movie_titles = tbl_dict["movies"].get_vocabularies(["title"])["title"]
     tbl_dict["users"] = tbl_dict["users"].cast("userid", "string")
     unique_user_ids = tbl_dict["users"].get_vocabularies(["userid"])["userid"]
@@ -218,42 +218,23 @@ if __name__ == "__main__":
         "lr": 0.1
     }
 
-    # est = Estimator.from_keras(model_creator=model_creator,
-    #                            verbose=True,
-    #                            config=config, backend="tf2")
-    # est.fit(train_dataset, 2, batch_size=256, steps_per_epoch=steps,
-    #         validation_data=test_dataset, validation_steps=test_steps)
-    # # est.evaluate(test_dataset, 256, num_steps=test_steps)
-    # est.save("/home/yina/Documents/models/listwise/pad.ckpt")
+    est = Estimator.from_keras(model_creator=model_creator,
+                               verbose=True,
+                               config=config, backend="tf2")
+    est.fit(train_dataset, 16, batch_size=256, steps_per_epoch=steps,
+            validation_data=test_dataset, validation_steps=test_steps)
+    est.evaluate(test_dataset, 256, num_steps=test_steps)
 
-    pred_tbl = train_tbl.limit(9)
-    pred_tbl.show()
+    pred_tbl = train_tbl
     pred_dataset = Dataset.from_feature_table(pred_tbl)
 
-    # def del_ratings(d):
-    #     del d["ratings"]
-    #     return d
-    # pred_dataset = pred_dataset.map(del_ratings)
+    def del_ratings(d):
+        del d["ratings"]
+        return d
+    pred_dataset = pred_dataset.map(del_ratings)
 
-    # repartition test
-    # shard = pred_dataset.xshards
-    # num = shard.num_partitions()
-    # shard = shard.repartition(1)
-    # a = shard.collect()
-
-    # pred_shards = est.predict(pred_dataset, 1024)
-    # pred_collect = pred_shards.collect()
-    # est.shutdown()
-
-    est2 = Estimator.from_keras(model_creator=model_creator,
-                                verbose=True,
-                                config=config, backend="tf2", workers_per_node=2)
-    est2.load("/home/yina/Documents/models/listwise/pad.ckpt",
-              sample_input={"userid": np.asarray(["1"]),
-                            "titles": np.asarray([["a", "b", "c", "d"]])})
-    pred_shards2 = est2.predict(pred_dataset)
-    pred_collect2 = pred_shards2.collect()
-
-    # est.save("/home/yina/Documents/models/listwise/pad.ckpt")
+    pred_shards = est.predict(pred_dataset, min_partition_num=6)
+    pred_collect = pred_shards.collect()
+    est.shutdown()
 
     stop_orca_context()
