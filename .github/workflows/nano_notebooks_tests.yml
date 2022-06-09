@@ -85,7 +85,8 @@ jobs:
             $CONDA/bin/conda info
             bash python/nano/dev/build_and_install.sh linux default false tensorflow
             source bigdl-nano-init
-            pip install -r pyhton/nano/notebooks/tensorflow/stanford_dogs/requirements.txt
+            pip install -r python/nano/notebooks/tensorflow/stanford_dogs/requirements.txt
+            bash python/nano/notebooks/tensorflow/stanford_dogs/run-nano-notebooks-tensorflow-stanford_dogs-tests.sh
             source $CONDA/bin/deactivate
             $CONDA/bin/conda remove -n notebooks-tensorflow --all
         env:
