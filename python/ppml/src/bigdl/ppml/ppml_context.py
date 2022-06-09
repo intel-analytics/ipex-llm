@@ -50,7 +50,10 @@ if __name__ == '__main__':
     df = sc.read(args.input_encrypt_mode) \
         .option("header", "true") \
         .csv(args.input_path)
-    print(type(df))
+
+    df.select("name").count()
+
+    df.select(df["name"], df["age"] + 1).show()
 
     developers = df.filter((df["job"] == "Developer") & df["age"].between(20, 40)).toDF("name", "age", "job")
 
