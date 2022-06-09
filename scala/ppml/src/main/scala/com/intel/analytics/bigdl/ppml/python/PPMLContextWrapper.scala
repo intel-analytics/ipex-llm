@@ -55,7 +55,7 @@ class PPMLContextWrapper[T]() {
   }
 
   def write(sc: PPMLContext, dataFrame: DataFrame, cryptoModeStr: String): DataFrameWriter[Row] = {
-    logger.debug("write file with crypt mode" + cryptoModeStr)
+    logger.debug("write file with crypt mode " + cryptoModeStr)
     val cryptoMode = CryptoMode.parse(cryptoModeStr)
     sc.write(dataFrame, cryptoMode)
   }
