@@ -16,8 +16,7 @@ set -e
 echo "# Start Testing stanford_dogs Fit Notebook"
 start=$(date "+%s")
 
-# python -m pytest --nbmake --nbmake-timeout=300 --nbmake-kernel=python3 ${TENSORFLOW_NANO_NOTEBOOKS_DIR}/nano_tensorflow_fit_example.ipynb
-jupyter nbconvert --to notebook --ExecutePreprocessor.kernel_name python3 --execute ${TENSORFLOW_NANO_NOTEBOOKS_DIR}/nano_tensorflow_fit_example.ipynb
+jupyter nbconvert --to notebook --ExecutePreprocessor.timeout 300 --ExecutePreprocessor.kernel_name python3 --execute ${TENSORFLOW_NANO_NOTEBOOKS_DIR}/nano_tensorflow_fit_example.ipynb
 
 
 now=$(date "+%s")
@@ -29,7 +28,7 @@ echo "Time used:$time seconds"
 echo "# Start Testing stanford_dogs Inference Notebook"
 start=$(date "+%s")
 
-jupyter nbconvert --to notebook --ExecutePreprocessor.kernel_name python3 --execute ${TENSORFLOW_NANO_NOTEBOOKS_DIR}/nano_tensorflow_inference_example.ipynb
+jupyter nbconvert --to notebook --ExecutePreprocessor.timeout 300 --ExecutePreprocessor.kernel_name python3 --execute ${TENSORFLOW_NANO_NOTEBOOKS_DIR}/nano_tensorflow_inference_example.ipynb
 
 now=$(date "+%s")
 time=$((now-start))
