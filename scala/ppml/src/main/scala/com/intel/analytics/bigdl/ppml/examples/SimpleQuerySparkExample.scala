@@ -42,34 +42,36 @@ object SimpleQuerySparkExample extends Supportive {
     // read kms args from spark-defaults.conf
     // val sc = PPMLContext.initPPMLContext("SimpleQuery")
 
-    // load csv file to data frame with ppmlcontext.
-    val df = timing("1/3 loadInputs") {
-      sc.read(cryptoMode = arguments.inputEncryptMode).option("header", "true")
-        .csv(arguments.inputPath + "/people.csv")
-    }
+    timing("processing") {
+      // load csv file to data frame with ppmlcontext.
+      val df = timing("1/3 loadInputs") {
+        sc.read(cryptoMode = arguments.inputEncryptMode).option("header", "true")
+          .csv(arguments.inputPath + "/people.csv")
+      }
+ 
+      val developers = timing("2/3 doSQLOperations") {
+        // Select only the "name" column
+        df.select("name").count()
 
-    val developers = timing("2/3 doSQLOperations") {
-      // Select only the "name" column
-      df.select("name").count()
-
-      // Select everybody, but increment the age by 1
-      df.select(df("name"), df("age") + 1).show()
+        // Select everybody, but increment the age by 1
+        df.select(df("name"), df("age") + 1).show()
 
       // Select Developer and records count
-      val developers = df.filter(df("job") === "Developer" and df("age").between(20, 40)).toDF()
-      developers.count()
+        val developers = df.filter(df("job") === "Developer" and df("age").between(20, 40)).toDF()
+        developers.count()
 
-      developers
-    }
+        developers
+      }
 
-    //Map[String, DataFrame]({
-    //  "developers" -> developers
-    //})
+      //Map[String, DataFrame]({
+      //  "developers" -> developers
+      //})
 
-    timing("3/3 encryptAndSaveOutputs") {
-      // save data frame using spark kms context
-      sc.write(developers, cryptoMode = arguments.outputEncryptMode).mode("overwrite")
-        .option("header", true).csv(arguments.outputPath)
+      timing("3/3 encryptAndSaveOutputs") {
+        // save data frame using spark kms context
+        sc.write(developers, cryptoMode = arguments.outputEncryptMode).mode("overwrite")
+          .option("header", true).csv(arguments.outputPath)
+      }
     }
   }
 }
