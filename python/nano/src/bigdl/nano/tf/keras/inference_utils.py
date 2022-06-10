@@ -15,11 +15,12 @@
 #
 
 from bigdl.nano.deps.openvino.openvino_api import KerasOpenVINOModel
+from bigdl.nano.utils.inference.tf.model import AcceleratedKerasModel
 
 
 class InferenceUtils:
     """A mixedin class for nano keras Sequential and Model, adding more functions."""
 
-    def trace(self, accelerator=None, input_sample=None):
+    def trace(self, accelerator=None, input_sample=None) -> AcceleratedKerasModel:
         if accelerator == 'openvino':
             return KerasOpenVINOModel(self, input_sample)
