@@ -15,7 +15,8 @@ class PPMLContext(JavaValue):
         return EncryptedDataFrameReader(self.bigdl_type, df_reader)
 
     def write(self, dataframe, crypto_mode):
-        return callBigDlFunc(self.bigdl_type, "write", self.value, dataframe, crypto_mode)
+        df_writer = callBigDlFunc(self.bigdl_type, "write", self.value, dataframe, crypto_mode)
+        return EncryptedDataFrameWriter(self.bigdl_type, df_writer)
 
 
 class EncryptedDataFrameReader:
@@ -29,6 +30,28 @@ class EncryptedDataFrameReader:
 
     def csv(self, path):
         return callBigDlFunc(self.bigdl_type, "csv", self.df_reader, path)
+
+
+class EncryptedDataFrameWriter:
+    support_mode = {"overwrite", "append", "ignore", "error", "errorifexists"}
+
+    def __init__(self, bigdl_type, df_writer):
+        self.bigdl_type = bigdl_type
+        self.df_writer = df_writer
+
+    def option(self, key, value):
+        self.df_writer = callBigDlFunc(self.bigdl_type, "option", self.df_writer, key, value)
+        return self
+
+    def mode(self, mode):
+        if mode not in EncryptedDataFrameWriter.support_mode:
+            raise ValueError("Unknown save mode: " + mode + "." +
+                             "Accepted save modes are 'overwrite', 'append', 'ignore', 'error', 'errorifexists'.")
+        self.df_writer = callBigDlFunc(self.bigdl_type, "mode", self.df_writer, mode)
+        return self
+
+    def csv(self, path):
+        return callBigDlFunc(self.bigdl_type, "csv", self.df_writer, path)
 
 
 if __name__ == '__main__':
@@ -57,10 +80,7 @@ if __name__ == '__main__':
 
     developers = df.filter((df["job"] == "Developer") & df["age"].between(20, 40)).toDF("name", "age", "job")
 
-    sc.write(developers, args.output_encrypt_mode)\
-        .mode('overwrite')\
-        .option("header", True)\
+    sc.write(developers, args.output_encrypt_mode) \
+        .mode('overwrite') \
+        .option("header", True) \
         .csv(args.output_path)
-
-
-

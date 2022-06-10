@@ -2,7 +2,7 @@ package com.intel.analytics.bigdl.ppml.python
 
 import com.intel.analytics.bigdl.ppml.PPMLContext
 import com.intel.analytics.bigdl.ppml.crypto.{CryptoMode, EncryptRuntimeException}
-import com.intel.analytics.bigdl.ppml.crypto.dataframe.EncryptedDataFrameReader
+import com.intel.analytics.bigdl.ppml.crypto.dataframe.{EncryptedDataFrameReader, EncryptedDataFrameWriter}
 import com.intel.analytics.bigdl.ppml.kms.KMS_CONVENTION
 import org.apache.spark.sql.{DataFrame, DataFrameWriter, Row}
 import org.slf4j.{Logger, LoggerFactory}
@@ -54,7 +54,7 @@ class PPMLContextWrapper[T]() {
     sc.read(cryptoMode)
   }
 
-  def write(sc: PPMLContext, dataFrame: DataFrame, cryptoModeStr: String): DataFrameWriter[Row] = {
+  def write(sc: PPMLContext, dataFrame: DataFrame, cryptoModeStr: String): EncryptedDataFrameWriter = {
     logger.debug("write file with crypt mode " + cryptoModeStr)
     val cryptoMode = CryptoMode.parse(cryptoModeStr)
     sc.write(dataFrame, cryptoMode)
@@ -78,4 +78,27 @@ class PPMLContextWrapper[T]() {
     logger.debug("read csv file from path: " + path)
     encryptedDataFrameReader.csv(path)
   }
+
+  /**
+   * EncryptedDataFrameWriter method
+   */
+
+  def option(encryptedDataFrameWriter: EncryptedDataFrameWriter,
+             key: String, value: String): EncryptedDataFrameWriter = {
+    encryptedDataFrameWriter.option(key, value)
+  }
+
+  def option(encryptedDataFrameWriter: EncryptedDataFrameWriter,
+             key: String, value: Boolean): EncryptedDataFrameWriter = {
+    encryptedDataFrameWriter.option(key, value)
+  }
+
+  def mode(encryptedDataFrameWriter: EncryptedDataFrameWriter, mode: String): EncryptedDataFrameWriter = {
+    encryptedDataFrameWriter.mode(mode)
+  }
+
+  def csv(encryptedDataFrameWriter: EncryptedDataFrameWriter, path: String): Unit = {
+    encryptedDataFrameWriter.csv(path)
+  }
+
 }
