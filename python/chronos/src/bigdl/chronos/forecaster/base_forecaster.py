@@ -123,10 +123,12 @@ class BasePytorchForecaster(Forecaster):
             num_nodes = 1 if sc.get('spark.master').startswith('local') \
                 else int(sc.get('spark.executor.instances'))
             if batch_size % self.workers_per_node != 0:
-                raise RuntimeError("Please make sure that batch_size can be divisible by "
-                                   "the product of worker_per_node and num_nodes, "
-                                   f"but 'batch_size' is {batch_size}, 'workers_per_node' "
-                                   f"is {self.workers_per_node}, 'num_nodes' is {num_nodes}")
+                from bigdl.nano.utils.log4Error import invalidInputError
+                invalidInputError(False,
+                                  "Please make sure that batch_size can be divisible by "
+                                  "the product of worker_per_node and num_nodes, "
+                                  f"but 'batch_size' is {batch_size}, 'workers_per_node' "
+                                  f"is {self.workers_per_node}, 'num_nodes' is {num_nodes}")
             batch_size //= (self.workers_per_node * num_nodes)
             return self.internal.fit(data=data,
                                      epochs=epochs,
@@ -142,9 +144,14 @@ class BasePytorchForecaster(Forecaster):
 
             # data transformation
             if isinstance(data, tuple):
+                if batch_size % self.num_processes != 0:
+                    warnings.warn("'batch_size' cannot be divided with no remainder by "
+                                  "'self.num_processes'. We got 'batch_size' = {} and "
+                                  "'self.num_processes' = {}".
+                                  format(batch_size, self.num_processes))
                 data = DataLoader(TensorDataset(torch.from_numpy(data[0]),
                                                 torch.from_numpy(data[1])),
-                                  batch_size=batch_size,
+                                  batch_size=max(1, batch_size//self.num_processes),
                                   shuffle=True)
 
             # Trainer init and fitting
@@ -200,7 +207,9 @@ class BasePytorchForecaster(Forecaster):
             return yhat
         else:
             if not self.fitted:
-                raise RuntimeError("You must call fit or restore first before calling predict!")
+                from bigdl.nano.utils.log4Error import invalidInputError
+                invalidInputError(False,
+                                  "You must call fit or restore first before calling predict!")
             if quantize:
                 yhat = _pytorch_fashion_inference(model=self.pytorch_int8,
                                                   input_data=data,
@@ -236,13 +245,15 @@ class BasePytorchForecaster(Forecaster):
         :return: A numpy array with shape (num_samples, horizon, target_dim).
         """
         from bigdl.chronos.pytorch.utils import _pytorch_fashion_inference
-
+        from bigdl.nano.utils.log4Error import invalidInputError
         if self.distributed:
-            raise NotImplementedError("ONNX inference has not been supported for distributed "
-                                      "forecaster. You can call .to_local() to transform the "
-                                      "forecaster to a non-distributed version.")
+            invalidInputError(False,
+                              "ONNX inference has not been supported for distributed "
+                              "forecaster. You can call .to_local() to transform the "
+                              "forecaster to a non-distributed version.")
         if not self.fitted:
-            raise RuntimeError("You must call fit or restore first before calling predict!")
+            invalidInputError(False,
+                              "You must call fit or restore first before calling predict!")
         if quantize:
             return _pytorch_fashion_inference(model=self.onnxruntime_int8,
                                               input_data=data,
@@ -307,7 +318,9 @@ class BasePytorchForecaster(Forecaster):
                                               batch_size=batch_size)
         else:
             if not self.fitted:
-                raise RuntimeError("You must call fit or restore first before calling evaluate!")
+                from bigdl.nano.utils.log4Error import invalidInputError
+                invalidInputError(False,
+                                  "You must call fit or restore first before calling evaluate!")
             if quantize:
                 yhat = _pytorch_fashion_inference(model=self.pytorch_int8,
                                                   input_data=data[0],
@@ -361,13 +374,15 @@ class BasePytorchForecaster(Forecaster):
         :return: A list of evaluation results. Each item represents a metric.
         """
         from bigdl.chronos.pytorch.utils import _pytorch_fashion_inference
-
+        from bigdl.nano.utils.log4Error import invalidInputError
         if self.distributed:
-            raise NotImplementedError("ONNX inference has not been supported for distributed "
-                                      "forecaster. You can call .to_local() to transform the "
-                                      "forecaster to a non-distributed version.")
+            invalidInputError(False,
+                              "ONNX inference has not been supported for distributed "
+                              "forecaster. You can call .to_local() to transform the "
+                              "forecaster to a non-distributed version.")
         if not self.fitted:
-            raise RuntimeError("You must call fit or restore first before calling evaluate!")
+            invalidInputError(False,
+                              "You must call fit or restore first before calling evaluate!")
         if quantize:
             yhat = _pytorch_fashion_inference(model=self.onnxruntime_int8,
                                               input_data=data[0],
@@ -399,7 +414,9 @@ class BasePytorchForecaster(Forecaster):
             self.internal.save(checkpoint_file)
         else:
             if not self.fitted:
-                raise RuntimeError("You must call fit or restore first before calling save!")
+                from bigdl.nano.utils.log4Error import invalidInputError
+                invalidInputError(False,
+                                  "You must call fit or restore first before calling save!")
             self.trainer.save_checkpoint(checkpoint_file)  # save current status
             if quantize_checkpoint_file:
                 try:
@@ -458,10 +475,10 @@ class BasePytorchForecaster(Forecaster):
         :return: a forecaster instance.
         """
         from bigdl.chronos.pytorch import TSTrainer as Trainer
-
+        from bigdl.nano.utils.log4Error import invalidInputError
         # TODO: optimizer is refreshed, which is not reasonable
         if not self.distributed:
-            raise RuntimeError("The forecaster has become local.")
+            invalidInputError(False, "The forecaster has become local.")
         model = self.internal.get_model()
         self.internal.shutdown()
 
@@ -516,18 +533,20 @@ class BasePytorchForecaster(Forecaster):
         '''
         import onnxruntime
         from bigdl.chronos.pytorch import TSTrainer as Trainer
-
+        from bigdl.nano.utils.log4Error import invalidInputError
         if sess_options is not None and not isinstance(sess_options, onnxruntime.SessionOptions):
-            raise RuntimeError("sess_options should be an onnxruntime.SessionOptions instance"
-                               f", but found {type(sess_options)}")
+            invalidInputError(False,
+                              "sess_options should be an onnxruntime.SessionOptions instance"
+                              f", but found {type(sess_options)}")
         if sess_options is None:
             sess_options = onnxruntime.SessionOptions()
             if thread_num is not None:
                 sess_options.intra_op_num_threads = thread_num
         if self.distributed:
-            raise NotImplementedError("build_onnx has not been supported for distributed "
-                                      "forecaster. You can call .to_local() to transform the "
-                                      "forecaster to a non-distributed version.")
+            invalidInputError(False,
+                              "build_onnx has not been supported for distributed "
+                              "forecaster. You can call .to_local() to transform the "
+                              "forecaster to a non-distributed version.")
         dummy_input = torch.rand(1, self.data_config["past_seq_len"],
                                  self.data_config["input_feature_num"])
         self.onnxruntime_fp32 = Trainer.trace(self.internal,
@@ -542,11 +561,12 @@ class BasePytorchForecaster(Forecaster):
         :param dirname: The dir location you want to save the onnx file.
         """
         from bigdl.chronos.pytorch import TSTrainer as Trainer
-
+        from bigdl.nano.utils.log4Error import invalidInputError
         if self.distributed:
-            raise NotImplementedError("export_onnx_file has not been supported for distributed "
-                                      "forecaster. You can call .to_local() to transform the "
-                                      "forecaster to a non-distributed version.")
+            invalidInputError(False,
+                              "export_onnx_file has not been supported for distributed "
+                              "forecaster. You can call .to_local() to transform the "
+                              "forecaster to a non-distributed version.")
         dummy_input = torch.rand(1, self.data_config["past_seq_len"],
                                  self.data_config["input_feature_num"])
         if quantized_dirname:
@@ -593,20 +613,23 @@ class BasePytorchForecaster(Forecaster):
                only once and return satisfying best model.
         """
         # check model support for quantization
+        from bigdl.nano.utils.log4Error import invalidInputError
         if not self.quantize_available:
-            raise NotImplementedError("This model has not supported quantization.")
+            invalidInputError(False,
+                              "This model has not supported quantization.")
 
         # Distributed forecaster does not support quantization
         if self.distributed:
-            raise NotImplementedError("quantization has not been supported for distributed "
-                                      "forecaster. You can call .to_local() to transform the "
-                                      "forecaster to a non-distributed version.")
+            invalidInputError(False,
+                              "quantization has not been supported for distributed "
+                              "forecaster. You can call .to_local() to transform the "
+                              "forecaster to a non-distributed version.")
 
         # calib data should be set correctly according to the approach
         if approach == 'static' and calib_data is None:
-            raise ValueError("You must set a `calib_data` for static quantization.")
+            invalidInputError(False, "You must set a `calib_data` for static quantization.")
         if approach == 'dynamic' and calib_data is not None:
-            raise ValueError("You must not set a `calib_data` for dynamic quantization.")
+            invalidInputError(False, "You must not set a `calib_data` for dynamic quantization.")
 
         # change data tuple to dataloader
         if isinstance(calib_data, tuple):
@@ -624,7 +647,7 @@ class BasePytorchForecaster(Forecaster):
         # init acc criterion
         accuracy_criterion = None
         if relative_drop and absolute_drop:
-            raise ValueError("Please unset either `relative_drop` or `absolute_drop`.")
+            invalidInputError(False, "Please unset either `relative_drop` or `absolute_drop`.")
         if relative_drop:
             accuracy_criterion = {'relative': relative_drop, 'higher_is_better': False}
         if absolute_drop:
@@ -651,7 +674,6 @@ class BasePytorchForecaster(Forecaster):
                                             accelerator=accelerator,
                                             method=method,
                                             calib_dataloader=calib_data,
-                                            val_dataloader=val_data,
                                             metric=metric,
                                             conf=conf,
                                             approach=approach,

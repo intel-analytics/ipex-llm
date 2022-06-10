@@ -35,6 +35,7 @@
 import tensorflow as tf
 from rnn import dynamic_rnn
 from utils import *
+from bigdl.dllib.utils.log4Error import *
 
 
 class Model(object):
@@ -46,7 +47,7 @@ class Model(object):
         elif data_type == 'FP16':
             self.model_dtype = tf.float16
         else:
-            raise ValueError("Invalid model data type: %s" % data_type)
+            invalidInputError(False, "Invalid model data type: %s" % data_type)
 
         with tf.name_scope('Inputs'):
             self.uid_batch_ph = tf.placeholder(tf.int32, [None, ], name='uid_batch_ph')

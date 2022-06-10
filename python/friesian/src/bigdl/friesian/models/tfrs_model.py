@@ -27,6 +27,8 @@ class TFRSModel(tf.keras.Model):
         log4Error.invalidInputError(isinstance(tfrs_model, tfrs.Model),
                                     "FriesianTFRSModel only support tfrs.Model, but got " +
                                     tfrs_model.__class__.__name__)
+        log4Error.invalidInputError(not tfrs_model._is_compiled,
+                                    "TFRSModel should be initialized before compiling.")
         attr = tfrs_model.__dict__
         task_dict = dict()
         for k, v in attr.items():
@@ -41,7 +43,7 @@ class TFRSModel(tf.keras.Model):
                                                   "`tf.keras.losses.Reduction.SUM` or "
                                                   "`tf.keras.losses.Reduction.NONE` for "
                                                   "loss reduction in this task if the "
-                                                  "Estimator raise an error.")
+                                                  "Estimator throw an error.")
         self.model = tfrs_model
 
     def train_step(self, inputs):

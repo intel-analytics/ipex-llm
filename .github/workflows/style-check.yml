@@ -75,3 +75,9 @@ jobs:
 
       - name: Nano style checking
         run: bash python/nano/dev/lint-python
+
+      - name: PPML style checking
+        run: bash python/ppml/dev/lint-python
+
+      - name: Serving style checking
+        run: bash python/serving/dev/lint-python

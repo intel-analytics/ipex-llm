@@ -2,7 +2,7 @@
 
 BigDL-Nano can be used to accelerate PyTorch or PyTorch-Lightning applications on training workloads. The optimizations in BigDL-Nano are delivered through an extended version of PyTorch-Lightning `Trainer`. These optimizations are either enabled by default or can be easily turned on by setting a parameter or calling a method.
 
-We will briefly describe here the major features in BigDL-Nano for PyTorch training. You can find complete examples here [links to be added]().
+We will briefly describe here the major features in BigDL-Nano for PyTorch training. You can find complete examples [here](https://github.com/intel-analytics/BigDL/tree/main/python/nano/notebooks/pytorch).
 
 ### Best Known Configurations
 
@@ -40,11 +40,18 @@ trainer.fit(lightning_module, train_loader)
 
 #### Intel® Extension for PyTorch
 
-Intel Extension for Pytorch (a.k.a. IPEX) extends PyTorch with optimizations for an extra performance boost on Intel hardware. BigDL-Nano integrates IPEX through the `Trainer`. Users can turn on IPEX by setting `use_ipex=True`.
+Intel Extension for Pytorch (a.k.a. IPEX) [link](https://github.com/intel/intel-extension-for-pytorch) extends PyTorch with optimizations for an extra performance boost on Intel hardware. BigDL-Nano integrates IPEX through the `Trainer`. Users can turn on IPEX by setting `use_ipex=True`.
 
 ```python
 from bigdl.nano.pytorch import Trainer
 trainer = Trainer(max_epoch=10, use_ipex=True)
+```
+
+Note: BigDL-Nano does not install IPEX by default. You can install IPEX using the following command:
+
+```bash
+python -m pip install torch_ipex==1.9.0 -f https://software.intel.com/ipex-whl-stable
+python -m pip install torchvision==0.10.0+cpu -f https://download.pytorch.org/whl/torch_stable.html
 ```
 
 #### Multi-instance Training

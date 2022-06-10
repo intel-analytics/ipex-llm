@@ -41,17 +41,19 @@ def _standard_input(metrics, y_true, y_pred):
         metrics = [metrics]
     if isinstance(metrics[0], str):
         metrics = list(map(lambda x: x.lower(), metrics))
-        assert all(metric in TORCHMETRICS_REGRESSION_MAP.keys() for metric in metrics),\
-            f"metric should be one of {TORCHMETRICS_REGRESSION_MAP.keys()}, "\
-            f"but get {metrics}."
-        assert type(y_true) is type(y_pred) and isinstance(y_pred, ndarray),\
-            "y_pred and y_true type must be numpy.ndarray, "\
-            f"but found {type(y_pred)} and {type(y_true)}."
+        from bigdl.nano.utils.log4Error import invalidInputError
+        invalidInputError(all(metric in TORCHMETRICS_REGRESSION_MAP.keys() for metric in metrics),
+                          f"metric should be one of {TORCHMETRICS_REGRESSION_MAP.keys()},"
+                          f" but get {metrics}.")
+        invalidInputError(type(y_true) is type(y_pred) and isinstance(y_pred, ndarray),
+                          "y_pred and y_true type must be numpy.ndarray,"
+                          f" but found {type(y_pred)} and {type(y_true)}.")
         y_true, y_pred = torch.from_numpy(y_true), torch.from_numpy(y_pred)
 
-    assert y_true.shape == y_pred.shape,\
-        "y_true and y_pred should have the same shape, "\
-        f"but get {y_true.shape} and {y_pred.shape}."
+    from bigdl.nano.utils.log4Error import invalidInputError
+    invalidInputError(y_true.shape == y_pred.shape,
+                      "y_true and y_pred should have the same shape, "
+                      f"but get {y_true.shape} and {y_pred.shape}.")
 
     if y_true.ndim == 1:
         y_true = y_true.reshape(-1, 1)

@@ -31,6 +31,7 @@ import random
 import pyarrow.parquet as pq
 import io
 import math
+from bigdl.dllib.utils.log4Error import *
 
 
 class ParquetDataset:
@@ -134,7 +135,7 @@ class ParquetDataset:
         :param path:
         :return:
         """
-        raise NotImplementedError()
+        invalidInputError(False, "not implemented")
 
 
 class ParquetIterable:
@@ -162,14 +163,14 @@ class ParquetIterable:
             filter_row_group_indexed = [
                 index for index in list(range(len(self.row_group)))]
         else:
-            assert self.num_shards <= len(
-                self.row_group), "num_shards should be not larger than partitions." \
-                                 "but got num_shards {} with partitions {}." \
-                .format(self.num_shards, len(self.row_group))
-            assert self.rank < self.num_shards, \
-                "shard index should be included in [0,num_shard)," \
-                "but got rank {} with num_shard {}.".format(
-                    self.rank, self.num_shards)
+            invalidInputError(self.num_shards <= len(self.row_group),
+                              "num_shards should be not larger than partitions. but got"
+                              " num_shards {} with "
+                              "partitions {}.".format(self.num_shards, len(self.row_group)))
+            invalidInputError(self.rank < self.num_shards,
+                              "shard index should be included in [0,num_shard),"
+                              "but got rank {} with "
+                              "num_shard {}.".format(self.rank, self.num_shards))
             filter_row_group_indexed = [index for index in list(range(len(self.row_group)))
                                         if index % self.num_shards == self.rank]
 
@@ -209,9 +210,9 @@ def _extract_mnist_images(image_filepath):
     with open(image_filepath, "rb") as bytestream:
         magic = _read32(bytestream)
         if magic != 2051:
-            raise ValueError(
-                'Invalid magic number %d in MNIST image file: %s' %
-                (magic, image_filepath))
+            invalidInputError(False,
+                              'Invalid magic number %d in MNIST image file: %s' %
+                              (magic, image_filepath))
         num_images = _read32(bytestream)
         rows = _read32(bytestream)
         cols = _read32(bytestream)
@@ -225,9 +226,9 @@ def _extract_mnist_labels(labels_filepath):
     with open(labels_filepath, "rb") as bytestream:
         magic = _read32(bytestream)
         if magic != 2049:
-            raise ValueError(
-                'Invalid magic number %d in MNIST label file: %s' %
-                (magic, labels_filepath.name))
+            invalidInputError(False,
+                              'Invalid magic number %d in MNIST label file: %s' %
+                              (magic, labels_filepath.name))
         num_items = _read32(bytestream)
         buf = bytestream.read(num_items)
         labels = np.frombuffer(buf, dtype=np.uint8)
@@ -320,14 +321,16 @@ def write_voc(voc_root_path, splits_names, output_path, **kwargs):
 
 def _check_arguments(_format, kwargs, args):
     for keyword in args:
-        assert keyword in kwargs, keyword + " is not specified for format " + _format + "."
+        invalidInputError(keyword in kwargs,
+                          keyword + " is not specified for format " + _format + ".")
 
 
 def write_parquet(format, output_path, *args, **kwargs):
     supported_format = {"mnist", "image_folder", "voc"}
     if format not in supported_format:
-        raise ValueError(format + " is not supported, should be one of 'mnist',"
-                                  "'image_folder' and 'voc'.")
+        invalidInputError(False,
+                          format + " is not supported, should be one of 'mnist',"
+                                   "'image_folder' and 'voc'.")
 
     format_to_function = {"mnist": (write_mnist, ["image_file", "label_file"]),
                           "image_folder": (write_from_directory, ["directory", "label_map"]),
@@ -419,8 +422,8 @@ def read_as_dataloader(path, config=None, transforms=None, batch_size=1, *args, 
 def read_parquet(format, path, transforms=None, config=None, batch_size=1, *args, **kwargs):
     supported_format = {"tf_dataset", "dataloader"}
     if format not in supported_format:
-        raise ValueError(
-            format + " is not supported, should be 'tf_dataset' or 'dataloader'.")
+        invalidInputError(False,
+                          format + " is not supported, should be 'tf_dataset' or 'dataloader'.")
 
     format_to_function = {"tf_dataset": (read_as_tfdataset, ["output_types"]),
                           "dataloader": (read_as_dataloader, [])}

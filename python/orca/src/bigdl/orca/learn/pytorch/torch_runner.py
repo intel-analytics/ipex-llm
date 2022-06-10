@@ -46,6 +46,7 @@ from bigdl.orca.learn.pytorch.constants import SCHEDULER_STEP, NUM_STEPS
 from bigdl.orca.learn.pytorch.training_operator import TrainingOperator
 from bigdl.orca.learn.pytorch import utils
 from bigdl.orca.learn.pytorch.utils import get_filesystem
+from bigdl.dllib.utils.log4Error import *
 
 try:
     from collections.abc import Iterable
@@ -86,6 +87,11 @@ class TorchDistBackend(DistBackend):
     def is_initialized(self):
         import torch.distributed as dist
         return dist.is_initialized()
+
+    def all_reduce_min(self, tensor, group=None, async_op=False):
+        import torch.distributed as dist
+        return dist.all_reduce(tensor, op=dist.ReduceOp.MIN,
+                               group=group, async_op=async_op)
 
 
 class TorchRunner:
@@ -138,8 +144,8 @@ class TorchRunner:
             self.criterion = self.loss_creator
         else:  # Torch loss is also callable.
             import types
-            assert isinstance(self.loss_creator, types.FunctionType), \
-                "Must provide a torch loss instance or a loss_creator function"
+            invalidInputError(isinstance(self.loss_creator, types.FunctionType),
+                              "Must provide a torch loss instance or a loss_creator function")
             self.criterion = self.loss_creator(self.config)
 
     def _create_schedulers_if_available(self):
@@ -181,8 +187,8 @@ class TorchRunner:
         self.models = self.model_creator(self.config)
         if isinstance(self.models, nn.Sequential) or not isinstance(self.models, Iterable):
             self.models = [self.models]
-        assert all(isinstance(model, nn.Module) for model in self.models), (
-            "All models must be PyTorch models: {}.".format(self.models))
+        invalidInputError(all(isinstance(model, nn.Module) for model in self.models),
+                          ("All models must be PyTorch models: {}.".format(self.models)))
 
         self.logger.debug("Creating optimizer.")
         self.optimizers = self.optimizer_creator(self.given_models,
@@ -196,9 +202,9 @@ class TorchRunner:
     def setup_operator(self, training_models):
         """Create the training operator."""
         if self.backend == "horovod":
-            dist_backend = HorovodDistBackend()
+            self.dist_backend = HorovodDistBackend()
         else:
-            dist_backend = TorchDistBackend()
+            self.dist_backend = TorchDistBackend()
 
         self.training_operator = \
             self.training_operator_cls(
@@ -210,7 +216,7 @@ class TorchRunner:
                 schedulers=self.schedulers,
                 use_tqdm=self.use_tqdm,
                 sync_stats=self.sync_stats,
-                dist_backend=dist_backend)
+                dist_backend=self.dist_backend)
 
     def with_sampler(self, loader):
         self.logger.debug("Wrapping DistributedSampler on DataLoader")
@@ -242,7 +248,8 @@ class TorchRunner:
                 and not_iterable)
 
     def train_epochs(self, data_creator, epochs=1, batch_size=32, profile=False,
-                     info=None, wrap_dataloader=None, callbacks=None):
+                     info=None, wrap_dataloader=None, callbacks=None,
+                     validation_data_creator=None):
         config = self.config.copy()
         if OrcaContext.serialize_data_creator:
             with FileLock(
@@ -256,6 +263,38 @@ class TorchRunner:
                 loader = self.with_sampler(loader)
         elif wrap_dataloader is True:
             loader = self.with_sampler(loader)
+
+        if validation_data_creator:
+            if OrcaContext.serialize_data_creator:
+                with FileLock(
+                        os.path.join(tempfile.gettempdir(), ".orca_val_data.lock")):
+                    val_loader = validation_data_creator(config, batch_size)
+            else:
+                val_loader = validation_data_creator(config, batch_size)
+
+            wrapped = False
+            if wrap_dataloader is None:
+                if TorchRunner.should_wrap_dataloader(val_loader):
+                    val_loader = self.with_sampler(val_loader)
+                    wrapped = True
+            elif wrap_dataloader is True:
+                val_loader = self.with_sampler(val_loader)
+                wrapped = True
+
+            if not wrapped:
+                # Truncate validation by the min step for all workers (data may distribute unevenly)
+                # Or it results in error in next epoch of training (op.preamble.length <= op.nbytes)
+                validation_tensor = torch.tensor(len(val_loader))
+                invalidInputError(self.backend != "horovod", "Sanity check failed!")
+                self.dist_backend.all_reduce_min(validation_tensor)
+                val_steps = validation_tensor.item()
+            else:
+                val_steps = None
+
+        else:
+            val_loader = None
+            val_steps = None
+
         if callbacks is not None:
             for callback in callbacks:
                 callback.set_trainer(self)
@@ -265,7 +304,8 @@ class TorchRunner:
             if callbacks is not None:
                 for callback in callbacks:
                     callback.on_epoch_begin(epoch=self.epochs)
-            stats = self.train_epoch(loader, profile=profile, info=info, callbacks=callbacks)
+            stats = self.train_epoch(loader, profile=profile, info=info, callbacks=callbacks,
+                                     val_loader=val_loader, val_steps=val_steps)
             if self.rank == 0:
                 if self.sync_stats:
                     self.logger.info(f"Finished training epoch {i + 1}, " +
@@ -287,7 +327,9 @@ class TorchRunner:
                     data_loader,
                     profile=False,
                     info=None,
-                    callbacks=None):
+                    callbacks=None,
+                    val_loader=None,
+                    val_steps=None):
         """Runs a training epoch and updates the model parameters."""
         if hasattr(self.train_loader, "sampler") and hasattr(
                 self.train_loader.sampler, "set_epoch"):
@@ -303,9 +345,27 @@ class TorchRunner:
         with self.timers.record("train_epoch"):
             data_loader = iter(data_loader)
             train_stats = self.training_operator.train_epoch(data_loader, info, callbacks)
+
+        if val_loader:
+            with self.timers.record("validation"):
+                info = info or {}
+                validation_results = self.training_operator.validate(val_loader,
+                                                                     info=info,
+                                                                     metrics=self.metrics,
+                                                                     num_steps=val_steps)
+                # add prefix of "val_" for validation_stats
+                validation_stats = {}
+                for name, value in validation_results.items():
+                    if not name.startswith("val_"):
+                        name = "val_" + name.lower()
+                    validation_stats[name] = value
+
+        else:
+            validation_stats = {}
+
         self.epochs += 1
         # This is so that `epochs` is first in ordering.
-        stats = dict(epoch=self.epochs, **train_stats)
+        stats = dict(epoch=self.epochs, **train_stats, **validation_stats)
 
         if profile:
             stats.update(profile=self.timers.stats())
@@ -460,7 +520,8 @@ class TorchRunner:
     def load_checkpoint(self, filepath):
         fs = get_filesystem(filepath)
         if not fs.exists(filepath):
-            raise FileNotFoundError(f"Checkpoint at {filepath} not found. Aborting training.")
+            invalidInputError(False,
+                              f"Checkpoint at {filepath} not found. Aborting training.")
         with fs.open(filepath, "rb") as f:
             state_dict = torch.load(f)
         self.load_state_dict(state_dict)

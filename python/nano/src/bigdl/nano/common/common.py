@@ -80,24 +80,23 @@ def _find_library(library_name: str, priority_dir: Union[str, None] = None) -> U
     return res[0].decode("utf-8") if len(res) > 0 else None
 
 
-def init_nano(use_malloc: str = "tc", use_openmp: bool = True,
-              print_environment: bool = False) -> None:
+def get_nano_env_var(use_malloc: str = "tc", use_openmp: bool = True,
+                     print_environment: bool = False) -> Dict[str, str]:
     """
-    Configure necessary environment variables for jemalloc and openmp libraries.
+    Return necessary environment variables for jemalloc and openmp libraries.
     :param use_malloc: Allocator to be chosen, either "je" for jemalloc or "tc" for tcmalloc.
         default as tcmalloc.
     :param use_openmp: If this is set to True, then use intel openmp library. Otherwise disable
         openmp and related environment variables.
     :param print_environment: If this is set to True, print all environment variables after
         setting.
-    :return: None
+    :return: Dict[str, str], indicates the key-value map of environment variables to be set by
+             nano.
     """
 
     # Get a copy of os environment
     env_copy = os.environ.copy()
-
-    if _env_variable_is_set("BIGDL_NANO_CHILD", env_copy):
-        return
+    nano_env = {}
 
     # Find conda directory
     conda_dir = None
@@ -124,13 +123,13 @@ def init_nano(use_malloc: str = "tc", use_openmp: bool = True,
 
         # Set environment variables
         if not _env_variable_is_set("OMP_NUM_THREADS", env_copy):
-            env_copy["OMP_NUM_THREADS"] = str(num_threads)
+            nano_env["OMP_NUM_THREADS"] = str(num_threads)
 
         if not _env_variable_is_set("KMP_AFFINITY", env_copy):
-            env_copy["KMP_AFFINITY"] = "granularity=fine,compact,1,0"
+            nano_env["KMP_AFFINITY"] = "granularity=fine,compact,1,0"
 
         if not _env_variable_is_set("KMP_BLOCKTIME", env_copy):
-            env_copy["KMP_BLOCKTIME"] = "1"
+            nano_env["KMP_BLOCKTIME"] = "1"
     else:
         warnings.warn("Intel OpenMP library (libiomp5.so) is not found.")
 
@@ -139,7 +138,7 @@ def init_nano(use_malloc: str = "tc", use_openmp: bool = True,
         ld_preload_list.append(jemalloc_lib_dir)
 
         if not _env_variable_is_set("MALLOC_CONF", env_copy):
-            env_copy["MALLOC_CONF"] = "oversize_threshold:1,background_thread:true,"\
+            nano_env["MALLOC_CONF"] = "oversize_threshold:1,background_thread:true,"\
                 "metadata_thp:auto,dirty_decay_ms:-1,muzzy_decay_ms:-1"
     else:
         warnings.warn("jemalloc library (libjemalloc.so) is nor found.")
@@ -151,28 +150,55 @@ def init_nano(use_malloc: str = "tc", use_openmp: bool = True,
 
     # Set LD_PRELOAD
     if not _env_variable_is_set("LD_PRELOAD", env_copy):
-        env_copy["LD_PRELOAD"] = " ".join(ld_preload_list)
+        nano_env["LD_PRELOAD"] = " ".join(ld_preload_list)
 
     # Disable openmp or jemalloc according to options
-    ld_preload = env_copy["LD_PRELOAD"].split(" ")
+    ld_preload = nano_env["LD_PRELOAD"].split(" ")
     if not use_openmp:
-        env_copy.pop("OMP_NUM_THREADS")
-        env_copy.pop("KMP_AFFINITY")
-        env_copy.pop("KMP_BLOCKTIME")
+        nano_env.pop("OMP_NUM_THREADS")
+        nano_env.pop("KMP_AFFINITY")
+        nano_env.pop("KMP_BLOCKTIME")
         ld_preload = [lib for lib in ld_preload if "libiomp5.so" not in lib]
 
     if use_malloc is not "je":
-        env_copy.pop("MALLOC_CONF")
+        nano_env.pop("MALLOC_CONF")
         ld_preload = [lib for lib in ld_preload if "libjemalloc.so" not in lib]
 
     if use_malloc is not "tc":
         ld_preload = [lib for lib in ld_preload if "libtcmalloc.so" not in lib]
 
-    env_copy["LD_PRELOAD"] = " ".join(ld_preload)
-    env_copy["BIGDL_NANO_CHILD"] = "1"
+    nano_env["LD_PRELOAD"] = " ".join(ld_preload)
 
     if print_environment:
-        print(env_copy)
+        print(nano_env)
+
+    return nano_env
+
+
+def init_nano(use_malloc: str = "tc", use_openmp: bool = True,
+              print_environment: bool = False) -> None:
+    """
+    Configure necessary environment variables for jemalloc and openmp libraries.
+    :param use_malloc: Allocator to be chosen, either "je" for jemalloc or "tc" for tcmalloc.
+        default as tcmalloc.
+    :param use_openmp: If this is set to True, then use intel openmp library. Otherwise disable
+        openmp and related environment variables.
+    :param print_environment: If this is set to True, print all environment variables after
+        setting.
+    :return: None
+    """
+
+    # Get a copy of os environment
+    env_copy = os.environ.copy()
+
+    if _env_variable_is_set("BIGDL_NANO_CHILD", env_copy):
+        return
+
+    nano_env = get_nano_env_var(use_malloc=use_malloc, use_openmp=use_openmp,
+                                print_environment=print_environment)
+
+    nano_env["BIGDL_NANO_CHILD"] = "1"
+    env_copy.update(nano_env)
 
     if len(sys.argv) > 0 and len(sys.argv[0]) > 0:
         # Not in an interactive shell (sys.argv is not [""])

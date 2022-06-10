@@ -41,6 +41,8 @@ from bigdl.orca.learn.pytorch.utils import (TimerCollection, AverageMeterCollect
 from bigdl.orca.learn.pytorch.constants import (SCHEDULER_STEP_EPOCH, NUM_STEPS,
                                                 SCHEDULER_STEP_BATCH, SCHEDULER_STEP)
 from torch.nn.parallel import DistributedDataParallel as DDP
+from bigdl.dllib.utils.log4Error import *
+
 
 tqdm = None
 try:
@@ -90,27 +92,22 @@ class TrainingOperator:
                  dist_backend=None):
         # You are not expected to override this method.
         self._models = models  # List of models
-        assert isinstance(
-            models,
-            collections.Iterable), ("Components need to be iterable. Got: {}".format(
-                type(models)))
+        invalidInputError(isinstance(models, collections.Iterable),
+                          "Components need to be iterable. Got: {}".format(type(models)))
         self._optimizers = optimizers  # List of optimizers
-        assert isinstance(
-            optimizers,
-            collections.Iterable), ("Components need to be iterable. Got: {}".format(
-                type(optimizers)))
+        invalidInputError(isinstance(optimizers, collections.Iterable),
+                          "Components need to be iterable. Got: {}".format(type(optimizers)))
         self._world_rank = world_rank
         self._criterion = criterion
         self._schedulers = schedulers
         if schedulers:
-            assert isinstance(
-                schedulers,
-                collections.Iterable), ("Components need to be iterable. Got: {}".format(
-                    type(schedulers)))
+            invalidInputError(isinstance(schedulers, collections.Iterable),
+                              "Components need to be iterable. Got: {}".format(type(schedulers)))
         self._config = config
         self._use_fp16 = use_fp16
         if tqdm is None and use_tqdm:
-            raise ValueError("tqdm must be installed to use tqdm in training.")
+            invalidInputError(False,
+                              "tqdm must be installed to use tqdm in training.")
         self._use_tqdm = use_tqdm
         self.global_step = 0
         self.sync_stats = sync_stats
@@ -119,10 +116,10 @@ class TrainingOperator:
         if type(self) is TrainingOperator:
             for component in (models, schedulers, optimizers):
                 if _is_multiple(component):
-                    raise ValueError(
-                        "Need to provide a custom operator subclassing "
-                        "TrainingOperator if using multi-scheduler, "
-                        "multi-model or multi-optimizer training/validation.")
+                    invalidInputError(False,
+                                      "Need to provide a custom operator subclassing "
+                                      "TrainingOperator if using multi-scheduler, "
+                                      "multi-model or multi-optimizer training/validation.")
         self.timers = TimerCollection()
         self.setup(config)
 
@@ -297,7 +294,7 @@ class TrainingOperator:
 
         return {"train_loss": loss.item(), NUM_SAMPLES: features[0].size(0)}
 
-    def validate(self, val_iterator, info, metrics):
+    def validate(self, val_iterator, info, metrics, num_steps=None):
         """Runs one standard validation pass over the val_iterator.
 
         This will call ``model.eval()`` and ``torch.no_grad`` when iterating
@@ -327,6 +324,8 @@ class TrainingOperator:
         total_samples = 0
         with torch.no_grad():
             for batch_idx, batch in enumerate(val_iterator):
+                if num_steps and batch_idx == num_steps:
+                    break
                 batch_info = {"batch_idx": batch_idx}
                 batch_info.update(info)
                 output, target, loss = self.forward_batch(batch, batch_info)

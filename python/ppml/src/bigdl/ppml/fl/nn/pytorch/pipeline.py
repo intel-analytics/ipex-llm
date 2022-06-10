@@ -21,18 +21,19 @@ from torch import nn
 import torch
 from bigdl.ppml.fl.nn.fl_client import FLClient
 from torch.utils.data import DataLoader
+from bigdl.dllib.utils.log4Error import invalidInputError
 from bigdl.ppml.fl.nn.utils import tensor_map_to_ndarray_map
 
 class PytorchPipeline:
     def __init__(self, model: nn.Module, loss_fn, optimizer: torch.optim.Optimizer, algorithm=None,
-            bigdl_type="float"):
+            bigdl_type="float", target="localhost:8980"):
         self.bigdl_type = bigdl_type
         self.model = model
         self.loss_fn = loss_fn
         self.optimizer = optimizer
         self.version = 0
         self.algorithm = algorithm
-        self.fl_client = FLClient()
+        self.fl_client = FLClient(target)
         self.loss_history = []
 
     
@@ -96,7 +97,8 @@ class PytorchPipeline:
                             epoch {e}/{epoch}")
                         self.loss_history.append(loss)
             else:
-                raise Exception(f'got unsupported data input type: {type(x)}')
+                invalidInputError(False,
+                                  f'got unsupported data input type: {type(x)}')
             
 
     def predict(self, x):

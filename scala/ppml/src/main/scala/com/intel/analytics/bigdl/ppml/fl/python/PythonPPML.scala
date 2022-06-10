@@ -31,7 +31,6 @@ import scala.collection.mutable.ArrayBuffer
 import scala.reflect.ClassTag
 import com.intel.analytics.bigdl.dllib.utils.Log4Error
 import com.intel.analytics.bigdl.ppml.fl.{FLClient, FLContext, FLServer, NNModel}
-import org.apache.log4j.LogManager
 
 object PythonPPML {
 
@@ -41,8 +40,8 @@ object PythonPPML {
 }
 class PythonPPML[T: ClassTag](implicit ev: TensorNumeric[T])
   extends PythonBigDL with TimingSupportive {
-  def initFLContext(): Unit = {
-    FLContext.initFLContext()
+  def initFLContext(target: String): Unit = {
+    FLContext.initFLContext(target)
   }
   def createFLServer(): FLServer = {
     new FLServer()
@@ -82,6 +81,9 @@ class PythonPPML[T: ClassTag](implicit ev: TensorNumeric[T])
 
   def flServerSetClientNum(flServer: FLServer, clientNum: Int): Unit = {
     flServer.setClientNum(clientNum)
+  }
+  def flServerSetPort(flServer: FLServer, port: Int): Unit = {
+    flServer.setPort(port)
   }
   def flServerBlockUntilShutdown(flServer: FLServer): Unit = {
     flServer.blockUntilShutdown()
@@ -156,6 +158,12 @@ class PythonPPML[T: ClassTag](implicit ev: TensorNumeric[T])
     val tensorArray = jTensorToTensorArray(feature)
     val result = model.predict(tensorArray).map(_.storage().array())
     JTensor(result.flatten, Array(result.length, result(0).length), bigdlType = "float")
+  }
+  def fgBoostRegressionSave(model: FGBoostRegression, dest: String): Unit = {
+    model.saveModel(dest)
+  }
+  def fgBoostRegressionLoad(src: String): FGBoostRegression = {
+    FGBoostRegression.loadModel(src)
   }
   def nnFit(model: NNModel): Unit = {
 
