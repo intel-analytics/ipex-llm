@@ -4,11 +4,12 @@ import pandas as pd
 
 init_fl_context()
 df_train = pd.read_csv('house-prices-train-2.csv')
-fgboost_regression = FGBoostRegression()
 
 # party 2 owns label, so split features and label first
 df_x = df_train.drop('SalePrice', 1) # drop the label column
 df_y = df_train.filter(items=['SalePrice']) # select the label column
+
+fgboost_regression = FGBoostRegression()
 fgboost_regression.fit(df_x, df_y, feature_columns=df_x.columns, label_columns=['SalePrice'], num_round=100)
 
 df_test = pd.read_csv('house-prices-test-2')

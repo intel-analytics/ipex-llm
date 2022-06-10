@@ -9,19 +9,74 @@ To simulate the scenario where different data features are held by 2 parties res
 
 After preprocessing, we got a data file in `data` folder, including `house-prices-train-1.csv` with half of features and no label, and a data file `house-prices-train-2.csv` with another half of features and label `SalePrice`. The and test data `house-prices-test-1.csv` and `house-prices-test-2.csv`.
 
+
 ## Start FLServer
 FL Server is required before running any federated applications. Please check [Start FL Server]() section.
 
-## Run Client Application
-To simuluate the training of 2 parties, we provide 2 Python scripts which has the similar pipeline logic. The pipelines both include loading data, running federated training, running federated prediction, and save/load the model. Note that the codes of them are slightly different due to the different data file they access.
+## Write Client Code
+The code is available in projects, including [Client 1 code]() and [Client 2 code](). You could directly start two different terminals are run them respectively to start a federated learning, and the order of start does not matter. Following is the detailed step-by-step tutorial to introduce how the code works.
 
-To run the example, start these 2 scripts from 2 different terminals.
-```bash
-python fgboost_regression_party_1.py
+### Import and Load Data
+First, import the package and initilize FL Context.
+```python
+from bigdl.ppml.fl import *
+from bigdl.ppml.fl.algorithms.fgboost_regression import FGBoostRegression
+import pandas as pd
+
+init_fl_context()
 ```
-and 
-```bash
-python fgboost_regression_party_2.py
+Then, read the data and split it into feature and label if necessary,
+
+Party 1:
+```python
+df_train = pd.read_csv('house-prices-train-1.csv')
 ```
-The order of starts does not matter.
-## Code Step-by-step Client Code
+
+Party 2:
+```python
+df_train = pd.read_csv('house-prices-train-2.csv')
+
+# party 2 owns label, so split features and label first
+df_x = df_train.drop('SalePrice', 1) # drop the label column
+df_y = df_train.filter(items=['SalePrice']) # select the label column
+```
+### Create Model and Train
+Create the FGBoost model with default parameters and train
+Party 1:
+```python
+fgboost_regression = FGBoostRegression()
+# party 1 does not own label, so directly pass all the features
+fgboost_regression.fit(df_train, feature_columns=df_train.columns, num_round=100)
+```
+Party 2:
+```
+fgboost_regression = FGBoostRegression()
+fgboost_regression.fit(df_x, df_y, feature_columns=df_x.columns, label_columns=['SalePrice'], num_round=100)
+```
+### Predict
+Using the trained model to federated predict
+
+Party 1:
+```python
+df_test = pd.read_csv('house-prices-test-1')
+result = fgboost_regression.predict(df_test, feature_columns=df_test.columns)
+```
+Party 2:
+```python
+df_test = pd.read_csv('house-prices-test-2')
+result = fgboost_regression.predict(df_test, feature_columns=df_test.columns)
+```
+### Save/Load
+Save the model and load it back
+
+Party 1:
+```python
+fgboost_regression.save_model('/tmp/fgboost_model_1.json')
+loaded = FGBoostRegression.load_model('/tmp/fgboost_model_1.json')
+```
+Party 2:
+```python
+fgboost_regression.save_model('/tmp/fgboost_model_2.json')
+loaded = FGBoostRegression.load_model('/tmp/fgboost_model_2.json')
+```
+
