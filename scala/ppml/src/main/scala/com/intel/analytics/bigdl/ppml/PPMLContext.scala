@@ -35,8 +35,8 @@ import java.nio.file.Paths
  * PPMLContext who wraps a SparkSession and provides read functions to
  * read encrypted data files to plain-text RDD or DataFrame, also provides
  * write functions to save DataFrame to encrypted data files.
- * @param kms
- * @param sparkSession
+ * @param kms a KeyManagementService to manage keys.
+ * @param sparkSession a SparkSession.
  */
 class PPMLContext protected(kms: KeyManagementService, sparkSession: SparkSession) {
 
@@ -44,8 +44,8 @@ class PPMLContext protected(kms: KeyManagementService, sparkSession: SparkSessio
 
   /**
    * Load keys from a local file system.
-   * @param primaryKeyPath
-   * @param dataKeyPath
+   * @param primaryKeyPath the path of primary key.
+   * @param dataKeyPath the path of data key.
    * @return
    */
   def loadKeys(primaryKeyPath: String, dataKeyPath: String): this.type = {
@@ -59,7 +59,7 @@ class PPMLContext protected(kms: KeyManagementService, sparkSession: SparkSessio
    * @param path data file path
    * @param minPartitions min partitions
    * @param cryptoMode crypto mode, such as PLAIN_TEXT or AES_CBC_PKCS5PADDING
-   * @return
+   * @return data in RDD[String].
    */
   def textFile(path: String,
                minPartitions: Int = sparkSession.sparkContext.defaultMinPartitions,
@@ -102,6 +102,13 @@ class PPMLContext protected(kms: KeyManagementService, sparkSession: SparkSessio
 }
 
 object PPMLContext{
+  /**
+   * A user defined function to encrypt data.
+   * @param spark a Spark Session.
+   * @param cryptoMode crypto mode, such as PLAIN_TEXT or AES_CBC_PKCS5PADDING.
+   * @param dataKeyPlaintext the plaintext of data key.
+   * @return a user defined function.
+   */
   private[bigdl] def registerUDF(
         spark: SparkSession,
         cryptoMode: CryptoMode,
@@ -115,6 +122,15 @@ object PPMLContext{
     spark.udf.register("convertUDF", convertCase)
   }
 
+  /**
+   * Read data files into RDD[String].
+   * @param sc a SparkContext.
+   * @param path data file path.
+   * @param dataKeyPlaintext the plaintext of data key.
+   * @param cryptoMode crypto mode, such as PLAIN_TEXT or AES_CBC_PKCS5PADDING.
+   * @param minPartitions min partitions.
+   * @return data in RDD[String].
+   */
   private[bigdl] def textFile(sc: SparkContext,
                path: String,
                dataKeyPlaintext: String,
@@ -135,6 +151,14 @@ object PPMLContext{
     }} // .flatMap(_.split("\n")).flatMap(_.split("\r"))
   }
 
+  /**
+   * Load data in external storage to Dataset.
+   * @param sparkSession a SparkSession.
+   * @param cryptoMode crypto mode, such as PLAIN_TEXT or AES_CBC_PKCS5PADDING.
+   * @param dataKeyPlaintext the plaintext of data key.
+   * @param dataFrame dataframe to save.
+   * @return a DataFrameWriter[Row].
+   */
   private[bigdl] def write(
         sparkSession: SparkSession,
         cryptoMode: CryptoMode,
@@ -151,10 +175,20 @@ object PPMLContext{
     df.write
   }
 
+  /**
+   * init ppml context with app name
+   * @param appName the name of this Application
+   * @return a PPMLContext
+   */
   def initPPMLContext(appName: String): PPMLContext = {
     initPPMLContext(null, appName)
   }
 
+  /**
+   * init ppml context with SparkConf
+   * @param conf a SparkConf
+   * @return a PPMLContext
+   */
   def initPPMLContext(conf: SparkConf): PPMLContext = {
     initPPMLContext(conf)
   }
