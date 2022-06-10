@@ -16,6 +16,11 @@
 
 package com.intel.analytics.bigdl.ppml.crypto
 
+/**
+ * Encrypt runtime exception.
+ * @param message the message to show.
+ * @param cause the cause which is saved for later retrieval.
+ */
 class EncryptRuntimeException(message: String, cause: Throwable)
   extends RuntimeException(message) {
   if (cause != null) {

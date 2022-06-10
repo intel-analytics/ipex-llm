@@ -23,10 +23,10 @@ import org.apache.spark.sql.types.{StringType, StructField, StructType}
 import org.apache.spark.sql.{DataFrame, Row, SparkSession}
 
 /**
- *
- * @param sparkSession
- * @param encryptMode
- * @param dataKeyPlainText
+ * Decrypt file to a dataframe.
+ * @param sparkSession a SparkSession
+ * @param encryptMode decryptMode to decrypt data, such as PLAIN_TEXT or AES_CBC_PKCS5PADDING.
+ * @param dataKeyPlainText the plaintext of data key.
  */
 class EncryptedDataFrameReader(
       sparkSession: SparkSession,
@@ -34,10 +34,22 @@ class EncryptedDataFrameReader(
       dataKeyPlainText: String) {
   protected val extraOptions = new scala.collection.mutable.HashMap[String, String]
 
+  /**
+   * Option of read file.
+   * @param key the key of option.
+   * @param value the value of option.
+   * @return this type.
+   */
   def option(key: String, value: String): this.type = {
     this.extraOptions += (key -> value)
     this
   }
+
+  /**
+   * Read csv file to a dataframe.
+   * @param path the path of file to read.
+   * @return a dataframe.
+   */
   def csv(path: String): DataFrame = {
     encryptMode match {
       case PLAIN_TEXT =>
@@ -64,6 +76,11 @@ class EncryptedDataFrameReader(
 }
 
 object EncryptedDataFrameReader {
+  /**
+   * Change a data rdd to a dataframe. The first line will be the schema.
+   * @param dataRDD the data rdd.
+   * @return a dataframe.
+   */
   private[bigdl] def toDataFrame(dataRDD: RDD[String]): DataFrame = {
     // get schema
     val sparkSession: SparkSession = SparkSession.builder().getOrCreate()

@@ -25,6 +25,13 @@ import org.apache.spark.sql.{DataFrame, Row, SaveMode, SparkSession}
 
 import java.util.Locale
 
+/**
+ * Encrypt a dataframe and save it in a file.
+ * @param sparkSession a SparkSession.
+ * @param df the dataframe.
+ * @param encryptMode encryptMode to encrypt data, such as PLAIN_TEXT and AES_CSB_PKCS5PADDING.
+ * @param dataKeyPlainText the plaintext of data key.
+ */
 class EncryptedDataFrameWriter(
       sparkSession: SparkSession,
       df: DataFrame,
@@ -32,11 +39,23 @@ class EncryptedDataFrameWriter(
       dataKeyPlainText: String) {
   protected val extraOptions = new scala.collection.mutable.HashMap[String, String]
 
+  /**
+   * Option of write file.
+   * @param key the key of option.
+   * @param value the value of option.
+   * @return this type.
+   */
   def option(key: String, value: String): this.type = {
     this.extraOptions += (key -> value)
     this
   }
 
+  /**
+   * Boolean type option of write file.
+   * @param key the key of option.
+   * @param value boolean type value of option.
+   * @return this type.
+   */
   def option(key: String, value: Boolean): this.type = {
     this.extraOptions += (key -> value.toString)
     this
@@ -44,6 +63,11 @@ class EncryptedDataFrameWriter(
 
   private var mode: SaveMode = SaveMode.ErrorIfExists
 
+  /**
+   * Save mode when writing file.
+   * @param saveMode save mode such as "overwrite", "append", "ignore", "error" and others.
+   * @return this type.
+   */
   def mode(saveMode: String): this.type = {
     this.mode = saveMode.toLowerCase(Locale.ROOT) match {
       case "overwrite" => SaveMode.Overwrite
@@ -56,6 +80,10 @@ class EncryptedDataFrameWriter(
     this
   }
 
+  /**
+   * Write csv file.
+   * @param path the path to save file.
+   */
   def csv(path: String): Unit = {
     encryptMode match {
       case PLAIN_TEXT =>
@@ -71,6 +99,14 @@ class EncryptedDataFrameWriter(
 }
 
 object EncryptedDataFrameWriter {
+  /**
+   * Encrypt a dataframe and write it to a csv file.
+   * @param rdd data in RDD[Row].
+   * @param sc a SparkContext.
+   * @param path the path to save file.
+   * @param encryptMode encryptMode to encrypt data.
+   * @param dataKeyPlainText the plaintext of data key.
+   */
   protected def writeCsv(rdd: RDD[Row],
                          sc: SparkContext,
                          path: String,
