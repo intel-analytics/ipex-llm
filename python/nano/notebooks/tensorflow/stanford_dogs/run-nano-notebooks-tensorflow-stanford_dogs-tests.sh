@@ -33,6 +33,6 @@ jupyter nbconvert --to notebook --ExecutePreprocessor.timeout 300 --ExecutePrepr
 now=$(date "+%s")
 time=$((now-start))
 
-echo "Bigdl-nano cifar10 train notebook test finished"
+echo "Bigdl-nano cifar10 inference notebook test finished"
 echo "Time used:$time seconds"
 
