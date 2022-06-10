@@ -274,7 +274,7 @@ jobs:
           $CONDA/bin/conda info
           bash python/nano/dev/build_and_install.sh linux default false tensorflow
           pip install pytest
-          pip install openvino-dev yaml
+          pip install openvino-dev
           source bigdl-nano-init
           bash python/nano/test/run-nano-tf-openvino-tests.sh
           source $CONDA/bin/deactivate
