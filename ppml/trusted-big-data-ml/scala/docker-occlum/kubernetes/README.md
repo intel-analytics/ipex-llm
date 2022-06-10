@@ -144,3 +144,7 @@ Then run the script.
 ./run_spark_tpch.sh
 ```
 
+## How to debug
+Modify the `--conf spark.kubernetes.sgx.log.level=off \` to one of `off, error, warn, debug, info, and trace` 
+in `run_spark_xx.sh`.
+

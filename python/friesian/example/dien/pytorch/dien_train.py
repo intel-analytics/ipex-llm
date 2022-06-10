@@ -14,8 +14,6 @@
 # limitations under the License.
 #
 
-from pyparsing import col
-
 from dienl import SparseFeat, VarLenSparseFeat, DIEN
 import torch.nn as nn
 import torch.optim as optim
@@ -28,15 +26,12 @@ from pyspark.sql.window import Window
 from pyspark.sql.functions import desc, rank, col
 
 import argparse
+from bigdl.dllib.utils.log4Error import *
+
 
 EMBEDDING_DIM = 18
-HIDDEN_SIZE = 18 * 2
-ATTENTION_SIZE = 18 * 2
 MAX_HIST_LEN = 100
-SEED = 3
-best_auc = 0.0
 hash_flag = False
-use_neg = False
 
 feature_columns = []
 behavior_feature_list = []
@@ -71,7 +66,7 @@ if __name__ == '__main__':
     parser.add_argument('--driver_memory', type=str, default="36g",
                         help='The driver memory.')
     parser.add_argument('--lr', default=0.001, type=float, help='learning rate')
-    parser.add_argument('--epochs', default=100, type=int, help='train epoch')
+    parser.add_argument('--epochs', default=20, type=int, help='train epoch')
     parser.add_argument('--batch_size', default=512, type=int, help='batch size')
     parser.add_argument('--data_dir', type=str, default="./preprocessed", help='data directory')
     args = parser.parse_args()
@@ -105,9 +100,9 @@ if __name__ == '__main__':
     elif args.cluster_mode == "spark-submit":
         init_orca_context("spark-submit")
     else:
-        raise ValueError(
-            "cluster_mode should be one of 'local', 'yarn', 'standalone' and 'spark-submit'"
-            ", but got " + args.cluster_mode)
+        invalidInputError(False,
+                          "cluster_mode should be one of 'local', 'yarn', 'standalone' and"
+                          " 'spark-submit', but got " + args.cluster_mode)
 
     # Read Data
     tbl = FeatureTable.read_parquet(args.data_dir + "data") \
@@ -137,18 +132,10 @@ if __name__ == '__main__':
     print("category size: ", n_cat)
 
     # build input feature table
-    feature_columns = [SparseFeat('user',
-                                  n_uid,
-                                  embedding_dim=EMBEDDING_DIM,
-                                  use_hash=hash_flag),
-                       SparseFeat('item_id',
-                                  n_mid,
-                                  embedding_dim=EMBEDDING_DIM,
-                                  use_hash=hash_flag),
-                       SparseFeat('cate_id',
-                                  n_cat,
-                                  embedding_dim=EMBEDDING_DIM,
-                                  use_hash=hash_flag)]
+    feature_columns = [
+        SparseFeat('user', n_uid, embedding_dim=EMBEDDING_DIM, use_hash=hash_flag),
+        SparseFeat('item_id', n_mid, embedding_dim=EMBEDDING_DIM, use_hash=hash_flag),
+        SparseFeat('cate_id', n_cat, embedding_dim=EMBEDDING_DIM, use_hash=hash_flag)]
     feature_columns += [VarLenSparseFeat(SparseFeat('hist_item_id',
                                                     vocabulary_size=n_mid,
                                                     embedding_dim=EMBEDDING_DIM,

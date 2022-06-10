@@ -39,6 +39,7 @@ import socket
 import time
 import torch.distributed as dist
 import torch
+from bigdl.dllib.utils.log4Error import *
 
 
 logger = logging.getLogger(__name__)
@@ -73,11 +74,11 @@ class TimerStat:
         self.count = 0
 
     def __enter__(self):
-        assert self._start_time is None, "concurrent updates not supported"
+        invalidInputError(self._start_time is None, "concurrent updates not supported")
         self._start_time = time.time()
 
     def __exit__(self, type, value, tb):
-        assert self._start_time is not None
+        invalidInputError(self._start_time is not None, "expect start time is not none")
         time_delta = time.time() - self._start_time
         self.push(time_delta)
         self._start_time = None
@@ -268,7 +269,8 @@ def check_for_failure(remote_values):
 
 def override(interface_class):
     def overrider(method):
-        assert (method.__name__ in dir(interface_class))
+        invalidInputError(method.__name__ in dir(interface_class),
+                          "method.__name__ doesn't exist in interface_class")
         return method
 
     return overrider

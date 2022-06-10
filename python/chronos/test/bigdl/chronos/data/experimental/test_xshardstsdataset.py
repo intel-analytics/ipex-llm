@@ -24,11 +24,21 @@ from unittest import TestCase
 from bigdl.chronos.data import TSDataset
 from bigdl.chronos.data.experimental import XShardsTSDataset
 from bigdl.orca.data.pandas import read_csv
-from bigdl.orca.common import init_orca_context, stop_orca_context
+from bigdl.orca.common import init_orca_context, stop_orca_context, OrcaContext
 
 from pandas.testing import assert_frame_equal
 from numpy.testing import assert_array_almost_equal
 
+
+def generate_spark_df():
+    init_orca_context(cores=8)
+    sc = OrcaContext.get_spark_context()
+    rdd = sc.range(0, 100)
+    from pyspark.ml.linalg import DenseVector
+    df = rdd.map(lambda x: (DenseVector(np.random.randn(1, ).astype(np.float)),
+                            int(np.random.randint(0, 2, size=())),
+                            int(x))).toDF(["feature", "id", "date"])
+    return df
 
 class TestXShardsTSDataset(TestCase):
 
@@ -42,7 +52,7 @@ class TestXShardsTSDataset(TestCase):
     def tearDownClass(cls):
         # stop possible active_spark_context
         from pyspark import SparkContext
-        from bigdl.orca.ray import RayContext
+        from bigdl.orca.ray import OrcaRayContext
         if SparkContext._active_spark_context is not None:
             print("Stopping spark_orca context")
             sc = SparkContext.getOrCreate()
@@ -181,3 +191,29 @@ class TestXShardsTSDataset(TestCase):
         collected_numpy = shards_numpy.collect()  # collect and valid
         x = np.concatenate([collected_numpy[i]['x'] for i in range(len(collected_numpy))], axis=0)
         assert x.shape == ((50-lookback-horizon+1)*2, lookback, 2)
+
+    def test_xshardstsdataset_sparkdf(self):
+        df = generate_spark_df()
+
+        # with id
+        tsdata = XShardsTSDataset.from_sparkdf(df, dt_col="date",
+                                               target_col="feature",
+                                               id_col="id")
+        tsdata.roll(lookback=4, horizon=2)
+        data = tsdata.to_xshards().collect()
+        assert data[0]['x'].shape[1] == 4
+        assert data[0]['x'].shape[2] == 1
+        assert data[0]['y'].shape[1] == 2
+        assert data[0]['y'].shape[2] == 1
+        assert tsdata.shards.num_partitions() == 2
+
+        # with only 1 id
+        tsdata = XShardsTSDataset.from_sparkdf(df, dt_col="date",
+                                               target_col="feature")
+        tsdata.roll(lookback=4, horizon=2)
+        data = tsdata.to_xshards().collect()
+        assert data[0]['x'].shape[1] == 4
+        assert data[0]['x'].shape[2] == 1
+        assert data[0]['y'].shape[1] == 2
+        assert data[0]['y'].shape[2] == 1
+        assert tsdata.shards.num_partitions() == 1

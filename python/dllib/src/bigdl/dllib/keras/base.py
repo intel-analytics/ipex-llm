@@ -87,7 +87,7 @@ class ZooKerasLayer(ZooKerasCreator, ZooCallable, Layer, InferShape):
         allowed_kwargs = {"name", "bigdl_type"}
         for kwarg in kwargs.keys():
             if kwarg not in allowed_kwargs:
-                raise TypeError("Wrong argument for the layer:", kwarg)
+                invalidInputError(False, "Wrong argument for the layer:", kwarg)
         bigdl_type = kwargs.get("bigdl_type")
         if not bigdl_type:
             bigdl_type = "float"

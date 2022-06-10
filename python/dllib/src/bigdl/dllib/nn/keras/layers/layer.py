@@ -18,6 +18,8 @@ import sys
 
 from bigdl.dllib.nn.layer import Layer, Node, SharedStaticUtils, Container
 from bigdl.dllib.utils.common import callBigDlFunc, JTensor, JavaValue
+from bigdl.dllib.utils.log4Error import *
+
 
 if sys.version >= '3':
     long = int
@@ -81,7 +83,7 @@ class KerasLayer(Layer, InferShape, KerasCreator):
         allowed_kwargs = {"name", "bigdl_type"}
         for kwarg in kwargs.keys():
             if kwarg not in allowed_kwargs:
-                raise TypeError("Wrong argument for the layer:", kwarg)
+                invalidInputError(False, "Wrong argument for the layer:", kwarg)
         bigdl_type = kwargs.get("bigdl_type")
         if not bigdl_type:
             bigdl_type = "float"
@@ -293,13 +295,16 @@ class BatchNormalization(KerasLayer):
                  gamma_init="one",
                  dim_ordering="th", input_shape=None, **kwargs):
         if mode != 0:
-            raise ValueError("For BatchNormalization, only mode=0 is supported for now")
+            invalidInputError(False,
+                              "For BatchNormalization, only mode=0 is supported for now")
         if dim_ordering == "th" and axis != 1:
-            raise ValueError("For BatchNormalization with th dim ordering, only axis=1 is"
-                             " supported for now")
+            invalidInputError(False,
+                              "For BatchNormalization with th dim ordering, only axis=1"
+                              " is supported for now")
         if dim_ordering == "tf" and axis != -1 and axis != 3:
-            raise ValueError("For BatchNormalization with tf dim ordering, only axis=-1 is"
-                             " supported for now")
+            invalidInputError(False,
+                              "For BatchNormalization with tf dim ordering, only axis=-1 is"
+                              " supported for now")
         super(BatchNormalization, self).__init__(None,
                                                  float(epsilon),
                                                  float(momentum),
@@ -828,10 +833,12 @@ class AtrousConvolution1D(KerasLayer):
                  border_mode="valid", subsample_length=1, atrous_rate=1, W_regularizer=None,
                  b_regularizer=None, bias=True, input_shape=None, **kwargs):
         if border_mode != "valid":
-            raise ValueError("For AtrousConvolution1D, only border_mode='valid' is supported for"
-                             " now")
+            invalidInputError(False,
+                              "For AtrousConvolution1D, only border_mode='valid' is"
+                              " supported for now")
         if not bias:
-            raise ValueError("For AtrousConvolution1D, only bias=True is supported for now")
+            invalidInputError(False,
+                              "For AtrousConvolution1D, only bias=True is supported for now")
         super(AtrousConvolution1D, self).__init__(None,
                                                   nb_filter,
                                                   filter_length,
@@ -893,10 +900,12 @@ class AtrousConvolution2D(KerasLayer):
                  atrous_rate=(1, 1), dim_ordering="th", W_regularizer=None,
                  b_regularizer=None, bias=True, input_shape=None, **kwargs):
         if border_mode != "valid":
-            raise ValueError("For AtrousConvolution2D, only border_mode='valid' is supported for"
-                             " now")
+            invalidInputError(False,
+                              "For AtrousConvolution2D, only border_mode='valid' is"
+                              " supported for now")
         if not bias:
-            raise ValueError("For AtrousConvolution2D, only bias=True is supported for now")
+            invalidInputError(False,
+                              "For AtrousConvolution2D, only bias=True is supported for now")
         super(AtrousConvolution2D, self).__init__(None,
                                                   nb_filter,
                                                   nb_row,
@@ -961,7 +970,8 @@ class Deconvolution2D(KerasLayer):
                  activation=None, border_mode="valid", subsample=(1, 1), dim_ordering="th",
                  W_regularizer=None, b_regularizer=None, bias=True, input_shape=None, **kwargs):
         if border_mode != "valid":
-            raise ValueError("For Deconvolution2D, only border_mode='valid' is supported for now")
+            invalidInputError(False,
+                              "For Deconvolution2D, only border_mode='valid' is supported for now")
         super(Deconvolution2D, self).__init__(None,
                                               nb_filter,
                                               nb_row,
@@ -1446,7 +1456,8 @@ class MaxPooling3D(KerasLayer):
     def __init__(self, pool_size=(2, 2, 2), strides=None, border_mode="valid",
                  dim_ordering="th", input_shape=None, **kwargs):
         if border_mode != "valid":
-            raise ValueError("For MaxPooling3D, only border_mode='valid' is supported for now")
+            invalidInputError(False,
+                              "For MaxPooling3D, only border_mode='valid' is supported for now")
         super(MaxPooling3D, self).__init__(None,
                                            pool_size,
                                            strides,
@@ -1557,7 +1568,9 @@ class AveragePooling3D(KerasLayer):
     def __init__(self, pool_size=(2, 2, 2), strides=None, border_mode="valid",
                  dim_ordering="th", input_shape=None, **kwargs):
         if border_mode != "valid":
-            raise ValueError("For AveragePooling3D, only border_mode='valid' is supported for now")
+            invalidInputError(False,
+                              "For AveragePooling3D, only border_mode='valid' is"
+                              " supported for now")
         super(AveragePooling3D, self).__init__(None,
                                                pool_size,
                                                strides,
@@ -1927,11 +1940,12 @@ class ConvLSTM2D(KerasLayer):
                  subsample=(1, 1), W_regularizer=None, U_regularizer=None, b_regularizer=None,
                  return_sequences=False, go_backwards=False, input_shape=None, **kwargs):
         if nb_row != nb_col:
-            raise ValueError("For ConvLSTM2D, only square kernel is supported for now")
+            invalidInputError(False, "For ConvLSTM2D, only square kernel is supported for now")
         if border_mode != "same":
-            raise ValueError("For ConvLSTM2D, only border_mode='same' is supported for now")
+            invalidInputError(False,
+                              "For ConvLSTM2D, only border_mode='same' is supported for now")
         if subsample[0] != subsample[1]:
-            raise ValueError("For ConvLSTM2D, only equal strides is supported for now")
+            invalidInputError(False, "For ConvLSTM2D, only equal strides is supported for now")
         super(ConvLSTM2D, self).__init__(None,
                                          nb_filter,
                                          nb_row,
@@ -1987,8 +2001,9 @@ class LocallyConnected1D(KerasLayer):
                  subsample_length=1, W_regularizer=None, b_regularizer=None,
                  bias=True, input_shape=None, **kwargs):
         if border_mode != "valid":
-            raise ValueError("For LocallyConnected1D, only border_mode='valid' is"
-                             " supported for now")
+            invalidInputError(False,
+                              "For LocallyConnected1D, only border_mode='valid' is"
+                              " supported for now")
         super(LocallyConnected1D, self).__init__(None,
                                                  nb_filter,
                                                  filter_length,

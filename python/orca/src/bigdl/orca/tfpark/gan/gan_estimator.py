@@ -23,6 +23,7 @@ from bigdl.orca.tfpark import TFOptimizer
 # todo make it inherit Estimator
 from bigdl.orca.tfpark.zoo_optimizer import FakeOptimMethod
 from bigdl.dllib.utils import nest
+from bigdl.dllib.utils.log4Error import *
 
 
 class GANEstimator(object):
@@ -40,10 +41,10 @@ class GANEstimator(object):
                  session_config=None,
                  ):
         from bigdl.orca.tfpark import ZooOptimizer
-        assert isinstance(generator_optimizer, ZooOptimizer),\
-            "generator_optimizer should be a ZooOptimizer"
-        assert isinstance(discriminator_optimizer, ZooOptimizer),\
-            "discriminator_optimizer should be a ZooOptimizer"
+        invalidInputError(isinstance(generator_optimizer, ZooOptimizer),
+                          "generator_optimizer should be a ZooOptimizer")
+        invalidInputError(isinstance(discriminator_optimizer, ZooOptimizer),
+                          "discriminator_optimizer should be a ZooOptimizer")
         self._generator_fn = generator_fn
         self._discriminator_fn = discriminator_fn
         self._generator_loss_fn = generator_loss_fn

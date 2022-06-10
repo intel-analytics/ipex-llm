@@ -56,7 +56,7 @@ class JavaToPython:
             invalidInputError("from_jvalue" in dir(pclass),
                               "pclass: {} should implement from_jvalue method".format(pclass))
             return pclass
-        raise Exception("No proper python class for: {}".format(self.jfullname))
+        invalidInputError(False, "No proper python class for: {}".format(self.jfullname))
 
     def _get_py_name(self, jclass_name):
         if jclass_name == "Model":
@@ -64,13 +64,13 @@ class JavaToPython:
         elif jclass_name == "Sequential":
             return "Sequential"
         else:
-            raise Exception("Not supported type: {}".format(jclass_name))
+            invalidInputError(False, "Not supported type: {}".format(jclass_name))
 
     def _load_ppackage_by_jpackage(self, jpackage_name):
         if jpackage_name in ("com.intel.analytics.bigdl.dllib.keras.Model",
                              "com.intel.analytics.bigdl.dllib.keras.Sequential"):
             return importlib.import_module('bigdl.dllib.keras.models')
-        raise Exception("Not supported package: {}".format(jpackage_name))
+        invalidInputError(False, "Not supported package: {}".format(jpackage_name))
 
 
 class Net:

@@ -108,7 +108,7 @@ class TestRollDataset:
     def test_df_nan(self):
         df = get_ts_df()
         df["value"][0] = np.nan
-        with pytest.raises(AssertionError):
+        with pytest.raises(RuntimeError):
             RollDataset(df=df,
                         lookback=2,
                         horizon=1,

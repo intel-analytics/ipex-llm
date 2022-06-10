@@ -31,3 +31,12 @@ def invalidInputError(condition, errMsg, fixMsg=None):
     if not condition:
         outputUserMessage(errMsg, fixMsg)
         raise RuntimeError(errMsg)
+
+
+def invalidOperationError(condition, errMsg, fixMsg=None, cause=None):
+    if not condition:
+        outputUserMessage(errMsg, fixMsg)
+        if cause:
+            raise cause
+        else:
+            raise RuntimeError(errMsg)

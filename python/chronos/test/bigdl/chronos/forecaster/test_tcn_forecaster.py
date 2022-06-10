@@ -134,8 +134,11 @@ class TestChronosModelTCNForecaster(TestCase):
         forecaster.quantize(approach="dynamic")
         pred_q = forecaster.predict(test_data[0], quantize=True)
         eval_q = forecaster.evaluate(test_data, quantize=True)
+        # reset model
+        forecaster.internal.train()
+        forecaster.internal.eval()
         # dynamic quantization does not need calib data
-        with pytest.raises(ValueError):
+        with pytest.raises(RuntimeError):
             forecaster.quantize(train_data, approach="dynamic")
 
     def test_tcn_forecaster_quantization(self):
@@ -152,6 +155,9 @@ class TestChronosModelTCNForecaster(TestCase):
         forecaster.quantize(train_data)
         pred_q = forecaster.predict(test_data[0], quantize=True)
         eval_q = forecaster.evaluate(test_data, quantize=True)
+        # reset model
+        forecaster.internal.train()
+        forecaster.internal.eval()
         # quantization with tunning
         forecaster.quantize(train_data, val_data=val_data,
                             metric="rmse", relative_drop=0.1, max_trials=3)
@@ -183,6 +189,17 @@ class TestChronosModelTCNForecaster(TestCase):
         forecaster.quantize(train_data, framework=['onnxrt_qlinearops'])
         pred_q = forecaster.predict_with_onnx(test_data[0], quantize=True)
         eval_q = forecaster.evaluate_with_onnx(test_data, quantize=True)
+
+    def test_tcn_forecaster_quantization_onnx_tuning(self):
+        train_data, val_data, test_data = create_data()
+        forecaster = TCNForecaster(past_seq_len=24,
+                                   future_seq_len=5,
+                                   input_feature_num=1,
+                                   output_feature_num=1,
+                                   kernel_size=4,
+                                   num_channels=[16, 16],
+                                   lr=0.01)
+        forecaster.fit(train_data, epochs=2)
         # quantization with tunning
         forecaster.quantize(train_data, val_data=val_data,
                             metric="mse", relative_drop=0.1, max_trials=3,
@@ -237,7 +254,7 @@ class TestChronosModelTCNForecaster(TestCase):
                                    output_feature_num=2,
                                    kernel_size=3,
                                    lr=0.01)
-        with pytest.raises(AssertionError):
+        with pytest.raises(RuntimeError):
             forecaster.fit(train_data, epochs=2)
 
     def test_tcn_forecaster_xshard_input(self):

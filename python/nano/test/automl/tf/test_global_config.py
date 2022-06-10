@@ -32,24 +32,30 @@ class TestGlobalConfig(TestCase):
             from bigdl.nano.tf import cast
         with self.assertRaises(ImportError):
             from bigdl.nano.tf.keras import Input
+        with self.assertRaises(ImportError):
+            from bigdl.nano.tf.optimizers import SGD, RMSprop, Adam, SparseAdam
 
     def _import_should_okay(self):
         try:
             from bigdl.nano.tf.keras.activations import sigmoid, linear
         except ImportError:
-            self.fail("nano.tf.automl should contain decorated activations")
+            self.fail("nano.tf.keras.activations did not register correctly.")
         try:
             from bigdl.nano.tf.keras.layers import Dense, Embedding
         except ImportError:
-            self.fail("nano.tf.automl should contain decorated layers")
+            self.fail("nano.tf.keras.layers did not register correctly.")
         try:
             from bigdl.nano.tf import cast
         except ImportError:
-            self.fail("nano.tf.automl should contain tensorflow functions like tf.cast")
+            self.fail("bigdl.nano.tf.cast did not register correctly.")
         try:
             from bigdl.nano.tf.keras import Input
         except ImportError:
-            self.fail("nano.tf.automl should contain keras.Input")
+            self.fail("nano.tf.keras.Input did not register correctly.")
+        try:
+            from bigdl.nano.tf.optimizers import SGD, RMSprop, Adam, SparseAdam
+        except ImportError:
+            self.fail("nano.tf.optimizers did not register correctly.")
 
     def test_enable_automl(self):
         nano_automl.hpo_config.enable_hpo_tf()
@@ -84,7 +90,7 @@ class TestGlobalConfig(TestCase):
         self._import_should_okay()
 
     def test_hpo_settings(self):
-        with self.assertRaises(ValueError):
+        with self.assertRaises(RuntimeError):
             nano_automl.hpo_config.hpo_tf = True
 
 

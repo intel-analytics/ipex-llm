@@ -13,3 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+__all__ = ["Trainer"]
+
+from bigdl.nano.pytorch.trainer import Trainer

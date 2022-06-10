@@ -27,25 +27,20 @@ class LSTMModel(Model):
         self.layer_num = layer_num
         self.output_dim = output_dim
         self.dropout = dropout
-        self.lstm_list = Sequential([Input(shape=(None, self.input_dim))])
+        self.lstm_sequential = Sequential([Input(shape=(None, self.input_dim))])
         for layer in range(self.layer_num - 1):
-            self.lstm_list.add(LSTM(self.hidden_dim[layer],
-                                    return_sequences=True,
-                                    dropout=self.dropout[layer],
-                                    activation="linear",
-                                    name="lstm_" + str(layer+1)))
-        self.lstm_list.add(LSTM(self.hidden_dim[-1],
-                                dropout=dropout[-1],
-                                activation="linear",
-                                name="lstm_" + str(self.layer_num)))
-        self.fc = Dense(self.output_dim)
-        self.out_shape = Reshape((1, self.output_dim), input_shape=(self.output_dim,))
+            self.lstm_sequential.add(LSTM(self.hidden_dim[layer],
+                                          return_sequences=True,
+                                          dropout=self.dropout[layer],
+                                          name="lstm_" + str(layer+1)))
+        self.lstm_sequential.add(LSTM(self.hidden_dim[-1],
+                                      dropout=dropout[-1],
+                                      name="lstm_" + str(layer_num)))
+        self.lstm_sequential.add(Dense(self.output_dim))
+        self.lstm_sequential.add(Reshape((1, self.output_dim), input_shape=(self.output_dim,)))
 
-    def call(self, input_seq):
-        lstm_out = input_seq
-        out = self.lstm_list(lstm_out)
-        out = self.fc(out)
-        out = self.out_shape(out)
+    def call(self, input_seq, training=False):
+        out = self.lstm_sequential(input_seq, training=training)
         return out
 
     def get_config(self):
@@ -64,12 +59,13 @@ def model_creator(config):
     hidden_dim = config.get('hidden_dim', 32)
     dropout = config.get('dropout', 0.2)
     layer_num = config.get('layer_num', 2)
+    from bigdl.nano.utils.log4Error import invalidInputError
     if isinstance(hidden_dim, list):
-        assert len(hidden_dim) == layer_num, \
-            "length of hidden_dim should be equal to layer_num"
+        invalidInputError(len(hidden_dim) == layer_num,
+                          "length of hidden_dim should be equal to layer_num")
     if isinstance(dropout, list):
-        assert len(dropout) == layer_num, \
-            "length of dropout should be equal to layer_num"
+        invalidInputError(len(dropout) == layer_num,
+                          "length of dropout should be equal to layer_num")
     if isinstance(hidden_dim, int):
         hidden_dim = [hidden_dim]*layer_num
     if isinstance(dropout, (float, int)):

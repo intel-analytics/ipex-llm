@@ -24,9 +24,12 @@
 
 import copy
 from collections import OrderedDict
-import ConfigSpace as CS
-import ConfigSpace.hyperparameters as CSH
 from bigdl.nano.automl.utils import EasyDict
+from bigdl.nano.deps.automl.hpo_api import create_configuration_space
+from bigdl.nano.deps.automl.hpo_api import (
+    create_uniform_float_hp, create_uniform_int_hp, create_categorical_hp)
+from bigdl.nano.utils.log4Error import invalidInputError
+
 
 __all__ = ['Space', 'NestedSpace', 'AutoObject', 'List', 'Dict',
            'Categorical', 'Real', 'Int', 'Bool']
@@ -55,6 +58,10 @@ class Space(object):
 class SimpleSpace(Space):
     """Non-nested search space. (i.e. a single simple hyperparameter)."""
 
+    def __init__(self, prefix=None):
+        """Init prefix for the param space."""
+        self._prefix = prefix
+
     def __repr__(self):
         reprstr = self.__class__.__name__
         if hasattr(self, 'lower') and hasattr(self, 'upper'):
@@ -65,7 +72,7 @@ class SimpleSpace(Space):
 
     def get_hp(self, name):
         """Fetch particular hyperparameter based on its name."""
-        raise NotImplementedError
+        invalidInputError(False, "not implement get_hp for SimpleSpace")
 
     @property
     def hp(self):
@@ -74,17 +81,13 @@ class SimpleSpace(Space):
 
     @property
     def prefix(self):
-        """Set default value for hyperparameter corresponding to\
-           this search space. The default value is always tried\
-           in the first trial of HPO."""
-        return self.hp.meta.setdefault('prefix', None)
+        """Get the prefix."""
+        return self._prefix
 
     @prefix.setter
     def prefix(self, value):
-        """Set default value for hyperparameter corresponding to\
-           this search space. The default value is always tried\
-           in the first trial of HPO."""
-        self.hp.meta['prefix'] = value
+        """Set the prefix in HP."""
+        self._prefix = value
 
     @property
     def default(self):
@@ -104,7 +107,7 @@ class SimpleSpace(Space):
     @property
     def rand(self):
         """Return randomly sampled (but valid) value from this search space."""
-        cs = CS.ConfigurationSpace()
+        cs = _new_cs(self.prefix)
         cs.add_hyperparameter(self.hp)
         return cs.sample_configuration().get_dictionary()['']
 
@@ -113,6 +116,10 @@ class NestedSpace(Space):
     """Nested hyperparameter search space, which is a search space that\
        itself contains multiple search spaces."""
 
+    def __init__(self, prefix=None):
+        """Init prefix for the param space."""
+        self._prefix = prefix
+
     def sample(self, **config):
         """Sample a configuration from this search space."""
         pass
@@ -120,26 +127,22 @@ class NestedSpace(Space):
     @property
     def cs(self):
         """`ConfigSpace` representation of this search space."""
-        raise NotImplementedError
+        invalidInputError(False, "not implement cs for NestedSpace")
 
     @property
     def prefix(self):
-        """Set default value for hyperparameter corresponding to\
-           this search space. The default value is always tried\
-           in the first trial of HPO."""
-        return self.cs.meta.setdefault('prefix', None)
+        """Get the prefix."""
+        return self._prefix if hasattr(self, '_prefix') else None
 
     @prefix.setter
     def prefix(self, value):
-        """Set default value for hyperparameter corresponding to\
-           this search space. The default value is always tried\
-           in the first trial of HPO."""
-        self.cs.meta['prefix'] = value
+        """Set the prefix in HP."""
+        self._prefix = value
 
     @property
     def kwspaces(self):
         """`OrderedDict` representation of this search space."""
-        raise NotImplementedError
+        invalidInputError(False, "not implement kwspaces for NestedSpace")
 
     @property
     def default(self):
@@ -181,7 +184,7 @@ class AutoObject(NestedSpace):
     @property
     def cs(self):
         """`ConfigSpace` representation of this search space."""
-        cs = CS.ConfigurationSpace()
+        cs = _new_cs(self.prefix)
         for k, v in self.kwvars.items():
             if isinstance(v, NestedSpace):
                 _add_cs(cs, v.cs, k)
@@ -195,7 +198,7 @@ class AutoObject(NestedSpace):
     @property
     def kwspaces(self):
         """`OrderedDict` representation of this search space."""
-        raise NotImplementedError
+        invalidInputError(False, "not implement kwspaces for AutoObject")
 
     # @classproperty
     # def kwspaces(cls):
@@ -205,7 +208,7 @@ class AutoObject(NestedSpace):
 
     def sample(self):
         """Sample a configuration from this search space."""
-        raise NotImplementedError
+        invalidInputError(False, "not implement sample for AutoObject")
 
     def __repr__(self):
         return 'AutoObject'
@@ -223,7 +226,7 @@ class List(NestedSpace):
         >>> )
     """
 
-    def __init__(self, *args):
+    def __init__(self, *args, prefix=None):
         """
         Nested search space corresponding to an ordered list of hyperparameters.
 
@@ -231,6 +234,7 @@ class List(NestedSpace):
             e.g.space.List(space.Int(1,2), space.Int(4,5),...)
         """
         self.data = [*args]
+        super(List, self).__init__(prefix)
 
     def __iter__(self):
         for elem in self.data:
@@ -279,7 +283,7 @@ class List(NestedSpace):
     @property
     def cs(self):
         """`ConfigSpace` representation of this search space."""
-        cs = CS.ConfigurationSpace()
+        cs = _new_cs(self.prefix)
         for k, v in enumerate(self.data):
             if isinstance(v, NestedSpace):
                 _add_cs(cs, v.cs, str(k))
@@ -323,10 +327,12 @@ class Dict(NestedSpace):
         """
         Nested search space for dictionary containing multiple hyperparameters.
 
+        TODO: document how to set prefix for such params. may not be needed.
         :param kwargs: specify key and space values in form of keywork arguments.
             e.g.space.Dict(hp1=space.Int(1,2), hp2=space.Int(4,5))
         """
         self.data = EasyDict(kwargs)
+        super(Dict, self).__init__(prefix=None)
 
     def __getattribute__(self, s):
         try:
@@ -353,7 +359,7 @@ class Dict(NestedSpace):
     @property
     def cs(self):
         """`ConfigSpace` representation of this search space."""
-        cs = CS.ConfigurationSpace()
+        cs = _new_cs(self.prefix)
         for k, v in self.data.items():
             if isinstance(v, NestedSpace):
                 _add_cs(cs, v.cs, k)
@@ -422,7 +428,7 @@ class Categorical(NestedSpace):
             used more than once in the model. Defaults to None.
         """
         self.data = [*data]
-        self._prefix = prefix
+        super(Categorical, self).__init__(prefix)
 
     def __iter__(self):
         for elem in self.data:
@@ -440,10 +446,10 @@ class Categorical(NestedSpace):
     @property
     def cs(self):
         """`ConfigSpace` representation of this search space."""
-        cs = CS.ConfigurationSpace(meta={'prefix': self._prefix})
+        cs = _new_cs(prefix=self.prefix)
         if len(self.data) == 0:
-            return CS.ConfigurationSpace(meta={'prefix': self._prefix})
-        hp = CSH.CategoricalHyperparameter(
+            return cs
+        hp = create_categorical_hp(
             name='choice', choices=range(len(self.data)),
             meta={})
         _add_hp(cs, hp)
@@ -509,17 +515,17 @@ class Real(SimpleSpace):
         self.upper = upper
         self.log = log
         self._default = default
-        self._prefix = prefix
+        super(Real, self).__init__(prefix)
 
     def get_hp(self, name):
         """Fetch particular hyperparameter based on its name."""
-        return CSH.UniformFloatHyperparameter(
+        return create_uniform_float_hp(
             name=name,
             lower=self.lower,
             upper=self.upper,
             default_value=self._default,
             log=self.log,
-            meta={'prefix': self._prefix})
+            meta={'prefix': self.prefix})
 
 
 class Int(SimpleSpace):
@@ -546,16 +552,16 @@ class Int(SimpleSpace):
         self.lower = lower
         self.upper = upper
         self._default = default
-        self._prefix = prefix
+        super(Int, self).__init__(prefix)
 
     def get_hp(self, name):
         """Fetch particular hyperparameter based on its name."""
-        return CSH.UniformIntegerHyperparameter(
+        return create_uniform_int_hp(
             name=name,
             lower=self.lower,
             upper=self.upper,
             default_value=self._default,
-            meta={'prefix': self._prefix})
+            meta={'prefix': self.prefix})
 
 
 class Bool(Int):
@@ -565,13 +571,40 @@ class Bool(Int):
         >>> pretrained = space.Bool()
     """
 
-    def __init__(self):
+    def __init__(self, default=None, prefix=None):
         """
         Search space for hyperparameter that is either True or False.
 
         `space.Bool()` serves as shorthand for: `space.Categorical(True, False)`
         """
-        super(Bool, self).__init__(0, 1)
+        super(Bool, self).__init__(0, 1, default=default, prefix=prefix)
+
+
+class SingleParam(object):
+    """A object to hold single params spaces which does not belong to\
+    any AutoObject."""
+
+    delimiter = u'.'
+
+    def __init__(self, argname, param):
+        self.argname = argname
+        self.param = param
+        self.cs = _new_cs()
+        if isinstance(self.param, SimpleSpace):
+            _add_hp(self.cs, param.get_hp(argname))
+        elif isinstance(self.param, NestedSpace):
+            _add_cs(self.cs, param.cs, self.argname, delimiter='.', parent_hp=None)
+        else:
+            # usually should not fall to this path
+            self.cs = param.cs
+
+    def sample(self, **config):
+        if isinstance(self.param, SimpleSpace):
+            new_params = config.get(self.argname, None)
+        elif isinstance(self.param, NestedSpace):
+            sub_config = _strip_config_space(config, prefix=self.argname)
+            new_params = self.param.sample(**sub_config)
+        return new_params
 
 
 def _strip_config_space(config, prefix):
@@ -583,6 +616,26 @@ def _strip_config_space(config, prefix):
     return new_config
 
 
+def _new_cs(prefix=None):
+    return create_configuration_space(meta={'prefix': prefix})
+
+
+def _get_cs_prefix(cs):
+    return cs.meta.setdefault('prefix', None)
+
+
+def _set_cs_prefix(cs, prefix):
+    cs.meta['prefix'] = prefix
+
+
+def _get_hp_prefix(hp):
+    return hp.meta.setdefault('prefix', None)
+
+
+def _set_hp_prefix(hp, prefix):
+    hp.meta['prefix'] = prefix
+
+
 def _add_hp(cs, hp):
     if hp.name in cs._hyperparameters:
         cs._hyperparameters[hp.name] = hp
@@ -591,6 +644,7 @@ def _add_hp(cs, hp):
 
 
 def _add_cs(master_cs, sub_cs, prefix, delimiter='.', parent_hp=None):
+    """Add the params from sub_cs to master_cs."""
     new_parameters = []
     for hp in sub_cs.get_hyperparameters():
         new_parameter = copy.deepcopy(hp)
@@ -600,6 +654,10 @@ def _add_cs(master_cs, sub_cs, prefix, delimiter='.', parent_hp=None):
         elif not prefix == '':
             new_parameter.name = "{}{}{}".format(
                 prefix, SPLITTER, new_parameter.name)
+            # further add the sub_cs prefix onto the param
+            sub_cs_prefix = _get_cs_prefix(sub_cs)
+            if not sub_cs_prefix == '':
+                _set_hp_prefix(new_parameter, sub_cs_prefix)
         new_parameters.append(new_parameter)
     for hp in new_parameters:
         _add_hp(master_cs, hp)

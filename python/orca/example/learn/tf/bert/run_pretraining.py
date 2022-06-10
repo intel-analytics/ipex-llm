@@ -33,9 +33,6 @@ import modeling
 import optimization
 
 import tensorflow.compat.v1 as tf
-# from tensorflow.contrib import cluster_resolver as contrib_cluster_resolver
-# from tensorflow.contrib import data as contrib_data
-# from tensorflow.contrib import tpu as contrib_tpu
 from bigdl.orca.learn.tf.tf_estimator import TFEstimator
 
 flags = absl.flags
@@ -462,9 +459,10 @@ def run(_):
                            extra_python_lib="optimization.py,modeling.py,deferred_grad_optimizer.py,lamb_optimizer_v1.py")
     num_workers = num_executor
   elif cluster_mode == "spark-submit":
-    sc = init_orca_context(cluster_mode="spark-submit", init_ray_on_spark=True,object_store_memory="30g",include_webui=True)
+    sc = init_orca_context(cluster_mode="spark-submit", init_ray_on_spark=True,object_store_memory="30g", include_webui=False)
     instances = sc.getConf().get("spark.executor.instances")
     num_workers = int(instances) if instances else 1
+    print(f"num_workers is {num_workers}")
   else:
     print("init_orca_context failed. cluster_mode should be one of 'local', 'yarn' and \
           'spark-submit' but got " + cluster_mode)

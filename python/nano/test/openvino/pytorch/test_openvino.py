@@ -13,24 +13,26 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+from tempfile import TemporaryDirectory
 from unittest import TestCase
-from bigdl.nano.pytorch.trainer import Trainer
+from bigdl.nano.pytorch import Trainer
 from torchvision.models.mobilenetv3 import mobilenet_v3_small
 import torch
 from torch.utils.data.dataset import TensorDataset
 from torch.utils.data.dataloader import DataLoader
 import os
-import shutil
+import pytest
+
 
 class TestOpenVINO(TestCase):
     def test_trainer_trace_openvino(self):
         trainer = Trainer(max_epochs=1)
         model = mobilenet_v3_small(num_classes=10)
-        
+
         x = torch.rand((10, 3, 256, 256))
         y = torch.ones((10, ), dtype=torch.long)
 
-        # trace a torch model 
+        # trace a torch model
         openvino_model = trainer.trace(model, x, 'openvino')
         y_hat = openvino_model(x)
         assert y_hat.shape == (10, 10)
@@ -43,6 +45,8 @@ class TestOpenVINO(TestCase):
         trainer.fit(pl_model, dataloader)
 
         openvino_model = trainer.trace(model, accelerator='openvino')
+        y_hat = openvino_model(x[0:3])
+        assert y_hat.shape == (3, 10)
         y_hat = openvino_model(x)
         assert y_hat.shape == (10, 10)
 
@@ -53,9 +57,11 @@ class TestOpenVINO(TestCase):
 
         # save and load pytorch model
         openvino_model = trainer.trace(model, accelerator='openvino', input_sample=x)
-        trainer.save(openvino_model, 'trainer_save_openvino_model')
-        assert len(os.listdir('trainer_save_openvino_model')) > 0
-        loaded_openvino_model = trainer.load('trainer_save_openvino_model')
-        y_hat = loaded_openvino_model(x)
-        assert y_hat.shape == (10, 10)
-        shutil.rmtree('trainer_save_openvino_model')
+        with TemporaryDirectory() as saved_root:
+            trainer.save(openvino_model, saved_root)
+            assert len(os.listdir(saved_root)) > 0
+            loaded_openvino_model = trainer.load(saved_root)
+            y_hat = loaded_openvino_model(x[0:3])
+            assert y_hat.shape == (3, 10)
+            y_hat = loaded_openvino_model(x)
+            assert y_hat.shape == (10, 10)

@@ -47,7 +47,7 @@ class LSTMForecaster(BaseTF2Forecaster):
                  seed=None,
                  distributed=False,
                  workers_per_node=1,
-                 distributed_backend="tf_distributed"):
+                 distributed_backend="tf2"):
         """
         Build a LSTM Forecast Model.
 
@@ -78,8 +78,8 @@ class LSTMForecaster(BaseTF2Forecaster):
         :param workers_per_node: int, the number of worker you want to use.
                The value defaults to 1. The param is only effective when
                distributed is set to True.
-        :param distributed_backend: str, select from "tf_distributed" or
-               "horovod". The value defaults to "tf_distributed".
+        :param distributed_backend: str, select from "tf2" or
+               "horovod". The value defaults to "tf2".
         """
         self.model_config = {
             "past_seq_len": past_seq_len,
@@ -102,10 +102,12 @@ class LSTMForecaster(BaseTF2Forecaster):
         # self.distributed = distributed
         # self.distributed_backend = distributed_backend
         # self.workers_per_node = workers_per_node
+        from bigdl.nano.utils.log4Error import invalidInputError
         if distributed:
-            raise NotImplementedError("We will add distributed support in subsequent releases, "
-                                      "the feature is currently unavailable, "
-                                      "Please set distributed=False.")
+            invalidInputError(False,
+                              "We will add distributed support in subsequent releases, "
+                              "the feature is currently unavailable, "
+                              "Please set distributed=False.")
 
         # other settings
         self.lr = lr

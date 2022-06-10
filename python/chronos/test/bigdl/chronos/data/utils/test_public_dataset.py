@@ -33,7 +33,7 @@ class TestPublicDataset(ZooTestCase):
         path = '~/.chronos/dataset/'
 
         # illegle input.
-        with pytest.raises(AssertionError):
+        with pytest.raises(RuntimeError):
             PublicDataset(name, path, redownload=False).get_public_data(chunk_size='1024')
 
     def test_get_nyc_taxi(self):

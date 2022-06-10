@@ -18,6 +18,19 @@ if [ -z "$uidentry" ] ; then
     fi
 fi
 
+# check occlum log level
+export ENABLE_SGX_DEBUG=false
+if [[ -z "$SGX_LOG_LEVEL" ]]; then
+    echo "No SGX_LOG_LEVEL specified, set to off."
+    export OCCLUM_LOG_LEVEL=off
+else
+    echo "Set SGX_LOG_LEVEL to $SGX_LOG_LEVEL"
+    export OCCLUM_LOG_LEVEL=$SGX_LOG_LEVEL
+    if [[ $OCCLUM_LOG_LEVEL != "off" ]]; then
+        export ENABLE_SGX_DEBUG=true
+    fi
+fi
+
 SPARK_K8S_CMD="$1"
 case "$SPARK_K8S_CMD" in
     driver | executor)
@@ -31,7 +44,7 @@ case "$SPARK_K8S_CMD" in
       ;;
 esac
 
-SPARK_CLASSPATH="$SPARK_CLASSPATH:/bin/jars/*:/opt/spark/jars/*"
+SPARK_CLASSPATH="$SPARK_CLASSPATH:/opt/spark/jars/*:/bin/jars/*"
 env | grep SPARK_JAVA_OPT_ | sort -t_ -k4 -n | sed 's/[^=]*=\(.*\)/\1/g' > /tmp/java_opts.txt
 readarray -t SPARK_EXECUTOR_JAVA_OPTS < /tmp/java_opts.txt
 

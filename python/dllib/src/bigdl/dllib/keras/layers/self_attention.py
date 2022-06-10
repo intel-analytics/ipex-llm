@@ -28,6 +28,7 @@ from bigdl.dllib.keras.layers import *
 from bigdl.dllib.keras.models import Sequential
 from bigdl.dllib.keras.models import Model
 import bigdl.dllib.keras.autograd as auto
+from bigdl.dllib.utils.log4Error import *
 
 if sys.version >= '3':
     long = int
@@ -104,8 +105,9 @@ class TransformerLayer(ZooKerasLayer):
 
     def build_input(self, input_shape):
         if any(not isinstance(i, tuple) and not isinstance(i, list) for i in input_shape):
-            raise TypeError('TransformerLayer input must be a list of ndarray (consisting'
-                            ' of input sequence, sequence positions, etc.)')
+            invalidInputError(False,
+                              'TransformerLayer input must be a list of ndarray (consisting'
+                              ' of input sequence, sequence positions, etc.)')
 
         inputs = [Input(list(shape)) for shape in input_shape]
         return None, inputs, inputs
@@ -211,7 +213,8 @@ class TransformerLayer(ZooKerasLayer):
         output_all_block: whether output all blocks' output
         """
         if hidden_size < 0:
-            raise TypeError('hidden_size must be greater than 0 with default embedding layer')
+            invalidInputError(False,
+                              'hidden_size must be greater than 0 with default embedding layer')
         from bigdl.dllib.nn.layer import Squeeze
         word_input = InputLayer(input_shape=(seq_len,))
         postion_input = InputLayer(input_shape=(seq_len,))
@@ -308,8 +311,9 @@ class BERT(TransformerLayer):
     def build_input(self, input_shape):
         if any(not isinstance(i, list) and not isinstance(i, tuple) for i in input_shape) \
                 and len(input_shape) != 4:
-            raise TypeError('BERT input must be a list of 4 ndarray (consisting of input'
-                            ' sequence, sequence positions, segment id, attention mask)')
+            invalidInputError(False,
+                              'BERT input must be a list of 4 ndarray (consisting of input'
+                              ' sequence, sequence positions, segment id, attention mask)')
         inputs = [Input(list(shape)) for shape in input_shape]
         return (- inputs[-1] + 1.0) * -10000.0, inputs[:-1], inputs
 

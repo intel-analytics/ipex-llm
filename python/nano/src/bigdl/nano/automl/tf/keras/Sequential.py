@@ -19,7 +19,6 @@ import copy
 
 from bigdl.nano.automl.utils import proxy_methods
 from bigdl.nano.automl.tf.mixin import HPOMixin
-from bigdl.nano.automl.hpo.backend import OptunaBackend
 from bigdl.nano.automl.hpo.space import AutoObject
 
 
@@ -59,8 +58,27 @@ class Sequential(HPOMixin, tf.keras.Sequential):
         instantiated_layers = []
         for layer in self.lazylayers_:
             if isinstance(layer, AutoObject):
-                newl = OptunaBackend.instantiate(trial, layer)
+                newl = self.backend.instantiate(trial, layer)
             else:
                 newl = copy.deepcopy(layer)
             instantiated_layers.append(newl)
         return {'layers': instantiated_layers, 'name': self.name_}
+
+    def _get_model_init_args_func_kwargs(self):
+        """Return the kwargs of _model_init_args_func except trial."""
+        return {
+            'lazylayers': self.lazylayers_,
+            'name': self.name_,
+            'backend': self.backend
+        }
+
+    @staticmethod
+    def _model_init_args_func(trial, lazylayers, name, backend):
+        instantiated_layers = []
+        for layer in lazylayers:
+            if isinstance(layer, AutoObject):
+                newl = backend.instantiate(trial, layer)
+            else:
+                newl = copy.deepcopy(layer)
+            instantiated_layers.append(newl)
+        return {'layers': instantiated_layers, 'name': name}

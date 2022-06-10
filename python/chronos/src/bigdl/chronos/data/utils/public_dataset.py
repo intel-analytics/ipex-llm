@@ -30,7 +30,8 @@ DATASET_NAME = {'network_traffic': ['2018%02d.agr' % i for i in range(1, 13)]
                 'AIOps': ['machine_usage.tar.gz'],
                 'fsi': ['individual_stocks_5yr.zip'],
                 'nyc_taxi': ['nyc_taxi.csv'],
-                'uci_electricity': ['LD2011_2014.txt.zip']
+                'uci_electricity': ['LD2011_2014.txt.zip'],
+                'uci_electricity_wide': ['LD2011_2014.txt.zip']
                 }
 BASE_URL = \
     {'network_traffic':
@@ -43,6 +44,8 @@ BASE_URL = \
      'nyc_taxi':
      ['https://raw.githubusercontent.com/numenta/NAB/v1.0/data/realKnownCause/nyc_taxi.csv'],
      'uci_electricity':
+     ['https://archive.ics.uci.edu/ml/machine-learning-databases/00321/LD2011_2014.txt.zip'],
+     'uci_electricity_wide':
      ['https://archive.ics.uci.edu/ml/machine-learning-databases/00321/LD2011_2014.txt.zip']}
 
 
@@ -64,7 +67,8 @@ class PublicDataset:
         Complete path stitching and download files.
         param chunk_size: Byte size of a single read, preferably an integer multiple of 2.
         '''
-        assert isinstance(chunk_size, int), "chunk_size must be int."
+        from bigdl.nano.utils.log4Error import invalidInputError
+        invalidInputError(isinstance(chunk_size, int), "chunk_size must be int.")
         if not os.path.exists(self.dir_path):
             os.makedirs(self.dir_path)
 
@@ -208,6 +212,26 @@ class PublicDataset:
         self.df.value = self.df.value.apply(lambda x: str(x).replace(",", "")).astype(np.float32)
         return self
 
+    def preprocess_uci_electricity_wide(self):
+        '''
+        return data that meets the minimum requirements of tsdata.
+        '''
+        if not os.path.exists(self.final_file_path):
+            zip_file = zipfile.ZipFile(os.path.join(
+                                       os.path.expanduser(self.dir_path),
+                                       DATASET_NAME[self.name][0]))
+            zip_file.extractall(os.path.join(os.path.expanduser(self.dir_path)))
+            download_file = os.path.join(self.dir_path, DATASET_NAME[self.name][0].split('.')[0])
+            os.rename(download_file+'.txt', self.final_file_path)
+        self.df = pd.read_csv(self.final_file_path,
+                              delimiter=';',
+                              parse_dates=['Unnamed: 0'],
+                              low_memory=False).rename(columns={'Unnamed: 0': 'timestamp'})
+        for column in self.df.columns.tolist()[1:]:
+            self.df[column] = self.df[column].apply(lambda x: str(x).replace(",", ""))\
+                                  .astype(np.float32)
+        return self
+
     def get_tsdata(self,
                    dt_col,
                    target_col,
@@ -242,9 +266,10 @@ def download(url, path, chunk_size):
     param url: File download source address, str or list.
     param path: File save path, default path/name/name_data.csv.
     """
+    from bigdl.nano.utils.log4Error import invalidInputError
     req = requests.get(url, stream=True)
     file_size = int(req.headers['content-length'])
-    assert req.status_code == 200, "download failure, please check the network."
+    invalidInputError(req.status_code == 200, "download failure, please check the network.")
     file_name = url.split('/')[-1]
     pbar = tqdm.tqdm(total=file_size, unit='B', unit_scale=True, desc=file_name)
     with open(os.path.join(path, file_name), 'wb') as f:

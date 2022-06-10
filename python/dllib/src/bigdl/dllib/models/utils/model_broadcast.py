@@ -22,6 +22,7 @@ from tempfile import NamedTemporaryFile
 from pyspark.broadcast import Broadcast
 from pyspark.broadcast import _from_id
 from bigdl.dllib.nn.layer import Model
+from bigdl.dllib.utils.log4Error import *
 
 
 def _from_id_and_type(bid, bigdl_type):
@@ -56,7 +57,7 @@ class ModelBroadcast(Broadcast):
             else:
                 from pyspark.util import print_exec
             print_exec(sys.stderr)
-            raise ValueError(msg)
+            invalidInputError(False, msg)
         f.close()
         return f.name
 
@@ -73,6 +74,6 @@ class ModelBroadcast(Broadcast):
 
     def __reduce__(self):
         if self._jbroadcast is None:
-            raise Exception("Broadcast can only be serialized in driver")
+            invalidInputError(False, "Broadcast can only be serialized in driver")
         self._pickle_registry.add(self)
         return _from_id_and_type, (self._jbroadcast.id(), self.bigdl_type)

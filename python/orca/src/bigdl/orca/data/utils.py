@@ -18,6 +18,7 @@ import numpy as np
 
 from bigdl.dllib.utils.file_utils import get_file_list
 from bigdl.dllib.utils.utils import convert_row_to_numpy
+from bigdl.dllib.utils.log4Error import *
 
 
 def list_s3_file(file_path, env):
@@ -86,12 +87,13 @@ def check_type_and_convert(data, allow_tuple=True, allow_list=True):
             return _convert_list_tuple(convert_data, allow_tuple=allow_tuple,
                                        allow_list=allow_list)
         else:
-            raise ValueError("value of x and y should be a ndarray, "
-                             "a tuple of ndarrays or a list of ndarrays")
+            invalidInputError(False,
+                              "value of x and y should be a ndarray, "
+                              "a tuple of ndarrays or a list of ndarrays")
 
     result = {}
-    assert isinstance(data, dict), "each shard should be an dict"
-    assert "x" in data, "key x should in each shard"
+    invalidInputError(isinstance(data, dict), "each shard should be an dict")
+    invalidInputError("x" in data, "key x should in each shard")
     x = data["x"]
     result["x"] = check_and_convert(x)
     if "y" in data:
@@ -159,9 +161,9 @@ def combine(data_list):
     elif isinstance(data_list[0], np.ndarray):
         res = np.concatenate(data_list, axis=0)
     else:
-        raise ValueError(
-            "value of x and y should be an ndarray, a dict of ndarrays, a tuple of ndarrays"
-            " or a list of ndarrays, please check your input")
+        invalidInputError(False,
+                          "value of x and y should be an ndarray, a dict of ndarrays, a tuple"
+                          " of ndarrays or a list of ndarrays, please check your input")
     return res
 
 
@@ -200,6 +202,39 @@ def ray_partitions_get_data_label(partition_list,
                                                allow_list=allow_list,
                                                has_label=has_label)
     return data, label
+
+
+def ray_partitions_get_tf_dataset(partition_list, has_label=True):
+    import tensorflow as tf
+    partition_data = [item for partition in partition_list for item in partition]
+    if len(partition_data) != 0:
+
+        sample = partition_data[0]
+        keys = sample.keys()
+        if "x" in keys:
+            if has_label:
+                invalidInputError("y" in keys, "key y should in each shard if has_label=True")
+            data, label = ray_partition_get_data_label(partition_data,
+                                                       allow_tuple=True,
+                                                       allow_list=False)
+            dataset = tf.data.Dataset.from_tensor_slices((data, label))
+        elif "ds_def" in keys and "elem_spec" in keys:
+            from tensorflow.python.distribute.coordinator.values import \
+                deserialize_dataset_from_graph
+            from functools import reduce
+            dataset_list = [deserialize_dataset_from_graph(serialized_dataset["ds_def"],
+                                                           serialized_dataset["elem_spec"])
+                            for serialized_dataset in partition_data]
+            dataset = reduce(lambda x, y: x.concatenate(y), dataset_list)
+        else:
+            invalidInputError(False,
+                              "value of x and y should be a ndarray, "
+                              "a tuple of ndarrays or a list of ndarrays")
+    else:
+        # TODO: may cause error
+        dataset = tf.data.Dataset.from_tensor_slices(([], []))
+
+    return dataset
 
 
 # todo: this might be very slow
@@ -273,8 +308,9 @@ def read_pd_file(path, file_type, **kwargs):
     elif file_type == "json":
         df = pd.read_json(path, **kwargs)
     else:
-        raise Exception("Unsupported file type: %s. Only csv and json files are "
-                        "supported for now" % file_type)
+        invalidInputError(False,
+                          "Unsupported file type: %s. Only csv and json files are "
+                          "supported for now" % file_type)
     return df
 
 
@@ -314,9 +350,9 @@ def index_data(x, i):
     elif isinstance(x, list):
         return [item[i] for item in x]
     else:
-        raise ValueError(
-            "data should be an ndarray, a dict of ndarrays, a tuple of ndarrays"
-            " or a list of ndarrays, please check your input")
+        invalidInputError(False,
+                          "data should be an ndarray, a dict of ndarrays, a tuple of ndarrays"
+                          " or a list of ndarrays, please check your input")
 
 
 def get_size(x):
@@ -328,9 +364,9 @@ def get_size(x):
     elif isinstance(x, tuple) or isinstance(x, list):
         return len(x[0])
     else:
-        raise ValueError(
-            "data should be an ndarray, a dict of ndarrays, a tuple of ndarrays"
-            " or a list of ndarrays, please check your input")
+        invalidInputError(False,
+                          "data should be an ndarray, a dict of ndarrays, a tuple of ndarrays"
+                          " or a list of ndarrays, please check your input")
 
 
 def spark_df_to_pd_sparkxshards(df):

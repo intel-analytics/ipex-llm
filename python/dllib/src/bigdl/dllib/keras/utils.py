@@ -17,6 +17,7 @@
 from bigdl.dllib.optim.optimizer import *
 from bigdl.dllib.keras.objectives import *
 from bigdl.dllib.keras import metrics
+from bigdl.dllib.utils.log4Error import *
 
 
 def to_bigdl_optim_method(optimizer):
@@ -34,7 +35,7 @@ def to_bigdl_optim_method(optimizer):
     elif optimizer == "adamax":
         return Adamax(epsilon=1e-8)
     else:
-        raise TypeError("Unsupported optimizer: %s" % optimizer)
+        invalidInputError(False, "Unsupported optimizer: %s" % optimizer)
 
 
 def to_bigdl_criterion(criterion):
@@ -66,7 +67,7 @@ def to_bigdl_criterion(criterion):
     elif criterion == "rank_hinge":
         return RankHinge()
     else:
-        raise TypeError("Unsupported loss: %s" % criterion)
+        invalidInputError(False, "Unsupported loss: %s" % criterion)
 
 
 def to_bigdl_metric(metric, loss):
@@ -83,8 +84,9 @@ def to_bigdl_metric(metric, loss):
                 or loss_str == "binarycrossentropy":
             return metrics.BinaryAccuracy()
         else:
-            raise TypeError(
-                "Not supported combination: metric {} and loss {}".format(metric, loss_str))
+            invalidInputError(False,
+                              "Not supported combination: metric {} and"
+                              " loss {}".format(metric, loss_str))
     elif metric == "top5accuracy" or metric == "top5acc":
         return metrics.Top5Accuracy()
     elif metric == "mae":
@@ -98,7 +100,7 @@ def to_bigdl_metric(metric, loss):
     elif metric == "treennaccuracy":
         return TreeNNAccuracy()
     else:
-        raise TypeError("Unsupported metric: %s" % metric)
+        invalidInputError(False, "Unsupported metric: %s" % metric)
 
 
 def to_bigdl_metrics(metrics, loss):

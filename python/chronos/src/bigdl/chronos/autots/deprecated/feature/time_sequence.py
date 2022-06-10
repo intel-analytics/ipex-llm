@@ -25,6 +25,7 @@ import numpy as np
 import json
 from packaging import version
 
+
 TIME_FEATURE = ("MINUTE", "DAY", "DAYOFYEAR", "HOUR", "WEEKDAY", "WEEKOFYEAR", "MONTH")
 ADDITIONAL_TIME_FEATURE = ("IS_AWAKE", "IS_BUSY_HOURS", "IS_WEEKEND")
 
@@ -48,7 +49,7 @@ class TimeSequenceFeatureTransformer(BaseFeatureTransformer):
         :extra_features_col: name of extra feature columns that needs to predict the target column.
         :param drop_missing: whether to drop missing values in the curve, if this is set to False,
                              an error will be reported if missing values are found. If True, will
-                             drop the missing values and won't raise errors.
+                             drop the missing values and won't throw errors.
         """
         # self.scaler = MinMaxScaler()
         self.scaler = StandardScaler()
@@ -86,10 +87,12 @@ class TimeSequenceFeatureTransformer(BaseFeatureTransformer):
         """
         self._check_input(input_df, mode="train")
         # print(input_df.shape)
+        from bigdl.nano.utils.log4Error import invalidInputError
         feature_data = self._get_features(input_df, self.config)
         self.scaler.fit(feature_data)
         data_n = self._scale(feature_data)
-        assert np.mean(data_n[0]) < 1e-5
+        invalidInputError(np.mean(data_n[0]) < 1e-5,
+                          "data_n[0] mean should be 0")
         (x, y) = self._roll_train(data_n,
                                   past_seq_len=self.past_seq_len,
                                   future_seq_len=self.future_seq_len)
@@ -182,8 +185,11 @@ class TimeSequenceFeatureTransformer(BaseFeatureTransformer):
             if future sequence length > 1, or 1-d numpy array in format (no. of samples, )
             if future sequence length = 1
         """
+        from bigdl.nano.utils.log4Error import invalidInputError
         if self.config is None or self.past_seq_len is None:
-            raise Exception("Needs to call fit_transform or restore first before calling transform")
+            invalidInputError(False,
+                              "Needs to call fit_transform or restore"
+                              " first before calling transform")
         mode = "val" if is_train else "test"
         if isinstance(input_df, list):
             output_x_list = []
@@ -256,6 +262,7 @@ class TimeSequenceFeatureTransformer(BaseFeatureTransformer):
          In test mode (is_train=False) return unscaled data frame(s) in the format of
           {datetime_col} | {target_col(s)}.
         """
+        from bigdl.nano.utils.log4Error import invalidInputError
         y_pred_unscale = self._unscale(y_pred)
         if is_train:
             # return unscaled y_pred (ndarray) and y (ndarray).
@@ -285,7 +292,8 @@ class TimeSequenceFeatureTransformer(BaseFeatureTransformer):
                                                             y_pred_st_loc + len(y_pred_dt_df)])
                     y_pred_st_loc = y_pred_st_loc + len(y_pred_dt_df)
                     y_pred_df_list.append(df)
-                assert y_pred_st_loc == len(y_pred_unscale)
+                    invalidInputError(y_pred_st_loc == len(y_pred_unscale),
+                                      "y_pred_st_loc should match len(y_pred_unscale)")
                 return y_pred_df_list
             else:
                 y_pred_dt_df = self._get_y_pred_dt_df(input_df, self.past_seq_len)
@@ -365,7 +373,6 @@ class TimeSequenceFeatureTransformer(BaseFeatureTransformer):
         for name in feature_config_names:
             if name not in config:
                 continue
-                # raise KeyError("Can not find " + name + " in config!")
             feat_config[name] = config[name]
         self.past_seq_len = feat_config.get("past_seq_len", 2)
         return feat_config
@@ -378,24 +385,26 @@ class TimeSequenceFeatureTransformer(BaseFeatureTransformer):
         """
         # check NaT in datetime
         input_df = input_df.reset_index()
+        from bigdl.nano.utils.log4Error import invalidInputError
         dt = input_df[self.dt_col]
         if not np.issubdtype(dt, np.datetime64):
-            raise ValueError("The dtype of datetime column is required to be np.datetime64!")
+            invalidInputError(False,
+                              "The dtype of datetime column is required to be np.datetime64!")
         is_nat = pd.isna(dt)
         if is_nat.any(axis=None):
-            raise ValueError("Missing datetime in input dataframe!")
+            invalidInputError(False, "Missing datetime in input dataframe!")
 
         # check uniform (is that necessary?)
         interval = dt[1] - dt[0]
 
         if not all([dt[i] - dt[i - 1] == interval for i in range(1, len(dt))]):
-            raise ValueError("Input time sequence intervals are not uniform!")
+            invalidInputError(False, "Input time sequence intervals are not uniform!")
 
         # check missing values
         if not self.drop_missing:
             is_nan = pd.isna(input_df)
             if is_nan.any(axis=None):
-                raise ValueError("Missing values in input dataframe!")
+                invalidInputError(False, "Missing values in input dataframe!")
 
         # check if the length of input data is smaller than requested.
         if mode == "test":
@@ -415,7 +424,7 @@ class TimeSequenceFeatureTransformer(BaseFeatureTransformer):
                         "past sequence length selected: {}\n"\
                 .format(mode, mode, len(input_df), self.future_seq_len, self.past_seq_len)
         if len(input_df) < min_input_len:
-            raise ValueError(error_msg)
+            invalidInputError(False, error_msg)
 
         return input_df
 
@@ -459,7 +468,7 @@ class TimeSequenceFeatureTransformer(BaseFeatureTransformer):
             y = dataframe.iloc[past_seq_len:, list(range(0, len(self.target_col)))].values
         output_x, mask_x = self._roll_data(x, past_seq_len)
         output_y, mask_y = self._roll_data(y, future_seq_len)
-        # assert output_x.shape[0] == output_y.shape[0],
+        # output_x.shape[0] == output_y.shape[0],
         # "The shape of output_x and output_y doesn't match! "
         mask = (mask_x == 1) & (mask_y == 1)
         return output_x[mask], output_y[mask]
@@ -478,7 +487,7 @@ class TimeSequenceFeatureTransformer(BaseFeatureTransformer):
         """
         x = dataframe.values
         output_x, mask_x = self._roll_data(x, past_seq_len)
-        # assert output_x.shape[0] == output_y.shape[0],
+        # output_x.shape[0] == output_y.shape[0],
         # "The shape of output_x and output_y doesn't match! "
         mask = (mask_x == 1)
         return output_x[mask]

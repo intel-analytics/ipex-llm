@@ -18,6 +18,9 @@ from bigdl.dllib.utils.file_utils import callZooFunc
 from pyspark.sql.types import IntegerType, ShortType, LongType, FloatType, DecimalType, \
     DoubleType, BooleanType
 from pyspark.sql.functions import broadcast, udf
+from bigdl.dllib.utils.log4Error import *
+import warnings
+from bigdl.dllib.utils.log4Error import *
 
 
 def compute(df):
@@ -60,7 +63,8 @@ def check_col_exists(df, columns):
     df_cols = df.columns
     col_not_exist = list(filter(lambda x: x not in df_cols, columns))
     if len(col_not_exist) > 0:
-        raise ValueError(str(col_not_exist) + " do not exist in this Table")
+        invalidInputError(False,
+                          str(col_not_exist) + " do not exist in this Table")
 
 
 def add_negative_samples(df, item_size, item_col, label_col, neg_num):
@@ -84,9 +88,9 @@ def mask(df, mask_cols, seq_len):
     return callZooFunc("float", "mask", df, mask_cols, seq_len)
 
 
-def pad(df, cols, seq_len, mask_cols):
+def pad(df, cols, seq_len, mask_cols, mask_token):
     df = callZooFunc("float", "mask", df, mask_cols, seq_len) if mask_cols else df
-    df = callZooFunc("float", "postPad", df, cols, seq_len)
+    df = callZooFunc("float", "postPad", df, cols, seq_len, mask_token)
     return df
 
 
@@ -106,13 +110,16 @@ def write_parquet(df, path, mode):
 
 def check_col_str_list_exists(df, column, arg_name):
     if isinstance(column, str):
-        assert column in df.columns, column + " in " + arg_name + " does not exist in Table"
+        invalidInputError(column in df.columns,
+                          column + " in " + arg_name + " does not exist in Table")
     elif isinstance(column, list):
         for single_column in column:
-            assert single_column in df.columns, "{} in {} does not exist in Table" \
-                .format(single_column, arg_name)
+            invalidInputError(single_column in df.columns,
+                              "{} in {} does not exist in Table".format(single_column, arg_name))
     else:
-        raise TypeError("elements in cat_cols should be str or list of str but get " + str(column))
+        invalidInputError(False,
+                          "elements in cat_cols should be str or list of str but"
+                          " get " + str(column))
 
 
 def get_nonnumeric_col_type(df, columns):
@@ -128,7 +135,8 @@ def gen_cols_name(columns, name_sep="_"):
     elif isinstance(columns, list):
         return name_sep.join(columns)
     else:
-        raise ValueError("item should be either str or list of str")
+        invalidInputError(False,
+                          "item should be either str or list of str")
 
 
 def encode_target_(tbl, targets, target_cols=None, drop_cat=True, drop_fold=True, fold_col=None):
@@ -136,8 +144,8 @@ def encode_target_(tbl, targets, target_cols=None, drop_cat=True, drop_fold=True
         cat_col = target_code.cat_col
         out_target_mean = target_code.out_target_mean
         join_tbl = tbl._clone(target_code.df)
-        assert "target_encode_count" in join_tbl.df.columns, \
-            "target_encode_count should be in target_code"
+        invalidInputError("target_encode_count" in join_tbl.df.columns,
+                          "target_encode_count should be in target_code")
         # (keys of out_target_mean) should include (output columns)
         output_columns = list(filter(lambda x:
                                      ((isinstance(cat_col, str) and x != cat_col) or
@@ -147,11 +155,11 @@ def encode_target_(tbl, targets, target_cols=None, drop_cat=True, drop_fold=True
                                      join_tbl.df.columns))
 
         for column in output_columns:
-            assert column in out_target_mean, column + " should be in out_target_mean"
+            invalidInputError(column in out_target_mean, column + " should be in out_target_mean")
             column_mean = out_target_mean[column][1]
-            assert isinstance(column_mean, int) or isinstance(column_mean, float), \
-                "mean in target_mean should be numeric but get {} of type {}" \
-                " in {}".format(column_mean, type(column_mean), out_target_mean)
+            invalidInputError(isinstance(column_mean, int) or isinstance(column_mean, float),
+                              "mean in target_mean should be numeric but get {} of type"
+                              " {} in {}".format(column_mean, type(column_mean), out_target_mean))
 
         # select target_cols to join
         if target_cols is not None:
@@ -210,32 +218,15 @@ def encode_target_(tbl, targets, target_cols=None, drop_cat=True, drop_fold=True
 def str_to_list(arg, arg_name):
     if isinstance(arg, str):
         return [arg]
-    assert isinstance(arg, list), arg_name + " should be str or a list of str"
+    invalidInputError(isinstance(arg, list), arg_name + " should be str or a list of str")
     return arg
 
 
-def distribute_tfrs_model(model):
-    from tensorflow_recommenders.tasks import base
-    import tensorflow as tf
-    import warnings
-    import tensorflow_recommenders as tfrs
-
-    if not isinstance(model, tfrs.Model):
-        return model
-    attr = model.__dict__
-    task_dict = dict()
-    for k, v in attr.items():
-        if isinstance(v, base.Task):
-            task_dict[k] = v
-
-    for k, v in task_dict.items():
-        try:
-            v._loss.reduction = tf.keras.losses.Reduction.NONE
-        except:
-            warnings.warn("Model task " + k + " has no attribute _loss, please use "
-                                              "`tf.keras.losses.Reduction.SUM` or "
-                                              "`tf.keras.losses.Reduction.NONE` for "
-                                              "loss reduction in this task if the "
-                                              "Estimator raise an error.")
-
-    return model
+def featuretable_to_xshards(tbl, convert_cols=None):
+    from bigdl.orca.learn.utils import dataframe_to_xshards_of_feature_dict
+    # TODO: partition < node num
+    if convert_cols is None:
+        convert_cols = tbl.columns
+    if convert_cols and not isinstance(convert_cols, list):
+        convert_cols = [convert_cols]
+    return dataframe_to_xshards_of_feature_dict(tbl.df, convert_cols, accept_str_col=True)

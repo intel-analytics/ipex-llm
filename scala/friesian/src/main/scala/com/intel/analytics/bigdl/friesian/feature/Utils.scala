@@ -183,10 +183,10 @@ private[friesian] object Utils {
     }
   }
 
-  def padArr[T]: (Int, mutable.WrappedArray[T]) => mutable.Seq[T] = {
-    (maxLength: Int, history: WrappedArray[T]) => {
+  def padArr[T]: (Int, Any, mutable.WrappedArray[T]) => mutable.Seq[T] = {
+    (maxLength: Int, maskToken: Any, history: WrappedArray[T]) => {
       val n = history.length
-      val padValue = castValueFromNum(history(0), 0)
+      val padValue = castValueFromNum(history(0), maskToken)
       val pads: mutable.Seq[T] = if (maxLength > n) {
         history ++ (0 to maxLength - n - 1).map(_ => padValue)
       } else {
@@ -196,10 +196,10 @@ private[friesian] object Utils {
     }
   }
 
-  def padMatrix[T]: (Int, WrappedArray[WrappedArray[T]]) => Seq[Seq[T]] = {
-    (maxLength: Int, history: WrappedArray[WrappedArray[T]]) => {
+  def padMatrix[T]: (Int, Any, WrappedArray[WrappedArray[T]]) => Seq[Seq[T]] = {
+    (maxLength: Int, maskToken: Any, history: WrappedArray[WrappedArray[T]]) => {
       val n = history.length
-      val padValue = castValueFromNum(history(0)(0), 0)
+      val padValue = castValueFromNum(history(0)(0), maskToken)
       if (maxLength > n) {
         val hishead = history(0)
         val padArray =
@@ -211,12 +211,29 @@ private[friesian] object Utils {
     }
   }
 
-  def castValueFromNum[T](num: T, value: Int): T = {
+  def castValueFromNum[T](num: T, value: Any): T = {
+    val targetType = value match {
+      case _: Double | _: Long | _: Int | _: Float => "numeric"
+      case _: String => "string"
+      case _ => throw new IllegalArgumentException(
+        s"Unsupported value type ${value.getClass.getName} ($value).")
+    }
     val out: Any = num match {
-      case _: Double => value.toDouble
-      case _: Int => value
-      case _: Float => value.toFloat
-      case _: Long => value.toLong
+      case _: Double | _: Long | _: Int | _: Float =>
+        if (targetType == "numeric") {
+          val valueNumber = value.asInstanceOf[Number]
+          num match {
+            case _: Double => valueNumber.doubleValue()
+            case _: Long => valueNumber.longValue()
+            case _: Int => valueNumber.intValue()
+            case _: Float => valueNumber.floatValue()
+          }
+        } else {
+          throw new IllegalArgumentException(s"Failed to convert mask_token type " +
+            s"${value.getClass.getName} to the element type of column ${num.getClass.getName}. " +
+            s"Please provide right mask_token.")
+        }
+      case _: String => value.toString
       case _ => throw new IllegalArgumentException(
         s"Unsupported value type ${num.getClass.getName} ($num).")
     }

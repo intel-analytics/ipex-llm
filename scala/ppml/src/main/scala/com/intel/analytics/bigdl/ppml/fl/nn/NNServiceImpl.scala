@@ -17,6 +17,8 @@
 
 package com.intel.analytics.bigdl.ppml.fl.nn
 
+import com.intel.analytics.bigdl.dllib.nn.abstractnn.Activity
+
 import java.util
 import java.util.Map
 import com.intel.analytics.bigdl.dllib.nn.{BCECriterion, MSECriterion, Sigmoid, View}
@@ -30,14 +32,13 @@ import io.grpc.stub.StreamObserver
 import org.apache.commons.lang3.exception.ExceptionUtils
 import org.apache.logging.log4j.LogManager
 
+import java.util.concurrent.ConcurrentHashMap
 import collection.JavaConverters._
-import collection.JavaConversions._
 
 class NNServiceImpl(clientNum: Int) extends NNServiceGrpc.NNServiceImplBase {
   private val logger = LogManager.getLogger(getClass)
   private var aggregatorMap: Map[String, NNAggregator] = null
   initAggregatorMap()
-
 
   private def initAggregatorMap(): Unit = {
     aggregatorMap = new util.HashMap[String, NNAggregator]
@@ -51,7 +52,8 @@ class NNServiceImpl(clientNum: Int) extends NNServiceGrpc.NNServiceImplBase {
     })
   }
 
-  override def train(request: TrainRequest, responseObserver: StreamObserver[TrainResponse]): Unit = {
+  override def train(request: TrainRequest,
+                     responseObserver: StreamObserver[TrainResponse]): Unit = {
     val clientUUID = request.getClientuuid
     logger.debug("Server get train request from client: " + clientUUID)
     val data = request.getData
@@ -67,7 +69,8 @@ class NNServiceImpl(clientNum: Int) extends NNServiceGrpc.NNServiceImplBase {
       }
       else {
         val response = "Download data successfully"
-        responseObserver.onNext(TrainResponse.newBuilder.setResponse(response).setData(responseData).setCode(1).build)
+        responseObserver.onNext(TrainResponse.newBuilder.setResponse(response)
+          .setData(responseData).setCode(1).build)
       }
       responseObserver.onCompleted()
     } catch {
@@ -81,7 +84,8 @@ class NNServiceImpl(clientNum: Int) extends NNServiceGrpc.NNServiceImplBase {
     }
 
   }
-  override def evaluate(request: EvaluateRequest, responseObserver: StreamObserver[EvaluateResponse]): Unit = {
+  override def evaluate(request: EvaluateRequest,
+                        responseObserver: StreamObserver[EvaluateResponse]): Unit = {
     val clientUUID = request.getClientuuid
     val data = request.getData
     val version = data.getMetaData.getVersion
@@ -120,7 +124,8 @@ class NNServiceImpl(clientNum: Int) extends NNServiceGrpc.NNServiceImplBase {
 
     }
   }
-  override def predict(request: PredictRequest, responseObserver: StreamObserver[PredictResponse]): Unit = {
+  override def predict(request: PredictRequest,
+                       responseObserver: StreamObserver[PredictResponse]): Unit = {
     val clientUUID = request.getClientuuid
     val data = request.getData
     val version = data.getMetaData.getVersion
@@ -134,7 +139,8 @@ class NNServiceImpl(clientNum: Int) extends NNServiceGrpc.NNServiceImplBase {
       }
       else {
         val response = "Download data successfully"
-        responseObserver.onNext(PredictResponse.newBuilder.setResponse(response).setData(responseData).setCode(1).build)
+        responseObserver.onNext(PredictResponse.newBuilder.setResponse(response)
+          .setData(responseData).setCode(1).build)
       }
       responseObserver.onCompleted()
     } catch {

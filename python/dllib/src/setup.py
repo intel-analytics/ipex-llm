@@ -121,7 +121,7 @@ if __name__ == '__main__':
         init_env()
         setup_package()
     except Exception as e:
-        raise e
+        raise e  # noqa
     finally:
         if build_from_source and os.path.exists(TEMP_PATH):
             rmtree(TEMP_PATH)

@@ -158,7 +158,7 @@ RUN cd /opt && \
     sed -i 's/2.4.0/3.1.2/g' tpch.sbt && \
     sbt package
 
-FROM occlum/occlum:0.27.1-ubuntu20.04 as ppml
+FROM occlum/occlum:0.27.3-ubuntu20.04 as ppml
 
 ARG BIGDL_VERSION=2.1.0-SNAPSHOT
 ARG SPARK_VERSION
@@ -238,6 +238,7 @@ ADD ./log4j2.xml /opt/spark/conf/log4j2.xml
 COPY ./entrypoint.sh /opt/
 
 RUN chmod a+x /opt/entrypoint.sh && \
-    chmod a+x /opt/run_spark_on_occlum_glibc.sh
+    chmod a+x /opt/run_spark_on_occlum_glibc.sh && \
+    chmod a+x /root/demos/remote_attestation/init_ra_flow/run_attestation_server.sh
 
 ENTRYPOINT [ "/opt/entrypoint.sh" ]

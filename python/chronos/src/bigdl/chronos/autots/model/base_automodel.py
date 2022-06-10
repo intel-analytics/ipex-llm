@@ -18,12 +18,27 @@
 import os
 import json
 from bigdl.chronos.autots.utils import recalculate_n_sampling
-DEFAULT_BEST_MODEL_DIR = "best_model.ckpt"
-DEFAULT_BEST_CONFIG_DIR = "best_config.json"
 
 
-class BasePytorchAutomodel:
+class BaseAutomodel:
+
     def __init__(self, **kwargs):
+        if self.backend.startswith("torch"):
+            from bigdl.orca.automl.model.base_pytorch_model import PytorchModelBuilder
+            self._DEFAULT_BEST_MODEL_DIR = "best_model.ckpt"
+            self._DEFAULT_BEST_CONFIG_DIR = "best_config.json"
+            model_builder = PytorchModelBuilder(model_creator=self._model_creator,
+                                                optimizer_creator=self.optimizer,
+                                                loss_creator=self.loss)
+        elif self.backend.startswith("keras"):
+            from bigdl.orca.automl.model.base_keras_model import KerasModelBuilder
+            self.search_space.update({"optimizer": self.optimizer, "loss": self.loss})
+            model_builder = KerasModelBuilder(model_creator=self._model_creator)
+            self._DEFAULT_BEST_MODEL_DIR = "best_keras_model.ckpt"
+            self._DEFAULT_BEST_CONFIG_DIR = "best_keras_config.json"
+
+        from bigdl.orca.automl.auto_estimator import AutoEstimator
+        self.auto_est = AutoEstimator(model_builder, **self._auto_est_config)
         self.best_model = None
 
     def fit(self,
@@ -99,8 +114,10 @@ class BasePytorchAutomodel:
 
         :return: A numpy array with shape (num_samples, horizon, target_dim).
         '''
+        from bigdl.nano.utils.log4Error import invalidInputError
         if self.best_model is None:
-            raise RuntimeError("You must call fit or load first before calling predict!")
+            invalidInputError(False,
+                              "You must call fit or load first before calling predict!")
         return self.best_model.predict(data, batch_size=batch_size)
 
     def predict_with_onnx(self, data, batch_size=32, dirname=None):
@@ -109,7 +126,7 @@ class BasePytorchAutomodel:
 
         Be sure to install onnx and onnxruntime to enable this function. The method
         will give exactly the same result as .predict() but with higher throughput
-        and lower latency.
+        and lower latency. keras will support onnx later.
 
         :param data: a numpy ndarray x, where x's shape is (num_samples, lookback, feature_dim)
                where lookback and feature_dim should be the same as past_seq_len and
@@ -122,8 +139,14 @@ class BasePytorchAutomodel:
 
         :return: A numpy array with shape (num_samples, horizon, target_dim).
         '''
+        from bigdl.nano.utils.log4Error import invalidInputError
+        if self.backend.startswith("keras"):
+            invalidInputError(False,
+                              "Currenctly, keras not support onnx method.")
+
         if self.best_model is None:
-            raise RuntimeError("You must call fit or load first before calling predict!")
+            invalidInputError(False,
+                              "You must call fit or load first before calling predict!")
         return self.best_model.predict_with_onnx(data, batch_size=batch_size, dirname=dirname)
 
     def evaluate(self, data,
@@ -160,8 +183,10 @@ class BasePytorchAutomodel:
 
         :return: A list of evaluation results. Each item represents a metric.
         '''
+        from bigdl.nano.utils.log4Error import invalidInputError
         if self.best_model is None:
-            raise RuntimeError("You must call fit or load first before calling predict!")
+            invalidInputError(False,
+                              "You must call fit or load first before calling predict!")
         return self.best_model.evaluate(data[0], data[1], metrics=metrics,
                                         multioutput=multioutput, batch_size=batch_size)
 
@@ -175,7 +200,7 @@ class BasePytorchAutomodel:
 
         Be sure to install onnx and onnxruntime to enable this function. The method
         will give exactly the same result as .evaluate() but with higher throughput
-        and lower latency.
+        and lower latency. keras will support onnx later.
 
         Please note that evaluate result is calculated by scaled y and yhat. If you scaled
         your data (e.g. use .scale() on the TSDataset) please follow the following code
@@ -206,8 +231,14 @@ class BasePytorchAutomodel:
 
         :return: A list of evaluation results. Each item represents a metric.
         '''
+        from bigdl.nano.utils.log4Error import invalidInputError
+        if self.backend.startswith("keras"):
+            invalidInputError(False,
+                              "Currenctly, keras not support onnx method.")
+
         if self.best_model is None:
-            raise RuntimeError("You must call fit or load first before calling predict!")
+            invalidInputError(False,
+                              "You must call fit or load first before calling predict!")
         return self.best_model.evaluate_with_onnx(data[0], data[1],
                                                   metrics=metrics,
                                                   dirname=dirname,
@@ -221,15 +252,19 @@ class BasePytorchAutomodel:
         Please note that if you only want the pytorch model or onnx model
         file, you can call .get_model() or .export_onnx_file(). The checkpoint
         file generated by .save() method can only be used by .load() in automodel.
+        If you specify "keras" as backend, file name will be best_keras_config.json
+        and best_keras_model.ckpt.
 
         :param checkpoint_path: The location you want to save the best model.
         """
+        from bigdl.nano.utils.log4Error import invalidInputError
         if self.best_model is None:
-            raise RuntimeError("You must call fit or load first before calling predict!")
+            invalidInputError(False,
+                              "You must call fit or load first before calling predict!")
         if not os.path.isdir(checkpoint_path):
             os.mkdir(checkpoint_path)
-        model_path = os.path.join(checkpoint_path, DEFAULT_BEST_MODEL_DIR)
-        best_config_path = os.path.join(checkpoint_path, DEFAULT_BEST_CONFIG_DIR)
+        model_path = os.path.join(checkpoint_path, self._DEFAULT_BEST_MODEL_DIR)
+        best_config_path = os.path.join(checkpoint_path, self._DEFAULT_BEST_CONFIG_DIR)
         self.best_model.save(model_path)
         with open(best_config_path, "w") as f:
             json.dump(self.best_config, f)
@@ -240,8 +275,8 @@ class BasePytorchAutomodel:
 
         :param checkpoint_path: The checkpoint location you want to load the best model.
         """
-        model_path = os.path.join(checkpoint_path, DEFAULT_BEST_MODEL_DIR)
-        best_config_path = os.path.join(checkpoint_path, DEFAULT_BEST_CONFIG_DIR)
+        model_path = os.path.join(checkpoint_path, self._DEFAULT_BEST_MODEL_DIR)
+        best_config_path = os.path.join(checkpoint_path, self._DEFAULT_BEST_CONFIG_DIR)
         self.best_model.restore(model_path)
         with open(best_config_path, "r") as f:
             self.best_config = json.load(f)
@@ -271,14 +306,21 @@ class BasePytorchAutomodel:
             >>> # directly call onnx related method is also supported
             >>> pred = automodel.predict_with_onnx(data)
         '''
+        from bigdl.nano.utils.log4Error import invalidInputError
+        if self.backend.startswith("keras"):
+            invalidInputError(False,
+                              "Currenctly, keras not support onnx method.")
+
         import onnxruntime
         if sess_options is not None and not isinstance(sess_options, onnxruntime.SessionOptions):
-            raise RuntimeError("sess_options should be an onnxruntime.SessionOptions instance"
-                               f", but found {type(sess_options)}")
+            invalidInputError(False,
+                              "sess_options should be an onnxruntime.SessionOptions instance"
+                              f", but found {type(sess_options)}")
         if self.distributed:
-            raise NotImplementedError("build_onnx has not been supported for distributed "
-                                      "forecaster. You can call .to_local() to transform the "
-                                      "forecaster to a non-distributed version.")
+            invalidInputError(False,
+                              "build_onnx has not been supported for distributed "
+                              "forecaster. You can call .to_local() to transform the "
+                              "forecaster to a non-distributed version.")
         import torch
         dummy_input = torch.rand(1, self.best_config["past_seq_len"],
                                  self.best_config["input_feature_num"])
@@ -293,10 +335,16 @@ class BasePytorchAutomodel:
 
         :param dirname: The dir location you want to save the onnx file.
         """
+        from bigdl.nano.utils.log4Error import invalidInputError
+        if self.backend.startswith("keras"):
+            invalidInputError(False,
+                              "Currenctly, keras not support onnx method.")
+
         if self.distributed:
-            raise NotImplementedError("export_onnx_file has not been supported for distributed "
-                                      "forecaster. You can call .to_local() to transform the "
-                                      "forecaster to a non-distributed version.")
+            invalidInputError(False,
+                              "export_onnx_file has not been supported for distributed "
+                              "forecaster. You can call .to_local() to transform the "
+                              "forecaster to a non-distributed version.")
         import torch
         dummy_input = torch.rand(1, self.best_config["past_seq_len"],
                                  self.best_config["input_feature_num"])

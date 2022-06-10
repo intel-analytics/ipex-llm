@@ -63,5 +63,6 @@ def scale_arr(arr, mode="minmax"):
         from sklearn.preprocessing import StandardScaler
         scaled = StandardScaler().fit_transform(arr).astype('float32')
     else:
-        raise ValueError("Unrecognized Mode")
+        from bigdl.nano.utils.log4Error import invalidInputError
+        invalidInputError(False, "Unrecognized Mode")
     return scaled

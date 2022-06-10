@@ -15,33 +15,27 @@
 #
 
 
-from typing import Union, Dict, Any, Optional
-import logging
-import intel_pytorch_extension as ipex
+from typing import Union, Dict, Any
+import intel_extension_for_pytorch as ipex
 
 import torch
-from torch.optim import Optimizer
-
 import pytorch_lightning as pl
 from pytorch_lightning.plugins import SingleDevicePlugin
 from pytorch_lightning.accelerators.accelerator import Accelerator
 from pytorch_lightning.plugins.training_type import TrainingTypePlugin
-from pytorch_lightning.plugins.precision import PrecisionPlugin, MixedPrecisionPlugin
-from pytorch_lightning.utilities.exceptions import MisconfigurationException
+from pytorch_lightning.plugins.precision import PrecisionPlugin
+from bigdl.nano.utils.log4Error import invalidInputError
 
-from .ipex_torchfunctional import to_cpu
 
 _STEP_OUTPUT_TYPE = Union[torch.Tensor, Dict[str, Any]]
 
 
 class IPEXAccelerator(Accelerator):
-    """ Accelerator for XPU devices. """
 
     def __init__(
         self,
-        precision_plugin: PrecisionPlugin = PrecisionPlugin(),
         training_type_plugin: TrainingTypePlugin = SingleDevicePlugin(
-            torch.device(ipex.DEVICE)),
+            torch.device('cpu')),
         enable_bf16=False,
     ) -> None:
         """
@@ -50,69 +44,26 @@ class IPEXAccelerator(Accelerator):
             precision_plugin: the plugin to handle precision-specific parts
             training_type_plugin: the plugin to handle different training routines
         """
-        if enable_bf16:
-            # Automatically mix precision
-            ipex.enable_auto_mixed_precision(mixed_dtype=torch.bfloat16)
-
-        self.device = ipex.DEVICE
-
-        super().__init__(precision_plugin=precision_plugin,
+        self.enable_bf16 = enable_bf16
+        super().__init__(precision_plugin=PrecisionPlugin(),
                          training_type_plugin=training_type_plugin)
 
-    def setup(self, trainer: 'pl.Trainer', model: 'pl.LightningModule') -> None:
+    def setup(self, trainer: "pl.Trainer", model: "pl.LightningModule") -> None:
         """
-        Raises:
-            MisconfigurationException:
-                If AMP is used with XPU.
-        """
-        if isinstance(self.precision_plugin, MixedPrecisionPlugin):
-            raise MisconfigurationException(
-                "amp is not supported in bigdl-nano.")
-
-        return super().setup(trainer, model)
-
-    def training_step_end(self, output: _STEP_OUTPUT_TYPE) -> _STEP_OUTPUT_TYPE:
-        """
-        For ipex xpu tensor do not support `tensor.storage()` right now,
-        which is a required operation by pytorch_lightning,
-        so just move output to cpu to store it, and move it back when doing backward.
-        """
-        output = to_cpu(output)
-
-        return super().training_step_end(output)
-
-    def test_step_end(self, output: Optional[_STEP_OUTPUT_TYPE]) -> \
-            Optional[_STEP_OUTPUT_TYPE]:
-        """A hook to do something at the end of the test step
+        Setup plugins for the trainer fit and creates optimizers.
 
         Args:
-            output: the output of the test step
+            trainer: the trainer instance
+            model: the LightningModule
         """
-        output = to_cpu(output)
+        self.setup_training_type_plugin(model)
+        if not self.training_type_plugin.setup_optimizers_in_pre_dispatch:
+            self.setup_optimizers(trainer)
+        self.setup_precision_plugin()
 
-        return super().test_step_end(output)
-
-    def validation_step_end(self, output: Optional[_STEP_OUTPUT_TYPE]) -> \
-            Optional[_STEP_OUTPUT_TYPE]:
-        """A hook to do something at the end of the validation step
-
-        Args:
-            output: the output of the validation step
-        """
-        output = to_cpu(output)
-
-        return super().validation_step_end(output)
-
-    def backward(self,  # type: ignore
-                 closure_loss: torch.Tensor,
-                 *args,
-                 **kwargs) -> torch.Tensor:
-        """
-        Moving back loss to xpu device
-        """
-        closure_loss = closure_loss.to(self.device)
-        return super().backward(
-            closure_loss,
-            *args,
-            **kwargs,
-        )
+        if len(self.optimizers) > 1:
+            invalidInputError("IPEX does not support more than one optimizers.")
+        dtype = torch.bfloat16 if self.enable_bf16 else None
+        model, optimizer = ipex.optimize(model, optimizer=self.optimizers[0],
+                                         inplace=True, dtype=dtype)
+        self.optimizers = [optimizer]

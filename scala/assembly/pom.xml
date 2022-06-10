@@ -12,6 +12,10 @@
     <artifactId>bigdl-assembly-spark_${spark.version}</artifactId>
     <packaging>pom</packaging>
 
+    <properties>
+        <bigdl.basedir>${project.parent.basedir}</bigdl.basedir>
+    </properties>
+
     <dependencies>
       <dependency>
         <groupId>com.intel.analytics.bigdl</groupId>

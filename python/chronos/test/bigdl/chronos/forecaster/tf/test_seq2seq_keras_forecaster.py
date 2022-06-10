@@ -15,6 +15,7 @@
 #
 import pytest
 import tempfile
+import os
 
 from unittest import TestCase
 import numpy as np
@@ -85,9 +86,10 @@ class TestSeq2SeqForecaster(TestCase):
                             epochs=2,
                             batch_size=32)
         yhat = self.forecaster.predict(test_data[0])
-        with tempfile.TemporaryDirectory() as checkpoint_file:
-            self.forecaster.save(checkpoint_file)
-            self.forecaster.load(checkpoint_file)
+        with tempfile.TemporaryDirectory() as tmp_dir_file:
+            tmp_dir_file = os.path.join(tmp_dir_file, 'seq2seq.ckpt')
+            self.forecaster.save(tmp_dir_file)
+            self.forecaster.load(tmp_dir_file)
             from bigdl.chronos.model.tf2.Seq2Seq_keras import LSTMSeq2Seq
             assert isinstance(self.forecaster.internal, LSTMSeq2Seq)
         load_model_yhat = self.forecaster.predict(test_data[0])

@@ -5,7 +5,7 @@ AutoTCN
 -------------------------------------------
 
 AutoTCN is a TCN forecasting model with Auto tuning.
-Other API follows its base class(BasePytorchAutomodel).
+Other API follows its base class(BaseAutomodel).
 
 .. automodule:: bigdl.chronos.autots.model.auto_tcn
     :members:
@@ -17,7 +17,7 @@ AutoLSTM
 ----------------------------------------
 
 AutoLSTM is an LSTM forecasting model with Auto tuning.
-Other API follows its base class(BasePytorchAutomodel).
+Other API follows its base class(BaseAutomodel).
 
 .. automodule:: bigdl.chronos.autots.model.auto_lstm
     :members:
@@ -28,7 +28,7 @@ AutoSeq2Seq
 ----------------------------------------
 
 AutoSeq2Seq is an Seq2Seq forecasting model with Auto tuning.
-Other API follows its base class(BasePytorchAutomodel).
+Other API follows its base class(BaseAutomodel).
 
 .. automodule:: bigdl.chronos.autots.model.auto_seq2seq
     :members:
@@ -55,10 +55,10 @@ AutoProphet is a Prophet forecasting model with Auto tuning.
     :undoc-members:
     :show-inheritance:
 
-BasePytorchAutomodel
+BaseAutomodel
 ------------------------------------------------------------
 AutoLSTM, AutoSeq2Seq and AutoTCN all follow the same API as stated below.
 
-.. autoclass:: bigdl.chronos.autots.model.base_automodel.BasePytorchAutomodel
+.. autoclass:: bigdl.chronos.autots.model.base_automodel.BaseAutomodel
     :members:
     :show-inheritance:

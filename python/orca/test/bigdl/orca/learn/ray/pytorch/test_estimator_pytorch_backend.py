@@ -151,12 +151,14 @@ def get_model(config):
     torch.manual_seed(0)
     return Net()
 
+
 def get_optimizer(model, config):
     return torch.optim.SGD(model.parameters(), lr=config.get("lr", 1e-2))
 
 
 def get_zero_optimizer(model, config):
     return torch.optim.SGD(model.parameters(), lr=0.0)
+
 
 def get_estimator(workers_per_node=1, model_fn=get_model, sync_stats=False,
                   log_level=logging.INFO, loss=nn.BCELoss(), optimizer=get_optimizer):
@@ -177,8 +179,10 @@ class TestPyTorchEstimator(TestCase):
         estimator = get_estimator(workers_per_node=2)
         start_val_stats = estimator.evaluate(val_data_loader, batch_size=64)
         print(start_val_stats)
-        train_stats = estimator.fit(train_data_loader, epochs=4, batch_size=128)
+        train_stats = estimator.fit(train_data_loader, epochs=4, batch_size=128,
+                                    validation_data=val_data_loader)
         print(train_stats)
+        assert "val_loss" in train_stats[0]
         end_val_stats = estimator.evaluate(val_data_loader, batch_size=64)
         print(end_val_stats)
         assert 0 < end_val_stats["Accuracy"] < 1
@@ -204,10 +208,10 @@ class TestPyTorchEstimator(TestCase):
         estimator.shutdown()
 
     def test_spark_xshards(self):
-        from bigdl.orca import init_orca_context
+        from bigdl.orca import OrcaContext
         from bigdl.orca.data import SparkXShards
         estimator = get_estimator(workers_per_node=1)
-        sc = init_orca_context(cores="*")
+        sc = OrcaContext.get_spark_context()
         x_rdd = sc.parallelize(np.random.rand(4000, 1, 50).astype(np.float32))
         # torch 1.7.1+ requires target size same as output size, which is (batch, 1)
         y_rdd = sc.parallelize(np.random.randint(0, 2, size=(4000, 1, 1)).astype(np.float32))
@@ -215,7 +219,9 @@ class TestPyTorchEstimator(TestCase):
         train_rdd, val_rdd = rdd.randomSplit([0.9, 0.1])
         train_xshards = SparkXShards(train_rdd)
         val_xshards = SparkXShards(val_rdd)
-        train_stats = estimator.fit(train_xshards, batch_size=256, epochs=2)
+        train_stats = estimator.fit(train_xshards, validation_data=val_xshards,
+                                    batch_size=256, epochs=2)
+        assert "val_loss" in train_stats[0]
         print(train_stats)
         val_stats = estimator.evaluate(val_xshards, batch_size=128)
         print(val_stats)
@@ -229,8 +235,14 @@ class TestPyTorchEstimator(TestCase):
                                 [int(np.random.randint(0, 2, size=()))])
                      ).toDF(["feature", "label"])
 
+        val_rdd = sc.range(0, 40)
+        val_df = val_rdd.map(lambda x: (np.random.randn(50).astype(np.float).tolist(),
+                             [int(np.random.randint(0, 2, size=()))])
+                            ).toDF(["feature", "label"])
+
         estimator = get_estimator(workers_per_node=2)
         estimator.fit(df, batch_size=4, epochs=2,
+                      validation_data=val_df,
                       feature_cols=["feature"],
                       label_cols=["label"])
         estimator.evaluate(df, batch_size=4,
@@ -265,6 +277,7 @@ class TestPyTorchEstimator(TestCase):
         assert df.rdd.getNumPartitions() < estimator.num_workers
 
         estimator.fit(df, batch_size=4, epochs=2,
+                      validation_data=df,
                       feature_cols=["feature"],
                       label_cols=["label"])
         estimator.evaluate(df, batch_size=4,
@@ -311,6 +324,7 @@ class TestPyTorchEstimator(TestCase):
 
         estimator = get_estimator(model_fn=lambda config: SimpleModel())
         estimator.fit(data_shard, batch_size=2, epochs=2,
+                      validation_data=data_shard,
                       feature_cols=["user", "item"],
                       label_cols=["label"])
 
@@ -333,6 +347,7 @@ class TestPyTorchEstimator(TestCase):
         estimator = get_estimator(workers_per_node=2,
                                   model_fn=lambda config: MultiInputNet())
         estimator.fit(df, batch_size=4, epochs=2,
+                      validation_data=df,
                       feature_cols=["f1", "f2"],
                       label_cols=["label"])
         estimator.evaluate(df, batch_size=4,
@@ -355,6 +370,7 @@ class TestPyTorchEstimator(TestCase):
                                   model_fn=lambda config: LinearModel(),
                                   loss=nn.MSELoss())
         stats = estimator.fit(df, batch_size=4, epochs=2,
+                              validation_data=df,
                               feature_cols=["feature"],
                               label_cols=["label"])
         estimator.evaluate(df, batch_size=4,
@@ -527,7 +543,7 @@ class TestPyTorchEstimator(TestCase):
         finally:
             shutil.rmtree(temp_dir)
 
-        with pytest.raises(FileNotFoundError):
+        with pytest.raises(RuntimeError):
             Estimator.latest_checkpoint(temp_dir)
 
     def test_manual_ckpt(self):

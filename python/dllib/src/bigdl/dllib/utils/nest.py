@@ -14,6 +14,7 @@
 # limitations under the License.
 #
 import six
+from bigdl.dllib.utils.log4Error import *
 
 
 def flatten(seq):
@@ -89,7 +90,7 @@ def _sorted(dict_):
     try:
         return sorted(six.iterkeys(dict_))
     except TypeError:
-        raise TypeError("nest only supports dicts with sortable keys.")
+        invalidInputError(False, "nest only supports dicts with sortable keys.")
 
 
 def is_sequence(s):

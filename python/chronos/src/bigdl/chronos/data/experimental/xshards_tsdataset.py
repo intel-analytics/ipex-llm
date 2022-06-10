@@ -16,10 +16,12 @@
 
 
 from bigdl.orca.data.shard import SparkXShards
+from bigdl.orca.learn.utils import dataframe_to_xshards_of_pandas_df
 from bigdl.chronos.data.utils.utils import _to_list, _check_type
 from bigdl.chronos.data.utils.roll import roll_timeseries_dataframe
 from bigdl.chronos.data.utils.split import split_timeseries_dataframe
 from bigdl.chronos.data.experimental.utils import add_row, transform_to_dict
+
 
 _DEFAULT_ID_COL_NAME = "id"
 _DEFAULT_ID_PLACEHOLDER = "0"
@@ -130,6 +132,99 @@ class XShardsTSDataset:
                                 target_col=target_col,
                                 feature_col=feature_col)
 
+    @staticmethod
+    def from_sparkdf(df,
+                     dt_col,
+                     target_col,
+                     id_col=None,
+                     extra_feature_col=None,
+                     with_split=False,
+                     val_ratio=0,
+                     test_ratio=0.1,
+                     largest_look_back=0,
+                     largest_horizon=1):
+        '''
+        Initialize xshardtsdataset(s) from Spark Dataframe.
+
+        :param df: an Spark DataFrame for your raw time series data.
+        :param dt_col: a str indicates the col name of datetime
+               column in the input data frame.
+        :param target_col: a str or list indicates the col name of target column
+               in the input data frame.
+        :param id_col: (optional) a str indicates the col name of dataframe id. If
+               it is not explicitly stated, then the data is interpreted as only
+               containing a single id.
+        :param extra_feature_col: (optional) a str or list indicates the col name
+               of extra feature columns that needs to predict the target column.
+        :param with_split: (optional) bool, states if we need to split the dataframe
+               to train, validation and test set. The value defaults to False.
+        :param val_ratio: (optional) float, validation ratio. Only effective when
+               with_split is set to True. The value defaults to 0.
+        :param test_ratio: (optional) float, test ratio. Only effective when with_split
+               is set to True. The value defaults to 0.1.
+        :param largest_look_back: (optional) int, the largest length to look back.
+               Only effective when with_split is set to True. The value defaults to 0.
+        :param largest_horizon: (optional) int, the largest num of steps to look
+               forward. Only effective when with_split is set to True. The value defaults
+               to 1.
+
+        :return: a XShardTSDataset instance when with_split is set to False,
+                 three XShardTSDataset instances when with_split is set to True.
+
+        Create a xshardtsdataset instance by:
+
+        >>> # Here is a df example:
+        >>> # id        datetime      value   "extra feature 1"   "extra feature 2"
+        >>> # 00        2019-01-01    1.9     1                   2
+        >>> # 01        2019-01-01    2.3     0                   9
+        >>> # 00        2019-01-02    2.4     3                   4
+        >>> # 01        2019-01-02    2.6     0                   2
+        >>> df = <pyspark.sql.dataframe.DataFrame>
+        >>> tsdataset = XShardsTSDataset.from_xshards(df, dt_col="datetime",
+        >>>                                           target_col="value", id_col="id",
+        >>>                                           extra_feature_col=["extra feature 1",
+        >>>                                                              "extra feature 2"])
+        '''
+
+        from pyspark.sql.dataframe import DataFrame
+        _check_type(df, "df", DataFrame)
+
+        target_col = _to_list(target_col, name="target_col")
+        feature_col = _to_list(extra_feature_col, name="extra_feature_col")
+        all_col = target_col + feature_col + _to_list(id_col, name="id_col") + [dt_col]
+
+        shards = dataframe_to_xshards_of_pandas_df(df,
+                                                   feature_cols=all_col,
+                                                   label_cols=None,
+                                                   accept_str_col=False)
+
+        if id_col is None:
+            shards = shards.transform_shard(add_row,
+                                            _DEFAULT_ID_COL_NAME,
+                                            _DEFAULT_ID_PLACEHOLDER)
+            id_col = _DEFAULT_ID_COL_NAME
+
+        # repartition to id
+        shards = shards.partition_by(cols=id_col,
+                                     num_partitions=len(shards[id_col].unique()))
+
+        if with_split:
+            tsdataset_shards\
+                = shards.transform_shard(split_timeseries_dataframe,
+                                         id_col, val_ratio, test_ratio,
+                                         largest_look_back, largest_horizon).split()
+            return [XShardsTSDataset(shards=tsdataset_shards[i],
+                                     id_col=id_col,
+                                     dt_col=dt_col,
+                                     target_col=target_col,
+                                     feature_col=feature_col) for i in range(3)]
+
+        return XShardsTSDataset(shards=shards,
+                                id_col=id_col,
+                                dt_col=dt_col,
+                                target_col=target_col,
+                                feature_col=feature_col)
+
     def roll(self,
              lookback,
              horizon,
@@ -162,8 +257,10 @@ class XShardsTSDataset:
 
         :return: the xshardtsdataset instance.
         '''
+        from bigdl.nano.utils.log4Error import invalidInputError
         if id_sensitive:
-            raise NotImplementedError("id_sensitive option has not been implemented.")
+            invalidInputError(False,
+                              "id_sensitive option has not been implemented.")
         feature_col = _to_list(feature_col, "feature_col") if feature_col is not None \
             else self.feature_col
         target_col = _to_list(target_col, "target_col") if target_col is not None \
@@ -180,7 +277,9 @@ class XShardsTSDataset:
         :return: a 2-element dict xshard. each value is a 3d numpy ndarray. The ndarray
                  is casted to float32.
         '''
+        from bigdl.nano.utils.log4Error import invalidInputError
         if self.numpy_shards is None:
-            raise RuntimeError("Please call 'roll' method "
-                               "before transform a XshardsTSDataset to numpy ndarray!")
+            invalidInputError(False,
+                              "Please call 'roll' method "
+                              "before transform a XshardsTSDataset to numpy ndarray!")
         return self.numpy_shards.transform_shard(transform_to_dict)

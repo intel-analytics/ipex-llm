@@ -22,6 +22,10 @@
 # https://github.com/awslabs/autogluon/blob/master/LICENSE
 
 
+import optuna
+from bigdl.nano.utils.log4Error import invalidInputError
+
+
 def _filter_tuner_args(kwargs, tuner_keys):
     return {k: v for k, v in kwargs.items() if k in tuner_keys}
 
@@ -30,7 +34,7 @@ def _search_summary(study):
     """
     Print statistics of trials and retrieve the summary for further analysis.
 
-    :param study: the optuna study object
+    :param study: the hpo study object
     :return : the summary object (current we return the study directly, so that
         it allows better flexiblity to do visualization and futher analysis)
     """
@@ -55,16 +59,15 @@ def _end_search(study, model_builder, use_trial_id=-1):
 
     Use the specified trial or best trial to init and compile the base model.
 
-    :param study: the optuna study object.
+    :param study: the hpo study object.
     :param model_builder: the function to build the model.
     :param use_trial_id: int(optional) params of which trial to be used. Defaults to -1.
-    :raises ValueError: if study is None.
+    :throw ValueError: if study is None.
     :return : the built model with best or specified trial hyperparams.
     """
     if study is None:
-        raise ValueError("study is None.   \
-                            Please call search before calling end_search. ")
-    if use_trial_id == -1:
+        trial = optuna.trial.FixedTrial({})
+    elif use_trial_id == -1:
         trial = study.best_trial
     else:
         trial = study.trials[use_trial_id]
@@ -74,13 +77,73 @@ def _end_search(study, model_builder, use_trial_id=-1):
     return _lazymodel
 
 
+def _create_study(resume, create_kwargs, backend):
+
+    if not resume:
+        load_if_exists = False
+        print("Starting a new tuning")
+    else:
+        load_if_exists = True
+        print("Resume the last tuning...")
+    create_kwargs['load_if_exists'] = load_if_exists
+    # create study
+    return backend.create_study(**create_kwargs)
+
+
 def _check_search_args(search_args, legal_keys):
     search_arg_keys = set(search_args.keys())
     allkeys = set().union(*legal_keys)
     illegal_args = search_arg_keys.difference(allkeys)
     if len(illegal_args) > 0:
-        raise ValueError('Invalid Arguments found for \'search\':',
-                         ', '.join(illegal_args))
+        invalidInputError(False,
+                          'Invalid Arguments found for \'search\':')
+
+
+def _prepare_args(kwargs,
+                  create_keys,
+                  run_keys,
+                  fit_keys,
+                  backend):
+
+    create_kwargs = _filter_tuner_args(kwargs, create_keys)
+    run_kwargs = _filter_tuner_args(kwargs, run_keys)
+    fit_kwargs = _filter_tuner_args(kwargs, fit_keys)
+    # prepare sampler and pruner args
+    sampler_type = create_kwargs.get('sampler', None)
+    if sampler_type:
+        sampler_args = create_kwargs.get('sampler_kwargs', {})
+        sampler = backend.create_sampler(sampler_type, sampler_args)
+        create_kwargs['sampler'] = sampler
+        create_kwargs.pop('sampler_kwargs', None)
+
+    pruner_type = create_kwargs.get('pruner', None)
+    if pruner_type:
+        pruner_args = create_kwargs.get('pruner_kwargs', {})
+        pruner = backend.create_pruner(pruner_type, pruner_args)
+        create_kwargs['pruner'] = pruner
+        create_kwargs.pop('pruner_kwargs', None)
+
+    # renamed callbacks to tune_callbacks to avoid conflict with fit param
+    run_kwargs['callbacks'] = run_kwargs.get('tune_callbacks', None)
+    run_kwargs.pop('tune_callbacks', None)
+    run_kwargs['show_progress_bar'] = False
+
+    return create_kwargs, run_kwargs, fit_kwargs
+
+
+def _validate_args(search_kwargs,
+                   target_metric,
+                   legal_keys):
+    _check_search_args(
+        search_args=search_kwargs,
+        legal_keys=legal_keys)
+
+    direction = search_kwargs.get('direction', None),
+    directions = search_kwargs.get('directions', None),
+    _check_optimize_direction(
+        direction=direction,
+        directions=directions,
+        metric=target_metric)
 
 
 def _strip_val_prefix(metric):
@@ -101,9 +164,9 @@ def _check_optimize_direction(direction, directions, metric):
     stripped_metric = _strip_val_prefix(metric).lower()
     if stripped_metric in max_metrics:
         if direction != 'maximize':
-            raise ValueError('metric', metric,
-                             'should use maximize direction for optmize')
+            invalidInputError(False,
+                              'should use maximize direction for optmize')
     elif stripped_metric in min_metrics:
         if direction != 'minimize':
-            raise ValueError('metric', metric,
-                             'should use minimize direction for optmize')
+            invalidInputError(False,
+                              'should use minimize direction for optmize')

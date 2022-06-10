@@ -18,7 +18,7 @@
 from threading import Lock
 
 
-class RayContext(object):
+class OrcaRayContext(object):
 
     _active_ray_context = None
     _lock = Lock()
@@ -46,10 +46,11 @@ class RayContext(object):
             self.num_ray_nodes = num_nodes
             self.ray_node_cpu_cores = cores
         else:
-            raise ValueError(f"Unsupported runtime: {runtime}. "
-                             f"Runtime must be spark or ray")
+            invalidInputError(False,
+                              f"Unsupported runtime: {runtime}. "
+                              f"Runtime must be spark or ray")
 
-        RayContext._active_ray_context = self
+        OrcaRayContext._active_ray_context = self
 
     def init(self, driver_cores=0):
         if self.runtime == "ray":
@@ -72,16 +73,17 @@ class RayContext(object):
         import ray
         ray.shutdown()
         self.initialized = False
-        with RayContext._lock:
-            RayContext._active_ray_context = None
+        with OrcaRayContext._lock:
+            OrcaRayContext._active_ray_context = None
 
     @classmethod
     def get(cls, initialize=True):
-        if RayContext._active_ray_context:
-            ray_ctx = RayContext._active_ray_context
+        if OrcaRayContext._active_ray_context:
+            ray_ctx = OrcaRayContext._active_ray_context
             if initialize and not ray_ctx.initialized:
                 ray_ctx.init()
             return ray_ctx
         else:
-            raise Exception("No active RayContext. "
-                            "Please call init_orca_context to create a RayContext.")
+            invalidInputError(False,
+                              "No active RayContext. "
+                              "Please call init_orca_context to create a RayContext.")

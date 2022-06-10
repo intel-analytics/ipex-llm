@@ -14,13 +14,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-from bigdl.orca.automl.model.base_pytorch_model import PytorchModelBuilder
-from bigdl.orca.automl.auto_estimator import AutoEstimator
-from bigdl.chronos.model.Seq2Seq_pytorch import model_creator
-from .base_automodel import BasePytorchAutomodel
+from .base_automodel import BaseAutomodel
 
 
-class AutoSeq2Seq(BasePytorchAutomodel):
+class AutoSeq2Seq(BaseAutomodel):
     def __init__(self,
                  input_feature_num,
                  output_target_num,
@@ -52,13 +49,14 @@ class AutoSeq2Seq(BasePytorchAutomodel):
                tf.keras optimizer instance.
         :param loss: String or pytorch/tf.keras loss instance or pytorch loss creator function.
         :param metric: String or customized evaluation metric function.
-            If string, metric is the evaluation metric name to optimize, e.g. "mse".
-            If callable function, it signature should be func(y_true, y_pred), where y_true and
-            y_pred are numpy ndarray. The function should return a float value as evaluation result.
+               If string, metric is the evaluation metric name to optimize, e.g. "mse".
+               If callable function, it signature should be func(y_true, y_pred), where y_true and
+               y_pred are numpy ndarray. The function should return a float value
+               as evaluation result.
         :param metric_mode: One of ["min", "max"]. "max" means greater metric value is better.
-            You have to specify metric_mode if you use a customized metric function.
-            You don't have to specify metric_mode if you use the built-in metric in
-            bigdl.orca.automl.metrics.Evaluator.
+               You have to specify metric_mode if you use a customized metric function.
+               You don't have to specify metric_mode if you use the built-in metric in
+               bigdl.orca.automl.metrics.Evaluator.
         :param lr: float or hp sampling function from a float space. Learning rate.
                e.g. hp.choice([0.001, 0.003, 0.01])
         :param lstm_hidden_dim: LSTM hidden channel for decoder and encoder.
@@ -68,21 +66,16 @@ class AutoSeq2Seq(BasePytorchAutomodel):
         :param dropout: float or hp sampling function from a float space. Learning rate. Dropout
                rate. e.g. hp.uniform(0.1, 0.3)
         :param teacher_forcing: If use teacher forcing in training. e.g. hp.choice([True, False])
-        :param backend: The backend of the Seq2Seq model. We only support backend as "torch"
-               for now.
+        :param backend: The backend of the Seq2Seq model. support "keras" and "torch".
         :param logs_dir: Local directory to save logs and results. It defaults to
                "/tmp/auto_seq2seq"
         :param cpus_per_trial: Int. Number of cpus for each trial. It defaults to 1.
         :param name: name of the AutoSeq2Seq. It defaults to "auto_seq2seq"
         :param remote_dir: String. Remote directory to sync training results and checkpoints. It
-            defaults to None and doesn't take effects while running in local. While running in
-            cluster, it defaults to "hdfs:///tmp/{name}".
+               defaults to None and doesn't take effects while running in local. While running in
+               cluster, it defaults to "hdfs:///tmp/{name}".
         """
-        super().__init__()
         # todo: support search for past_seq_len.
-        # todo: add input check.
-        if backend != "torch":
-            raise ValueError(f"We only support backend as torch. Got {backend}")
         self.search_space = dict(
             input_feature_num=input_feature_num,
             output_feature_num=output_target_num,
@@ -96,12 +89,24 @@ class AutoSeq2Seq(BasePytorchAutomodel):
         )
         self.metric = metric
         self.metric_mode = metric_mode
-        model_builder = PytorchModelBuilder(model_creator=model_creator,
-                                            optimizer_creator=optimizer,
-                                            loss_creator=loss,
-                                            )
-        self.auto_est = AutoEstimator(model_builder=model_builder,
-                                      logs_dir=logs_dir,
-                                      resources_per_trial={"cpu": cpus_per_trial},
-                                      remote_dir=remote_dir,
-                                      name=name)
+        self.backend = backend
+        self.optimizer = optimizer
+        self.loss = loss
+
+        self._auto_est_config = dict(logs_dir=logs_dir,
+                                     resources_per_trial={"cpu": cpus_per_trial},
+                                     remote_dir=remote_dir,
+                                     name=name)
+
+        if self.backend.startswith("torch"):
+            from bigdl.chronos.model.Seq2Seq_pytorch import model_creator
+        elif self.backend.startswith("keras"):
+            from bigdl.chronos.model.tf2.Seq2Seq_keras import model_creator
+        else:
+            from bigdl.nano.utils.log4Error import invalidInputError
+            invalidInputError(False,
+                              f"We only support keras and torch as backend,"
+                              f" but got {self.backend}")
+        self._model_creator = model_creator
+
+        super().__init__()

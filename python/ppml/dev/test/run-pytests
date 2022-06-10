@@ -21,7 +21,7 @@ SCRIPT_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" &> /dev/null && pwd)
 BIGDL_PYTHON_ROOT=$SCRIPT_DIR/../../..
 
 
-export PYTHONPATH=$PYTHONPATH:$BIGDL_PYTHON_ROOT/dllib/src:$BIGDL_PYTHON_ROOT/ppml/src
+export PYTHONPATH=$PYTHONPATH:$BIGDL_PYTHON_ROOT/dllib/src:$BIGDL_PYTHON_ROOT/ppml/src:$BIGDL_PYTHON_ROOT/ppml/src/bigdl/ppml/fl/nn/generated
 
 export BIGDL_CLASSPATH=$(find $BIGDL_PYTHON_ROOT/../dist/lib/ -name bigdl-ppml-*-jar-with-dependencies.jar)
 

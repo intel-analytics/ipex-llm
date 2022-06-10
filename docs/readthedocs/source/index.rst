@@ -11,7 +11,7 @@ BigDL Documentation
 * `Chronos <doc/Chronos/Overview/chronos.html>`_: scalable time series analysis using AutoML
 * `PPML <doc/PPML/Overview/ppml.html>`_: privacy preserving big data analysis and machine learning (*experimental*)
 * `Serving <doc/Serving/Overview/serving.html>`_: distributed and automated model inference on Big Data streaming frameworks
- 
+
 -------
 
 
@@ -40,7 +40,20 @@ BigDL Documentation
    doc/UserGuide/k8s.md
    doc/UserGuide/databricks.md
    doc/UserGuide/develop.md
-   
+
+.. toctree::
+   :maxdepth: 1
+   :caption: Nano Overview
+
+   doc/Nano/Overview/nano.md
+   doc/Nano/Overview/windows_guide.md
+   doc/Nano/QuickStart/pytorch_train.md
+   doc/Nano/QuickStart/pytorch_inference.md
+   doc/Nano/QuickStart/tensorflow_train.md
+   doc/Nano/QuickStart/tensorflow_inference.md
+   doc/Nano/QuickStart/hpo.md
+   doc/Nano/Overview/known_issues.md
+
 .. toctree::
    :maxdepth: 1
    :caption: DLlib Overview
@@ -67,6 +80,7 @@ BigDL Documentation
    doc/Chronos/Overview/chronos.md
    doc/Chronos/Overview/deep_dive.rst
    doc/Chronos/QuickStart/index.md
+   doc/Chronos/Overview/chronos_known_issue.md
 
 .. toctree::
    :maxdepth: 1
@@ -97,26 +111,27 @@ BigDL Documentation
 .. toctree::
    :maxdepth: 1
    :caption: Common Use Case
-   
+
    doc/Orca/QuickStart/orca-pytorch-distributed-quickstart.md
    doc/UseCase/spark-dataframe.md
    doc/UseCase/xshards-pandas.md
    doc/Orca/QuickStart/orca-autoestimator-pytorch-quickstart.md
    doc/Orca/QuickStart/orca-autoxgboost-quickstart.md
-   
+
 .. toctree::
    :maxdepth: 1
    :caption: Python API
-   
+
    doc/PythonAPI/Orca/orca.rst
    doc/PythonAPI/Friesian/feature.rst
    doc/PythonAPI/Chronos/index.rst
-   
+   doc/PythonAPI/Nano/index.rst
+
 .. toctree::
    :maxdepth: 1
    :caption: Real-World Application
-   
+
    doc/Application/presentations.md
    doc/Application/blogs.md
-   doc/Application/powered-by.md  
+   doc/Application/powered-by.md
 

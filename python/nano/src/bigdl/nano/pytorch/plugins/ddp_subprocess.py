@@ -36,6 +36,7 @@ import multiprocessing
 import os
 import subprocess
 import sys
+import copy
 from tempfile import TemporaryDirectory
 
 import torch
@@ -80,14 +81,16 @@ class DDPSubprocessPlugin(DDPSpawnPlugin):
         processes = []
         cwd_path = os.path.split(os.path.realpath(__file__))[0]
         for i in range(self.num_processes):
-            env = {
+
+            env = copy.deepcopy(os.environ)
+
+            env.update({
                 "KMP_AFFINITY": f"granularity=fine,proclist"
                                 f"=[{','.join([str(i) for i in cpu_procs[i]])}],explicit",
                 "OMP_NUM_THREADS": str(len(cpu_procs[i])),
                 "PROCESS_IDX": str(i),
-            }
-            if "PYTHONPATH" in os.environ:
-                env["PYTHONPATH"] = os.environ["PYTHONPATH"]
+            })
+
             processes.append(subprocess.Popen([sys.executable, f"{cwd_path}/worker.py",
                                                tmpdir], env=env))
 
@@ -125,6 +128,10 @@ class DDPSubprocessPlugin(DDPSpawnPlugin):
 
             for _, process in enumerate(processes):
                 process.wait()
+
+            for _, process in enumerate(processes):
+                assert process.returncode == 0, "Subprocess incorrectly exit, \
+                                                check the trainer configure or usage"
 
             with open(os.path.join(temp_dir, "results.pkl"), "rb") as f:
                 queue_list = cloudpickle.load(f)

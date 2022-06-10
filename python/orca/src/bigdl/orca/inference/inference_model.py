@@ -19,6 +19,7 @@ from bigdl.dllib.utils.file_utils import callZooFunc
 from bigdl.dllib.keras.engine.topology import KerasNet
 from bigdl.dllib.nn.layer import Layer
 import warnings
+from bigdl.dllib.utils.log4Error import *
 
 
 class InferenceModel(JavaValue):
@@ -133,7 +134,7 @@ class InferenceModel(JavaValue):
 
         :param model_path: the path of saved pytorch model
            """
-        assert(model_path, str)
+        invalidInputError(isinstance(model_path, str), "model_path should be string")
         import os
         import io
         import torch

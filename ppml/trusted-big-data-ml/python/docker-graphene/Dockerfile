@@ -12,8 +12,8 @@ RUN env DEBIAN_FRONTEND=noninteractive apt-get update && \
     env DEBIAN_FRONTEND=noninteractive apt-get install -y autoconf bison build-essential coreutils gawk git libcurl4-openssl-dev libprotobuf-c-dev protobuf-c-compiler python3-protobuf wget
 RUN git clone https://github.com/analytics-zoo/graphene.git /graphene
 RUN cd /graphene && \
-    git fetch origin branch-0.5 && \
-    git checkout branch-0.5
+    git fetch origin branch-0.6 && \
+    git checkout branch-0.6
 RUN cd /graphene/Pal/src/host/Linux-SGX && \
     git clone https://github.com/intel/SGXDataCenterAttestationPrimitives.git linux-sgx-driver && \
     cd linux-sgx-driver && \
@@ -66,6 +66,7 @@ RUN cd /opt && \
     echo $'\nlog4j.logger.io.netty=ERROR' >> spark-${SPARK_VERSION}/conf/log4j.properties && \
     rm spark-${SPARK_VERSION}/python/lib/pyspark.zip && \
     rm spark-${SPARK_VERSION}/jars/spark-core_2.12-$SPARK_VERSION.jar && \
+    rm spark-${SPARK_VERSION}/jars/spark-launcher_2.12-$SPARK_VERSION.jar && \
     rm spark-${SPARK_VERSION}/jars/spark-kubernetes_2.12-$SPARK_VERSION.jar && \
     rm spark-${SPARK_VERSION}/jars/spark-network-common_2.12-$SPARK_VERSION.jar && \
     rm spark-${SPARK_VERSION}/examples/jars/spark-examples_2.12-$SPARK_VERSION.jar && \
@@ -78,16 +79,14 @@ RUN cd /opt && \
     wget $SPARK_JAR_REPO_URL/spark-kubernetes_2.12-$SPARK_VERSION.jar && \
     wget $SPARK_JAR_REPO_URL/spark-network-common_2.12-$SPARK_VERSION.jar && \
     wget $SPARK_JAR_REPO_URL/spark-examples_2.12-$SPARK_VERSION.jar && \
+    wget $SPARK_JAR_REPO_URL/spark-launcher_2.12-$SPARK_VERSION.jar && \
     wget $SPARK_JAR_REPO_URL/pyspark.zip && \
-    wget $SPARK_JAR_REPO_URL/spark-encrypt-io-0.3-SNAPSHOT.jar && \
-    wget $SPARK_JAR_REPO_URL/spark-encrypt-io-0.3-SNAPSHOT-no-spark-jar-with-dependencies.jar && \
     mv /opt/spark-core_2.12-$SPARK_VERSION.jar  /opt/spark-${SPARK_VERSION}/jars/spark-core_2.12-$SPARK_VERSION.jar && \
+    mv /opt/spark-launcher_2.12-$SPARK_VERSION.jar /opt/spark-${SPARK_VERSION}/jars/spark-launcher_2.12-$SPARK_VERSION.jar && \
     mv /opt/spark-kubernetes_2.12-$SPARK_VERSION.jar /opt/spark-${SPARK_VERSION}/jars/spark-kubernetes_2.12-$SPARK_VERSION.jar && \
     mv /opt/spark-network-common_2.12-$SPARK_VERSION.jar /opt/spark-${SPARK_VERSION}/jars/spark-network-common_2.12-$SPARK_VERSION.jar && \
     mv /opt/spark-examples_2.12-$SPARK_VERSION.jar /opt/spark-${SPARK_VERSION}/examples/jars/spark-examples_2.12-$SPARK_VERSION.jar && \
     mv /opt/pyspark.zip /opt/spark-${SPARK_VERSION}/python/lib/pyspark.zip && \
-    mv /opt/spark-encrypt-io-0.3-SNAPSHOT.jar /opt/spark-${SPARK_VERSION}/examples/jars/spark-encrypt-io.jar && \
-    mv /opt/spark-encrypt-io-0.3-SNAPSHOT-no-spark-jar-with-dependencies.jar /opt/spark-${SPARK_VERSION}/examples/jars/spark-encrypt-io-no-spark-jar-with-dependencies.jar && \
     sed -i 's/\#\!\/usr\/bin\/env bash/\#\!\/usr\/bin\/env bash\nset \-x/' /opt/spark-${SPARK_VERSION}/bin/spark-class && \
     rm -f /opt/spark-${SPARK_VERSION}/jars/log4j-1.2.17.jar && \
     rm -f /opt/spark-${SPARK_VERSION}/jars/slf4j-log4j12-1.7.16.jar && \
@@ -310,7 +309,6 @@ RUN rm $SPARK_HOME/jars/okhttp-*.jar && \
 
 # Azure support
 RUN curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash
-RUN mkdir /ppml/trusted-big-data-ml/azure
 ADD azure /ppml/trusted-big-data-ml/azure
 
 WORKDIR /ppml/trusted-big-data-ml

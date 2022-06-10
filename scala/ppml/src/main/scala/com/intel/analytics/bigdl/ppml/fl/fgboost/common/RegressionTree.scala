@@ -17,15 +17,16 @@
 package com.intel.analytics.bigdl.ppml.fl.fgboost.common
 
 import org.apache.logging.log4j.LogManager
-import java.util
 
+import java.util
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.ppml.fl.fgboost.common.TreeUtils._
 import com.intel.analytics.bigdl.dllib.utils.Log4Error
-import scala.collection.JavaConversions.asScalaBuffer
+
 import scala.collection.JavaConverters._
 import scala.collection.mutable.HashSet
-import scala.collection.mutable
+import scala.collection.{SortedMap, mutable}
+import scala.util.parsing.json.{JSONArray, JSONObject}
 
 class RegressionTree(
                       val dataset: Array[Tensor[Float]],
@@ -34,7 +35,6 @@ class RegressionTree(
                       val treeID: String,
                       val numClasses: Int = 2,
                       var depth: Int = 0,
-                      val minInstancesPerNode: Int = 8,
                       val numFeaturesPerNode: Int = 1,
                       val minInfoGain: Float = 0,
                       val lambda: Float = 1f
@@ -56,7 +56,6 @@ class RegressionTree(
   // Store splittable node queue
   val expandQueue = new mutable.Queue[TreeNode]
 
-  init()
 
   def init(): Unit = {
     val rootNode = TreeNode("0",
@@ -87,7 +86,7 @@ class RegressionTree(
     bestLocalSplit
   }
 
-  def findBestSplitValue(treeNode: TreeNode): Split  = {
+  def findBestSplitValue(treeNode: TreeNode): Split = {
     // TODO: make minChildSize a parameter
     // For each feature
     val (gradSum, hessSum) = (sum(grads(0), treeNode.recordSet.toArray),
@@ -95,7 +94,7 @@ class RegressionTree(
     val bestGainByFeature = sortedIndex.indices.par.map{fIndex =>
       val sortedFeatureIndex = sortedIndex(fIndex).filter(treeNode.recordSet.contains)
       var leftGradSum = 0.0
-      var leftHessSum  = 0.0
+      var leftHessSum = 0.0
       var rightGradSum = gradSum.toDouble
       var rightHessSum = hessSum.toDouble
       var rStartIndex = 0
@@ -227,7 +226,7 @@ class RegressionTree(
   }
 
   def splitToNodes(split: Split, treeNode: TreeNode): (TreeNode, TreeNode) = {
-    val leftSet = split.itemSet.map(Integer2int).toSet
+    val leftSet = split.itemSet.asScala.map(Integer2int).toSet
     val rightSet = treeNode.recordSet.diff(leftSet)
     // Left nodeID = parentNodeID * 2 + 1
     // Right nodeID = parentNodeID * 2 + 2
@@ -245,7 +244,23 @@ class RegressionTree(
     depth
   }
 
-  override def toString = s"RegressionTree($treeID, depth $depth, local node $localNodes, leaves $leaves)"
+  override def toString: String = s"RegressionTree($treeID," +
+    s" depth $depth, local node $localNodes, leaves $leaves)"
+
+  def toJson(): JSONObject = {
+    val sortedLocalNodes = SortedMap(
+      localNodes.toArray.map(v => (v._1, v._2.toJSON())): _*)(Ordering.by(_.toInt))
+    JSONObject(Map(
+      "treeID" -> treeID,
+      "numClasses" -> numClasses,
+      "depth" -> depth,
+      "numFeaturesPerNode" -> numFeaturesPerNode,
+      "minInfoGain" -> minInfoGain,
+      "lambda" -> lambda,
+      "localNodes" -> JSONObject(sortedLocalNodes.toMap),
+      "leaves" -> JSONArray(leaves.map(_.toJSON()).toList))
+    )
+  }
 }
 
 object RegressionTree {
@@ -261,6 +276,24 @@ object RegressionTree {
             treeID: String,
             flattenHeaders: Array[String] = null): RegressionTree = {
     new RegressionTree(dataset, sortedIndex, grads, treeID)
+  }
+  def fromJson(json: JSONObject): RegressionTree = {
+    val treeID = json.obj.get("treeID").get.asInstanceOf[String]
+    val numClasses = json.obj.get("numClasses").get.asInstanceOf[Double].toInt
+    val depth = json.obj.get("depth").get.asInstanceOf[Double].toInt
+    val numFeaturesPerNode = json.obj.get("numFeaturesPerNode").get.asInstanceOf[Double].toInt
+    val minInfoGain = json.obj.get("minInfoGain").get.asInstanceOf[Double].toFloat
+    val lambda = json.obj.get("lambda").get.asInstanceOf[Double].toFloat
+    val leaves = json.obj.get("leaves").get.asInstanceOf[JSONArray].list
+      .map(v => TreeNode.fromJson(v.asInstanceOf[JSONObject]))
+    val localNodes = json.obj.get("localNodes").get.asInstanceOf[JSONObject].obj
+      .mapValues(v => Split.fromJson(v.asInstanceOf[JSONObject]))
+    val rt = new RegressionTree(Array(Tensor[Float]()),
+      Array(Array()), Array(Array()), treeID, numClasses, depth, numFeaturesPerNode,
+      minInfoGain, lambda)
+    localNodes.foreach(v => rt.localNodes.put(v._1, v._2))
+    leaves.foreach(rt.leaves.enqueue(_))
+    rt
   }
 
 }

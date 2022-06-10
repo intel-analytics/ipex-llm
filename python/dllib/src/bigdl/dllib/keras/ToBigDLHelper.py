@@ -17,6 +17,7 @@
 from math import ceil
 
 import bigdl.dllib.nn.initialization_method as BInit
+from bigdl.dllib.utils.log4Error import *
 from bigdl.dllib.optim.optimizer import L1L2Regularizer as BRegularizer
 
 
@@ -26,7 +27,7 @@ def to_bigdl_2d_ordering(order):
     elif order == "th":
         return "NCHW"
     else:
-        raise Exception("Unsupported dim_ordering: %s" % order)
+        invalidInputError(False, "Unsupported dim_ordering: %s" % order)
 
 
 def to_bigdl_3d_ordering(order):
@@ -35,7 +36,7 @@ def to_bigdl_3d_ordering(order):
     elif order == "th":
         return "channel_first"
     else:
-        raise Exception("Unsupported dim_ordering: %s" % order)
+        invalidInputError(False, "Unsupported dim_ordering: %s" % order)
 
 
 def to_bigdl_3d_padding(border_mode):
@@ -44,7 +45,7 @@ def to_bigdl_3d_padding(border_mode):
     elif border_mode == "same":
         return -1, -1, -1
     else:
-        raise Exception("Unsupported border mode: %s" % border_mode)
+        invalidInputError(False, "Unsupported border mode: %s" % border_mode)
 
 
 def __calculate_2d_same_padding(x, kx, dx, dilation_x):
@@ -68,7 +69,7 @@ def to_bigdl_2d_padding(border_mode, *args):
     elif border_mode == "valid":
         return 0, 0
     else:
-        raise Exception("Unsupported border mode: %s" % border_mode)
+        invalidInputError(False, "Unsupported border mode: %s" % border_mode)
 
 
 def to_bigdl_init(kinit_method):  # kinit_method is a string
@@ -84,7 +85,7 @@ def to_bigdl_init(kinit_method):  # kinit_method is a string
     elif kinit_method == "normal":
         init = BInit.RandomNormal(mean=0.0, stdv=0.05)
     else:
-        raise Exception("Unsupported init type: %s" % kinit_method)
+        invalidInputError(False, "Unsupported init type: %s" % kinit_method)
     return init
 
 

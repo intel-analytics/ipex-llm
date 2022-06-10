@@ -16,7 +16,7 @@
 
 package com.intel.analytics.bigdl.ppml.fl.fgboost
 
-import com.intel.analytics.bigdl.dllib.optim.ValidationMethod
+import com.intel.analytics.bigdl.dllib.optim.{ValidationMethod, ValidationResult}
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
 import com.intel.analytics.bigdl.ppml.fl.fgboost.common.{RegressionTree, Split, TreeUtils}
 import com.intel.analytics.bigdl.ppml.fl.FLContext
@@ -30,13 +30,15 @@ import org.apache.logging.log4j.LogManager
 import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
 import collection.JavaConverters._
+import scala.util.parsing.json.{JSONObject, JSON}
 
 abstract class FGBoostModel(continuous: Boolean,
                             nLabel: Int = 1,
                             learningRate: Float = 0.005f,
                             maxDepth: Int = 6,
                             minChildSize: Int = 1,
-                            validationMethods: Array[ValidationMethod[Float]] = null) extends FLClientClosable {
+                            validationMethods: Array[ValidationMethod[Float]] = null)
+  extends FLClientClosable {
   val logger = LogManager.getLogger(getClass)
   var splitVersion = 0
   var treeLeafVersion = 0
@@ -48,7 +50,7 @@ abstract class FGBoostModel(continuous: Boolean,
   var curLoss: Float = Float.MaxValue
   def fit(feature: Array[Tensor[Float]],
           label: Array[Float],
-          boostRound: Int) = {
+          boostRound: Int): Unit = {
     val sortedIndexByFeature = TreeUtils.sortByFeature(feature)
     // TODO Load model from file
     initFGBoost(label)
@@ -59,10 +61,10 @@ abstract class FGBoostModel(continuous: Boolean,
       trainClassificationTree(feature, sortedIndexByFeature, boostRound)
     }
   }
-  def fitAdd(xTrainBatch: Array[Tensor[Float]]) = {
+  def fitAdd(xTrainBatch: Array[Tensor[Float]]): ArrayBuffer[Tensor[Float]] = {
     xTrainBuffer ++= xTrainBatch
   }
-  def fitCall(yTrain: Array[Float], boostRound: Int) = {
+  def fitCall(yTrain: Array[Float], boostRound: Int): Unit = {
     val xTrain = xTrainBuffer.toArray
     logger.info(s"start to sort index")
     val sortedIndexByFeature = TreeUtils.sortByFeature(xTrain)
@@ -79,7 +81,7 @@ abstract class FGBoostModel(continuous: Boolean,
 
 
   def evaluate(feature: Array[Tensor[Float]],
-               label: Array[Float]) = {
+               label: Array[Float]): Array[ValidationResult] = {
     val predictResult = predictTree(feature)
     val predictActivity = Tensor[Float](predictResult, Array(predictResult.length))
     val targetProto = flClient.fgbostStub.downloadLabel("label", 0).getData
@@ -88,7 +90,7 @@ abstract class FGBoostModel(continuous: Boolean,
       vMethod.apply(predictActivity, targetActivity)
     })
   }
-  def predict(feature: Array[Tensor[Float]]) = {
+  def predict(feature: Array[Tensor[Float]]): Array[Tensor[Float]] = {
     val predictResult = predictTree(feature)
     predictResult.map{ value =>
       Tensor[Float](Array(value), Array(1))
@@ -155,7 +157,7 @@ abstract class FGBoostModel(continuous: Boolean,
    * @param data the input data to predict
    * @return
    */
-  def uploadResidual(data: Array[Tensor[Float]]) = {
+  def uploadResidual(data: Array[Tensor[Float]]): Unit = {
     val lastTreePredict = data.map { record =>
       Map(trees.last.treeID -> trees.last.predict(record))
     }
@@ -164,7 +166,8 @@ abstract class FGBoostModel(continuous: Boolean,
 
     val perMsgSize = ObjectSizeCalculator.getObjectSize(boostEvals.head)
     val dataPerGroup = MAX_MSG_SIZE / perMsgSize
-    logger.info(s"data num: ${boostEvals.size}, per msg size: $perMsgSize, data per group: $dataPerGroup")
+    logger.info(s"data num: ${boostEvals.size}," +
+      s" per msg size: $perMsgSize, data per group: $dataPerGroup")
     var sended = 0
     var lastBatch = false
     boostEvals.grouped(dataPerGroup.toInt).foreach(l => {
@@ -180,17 +183,20 @@ abstract class FGBoostModel(continuous: Boolean,
   }
 
 
-  def trainRegressionTree(dataSet: Array[Tensor[Float]], indices: Array[Array[Int]], totalRound: Int): Unit = {
+  def trainRegressionTree(dataSet: Array[Tensor[Float]],
+                          indices: Array[Array[Int]], totalRound: Int): Unit = {
     for (i <- 0 until totalRound) {
       logger.info(s"Round: $i/$totalRound, loss: $curLoss")
       val grads = downloadGrad(i)
       val currTree = RegressionTree(dataSet, indices, grads, i.toString)
+      currTree.init()
       currTree.setLearningRate(learningRate).setMinChildSize(minChildSize)
       val continueBoosting = boostRound(i, currTree)
       if (!continueBoosting) return
     }
   }
-  def trainClassificationTree(dataSet: Array[Tensor[Float]], indices: Array[Array[Int]], totalRound: Int) = {
+  def trainClassificationTree(dataSet: Array[Tensor[Float]],
+                              indices: Array[Array[Int]], totalRound: Int): Unit = {
     val labelEarlyStop = new Array[Boolean](nLabel)
     for (i <- 0 until totalRound) {
       logger.info(s"Round: $i/$totalRound")
@@ -199,6 +205,7 @@ abstract class FGBoostModel(continuous: Boolean,
       for (gID <- 0 until nLabel) {
         if (!labelEarlyStop(gID)) {
           val currTree = RegressionTree(dataSet, indices, nGrads(gID), i.toString)
+          currTree.init()
           currTree.setLearningRate(learningRate).setMinChildSize(minChildSize)
           val continueBoosting = boostRound(i, currTree)
           if (!continueBoosting) labelEarlyStop(gID) = true
@@ -206,7 +213,7 @@ abstract class FGBoostModel(continuous: Boolean,
       }
     }
   }
-  def buildTree(tree: RegressionTree, continuous: Boolean) = {
+  def buildTree(tree: RegressionTree, continuous: Boolean): Unit = {
 
     while (tree.canGrow && tree.depth < maxDepth) {
       // Find best split in curr tree
@@ -223,7 +230,7 @@ abstract class FGBoostModel(continuous: Boolean,
       // If this split is in local dataset
       val updateCondition = if (continuous) {
         bestSplit.featureID == -1 || bestSplit.gain < 1e-6f
-      } else  bestSplit.featureID == -1
+      } else bestSplit.featureID == -1
       if (updateCondition) {
         logger.debug(s"Set ${bestSplit.nodeID} as leaf")
 //        logger.info(s"Set Leaf gain = ${bestSplit.gain}")
@@ -299,4 +306,7 @@ abstract class FGBoostModel(continuous: Boolean,
     }
 
   }
+
 }
+
+

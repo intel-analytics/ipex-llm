@@ -29,8 +29,10 @@ class Trigger(ABC):
             if trigger.lower() == "everyepoch":
                 return EveryEpoch().get_trigger()
             else:
-                raise ValueError("Only 'EveryEpoch', orca triggers and bigdl triggers are "
-                                 "supported now")
+                from bigdl.dllib.utils.log4Error import invalidInputError
+                invalidInputError(False,
+                                  "Only 'EveryEpoch', orca triggers and bigdl triggers are "
+                                  "supported now")
         elif isinstance(trigger, Trigger):
             return trigger.get_trigger()
         else:

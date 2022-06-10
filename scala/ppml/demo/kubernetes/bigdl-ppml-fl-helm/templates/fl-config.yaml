@@ -1,0 +1,8 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: fl-config
+  labels:
+    app: fldemo
+data:
+  fl.server.ip: fl-server

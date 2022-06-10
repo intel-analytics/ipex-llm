@@ -13,7 +13,7 @@ import pytest
 import ray
 
 from bigdl.orca import stop_orca_context
-from bigdl.orca.ray import RayContext
+from bigdl.orca.ray import OrcaRayContext
 
 @ray.remote
 class TestRay():
@@ -23,7 +23,7 @@ class TestRay():
 
 class TestUtil(TestCase):
     def setUp(self):
-        self.ray_ctx = RayContext("ray", cores=2, num_nodes=1)
+        self.ray_ctx = OrcaRayContext("ray", cores=2, num_nodes=1)
     
     def tearDown(self):
         stop_orca_context()
@@ -31,7 +31,7 @@ class TestUtil(TestCase):
     def test_init(self):
         node_num = 4
         address_info = self.ray_ctx.init()
-        assert RayContext._active_ray_context, ("RayContext has not been initialized")
+        assert OrcaRayContext._active_ray_context, ("OrcaRayContext has not been initialized")
         assert "object_store_address" in address_info
         actors = [TestRay.remote() for i in range(0, node_num)]
         print(ray.get([actor.hostname.remote() for actor in actors]))

@@ -53,7 +53,7 @@ def get_node_ip():
     import errno
     s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     try:
-        # This command will raise an exception if there is no internet connection.
+        # This command will throw an exception if there is no internet connection.
         s.connect(("8.8.8.8", 80))
         node_ip_address = s.getsockname()[0]
     except OSError as e:
@@ -92,8 +92,8 @@ def detect_conda_env_name():
     err = err.decode("utf-8")
     errorcode = pro.returncode
     if 0 != errorcode:
-        raise EnvironmentError(err +
-                               "Cannot find conda info. Please verify your conda installation")
+        invalidInputError(False, err +
+                          "Cannot find conda info. Please verify your conda installation")
     for line in out.split('\n'):
         item = line.split(':')
         if len(item) == 2:
@@ -103,8 +103,9 @@ def detect_conda_env_name():
     python_location = detect_python_location()
     if "envs" in python_location:
         return python_location.split("/")[-3]
-    raise EnvironmentError(err + "Failed to detect the current conda environment. Please verify"
-                                 "your conda installation and activate the env you want to use")
+        invalidInputError(False,
+                          err + "Failed to detect the current conda environment. Please verify "
+                                "your conda installation and activate the env you want to use")
 
 
 # This is adopted from conda-pack.
@@ -117,7 +118,7 @@ def pack_conda_main(conda_name, tmp_path):
         .format(conda_name, tmp_path)
     pro = subprocess.Popen(pack_cmd, shell=True, env=pack_env)
     if pro.wait() != 0:
-        raise RuntimeError(f"conda pack failed! Error executing command: {pack_cmd} ")
+        invalidInputError(False, f"conda pack failed! Error executing command: {pack_cmd} ")
 
 
 def pack_penv(conda_name, output_name):
@@ -169,11 +170,16 @@ def get_bigdl_class_version():
     from bigdl.dllib.utils.engine import get_bigdl_jars
     bigdl_jars = get_bigdl_jars()
     try:
-        bigdl_class_version = re.search('spark_(.+?)-jar', bigdl_jars[0]).group(1)[6:]
+        bigdl_class_version = re.search('spark_(.+?)-jar', bigdl_jars[1]).group(1)[6:]
     except AttributeError:
         # not found
         bigdl_class_version = 'Cannot find BigDL classpath, please check your installation'
     return bigdl_class_version
+
+
+def get_bigdl_image_workdir():
+    bigdl_image_workdir = "/opt/spark/work-dir"  # WORKDIR defined in dockerfile
+    return bigdl_image_workdir
 
 
 def _is_scalar_type(dtype, accept_str_col=False):
@@ -185,6 +191,8 @@ def _is_scalar_type(dtype, accept_str_col=False):
     if isinstance(dtype, df_types.LongType):
         return True
     if isinstance(dtype, df_types.DoubleType):
+        return True
+    if isinstance(dtype, df_types.TimestampType):
         return True
     if accept_str_col and isinstance(dtype, df_types.StringType):
         return True
@@ -200,6 +208,8 @@ def convert_row_to_numpy(row, schema, feature_cols, label_cols, accept_str_col=F
             if _is_scalar_type(feature_type, accept_str_col):
                 if isinstance(feature_type, df_types.FloatType):
                     result.append(np.array(row[name]).astype(np.float32))
+                elif isinstance(feature_type, df_types.TimestampType):
+                    result.append(np.array(row[name]).astype('datetime64[ns]'))
                 elif isinstance(feature_type, df_types.IntegerType):
                     result.append(np.array(row[name]).astype(np.int32))
                 else:

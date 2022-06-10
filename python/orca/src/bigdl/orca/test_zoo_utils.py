@@ -22,6 +22,8 @@ from unittest import TestCase
 
 from bigdl.dllib.nncontext import *
 from bigdl.dllib.feature.image import ImageSet
+from bigdl.dllib.utils.log4Error import *
+
 
 np.random.seed(1337)  # for reproducibility
 
@@ -37,10 +39,13 @@ class ZooTestCase(TestCase):
         """
         sparkConf = init_spark_conf().setMaster("local[4]").setAppName("zoo test case")\
             .set("spark.driver.memory", "5g")
-        assert str(sparkConf.get("spark.shuffle.reduceLocality.enabled")) == "false"
-        assert \
-            str(sparkConf.get("spark.serializer")) == "org.apache.spark.serializer.JavaSerializer"
-        assert SparkContext._active_spark_context is None
+        invalidInputError(str(sparkConf.get("spark.shuffle.reduceLocality.enabled")) == "false",
+                          "expect spark.shuffle.reduceLocality.enabled == false in spark conf")
+        invalidInputError(
+            str(sparkConf.get("spark.serializer")) == "org.apache.spark.serializer.JavaSerializer",
+            "expect spark.serializer == org.apache.spark.serializer.JavaSerializer in spark conf")
+        invalidInputError(SparkContext._active_spark_context is None,
+                          "SparkContext._active_spark_context should be none")
         self.sc = init_nncontext(sparkConf)
         self.sc.setLogLevel("ERROR")
         self.sqlContext = SQLContext(self.sc)
@@ -90,7 +95,8 @@ class ZooTestCase(TestCase):
         tmp_path = create_tmp_path() + ".h5"
         model.save_model(tmp_path)
         loaded_model = model_class.load_model(tmp_path)
-        assert isinstance(loaded_model, model_class)
+        invalidInputError(isinstance(loaded_model, model_class),
+                          "loaded_model should be model_class")
         # Calling predict will remove the impact of dropout.
         output1 = model.predict(input_data)
         output2 = loaded_model.predict(input_data, distributed=True)
@@ -107,9 +113,10 @@ class ZooTestCase(TestCase):
             func()
         except Exception as e:
             if error_message not in str(e):
-                raise Exception("error_message not in the exception raised. " +
-                                "error_message: %s, exception: %s" % (error_message, e))
+                invalidInputError(False,
+                                  "error_message not in the exception raised. " +
+                                  "error_message: %s, exception: %s" % (error_message, e))
             error = True
 
         if not error:
-            raise Exception("exception is not raised")
+            invalidInputError(False, "exception is not throw")

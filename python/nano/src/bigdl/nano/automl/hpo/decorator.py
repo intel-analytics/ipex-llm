@@ -29,9 +29,7 @@ import functools
 from collections import OrderedDict
 import numpy as np
 import multiprocessing as mp
-import ConfigSpace as CS
 
-from .backend import OptunaBackend
 
 from .space import *
 from .space import _add_hp, _add_cs, _rm_hp, _strip_config_space, SPLITTER
@@ -39,6 +37,8 @@ from .callgraph import CallCache
 
 from bigdl.nano.automl.utils import EasyDict as ezdict
 from bigdl.nano.automl.utils import proxy_methods
+from bigdl.nano.automl.hpo.backend import create_hpo_backend
+from bigdl.nano.deps.automl.hpo_api import create_configuration_space
 
 __all__ = ['args', 'obj', 'func', 'tfmodel', 'plmodel', 'sample_config']
 
@@ -119,7 +119,7 @@ class _automl_method(object):
 
     @property
     def cs(self):
-        cs = CS.ConfigurationSpace()
+        cs = create_configuration_space()
         for k, v in self.kwvars.items():
             if isinstance(v, NestedSpace):
                 _add_cs(cs, v.cs, k)
@@ -454,9 +454,33 @@ def tfmodel(**kwvars):
                 # override _model_build to build
                 # the model directly instead of using
                 # modeld_init and model_compile
-                model = OptunaBackend.instantiate(trial, self._lazyobj)
+                model = self.backend.instantiate(trial, self._lazyobj)
                 self._model_compile(model, trial)
                 return model
+
+            def _get_model_builder_args(self):
+                return {'lazyobj': self._lazyobj,
+                        'compile_args': self.compile_args,
+                        'compile_kwargs': self.compile_kwargs,
+                        'backend': self.backend}
+
+            @staticmethod
+            def _get_model_builder(lazyobj,
+                                   compile_args,
+                                   compile_kwargs,
+                                   backend):
+
+                def model_builder(trial):
+                    model = backend.instantiate(trial, lazyobj)
+                    # self._model_compile(model, trial)
+                    # instantiate optimizers if it is autoobj
+                    optimizer = compile_kwargs.get('optimizer', None)
+                    if optimizer and isinstance(optimizer, AutoObject):
+                        optimizer = backend.instantiate(trial, optimizer)
+                        compile_kwargs['optimizer'] = optimizer
+                    model.compile(*compile_args, **compile_kwargs)
+                    return model
+                return model_builder
 
         return TFAutoMdl
 
@@ -495,6 +519,7 @@ def plmodel(**kwvars):
                     elif k in default_config:
                         super_kwargs[k] = default_config[k]
                 super().__init__(**super_kwargs)
+                self.backend = create_hpo_backend()
 
             def __repr__(self):
                 return 'PlAutoMdl -- ' + Cls.__name__
@@ -503,7 +528,7 @@ def plmodel(**kwvars):
                 # override _model_build to build
                 # the model directly instead of using
                 # modeld_init and model_compile
-                model = OptunaBackend.instantiate(trial, self._lazyobj)
+                model = self.backend.instantiate(trial, self._lazyobj)
                 # self._model_compile(model, trial)
                 return model
 
