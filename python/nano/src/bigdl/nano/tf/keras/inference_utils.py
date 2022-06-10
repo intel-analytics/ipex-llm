@@ -59,9 +59,10 @@ class InferenceUtils:
                                 'static': post_training_static_quant,
                                 'dynamic': post_training_dynamic_quant.
                                 Default: 'static'. OpenVINO supports static mode only.
-        :param method:      Method to do quantization. When accelerator=None, supported methods: None.
-                When accelerator='onnxruntime', supported methods: 'qlinear', 'integer', defaults
-                to 'qlinear'. Suggest 'qlinear' for lower accuracy drop if using static quantization.
+        :param method:      Method to do quantization. When accelerator=None, supported methods:
+                None. When accelerator='onnxruntime', supported methods: 'qlinear', 'integer',
+                defaults to 'qlinear'. Suggest 'qlinear' for lower accuracy drop if using
+                static quantization.
                 More details in https://onnxruntime.ai/docs/performance/quantization.html.
                 This argument doesn't take effect for OpenVINO, don't change it for OpenVINO.
         :param conf:        A path to conf yaml file for quantization.
