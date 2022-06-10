@@ -59,7 +59,7 @@ class TestPPMLContext(unittest.TestCase):
         self.sc.write(df, "plain_text") \
             .mode('overwrite') \
             .option("header", True) \
-            .csv(os.path.join(resource_path, "out"))
+            .csv(os.path.join(resource_path, "out/plain"))
 
     def test_write_encrypt_file(self):
         print("test write encrypt text file")
@@ -69,7 +69,7 @@ class TestPPMLContext(unittest.TestCase):
         self.sc.write(df, "AES/CBC/PKCS5Padding") \
             .mode('overwrite') \
             .option("header", True) \
-            .csv(os.path.join(resource_path, "out"))
+            .csv(os.path.join(resource_path, "out/encrypt"))
 
 
 if __name__ == "__main__":
