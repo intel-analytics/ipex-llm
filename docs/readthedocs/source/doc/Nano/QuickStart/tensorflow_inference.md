@@ -1,12 +1,12 @@
 # BigDL-Nano TensorFlow Inference Overview
-BigDL-Nano provides several APIs which can help users easily apply optimizations on inference pipelines to improve latency and throughput. Currently, performance accelerations are achieved by integrating extra runtimes as inference backend engines or using quantization methods on full-precision trained models to reduce computation during inference. Keras Model (`bigdl.nano.tf.keras.Model`) provides the APIs for all optimizations you need for inference.
+BigDL-Nano provides several APIs which can help users easily apply optimizations on inference pipelines to improve latency and throughput. Currently, performance accelerations are achieved by integrating extra runtimes as inference backend engines or using quantization methods on full-precision trained models to reduce computation during inference. Keras Model (`bigdl.nano.tf.keras.Model`) and Sequential (`bigdl.nano.tf.keras.Sequential`) provides the APIs for all optimizations you need for inference. 
 
 For quantization, BigDL-Nano provides only post-training quantization in `Model.quantize()` for users to infer with models of 8-bit precision. Quantization-Aware Training is not available for now. Model conversion to 16-bit like BF16, and FP16 will be coming soon.
 
 Before you go ahead with these APIs, you have to make sure BigDL-Nano is correctly installed for Tensorflow. If not, please follow [this](../Overview/nano.md) to set up your environment.
 
 ## Quantization
-Quantization is widely used to compress models to a lower precision, which not only reduces the model size but also accelerates inference. BigDL-Nano provides `Model.quantize()` API for users to quickly obtain a quantized model with accuracy control by specifying a few arguments.
+Quantization is widely used to compress models to a lower precision, which not only reduces the model size but also accelerates inference. BigDL-Nano provides `Model.quantize()` API for users to quickly obtain a quantized model with accuracy control by specifying a few arguments. `Sequential` has similar usage, so we will only show how to use an instance of `Model` to enable quantization pipeline. 
 
 To use INC as your quantization engine, you can choose accelerator as None or 'onnxruntime'. Otherwise, accelerator='openvino' means using OpenVINO POT to do quantization.
 
