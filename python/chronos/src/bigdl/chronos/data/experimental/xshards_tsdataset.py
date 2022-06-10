@@ -270,6 +270,7 @@ class XShardsTSDataset:
                                                         None, lookback, horizon,
                                                         feature_col, target_col)
         return self
+
     def impute(self,
                mode="last",
                const_num=0):
@@ -290,16 +291,13 @@ class XShardsTSDataset:
 
         :return: the tsdataset instance.
         '''
-        
         def df_reset_index(df):
-              df.reset_index(drop=True, inplace=True)
-              return df
-       
+                df.reset_index(drop=True, inplace=True)
+                return df
         self.shards = self.shards.transform_shard(impute_timeseries_dataframe,
-                                                        self.dt_col, mode,
-                                                        const_num)
+                                                  self.dt_col, mode,
+                                                  const_num)
         self.shards.transform_shard(df_reset_index)
-       
         return self
 
     def to_xshards(self):
