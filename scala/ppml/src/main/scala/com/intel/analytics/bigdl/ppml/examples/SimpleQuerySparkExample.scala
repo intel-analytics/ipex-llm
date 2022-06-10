@@ -48,7 +48,7 @@ object SimpleQuerySparkExample extends Supportive {
         sc.read(cryptoMode = arguments.inputEncryptMode).option("header", "true")
           .csv(arguments.inputPath + "/people.csv")
       }
- 
+
       val developers = timing("2/3 doSQLOperations") {
         // Select only the "name" column
         df.select("name").count()
@@ -63,9 +63,9 @@ object SimpleQuerySparkExample extends Supportive {
         developers
       }
 
-      //Map[String, DataFrame]({
+      // Map[String, DataFrame]({
       //  "developers" -> developers
-      //})
+      // })
 
       timing("3/3 encryptAndSaveOutputs") {
         // save data frame using spark kms context
