@@ -14,6 +14,7 @@
 # limitations under the License.
 #
 import tensorflow as tf
+from bigdl.nano.utils.log4Error import invalidInputError
 from ..model import AcceleratedModel
 
 
@@ -23,6 +24,14 @@ class AcceleratedKerasModel(AcceleratedModel, tf.keras.Model):
     def __init__(self, model):
         super().__init__()
         self.model = model
+
+    def __call__(self, *args, **kwds):
+        invalidInputError(
+            not kwds.get('training', False),
+            "Model of AcceleratedKerasModel is not trainable. Please set `trainning=False`."
+        )
+        kwds['training'] = False
+        return super().__call__(*args, **kwds)
 
     def call(self, *inputs):
         return tf.py_function(self.forward, inputs, Tout=tf.float32)
