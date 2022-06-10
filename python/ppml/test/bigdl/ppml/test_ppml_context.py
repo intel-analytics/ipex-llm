@@ -17,8 +17,8 @@
 import unittest
 import os
 
-from pyspark.sql import SparkSession
 from bigdl.ppml import PPMLContext
+from pyspark.sql import SparkSession
 
 resource_path = os.path.join(os.path.dirname(__file__), "/resources")
 
@@ -34,20 +34,25 @@ class TestPPMLContext(unittest.TestCase):
         self.sc = PPMLContext(None, "testApp", self.args)
 
     def test_read_plain_file(self):
+        print("test read plain text file")
         input_path = os.path.join(resource_path, "people.csv")
+        print(input_path)
         df = self.sc.read("plain_text") \
             .option("header", "true") \
             .csv(input_path)
         self.assertEqual(df.count(), 100)
 
     def test_read_encrypt_file(self):
+        print("test read encrypt text file")
         input_path = os.path.join(resource_path, "encrypt-people")
-        df = self.sc.read("plain_text") \
+        print(input_path)
+        df = self.sc.read("AES/CBC/PKCS5Padding") \
             .option("header", "true") \
             .csv(input_path)
         self.assertEqual(df.count(), 100)
 
     def test_write_plain_file(self):
+        print("test write plain text file")
         data = [("Java", "20000"), ("Python", "100000"), ("Scala", "3000")]
         spark = SparkSession.builder.appName('testApp').getOrCreate()
         df = spark.createDataFrame(data).toDF("language", "user")
@@ -57,6 +62,7 @@ class TestPPMLContext(unittest.TestCase):
             .csv(os.path.join(resource_path, "out"))
 
     def test_write_encrypt_file(self):
+        print("test write encrypt text file")
         data = [("Java", "20000"), ("Python", "100000"), ("Scala", "3000")]
         spark = SparkSession.builder.appName('testApp').getOrCreate()
         df = spark.createDataFrame(data).toDF("language", "user")
