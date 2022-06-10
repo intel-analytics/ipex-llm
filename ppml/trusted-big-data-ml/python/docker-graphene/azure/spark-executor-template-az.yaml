@@ -13,9 +13,6 @@ spec:
         mountPath: /var/lib/kubelet/device-plugins
       - name: aesm-socket
         mountPath: /var/run/aesmd/aesm.socket
-#      - name: nfs-storage
-#        mountPath: /ppml/trusted-big-data-ml/work/data
-#        subPath: data
       - name: kube-config
         mountPath: /root/.kube/config
         subPath: kubeconfig

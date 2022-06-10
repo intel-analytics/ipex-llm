@@ -3,9 +3,12 @@
 SPARK_EXTRA_JAR_PATH=
 SPARK_JOB_MAIN_CLASS=
 ARGS=
+RUNTIME_SPARK_MASTER=
 DATA_LAKE_NAME=
 DATA_LAKE_ACCESS_KEY=
 KEY_VAULT_NAME=
+PRIMARY_KEY_PATH=
+DATA_KEY_PATH=
 
 INPUT_DIR_PATH=$1
 ENCRYPT_KEYS_PATH=$2
@@ -20,7 +23,7 @@ export TF_MKL_ALLOC_MAX_BYTES=10737418240 && \
     -Xmx12g \
     org.apache.spark.deploy.SparkSubmit \
     --master $RUNTIME_SPARK_MASTER \
-    --deploy-mode cluster \
+    --deploy-mode client \
     --name spark-decrypt-sgx \
     --conf spark.driver.memory=18g \
     --conf spark.driver.cores=2 \
@@ -30,9 +33,9 @@ export TF_MKL_ALLOC_MAX_BYTES=10737418240 && \
     --conf spark.driver.defaultJavaOptions="-Dlog4j.configuration=/ppml/trusted-big-data-ml/work/spark-3.1.2/conf/log4j2.xml" \
     --conf spark.executor.defaultJavaOptions="-Dlog4j.configuration=/ppml/trusted-big-data-ml/work/spark-3.1.2/conf/log4j2.xml" \
     --conf spark.kubernetes.authenticate.driver.serviceAccountName=spark \
-    --conf spark.kubernetes.container.image=intelanalytics/bigdl-ppml-trusted-big-data-ml-python-graphene:2.1.1-SNAPSHOT \
-    --conf spark.kubernetes.driver.podTemplateFile=/ppml/trusted-big-data-ml/spark-driver-template-kv.yaml \
-    --conf spark.kubernetes.executor.podTemplateFile=/ppml/trusted-big-data-ml/spark-executor-template-kv.yaml \
+    --conf spark.kubernetes.container.image=intelanalytics/bigdl-ppml-trusted-big-data-ml-python-graphene:2.1.0-SNAPSHOT \
+    --conf spark.kubernetes.driver.podTemplateFile=/ppml/trusted-big-data-ml/spark-driver-template-az.yaml \
+    --conf spark.kubernetes.executor.podTemplateFile=/ppml/trusted-big-data-ml/spark-executor-template-az.yaml \
     --conf spark.kubernetes.executor.deleteOnTermination=false \
     --conf spark.network.timeout=10000000 \
     --conf spark.executor.heartbeatInterval=10000000 \
@@ -71,6 +74,10 @@ export TF_MKL_ALLOC_MAX_BYTES=10737418240 && \
     --conf spark.hadoop.fs.azure.account.auth.type.${DATA_LAKE_NAME}.dfs.core.windows.net=SharedKey \
     --conf spark.hadoop.fs.azure.account.key.${DATA_LAKE_NAME}.dfs.core.windows.net=${DATA_LAKE_ACCESS_KEY} \
     --conf spark.hadoop.fs.azure.enable.append.support=true \
+    --conf spark.bigdl.kms.type=AzureKeyManagementService \
+    --conf spark.bigdl.kms.azure.vault=$KEY_VAULT_NAME \
+    --conf spark.bigdl.kms.key.primary=$PRIMARY_KEY_PATH \
+    --conf spark.bigdl.kms.key.data=$DATA_KEY_PATH \
     --class $SPARK_JOB_MAIN_CLASS \
     --verbose \
     local://$SPARK_EXTRA_JAR_PATH \

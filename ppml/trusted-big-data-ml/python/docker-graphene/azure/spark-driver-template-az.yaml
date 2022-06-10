@@ -13,9 +13,6 @@ spec:
         mountPath: /var/lib/kubelet/device-plugins
       - name: aesm-socket
         mountPath: /var/run/aesmd/aesm.socket
-#      - name: nfs-storage
-#        mountPath: /ppml/trusted-big-data-ml/work/data
-#        subPath: data
       - name: secure-keys
         mountPath: /ppml/trusted-big-data-ml/work/keys/keystore.jks
         subPath: keystore.jks
@@ -54,6 +51,3 @@ spec:
     - name: kube-config
       secret:
         secretName: kubeconf
-#    - name: nfs-storage
-#      persistentVolumeClaim:
-#        claimName: nfsvolumeclaim
