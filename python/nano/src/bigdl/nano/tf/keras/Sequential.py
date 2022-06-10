@@ -14,10 +14,11 @@
 # limitations under the License.
 #
 import tensorflow as tf
+from bigdl.nano.tf.keras.inference_utils import InferenceUtils
 from bigdl.nano.tf.keras.training_utils import TrainingUtils
 
 
-class Sequential(TrainingUtils, tf.keras.Sequential):
+class Sequential(TrainingUtils, InferenceUtils, tf.keras.Sequential):
     """A wrapper class for tf.keras.Sequential adding more functions for BigDL-Nano."""
 
     def __init__(self, *args, **kwargs):
