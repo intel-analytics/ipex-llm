@@ -17,10 +17,10 @@
 import unittest
 import os
 
-from bigdl.ppml import PPMLContext
+from bigdl.ppml.ppml_context import PPMLContext
 from pyspark.sql import SparkSession
 
-resource_path = os.path.join(os.path.dirname(__file__), "/resources")
+resource_path = os.path.join(os.path.dirname(__file__), "resources")
 
 
 class TestPPMLContext(unittest.TestCase):
