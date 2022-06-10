@@ -69,9 +69,10 @@ class Seq2SeqForecaster(BasePytorchForecaster):
                possibility to a neuron). This value defaults to 0.1.
         :param optimizer: Specify the optimizer used for training. This value
                defaults to "Adam".
-        :param loss: Specify the loss function used for training. This value
-               defaults to "mse". You can choose from "mse", "mae" and
-               "huber_loss".
+        :param loss: str or pytorch loss instance, Specify the loss function
+               used for training. This value defaults to "mse". You can choose
+               from "mse", "mae", "huber_loss" or any customized loss instance
+               you want to use.
         :param lr: Specify the learning rate. This value defaults to 0.001.
         :param metrics: A list contains metrics for evaluating the quality of
                forecasting. You may only choose from "mse" and "mae" for a
