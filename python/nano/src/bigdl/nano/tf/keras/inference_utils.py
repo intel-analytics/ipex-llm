@@ -98,6 +98,20 @@ class InferenceUtils:
         else:
             invalidInputError(False, "Accelerator {} is invalid.".format(accelerator))
 
-    def trace(self, accelerator=None, input_sample=None):
+    def trace(self, accelerator=None, input_sample=None, onnxruntime_session_options=None):
+        """
+        Trace a Keras model and convert it into an accelerated module for inference.
+
+        For example, this function returns a KerasOpenVINOModel when accelerator=='openvino'.
+
+        :param model: An torch.nn.Module model, including pl.LightningModule.
+        :param input_sample: A set of inputs for trace, defaults to None if you have trace before or
+                             model is a LightningModule with any dataloader attached.
+        :param accelerator: The accelerator to use, defaults to None meaning staying in Keras
+                            backend. 'openvino' and 'onnxruntime' are supported for now.
+        :param onnxruntime_session_options: The session option for onnxruntime, only valid when
+                                            accelerator='onnxruntime', otherwise will be ignored.
+        :return: Model with different acceleration(OpenVINO/ONNX Runtime).
+        """
         if accelerator == 'openvino':
             return KerasOpenVINOModel(self, input_sample)
