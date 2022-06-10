@@ -28,7 +28,7 @@ if sys.version >= '3':
 
 class InferShape(JavaValue):
     """
-    .. note:: `bigdl.dllib.keras` is deprecated in 0.11.
+    .. note:: `bigdl.dllib.nn.keras` is deprecated in 0.11.
     This will be removed in future releases.
     """
     def __init__(self, bigdl_type="float"):
@@ -65,7 +65,7 @@ class InferShape(JavaValue):
 
 class KerasCreator(JavaValue):
     """
-    .. note:: `bigdl.dllib.keras` is deprecated in 0.11.
+    .. note:: `bigdl.dllib.nn.keras` is deprecated in 0.11.
     This will be removed in future releases.
     """
     def jvm_class_constructor(self):
@@ -76,7 +76,7 @@ class KerasCreator(JavaValue):
 
 class KerasLayer(Layer, InferShape, KerasCreator):
     """
-     .. note:: `bigdl.dllib.keras` is deprecated in 0.11.
+     .. note:: `bigdl.dllib.nn.keras` is deprecated in 0.11.
     This will be removed in future releases.
     """
     def __init__(self, jvalue, *args, **kwargs):
@@ -105,7 +105,7 @@ class Input(Node, KerasCreator):
     >>> input = Input(name="input1", shape=(3, 5))
     creating: createKerasInput
 
-     .. note:: `bigdl.dllib.keras` is deprecated in 0.11.
+     .. note:: `bigdl.dllib.nn.keras` is deprecated in 0.11.
     This will be removed in future releases.
     """
     def __init__(self, shape=None, name=None, bigdl_type="float"):
@@ -126,7 +126,7 @@ class InputLayer(KerasLayer):
     >>> inputlayer = InputLayer(input_shape=(3, 5))
     creating: createKerasInputLayer
 
-     .. note:: `bigdl.dllib.keras` is deprecated in 0.11.
+     .. note:: `bigdl.dllib.nn.keras` is deprecated in 0.11.
     This will be removed in future releases.
     """
     def __init__(self, input_shape=None, **kwargs):
@@ -164,7 +164,7 @@ class Dense(KerasLayer):
     >>> dense = Dense(10, input_dim=8, name="dense1")
     creating: createKerasDense
 
-     .. note:: `bigdl.dllib.keras` is deprecated in 0.11.
+     .. note:: `bigdl.dllib.nn.keras` is deprecated in 0.11.
     This will be removed in future releases.
     """
     def __init__(self, output_dim, init="glorot_uniform", activation=None,
@@ -209,7 +209,7 @@ class MaxoutDense(KerasLayer):
     >>> maxoutdense = MaxoutDense(6, input_shape=(10, ))
     creating: createKerasMaxoutDense
 
-     .. note:: `bigdl.dllib.keras` is deprecated in 0.11.
+     .. note:: `bigdl.dllib.nn.keras` is deprecated in 0.11.
     This will be removed in future releases.
     """
     def __init__(self, output_dim, nb_feature=4, W_regularizer=None, b_regularizer=None,
@@ -248,7 +248,7 @@ class Embedding(KerasLayer):
     >>> embedding = Embedding(1000, 32, input_shape=(10, ), name="embedding1")
     creating: createKerasEmbedding
 
-     .. note:: `bigdl.dllib.keras` is deprecated in 0.11.
+     .. note:: `bigdl.dllib.nn.keras` is deprecated in 0.11.
     This will be removed in future releases.
     """
     def __init__(self, input_dim, output_dim, init="uniform", W_regularizer=None,
@@ -288,7 +288,7 @@ class BatchNormalization(KerasLayer):
     >>> batchnormalization = BatchNormalization(input_shape=(3, 12, 12), name="bn1")
     creating: createKerasBatchNormalization
 
-     .. note:: `bigdl.dllib.keras` is deprecated in 0.11.
+     .. note:: `bigdl.dllib.nn.keras` is deprecated in 0.11.
     This will be removed in future releases.
     """
     def __init__(self, epsilon=0.001, mode=0, axis=1, momentum=0.99, beta_init="zero",
@@ -373,7 +373,7 @@ class Merge(KerasLayer):
     >>> merge = Merge(layers=[l1, l2], mode='sum', name="merge1")
     creating: createKerasMerge
 
-     .. note:: `bigdl.dllib.keras` is deprecated in 0.11.
+     .. note:: `bigdl.dllib.nn.keras` is deprecated in 0.11.
     This will be removed in future releases.
     """
     def __init__(self, layers=None, mode="sum", concat_axis=-1,
@@ -402,7 +402,7 @@ def merge(inputs, mode="sum", concat_axis=-1, name=None):
     name: String to set the name of the merge. If not specified, its name will by default to be a
           generated string.
 
-     .. note:: `bigdl.dllib.keras` is deprecated in 0.11.
+     .. note:: `bigdl.dllib.nn.keras` is deprecated in 0.11.
     This will be removed in future releases.
     """
     return Merge(mode=mode, concat_axis=concat_axis, name=name)(list(inputs))
@@ -425,7 +425,7 @@ class Dropout(KerasLayer):
     >>> dropout = Dropout(0.25, input_shape=(2, 3))
     creating: createKerasDropout
 
-     .. note:: `bigdl.dllib.keras` is deprecated in 0.11.
+     .. note:: `bigdl.dllib.nn.keras` is deprecated in 0.11.
     This will be removed in future releases.
     """
     def __init__(self, p, input_shape=None, **kwargs):
@@ -450,7 +450,7 @@ class Flatten(KerasLayer):
     >>> flatten = Flatten(input_shape=(3, 10, 2))
     creating: createKerasFlatten
 
-     .. note:: `bigdl.dllib.keras` is deprecated in 0.11.
+     .. note:: `bigdl.dllib.nn.keras` is deprecated in 0.11.
     This will be removed in future releases.
     """
     def __init__(self, input_shape=None, **kwargs):
@@ -479,7 +479,7 @@ class Reshape(KerasLayer):
     >>> reshape = Reshape((2, 10), input_shape=(5, 4))
     creating: createKerasReshape
 
-     .. note:: `bigdl.dllib.keras` is deprecated in 0.11.
+     .. note:: `bigdl.dllib.nn.keras` is deprecated in 0.11.
     This will be removed in future releases.
     """
     def __init__(self, target_shape, input_shape=None, **kwargs):
@@ -507,7 +507,7 @@ class Activation(KerasLayer):
     >>> activation = Activation("relu", input_shape=(3, 4))
     creating: createKerasActivation
 
-     .. note:: `bigdl.dllib.keras` is deprecated in 0.11.
+     .. note:: `bigdl.dllib.nn.keras` is deprecated in 0.11.
     This will be removed in future releases.
     """
     def __init__(self, activation, input_shape=None, **kwargs):
@@ -536,7 +536,7 @@ class RepeatVector(KerasLayer):
     >>> repeatvector = RepeatVector(5, input_shape=(3, ))
     creating: createKerasRepeatVector
 
-     .. note:: `bigdl.dllib.keras` is deprecated in 0.11.
+     .. note:: `bigdl.dllib.nn.keras` is deprecated in 0.11.
     This will be removed in future releases.
     """
     def __init__(self, n, input_dim=None, input_shape=None, **kwargs):
@@ -566,7 +566,7 @@ class Permute(KerasLayer):
     >>> permute = Permute((2, 1, 3), input_shape=(3, 4, 5))
     creating: createKerasPermute
 
-     .. note:: `bigdl.dllib.keras` is deprecated in 0.11.
+     .. note:: `bigdl.dllib.nn.keras` is deprecated in 0.11.
     This will be removed in future releases.
     """
     def __init__(self, dims, input_shape=None, **kwargs):
@@ -603,7 +603,7 @@ class Highway(KerasLayer):
     >>> highway = Highway(activation='relu', input_shape=(8, ))
     creating: createKerasHighway
 
-     .. note:: `bigdl.dllib.keras` is deprecated in 0.11.
+     .. note:: `bigdl.dllib.nn.keras` is deprecated in 0.11.
     This will be removed in future releases.
     """
     def __init__(self, activation=None, W_regularizer=None, b_regularizer=None,
@@ -650,7 +650,7 @@ class Convolution1D(KerasLayer):
     >>> conv1d = Convolution1D(12, 4, input_shape=(3, 16))
     creating: createKerasConvolution1D
 
-     .. note:: `bigdl.dllib.keras` is deprecated in 0.11.
+     .. note:: `bigdl.dllib.nn.keras` is deprecated in 0.11.
     This will be removed in future releases.
     """
     def __init__(self, nb_filter, filter_length, init="glorot_uniform",
@@ -707,7 +707,7 @@ class Convolution2D(KerasLayer):
     >>> conv2d = Convolution2D(32, 3, 3, input_shape=(3, 128, 128), name="convolution2d_1")
     creating: createKerasConvolution2D
 
-     .. note:: `bigdl.dllib.keras` is deprecated in 0.11.
+     .. note:: `bigdl.dllib.nn.keras` is deprecated in 0.11.
     This will be removed in future releases.
     """
     def __init__(self, nb_filter, nb_row, nb_col,
@@ -767,7 +767,7 @@ class Convolution3D(KerasLayer):
     >>> conv3d = Convolution3D(32, 3, 4, 5, input_shape=(3, 64, 64, 64))
     creating: createKerasConvolution3D
 
-     .. note:: `bigdl.dllib.keras` is deprecated in 0.11.
+     .. note:: `bigdl.dllib.nn.keras` is deprecated in 0.11.
     This will be removed in future releases.
     """
     def __init__(self, nb_filter, kernel_dim1, kernel_dim2, kernel_dim3,
@@ -826,7 +826,7 @@ class AtrousConvolution1D(KerasLayer):
     >>> atrousconv1d = AtrousConvolution1D(8, 3, input_shape=(3, 12))
     creating: createKerasAtrousConvolution1D
 
-     .. note:: `bigdl.dllib.keras` is deprecated in 0.11.
+     .. note:: `bigdl.dllib.nn.keras` is deprecated in 0.11.
     This will be removed in future releases.
     """
     def __init__(self, nb_filter, filter_length, init="glorot_uniform", activation=None,
@@ -892,7 +892,7 @@ class AtrousConvolution2D(KerasLayer):
     >>> atrousconv2d = AtrousConvolution2D(12, 4, 3, input_shape=(3, 64, 64))
     creating: createKerasAtrousConvolution2D
 
-     .. note:: `bigdl.dllib.keras` is deprecated in 0.11.
+     .. note:: `bigdl.dllib.nn.keras` is deprecated in 0.11.
     This will be removed in future releases.
     """
     def __init__(self, nb_filter, nb_row, nb_col, init="glorot_uniform",
@@ -963,7 +963,7 @@ class Deconvolution2D(KerasLayer):
     >>> deconv2d = Deconvolution2D(3, 3, 3, output_shape=(None, 3, 14, 14), input_shape=(3, 12, 12))
     creating: createKerasDeconvolution2D
 
-     .. note:: `bigdl.dllib.keras` is deprecated in 0.11.
+     .. note:: `bigdl.dllib.nn.keras` is deprecated in 0.11.
     This will be removed in future releases.
     """
     def __init__(self, nb_filter, nb_row, nb_col, output_shape, init="glorot_uniform",
@@ -1033,7 +1033,7 @@ class SeparableConvolution2D(KerasLayer):
     >>> separableconv2d = SeparableConvolution2D(12, 3, 4, input_shape=(3, 32, 32))
     creating: createKerasSeparableConvolution2D
 
-     .. note:: `bigdl.dllib.keras` is deprecated in 0.11.
+     .. note:: `bigdl.dllib.nn.keras` is deprecated in 0.11.
     This will be removed in future releases.
     """
     def __init__(self, nb_filter, nb_row, nb_col, init="glorot_uniform",
@@ -1085,7 +1085,7 @@ class Cropping1D(KerasLayer):
     >>> cropping1d = Cropping1D(cropping=(1, 2), input_shape=(8, 8))
     creating: createKerasCropping1D
 
-     .. note:: `bigdl.dllib.keras` is deprecated in 0.11.
+     .. note:: `bigdl.dllib.nn.keras` is deprecated in 0.11.
     This will be removed in future releases.
     """
     def __init__(self, cropping=(1, 1), input_shape=None, **kwargs):
@@ -1114,7 +1114,7 @@ class Cropping2D(KerasLayer):
     >>> cropping2d = Cropping2D(cropping=((1, 2), (0, 1)), input_shape=(12, 12, 12))
     creating: createKerasCropping2D
 
-     .. note:: `bigdl.dllib.keras` is deprecated in 0.11.
+     .. note:: `bigdl.dllib.nn.keras` is deprecated in 0.11.
     This will be removed in future releases.
     """
     def __init__(self, cropping=((0, 0), (0, 0)), dim_ordering="th",
@@ -1146,7 +1146,7 @@ class Cropping3D(KerasLayer):
     >>> cropping3d = Cropping3D(cropping=((0, 2), (1, 1), (3, 1)), input_shape=(4, 12, 12, 16))
     creating: createKerasCropping3D
 
-     .. note:: `bigdl.dllib.keras` is deprecated in 0.11.
+     .. note:: `bigdl.dllib.nn.keras` is deprecated in 0.11.
     This will be removed in future releases.
     """
     def __init__(self, cropping=((1, 1), (1, 1), (1, 1)), dim_ordering="th",
@@ -1178,7 +1178,7 @@ class UpSampling1D(KerasLayer):
     >>> upsampling1d = UpSampling1D(length=3, input_shape=(3, 12))
     creating: createKerasUpSampling1D
 
-     .. note:: `bigdl.dllib.keras` is deprecated in 0.11.
+     .. note:: `bigdl.dllib.nn.keras` is deprecated in 0.11.
     This will be removed in future releases.
     """
     def __init__(self, length=2, input_shape=None, **kwargs):
@@ -1208,7 +1208,7 @@ class UpSampling2D(KerasLayer):
     >>> upsampling2d = UpSampling2D(size=(1, 3), input_shape=(3, 16, 16))
     creating: createKerasUpSampling2D
 
-     .. note:: `bigdl.dllib.keras` is deprecated in 0.11.
+     .. note:: `bigdl.dllib.nn.keras` is deprecated in 0.11.
     This will be removed in future releases.
     """
     def __init__(self, size=(2, 2), dim_ordering="th", input_shape=None, **kwargs):
@@ -1240,7 +1240,7 @@ class UpSampling3D(KerasLayer):
     >>> upsampling3d = UpSampling3D(size=(1, 2, 3), input_shape=(3, 16, 16, 16))
     creating: createKerasUpSampling3D
 
-     .. note:: `bigdl.dllib.keras` is deprecated in 0.11.
+     .. note:: `bigdl.dllib.nn.keras` is deprecated in 0.11.
     This will be removed in future releases.
     """
     def __init__(self, size=(2, 2, 2), dim_ordering="th", input_shape=None, **kwargs):
@@ -1272,7 +1272,7 @@ class ZeroPadding1D(KerasLayer):
     >>> zeropadding1d = ZeroPadding1D(padding=2, input_shape=(3, 6))
     creating: createKerasZeroPadding1D
 
-     .. note:: `bigdl.dllib.keras` is deprecated in 0.11.
+     .. note:: `bigdl.dllib.nn.keras` is deprecated in 0.11.
     This will be removed in future releases.
     """
     def __init__(self, padding=1, input_shape=None, **kwargs):
@@ -1308,7 +1308,7 @@ class ZeroPadding2D(KerasLayer):
     >>> zeropadding2d = ZeroPadding2D(padding=(2, 1), input_shape=(2, 8, 8))
     creating: createKerasZeroPadding2D
 
-     .. note:: `bigdl.dllib.keras` is deprecated in 0.11.
+     .. note:: `bigdl.dllib.nn.keras` is deprecated in 0.11.
     This will be removed in future releases.
     """
     def __init__(self, padding=(1, 1), dim_ordering="th", input_shape=None, **kwargs):
@@ -1342,7 +1342,7 @@ class ZeroPadding3D(KerasLayer):
     >>> zeropadding3d = ZeroPadding3D(padding=(2, 1, 2), input_shape=(2, 8, 8, 10))
     creating: createKerasZeroPadding3D
 
-     .. note:: `bigdl.dllib.keras` is deprecated in 0.11.
+     .. note:: `bigdl.dllib.nn.keras` is deprecated in 0.11.
     This will be removed in future releases.
     """
     def __init__(self, padding=(1, 1, 1), dim_ordering="th", input_shape=None, **kwargs):
@@ -1373,7 +1373,7 @@ class MaxPooling1D(KerasLayer):
     >>> maxpooling1d = MaxPooling1D(3, input_shape=(3, 24))
     creating: createKerasMaxPooling1D
 
-     .. note:: `bigdl.dllib.keras` is deprecated in 0.11.
+     .. note:: `bigdl.dllib.nn.keras` is deprecated in 0.11.
     This will be removed in future releases.
     """
     def __init__(self, pool_length=2, stride=None, border_mode="valid",
@@ -1411,7 +1411,7 @@ class MaxPooling2D(KerasLayer):
     >>> maxpooling2d = MaxPooling2D((2, 2), input_shape=(3, 32, 32), name="maxpooling2d_1")
     creating: createKerasMaxPooling2D
 
-     .. note:: `bigdl.dllib.keras` is deprecated in 0.11.
+     .. note:: `bigdl.dllib.nn.keras` is deprecated in 0.11.
     This will be removed in future releases.
     """
     def __init__(self, pool_size=(2, 2), strides=None,
@@ -1450,7 +1450,7 @@ class MaxPooling3D(KerasLayer):
     >>> maxpooling3d = MaxPooling3D((2, 1, 3), input_shape=(3, 32, 32, 32))
     creating: createKerasMaxPooling3D
 
-     .. note:: `bigdl.dllib.keras` is deprecated in 0.11.
+     .. note:: `bigdl.dllib.nn.keras` is deprecated in 0.11.
     This will be removed in future releases.
     """
     def __init__(self, pool_size=(2, 2, 2), strides=None, border_mode="valid",
@@ -1486,7 +1486,7 @@ class AveragePooling1D(KerasLayer):
     >>> averagepooling1d = AveragePooling1D(input_shape=(3, 24))
     creating: createKerasAveragePooling1D
 
-     .. note:: `bigdl.dllib.keras` is deprecated in 0.11.
+     .. note:: `bigdl.dllib.nn.keras` is deprecated in 0.11.
     This will be removed in future releases.
     """
     def __init__(self, pool_length=2, stride=None, border_mode="valid",
@@ -1524,7 +1524,7 @@ class AveragePooling2D(KerasLayer):
     >>> averagepooling2d = AveragePooling2D((1, 2), input_shape=(2, 28, 32))
     creating: createKerasAveragePooling2D
 
-     .. note:: `bigdl.dllib.keras` is deprecated in 0.11.
+     .. note:: `bigdl.dllib.nn.keras` is deprecated in 0.11.
     This will be removed in future releases.
     """
     def __init__(self, pool_size=(2, 2), strides=None, border_mode="valid",
@@ -1562,7 +1562,7 @@ class AveragePooling3D(KerasLayer):
     >>> averagepooling3d = AveragePooling3D((1, 1, 2), input_shape=(3, 28, 32, 36))
     creating: createKerasAveragePooling3D
 
-     .. note:: `bigdl.dllib.keras` is deprecated in 0.11.
+     .. note:: `bigdl.dllib.nn.keras` is deprecated in 0.11.
     This will be removed in future releases.
     """
     def __init__(self, pool_size=(2, 2, 2), strides=None, border_mode="valid",
@@ -1595,7 +1595,7 @@ class GlobalMaxPooling1D(KerasLayer):
     >>> globalmaxpooling1d = GlobalMaxPooling1D(input_shape=(4, 8))
     creating: createKerasGlobalMaxPooling1D
 
-     .. note:: `bigdl.dllib.keras` is deprecated in 0.11.
+     .. note:: `bigdl.dllib.nn.keras` is deprecated in 0.11.
     This will be removed in future releases.
     """
     def __init__(self, input_shape=None, **kwargs):
@@ -1620,7 +1620,7 @@ class GlobalAveragePooling1D(KerasLayer):
     >>> globalaveragepooling1d = GlobalAveragePooling1D(input_shape=(12, 12))
     creating: createKerasGlobalAveragePooling1D
 
-     .. note:: `bigdl.dllib.keras` is deprecated in 0.11.
+     .. note:: `bigdl.dllib.nn.keras` is deprecated in 0.11.
     This will be removed in future releases.
     """
     def __init__(self, input_shape=None, **kwargs):
@@ -1647,7 +1647,7 @@ class GlobalMaxPooling2D(KerasLayer):
     >>> globalmaxpooling2d = GlobalMaxPooling2D(input_shape=(4, 32, 32))
     creating: createKerasGlobalMaxPooling2D
 
-     .. note:: `bigdl.dllib.keras` is deprecated in 0.11.
+     .. note:: `bigdl.dllib.nn.keras` is deprecated in 0.11.
     This will be removed in future releases.
     """
     def __init__(self, dim_ordering="th", input_shape=None, **kwargs):
@@ -1675,7 +1675,7 @@ class GlobalAveragePooling2D(KerasLayer):
     >>> globalaveragepooling2d = GlobalAveragePooling2D(input_shape=(4, 32, 32))
     creating: createKerasGlobalAveragePooling2D
 
-     .. note:: `bigdl.dllib.keras` is deprecated in 0.11.
+     .. note:: `bigdl.dllib.nn.keras` is deprecated in 0.11.
     This will be removed in future releases.
     """
     def __init__(self, dim_ordering="th", input_shape=None, **kwargs):
@@ -1704,7 +1704,7 @@ class GlobalMaxPooling3D(KerasLayer):
     >>> globalmaxpooling3d = GlobalMaxPooling3D(input_shape=(4, 32, 32, 32))
     creating: createKerasGlobalMaxPooling3D
 
-     .. note:: `bigdl.dllib.keras` is deprecated in 0.11.
+     .. note:: `bigdl.dllib.nn.keras` is deprecated in 0.11.
     This will be removed in future releases.
     """
     def __init__(self, dim_ordering="th", input_shape=None, **kwargs):
@@ -1733,7 +1733,7 @@ class GlobalAveragePooling3D(KerasLayer):
     >>> globalaveragepooling3d = GlobalAveragePooling3D(input_shape=(4, 16, 16, 20))
     creating: createKerasGlobalAveragePooling3D
 
-     .. note:: `bigdl.dllib.keras` is deprecated in 0.11.
+     .. note:: `bigdl.dllib.nn.keras` is deprecated in 0.11.
     This will be removed in future releases.
     """
     def __init__(self, dim_ordering="th", input_shape=None, **kwargs):
@@ -1772,7 +1772,7 @@ class SimpleRNN(KerasLayer):
     >>> simplernn = SimpleRNN(16, input_shape=(3, 32))
     creating: createKerasSimpleRNN
 
-     .. note:: `bigdl.dllib.keras` is deprecated in 0.11.
+     .. note:: `bigdl.dllib.nn.keras` is deprecated in 0.11.
     This will be removed in future releases.
     """
     def __init__(self, output_dim, activation="tanh", return_sequences=False,
@@ -1821,7 +1821,7 @@ class LSTM(KerasLayer):
     >>> lstm = LSTM(32, input_shape=(8, 16), name="lstm1")
     creating: createKerasLSTM
 
-     .. note:: `bigdl.dllib.keras` is deprecated in 0.11.
+     .. note:: `bigdl.dllib.nn.keras` is deprecated in 0.11.
     This will be removed in future releases.
     """
     def __init__(self, output_dim, activation="tanh", inner_activation="hard_sigmoid",
@@ -1871,7 +1871,7 @@ class GRU(KerasLayer):
     >>> gru = GRU(24, input_shape=(32, 32))
     creating: createKerasGRU
 
-     .. note:: `bigdl.dllib.keras` is deprecated in 0.11.
+     .. note:: `bigdl.dllib.nn.keras` is deprecated in 0.11.
     This will be removed in future releases.
     """
     def __init__(self, output_dim, activation="tanh", inner_activation="hard_sigmoid",
@@ -1932,7 +1932,7 @@ class ConvLSTM2D(KerasLayer):
     >>> convlstm2d = ConvLSTM2D(24, 3, 3, input_shape=(4, 32, 32, 32))
     creating: createKerasConvLSTM2D
 
-     .. note:: `bigdl.dllib.keras` is deprecated in 0.11.
+     .. note:: `bigdl.dllib.nn.keras` is deprecated in 0.11.
     This will be removed in future releases.
     """
     def __init__(self, nb_filter, nb_row, nb_col, activation="tanh",
@@ -1994,7 +1994,7 @@ class LocallyConnected1D(KerasLayer):
     >>> locallyconnected1d = LocallyConnected1D(6, 3, input_shape=(8, 12))
     creating: createKerasLocallyConnected1D
 
-     .. note:: `bigdl.dllib.keras` is deprecated in 0.11.
+     .. note:: `bigdl.dllib.nn.keras` is deprecated in 0.11.
     This will be removed in future releases.
     """
     def __init__(self, nb_filter, filter_length, activation=None, border_mode="valid",
@@ -2050,7 +2050,7 @@ class LocallyConnected2D(KerasLayer):
     >>> locallyconnected2d = LocallyConnected2D(12, 3, 4, input_shape=(3, 128, 128))
     creating: createKerasLocallyConnected2D
 
-     .. note:: `bigdl.dllib.keras` is deprecated in 0.11.
+     .. note:: `bigdl.dllib.nn.keras` is deprecated in 0.11.
     This will be removed in future releases.
     """
     def __init__(self, nb_filter, nb_row, nb_col, activation=None,
@@ -2095,7 +2095,7 @@ class SpatialDropout1D(KerasLayer):
     >>> spatialdropout1d = SpatialDropout1D(0.4, input_shape=(10, 12))
     creating: createKerasSpatialDropout1D
 
-     .. note:: `bigdl.dllib.keras` is deprecated in 0.11.
+     .. note:: `bigdl.dllib.nn.keras` is deprecated in 0.11.
     This will be removed in future releases.
     """
     def __init__(self, p=0.5, input_shape=None, **kwargs):
@@ -2130,7 +2130,7 @@ class SpatialDropout2D(KerasLayer):
     >>> spatialdropout2d = SpatialDropout2D(0.25, input_shape=(5, 12, 12))
     creating: createKerasSpatialDropout2D
 
-     .. note:: `bigdl.dllib.keras` is deprecated in 0.11.
+     .. note:: `bigdl.dllib.nn.keras` is deprecated in 0.11.
     This will be removed in future releases.
     """
     def __init__(self, p=0.5, dim_ordering="th", input_shape=None, **kwargs):
@@ -2166,7 +2166,7 @@ class SpatialDropout3D(KerasLayer):
     >>> spatialdropout3d = SpatialDropout3D(0.6, input_shape=(4, 12, 12, 16))
     creating: createKerasSpatialDropout3D
 
-     .. note:: `bigdl.dllib.keras` is deprecated in 0.11.
+     .. note:: `bigdl.dllib.nn.keras` is deprecated in 0.11.
     This will be removed in future releases.
     """
     def __init__(self, p=0.5, dim_ordering="th", input_shape=None, **kwargs):
@@ -2195,7 +2195,7 @@ class GaussianDropout(KerasLayer):
     >>> gaussiandropout = GaussianDropout(0.45, input_shape=(4, 8))
     creating: createKerasGaussianDropout
 
-     .. note:: `bigdl.dllib.keras` is deprecated in 0.11.
+     .. note:: `bigdl.dllib.nn.keras` is deprecated in 0.11.
     This will be removed in future releases.
     """
     def __init__(self, p, input_shape=None, **kwargs):
@@ -2224,7 +2224,7 @@ class GaussianNoise(KerasLayer):
     >>> gaussiannoise = GaussianNoise(0.45, input_shape=(3, 4, 5), name="gaussiannoise1")
     creating: createKerasGaussianNoise
 
-     .. note:: `bigdl.dllib.keras` is deprecated in 0.11.
+     .. note:: `bigdl.dllib.nn.keras` is deprecated in 0.11.
     This will be removed in future releases.
     """
     def __init__(self, sigma, input_shape=None, **kwargs):
@@ -2253,7 +2253,7 @@ class Masking(KerasLayer):
     >>> masking = Masking(0.3, input_shape=(6, 8))
     creating: createKerasMasking
 
-     .. note:: `bigdl.dllib.keras` is deprecated in 0.11.
+     .. note:: `bigdl.dllib.nn.keras` is deprecated in 0.11.
     This will be removed in future releases.
     """
     def __init__(self, mask_value=0.0, input_shape=None, **kwargs):
@@ -2296,7 +2296,7 @@ class SReLU(KerasLayer):
     >>> srelu = SReLU(input_shape=(4, 5))
     creating: createKerasSReLU
 
-     .. note:: `bigdl.dllib.keras` is deprecated in 0.11.
+     .. note:: `bigdl.dllib.nn.keras` is deprecated in 0.11.
     This will be removed in future releases.
     """
     def __init__(self, t_left_init="zero", a_left_init="glorot_uniform",
@@ -2331,7 +2331,7 @@ class ELU(KerasLayer):
     >>> elu = ELU(1.2, input_shape=(4, 5))
     creating: createKerasELU
 
-     .. note:: `bigdl.dllib.keras` is deprecated in 0.11.
+     .. note:: `bigdl.dllib.nn.keras` is deprecated in 0.11.
     This will be removed in future releases.
     """
     def __init__(self, alpha=1.0, input_shape=None, **kwargs):
@@ -2360,7 +2360,7 @@ class LeakyReLU(KerasLayer):
     >>> leakyrelu = LeakyReLU(0.02, input_shape=(4, 5))
     creating: createKerasLeakyReLU
 
-     .. note:: `bigdl.dllib.keras` is deprecated in 0.11.
+     .. note:: `bigdl.dllib.nn.keras` is deprecated in 0.11.
     This will be removed in future releases.
     """
     def __init__(self, alpha=0.01, input_shape=None, **kwargs):
@@ -2389,7 +2389,7 @@ class ThresholdedReLU(KerasLayer):
     >>> thresholdedrelu = ThresholdedReLU(input_shape=(10, 12))
     creating: createKerasThresholdedReLU
 
-     .. note:: `bigdl.dllib.keras` is deprecated in 0.11.
+     .. note:: `bigdl.dllib.nn.keras` is deprecated in 0.11.
     This will be removed in future releases.
     """
     def __init__(self, theta=1.0, input_shape=None, **kwargs):
@@ -2421,7 +2421,7 @@ class TimeDistributed(KerasLayer):
     creating: createKerasDense
     creating: createKerasTimeDistributed
 
-     .. note:: `bigdl.dllib.keras` is deprecated in 0.11.
+     .. note:: `bigdl.dllib.nn.keras` is deprecated in 0.11.
     This will be removed in future releases.
     """
     def __init__(self, layer, input_shape=None, **kwargs):
@@ -2455,7 +2455,7 @@ class Bidirectional(KerasLayer):
     creating: createKerasLSTM
     creating: createKerasBidirectional
 
-     .. note:: `bigdl.dllib.keras` is deprecated in 0.11.
+     .. note:: `bigdl.dllib.nn.keras` is deprecated in 0.11.
     This will be removed in future releases.
     """
     def __init__(self, layer, merge_mode="concat", input_shape=None, **kwargs):
