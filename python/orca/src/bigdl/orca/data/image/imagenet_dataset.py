@@ -39,6 +39,7 @@ import sys
 import threading
 
 import numpy as np
+from bigdl.dllib.utils.log4Error import *
 
 TRAINING_SHARDS = 1024
 VALIDATION_SHARDS = 128
@@ -139,8 +140,8 @@ class ImageCoder(object):
         """Decodes a JPEG image."""
         image = self._sess.run(self._decode_jpeg,
                                feed_dict={self._decode_jpeg_data: image_data})
-        assert len(image.shape) == 3
-        assert image.shape[2] == 3
+        invalidInputError(len(image.shape) == 3, "expect image dim is 3")
+        invalidInputError(image.shape[2] == 3, "expect image.shape[2] == 3")
         return image
 
 
@@ -216,10 +217,10 @@ def _process_image(
     image = coder.decode_jpeg(image_data)
 
     # Check that image converted to RGB
-    assert len(image.shape) == 3
+    invalidInputError(len(image.shape) == 3, "expect image dim is 3")
     height = image.shape[0]
     width = image.shape[1]
-    assert image.shape[2] == 3
+    invalidInputError(image.shape[2] == 3, "expect image.shape[2] is 3")
 
     return image_data, height, width
 

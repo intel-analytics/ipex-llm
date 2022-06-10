@@ -193,7 +193,6 @@ class TestTSPipeline(TestCase):
                                     metrics=['smape'])
 
         tsppl_lstm.quantize(calib_data=train_data_creator,
-                            val_data=valid_data_creator,
                             metric='mae',
                             framework=['pytorch_fx', 'onnxrt_qlinearops'])
         # only quantize
@@ -249,7 +248,6 @@ class TestTSPipeline(TestCase):
         # mixed data
         tsppl_tcn._best_config.update({'selected_features': []})
         tsppl_tcn.quantize(calib_data=train_tsdata,
-                           val_data=test_tsdata,
                            metric='smape')
         yhat = tsppl_tcn.predict(train_tsdata)
 

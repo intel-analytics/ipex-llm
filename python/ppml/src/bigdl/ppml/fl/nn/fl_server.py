@@ -27,6 +27,9 @@ class FLServer(object):
         self.port = 8980 # TODO: set from config file
         self.client_num = client_num
 
+    def set_port(self, port):
+        self.port = port
+        
     def build(self):
         add_NNServiceServicer_to_server(
             NNServiceImpl(client_num=self.client_num),            

@@ -24,6 +24,7 @@ from itertools import chain, islice
 
 from enum import Enum
 import json
+from bigdl.dllib.utils.log4Error import *
 
 
 class DType(Enum):
@@ -45,7 +46,7 @@ def ndarray_dtype_to_dtype(dtype):
     if dtype == np.uint8:
         return DType.UINT8
 
-    raise ValueError(f"{dtype} is not supported")
+    invalidInputError(False, f"{dtype} is not supported")
 
 
 class FeatureType(Enum):
@@ -129,7 +130,7 @@ def dict_to_row(schema, row_dict):
     import pyspark
     err_msg = 'Dictionary fields \n{}\n do not match schema fields \n{}'\
         .format('\n'.join(sorted(row_dict.keys())), '\n'.join(schema.keys()))
-    assert set(row_dict.keys()) == set(schema.keys()), err_msg
+    invalidInputError(set(row_dict.keys()) == set(schema.keys()), err_msg)
 
     row = {}
     for k, v in row_dict.items():
@@ -167,7 +168,7 @@ def pa_fs(path):
         path = path[len("hdfs://"):]
         return path, fs
     elif path.startswith("s3"):
-        raise ValueError("aws s3 is not supported for now")
+        invalidInputError(False, "aws s3 is not supported for now")
     else:  # Local path
         if path.startswith("file://"):
             path = path[len("file://"):]

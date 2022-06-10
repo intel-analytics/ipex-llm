@@ -17,6 +17,8 @@
 import logging
 import os
 import time
+from bigdl.dllib.utils.log4Error import *
+
 
 logger = logging.getLogger(__name__)
 
@@ -60,7 +62,7 @@ class LogMonitor:
         """
         anything_published = False
         if self.log_fd:
-            assert not self.log_fd.closed
+            invalidInputError(not self.log_fd.closed, "expect log is not closed here")
 
             lines_to_publish = []
             max_num_lines_to_read = 50
@@ -76,9 +78,9 @@ class LogMonitor:
                                + next_line
                     lines_to_publish.append(new_line)
                 except Exception:
-                    logger.error("Error: Reading file: {} at position: {} failed."
-                                 .format(self.log_path, self.log_fd.tell()))
-                    raise
+                    msg = "Error: Reading file: {} at position: {} failed."\
+                        .format(self.log_path, self.log_fd.tell())
+                    invalidInputError(False, msg)
 
             if len(lines_to_publish) > 0:
                 message = "\n".join(lines_to_publish)
@@ -102,7 +104,7 @@ class LogMonitor:
                     time.sleep(0.1)
         except Exception as e:
             self.socket.send_string(str(e))
-            raise e
+            invalidInputError(False, str(e))
         finally:
             self.close_log_file()
 

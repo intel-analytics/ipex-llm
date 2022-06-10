@@ -17,8 +17,7 @@
 package com.intel.analytics.bigdl.ppml.utils
 
 import com.intel.analytics.bigdl.ppml.PPMLContext
-import com.intel.analytics.bigdl.ppml.crypto.{CryptoMode, EncryptRuntimeException}
-import com.intel.analytics.bigdl.ppml.crypto.CryptoMode.CryptoMode
+import com.intel.analytics.bigdl.ppml.crypto.{CryptoMode, EncryptRuntimeException, PLAIN_TEXT}
 import com.intel.analytics.bigdl.ppml.kms.{EHSMKeyManagementService, KMS_CONVENTION, SimpleKeyManagementService}
 
 import java.io.File
@@ -26,8 +25,8 @@ import java.io.File
 case class EncryptIOArguments(
                                inputPath: String = "./input",
                                outputPath: String = "./output",
-                               inputEncryptMode: CryptoMode = CryptoMode.PLAIN_TEXT,
-                               outputEncryptMode: CryptoMode = CryptoMode.PLAIN_TEXT,
+                               inputEncryptMode: CryptoMode = PLAIN_TEXT,
+                               outputEncryptMode: CryptoMode = PLAIN_TEXT,
                                inputPartitionNum: Int = 4,
                                outputPartitionNum: Int = 4,
                                primaryKeyPath: String = "./primaryKeyPath",
@@ -38,7 +37,9 @@ case class EncryptIOArguments(
                                ehsmAPPID: String = "ehsmAPPID",
                                ehsmAPPKEY: String = "ehsmAPPKEY",
                                simpleAPPID: String = "simpleAPPID",
-                               simpleAPPKEY: String = "simpleAPPKEY") {
+                               simpleAPPKEY: String = "simpleAPPKEY",
+                               keyVaultName: String = "keyVaultName",
+                               managedIdentityClientId: String = "") {
   def ppmlArgs(): Map[String, String] = {
     val kmsArgs = scala.collection.mutable.Map[String, String]()
     kmsArgs("spark.bigdl.kms.type") = kmsType
@@ -51,6 +52,9 @@ case class EncryptIOArguments(
       case KMS_CONVENTION.MODE_SIMPLE_KMS =>
         kmsArgs("spark.bigdl.kms.simple.id") = simpleAPPID
         kmsArgs("spark.bigdl.kms.simple.key") = simpleAPPKEY
+      case KMS_CONVENTION.MODE_AZURE_KMS =>
+        kmsArgs("spark.bigdl.kms.azure.vault") = keyVaultName
+        kmsArgs("spark.bigdl.kms.azure.clientId") = managedIdentityClientId
       case _ =>
         throw new EncryptRuntimeException("Wrong kms type")
     }
@@ -115,5 +119,11 @@ object EncryptIOArguments {
     opt[String]('k', "simpleAPPKEY")
       .action((x, c) => c.copy(simpleAPPKEY = x))
       .text("simpleAPPKEY")
+    opt[String]('v', "vaultName")
+      .action((x, c) => c.copy(keyVaultName = x))
+      .text("keyVaultName")
+    opt[String]('u', "clientId")
+      .action((x, c) => c.copy(managedIdentityClientId = x))
+      .text("keyVaultName")
   }
 }
