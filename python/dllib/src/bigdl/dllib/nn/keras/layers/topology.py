@@ -243,7 +243,7 @@ class Model(KerasModel):
     output: An output node or a list of output nodes.
     name: String to specify the name of the graph model. Default is None.
 
-    .. note:: `bigdl.dllib.keras` is deprecated in 0.11.
+    .. note:: `bigdl.dllib.nn.keras` is deprecated in 0.11.
     This will be removed in future releases.
     """
 
