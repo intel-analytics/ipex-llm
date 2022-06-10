@@ -28,11 +28,11 @@ class TestOpenVINO(TestCase):
         train_labels = np.random.randint(0, 10, size=(100,))
         train_dataset = tf.data.Dataset.from_tensor_slices((train_examples, train_labels))
 
-        # trace a torch model
+        # trace a Keras model
         openvino_model = model.trace(accelerator='openvino')
-        y_hat = openvino_model(train_examples[:3])
+        y_hat = openvino_model(train_examples[:3], training=False)
         assert y_hat.shape == (3, 10)
         y_hat = openvino_model(train_examples[:10])
         assert y_hat.shape == (10, 10)
 
-        openvino_model.predict(train_dataset)
+        y_hat = openvino_model.predict(train_dataset, batch_size=2)

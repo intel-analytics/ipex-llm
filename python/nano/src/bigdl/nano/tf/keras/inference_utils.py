@@ -14,7 +14,6 @@
 # limitations under the License.
 #
 
-import tensorflow as tf
 from bigdl.nano.deps.openvino.openvino_api import KerasOpenVINOModel
 
 

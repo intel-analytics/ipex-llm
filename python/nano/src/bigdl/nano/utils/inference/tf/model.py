@@ -25,11 +25,13 @@ class AcceleratedKerasModel(AcceleratedModel, tf.keras.Model):
         self.model = model
 
     def call(self, *inputs):
+        return tf.py_function(self.forward, inputs, Tout=tf.float32)
+
+    def forward(self, *inputs):
         inputs = self.on_forward_start(inputs)
         outputs = self.forward_step(*inputs)
         return self.on_forward_end(outputs)
 
     @staticmethod
     def tensors_to_numpy(tensors):
-        np_data = tuple(map(lambda x: x.numpy(), tensors))
-        return np_data
+        return tuple(map(lambda x: x.numpy()[None], tensors))
