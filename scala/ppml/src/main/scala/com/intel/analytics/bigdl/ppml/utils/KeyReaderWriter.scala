@@ -24,8 +24,17 @@ import org.apache.hadoop.io.IOUtils
 
 import scala.io.Source
 
+/**
+ * Tool class to read and write keys.
+ */
 class KeyReaderWriter {
 
+  /**
+   * Write a encrypted key to a file.
+   * @param encryptedKeyPath the path to save the encrypted key.
+   * @param encryptedKeyContent the encrypted key content.
+   * @param config hadoop config.
+   */
   def writeKeyToFile(encryptedKeyPath: String, encryptedKeyContent: String,
                      config: Configuration = null): Unit = {
     val hadoopConfig = if (config != null) config else new Configuration()
@@ -35,6 +44,12 @@ class KeyReaderWriter {
     outputStream.close()
   }
 
+  /**
+   * Read a encrypted key from a file.
+   * @param encryptedKeyPath the path to read the encrypted key.
+   * @param config hadoop config.
+   * @return a encrypted key.
+   */
   def readKeyFromFile(encryptedKeyPath: String, config: Configuration = null): String = {
     val hadoopConfig = if (config != null) config else new Configuration()
     val fs = FileSystem.get(new URI(encryptedKeyPath), hadoopConfig)

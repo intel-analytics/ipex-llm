@@ -24,8 +24,8 @@ import com.intel.analytics.bigdl.ppml.utils.KeyReaderWriter
 
 /**
  * A simple KeyManagementService for local test.
- * @param simpleAPPID the APPId of your application.
- * @param simpleAPPKEY the APPKey of your application.
+ * @param simpleAPPID Id of your application.
+ * @param simpleAPPKEY key of your application.
  */
 class SimpleKeyManagementService protected(
       simpleAPPID: String,

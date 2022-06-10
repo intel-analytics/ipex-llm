@@ -18,7 +18,17 @@ package com.intel.analytics.bigdl.ppml.utils
 
 import org.slf4j.LoggerFactory
 
+/**
+ * Log interface.
+ */
 trait Supportive {
+  /**
+   * Output time and log.
+   * @param name name of log.
+   * @param f log content.
+   * @tparam T template type.
+   * @return a template type result.
+   */
   def timing[T](name: String)(f: => T): T = {
     val begin = System.currentTimeMillis
     val result = f
