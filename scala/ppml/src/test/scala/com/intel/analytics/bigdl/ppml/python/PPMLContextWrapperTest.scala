@@ -34,12 +34,13 @@ class PPMLContextWrapperTest extends FunSuite {
   def initAndWrite(df: DataFrame, encryptMode: String): Unit = {
     val appName = "test"
     val args = initArgs()
+    val path = this.getClass.getClassLoader.getResource("out").getPath
 
     val sc = ppmlContextWrapper.createPPMLContext(appName, args)
-    ppmlContextWrapper.write(sc, df, encryptMode)
-      .mode("overwrite")
-      .option("header", true)
-      .csv(this.getClass.getClassLoader.getResource("out").getPath)
+    val encryptedDataFrameWriter = ppmlContextWrapper.write(sc, df, encryptMode)
+    ppmlContextWrapper.mode(encryptedDataFrameWriter, "overwrite")
+    ppmlContextWrapper.option(encryptedDataFrameWriter, "header", true)
+    ppmlContextWrapper.csv(encryptedDataFrameWriter, path)
   }
 
   test("init PPMLContext with app name") {
