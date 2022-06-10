@@ -87,6 +87,11 @@ You may test if the installation is successful using the interactive Python shel
   from bigdl.orca import init_orca_context
 
   sc = init_orca_context()  # Initiation of bigdl on the underlying cluster.
+  from bigdl.dllib.nn.keras.layers.topology import *
+  from bigdl.dllib.nn.keras.layers.layer import *
+  model = Sequential()
+  model.add(Dense(8, input_shape=(10, )))
+
   ```
 
 #### **2.2 Jupyter Notebook**
