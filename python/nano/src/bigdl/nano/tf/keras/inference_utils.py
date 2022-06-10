@@ -19,7 +19,6 @@ import tensorflow as tf
 from tensorflow.keras.metrics import Metric
 from bigdl.nano.utils.log4Error import invalidInputError
 from bigdl.nano.deps.openvino.openvino_api import KerasOpenVINOModel
-from bigdl.nano.utils.inference.tf.model import AcceleratedKerasModel
 
 
 class InferenceUtils:
@@ -99,6 +98,6 @@ class InferenceUtils:
         else:
             invalidInputError(False, "Accelerator {} is invalid.".format(accelerator))
 
-    def trace(self, accelerator=None, input_sample=None) -> AcceleratedKerasModel:
+    def trace(self, accelerator=None, input_sample=None):
         if accelerator == 'openvino':
             return KerasOpenVINOModel(self, input_sample)
