@@ -4,7 +4,7 @@ name: Nano Unit Tests for Notebooks
 on:
   # Triggers the workflow on push or pull request events but only for the main branch
   push:
-    branches: [ add-nano-tensorflow-notebooks-unit-test ]
+    branches: [ main ]
   pull_request:
     branches: [ main ]
     paths:
