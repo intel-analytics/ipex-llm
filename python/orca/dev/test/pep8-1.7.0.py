@@ -179,6 +179,14 @@ def trailing_whitespace(physical_line):
             return 0, "W293 blank line contains whitespace"
 
 
+def trailing_blacklist_words(physical_line):
+    if physical_line.find("assert ") != -1:
+        return 0, "Please don't use assert, use log4Error.invalidInputError instead"
+    if physical_line.find("raise ") != -1:
+        if physical_line.find("raise StopIteration") == -1:
+            return 0, "Please don't use raise, use log4Error.invalidInputError instead"
+    
+
 def trailing_blank_lines(physical_line, lines, line_number, total_lines):
     r"""Trailing blank lines are superfluous.
 

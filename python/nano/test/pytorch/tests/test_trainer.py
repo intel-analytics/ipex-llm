@@ -71,8 +71,7 @@ class TestTrainer(TestCase):
         resnet18 = vision.resnet18(
             pretrained=False, include_top=False, freeze=True)
         train_with_linear_top_layer(
-            resnet18, batch_size, num_workers, data_dir,
-            use_orca_lite_trainer=True)
+            resnet18, batch_size, num_workers, data_dir)
 
     def test_trainer_compile(self):
         trainer = Trainer(max_epochs=1)

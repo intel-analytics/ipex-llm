@@ -16,6 +16,7 @@
 
 from abc import abstractmethod
 from bigdl.orca.learn.base_estimator import BaseEstimator
+from bigdl.dllib.utils.log4Error import invalidInputError
 
 
 class Estimator(BaseEstimator):
@@ -36,7 +37,7 @@ class Estimator(BaseEstimator):
         Should be a bigdl.orca.learn.trigger, like EveryEpoch(),
         SeveralIteration(num_iterations),etc.
         """
-        raise NotImplementedError
+        invalidInputError(False, "not implemented")
 
     @abstractmethod
     def predict(self, data, batch_size=4, feature_cols=None):
@@ -51,7 +52,7 @@ class Estimator(BaseEstimator):
          and the schema for each result is: {'prediction': predicted numpy array or
           list of predicted numpy arrays}.
         """
-        raise NotImplementedError
+        invalidInputError(False, "not implemented")
 
     @abstractmethod
     def evaluate(self, data, batch_size=32, feature_cols=None, label_cols=None):
@@ -64,7 +65,7 @@ class Estimator(BaseEstimator):
         :param label_cols: label column names if train data is Spark DataFrame.
         :return: evaluation result as a dictionary of {'metric name': metric value}
         """
-        raise NotImplementedError
+        invalidInputError(False, "not implemented")
 
     @abstractmethod
     def get_model(self):
@@ -73,7 +74,7 @@ class Estimator(BaseEstimator):
 
         :return: Trained model
         """
-        raise NotImplementedError
+        invalidInputError(False, "not implemented")
 
     @abstractmethod
     def save(self, model_path):
@@ -83,7 +84,7 @@ class Estimator(BaseEstimator):
         :param model_path: path to save the trained model.
         :return:
         """
-        raise NotImplementedError
+        invalidInputError(False, "not implemented")
 
     @abstractmethod
     def load(self, model_path):
@@ -93,7 +94,7 @@ class Estimator(BaseEstimator):
         :param model_path: Path to the existing model.
         :return:
         """
-        raise NotImplementedError
+        invalidInputError(False, "not implemented")
 
     def set_tensorboard(self, log_dir, app_name):
         """
@@ -118,7 +119,7 @@ class Estimator(BaseEstimator):
 
         :return:
         """
-        raise NotImplementedError
+        invalidInputError(False, "not implemented")
 
     @abstractmethod
     def set_constant_gradient_clipping(self, min, max):
@@ -130,7 +131,7 @@ class Estimator(BaseEstimator):
         :param max: The maximum value to clip by.
         :return:
         """
-        raise NotImplementedError
+        invalidInputError(False, "not implemented")
 
     @abstractmethod
     def set_l2_norm_gradient_clipping(self, clip_norm):
@@ -141,7 +142,7 @@ class Estimator(BaseEstimator):
         :param clip_norm: Gradient L2-Norm threshold.
         :return:
         """
-        raise NotImplementedError
+        invalidInputError(False, "not implemented")
 
     @abstractmethod
     def get_train_summary(self, tag=None):
@@ -151,7 +152,7 @@ class Estimator(BaseEstimator):
 
         :param tag: The string variable represents the scalar wanted
         """
-        raise NotImplementedError
+        invalidInputError(False, "not implemented")
 
     @abstractmethod
     def get_validation_summary(self, tag=None):
@@ -181,7 +182,7 @@ class Estimator(BaseEstimator):
 
         :param tag: The string variable represents the scalar wanted
         """
-        raise NotImplementedError
+        invalidInputError(False, "not implemented")
 
     @abstractmethod
     def load_orca_checkpoint(self, path, version):
@@ -193,7 +194,7 @@ class Estimator(BaseEstimator):
         :param version: checkpoint version, which is the suffix of model.* file,
         i.e., for modle.4 file, the version is 4.
         """
-        raise NotImplementedError
+        invalidInputError(False, "not implemented")
 
     def shutdown(self):
         """

@@ -23,12 +23,13 @@ from bigdl.ppml.fl.nn.generated.nn_service_pb2_grpc import *
 from bigdl.ppml.fl.nn.utils import ndarray_map_to_tensor_map
 import uuid
 from torch.utils.data import DataLoader
+from bigdl.dllib.utils.log4Error import invalidInputError
 
 from bigdl.ppml.fl.nn.utils import ClassAndArgsWrapper
 
 class FLClient(object):
-    def __init__(self) -> None:
-        self.channel = grpc.insecure_channel("localhost:8980")
+    def __init__(self, target="localhost:8980") -> None:
+        self.channel = grpc.insecure_channel(target)
         self.nn_stub = NNServiceStub(self.channel)
         self.client_uuid = str(uuid.uuid4())
 
@@ -40,7 +41,8 @@ class FLClient(object):
         
         response = self.nn_stub.train(train_request)
         if response.code == 1:
-            raise Exception(response.response)
+            invalidInputError(False,
+                              response.response)
         return response
 
     def upload_model(self, model, loss_fn, optimizer_cls, optimizer_args):

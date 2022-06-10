@@ -18,6 +18,7 @@ import os
 import os.path as osp
 from PIL import Image
 import logging
+from bigdl.dllib.utils.log4Error import *
 
 try:
     import xml.etree.cElementTree as ET
@@ -131,7 +132,7 @@ class VOCDatasets:
             label = label[..., :5]
         try:
             self._check_label(label, width, height)
-        except AssertionError as e:
+        except RuntimeError as e:
             logging.warning("Invalid label at %s, %s", anno_path, e)
         return label
 
@@ -141,14 +142,14 @@ class VOCDatasets:
         ymin = label[:, 1]
         xmax = label[:, 2]
         ymax = label[:, 3]
-        assert ((0 <= xmin) & (xmin < width)).any(), \
-            "xmin must in [0, {}), given {}".format(width, xmin)
-        assert ((0 <= ymin) & (ymin < height)).any(), \
-            "ymin must in [0, {}), given {}".format(height, ymin)
-        assert ((xmin < xmax) & (xmax <= width)).any(), \
-            "xmax must in ({}, {}], given {}".format(xmin, width, xmax)
-        assert ((ymin < ymax) & (ymax <= height)).any(), \
-            "ymax must in ({}, {}], given {}".format(ymin, height, ymax)
+        invalidInputError(((0 <= xmin) & (xmin < width)).any(),
+                          "xmin must in [0, {}), given {}".format(width, xmin))
+        invalidInputError(((0 <= ymin) & (ymin < height)).any(),
+                          "ymin must in [0, {}), given {}".format(height, ymin))
+        invalidInputError(((xmin < xmax) & (xmax <= width)).any(),
+                          "xmax must in ({}, {}], given {}".format(xmin, width, xmax))
+        invalidInputError(((ymin < ymax) & (ymax <= height)).any(),
+                          "ymax must in ({}, {}], given {}".format(ymin, height, ymax))
 
     def _read_image(self, image_path):
         try:
@@ -157,7 +158,7 @@ class VOCDatasets:
             img = img.astype(np.uint8)
             return img
         except FileNotFoundError as e:
-            raise e
+            invalidOperationError(False, str(e), cause=e)
 
     @property
     def classes_label(self):

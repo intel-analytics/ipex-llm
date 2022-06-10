@@ -60,7 +60,7 @@ object ImageBytesToMat {
       case e: Exception =>
         e.printStackTrace()
         val uri = feature.uri()
-        logger.error(s"The convertion from bytes to mat fails for $uri")
+        logger.info(s"The convertion from bytes to mat fails for $uri")
         feature(ImageFeature.originalSize) = (-1, -1, -1)
         feature.isValid = false
     }

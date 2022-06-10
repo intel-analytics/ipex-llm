@@ -18,6 +18,7 @@ import tensorflow as tf
 
 from bigdl.orca.tfpark.tf_dataset import TFDataset
 from bigdl.orca.data.utils import get_spec, flatten_xy
+from bigdl.dllib.utils.log4Error import *
 
 
 def xshards_to_tf_dataset(data_shard,
@@ -35,8 +36,8 @@ def xshards_to_tf_dataset(data_shard,
     label_spec = [(tf.dtypes.as_dtype(spec[0]), spec[1]) for spec in label_spec] \
         if label_spec is not None else None
 
-    assert batch_size != -1 or batch_per_thread != -1, \
-        "one of batch_size and batch_per_thread should be specified"
+    invalidInputError(batch_size != -1 or batch_per_thread != -1,
+                      "one of batch_size and batch_per_thread should be specified")
 
     val_rdd = None if validation_data_shard is None \
         else validation_data_shard.rdd.flatMap(flatten_xy(allow_tuple=True, allow_list=False))

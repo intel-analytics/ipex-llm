@@ -18,15 +18,16 @@ package com.intel.analytics.bigdl.ppml
 
 import com.intel.analytics.bigdl.dllib.NNContext.{checkScalaVersion, checkSparkVersion, createSparkConf, initConf, initNNContext}
 import com.intel.analytics.bigdl.dllib.utils.Log4Error
-import com.intel.analytics.bigdl.ppml.crypto.CryptoMode.CryptoMode
-import com.intel.analytics.bigdl.ppml.crypto.{CryptoMode, EncryptRuntimeException, FernetEncrypt}
+import com.intel.analytics.bigdl.ppml.crypto.{AES_CBC_PKCS5PADDING, BigDLEncrypt, Crypto, CryptoMode, DECRYPT, ENCRYPT, EncryptRuntimeException, PLAIN_TEXT}
 import com.intel.analytics.bigdl.ppml.utils.Supportive
 import org.apache.spark.{SparkConf, SparkContext}
 import org.apache.spark.input.PortableDataStream
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.{DataFrame, DataFrameReader, DataFrameWriter, Row, SparkSession}
-import com.intel.analytics.bigdl.ppml.kms.{EHSMKeyManagementService, KMS_CONVENTION, KeyManagementService, SimpleKeyManagementService}
-import com.intel.analytics.bigdl.ppml.crypto.dataframe.EncryptedDataFrameReader
+
+import com.intel.analytics.bigdl.ppml.kms.{EHSMKeyManagementService, KMS_CONVENTION,
+KeyManagementService, SimpleKeyManagementService, AzureKeyManagementService}
+import com.intel.analytics.bigdl.ppml.crypto.dataframe.{EncryptedDataFrameReader, EncryptedDataFrameWriter}
 
 import java.nio.file.Paths
 
@@ -62,14 +63,13 @@ class PPMLContext protected(kms: KeyManagementService, sparkSession: SparkSessio
    */
   def textFile(path: String,
                minPartitions: Int = sparkSession.sparkContext.defaultMinPartitions,
-               cryptoMode: CryptoMode = CryptoMode.PLAIN_TEXT): RDD[String] = {
+               cryptoMode: CryptoMode = PLAIN_TEXT): RDD[String] = {
     cryptoMode match {
-      case CryptoMode.PLAIN_TEXT =>
+      case PLAIN_TEXT =>
         sparkSession.sparkContext.textFile(path, minPartitions)
-      case CryptoMode.AES_CBC_PKCS5PADDING =>
-        PPMLContext.textFile(sparkSession.sparkContext, path, dataKeyPlainText, minPartitions)
       case _ =>
-        throw new IllegalArgumentException("unknown EncryptMode " + cryptoMode.toString)
+        PPMLContext.textFile(sparkSession.sparkContext, path, dataKeyPlainText,
+          cryptoMode, minPartitions)
     }
   }
 
@@ -88,25 +88,25 @@ class PPMLContext protected(kms: KeyManagementService, sparkSession: SparkSessio
    * @param cryptoMode crypto mode, such as PLAIN_TEXT or AES_CBC_PKCS5PADDING
    * @return a DataFrameWriter[Row]
    */
-  def write(dataFrame: DataFrame, cryptoMode: CryptoMode): DataFrameWriter[Row] = {
-    cryptoMode match {
-      case CryptoMode.PLAIN_TEXT =>
-        dataFrame.write
-      case CryptoMode.AES_CBC_PKCS5PADDING =>
-        PPMLContext.write(sparkSession, dataKeyPlainText, dataFrame)
-      case _ =>
-        throw new IllegalArgumentException("unknown EncryptMode " + cryptoMode.toString)
-    }
+  def write(dataFrame: DataFrame, cryptoMode: CryptoMode): EncryptedDataFrameWriter = {
+    new EncryptedDataFrameWriter(sparkSession, dataFrame, cryptoMode, dataKeyPlainText)
+  }
+
+  def getSparkSession(): SparkSession = {
+    sparkSession
   }
 }
 
 object PPMLContext{
-  private[bigdl] def registerUDF(spark: SparkSession,
-                  dataKeyPlaintext: String) = {
+  private[bigdl] def registerUDF(
+        spark: SparkSession,
+        cryptoMode: CryptoMode,
+        dataKeyPlaintext: String) = {
     val bcKey = spark.sparkContext.broadcast(dataKeyPlaintext)
     val convertCase = (x: String) => {
-      val fernetCryptos = new FernetEncrypt()
-      new String(fernetCryptos.encryptBytes(x.getBytes, bcKey.value))
+      val crypto = Crypto(cryptoMode)
+      crypto.init(cryptoMode, ENCRYPT, dataKeyPlaintext)
+      new String(crypto.doFinal(x.getBytes)._1)
     }
     spark.udf.register("convertUDF", convertCase)
   }
@@ -114,6 +114,7 @@ object PPMLContext{
   private[bigdl] def textFile(sc: SparkContext,
                path: String,
                dataKeyPlaintext: String,
+               cryptoMode: CryptoMode,
                minPartitions: Int = -1): RDD[String] = {
     Log4Error.invalidInputError(dataKeyPlaintext != "",
       "dataKeyPlainText should not be empty, please loadKeys first.")
@@ -122,19 +123,22 @@ object PPMLContext{
     } else {
       sc.binaryFiles(path)
     }
-    val fernetCryptos = new FernetEncrypt
     data.mapPartitions { iterator => {
       Supportive.logger.info("Decrypting bytes with JavaAESCBC...")
-      fernetCryptos.decryptBigContent(iterator, dataKeyPlaintext)
-    }}.flatMap(_.split("\n"))
+      val crypto = Crypto(cryptoMode)
+      crypto.init(cryptoMode, DECRYPT, dataKeyPlaintext)
+      crypto.decryptBigContent(iterator)
+    }} // .flatMap(_.split("\n")).flatMap(_.split("\r"))
   }
 
-  private[bigdl] def write(sparkSession: SparkSession,
-               dataKeyPlaintext: String,
-               dataFrame: DataFrame): DataFrameWriter[Row] = {
+  private[bigdl] def write(
+        sparkSession: SparkSession,
+        cryptoMode: CryptoMode,
+        dataKeyPlaintext: String,
+        dataFrame: DataFrame): DataFrameWriter[Row] = {
     val tableName = "ppml_save_table"
     dataFrame.createOrReplaceTempView(tableName)
-    PPMLContext.registerUDF(sparkSession, dataKeyPlaintext)
+    PPMLContext.registerUDF(sparkSession, cryptoMode, dataKeyPlaintext)
     // Select all and encrypt columns.
     val convertSql = "select " + dataFrame.schema.map(column =>
       "convertUDF(" + column.name + ") as " + column.name).mkString(", ") +
@@ -206,6 +210,10 @@ object PPMLContext{
         val key = conf.get("spark.bigdl.kms.simple.key", defaultValue = "simpleAPPKEY")
         // println(key + "=-------------------")
         SimpleKeyManagementService(id, key)
+      case KMS_CONVENTION.MODE_AZURE_KMS =>
+        val vaultName = conf.get("spark.bigdl.kms.azure.vault", defaultValue = "keyVaultName")
+        val clientId = conf.get("spark.bigdl.kms.azure.clientId", defaultValue = "")
+        new AzureKeyManagementService(vaultName, clientId)
       case _ =>
         throw new EncryptRuntimeException("Wrong kms type")
     }

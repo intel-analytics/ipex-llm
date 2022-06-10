@@ -14,6 +14,7 @@
 # limitations under the License.
 #
 from bigdl.orca.automl.search import SearchEngineFactory
+from bigdl.dllib.utils.log4Error import *
 
 
 class AutoEstimator:
@@ -180,8 +181,8 @@ class AutoEstimator:
         :param label_cols: target column names if data is Spark DataFrame.
         """
         if self._fitted:
-            raise RuntimeError(
-                "This AutoEstimator has already been fitted and cannot fit again.")
+            invalidInputError(False,
+                              "This AutoEstimator has already been fitted and cannot fit again.")
 
         metric_mode = AutoEstimator._validate_metric_mode(metric, metric_mode)
         feature_cols, label_cols = AutoEstimator._check_spark_dataframe_input(data,
@@ -251,17 +252,21 @@ class AutoEstimator:
     def _validate_metric_mode(metric, mode):
         if not mode:
             if callable(metric):
-                raise ValueError("You must specify `metric_mode` for your metric function")
+                invalidInputError(False,
+                                  "You must specify `metric_mode` for your metric function")
             try:
                 from bigdl.orca.automl.metrics import Evaluator
                 mode = Evaluator.get_metric_mode(metric)
             except ValueError:
                 pass
             if not mode:
-                raise ValueError(f"We cannot infer metric mode with metric name of {metric}. Please"
-                                 f" specify the `metric_mode` parameter in AutoEstimator.fit().")
+                invalidInputError(False,
+                                  f"We cannot infer metric mode with metric name of {metric}."
+                                  f" Please specify the `metric_mode` parameter in"
+                                  f" AutoEstimator.fit().")
         if mode not in ["min", "max"]:
-            raise ValueError("`mode` has to be one of ['min', 'max']")
+            invalidInputError(False,
+                              "`mode` has to be one of ['min', 'max']")
         return mode
 
     @staticmethod
@@ -273,12 +278,15 @@ class AutoEstimator:
 
         def check_cols(cols, cols_name):
             if not cols:
-                raise ValueError(f"You must input valid {cols_name} for Spark DataFrame data input")
+                invalidInputError(False,
+                                  f"You must input valid {cols_name} for Spark DataFrame"
+                                  f" data input")
             if isinstance(cols, list):
                 return cols
             if not isinstance(cols, str):
-                raise ValueError(f"{cols_name} should be a string or a list of strings, "
-                                 f"but got {type(cols)}")
+                invalidInputError(False,
+                                  f"{cols_name} should be a string or a list of strings, "
+                                  f"but got {type(cols)}")
             return [cols]
 
         from pyspark.sql import DataFrame
@@ -287,6 +295,7 @@ class AutoEstimator:
             label_cols = check_cols(label_cols, cols_name="label_cols")
             if validation_data:
                 if not isinstance(validation_data, DataFrame):
-                    raise ValueError(f"data and validation_data should be both Spark DataFrame, "
-                                     f"but got validation_data of type {type(data)}")
+                    invalidInputError(False,
+                                      f"data and validation_data should be both Spark DataFrame, "
+                                      f"but got validation_data of type {type(data)}")
         return feature_cols, label_cols

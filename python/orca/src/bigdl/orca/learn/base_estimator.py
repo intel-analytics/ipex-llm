@@ -15,6 +15,7 @@
 #
 
 from abc import ABC, abstractmethod
+from bigdl.dllib.utils.log4Error import invalidInputError
 
 
 class BaseEstimator(ABC):
@@ -27,7 +28,7 @@ class BaseEstimator(ABC):
         :param epochs: number of epochs to train.
         :param batch_size: total batch size for each iteration.
         """
-        raise NotImplementedError
+        invalidInputError(False, "not implemented")
 
     @abstractmethod
     def predict(self, data, batch_size):
@@ -38,7 +39,7 @@ class BaseEstimator(ABC):
         :param batch_size: batch size per thread. Default: 4.
         :return: predicted result.
         """
-        raise NotImplementedError
+        invalidInputError(False, "not implemented")
 
     @abstractmethod
     def evaluate(self, data, batch_size):
@@ -49,7 +50,7 @@ class BaseEstimator(ABC):
         :param batch_size: batch size per thread.
         :return: evaluation result as a dictionary of {'metric name': metric value}
         """
-        raise NotImplementedError
+        invalidInputError(False, "not implemented")
 
     @abstractmethod
     def get_model(self):
@@ -58,7 +59,7 @@ class BaseEstimator(ABC):
 
         :return: Trained model
         """
-        raise NotImplementedError
+        invalidInputError(False, "not implemented")
 
     @abstractmethod
     def save(self, model_path):
@@ -68,7 +69,7 @@ class BaseEstimator(ABC):
         :param model_path: path to save the trained model.
         :return:
         """
-        raise NotImplementedError
+        invalidInputError(False, "not implemented")
 
     @abstractmethod
     def load(self, model_path):
@@ -78,7 +79,7 @@ class BaseEstimator(ABC):
         :param model_path: Path to the existing model.
         :return:
         """
-        raise NotImplementedError
+        invalidInputError(False, "not implemented")
 
     @abstractmethod
     def shutdown(self):

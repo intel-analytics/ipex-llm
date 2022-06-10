@@ -13,6 +13,7 @@ ${SPARK_HOME}/bin/spark-submit \
     --conf spark.kubernetes.driver.podTemplateFile=./executor.yaml \
     --conf spark.kubernetes.executor.podTemplateFile=./executor.yaml \
     --conf spark.kubernetes.file.upload.path=file:///tmp \
+    --conf spark.kubernetes.sgx.log.level=off \
     --conf spark.task.cpus=2 \
     --executor-cores 2 \
     --executor-memory 2g \

@@ -125,6 +125,7 @@ BigDL Documentation
    doc/PythonAPI/Orca/orca.rst
    doc/PythonAPI/Friesian/feature.rst
    doc/PythonAPI/Chronos/index.rst
+   doc/PythonAPI/Nano/index.rst
 
 .. toctree::
    :maxdepth: 1

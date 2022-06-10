@@ -20,6 +20,7 @@ import sys
 import tempfile
 import shutil
 
+from bigdl.dllib.utils import log4Error
 from bigdl.dllib.utils.file_utils import get_file_list, is_local_path
 from bigdl.orca.data import SparkXShards
 from bigdl.orca.data.utils import get_size
@@ -31,6 +32,7 @@ import numpy as np
 import pickle
 import os
 import subprocess
+from bigdl.dllib.utils.log4Error import *
 
 
 def find_latest_checkpoint(model_dir, model_type="bigdl"):
@@ -201,7 +203,12 @@ def convert_predict_rdd_to_dataframe(df, prediction_rdd):
 
 
 def _merge_rows(results):
-    result_arrs = [np.stack(l) for l in results]
+    try:
+        result_arrs = [np.stack(l) for l in results]
+    except ValueError:
+        log4Error.invalidInputError(False, "Elements in the same column must have the same "
+                                           "shape, please drop, pad or truncate the columns "
+                                           "that do not meet this requirement.")
     if len(result_arrs) == 1:
         result_arrs = result_arrs[0]
     else:
@@ -311,8 +318,9 @@ def process_xshards_of_pandas_dataframe(data, feature_cols, label_cols=None, val
     data = transform_to_shard_dict(data, feature_cols, label_cols)
     if mode == "fit":
         if validation_data:
-            assert validation_data._get_class_name() == 'pandas.core.frame.DataFrame', \
-                "train data and validation data should be both XShards of Pandas DataFrame"
+            invalidInputError(validation_data._get_class_name() == 'pandas.core.frame.DataFrame',
+                              "train data and validation data should be both XShards of Pandas"
+                              " DataFrame")
             validation_data = transform_to_shard_dict(validation_data, feature_cols, label_cols)
         return data, validation_data
     else:
@@ -395,16 +403,17 @@ def dataframe_to_xshards(data, validation_data, feature_cols, label_cols, mode="
                          num_workers=None, accept_str_col=False):
     from pyspark.sql import DataFrame
     valid_mode = {"fit", "evaluate", "predict"}
-    assert mode in valid_mode, f"invalid mode {mode} " \
-                               f"mode should be one of {valid_mode}"
-    assert validation_data is None or isinstance(validation_data, DataFrame), \
-        "validation data must be a spark DataFrame when data is a DataFrame"
-    assert feature_cols is not None, \
-        "feature_col must be provided if data is a spark dataframe"
+    invalidInputError(mode in valid_mode,
+                      f"invalid mode {mode} "
+                      f"mode should be one of {valid_mode}")
+    invalidInputError(validation_data is None or isinstance(validation_data, DataFrame),
+                      "validation data must be a spark DataFrame when data is a DataFrame")
+    invalidInputError(feature_cols is not None,
+                      "feature_col must be provided if data is a spark dataframe")
 
     if mode != "predict":
-        assert label_cols is not None, \
-            "label_cols must be provided if data is a spark dataframe"
+        invalidInputError(label_cols is not None,
+                          "label_cols must be provided if data is a spark dataframe")
         # avoid empty partition for worker
         if data.rdd.getNumPartitions() < num_workers:
             data = data.repartition(num_workers)
