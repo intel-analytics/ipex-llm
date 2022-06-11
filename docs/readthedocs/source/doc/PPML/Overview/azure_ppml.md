@@ -290,6 +290,9 @@ ARGS=
 DATA_LAKE_NAME=
 DATA_LAKE_ACCESS_KEY=
 KEY_VAULT_NAME=
+PRIMARY_KEY_PATH=
+DATA_KEY_PATH=
+
 LOCAL_IP=
 RUNTIME_SPARK_MASTER=
 
@@ -353,6 +356,10 @@ export TF_MKL_ALLOC_MAX_BYTES=10737418240 && \
     --conf spark.hadoop.fs.azure.account.auth.type.${DATA_LAKE_NAME}.dfs.core.windows.net=SharedKey \
     --conf spark.hadoop.fs.azure.account.key.${DATA_LAKE_NAME}.dfs.core.windows.net=${DATA_LAKE_ACCESS_KEY} \
     --conf spark.hadoop.fs.azure.enable.append.support=true \
+    --conf spark.bigdl.kms.type=AzureKeyManagementService \
+    --conf spark.bigdl.kms.azure.vault=$KEY_VAULT_NAME \
+    --conf spark.bigdl.kms.key.primary=$PRIMARY_KEY_PATH \
+    --conf spark.bigdl.kms.key.data=$DATA_KEY_PATH \
     --class $SPARK_JOB_MAIN_CLASS \
     --verbose \
     local://$SPARK_EXTRA_JAR_PATH \
