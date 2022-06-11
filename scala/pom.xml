@@ -547,6 +547,7 @@
                     <includeTestSourceDirectory>true</includeTestSourceDirectory>
                     <failOnWarning>false</failOnWarning>
                     <sourceDirectory>${basedir}/src/main/scala</sourceDirectory>
+                    <excludes>${basedir}/src/main/scala/**/tpch/*.scala</excludes>
                     <testSourceDirectory>${basedir}/src/test/scala</testSourceDirectory>
                     <configLocation>${bigdl.basedir}/scalastyle_config.xml</configLocation>
                     <outputFile>${project.build.directory}/stylecheck/scalastyle-output.xml</outputFile>
