@@ -1,6 +1,5 @@
 // scalastyle:off
 /*
- *
  * This file is copied from:
  * https://github.com/ssavvides/tpch-spark/blob/master/src/main/scala/Q06.scala
  *
