@@ -1,3 +1,4 @@
+// scalastyle:off
 /*
  * Copyright 2016 The BigDL Authors.
  *
@@ -12,9 +13,7 @@
  * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
  * See the License for the specific language governing permissions and
  * limitations under the License.
- */
-
-/*
+ *
  * This file is adapted from
  * https://github.com/intel-analytics/zoo-tutorials/blob/master/tpch-spark/
  * src/main/scala/TpchSchemaProvider.scala
@@ -44,6 +43,7 @@
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
  * OTHER DEALINGS IN THE SOFTWARE.
  */
+// scalastyle:on
 
 package com.intel.analytics.bigdl.ppml.examples.tpch
 
