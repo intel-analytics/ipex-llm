@@ -15,19 +15,18 @@ Azure PPML solution integrate BigDL ***PPML*** technology with Azure Services(Az
 ## 2. Setup
 ### 2.1 Create Azure VM with BigDL PPML image
 #### 2.1.1 Create Resource Group
-Create resource group or use your existing resource group. Create resource group with Azure CLI:
+Create resource group or use your existing resource group. Example code to create resource group with Azure CLI:
 ```
-BigDLresourceGroupName="bigdl-rg-es2-test"
 region="eastus2"
 az group create \
-    --name $BigDLresourceGroupName \
+    --name myResourceGroup \
     --location $region \
     --output none
 ```
     
 #### 2.1.2 Create Linux client with sgx support
-Create Linux VM through Azure CLI/Portal/Powershell. Please choose East US 2 region. 
-For size of the VM, please choose DC-Series VM with more than 4 vCPU cores. 
+Create Linux VM through Azure [CLI](https://docs.microsoft.com/en-us/azure/developer/javascript/tutorial/nodejs-virtual-machine-vm/create-linux-virtual-machine-azure-cli)/[Portal](https://docs.microsoft.com/en-us/azure/virtual-machines/linux/quick-create-portal)/Powershell. Please choose East US 2 region.
+For size of the VM, please choose DC-Series VM with more than 4 vCPU cores.
 
 #### 2.1.3 Pull BigDL PPML image and start
 * Login to the created VM, pull BigDL PPML image using such command:
@@ -59,46 +58,23 @@ sudo docker run -itd \
 ### 2.2 Create AKS(Azure Kubernetes Services)
 Create AKS or use existing one. 
 
-The steps to create AKS is as below
-* Create Service Principle
+You can run `/ppml/trusted-big-data-ml/azure/create-aks.sh` to create AKS with confidential computing support.
+
+Note: Please use same VNet information of your client to create AKS.
 ```bash
-az ad sp create-for-rbac
+/ppml/trusted-big-data-ml/azure/create-aks.sh \
+--resource-group myResourceGroup \
+--vnet-resource-group myVnetResourceGroup \
+--vnet-name myVnetName \
+--subnet-name mySubnetName \
+--cluster-name myAKSName \
+--vm-size myAKSNodeVMSize \
+--node-count myAKSInitNodeCount
 
 ```
-The output is like below, please note down the 'appId'.
+You can check the information by run:
 ```bash
-{
-"appId": "b1876d8d-66bc-4352-9ce4-8f0192b2546d",
-"displayName": "azure-cli-2022-03-04-01-21-55",
-"password": "0t~OHjoWuKYNO.b6r7OZG_uOAn5AbnTmHp",
-"tenant": "076293d2-5bf8-4aed-b73f-d8e82dacfc7e"
-}
-```
-* Assign your service princile to the VNet
-```bash
-VNET_ID=$(az network vnet show --resource-group myResourceGroup --name myAKSVnet --query id -o tsv)
-SUBNET_ID=$(az network vnet subnet show --resource-group myResourceGroup --vnet-name myAKSVnet --name myAKSSubnet --query id -o tsv)
-az role assignment create --assignee <appId> --scope "/subscriptions/xxx/resourceGroups/myResourceGroup/providers/Microsoft.Network/virtualNetworks/myAKSSubnet" --role "Network Contributor"
-```
-* Create AKS
-Example command to create AKS:
-```bash
-az aks create \
-    --resource-group myResourceGroup \
-    --name myAKSCluster \
-    --node-count 3 \
-    --network-plugin kubenet \
-    --service-cidr 10.0.0.0/16 \
-    --dns-service-ip 10.0.0.10 \
-    --pod-cidr 10.244.0.0/16 \
-    --docker-bridge-address 172.17.0.1/16 \
-    --vnet-subnet-id $SUBNET_ID \
-    --service-principal <appId>
-```
-
-* Enable Confidential Computing addon on AKS
-```bash
-az aks enable-addons --addons confcom --name myAKSCluster--resource-group myResourceGroup
+/ppml/trusted-big-data-ml/azure/create-aks.sh --help
 ```
 
 ## 2.3 Create Azure Data Lake Store Gen 2
