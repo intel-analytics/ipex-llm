@@ -1,4 +1,4 @@
-// scalastyle:off HeaderMatchesChecker
+// scalastyle:off
 /*
  * This file is copied from:
  * https://github.com/ssavvides/tpch-spark/blob/master/src/main/scala/Q01.scala
@@ -28,7 +28,7 @@
  * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR
  * OTHER DEALINGS IN THE SOFTWARE.
  */
-// scalastyle:on HeaderMatchesChecker
+// scalastyle:on
 
 package com.intel.analytics.bigdl.ppml.examples.tpch
 
