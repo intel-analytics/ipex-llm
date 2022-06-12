@@ -94,6 +94,7 @@ BigDL Documentation
    doc/PPML/QuickStart/trusted-serving-on-k8s-guide.md
    doc/PPML/QuickStart/tpc-h_with_sparksql_on_k8s.md
    doc/PPML/QuickStart/tpc-ds_with_sparksql_on_k8s.md
+   doc/PPML/Overview/azure_ppml.md
 
 .. toctree::
    :maxdepth: 1
