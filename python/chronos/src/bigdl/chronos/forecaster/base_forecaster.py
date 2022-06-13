@@ -657,12 +657,6 @@ class BasePytorchForecaster(Forecaster):
         framework = [framework] if isinstance(framework, str) else framework
         temp_quantized_model = None
         for framework_item in framework:
-            # if "onnxrt" in framework_item:
-                # Temp patch to developing bigdl-nano
-                # TODO: delete once bigdl-nano has a stable inference API
-                # if "_quantized_model" in dir(self.internal):
-                #     temp_quantized_model = self.internal._quantized_model
-                #     self.internal._quantized_model = None
             accelerator, method = framework_item.split('_')
             if accelerator == 'pytorch':
                 accelerator = None

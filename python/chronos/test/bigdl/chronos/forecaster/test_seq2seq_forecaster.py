@@ -242,7 +242,7 @@ class TestChronosModelSeq2SeqForecaster(TestCase):
 
         stop_orca_context()
 
-    def test_seq2seq_dataloader_distributed(self):
+    def test_s2s_dataloader_distributed(self):
         from bigdl.orca import init_orca_context, stop_orca_context
         train_data, _, _ = create_data(loader=True)
         init_orca_context(cores=4, memory="2g")
@@ -255,3 +255,27 @@ class TestChronosModelSeq2SeqForecaster(TestCase):
                                        distributed=True)
         forecaster.fit(train_data, epochs=2)
         stop_orca_context()
+    
+    def test_s2s_customized_loss_metric(self):
+        from torchmetrics.functional import mean_squared_error
+        train_data, _, _ = create_data(loader=True)
+        _, _, test_data = create_data()
+        loss = torch.nn.L1Loss()
+        def customized_metric(y_true, y_pred):
+            return mean_squared_error(torch.from_numpy(y_pred),
+                                      torch.from_numpy(y_true)).numpy()
+        forecaster = Seq2SeqForecaster(past_seq_len=24,
+                                       future_seq_len=5,
+                                       input_feature_num=1,
+                                       output_feature_num=1,
+                                       loss=loss,
+                                       metrics=[customized_metric],
+                                       lr=0.01)
+        forecaster.fit(train_data, epochs=2)
+        with tempfile.TemporaryDirectory() as tmp_dir_name:
+            ckpt_name = os.path.join(tmp_dir_name, "ckpt")
+            test_pred_save = forecaster.predict(test_data[0])
+            forecaster.save(ckpt_name)
+            forecaster.load(ckpt_name)
+            test_pred_load = forecaster.predict(test_data[0])
+        np.testing.assert_almost_equal(test_pred_save, test_pred_load)
