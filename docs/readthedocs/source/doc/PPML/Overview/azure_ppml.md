@@ -13,23 +13,27 @@ Azure PPML solution integrate BigDL ***PPML*** technology with Azure Services(Az
 
 
 ## 2. Setup
-### 2.1 Create Azure VM with BigDL PPML image
-#### 2.1.1 Create Resource Group
-Create resource group or use your existing resource group. Create resource group with Azure CLI:
+### 2.1 Install Azure CLI
+Before you setup your environment, please install Azure CLI on your machine according to [guide](https://docs.microsoft.com/en-us/cli/azure/install-azure-cli).
+
+Then run `az login` to login to Azure system before you run following Azure commands.
+
+### 2.2 Create Azure VM with BigDL PPML image
+#### 2.2.1 Create Resource Group
+Create resource group or use your existing resource group. Example code to create resource group with Azure CLI:
 ```
-BigDLresourceGroupName="bigdl-rg-es2-test"
 region="eastus2"
 az group create \
-    --name $BigDLresourceGroupName \
+    --name myResourceGroup \
     --location $region \
     --output none
 ```
     
-#### 2.1.2 Create Linux client with sgx support
-Create Linux VM through Azure CLI/Portal/Powershell. Please choose East US 2 region. 
-For size of the VM, please choose DC-Series VM with more than 4 vCPU cores. 
+#### 2.2.2 Create Linux client with sgx support
+Create Linux VM through Azure [CLI](https://docs.microsoft.com/en-us/azure/developer/javascript/tutorial/nodejs-virtual-machine-vm/create-linux-virtual-machine-azure-cli)/[Portal](https://docs.microsoft.com/en-us/azure/virtual-machines/linux/quick-create-portal)/Powershell. Please choose East US 2 region.
+For size of the VM, please choose DC-Series VM with more than 4 vCPU cores.
 
-#### 2.1.3 Pull BigDL PPML image and start
+#### 2.2.3 Pull BigDL PPML image and start
 * Login to the created VM, pull BigDL PPML image using such command:
 ```bash
 docker pull intelanalytics/bigdl-ppml-trusted-big-data-ml-python-graphene:2.1.0-SNAPSHOT
@@ -56,53 +60,30 @@ sudo docker run -itd \
     $DOCKER_IMAGE bash
 ```
 
-### 2.2 Create AKS(Azure Kubernetes Services)
+### 2.3 Create AKS(Azure Kubernetes Services)
 Create AKS or use existing one. 
 
-The steps to create AKS is as below
-* Create Service Principle
+You can run `/ppml/trusted-big-data-ml/azure/create-aks.sh` to create AKS with confidential computing support.
+
+Note: Please use same VNet information of your client to create AKS. And use DC-Series VM size(i.e.Standard_DC8ds_v3) to create AKS.
 ```bash
-az ad sp create-for-rbac
+/ppml/trusted-big-data-ml/azure/create-aks.sh \
+--resource-group myResourceGroup \
+--vnet-resource-group myVnetResourceGroup \
+--vnet-name myVnetName \
+--subnet-name mySubnetName \
+--cluster-name myAKSName \
+--vm-size myAKSNodeVMSize \
+--node-count myAKSInitNodeCount
 
 ```
-The output is like below, please note down the 'appId'.
+You can check the information by run:
 ```bash
-{
-"appId": "b1876d8d-66bc-4352-9ce4-8f0192b2546d",
-"displayName": "azure-cli-2022-03-04-01-21-55",
-"password": "0t~OHjoWuKYNO.b6r7OZG_uOAn5AbnTmHp",
-"tenant": "076293d2-5bf8-4aed-b73f-d8e82dacfc7e"
-}
-```
-* Assign your service princile to the VNet
-```bash
-VNET_ID=$(az network vnet show --resource-group myResourceGroup --name myAKSVnet --query id -o tsv)
-SUBNET_ID=$(az network vnet subnet show --resource-group myResourceGroup --vnet-name myAKSVnet --name myAKSSubnet --query id -o tsv)
-az role assignment create --assignee <appId> --scope "/subscriptions/xxx/resourceGroups/myResourceGroup/providers/Microsoft.Network/virtualNetworks/myAKSSubnet" --role "Network Contributor"
-```
-* Create AKS
-Example command to create AKS:
-```bash
-az aks create \
-    --resource-group myResourceGroup \
-    --name myAKSCluster \
-    --node-count 3 \
-    --network-plugin kubenet \
-    --service-cidr 10.0.0.0/16 \
-    --dns-service-ip 10.0.0.10 \
-    --pod-cidr 10.244.0.0/16 \
-    --docker-bridge-address 172.17.0.1/16 \
-    --vnet-subnet-id $SUBNET_ID \
-    --service-principal <appId>
+/ppml/trusted-big-data-ml/azure/create-aks.sh --help
 ```
 
-* Enable Confidential Computing addon on AKS
-```bash
-az aks enable-addons --addons confcom --name myAKSCluster--resource-group myResourceGroup
-```
-
-## 2.3 Create Azure Data Lake Store Gen 2
-### 2.3.1 Create Data Lake Storage account or use existing one.
+## 2.4 Create Azure Data Lake Store Gen 2
+### 2.4.1 Create Data Lake Storage account or use existing one.
 The example command to create Data Lake store is as below:
 ```bash
 az dls account create --account myDataLakeAccount --location myLocation --resource-group myResourceGroup
@@ -126,7 +107,7 @@ Example command to upload directory
 ```bash
 az storage fs directory upload -f myFS --account-name myDataLakeAccount -s "path/to/directory" -d myDirectory --recursive
 ```
-### 2.3.2  Access data in Hadoop through ABFS(Azure Blob Filesystem) driver
+### 2.4.2  Access data in Hadoop through ABFS(Azure Blob Filesystem) driver
 You can access Data Lake Storage in Hadoop filesytem by such URI:  ```abfs[s]://file_system@account_name.dfs.core.windows.net/<path>/<path>/<file_name>```
 #### Authentication
 The ABFS driver supports two forms of authentication so that the Hadoop application may securely access resources contained within a Data Lake Storage Gen2 capable account. 
@@ -141,8 +122,8 @@ az storage account keys list -g MyResourceGroup -n myDataLakeAccount
 ``` 
 Use one of the keys in authentication.
 
-## 2.4 Create Azure Key Vault
-### 2.4.1 Create or use an existing Azure key vault
+## 2.5 Create Azure Key Vault
+### 2.5.1 Create or use an existing Azure key vault
 Example command to create key vault
 ```bash
 az keyvault create -n myKeyVault -g myResourceGroup -l location
@@ -154,7 +135,7 @@ Take note of the following properties for use in the next section:
 * The name of your Azure key vault resource
 * The Azure tenant ID that the subscription belongs to
 
-### 2.4.2 Set access policy for the client VM
+### 2.5.2 Set access policy for the client VM
 * Login to the client VM, and get the system identity:
 ```bash
 az vm identity assign -g myResourceGroup -n myVM
@@ -174,8 +155,8 @@ Example command:
 az keyvault set-policy --name myKeyVault --object-id <mySystemAssignedIdentity> --secret-permissions all --key-permissions all --certificate-permissions all
 ```
 
-### 2.4.3 AKS access key vault
-#### 2.4.3.1 Set access for AKS VM ScaleSet
+### 2.5.3 AKS access key vault
+#### 2.5.3.1 Set access for AKS VM ScaleSet
 ##### a. Find your VM ScaleSet in your AKS, and assign system managed identity to VM scale set.
 ```bash
 az vm identity assign -g myResourceGroup -n myAKSVMSS
@@ -196,7 +177,7 @@ Example command:
 ```bash
 az keyvault set-policy --name myKeyVault --object-id <systemManagedIdentityOfVMSS> --secret-permissions get --key-permissions all --certificate-permissions all
 ```
-#### 2.4.3.2 Set access for AKS
+#### 2.5.3.2 Set access for AKS
 ##### a. Enable Azure Key Vault Provider for Secrets Store CSI Driver support
 Example command:
 ```bash
@@ -290,6 +271,9 @@ ARGS=
 DATA_LAKE_NAME=
 DATA_LAKE_ACCESS_KEY=
 KEY_VAULT_NAME=
+PRIMARY_KEY_PATH=
+DATA_KEY_PATH=
+
 LOCAL_IP=
 RUNTIME_SPARK_MASTER=
 
@@ -353,6 +337,10 @@ export TF_MKL_ALLOC_MAX_BYTES=10737418240 && \
     --conf spark.hadoop.fs.azure.account.auth.type.${DATA_LAKE_NAME}.dfs.core.windows.net=SharedKey \
     --conf spark.hadoop.fs.azure.account.key.${DATA_LAKE_NAME}.dfs.core.windows.net=${DATA_LAKE_ACCESS_KEY} \
     --conf spark.hadoop.fs.azure.enable.append.support=true \
+    --conf spark.bigdl.kms.type=AzureKeyManagementService \
+    --conf spark.bigdl.kms.azure.vault=$KEY_VAULT_NAME \
+    --conf spark.bigdl.kms.key.primary=$PRIMARY_KEY_PATH \
+    --conf spark.bigdl.kms.key.data=$DATA_KEY_PATH \
     --class $SPARK_JOB_MAIN_CLASS \
     --verbose \
     local://$SPARK_EXTRA_JAR_PATH \
