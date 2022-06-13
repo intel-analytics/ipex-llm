@@ -215,7 +215,7 @@ class Sequential(KerasModel):
 
     def __init__(self, jvalue=None, **kwargs):
         warnings.warn("bigdl.dllib.nn.keras is deprecated in 0.11. "
-                      "Recommend to use bigdl.dllib.keras Keras API.")
+                      "Recommend to use bigdl.dllib.keras.")
         super(Sequential, self).__init__(jvalue, **kwargs)
 
     @staticmethod
@@ -249,7 +249,7 @@ class Model(KerasModel):
 
     def __init__(self, input, output, jvalue=None, **kwargs):
         warnings.warn("bigdl.dllib.nn.keras is deprecated in BigDL 0.11."
-                      "Recommend to use bigdl.dllib.keras Keras API.")
+                      "Recommend to use bigdl.dllib.keras.")
         super(Model, self).__init__(jvalue,
                                     to_list(input),
                                     to_list(output),
