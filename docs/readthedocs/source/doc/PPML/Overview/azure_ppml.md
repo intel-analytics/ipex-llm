@@ -65,7 +65,7 @@ Create AKS or use existing one.
 
 You can run `/ppml/trusted-big-data-ml/azure/create-aks.sh` to create AKS with confidential computing support.
 
-Note: Please use same VNet information of your client to create AKS.
+Note: Please use same VNet information of your client to create AKS. And use DC-Series VM size(i.e.Standard_DC8ds_v3) to create AKS.
 ```bash
 /ppml/trusted-big-data-ml/azure/create-aks.sh \
 --resource-group myResourceGroup \
