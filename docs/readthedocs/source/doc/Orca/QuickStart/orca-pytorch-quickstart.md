@@ -60,7 +60,7 @@ class LeNet(nn.Module):
         self.conv2 = nn.Conv2d(20, 50, 5, 1)
         self.fc1 = nn.Linear(4*4*50, 500)
         self.fc2 = nn.Linear(500, 10)
-
+        
     def forward(self, x):
         x = F.relu(self.conv1(x))
         x = F.max_pool2d(x, 2, 2)
