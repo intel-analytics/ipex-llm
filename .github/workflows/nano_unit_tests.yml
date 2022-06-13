@@ -131,7 +131,7 @@ jobs:
           $CONDA/bin/conda remove -n openvino-pytorch --all
         env:
           ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
-    
+
       - name: Run pytorch automl unit tests
         shell: bash
         run: |
@@ -266,4 +266,18 @@ jobs:
         env:
           ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
           
-
+      - name: Run Tensorflow unit tests (OpenVINO)
+        shell: bash
+        run: |
+          $CONDA/bin/conda create -n openvino-tensorflow -y python==3.7.10 setuptools=58.0.4
+          source $CONDA/bin/activate openvino-tensorflow
+          $CONDA/bin/conda info
+          bash python/nano/dev/build_and_install.sh linux default false tensorflow
+          pip install pytest
+          pip install openvino-dev
+          source bigdl-nano-init
+          bash python/nano/test/run-nano-tf-openvino-tests.sh
+          source $CONDA/bin/deactivate
+          $CONDA/bin/conda remove -n openvino-tensorflow --all
+        env:
+          ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
