@@ -53,7 +53,7 @@ class TestPPMLContext(unittest.TestCase):
         df = self.sc.read("plain_text") \
             .option("header", "true") \
             .csv(input_path)
-        self.assertEqual(df.count(), 100)
+        self.assertEqual(df.count(), 8)
 
         if os.path.isfile(input_path):
             os.remove(input_path)
