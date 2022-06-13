@@ -192,6 +192,19 @@ class TestXShardsTSDataset(TestCase):
         x = np.concatenate([collected_numpy[i]['x'] for i in range(len(collected_numpy))], axis=0)
         assert x.shape == ((50-lookback-horizon+1)*2, lookback, 2)
 
+    def test_xshardstsdataset_scale(self):
+        from sklearn.preprocessing import StandardScaler
+        
+        shards_multiple = read_csv(os.path.join(self.resource_path, "multiple.csv"))
+
+        tsdata = XShardsTSDataset.from_xshards(shards_multiple, dt_col="datetime",
+                                               target_col="value",
+                                               extra_feature_col=["extra feature"], id_col="id")
+
+
+        scaler = StandardScaler()
+        tsdata.scale(scaler)
+
     def test_xshardstsdataset_sparkdf(self):
         df = generate_spark_df()
 

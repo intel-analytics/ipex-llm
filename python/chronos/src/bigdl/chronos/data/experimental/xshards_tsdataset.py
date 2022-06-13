@@ -270,6 +270,34 @@ class XShardsTSDataset:
                                                         feature_col, target_col)
         return self
 
+    def scale(self,
+              scaler,
+              fit = True):
+        '''
+        Scale the time series dataset's feature column and target column.
+
+        :param scaler: sklearn scaler instance, StandardScaler, MaxAbsScaler,
+               MinMaxScaler and RobustScaler are supported.
+        :param fit: if we need to fit the scaler. Typically, the value should
+               be set to True for training set, while False for validation and
+               test set. The value is defaulted to True.
+
+        :return: the tsdataset instance.
+
+        Assume there is a training set tsdata and a test set tsdata_test.
+        scale() should be called first on training set with default value fit=True,
+        then be called on test set with the same scaler and fit=False.
+
+        >>> from sklearn.preprocessing import StandardScaler
+        >>> scaler = StandardScaler()
+        >>> tsdata.scale(scaler, fit=True)
+        >>> tsdata_test.scale(scaler, fit=False)
+        '''
+        self.shards = self.shards.transform_shard(scale_timeseries_dataframe,
+                                                        scaler, self.feature_col, self.target_col, fit)
+        
+        return self
+
     def to_xshards(self):
         '''
         Export rolling result in form of a dict of numpy ndarray {'x': ..., 'y': ...}
@@ -283,3 +311,50 @@ class XShardsTSDataset:
                               "Please call 'roll' method "
                               "before transform a XshardsTSDataset to numpy ndarray!")
         return self.numpy_shards.transform_shard(transform_to_dict)
+
+def scale_timeseries_dataframe(df, scaler, feature_col, target_col, fit=True):
+        '''
+        Scale the time series dataset's feature column and target column.
+
+        :param scaler: sklearn scaler instance, StandardScaler, MaxAbsScaler,
+               MinMaxScaler and RobustScaler are supported.
+        :param fit: if we need to fit the scaler. Typically, the value should
+               be set to True for training set, while False for validation and
+               test set. The value is defaulted to True.
+
+        :return: the tsdataset instance.
+
+        Assume there is a training set tsdata and a test set tsdata_test.
+        scale() should be called first on training set with default value fit=True,
+        then be called on test set with the same scaler and fit=False.
+
+        >>> from sklearn.preprocessing import StandardScaler
+        >>> scaler = StandardScaler()
+        >>> tsdata.scale(scaler, fit=True)
+        >>> tsdata_test.scale(scaler, fit=False)
+        '''
+       #  if self.roll_additional_feature:
+       #      feature_col = []
+       #      for feature in self.feature_col:
+       #          if feature not in self.roll_additional_feature:
+       #              feature_col.append(feature)
+       #  import sklearn
+       #  scaler = sklearn.preprocessing.StandardScaler()
+        
+        
+        if fit:
+            # print(df)
+            df[feature_col + target_col] = scaler.fit_transform(df[feature_col + target_col])
+        else:
+            from sklearn.utils.validation import check_is_fitted
+            from bigdl.nano.utils.log4Error import invalidInputError
+            try:
+                invalidInputError(not check_is_fitted(scaler), "scaler is not fittedd")
+            except Exception:
+                invalidInputError(False,
+                                  "When calling scale for the first time, "
+                                  "you need to set fit=True.")
+            df[feature_col + target_col] = scaler.fit_transform(df[feature_col + target_col])
+
+        # return {df["id_col"][0]:{"scaler": scaler, "df": df}}
+        return df
