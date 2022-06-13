@@ -40,6 +40,22 @@ def generate_spark_df():
                             int(x))).toDF(["feature", "id", "date"])
     return df
 
+def get_ugly_ts_df():
+    data = np.random.random_sample((100, 5))
+    mask = np.random.random_sample((100, 5))
+    newmask = mask.copy()
+    mask[newmask >= 0.4] = 2
+    mask[newmask < 0.4] = 1
+    mask[newmask < 0.2] = 0
+    data[mask == 0] = None
+    data[mask == 1] = np.nan
+    df = pd.DataFrame(data, columns=['a', 'b', 'c', 'd', 'e'])
+    df['a'][0] = np.nan  # make sure column 'a' has a N/A
+    df["datetime"] = pd.date_range('1/1/2019', periods=100)
+    df.loc[50:100, "datetime"] = pd.date_range('1/1/2019', periods=50)
+    df["id"] = np.array(['00']*50 + ['01']*50)
+    return df
+
 class TestXShardsTSDataset(TestCase):
 
     def setUp(self):
@@ -193,18 +209,23 @@ class TestXShardsTSDataset(TestCase):
         assert x.shape == ((50-lookback-horizon+1)*2, lookback, 2)
 
     def test_xshardstsdataset_impute(self):
-        for val in ["last", "const", "linear"]:
-            shards_tmp = read_csv(os.path.join(self.resource_path, "impute_test.csv"))
-            tsdata = XShardsTSDataset.from_xshards(shards_tmp, 
-                                                dt_col="datetime", target_col="e",
-                                           extra_feature_col=["a", "b", "c", "d"], id_col="id")
-
-            tsdata.impute(mode=val)
-            collected_df = tsdata.shards.collect()
-            collected_df = pd.concat(collected_df, axis=0)
-            
-            assert collected_df.isna().sum().sum() == 0
-            assert len(collected_df) == 100
+        from tempfile import TemporaryDirectory
+        tmp_df = get_ugly_ts_df()
+        with TemporaryDirectory() as tmpdir:
+            file_name = os.path.join(tmpdir, 'impute.csv')
+            tmp_df.to_csv(file_name, index=False)
+            shards_tmp = read_csv(file_name)
+        
+            for val in ["last", "const", "linear"]:
+                tsdata = XShardsTSDataset.from_xshards(shards_tmp, 
+                                                    dt_col="datetime", target_col="e",
+                                            extra_feature_col=["a", "b", "c", "d"], id_col="id")
+                tsdata.impute(mode=val)
+                collected_df = tsdata.shards.collect()
+                collected_df = pd.concat(collected_df, axis=0)
+                
+                assert collected_df.isna().sum().sum() == 0
+                assert len(collected_df) == 100
 
     def test_xshardstsdataset_sparkdf(self):
         df = generate_spark_df()

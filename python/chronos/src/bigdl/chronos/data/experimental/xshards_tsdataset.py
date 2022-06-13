@@ -297,7 +297,7 @@ class XShardsTSDataset:
         self.shards = self.shards.transform_shard(impute_timeseries_dataframe,
                                                   self.dt_col, mode,
                                                   const_num)
-        self.shards.transform_shard(df_reset_index)
+        self.shards = self.shards.transform_shard(df_reset_index)
         return self
 
     def to_xshards(self):
