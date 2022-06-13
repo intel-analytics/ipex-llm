@@ -37,6 +37,8 @@ elif cluster_mode == "yarn":  # For Hadoop/YARN cluster
     conf={"spark.rpc.message.maxSize": "1024",
         "spark.task.maxFailures": "1",
         "spark.driver.extraJavaOptions": "-Dbigdl.failure.retryTimes=1"})
+else:
+    init_orca_context(cores=4, memory="10g")
 ```
 
 This is the only place where you need to specify local or distributed mode. View [Orca Context](./../Overview/orca-context.md) for more details.
@@ -69,7 +71,7 @@ class LeNet(nn.Module):
         x = F.relu(self.fc1(x))
         x = self.fc2(x)
         return F.log_softmax(x, dim=1)
-        
+
 model = LeNet()
 model.train()
 criterion = nn.NLLLoss()
