@@ -26,6 +26,15 @@ resource_path = os.path.join(os.path.dirname(__file__), "resources")
 
 class TestPPMLContext(unittest.TestCase):
     def setUp(self) -> None:
+        self.args = {"kms_type": "SimpleKeyManagementService",
+                     "simple_app_id": "465227134889",
+                     "simple_app_key": "799072978028",
+                     "primary_key_path": os.path.join(resource_path, "primaryKey"),
+                     "data_key_path": os.path.join(resource_path, "dataKey")
+                     }
+        self.sc = PPMLContext("testApp", self.args)
+
+    def test_read_plain_file(self):
         # create a tmp csv file
         with open(os.path.join(resource_path, "people.csv"), "w", encoding="utf-8", newline="") as f:
             csv_writer = csv.writer(f)
@@ -40,15 +49,6 @@ class TestPPMLContext(unittest.TestCase):
             csv_writer.writerow(["pjt", "24", "Developer"])
             f.close()
 
-        self.args = {"kms_type": "SimpleKeyManagementService",
-                     "simple_app_id": "465227134889",
-                     "simple_app_key": "799072978028",
-                     "primary_key_path": os.path.join(resource_path, "primaryKey"),
-                     "data_key_path": os.path.join(resource_path, "dataKey")
-                     }
-        self.sc = PPMLContext("testApp", self.args)
-
-    def test_read_plain_file(self):
         input_path = os.path.join(resource_path, "people.csv")
         df = self.sc.read("plain_text") \
             .option("header", "true") \
