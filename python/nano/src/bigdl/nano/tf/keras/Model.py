@@ -14,13 +14,25 @@
 # limitations under the License.
 #
 import tensorflow as tf
+from tensorflow.keras import tf_Model
 from bigdl.nano.tf.keras.training_utils import TrainingUtils
 from bigdl.nano.tf.keras.inference_utils import InferenceUtils
 
 
-class Model(TrainingUtils, InferenceUtils, tf.keras.Model):
+class Model(TrainingUtils, InferenceUtils):
     """A wrapper class for tf.keras.Model adding more functions for BigDL-Nano."""
-
     def __init__(self, *args, **kwargs):
         """Create a nano Sequential model, having the same arguments with tf.keras.Sequential."""
-        super().__init__(*args, **kwargs)
+        self.model = tf_Model(*args, **kwargs)
+        super().__init__(Model)
+
+
+def f_wapper(f):
+    def inner(self, *args, **kwargs):
+        return f(self.model, *args, **kwargs)
+    return inner
+
+
+for name in dir(tf_Model):
+    if name != "fit" and not name.startswith('__'):
+        setattr(Model, name, f_wapper(getattr(tf_Model, name)))
