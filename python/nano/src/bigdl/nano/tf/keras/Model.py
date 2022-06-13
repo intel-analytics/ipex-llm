@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 import tensorflow as tf
-from tensorflow.keras import tf_Model
+from tensorflow.keras import Model as tf_Model
 from bigdl.nano.tf.keras.training_utils import TrainingUtils
 from bigdl.nano.tf.keras.inference_utils import InferenceUtils
 
@@ -26,8 +26,13 @@ class Model(TrainingUtils, InferenceUtils):
         self.model = tf_Model(*args, **kwargs)
         super().__init__(Model)
 
+    def fit(self, *args, **kwargs):
+        """A warpped fit function of Nano."""
+        return super().fit(*args, **kwargs)
+
 
 def f_wapper(f):
+    """A wapper function to overide all tf.keras.Model method."""
     def inner(self, *args, **kwargs):
         return f(self.model, *args, **kwargs)
     return inner
