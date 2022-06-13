@@ -18,8 +18,11 @@ from bigdl.ppml.api import *
 
 
 class PPMLContext(JavaValue):
-    def __init__(self, *args):
+    def __init__(self, app_name, conf=None):
         self.bigdl_type = "float"
+        args = [app_name]
+        if conf:
+            args.append(conf)
         super().__init__(None, self.bigdl_type, *args)
 
     def load_keys(self, primary_key_path, data_key_path):

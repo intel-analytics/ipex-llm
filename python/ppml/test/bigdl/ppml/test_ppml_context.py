@@ -31,7 +31,7 @@ class TestPPMLContext(unittest.TestCase):
                      "primary_key_path": os.path.join(resource_path, "primaryKey"),
                      "data_key_path": os.path.join(resource_path, "dataKey")
                      }
-        self.sc = PPMLContext(None, "testApp", self.args)
+        self.sc = PPMLContext("testApp", self.args)
 
     def test_read_plain_file(self):
         print("test read plain text file")
