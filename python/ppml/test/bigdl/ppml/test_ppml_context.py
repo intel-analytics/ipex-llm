@@ -26,6 +26,14 @@ resource_path = os.path.join(os.path.dirname(__file__), "resources")
 
 class TestPPMLContext(unittest.TestCase):
     def setUp(self) -> None:
+        # create file primaryKey
+        with open(os.path.join(resource_path, "primaryKey"), "w") as f:
+            f.write("4652271348897248")
+
+        # create file dataKey
+        with open(os.path.join(resource_path, "dataKey"), "w") as f:
+            f.write("53535156525051565052535555535449")
+
         self.args = {"kms_type": "SimpleKeyManagementService",
                      "simple_app_id": "465227134889",
                      "simple_app_key": "799072978028",
@@ -33,6 +41,16 @@ class TestPPMLContext(unittest.TestCase):
                      "data_key_path": os.path.join(resource_path, "dataKey")
                      }
         self.sc = PPMLContext("testApp", self.args)
+
+    def tearDown(self) -> None:
+        primary_key_path = os.path.join(resource_path, "primaryKey")
+        data_key_path = os.path.join(resource_path, "dataKey")
+
+        if os.path.isfile(primary_key_path):
+            os.remove(primary_key_path)
+
+        if os.path.isfile(data_key_path):
+            os.remove(data_key_path)
 
     def test_read_plain_file(self):
         # create a tmp csv file
