@@ -453,6 +453,9 @@ class BasePytorchForecaster(Forecaster):
                 from bigdl.nano.utils.log4Error import invalidInputError
                 invalidInputError(False,
                                   "You must call fit or restore first before calling save!")
+            # user may never call the fit before
+            if self.trainer.model is None:
+                self.trainer.model = self.internal
             self.trainer.save_checkpoint(checkpoint_file)  # save current status
             if quantize_checkpoint_file:
                 try:
@@ -522,6 +525,11 @@ class BasePytorchForecaster(Forecaster):
         optimizer = self.optimizer_creator(model, self.optim_config)
         self.internal = Trainer.compile(model=model, loss=loss,
                                         optimizer=optimizer)
+        # This trainer is only for saving, once the user call `fit`, it will be
+        # replaced according to the new training config
+        self.trainer = Trainer(logger=False, max_epochs=1,
+                               checkpoint_callback=self.checkpoint_callback,
+                               num_processes=self.num_processes, use_ipex=self.use_ipex)
 
         self.distributed = False
         self.fitted = True
