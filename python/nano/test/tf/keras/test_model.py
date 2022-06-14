@@ -14,6 +14,7 @@
 # limitations under the License.
 #
 
+import tensorflow as tf
 from bigdl.nano.tf.keras import Model
 from tensorflow.keras.applications.mobilenet_v2 import MobileNetV2
 
