@@ -110,7 +110,7 @@ class TestChronosModelTCNForecaster(TestCase):
         train_data = (train_data[0] * 10000.0, train_data[1] * 10000.0)
         forecaster.fit(train_data, epochs=2)
         train_loss = forecaster.trainer.callback_metrics['train/loss']
-        assert(train_loss > 100)
+        assert train_loss > 10
 
 
     def test_tcn_forecaster_onnx_methods(self):
