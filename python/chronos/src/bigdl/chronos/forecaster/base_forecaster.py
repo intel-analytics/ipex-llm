@@ -265,6 +265,42 @@ class BasePytorchForecaster(Forecaster):
                                               input_data=data,
                                               batch_size=batch_size)
 
+    def predict_with_openvino(self, data, batch_size=32):
+        """
+        Predict using a trained forecaster with openvino. The method can only be
+        used when forecaster is a non-distributed version.
+
+        Directly call this method without calling build_openvino is valid and Forecaster will
+        automatically build an openvino session with default settings.
+
+        :param data: The data support following formats:
+
+               | 1. a numpy ndarray x:
+               | x's shape is (num_samples, lookback, feature_dim) where lookback and feature_dim
+               | should be the same as past_seq_len and input_feature_num.
+
+        :param batch_size: predict batch size. The value will not affect predict
+               result but will affect resources cost(e.g. memory and time). Defaults
+               to 32. None for all-data-single-time inference.
+
+        :return: A numpy array with shape (num_samples, horizon, target_dim).
+        """
+        from bigdl.chronos.pytorch.utils import _pytorch_fashion_inference
+
+        if self.distributed:
+            invalidInputError(False,
+                              "Openvino inference has not been supported for distributed "
+                              "forecaster. You can call .to_local() to transform the "
+                              "forecaster to a non-distributed version.")
+        if not self.fitted:
+            invalidInputError(False,
+                              "You must call fit or restore first before calling predict!")
+        if self.openvino_fp32 is None:
+            self.build_openvino()
+        return _pytorch_fashion_inference(model=self.openvino_fp32,
+                                          input_data=data,
+                                          batch_size=batch_size)
+
     def evaluate(self, data, batch_size=32, multioutput="raw_values", quantize=False):
         """
         Evaluate using a trained forecaster.
@@ -417,6 +453,9 @@ class BasePytorchForecaster(Forecaster):
                 from bigdl.nano.utils.log4Error import invalidInputError
                 invalidInputError(False,
                                   "You must call fit or restore first before calling save!")
+            # user may never call the fit before
+            if self.trainer.model is None:
+                self.trainer.model = self.internal
             self.trainer.save_checkpoint(checkpoint_file)  # save current status
             if quantize_checkpoint_file:
                 try:
@@ -486,6 +525,11 @@ class BasePytorchForecaster(Forecaster):
         optimizer = self.optimizer_creator(model, self.optim_config)
         self.internal = Trainer.compile(model=model, loss=loss,
                                         optimizer=optimizer)
+        # This trainer is only for saving, once the user call `fit`, it will be
+        # replaced according to the new training config
+        self.trainer = Trainer(logger=False, max_epochs=1,
+                               checkpoint_callback=self.checkpoint_callback,
+                               num_processes=self.num_processes, use_ipex=self.use_ipex)
 
         self.distributed = False
         self.fitted = True
@@ -553,6 +597,24 @@ class BasePytorchForecaster(Forecaster):
                                               input_sample=dummy_input,
                                               accelerator="onnxruntime",
                                               onnxruntime_session_options=sess_options)
+
+    def build_openvino(self):
+        '''
+        Build openvino model to speed up inference and reduce latency.
+        The method is Not required to call before predict_with_openvino.
+        '''
+        from bigdl.chronos.pytorch import TSTrainer as Trainer
+
+        if self.distributed:
+            invalidInputError(False,
+                              "build_openvino has not been supported for distributed "
+                              "forecaster. You can call .to_local() to transform the "
+                              "forecaster to a non-distributed version.")
+        dummy_input = torch.rand(1, self.data_config["past_seq_len"],
+                                 self.data_config["input_feature_num"])
+        self.openvino_fp32 = Trainer.trace(self.internal,
+                                           input_sample=dummy_input,
+                                           accelerator="openvino")
 
     def export_onnx_file(self, dirname="model.onnx", quantized_dirname="qmodel.onnx"):
         """
@@ -657,12 +719,6 @@ class BasePytorchForecaster(Forecaster):
         framework = [framework] if isinstance(framework, str) else framework
         temp_quantized_model = None
         for framework_item in framework:
-            # if "onnxrt" in framework_item:
-                # Temp patch to developing bigdl-nano
-                # TODO: delete once bigdl-nano has a stable inference API
-                # if "_quantized_model" in dir(self.internal):
-                #     temp_quantized_model = self.internal._quantized_model
-                #     self.internal._quantized_model = None
             accelerator, method = framework_item.split('_')
             if accelerator == 'pytorch':
                 accelerator = None

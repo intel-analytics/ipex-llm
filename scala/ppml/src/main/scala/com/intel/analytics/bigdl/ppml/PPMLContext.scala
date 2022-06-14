@@ -92,6 +92,10 @@ class PPMLContext protected(kms: KeyManagementService, sparkSession: SparkSessio
     new EncryptedDataFrameWriter(sparkSession, dataFrame, cryptoMode, dataKeyPlainText)
   }
 
+  /**
+   * Get SparkSession from PPMLContext
+   * @return SparkSession in PPMLContext
+   */
   def getSparkSession(): SparkSession = {
     sparkSession
   }

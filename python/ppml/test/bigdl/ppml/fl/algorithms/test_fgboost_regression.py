@@ -31,10 +31,10 @@ from bigdl.ppml.fl.utils import FLTest
 
 resource_path = os.path.join(os.path.dirname(__file__), "../resources")
 
-def mock_process(data_train, data_test):
+def mock_process(data_train, data_test, target="localhost:8980"):
     # FLContext is a singleton in JVM, so another process initialization is needed
     # prepare_env()
-    init_fl_context()
+    init_fl_context(target)
 
     df_train = pd.read_csv(os.path.join(resource_path, data_train))
 
@@ -105,10 +105,10 @@ class TestFGBoostRegression(FLTest):
         self.fl_server.build()
         self.fl_server.start()
         mock_party1 = Process(target=mock_process, 
-        args=('house-prices-train-preprocessed-1.csv', 'house-prices-test-preprocessed-1.csv'))
+        args=('house-prices-train-preprocessed-1.csv', 'house-prices-test-preprocessed-1.csv', self.target))
         mock_party1.start()
         mock_party2 = Process(target=mock_process, 
-        args=('house-prices-train-preprocessed-2.csv', 'house-prices-test-preprocessed-2.csv'))
+        args=('house-prices-train-preprocessed-2.csv', 'house-prices-test-preprocessed-2.csv', self.target))
         mock_party2.start()        
 
         df_train = pd.read_csv(

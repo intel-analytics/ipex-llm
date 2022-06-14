@@ -121,6 +121,23 @@ class TestChronosModelTCNForecaster(TestCase):
         except ImportError:
             pass
 
+    def test_tcn_forecaster_openvino_methods(self):
+        train_data, val_data, test_data = create_data()
+        forecaster = TCNForecaster(past_seq_len=24,
+                                   future_seq_len=5,
+                                   input_feature_num=1,
+                                   output_feature_num=1,
+                                   kernel_size=4,
+                                   num_channels=[16, 16],
+                                   lr=0.01)
+        forecaster.fit(train_data, epochs=2)
+        try:
+            pred = forecaster.predict(test_data[0])
+            pred_openvino = forecaster.predict_with_openvino(test_data[0])
+            np.testing.assert_almost_equal(pred, pred_openvino, decimal=5)
+        except ImportError:
+            pass
+
     def test_tcn_forecaster_quantization_dynamic(self):
         train_data, val_data, test_data = create_data()
         forecaster = TCNForecaster(past_seq_len=24,
@@ -324,6 +341,14 @@ class TestChronosModelTCNForecaster(TestCase):
         model = forecaster.get_model()
         assert isinstance(model, torch.nn.Module)
 
+        with tempfile.TemporaryDirectory() as tmp_dir_name:
+            ckpt_name = os.path.join(tmp_dir_name, "checkpoint.ckpt")
+            test_pred_save = forecaster.predict(test_data[0])
+            forecaster.save(ckpt_name)
+            forecaster.load(ckpt_name)
+            test_pred_load = forecaster.predict(test_data[0])
+        np.testing.assert_almost_equal(test_pred_save, test_pred_load)
+
         stop_orca_context()
 
     def test_tcn_dataloader_distributed(self):
@@ -339,3 +364,28 @@ class TestChronosModelTCNForecaster(TestCase):
                                    distributed=True)
         forecaster.fit(train_loader, epochs=2)
         stop_orca_context()
+
+    def test_tcn_customized_loss_metric(self):
+        from torchmetrics.functional import mean_squared_error
+        train_loader, _, _ = create_data(loader=True)
+        _, _, test_data = create_data()
+        loss = torch.nn.L1Loss()
+        def customized_metric(y_true, y_pred):
+            return mean_squared_error(torch.from_numpy(y_pred),
+                                      torch.from_numpy(y_true)).numpy()
+        forecaster = TCNForecaster(past_seq_len=24,
+                                   future_seq_len=5,
+                                   input_feature_num=1,
+                                   output_feature_num=1,
+                                   kernel_size=3,
+                                   loss=loss,
+                                   metrics=[customized_metric],
+                                   lr=0.01)
+        forecaster.fit(train_loader, epochs=2)
+        with tempfile.TemporaryDirectory() as tmp_dir_name:
+            ckpt_name = os.path.join(tmp_dir_name, "ckpt")
+            test_pred_save = forecaster.predict(test_data[0])
+            forecaster.save(ckpt_name)
+            forecaster.load(ckpt_name)
+            test_pred_load = forecaster.predict(test_data[0])
+        np.testing.assert_almost_equal(test_pred_save, test_pred_load)
