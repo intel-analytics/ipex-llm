@@ -94,7 +94,8 @@ class GenericLightningModule(LightningModuleFromTorch):
         _check_duplicate_metrics(self.metrics)
         self.save_hyperparameters(
             ignore=["model_creator", "optim_creator", "loss_creator",
-                    "model_config_keys", "data_config_keys", "optim_config_keys", "loss_config_keys",
+                    "model_config_keys", "data_config_keys",
+                    "optim_config_keys", "loss_config_keys",
                     "data", "validation_data", "metrics"])
 
     @staticmethod
