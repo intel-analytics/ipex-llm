@@ -42,7 +42,7 @@ class TensorflowPipeline:
 
     @staticmethod
     def file_chunk_generate(file_path):
-        CHUNK_SIZE = 4 * 1024 * 1024
+        CHUNK_SIZE = 1 * 1024 * 1024
         with open(file_path, 'rb') as f:
             while True:
                 piece = f.read(CHUNK_SIZE);
@@ -53,17 +53,15 @@ class TensorflowPipeline:
     @staticmethod
     def load_model_as_bytes(model):
         model_path = os.path.join(tempfile.mkdtemp(), "tf_vfl_server_model.h5")
-
-        j = model.to_json()
+        model.save(model_path)
         # print_file_size_in_dir(tmpdir)
         # print("0", os.listdir(tmpdir))
         # zip_path = os.path.join(tempfile.mkdtemp(), "tf_vfl_server_model")
         # shutil.make_archive(zip_path, 'zip', tmpdir)
         # size = os.path.getsize(f'{zip_path}.zip')
         logging.info(f"Client packed model file, length: {os.path.getsize(model_path)}")
-        # file_chunk_generator = TensorflowPipeline.file_chunk_generate(model_path)
-        # return file_chunk_generator
-        return j
+        file_chunk_generator = TensorflowPipeline.file_chunk_generate(model_path)
+        return file_chunk_generator
         
         
 
@@ -92,7 +90,8 @@ class TensorflowPipeline:
         """
         Get the loss data from FLServer and construct the identical Pytorch Tensor
         """
-        y_pred_local = self.model(x)
+        with tf.GradientTape() as tape:
+            y_pred_local = self.model(x)
         y_true_global = y
         data_map = {'input': y_pred_local.numpy()}
         if y_true_global is not None:
@@ -101,10 +100,9 @@ class TensorflowPipeline:
         response = self.fl_client.train(data_map)
         logging.debug(f'[{self.fl_client.client_uuid}] client got response from server')
         response_map = tensor_map_to_ndarray_map(response.data.tensorMap)
-        grad = response_map['grad']
-        self.optimizer.zero_grad()
-        y_pred_local.backward(gradient=tf.tensor(grad))
-        self.optimizer.step()
+        server_grad = response_map['grad']
+        gradients = tape.gradient(y_pred_local, self.model.trainable_variables, tf.convert_to_tensor(server_grad))
+        self.optimizer.apply_gradients(zip(gradients, self.model.trainable_variables))
         return response_map['loss']
 
     def fit(self, x, y=None, epoch=1, batch_size=4):
@@ -112,10 +110,11 @@ class TensorflowPipeline:
             if isinstance(x, tf.data.Dataset):
                 size = len(x)
                 for batch, (X, y) in enumerate(x):
+                    logging.debug(f"training batch {batch}/{size}")
                     loss = self.train_step(X, y)
                     current = batch * len(X)
-                    if batch % 100 == 0:
-                        logging.info(f"loss: {loss:>7f}  [{current:>5d}/{size:>5d}]  \
+                    if batch % 10 == 0:
+                        logging.info(f"loss: {loss:>7f}  [{batch:>5d}/{size:>5d}]  \
                             epoch {e}/{epoch}")
                         self.loss_history.append(loss)
             elif isinstance(x, ndarray):

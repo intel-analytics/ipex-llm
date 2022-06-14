@@ -20,6 +20,7 @@ import threading
 from bigdl.ppml.fl.nn.utils import ndarray_map_to_tensor_map
 from threading import Condition
 
+import numpy as np
 import tensorflow as tf
 
 # TODO: tf and pytorch aggregator could be integrated to one using inherit
@@ -46,15 +47,22 @@ class Aggregator(object):
 
     def set_server(self, model, loss_fn, optimizer):
         with self._lock:
-            if self.model is not None:
-                logging.warn("model exists on server, the add model operation is skipped")
-            else:
-                if model is not None:
-                    self.model = model
-                self.set_loss_fn(loss_fn)
-                optimizer_cls = pickle.loads(optimizer.cls)
-                optimizer_args = pickle.loads(optimizer.args)
-                self.set_optimizer(optimizer_cls, optimizer_args)
+            if model is not None:
+                logging.warn(f"This is Tensorflow Aggregator::set_server, \
+                    model should be None, but got {model}, please check.")
+            self.set_loss_fn(loss_fn)
+            optimizer_cls = pickle.loads(optimizer.cls)
+            optimizer_args = pickle.loads(optimizer.args)
+            self.set_optimizer(optimizer_cls, optimizer_args)
+
+    def set_loss_fn(self, loss_fn):
+        self.loss_fn = loss_fn
+
+    def set_optimizer(self, optimizer_cls, optimizer_args):
+        if len(list(self.model.trainable_variables)) == 0:
+            self.optimizer = None
+            return
+        self.optimizer = optimizer_cls(**optimizer_args)
 
     def set_server_model(self, model):
         with self._lock:
@@ -102,16 +110,17 @@ got {len(self.client_data)}/{self.client_num}')
                     raise Exception(f'Invalid type of tensor map key: {k}, should be input/target')
         # TODO: to be consistent with Pytorch, custom API
         x = input
-        with tf.GradientTape() as tape:
+        with tf.GradientTape(persistent=True) as tape:
             for tensor in x:
                 tape.watch(tensor)
             pred = self.model(x)
-            loss = self.loss_fn(pred, target)
+            loss = self.loss_fn(target, pred)
         gradients = tape.gradient(loss, self.model.trainable_variables)
         if self.optimizer is not None:
             self.optimizer.apply_gradients(zip(gradients, self.model.trainable_variables))
-        x_grad = tape.gradient(loss, x)
-        grad_map = {'grad': x_grad.numpy(), 'loss': loss.numpy()}
+        x_grad = tape.gradient(loss, x)[0]
+        del tape # manually delete the persistent GradientTape
+        grad_map = {'grad': x_grad.numpy(), 'loss': np.array(loss.numpy())}
         self.server_data = ndarray_map_to_tensor_map(grad_map)
 
     

@@ -22,6 +22,7 @@ from bigdl.ppml.fl.nn.generated.nn_service_pb2 import TrainRequest, UploadModelR
 from bigdl.ppml.fl.nn.generated.nn_service_pb2_grpc import *
 from bigdl.ppml.fl.nn.utils import ndarray_map_to_tensor_map
 import uuid
+import threading
 from torch.utils.data import DataLoader
 from bigdl.dllib.utils.log4Error import invalidInputError
 
@@ -29,10 +30,12 @@ from bigdl.ppml.fl.nn.utils import ClassAndArgsWrapper
 
 class FLClient(object):
     channel = None
+    _lock = threading.Lock()
     nn_stub = NNServiceStub(channel)
     def __init__(self, aggregator, target="localhost:8980") -> None: 
-        if FLClient.channel == None:
-            FLClient.channel = grpc.insecure_channel(target)
+        with FLClient._lock:
+            if FLClient.channel == None:                
+                FLClient.channel = grpc.insecure_channel(target)
         self.client_uuid = str(uuid.uuid4())
         self.aggregator = aggregator
     
@@ -50,7 +53,7 @@ class FLClient(object):
 
     def upload_model(self, model, loss_fn, optimizer_cls, optimizer_args):
         # upload model to server
-        model = pickle.dumps(model) if model is not None else None
+        model = pickle.dumps(model)
         loss_fn = pickle.dumps(loss_fn)
         optimizer = ClassAndArgsWrapper(optimizer_cls, optimizer_args).to_protobuf()
         request = UploadModelRequest(client_uuid=self.client_uuid,
