@@ -29,13 +29,13 @@ First you should download the Fashion-MNIST dataset manually on your local machi
 ```bash
 # PyTorch official dataset download link
 git clone https://github.com/zalandoresearch/fashion-mnist.git
-mv /path/to/fashion-mnist/data/fashion /path/to/local/data/Fashin-MNIST/raw 
+mv /path/to/fashion-mnist/data/fashion /path/to/local/data/FashionMNIST/raw 
 ```
 
 After downloading the dataset, you need to upload it to a network file system (HDFS or S3).
 
 ```bash
-hdfs dfs -put /path/to/local/data hdfs://path/to/remote/data
+hdfs dfs -put /path/to/local/data/FashionMNIST hdfs://path/to/remote/data
 ```
 
 Please set the dataset path on the network file system through `--remote-dir` argument when submmiting and running the program on yarn-cluster, the dataset would be downloaded and processing on the driver.
