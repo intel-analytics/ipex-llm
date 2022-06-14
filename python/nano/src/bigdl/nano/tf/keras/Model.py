@@ -21,10 +21,12 @@ from bigdl.nano.tf.keras.inference_utils import InferenceUtils
 
 class Model(TrainingUtils, InferenceUtils):
     """A wrapper class for tf.keras.Model adding more functions for BigDL-Nano."""
+
     def __init__(self, *args, **kwargs):
         """Create a nano Sequential model, having the same arguments with tf.keras.Sequential."""
         self.model = tf_Model(*args, **kwargs)
         super().__init__()
+
 
 def f_wapper(f):
     """A wapper function to overide all tf.keras.Model method."""
