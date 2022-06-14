@@ -124,6 +124,10 @@ class TestChronosNBeatsForecaster(TestCase):
             pred = forecaster.predict(test_data[0])
             pred_openvino = forecaster.predict_with_openvino(test_data[0])
             np.testing.assert_almost_equal(pred, pred_openvino, decimal=5)
+            mse = forecaster.evaluate(test_data, multioutput="raw_values")
+            mse_openvino = forecaster.evaluate_with_openvino(test_data,
+                                                     multioutput="raw_values")
+            np.testing.assert_almost_equal(mse, mse_openvino, decimal=5)
         except ImportError:
             pass
 

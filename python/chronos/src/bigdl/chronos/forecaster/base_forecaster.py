@@ -433,6 +433,56 @@ class BasePytorchForecaster(Forecaster):
         aggregate = 'mean' if multioutput == 'uniform_average' else None
         return Evaluator.evaluate(self.metrics, data[1], yhat, aggregate=aggregate)
 
+    def evaluate_with_openvino(self, data,
+                               batch_size=32,
+                               multioutput="raw_values",
+                               quantize=False):
+        """
+        Evaluate using a trained forecaster with openvino. The method can only be
+        used when forecaster is a non-distributed version.
+
+        Directly call this method without calling build_openvino is valid and Forecaster will
+        automatically build an openvino session with default settings.
+
+        Please note that evaluate result is calculated by scaled y and yhat. If you scaled
+        your data (e.g. use .scale() on the TSDataset) please follow the following code
+        snap to evaluate your result if you need to evaluate on unscaled data.
+
+        :param data: The data support following formats:
+
+               | 1. a numpy ndarray tuple (x, y):
+               | x's shape is (num_samples, lookback, feature_dim) where lookback and feature_dim
+               | should be the same as past_seq_len and input_feature_num.
+               | y's shape is (num_samples, horizon, target_dim), where horizon and target_dim
+               | should be the same as future_seq_len and output_feature_num.
+
+        :param batch_size: evaluate batch size. The value will not affect evaluate
+               result but will affect resources cost(e.g. memory and time).
+        :param multioutput: Defines aggregating of multiple output values.
+               String in ['raw_values', 'uniform_average']. The value defaults to
+               'raw_values'.
+
+        :return: A list of evaluation results. Each item represents a metric.
+        """
+        from bigdl.chronos.pytorch.utils import _pytorch_fashion_inference
+        from bigdl.nano.utils.log4Error import invalidInputError
+        if self.distributed:
+            invalidInputError(False,
+                              "Openvino inference has not been supported for distributed "
+                              "forecaster. You can call .to_local() to transform the "
+                              "forecaster to a non-distributed version.")
+        if not self.fitted:
+            invalidInputError(False,
+                              "You must call fit or restore first before calling evaluate!")
+        if self.openvino_fp32 is None:
+            self.build_openvino()
+        yhat = _pytorch_fashion_inference(model=self.openvino_fp32,
+                                            input_data=data[0],
+                                            batch_size=batch_size)
+
+        aggregate = 'mean' if multioutput == 'uniform_average' else None
+        return Evaluator.evaluate(self.metrics, data[1], yhat, aggregate=aggregate)
+
     def save(self, checkpoint_file, quantize_checkpoint_file=None):
         """
         Save the forecaster.
