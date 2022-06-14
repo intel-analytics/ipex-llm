@@ -750,7 +750,14 @@ def init_spark_conf(conf=None):
     init_env(spark_conf)
     zoo_conf = get_analytics_zoo_conf()
     # Set bigDL and TF conf
-    spark_conf.setAll(zoo_conf.items())
+    if conf and "spark.driver.extraJavaOptions" in conf:
+        extraJavaOptions = conf["spark.driver.extraJavaOptions"]
+        spark_conf.setAll(zoo_conf.items())
+        concatJavaOptions = extraJavaOptions + " " + zoo_conf.get("spark.driver.extraJavaOptions")
+        spark_conf.set("spark.driver.extraJavaOptions", concatJavaOptions)
+    else:
+        spark_conf.setAll(zoo_conf.items())
+
 
     if os.environ.get("BIGDL_JARS", None) and not is_spark_below_2_2():
         if 'PYSPARK_SUBMIT_ARGS' in os.environ:
