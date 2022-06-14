@@ -32,22 +32,8 @@ class PytorchEstimator:
         self.optimizer = optimizer
         self.version = 0
         self.algorithm = algorithm
-        self.fl_client = FLClient(target)
+        self.fl_client = FLClient(aggregator='pt', target=target)
         self.loss_history = []
-
-    @staticmethod
-    def from_torch(client_model: nn.Module,
-                   loss_fn,
-                   optimizer_cls,
-                   optimizer_args=None,
-                   target="localhost:8980",
-                   server_model=None):
-        optimizer = optimizer_cls(client_model.parameters(), **optimizer_args)
-        estimator = PytorchEstimator(client_model, loss_fn, optimizer, target=target)
-        if server_model is not None:
-            estimator.add_server_model(server_model, loss_fn, optimizer_cls, optimizer_args)
-        return estimator
-
     
     def add_server_model(self, model: nn.Module, loss_fn=None, optimizer_cls=None, optimizer_args={}):
         # add model and pickle to server

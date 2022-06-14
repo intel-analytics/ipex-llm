@@ -113,11 +113,11 @@ class TestCorrectness(FLTest):
         vfl_model_2 = NeuralNetworkPart2()
         set_one_like_parameter(vfl_model_2)
         vfl_client_ppl = Estimator.from_torch(client_model=vfl_model_1, 
-                                                     loss_fn=loss_fn,
-                                                     optimizer_cls=torch.optim.SGD,
-                                                     optimizer_args={'lr':1e-3},
-                                                     target=self.target,
-                                                     server_model=vfl_model_2)
+                                              loss_fn=loss_fn,
+                                              optimizer_cls=torch.optim.SGD,
+                                              optimizer_args={'lr':1e-3},
+                                              target=self.target,
+                                              server_model=vfl_model_2)
         vfl_client_ppl.fit(train_dataloader)
         assert np.allclose(pytorch_loss_list, vfl_client_ppl.loss_history), \
             "Validation failed, correctness of PPML and native Pytorch not the same"

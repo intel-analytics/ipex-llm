@@ -28,16 +28,16 @@ from tensorflow.keras.layers import Dense, Flatten, Conv2D
 from tensorflow.keras import Model
 from bigdl.ppml.fl.nn.generated.nn_service_pb2 import ByteChunk
 
-class TensorflowPipeline:
+class TensorflowEstimator:
     def __init__(self, model, loss_fn, optimizer, algorithm=None,
-            bigdl_type="float"):
+            bigdl_type="float", target="localhost:8980"):
         self.bigdl_type = bigdl_type
         self.model = model
         self.loss_fn = loss_fn
         self.optimizer = optimizer
         self.version = 0
         self.algorithm = algorithm
-        self.fl_client = FLClient(aggregator='tf')
+        self.fl_client = FLClient(aggregator='tf', target=target)
         self.loss_history = []
 
     @staticmethod
@@ -60,7 +60,7 @@ class TensorflowPipeline:
         # shutil.make_archive(zip_path, 'zip', tmpdir)
         # size = os.path.getsize(f'{zip_path}.zip')
         logging.info(f"Client packed model file, length: {os.path.getsize(model_path)}")
-        file_chunk_generator = TensorflowPipeline.file_chunk_generate(model_path)
+        file_chunk_generator = TensorflowEstimator.file_chunk_generate(model_path)
         return file_chunk_generator
         
         
@@ -80,7 +80,7 @@ class TensorflowPipeline:
             optimizer_cls = self.optimizer.__class__
 
         msg_model = self.fl_client.nn_stub.upload_file(
-            TensorflowPipeline.load_model_as_bytes(model))
+            TensorflowEstimator.load_model_as_bytes(model))
         msg = self.fl_client.upload_model(None, loss_fn, optimizer_cls, optimizer_args).message
         
         logging.info(msg_model)

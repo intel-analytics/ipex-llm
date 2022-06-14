@@ -22,11 +22,12 @@ import pandas as pd
 import os
 
 from bigdl.ppml.fl import *
+from bigdl.ppml.fl.estimator import Estimator
 from bigdl.ppml.fl.nn.fl_server import FLServer
 from bigdl.ppml.fl.nn.fl_client import FLClient
 from bigdl.ppml.fl.nn.tensorflow.utils import set_one_like_parameter
 from bigdl.ppml.fl.utils import init_fl_context
-from bigdl.ppml.fl.nn.tensorflow.pipeline import TensorflowPipeline
+from bigdl.ppml.fl.nn.tensorflow.estimator import TensorflowEstimator
 
 import tensorflow as tf
 print("TensorFlow version:", tf.__version__)
@@ -40,12 +41,13 @@ from tensorflow.keras import Model, Input
 resource_path = os.path.join(os.path.dirname(__file__), "../../resources")
 
 
-class TestCorrectness(unittest.TestCase):
+class TestCorrectness(FLTest):
     fmt = '%(asctime)s %(levelname)s {%(module)s:%(lineno)d} - %(message)s'
     logging.basicConfig(format=fmt, level=logging.INFO)
     tf.config.run_functions_eagerly(True) # enable step-by-step debug
     def setUp(self) -> None:
         self.fl_server = FLServer()
+        self.fl_server.set_port(self.port)
         self.fl_server.build()
         self.fl_server.start()
     
@@ -134,12 +136,18 @@ class TestCorrectness(unittest.TestCase):
         # TODO: set fixed parameters
         vfl_model_1 = build_client_model()
         set_one_like_parameter(vfl_model_1)
-        optimizer = tf.keras.optimizers.Adam()
-
-        vfl_client_ppl = TensorflowPipeline(vfl_model_1, loss_object, optimizer)
         vfl_model_2 = build_server_model()
         set_one_like_parameter(vfl_model_2)
-        vfl_client_ppl.add_server_model(vfl_model_2, loss_object, tf.keras.optimizers.Adam)
+        vfl_client_ppl = Estimator.from_keras(client_model=vfl_model_1,
+                                              loss_fn=loss_object,
+                                              optimizer_cls=tf.keras.optimizers.Adam,
+                                              optimizer_args={},
+                                              target=self.target,
+                                              server_model=vfl_model_2)
+        # vfl_client_ppl = TensorflowEstimator(vfl_model_1, loss_object, optimizer)
+        
+        
+        # vfl_client_ppl.add_server_model(vfl_model_2, loss_object, tf.keras.optimizers.Adam)
         
         vfl_client_ppl.fit(train_ds)
         assert np.allclose(tensorflow_loss_history, vfl_client_ppl.loss_history), \
