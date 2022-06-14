@@ -33,7 +33,7 @@ from bigdl.nano.pytorch.plugins.ddp_subprocess import DDPSubprocessPlugin
 
 from bigdl.nano.deps.automl.hpo_api import create_hpo_searcher, check_hpo_status
 from bigdl.nano.deps.ray.ray_api import distributed_ray
-from bigdl.nano.deps.ipex.ipex_api import create_IPEXAccelerator, create_IPEXAccelerator_1_9
+from bigdl.nano.deps.ipex.ipex_api import create_IPEXStrategy, create_IPEXStrategy_1_9, create_IPEXAccelerator_1_9
 from bigdl.nano.deps.openvino.openvino_api import PytorchOpenVINOModel, load_openvino_model
 from bigdl.nano.deps.onnxruntime.onnxruntime_api import PytorchONNXRuntimeModel, \
     load_onnxruntime_model
@@ -91,7 +91,7 @@ class Trainer(pl.Trainer):
         else:
             self.hposearcher = None
 
-        accelerator = None
+        strategy = None
 
         if TORCH_VERSION_LESS_1_11 and use_ipex and not check_avx512():
             warning("Enable ipex<=1.10 in a cpu instruction set"
@@ -104,11 +104,11 @@ class Trainer(pl.Trainer):
         if num_processes == 1:
             if self.use_ipex:
                 if TORCH_VERSION_LESS_1_10:
-                    accelerator = create_IPEXAccelerator_1_9(enable_bf16=enable_bf16)
+                    strategy = create_IPEXStrategy_1_9(enable_bf16=enable_bf16)
                 else:
-                    accelerator = create_IPEXAccelerator(enable_bf16=enable_bf16)
+                    strategy = create_IPEXStrategy(enable_bf16=enable_bf16)
 
-            super().__init__(accelerator=accelerator, *args, **kwargs)
+            super().__init__(strategy=strategy, *args, **kwargs)
         else:
             plugin = None
             invalidInputError(distributed_backend in distributed_backends,

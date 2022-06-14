@@ -15,55 +15,37 @@
 #
 
 
-from typing import Union, Dict, Any
-import intel_extension_for_pytorch as ipex
-
-import torch
-import pytorch_lightning as pl
-from pytorch_lightning.plugins import SingleDevicePlugin
 from pytorch_lightning.accelerators.accelerator import Accelerator
-from pytorch_lightning.plugins.training_type import TrainingTypePlugin
-from pytorch_lightning.plugins.precision import PrecisionPlugin
-from bigdl.nano.utils.log4Error import invalidInputError
-
-
-_STEP_OUTPUT_TYPE = Union[torch.Tensor, Dict[str, Any]]
-
+from bigdl.nano.common import check_avx512
+from typing import Any
 
 class IPEXAccelerator(Accelerator):
 
-    def __init__(
-        self,
-        training_type_plugin: TrainingTypePlugin = SingleDevicePlugin(
-            torch.device('cpu')),
-        enable_bf16=False,
-    ) -> None:
-        """
+    def __init__(self) -> None:
+        super().__init__()
 
-        Args:
-            precision_plugin: the plugin to handle precision-specific parts
-            training_type_plugin: the plugin to handle different training routines
-        """
-        self.enable_bf16 = enable_bf16
-        super().__init__(precision_plugin=PrecisionPlugin(),
-                         training_type_plugin=training_type_plugin)
+    @staticmethod
+    def is_available() -> bool:
+        """Detect if IPEX accelerator is available"""
+        if not check_avx512():
+            Warning("Enable ipex in a cpu instruction set "
+                    "without avx512 may cause some random error. "
+                    "Fall back to cpu device.")
+            return False
+        return True
 
-    def setup(self, trainer: "pl.Trainer", model: "pl.LightningModule") -> None:
-        """
-        Setup plugins for the trainer fit and creates optimizers.
+    @staticmethod
+    def auto_device_count() -> int:
+        """Get the devices when set to auto."""
+        return 1
 
-        Args:
-            trainer: the trainer instance
-            model: the LightningModule
-        """
-        self.setup_training_type_plugin(model)
-        if not self.training_type_plugin.setup_optimizers_in_pre_dispatch:
-            self.setup_optimizers(trainer)
-        self.setup_precision_plugin()
+    @staticmethod
+    def parse_devices(devices: Any) -> Any:
+        """Accelerator device parsing logic."""
+        pass
 
-        if len(self.optimizers) > 1:
-            invalidInputError("IPEX does not support more than one optimizers.")
-        dtype = torch.bfloat16 if self.enable_bf16 else None
-        model, optimizer = ipex.optimize(model, optimizer=self.optimizers[0],
-                                         inplace=True, dtype=dtype)
-        self.optimizers = [optimizer]
+    @staticmethod
+    def get_parallel_devices(devices: Any) -> Any:
+        """Gets parallel devices for the Accelerator."""
+        pass
+    

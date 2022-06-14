@@ -24,6 +24,16 @@ def create_IPEXAccelerator_1_9(*args, **kwargs):
     return IPEXAccelerator(*args, **kwargs)
 
 
+def create_IPEXStrategy(*args, **kwargs):
+    from bigdl.nano.deps.ipex.ipex_strategy import IPEXStrategy
+    return IPEXStrategy(*args, **kwargs)
+
+
+def create_IPEXStrategy_1_9(*args, **kwargs):
+    from bigdl.nano.deps.ipex.version_1_9.ipex_strategy_1_9 import IPEXStrategy
+    return IPEXStrategy(*args, **kwargs)
+
+
 def ipex_optimize(*args, **kwargs):
     import intel_extension_for_pytorch as ipex
     ipex.optimize(*args, **kwargs)
