@@ -18,6 +18,7 @@ import unittest
 import os
 import csv
 import random
+import shutil
 
 from bigdl.ppml.ppml_context import PPMLContext, init_keys, generate_encrypted_file
 from pyspark.sql import SparkSession
@@ -86,10 +87,10 @@ class TestPPMLContext(unittest.TestCase):
             os.remove(data_key_path)
 
         if os.path.isdir(encrypted_file_path):
-            os.removedirs(encrypted_file_path)
+            shutil.rmtree(encrypted_file_path)
 
         if os.path.isdir(write_data_path):
-            os.removedirs(write_data_path)
+            shutil.rmtree(write_data_path)
 
     def test_read_plain_file(self):
         input_path = os.path.join(resource_path, "people.csv")
