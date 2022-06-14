@@ -70,10 +70,6 @@ class PPMLContextWrapperTest extends FunSuite with BeforeAndAfterAll{
     }
   }
 
-  test("test1") {
-    println("test1")
-  }
-
   def initArgs(): util.Map[String, String] = {
     val args = new util.HashMap[String, String]()
     args.put("kms_type", "SimpleKeyManagementService")
@@ -116,53 +112,53 @@ class PPMLContextWrapperTest extends FunSuite with BeforeAndAfterAll{
     ppmlContextWrapper.csv(encryptedDataFrameWriter, path)
   }
 
-//  test("init PPMLContext with app name") {
-//    val appName = "test"
-//    ppmlContextWrapper.createPPMLContext(appName)
-//  }
-//
-//  test("init PPMLContext with app name & args") {
-//    val appName = "test"
-//    val args = initArgs()
-//    ppmlContextWrapper.createPPMLContext(appName, args)
-//  }
-//
-//  test("read plain text csv file") {
-//    val cryptoMode = "plain_text"
-//    val path = this.getClass.getClassLoader.getResource("people.csv").getPath
-//
-//    initAndRead(cryptoMode, path)
-//  }
-//
-//  test("read encrypted csv file") {
-//    val cryptoMode = "AES/CBC/PKCS5Padding"
-//    val path = this.getClass.getClassLoader.getResource("encrypt-people").getPath
-//
-//    initAndRead(cryptoMode, path)
-//  }
-//
-//  test(" write plain text csv file") {
-//    val spark: SparkSession = SparkSession.builder()
-//      .master("local[1]").appName("testData")
-//      .getOrCreate()
-//
-//    val data = Seq(("Java", "20000"), ("Python", "100000"), ("Scala", "3000"))
-//
-//    val df = spark.createDataFrame(data).toDF("language", "user")
-//
-//    initAndWrite(df, "plain_text")
-//  }
-//
-//  test(" write encrypted csv file") {
-//    val spark: SparkSession = SparkSession.builder()
-//      .master("local[1]").appName("testData")
-//      .getOrCreate()
-//
-//    val data = Seq(("Java", "20000"), ("Python", "100000"), ("Scala", "3000"))
-//
-//    val df = spark.createDataFrame(data).toDF("language", "user")
-//
-//    initAndWrite(df, "AES/CBC/PKCS5Padding")
-//  }
+  test("init PPMLContext with app name") {
+    val appName = "test"
+    ppmlContextWrapper.createPPMLContext(appName)
+  }
+
+  test("init PPMLContext with app name & args") {
+    val appName = "test"
+    val args = initArgs()
+    ppmlContextWrapper.createPPMLContext(appName, args)
+  }
+
+  test("read plain text csv file") {
+    val cryptoMode = "plain_text"
+    val path = this.getClass.getClassLoader.getResource("people.csv").getPath
+
+    initAndRead(cryptoMode, path)
+  }
+
+  test("read encrypted csv file") {
+    val cryptoMode = "AES/CBC/PKCS5Padding"
+    val path = this.getClass.getClassLoader.getResource("encrypt-people").getPath
+
+    initAndRead(cryptoMode, path)
+  }
+
+  test(" write plain text csv file") {
+    val spark: SparkSession = SparkSession.builder()
+      .master("local[1]").appName("testData")
+      .getOrCreate()
+
+    val data = Seq(("Java", "20000"), ("Python", "100000"), ("Scala", "3000"))
+
+    val df = spark.createDataFrame(data).toDF("language", "user")
+
+    initAndWrite(df, "plain_text")
+  }
+
+  test(" write encrypted csv file") {
+    val spark: SparkSession = SparkSession.builder()
+      .master("local[1]").appName("testData")
+      .getOrCreate()
+
+    val data = Seq(("Java", "20000"), ("Python", "100000"), ("Scala", "3000"))
+
+    val df = spark.createDataFrame(data).toDF("language", "user")
+
+    initAndWrite(df, "AES/CBC/PKCS5Padding")
+  }
 
 }
