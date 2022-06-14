@@ -213,8 +213,8 @@ class SampleRankingModel(tfrs.models.Model):
 
 def model_creator(config):
     model = SampleRankingModel(user_id_num, movie_title_num)
-    model.compile(loss=tf.keras.losses.MeanSquaredError(), 
-                  optimizer=tf.keras.optimizers.Adagrad(config["lr"]))
+    model = TFRSModel(model)
+    model.compile(optimizer=tf.keras.optimizers.Adagrad(config["lr"]))
     return model
 
 config = {
