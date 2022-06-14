@@ -683,10 +683,8 @@ def main():
     trainer.fit(train_data_creator,
                 epochs=options.epochs,
                 batch_size=options.batch_size,
-                steps_per_epoch=3473 // options.batch_size,
                 callbacks=callbacks,
-                validation_data=val_data_creator,
-                validation_steps=3581 // options.batch_size)
+                validation_data=val_data_creator)
     stop_orca_context()
 
 
