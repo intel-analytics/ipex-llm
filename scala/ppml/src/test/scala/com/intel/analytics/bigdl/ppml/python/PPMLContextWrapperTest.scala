@@ -17,11 +17,13 @@
 package com.intel.analytics.bigdl.ppml.python
 
 import com.intel.analytics.bigdl.dllib.utils.Log4Error
+import com.intel.analytics.bigdl.ppml.crypto.{AES_CBC_PKCS5PADDING, BigDLEncrypt, ENCRYPT}
 import com.intel.analytics.bigdl.ppml.kms.SimpleKeyManagementService
 import org.apache.spark.sql.{DataFrame, SparkSession}
 import org.scalatest.{BeforeAndAfterAll, FunSuite}
 
 import java.io.{File, PrintWriter}
+import java.nio.file.Paths
 import java.util
 
 class PPMLContextWrapperTest extends FunSuite with BeforeAndAfterAll{
@@ -48,6 +50,13 @@ class PPMLContextWrapperTest extends FunSuite with BeforeAndAfterAll{
     val dataKeyPath = this.getClass.getClassLoader.getResource("").getPath + "dataKey"
     kms.retrievePrimaryKey(primaryKeyPath)
     kms.retrieveDataKey(primaryKeyPath, dataKeyPath)
+
+    // generate encrypted file
+    val outputPath = this.getClass.getClassLoader.getResource("").getPath + "output/people.csv"
+    val dataKeyPlaintext = kms.retrieveDataKeyPlainText(primaryKeyPath, dataKeyPath)
+    val encrypt = new BigDLEncrypt()
+    encrypt.init(AES_CBC_PKCS5PADDING, ENCRYPT, dataKeyPlaintext)
+    encrypt.doFinal(csvFile, outputPath)
   }
 
   override def afterAll(): Unit = {
@@ -91,8 +100,8 @@ class PPMLContextWrapperTest extends FunSuite with BeforeAndAfterAll{
       Log4Error.invalidOperationError(df.count() == 8,
         "record count should be 8")
     } else {
-      Log4Error.invalidOperationError(df.count() == 100,
-        "record count should be 100")
+      Log4Error.invalidOperationError(df.count() == 8,
+        "record count should be 8")
     }
   }
 
@@ -135,7 +144,7 @@ class PPMLContextWrapperTest extends FunSuite with BeforeAndAfterAll{
 
   test("read encrypted csv file") {
     val cryptoMode = "AES/CBC/PKCS5Padding"
-    val path = this.getClass.getClassLoader.getResource("encrypt-people").getPath
+    val path = this.getClass.getClassLoader.getResource("") + "output/people.csv"
 
     initAndRead(cryptoMode, path)
   }
