@@ -94,6 +94,9 @@ class TestPPMLContext(unittest.TestCase):
         if os.path.isdir(write_data_path):
             shutil.rmtree(write_data_path)
 
+        if os.path.exists(resource_path):
+            shutil.rmtree(resource_path)
+
     def test_read_plain_file(self):
         input_path = os.path.join(resource_path, "people.csv")
         df = self.sc.read("plain_text") \
