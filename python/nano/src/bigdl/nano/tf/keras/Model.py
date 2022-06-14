@@ -35,6 +35,17 @@ def f_wapper(f):
     return inner
 
 
+def ExtendMethod(*classes):
+    """A helper function to extract all extend method from base classes."""
+    name_set = set()
+    for extend_class in classes:
+        for name in dir(extend_class):
+            if not name.startswith("_"):
+                name_set.add(name)
+    return name_set
+
+
+extend_methods = ExtendMethod(TrainingUtils, InferenceUtils)
 for name in dir(tf_Model):
-    if name != "fit" and not name.startswith('__'):
+    if name not in extend_methods and not name.startswith('__'):
         setattr(Model, name, f_wapper(getattr(tf_Model, name)))
