@@ -17,18 +17,28 @@
 package com.intel.analytics.bigdl.ppml.python
 
 import com.intel.analytics.bigdl.dllib.utils.Log4Error
+import com.intel.analytics.bigdl.ppml.PPMLContext
 import com.intel.analytics.bigdl.ppml.crypto.{AES_CBC_PKCS5PADDING, BigDLEncrypt, ENCRYPT}
 import com.intel.analytics.bigdl.ppml.kms.SimpleKeyManagementService
 import org.apache.spark.sql.{DataFrame, SparkSession}
 import org.scalatest.{BeforeAndAfterAll, FunSuite}
+import scala.collection.JavaConverters._
 
 import java.io.{File, PrintWriter}
-import java.nio.file.Paths
 import java.util
 
 class PPMLContextWrapperTest extends FunSuite with BeforeAndAfterAll{
   val ppmlContextWrapper: PPMLContextWrapper[Float] = PPMLContextWrapper.ofFloat
   val kms: SimpleKeyManagementService = SimpleKeyManagementService.apply()
+  val appName = "test"
+  val ppmlArgs: Map[String, String] = Map(
+    "kms_type" -> "SimpleKeyManagementService",
+    "simple_app_id" -> kms._appId,
+    "simple_app_key" -> kms._appKey,
+    "primary_key_path" -> (this.getClass.getClassLoader.getResource("").getPath + "primaryKey"),
+    "data_key_path" -> (this.getClass.getClassLoader.getResource("").getPath + "dataKey")
+  )
+  var sc: PPMLContext = null
 
   override def beforeAll(): Unit = {
     // generate a tmp csv file
@@ -57,6 +67,9 @@ class PPMLContextWrapperTest extends FunSuite with BeforeAndAfterAll{
     val encrypt = new BigDLEncrypt()
     encrypt.init(AES_CBC_PKCS5PADDING, ENCRYPT, dataKeyPlaintext)
     encrypt.doFinal(csvFile, encryptedFilePath)
+
+    // init PPMLContext
+    sc = ppmlContextWrapper.createPPMLContext(appName, ppmlArgs.asJava)
   }
 
   override def afterAll(): Unit = {
@@ -64,6 +77,7 @@ class PPMLContextWrapperTest extends FunSuite with BeforeAndAfterAll{
     val primaryKey = new File(this.getClass.getClassLoader.getResource("").getPath + "primaryKey")
     val dataKey = new File(this.getClass.getClassLoader.getResource("").getPath + "dataKey")
     val encryptPath = new File(this.getClass.getClassLoader.getResource("").getPath + "encrypted")
+    val writeOutput = new File(this.getClass.getClassLoader.getResource("").getPath + "output")
     if (csvFile.isFile) {
       csvFile.delete()
     }
@@ -75,6 +89,9 @@ class PPMLContextWrapperTest extends FunSuite with BeforeAndAfterAll{
     }
     if (encryptPath.isDirectory) {
       deleteDir(encryptPath)
+    }
+    if (writeOutput.isDirectory) {
+      deleteDir(writeOutput)
     }
   }
 
@@ -90,21 +107,7 @@ class PPMLContextWrapperTest extends FunSuite with BeforeAndAfterAll{
     dir.delete()
   }
 
-  def initArgs(): util.Map[String, String] = {
-    val args = new util.HashMap[String, String]()
-    args.put("kms_type", "SimpleKeyManagementService")
-    args.put("simple_app_id", kms._appId)
-    args.put("simple_app_key", kms._appKey)
-    args.put("primary_key_path", this.getClass.getClassLoader.getResource("primaryKey").getPath)
-    args.put("data_key_path", this.getClass.getClassLoader.getResource("dataKey").getPath)
-    args
-  }
-
-  def initAndRead(cryptoMode: String, path: String): Unit = {
-    val appName = "test"
-    val args = initArgs()
-
-    val sc = ppmlContextWrapper.createPPMLContext(appName, args)
+  def read(cryptoMode: String, path: String): Unit = {
     val encryptedDataFrameReader = ppmlContextWrapper.read(sc, cryptoMode)
     ppmlContextWrapper.option(encryptedDataFrameReader, "header", "true")
     val df = ppmlContextWrapper.csv(encryptedDataFrameReader, path)
@@ -113,19 +116,15 @@ class PPMLContextWrapperTest extends FunSuite with BeforeAndAfterAll{
         "record count should be 8")
   }
 
-  def initAndWrite(df: DataFrame, encryptMode: String): Unit = {
-    val appName = "test"
-    val args = initArgs()
+  def write(df: DataFrame, encryptMode: String): Unit = {
     var outputDir = "output/"
     if (encryptMode == "AES/CBC/PKCS5Padding") {
       outputDir = outputDir + "encrypt"
     } else {
       outputDir = outputDir + "plain"
     }
-
     val path = this.getClass.getClassLoader.getResource("").getPath + outputDir
 
-    val sc = ppmlContextWrapper.createPPMLContext(appName, args)
     val encryptedDataFrameWriter = ppmlContextWrapper.write(sc, df, encryptMode)
     ppmlContextWrapper.mode(encryptedDataFrameWriter, "overwrite")
     ppmlContextWrapper.option(encryptedDataFrameWriter, "header", true)
@@ -133,28 +132,25 @@ class PPMLContextWrapperTest extends FunSuite with BeforeAndAfterAll{
   }
 
   test("init PPMLContext with app name") {
-    val appName = "test"
     ppmlContextWrapper.createPPMLContext(appName)
   }
 
   test("init PPMLContext with app name & args") {
-    val appName = "test"
-    val args = initArgs()
-    ppmlContextWrapper.createPPMLContext(appName, args)
+    ppmlContextWrapper.createPPMLContext(appName, ppmlArgs.asJava)
   }
 
   test("read plain text csv file") {
     val cryptoMode = "plain_text"
     val path = this.getClass.getClassLoader.getResource("people.csv").getPath
 
-    initAndRead(cryptoMode, path)
+    read(cryptoMode, path)
   }
 
   test("read encrypted csv file") {
     val cryptoMode = "AES/CBC/PKCS5Padding"
     val path = this.getClass.getClassLoader.getResource("") + "encrypted/people.csv"
 
-    initAndRead(cryptoMode, path)
+    read(cryptoMode, path)
   }
 
   test(" write plain text csv file") {
@@ -166,7 +162,7 @@ class PPMLContextWrapperTest extends FunSuite with BeforeAndAfterAll{
 
     val df = spark.createDataFrame(data).toDF("language", "user")
 
-    initAndWrite(df, "plain_text")
+    write(df, "plain_text")
   }
 
   test(" write encrypted csv file") {
@@ -178,7 +174,7 @@ class PPMLContextWrapperTest extends FunSuite with BeforeAndAfterAll{
 
     val df = spark.createDataFrame(data).toDF("language", "user")
 
-    initAndWrite(df, "AES/CBC/PKCS5Padding")
+    write(df, "AES/CBC/PKCS5Padding")
   }
 
 }
