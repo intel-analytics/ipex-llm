@@ -45,7 +45,14 @@ def ExtendMethod(*classes):
     return name_set
 
 
-extend_methods = ExtendMethod(TrainingUtils, InferenceUtils)
+extend_methods = ExtendMethod(Model.__bases__)
+# map all public method from tf.keras.model
 for name in dir(tf_Model):
     if name not in extend_methods and not name.startswith('__'):
         setattr(Model, name, f_wapper(getattr(tf_Model, name)))
+
+# map all public method from base class
+for cls in Model.__bases__:
+    for name in dir(cls):
+        if not name.startswith("_"):
+            setattr(Model, name, f_wapper(getattr(cls, name)))
