@@ -26,6 +26,7 @@ import java.util
 
 class PPMLContextWrapperTest extends FunSuite with BeforeAndAfterAll{
   val ppmlContextWrapper: PPMLContextWrapper[Float] = PPMLContextWrapper.ofFloat
+  val kms: SimpleKeyManagementService = SimpleKeyManagementService.apply()
 
   override def beforeAll(): Unit = {
     // generate a tmp csv file
@@ -43,7 +44,6 @@ class PPMLContextWrapperTest extends FunSuite with BeforeAndAfterAll{
     csvWriter.close()
 
     // generate a primaryKey and dataKey
-    val kms = SimpleKeyManagementService.apply()
     val primaryKeyPath = this.getClass.getClassLoader.getResource("").getPath + "primaryKey"
     val dataKeyPath = this.getClass.getClassLoader.getResource("").getPath + "dataKey"
     kms.retrievePrimaryKey(primaryKeyPath)
@@ -60,12 +60,10 @@ class PPMLContextWrapperTest extends FunSuite with BeforeAndAfterAll{
     }
 
     if (dataKey.isFile) {
-      println("delete dataKey")
       dataKey.delete()
     }
 
     if (primaryKey.isFile) {
-      println("delete primary")
       primaryKey.delete()
     }
   }
@@ -73,8 +71,8 @@ class PPMLContextWrapperTest extends FunSuite with BeforeAndAfterAll{
   def initArgs(): util.Map[String, String] = {
     val args = new util.HashMap[String, String]()
     args.put("kms_type", "SimpleKeyManagementService")
-    args.put("simple_app_id", "465227134889")
-    args.put("simple_app_key", "799072978028")
+    args.put("simple_app_id", kms._appId)
+    args.put("simple_app_key", kms._appKey)
     args.put("primary_key_path", this.getClass.getClassLoader.getResource("primaryKey").getPath)
     args.put("data_key_path", this.getClass.getClassLoader.getResource("dataKey").getPath)
     args
@@ -89,8 +87,13 @@ class PPMLContextWrapperTest extends FunSuite with BeforeAndAfterAll{
     ppmlContextWrapper.option(encryptedDataFrameReader, "header", "true")
     val df = ppmlContextWrapper.csv(encryptedDataFrameReader, path)
 
-    Log4Error.invalidOperationError(df.count() == 100,
-    "record count should be 100")
+    if (cryptoMode == "plain_text") {
+      Log4Error.invalidOperationError(df.count() == 8,
+        "record count should be 8")
+    } else {
+      Log4Error.invalidOperationError(df.count() == 100,
+        "record count should be 100")
+    }
   }
 
   def initAndWrite(df: DataFrame, encryptMode: String): Unit = {
