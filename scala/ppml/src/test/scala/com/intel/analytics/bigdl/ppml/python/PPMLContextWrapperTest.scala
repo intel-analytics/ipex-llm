@@ -52,29 +52,42 @@ class PPMLContextWrapperTest extends FunSuite with BeforeAndAfterAll{
     kms.retrieveDataKey(primaryKeyPath, dataKeyPath)
 
     // generate encrypted file
-    val outputPath = this.getClass.getClassLoader.getResource("").getPath + "output/people.csv"
+    val encryptedFilePath = this.getClass.getClassLoader.getResource("").getPath + "encrypted/people.csv"
     val dataKeyPlaintext = kms.retrieveDataKeyPlainText(primaryKeyPath, dataKeyPath)
     val encrypt = new BigDLEncrypt()
     encrypt.init(AES_CBC_PKCS5PADDING, ENCRYPT, dataKeyPlaintext)
-    encrypt.doFinal(csvFile, outputPath)
+    encrypt.doFinal(csvFile, encryptedFilePath)
   }
 
   override def afterAll(): Unit = {
     val csvFile = new File(this.getClass.getClassLoader.getResource("").getPath + "people.csv")
     val primaryKey = new File(this.getClass.getClassLoader.getResource("").getPath + "primaryKey")
     val dataKey = new File(this.getClass.getClassLoader.getResource("").getPath + "dataKey")
-
+    val encryptPath = new File(this.getClass.getClassLoader.getResource("").getPath + "encrypted")
     if (csvFile.isFile) {
       csvFile.delete()
     }
-
     if (dataKey.isFile) {
       dataKey.delete()
     }
-
     if (primaryKey.isFile) {
       primaryKey.delete()
     }
+    if (encryptPath.isDirectory) {
+      deleteDir(encryptPath)
+    }
+  }
+
+  def deleteDir(dir: File): Unit = {
+    val files = dir.listFiles()
+    files.foreach(file => {
+      if (file.isDirectory) {
+        deleteDir(file)
+      } else {
+        file.delete()
+      }
+    })
+    dir.delete()
   }
 
   def initArgs(): util.Map[String, String] = {
@@ -96,13 +109,8 @@ class PPMLContextWrapperTest extends FunSuite with BeforeAndAfterAll{
     ppmlContextWrapper.option(encryptedDataFrameReader, "header", "true")
     val df = ppmlContextWrapper.csv(encryptedDataFrameReader, path)
 
-    if (cryptoMode == "plain_text") {
-      Log4Error.invalidOperationError(df.count() == 8,
+    Log4Error.invalidOperationError(df.count() == 8,
         "record count should be 8")
-    } else {
-      Log4Error.invalidOperationError(df.count() == 8,
-        "record count should be 8")
-    }
   }
 
   def initAndWrite(df: DataFrame, encryptMode: String): Unit = {
@@ -144,7 +152,7 @@ class PPMLContextWrapperTest extends FunSuite with BeforeAndAfterAll{
 
   test("read encrypted csv file") {
     val cryptoMode = "AES/CBC/PKCS5Padding"
-    val path = this.getClass.getClassLoader.getResource("") + "output/people.csv"
+    val path = this.getClass.getClassLoader.getResource("") + "encrypted/people.csv"
 
     initAndRead(cryptoMode, path)
   }
