@@ -19,6 +19,7 @@ import os
 import shutil
 import tempfile
 from numpy import ndarray
+from bigdl.dllib.utils.log4Error import invalidInputError
 
 from bigdl.ppml.fl.nn.fl_client import FLClient
 from bigdl.ppml.fl.nn.utils import print_file_size_in_dir, tensor_map_to_ndarray_map
@@ -131,7 +132,7 @@ class TensorflowEstimator:
                             epoch {e}/{epoch}")
                         self.loss_history.append(loss)
             else:
-                raise Exception(f'got unsupported data input type: {type(x)}')
+                invalidInputError(False, f'got unsupported data input type: {type(x)}')
             
 
     def predict(self, x):

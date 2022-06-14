@@ -17,6 +17,7 @@
 import pickle
 import logging
 import threading
+from bigdl.dllib.utils.log4Error import invalidInputError
 from bigdl.ppml.fl.nn.utils import ndarray_map_to_tensor_map
 from threading import Condition
 
@@ -107,7 +108,7 @@ got {len(self.client_data)}/{self.client_num}')
                 elif k == 'target':
                     target = tf.convert_to_tensor(v)
                 else:
-                    raise Exception(f'Invalid type of tensor map key: {k}, should be input/target')
+                    invalidInputError(False, f'Invalid type of tensor map key: {k}, should be input/target')
         # TODO: to be consistent with Pytorch, custom API
         x = input
         with tf.GradientTape(persistent=True) as tape:
