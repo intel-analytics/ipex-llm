@@ -24,12 +24,7 @@ class Model(TrainingUtils, InferenceUtils):
     def __init__(self, *args, **kwargs):
         """Create a nano Sequential model, having the same arguments with tf.keras.Sequential."""
         self.model = tf_Model(*args, **kwargs)
-        super().__init__(Model)
-
-    def fit(self, *args, **kwargs):
-        """A warpped fit function of Nano."""
-        return super().fit(*args, **kwargs)
-
+        super().__init__()
 
 def f_wapper(f):
     """A wapper function to overide all tf.keras.Model method."""
