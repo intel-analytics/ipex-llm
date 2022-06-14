@@ -26,7 +26,7 @@ import math
 from functools import partial
 from torch.utils.data import TensorDataset, DataLoader
 from bigdl.nano.automl.hpo.space import Space
-from .utils_hpo import GenericLightningModule
+from .utils_hpo import GenericLightningModule, _format_metric_str
 from bigdl.nano.utils.log4Error import invalidOperationError, invalidInputError
 
 
@@ -35,6 +35,7 @@ class BasePytorchForecaster(Forecaster):
     Forecaster base model for lstm, seq2seq, tcn and nbeats forecasters.
     '''
     def __init__(self, **kwargs):
+        self.internal = None
         if self.distributed:
             from bigdl.orca.learn.pytorch.estimator import Estimator
             from bigdl.orca.learn.metrics import MSE, MAE
@@ -63,16 +64,17 @@ class BasePytorchForecaster(Forecaster):
             # Model preparation
             self.fitted = False
 
-            if self.use_hpo and \
-                self._config_has_search_space(
-                    {**self.model_config, **self.optim_config, **self.loss_config}):
-                # check if there's any searchspace in arguments
-                # if no space, disable hpo and follow the normal path
-                # delay the model build to search to incorporate data
-                # TODO shall we build a default model for model.summary?
-                # self.internal = self._build_automodel()
-                pass
-            else:
+            has_space = self._config_has_search_space(
+                config={**self.model_config, **self.optim_config,
+                        **self.loss_config, **self.data_config})
+
+            if not self.use_hpo and has_space:
+                invalidInputError(False, "Found search spaces in arguments but HPO is disabled."
+                                         "Enable HPO or remove search spaces in arguments to use.")
+
+            if not has_space:
+                if self.use_hpo:
+                    warnings.warn("HPO is enabled but no spaces is specified, so disable HPO.")
                 self.use_hpo = False
                 model = self.model_creator({**self.model_config, **self.data_config})
                 loss = self.loss_creator(self.loss_config)
@@ -85,7 +87,7 @@ class BasePytorchForecaster(Forecaster):
             self.pytorch_int8 = None  # pytorch model for int8 precision
 
     @staticmethod
-    def _config_has_search_space(**config):
+    def _config_has_search_space(config):
         """Check if there's any search space in configuration."""
         for _, v in config.items():
             if isinstance(v, Space):
@@ -97,13 +99,29 @@ class BasePytorchForecaster(Forecaster):
         return False
 
     def _build_automodel(self, data, validation_data=None, batch_size=32, epochs=1):
+        """Build a Generic Model using config parameters."""
+        merged_config = {**self.model_config, **self.optim_config,
+                         **self.loss_config, **self.data_config}
+
+        model_config_keys = list(self.model_config.keys())
+        data_config_keys = list(self.data_config.keys())
+        optim_config_keys = list(self.optim_config.keys())
+        loss_config_keys = list(self.loss_config.keys())
+
         return GenericLightningModule(
             model_creator=self.model_creator,
-            model_config=self.model_config, data_config=self.data_config,
-            optim_creator=self.optimizer_creator, optim_config=self.optim_config,
-            loss_creator=self.loss_creator, loss_config=self.loss_config,
+            optim_creator=self.optimizer_creator,
+            loss_creator=self.loss_creator,
             data=data, validation_data=validation_data,
-            batch_size=batch_size, epochs=epochs)
+            batch_size=batch_size, epochs=epochs,
+            metrics=[_str2metric(metric) for metric in self.metrics],
+            scheduler=None,  # TODO
+            num_processes=self.num_processes,
+            model_config_keys=model_config_keys,
+            data_config_keys=data_config_keys,
+            optim_config_keys=optim_config_keys,
+            loss_config_keys=loss_config_keys,
+            **merged_config)
 
     def tune(self,
              data,
@@ -144,17 +162,33 @@ class BasePytorchForecaster(Forecaster):
         else:
             invalidInputError(False, "HPO only supports numpy train input data.")
 
+        # prepare target metric
+        if validation_data is not None:
+            formated_target_metric = _format_metric_str('val', target_metric)
+        else:
+            invalidInputError(False, "To use tuning, you must provide validation_data"
+                                     "as numpy arrays.")
+
+        # build auto model
         self.tune_internal = self._build_automodel(data, validation_data, batch_size, epochs)
+
         from bigdl.chronos.pytorch import TSTrainer as Trainer
         # shall we use the same trainier
         self.tune_trainer = Trainer(logger=False, max_epochs=epochs,
                                     checkpoint_callback=self.checkpoint_callback,
-                                    num_processes=self.num_processes, use_ipex=self.use_ipex)
-        self.internal = self.tune_trainer.search(n_trials=n_trials,
-                                                 target_metric=target_metric,
-                                                 direction=direction,
-                                                 n_parallels=n_parallels,
-                                                 **kwargs)
+                                    num_processes=self.num_processes, use_ipex=self.use_ipex,
+                                    use_hpo=True)
+        # run hyper parameter search
+        self.internal = self.tune_trainer.search(
+            self.tune_internal,
+            n_trials=n_trials,
+            target_metric=formated_target_metric,
+            direction=direction,
+            n_parallels=n_parallels,
+            **kwargs)
+
+        # reset train and validation datasets
+        self.tune_trainer.reset_train_val_dataloaders(self.internal)
 
     def fit(self, data, epochs=1, batch_size=32):
         # TODO: give an option to close validation during fit to save time.
@@ -201,6 +235,12 @@ class BasePytorchForecaster(Forecaster):
                 data = xshard_to_np(data)
         except ImportError:
             pass
+
+        invalidOperationError(self.internal is not None,
+                              "The model is not properly built. "
+                              "Have you set search spaces in arguments? "
+                              "If so, you need to run tune before fit "
+                              "to search and build the model.")
 
         # fit on internal
         if self.distributed:
@@ -788,10 +828,7 @@ class BasePytorchForecaster(Forecaster):
             val_data = DataLoader(TensorDataset(torch.from_numpy(val_data[0]),
                                                 torch.from_numpy(val_data[1])))
 
-        # map metric str to function
-        from bigdl.chronos.metric.forecast_metrics import TORCHMETRICS_REGRESSION_MAP
-        if isinstance(metric, str):
-            metric = TORCHMETRICS_REGRESSION_MAP[metric]
+        metric = _str2metric(metric)
 
         # init acc criterion
         accuracy_criterion = None
@@ -828,3 +865,11 @@ class BasePytorchForecaster(Forecaster):
                 self.onnxruntime_int8 = q_model
             if accelerator is None:
                 self.pytorch_int8 = q_model
+
+
+def _str2metric(metric):
+    # map metric str to function
+    if isinstance(metric, str):
+        from bigdl.chronos.metric.forecast_metrics import TORCHMETRICS_REGRESSION_MAP
+        metric = TORCHMETRICS_REGRESSION_MAP[metric]
+    return metric
