@@ -9,64 +9,63 @@ import torchvision.transforms as transforms
 from bigdl.orca import init_orca_context, stop_orca_context
 from bigdl.orca.learn.pytorch import Estimator
 from bigdl.orca.learn.metrics import Accuracy
-
-from model import model_creator, optimizer_creator
+from bigdl.orca.data.file import get_remote_file_to_local
 
 parser = argparse.ArgumentParser(description='PyTorch Example')
 parser.add_argument('--cluster_mode', type=str, default="spark-submit",
                     help='The cluster mode, such as local, yarn-client, yarn-cluster, spark-submit or k8s.')
-parser.add_argument('--backend', type=str, default="spark",
-                    help='The backend of PyTorch Estimator; '
-                         'bigdl, ray and spark are supported.')
-parser.add_argument('--batch_size', type=int, default=4, help='The training batch size')
-parser.add_argument('--epochs', type=int, default=2, help='The number of epochs to train for')
-parser.add_argument('--data_dir', type=str, default="/tmp/dataset", help='The path of dataset')
 parser.add_argument('--remote_dir', type=str, help='The path to load data from remote resources like HDFS or S3')
-parser.add_argument('--download', default=True, action='store_true', help='Download dataset or not')
-parser.add_argument('--extra-python-lib', type=str, default='model.py', help='Load dependency when running on yarn')
 args = parser.parse_args()
-
-if args.remote_dir is not None:
-    args.download = False
-    from bigdl.orca.data.file import get_remote_file_to_local
-    get_remote_file_to_local(args.remote_dir, args.data_dir)
 
 transform = transforms.Compose(
         [transforms.ToTensor(),
          transforms.Normalize((0.5,), (0.5,))])
 
-trainset = torchvision.datasets.FashionMNIST(root=args.data_dir, train=True,
-                                             download=args.download, transform=transform)
+def train_data_process():
+    remote_dir = args.remote_dir
+    data_dir = "/tmp/dataset"
+    if remote_dir is not None:
+        get_remote_file_to_local(remote_dir, data_dir)
+        trainset = torchvision.datasets.FashionMNIST(root=data_dir, train=True,
+                                                    download=False, transform=transform)
+    else:
+        trainset = torchvision.datasets.FashionMNIST(root="./data", train=True,
+                                                     download=True, transform=transform)
+    return trainset
 
-testset = torchvision.datasets.FashionMNIST(root=args.data_dir, train=False,
-                                            download=args.download, transform=transform)
+trainset = train_data_process()
 
 def train_data_creator(config, batch_size):
     trainloader = torch.utils.data.DataLoader(trainset, batch_size=batch_size,
                                               shuffle=True, num_workers=0)
     return trainloader
 
-def validation_data_creator(config, batch_size):
-    testloader = torch.utils.data.DataLoader(testset, batch_size=batch_size,
-                                             shuffle=False, num_workers=0)
-    return testloader
-
 def main():
-    init_orca_context(cluster_mode=args.cluster_mode, extra_python_lib=args.extra_python_lib)
+    if args.cluster_mode.startswith("yarn"):
+        if args.cluster_mode == "yarn-client" or "yarn":
+            init_orca_context(cluster_mode="yarn-client", extra_python_lib="./orca_example.zip", 
+                            cores=4, memory="10g", num_nodes=2)
+        elif args.cluster_mode == "yarn-cluster":
+            init_orca_context(cluster_mode="yarn-cluster", extra_python_lib="./orca_example.zip",
+                            cores=4, memory="10g", num_nodes=2)
+    elif args.cluster_mode == "spark-submit":
+        init_orca_context(cluster_mode="spark-submit")
+    else:
+        print("init_orca_context failed. cluster_mode should be one of 'yarn' or 'spark-submit' but got "
+            + args.cluster_mode)
+    
+    from example import model_creator, optimizer_creator
 
     criterion = nn.CrossEntropyLoss()
     orca_estimator = Estimator.from_torch(model=model_creator,
                                           optimizer=optimizer_creator,
                                           loss=criterion,
-                                          metrics=[Accuracy()],# Orca validation methods for evaluate.
-                                          model_dir=os.getcwd(),# The path to save model.
-                                          backend=args.backend)
+                                          metrics=[Accuracy()],
+                                          model_dir="file:///tmp",
+                                          backend="spark")
 
-    train_stats = orca_estimator.fit(train_data_creator, epochs=args.epochs, batch_size=args.batch_size)
+    train_stats = orca_estimator.fit(train_data_creator, epochs=1, batch_size=32)
     print("Train stats: {}".format(train_stats))
-
-    eval_stats = orca_estimator.evaluate(validation_data_creator, batch_size=args.batch_size)
-    print("Train stats: {}".format(eval_stats))
 
     stop_orca_context()
 
