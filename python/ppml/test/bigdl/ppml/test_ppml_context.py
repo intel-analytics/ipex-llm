@@ -70,34 +70,26 @@ class TestPPMLContext(unittest.TestCase):
 
     @classmethod
     def tearDownClass(cls) -> None:
-        pass
+        csv_path = os.path.join(resource_path, "people.csv")
+        primary_key_path = os.path.join(resource_path, "primaryKey")
+        data_key_path = os.path.join(resource_path, "dataKey")
+        encrypted_file_path = os.path.join(resource_path, "encrypted")
+        write_data_path = os.path.join(resource_path, "output")
 
-    # def setUp(self) -> None:
-    #     # create file primaryKey
-    #     with open(os.path.join(resource_path, "primaryKey"), "w") as f:
-    #         f.write("4652271348897248")
-    #
-    #     # create file dataKey
-    #     with open(os.path.join(resource_path, "dataKey"), "w") as f:
-    #         f.write("53535156525051565052535555535449")
-    #
-    #     self.args = {"kms_type": "SimpleKeyManagementService",
-    #                  "simple_app_id": "465227134889",
-    #                  "simple_app_key": "799072978028",
-    #                  "primary_key_path": os.path.join(resource_path, "primaryKey"),
-    #                  "data_key_path": os.path.join(resource_path, "dataKey")
-    #                  }
-    #     self.sc = PPMLContext("testApp", self.args)
-    #
-    # def tearDown(self) -> None:
-    #     primary_key_path = os.path.join(resource_path, "primaryKey")
-    #     data_key_path = os.path.join(resource_path, "dataKey")
-    #
-    #     if os.path.isfile(primary_key_path):
-    #         os.remove(primary_key_path)
-    #
-    #     if os.path.isfile(data_key_path):
-    #         os.remove(data_key_path)
+        if os.path.isfile(csv_path):
+            os.remove(csv_path)
+
+        if os.path.isfile(primary_key_path):
+            os.remove(primary_key_path)
+
+        if os.path.isfile(data_key_path):
+            os.remove(data_key_path)
+
+        if os.path.isdir(encrypted_file_path):
+            os.removedirs(encrypted_file_path)
+
+        if os.path.isdir(write_data_path):
+            os.removedirs(write_data_path)
 
     def test_read_plain_file(self):
         input_path = os.path.join(resource_path, "people.csv")
@@ -120,7 +112,7 @@ class TestPPMLContext(unittest.TestCase):
         self.sc.write(df, "plain_text") \
             .mode('overwrite') \
             .option("header", True) \
-            .csv(os.path.join(resource_path, "out/plain"))
+            .csv(os.path.join(resource_path, "output/plain"))
 
     def test_write_encrypt_file(self):
         data = [("Java", "20000"), ("Python", "100000"), ("Scala", "3000")]
@@ -129,7 +121,7 @@ class TestPPMLContext(unittest.TestCase):
         self.sc.write(df, "AES/CBC/PKCS5Padding") \
             .mode('overwrite') \
             .option("header", True) \
-            .csv(os.path.join(resource_path, "out/encrypt"))
+            .csv(os.path.join(resource_path, "output/encrypt"))
 
 
 if __name__ == "__main__":
