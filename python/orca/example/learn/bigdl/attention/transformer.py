@@ -30,9 +30,9 @@ from bigdl.orca import init_orca_context, stop_orca_context
 parser = argparse.ArgumentParser()
 parser.add_argument('--cluster_mode', type=str, default="local",
                     help='The mode for the Spark cluster. local, yarn or spark-submit.')
-parser.add_argument('--train_data_size', type=int, default=10000,
+parser.add_argument('--train_data_size', type=int, default=None,
                     help='The number of train data samples to use.')
-parser.add_argument('--test_data_size', type=int, default=1000,
+parser.add_argument('--test_data_size', type=int, default=None,
                     help='The number of test data samples to use.')
 
 args = parser.parse_args()
