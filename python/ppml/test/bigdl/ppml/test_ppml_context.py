@@ -67,7 +67,7 @@ class TestPPMLContext(unittest.TestCase):
                 "data_key_path": data_key_path
                 }
 
-        TestPPMLContext.sc = PPMLContext("testApp", args)
+        cls.sc = PPMLContext("testApp", args)
 
     @classmethod
     def tearDownClass(cls) -> None:
