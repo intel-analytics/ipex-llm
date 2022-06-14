@@ -477,8 +477,8 @@ class BasePytorchForecaster(Forecaster):
         if self.openvino_fp32 is None:
             self.build_openvino()
         yhat = _pytorch_fashion_inference(model=self.openvino_fp32,
-                                            input_data=data[0],
-                                            batch_size=batch_size)
+                                          input_data=data[0],
+                                          batch_size=batch_size)
 
         aggregate = 'mean' if multioutput == 'uniform_average' else None
         return Evaluator.evaluate(self.metrics, data[1], yhat, aggregate=aggregate)
