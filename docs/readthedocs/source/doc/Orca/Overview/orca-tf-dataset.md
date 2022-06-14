@@ -102,7 +102,7 @@ pred_shards = est.predict(ds)
 2. Apply TF dataset map functions to preprocess the data.
 3. Feed into Orca TF Estimator to do model training, validation, and inference.
 
-Let's see an example of using Orca TF Dataset. You can run this example via [Friesian basic ranking example](https://github.com/intel-analytics/analytics-zoo/blob/master/docs/docs/colab-notebook/friesian/examples/basic_ranking.ipynb)
+Let's see an example of using Orca TF Dataset. You can run this example via [Friesian basic ranking example](https://github.com/intel-analytics/BigDL/blob/main/python/friesian/colab-notebook/examples/basic_ranking.ipynb)
 
 First, init an orca context and create a Friesian FeatureTable from the input CSV files. Then we can create the Orca TF Dataset from the Friesian FeatureTable.
 
