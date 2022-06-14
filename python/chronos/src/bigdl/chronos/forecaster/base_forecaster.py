@@ -334,7 +334,10 @@ class BasePytorchForecaster(Forecaster):
         # data transform
         is_local_data = isinstance(data, (np.ndarray, DataLoader))
         if is_local_data and self.distributed:
-            data = np_dataloader_to_xshard(data)
+            if isinstance(data, DataLoader):
+                invalidInputError(False,
+                                  "We will be support input data loader later.")
+            data = np_to_xshard(data)
         if not is_local_data and not self.distributed:
             data = xshard_to_np(data, mode="predict")
 
@@ -353,7 +356,6 @@ class BasePytorchForecaster(Forecaster):
                 from bigdl.nano.utils.log4Error import invalidInputError
                 invalidInputError(False,
                                   "You must call fit or restore first before calling predict!")
-            data = data.dataset.tensors[0].numpy() if isinstance(data, DataLoader) else data
             if quantize:
                 yhat = _pytorch_fashion_inference(model=self.pytorch_int8,
                                                   input_data=data,
@@ -364,7 +366,7 @@ class BasePytorchForecaster(Forecaster):
                                                   input_data=data,
                                                   batch_size=batch_size)
             if not is_local_data:
-                yhat = np_dataloader_to_xshard(yhat, prefix="prediction")
+                yhat = np_to_xshard(yhat, prefix="prediction")
             return yhat
 
     def predict_with_onnx(self, data, batch_size=32, quantize=False):
@@ -404,7 +406,6 @@ class BasePytorchForecaster(Forecaster):
         if not self.fitted:
             invalidInputError(False,
                               "You must call fit or restore first before calling predict!")
-        data = data.dataset.tensors[0].numpy() if isinstance(data, DataLoader) else data
         if quantize:
             return _pytorch_fashion_inference(model=self.onnxruntime_int8,
                                               input_data=data,
@@ -506,30 +507,31 @@ class BasePytorchForecaster(Forecaster):
         if self.distributed:
             if is_local_data:
                 data = np_to_creator(data) if isinstance(data, tuple) else loader_to_creator(data)
-                return self.internal.evaluate(data=data,
-                                              batch_size=batch_size)
-            else:
-                return self.internal.evaluate(data=data,
-                                              batch_size=batch_size)
+            return self.internal.evaluate(data=data,
+                                          batch_size=batch_size)
         else:
             if not self.fitted:
                 from bigdl.nano.utils.log4Error import invalidInputError
                 invalidInputError(False,
                                   "You must call fit or restore first before calling evaluate!")
             if isinstance(data, DataLoader):
-                data = data.dataset.tensors[0].numpy(), data.dataset.tensors[1].numpy()
+                input_data = data
+                target = np.concatenate(tuple(val[1] for val in data), axis=0)
+            else:
+                input_data, target = data
             if quantize:
                 yhat = _pytorch_fashion_inference(model=self.pytorch_int8,
-                                                  input_data=data[0],
+                                                  input_data=input_data,
                                                   batch_size=batch_size)
             else:
                 self.internal.eval()
                 yhat = _pytorch_fashion_inference(model=self.internal,
-                                                  input_data=data[0],
+                                                  input_data=input_data,
                                                   batch_size=batch_size)
 
             aggregate = 'mean' if multioutput == 'uniform_average' else None
-            return Evaluator.evaluate(self.metrics, data[1],
+
+            return Evaluator.evaluate(self.metrics, target,
                                       yhat, aggregate=aggregate)
 
     def evaluate_with_onnx(self, data,
@@ -587,20 +589,23 @@ class BasePytorchForecaster(Forecaster):
             invalidInputError(False,
                               "You must call fit or restore first before calling evaluate!")
         if isinstance(data, DataLoader):
-            data = data.dataset.tensors[0].numpy(), data.dataset.tensors[1].numpy()
+            input_data = data
+            target = np.concatenate(tuple((val[1] for val in data)), axis=0)
+        else:
+            input_data, target = data
         if quantize:
             yhat = _pytorch_fashion_inference(model=self.onnxruntime_int8,
-                                              input_data=data[0],
+                                              input_data=input_data,
                                               batch_size=batch_size)
         else:
             if self.onnxruntime_fp32 is None:
                 self.build_onnx()
             yhat = _pytorch_fashion_inference(model=self.onnxruntime_fp32,
-                                              input_data=data[0],
+                                              input_data=input_data,
                                               batch_size=batch_size)
 
         aggregate = 'mean' if multioutput == 'uniform_average' else None
-        return Evaluator.evaluate(self.metrics, data[1], yhat, aggregate=aggregate)
+        return Evaluator.evaluate(self.metrics, target, yhat, aggregate=aggregate)
 
     def save(self, checkpoint_file, quantize_checkpoint_file=None):
         """

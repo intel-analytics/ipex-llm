@@ -16,25 +16,11 @@
 import math
 import torch
 import numpy as np
+from torch.utils.data.dataloader import DataLoader
 
-
-def _pytorch_fashion_inference(model, input_data, batch_size=None):
-    '''
-    This is an internal inference pattern for any models which can be used like:
-    `model(x)  # x is a pytorch tensor`
-
-    :param model: The model to inference
-    :param input_data: numpy ndarray
-    :param batch_size: batch size
-
-    :return: numpy ndarray
-    '''
-    if isinstance(input_data, list):
-        input_sample_list = list(map(lambda x: torch.from_numpy(x), input_data))
-    else:
-        input_sample_list = [torch.from_numpy(input_data)]
+def _inference(model, batch_size, input_sample_list):
     if batch_size is None:
-        # this branch is only to speed up the inferencing when batch_size is set to None.
+    # this branch is only to speed up the inferencing when batch_size is set to None.
         with torch.no_grad():
             return model(*input_sample_list).numpy()
     else:
@@ -50,3 +36,28 @@ def _pytorch_fashion_inference(model, input_data, batch_size=None):
         # this operation may cause performance degradation
         yhat = np.concatenate(yhat_list, axis=0)
         return yhat
+
+
+def _pytorch_fashion_inference(model, input_data, batch_size=None):
+    '''
+    This is an internal inference pattern for any models which can be used like:
+    `model(x)  # x is a pytorch tensor`
+
+    :param model: The model to inference
+    :param input_data: numpy ndarray
+    :param batch_size: batch size
+
+    :return: numpy ndarray
+    '''
+    if isinstance(input_data, list):
+        input_sample_list = list(map(lambda x: torch.from_numpy(x), input_data))
+        yhat = _inference(model, batch_size, input_sample_list)
+    elif isinstance(input_data, DataLoader):
+        yhat_list = []
+        for batch in input_data:
+            yhat_list.append(model(batch[0]).detach().numpy())
+        return np.concatenate(yhat_list, axis=0)
+    else:
+        input_sample_list = [torch.from_numpy(input_data)]
+        yhat = _inference(model, batch_size, input_sample_list)
+    return yhat

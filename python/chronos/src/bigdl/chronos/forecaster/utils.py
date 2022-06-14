@@ -23,7 +23,7 @@ import numpy as np
 __all__ = ['loader_to_creator',
            'np_to_creator',
            'xshard_to_np',
-           'np_dataloader_to_xshard',
+           'np_to_xshard',
            'set_pytorch_seed',
            'check_data']
 
@@ -70,10 +70,8 @@ def xshard_to_np(shard, mode="fit", expand_dim=None):
         return yhat
 
 
-def np_dataloader_to_xshard(x, prefix="x"):
+def np_to_xshard(x, prefix="x"):
     from bigdl.orca.data import XShards
-    if isinstance(x, DataLoader):
-        x = x.dataset.tensors[0].numpy()
     x = XShards.partition(x)
 
     def transform_to_dict(train_data):
