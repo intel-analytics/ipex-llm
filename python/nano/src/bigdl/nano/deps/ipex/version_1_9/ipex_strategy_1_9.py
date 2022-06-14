@@ -46,9 +46,7 @@ class IPEXStrategy(SingleDeviceStrategy):
             # Automatically mix precision
             ipex.enable_auto_mixed_precision(mixed_dtype=torch.bfloat16)
 
-        self.device = ipex.DEVICE
-
-        super().__init__(accelerator=accelerator, precision_plugin=precision_plugin)
+        super().__init__(accelerator=accelerator, precision_plugin=precision_plugin, device=ipex.DEVICE)
 
     def setup(self, trainer: pl.Trainer) -> None:
         """
@@ -103,7 +101,7 @@ class IPEXStrategy(SingleDeviceStrategy):
         """
         Moving back loss to xpu device
         """
-        closure_loss = closure_loss.to(self.device)
+        closure_loss = closure_loss.to(self.root_device)
         return super().backward(
             closure_loss,
             *args,
