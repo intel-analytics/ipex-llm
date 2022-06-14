@@ -70,3 +70,12 @@ class EncryptedDataFrameWriter:
 
     def csv(self, path):
         return callBigDlFunc(self.bigdl_type, "csv", self.df_writer, path)
+
+
+def init_keys(app_id, app_key, primary_key_path, data_key_path):
+    return callBigDlFunc("float", "initKeys", app_id, app_key, primary_key_path, data_key_path)
+
+
+def generate_encrypted_file(kms, primary_key_path, data_key_path, input_path, output_path):
+    callBigDlFunc("float", "generateEncryptedFile",
+                  kms, primary_key_path, data_key_path, input_path, output_path)

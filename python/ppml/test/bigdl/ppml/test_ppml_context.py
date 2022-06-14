@@ -17,42 +17,23 @@
 import unittest
 import os
 import csv
+import random
 
-from bigdl.ppml.ppml_context import PPMLContext
+from bigdl.ppml.ppml_context import PPMLContext, init_keys, generate_encrypted_file
 from pyspark.sql import SparkSession
 
 resource_path = os.path.join(os.path.dirname(__file__), "resources")
 
 
 class TestPPMLContext(unittest.TestCase):
-    def setUp(self) -> None:
-        # create file primaryKey
-        with open(os.path.join(resource_path, "primaryKey"), "w") as f:
-            f.write("4652271348897248")
+    # generate app_id and app_key
+    app_id = ''.join([str(random.randint(0, 9)) for i in range(12)])
+    app_key = ''.join([str(random.randint(0, 9)) for j in range(12)])
 
-        # create file dataKey
-        with open(os.path.join(resource_path, "dataKey"), "w") as f:
-            f.write("53535156525051565052535555535449")
+    sc = None
 
-        self.args = {"kms_type": "SimpleKeyManagementService",
-                     "simple_app_id": "465227134889",
-                     "simple_app_key": "799072978028",
-                     "primary_key_path": os.path.join(resource_path, "primaryKey"),
-                     "data_key_path": os.path.join(resource_path, "dataKey")
-                     }
-        self.sc = PPMLContext("testApp", self.args)
-
-    def tearDown(self) -> None:
-        primary_key_path = os.path.join(resource_path, "primaryKey")
-        data_key_path = os.path.join(resource_path, "dataKey")
-
-        if os.path.isfile(primary_key_path):
-            os.remove(primary_key_path)
-
-        if os.path.isfile(data_key_path):
-            os.remove(data_key_path)
-
-    def test_read_plain_file(self):
+    @classmethod
+    def setUpClass(cls) -> None:
         # create a tmp csv file
         with open(os.path.join(resource_path, "people.csv"), "w", encoding="utf-8", newline="") as f:
             csv_writer = csv.writer(f)
@@ -67,21 +48,70 @@ class TestPPMLContext(unittest.TestCase):
             csv_writer.writerow(["pjt", "24", "Developer"])
             f.close()
 
+        # generate primaryKey and dataKey
+        primary_key_path = os.path.join(resource_path, "primaryKey")
+        data_key_path = os.path.join(resource_path, "dataKey")
+        kms = init_keys(TestPPMLContext.app_id, TestPPMLContext.app_key,
+                        primary_key_path, data_key_path)
+
+        # generate encrypted file
+        input_file = os.path.join(resource_path, "people.csv")
+        output_file = os.path.join(resource_path, "encrypted/people.csv")
+        generate_encrypted_file(kms, primary_key_path, data_key_path, input_file, output_file)
+
+        args = {"kms_type": "SimpleKeyManagementService",
+                "simple_app_id": TestPPMLContext.app_id,
+                "simple_app_key": TestPPMLContext.app_key,
+                "primary_key_path": primary_key_path,
+                "data_key_path": data_key_path
+                }
+
+        TestPPMLContext.sc = PPMLContext("testApp", args)
+
+    @classmethod
+    def tearDownClass(cls) -> None:
+        pass
+
+    # def setUp(self) -> None:
+    #     # create file primaryKey
+    #     with open(os.path.join(resource_path, "primaryKey"), "w") as f:
+    #         f.write("4652271348897248")
+    #
+    #     # create file dataKey
+    #     with open(os.path.join(resource_path, "dataKey"), "w") as f:
+    #         f.write("53535156525051565052535555535449")
+    #
+    #     self.args = {"kms_type": "SimpleKeyManagementService",
+    #                  "simple_app_id": "465227134889",
+    #                  "simple_app_key": "799072978028",
+    #                  "primary_key_path": os.path.join(resource_path, "primaryKey"),
+    #                  "data_key_path": os.path.join(resource_path, "dataKey")
+    #                  }
+    #     self.sc = PPMLContext("testApp", self.args)
+    #
+    # def tearDown(self) -> None:
+    #     primary_key_path = os.path.join(resource_path, "primaryKey")
+    #     data_key_path = os.path.join(resource_path, "dataKey")
+    #
+    #     if os.path.isfile(primary_key_path):
+    #         os.remove(primary_key_path)
+    #
+    #     if os.path.isfile(data_key_path):
+    #         os.remove(data_key_path)
+
+    def test_read_plain_file(self):
         input_path = os.path.join(resource_path, "people.csv")
         df = self.sc.read("plain_text") \
             .option("header", "true") \
             .csv(input_path)
         self.assertEqual(df.count(), 8)
 
-        if os.path.isfile(input_path):
-            os.remove(input_path)
-
     def test_read_encrypt_file(self):
-        input_path = os.path.join(resource_path, "encrypt-people")
+        input_path = os.path.join(resource_path, "encrypted/people.csv")
         df = self.sc.read("AES/CBC/PKCS5Padding") \
             .option("header", "true") \
             .csv(input_path)
-        self.assertEqual(df.count(), 100)
+        self.assertEqual(df.count(), 8)
 
     def test_write_plain_file(self):
         data = [("Java", "20000"), ("Python", "100000"), ("Scala", "3000")]

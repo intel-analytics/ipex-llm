@@ -17,9 +17,9 @@
 package com.intel.analytics.bigdl.ppml.python
 
 import com.intel.analytics.bigdl.ppml.PPMLContext
-import com.intel.analytics.bigdl.ppml.crypto.{CryptoMode, EncryptRuntimeException}
+import com.intel.analytics.bigdl.ppml.crypto.{AES_CBC_PKCS5PADDING, BigDLEncrypt, CryptoMode, ENCRYPT, EncryptRuntimeException}
 import com.intel.analytics.bigdl.ppml.crypto.dataframe.{EncryptedDataFrameReader, EncryptedDataFrameWriter}
-import com.intel.analytics.bigdl.ppml.kms.KMS_CONVENTION
+import com.intel.analytics.bigdl.ppml.kms.{KMS_CONVENTION, SimpleKeyManagementService}
 import org.apache.spark.sql.{DataFrame, DataFrameWriter, Row}
 import org.slf4j.{Logger, LoggerFactory}
 
@@ -117,6 +117,26 @@ class PPMLContextWrapper[T]() {
 
   def csv(encryptedDataFrameWriter: EncryptedDataFrameWriter, path: String): Unit = {
     encryptedDataFrameWriter.csv(path)
+  }
+
+  /**
+   * support for test
+   */
+
+  def initKeys(appId: String, appKey: String, primaryKeyPath: String,
+               dataKeyPath: String): SimpleKeyManagementService = {
+    val kms = SimpleKeyManagementService.apply(appId, appKey)
+    kms.retrievePrimaryKey(primaryKeyPath)
+    kms.retrieveDataKey(primaryKeyPath, dataKeyPath)
+    kms
+  }
+
+  def generateEncryptedFile(kms: SimpleKeyManagementService, primaryKeyPath: String,
+                            dataKeyPath: String, input: String, output: String): Unit ={
+    val dataKeyPlaintext = kms.retrieveDataKeyPlainText(primaryKeyPath, dataKeyPath)
+    val encrypt = new BigDLEncrypt()
+    encrypt.init(AES_CBC_PKCS5PADDING, ENCRYPT, dataKeyPlaintext)
+    encrypt.doFinal(input, output)
   }
 
 }

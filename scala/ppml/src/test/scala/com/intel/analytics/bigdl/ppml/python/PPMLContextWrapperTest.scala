@@ -25,7 +25,6 @@ import org.scalatest.{BeforeAndAfterAll, FunSuite}
 import scala.collection.JavaConverters._
 
 import java.io.{File, PrintWriter}
-import java.util
 
 class PPMLContextWrapperTest extends FunSuite with BeforeAndAfterAll{
   val ppmlContextWrapper: PPMLContextWrapper[Float] = PPMLContextWrapper.ofFloat
