@@ -35,6 +35,9 @@ class TestPPMLContext(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls) -> None:
+        if not os.path.exists(resource_path):
+            os.mkdir(resource_path)
+
         # create a tmp csv file
         with open(os.path.join(resource_path, "people.csv"), "w", encoding="utf-8", newline="") as f:
             csv_writer = csv.writer(f)
@@ -47,7 +50,6 @@ class TestPPMLContext(unittest.TestCase):
             csv_writer.writerow(["ehhxoni", "23", "Developer"])
             csv_writer.writerow(["capom", "60", "Developer"])
             csv_writer.writerow(["pjt", "24", "Developer"])
-            f.close()
 
         # generate primaryKey and dataKey
         primary_key_path = os.path.join(resource_path, "primaryKey")

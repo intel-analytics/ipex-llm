@@ -132,7 +132,7 @@ class PPMLContextWrapper[T]() {
   }
 
   def generateEncryptedFile(kms: SimpleKeyManagementService, primaryKeyPath: String,
-                            dataKeyPath: String, input: String, output: String): Unit ={
+                            dataKeyPath: String, input: String, output: String): Unit = {
     val dataKeyPlaintext = kms.retrieveDataKeyPlainText(primaryKeyPath, dataKeyPath)
     val encrypt = new BigDLEncrypt()
     encrypt.init(AES_CBC_PKCS5PADDING, ENCRYPT, dataKeyPlaintext)
