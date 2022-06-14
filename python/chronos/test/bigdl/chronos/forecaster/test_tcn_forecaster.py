@@ -22,7 +22,7 @@ import torch
 from bigdl.chronos.forecaster.tcn_forecaster import TCNForecaster
 from unittest import TestCase
 import pytest
-import unittest
+
 
 def create_data(loader=False):
     num_train_samples = 1000
@@ -110,7 +110,6 @@ class TestChronosModelTCNForecaster(TestCase):
         train_data = (train_data[0] * 10000.0, train_data[1] * 10000.0)
         forecaster.fit(train_data, epochs=2)
         train_loss = forecaster.trainer.callback_metrics['train/loss']
-        print(forecaster.trainer.callback_metrics)
         assert(train_loss > 100)
 
 
