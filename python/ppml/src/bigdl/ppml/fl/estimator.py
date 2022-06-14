@@ -23,7 +23,7 @@ from torch import nn
 from bigdl.ppml.fl.nn.pytorch.estimator import PytorchEstimator
 from torch.utils.data import DataLoader
 from bigdl.dllib.utils.log4Error import invalidInputError
-from bigdl.ppml.fl.nn.tensorflow.pipeline import TensorflowEstimator
+from bigdl.ppml.fl.nn.tensorflow.estimator import TensorflowEstimator
 from bigdl.ppml.fl.nn.utils import tensor_map_to_ndarray_map
 from tensorflow.keras.models import Model
 
