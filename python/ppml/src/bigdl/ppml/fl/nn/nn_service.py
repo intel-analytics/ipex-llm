@@ -15,7 +15,6 @@
 #
 
 
-import shutil
 import bigdl.ppml.fl.nn.pytorch.aggregator as pt_agg
 import bigdl.ppml.fl.nn.tensorflow.aggregator as tf_agg
 

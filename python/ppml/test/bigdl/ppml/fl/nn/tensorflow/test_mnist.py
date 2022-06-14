@@ -66,7 +66,7 @@ class TestCorrectness(unittest.TestCase):
         x_train = x_train[..., tf.newaxis].astype("float32")
         x_test = x_test[..., tf.newaxis].astype("float32")
         train_ds = tf.data.Dataset.from_tensor_slices(
-        (x_train[:5000], y_train[:5000])).shuffle(10000).batch(32)
+        (x_train[:5000], y_train[:5000])).batch(32)
         test_ds = tf.data.Dataset.from_tensor_slices((x_test, y_test)).batch(32)
 
 
@@ -105,7 +105,7 @@ class TestCorrectness(unittest.TestCase):
             test_loss(t_loss)
             test_accuracy(labels, predictions)
         
-
+        tensorflow_loss_history = []
         EPOCHS = 1
         for epoch in range(EPOCHS):
             # Reset the metrics at the start of the next epoch
@@ -115,8 +115,9 @@ class TestCorrectness(unittest.TestCase):
             test_accuracy.reset_states()
             size = len(train_ds)
             for batch, (images, labels) in enumerate(train_ds):
-                loss = train_step(images, labels)
+                loss = train_step(images, labels)                
                 if batch % 10 == 0:
+                    tensorflow_loss_history.append(np.array(loss))
                     logging.info(f"loss: {loss:>7f}  [{batch:>5d}/{size:>5d}]  \
                             epoch {epoch}/{EPOCHS}")
 
@@ -141,8 +142,8 @@ class TestCorrectness(unittest.TestCase):
         vfl_client_ppl.add_server_model(vfl_model_2, loss_object, tf.keras.optimizers.Adam)
         
         vfl_client_ppl.fit(train_ds)
-        # assert np.allclose(pytorch_loss_list, vfl_client_ppl.loss_history), \
-        #     "Validation failed, correctness of PPML and native Pytorch not the same"
+        assert np.allclose(tensorflow_loss_history, vfl_client_ppl.loss_history), \
+            "Validation failed, correctness of PPML and native Pytorch not the same"
 
 def build_client_model():
     inputs = Input(shape=(28, 28, 1))
