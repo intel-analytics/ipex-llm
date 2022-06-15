@@ -24,7 +24,7 @@ from torchmetrics.functional import mean_squared_error, mean_absolute_error,\
 
 EPSILON = 1e-10
 
-
+# implemented this metric to keep up with orca.automl
 def symmetric_mean_absolute_percentage_error(preds: Tensor, target: Tensor) -> Tensor:
     abs_diff = torch.abs(preds - target)
     abs_per_error = abs_diff / (torch.abs(preds) + torch.abs(target) + EPSILON)
