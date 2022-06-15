@@ -69,6 +69,7 @@ ${SPARK_HOME}/bin/pyspark \
   --driver-memory ${RUNTIME_DRIVER_MEMORY} \
   --executor-cores ${RUNTIME_EXECUTOR_CORES} \
   --executor-memory ${RUNTIME_EXECUTOR_MEMORY} \
+  --executor-instances ${RUNTIME_EXECUTOR_INSTANCES} \
   --total-executor-cores ${RUNTIME_TOTAL_EXECUTOR_CORES} \
   --properties-file ${BIGDL_HOME}/conf/spark-bigdl.conf \
   --py-files local://${BIGDL_HOME}/python/bigdl-dllib-spark_${SPARK_VERSION}-${BIGDL_VERSION}-python-api.zip,local://${BIGDL_HOME}/python/bigdl-friesian-spark_${SPARK_VERSION}-${BIGDL_VERSION}-python-api.zip,local://${BIGDL_HOME}/python/bigdl-orca-spark_${SPARK_VERSION}-${BIGDL_VERSION}-python-api.zip,local://${BIGDL_HOME}/python/bigdl-serving-spark_${SPARK_VERSION}-${BIGDL_VERSION}-python-api.zip \
