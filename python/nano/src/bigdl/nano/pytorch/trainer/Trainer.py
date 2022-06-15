@@ -280,7 +280,7 @@ class Trainer(pl.Trainer):
             if accelerator == "onnxruntime":
                 if not type(model).__name__ == 'PytorchONNXRuntimeModel':
                     # try to establish onnx model
-                    if not input_sample:
+                    if input_sample is None:
                         # input_sample can be a dataloader
                         input_sample = calib_dataloader
                     model = Trainer.trace(model,
