@@ -2,7 +2,10 @@
 
 ## **1. Overview**
 BigDL Friesian is an open source framework for building and deploying recommender systems and works with the other BigDL components including DLlib and Orca to provide end-to-end recommender solution on Intel CPU. 
-It provides unified and easy-to-use APIs for data preprocessing and [feature engineering](../QuickStart/feature_engineering.md), examples of [common recommender models](../QuickStart/train.md), as well as a framework of [distributed serving](../QuickStart/serve.md).
+It provides: 
+1. An offline pipeline, including unified and easy-to-use APIs for [feature engineering](../QuickStart/offline.md), [examples](https://github.com/intel-analytics/BigDL/tree/main/python/friesian/example) of common recommender models.
+2. A nearline pipeline of loading procssed data into redis database.
+3. An online framework of distributed serving.
 
 ## **2. Install**
 Note: For windows Users, we recommend using Windows Subsystem for Linux 2 (WSL2) to run BigDL-Friesian. Please refer [here](./windows_guide.md) for instructions.
@@ -17,7 +20,7 @@ pip install bigdl-friesian
 
 ## **3. Get started**
 
-### **3.1 Featuer Engineering**
+### **3.1 Offline feature engineering**
 BigDL-Friesian provides `table` APIs for common feature engineering examples.
 ```python
 import pandas as pd
@@ -30,8 +33,7 @@ full = FeatureTable.from_pandas(pddf)\
 train, test = full.random_split([0.8, 0.2], seed=1)
 ```
 
-### **3.2 Recommender Models**
-BigDL-Friesian uses [`orca` APIs](../../Orca/Overview/orca.md) and provides examples of popular recommender models.
+### **3.2 Offline distributed training **
 ```python
 from bigdl.orca.learn.tf2.estimator import Estimator
 import tensorflow as tf
@@ -74,12 +76,15 @@ def build_model(num_users, num_items, class_num, layers=[20, 10]):
 
     estimator = Estimator.from_keras(model_creator=model_creator, config=config)
     estimator.fit(train.df,
-                  batch_size=args.batch_size,
-                  epochs=args.epochs,
+                  batch_size=batch_size,
+                  epochs=epochs,
                   feature_cols=['user', 'item'],
                   label_cols=['label'],
                   steps_per_epoch=steps_per_epoch,
                   validation_data=test.df,
                   validation_steps=val_steps)
+    tf.saved_model.save(estimator.get_model(), args.model_dir)
 ```
-For more details on the BigDL-Friesian's usage, please refer to the [Friesian feature engineering](../QuickStart/feature_engineering.md), [Friesian Training](../QuickStart/train.md) and [Friesian serving](../QuickStart/serve.md) page.
+
+
+

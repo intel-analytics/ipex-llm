@@ -26,9 +26,9 @@ chmod +x Miniconda3-4.5.4-Linux-x86_64.sh
 ./Miniconda3-4.5.4-Linux-x86_64.sh
 ```
 
-## Step 3: Create a BigDL-Nano env 
+## Step 3: Create a BigDL-Friesian env 
 
-Use conda to create a new environment. For example, use `bigdl-friesian` as the new environemnt name: 
+Use conda to create a new environment. For example, use `bigdl-friesian` as the new environment name: 
 
 ```bash
 conda create -n bigdl-friesian
@@ -41,7 +41,7 @@ conda activate bigdl-friesian
 You can install BigDL friesian from Pypi with `pip`. Specifically, for PyTroch extensions, please run:
 
 ```
-pip install bigdl-friesian[pytorch]
+pip install bigdl-friesian
 source bigdl-friesian-init
 ```
 
