@@ -18,9 +18,10 @@ import torch
 import numpy as np
 from torch.utils.data.dataloader import DataLoader
 
+
 def _inference(model, batch_size, input_sample_list):
     if batch_size is None:
-    # this branch is only to speed up the inferencing when batch_size is set to None.
+        # this branch is only to speed up the inferencing when batch_size is set to None.
         with torch.no_grad():
             return model(*input_sample_list).numpy()
     else:

@@ -335,8 +335,9 @@ class BasePytorchForecaster(Forecaster):
         is_local_data = isinstance(data, (np.ndarray, DataLoader))
         if is_local_data and self.distributed:
             if isinstance(data, DataLoader):
+                from bigdl.nano.utils.log4Error import invalidInputError
                 invalidInputError(False,
-                                  "We will be support input data loader later.")
+                                  "We will be support input dataloader later.")
             data = np_to_xshard(data)
         if not is_local_data and not self.distributed:
             data = xshard_to_np(data, mode="predict")
@@ -505,8 +506,7 @@ class BasePytorchForecaster(Forecaster):
         if not is_local_data and not self.distributed:
             data = xshard_to_np(data, mode="fit")
         if self.distributed:
-            if is_local_data:
-                data = np_to_creator(data) if isinstance(data, tuple) else loader_to_creator(data)
+            data = np_to_creator(data) if is_local_data else data
             return self.internal.evaluate(data=data,
                                           batch_size=batch_size)
         else:
@@ -530,7 +530,6 @@ class BasePytorchForecaster(Forecaster):
                                                   batch_size=batch_size)
 
             aggregate = 'mean' if multioutput == 'uniform_average' else None
-
             return Evaluator.evaluate(self.metrics, target,
                                       yhat, aggregate=aggregate)
 

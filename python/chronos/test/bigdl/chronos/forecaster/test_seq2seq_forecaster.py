@@ -247,9 +247,7 @@ class TestChronosModelSeq2SeqForecaster(TestCase):
 
         forecaster.fit(train_data, epochs=2)
         distributed_pred = forecaster.predict(test_data[0])
-        distributed_loader_pred = forecaster.predict(_test_loader)
         distributed_eval = forecaster.evaluate(val_data)
-        distributed_loader_eval = forecaster.evaluate(_test_loader)
 
         model = forecaster.get_model()
         assert isinstance(model, torch.nn.Module)
