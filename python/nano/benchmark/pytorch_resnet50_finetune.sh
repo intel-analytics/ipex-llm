@@ -24,6 +24,8 @@ bash $ANALYTICS_ZOO_ROOT/python/nano/dev/build_and_install.sh linux default fals
 python -m pip install torch_ipex==1.9.0 -f https://software.intel.com/ipex-whl-stable
 python -m pip install torchvision==0.10.0+cpu -f https://download.pytorch.org/whl/torch_stable.html
 
+cd $ANALYTICS_ZOO_ROOT/python/nano/benchmark/pytorch/
+
 echo "Nano_Perf: Running PyTorch Baseline"
 python pytorch-cat-dog.py --batch_size 32 --name "PyTorch Baseline"
 
