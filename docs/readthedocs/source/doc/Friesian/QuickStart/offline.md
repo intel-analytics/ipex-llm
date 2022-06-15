@@ -149,9 +149,9 @@ item_df = pd.read_csv(args.data_dir + "/ml-1m/movies.dat", encoding="ISO-8859-1"
 item_tbl = FeatureTable.from_pandas(item_df).cast("item", "int")
 ```
 
-Once data is loaded into FeatureTable, `FeatureTable.apply(in_col, out_col, func, dtype="string")` function is a convenient way to generate new column based on input columns.
+Once data is loaded into FeatureTable, `FeatureTable.apply(in_col, out_col, func, dtype="string")`  is a convenient way to generate new column based on input columns.
 ```python
-ratings_tbl = ratings_tbl.apply("rate", "label", lambda x: 1, "int")
+ratings_tbl = ratings_tbl.apply(["rate"], "label", lambda x: 1, "int")
 ```
 
 Dealing with missing data if needed, could `fillna` with provided value or just fill with median. Movielens data does not have missing value, code is for demo purpose. 
@@ -202,66 +202,4 @@ full = ratings_tbl.join(user_tbl, on="user").join(item_tbl, on="item")
 full.show(3, False)
 ```
 
-Friesian provides a library of examples end to end training piplelines of common recommender models, here is an example of NueroCF model.
-```python
-from bigdl.orca.learn.tf2.estimator import Estimator
-import tensorflow as tf
-from tensorflow.keras.layers import Input, Embedding, Dense, Flatten, concatenate, multiply
-
-def build_model(num_users, num_items, class_num, layers=[20, 10]):
-    num_layer = len(layers)
-    user_input = Input(shape=(1,), dtype='int32', name='user_input')
-    item_input = Input(shape=(1,), dtype='int32', name='item_input')
-
-    mlp_embed_user = Embedding(input_dim=num_users, output_dim=int(layers[0] / 2),
-                               input_length=1)(user_input)
-    mlp_embed_item = Embedding(input_dim=num_items, output_dim=int(layers[0] / 2),
-                               input_length=1)(item_input)
-
-    user_latent = Flatten()(mlp_embed_user)
-    item_latent = Flatten()(mlp_embed_item)
-
-    mlp_latent = concatenate([user_latent, item_latent], axis=1)
-    for idx in range(1, num_layer):
-        layer = Dense(layers[idx], activation='relu',
-                      name='layer%d' % idx)
-        mlp_latent = layer(mlp_latent)
-    prediction = Dense(class_num, activation='softmax', name='prediction')(mlp_latent)
-
-    model = tf.keras.Model([user_input, item_input], prediction)
-    return model
-    
-    config = {"lr": 1e-3, "inter_op_parallelism": 4, "intra_op_parallelism": executor_cores}
-    def model_creator(config):
-        model = build_model(num_users, num_items, 5)
-        optimizer = tf.keras.optimizers.Adam(config["lr"])
-        model.compile(optimizer=optimizer,
-                      loss='sparse_categorical_crossentropy',
-                      metrics=['sparse_categorical_crossentropy', 'accuracy'])
-        return model
-
-    steps_per_epoch = math.ceil(train.size() / batch_size)
-    val_steps = math.ceil(test.size() / batch_size)
-
-    estimator = Estimator.from_keras(model_creator=model_creator, config=config)
-    estimator.fit(train.df,
-                  batch_size=batch_size,
-                  epochs=epochs,
-                  feature_cols=['user', 'item'],
-                  label_cols=['label'],
-                  steps_per_epoch=steps_per_epoch,
-                  validation_data=test.df,
-                  validation_steps=val_steps)
-```
 For more details on the BigDL-Friesian offline pipelines, please refer to [examples on github](https://github.com/intel-analytics/BigDL/tree/main/python/friesian/example).
-
-
-
-
-
-
-
-
-
-
-

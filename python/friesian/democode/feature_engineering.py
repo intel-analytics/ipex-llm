@@ -55,7 +55,7 @@ if __name__ == '__main__':
                         help='The driver core number.')
     parser.add_argument('--driver_memory', type=str, default="36g",
                         help='The driver memory.')
-    parser.add_argument('--data_dir', type=str,default="/Users/guoqiong/intelWork/data/movielens", help='data directory')
+    parser.add_argument('--data_dir', type=str, default="./movielens", help='data directory')
 
     args = parser.parse_args()
 
@@ -81,14 +81,13 @@ if __name__ == '__main__':
         invalidInputError(False,
                           "cluster_mode should be one of 'local', 'yarn', 'standalone' and"
                           " 'spark-submit', but got " + args.cluster_mode)
-
+    # download data
+    # movielens = movielens.get_id_ratings(args.data_dir)
     ratings = pd.read_csv(args.data_dir + "/ml-1m/ratings.dat", delimiter="::",
                           names=["user", "item", "rate", "time"])
-
     ratings_tbl = FeatureTable.from_pandas(ratings)\
         .cast(["user", "item", "rate"], "int").cast("time", "long")
-
-    ratings_tbl.show(5)
+    print("count: ", ratings_tbl.size())
 
     user_df = pd.read_csv(args.data_dir + "/ml-1m/users.dat", delimiter="::",
                           names=["user", "gender", "age", "occupation", "zipcode"])
@@ -107,28 +106,31 @@ if __name__ == '__main__':
                             .rename({"count(user)": "item_visits", "avg(rate)": "item_mean_rate"})
     item_stats, user_min_max = item_stats.min_max_scale(["item_visits", "item_mean_rate"])
 
-
-    item_size = item_stats.max("item")
-    ratings_tbl = ratings_tbl.apply("rate", "label", lambda x: 1, "int")
+    item_size = item_stats.select("item").distinct().size()
     ratings_tbl = ratings_tbl.add_negative_samples(item_size=item_size, item_col="item", label_col="label", neg_num=1)
 
-    user_tbl, inx_list = user_tbl.category_encode(["gender", "age", "zipcode"])
+    user_tbl, inx_list = user_tbl.category_encode(["gender", "age", "zipcode", "occupation"])
     item_tbl, item_list = item_tbl.category_encode(["genres"])
 
     user_tbl = user_tbl.cross_columns([["gender", "age"], ["age", "zipcode"]], [50, 200])
 
-    ratings_tbl = ratings_tbl\
-        .add_hist_seq(cols=['item'], user_col="user", sort_col='time',
-                      min_len=1, max_len=10, num_seqs=1)\
-        .pad(cols="item_hist_seq", seq_len=10)
+    # ratings_tbl = ratings_tbl\
+    #     .add_hist_seq(cols=['item'], user_col="user", sort_col='time',
+    #                   min_len=1, max_len=10, num_seqs=1)\
+    #     .pad("item_hist_seq", 10)
 
     user_tbl = user_tbl.join(user_stats, on="user")
     item_tbl = item_tbl.join(item_stats, on="item")
-
     full = ratings_tbl.join(user_tbl, on="user")\
         .join(item_tbl, on="item")
 
-    full.show()
+    full.df.printSchema()
 
+    print("count: ", full.size())
+
+
+    user_tbl.write_parquet(args.data_dir + "/processed/user_features/")
+    item_tbl.write_parquet(args.data_dir + "/processed/item_features/")
+    full.write_parquet(args.data_dir + "/processed/full/")
     stop_orca_context()
 
