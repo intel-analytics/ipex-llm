@@ -19,6 +19,7 @@ from bigdl.nano.tf.keras.training_utils import TrainingUtils
 from bigdl.nano.tf.keras.inference_utils import InferenceUtils
 from bigdl.nano.tf.keras.inheritance_utils import override_method
 
+
 class Model(TrainingUtils, InferenceUtils):
     """A wrapper class for tf.keras.Model adding more functions for BigDL-Nano."""
 
@@ -28,4 +29,11 @@ class Model(TrainingUtils, InferenceUtils):
         super().__init__()
 
 
-override_method(Model, TFModel)
+def f_wrapper(f):
+    """A wrapper function to overide desired method."""
+    def wrapped(self, *args, **kwargs):
+        return f(self.model, *args, **kwargs)
+    return wrapped
+
+
+override_method(Model, TFModel, f_wrapper)

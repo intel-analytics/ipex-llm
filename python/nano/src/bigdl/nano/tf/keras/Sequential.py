@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 import tensorflow as tf
-from tensorflow.keras import Sequential as TFSequencial 
+from tensorflow.keras import Sequential as TFSequencial
 from bigdl.nano.tf.keras.inference_utils import InferenceUtils
 from bigdl.nano.tf.keras.training_utils import TrainingUtils
 from bigdl.nano.tf.keras.inheritance_utils import override_method
@@ -29,4 +29,11 @@ class Sequential(TrainingUtils, InferenceUtils):
         super().__init__()
 
 
-override_method(Sequential, TFSequencial)
+def f_wrapper(f):
+    """A wrapper function to overide desired method."""
+    def wrapped(self, *args, **kwargs):
+        return f(self.seq, *args, **kwargs)
+    return wrapped
+
+
+override_method(Sequential, TFSequencial, f_wrapper)
