@@ -56,23 +56,24 @@ then
     exit $exit_status_3
 fi
 
-python -m pytest -v test/bigdl/orca/learn/ray/tf/test_tf2_estimator_orca_dataset.py
+echo "Running PyTorch Estimator Ray Dataset tests"
+python -m pytest -v test/bigdl/orca/learn/ray/pytorch/test_estimator_ray_dataset.py
 exit_status_4=$?
 if [ $exit_status_4 -ne 0 ];
 then
     exit $exit_status_4
 fi
 
-echo "Running PyTorch Estimator Ray Dataset tests"
-python -m pytest -v test/bigdl/orca/learn/ray/pytorch/test_estimator_ray_dataset.py
+echo "Running TF2Estimator Ray Dataset tests"
+python -m pytest -v test/bigdl/orca/learn/ray/tf/test_tf2estimator_ray_dataset.py
 exit_status_5=$?
 if [ $exit_status_5 -ne 0 ];
 then
     exit $exit_status_5
 fi
 
-echo "Running TF2Estimator Ray Dataset tests"
-python -m pytest -v test/bigdl/orca/learn/ray/tf/test_tf2estimator_ray_dataset.py
+echo "Running TF2Estimator Orca Dataset tests"
+python -m pytest -v test/bigdl/orca/learn/ray/tf/test_tf2_estimator_orca_dataset.py
 exit_status_6=$?
 if [ $exit_status_6 -ne 0 ];
 then

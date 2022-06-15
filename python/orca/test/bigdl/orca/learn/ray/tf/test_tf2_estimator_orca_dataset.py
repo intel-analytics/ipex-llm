@@ -31,7 +31,6 @@ from bigdl.orca import init_orca_context, stop_orca_context, OrcaContext
 class SimpleModel(tf.keras.Model):
     def __init__(self):
         super().__init__()
-        # self.x_embedding = tf.keras.layers.Embedding(1001, 1)
         self.simple_model = tf.keras.Sequential([
             tf.keras.layers.Dense(10),
             tf.keras.layers.Dense(1)])
@@ -90,14 +89,12 @@ def get_estimator(workers_per_node=2, model_fn=model_creator):
 
 class TestTF2Estimator(TestCase):
     def setUp(self):
-        # self.sc = init_orca_context(runtime="ray", address="localhost:6379")
         self.sc = init_orca_context(init_ray_on_spark=True)
 
     def tearDown(self):
         stop_orca_context()
 
     def test_train_and_evaluate(self):
-        # sc = init_orca_context(init_ray_on_spark=True)
         rdd = self.sc.parallelize(range(5))
         shard = SparkXShards(rdd)
 
