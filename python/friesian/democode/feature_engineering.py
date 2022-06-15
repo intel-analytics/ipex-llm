@@ -115,13 +115,12 @@ if __name__ == '__main__':
     user_tbl, inx_list = user_tbl.category_encode(["gender", "age", "zipcode"])
     item_tbl, item_list = item_tbl.category_encode(["genres"])
 
-    user_tbl = user_tbl.cross_columns([["gender", "age"], ["age", "zipcode"]], [150, 200])
+    user_tbl = user_tbl.cross_columns([["gender", "age"], ["age", "zipcode"]], [50, 200])
 
-    ratings_tbl.df.printSchema()
     ratings_tbl = ratings_tbl\
         .add_hist_seq(cols=['item'], user_col="user", sort_col='time',
                       min_len=1, max_len=10, num_seqs=1)\
-        .pad(cols="item_hist_seq", seq_len=5)
+        .pad(cols="item_hist_seq", seq_len=10)
 
     user_tbl = user_tbl.join(user_stats, on="user")
     item_tbl = item_tbl.join(item_stats, on="item")

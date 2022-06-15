@@ -191,7 +191,7 @@ Adding a sequence of history visits of items and padding them into certain lengt
 ratings_tbl = ratings_tbl
     .add_hist_seq(cols=['item'], user_col="user", sort_col='time',
                   min_len=1, max_len=10, num_seqs=1)
-    .pad(cols="item_hist_seq", seq_len=5)
+    .pad(cols="item_hist_seq", seq_len=10)
 ```
 
 Joining user features, item features with rating table gives the full proprocessed data.

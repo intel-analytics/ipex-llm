@@ -4,7 +4,7 @@
 BigDL Friesian is an open source framework for building and deploying recommender systems and works with the other BigDL components including DLlib and Orca to provide end-to-end recommender solution on Intel CPU. 
 It provides: 
 1. An offline pipeline, including unified and easy-to-use APIs for [feature engineering](../QuickStart/offline.md), [examples](https://github.com/intel-analytics/BigDL/tree/main/python/friesian/example) of common recommender models.
-2. A nearline pipeline of loading procssed data into redis database.
+2. A nearline pipeline of loading processed data into redis database.
 3. An online framework of distributed serving.
 
 ## **Install**
