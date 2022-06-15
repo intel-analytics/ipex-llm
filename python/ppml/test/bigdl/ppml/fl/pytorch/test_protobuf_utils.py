@@ -28,14 +28,18 @@ import torch
 from torch import nn
 import torch.nn.functional as F
 
+from bigdl.ppml.fl.utils import FLTest
+
 resource_path = os.path.join(os.path.dirname(__file__), "../resources")
 
 
-class TestProtobufUtils(unittest.TestCase):
+class TestProtobufUtils(FLTest):
     fmt = '%(asctime)s %(levelname)s {%(module)s:%(lineno)d} - %(message)s'
     logging.basicConfig(format=fmt, level=logging.DEBUG)
+
     def setUp(self) -> None:
         self.fl_server = FLServer()
+        self.fl_server.set_port(self.port)
         self.fl_server.build()
         self.fl_server.start()
     
@@ -43,7 +47,7 @@ class TestProtobufUtils(unittest.TestCase):
         self.fl_server.stop()
 
     def test_upload_model(self) -> None:
-        cli = FLClient()
+        cli = FLClient(target=self.target)
         model = SimpleNNModel()
         loss_fn = nn.BCELoss()
         logging.debug('uploading model to server')

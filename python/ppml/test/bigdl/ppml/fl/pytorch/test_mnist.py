@@ -25,23 +25,24 @@ from bigdl.ppml.fl.nn.fl_server import FLServer
 from bigdl.ppml.fl.nn.fl_client import FLClient
 from bigdl.ppml.fl.nn.pytorch.utils import set_one_like_parameter
 from bigdl.ppml.fl.utils import init_fl_context
-from bigdl.ppml.fl.nn.pytorch.pipeline import PytorchPipeline
+from bigdl.ppml.fl.estimator import Estimator
 
 from torch import nn
 import torch
 from torch.utils.data import DataLoader
 from torchvision import datasets
 from torchvision.transforms import ToTensor
-
+from bigdl.ppml.fl.utils import FLTest
 
 resource_path = os.path.join(os.path.dirname(__file__), "../resources")
 
 
-class TestCorrectness(unittest.TestCase):
+class TestCorrectness(FLTest):
     fmt = '%(asctime)s %(levelname)s {%(module)s:%(lineno)d} - %(message)s'
     logging.basicConfig(format=fmt, level=logging.INFO)
     def setUp(self) -> None:
         self.fl_server = FLServer()
+        self.fl_server.set_port(self.port)
         self.fl_server.build()
         self.fl_server.start()
     
@@ -108,12 +109,15 @@ class TestCorrectness(unittest.TestCase):
         train(train_dataloader, model, loss_fn, optimizer)
         
         vfl_model_1 = NeuralNetworkPart1()
-        optimizer1 = torch.optim.SGD(vfl_model_1.parameters(), lr=1e-3)
         set_one_like_parameter(vfl_model_1)
-        vfl_client_ppl = PytorchPipeline(vfl_model_1, loss_fn, optimizer1)
         vfl_model_2 = NeuralNetworkPart2()
         set_one_like_parameter(vfl_model_2)
-        vfl_client_ppl.add_server_model(vfl_model_2, loss_fn, torch.optim.SGD, {'lr':1e-3})
+        vfl_client_ppl = Estimator.from_torch(client_model=vfl_model_1, 
+                                                     loss_fn=loss_fn,
+                                                     optimizer_cls=torch.optim.SGD,
+                                                     optimizer_args={'lr':1e-3},
+                                                     target=self.target,
+                                                     server_model=vfl_model_2)
         vfl_client_ppl.fit(train_dataloader)
         assert np.allclose(pytorch_loss_list, vfl_client_ppl.loss_history), \
             "Validation failed, correctness of PPML and native Pytorch not the same"

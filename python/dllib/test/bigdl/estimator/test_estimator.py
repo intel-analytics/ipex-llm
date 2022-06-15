@@ -25,7 +25,7 @@ from bigdl.dllib.optim.optimizer import *
 from bigdl.dllib.utils.common import EvaluatedResult
 from test.bigdl.test_zoo_utils import ZooTestCase
 from bigdl.dllib.feature.common import FeatureSet
-from bigdl.dllib.nncontext import init_nncontext, init_spark_conf
+from bigdl.dllib.nncontext import init_nncontext, init_spark_conf, ZooContext
 from bigdl.dllib.utils.file_utils import Sample
 
 
@@ -34,16 +34,19 @@ class TestEstimator(ZooTestCase):
         """ setup any state tied to the execution of the given method in a
         class.  setup_method is invoked for every test method of a class.
         """
+        ZooContext.log_output = True
         sparkConf = init_spark_conf().setMaster("local[1]").setAppName("testEstimator")
         self.sc = init_nncontext(sparkConf)
         #test model not equal to testEstimator
         #assert (self.sc.appName == "testEstimator")
+
 
     def teardown_method(self, method):
         """ teardown any state that was previously setup with a setup_method
         call.
         """
         self.sc.stop()
+        ZooContext.log_output = False
 
     @staticmethod
     def _create_cnn_model():
@@ -129,7 +132,11 @@ class TestEstimator(ZooTestCase):
         assert len(eval_result) == 1
         predict_result = model.predict(sample_rdd)
         assert (predict_result.count(), 8)
-
+        import time
+        time.sleep(10)
+        logPath = SparkContext._jvm.java.lang.System.getProperty("logFilename")
+        absPath = "/tmp/" + logPath
+        assert os.path.exists(absPath) and os.path.getsize(absPath) > 0
 
 if __name__ == "__main__":
     pytest.main([__file__])

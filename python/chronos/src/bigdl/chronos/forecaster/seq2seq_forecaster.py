@@ -69,14 +69,18 @@ class Seq2SeqForecaster(BasePytorchForecaster):
                possibility to a neuron). This value defaults to 0.1.
         :param optimizer: Specify the optimizer used for training. This value
                defaults to "Adam".
-        :param loss: Specify the loss function used for training. This value
-               defaults to "mse". You can choose from "mse", "mae" and
-               "huber_loss".
+        :param loss: str or pytorch loss instance, Specify the loss function
+               used for training. This value defaults to "mse". You can choose
+               from "mse", "mae", "huber_loss" or any customized loss instance
+               you want to use.
         :param lr: Specify the learning rate. This value defaults to 0.001.
         :param metrics: A list contains metrics for evaluating the quality of
                forecasting. You may only choose from "mse" and "mae" for a
                distributed forecaster. You may choose from "mse", "mae",
-               "rmse", "r2", "mape", "smape", for a non-distributed forecaster.
+               "rmse", "r2", "mape", "smape" or a callable function for a
+               non-distributed forecaster. If callable function, it signature
+               should be func(y_true, y_pred), where y_true and y_pred are numpy
+               ndarray.
         :param seed: int, random seed for training. This value defaults to None.
         :param distributed: bool, if init the forecaster in a distributed
                fashion. If True, the internal model will use an Orca Estimator.
@@ -112,7 +116,12 @@ class Seq2SeqForecaster(BasePytorchForecaster):
         # model creator settings
         self.model_creator = model_creator
         self.optimizer_creator = optimizer_creator
-        self.loss_creator = loss_creator
+        if isinstance(loss, str):
+            self.loss_creator = loss_creator
+        else:
+            def customized_loss_creator(config):
+                return config["loss"]
+            self.loss_creator = customized_loss_creator
 
         # distributed settings
         self.distributed = distributed
@@ -131,5 +140,6 @@ class Seq2SeqForecaster(BasePytorchForecaster):
         self.onnx_available = True
         self.quantize_available = False
         self.checkpoint_callback = False
+        self.use_hpo = False
 
         super().__init__()

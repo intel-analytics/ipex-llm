@@ -27,6 +27,7 @@ from bigdl.nano.pytorch import Trainer
 
 from test.pytorch.utils._train_torch_lightning import create_data_loader, data_transform
 from test.pytorch.utils._train_torch_lightning import create_test_data_loader
+from test.pytorch.utils._train_ipex_callback import CheckIPEXCallback
 from test.pytorch.tests.test_lightning import ResNet18
 
 num_classes = 10
@@ -58,7 +59,8 @@ class TestPlugin(TestCase):
             metrics=[torchmetrics.F1(num_classes), torchmetrics.Accuracy(num_classes=10)]
         )
         trainer = Trainer(num_processes=2, distributed_backend="subprocess",
-                          max_epochs=4, use_ipex=True)
+                          max_epochs=4, use_ipex=True,
+                          callbacks=[CheckIPEXCallback()])
         trainer.fit(pl_model, self.data_loader, self.test_data_loader)
         trainer.test(pl_model, self.test_data_loader)
 

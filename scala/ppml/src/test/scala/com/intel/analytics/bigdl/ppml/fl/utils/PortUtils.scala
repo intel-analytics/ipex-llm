@@ -20,7 +20,7 @@ import java.io.IOException
 import java.net.{DatagramSocket, ServerSocket}
 
 object PortUtils {
-  def findNextPortAvailable(port: Int): Int = {
+  def findNextPortAvailable(startPort: Int, endPort: Int = -1): Int = {
     def isAvailable(port: Int): Boolean = {
       var ss: ServerSocket = null
       var ds: DatagramSocket = null
@@ -38,9 +38,12 @@ object PortUtils {
         }
       }
 
-    var portAvailable: Int = port
+    var portAvailable: Int = startPort
     while (!isAvailable(portAvailable)) {
       portAvailable += 1
+      if (endPort != -1 && portAvailable > endPort) {
+        throw new Exception(s"Can not find avaible port in range [$startPort, $endPort].")
+      }
     }
     portAvailable
   }

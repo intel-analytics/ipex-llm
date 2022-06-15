@@ -180,7 +180,7 @@ class Trainer(pl.Trainer):
         :param target_metric: the object metric to optimize,
             defaults to None.
         :param n_parallels: the number of parallel processes for running trials.
-        :param return: the model with study meta info attached.
+        :return: the model with study meta info attached.
         """
         if not check_hpo_status(self.hposearcher):
             return None
@@ -205,17 +205,17 @@ class Trainer(pl.Trainer):
 
     @staticmethod
     def quantize(model,  # remove the type requirement for type checking
-                 precision='int8',
+                 precision: str = 'int8',
                  accelerator=None,
                  calib_dataloader: DataLoader = None,
-                 metric: Optional[Metric] = None,
+                 metric: Metric = None,
                  accuracy_criterion: dict = None,
-                 approach='static',
-                 method=None,
-                 conf: Optional[str] = None,
-                 tuning_strategy=None,
-                 timeout=None,
-                 max_trials=None,
+                 approach: str = 'static',
+                 method: str = None,
+                 conf: str = None,
+                 tuning_strategy: str = None,
+                 timeout: int = None,
+                 max_trials: int = None,
                  input_sample=None
                  ):
         """
@@ -229,6 +229,7 @@ class Trainer(pl.Trainer):
                                 None means staying in pytorch.
         :param calib_dataloader:    A torch.utils.data.dataloader.DataLoader object for calibration.
                                     Required for static quantization.
+                                    It's also used as validation dataloader.
         :param metric:              A torchmetrics.metric.Metric object for evaluation.
         :param accuracy_criterion:  Tolerable accuracy drop, defaults to None meaning no
                                     accuracy control.
@@ -257,7 +258,7 @@ class Trainer(pl.Trainer):
                             Combine with timeout field to decide when to exit.
                             "timeout=0, max_trials=1" means it will try quantization only once and
                             return satisfying best model.
-        :input_sample:      An input example to convert pytorch model into ONNX/OpenVINO.
+        :param input_sample:      An input example to convert pytorch model into ONNX/OpenVINO.
 
         :return:            A accelerated Pytorch-Lightning Model if quantization is sucessful.
         """
@@ -279,7 +280,7 @@ class Trainer(pl.Trainer):
             if accelerator == "onnxruntime":
                 if not type(model).__name__ == 'PytorchONNXRuntimeModel':
                     # try to establish onnx model
-                    if not input_sample:
+                    if input_sample is None:
                         # input_sample can be a dataloader
                         input_sample = calib_dataloader
                     model = Trainer.trace(model,

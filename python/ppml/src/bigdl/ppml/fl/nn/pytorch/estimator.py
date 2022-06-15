@@ -18,25 +18,36 @@ import logging
 from numpy import ndarray
 import torch
 from torch import nn
-import torch
 from bigdl.ppml.fl.nn.fl_client import FLClient
 from torch.utils.data import DataLoader
 from bigdl.dllib.utils.log4Error import invalidInputError
 from bigdl.ppml.fl.nn.utils import tensor_map_to_ndarray_map
 
-class PytorchPipeline:
+class PytorchEstimator:
     def __init__(self, model: nn.Module, loss_fn, optimizer: torch.optim.Optimizer, algorithm=None,
-            bigdl_type="float"):
+            bigdl_type="float", target="localhost:8980"):
         self.bigdl_type = bigdl_type
         self.model = model
         self.loss_fn = loss_fn
         self.optimizer = optimizer
         self.version = 0
         self.algorithm = algorithm
-        self.fl_client = FLClient()
+        self.fl_client = FLClient(target)
         self.loss_history = []
 
-    
+    @staticmethod
+    def from_torch(client_model: nn.Module,
+                   loss_fn,
+                   optimizer_cls,
+                   optimizer_args=None,
+                   target="localhost:8980",
+                   server_model=None):
+        optimizer = optimizer_cls(client_model.parameters(), **optimizer_args)
+        estimator = PytorchEstimator(client_model, loss_fn, optimizer, target=target)
+        if server_model is not None:
+            estimator.add_server_model(server_model, loss_fn, optimizer_cls, optimizer_args)
+        return estimator
+
     
     def add_server_model(self, model: nn.Module, loss_fn=None, optimizer_cls=None, optimizer_args={}):
         # add model and pickle to server
@@ -106,9 +117,3 @@ class PytorchPipeline:
         data_map = {'input': y_pred_local.detach().numpy()}
         response = self.fl_client.predict(data_map)
         return response.data.tensorMap['result']
-                    
-            
-            
-
-    
-        

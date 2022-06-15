@@ -40,7 +40,12 @@ class TensorflowQuantization(BaseQuantization):
             self.cfg.model.outputs = get_tensors_name(model.outputs)
 
         if calib_dataloader:
-            calib_dataloader = Dataloader(calib_dataloader, 1)
+            batch_size = 1
+            if hasattr(calib_dataloader, '_batch_size'):
+                # Batch dataset
+                batch_size = calib_dataloader._batch_size
+                calib_dataloader = calib_dataloader._input_dataset
+            calib_dataloader = Dataloader(calib_dataloader, batch_size)
 
         return model, calib_dataloader, metric
 
