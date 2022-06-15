@@ -60,6 +60,13 @@ def get_ugly_ts_df():
     df.loc[50:100, "datetime"] = pd.date_range('1/1/2019', periods=50)
     df["id"] = np.array(['00']*50 + ['01']*50)
     return df
+def get_ts_df():
+    sample_num = np.random.randint(100, 200)
+    train_df = pd.DataFrame({"datetime": pd.date_range('1/1/2019', periods=sample_num),
+                             "value": np.random.randn(sample_num),
+                             "id": np.array(['00']*sample_num),
+                             "extra feature": np.random.randn(sample_num)})
+    return train_df
 
 @op_torch
 @op_distributed
@@ -216,6 +223,77 @@ class TestXShardsTSDataset(TestCase):
         collected_numpy = shards_numpy.collect()  # collect and valid
         x = np.concatenate([collected_numpy[i]['x'] for i in range(len(collected_numpy))], axis=0)
         assert x.shape == ((50-lookback-horizon+1)*2, lookback, 2)
+    
+    def test_xshardstsdataset_datetime_feature(self):
+        from tempfile import TemporaryDirectory
+        tmp_df = get_ts_df()
+        with TemporaryDirectory() as tmpdir:
+            file_name = os.path.join(tmpdir, 'dt_feature.csv')
+            tmp_df.to_csv(file_name, index=False)
+            shards_tmp = read_csv(file_name)
+            # interval = day
+            tsdata = XShardsTSDataset.from_xshards(shards_tmp, dt_col="datetime", target_col="value",
+                                                   extra_feature_col=["extra feature"], id_col="id")
+            tsdata.gen_dt_feature()
+            collected_df = tsdata.shards.collect()
+            collected_df = pd.concat(collected_df, axis=0)
+            assert set(collected_df.columns) == {'DAY',
+                                                'IS_WEEKEND',
+                                                'WEEKDAY',
+                                                'MONTH',
+                                                'YEAR',
+                                                'DAYOFYEAR',
+                                                'WEEKOFYEAR',
+                                                'extra feature',
+                                                'value',
+                                                'datetime',
+                                                'id'}
+            assert set(tsdata.feature_col) == {'DAY',
+                                              'IS_WEEKEND',
+                                              'WEEKDAY',
+                                              'MONTH',
+                                              'YEAR',
+                                              'DAYOFYEAR',
+                                              'WEEKOFYEAR',
+                                              'extra feature'}
+
+            # interval = day, one_hot = ["WEEKDAY"]
+            tsdata = XShardsTSDataset.from_xshards(shards_tmp, dt_col="datetime", target_col="value",
+                                                   extra_feature_col=["extra feature"], id_col="id")
+            tsdata.gen_dt_feature(one_hot_features=["WEEKDAY"])
+            collected_df = tsdata.shards.collect()
+            collected_df = pd.concat(collected_df, axis=0)
+            assert set(collected_df.columns) == {'DAY',
+                                                'IS_WEEKEND',
+                                                'WEEKDAY_0',
+                                                'WEEKDAY_1',
+                                                'WEEKDAY_2',
+                                                'WEEKDAY_3',
+                                                'WEEKDAY_4',
+                                                'WEEKDAY_5',
+                                                'WEEKDAY_6',
+                                                'MONTH',
+                                                'YEAR',
+                                                'DAYOFYEAR',
+                                                'WEEKOFYEAR',
+                                                'extra feature',
+                                                'value',
+                                                'datetime',
+                                                'id'}
+            assert set(tsdata.feature_col) == {'DAY',
+                                              'IS_WEEKEND',
+                                              'WEEKDAY_0',
+                                              'WEEKDAY_1',
+                                              'WEEKDAY_2',
+                                              'WEEKDAY_3',
+                                              'WEEKDAY_4',
+                                              'WEEKDAY_5',
+                                              'WEEKDAY_6',
+                                              'MONTH',
+                                              'YEAR',
+                                              'DAYOFYEAR',
+                                              'WEEKOFYEAR',
+                                              'extra feature'}
 
     def test_xshardstsdataset_scale_unscale(self):
         from sklearn.preprocessing import StandardScaler

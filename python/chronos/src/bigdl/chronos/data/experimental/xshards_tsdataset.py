@@ -23,6 +23,7 @@ from bigdl.chronos.data.utils.impute import impute_timeseries_dataframe
 from bigdl.chronos.data.utils.split import split_timeseries_dataframe
 from bigdl.chronos.data.experimental.utils import add_row, transform_to_dict
 from bigdl.chronos.data.utils.scale import unscale_timeseries_numpy
+import pandas as pd
 
 
 _DEFAULT_ID_COL_NAME = "id"
@@ -351,6 +352,50 @@ class XShardsTSDataset:
         self.shards = self.shards.transform_shard(_inverse_transform, self.id_col,
                                                   self.scaler_dict, self.feature_col,
                                                   self.target_col)
+        return self
+ 
+    def gen_dt_feature(self, features="auto", one_hot_features=None):
+        '''
+        Generate datetime feature(s) for each record.
+
+        :param features: str or list, states which feature(s) will be generated. If the value
+               is set to be a str, it should be one of "auto" or "all". For "auto", a subset
+               of datetime features will be generated under the consideration of the sampling
+               frequency of your data. For "all", the whole set of datetime features will be
+               generated. If the value is set to be a list, the list should contain the features
+               you want to generate. A table of all datatime features and their description is
+               listed below. The value defaults to "auto".
+        :param one_hot_features: list, states which feature(s) will be generated as one-hot-encoded
+               feature. The value defaults to None, which means no features will be generated with\
+               one-hot-encoded.
+
+        | "MINUTE": The minute of the time stamp.
+        | "DAY": The day of the time stamp.
+        | "DAYOFYEAR": The ordinal day of the year of the time stamp.
+        | "HOUR": The hour of the time stamp.
+        | "WEEKDAY": The day of the week of the time stamp, Monday=0, Sunday=6.
+        | "WEEKOFYEAR": The ordinal week of the year of the time stamp.
+        | "MONTH": The month of the time stamp.
+        | "YEAR": The year of the time stamp.
+        | "IS_AWAKE": Bool value indicating whether it belongs to awake hours for the time stamp,
+        | True for hours between 6A.M. and 1A.M.
+        | "IS_BUSY_HOURS": Bool value indicating whether it belongs to busy hours for the time
+        | stamp, True for hours between 7A.M. and 10A.M. and hours between 4P.M. and 8P.M.
+        | "IS_WEEKEND": Bool value indicating whether it belongs to weekends for the time stamp,
+        | True for Saturdays and Sundays.
+
+        :return: the tsdataset instance.
+        '''
+        tmp_df = self.shards.collect()
+        tmp_df = pd.concat(tmp_df, axis=0)
+        freq = tmp_df[self.dt_col].iloc[1] - tmp_df[self.dt_col].iloc[0]
+        features_generated = []
+        self.shards = self.shards.transform_shard(generate_dt_features, self.dt_col, features,
+                                                  one_hot_features, freq, features_generated)
+        tmp_df = self.shards.collect()
+        tmp_df = pd.concat(tmp_df, axis=0)
+        features_generated = [col for col in tmp_df.columns if col not in self.target_col + [self.dt_col, self.id_col]]
+        self.feature_col += features_generated
         return self
 
     def unscale_xshards(self, data, key=None):
