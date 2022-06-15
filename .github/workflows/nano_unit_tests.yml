@@ -192,7 +192,7 @@ jobs:
           pip install pytest
           if [ ! -z "${{matrix.pytorch-version}}" ]; then
             requirements=(${{matrix.pytorch-version}})
-            pip install ${requirements[0] $requirements[1]} -f https://download.pytorch.org/whl/torch_stable.html
+            pip install ${requirements[0]} ${requirements[1]} -f https://download.pytorch.org/whl/torch_stable.html
             pip install ${requirements[2]} -f https://software.intel.com/ipex-whl-stable
             if [ ! -z "${{matrix.extra}}" ]; then
                pip install ${{matrix.extra}}
