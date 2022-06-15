@@ -1,13 +1,13 @@
 # Friesian User Guide
 
-## **1. Overview**
+## **Overview**
 BigDL Friesian is an open source framework for building and deploying recommender systems and works with the other BigDL components including DLlib and Orca to provide end-to-end recommender solution on Intel CPU. 
 It provides: 
 1. An offline pipeline, including unified and easy-to-use APIs for [feature engineering](../QuickStart/offline.md), [examples](https://github.com/intel-analytics/BigDL/tree/main/python/friesian/example) of common recommender models.
 2. A nearline pipeline of loading procssed data into redis database.
 3. An online framework of distributed serving.
 
-## **2. Install**
+## **Install**
 Note: For windows Users, we recommend using Windows Subsystem for Linux 2 (WSL2) to run BigDL-Friesian. Please refer [here](./windows_guide.md) for instructions.
 
 BigDL-Friesian can be installed using pip and we recommend installing BigDL-Friesian in a conda environment.
@@ -18,9 +18,9 @@ conda activate bigdl
 pip install bigdl-friesian
 ```
 
-## **3. Get started**
+## **Quick Start**
 
-### **3.1 Offline feature engineering**
+### **Offline feature engineering**
 BigDL-Friesian provides `table` APIs for common feature engineering examples.
 ```python
 import pandas as pd
@@ -33,7 +33,7 @@ full = FeatureTable.from_pandas(pddf)\
 train, test = full.random_split([0.8, 0.2], seed=1)
 ```
 
-### **3.2 Offline distributed training **
+### Offline distributed training
 ```python
 from bigdl.orca.learn.tf2.estimator import Estimator
 import tensorflow as tf
