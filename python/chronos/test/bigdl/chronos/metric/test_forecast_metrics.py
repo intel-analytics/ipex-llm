@@ -108,5 +108,5 @@ class TestChronosForecastMetrics(TestCase):
         y_true = np.random.randn(100, 4)
         y_pred = np.random.randn(100, 4)
         smape = Evaluator.evaluate("smape", y_true, y_pred, aggregate="mean")[0]
-        orca_smape = sMAPE(y_true, y_pred)
+        orca_smape = sMAPE(y_true, y_pred, multioutput='uniform_average')
         assert_almost_equal(smape, orca_smape, 6)
