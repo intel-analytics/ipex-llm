@@ -134,5 +134,6 @@ class LSTMForecaster(BasePytorchForecaster):
         self.onnx_available = True
         self.quantize_available = True
         self.checkpoint_callback = False
+        self.use_hpo = False
 
         super().__init__()

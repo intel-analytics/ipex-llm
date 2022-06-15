@@ -145,5 +145,6 @@ class TCNForecaster(BasePytorchForecaster):
         self.onnx_available = True
         self.quantize_available = True
         self.checkpoint_callback = False
+        self.use_hpo = True
 
         super().__init__()

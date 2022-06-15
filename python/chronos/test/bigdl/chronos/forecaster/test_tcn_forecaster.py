@@ -92,6 +92,27 @@ class TestChronosModelTCNForecaster(TestCase):
                                    lr=0.01)
         train_loss = forecaster.fit(train_loader, epochs=2)
 
+
+    def test_tcn_forecaster_tune(self):
+        import bigdl.nano.automl.hpo.space as space
+        train_data, val_data, _ = create_data(loader=False)
+        forecaster = TCNForecaster(past_seq_len=24,
+                                future_seq_len=5,
+                                input_feature_num=1,
+                                output_feature_num=1,
+                                kernel_size=4,
+                                num_channels=[16, 16],
+                                loss="mae",
+                                metrics=['mae', 'mse', 'mape'],
+                                lr=space.Real(0.001, 0.01, log=True))
+        forecaster.tune(train_data, validation_data=val_data,
+                        n_trials=2, target_metric='mse', direction="minimize")
+        train_data = (train_data[0] * 10000.0, train_data[1] * 10000.0)
+        forecaster.fit(train_data, epochs=2)
+        train_loss = forecaster.trainer.callback_metrics['train/loss']
+        assert train_loss > 10
+
+
     def test_tcn_forecaster_onnx_methods(self):
         train_data, val_data, test_data = create_data()
         forecaster = TCNForecaster(past_seq_len=24,
