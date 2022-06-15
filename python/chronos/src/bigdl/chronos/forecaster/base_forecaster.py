@@ -466,7 +466,7 @@ class BasePytorchForecaster(Forecaster):
         """
         from bigdl.chronos.pytorch.utils import _pytorch_fashion_inference
         from bigdl.nano.utils.log4Error import invalidInputError
-        if quantize == True:
+        if quantize:
             invalidInputError(False,
                               "Openvino inference has not been supported for quantization, "
                               "please set 'quantize=False'.")
