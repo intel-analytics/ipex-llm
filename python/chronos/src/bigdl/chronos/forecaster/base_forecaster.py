@@ -325,7 +325,8 @@ class BasePytorchForecaster(Forecaster):
         :param quantize: if use the quantized model to predict.
 
         :return: A numpy array with shape (num_samples, horizon, target_dim)
-                 if data is a numpy ndarray. A xshard item with format {'prediction': result},
+                 if data is a numpy ndarray or a dataloader.
+                 A xshard item with format {'prediction': result},
                  where result is a numpy array with shape (num_samples, horizon, target_dim)
                  if data is a xshard item.
         """

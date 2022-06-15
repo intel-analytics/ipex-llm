@@ -22,18 +22,16 @@ from torch.utils.data.dataloader import DataLoader
 def _inference(model, batch_size, input_sample_list):
     if batch_size is None:
         # this branch is only to speed up the inferencing when batch_size is set to None.
-        with torch.no_grad():
-            return model(*input_sample_list).numpy()
+        return model(*input_sample_list).numpy()
     else:
         yhat_list = []
         sample_num = input_sample_list[0].shape[0]  # the first dim should be sample_num
         batch_num = math.ceil(sample_num / batch_size)
-        with torch.no_grad():
-            for batch_id in range(batch_num):
-                yhat_list.append(model(
-                    *tuple(map(lambda x: x[batch_id * batch_size:
-                                           (batch_id + 1) * batch_size],
-                               input_sample_list))).numpy())
+        for batch_id in range(batch_num):
+            yhat_list.append(model(
+                *tuple(map(lambda x: x[batch_id * batch_size:
+                                        (batch_id + 1) * batch_size],
+                            input_sample_list))).numpy())
         # this operation may cause performance degradation
         yhat = np.concatenate(yhat_list, axis=0)
         return yhat
@@ -50,15 +48,16 @@ def _pytorch_fashion_inference(model, input_data, batch_size=None):
 
     :return: numpy ndarray
     '''
-    if isinstance(input_data, list):
-        input_sample_list = list(map(lambda x: torch.from_numpy(x), input_data))
-        yhat = _inference(model, batch_size, input_sample_list)
-    elif isinstance(input_data, DataLoader):
-        yhat_list = []
-        for batch in input_data:
-            yhat_list.append(model(batch[0]).detach().numpy())
-        return np.concatenate(yhat_list, axis=0)
-    else:
-        input_sample_list = [torch.from_numpy(input_data)]
-        yhat = _inference(model, batch_size, input_sample_list)
-    return yhat
+    with torch.no_grad():
+        if isinstance(input_data, list):
+            input_sample_list = list(map(lambda x: torch.from_numpy(x), input_data))
+            yhat = _inference(model, batch_size, input_sample_list)
+        elif isinstance(input_data, DataLoader):
+            yhat_list = []
+            for batch in input_data:
+                yhat_list.append(model(batch[0]).numpy())
+            return np.concatenate(yhat_list, axis=0)
+        else:
+            input_sample_list = [torch.from_numpy(input_data)]
+            yhat = _inference(model, batch_size, input_sample_list)
+        return yhat
