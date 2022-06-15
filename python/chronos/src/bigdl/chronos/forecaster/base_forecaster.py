@@ -125,20 +125,30 @@ class BasePytorchForecaster(Forecaster):
 
     def tune(self,
              data,
+             validation_data,
              target_metric,
              direction,
              n_trials=2,
              n_parallels=1,
              epochs=1,
              batch_size=32,
-             validation_data=None,
              **kwargs):
         """
         Search the hyper parameter.
 
-        :param data: The data supports either dataloader or numpy
-        :param int epochs: _description_, defaults to 1
-        :param int batch_size: _description_, defaults to 32
+        :param data: train data, as numpy ndarray tuple (x, y)
+        :param validation_data: validation data, as numpy ndarray tuple (x,y)
+        :param target_metric: the target metric to optimize,
+               a string or an instance of torchmetrics.metric.Metric
+        :param direction: in which direction to optimize the target metric,
+               "maximize" - larger the better
+               "minimize" - smaller the better
+        :param n_trials: number of trials to run
+        :param n_parallels: number of parallel processes used to run trials.
+               to use parallel tuning you need to use a RDB url for storage and specify study_name.
+               For more information, refer to Nano AutoML user guide.
+        :param epochs: the number of epochs to run in each trial fit, defaults to 1
+        :param batch_size: number of batch size for each trial fit, defaults to 32
         """
         invalidInputError(not self.distributed,
                           "HPO is not supported in distributed mode."
