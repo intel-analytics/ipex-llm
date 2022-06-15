@@ -493,7 +493,7 @@ class TFRunner:
             log4Error.invalidInputError(False,
                                         "Failed to set model weights, please provide real tensor "
                                         "data (of the correct dtype) as sample_input in the load "
-                                        "method")
+                                        "method.")
 
     def shutdown(self):
         """Attempts to shut down the worker."""
