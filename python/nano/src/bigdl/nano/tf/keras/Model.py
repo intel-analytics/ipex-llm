@@ -14,45 +14,18 @@
 # limitations under the License.
 #
 import tensorflow as tf
-from tensorflow.keras import Model as tf_Model
+from tensorflow.keras import Model as TFModel
 from bigdl.nano.tf.keras.training_utils import TrainingUtils
 from bigdl.nano.tf.keras.inference_utils import InferenceUtils
-
+from bigdl.nano.tf.keras.inheritance_utils import override_method
 
 class Model(TrainingUtils, InferenceUtils):
     """A wrapper class for tf.keras.Model adding more functions for BigDL-Nano."""
 
     def __init__(self, *args, **kwargs):
         """Create a nano Sequential model, having the same arguments with tf.keras.Sequential."""
-        self.model = tf_Model(*args, **kwargs)
+        self.model = TFModel(*args, **kwargs)
         super().__init__()
 
 
-def f_wapper(f):
-    """A wapper function to overide all tf.keras.Model method."""
-    def inner(self, *args, **kwargs):
-        return f(self.model, *args, **kwargs)
-    return inner
-
-
-def ExtendMethod(*classes):
-    """A helper function to extract all extend method from base classes."""
-    name_set = set()
-    for extend_class in classes:
-        for name in dir(extend_class):
-            if not name.startswith("_"):
-                name_set.add(name)
-    return name_set
-
-
-extend_methods = ExtendMethod(Model.__bases__)
-# map all public method from tf.keras.model
-for name in dir(tf_Model):
-    if name not in extend_methods and not name.startswith('__'):
-        setattr(Model, name, f_wapper(getattr(tf_Model, name)))
-
-# map all public method from base class
-for cls in Model.__bases__:
-    for name in dir(cls):
-        if not name.startswith("_"):
-            setattr(Model, name, f_wapper(getattr(cls, name)))
+override_method(Model, TFModel)

@@ -14,13 +14,19 @@
 # limitations under the License.
 #
 import tensorflow as tf
+from tensorflow.keras import Sequential as TFSequencial 
 from bigdl.nano.tf.keras.inference_utils import InferenceUtils
 from bigdl.nano.tf.keras.training_utils import TrainingUtils
+from bigdl.nano.tf.keras.inheritance_utils import override_method
 
 
-class Sequential(TrainingUtils, InferenceUtils, tf.keras.Sequential):
+class Sequential(TrainingUtils, InferenceUtils):
     """A wrapper class for tf.keras.Sequential adding more functions for BigDL-Nano."""
 
     def __init__(self, *args, **kwargs):
         """Create a nano Sequential model, having the same arguments with tf.keras.Sequential."""
-        super().__init__(*args, **kwargs)
+        self.seq = TFSequencial(*args, **kwargs)
+        super().__init__()
+
+
+override_method(Sequential, TFSequencial)
