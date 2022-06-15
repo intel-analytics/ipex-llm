@@ -40,6 +40,7 @@ from bigdl.nano.deps.onnxruntime.onnxruntime_api import PytorchONNXRuntimeModel,
 from bigdl.nano.deps.neural_compressor.inc_api import load_inc_model, quantize as inc_quantize
 from bigdl.nano.utils.log4Error import invalidInputError
 from bigdl.nano.utils.inference.pytorch.model import AcceleratedLightningModule
+from bigdl.nano.common import check_avx512
 distributed_backends = ["spawn", "ray", "subprocess"]
 
 
@@ -91,6 +92,13 @@ class Trainer(pl.Trainer):
             self.hposearcher = None
 
         accelerator = None
+
+        if TORCH_VERSION_LESS_1_10 and use_ipex and not check_avx512():
+            warning("Enable ipex1.9 in a cpu instruction set"
+                    " without avx512 may cause some random error."
+                    "Fall back to regular pytorch.")
+            use_ipex = False
+
         if num_processes == 1:
             if use_ipex:
                 if TORCH_VERSION_LESS_1_10:
