@@ -22,11 +22,11 @@ export NANO_HOME=${ANALYTICS_ZOO_ROOT}/python/nano/src
 export NANO_BENCHMARK_DIR=${ANALYTICS_ZOO_ROOT}/python/nano/benchmark
 
 #
-if [ -z "${CONDA_EXE}" ]; then
-    if [ -z "${CONDA}"]; then
+if [ -z "${CONDA}" ]; then
+    if [ -z "${CONDA_EXE}"]; then
         echo "Do not find conda. Please install conda to run this script"
     else
-        export CONDA_EXE=$CONDA/bin/conda
+        export CONDA=${CONDA_EXE%"/bin/conda"}
     fi
 fi
 
