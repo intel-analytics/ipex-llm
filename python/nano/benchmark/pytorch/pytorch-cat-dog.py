@@ -1,16 +1,14 @@
 import os
 from shutil import rmtree
 import torch
-import time 
+import time
 from bigdl.nano.pytorch.vision.datasets import ImageFolder
 from bigdl.nano.pytorch.vision.transforms import transforms
 import argparse
 from torch.utils.data import DataLoader
 from torchvision.datasets.utils import download_and_extract_archive
-from pytorch_lightning.callbacks import Callback
-from bigdl.nano.pytorch.vision.models import resnet50 
-from bigdl.nano.pytorch.vision.models import ImageClassifier 
-from bigdl.nano.common import init_nano 
+from bigdl.nano.pytorch.vision.models import resnet50
+from bigdl.nano.pytorch.vision.models import ImageClassifier
 from bigdl.nano.pytorch import Trainer
 
 DATA_URL = "https://storage.googleapis.com/mledu-datasets/cats_and_dogs_filtered.zip"
@@ -34,7 +32,7 @@ class Classifier(ImageClassifier):
         return torch.optim.Adam(self.parameters(), lr=0.002)
 
 
-def create_data_loader(root_dir, batch_size):
+def create_data_loader(root_dir, batch_size, nproc):
     dir_path = os.path.realpath(root_dir)
     data_transform = transforms.Compose([
         transforms.Resize(256),
@@ -47,10 +45,19 @@ def create_data_loader(root_dir, batch_size):
 
     catdogs = ImageFolder(dir_path, data_transform)
     dataset_size = len(catdogs)
-    train_split = 0.8
-    train_size = int(dataset_size * train_split)
-    val_size = dataset_size - train_size
-    train_set, val_set = torch.utils.data.random_split(catdogs, [train_size, val_size])
+
+
+    if "SANITY_CHECK" in os.environ and os.environ["SANITY_CHECK"] == "1":
+        # reduce dataset size to speedup the check
+        train_size = 2 * nproc * batch_size
+        val_size = 2 * nproc * batch_size
+        test_size = dataset_size - train_size - val_size
+        train_set, val_set, _ = torch.utils.data.random_split(catdogs, [train_size, val_size, test_size])
+    else:
+        train_split = 0.8
+        train_size = int(dataset_size * train_split)
+        val_size = dataset_size - train_size
+        train_set, val_set = torch.utils.data.random_split(catdogs, [train_size, val_size])
 
     train_loader = DataLoader(train_set, batch_size=batch_size, shuffle=True, num_workers=0)
     val_loader = DataLoader(val_set, batch_size=batch_size, shuffle=False, num_workers=0)
@@ -60,16 +67,16 @@ def create_data_loader(root_dir, batch_size):
 def _main_process(args, train_loader, val_loader, train_size):
     classifier = Classifier()
     trainer = Trainer(max_epochs=args.epochs, use_ipex=args.use_ipex, num_processes=args.nproc)
-    
+
     train_start = time.time()
     trainer.fit(classifier, train_loader)
     train_end = time.time()
     trainer.test(classifier, val_loader)
 
     throughput = train_size * args.epochs / (train_end - train_start)
-    print(f"Nano_Perf: training in {train_end - train_start}s, thoughput is {throughput} img/s") 
+    print(f"Nano_Perf: training in {train_end - train_start}s, thoughput is {throughput} img/s")
 
-    return 
+    return
 
 def main():
     print("Nano Pytorch cat-vs-dog example")
@@ -85,10 +92,10 @@ def main():
     # get dataset
     download_and_extract_archive(url=DATA_URL, download_root="data")
 
-    train_loader, val_loader, (train_size, _) = create_data_loader("data", args.batch_size)
-    
+    train_loader, val_loader, (train_size, _) = create_data_loader("data", args.batch_size, args.nproc)
+
     _main_process(args, train_loader, val_loader, train_size)
-    
-        
+
+
 if __name__ == "__main__":
     main()
