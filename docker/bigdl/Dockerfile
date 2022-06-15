@@ -144,6 +144,6 @@ ENV PATH /usr/local/envs/bigdl/bin:$PATH
 ADD ./start-notebook.sh /opt/work
 ADD ./start-notebook-k8s.sh /opt/work
 RUN chmod a+x /opt/work/start-notebook.sh && \
-    chmod a+x /opt/work/k8s-start-notebook.sh
+    chmod a+x /opt/work/start-notebook-k8s.sh
 
 CMD ["/opt/work/start-notebook.sh"]
