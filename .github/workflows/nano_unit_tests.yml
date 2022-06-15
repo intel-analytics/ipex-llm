@@ -165,6 +165,8 @@ jobs:
           # "torch==1.10.1+cpu torchvision==0.11.2+cpu",
           # ""
           ]
+        - extra: "psutil"
+          pytorch-version: "torch==1.10.0+cpu torchvision==0.11.0+cpu intel_extension_for_pytorch==1.10.0"
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
@@ -190,8 +192,11 @@ jobs:
           pip install pytest
           if [ ! -z "${{matrix.pytorch-version}}" ]; then
             requirements=(${{matrix.pytorch-version}})
-            pip install ${{requirements[0] requirements[1]}}
-            pip install ${{requirements[2]}} -f https://software.intel.com/ipex-whl-stable
+            pip install ${requirements[0] $requirements[1]} -f https://download.pytorch.org/whl/torch_stable.html
+            pip install ${requirements[2]} -f https://software.intel.com/ipex-whl-stable
+            if [ ! -z "${{matrix.extra}}" ]; then
+               pip install ${{matrix.extra}}
+            fi
           fi
           source bigdl-nano-init
           bash python/nano/test/run-nano-pytorch-tests-ipex.sh
