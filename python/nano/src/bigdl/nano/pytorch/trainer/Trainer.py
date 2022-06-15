@@ -26,7 +26,7 @@ from torch.utils.data import DataLoader
 from torchmetrics.metric import Metric
 from torch.optim.lr_scheduler import _LRScheduler
 import yaml
-from bigdl.nano.pytorch.utils import TORCH_VERSION_LESS_1_10
+from bigdl.nano.pytorch.utils import TORCH_VERSION_LESS_1_10, TORCH_VERSION_LESS_1_11
 from bigdl.nano.pytorch.lightning import LightningModuleFromTorch
 from bigdl.nano.pytorch.plugins.ddp_spawn import DDPSpawnPlugin
 from bigdl.nano.pytorch.plugins.ddp_subprocess import DDPSubprocessPlugin
@@ -93,9 +93,9 @@ class Trainer(pl.Trainer):
 
         accelerator = None
 
-        if TORCH_VERSION_LESS_1_10 and use_ipex and not check_avx512():
-            warning("Enable ipex1.9 in a cpu instruction set"
-                    " without avx512 may cause some random error."
+        if TORCH_VERSION_LESS_1_11 and use_ipex and not check_avx512():
+            warning("Enable ipex<=1.10 in a cpu instruction set"
+                    " without avx512 will crash."
                     "Fall back to regular pytorch.")
             use_ipex = False
 
