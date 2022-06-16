@@ -4,7 +4,7 @@ name: Nano Unit Tests For OnnxRuntime
 on:
   # Triggers the workflow on push or pull request events but only for the main branch
   push:
-    branches: [ main ]
+    branches: [ update-pytorch-to-1.11 ]
   pull_request:
     branches: [ main ]
     paths:
@@ -22,7 +22,7 @@ jobs:
         os: ["ubuntu-20.04"]
         python-version: ["3.7"]
         pytorch-version: [
-          "torch==1.11.0+cpu torchvision==0.12.0+cpu",
+          "torch==1.9.0+cpu torchvision==0.10.0+cpu",
           "torch==1.10.1+cpu torchvision==0.11.2+cpu",
           ""
           ]
