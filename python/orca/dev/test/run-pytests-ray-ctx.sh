@@ -72,12 +72,4 @@ then
     exit $exit_status_5
 fi
 
-echo "Running TF2Estimator Orca Dataset tests"
-python -m pytest -v test/bigdl/orca/learn/ray/tf/test_tf2_estimator_orca_dataset.py
-exit_status_6=$?
-if [ $exit_status_6 -ne 0 ];
-then
-    exit $exit_status_6
-fi
-
 ray stop -f
