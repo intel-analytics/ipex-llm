@@ -15,6 +15,7 @@
 #
 
 from bigdl.ppml.api import *
+from bigdl.ppml.utils.log4Error import *
 
 
 class PPMLContext(JavaValue):
@@ -62,9 +63,9 @@ class EncryptedDataFrameWriter:
         return self
 
     def mode(self, mode):
-        if mode not in EncryptedDataFrameWriter.support_mode:
-            raise ValueError("Unknown save mode: " + mode + "." +
-                             "Accepted save modes are 'overwrite', 'append', 'ignore', 'error', 'errorifexists'.")
+        invalidInputError(mode in EncryptedDataFrameWriter.support_mode,
+                              "Unknown save mode: " + mode + "." +
+                              "Accepted save modes are 'overwrite', 'append', 'ignore', 'error', 'errorifexists'.")
         self.df_writer = callBigDlFunc(self.bigdl_type, "mode", self.df_writer, mode)
         return self
 
