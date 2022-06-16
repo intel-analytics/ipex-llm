@@ -20,7 +20,15 @@
 export ANALYTICS_ZOO_ROOT=${ANALYTICS_ZOO_ROOT}
 export NANO_HOME=${ANALYTICS_ZOO_ROOT}/python/nano/src
 export NANO_BENCHMARK_DIR=${ANALYTICS_ZOO_ROOT}/python/nano/benchmark
+
 #
+if [ -z "${CONDA}" ]; then
+    if [ -z "${CONDA_EXE}"]; then
+        echo "Do not find conda. Please install conda to run this script"
+    else
+        export CONDA=${CONDA_EXE%"/bin/conda"}
+    fi
+fi
 
 set -e
 echo "# Start testing"
@@ -28,7 +36,7 @@ start=$(date "+%s")
 
 # Boot-up commands 
 # e.g. python benchmark_program.py 
-python $NANO_BENCHMARK_DIR/pytorch/pytorch-cat-vs-dog.py
+bash $NANO_BENCHMARK_DIR/pytorch_resnet50_finetune.sh
 #
 
 now=$(date "+%s")
