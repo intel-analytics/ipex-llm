@@ -158,15 +158,25 @@ class PyTorchPySparkEstimator(BaseEstimator):
 
         local_init_params = self.worker_init_params.copy()
         local_init_params["log_to_driver"] = False
+        self.tcp_port = find_free_port()
+        self.num_executors = int(sc.getConf().get("spark.executor.instances"))
         self.driver_runner = PytorchPysparkWorker(
             mode='predict',
             cluster_info=self._get_cluster_info(sc),
             **local_init_params)
 
         self.state_dict = self.driver_runner.get_state_dict()
+    
+    def create_tcpstore_server(self):
+        import torch.distributed as dist
+        from torch._C._distributed_c10d import _DEFAULT_PG_TIMEOUT
+        server_store = dist.TCPStore(self.ip, self.tcp_port, -1, True, _DEFAULT_PG_TIMEOUT)
+        return server_store
 
-    def _get_cluster_info(self, sc):
-        cluster_info = self.workerRDD.barrier().mapPartitions(find_ip_and_free_port).collect()
+    def _get_cluster_info(self):
+        cluster_info = []
+        for i in range(self.num_executors):
+            cluster_info.append(f"{self.ip}:{self.tcp_port}")
         return cluster_info
 
     def fit(self,
@@ -222,6 +232,7 @@ class PyTorchPySparkEstimator(BaseEstimator):
                                                            num_workers=self.num_workers)
 
         sc = OrcaContext.get_spark_context()
+        server_store = self.create_tcpstore_server()
         cluster_info = self._get_cluster_info(sc)
         state_dict = self._get_broadcasted_state_dict(sc)
         init_params = dict(
@@ -360,6 +371,7 @@ class PyTorchPySparkEstimator(BaseEstimator):
         from pyspark.sql import DataFrame
 
         sc = OrcaContext.get_spark_context()
+        server_store = self.create_tcpstore_server()
         cluster_info = self._get_cluster_info(sc)
         state_dict = self._get_broadcasted_state_dict(sc)
 
@@ -430,6 +442,7 @@ class PyTorchPySparkEstimator(BaseEstimator):
                 when creating the Estimator.
         """
         sc = OrcaContext.get_spark_context()
+        server_store = self.create_tcpstore_server()
         cluster_info = self._get_cluster_info(sc)
         state_dict = self._get_broadcasted_state_dict(sc)
         init_params = dict(
