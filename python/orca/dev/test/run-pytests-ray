@@ -86,3 +86,13 @@ then
 fi
 
 ray stop -f
+
+echo "Running tf2estimator tf2 backend tests"
+python -m pytest -v test/bigdl/orca/learn/ray/tf/test_tf2estimator_tf2_backend.py
+exit_status_6=$?
+if [ $exit_status_6 -ne 0 ];
+then
+   exit $exit_status_6
+fi
+
+ray stop -f
