@@ -33,75 +33,105 @@
 
 
 import os
+import multiprocessing
+from multiprocessing.queues import SimpleQueue
 from typing import Any, List, Optional, Callable
 
-import multiprocessing
-from bigdl.nano.pytorch.utils import TORCH_VERSION_LESS_1_10
 import torch
-from torch.nn.parallel.distributed import DistributedDataParallel
 from torch.multiprocessing.spawn import _wrap, ProcessContext
 
 import pytorch_lightning as pl
-from pytorch_lightning.overrides import LightningDistributedModule
-from pytorch_lightning.plugins.environments.cluster_environment import ClusterEnvironment
+from pytorch_lightning.strategies.launchers import _SpawnLauncher
+from pytorch_lightning.strategies import Strategy, DDPSpawnStrategy as BaseStrategy
+from pytorch_lightning.utilities.apply_func import move_data_to_device
 from pytorch_lightning.plugins.environments import LightningEnvironment
-from pytorch_lightning.utilities.distributed import rank_zero_only
-from pytorch_lightning.utilities.seed import reset_seed
 
 from bigdl.nano.common.cpu_schedule import schedule_workers
 from bigdl.nano.deps.ipex.ipex_api import ipex_device, ipex_optimize
-import logging
+from bigdl.nano.pytorch.utils import TORCH_VERSION_LESS_1_10
 
+import logging
 import warnings
 import copy
 log = logging.getLogger(__name__)
 
+class _DDPSpawnLauncher(_SpawnLauncher):
+    r"""Spawns processes that run a given function in parallel, and joins them all at the end.
 
-def start_processes_new(fn, args=(), nprocs=1, join=True, daemon=False,
-                        start_method='spawn', cpu_procs=None):
-    """Start processess with optimized environment variables."""
-    mp = multiprocessing.get_context(start_method)
-    error_queues = []
-    processes = []
+    The main process in which this launcher is invoked creates N so-called worker processes (using
+    :func:`torch.multiprocessing.spawn`) that run the given function.
+    Worker processes have a rank that ranges from 0 to N - 1.
 
-    if cpu_procs is None:
-        cpu_procs = schedule_workers(nprocs)
+    Note:
+        - This launcher requires all objects to be pickleable.
+        - It is important that the entry point to the program/script is guarded by ``if __name__ == "__main__"``.
 
-    init_KMP_AFFINITY = os.environ.get("KMP_AFFINITY", "")
-    init_OMP_NUM_THREADS = os.environ.get("OMP_NUM_THREADS", "")
+    Args:
+        strategy: A reference to the strategy that is used together with this launcher.
+    """
 
-    for i in range(nprocs):
-        os.environ["KMP_AFFINITY"] = f"granularity=fine,proclist"\
-                                     f"=[{','.join([str(i) for i in cpu_procs[i]])}],explicit"
-        os.environ["OMP_NUM_THREADS"] = str(len(cpu_procs[i]))
-        log.debug(f"[Process {i}]: using KMP_AFFINITY: {os.environ['KMP_AFFINITY']}")
-        log.debug(f"[Process {i}]: using OMP_NUM_THREADS: {os.environ['OMP_NUM_THREADS']}")
-        error_queue = mp.SimpleQueue()
-        process = mp.Process(
-            target=_wrap,
-            args=(fn, i, args, error_queue),
-            daemon=daemon,
-        )
-        process.start()
-        error_queues.append(error_queue)
-        processes.append(process)
+    def __init__(self, strategy: Strategy) -> None:
+        super().__init__(strategy)
 
-    context = ProcessContext(processes, error_queues)
-    if not join:
-        return context
+    def launch(self, function: Callable, *args: Any, trainer: Optional["pl.Trainer"] = None, **kwargs: Any) -> Any:
+        """Spawns processes that run the given function in parallel.
 
-    # Loop on join until it returns True or throw an exception.
-    while not context.join():
-        pass
+        The function is allowed to have a return value. However, when all processes join, only the return value
+        of worker process 0 gets returned from this `launch` method in the main process.
 
-    os.environ["KMP_AFFINITY"] = init_KMP_AFFINITY
-    os.environ["OMP_NUM_THREADS"] = init_OMP_NUM_THREADS
+        Arguments:
+            function: The entry point for all spawned processes.
+            *args: Optional positional arguments to be passed to the given function.
+            trainer: Optional reference to the :class:`~pytorch_lightning.trainer.trainer.Trainer` for which
+                a selected set of attributes get restored in the main process after processes join.
+            **kwargs: Optional keyword arguments to be passed to the given function.
+        """
+        # The default cluster environment in Lightning chooses a random free port number
+        # This needs to be done in the main process here before spawning to ensure each rank will connect
+        # through the same port
+        os.environ["MASTER_PORT"] = str(self._strategy.cluster_environment.main_port)
+        if self._strategy.cpu_for_each_process is None:
+            cpu_procs = schedule_workers(self._strategy.num_processes)
+        else:
+            cpu_procs = self._strategy.cpu_for_each_process
+        
+        init_KMP_AFFINITY = os.environ.get("KMP_AFFINITY")
+        init_OMP_NUM_THREADS = os.environ.get("OMP_NUM_THREADS")
+
+        mp = multiprocessing.get_context(self._start_method)
+        return_queue = mp.SimpleQueue()
+        error_queues = []
+        processes = []
+        args = (trainer, function, args, kwargs, return_queue)
+
+        for i in range(self._strategy.num_processes):
+            os.environ["KMP_AFFINITY"] = f"granularity=fine,proclist"\
+                                         f"=[{','.join([str(i) for i in cpu_procs[i]])}],explicit"
+            os.environ["OMP_NUM_THREADS"] = str(len(cpu_procs[i]))
+            log.debug(f"[Process {i}]: using KMP_AFFINITY: {os.environ['KMP_AFFINITY']}")
+            log.debug(f"[Process {i}]: using OMP_NUM_THREADS: {os.environ['OMP_NUM_THREADS']}")
+            error_queue = mp.SimpleQueue()
+            process = mp.Process(
+                target=_wrap,
+                args=(self._wrapping_function, i, args, error_queue),
+                daemon=False,
+            )
+            process.start()
+            error_queues.append(error_queue)
+            processes.append(process)
+
+        context = ProcessContext(processes, error_queues)
+
+        while not context.join():
+            pass
+
+        os.environ["KMP_AFFINITY"] = init_KMP_AFFINITY
+        os.environ["OMP_NUM_THREADS"] = init_OMP_NUM_THREADS
 
 
-class DDPSpawnPlugin(pl.plugins.DDPSpawnPlugin):
-    """Extending DDPSpawnPlugin to support launch subprocesses with optimized env variables."""
+class DDPSpawnStrategy(BaseStrategy):
 
-    distributed_backend = "ddp_spawn"
+    strategy_name = "ddp_spawn"
 
     def __init__(
         self,
@@ -109,113 +139,35 @@ class DDPSpawnPlugin(pl.plugins.DDPSpawnPlugin):
         cpu_for_each_process: Optional[List[List[int]]] = None,
         use_ipex=False,
         enable_bf16=False,
+        **kwargs: Any
     ):
-        """Create a DDPSpawnPlugin, adding a cpu_for_each_process parameter."""
+        """Create a DDPSpawnStrategy, adding a cpu_for_each_process parameter."""
         device = ipex_device() if use_ipex and TORCH_VERSION_LESS_1_10 else 'cpu'
         parallel_devices = [torch.device(device) for _ in range(num_processes)]
         cluster_environment = LightningEnvironment()
 
-        super().__init__(parallel_devices,
-                         cluster_environment=cluster_environment)
+        super().__init__(parallel_devices=parallel_devices,
+                         cluster_environment=cluster_environment, **kwargs)
         self.cpu_for_each_process = cpu_for_each_process
         self.is_distributed = True
         self.use_ipex = use_ipex
         self.enable_bf16 = enable_bf16
 
-    @property
-    def mp_spawn_kwargs(self):
-        """Return the kwargs that will be passed to spawn to start a new process."""
-        return {
-            "args": (self.lightning_module.trainer, self.mp_queue),
-            "nprocs": self.num_processes,
-            "cpu_procs": self.cpu_for_each_process
-        }
-
-    def start_training(self, trainer):
-        """Setup start_training hook for the plugin."""
-        # reset ortsess, since InferenceSession can not be pickled
-        self.model._ortsess = None
-        start_processes_new(self.new_process, **self.mp_spawn_kwargs)
-        # reset optimizers, since main process is never used for training
-        # and thus does not have a valid optim state
-        trainer.optimizers = []
-
-    def start_evaluating(self, trainer):
-        """Setup start_evaluting hook for the plugin."""
-        print("evaluate")
-        start_processes_new(self.new_process, **self.mp_spawn_kwargs)
-
-    def start_predicting(self, trainer):
-        """Setup start_predicting hook for the plugin."""
-        print("predict")
-        start_processes_new(self.new_process, **self.mp_spawn_kwargs)
-
-    def new_process(self, process_idx, trainer, mp_queue):
-        """The fucntion to run in each new process."""
-        self = copy.deepcopy(self)
-        self.mp_queue = mp_queue
-
-        reset_seed()
-
-        self.set_world_ranks(process_idx)
-
-        # set warning rank
-        rank_zero_only.rank = self.global_rank
-
-        # set up server using proc 0's ip address
-        # try to init for 20 times at max in case ports are taken
-        # where to store ip_table
-        self.init_ddp_connection(self.global_rank, self.world_size)
-
-        # TODO: we moved it to the trainer.fit after calling pre_dispatch
-        #   ... need to double check that it is the correct place
-        # self.trainer.call_setup_hook(self.model)
-
-        # on world_size=0 let everyone know training is starting
-        if self.is_global_zero and not torch.distributed.is_initialized():
-            log.info("-" * 100)
-            log.info(f"distributed_backend={self.distributed_backend}")
-            log.info(f"All DDP processes registered. Starting ddp with {self.world_size} processes")
-            log.info("-" * 100)
-
-        # set the ranks and devices
-        self.dist.rank = self.global_rank
-        self.dist.device = self.root_device
-
+    def setup(self, trainer: "pl.Trainer") -> None:
+        super().setup(trainer)
+        
         if self.use_ipex and not TORCH_VERSION_LESS_1_10:
             dtype = torch.bfloat16 if self.enable_bf16 else None
-            num_optimizers = len(self.lightning_module.trainer.accelerator.optimizers)
+            num_optimizers = len(self.optimizers)
+
             if num_optimizers == 1:
-                optimizer = self.lightning_module.trainer.accelerator.optimizers[0]
-                ipex_optimize(self.model, optimizer=optimizer,
-                              inplace=True, dtype=dtype)
+                optimizer = self.optimizers[0]
+                ipex_optimize(self.model, optimizer=optimizer, inplace=True, dtype=dtype)
             elif num_optimizers == 0:
                 ipex_optimize(self.model, inplace=True, dtype=dtype)
             else:
                 warnings.warn(f"IPEX currently only support single optimizers, "
                               f"but got {num_optimizers}. Skip IPEX")
 
-        if self.sync_batchnorm:
-            self.model = self.configure_sync_batchnorm(self.model)
-
-        self.configure_ddp()
-
-        # Move this line here so that we can temporarily use cpu while configuring ddp
-        # and use ipex.DEVICE later on
-        # move the model to the correct device
-        self.model_to_device()
-
-        self.barrier()
-        results = self.lightning_module.trainer.run_stage()
-
-        # persist info in ddp_spawn
-        self.transfer_distrib_spawn_state_on_fit_end(results)
-
-    def configure_ddp(self):
-        """Setup the configuration for pytorch ddp."""
-        self.pre_configure_ddp()
-        self._model = DistributedDataParallel(
-            LightningDistributedModule(self.model),
-            **self._ddp_kwargs,
-        )
-        self._register_ddp_hooks()
+    def _configure_launcher(self):
+        self._launcher = _DDPSpawnLauncher(self)

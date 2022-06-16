@@ -53,7 +53,6 @@ class IPEXStrategy(SingleDeviceStrategy):
         Setup plugins for the trainer fit and creates optimizers.
         Args:
             trainer: the trainer instance
-            kwargs['model']: pl.LightningModule
         throw:
             RuntimeError:
                 If AMP is used with XPU.
