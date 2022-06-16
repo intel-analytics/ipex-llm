@@ -87,6 +87,8 @@ class _DDPSpawnLauncher(_SpawnLauncher):
         # The default cluster environment in Lightning chooses a random free port number
         # This needs to be done in the main process here before spawning to ensure each rank will connect
         # through the same port
+        os.environ["MASTER_PORT"] = str(self._strategy.cluster_environment.main_port)
+
         if self._strategy.cpu_for_each_process is None:
             cpu_procs = schedule_workers(self._strategy.num_processes)
         else:

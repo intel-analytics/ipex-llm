@@ -47,6 +47,7 @@ from pytorch_lightning.strategies.launchers import _Launcher
 from pytorch_lightning.strategies import Strategy, DDPSpawnStrategy
 from pytorch_lightning.plugins.environments import LightningEnvironment
 
+from bigdl.nano.common.cpu_schedule import schedule_workers
 from bigdl.nano.deps.ipex.ipex_api import ipex_device, ipex_optimize, create_IPEXAccelerator, create_IPEXAccelerator_1_9
 from bigdl.nano.pytorch.utils import TORCH_VERSION_LESS_1_10
 
@@ -90,7 +91,8 @@ class _DDPSubprocessLauncher(_Launcher):
             trainer: Optional reference to the :class:`~pytorch_lightning.trainer.trainer.Trainer`.
             **kwargs: Optional keyword arguments to be passed to the given function.
         """
-        from bigdl.nano.common.cpu_schedule import schedule_workers
+        os.environ["MASTER_PORT"] = str(self._strategy.cluster_environment.main_port)
+
         strategy = self._strategy
         cpu_procs = schedule_workers(strategy.num_processes)
 
