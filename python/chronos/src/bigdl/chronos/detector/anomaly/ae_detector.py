@@ -20,22 +20,22 @@ import numpy as np
 from bigdl.chronos.pytorch import TSTrainer as Trainer
 
 
-# def create_tf_model(compress_rate,
-#                     input_dim,
-#                     optimizer='adadelta',
-#                     loss='binary_crossentropy',
-#                     lr=0.001):
-#     from tensorflow.keras.layers import Input, Dense
-#     from tensorflow.keras.models import Model
-#     from tensorflow.keras import backend
+def create_tf_model(compress_rate,
+                    input_dim,
+                    optimizer='adadelta',
+                    loss='binary_crossentropy',
+                    lr=0.001):
+    from tensorflow.keras.layers import Input, Dense
+    from tensorflow.keras.models import Model
+    from tensorflow.keras import backend
 
-#     inp = Input(shape=(input_dim,))
-#     encoded = Dense(int(compress_rate * input_dim), activation='relu')(inp)
-#     decoded = Dense(input_dim, activation='sigmoid')(encoded)
-#     autoencoder = Model(inp, decoded)
-#     autoencoder.compile(optimizer=optimizer, loss=loss)
-#     backend.set_value(autoencoder.optimizer.learning_rate, lr)
-#     return autoencoder
+    inp = Input(shape=(input_dim,))
+    encoded = Dense(int(compress_rate * input_dim), activation='relu')(inp)
+    decoded = Dense(input_dim, activation='sigmoid')(encoded)
+    autoencoder = Model(inp, decoded)
+    autoencoder.compile(optimizer=optimizer, loss=loss)
+    backend.set_value(autoencoder.optimizer.learning_rate, lr)
+    return autoencoder
 
 
 def create_torch_model(compress_rate, input_dim):
