@@ -29,11 +29,11 @@ import yaml
 from bigdl.nano.pytorch.utils import TORCH_VERSION_LESS_1_10, TORCH_VERSION_LESS_1_11
 from bigdl.nano.pytorch.lightning import LightningModuleFromTorch
 from bigdl.nano.pytorch.plugins.ddp_spawn import DDPSpawnStrategy
-from bigdl.nano.pytorch.plugins.ddp_subprocess import DDPSubprocessPlugin
+from bigdl.nano.pytorch.plugins.ddp_subprocess import DDPSubprocessStrategy
 
 from bigdl.nano.deps.automl.hpo_api import create_hpo_searcher, check_hpo_status
 from bigdl.nano.deps.ray.ray_api import distributed_ray
-from bigdl.nano.deps.ipex.ipex_api import create_IPEXStrategy, create_IPEXStrategy_1_9, create_IPEXAccelerator_1_9
+from bigdl.nano.deps.ipex.ipex_api import create_IPEXStrategy, create_IPEXStrategy_1_9
 from bigdl.nano.deps.openvino.openvino_api import PytorchOpenVINOModel, load_openvino_model
 from bigdl.nano.deps.onnxruntime.onnxruntime_api import PytorchONNXRuntimeModel, \
     load_onnxruntime_model
@@ -126,7 +126,7 @@ class Trainer(pl.Trainer):
                                         use_ipex=self.use_ipex,
                                         enable_bf16=enable_bf16)
             elif distributed_backend == "subprocess":
-                strategy = DDPSubprocessPlugin(num_processes=num_processes,
+                strategy = DDPSubprocessStrategy(num_processes=num_processes,
                                              cpu_for_each_process=cpu_for_each_process,
                                              use_ipex=self.use_ipex,
                                              enable_bf16=enable_bf16)

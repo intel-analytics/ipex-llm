@@ -40,20 +40,22 @@ if __name__ == '__main__':
     plugin.mp_queue = multiprocessing.SimpleQueue()
     process_idx = int(os.environ["PROCESS_IDX"])
 
-    reset_seed()
-    plugin.set_world_ranks(process_idx)
+    # reset_seed()
+    # plugin.set_world_ranks(process_idx)
     # rank_zero_only.rank = plugin.global_rank
 
-    plugin.init_ddp_connection(plugin.global_rank, plugin.world_size)
+    plugin._worker_setup(process_idx)
 
-    plugin.dist.rank = plugin.global_rank
-    plugin.dist.device = plugin.root_device
+    # plugin.init_ddp_connection(plugin.global_rank, plugin.world_size)
+
+    # plugin.dist.rank = plugin.global_rank
+    # plugin.dist.device = plugin.root_device
 
     if plugin.use_ipex and not TORCH_VERSION_LESS_1_10:
         dtype = torch.bfloat16 if plugin.enable_bf16 else None
-        num_optimizers = len(plugin.lightning_module.trainer.accelerator.optimizers)
+        num_optimizers = len(plugin.optimizers)
         if num_optimizers == 1:
-            optimizer = plugin.lightning_module.trainer.accelerator.optimizers[0]
+            optimizer = plugin.optimizers[0]
             ipex_optimize(plugin.model, optimizer=optimizer,
                           inplace=True, dtype=dtype)
         elif num_optimizers == 0:
@@ -62,9 +64,6 @@ if __name__ == '__main__':
         else:
             warnings.warn(f"IPEX currently only support single optimizers, "
                           f"but got {num_optimizers}. Skip IPEX")
-
-    if plugin.sync_batchnorm:
-        plugin.model = plugin.configure_sync_batchnorm(plugin.model)
 
     plugin.configure_ddp()
 

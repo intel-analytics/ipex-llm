@@ -34,7 +34,6 @@
 
 import os
 import multiprocessing
-from multiprocessing.queues import SimpleQueue
 from typing import Any, List, Optional, Callable
 
 import torch
@@ -42,12 +41,11 @@ from torch.multiprocessing.spawn import _wrap, ProcessContext
 
 import pytorch_lightning as pl
 from pytorch_lightning.strategies.launchers import _SpawnLauncher
-from pytorch_lightning.strategies import Strategy, DDPSpawnStrategy as BaseStrategy
-from pytorch_lightning.utilities.apply_func import move_data_to_device
+from pytorch_lightning.strategies import Strategy, DDPSpawnStrategy as _DDPSpawnStrategy
 from pytorch_lightning.plugins.environments import LightningEnvironment
 
 from bigdl.nano.common.cpu_schedule import schedule_workers
-from bigdl.nano.deps.ipex.ipex_api import ipex_device, ipex_optimize
+from bigdl.nano.deps.ipex.ipex_api import ipex_device, ipex_optimize, create_IPEXAccelerator_1_9
 from bigdl.nano.pytorch.utils import TORCH_VERSION_LESS_1_10
 
 import logging
@@ -89,7 +87,6 @@ class _DDPSpawnLauncher(_SpawnLauncher):
         # The default cluster environment in Lightning chooses a random free port number
         # This needs to be done in the main process here before spawning to ensure each rank will connect
         # through the same port
-        os.environ["MASTER_PORT"] = str(self._strategy.cluster_environment.main_port)
         if self._strategy.cpu_for_each_process is None:
             cpu_procs = schedule_workers(self._strategy.num_processes)
         else:
@@ -125,11 +122,13 @@ class _DDPSpawnLauncher(_SpawnLauncher):
         while not context.join():
             pass
 
-        os.environ["KMP_AFFINITY"] = init_KMP_AFFINITY
-        os.environ["OMP_NUM_THREADS"] = init_OMP_NUM_THREADS
+        if init_KMP_AFFINITY is not None:
+            os.environ["KMP_AFFINITY"] = init_KMP_AFFINITY
+        if init_OMP_NUM_THREADS is not None:
+            os.environ["OMP_NUM_THREADS"] = init_OMP_NUM_THREADS
 
 
-class DDPSpawnStrategy(BaseStrategy):
+class DDPSpawnStrategy(_DDPSpawnStrategy):
 
     strategy_name = "ddp_spawn"
 
@@ -141,13 +140,17 @@ class DDPSpawnStrategy(BaseStrategy):
         enable_bf16=False,
         **kwargs: Any
     ):
-        """Create a DDPSpawnStrategy, adding a cpu_for_each_process parameter."""
         device = ipex_device() if use_ipex and TORCH_VERSION_LESS_1_10 else 'cpu'
         parallel_devices = [torch.device(device) for _ in range(num_processes)]
         cluster_environment = LightningEnvironment()
 
-        super().__init__(parallel_devices=parallel_devices,
-                         cluster_environment=cluster_environment, **kwargs)
+        if use_ipex and TORCH_VERSION_LESS_1_10 and 'accelerator' not in kwargs:
+            super().__init__(accelerator=create_IPEXAccelerator_1_9(),
+                             parallel_devices=parallel_devices,
+                             cluster_environment=cluster_environment, **kwargs)
+        else:
+            super().__init__(parallel_devices=parallel_devices,
+                             cluster_environment=cluster_environment, **kwargs)
         self.cpu_for_each_process = cpu_for_each_process
         self.is_distributed = True
         self.use_ipex = use_ipex
@@ -155,7 +158,7 @@ class DDPSpawnStrategy(BaseStrategy):
 
     def setup(self, trainer: "pl.Trainer") -> None:
         super().setup(trainer)
-        
+
         if self.use_ipex and not TORCH_VERSION_LESS_1_10:
             dtype = torch.bfloat16 if self.enable_bf16 else None
             num_optimizers = len(self.optimizers)
