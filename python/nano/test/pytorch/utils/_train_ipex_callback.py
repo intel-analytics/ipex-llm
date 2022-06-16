@@ -46,7 +46,8 @@ class CheckIPEXCallback(Callback):
             assert check_device(pl_module.state_dict())
         else:
             from bigdl.nano.deps.ipex.ipex_accelerator import IPEXAccelerator
-            if not isinstance(trainer.accelerator, IPEXAccelerator):
+            from pytorch_lightning.plugins import DDPSpawnPlugin
+            if not (isinstance(trainer.accelerator, IPEXAccelerator) or isinstance(trainer.training_type_plugin, DDPSpawnPlugin) and hasattr(trainer.training_type_plugin, 'use_ipex') and trainer.training_type_plugin.use_ipex == True):
                 warnings.warn("CheckIPEXCallback is used, but ipex fail")
                 return
             from intel_extension_for_pytorch.nn.utils._model_convert import _LSTM

@@ -159,7 +159,9 @@ jobs:
         os: ["ubuntu-20.04"]
         python-version: ["3.7"]
         pytorch-version: [
-          "torch==1.11.0 torchvision==0.12.0 intel_extension_for_pytorch==1.11.0",
+          "torch==1.11.0+cpu torchvision==0.12.0+cpu intel_extension_for_pytorch==1.11.0",
+          "torch==1.9.0+cpu torchvision==0.10.0+cpu torch_ipex==1.9.0"
+          # "torch==1.10.0+cpu torchvision==0.11.0+cpu intel_extension_for_pytorch==1.10.0",
           # "torch==1.10.1+cpu torchvision==0.11.2+cpu",
           # ""
           ]
@@ -187,7 +189,12 @@ jobs:
           bash python/nano/dev/build_and_install.sh linux default false pytorch
           pip install pytest
           if [ ! -z "${{matrix.pytorch-version}}" ]; then
-            pip install ${{matrix.pytorch-version}}
+            requirements=(${{matrix.pytorch-version}})
+            pip install ${requirements[0]} ${requirements[1]} -f https://download.pytorch.org/whl/torch_stable.html
+            pip install ${requirements[2]} -f https://software.intel.com/ipex-whl-stable
+            if [ ! -z "${{matrix.extra}}" ]; then
+               pip install ${{matrix.extra}}
+            fi
           fi
           source bigdl-nano-init
           bash python/nano/test/run-nano-pytorch-tests-ipex.sh

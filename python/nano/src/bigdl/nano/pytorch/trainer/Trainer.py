@@ -26,7 +26,7 @@ from torch.utils.data import DataLoader
 from torchmetrics.metric import Metric
 from torch.optim.lr_scheduler import _LRScheduler
 import yaml
-from bigdl.nano.pytorch.utils import TORCH_VERSION_LESS_1_10
+from bigdl.nano.pytorch.utils import TORCH_VERSION_LESS_1_10, TORCH_VERSION_LESS_1_11
 from bigdl.nano.pytorch.lightning import LightningModuleFromTorch
 from bigdl.nano.pytorch.plugins.ddp_spawn import DDPSpawnPlugin
 from bigdl.nano.pytorch.plugins.ddp_subprocess import DDPSubprocessPlugin
@@ -40,6 +40,7 @@ from bigdl.nano.deps.onnxruntime.onnxruntime_api import PytorchONNXRuntimeModel,
 from bigdl.nano.deps.neural_compressor.inc_api import load_inc_model, quantize as inc_quantize
 from bigdl.nano.utils.log4Error import invalidInputError
 from bigdl.nano.utils.inference.pytorch.model import AcceleratedLightningModule
+from bigdl.nano.common import check_avx512
 distributed_backends = ["spawn", "ray", "subprocess"]
 
 
@@ -91,6 +92,13 @@ class Trainer(pl.Trainer):
             self.hposearcher = None
 
         accelerator = None
+
+        if TORCH_VERSION_LESS_1_11 and use_ipex and not check_avx512():
+            warning("Enable ipex<=1.10 in a cpu instruction set"
+                    " without avx512 will crash."
+                    "Fall back to regular pytorch.")
+            use_ipex = False
+
         if num_processes == 1:
             if use_ipex:
                 if TORCH_VERSION_LESS_1_10:
