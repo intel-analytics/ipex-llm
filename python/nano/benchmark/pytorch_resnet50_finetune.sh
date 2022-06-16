@@ -21,8 +21,6 @@ $CONDA/bin/conda create -n benchmark-resnet-50 -y python==3.7.10 setuptools==58.
 $CONDA/bin/activate benchmark-resnet-50
 
 bash $ANALYTICS_ZOO_ROOT/python/nano/dev/build_and_install.sh linux default false pytorch
-# python -m pip install torch_ipex==1.9.0 -f https://software.intel.com/ipex-whl-stable
-# python -m pip install torchvision==0.10.0+cpu -f https://download.pytorch.org/whl/torch_stable.html
 
 cd $ANALYTICS_ZOO_ROOT/python/nano/benchmark/pytorch/
 
