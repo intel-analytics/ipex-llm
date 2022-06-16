@@ -116,6 +116,13 @@ def denormalize(images):
     return images * stds + means
 
 
+def re_dataset(df, args):
+    zip_file = args.additional_archive.split('#')[-1]
+    df['image_path'] = df['image_path'].apply(lambda x: x.replace('kaggle_3m', zip_file + '/kaggle_3m'))
+    df['mask_path'] = df['mask_path'].apply(lambda x: x.replace('kaggle_3m', zip_file + '/kaggle_3m'))
+    return df
+
+
 parser = argparse.ArgumentParser(description='PyTorch brainMRI Example')
 parser.add_argument('--cluster_mode', type=str, default="local",
                     help='The cluster mode, such as local, yarn-client, spark-submit or k8s.')
@@ -123,21 +130,21 @@ parser.add_argument('--backend', type=str, default="torch_distributed",
                     help='The backend of PyTorch Estimator; torch_distributed and spark are supported')
 parser.add_argument('--batch_size', type=int, default=64, help='The training batch size')
 parser.add_argument('--epochs', type=int, default=2, help='The number of epochs to train for')
-parser.add_argument('--data_dir', type=str, default='./kaggle_3m', help='the data path')
-parser.add_argument('--additional_archive', type=str, default="kaggle_3m.zip#kaggle_3m")
+parser.add_argument('--data_dir', type=str, default='./kaggle_3m')
+parser.add_argument('--additional_archive', type=str, default="kaggle_3m.zip#dataset")
 args = parser.parse_args()
 
 train_df, test_df = dataset(args.data_dir)
 
 if args.cluster_mode == "local":
     init_orca_context(memory="4g")
-elif args.cluster_mode.startswith('yarn'):
-    if args.cluster_mode == "yarn-client":
-        init_orca_context(cluster_mode="yarn-client", cores=2, num_nodes=2, additional_archive=args.additional_archive,
-                          extra_python_lib='dataset.py,Unet.py', num_executors=2)
-    else:
-        raise NotImplementedError("The yarn cluster_mode only can be yarn-client now,"
-                                  " but got {}".format(args.cluster_mode))
+elif args.cluster_mode == "yarn-client":
+    init_orca_context(cluster_mode="yarn-client", cores=2, additional_archive=args.additional_archive,
+                      extra_python_lib='dataset.py,Unet.py', num_executors=2)
+    args.data_dir = args.data_dir.replace('kaggle_3m', 'dataset/kaggle_3m')
+    train_df, test_df = re_dataset(train_df, args), re_dataset(test_df, args)
+    print('the new data_dir is {} because the dataset will be zip'.format(args.data_dir))
+
 elif args.cluster_mode == "spark-submit":
     init_orca_context(cluster_mode="spark-submit")
 else:
@@ -169,7 +176,7 @@ if args.backend in ["torch_distributed", "spark"]:
     for r in res:
         print(r, ":", res[r])
 else:
-    raise NotImplementedError("Only torch_distributed and spark are supported as the backend,"
+    raise NotImplementedError("Only torch_distributed are supported as the backend,"
                               " but got {}".format(args.backend))
 
 stop_orca_context()
