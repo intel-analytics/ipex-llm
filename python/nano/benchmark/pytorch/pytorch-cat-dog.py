@@ -62,13 +62,14 @@ def create_data_loader(root_dir, batch_size, nproc):
     catdogs = ImageFolder(dir_path, data_transform)
     dataset_size = len(catdogs)
 
-
     if "SANITY_CHECK" in os.environ and os.environ["SANITY_CHECK"] == "1":
         # reduce dataset size to speedup the check
         train_size = 2 * nproc * batch_size
         val_size = 2 * nproc * batch_size
         test_size = dataset_size - train_size - val_size
-        train_set, val_set, _ = torch.utils.data.random_split(catdogs, [train_size, val_size, test_size])
+        train_set, val_set, _ = torch.utils.data.random_split(catdogs, [train_size,
+                                                                        val_size,
+                                                                        test_size])
     else:
         train_split = 0.8
         train_size = int(dataset_size * train_split)
@@ -79,6 +80,7 @@ def create_data_loader(root_dir, batch_size, nproc):
     val_loader = DataLoader(val_set, batch_size=batch_size, shuffle=False, num_workers=0)
     size = (train_size, val_size)
     return train_loader, val_loader, size
+
 
 def _main_process(args, train_loader, val_loader, train_size):
     classifier = Classifier()
@@ -94,6 +96,7 @@ def _main_process(args, train_loader, val_loader, train_size):
 
     return
 
+
 def main():
     print("Nano Pytorch cat-vs-dog example")
     args = parser.parse_args()
@@ -108,7 +111,9 @@ def main():
     # get dataset
     download_and_extract_archive(url=DATA_URL, download_root="data")
 
-    train_loader, val_loader, (train_size, _) = create_data_loader("data", args.batch_size, args.nproc)
+    train_loader, val_loader, (train_size, _) = create_data_loader("data",
+                                                                   args.batch_size,
+                                                                   args.nproc)
 
     _main_process(args, train_loader, val_loader, train_size)
 
