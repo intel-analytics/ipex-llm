@@ -70,7 +70,13 @@ def train(config, train_tbl, test_tbl, epochs=1, batch_size=128, model_dir='.'):
     print("Total number of train records: {}".format(train_count))
     print("Total number of val records: {}".format(test_count))
 
-    estimator.fit(train_df, epochs=epochs, batch_size=batch_size,
+    estimator.fit(data=train_df,
+                  epochs=args.epochs,
+                  batch_size=args.batch_size,
+                  callbacks=callbacks,
+                  steps_per_epoch=steps_per_epoch,
+                  validation_data=test_df,
+                  validation_steps=val_steps,
                   feature_cols=feature_cols,
                   label_cols=['label'])
 

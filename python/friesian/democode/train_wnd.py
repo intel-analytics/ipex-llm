@@ -14,14 +14,12 @@
 # limitations under the License.
 #
 
-import pickle
 import argparse
-from pyspark.sql.functions import array
 from bigdl.orca import init_orca_context, stop_orca_context
 from bigdl.orca.data.file import exists, makedirs
 from bigdl.friesian.feature import FeatureTable
 from bigdl.orca.learn.tf2.estimator import Estimator
-from friesian.example.wnd.train.wnd_train_recsys import ColumnFeatureInfo, model_creator, build_model
+from friesian.example.wnd.train.wnd_train_recsys import ColumnFeatureInfo, model_creator
 from bigdl.dllib.utils.log4Error import *
 import time
 import math
@@ -82,7 +80,7 @@ if __name__ == '__main__':
         sc = init_orca_context("yarn-client", cores=args.executor_cores,
                                num_nodes=args.num_executor, memory=args.executor_memory,
                                driver_cores=args.driver_cores, driver_memory=args.driver_memory,
-                               conf=spark_conf, extra_python_lib="../example/two_tower/model.py",
+                               conf=spark_conf,
                                object_store_memory="8g",
                                init_ray_on_spark=True)
     elif args.cluster_mode == "spark-submit":
@@ -109,7 +107,7 @@ if __name__ == '__main__':
 
     wide_dims = [stats[key] for key in wide_cols]
     wide_cross_dims = [stats[key] for key in wide_cross_cols]
-    embed_dims =  [stats[key] for key in embed_cols]
+    embed_dims = [stats[key] for key in embed_cols]
 
     column_info = ColumnFeatureInfo(wide_base_cols=wide_cols,
                                     wide_base_dims=wide_dims,
