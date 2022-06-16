@@ -166,7 +166,7 @@ class PyTorchPySparkEstimator(BaseEstimator):
             **local_init_params)
 
         self.state_dict = self.driver_runner.get_state_dict()
-    
+
     def create_tcpstore_server(self):
         import torch.distributed as dist
         from torch._C._distributed_c10d import _DEFAULT_PG_TIMEOUT
