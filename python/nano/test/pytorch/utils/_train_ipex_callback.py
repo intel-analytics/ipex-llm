@@ -27,6 +27,7 @@ class CheckIPEXCallback(Callback):
     def on_train_start(self, trainer, pl_module):
         if trainer.use_ipex == False:
            warnings.warn("CheckIPEXCallback is used, but ipex fail. ") 
+           return
         if TORCH_VERSION_LESS_1_10:
             from bigdl.nano.deps.ipex.version_1_9.ipex_torchfunctional import RESTORE_TYPE
             def check_device(obj):
