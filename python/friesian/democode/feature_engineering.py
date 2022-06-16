@@ -113,12 +113,6 @@ if __name__ == '__main__':
     item_tbl, item_list = item_tbl.category_encode(["genres"])
 
     user_tbl = user_tbl.cross_columns([["gender", "age"], ["age", "zipcode"]], [50, 200])
-
-    # ratings_tbl = ratings_tbl\
-    #     .add_hist_seq(cols=['item'], user_col="user", sort_col='time',
-    #                   min_len=1, max_len=10, num_seqs=1)\
-    #     .pad("item_hist_seq", 10)
-
     user_tbl = user_tbl.join(user_stats, on="user")
     item_tbl = item_tbl.join(item_stats, on="item")
     full = ratings_tbl.join(user_tbl, on="user")\

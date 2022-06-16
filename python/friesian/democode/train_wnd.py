@@ -21,9 +21,11 @@ from bigdl.orca import init_orca_context, stop_orca_context
 from bigdl.orca.data.file import exists, makedirs
 from bigdl.friesian.feature import FeatureTable
 from bigdl.orca.learn.tf2.estimator import Estimator
-from friesian.example.two_tower.model import *
+from friesian.example.wnd.train.wnd_train_recsys import ColumnFeatureInfo, model_creator, build_model
 from bigdl.dllib.utils.log4Error import *
-
+import time
+import math
+import os
 
 spark_conf = {"spark.network.timeout": "10000000",
               "spark.sql.broadcastTimeout": "7200",
@@ -41,48 +43,6 @@ spark_conf = {"spark.network.timeout": "10000000",
               "spark.app.name": "recsys-2tower",
               "spark.executor.memoryOverhead": "120g"}
 
-
-def train(config, train_tbl, test_tbl, epochs=1, batch_size=128, model_dir='.'):
-    two_tower = TwoTowerModel(config["user_col_info"], config["item_col_info"])
-
-    def model_creator(config):
-        model = two_tower.build_model()
-        print(model.summary())
-        optimizer = tf.keras.optimizers.Adam(config["lr"])
-        model.compile(optimizer=optimizer,
-                      loss='binary_crossentropy',
-                      metrics=['binary_accuracy', 'Recall', 'AUC'])
-        return model
-
-    estimator = Estimator.from_keras(model_creator=model_creator,
-                                     verbose=False,
-                                     config=config)
-
-    callbacks = []
-    from tensorflow.keras.callbacks import EarlyStopping
-    callbacks.append(EarlyStopping(monitor='val_auc', mode='max', verbose=1, patience=5))
-
-    train_count, test_count = train_tbl.size(), test_tbl.size()
-    train_df, test_df = train_tbl.df, test_tbl.df
-    steps_per_epoch = math.ceil(train_count / batch_size)
-    val_steps = math.ceil(test_count / batch_size)
-    feature_cols = config["user_col_info"].get_name_list() + config["item_col_info"].get_name_list()
-    print("Total number of train records: {}".format(train_count))
-    print("Total number of val records: {}".format(test_count))
-
-    estimator.fit(train_df, epochs=epochs, batch_size=batch_size,
-                  feature_cols=feature_cols,
-                  label_cols=['label'])
-
-    model = estimator.get_model()
-    user_model = get_1tower_model(model, two_tower.user_col_info)
-    item_model = get_1tower_model(model, two_tower.item_col_info)
-    tf.saved_model.save(model, os.path.join(model_dir, "twotower-model"))
-    tf.saved_model.save(user_model, os.path.join(model_dir, "user-model"))
-    tf.saved_model.save(item_model, os.path.join(model_dir, "item-model"))
-    estimator.save(os.path.join(model_dir, "twotower_model.ckpt"))
-    print("saved models")
-    return estimator
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Two Tower Training/Inference')
@@ -103,8 +63,8 @@ if __name__ == '__main__':
     parser.add_argument('--lr', default=0.001, type=float, help='learning rate')
     parser.add_argument('--epochs', default=1, type=int, help='train epoch')
     parser.add_argument('--batch_size', default=8000, type=int, help='batch size')
-    parser.add_argument('--model_dir', default='snapshot', type=str,
-                        help='snapshot directory name (default: snapshot)')
+    parser.add_argument('--model_dir', default='model_wnd', type=str,
+                        help='snapshot directory name (default: model_wnd)')
     parser.add_argument('--data_dir', type=str, default="./movielens/processed", help='data directory')
 
     args = parser.parse_args()
@@ -132,42 +92,82 @@ if __name__ == '__main__':
                           "cluster_mode should be one of 'local', 'yarn', 'standalone' and"
                           " 'spark-submit', but got " + args.cluster_mode)
 
+    wide_cols = ["gender", "age", "occupation", "zipcode", "genres"]
+    wide_cross_cols = ["gender_age", "age_zipcode"]
+    indicator_cols = wide_cols + wide_cross_cols
+    embed_cols = ["user", "item"]
+    num_cols = ["user_visits", "user_mean_rate", "item_visits", "item_mean_rate"]
+    cat_cols = wide_cols + wide_cross_cols + embed_cols
+
+
     full = FeatureTable.read_parquet(args.data_dir + "/full")\
-        .select("label", "user", "item", "zipcode", "gender", "age", "occupation", "zipcode", "genres",
-                array("user_visits", "user_mean_rate").alias("user_num"),
-                array("item_visits", "item_mean_rate").alias("item_num"))
-    stats = full.get_stats(["user", "item", "zipcode", "gender", "age", "occupation", "zipcode", "genres"], "max")
+        .select("label", *cat_cols, *num_cols)
+    stats = full.get_stats(cat_cols, "max")
     for key in stats.keys():
         stats[key] += 1
-    print(stats)
-    for items in stats:
-        print(items)
     train_tbl, test_tbl = full.random_split([0.8, 0.2], seed=1)
-    user_info = ColumnInfoTower(indicator_cols=["gender", "age", "occupation"],
-                                indicator_dims=[stats["gender"], stats["age"], stats["occupation"]],
-                                embed_cols=["user", "zipcode"],
-                                embed_in_dims=[stats["user"], stats["zipcode"]],
-                                embed_out_dims=[16, 16],
-                                numerical_cols=["user_num"],
-                                numerical_dims=[2],
-                                name="user")
-    item_info = ColumnInfoTower(indicator_cols=["genres"],
-                                indicator_dims=[stats["genres"]],
-                                embed_cols=["item"],
-                                embed_in_dims=[stats["item"]],
-                                embed_out_dims=[16],
-                                numerical_cols=["item_num"],
-                                numerical_dims=[2],
-                                name="item")
-    train_config = {"lr": 1e-3,
-                    "user_col_info": user_info,
-                    "item_col_info": item_info,
-                    "inter_op_parallelism": 4,
-                    "intra_op_parallelism": args.executor_cores}
 
-    train_tbl.show(2, False)
+    wide_dims = [stats[key] for key in wide_cols]
+    wide_cross_dims = [stats[key] for key in wide_cross_cols]
+    embed_dims =  [stats[key] for key in embed_cols]
 
-    train(train_config, train_tbl, test_tbl, epochs=args.epochs, batch_size=args.batch_size,
-          model_dir=args.model_dir)
+    column_info = ColumnFeatureInfo(wide_base_cols=wide_cols,
+                                    wide_base_dims=wide_dims,
+                                    wide_cross_cols=wide_cross_cols,
+                                    wide_cross_dims=wide_cross_dims,
+                                    indicator_cols=indicator_cols,
+                                    indicator_dims=wide_dims + wide_cross_dims,
+                                    embed_cols=embed_cols,
+                                    embed_in_dims=embed_dims,
+                                    embed_out_dims=[8] * len(embed_dims),
+                                    continuous_cols=num_cols,
+                                    label="label")
+
+    config = {
+        "lr": args.lr,
+        "hidden_units": [40, 20],
+        "column_info": column_info,
+        "inter_op_parallelism": 4,
+        "intra_op_parallelism": args.executor_cores
+    }
+
+    est = Estimator.from_keras(
+        model_creator=model_creator,
+        verbose=True,
+        config=config,
+        backend="tf2")
+
+    train_tbl.df.printSchema()
+    train_tbl.show(20, False)
+
+    if not exists(args.model_dir):
+        makedirs(args.model_dir)
+
+    callbacks = []
+    # early stopping
+    from tensorflow.keras.callbacks import EarlyStopping
+    callbacks.append(EarlyStopping(monitor='val_auc', mode='max', verbose=1, patience=5))
+    train_count = train_tbl.size()
+    print("train size: ", train_count)
+    steps = math.ceil(train_count / args.batch_size)
+    test_count = test_tbl.size()
+    print("test size: ", test_count)
+    val_steps = math.ceil(test_count / args.batch_size)
+
+    start = time.time()
+    est.fit(data=train_tbl.df,
+            epochs=args.epochs,
+            batch_size=args.batch_size,
+            callbacks=callbacks,
+            steps_per_epoch=steps,
+            validation_data=test_tbl.df,
+            validation_steps=val_steps,
+            feature_cols=column_info.feature_cols,
+            label_cols=column_info.label_cols)
+    end = time.time()
+    print("Training time is: ", end - start)
+    est.save(os.path.join(args.model_dir, "model-%d.ckpt" % args.epochs))
+    model = est.get_model()
+    model.save_weights(os.path.join(args.model_dir, "model.h5"))
 
     stop_orca_context()
