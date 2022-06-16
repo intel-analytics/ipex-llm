@@ -63,18 +63,28 @@ if [[ $* == *"verbose"* ]]; then
     export KMP_AFFINITY=${KMP_AFFINITY},verbose
 fi
 
+jars=$(echo ${BIGDL_HOME}/jars/*.jar | tr ' ' ',')
+echo $jars
+
 ${SPARK_HOME}/bin/pyspark \
   --master ${RUNTIME_SPARK_MASTER} \
+  --deploy-mode ${DEPLOY_MODE} \
+  --conf spark.driver.host=${SPARK_DRIVER_HOST} \
+  --conf spark.kubernetes.authenticate.driver.serviceAccountName=${RUNTIME_K8S_SERVICE_ACCOUNT} \
+  --name ${CONTAINER_NAME} \
+  --conf spark.kubernetes.container.image=${RUNTIME_K8S_SPARK_IMAGE} \
+  --conf spark.kubernetes.executor.deleteOnTermination=false \
   --driver-cores ${RUNTIME_DRIVER_CORES} \
   --driver-memory ${RUNTIME_DRIVER_MEMORY} \
   --executor-cores ${RUNTIME_EXECUTOR_CORES} \
   --executor-memory ${RUNTIME_EXECUTOR_MEMORY} \
-  --executor-instances ${RUNTIME_EXECUTOR_INSTANCES} \
+  --num-executors ${RUNTIME_EXECUTOR_INSTANCES} \
   --total-executor-cores ${RUNTIME_TOTAL_EXECUTOR_CORES} \
   --properties-file ${BIGDL_HOME}/conf/spark-bigdl.conf \
-  --py-files local://${BIGDL_HOME}/python/bigdl-dllib-spark_${SPARK_VERSION}-${BIGDL_VERSION}-python-api.zip,local://${BIGDL_HOME}/python/bigdl-friesian-spark_${SPARK_VERSION}-${BIGDL_VERSION}-python-api.zip,local://${BIGDL_HOME}/python/bigdl-orca-spark_${SPARK_VERSION}-${BIGDL_VERSION}-python-api.zip,local://${BIGDL_HOME}/python/bigdl-serving-spark_${SPARK_VERSION}-${BIGDL_VERSION}-python-api.zip \
-  --jars local://${BIGDL_HOME}/jars/* \
+  --py-files local://${BIGDL_HOME}/python/bigdl-spark_${SPARK_VERSION}-${BIGDL_VERSION}-python-api.zip \
+  --conf spark.jars=$jars \
   --conf spark.driver.extraClassPath=local://${BIGDL_HOME}/jars/* \
   --conf spark.executor.extraClassPath=local://${BIGDL_HOME}/jars/* \
   --conf spark.driver.extraJavaOptions=-Dderby.stream.error.file=/tmp \
-  --conf spark.sql.catalogImplementation='in-memory'
+  --conf spark.sql.catalogImplementation='in-memory' \
+  --verbose

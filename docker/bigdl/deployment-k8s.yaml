@@ -1,0 +1,142 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: bigdl-notebook
+  namespace: default
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: bigdl-notebook
+  template:
+    metadata:
+      name: bigdl-notebook
+      labels:
+        app: bigdl-notebook
+        appType: bigdl
+    spec:
+      containers:
+        - image: intelanalytics/bigdl:default
+          ports:
+            - name: jupyter-address
+              containerPort: 8888
+          name: bigdl-notebook
+          env:
+            - name: CONTAINER_NAME
+              value: bigdl-notebook
+            - name: NOTEBOOK_TOKEN
+              value: ""
+            - name: RUNTIME_SPARK_MASTER
+              valueFrom:
+                configMapKeyRef:
+                  name: notebook-config
+                  key: master
+            - name: DEPLOY_MODE
+              valueFrom:
+                configMapKeyRef:
+                  name: notebook-config
+                  key: mode
+            - name: SPARK_DRIVER_HOST
+              valueFrom:
+                configMapKeyRef:
+                  name: notebook-config
+                  key: spark.driver.host
+            - name: RUNTIME_K8S_SERVICE_ACCOUNT
+              valueFrom:
+                configMapKeyRef:
+                  name: notebook-config
+                  key: spark.kubernetes.authenticate.driver.serviceAccountName
+            - name: CONTAINER_NAME
+              valueFrom:
+                configMapKeyRef:
+                  name: notebook-config
+                  key: name
+            - name: RUNTIME_K8S_SPARK_IMAGE
+              valueFrom:
+                configMapKeyRef:
+                  name: notebook-config
+                  key: spark.kubernetes.container.image
+            - name: RUNTIME_DRIVER_CORES
+              valueFrom:
+                configMapKeyRef:
+                  name: notebook-config
+                  key: spark.driver.cores
+            - name: RUNTIME_DRIVER_MEMORY
+              valueFrom:
+                configMapKeyRef:
+                  name: notebook-config
+                  key: spark.driver.memory
+            - name: RUNTIME_EXECUTOR_CORES
+              valueFrom:
+                configMapKeyRef:
+                  name: notebook-config
+                  key: spark.executor.cores
+            - name: RUNTIME_EXECUTOR_MEMORY
+              valueFrom:
+                configMapKeyRef:
+                  name: notebook-config
+                  key: spark.executor.memory
+            - name: RUNTIME_EXECUTOR_INSTANCES
+              valueFrom:
+                configMapKeyRef:
+                  name: notebook-config
+                  key: spark.executor.instances
+            - name: RUNTIME_TOTAL_EXECUTOR_CORES
+              valueFrom:
+                configMapKeyRef:
+                  name: notebook-config
+                  key: total.executor.cores
+          volumeMounts:
+            - name: bigdl-notebook-volume
+              mountPath: /data/jupyter
+            - name: cache-volume
+              mountPath: /dev/shm
+          command: [ "/opt/work/start-notebook-k8s.sh" ]
+      volumes:
+        - name: bigdl-notebook-volume
+          persistentVolumeClaim:
+            claimName: nfsvolumeclaim
+            readOnly: false
+        - name: cache-volume
+          emptyDir:
+            medium: Memory
+            sizeLimit: "1024Mi"
+
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: bigdl-notebook
+  namespace: default
+  labels:
+    app: bigdl-notebook
+spec:
+  ports:
+    - port: 8888
+      protocol: TCP
+      name: jupyter-address
+  type: NodePort
+  selector:
+    app: bigdl-notebook
+
+
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: notebook-config
+  labels:
+    app: notebook
+data:
+  master: k8s://https://172.16.0.117:6443
+  mode: client
+  name: notebook
+  spark.driver.host: 172.16.0.117
+  spark.kubernetes.authenticate.driver.serviceAccountName: spark
+  spark.kubernetes.container.image: 10.239.45.10/arda/bigdl-k8s-spark-3.1.2:202206073
+  spark.driver.cores: 4
+  spark.driver.memory: 20g
+  spark.executor.cores: 4
+  spark.executor.memory: 20g
+  spark.executor.instances: 4
+  total.executor.cores: 4
