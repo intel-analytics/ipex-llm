@@ -99,6 +99,8 @@ class Trainer(pl.Trainer):
                     "Fall back to regular pytorch.")
             use_ipex = False
 
+        self.use_ipex = use_ipex
+
         if num_processes == 1:
             if use_ipex:
                 if TORCH_VERSION_LESS_1_10:
