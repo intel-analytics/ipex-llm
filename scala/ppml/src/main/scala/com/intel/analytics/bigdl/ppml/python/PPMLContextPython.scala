@@ -26,13 +26,13 @@ import org.slf4j.{Logger, LoggerFactory}
 import java.io.File
 import java.util
 
-object PPMLContextWrapper {
-  def ofFloat: PPMLContextWrapper[Float] = new PPMLContextWrapper[Float]()
+object PPMLContextPython {
+  def ofFloat: PPMLContextPython[Float] = new PPMLContextPython[Float]()
 
-  def ofDouble: PPMLContextWrapper[Double] = new PPMLContextWrapper[Double]()
+  def ofDouble: PPMLContextPython[Double] = new PPMLContextPython[Double]()
 }
 
-class PPMLContextWrapper[T]() {
+class PPMLContextPython[T]() {
   val logger: Logger = LoggerFactory.getLogger(getClass)
 
   def createPPMLContext(appName: String): PPMLContext = {

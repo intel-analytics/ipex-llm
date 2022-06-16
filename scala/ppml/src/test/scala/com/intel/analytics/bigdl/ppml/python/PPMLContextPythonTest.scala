@@ -26,8 +26,8 @@ import scala.collection.JavaConverters._
 
 import java.io.{File, PrintWriter}
 
-class PPMLContextWrapperTest extends FunSuite with BeforeAndAfterAll{
-  val ppmlContextWrapper: PPMLContextWrapper[Float] = PPMLContextWrapper.ofFloat
+class PPMLContextPythonTest extends FunSuite with BeforeAndAfterAll{
+  val ppmlContextPython: PPMLContextPython[Float] = PPMLContextPython.ofFloat
   val kms: SimpleKeyManagementService = SimpleKeyManagementService.apply()
   val appName = "test"
   val ppmlArgs: Map[String, String] = Map(
@@ -69,7 +69,7 @@ class PPMLContextWrapperTest extends FunSuite with BeforeAndAfterAll{
     encrypt.doFinal(csvFile, encryptedFilePath)
 
     // init PPMLContext
-    sc = ppmlContextWrapper.createPPMLContext(appName, ppmlArgs.asJava)
+    sc = ppmlContextPython.createPPMLContext(appName, ppmlArgs.asJava)
   }
 
   override def afterAll(): Unit = {
@@ -108,9 +108,9 @@ class PPMLContextWrapperTest extends FunSuite with BeforeAndAfterAll{
   }
 
   def read(cryptoMode: String, path: String): Unit = {
-    val encryptedDataFrameReader = ppmlContextWrapper.read(sc, cryptoMode)
-    ppmlContextWrapper.option(encryptedDataFrameReader, "header", "true")
-    val df = ppmlContextWrapper.csv(encryptedDataFrameReader, path)
+    val encryptedDataFrameReader = ppmlContextPython.read(sc, cryptoMode)
+    ppmlContextPython.option(encryptedDataFrameReader, "header", "true")
+    val df = ppmlContextPython.csv(encryptedDataFrameReader, path)
 
     Log4Error.invalidOperationError(df.count() == 8,
         "record count should be 8")
@@ -125,18 +125,18 @@ class PPMLContextWrapperTest extends FunSuite with BeforeAndAfterAll{
     }
     val path = this.getClass.getClassLoader.getResource("").getPath + outputDir
 
-    val encryptedDataFrameWriter = ppmlContextWrapper.write(sc, df, encryptMode)
-    ppmlContextWrapper.mode(encryptedDataFrameWriter, "overwrite")
-    ppmlContextWrapper.option(encryptedDataFrameWriter, "header", true)
-    ppmlContextWrapper.csv(encryptedDataFrameWriter, path)
+    val encryptedDataFrameWriter = ppmlContextPython.write(sc, df, encryptMode)
+    ppmlContextPython.mode(encryptedDataFrameWriter, "overwrite")
+    ppmlContextPython.option(encryptedDataFrameWriter, "header", true)
+    ppmlContextPython.csv(encryptedDataFrameWriter, path)
   }
 
   test("init PPMLContext with app name") {
-    ppmlContextWrapper.createPPMLContext(appName)
+    ppmlContextPython.createPPMLContext(appName)
   }
 
   test("init PPMLContext with app name & args") {
-    ppmlContextWrapper.createPPMLContext(appName, ppmlArgs.asJava)
+    ppmlContextPython.createPPMLContext(appName, ppmlArgs.asJava)
   }
 
   test("read plain text csv file") {
