@@ -30,7 +30,7 @@ import logging
 from bigdl.ppml.fl.estimator import Estimator
 from bigdl.ppml.fl.utils import FLTest
 
-resource_path = os.path.join(os.path.dirname(__file__), "../resources")
+resource_path = os.path.join(os.path.dirname(__file__), "../../resources")
 
 def mock_process(data_train, target):
     df_train = pd.read_csv(os.path.join(resource_path, data_train))

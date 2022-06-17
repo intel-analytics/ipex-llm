@@ -15,16 +15,22 @@
 #
 
 import logging
+import os
+import shutil
+import tempfile
 from numpy import ndarray
-import torch
-from torch import nn
-from bigdl.ppml.fl.nn.fl_client import FLClient
-from torch.utils.data import DataLoader
 from bigdl.dllib.utils.log4Error import invalidInputError
-from bigdl.ppml.fl.nn.utils import tensor_map_to_ndarray_map
 
-class PytorchEstimator:
-    def __init__(self, model: nn.Module, loss_fn, optimizer: torch.optim.Optimizer, algorithm=None,
+from bigdl.ppml.fl.nn.fl_client import FLClient
+from bigdl.ppml.fl.nn.utils import print_file_size_in_dir, tensor_map_to_ndarray_map
+
+import tensorflow as tf
+from tensorflow.keras.layers import Dense, Flatten, Conv2D
+from tensorflow.keras import Model
+from bigdl.ppml.fl.nn.generated.nn_service_pb2 import ByteChunk
+
+class TensorflowEstimator:
+    def __init__(self, model, loss_fn, optimizer, algorithm=None,
             bigdl_type="float", target="localhost:8980"):
         self.bigdl_type = bigdl_type
         self.model = model
@@ -32,10 +38,38 @@ class PytorchEstimator:
         self.optimizer = optimizer
         self.version = 0
         self.algorithm = algorithm
-        self.fl_client = FLClient(aggregator='pt', target=target)
+        self.fl_client = FLClient(aggregator='tf', target=target)
         self.loss_history = []
-    
-    def add_server_model(self, model: nn.Module, loss_fn=None, optimizer_cls=None, optimizer_args={}):
+
+    @staticmethod
+    def file_chunk_generate(file_path):
+        CHUNK_SIZE = 1 * 1024 * 1024
+        with open(file_path, 'rb') as f:
+            while True:
+                piece = f.read(CHUNK_SIZE);
+                if not piece:
+                    return
+                yield ByteChunk(buffer=piece)
+
+    @staticmethod
+    def load_model_as_bytes(model):
+        model_path = os.path.join(tempfile.mkdtemp(), "tf_vfl_server_model.h5")
+        model.save(model_path)
+        # print_file_size_in_dir(tmpdir)
+        # print("0", os.listdir(tmpdir))
+        # zip_path = os.path.join(tempfile.mkdtemp(), "tf_vfl_server_model")
+        # shutil.make_archive(zip_path, 'zip', tmpdir)
+        # size = os.path.getsize(f'{zip_path}.zip')
+        logging.info(f"Client packed model file, length: {os.path.getsize(model_path)}")
+        file_chunk_generator = TensorflowEstimator.file_chunk_generate(model_path)
+        return file_chunk_generator
+        
+        
+
+
+    def add_server_model(self, model, loss_fn=None, optimizer_cls=None, optimizer_args={}):
+        
+        
         # add model and pickle to server
         if loss_fn is None:
             logging.info(f'loss_fn on FLServer not specified, \
@@ -46,38 +80,42 @@ class PytorchEstimator:
                 using same as client: {self.optimizer} (with no args)')
             optimizer_cls = self.optimizer.__class__
 
-        msg = self.fl_client.upload_model(model, loss_fn, optimizer_cls, optimizer_args).message
+        msg_model = self.fl_client.nn_stub.upload_file(
+            TensorflowEstimator.load_model_as_bytes(model))
+        msg = self.fl_client.upload_model(None, loss_fn, optimizer_cls, optimizer_args).message
+        
+        logging.info(msg_model)
         logging.info(msg)
 
     def train_step(self, x, y):
         """
         Get the loss data from FLServer and construct the identical Pytorch Tensor
         """
-        y_pred_local = self.model(x)
+        with tf.GradientTape() as tape:
+            y_pred_local = self.model(x)
         y_true_global = y
-        data_map = {'input': y_pred_local.detach().numpy()}
+        data_map = {'input': y_pred_local.numpy()}
         if y_true_global is not None:
-            data_map['target'] = y_true_global.detach().numpy()
+            data_map['target'] = y_true_global.numpy()
         logging.debug(f'[{self.fl_client.client_uuid}] client sending train data to server')
         response = self.fl_client.train(data_map)
         logging.debug(f'[{self.fl_client.client_uuid}] client got response from server')
         response_map = tensor_map_to_ndarray_map(response.data.tensorMap)
-        grad = response_map['grad']
-        self.optimizer.zero_grad()
-        y_pred_local.backward(gradient=torch.tensor(grad))
-        self.optimizer.step()
+        server_grad = response_map['grad']
+        gradients = tape.gradient(y_pred_local, self.model.trainable_variables, tf.convert_to_tensor(server_grad))
+        self.optimizer.apply_gradients(zip(gradients, self.model.trainable_variables))
         return response_map['loss']
 
     def fit(self, x, y=None, epoch=1, batch_size=4):
         for e in range(epoch):
-            self.model.train()
-            if isinstance(x, DataLoader):
-                size = len(x.dataset)
+            if isinstance(x, tf.data.Dataset):
+                size = len(x)
                 for batch, (X, y) in enumerate(x):
+                    logging.debug(f"training batch {batch}/{size}")
                     loss = self.train_step(X, y)
                     current = batch * len(X)
-                    if batch % 100 == 0:
-                        logging.info(f"loss: {loss:>7f}  [{current:>5d}/{size:>5d}]  \
+                    if batch % 10 == 0:
+                        logging.info(f"loss: {loss:>7f}  [{batch:>5d}/{size:>5d}]  \
                             epoch {e}/{epoch}")
                         self.loss_history.append(loss)
             elif isinstance(x, ndarray):
@@ -85,8 +123,8 @@ class PytorchEstimator:
                 # just abandon last batch to reduce code
                 while i < size:
                     end_index = i + batch_size if i + batch_size < size else size
-                    X = torch.from_numpy(x[i:end_index])
-                    Y = torch.from_numpy(y[i:end_index]) if y is not None else None
+                    X = tf.convert_to_tensor(x[i:end_index])
+                    Y = tf.convert_to_tensor(y[i:end_index]) if y is not None else None
                     loss = self.train_step(X, Y)
                     i += batch_size
                     if i % 100 == 0:
@@ -94,12 +132,17 @@ class PytorchEstimator:
                             epoch {e}/{epoch}")
                         self.loss_history.append(loss)
             else:
-                invalidInputError(False,
-                                  f'got unsupported data input type: {type(x)}')
+                invalidInputError(False, f'got unsupported data input type: {type(x)}')
             
 
     def predict(self, x):
         y_pred_local = self.model(x)
-        data_map = {'input': y_pred_local.detach().numpy()}
+        data_map = {'input': y_pred_local.numpy()}
         response = self.fl_client.predict(data_map)
         return response.data.tensorMap['result']
+                    
+            
+            
+
+    
+        

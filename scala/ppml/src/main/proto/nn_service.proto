@@ -25,6 +25,7 @@ service NNService {
     rpc evaluate(EvaluateRequest) returns (EvaluateResponse) {}
     rpc predict(PredictRequest) returns (PredictResponse) {}
     rpc upload_model(UploadModelRequest) returns (UploadModelResponse) {}
+    rpc upload_file(stream ByteChunk) returns (UploadModelResponse) {}
 }
 
 message TrainRequest {
@@ -66,7 +67,13 @@ message UploadModelRequest {
     bytes model_bytes = 2;
     bytes loss_fn = 3;
     ClassAndArgs optimizer = 4;
+    string aggregator = 5;
 }
+
+message ByteChunk {
+    bytes buffer = 1;
+}
+
 message ClassAndArgs {
     bytes cls = 1;
     bytes args = 2;
