@@ -394,7 +394,7 @@ class XShardsTSDataset:
                                                   one_hot_features, freq, features_generated)
         tmp_df = self.shards.collect()
         tmp_df = pd.concat(tmp_df, axis=0)
-        features_generated = [col for col in tmp_df.columns 
+        features_generated = [col for col in tmp_df.columns
                               if col not in self.target_col + [self.dt_col, self.id_col]]
         self.feature_col += features_generated
         return self
