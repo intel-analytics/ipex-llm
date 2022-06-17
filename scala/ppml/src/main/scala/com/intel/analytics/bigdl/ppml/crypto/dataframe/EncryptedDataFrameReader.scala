@@ -38,6 +38,7 @@ class EncryptedDataFrameReader(
     this.extraOptions += (key -> value)
     this
   }
+
   def csv(path: String): DataFrame = {
     encryptMode match {
       case PLAIN_TEXT =>
@@ -60,6 +61,10 @@ class EncryptedDataFrameReader(
       case _ =>
         throw new IllegalArgumentException("unknown EncryptMode " + CryptoMode.toString)
     }
+  }
+
+  def parquet(path: String): DataFrame = {
+    sparkSession.read.parquet(path)
   }
 }
 

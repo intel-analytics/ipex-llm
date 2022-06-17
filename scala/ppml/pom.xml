@@ -14,6 +14,7 @@
     <properties>
         <grpc.version>1.37.0</grpc.version>
         <bigdl.basedir>${project.parent.basedir}</bigdl.basedir>
+        <parquet.version>1.12.2</parquet.version>
     </properties>
 
     <dependencyManagement>
@@ -72,19 +73,46 @@
                     <groupId>org.glassfish.jersey.media</groupId>
                     <artifactId>jersey-media-jaxb</artifactId>
                 </exclusion>
-                <exclusion>
-                    <groupId>org.codehaus.jackson</groupId>
-                    <artifactId>jackson-mapper-asl</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>com.fasterxml.jackson.core</groupId>
-                    <artifactId>jackson-databind</artifactId>
-                </exclusion>
+<!--                <exclusion>-->
+<!--                    <groupId>org.codehaus.jackson</groupId>-->
+<!--                    <artifactId>jackson-mapper-asl</artifactId>-->
+<!--                </exclusion>-->
+<!--                <exclusion>-->
+<!--                    <groupId>com.fasterxml.jackson.core</groupId>-->
+<!--                    <artifactId>jackson-databind</artifactId>-->
+<!--                </exclusion>-->
                 <exclusion>
                     <groupId>xerces</groupId>
                     <artifactId>xercesImpl</artifactId>
                 </exclusion>
+                <exclusion>
+                    <groupId>org.apache.parquet</groupId>
+                    <artifactId>parquet-column</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>org.apache.parquet</groupId>
+                    <artifactId>parquet-hadoop</artifactId>
+                </exclusion>
             </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.parquet</groupId>
+            <artifactId>parquet-hadoop</artifactId>
+            <version>${parquet.version}</version>
+            <type>test-jar</type>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.parquet</groupId>
+            <artifactId>parquet-hadoop</artifactId>
+            <version>${parquet.version}</version>
+<!--            <scope>test</scope>-->
+        </dependency>
+        <dependency>
+            <groupId>org.apache.parquet</groupId>
+            <artifactId>parquet-column</artifactId>
+            <version>${parquet.version}</version>
+<!--            <scope>test</scope>-->
         </dependency>
         <dependency>
             <groupId>org.apache.logging.log4j</groupId>
