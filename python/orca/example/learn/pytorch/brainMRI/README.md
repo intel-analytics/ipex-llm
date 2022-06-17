@@ -11,7 +11,9 @@ conda create -n bigdl python=3.7  # "bigdl" is conda environment name, you can u
 conda activate bigdl
 pip install torch
 pip install torchvision
-pip install matplotlib
+pip install albumentations
+pip install scikit-learn
+pip install opencv-python
 
 # For torch_distributed and spark backend:
 pip install bigdl-orca[ray]
@@ -24,7 +26,7 @@ The default backend is `torch_distributed`
 You can run with `spark` backend via:
 
 ```
-python brainMRI.py --backend spark
+python brainMRI.py --backend spark 
 ```
 
 ## Run on yarn cluster for yarn-client mode after pip install
