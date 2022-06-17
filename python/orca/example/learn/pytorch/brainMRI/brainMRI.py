@@ -13,8 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 # ==============================================================================
-# A lot of thanks to S0MNATHS, the orginal author of the code.
-# https://pytorch.org/tutorials/beginner/blitz/cifar10_tutorial.html
+# A lot of thanks to S0MNATHS, the original author of the code.
+# https://www.kaggle.com/s0mnaths/brain-mri-unet-pytorch/notebook
 #
 
 
@@ -129,7 +129,7 @@ parser.add_argument('--batch_size', type=int, default=64, help='The training bat
 parser.add_argument('--epochs', type=int, default=2, help='The number of epochs to train for')
 parser.add_argument('--data_dir', type=str, default='./kaggle_3m', help='the path of the dataset')
 parser.add_argument('--additional_archive', type=str, default="kaggle_3m.zip#kaggle_3m", help='the zip dataset')
-parser.add_argument('--memory', type=str, default="4g")
+parser.add_argument('--memory', type=str, default="4g", help="the memory parameter of init_orca_context()")
 args = parser.parse_args()
 
 train_df, test_df = dataset(args.data_dir)
