@@ -51,23 +51,6 @@ import logging
 
 log = logging.getLogger(__name__)
 
-
-def queue_dumper(q):
-    """Copy values from Queue into a List."""
-    q_list = []
-    while not q.empty():
-        q_list.append(q.get())
-    return q_list
-
-
-def queue_loader(q_list):
-    """Copy values from a List into a SimpleQueue."""
-    q = multiprocessing.SimpleQueue()
-    for item in q_list:
-        q.put(item)
-    return q
-
-
 class _DDPSubprocessLauncher(_Launcher):
     def __init__(self, strategy: Strategy) -> None:
         self._strategy = strategy

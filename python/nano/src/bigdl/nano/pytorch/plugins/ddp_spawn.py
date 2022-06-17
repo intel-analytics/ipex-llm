@@ -34,24 +34,31 @@
 
 import os
 import multiprocessing
-from typing import Any, List, Optional, Callable
+from typing import Any, List, Optional, Callable, Union, Dict
 
 import torch
 from torch.multiprocessing.spawn import _wrap, ProcessContext
+from torch.nn.parallel.distributed import DistributedDataParallel
 
 import pytorch_lightning as pl
+from pytorch_lightning.trainer.states import TrainerFn
 from pytorch_lightning.strategies.launchers import _SpawnLauncher
 from pytorch_lightning.strategies import Strategy, DDPSpawnStrategy as _DDPSpawnStrategy
 from pytorch_lightning.plugins.environments import LightningEnvironment
+from pytorch_lightning.overrides import LightningDistributedModule
+from pytorch_lightning.utilities.optimizer import optimizers_to_device
 
 from bigdl.nano.common.cpu_schedule import schedule_workers
-from bigdl.nano.deps.ipex.ipex_api import ipex_device, ipex_optimize, create_IPEXAccelerator_1_9
+from bigdl.nano.deps.ipex.ipex_api import ipex_device, ipex_optimize, create_IPEXAccelerator_1_9, to_cpu
 from bigdl.nano.pytorch.utils import TORCH_VERSION_LESS_1_10
 
 import logging
 import warnings
-import copy
+
+_STEP_OUTPUT_TYPE = Union[torch.Tensor, Dict[str, Any]]
+
 log = logging.getLogger(__name__)
+
 
 class _DDPSpawnLauncher(_SpawnLauncher):
     r"""Spawns processes that run a given function in parallel, and joins them all at the end.
@@ -158,8 +165,24 @@ class DDPSpawnStrategy(_DDPSpawnStrategy):
         self.use_ipex = use_ipex
         self.enable_bf16 = enable_bf16
 
+    def _configure_launcher(self):
+        self._launcher = _DDPSpawnLauncher(self)
+
     def setup(self, trainer: "pl.Trainer") -> None:
-        super().setup(trainer)
+        os.environ["MASTER_PORT"] = str(self.cluster_environment.main_port)
+
+        self.accelerator.setup(trainer)
+
+        # skip wrapping the model if we are not fitting as no gradients need to be exchanged
+        trainer_fn = trainer.state.fn
+        if trainer_fn == TrainerFn.FITTING:
+            if self._layer_sync:
+                self.model = self._layer_sync.apply(self.model)
+
+        self.setup_precision_plugin()
+
+        if trainer_fn == TrainerFn.FITTING:
+            self.configure_ddp()
 
         if self.use_ipex and not TORCH_VERSION_LESS_1_10:
             dtype = torch.bfloat16 if self.enable_bf16 else None
@@ -173,6 +196,66 @@ class DDPSpawnStrategy(_DDPSpawnStrategy):
             else:
                 warnings.warn(f"IPEX currently only support single optimizers, "
                               f"but got {num_optimizers}. Skip IPEX")
+        
+        # move the model to the correct device
+        self.model_to_device()
 
-    def _configure_launcher(self):
-        self._launcher = _DDPSpawnLauncher(self)
+    def configure_ddp(self):
+        """Setup the configuration for pytorch ddp."""
+        self.pre_configure_ddp()
+        self._model = DistributedDataParallel(
+            LightningDistributedModule(self.model),
+            **self._ddp_kwargs,
+        )
+        self._register_ddp_hooks()
+
+        # set up optimizers after the wrapped module has been moved to the device
+        self.setup_optimizers(self.lightning_module.trainer)
+        optimizers_to_device(self.optimizers, self.root_device)
+
+    def training_step_end(self, output: _STEP_OUTPUT_TYPE) -> _STEP_OUTPUT_TYPE:
+        """
+        For ipex xpu tensor do not support `tensor.storage()` right now,
+        which is a required operation by pytorch_lightning,
+        so just move output to cpu to store it, and move it back when doing backward.
+        """
+        if self.use_ipex and TORCH_VERSION_LESS_1_10:
+            output = to_cpu(output)
+
+        return super().training_step_end(output)
+
+    def test_step_end(self, output: Optional[_STEP_OUTPUT_TYPE]) -> \
+            Optional[_STEP_OUTPUT_TYPE]:
+        """A hook to do something at the end of the test step
+        Args:
+            output: the output of the test step
+        """
+        if self.use_ipex and TORCH_VERSION_LESS_1_10:
+            output = to_cpu(output)
+
+        return super().test_step_end(output)
+
+    def validation_step_end(self, output: Optional[_STEP_OUTPUT_TYPE]) -> \
+            Optional[_STEP_OUTPUT_TYPE]:
+        """A hook to do something at the end of the validation step
+        Args:
+            output: the output of the validation step
+        """
+        if self.use_ipex and TORCH_VERSION_LESS_1_10:
+            output = to_cpu(output)
+
+        return super().validation_step_end(output)
+
+    def backward(self,  # type: ignore
+                 closure_loss: torch.Tensor,
+                 *args,
+                 **kwargs) -> torch.Tensor:
+        """
+        Moving back loss to xpu device
+        """
+        closure_loss = closure_loss.to(self.root_device)
+        return super().backward(
+            closure_loss,
+            *args,
+            **kwargs,
+        )

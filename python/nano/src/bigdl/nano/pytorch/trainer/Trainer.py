@@ -137,12 +137,7 @@ class Trainer(pl.Trainer):
                 strategy = distributed_ray(num_workers=num_processes,  # type: ignore
                                          use_ipex=self.use_ipex,
                                          enable_bf16=enable_bf16)
-            # if use_ipex:
-            #     if TORCH_VERSION_LESS_1_10:
-            #         accelerator = create_IPEXAccelerator_1_9(training_type_plugin=strategy,
-            #                                                  enable_bf16=enable_bf16)
-            #     else:
-            #         accelerator = None
+
             super().__init__(strategy=strategy, *args, **kwargs)
 
     @staticmethod
