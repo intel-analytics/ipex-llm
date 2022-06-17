@@ -20,7 +20,7 @@ from bigdl.orca import init_orca_context, stop_orca_context, OrcaContext
 from bigdl.friesian.feature import FeatureTable
 from bigdl.dllib.utils.log4Error import *
 from bigdl.dllib.feature.dataset import movielens
-
+from pyspark.sql.functions import col as pyspark_col
 
 spark_conf = {"spark.network.timeout": "10000000",
               "spark.sql.broadcastTimeout": "7200",
@@ -82,7 +82,7 @@ if __name__ == '__main__':
                           "cluster_mode should be one of 'local', 'yarn', 'standalone' and"
                           " 'spark-submit', but got " + args.cluster_mode)
     # download data
-    # movielens = movielens.get_id_ratings(args.data_dir)
+    # _ = movielens.get_id_ratings(args.data_dir)
     ratings = pd.read_csv(args.data_dir + "/ml-1m/ratings.dat", delimiter="::",
                           names=["user", "item", "rate", "time"])
     ratings_tbl = FeatureTable.from_pandas(ratings)\
@@ -92,7 +92,7 @@ if __name__ == '__main__':
     user_df = pd.read_csv(args.data_dir + "/ml-1m/users.dat", delimiter="::",
                           names=["user", "gender", "age", "occupation", "zipcode"])
     user_tbl = FeatureTable.from_pandas(user_df)\
-        .cast(["user", "age", "occupation", "zipcode"], "int")
+        .cast(["user", "age", "occupation", "zipcode"], "int").fillna(0, 'zipcode')
 
     item_df = pd.read_csv(args.data_dir + "/ml-1m/movies.dat", encoding="ISO-8859-1",
                           delimiter="::", names=["item", "title", "genres"])
@@ -119,8 +119,16 @@ if __name__ == '__main__':
         .join(item_tbl, on="item")
 
     full.df.printSchema()
-
+    wide_cols = ["gender", "age", "occupation", "zipcode", "genres"]
+    wide_cross_cols = ["gender_age", "age_zipcode"]
+    indicator_cols = wide_cols + wide_cross_cols
+    embed_cols = ["user", "item"]
+    num_cols = ["user_visits", "user_mean_rate", "item_visits", "item_mean_rate"]
+    cat_cols = wide_cols + wide_cross_cols + embed_cols
+    all = cat_cols + num_cols
     print("count: ", full.size())
+    for c in all:
+        print(c, full.df.filter(pyspark_col(c).isNull()).count())
 
 
     user_tbl.write_parquet(args.data_dir + "/processed/user_features/")
