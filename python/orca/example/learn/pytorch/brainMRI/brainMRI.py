@@ -22,6 +22,8 @@ from __future__ import print_function
 
 import argparse
 import glob
+import os
+
 import albumentations as A
 import pandas as pd
 import torch.nn as nn
@@ -127,16 +129,17 @@ parser.add_argument('--batch_size', type=int, default=64, help='The training bat
 parser.add_argument('--epochs', type=int, default=2, help='The number of epochs to train for')
 parser.add_argument('--data_dir', type=str, default='./kaggle_3m', help='the path of the dataset')
 parser.add_argument('--additional_archive', type=str, default="kaggle_3m.zip#kaggle_3m", help='the zip dataset')
+parser.add_argument('--memory', type=str, default="4g")
 args = parser.parse_args()
 
 train_df, test_df = dataset(args.data_dir)
 
 if args.cluster_mode == "local":
-    init_orca_context(memory="4g")
+    init_orca_context(memory=args.memory)
 elif args.cluster_mode.startswith('yarn'):
     if args.cluster_mode == "yarn-client":
         init_orca_context(cluster_mode="yarn-client", cores=2, num_nodes=2, additional_archive=args.additional_archive,
-                          extra_python_lib='dataset.py,Unet.py', num_executors=2)
+                          extra_python_lib='dataset.py,Unet.py', num_executors=2, memory=args.memory)
     else:
         raise NotImplementedError("The yarn cluster_mode only can be yarn-client now,"
                                   " but got {}".format(args.cluster_mode))
@@ -160,6 +163,7 @@ if args.backend in ["torch_distributed", "spark"]:
                                           optimizer=optim_creator,
                                           loss=loss_creator,
                                           metrics=[Accuracy()],
+                                          model_dir=os.getcwd(),
                                           backend=args.backend,
                                           config=config,
                                           use_tqdm=True
