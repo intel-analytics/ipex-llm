@@ -354,7 +354,8 @@ class Trainer(pl.Trainer):
     def trace(model: nn.Module,
               input_sample=None,
               accelerator=None,
-              onnxruntime_session_options=None):
+              onnxruntime_session_options=None,
+              opset_version=11):
         """
         Trace a pytorch model and convert it into an accelerated module for inference.
 
@@ -367,6 +368,8 @@ class Trainer(pl.Trainer):
                             backend. 'openvino' and 'onnxruntime' are supported for now.
         :param onnxruntime_session_options: The session option for onnxruntime, only valid when
                                             accelerator='onnxruntime', otherwise will be ignored.
+        :param opset_version: opset_version for export_to_onnx, only valid when
+                                            accelerator='onnxruntime', otherwise will be ignored.
         :return: Model with different acceleration(OpenVINO/ONNX Runtime).
         """
         invalidInputError(
@@ -377,7 +380,8 @@ class Trainer(pl.Trainer):
         if accelerator == 'openvino':
             return PytorchOpenVINOModel(model, input_sample)
         if accelerator == 'onnxruntime':
-            return PytorchONNXRuntimeModel(model, input_sample, onnxruntime_session_options)
+            return PytorchONNXRuntimeModel(model, input_sample, onnxruntime_session_options,
+                                           opset_version=opset_version)
         invalidInputError(False, "Accelerator {} is invalid.".format(accelerator))
 
     @staticmethod
