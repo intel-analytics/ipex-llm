@@ -353,7 +353,7 @@ class XShardsTSDataset:
                                                   self.scaler_dict, self.feature_col,
                                                   self.target_col)
         return self
- 
+
     def gen_dt_feature(self, features="auto", one_hot_features=None):
         '''
         Generate datetime feature(s) for each record.
@@ -394,7 +394,8 @@ class XShardsTSDataset:
                                                   one_hot_features, freq, features_generated)
         tmp_df = self.shards.collect()
         tmp_df = pd.concat(tmp_df, axis=0)
-        features_generated = [col for col in tmp_df.columns if col not in self.target_col + [self.dt_col, self.id_col]]
+        features_generated = [col for col in tmp_df.columns 
+                              if col not in self.target_col + [self.dt_col, self.id_col]]
         self.feature_col += features_generated
         return self
 
