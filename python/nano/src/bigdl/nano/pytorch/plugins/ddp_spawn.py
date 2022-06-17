@@ -101,8 +101,8 @@ class _DDPSpawnLauncher(_SpawnLauncher):
         else:
             cpu_procs = self._strategy.cpu_for_each_process
         
-        init_KMP_AFFINITY = os.environ.get("KMP_AFFINITY")
-        init_OMP_NUM_THREADS = os.environ.get("OMP_NUM_THREADS")
+        init_KMP_AFFINITY = os.environ.get("KMP_AFFINITY", "")
+        init_OMP_NUM_THREADS = os.environ.get("OMP_NUM_THREADS", "")
 
         mp = multiprocessing.get_context(self._start_method)
         return_queue = mp.SimpleQueue()
@@ -131,10 +131,8 @@ class _DDPSpawnLauncher(_SpawnLauncher):
         while not context.join():
             pass
 
-        if init_KMP_AFFINITY is not None:
-            os.environ["KMP_AFFINITY"] = init_KMP_AFFINITY
-        if init_OMP_NUM_THREADS is not None:
-            os.environ["OMP_NUM_THREADS"] = init_OMP_NUM_THREADS
+        os.environ["KMP_AFFINITY"] = init_KMP_AFFINITY
+        os.environ["OMP_NUM_THREADS"] = init_OMP_NUM_THREADS
 
 
 class DDPSpawnStrategy(_DDPSpawnStrategy):

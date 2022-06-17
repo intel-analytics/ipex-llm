@@ -18,6 +18,8 @@ from typing import Any
 
 from pytorch_lightning.accelerators.accelerator import Accelerator
 
+from bigdl.nano.common import check_avx512
+
 
 class IPEXAccelerator(Accelerator):
     """ Accelerator for XPU devices. """
@@ -28,6 +30,11 @@ class IPEXAccelerator(Accelerator):
     @staticmethod
     def is_available() -> bool:
         """Detect if IPEX accelerator is available"""
+        if not check_avx512():
+            Warning("Enable ipex in a cpu instruction set "
+                    "without avx512 may cause some random error. "
+                    "Fall back to cpu device.")
+            return False
         return True
 
     @staticmethod

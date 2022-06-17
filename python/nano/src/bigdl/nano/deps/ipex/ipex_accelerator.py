@@ -27,11 +27,6 @@ class IPEXAccelerator(Accelerator):
     @staticmethod
     def is_available() -> bool:
         """Detect if IPEX accelerator is available"""
-        if not check_avx512():
-            Warning("Enable ipex in a cpu instruction set "
-                    "without avx512 may cause some random error. "
-                    "Fall back to cpu device.")
-            return False
         return True
 
     @staticmethod
