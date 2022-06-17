@@ -102,7 +102,7 @@ class Trainer(pl.Trainer):
         self.use_ipex = use_ipex
 
         if num_processes == 1:
-            if use_ipex:
+            if self.use_ipex:
                 if TORCH_VERSION_LESS_1_10:
                     accelerator = create_IPEXAccelerator_1_9(enable_bf16=enable_bf16)
                 else:
@@ -117,21 +117,21 @@ class Trainer(pl.Trainer):
             if distributed_backend == "spawn":
                 plugin = DDPSpawnPlugin(num_processes=num_processes,
                                         cpu_for_each_process=cpu_for_each_process,
-                                        use_ipex=use_ipex,
+                                        use_ipex=self.use_ipex,
                                         enable_bf16=enable_bf16)
             elif distributed_backend == "subprocess":
                 plugin = DDPSubprocessPlugin(num_processes=num_processes,
                                              cpu_for_each_process=cpu_for_each_process,
-                                             use_ipex=use_ipex,
+                                             use_ipex=self.use_ipex,
                                              enable_bf16=enable_bf16)
             elif distributed_backend == "ray":
                 # Import RayPlugins may entangle with openmp even if it has not been used,
                 # which leads to an unacceptably low performance.
                 # So we import when we need.
                 plugin = distributed_ray(num_workers=num_processes,  # type: ignore
-                                         use_ipex=use_ipex,
+                                         use_ipex=self.use_ipex,
                                          enable_bf16=enable_bf16)
-            if use_ipex:
+            if self.use_ipex:
                 if TORCH_VERSION_LESS_1_10:
                     accelerator = create_IPEXAccelerator_1_9(training_type_plugin=plugin,
                                                              enable_bf16=enable_bf16)
