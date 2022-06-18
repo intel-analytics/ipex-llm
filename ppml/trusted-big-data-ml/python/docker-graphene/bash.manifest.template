@@ -20,7 +20,7 @@ sgx.isvsvn = 3
 loader.env.LD_LIBRARY_PATH = "/usr/lib/python3.7/lib:/lib:/lib/x86_64-linux-gnu:/usr/lib:/usr/lib/x86_64-linux-gnu:$(JDK_HOME):$(JDK_HOME)/lib/amd64/jli:/ppml/trusted-big-data-ml/work/lib"
 loader.env.PATH = "/usr/lib/python3.7/bin:/:$(EXECDIR):/usr/sbin:/usr/bin:/sbin:/bin:$(JDK_HOME)/bin"
 loader.env.PYTHONHOME = "/usr/lib/python3.7"
-loader.env.PYTHONPATH = "/usr/lib/python38.7:/usr/lib/python3.7/lib-dynload:/usr/local/lib/python3.7/dist-packages:/usr/lib/python3/dist-packages"
+loader.env.PYTHONPATH = "/usr/lib/python3.7:/usr/lib/python3.7/lib-dynload:/usr/local/lib/python3.7/dist-packages:/usr/lib/python3/dist-packages"
 loader.env.JAVA_HOME = "$(JDK_HOME)"
 loader.env.JAVA_OPTS = "'-Djava.library.path=$(JDK_HOME)/lib -Dsun.boot.library.path=$(JDK_HOME)/lib'"
 loader.env.SPARK_LOCAL_IP = "$(SPARK_LOCAL_IP)"
