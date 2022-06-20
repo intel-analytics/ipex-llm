@@ -175,7 +175,6 @@ class AutoCorrelation(nn.Module):
             # change this to avoid the using of gather and improve the inference speed.
             V = self.time_delay_agg_training(values.permute(0, 2, 3, 1)
                                              .contiguous(), corr).permute(0, 3, 1, 2)
-            time_delay_agg_training
 
         if self.output_attention:
             return (V.contiguous(), corr.permute(0, 3, 1, 2))
