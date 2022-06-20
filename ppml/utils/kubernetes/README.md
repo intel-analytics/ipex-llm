@@ -1,6 +1,7 @@
 # Deploy BigDL-PCCS-eHSM-KMS on Kubernetes with Helm Charts
 
-![bigdl-pccs-ehsm-kms-architecture2 0](https://user-images.githubusercontent.com/60865256/174203820-05daa81a-ac34-4b1a-8632-a507df1a4a0c.png)
+
+![bigdl-pccs-ehsm-kms-architecture2 0](https://user-images.githubusercontent.com/60865256/174554804-4c0b361b-413b-48f9-bddc-dc2d1ad5b81e.png)
 
 
 **pccs** provides SGX attestation support service.
