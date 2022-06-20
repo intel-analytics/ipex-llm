@@ -144,7 +144,7 @@ orca_example.zip
 Add the code as below in `__init__.py` that allowed `train.py` to access modules you need.
 ```python
 # In the __init__.py
-from .model import import model_creator, optimizer_creator
+from orca_example.model import import model_creator, optimizer_creator
 ```
 Then zip the whole package.
 ```bash
@@ -275,6 +275,7 @@ In the `bigdl-submit` script for running Orca programs on yarn-client mode:
 * `--py-files`: upload Python dependency file(s) to cluster and distribute between executors;
 * `--conf spark.pyspark.driver.python`: set the driver Python environment as the local Python path. For `yarn-client` mode, the Spark driver is running on local and it will use the Python interpreter in the current active conda environment;
 * `--conf spark.pyspark.python`: set the executor Python environment to the Python path in the Conda archive, since executors will use the Python interpreter in the conda archive.
+* `--cluster_mode`: set the cluster_mode in `init_orca_context` to get or create an OrcaContext.
 
 ### 4.2.2 Yarn Cluster
 To run every Orca program on yarn cluster with `bigdl-submit`, we need to call `init_orca_context` at the very beginning of the program and specify the `cluster_mode` to `bigdl-submit` to create or get an OrcaContext for yarn-cluster mode.
@@ -305,6 +306,7 @@ In the `bigdl-submit` script for running Orca programs on yarn-cluster mode:
 * `--conf spark.yarn.appMasterEnv.PYSPARK_PYTHON`: set the Python environment for the Application Master process launched on YARN, it will use the Python interpreter in `environment.tar.gz`;
 * `--conf spark.executorEnv.PYSPARK_PYTHON`: set the Python environment for executors on Yarn, it will use the Python interpreter in `environment.tar.gz`;
 * `--py-files`: upload Python dependency file(s) to cluster and distribute between executors;
+* `--cluster_mode`: set the cluster_mode in `init_orca_context` to get or create an OrcaContext;
 * `--remote_dir`: loda data from remote datasets path. For yarn-cluster mode, we recommend that you should use the datasets stored in remote resources like HDFS or S3 instead of downloading to avoid possible network connection errors.
 
 ## 4.3 Use `spark-submit`
@@ -313,8 +315,7 @@ When the client node where users submit the job on Yarn is not able to install B
 ```bash
 export SPARK_HOME=/path/to/spark # the folder path where you extract the Spark package
 ```
-* Install all the dependency files that BigDL required (please refer to prepare environment part) on the node which could install conda;
-* Pack the conda environment to an archive on the node with conda then send it to the driver node;
+* Install all the dependency files that BigDL required (please refer to prepare environment part), pack the Conda environment to an archive and send it to the Spark driver on a different node which could use conda;
 * Download and unzip a BigDL assembly package from [BigDL Release Page](https://bigdl.readthedocs.io/en/latest/doc/release.html), set the unzipped BigDL file path as `${BIGDL_HOME}`;
 * Set environment variables `${SPARK_VERSION}` and `${BIGDL_VERSION}` as the version in your environment.
 
@@ -353,6 +354,7 @@ In this script:
 * `--conf spark.pyspark.python`: set the executor Python environment to the Python path in Conda archive, since executors will use the Python interpreter and relevant libraries in the conda archive;
 * `--conf spark.driver.extraClassPath`: load and register the BigDL jars files to the driver's classpath;
 * `--conf spark.executor.extraClassPath`: load and register the BigDL jars files to the executors' classpath.
+* `--cluster_mode`: set the cluster_mode in `init_orca_context` to get or create an OrcaContext.
 
 ### 4.3.2 Yarn-Cluster
 We need to call `init_orca_context` first to create an OrcaContext at the very beginning of the program.
@@ -388,4 +390,5 @@ In the `spark-submit` script for yarn-cluster:
 * `--archives`: set the option to the path of the Conda archive, which will be upload to remote clusters(i.e. HDFS) and distributed between all executors;
 * `--py-files`: upload Python dependency file(s) to cluster and distribute between executors;
 * `--jars`: register and distribute BigDL dependency jars files to the Spark job;
+* `--cluster_mode`: set the cluster_mode in `init_orca_context` to get or create an OrcaContext;
 * `--remote_dir`: load dataset from remote path. For yarn-cluster mode, we recommend that you use the datasets stored in remote resources like HDFS instead of downloading to avoid possible network connection errors.
