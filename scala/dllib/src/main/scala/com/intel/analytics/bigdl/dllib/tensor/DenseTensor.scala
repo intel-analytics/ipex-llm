@@ -315,7 +315,6 @@ private[tensor] class DenseTensor[@specialized T: ClassTag](
   override def bernoulli(p: Double): Tensor[T] = {
     if (this.isContiguous()) {
       var i = 0
-      val floatP = p.toFloat
       val total = this.nElement()
       val data = this.storage().array()
       val offset = this.storageOffset() - 1
@@ -323,7 +322,7 @@ private[tensor] class DenseTensor[@specialized T: ClassTag](
         case FloatType =>
           val floatData = data.asInstanceOf[Array[Float]]
           while (i < total) {
-            floatData(offset + i) = if (ThreadLocalRandom.current().nextFloat() <= floatP) {
+            floatData(offset + i) = if (ThreadLocalRandom.current().nextFloat() <= p) {
               1
             } else {
               0
