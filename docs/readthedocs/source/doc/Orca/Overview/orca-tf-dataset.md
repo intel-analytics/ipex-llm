@@ -116,7 +116,7 @@ from bigdl.orca.data.tf.data import Dataset
 init_orca_context("local", cores=4, memory="4g", init_ray_on_spark=True)
 
 # Read the input csv files
-tbl = FeatureTable.read_csv("/path/to/input_file", delimiter=":", header=False, names=["userid", "title", "rating"]).dropna(columns=None)
+tbl = FeatureTable.read_csv("/path/to/input_file", delimiter=":", header=False, names=["userid", "title", "rating", "timestamp"]).dropna(columns=None)
 tbl = tbl.cast(["rating"], "int")
 tbl = tbl.cast(["userid"], "string")
 tbl.show(5, False)
@@ -146,6 +146,9 @@ tbl.show(5, False)
 # |5     |4395  |1582 |
 # +------+------+-----+
 
+# Calculate mean and standard deviation for normalization
+avg, stddev = tbl.get_stats(["timestamp"], ["avg", "stddev"])["timestamp"]
+
 train_count = tbl.size()
 steps = math.ceil(train_count / 8192)
 print("train size: ", train_count, ", steps: ", steps)
@@ -160,22 +163,27 @@ ds = Dataset.from_feature_table(tbl)
 # {'userid': 4395, 'title': 1582, 'rating': 5}
 ```
 
-Once the Orca TF Dataset is created, we can perform some data preprocessing using the map function. Since the model use `input["movie_title"], input["user_id"] and input["user_rating"]` in the model `call` and `compute_loss` function, we should change the key name of the Dataset.
+Once the Orca TF Dataset is created, we can perform some data preprocessing using the map function. Since the model use `input["movie_title"], input["user_id"] and input["user_rating"]` in the model `call` and `compute_loss` function, we should change the key name of the Dataset. Also, we normalize the continuous feature timestamp here.
 
 ```python
+def preprocess(x):
+    return {
+        "movie_title": x["title"],
+        "user_id": x["userid"],
+        "user_rating": x["rating"],
+        # Normalize continuous timestamp
+        "timestamp": (tf.cast(x["timestamp"], tf.float32) - avg) / stddev
+    }
+
 # Preprocess the ds using map function
-ds = ds.map(lambda x: {
-    "movie_title": x["title"],
-    "user_id": x["userid"],
-    "user_rating": x["rating"],
-    "a": (x["userid"], x["title"])
-})
+ds = ds.map(preprocess)
+
 # List all elements in ds
-# {'movie_title': 1855, 'user_id': 4395, 'user_rating': 5, 'a': (4395, 1855)}
-# {'movie_title': 136, 'user_id': 4395, 'user_rating': 3, 'a': (4395, 136)}
-# {'movie_title': 2973, 'user_id': 4395, 'user_rating': 3, 'a': (4395, 2973)}
-# {'movie_title': 816, 'user_id': 4395, 'user_rating': 4, 'a': (4395, 816)}
-# {'movie_title': 1582, 'user_id': 4395, 'user_rating': 5, 'a': (4395, 1582)}
+# {'movie_title': 1855, 'user_id': 4395, 'user_rating': 5, 'timestamp': 0.49397522}
+# {'movie_title': 136, 'user_id': 4395, 'user_rating': 3, 'timestamp': 0.4940853}
+# {'movie_title': 2973, 'user_id': 4395, 'user_rating': 3, 'timestamp': 0.49407482}
+# {'movie_title': 816, 'user_id': 4395, 'user_rating': 4, 'timestamp': 0.4939385}
+# {'movie_title': 1582, 'user_id': 4395, 'user_rating': 5, 'timestamp': 0.5368723}
 ```
 
 Then we can use this dataset as input for estimator `fit`, `evaluate` and `predict`.
@@ -202,7 +210,8 @@ class SampleRankingModel(tfrs.models.Model):
 
     def call(self, features):
         embeddings = tf.concat([self.user_embedding(features["user_id"]),
-                               self.movie_embedding(features["movie_title"])], axis=1)
+                               self.movie_embedding(features["movie_title"]), 
+                               tf.reshape(features["timestamp"], (-1, 1))], axis=1)
         return self.ratings(embeddings)
 
     def compute_loss(self, inputs, training: bool = False) -> tf.Tensor:
