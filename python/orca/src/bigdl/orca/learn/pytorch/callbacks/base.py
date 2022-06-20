@@ -86,5 +86,3 @@ class Callback(object):
     def set_param(self, param):
         self.params = param
 
-    def set_trainer(self, trainer):
-        self.trainer = trainer
