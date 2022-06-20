@@ -85,4 +85,3 @@ class Callback(object):
 
     def set_param(self, param):
         self.params = param
-
