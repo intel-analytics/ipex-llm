@@ -241,6 +241,9 @@ def init_orca_context(cluster_mode=None, runtime="spark", cores=2, memory="2g", 
                     spark_args["python_location"] = kwargs["python_location"]
                 from bigdl.dllib.nncontext import init_spark_on_local
                 sc = init_spark_on_local(cores, **spark_args)
+            elif cluster_mode == "bigdl-submit":
+                from bigdl.dllib.nncontext import init_nncontext
+                sc = init_nncontext(**spark_args)
             elif cluster_mode == "spark-submit":
                 from bigdl.dllib.nncontext import init_nncontext
                 sc = init_nncontext(**spark_args)
