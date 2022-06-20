@@ -23,6 +23,12 @@ import javax.crypto.Mac
 import javax.crypto.spec.SecretKeySpec
 import java.util.Base64
 
+/**
+ * EHSM params.
+ * @param appId Id of your application.
+ * @param appKey key of your application.
+ * @param timeStamp time stamp.
+ */
 class EHSMParams(
       appId: String,
       appKey: String,
@@ -30,10 +36,19 @@ class EHSMParams(
 
   protected val payLoad = new HashMap[String, String]
 
+  /**
+   * Load element.
+   * @param payloadElementKey key of element.
+   * @param payloadElementVal value of element.
+   */
   def addPayloadElement(payloadElementKey: String, payloadElementVal: String): Unit = {
     payLoad(payloadElementKey) = payloadElementVal
   }
 
+  /**
+   * Get json type of params.
+   * @return params in json type string.
+   */
   def getPostJSONString(): String = {
 
     var postJSONString: String = "{\"appid\":\"" + appId + "\""
@@ -54,7 +69,10 @@ class EHSMParams(
     postJSONString
   }
 
-
+  /**
+   * Get sigh cipher text in string.
+   * @return sign cipher text.
+   */
   private def getSignCiphertextString(): String = {
     val secret = new SecretKeySpec(appKey.getBytes("UTF-8"), "SHA256")
     val mac = Mac.getInstance("HmacSHA256")
@@ -65,6 +83,10 @@ class EHSMParams(
     signCiphertextString
   }
 
+  /**
+   * Get sign plaintext in String.
+   * @return sign plaintext.
+   */
   private def getSignPlaintextString(): String = {
 
     Log4Error.invalidInputError(appId != "" && appKey != "" && timeStamp != ""

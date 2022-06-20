@@ -16,13 +16,26 @@
 
 package com.intel.analytics.bigdl.ppml.attestation
 
-
+/**
+ * Verify quote.
+ */
 abstract class QuoteVerifier {
 
+  /**
+   * Verify quote.
+   * @param quote quote in byte array.
+   * @return the result of verification.
+   */
   def verifyQuote(quote: Array[Byte]): Int = {
     1
   }
 
+  /**
+   * Verify quote with policy.
+   * @param quote quote in byte array.
+   * @param policy the policy.
+   * @return the result of verification.
+   */
   def verifyQuote(quote: Array[Byte], policy: Policy): Int = {
     1
   }

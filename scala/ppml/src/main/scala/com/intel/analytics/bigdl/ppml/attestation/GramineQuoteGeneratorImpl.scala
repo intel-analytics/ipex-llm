@@ -32,6 +32,12 @@ class GramineQuoteGeneratorImpl extends QuoteGenerator {
   val USER_REPORT_PATH = "/dev/attestation/user_report_data"
   val QUOTE_PATH = "/dev/attestation/quote"
 
+  /**
+   * Get quote with user report.
+   * @param userReportData user report in byte array.
+   * @throws com.intel.analytics.bigdl.ppml.attestation.AttestationRuntimeException if user report size is incorrect.
+   * @return quote in byte array.
+   */
   @throws(classOf[AttestationRuntimeException])
   override def getQuote(userReportData: Array[Byte]): Array[Byte] = {
 

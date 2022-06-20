@@ -175,8 +175,8 @@ class BigDLEncrypt extends Crypto {
   /**
    * Encrypts or decrypts a file. The data is encrypted
    * or decrypted, depending on how this crypto was initialized.
-   * @param binaryFilePath
-   * @param savePath
+   * @param binaryFilePath the path of file to load.
+   * @param savePath the path to save the file.
    */
   def doFinal(binaryFilePath: String, savePath: String): Unit = {
     if (opMode == ENCRYPT) {
@@ -188,6 +188,12 @@ class BigDLEncrypt extends Crypto {
 
   val blockSize = 1024 * 1024 // 1m per update
   val byteBuffer = new Array[Byte](blockSize)
+
+  /**
+   * Encrypt a byte stream.
+   * @param inputStream input stream.
+   * @param outputStream output stream.
+   */
   protected def encryptStream(
         inputStream: DataInputStream,
         outputStream: DataOutputStream): Unit = {
@@ -205,6 +211,12 @@ class BigDLEncrypt extends Crypto {
   }
 
   val hmacSize = 32
+
+  /**
+   * Decrypt a byte stream.
+   * @param inputStream input stream.
+   * @param outputStream output stream.
+   */
   protected def decryptStream(
         inputStream: DataInputStream,
         outputStream: DataOutputStream): Unit = {
@@ -223,6 +235,11 @@ class BigDLEncrypt extends Crypto {
     outputStream.flush()
   }
 
+  /**
+   * Decrypt a file and save it.
+   * @param binaryFilePath the path of file to decrypt.
+   * @param savePath the path to save the file.
+   */
   protected def decryptFile(binaryFilePath: String, savePath: String): Unit = {
     Log4Error.invalidInputError(savePath != null && savePath != "",
       "decrypted file save path should be specified")
@@ -234,6 +251,11 @@ class BigDLEncrypt extends Crypto {
     outs.close()
   }
 
+  /**
+   * Encrypt a file and save it.
+   * @param binaryFilePath the path of file to load.
+   * @param savePath the path to save the file.
+   */
   protected def encryptFile(binaryFilePath: String, savePath: String): Unit = {
     Log4Error.invalidInputError(savePath != null && savePath != "",
       "decrypted file save path should be specified")
@@ -245,6 +267,12 @@ class BigDLEncrypt extends Crypto {
     outs.close()
   }
 
+  /**
+   * Read data from input data stream to byte array with given size.
+   * @param stream input data stream.
+   * @param numBytes num of byte to read.
+   * @return data in byte array.
+   */
   private def read(stream: DataInputStream, numBytes: Int): Array[Byte] = {
     val retval = new Array[Byte](numBytes)
     val bytesRead: Int = stream.read(retval)

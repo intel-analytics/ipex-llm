@@ -22,6 +22,9 @@ import com.intel.analytics.bigdl.ppml.utils.Supportive
 import com.intel.analytics.bigdl.ppml.utils.EncryptIOArguments
 import org.slf4j.LoggerFactory
 
+/**
+ * A example for local encryption.
+ */
 object LocalCryptoExample extends App with Supportive{
   val logger = LoggerFactory.getLogger(getClass)
 

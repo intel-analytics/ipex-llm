@@ -15,10 +15,14 @@
  */
 
 package com.intel.analytics.bigdl.ppml.attestation
+
 import org.apache.logging.log4j.LogManager
 import java.io.{File, FileInputStream, FileOutputStream}
 import scopt.OptionParser
 
+/**
+ * Get and save quote.
+ */
 object QuoteGeneratorCmd {
     def main(args: Array[String]): Unit = {
 

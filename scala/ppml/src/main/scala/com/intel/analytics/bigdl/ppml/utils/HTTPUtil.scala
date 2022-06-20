@@ -23,7 +23,16 @@ import org.apache.http.message.BasicHeader
 import org.apache.http.util.EntityUtils
 import org.json.JSONObject
 
+/**
+ * Util class for http request and response.
+ */
 object HTTPUtil {
+  /**
+   * Post a http request and return the "result" in response.
+   * @param url http url.
+   * @param postString params in http request.
+   * @return the "result" in response.
+   */
   def postRequest(url: String, postString: String): JSONObject = {
     val response: String = retrieveResponse(url, postString)
     val jsonObj: JSONObject = new JSONObject(response)
@@ -31,6 +40,12 @@ object HTTPUtil {
     result
   }
 
+  /**
+   * Post thr http request and retrieve the response.
+   * @param url http url.
+   * @param params params in http request.
+   * @return a http response.
+   */
   def retrieveResponse(url: String, params: String = null): String = {
     val httpClient = HttpClients.createDefault()
     val post = new HttpPost(url)

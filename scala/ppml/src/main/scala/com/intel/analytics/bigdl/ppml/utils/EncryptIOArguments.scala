@@ -22,6 +22,26 @@ import com.intel.analytics.bigdl.ppml.kms.{EHSMKeyManagementService, KMS_CONVENT
 
 import java.io.File
 
+/**
+ * PPML encrypt IO arguments.
+ * @param inputPath input path of data.
+ * @param outputPath output path of data.
+ * @param inputEncryptMode decrypt mode when read file.
+ * @param outputEncryptMode encrypt mode when write file.
+ * @param inputPartitionNum input partition num.
+ * @param outputPartitionNum output partition num.
+ * @param primaryKeyPath path of primary path.
+ * @param dataKeyPath path of data key path.
+ * @param kmsType type of key management service.
+ * @param kmsServerIP IP address of key management service server.
+ * @param kmsServerPort port of key management service server.
+ * @param ehsmAPPID AppId of ehsm key management service.
+ * @param ehsmAPPKEY AppKey of ehsm key management service.
+ * @param simpleAPPID AppId of simple key management service.
+ * @param simpleAPPKEY AppKey of simple key management service.
+ * @param keyVaultName name of key management service.
+ * @param managedIdentityClientId client Id.
+ */
 case class EncryptIOArguments(
                                inputPath: String = "./input",
                                outputPath: String = "./output",
@@ -40,6 +60,10 @@ case class EncryptIOArguments(
                                simpleAPPKEY: String = "simpleAPPKEY",
                                keyVaultName: String = "keyVaultName",
                                managedIdentityClientId: String = "") {
+  /**
+   * Handle ppml args.
+   * @return ppml args in Map.
+   */
   def ppmlArgs(): Map[String, String] = {
     val kmsArgs = scala.collection.mutable.Map[String, String]()
     kmsArgs("spark.bigdl.kms.type") = kmsType

@@ -22,6 +22,9 @@ import com.intel.analytics.bigdl.ppml.kms.{AzureKeyManagementService, EHSMKeyMan
 import com.intel.analytics.bigdl.ppml.utils.EncryptIOArguments
 import com.intel.analytics.bigdl.ppml.crypto.EncryptRuntimeException
 
+/**
+ * Generate primary key and data key with KMS.
+ */
 object GenerateKeys extends App {
   val logger = LoggerFactory.getLogger(getClass)
 

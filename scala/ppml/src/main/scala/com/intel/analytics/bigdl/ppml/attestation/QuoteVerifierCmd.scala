@@ -22,6 +22,9 @@ import scopt.OptionParser
 import java.io.{File, FileInputStream}
 import java.math.BigInteger
 
+/**
+ * Verify quote saved by QuoteGeneratorCmd.
+ */
 object QuoteVerifierCmd {
     def main(args: Array[String]): Unit = {
 

@@ -24,8 +24,29 @@ object KMS_CONVENTION {
   val MODE_AZURE_KMS = "AzureKeyManagementService"
 }
 
+
+/**
+ * KeyManagementService interface.
+ */
 trait KeyManagementService extends Supportive {
+  /**
+   * Generate a primary key.
+   * @param primaryKeySavePath the path to save primary key.
+   */
   def retrievePrimaryKey(primaryKeySavePath: String)
+
+  /**
+   * Generate a data key and use primary key to encrypt it.
+   * @param primaryKeyPath the path of primary key.
+   * @param dataKeySavePath the path to save encrypted data key.
+   */
   def retrieveDataKey(primaryKeyPath: String, dataKeySavePath: String)
+
+  /**
+   * Use primary key to decrypt data key.
+   * @param primaryKeyPath the path of primary key.
+   * @param dataKeyPath the path of encrypted data key.
+   * @return the plaintext of data key.
+   */
   def retrieveDataKeyPlainText(primaryKeyPath: String, dataKeyPath: String): String
 }

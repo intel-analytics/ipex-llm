@@ -16,8 +16,16 @@
 
 package com.intel.analytics.bigdl.ppml.attestation
 
+/**
+ * Get quote with user report.
+ */
 trait QuoteGenerator {
 
+  /**
+   * Get quote with user report.
+   * @param userReport user report in byte array.
+   * @return quote in byte array.
+   */
   def getQuote(userReport: Array[Byte]): Array[Byte]
 
 }
