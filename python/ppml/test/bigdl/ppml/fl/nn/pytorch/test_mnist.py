@@ -23,14 +23,9 @@ import os
 from bigdl.ppml.fl import *
 from bigdl.ppml.fl.nn.fl_server import FLServer
 from bigdl.ppml.fl.nn.fl_client import FLClient
-from bigdl.ppml.fl.nn.fl_context import FLContext
 from bigdl.ppml.fl.nn.pytorch.utils import set_one_like_parameter
-<<<<<<< HEAD:python/ppml/test/bigdl/ppml/fl/nn/pytorch/test_mnist.py
 from bigdl.ppml.fl.utils import init_fl_context
 from bigdl.ppml.fl.estimator import Estimator
-=======
-from bigdl.ppml.fl.nn.pytorch.pipeline import PytorchPipeline
->>>>>>> ecab9fe82 (set client ID in init_fl_context):python/ppml/test/bigdl/ppml/fl/pytorch/test_mnist.py
 
 from torch import nn
 import torch
@@ -112,7 +107,6 @@ class TestCorrectness(FLTest):
 
         
         train(train_dataloader, model, loss_fn, optimizer)
-        FLContext.init_fl_context('1')
         vfl_model_1 = NeuralNetworkPart1()
         set_one_like_parameter(vfl_model_1)
         vfl_model_2 = NeuralNetworkPart2()

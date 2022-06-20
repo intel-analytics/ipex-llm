@@ -29,7 +29,6 @@ from bigdl.dllib.utils.log4Error import invalidInputError
 from bigdl.ppml.fl.nn.utils import ClassAndArgsWrapper
 
 class FLClient(object):
-<<<<<<< HEAD
     channel = None
     _lock = threading.Lock()
     def __init__(self, aggregator=None, target="localhost:8980") -> None: 
@@ -39,13 +38,6 @@ class FLClient(object):
         self.nn_stub = NNServiceStub(FLClient.channel)
         self.client_uuid = str(uuid.uuid4())
         self.aggregator = aggregator
-=======
-    def __init__(self, client_id=None) -> None:
-        self.channel = grpc.insecure_channel("localhost:8980")
-        self.nn_stub = NNServiceStub(self.channel)
-        self.client_uuid = str(uuid.uuid4()) if client_id is None else client_id
-
->>>>>>> ecab9fe82 (set client ID in init_fl_context)
     
     def train(self, x):
         tensor_map = ndarray_map_to_tensor_map(x)

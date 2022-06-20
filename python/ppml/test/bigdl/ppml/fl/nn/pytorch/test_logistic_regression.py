@@ -33,7 +33,7 @@ from bigdl.ppml.fl.utils import FLTest
 
 resource_path = os.path.join(os.path.dirname(__file__), "../../resources")
 
-def mock_process(data_train, client_id, target):
+def mock_process(data_train, target, client_id):
     # set new_fl_client to True will create a FLClient with new ID for multi-party test
     df_train = pd.read_csv(os.path.join(resource_path, data_train))
     if 'Outcome' in df_train:
@@ -110,7 +110,7 @@ class TestLogisticRegression(FLTest):
                 pytorch_loss_list.append(np.array(loss))
         
         mock_party2 = threading.Thread(target=mock_process, 
-            args=('diabetes-vfl-2.csv', self.target))
+            args=('diabetes-vfl-2.csv', self.target, '2'))
         mock_party2.start()
         ppl = mock_process(data_train='diabetes-vfl-1.csv', target=self.target, client_id='1')
         mock_party2.join()
