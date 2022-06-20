@@ -25,7 +25,7 @@ For more details, please see [OrcaContext](https://bigdl.readthedocs.io/en/lates
 ## 1.2 Yarn-Client & Yarn-Cluster
 The difference between yarn-client and yarn-cluster is where you run your Spark driver. 
 
-For yarn-client, the Spark driver runs in the client process, and the application master is only used for requesting resources from YARN, while for yarn-cluster the Spark driver runs inside an application master process which is managed by YARN on the cluster. So if you are running with yarn-cluster, you should change the data loading from local file to a network file system (e.g. HDFS).
+For yarn-client, the Spark driver runs in the client process, and the application master is only used for requesting resources from YARN, while for yarn-cluster the Spark driver runs inside an application master process which is managed by YARN on the cluster. If you are running on a production environment(especially yarn-cluster), you should load data from a network file system (e.g. HDFS).
 
 For more details, please see [Launching Spark on YARN](https://spark.apache.org/docs/latest/running-on-yarn.html).
 
@@ -219,7 +219,7 @@ jupyter notebook --notebook-dir=/path/to/notebook/directory --ip=* --no-browser
 ```
 
 ## 4.2 Use `bigdl-submit`
-For `spark-submit` users, BigDL provides a `bigdl-submit` script, you can find it in `${BIGDL_HOME}/scripts/bigdl-submit` and adjust the configurations according to your cluster settings. 
+For Spark script users, BigDL provides a `bigdl-submit` script, you can find it in `${BIGDL_HOME}/scripts/bigdl-submit` and adjust the configurations according to your cluster settings. 
 ```bash
 # bigdl-submit script
 spark-submit \
@@ -230,11 +230,11 @@ spark-submit \
   $*
 ```
 In the `bigdl-submit` script:
-* It could automatically detect and setup configuration and jars files from the current conda environment, which will be set as `${BIGDL_CONF}` and `${BIGDL_JARS}` seperately. There is no need for you to setup these varaibles manully.
-* `--properties-file`: upload the BigDL configuration file to the cluster.
-* `--jars`: register BigDL dependency jars files to the Spark job.
-* `--conf spark.driver.extraClassPath`: register the BigDL jars files to the driver classpath.
-* `--conf spark.executor.extraClassPath`: register the BigDL jars files to the classpath of executors.
+* It could automatically detect and setup configuration and jars files from the current conda environment, which will be set as `${BIGDL_CONF}` and `${BIGDL_JARS}` seperately. There is no need for you to setup these varaibles manully;
+* `--properties-file`: upload the BigDL configuration properties to the cluster;
+* `--jars`: register and distribute BigDL dependency jars files to the Spark job;
+* `--conf spark.driver.extraClassPath`: register and upload the BigDL jars files to the driver classpath;
+* `--conf spark.executor.extraClassPath`: register and upload the BigDL jars files to the classpath of executors.
 
 Before submitting the Fasion-MNIST program to Yarn with `bigdl-submit`, we need to pack the Conda environment to an archive, which captures the Conda environment for Python and stores both Python interpreter and all its relevant dependencies.
 ```bash
@@ -269,11 +269,11 @@ bigdl-submit \
     train.py
 ```
 In the `bigdl-submit` script for running Orca programs on yarn-client mode:
-* `--master`: the spark master, set it to yarn when running programs on Yarn.
-* `--deploy-mode`: submit and execute programs on yarn-client or yarn-cluster, set it to client when running programs on yarn-client mode.
-* `--archives`: set this option to the path of the Conda archive, the archive will be uploaded to remote clusters(i.e. HDFS) and distributed between executors.
-* `--py-files`: load and distribute dependency library on cluster.
-* `--conf spark.pyspark.driver.python`: set the driver Python environment as the local Python path. For `yarn-client` mode, the Spark driver is running on local and it will use the Python interpreter in the current active conda environment.
+* `--master`: the spark master, set it to yarn when running programs on Yarn;
+* `--deploy-mode`: submit and execute programs on yarn-client or yarn-cluster, set it to client when running programs on yarn-client mode;
+* `--archives`: set this option to the path of the Conda archive, the archive will be uploaded to remote clusters(i.e. HDFS) and distributed between executors;
+* `--py-files`: upload Python dependency file(s) to cluster and distribute between executors;
+* `--conf spark.pyspark.driver.python`: set the driver Python environment as the local Python path. For `yarn-client` mode, the Spark driver is running on local and it will use the Python interpreter in the current active conda environment;
 * `--conf spark.pyspark.python`: set the executor Python environment to the Python path in the Conda archive, since executors will use the Python interpreter in the conda archive.
 
 ### 4.2.2 Yarn Cluster
@@ -299,12 +299,12 @@ bigdl-submit \
     train.py --remote_dir hdfs://path/to/remote/data
 ```
 In the `bigdl-submit` script script for running Orca programs on yarn-cluster mode:
-* `--master`: the spark master, set it to yarn when running programs on Yarn.
-* `--deploy-mode`: submit and execute programs on yarn-client or yarn-cluster, set it to cluster when running programs on yarn-cluster mode.
-* `--archives`: set the option to the path of the Conda archive, which will be upload to remote resources(i.e. HDFS) and distributed between executors.
-* `--conf spark.yarn.appMasterEnv.PYSPARK_PYTHON`: set the Python environment for the Application Master process launched on YARN, it will use the Python interpreter in `environment.tar.gz`. 
-* `--conf spark.executorEnv.PYSPARK_PYTHON`: set the Python environment for executors on Yarn, it will use the Python interpreter in `environment.tar.gz`.
-* `--py-files`: load dependency library to cluster and distribute between executors.
+* `--master`: the spark master, set it to yarn when running programs on Yarn;
+* `--deploy-mode`: submit and execute programs on yarn-client or yarn-cluster, set it to cluster when running programs on yarn-cluster mode;
+* `--archives`: set the option to the path of the Conda archive, which will be upload to remote resources(i.e. HDFS) and distributed between executors;
+* `--conf spark.yarn.appMasterEnv.PYSPARK_PYTHON`: set the Python environment for the Application Master process launched on YARN, it will use the Python interpreter in `environment.tar.gz`;
+* `--conf spark.executorEnv.PYSPARK_PYTHON`: set the Python environment for executors on Yarn, it will use the Python interpreter in `environment.tar.gz`;
+* `--py-files`: upload Python dependency file(s) to cluster and distribute between executors;
 * `--remote_dir`: loda data from remote datasets path. For yarn-cluster mode, we recommend that you should use the datasets stored in remote resources like HDFS or S3 instead of downloading to avoid possible network connection errors.
 
 ## 4.3 Use `spark-submit`
@@ -344,15 +344,15 @@ spark-submit \
     train.py
 ```
 In this script:
-* `--master`: the spark master, set it to yarn when running programs on Yarn.
-* `--deploy-mode`: submit and execute programs on yarn-client or yarn-cluster, set it to client when running programs on yarn-client mode.
-* `--conf spark.pyspark.driver.python`: set the driver Python environment to the local Python path, since Spark driver is running on local and it will use the Python interpreter in the current active Conda environment.
-* `--conf spark.pyspark.python`: set the executor Python environment to the Python path in Conda archive, since executors will use the Python interpreter and relevant libraries in the conda archive.
+* `--master`: the spark master, set it to yarn when running programs on Yarn;
+* `--deploy-mode`: submit and execute programs on yarn-client or yarn-cluster, set it to client when running programs on yarn-client mode;
 * `--archives`: set the option to the path of the archive which was sent from the other node;
-* `--properties-file`: override spark configuration by BigDL configuration file;
-* `--py-files`: load and distribute BigDL required dependency libraries in cluster;
+* `--properties-file`: upload the BigDL configuration properties to the cluster;
+* `--py-files`: upload Python dependency file(s) to cluster and distribute between executors;
+* `--conf spark.pyspark.driver.python`: set the driver Python environment to the local Python path, since Spark driver is running on local and it will use the Python interpreter in the current active Conda environment;
+* `--conf spark.pyspark.python`: set the executor Python environment to the Python path in Conda archive, since executors will use the Python interpreter and relevant libraries in the conda archive;
 * `--conf spark.driver.extraClassPath`: load and register the BigDL jars files to the driver's classpath;
-* `--conf spark.executor.extraClassPath`: load and register the BigDL jars files to the executors' classpath; 
+* `--conf spark.executor.extraClassPath`: load and register the BigDL jars files to the executors' classpath.
 
 ### 4.3.2 Yarn-Cluster
 We need to call `init_orca_context` first to create an OrcaContext at the very beginning of the program.
@@ -381,11 +381,11 @@ spark-submit \
     train.py --remote_dir hdfs://path/to/remote/data
 ```
 In the `spark-submit` script for yarn-cluster:
-* `--master`: the spark master, set it to yarn when running programs on Yarn.
-* `--deploy-mode`: submit and execute programs on yarn-client or yarn-cluster, set it to cluster when running programs on yarn-cluster mode.
-* `--conf spark.yarn.appMasterEnv.PYSPARK_PYTHON`: set the Python environment for the Application Master process launched on YARN, it will use the Python interpreter in `environment.tar.gz`. 
-* `--conf spark.executorEnv.PYSPARK_PYTHON`: set the Python environment for executors on Yarn, it will use the Python interpreter in `environment.tar.gz`.
-* `--archives`: set the option to the path of the Conda archive, which will be upload to remote clusters(i.e. HDFS) and distributed between all executors.
-* `--py-files`: load and distributed BigDL and other dependency libraries on yarn cluster.
-* `--jars`: register and distribute the BigDL jars files to the cluster. 
+* `--master`: the spark master, set it to yarn when running programs on Yarn;
+* `--deploy-mode`: submit and execute programs on yarn-client or yarn-cluster, set it to cluster when running programs on yarn-cluster mode;
+* `--conf spark.yarn.appMasterEnv.PYSPARK_PYTHON`: set the Python environment for the Application Master process launched on YARN, it will use the Python interpreter in `environment.tar.gz`; 
+* `--conf spark.executorEnv.PYSPARK_PYTHON`: set the Python environment for executors on Yarn, it will use the Python interpreter in `environment.tar.gz`;
+* `--archives`: set the option to the path of the Conda archive, which will be upload to remote clusters(i.e. HDFS) and distributed between all executors;
+* `--py-files`: upload Python dependency file(s) to cluster and distribute between executors;
+* `--jars`: register and distribute BigDL dependency jars files to the Spark job;
 * `--remote_dir`: load dataset from remote path. For yarn-cluster mode, we recommend that you use the datasets stored in remote resources like HDFS instead of downloading to avoid possible network connection errors.
