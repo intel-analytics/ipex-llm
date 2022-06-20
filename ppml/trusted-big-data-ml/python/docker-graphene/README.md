@@ -620,10 +620,9 @@ sudo docker run -itd \
     -e LOCAL_IP=$LOCAL_IP \
     $DOCKER_IMAGE bash
 ```
+run `docker exec -it spark-local-k8s-client bash` to entry the container.
 
-### 1.4 Init the client and run Spark applications on k8s
-
-First, run `docker exec -it spark-local-k8s-client bash` to entry the container.
+### 1.4 Init the client and run Spark applications on k8s (1.4 can be skipped if you are using 1.5 to submit jobs)
 
 #### 1.4.1 Configure `spark-executor-template.yaml` in the container
 
@@ -710,6 +709,121 @@ Note that: you can run your own Spark Appliction after changing `--class` and ja
 
 ```bash
 SGX=1 ./pal_loader bash 2>&1 | tee spark-pi-sgx-$SPARK_MODE.log
+```
+### 1.5 Use bigdl-ppml-submit.sh to run Spark applications on k8s
+#### 1.5.1 Spark-Pi on local mode
+```
+#!/bin/bash
+export SGX_ENABLED=false
+unset SPARK_MODE
+bash bigdl-ppml-submit.sh \
+        --master local[2] \
+        --class org.apache.spark.examples.SparkPi \
+        --name spark-pi \
+        --verbose \
+        local:///ppml/trusted-big-data-ml/work/spark-3.1.2/examples/jars/spark-examples_2.12-3.1.2.jar 3000
+```
+#### 1.5.2 Spark-Pi on local sgx mode
+```
+#!/bin/bash
+export SGX_ENABLED=true
+unset SPARK_MODE
+bash bigdl-ppml-submit.sh \
+        --master local[2] \
+        --class org.apache.spark.examples.SparkPi \
+        --name spark-pi \
+        --verbose \
+        local:///ppml/trusted-big-data-ml/work/spark-3.1.2/examples/jars/spark-examples_2.12-3.1.2.jar 3000
+```
+#### 1.5.3 Spark-Pi on client mode
+```
+#!/bin/bash
+ 
+export secure_password=`openssl rsautl -inkey /ppml/trusted-big-data-ml/work/password/key.txt -decrypt </ppml/trusted-big-data-ml/work/password/output.bin`
+export SGX_ENABLED=true
+export SPARK_MODE=client
+bash bigdl-ppml-submit.sh \
+        --master $RUNTIME_SPARK_MASTER \
+        --deploy-mode $SPARK_MODE \
+        --class org.apache.spark.examples.SparkPi \
+        --name spark-pi \
+        --verbose \
+        local:///ppml/trusted-big-data-ml/work/spark-3.1.2/examples/jars/spark-examples_2.12-3.1.2.jar 3000
+```
+#### 1.5.4 Spark-Pi on cluster mode
+```
+#!/bin/bash
+ 
+export secure_password=`openssl rsautl -inkey /ppml/trusted-big-data-ml/work/password/key.txt -decrypt </ppml/trusted-big-data-ml/work/password/output.bin`
+export SGX_ENABLED=true
+export SPARK_MODE=client
+bash bigdl-ppml-submit.sh \
+        --master $RUNTIME_SPARK_MASTER \
+        --deploy-mode $SPARK_MODE \
+        --class org.apache.spark.examples.SparkPi \
+        --name spark-pi \
+        --verbose \
+        local:///ppml/trusted-big-data-ml/work/spark-3.1.2/examples/jars/spark-examples_2.12-3.1.2.jar 3000
+```
+
+#### 1.5.5 bigdl-ppml-submit.sh explanations
+
+bigdl-ppml-submit.sh is used to simplify the steps in 1.4, by using bigdl-ppml-submit.sh, the following spark properties will be set defaultly. 
+```
+--conf spark.driver.host=$LOCAL_IP \
+--conf spark.driver.port=$RUNTIME_DRIVER_PORT \
+--conf spark.driver.cores=$RUNTIME_DRIVER_CORES \
+--conf spark.driver.memory=$RUNTIME_DRIVER_MEMORY \
+--conf spark.executor.cores=$RUNTIME_EXECUTOR_CORES \
+--conf spark.executor.memory=$RUNTIME_EXECUTOR_MEMORY \
+--conf spark.executor.instances=$RUNTIME_EXECUTOR_INSTANCES \
+--conf spark.network.timeout=10000000 \
+--conf spark.executor.heartbeatInterval=10000000 \
+--conf spark.python.use.daemon=false \
+--conf spark.python.worker.reuse=false \
+--conf spark.kubernetes.sgx.enabled=$SGX_ENABLED \
+--conf spark.kubernetes.sgx.driver.mem=$SGX_DRIVER_MEM \
+--conf spark.kubernetes.sgx.driver.jvm.mem=$SGX_DRIVER_JVM_MEM \
+--conf spark.kubernetes.sgx.executor.mem=$SGX_EXECUTOR_MEM \
+--conf spark.kubernetes.sgx.executor.jvm.mem=$SGX_EXECUTOR_JVM_MEM \
+--conf spark.kubernetes.sgx.log.level=$SGX_LOG_LEVEL \
+--conf spark.kubernetes.container.image=$RUNTIME_K8S_SPARK_IMAGE \
+--conf spark.kubernetes.authenticate.driver.serviceAccountName=spark \
+--conf spark.kubernetes.driver.podTemplateFile=/ppml/trusted-big-data-ml/spark-driver-template.yaml \
+--conf spark.kubernetes.executor.podTemplateFile=/ppml/trusted-big-data-ml/spark-executor-template.yaml \
+--conf spark.kubernetes.executor.deleteOnTermination=false \
+```
+So that you only need to set a few required arguments to submit job: 
+```
+#!/bin/bash
+export SGX_ENABLED=true
+export SPARK_MODE=client
+bash bigdl-ppml-submit.sh \
+        --master $RUNTIME_SPARK_MASTER \
+        --deploy-mode $SPARK_MODE \
+        --class org.apache.spark.examples.SparkPi \
+        --name spark-pi \
+        --verbose \
+        local:///ppml/trusted-big-data-ml/work/spark-3.1.2/examples/jars/spark-examples_2.12-3.1.2.jar 3000
+```
+1. set the deploy_mode if you are running job using client or cluster on k8s
+2. set the master to local[2] if you are running job on spark local mode
+3. set the name, jars, main class
+
+If you want to overwrite these properties, just append the spark properties to bigdl-ppml-submit.sh as arguments. For example, set spark.executor.memory to 32g.
+```
+bash bigdl-ppml-submit.sh \
+        --master $RUNTIME_SPARK_MASTER \
+        --deploy-mode $SPARK_MODE \
+        --conf spark.executor.memory=32g \
+        --class org.apache.spark.examples.SparkPi \
+        --name spark-pi \
+        --verbose \
+        local:///ppml/trusted-big-data-ml/work/spark-3.1.2/examples/jars/spark-examples_2.12-3.1.2.jar 3000
+```
+If you want to enable the spark security configurations as in 2.Spark security configurations, export secure_password to enable it.
+```
+export secure_password=`openssl rsautl -inkey /ppml/trusted-big-data-ml/work/password/key.txt -decrypt </ppml/trusted-big-data-ml/work/password/output.bin`
 ```
 
 ### Configuration Explainations
