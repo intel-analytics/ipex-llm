@@ -266,7 +266,7 @@ bigdl-submit \
     --archives environment.tar.gz#environment \
     --conf spark.pyspark.driver.python=/path/to/python \
     --conf spark.pyspark.python=environment/bin/python \
-    train.py
+    train.py --cluster_mode bigdl-submit
 ```
 In the `bigdl-submit` script for running Orca programs on yarn-client mode:
 * `--master`: the spark master, set it to yarn when running programs on Yarn;
@@ -296,9 +296,9 @@ bigdl-submit \
     --num-executors 2 \
     --archives environment.tar.gz#environment \
     --py-files orca_example.zip \
-    train.py --remote_dir hdfs://path/to/remote/data
+    train.py --cluster_mode bigdl-submit --remote_dir hdfs://path/to/remote/data
 ```
-In the `bigdl-submit` script script for running Orca programs on yarn-cluster mode:
+In the `bigdl-submit` script for running Orca programs on yarn-cluster mode:
 * `--master`: the spark master, set it to yarn when running programs on Yarn;
 * `--deploy-mode`: submit and execute programs on yarn-client or yarn-cluster, set it to cluster when running programs on yarn-cluster mode;
 * `--archives`: set the option to the path of the Conda archive, which will be upload to remote resources(i.e. HDFS) and distributed between executors;
@@ -341,7 +341,7 @@ spark-submit \
     --executor-cores 8 \
     --num-executors 2 \
     --archives environment.tar.gz#environment \
-    train.py
+    train.py --cluster_mode spark-submit
 ```
 In this script:
 * `--master`: the spark master, set it to yarn when running programs on Yarn;
@@ -378,7 +378,7 @@ spark-submit \
     --driver-memory 10g \
     --executor-cores 4 \
     --num-executors 2 \
-    train.py --remote_dir hdfs://path/to/remote/data
+    train.py --cluster_mode spark-submit --remote_dir hdfs://path/to/remote/data
 ```
 In the `spark-submit` script for yarn-cluster:
 * `--master`: the spark master, set it to yarn when running programs on Yarn;
