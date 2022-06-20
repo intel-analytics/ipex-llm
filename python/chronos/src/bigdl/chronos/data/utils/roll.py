@@ -56,7 +56,9 @@ def roll_timeseries_dataframe(df,
     invalidInputError(is_horizon_int or is_horizon_list,
                       "horizon is expected to be a list or int")
 
-    is_test = True if (is_horizon_int and horizon == 0) else False
+    # don't enter test mode if label_len!=0
+    # TODO: change to use is_predict.
+    is_test = True if (is_horizon_int and horizon == 0 and label_len==0) else False
     if not is_test:
         return _roll_timeseries_dataframe_train(df,
                                                 roll_feature_df,
@@ -114,7 +116,10 @@ def _roll_timeseries_dataframe_train(df,
         invalidInputError(False,
                           "horizon should be an integer if label_len is set to larger than 0.")
     max_horizon = horizon if isinstance(horizon, int) else max(horizon)
-    x = df[:-max_horizon].loc[:, target_col+feature_col].values.astype(np.float32)
+    if max_horizon > 0:
+        x = df[:-max_horizon].loc[:, target_col+feature_col].values.astype(np.float32)
+    else:
+        x = df.loc[:, target_col+feature_col].values.astype(np.float32)
     y = df.iloc[lookback-label_len:].loc[:, target_col].values.astype(np.float32)
 
     output_x, mask_x = _roll_timeseries_ndarray(x, lookback)

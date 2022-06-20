@@ -502,7 +502,8 @@ class TSDataset:
              target_col=None,
              id_sensitive=False,
              time_enc=False,
-             label_len=0):
+             label_len=0,
+             is_predict=False):
         '''
         Sampling by rolling for machine learning/deep learning models.
 
@@ -514,6 +515,9 @@ class TSDataset:
                if `horizon` is a list, we will sample discretely according
                to the input list. 1 means the timestamp just after the observed data.
                specially, when `horizon` is set to 0, ground truth will be generated as None.
+
+               WARNING: The usage of setting `horizon` to will be deprecated later, please
+               use `is_predict` in future.
         :param feature_col: str or list, indicates the feature col name. Default to None,
                where we will take all available feature in rolling.
         :param target_col: str or list, indicates the target col name. Default to None,
@@ -524,21 +528,28 @@ class TSDataset:
                and fuse the sampings.
                The shape of rolling will be
                x: (num_sample, lookback, num_feature_col + num_target_col)
-               y: (num_sample, horizon, num_target_col)
+               y: (num_sample, horizon+label_len, num_target_col)
                where num_sample is the summation of sample number of each dataframe
 
                if `id_sensitive` is True, we will rolling on the wide dataframe whose
                columns are cartesian product of id_col and feature_col
                The shape of rolling will be
                x: (num_sample, lookback, new_num_feature_col + new_num_target_col)
-               y: (num_sample, horizon, new_num_target_col)
+               y: (num_sample, horizon+label_len, new_num_target_col)
                where num_sample is the sample number of the wide dataframe,
                new_num_feature_col is the product of the number of id and the number of feature_col.
                new_num_target_col is the product of the number of id and the number of target_col.
         :param time_enc: bool,
-               This parameter is only useful when you are using Autoformer model.
+               This parameter should be set to True only when you are using Autoformer model. With
+               time_enc to be true, 2 additional numpy ndarray will be returned when you call
+               `.to_numpy()`. Be sure to have a time type for dt_col if you set time_enc to True.
         :param label_len: int,
-               This parameter is only useful when you are using Autoformer model.
+               This parameter should be set to True only when you are using Autoformer model. This
+               indicates the length of overlap area of output(y) and input(x) on time axis.
+        :param is_predict: bool,
+               This parameter should be set to True only when you are using Autoformer model. This
+               indicates if the dataset will be sampled as a prediction dataset(without groud
+               truth).
 
         :return: the tsdataset instance.
 
@@ -592,6 +603,12 @@ class TSDataset:
         roll_feature_df = None if self.roll_feature_df is None \
             else self.roll_feature_df[additional_feature_col]
 
+        # horizon_time is only for time_enc, the time_enc numpy ndarray won't have any
+        # shape change when the dataset is for prediction.
+        horizon_time = horizon
+        if is_predict:
+            horizon = 0
+
         if lookback == 'auto':
             lookback = self.get_cycle_length('mode', top_k=3)
         rolling_result = \
@@ -609,7 +626,7 @@ class TSDataset:
         self.numpy_x = np.concatenate([rolling_result[i][0]
                                        for i in self._id_list],
                                       axis=concat_axis).astype(np.float32)
-        if horizon != 0:
+        if horizon != 0 or time_enc:
             self.numpy_y = np.concatenate([rolling_result[i][1]
                                            for i in self._id_list],
                                           axis=concat_axis).astype(np.float32)
@@ -618,18 +635,25 @@ class TSDataset:
 
         # time_enc
         if time_enc:
-            data_stamp = time_features(pd.to_datetime(self.df[self.dt_col].values), freq=self._freq)
+            df_stamp = pd.DataFrame(columns=[self.dt_col])
+            if is_predict:
+                pred_dates = pd.date_range(self.df[self.dt_col].values[-1], periods=horizon_time + 1, freq=self._freq)
+                df_stamp.loc[:, self.dt_col] = list(self.df[self.dt_col].values) + list(pred_dates[1:])
+            else:
+                df_stamp.loc[:, self.dt_col] = list(self.df[self.dt_col].values)
+            data_stamp = time_features(pd.to_datetime(df_stamp[self.dt_col].values), freq=self._freq)
             self.data_stamp = data_stamp.transpose(1, 0)
-            max_horizon = horizon if isinstance(horizon, int) else max(horizon)
+            max_horizon = horizon_time if isinstance(horizon_time, int) else max(horizon_time)
             self.numpy_x_timeenc, _ = _roll_timeseries_ndarray(self.data_stamp[:-max_horizon],
                                                                lookback)
             self.numpy_y_timeenc, _ = _roll_timeseries_ndarray(self.data_stamp[lookback-label_len:],
-                                                               horizon+label_len)
+                                                               horizon_time+label_len)
         else:
             self.numpy_x_timeenc = None
             self.numpy_y_timeenc = None
 
         # target first
+        # TODO: check id_sensitive effectiveness for the time_enc=True cases.
         if self.id_sensitive:
             feature_start_idx = num_target_col * num_id
             reindex_list = [list(range(i * num_target_col, (i + 1) * num_target_col)) +
@@ -655,7 +679,11 @@ class TSDataset:
                              lookback='auto',
                              horizon=None,
                              feature_col=None,
-                             target_col=None, ):
+                             target_col=None,
+                             shuffle=True,
+                             time_enc=False,
+                             label_len=0,
+                             is_predict=False):
         """
         Convert TSDataset to a PyTorch DataLoader with or without rolling. We recommend to use
         to_torch_data_loader(roll=True) if you don't need to output the rolled numpy array. It is
@@ -679,6 +707,18 @@ class TSDataset:
         :param target_col: str or list, indicates the target col name. Default to None,
                where we will take all target in rolling. it should be a subset of target_col
                you used to initialize the tsdataset.
+        :param shuffle: if the dataloader is shuffled. default to True.
+        :param time_enc: bool,
+               This parameter should be set to True only when you are using Autoformer model. With
+               time_enc to be true, 2 additional numpy ndarray will be returned when you call
+               `.to_numpy()`. Be sure to have a time type for dt_col if you set time_enc to True.
+        :param label_len: int,
+               This parameter should be set to True only when you are using Autoformer model. This
+               indicates the length of overlap area of output(y) and input(x) on time axis.
+        :param is_predict: bool,
+               This parameter should be set to True only when you are using Autoformer model. This
+               indicates if the dataset will be sampled as a prediction dataset(without groud
+               truth).
 
         :return: A pytorch DataLoader instance.
 
@@ -725,14 +765,19 @@ class TSDataset:
             if lookback == 'auto':
                 lookback = self.get_cycle_length('mode', top_k=3)
             torch_dataset = RollDataset(self.df,
+                                        dt_col=self.dt_col,
+                                        freq=self._freq,
                                         lookback=lookback,
                                         horizon=horizon,
                                         feature_col=feature_col,
                                         target_col=target_col,
-                                        id_col=self.id_col)
+                                        id_col=self.id_col,
+                                        time_enc=time_enc,
+                                        label_len=label_len,
+                                        is_predict=is_predict)
             return DataLoader(torch_dataset,
                               batch_size=batch_size,
-                              shuffle=True)
+                              shuffle=shuffle)
         else:
             if self.numpy_x is None:
                 invalidInputError(False,
@@ -742,7 +787,7 @@ class TSDataset:
             return DataLoader(TensorDataset(torch.from_numpy(x).float(),
                                             torch.from_numpy(y).float()),
                               batch_size=batch_size,
-                              shuffle=True)
+                              shuffle=shuffle)
 
     def to_tf_dataset(self, batch_size=32, shuffle=False):
         """
