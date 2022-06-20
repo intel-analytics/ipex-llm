@@ -308,7 +308,7 @@ RUN rm $SPARK_HOME/jars/okhttp-*.jar && \
     cp /sbin/tini /usr/bin/tini
 
 # Azure support
-RUN curl -sL https://aka.ms/InstallAzureCLIDeb | sudo bash
+RUN curl -sL https://aka.ms/InstallAzureCLIDeb | bash
 ADD azure /ppml/trusted-big-data-ml/azure
 
 WORKDIR /ppml/trusted-big-data-ml
