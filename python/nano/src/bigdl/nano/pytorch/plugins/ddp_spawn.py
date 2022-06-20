@@ -37,6 +37,7 @@ import multiprocessing
 from typing import Any, List, Optional, Callable, Union, Dict
 
 import torch
+from torch import Tensor
 from torch.multiprocessing.spawn import _wrap, ProcessContext
 from torch.nn.parallel.distributed import DistributedDataParallel
 
@@ -47,9 +48,11 @@ from pytorch_lightning.strategies import Strategy, DDPSpawnStrategy as _DDPSpawn
 from pytorch_lightning.plugins.environments import LightningEnvironment
 from pytorch_lightning.overrides import LightningDistributedModule
 from pytorch_lightning.utilities.optimizer import optimizers_to_device
+from pytorch_lightning.utilities.distributed import ReduceOp
 
 from bigdl.nano.common.cpu_schedule import schedule_workers
-from bigdl.nano.deps.ipex.ipex_api import ipex_device, ipex_optimize, create_IPEXAccelerator_1_9, to_cpu
+from bigdl.nano.deps.ipex.ipex_api import ipex_device, ipex_optimize, \
+    create_IPEXAccelerator_1_9, to_cpu
 from bigdl.nano.pytorch.utils import TORCH_VERSION_LESS_1_10
 
 import logging
@@ -63,13 +66,14 @@ log = logging.getLogger(__name__)
 class _DDPSpawnLauncher(_SpawnLauncher):
     r"""Spawns processes that run a given function in parallel, and joins them all at the end.
 
-    The main process in which this launcher is invoked creates N so-called worker processes (using
-    :func:`torch.multiprocessing.spawn`) that run the given function.
+    The main process in which this launcher is invoked creates N so-called worker processes 
+    (using:func:`torch.multiprocessing.spawn`) that run the given function.
     Worker processes have a rank that ranges from 0 to N - 1.
 
     Note:
         - This launcher requires all objects to be pickleable.
-        - It is important that the entry point to the program/script is guarded by ``if __name__ == "__main__"``.
+        - It is important that the entry point to the program/script is guarded by 
+        ``if __name__ == "__main__"``.
 
     Args:
         strategy: A reference to the strategy that is used together with this launcher.
@@ -80,9 +84,6 @@ class _DDPSpawnLauncher(_SpawnLauncher):
 
     def launch(self, function: Callable, *args: Any, trainer: Optional["pl.Trainer"] = None, **kwargs: Any) -> Any:
         """Spawns processes that run the given function in parallel.
-
-        The function is allowed to have a return value. However, when all processes join, only the return value
-        of worker process 0 gets returned from this `launch` method in the main process.
 
         Arguments:
             function: The entry point for all spawned processes.
@@ -181,6 +182,8 @@ class DDPSpawnStrategy(_DDPSpawnStrategy):
 
         if trainer_fn == TrainerFn.FITTING:
             self.configure_ddp()
+        else:
+            self.model.training = False
 
         if self.use_ipex and not TORCH_VERSION_LESS_1_10:
             dtype = torch.bfloat16 if self.enable_bf16 else None
@@ -210,6 +213,13 @@ class DDPSpawnStrategy(_DDPSpawnStrategy):
         # set up optimizers after the wrapped module has been moved to the device
         self.setup_optimizers(self.lightning_module.trainer)
         optimizers_to_device(self.optimizers, self.root_device)
+
+    def reduce(self, tensor, group: Optional[Any] = None,
+               reduce_op: Union[ReduceOp, str] = "mean") -> Tensor:
+        try:
+            return super().reduce(tensor, group, reduce_op)
+        except Exception as _e:
+            return tensor
 
     def training_step_end(self, output: _STEP_OUTPUT_TYPE) -> _STEP_OUTPUT_TYPE:
         """
