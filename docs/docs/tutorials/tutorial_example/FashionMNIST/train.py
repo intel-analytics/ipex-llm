@@ -17,9 +17,8 @@ parser.add_argument('--cluster_mode', type=str, default="spark-submit",
 parser.add_argument('--remote_dir', type=str, help='The path to load data from remote resources like HDFS or S3')
 args = parser.parse_args()
 
-transform = transforms.Compose(
-        [transforms.ToTensor(),
-         transforms.Normalize((0.5,), (0.5,))])
+transform = transforms.Compose([transforms.ToTensor(),
+                                transforms.Normalize((0.5,), (0.5,))])
 
 def train_data_process():
     remote_dir = args.remote_dir
@@ -27,7 +26,7 @@ def train_data_process():
     if remote_dir is not None:
         get_remote_file_to_local(remote_dir, data_dir)
         trainset = torchvision.datasets.FashionMNIST(root=data_dir, train=True,
-                                                    download=False, transform=transform)
+                                                     download=False, transform=transform)
     else:
         trainset = torchvision.datasets.FashionMNIST(root="./data", train=True,
                                                      download=True, transform=transform)
@@ -42,19 +41,21 @@ def train_data_creator(config, batch_size):
 
 def main():
     if args.cluster_mode.startswith("yarn"):
-        if args.cluster_mode == "yarn-client" or "yarn":
+        if args.cluster_mode == "yarn-client":
             init_orca_context(cluster_mode="yarn-client", extra_python_lib="./orca_example.zip", 
-                            cores=4, memory="10g", num_nodes=2)
+                              cores=4, memory="10g", num_nodes=2)
         elif args.cluster_mode == "yarn-cluster":
             init_orca_context(cluster_mode="yarn-cluster", extra_python_lib="./orca_example.zip",
-                            cores=4, memory="10g", num_nodes=2)
+                              cores=4, memory="10g", num_nodes=2)
+    elif args.cluster_mode == "bigdl-submit":
+        init_orca_context(cluster_mode="bigdl-submit")
     elif args.cluster_mode == "spark-submit":
         init_orca_context(cluster_mode="spark-submit")
     else:
-        print("init_orca_context failed. cluster_mode should be one of 'yarn' or 'spark-submit' but got "
-            + args.cluster_mode)
-    
-    from example import model_creator, optimizer_creator
+        print("init_orca_context failed. cluster_mode should be one of 'yarn', 'bigdl-submit' or 'spark-submit' " 
+              "but got " + args.cluster_mode)
+
+    from orca_example import model_creator, optimizer_creator
 
     criterion = nn.CrossEntropyLoss()
     orca_estimator = Estimator.from_torch(model=model_creator,
