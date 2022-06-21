@@ -19,7 +19,7 @@ import numpy as np
 from torch.utils.data.dataloader import DataLoader
 
 
-def _inference(model, batch_size, input_sample_list):
+def _inference(model, input_sample_list, batch_size):
     if batch_size is None:
         # this branch is only to speed up the inferencing when batch_size is set to None.
         return model(*input_sample_list).numpy()
@@ -29,9 +29,8 @@ def _inference(model, batch_size, input_sample_list):
         batch_num = math.ceil(sample_num / batch_size)
         for batch_id in range(batch_num):
             yhat_list.append(model(
-                *tuple(map(lambda x: x[batch_id * batch_size:
-                                        (batch_id + 1) * batch_size],
-                            input_sample_list))).numpy())
+                *tuple(map(lambda x: x[batch_id * batch_size: (batch_id + 1) * batch_size],
+                           input_sample_list))).numpy())
         # this operation may cause performance degradation
         yhat = np.concatenate(yhat_list, axis=0)
         return yhat
@@ -51,13 +50,9 @@ def _pytorch_fashion_inference(model, input_data, batch_size=None):
     with torch.no_grad():
         if isinstance(input_data, list):
             input_sample_list = list(map(lambda x: torch.from_numpy(x), input_data))
-            yhat = _inference(model, batch_size, input_sample_list)
         elif isinstance(input_data, DataLoader):
-            yhat_list = []
-            for batch in input_data:
-                yhat_list.append(model(batch[0]).numpy())
-            return np.concatenate(yhat_list, axis=0)
+            input_sample_list = [torch.cat(tuple(batch[0] for batch in input_data), dim=0)]
         else:
             input_sample_list = [torch.from_numpy(input_data)]
-            yhat = _inference(model, batch_size, input_sample_list)
-        return yhat
+        yhat = _inference(model, input_sample_list, batch_size=batch_size)
+    return yhat

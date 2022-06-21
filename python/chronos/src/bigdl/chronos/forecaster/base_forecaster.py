@@ -590,7 +590,7 @@ class BasePytorchForecaster(Forecaster):
                               "You must call fit or restore first before calling evaluate!")
         if isinstance(data, DataLoader):
             input_data = data
-            target = np.concatenate(tuple((val[1] for val in data)), axis=0)
+            target = np.concatenate(tuple(val[1] for val in data), axis=0)
         else:
             input_data, target = data
         if quantize:
