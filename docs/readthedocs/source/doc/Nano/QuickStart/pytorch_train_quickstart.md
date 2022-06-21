@@ -114,3 +114,4 @@ model = LitResnet(learning_rate=0.05)
 single_trainer = Trainer(max_epochs=1, num_processes=4, use_ipex=True)
 single_trainer.fit(model, datamodule=datamodule)
 ```
+Get more information about the optimizations from [here](https://bigdl.readthedocs.io/en/latest/doc/PythonAPI/Nano/pytorch.html#bigdl-nano-pytorch)
