@@ -95,11 +95,6 @@
                 </exclusion>
             </exclusions>
         </dependency>
-<!--        <dependency>-->
-<!--            <groupId>org.codehaus.jackson</groupId>-->
-<!--            <artifactId>jackson-mapper-asl</artifactId>-->
-<!--            <version>2.10.5.1</version>-->
-<!--        </dependency>-->
         <dependency>
             <groupId>com.fasterxml.jackson.core</groupId>
             <artifactId>jackson-databind</artifactId>
