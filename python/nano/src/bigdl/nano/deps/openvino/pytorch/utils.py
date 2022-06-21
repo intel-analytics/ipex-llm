@@ -19,7 +19,7 @@ from bigdl.nano.utils.inference.pytorch.model_utils import export_to_onnx
 from pathlib import Path
 
 
-def export(model, input_sample=None, xml_path="model.xml"):
+def export(model, input_sample=None, xml_path="model.xml", **kwargs):
     '''
     Function to export pytorch model into openvino and save it to local.
     Any instance of torch.nn.Module including Lightning Module is acceptable.
@@ -32,5 +32,5 @@ def export(model, input_sample=None, xml_path="model.xml"):
     with TemporaryDirectory() as folder:
         folder = Path(folder)
         onnx_path = str(folder / 'tmp.onnx')
-        export_to_onnx(model, input_sample, onnx_path, dynamic_axes=True)
+        export_to_onnx(model, input_sample, onnx_path, dynamic_axes=True, **kwargs)
         convert_onnx_to_xml(onnx_path, xml_path)

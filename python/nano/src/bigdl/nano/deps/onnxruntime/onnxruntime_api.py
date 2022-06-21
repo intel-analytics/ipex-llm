@@ -16,7 +16,7 @@
 
 
 def PytorchONNXRuntimeModel(model, input_sample=None,
-                            onnxruntime_session_options=None, opset_version=11):
+                            onnxruntime_session_options=None, **kwargs):
     """
         Create a ONNX Runtime model from pytorch.
 
@@ -32,7 +32,7 @@ def PytorchONNXRuntimeModel(model, input_sample=None,
     from .pytorch.pytorch_onnxruntime_model import PytorchONNXRuntimeModel
     return PytorchONNXRuntimeModel(model, input_sample,
                                    onnxruntime_session_options=onnxruntime_session_options,
-                                   opset_version=opset_version)
+                                   **kwargs)
 
 
 def load_onnxruntime_model(path):

@@ -16,7 +16,7 @@
 from functools import partial
 
 
-def PytorchOpenVINOModel(model, input_sample=None):
+def PytorchOpenVINOModel(model, input_sample=None, **kwargs):
     """
     Create a OpenVINO model from pytorch.
 
@@ -27,7 +27,7 @@ def PytorchOpenVINOModel(model, input_sample=None):
     :return: PytorchOpenVINOModel model for OpenVINO inference.
     """
     from .pytorch.model import PytorchOpenVINOModel
-    return PytorchOpenVINOModel(model, input_sample)
+    return PytorchOpenVINOModel(model, input_sample, **kwargs)
 
 
 def load_openvino_model(path):

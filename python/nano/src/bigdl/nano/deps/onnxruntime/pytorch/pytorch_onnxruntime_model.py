@@ -32,7 +32,7 @@ class PytorchONNXRuntimeModel(ONNXRuntimeModel, AcceleratedLightningModule):
     '''
 
     def __init__(self, model, input_sample=None, onnxruntime_session_options=None,
-                 opset_version=11):
+                 **kwargs):
         """
         Create a ONNX Runtime model from pytorch.
 
@@ -49,7 +49,7 @@ class PytorchONNXRuntimeModel(ONNXRuntimeModel, AcceleratedLightningModule):
             # Typically, when model is fp32, we use this path
             # TODO: expose ONNX export parameters to users
             export_to_onnx(model, input_sample=input_sample, onnx_path='tmp.onnx',
-                           opset_version=opset_version)
+                           **kwargs)
             onnx_path = 'tmp.onnx'
         AcceleratedLightningModule.__init__(self, None)
         ONNXRuntimeModel.__init__(self, onnx_path, session_options=onnxruntime_session_options)

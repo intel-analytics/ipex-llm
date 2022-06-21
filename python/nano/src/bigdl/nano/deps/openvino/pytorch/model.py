@@ -25,7 +25,7 @@ from bigdl.nano.utils.log4Error import invalidInputError
 
 
 class PytorchOpenVINOModel(OpenVINOModel, AcceleratedLightningModule):
-    def __init__(self, model, input_sample=None):
+    def __init__(self, model, input_sample=None, **kwargs):
         """
         Create a OpenVINO model from pytorch.
 
@@ -39,7 +39,7 @@ class PytorchOpenVINOModel(OpenVINOModel, AcceleratedLightningModule):
         with TemporaryDirectory() as dir:
             dir = Path(dir)
             if isinstance(model, torch.nn.Module):
-                export(model, input_sample, str(dir / 'tmp.xml'))
+                export(model, input_sample, str(dir / 'tmp.xml'), **kwargs)
                 ov_model_path = dir / 'tmp.xml'
             OpenVINOModel.__init__(self, ov_model_path)
             AcceleratedLightningModule.__init__(self, None)

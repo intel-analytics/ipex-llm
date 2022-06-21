@@ -228,7 +228,7 @@ class Trainer(pl.Trainer):
                  max_trials: int = None,
                  input_sample=None,
                  onnxruntime_session_options=None,
-                 opset_version=11):
+                 **kwargs):
         """
         Calibrate a Pytorch-Lightning model for post-training quantization.
 
@@ -272,8 +272,6 @@ class Trainer(pl.Trainer):
         :param input_sample:      An input example to convert pytorch model into ONNX/OpenVINO.
         :param onnxruntime_session_options: The session option for onnxruntime, only valid when
                                             accelerator='onnxruntime', otherwise will be ignored.
-        :param opset_version: opset_version for export_to_onnx, only valid when
-                                            accelerator='onnxruntime', otherwise will be ignored.
         :return:            A accelerated Pytorch-Lightning Model if quantization is sucessful.
         """
         if not accelerator or accelerator == 'onnxruntime':
@@ -301,7 +299,7 @@ class Trainer(pl.Trainer):
                                           input_sample=input_sample,
                                           accelerator='onnxruntime',
                                           onnxruntime_session_options=onnxruntime_session_options,
-                                          opset_version=opset_version)
+                                          **kwargs)
             """
             If accelerator==None, quantized model returned should be an object of PytorchModel
             which is defined by neural-compressor containing a `GraphModule` for inference.
@@ -326,7 +324,8 @@ class Trainer(pl.Trainer):
                     input_sample = calib_dataloader
                 model = Trainer.trace(model,
                                       input_sample=input_sample,
-                                      accelerator='openvino')
+                                      accelerator='openvino',
+                                      **kwargs)
             invalidInputError(type(model).__name__ == 'PytorchOpenVINOModel',
                               "Invalid model to quantize. Please use a nn.Module or a model "
                               "from trainer.trance(accelerator=='openvino')")
@@ -361,7 +360,7 @@ class Trainer(pl.Trainer):
               input_sample=None,
               accelerator=None,
               onnxruntime_session_options=None,
-              opset_version=11):
+              **kwargs):
         """
         Trace a pytorch model and convert it into an accelerated module for inference.
 
@@ -374,8 +373,6 @@ class Trainer(pl.Trainer):
                             backend. 'openvino' and 'onnxruntime' are supported for now.
         :param onnxruntime_session_options: The session option for onnxruntime, only valid when
                                             accelerator='onnxruntime', otherwise will be ignored.
-        :param opset_version: opset_version for export_to_onnx, only valid when
-                                            accelerator='onnxruntime', otherwise will be ignored.
         :return: Model with different acceleration(OpenVINO/ONNX Runtime).
         """
         invalidInputError(
@@ -384,10 +381,10 @@ class Trainer(pl.Trainer):
             "but got type {}".format(type(model))
         )
         if accelerator == 'openvino':
-            return PytorchOpenVINOModel(model, input_sample)
+            return PytorchOpenVINOModel(model, input_sample, **kwargs)
         if accelerator == 'onnxruntime':
             return PytorchONNXRuntimeModel(model, input_sample, onnxruntime_session_options,
-                                           opset_version=opset_version)
+                                           **kwargs)
         invalidInputError(False, "Accelerator {} is invalid.".format(accelerator))
 
     @staticmethod
