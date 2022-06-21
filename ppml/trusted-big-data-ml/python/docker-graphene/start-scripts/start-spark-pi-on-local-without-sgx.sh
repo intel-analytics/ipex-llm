@@ -1,9 +1,13 @@
 #!/bin/bash
  
-export SGX_ENABLED=false
-unset SPARK_MODE
 bash bigdl-ppml-submit.sh \
+        --sgx-enabled false \
         --master local[2] \
+        --driver-memory 32g \
+        --driver-cores 8 \
+        --executor-memory 32g \
+        --executor-cores 8 \
+        --num-executors 2 \
         --class org.apache.spark.examples.SparkPi \
         --name spark-pi \
         --verbose \
