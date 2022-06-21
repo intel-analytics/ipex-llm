@@ -30,16 +30,26 @@ from tensorflow.keras import Model
 from bigdl.ppml.fl.nn.generated.nn_service_pb2 import ByteChunk
 
 class TensorflowEstimator:
-    def __init__(self, model, loss_fn, optimizer, algorithm=None,
-            bigdl_type="float", target="localhost:8980"):
+    def __init__(self, 
+                 model: Model, 
+                 loss_fn, 
+                 optimizer_cls,
+                 optimizer_args,
+                 client_id,
+                 bigdl_type="float", 
+                 target="localhost:8980", 
+                 fl_client=None,
+                 server_model=None):
         self.bigdl_type = bigdl_type
         self.model = model
         self.loss_fn = loss_fn
-        self.optimizer = optimizer
+        self.optimizer = optimizer_cls(**optimizer_args)
         self.version = 0
-        self.algorithm = algorithm
-        self.fl_client = FLClient(aggregator='tf', target=target)
+        self.fl_client = fl_client if fl_client is not None \
+            else FLClient(client_id=client_id, aggregator='tf', target=target)
         self.loss_history = []
+        if server_model is not None:
+            self.__add_server_model(server_model, loss_fn, optimizer_cls, optimizer_args)
 
     @staticmethod
     def file_chunk_generate(file_path):
@@ -67,7 +77,7 @@ class TensorflowEstimator:
         
 
 
-    def add_server_model(self, model, loss_fn=None, optimizer_cls=None, optimizer_args={}):
+    def __add_server_model(self, model, loss_fn=None, optimizer_cls=None, optimizer_args={}):
         
         
         # add model and pickle to server
