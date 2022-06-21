@@ -16,7 +16,7 @@
 from bigdl.nano.utils.log4Error import invalidInputError
 from ..core import BaseQuantization
 from .metric import TensorflowINCMetric
-from tensorflow.keras.metrics import Metric
+from .model import KerasQuantizedModel
 from .utils import Dataloader
 
 
@@ -40,13 +40,18 @@ class TensorflowQuantization(BaseQuantization):
             self.cfg.model.outputs = get_tensors_name(model.outputs)
 
         if calib_dataloader:
-            calib_dataloader = Dataloader(calib_dataloader, 1)
+            batch_size = 1
+            if hasattr(calib_dataloader, '_batch_size'):
+                # Batch dataset
+                batch_size = calib_dataloader._batch_size
+                calib_dataloader = calib_dataloader._input_dataset
+            calib_dataloader = Dataloader(calib_dataloader, batch_size)
 
         return model, calib_dataloader, metric
 
     def _post_execution(self, q_model):
         # TODO: Need to wrapp q_model similar to Pytorch
-        return q_model
+        return KerasQuantizedModel(q_model)
 
     @property
     def valid_frameworks(self):

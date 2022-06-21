@@ -42,7 +42,7 @@ object FLContext {
             flClient.setTarget(target)
           }
           flClient.build()
-          logger.info(s"Created FlClient for FlContext with ID: ${flClient.getClientUUID}")
+          logger.info(s"Created FlClient with ID: ${flClient.getClientUUID}, target: $target")
         }
       }
     }

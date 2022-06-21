@@ -22,7 +22,7 @@ import pytorch_lightning as pl
 import torchvision.transforms as transforms
 from torchvision.datasets import CIFAR10
 from torch.utils.data import DataLoader
-
+from torch.utils.data.sampler import SequentialSampler
 from bigdl.nano.pytorch.vision.models import ImageClassifier
 
 num_classes = 10
@@ -55,13 +55,18 @@ class Net(ImageClassifier):
         return optimizer
 
 
-def create_data_loader(dir, batch_size, num_workers, transform, subset=50):
+def create_data_loader(dir, batch_size, num_workers, transform, subset=50, shuffle=True, sampler=False):
     train_set = CIFAR10(root=dir, train=True,
                         download=True, transform=transform)
     # `subset` is the number of subsets. The larger the number, the smaller the training set.
     mask = list(range(0, len(train_set), subset))
     train_subset = torch.utils.data.Subset(train_set, mask)
-    data_loader = DataLoader(train_subset, batch_size=batch_size, shuffle=True,
+    if sampler:
+        sampler_set = SequentialSampler(train_subset)
+        data_loader = DataLoader(train_subset, batch_size=batch_size, shuffle=shuffle,
+                             num_workers=num_workers, sampler=sampler_set)
+    else:
+        data_loader = DataLoader(train_subset, batch_size=batch_size, shuffle=shuffle,
                              num_workers=num_workers)
     return data_loader
 
@@ -75,6 +80,7 @@ def create_test_data_loader(dir, batch_size, num_workers, transform, subset=50):
     # `subset` is the number of subsets. The larger the number, the smaller the training set.
     mask = list(range(0, len(train_set), subset))
     train_subset = torch.utils.data.Subset(train_set, mask)
+
     data_loader = DataLoader(train_subset, batch_size=batch_size, shuffle=False,
                              num_workers=num_workers)
     return data_loader

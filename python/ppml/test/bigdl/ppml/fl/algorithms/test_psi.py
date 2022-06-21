@@ -20,11 +20,12 @@ import unittest
 from bigdl.ppml.fl.algorithms.psi import PSI
 from bigdl.ppml.fl.fl_server import FLServer
 from bigdl.ppml.fl import *
+from bigdl.ppml.fl.utils import FLTest
 
-
-class TestPSI(unittest.TestCase):
+class TestPSI(FLTest):
     def setUp(self) -> None:
         self.fl_server = FLServer()
+        self.fl_server.set_port(self.port)
         self.fl_server.build()
         self.fl_server.start()
 
@@ -33,13 +34,13 @@ class TestPSI(unittest.TestCase):
    
         
     def test_psi_get_salt(self):        
-        init_fl_context()
+        init_fl_context(self.target)
         psi = PSI()
         salt = psi.get_salt()
         assert (isinstance(salt, str))
 
     def test_psi_pipeline(self):
-        init_fl_context()
+        init_fl_context(self.target)
         psi = PSI()
         salt = psi.get_salt()
         key = ["k1", "k2"]

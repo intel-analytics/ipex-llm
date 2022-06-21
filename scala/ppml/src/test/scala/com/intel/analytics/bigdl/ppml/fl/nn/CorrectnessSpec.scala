@@ -18,7 +18,7 @@ package com.intel.analytics.bigdl.ppml.fl.nn
 
 import com.intel.analytics.bigdl.ppml.fl.example.DebugLogger
 import com.intel.analytics.bigdl.ppml.fl.nn.MockClient
-import com.intel.analytics.bigdl.ppml.fl.{FLContext, FLServer}
+import com.intel.analytics.bigdl.ppml.fl.{FLContext, FLServer, FLSpec}
 import org.apache.log4j.LogManager
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
@@ -28,13 +28,11 @@ import com.intel.analytics.bigdl.ppml.fl.utils.TestUtils
 
 import scala.concurrent.Future
 
-class CorrectnessSpec extends FlatSpec with Matchers with BeforeAndAfter with DebugLogger {
-  // This is a full-dataset validation so we disable debug log
-  val logger = LogManager.getLogger(getClass)
-
+class CorrectnessSpec extends FLSpec {
   "NN Correctness two parties" should "work" in {
     val flServer = new FLServer()
     try {
+      flServer.setPort(port)
       val dataPath1 = getClass.getClassLoader.getResource("two-party/diabetes-vfl-1.csv").getPath
       val dataPath2 = getClass.getClassLoader.getResource("two-party/diabetes-vfl-2.csv").getPath
 
@@ -44,12 +42,14 @@ class CorrectnessSpec extends FlatSpec with Matchers with BeforeAndAfter with De
       val mockClient1 = new MockClient(
         dataPath = dataPath1,
         featureColumns = Array("Pregnancies", "Glucose", "BloodPressure", "SkinThickness"),
-        labelColumns = Array("Outcome")
+        labelColumns = Array("Outcome"),
+        target = target
       )
       val mockClient2 = new MockClient(
         dataPath = dataPath2,
         featureColumns = Array("Insulin", "BMI", "DiabetesPedigreeFunction"),
-        labelColumns = null
+        labelColumns = null,
+        target = target
       )
       @volatile var errorFlag = false
       val exceptionHandler = new Thread.UncaughtExceptionHandler {

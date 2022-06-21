@@ -20,7 +20,7 @@ import com.intel.analytics.bigdl.ppml.fl.algorithms.FGBoostRegression
 import com.intel.analytics.bigdl.ppml.fl.data.PreprocessUtil
 import com.intel.analytics.bigdl.ppml.fl.example.DebugLogger
 import com.intel.analytics.bigdl.ppml.fl.fgboost.common.{XGBoostFormatNode, XGBoostFormatSerializer, XGBoostFormatValidator}
-import com.intel.analytics.bigdl.ppml.fl.{FLContext, FLServer}
+import com.intel.analytics.bigdl.ppml.fl.{FLContext, FLServer, FLSpec}
 import ml.dmlc.xgboost4j.scala.{DMatrix, XGBoost}
 import org.apache.log4j.LogManager
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
@@ -29,42 +29,38 @@ import java.io.File
 import scala.io.Source
 import com.intel.analytics.bigdl.ppml.fl.utils.TestUtils
 
-class CorrectnessSpec extends FlatSpec with Matchers with BeforeAndAfter with DebugLogger {
-  // This is a full-dataset validation so we disable debug log
-  val logger = LogManager.getLogger(getClass)
+class CorrectnessSpec extends FLSpec {
   var xGBoostResults: Array[Double] = null
   var xgBoostFormatNodes: Array[XGBoostFormatNode] = null
-  before {
-    val dataPath = getClass.getClassLoader.getResource("house-prices-train.csv").getPath
-    val testPath = getClass.getClassLoader.getResource("house-prices-test.csv").getPath
-    val sources = Source.fromFile(dataPath, "utf-8").getLines()
-    val testSources = Source.fromFile(testPath, "utf-8").getLines()
-    val rowkeyName = "Id"
-    val labelName = "SalePrice"
-    val (trainFeatures, testFeatures, trainLabels, flattenHeaders) = {
-      PreprocessUtil.preprocessing(sources, testSources, rowkeyName, labelName)
-    }
 
-    XGBoostFormatValidator.setXGBoostHeaders(flattenHeaders)
-    val trainFeatureArray = trainFeatures.map(tensor => tensor.toArray()).flatten
-    val testFeatureArray = testFeatures.map(tensor => tensor.toArray()).flatten
-    val trainDMat = new DMatrix(trainFeatureArray, trainFeatures.length,
-      trainFeatureArray.length / trainFeatures.length, 0.0f)
-    val testDMat = new DMatrix(testFeatureArray, testFeatures.length,
-      testFeatureArray.length / testFeatures.length, 0.0f)
-    trainDMat.setLabel(trainLabels)
-    val params = Map("eta" -> 0.1, "max_depth" -> 7, "objective" -> "reg:squarederror",
-    "min_child_weight" -> 5)
-    val booster = XGBoost.train(trainDMat, params, 15)
-    xGBoostResults = booster.predict(testDMat).flatten.map(math.exp(_))
-    val treeStr = booster.getModelDump(featureMap = null, withStats = false, format = "json")
-    // XGBoost model dump will get 100(number of boost round) trees, we validate each one
-    xgBoostFormatNodes = treeStr.map(singleTree => {
-      XGBoostFormatSerializer(singleTree)
-    })
-
-    xGBoostResults
+  val dataPath = getClass.getClassLoader.getResource("house-prices-train.csv").getPath
+  val testPath = getClass.getClassLoader.getResource("house-prices-test.csv").getPath
+  val sources = Source.fromFile(dataPath, "utf-8").getLines()
+  val testSources = Source.fromFile(testPath, "utf-8").getLines()
+  val rowkeyName = "Id"
+  val labelName = "SalePrice"
+  val (trainFeatures, testFeatures, trainLabels, flattenHeaders) = {
+    PreprocessUtil.preprocessing(sources, testSources, rowkeyName, labelName)
   }
+
+  XGBoostFormatValidator.setXGBoostHeaders(flattenHeaders)
+  val trainFeatureArray = trainFeatures.map(tensor => tensor.toArray()).flatten
+  val testFeatureArray = testFeatures.map(tensor => tensor.toArray()).flatten
+  val trainDMat = new DMatrix(trainFeatureArray, trainFeatures.length,
+    trainFeatureArray.length / trainFeatures.length, 0.0f)
+  val testDMat = new DMatrix(testFeatureArray, testFeatures.length,
+    testFeatureArray.length / testFeatures.length, 0.0f)
+  trainDMat.setLabel(trainLabels)
+  val params = Map("eta" -> 0.1, "max_depth" -> 7, "objective" -> "reg:squarederror",
+  "min_child_weight" -> 5)
+  val booster = XGBoost.train(trainDMat, params, 15)
+  xGBoostResults = booster.predict(testDMat).flatten.map(math.exp(_))
+  val treeStr = booster.getModelDump(featureMap = null, withStats = false, format = "json")
+  // XGBoost model dump will get 100(number of boost round) trees, we validate each one
+  xgBoostFormatNodes = treeStr.map(singleTree => {
+    XGBoostFormatSerializer(singleTree)
+  })
+
   // House pricing dataset compared with xgboost training and prediction result
   // TODO: use DataFrame API to do the same validation
   "FGBoost Correctness single party" should "work" in {
@@ -95,6 +91,7 @@ class CorrectnessSpec extends FlatSpec with Matchers with BeforeAndAfter with De
 //    val normalizedLabel = label.map(x => math.log(x).toFloat)
     val flServer = new FLServer()
     try {
+      flServer.setPort(port)
       val rowkeyName = "Id"
       val labelName = "SalePrice"
       val dataPath = getClass.getClassLoader.getResource("house-prices-train.csv").getPath
@@ -107,7 +104,7 @@ class CorrectnessSpec extends FlatSpec with Matchers with BeforeAndAfter with De
       XGBoostFormatValidator.addHeaders(flattenHeaders)
       flServer.build()
       flServer.start()
-      FLContext.initFLContext()
+      FLContext.initFLContext(target)
       val fGBoostRegression = new FGBoostRegression(
         learningRate = 0.1f, maxDepth = 7, minChildSize = 5)
       fGBoostRegression.fit(trainFeatures, trainLabels, 15)
@@ -153,6 +150,7 @@ class CorrectnessSpec extends FlatSpec with Matchers with BeforeAndAfter with De
   "FGBoost Correctness two parties" should "work" in {
     val flServer = new FLServer()
     try {
+      flServer.setPort(port)
       XGBoostFormatValidator.clearHeaders()
       val rowkeyName = "Id"
       val labelName = "SalePrice"
@@ -180,13 +178,13 @@ class CorrectnessSpec extends FlatSpec with Matchers with BeforeAndAfter with De
       flServer.setClientNum(2)
       flServer.build()
       flServer.start()
-      FLContext.initFLContext()
+      FLContext.initFLContext(target)
       val mockClient = new MockClient(
         dataPath = getClass.getClassLoader
           .getResource("two-party/house-prices-train-2.csv").getPath,
         testPath = getClass.getClassLoader
           .getResource("two-party/house-prices-test-2.csv").getPath,
-        rowKeyName = "Id", labelName = "SalePrice", dataFormat = "raw")
+        rowKeyName = "Id", labelName = "SalePrice", dataFormat = "raw", target = target)
       mockClient.start()
       val fGBoostRegression = new FGBoostRegression(
         learningRate = 0.1f, maxDepth = 7, minChildSize = 5)
@@ -215,6 +213,7 @@ class CorrectnessSpec extends FlatSpec with Matchers with BeforeAndAfter with De
   "FGBoost Correctness three parties" should "work" in {
     val flServer = new FLServer()
     try {
+      flServer.setPort(port)
       val rowkeyName = "Id"
       val labelName = "SalePrice"
       val dataPath = getClass.getClassLoader
@@ -250,20 +249,20 @@ class CorrectnessSpec extends FlatSpec with Matchers with BeforeAndAfter with De
       flServer.setClientNum(3)
       flServer.build()
       flServer.start()
-      FLContext.initFLContext()
+      FLContext.initFLContext(target)
       val mockClient2 = new MockClient(
         dataPath = getClass.getClassLoader
           .getResource("three-party/house-prices-train-1.csv").getPath,
         testPath = getClass.getClassLoader
           .getResource("three-party/house-prices-test-1.csv").getPath,
-        rowKeyName = "Id", labelName = "SalePrice", dataFormat = "raw")
+        rowKeyName = "Id", labelName = "SalePrice", dataFormat = "raw", target = target)
       mockClient2.start()
       val mockClient3 = new MockClient(
         dataPath = getClass.getClassLoader
           .getResource("three-party/house-prices-train-2.csv").getPath,
         testPath = getClass.getClassLoader
           .getResource("three-party/house-prices-test-2.csv").getPath,
-        rowKeyName = "Id", labelName = "SalePrice", dataFormat = "raw")
+        rowKeyName = "Id", labelName = "SalePrice", dataFormat = "raw", target = target)
       mockClient3.start()
 
 

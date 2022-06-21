@@ -21,12 +21,10 @@ import com.intel.analytics.bigdl.ppml.utils.Supportive
 object KMS_CONVENTION {
   val MODE_SIMPLE_KMS = "SimpleKeyManagementService"
   val MODE_EHSM_KMS = "EHSMKeyManagementService"
+  val MODE_AZURE_KMS = "AzureKeyManagementService"
 }
 
 trait KeyManagementService extends Supportive {
-  var _appId: String = _
-  var _appKey: String = _
-
   def retrievePrimaryKey(primaryKeySavePath: String)
   def retrieveDataKey(primaryKeyPath: String, dataKeySavePath: String)
   def retrieveDataKeyPlainText(primaryKeyPath: String, dataKeyPath: String): String

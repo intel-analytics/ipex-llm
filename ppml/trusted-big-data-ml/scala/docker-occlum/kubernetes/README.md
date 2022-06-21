@@ -145,5 +145,6 @@ Then run the script.
 ```
 
 ## How to debug
-Modify the `SGX_LOG_LEVEL` to one of `off, error, warn, debug, info, and trace` in `executor.yaml`.
+Modify the `--conf spark.kubernetes.sgx.log.level=off \` to one of `off, error, warn, debug, info, and trace` 
+in `run_spark_xx.sh`.
 

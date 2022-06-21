@@ -3,6 +3,7 @@
 import grpc
 
 import nn_service_pb2 as nn__service__pb2
+from bigdl.dllib.utils.log4Error import invalidInputError
 
 
 class NNServiceStub(object):
@@ -34,6 +35,11 @@ class NNServiceStub(object):
                 request_serializer=nn__service__pb2.UploadModelRequest.SerializeToString,
                 response_deserializer=nn__service__pb2.UploadModelResponse.FromString,
                 )
+        self.upload_file = channel.stream_unary(
+                '/nn.NNService/upload_file',
+                request_serializer=nn__service__pb2.ByteChunk.SerializeToString,
+                response_deserializer=nn__service__pb2.UploadModelResponse.FromString,
+                )
 
 
 class NNServiceServicer(object):
@@ -43,21 +49,27 @@ class NNServiceServicer(object):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
-        raise NotImplementedError('Method not implemented!')
+        invalidInputError(False, 'Method not implemented!')
 
     def evaluate(self, request, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
-        raise NotImplementedError('Method not implemented!')
+        invalidInputError(False, 'Method not implemented!')
 
     def predict(self, request, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
-        raise NotImplementedError('Method not implemented!')
+        invalidInputError(False, 'Method not implemented!')
 
     def upload_model(self, request, context):
+        """Missing associated documentation comment in .proto file."""
+        context.set_code(grpc.StatusCode.UNIMPLEMENTED)
+        context.set_details('Method not implemented!')
+        invalidInputError(False, 'Method not implemented!')
+
+    def upload_file(self, request_iterator, context):
         """Missing associated documentation comment in .proto file."""
         context.set_code(grpc.StatusCode.UNIMPLEMENTED)
         context.set_details('Method not implemented!')
@@ -84,6 +96,11 @@ def add_NNServiceServicer_to_server(servicer, server):
             'upload_model': grpc.unary_unary_rpc_method_handler(
                     servicer.upload_model,
                     request_deserializer=nn__service__pb2.UploadModelRequest.FromString,
+                    response_serializer=nn__service__pb2.UploadModelResponse.SerializeToString,
+            ),
+            'upload_file': grpc.stream_unary_rpc_method_handler(
+                    servicer.upload_file,
+                    request_deserializer=nn__service__pb2.ByteChunk.FromString,
                     response_serializer=nn__service__pb2.UploadModelResponse.SerializeToString,
             ),
     }
@@ -160,6 +177,23 @@ class NNService(object):
             metadata=None):
         return grpc.experimental.unary_unary(request, target, '/nn.NNService/upload_model',
             nn__service__pb2.UploadModelRequest.SerializeToString,
+            nn__service__pb2.UploadModelResponse.FromString,
+            options, channel_credentials,
+            insecure, call_credentials, compression, wait_for_ready, timeout, metadata)
+
+    @staticmethod
+    def upload_file(request_iterator,
+            target,
+            options=(),
+            channel_credentials=None,
+            call_credentials=None,
+            insecure=False,
+            compression=None,
+            wait_for_ready=None,
+            timeout=None,
+            metadata=None):
+        return grpc.experimental.stream_unary(request_iterator, target, '/nn.NNService/upload_file',
+            nn__service__pb2.ByteChunk.SerializeToString,
             nn__service__pb2.UploadModelResponse.FromString,
             options, channel_credentials,
             insecure, call_credentials, compression, wait_for_ready, timeout, metadata)

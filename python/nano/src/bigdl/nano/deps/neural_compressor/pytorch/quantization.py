@@ -14,6 +14,7 @@
 # limitations under the License.
 #
 from typing import Callable
+from collections import Iterable
 from bigdl.nano.utils.log4Error import invalidInputError
 from ..core import BaseQuantization
 from .utils import _check_loader
@@ -44,8 +45,8 @@ class PytorchQuantization(BaseQuantization):
                           "model should be an instance of torch.nn.Module.")
         if calib_dataloader:
             _check_loader(model=model, loader=calib_dataloader, metric=metric)
-            invalidInputError(isinstance(calib_dataloader, torch.utils.data.DataLoader),
-                              "Only torch dataloader is supported for onnx quantization.")
+            invalidInputError(isinstance(calib_dataloader, Iterable),
+                              "Only iterable class is supported.")
         if metric:
             invalidInputError(
                 isinstance(metric, Metric) or isinstance(metric, Callable),
