@@ -15,9 +15,10 @@
 #
 import tensorflow as tf
 from bigdl.nano.tf.keras.training_utils import TrainingUtils
+from bigdl.nano.tf.keras.inference_utils import InferenceUtils
 
 
-class Model(TrainingUtils, tf.keras.Model):
+class Model(TrainingUtils, InferenceUtils, tf.keras.Model):
     """A wrapper class for tf.keras.Model adding more functions for BigDL-Nano."""
 
     def __init__(self, *args, **kwargs):

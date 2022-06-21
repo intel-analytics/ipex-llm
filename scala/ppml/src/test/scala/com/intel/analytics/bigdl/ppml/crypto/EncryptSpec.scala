@@ -16,51 +16,24 @@
 
 package com.intel.analytics.bigdl.ppml.crypto
 
-import com.intel.analytics.bigdl.dllib.common.zooUtils
 import com.intel.analytics.bigdl.dllib.utils.File
-import com.intel.analytics.bigdl.ppml.kms.SimpleKeyManagementService
+import com.intel.analytics.bigdl.ppml.crypto.dataframe.DataFrameHelper
 import org.apache.hadoop.fs.Path
-import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
-import java.io.{BufferedReader, BufferedWriter, FileReader, FileWriter}
-import java.nio.file.{Files, Paths, StandardOpenOption}
-import scala.util.Random
+import java.io.FileWriter
+import java.nio.file.{Files, Paths}
+import scala.io.Source
 
-class EncryptSpec extends FlatSpec with Matchers with BeforeAndAfter {
-  val (appid, appkey) = generateKeys()
-  val simpleKms = SimpleKeyManagementService(appid, appkey)
-  val dir = zooUtils.createTmpDir("PPMLUT", "rwx------").toFile()
-  val primaryKeyPath = dir + "/primary.key"
-  val dataKeyPath = dir + "/data.key"
-  simpleKms.retrievePrimaryKey(primaryKeyPath)
-  simpleKms.retrieveDataKey(primaryKeyPath, dataKeyPath)
-  var dataKeyPlaintext: String = null
-  val (plainFileName, encryptFileName, data) = generateCsvData()
+class EncryptSpec extends DataFrameHelper {
   val fs = File.getFileSystem(plainFileName)
 
-  def generateKeys(): (String, String) = {
-    val appid: String = (1 to 12).map(x => Random.nextInt(10)).mkString
-    val appkey: String = (1 to 12).map(x => Random.nextInt(10)).mkString
-    (appid, appkey)
-  }
-  def generateCsvData(): (String, String, String) = {
-    val fileName = dir + "/people.csv"
-    val encryptFileName = dir + "/en_people.csv"
-    val fw = new FileWriter(fileName)
-    val data = new StringBuilder()
-    data.append(s"name,age,job\n")
-    data.append(s"yvomq,59,Developer\ngdni,40,Engineer\npglyal,33,Engineer")
-    fw.append(data)
-    fw.close()
-
+  "decrypt file" should "work" in {
+    val decryptFile = dir + "/decrypt_file.csv"
     val crypto = new BigDLEncrypt()
-    dataKeyPlaintext = simpleKms.retrieveDataKeyPlainText(primaryKeyPath, dataKeyPath)
-    crypto.init(AES_CBC_PKCS5PADDING, ENCRYPT, dataKeyPlaintext)
-    Files.write(Paths.get(encryptFileName), crypto.genFileHeader())
-    val encryptedBytes = crypto.doFinal(data.toString().getBytes)
-    Files.write(Paths.get(encryptFileName), encryptedBytes._1, StandardOpenOption.APPEND)
-    Files.write(Paths.get(encryptFileName), encryptedBytes._2, StandardOpenOption.APPEND)
-    (fileName, encryptFileName, data.toString())
+    crypto.init(AES_CBC_PKCS5PADDING, DECRYPT, dataKeyPlaintext)
+    crypto.doFinal(encryptFileName, decryptFile)
+    val readData = Source.fromFile(decryptFile).getLines().mkString("\n")
+    readData + "\n" should be (data)
   }
 
   "encrypt stream" should "work" in {
@@ -68,7 +41,7 @@ class EncryptSpec extends FlatSpec with Matchers with BeforeAndAfter {
     encrypt.init(AES_CBC_PKCS5PADDING, ENCRYPT, dataKeyPlaintext)
     val bis = fs.open(new Path(plainFileName))
     val outs = fs.create(new Path(dir + "/en_o.csv"))
-    encrypt.encryptStream(bis, outs)
+    encrypt.doFinal(bis, outs)
     bis.close()
     outs.flush()
     outs.close()
@@ -78,7 +51,7 @@ class EncryptSpec extends FlatSpec with Matchers with BeforeAndAfter {
     decrypt.init(AES_CBC_PKCS5PADDING, DECRYPT, dataKeyPlaintext)
     val bis2 = fs.open(new Path(dir + "/en_o.csv"))
     val outs2 = fs.create(new Path(dir + "/de_o.csv"))
-    decrypt.decryptStream(bis2, outs2)
+    decrypt.doFinal(bis2, outs2)
     outs2.close()
     outs2.flush()
     bis2.close()

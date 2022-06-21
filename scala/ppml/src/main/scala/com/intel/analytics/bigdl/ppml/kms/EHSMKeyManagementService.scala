@@ -53,7 +53,6 @@ class EHSMKeyManagementService(
 
   Log4Error.invalidInputError(ehsmAPPID != "", s"ehsmAPPID should not be empty string.")
   Log4Error.invalidInputError(ehsmAPPKEY != "", s"ehsmAPPKEY should not be empty string.")
-  setAppIdAndKey(ehsmAPPID, ehsmAPPKEY)
 
   def retrievePrimaryKey(primaryKeySavePath: String): Unit = {
     Log4Error.invalidInputError(primaryKeySavePath != null && primaryKeySavePath != "",
@@ -61,7 +60,7 @@ class EHSMKeyManagementService(
     val action: String = EHSM_CONVENTION.ACTION_CREATE_KEY
     val currentTime = System.currentTimeMillis() // ms
     val timestamp = s"$currentTime"
-    val ehsmParams = new EHSMParams(_appId, _appKey, timestamp)
+    val ehsmParams = new EHSMParams(ehsmAPPID, ehsmAPPKEY, timestamp)
     ehsmParams.addPayloadElement(EHSM_CONVENTION.PAYLOAD_KEYSPEC,
       EHSM_CONVENTION.KEYSPEC_EH_AES_GCM_128)
     ehsmParams.addPayloadElement(EHSM_CONVENTION.PAYLOAD_ORIGIN,
@@ -85,7 +84,7 @@ class EHSMKeyManagementService(
     val encryptedPrimaryKey: String = keyReaderWriter.readKeyFromFile(primaryKeyPath)
     val currentTime = System.currentTimeMillis() // ms
     val timestamp = s"$currentTime"
-    val ehsmParams = new EHSMParams(_appId, _appKey, timestamp)
+    val ehsmParams = new EHSMParams(ehsmAPPID, ehsmAPPKEY, timestamp)
     ehsmParams.addPayloadElement(EHSM_CONVENTION.PAYLOAD_AAD, "test")
     ehsmParams.addPayloadElement(EHSM_CONVENTION.PAYLOAD_KEY_ID, encryptedPrimaryKey)
     ehsmParams.addPayloadElement(EHSM_CONVENTION.PAYLOAD_KEY_LENGTH, "32")
@@ -110,7 +109,7 @@ class EHSMKeyManagementService(
     val encryptedDataKey: String = keyReaderWriter.readKeyFromFile(dataKeyPath)
     val currentTime = System.currentTimeMillis() // ms
     val timestamp = s"$currentTime"
-    val ehsmParams = new EHSMParams(_appId, _appKey, timestamp)
+    val ehsmParams = new EHSMParams(ehsmAPPID, ehsmAPPKEY, timestamp)
     ehsmParams.addPayloadElement(EHSM_CONVENTION.PAYLOAD_AAD, "test")
     ehsmParams.addPayloadElement(EHSM_CONVENTION.PAYLOAD_CIPHER_TEXT, encryptedDataKey)
     ehsmParams.addPayloadElement(EHSM_CONVENTION.PAYLOAD_KEY_ID, encryptedPrimaryKey)
@@ -127,10 +126,4 @@ class EHSMKeyManagementService(
   private def constructUrl(action: String): String = {
     s"http://$kmsServerIP:$kmsServerPort/ehsm?Action=$action"
   }
-
-  private def setAppIdAndKey(appid: String, appkey: String) = {
-    _appId = appid
-    _appKey = appkey
-  }
-
 }

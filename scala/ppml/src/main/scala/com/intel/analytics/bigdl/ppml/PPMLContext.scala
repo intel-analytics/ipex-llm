@@ -18,14 +18,16 @@ package com.intel.analytics.bigdl.ppml
 
 import com.intel.analytics.bigdl.dllib.NNContext.{checkScalaVersion, checkSparkVersion, createSparkConf, initConf, initNNContext}
 import com.intel.analytics.bigdl.dllib.utils.Log4Error
-import com.intel.analytics.bigdl.ppml.crypto.{AES_CBC_PKCS5PADDING, Crypto, CryptoMode, DECRYPT, ENCRYPT, EncryptRuntimeException, BigDLEncrypt, PLAIN_TEXT}
+import com.intel.analytics.bigdl.ppml.crypto.{AES_CBC_PKCS5PADDING, BigDLEncrypt, Crypto, CryptoMode, DECRYPT, ENCRYPT, EncryptRuntimeException, PLAIN_TEXT}
 import com.intel.analytics.bigdl.ppml.utils.Supportive
 import org.apache.spark.{SparkConf, SparkContext}
 import org.apache.spark.input.PortableDataStream
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.{DataFrame, DataFrameReader, DataFrameWriter, Row, SparkSession}
-import com.intel.analytics.bigdl.ppml.kms.{EHSMKeyManagementService, KMS_CONVENTION, KeyManagementService, SimpleKeyManagementService}
-import com.intel.analytics.bigdl.ppml.crypto.dataframe.EncryptedDataFrameReader
+
+import com.intel.analytics.bigdl.ppml.kms.{EHSMKeyManagementService, KMS_CONVENTION,
+KeyManagementService, SimpleKeyManagementService, AzureKeyManagementService}
+import com.intel.analytics.bigdl.ppml.crypto.dataframe.{EncryptedDataFrameReader, EncryptedDataFrameWriter}
 
 import java.nio.file.Paths
 
@@ -86,15 +88,16 @@ class PPMLContext protected(kms: KeyManagementService, sparkSession: SparkSessio
    * @param cryptoMode crypto mode, such as PLAIN_TEXT or AES_CBC_PKCS5PADDING
    * @return a DataFrameWriter[Row]
    */
-  def write(dataFrame: DataFrame, cryptoMode: CryptoMode): DataFrameWriter[Row] = {
-    cryptoMode match {
-      case PLAIN_TEXT =>
-        dataFrame.write
-      case AES_CBC_PKCS5PADDING =>
-        PPMLContext.write(sparkSession, cryptoMode, dataKeyPlainText, dataFrame)
-      case _ =>
-        throw new IllegalArgumentException("unknown EncryptMode " + cryptoMode.toString)
-    }
+  def write(dataFrame: DataFrame, cryptoMode: CryptoMode): EncryptedDataFrameWriter = {
+    new EncryptedDataFrameWriter(sparkSession, dataFrame, cryptoMode, dataKeyPlainText)
+  }
+
+  /**
+   * Get SparkSession from PPMLContext
+   * @return SparkSession in PPMLContext
+   */
+  def getSparkSession(): SparkSession = {
+    sparkSession
   }
 }
 
@@ -129,7 +132,7 @@ object PPMLContext{
       val crypto = Crypto(cryptoMode)
       crypto.init(cryptoMode, DECRYPT, dataKeyPlaintext)
       crypto.decryptBigContent(iterator)
-    }}.flatMap(_.split("\n"))
+    }} // .flatMap(_.split("\n")).flatMap(_.split("\r"))
   }
 
   private[bigdl] def write(
@@ -211,6 +214,10 @@ object PPMLContext{
         val key = conf.get("spark.bigdl.kms.simple.key", defaultValue = "simpleAPPKEY")
         // println(key + "=-------------------")
         SimpleKeyManagementService(id, key)
+      case KMS_CONVENTION.MODE_AZURE_KMS =>
+        val vaultName = conf.get("spark.bigdl.kms.azure.vault", defaultValue = "keyVaultName")
+        val clientId = conf.get("spark.bigdl.kms.azure.clientId", defaultValue = "")
+        new AzureKeyManagementService(vaultName, clientId)
       case _ =>
         throw new EncryptRuntimeException("Wrong kms type")
     }

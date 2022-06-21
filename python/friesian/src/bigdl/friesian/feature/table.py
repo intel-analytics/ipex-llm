@@ -13,7 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-
+import copy
 import hashlib
 import os
 import random
@@ -2096,6 +2096,116 @@ class FeatureTable(Table):
             vocabularies[col] = self.df.select(col)\
                 .distinct().rdd.map(lambda row: row[col]).collect()
         return vocabularies
+
+    def sample_listwise(self, columns, num_sampled_list, num_sampled_item, random_seed=None,
+                        replace=True):
+        """
+        Convert the FeatureTable to a sample listwise FeatureTable. The columns should be of list
+        type and have the same length. Note that the rows with list length < num_sampled_item will
+        be dropped since they don't have enough examples.
+
+        You can use groupby to aggregate records under the same key before calling sample_listwise.
+        >>> tbl
+        +----+----+----+
+        |name|   a|   b|
+        +----+----+----+
+        |   a|   1|   1|
+        |   a|   2|   2|
+        |   b|   1|   1|
+        +----+----+----+
+        >>> tbl.group_by("name", agg="collect_list")
+        +----+------------------+------------------+
+        |name|   collect_list(a)|   collect_list(b)|
+        +----+------------------+------------------+
+        |   a|            [1, 2]|            [1, 2]|
+        |   b|               [1]|               [1]|
+        +----+------------------+------------------+
+        >>> tbl
+        +----+------------+------------+--------------------+
+        |name|     int_arr|     str_arr|         int_arr_arr|
+        +----+------------+------------+--------------------+
+        |   a|   [1, 2, 3]|   [1, 2, 3]|     [[1], [2], [3]]|
+        |   b|[1, 2, 3, 4]|[1, 2, 3, 4]|[[1], [2], [3], [4]]|
+        |   c|         [1]|         [1]|               [[1]]|
+        +----+------------+------------+--------------------+
+        >>> tbl.sample_listwise(["int_arr", "str_arr", "int_arr_arr"], num_sampled_list=4,
+        >>>                     num_sampled_item=2)
+        +----+-------+-------+-----------+
+        |name|int_arr|str_arr|int_arr_arr|
+        +----+-------+-------+-----------+
+        |   a| [1, 3]| [1, 3]| [[1], [3]]|
+        |   a| [2, 1]| [2, 1]| [[2], [1]]|
+        |   a| [3, 2]| [3, 2]| [[3], [2]]|
+        |   a| [2, 3]| [2, 3]| [[2], [3]]|
+        |   b| [4, 1]| [4, 1]| [[4], [1]]|
+        |   b| [2, 3]| [2, 3]| [[2], [3]]|
+        |   b| [2, 3]| [2, 3]| [[2], [3]]|
+        |   b| [2, 3]| [2, 3]| [[2], [3]]|
+        +----+-------+-------+-----------+
+        >>> tbl.sample_listwise(["int_arr", "str_arr"], num_sampled_list=2,
+        >>>                     num_sampled_item=2, replace=False)
+        +----+------------+------------+--------------------+---------------+---------------+
+        |name|     int_arr|     str_arr|         int_arr_arr|sampled_int_arr|sampled_str_arr|
+        +----+------------+------------+--------------------+---------------+---------------+
+        |   a|   [1, 2, 3]|   [1, 2, 3]|     [[1], [2], [3]]|         [3, 2]|         [3, 2]|
+        |   a|   [1, 2, 3]|   [1, 2, 3]|     [[1], [2], [3]]|         [2, 1]|         [2, 1]|
+        |   b|[1, 2, 3, 4]|[1, 2, 3, 4]|[[1], [2], [3], [4]]|         [2, 4]|         [2, 4]|
+        |   b|[1, 2, 3, 4]|[1, 2, 3, 4]|[[1], [2], [3], [4]]|         [4, 2]|         [4, 2]|
+        +----+------------+------------+--------------------+---------------+---------------+
+
+        :param columns: str or a list of str. Columns to convert to sampled list. Each column
+               should be of list type. The list length of specified columns in the same row must
+               be the same.
+        :param num_sampled_list: int. The number of lists that should be sampled for each row.
+        :param num_sampled_item: int. The number of elements to be sampled for each list from
+               the list of each column.
+        :param random_seed: int. The number for creating 'np.random.RandomState'. Default: None.
+        :param replace: bool. Indicates whether to replace the original columns. If replace=False,
+               a corresponding column "sampled_col" will be generated for each sampled column.
+
+        :return: A new sampled listwise FeatureTable.
+        """
+        schema = self.schema
+        cols = str_to_list(columns, "cols")
+        for c in cols:
+            invalidInputError(c in self.df.columns, "Column '" + c +
+                              "' does not exist in this FeatureTable.")
+            c_type = schema[c].dataType
+            invalidInputError(isinstance(c_type, ArrayType),
+                              "Each column should be of list type, but the type of column '" + c +
+                              "' is " + c_type.simpleString())
+            if not replace:
+                c_schema = StructField("sampled_" + c, c_type, True)
+                schema.add(c_schema)
+
+        def sample_features(row, random_state):
+            row = row.asDict()
+            len_set = set([len(row[c]) for c in cols])
+            invalidInputError(len(len_set) == 1,
+                              "Each row of the FeatureTable should "
+                              "have the same array length in the specified cols.")
+            length = len_set.pop()
+            sampled_rows = []
+            if length >= num_sampled_item:
+                for _ in range(num_sampled_list):
+                    new_row = copy.deepcopy(row)
+                    sampled_indices = random_state.choice(range(length), size=num_sampled_item,
+                                                          replace=False)
+                    for c in cols:
+                        sampled_list = [new_row[c][idx] for idx in sampled_indices]
+                        if replace:
+                            new_row[c] = sampled_list
+                        else:
+                            new_row["sampled_" + c] = sampled_list
+                    sampled_rows.append(new_row)
+            return sampled_rows
+
+        random_state = np.random.RandomState(seed=random_seed)
+        spark = OrcaContext.get_spark_session()
+        df = spark.createDataFrame(self.df.rdd.flatMap(lambda x:
+                                                       sample_features(x, random_state)), schema)
+
+        return FeatureTable(df)
 
 
 class StringIndex(Table):

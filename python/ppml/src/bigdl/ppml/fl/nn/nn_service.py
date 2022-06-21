@@ -15,32 +15,44 @@
 #
 
 
-from bigdl.ppml.fl.nn.pytorch.aggregator import Aggregator
+import bigdl.ppml.fl.nn.pytorch.aggregator as pt_agg
+import bigdl.ppml.fl.nn.tensorflow.aggregator as tf_agg
+
 from bigdl.ppml.fl.nn.generated.fl_base_pb2 import TensorMap
 from bigdl.ppml.fl.nn.generated.nn_service_pb2 import TrainRequest, TrainResponse, UploadModelResponse
 from bigdl.ppml.fl.nn.generated.nn_service_pb2_grpc import *
 from bigdl.ppml.fl.nn.utils import tensor_map_to_ndarray_map
+import tensorflow as tf
+from bigdl.dllib.utils.log4Error import invalidInputError
 import pickle
+import tempfile
 import traceback
+import os
+import logging
 
 
 class NNServiceImpl(NNServiceServicer):
-    def __init__(self, **kargs) -> None:
-        self.aggregator = Aggregator(**kargs)
+    def __init__(self, client_num, **kargs) -> None:
+        self.client_num = client_num
+        self.aggregator_map = {
+            'tf': tf_agg.Aggregator(client_num, **kargs),
+            'pt': pt_agg.Aggregator(client_num, **kargs)}
 
     def train(self, request: TrainRequest, context):
         tensor_map = request.data.tensorMap
         client_id = request.clientuuid
+        self.validate_client_id(client_id)
         ndarray_map = tensor_map_to_ndarray_map(tensor_map)
+        aggregator = self.aggregator_map[request.algorithm]
         try:
-            self.aggregator.put_client_data(client_id, ndarray_map)            
+            aggregator.put_client_data(client_id, ndarray_map)            
             msg = f'[client {client_id} batch trained]'
             code = 0
-        except Exception as e:
+        except Exception as e:            
             msg = traceback.format_exc()
+            logging.error(msg)
             code = 1
-        
-        return TrainResponse(response=msg, data=self.aggregator.server_data, code=code)
+        return TrainResponse(response=msg, data=aggregator.server_data[client_id], code=code)
 
     def evaluate(self, request, context):
         return super().evaluate(request, context)
@@ -49,11 +61,43 @@ class NNServiceImpl(NNServiceServicer):
         return super().predict(request, context)
         
     def upload_model(self, request, context):
-        try:
-            model = pickle.loads(request.model_bytes)
+        try:            
+            model = pickle.loads(request.model_bytes) if request.aggregator == 'pt' else None
             loss_fn = pickle.loads(request.loss_fn)
-            self.aggregator.set_server_model(model, loss_fn, request.optimizer)
+            aggregator = self.aggregator_map[request.aggregator]
+            aggregator.set_server(model, loss_fn, request.optimizer)
             msg = "Upload sucess"
         except Exception as e:
             msg = traceback.format_exc()
         return UploadModelResponse(message=msg)
+
+    def upload_file(self, request_iterator, context):
+        try:
+            tmpdir = tempfile.mkdtemp()
+            model_path = os.path.join(tmpdir, "tf_vfl_server_model.h5")
+            with open(model_path, 'wb') as f:
+                for byte_chunk in request_iterator:
+                    f.write(byte_chunk.buffer)
+            logging.info(f"Server received model file, length: {os.path.getsize(model_path)}")
+            # shutil.unpack_archive(zip_path, tmpdir)
+            # loaded = tf.saved_model.load(tmpdir)
+            model = tf.keras.models.load_model(model_path)
+            # hard code this func to use tf for now
+            aggregator = self.aggregator_map['tf']
+            aggregator.set_server_model(model)
+            msg = "Upload model through file sucess"
+        except Exception as e:
+            traceback.print_exc()
+            msg = traceback.format_exc()
+        return UploadModelResponse(message=msg)
+
+            
+    def validate_client_id(self, client_id):
+        try:
+            client_id = int(client_id)
+        except:
+            invalidInputError(False, f"client ID must be a number, got {client_id}")
+
+        if client_id <= 0 or client_id > self.client_num:
+            invalidInputError(False, f"invalid client ID received: {client_id}, \
+                must be in range of client number [1, {self.client_num}]")

@@ -15,7 +15,10 @@
 #
 
 import pickle
+import numpy as np
+
 from bigdl.ppml.fl.nn.generated.nn_service_pb2 import *
+from bigdl.ppml.fl.nn.generated.fl_base_pb2 import FloatTensor, TensorMap
 
 
 class ClassAndArgsWrapper(object):
@@ -29,13 +32,15 @@ class ClassAndArgsWrapper(object):
         return ClassAndArgs(cls=cls, args=args)
 
 import numpy as np
+from bigdl.dllib.utils.log4Error import invalidInputError
 from bigdl.ppml.fl.nn.generated.fl_base_pb2 import FloatTensor, TensorMap
 
 def ndarray_map_to_tensor_map(array_map: dict):
     tensor_map = {}
     for (k, v) in array_map.items():
         if not isinstance(v, np.ndarray):
-            raise Exception("ndarray map element should be Numpy ndarray")
+            invalidInputError(False,
+                              "ndarray map element should be Numpy ndarray")
         tensor_map[k] = FloatTensor(tensor=v.flatten().tolist(), shape=v.shape, dtype=str(v.dtype))
     return TensorMap(tensorMap=tensor_map)
 
@@ -44,7 +49,18 @@ def tensor_map_to_ndarray_map(tensor_map: TensorMap):
     ndarray_map = {}
     for (k, v) in tensor_map.items():
         if not isinstance(v, FloatTensor):
-            raise Exception("tensor map element should be protobuf type FloatTensor")
+            invalidInputError(False,
+                              "tensor map element should be protobuf type FloatTensor")
         dtype = "float32" if v.dtype is None else v.dtype
         ndarray_map[k] = np.array(v.tensor, dtype=dtype).reshape(v.shape)
     return ndarray_map
+
+
+def print_file_size_in_dir(path='.'):
+    import os
+    with os.scandir(path) as it:
+        for entry in it:
+            if entry.is_file():
+                print(entry, entry.stat().st_size)
+            elif entry.is_dir():
+                print_file_size_in_dir(entry.path)
