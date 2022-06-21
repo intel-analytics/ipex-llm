@@ -117,7 +117,7 @@ curl http://<external_kms_ip>:9000/ehsm/?Action=GetVersion
 
 ## 3. Enroll
 
-### Scheme 1: through kms-utils container (to do)
+### Scheme 1: through kms-utils container
 We encapsulate eHSM enroll into a docker image, you can pull it or build by yourself like below:
 
 ```bash
