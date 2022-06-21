@@ -709,7 +709,7 @@ Note that: you can run your own Spark Appliction after changing `--class` and ja
 ```bash
 SGX=1 ./pal_loader bash 2>&1 | tee spark-pi-sgx-$SPARK_MODE.log
 ```
-### 1.5 Use bigdl-ppml-submit.sh to run Spark applications on k8s
+### 1.5 Use bigdl-ppml-submit.sh to submit ppml jobs
 #### 1.5.1 Spark-Pi on local mode
 ![image2022-6-6_16-18-10](https://user-images.githubusercontent.com/61072813/174703141-63209559-05e1-4c4d-b096-6b862a9bed8a.png)
 ```
