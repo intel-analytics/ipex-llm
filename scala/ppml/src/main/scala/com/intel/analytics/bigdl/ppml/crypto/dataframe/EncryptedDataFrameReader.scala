@@ -89,7 +89,7 @@ object EncryptedDataFrameReader {
     sparkSession.createDataFrame(rowRdd, schema)
   }
 
-  private[bigdl] def setParquetKey(sparkSession: SparkSession, dataKeyPlainText: String): Unit  = {
+  private[bigdl] def setParquetKey(sparkSession: SparkSession, dataKeyPlainText: String): Unit = {
     EncryptedDataFrameWriter.setParquetKey(sparkSession, dataKeyPlainText)
   }
 }

@@ -136,7 +136,7 @@ object EncryptedDataFrameWriter {
 
   }
 
-  private[bigdl] def setParquetKey(sparkSession: SparkSession, dataKeyPlainText: String): Unit  = {
+  private[bigdl] def setParquetKey(sparkSession: SparkSession, dataKeyPlainText: String): Unit = {
     val encoder = Base64.getEncoder
     val footKey = encoder.encodeToString(dataKeyPlainText.slice(0, 16)
       .getBytes(StandardCharsets.UTF_8))
