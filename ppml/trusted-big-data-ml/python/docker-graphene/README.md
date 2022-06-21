@@ -714,10 +714,14 @@ SGX=1 ./pal_loader bash 2>&1 | tee spark-pi-sgx-$SPARK_MODE.log
 ![image2022-6-6_16-18-10](https://user-images.githubusercontent.com/61072813/174703141-63209559-05e1-4c4d-b096-6b862a9bed8a.png)
 ```
 #!/bin/bash
-export SGX_ENABLED=false
-unset SPARK_MODE
 bash bigdl-ppml-submit.sh \
+        --sgx-enabled false \
         --master local[2] \
+        --driver-memory 32g \
+        --driver-cores 8 \
+        --executor-memory 32g \
+        --executor-cores 8 \
+        --num-executors 2 \
         --class org.apache.spark.examples.SparkPi \
         --name spark-pi \
         --verbose \
@@ -727,10 +731,19 @@ bash bigdl-ppml-submit.sh \
 ![image2022-6-6_16-18-57](https://user-images.githubusercontent.com/61072813/174703165-2afc280d-6a3d-431d-9856-dd5b3659214a.png)
 ```
 #!/bin/bash
-export SGX_ENABLED=true
-unset SPARK_MODE
 bash bigdl-ppml-submit.sh \
         --master local[2] \
+        --sgx-enabled true \
+        --sgx-log-level error \
+        --sgx-driver-memory 64g \
+        --sgx-driver-jvm-memory 12g \
+        --sgx-executor-memory 64g \
+        --sgx-executor-jvm-memory 12g \
+        --driver-memory 32g \
+        --driver-cores 8 \
+        --executor-memory 32g \
+        --executor-cores 8 \
+        --num-executors 2 \
         --class org.apache.spark.examples.SparkPi \
         --name spark-pi \
         --verbose \
@@ -742,11 +755,21 @@ bash bigdl-ppml-submit.sh \
 #!/bin/bash
  
 export secure_password=`openssl rsautl -inkey /ppml/trusted-big-data-ml/work/password/key.txt -decrypt </ppml/trusted-big-data-ml/work/password/output.bin`
-export SGX_ENABLED=true
-export SPARK_MODE=client
 bash bigdl-ppml-submit.sh \
         --master $RUNTIME_SPARK_MASTER \
-        --deploy-mode $SPARK_MODE \
+        --deploy-mode client \
+        --sgx-enabled true \
+        --sgx-log-level error \
+        --sgx-driver-memory 64g \
+        --sgx-driver-jvm-memory 12g \
+        --sgx-executor-memory 64g \
+        --sgx-executor-jvm-memory 12g \
+        --driver-memory 32g \
+        --driver-cores 8 \
+        --executor-memory 32g \
+        --executor-cores 8 \
+        --num-executors 2 \
+        --conf spark.kubernetes.container.image=$RUNTIME_K8S_SPARK_IMAGE \
         --class org.apache.spark.examples.SparkPi \
         --name spark-pi \
         --verbose \
@@ -756,13 +779,23 @@ bash bigdl-ppml-submit.sh \
 ![image2022-6-6_16-20-0](https://user-images.githubusercontent.com/61072813/174703234-e45b8fe5-9c61-4d17-93ef-6b0c961a2f95.png)
 ```
 #!/bin/bash
- 
+
 export secure_password=`openssl rsautl -inkey /ppml/trusted-big-data-ml/work/password/key.txt -decrypt </ppml/trusted-big-data-ml/work/password/output.bin`
-export SGX_ENABLED=true
-export SPARK_MODE=client
 bash bigdl-ppml-submit.sh \
         --master $RUNTIME_SPARK_MASTER \
-        --deploy-mode $SPARK_MODE \
+        --deploy-mode cluster \
+        --sgx-enabled true \
+        --sgx-log-level error \
+        --sgx-driver-memory 64g \
+        --sgx-driver-jvm-memory 12g \
+        --sgx-executor-memory 64g \
+        --sgx-executor-jvm-memory 12g \
+        --driver-memory 32g \
+        --driver-cores 8 \
+        --executor-memory 32g \
+        --executor-cores 8 \
+        --conf spark.kubernetes.container.image=$RUNTIME_K8S_SPARK_IMAGE \
+        --num-executors 2 \
         --class org.apache.spark.examples.SparkPi \
         --name spark-pi \
         --verbose \
@@ -771,63 +804,63 @@ bash bigdl-ppml-submit.sh \
 
 #### 1.5.5 bigdl-ppml-submit.sh explanations
 
-bigdl-ppml-submit.sh is used to simplify the steps in 1.4, by using bigdl-ppml-submit.sh, the following spark properties will be set defaultly. 
+bigdl-ppml-submit.sh is used to simplify the steps in 1.4
+
+1. To use bigdl-ppml-submit.sh, first set the following required arguments: 
+```
+--master $RUNTIME_SPARK_MASTER \
+--deploy-mode cluster \
+--driver-memory 32g \
+--driver-cores 8 \
+--executor-memory 32g \
+--executor-cores 8 \
+--sgx-enabled true \
+--sgx-log-level error \
+--sgx-driver-memory 64g \
+--sgx-driver-jvm-memory 12g \
+--sgx-executor-memory 64g \
+--sgx-executor-jvm-memory 12g \
+--conf spark.kubernetes.container.image=$RUNTIME_K8S_SPARK_IMAGE \
+--num-executors 2 \
+--name spark-pi \
+--verbose \
+--class org.apache.spark.examples.SparkPi \
+local:///ppml/trusted-big-data-ml/work/spark-3.1.2/examples/jars/spark-examples_2.12-3.1.2.jar 3000
+```
+if you are want to enable sgx, don't forget to set the sgx-related arguments
+```
+--sgx-enabled true \
+--sgx-log-level error \
+--sgx-driver-memory 64g \
+--sgx-driver-jvm-memory 12g \
+--sgx-executor-memory 64g \
+--sgx-executor-jvm-memory 12g \
+```
+you can update the application arguments to anything you want to run
+```
+--class org.apache.spark.examples.SparkPi \
+local:///ppml/trusted-big-data-ml/work/spark-3.1.2/examples/jars/spark-examples_2.12-3.1.2.jar 3000
+```
+
+2. If you want to enable the spark security configurations as in 2.Spark security configurations, export secure_password to enable it.
+```
+export secure_password=`openssl rsautl -inkey /ppml/trusted-big-data-ml/work/password/key.txt -decrypt </ppml/trusted-big-data-ml/work/password/output.bin`
+```
+
+3. The following spark properties are set by default in bigdl-ppml-submit.sh. If you want to overwrite them or add new spark properties, just append the spark properties to bigdl-ppml-submit.sh as arguments.
 ```
 --conf spark.driver.host=$LOCAL_IP \
 --conf spark.driver.port=$RUNTIME_DRIVER_PORT \
---conf spark.driver.cores=$RUNTIME_DRIVER_CORES \
---conf spark.driver.memory=$RUNTIME_DRIVER_MEMORY \
---conf spark.executor.cores=$RUNTIME_EXECUTOR_CORES \
---conf spark.executor.memory=$RUNTIME_EXECUTOR_MEMORY \
---conf spark.executor.instances=$RUNTIME_EXECUTOR_INSTANCES \
 --conf spark.network.timeout=10000000 \
 --conf spark.executor.heartbeatInterval=10000000 \
 --conf spark.python.use.daemon=false \
 --conf spark.python.worker.reuse=false \
---conf spark.kubernetes.sgx.enabled=$SGX_ENABLED \
---conf spark.kubernetes.sgx.driver.mem=$SGX_DRIVER_MEM \
---conf spark.kubernetes.sgx.driver.jvm.mem=$SGX_DRIVER_JVM_MEM \
---conf spark.kubernetes.sgx.executor.mem=$SGX_EXECUTOR_MEM \
---conf spark.kubernetes.sgx.executor.jvm.mem=$SGX_EXECUTOR_JVM_MEM \
---conf spark.kubernetes.sgx.log.level=$SGX_LOG_LEVEL \
---conf spark.kubernetes.container.image=$RUNTIME_K8S_SPARK_IMAGE \
 --conf spark.kubernetes.authenticate.driver.serviceAccountName=spark \
 --conf spark.kubernetes.driver.podTemplateFile=/ppml/trusted-big-data-ml/spark-driver-template.yaml \
 --conf spark.kubernetes.executor.podTemplateFile=/ppml/trusted-big-data-ml/spark-executor-template.yaml \
 --conf spark.kubernetes.executor.deleteOnTermination=false \
 ```
-So that you only need to set a few required arguments to submit job: 
-```
-#!/bin/bash
-export SGX_ENABLED=true
-export SPARK_MODE=client
-bash bigdl-ppml-submit.sh \
-        --master $RUNTIME_SPARK_MASTER \
-        --deploy-mode $SPARK_MODE \
-        --class org.apache.spark.examples.SparkPi \
-        --name spark-pi \
-        --verbose \
-        local:///ppml/trusted-big-data-ml/work/spark-3.1.2/examples/jars/spark-examples_2.12-3.1.2.jar 3000
-```
-1. set the deploy_mode if you are running job using client or cluster on k8s
-2. set the master to local[2] if you are running job on spark local mode
-3. set the name, jars, main class
 
-If you want to overwrite these properties, just append the spark properties to bigdl-ppml-submit.sh as arguments. For example, set spark.executor.memory to 32g.
-```
-bash bigdl-ppml-submit.sh \
-        --master $RUNTIME_SPARK_MASTER \
-        --deploy-mode $SPARK_MODE \
-        --conf spark.executor.memory=32g \
-        --class org.apache.spark.examples.SparkPi \
-        --name spark-pi \
-        --verbose \
-        local:///ppml/trusted-big-data-ml/work/spark-3.1.2/examples/jars/spark-examples_2.12-3.1.2.jar 3000
-```
-If you want to enable the spark security configurations as in 2.Spark security configurations, export secure_password to enable it.
-```
-export secure_password=`openssl rsautl -inkey /ppml/trusted-big-data-ml/work/password/key.txt -decrypt </ppml/trusted-big-data-ml/work/password/output.bin`
-```
 
 ### Configuration Explainations
 

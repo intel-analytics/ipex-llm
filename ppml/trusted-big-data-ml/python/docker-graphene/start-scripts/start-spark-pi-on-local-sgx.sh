@@ -4,10 +4,10 @@ bash bigdl-ppml-submit.sh \
         --master local[2] \
         --sgx-enabled true \
         --sgx-log-level error \
-        --sgx-driver-memory 64g\
-        --sgx-driver-jvm-memory 12g\
-        --sgx-executor-memory 64g\
-        --sgx-executor-jvm-memory 12g\
+        --sgx-driver-memory 64g \
+        --sgx-driver-jvm-memory 12g \
+        --sgx-executor-memory 64g \
+        --sgx-executor-jvm-memory 12g \
         --driver-memory 32g \
         --driver-cores 8 \
         --executor-memory 32g \
