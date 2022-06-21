@@ -148,8 +148,8 @@ sudo docker run -itd \
     -v /dev/sgx/provision:/dev/sgx/provision \
     -v $local_data_folder_path:/home/data \
     -v $local_key_folder_path:/home/key \
-    -e EHSM_KMS_IP=$EHSM_KMS_IP \ # optional
-    -e EHSM_KMS_PORT=$EHSM_KMS_PORT \ # optional
+    -e EHSM_KMS_IP=$EHSM_KMS_IP \
+    -e EHSM_KMS_PORT=$EHSM_KMS_PORT \
     -e KMS_TYPE=$KMS_TYPE \
     -e PCCS_URL=$PCCS_URL
     $ENROLL_IMAGE_NAME bash
