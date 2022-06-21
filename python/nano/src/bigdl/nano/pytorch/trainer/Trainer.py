@@ -226,8 +226,9 @@ class Trainer(pl.Trainer):
                  tuning_strategy: str = None,
                  timeout: int = None,
                  max_trials: int = None,
-                 input_sample=None
-                 ):
+                 input_sample=None,
+                 onnxruntime_session_options=None,
+                 opset_version=11):
         """
         Calibrate a Pytorch-Lightning model for post-training quantization.
 
@@ -269,7 +270,10 @@ class Trainer(pl.Trainer):
                             "timeout=0, max_trials=1" means it will try quantization only once and
                             return satisfying best model.
         :param input_sample:      An input example to convert pytorch model into ONNX/OpenVINO.
-
+        :param onnxruntime_session_options: The session option for onnxruntime, only valid when
+                                            accelerator='onnxruntime', otherwise will be ignored.
+        :param opset_version: opset_version for export_to_onnx, only valid when
+                                            accelerator='onnxruntime', otherwise will be ignored.
         :return:            A accelerated Pytorch-Lightning Model if quantization is sucessful.
         """
         if not accelerator or accelerator == 'onnxruntime':
@@ -295,7 +299,9 @@ class Trainer(pl.Trainer):
                         input_sample = calib_dataloader
                     model = Trainer.trace(model,
                                           input_sample=input_sample,
-                                          accelerator='onnxruntime')
+                                          accelerator='onnxruntime',
+                                          onnxruntime_session_options=onnxruntime_session_options,
+                                          opset_version=opset_version)
             """
             If accelerator==None, quantized model returned should be an object of PytorchModel
             which is defined by neural-compressor containing a `GraphModule` for inference.
