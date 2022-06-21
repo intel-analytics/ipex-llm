@@ -111,7 +111,8 @@ class TestCorrectness(FLTest):
         set_one_like_parameter(vfl_model_1)
         vfl_model_2 = NeuralNetworkPart2()
         set_one_like_parameter(vfl_model_2)
-        vfl_client_ppl = Estimator.from_torch(client_model=vfl_model_1, 
+        vfl_client_ppl = Estimator.from_torch(client_model=vfl_model_1,
+                                              client_id="1",
                                               loss_fn=loss_fn,
                                               optimizer_cls=torch.optim.SGD,
                                               optimizer_args={'lr':1e-3},

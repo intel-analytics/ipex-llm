@@ -24,19 +24,28 @@ from bigdl.dllib.utils.log4Error import invalidInputError
 from bigdl.ppml.fl.nn.utils import tensor_map_to_ndarray_map
 
 class PytorchEstimator:
-    def __init__(self, model: nn.Module, loss_fn, optimizer: torch.optim.Optimizer, algorithm=None,
-            bigdl_type="float", target="localhost:8980", fl_client=None):
+    def __init__(self, 
+                 model: nn.Module, 
+                 loss_fn, 
+                 optimizer_cls,
+                 optimizer_args,
+                 client_id,
+                 bigdl_type="float", 
+                 target="localhost:8980", 
+                 fl_client=None,
+                 server_model=None):
         self.bigdl_type = bigdl_type
         self.model = model
         self.loss_fn = loss_fn
-        self.optimizer = optimizer
+        self.optimizer = optimizer_cls(model.parameters(), **optimizer_args)
         self.version = 0
-        self.algorithm = algorithm
         self.fl_client = fl_client if fl_client is not None \
-            else FLClient(aggregator='pt', target=target)
+            else FLClient(client_id=client_id, aggregator='pt', target=target)
         self.loss_history = []
+        if server_model is not None:
+            self.__add_server_model(server_model, loss_fn, optimizer_cls, optimizer_args)
     
-    def add_server_model(self, 
+    def __add_server_model(self, 
                          model: nn.Module,
                          loss_fn=None,
                          optimizer_cls=None,
