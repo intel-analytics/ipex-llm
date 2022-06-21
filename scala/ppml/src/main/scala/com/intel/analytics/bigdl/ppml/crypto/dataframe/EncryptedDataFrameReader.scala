@@ -17,6 +17,7 @@
 package com.intel.analytics.bigdl.ppml.crypto.dataframe
 
 import com.intel.analytics.bigdl.ppml.PPMLContext
+import com.intel.analytics.bigdl.ppml.crypto.dataframe.EncryptedDataFrameWriter.writeCsv
 import com.intel.analytics.bigdl.ppml.crypto.{AES_CBC_PKCS5PADDING, CryptoMode, PLAIN_TEXT}
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.types.{StringType, StructField, StructType}
@@ -64,6 +65,9 @@ class EncryptedDataFrameReader(
   }
 
   def parquet(path: String): DataFrame = {
+    if (encryptMode != PLAIN_TEXT) {
+      EncryptedDataFrameReader.setParquetKey(sparkSession, dataKeyPlainText)
+    }
     sparkSession.read.parquet(path)
   }
 }
@@ -83,5 +87,9 @@ object EncryptedDataFrameReader {
     // create df
     val rowRdd = data_filter.map(s => Row.fromSeq(s.split(",")))
     sparkSession.createDataFrame(rowRdd, schema)
+  }
+
+  private[bigdl] def setParquetKey(sparkSession: SparkSession, dataKeyPlainText: String): Unit  = {
+    EncryptedDataFrameWriter.setParquetKey(sparkSession, dataKeyPlainText)
   }
 }

@@ -18,8 +18,9 @@
 package com.intel.analytics.bigdl.ppml.crypto.dataframe
 
 import com.intel.analytics.bigdl.ppml.PPMLContext
-import com.intel.analytics.bigdl.ppml.crypto.PLAIN_TEXT
+import com.intel.analytics.bigdl.ppml.crypto.{AES_GCM_CTR_V1, PLAIN_TEXT}
 import org.apache.spark.SparkConf
+import org.apache.spark.sql.SparkSession
 
 import java.io.{File, RandomAccessFile}
 import java.nio.charset.StandardCharsets
@@ -32,10 +33,6 @@ class ParquetEncryptionSpec extends DataFrameHelper {
   override val repeatedNum = 100
 
   private val encoder = Base64.getEncoder
-  private val footerKey =
-    encoder.encodeToString("0123456789012345".getBytes(StandardCharsets.UTF_8))
-  private val key1 = encoder.encodeToString("1234567890123450".getBytes(StandardCharsets.UTF_8))
-  private val key2 = encoder.encodeToString("1234567890123451".getBytes(StandardCharsets.UTF_8))
 
   val ppmlArgs = Map(
     "spark.bigdl.kms.simple.id" -> appid,
@@ -44,35 +41,21 @@ class ParquetEncryptionSpec extends DataFrameHelper {
     "spark.bigdl.kms.key.data" -> dataKeyPath
   )
   val conf = new SparkConf().setMaster("local[4]")
-//  conf.set("parquet.crypto.factory.class",
-//    "org.apache.parquet.crypto.keytools.PropertiesDrivenCryptoFactory")
-//  conf.set("parquet.encryption.kms.client.class",
-//    "org.apache.parquet.crypto.keytools.mocks.InMemoryKMS")
-//  conf.set("parquet.encryption.key.list",
-//    s"footerKey: ${footerKey}, key1: ${key1}, key2: ${key2}")
   val sc = PPMLContext.initPPMLContext(conf, "SimpleQuery", ppmlArgs)
   val sparkSession = sc.getSparkSession()
-  sparkSession.sparkContext.hadoopConfiguration.set("parquet.crypto.factory.class",
-    "org.apache.parquet.crypto.keytools.PropertiesDrivenCryptoFactory")
-  sparkSession.sparkContext.hadoopConfiguration.set("parquet.encryption.kms.client.class",
-    "org.apache.parquet.crypto.keytools.mocks.InMemoryKMS")
-  sparkSession.sparkContext.hadoopConfiguration.set("parquet.encryption.key.list",
-    s"footerKey: ${footerKey}, key1: ${key1}, key2: ${key2}")
   import sparkSession.implicits._
 
   "SPARK-34990: Write and read an encrypted parquet" should "work" in {
     val input = Seq((1, 22, 333))
     val inputDF = input.toDF("a", "b", "c")
     val parquetDir = new File(dir, "parquet").getCanonicalPath
-    inputDF.write
-      .option("parquet.encryption.column.keys", "key1: a, b; key2: c")
-      .option("parquet.encryption.footer.key", "footerKey")
+    sc.write(inputDF, AES_GCM_CTR_V1)
       .parquet(parquetDir)
 
     verifyParquetEncrypted(parquetDir)
 
     val parquetDF = sparkSession.read.parquet(parquetDir)
-    assert(parquetDF.inputFiles.nonEmpty)
+    parquetDF.inputFiles.nonEmpty should be (true)
     val readDataset = parquetDF.select("a", "b", "c")
     val result = readDataset.collect()
     result.length should be (1)
@@ -81,51 +64,38 @@ class ParquetEncryptionSpec extends DataFrameHelper {
     result(0).get(2) should be (input.head._3)
   }
 
-  "SPARK-37117: Can't read files in Parquet encryption external key material mode" should "work" in {
-    val input = Seq((1, 22, 333))
-    val inputDF = input.toDF("a", "b", "c")
-    val parquetDir = new File(dir, "parquet").getCanonicalPath
-    inputDF.write
-      .option("parquet.encryption.column.keys", "key1: a, b; key2: c")
-      .option("parquet.encryption.footer.key", "footerKey")
-      .parquet(parquetDir)
-
-    val parquetDF = sparkSession.read.parquet(parquetDir)
-    assert(parquetDF.inputFiles.nonEmpty)
-    val readDataset = parquetDF.select("a", "b", "c")
-    val result = readDataset.collect()
-    result.length should be (1)
-    result(0).get(0) should be (input.head._1)
-    result(0).get(1) should be (input.head._2)
-    result(0).get(2) should be (input.head._3)
-  }
-
-  "read from plain csv with header" should "work" in {
+  "write/read encrypted parquet format" should "work" in {
     val enParquetPath = dir + "/en-parquet"
+    val df = sc.read(cryptoMode = PLAIN_TEXT)
+      .option("header", "true").csv(plainFileName)
+    val d = df.schema.map(_.name).mkString(",") + "\n" +
+      df.collect().map(v => s"${v.get(0)},${v.get(1)},${v.get(2)}").mkString("\n")
+    d + "\n" should be (data)
+    sc.write(df, AES_GCM_CTR_V1)
+      .mode("overwrite")
+      .parquet(enParquetPath)
+
+    val df2 = sc.read(AES_GCM_CTR_V1).parquet(enParquetPath)
+    val d2 = df2.schema.map(_.name).mkString(",") + "\n" +
+      df2.collect().map(v => s"${v.get(0)},${v.get(1)},${v.get(2)}").mkString("\n")
+    d2 + "\n" should be (data)
+  }
+
+  "write/read parquet" should "work" in {
     val plainParquetPath = dir + "/plain-parquet"
     val df = sc.read(cryptoMode = PLAIN_TEXT)
       .option("header", "true").csv(plainFileName)
     val d = df.schema.map(_.name).mkString(",") + "\n" +
       df.collect().map(v => s"${v.get(0)},${v.get(1)},${v.get(2)}").mkString("\n")
     d + "\n" should be (data)
-    df.write
-      .mode("overwrite")
-      .option("parquet.encryption.column.keys", "key1: name, age; key2: job")
-      .option("parquet.encryption.footer.key", "footerKey")
-      .parquet(enParquetPath)
-    df.write
+    sc.write(df, PLAIN_TEXT)
       .mode("overwrite")
       .parquet(plainParquetPath)
 
-    val df2 = sc.getSparkSession().read.parquet(enParquetPath)
+    val df2 = sc.read(PLAIN_TEXT).parquet(plainParquetPath)
     val d2 = df2.schema.map(_.name).mkString(",") + "\n" +
       df2.collect().map(v => s"${v.get(0)},${v.get(1)},${v.get(2)}").mkString("\n")
     d2 + "\n" should be (data)
-
-    val df3 = sc.getSparkSession().read.parquet(enParquetPath)
-    val d3 = df3.schema.map(_.name).mkString(",") + "\n" +
-      df3.collect().map(v => s"${v.get(0)},${v.get(1)},${v.get(2)}").mkString("\n")
-    d3 + "\n" should be (data)
   }
 
   /**
@@ -136,7 +106,7 @@ class ParquetEncryptionSpec extends DataFrameHelper {
    */
   private def verifyParquetEncrypted(parquetDir: String): Unit = {
     val parquetPartitionFiles = getListOfParquetFiles(new File(parquetDir))
-    assert(parquetPartitionFiles.size >= 1)
+    parquetPartitionFiles.size >= 1 should be (true)
     parquetPartitionFiles.foreach { parquetFile =>
       val magicString = "PARE"
       val magicStringLength = magicString.length()
@@ -148,7 +118,7 @@ class ParquetEncryptionSpec extends DataFrameHelper {
         randomAccessFile.close()
       }
       val stringRead = new String(byteArray, StandardCharsets.UTF_8)
-      assert(magicString == stringRead)
+      magicString should be (stringRead)
     }
   }
 
