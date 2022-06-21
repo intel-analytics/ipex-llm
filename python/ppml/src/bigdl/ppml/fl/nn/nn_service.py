@@ -33,6 +33,7 @@ import logging
 
 class NNServiceImpl(NNServiceServicer):
     def __init__(self, client_num, **kargs) -> None:
+        self.client_num = client_num
         self.aggregator_map = {
             'tf': tf_agg.Aggregator(client_num, **kargs),
             'pt': pt_agg.Aggregator(client_num, **kargs)}
@@ -40,6 +41,7 @@ class NNServiceImpl(NNServiceServicer):
     def train(self, request: TrainRequest, context):
         tensor_map = request.data.tensorMap
         client_id = request.clientuuid
+        self.validate_client_id(client_id)
         ndarray_map = tensor_map_to_ndarray_map(tensor_map)
         aggregator = self.aggregator_map[request.algorithm]
         try:
@@ -91,7 +93,11 @@ class NNServiceImpl(NNServiceServicer):
 
             
     def validate_client_id(self, client_id):
-        client_id = str(client_id)
+        try:
+            client_id = int(client_id)
+        except:
+            invalidInputError(False, f"client ID must be a number, got {client_id}")
+
         if client_id <= 0 or client_id > self.client_num:
             invalidInputError(False, f"invalid client ID received: {client_id}, \
                 must be in range of client number [1, {self.client_num}]")
