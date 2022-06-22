@@ -26,6 +26,9 @@ from torch.multiprocessing.spawn import _wrap
 if __name__ == '__main__':
     temp_dir = sys.argv[1]
     process_idx = int(os.environ["PROCESS_IDX"])
+    
+    # set the same `multiprocessing.current_process().authkey` as the main process
+    # so that we can load the `args.pkl`
     authkey = bytes(os.environ['AUTHKEY'], encoding='utf-8')
     multiprocessing.current_process().authkey = authkey
 

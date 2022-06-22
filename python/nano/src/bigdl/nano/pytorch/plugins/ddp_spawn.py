@@ -33,6 +33,7 @@
 
 
 import os
+import copy
 import multiprocessing
 from typing import Any, List, Optional, Callable, Union, Dict
 
@@ -64,37 +65,13 @@ log = logging.getLogger(__name__)
 
 
 class _DDPSpawnLauncher(_SpawnLauncher):
-    r"""Spawns processes that run a given function in parallel, and joins them all at the end.
-
-    The main process in which this launcher is invoked creates N so-called worker processes 
-    (using:func:`torch.multiprocessing.spawn`) that run the given function.
-    Worker processes have a rank that ranges from 0 to N - 1.
-
-    Note:
-        - This launcher requires all objects to be pickleable.
-        - It is important that the entry point to the program/script is guarded by 
-        ``if __name__ == "__main__"``.
-
-    Args:
-        strategy: A reference to the strategy that is used together with this launcher.
-    """
 
     def __init__(self, strategy: Strategy) -> None:
         super().__init__(strategy)
 
-    def launch(self, function: Callable, *args: Any, trainer: Optional["pl.Trainer"] = None, **kwargs: Any) -> Any:
-        """Spawns processes that run the given function in parallel.
-
-        Arguments:
-            function: The entry point for all spawned processes.
-            *args: Optional positional arguments to be passed to the given function.
-            trainer: Optional reference to the :class:`~pytorch_lightning.trainer.trainer.Trainer` for which
-                a selected set of attributes get restored in the main process after processes join.
-            **kwargs: Optional keyword arguments to be passed to the given function.
-        """
-        # The default cluster environment in Lightning chooses a random free port number
-        # This needs to be done in the main process here before spawning to ensure each rank will connect
-        # through the same port
+    def launch(self, function: Callable, *args: Any, 
+               trainer: Optional["pl.Trainer"] = None, **kwargs: Any) -> Any:
+        # pytorch_lightning 1.6 uses this method to create child processes
         os.environ["MASTER_PORT"] = str(self._strategy.cluster_environment.main_port)
 
         if self._strategy.cpu_for_each_process is None:
@@ -134,6 +111,11 @@ class _DDPSpawnLauncher(_SpawnLauncher):
 
         os.environ["KMP_AFFINITY"] = init_KMP_AFFINITY
         os.environ["OMP_NUM_THREADS"] = init_OMP_NUM_THREADS
+        
+        # recover the state of child process
+        spawn_output = return_queue.get()
+        self._recover_results_in_main_process(spawn_output, trainer)
+        return spawn_output.trainer_results
 
 
 class DDPSpawnStrategy(_DDPSpawnStrategy):
@@ -168,11 +150,13 @@ class DDPSpawnStrategy(_DDPSpawnStrategy):
         self._launcher = _DDPSpawnLauncher(self)
 
     def setup(self, trainer: "pl.Trainer") -> None:
-        os.environ["MASTER_PORT"] = str(self.cluster_environment.main_port)
-
+        # when using spawn, multiple child processes may update the weights of
+        # the same model, so we should copy the model to avoid it
+        if self.strategy_name == "ddp_spawn":
+            self.model = copy.deepcopy(self.model)
+            
         self.accelerator.setup(trainer)
 
-        # skip wrapping the model if we are not fitting as no gradients need to be exchanged
         trainer_fn = trainer.state.fn
         if trainer_fn == TrainerFn.FITTING:
             if self._layer_sync:
@@ -180,9 +164,15 @@ class DDPSpawnStrategy(_DDPSpawnStrategy):
 
         self.setup_precision_plugin()
 
+        # `configure_ddp` will create a `DistributedDataParallel`, which has no
+        # `test_step` method in pytorch_lightning 1.6, which causes error when
+        # calling `trainer.test()`, so we call `configure_ddp` only when fitting
         if trainer_fn == TrainerFn.FITTING:
             self.configure_ddp()
         else:
+            # when calling `trainer.test()`, the `model.training` won't be set to `False`,
+            # causing the following `ipex_optimize` to raise error,
+            # so we need to set it to `False` manuallay
             self.model.training = False
 
         if self.use_ipex and not TORCH_VERSION_LESS_1_10:
@@ -198,11 +188,12 @@ class DDPSpawnStrategy(_DDPSpawnStrategy):
                 warnings.warn(f"IPEX currently only support single optimizers, "
                               f"but got {num_optimizers}. Skip IPEX")
         
-        # move the model to the correct device
+        # some operations in `configure_ddp` do not support XPU,
+        # which is used by ipex==1.9, so we move this line here
         self.model_to_device()
 
     def configure_ddp(self):
-        """Setup the configuration for pytorch ddp."""
+        # we should override this method to change the creation of `DistributedDataParallel`
         self.pre_configure_ddp()
         self._model = DistributedDataParallel(
             LightningDistributedModule(self.model),
@@ -210,12 +201,14 @@ class DDPSpawnStrategy(_DDPSpawnStrategy):
         )
         self._register_ddp_hooks()
 
-        # set up optimizers after the wrapped module has been moved to the device
         self.setup_optimizers(self.lightning_module.trainer)
         optimizers_to_device(self.optimizers, self.root_device)
 
     def reduce(self, tensor, group: Optional[Any] = None,
                reduce_op: Union[ReduceOp, str] = "mean") -> Tensor:
+        # some operations in `super.reduce()` method do not support XPU,
+        # which will cause error when using ipex==1.9, however, these operations
+        # seems not necessary, so we just ignore these errors
         try:
             return super().reduce(tensor, group, reduce_op)
         except Exception as _e:

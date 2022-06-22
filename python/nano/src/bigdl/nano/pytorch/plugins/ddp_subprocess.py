@@ -55,19 +55,11 @@ class _DDPSubprocessLauncher(_DDPSpawnLauncher):
 
     @property
     def is_interactive_compatible(self) -> bool:
-        """Returns whether this launcher can work in interactive environments such as Jupyter notebooks."""
-        return False
+        return True
 
-    def launch(self, function: Callable, *args: Any, trainer: Optional["pl.Trainer"] = None, **kwargs: Any) -> Any:
-        """Creates new processes, then calls the given function.
-
-        Arguments:
-            function: A callback function to execute after all processes have been created.
-                It is up to the implementation of this function to synchronize the processes, e.g., with barriers.
-            *args: Optional positional arguments to be passed to the given function.
-            trainer: Optional reference to the :class:`~pytorch_lightning.trainer.trainer.Trainer`.
-            **kwargs: Optional keyword arguments to be passed to the given function.
-        """
+    def launch(self, function: Callable, *args: Any,
+               trainer: Optional["pl.Trainer"] = None, **kwargs: Any) -> Any:
+        # pytorch_lightning 1.6 uses this method to create child processes
         os.environ["MASTER_PORT"] = str(self._strategy.cluster_environment.main_port)
 
         if self._strategy.cpu_for_each_process is None:
@@ -75,6 +67,11 @@ class _DDPSubprocessLauncher(_DDPSpawnLauncher):
         else:
             cpu_procs = self._strategy.cpu_for_each_process
 
+        # the `return_queue` is necessary for recovering child process's state, we need
+        # to dump it in this process and load it in subprocess, the `mp.SimpleQueue()` in
+        # `ddp_spawn.py` cannot be dumped, so we use `multiprocessing.Manager().Queue()` here,
+        # however, in order to be able to load it in subprocess, we must ensure the 
+        # `current_process().authkey` in this process and in subprocess are the same
         authkey = str(uuid.uuid1())
         multiprocessing.current_process().authkey = bytes(authkey, encoding='utf-8')
         mp = multiprocessing.Manager()
@@ -110,7 +107,7 @@ class _DDPSubprocessLauncher(_DDPSpawnLauncher):
             for _, process in enumerate(processes):
                 assert process.returncode == 0, "Subprocess incorrectly exit, \
                                                 check the trainer configure or usage"
-            
+            # recover the state of child process
             spawn_output = return_queue.get()
             self._recover_results_in_main_process(spawn_output, trainer)
             return spawn_output.trainer_results
