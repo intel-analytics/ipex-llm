@@ -32,11 +32,12 @@ class Callback(object):
         pass
 
     @abstractmethod
-    def on_batch_end(self, batch):
+    def on_batch_end(self, batch, logs=None):
         """
         Called at the end of a training batch in `fit` methods.
         Subclasses should override for any actions to run.
         @param batch: Integer, index of batch within the current epoch.
+        :param logs: Dict. Aggregated metric results up until this batch.
         """
         pass
 
@@ -73,10 +74,11 @@ class Callback(object):
         pass
 
     @abstractmethod
-    def on_train_end(self):
+    def on_train_end(self, logs=None):
         """
         Called at the end of training.
         Subclasses should override for any actions to run.
+        :param logs: Dict. Currently the output of the last call to on_epoch_end() is passed to this argument for this method but that may change in the future.
         """
         pass
 

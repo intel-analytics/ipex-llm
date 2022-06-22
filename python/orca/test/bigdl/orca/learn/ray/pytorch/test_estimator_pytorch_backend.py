@@ -36,6 +36,8 @@ from bigdl.orca.data.image.utils import chunks
 import tempfile
 import shutil
 
+from bigdl.orca.learn.pytorch.callbacks.base import Callback
+
 np.random.seed(1337)  # for reproducibility
 resource_path = os.path.join(
     os.path.realpath(os.path.dirname(__file__)), "../../../resources")
@@ -127,6 +129,26 @@ class SimpleModel(nn.Module):
         x = self.fc(x)
         x = self.out_act(x).flatten()
         return x
+
+
+class CustomCallback(Callback):
+    def on_train_begin(self, logs=None):
+        keys = list(logs.keys())
+        print("Starting training; got log keys: {}".format(keys))
+
+    def on_train_end(self, logs=None):
+        keys = list(logs.keys())
+        # model = self.model
+        # weights = model.weights
+        print("Stop training; got log keys: {}".format(keys))
+
+    def on_epoch_begin(self, epoch, logs=None):
+        keys = list(logs.keys())
+        print("Start epoch {} of training; got log keys: {}".format(epoch, keys))
+
+    def on_epoch_end(self, epoch, logs=None):
+        keys = list(logs.keys())
+        print("End epoch {} of training; got log keys: {}".format(epoch, keys))
 
 
 def train_data_loader(config, batch_size):
@@ -577,6 +599,13 @@ class TestPyTorchEstimator(TestCase):
                 np.testing.assert_almost_equal(value, eval_after[name])
         finally:
             shutil.rmtree(temp_dir)
+
+    def test_custom_callback(self):
+        estimator = get_estimator(workers_per_node=2)
+        callbacks = [CustomCallback()]
+        train_stats = estimator.fit(train_data_loader, epochs=4, batch_size=128,
+                                    validation_data=val_data_loader, callbacks=callbacks)
+        print(train_stats)
 
 
 if __name__ == "__main__":
