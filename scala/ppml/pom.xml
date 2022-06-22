@@ -73,10 +73,6 @@
                     <groupId>org.glassfish.jersey.media</groupId>
                     <artifactId>jersey-media-jaxb</artifactId>
                 </exclusion>
-<!--                <exclusion>-->
-<!--                    <groupId>org.codehaus.jackson</groupId>-->
-<!--                    <artifactId>jackson-mapper-asl</artifactId>-->
-<!--                </exclusion>-->
                 <exclusion>
                     <groupId>com.fasterxml.jackson.core</groupId>
                     <artifactId>jackson-databind</artifactId>
@@ -94,11 +90,6 @@
                     <artifactId>parquet-hadoop</artifactId>
                 </exclusion>
             </exclusions>
-        </dependency>
-        <dependency>
-            <groupId>com.fasterxml.jackson.core</groupId>
-            <artifactId>jackson-databind</artifactId>
-            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.apache.parquet</groupId>
