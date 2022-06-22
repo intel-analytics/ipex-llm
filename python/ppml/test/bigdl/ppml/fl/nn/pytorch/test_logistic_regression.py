@@ -22,6 +22,7 @@ import pandas as pd
 import os
 
 import torch
+from bigdl.ppml.fl.nn.fl_client import FLClient
 from bigdl.ppml.fl.nn.pytorch.utils import set_one_like_parameter
 from bigdl.ppml.fl.nn.fl_server import FLServer
 from torch import nn
@@ -30,9 +31,10 @@ import logging
 from bigdl.ppml.fl.estimator import Estimator
 from bigdl.ppml.fl.utils import FLTest
 
-resource_path = os.path.join(os.path.dirname(__file__), "../resources")
+resource_path = os.path.join(os.path.dirname(__file__), "../../resources")
 
-def mock_process(data_train, target):
+def mock_process(data_train, target, client_id):
+    # set new_fl_client to True will create a FLClient with new ID for multi-party test
     df_train = pd.read_csv(os.path.join(resource_path, data_train))
     if 'Outcome' in df_train:
         df_x = df_train.drop('Outcome', 1)
@@ -47,12 +49,13 @@ def mock_process(data_train, target):
     set_one_like_parameter(model)
     loss_fn = nn.BCELoss()
     server_model = LogisticRegressionNetwork2()
-    ppl = Estimator.from_torch(client_model=model, 
+    ppl = Estimator.from_torch(client_model=model,
+                               client_id=client_id,
                                loss_fn=loss_fn,
                                optimizer_cls=torch.optim.SGD,
-                             optimizer_args={'lr':1e-3},
-                            target=target,
-                            server_model=server_model)
+                               optimizer_args={'lr':1e-3},
+                               target=target,
+                               server_model=server_model)
     response = ppl.fit(x, y)
     logging.info(response)
     return ppl
@@ -108,9 +111,9 @@ class TestLogisticRegression(FLTest):
                 pytorch_loss_list.append(np.array(loss))
         
         mock_party2 = threading.Thread(target=mock_process, 
-            args=('diabetes-vfl-2.csv', self.target))
-        mock_party2.start()        
-        ppl = mock_process(data_train='diabetes-vfl-1.csv', target=self.target)
+            args=('diabetes-vfl-2.csv', self.target, '2'))
+        mock_party2.start()
+        ppl = mock_process(data_train='diabetes-vfl-1.csv', target=self.target, client_id='1')
         mock_party2.join()
         assert np.allclose(pytorch_loss_list, ppl.loss_history), \
             "Validation failed, correctness of PPML and native Pytorch not the same"
@@ -131,6 +134,8 @@ class LogisticRegressionNetwork2(nn.Module):
         self.sigmoid = nn.Sigmoid()
 
     def forward(self, x):
+        x = torch.stack(x)
+        x = torch.sum(x, dim=0) # above two act as interactive layer, CAddTable
         x = self.sigmoid(x)
         return x
 

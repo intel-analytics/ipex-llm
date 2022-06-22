@@ -15,6 +15,7 @@
 #
 
 
+import imp
 import logging
 from numpy import ndarray
 import torch
@@ -22,18 +23,41 @@ from torch import nn
 from bigdl.ppml.fl.nn.pytorch.estimator import PytorchEstimator
 from torch.utils.data import DataLoader
 from bigdl.dllib.utils.log4Error import invalidInputError
+from bigdl.ppml.fl.nn.tensorflow.estimator import TensorflowEstimator
 from bigdl.ppml.fl.nn.utils import tensor_map_to_ndarray_map
+from tensorflow.keras.models import Model
 
 class Estimator:
     @staticmethod
     def from_torch(client_model: nn.Module,
+                   client_id,
                    loss_fn,
                    optimizer_cls,
-                   optimizer_args=None,
+                   optimizer_args={},                   
                    target="localhost:8980",
                    server_model=None):
-        optimizer = optimizer_cls(client_model.parameters(), **optimizer_args)
-        estimator = PytorchEstimator(client_model, loss_fn, optimizer, target=target)
-        if server_model is not None:
-            estimator.add_server_model(server_model, loss_fn, optimizer_cls, optimizer_args)
+        estimator = PytorchEstimator(model=client_model, 
+                                     loss_fn=loss_fn, 
+                                     optimizer_cls=optimizer_cls,
+                                     optimizer_args=optimizer_args,
+                                     client_id=client_id,
+                                     target=target,
+                                     server_model=server_model)
+        return estimator
+
+    @staticmethod
+    def from_keras(client_model: Model,
+                   client_id,
+                   loss_fn,
+                   optimizer_cls,
+                   optimizer_args={},
+                   target="localhost:8980",
+                   server_model=None):
+        estimator = TensorflowEstimator(model=client_model, 
+                                        loss_fn=loss_fn, 
+                                        optimizer_cls=optimizer_cls,
+                                        optimizer_args=optimizer_args,
+                                        client_id=client_id,
+                                        target=target,
+                                        server_model=server_model)        
         return estimator
