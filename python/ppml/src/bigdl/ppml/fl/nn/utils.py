@@ -15,7 +15,10 @@
 #
 
 import pickle
+import numpy as np
+
 from bigdl.ppml.fl.nn.generated.nn_service_pb2 import *
+from bigdl.ppml.fl.nn.generated.fl_base_pb2 import FloatTensor, TensorMap
 
 
 class ClassAndArgsWrapper(object):
@@ -51,3 +54,13 @@ def tensor_map_to_ndarray_map(tensor_map: TensorMap):
         dtype = "float32" if v.dtype is None else v.dtype
         ndarray_map[k] = np.array(v.tensor, dtype=dtype).reshape(v.shape)
     return ndarray_map
+
+
+def print_file_size_in_dir(path='.'):
+    import os
+    with os.scandir(path) as it:
+        for entry in it:
+            if entry.is_file():
+                print(entry, entry.stat().st_size)
+            elif entry.is_dir():
+                print_file_size_in_dir(entry.path)

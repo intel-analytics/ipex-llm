@@ -47,7 +47,7 @@ class TestProtobufUtils(FLTest):
         self.fl_server.stop()
 
     def test_upload_model(self) -> None:
-        cli = FLClient(target=self.target)
+        cli = FLClient(client_id='1', aggregator='pt', target=self.target)
         model = SimpleNNModel()
         loss_fn = nn.BCELoss()
         logging.debug('uploading model to server')
