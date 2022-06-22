@@ -131,6 +131,9 @@ class ModelCheckpoint(Callback):
     def set_param(self, param):
         self.params = param
 
+    def set_trainer(self, trainer):
+        self.trainer = trainer
+
     @classmethod
     def get_latest_checkpoint(cls, dirname):
         """
