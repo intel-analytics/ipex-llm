@@ -17,7 +17,7 @@
 #
 
 set -ex
-unset SPARK_HOME
+unset SCALA_HOME
 SCRIPT_DIR=$(cd "$(dirname "${BASH_SOURCE[0]}")" &> /dev/null && pwd)
 BIGDL_PYTHON_ROOT=$SCRIPT_DIR/../../..
 
