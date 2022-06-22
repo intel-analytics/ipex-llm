@@ -26,6 +26,10 @@ from bigdl.chronos.data import TSDataset
 from bigdl.orca.automl import hp
 import pandas as pd
 import tensorflow as tf
+import onnxruntime
+
+_onnxrt_ver = onnxruntime.__version__ != '1.6.0' #  Jenkins runtime requires version 1.6.0(chronos)
+onnxrt_whether_skip = pytest.mark.skipif(_onnxrt_ver, reason="Only runs when onnxrt is 1.6.0")
 
 
 def get_ts_df():
@@ -307,6 +311,7 @@ class TestAutoTrainer(TestCase):
         best_model = auto_estimator._get_best_automl_model()
         assert 4 <= best_config["past_seq_len"] <= 6
 
+    @onnxrt_whether_skip
     def test_fit_lstm_feature(self):
         from sklearn.preprocessing import StandardScaler
         scaler = StandardScaler()
@@ -373,6 +378,7 @@ class TestAutoTrainer(TestCase):
         # use tspipeline to incrementally train
         new_ts_pipeline.fit(tsdata_valid)
 
+    @onnxrt_whether_skip
     def test_fit_tcn_feature(self):
         from sklearn.preprocessing import StandardScaler
         scaler = StandardScaler()
@@ -440,6 +446,7 @@ class TestAutoTrainer(TestCase):
         # use tspipeline to incrementally train
         new_ts_pipeline.fit(tsdata_valid)
 
+    @onnxrt_whether_skip
     def test_fit_seq2seq_feature(self):
         from sklearn.preprocessing import StandardScaler
         scaler = StandardScaler()

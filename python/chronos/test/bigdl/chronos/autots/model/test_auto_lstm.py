@@ -20,6 +20,10 @@ import numpy as np
 from unittest import TestCase
 import pytest
 import tempfile
+import onnxruntime
+
+_onnxrt_ver = onnxruntime.__version__ != '1.6.0' #  Jenkins runtime requires version 1.6.0(chronos)
+onnxrt_whether_skip = pytest.mark.skipif(_onnxrt_ver, reason="Only runs when onnxrt is 1.6.0")
 
 from bigdl.chronos.autots.model.auto_lstm import AutoLSTM
 from bigdl.orca.automl import hp
@@ -140,6 +144,7 @@ class TestAutoLSTM(TestCase):
         auto_lstm.predict(test_data_x)
         auto_lstm.evaluate((test_data_x, test_data_y))
 
+    @onnxrt_whether_skip
     def test_onnx_methods(self):
         auto_lstm = get_auto_estimator()
         auto_lstm.fit(data=train_dataloader_creator(config={"batch_size": 64}),
