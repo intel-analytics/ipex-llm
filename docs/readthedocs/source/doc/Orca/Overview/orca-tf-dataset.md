@@ -151,7 +151,7 @@ print("train size: ", train_count, ", steps: ", steps)
 
 # Convert to orca xshards
 train_shards = dataframe_to_xshards_of_feature_dict(df, df.columns, accept_str_col=True)
-# Create an Orca TF Dataset from a Friesian FeatureTable
+# Create an Orca TF Dataset from an Orca Xshards
 ds = Dataset.from_tensor_slices(train_shards)
 # List all elements in ds 
 # {'movieid': 1193, 'userid': b'1', 'rating': 5.0, 'timestamp': 978300760, 'title': b"One Flew Over the Cuckoo's Nest (1975)", 'genres': b'Drama'}
@@ -161,8 +161,7 @@ ds = Dataset.from_tensor_slices(train_shards)
 # {'movieid': 2355, 'userid': b'1', 'rating': 5.0, 'timestamp': 978824291, 'title': b"Bug's Life, A (1998)", 'genres': b"Animation|Children's|Comedy"}
 ```
 
-Once the Orca TF Dataset is created, we can perform some data preprocessing using the map function. Since the model use `input["movie_title"], input["user_id"] and input["user_rating"]` in the model `call` and `compute_loss` function, we should change the key name of the Dataset. Also, we normalize the continuous feature timestamp here.
-
+Once the Orca TF Dataset is created, we can perform some data preprocessing using the map function. Since the model use `input["movie_title"]`, `input["user_id"]` and `input["user_rating"]` in the model `call`, `train_step` and `test_step` function, we should change the key name of the Dataset. Also, we normalize the continuous feature timestamp here.
 ```python
 def preprocess(x):
     return {
