@@ -13,7 +13,7 @@ A **FGBoost Instance** is an algorithm instance running federated gradient boost
 ## Write Client Code
 This section introduces the details of the example code.
 
-We use [House Prices]() dataset. To simulate the scenario where different data features are held by 2 parties respectively, we split the dataset to 2 parts and assign an Id for each record. The split is taken by select every other column (code at [split script]()).
+We use [House Prices]() dataset. To simulate the scenario where different data features are held by 2 parties respectively, we split the dataset to 2 parts. The split is taken by select every other column (code at [split script]()).
 
 The code is available in projects, including [Client 1 code]() and [Client 2 code](). You could directly start two different terminals are run them respectively to start a federated learning, and the order of start does not matter. Following is the detailed step-by-step tutorial to introduce how the code works.
 ### Config
@@ -56,7 +56,7 @@ intersection = psi.download_intersection()
 df_train = df_train.ix(intersection) # select the intersection part of training data
 ```
 #### Preprocess Data
-We provide a `preprocess` method in the code, including fillNA, normalization, one-hot. The output is a DataFrame with all numerical features. You can check the detail in the [code]()
+We provide a `preprocess` method in the code, including normalization and one-hot. The output is a DataFrame with all numerical features. You can check the detail in the [code]()
 
 ```python
 df_train = preprocess(df_train)
