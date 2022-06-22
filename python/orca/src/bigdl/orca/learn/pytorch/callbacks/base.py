@@ -32,7 +32,7 @@ class Callback(object):
         pass
 
     @abstractmethod
-    def on_batch_end(self, batch, logs=None):
+    def on_batch_end(self, batch):
         """
         Called at the end of a training batch in `fit` methods.
         Subclasses should override for any actions to run.
@@ -54,12 +54,13 @@ class Callback(object):
         pass
 
     @abstractmethod
-    def on_epoch_end(self, epoch):
+    def on_epoch_end(self, epoch, logs=None):
         """
         Called at the end of an epoch.
         Subclasses should override for any actions to run. This function should only
         be called during TRAIN mode.
         @param epoch:  Integer, index of epoch.
+        @param logs: Dict, metric results for this training epoch, and for the validation epoch if validation is performed. Validation result keys are prefixed with val_. For training epoch, the values of the Model's metrics are returned. Example : {'loss': 0.2, 'accuracy': 0.7}
         """
         pass
 
