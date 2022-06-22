@@ -21,7 +21,6 @@ import os
 from unittest import TestCase
 import numpy as np
 import tensorflow as tf
-import sklearn
 
 
 def create_data(tf_data=False, batch_size=32):
@@ -98,11 +97,10 @@ class TestLSTMForecaster(TestCase):
         np.testing.assert_almost_equal(yhat, load_model_yhat, decimal=5)
     
     def test_lstm_customized_loss_metric(self):
-        from sklearn.metrics import mean_squared_error
         train_data, test_data = create_data(tf_data=True)
         loss = tf.losses.mean_squared_error
         def customized_metric(y_true, y_pred):
-            return mean_squared_error(tf.convert_to_tensor(y_pred),
+            return tf.losses.mean_squared_error(tf.convert_to_tensor(y_pred),
                                       tf.convert_to_tensor(y_true)).numpy()
         from bigdl.chronos.forecaster.tf.lstm_forecaster import LSTMForecaster
         self.forecaster = LSTMForecaster(past_seq_len=10,
