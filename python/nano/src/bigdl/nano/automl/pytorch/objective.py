@@ -79,7 +79,7 @@ class Objective(object):
             self.searcher.trainer.callbacks = callbacks
 
         # links data to the trainer
-        self.searcher.trainer.data_connector.attach_data(
+        self.searcher.trainer._data_connector.attach_data(
             model,
             train_dataloaders=self.train_dataloaders,
             val_dataloaders=self.val_dataloaders,
