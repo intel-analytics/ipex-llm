@@ -69,6 +69,7 @@ COPY --from=builder /usr/bin/node /usr/bin/node
 COPY --from=builder /SGXDataCenterAttestationPrimitives/QuoteGeneration/pccs/ /opt/intel/pccs/
 ADD ./default.json /opt/intel/pccs/config/default.json
 ADD ./entrypoint.sh /opt/intel/pccs/entrypoint.sh
+RUN chmod 777 /opt/intel/pccs/entrypoint.sh
 WORKDIR /opt/intel/pccs/
 
 # entrypoint to start pccs
