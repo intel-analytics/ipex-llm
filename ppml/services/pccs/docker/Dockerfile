@@ -59,7 +59,10 @@ RUN make && \
 WORKDIR /SGXDataCenterAttestationPrimitives/QuoteGeneration/pccs/
 
 # build pccs
-RUN npm config set engine-strict true && \
+RUN npm config set proxy $http_proxy && \
+    npm config set http-proxy $http_proxy && \
+    npm config set https-proxy $https_proxy && \
+    npm config set engine-strict true && \
     npm install
 
 # build final image
