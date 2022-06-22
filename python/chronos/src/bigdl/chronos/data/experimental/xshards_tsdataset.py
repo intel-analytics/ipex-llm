@@ -354,7 +354,7 @@ class XShardsTSDataset:
                                                   self.target_col)
         return self
 
-    def gen_dt_feature(self, 
+    def gen_dt_feature(self,
                        features):
         '''
         Generate datetime feature(s) for each record.
