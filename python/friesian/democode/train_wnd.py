@@ -41,8 +41,7 @@ if __name__ == '__main__':
 
     ratings = movielens.get_id_ratings(data_dir)
     ratings = pd.DataFrame(ratings, columns=["user", "item", "rate"])
-    ratings_tbl = FeatureTable.from_pandas(ratings) \
-        .cast(["user", "item", "rate"], "int")
+    ratings_tbl = FeatureTable.from_pandas(ratings)
     ratings_tbl.cache()
 
     user_df = pd.read_csv(data_dir + "/ml-1m/users.dat", delimiter="::",
@@ -55,6 +54,8 @@ if __name__ == '__main__':
     item_tbl = FeatureTable.from_pandas(item_df).cast("item", "int")
     item_tbl.cache()
 
+    user_tbl = user_tbl.fillna('0', "zipcode")
+
     user_stats = ratings_tbl.group_by("user", agg={"item": "count", "rate": "mean"}) \
         .rename({"count(item)": "user_visits", "avg(rate)": "user_mean_rate"})
     user_stats, user_min_max = user_stats.min_max_scale(["user_visits", "user_mean_rate"])
@@ -63,13 +64,12 @@ if __name__ == '__main__':
         .rename({"count(user)": "item_visits", "avg(rate)": "item_mean_rate"})
     item_stats, user_min_max = item_stats.min_max_scale(["item_visits", "item_mean_rate"])
 
+    user_tbl, inx_list = user_tbl.category_encode(["gender", "age", "zipcode", "occupation"])
+    item_tbl, item_list = item_tbl.category_encode(["genres"])
+
     item_size = item_stats.select("item").distinct().size()
     ratings_tbl = ratings_tbl.add_negative_samples(item_size=item_size, item_col="item",
                                                    label_col="label", neg_num=1)
-
-    user_tbl = user_tbl.fillna('0', "zipcode")
-    user_tbl, inx_list = user_tbl.category_encode(["gender", "age", "zipcode", "occupation"])
-    item_tbl, item_list = item_tbl.category_encode(["genres"])
 
     user_tbl = user_tbl.cross_columns([["gender", "age"], ["age", "zipcode"]], [50, 200])
 
@@ -78,11 +78,10 @@ if __name__ == '__main__':
     full = ratings_tbl.join(user_tbl, on="user") \
         .join(item_tbl, on="item")
 
-    stats = full.get_stats(cat_cols, "max")
-
     train_tbl, test_tbl = full.random_split([0.8, 0.2], seed=1)
     train_count, test_count = train_tbl.size(), test_tbl.size()
 
+    stats = full.get_stats(cat_cols, "max")
     wide_dims = [stats[key] for key in wide_cols]
     wide_cross_dims = [stats[key] for key in wide_cross_cols]
     embed_dims = [stats[key] for key in embed_cols]

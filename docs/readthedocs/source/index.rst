@@ -97,6 +97,12 @@ BigDL Documentation
 
 .. toctree::
    :maxdepth: 1
+   :caption: Friesian Overview
+
+   doc/Friesian/QuickStart/Feature_engineering.md
+
+.. toctree::
+   :maxdepth: 1
    :caption: Serving Overview
 
    doc/Serving/Overview/serving.md

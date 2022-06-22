@@ -50,6 +50,8 @@ if __name__ == '__main__':
     item_tbl = FeatureTable.from_pandas(item_df).cast("item", "int")
     item_tbl.cache()
 
+    user_tbl = user_tbl.fillna('0', "zipcode")
+
     user_stats = ratings_tbl.group_by("user", agg={"item": "count", "rate": "mean"}) \
         .rename({"count(item)": "user_visits", "avg(rate)": "user_mean_rate"})
     user_stats, user_min_max = user_stats.min_max_scale(["user_visits", "user_mean_rate"])
@@ -62,7 +64,6 @@ if __name__ == '__main__':
     ratings_tbl = ratings_tbl.add_negative_samples(item_size=item_size, item_col="item",
                                                    label_col="label", neg_num=1)
 
-    user_tbl = user_tbl.fillna('0', "zipcode")
     user_tbl, inx_list = user_tbl.category_encode(["gender", "age", "zipcode", "occupation"])
     item_tbl, item_list = item_tbl.category_encode(["genres"])
 
