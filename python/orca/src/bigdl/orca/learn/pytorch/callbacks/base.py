@@ -60,7 +60,10 @@ class Callback(object):
         Subclasses should override for any actions to run. This function should only
         be called during TRAIN mode.
         @param epoch:  Integer, index of epoch.
-        @param logs: Dict, metric results for this training epoch, and for the validation epoch if validation is performed. Validation result keys are prefixed with val_. For training epoch, the values of the Model's metrics are returned. Example : {'loss': 0.2, 'accuracy': 0.7}
+        @param logs: Dict, metric results for this training epoch, and for the validation epoch if
+            validation is performed. Validation result keys are prefixed with val_. For training
+            epoch, the values of the Model's metrics are returned.
+            Example : {'loss': 0.2, 'accuracy': 0.7}
         """
         pass
 
@@ -79,7 +82,8 @@ class Callback(object):
         """
         Called at the end of training.
         Subclasses should override for any actions to run.
-        :param logs: Dict. Currently the output of the last call to on_epoch_end() is passed to this argument for this method but that may change in the future.
+        :param logs: Dict. Currently the output of the last call to on_epoch_end() is passed to
+            this argument for this method but that may change in the future.
         """
         pass
 
