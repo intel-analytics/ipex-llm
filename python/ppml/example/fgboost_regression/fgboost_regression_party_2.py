@@ -19,6 +19,8 @@ from bigdl.ppml.fl import *
 from bigdl.ppml.fl.algorithms.fgboost_regression import FGBoostRegression
 import pandas as pd
 
+from bigdl.ppml.fl.algorithms.psi import PSI
+
 
 # the preprocess code is mainly from 
 # https://www.kaggle.com/code/pablocastilla/predict-house-prices-with-xgboost-regression/notebook
@@ -65,6 +67,10 @@ def preprocess(train_dataset):
 
 init_fl_context()
 df_train = pd.read_csv('./python/ppml/example/fgboost_regression/data/house-prices-train-2.csv')
+
+psi = PSI()
+intersection = psi.get_intersection(df_train['Id'])
+df_train = df_train.ix(intersection)
 
 x, y = preprocess(df_train)
 
