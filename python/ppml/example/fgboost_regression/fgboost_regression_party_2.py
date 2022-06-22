@@ -58,7 +58,7 @@ def preprocess(train_dataset):
     
     train_dataset = pd.get_dummies(train_dataset, columns=categorical_features_party)
     every_column_except_y= [col for col in train_dataset.columns if col not in ['SalePrice','Id']]
-    y = train_dataset['SalePrice'] if 'SalePrice' in train_dataset else None
+    y = train_dataset[['SalePrice']] if 'SalePrice' in train_dataset else None
     return train_dataset[every_column_except_y], y
 
 
