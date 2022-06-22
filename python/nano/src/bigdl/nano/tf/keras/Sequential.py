@@ -20,20 +20,9 @@ from bigdl.nano.tf.keras.training_utils import TrainingUtils
 from bigdl.nano.tf.keras.inheritance_utils import override_method
 
 
-class Sequential(TrainingUtils, InferenceUtils):
+class Sequential(TrainingUtils, InferenceUtils, tf.keras.Sequential):
     """A wrapper class for tf.keras.Sequential adding more functions for BigDL-Nano."""
 
     def __init__(self, *args, **kwargs):
         """Create a nano Sequential model, having the same arguments with tf.keras.Sequential."""
-        self.seq = TFSequencial(*args, **kwargs)
-        super().__init__()
-
-
-def f_wrapper(f):
-    """A wrapper function to overide desired method."""
-    def wrapped(self, *args, **kwargs):
-        return f(self.seq, *args, **kwargs)
-    return wrapped
-
-
-override_method(Sequential, TFSequencial, f_wrapper)
+        super().__init__(*args, **kwargs)
