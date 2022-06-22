@@ -17,31 +17,37 @@ import pandas as pd
 from pyspark.sql.functions import array
 from bigdl.orca import init_orca_context, stop_orca_context
 from bigdl.friesian.feature import FeatureTable
+from bigdl.dllib.feature.dataset import movielens
 from bigdl.orca.learn.tf2.estimator import Estimator
-from friesian.example.two_tower.model import *
+from friesian.example.two_tower.model import ColumnInfoTower, TwoTowerModel, get_1tower_model
+import os
+import tensorflow as tf
+import time
 
 
 data_dir = "./movielens"
 model_dir = "./two_tower"
-
+batch_size = 1024
 
 if __name__ == '__main__':
+    start = time.time()
     sc = init_orca_context("local",  cores=8, memory="8g", init_ray_on_spark=True)
 
-    # _ = movielens.get_id_ratings(args.data_dir)
-    ratings = pd.read_csv(data_dir + "/ml-1m/ratings.dat", delimiter="::",
-                          names=["user", "item", "rate", "time"])
+    ratings = movielens.get_id_ratings(data_dir)
+    ratings = pd.DataFrame(ratings, columns=["user", "item", "rate"])
     ratings_tbl = FeatureTable.from_pandas(ratings) \
-        .cast(["user", "item", "rate"], "int").cast("time", "long")
+        .cast(["user", "item", "rate"], "int")
+    ratings_tbl.cache()
 
     user_df = pd.read_csv(data_dir + "/ml-1m/users.dat", delimiter="::",
                           names=["user", "gender", "age", "occupation", "zipcode"])
-    user_tbl = FeatureTable.from_pandas(user_df) \
-        .cast(["user", "age", "occupation", "zipcode"], "int")
+    user_tbl = FeatureTable.from_pandas(user_df).cast(["user"], "int")
+    user_tbl.cache()
 
     item_df = pd.read_csv(data_dir + "/ml-1m/movies.dat", encoding="ISO-8859-1",
                           delimiter="::", names=["item", "title", "genres"])
     item_tbl = FeatureTable.from_pandas(item_df).cast("item", "int")
+    item_tbl.cache()
 
     user_stats = ratings_tbl.group_by("user", agg={"item": "count", "rate": "mean"}) \
         .rename({"count(item)": "user_visits", "avg(rate)": "user_mean_rate"})
@@ -55,7 +61,7 @@ if __name__ == '__main__':
     ratings_tbl = ratings_tbl.add_negative_samples(item_size=item_size, item_col="item",
                                                    label_col="label", neg_num=1)
 
-    user_tbl = user_tbl.fillna(0, "zipcode")
+    user_tbl = user_tbl.fillna('0', "zipcode")
     user_tbl, inx_list = user_tbl.category_encode(["gender", "age", "zipcode", "occupation"])
     item_tbl, item_list = item_tbl.category_encode(["genres"])
 
@@ -91,20 +97,20 @@ if __name__ == '__main__':
 
     two_tower = TwoTowerModel(user_info, item_info)
 
-    def model_creator():
+    def model_creator(config):
         model = two_tower.build_model()
         optimizer = tf.keras.optimizers.Adam()
-        model.compile(optimizer=optimizer, loss='binary_crossentropy', metrics=['AUC'])
+        model.compile(optimizer=optimizer, loss='binary_crossentropy',
+                      metrics=['binary_accuracy', 'Recall', 'AUC'])
         return model
 
     estimator = Estimator.from_keras(model_creator=model_creator)
 
     train_count, test_count = train_tbl.size(), test_tbl.size()
     feature_cols = user_info.get_name_list() + item_info.get_name_list()
-    batch_size = 1024
 
     estimator.fit(data=train_tbl.df,
-                  epochs=2,
+                  epochs=1,
                   batch_size=batch_size,
                   steps_per_epoch=train_count // batch_size,
                   validation_data=test_tbl.df,
@@ -112,13 +118,13 @@ if __name__ == '__main__':
                   feature_cols=feature_cols,
                   label_cols=['label'])
 
-    eval_stats = estimator.evaluate(test_tbl.df, num_steps=test_count // batch_size)
-    print(eval_stats)
     model = estimator.get_model()
     user_model = get_1tower_model(model, two_tower.user_col_info)
     item_model = get_1tower_model(model, two_tower.item_col_info)
     tf.saved_model.save(model, os.path.join(model_dir, "twotower-model"))
     tf.saved_model.save(user_model, os.path.join(model_dir, "user-model"))
     tf.saved_model.save(item_model, os.path.join(model_dir, "item-model"))
+    end = time.time()
+    print(f"processing time: {(end - start):.2f}s")
 
     stop_orca_context()
