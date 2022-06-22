@@ -354,12 +354,13 @@ class XShardsTSDataset:
                                                   self.target_col)
         return self
 
-    def gen_dt_feature(self, features:list):
+    def gen_dt_feature(self, features:list): 
         '''
         Generate datetime feature(s) for each record.
-        :param features: list, states which feature(s) will be generated. The list should contain the features
-               you want to generate. A table of all datatime features and their description is listed below. 
-
+        :param features: list, states which feature(s) will be generated. 
+                The list should contain the features you want to generate. 
+                A table of all datatime features and their description is listed below. 
+        
         | "MINUTE": The minute of the time stamp.
         | "DAY": The day of the time stamp.
         | "DAYOFYEAR": The ordinal day of the year of the time stamp.
@@ -377,11 +378,11 @@ class XShardsTSDataset:
 
         :return: the xshards instance.
         '''
-        assert type(features) == list
         features_generated = []
         self.shards = self.shards.transform_shard(generate_dt_features, self.dt_col, features,
                                                   None, None, features_generated)
-        features_generated = [fe for fe in features if fe not in self.target_col + [self.dt_col, self.id_col]]
+        features_generated = [fe for fe in features if fe not in 
+                              self.target_col + [self.dt_col, self.id_col]]
         self.feature_col += features_generated
         return self
 
