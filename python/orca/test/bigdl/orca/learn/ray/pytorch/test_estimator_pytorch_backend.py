@@ -132,23 +132,16 @@ class SimpleModel(nn.Module):
 
 
 class CustomCallback(Callback):
-    def on_train_begin(self, logs=None):
-        keys = list(logs.keys())
-        print("Starting training; got log keys: {}".format(keys))
 
     def on_train_end(self, logs=None):
-        keys = list(logs.keys())
-        # model = self.model
-        # weights = model.weights
-        print("Stop training; got log keys: {}".format(keys))
-
-    def on_epoch_begin(self, epoch, logs=None):
-        keys = list(logs.keys())
-        print("Start epoch {} of training; got log keys: {}".format(epoch, keys))
+        assert "train_loss" in logs
+        assert "val_loss" in logs
+        assert self.model
 
     def on_epoch_end(self, epoch, logs=None):
-        keys = list(logs.keys())
-        print("End epoch {} of training; got log keys: {}".format(epoch, keys))
+        assert "train_loss" in logs 
+        assert "val_loss" in logs
+        assert self.model
 
 
 def train_data_loader(config, batch_size):
@@ -603,9 +596,8 @@ class TestPyTorchEstimator(TestCase):
     def test_custom_callback(self):
         estimator = get_estimator(workers_per_node=2)
         callbacks = [CustomCallback()]
-        train_stats = estimator.fit(train_data_loader, epochs=4, batch_size=128,
-                                    validation_data=val_data_loader, callbacks=callbacks)
-        print(train_stats)
+        estimator.fit(train_data_loader, epochs=4, batch_size=128, 
+                      validation_data=val_data_loader, callbacks=callbacks)
 
 
 if __name__ == "__main__":
