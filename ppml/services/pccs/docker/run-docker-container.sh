@@ -9,13 +9,18 @@ export COUNTRY_NAME=your_country_name
 export CITY_NAME=your_city_name
 export ORGANIZATION_NAME=your_organizaition_name
 export COMMON_NAME=server_fqdn_or_your_name
+export EMAIL_ADDRESS=your_email_address
+export PASSWORD=your_server_password_to_use
 
-docker run \
+docker run -itd \
+--name $PCCS_CONTAINER_NAME \
 -e PCCS_PORT=$PCCS_PORT \
 -e API_KEY=$API_KEY \
 -e HTTPS_PROXY_URL=$HTTPS_PROXY_URL \
 -e COUNTRY_NAME=$COUNTRY_NAME \
 -e CITY_NAME=$CITY_NAME \
--e ORGANIZATION_NAME=$ORGANIZATION_NAME \
+-e ORGANIZATION_NAME==$ORGANIZATION_NAME \
 -e COMMON_NAME=$COMMON_NAME \
--name $PCCS_CONTAINER_NAME -d $PCCS_IMAGE_NAME:$PCCS_IMAGE_VERSION
+-e EMAIL_ADDRESS=$EMAIL_ADDRESS \
+-e PASSWORD=$PASSWORD \
+-d $PCCS_IMAGE_NAME:$PCCS_IMAGE_VERSION

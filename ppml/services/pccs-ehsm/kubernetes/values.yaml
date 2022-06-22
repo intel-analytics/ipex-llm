@@ -20,3 +20,5 @@ countryName: your_country_name
 cityName: your_city_name
 organizaitonName: your_organizaition_name
 commonName: server_fqdn_or_your_name
+emailAddress: your_email_address
+serverPassword: your_server_password_to_use

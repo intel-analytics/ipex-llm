@@ -50,6 +50,10 @@ spec:
           value: {{ .Values.organizaitonName }}
         - name: COMMON_NAME
           value: {{ .Values.commonName }}
+        - name: EMAIL_ADDRESS
+          value: {{ .Values.emailAddress }}
+        - name: PASSWORD
+          value: {{ .Values.serverPassword }}
         ports:
         - containerPort: 18081
           name: pccs-port
