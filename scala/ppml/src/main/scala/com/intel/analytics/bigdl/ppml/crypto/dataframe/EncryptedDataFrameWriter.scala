@@ -61,7 +61,12 @@ class EncryptedDataFrameWriter(
       case PLAIN_TEXT =>
         df.write.options(extraOptions).mode(mode).csv(path)
       case AES_CBC_PKCS5PADDING =>
-        writeCsv(df.rdd, sparkSession.sparkContext, path, encryptMode, dataKeyPlainText)
+        val header = if (extraOptions.getOrElse("header", "false").toBoolean) {
+          df.schema.fieldNames.mkString(",")
+        } else {
+          ""
+        }
+        writeCsv(df.rdd, sparkSession.sparkContext, path, encryptMode, dataKeyPlainText, header)
       case _ =>
         throw new IllegalArgumentException("unknown EncryptMode " + CryptoMode.toString)
     }
@@ -75,7 +80,8 @@ object EncryptedDataFrameWriter {
                          sc: SparkContext,
                          path: String,
                          encryptMode: CryptoMode,
-                         dataKeyPlainText: String): Unit = {
+                         dataKeyPlainText: String,
+                         schema: String): Unit = {
     val confBroadcast = sc.broadcast(
       new SerializableWritable(sc.hadoopConfiguration)
     )
@@ -86,20 +92,23 @@ object EncryptedDataFrameWriter {
         val partId = TaskContext.getPartitionId()
         // TODO
         val output = fs.create(new Path(path + "/part-" + partId), true)
-        val cypto = Crypto(cryptoMode = encryptMode)
-        cypto.init(encryptMode, ENCRYPT, dataKeyPlainText)
-        val header = cypto.genHeader()
-
-        output.write(header)
+        val crypto = Crypto(cryptoMode = encryptMode)
+        crypto.init(encryptMode, ENCRYPT, dataKeyPlainText)
+        // write crypto header
+        output.write(crypto.genHeader())
+        // write csv header
+        if (schema != null && schema.nonEmpty) {
+          output.write(crypto.update((schema + "\n").getBytes))
+        }
         var row = rows.next()
         while (rows.hasNext) {
           val line = row.toSeq.mkString(",") + "\n"
-          output.write(cypto.update(line.getBytes))
+          output.write(crypto.update(line.getBytes))
 //          print(rows.hasNext)
           row = rows.next()
         }
         val lastLine = row.toSeq.mkString(",")
-        val (lBytes, hmac) = cypto.doFinal(lastLine.getBytes)
+        val (lBytes, hmac) = crypto.doFinal(lastLine.getBytes)
         output.write(lBytes)
         output.write(hmac)
         output.flush()

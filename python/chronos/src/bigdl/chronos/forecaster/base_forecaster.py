@@ -424,6 +424,7 @@ class BasePytorchForecaster(Forecaster):
         :return: A numpy array with shape (num_samples, horizon, target_dim).
         """
         from bigdl.chronos.pytorch.utils import _pytorch_fashion_inference
+        from bigdl.nano.utils.log4Error import invalidInputError
 
         if self.distributed:
             invalidInputError(False,
@@ -742,6 +743,7 @@ class BasePytorchForecaster(Forecaster):
         The method is Not required to call before predict_with_openvino.
         '''
         from bigdl.chronos.pytorch import TSTrainer as Trainer
+        from bigdl.nano.utils.log4Error import invalidInputError
 
         if self.distributed:
             invalidInputError(False,

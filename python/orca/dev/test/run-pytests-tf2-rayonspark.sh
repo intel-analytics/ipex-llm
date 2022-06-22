@@ -1,3 +1,5 @@
+#!/usr/bin/env bash
+
 #
 # Copyright 2016 The BigDL Authors.
 #
@@ -13,21 +15,24 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-from bigdl.orca.data import SparkXShards
 
+# bigdl orca test only support pip, you have to install orca whl before running the script.
+#. `dirname $0`/prepare_env.sh
 
-class TF2Dataset(object):
-    def __init__(self, dataset):
-        self.rdd = dataset.as_tf_dataset_rdd()
-        self.dataset = dataset
+cd "`dirname $0`"
+cd ../..
 
-    def get_origin_xshards(self):
-        return self.dataset.get_xshards()
+export PYSPARK_PYTHON=python
+export PYSPARK_DRIVER_PYTHON=python
 
-    def get_xshards(self):
-        return SparkXShards(self.rdd)
+ray stop -f
 
-    def get_ray_xshards(self, num_workers):
-        from bigdl.orca.data.utils import process_spark_xshards
-        xshards = self.get_xshards()
-        return process_spark_xshards(xshards, num_workers)
+echo "Running tf2estimator tf2 backend tests"
+python -m pytest -v test/bigdl/orca/learn/ray/tf/test_tf2estimator_tf2_backend.py
+exit_status_1=$?
+if [ $exit_status_1 -ne 0 ];
+then
+   exit $exit_status_1
+fi
+
+ray stop -f

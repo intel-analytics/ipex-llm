@@ -13,21 +13,3 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-from bigdl.orca.data import SparkXShards
-
-
-class TF2Dataset(object):
-    def __init__(self, dataset):
-        self.rdd = dataset.as_tf_dataset_rdd()
-        self.dataset = dataset
-
-    def get_origin_xshards(self):
-        return self.dataset.get_xshards()
-
-    def get_xshards(self):
-        return SparkXShards(self.rdd)
-
-    def get_ray_xshards(self, num_workers):
-        from bigdl.orca.data.utils import process_spark_xshards
-        xshards = self.get_xshards()
-        return process_spark_xshards(xshards, num_workers)

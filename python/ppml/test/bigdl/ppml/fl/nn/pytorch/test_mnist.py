@@ -34,7 +34,7 @@ from torchvision import datasets
 from torchvision.transforms import ToTensor
 from bigdl.ppml.fl.utils import FLTest
 
-resource_path = os.path.join(os.path.dirname(__file__), "../resources")
+resource_path = os.path.join(os.path.dirname(__file__), "../../resources")
 
 
 class TestCorrectness(FLTest):
@@ -107,17 +107,17 @@ class TestCorrectness(FLTest):
 
         
         train(train_dataloader, model, loss_fn, optimizer)
-        
         vfl_model_1 = NeuralNetworkPart1()
         set_one_like_parameter(vfl_model_1)
         vfl_model_2 = NeuralNetworkPart2()
         set_one_like_parameter(vfl_model_2)
-        vfl_client_ppl = Estimator.from_torch(client_model=vfl_model_1, 
-                                                     loss_fn=loss_fn,
-                                                     optimizer_cls=torch.optim.SGD,
-                                                     optimizer_args={'lr':1e-3},
-                                                     target=self.target,
-                                                     server_model=vfl_model_2)
+        vfl_client_ppl = Estimator.from_torch(client_model=vfl_model_1,
+                                              client_id="1",
+                                              loss_fn=loss_fn,
+                                              optimizer_cls=torch.optim.SGD,
+                                              optimizer_args={'lr':1e-3},
+                                              target=self.target,
+                                              server_model=vfl_model_2)
         vfl_client_ppl.fit(train_dataloader)
         assert np.allclose(pytorch_loss_list, vfl_client_ppl.loss_history), \
             "Validation failed, correctness of PPML and native Pytorch not the same"
@@ -167,6 +167,7 @@ class NeuralNetworkPart2(nn.Module):
         )
 
     def forward(self, x):
+        x = x[0] # this act as interactive layer, take the first tensor
         x = self.sequential_2(x)
         return x
 
