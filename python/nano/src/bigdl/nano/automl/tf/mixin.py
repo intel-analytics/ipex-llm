@@ -116,12 +116,14 @@ class HPOMixin:
                           target_metric,
                           isprune,
                           fit_kwargs,
-                          backend):
+                          backend,
+                          report_method):
         objective = Objective(
             model=model_builder,
             target_metric=target_metric,
             pruning=isprune,
             backend=backend,
+            report_method=report_method,
             **fit_kwargs,
         )
         return objective
@@ -163,6 +165,7 @@ class HPOMixin:
                             backend,
                             target_metric,
                             isprune,
+                            report_method,
                             fit_kwargs,
                             run_kwargs):
         """A stand-alone function for running parallel search."""
@@ -173,7 +176,8 @@ class HPOMixin:
                                                target_metric,
                                                isprune,
                                                fit_kwargs,
-                                               backend)
+                                               backend,
+                                               report_method)
 
         study.optimize(objective, **run_kwargs)
 
@@ -193,6 +197,7 @@ class HPOMixin:
                        'backend': self.backend,
                        'target_metric': self.target_metric,
                        'isprune': isprune,
+                       'report_method': self.report_method,
                        'fit_kwargs': self.fit_kwargs,
                        'run_kwargs': subp_run_kwargs}
 
@@ -213,15 +218,33 @@ class HPOMixin:
                                                     self.target_metric,
                                                     isprune,
                                                     self.fit_kwargs,
-                                                    self.backend)
+                                                    self.backend,
+                                                    self.report_method)
 
         self.study.optimize(self.objective, **self.run_kwargs)
+
+    @staticmethod
+    def _prepare_report_method(mode, direction):
+        if mode == 'auto':
+            if direction == 'maximize':
+                mode = 'max'
+            else:
+                mode = 'min'
+        if mode == 'max':
+            return max
+        elif mode == 'min':
+            return min
+        elif mode == 'last':
+            return lambda x: x[-1]
+        else:
+            invalidInputError(False, "mode is not recognized")
 
     def search(
         self,
         resume=False,
         target_metric=None,
         n_parallels=1,
+        target_metric_mode='last',
         **kwargs
     ):
         """
@@ -231,6 +254,14 @@ class HPOMixin:
             Defaults to False.
         :param target_metric: str, optional. the target metric to optimize.
             Defaults to "accuracy".
+        :param n_parallels: number of parallel processes to run trials.
+        :param target_metric_mode: target metric of which epoch to report as the final result,
+            possible options are:
+                'max': maximum value of all epochs's results
+                'min': minimum value of all epochs's results
+                'last': result of the last epoch
+                'auto': if direction is maximize, use max mode
+                        if direction is minimize, use min mode
         :param kwargs: model.fit arguments (e.g. batch_size, validation_data, etc.)
             and search backend arguments (e.g. n_trials, pruner, etc.)
             are allowed in kwargs.
@@ -263,6 +294,9 @@ class HPOMixin:
                             HPOMixin.TUNE_RUN_KEYS,
                             HPOMixin.FIT_KEYS,
                             self.backend)
+
+        self.report_method = self._prepare_report_method(
+            target_metric_mode, self.create_kwargs.get('direction', None))
 
         # create study
         if do_create:
