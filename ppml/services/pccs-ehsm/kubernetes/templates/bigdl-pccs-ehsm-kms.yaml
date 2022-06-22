@@ -40,10 +40,12 @@ spec:
         env:
         - name: API_KEY
           value: {{ .Values.apiKey }}
+        - name: PCCS_PORT
+          value: {{ .Values.pccsPort }}
         - name: HTTPS_PROXY_URL
           value: {{ .Values.httpsProxyUrl }}
         - name: COUNTRY_NAME
-          value: countryName
+          value: {{ .Values.countryName }}
         - name: CITY_NAME
           value: {{ .Values.cityName }}
         - name: ORGANIZATION_NAME
