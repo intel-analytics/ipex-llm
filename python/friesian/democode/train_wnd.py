@@ -22,19 +22,21 @@ from bigdl.friesian.feature import FeatureTable
 from bigdl.dllib.feature.dataset import movielens
 from bigdl.orca.learn.tf2.estimator import Estimator
 from friesian.example.wnd.train.wnd_train_recsys import ColumnFeatureInfo, model_creator
+from bigdl.orca.data.file import exists, makedirs
 
 
 data_dir = "./movielens"
 model_dir = "./wnd"
 wide_cols = ["gender", "age", "occupation", "zipcode", "genres"]
 wide_cross_cols = ["gender_age", "age_zipcode"]
-indicator_cols = wide_cols + wide_cross_cols
+indicator_cols = ["gender", "age", "occupation", "genres"]
 embed_cols = ["user", "item"]
 num_cols = ["user_visits", "user_mean_rate", "item_visits", "item_mean_rate"]
 cat_cols = wide_cols + wide_cross_cols + embed_cols
 batch_size = 1024
 
 if __name__ == '__main__':
+    start = time.time()
     sc = init_orca_context("local",  cores=8, memory="8g", init_ray_on_spark=True)
 
     ratings = movielens.get_id_ratings(data_dir)
@@ -79,31 +81,31 @@ if __name__ == '__main__':
     stats = full.get_stats(cat_cols, "max")
 
     train_tbl, test_tbl = full.random_split([0.8, 0.2], seed=1)
+    train_count, test_count = train_tbl.size(), test_tbl.size()
 
     wide_dims = [stats[key] for key in wide_cols]
     wide_cross_dims = [stats[key] for key in wide_cross_cols]
     embed_dims = [stats[key] for key in embed_cols]
-
+    indicator_dims = [stats[key] for key in indicator_cols]
     column_info = ColumnFeatureInfo(wide_base_cols=wide_cols,
                                     wide_base_dims=wide_dims,
                                     wide_cross_cols=wide_cross_cols,
                                     wide_cross_dims=wide_cross_dims,
                                     indicator_cols=indicator_cols,
-                                    indicator_dims=wide_dims + wide_cross_dims,
+                                    indicator_dims=indicator_dims,
                                     embed_cols=embed_cols,
                                     embed_in_dims=embed_dims,
                                     embed_out_dims=[8] * len(embed_dims),
                                     continuous_cols=num_cols,
                                     label="label")
+    conf = {"column_info": column_info, "hidden_units": [20, 10], "lr": 0.001}
 
-    est = Estimator.from_keras(model_creator=model_creator)
-    train_count, test_count = train_tbl.size(), test_tbl.size()
+    est = Estimator.from_keras(model_creator=model_creator, config=conf)
 
-    start = time.time()
     est.fit(data=train_tbl.df,
             epochs=1,
             batch_size=batch_size,
-            steps_per_epoch=train_count// batch_size,
+            steps_per_epoch=train_count // batch_size,
             validation_data=test_tbl.df,
             validation_steps=test_count // batch_size,
             feature_cols=column_info.feature_cols,
@@ -112,6 +114,8 @@ if __name__ == '__main__':
     end = time.time()
     print("Training time is: ", end - start)
     model = est.get_model()
+    if not exists(model_dir):
+        makedirs(model_dir)
     model.save_weights(os.path.join(model_dir, "model.h5"))
 
     stop_orca_context()

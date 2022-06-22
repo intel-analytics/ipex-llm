@@ -23,6 +23,7 @@ from friesian.example.two_tower.model import ColumnInfoTower, TwoTowerModel, get
 import os
 import tensorflow as tf
 import time
+from bigdl.orca.data.file import exists, makedirs
 
 
 data_dir = "./movielens"
@@ -121,6 +122,8 @@ if __name__ == '__main__':
     model = estimator.get_model()
     user_model = get_1tower_model(model, two_tower.user_col_info)
     item_model = get_1tower_model(model, two_tower.item_col_info)
+    if not exists(model_dir):
+        makedirs(model_dir)
     tf.saved_model.save(model, os.path.join(model_dir, "twotower-model"))
     tf.saved_model.save(user_model, os.path.join(model_dir, "user-model"))
     tf.saved_model.save(item_model, os.path.join(model_dir, "item-model"))
