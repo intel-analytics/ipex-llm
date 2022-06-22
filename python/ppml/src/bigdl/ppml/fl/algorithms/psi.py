@@ -31,9 +31,9 @@ class PSI(JavaValue):
     def upload_set(self, ids, salt):
         callBigDlFunc(self.bigdl_type, "psiUploadSet", self.value, ids, salt)
 
-    def download_intersection(self, max_try=100, retry=3):
+    def download_intersection(self, max_try=100, retry=3000):
         return callBigDlFunc(self.bigdl_type, "psiDownloadIntersection", self.value, max_try, retry)
 
-    def get_intersection(self, ids, max_try=100, retry=3):
+    def get_intersection(self, ids, max_try=100, retry=3000):
         return callBigDlFunc(self.bigdl_type, "psiGetIntersection", \
             self.value, ids, max_try, retry)

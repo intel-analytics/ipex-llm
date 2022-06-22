@@ -64,13 +64,14 @@ def preprocess(train_dataset):
     return train_dataset[every_column_except_y], y
 
 
-
 init_fl_context()
+
 df_train = pd.read_csv('./python/ppml/example/fgboost_regression/data/house-prices-train-2.csv')
+df_train['Id'] = df_train['Id'].astype(str)
 
 psi = PSI()
-intersection = psi.get_intersection(df_train['Id'])
-df_train = df_train.ix(intersection)
+intersection = psi.get_intersection(list(df_train['Id']))
+df_train = df_train[df_train['Id'].isin(intersection)]
 
 x, y = preprocess(df_train)
 
