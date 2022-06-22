@@ -48,8 +48,7 @@ object Encrypt extends App with Supportive{
   val dataKeyPath = arguments.dataKeyPath
   val encryptedFilePath = arguments.inputPath + ".encrypted"
 
-  logger.info(s"$arguments.inputPath will be encrypted and saved at $encryptedFilePath," +
-    s" and decrypted and saved at $decryptedFilePath")
+  logger.info(s"$arguments.inputPath will be encrypted and saved at $encryptedFilePath")
 
   logger.info(s"Primary key will be saved at $primaryKeyPath," +
     s" and data key will be saved at $dataKeyPath")
