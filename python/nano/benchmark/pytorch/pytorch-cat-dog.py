@@ -59,6 +59,7 @@ def create_data_loader(root_dir, batch_size, nproc):
         transforms.ToTensor()
     ])
 
+
     catdogs = ImageFolder(dir_path, data_transform)
     dataset_size = len(catdogs)
 
