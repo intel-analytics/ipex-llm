@@ -99,6 +99,32 @@ class EncryptDataFrameSpec extends DataFrameHelper {
     readPlainCollect + "\n" should be (data)
   }
 
+  "save df with header" should "work" in {
+    val enWriteCsvPath = dir + "/en_write_csv_with_header"
+    val writeCsvPath = dir + "/write_csv_with_header"
+    val df = sc.read(cryptoMode = AES_CBC_PKCS5PADDING)
+      .option("header", "true").csv(encryptFileName)
+    df.count() should be (totalNum)
+    sc.write(df, cryptoMode = AES_CBC_PKCS5PADDING).option("header", "true").csv(enWriteCsvPath)
+    sc.write(df, cryptoMode = PLAIN_TEXT).option("header", "true").csv(writeCsvPath)
+
+    val readEn = sc.read(cryptoMode = AES_CBC_PKCS5PADDING)
+      .option("header", "true").csv(enWriteCsvPath)
+    readEn.count() should be (totalNum)
+    val readEnCollect = readEn.collect().map(v =>
+      s"${v.get(0)},${v.get(1)},${v.get(2)}").mkString("\n")
+    readEn.schema.map(_.name).mkString(",") + "\n" +
+      readEnCollect + "\n" should be (data)
+
+    val readPlain = sc.read(cryptoMode = PLAIN_TEXT)
+      .option("header", "true").csv(writeCsvPath)
+    readPlain.count() should be (totalNum)
+    val readPlainCollect = readPlain.collect().map(v =>
+      s"${v.get(0)},${v.get(1)},${v.get(2)}").mkString("\n")
+    readPlain.schema.map(_.name).mkString(",") + "\n" +
+      readPlainCollect + "\n" should be (data)
+  }
+
   "save df with multi-partition" should "work" in {
     val enWriteCsvPath = dir + "/en_write_csv_multi"
     val writeCsvPath = dir + "/write_csv_multi"

@@ -30,6 +30,17 @@ def convert_onnx_to_xml(onnx_file_path, xml_path, batch_size=1):
                           "ModelOptimizer fails to convert {}.".format(str(onnx_file_path)))
 
 
+def convert_pb_to_xml(pb_file_path, xml_path, batch_size=1):
+    xml_path = Path(xml_path)
+    model_name, output_dir = str(xml_path.stem), str(xml_path.parent)
+    mo_cmd = "mo --saved_model_dir {} -n {} -o {}".format(str(pb_file_path), model_name, output_dir)
+    if os.system(mo_cmd) == 0:
+        return
+    else:
+        invalidInputError(False,
+                          "ModelOptimizer fails to convert {}.".format(str(pb_file_path)))
+
+
 def save(model, xml_path):
     xml_path = Path(xml_path)
     pass_manager = Manager()
