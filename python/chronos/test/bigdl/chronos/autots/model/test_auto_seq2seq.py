@@ -22,7 +22,7 @@ import pytest
 import tempfile
 import onnxruntime
 
-_onnxrt_ver = onnxruntime.__version != '1.6.0'
+_onnxrt_ver = onnxruntime.__version__ != '1.6.0' #  Jenkins requires 1.6.0(chronos)
 onnxrt_whether_skip = pytest.mark.skipif(_onnxrt_ver, reason="Only runs when onnxrt is 1.6.0")
 
 from bigdl.chronos.autots.model.auto_seq2seq import AutoSeq2Seq

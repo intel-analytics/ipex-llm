@@ -24,7 +24,7 @@ from unittest import TestCase
 import pytest
 import onnxruntime
 
-_onnxrt_ver = onnxruntime.__version__ != '1.6.0' #  Jenkins runtime requires version 1.6.0(chronos)
+_onnxrt_ver = onnxruntime.__version__ != '1.6.0' #  Jenkins requires 1.6.0(chronos)
 onnxrt_whether_skip = pytest.mark.skipif(_onnxrt_ver, reason="Only runs when onnxrt is 1.6.0")
 
 
