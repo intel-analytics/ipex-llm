@@ -354,20 +354,11 @@ class XShardsTSDataset:
                                                   self.target_col)
         return self
 
-    def gen_dt_feature(self, features="auto", one_hot_features=None):
+    def gen_dt_feature(self, features:list):
         '''
         Generate datetime feature(s) for each record.
-
-        :param features: str or list, states which feature(s) will be generated. If the value
-               is set to be a str, it should be one of "auto" or "all". For "auto", a subset
-               of datetime features will be generated under the consideration of the sampling
-               frequency of your data. For "all", the whole set of datetime features will be
-               generated. If the value is set to be a list, the list should contain the features
-               you want to generate. A table of all datatime features and their description is
-               listed below. The value defaults to "auto".
-        :param one_hot_features: list, states which feature(s) will be generated as one-hot-encoded
-               feature. The value defaults to None, which means no features will be generated with\
-               one-hot-encoded.
+        :param features: list, states which feature(s) will be generated. The list should contain the features
+               you want to generate. A table of all datatime features and their description is listed below. 
 
         | "MINUTE": The minute of the time stamp.
         | "DAY": The day of the time stamp.
@@ -384,18 +375,13 @@ class XShardsTSDataset:
         | "IS_WEEKEND": Bool value indicating whether it belongs to weekends for the time stamp,
         | True for Saturdays and Sundays.
 
-        :return: the tsdataset instance.
+        :return: the xshards instance.
         '''
-        tmp_df = self.shards.collect()
-        tmp_df = pd.concat(tmp_df, axis=0)
-        freq = tmp_df[self.dt_col].iloc[1] - tmp_df[self.dt_col].iloc[0]
+        assert type(features) == list
         features_generated = []
         self.shards = self.shards.transform_shard(generate_dt_features, self.dt_col, features,
-                                                  one_hot_features, freq, features_generated)
-        tmp_df = self.shards.collect()
-        tmp_df = pd.concat(tmp_df, axis=0)
-        features_generated = [col for col in tmp_df.columns
-                              if col not in self.target_col + [self.dt_col, self.id_col]]
+                                                  None, None, features_generated)
+        features_generated = [fe for fe in features if fe not in self.target_col + [self.dt_col, self.id_col]]
         self.feature_col += features_generated
         return self
 
