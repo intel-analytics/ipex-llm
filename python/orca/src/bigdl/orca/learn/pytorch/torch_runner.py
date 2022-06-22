@@ -320,10 +320,10 @@ class TorchRunner:
             self.epochs_stats = stats
             if callbacks is not None:
                 for callback in callbacks:
-                    callback.on_epoch_end(epoch=self.epochs)
+                    callback.on_epoch_end(epoch=self.epochs, logs=self.epochs_stats)
         if callbacks is not None:
             for callback in callbacks:
-                callback.on_train_end()
+                callback.on_train_end(logs=self.epochs_stats)
         return stats_list
 
     def train_epoch(self,
