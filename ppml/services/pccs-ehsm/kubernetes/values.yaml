@@ -16,7 +16,6 @@ kmsIP: your_kms_ip_to_use_as
 # Below are used by pccs
 apiKey: your_intel_pcs_server_subscription_key_obtained_through_web_registeration
 httpsProxyUrl: your_usable_https_proxy_url
-pccsPort: your_pccs_port_to_use
 countryName: your_country_name
 cityName: your_city_name
 organizaitonName: your_organizaition_name
