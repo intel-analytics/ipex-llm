@@ -26,7 +26,7 @@ class IPEXAccelerator(Accelerator):
 
     def __init__(self) -> None:
         super().__init__()
-    
+
     @staticmethod
     def is_available() -> bool:
         """Detect if IPEX accelerator is available"""

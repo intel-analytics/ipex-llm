@@ -69,7 +69,7 @@ class _DDPSpawnLauncher(_SpawnLauncher):
     def __init__(self, strategy: Strategy) -> None:
         super().__init__(strategy)
 
-    def launch(self, function: Callable, *args: Any, 
+    def launch(self, function: Callable, *args: Any,
                trainer: Optional["pl.Trainer"] = None, **kwargs: Any) -> Any:
         # pytorch_lightning 1.6 uses this method to create child processes
         os.environ["MASTER_PORT"] = str(self._strategy.cluster_environment.main_port)
@@ -78,7 +78,7 @@ class _DDPSpawnLauncher(_SpawnLauncher):
             cpu_procs = schedule_workers(self._strategy.num_processes)
         else:
             cpu_procs = self._strategy.cpu_for_each_process
-        
+
         init_KMP_AFFINITY = os.environ.get("KMP_AFFINITY", "")
         init_OMP_NUM_THREADS = os.environ.get("OMP_NUM_THREADS", "")
 
@@ -111,7 +111,7 @@ class _DDPSpawnLauncher(_SpawnLauncher):
 
         os.environ["KMP_AFFINITY"] = init_KMP_AFFINITY
         os.environ["OMP_NUM_THREADS"] = init_OMP_NUM_THREADS
-        
+
         # recover the state of child process
         spawn_output = return_queue.get()
         self._recover_results_in_main_process(spawn_output, trainer)
@@ -154,7 +154,7 @@ class DDPSpawnStrategy(_DDPSpawnStrategy):
         # the same model, so we should copy the model to avoid it
         if self.strategy_name == "ddp_spawn":
             self.model = copy.deepcopy(self.model)
-            
+
         self.accelerator.setup(trainer)
 
         trainer_fn = trainer.state.fn
@@ -187,7 +187,7 @@ class DDPSpawnStrategy(_DDPSpawnStrategy):
             else:
                 warnings.warn(f"IPEX currently only support single optimizers, "
                               f"but got {num_optimizers}. Skip IPEX")
-        
+
         # some operations in `configure_ddp` do not support XPU,
         # which is used by ipex==1.9, so we move this line here
         self.model_to_device()

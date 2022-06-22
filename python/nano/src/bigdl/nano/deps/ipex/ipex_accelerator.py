@@ -16,8 +16,8 @@
 
 
 from pytorch_lightning.accelerators.accelerator import Accelerator
-from bigdl.nano.common import check_avx512
 from typing import Any
+
 
 class IPEXAccelerator(Accelerator):
 
@@ -43,4 +43,3 @@ class IPEXAccelerator(Accelerator):
     def get_parallel_devices(devices: Any) -> Any:
         """Gets parallel devices for the Accelerator."""
         pass
-    

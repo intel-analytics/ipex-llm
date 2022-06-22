@@ -13,7 +13,6 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-from typing import Optional
 
 import torch
 import pytorch_lightning as pl
@@ -24,6 +23,7 @@ from bigdl.nano.utils.log4Error import invalidInputError
 import intel_extension_for_pytorch as ipex
 
 from .ipex_accelerator import IPEXAccelerator
+
 
 class IPEXStrategy(SingleDeviceStrategy):
 
@@ -61,4 +61,3 @@ class IPEXStrategy(SingleDeviceStrategy):
         model, optimizer = ipex.optimize(self.model, optimizer=self.optimizers[0],
                                          inplace=True, dtype=dtype)
         self.optimizers = [optimizer]
-        

@@ -122,21 +122,21 @@ class Trainer(pl.Trainer):
                                       f"distributed training backend work incorrect")
             if distributed_backend == "spawn":
                 strategy = DDPSpawnStrategy(num_processes=num_processes,
-                                        cpu_for_each_process=cpu_for_each_process,
-                                        use_ipex=self.use_ipex,
-                                        enable_bf16=enable_bf16)
+                                            cpu_for_each_process=cpu_for_each_process,
+                                            use_ipex=self.use_ipex,
+                                            enable_bf16=enable_bf16)
             elif distributed_backend == "subprocess":
                 strategy = DDPSubprocessStrategy(num_processes=num_processes,
-                                             cpu_for_each_process=cpu_for_each_process,
-                                             use_ipex=self.use_ipex,
-                                             enable_bf16=enable_bf16)
+                                                 cpu_for_each_process=cpu_for_each_process,
+                                                 use_ipex=self.use_ipex,
+                                                 enable_bf16=enable_bf16)
             elif distributed_backend == "ray":
                 # Import RayPlugins may entangle with openmp even if it has not been used,
                 # which leads to an unacceptably low performance.
                 # So we import when we need.
                 strategy = distributed_ray(num_workers=num_processes,  # type: ignore
-                                         use_ipex=self.use_ipex,
-                                         enable_bf16=enable_bf16)
+                                           use_ipex=self.use_ipex,
+                                           enable_bf16=enable_bf16)
 
             super().__init__(strategy=strategy, *args, **kwargs)
 

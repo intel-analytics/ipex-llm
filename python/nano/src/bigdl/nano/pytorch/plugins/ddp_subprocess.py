@@ -70,7 +70,7 @@ class _DDPSubprocessLauncher(_DDPSpawnLauncher):
         # the `return_queue` is necessary for recovering child process's state, we need
         # to dump it in this process and load it in subprocess, the `mp.SimpleQueue()` in
         # `ddp_spawn.py` cannot be dumped, so we use `multiprocessing.Manager().Queue()` here,
-        # however, in order to be able to load it in subprocess, we must ensure the 
+        # however, in order to be able to load it in subprocess, we must ensure the
         # `current_process().authkey` in this process and in subprocess are the same
         authkey = str(uuid.uuid1())
         multiprocessing.current_process().authkey = bytes(authkey, encoding='utf-8')
@@ -99,7 +99,7 @@ class _DDPSubprocessLauncher(_DDPSpawnLauncher):
                 log.debug(f"[Process {i}]: using OMP_NUM_THREADS: {env['OMP_NUM_THREADS']}")
 
                 processes.append(subprocess.Popen([sys.executable, f"{cwd_path}/worker.py",
-                                                temp_dir], env=env))
+                                                   temp_dir], env=env))
 
             for _, process in enumerate(processes):
                 process.wait()

@@ -43,6 +43,7 @@ def ipex_device():
     from bigdl.nano.deps.ipex.version_1_9 import DEVICE
     return DEVICE
 
+
 def to_cpu(*args, **kwargs):
     from bigdl.nano.deps.ipex.version_1_9.ipex_torchfunctional import to_cpu
     return to_cpu(*args, **kwargs)

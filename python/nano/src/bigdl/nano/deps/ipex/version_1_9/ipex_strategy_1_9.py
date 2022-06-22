@@ -29,6 +29,7 @@ from .ipex_accelerator_1_9 import IPEXAccelerator
 
 _STEP_OUTPUT_TYPE = Union[torch.Tensor, Dict[str, Any]]
 
+
 class IPEXStrategy(SingleDeviceStrategy):
 
     def __init__(
@@ -41,12 +42,13 @@ class IPEXStrategy(SingleDeviceStrategy):
         Args:
             accelerator: the accelerator to handle hardware
             precision_plugin: the plugin to handle precision-specific parts
-        """        
+        """
         if enable_bf16:
             # Automatically mix precision
             ipex.enable_auto_mixed_precision(mixed_dtype=torch.bfloat16)
 
-        super().__init__(accelerator=accelerator, precision_plugin=precision_plugin, device=ipex.DEVICE)
+        super().__init__(accelerator=accelerator, precision_plugin=precision_plugin,
+                         device=ipex.DEVICE)
 
     def setup(self, trainer: pl.Trainer) -> None:
         """
@@ -62,7 +64,7 @@ class IPEXStrategy(SingleDeviceStrategy):
             invalidInputError(False, "amp is not supported in bigdl-nano.")
 
         super().setup(trainer)
-        
+
     def training_step_end(self, output: _STEP_OUTPUT_TYPE) -> _STEP_OUTPUT_TYPE:
         """
         For ipex xpu tensor do not support `tensor.storage()` right now,
