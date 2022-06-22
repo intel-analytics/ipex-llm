@@ -102,65 +102,63 @@ pred_shards = est.predict(ds)
 2. Apply TF dataset map functions to preprocess the data.
 3. Feed into Orca TF Estimator to do model training, validation, and inference.
 
-Let's see an example of using Orca TF Dataset. You can run this example via [Friesian basic ranking example](https://github.com/intel-analytics/BigDL/blob/main/python/friesian/example/basic_ranking)
+Let's see an example of using Orca TF Dataset. You can run this example via [Orca basic ranking example](https://github.com/intel-analytics/BigDL/tree/main/python/orca/example/learn/tf2/basic_ranking)
 
-First, init an orca context and create a Friesian FeatureTable from the input CSV files. Then we can create the Orca TF Dataset from the Friesian FeatureTable.
+First, init an orca context and create a Spark dataframe from the input CSV files. Then we can convert the dataframe to an Orca XShards, and create the Orca TF Dataset from the Orca XShards.
 
 ```python
-from bigdl.orca import init_orca_context, stop_orca_context
-from bigdl.friesian.feature import FeatureTable
+import math
+from bigdl.orca import init_orca_context, stop_orca_context, OrcaContext
 from bigdl.orca.learn.tf2 import Estimator
 from bigdl.orca.data.tf.data import Dataset
+from bigdl.orca.learn.utils import dataframe_to_xshards_of_feature_dict
+from pyspark.sql.functions import col, mean, stddev
 
 # Init an orca context
 init_orca_context("local", cores=4, memory="4g", init_ray_on_spark=True)
+spark = OrcaContext.get_spark_session()
 
 # Read the input csv files
-tbl = FeatureTable.read_csv("/path/to/input_file", delimiter=":", header=False, names=["userid", "title", "rating", "timestamp"]).dropna(columns=None)
-tbl = tbl.cast(["rating"], "int")
-tbl = tbl.cast(["userid"], "string")
-tbl.show(5, False)
-# +------+--------------------------------------+------+
-# |userid|title                                 |rating|
-# +------+--------------------------------------+------+
-# |1     |One Flew Over the Cuckoo's Nest (1975)|5     |
-# |1     |James and the Giant Peach (1996)      |3     |
-# |1     |My Fair Lady (1964)                   |3     |
-# |1     |Erin Brockovich (2000)                |4     |
-# |1     |Bug's Life, A (1998)                  |5     |
-# +------+--------------------------------------+------+
+df = spark.read.options(header=True, inferSchema=True, delimiter=":").csv("/path/to/input_file")
+df = df.withColumn("rating", col("rating").cast("float"))
+df = df.withColumn("userid", col("userid").cast("string"))
+df.show(5, False)
+# +-------+------+------+---------+--------------------------------------+----------------------------+
+# |movieid|userid|rating|timestamp|title                                 |genres                      |
+# +-------+------+------+---------+--------------------------------------+----------------------------+
+# |1193   |1     |5.0   |978300760|One Flew Over the Cuckoo's Nest (1975)|Drama                       |
+# |661    |1     |3.0   |978302109|James and the Giant Peach (1996)      |Animation|Children's|Musical|
+# |914    |1     |3.0   |978301968|My Fair Lady (1964)                   |Musical|Romance             |
+# |3408   |1     |4.0   |978300275|Erin Brockovich (2000)                |Drama                       |
+# |2355   |1     |5.0   |978824291|Bug's Life, A (1998)                  |Animation|Children's|Comedy |
+# +-------+------+------+---------+--------------------------------------+----------------------------+
 
-# Generate unique index value of categorical features and encode these columns with generated string indices.
-str_idx = tbl.gen_string_idx(["userid", "title"])
-user_id_size = str_idx[0].size()
-title_size = str_idx[1].size()
-tbl = tbl.encode_string(["userid", "title"], str_idx)
-tbl.show(5, False)
-# +------+------+-----+
-# |rating|userid|title|
-# +------+------+-----+
-# |5     |4395  |1855 |
-# |3     |4395  |136  |
-# |3     |4395  |2973 |
-# |4     |4395  |816  |
-# |5     |4395  |1582 |
-# +------+------+-----+
+# Generate vocabularies for the StringLookup layers
+user_id_vocab = df.select("userid").distinct().rdd.map(lambda row: row["userid"]).collect()
+movie_title_vocab = df.select("title").distinct().rdd.map(lambda row: row["title"]).collect()
 
 # Calculate mean and standard deviation for normalization
-avg, stddev = tbl.get_stats(["timestamp"], ["avg", "stddev"])["timestamp"]
+df_stats = df.select(
+    mean(col('timestamp')).alias('mean'),
+    stddev(col('timestamp')).alias('std')
+).collect()
+mean = df_stats[0]['mean']
+stddev = df_stats[0]['std']
 
-train_count = tbl.size()
+train_count = df.count()
 steps = math.ceil(train_count / 8192)
 print("train size: ", train_count, ", steps: ", steps)
 
+# Convert to orca xshards
+train_shards = dataframe_to_xshards_of_feature_dict(df, df.columns, accept_str_col=True)
 # Create an Orca TF Dataset from a Friesian FeatureTable
-ds = Dataset.from_feature_table(tbl)
+ds = Dataset.from_tensor_slices(train_shards)
 # List all elements in ds 
-# {'userid': 4395, 'title': 1855, 'rating': 5}
-# {'userid': 4395, 'title': 136, 'rating': 3}
-# {'userid': 4395, 'title': 2973, 'rating': 3}
-# {'userid': 4395, 'title': 816, 'rating': 4}
-# {'userid': 4395, 'title': 1582, 'rating': 5}
+# {'movieid': 1193, 'userid': b'1', 'rating': 5.0, 'timestamp': 978300760, 'title': b"One Flew Over the Cuckoo's Nest (1975)", 'genres': b'Drama'}
+# {'movieid': 661, 'userid': b'1', 'rating': 3.0, 'timestamp': 978302109, 'title': b'James and the Giant Peach (1996)', 'genres': b"Animation|Children's|Musical"}
+# {'movieid': 914, 'userid': b'1', 'rating': 3.0, 'timestamp': 978301968, 'title': b'My Fair Lady (1964)', 'genres': b'Musical|Romance'}
+# {'movieid': 3408, 'userid': b'1', 'rating': 4.0, 'timestamp': 978300275, 'title': b'Erin Brockovich (2000)', 'genres': b'Drama'}
+# {'movieid': 2355, 'userid': b'1', 'rating': 5.0, 'timestamp': 978824291, 'title': b"Bug's Life, A (1998)", 'genres': b"Animation|Children's|Comedy"}
 ```
 
 Once the Orca TF Dataset is created, we can perform some data preprocessing using the map function. Since the model use `input["movie_title"], input["user_id"] and input["user_rating"]` in the model `call` and `compute_loss` function, we should change the key name of the Dataset. Also, we normalize the continuous feature timestamp here.
@@ -172,34 +170,34 @@ def preprocess(x):
         "user_id": x["userid"],
         "user_rating": x["rating"],
         # Normalize continuous timestamp
-        "timestamp": (tf.cast(x["timestamp"], tf.float32) - avg) / stddev
+        "timestamp": (tf.cast(x["timestamp"], tf.float32) - mean) / stddev
     }
 
 # Preprocess the ds using map function
 ds = ds.map(preprocess)
-
 # List all elements in ds
-# {'movie_title': 1855, 'user_id': 4395, 'user_rating': 5, 'timestamp': 0.49397522}
-# {'movie_title': 136, 'user_id': 4395, 'user_rating': 3, 'timestamp': 0.4940853}
-# {'movie_title': 2973, 'user_id': 4395, 'user_rating': 3, 'timestamp': 0.49407482}
-# {'movie_title': 816, 'user_id': 4395, 'user_rating': 4, 'timestamp': 0.4939385}
-# {'movie_title': 1582, 'user_id': 4395, 'user_rating': 5, 'timestamp': 0.5368723}
+# {'movie_title': b"One Flew Over the Cuckoo's Nest (1975)", 'user_id': b'1', 'user_rating': 5.0, 'timestamp': 0.49397522}
+# {'movie_title': b'James and the Giant Peach (1996)', 'user_id': b'1', 'user_rating': 3.0, 'timestamp': 0.4940853}
+# {'movie_title': b'My Fair Lady (1964)', 'user_id': b'1', 'user_rating': 3.0, 'timestamp': 0.49407482}
+# {'movie_title': b'Erin Brockovich (2000)', 'user_id': b'1', 'user_rating': 4.0, 'timestamp': 0.4939385}
+# {'movie_title': b"Bug's Life, A (1998)", 'user_id': b'1', 'user_rating': 5.0, 'timestamp': 0.5368723}
 ```
 
 Then we can use this dataset as input for estimator `fit`, `evaluate` and `predict`.
 
 ```python
 # Define the SampleRankingModel
-class SampleRankingModel(tfrs.models.Model):
-    def __init__(self, user_id_num, movie_title_num):
+class SampleRankingModel(tf.keras.Model):
+    def __init__(self, unique_user_ids, unique_movie_titles):
         super().__init__()
         embedding_dim = 32
-        self.task = tfrs.tasks.Ranking(
-            loss=tf.keras.losses.MeanSquaredError(),
-            metrics=[tf.keras.metrics.RootMeanSquaredError()]
-        )
-        self.user_embedding = tf.keras.layers.Embedding(user_id_num + 1, embedding_dim)
-        self.movie_embedding = tf.keras.layers.Embedding(movie_title_num + 1, embedding_dim)
+
+        self.user_embedding = tf.keras.Sequential([
+            tf.keras.layers.StringLookup(vocabulary=unique_user_ids, mask_token=None),
+            tf.keras.layers.Embedding(len(unique_user_ids) + 1, embedding_dim)])
+        self.movie_embedding = tf.keras.Sequential([
+            tf.keras.layers.StringLookup(vocabulary=unique_movie_titles, mask_token=None),
+            tf.keras.layers.Embedding(len(unique_movie_titles) + 1, embedding_dim)])
         self.ratings = tf.keras.Sequential([
               # Learn multiple dense layers.
               tf.keras.layers.Dense(256, activation="relu"),
@@ -210,20 +208,39 @@ class SampleRankingModel(tfrs.models.Model):
 
     def call(self, features):
         embeddings = tf.concat([self.user_embedding(features["user_id"]),
-                               self.movie_embedding(features["movie_title"]), 
-                               tf.reshape(features["timestamp"], (-1, 1))], axis=1)
+                                self.movie_embedding(features["movie_title"]),
+                                tf.reshape(features["timestamp"], (-1, 1))], axis=1)
         return self.ratings(embeddings)
 
-    def compute_loss(self, inputs, training: bool = False) -> tf.Tensor:
-        labels = inputs["user_rating"]
-        rating_predictions = self(inputs)
-        return self.task(labels=labels, predictions=rating_predictions)
+    def train_step(self, data):
+        y = data["user_rating"]
+
+        with tf.GradientTape() as tape:
+            y_pred = self(data, training=True)
+            loss = self.compiled_loss(y, y_pred, regularization_losses=self.losses)
+
+        trainable_vars = self.trainable_variables
+        gradients = tape.gradient(loss, trainable_vars)
+        self.optimizer.apply_gradients(zip(gradients, trainable_vars))
+        self.compiled_metrics.update_state(y, y_pred)
+        return {m.name: m.result() for m in self.metrics}
+
+    def test_step(self, data):
+        y = data["user_rating"]
+
+        y_pred = self(data, training=False)
+        self.compiled_loss(y, y_pred, regularization_losses=self.losses)
+
+        self.compiled_metrics.update_state(y, y_pred)
+        return {m.name: m.result() for m in self.metrics}
 
 
 def model_creator(config):
-    model = SampleRankingModel(user_id_num, movie_title_num)
-    model = TFRSModel(model)
-    model.compile(optimizer=tf.keras.optimizers.Adagrad(config["lr"]))
+    model = SampleRankingModel(unique_user_ids=user_id_vocab,
+                               unique_movie_titles=movie_title_vocab)
+    model.compile(loss=tf.keras.losses.MeanSquaredError(),
+                  metrics=[tf.keras.metrics.RootMeanSquaredError()],
+                  optimizer=tf.keras.optimizers.Adagrad(config["lr"]))
     return model
 
 config = {
@@ -233,7 +250,9 @@ config = {
 est = Estimator.from_keras(model_creator=model_creator,
                            verbose=True,
                            config=config, backend="tf2")
+# Train the model using Orca TF Dataset.
 est.fit(ds, 1, batch_size=32, steps_per_epoch=steps)
+# Evaluate the model on the test set.
 est.evaluate(ds, 32, num_steps=steps)
 pred_shards = est.predict(ds)
 # Collect the predict results to driver.
