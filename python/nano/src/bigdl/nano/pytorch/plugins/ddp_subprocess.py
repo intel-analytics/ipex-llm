@@ -32,28 +32,26 @@
 # limitations under the License.
 
 import cloudpickle
-import multiprocessing
 import os
+import multiprocessing
 import subprocess
 import sys
 import copy
+import uuid
 from typing import Any, Optional, Callable
 from tempfile import TemporaryDirectory
 
 import pytorch_lightning as pl
-from pytorch_lightning.strategies.launchers import _Launcher
-from pytorch_lightning.strategies import Strategy
 
-from bigdl.nano.pytorch.plugins.ddp_spawn import DDPSpawnStrategy
+from bigdl.nano.pytorch.plugins.ddp_spawn import DDPSpawnStrategy, _DDPSpawnLauncher
 from bigdl.nano.common.cpu_schedule import schedule_workers
 
 import logging
 
 log = logging.getLogger(__name__)
 
-class _DDPSubprocessLauncher(_Launcher):
-    def __init__(self, strategy: Strategy) -> None:
-        self._strategy = strategy
+
+class _DDPSubprocessLauncher(_DDPSpawnLauncher):
 
     @property
     def is_interactive_compatible(self) -> bool:
@@ -77,13 +75,16 @@ class _DDPSubprocessLauncher(_Launcher):
         else:
             cpu_procs = self._strategy.cpu_for_each_process
 
+        authkey = str(uuid.uuid1())
+        multiprocessing.current_process().authkey = bytes(authkey, encoding='utf-8')
+        mp = multiprocessing.Manager()
+
         with TemporaryDirectory() as temp_dir:
-            with open(os.path.join(temp_dir, "strategy.pkl"), "wb") as f:
-                cloudpickle.dump(self._strategy, f)
+            return_queue = mp.Queue()
+            error_queue = mp.Queue()
+            args = (trainer, function, args, kwargs, return_queue)
             with open(os.path.join(temp_dir, "args.pkl"), "wb") as f:
-                cloudpickle.dump((args, kwargs), f)
-            with open(os.path.join(temp_dir, "function.pkl"), 'wb') as f:
-                cloudpickle.dump(function, f)
+                cloudpickle.dump((self._wrapping_function, args, error_queue), f)
 
             processes = []
             cwd_path = os.path.split(os.path.realpath(__file__))[0]
@@ -95,6 +96,7 @@ class _DDPSubprocessLauncher(_Launcher):
                                     f"=[{','.join([str(i) for i in cpu_procs[i]])}],explicit",
                     "OMP_NUM_THREADS": str(len(cpu_procs[i])),
                     "PROCESS_IDX": str(i),
+                    "AUTHKEY": authkey,
                 })
                 log.debug(f"[Process {i}]: using KMP_AFFINITY: {env['KMP_AFFINITY']}")
                 log.debug(f"[Process {i}]: using OMP_NUM_THREADS: {env['OMP_NUM_THREADS']}")
@@ -108,6 +110,10 @@ class _DDPSubprocessLauncher(_Launcher):
             for _, process in enumerate(processes):
                 assert process.returncode == 0, "Subprocess incorrectly exit, \
                                                 check the trainer configure or usage"
+            
+            spawn_output = return_queue.get()
+            self._recover_results_in_main_process(spawn_output, trainer)
+            return spawn_output.trainer_results
 
 
 class DDPSubprocessStrategy(DDPSpawnStrategy):

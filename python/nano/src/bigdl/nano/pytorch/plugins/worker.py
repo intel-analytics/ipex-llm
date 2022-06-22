@@ -18,24 +18,18 @@ import os
 import sys
 
 import cloudpickle
+import multiprocessing
+from torch.multiprocessing.spawn import _wrap
+
 
 
 if __name__ == '__main__':
     temp_dir = sys.argv[1]
-
-    with open(os.path.join(temp_dir, "strategy.pkl"), 'rb') as f:
-        strategy = cloudpickle.load(f)
-    with open(os.path.join(temp_dir, "args.pkl"), "rb") as f:
-        (args, kwargs) = cloudpickle.load(f)
-    with open(os.path.join(temp_dir, "function.pkl"), 'rb') as f:
-        function = cloudpickle.load(f)
-
     process_idx = int(os.environ["PROCESS_IDX"])
+    authkey = bytes(os.environ['AUTHKEY'], encoding='utf-8')
+    multiprocessing.current_process().authkey = authkey
 
-    strategy._worker_setup(process_idx)
+    with open(os.path.join(temp_dir, "args.pkl"), "rb") as f:
+        (fn, args, error_queue) = cloudpickle.load(f)
 
-    results = function(*args, **kwargs)
-
-    if strategy.global_rank == 0:
-        with open(os.path.join(temp_dir, "results.pkl"), "wb") as f:
-            cloudpickle.dump(results, f)
+    _wrap(fn, process_idx, args, error_queue)
