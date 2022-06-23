@@ -76,7 +76,8 @@ class PPMLContextPythonTest extends FunSuite with BeforeAndAfterAll{
       .getOrCreate()
     val data = Seq(("Java", "20000"), ("Python", "100000"), ("Scala", "3000"))
     df = spark.createDataFrame(data).toDF("language", "user")
-    dataContent = df.collect().map(v => s"${v.get(0)},${v.get(1)}").mkString("\n")
+    dataContent = df.orderBy("language").collect()
+      .map(v => s"${v.get(0)},${v.get(1)}").mkString("\n")
 
     // init PPMLContext
     sc = ppmlContextPython.createPPMLContext(appName, ppmlArgs.asJava)
@@ -182,7 +183,8 @@ class PPMLContextPythonTest extends FunSuite with BeforeAndAfterAll{
     val encryptedDataFrameReader = ppmlContextPython.read(sc, "plain_text")
     val parquetDF = ppmlContextPython.parquet(encryptedDataFrameReader, path)
 
-    val data = parquetDF.collect().map(v => s"${v.get(0)},${v.get(1)}").mkString("\n")
+    val data = parquetDF.orderBy("language").collect()
+      .map(v => s"${v.get(0)},${v.get(1)}").mkString("\n")
     Log4Error.invalidOperationError(data == dataContent,
       "current data is\n" + data + "\n" +
         "data should be\n" + dataContent)
@@ -198,7 +200,8 @@ class PPMLContextPythonTest extends FunSuite with BeforeAndAfterAll{
     val encryptedDataFrameReader = ppmlContextPython.read(sc, "AES/CBC/PKCS5Padding")
     val parquetDF = ppmlContextPython.parquet(encryptedDataFrameReader, path)
 
-    val data = parquetDF.collect().map(v => s"${v.get(0)},${v.get(1)}").mkString("\n")
+    val data = parquetDF.orderBy("language").collect()
+      .map(v => s"${v.get(0)},${v.get(1)}").mkString("\n")
     Log4Error.invalidOperationError(data == dataContent,
       "current data is\n" + data + "\n" +
         "data should be\n" + dataContent)
