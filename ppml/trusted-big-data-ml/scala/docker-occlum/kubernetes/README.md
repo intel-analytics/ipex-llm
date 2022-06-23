@@ -18,31 +18,67 @@ cd ..
 bash build-docker-image.sh
 ```
 
-2. Download [Spark 3.1.2](https://archive.apache.org/dist/spark/spark-3.1.2/spark-3.1.2-bin-hadoop2.7.tgz), and setup `SPARK_HOME`. Or set `SPARK_HOME` in `run_spark_pi.sh`.
-3. Modify `${kubernetes_master_url}` to your k8s master url in the `run_spark_pi.sh `
-4. Modify `executor.yaml` for your need
+2. Download [Spark 3.1.2](https://archive.apache.org/dist/spark/spark-3.1.2/spark-3.1.2-bin-hadoop2.7.tgz), and setup `SPARK_HOME`.
+3. `export kubernetes_master_url=your_k8s_master` or replace `${kubernetes_master_url}` with your k8s master url in `run_spark_xxx.sh`.
+4. Modify `driver.yaml` and `executor.yaml` for your applications.
 
-## Run Spark executor in Occlum:
+## Examples
 
-### Run SparkPi example
+### SparkPi example
 
 ```bash
 ./run_spark_pi.sh
 ```
 
-### Run Spark ML LogisticRegression example
+```yaml
+#driver.yaml
+    env:
+    - name: DRIVER_MEMORY
+      value: "500m"
+    - name: SGX_MEM_SIZE
+      value: "1GB"
+```
+
+```yaml
+#executor.yaml
+    env:
+    - name: SGX_MEM_SIZE
+      value: "1GB"
+```
+
+### Spark ML LogisticRegression example
 
 ```bash
 ./run_spark_lr.sh
 ```
 
-### Run Spark ML GradientBoostedTreeClassifier example
+```yaml
+#driver.yaml
+    env:
+    - name: DRIVER_MEMORY
+      value: "2g"
+    - name: SGX_MEM_SIZE
+      value: "4GB"
+    - name: SGX_THREAD
+      value: "128"
+```
+
+```yaml
+#executor.yaml
+    env:
+    - name: SGX_MEM_SIZE
+      value: "4GB"
+    - name: SGX_THREAD
+      value: "128"
+```
+
+### Spark ML GradientBoostedTreeClassifier example
 
 ```bash
 ./run_spark_gbt.sh
 ```
 
-### Run Spark SQL SparkSQL example
+### Spark SQL SparkSQL example
 
 ```bash
 ./run_spark_sql.sh
@@ -67,8 +103,7 @@ Parameters:
 * num_round : Int
 * path_to_model_to_be_saved : String.
 
-  After training, you can find xgboost model in folder `/tmp/path_to_model_to_be_saved`.
-
+After training, you can find xgboost model in folder `/tmp/path_to_model_to_be_saved`.
 
 #### Criteo 1TB Click Logs [dataset](https://ailab.criteo.com/download-criteo-1tb-click-logs-dataset/)
 
@@ -77,6 +112,7 @@ Then change the `class` in [script](https://github.com/intel-analytics/BigDL/blo
 `com.intel.analytics.bigdl.dllib.examples.nnframes.xgboost.xgbClassifierTrainingExampleOnCriteoClickLogsDataset`.
 
 Add these configurations to [script](https://github.com/intel-analytics/BigDL/blob/main/ppml/trusted-big-data-ml/scala/docker-occlum/kubernetes/run_spark_xgboost.sh):
+
 ```bash
     --conf spark.driver.extraClassPath=local:///opt/spark/jars/* \
     --conf spark.executor.extraClassPath=local:///opt/spark/jars/* \
@@ -94,17 +130,21 @@ Add these configurations to [script](https://github.com/intel-analytics/BigDL/bl
     --executor-memory 10g \
     --driver-memory 10g
 ```
+
 Change the `parameters` to:
+
 ```commandline
 /host/data/xgboost_data /host/data/xgboost_criteo_model 32 100 10
 ```
+
 Then:
+
 ```bash
 ./run_spark_xgboost.sh
 ```
 Parameters:
 
-* path_to_Criteo_data : String. 
+* path_to_Criteo_data : String.
 
     For example, yout host path to Criteo dateset is `/tmp/xgboost_data/criteo` then this parameter in `run_spark_xgboost.sh` is `/host/data/xgboost_data`.
 * path_to_model_to_be_saved : String.
@@ -115,18 +155,16 @@ Parameters:
 * num_round : Int
 * max_depth: Int. Tree max depth.
 
-**note: make sure num_threads is larger than spark.task.cpus.**
+**Note: make sure num_threads is larger than spark.task.cpus.**
 
 #### Source code
 You can find source code [here](https://github.com/intel-analytics/BigDL/tree/main/scala/dllib/src/main/scala/com/intel/analytics/bigdl/dllib/example/nnframes/xgboost).
 
 ### Run Spark TPC-H example
 
-Modify the following configuration in `executor.yaml`.
+Modify the following configuration in `driver.yaml` and `executor.yaml`.
 
 ```yaml
-imagePullPolicy: Always
-
 env:
 - name: SGX_THREAD
   value: "256"
@@ -134,8 +172,6 @@ env:
   value: "2GB"
 - name: SGX_KERNEL_HEAP
   value: "2GB"
-- name: SGX_MMAP
-  value: "16GB"
 ```
 
 Then run the script.
@@ -145,6 +181,5 @@ Then run the script.
 ```
 
 ## How to debug
-Modify the `--conf spark.kubernetes.sgx.log.level=off \` to one of `off, error, warn, debug, info, and trace` 
-in `run_spark_xx.sh`.
 
+Modify the `--conf spark.kubernetes.sgx.log.level=off \` to one of `off, error, warn, debug, info, and trace` in `run_spark_xx.sh`.
