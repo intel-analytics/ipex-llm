@@ -4,13 +4,24 @@ Forecasters
 LSTMForecaster
 ----------------------------------------
 
-:strong:`Please refer to` `BasePytorchForecaster <https://bigdl.readthedocs.io/en/latest/doc/PythonAPI/Chronos/forecasters.html#basepytorchforecaster>`__ :strong:`for other methods other than initialization`.
-
 Long short-term memory(LSTM) is a special type of recurrent neural network(RNN). We implement the basic version of LSTM - VanillaLSTM for this forecaster for time-series forecasting task. It has two LSTM layers, two dropout layer and a dense layer.
 
 For the detailed algorithm description, please refer to `here <https://github.com/intel-analytics/BigDL/blob/main/docs/docs/Chronos/Algorithm/LSTMAlgorithm.md>`__.
 
+`version:pytorch`
+
+:strong:`Please refer to` `BasePytorchForecaster <https://bigdl.readthedocs.io/en/latest/doc/PythonAPI/Chronos/forecasters.html#basepytorchforecaster>`__ :strong:`for other methods other than initialization`.
+
 .. automodule:: bigdl.chronos.forecaster.lstm_forecaster
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+`version:tensorflow`
+
+:strong:`Please refer to` `BaseTF2Forecaster <https://qp-bigdl.readthedocs.io/en/latest/doc/PythonAPI/Chronos/forecasters.html#module-bigdl.chronos.forecaster.tf.base_forecaster>`__ :strong:`for other methods other than initialization`.
+
+.. automodule:: bigdl.chronos.forecaster.tf.lstm_forecaster
     :members:
     :undoc-members:
     :show-inheritance:
@@ -19,11 +30,22 @@ For the detailed algorithm description, please refer to `here <https://github.co
 Seq2SeqForecaster
 -------------------------------------------
 
-:strong:`Please refer to` `BasePytorchForecaster <https://bigdl.readthedocs.io/en/latest/doc/PythonAPI/Chronos/forecasters.html#basepytorchforecaster>`__ :strong:`for other methods other than initialization`.
-
 Seq2SeqForecaster wraps a sequence to sequence model based on LSTM, and is suitable for multivariant & multistep time series forecasting.
 
+`version:pytorch`
+
+:strong:`Please refer to` `BasePytorchForecaster <https://bigdl.readthedocs.io/en/latest/doc/PythonAPI/Chronos/forecasters.html#basepytorchforecaster>`__ :strong:`for other methods other than initialization`.
+
 .. automodule:: bigdl.chronos.forecaster.seq2seq_forecaster
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+`version:tensorflow`
+
+:strong:`Please refer to` `BaseTF2Forecaster <https://qp-bigdl.readthedocs.io/en/latest/doc/PythonAPI/Chronos/forecasters.html#module-bigdl.chronos.forecaster.tf.base_forecaster>`__ :strong:`for other methods other than initialization`.
+
+.. automodule:: bigdl.chronos.forecaster.tf.seq2seq_forecaster
     :members:
     :undoc-members:
     :show-inheritance:
@@ -32,11 +54,22 @@ Seq2SeqForecaster wraps a sequence to sequence model based on LSTM, and is suita
 TCNForecaster
 ----------------------------------------
 
-:strong:`Please refer to` `BasePytorchForecaster <https://bigdl.readthedocs.io/en/latest/doc/PythonAPI/Chronos/forecasters.html#basepytorchforecaster>`__ :strong:`for other methods other than initialization`.
-
 Temporal Convolutional Networks (TCN) is a neural network that use convolutional architecture rather than recurrent networks. It supports multi-step and multi-variant cases. Causal Convolutions enables large scale parallel computing which makes TCN has less inference time than RNN based model such as LSTM.
 
+`version:pytorch`
+
+:strong:`Please refer to` `BasePytorchForecaster <https://bigdl.readthedocs.io/en/latest/doc/PythonAPI/Chronos/forecasters.html#basepytorchforecaster>`__ :strong:`for other methods other than initialization`.
+
 .. automodule:: bigdl.chronos.forecaster.tcn_forecaster
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+`version:tensorflow`
+
+:strong:`Please refer to` `BaseTF2Forecaster <https://qp-bigdl.readthedocs.io/en/latest/doc/PythonAPI/Chronos/forecasters.html#module-bigdl.chronos.forecaster.tf.base_forecaster>`__ :strong:`for other methods other than initialization`.
+
+.. automodule:: bigdl.chronos.forecaster.tf.tcn_forecaster
     :members:
     :undoc-members:
     :show-inheritance:
@@ -75,7 +108,6 @@ TCMFForecaster supports distributed training and inference. It is based on Orca 
     :undoc-members:
     :show-inheritance:
 
-
 MTNetForecaster
 ----------------------------------------
 
@@ -113,19 +145,20 @@ For the detailed algorithm description, please refer to `here <https://github.co
     :members:
     :undoc-members:
     :show-inheritance:
-    
-    
-TFParkForecaster
-----------------------------------------
 
-.. automodule:: bigdl.chronos.forecaster.tfpark_forecaster
-    :members:
-    :undoc-members:
-    :show-inheritance:
 
 BasePytorchForecaster
 ----------------------------------------
 
 .. autoclass:: bigdl.chronos.forecaster.base_forecaster.BasePytorchForecaster
     :members:
+    :show-inheritance:
+
+
+BaseTF2Forecaster
+----------------------------------------
+
+.. automodule:: bigdl.chronos.forecaster.tf.base_forecaster
+    :members:
+    :undoc-members:
     :show-inheritance:
