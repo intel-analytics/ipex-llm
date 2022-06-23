@@ -164,6 +164,7 @@ class TestAutoLSTM(TestCase):
         except ImportError:
             pass
 
+    @skip_onnxrt
     def test_save_load(self):
         auto_lstm = get_auto_estimator()
         auto_lstm.fit(data=train_dataloader_creator(config={"batch_size": 64}),

@@ -217,6 +217,7 @@ class TestChronosModelTCNForecaster(TestCase):
         np.testing.assert_almost_equal(test_pred_save, test_pred_load)
         np.testing.assert_almost_equal(test_pred_save_q, test_pred_load_q)
 
+    @skip_onnxrt
     def test_tcn_forecaster_quantization_onnx(self):
         train_data, val_data, test_data = create_data()
         forecaster = TCNForecaster(past_seq_len=24,
@@ -232,6 +233,7 @@ class TestChronosModelTCNForecaster(TestCase):
         pred_q = forecaster.predict_with_onnx(test_data[0], quantize=True)
         eval_q = forecaster.evaluate_with_onnx(test_data, quantize=True)
 
+    @skip_onnxrt
     def test_tcn_forecaster_quantization_onnx_tuning(self):
         train_data, val_data, test_data = create_data()
         forecaster = TCNForecaster(past_seq_len=24,
@@ -327,6 +329,7 @@ class TestChronosModelTCNForecaster(TestCase):
             distributed_eval = forecaster.evaluate(val_data)
         stop_orca_context()
 
+    @skip_onnxrt
     def test_tcn_forecaster_distributed(self):
         from bigdl.orca import init_orca_context, stop_orca_context
         train_data, val_data, test_data = create_data()

@@ -34,11 +34,25 @@ python -m pytest -v test/bigdl/chronos/autots/test_autotsestimator.py::TestAutoT
                     test/bigdl/chronos/autots/test_tspipeline.py::TestTSPipeline::test_seq2seq_tsppl_support_dataloader \
                     test/bigdl/chronos/autots/test_tspipeline.py::TestTSPipeline::test_tsppl_quantize_data_creator \
                     test/bigdl/chronos/autots/model/test_auto_lstm.py::TestAutoLSTM::test_onnx_methods \
+                    test/bigdl/chronos/autots/model/test_auto_lstm.py::TestAutoLSTM::test_save_load \
                     test/bigdl/chronos/autots/model/test_auto_tcn.py::TestAutoTCN::test_onnx_methods \
+                    test/bigdl/chronos/autots/model/test_auto_tcn.py::TestAutoTCN::test_save_load \
                     test/bigdl/chronos/autots/model/test_auto_seq2seq.py::TestAutoSeq2Seq::test_onnx_methods \
+                    test/bigdl/chronos/autots/model/test_auto_seq2seq.py::TestAutoSeq2Seq::test_save_load \
                     test/bigdl/chronos/forecaster/test_lstm_forecaster.py::TestChronosModelLSTMForecaster::test_lstm_forecaster_onnx_methods \
+                    test/bigdl/chronos/forecaster/test_lstm_forecaster.py::TestChronosModelLSTMForecaster::test_lstm_forecaster_quantization_onnx \
+                    test/bigdl/chronos/forecaster/test_lstm_forecaster.py::TestChronosModelLSTMForecaster::test_lstm_forecaster_quantization_onnx_tuning \
+                    test/bigdl/chronos/forecaster/test_lstm_forecaster.py::TestChronosModelLSTMForecaster::test_lstm_forecaster_distributed \
                     test/bigdl/chronos/forecaster/test_seq2seq_forecaster.py::TestChronosModelSeq2SeqForecaster::test_s2s_forecaster_onnx_methods \
-                    test/bigdl/chronos/forecaster/test_tcn_forecaster.py::TestChronosModelTCNForecaster::test_tcn_forecaster_onnx_methods
+                    test/bigdl/chronos/forecaster/test_seq2seq_forecaster.py::TestChronosModelSeq2SeqForecaster::test_s2s_forecaster_distributed \
+                    test/bigdl/chronos/forecaster/test_tcn_forecaster.py::TestChronosModelTCNForecaster::test_tcn_forecaster_onnx_methods \
+                    test/bigdl/chronos/forecaster/test_tcn_forecaster.py::TestChronosModelTCNForecaster::test_tcn_forecaster_quantization_onnx \
+                    test/bigdl/chronos/forecaster/test_tcn_forecaster.py::TestChronosModelTCNForecaster::test_tcn_forecaster_quantization_onnx_tuning \
+                    test/bigdl/chronos/forecaster/test_tcn_forecaster.py::TestChronosModelTCNForecaster::test_tcn_forecaster_distributed \
+                    test/bigdl/chronos/forecaster/test_nbeats_forecaster.py::TestChronosNBeatsForecaster::test_nbeats_forecaster_onnx_methods \
+                    test/bigdl/chronos/forecaster/test_nbeats_forecaster.py::TestChronosNBeatsForecaster::test_nbeats_forecaster_quantization_onnx \
+                    test/bigdl/chronos/forecaster/test_nbeats_forecaster.py::TestChronosNBeatsForecaster::test_nbeats_forecaster_quantization_onnx_tuning \
+                    test/bigdl/chronos/forecaster/test_nbeats_forecaster.py::TestChronosNBeatsForecaster::test_nbeats_forecaster_distributed
 
 exit_status_0=$?
 if [ $exit_status_0 -ne 0 ];

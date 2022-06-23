@@ -222,6 +222,7 @@ class TestChronosModelSeq2SeqForecaster(TestCase):
             distributed_eval = forecaster.evaluate(val_data)
         stop_orca_context()
 
+    @skip_onnxrt
     def test_s2s_forecaster_distributed(self):
         from bigdl.orca import init_orca_context, stop_orca_context
         train_data, val_data, test_data = create_data()
