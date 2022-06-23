@@ -78,11 +78,6 @@ spec:
                 configMapKeyRef:
                   name: bigdl-notebook-config
                   key: spark.executor.instances
-            - name: RUNTIME_TOTAL_EXECUTOR_CORES
-              valueFrom:
-                configMapKeyRef:
-                  name: bigdl-notebook-config
-                  key: total.executor.cores
             - name: NFS_CLAIMNAME
               valueFrom:
                 configMapKeyRef:
@@ -166,7 +161,6 @@ data:
   spark.executor.cores: "4"
   spark.executor.memory: 20g
   spark.executor.instances: "4"
-  total.executor.cores: "4"
   token: 1234qwer
   spark.kubernetes.executor.volumes.persistentVolumeClaim.nfsvolumeclaim.options.claimName: nfsvolumeclaim
   spark.kubernetes.executor.volumes.persistentVolumeClaim.nfsvolumeclaim.mount.path: /data/jupyter

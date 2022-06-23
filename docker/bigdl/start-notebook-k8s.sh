@@ -84,7 +84,6 @@ ${SPARK_HOME}/bin/pyspark \
   --executor-cores ${RUNTIME_EXECUTOR_CORES} \
   --executor-memory ${RUNTIME_EXECUTOR_MEMORY} \
   --num-executors ${RUNTIME_EXECUTOR_INSTANCES} \
-  --total-executor-cores ${RUNTIME_TOTAL_EXECUTOR_CORES} \
   --properties-file ${BIGDL_HOME}/conf/spark-bigdl.conf \
   --py-files ${BIGDL_HOME}/python/bigdl-spark_${SPARK_VERSION}-${BIGDL_VERSION}-python-api.zip \
   --conf spark.jars=$jars \
