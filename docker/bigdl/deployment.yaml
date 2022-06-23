@@ -16,7 +16,7 @@ spec:
         appType: bigdl
     spec:
       containers:
-        - image: intelanalytics/bigdl:2.1.0-SNAPSHOT
+        - image: intelanalytics/bigdl:default
           ports:
             - name: jupyter-address
               containerPort: 8888
@@ -24,6 +24,8 @@ spec:
           env:
             - name: CONTAINER_NAME
               value: bigdl-notebook
+            - name: NOTEBOOK_TOKEN
+              value: "1234qwer"
           volumeMounts:
             - name: bigdl-notebook-volume
               mountPath: /data/jupyter
