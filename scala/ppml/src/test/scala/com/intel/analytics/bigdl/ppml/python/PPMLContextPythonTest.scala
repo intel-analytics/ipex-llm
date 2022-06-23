@@ -30,19 +30,21 @@ class PPMLContextPythonTest extends FunSuite with BeforeAndAfterAll{
   val ppmlContextPython: PPMLContextPython[Float] = PPMLContextPython.ofFloat
   val kms: SimpleKeyManagementService = SimpleKeyManagementService.apply()
   val appName = "test"
+  val dir: String = this.getClass.getClassLoader.getResource("").getPath
   val ppmlArgs: Map[String, String] = Map(
     "kms_type" -> "SimpleKeyManagementService",
     "simple_app_id" -> kms._appId,
     "simple_app_key" -> kms._appKey,
-    "primary_key_path" -> (this.getClass.getClassLoader.getResource("").getPath + "primaryKey"),
-    "data_key_path" -> (this.getClass.getClassLoader.getResource("").getPath + "dataKey")
+    "primary_key_path" -> (dir + "primaryKey"),
+    "data_key_path" -> (dir + "dataKey")
   )
-  val dir: String = this.getClass.getClassLoader.getResource("").getPath
   var sc: PPMLContext = null
+  var df: DataFrame = null
+  var dataContent: String = null
 
   override def beforeAll(): Unit = {
     // generate a tmp csv file
-    val csvFile = this.getClass.getClassLoader.getResource("").getPath + "people.csv"
+    val csvFile = dir + "people.csv"
     val csvWriter = new PrintWriter(new File(csvFile))
     csvWriter.println("name,age,job")
     csvWriter.println("jack,18,Developer")
@@ -56,29 +58,36 @@ class PPMLContextPythonTest extends FunSuite with BeforeAndAfterAll{
     csvWriter.close()
 
     // generate a primaryKey and dataKey
-    val primaryKeyPath = this.getClass.getClassLoader.getResource("").getPath + "primaryKey"
-    val dataKeyPath = this.getClass.getClassLoader.getResource("").getPath + "dataKey"
+    val primaryKeyPath = dir + "primaryKey"
+    val dataKeyPath = dir + "dataKey"
     kms.retrievePrimaryKey(primaryKeyPath)
     kms.retrieveDataKey(primaryKeyPath, dataKeyPath)
 
     // generate encrypted file
-    val encryptedFilePath = this.getClass.getClassLoader.getResource("")
-      .getPath + "encrypted/people.csv"
+    val encryptedFilePath = dir + "encrypted/people.csv"
     val dataKeyPlaintext = kms.retrieveDataKeyPlainText(primaryKeyPath, dataKeyPath)
     val encrypt = new BigDLEncrypt()
     encrypt.init(AES_CBC_PKCS5PADDING, ENCRYPT, dataKeyPlaintext)
     encrypt.doFinal(csvFile, encryptedFilePath)
+
+    // init a DataFrame for test
+    val spark: SparkSession = SparkSession.builder()
+      .master("local[1]").appName("initData")
+      .getOrCreate()
+    val data = Seq(("Java", "20000"), ("Python", "100000"), ("Scala", "3000"))
+    df = spark.createDataFrame(data).toDF("language", "user")
+    dataContent = df.collect().map(v => s"${v.get(0)},${v.get(1)}").mkString("\n")
 
     // init PPMLContext
     sc = ppmlContextPython.createPPMLContext(appName, ppmlArgs.asJava)
   }
 
   override def afterAll(): Unit = {
-    val csvFile = new File(this.getClass.getClassLoader.getResource("").getPath + "people.csv")
-    val primaryKey = new File(this.getClass.getClassLoader.getResource("").getPath + "primaryKey")
-    val dataKey = new File(this.getClass.getClassLoader.getResource("").getPath + "dataKey")
-    val encryptPath = new File(this.getClass.getClassLoader.getResource("").getPath + "encrypted")
-    val writeOutput = new File(this.getClass.getClassLoader.getResource("").getPath + "output")
+    val csvFile = new File(dir + "people.csv")
+    val primaryKey = new File(dir + "primaryKey")
+    val dataKey = new File(dir + "dataKey")
+    val encryptPath = new File(dir + "encrypted")
+    val writeOutput = new File(dir + "output")
     if (csvFile.isFile) {
       csvFile.delete()
     }
@@ -155,50 +164,42 @@ class PPMLContextPythonTest extends FunSuite with BeforeAndAfterAll{
   }
 
   test(" write plain text csv file") {
-    val spark: SparkSession = SparkSession.builder()
-      .master("local[1]").appName("testData")
-      .getOrCreate()
-
-    val data = Seq(("Java", "20000"), ("Python", "100000"), ("Scala", "3000"))
-
-    val df = spark.createDataFrame(data).toDF("language", "user")
-
     write(df, "plain_text")
   }
 
   test(" write encrypted csv file") {
-    val spark: SparkSession = SparkSession.builder()
-      .master("local[1]").appName("testData")
-      .getOrCreate()
-
-    val data = Seq(("Java", "20000"), ("Python", "100000"), ("Scala", "3000"))
-
-    val df = spark.createDataFrame(data).toDF("language", "user")
-
     write(df, "AES/CBC/PKCS5Padding")
   }
 
   test("write and read plain parquet file") {
-    val spark: SparkSession = SparkSession.builder()
-      .master("local[1]").appName("testParquetData")
-      .getOrCreate()
-
-    val data = Seq(("Java", "20000"), ("Python", "100000"), ("Scala", "3000"))
-
-    val df = spark.createDataFrame(data).toDF("language", "user")
-
     // write a parquet file
-    val path = dir + "plain-parquet"
+    val path = dir + "parquet/plain-parquet"
     val encryptedDataFrameWriter = ppmlContextPython.write(sc, df, "plain_text")
     ppmlContextPython.mode(encryptedDataFrameWriter, "overwrite")
     ppmlContextPython.parquet(encryptedDataFrameWriter, path)
 
     // read a parquet file
     val encryptedDataFrameReader = ppmlContextPython.read(sc, "plain_text")
-    val dfFromParquet = ppmlContextPython.parquet(encryptedDataFrameReader, path)
+    val parquetDF = ppmlContextPython.parquet(encryptedDataFrameReader, path)
 
-    Log4Error.invalidOperationError(dfFromParquet.count() == 3,
-      "record count should be 3")
+    val data = parquetDF.collect().map(v => s"${v.get(0)},${v.get(1)}").mkString("\n")
+    Log4Error.invalidOperationError(data == dataContent,
+      "data should be \n" + dataContent)
+  }
+
+  test("write and read encrypted parquet file") {
+    val path = dir + "parquet/en-parquet"
+    val encryptedDataFrameWriter = ppmlContextPython.write(sc, df, "AES/CBC/PKCS5Padding")
+    ppmlContextPython.mode(encryptedDataFrameWriter, "overwrite")
+    ppmlContextPython.parquet(encryptedDataFrameWriter, path)
+
+    // read a parquet file
+    val encryptedDataFrameReader = ppmlContextPython.read(sc, "AES/CBC/PKCS5Padding")
+    val parquetDF = ppmlContextPython.parquet(encryptedDataFrameReader, path)
+
+    val data = parquetDF.collect().map(v => s"${v.get(0)},${v.get(1)}").mkString("\n")
+    Log4Error.invalidOperationError(data == dataContent,
+      "data should be \n" + dataContent)
   }
 
 }
