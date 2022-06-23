@@ -34,11 +34,11 @@ class WandbLoggerCallback(Callback):
         **kwargs,
     ):
         """
-        Weights and biases (https://www.wandb.ai/) is a tool for experiment tracking, 
+        Weights and biases (https://www.wandb.ai/) is a tool for experiment tracking,
         model optimization, and dataset versioning.
 
         WandbLoggerCallback automatically uses Weights and biases to log metric results at the end
-        of each epoch. User could choose whether to watch model gradients and whether to log 
+        of each epoch. User could choose whether to watch model gradients and whether to log
         hyper-parameters defined in config.
 
         Example:
@@ -46,7 +46,7 @@ class WandbLoggerCallback(Callback):
             ...     project='my_project',
             ... )
         :param project: Name of the Wandb project. Mandatory.
-        :param log_config: Whether to log ``config``. 
+        :param log_config: Whether to log ``config``.
         :param watch_model: Whether to log model gradients and model topology.
         :param **kwargs: The keyword arguments will be pased to ``wandb.init()``.
         """
@@ -56,7 +56,7 @@ class WandbLoggerCallback(Callback):
             invalidInputError(False, "You should run `wandb login` from the command line first.")
         self.project = project
         self.log_config = log_config
-        self.watch_model = watch_model        
+        self.watch_model = watch_model
         self.kwargs = kwargs
         super.__init__()
 
@@ -99,7 +99,6 @@ class WandbLoggerCallback(Callback):
                 self.run.watch(self.model)
         else:
             self.run = None
-        
 
     def on_train_end(self, logs=None):
         """
