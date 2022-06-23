@@ -51,4 +51,8 @@ if __name__ == "__main__":
     trans_data_shard = data_shard.transform_shard(process_feature)
     data2 = trans_data_shard.collect()
 
+    scaled_shard =\
+        trans_data_shard.minmax_scaler(inputColumn=["hours", "awake"], outputColumn="x_scaled")
+    scaled_shard.collect()
+
     stop_orca_context()
