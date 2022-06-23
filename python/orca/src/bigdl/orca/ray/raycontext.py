@@ -17,6 +17,8 @@
 
 from threading import Lock
 
+from bigdl.dllib.utils.log4Error import invalidInputError
+
 
 class OrcaRayContext(object):
 

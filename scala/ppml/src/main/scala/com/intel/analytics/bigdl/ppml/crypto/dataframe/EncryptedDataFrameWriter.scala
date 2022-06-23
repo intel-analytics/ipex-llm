@@ -17,13 +17,14 @@
 package com.intel.analytics.bigdl.ppml.crypto.dataframe
 
 import com.intel.analytics.bigdl.ppml.crypto.dataframe.EncryptedDataFrameWriter.writeCsv
-import com.intel.analytics.bigdl.ppml.crypto.{AES_CBC_PKCS5PADDING, Crypto, CryptoMode, ENCRYPT, PLAIN_TEXT}
+import com.intel.analytics.bigdl.ppml.crypto.{AES_CBC_PKCS5PADDING, AES_GCM_CTR_V1, AES_GCM_V1, Crypto, CryptoMode, ENCRYPT, PLAIN_TEXT}
 import org.apache.hadoop.fs.{FileSystem, Path}
 import org.apache.spark.rdd.RDD
 import org.apache.spark.{SerializableWritable, SparkContext, TaskContext}
 import org.apache.spark.sql.{DataFrame, Row, SaveMode, SparkSession}
 
-import java.util.Locale
+import java.nio.charset.StandardCharsets
+import java.util.{Base64, Locale}
 
 class EncryptedDataFrameWriter(
       sparkSession: SparkSession,
@@ -61,12 +62,33 @@ class EncryptedDataFrameWriter(
       case PLAIN_TEXT =>
         df.write.options(extraOptions).mode(mode).csv(path)
       case AES_CBC_PKCS5PADDING =>
-        writeCsv(df.rdd, sparkSession.sparkContext, path, encryptMode, dataKeyPlainText)
+        val header = if (extraOptions.getOrElse("header", "false").toBoolean) {
+          df.schema.fieldNames.mkString(",")
+        } else {
+          ""
+        }
+        writeCsv(df.rdd, sparkSession.sparkContext, path, encryptMode, dataKeyPlainText, header)
       case _ =>
         throw new IllegalArgumentException("unknown EncryptMode " + CryptoMode.toString)
     }
   }
 
+  def parquet(path: String): Unit = {
+    lazy val header = df.schema.fieldNames.mkString(",")
+    encryptMode match {
+      case PLAIN_TEXT =>
+        df.write.options(extraOptions).mode(mode).parquet(path)
+      case AES_GCM_CTR_V1 | AES_GCM_V1 =>
+        EncryptedDataFrameWriter.setParquetKey(sparkSession, dataKeyPlainText)
+        df.write
+          .option("parquet.encryption.column.keys", "key1: " + header)
+          .option("parquet.encryption.footer.key", "footerKey")
+          .option("parquet.encryption.algorithm", encryptMode.encryptionAlgorithm)
+          .options(extraOptions).mode(mode).parquet(path)
+      case _ =>
+        throw new IllegalArgumentException("unknown EncryptMode " + CryptoMode.toString)
+    }
+  }
 
 }
 
@@ -75,7 +97,8 @@ object EncryptedDataFrameWriter {
                          sc: SparkContext,
                          path: String,
                          encryptMode: CryptoMode,
-                         dataKeyPlainText: String): Unit = {
+                         dataKeyPlainText: String,
+                         schema: String): Unit = {
     val confBroadcast = sc.broadcast(
       new SerializableWritable(sc.hadoopConfiguration)
     )
@@ -86,20 +109,23 @@ object EncryptedDataFrameWriter {
         val partId = TaskContext.getPartitionId()
         // TODO
         val output = fs.create(new Path(path + "/part-" + partId), true)
-        val cypto = Crypto(cryptoMode = encryptMode)
-        cypto.init(encryptMode, ENCRYPT, dataKeyPlainText)
-        val header = cypto.genHeader()
-
-        output.write(header)
+        val crypto = Crypto(cryptoMode = encryptMode)
+        crypto.init(encryptMode, ENCRYPT, dataKeyPlainText)
+        // write crypto header
+        output.write(crypto.genHeader())
+        // write csv header
+        if (schema != null && schema.nonEmpty) {
+          output.write(crypto.update((schema + "\n").getBytes))
+        }
         var row = rows.next()
         while (rows.hasNext) {
           val line = row.toSeq.mkString(",") + "\n"
-          output.write(cypto.update(line.getBytes))
+          output.write(crypto.update(line.getBytes))
 //          print(rows.hasNext)
           row = rows.next()
         }
         val lastLine = row.toSeq.mkString(",")
-        val (lBytes, hmac) = cypto.doFinal(lastLine.getBytes)
+        val (lBytes, hmac) = crypto.doFinal(lastLine.getBytes)
         output.write(lBytes)
         output.write(hmac)
         output.flush()
@@ -108,5 +134,19 @@ object EncryptedDataFrameWriter {
       Iterator.single(1)
     }}.count()
 
+  }
+
+  private[bigdl] def setParquetKey(sparkSession: SparkSession, dataKeyPlainText: String): Unit = {
+    val encoder = Base64.getEncoder
+    val footKey = encoder.encodeToString(dataKeyPlainText.slice(0, 16)
+      .getBytes(StandardCharsets.UTF_8))
+    val dataKey = encoder.encodeToString(dataKeyPlainText.slice(16, 32)
+      .getBytes(StandardCharsets.UTF_8))
+    sparkSession.sparkContext.hadoopConfiguration.set("parquet.crypto.factory.class",
+      "org.apache.parquet.crypto.keytools.PropertiesDrivenCryptoFactory")
+    sparkSession.sparkContext.hadoopConfiguration.set("parquet.encryption.kms.client.class",
+      "org.apache.parquet.crypto.keytools.mocks.InMemoryKMS")
+    sparkSession.sparkContext.hadoopConfiguration.set("parquet.encryption.key.list",
+      s"footerKey: ${footKey}, key1: ${dataKey}")
   }
 }

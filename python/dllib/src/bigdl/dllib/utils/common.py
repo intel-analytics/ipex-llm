@@ -628,7 +628,7 @@ def callBigDlFunc(bigdl_type, name, *args):
         except Exception as e:
             error = e
             if "does not exist" not in str(e):
-                invalidOperationError(False, "e is not a does not exist exception", cause=e)
+                invalidOperationError(False, str(e), cause=e)
         else:
             return result
     invalidOperationError(False, "Cannot find function: %s" % name, cause=error)

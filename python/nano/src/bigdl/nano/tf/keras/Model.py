@@ -14,12 +14,26 @@
 # limitations under the License.
 #
 import tensorflow as tf
+from tensorflow.keras import Model as TFModel
 from bigdl.nano.tf.keras.training_utils import TrainingUtils
+from bigdl.nano.tf.keras.inference_utils import InferenceUtils
+from bigdl.nano.tf.keras.inheritance_utils import override_method
 
 
-class Model(TrainingUtils, tf.keras.Model):
+class Model(TrainingUtils, InferenceUtils):
     """A wrapper class for tf.keras.Model adding more functions for BigDL-Nano."""
 
     def __init__(self, *args, **kwargs):
         """Create a nano Sequential model, having the same arguments with tf.keras.Sequential."""
-        super().__init__(*args, **kwargs)
+        self.model = TFModel(*args, **kwargs)
+        super().__init__()
+
+
+def f_wrapper(f):
+    """A wrapper function to overide desired method."""
+    def wrapped(self, *args, **kwargs):
+        return f(self.model, *args, **kwargs)
+    return wrapped
+
+
+override_method(Model, TFModel, f_wrapper)
