@@ -184,7 +184,8 @@ class PPMLContextPythonTest extends FunSuite with BeforeAndAfterAll{
 
     val data = parquetDF.collect().map(v => s"${v.get(0)},${v.get(1)}").mkString("\n")
     Log4Error.invalidOperationError(data == dataContent,
-      "data should be \n" + dataContent)
+      "current data is\n" + data + "\n" +
+        "data should be\n" + dataContent)
   }
 
   test("write and read encrypted parquet file") {
@@ -199,7 +200,8 @@ class PPMLContextPythonTest extends FunSuite with BeforeAndAfterAll{
 
     val data = parquetDF.collect().map(v => s"${v.get(0)},${v.get(1)}").mkString("\n")
     Log4Error.invalidOperationError(data == dataContent,
-      "data should be \n" + dataContent)
+      "current data is\n" + data + "\n" +
+        "data should be\n" + dataContent)
   }
 
 }
