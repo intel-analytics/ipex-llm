@@ -130,7 +130,7 @@ class AutoformerForecaster(Forecaster):
 
         self.distributed = distributed
         self.seed = seed
-        self.checkpoint_callback = False
+        self.checkpoint_callback = True
 
         # disable multi-process training for now.
         # TODO: enable it in future.
