@@ -53,7 +53,7 @@ trainer.fit(model, data_loader)
 ### **Step 2: Quantization using Post-training Optimization Tools**
 Accelerator='openvino' means using OpenVINO POT to do quantization. The quantization can be added as below:
 ```python
-ov_q_model = trainer.quanize(model, accelerator='openvino', calib_dataloader=dataloader)
+ov_q_model = trainer.quanize(model, accelerator='openvino', calib_dataloader=data_loader)
 
 # run simple prediction with transparent acceleration
 y_hat = ov_q_model(x)

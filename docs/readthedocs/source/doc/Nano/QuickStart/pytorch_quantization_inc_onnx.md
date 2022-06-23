@@ -56,7 +56,7 @@ With the ONNXRuntime accelerator, `Trainer.quantize()` will return a model with 
 
 you can add quantization as below:
 ```python
-ort_q_model = trainer.quantize(model, accelerator='onnxruntime', calib_dataloader=dataloader)
+ort_q_model = trainer.quantize(model, accelerator='onnxruntime', calib_dataloader=data_loader)
 
 # run simple prediction
 y_hat = ort_q_model(torch.rand((10, 3, 256, 256)))
