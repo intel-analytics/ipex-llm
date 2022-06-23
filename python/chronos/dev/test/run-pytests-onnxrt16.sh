@@ -31,6 +31,8 @@ echo "Running chronos tests TF1 and Deprecated API"
 python -m pytest -v test/bigdl/chronos/autots/test_autotsestimator.py::TestAutoTrainer::test_fit_lstm_feature \
                     test/bigdl/chronos/autots/test_autotsestimator.py::TestAutoTrainer::test_fit_tcn_feature \
                     test/bigdl/chronos/autots/test_autotsestimator.py::TestAutoTrainer::test_fit_seq2seq_feature \
+                    test/bigdl/chronos/autots/test_tspipeline.py::TestTSPipeline::test_seq2seq_tsppl_support_dataloader \
+                    test/bigdl/chronos/autots/test_tspipeline.py::TestTSPipeline::test_tsppl_quantize_data_creator \
                     test/bigdl/chronos/autots/model/test_auto_lstm.py::TestAutoLSTM::test_onnx_methods \
                     test/bigdl/chronos/autots/model/test_auto_tcn.py::TestAutoTCN::test_onnx_methods \
                     test/bigdl/chronos/autots/model/test_auto_seq2seq.py::TestAutoSeq2Seq::test_onnx_methods \
