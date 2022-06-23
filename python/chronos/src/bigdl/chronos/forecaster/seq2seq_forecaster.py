@@ -142,7 +142,7 @@ class Seq2SeqForecaster(BasePytorchForecaster):
         self.use_ipex = False  # S2S has worse performance on ipex
         self.onnx_available = True
         self.quantize_available = False
-        self.checkpoint_callback = False
+        self.checkpoint_callback = True
         self.use_hpo = False
 
         super().__init__()
