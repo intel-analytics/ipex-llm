@@ -149,7 +149,7 @@
         -e RUNTIME_DRIVER_MEMORY=20g \
         -e RUNTIME_EXECUTOR_CORES=4 \
         -e RUNTIME_EXECUTOR_MEMORY=20g \
-        -e RUNTIME_TOTAL_EXECUTOR_CORES=4 \
+        -e RUNTIME_EXECUTOR_INSTANCES=4 \
         intelanalytics/bigdl:latest
 
 
