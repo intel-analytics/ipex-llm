@@ -21,77 +21,101 @@ spec:
             - name: jupyter-address
               containerPort: 8888
           name: bigdl-notebook
+          imagePullPolicy: Always
           env:
-            - name: CONTAINER_NAME
-              value: bigdl-notebook
             - name: NOTEBOOK_TOKEN
-              value: ""
+              valueFrom:
+                configMapKeyRef:
+                  name: bigdl-notebook-config
+                  key: token
             - name: RUNTIME_SPARK_MASTER
               valueFrom:
                 configMapKeyRef:
-                  name: notebook-config
+                  name: bigdl-notebook-config
                   key: master
             - name: DEPLOY_MODE
               valueFrom:
                 configMapKeyRef:
-                  name: notebook-config
+                  name: bigdl-notebook-config
                   key: mode
-            - name: SPARK_DRIVER_HOST
-              valueFrom:
-                configMapKeyRef:
-                  name: notebook-config
-                  key: spark.driver.host
             - name: RUNTIME_K8S_SERVICE_ACCOUNT
               valueFrom:
                 configMapKeyRef:
-                  name: notebook-config
+                  name: bigdl-notebook-config
                   key: spark.kubernetes.authenticate.driver.serviceAccountName
             - name: CONTAINER_NAME
               valueFrom:
                 configMapKeyRef:
-                  name: notebook-config
+                  name: bigdl-notebook-config
                   key: name
             - name: RUNTIME_K8S_SPARK_IMAGE
               valueFrom:
                 configMapKeyRef:
-                  name: notebook-config
+                  name: bigdl-notebook-config
                   key: spark.kubernetes.container.image
             - name: RUNTIME_DRIVER_CORES
               valueFrom:
                 configMapKeyRef:
-                  name: notebook-config
+                  name: bigdl-notebook-config
                   key: spark.driver.cores
             - name: RUNTIME_DRIVER_MEMORY
               valueFrom:
                 configMapKeyRef:
-                  name: notebook-config
+                  name: bigdl-notebook-config
                   key: spark.driver.memory
             - name: RUNTIME_EXECUTOR_CORES
               valueFrom:
                 configMapKeyRef:
-                  name: notebook-config
+                  name: bigdl-notebook-config
                   key: spark.executor.cores
             - name: RUNTIME_EXECUTOR_MEMORY
               valueFrom:
                 configMapKeyRef:
-                  name: notebook-config
+                  name: bigdl-notebook-config
                   key: spark.executor.memory
             - name: RUNTIME_EXECUTOR_INSTANCES
               valueFrom:
                 configMapKeyRef:
-                  name: notebook-config
+                  name: bigdl-notebook-config
                   key: spark.executor.instances
             - name: RUNTIME_TOTAL_EXECUTOR_CORES
               valueFrom:
                 configMapKeyRef:
-                  name: notebook-config
+                  name: bigdl-notebook-config
                   key: total.executor.cores
+            - name: NFS_CLAIMNAME
+              valueFrom:
+                configMapKeyRef:
+                  name: bigdl-notebook-config
+                  key: spark.kubernetes.executor.volumes.persistentVolumeClaim.nfsvolumeclaim.options.claimName
+            - name: NFS_MOUNT_PATH
+              valueFrom:
+                configMapKeyRef:
+                  name: bigdl-notebook-config
+                  key: spark.kubernetes.executor.volumes.persistentVolumeClaim.nfsvolumeclaim.mount.path
+            - name: PYSPARK_DRIVER_PYTHON
+              valueFrom:
+                configMapKeyRef:
+                  name: bigdl-notebook-config
+                  key: spark.pyspark.driver.python
+            - name: PYSPARK_PYTHON
+              valueFrom:
+                configMapKeyRef:
+                  name: bigdl-notebook-config
+                  key: spark.pyspark.python
           volumeMounts:
             - name: bigdl-notebook-volume
               mountPath: /data/jupyter
             - name: cache-volume
               mountPath: /dev/shm
-          command: [ "/opt/work/start-notebook-k8s.sh" ]
+            - name: kubeconfig
+              mountPath: /root/.kube
+          command: ["/bin/sh","-c"]
+          args: ["
+                  export SPARK_DRIVER_HOST=$( hostname -I | awk '{print $1}' );
+                  ray start --head --port=6379;
+                  bash /opt/work/start-notebook-k8s.sh
+                "]
       volumes:
         - name: bigdl-notebook-volume
           persistentVolumeClaim:
@@ -101,6 +125,9 @@ spec:
           emptyDir:
             medium: Memory
             sizeLimit: "1024Mi"
+        - name: kubeconfig
+          secret:
+            secretName: kubeconf
 
 ---
 apiVersion: v1
@@ -124,19 +151,24 @@ spec:
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: notebook-config
+  name: bigdl-notebook-config
+  namespace: default
   labels:
-    app: notebook
+    app: bigdl-notebook
 data:
   master: k8s://https://172.16.0.117:6443
   mode: client
-  name: notebook
-  spark.driver.host: 172.16.0.117
+  name: bigdl-notebook
   spark.kubernetes.authenticate.driver.serviceAccountName: spark
-  spark.kubernetes.container.image: 10.239.45.10/arda/bigdl-k8s-spark-3.1.2:202206073
-  spark.driver.cores: 4
+  spark.kubernetes.container.image: intelanalytics/bigdl-spark-3.1.2:202206222
+  spark.driver.cores: "4"
   spark.driver.memory: 20g
-  spark.executor.cores: 4
+  spark.executor.cores: "4"
   spark.executor.memory: 20g
-  spark.executor.instances: 4
-  total.executor.cores: 4
+  spark.executor.instances: "4"
+  total.executor.cores: "4"
+  token: 1234qwer
+  spark.kubernetes.executor.volumes.persistentVolumeClaim.nfsvolumeclaim.options.claimName: nfsvolumeclaim
+  spark.kubernetes.executor.volumes.persistentVolumeClaim.nfsvolumeclaim.mount.path: /data/jupyter
+  spark.pyspark.driver.python: python
+  spark.pyspark.python: /usr/local/envs/bigdl/python

@@ -74,6 +74,11 @@ ${SPARK_HOME}/bin/pyspark \
   --name ${CONTAINER_NAME} \
   --conf spark.kubernetes.container.image=${RUNTIME_K8S_SPARK_IMAGE} \
   --conf spark.kubernetes.executor.deleteOnTermination=false \
+  --conf spark.kubernetes.executor.volumes.persistentVolumeClaim.nfsvolumeclaim.options.claimName=${NFS_CLAIMNAME} \
+  --conf spark.kubernetes.executor.volumes.persistentVolumeClaim.nfsvolumeclaim.mount.path=${NFS_MOUNT_PATH} \
+  --conf spark.network.timeout=10000000 \
+  --conf spark.executor.heartbeatInterval=10000000 \
+  --conf spark.kubernetes.container.image.pullPolicy=Always \
   --driver-cores ${RUNTIME_DRIVER_CORES} \
   --driver-memory ${RUNTIME_DRIVER_MEMORY} \
   --executor-cores ${RUNTIME_EXECUTOR_CORES} \
@@ -81,7 +86,7 @@ ${SPARK_HOME}/bin/pyspark \
   --num-executors ${RUNTIME_EXECUTOR_INSTANCES} \
   --total-executor-cores ${RUNTIME_TOTAL_EXECUTOR_CORES} \
   --properties-file ${BIGDL_HOME}/conf/spark-bigdl.conf \
-  --py-files local://${BIGDL_HOME}/python/bigdl-spark_${SPARK_VERSION}-${BIGDL_VERSION}-python-api.zip \
+  --py-files ${BIGDL_HOME}/python/bigdl-spark_${SPARK_VERSION}-${BIGDL_VERSION}-python-api.zip \
   --conf spark.jars=$jars \
   --conf spark.driver.extraClassPath=local://${BIGDL_HOME}/jars/* \
   --conf spark.executor.extraClassPath=local://${BIGDL_HOME}/jars/* \
