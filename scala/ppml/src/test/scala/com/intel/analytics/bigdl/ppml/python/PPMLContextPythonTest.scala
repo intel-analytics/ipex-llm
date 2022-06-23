@@ -37,6 +37,7 @@ class PPMLContextPythonTest extends FunSuite with BeforeAndAfterAll{
     "primary_key_path" -> (this.getClass.getClassLoader.getResource("").getPath + "primaryKey"),
     "data_key_path" -> (this.getClass.getClassLoader.getResource("").getPath + "dataKey")
   )
+  val dir: String = this.getClass.getClassLoader.getResource("").getPath
   var sc: PPMLContext = null
 
   override def beforeAll(): Unit = {
@@ -175,6 +176,29 @@ class PPMLContextPythonTest extends FunSuite with BeforeAndAfterAll{
     val df = spark.createDataFrame(data).toDF("language", "user")
 
     write(df, "AES/CBC/PKCS5Padding")
+  }
+
+  test("write and read plain parquet file") {
+    val spark: SparkSession = SparkSession.builder()
+      .master("local[1]").appName("testParquetData")
+      .getOrCreate()
+
+    val data = Seq(("Java", "20000"), ("Python", "100000"), ("Scala", "3000"))
+
+    val df = spark.createDataFrame(data).toDF("language", "user")
+
+    // write a parquet file
+    val path = dir + "plain-parquet"
+    val encryptedDataFrameWriter = ppmlContextPython.write(sc, df, "plain_text")
+    ppmlContextPython.mode(encryptedDataFrameWriter, "overwrite")
+    ppmlContextPython.parquet(encryptedDataFrameWriter, path)
+
+    // read a parquet file
+    val encryptedDataFrameReader = ppmlContextPython.read(sc, "plain_text")
+    val dfFromParquet = ppmlContextPython.parquet(encryptedDataFrameReader, path)
+
+    Log4Error.invalidOperationError(dfFromParquet.count() == 3,
+      "record count should be 3")
   }
 
 }
