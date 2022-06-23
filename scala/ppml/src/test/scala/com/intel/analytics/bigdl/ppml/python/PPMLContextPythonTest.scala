@@ -191,13 +191,14 @@ class PPMLContextPythonTest extends FunSuite with BeforeAndAfterAll{
   }
 
   test("write and read encrypted parquet file") {
+    // write a parquet file
     val path = dir + "parquet/en-parquet"
-    val encryptedDataFrameWriter = ppmlContextPython.write(sc, df, "AES/CBC/PKCS5Padding")
+    val encryptedDataFrameWriter = ppmlContextPython.write(sc, df, "AES_GCM_CTR_V1")
     ppmlContextPython.mode(encryptedDataFrameWriter, "overwrite")
     ppmlContextPython.parquet(encryptedDataFrameWriter, path)
 
     // read a parquet file
-    val encryptedDataFrameReader = ppmlContextPython.read(sc, "AES/CBC/PKCS5Padding")
+    val encryptedDataFrameReader = ppmlContextPython.read(sc, "AES_GCM_CTR_V1")
     val parquetDF = ppmlContextPython.parquet(encryptedDataFrameReader, path)
 
     val data = parquetDF.orderBy("language").collect()

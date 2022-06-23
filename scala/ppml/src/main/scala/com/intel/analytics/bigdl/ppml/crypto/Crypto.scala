@@ -181,6 +181,10 @@ object CryptoMode {
          AES_CBC_PKCS5PADDING
        case "plain_text" =>
          PLAIN_TEXT
+       case "aes_gcm_v1" =>
+         AES_GCM_V1
+       case "aes_gcm_ctr_v1" =>
+         AES_GCM_CTR_V1
      }
    }
 }
