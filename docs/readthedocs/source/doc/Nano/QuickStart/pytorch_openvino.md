@@ -1,6 +1,6 @@
 # BigDL-Nano PyTorch OpenVINO Acceleration Quickstart
 
-**In this guide we will describe how to apply OpenVINO Acceleration on inference pipeline with the APIs delivered by BigDL-Nano**
+**In this guide we will describe how to apply OpenVINO Acceleration on inference pipeline with the APIs delivered by BigDL-Nano in 2 simple steps**
 
 ### **Step 0: Prepare Environment**
 We recommend using [conda](https://docs.conda.io/projects/conda/en/latest/user-guide/install/) to prepare the environment. Please refer to the [install guide](../../UserGuide/python.md) for more details.

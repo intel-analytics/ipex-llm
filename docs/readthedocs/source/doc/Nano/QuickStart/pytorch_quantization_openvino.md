@@ -1,6 +1,6 @@
-# BigDL-Nano PyTorch ONNXRuntime Acceleration Quickstart
+# BigDL-Nano PyTorch Quantization with POT Quickstart
 
-**In this guide we will describe how to apply ONNXRuntime Acceleration on inference pipeline with the APIs delivered by BigDL-Nano in 2 simple steps**
+**In this guide we will describe how to obtain a quantized model with the APIs delivered by BigDL-Nano in 2 simple steps**
 
 ### **Step 0: Prepare Environment**
 We recommend using [conda](https://docs.conda.io/projects/conda/en/latest/user-guide/install/) to prepare the environment. Please refer to the [install guide](../../UserGuide/python.md) for more details.
@@ -14,9 +14,9 @@ pip install --pre --upgrade bigdl-nano[pytorch]
 source bigdl-nano-init
 ```
 
-Before you start with onnxruntime accelerator, you are required to install some onnx packages as follows to set up your environment with ONNXRuntime acceleration.
-```bash
-pip install onnx onnxruntime
+The POT(Post-training Optimization Tools) is provided by OpenVINO toolkit. To use POT, you need to install OpenVINO
+```python
+pip install openvino-dev
 ```
 
 ### **Step 1: Prepare the Model**
@@ -26,15 +26,15 @@ from torchvision import datasets
 from torch.utils.data.dataloader import DataLoader
 from bigdl.nano.pytorch.vision import transforms
 from bigdl.nano.pytorch.trainer import Trainer
-from torchvision.models.mobilenetv3 import mobilenet_v3_small
+from torchvision.models import resnet18
 # define your own model
-model = mobilenet_v3_small(num_classes=10)
+model = resnet18(num_classes=10)
 loss = torch.nn.CrossEntropyLoss()
 optimizer = torch.optim.Adam(model.parameters(), lr=1e-4)
 model = Trainer.compile(model, loss, optimizer)
 # prepare your own data
 data_transform = transforms.Compose([
-    transforms.Resize((256, 256)),
+    transforms.Resize((224, 224)),
     transforms.Grayscale(3),
     transforms.ToTensor(),
     transforms.Normalize((0.1307,0.1307,0.1307), (0.3081,0.3081,0.3081))
@@ -50,17 +50,15 @@ trainer = Trainer()
 trainer.fit(model, data_loader)
 ```
 
-### **Step 2: Apply ONNXRumtime Acceleration**
-When you're ready, you can simply append the following part to enable your ONNXRuntime acceleration.
+### **Step 2: Quantization using Post-training Optimization Tools**
+Accelerator='openvino' means using OpenVINO POT to do quantization. The quantization can be added as below:
 ```python
-# trace your model as an ONNXRuntime model
-# The argument `input_sample` is not required in the following cases:
-# you have run `trainer.fit` before trace
-# The Model has `example_input_array` set
-ort_model = Trainer.trace(model, accelerator='onnxruntime', input_sample=torch.randn((1, 3, 256, 256)))
+ov_q_model = trainer.quanize(model, accelerator='openvino', calib_dataloader=data_loader)
 
-# The usage is almost the same with any PyTorch module
-y_hat = ort_model(torch.rand((10, 3, 256, 256)))
+# run simple prediction with transparent acceleration
+y_hat = ov_q_model(torch.rand((10, 3, 224, 224)))
 ```
-- Note
-    `ort_model` is not trainable any more, so you can't use like trainer.fit(ort_model, dataloader)
+Same as you set accelerator as ONNXRuntime, it equals to converting the model from Pytorch to OpenVINO firstly and then doing quantization on the converted OpenVINO model:
+```python
+ov_model = Trainer.trace(model, accelerator='openvino', input_sample=x):
+ov_q_model = trainer.quanize(ov_model, accelerator='onnxruntime', calib_dataloader=dataloader)
