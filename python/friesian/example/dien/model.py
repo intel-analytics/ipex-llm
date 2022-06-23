@@ -33,8 +33,8 @@
 # ========================================================
 
 import tensorflow as tf
-from rnn import dynamic_rnn
-from utils import *
+from friesian.example.dien.rnn import dynamic_rnn
+from friesian.example.dien.utils import *
 from bigdl.dllib.utils.log4Error import *
 
 
