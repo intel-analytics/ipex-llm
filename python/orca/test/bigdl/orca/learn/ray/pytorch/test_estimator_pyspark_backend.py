@@ -30,6 +30,7 @@ from bigdl.dllib.nncontext import init_nncontext
 from bigdl.orca.learn.pytorch import Estimator
 from bigdl.orca.data import SparkXShards
 from bigdl.orca.data.image.utils import chunks
+from bigdl.orca.learn.pytorch.callbacks.base import Callback
 
 import tempfile
 import shutil
@@ -127,6 +128,19 @@ class SimpleModel(nn.Module):
         x = self.fc(x)
         x = self.out_act(x).flatten()
         return x
+
+
+class CustomCallback(Callback):
+
+    def on_train_end(self, logs=None):
+        assert "train_loss" in logs
+        assert "val_loss" in logs
+        assert self.model
+
+    def on_epoch_end(self, epoch, logs=None):
+        assert "train_loss" in logs 
+        assert "val_loss" in logs
+        assert self.model
 
 
 def train_data_loader(config, batch_size):
@@ -475,6 +489,12 @@ class TestPyTorchEstimator(TestCase):
                 np.testing.assert_almost_equal(value, eval_after[name])
         finally:
             shutil.rmtree(temp_dir)
+
+    def test_custom_callback(self):
+        estimator = get_estimator(workers_per_node=2, model_dir=self.model_dir)
+        callbacks = [CustomCallback()]
+        estimator.fit(train_data_loader, epochs=4, batch_size=128, 
+                      validation_data=val_data_loader, callbacks=callbacks)
 
 
 if __name__ == "__main__":
