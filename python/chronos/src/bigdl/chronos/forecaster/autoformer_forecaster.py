@@ -54,7 +54,7 @@ class AutoformerForecaster(Forecaster):
                  distributed=False,
                  workers_per_node=1,
                  distributed_backend="ray"):
-        
+
         """
         Build a AutoformerForecaster Forecast Model.
 
@@ -173,8 +173,8 @@ class AutoformerForecaster(Forecaster):
                                             torch.from_numpy(data[1]),
                                             torch.from_numpy(data[2]),
                                             torch.from_numpy(data[3]),),
-                                batch_size=batch_size,
-                                shuffle=True)
+                              batch_size=batch_size,
+                              shuffle=True)
 
         # Trainer init and fitting
         self.trainer = Trainer(logger=False, max_epochs=epochs,
@@ -205,8 +205,8 @@ class AutoformerForecaster(Forecaster):
                                             torch.from_numpy(data[1]),
                                             torch.from_numpy(data[2]),
                                             torch.from_numpy(data[3]),),
-                                batch_size=batch_size,
-                                shuffle=False)
+                              batch_size=batch_size,
+                              shuffle=False)
 
         return self.trainer.predict(self.internal, data)
 
@@ -234,8 +234,8 @@ class AutoformerForecaster(Forecaster):
                                             torch.from_numpy(data[1]),
                                             torch.from_numpy(data[2]),
                                             torch.from_numpy(data[3]),),
-                                batch_size=batch_size,
-                                shuffle=False)
+                              batch_size=batch_size,
+                              shuffle=False)
 
         return self.trainer.validate(self.internal, data)
 

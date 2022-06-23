@@ -637,11 +637,14 @@ class TSDataset:
         if time_enc:
             df_stamp = pd.DataFrame(columns=[self.dt_col])
             if is_predict:
-                pred_dates = pd.date_range(self.df[self.dt_col].values[-1], periods=horizon_time + 1, freq=self._freq)
-                df_stamp.loc[:, self.dt_col] = list(self.df[self.dt_col].values) + list(pred_dates[1:])
+                pred_dates = pd.date_range(self.df[self.dt_col].values[-1],
+                                           periods=horizon_time + 1, freq=self._freq)
+                df_stamp.loc[:, self.dt_col] = list(self.df[self.dt_col].values)\
+                                                + list(pred_dates[1:])
             else:
                 df_stamp.loc[:, self.dt_col] = list(self.df[self.dt_col].values)
-            data_stamp = time_features(pd.to_datetime(df_stamp[self.dt_col].values), freq=self._freq)
+            data_stamp = time_features(pd.to_datetime(df_stamp[self.dt_col].values),
+                                       freq=self._freq)
             self.data_stamp = data_stamp.transpose(1, 0)
             max_horizon = horizon_time if isinstance(horizon_time, int) else max(horizon_time)
             self.numpy_x_timeenc, _ = _roll_timeseries_ndarray(self.data_stamp[:-max_horizon],

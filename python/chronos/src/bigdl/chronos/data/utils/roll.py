@@ -58,7 +58,7 @@ def roll_timeseries_dataframe(df,
 
     # don't enter test mode if label_len!=0
     # TODO: change to use is_predict.
-    is_test = True if (is_horizon_int and horizon == 0 and label_len==0) else False
+    is_test = True if (is_horizon_int and horizon == 0 and label_len == 0) else False
     if not is_test:
         return _roll_timeseries_dataframe_train(df,
                                                 roll_feature_df,

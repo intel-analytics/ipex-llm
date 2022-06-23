@@ -100,7 +100,8 @@ class RollDataset(Dataset):
         if self.time_enc:
             df_stamp = pd.DataFrame(columns=[dt_col])
             if is_predict:
-                pred_dates = pd.date_range(df[dt_col].values[-1], periods=self.horizon_time + 1, freq=freq)
+                pred_dates = pd.date_range(df[dt_col].values[-1], periods=self.horizon_time + 1,
+                                           freq=freq)
                 df_stamp.loc[:, dt_col] = list(df[dt_col].values) + list(pred_dates[1:])
             else:
                 df_stamp.loc[:, dt_col] = list(df[dt_col].values)
@@ -122,7 +123,8 @@ class RollDataset(Dataset):
         # cal y
         arr_target_only = self.arr[:, :self.target_num]
         if isinstance(self.horizon, int):
-            y = arr_target_only[start_idx + self.lookback - self.label_len: start_idx + self.lookback + self.horizon]
+            y = arr_target_only[start_idx + self.lookback - self.label_len:
+                                start_idx + self.lookback + self.horizon]
         else:
             # horizon is a list of int
             horizons = np.array(self.horizon)
