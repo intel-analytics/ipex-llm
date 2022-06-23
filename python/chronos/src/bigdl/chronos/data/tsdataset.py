@@ -639,8 +639,8 @@ class TSDataset:
             if is_predict:
                 pred_dates = pd.date_range(self.df[self.dt_col].values[-1],
                                            periods=horizon_time + 1, freq=self._freq)
-                df_stamp.loc[:, self.dt_col] = list(self.df[self.dt_col].values)\
-                                                + list(pred_dates[1:])
+                df_stamp.loc[:, self.dt_col] =\
+                    list(self.df[self.dt_col].values) + list(pred_dates[1:])
             else:
                 df_stamp.loc[:, self.dt_col] = list(self.df[self.dt_col].values)
             data_stamp = time_features(pd.to_datetime(df_stamp[self.dt_col].values),
