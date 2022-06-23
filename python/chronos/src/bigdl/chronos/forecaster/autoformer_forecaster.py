@@ -245,7 +245,7 @@ class AutoformerForecaster(Forecaster):
 
         :param checkpoint_file: The checkpoint file location you want to load the forecaster.
         """
-        self.trainer = Trainer(logger=False, max_epochs=epochs,
+        self.trainer = Trainer(logger=False, max_epochs=1,
                                checkpoint_callback=self.checkpoint_callback, num_processes=1,
                                use_ipex=self.use_ipex, distributed_backend="spawn")
         args = _transform_config_to_namedtuple(self.model_config)
