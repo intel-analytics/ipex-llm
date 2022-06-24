@@ -3,12 +3,24 @@
 ## Table of contents
 1. [Overview](#overview)
 2. [Key Concepts](#key-concepts)
+   2.1. [gRPC](#grpc)
+   2.2. [Faiss](#faiss)
+   2.3. [Redis](#redis)
+   2.4. [Config Files](#config-files)
+   2.5. [Ranking Service](#ranking-service)
+   2.6. [Feature Service](#feature-service)
+   2.7. [Recall Service](#recall-service)
+   2.8. [Recommender Service](#recommender-service)
+   2.9. [Service Proxy](#service-proxy)
 3. [Pull Friesian Serving Docker Image](#pull-friesian-serving-docker-image)
 4. [Start Ranking Service](#start-ranking-service)
 5. [Start Feature Service](#start-feature-service)
 6. [Start Recall Service](#start-recall-service)
 7. [Start Recommender Service](#start-recommender-service)
-8. [Quick Start](#quick-start)
+8. [Scale-out for Big Data](#scale-out-for-big-data)
+   8.1. [Redis for Big Data](#redis-for-big-data)
+   8.2. [Scale Service with Envoy](#scale-service-with-envoy)
+9. [Quick Start](#quick-start)
 
 ## Overview
 
@@ -406,7 +418,7 @@ Users can pull the Friesian Serving docker image using `docker pull intelanalyti
 
 ## Scale-out for Big Data
 
-### Redis
+### Redis for Big Data
 
 Redis is a component which is used in the feature service. Users should build their own redis server (standalone, sentiel or cluster) for the feature service.
 
