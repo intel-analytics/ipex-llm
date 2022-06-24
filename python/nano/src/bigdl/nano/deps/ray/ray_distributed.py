@@ -152,12 +152,12 @@ class _RayLauncher(_SpawnLauncher):
         if strategy.global_rank == 0:
             if trainer.checkpoint_callback is not None:
                 return move_data_to_device(results, "cpu"), \
-                       trainer.checkpoint_callback.best_model_path, \
-                       move_data_to_device(strategy.lightning_module.state_dict(), "cpu")
+                    trainer.checkpoint_callback.best_model_path, \
+                    move_data_to_device(strategy.lightning_module.state_dict(), "cpu")
             else:
                 return move_data_to_device(results, "cpu"), \
-                       None, \
-                       move_data_to_device(strategy.lightning_module.state_dict(), "cpu")
+                    None, \
+                    move_data_to_device(strategy.lightning_module.state_dict(), "cpu")
         else:
             return None
 
@@ -237,7 +237,7 @@ class RayStrategy(DDPSpawnStrategy):
             workers.append(worker)
 
         return workers
-    
+
     def _setup_env_vars(self):
         # Get rank 0 worker address and port for DDP connection.
         os.environ["MASTER_ADDR"] = ray.get(
@@ -268,11 +268,11 @@ class RayStrategy(DDPSpawnStrategy):
 
     def set_world_ranks(self, process_idx: int = 0):
         """Set the appropriate rank attribues for the trainer."""
-        invalidInputError(self.cluster_environment is not None and
-                          isinstance(self.cluster_environment, RayEnvironment),
+        invalidInputError(self.cluster_environment is not None
+                          and isinstance(self.cluster_environment, RayEnvironment),
                           "expect ray environment here")
-        if not (self.cluster_environment is not None and
-                isinstance(self.cluster_environment, RayEnvironment)):
+        if not (self.cluster_environment is not None 
+                and isinstance(self.cluster_environment, RayEnvironment)):
             return
         if self.cluster_environment.is_remote():
             self._local_rank = self.global_to_local[self.global_rank]
