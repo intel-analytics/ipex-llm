@@ -14,10 +14,8 @@
 # limitations under the License.
 #
 import tensorflow as tf
-from tensorflow.keras import Sequential as TFSequencial
 from bigdl.nano.tf.keras.inference_utils import InferenceUtils
 from bigdl.nano.tf.keras.training_utils import TrainingUtils
-from bigdl.nano.tf.keras.inheritance_utils import override_method
 
 
 class Sequential(TrainingUtils, InferenceUtils, tf.keras.Sequential):
