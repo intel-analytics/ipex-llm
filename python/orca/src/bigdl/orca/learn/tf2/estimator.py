@@ -54,7 +54,7 @@ class Estimator(object):
                dictionary like {"optimizer": tf.keras.optimizers.SGD(lr), "loss":
                "mean_squared_error", "metrics": ["mean_squared_error"]}
         :param backend: (string) You can choose "horovod", "ray" or "spark" as backend.
-         Default: `tf2`.
+         Default: `ray`.
         :param cpu_binding: (bool) Whether to binds threads to specific CPUs. Default: False
         :param log_to_driver: (bool) Whether display executor log on driver in cluster mode.
          Default: True. This option is only for "spark" backend.
