@@ -29,6 +29,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
+import os
 
 from pytorch_lightning.plugins.environments import ClusterEnvironment
 from pytorch_lightning.utilities import rank_zero_only
@@ -42,17 +43,21 @@ class RayEnvironment(ClusterEnvironment):
         self.set_world_size(world_size)
         self._global_rank = 0
         self._is_remote = False
+        self._main_port = -1
 
-    def creates_children(self) -> bool:
+    @property
+    def creates_processes_externally(self) -> bool:
         return False
 
-    def master_address(self) -> str:
-        invalidInputError(False, "master_address not implemented for RayEnvironment")
-        return ""
+    @property
+    def main_address(self) -> str:
+        return os.environ.get("MASTER_ADDR", "127.0.0.1")
 
-    def master_port(self) -> int:
-        invalidInputError(False, "master_port not implemented for RayEnvironment")
-        return 0
+    @property
+    def main_port(self) -> int:
+        if self._main_port == -1:
+            self._main_port = int(os.environ.get("MASTER_PORT", 0))
+        return self._main_port
 
     def world_size(self) -> int:
         return self._world_size
@@ -74,9 +79,12 @@ class RayEnvironment(ClusterEnvironment):
         return self._is_remote
 
     def local_rank(self) -> int:
-        invalidInputError(False, "local_rank not implemented for RayEnvironment")
-        return 0
+        return int(os.environ.get("LOCAL_RANK", 0))
 
     def node_rank(self) -> int:
-        invalidInputError(False, "node_rank not implemented for RayEnvironment")
-        return 0
+        group_rank = os.environ.get("GROUP_RANK", 0)
+        return int(os.environ.get("NODE_RANK", group_rank))
+
+    @staticmethod
+    def detect() -> bool:
+        return True
