@@ -16,6 +16,7 @@
 
 from bigdl.ppml.api import *
 from bigdl.ppml.utils.log4Error import *
+from enum import Enum
 
 
 class PPMLContext(JavaValue):
@@ -50,6 +51,9 @@ class EncryptedDataFrameReader:
     def csv(self, path):
         return callBigDlFunc(self.bigdl_type, "csv", self.df_reader, path)
 
+    def parquet(self, path):
+        return callBigDlFunc(self.bigdl_type, "parquet", self.df_reader, path)
+
 
 class EncryptedDataFrameWriter:
     support_mode = {"overwrite", "append", "ignore", "error", "errorifexists"}
@@ -71,6 +75,16 @@ class EncryptedDataFrameWriter:
 
     def csv(self, path):
         return callBigDlFunc(self.bigdl_type, "csv", self.df_writer, path)
+
+    def parquet(self, path):
+        return callBigDlFunc(self.bigdl_type, "parquet", self.df_writer, path)
+
+
+class CryptoMode(Enum):
+    PLAIN_TEXT = "plain_text"
+    AES_CBC_PKCS5PADDING = "AES/CBC/PKCS5Padding"
+    AES_GCM_V1 = "AES_GCM_V1"
+    AES_GCM_CTR_V1 = "AES_GCM_CTR_V1"
 
 
 def init_keys(app_id, app_key, primary_key_path, data_key_path):
