@@ -29,27 +29,31 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
-from typing import Callable, Dict, List, Union, Any, Optional
-
 import os
+import warnings
+from typing import Callable, Dict, List, Union, Any, Optional
 from collections import defaultdict
+
+import ray
+from ray.util.ml_utils.util import find_free_port
+
+import torch
+from torch import Tensor
+import pytorch_lightning as pl
+from pytorch_lightning.trainer.states import TrainerFn
+from pytorch_lightning.utilities import rank_zero_only
+from pytorch_lightning.utilities.apply_func import move_data_to_device
+from pytorch_lightning.utilities.distributed import ReduceOp
+from pytorch_lightning.strategies.launchers import _SpawnLauncher
+from pytorch_lightning.strategies import Strategy, DDPSpawnStrategy
+
+from bigdl.nano.deps.ray.ray_envbase import RayEnvironment
+from bigdl.nano.utils.log4Error import invalidInputError
 from bigdl.nano.deps.ipex.ipex_api import ipex_device, ipex_optimize, \
     create_IPEXAccelerator_1_9, to_cpu
 from bigdl.nano.pytorch.utils import TORCH_VERSION_LESS_1_10
 
-import ray
-import torch
-import pytorch_lightning as pl
-from pytorch_lightning.trainer.states import TrainerFn
-from pytorch_lightning.utilities import rank_zero_only
-from pytorch_lightning.strategies.launchers import _SpawnLauncher
-from pytorch_lightning.strategies import Strategy, DDPSpawnStrategy
-from ray.util.ml_utils.util import find_free_port
-from pytorch_lightning.utilities.apply_func import move_data_to_device
-from bigdl.nano.deps.ray.ray_envbase import RayEnvironment
-from bigdl.nano.utils.log4Error import invalidInputError
-import warnings
+_STEP_OUTPUT_TYPE = Union[torch.Tensor, Dict[str, Any]]
 
 
 @ray.remote
@@ -82,19 +86,19 @@ class RayExecutor:
 
 
 class _RayLauncher(_SpawnLauncher):
-    
+
     def __init__(self, strategy: Strategy) -> None:
         self._strategy = strategy
-        
+
     @property
     def is_interactive_compatible(self) -> bool:
         return False
-        
+
     def launch(self, function: Callable, *args: Any,
                trainer: Optional["pl.Trainer"] = None, **kwargs: Any) -> Any:
         # pytorch_lightning 1.6 uses this method to create child processes
         strategy = self._strategy
-        
+
         strategy._setup_env_vars()
         strategy.global_to_local = strategy.get_local_ranks()
 
@@ -102,7 +106,7 @@ class _RayLauncher(_SpawnLauncher):
         if torch_backend is None:
             torch_backend = "nccl" if strategy.use_gpu else "gloo"
         strategy._process_group_backend = torch_backend
-        
+
         futures = [
             strategy.workers[i].execute.remote(
                 self._wrapping_function,
@@ -127,7 +131,7 @@ class _RayLauncher(_SpawnLauncher):
         strategy.lightning_module.trainer.checkpoint_callback.best_model_path = best_path
 
         return results
-    
+
     @staticmethod
     def _wrapping_function(args_pack: tuple) -> None:
         global_rank, trainer, function, args, kwargs = args_pack
@@ -138,25 +142,28 @@ class _RayLauncher(_SpawnLauncher):
 
         strategy.cluster_environment.set_global_rank(global_rank)
         strategy.cluster_environment.set_remote_execution(True)
-        
+
         strategy._worker_setup(global_rank)
         results = function(*args, **kwargs)
 
         if trainer is not None:
             results = strategy._launcher._collect_rank_zero_results(trainer, results)
-        
+
         if strategy.global_rank == 0:
             if trainer.checkpoint_callback is not None:
                 return move_data_to_device(results, "cpu"), \
-                       trainer.checkpoint_callback.best_model_path, strategy.lightning_module.state_dict()
+                       trainer.checkpoint_callback.best_model_path, \
+                       move_data_to_device(strategy.lightning_module.state_dict(), "cpu")
             else:
                 return move_data_to_device(results, "cpu"), \
-                       None, strategy.lightning_module.state_dict()
+                       None, \
+                       move_data_to_device(strategy.lightning_module.state_dict(), "cpu")
         else:
             return None
-        
+
+
 class RayStrategy(DDPSpawnStrategy):
-    
+
     strategy_name = "ddp_ray"
 
     def __init__(self,
@@ -189,7 +196,7 @@ class RayStrategy(DDPSpawnStrategy):
             super().__init__(parallel_devices=[],
                              cluster_environment=RayEnvironment(world_size=num_workers),
                              **ddp_kwargs)
-            
+
         self.num_workers = num_workers
         self.num_cpus_per_worker = num_cpus_per_worker
         self.use_gpu = use_gpu
@@ -202,7 +209,7 @@ class RayStrategy(DDPSpawnStrategy):
         self.workers = self._create_worker()
         self.init_hook = init_hook
         self._local_rank = 0
-        
+
         if self.init_hook:
             ray.get([w.execute.remote(self.init_hook) for w in self.workers])
 
@@ -217,7 +224,6 @@ class RayStrategy(DDPSpawnStrategy):
 
         workers = []
         for i in range(self.num_workers):
-
             worker = RayExecutor.options(
                 num_cpus=self.num_cpus_per_worker,
                 num_gpus=int(self.use_gpu)
@@ -262,12 +268,11 @@ class RayStrategy(DDPSpawnStrategy):
 
     def set_world_ranks(self, process_idx: int = 0):
         """Set the appropriate rank attribues for the trainer."""
-        invalidInputError(
-            self.cluster_environment is not None and isinstance(self.cluster_environment,
-                                                                RayEnvironment),
-            "expect ray environment here")
-        if not (self.cluster_environment is not None and isinstance(self.cluster_environment,
-                                                                    RayEnvironment)):
+        invalidInputError(self.cluster_environment is not None and
+                          isinstance(self.cluster_environment, RayEnvironment),
+                          "expect ray environment here")
+        if not (self.cluster_environment is not None and
+                isinstance(self.cluster_environment, RayEnvironment)):
             return
         if self.cluster_environment.is_remote():
             self._local_rank = self.global_to_local[self.global_rank]
@@ -334,6 +339,59 @@ class RayStrategy(DDPSpawnStrategy):
             num_replicas=self.num_workers, rank=self.global_rank)
         return distributed_sampler_kwargs
 
-    @property
-    def is_distributed(self):
-        return True
+    def reduce(self, tensor, group: Optional[Any] = None,
+               reduce_op: Union[ReduceOp, str] = "mean") -> Tensor:
+        # some operations in `super.reduce()` method do not support XPU,
+        # which will cause error when using ipex==1.9, however, these operations
+        # seems not necessary, so we just ignore these errors
+        try:
+            return super().reduce(tensor, group, reduce_op)
+        except Exception as _e:
+            return tensor
+
+    def training_step_end(self, output: _STEP_OUTPUT_TYPE) -> _STEP_OUTPUT_TYPE:
+        """
+        For ipex xpu tensor do not support `tensor.storage()` right now,
+        which is a required operation by pytorch_lightning,
+        so just move output to cpu to store it, and move it back when doing backward.
+        """
+        if self.use_ipex and TORCH_VERSION_LESS_1_10:
+            output = to_cpu(output)
+
+        return super().training_step_end(output)
+
+    def test_step_end(self, output: Optional[_STEP_OUTPUT_TYPE]) -> \
+            Optional[_STEP_OUTPUT_TYPE]:
+        """A hook to do something at the end of the test step
+        Args:
+            output: the output of the test step
+        """
+        if self.use_ipex and TORCH_VERSION_LESS_1_10:
+            output = to_cpu(output)
+
+        return super().test_step_end(output)
+
+    def validation_step_end(self, output: Optional[_STEP_OUTPUT_TYPE]) -> \
+            Optional[_STEP_OUTPUT_TYPE]:
+        """A hook to do something at the end of the validation step
+        Args:
+            output: the output of the validation step
+        """
+        if self.use_ipex and TORCH_VERSION_LESS_1_10:
+            output = to_cpu(output)
+
+        return super().validation_step_end(output)
+
+    def backward(self,  # type: ignore
+                 closure_loss: torch.Tensor,
+                 *args,
+                 **kwargs) -> torch.Tensor:
+        """
+        Moving back loss to xpu device
+        """
+        closure_loss = closure_loss.to(self.root_device)
+        return super().backward(
+            closure_loss,
+            *args,
+            **kwargs,
+        )
