@@ -28,7 +28,7 @@ look_back = 96
 horizon = 720
 
 def generate_data():
-    raw_df = pd.read_csv("data/electricity.csv")
+    raw_df = pd.read_csv("electricity.csv")
     df = pd.DataFrame(pd.to_datetime(raw_df.date))
     for i in range(0, 320):
         df[str(i)] = raw_df[str(i)]
