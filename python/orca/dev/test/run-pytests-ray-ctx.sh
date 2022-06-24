@@ -49,7 +49,7 @@ then
     exit $exit_status_2
 fi
 
-python -m pytest -v test/bigdl/orca/learn/ray/tf/test_ray_tf2estimator.py
+python -m pytest -v test/bigdl/orca/learn/ray/tf/test_tf2estimator_ray_runtime.py
 exit_status_3=$?
 if [ $exit_status_3 -ne 0 ];
 then
