@@ -784,7 +784,7 @@ class Table:
         return self
 
     def coalesce(self, num_partitions):
-        """f
+        """
         Return a new Table that has exactly num_partitions partitions.
         coalesce uses existing partitions to minimize the amount of data that's shuffled.
 
