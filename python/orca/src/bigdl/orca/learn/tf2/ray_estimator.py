@@ -114,7 +114,7 @@ class TensorFlow2Estimator(OrcaRayEstimator):
                 for i, worker in enumerate(self.remote_workers)])
         else:
             invalidInputError(False,
-                              "Only \"tf2\" and \"horovod\" are legal "
+                              "Only \"ray\" and \"horovod\" are legal "
                               "values of backend, but got {}".format(backend))
 
         self.num_workers = len(self.remote_workers)
