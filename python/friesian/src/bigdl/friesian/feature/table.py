@@ -783,12 +783,6 @@ class Table:
                 print("Try to unpersist an uncached table")
         return self
 
-    def take(self, num):
-        """
-        Return fist `num` rows
-        """
-        return self.df.take(num)
-
     def coalesce(self, num_partitions):
         """f
         Return a new Table that has exactly num_partitions partitions.
@@ -808,6 +802,19 @@ class Table:
         :return: A new Table.
         """
         return self._clone(self.df.intersect(other.df))
+
+    def collect(self):
+        """
+        Returns all the records as a list of :class:`Row`.
+        """
+        return self.df.collect()
+
+    @property
+    def dtypes(self):
+        """
+        Returns all column names and their data types as a list.
+        """
+        return self.df.dtypes()
 
 
 class FeatureTable(Table):
