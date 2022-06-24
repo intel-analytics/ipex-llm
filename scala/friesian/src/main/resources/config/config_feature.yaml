@@ -50,8 +50,5 @@ redisUrl: 10.239.158.177:6379
 # default: localhost:26379
 # redisSentinelMasterURL:
 
-# default: 256, JedisPoolMaxTotal
-# redisPoolMaxTotal:
-
 # default: 2, The redis log emit interval in minutes
 logInterval: 2
