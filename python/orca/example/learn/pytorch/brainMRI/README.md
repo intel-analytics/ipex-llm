@@ -47,10 +47,15 @@ python brainMRI.py --backend spark
 ```
 
 ### Run on yarn cluster for yarn-client mode after pip install
-
+Run on yarn cluster for yarn-client mode will need more memory, so you should give more memory allocation.
 ```
 export HADOOP_CONF_DIR=the directory of the hadoop and yarn configurations
-python brainMRI.py --cluster_mode yarn-client
+python brainMRI.py --cluster_mode yarn-client --memory 8g
+```
+
+If you use the spark as backend, you should give the `model_dir` parameter with the hdfs path.
+```commandline
+python brainMRI.py --cluster_mode yarn-client --backend spark --model_dir hdfs://url:port/file_path --memory 8g
 ```
 
 Options
@@ -62,3 +67,4 @@ Options
 - `--data_dir` The path of the dataset. Default is `./kaggle_3m`
 - `--additional_archive` The zip dataset if use `yarn-client` mode. Default is `kaggle_3m.zip#kaggle_3m`
 - `--memory` The memory allocated for each node. Default is `4g`
+- `--model_dir` The model save dir when use spark backend. Default is `'file://' + os.getcwd()`
