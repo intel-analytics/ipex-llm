@@ -79,4 +79,12 @@ fgboost_regression = FGBoostRegression()
 # party 1 does not own label, so directly pass all the features
 fgboost_regression.fit(x, feature_columns=x.columns, num_round=15)
 
+fgboost_regression.save_model('/tmp/fgboost_model_1.json')
+loaded = FGBoostRegression.load_model('/tmp/fgboost_model_1.json')
 
+df_test = pd.read_csv('house-prices-test-1')
+result = fgboost_regression.predict(df_test, feature_columns=df_test.columns)
+
+# print first 5 results
+for i in range(5):
+    print(f"{i}-th result of FGBoost predict: {result[i]}")

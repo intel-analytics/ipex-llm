@@ -6,7 +6,7 @@ This example provides a step-by-step tutorial of running a FGBoost Regression ta
 ### 1.2 PSI
 **PSI** stands for Private Set Intersection algorithm. It compute the intersection of data from different parties and return the result so that parties know which data they could collaborate with.
 ### 1.3 SGX
-**SGX** stands for [Software Guard Extensions](). It helps protect data in use via unique application isolation technology. The data of application running in SGX would be protected.
+**SGX** stands for [Software Guard Extensions](https://www.intel.com/content/www/us/en/developer/tools/software-guard-extensions/overview.html). It helps protect data in use via unique application isolation technology. The data of application running in SGX would be protected.
 
 ### 1.4 FL Server and Client
 A **FL Server** is a gRPC server to handle requests from FL Client. A **FL Client** is a gRPC client to send requests to FL Server. These requests include:
@@ -18,9 +18,9 @@ A **FL Server** is a gRPC server to handle requests from FL Client. A **FL Clien
 ## 2. Build FGBoost Client Applications
 This section introduces the details of the example code.
 
-We use [House Prices]() dataset. To simulate the scenario where different data features are held by 2 parties respectively, we split the dataset to 2 parts. The split is taken by select every other column (code at [split script]()).
+We use [House Prices](https://www.kaggle.com/competitions/house-prices-advanced-regression-techniques/data) dataset. To simulate the scenario where different data features are held by 2 parties respectively, we split the dataset to 2 parts. The split is taken by select every other column (code at [split script](scala/ppml/scripts/split_dataset.py)).
 
-The code is available in projects, including [Client 1 code]() and [Client 2 code](). You could directly start two different terminals are run them respectively to start a federated learning, and the order of start does not matter. Following is the detailed step-by-step tutorial to introduce how the code works.
+The code is available in projects, including [Client 1 code](fgboost_regression_party_1.py) and [Client 2 code](fgboost_regression_party_2.py). You could directly start two different terminals are run them respectively to start a federated learning, and the order of start does not matter. Following is the detailed step-by-step tutorial to introduce how the code works.
 
 ### 2.1 FL Context
 First, import the package and initilize FL Context.
