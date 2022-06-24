@@ -82,27 +82,6 @@ class TestPPMLContext(unittest.TestCase):
 
     @classmethod
     def tearDownClass(cls) -> None:
-        csv_path = os.path.join(resource_path, "people.csv")
-        primary_key_path = os.path.join(resource_path, "primaryKey")
-        data_key_path = os.path.join(resource_path, "dataKey")
-        encrypted_file_path = os.path.join(resource_path, "encrypted")
-        write_data_path = os.path.join(resource_path, "output")
-
-        if os.path.isfile(csv_path):
-            os.remove(csv_path)
-
-        if os.path.isfile(primary_key_path):
-            os.remove(primary_key_path)
-
-        if os.path.isfile(data_key_path):
-            os.remove(data_key_path)
-
-        if os.path.isdir(encrypted_file_path):
-            shutil.rmtree(encrypted_file_path)
-
-        if os.path.isdir(write_data_path):
-            shutil.rmtree(write_data_path)
-
         if os.path.exists(resource_path):
             shutil.rmtree(resource_path)
 
