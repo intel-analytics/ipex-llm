@@ -89,6 +89,7 @@ class PPMLContextPythonTest extends FunSuite with BeforeAndAfterAll{
     val dataKey = new File(dir + "dataKey")
     val encryptPath = new File(dir + "encrypted")
     val writeOutput = new File(dir + "output")
+    val parquetPath = new File(dir + "parquet")
     if (csvFile.isFile) {
       csvFile.delete()
     }
@@ -103,6 +104,9 @@ class PPMLContextPythonTest extends FunSuite with BeforeAndAfterAll{
     }
     if (writeOutput.isDirectory) {
       deleteDir(writeOutput)
+    }
+    if (parquetPath.isDirectory) {
+      deleteDir(parquetPath)
     }
   }
 
@@ -121,9 +125,9 @@ class PPMLContextPythonTest extends FunSuite with BeforeAndAfterAll{
   def read(cryptoMode: String, path: String): Unit = {
     val encryptedDataFrameReader = ppmlContextPython.read(sc, cryptoMode)
     ppmlContextPython.option(encryptedDataFrameReader, "header", "true")
-    val df = ppmlContextPython.csv(encryptedDataFrameReader, path)
+    val dfFromCsv = ppmlContextPython.csv(encryptedDataFrameReader, path)
 
-    Log4Error.invalidOperationError(df.count() == 8,
+    Log4Error.invalidOperationError(dfFromCsv.count() == 8,
         "record count should be 8")
   }
 
@@ -134,7 +138,7 @@ class PPMLContextPythonTest extends FunSuite with BeforeAndAfterAll{
     } else {
       outputDir = outputDir + "plain"
     }
-    val path = this.getClass.getClassLoader.getResource("").getPath + outputDir
+    val path = dir + outputDir
 
     val encryptedDataFrameWriter = ppmlContextPython.write(sc, df, encryptMode)
     ppmlContextPython.mode(encryptedDataFrameWriter, "overwrite")
@@ -152,14 +156,14 @@ class PPMLContextPythonTest extends FunSuite with BeforeAndAfterAll{
 
   test("read plain text csv file") {
     val cryptoMode = "plain_text"
-    val path = this.getClass.getClassLoader.getResource("people.csv").getPath
+    val path = dir + "people.csv"
 
     read(cryptoMode, path)
   }
 
   test("read encrypted csv file") {
     val cryptoMode = "AES/CBC/PKCS5Padding"
-    val path = this.getClass.getClassLoader.getResource("") + "encrypted/people.csv"
+    val path = dir + "encrypted/people.csv"
 
     read(cryptoMode, path)
   }
