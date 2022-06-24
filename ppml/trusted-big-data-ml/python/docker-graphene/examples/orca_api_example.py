@@ -241,7 +241,7 @@ if __name__ == "__main__":
         bigdl_estimator()
     elif mode == "tf":
         tf_estimator()
-    elif mode == "tf2":
+    elif mode == "ray":
         tf2_estimator()
     elif mode == "pytorch":
         pytorch_estimator()

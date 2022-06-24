@@ -63,7 +63,7 @@ parser.add_argument("--object_store_memory", type=str, default="4g",
 # Use torch for both policies.
 parser.add_argument(
     "--framework",
-    choices=["tf", "tf2", "tfe", "torch"],
+    choices=["tf", "ray", "tfe", "torch"],
     default="tf",
     help="The DL framework specifier.")
 parser.add_argument(
