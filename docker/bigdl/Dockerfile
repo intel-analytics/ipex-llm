@@ -92,7 +92,7 @@ ARG RUNTIME_DRIVER_CORES=4
 ARG RUNTIME_DRIVER_MEMORY=20g
 ARG RUNTIME_EXECUTOR_CORES=4
 ARG RUNTIME_EXECUTOR_MEMORY=20g
-ARG RUNTIME_TOTAL_EXECUTOR_CORES=4
+ARG RUNTIME_EXECUTOR_INSTANCES=1
 ARG DEBIAN_FRONTEND
 ENV SPARK_VERSION                   ${SPARK_VERSION}
 ENV BIGDL_VERSION                   ${BIGDL_VERSION}
@@ -103,7 +103,7 @@ ENV RUNTIME_DRIVER_CORES            ${RUNTIME_DRIVER_CORES}
 ENV RUNTIME_DRIVER_MEMORY           ${RUNTIME_DRIVER_MEMORY}
 ENV RUNTIME_EXECUTOR_CORES          ${RUNTIME_EXECUTOR_CORES}
 ENV RUNTIME_EXECUTOR_MEMORY         ${RUNTIME_EXECUTOR_MEMORY}
-ENV RUNTIME_TOTAL_EXECUTOR_CORES    ${RUNTIME_TOTAL_EXECUTOR_CORES}
+ENV RUNTIME_EXECUTOR_INSTANCES      ${RUNTIME_EXECUTOR_INSTANCES}
 ENV SPARK_HOME                      /opt/work/spark-${SPARK_VERSION}
 ENV BIGDL_HOME                      /opt/work/bigdl-${BIGDL_VERSION}
 ENV JAVA_HOME                       /opt/jdk
@@ -140,6 +140,8 @@ RUN echo "source activate bigdl" > ~/.bashrc
 ENV PATH /usr/local/envs/bigdl/bin:$PATH
 
 ADD ./start-notebook.sh /opt/work
-RUN chmod a+x /opt/work/start-notebook.sh
+ADD ./start-notebook-k8s.sh /opt/work
+RUN chmod a+x /opt/work/start-notebook.sh && \
+    chmod a+x /opt/work/start-notebook-k8s.sh
 
 CMD ["/opt/work/start-notebook.sh"]
