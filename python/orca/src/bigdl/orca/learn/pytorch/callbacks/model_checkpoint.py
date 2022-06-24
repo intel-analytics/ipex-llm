@@ -78,7 +78,7 @@ class ModelCheckpoint(Callback):
         """
         pass
 
-    def on_epoch_end(self, epoch):
+    def on_epoch_end(self, epoch, logs=None):
         """
         Called at the end of an epoch.
         Subclasses should override for any actions to run. This function should only
@@ -111,7 +111,7 @@ class ModelCheckpoint(Callback):
         else:
             fs.mkdirs(dirname)
 
-    def on_train_end(self):
+    def on_train_end(self, logs=None):
         """
         Called at the end of training.
         Subclasses should override for any actions to run.
@@ -130,6 +130,9 @@ class ModelCheckpoint(Callback):
 
     def set_param(self, param):
         self.params = param
+
+    def set_trainer(self, trainer):
+        self.trainer = trainer
 
     @classmethod
     def get_latest_checkpoint(cls, dirname):
