@@ -85,7 +85,7 @@ class Estimator(object):
                                     **kwargs)
         else:
             invalidInputError(False,
-                              "Only horovod, tf2 and spark backends are supported"
+                              "Only horovod, ray and spark backends are supported"
                               f" for now, got backend: {backend}")
 
     @staticmethod
