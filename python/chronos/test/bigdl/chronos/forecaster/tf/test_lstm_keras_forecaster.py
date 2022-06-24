@@ -98,9 +98,9 @@ class TestLSTMForecaster(TestCase):
     
     def test_lstm_customized_loss_metric(self):
         train_data, test_data = create_data(tf_data=True)
-        loss = tf.losses.mean_squared_error
+        loss = tf.keras.losses.MeanSquaredError()
         def customized_metric(y_true, y_pred):
-            return tf.losses.mean_squared_error(tf.convert_to_tensor(y_pred),
+            return tf.keras.losses.MeanSquaredError(tf.convert_to_tensor(y_pred),
                                       tf.convert_to_tensor(y_true)).numpy()
         from bigdl.chronos.forecaster.tf.lstm_forecaster import LSTMForecaster
         self.forecaster = LSTMForecaster(past_seq_len=10,
