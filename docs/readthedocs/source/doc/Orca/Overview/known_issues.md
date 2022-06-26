@@ -28,10 +28,10 @@ This error occurs when initialize an orca context with `init_ray_on_spark=True`.
 
 You could follow below steps to workaround:
 
-1. If you only need to use functions in ray (e.g. `bigdl.orca.learn` with `backend="ray"`, `bigdl.orca.automl` for pytorch/tensorflow model, `bigdl.chronos.autots` for time series model's auto-tunning), we may use ray as the first-class 
+1. If you only need to use functions in ray (e.g. `bigdl.orca.learn` with `backend="ray"`, `bigdl.orca.automl` for pytorch/tensorflow model, `bigdl.chronos.autots` for time series model's auto-tunning), we may use ray as the first-class.
 
    1. Start a ray cluster by `ray start --head`. if you already have a ray cluster started, please direcetly jump to step 2.
-   2. Initialize an orca context with `runtime="ray"` and `init_ray_on_spark=False`, please refer to detailed information [here](./orca-context.html)
+   2. Initialize an orca context with `runtime="ray"` and `init_ray_on_spark=False`, please refer to detailed information [here](./orca-context.html).
    3. If you are using `bigdl.orca.automl` or `bigdl.chronos.autots` on a single node, please set:
       ```python
       ray_ctx = OrcaContext.get_ray_context()
