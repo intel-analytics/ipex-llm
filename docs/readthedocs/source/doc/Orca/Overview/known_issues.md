@@ -20,6 +20,7 @@ You could follow below steps:
    spark-submit --conf "spark.executorEnv.ARROW_LIBHDFS_DIR=/opt/cloudera/parcels/CDH-5.15.2-1.cdh5.15.2.p0.3/lib64"
    ```
 
+## **Orca Context Issues**
 
 ### **Exception: Failed to read dashbord log: [Errno 2] No such file or directory: '/tmp/ray/.../dashboard.log'**
 
