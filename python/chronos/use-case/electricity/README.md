@@ -2,7 +2,10 @@
 
 
 
-In this use-case, we will use Chronos Forecasters(TCN, AutoFormer) on electricity dataset. Electricity dataset is a widely used public dataset for Time series forecasting in engineering validation and researching.
+In this use-case, we will use Chronos Forecasters(TCN, Autoformer) on electricity dataset. Electricity dataset is a widely used public dataset for Time series forecasting in engineering validation and researching.
+
+For API docs of TCNForecaster and AutoformerForecaster, please refer to
+[Chronos Forecasters API Document](https://bigdl.readthedocs.io/en/latest/doc/PythonAPI/Chronos/forecasters.html)
 
 
 
