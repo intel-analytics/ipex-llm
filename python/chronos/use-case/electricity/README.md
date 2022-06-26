@@ -32,11 +32,13 @@ For more detailed information, please refer to [Chronos Install Guide](https://b
 
 
 
-We are using the Electricity data with the preprocessing aligned with [this paper](https://arxiv.org/abs/2106.13008).
+We are using the **Electricity** data with the preprocessing aligned with [this paper](https://arxiv.org/abs/2106.13008).
 
 
 
 Download link: [Tsinghua Cloud](https://cloud.tsinghua.edu.cn/d/e1ccfff39ad541908bae/) or [Google Drive](https://drive.google.com/drive/folders/1ZOYpTUa82_jCcxIdTmyr0LXQfvaM9vIy?usp=sharing).
+
+You only need to download `electricity.csv`.
 
 
 
@@ -46,13 +48,14 @@ Download link: [Tsinghua Cloud](https://cloud.tsinghua.edu.cn/d/e1ccfff39ad54190
 
 ```bash
 python tcn.py # for tcn forecaster
+python autoformer.py # for autoformer forecaster
 ```
 
 
 
 ## Output
 
-
+### TCNForecaster
 After you run the code, the training process is shown like this:
 ```bash
 Epoch 0:  17%|████████▏                                       | 94/550 [00:08<00:39, 11.61it/s, loss=0.95]
@@ -67,6 +70,25 @@ and the inference latency is shown like this:
 ```bash
 Inference latency is: 0.0060901641845703125
 Inference latency with onnx is: 0.0030126571655273438
+```
+
+### AutoformerForecaster
+
+After you run the code, the training process is shown like this:
+```bash
+Epoch 0:   2%|██▏                                                                                                                   | 10/550 [00:02<02:08,  4.19it/s, loss=1.18]
+```
+
+After training 3 epochs, MSE is shown like this,
+```bash
+MSE on test dataset: [{'val_loss': 0.2887305021286011}]
+```
+*Note: Autoformer suffers overfitting problem on electricity dataset.*
+
+and the inference latency is shown like this:
+```bash
+latency(8 cores): 0.013892467462774168
+latency(1 cores): 0.022499848716141295
 ```
 
 
