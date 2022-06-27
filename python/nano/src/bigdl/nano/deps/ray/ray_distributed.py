@@ -99,7 +99,7 @@ class _RayLauncher(_SpawnLauncher):
                trainer: Optional["pl.Trainer"] = None, **kwargs: Any) -> Any:
         # pytorch_lightning 1.6 uses this method to create child processes
         strategy = self._strategy
-        
+
         # fix bug
         # args[1] is dataloader, args[3] and args[4] is datamodule
         if self._strategy.use_ipex and TORCH_VERSION_LESS_1_10:

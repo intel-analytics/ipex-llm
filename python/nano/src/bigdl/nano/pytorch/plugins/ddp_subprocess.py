@@ -68,7 +68,7 @@ class _DDPSubprocessLauncher(_DDPSpawnLauncher):
             cpu_procs = schedule_workers(self._strategy.num_processes)
         else:
             cpu_procs = self._strategy.cpu_for_each_process
-        
+
         # fix bug
         # args[1] is dataloader, args[3] and args[4] is datamodule
         if self._strategy.use_ipex and TORCH_VERSION_LESS_1_10:

@@ -40,7 +40,7 @@ def get_input_example(model, input_sample):
             # the default implementation of model.test_dataloader/train_dalaloader/val_dataloader
             # /predict_dataloader will raise exception in pytorch_lightning 1.6
 
-            for dataloader_fn in [model.test_dataloader, model.train_dataloader, 
+            for dataloader_fn in [model.test_dataloader, model.train_dataloader,
                                   model.val_dataloader]:
                 try:
                     dataloader = dataloader_fn()
