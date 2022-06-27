@@ -83,7 +83,8 @@ class TestChronosNBeatsForecaster(TestCase):
         eva = forecaster.evaluate(test_data)
         assert eva[0].shape == test_data[1].shape[1:]
 
-    def test_nbeats_forecaster_data_loader(self):
+    @skip_onnxrt
+    def test_nbeats_forecaster_fit_loader(self):
         train_loader, val_loader, test_loader = create_data(loader=True)
         forecaster = NBeatsForecaster(past_seq_len=24,
                                       future_seq_len=5,

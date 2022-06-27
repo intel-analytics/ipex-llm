@@ -84,6 +84,7 @@ class TestChronosModelTCNForecaster(TestCase):
         test_mse = forecaster.evaluate(test_data)
         assert test_mse[0].shape == test_data[1].shape[1:]
 
+    @skip_onnxrt
     def test_tcn_forecaster_fit_loader(self):
         train_loader, val_loader, test_loader = create_data(loader=True)
         forecaster = TCNForecaster(past_seq_len=24,
