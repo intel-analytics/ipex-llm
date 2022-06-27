@@ -58,7 +58,7 @@ class WandbLoggerCallback(Callback):
         self.log_config = log_config
         self.watch_model = watch_model
         self.kwargs = kwargs
-        super.__init__()
+        super().__init__()
 
     def on_epoch_end(self, epoch, logs=None):
         """
@@ -113,6 +113,6 @@ class WandbLoggerCallback(Callback):
         self.trainer = trainer
 
     def _is_rank_zero(self):
-        invalidInputError(self.trainer is None, "Sanity check failed. Must call set_trainer first!")
+        invalidInputError(self.trainer, "Sanity check failed. Must call set_trainer first!")
         rank = self.trainer.rank
         return rank == 0
