@@ -460,7 +460,7 @@ We use [envoy](https://www.envoyproxy.io/docs/envoy/latest/) as the Load Balance
  * download: `docker pull envoyproxy/envoy-dev:21df5e8676a0f705709f0b3ed90fc2dbbd63cfc5`
 2. run command: `docker run --rm -it  -p 9082:9082 -p 9090:9090 envoyproxy/envoy-dev:79ade4aebd02cf15bd934d6d58e90aa03ef6909e --config-yaml "$(cat path/to/service-specific-envoy.yaml)" --parent-shutdown-time-s 1000000`
 3. validate: run `netstat -tnlp` to see if the envoy process is listening to the corresponding port in the envoy config file.
-4. For details on envoy and sample procedure, read [envoy](envoy.md).
+4. For details on envoy and how to scale out gRPC services using envoy, please read [envoy](envoy.md).
 
 ## Quick Start
 
