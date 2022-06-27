@@ -30,7 +30,7 @@ The Friesian Online Serving is a set of **gRPC services** that enable users to d
 
 A Client sends a **request** to the **Recommender service** and triggers the recommendation process. The **Recall service** generate candidates from millions of items based on embeddings and the **Ranking Service** ranks the candidates for the final recommendation results.
 
-The Online Serving depends on offline and nearline:
+The Online Serving depends on offline and nearline stages:
 - Offline: 
   - For ranking: prepare the user & item features and the ranking model for the ranking service.
     1. Preprocess the user & item data and save them as **user & item feature parquet files**.
@@ -367,7 +367,7 @@ Users can pull the Friesian Serving docker image using `docker pull intelanalyti
 ## Start Ranking Service
 
 1. Prepare the ranking model which trained in the offline stage.
-2. Prepare the ranking config file. You can refer to [Ranking Service Config Template](#ranking-service-config-template)
+2. Prepare the ranking config file. You can refer to [Ranking Service Config Template](#ranking-service-config-template). **Note** that we use the bind mount to mount the current directory into /opt/work/mnt in the container, so paths in the config file should start with `mnt/`
 3. Put the model and config file under the current directory.
     ```
     └── $(pwd)
@@ -380,7 +380,7 @@ Users can pull the Friesian Serving docker image using `docker pull intelanalyti
 
 ## Start Feature Service
 
-1. Prepare the feature config file, which includes the redis configurations used in the nearline stage. You can refer to [Feature Service Config Template](#feature-service-config-template)
+1. Prepare the feature config file, which includes the redis configurations used in the nearline stage. You can refer to [Feature Service Config Template](#feature-service-config-template). **Note** that we use the bind mount to mount the current directory into /opt/work/mnt in the container, so paths in the config file should start with `mnt/`
 2. Put the config file under the current directory.
    ```
     └── $(pwd)
@@ -393,7 +393,7 @@ Users can pull the Friesian Serving docker image using `docker pull intelanalyti
 ## Start Recall Service
 
 1. Prepare the faiss index file which generated in the nearline stage.
-2. Prepare the recall config file. You can refer to [Recall Service Config Template](#recall-service-config-template)
+2. Prepare the recall config file. You can refer to [Recall Service Config Template](#recall-service-config-template). **Note** that we use the bind mount to mount the current directory into /opt/work/mnt in the container, so paths in the config file should start with `mnt/`
 3. Put the faiss index file and the config file under the current directory.
    ```
    └── $(pwd)
@@ -470,11 +470,11 @@ You can follow the following steps to run the WnD demo.
 1. Prepare config files, WnD model and index
    1. WnD model: the WnD model is the output of the offline pipelines.
    2. index: the faiss index is generated in [Run nearline pipelines 6.](#run-nearline-pipelines)
-   3. Prepare [config_feature.yaml](./src/main/resources/config/config_feature.yaml)
-   4. Prepare [config_feature_vec.yaml](./src/main/resources/config/config_feature_vec.yaml)
-   5. Prepare [config_ranking.yaml](./src/main/resources/config/config_ranking.yaml): modify `modelPath` and `savedModelInputs` according to your WnD model path and inputs.
-   6. Prepare [config_recall.yaml](./src/main/resources/config/config_recall.yaml): modify `indexPath` and `indexDim` according to your index location and dimension. `featureServiceURL` according to `ip:port` the feature recall service listening on.
-   7. Prepare [config_recommender.yaml](./src/main/resources/config/config_recommender.yaml): modify `itemIDColumn` and `inferenceColumns` according to the input order of the WnD model. `recallServiceURL`, `featureServiceURL` and `rankingServiceURL` according to the `ip:port` the corresponding service listening on.
+   3. Prepare [config_feature.yaml](https://github.com/intel-analytics/BigDL/blob/main/scala/friesian/src/main/resources/config/config_feature.yaml)
+   4. Prepare [config_feature_vec.yaml](https://github.com/intel-analytics/BigDL/blob/main/scala/friesian/src/main/resources/config/config_feature_vec.yaml)
+   5. Prepare [config_ranking.yaml](https://github.com/intel-analytics/BigDL/blob/main/scala/friesian/src/main/resources/config/config_ranking.yaml): modify `modelPath` and `savedModelInputs` according to your WnD model path and inputs.
+   6. Prepare [config_recall.yaml](https://github.com/intel-analytics/BigDL/blob/main/scala/friesian/src/main/resources/config/config_recall.yaml): modify `indexPath` and `indexDim` according to your index location and dimension. `featureServiceURL` according to `ip:port` the feature recall service listening on.
+   7. Prepare [config_recommender.yaml](https://github.com/intel-analytics/BigDL/blob/main/scala/friesian/src/main/resources/config/config_recommender.yaml): modify `itemIDColumn` and `inferenceColumns` according to the input order of the WnD model. `recallServiceURL`, `featureServiceURL` and `rankingServiceURL` according to the `ip:port` the corresponding service listening on.
    8. Your file structure will like:
    ```
     └── $(pwd)
