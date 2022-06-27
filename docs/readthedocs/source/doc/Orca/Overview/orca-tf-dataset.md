@@ -12,7 +12,7 @@ An **Orca TF Dataset** is a distributed Tensorflow tf.data.Dataset.
 
 ## Creating an Orca TF Dataset
 
-An Orca TF Dataset can be created from an Orca xShards or a Friesian FeatureTable.
+An Orca TF Dataset can be created from an Orca xShards, a Spark DataFrame or a Friesian FeatureTable.
 
 ### From Orca xShards
 
@@ -33,6 +33,41 @@ ds = DataSet.from_tensor_slices(sample_xshards)
 # {'movie_title': b'My Fair Lady (1964)', 'user_id': 1, 'user_rating': 3}
 # {'movie_title': b'Erin Brockovich (2000)', 'user_id': 1, 'user_rating': 4}
 # {'movie_title': b"Bug's Life, A (1998)", 'user_id': 1, 'user_rating': 5}
+```
+
+### From Spark DataFrame
+
+A Spark DataFrame can be converted to an Orca xShards using `dataframe_to_xshards_of_feature_dict`. Then users can use the converted xShards to create an Orca TF Dataset using `DataSet.from_tensor_slices(xshards)`
+
+```python
+from bigdl.orca.learn.utils import dataframe_to_xshards_of_feature_dict
+
+spark = OrcaContext.get_spark_session()
+df = spark.read.options(header=True, inferSchema=True, delimiter=":").csv("/path/to/input_file")
+df.show(5, False)
+# +------+--------------------------------------+------+
+# |userid|title                                 |rating|
+# +------+--------------------------------------+------+
+# |1     |One Flew Over the Cuckoo's Nest (1975)|5     |
+# |1     |James and the Giant Peach (1996)      |3     |
+# |1     |My Fair Lady (1964)                   |3     |
+# |1     |Erin Brockovich (2000)                |4     |
+# |1     |Bug's Life, A (1998)                  |5     |
+# +------+--------------------------------------+------+
+
+xshards = dataframe_to_xshards_of_feature_dict(df, df.columns, accept_str_col=True)
+# [{'userid': array(['1', '1', '1', '1', '1'], dtype='<U1'), 'rating': array([5., 3., 3., 4., 5.], dtype=float32), 
+#   'title': array(["One Flew Over the Cuckoo's Nest (1975)",
+#        'James and the Giant Peach (1996)', 'My Fair Lady (1964)',
+#        'Erin Brockovich (2000)', "Bug's Life, A (1998)"], dtype='<U38')}]
+
+ds = DataSet.from_tensor_slices(xshards)
+# List all elements in ds 
+# {'userid': b'1', 'title': b"One Flew Over the Cuckoo's Nest (1975)", 'rating': 5}
+# {'userid': b'1', 'title': b'James and the Giant Peach (1996)', 'rating': 3}
+# {'userid': b'1', 'title': b'My Fair Lady (1964)', 'rating': 3}
+# {'userid': b'1', 'title': b'Erin Brockovich (2000)', 'rating': 4}
+# {'userid': b'1', 'title': b"Bug's Life, A (1998)", 'rating': 5}
 ```
 
 ### From Friesian FeatureTable
