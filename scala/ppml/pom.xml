@@ -378,26 +378,6 @@
                     <target>8</target>
                 </configuration>
             </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-assembly-plugin</artifactId>
-                <executions>
-                    <execution>
-                        <id>python</id>
-                        <inherited>false</inherited>
-                        <configuration>
-                            <descriptors>
-                                <descriptor>${project.basedir}/../../python/ppml/src/python-zip.xml
-                                </descriptor>
-                            </descriptors>
-                        </configuration>
-                        <phase>package</phase>
-                        <goals>
-                            <goal>single</goal>
-                        </goals>
-                    </execution>
-                </executions>
-            </plugin>
         </plugins>
     </build>
 </project>
