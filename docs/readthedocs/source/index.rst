@@ -71,6 +71,7 @@ BigDL Documentation
    doc/Orca/Overview/distributed-training-inference.md
    doc/Orca/Overview/distributed-tuning.md
    doc/Ray/Overview/ray.md
+   doc/Orca/Overview/known_issues.md
 
 .. toctree::
    :maxdepth: 1
