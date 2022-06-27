@@ -146,3 +146,27 @@ Start Client 2:
 python fgboost_regression_party_2.py
 ```
 ### 3.3 Get Results
+The first 5 batches of results are printed
+```
+0-th result of FGBoost predict: [[9.74606]
+ [9.74606]
+ [9.74606]
+ [9.74606]]
+1-th result of FGBoost predict: [[9.74606]
+ [9.74606]
+ [9.74606]
+ [9.74606]]
+2-th result of FGBoost predict: [[9.74606]
+ [9.74606]
+ [9.74606]
+ [9.74606]]
+3-th result of FGBoost predict: [[9.74606]
+ [9.74606]
+ [9.74606]
+ [9.74606]]
+4-th result of FGBoost predict: [[9.74606]
+ [9.74606]
+ [9.74606]
+ [9.74606]]
+
+```

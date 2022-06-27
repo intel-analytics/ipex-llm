@@ -24,7 +24,7 @@ from bigdl.ppml.fl.algorithms.psi import PSI
 
 # the preprocess code is mainly from 
 # https://www.kaggle.com/code/pablocastilla/predict-house-prices-with-xgboost-regression/notebook
-def preprocess(train_dataset):
+def preprocess(train_dataset, test_dataset):
     # takes Pandas DataFrame of raw data and output the preprocessed data
     # raw data may have any type of data, preprocessed data only have numerical data
     categorical_features_all= \
@@ -39,29 +39,36 @@ def preprocess(train_dataset):
 
     every_column_non_categorical= [col for col in train_dataset.columns \
         if col not in categorical_features_party and col not in ['Id'] ]
-
     # log transform skewed numeric features:
     numeric_feats = train_dataset[every_column_non_categorical] \
         .dtypes[train_dataset.dtypes != "object"].index  
     train_dataset[numeric_feats] = np.log1p(train_dataset[numeric_feats])
 
+    every_column_non_categorical= [col for col in test_dataset.columns \
+        if col not in categorical_features_party and col not in ['Id'] ]
+    numeric_feats = test_dataset[every_column_non_categorical] \
+        .dtypes[test_dataset.dtypes != "object"].index
+    test_dataset[numeric_feats] = np.log1p(test_dataset[numeric_feats])
     # All features with NaN values in dataset, some of them do not exist after split into parties
     # Thus we need to get intersections, to get the features in particular party
     features_with_nan_all = \
     ['Alley','MasVnrType','BsmtQual','BsmtQual','BsmtCond','BsmtCond','BsmtExposure',
      'BsmtFinType1','BsmtFinType2','FireplaceQu','GarageType','GarageFinish']
-    features_with_nan_party = list(set(train_dataset.columns) & set(features_with_nan_all))
+    features_with_nan_party_train = list(set(train_dataset.columns) & set(features_with_nan_all))
+    features_with_nan_party_test = list(set(test_dataset.columns) & set(features_with_nan_all))
     
     def ConverNaNToNAString(data, columnList):
         for x in columnList:       
             data[x] =str(data[x])  
 
-    ConverNaNToNAString(train_dataset, features_with_nan_party)        
-    
+    ConverNaNToNAString(train_dataset, features_with_nan_party_train)        
+    ConverNaNToNAString(test_dataset, features_with_nan_party_test)
+
     train_dataset = pd.get_dummies(train_dataset, columns=categorical_features_party)
+    test_dataset = pd.get_dummies(test_dataset, columns=categorical_features_party)
     every_column_except_y= [col for col in train_dataset.columns if col not in ['SalePrice','Id']]
     y = train_dataset[['SalePrice']] if 'SalePrice' in train_dataset else None
-    return train_dataset[every_column_except_y], y
+    return train_dataset[every_column_except_y], y, test_dataset
 
 
 init_fl_context()
@@ -69,20 +76,24 @@ init_fl_context()
 df_train = pd.read_csv('./python/ppml/example/fgboost_regression/data/house-prices-train-2.csv')
 df_train['Id'] = df_train['Id'].astype(str)
 
+df_test = pd.read_csv('./python/ppml/example/fgboost_regression/data/house-prices-test-2.csv')
+df_test['Id'] = df_test['Id'].astype(str)
+
 psi = PSI()
 intersection = psi.get_intersection(list(df_train['Id']))
 df_train = df_train[df_train['Id'].isin(intersection)]
 
-x, y = preprocess(df_train)
+x, y, x_test = preprocess(df_train, df_test)
 
 fgboost_regression = FGBoostRegression()
+
+# party 2 owns label, so pass features and labels
 fgboost_regression.fit(x, y, feature_columns=x.columns, label_columns=y.columns, num_round=15)
 
 fgboost_regression.save_model('/tmp/fgboost_model_2.json')
 loaded = FGBoostRegression.load_model('/tmp/fgboost_model_2.json')
 
-df_test = pd.read_csv('house-prices-test-2')
-result = fgboost_regression.predict(df_test, feature_columns=df_test.columns)
+result = fgboost_regression.predict(x_test, feature_columns=x_test.columns)
 
 # print first 5 results
 for i in range(5):
