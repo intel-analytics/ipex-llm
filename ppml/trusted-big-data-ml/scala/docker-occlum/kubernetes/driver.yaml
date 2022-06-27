@@ -6,7 +6,6 @@ metadata:
 spec:
   containers:
   - name: spark-example
-    image: intelanalytics/bigdl-ppml-trusted-big-data-ml-scala-occlum:2.1.0-SNAPSHOT
     imagePullPolicy: Never
     volumeMounts:
     - name: sgx-enclave
