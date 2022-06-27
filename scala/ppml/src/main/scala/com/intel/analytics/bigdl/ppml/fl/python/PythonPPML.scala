@@ -116,6 +116,10 @@ class PythonPPML[T: ClassTag](implicit ev: TensorNumeric[T])
                               maxtry: Int = 100, retry: Int = 3000): java.util.List[String] = {
     psi.downloadIntersection(maxtry, retry)
   }
+  def psiGetIntersection(psi: PSI, ids: JList[String],
+                         maxtry: Int = 100, retry: Int = 3000): java.util.List[String] = {
+    psi.getIntersection(ids, maxtry, retry)
+  }
   def jTensorToTensorArray(jTensor: JTensor): Array[Tensor[Float]] = {
     Log4Error.invalidOperationError(jTensor.shape.length == 2,
       s"FGBoost only support 2D input, get dimension: ${jTensor.shape.length}")
