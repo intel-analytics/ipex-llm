@@ -85,7 +85,7 @@ class TestTF2Estimator(TestCase):
         estimator = Estimator.from_keras(model_creator=model_creator,
                                         verbose=True,
                                         config=None,
-                                        backend="tf2",
+                                        backend="ray",
                                         workers_per_node=2)
 
         start_stats = estimator.evaluate(create_test_dataset, batch_size=32, num_steps=2)

@@ -25,7 +25,7 @@ if [[ -z "$SGX_LOG_LEVEL" ]]; then
     echo "No SGX_LOG_LEVEL specified, set to off."
 else
     echo "Set SGX_LOG_LEVEL to $SGX_LOG_LEVEL"
-    if [[ $SGX_LOG_LEVEL == "debug" ] || [ $SGX_LOG_LEVEL == "trace" ]]; then
+    if [[ $SGX_LOG_LEVEL == "debug" ]] || [[ $SGX_LOG_LEVEL == "trace" ]]; then
         export ENABLE_SGX_DEBUG=true
         export OCCLUM_LOG_LEVEL=$SGX_LOG_LEVEL
     fi

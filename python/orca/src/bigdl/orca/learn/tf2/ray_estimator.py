@@ -43,7 +43,7 @@ class TensorFlow2Estimator(OrcaRayEstimator):
                  compile_args_creator=None,
                  config=None,
                  verbose=False,
-                 backend="tf2",
+                 backend="ray",
                  workers_per_node=1,
                  cpu_binding=False):
         self.model_creator = model_creator
@@ -75,7 +75,7 @@ class TensorFlow2Estimator(OrcaRayEstimator):
             "verbose": self.verbose,
         }
 
-        if backend == "tf2":
+        if backend == "ray":
             cores_per_node = ray_ctx.ray_node_cpu_cores // workers_per_node
             num_nodes = ray_ctx.num_ray_nodes * workers_per_node
 
@@ -114,7 +114,7 @@ class TensorFlow2Estimator(OrcaRayEstimator):
                 for i, worker in enumerate(self.remote_workers)])
         else:
             invalidInputError(False,
-                              "Only \"tf2\" and \"horovod\" are legal "
+                              "Only \"ray\" and \"horovod\" are legal "
                               "values of backend, but got {}".format(backend))
 
         self.num_workers = len(self.remote_workers)
