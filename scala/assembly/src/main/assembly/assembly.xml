@@ -59,13 +59,6 @@
     </fileSet>
     <fileSet>
       <outputDirectory>/python</outputDirectory>
-      <directory>${project.parent.basedir}/ppml/target</directory>
-      <includes>
-        <include>bigdl-ppml*-python-api.zip</include>
-      </includes>
-    </fileSet>
-    <fileSet>
-      <outputDirectory>/python</outputDirectory>
       <directory>${project.parent.basedir}/target</directory>
       <includes>
           <include>bigdl*-python-api.zip</include>
