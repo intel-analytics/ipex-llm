@@ -42,9 +42,11 @@ from typing import Any, Optional, Callable
 from tempfile import TemporaryDirectory
 
 import pytorch_lightning as pl
+from pytorch_lightning.core.datamodule import LightningDataModule
 
 from bigdl.nano.pytorch.plugins.ddp_spawn import DDPSpawnStrategy, _DDPSpawnLauncher
 from bigdl.nano.common.cpu_schedule import schedule_workers
+from bigdl.nano.pytorch.utils import TORCH_VERSION_LESS_1_10
 
 import logging
 
@@ -66,6 +68,16 @@ class _DDPSubprocessLauncher(_DDPSpawnLauncher):
             cpu_procs = schedule_workers(self._strategy.num_processes)
         else:
             cpu_procs = self._strategy.cpu_for_each_process
+        
+        # fix bug
+        # args[1] is dataloader, args[3] and args[4] is datamodule
+        if self._strategy.use_ipex and TORCH_VERSION_LESS_1_10:
+            if isinstance(args[1], LightningDataModule):
+                args[1].trainer = None
+            elif isinstance(args[3], LightningDataModule):
+                args[3].trainer = None
+            elif isinstance(args[4], LightningDataModule):
+                args[4].trainer = None
 
         # the `return_queue` is necessary for recovering child process's state, we need
         # to dump it in this process and load it in subprocess, the `mp.SimpleQueue()` in

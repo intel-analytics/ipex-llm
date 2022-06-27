@@ -40,6 +40,7 @@ from ray.util.ml_utils.util import find_free_port
 import torch
 from torch import Tensor
 import pytorch_lightning as pl
+from pytorch_lightning.core.datamodule import LightningDataModule
 from pytorch_lightning.trainer.states import TrainerFn
 from pytorch_lightning.utilities import rank_zero_only
 from pytorch_lightning.utilities.apply_func import move_data_to_device
@@ -98,6 +99,16 @@ class _RayLauncher(_SpawnLauncher):
                trainer: Optional["pl.Trainer"] = None, **kwargs: Any) -> Any:
         # pytorch_lightning 1.6 uses this method to create child processes
         strategy = self._strategy
+        
+        # fix bug
+        # args[1] is dataloader, args[3] and args[4] is datamodule
+        if self._strategy.use_ipex and TORCH_VERSION_LESS_1_10:
+            if isinstance(args[1], LightningDataModule):
+                args[1].trainer = None
+            elif isinstance(args[3], LightningDataModule):
+                args[3].trainer = None
+            elif isinstance(args[4], LightningDataModule):
+                args[4].trainer = None
 
         strategy._setup_env_vars()
         strategy.global_to_local = strategy.get_local_ranks()

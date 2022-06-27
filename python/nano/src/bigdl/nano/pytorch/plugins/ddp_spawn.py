@@ -44,6 +44,7 @@ from torch.nn.parallel.distributed import DistributedDataParallel
 
 import pytorch_lightning as pl
 from pytorch_lightning.trainer.states import TrainerFn
+from pytorch_lightning.core.datamodule import LightningDataModule
 from pytorch_lightning.strategies.launchers import _SpawnLauncher
 from pytorch_lightning.strategies import Strategy, DDPSpawnStrategy as _DDPSpawnStrategy
 from pytorch_lightning.plugins.environments import LightningEnvironment
@@ -78,6 +79,16 @@ class _DDPSpawnLauncher(_SpawnLauncher):
             cpu_procs = schedule_workers(self._strategy.num_processes)
         else:
             cpu_procs = self._strategy.cpu_for_each_process
+
+        # fix bug
+        # args[1] is dataloader, args[3] and args[4] is datamodule
+        if self._strategy.use_ipex and TORCH_VERSION_LESS_1_10:
+            if isinstance(args[1], LightningDataModule):
+                args[1].trainer = None
+            elif isinstance(args[3], LightningDataModule):
+                args[3].trainer = None
+            elif isinstance(args[4], LightningDataModule):
+                args[4].trainer = None
 
         init_KMP_AFFINITY = os.environ.get("KMP_AFFINITY", "")
         init_OMP_NUM_THREADS = os.environ.get("OMP_NUM_THREADS", "")
