@@ -79,7 +79,8 @@ class FGBoostServiceImpl(clientNum: Int) extends FGBoostServiceGrpc.FGBoostServi
       responseObserver.onCompleted()
     } catch {
       case e: Exception =>
-        val response = UploadResponse.newBuilder.setResponse(e.getMessage).setCode(1).build
+        val errorMsg = ExceptionUtils.getStackTrace(e)
+        val response = UploadResponse.newBuilder.setResponse(errorMsg).setCode(1).build
         responseObserver.onNext(response)
         responseObserver.onCompleted()
     } finally {

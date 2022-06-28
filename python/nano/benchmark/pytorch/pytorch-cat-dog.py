@@ -62,6 +62,7 @@ def create_data_loader(root_dir, batch_size, nproc):
     catdogs = ImageFolder(dir_path, data_transform)
     dataset_size = len(catdogs)
 
+
     if "SANITY_CHECK" in os.environ and os.environ["SANITY_CHECK"] == "1":
         # reduce dataset size to speedup the check
         train_size = 2 * nproc * batch_size
