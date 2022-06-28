@@ -5,7 +5,7 @@ With Friesian Table APIs, data scientists and machine learning engineers are abl
 **DIEN** is a noval recommender models proposed by Alibaba. Specifically, DIEN has an interest extractor layer to capture temporal interests from history behavior sequence, and an interest evolving layer to model interest evolving process that is relative to target item. Know more about [DIEN](https://arxiv.org/pdf/1809.03672.pdf), and it's optimization from [Intel](https://github.com/intel-analytics/BigDL/tree/main/python/friesian/example/dien).
 
 A **FeatureTable** is a distributed collection of data, it provides rich data processing and feature engineering functions for recommender systems.
-- Categorical Data Encoding, FeatureTable can encode categorical data into integers, one hot encodings, target eoncodes.
+- Categorical Data Encoding, FeatureTable can encode categorical data into integers, one hot encodings, target encodes.
 - Negative Sampling, FeatureTable selects negative examples randomly from the user’s non-interactive product set.
 - FeatureTable can extract behavior sequences for users to capture their temporal interests, as well as the evolving process.
 
