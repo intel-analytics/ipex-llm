@@ -4,24 +4,20 @@ ARG HTTPS_PROXY_HOST
 ARG HTTPS_PROXY_PORT
 ARG JDK_VERSION=8u192
 ARG SPARK_VERSION=3.1.2
-ARG SCALA_VERSION=2.12.10
 
-# stage.1 java & scala & spark
+# stage.1 java & spark
 FROM ubuntu:18.04 AS builder
 
 ARG SPARK_VERSION
-ARG SCALA_VERSION
 ARG JDK_VERSION
 ARG JDK_URL=your_jdk_url
 ARG SPARK_JAR_REPO_URL
 ENV JDK_VERSION         ${JDK_VERSION}
 ENV SPARK_VERSION       ${SPARK_VERSION}
-ENV SCALA_VERSION       ${SCALA_VERSION}
 
 ENV JAVA_HOME           /opt/jdk${JDK_VERSION}
-ENV SCALA_HOME          /opt/scala-${SCALA_VERSION}
 ENV SPARK_HOME          /opt/spark-${SPARK_VERSION}
-ENV PATH                ${JAVA_HOME}/bin:${SCALA_HOME}/bin:${SPARK_HOME}/bin:${PATH}
+ENV PATH                ${JAVA_HOME}/bin:${SPARK_HOME}/bin:${PATH}
 
 RUN apt-get update --fix-missing && \
     env DEBIAN_FRONTEND=noninteractive TZ=Etc/UTC apt-get install -y tzdata apt-utils wget unzip patch zip
@@ -33,11 +29,6 @@ RUN wget $JDK_URL && \
     rm jdk-$JDK_VERSION-linux-x64.tar && \
     mv /opt/jdk* /opt/jdk$JDK_VERSION && \
     ln -s /opt/jdk$JDK_VERSION /opt/jdk
-
-# scala
-RUN cd / && wget -c https://downloads.lightbend.com/scala/${SCALA_VERSION}/scala-${SCALA_VERSION}.tgz && \
-    (cd / && gunzip < scala-${SCALA_VERSION}.tgz)|(cd /opt && tar -xvf -) && \
-    rm /scala-${SCALA_VERSION}.tgz
 
 # spark
 RUN cd /opt && \
@@ -57,13 +48,10 @@ RUN cd /home && \
 FROM ubuntu:18.04
 ARG EHSM_KMS_BRANCH_VERSION=main
 ARG SPARK_VERSION
-ARG SCALA_VERSION
 ENV SPARK_VERSION       ${SPARK_VERSION}
-ENV SCALA_VERSION       ${SCALA_VERSION}
 ENV JAVA_HOME           /opt/jdk8
-ENV SCALA_HOME          /opt/scala-${SCALA_VERSION}
 ENV SPARK_HOME          /opt/spark-${SPARK_VERSION}
-ENV PATH                ${JAVA_HOME}/bin:${SCALA_HOME}/bin:${SPARK_HOME}/bin:${PATH}
+ENV PATH                ${JAVA_HOME}/bin:${SPARK_HOME}/bin:${PATH}
 
 # Step 1. Install requirement tools
 RUN apt-get update && apt-get install -y vim autoconf automake build-essential cmake curl debhelper git libcurl4-openssl-dev libprotobuf-dev libssl-dev libtool lsb-release ocaml ocamlbuild protobuf-compiler python wget libcurl4 libprotobuf10 libssl1.1 make module-init-tools g++ libjsoncpp-dev uuid-dev openjdk-8-jdk && \
@@ -87,7 +75,6 @@ RUN apt-get update && apt-get install -y vim autoconf automake build-essential c
 
 ADD ./entrypoint.sh /home/entrypoint.sh
 COPY --from=builder /opt/jdk /opt/jdk8
-COPY --from=builder /opt/scala-${SCALA_VERSION} /opt/scala-${SCALA_VERSION}
 COPY --from=builder /opt/spark-${SPARK_VERSION} /opt/spark-${SPARK_VERSION}
 COPY --from=builder /home/spark-encrypt-io.jar /home/spark-encrypt-io.jar
 
