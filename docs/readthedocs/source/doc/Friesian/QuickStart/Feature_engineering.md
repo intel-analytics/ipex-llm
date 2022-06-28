@@ -5,28 +5,23 @@ Friesian Table provides a feature engineering and preprocessing library for tabu
 
 It provides high-level abstraction to simplify code and accelerates computation on Intel CPU. With Table recommender focused APIs, data scientists and machine learning engineers are able to quickly process datasets of all sizes.
 
-Processed features are feed into Orca Estimator to train recommender models, and loaded into Redis online inference. 
+Processed features are feed into Orca Estimator to train recommender models, and then loaded into Redis for online inference. 
 
 ## **Key Concepts**
+A **Friesian Table** is a distributed collection of data. It is built on top of [spark dataframe](https://spark.apache.org/docs/latest/sql-programming-guide.html#datasets-and-dataframes), with richer abstraction and optimizations under the hood, specifically for recommender systems.
 
-### **Table**
-A Table is a distributed collection of data. It is built on top of [spark dataframe](https://spark.apache.org/docs/latest/sql-programming-guide.html#datasets-and-dataframes), with richer abstraction and optimizations under the hood, specifically for recommender systems.
+**FeatureTable** is built on top of Friesian Table.
+- A FeatureTable provides rich data processing and feature engineering methods specifically for recommender models. 
+- FeatureTable.df is then feed into [Orca Estimator](../../Orca/Overview/distributed-training-inference.md) for training purpose.
 
-### **FeatureTable**
-FeatureTable is built on top of Friesian Table, it provides rich data processing and feature engineering functions for recommender systems.
+A **StringIndex** is a **Friesian Table** with unique index values for categorical features, it represents a mapping from categorical values to `id` of integers.
+- Frisian FeatureTable could generate StringIndex based feature frequency.
+- Integer `id`  starts from 1, reserving 0 for unknown features.
+- A StringIndex is then used to transform categorical features of Friesian FeatureTable to integer values. 
 
-FeatureTable.df is then feed into [Orca Estimator](../../Orca/Overview/distributed-training-inference.md) for training purpose.
-
-### **StringIndex**
-A StringIndex is a Friesian Table with unique index values of categorical features.
-
-A StringIndex is then used to transform categorical features of FeatureTable to integer values. 
-
-### **TargetCode**
-A TargetEncode is a Friesian Table, with representation of categorical data using target encoding. 
-Target encoding allows us to retain actual useful information about the categories while keeping the dimensionality of our data the same as the unencoded data. To target encode data, for each feature, we simply replace each category with the mean target value for samples which have that category.
-
-A TargetCode is then used to transform categorical features of FeatureTable to mean statics.
+A **TargetEncode** is a Friesian Table with representation of categorical data using target encodes. 
+- Target encoding allows us to retain actual useful information about the categories while keeping the dimensionality of data the same as the unencoded data. 
+- To target encode data, **Friesian FeatureTable** simply replaces each category with the mean target value for samples which have that category.
 
 ## **Create a Friesian Table**
 
@@ -74,10 +69,8 @@ tbl, target_codes = tbl.target_encode(cat_cols="count", target_cols="label")
 ```
 
 ## **Quick Start**
-FeatureTable provides a library of unified and easy-to-use APIs for data preprocessing and feature engineering. It inherits common spark dataframe functions, and provides complex feature generation.
-A couple of end to end training pipelines are provided here to showcase how to use Friesian Table to generate features for popular recommender models.
+A couple of end to end training pipelines are provided here to showcase how to use **Friesian Table** to generate features for popular recommender models.
 See full demo code [here](https://github.com/intel-analytics/BigDL/tree/main/python/friesian/democode/)
 
-[Preprocess and Train Two Tower Model Using Movielens Data](Train_2tower.md)
 
-[Preprocess and Train Wide and Deep Model Using Movielens Data](Train_wnd.md)
+[Feature Engineering for W&D (Wide and Deep Learning) using Friesian](Train_wnd.md)

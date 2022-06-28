@@ -41,7 +41,8 @@ if __name__ == '__main__':
 
     ratings = movielens.get_id_ratings(data_dir)
     ratings = pd.DataFrame(ratings, columns=["user", "item", "rate"])
-    ratings_tbl = FeatureTable.from_pandas(ratings)
+    ratings_tbl = FeatureTable.from_pandas(ratings) \
+        .cast(["user", "item", "rate"], "int")
     ratings_tbl.cache()
 
     user_df = pd.read_csv(data_dir + "/ml-1m/users.dat", delimiter="::",
