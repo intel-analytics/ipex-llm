@@ -49,10 +49,7 @@ You can run with `spark` backend via:
 ```
 python brainMRI.py --backend spark 
 ```
-You can run with `bigdl` backend via:
-```
-python brainMRI.py --backend bigdl
-```
+
 ### Run on yarn cluster for yarn-client mode after pip install
 ```
 export HADOOP_CONF_DIR=the directory of the hadoop and yarn configurations
