@@ -5,8 +5,6 @@ In computing, data exists in three states: data in transit, data at rest, and da
 2. data in storage is “at rest”. transparent database encryption.
 3. data being processed is “in use”. computing
 
-![MicrosoftTeams-image](https://user-images.githubusercontent.com/61072813/176081992-f99cdfd2-57e4-417b-8f87-ab066b4f749e.png)
-
 ### Confidential computing
 [Confidential computing](https://www.intel.com/content/www/us/en/security/confidential-computing.html) is an emerging industry initiative focused on helping to secure data in use.
 
