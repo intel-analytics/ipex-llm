@@ -140,7 +140,7 @@ parser = argparse.ArgumentParser(description='PyTorch brainMRI Example')
 parser.add_argument('--cluster_mode', type=str, default="local",
                     help='The cluster mode, such as local, yarn-client, or spark-submit.')
 parser.add_argument('--backend', type=str, default="torch_distributed",
-                    help='The backend of PyTorch Estimator; bigdl, torch_distributed and spark are supported')
+                    help='The backend of PyTorch Estimator; torch_distributed and spark are supported')
 parser.add_argument('--batch_size', type=int, default=64, help='The training batch size')
 parser.add_argument('--epochs', type=int, default=2, help='The number of epochs to train for')
 parser.add_argument('--data_dir', type=str, default='./kaggle_3m', help='the path of the dataset')
@@ -171,21 +171,10 @@ config = {
 train_loader = train_loader_creator(config=config, batch_size=batch_size)
 
 # plot some random training images.
-# You should use jupyter notebook for show the pictures.
+# You should use jupyter notebook to show the pictures.
 show_batch(train_loader)
 
-if args.backend == "bigdl":
-    net = model_creator(config={})
-    optimizer = optim_creator(model=net, config={"lr": 0.001})
-    orca_estimator = Estimator.from_torch(model=net,
-                                          optimizer=optimizer,
-                                          loss=bce_dice_loss,
-                                          metrics=[],
-                                          backend=args.backend,
-                                          )
-    orca_estimator.fit(data=train_loader, epochs=args.epochs)
-
-elif args.backend in ["torch_distributed", "spark"]:
+if args.backend in ["torch_distributed", "spark"]:
     orca_estimator = Estimator.from_torch(model=model_creator,
                                           optimizer=optim_creator,
                                           loss=loss_creator,
@@ -197,7 +186,7 @@ elif args.backend in ["torch_distributed", "spark"]:
 
     orca_estimator.fit(data=train_loader_creator, epochs=args.epochs, batch_size=batch_size)
 else:
-    raise NotImplementedError("Only bigdl, torch_distributed and spark are supported as the backend,"
+    raise NotImplementedError("Only torch_distributed and spark are supported as the backend,"
                               " but got {}".format(args.backend))
 
 stop_orca_context()
