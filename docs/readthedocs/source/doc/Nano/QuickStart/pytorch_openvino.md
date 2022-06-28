@@ -19,48 +19,59 @@ To use OpenVINO acceleration, you have to install the OpenVINO toolkit:
 pip install openvino-dev
 ```
 
-### **Step 1: Prepare the Model**
+### **Step 1: Load the data**
+```python
+from torchvision.io import read_image
+from bigdl.nano.pytorch.vision import transforms
+
+paths = ["../Image/cat.jpg", "../Image/dog.jpg"]
+data_transform =  transforms.Compose([transforms.RandomCrop(224),
+                                     transforms.RandomHorizontalFlip(p=0.3),
+                                     transforms.ToPILImage(),
+                                     transforms.ToTensor(),
+                                     transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])])
+cat = data_transform(read_image(paths[0]))
+dog = data_transform(read_image(paths[1]))
+```
+Let’s have a quick look at our data<br>
+
+<img src="../Image/cat.jpg" width="20%" height="20%" alt="cat" align=center />
+<img src="../Image/dog.jpg" width="20%" height="20%" alt="dog" align=center />
+
+### **Step 2: Prepare the Model**
 ```python
 import torch
-from torchvision import datasets
-from torch.utils.data.dataloader import DataLoader
-from bigdl.nano.pytorch.vision import transforms
-from bigdl.nano.pytorch.trainer import Trainer
-from torchvision.models.mobilenetv3 import mobilenet_v3_small
+import torch.nn as nn
+from torchvision.models import resnet18
 # define your own model
-model = mobilenet_v3_small(num_classes=10)
-loss = torch.nn.CrossEntropyLoss()
-optimizer = torch.optim.Adam(model.parameters(), lr=1e-4)
-model = Trainer.compile(model, loss, optimizer)
-# prepare your own data
-data_transform = transforms.Compose([
-    transforms.Resize((256, 256)),
-    transforms.Grayscale(3),
-    transforms.ToTensor(),
-    transforms.Normalize((0.1307,0.1307,0.1307), (0.3081,0.3081,0.3081))
-])
-train_data = datasets.MNIST(
-    root=".",
-    train=True,
-    transform=data_transform
-)
-data_loader = DataLoader(train_data)
+class Predictor(nn.Module):
+    def __init__(self):
+        super().__init__()
+        self.resnet18=resnet18(pretrained=True)
+
+    def forward(self, x):
+        y_hat = self.resnet18(x)
+        return y_hat.argmax(dim=1)
 # (Optional) Something else, like training ...
-trainer = Trainer()
-trainer.fit(model, data_loader)
+# trainer = Trainer()
+# trainer.fit(model, data_loader)
 ```
 
-### **Step 2: Apply OpenVINO Acceleration**
+### **Step 3: Apply OpenVINO Acceleration**
 When you're ready, you can simply append the following part to enable your OpenVINO acceleration.
 ```python
+batch = torch.stack([cat, dog])
+predictor = Predictor()
+predictor.eval()
+predictor(batch)
 # trace your model as an OpenVINO model
 # The argument `input_sample` is not required in the following cases:
 # you have run `trainer.fit` before trace
 # The Model has `example_input_array` set
-ov_model = Trainer.trace(model, accelerator='openvino', input_sample=torch.randn((1, 3, 256, 256)))
+ov_predictor = Trainer.trace(model, accelerator='openvino', input_sample=batch)
 
 # The usage is almost the same with any PyTorch module
-y_hat = ov_model(torch.rand((10, 3, 256, 256)))
+y_hat = ov_predictor(batch)
 ```
 - Note
-    The `ov_model` is not trainable any more, so you can't use like trainer.fit(ov_model, dataloader)
+    The `ov_predictor` is not trainable any more, so you can't use like trainer.fit(ov_model, dataloader)
