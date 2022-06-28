@@ -50,13 +50,14 @@ class FGBoostRegression(FLClientClosable):
             x_batch = x[i:i+batchsize]
             x_batch, _ = convert_to_jtensor(x_batch, **kargs)
             result_batch = callBigDlFunc(self.bigdl_type, "fgBoostPredict", self.value, x_batch).to_ndarray()
-            result.append(result_batch)
+            result.append(result_batch.flatten())
             i += batchsize
         x_batch = x[i:]
         x_batch, _ = convert_to_jtensor(x_batch, **kargs)
         result_batch = callBigDlFunc(self.bigdl_type, "fgBoostPredict", self.value, x_batch).to_ndarray()
-        result.append(result_batch)
-        return np.array(result)
+        result.append(result_batch.flatten())
+        flat_result = [x for xs in result for x in xs]
+        return np.array(flat_result)
 
     def save_model(self, dest):
         callBigDlFunc(self.bigdl_type, "fgBoostRegressionSave", self.value, dest)
