@@ -87,8 +87,7 @@ class PSI() extends FLClientClosable {
     import spark.implicits._
     val ids = df.select(rowKeyName).as[String].collect().toList.asJava
     uploadSet(ids, salt)
-    val hashIntersection = downloadIntersection(maxTry, retry)
-    val intersection = hashIntersection.asScala.map(h => hashIdToId(h))
-    getIntersectionDataFrame(df, rowKeyName, intersection.asJava)
+    val intersection = downloadIntersection(maxTry, retry)
+    getIntersectionDataFrame(df, rowKeyName, intersection)
   }
 }
