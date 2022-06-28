@@ -10,8 +10,7 @@ BigDL Documentation
 * `RayOnSpark <doc/Ray/Overview/ray.html>`_: run Ray programs directly on Big Data clusters
 * `Chronos <doc/Chronos/Overview/chronos.html>`_: scalable time series analysis using AutoML
 * `PPML <doc/PPML/Overview/ppml.html>`_: privacy preserving big data analysis and machine learning (*experimental*)
-* `Serving <doc/Serving/Overview/serving.html>`_: distributed and automated model inference on Big Data streaming frameworks
-
+* `Nano <doc/Nano/Overview/nano.html>`_: automatically accelerate TensorFlow and PyTorch pipelines by applying modern CPU optimizations
 -------
 
 
@@ -72,6 +71,7 @@ BigDL Documentation
    doc/Orca/Overview/distributed-training-inference.md
    doc/Orca/Overview/distributed-tuning.md
    doc/Ray/Overview/ray.md
+   doc/Orca/Overview/known_issues.md
 
 .. toctree::
    :maxdepth: 1
@@ -94,6 +94,7 @@ BigDL Documentation
    doc/PPML/QuickStart/trusted-serving-on-k8s-guide.md
    doc/PPML/QuickStart/tpc-h_with_sparksql_on_k8s.md
    doc/PPML/QuickStart/tpc-ds_with_sparksql_on_k8s.md
+   doc/PPML/Overview/azure_ppml.md
 
 .. toctree::
    :maxdepth: 1

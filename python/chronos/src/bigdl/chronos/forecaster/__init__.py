@@ -13,7 +13,12 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+
 import warnings
+# unset the KMP_INIT_AT_FORK
+# which will cause significant slow down in multiprocessing training
+import os
+os.unsetenv('KMP_INIT_AT_FORK')
 
 
 # dependencies check

@@ -27,7 +27,7 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
+import copy
 import logging
 import json
 import os
@@ -39,6 +39,7 @@ from contextlib import closing
 import logging
 import socket
 
+from bigdl.dllib.utils import log4Error
 from bigdl.orca.data.utils import ray_partitions_get_data_label, ray_partitions_get_tf_dataset
 from bigdl.dllib.utils.log4Error import *
 
@@ -437,6 +438,8 @@ class TFRunner:
             invalidInputError(False, "Only xshards is supported for predict")
 
         partition = ray.get(dataset)
+        if len(partition) == 0:
+            return []
         params = dict(
             batch_size=batch_size,
             verbose=verbose,
@@ -446,12 +449,25 @@ class TFRunner:
 
         if self.backend == "tf-distributed":
             local_model = self.model_creator(self.config)
-            local_model.set_weights(self.model.get_weights())
+            try:
+                local_model.set_weights(self.model.get_weights())
+            except Exception:
+                logger.warning("Get a sample input from input data to init the model.")
+                sample_shard = copy.deepcopy(partition[0])
+                log4Error.invalidInputError(isinstance(sample_shard, dict),
+                                            "Only dictionary is supported in tf_runner predict")
+                for k, v in sample_shard.items():
+                    sample_shard[k] = v[0:1]
+                local_model(sample_shard)
+                local_model.set_weights(self.model.get_weights())
         else:
             local_model = self.model
 
         def predict_fn(shard):
-            y = local_model.predict(shard["x"], **params)
+            if "x" in shard:
+                y = local_model.predict(shard["x"], **params)
+            else:
+                y = local_model.predict(shard, **params)
             return {"prediction": y}
 
         new_part = [predict_fn(shard) for shard in partition]
@@ -466,10 +482,18 @@ class TFRunner:
             "optimizer_weights": self.model.optimizer.get_weights()
         }
 
-    def set_state(self, state):
+    def set_state(self, state, sample_input=None):
         """Sets the state of the model."""
         self.epoch = state["epoch"]
-        self.model.set_weights(state["weights"])
+        if sample_input:
+            self.model(sample_input)
+        try:
+            self.model.set_weights(state["weights"])
+        except Exception:
+            log4Error.invalidInputError(False,
+                                        "Failed to set model weights, please provide real tensor "
+                                        "data (of the correct dtype) as sample_input in the load "
+                                        "method.")
 
     def shutdown(self):
         """Attempts to shut down the worker."""

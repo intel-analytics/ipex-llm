@@ -19,6 +19,7 @@ from bigdl.orca.data.shard import SparkXShards
 from bigdl.orca.learn.utils import dataframe_to_xshards_of_pandas_df
 from bigdl.chronos.data.utils.utils import _to_list, _check_type
 from bigdl.chronos.data.utils.roll import roll_timeseries_dataframe
+from bigdl.chronos.data.utils.impute import impute_timeseries_dataframe
 from bigdl.chronos.data.utils.split import split_timeseries_dataframe
 from bigdl.chronos.data.experimental.utils import add_row, transform_to_dict
 
@@ -268,6 +269,35 @@ class XShardsTSDataset:
         self.numpy_shards = self.shards.transform_shard(roll_timeseries_dataframe,
                                                         None, lookback, horizon,
                                                         feature_col, target_col)
+        return self
+
+    def impute(self,
+               mode="last",
+               const_num=0):
+        '''
+        Impute the tsdataset by imputing each univariate time series
+        distinguished by id_col and feature_col.
+
+        :param mode: imputation mode, select from "last", "const" or "linear".
+
+            "last": impute by propagating the last non N/A number to its following N/A.
+            if there is no non N/A number ahead, 0 is filled instead.
+
+            "const": impute by a const value input by user.
+
+            "linear": impute by linear interpolation.
+        :param const_num:  indicates the const number to fill, which is only effective when mode
+            is set to "const".
+
+        :return: the tsdataset instance.
+        '''
+        def df_reset_index(df):
+                df.reset_index(drop=True, inplace=True)
+                return df
+        self.shards = self.shards.transform_shard(impute_timeseries_dataframe,
+                                                  self.dt_col, mode,
+                                                  const_num)
+        self.shards = self.shards.transform_shard(df_reset_index)
         return self
 
     def to_xshards(self):

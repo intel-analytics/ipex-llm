@@ -22,6 +22,10 @@ import torch
 from bigdl.chronos.forecaster.seq2seq_forecaster import Seq2SeqForecaster
 from unittest import TestCase
 import pytest
+import onnxruntime
+
+_onnxrt_ver = onnxruntime.__version__ != '1.6.0' #  Jenkins requires 1.6.0(chronos)
+skip_onnxrt = pytest.mark.skipif(_onnxrt_ver, reason="Only runs when onnxrt is 1.6.0")
 
 
 def create_data(loader=False):
@@ -88,6 +92,7 @@ class TestChronosModelSeq2SeqForecaster(TestCase):
                                        lr=0.01)
         train_loss = forecaster.fit(train_loader, epochs=2)
 
+    @skip_onnxrt
     def test_s2s_forecaster_onnx_methods(self):
         train_data, val_data, test_data = create_data()
         forecaster = Seq2SeqForecaster(past_seq_len=24,
@@ -113,6 +118,22 @@ class TestChronosModelSeq2SeqForecaster(TestCase):
             mse = forecaster.evaluate(test_data)
             mse_onnx = forecaster.evaluate_with_onnx(test_data)
             np.testing.assert_almost_equal(mse, mse_onnx, decimal=5)
+        except ImportError:
+            pass
+
+    def test_s2s_forecaster_openvino_methods(self):
+        train_data, val_data, test_data = create_data()
+        forecaster = Seq2SeqForecaster(past_seq_len=24,
+                                       future_seq_len=5,
+                                       input_feature_num=1,
+                                       output_feature_num=1,
+                                       loss="mae",
+                                       lr=0.01)
+        forecaster.fit(train_data, epochs=2)
+        try:
+            pred = forecaster.predict(test_data[0])
+            pred_openvino = forecaster.predict_with_openvino(test_data[0])
+            np.testing.assert_almost_equal(pred, pred_openvino, decimal=5)
         except ImportError:
             pass
 
@@ -201,6 +222,7 @@ class TestChronosModelSeq2SeqForecaster(TestCase):
             distributed_eval = forecaster.evaluate(val_data)
         stop_orca_context()
 
+    @skip_onnxrt
     def test_s2s_forecaster_distributed(self):
         from bigdl.orca import init_orca_context, stop_orca_context
         train_data, val_data, test_data = create_data()
@@ -240,9 +262,17 @@ class TestChronosModelSeq2SeqForecaster(TestCase):
         model = forecaster.get_model()
         assert isinstance(model, torch.nn.Module)
 
+        with tempfile.TemporaryDirectory() as tmp_dir_name:
+            ckpt_name = os.path.join(tmp_dir_name, "checkpoint.ckpt")
+            test_pred_save = forecaster.predict(test_data[0])
+            forecaster.save(ckpt_name)
+            forecaster.load(ckpt_name)
+            test_pred_load = forecaster.predict(test_data[0])
+        np.testing.assert_almost_equal(test_pred_save, test_pred_load)
+
         stop_orca_context()
 
-    def test_seq2seq_dataloader_distributed(self):
+    def test_s2s_dataloader_distributed(self):
         from bigdl.orca import init_orca_context, stop_orca_context
         train_data, _, _ = create_data(loader=True)
         init_orca_context(cores=4, memory="2g")
@@ -255,3 +285,27 @@ class TestChronosModelSeq2SeqForecaster(TestCase):
                                        distributed=True)
         forecaster.fit(train_data, epochs=2)
         stop_orca_context()
+    
+    def test_s2s_customized_loss_metric(self):
+        from torchmetrics.functional import mean_squared_error
+        train_data, _, _ = create_data(loader=True)
+        _, _, test_data = create_data()
+        loss = torch.nn.L1Loss()
+        def customized_metric(y_true, y_pred):
+            return mean_squared_error(torch.from_numpy(y_pred),
+                                      torch.from_numpy(y_true)).numpy()
+        forecaster = Seq2SeqForecaster(past_seq_len=24,
+                                       future_seq_len=5,
+                                       input_feature_num=1,
+                                       output_feature_num=1,
+                                       loss=loss,
+                                       metrics=[customized_metric],
+                                       lr=0.01)
+        forecaster.fit(train_data, epochs=2)
+        with tempfile.TemporaryDirectory() as tmp_dir_name:
+            ckpt_name = os.path.join(tmp_dir_name, "ckpt")
+            test_pred_save = forecaster.predict(test_data[0])
+            forecaster.save(ckpt_name)
+            forecaster.load(ckpt_name)
+            test_pred_load = forecaster.predict(test_data[0])
+        np.testing.assert_almost_equal(test_pred_save, test_pred_load)

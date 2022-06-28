@@ -219,7 +219,6 @@ COPY --from=spark /opt/scala-2.11.8  /opt/scala-2.11.8
 COPY --from=spark /opt/spark-${SPARK_VERSION} /ppml/trusted-big-data-ml/work/spark-${SPARK_VERSION}
 COPY --from=spark /opt/spark-${SPARK_VERSION}/examples/src/main/resources /ppml/trusted-big-data-ml/examples/src/main/resources
 COPY --from=bigdl /bigdl-${BIGDL_VERSION} ${BIGDL_HOME}
-ADD ./kms-client /ppml/trusted-big-data-ml/work/kms-client
 
 RUN apt-get update --fix-missing && \
     env DEBIAN_FRONTEND=noninteractive TZ=Etc/UTC apt-get install -y tzdata && \
@@ -229,13 +228,16 @@ RUN apt-get update --fix-missing && \
     apt-get install -y netcat net-tools
 
 #python
-RUN apt-get install -y python3-minimal && \
-    apt-get install -y build-essential python3 python3-setuptools python3-dev python3-pip && \
+RUN apt install software-properties-common -y && \
+    add-apt-repository ppa:deadsnakes/ppa -y && \
+    apt-get install -y python3-minimal build-essential python3.7-distutils python3-apt python3.7 python3-setuptools python3-dev python3-pip libpython3.7 && \
+    rm /usr/bin/python3 && \
+    ln -s /usr/bin/python3.7 /usr/bin/python3 && \
     pip3 install --upgrade pip && \
     pip install setuptools==58.4.0 && \
     pip install --no-cache-dir numpy scipy && \
-    pip install --no-cache-dir --no-binary pandas -I pandas && \
-    pip install --no-cache-dir scikit-learn matplotlib seaborn jupyter wordcloud moviepy requests h5py opencv-python tensorflow && \
+    pip install --no-cache-dir pandas && \
+    pip install --no-cache-dir scikit-learn matplotlib seaborn jupyter wordcloud moviepy requests h5py opencv-python tensorflow==1.15 protobuf==3.19.0 && \
     pip install --no-cache-dir torch==1.8.1 torchvision==0.9.1 -f https://download.pytorch.org/whl/torch_stable.html && \
     ln -s /usr/bin/python3 /usr/bin/python && \
     #Fix tornado await process
@@ -246,7 +248,6 @@ RUN apt-get install -y python3-minimal && \
     pip install --no-cache-dir pyarrow && \
     pip install --no-cache-dir ninja meson && \
     pip install --no-cache-dir psutil && \
-    pip install -r /ppml/trusted-big-data-ml/work/kms-client/requirement.yml && \
     pip install --no-cache-dir dill==0.3.4 && \
     python3 -m pip install toml==0.10.2 click jinja2 && \
     python3 -m ipykernel.kernelspec
@@ -269,11 +270,11 @@ ADD ./python-uuid.patch ./python-uuid.patch
 ADD ./python-pslinux.patch ./python-pslinux.patch
 
 RUN zip -u ${BIGDL_HOME}/jars/bigdl-dllib-spark_${SPARK_VERSION}-${BIGDL_VERSION}.jar ./tracker.py && \
-    patch /usr/local/lib/python3.8/dist-packages/dill/_dill.py ./_dill.py.patch && \
-    patch /usr/lib/python3.8/uuid.py ./python-uuid.patch && \
-    patch /usr/local/lib/python3.8/dist-packages/psutil/_pslinux.py ./python-pslinux.patch && \
+    patch /usr/local/lib/python3.7/dist-packages/dill/_dill.py ./_dill.py.patch && \
+    patch /usr/lib/python3.7/uuid.py ./python-uuid.patch && \
+    patch /usr/local/lib/python3.7/dist-packages/psutil/_pslinux.py ./python-pslinux.patch && \
     wget -P /ppml/trusted-big-data-ml/work/lib https://sourceforge.net/projects/analytics-zoo/files/analytics-zoo-data/libhadoop.so && \
-    cp /usr/lib/x86_64-linux-gnu/libpython3.8.so /usr/lib/libpython3.8.so && \
+    cp /usr/lib/x86_64-linux-gnu/libpython3.7m.so.1 /usr/lib/libpython3.7m.so.1 && \
     sed -i 's/examples/\/ppml\/trusted-big-data-ml\/work\/spark-3.1.2\/examples/' /ppml/trusted-big-data-ml/work/spark-3.1.2/examples/src/main/python/sql/basic.py && \
     sed -i 's/examples/\/ppml\/trusted-big-data-ml\/work\/spark-3.1.2\/examples/' /ppml/trusted-big-data-ml/work/spark-3.1.2/examples/src/main/python/sql/hive.py && \
     sed -i 's/spark-warehouse/\/ppml\/trusted-big-data-ml\/work\/spark-warehouse/' /ppml/trusted-big-data-ml/work/spark-3.1.2/examples/src/main/python/sql/hive.py && \
@@ -292,8 +293,7 @@ RUN zip -u ${BIGDL_HOME}/jars/bigdl-dllib-spark_${SPARK_VERSION}-${BIGDL_VERSION
     chmod a+x /ppml/trusted-big-data-ml/work/test-suites/spark-e2e-example.sh && \
     chmod a+x /ppml/trusted-big-data-ml/work/test-suites/k8s-spark-pi.sh && \
     chmod a+x /ppml/trusted-big-data-ml/work/test-suites/k8s-spark-sql-examples.sh && \
-    chmod a+x /ppml/trusted-big-data-ml/work/test-suites/k8s-pyspark-sql-examples.sh && \
-    chmod a+x /ppml/trusted-big-data-ml/work/kms-client/*
+    chmod a+x /ppml/trusted-big-data-ml/work/test-suites/k8s-pyspark-sql-examples.sh
 
 # kuberenetes support
 ADD ./spark-executor-template.yaml /ppml/trusted-big-data-ml/spark-executor-template.yaml
@@ -306,6 +306,10 @@ RUN rm $SPARK_HOME/jars/okhttp-*.jar && \
     chmod +x /opt/entrypoint.sh && \
     chmod +x /sbin/tini && \
     cp /sbin/tini /usr/bin/tini
+
+# Azure support
+RUN curl -sL https://aka.ms/InstallAzureCLIDeb | bash
+ADD azure /ppml/trusted-big-data-ml/azure
 
 WORKDIR /ppml/trusted-big-data-ml
 

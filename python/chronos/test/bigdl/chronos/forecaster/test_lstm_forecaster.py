@@ -22,6 +22,10 @@ import torch
 from bigdl.chronos.forecaster.lstm_forecaster import LSTMForecaster
 from unittest import TestCase
 import pytest
+import onnxruntime
+
+_onnxrt_ver = onnxruntime.__version__ != '1.6.0' #  Jenkins requires 1.6.0(chronos)
+skip_onnxrt = pytest.mark.skipif(_onnxrt_ver, reason="Only runs when onnxrt is 1.6.0")
 
 
 def create_data(loader=False):
@@ -92,6 +96,7 @@ class TestChronosModelLSTMForecaster(TestCase):
                                     lr=0.01)
         train_loss = forecaster.fit(train_loader, epochs=2)
 
+    @skip_onnxrt
     def test_lstm_forecaster_onnx_methods(self):
         train_data, val_data, test_data = create_data()
         forecaster = LSTMForecaster(past_seq_len=24,
@@ -118,6 +123,21 @@ class TestChronosModelLSTMForecaster(TestCase):
             mse = forecaster.evaluate(test_data)
             mse_onnx = forecaster.evaluate_with_onnx(test_data)
             np.testing.assert_almost_equal(mse, mse_onnx, decimal=5)
+        except ImportError:
+            pass
+
+    def test_lstm_forecaster_openvino_methods(self):
+        train_data, val_data, test_data = create_data()
+        forecaster = LSTMForecaster(past_seq_len=24,
+                                    input_feature_num=2,
+                                    output_feature_num=2,
+                                    loss="mae",
+                                    lr=0.01)
+        forecaster.fit(train_data, epochs=2)
+        try:
+            pred = forecaster.predict(test_data[0])
+            pred_openvino = forecaster.predict_with_openvino(test_data[0])
+            np.testing.assert_almost_equal(pred, pred_openvino, decimal=5)
         except ImportError:
             pass
 
@@ -153,6 +173,7 @@ class TestChronosModelLSTMForecaster(TestCase):
         np.testing.assert_almost_equal(test_pred_save, test_pred_load)
         np.testing.assert_almost_equal(test_pred_save_q, test_pred_load_q)
 
+    @skip_onnxrt
     def test_lstm_forecaster_quantization_onnx(self):
         train_data, val_data, test_data = create_data()
         forecaster = LSTMForecaster(past_seq_len=24,
@@ -165,7 +186,8 @@ class TestChronosModelLSTMForecaster(TestCase):
         forecaster.quantize(train_data, framework=['onnxrt_qlinearops'])
         pred_q = forecaster.predict_with_onnx(test_data[0], quantize=True)
         eval_q = forecaster.evaluate_with_onnx(test_data, quantize=True)
-        
+
+    @skip_onnxrt
     def test_lstm_forecaster_quantization_onnx_tuning(self):
         train_data, val_data, test_data = create_data()
         forecaster = LSTMForecaster(past_seq_len=24,
@@ -254,6 +276,7 @@ class TestChronosModelLSTMForecaster(TestCase):
             distributed_eval = forecaster.evaluate(val_data)
         stop_orca_context()
 
+    @skip_onnxrt
     def test_lstm_forecaster_distributed(self):
         from bigdl.orca import init_orca_context, stop_orca_context
         train_data, val_data, test_data = create_data()
@@ -291,6 +314,14 @@ class TestChronosModelLSTMForecaster(TestCase):
         model = forecaster.get_model()
         assert isinstance(model, torch.nn.Module)
 
+        with tempfile.TemporaryDirectory() as tmp_dir_name:
+            ckpt_name = os.path.join(tmp_dir_name, "checkpoint.ckpt")
+            test_pred_save = forecaster.predict(test_data[0])
+            forecaster.save(ckpt_name)
+            forecaster.load(ckpt_name)
+            test_pred_load = forecaster.predict(test_data[0])
+        np.testing.assert_almost_equal(test_pred_save, test_pred_load)
+
         stop_orca_context()
 
     def test_lstm_dataloader_distributed(self):
@@ -305,3 +336,26 @@ class TestChronosModelLSTMForecaster(TestCase):
                                     distributed=True)
         forecaster.fit(train_loader, epochs=2)
         stop_orca_context()
+
+    def test_lstm_customized_loss_metric(self):
+        from torchmetrics.functional import mean_squared_error
+        train_data, _, _ = create_data(loader=True)
+        _, _, test_data = create_data()
+        loss = torch.nn.L1Loss()
+        def customized_metric(y_true, y_pred):
+            return mean_squared_error(torch.from_numpy(y_pred),
+                                      torch.from_numpy(y_true)).numpy()
+        forecaster = LSTMForecaster(past_seq_len=24,
+                                    input_feature_num=2,
+                                    output_feature_num=2,
+                                    loss=loss,
+                                    metrics=[customized_metric],
+                                    lr=0.01)
+        forecaster.fit(train_data, epochs=2)
+        with tempfile.TemporaryDirectory() as tmp_dir_name:
+            ckpt_name = os.path.join(tmp_dir_name, "ckpt")
+            test_pred_save = forecaster.predict(test_data[0])
+            forecaster.save(ckpt_name)
+            forecaster.load(ckpt_name)
+            test_pred_load = forecaster.predict(test_data[0])
+        np.testing.assert_almost_equal(test_pred_save, test_pred_load)

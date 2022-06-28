@@ -19,6 +19,8 @@ import pickle
 
 import numpy as np
 import ray
+
+from bigdl.dllib.utils import log4Error
 from bigdl.dllib.utils.file_utils import enable_multi_fs_load, enable_multi_fs_save
 
 from bigdl.orca.data.ray_xshards import RayXShards
@@ -41,7 +43,7 @@ class TensorFlow2Estimator(OrcaRayEstimator):
                  compile_args_creator=None,
                  config=None,
                  verbose=False,
-                 backend="tf2",
+                 backend="ray",
                  workers_per_node=1,
                  cpu_binding=False):
         self.model_creator = model_creator
@@ -73,7 +75,7 @@ class TensorFlow2Estimator(OrcaRayEstimator):
             "verbose": self.verbose,
         }
 
-        if backend == "tf2":
+        if backend == "ray":
             cores_per_node = ray_ctx.ray_node_cpu_cores // workers_per_node
             num_nodes = ray_ctx.num_ray_nodes * workers_per_node
 
@@ -112,7 +114,7 @@ class TensorFlow2Estimator(OrcaRayEstimator):
                 for i, worker in enumerate(self.remote_workers)])
         else:
             invalidInputError(False,
-                              "Only \"tf2\" and \"horovod\" are legal "
+                              "Only \"ray\" and \"horovod\" are legal "
                               "values of backend, but got {}".format(backend))
 
         self.num_workers = len(self.remote_workers)
@@ -332,7 +334,6 @@ class TensorFlow2Estimator(OrcaRayEstimator):
             ray_xshards = RayXShards.from_spark_xshards(data)
             worker_stats = self._evaluate_ray_xshards(ray_xshards, params)
         elif isinstance(data, Dataset):
-            # TODO: repartition?
             ray_xshards = TF2Dataset(data).get_ray_xshards(self.num_workers)
             worker_stats = self._evaluate_ray_xshards(ray_xshards, params)
         elif isinstance(data, ray.data.Dataset):
@@ -402,13 +403,14 @@ class TensorFlow2Estimator(OrcaRayEstimator):
 
     def predict(self, data, batch_size=None, verbose=1,
                 steps=None, callbacks=None, data_config=None,
-                feature_cols=None):
+                feature_cols=None, min_partition_num=None):
         """
         Predict the input data
 
-        :param data: predict input data.  It can be XShards or Spark DataFrame.
-               If data is XShards, each partition can be a Pandas DataFrame or a dictionary of
-               {'x': feature}, where feature is a numpy array or a tuple of numpy arrays.
+        :param data: predict input data.  It can be XShards, Spark DataFrame or
+               orca.data.tf.data.Dataset. If data is XShards, each partition can be a Pandas
+               DataFrame or a dictionary of {'x': feature}, where feature is a numpy array or a
+               tuple of numpy arrays.
         :param batch_size: Batch size used for inference. Default: None.
         :param verbose: Prints output of one model if true.
         :param steps: Total number of steps (batches of samples) before declaring the prediction
@@ -417,6 +419,15 @@ class TensorFlow2Estimator(OrcaRayEstimator):
         :param data_config: An optional dictionary that can be passed to data creator function.
         :param feature_cols: Feature column name(s) of data. Only used when data is a Spark
                DataFrame or an XShards of Pandas DataFrame. Default: None.
+        :param min_partition_num: Int. An optional param for repartition the input data when data
+               is an **orca.data.tf.data.Dataset**. If min_partition_num != None, the input data
+               will be repartitioned to max(min_partition_num, worker_num) partitions. This
+               parameter is usually used to improve the prediction performance when the model is a
+               customized Keras model, and the number of input partitions is significantly larger
+               than the number of workers. Note that if you set this parameter, the order of the
+               prediction results is not guaranteed to be the same as the input order, so you need
+               to add id information to the input to identify the corresponding prediction results.
+               Default: None.
         :return:
         """
         logger.info("Starting predict step.")
@@ -429,6 +440,7 @@ class TensorFlow2Estimator(OrcaRayEstimator):
         )
         from bigdl.orca.data import SparkXShards
         from pyspark.sql import DataFrame
+        from bigdl.orca.data.tf.data import Dataset
 
         if isinstance(data, DataFrame):
             xshards, _ = dataframe_to_xshards(data,
@@ -444,13 +456,22 @@ class TensorFlow2Estimator(OrcaRayEstimator):
                 data = process_xshards_of_pandas_dataframe(data, feature_cols)
             pred_shards = self._predict_spark_xshards(data, params)
             result = update_predict_xshards(data, pred_shards)
+        elif isinstance(data, Dataset):
+            data = data.get_xshards()
+            if min_partition_num:
+                partition_num = max(min_partition_num, self.num_workers)
+                if data.num_partitions() != partition_num:
+                    data = data.repartition(partition_num)
+            pred_shards = self._predict_spark_xshards(data, params)
+            result = update_predict_xshards(data, pred_shards)
         else:
             invalidInputError(False,
-                              "Only xshards or Spark DataFrame is supported for predict")
+                              "Only xshards, Spark DataFrame or orca TF Dataset are supported "
+                              "for predict")
 
         return result
 
-    def get_model(self):
+    def get_model(self, sample_input=None):
         """
         Returns the learned model.
 
@@ -458,7 +479,7 @@ class TensorFlow2Estimator(OrcaRayEstimator):
         """
         state_refs = [w.get_state.remote() for w in self.remote_workers]
         state = ray.get(state_refs[0])
-        return self._get_model_from_state(state)
+        return self._get_model_from_state(state, sample_input=sample_input)
 
     @enable_multi_fs_save
     def save(self, checkpoint):
@@ -494,7 +515,7 @@ class TensorFlow2Estimator(OrcaRayEstimator):
             state = pickle.load(f)
 
         state_id = ray.put(state)
-        ray.get([worker.set_state.remote(state_id) for worker in self.remote_workers])
+        ray.get([worker.set_state.remote(state_id, **kwargs) for worker in self.remote_workers])
 
     def shutdown(self):
         """
@@ -504,11 +525,19 @@ class TensorFlow2Estimator(OrcaRayEstimator):
             worker.shutdown.remote()
             worker.__ray_terminate__.remote()
 
-    def _get_model_from_state(self, state):
+    def _get_model_from_state(self, state, sample_input=None):
         """Creates model and load weights from state"""
 
         # keep the same behavior as `set_state` in `load` do
         model = self.model_creator(self.config)
-        model.set_weights(state["weights"])
+        if sample_input:
+            model(sample_input)
+        try:
+            model.set_weights(state["weights"])
+        except Exception:
+            log4Error.invalidInputError(False,
+                                        "Failed to set model weights, please provide real tensor "
+                                        "data (of the correct dtype) as sample_input in the "
+                                        "get_model method.")
 
         return model

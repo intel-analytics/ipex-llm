@@ -27,7 +27,6 @@ all: bash.token
 endif
 
 include $(GRAPHENEDIR)/Scripts/Makefile.configs
-PYTHONVERSION = python3.6
 include /graphene/Scripts/Makefile.python
 
 bash.manifest: bash.manifest.template

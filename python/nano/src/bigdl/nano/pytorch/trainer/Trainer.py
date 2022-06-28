@@ -26,7 +26,7 @@ from torch.utils.data import DataLoader
 from torchmetrics.metric import Metric
 from torch.optim.lr_scheduler import _LRScheduler
 import yaml
-from bigdl.nano.pytorch.utils import TORCH_VERSION_LESS_1_10
+from bigdl.nano.pytorch.utils import TORCH_VERSION_LESS_1_10, TORCH_VERSION_LESS_1_11
 from bigdl.nano.pytorch.lightning import LightningModuleFromTorch
 from bigdl.nano.pytorch.plugins.ddp_spawn import DDPSpawnPlugin
 from bigdl.nano.pytorch.plugins.ddp_subprocess import DDPSubprocessPlugin
@@ -40,6 +40,7 @@ from bigdl.nano.deps.onnxruntime.onnxruntime_api import PytorchONNXRuntimeModel,
 from bigdl.nano.deps.neural_compressor.inc_api import load_inc_model, quantize as inc_quantize
 from bigdl.nano.utils.log4Error import invalidInputError
 from bigdl.nano.utils.inference.pytorch.model import AcceleratedLightningModule
+from bigdl.nano.common import check_avx512
 distributed_backends = ["spawn", "ray", "subprocess"]
 
 
@@ -91,8 +92,17 @@ class Trainer(pl.Trainer):
             self.hposearcher = None
 
         accelerator = None
+
+        if TORCH_VERSION_LESS_1_11 and use_ipex and not check_avx512():
+            warning("Enable ipex<=1.10 in a cpu instruction set"
+                    " without avx512 will crash."
+                    "Fall back to regular pytorch.")
+            use_ipex = False
+
+        self.use_ipex = use_ipex
+
         if num_processes == 1:
-            if use_ipex:
+            if self.use_ipex:
                 if TORCH_VERSION_LESS_1_10:
                     accelerator = create_IPEXAccelerator_1_9(enable_bf16=enable_bf16)
                 else:
@@ -104,24 +114,30 @@ class Trainer(pl.Trainer):
             invalidInputError(distributed_backend in distributed_backends,
                               f"Distributed backends supported now are {distributed_backends},"
                               f" but get {distributed_backend}.")
+            if "checkpoint_callback" in kwargs:
+                if not kwargs["checkpoint_callback"]:
+                    invalidInputError(False,
+                                      f"`checkpoint_callback` set to False. "
+                                      f"Currently, disable checkpoint callback make "
+                                      f"distributed training backend work incorrect")
             if distributed_backend == "spawn":
                 plugin = DDPSpawnPlugin(num_processes=num_processes,
                                         cpu_for_each_process=cpu_for_each_process,
-                                        use_ipex=use_ipex,
+                                        use_ipex=self.use_ipex,
                                         enable_bf16=enable_bf16)
             elif distributed_backend == "subprocess":
                 plugin = DDPSubprocessPlugin(num_processes=num_processes,
                                              cpu_for_each_process=cpu_for_each_process,
-                                             use_ipex=use_ipex,
+                                             use_ipex=self.use_ipex,
                                              enable_bf16=enable_bf16)
             elif distributed_backend == "ray":
                 # Import RayPlugins may entangle with openmp even if it has not been used,
                 # which leads to an unacceptably low performance.
                 # So we import when we need.
                 plugin = distributed_ray(num_workers=num_processes,  # type: ignore
-                                         use_ipex=use_ipex,
+                                         use_ipex=self.use_ipex,
                                          enable_bf16=enable_bf16)
-            if use_ipex:
+            if self.use_ipex:
                 if TORCH_VERSION_LESS_1_10:
                     accelerator = create_IPEXAccelerator_1_9(training_type_plugin=plugin,
                                                              enable_bf16=enable_bf16)
@@ -280,7 +296,7 @@ class Trainer(pl.Trainer):
             if accelerator == "onnxruntime":
                 if not type(model).__name__ == 'PytorchONNXRuntimeModel':
                     # try to establish onnx model
-                    if not input_sample:
+                    if input_sample is None:
                         # input_sample can be a dataloader
                         input_sample = calib_dataloader
                     model = Trainer.trace(model,
