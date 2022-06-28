@@ -56,7 +56,8 @@ class PSI() extends FLClientClosable {
           Thread.sleep(retry)
         }
         else {
-          logger.info("Intersection successful. Intersection's size is " + intersectionHashed.size + ".")
+          logger.info("Intersection successful. Intersection's size is "
+            + intersectionHashed.size + ".")
           break
         }
       }
