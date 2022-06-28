@@ -19,21 +19,23 @@
 #
 
 from __future__ import print_function
-from torchvision.utils import make_grid
+from sklearn.model_selection import train_test_split
 import matplotlib.pyplot as plt
+import albumentations as A
+import pandas as pd
 import argparse
 import glob
 import os
 
-import albumentations as A
-import pandas as pd
 import torch.nn as nn
 import torch.optim as optim
 import torch.utils.data as data
+from torchvision.utils import make_grid
+
 from bigdl.orca import init_orca_context, stop_orca_context
 from bigdl.orca.learn.metrics import Accuracy
 from bigdl.orca.learn.pytorch import Estimator
-from sklearn.model_selection import train_test_split
+
 from Unet import UNet
 from dataset import *
 
@@ -136,48 +138,54 @@ def denormalize(images):
 
 parser = argparse.ArgumentParser(description='PyTorch brainMRI Example')
 parser.add_argument('--cluster_mode', type=str, default="local",
-                    help='The cluster mode, such as local, yarn-client, spark-submit.')
+                    help='The cluster mode, such as local, yarn-client, or spark-submit.')
 parser.add_argument('--backend', type=str, default="torch_distributed",
-                    help='The backend of PyTorch Estimator; torch_distributed and spark are supported')
+                    help='The backend of PyTorch Estimator; bigdl, torch_distributed and spark are supported')
 parser.add_argument('--batch_size', type=int, default=64, help='The training batch size')
 parser.add_argument('--epochs', type=int, default=2, help='The number of epochs to train for')
 parser.add_argument('--data_dir', type=str, default='./kaggle_3m', help='the path of the dataset')
 parser.add_argument('--additional_archive', type=str, default="kaggle_3m.zip#kaggle_3m", help='the zip dataset')
-parser.add_argument('--memory', type=str, default="4g", help="the memory allocated for each node")
-parser.add_argument('--model_dir', type=str, default='file://' + os.getcwd(),
-                    help="the model save dir when use spark backend")
+parser.add_argument('--model_dir', type=str, default=os.getcwd(),
+                    help="the model save dir for spark backend")
 args = parser.parse_args()
 
-train_df, test_df = dataset(args.data_dir)
-
 if args.cluster_mode == "local":
-    init_orca_context(memory=args.memory)
+    init_orca_context(memory='4g')
 elif args.cluster_mode.startswith('yarn'):
-    config = {}
-    if args.backend == 'spark':
-        config = {'spark.executorEnv.ARROW_LIBHDFS_DIR': '/opt/cloudera/parcels/CDH-5.15.2-1.cdh5.15.2.p0.3/lib64'}
     init_orca_context(cluster_mode="yarn-client", cores=2, num_nodes=2, additional_archive=args.additional_archive,
-                      extra_python_lib='dataset.py,Unet.py', num_executors=2, memory=args.memory, conf=config)
+                      extra_python_lib='dataset.py,Unet.py', num_executors=2, memory='4g')
 elif args.cluster_mode == "spark-submit":
     init_orca_context(cluster_mode="spark-submit")
 else:
     raise NotImplementedError("Only local, yarn-client, and spark-submit are supported as the cluster_mode,"
                               " but got {}".format(args.cluster_mode))
 
-criterion = nn.CrossEntropyLoss()
+train_df, test_df = dataset(args.data_dir)
 batch_size = args.batch_size
 epochs = args.epochs
-train_loader = train_loader_creator(config={"train": train_df}, batch_size=batch_size)
+config = {
+    'lr': 1e-3,
+    'train': train_df,
+    'test': test_df
+}
+train_loader = train_loader_creator(config=config, batch_size=batch_size)
 
-# plot some random training images
+# plot some random training images.
+# You should use jupyter notebook for show the pictures.
 show_batch(train_loader)
 
-if args.backend in ["torch_distributed", "spark"]:
-    config = {
-        'lf': 1e-3,
-        'train': train_df,
-        'test': test_df
-    }
+if args.backend == "bigdl":
+    net = model_creator(config={})
+    optimizer = optim_creator(model=net, config={"lr": 0.001})
+    orca_estimator = Estimator.from_torch(model=net,
+                                          optimizer=optimizer,
+                                          loss=bce_dice_loss,
+                                          metrics=[],
+                                          backend=args.backend,
+                                          )
+    orca_estimator.fit(data=train_loader, epochs=args.epochs)
+
+elif args.backend in ["torch_distributed", "spark"]:
     orca_estimator = Estimator.from_torch(model=model_creator,
                                           optimizer=optim_creator,
                                           loss=loss_creator,
@@ -189,7 +197,7 @@ if args.backend in ["torch_distributed", "spark"]:
 
     orca_estimator.fit(data=train_loader_creator, epochs=args.epochs, batch_size=batch_size)
 else:
-    raise NotImplementedError("Only torch_distributed and spark are supported as the backend,"
+    raise NotImplementedError("Only bigdl, torch_distributed and spark are supported as the backend,"
                               " but got {}".format(args.backend))
 
 stop_orca_context()
