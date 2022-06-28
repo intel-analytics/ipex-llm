@@ -31,6 +31,12 @@ else
     fi
 fi
 
+# check the NETTY_THREAD
+if [[ -z "$NETTY_THREAD" ]]; then
+    echo "NETTY_THREAD not set, using default value 16"
+    NETTY_THREAD=16
+fi
+
 SPARK_K8S_CMD="$1"
 case "$SPARK_K8S_CMD" in
     driver | executor)
@@ -82,7 +88,7 @@ case "$SPARK_K8S_CMD" in
         -cp "$SPARK_CLASSPATH" \
         -Xmx$DRIVER_MEMORY \
         -XX:ActiveProcessorCount=4 \
-        -Dio.netty.availableProcessors=64 \
+        -Dio.netty.availableProcessors=$NETTY_THREAD \
         org.apache.spark.deploy.SparkSubmit \
         --conf "spark.driver.bindAddress=$SPARK_DRIVER_BIND_ADDRESS" \
         --deploy-mode client \
@@ -104,7 +110,7 @@ case "$SPARK_K8S_CMD" in
         -Xms$SPARK_EXECUTOR_MEMORY \
         -Xmx$SPARK_EXECUTOR_MEMORY \
         -Dos.name=Linux \
-        -Dio.netty.availableProcessors=64 \
+        -Dio.netty.availableProcessors=$NETTY_THREAD \
         -Djdk.lang.Process.launchMechanism=posix_spawn \
         -cp "$SPARK_CLASSPATH" \
         org.apache.spark.executor.CoarseGrainedExecutorBackend \
