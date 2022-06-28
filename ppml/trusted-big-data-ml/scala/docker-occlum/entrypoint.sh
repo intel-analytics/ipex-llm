@@ -33,8 +33,9 @@ fi
 
 # check the NETTY_THREAD
 if [[ -z "$NETTY_THREAD" ]]; then
-        echo "NETTY_THREAD not set, using default value 16"
-        NETTY_THREAD=16
+    echo "NETTY_THREAD not set, using default value 16"
+    NETTY_THREAD=16
+fi
 
 SPARK_K8S_CMD="$1"
 case "$SPARK_K8S_CMD" in
