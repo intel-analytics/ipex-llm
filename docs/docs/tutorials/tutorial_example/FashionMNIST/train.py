@@ -17,36 +17,31 @@ parser.add_argument('--cluster_mode', type=str, default="spark-submit",
 parser.add_argument('--remote_dir', type=str, help='The path to load data from remote resources like HDFS or S3')
 args = parser.parse_args()
 
-transform = transforms.Compose([transforms.ToTensor(),
-                                transforms.Normalize((0.5,), (0.5,))])
-
-def train_data_process():
-    remote_dir = args.remote_dir
-    data_dir = "/tmp/dataset"
-    if remote_dir is not None:
-        get_remote_file_to_local(remote_dir, data_dir)
-        trainset = torchvision.datasets.FashionMNIST(root=data_dir, train=True,
-                                                     download=False, transform=transform)
-    else:
-        trainset = torchvision.datasets.FashionMNIST(root="./data", train=True,
-                                                     download=True, transform=transform)
-    return trainset
-
-trainset = train_data_process()
 
 def train_data_creator(config, batch_size):
-    trainloader = torch.utils.data.DataLoader(trainset, batch_size=batch_size,
-                                              shuffle=True, num_workers=0)
+    transform = transforms.Compose([transforms.ToTensor(),
+                                transforms.Normalize((0.5,), (0.5,))])
+    if args.remote_dir is not None:
+        data_dir = "/tmp/dataset"
+        get_remote_file_to_local(remote_path=args.remote_dir, local_path=data_dir)
+        trainset = torchvision.datasets.FashionMNIST(root=data_dir, train=True,
+                                                     download=False, transform=transform)
+        trainloader = torch.utils.data.DataLoader(trainset, batch_size=batch_size,
+                                                  shuffle=True, num_workers=0)
+    else:
+        print("Please specify the dataset path on a network file system.")
     return trainloader
 
 def main():
     if args.cluster_mode.startswith("yarn"):
         if args.cluster_mode == "yarn-client":
-            init_orca_context(cluster_mode="yarn-client", extra_python_lib="./orca_example.zip", 
-                              cores=4, memory="10g", num_nodes=2)
+            init_orca_context(cluster_mode="yarn-client", cores=4, memory="10g", num_nodes=2,
+                              driver_cores=2, driver_memory="4g",
+                              extra_python_lib="./orca_example.zip")
         elif args.cluster_mode == "yarn-cluster":
-            init_orca_context(cluster_mode="yarn-cluster", extra_python_lib="./orca_example.zip",
-                              cores=4, memory="10g", num_nodes=2)
+            init_orca_context(cluster_mode="yarn-cluster", cores=4, memory="10g", num_nodes=2,
+                              driver_cores=2, driver_memory="4g",
+                              extra_python_lib="./orca_example.zip")
     elif args.cluster_mode == "bigdl-submit":
         init_orca_context(cluster_mode="bigdl-submit")
     elif args.cluster_mode == "spark-submit":
@@ -55,14 +50,15 @@ def main():
         print("init_orca_context failed. cluster_mode should be one of 'yarn', 'bigdl-submit' or 'spark-submit' " 
               "but got " + args.cluster_mode)
 
-    from orca_example import model_creator, optimizer_creator
+    from FashionMNIST.model import model_creator, optimizer_creator
 
     criterion = nn.CrossEntropyLoss()
+    model_dir = args.remote_dir
     orca_estimator = Estimator.from_torch(model=model_creator,
                                           optimizer=optimizer_creator,
                                           loss=criterion,
                                           metrics=[Accuracy()],
-                                          model_dir="file:///tmp",
+                                          model_dir=model_dir,
                                           backend="spark")
 
     train_stats = orca_estimator.fit(train_data_creator, epochs=1, batch_size=32)

@@ -275,12 +275,12 @@ Spark allows to upload Python files(`.py`), and zipped Python packages(`.zip`) t
     
     If you depend on a nested directory of python files, we recommend packaging them into a zip file, you need to create a package like `orca_exmaple` with all custom modules. 
     ```bash
-    | -- orca_example <dir>
+    | -- FashionMNIST <dir>
         | -- model.py
     ``` 
     Then zip the whole package.
     ```bash
-    zip -q -r orca_example.zip orca_example
+    zip -q -r orca_example.zip FashionMNIST
     ```
 * When running this example using `bigdl-submit` or `spark-submit`, you need to upload the zipped file in Spark scripts through `--py-files` to the cluster.
     ```bash
@@ -289,7 +289,7 @@ Spark allows to upload Python files(`.py`), and zipped Python packages(`.zip`) t
     You should import custom modules as below in `train.py`. The zip file will be automatically unzipped after uploading and distributing in the cluster, so you need to load modules from the unzipped file. 
     ```python
     # Import dependency from zip file
-    from orca_example.model import model_creator, optimizer_creator
+    from FashionMNIST.model import model_creator, optimizer_creator
     ```
 * When using `python` command to run the example, please set the `extra_python_lib` in `init_orca_context` to the path of zipped Python file. Note you should import modules after creating OrcaContext, since the zip file will be uploaded through `init_orca_context`.
 
@@ -302,7 +302,7 @@ Spark allows to upload Python files(`.py`), and zipped Python packages(`.zip`) t
                     extra_python_lib="/path/to/orca_example.zip")
 
     # Note please import modules after init_orca_context()
-    from orca_example.model import model_creator, optimizer_creator
+    from FashionMNIST.model import model_creator, optimizer_creator
     ```
 
 # 4. Run Jobs on Yarn
