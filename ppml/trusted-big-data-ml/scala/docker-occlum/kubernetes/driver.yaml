@@ -19,8 +19,6 @@ spec:
     securityContext:
       privileged: true
     env:
-    - name: NETTY_THREAD
-      value: "16"
     - name: DRIVER_MEMORY
       value: "5g"
     - name: SGX_MEM_SIZE
