@@ -58,9 +58,6 @@ class XShards(object):
         """
         pass
 
-    def label_encoder(self):
-        pass
-
     @classmethod
     def load_pickle(cls, path, minPartitions=None):
         """
@@ -481,47 +478,22 @@ class SparkXShards(XShards):
         df = rdd.toDF(list(column))
         return df
 
-    def to_pandas_df(self, df):
-        def to_pdf(columns):
-            def f(iter):
-                import pandas as pd
-                data = list(iter)
-                pd_df = pd.DataFrame(data, columns=columns)
-                return [pd_df]
+    @staticmethod
+    def from_sparkdf(df):
+        def to_pandas_df(df):
+            def to_pdf(columns):
+                def f(iter):
+                    import pandas as pd
+                    data = list(iter)
+                    pd_df = pd.DataFrame(data, columns=columns)
+                    return [pd_df]
 
-            return f
+                return f
 
-        pd_rdd = df.rdd.mapPartitions(to_pdf(df.columns))
-        return pd_rdd
-
-
-    def label_encoder(self, inputColumn, outputColumn):
-        df = self.to_sparkdf()
-        from pyspark.ml.feature import StringIndexer
-        indexer = StringIndexer(inputCol=inputColumn, outputCol=outputColumn)
-        indexed = indexer.fit(df).transform(df)
-
-        pd_rdd = self.to_pandas_df(indexed)
-        data_shards = SparkXShards(pd_rdd)
-        return data_shards
-
-    def minmax_scaler(self, inputColumn, outputColumn):
-        invalidInputError(len(inputColumn) > 0, "inputColumn cannot be empty")
-        df = self.to_sparkdf()
-        from pyspark.ml.feature import VectorAssembler, MinMaxScaler
-        from pyspark.ml import Pipeline
-        import uuid
-        vecOutputCol = str(uuid.uuid1())+"x_vec"
-        assembler = VectorAssembler(inputCols=inputColumn, outputCol=vecOutputCol)
-        scaler = MinMaxScaler(inputCol=vecOutputCol, outputCol=outputColumn)
-        pipeline = Pipeline(stages=[assembler, scaler])
-        scalerModel = pipeline.fit(df)
-        scaledData = scalerModel.transform(df)
-
-        pd_rdd = self.to_pandas_df(scaledData)
-        data_shards = SparkXShards(pd_rdd)
-        return data_shards
-
+            pd_rdd = df.rdd.mapPartitions(to_pdf(df.columns))
+            return pd_rdd
+        rdd = to_pandas_df(df)
+        return SparkXShards(rdd)
 
     def __len__(self):
         return self.rdd.map(lambda data: len(data) if hasattr(data, '__len__') else 1)\
