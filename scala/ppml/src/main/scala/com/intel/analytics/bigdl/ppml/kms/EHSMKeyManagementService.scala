@@ -69,7 +69,7 @@ class EHSMKeyManagementService(
     val primaryKeyCiphertext: String = timing(
       "EHSMKeyManagementService request for primaryKeyCiphertext") {
       val postString: String = ehsmParams.getPostJSONString()
-      val postResult = postRequest(action, postString)
+      val postResult = postRequest(constructUrl(action), postString)
       postResult.getString(EHSM_CONVENTION.PAYLOAD_KEY_ID)
     }
     keyReaderWriter.writeKeyToFile(primaryKeySavePath, primaryKeyCiphertext)
