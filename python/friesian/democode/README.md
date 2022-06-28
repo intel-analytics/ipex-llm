@@ -16,12 +16,6 @@ Then download and install latest nightly-build BigDL Friesian.
 pip install --pre --upgrade bigdl-friesian[train]
 ```
 
-## Train two tower model
-
-```bash
-python train_2tower.py
-```
-
 ## Train wide_and_deep model
 
 ```bash
