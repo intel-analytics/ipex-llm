@@ -6,7 +6,7 @@ With Friesian Table APIs, data scientists and machine learning engineers are abl
 Know more about W&D and it's implementation [here](https://github.com/intel-analytics/BigDL/tree/main/python/friesian/example/wnd)
 
 A **FeatureTable** is a distributed collection of data, it provides rich data processing and feature engineering methods for recommender systems.
-- Categorical Data Encoding, FeatureTable can encode categorical data into integers, one hot encodings.
+- Categorical Data Encoding, FeatureTable can encode categorical data into integers, one hot encodings, target encodes.
 - Cross-product Feature Transformations, FeatureTable crosses categorical columns and hash into certain buckets to generate more features.
 - Negative Sampling, FeatureTable selects negative examples randomly from the user’s non-interactive product set.
 
