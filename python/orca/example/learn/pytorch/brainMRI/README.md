@@ -15,6 +15,7 @@ pip install albumentations
 pip install scikit-learn
 pip install opencv-python
 pip install matplotlib
+pip install tqdm
 
 # For torch_distributed backend:
 pip install bigdl-orca[ray]
