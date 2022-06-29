@@ -45,9 +45,9 @@
 
     In this guide we will describe how to obtain a quantized model with the APIs delivered by BigDL-Nano
 
-[Nano_pytorch_training]: <../../../../../../../../python/nano/notebooks/pytorch/cifar10/nano-trainer-example.ipynb>
-[Nano_pytorch_onnxruntime]: <../../../../../../../../python/nano/notebooks/pytorch/tutorial/pytorch_inference_onnx.ipynb>
-[Nano_pytorch_openvino]: <../../../../../../../../python/nano/notebooks/pytorch/tutorial/pytorch_inference_openvino.ipynb>
-[Nano_pytorch_Quantization_inc]: <../../../../../../../../python/nano/notebooks/pytorch/tutorial/pytorch_quantization_inc.ipynb>
-[Nano_pytorch_quantization_inc_onnx]: <../../../../../../../../python/nano/notebooks/pytorch/tutorial/pytorch_quantization_inc.ipynb>
-[Nano_pytorch_quantization_openvino]: <../../../../../../../../python/nano/notebooks/pytorch/tutorial/pytorch_quantization_openvino.ipynb>
+[Nano_pytorch_training]: <https://github.com/intel-analytics/BigDL/blob/main/python/nano/notebooks/pytorch/cifar10/nano-trainer-example.ipynb>
+[Nano_pytorch_onnxruntime]: <https://github.com/y199387/BigDL/tree/add-nano-quick-start-doc/python/nano/notebooks/pytorch/tutorial/pytorch_inference_onnx.ipynb>
+[Nano_pytorch_openvino]: <https://github.com/y199387/BigDL/tree/add-nano-quick-start-doc/python/nano/notebooks/pytorch/tutorial/pytorch_inference_openvino.ipynb>
+[Nano_pytorch_Quantization_inc]: <https://github.com/y199387/BigDL/tree/add-nano-quick-start-doc/python/nano/notebooks/pytorch/tutorial/pytorch_quantization_inc.ipynb>
+[Nano_pytorch_quantization_inc_onnx]: <https://github.com/y199387/BigDL/tree/add-nano-quick-start-doc/python/nano/notebooks/pytorch/tutorial/pytorch_quantization_inc.ipynb>
+[Nano_pytorch_quantization_openvino]: <https://github.com/y199387/BigDL/tree/add-nano-quick-start-doc/python/nano/notebooks/pytorch/tutorial/pytorch_quantization_openvino.ipynb>
