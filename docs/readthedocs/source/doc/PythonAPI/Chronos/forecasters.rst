@@ -75,6 +75,19 @@ Temporal Convolutional Networks (TCN) is a neural network that use convolutional
     :show-inheritance:
 
 
+AutoformerForecaster
+----------------------------------------
+
+Autoformer is a neural network that use transformer architecture with autocorrelation. It supports multi-step and multi-variant cases. It shows significant accuracy improvement while longer training/inference time than TCN.
+
+`version:pytorch`
+
+.. automodule:: bigdl.chronos.forecaster.autoformer_forecaster
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+
 NBeatsForecaster
 ----------------------------------------
 
