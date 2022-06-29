@@ -19,7 +19,6 @@ import sys
 import math
 from optparse import OptionParser
 import tensorflow as tf
-from bigdl.orca.learn.utils import dataframe_to_xshards_of_feature_dict
 
 from bigdl.orca import init_orca_context, stop_orca_context, OrcaContext
 from bigdl.orca.learn.tf2 import Estimator
@@ -75,7 +74,7 @@ class SampleRankingModel(tf.keras.Model):
         return {m.name: m.result() for m in self.metrics}
 
 
-if __name__ == "__main__":
+def parse_args():
     parser = OptionParser()
     parser.add_option('--cluster_mode', type=str, default="local",
                       help='The cluster mode, such as local or yarn.')
@@ -93,6 +92,11 @@ if __name__ == "__main__":
                       help='The directory to ml-1m .dat files')
 
     (options, args) = parser.parse_args(sys.argv)
+    return (options, args)
+
+
+if __name__ == "__main__":
+    (options, args) = parse_args()
     data_dir = options.data_dir
 
     if options.cluster_mode == "local":
@@ -106,8 +110,6 @@ if __name__ == "__main__":
     else:
         raise ValueError("cluster_mode should be 'local' or 'yarn', but got " + args.cluster_mode)
 
-    (options, args) = parser.parse_args(sys.argv)
-    data_dir = options.data_dir
     spark = OrcaContext.get_spark_session()
 
     # UserID::MovieID::Rating::Timestamp
@@ -159,15 +161,9 @@ if __name__ == "__main__":
     test_steps = math.ceil(test_count / 4096)
     print("test size: ", test_count, ", steps: ", test_steps)
 
-    # Convert to orca xshards
-    train_shards = dataframe_to_xshards_of_feature_dict(train_df, train_df.columns,
-                                                        accept_str_col=True)
-    test_shards = dataframe_to_xshards_of_feature_dict(test_df, test_df.columns,
-                                                       accept_str_col=True)
-
-    # Create Orca TF Datasets from an Orca XShards
-    train_ds = Dataset.from_tensor_slices(train_shards)
-    test_ds = Dataset.from_tensor_slices(test_shards)
+    # Create Orca TF Datasets from a Spark DataFrame
+    train_ds = Dataset.from_spark_df(train_df)
+    test_ds = Dataset.from_spark_df(test_df)
 
     # Once the Orca TF Dataset is created, we can perform some data preprocessing using the map
     # function. Since the model use input["movie_title"], input["user_id"] and input["user_rating"]
