@@ -1,6 +1,6 @@
 # BigDL-Nano PyTorch Quantization with POT Quickstart
 
-**In this guide we will describe how to obtain a quantized model with the APIs delivered by BigDL-Nano in 2 simple steps**
+**In this guide we will describe how to obtain a quantized model with the APIs delivered by BigDL-Nano in 3 simple steps**
 
 ### **Step 0: Prepare Environment**
 We recommend using [conda](https://docs.conda.io/projects/conda/en/latest/user-guide/install/) to prepare the environment. Please refer to the [install guide](../../UserGuide/python.md) for more details.
@@ -33,7 +33,8 @@ data_transforms = transforms.Compose([
         transforms.ToTensor(),
         transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
     ])
-data_set = OxfordIIITPet(root="./data/", transform=data_transforms)
+data_set = OxfordIIITPet(root="./data/", transform=data_transforms, 
+                         target_transform=transforms.Lambda(lambda label: torch.tensor(label, dtype=torch.long)))
 data_loader = DataLoader(data_set, batch_size=32, shuffle=True)
 ```
 
@@ -55,7 +56,7 @@ trainer = Trainer(max_epochs=5)
 trainer.fit(model, train_dataloader=data_loader)
 ```
 
-### **Step 2: Quantization using Post-training Optimization Tools**
+### **Step 3: Quantization using Post-training Optimization Tools**
 Accelerator='openvino' means using OpenVINO POT to do quantization. The quantization can be added as below:
 ```python
 from torchmetrics.functional import accuracy
