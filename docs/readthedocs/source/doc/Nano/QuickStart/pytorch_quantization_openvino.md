@@ -1,6 +1,6 @@
 # BigDL-Nano PyTorch Quantization with POT Quickstart
 
-**In this guide we will describe how to obtain a quantized model with the APIs delivered by BigDL-Nano in 3 simple steps**
+**In this guide we will describe how to obtain a quantized model with the APIs delivered by BigDL-Nano in 4 simple steps**
 
 ### **Step 0: Prepare Environment**
 We recommend using [conda](https://docs.conda.io/projects/conda/en/latest/user-guide/install/) to prepare the environment. Please refer to the [install guide](../../UserGuide/python.md) for more details.

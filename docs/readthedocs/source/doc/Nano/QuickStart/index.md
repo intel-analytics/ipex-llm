@@ -45,8 +45,7 @@
 
     In this guide we will describe how to obtain a quantized model with the APIs delivered by BigDL-Nano
 
-[Tutorial_Root]: <../../../../../../../../python/nano/notebooks/pytorch/tutorial/>
-[Nano_pytorch_training]: <../../../../../../../../python/nano/notebooks/pytorch/tutorial/>
+[Nano_pytorch_training]: <../../../../../../../../python/nano/notebooks/pytorch/cifar10/nano-trainer-example.ipynb>
 [Nano_pytorch_onnxruntime]: <../../../../../../../../python/nano/notebooks/pytorch/tutorial/pytorch_inference_onnx.ipynb>
 [Nano_pytorch_openvino]: <../../../../../../../../python/nano/notebooks/pytorch/tutorial/pytorch_inference_openvino.ipynb>
 [Nano_pytorch_Quantization_inc]: <../../../../../../../../python/nano/notebooks/pytorch/tutorial/pytorch_quantization_inc.ipynb>

@@ -1,6 +1,6 @@
 # BigDL-Nano PyTorch Training Quickstart
 
-**In this guide we will describe how to scale out PyTorch programs using Nano in 4 simple steps**
+**In this guide we will describe how to scale out PyTorch programs using Nano in 5 simple steps**
 
 ### **Step 0: Prepare Environment**
 
