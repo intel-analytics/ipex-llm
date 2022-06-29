@@ -35,7 +35,7 @@ from torchvision.utils import make_grid
 from bigdl.orca import init_orca_context, stop_orca_context
 from bigdl.orca.learn.metrics import Accuracy
 from bigdl.orca.learn.pytorch import Estimator
-from bigdl.dllib.utils.log4Error import *
+from bigdl.dllib.utils.log4Error import invalidInputError
 
 from Unet import UNet
 from dataset import *
