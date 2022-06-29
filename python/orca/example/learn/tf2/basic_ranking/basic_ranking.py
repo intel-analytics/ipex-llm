@@ -196,7 +196,7 @@ if __name__ == "__main__":
 
     est = Estimator.from_keras(model_creator=model_creator,
                                verbose=True,
-                               config=config, backend="tf2")
+                               config=config, backend="ray")
 
     # Train the model using Orca TF Dataset.
     est.fit(train_ds, 3, batch_size=8192, steps_per_epoch=steps)

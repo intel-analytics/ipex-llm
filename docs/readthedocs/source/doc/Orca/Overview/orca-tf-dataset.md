@@ -116,7 +116,7 @@ from bigdl.orca.learn.tf2.estimator import Estimator
 
 est = Estimator.from_keras(model_creator=model_creator,
                            verbose=True,
-                           config=config, backend="tf2")
+                           config=config, backend="ray")
 est.fit(ds, 1, batch_size=32, steps_per_epoch=steps)
 est.evaluate(ds, 32, num_steps=steps)
 pred_shards = est.predict(ds)
@@ -272,7 +272,7 @@ config = {
 
 est = Estimator.from_keras(model_creator=model_creator,
                            verbose=True,
-                           config=config, backend="tf2")
+                           config=config, backend="ray")
 # Train the model using Orca TF Dataset.
 est.fit(ds, 1, batch_size=32, steps_per_epoch=steps)
 # Evaluate the model on the test set.
