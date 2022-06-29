@@ -30,6 +30,9 @@ class ONNXRuntimeModel:
         '''
         This function run through the onnxruntime forwarding step
         '''
+        if len(self._forward_args) != len(inputs):
+            invalidInputError(False, "The length of inputs is inconsistent with the input length of ONNXRuntime's inferencesession,"
+                                     "There may be some redundant inputs.")
         inputs = dict(zip(self._forward_args, inputs))
         ort_outs = self.ortsess.run(None, inputs)
         return ort_outs
