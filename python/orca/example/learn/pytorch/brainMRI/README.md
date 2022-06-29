@@ -24,11 +24,10 @@ pip install bigdl-orca
 ```
 
 ## Prepare the dataset
-You can download the dataset [here](https://www.kaggle.com/datasets/mateuszbuda/lgg-mri-segmentation/download).
+You can download the dataset [here](https://www.kaggle.com/datasets/mateuszbuda/lgg-mri-segmentation/download). Put the downloaded data in the current working directory.
 
 
 ```
-# You can download the dataset to your project path.
 unzip archive.zip
 
 # if you use yarn-client, the dataset should be sent to the excutors. 
@@ -41,11 +40,10 @@ zip ../kaggle_3m.zip *
 You can run the example on local and yarn client mode.
 ### Run on local after pip install
 
-The default backend is `torch_distributed`
 ```commandline
 python brainMRI.py
 ```
-You can run with `spark` backend via:
+The default backend is `torch_distributed`. You can run with `spark` backend via:
 ```
 python brainMRI.py --backend spark 
 ```
@@ -56,11 +54,11 @@ export HADOOP_CONF_DIR=the directory of the hadoop and yarn configurations
 python brainMRI.py --cluster_mode yarn-client
 ```
 
-If you use the spark as backend, you should give the `model_dir` parameter with the hdfs path. 
+If you use spark backend, you should input `model_dir` parameter with the hdfs path. 
 
-Note: if you meet `OSError: Unable to load libhdfs: ./libhdfs.so: cannot open shared object file: No such file or directory` error, read the [document](https://bigdl.readthedocs.io/en/latest/doc/Orca/Overview/known_issues.html#oserror-unable-to-load-libhdfs-libhdfs-so-cannot-open-shared-object-file-no-such-file-or-directory).
+Note: If you meet `OSError: Unable to load libhdfs: ./libhdfs.so: cannot open shared object file: No such file or directory`, please refer to [here](https://bigdl.readthedocs.io/en/latest/doc/Orca/Overview/known_issues.html#oserror-unable-to-load-libhdfs-libhdfs-so-cannot-open-shared-object-file-no-such-file-or-directory) for the solution.
 ```commandline
-python brainMRI.py --cluster_mode yarn-client --backend spark --model_dir hdfs://url:port/file_path
+python brainMRI.py --cluster_mode yarn-client --backend spark --model_dir hdfs_path_to_save_model
 ```
 
 Options
@@ -71,8 +69,4 @@ Options
 - `--batch_size` The number of samples per gradient update. Default is 64.
 - `--data_dir` The path of the dataset. Default is `./kaggle_3m`.
 - `--additional_archive` The zip dataset if use `yarn-client` mode. Default is `kaggle_3m.zip#kaggle_3m`.
-- `--memory` The memory allocated for each node. Default is `4g`.
 - `--model_dir` The model save dir when use spark backend. Default is the current working directory.
-  - If you use `yarn-client` as `cluster_mode`, you need give the hdfs path to save the model. 
-  - If you use `spark-submit` as `cluster_mode`, you need add `file://` at the beginning of the path.
-- `spark_executor_dir` The spark.executorEnv.ARROW_LIBHDFS_DIR is need when use spark backend and yarn cluster_mode.
