@@ -35,8 +35,8 @@ dog = data_transform(read_image(paths[1]))
 ```
 Let’s have a quick look at our data<br>
 
-![cat](../Image/cat_small.jpg)
-![dog](../Image/dog_small.jpg)
+![cat](../Image/cat.jpg)
+![dog](../Image/dog.jpg)
 
 ### **Step 2: Prepare the Model**
 ```python
