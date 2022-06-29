@@ -21,9 +21,11 @@
     <Loggers>
         <Root level="info">
             <AppenderRef ref="Console"/>
+            <AppenderRef ref="Routing" level="info" />
         </Root>
         <Logger name="org" level="info" additivity="false">
             <AppenderRef ref="Console"/>
+            <AppenderRef ref="Routing" level="info" />
         </Logger>
     </Loggers>
 </Configuration>
