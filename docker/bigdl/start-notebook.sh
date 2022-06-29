@@ -19,4 +19,4 @@
 set -x
 
 echo $BIGDL_HOME
-jupyter notebook --notebook-dir=$BIGDL_HOME/apps --ip=0.0.0.0 --port=$NOTEBOOK_PORT --no-browser --NotebookApp.token=$NOTEBOOK_TOKEN --allow-root
+jupyter-lab --notebook-dir=$BIGDL_HOME/apps --ip=0.0.0.0 --port=$NOTEBOOK_PORT --no-browser --NotebookApp.token=$NOTEBOOK_TOKEN --allow-root

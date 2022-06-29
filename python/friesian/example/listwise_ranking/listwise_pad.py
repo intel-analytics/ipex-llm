@@ -29,6 +29,9 @@ from bigdl.orca import OrcaContext
 from bigdl.friesian.feature import FeatureTable
 from bigdl.orca.learn.tf2 import Estimator
 from bigdl.orca.data.tf.data import Dataset
+import numpy as np
+
+conf = {"spark.driver.maxResultSize": "10G"}
 
 
 class RankingModel(tfrs.Model):
@@ -80,7 +83,6 @@ class RankingModel(tfrs.Model):
         # We want to concatenate user embeddings with movie emebeddings to pass
         # them into the ranking model. To do so, we need to reshape the user
         # embeddings to match the shape of movie embeddings.
-        ragged_length = features["len"]
         list_length = features["titles"].shape[1]
         user_embedding_repeated = tf.repeat(
             tf.expand_dims(user_embeddings, 1), [list_length], axis=1)
@@ -91,7 +93,9 @@ class RankingModel(tfrs.Model):
             [user_embedding_repeated, movie_embeddings], 2)
 
         scores = self.score_model(concatenated_embeddings)
+        scores = tf.squeeze(scores, axis=-1)
         if ragged_output:
+            ragged_length = features["len"]
             ragged_scores = tf.RaggedTensor.from_tensor(scores, ragged_length)
             return ragged_scores
         else:
@@ -106,7 +110,7 @@ class RankingModel(tfrs.Model):
 
         return self.task(
             labels=ragged_labels,
-            predictions=tf.squeeze(scores, axis=-1),
+            predictions=scores,
         )
 
 
@@ -116,7 +120,7 @@ if __name__ == "__main__":
                       help='The cluster mode, such as local or yarn.')
     parser.add_option('--executor_cores', type=int, default=18,
                       help='The executor core number.')
-    parser.add_option('--executor_memory', type=str, default="10g",
+    parser.add_option('--executor_memory', type=str, default="20g",
                       help='The executor memory.')
     parser.add_option('--num_executor', type=int, default=1,
                       help='The number of executor.')
@@ -132,12 +136,12 @@ if __name__ == "__main__":
 
     if options.cluster_mode == "local":
         init_orca_context("local", cores=options.executor_cores, memory=options.executor_memory,
-                          init_ray_on_spark=True)
+                          init_ray_on_spark=True, conf=conf)
     elif options.cluster_mode == "yarn":
         init_orca_context("yarn-client", cores=options.executor_cores,
                           num_nodes=options.num_executor, memory=options.executor_memory,
                           driver_cores=options.driver_cores, driver_memory=options.driver_memory,
-                          init_ray_on_spark=True)
+                          init_ray_on_spark=True, conf=conf)
     else:
         raise ValueError("cluster_mode should be 'local' or 'yarn', but got " + args.cluster_mode)
 
@@ -216,8 +220,21 @@ if __name__ == "__main__":
 
     est = Estimator.from_keras(model_creator=model_creator,
                                verbose=True,
-                               config=config, backend="tf2")
+                               config=config, backend="ray")
     est.fit(train_dataset, 16, batch_size=256, steps_per_epoch=steps,
             validation_data=test_dataset, validation_steps=test_steps)
     est.evaluate(test_dataset, 256, num_steps=test_steps)
+
+    pred_tbl = train_tbl
+    pred_dataset = Dataset.from_feature_table(pred_tbl)
+
+    def del_ratings(d):
+        del d["ratings"]
+        return d
+    pred_dataset = pred_dataset.map(del_ratings)
+
+    pred_shards = est.predict(pred_dataset, min_partition_num=6)
+    pred_collect = pred_shards.collect()
+    est.shutdown()
+
     stop_orca_context()

@@ -32,9 +32,10 @@ class Dataset(object):
     on each partitions.
     """
 
-    def __init__(self, xshards, create_dataset_fn):
+    def __init__(self, xshards, create_dataset_fn, xshards_transform_fn=None):
         self.xshards = xshards
         self.create_dataset_fn = create_dataset_fn
+        self.xshards_transform_fn = xshards_transform_fn
 
     def as_graph_rdd(self, batch_per_shard, drop_remainder=True):
 
@@ -109,6 +110,13 @@ class Dataset(object):
         tf_dataset_rdd = self.xshards.rdd.mapPartitions(to_dataset)
         return tf_dataset_rdd
 
+    def get_xshards(self):
+        if self.xshards_transform_fn is None:
+            return self.xshards
+        else:
+            new_shards = self.xshards_transform_fn(self.xshards)
+            return new_shards
+
     @staticmethod
     def from_tensor_slices(xshards):
         return TensorSliceDataset(xshards)
@@ -156,9 +164,18 @@ class MapDataset(Dataset):
     def __init__(self, input_dataset, map_func):
 
         create_pre_dataset_fn = input_dataset.create_dataset_fn
+        xshards_pre_transform_fn = input_dataset.xshards_transform_fn
 
         def create_dataset_fn(data):
             dataset = create_pre_dataset_fn(data)
             return dataset.map(map_func)
+
+        def xshards_transform_fn(data):
+            if xshards_pre_transform_fn is None:
+                return data.transform_shard(map_func)
+            else:
+                pre_shards = xshards_pre_transform_fn(data)
+                return pre_shards.transform_shard(map_func)
         super().__init__(xshards=input_dataset.xshards,
-                         create_dataset_fn=create_dataset_fn)
+                         create_dataset_fn=create_dataset_fn,
+                         xshards_transform_fn=xshards_transform_fn)

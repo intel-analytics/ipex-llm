@@ -365,6 +365,49 @@ class TestTSDataset(ZooTestCase):
         assert x_time.shape[1:] == (lookback, 3)
         assert y_time.shape[1:] == (lookback, 3)
 
+    def test_tsdata_roll_timeenc_predict(self):
+        horizon = 10
+        lookback = random.randint(10, 20)
+        df = get_int_target_df()
+        len_df = len(df)
+        tsdata = TSDataset.from_pandas(df, dt_col='datetime', target_col='value', id_col="id")
+        x, y, x_time, y_time =\
+            tsdata.roll(lookback=lookback, horizon=horizon,
+                        time_enc=True, label_len=5, is_predict=True).to_numpy()
+        assert x.shape[1:] == (lookback, 1)
+        assert y.shape[1:] == (5, 1)
+        assert x_time.shape[1:] == (lookback, 3)
+        assert y_time.shape[1:] == (15, 3)
+        assert x.shape[0] == y.shape[0] == x_time.shape[0] == y_time.shape[0] == len(df) - lookback + 1
+
+    def test_tsdata_roll_timeenc_to_torch_data_loader(self):
+        horizon = random.randint(1, 9)
+        lookback = random.randint(10, 20)
+        df = get_int_target_df()
+        tsdata = TSDataset.from_pandas(df, dt_col='datetime', target_col='value', id_col="id")
+        dataloader =\
+            tsdata.to_torch_data_loader(roll=True, lookback=lookback, horizon=horizon,
+                        time_enc=True, label_len=lookback-horizon)
+        x, y, x_time, y_time = next(iter(dataloader))
+        assert x.shape[1:] == (lookback, 1)
+        assert y.shape[1:] == (lookback, 1)
+        assert x_time.shape[1:] == (lookback, 3)
+        assert y_time.shape[1:] == (lookback, 3)
+    
+    def test_tsdata_roll_timeenc_to_torch_data_loader_predict(self):
+        horizon = 10
+        lookback = random.randint(10, 20)
+        df = get_int_target_df()
+        tsdata = TSDataset.from_pandas(df, dt_col='datetime', target_col='value', id_col="id")
+        dataloader =\
+            tsdata.to_torch_data_loader(roll=True, lookback=lookback, horizon=horizon,
+                        time_enc=True, label_len=5, is_predict=True, batch_size=len(df))
+        x, y, x_time, y_time = next(iter(dataloader))
+        assert x.shape[1:] == (lookback, 1)
+        assert y.shape[1:] == (5, 1)
+        assert x_time.shape[1:] == (lookback, 3)
+        assert y_time.shape[1:] == (15, 3)
+        assert x.shape[0] == y.shape[0] == x_time.shape[0] == y_time.shape[0] == len(df) - lookback + 1
 
     def test_tsdataset_to_torch_loader_roll(self):
         df_single_id = get_ts_df()
