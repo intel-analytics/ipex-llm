@@ -30,15 +30,14 @@ You can download the dataset [here](https://www.kaggle.com/datasets/mateuszbuda/
 ```
 unzip archive.zip
 
-# if you use yarn-client, the dataset should be sent to the excutors. 
-# So we need zip the dataset as `.zip` file, then the program will send it to all excutors automatically. 
+# If you run in yarn-client mode, you need to zip the images under kaggle_3m to the current working directory as well.
 cd kaggle_3m
 zip ../kaggle_3m.zip *
+cd ../
 ```
 
 
-You can run the example on local and yarn client mode.
-### Run on local after pip install
+## Run on local after pip install
 
 ```commandline
 python brainMRI.py
@@ -48,7 +47,7 @@ The default backend is `torch_distributed`. You can run with `spark` backend via
 python brainMRI.py --backend spark 
 ```
 
-### Run on yarn cluster for yarn-client mode after pip install
+## Run on yarn cluster for yarn-client mode after pip install
 ```
 export HADOOP_CONF_DIR=the directory of the hadoop and yarn configurations
 python brainMRI.py --cluster_mode yarn-client
@@ -67,6 +66,6 @@ Options
 - `--backend` The backend of PyTorch Estimator; torch_distributed and spark are supported. Default is `torch_distributed`.
 - `--epochs` The number of epochs to train for. Default is 2.
 - `--batch_size` The number of samples per gradient update. Default is 64.
-- `--data_dir` The path of the dataset. Default is `./kaggle_3m`.
+- `--data_dir` The path to the dataset. Default is `./kaggle_3m`.
 - `--additional_archive` The zip dataset if use `yarn-client` mode. Default is `kaggle_3m.zip#kaggle_3m`.
 - `--model_dir` The model save dir when use spark backend. Default is the current working directory.

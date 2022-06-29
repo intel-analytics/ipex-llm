@@ -35,6 +35,7 @@ from torchvision.utils import make_grid
 from bigdl.orca import init_orca_context, stop_orca_context
 from bigdl.orca.learn.metrics import Accuracy
 from bigdl.orca.learn.pytorch import Estimator
+from bigdl.dllib.utils.log4Error import *
 
 from Unet import UNet
 from dataset import *
@@ -143,10 +144,11 @@ parser.add_argument('--backend', type=str, default="torch_distributed",
                     help='The backend of PyTorch Estimator; torch_distributed and spark are supported')
 parser.add_argument('--batch_size', type=int, default=64, help='The training batch size')
 parser.add_argument('--epochs', type=int, default=2, help='The number of epochs to train for')
-parser.add_argument('--data_dir', type=str, default='./kaggle_3m', help='the path of the dataset')
-parser.add_argument('--additional_archive', type=str, default="kaggle_3m.zip#kaggle_3m", help='the zip dataset')
+parser.add_argument('--data_dir', type=str, default='./kaggle_3m', help='The path to the dataset')
+parser.add_argument('--additional_archive', type=str, default="kaggle_3m.zip#kaggle_3m",
+                    help='The zip dataset for yarn-client mode')
 parser.add_argument('--model_dir', type=str, default=os.getcwd(),
-                    help="the model save dir for spark backend")
+                    help="The model save dir for spark backend")
 args = parser.parse_args()
 
 if args.cluster_mode == "local":
@@ -157,8 +159,9 @@ elif args.cluster_mode.startswith('yarn'):
 elif args.cluster_mode == "spark-submit":
     init_orca_context(cluster_mode="spark-submit")
 else:
-    raise NotImplementedError("Only local, yarn-client, and spark-submit are supported as the cluster_mode,"
-                              " but got {}".format(args.cluster_mode))
+    invalidInputError(False,
+                      "cluster_mode should be one of 'local', 'yarn', 'standalone' and"
+                      " 'spark-submit', but got " + args.cluster_mode)
 
 train_df, test_df = dataset(args.data_dir)
 batch_size = args.batch_size
@@ -171,7 +174,7 @@ config = {
 train_loader = train_loader_creator(config=config, batch_size=batch_size)
 
 # plot some random training images.
-# You should use jupyter notebook to show the pictures.
+# You should use jupyter notebook to show the images.
 show_batch(train_loader)
 
 if args.backend in ["torch_distributed", "spark"]:
@@ -181,8 +184,7 @@ if args.backend in ["torch_distributed", "spark"]:
                                           model_dir=args.model_dir,
                                           backend=args.backend,
                                           config=config,
-                                          use_tqdm=True
-                                          )
+                                          use_tqdm=True)
 
     orca_estimator.fit(data=train_loader_creator, epochs=args.epochs, batch_size=batch_size)
 else:
