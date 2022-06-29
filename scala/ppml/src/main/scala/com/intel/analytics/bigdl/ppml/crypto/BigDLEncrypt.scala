@@ -105,6 +105,15 @@ class BigDLEncrypt extends Crypto {
   }
 
   /**
+   * Verify the header bytes in the stream.
+   * @param header header bytes
+   */
+  override def verifyHeader(in: InputStream): Unit = {
+    val header = read(in, 25)
+    verifyHeader(header)
+  }
+
+  /**
    * Continues a multiple-part encryption or decryption operation
    * (depending on how this crypto was initialized).
    * @param content byte to be encrypted or decrypted.
@@ -245,7 +254,7 @@ class BigDLEncrypt extends Crypto {
     outs.close()
   }
 
-  private def read(stream: DataInputStream, numBytes: Int): Array[Byte] = {
+  private def read(stream: InputStream, numBytes: Int): Array[Byte] = {
     val retval = new Array[Byte](numBytes)
     val bytesRead: Int = stream.read(retval)
     Log4Error.invalidOperationError(bytesRead == numBytes,

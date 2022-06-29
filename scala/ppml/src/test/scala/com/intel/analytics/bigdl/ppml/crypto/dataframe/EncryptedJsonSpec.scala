@@ -20,7 +20,7 @@ import com.intel.analytics.bigdl.ppml.crypto.PLAIN_TEXT
 import org.apache.spark.SparkConf
 
 class EncryptedJsonSpec extends DataFrameHelper {
-  override val repeatedNum = 100
+  override val repeatedNum = 2000
 
   val ppmlArgs = Map(
     "spark.bigdl.kms.simple.id" -> appid,
@@ -29,6 +29,8 @@ class EncryptedJsonSpec extends DataFrameHelper {
     "spark.bigdl.kms.key.data" -> dataKeyPath
   )
   val conf = new SparkConf().setMaster("local[4]")
+  conf.set("spark.hadoop.io.compression.codecs",
+    "com.intel.analytics.bigdl.ppml.crypto.CryptoCodec")
   val sc = PPMLContext.initPPMLContext(conf, "SimpleQuery", ppmlArgs)
 
   val sparkSession = sc.getSparkSession()
@@ -42,6 +44,19 @@ class EncryptedJsonSpec extends DataFrameHelper {
       .option("compression", "com.intel.analytics.bigdl.ppml.crypto.CryptoCodec")
       .json(plainJsonPath)
     val jsonDf = sparkSession.read.json(plainJsonPath)
+    jsonDf.count()
+
+  }
+
+  "csv" should "work" in {
+    val plainJsonPath = dir + "/plain-csv"
+    val df = sc.read(cryptoMode = PLAIN_TEXT)
+      .option("header", "true").csv(plainFileName)
+    df.write
+      .option("compression", "com.intel.analytics.bigdl.ppml.crypto.CryptoCodec")
+//      .option("compression", "deflate")
+      .csv(plainJsonPath)
+    val jsonDf = sparkSession.read.csv(plainJsonPath)
     jsonDf.count()
 
   }

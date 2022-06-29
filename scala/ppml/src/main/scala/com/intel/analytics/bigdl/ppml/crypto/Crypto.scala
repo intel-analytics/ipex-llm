@@ -21,7 +21,7 @@ import com.intel.analytics.bigdl.dllib.utils.Log4Error
 import com.intel.analytics.bigdl.ppml.utils.Supportive
 import org.apache.spark.input.PortableDataStream
 
-import java.io.{DataInputStream, DataOutputStream}
+import java.io.{DataInputStream, DataOutputStream, InputStream}
 import javax.crypto.Cipher
 
 /**
@@ -54,6 +54,12 @@ trait Crypto extends Supportive with Serializable {
    * @param header header bytes
    */
   def verifyHeader(header: Array[Byte]): Unit
+
+  /**
+   * Verify the header bytes when decrypt.
+   * @param header header bytes
+   */
+  def verifyHeader(in: InputStream): Unit
 
   /**
    * Continues a multiple-part encryption or decryption operation

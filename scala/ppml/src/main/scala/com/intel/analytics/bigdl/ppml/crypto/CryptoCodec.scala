@@ -16,10 +16,13 @@
 
 package com.intel.analytics.bigdl.ppml.crypto
 
+import com.intel.analytics.bigdl.dllib.utils.Log4Error
+import com.intel.analytics.bigdl.ppml.crypto.CryptoCodec.CryptoDecompressStream
+import org.apache.commons.logging.{Log, LogFactory}
 import org.apache.hadoop.classification.InterfaceAudience
 import org.apache.hadoop.classification.InterfaceStability
-import org.apache.hadoop.conf.Configuration
-import org.apache.hadoop.io.compress._
+import org.apache.hadoop.conf.{Configurable, Configuration}
+import org.apache.hadoop.io.compress.{DefaultCodec, _}
 import org.apache.hadoop.io.compress.zlib.BuiltInGzipDecompressor
 import org.apache.hadoop.io.compress.zlib.ZlibCompressor
 import org.apache.hadoop.io.compress.zlib.ZlibCompressor.{CompressionHeader, CompressionLevel, CompressionStrategy}
@@ -33,162 +36,110 @@ import java.io.OutputStream
 import java.util.zip.GZIPOutputStream
 import org.apache.hadoop.util.PlatformName.IBM_JAVA
 
+class CryptoCodec
+  extends Configurable with CompressionCodec with DirectDecompressionCodec {
+  protected var conf: Configuration = null
 
-/**
- * This class creates gzip compressors/decompressors.
- */
-@InterfaceAudience.Public
-@InterfaceStability.Evolving object CryptoCodec {
-  /**
-   * A bridge that wraps around a DeflaterOutputStream to make it
-   * a CompressionOutputStream.
-   */
-  @InterfaceStability.Evolving protected object GzipOutputStream {
-    private object ResetableGZIPOutputStream {
-      private val TRAILER_SIZE = 8
-      val JVMVersion: String = System.getProperty("java.version")
-      private val HAS_BROKEN_FINISH = IBM_JAVA && JVMVersion.contains("1.6.0")
-    }
-
-    private class ResetableGZIPOutputStream @throws[IOException]
-    (out: OutputStream) extends GZIPOutputStream(out) {
-      @throws[IOException]
-      def resetState(): Unit = {
-        `def`.reset()
-      }
-    }
+  override def setConf(conf: Configuration): Unit = {
+    this.conf = conf
   }
 
-  @InterfaceStability.Evolving
-  protected class GzipOutputStream(out: OutputStream) extends CompressorStream(out) {
+  override def getConf: Configuration = conf
 
-    @throws[IOException]
-    override def close(): Unit = {
-      out.close()
-    }
-
-    @throws[IOException]
-    override def flush(): Unit = {
-      out.flush()
-    }
-
-    @throws[IOException]
-    override def write(b: Int): Unit = {
-      out.write(b)
-    }
-
-    @throws[IOException]
-    override def write(data: Array[Byte], offset: Int, length: Int): Unit = {
-      out.write(data, offset, length)
-    }
-
-    @throws[IOException]
-    override def finish(): Unit = {
-      out.asInstanceOf[GzipOutputStream.ResetableGZIPOutputStream].finish()
-    }
-
-    @throws[IOException]
-    override def resetState(): Unit = {
-      out.asInstanceOf[GzipOutputStream.ResetableGZIPOutputStream].resetState()
-    }
-  }
-
-  final private[crypto] class GzipZlibCompressor(
-        level: ZlibCompressor.CompressionLevel, strategy: ZlibCompressor.CompressionStrategy,
-        header: ZlibCompressor.CompressionHeader, directBufferSize: Int) extends
-        ZlibCompressor(CompressionLevel.DEFAULT_COMPRESSION,
-    CompressionStrategy.DEFAULT_STRATEGY,
-      ZlibCompressor.CompressionHeader.GZIP_FORMAT, 64 * 1024) {
-    def this(conf: Configuration) {
-      this (ZlibFactory.getCompressionLevel(conf),
-        ZlibFactory.getCompressionStrategy(conf),
-        ZlibCompressor.CompressionHeader.GZIP_FORMAT, 64 * 1024)
-    }
-  }
-
-  final private[crypto] class BigDLDecompressor() extends ZlibDecompressor(
-    ZlibDecompressor.CompressionHeader.AUTODETECT_GZIP_ZLIB, 64 * 1024) {
-  }
-}
-
-@InterfaceAudience.Public
-@InterfaceStability.Evolving class CryptoCodec extends DefaultCodec {
   @throws[IOException]
   override def createOutputStream(out: OutputStream): CompressionOutputStream = {
-    if (!ZlibFactory.isNativeZlibLoaded(getConf)) return new CryptoCodec.GzipOutputStream(out)
-    val compressor = CodecPool.getCompressor(this, getConf)
+    // TODO: CompressionCodec.Util.createOutputStreamWithCodecPool(this, conf, out)
+    val compressor = this.createCompressor()
     this.createOutputStream(out, compressor)
   }
 
   @throws[IOException]
-  override def createOutputStream(
-        out: OutputStream,
-        compressor: Compressor): CompressionOutputStream = {
-    if (compressor != null) {
-      new CompressorStream(out, compressor, getConf.getInt("io.file.buffer.size", 4 * 1024))
-    } else {
-      createOutputStream(out)
-    }
+  override def createOutputStream(out: OutputStream, compressor: Compressor) = {
+    new CompressorStream(out, compressor, conf.getInt("io.file.buffer.size", 4 * 1024))
   }
-
-  override def createCompressor: Compressor = if (ZlibFactory.isNativeZlibLoaded(getConf)) {
-    new CryptoCodec.GzipZlibCompressor(getConf)
-  }
-  else null
 
   override def getCompressorType: Class[_ <: Compressor] = {
-    if (ZlibFactory.isNativeZlibLoaded(getConf)) {
-      classOf[CryptoCodec.GzipZlibCompressor]
-    } else {
-      null
-    }
+    BigDLEncryptCompressor.getCompressorType(conf)
+//    ZlibFactory.getZlibCompressorType(conf)
+  }
+
+  override def createCompressor: Compressor = {
+    BigDLEncryptCompressor(conf)
+//    ZlibFactory.getZlibCompressor(conf)
   }
 
   @throws[IOException]
   override def createInputStream(in: InputStream): CompressionInputStream = {
-    val decompressor = CodecPool.getDecompressor(this)
-    this.createInputStream(in, decompressor)
+    // TODO:  CompressionCodec.Util.createInputStreamWithCodecPool(this, conf, in)
+//    val decompressor = this.createDecompressor()
+//    this.createInputStream(in, decompressor)
+    new CryptoDecompressStream(in, conf.getInt("io.file.buffer.size", 4 * 1024))
   }
 
   @throws[IOException]
-  override def createInputStream(
-        in: InputStream,
-        decompressor: Decompressor): CompressionInputStream = {
-    val _decompressor = if (decompressor == null) {
-      createDecompressor
-    } else {
-      decompressor
-    }
-    // always succeeds (or throws)
-    new DecompressorStream(in, _decompressor, getConf.getInt("io.file.buffer.size", 4 * 1024))
-  }
-
-  override def createDecompressor: Decompressor = {
-    if (ZlibFactory.isNativeZlibLoaded(getConf)) {
-      new CryptoCodec.BigDLDecompressor
-    } else {
-      new BuiltInGzipDecompressor
-    }
+  override def createInputStream(in: InputStream, decompressor: Decompressor) = {
+//    new DecompressorStream(in, decompressor, conf.getInt("io.file.buffer.size", 4 * 1024))
+    new CryptoDecompressStream(in, conf.getInt("io.file.buffer.size", 4 * 1024))
   }
 
   override def getDecompressorType: Class[_ <: Decompressor] = {
-    if (ZlibFactory.isNativeZlibLoaded(getConf)) {
-      classOf[CryptoCodec.BigDLDecompressor]
-    } else {
-      classOf[BuiltInGzipDecompressor]
-    }
+    ZlibFactory.getZlibDecompressorType(conf)
+    null
   }
 
+  override def createDecompressor: Decompressor = {
+    ZlibFactory.getZlibDecompressor(conf)
+    null
+  }
+
+  /**
+   * {@inheritDoc }
+   */
   override def createDirectDecompressor: DirectDecompressor = {
-    if (ZlibFactory.isNativeZlibLoaded(getConf)) {
-      new ZlibDecompressor.ZlibDirectDecompressor(
-        ZlibDecompressor.CompressionHeader.AUTODETECT_GZIP_ZLIB, 0)
-    } else {
-      null
-    }
+    ZlibFactory.getZlibDirectDecompressor(conf)
+    null
   }
 
   override def getDefaultExtension: String = {
-    ".gz"
+    ".cbc"
   }
+}
+
+object CryptoCodec {
+  class CryptoDecompressStream(
+      in: InputStream, bufferSize: Int) extends DecompressorStream(in) {
+    buffer = new Array[Byte](bufferSize)
+    val bigdlEncrypt = Crypto(AES_CBC_PKCS5PADDING)
+    // TODO
+    bigdlEncrypt.init(AES_CBC_PKCS5PADDING, DECRYPT, "1234567890123456")
+    var headerVerified = false
+
+    override def decompress(b: Array[Byte], off: Int, len: Int): Int = {
+      if(!headerVerified) {
+        bigdlEncrypt.verifyHeader(in)
+        headerVerified = true
+      }
+
+      val decompressed = if (in.available() < -100 || in.available() > buffer.size) {
+        val m = getCompressedData()
+        bigdlEncrypt.update(buffer, 0, m)
+      } else {
+        val last = getCompressedData()
+        if (last == -1) { // apparently the previous end-of-stream was also end-of-file:
+          // return success, as if we had never called getCompressedData()
+          eof = true
+          return -1
+        }
+        val hmacSize = 32
+        val inputHmac = buffer.slice(last - hmacSize, last)
+        val (lastSlice, streamHmac) = bigdlEncrypt.doFinal(buffer, 0, last - hmacSize)
+        Log4Error.invalidInputError(!inputHmac.sameElements(streamHmac), "hmac not match")
+        lastSlice
+      }
+
+      decompressed.copyToArray(b, 0)
+      decompressed.length
+    }
+  }
+
 }
