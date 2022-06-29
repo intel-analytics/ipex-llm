@@ -14,4 +14,27 @@
 # limitations under the License.
 #
 
-from bigdl.chronos.forecaster.pytorch import TCNForecaster, LSTMForecaster, NBeatsForecaster, Seq2SeqForecaster, AutoformerForecaster
+from unittest import TestCase
+
+class TestChronosModelPytorch(TestCase):
+
+    def setUp(self):
+        pass
+
+    def tearDown(self):
+        pass
+
+    def test_tcn_forecaster_import(self):
+        from bigdl.chronos.forecaster.pytorch import TCNForecaster
+
+    def test_lstm_forecaster_import(self):
+        from bigdl.chronos.forecaster.pytorch import LSTMForecaster
+
+    def test_nbeats_forecaster_import(self):
+        from bigdl.chronos.forecaster.pytorch import NBeatsForecaster
+
+    def test_s2s_forecaster_import(self):
+        from bigdl.chronos.forecaster.pytorch import Seq2SeqForecaster
+
+    def test_autoformer_forecaster_import(self):
+        from bigdl.chronos.forecaster.pytorch import AutoformerForecaster
