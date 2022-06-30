@@ -130,6 +130,7 @@ class _DDPSpawnLauncher(_SpawnLauncher):
 
 
 class DDPSpawnStrategy(_DDPSpawnStrategy):
+    """Extending DDPSpawnStrategy to support launch subprocesses with optimized env variables."""
 
     strategy_name = "ddp_spawn"
 
@@ -141,6 +142,7 @@ class DDPSpawnStrategy(_DDPSpawnStrategy):
         enable_bf16=False,
         **kwargs: Any
     ):
+        """Create a DDPSpawnStrategy, adding a cpu_for_each_process parameter."""
         device = ipex_device() if use_ipex and TORCH_VERSION_LESS_1_10 else 'cpu'
         parallel_devices = [torch.device(device) for _ in range(num_processes)]
         cluster_environment = LightningEnvironment()
@@ -161,10 +163,12 @@ class DDPSpawnStrategy(_DDPSpawnStrategy):
         self._launcher = _DDPSpawnLauncher(self)
 
     def setup(self, trainer: "pl.Trainer") -> None:
+        """Setup the distributed environment of sub processes, we add ipex optimization here."""
         # when using spawn, multiple child processes may update the weights of
         # the same model, so we should copy the model to avoid it
         if self.strategy_name == "ddp_spawn":
             self.model = copy.deepcopy(self.model)
+            self.model.trainer = trainer
 
         self.accelerator.setup(trainer)
 
@@ -204,6 +208,7 @@ class DDPSpawnStrategy(_DDPSpawnStrategy):
         self.model_to_device()
 
     def configure_ddp(self):
+        """Setup the configuration for pytorch ddp."""
         # we should override this method to change the creation of `DistributedDataParallel`
         self.pre_configure_ddp()
         self._model = DistributedDataParallel(
@@ -217,6 +222,7 @@ class DDPSpawnStrategy(_DDPSpawnStrategy):
 
     def reduce(self, tensor, group: Optional[Any] = None,
                reduce_op: Union[ReduceOp, str] = "mean") -> Tensor:
+        """Reduces a tensor from several distributed processes to one aggregated tensor."""
         # some operations in `super.reduce()` method do not support XPU,
         # which will cause error when using ipex==1.9, however, these operations
         # seems not necessary, so we just ignore these errors

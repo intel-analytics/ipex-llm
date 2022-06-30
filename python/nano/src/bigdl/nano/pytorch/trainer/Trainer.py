@@ -20,6 +20,7 @@ from typing import Any, List, Optional
 import pytorch_lightning as pl
 import torch
 from pytorch_lightning import LightningModule
+from pytorch_lightning.utilities.types import _PATH
 from torch import nn
 from torch.nn.modules.loss import _Loss
 from torch.utils.data import DataLoader
@@ -449,3 +450,18 @@ class Trainer(pl.Trainer):
             invalidInputError(False,
                               "ModelType {} or argument 'model={}' is not acceptable for pytorch"
                               " loading.".format(model_type, type(model)))
+
+    def save_checkpoint(
+        self, filepath: _PATH, weights_only: bool = False, storage_options: Optional[Any] = None
+    ) -> None:
+        """
+        When using ipex==1.9 and custom lr_schedulers for training, `save_checkpoint`
+        will raise an error of 'Unsupport storage type' because model is in 'xpu',
+        so we temporarily move model to 'cpu', then move it to 'xpu' after `save_checkpoint`.
+        """
+
+        if self.use_ipex and TORCH_VERSION_LESS_1_10:
+            self.model.to('cpu')
+        super().save_checkpoint(filepath, weights_only, storage_options)
+        if self.use_ipex and TORCH_VERSION_LESS_1_10:
+            self.model.to(self.strategy.root_device)
