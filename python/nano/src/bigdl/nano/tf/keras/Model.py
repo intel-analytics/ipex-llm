@@ -45,7 +45,7 @@ import tensorflow as tf
 from tensorflow.keras import Model as Model
 from bigdl.nano.tf.keras.training_utils import TrainingUtils
 from bigdl.nano.tf.keras.inference_utils import InferenceUtils
-from bigdl.nano.tf.keras.inheritance_utils import override_method, inject_function
+from bigdl.nano.tf.keras.inheritance_utils import inject_function
 
 
 # class Model(TrainingUtils, InferenceUtils):
