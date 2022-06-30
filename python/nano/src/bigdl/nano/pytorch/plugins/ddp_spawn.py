@@ -175,6 +175,8 @@ class DDPSpawnStrategy(_DDPSpawnStrategy):
         # the same model, so we should copy the model to avoid it
         if self.strategy_name == "ddp_spawn":
             self.model = copy.deepcopy(self.model)
+            # `copy.deepcopy(self.model)` can't copy `self.model.trainer` correctly sometimes,
+            # so we reuse the original trainer
             self.model.trainer = trainer
 
         self.accelerator.setup(trainer)

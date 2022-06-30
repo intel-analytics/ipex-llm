@@ -455,9 +455,10 @@ class Trainer(pl.Trainer):
         self, filepath: _PATH, weights_only: bool = False, storage_options: Optional[Any] = None
     ) -> None:
         """
-        When using ipex==1.9 and custom lr_schedulers for training, `save_checkpoint`
-        will raise an error of 'Unsupport storage type' because model is in 'xpu',
-        so we temporarily move model to 'cpu', then move it to 'xpu' after `save_checkpoint`.
+        When using ipex==1.9 and custom lr_schedulers for training, if set `weights_only` to
+        True,`save_checkpoint` method will raise an error of 'Unsupport storage type' because
+        model is in 'xpu', so we temporarily move model to 'cpu',
+        then move it back after `save_checkpoint`.
         """
 
         if self.use_ipex and TORCH_VERSION_LESS_1_10:
