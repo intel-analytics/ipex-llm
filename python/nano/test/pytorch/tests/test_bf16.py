@@ -13,18 +13,19 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
+import subprocess
 from unittest import TestCase
 import pytest
 import torch
 from torch import nn
 from torch.utils.data import DataLoader, TensorDataset
 from bigdl.nano.pytorch import Trainer
+from torchvision.models.resnet import resnet18
 
 
 class TestBF16(TestCase):
-    def test_bf16(self):
+    def test_bf16_common(self):
         trainer = Trainer(max_epochs=1)
-        from torchvision.models.resnet import resnet18
         model = resnet18(num_classes=10)
         loss = nn.CrossEntropyLoss()
         optimizer = torch.optim.Adam(model.parameters(), lr=0.01)
@@ -57,6 +58,28 @@ class TestBF16(TestCase):
                 return
             else:
                 raise e
+        assert y_hat.shape == (10, 10) and y_hat.dtype == torch.bfloat16
+
+    def test_bf16_with_bf_isa_support(self):
+        msg = subprocess.check_output(["lscpu"]).decode("utf-8")
+        if not "avx512_core_bf16" in msg or "amx_bf16" in msg:
+            print("BF16 instructions are not available in this machine. Exit testing...")
+            return
+
+        trainer = Trainer(max_epochs=1)
+        model = resnet18(num_classes=10)
+        loss = nn.CrossEntropyLoss()
+        optimizer = torch.optim.Adam(model.parameters(), lr=0.01)
+
+        x = torch.rand((10, 3, 256, 256))
+        y = torch.ones((10,), dtype=torch.long)
+
+        ds = TensorDataset(x, y)
+        dataloader = DataLoader(ds, batch_size=2)
+
+        pl_model = Trainer.compile(model, loss, optimizer)
+        bf16_model = trainer.quantize(pl_model, precision='bf16')
+        y_hat = bf16_model(x)
         assert y_hat.shape == (10, 10) and y_hat.dtype == torch.bfloat16
 
 
