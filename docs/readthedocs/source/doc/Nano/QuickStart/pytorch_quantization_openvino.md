@@ -21,52 +21,62 @@ pip install openvino-dev
 
 ### **Step 1: Load the data**
 ```python
+import torch
+from torchvision.io import read_image
+from torchvision import transforms
 from torchvision.datasets import OxfordIIITPet
 from torch.utils.data.dataloader import DataLoader
-from torchvision import transforms
-from torch.utils.data.dataloader import DataLoader
-data_transforms = transforms.Compose([
-        transforms.Resize(256),
-        transforms.RandomCrop(224),
-        transforms.RandomHorizontalFlip(),
-        transforms.ColorJitter(brightness=.5, hue=.3),
-        transforms.ToTensor(),
-        transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])
-    ])
-data_set = OxfordIIITPet(root="./data/", transform=data_transforms, 
-                         target_transform=transforms.Lambda(lambda label: torch.tensor(label, dtype=torch.long)))
-data_loader = DataLoader(data_set, batch_size=32, shuffle=True)
+
+train_transform = transforms.Compose([transforms.Resize(256),
+                                      transforms.RandomCrop(224),
+                                      transforms.RandomHorizontalFlip(),
+                                      transforms.ColorJitter(brightness=.5, hue=.3),
+                                      transforms.ToTensor(),
+                                      transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])])
+val_transform = transforms.Compose([transforms.Resize([224, 224]), transforms.ToTensor(), transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])])
+train_dataset = OxfordIIITPet(root = ".", transform=train_transform)
+val_dataset = OxfordIIITPet(root=".", transform=val_transform)
+# obtain training indices that will be used for validation
+indices = torch.randperm(len(train_dataset))
+val_size = len(train_dataset) // 4
+train_dataset = torch.utils.data.Subset(train_dataset, indices[:-val_size])
+val_dataset = torch.utils.data.Subset(val_dataset, indices[-val_size:])
+# prepare data loaders
+train_dataloader = DataLoader(train_dataset, batch_size=32)
 ```
 
 ### **Step 2: Prepare the Model**
 ```python
-from torchvision.models import mobilenet_v3_small
 import torch
-import torch.nn as nn
-# define your own model
+from torchvision.models import resnet18
+from bigdl.nano.pytorch import Trainer
 model_ft = resnet18(pretrained=True)
 num_ftrs = model_ft.fc.in_features
-model_ft.fc = nn.Linear(num_ftrs, len(data_set.classes))
-loss_ft = nn.CrossEntropyLoss()
+
+# Here the size of each output sample is set to 37.
+model_ft.fc = torch.nn.Linear(num_ftrs, 37)
+loss_ft = torch.nn.CrossEntropyLoss()
 optimizer_ft = torch.optim.SGD(model_ft.parameters(), lr=0.01, momentum=0.9, weight_decay=5e-4)
-from bigdl.nano.pytorch import Trainer
+
+# Compile our model with loss function, optimizer.
 model = Trainer.compile(model_ft, loss_ft, optimizer_ft)
-# (Optional) Something else, like training ...
 trainer = Trainer(max_epochs=5)
-trainer.fit(model, train_dataloader=data_loader)
+trainer.fit(model, train_dataloader=train_dataloader)
+
+# Inference/Prediction
+x = torch.stack([val_dataset[0][0], val_dataset[1][0]])
+model_ft.eval()
+y_hat = model_ft(x)
+y_hat.argmax(dim=1)
 ```
 
 ### **Step 3: Quantization using Post-training Optimization Tools**
 Accelerator='openvino' means using OpenVINO POT to do quantization. The quantization can be added as below:
 ```python
-from torchmetrics.functional import accuracy
-ov_q_model = trainer.quanize(model, accelerator='openvino', calib_dataloader=data_loader, metric=accuracy)
+from torchmetrics import Accuracy
+ov_q_model = trainer.quantize(model, accelerator="openvino", calib_dataloader=data_loader)
 
-# run simple prediction with transparent acceleration
+# run simple prediction
 batch = torch.stack([data_set[0][0], data_set[1][0]])
-y_hat = ov_q_model(batch)
+ov_q_model(batch)
 ```
-Same as you set accelerator as ONNXRuntime, it equals to converting the model from Pytorch to OpenVINO firstly and then doing quantization on the converted OpenVINO model:
-```python
-ov_model = Trainer.trace(model, accelerator='openvino', input_sample=x):
-ov_q_model = trainer.quanize(ov_model, accelerator='onnxruntime', calib_dataloader=dataloader)

@@ -14,64 +14,75 @@ pip install --pre --upgrade bigdl-nano[pytorch]
 source bigdl-nano-init
 ```
 
-Before you start with onnxruntime accelerator, you are required to install some onnx packages as follows to set up your environment with ONNXRuntime acceleration.
+Before you start with onnxruntime accelerator, you need to install some onnx packages as follows to set up your environment with ONNXRuntime acceleration.
 ```bash
 pip install onnx onnxruntime
 ```
 ### **Step 1: Load the data**
 ```python
+import torch
 from torchvision.io import read_image
-from bigdl.nano.pytorch.vision import transforms
+from torchvision import transforms
+from torchvision.datasets import OxfordIIITPet
+from torch.utils.data.dataloader import DataLoader
 
-paths = ["../Image/cat.jpg", "../Image/dog.jpg"]
-data_transform =  transforms.Compose([transforms.RandomCrop(224),
-                                     transforms.RandomHorizontalFlip(p=0.3),
-                                     transforms.ToPILImage(),
-                                     transforms.ToTensor(),
-                                     transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])])
-cat = data_transform(read_image(paths[0]))
-dog = data_transform(read_image(paths[1]))
+train_transform = transforms.Compose([transforms.Resize(256),
+                                      transforms.RandomCrop(224),
+                                      transforms.RandomHorizontalFlip(),
+                                      transforms.ColorJitter(brightness=.5, hue=.3),
+                                      transforms.ToTensor(),
+                                      transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])])
+val_transform = transforms.Compose([transforms.Resize([224, 224]), transforms.ToTensor(), transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])])
+# Apply data augmentation to the tarin_dataset
+train_dataset = OxfordIIITPet(root = ".", transform=train_transform)
+val_dataset = OxfordIIITPet(root=".", transform=val_transform)
+indices = torch.randperm(len(train_dataset))
+val_size = len(train_dataset) // 4
+train_dataset = torch.utils.data.Subset(train_dataset, indices[:-val_size])
+val_dataset = torch.utils.data.Subset(val_dataset, indices[-val_size:])
+
+train_dataloader = DataLoader(train_dataset, batch_size=32)
 ```
-Let’s have a quick look at our data<br>
-
-![](../Image/cat.jpg)
-![](../Image/dog.jpg)
 
 ### **Step 2: Prepare the Model**
 ```python
 import torch
-import torch.nn as nn
 from torchvision.models import resnet18
-# define your own model
-class Predictor(nn.Module):
-    def __init__(self):
-        super().__init__()
-        self.resnet18=resnet18(pretrained=True)
+from bigdl.nano.pytorch import Trainer
+model_ft = resnet18(pretrained=True)
+num_ftrs = model_ft.fc.in_features
 
-    def forward(self, x):
-        y_hat = self.resnet18(x)
-        return y_hat.argmax(dim=1)
-# (Optional) Something else, like training ...
-# trainer = Trainer()
-# trainer.fit(model, data_loader)
+# Here the size of each output sample is set to 37.
+model_ft.fc = torch.nn.Linear(num_ftrs, 37)
+loss_ft = torch.nn.CrossEntropyLoss()
+optimizer_ft = torch.optim.SGD(model_ft.parameters(), lr=0.01, momentum=0.9, weight_decay=5e-4)
+
+# Compile our model with loss function, optimizer.
+model = Trainer.compile(model_ft, loss_ft, optimizer_ft)
+trainer = Trainer(max_epochs=5)
+trainer.fit(model, train_dataloader=train_dataloader)
+
+# Inference/Prediction
+x = torch.stack([val_dataset[0][0], val_dataset[1][0]])
+model_ft.eval()
+y_hat = model_ft(x)
+y_hat.argmax(dim=1)
 ```
 
 ### **Step 3: Apply ONNXRumtime Acceleration**
 When you're ready, you can simply append the following part to enable your ONNXRuntime acceleration.
 ```python
-batch = torch.stack([cat, dog])
-predictor = Predictor()
-predictor.eval()
-predictor(batch)
 # trace your model as an ONNXRuntime model
 # The argument `input_sample` is not required in the following cases:
 # you have run `trainer.fit` before trace
-# The Model has `example_input_array` set
+# Model has `example_input_array` set
+# Model is a LightningModule with any dataloader attached.
 from bigdl.nano.pytorch import Trainer
-ort_predictor = Trainer.trace(predictor, accelerator="onnxruntime", input_sample=batch)
+ort_model = Trainer.trace(model_ft, accelerator="onnxruntime", input_sample=torch.rand(1, 3, 224, 224))
 
 # The usage is almost the same with any PyTorch module
-ort_predictor(batch)
+y_hat = ort_model(x)
+y_hat.argmax(dim=1)
 ```
 - Note
-    `ort_predictor` is not trainable any more, so you can't use like trainer.fit(ort_model, dataloader)
+    `ort_model` is not trainable any more, so you can't use like trainer.fit(ort_model, dataloader)
