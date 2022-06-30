@@ -126,12 +126,6 @@ class _RayLauncher(_SpawnLauncher):
             for i in range(strategy.num_workers)
         ]
 
-        not_ready = futures
-        while not_ready:
-            ready, not_ready = ray.wait(not_ready, timeout=0)
-            ray.get(ready)
-        ray.get(ready)
-
         results = ray.get(futures)
 
         # Get the results, checkpoint path, and model weights from worker 0.

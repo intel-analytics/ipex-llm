@@ -80,9 +80,16 @@ class _DDPSpawnLauncher(_SpawnLauncher):
         else:
             cpu_procs = self._strategy.cpu_for_each_process
 
-        # fix bug
-        # args[1] is dataloader, args[3] and args[4] is datamodule
+        # reset datamodule to fix bug:
+        # in pytorch lightning 1.6, `datamodule` has a `trainer` member,
+        # if this datamodule has been used for training, its `trainer` member will refers
+        # to the previous trainer, which will causes errors when creating child processes.
+        # pytorch lightning 1.4 resets datamodule automatically before creating child processes,
+        # so we do not need to do this, but 1.6 resets datamodule after creating child processes,
+        # so we must reset datamodule here.
         if self._strategy.use_ipex and TORCH_VERSION_LESS_1_10:
+            # args[1] is dataloader, args[3] is datamodule when training,
+            # and args[4] is datamodule when testing
             if isinstance(args[1], LightningDataModule):
                 args[1].trainer = None
             elif isinstance(args[3], LightningDataModule):

@@ -48,7 +48,7 @@ def get_input_example(model, input_sample):
                     input_sample = tuple(next(iter(dataloader)))[:-1]
                     break
                 except Exception as _e:
-                    input_sample = None
+                    pass
 
             if input_sample is None:
                 try:
