@@ -4,6 +4,7 @@ ARG HTTPS_PROXY_HOST
 ARG HTTPS_PROXY_PORT
 ARG JDK_VERSION=8u192
 ARG SPARK_VERSION=3.1.2
+ARG BIGDL_VERSION=2.1.0-SNAPSHOT
 
 # stage.1 java & spark
 FROM ubuntu:18.04 AS builder
@@ -44,13 +45,29 @@ RUN cd /home && \
     wget $SPARK_JAR_REPO_URL/spark-encrypt-io-0.2-SNAPSHOT.jar -O spark-encrypt-io.jar
 
 
-# stage.2 kms-util
+# stage.2 bigdl
+FROM ubuntu:18.04 as bigdl
+ARG BIGDL_VERSION
+ARG SPARK_VERSION
+ENV SPARK_VERSION               ${SPARK_VERSION}
+ENV BIGDL_VERSION               ${BIGDL_VERSION}
+ENV BIGDL_HOME                  /bigdl-${BIGDL_VERSION}
+RUN apt-get update --fix-missing && \
+    apt-get install -y apt-utils curl wget unzip git
+RUN wget https://raw.githubusercontent.com/intel-analytics/analytics-zoo/bigdl-2.0/docker/hyperzoo/download-bigdl.sh && \
+    chmod a+x ./download-bigdl.sh
+RUN ./download-bigdl.sh && \
+    rm bigdl*.zip
+
+
+# stage.3 kms-util
 FROM ubuntu:18.04
 ARG EHSM_KMS_BRANCH_VERSION=main
 ARG SPARK_VERSION
 ENV SPARK_VERSION       ${SPARK_VERSION}
 ENV JAVA_HOME           /opt/jdk8
 ENV SPARK_HOME          /opt/spark-${SPARK_VERSION}
+ENV BIGDL_HOME          /opt/bigdl-${BIGDL_VERSION}
 ENV PATH                ${JAVA_HOME}/bin:${SPARK_HOME}/bin:${PATH}
 
 # Step 1. Install requirement tools
@@ -77,6 +94,7 @@ ADD ./entrypoint.sh /home/entrypoint.sh
 COPY --from=builder /opt/jdk /opt/jdk8
 COPY --from=builder /opt/spark-${SPARK_VERSION} /opt/spark-${SPARK_VERSION}
 COPY --from=builder /home/spark-encrypt-io.jar /home/spark-encrypt-io.jar
+COPY --from=bigdl /bigdl-${BIGDL_VERSION} ${BIGDL_HOME}
 
 # python
 RUN apt-get install -y python3-minimal && \
