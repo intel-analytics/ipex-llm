@@ -36,11 +36,12 @@ val_transform = transforms.Compose([transforms.Resize([224, 224]), transforms.To
 # Apply data augmentation to the tarin_dataset
 train_dataset = OxfordIIITPet(root = ".", transform=train_transform)
 val_dataset = OxfordIIITPet(root=".", transform=val_transform)
+# obtain training indices that will be used for validation
 indices = torch.randperm(len(train_dataset))
 val_size = len(train_dataset) // 4
 train_dataset = torch.utils.data.Subset(train_dataset, indices[:-val_size])
 val_dataset = torch.utils.data.Subset(val_dataset, indices[-val_size:])
-
+# prepare data loaders
 train_dataloader = DataLoader(train_dataset, batch_size=32)
 ```
 
