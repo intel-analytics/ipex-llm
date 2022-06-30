@@ -3,7 +3,7 @@ AutoML Overview
 
 Nano provides built-in AutoML support through hyperparameter optimization.
 
-By simply changing imports, you are able to search the model architecture (e.g. by specifying search spaces in layer/activation/function arguments when defining the model), or the training procedure (e.g. by specifying search spaces in `learning_rate` or `batch_size`). You can simply use `search` on Model (for tensorflow) or on Trainier (for pytorch) to launch search trials, and `search_summary` to review the search results.
+By simply changing imports, you are able to search the model architecture (e.g. by specifying search spaces in layer/activation/function arguments when defining the model), or the training procedure (e.g. by specifying search spaces in ``learning_rate`` or ``batch_size``). You can simply use ``search`` on Model (for tensorflow) or on Trainier (for pytorch) to launch search trials, and ``search_summary`` to review the search results.
 
 Under the hood, the objects (layers, activations, model, etc.) are implicitly turned into searchable objects at creation, which allows search spaces to be specified in their init arguments. Nano HPO collects those search spaces and passes them to the underlying HPO engine (i.e. Optuna) which generates hyperparameter suggestions accordingly. The instantiation and execution of the corresponding objects are delayed until the hyperparameter values are available in each trial.
 
@@ -15,16 +15,18 @@ If you have not installed BigDL-Nano, follow [Nano Install Guide](../Overview/na
 
 Next, install a few dependencies required for Nano HPO using below commands.
 
-```bash
-pip install ConfigSpace
-pip install optuna
-```
+.. code-block:: bash
+    :linenos:
+
+    $pip install ConfigSpace
+    $pip install optuna
+
 
 
 Search Spaces
 =============
 
-Search spaces are value range specifications that the search engine uses for sampling hyperparameters. The available search spaces in Nano HPO is defined in `bigdl.nano.automl.hpo.space`. Refer to [Search Space API doc]() for more details.
+Search spaces are value range specifications that the search engine uses for sampling hyperparameters. The available search spaces in Nano HPO is defined in ``bigdl.nano.automl.hpo.space``. Refer to [Search Space API doc]() for more details.
 
 
 
@@ -35,126 +37,149 @@ For Tensorflow Users
 Enable/Disable HPO for tensorflow
 ---------------------------------
 
-For tensorflow training, you should call `hpo_config.enable_hpo_tf` before using Nano HPO.
+For tensorflow training, you should call ``hpo_config.enable_hpo_tf`` before using Nano HPO.
 
-`hpo_config.enable_hpo_tf` will dynamically add searchable layers, activations, functions, optimizers, etc into the `bigdl.nano.tf` module. When importing layers, you need to change the imports from `tf.keras.layers` to `bigdl.nano.tf.keras.layers`, so that you can specify search spaces in their init arguments. Note even if you don't need to search the model architecture, you still need to change the imports to use HPO.
+``hpo_config.enable_hpo_tf`` will dynamically add searchable layers, activations, functions, optimizers, etc into the ``bigdl.nano.tf`` module. When importing layers, you need to change the imports from ``tf.keras.layers`` to ``bigdl.nano.tf.keras.layers``, so that you can specify search spaces in their init arguments. Note even if you don't need to search the model architecture, you still need to change the imports to use HPO.
 
-```python
-import bigdl.nano.automl as nano_automl
-nano_automl.hpo_config.enable_hpo_tf()
-```
+.. code-block:: py
+    :linenos:
+    :emphasize-lines: 2
 
-To disable HPO, use `hpo_config.disable_hpo_tf`. This will remove the searchable objects from `bigdl.nano.tf` module.
+    import bigdl.nano.automl as nano_automl
+    nano_automl.hpo_config.enable_hpo_tf()
 
-```python
-import bigdl.nano.automl as nano_automl
-nano_automl.hpo_config.disable_hpo_tf()
-```
+
+To disable HPO, use ``hpo_config.disable_hpo_tf``. This will remove the searchable objects from ``bigdl.nano.tf`` module.
+
+.. code-block:: py
+    :linenos:
+    :emphasize-lines: 2
+
+    import bigdl.nano.automl as nano_automl
+    nano_automl.hpo_config.disable_hpo_tf()
+
 
 Search the Model Architecture
 -----------------------------
 
-To search different versions of your model, you can specify search spaces when defining the model using either sequential API, functional API or by subclassing `tf.keras.Model`.
+To search different versions of your model, you can specify search spaces when defining the model using either sequential API, functional API or by subclassing ``tf.keras.Model``.
 
 using Sequential API
 ^^^^^^^^^^^^^^^^^^^^
 
-You can specify search spaces in layer arguments. Note that search spaces can only be specified in key-word argument (which means `Dense(space.Int(...))` should be changed to `Dense(units=space.Int(...))`). Remember to import `Sequential` from `bigdl.nano.automl.tf.keras` instead of `tensorflow.keras`
+You can specify search spaces in layer arguments. Note that search spaces can only be specified in key-word argument (which means ``Dense(space.Int(...))`` should be changed to ``Dense(units=space.Int(...))``). Remember to import ``Sequential`` from ``bigdl.nano.automl.tf.keras`` instead of ``tensorflow.keras``
 
-```python
-from bigdl.nano.tf.keras.layers import Dense, Conv2D, Flatten
-from bigdl.nano.automl.tf.keras import Sequential
-model = Sequential()
-model.add(Conv2D(
-    filters=space.Categorical(32, 64),
-    kernel_size=space.Categorical(3, 5),
-    strides=space.Categorical(1, 2),
-    activation=space.Categorical("relu", "linear"),
-    input_shape=input_shape))
-model.add(Flatten())
-model.add(Dense(10, activation="softmax"))
-```
+.. code-block:: py
+    :linenos:
+    :emphasize-lines: 5,6,7,8
+
+    from bigdl.nano.tf.keras.layers import Dense, Conv2D, Flatten
+    from bigdl.nano.automl.tf.keras import Sequential
+    model = Sequential()
+    model.add(Conv2D(
+        filters=space.Categorical(32, 64),
+        kernel_size=space.Categorical(3, 5),
+        strides=space.Categorical(1, 2),
+        activation=space.Categorical("relu", "linear"),
+        input_shape=input_shape))
+    model.add(Flatten())
+    model.add(Dense(10, activation="softmax"))
+
 
 using Functional API
 ^^^^^^^^^^^^^^^^^^^^
 
-You can specify search spaces in layer arguments. Note that if a layer is used more than once in the model, we strongly suggest you specify a `prefix` for each search space in such layers to distinguish them, or they will share the same search space (the last space will override all previous definition), as shown in the below example. Remember to import `Model` from `bigdl.nano.automl.tf.keras` instead of `tensorflow.keras`
+You can specify search spaces in layer arguments. Note that if a layer is used more than once in the model, we strongly suggest you specify a ``prefix`` for each search space in such layers to distinguish them, or they will share the same search space (the last space will override all previous definition), as shown in the below example. Remember to import ``Model`` from ``bigdl.nano.automl.tf.keras`` instead of ``tensorflow.keras``.
 
-```python
-import bigdl.nano.automl.hpo.space as space
-from bigdl.nano.tf.keras import Input
-from bigdl.nano.tf.keras.layers import Dense, Dropout
-from bigdl.nano.automl.tf.keras import Model
+.. code-block:: py
+    :linenos:
+    :emphasize-lines: 6,7,8
 
-inputs = Input(shape=(784,))
-x = Dense(units=space.Categorical(8,16,prefix='dense_1'), activation="linear")(inputs)
-x = Dense(units=space.Categorical(32,64,prefix='dense_2'), activation="tanh")(x)
-x = Dropout(rate=space.Real(0.1,0.5, prefix='dropout'))(x)
-outputs = Dense(units=10)(x)
-model = Model(inputs=inputs, outputs=outputs, name="mnist_model")
-```
+    import bigdl.nano.automl.hpo.space as space
+    from bigdl.nano.tf.keras import Input
+    from bigdl.nano.tf.keras.layers import Dense, Dropout
+    from bigdl.nano.automl.tf.keras import Model
+
+    inputs = Input(shape=(784,))
+    x = Dense(units=space.Categorical(8,16,prefix='dense_1'), activation="linear")(inputs)
+    x = Dense(units=space.Categorical(32,64,prefix='dense_2'), activation="tanh")(x)
+    x = Dropout(rate=space.Real(0.1,0.5, prefix='dropout'))(x)
+    outputs = Dense(units=10)(x)
+    model = Model(inputs=inputs, outputs=outputs, name="mnist_model")
+
 
 by Subclassing tf.keras.Model
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-For models defined by subclassing tf.keras.Model, use the decorator `@hpo.tfmodel` to turn the model into a searchable object. Then you will able to specify either search spaces or normal values in the model init arguments.
+For models defined by subclassing tf.keras.Model, use the decorator ``@hpo.tfmodel`` to turn the model into a searchable object. Then you will able to specify either search spaces or normal values in the model init arguments.
 
-```python
-import bigdl.nano.automl.hpo.space as space
-import bigdl.nano.automl.hpo as hpo
-@hpo.tfmodel()
-class MyModel(tf.keras.Model):
-    def __init__(self, filters, kernel_size, strides, num_classes=10):
-        super().__init__()
-        self.conv1 = tf.keras.layers.Conv2D(filters=filters,
-                            kernel_size=kernel_size,
-                            strides=strides,
-                            activation="relu")
-        self.max1  = tf.keras.layers.MaxPooling2D(3)
-        self.bn1   = tf.keras.layers.BatchNormalization()
+.. code-block:: py
+    :linenos:
+    :emphasize-lines: 3,25,26,27
 
-        self.gap   = tf.keras.layers.GlobalAveragePooling2D()
-        self.dense = tf.keras.layers.Dense(num_classes)
+    import bigdl.nano.automl.hpo.space as space
+    import bigdl.nano.automl.hpo as hpo
+    @hpo.tfmodel()
+    class MyModel(tf.keras.Model):
+        def __init__(self, filters, kernel_size, strides, num_classes=10):
+            super().__init__()
+            self.conv1 = tf.keras.layers.Conv2D(filters=filters,
+                                kernel_size=kernel_size,
+                                strides=strides,
+                                activation="relu")
+            self.max1  = tf.keras.layers.MaxPooling2D(3)
+            self.bn1   = tf.keras.layers.BatchNormalization()
 
-    def call(self, inputs, training=False):
-        x = self.conv1(inputs)
-        x = self.max1(x)
-        x = self.bn1(x)
-        x = self.gap(x)
-        return self.dense(x)
+            self.gap   = tf.keras.layers.GlobalAveragePooling2D()
+            self.dense = tf.keras.layers.Dense(num_classes)
 
-model = MyModel(
-    filters=hpo.space.Categorical(32, 64),
-    kernel_size=hpo.space.Categorical(3, 5),
-    strides=hpo.space.Categorical(1, 2)
-)
-```
+        def call(self, inputs, training=False):
+            x = self.conv1(inputs)
+            x = self.max1(x)
+            x = self.bn1(x)
+            x = self.gap(x)
+            return self.dense(x)
+
+    model = MyModel(
+        filters=hpo.space.Categorical(32, 64),
+        kernel_size=hpo.space.Categorical(3, 5),
+        strides=hpo.space.Categorical(1, 2)
+    )
+
+
 
 Search the Learning Rate
 ------------------------
 
-To search the learning rate, specify search space in `learning_rate` argument in the optimizer argument in `model.compile`. Remember to import the optimizer from `bigdl.nano.tf.optimizers` instead of `tf.keras.optimizers`.
+To search the learning rate, specify search space in ``learning_rate`` argument in the optimizer argument in ``model.compile``. Remember to import the optimizer from ``bigdl.nano.tf.optimizers`` instead of ``tf.keras.optimizers``.
 
-```python
-import bigdl.nano.automl.hpo.space as space
-from bigdl.nano.tf.optimizers import RMSprop
-model.compile(
-    loss=keras.losses.SparseCategoricalCrossentropy(from_logits=True),
-    optimizer=RMSprop(learning_rate=space.Real(0.0001, 0.01, log=True)),
-    metrics=["accuracy"],
-)
-```
+.. code-block:: py
+    :linenos:
+    :emphasize-lines: 5
+
+    import bigdl.nano.automl.hpo.space as space
+    from bigdl.nano.tf.optimizers import RMSprop
+    model.compile(
+        loss=keras.losses.SparseCategoricalCrossentropy(from_logits=True),
+        optimizer=RMSprop(learning_rate=space.Real(0.0001, 0.01, log=True)),
+        metrics=["accuracy"],
+    )
+
 
 Search the Batch Size
 ----------------------
 
-To search the batch size, specify search space in `batch_size` argument in `model.search`.
-```python
-import bigdl.nano.automl.hpo.space as space
-model.search(n_trials=2, target_metric='accuracy', direction="maximize",
-    x=x_train, y=y_train,validation_data=(x_valid, y_valid),
-    batch_size=space.Categorical(128,64))
-```
+To search the batch size, specify search space in ``batch_size`` argument in ``model.search``.
+
+.. code-block:: py
+    :linenos:
+    :emphasize-lines: 4
+
+    import bigdl.nano.automl.hpo.space as space
+    model.search(n_trials=2, target_metric='accuracy', direction="maximize",
+        x=x_train, y=y_train,validation_data=(x_valid, y_valid),
+        batch_size=space.Categorical(128,64))
+
 
 Launch Hyperparameter Search and Review the Results
 ----------------------------------------------------
@@ -294,7 +319,6 @@ To use a persistent storage, specify `storage` with an RDB url (e.g SQLlite, MyS
 #### Example
 
 
-
 .. tabs::
 
    .. code-tab:: c
@@ -314,38 +338,6 @@ To use a persistent storage, specify `storage` with an RDB url (e.g SQLlite, MyS
          trainer.search(study_name=name, storage=storage,...)
          # the resumed search
          trainer.search(study_name=name, storage=storage, resume=True,...)
-
-
-.. tabs::
-
-   .. code-tab:: c
-
-         C Main Function
-
-   .. code-tab:: c++
-
-         C++ Main Function
-
-   .. code-tab:: py
-
-         Python Main Function
-
-   .. code-tab:: java
-
-         Java Main Function
-
-   .. code-tab:: julia
-
-         Julia Main Function
-
-   .. code-tab:: fortran
-
-         Fortran Main Function
-
-   .. code-tab:: r R
-
-         R Main Function
-
 
 
 If the model/trainer object is still accessible along the searches (e.g. in a running jupyter notebook), the specification of `storage` and `study_name` can be omitted. Simply call `search` with `resume=True` to resume search.
@@ -418,18 +410,20 @@ trainer.search(study_name=name,
 ### Analysis and Visualization
 
 
-<script type="text/javascript">
-var params = {
-  'url': 'https://docs.readthedocs.io/en/latest/automation-rules.html%23creating-an-automation-rule',
-  // 'doctool': 'sphinx',
-  // 'doctoolversion': '4.2.0',
-};
-var url = 'https://readthedocs.org/api/v3/embed/?' + $.param(params);
-$.get(url, function(data) {
-  $('#help-container').content(data['content']);
-});
-</script>
+.. code-block:: html
 
-<div id="help-container"></div>
+    <script type="text/javascript">
+    var params = {
+      'url': 'https://docs.readthedocs.io/en/latest/automation-rules.html%23creating-an-automation-rule',
+      // 'doctool': 'sphinx',
+      // 'doctoolversion': '4.2.0',
+    };
+    var url = 'https://readthedocs.org/api/v3/embed/?' + $.param(params);
+    $.get(url, function(data) {
+      $('#help-container').content(data['content']);
+    });
+    </script>
+
+    <div id="help-container"></div>
 
 
