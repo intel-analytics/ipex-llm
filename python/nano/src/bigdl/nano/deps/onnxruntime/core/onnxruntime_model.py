@@ -30,7 +30,7 @@ class ONNXRuntimeModel:
         '''
         This function run through the onnxruntime forwarding step
         '''
-        if len(self._forward_args) != len(inputs):
+        if len(self._forward_args) < len(inputs):
             invalidInputError(False, "The length of inputs is inconsistent with the length of "
                                      "ONNXRuntime's inputs, there may be some redundant inputs.")
         inputs = dict(zip(self._forward_args, inputs))
