@@ -15,7 +15,7 @@ If you have not installed BigDL-Nano, follow [Nano Install Guide](../Overview/na
 
 Next, install a few dependencies required for Nano HPO using below commands.
 
-.. code-block:: bash
+.. code-block:: console
 
     pip install ConfigSpace
     pip install optuna
@@ -41,7 +41,6 @@ For tensorflow training, you should call ``hpo_config.enable_hpo_tf`` before usi
 ``hpo_config.enable_hpo_tf`` will dynamically add searchable layers, activations, functions, optimizers, etc into the ``bigdl.nano.tf`` module. When importing layers, you need to change the imports from ``tf.keras.layers`` to ``bigdl.nano.tf.keras.layers``, so that you can specify search spaces in their init arguments. Note even if you don't need to search the model architecture, you still need to change the imports to use HPO.
 
 .. code-block:: python
-    :emphasize-lines: 2
     :linenos:
 
     import bigdl.nano.automl as nano_automl
@@ -52,7 +51,6 @@ To disable HPO, use ``hpo_config.disable_hpo_tf``. This will remove the searchab
 
 .. code-block:: python
     :linenos:
-    :emphasize-lines: 2
 
     import bigdl.nano.automl as nano_automl
     nano_automl.hpo_config.disable_hpo_tf()
@@ -70,7 +68,6 @@ You can specify search spaces in layer arguments. Note that search spaces can on
 
 .. code-block:: python
     :linenos:
-    :emphasize-lines: 5,6,7,8
 
     from bigdl.nano.tf.keras.layers import Dense, Conv2D, Flatten
     from bigdl.nano.automl.tf.keras import Sequential
@@ -92,7 +89,6 @@ You can specify search spaces in layer arguments. Note that if a layer is used m
 
 .. code-block:: python
     :linenos:
-    :emphasize-lines: 6,7,8
 
     import bigdl.nano.automl.hpo.space as space
     from bigdl.nano.tf.keras import Input
@@ -114,7 +110,6 @@ For models defined by subclassing tf.keras.Model, use the decorator ``@hpo.tfmod
 
 .. code-block:: python
     :linenos:
-    :emphasize-lines: 3,25,26,27
 
     import bigdl.nano.automl.hpo.space as space
     import bigdl.nano.automl.hpo as hpo
@@ -154,7 +149,6 @@ To search the learning rate, specify search space in ``learning_rate`` argument 
 
 .. code-block:: python
     :linenos:
-    :emphasize-lines: 5
 
     import bigdl.nano.automl.hpo.space as space
     from bigdl.nano.tf.optimizers import RMSprop
@@ -172,7 +166,6 @@ To search the batch size, specify search space in ``batch_size`` argument in ``m
 
 .. code-block:: python
     :linenos:
-    :emphasize-lines: 4
 
     import bigdl.nano.automl.hpo.space as space
     model.search(n_trials=2, target_metric='accuracy', direction="maximize",
@@ -191,7 +184,6 @@ Finally, ``model.fit`` will automatically fit the model using the best set of hy
 
 .. code-block:: python
     :linenos:
-    :emphasize-lines: 4
 
     model = ... # define the model
     model.compile(...)
@@ -217,7 +209,6 @@ To search the model architecture, use the decorator ``@hpo.plmodel()`` to turn t
 
 .. code-block:: python
     :linenos:
-    :emphasize-lines: 4
 
     import bigdl.nano.automl.hpo.space as space
     import bigdl.nano.automl.hpo as hpo
@@ -255,8 +246,8 @@ Search the Learning Rate
 .. code-block:: python
     :linenos:
 
-import bigdl.nano.automl.hpo.space as space
-import bigdl.nano.automl.hpo as hpo
+    import bigdl.nano.automl.hpo.space as space
+    import bigdl.nano.automl.hpo as hpo
 
     @hpo.plmodel()
     class MyModel(pl.LightningModule):
@@ -397,7 +388,7 @@ Create a new file with name ``setup_db.sql``, paste the below contents.
 
 Run below command
 
-.. code-block:: bash
+.. code-block:: console
 
     $ sudo mysql -u root < setup_db.sql
 
@@ -408,18 +399,18 @@ The above command creates a new user ``bigdlhpo`` and a new database ``example``
 Install MySQL client for python
 -------------------------------
 
-Install mysqlclient so that search can access MySQL databases from python.
+Install ``mysqlclient`` so that search can access MySQL databases from python.
 
-.. code-block:: bash
+.. code-block:: console
 
     pip install mysqlclient
 
 
 
 Run Parallel Search
---------
+-------------------
 
-Specify ``storage`` to the MySQL database ``example`` we just created as user ``bigdlhpo``, specify ``study_name`` and also set ``n_parallels=8``.
+In search, specify ``storage`` to the MySQL database ``example`` we just created as user ``bigdlhpo``, specify ``study_name`` and also set ``n_parallels=8``.
 
 .. tabs::
 
@@ -427,10 +418,10 @@ Specify ``storage`` to the MySQL database ``example`` we just created as user ``
 
         .. code-block:: python
 
-        name = "parallel-example-tf"
-        storage = "mysql://bigdlhpo@localhost/example"
-        #the first search from scratch
-        model.search(study_name=name,
+         name = "parallel-example-tf"
+         storage = "mysql://bigdlhpo@localhost/example"
+         # the first search from scratch
+         model.search(study_name=name,
                     storage=storage,
                     n_parallels=8,
                     ...)
@@ -439,10 +430,10 @@ Specify ``storage`` to the MySQL database ``example`` we just created as user ``
 
         .. code-block:: python
 
-        name = "parallel-example-torch"
-        storage = "mysql://bigdlhpo@localhost/example"
-        #the first search from scratch
-        trainer.search(study_name=name,
+         name = "parallel-example-torch"
+         storage = "mysql://bigdlhpo@localhost/example"
+         #the first search from scratch
+         trainer.search(study_name=name,
                     storage=storage,
                     n_parallels=8,
                     ...)
@@ -467,6 +458,5 @@ Analysis and Visualization
     });
     </script>
 
-    <div id="help-container"></div>
 
 
