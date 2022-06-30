@@ -280,7 +280,7 @@ jobs:
           if [ ! -z "${{matrix.tf-version}}" ]; then
             pip install ${{matrix.tf-version}}
           fi
-          pip install horovod==0.24.2
+          pip install --no-cache-dir horovod==0.24.2
           pip install pytest
           source bigdl-nano-init
           bash python/nano/test/run-nano-tf-horovod-tests.sh
