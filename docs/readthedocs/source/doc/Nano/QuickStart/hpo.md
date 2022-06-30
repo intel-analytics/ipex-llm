@@ -281,27 +281,58 @@ To use a persistent storage, specify `storage` with an RDB url (e.g SQLlite, MyS
 
 #### Example
 
-.. code-block:: RST
 
-   .. tabs::
 
-      .. code-tab:: py
+.. tabs::
 
-            name = "resume-example"
-            storage = "sqlite:///example.db"
-            #the first search from scratch
-            model.search(study_name=name, storage=storage,...)
-            # the resumed search
-            model.search(study_name=name, storage=storage, resume=True,...)
+   .. code-tab:: c
 
-      .. code-tab:: py
+         name = "resume-example"
+         storage = "sqlite:///example.db"
+         #the first search from scratch
+         model.search(study_name=name, storage=storage,...)
+         # the resumed search
+         model.search(study_name=name, storage=storage, resume=True,...)
 
-        name = "resume-example"
-        storage = "sqlite:///example.db"
-        #the first search from scratch
-        trainer.search(study_name=name, storage=storage,...)
-        # the resumed search
-        trainer.search(study_name=name, storage=storage, resume=True,..)
+   .. code-tab:: py
+
+         name = "resume-example"
+         storage = "sqlite:///example.db"
+         #the first search from scratch
+         trainer.search(study_name=name, storage=storage,...)
+         # the resumed search
+         trainer.search(study_name=name, storage=storage, resume=True,...)
+
+
+.. tabs::
+
+   .. code-tab:: c
+
+         C Main Function
+
+   .. code-tab:: c++
+
+         C++ Main Function
+
+   .. code-tab:: py
+
+         Python Main Function
+
+   .. code-tab:: java
+
+         Java Main Function
+
+   .. code-tab:: julia
+
+         Julia Main Function
+
+   .. code-tab:: fortran
+
+         Fortran Main Function
+
+   .. code-tab:: r R
+
+         R Main Function
 
 
 
