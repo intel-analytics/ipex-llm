@@ -447,7 +447,11 @@ Analysis and Visualization
 
 .. raw:: html
 
-    :file: visualization.html
+   <p class="rajout_vert">I am class rajout_vert</p>
 
+
+.. raw:: html
+
+       <iframe width="560" height="315" src="visualization.html" frameborder="0" allowfullscreen></iframe>
 
 
