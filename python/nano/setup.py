@@ -66,9 +66,9 @@ def download_libs(url: str):
 
 def setup_package():
 
-    tensorflow_requires = ["intel-tensorflow==2.7.0",
-                           "keras==2.7.0",
-                           "tensorflow-estimator==2.7.0"]
+    tensorflow_requires = ["intel-tensorflow==2.9.1",
+                           "keras==2.9.0",
+                           "tensorflow-estimator==2.9.0"]
 
     pytorch_requires = ["torch==1.11.0",
                         "torchvision==0.12.0",
