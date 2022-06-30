@@ -27,7 +27,7 @@ object HTTPUtil {
   def postRequest(url: String, postString: String): JSONObject = {
     val response: String = retrieveResponse(url, postString)
     val jsonObj: JSONObject = new JSONObject(response)
-    val result: JSONObject = new JSONObject(jsonObj.getString("result"))
+    val result: JSONObject = jsonObj.getJSONObject("result")
     result
   }
 
