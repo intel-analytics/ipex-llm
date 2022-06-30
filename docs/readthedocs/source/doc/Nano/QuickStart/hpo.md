@@ -281,31 +281,28 @@ To use a persistent storage, specify `storage` with an RDB url (e.g SQLlite, MyS
 
 #### Example
 
-.. tabs::
+.. code-block:: RST
 
-   .. tab::
+   .. tabs::
 
+      .. code-tab:: py
 
-    .. tab:: Tensorflow
-    ```python
-    name = "resume-example"
-    storage = "sqlite:///example.db"
-    #the first search from scratch
-    model.search(study_name=name, storage=storage,...)
-    # the resumed search
-    model.search(study_name=name, storage=storage, resume=True,...)
-    ```
+            name = "resume-example"
+            storage = "sqlite:///example.db"
+            #the first search from scratch
+            model.search(study_name=name, storage=storage,...)
+            # the resumed search
+            model.search(study_name=name, storage=storage, resume=True,...)
 
-    .. tab:: PyTorch
+      .. code-tab:: py
 
-    ```python
-    name = "resume-example"
-    storage = "sqlite:///example.db"
-    #the first search from scratch
-    trainer.search(study_name=name, storage=storage,...)
-    # the resumed search
-    trainer.search(study_name=name, storage=storage, resume=True,..)
-    ```
+        name = "resume-example"
+        storage = "sqlite:///example.db"
+        #the first search from scratch
+        trainer.search(study_name=name, storage=storage,...)
+        # the resumed search
+        trainer.search(study_name=name, storage=storage, resume=True,..)
+
 
 
 If the model/trainer object is still accessible along the searches (e.g. in a running jupyter notebook), the specification of `storage` and `study_name` can be omitted. Simply call `search` with `resume=True` to resume search.
