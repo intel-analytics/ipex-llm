@@ -61,3 +61,5 @@ def inject_function(target_cls, *injected_cls):
                     old_f = getattr(target_cls, name)
                     setattr(target_cls, name + "_old", old_f)
                     setattr(target_cls, name, getattr(cls, name))
+                else:
+                    setattr(target_cls, name, getattr(cls, name))
