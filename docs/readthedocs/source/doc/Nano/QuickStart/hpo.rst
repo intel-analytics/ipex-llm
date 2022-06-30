@@ -1,4 +1,5 @@
-# AutoML Overview
+AutoML Overview
+***************
 
 Nano provides built-in AutoML support through hyperparameter optimization.
 
@@ -6,9 +7,9 @@ By simply changing imports, you are able to search the model architecture (e.g. 
 
 Under the hood, the objects (layers, activations, model, etc.) are implicitly turned into searchable objects at creation, which allows search spaces to be specified in their init arguments. Nano HPO collects those search spaces and passes them to the underlying HPO engine (i.e. Optuna) which generates hyperparameter suggestions accordingly. The instantiation and execution of the corresponding objects are delayed until the hyperparameter values are available in each trial.
 
----
 
-### Install
+Install
+=======
 
 If you have not installed BigDL-Nano, follow [Nano Install Guide](../Overview/nano.md#2-install) to install it according to your system and framework (i.e. tensorflow or pytorch).
 
@@ -19,18 +20,20 @@ pip install ConfigSpace
 pip install optuna
 ```
 
----
 
-### Search Spaces
+Search Spaces
+=============
 
 Search spaces are value range specifications that the search engine uses for sampling hyperparameters. The available search spaces in Nano HPO is defined in `bigdl.nano.automl.hpo.space`. Refer to [Search Space API doc]() for more details.
 
----
-
-### For Tensorflow Users
 
 
-#### Enable/Disable HPO for tensorflow
+For Tensorflow Users
+====================
+
+
+Enable/Disable HPO for tensorflow
+---------------------------------
 
 For tensorflow training, you should call `hpo_config.enable_hpo_tf` before using Nano HPO.
 
@@ -48,11 +51,13 @@ import bigdl.nano.automl as nano_automl
 nano_automl.hpo_config.disable_hpo_tf()
 ```
 
-####  Search the Model Architecture
+Search the Model Architecture
+-----------------------------
 
 To search different versions of your model, you can specify search spaces when defining the model using either sequential API, functional API or by subclassing `tf.keras.Model`.
 
-##### using Sequential API
+using Sequential API
+^^^^^^^^^^^^^^^^^^^^
 
 You can specify search spaces in layer arguments. Note that search spaces can only be specified in key-word argument (which means `Dense(space.Int(...))` should be changed to `Dense(units=space.Int(...))`). Remember to import `Sequential` from `bigdl.nano.automl.tf.keras` instead of `tensorflow.keras`
 
@@ -70,7 +75,8 @@ model.add(Flatten())
 model.add(Dense(10, activation="softmax"))
 ```
 
-##### using Functional API
+using Functional API
+^^^^^^^^^^^^^^^^^^^^
 
 You can specify search spaces in layer arguments. Note that if a layer is used more than once in the model, we strongly suggest you specify a `prefix` for each search space in such layers to distinguish them, or they will share the same search space (the last space will override all previous definition), as shown in the below example. Remember to import `Model` from `bigdl.nano.automl.tf.keras` instead of `tensorflow.keras`
 
@@ -88,7 +94,8 @@ outputs = Dense(units=10)(x)
 model = Model(inputs=inputs, outputs=outputs, name="mnist_model")
 ```
 
-##### by Subclassing tf.keras.Model
+by Subclassing tf.keras.Model
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 For models defined by subclassing tf.keras.Model, use the decorator `@hpo.tfmodel` to turn the model into a searchable object. Then you will able to specify either search spaces or normal values in the model init arguments.
 
@@ -123,7 +130,9 @@ model = MyModel(
 )
 ```
 
-#### Search the Learning Rate
+Search the Learning Rate
+------------------------
+
 To search the learning rate, specify search space in `learning_rate` argument in the optimizer argument in `model.compile`. Remember to import the optimizer from `bigdl.nano.tf.optimizers` instead of `tf.keras.optimizers`.
 
 ```python
@@ -135,7 +144,9 @@ model.compile(
     metrics=["accuracy"],
 )
 ```
-#### Search the Batch Size
+
+Search the Batch Size
+----------------------
 
 To search the batch size, specify search space in `batch_size` argument in `model.search`.
 ```python
@@ -145,7 +156,8 @@ model.search(n_trials=2, target_metric='accuracy', direction="maximize",
     batch_size=space.Categorical(128,64))
 ```
 
-#### Launch Hyperparameter Search and Review the Results
+Launch Hyperparameter Search and Review the Results
+----------------------------------------------------
 
 To launch hyperparameter search, call `model.search` after compile, as shown below. `model.search` runs the `n_trials` number of trials (meaning `n_trials` set of hyperparameter combinations are searched), and optimizes the `target_metric` in the specified `direction`. Besides search arguments, you also need to specify fit arguments in `model.search` which will be used in the fitting process in each trial. Refer to [API docs]() for details.
 
@@ -162,7 +174,7 @@ study = model.search_summary()
 model.fit(...)
 ```
 
----
+
 
 ### For PyTorch Users
 
