@@ -40,10 +40,6 @@ RUN cd /opt && \
     cp spark-${SPARK_VERSION}/conf/log4j.properties.template spark-${SPARK_VERSION}/conf/log4j.properties && \
     echo $'\nlog4j.logger.io.netty=ERROR' >> spark-${SPARK_VERSION}/conf/log4j.properties
 
-# spark-encrypt-io.jar
-RUN cd /home && \
-    wget $SPARK_JAR_REPO_URL/spark-encrypt-io-0.2-SNAPSHOT.jar -O spark-encrypt-io.jar
-
 
 # stage.2 bigdl
 FROM ubuntu:18.04 as bigdl
@@ -93,7 +89,6 @@ RUN apt-get update && apt-get install -y vim autoconf automake build-essential c
 ADD ./entrypoint.sh /home/entrypoint.sh
 COPY --from=builder /opt/jdk /opt/jdk8
 COPY --from=builder /opt/spark-${SPARK_VERSION} /opt/spark-${SPARK_VERSION}
-COPY --from=builder /home/spark-encrypt-io.jar /home/spark-encrypt-io.jar
 COPY --from=bigdl /bigdl-${BIGDL_VERSION} ${BIGDL_HOME}
 
 # python
