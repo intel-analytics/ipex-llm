@@ -89,7 +89,7 @@ elif [ "$action" = "encrypt" ]; then
                 --primaryKeyPath /home/key/simple_encrypted_primary_key \
                 --dataKeyPath /home/key/simple_encrypted_data_key \
                 --kmsType AzureKeyManagementService \
-		        --vaultName $keyVaultName
+		--vaultName $keyVaultName
 	else
 		echo "Wrong KMS_TYPE! KMS_TYPE can be (1) ehsm, (2) simple, (3) azure"
                 return -1
@@ -157,8 +157,8 @@ elif [ "$action" = "decrypt" ]; then
 		--inputPath $input_path \
 		--inputPartitionNum 8 \
 		--outputPartitionNum 8 \
-		--inputCryptoModeValue AES/CBC/PKCS5Padding \
-		--outputCryptoModeValue plain_text \
+		--inputEncryptModeValue AES/CBC/PKCS5Padding \
+		--outputEncryptModeValue plain_text \
 		--primaryKeyPath /home/key/ehsm_encrypted_primary_key \
 		--dataKeyPath /home/key/ehsm_encrypted_data_key \
 		--kmsType EHSMKeyManagementService \
@@ -175,8 +175,8 @@ elif [ "$action" = "decrypt" ]; then
                 --inputPath $input_path \
                 --inputPartitionNum 8 \
                 --outputPartitionNum 8 \
-                --inputCryptoModeValue AES/CBC/PKCS5Padding \
-                --outputCryptoModeValue plain_text \
+                --inputEncryptModeValue AES/CBC/PKCS5Padding \
+                --outputEncryptModeValue plain_text \
                 --primaryKeyPath /home/key/simple_encrypted_primary_key \
                 --dataKeyPath /home/key/simple_encrypted_data_key \
                 --kmsType SimpleKeyManagementService \
@@ -190,8 +190,8 @@ elif [ "$action" = "decrypt" ]; then
                 --inputPath $input_path \
                 --inputPartitionNum 8 \
                 --outputPartitionNum 8 \
-                --inputCryptoModeValue AES/CBC/PKCS5Padding \
-                --outputCryptoModeValue plain_text \
+                --inputEncryptModeValue AES/CBC/PKCS5Padding \
+                --outputEncryptModeValue plain_text \
                 --primaryKeyPath /home/key/simple_encrypted_primary_key \
                 --dataKeyPath /home/key/simple_encrypted_data_key \
                 --kmsType AzureKeyManagementService \
