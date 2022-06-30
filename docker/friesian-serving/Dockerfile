@@ -31,8 +31,8 @@ RUN mkdir logs
 
 ADD download-friesian-serving.sh /opt/work
 
-RUN chmod a+x download-friesian-serving.sh && \
-    /opt/work/download-friesian-serving.sh
+RUN chmod a+x download-friesian-serving.sh
+RUN /opt/work/download-friesian-serving.sh
 
 ADD lib/* /opt/work/lib/
 ADD start_service.sh /opt/work/
