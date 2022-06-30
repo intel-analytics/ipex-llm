@@ -45,7 +45,7 @@ class PPMLContextPythonSpec extends DataFrameHelper{
     ppmlContextPython.option(encryptedDataFrameReader, "header", "true")
     val df = ppmlContextPython.csv(encryptedDataFrameReader, plainFileName)
 
-    df.count() should be (repeatedNum)
+    df.count() should be (totalNum)
 
     val content = df.schema.map(_.name).mkString(",") + "\n" +
       df.collect().map(v => s"${v.get(0)},${v.get(1)},${v.get(2)}").mkString("\n")
@@ -58,7 +58,7 @@ class PPMLContextPythonSpec extends DataFrameHelper{
     ppmlContextPython.option(encryptedDataFrameReader, "header", "true")
     val df = ppmlContextPython.csv(encryptedDataFrameReader, encryptFileName)
 
-    df.count() should be (repeatedNum)
+    df.count() should be (totalNum)
 
     val content = df.schema.map(_.name).mkString(",") + "\n" +
       df.collect().map(v => s"${v.get(0)},${v.get(1)},${v.get(2)}").mkString("\n")
@@ -134,6 +134,8 @@ class PPMLContextPythonSpec extends DataFrameHelper{
     val encryptedDataFrameReader = ppmlContextPython.read(sc, "plain_text")
     val parquetDF = ppmlContextPython.parquet(encryptedDataFrameReader, parquetPath)
 
+    parquetDF.count() should be (3)
+
     val parquetContent = parquetDF.orderBy("language").collect()
       .map(v => s"${v.get(0)},${v.get(1)}").mkString("\n")
 
@@ -155,6 +157,8 @@ class PPMLContextPythonSpec extends DataFrameHelper{
     // read a parquet file
     val encryptedDataFrameReader = ppmlContextPython.read(sc, "AES_GCM_CTR_V1")
     val parquetDF = ppmlContextPython.parquet(encryptedDataFrameReader, parquetPath)
+
+    parquetDF.count() should be (3)
 
     val parquetContent = parquetDF.orderBy("language").collect()
       .map(v => s"${v.get(0)},${v.get(1)}").mkString("\n")
