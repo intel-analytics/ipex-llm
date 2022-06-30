@@ -447,17 +447,7 @@ Analysis and Visualization
 
 .. raw:: html
 
-    <script type="text/javascript">
-    var params = {
-      'url': 'https://docs.readthedocs.io/en/latest/automation-rules.html%23creating-an-automation-rule',
-      // 'doctool': 'sphinx',
-      // 'doctoolversion': '4.2.0',
-    };
-    var url = 'https://readthedocs.org/api/v3/embed/?' + $.param(params);
-    $.get(url, function(data) {
-      $('#help-container').content(data['content']);
-    });
-    </script>
+    :file: visualization.html
 
 
 
