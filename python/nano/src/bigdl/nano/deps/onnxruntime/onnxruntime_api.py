@@ -26,7 +26,7 @@ def PytorchONNXRuntimeModel(model, input_sample=None,
                              model is a LightningModule with any dataloader attached,
                              defaults to None.
         :param onnxruntime_session_options: A session option for onnxruntime accelerator.
-
+        :param kwargs: some onnx_export_args can be add in kwargs
         :return: A PytorchONNXRuntimeModel instance
         """
     from .pytorch.pytorch_onnxruntime_model import PytorchONNXRuntimeModel
