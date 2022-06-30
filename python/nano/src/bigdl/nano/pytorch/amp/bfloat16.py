@@ -25,6 +25,11 @@ import os
 from bigdl.nano.utils.log4Error import invalidOperationError, invalidInputError
 from bigdl.nano.pytorch.utils import TORCH_VERSION_LESS_1_10, LIGHTNING_VERSION_LESS_1_6
 
+invalidInputError(
+    not TORCH_VERSION_LESS_1_10 and not LIGHTNING_VERSION_LESS_1_6,
+    errMsg="Require torch>=1.10 and pytorch-lightning>=1.6.0."
+)
+
 
 class autocast(torch.cpu.amp.autocast):  # noqa
     """
@@ -46,10 +51,6 @@ class BF16Model(LightningModule):
 
     def __init__(self, model):  # noqa
         super().__init__()
-        invalidInputError(
-            not TORCH_VERSION_LESS_1_10 and not LIGHTNING_VERSION_LESS_1_6,
-            errMsg="Require torch>=1.10 and pytorch-lightning>=1.6.0."
-        )
         self.bf16_model = model.bfloat16()
 
     @property
