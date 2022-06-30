@@ -26,7 +26,7 @@ from bigdl.nano.pytorch.utils import TORCH_VERSION_LESS_1_10, LIGHTNING_VERSION_
 
 
 class autocast(torch.cpu.amp.autocast):
-    r"""
+    """
     Customized autocast to verify BF16 support.
     """
 
@@ -34,8 +34,9 @@ class autocast(torch.cpu.amp.autocast):
         super().__init__()
 
     def __enter__(self):
-        self.global_max_cpu_isa = os.environ["ONEDNN_MAX_CPU_ISA"]
+        self.global_max_cpu_isa = os.environ.get("ONEDNN_MAX_CPU_ISA", "ALL")
         os.environ["ONEDNN_MAX_CPU_ISA"] = "ALL"
+        super().__enter__()
 
     def __exit__(self, exc_type, exc_val, exc_tb):
         os.environ["ONEDNN_MAX_CPU_ISA"] = self.global_max_cpu_isa
@@ -56,7 +57,7 @@ class BF16Model(LightningModule):
         msg = subprocess.check_output(["lscpu"]).decode("utf-8")
         return "avx512_core_bf16" in msg or "amx_bf16" in msg
 
-    @torch.cpu.amp.autocast(dtype=torch.bfloat16)
+    @autocast()
     def forward(self, *args, **kwargs):
         _is_bf16 = getattr(self, "_is_bf16", None)
         # ALLOW_NON_BF16_ISA indicates if we restrict bf16 instructions support to be available.
