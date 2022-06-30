@@ -449,5 +449,5 @@ Analysis and Visualization
 
     .. raw:: html
 
-        <iframe src='_static/visualization.html' scrolling='no'></iframe>
+        <iframe src='../../../_static/visualization.html' width="200" height="200" scrolling='no'></iframe>
 
