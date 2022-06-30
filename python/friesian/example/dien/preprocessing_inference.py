@@ -40,8 +40,10 @@ conf = {"spark.network.timeout": "10000000",
         "spark.executor.heartbeatInterval": "200s",
         "spark.driver.maxResultSize": "40G"}
 
+
 def prepare_data(rows, config):
-    # Columns order: item_hist_seq, item, label, category, category_hist_seq, user, item_hist_seq_len
+    # Columns order:
+    # item_hist_seq, item, label, category, category_hist_seq, user, item_hist_seq_len
     lengths_x = [row[6] for row in rows]
     seqs_mid = [row[0] for row in rows]
     seqs_cat = [row[4] for row in rows]
@@ -206,7 +208,8 @@ def infer_main(partition, config):
         total_recommendations = data_size
         # total_recommendations = i * config["batch_size"]
         thpt_forward_pass = float(i * config["batch_size"]) / float(eval_time)
-        return [[test_auc, accuracy_sum, total_recommendations, (init_time, model_restore_time, infer_time, thpt_forward_pass)]]
+        return [[test_auc, accuracy_sum, total_recommendations,
+                 (init_time, model_restore_time, infer_time, thpt_forward_pass)]]
     else:
         return [[0, 0, 0, 0]]
 
