@@ -45,7 +45,7 @@ class PPMLContextPythonSpec extends DataFrameHelper{
     ppmlContextPython.option(encryptedDataFrameReader, "header", "true")
     val df = ppmlContextPython.csv(encryptedDataFrameReader, plainFileName)
 
-    df.count() should be (totalNum)
+    df.count() should be (300)
 
     val content = df.schema.map(_.name).mkString(",") + "\n" +
       df.collect().map(v => s"${v.get(0)},${v.get(1)},${v.get(2)}").mkString("\n")
@@ -58,7 +58,7 @@ class PPMLContextPythonSpec extends DataFrameHelper{
     ppmlContextPython.option(encryptedDataFrameReader, "header", "true")
     val df = ppmlContextPython.csv(encryptedDataFrameReader, encryptFileName)
 
-    df.count() should be (totalNum)
+    df.count() should be (300)
 
     val content = df.schema.map(_.name).mkString(",") + "\n" +
       df.collect().map(v => s"${v.get(0)},${v.get(1)},${v.get(2)}").mkString("\n")
