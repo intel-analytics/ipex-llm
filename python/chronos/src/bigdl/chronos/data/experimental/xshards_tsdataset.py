@@ -277,13 +277,15 @@ class XShardsTSDataset:
         '''
         Scale the time series dataset's feature column and target column.
 
-        :param scaler: sklearn scaler instance, StandardScaler, MaxAbsScaler,
-               MinMaxScaler and RobustScaler are supported.
+        :param scaler: sklearn scaler instance or dictionary, StandardScaler, MaxAbsScaler,
+               MinMaxScaler and RobustScaler are supported. If fit is true, it should 
+               be sklearn scaler instance; if fit is false, scaler should be a dictionary
+               whose key is id and value is sklearn scaler instance.
         :param fit: if we need to fit the scaler. Typically, the value should
                be set to True for training set, while False for validation and
                test set. The value is defaulted to True.
 
-        :return: the tsdataset instance.
+        :return: the xshardtsdataset instance.
 
         Assume there is a training set tsdata and a test set tsdata_test.
         scale() should be called first on training set with default value fit=True,
@@ -294,9 +296,56 @@ class XShardsTSDataset:
         >>> tsdata.scale(scaler, fit=True)
         >>> tsdata_test.scale(scaler, fit=False)
         '''
-        self.shards = self.shards.transform_shard(scale_timeseries_dataframe,
-                                                        scaler, self.feature_col, self.target_col, fit)
-        
+        def _fit(df, id_col, scaler, feature_col, target_col):
+            df[feature_col + target_col] = scaler.fit(df[feature_col + target_col])
+            return {id_col: df[id_col][0], "scaler": scaler}
+        def _transform(df, id_col, scaler, feature_col, target_col):
+            from sklearn.utils.validation import check_is_fitted
+            from bigdl.nano.utils.log4Error import invalidInputError
+            try:
+                invalidInputError(not check_is_fitted(scaler[df[id_col][0]]), "scaler is not fittedd")
+            except Exception:
+                invalidInputError(False,
+                                  "When calling scale for the first time, "
+                                  "you need to set fit=True.")
+            df[feature_col + target_col] =\
+                scaler[df[id_col][0]].transform(df[feature_col + target_col])
+            return df
+        if fit:
+            self.shards_scaler = self.shards.transform_shard(_fit, self.id_col, scaler,
+                                                             self.feature_col, self.target_col)
+            self.shards_scaler = self.shards_scaler.collect()
+            self.shards_scaler = {sc["id"]:sc["scaler"] for sc in self.shards_scaler}
+            self.shards = self.shards.transform_shard(_transform, self.id_col, self.shards_scaler,
+                                                      self.feature_col, self.target_col)
+        else:
+            self.shards_scaler = scaler
+            self.shards = self.shards.transform_shard(_transform, self.id_col, self.shards_scaler,
+                                                      self.feature_col, self.target_col)
+        return self
+
+    def unscale(self):
+        '''
+        Unscale the time series dataset's feature column and target column.
+
+        :return: the xshardtsdataset instance.
+        '''
+        def _inverse_transform(df, id_col, scaler, feature_col, target_col):
+            from sklearn.utils.validation import check_is_fitted
+            from bigdl.nano.utils.log4Error import invalidInputError
+            try:
+                invalidInputError(not check_is_fitted(scaler[df[id_col][0]]), "scaler is not fittedd")
+            except Exception:
+                invalidInputError(False,
+                                  "When calling scale for the first time, "
+                                  "you need to set fit=True.")
+            df[feature_col + target_col] =\
+                scaler[df[id_col][0]].inverse_transform(df[feature_col + target_col])
+            return df
+        self.shards = self.shards.transform_shard(_inverse_transform, self.id_col, self.shards_scaler,
+                                                  self.feature_col, self.target_col)
+        return self
+
     def impute(self,
                mode="last",
                const_num=0):
