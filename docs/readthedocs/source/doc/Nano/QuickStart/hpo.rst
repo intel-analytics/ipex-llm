@@ -445,13 +445,9 @@ In search, specify ``storage`` to the MySQL database ``example`` we just created
 Analysis and Visualization
 ============================
 
-.. raw:: html
+.. only:: html
 
-   <p class="rajout_vert">I am class rajout_vert</p>
+    .. raw:: html
 
-
-.. raw:: html
-
-       <iframe width="560" height="315" src="./visualization.html" frameborder="0" allowfullscreen></iframe>
-
+        <iframe src='./visualization.html' scrolling='no'></iframe>
 
