@@ -126,6 +126,12 @@ class _DDPSubprocessLauncher(_DDPSpawnLauncher):
 
 
 class DDPSubprocessStrategy(DDPSpawnStrategy):
+    """
+    Extending DDPSpawnStrategy to support launch subprocesses with optimized env variables.
+
+    Instead of using python multiprocessing.spawn, this strategy use subprocess.Popen to start
+    a new process in order to run mulit-instance training in a jupyter notebook.
+    """
 
     strategy_name = "ddp_subprocess"
 

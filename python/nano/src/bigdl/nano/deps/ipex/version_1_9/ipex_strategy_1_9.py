@@ -67,6 +67,8 @@ class IPEXStrategy(SingleDeviceStrategy):
 
     def training_step_end(self, output: _STEP_OUTPUT_TYPE) -> _STEP_OUTPUT_TYPE:
         """
+        A hook to do something at the end of the train step.
+
         For ipex xpu tensor do not support `tensor.storage()` right now,
         which is a required operation by pytorch_lightning,
         so just move output to cpu to store it, and move it back when doing backward.
@@ -77,9 +79,10 @@ class IPEXStrategy(SingleDeviceStrategy):
 
     def test_step_end(self, output: Optional[_STEP_OUTPUT_TYPE]) -> \
             Optional[_STEP_OUTPUT_TYPE]:
-        """A hook to do something at the end of the test step
-        Args:
-            output: the output of the test step
+        """
+        A hook to do something at the end of the test step.
+
+        :param output: the output of the test step
         """
         output = to_cpu(output)
 
@@ -87,9 +90,10 @@ class IPEXStrategy(SingleDeviceStrategy):
 
     def validation_step_end(self, output: Optional[_STEP_OUTPUT_TYPE]) -> \
             Optional[_STEP_OUTPUT_TYPE]:
-        """A hook to do something at the end of the validation step
-        Args:
-            output: the output of the validation step
+        """
+        A hook to do something at the end of the validation step.
+
+        :param output: the output of the validation step
         """
         output = to_cpu(output)
 
@@ -99,9 +103,7 @@ class IPEXStrategy(SingleDeviceStrategy):
                  closure_loss: torch.Tensor,
                  *args,
                  **kwargs) -> torch.Tensor:
-        """
-        Moving back loss to xpu device
-        """
+        """Moving back loss to xpu device"""
         closure_loss = closure_loss.to(self.root_device)
         return super().backward(
             closure_loss,
