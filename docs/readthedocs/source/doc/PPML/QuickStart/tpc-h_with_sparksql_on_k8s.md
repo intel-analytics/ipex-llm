@@ -45,7 +45,7 @@ java -cp '/ppml/trusted-big-data-ml/work/bigdl-2.1.0-SNAPSHOT/lib/bigdl-ppml-spa
 ```
 sudo docker pull intelanalytics/bigdl-ppml-trusted-big-data-ml-python-graphene:2.1.0-SNAPSHOT
 ```
-2. Prepare SGX keys, make sure keys and tpch-spark can be accessed on each K8S node
+2. Prepare SGX keys (following instructions [here](https://github.com/intel-analytics/BigDL/tree/main/ppml/trusted-big-data-ml/python/docker-graphene#11-prepare-the-keyspassworddataenclave-keypem "here")), make sure keys and tpch-spark can be accessed on each K8S node
 3. Start a bigdl-ppml enabled Spark K8S client container with configured local IP, key, tpch and kuberconfig path
 ```
 export ENCLAVE_KEY=/root/keys/enclave-key.pem
@@ -114,7 +114,7 @@ spec:
         path: /path/to/kuberconfig
 ```
 6. Run PPML TPC-H
-```
+bash```
 secure_password=`openssl rsautl -inkey /ppml/trusted-big-data-ml/work/password/key.txt -decrypt </ppml/trusted-big-data-ml/work/password/output.bin` && \
 export TF_MKL_ALLOC_MAX_BYTES=10737418240 && \
 export SPARK_LOCAL_IP=$LOCAL_IP && \
