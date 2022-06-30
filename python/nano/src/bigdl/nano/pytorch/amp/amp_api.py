@@ -13,4 +13,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-from .amp_api import *
+
+def BF16Model(*args, **kwargs):
+    from .bfloat16 import BF16Model
+    return BF16Model(*args, **kwargs)
