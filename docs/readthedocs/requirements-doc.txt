@@ -31,3 +31,4 @@ xgboost
 torchmetrics==0.7.2
 pickle5==0.0.12
 protobuf~=3.19.0
+sphinx-tabs

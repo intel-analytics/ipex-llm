@@ -87,7 +87,8 @@ extensions = [
     'sphinx_copybutton',
     'sphinx.ext.mathjax',
     'recommonmark',
-    'sphinx_markdown_tables'
+    'sphinx_markdown_tables',
+    'sphinx_tabs.tabs'
 ]
 
 

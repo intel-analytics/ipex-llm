@@ -283,9 +283,10 @@ To use a persistent storage, specify `storage` with an RDB url (e.g SQLlite, MyS
 
 .. tabs::
 
-   .. tab:: Tensorflow
+   .. tab::
 
 
+    .. tab:: Tensorflow
     ```python
     name = "resume-example"
     storage = "sqlite:///example.db"
