@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 
-# the following function is copied from 
+# the following function is copied from
 # https://github.com/Lightning-AI/lightning/blob/1.4.2/pytorch_lightning/utilities/imports.py
 
 # Copyright The PyTorch Lightning team.
