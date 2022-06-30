@@ -48,17 +48,17 @@ def prepare_data(rows, config):
 
     n_samples = len(seqs_mid)
     maxlen_x = np.max(lengths_x)
-    maxlen_padding = (config['exact_maxlen'] != 0)
+    maxlen_padding = (config["exact_maxlen"] != 0)
     if maxlen_padding:
-        maxlen_x = max(config['history_maxlen'], maxlen_x)
+        maxlen_x = max(config["history_maxlen"], maxlen_x)
 
-    mid_his = np.zeros((n_samples, maxlen_x)).astype('int64')
-    cat_his = np.zeros((n_samples, maxlen_x)).astype('int64')
-    dtype = config['data_type']
-    if dtype == 'fp32' or dtype == 'bfloat16' or dtype == 'int8':
-        data_type = 'float32'
-    elif dtype == 'fp16':
-        data_type = 'float16'
+    mid_his = np.zeros((n_samples, maxlen_x)).astype("int64")
+    cat_his = np.zeros((n_samples, maxlen_x)).astype("int64")
+    dtype = config["data_type"]
+    if dtype == "fp32" or dtype == "bfloat16" or dtype == "int8":
+        data_type = "float32"
+    elif dtype == "fp16":
+        data_type = "float16"
     else:
         invalidInputError(False, "Invalid model data type: %s" % dtype)
     mid_mask = np.zeros((n_samples, maxlen_x)).astype(data_type)
@@ -84,22 +84,22 @@ def infer_main(partition, config):
     seed = config["seed"]
     np.random.seed(seed)
     random.seed(seed)
-    if tf.__version__[0] == '1':
+    if tf.__version__[0] == "1":
         tf.compat.v1.set_random_seed(seed)
-    elif tf.__version__[0] == '2':
+    elif tf.__version__[0] == "2":
         tf.random.set_seed(seed)
 
     init_start = time.time()
-    os.environ['CUDA_VISIBLE_DEVICES'] = '-1'
-    os.environ['KMP_BLOCKTIME'] = '1'
-    os.environ['OMP_NUM_THREADS'] = str(config['cores_per_instance'])
-    os.environ['KMP_AFFINITY'] = config["kmp_affinity"]
-    os.environ['KMP_SETTINGS'] = '1'
-    if config['AMX'] == True:
-        os.environ['DNNL_MAX_CPU_ISA'] = 'AVX512_CORE_AMX'
-    if config['dnnl_verbose'] == True:
-        os.environ['MKL_VERBOSE'] = '1'
-        os.environ['DNNL_VERBOSE'] = '1'
+    os.environ["CUDA_VISIBLE_DEVICES"] = "-1"
+    os.environ["KMP_BLOCKTIME"] = "1"
+    os.environ["OMP_NUM_THREADS"] = str(config["cores_per_instance"])
+    os.environ["KMP_AFFINITY"] = config["kmp_affinity"]
+    os.environ["KMP_SETTINGS"] = "1"
+    if config["AMX"]:
+        os.environ["DNNL_MAX_CPU_ISA"] = "AVX512_CORE_AMX"
+    if config["dnnl_verbose"]:
+        os.environ["MKL_VERBOSE"] = "1"
+        os.environ["DNNL_VERBOSE"] = "1"
     init_end = time.time()
     init_time = init_end - init_start
 
@@ -108,7 +108,7 @@ def infer_main(partition, config):
         graph_def = tf.compat.v1.GraphDef()
         graph_def.ParseFromString(f.read())
     with tf.Graph().as_default() as graph:
-        tf.import_graph_def(graph_def, name='')
+        tf.import_graph_def(graph_def, name="")
 
     input_layers = ["Inputs/uid_batch_ph",
                     "Inputs/mid_batch_ph",
@@ -118,7 +118,7 @@ def infer_main(partition, config):
                     "Inputs/mask",
                     "Inputs/target_ph"]
 
-    if config["graph_type"] == 'dynamic':
+    if config["graph_type"] == "dynamic":
         input_layers.append("Inputs/seq_len_ph")
 
     input_tensor = [graph.get_tensor_by_name(x + ":0") for x in input_layers]
@@ -126,18 +126,18 @@ def infer_main(partition, config):
                      "dien/fcn/Metrics/Mean_1"]
     output_tensor = [graph.get_tensor_by_name(x + ":0") for x in output_layers]
 
-    dtype = config['data_type']
-    if dtype == 'bfloat16' or dtype == 'int8':
+    dtype = config["data_type"]
+    if dtype == "bfloat16" or dtype == "int8":
         graph_options = tf.compat.v1.GraphOptions(
             rewrite_options=rewriter_config_pb2.RewriterConfig(
                 remapping=rewriter_config_pb2.RewriterConfig.AGGRESSIVE,
                 auto_mixed_precision_mkl=rewriter_config_pb2.RewriterConfig.ON))
-    elif dtype == 'fp32':
+    elif dtype == "fp32":
         graph_options = tf.compat.v1.GraphOptions(
             rewrite_options=rewriter_config_pb2.RewriterConfig(
                 remapping=rewriter_config_pb2.RewriterConfig.AGGRESSIVE))
     else:
-        invalidInputError(False, f'Unsupported data type: {dtype}')
+        invalidInputError(False, f"Unsupported data type: {dtype}")
 
     session_config = tf.compat.v1.ConfigProto(graph_options=graph_options)
     session_config.intra_op_parallelism_threads = config["num_intra_threads"]
@@ -213,25 +213,25 @@ def infer_main(partition, config):
 
 def _parse_args():
     parser = ArgumentParser()
-    parser.add_argument('--cluster_mode', type=str, default="local",
-                        help='The cluster mode, such as local, yarn, standalone or spark-submit.')
-    parser.add_argument('--master', type=str, default=None,
-                        help='The master url, only used when cluster mode is standalone.')
-    parser.add_argument('--executor_cores', type=int, default=48,
-                        help='The executor core number.')
-    parser.add_argument('--executor_memory', type=str, default="160g",
-                        help='The executor memory.')
-    parser.add_argument('--num_executors', type=int, default=8,
-                        help='The number of executors.')
-    parser.add_argument('--driver_cores', type=int, default=4,
-                        help='The driver core number.')
-    parser.add_argument('--driver_memory', type=str, default="36g",
-                        help='The driver memory.')
-    parser.add_argument('--input_transaction', type=str, required=True,
+    parser.add_argument("--cluster_mode", type=str, default="local",
+                        help="The cluster mode, such as local, yarn, standalone or spark-submit.")
+    parser.add_argument("--master", type=str, default=None,
+                        help="The master url, only used when cluster mode is standalone.")
+    parser.add_argument("--executor_cores", type=int, default=48,
+                        help="The executor core number.")
+    parser.add_argument("--executor_memory", type=str, default="160g",
+                        help="The executor memory.")
+    parser.add_argument("--num_executors", type=int, default=8,
+                        help="The number of executors.")
+    parser.add_argument("--driver_cores", type=int, default=4,
+                        help="The driver core number.")
+    parser.add_argument("--driver_memory", type=str, default="36g",
+                        help="The driver memory.")
+    parser.add_argument("--input_transaction", type=str, required=True,
                         help="The path to the user transaction file.")
-    parser.add_argument('--input_meta', type=str, required=True,
+    parser.add_argument("--input_meta", type=str, required=True,
                         help="The path to the item metadata file.")
-    parser.add_argument('--index_folder', type=str, default="./",
+    parser.add_argument("--index_folder", type=str, default="./",
                         help="The folder for user, item and category string indices.")
 
     args = parser.parse_args()
@@ -239,9 +239,10 @@ def _parse_args():
 
 if __name__ == "__main__":
     args = _parse_args()
-    num_tasks = args.executor_cores
+    num_tasks = args.executor_cores * args.num_executors
     if args.cluster_mode == "local":
         sc = init_orca_context("local", cores=args.executor_cores, memory=args.executor_memory)
+        num_tasks = args.executor_cores
     elif args.cluster_mode == "standalone":
         sc = init_orca_context("standalone", master=args.master,
                                cores=args.executor_cores, num_nodes=args.num_executors,
@@ -249,18 +250,15 @@ if __name__ == "__main__":
                                driver_cores=args.driver_cores,
                                driver_memory=args.driver_memory, conf=conf,
                                extra_python_lib="utils.py")
-        num_tasks = args.executor_cores * args.num_executors
     elif args.cluster_mode == "yarn":
         sc = init_orca_context("yarn-client", cores=args.executor_cores,
                                num_nodes=args.num_executors, memory=args.executor_memory,
                                driver_cores=args.driver_cores, driver_memory=args.driver_memory,
                                conf=conf, extra_python_lib="utils.py")
-    elif args.cluster_mode == "spark-submit":
-        sc = init_orca_context("spark-submit")
     else:
         invalidInputError(False,
-                          "cluster_mode should be one of 'local', 'yarn', 'standalone' and"
-                          " 'spark-submit', but got " + args.cluster_mode)
+                          "cluster_mode should be one of 'local', 'yarn' and 'standalone', "
+                          "but got " + args.cluster_mode)
 
     begin = time.time()
     transaction_tbl = FeatureTable.read_json(args.input_transaction).select(
@@ -324,7 +322,7 @@ if __name__ == "__main__":
     df = full_tbl.df.repartition(num_tasks)
     df = df.sortWithinPartitions("item_hist_seq_len", ascending=False)
 
-    config = yaml.load(open('config_runtime.yaml', 'r'), Loader=yaml.FullLoader)
+    config = yaml.load(open("config_runtime.yaml", "r"), Loader=yaml.FullLoader)
     rdd = df.rdd
     eval_res = rdd.mapPartitions(lambda iter: infer_main(iter, config)).collect()
     data_size = 0
@@ -332,9 +330,9 @@ if __name__ == "__main__":
         if total_recommendations > 0:  # Print the evaluation result of each task/partition
             init_time, model_restore_time, infer_time, thpt_forward_pass = stats
             data_size += total_recommendations
-            print(f'<Forward pass> ({total_recommendations} samples) infer_time={infer_time} | '
-                  f'model_restore_time={model_restore_time} | init_time={init_time} | '
-                  f'throughput={thpt_forward_pass} | accurary={test_accuracy} | auc={test_auc}')
+            print(f"<Forward pass> ({total_recommendations} samples) infer_time={infer_time} | "
+                  f"model_restore_time={model_restore_time} | init_time={init_time} | "
+                  f"throughput={thpt_forward_pass} | accurary={test_accuracy} | auc={test_auc}")
 
     end = time.time()
     print(f"DIEN end-to-end inference time: {(end - begin):.2f}s")
