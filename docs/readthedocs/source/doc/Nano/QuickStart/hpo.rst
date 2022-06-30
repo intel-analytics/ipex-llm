@@ -16,10 +16,9 @@ If you have not installed BigDL-Nano, follow [Nano Install Guide](../Overview/na
 Next, install a few dependencies required for Nano HPO using below commands.
 
 .. code-block:: bash
-    :linenos:
 
-    $pip install ConfigSpace
-    $pip install optuna
+    pip install ConfigSpace
+    pip install optuna
 
 
 
@@ -41,9 +40,9 @@ For tensorflow training, you should call ``hpo_config.enable_hpo_tf`` before usi
 
 ``hpo_config.enable_hpo_tf`` will dynamically add searchable layers, activations, functions, optimizers, etc into the ``bigdl.nano.tf`` module. When importing layers, you need to change the imports from ``tf.keras.layers`` to ``bigdl.nano.tf.keras.layers``, so that you can specify search spaces in their init arguments. Note even if you don't need to search the model architecture, you still need to change the imports to use HPO.
 
-.. code-block:: py
-    :linenos:
+.. code-block:: python
     :emphasize-lines: 2
+    :linenos:
 
     import bigdl.nano.automl as nano_automl
     nano_automl.hpo_config.enable_hpo_tf()
@@ -51,7 +50,7 @@ For tensorflow training, you should call ``hpo_config.enable_hpo_tf`` before usi
 
 To disable HPO, use ``hpo_config.disable_hpo_tf``. This will remove the searchable objects from ``bigdl.nano.tf`` module.
 
-.. code-block:: py
+.. code-block:: python
     :linenos:
     :emphasize-lines: 2
 
@@ -69,7 +68,7 @@ using Sequential API
 
 You can specify search spaces in layer arguments. Note that search spaces can only be specified in key-word argument (which means ``Dense(space.Int(...))`` should be changed to ``Dense(units=space.Int(...))``). Remember to import ``Sequential`` from ``bigdl.nano.automl.tf.keras`` instead of ``tensorflow.keras``
 
-.. code-block:: py
+.. code-block:: python
     :linenos:
     :emphasize-lines: 5,6,7,8
 
@@ -91,7 +90,7 @@ using Functional API
 
 You can specify search spaces in layer arguments. Note that if a layer is used more than once in the model, we strongly suggest you specify a ``prefix`` for each search space in such layers to distinguish them, or they will share the same search space (the last space will override all previous definition), as shown in the below example. Remember to import ``Model`` from ``bigdl.nano.automl.tf.keras`` instead of ``tensorflow.keras``.
 
-.. code-block:: py
+.. code-block:: python
     :linenos:
     :emphasize-lines: 6,7,8
 
@@ -113,7 +112,7 @@ by Subclassing tf.keras.Model
 
 For models defined by subclassing tf.keras.Model, use the decorator ``@hpo.tfmodel`` to turn the model into a searchable object. Then you will able to specify either search spaces or normal values in the model init arguments.
 
-.. code-block:: py
+.. code-block:: python
     :linenos:
     :emphasize-lines: 3,25,26,27
 
@@ -153,7 +152,7 @@ Search the Learning Rate
 
 To search the learning rate, specify search space in ``learning_rate`` argument in the optimizer argument in ``model.compile``. Remember to import the optimizer from ``bigdl.nano.tf.optimizers`` instead of ``tf.keras.optimizers``.
 
-.. code-block:: py
+.. code-block:: python
     :linenos:
     :emphasize-lines: 5
 
@@ -171,7 +170,7 @@ Search the Batch Size
 
 To search the batch size, specify search space in ``batch_size`` argument in ``model.search``.
 
-.. code-block:: py
+.. code-block:: python
     :linenos:
     :emphasize-lines: 4
 
@@ -184,144 +183,169 @@ To search the batch size, specify search space in ``batch_size`` argument in ``m
 Launch Hyperparameter Search and Review the Results
 ----------------------------------------------------
 
-To launch hyperparameter search, call `model.search` after compile, as shown below. `model.search` runs the `n_trials` number of trials (meaning `n_trials` set of hyperparameter combinations are searched), and optimizes the `target_metric` in the specified `direction`. Besides search arguments, you also need to specify fit arguments in `model.search` which will be used in the fitting process in each trial. Refer to [API docs]() for details.
+To launch hyperparameter search, call ``model.search`` after compile, as shown below. ``model.search`` runs the ``n_trials`` number of trials (meaning ``n_trials`` set of hyperparameter combinations are searched), and optimizes the ``target_metric`` in the specified ``direction``. Besides search arguments, you also need to specify fit arguments in ``model.search`` which will be used in the fitting process in each trial. Refer to [API docs]() for details.
 
-Call `model.search_summary` to retrieve the search results, which you can use to get all trial statistics in pandas dataframe format, pick the best trial, or do visualizations.  Examples of search results analysis and visualization can be found [here](#analysis-and-visualization).
+Call ``model.search_summary`` to retrieve the search results, which you can use to get all trial statistics in pandas dataframe format, pick the best trial, or do visualizations.  Examples of search results analysis and visualization can be found [here](#analysis-and-visualization).
 
-Finally, `model.fit` will automatically fit the model using the best set of hyper parameters found in the search. You can also use the hyperparameters from a particular trial other than the best one. Refer to [API docs]() for details.
+Finally, ``model.fit`` will automatically fit the model using the best set of hyper parameters found in the search. You can also use the hyperparameters from a particular trial other than the best one. Refer to [API docs]() for details.
 
-```python
-model = ... # define the model
-model.compile(...)
-model.search(n_trials=100, target_metric='accuracy', direction="maximize",
-    x=x_train, y=y_train, batch_size=32, epochs=20, validation_split=0.2)
-study = model.search_summary()
-model.fit(...)
-```
+.. code-block:: python
+    :linenos:
+    :emphasize-lines: 4
+
+    model = ... # define the model
+    model.compile(...)
+    model.search(n_trials=100, target_metric='accuracy', direction="maximize",
+        x=x_train, y=y_train, batch_size=32, epochs=20, validation_split=0.2)
+    study = model.search_summary()
+    model.fit(...)
 
 
 
-### For PyTorch Users
+
+For PyTorch Users
+==================
+
 
 Nano-HPO now only supports hyperparameter search for [pytorch-lightning]() modules.
 
-####  Search the Model Architecture
 
-To search the model architecture, use the decorator `@hpo.plmodel()` to turn the model into a searchable object. Put the arguments that you want to search in the init arguments and use the arguments to construct the model. The arguments can be either space or non-space values, as shown below.
+Search the Model Architecture
+-----------------------------
 
-```python
+To search the model architecture, use the decorator ``@hpo.plmodel()`` to turn the model into a searchable object. Put the arguments that you want to search in the init arguments and use the arguments to construct the model. The arguments can be either space or non-space values, as shown below.
+
+.. code-block:: python
+    :linenos:
+    :emphasize-lines: 4
+
+    import bigdl.nano.automl.hpo.space as space
+    import bigdl.nano.automl.hpo as hpo
+
+    @hpo.plmodel()
+    class MyModel(pl.LightningModule):
+        """Customized Model."""
+        def __init__(self,out_dim1,out_dim2,dropout_1,dropout_2):
+            super().__init__()
+            layers = []
+            input_dim = 32
+            for out_dim, dropout in [(out_dim1, dropout_1),(out_dim2,dropout_2)]:
+                layers.append(torch.nn.Linear(input_dim, out_dim))
+                layers.append(torch.nn.Tanh())
+                layers.append(torch.nn.Dropout(dropout))
+                input_dim = out_dim
+            layers.append(torch.nn.Linear(input_dim, 2))
+            self.layers: torch.nn.Module = torch.nn.Sequential(*layers)
+            self.save_hyperparameters()
+        def forward(self, x):
+            return self.layers(x)
+
+    model = MyModel(
+        out_dim1=space.Categorical(16,32),
+        out_dim2=space.Categorical(16,32),
+        dropout_1=space.Categorical(0.1, 0.2, 0.3, 0.4, 0.5),
+        dropout_2 = 0.5)
+
+
+Search the Learning Rate
+-------------------------
+
+``learning_rate`` can be specified in the init arguments of your model. You can use ``learning_rate`` to construct the optimizer in ``configure_optimizers()``, as shown below.
+
+.. code-block:: python
+    :linenos:
+
 import bigdl.nano.automl.hpo.space as space
 import bigdl.nano.automl.hpo as hpo
 
-@hpo.plmodel()
-class MyModel(pl.LightningModule):
-    """Customized Model."""
-    def __init__(self,out_dim1,out_dim2,dropout_1,dropout_2):
-        super().__init__()
-        layers = []
-        input_dim = 32
-        for out_dim, dropout in [(out_dim1, dropout_1),(out_dim2,dropout_2)]:
-            layers.append(torch.nn.Linear(input_dim, out_dim))
-            layers.append(torch.nn.Tanh())
-            layers.append(torch.nn.Dropout(dropout))
-            input_dim = out_dim
-        layers.append(torch.nn.Linear(input_dim, 2))
-        self.layers: torch.nn.Module = torch.nn.Sequential(*layers)
-        self.save_hyperparameters()
-    def forward(self, x):
-        return self.layers(x)
+    @hpo.plmodel()
+    class MyModel(pl.LightningModule):
+        def __init__(self, ..., learning_rate=0.1):
+            ...
+            self.save_hyperparameters()
+        def configure_optimizers(self):
+            # set learning rate in the optimizer
+            self.optimizer = torch.optim.Adam(self.layers.parameters(),
+                                            lr=self.hparams.learning_rate)
+            return [self.optimizer], []
+    model = MyModel(..., learning_rate=space.Real(0.001,0.01,log=True))
 
-model = MyModel(
-    out_dim1=space.Categorical(16,32),
-    out_dim2=space.Categorical(16,32),
-    dropout_1=space.Categorical(0.1, 0.2, 0.3, 0.4, 0.5),
-    dropout_2 = 0.5)
-```
-#### Search the Learning Rate
 
-`learning_rate` can be specified in the init arguments of your model. You can use `learning_rate` to construct the optimizer in `configure_optimizers()`, as shown below.
+Search the Batch Size
+-------------------------
 
-```python
-import bigdl.nano.automl.hpo.space as space
-import bigdl.nano.automl.hpo as hpo
-@hpo.plmodel()
-class MyModel(pl.LightningModule):
-    def __init__(self, ..., learning_rate=0.1):
-        ...
-        self.save_hyperparameters()
-    def configure_optimizers(self):
-        # set learning rate in the optimizer
-        self.optimizer = torch.optim.Adam(self.layers.parameters(),
-                                          lr=self.hparams.learning_rate)
-        return [self.optimizer], []
-model = MyModel(..., learning_rate=space.Real(0.001,0.01,log=True))
-```
-#### Search the Batch Size
+``batch_size`` can be specified in the init arguments of your model. You can use the ``batch_size`` to construct the ``DataLoader`` in ``train_dataloader()``, as shown below.
 
-`batch_size` can be specified in the init arguments of your model. You can use the `batch_size` to construct the `DataLoader` in `train_dataloader()`, as shown below.
+.. code-block:: python
+    :linenos:
 
-```python
-import bigdl.nano.automl.hpo.space as space
-import bigdl.nano.automl.hpo as hpo
-@hpo.plmodel()
-class MyModel(pl.LightningModule):
-    def __init__(self, ..., batch_size=16):
-        ...
-        self.save_hyperparameters()
-    def train_dataloader(self):
-        # set the batch size in train dataloader
-        return DataLoader(RandomDataset(32, 64),
-                          batch_size=self.hparams.batch_size)
-model = MyModel(..., batch_size = space.Categorical(32,64))
-```
+    import bigdl.nano.automl.hpo.space as space
+    import bigdl.nano.automl.hpo as hpo
+    @hpo.plmodel()
+    class MyModel(pl.LightningModule):
+        def __init__(self, ..., batch_size=16):
+            ...
+            self.save_hyperparameters()
+        def train_dataloader(self):
+            # set the batch size in train dataloader
+            return DataLoader(RandomDataset(32, 64),
+                            batch_size=self.hparams.batch_size)
+    model = MyModel(..., batch_size = space.Categorical(32,64))
 
-#### Launch Hyperparameter Search and Review the Results
 
-First of all, import `Trainer` from `bigdl.nano.pytorch` instead of `pytorch_lightning`. Remember to set `use_hpo=True` when initializing the `Trainer`.
+Launch Hyperparameter Search and Review the Results
+----------------------------------------------------
 
-To launch hyperparameter search, call `Trainer.search` after model is defined. `Trainer.search` takes the decorated model as input. Similar to tensorflow, `trainer.search` runs the `n_trials` number of trials (meaning `n_trials` set of hyperparameter combinations are searched), and optimizes the `target_metric` in the specified `direction`. There's an extra argument `max_epochs` which is used only in the fitting process in search trials without affecting `Trainer.fit`. `Trainer.search` returns a model configured with the best set of hyper parameters.
+First of all, import ``Trainer`` from ``bigdl.nano.pytorch`` instead of ``pytorch_lightning``. Remember to set ``use_hpo=True`` when initializing the ``Trainer``.
 
-Call `model.search_summary` to retrieve the search results, which you can use to get all trial statistics in pandas dataframe format, pick the best trial, or do visualizations.  Examples of search results analysis and visualization can be found [here](#analysis-and-visualization).
+To launch hyperparameter search, call ``Trainer.search`` after model is defined. ``Trainer.search`` takes the decorated model as input. Similar to tensorflow, ``trainer.search`` runs the ``n_trials`` number of trials (meaning ``n_trials`` set of hyperparameter combinations are searched), and optimizes the ``target_metric`` in the specified ``direction``. There's an extra argument ``max_epochs`` which is used only in the fitting process in search trials without affecting ``Trainer.fit``. ``Trainer.search`` returns a model configured with the best set of hyper parameters.
 
-Finally you can use `Trainer.fit()` to fit the best model. You can also get a model constructed with hyperparameters from a particular trial other than the best one. Refer to [Trainer.search API doc]() for more details.
+Call ``Trainer.search_summary`` to retrieve the search results, which you can use to get all trial statistics in pandas dataframe format, pick the best trial, or do visualizations.  Examples of search results analysis and visualization can be found [here](#analysis-and-visualization).
 
-```python
-from bigdl.nano.pytorch import Trainer
-model = MyModel(...)
-trainer = Trainer(...,use_hpo=True)
-best_model = trainer.search(
-    model,
-    target_metric='val_loss',
-    direction='minimize',
-    n_trials=100,
-    max_epochs=20,
-)
-study = trainer.search_summary()
-trainer.fit(best_model)
-```
----
+Finally you can use ``Trainer.fit()`` to fit the best model. You can also get a model constructed with hyperparameters from a particular trial other than the best one. Refer to [Trainer.search API doc]() for more details.
 
-### Resume Search
+.. code-block:: python
+    :linenos:
 
-You can call `search` more than once with flag `resume=True` to resume from a previous search instead of starting a new one.
+    from bigdl.nano.pytorch import Trainer
+    model = MyModel(...)
+    trainer = Trainer(...,use_hpo=True)
+    best_model = trainer.search(
+        model,
+        target_metric='val_loss',
+        direction='minimize',
+        n_trials=100,
+        max_epochs=20,
+    )
+    study = trainer.search_summary()
+    trainer.fit(best_model)
 
-The _resumed_ search will take into consideration all trials in the previous search when sampling hyperparameters. The trials in the resumed search will be stored in the same repo as the first search, and all trials will be retrieved as a whole by `search_summary`.
 
-Note that the flag `resume` is by default set to `False`, which means each search will by default start from scratch and any previous search results will be overridden and can no longer be retrieved.
+Resume Search
+=================
+
+
+You can call ``search`` more than once with flag ``resume=True`` to resume from a previous search instead of starting a new one.
+
+The _resumed_ search will take into consideration all trials in the previous search when sampling hyperparameters. The trials in the resumed search will be stored in the same repo as the first search, and all trials will be retrieved as a whole by ``search_summary``.
+
+Note that the flag ``resume`` is by default set to ``False``, which means each search will by default start from scratch and any previous search results will be overridden and can no longer be retrieved.
 
 
 #### Use a Persistent Storage
 
 By default, the storage used for storing trial info is created in-memory, so once the process is stopped the trial statistics can not be retrieved anymore. If you are expecting to run search for a long time and may resume search several times, it is highly recommended to use a persistent storage instead of the default in-memory storage.
 
-To use a persistent storage, specify `storage` with an RDB url (e.g SQLlite, MySQL, etc.) in `search`. The simplest way is to specify a sqllite url, as shown in the example below. It will automatically create a db file in the specified path. Also specify `study_name` so that all the search with the same name will be gathered into the same repo.
+To use a persistent storage, specify ``storage`` with an RDB url (e.g SQLlite, MySQL, etc.) in ``search``. The simplest way is to specify a sqllite url, as shown in the example below. It will automatically create a db file in the specified path. Also specify ``study_name`` so that all the search with the same name will be gathered into the same repo.
 
-#### Example
-
+Example
+--------
 
 .. tabs::
 
-   .. code-tab:: c
+    .. tab:: Tensorflow
+
+        .. code-block:: python
 
          name = "resume-example"
          storage = "sqlite:///example.db"
@@ -330,7 +354,9 @@ To use a persistent storage, specify `storage` with an RDB url (e.g SQLlite, MyS
          # the resumed search
          model.search(study_name=name, storage=storage, resume=True,...)
 
-   .. code-tab:: py
+    .. tab:: PyTorch
+
+        .. code-block:: python
 
          name = "resume-example"
          storage = "sqlite:///example.db"
@@ -340,75 +366,92 @@ To use a persistent storage, specify `storage` with an RDB url (e.g SQLlite, MyS
          trainer.search(study_name=name, storage=storage, resume=True,...)
 
 
-If the model/trainer object is still accessible along the searches (e.g. in a running jupyter notebook), the specification of `storage` and `study_name` can be omitted. Simply call `search` with `resume=True` to resume search.
+If the model/trainer object is still accessible along the searches (e.g. in a running jupyter notebook), the specification of ``storage`` and ``study_name`` can be omitted. Simply call ``search`` with ``resume=True`` to resume search.
 
----
 
-### Parallel Search
 
-Parallel search allows trials to be run in multiple processes simultaneously. To use parallel search, you need to prepare an RDB database as storage. Then in `search`, specify the database url for `storage`, specify `study_name`, and set `n_parallels` to the number of parallel processes you want to run.
+Parallel Search
+================
+
+Parallel search allows trials to be run in multiple processes simultaneously. To use parallel search, you need to prepare an RDB database as storage. Then in ``search``, specify the database url for ``storage``, specify ``study_name``, and set ``n_parallels`` to the number of parallel processes you want to run.
 
 We do not recommend SQLite as storage for parallel search as it may cause deadlocks and performance issues. Here we provide an example using MySQL.
 
-#### Setup MySQL database
+
+Setup MySQL database
+---------------------
+
 
 If you already know how to create a database in MySQL, you can skip this step. We assume MySQL service is already installed and started in your local machine.
 
-Create a new file with name `setup_db.sql`, paste the below contents.
+Create a new file with name ``setup_db.sql``, paste the below contents.
 
-```sql
-CREATE DATABASE IF NOT EXISTS example;
-CREATE USER IF NOT EXISTS bigdlhpo ;
-GRANT ALL PRIVILEGEs ON example.* TO bigdlhpo;
-FLUSH PRIVILEGES;
-```
+.. code-block:: sql
+    :linenos:
+
+    CREATE DATABASE IF NOT EXISTS example;
+    CREATE USER IF NOT EXISTS bigdlhpo ;
+    GRANT ALL PRIVILEGEs ON example.* TO bigdlhpo;
+    FLUSH PRIVILEGES;
+
 
 Run below command
-```bash
-sudo mysql -u root < setup_db.sql
-```
 
-The above command creates a new user `bigdlhpo` and a new database `example`, and grants all access privileges on the `example` database to `bigdlhpo`.
+.. code-block:: bash
 
-#### Install MySQL client for python
+    $ sudo mysql -u root < setup_db.sql
+
+
+The above command creates a new user ``bigdlhpo`` and a new database ``example``, and grants all access privileges on the ``example`` database to ``bigdlhpo``.
+
+
+Install MySQL client for python
+-------------------------------
 
 Install mysqlclient so that search can access MySQL databases from python.
 
-```python
-pip install mysqlclient
-```
-#### Tensorflow Example
+.. code-block:: bash
 
-Specify `storage` to the MySQL database `example` we just created as user `bigdlhpo`, specify `study_name` and also set `n_parallels=8`.
-
-```python
-name = "parallel-example-tf"
-storage = "mysql://bigdlhpo@localhost/example"
-#the first search from scratch
-model.search(study_name=name,
-             storage=storage,
-             n_parallels=8,
-             ...)
-```
-#### PyTorch Example
-
-Specify `storage` to the MySQL database `example` we just created as user `bigdlhpo`, specify `study_name` and also set `n_parallels=8`.
-
-```python
-name = "parallel-example-torch"
-storage = "mysql://bigdlhpo@localhost/example"
-#the first search from scratch
-trainer.search(study_name=name,
-               storage=storage,
-               n_parallels=8,
-               ...)
-
-```
+    pip install mysqlclient
 
 
----
-### Analysis and Visualization
 
+Run Parallel Search
+--------
+
+Specify ``storage`` to the MySQL database ``example`` we just created as user ``bigdlhpo``, specify ``study_name`` and also set ``n_parallels=8``.
+
+.. tabs::
+
+    .. tab:: Tensorflow
+
+        .. code-block:: python
+
+        name = "parallel-example-tf"
+        storage = "mysql://bigdlhpo@localhost/example"
+        #the first search from scratch
+        model.search(study_name=name,
+                    storage=storage,
+                    n_parallels=8,
+                    ...)
+
+    .. tab:: PyTorch
+
+        .. code-block:: python
+
+        name = "parallel-example-torch"
+        storage = "mysql://bigdlhpo@localhost/example"
+        #the first search from scratch
+        trainer.search(study_name=name,
+                    storage=storage,
+                    n_parallels=8,
+                    ...)
+
+
+
+
+Analysis and Visualization
+============================
 
 .. code-block:: html
 
