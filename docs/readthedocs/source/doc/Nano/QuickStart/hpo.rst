@@ -445,32 +445,63 @@ In search, specify ``storage`` to the MySQL database ``example`` we just created
 Analysis and Visualization
 ============================
 
-You can export the trial statistics as pandas dataframe, as shown below.
+The result of ``search_summary`` can be used for further analysis and visualization.
 
 Get trial statistics as dataframe
 ---------------------------------
 
-.. code-block:: python
+You can export the trial statistics as pandas dataframe, as shown below.
 
-    study = model.search_summary()
-    trials_df = study.trials_dataframe(attrs=("number", "value", "params", "state"))
+.. tabs::
+
+    .. tab:: Tensorflow
+
+        .. code-block:: python
+
+         ...
+         study = model.search_summary()
+         trials_df = study.trials_dataframe(attrs=("number", "value", "params", "state"))
+
+    .. tab:: PyTorch
+
+        .. code-block:: python
+
+         ...
+         study = trainer.search_summary()
+         trials_df = study.trials_dataframe(attrs=("number", "value", "params", "state"))
 
 
 Below an example of the trials history we have exported as below.
 
 
-You can also examine the tuning results by making plots about the optimization history, importance of hyperparameters, etc.
 
 
 Plot optimization history and hyperparameters importance
-----------
+--------------------------------------------------------
 
-.. code-block:: python
+You can also examine the tuning results by making plots about the optimization history, importance of hyperparameters, etc.
 
-    study = model.search_summary()
-    from bigdl.nano.automl.hpo.visualization import plot_optimization_history
-    plot1=plot_optimization_history(study)
+.. tabs::
 
+    .. tab:: Tensorflow
+
+        .. code-block:: python
+
+         ...
+         study = model.search_summary()
+
+         from bigdl.nano.automl.hpo.visualization import plot_optimization_history
+         plot1=plot_optimization_history(study)
+
+    .. tab:: PyTorch
+
+        .. code-block:: python
+
+         ...
+         study = trainer.search_summary()
+
+         from bigdl.nano.automl.hpo.visualization import plot_optimization_history
+         plot1=plot_optimization_history(study)
 
 An example optimization history chart is shown below. It is an interactive chart which you can zoom-in and zoom-out and select data points.
 
@@ -478,5 +509,5 @@ An example optimization history chart is shown below. It is an interactive chart
 
     .. raw:: html
 
-        <iframe src='../../../_static/visualization.html' height="600px" width="100%" scrolling='no'></iframe>
+        <iframe src='../../../_static/visualization.html' height="400px" width="100%" scrolling='no'></iframe>
 
