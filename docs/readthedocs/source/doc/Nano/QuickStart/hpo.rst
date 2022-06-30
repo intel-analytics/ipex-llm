@@ -11,7 +11,7 @@ Under the hood, the objects (layers, activations, model, etc.) are implicitly tu
 Install
 =======
 
-If you have not installed BigDL-Nano, follow [Nano Install Guide](../Overview/nano.md#2-install) to install it according to your system and framework (i.e. tensorflow or pytorch).
+If you have not installed BigDL-Nano, follow :doc:`Nano Install Guide <../Overview/nano.md#2-install>` to install it according to your system and framework (i.e. tensorflow or pytorch).
 
 Next, install a few dependencies required for Nano HPO using below commands.
 
@@ -323,7 +323,8 @@ The _resumed_ search will take into consideration all trials in the previous sea
 Note that the flag ``resume`` is by default set to ``False``, which means each search will by default start from scratch and any previous search results will be overridden and can no longer be retrieved.
 
 
-#### Use a Persistent Storage
+Use a Persistent Storage
+-------------------------
 
 By default, the storage used for storing trial info is created in-memory, so once the process is stopped the trial statistics can not be retrieved anymore. If you are expecting to run search for a long time and may resume search several times, it is highly recommended to use a persistent storage instead of the default in-memory storage.
 
@@ -407,8 +408,8 @@ Install ``mysqlclient`` so that search can access MySQL databases from python.
 
 
 
-Run Parallel Search
--------------------
+Example
+--------
 
 In search, specify ``storage`` to the MySQL database ``example`` we just created as user ``bigdlhpo``, specify ``study_name`` and also set ``n_parallels=8``.
 
@@ -444,7 +445,7 @@ In search, specify ``storage`` to the MySQL database ``example`` we just created
 Analysis and Visualization
 ============================
 
-.. code-block:: html
+.. raw:: html
 
     <script type="text/javascript">
     var params = {
