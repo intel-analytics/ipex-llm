@@ -258,7 +258,7 @@ python train.py --cluster_mode yarn-client --remote_dir hdfs://url:port/path/to/
 
 __Note__:
 * Please refer to __Part4__ to learn how to prepare for extra custom modules and upload them to the cluster through `init_orca_context`.
-* For CDH users, please set `spark.executorEnv.ARROW_LIBHDFS_DIR` as a Spark configuration through `conf` in `init_orca_context` when using `pyarrow` to connect to HDFS. Please see __Part2.3__ for more details.
+* For CDH users, please set `spark.executorEnv.ARROW_LIBHDFS_DIR` as a Spark configuration through `conf` in `init_orca_context`. Please see __Part2.3__ for more details.
 
 ### 5.1.2 Yarn Cluster
 Please call `init_orca_context` to create an OrcaContext at the very beginning of each Orca program.
@@ -278,7 +278,7 @@ python train.py --cluster_mode yarn-cluster --remote_dir hdfs://url:port/path/to
 
 __Note__:
 * Please refer to __Part4__ to learn how to prepare for extra custom modules and upload them to the cluster through `init_orca_context`.
-* For CDH users, please set `spark.executorEnv.ARROW_LIBHDFS_DIR` as a Spark configuration through `conf` in `init_orca_context` when using `pyarrow` to connect to HDFS. Please see __Part2.3__ for more details.
+* For CDH users, please set `spark.executorEnv.ARROW_LIBHDFS_DIR` as a Spark configuration through `conf` in `init_orca_context`. Please see __Part2.3__ for more details.
 
 ### 5.1.3 Jupyter Notebook
 You can simply run the program in a Jupyter Notebook. 
