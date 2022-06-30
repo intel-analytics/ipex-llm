@@ -39,6 +39,7 @@
 # code adapted from https://github.com/thuml/Autoformer
 
 
+from pyrsistent import l
 import torch
 import torch.nn as nn
 import torch.nn.functional as F
@@ -68,7 +69,7 @@ class AutoFormer(pl.LightningModule):
         self.output_attention = configs.output_attention
         self.optim = configs.optim
         self.lr = configs.lr
-        self.loss = _loss_creator(configs.loss)
+        self.loss = loss_creator(configs.loss)
 
         # Decomp
         kernel_size = configs.moving_avg
@@ -150,9 +151,7 @@ class AutoFormer(pl.LightningModule):
 
     def training_step(self, batch, batch_idx):
         batch_x, batch_y, batch_x_mark, batch_y_mark = map(lambda x: x.float(), batch)
-        dec_inp = torch.zeros_like(batch_y[:, -self.pred_len:, :]).float()
-        dec_inp = torch.cat([batch_y[:, :self.label_len, :], dec_inp], dim=1).float()
-        outputs = self(batch_x, batch_x_mark, dec_inp, batch_y_mark)
+        outputs = self(batch_x, batch_x_mark, batch_y, batch_y_mark)
 
         outputs = outputs[:, -self.pred_len:, :]
         batch_y = batch_y[:, -self.pred_len:, :]
@@ -160,9 +159,7 @@ class AutoFormer(pl.LightningModule):
 
     def validation_step(self, batch, batch_idx):
         batch_x, batch_y, batch_x_mark, batch_y_mark = map(lambda x: x.float(), batch)
-        dec_inp = torch.zeros_like(batch_y[:, -self.pred_len:, :]).float()
-        dec_inp = torch.cat([batch_y[:, :self.label_len, :], dec_inp], dim=1).float()
-        outputs = self(batch_x.float(), batch_x_mark.float(), dec_inp,
+        outputs = self(batch_x.float(), batch_x_mark.float(), batch_y,
                        batch_y_mark.float())
 
         outputs = outputs[:, -self.pred_len:, :]
@@ -171,9 +168,7 @@ class AutoFormer(pl.LightningModule):
 
     def predict_step(self, batch, batch_idx):
         batch_x, batch_y, batch_x_mark, batch_y_mark = map(lambda x: x.float(), batch)
-        dec_inp = torch.zeros(batch_y.size(0), self.pred_len, batch_y.size(2)).float()
-        dec_inp = torch.cat([batch_y[:, :self.label_len, :], dec_inp], dim=1).float()
-        outputs = self(batch_x.float(), batch_x_mark.float(), dec_inp,
+        outputs = self(batch_x.float(), batch_x_mark.float(), batch_y,
                        batch_y_mark.float())
         outputs = outputs[:, -self.pred_len:, :]
         return outputs
@@ -187,7 +182,8 @@ def model_creator(config):
     return AutoFormer(args)
 
 
-def _loss_creator(loss_name):
+def loss_creator(loss_name):
+    print(loss_name)
     if loss_name in PYTORCH_REGRESSION_LOSS_MAP:
         loss_name = PYTORCH_REGRESSION_LOSS_MAP[loss_name]
     else:

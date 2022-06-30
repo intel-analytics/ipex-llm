@@ -141,11 +141,12 @@ class GenericLightningModule(LightningModuleFromTorch):
 
 
 @hpo.plmodel()
-class GenericTransformerLightningModule(LightningModule):
-    """A generic Transformer LightningMoudle for light-weight HPO."""
+class GenericTSTransformerLightningModule(LightningModule):
+    """A generic TS Transformer LightningMoudle for light-weight HPO."""
 
     def __init__(self,
                  model_creator,
+                 loss_creator,
                  data,
                  validation_data=None,
                  batch_size=32,
@@ -173,6 +174,7 @@ class GenericTransformerLightningModule(LightningModule):
         :param scheduler:       learning rate scheduler.
         :param metrics:         list of metrics to calculate accuracy of the model.
         """
+        super().__init__()
         self.data = data
         self.validation_data = validation_data
         # set batch size
@@ -190,11 +192,12 @@ class GenericTransformerLightningModule(LightningModule):
         optim_config = self._get_config_by_keys(optim_config_keys, all_config)
         loss_config = self._get_config_by_keys(loss_config_keys, all_config)
 
-        model = model_creator({**model_config, **optim_config, **loss_config})
+        self.model = model_creator({**model_config, **optim_config, **loss_config})
+        self.loss = loss_creator(loss_config['loss'])
        
-        invalidInputError(isinstance(model, LightningModule),
+        invalidInputError(isinstance(self.model, LightningModule),
                           "The created model must be instance of LightningModule but got {}"
-                          .format(model.__class__))
+                          .format(self.model.__class__))
         
         self.scheduler = scheduler
         self.metrics = metrics
@@ -216,34 +219,46 @@ class GenericTransformerLightningModule(LightningModule):
             args = [args[i] for i in range(nargs)]
         else:
             args = args[:nargs]
-        return self.model(*args)
+        batch_x, batch_y, batch_x_mark, batch_y_mark = map(lambda x: x.float(), args)
+        outputs = self.model(batch_x, batch_x_mark, batch_y, batch_y_mark)
+        return outputs
+    
+    def training_step(self, batch, batch_idx):
+        y_hat = self(*batch)
+        target = batch[1][:, self.hparams.label_len:, :]
+        loss = self.loss(y_hat, target)  # use last output as target
+        self.log("train/loss", loss, on_epoch=True,
+                    prog_bar=True, logger=True)
+        return loss
 
     def validation_step(self, batch, batch_idx):
         """Define a single validation step."""
         y_hat = self(*batch)
+        target = batch[1][:, self.hparams.label_len:, :]
         if self.loss:
-            loss = self.loss(y_hat, batch[-1])  # use last output as target
+            loss = self.loss(y_hat, target)  # use last output as target
             self.log("val/loss", loss, on_epoch=True,
                      prog_bar=True, logger=True)
         if self.metrics:
-            acc = {_format_metric('val', metric, i): metric(y_hat, batch[-1])
+            acc = {_format_metric('val', metric, i): metric(y_hat, target)
                    for i, metric in enumerate(self.metrics)}
             self.log_dict(acc, on_epoch=True, prog_bar=True, logger=True)
 
     def test_step(self, batch, batch_idx):
         """Define a single test step."""
         y_hat = self(*batch)
+        target = batch[1][:, self.hparams.label_len:, :]
         if self.metrics:
-            acc = {_format_metric('test', metric, i): metric(y_hat, batch[-1])
+            acc = {_format_metric('test', metric, i): metric(y_hat, target)
                    for i, metric in enumerate(self.metrics)}
             self.log_dict(acc, on_epoch=True, prog_bar=True, logger=True)
 
     def train_dataloader(self):
         """Create the train data loader."""
-        return DataLoader(TensorDataset(torch.from_numpy(self.data[0]),
-                                        torch.from_numpy(self.data[1]),
-                                        torch.from_numpy(self.data[2]),
-                                        torch.from_numpy(self.data[3])),
+        return DataLoader(TensorDataset(torch.from_numpy(self.data[0]).float(),
+                                        torch.from_numpy(self.data[1]).float(),
+                                        torch.from_numpy(self.data[2]).float(),
+                                        torch.from_numpy(self.data[3]).float()),
                           batch_size=self.batch_size,
                           shuffle=True)
 
@@ -255,6 +270,9 @@ class GenericTransformerLightningModule(LightningModule):
                                         torch.from_numpy(self.validation_data[3])),
                           batch_size=self.batch_size,
                           shuffle=False)
+        
+    def configure_optimizers(self):
+        return self.model.configure_optimizers()
 
 
 def _check_duplicate_metrics(metrics):

@@ -14,4 +14,4 @@
 # limitations under the License.
 #
 
-from .Autoformer import model_creator
+from .Autoformer import model_creator, loss_creator

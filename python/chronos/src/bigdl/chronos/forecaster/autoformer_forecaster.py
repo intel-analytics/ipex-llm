@@ -16,7 +16,7 @@
 
 import torch
 from bigdl.chronos.forecaster.abstract import Forecaster
-from bigdl.chronos.model.autoformer import model_creator
+from bigdl.chronos.model.autoformer import model_creator, loss_creator
 from torch.utils.data import TensorDataset, DataLoader
 from bigdl.chronos.model.autoformer.Autoformer import AutoFormer, _transform_config_to_namedtuple
 from bigdl.nano.utils.log4Error import invalidInputError, invalidOperationError
@@ -24,7 +24,9 @@ from bigdl.chronos.forecaster.utils import\
     np_to_creator, set_pytorch_seed, check_transformer_data, xshard_to_np, np_to_xshard, loader_to_creator
 from bigdl.chronos.pytorch import TSTrainer as Trainer
 from bigdl.nano.automl.hpo.space import Space
-from bigdl.chronos.forecaster.utils_hpo import GenericTransformerLightningModule
+from bigdl.chronos.forecaster.utils_hpo import GenericTSTransformerLightningModule
+import bigdl.nano.automl.hpo as hpo
+
 from .utils_hpo import _format_metric_str
 import torch.nn as nn
 import numpy as np
@@ -164,8 +166,8 @@ class AutoformerForecaster(Forecaster):
                 warnings.warn("HPO is enabled but no spaces is specified, so disable HPO.")
             self.use_hpo = False
             self.internal = model_creator(self.model_config)
-        
         self.model_creator = model_creator
+        self.loss_creator = loss_creator
         
     @staticmethod
     def _config_has_search_space(config):
@@ -189,8 +191,9 @@ class AutoformerForecaster(Forecaster):
         optim_config_keys = list(self.optim_config.keys())
         loss_config_keys = list(self.loss_config.keys())
 
-        return GenericTransformerLightningModule(
+        return GenericTSTransformerLightningModule(
             model_creator=self.model_creator,
+            loss_creator=self.loss_creator,
             data=data, validation_data=validation_data,
             batch_size=batch_size, epochs=epochs,
             metrics=[_str2metric(metric) for metric in self.metrics],
@@ -261,7 +264,7 @@ class AutoformerForecaster(Forecaster):
 
         # build auto model
         self.tune_internal = self._build_automodel(data, validation_data, batch_size, epochs)
-
+        
         # shall we use the same trainier
         self.tune_trainer = Trainer(logger=False, max_epochs=epochs,
                                     checkpoint_callback=self.checkpoint_callback,

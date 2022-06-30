@@ -52,6 +52,9 @@ def create_data(loader=False):
         train_data = tsdata_train.roll(lookback=24, horizon=5, time_enc=True, label_len=12).to_numpy()
         val_data = tsdata_val.roll(lookback=24, horizon=5, time_enc=True, label_len=12).to_numpy()
         test_data = tsdata_test.roll(lookback=24, horizon=5, time_enc=True, label_len=12).to_numpy()
+        train_data = tuple(map(lambda x: x.astype(np.float32), train_data))
+        val_data = tuple(map(lambda x: x.astype(np.float32), val_data))
+        test_data = tuple(map(lambda x: x.astype(np.float32), test_data))
         return train_data, val_data, test_data
 
 class TestChronosModelTCNForecaster(TestCase):
@@ -117,14 +120,3 @@ class TestChronosModelTCNForecaster(TestCase):
             forecaster.load(ckpt_name)
             evaluate2 = forecaster.evaluate(self.val_loader)
         assert evaluate[0]['val_loss'] == evaluate2[0]['val_loss']
-
-
-if __name__ == "__main__":
-    train_data, val_data, test_data = create_data(loader=False)
-    print(len(train_data))
-    for x in train_data:
-        print(x.shape)
-    ut = TestChronosModelTCNForecaster()
-    # ut.test_autoformer_forecaster_loader_fit_eval_pred()
-    # ut.test_autoformer_forecaster_array_fit_eval_pred()
-    ut.test_autoformer_forecaster_tune()

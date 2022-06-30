@@ -417,8 +417,3 @@ class TestChronosModelTCNForecaster(TestCase):
             forecaster.load(ckpt_name)
             test_pred_load = forecaster.predict(test_data[0])
         np.testing.assert_almost_equal(test_pred_save, test_pred_load)
-
-
-if __name__ == "__main__":
-    ut = TestChronosModelTCNForecaster()
-    ut.test_tcn_forecaster_tune()
