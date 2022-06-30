@@ -68,6 +68,11 @@ jobs:
       matrix:
         os: ["ubuntu-20.04"]
         python-version: ["3.7"]
+        tf-version: [
+          "intel-tensorflow==2.8.0 keras==2.8.0 tensorflow-estimator==2.0.0",
+          "intel-tensorflow==2.7.0 keras==2.7.0 tensorflow-estimator==2.7.0",
+          ""
+          ]
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
@@ -90,6 +95,9 @@ jobs:
           source $CONDA/bin/activate inc-tf
           $CONDA/bin/conda info
           bash python/nano/dev/build_and_install.sh linux default false tensorflow
+          if [ ! -z "${{matrix.tf-version}}" ]; then
+            pip install ${{matrix.tf-version}}
+          fi
           pip install pytest
           pip install neural-compressor==1.11
           source bigdl-nano-init

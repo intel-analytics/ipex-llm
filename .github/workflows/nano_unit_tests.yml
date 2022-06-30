@@ -212,6 +212,11 @@ jobs:
       matrix:
         os: ["ubuntu-20.04"]
         python-version: ["3.7"]
+        tf-version: [
+          "intel-tensorflow==2.8.0 keras==2.8.0 tensorflow-estimator==2.0.0",
+          "intel-tensorflow==2.7.0 keras==2.7.0 tensorflow-estimator==2.7.0",
+          ""
+          ]
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
@@ -234,6 +239,9 @@ jobs:
           source $CONDA/bin/activate nano-tensorflow
           $CONDA/bin/conda info
           bash python/nano/dev/build_and_install.sh linux default false tensorflow
+          if [ ! -z "${{matrix.tf-version}}" ]; then
+            pip install ${{matrix.tf-version}}
+          fi
           pip install pytest
           source bigdl-nano-init
           bash python/nano/test/run-nano-tf-tests.sh
@@ -249,6 +257,9 @@ jobs:
           source $CONDA/bin/activate ray-tf
           $CONDA/bin/conda info
           bash python/nano/dev/build_and_install.sh linux default false tensorflow
+          if [ ! -z "${{matrix.tf-version}}" ]; then
+            pip install ${{matrix.tf-version}}
+          fi
           pip install pytest
           pip install ray[default]==1.11.0 prometheus_client==0.13.0
           source bigdl-nano-init
@@ -265,6 +276,9 @@ jobs:
           source $CONDA/bin/activate horovod-tf
           $CONDA/bin/conda info
           bash python/nano/dev/build_and_install.sh linux default false tensorflow
+          if [ ! -z "${{matrix.tf-version}}" ]; then
+            pip install ${{matrix.tf-version}}
+          fi
           pip install horovod==0.24.2
           pip install pytest
           source bigdl-nano-init
@@ -281,6 +295,9 @@ jobs:
           source $CONDA/bin/activate nano-automl-tf
           $CONDA/bin/conda info
           bash python/nano/dev/build_and_install.sh linux default false tensorflow
+          if [ ! -z "${{matrix.tf-version}}" ]; then
+            pip install ${{matrix.tf-version}}
+          fi
           pip install pytest
           pip install ConfigSpace
           pip install optuna
@@ -299,6 +316,9 @@ jobs:
           source $CONDA/bin/activate openvino-tensorflow
           $CONDA/bin/conda info
           bash python/nano/dev/build_and_install.sh linux default false tensorflow
+          if [ ! -z "${{matrix.tf-version}}" ]; then
+            pip install ${{matrix.tf-version}}
+          fi
           pip install pytest
           pip install openvino-dev
           source bigdl-nano-init
