@@ -87,26 +87,26 @@ class TestPPMLContext(unittest.TestCase):
 
     def test_read_plain_file(self):
         input_path = os.path.join(resource_path, "people.csv")
-        df = self.sc.read(CryptoMode.PLAIN_TEXT.value) \
+        df = self.sc.read(CryptoMode.PLAIN_TEXT) \
             .option("header", "true") \
             .csv(input_path)
         self.assertEqual(df.count(), 8)
 
     def test_read_encrypt_file(self):
         input_path = os.path.join(resource_path, "encrypted/people.csv")
-        df = self.sc.read(CryptoMode.AES_CBC_PKCS5PADDING.value) \
+        df = self.sc.read(CryptoMode.AES_CBC_PKCS5PADDING) \
             .option("header", "true") \
             .csv(input_path)
         self.assertEqual(df.count(), 8)
 
     def test_write_plain_file(self):
-        self.sc.write(self.df, CryptoMode.PLAIN_TEXT.value) \
+        self.sc.write(self.df, CryptoMode.PLAIN_TEXT) \
             .mode('overwrite') \
             .option("header", True) \
             .csv(os.path.join(resource_path, "output/plain"))
 
     def test_write_encrypt_file(self):
-        self.sc.write(self.df, CryptoMode.AES_CBC_PKCS5PADDING.value) \
+        self.sc.write(self.df, CryptoMode.AES_CBC_PKCS5PADDING) \
             .mode('overwrite') \
             .option("header", True) \
             .csv(os.path.join(resource_path, "output/encrypt"))
@@ -114,12 +114,12 @@ class TestPPMLContext(unittest.TestCase):
     def test_write_and_read_plain_parquet(self):
         parquet_path = os.path.join(resource_path, "parquet/plain-parquet")
         # write as a parquet
-        self.sc.write(self.df, CryptoMode.PLAIN_TEXT.value) \
+        self.sc.write(self.df, CryptoMode.PLAIN_TEXT) \
             .mode('overwrite') \
             .parquet(parquet_path)
 
         # read from a parquet
-        df_from_parquet = self.sc.read(CryptoMode.PLAIN_TEXT.value) \
+        df_from_parquet = self.sc.read(CryptoMode.PLAIN_TEXT) \
             .parquet(parquet_path)
 
         content = '\n'.join([str(v['language']) + "," + str(v['user'])
@@ -129,12 +129,12 @@ class TestPPMLContext(unittest.TestCase):
     def test_write_and_read_encrypted_parquet(self):
         parquet_path = os.path.join(resource_path, "parquet/en-parquet")
         # write as a parquet
-        self.sc.write(self.df, CryptoMode.AES_GCM_CTR_V1.value) \
+        self.sc.write(self.df, CryptoMode.AES_GCM_CTR_V1) \
             .mode('overwrite') \
             .parquet(parquet_path)
 
         # read from a parquet
-        df_from_parquet = self.sc.read(CryptoMode.AES_GCM_CTR_V1.value) \
+        df_from_parquet = self.sc.read(CryptoMode.AES_GCM_CTR_V1) \
             .parquet(parquet_path)
 
         content = '\n'.join([str(v['language']) + "," + str(v['user'])

@@ -31,10 +31,14 @@ class PPMLContext(JavaValue):
         callBigDlFunc(self.bigdl_type, "loadKeys", self.value, primary_key_path, data_key_path)
 
     def read(self, crypto_mode):
+        if isinstance(crypto_mode, CryptoMode):
+            crypto_mode = crypto_mode.value
         df_reader = callBigDlFunc(self.bigdl_type, "read", self.value, crypto_mode)
         return EncryptedDataFrameReader(self.bigdl_type, df_reader)
 
     def write(self, dataframe, crypto_mode):
+        if isinstance(crypto_mode, CryptoMode):
+            crypto_mode = crypto_mode.value
         df_writer = callBigDlFunc(self.bigdl_type, "write", self.value, dataframe, crypto_mode)
         return EncryptedDataFrameWriter(self.bigdl_type, df_writer)
 
@@ -81,9 +85,20 @@ class EncryptedDataFrameWriter:
 
 
 class CryptoMode(Enum):
+    """
+    BigDL crypto mode for encrypt and decrypt data.
+    """
+
+    # CryptoMode PLAIN_TEXT
     PLAIN_TEXT = "plain_text"
+
+    # CryptoMode AES_CBC_PKCS5PADDING
     AES_CBC_PKCS5PADDING = "AES/CBC/PKCS5Padding"
+
+    # CryptoMode AES_GCM_V1 for parquet only
     AES_GCM_V1 = "AES_GCM_V1"
+
+    # CryptoMode AES_GCM_CTR_V1 for parquet only
     AES_GCM_CTR_V1 = "AES_GCM_CTR_V1"
 
 
