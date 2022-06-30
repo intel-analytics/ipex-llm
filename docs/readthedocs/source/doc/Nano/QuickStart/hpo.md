@@ -279,27 +279,33 @@ By default, the storage used for storing trial info is created in-memory, so onc
 
 To use a persistent storage, specify `storage` with an RDB url (e.g SQLlite, MySQL, etc.) in `search`. The simplest way is to specify a sqllite url, as shown in the example below. It will automatically create a db file in the specified path. Also specify `study_name` so that all the search with the same name will be gathered into the same repo.
 
-#### Tensorflow Example
+#### Example
 
-Specify SQLlite `storage` and a `study_name` in search.
-```python
-name = "resume-example"
-storage = "sqlite:///example.db"
-#the first search from scratch
-model.search(study_name=name, storage=storage,...)
-# the resumed search
-model.search(study_name=name, storage=storage, resume=True,...)
-```
-#### PyTorch Example
-Specify SQLlite `storage` and a `study_name` in search.
-```python
-name = "resume-example"
-storage = "sqlite:///example.db"
-#the first search from scratch
-trainer.search(study_name=name, storage=storage,...)
-# the resumed search
-trainer.search(study_name=name, storage=storage, resume=True,..)
-```
+.. tabs::
+
+   .. tab:: Tensorflow
+
+
+    ```python
+    name = "resume-example"
+    storage = "sqlite:///example.db"
+    #the first search from scratch
+    model.search(study_name=name, storage=storage,...)
+    # the resumed search
+    model.search(study_name=name, storage=storage, resume=True,...)
+    ```
+
+    .. tab:: PyTorch
+
+    ```python
+    name = "resume-example"
+    storage = "sqlite:///example.db"
+    #the first search from scratch
+    trainer.search(study_name=name, storage=storage,...)
+    # the resumed search
+    trainer.search(study_name=name, storage=storage, resume=True,..)
+    ```
+
 
 If the model/trainer object is still accessible along the searches (e.g. in a running jupyter notebook), the specification of `storage` and `study_name` can be omitted. Simply call `search` with `resume=True` to resume search.
 
@@ -370,5 +376,19 @@ trainer.search(study_name=name,
 ---
 ### Analysis and Visualization
 
+
+<script type="text/javascript">
+var params = {
+  'url': 'https://docs.readthedocs.io/en/latest/automation-rules.html%23creating-an-automation-rule',
+  // 'doctool': 'sphinx',
+  // 'doctoolversion': '4.2.0',
+};
+var url = 'https://readthedocs.org/api/v3/embed/?' + $.param(params);
+$.get(url, function(data) {
+  $('#help-container').content(data['content']);
+});
+</script>
+
+<div id="help-container"></div>
 
 
