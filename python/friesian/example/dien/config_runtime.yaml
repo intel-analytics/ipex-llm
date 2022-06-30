@@ -12,3 +12,4 @@ model_path: dien_fp32_dynamic_rnn_graph.pb
 num_inter_threads: 1
 num_intra_threads: 1
 seed: 2
+kmp_affinity: granularity=fine,verbose,1,0

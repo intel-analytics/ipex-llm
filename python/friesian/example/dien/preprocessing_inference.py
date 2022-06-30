@@ -40,7 +40,7 @@ conf = {"spark.network.timeout": "10000000",
         "spark.executor.heartbeatInterval": "200s",
         "spark.driver.maxResultSize": "40G"}
 
-def prepare_data(rows):
+def prepare_data(rows, config):
     # Columns order: item_hist_seq, item, label, category, category_hist_seq, user, item_hist_seq_len
     lengths_x = [row[6] for row in rows]
     seqs_mid = [row[0] for row in rows]
@@ -48,6 +48,9 @@ def prepare_data(rows):
 
     n_samples = len(seqs_mid)
     maxlen_x = np.max(lengths_x)
+    maxlen_padding = (config['exact_maxlen'] != 0)
+    if maxlen_padding:
+        maxlen_x = max(config['history_maxlen'], maxlen_x)
 
     mid_his = np.zeros((n_samples, maxlen_x)).astype('int64')
     cat_his = np.zeros((n_samples, maxlen_x)).astype('int64')
@@ -57,7 +60,7 @@ def prepare_data(rows):
     elif dtype == 'fp16':
         data_type = 'float16'
     else:
-        raise ValueError("Invalid model data type: %s" % dtype)
+        invalidInputError(False, "Invalid model data type: %s" % dtype)
     mid_mask = np.zeros((n_samples, maxlen_x)).astype(data_type)
     for idx, [s_x, s_y] in enumerate(zip(seqs_mid, seqs_cat)):
         mid_mask[idx, :lengths_x[idx]] = 1.
@@ -90,7 +93,7 @@ def infer_main(partition, config):
     os.environ['CUDA_VISIBLE_DEVICES'] = '-1'
     os.environ['KMP_BLOCKTIME'] = '1'
     os.environ['OMP_NUM_THREADS'] = str(config['cores_per_instance'])
-    os.environ['KMP_AFFINITY'] = 'granularity=fine,verbose,compact,1,0'
+    os.environ['KMP_AFFINITY'] = config["kmp_affinity"]
     os.environ['KMP_SETTINGS'] = '1'
     if config['AMX'] == True:
         os.environ['DNNL_MAX_CPU_ISA'] = 'AVX512_CORE_AMX'
@@ -115,7 +118,7 @@ def infer_main(partition, config):
                     "Inputs/mask",
                     "Inputs/target_ph"]
 
-    if (config["graph_type"] == 'dynamic'):
+    if config["graph_type"] == 'dynamic':
         input_layers.append("Inputs/seq_len_ph")
 
     input_tensor = [graph.get_tensor_by_name(x + ":0") for x in input_layers]
@@ -134,7 +137,7 @@ def infer_main(partition, config):
             rewrite_options=rewriter_config_pb2.RewriterConfig(
                 remapping=rewriter_config_pb2.RewriterConfig.AGGRESSIVE))
     else:
-        raise Exception(f'Unsupported data type: {dtype}')
+        invalidInputError(False, f'Unsupported data type: {dtype}')
 
     session_config = tf.compat.v1.ConfigProto(graph_options=graph_options)
     session_config.intra_op_parallelism_threads = config["num_intra_threads"]
@@ -168,7 +171,7 @@ def infer_main(partition, config):
             buffer.append(row)
         if run:
             data_size += len(buffer)
-            feed_data = prepare_data(buffer)
+            feed_data = prepare_data(buffer, config)
             i += 1
 
             start_time = time.time()
@@ -248,12 +251,12 @@ if __name__ == "__main__":
                                extra_python_lib="utils.py")
         num_tasks = args.executor_cores * args.num_executors
     elif args.cluster_mode == "yarn":
-        init_orca_context("yarn-client", cores=args.executor_cores,
-                          num_nodes=args.num_executors, memory=args.executor_memory,
-                          driver_cores=args.driver_cores, driver_memory=args.driver_memory,
-                          conf=conf, extra_python_lib="utils.py")
+        sc = init_orca_context("yarn-client", cores=args.executor_cores,
+                               num_nodes=args.num_executors, memory=args.executor_memory,
+                               driver_cores=args.driver_cores, driver_memory=args.driver_memory,
+                               conf=conf, extra_python_lib="utils.py")
     elif args.cluster_mode == "spark-submit":
-        init_orca_context("spark-submit")
+        sc = init_orca_context("spark-submit")
     else:
         invalidInputError(False,
                           "cluster_mode should be one of 'local', 'yarn', 'standalone' and"
@@ -326,11 +329,12 @@ if __name__ == "__main__":
     eval_res = rdd.mapPartitions(lambda iter: infer_main(iter, config)).collect()
     data_size = 0
     for test_auc, test_accuracy, total_recommendations, stats in eval_res:
-        if total_recommendations > 0:
+        if total_recommendations > 0:  # Print the evaluation result of each task/partition
             init_time, model_restore_time, infer_time, thpt_forward_pass = stats
             data_size += total_recommendations
-            print(
-                f'<Forward pass> ({total_recommendations} samples) time={infer_time} | model_restore_time={model_restore_time} | init_time={init_time} | throughput={thpt_forward_pass} | accurary={test_accuracy} | auc={test_auc}')
+            print(f'<Forward pass> ({total_recommendations} samples) infer_time={infer_time} | '
+                  f'model_restore_time={model_restore_time} | init_time={init_time} | '
+                  f'throughput={thpt_forward_pass} | accurary={test_accuracy} | auc={test_auc}')
 
     end = time.time()
     print(f"DIEN end-to-end inference time: {(end - begin):.2f}s")
