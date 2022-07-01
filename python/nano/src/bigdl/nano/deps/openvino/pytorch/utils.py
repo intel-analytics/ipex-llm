@@ -27,6 +27,7 @@ def export(model, input_sample=None, xml_path="model.xml", **kwargs):
     :param model: Model instance of torch.nn.module to be exported.
     :param input_sample: torch.Tensor or a list for the model tracing.
     :param xml_path: The path to save openvino model file.
+    :param **kwargs: will be passed to torch.onnx.export function.
     '''
     # export a model with dynamic axes to enable IR to accept different batches and resolutions
     with TemporaryDirectory() as folder:
