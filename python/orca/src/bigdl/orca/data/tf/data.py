@@ -14,7 +14,9 @@
 # limitations under the License.
 #
 import tensorflow as tf
+from pyspark.sql import DataFrame
 
+from bigdl.orca.learn.utils import dataframe_to_xshards_of_feature_dict
 from bigdl.orca.tfpark.tf_dataset import TensorMeta
 from bigdl.dllib.utils import nest
 from bigdl.orca.data import SparkXShards
@@ -30,9 +32,10 @@ class Dataset(object):
     on each partitions.
     """
 
-    def __init__(self, xshards, create_dataset_fn):
+    def __init__(self, xshards, create_dataset_fn, xshards_transform_fn=None):
         self.xshards = xshards
         self.create_dataset_fn = create_dataset_fn
+        self.xshards_transform_fn = xshards_transform_fn
 
     def as_graph_rdd(self, batch_per_shard, drop_remainder=True):
 
@@ -107,6 +110,13 @@ class Dataset(object):
         tf_dataset_rdd = self.xshards.rdd.mapPartitions(to_dataset)
         return tf_dataset_rdd
 
+    def get_xshards(self):
+        if self.xshards_transform_fn is None:
+            return self.xshards
+        else:
+            new_shards = self.xshards_transform_fn(self.xshards)
+            return new_shards
+
     @staticmethod
     def from_tensor_slices(xshards):
         return TensorSliceDataset(xshards)
@@ -118,6 +128,17 @@ class Dataset(object):
         log4Error.invalidInputError(isinstance(tbl, FeatureTable),
                                     "Only Friesian FeatureTable is supported")
         xshards = featuretable_to_xshards(tbl)
+        return TensorSliceDataset(xshards)
+
+    @staticmethod
+    def from_spark_df(df, columns=None):
+        log4Error.invalidInputError(isinstance(df, DataFrame),
+                                    "Only Spark DataFrame is supported")
+        if columns is None:
+            columns = df.columns
+        if columns and not isinstance(columns, list):
+            columns = [columns]
+        xshards = dataframe_to_xshards_of_feature_dict(df, columns, accept_str_col=True)
         return TensorSliceDataset(xshards)
 
     def map(self, map_func):
@@ -143,9 +164,18 @@ class MapDataset(Dataset):
     def __init__(self, input_dataset, map_func):
 
         create_pre_dataset_fn = input_dataset.create_dataset_fn
+        xshards_pre_transform_fn = input_dataset.xshards_transform_fn
 
         def create_dataset_fn(data):
             dataset = create_pre_dataset_fn(data)
             return dataset.map(map_func)
+
+        def xshards_transform_fn(data):
+            if xshards_pre_transform_fn is None:
+                return data.transform_shard(map_func)
+            else:
+                pre_shards = xshards_pre_transform_fn(data)
+                return pre_shards.transform_shard(map_func)
         super().__init__(xshards=input_dataset.xshards,
-                         create_dataset_fn=create_dataset_fn)
+                         create_dataset_fn=create_dataset_fn,
+                         xshards_transform_fn=xshards_transform_fn)

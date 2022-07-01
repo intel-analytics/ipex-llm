@@ -1,6 +1,5 @@
 # Trusted Big Data ML with Occlum
 
-
 ## Prerequisites
 
 Pull image from dockerhub.
@@ -110,7 +109,6 @@ Enlarge these four configurations in [run_spark_on_occlum_glibc.sh](https://gith
 .resource_limits.max_num_of_threads = 4096 |
 .process.default_heap_size = "4096MB" |
 .resource_limits.kernel_space_heap_size="4096MB" |
-.process.default_mmap_size = "81920MB" |
 ```
 
 Then build the docker image:
@@ -188,7 +186,6 @@ Enlarge these four configurations in [run_spark_on_occlum_glibc.sh](https://gith
 .resource_limits.max_num_of_threads = 4096 |
 .process.default_heap_size = "32GB" |
 .resource_limits.kernel_space_heap_size="2GB" |
-.process.default_mmap_size = "24GB" |
 ```
 
 Then build the docker image:

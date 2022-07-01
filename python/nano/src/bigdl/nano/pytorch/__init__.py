@@ -15,4 +15,9 @@
 #
 __all__ = ["Trainer"]
 
+
+# unset the KMP_INIT_AT_FORK
+# which will cause significant slow down in multiprocessing training
+import os
+os.unsetenv('KMP_INIT_AT_FORK')
 from bigdl.nano.pytorch.trainer import Trainer

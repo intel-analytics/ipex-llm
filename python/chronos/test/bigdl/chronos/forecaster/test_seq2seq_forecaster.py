@@ -22,6 +22,10 @@ import torch
 from bigdl.chronos.forecaster.seq2seq_forecaster import Seq2SeqForecaster
 from unittest import TestCase
 import pytest
+import onnxruntime
+
+_onnxrt_ver = onnxruntime.__version__ != '1.6.0' #  Jenkins requires 1.6.0(chronos)
+skip_onnxrt = pytest.mark.skipif(_onnxrt_ver, reason="Only runs when onnxrt is 1.6.0")
 
 
 def create_data(loader=False):
@@ -88,6 +92,7 @@ class TestChronosModelSeq2SeqForecaster(TestCase):
                                        lr=0.01)
         train_loss = forecaster.fit(train_loader, epochs=2)
 
+    @skip_onnxrt
     def test_s2s_forecaster_onnx_methods(self):
         train_data, val_data, test_data = create_data()
         forecaster = Seq2SeqForecaster(past_seq_len=24,
@@ -217,6 +222,7 @@ class TestChronosModelSeq2SeqForecaster(TestCase):
             distributed_eval = forecaster.evaluate(val_data)
         stop_orca_context()
 
+    @skip_onnxrt
     def test_s2s_forecaster_distributed(self):
         from bigdl.orca import init_orca_context, stop_orca_context
         train_data, val_data, test_data = create_data()

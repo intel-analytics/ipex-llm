@@ -37,11 +37,9 @@ ds = DataSet.from_tensor_slices(sample_xshards)
 
 ### From Spark DataFrame
 
-A Spark DataFrame can be converted to an Orca xShards using `dataframe_to_xshards_of_feature_dict`. Then users can use the converted xShards to create an Orca TF Dataset using `DataSet.from_tensor_slices(xshards)`
+An Orca TF Dataset can be created from a Spark DataFrame using `DataSet.from_spark_df(df)`
 
 ```python
-from bigdl.orca.learn.utils import dataframe_to_xshards_of_feature_dict
-
 spark = OrcaContext.get_spark_session()
 df = spark.read.options(header=True, inferSchema=True, delimiter=":").csv("/path/to/input_file")
 df.show(5, False)
@@ -55,13 +53,7 @@ df.show(5, False)
 # |1     |Bug's Life, A (1998)                  |5     |
 # +------+--------------------------------------+------+
 
-xshards = dataframe_to_xshards_of_feature_dict(df, df.columns, accept_str_col=True)
-# [{'userid': array(['1', '1', '1', '1', '1'], dtype='<U1'), 'rating': array([5., 3., 3., 4., 5.], dtype=float32), 
-#   'title': array(["One Flew Over the Cuckoo's Nest (1975)",
-#        'James and the Giant Peach (1996)', 'My Fair Lady (1964)',
-#        'Erin Brockovich (2000)', "Bug's Life, A (1998)"], dtype='<U38')}]
-
-ds = DataSet.from_tensor_slices(xshards)
+ds = DataSet.from_spark_df(df)
 # List all elements in ds 
 # {'userid': b'1', 'title': b"One Flew Over the Cuckoo's Nest (1975)", 'rating': 5}
 # {'userid': b'1', 'title': b'James and the Giant Peach (1996)', 'rating': 3}
@@ -124,7 +116,7 @@ from bigdl.orca.learn.tf2.estimator import Estimator
 
 est = Estimator.from_keras(model_creator=model_creator,
                            verbose=True,
-                           config=config, backend="tf2")
+                           config=config, backend="ray")
 est.fit(ds, 1, batch_size=32, steps_per_epoch=steps)
 est.evaluate(ds, 32, num_steps=steps)
 pred_shards = est.predict(ds)
@@ -146,7 +138,6 @@ import math
 from bigdl.orca import init_orca_context, stop_orca_context, OrcaContext
 from bigdl.orca.learn.tf2 import Estimator
 from bigdl.orca.data.tf.data import Dataset
-from bigdl.orca.learn.utils import dataframe_to_xshards_of_feature_dict
 from pyspark.sql.functions import col, mean, stddev
 
 # Init an orca context
@@ -184,10 +175,8 @@ train_count = df.count()
 steps = math.ceil(train_count / 8192)
 print("train size: ", train_count, ", steps: ", steps)
 
-# Convert to orca xshards
-train_shards = dataframe_to_xshards_of_feature_dict(df, df.columns, accept_str_col=True)
-# Create an Orca TF Dataset from an Orca Xshards
-ds = Dataset.from_tensor_slices(train_shards)
+# Create an Orca TF Dataset from a Spark DataFrame
+ds = DataSet.from_spark_df(df)
 # List all elements in ds 
 # {'movieid': 1193, 'userid': b'1', 'rating': 5.0, 'timestamp': 978300760, 'title': b"One Flew Over the Cuckoo's Nest (1975)", 'genres': b'Drama'}
 # {'movieid': 661, 'userid': b'1', 'rating': 3.0, 'timestamp': 978302109, 'title': b'James and the Giant Peach (1996)', 'genres': b"Animation|Children's|Musical"}
@@ -283,7 +272,7 @@ config = {
 
 est = Estimator.from_keras(model_creator=model_creator,
                            verbose=True,
-                           config=config, backend="tf2")
+                           config=config, backend="ray")
 # Train the model using Orca TF Dataset.
 est.fit(ds, 1, batch_size=32, steps_per_epoch=steps)
 # Evaluate the model on the test set.

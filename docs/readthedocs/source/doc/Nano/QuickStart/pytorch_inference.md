@@ -92,10 +92,10 @@ By default, `Trainer.quantize()` doesn't search the tuning space and returns the
 ### Quantization using Intel Neural Compressor
 By default, Intel Neural Compressor is not installed with BigDL-Nano. So if you determine to use it as your quantization backend, you'll need to install it first:
 ```shell
-# We have tested on neural-compressor>=1.8.1,<=1.11.0
-pip install 'neural-compressor>=1.8.1,<=1.11.0'
+pip install neural-compressor==1.11.0
 ```
-**Quantization without extra accelerator**  
+**Quantization without extra accelerator**
+
 Without extra accelerator, `Trainer.quantize()` returns a pytorch module with desired precision and accuracy. Following the example in [Runtime Acceleration](#runtime-acceleration), you can add quantization as below:
 ```python
 q_model = trainer.quanize(model, calib_dataloader=dataloader)
@@ -109,8 +109,9 @@ trainer.predict(q_model, dataloader)
 ```
 This is a most basic usage to quantize a model with defaults, INT8 precision, and without search tuning space to control accuracy drop.  
 
-**Quantization with ONNXRuntime accelerator**  
-Without the ONNXRuntime accelerator, `Trainer.quantize()` will return a model with compressed precision but running inference in the ONNXRuntime engine. If your INC version >= 1.11, it's also required to install onnxruntime-extensions as a dependency of INC when using ONNXRuntime as backend as well as the dependencies required in [ONNXRuntime Acceleration](#onnxruntime-acceleration):
+**Quantization with ONNXRuntime accelerator**
+
+Without the ONNXRuntime accelerator, `Trainer.quantize()` will return a model with compressed precision but running inference in the ONNXRuntime engine. It's also required to install onnxruntime-extensions as a dependency of INC when using ONNXRuntime as backend as well as the dependencies required in [ONNXRuntime Acceleration](#onnxruntime-acceleration):
 ```shell
 pip install onnx onnxruntime onnxruntime-extensions
 ```

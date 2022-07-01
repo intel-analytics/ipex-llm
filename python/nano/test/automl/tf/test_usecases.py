@@ -98,7 +98,6 @@ class TestUseCases(TestCase):
         )
         # run hpo
         model.search(n_trials=2,
-                     n_parallels = 2,
                      target_metric='accuracy',
                      direction="maximize",
                      sampler=SamplerType.Random,
@@ -149,7 +148,6 @@ class TestUseCases(TestCase):
         # run hpo
         model.search(
             n_trials=2,
-            n_parallels = 2,
             target_metric='accuracy',
             direction="maximize",
             x=x_train,
@@ -203,9 +201,9 @@ class TestUseCases(TestCase):
         # run hpo
         model.search(
             n_trials=2,
-            n_parallels = 2,
             target_metric='accuracy',
             direction="maximize",
+            target_metric_mode='auto',
             x=x_train,
             y=y_train,
             validation_data=(x_valid, y_valid),
@@ -285,6 +283,8 @@ class TestUseCases(TestCase):
         history = model.fit(x_train, y_train,
                     batch_size=128, epochs=2, validation_split=0.2)
         test_scores = model.evaluate(x_test, y_test, verbose=2)
+
+
 
 if __name__ == '__main__':
     pytest.main([__file__])

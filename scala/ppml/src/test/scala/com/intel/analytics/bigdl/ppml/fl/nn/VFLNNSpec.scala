@@ -34,7 +34,7 @@ class VFLNNSpec extends FLSpec {
     FLContext.initFLContext()
     val psi = new PSI()
     val salt = psi.getSalt()
-    val trainDf = psi.uploadSetAndDownloadIntersection(df, salt)
+    val trainDf = psi.uploadSetAndDownloadIntersectionDataFrame(df, salt)
     val testDf = trainDf.drop("Outcome")
     trainDf.show()
     val lr = new VFLLogisticRegression(df.columns.size - 1)

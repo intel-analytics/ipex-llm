@@ -38,7 +38,7 @@ class DataFrameHelper extends BigDLSpecHelper {
   var dataKeyPlaintext: String = null
   simpleKms.retrievePrimaryKey(primaryKeyPath)
   simpleKms.retrieveDataKey(primaryKeyPath, dataKeyPath)
-  val (plainFileName, encryptFileName, data) = generateCsvData()
+  lazy val (plainFileName, encryptFileName, data) = generateCsvData()
 
   def generateKeys(): (String, String) = {
     val appid: String = (1 to 12).map(x => Random.nextInt(10)).mkString

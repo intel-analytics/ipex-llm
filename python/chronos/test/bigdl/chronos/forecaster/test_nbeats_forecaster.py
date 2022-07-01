@@ -22,6 +22,10 @@ from unittest import TestCase
 import pytest
 
 from bigdl.chronos.forecaster.nbeats_forecaster import NBeatsForecaster
+import onnxruntime
+
+_onnxrt_ver = onnxruntime.__version__ != '1.6.0' #  Jenkins requires 1.6.0(chronos)
+skip_onnxrt = pytest.mark.skipif(_onnxrt_ver, reason="Only runs when onnxrt is 1.6.0")
 
 
 def create_data(loader=False):
@@ -87,6 +91,7 @@ class TestChronosNBeatsForecaster(TestCase):
                                      lr=0.01)
         forecater.fit(train_loader, epochs=2)
 
+    @skip_onnxrt
     def test_nbeats_forecaster_onnx_methods(self):
         train_data, val_data, test_data = create_data()
         forecaster = NBeatsForecaster(past_seq_len=24,
@@ -162,6 +167,7 @@ class TestChronosNBeatsForecaster(TestCase):
         np.testing.assert_almost_equal(test_pred_save, test_pred_load)
         np.testing.assert_almost_equal(test_pred_save_q, test_pred_load_q)
 
+    @skip_onnxrt
     def test_nbeats_forecaster_quantization_onnx(self):
         train_data, val_data, test_data = create_data()
         forecaster = NBeatsForecaster(past_seq_len=24,
@@ -174,6 +180,7 @@ class TestChronosNBeatsForecaster(TestCase):
         pred_q = forecaster.predict_with_onnx(test_data[0], quantize=True)
         eval_q = forecaster.evaluate_with_onnx(test_data, quantize=True)
 
+    @skip_onnxrt
     def test_nbeats_forecaster_quantization_onnx_tuning(self):
         train_data, val_data, test_data = create_data()
         forecaster = NBeatsForecaster(past_seq_len=24,
@@ -250,6 +257,7 @@ class TestChronosNBeatsForecaster(TestCase):
             distributed_eval = forecaster.evaluate(val_data)
         stop_orca_context()
 
+    @skip_onnxrt
     def test_nbeats_forecaster_distributed(self):
         train_data, val_data, test_data = create_data()
         from bigdl.orca import init_orca_context, stop_orca_context
