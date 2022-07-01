@@ -1,4 +1,4 @@
-# Applying TensorFlow pipeline to Spark DataFrame (Distributed Data Processing)
+# Applying TensorFlow Pipeline to Spark DataFrame (Distributed Data Processing)
 
 ## Overview
 
@@ -8,7 +8,7 @@ In this tutorial, we will apply TensorFlow pipeline to distributed Big Data:
 2. Optionally create Orca TF Dataset (i.e., distributed TensorFlow Dataset) from Spark Dataframe.
 3. Run distributed TensorFlow training on distributed data (Spark Dataframe or Orca TF Dataset).
 
-This tutorial is based on the Tensorflow Recommenders example [basic ranking](https://www.tensorflow.org/recommenders/examples/basic_ranking)
+This tutorial is based on the Tensorflow Recommenders example [basic ranking](https://www.tensorflow.org/recommenders/examples/basic_ranking).
 
 ## Key Concepts
 
@@ -17,7 +17,8 @@ An **Orca TF Dataset** is a distributed Tensorflow [tf.data.Dataset](https://www
 - Each element of the Orca TF Dataset is a tf.data.Dataset.
 - An Orca TF Dataset has a collection of elements partitioned across the cluster nodes that can be operated on in parallel.
 - An Orca TF Dataset can be created from an [Orca xShards](https://bigdl.readthedocs.io/en/latest/doc/Orca/Overview/data-parallel-processing.html#xshards-distributed-data-parallel-python-processing), a [Friesian FeatureTable](https://bigdl.readthedocs.io/en/latest/doc/PythonAPI/Friesian/feature.html) or a [Spark DataFrame](https://spark.apache.org/docs/latest/sql-programming-guide.html).
-- After the Orca TF Dataset is created, map functions can be applied to the Dataset in parallel. And the Orca TF estimator can do model training, validation, and inference using the created Orca TF Dataset.
+- After the Orca TF Dataset is created, map functions can be applied to the Dataset in parallel. 
+- The Orca TF estimator can do model training, validation, and inference using the created Orca TF Dataset.
 
 ### Orca Estimator
 
@@ -157,7 +158,14 @@ def preprocess(x):
         "timestamp": (tf.cast(x["timestamp"], tf.float32) - mean) / stddev
     }
 
+# Preprocess the ds using map function
 ds = ds.map(preprocess)
+# List 5 elements in ds
+# {'movie_title': b"One Flew Over the Cuckoo's Nest (1975)", 'user_id': b'1', 'user_rating': 5.0, 'timestamp': 0.49397522}
+# {'movie_title': b'James and the Giant Peach (1996)', 'user_id': b'1', 'user_rating': 3.0, 'timestamp': 0.4940853}
+# {'movie_title': b'My Fair Lady (1964)', 'user_id': b'1', 'user_rating': 3.0, 'timestamp': 0.49407482}
+# {'movie_title': b'Erin Brockovich (2000)', 'user_id': b'1', 'user_rating': 4.0, 'timestamp': 0.4939385}
+# {'movie_title': b"Bug's Life, A (1998)", 'user_id': b'1', 'user_rating': 5.0, 'timestamp': 0.5368723}
 ```
 
 ## Using Orca Estimator to Train The TensorFlow Model Distributedly
@@ -178,7 +186,7 @@ config = {
     "lr": 0.1
 }
 
-# Create the tf estimator
+# Create the orca tf estimator
 est = Estimator.from_keras(model_creator=model_creator,
                            verbose=True,
                            config=config, backend="ray")

@@ -105,6 +105,8 @@ def parse_args():
                       help='The driver memory.')
     parser.add_option("--data_dir", dest="data_dir", default="./ml-1m",
                       help='The directory to ml-1m .dat files')
+    parser.add_option("--batch_size", dest="batch_size", default=8192,
+                      help="The batch size used for training and evaluate.")
 
     (options, args) = parser.parse_args(sys.argv)
     return (options, args)
@@ -169,11 +171,11 @@ if __name__ == "__main__":
     train_df, test_df = part_df.randomSplit([0.8, 0.2])
 
     train_count = train_df.count()
-    steps = math.ceil(train_count / 8192)
+    steps = math.ceil(train_count / options.batch_size)
     print("train size: ", train_count, ", steps: ", steps)
 
     test_count = test_df.count()
-    test_steps = math.ceil(test_count / 4096)
+    test_steps = math.ceil(test_count / options.batch_size)
     print("test size: ", test_count, ", steps: ", test_steps)
 
     # Create Orca TF Datasets from a Spark DataFrame
@@ -214,9 +216,9 @@ if __name__ == "__main__":
                                config=config, backend="ray")
 
     # Train the model using Orca TF Dataset.
-    est.fit(train_ds, 3, batch_size=8192, steps_per_epoch=steps)
+    est.fit(train_ds, 3, batch_size=options.batch_size, steps_per_epoch=steps)
     # Evaluate the model on the test set.
-    est.evaluate(test_ds, 4096, num_steps=test_steps)
+    est.evaluate(test_ds, options.batch_size, num_steps=test_steps)
 
     # Shutdown the Estimator and stop the orca context.
     est.shutdown()
