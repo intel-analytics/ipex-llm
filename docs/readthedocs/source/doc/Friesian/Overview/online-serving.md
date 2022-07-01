@@ -20,7 +20,7 @@
 8. [Scale-out for Big Data](#scale-out-for-big-data)
    1. [Redis for Big Data](#redis-for-big-data)
    2. [Scale Service with Envoy](#scale-service-with-envoy)
-9. [Quick Start](#quick-start)
+   3. [Use Scripts to Deploy Multiple Services](#use-scripts-to-deploy-multiple-services)
 
 ## Overview
 
