@@ -5,3 +5,5 @@ Nano API
     :maxdepth: 2
 
     pytorch.rst
+    hpo_api.rst
+
