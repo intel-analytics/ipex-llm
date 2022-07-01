@@ -4,20 +4,26 @@ Nano HPO API
 Search Space
 ---------------------------
 
-.. automodule:: bigdl.nano.automl.hpo.space
-    :members: Categorical, Real, Int, Bool
-    :undoc-members:
-    :exclude-members:
+.. autoclass:: bigdl.nano.automl.hpo.space.Categorical
 
+.. autoclass:: bigdl.nano.automl.hpo.space.Real
+
+.. autoclass:: bigdl.nano.automl.hpo.space.Int
+
+.. autoclass:: bigdl.nano.automl.hpo.space.Bool
 
 
 HPO for Tensorflow
 ---------------------------
 
-.. autoclass:: bigdl.nano.automl.tf.keras.Model.py
+.. autoclass:: bigdl.nano.automl.tf.keras.Model
     :members:
     :inherited-members: search, search_summary
 
+
+.. autoclass:: bigdl.nano.automl.tf.keras.Sequantial
+    :members:
+    :inherited-members: search, search_summary
 
 
 HPO for PyTorch
