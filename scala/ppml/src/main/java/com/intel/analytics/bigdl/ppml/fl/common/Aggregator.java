@@ -68,7 +68,7 @@ public abstract class Aggregator {
         synchronized (this) {
             storageHolder.putClientData(clientUUID, dataHolder);
             logger.debug(clientUUID + " uploaded. Server received: " + flPhase + " " +
-                    storageHolder.getClientDataSize() + "/" + clientNum);
+                    storageHolder.getClientDataSize() + "/" + clientNum + ", version: " + version);
             if (storageHolder.getClientDataSize() >= clientNum) {
                 logger.debug("Server start aggregate: " + flPhase);
                 aggregate(flPhase);

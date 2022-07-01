@@ -105,5 +105,26 @@ class TestPlugin(TestCase):
         assert pl_model.model.fc1.weight.data == 0.25, "subprocess plugin works incorrect"
         return 
 
+    def test_trainer_spawn_correctness(self):
+        # same as subprocess test
+
+        linear = LinearModel()
+        pl_model = LightningModuleFromTorch(
+            model = linear,
+            optimizer = torch.optim.SGD(linear.parameters(), lr=0.5),
+            loss=torch.nn.MSELoss(),
+            metrics=[torchmetrics.MeanSquaredError()]
+        )
+        trainer = Trainer(num_processes=2, distributed_backend="spawn", max_epochs=2)
+        features = torch.tensor([[0.0],[0.0],[1.0],[1.0]])
+        labels = torch.tensor([[0.0],[0.0],[0.0],[0.0]])
+
+        dataset = TensorDataset(features,labels)
+        train_loader = DataLoader(dataset=dataset, batch_size=2, shuffle=False)
+        trainer.fit(pl_model, train_loader, train_loader)
+
+        assert pl_model.model.fc1.weight.data == 0.25, "spawn plugin works incorrect"
+        return 
+
 if __name__ == '__main__':
     pytest.main([__file__])

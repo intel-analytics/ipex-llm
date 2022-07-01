@@ -107,12 +107,12 @@ class TestCorrectness(FLTest):
 
         
         train(train_dataloader, model, loss_fn, optimizer)
-        
         vfl_model_1 = NeuralNetworkPart1()
         set_one_like_parameter(vfl_model_1)
         vfl_model_2 = NeuralNetworkPart2()
         set_one_like_parameter(vfl_model_2)
-        vfl_client_ppl = Estimator.from_torch(client_model=vfl_model_1, 
+        vfl_client_ppl = Estimator.from_torch(client_model=vfl_model_1,
+                                              client_id="1",
                                               loss_fn=loss_fn,
                                               optimizer_cls=torch.optim.SGD,
                                               optimizer_args={'lr':1e-3},
@@ -167,6 +167,7 @@ class NeuralNetworkPart2(nn.Module):
         )
 
     def forward(self, x):
+        x = x[0] # this act as interactive layer, take the first tensor
         x = self.sequential_2(x)
         return x
 

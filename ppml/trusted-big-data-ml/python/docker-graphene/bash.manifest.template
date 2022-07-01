@@ -14,13 +14,13 @@ sgx.debug = 0
 sgx.isvprodid = 1
 sgx.isvsvn = 3
 
-#sgx.remote_attestation = 1
-#sgx.ra_client_spid = ""
+sgx.remote_attestation = 1
+sgx.ra_client_spid = ""
 
-loader.env.LD_LIBRARY_PATH = "/usr/lib/python3.8/lib:/lib:/lib/x86_64-linux-gnu:/usr/lib:/usr/lib/x86_64-linux-gnu:$(JDK_HOME):$(JDK_HOME)/lib/amd64/jli:/ppml/trusted-big-data-ml/work/lib"
-loader.env.PATH = "/usr/lib/python3.8/bin:/:$(EXECDIR):/usr/sbin:/usr/bin:/sbin:/bin:$(JDK_HOME)/bin"
-loader.env.PYTHONHOME = "/usr/lib/python3.8"
-loader.env.PYTHONPATH = "/usr/lib/python3.8:/usr/lib/python3.8/lib-dynload:/usr/local/lib/python3.8/dist-packages:/usr/lib/python3/dist-packages"
+loader.env.LD_LIBRARY_PATH = "/usr/lib/python3.7/lib:/lib:/lib/x86_64-linux-gnu:/usr/lib:/usr/lib/x86_64-linux-gnu:$(JDK_HOME):$(JDK_HOME)/lib/amd64/jli:/ppml/trusted-big-data-ml/work/lib"
+loader.env.PATH = "/usr/lib/python3.7/bin:/:$(EXECDIR):/usr/sbin:/usr/bin:/sbin:/bin:$(JDK_HOME)/bin"
+loader.env.PYTHONHOME = "/usr/lib/python3.7"
+loader.env.PYTHONPATH = "/usr/lib/python3.7:/usr/lib/python3.7/lib-dynload:/usr/local/lib/python3.7/dist-packages:/usr/lib/python3/dist-packages"
 loader.env.JAVA_HOME = "$(JDK_HOME)"
 loader.env.JAVA_OPTS = "'-Djava.library.path=$(JDK_HOME)/lib -Dsun.boot.library.path=$(JDK_HOME)/lib'"
 loader.env.SPARK_LOCAL_IP = "$(SPARK_LOCAL_IP)"
@@ -79,8 +79,8 @@ fs.mount.tmp.path = "/tmp"
 fs.mount.tmp.uri = "file:/tmp"
 
 fs.mount.pyhome.type = "chroot"
-fs.mount.pyhome.path = "/usr/lib/python3.8"
-fs.mount.pyhome.uri = "file:/usr/lib/python3.8"
+fs.mount.pyhome.path = "/usr/lib/python3.7"
+fs.mount.pyhome.uri = "file:/usr/lib/python3.7"
 
 fs.mount.pydisthome.type = "chroot"
 fs.mount.pydisthome.path = "/usr/lib/python3/dist-packages"
@@ -180,8 +180,8 @@ sgx.allowed_files.etc       = "file:/etc"
 sgx.allowed_files.tmp       = "file:/tmp"
 sgx.allowed_files.jdk       = "file:$(JDK_HOME)"
 sgx.allowed_files.current   = "file:/ppml/trusted-big-data-ml"
-sgx.allowed_files.pyhome    = "file:/usr/lib/python3.8"
-sgx.allowed_files.pydisthome = "file:/usr/local/lib/python3.8/dist-packages"
+sgx.allowed_files.pyhome    = "file:/usr/lib/python3.7"
+sgx.allowed_files.pydisthome = "file:/usr/local/lib/python3.7/dist-packages"
 sgx.allowed_files.kerasdatas = "file:/root/.keras"
 sgx.allowed_files.m2        = "file:/root/.m2"
 sgx.allowed_files.zinc      = "file:/root/.zinc"

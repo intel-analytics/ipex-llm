@@ -30,7 +30,7 @@ class Aggregator(object):
                  client_num=1) -> None:
         self.model = None
         self.client_data = {}
-        self.server_data = None
+        self.server_data = {}
         self.client_num = client_num
         self.condition = Condition()
         self._lock = threading.Lock()
@@ -101,28 +101,39 @@ got {len(self.client_data)}/{self.client_num}')
 
     def aggregate(self):
         input, target = [], None        
-        for ndarray_map in self.client_data.values():
+        for cid, ndarray_map in self.client_data.items():
             for k, v in ndarray_map.items():
                 if k == 'input':
-                    input.append(tf.convert_to_tensor(v))
+                    input.append((cid, tf.convert_to_tensor(v)))
                 elif k == 'target':
                     target = tf.convert_to_tensor(v)
                 else:
                     invalidInputError(False, f'Invalid type of tensor map key: {k}, should be input/target')
         # TODO: to be consistent with Pytorch, custom API
-        x = input
+        
+        def sort_by_key(kv_tuple):
+            return kv_tuple[0]
+        
+        input.sort(key=sort_by_key)
+        tensor_list = []
+        for cid, input_tensor in input:
+            input_tensor.requires_grad = True
+            tensor_list.append(input_tensor)
+        
         with tf.GradientTape(persistent=True) as tape:
-            for tensor in x:
+            for tensor in tensor_list:
                 tape.watch(tensor)
-            pred = self.model(x)
+            pred = self.model(tensor_list)
             loss = self.loss_fn(target, pred)
         gradients = tape.gradient(loss, self.model.trainable_variables)
         if self.optimizer is not None:
             self.optimizer.apply_gradients(zip(gradients, self.model.trainable_variables))
-        x_grad = tape.gradient(loss, x)[0]
+        
+        for cid, input_tensor in input:
+            x_grad = tape.gradient(loss, input_tensor)
+            grad_map = {'grad': x_grad.numpy(), 'loss': np.array(loss.numpy())}
+            self.server_data[cid] = ndarray_map_to_tensor_map(grad_map)
+        
         del tape # manually delete the persistent GradientTape
-        grad_map = {'grad': x_grad.numpy(), 'loss': np.array(loss.numpy())}
-        self.server_data = ndarray_map_to_tensor_map(grad_map)
-
     
 

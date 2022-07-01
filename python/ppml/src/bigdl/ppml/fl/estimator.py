@@ -30,26 +30,34 @@ from tensorflow.keras.models import Model
 class Estimator:
     @staticmethod
     def from_torch(client_model: nn.Module,
+                   client_id,
                    loss_fn,
                    optimizer_cls,
-                   optimizer_args=None,
+                   optimizer_args={},                   
                    target="localhost:8980",
                    server_model=None):
-        optimizer = optimizer_cls(client_model.parameters(), **optimizer_args)
-        estimator = PytorchEstimator(client_model, loss_fn, optimizer, target=target)
-        if server_model is not None:
-            estimator.add_server_model(server_model, loss_fn, optimizer_cls, optimizer_args)
+        estimator = PytorchEstimator(model=client_model, 
+                                     loss_fn=loss_fn, 
+                                     optimizer_cls=optimizer_cls,
+                                     optimizer_args=optimizer_args,
+                                     client_id=client_id,
+                                     target=target,
+                                     server_model=server_model)
         return estimator
 
     @staticmethod
     def from_keras(client_model: Model,
+                   client_id,
                    loss_fn,
                    optimizer_cls,
                    optimizer_args={},
                    target="localhost:8980",
                    server_model=None):
-        optimizer = optimizer_cls(**optimizer_args)
-        estimator = TensorflowEstimator(client_model, loss_fn, optimizer, target=target)
-        if server_model is not None:
-            estimator.add_server_model(server_model, loss_fn, optimizer_cls, optimizer_args)
+        estimator = TensorflowEstimator(model=client_model, 
+                                        loss_fn=loss_fn, 
+                                        optimizer_cls=optimizer_cls,
+                                        optimizer_args=optimizer_args,
+                                        client_id=client_id,
+                                        target=target,
+                                        server_model=server_model)        
         return estimator

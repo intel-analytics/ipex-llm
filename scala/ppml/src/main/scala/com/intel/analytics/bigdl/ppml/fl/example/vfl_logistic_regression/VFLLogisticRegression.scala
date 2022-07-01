@@ -32,7 +32,7 @@ object VFLLogisticRegression extends DebugLogger{
 
     val spark = FLContext.getSparkSession()
     val df = spark.read.option("header", "true").csv(dataPath)
-    val intersectionDf = pSI.uploadSetAndDownloadIntersection(df, salt, rowKeyName)
+    val intersectionDf = pSI.uploadSetAndDownloadIntersectionDataFrame(df, salt, rowKeyName)
     val (trainDf, valDf) = ExampleUtils.splitDataFrameToTrainVal(intersectionDf)
     val testDf = trainDf.drop("Outcome")
     trainDf.show()
