@@ -35,7 +35,6 @@ class TestPPMLContext(unittest.TestCase):
     data_content = None
     csv_content = None
     sc = None
-    spark = None
 
     @classmethod
     def setUpClass(cls) -> None:
@@ -76,8 +75,8 @@ class TestPPMLContext(unittest.TestCase):
 
         # generate a tmp dataframe for test
         data = [("Java", "20000"), ("Python", "100000"), ("Scala", "3000")]
-        cls.spark = SparkSession.builder.appName('initData').getOrCreate()
-        cls.df = cls.spark.createDataFrame(data).toDF("language", "user")
+        spark = SparkSession.builder.appName('initData').getOrCreate()
+        cls.df = spark.createDataFrame(data).toDF("language", "user")
         cls.data_content = '\n'.join([str(v['language']) + "," + str(v['user'])
                                       for v in cls.df.orderBy('language').collect()])
 
