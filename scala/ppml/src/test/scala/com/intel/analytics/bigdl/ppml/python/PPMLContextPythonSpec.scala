@@ -22,6 +22,7 @@ import org.apache.spark.SparkConf
 import org.apache.spark.sql.SparkSession
 
 import java.io.File
+import java.util
 import scala.collection.JavaConverters._
 
 class PPMLContextPythonSpec extends DataFrameHelper{
@@ -57,7 +58,14 @@ class PPMLContextPythonSpec extends DataFrameHelper{
   }
 
   "init PPMLContext with app name & args & sparkConf" should "work" in {
-    ppmlContextPython.createPPMLContext("testApp", pyPPMLArgs.asJava, conf)
+    val confs: util.List[util.List[String]] = new util.ArrayList[util.List[String]]()
+    conf.getAll.foreach(tuple => {
+      val conf = new util.ArrayList[String]()
+      conf.add(tuple._1)
+      conf.add(tuple._2)
+      confs.add(conf)
+    })
+    ppmlContextPython.createPPMLContext("testApp", pyPPMLArgs.asJava, confs)
   }
 
   "read plain csv file" should "work" in {

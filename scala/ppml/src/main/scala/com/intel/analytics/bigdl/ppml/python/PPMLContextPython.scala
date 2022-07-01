@@ -50,11 +50,11 @@ class PPMLContextPython[T]() {
   }
 
   def createPPMLContext(appName: String, ppmlArgs: util.Map[String, String],
-                        confs: util.List[util.List]): PPMLContext = {
+                        confs: util.List[util.List[String]]): PPMLContext = {
     logger.debug("create PPMLContextWrapper with appName & ppmlArgs & sparkConf")
     val args = parseArgs(ppmlArgs)
     val sparkConf = new SparkConf()
-    confs.asScala.foreach(conf => sparkConf.set(conf.get(0).toString, conf.get(1).toString))
+    confs.asScala.foreach(conf => sparkConf.set(conf.get(0), conf.get(1)))
 
     PPMLContext.initPPMLContext(sparkConf, appName, args)
   }
