@@ -4,8 +4,8 @@ Nano HPO API
 Search Space
 ---------------------------
 
-.. autoclass:: bigdl.nano.automl.hpo.space
-    :members:
+.. automodule:: bigdl.nano.automl.hpo.space
+    :members: Categorical, Real, Int, Bool
     :undoc-members:
     :exclude-members:
 
@@ -14,10 +14,9 @@ Search Space
 HPO for Tensorflow
 ---------------------------
 
-.. autoclass:: bigdl.nano.pytorch.Trainer
+.. autoclass:: bigdl.nano.automl.tf.keras.Model.py
     :members:
-    :undoc-members:
-    :exclude-members: accelerator_connector, checkpoint_connector, reload_dataloaders_every_n_epochs, limit_val_batches, logger, logger_connector, state
+    :inherited-members: search, search_summary
 
 
 
@@ -25,7 +24,5 @@ HPO for PyTorch
 ---------------------------
 
 .. autoclass:: bigdl.nano.pytorch.Trainer
-    :members:
+    :members: search, search_summary
     :undoc-members:
-    :exclude-members: accelerator_connector, checkpoint_connector, reload_dataloaders_every_n_epochs, limit_val_batches, logger, logger_connector, state
-
