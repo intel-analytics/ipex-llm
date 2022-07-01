@@ -56,6 +56,10 @@ class PPMLContextPythonSpec extends DataFrameHelper{
     ppmlContextPython.createPPMLContext("testApp", pyPPMLArgs.asJava)
   }
 
+  "init PPMLContext with app name & args & sparkConf" should "work" in {
+    ppmlContextPython.createPPMLContext("testApp", ppmlArgs.asJava, conf)
+  }
+
   "read plain csv file" should "work" in {
     val encryptedDataFrameReader = ppmlContextPython.read(sc, "plain_text")
     ppmlContextPython.option(encryptedDataFrameReader, "header", "true")
@@ -180,6 +184,24 @@ class PPMLContextPythonSpec extends DataFrameHelper{
       .map(v => s"${v.get(0)},${v.get(1)}").mkString("\n")
 
     parquetContent should be (dataContent)
+  }
+
+  "textFile method with plain csv file" should "work" in {
+    val minPartitions = sc.getSparkSession().sparkContext.defaultMinPartitions
+    val cryptoMode = "plain_text"
+    val rdd = ppmlContextPython.textFile(sc, plainFileName, minPartitions, cryptoMode)
+    val rddContent = rdd.collect().mkString("\n")
+
+    rddContent + "\n" should be (data)
+  }
+
+  "textFile method with encrypted csv file" should "work" in {
+    val minPartitions = sc.getSparkSession().sparkContext.defaultMinPartitions
+    val cryptoMode = "AES/CBC/PKCS5Padding"
+    val rdd = ppmlContextPython.textFile(sc, encryptFileName, minPartitions, cryptoMode)
+    val rddContent = rdd.collect().mkString("\n")
+
+    rddContent + "\n" should be (data)
   }
 
 }
