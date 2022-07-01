@@ -204,7 +204,7 @@ if __name__ == "__main__":
 
     est = Estimator.from_keras(model_creator=model_creator,
                                verbose=True,
-                               config=config, backend="tf2")
+                               config=config, backend="ray")
     est.fit(train_dataset, 30, batch_size=8192, steps_per_epoch=steps,
             validation_data=test_dataset, validation_steps=test_steps)
     stop_orca_context()

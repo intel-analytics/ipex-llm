@@ -299,7 +299,7 @@ class TorchRunner:
         if callbacks is not None:
             for callback in callbacks:
                 callback.set_model(self.given_models)
-                if isinstance(callback, ModelCheckpoint):
+                if hasattr(callback, "set_trainer"):
                     callback.set_trainer(self)
                 callback.on_train_begin()
         stats_list = list()

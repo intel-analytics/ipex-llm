@@ -783,6 +783,39 @@ class Table:
                 print("Try to unpersist an uncached table")
         return self
 
+    def coalesce(self, num_partitions):
+        """
+        Return a new Table that has exactly num_partitions partitions.
+        coalesce uses existing partitions to minimize the amount of data that's shuffled.
+
+        :param num_partitions: target number of partitions
+        :return: a new Table that has num_partitions partitions.
+        """
+        return self._clone(self.df.coalesce(num_partitions))
+
+    def intersect(self, other):
+        """
+        Return a new :class:`Table` containing rows only in both this :class:`Table`
+        and another :class:`Table`
+
+        :param other: Table.
+        :return: A new Table.
+        """
+        return self._clone(self.df.intersect(other.df))
+
+    def collect(self):
+        """
+        Returns all the records as a list of :class:`Row`.
+        """
+        return self.df.collect()
+
+    @property
+    def dtypes(self):
+        """
+        Returns all column names and their data types as a list.
+        """
+        return self.df.dtypes()
+
 
 class FeatureTable(Table):
     @classmethod

@@ -18,6 +18,7 @@ package com.intel.analytics.bigdl.ppml.fl.fgboost
 
 import com.intel.analytics.bigdl.dllib.optim.{ValidationMethod, ValidationResult}
 import com.intel.analytics.bigdl.dllib.tensor.Tensor
+import com.intel.analytics.bigdl.dllib.utils.Log4Error
 import com.intel.analytics.bigdl.ppml.fl.fgboost.common.{RegressionTree, Split, TreeUtils}
 import com.intel.analytics.bigdl.ppml.fl.FLContext
 import com.intel.analytics.bigdl.ppml.fl.generated.FlBaseProto.{MetaData, TensorMap}
@@ -30,7 +31,7 @@ import org.apache.logging.log4j.LogManager
 import scala.collection.mutable
 import scala.collection.mutable.ArrayBuffer
 import collection.JavaConverters._
-import scala.util.parsing.json.{JSONObject, JSON}
+import scala.util.parsing.json.{JSON, JSONObject}
 
 abstract class FGBoostModel(continuous: Boolean,
                             nLabel: Int = 1,
@@ -265,7 +266,11 @@ abstract class FGBoostModel(continuous: Boolean,
     if (flClient == null) {
       throw new IllegalArgumentException("FLClient not initialized.")
     }
-    flClient.fgbostStub.uploadLabel(gradData.build)
+    val response = flClient.fgbostStub.uploadLabel(gradData.build)
+    if (response.getCode == 1) {
+      Log4Error.invalidOperationError(false, response.getResponse)
+    }
+    logger.debug(response.getResponse)
   }
 
   /**
