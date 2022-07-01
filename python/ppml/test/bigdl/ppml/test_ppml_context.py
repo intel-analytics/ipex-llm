@@ -42,19 +42,6 @@ class TestPPMLContext(unittest.TestCase):
         if not os.path.exists(resource_path):
             os.mkdir(resource_path)
 
-        # create a tmp csv file
-        with open(os.path.join(resource_path, "people.csv"), "w", encoding="utf-8", newline="") as f:
-            csv_writer = csv.writer(f)
-            csv_writer.writerow(["name", "age", "job"])
-            csv_writer.writerow(["jack", "18", "Developer"])
-            csv_writer.writerow(["alex", "20", "Researcher"])
-            csv_writer.writerow(["xuoui", "25", "Developer"])
-            csv_writer.writerow(["hlsgu", "29", "Researcher"])
-            csv_writer.writerow(["xvehlbm", "45", "Developer"])
-            csv_writer.writerow(["ehhxoni", "23", "Developer"])
-            csv_writer.writerow(["capom", "60", "Developer"])
-            csv_writer.writerow(["pjt", "24", "Developer"])
-
         cls.csv_content = "name,age,job\n" + \
                           "jack,18,Developer\n" + \
                           "alex,20,Researcher\n" + \
@@ -64,6 +51,10 @@ class TestPPMLContext(unittest.TestCase):
                           "ehhxoni,23,Developer\n" + \
                           "capom,60,Developer\n" + \
                           "pjt,24,Developer"
+
+        # create a tmp csv file
+        with open(os.path.join(resource_path, "people.csv"), "w") as file:
+            file.write(cls.csv_content)
 
         # generate primaryKey and dataKey
         primary_key_path = os.path.join(resource_path, "primaryKey")
@@ -164,7 +155,6 @@ class TestPPMLContext(unittest.TestCase):
         path = os.path.join(resource_path, "encrypted/people.csv")
         rdd = self.sc.textfile(path=path, crypto_mode=CryptoMode.AES_CBC_PKCS5PADDING)
         rdd_content = '\n'.join([line for line in rdd.collect()])
-
         self.assertEqual(rdd_content, self.csv_content)
 
 
