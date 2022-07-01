@@ -20,6 +20,7 @@ For the detailed algorithm description, please refer to `here <https://github.co
             :members:
             :undoc-members:
             :show-inheritance:
+            :inherited-members: fit, predict, predict_with_onnx, predict_with_openvino, evaluate, evaluate_with_onnx, save, load, to_local, get_model, build_onnx, build_openvino
 
 
     .. tab:: Tensorflow
@@ -30,6 +31,7 @@ For the detailed algorithm description, please refer to `here <https://github.co
             :members:
             :undoc-members:
             :show-inheritance:
+            :inherited-members: fit, predict, evaluate, save, load
 
 
 
