@@ -22,10 +22,10 @@ from bigdl.nano.utils.log4Error import invalidInputError
 class RayBackend(Backend):
 
     def setup(self) -> None:
-        ray.init()
+        ray.init()  # type: ignore
 
     def shutdown(self) -> None:
-        ray.shutdown()
+        ray.shutdown()  # type: ignore
 
     def run(self, target, args=..., nprocs=1, envs=None) -> None:
         if envs is not None:
@@ -42,5 +42,6 @@ class RayBackend(Backend):
             runtime_env = {
                 "env_vars": envs[i]
             }
-            results.append(ray.remote(target).options(runtime_env=runtime_env).remote(*args))
-        return ray.get(results)
+            results.append(ray.remote(target)   # type: ignore
+                           .options(runtime_env=runtime_env).remote(*args))
+        return ray.get(results)     # type: ignore

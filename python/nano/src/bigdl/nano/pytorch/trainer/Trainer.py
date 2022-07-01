@@ -108,10 +108,7 @@ class Trainer(pl.Trainer):
                     strategy = create_IPEXStrategy_1_9(enable_bf16=enable_bf16)
                 else:
                     strategy = create_IPEXStrategy(enable_bf16=enable_bf16)
-
-            super().__init__(strategy=strategy, *args, **kwargs)
         else:
-            strategy = None
             invalidInputError(distributed_backend in distributed_backends,
                               f"Distributed backends supported now are {distributed_backends},"
                               f" but get {distributed_backend}.")
@@ -138,8 +135,8 @@ class Trainer(pl.Trainer):
                 strategy = distributed_ray(num_workers=num_processes,  # type: ignore
                                            use_ipex=self.use_ipex,
                                            enable_bf16=enable_bf16)
-
-            super().__init__(strategy=strategy, *args, **kwargs)
+        kwargs['strategy'] = strategy
+        super().__init__(*args, **kwargs)
 
     @staticmethod
     def compile(model: nn.Module,

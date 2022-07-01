@@ -57,7 +57,7 @@ from bigdl.nano.pytorch.utils import TORCH_VERSION_LESS_1_10
 _STEP_OUTPUT_TYPE = Union[torch.Tensor, Dict[str, Any]]
 
 
-@ray.remote
+@ray.remote     # type: ignore
 class RayExecutor:
     """A class to execute any arbitrary function remotely."""
 
@@ -88,8 +88,8 @@ class RayExecutor:
 
 class _RayLauncher(_SpawnLauncher):
 
-    def __init__(self, strategy: Strategy) -> None:
-        self._strategy = strategy
+    def __init__(self, strategy: 'RayStrategy') -> None:
+        self._strategy: RayStrategy = strategy
 
     @property
     def is_interactive_compatible(self) -> bool:
@@ -98,6 +98,10 @@ class _RayLauncher(_SpawnLauncher):
     def launch(self, function: Callable, *args: Any,
                trainer: Optional["pl.Trainer"] = None, **kwargs: Any) -> Any:
         # pytorch_lightning 1.6 uses this method to create child processes
+        invalidInputError(trainer is not None and self._strategy.cluster_environment is not None,
+                          'strategy.cluster_environment and trainer cannot be None')
+        invalidInputError(self._strategy.model is not None, "You must specify the model.")
+
         strategy = self._strategy
 
         # fix bug
@@ -111,7 +115,7 @@ class _RayLauncher(_SpawnLauncher):
                 args[4].trainer = None
 
         strategy._setup_env_vars()
-        strategy.global_to_local = strategy.get_local_ranks()
+        strategy.global_to_local = strategy.get_local_ranks()   # type: ignore
 
         torch_backend = os.getenv("PL_TORCH_DISTRIBUTED_BACKEND")
         if torch_backend is None:
@@ -126,19 +130,18 @@ class _RayLauncher(_SpawnLauncher):
             for i in range(strategy.num_workers)
         ]
 
-        results = ray.get(futures)
+        results = ray.get(futures)  # type: ignore
 
         # Get the results, checkpoint path, and model weights from worker 0.
-        results, best_path, state_dict = results[0]
-        strategy._results = results
-        strategy._model.load_state_dict(state_dict)  # type: ignore
-        strategy.model.trainer = trainer
+        results, best_path, state_dict = results[0]  # type: ignore
+        strategy._model.load_state_dict(state_dict)
+        strategy.lightning_module.trainer = trainer
         strategy.lightning_module.trainer.checkpoint_callback.best_model_path = best_path
 
         return results
 
     @staticmethod
-    def _wrapping_function(args_pack: tuple) -> None:
+    def _wrapping_function(args_pack: tuple) -> Any:   # type: ignore[override]
         global_rank, trainer, function, args, kwargs = args_pack
         strategy = trainer.strategy
         invalidInputError(isinstance(strategy, RayStrategy), "expect ray strategy here")
@@ -178,7 +181,7 @@ class RayStrategy(DDPSpawnStrategy):
                  use_ipex: bool = False,
                  enable_bf16: bool = False,
                  init_hook: Callable = None,
-                 **ddp_kwargs: Union[Any, Dict[str, Any]]):
+                 **ddp_kwargs: Any):
 
         # Unset MKL setting as bigdl.nano would give default values when init env.
         # Running different programs may need different configurations.
@@ -189,8 +192,8 @@ class RayStrategy(DDPSpawnStrategy):
         os.environ.pop("KMP_AFFINITY", None)
         os.environ.pop("OMP_NUM_THREADS", None)
 
-        if not ray.is_initialized():
-            print(ray.init())
+        if not ray.is_initialized():    # type: ignore
+            print(ray.init())   # type: ignore
 
         if use_ipex and TORCH_VERSION_LESS_1_10 and 'accelerator' not in ddp_kwargs:
             super().__init__(accelerator=create_IPEXAccelerator_1_9(),
@@ -216,7 +219,7 @@ class RayStrategy(DDPSpawnStrategy):
         self._local_rank = 0
 
         if self.init_hook:
-            ray.get([w.execute.remote(self.init_hook) for w in self.workers])
+            ray.get([w.execute.remote(self.init_hook) for w in self.workers])   # type: ignore
 
     def _configure_launcher(self):
         self._launcher = _RayLauncher(self)
@@ -275,8 +278,8 @@ class RayStrategy(DDPSpawnStrategy):
         """Set the appropriate rank attribues for the trainer."""
         invalidInputError(self.cluster_environment is not None and isinstance(
             self.cluster_environment, RayEnvironment), "expect ray environment here")
-        if self.cluster_environment.is_remote():
-            self._local_rank = self.global_to_local[self.global_rank]
+        if self.cluster_environment.is_remote():    # type: ignore
+            self._local_rank = self.global_to_local[self.global_rank]   # type: ignore
             self.cluster_environment.set_global_rank(self.global_rank)
             self.cluster_environment.set_world_size(self.num_workers)
             rank_zero_only.rank = self.cluster_environment.global_rank()  # type: ignore
@@ -340,7 +343,7 @@ class RayStrategy(DDPSpawnStrategy):
             num_replicas=self.num_workers, rank=self.global_rank)
         return distributed_sampler_kwargs
 
-    def reduce(self, tensor, group: Optional[Any] = None,
+    def reduce(self, tensor, group: Optional[Any] = None,   # type: ignore[override]
                reduce_op: Union[ReduceOp, str] = "mean") -> Tensor:
         # some operations in `super.reduce()` method do not support XPU,
         # which will cause error when using ipex==1.9, however, these operations

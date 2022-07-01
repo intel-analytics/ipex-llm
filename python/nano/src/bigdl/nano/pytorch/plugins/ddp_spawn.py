@@ -56,6 +56,7 @@ from bigdl.nano.common.cpu_schedule import schedule_workers
 from bigdl.nano.deps.ipex.ipex_api import ipex_device, ipex_optimize, \
     create_IPEXAccelerator_1_9, to_cpu
 from bigdl.nano.pytorch.utils import TORCH_VERSION_LESS_1_10
+from bigdl.nano.utils.log4Error import invalidInputError
 
 import logging
 import warnings
@@ -67,12 +68,16 @@ log = logging.getLogger(__name__)
 
 class _DDPSpawnLauncher(_SpawnLauncher):
 
-    def __init__(self, strategy: Strategy) -> None:
-        super().__init__(strategy)
+    def __init__(self, strategy: 'DDPSpawnStrategy') -> None:   # type: ignore[override]
+        self._strategy: DDPSpawnStrategy = strategy
+        self._start_method = "spawn"
 
     def launch(self, function: Callable, *args: Any,
                trainer: Optional["pl.Trainer"] = None, **kwargs: Any) -> Any:
         # pytorch_lightning 1.6 uses this method to create child processes
+        invalidInputError(trainer is not None and self._strategy.cluster_environment is not None,
+                          'strategy.cluster_environment and trainer cannot be None')
+
         os.environ["MASTER_PORT"] = str(self._strategy.cluster_environment.main_port)
 
         if self._strategy.cpu_for_each_process is None:
@@ -171,13 +176,15 @@ class DDPSpawnStrategy(_DDPSpawnStrategy):
 
     def setup(self, trainer: "pl.Trainer") -> None:
         """Setup the distributed environment of sub processes, we add ipex optimization here."""
+        invalidInputError(self.model is not None, "You must specify the model.")
+
         # when using spawn, multiple child processes may update the weights of
         # the same model, so we should copy the model to avoid it
         if self.strategy_name == "ddp_spawn":
             self.model = copy.deepcopy(self.model)
             # `copy.deepcopy(self.model)` can't copy `self.model.trainer` correctly sometimes,
             # so we reuse the original trainer
-            self.model.trainer = trainer
+            self.model.trainer = trainer    # type: ignore
 
         self.accelerator.setup(trainer)
 
@@ -229,7 +236,7 @@ class DDPSpawnStrategy(_DDPSpawnStrategy):
         self.setup_optimizers(self.lightning_module.trainer)
         optimizers_to_device(self.optimizers, self.root_device)
 
-    def reduce(self, tensor, group: Optional[Any] = None,
+    def reduce(self, tensor, group: Optional[Any] = None,   # type: ignore[override]
                reduce_op: Union[ReduceOp, str] = "mean") -> Tensor:
         """Reduces a tensor from several distributed processes to one aggregated tensor."""
         # some operations in `super.reduce()` method do not support XPU,

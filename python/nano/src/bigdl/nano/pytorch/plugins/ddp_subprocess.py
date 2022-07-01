@@ -47,6 +47,7 @@ from pytorch_lightning.core.datamodule import LightningDataModule
 from bigdl.nano.pytorch.plugins.ddp_spawn import DDPSpawnStrategy, _DDPSpawnLauncher
 from bigdl.nano.common.cpu_schedule import schedule_workers
 from bigdl.nano.pytorch.utils import TORCH_VERSION_LESS_1_10
+from bigdl.nano.utils.log4Error import invalidInputError
 
 import logging
 
@@ -62,6 +63,9 @@ class _DDPSubprocessLauncher(_DDPSpawnLauncher):
     def launch(self, function: Callable, *args: Any,
                trainer: Optional["pl.Trainer"] = None, **kwargs: Any) -> Any:
         # pytorch_lightning 1.6 uses this method to create child processes
+        invalidInputError(trainer is not None and self._strategy.cluster_environment is not None,
+                          'strategy.cluster_environment and trainer cannot be None')
+
         os.environ["MASTER_PORT"] = str(self._strategy.cluster_environment.main_port)
 
         if self._strategy.cpu_for_each_process is None:
