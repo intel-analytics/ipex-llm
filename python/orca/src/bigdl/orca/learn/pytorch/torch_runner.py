@@ -96,6 +96,7 @@ class TorchDistBackend(DistBackend):
         return dist.all_reduce(tensor, *args,
                                **all_reduce_min_kwargs)
 
+
 class TorchRunner:
     """Manages a PyTorch model for training."""
 
