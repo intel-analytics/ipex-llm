@@ -57,7 +57,7 @@ def create_data(loader=False):
         test_data = tuple(map(lambda x: x.astype(np.float32), test_data))
         return train_data, val_data, test_data
 
-class TestChronosModelTCNForecaster(TestCase):
+class TestChronosModelAutoformerForecaster(TestCase):
     
     def setUp(self):
         pass
@@ -65,7 +65,7 @@ class TestChronosModelTCNForecaster(TestCase):
     def tearDown(self):
         pass
 
-    def test_autoformer_forecaster_loader_fit_eval_pred(self):
+    def test_autoformer_forecaster_fit_eval_pred_loader(self):
         train_loader, val_loader, test_loader = create_data(loader=True)
         forecaster = AutoformerForecaster(past_seq_len=24,
                                           future_seq_len=5,
@@ -77,7 +77,7 @@ class TestChronosModelTCNForecaster(TestCase):
         evaluate = forecaster.evaluate(val_loader)
         pred = forecaster.predict(test_loader)
         
-    def test_autoformer_forecaster_array_fit_eval_pred(self):
+    def test_autoformer_forecaster_fit_eval_pred_array(self):
         train_data, val_data, test_data = create_data(loader=False)
         forecaster = AutoformerForecaster(past_seq_len=24,
                                           future_seq_len=5,
@@ -91,7 +91,7 @@ class TestChronosModelTCNForecaster(TestCase):
     
     def test_autoformer_forecaster_tune(self):
         import bigdl.nano.automl.hpo.space as space
-        train_data, val_data, _ = create_data(loader=False)
+        train_data, val_data, test_data = create_data(loader=False)
         forecaster = AutoformerForecaster(past_seq_len=24,
                                           future_seq_len=5,
                                           input_feature_num=2,
@@ -103,7 +103,8 @@ class TestChronosModelTCNForecaster(TestCase):
                                           lr=space.Real(0.001, 0.01, log=True))
         forecaster.tune(train_data, validation_data=val_data,
                         n_trials=2, target_metric='mse', direction="minimize")
-    
+        forecaster.fit(train_data, epochs=3, batch_size=32)
+        evaluate = forecaster.evaluate(val_data)
 
     def test_autoformer_forecaster_save_load(self):
         forecaster = AutoformerForecaster(past_seq_len=24,

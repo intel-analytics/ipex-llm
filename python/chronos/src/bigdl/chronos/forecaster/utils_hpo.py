@@ -99,7 +99,6 @@ class GenericLightningModule(LightningModuleFromTorch):
                     "model_config_keys", "data_config_keys",
                     "optim_config_keys", "loss_config_keys",
                     "data", "validation_data", "metrics"])
-        print("hparams: ", self.hparams)
 
     @staticmethod
     def _get_config_by_keys(keys, config):
@@ -219,6 +218,7 @@ class GenericTSTransformerLightningModule(LightningModule):
             args = [args[i] for i in range(nargs)]
         else:
             args = args[:nargs]
+        print("generatic")
         batch_x, batch_y, batch_x_mark, batch_y_mark = map(lambda x: x.float(), args)
         outputs = self.model(batch_x, batch_x_mark, batch_y, batch_y_mark)
         return outputs
