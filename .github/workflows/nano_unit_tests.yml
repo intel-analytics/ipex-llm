@@ -213,8 +213,8 @@ jobs:
         os: ["ubuntu-20.04"]
         python-version: ["3.7"]
         tf-version: [
-          "intel-tensorflow==2.8.0 keras==2.8.0 tensorflow-estimator==2.0.0",
-          "intel-tensorflow==2.7.0 keras==2.7.0 tensorflow-estimator==2.7.0",
+          "tensorflow==2.8.0 keras==2.8.0 tensorflow-estimator==2.0.0",
+          "tensorflow==2.7.0 keras==2.7.0 tensorflow-estimator==2.7.0",
           ""
           ]
 
@@ -243,6 +243,7 @@ jobs:
             pip install ${{matrix.tf-version}}
           fi
           HOROVOD_WITH_GLOO=1 HOROVOD_WITH_TENSORFLOW=1 pip install --no-cache-dir horovod==0.25.0
+          horovodrun --check-build
           pip install pytest
           source bigdl-nano-init
           bash python/nano/test/run-nano-tf-horovod-tests.sh
