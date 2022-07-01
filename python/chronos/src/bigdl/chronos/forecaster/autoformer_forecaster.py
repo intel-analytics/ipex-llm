@@ -152,8 +152,8 @@ class AutoformerForecaster(Forecaster):
         self.use_hpo = True
 
         has_space = self._config_has_search_space(
-                config={**self.model_config, **self.optim_config,
-                        **self.loss_config, **self.data_config})
+            config={**self.model_config, **self.optim_config,
+                    **self.loss_config, **self.data_config})
 
         if not self.use_hpo and has_space:
             invalidInputError(False, "Found search spaces in arguments but HPO is disabled."
