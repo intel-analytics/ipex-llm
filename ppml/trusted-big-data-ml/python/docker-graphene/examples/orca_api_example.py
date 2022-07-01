@@ -234,14 +234,14 @@ def openvino_estimator():
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
     parser.add_argument('--mode', type=str, default="bigdl",
-                    help='The mode for the examples. bigdl, tf, tf2, pytorch or openvino.')
+                    help='The mode for the examples. bigdl, tf, ray, pytorch or openvino.')
     args = parser.parse_args()
     mode = args.mode
     if mode == "bigdl":
         bigdl_estimator()
     elif mode == "tf":
         tf_estimator()
-    elif mode == "tf2":
+    elif mode == "ray":
         tf2_estimator()
     elif mode == "pytorch":
         pytorch_estimator()

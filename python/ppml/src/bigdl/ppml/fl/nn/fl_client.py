@@ -31,12 +31,12 @@ from bigdl.ppml.fl.nn.utils import ClassAndArgsWrapper
 class FLClient(object):
     channel = None
     _lock = threading.Lock()
-    def __init__(self, aggregator=None, target="localhost:8980") -> None: 
+    def __init__(self, client_id, aggregator, target="localhost:8980") -> None: 
         with FLClient._lock:
             if FLClient.channel == None:                
                 FLClient.channel = grpc.insecure_channel(target)
         self.nn_stub = NNServiceStub(FLClient.channel)
-        self.client_uuid = str(uuid.uuid4())
+        self.client_uuid = client_id
         self.aggregator = aggregator
     
     def train(self, x):

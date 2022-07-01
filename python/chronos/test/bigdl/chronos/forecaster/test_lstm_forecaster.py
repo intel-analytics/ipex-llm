@@ -22,6 +22,10 @@ import torch
 from bigdl.chronos.forecaster.lstm_forecaster import LSTMForecaster
 from unittest import TestCase
 import pytest
+import onnxruntime
+
+_onnxrt_ver = onnxruntime.__version__ != '1.6.0' #  Jenkins requires 1.6.0(chronos)
+skip_onnxrt = pytest.mark.skipif(_onnxrt_ver, reason="Only runs when onnxrt is 1.6.0")
 
 
 def create_data(loader=False):
@@ -92,6 +96,7 @@ class TestChronosModelLSTMForecaster(TestCase):
                                     lr=0.01)
         train_loss = forecaster.fit(train_loader, epochs=2)
 
+    @skip_onnxrt
     def test_lstm_forecaster_onnx_methods(self):
         train_data, val_data, test_data = create_data()
         forecaster = LSTMForecaster(past_seq_len=24,
@@ -168,6 +173,7 @@ class TestChronosModelLSTMForecaster(TestCase):
         np.testing.assert_almost_equal(test_pred_save, test_pred_load)
         np.testing.assert_almost_equal(test_pred_save_q, test_pred_load_q)
 
+    @skip_onnxrt
     def test_lstm_forecaster_quantization_onnx(self):
         train_data, val_data, test_data = create_data()
         forecaster = LSTMForecaster(past_seq_len=24,
@@ -180,7 +186,8 @@ class TestChronosModelLSTMForecaster(TestCase):
         forecaster.quantize(train_data, framework=['onnxrt_qlinearops'])
         pred_q = forecaster.predict_with_onnx(test_data[0], quantize=True)
         eval_q = forecaster.evaluate_with_onnx(test_data, quantize=True)
-        
+
+    @skip_onnxrt
     def test_lstm_forecaster_quantization_onnx_tuning(self):
         train_data, val_data, test_data = create_data()
         forecaster = LSTMForecaster(past_seq_len=24,
@@ -269,6 +276,7 @@ class TestChronosModelLSTMForecaster(TestCase):
             distributed_eval = forecaster.evaluate(val_data)
         stop_orca_context()
 
+    @skip_onnxrt
     def test_lstm_forecaster_distributed(self):
         from bigdl.orca import init_orca_context, stop_orca_context
         train_data, val_data, test_data = create_data()

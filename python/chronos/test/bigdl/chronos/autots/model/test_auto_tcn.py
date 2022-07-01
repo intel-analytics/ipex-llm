@@ -19,6 +19,10 @@ import numpy as np
 from unittest import TestCase
 import pytest
 import tempfile
+import onnxruntime
+
+_onnxrt_ver = onnxruntime.__version__ != '1.6.0' #  Jenkins requires 1.6.0(chronos)
+skip_onnxrt = pytest.mark.skipif(_onnxrt_ver, reason="Only runs when onnxrt is 1.6.0")
 
 from bigdl.chronos.autots.model.auto_tcn import AutoTCN
 from bigdl.orca.automl import hp
@@ -165,6 +169,7 @@ class TestAutoTCN(TestCase):
         auto_tcn.predict(test_data_x)
         auto_tcn.evaluate((test_data_x, test_data_y))
 
+    @skip_onnxrt
     def test_onnx_methods(self):
         auto_tcn = get_auto_estimator()
         auto_tcn.fit(data=train_dataloader_creator(config={"batch_size": 64}),
@@ -184,6 +189,7 @@ class TestAutoTCN(TestCase):
         except ImportError:
             pass
 
+    @skip_onnxrt
     def test_save_load(self):
         auto_tcn = get_auto_estimator()
         auto_tcn.fit(data=train_dataloader_creator(config={"batch_size": 64}),

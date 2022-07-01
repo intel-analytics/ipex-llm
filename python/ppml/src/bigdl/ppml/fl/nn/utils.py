@@ -15,7 +15,10 @@
 #
 
 import pickle
+import numpy as np
+
 from bigdl.ppml.fl.nn.generated.nn_service_pb2 import *
+from bigdl.ppml.fl.nn.generated.fl_base_pb2 import FloatTensor, TensorMap
 
 
 class ClassAndArgsWrapper(object):

@@ -53,7 +53,7 @@ from bigdl.nano.deps.ipex.ipex_api import ipex_device, ipex_optimize
 import logging
 
 import warnings
-
+import copy
 log = logging.getLogger(__name__)
 
 
@@ -152,6 +152,7 @@ class DDPSpawnPlugin(pl.plugins.DDPSpawnPlugin):
 
     def new_process(self, process_idx, trainer, mp_queue):
         """The fucntion to run in each new process."""
+        self = copy.deepcopy(self)
         self.mp_queue = mp_queue
 
         reset_seed()
@@ -205,7 +206,7 @@ class DDPSpawnPlugin(pl.plugins.DDPSpawnPlugin):
         self.model_to_device()
 
         self.barrier()
-        results = trainer.run_stage()
+        results = self.lightning_module.trainer.run_stage()
 
         # persist info in ddp_spawn
         self.transfer_distrib_spawn_state_on_fit_end(results)

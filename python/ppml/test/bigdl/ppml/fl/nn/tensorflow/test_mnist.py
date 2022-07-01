@@ -139,6 +139,7 @@ class TestCorrectness(FLTest):
         vfl_model_2 = build_server_model()
         set_one_like_parameter(vfl_model_2)
         vfl_client_ppl = Estimator.from_keras(client_model=vfl_model_1,
+                                              client_id='1',
                                               loss_fn=loss_object,
                                               optimizer_cls=tf.keras.optimizers.Adam,
                                               optimizer_args={},

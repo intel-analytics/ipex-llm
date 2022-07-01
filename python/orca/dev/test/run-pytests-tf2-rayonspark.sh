@@ -27,8 +27,8 @@ export PYSPARK_DRIVER_PYTHON=python
 
 ray stop -f
 
-echo "Running tf2estimator tf2 backend tests"
-python -m pytest -v test/bigdl/orca/learn/ray/tf/test_tf2estimator_tf2_backend.py
+echo "Running tf2estimator ray backend tests"
+python -m pytest -v test/bigdl/orca/learn/ray/tf/test_tf2estimator_ray_backend.py
 exit_status_1=$?
 if [ $exit_status_1 -ne 0 ];
 then
