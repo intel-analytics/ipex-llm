@@ -131,7 +131,8 @@ if __name__ == "__main__":
                           driver_cores=options.driver_cores, driver_memory=options.driver_memory,
                           init_ray_on_spark=True)
     else:
-        invalidInputError(False, "cluster_mode should be 'local' or 'yarn', but got " + args.cluster_mode)
+        invalidInputError(False,
+                          "cluster_mode should be 'local' or 'yarn', but got " + args.cluster_mode)
 
     (options, args) = parser.parse_args(sys.argv)
     data_dir = options.data_dir
