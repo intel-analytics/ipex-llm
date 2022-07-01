@@ -89,11 +89,12 @@ class TorchDistBackend(DistBackend):
         import torch.distributed as dist
         return dist.is_initialized()
 
-    def all_reduce_min(self, tensor, group=None, async_op=False):
+    def all_reduce_min(self, tensor, *args, **kwargs):
         import torch.distributed as dist
-        return dist.all_reduce(tensor, op=dist.ReduceOp.MIN,
-                               group=group, async_op=async_op)
-
+        all_reduce_min_kwargs = dict(op=dist.ReduceOp.MIN)
+        all_reduce_min_kwargs.update(kwargs)
+        return dist.all_reduce(tensor, *args,
+                               **all_reduce_min_kwargs)
 
 class TorchRunner:
     """Manages a PyTorch model for training."""
