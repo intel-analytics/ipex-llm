@@ -72,6 +72,7 @@ BigDL Documentation
    doc/Orca/Overview/distributed-tuning.md
    doc/Orca/Overview/orca-tf-dataset.md
    doc/Ray/Overview/ray.md
+   doc/Orca/Tutorial/apply-tensorflow-pipeline-to-spark-dataframe.md
 
 .. toctree::
    :maxdepth: 1
