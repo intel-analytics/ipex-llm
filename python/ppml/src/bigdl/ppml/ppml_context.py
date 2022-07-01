@@ -28,7 +28,6 @@ class PPMLContext(JavaValue):
             if spark_conf:
                 args.append(spark_conf)
         super().__init__(None, self.bigdl_type, *args)
-        self.sparkSession = callBigDlFunc(self.bigdl_type, "getSparkSession", self.value)
 
     def load_keys(self, primary_key_path, data_key_path):
         callBigDlFunc(self.bigdl_type, "loadKeys", self.value, primary_key_path, data_key_path)
