@@ -17,13 +17,16 @@ HPO for Tensorflow
 ---------------------------
 
 .. autoclass:: bigdl.nano.automl.tf.keras.Model
-    :members:
+    :members: search, search_summary
     :inherited-members: search, search_summary
+    :undoc-members:
 
 
 .. autoclass:: bigdl.nano.automl.tf.keras.Sequantial
-    :members:
+    :members: search, search_summary
     :inherited-members: search, search_summary
+    :undoc-members:
+
 
 
 HPO for PyTorch
@@ -32,3 +35,4 @@ HPO for PyTorch
 .. autoclass:: bigdl.nano.pytorch.Trainer
     :members: search, search_summary
     :undoc-members:
+
