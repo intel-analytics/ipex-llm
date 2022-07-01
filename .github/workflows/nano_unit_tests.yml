@@ -233,6 +233,25 @@ jobs:
           python -m pip install --upgrade setuptools==58.0.4
           python -m pip install --upgrade wheel
 
+      - name: Run horovod unit tests
+        shell: bash
+        run: |
+          $CONDA/bin/conda create -n horovod-tf -y python==3.7.10 setuptools=58.0.4
+          source $CONDA/bin/activate horovod-tf
+          $CONDA/bin/conda info
+          bash python/nano/dev/build_and_install.sh linux default false tensorflow
+          if [ ! -z "${{matrix.tf-version}}" ]; then
+            pip install ${{matrix.tf-version}}
+          fi
+          HOROVOD_WITH_MPI=1 HOROVOD_WITH_TENSORFLOW=1 pip install --no-cache-dir horovod==0.25.0
+          pip install pytest
+          source bigdl-nano-init
+          bash python/nano/test/run-nano-tf-horovod-tests.sh
+          source $CONDA/bin/deactivate
+          $CONDA/bin/conda remove -n horovod-tf --all
+        env:
+          ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
+
       - name: Run tensorflow unit tests
         shell: bash
         run: |
@@ -267,25 +286,6 @@ jobs:
           bash python/nano/test/run-nano-tf-ray-tests.sh
           source $CONDA/bin/deactivate
           $CONDA/bin/conda remove -n ray-tf --all
-        env:
-          ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
-
-      - name: Run horovod unit tests
-        shell: bash
-        run: |
-          $CONDA/bin/conda create -n horovod-tf -y python==3.7.10 setuptools=58.0.4
-          source $CONDA/bin/activate horovod-tf
-          $CONDA/bin/conda info
-          bash python/nano/dev/build_and_install.sh linux default false tensorflow
-          if [ ! -z "${{matrix.tf-version}}" ]; then
-            pip install ${{matrix.tf-version}}
-          fi
-          pip install --no-cache-dir horovod==0.25.0
-          pip install pytest
-          source bigdl-nano-init
-          bash python/nano/test/run-nano-tf-horovod-tests.sh
-          source $CONDA/bin/deactivate
-          $CONDA/bin/conda remove -n horovod-tf --all
         env:
           ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
           
