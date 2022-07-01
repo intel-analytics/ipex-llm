@@ -40,21 +40,19 @@ Seq2SeqForecaster wraps a sequence to sequence model based on LSTM, and is suita
 
     .. tab:: PyTorch
 
-        :strong:`Please refer to` `BasePytorchForecaster <https://bigdl.readthedocs.io/en/latest/doc/PythonAPI/Chronos/forecasters.html#basepytorchforecaster>`__ :strong:`for other methods other than initialization`.
-
         .. automodule:: bigdl.chronos.forecaster.seq2seq_forecaster
             :members:
             :undoc-members:
             :show-inheritance:
+            :inherited-members:
 
     .. tab:: Tensorflow
-
-        :strong:`Please refer to` `BaseTF2Forecaster <https://qp-bigdl.readthedocs.io/en/latest/doc/PythonAPI/Chronos/forecasters.html#module-bigdl.chronos.forecaster.tf.base_forecaster>`__ :strong:`for other methods other than initialization`.
 
         .. automodule:: bigdl.chronos.forecaster.tf.seq2seq_forecaster
             :members:
             :undoc-members:
             :show-inheritance:
+            :inherited-members:
 
 
 TCNForecaster
@@ -66,22 +64,19 @@ Temporal Convolutional Networks (TCN) is a neural network that use convolutional
 
     .. tab:: PyTorch
 
-        :strong:`Please refer to` `BasePytorchForecaster <https://bigdl.readthedocs.io/en/latest/doc/PythonAPI/Chronos/forecasters.html#basepytorchforecaster>`__ :strong:`for other methods other than initialization`.
-
         .. automodule:: bigdl.chronos.forecaster.tcn_forecaster
             :members:
             :undoc-members:
             :show-inheritance:
+            :inherited-members:
 
     .. tab:: Tensorflow
-
-        :strong:`Please refer to` `BaseTF2Forecaster <https://qp-bigdl.readthedocs.io/en/latest/doc/PythonAPI/Chronos/forecasters.html#module-bigdl.chronos.forecaster.tf.base_forecaster>`__ :strong:`for other methods other than initialization`.
 
         .. automodule:: bigdl.chronos.forecaster.tf.tcn_forecaster
             :members:
             :undoc-members:
             :show-inheritance:
-
+            :inherited-members:
 
 AutoformerForecaster
 ----------------------------------------
@@ -96,6 +91,7 @@ Autoformer is a neural network that use transformer architecture with autocorrel
             :members:
             :undoc-members:
             :show-inheritance:
+            :inherited-members:
 
 
 NBeatsForecaster
@@ -106,14 +102,13 @@ NBeatsForecaster
 
     .. tab:: PyTorch
 
-        :strong:`Please refer to` `BasePytorchForecaster <https://bigdl.readthedocs.io/en/latest/doc/PythonAPI/Chronos/forecasters.html#basepytorchforecaster>`__ :strong:`for other methods other than initialization`.
-
         Neural basis expansion analysis for interpretable time series forecasting (`N-BEATS <https://arxiv.org/abs/1905.10437>`__) is a deep neural architecture based on backward and forward residual links and a very deep stack of fully-connected layers. Nbeats can solve univariate time series point forecasting problems, being interpretable, and fast to train.
 
         .. automodule:: bigdl.chronos.forecaster.nbeats_forecaster
             :members:
             :undoc-members:
             :show-inheritance:
+            :inherited-members:
 
 
 TCMFForecaster
@@ -139,6 +134,7 @@ TCMFForecaster supports distributed training and inference. It is based on Orca 
             :members:
             :undoc-members:
             :show-inheritance:
+            :inherited-members:
 
 
 MTNetForecaster
@@ -158,6 +154,7 @@ For the detailed algorithm description, please refer to `here <https://github.co
             :members:
             :undoc-members:
             :show-inheritance:
+            :inherited-members:
 
 
 ARIMAForecaster
@@ -169,7 +166,7 @@ AutoRegressive Integrated Moving Average (ARIMA) is a class of statistical model
     :members:
     :undoc-members:
     :show-inheritance:
-
+    :inherited-members:
 
 ProphetForecaster
 ----------------------------------------
@@ -182,20 +179,4 @@ For the detailed algorithm description, please refer to `here <https://github.co
     :members:
     :undoc-members:
     :show-inheritance:
-
-
-BasePytorchForecaster
-----------------------------------------
-
-.. autoclass:: bigdl.chronos.forecaster.base_forecaster.BasePytorchForecaster
-    :members:
-    :show-inheritance:
-
-
-BaseTF2Forecaster
-----------------------------------------
-
-.. automodule:: bigdl.chronos.forecaster.tf.base_forecaster
-    :members:
-    :undoc-members:
-    :show-inheritance:
+    :inherited-members:
