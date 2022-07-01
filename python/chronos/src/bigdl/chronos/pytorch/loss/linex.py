@@ -23,7 +23,7 @@ class LinexLoss(nn.Module):
     '''
     LinexLoss is an asymmetric loss talked about in
     https://www.scirp.org/journal/paperinformation.aspx?paperid=97986
-    
+
     '''
     def __init__(self, a=1):
         '''
@@ -32,7 +32,7 @@ class LinexLoss(nn.Module):
                when a is set to < 0, this loss panelize overestimate more.
         '''
         super().__init__()
-        invalidInputError(a!=0, "a should not be set to 0")
+        invalidInputError(a != 0, "a should not be set to 0")
         self.a = a
         self.b = 2/(a**2)
 
