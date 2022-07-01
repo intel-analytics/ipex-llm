@@ -66,7 +66,7 @@ def download_libs(url: str):
 
 def setup_package():
 
-    tensorflow_requires = ["tensorflow==2.9.1",
+    tensorflow_requires = ["intel-tensorflow==2.9.1",
                            "keras==2.9.0",
                            "tensorflow-estimator==2.9.0"]
 
