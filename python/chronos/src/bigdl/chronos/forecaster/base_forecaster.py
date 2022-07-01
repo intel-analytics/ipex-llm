@@ -294,7 +294,8 @@ class BasePytorchForecaster(Forecaster):
             # Trainer init and fitting
             self.trainer = Trainer(logger=False, max_epochs=epochs,
                                    checkpoint_callback=self.checkpoint_callback,
-                                   num_processes=self.num_processes, use_ipex=self.use_ipex)
+                                   num_processes=self.num_processes, use_ipex=self.use_ipex,
+                                   distributed_backend="spawn")
             self.trainer.fit(self.internal, data)
             self.fitted = True
 
@@ -423,6 +424,7 @@ class BasePytorchForecaster(Forecaster):
         :return: A numpy array with shape (num_samples, horizon, target_dim).
         """
         from bigdl.chronos.pytorch.utils import _pytorch_fashion_inference
+        from bigdl.nano.utils.log4Error import invalidInputError
 
         if self.distributed:
             invalidInputError(False,
@@ -741,6 +743,7 @@ class BasePytorchForecaster(Forecaster):
         The method is Not required to call before predict_with_openvino.
         '''
         from bigdl.chronos.pytorch import TSTrainer as Trainer
+        from bigdl.nano.utils.log4Error import invalidInputError
 
         if self.distributed:
             invalidInputError(False,

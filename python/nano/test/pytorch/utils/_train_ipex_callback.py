@@ -25,11 +25,10 @@ from pytorch_lightning.accelerators.cpu import CPUAccelerator
 
 class CheckIPEXCallback(Callback):
     def on_train_start(self, trainer, pl_module):
+        if trainer.use_ipex == False:
+           warnings.warn("CheckIPEXCallback is used, but ipex is disabled. ") 
+           return
         if TORCH_VERSION_LESS_1_10:
-            from bigdl.nano.deps.ipex.version_1_9.ipex_accelerator_1_9 import IPEXAccelerator
-            if not isinstance(trainer.accelerator, IPEXAccelerator):
-                warnings.warn("CheckIPEXCallback is used, but ipex fail")
-                return
             from bigdl.nano.deps.ipex.version_1_9.ipex_torchfunctional import RESTORE_TYPE
             def check_device(obj):
                 if torch.is_tensor(obj):
@@ -45,10 +44,6 @@ class CheckIPEXCallback(Callback):
                 return True
             assert check_device(pl_module.state_dict())
         else:
-            from bigdl.nano.deps.ipex.ipex_accelerator import IPEXAccelerator
-            if not isinstance(trainer.accelerator, IPEXAccelerator):
-                warnings.warn("CheckIPEXCallback is used, but ipex fail")
-                return
             from intel_extension_for_pytorch.nn.utils._model_convert import _LSTM
             from intel_extension_for_pytorch.nn.utils._weight_prepack import _IPEXConvNd, _IPEXLinear, _IPEXConvTransposeNd
             IPEX_LAYERS = (_LSTM, 

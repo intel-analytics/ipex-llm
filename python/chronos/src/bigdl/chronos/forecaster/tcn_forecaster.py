@@ -140,11 +140,14 @@ class TCNForecaster(BasePytorchForecaster):
 
         # nano setting
         current_num_threads = torch.get_num_threads()
-        self.num_processes = max(1, current_num_threads//8)  # 8 is a magic num
+        if current_num_threads >= 24:
+            self.num_processes = max(1, current_num_threads//8)  # 8 is a magic num
+        else:
+            self.num_processes = 1
         self.use_ipex = False  # TCN has worse performance on ipex
         self.onnx_available = True
         self.quantize_available = True
-        self.checkpoint_callback = False
+        self.checkpoint_callback = True
         self.use_hpo = True
 
         super().__init__()

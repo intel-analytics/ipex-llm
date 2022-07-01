@@ -42,6 +42,7 @@ import torch.nn as nn
 from torch.utils.data import DataLoader, IterableDataset
 from torch.utils.data.distributed import DistributedSampler
 from bigdl.orca import OrcaContext
+from bigdl.orca.learn.pytorch.callbacks.model_checkpoint import ModelCheckpoint
 from bigdl.orca.learn.pytorch.constants import SCHEDULER_STEP, NUM_STEPS
 from bigdl.orca.learn.pytorch.training_operator import TrainingOperator
 from bigdl.orca.learn.pytorch import utils
@@ -297,7 +298,9 @@ class TorchRunner:
 
         if callbacks is not None:
             for callback in callbacks:
-                callback.set_trainer(self)
+                callback.set_model(self.given_models)
+                if hasattr(callback, "set_trainer"):
+                    callback.set_trainer(self)
                 callback.on_train_begin()
         stats_list = list()
         for i in range(epochs):
@@ -317,10 +320,10 @@ class TorchRunner:
             self.epochs_stats = stats
             if callbacks is not None:
                 for callback in callbacks:
-                    callback.on_epoch_end(epoch=self.epochs)
+                    callback.on_epoch_end(epoch=self.epochs, logs=self.epochs_stats)
         if callbacks is not None:
             for callback in callbacks:
-                callback.on_train_end()
+                callback.on_train_end(logs=self.epochs_stats)
         return stats_list
 
     def train_epoch(self,
