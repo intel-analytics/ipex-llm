@@ -34,7 +34,10 @@ train_transform = transforms.Compose([transforms.Resize(256),
                                       transforms.ToTensor(),
                                       transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])])
 val_transform = transforms.Compose([transforms.Resize([224, 224]), transforms.ToTensor(), transforms.Normalize([0.485, 0.456, 0.406], [0.229, 0.224, 0.225])])
-train_dataset = OxfordIIITPet(root = ".", transform=train_transform)
+# Apply data augmentation to the tarin_dataset
+train_dataset = OxfordIIITPet(root = ".",
+                              transform=train_transform,
+                              target_transform=transforms.Lambda(lambda label: torch.tensor(label, dtype=torch.long)))   # Quantization using POT expect a tensor as label
 val_dataset = OxfordIIITPet(root=".", transform=val_transform)
 # obtain training indices that will be used for validation
 indices = torch.randperm(len(train_dataset))
