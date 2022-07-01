@@ -9,7 +9,7 @@ AutoTSEstimator will replace AutoTSTrainer in later version.
 
 .. tabs::
 
-    .. tab:: PyTorch
+    .. tab:: PyTorch/Tensorflow
 
         .. automodule:: bigdl.chronos.autots.autotsestimator
             :members:
