@@ -83,6 +83,10 @@ class PPMLContextPython[T]() {
     sc.getSparkSession()
   }
 
+  def getDefaultMinPartitions(sparkSession: SparkSession): Int = {
+    sparkSession.sparkContext.defaultMinPartitions
+  }
+
   private def parseArgs(ppmlArgs: util.Map[String, String]): Map[String, String] = {
     val kmsArgs = scala.collection.mutable.Map[String, String]()
     val kmsType = ppmlArgs.get("kms_type")
