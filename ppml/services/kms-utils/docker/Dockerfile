@@ -15,7 +15,6 @@ ARG JDK_URL=your_jdk_url
 ARG SPARK_JAR_REPO_URL
 ENV JDK_VERSION         ${JDK_VERSION}
 ENV SPARK_VERSION       ${SPARK_VERSION}
-
 ENV JAVA_HOME           /opt/jdk${JDK_VERSION}
 ENV SPARK_HOME          /opt/spark-${SPARK_VERSION}
 ENV PATH                ${JAVA_HOME}/bin:${SPARK_HOME}/bin:${PATH}
@@ -47,7 +46,7 @@ ARG BIGDL_VERSION
 ARG SPARK_VERSION
 ENV SPARK_VERSION               ${SPARK_VERSION}
 ENV BIGDL_VERSION               ${BIGDL_VERSION}
-ENV BIGDL_HOME                  /bigdl-${BIGDL_VERSION}
+ENV BIGDL_HOME                  /opt/bigdl-${BIGDL_VERSION}
 RUN apt-get update --fix-missing && \
     apt-get install -y apt-utils curl wget unzip git
 RUN wget https://raw.githubusercontent.com/intel-analytics/analytics-zoo/bigdl-2.0/docker/hyperzoo/download-bigdl.sh && \
@@ -60,6 +59,8 @@ RUN ./download-bigdl.sh && \
 FROM ubuntu:18.04
 ARG EHSM_KMS_BRANCH_VERSION=main
 ARG SPARK_VERSION
+ARG BIGDL_VERSION
+ENV BIGDL_VERSION       ${BIGDL_VERSION}
 ENV SPARK_VERSION       ${SPARK_VERSION}
 ENV JAVA_HOME           /opt/jdk8
 ENV SPARK_HOME          /opt/spark-${SPARK_VERSION}
@@ -89,7 +90,7 @@ RUN apt-get update && apt-get install -y vim autoconf automake build-essential c
 ADD ./entrypoint.sh /home/entrypoint.sh
 COPY --from=builder /opt/jdk /opt/jdk8
 COPY --from=builder /opt/spark-${SPARK_VERSION} /opt/spark-${SPARK_VERSION}
-COPY --from=bigdl /bigdl-${BIGDL_VERSION} ${BIGDL_HOME}
+COPY --from=bigdl   ${BIGDL_HOME} ${BIGDL_HOME}
 
 # python
 RUN apt-get install -y python3-minimal && \
