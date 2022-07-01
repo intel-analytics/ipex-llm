@@ -125,7 +125,8 @@ class TestFGBoostRegression(FLTest):
         df_test = pd.read_csv(os.path.join(resource_path, "house-prices-test-preprocessed-0.csv"))
         result = fgboost_regression.predict(df_test, feature_columns=df_test.columns)
         result = np.exp(result)
-        assert np.allclose(result, TestFGBoostRegression.xgboost_result, rtol=100, atol=100)
+        assert len(result) == len(TestFGBoostRegression.xgboost_result)
+        assert np.allclose(result, TestFGBoostRegression.xgboost_result, rtol=10, atol=10)
 
 if __name__ == '__main__':
     unittest.main()

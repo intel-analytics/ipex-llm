@@ -47,13 +47,6 @@ from bigdl.nano.pytorch import Trainer
 trainer = Trainer(max_epoch=10, use_ipex=True)
 ```
 
-Note: BigDL-Nano does not install IPEX by default. You can install IPEX using the following command:
-
-```bash
-python -m pip install torch_ipex==1.9.0 -f https://software.intel.com/ipex-whl-stable
-python -m pip install torchvision==0.10.0+cpu -f https://download.pytorch.org/whl/torch_stable.html
-```
-
 #### Multi-instance Training
 
 When training on a server with dozens of CPU cores, it is often beneficial to use multiple training instances in a data-parallel fashion to make full use of the CPU cores. However, using PyTorch's DDP API is a little cumbersome and error-prone, and if not configured correctly, it will make the training even slow.

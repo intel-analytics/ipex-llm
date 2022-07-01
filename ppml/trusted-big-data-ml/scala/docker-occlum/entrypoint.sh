@@ -20,15 +20,21 @@ fi
 
 # check occlum log level
 export ENABLE_SGX_DEBUG=false
+export OCCLUM_LOG_LEVEL=off
 if [[ -z "$SGX_LOG_LEVEL" ]]; then
     echo "No SGX_LOG_LEVEL specified, set to off."
-    export OCCLUM_LOG_LEVEL=off
 else
     echo "Set SGX_LOG_LEVEL to $SGX_LOG_LEVEL"
-    export OCCLUM_LOG_LEVEL=$SGX_LOG_LEVEL
-    if [[ $OCCLUM_LOG_LEVEL != "off" ]]; then
+    if [[ $SGX_LOG_LEVEL == "debug" ]] || [[ $SGX_LOG_LEVEL == "trace" ]]; then
         export ENABLE_SGX_DEBUG=true
+        export OCCLUM_LOG_LEVEL=$SGX_LOG_LEVEL
     fi
+fi
+
+# check the NETTY_THREAD
+if [[ -z "$NETTY_THREAD" ]]; then
+    echo "NETTY_THREAD not set, using default value 16"
+    NETTY_THREAD=16
 fi
 
 SPARK_K8S_CMD="$1"
@@ -82,7 +88,7 @@ case "$SPARK_K8S_CMD" in
         -cp "$SPARK_CLASSPATH" \
         -Xmx$DRIVER_MEMORY \
         -XX:ActiveProcessorCount=4 \
-        -Dio.netty.availableProcessors=64 \
+        -Dio.netty.availableProcessors=$NETTY_THREAD \
         org.apache.spark.deploy.SparkSubmit \
         --conf "spark.driver.bindAddress=$SPARK_DRIVER_BIND_ADDRESS" \
         --deploy-mode client \
@@ -104,7 +110,7 @@ case "$SPARK_K8S_CMD" in
         -Xms$SPARK_EXECUTOR_MEMORY \
         -Xmx$SPARK_EXECUTOR_MEMORY \
         -Dos.name=Linux \
-        -Dio.netty.availableProcessors=64 \
+        -Dio.netty.availableProcessors=$NETTY_THREAD \
         -Djdk.lang.Process.launchMechanism=posix_spawn \
         -cp "$SPARK_CLASSPATH" \
         org.apache.spark.executor.CoarseGrainedExecutorBackend \

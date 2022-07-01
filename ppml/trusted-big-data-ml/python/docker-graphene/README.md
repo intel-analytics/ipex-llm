@@ -486,10 +486,9 @@ sudo docker run -itd \
     -e LOCAL_IP=$LOCAL_IP \
     $DOCKER_IMAGE bash
 ```
+run `docker exec -it spark-local-k8s-client bash` to entry the container.
 
-### 1.4 Init the client and run Spark applications on k8s
-
-First, run `docker exec -it spark-local-k8s-client bash` to entry the container.
+### 1.4 Init the client and run Spark applications on k8s (1.4 can be skipped if you are using 1.5 to submit jobs)
 
 #### 1.4.1 Configure `spark-executor-template.yaml` in the container
 
@@ -573,10 +572,161 @@ Note that: you can run your own Spark Appliction after changing `--class` and ja
 2. `--class org.apache.spark.examples.SparkPi` => `--class your_class_path`
 
 #### 1.4.3 Spark-Pi example
-
 ```bash
 SGX=1 ./pal_loader bash 2>&1 | tee spark-pi-sgx-$SPARK_MODE.log
 ```
+### 1.5 Use bigdl-ppml-submit.sh to submit ppml jobs
+#### 1.5.1 Spark-Pi on local mode
+![image2022-6-6_16-18-10](https://user-images.githubusercontent.com/61072813/174703141-63209559-05e1-4c4d-b096-6b862a9bed8a.png)
+```
+#!/bin/bash
+bash bigdl-ppml-submit.sh \
+        --sgx-enabled false \
+        --master local[2] \
+        --driver-memory 32g \
+        --driver-cores 8 \
+        --executor-memory 32g \
+        --executor-cores 8 \
+        --num-executors 2 \
+        --class org.apache.spark.examples.SparkPi \
+        --name spark-pi \
+        --verbose \
+        local:///ppml/trusted-big-data-ml/work/spark-3.1.2/examples/jars/spark-examples_2.12-3.1.2.jar 3000
+```
+#### 1.5.2 Spark-Pi on local sgx mode
+![image2022-6-6_16-18-57](https://user-images.githubusercontent.com/61072813/174703165-2afc280d-6a3d-431d-9856-dd5b3659214a.png)
+```
+#!/bin/bash
+bash bigdl-ppml-submit.sh \
+        --master local[2] \
+        --sgx-enabled true \
+        --sgx-log-level error \
+        --sgx-driver-memory 64g \
+        --sgx-driver-jvm-memory 12g \
+        --sgx-executor-memory 64g \
+        --sgx-executor-jvm-memory 12g \
+        --driver-memory 32g \
+        --driver-cores 8 \
+        --executor-memory 32g \
+        --executor-cores 8 \
+        --num-executors 2 \
+        --class org.apache.spark.examples.SparkPi \
+        --name spark-pi \
+        --verbose \
+        local:///ppml/trusted-big-data-ml/work/spark-3.1.2/examples/jars/spark-examples_2.12-3.1.2.jar 3000
+```
+#### 1.5.3 Spark-Pi on client mode
+![image2022-6-6_16-19-43](https://user-images.githubusercontent.com/61072813/174703216-70588315-7479-4b6c-9133-095104efc07d.png)
+```
+#!/bin/bash
+ 
+export secure_password=`openssl rsautl -inkey /ppml/trusted-big-data-ml/work/password/key.txt -decrypt </ppml/trusted-big-data-ml/work/password/output.bin`
+bash bigdl-ppml-submit.sh \
+        --master $RUNTIME_SPARK_MASTER \
+        --deploy-mode client \
+        --sgx-enabled true \
+        --sgx-log-level error \
+        --sgx-driver-memory 64g \
+        --sgx-driver-jvm-memory 12g \
+        --sgx-executor-memory 64g \
+        --sgx-executor-jvm-memory 12g \
+        --driver-memory 32g \
+        --driver-cores 8 \
+        --executor-memory 32g \
+        --executor-cores 8 \
+        --num-executors 2 \
+        --conf spark.kubernetes.container.image=$RUNTIME_K8S_SPARK_IMAGE \
+        --class org.apache.spark.examples.SparkPi \
+        --name spark-pi \
+        --verbose \
+        local:///ppml/trusted-big-data-ml/work/spark-3.1.2/examples/jars/spark-examples_2.12-3.1.2.jar 3000
+```
+#### 1.5.4 Spark-Pi on cluster mode
+![image2022-6-6_16-20-0](https://user-images.githubusercontent.com/61072813/174703234-e45b8fe5-9c61-4d17-93ef-6b0c961a2f95.png)
+```
+#!/bin/bash
+
+export secure_password=`openssl rsautl -inkey /ppml/trusted-big-data-ml/work/password/key.txt -decrypt </ppml/trusted-big-data-ml/work/password/output.bin`
+bash bigdl-ppml-submit.sh \
+        --master $RUNTIME_SPARK_MASTER \
+        --deploy-mode cluster \
+        --sgx-enabled true \
+        --sgx-log-level error \
+        --sgx-driver-memory 64g \
+        --sgx-driver-jvm-memory 12g \
+        --sgx-executor-memory 64g \
+        --sgx-executor-jvm-memory 12g \
+        --driver-memory 32g \
+        --driver-cores 8 \
+        --executor-memory 32g \
+        --executor-cores 8 \
+        --conf spark.kubernetes.container.image=$RUNTIME_K8S_SPARK_IMAGE \
+        --num-executors 2 \
+        --class org.apache.spark.examples.SparkPi \
+        --name spark-pi \
+        --verbose \
+        local:///ppml/trusted-big-data-ml/work/spark-3.1.2/examples/jars/spark-examples_2.12-3.1.2.jar 3000
+```
+
+#### 1.5.5 bigdl-ppml-submit.sh explanations
+
+bigdl-ppml-submit.sh is used to simplify the steps in 1.4
+
+1. To use bigdl-ppml-submit.sh, first set the following required arguments: 
+```
+--master $RUNTIME_SPARK_MASTER \
+--deploy-mode cluster \
+--driver-memory 32g \
+--driver-cores 8 \
+--executor-memory 32g \
+--executor-cores 8 \
+--sgx-enabled true \
+--sgx-log-level error \
+--sgx-driver-memory 64g \
+--sgx-driver-jvm-memory 12g \
+--sgx-executor-memory 64g \
+--sgx-executor-jvm-memory 12g \
+--conf spark.kubernetes.container.image=$RUNTIME_K8S_SPARK_IMAGE \
+--num-executors 2 \
+--name spark-pi \
+--verbose \
+--class org.apache.spark.examples.SparkPi \
+local:///ppml/trusted-big-data-ml/work/spark-3.1.2/examples/jars/spark-examples_2.12-3.1.2.jar 3000
+```
+if you are want to enable sgx, don't forget to set the sgx-related arguments
+```
+--sgx-enabled true \
+--sgx-log-level error \
+--sgx-driver-memory 64g \
+--sgx-driver-jvm-memory 12g \
+--sgx-executor-memory 64g \
+--sgx-executor-jvm-memory 12g \
+```
+you can update the application arguments to anything you want to run
+```
+--class org.apache.spark.examples.SparkPi \
+local:///ppml/trusted-big-data-ml/work/spark-3.1.2/examples/jars/spark-examples_2.12-3.1.2.jar 3000
+```
+
+2. If you want to enable the spark security configurations as in 2.Spark security configurations, export secure_password to enable it.
+```
+export secure_password=`openssl rsautl -inkey /ppml/trusted-big-data-ml/work/password/key.txt -decrypt </ppml/trusted-big-data-ml/work/password/output.bin`
+```
+
+3. The following spark properties are set by default in bigdl-ppml-submit.sh. If you want to overwrite them or add new spark properties, just append the spark properties to bigdl-ppml-submit.sh as arguments.
+```
+--conf spark.driver.host=$LOCAL_IP \
+--conf spark.driver.port=$RUNTIME_DRIVER_PORT \
+--conf spark.network.timeout=10000000 \
+--conf spark.executor.heartbeatInterval=10000000 \
+--conf spark.python.use.daemon=false \
+--conf spark.python.worker.reuse=false \
+--conf spark.kubernetes.authenticate.driver.serviceAccountName=spark \
+--conf spark.kubernetes.driver.podTemplateFile=/ppml/trusted-big-data-ml/spark-driver-template.yaml \
+--conf spark.kubernetes.executor.podTemplateFile=/ppml/trusted-big-data-ml/spark-executor-template.yaml \
+--conf spark.kubernetes.executor.deleteOnTermination=false \
+```
+
 
 ### Configuration Explainations
 

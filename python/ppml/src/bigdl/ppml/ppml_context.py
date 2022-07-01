@@ -16,6 +16,7 @@
 
 from bigdl.ppml.api import *
 from bigdl.ppml.utils.log4Error import *
+from enum import Enum
 
 
 class PPMLContext(JavaValue):
@@ -30,10 +31,14 @@ class PPMLContext(JavaValue):
         callBigDlFunc(self.bigdl_type, "loadKeys", self.value, primary_key_path, data_key_path)
 
     def read(self, crypto_mode):
+        if isinstance(crypto_mode, CryptoMode):
+            crypto_mode = crypto_mode.value
         df_reader = callBigDlFunc(self.bigdl_type, "read", self.value, crypto_mode)
         return EncryptedDataFrameReader(self.bigdl_type, df_reader)
 
     def write(self, dataframe, crypto_mode):
+        if isinstance(crypto_mode, CryptoMode):
+            crypto_mode = crypto_mode.value
         df_writer = callBigDlFunc(self.bigdl_type, "write", self.value, dataframe, crypto_mode)
         return EncryptedDataFrameWriter(self.bigdl_type, df_writer)
 
@@ -49,6 +54,9 @@ class EncryptedDataFrameReader:
 
     def csv(self, path):
         return callBigDlFunc(self.bigdl_type, "csv", self.df_reader, path)
+
+    def parquet(self, path):
+        return callBigDlFunc(self.bigdl_type, "parquet", self.df_reader, path)
 
 
 class EncryptedDataFrameWriter:
@@ -71,6 +79,27 @@ class EncryptedDataFrameWriter:
 
     def csv(self, path):
         return callBigDlFunc(self.bigdl_type, "csv", self.df_writer, path)
+
+    def parquet(self, path):
+        return callBigDlFunc(self.bigdl_type, "parquet", self.df_writer, path)
+
+
+class CryptoMode(Enum):
+    """
+    BigDL crypto mode for encrypt and decrypt data.
+    """
+
+    # CryptoMode PLAIN_TEXT
+    PLAIN_TEXT = "plain_text"
+
+    # CryptoMode AES_CBC_PKCS5PADDING
+    AES_CBC_PKCS5PADDING = "AES/CBC/PKCS5Padding"
+
+    # CryptoMode AES_GCM_V1 for parquet only
+    AES_GCM_V1 = "AES_GCM_V1"
+
+    # CryptoMode AES_GCM_CTR_V1 for parquet only
+    AES_GCM_CTR_V1 = "AES_GCM_CTR_V1"
 
 
 def init_keys(app_id, app_key, primary_key_path, data_key_path):

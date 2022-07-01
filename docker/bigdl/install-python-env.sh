@@ -32,4 +32,6 @@ pip install --no-cache-dir tensorflow==1.15.0 && \
 pip install --no-cache-dir tf_slim && \
 pip install --no-cache-dir tensorflow-datasets==3.2.0 && \
 pip install --no-cache-dir imageio==2.8.0 && \
-pip install --no-cache-dir jupyterlab
+pip install --no-cache-dir jupyterlab && \
+pip install ray[default] && \
+pip install --pre bigdl-orca-spark3

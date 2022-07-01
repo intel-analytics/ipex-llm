@@ -114,6 +114,12 @@ class Trainer(pl.Trainer):
             invalidInputError(distributed_backend in distributed_backends,
                               f"Distributed backends supported now are {distributed_backends},"
                               f" but get {distributed_backend}.")
+            if "checkpoint_callback" in kwargs:
+                if not kwargs["checkpoint_callback"]:
+                    invalidInputError(False,
+                                      f"`checkpoint_callback` set to False. "
+                                      f"Currently, disable checkpoint callback make "
+                                      f"distributed training backend work incorrect")
             if distributed_backend == "spawn":
                 plugin = DDPSpawnPlugin(num_processes=num_processes,
                                         cpu_for_each_process=cpu_for_each_process,
@@ -315,7 +321,7 @@ class Trainer(pl.Trainer):
         elif accelerator == 'openvino':
             model_type = type(model).__name__
             if not model_type == 'PytorchOpenVINOModel':
-                if not input_sample:
+                if input_sample is None:
                     # input_sample can be a dataloader
                     input_sample = calib_dataloader
                 model = Trainer.trace(model,
