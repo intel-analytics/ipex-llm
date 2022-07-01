@@ -70,6 +70,7 @@ ENV PATH                ${JAVA_HOME}/bin:${SPARK_HOME}/bin:${PATH}
 # Step 1. Install requirement tools
 RUN apt-get update && apt-get install -y vim autoconf automake build-essential cmake curl debhelper git libcurl4-openssl-dev libprotobuf-dev libssl-dev libtool lsb-release ocaml ocamlbuild protobuf-compiler python wget libcurl4 libprotobuf17 libssl1.1 make kmod g++ libjsoncpp-dev uuid-dev openjdk-8-jdk && \
 # Step 2. Install Intel SGX SDK
+    mkdir /opt/intel && cd /opt/intel && \
     wget https://download.01.org/intel-sgx/sgx-dcap/1.13/linux/distro/ubuntu20.04-server/sgx_linux_x64_sdk_2.16.100.4.bin && \
     chmod a+x ./sgx_linux_x64_sdk_2.16.100.4.bin && \
     printf "no\n/opt/intel\n"|./sgx_linux_x64_sdk_2.16.100.4.bin && \
