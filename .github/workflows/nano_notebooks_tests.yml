@@ -75,6 +75,8 @@ jobs:
             bash python/nano/notebooks/pytorch/tutorial/run-nano-notebooks-pytorch-tutorial-tests.sh
             source $CONDA/bin/deactivate
             $CONDA/bin/conda remove -n notebooks-pytorch --all
+        env:
+            ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
 
       - name: Run tutorial notebooks Pytorch unit tests(OpenVINO)
         shell: bash
@@ -95,3 +97,5 @@ jobs:
             bash python/nano/notebooks/pytorch/tutorial/run-nano-notebooks-pytorch-tutorial-openvino-tests.sh
             source $CONDA/bin/deactivate
             $CONDA/bin/conda remove -n --all
+        env:
+            ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
