@@ -321,7 +321,7 @@ class Trainer(pl.Trainer):
         elif accelerator == 'openvino':
             model_type = type(model).__name__
             if not model_type == 'PytorchOpenVINOModel':
-                if not input_sample:
+                if input_sample is None:
                     # input_sample can be a dataloader
                     input_sample = calib_dataloader
                 model = Trainer.trace(model,
