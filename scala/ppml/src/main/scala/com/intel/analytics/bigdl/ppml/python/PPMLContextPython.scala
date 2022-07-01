@@ -24,6 +24,7 @@ import org.apache.spark.SparkConf
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.{DataFrame, DataFrameWriter, Row, SparkSession}
 import org.slf4j.{Logger, LoggerFactory}
+import scala.collection.JavaConverters._
 
 import java.io.File
 import java.util
@@ -49,9 +50,12 @@ class PPMLContextPython[T]() {
   }
 
   def createPPMLContext(appName: String, ppmlArgs: util.Map[String, String],
-                        sparkConf: SparkConf): PPMLContext = {
+                        confs: util.List[util.List]): PPMLContext = {
     logger.debug("create PPMLContextWrapper with appName & ppmlArgs & sparkConf")
     val args = parseArgs(ppmlArgs)
+    val sparkConf = new SparkConf()
+    confs.asScala.foreach(conf => sparkConf.set(conf.get(0).toString, conf.get(1).toString))
+
     PPMLContext.initPPMLContext(sparkConf, appName, args)
   }
 
