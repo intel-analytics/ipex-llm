@@ -5,7 +5,6 @@ AutoTCN
 -------------------------------------------
 
 AutoTCN is a TCN forecasting model with Auto tuning.
-Other API follows its base class(BaseAutomodel).
 
 .. automodule:: bigdl.chronos.autots.model.auto_tcn
     :members:
@@ -18,7 +17,6 @@ AutoLSTM
 ----------------------------------------
 
 AutoLSTM is an LSTM forecasting model with Auto tuning.
-Other API follows its base class(BaseAutomodel).
 
 .. automodule:: bigdl.chronos.autots.model.auto_lstm
     :members:
@@ -31,7 +29,6 @@ AutoSeq2Seq
 ----------------------------------------
 
 AutoSeq2Seq is an Seq2Seq forecasting model with Auto tuning.
-Other API follows its base class(BaseAutomodel).
 
 .. automodule:: bigdl.chronos.autots.model.auto_seq2seq
     :members:
