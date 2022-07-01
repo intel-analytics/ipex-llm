@@ -392,4 +392,3 @@ class XShardsTSDataset:
                               "Please call 'roll' method "
                               "before transform a XshardsTSDataset to numpy ndarray!")
         return self.numpy_shards.transform_shard(transform_to_dict)
-    
