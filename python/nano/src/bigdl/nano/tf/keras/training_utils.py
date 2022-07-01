@@ -115,4 +115,4 @@ class TrainingUtils:
                                                   fit_kwargs=fit_kwargs)
                 return history
         else:
-            return super().fit(**fit_kwargs)
+            return self.fit_old(**fit_kwargs)

@@ -50,7 +50,7 @@ BigDL Documentation
    doc/Nano/QuickStart/pytorch_inference.md
    doc/Nano/QuickStart/tensorflow_train.md
    doc/Nano/QuickStart/tensorflow_inference.md
-   doc/Nano/QuickStart/hpo.md
+   doc/Nano/QuickStart/hpo.rst
    doc/Nano/Overview/known_issues.md
 
 .. toctree::

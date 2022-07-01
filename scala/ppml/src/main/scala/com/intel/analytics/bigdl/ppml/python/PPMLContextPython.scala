@@ -96,6 +96,11 @@ class PPMLContextPython[T]() {
     encryptedDataFrameReader.csv(path)
   }
 
+  def parquet(encryptedDataFrameReader: EncryptedDataFrameReader, path: String): DataFrame = {
+    logger.debug("read parquet file from path: " + path)
+    encryptedDataFrameReader.parquet(path)
+  }
+
   /**
    * EncryptedDataFrameWriter method
    */
@@ -117,6 +122,10 @@ class PPMLContextPython[T]() {
 
   def csv(encryptedDataFrameWriter: EncryptedDataFrameWriter, path: String): Unit = {
     encryptedDataFrameWriter.csv(path)
+  }
+
+  def parquet(encryptedDataFrameWriter: EncryptedDataFrameWriter, path: String): Unit = {
+    encryptedDataFrameWriter.parquet(path)
   }
 
   /**
