@@ -7,7 +7,7 @@ ARG SPARK_VERSION=3.1.2
 ARG BIGDL_VERSION=2.1.0-SNAPSHOT
 
 # stage.1 java & spark
-FROM ubuntu:18.04 AS builder
+FROM ubuntu:20.04 AS builder
 
 ARG SPARK_VERSION
 ARG JDK_VERSION
@@ -41,7 +41,7 @@ RUN cd /opt && \
 
 
 # stage.2 bigdl
-FROM ubuntu:18.04 as bigdl
+FROM ubuntu:20.04 as bigdl
 ARG BIGDL_VERSION
 ARG SPARK_VERSION
 ENV SPARK_VERSION               ${SPARK_VERSION}
@@ -56,7 +56,7 @@ RUN ./download-bigdl.sh && \
 
 
 # stage.3 kms-util
-FROM ubuntu:18.04
+FROM ubuntu:20.04
 ARG EHSM_KMS_BRANCH_VERSION=main
 ARG SPARK_VERSION
 ARG BIGDL_VERSION
@@ -68,7 +68,7 @@ ENV BIGDL_HOME          /opt/bigdl-${BIGDL_VERSION}
 ENV PATH                ${JAVA_HOME}/bin:${SPARK_HOME}/bin:${PATH}
 
 # Step 1. Install requirement tools
-RUN apt-get update && apt-get install -y vim autoconf automake build-essential cmake curl debhelper git libcurl4-openssl-dev libprotobuf-dev libssl-dev libtool lsb-release ocaml ocamlbuild protobuf-compiler python wget libcurl4 libprotobuf10 libssl1.1 make module-init-tools g++ libjsoncpp-dev uuid-dev openjdk-8-jdk && \
+RUN apt-get update && apt-get install -y vim autoconf automake build-essential cmake curl debhelper git libcurl4-openssl-dev libprotobuf-dev libssl-dev libtool lsb-release ocaml ocamlbuild protobuf-compiler python wget libcurl4 libprotobuf17 libssl1.1 make kmod g++ libjsoncpp-dev uuid-dev openjdk-8-jdk && \
 # Step 2. Install Intel SGX SDK
     mkdir /opt/intel && cd /opt/intel && \
     wget https://download.01.org/intel-sgx/sgx-dcap/1.12.1/linux/distro/ubuntu18.04-server/sgx_linux_x64_sdk_2.15.101.1.bin && \
