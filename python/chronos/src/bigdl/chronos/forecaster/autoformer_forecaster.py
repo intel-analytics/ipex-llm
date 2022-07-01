@@ -151,13 +151,14 @@ class AutoformerForecaster(Forecaster):
         self.use_amp = False
         self.use_hpo = True
 
-        has_space = self._config_has_search_space(
-                config={**self.model_config, **self.optim_config,
-                **self.loss_config, **self.data_config})
+        has_space = self._config_has_search_space( \
+                    config={**self.model_config, **self.optim_config,
+                            **self.loss_config, **self.data_config}
+                    )
 
         if not self.use_hpo and has_space:
             invalidInputError(False, "Found search spaces in arguments but HPO is disabled."
-                                        "Enable HPO or remove search spaces in arguments to use.")
+                              "Enable HPO or remove search spaces in arguments to use.")
 
         if not has_space:
             if self.use_hpo:
@@ -244,7 +245,7 @@ class AutoformerForecaster(Forecaster):
         if isinstance(data, tuple):
             check_transformer_data(data[0], data[1], data[2], data[3], self.data_config)
             if validation_data and isinstance(validation_data, tuple):
-                check_transformer_data(validation_data[0], validation_data[1], 
+                check_transformer_data(validation_data[0], validation_data[1],
                                        validation_data[2], validation_data[3], self.data_config)
             else:
                 invalidInputError(False,

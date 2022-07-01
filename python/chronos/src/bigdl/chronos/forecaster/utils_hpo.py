@@ -228,7 +228,7 @@ class GenericTSTransformerLightningModule(LightningModule):
         target = batch[1][:, self.hparams.label_len:, :]
         loss = self.loss(y_hat, target)  # use last output as target
         self.log("train/loss", loss, on_epoch=True,
-                prog_bar=True, logger=True)
+                 prog_bar=True, logger=True)
         return loss
 
     def validation_step(self, batch, batch_idx):
