@@ -47,6 +47,8 @@ RUN cd /opt && \
     wget -P ${SPARK_HOME}/jars/ https://repo1.maven.org/maven2/org/apache/logging/log4j/log4j-core/2.17.1/log4j-core-2.17.1.jar && \
     wget -P ${SPARK_HOME}/jars/ https://repo1.maven.org/maven2/org/apache/logging/log4j/log4j-slf4j-impl/2.17.1/log4j-slf4j-impl-2.17.1.jar
     
+ADD https://raw.githubusercontent.com/intel-analytics/BigDL/main/docker/bigdl-k8s/log4j2.xml ${SPARK_HOME}/conf/log4j2.xml
+
 
 # stage.2 bigdl
 FROM ubuntu:20.04 as bigdl
