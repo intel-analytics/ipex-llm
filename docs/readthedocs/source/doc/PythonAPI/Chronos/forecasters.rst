@@ -14,24 +14,20 @@ For the detailed algorithm description, please refer to `here <https://github.co
 
     .. tab:: PyTorch
 
-        :strong:`Please refer to` `BasePytorchForecaster <https://bigdl.readthedocs.io/en/latest/doc/PythonAPI/Chronos/forecasters.html#basepytorchforecaster>`__ :strong:`for other methods other than initialization`.
-
         .. automodule:: bigdl.chronos.forecaster.lstm_forecaster
             :members:
             :undoc-members:
             :show-inheritance:
-            :inherited-members: fit, predict, predict_with_onnx, predict_with_openvino, evaluate, evaluate_with_onnx, save, load, to_local, get_model, build_onnx, build_openvino
+            :inherited-members:
 
 
     .. tab:: Tensorflow
-
-        :strong:`Please refer to` `BaseTF2Forecaster <https://qp-bigdl.readthedocs.io/en/latest/doc/PythonAPI/Chronos/forecasters.html#module-bigdl.chronos.forecaster.tf.base_forecaster>`__ :strong:`for other methods other than initialization`.
 
         .. automodule:: bigdl.chronos.forecaster.tf.lstm_forecaster
             :members:
             :undoc-members:
             :show-inheritance:
-            :inherited-members: fit, predict, evaluate, save, load
+            :inherited-members:
 
 
 
