@@ -304,8 +304,8 @@ class XShardsTSDataset:
             from sklearn.utils.validation import check_is_fitted
             from bigdl.nano.utils.log4Error import invalidInputError
             try:
-                invalidInputError(not check_is_fitted(scaler[df[id_col][0]]),\
-                    "scaler is not fittedd")
+                invalidInputError(not check_is_fitted(scaler[df[id_col][0]]),
+                                  "scaler is not fittedd")
             except Exception:
                 invalidInputError(False,
                                   "When calling scale for the first time, "
@@ -336,8 +336,8 @@ class XShardsTSDataset:
             from sklearn.utils.validation import check_is_fitted
             from bigdl.nano.utils.log4Error import invalidInputError
             try:
-                invalidInputError(not check_is_fitted(scaler[df[id_col][0]]),\
-                    "scaler is not fittedd")
+                invalidInputError(not check_is_fitted(scaler[df[id_col][0]]),
+                                  "scaler is not fittedd")
             except Exception:
                 invalidInputError(False,
                                   "When calling scale for the first time, "
@@ -346,7 +346,7 @@ class XShardsTSDataset:
                 scaler[df[id_col][0]].inverse_transform(df[feature_col + target_col])
             return df
         self.shards = self.shards.transform_shard(_inverse_transform, self.id_col,
-                                                  self.shards_scaler, self.feature_col, 
+                                                  self.shards_scaler, self.feature_col,
                                                   self.target_col)
         return self
 
@@ -392,3 +392,4 @@ class XShardsTSDataset:
                               "Please call 'roll' method "
                               "before transform a XshardsTSDataset to numpy ndarray!")
         return self.numpy_shards.transform_shard(transform_to_dict)
+    
