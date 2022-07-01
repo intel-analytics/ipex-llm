@@ -194,11 +194,11 @@ class GenericTSTransformerLightningModule(LightningModule):
 
         self.model = model_creator({**model_config, **optim_config, **loss_config})
         self.loss = loss_creator(loss_config['loss'])
-       
+
         invalidInputError(isinstance(self.model, LightningModule),
                           "The created model must be instance of LightningModule but got {}"
                           .format(self.model.__class__))
-        
+
         self.scheduler = scheduler
         self.metrics = metrics
         _check_duplicate_metrics(self.metrics)
@@ -211,7 +211,7 @@ class GenericTSTransformerLightningModule(LightningModule):
     @staticmethod
     def _get_config_by_keys(keys, config):
         return {k: config[k] for k in keys}
-    
+
     def forward(self, *args):
         """Same as torch.nn.Module.forward()."""
         nargs = len(inspect.getfullargspec(self.model.forward).args[1:])
@@ -222,13 +222,13 @@ class GenericTSTransformerLightningModule(LightningModule):
         batch_x, batch_y, batch_x_mark, batch_y_mark = map(lambda x: x.float(), args)
         outputs = self.model(batch_x, batch_x_mark, batch_y, batch_y_mark)
         return outputs
-    
+
     def training_step(self, batch, batch_idx):
         y_hat = self(*batch)
         target = batch[1][:, self.hparams.label_len:, :]
         loss = self.loss(y_hat, target)  # use last output as target
         self.log("train/loss", loss, on_epoch=True,
-                    prog_bar=True, logger=True)
+                prog_bar=True, logger=True)
         return loss
 
     def validation_step(self, batch, batch_idx):
@@ -270,7 +270,7 @@ class GenericTSTransformerLightningModule(LightningModule):
                                         torch.from_numpy(self.validation_data[3])),
                           batch_size=self.batch_size,
                           shuffle=False)
-        
+
     def configure_optimizers(self):
         return self.model.configure_optimizers()
 
