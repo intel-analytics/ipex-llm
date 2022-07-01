@@ -462,49 +462,43 @@ We use [envoy](https://www.envoyproxy.io/docs/envoy/latest/) as the Load Balance
 3. validate: run `netstat -tnlp` to see if the envoy process is listening to the corresponding port in the envoy config file.
 4. For details on envoy and how to scale out gRPC services using envoy, please read [envoy](envoy.md).
 
-## Quick Start
+### Use Scripts to Deploy Multiple Services
 
-TODO: new demo
+We provide sample scripts to automatically deploy the whole pipeline across multiple servers. Following the steps below:
 
-You can follow the following steps to run the WnD demo.
-1. Prepare config files, WnD model and index
-   1. WnD model: the WnD model is the output of the offline pipelines.
-   2. index: the faiss index is generated in [Run nearline pipelines 6.](#run-nearline-pipelines)
-   3. Prepare [config_feature.yaml](https://github.com/intel-analytics/BigDL/blob/main/scala/friesian/src/main/resources/config/config_feature.yaml)
-   4. Prepare [config_feature_vec.yaml](https://github.com/intel-analytics/BigDL/blob/main/scala/friesian/src/main/resources/config/config_feature_vec.yaml)
-   5. Prepare [config_ranking.yaml](https://github.com/intel-analytics/BigDL/blob/main/scala/friesian/src/main/resources/config/config_ranking.yaml): modify `modelPath` and `savedModelInputs` according to your WnD model path and inputs.
-   6. Prepare [config_recall.yaml](https://github.com/intel-analytics/BigDL/blob/main/scala/friesian/src/main/resources/config/config_recall.yaml): modify `indexPath` and `indexDim` according to your index location and dimension. `featureServiceURL` according to `ip:port` the feature recall service listening on.
-   7. Prepare [config_recommender.yaml](https://github.com/intel-analytics/BigDL/blob/main/scala/friesian/src/main/resources/config/config_recommender.yaml): modify `itemIDColumn` and `inferenceColumns` according to the input order of the WnD model. `recallServiceURL`, `featureServiceURL` and `rankingServiceURL` according to the `ip:port` the corresponding service listening on.
-   8. Your file structure will like:
-   ```
-    └── $(pwd)
-        ├── recsys_wnd
-        ├── item.idx
-        ├── wnd_user.parquet
-        ├── wnd_item.parquet
-        ├── vec_feature_user_prediction.parquet
-        ├── vec_feature_item_prediction.parquet
-        ├── config_recommender.yaml
-        ├── config_ranking.yaml
-        ├── config_feature.yaml
-        ├── config_feature_vec.yaml
-        ├── config_recall.yaml
-        └── nearline
-            ├── config_feature.yaml
-            ├── config_feature_vec.yaml
-            └── config_recall.yaml
-    ```
-2. Start ranking service
-   `docker run -it --net host --rm --name ranking -v $(pwd):/opt/work/mnt -e OMP_NUM_THREADS=1 intelanalytics/friesian-serving:0.1.0 ranking -c mnt/config_ranking.yaml`
-3. Start feature service
-   `docker run -it --net host --rm --name feature -v $(pwd):/opt/work/mnt intelanalytics/friesian-serving:0.1.0 feature -c mnt/config_feature.yaml`
-4. Start feature recall service
-   `docker run -it --net host --rm --name feature-recall -v $(pwd):/opt/work/mnt intelanalytics/friesian-serving:0.1.0 feature -c mnt/config_feature_vec.yaml`
-5. Start recall service
-   `docker run -it --net host --rm --name recall -v $(pwd):/opt/work/mnt intelanalytics/friesian-serving:0.1.0 recall -c mnt/config_recall.yaml`
-6. Start recommender service
-   `docker run -it --net host --rm --name recommender -v $(pwd):/opt/work/mnt intelanalytics/friesian-serving:0.1.0 recommender -c mnt/config_recommender.yaml`
-7. Run client to test
-   `docker run -it --net host --rm -v $(pwd):/opt/work/mnt intelanalytics/friesian-serving:0.1.0 client -target localhost:8980 -dataDir mnt/wnd_user.parquet -k 50 -clientNum 4 -testNum 2`
+1. Prepare dataset & 5 config files for 5 services & 3 config files for nearline initial data loading.
+2. Set up [redis sentinel or redis cluster](#redis-for-big-data).
+3. [Pull Friesian-serving docker image](#pull-friesian-serving-docker-image).
+4. Create NFS on the cluster.
+5. Modify parameters in [config.sh](https://github.com/intel-analytics/BigDL/blob/main/scala/friesian/scripts/config.sh). If the SSH login without password is not enabled between the servers in the cluster, we need configure `SERVER_PASS` here.
+```bash
+#!/bin/bash
+IMAGE_TAG="intelanalytics/friesian-serving"
+CLUSTER_NAME=""
+SERVER_PASS=""
+RANKING_SERVER_LIST=('127.0.0.1')
+RECALL_SERVER_LIST=('127.0.0.1')
+FEATURE_SERVER_LIST=('127.0.0.1')
+FEATURE_RECALL_SERVER_LIST=('127.0.0.1')
+RECOMMENDER_SERVER_LIST=('127.0.0.1')
 
-TODO: multi-server demo
+# Use nfs volume
+VOLUME_TARGET="/opt/work/nfs"
+VOLUME_DEVICE="/mnt/myshareddir"
+VOLUME_ADDR="172.168.3.115"
+VOLUME_CONF="type=volume,source=nfsvolume,target=$VOLUME_TARGET,volume-driver=local,volume-opt=type=nfs,volume-opt=device=:$VOLUME_DEVICE,volume-opt=o=addr=$VOLUME_ADDR"
+
+# Use bind mounts
+# VOLUME_TARGET="/opt/work/data"
+# VOLUME_SOURCE="$(pwd)/data"
+# VOLUME_CONF="type=bind,source=$VOLUME_SOURCE,target=$VOLUME_TARGET"
+
+RANKING_INSTANCE_PER_NODE=1
+RECOMMENDER_INSTANCE_PER_NODE=1
+RECALL_INSTANCE_PER_NODE=1
+
+OMP_NUM_THREADS=1
+```
+6. Run [script](https://github.com/intel-analytics/BigDL/blob/main/scala/friesian/scripts/setup_all_services.sh) to setup all services using `bash setup_all_services.sh`.
+7. Modify envoy config files and start envoy on the proxy machines.
+8. Run [script](https://github.com/intel-analytics/BigDL/blob/main/scala/friesian/scripts/shutdown-all-services.sh) to shut down all services using `bash shutdown-all-services.sh`.
