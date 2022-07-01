@@ -11,7 +11,8 @@ Other API follows its base class(BaseAutomodel).
     :members:
     :undoc-members:
     :show-inheritance:
-    
+    :inherited-members:
+
 
 AutoLSTM
 ----------------------------------------
@@ -23,6 +24,8 @@ Other API follows its base class(BaseAutomodel).
     :members:
     :undoc-members:
     :show-inheritance:
+    :inherited-members:
+
 
 AutoSeq2Seq
 ----------------------------------------
@@ -34,6 +37,8 @@ Other API follows its base class(BaseAutomodel).
     :members:
     :undoc-members:
     :show-inheritance:
+    :inherited-members:
+
 
 AutoARIMA
 ----------------------------------------
@@ -44,6 +49,7 @@ AutoARIMA is an ARIMA forecasting model with Auto tuning.
     :members:
     :undoc-members:
     :show-inheritance:
+    :inherited-members:
 
 AutoProphet
 ----------------------------------------
@@ -54,11 +60,4 @@ AutoProphet is a Prophet forecasting model with Auto tuning.
     :members:
     :undoc-members:
     :show-inheritance:
-
-BaseAutomodel
-------------------------------------------------------------
-AutoLSTM, AutoSeq2Seq and AutoTCN all follow the same API as stated below.
-
-.. autoclass:: bigdl.chronos.autots.model.base_automodel.BaseAutomodel
-    :members:
-    :show-inheritance:
+    :inherited-members:
