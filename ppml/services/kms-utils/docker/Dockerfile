@@ -37,9 +37,16 @@ RUN cd /opt && \
     tar -zxvf spark-${SPARK_VERSION}-bin-hadoop3.2.tgz && \
     mv spark-${SPARK_VERSION}-bin-hadoop3.2 spark-${SPARK_VERSION} && \
     rm spark-${SPARK_VERSION}-bin-hadoop3.2.tgz && \
-    cp spark-${SPARK_VERSION}/conf/log4j.properties.template spark-${SPARK_VERSION}/conf/log4j.properties && \
-    echo $'\nlog4j.logger.io.netty=ERROR' >> spark-${SPARK_VERSION}/conf/log4j.properties
-
+    # remove log4j 1.x jars
+    rm -f ${SPARK_HOME}/jars/log4j-1.2.17.jar && \
+    rm -f ${SPARK_HOME}/jars/slf4j-log4j12-1.7.16.jar && \
+    rm -f ${SPARK_HOME}/jars/apache-log4j-extras-1.2.17.jar && \
+    wget -P ${SPARK_HOME}/jars/ https://repo1.maven.org/maven2/org/apache/logging/log4j/log4j-1.2-api/2.17.1/log4j-1.2-api-2.17.1.jar && \
+    wget -P ${SPARK_HOME}/jars/ https://repo1.maven.org/maven2/org/slf4j/slf4j-reload4j/1.7.35/slf4j-reload4j-1.7.35.jar && \
+    wget -P ${SPARK_HOME}/jars/ https://repo1.maven.org/maven2/org/apache/logging/log4j/log4j-api/2.17.1/log4j-api-2.17.1.jar && \
+    wget -P ${SPARK_HOME}/jars/ https://repo1.maven.org/maven2/org/apache/logging/log4j/log4j-core/2.17.1/log4j-core-2.17.1.jar && \
+    wget -P ${SPARK_HOME}/jars/ https://repo1.maven.org/maven2/org/apache/logging/log4j/log4j-slf4j-impl/2.17.1/log4j-slf4j-impl-2.17.1.jar
+    
 
 # stage.2 bigdl
 FROM ubuntu:20.04 as bigdl
