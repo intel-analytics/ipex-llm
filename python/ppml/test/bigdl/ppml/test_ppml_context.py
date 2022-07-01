@@ -33,6 +33,7 @@ class TestPPMLContext(unittest.TestCase):
 
     df = None
     data_content = None
+    csv_content = None
     sc = None
 
     @classmethod
@@ -53,6 +54,16 @@ class TestPPMLContext(unittest.TestCase):
             csv_writer.writerow(["capom", "60", "Developer"])
             csv_writer.writerow(["pjt", "24", "Developer"])
 
+        cls.csv_content = "name,age,job\n" + \
+                          "jack,18,Developer\n" + \
+                          "alex,20,Researcher\n" + \
+                          "xuoui,25,Developer\n" + \
+                          "hlsgu,29,Researcher\n" + \
+                          "xvehlbm,45,Developer\n" + \
+                          "ehhxoni,23,Developer\n" + \
+                          "capom,60,Developer\n" + \
+                          "pjt,24,Developer"
+
         # generate primaryKey and dataKey
         primary_key_path = os.path.join(resource_path, "primaryKey")
         data_key_path = os.path.join(resource_path, "dataKey")
@@ -71,14 +82,13 @@ class TestPPMLContext(unittest.TestCase):
                 "data_key_path": data_key_path
                 }
 
+        cls.sc = PPMLContext("testApp", args)
         # generate a tmp dataframe for test
         data = [("Java", "20000"), ("Python", "100000"), ("Scala", "3000")]
-        spark = SparkSession.builder.appName('initData').getOrCreate()
-        cls.df = spark.createDataFrame(data).toDF("language", "user")
+        cls.df = cls.sc.sparkSession.createDataFrame(data).toDF("language", "user")
         cls.data_content = '\n'.join([str(v['language']) + "," + str(v['user'])
                                       for v in cls.df.orderBy('language').collect()])
 
-        cls.sc = PPMLContext("testApp", args)
 
     @classmethod
     def tearDownClass(cls) -> None:
@@ -140,6 +150,20 @@ class TestPPMLContext(unittest.TestCase):
         content = '\n'.join([str(v['language']) + "," + str(v['user'])
                              for v in df_from_parquet.orderBy('language').collect()])
         self.assertEqual(content, self.data_content)
+
+    def test_plain_text_file(self):
+        path = os.path.join(resource_path, "people.csv")
+        rdd = self.sc.textfile(path)
+        rdd_content = '\n'.join([line for line in rdd.collect()])
+
+        self.assertEqual(rdd_content, self.csv_content)
+
+    def test_encrypted_text_file(self):
+        path = os.path.join(resource_path, "encrypted/people.csv")
+        rdd = self.sc.textfile(path=path, crypto_mode=CryptoMode.AES_CBC_PKCS5PADDING)
+        rdd_content = '\n'.join([line for line in rdd.collect()])
+
+        self.assertEqual(rdd_content, self.csv_content)
 
 
 if __name__ == "__main__":
