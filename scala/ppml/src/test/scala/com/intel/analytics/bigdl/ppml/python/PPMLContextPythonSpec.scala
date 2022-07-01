@@ -57,7 +57,7 @@ class PPMLContextPythonSpec extends DataFrameHelper{
   }
 
   "init PPMLContext with app name & args & sparkConf" should "work" in {
-    ppmlContextPython.createPPMLContext("testApp", ppmlArgs.asJava, conf)
+    ppmlContextPython.createPPMLContext("testApp", pyPPMLArgs.asJava, conf)
   }
 
   "read plain csv file" should "work" in {
