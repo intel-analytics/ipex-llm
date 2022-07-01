@@ -80,7 +80,10 @@ class TestPPMLContext(unittest.TestCase):
         cls.data_content = '\n'.join([str(v['language']) + "," + str(v['user'])
                                       for v in cls.df.orderBy('language').collect()])
 
-        cls.sc = PPMLContext("testApp", args)
+        from pyspark import SparkConf
+        spark_conf = SparkConf()
+        spark_conf.setMaster("local[4]")
+        cls.sc = PPMLContext("testApp", args, spark_conf)
 
     @classmethod
     def tearDownClass(cls) -> None:

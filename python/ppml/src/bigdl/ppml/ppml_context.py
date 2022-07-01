@@ -26,7 +26,7 @@ class PPMLContext(JavaValue):
         if ppml_args:
             args.append(ppml_args)
             if spark_conf:
-                args.append(spark_conf)
+                args.append(spark_conf.getAll())
         super().__init__(None, self.bigdl_type, *args)
         self.sparkSession = callBigDlFunc(self.bigdl_type, "getSparkSession", self.value)
 
