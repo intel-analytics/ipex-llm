@@ -301,7 +301,7 @@ class RayStrategy(DDPSpawnStrategy):
             self.configure_ddp()
         else:
             # when calling `trainer.test()`, the `model.training` won't be set to `False`,
-            # causing the following `ipex_optimize` to raise error,
+            # then the following `ipex_optimize()` will report an error,
             # so we need to set it to `False` manuallay
             self.model.training = False
 
