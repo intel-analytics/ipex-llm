@@ -22,10 +22,6 @@ jobs:
       matrix:
         os: ["ubuntu-20.04"]
         python-version: ["3.7"]
-        pytorch-version: [
-          "torch==1.9.0+cpu torchvision==0.10.0+cpu torch_ipex==1.9.0",
-          ""
-        ]
 
     # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
@@ -64,14 +60,10 @@ jobs:
             $CONDA/bin/conda info
             bash python/nano/dev/build_and_install.sh linux default false pytorch
             source bigdl-nano-init
-            if [ ! -z "${{matrix.pytorch-version}}" ]; then
-              requirements=(${{matrix.pytorch-version}})
-              pip install ${requirements[0]} ${requirements[1]} -f https://download.pytorch.org/whl/torch_stable.html
-              pip install ${requirements[2]} -f https://software.intel.com/ipex-whl-stable
-            fi
             pip install pytest nbmake
             pip install neural-compressor==1.11
             pip install onnx onnxruntime onnxruntime-extensions
+            pip install lightning-bolts
             bash python/nano/notebooks/pytorch/tutorial/run-nano-notebooks-pytorch-tutorial-tests.sh
             source $CONDA/bin/deactivate
             $CONDA/bin/conda remove -n notebooks-pytorch --all
@@ -86,11 +78,6 @@ jobs:
             $CONDA/bin/conda info
             bash python/nano/dev/build_and_install.sh linux default false pytorch
             source bigdl-nano-init
-            if [ ! -z "${{matrix.pytorch-version}}" ]; then
-              requirements=(${{matrix.pytorch-version}})
-              pip install ${requirements[0]} ${requirements[1]} -f https://download.pytorch.org/whl/torch_stable.html
-              pip install ${requirements[2]} -f https://software.intel.com/ipex-whl-stable
-            fi
             pip install pytest nbmake
             pip install ipykernel==5.5.6
             pip install openvino-dev
