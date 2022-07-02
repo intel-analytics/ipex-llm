@@ -209,52 +209,42 @@ class TestXShardsTSDataset(TestCase):
         assert x.shape == ((50-lookback-horizon+1)*2, lookback, 2)
 
     def test_xshardstsdataset_scale_unscale(self):
-        from sklearn.preprocessing import StandardScaler, MaxAbsScaler, MinMaxScaler, RobustScaler
-        scalers = [StandardScaler(), MaxAbsScaler(),
-                   MinMaxScaler(), RobustScaler()]
+        from sklearn.preprocessing import StandardScaler
+        scalers = [{0: StandardScaler(), 1: StandardScaler()}]
         df = pd.read_csv(os.path.join(self.resource_path, "multiple.csv"))
         for scaler in scalers:
             shards_multiple = read_csv(os.path.join(self.resource_path, "multiple.csv"))
             shards_multiple_test = read_csv(os.path.join(self.resource_path, "multiple.csv"))
 
             tsdata = XShardsTSDataset.from_xshards(shards_multiple, dt_col="datetime",
-                                                target_col="value",
-                                                extra_feature_col=["extra feature"], id_col="id")
+                                                   target_col="value",
+                                                   extra_feature_col=["extra feature"], id_col="id")
             tsdata_test = XShardsTSDataset.from_xshards(shards_multiple_test, dt_col="datetime",
-                                                target_col="value",
-                                                extra_feature_col=["extra feature"], id_col="id")
-            # scale testing
+                                                        target_col="value",
+                                                        extra_feature_col=["extra feature"], id_col="id")
 
-            # train
             tsdata.scale(scaler)
-            collected_scaler = tsdata.shards_scaler
+            tsdata_test.scale(scaler, fit=False)
 
-            assert type(collected_scaler) == dict
+            def get_local_df(tsdata):
+                collected_df = tsdata.shards.collect()
+                collected_df = pd.concat(collected_df, axis=0)
+                collected_df.reset_index(inplace=True)
+                collected_df["datetime"] = collected_df["datetime"].astype(type(df["datetime"][0]))
+                del collected_df["index"]
+                return collected_df
 
-            # test
-            tsdata_test.scale(collected_scaler, fit=False)
+            df_train = get_local_df(tsdata)
+            df_test = get_local_df(tsdata_test)
+            assert_frame_equal(df_train, df_test)
 
-            # unscale testing
+            with pytest.raises(AssertionError):
+                assert_frame_equal(df_train, df)
+                assert_frame_equal(df_test, df)
 
-            # train
             tsdata.unscale()
-            collected_df = tsdata.shards.collect()
-            collected_df = pd.concat(collected_df)
-            collected_df.reset_index(inplace=True)
-            collected_df["datetime"] = collected_df["datetime"].astype(type(df["datetime"][0]))
-            del collected_df["index"]
-
-            assert_frame_equal(collected_df, df)
-
-            # test
-            tsdata_test.unscale()
-            collected_df_test = tsdata.shards.collect()
-            collected_df_test = pd.concat(collected_df_test, axis=0)
-            collected_df_test.reset_index(inplace=True)
-            collected_df_test["datetime"] = collected_df_test["datetime"].astype(type(df["datetime"][0]))
-            del collected_df_test["index"]
-
-            assert_frame_equal(collected_df_test, df)
+            df_train_unscale = get_local_df(tsdata)
+            assert_frame_equal(df_train_unscale, df)
 
     def test_xshardstsdataset_impute(self):
         from tempfile import TemporaryDirectory
