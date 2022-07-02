@@ -490,6 +490,13 @@ class SparkXShards(XShards):
 
                 return f
 
+            import pyspark.sql.functions as F
+            import pyspark.sql.types as T
+            to_array = F.udf(lambda v: v.toArray().tolist(), T.ArrayType(T.FloatType()))
+            for colName, colType in df.dtypes:
+                if colType == 'vector':
+                    df = df.withColumn(colName, to_array(colName))
+
             pd_rdd = df.rdd.mapPartitions(to_pdf(df.columns))
             return pd_rdd
         rdd = to_pandas_df(df)

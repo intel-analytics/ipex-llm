@@ -56,4 +56,8 @@ if __name__ == "__main__":
     data_shard = scale.fit_transform(trans_data_shard)
     data_shard.rdd.count()
 
+    encode = LabelEncode(inputCol="value", outputCol="encoded_value")
+    encoded_data_shard = encode.fit_transform(trans_data_shard)
+    encoded_data_shard.rdd.count()
+
     stop_orca_context()
