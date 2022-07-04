@@ -16,9 +16,15 @@ Search Space
 HPO for Tensorflow
 ---------------------------
 
+bigdl.nano.automl.tf.keras.Model
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
 .. autoclass:: bigdl.nano.automl.tf.keras.Model.Model
     :members: search, search_summary
 
+
+bigdl.nano.automl.tf.keras.Sequential
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 .. autoclass:: bigdl.nano.automl.tf.keras.Sequential.Sequential
     :members: search, search_summary
