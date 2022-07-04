@@ -222,7 +222,7 @@ class BigDLEncrypt extends Crypto {
     while (inputStream.available() < outOfSize ||
       inputStream.available() > 0) {
       val readLen = inputStream.read(byteBuffer)
-      if (inputStream.available() <= hmacSize) {
+      if (inputStream.available() <= hmacSize && inputStream.available() >= 0) {
         val last = if (inputStream.available() != 0) {
           val l = new Array[Byte](inputStream.available())
           inputStream.read(l)

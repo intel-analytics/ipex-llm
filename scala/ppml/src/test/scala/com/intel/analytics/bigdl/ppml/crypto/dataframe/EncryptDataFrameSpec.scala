@@ -17,7 +17,7 @@
 package com.intel.analytics.bigdl.ppml.crypto.dataframe
 
 import com.intel.analytics.bigdl.ppml.PPMLContext
-import com.intel.analytics.bigdl.ppml.crypto.{AES_CBC_PKCS5PADDING, BigDLEncrypt, DECRYPT, ENCRYPT, PLAIN_TEXT}
+import com.intel.analytics.bigdl.ppml.crypto.{AES_CBC_PKCS5PADDING, BigDLEncrypt, CryptoCodec, DECRYPT, ENCRYPT, PLAIN_TEXT}
 import org.apache.spark.{SparkConf, SparkContext}
 import org.apache.spark.sql.SparkSession
 
@@ -60,49 +60,10 @@ class EncryptDataFrameSpec extends DataFrameHelper {
     d + "\n" should be (data)
   }
 
-  "read from plain csv with header2" should "work" in {
-    val df = sc.read(cryptoMode = PLAIN_TEXT)
-      .option("header", "true").csv(plainFileName)
-    sc.write(df, cryptoMode = PLAIN_TEXT)
-      .option("codec", "com.intel.analytics.bigdl.ppml.crypto.CryptoCodec")
-      .option("header", "true").csv(dir + "/gzip")
-    val df2 = sc.read(cryptoMode = PLAIN_TEXT)
-      .option("codec", "com.intel.analytics.bigdl.ppml.crypto.CryptoCodec")
-      .option("header", "true").csv(dir + "/gzip")
-    val c = df2.count()
-    println(df2.count())
-  }
-
-  "read from plain csv with header4" should "work" in {
-    val df = sc.read(cryptoMode = PLAIN_TEXT)
-      .option("header", "true").csv(plainFileName)
-    df.write
-      .option("compression", "com.intel.analytics.bigdl.ppml.crypto.CryptoCodec")
-      .option("header", "true").parquet(dir + "/parquet")
-    val df2 = sc.getSparkSession().read
-      .option("codec", "com.intel.analytics.bigdl.ppml.crypto.CryptoCodec")
-      .option("header", "true").parquet(dir + "/parquet").count()
-//    val c = df2.count()
-    Thread.sleep(100000)
-//    println(df2.count())
-  }
-
-  "read from plain csv with json" should "work" in {
-    val df = sc.read(cryptoMode = PLAIN_TEXT)
-      .option("header", "true").csv(plainFileName)
-    df.write
-      .option("codec", "com.intel.analytics.bigdl.ppml.crypto.CryptoCodec")
-      .option("header", "true").json(dir + "/json")
-    val df2 = sc.getSparkSession().read
-      .option("codec", "com.intel.analytics.bigdl.ppml.crypto.CryptoCodec")
-      .option("header", "true").json(dir + "/json")
-    val c = df2.count()
-    println(df2.count())
-  }
-
   "read from encrypted csv with header" should "work" in {
     val df = sc.read(cryptoMode = AES_CBC_PKCS5PADDING)
       .option("header", "true").csv(encryptFileName)
+    val b = df.collect()
     val d = df.schema.map(_.name).mkString(",") + "\n" +
       df.collect().map(v => s"${v.get(0)},${v.get(1)},${v.get(2)}").mkString("\n")
     d + "\n" should be (data)
@@ -195,7 +156,7 @@ class EncryptDataFrameSpec extends DataFrameHelper {
   "encrypt/Decrypt BigFile" should "work" in {
     val bigFile = dir + "/big_file.csv"
     val outFile = dir + "/plain_big_file.csv"
-    val enFile = dir + "/en_big_file.csv"
+    val enFile = dir + "/en_big_file.csv" + CryptoCodec.getDefaultExtension()
     val fw = new FileWriter(bigFile)
     val genNum = 40000000
     (0 until genNum).foreach {i =>

@@ -103,11 +103,15 @@ class CryptoCodec
   }
 
   override def getDefaultExtension: String = {
-    ".cbc"
+    CryptoCodec.getDefaultExtension()
   }
 }
 
 object CryptoCodec {
+  def getDefaultExtension(): String = {
+    ".cbc"
+  }
+
   class CryptoDecompressStream(
         in: InputStream,
         bufferSize: Int,

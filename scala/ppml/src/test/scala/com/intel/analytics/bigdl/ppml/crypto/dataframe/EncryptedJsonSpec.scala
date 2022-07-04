@@ -36,7 +36,6 @@ class EncryptedJsonSpec extends DataFrameHelper {
   val sc = PPMLContext.initPPMLContext(conf, "SimpleQuery", ppmlArgs)
 
   val sparkSession = sc.getSparkSession()
-  import sparkSession.implicits._
 
   "json read/write" should "work" in {
     val plainJsonPath = dir + "/plain-csv"
@@ -54,13 +53,10 @@ class EncryptedJsonSpec extends DataFrameHelper {
 
   "csv read/write" should "work" in {
     val plainJsonPath = dir + "/plain-csv"
-//    val plainJsonPath = "/tmp/3/e1"
     val df = sc.read(cryptoMode = PLAIN_TEXT)
       .option("header", "true").csv(plainFileName)
-    df.write
-      .option("compression", "com.intel.analytics.bigdl.ppml.crypto.CryptoCodec")
-      //      .option("compression", "deflate")
-      .csv(plainJsonPath)
+    df.count() should be (repeatedNum * 3)
+    sc.write(df, AES_CBC_PKCS5PADDING).csv(plainJsonPath)
     val jsonDf = sc.read(AES_CBC_PKCS5PADDING).csv(plainJsonPath)
     jsonDf.count() should be (repeatedNum * 3)
     val d = "name,age,job\n" +

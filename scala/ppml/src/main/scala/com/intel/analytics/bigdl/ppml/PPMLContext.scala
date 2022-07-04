@@ -199,6 +199,8 @@ object PPMLContext{
    */
   def initPPMLContext(sparkConf: SparkConf, appName: String): PPMLContext = {
     val conf = createSparkConf(sparkConf)
+    conf.set("spark.hadoop.io.compression.codecs",
+        "com.intel.analytics.bigdl.ppml.crypto.CryptoCodec")
     val sc = initNNContext(conf, appName)
     val sparkSession: SparkSession = SparkSession.builder().getOrCreate()
     val kmsType = conf.get("spark.bigdl.kms.type", defaultValue = "SimpleKeyManagementService")

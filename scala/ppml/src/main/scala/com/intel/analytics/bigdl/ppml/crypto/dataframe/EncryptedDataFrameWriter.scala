@@ -62,12 +62,12 @@ class EncryptedDataFrameWriter(
       case PLAIN_TEXT =>
         df.write.options(extraOptions).mode(mode).csv(path)
       case AES_CBC_PKCS5PADDING =>
-        val header = if (extraOptions.getOrElse("header", "false").toBoolean) {
-          df.schema.fieldNames.mkString(",")
-        } else {
-          ""
-        }
-        writeCsv(df.rdd, sparkSession.sparkContext, path, encryptMode, dataKeyPlainText, header)
+        sparkSession.sparkContext.hadoopConfiguration
+          .set("hadoop.io.compression.codecs",
+          "com.intel.analytics.bigdl.ppml.crypto.CryptoCodec")
+        df.write
+          .option("compression", "com.intel.analytics.bigdl.ppml.crypto.CryptoCodec")
+          .options(extraOptions).mode(mode).csv(path)
       case _ =>
         throw new IllegalArgumentException("unknown EncryptMode " + CryptoMode.toString)
     }
