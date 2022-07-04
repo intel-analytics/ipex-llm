@@ -99,6 +99,10 @@ def schedule_workers(num_workers: int,
             p2l[physical_core] = logical_core
     p_cores = sorted(p_cores_set)
 
+    msg = "total number of workers requested must be smaller or" \
+          " equal than the physical cores avaulable"
+    invalidInputError(num_workers <= len(p_cores), msg)
+
     if cores_per_worker is None:
         cores_per_worker = len(p_cores) // num_workers
 
