@@ -23,11 +23,12 @@ import torch
 import subprocess
 import os
 from bigdl.nano.utils.log4Error import invalidOperationError, invalidInputError
-from bigdl.nano.pytorch.utils import TORCH_VERSION_LESS_1_10, LIGHTNING_VERSION_LESS_1_6
+from bigdl.nano.pytorch.utils import TORCH_VERSION_LESS_1_10, TORCH_VERSION_LESS_1_12,\
+    LIGHTNING_VERSION_LESS_1_6
 
 invalidInputError(
-    not TORCH_VERSION_LESS_1_10 and not LIGHTNING_VERSION_LESS_1_6,
-    errMsg="Require torch>=1.10 and pytorch-lightning>=1.6.0."
+    not TORCH_VERSION_LESS_1_10 and not TORCH_VERSION_LESS_1_12 and not LIGHTNING_VERSION_LESS_1_6,
+    errMsg="Require torch>=1.12 and pytorch-lightning>=1.6.0."
 )
 
 
@@ -54,10 +55,39 @@ class BF16Model(LightningModule):
         self.bf16_model = model.bfloat16()
 
     @property
-    def has_bf16_isa(self):
-        """Indicator to verify is bf16 instructions are available."""
+    def _has_bf16_isa(self):
+        """Indicator to verify if bf16 instructions are available."""
         msg = subprocess.check_output(["lscpu"]).decode("utf-8")
         return "avx512_core_bf16" in msg or "amx_bf16" in msg
+
+    @property
+    def _allow_non_bf16(self):
+        """
+        ALLOW_NON_BF16_ISA indicates if we restrict bf16 instructions support to be available.
+        ALLOW_NON_BF16_ISA='1' sometimes helps debug and test cases without AVX512 or AMX
+
+        :return: The bool value of ALLOW_NON_BF16_ISA
+        """
+        return os.environ.get("ALLOW_NON_BF16_ISA", None) == '1'
+
+    def _max_bf16_isa(self, *args, **kwargs):
+        """
+        Run inference once and check the log to confirm if bf16 instructions are used.
+
+        :return:True/False
+        """
+        dnnl_log = io.StringIO()
+        with contextlib.redirect_stdout(dnnl_log):
+            os.environ['DNNL_VERBOSE'] = '1'
+            self.bf16_model(*args, **kwargs)
+            os.environ['DNNL_VERBOSE'] = '0'
+        dnnl_log = dnnl_log.getvalue()
+        max_bf16_isa = None
+        if 'amx_bf16' in dnnl_log:
+            max_bf16_isa = "AMX"
+        elif 'avx512_core_bf16' in dnnl_log:
+            max_bf16_isa = "AVX512"
+        return max_bf16_isa
 
     @autocast()
     def forward(self, *args, **kwargs):  # noqa
@@ -71,24 +101,13 @@ class BF16Model(LightningModule):
         # ALLOW_NON_BF16_ISA indicates if we restrict bf16 instructions support to be available.
         # ALLOW_NON_BF16_ISA='1' sometimes helps debug and test cases without AVX512 or AMX
         allow_non_bf16 = os.environ.get("ALLOW_NON_BF16_ISA", None)
-        if self.has_bf16_isa:
-            dnnl_log = io.StringIO()
-            with contextlib.redirect_stdout(dnnl_log):
-                os.environ['DNNL_VERBOSE'] = '1'
-                self.bf16_model(*args, **kwargs)
-                os.environ['DNNL_VERBOSE'] = '0'
-            dnnl_log = dnnl_log.getvalue()
-            max_bf16_isa = None
-            if 'amx_bf16' in dnnl_log:
-                max_bf16_isa = "AMX"
-            elif 'avx512_core_bf16' in dnnl_log:
-                max_bf16_isa = "AVX512"
+        if self._has_bf16_isa:
+            max_bf16_isa = self._max_bf16_isa(*args, **kwargs)
             if max_bf16_isa:
                 info("{} BF16 support is enabled in this run.".format(max_bf16_isa))
                 self._is_bf16 = True
             else:
-                self._is_bf16 = False
-                if allow_non_bf16 == '1':
+                if self._allow_non_bf16:
                     self._is_bf16 = False
                 else:
                     invalidOperationError(
@@ -98,7 +117,7 @@ class BF16Model(LightningModule):
                                " BF16 acceleration."
                     )
         else:
-            if allow_non_bf16 == '1':
+            if self._allow_non_bf16:
                 self._is_bf16 = False
             else:
                 invalidOperationError(
