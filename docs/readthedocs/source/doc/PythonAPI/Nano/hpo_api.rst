@@ -33,6 +33,9 @@ bigdl.nano.automl.tf.keras.Sequential
 HPO for PyTorch
 ---------------------------
 
+bigdl.nano.pytorch.Trainer
+^^^^^^^^^^^^^^^^^^^^^^^^^^
+
 .. autoclass:: bigdl.nano.pytorch.Trainer
     :members: search, search_summary
     :undoc-members:
