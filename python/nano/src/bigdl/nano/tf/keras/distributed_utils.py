@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 
-from bigdl.nano.common.cpu_schedule import schedule_workers
+from bigdl.nano.common.cpu_schedule import schedule_processors
 import os
 import json
 import shutil
@@ -73,7 +73,8 @@ def distributed_train_keras(backend, model, nprocs, fit_kwargs=None):
     if fit_kwargs is None:
         fit_kwargs = {}
 
-    cpu_procs = schedule_workers(nprocs)
+    # cpu_procs = schedule_workers(nprocs)
+    envs = schedule_processors(nprocs)
 
     from tensorflow.python.distribute.coordinator.values import serialize_dataset_to_graph
 
@@ -106,9 +107,8 @@ def distributed_train_keras(backend, model, nprocs, fit_kwargs=None):
         envs = []
         for i in range(nprocs):
             env = {
-                "KMP_AFFINITY": f"granularity=fine,proclist"
-                                f"=[{','.join([str(i) for i in cpu_procs[i]])}],explicit",
-                "OMP_NUM_THREADS": str(len(cpu_procs[i])),
+                "KMP_AFFINITY": envs[i]['KMP_AFFINITY'],
+                "OMP_NUM_THREADS": envs[i]['OMP_NUM_THREADS'],
                 "TF_CONFIG": json.dumps(
                     {
                         'cluster': {
