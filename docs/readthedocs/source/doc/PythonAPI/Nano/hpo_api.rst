@@ -22,7 +22,7 @@ HPO for Tensorflow
 
 
 .. autoclass:: bigdl.nano.automl.tf.keras.Sequential.Sequential
-    :members: fit, compile
+    :members: fit, compile, search, search_summary
 
 
 HPO for PyTorch
