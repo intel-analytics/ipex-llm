@@ -26,7 +26,8 @@ from torch.utils.data import DataLoader
 from torchmetrics.metric import Metric
 from torch.optim.lr_scheduler import _LRScheduler
 import yaml
-from bigdl.nano.pytorch.utils import TORCH_VERSION_LESS_1_10, TORCH_VERSION_LESS_1_11
+from bigdl.nano.pytorch.utils import TORCH_VERSION_LESS_1_10, TORCH_VERSION_LESS_1_11, \
+    LIGHTNING_VERSION_LESS_1_6
 from bigdl.nano.pytorch.lightning import LightningModuleFromTorch
 from bigdl.nano.pytorch.plugins.ddp_spawn import DDPSpawnPlugin
 from bigdl.nano.pytorch.plugins.ddp_subprocess import DDPSubprocessPlugin
@@ -455,3 +456,24 @@ class Trainer(pl.Trainer):
             invalidInputError(False,
                               "ModelType {} or argument 'model={}' is not acceptable for pytorch"
                               " loading.".format(model_type, type(model)))
+
+    def save_checkpoint(    # type: ignore[override]
+        self, filepath, weights_only: bool = False, storage_options: Optional[Any] = None
+    ) -> None:
+        """Save checkpoint after one train epoch."""
+        # When using ipex==1.9 and custom lr_schedulers for training, if set `weights_only` to
+        # False,`save_checkpoint` method will report an error of 'Unsupport storage type'
+        # because the model is in 'xpu', so we temporarily move it to 'cpu',
+        # then move it back after `save_checkpoint`.
+        if self.use_ipex and TORCH_VERSION_LESS_1_10 and not weights_only:
+            self.model.to('cpu')
+
+        if LIGHTNING_VERSION_LESS_1_6:
+            super().save_checkpoint(filepath, weights_only)
+        else:
+            super().save_checkpoint(filepath, weights_only, storage_options)    # type: ignore
+        if self.use_ipex and TORCH_VERSION_LESS_1_10 and not weights_only:
+            if LIGHTNING_VERSION_LESS_1_6:
+                self.model.to(self.training_type_plugin.root_device)
+            else:
+                self.model.to(self.strategy.root_device)    # type: ignore
