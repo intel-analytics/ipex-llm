@@ -17,9 +17,9 @@ HPO for Tensorflow
 ---------------------------
 
 .. autoclass:: bigdl.nano.automl.tf.keras.Model.Model
-    :members: fit, search, search_summary
+    :members: fit
     :inherited-members: search, search_summary
-    :ignore-module-all:
+
 
 .. autoclass:: bigdl.nano.automl.tf.keras.Sequential.Sequential
     :members: search, search_summary
