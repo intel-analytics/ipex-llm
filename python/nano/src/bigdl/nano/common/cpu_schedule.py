@@ -114,9 +114,10 @@ def schedule_workers(num_workers: int,
 
     return schedule
 
+
 def schedule_processors(num_workers: int,
                         cores_per_worker: Optional[int] = None):
-    
+
     import os
     cpu_procs = schedule_workers(num_workers, cores_per_worker)
 

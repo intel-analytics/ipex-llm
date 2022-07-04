@@ -104,11 +104,8 @@ def distributed_train_keras(backend, model, nprocs, fit_kwargs=None):
     with TemporaryDirectory() as temp_dir:
         model.save(os.path.join(temp_dir, 'temp_model'))
 
-        envs = []
-        for i in range(nprocs):
-            env = {
-                "KMP_AFFINITY": envs[i]['KMP_AFFINITY'],
-                "OMP_NUM_THREADS": envs[i]['OMP_NUM_THREADS'],
+        for env in envs:
+            env.update({
                 "TF_CONFIG": json.dumps(
                     {
                         'cluster': {
@@ -117,8 +114,7 @@ def distributed_train_keras(backend, model, nprocs, fit_kwargs=None):
                         'task': {'type': 'worker', 'index': i}
                     }),
                 'no_proxy': "localhost",
-            }
-            envs.append(env)
+            })
 
         train_args = (temp_dir, train_ds_def, train_elem_spec,
                       val_ds_def, val_elem_spec, fit_kwargs)

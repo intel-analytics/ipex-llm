@@ -70,13 +70,12 @@ def start_processes_new(fn, args=(), nprocs=1, join=True, daemon=False,
     else:
         for i in range(nprocs):
             env = {
-                "KMP_AFFINITY": f"granularity=fine,proclist"\
+                "KMP_AFFINITY": f"granularity=fine,proclist"
                                 f"=[{','.join([str(i) for i in cpu_procs[i]])}],explicit",
                 "OMP_NUM_THREADS": str(len(cpu_procs[i]))
             }
 
             envs.append(env)
-
 
     init_KMP_AFFINITY = os.environ.get("KMP_AFFINITY", "")
     init_OMP_NUM_THREADS = os.environ.get("OMP_NUM_THREADS", "")
