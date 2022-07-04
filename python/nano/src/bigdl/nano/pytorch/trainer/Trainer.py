@@ -103,13 +103,17 @@ class Trainer(pl.Trainer):
         self.use_ipex = use_ipex
 
         if num_processes == 1:
-            if self.use_ipex:
-                if TORCH_VERSION_LESS_1_10:
-                    accelerator = create_IPEXAccelerator_1_9(enable_bf16=enable_bf16)
-                else:
-                    accelerator = create_IPEXAccelerator(enable_bf16=enable_bf16)
-
-            super().__init__(accelerator=accelerator, *args, **kwargs)
+            if LIGHTNING_VERSION_LESS_1_6:
+                if self.use_ipex:
+                    if TORCH_VERSION_LESS_1_10:
+                        accelerator = create_IPEXAccelerator_1_9(enable_bf16=enable_bf16)
+                    else:
+                        accelerator = create_IPEXAccelerator(enable_bf16=enable_bf16)
+                super().__init__(accelerator=accelerator, *args, **kwargs)
+            else:
+                from bigdl.nano.pytorch.strategies.ipex.ipex_api import create_IPEXStrategy
+                strategy = create_IPEXStrategy(enable_bf16=enable_bf16) if self.use_ipex else None
+                super().__init__(strategy=strategy, *args, **kwargs)
         else:
             plugin = None
             invalidInputError(distributed_backend in distributed_backends,
