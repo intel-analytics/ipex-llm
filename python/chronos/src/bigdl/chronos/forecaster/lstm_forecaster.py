@@ -23,10 +23,15 @@ class LSTMForecaster(BasePytorchForecaster):
     """
     Example:
         >>> #The dataset is split into x_train, x_val, x_test, y_train, y_val, y_test
+        >>> # 1. Initialize Forecaster directly
         >>> forecaster = LSTMForecaster(past_seq_len=24,
                                         input_feature_num=2,
                                         output_feature_num=2,
                                         ...)
+        >>> # 2. The from_dataset method can also initialize a LSTMForecaster.
+        >>> tsdata = TSDataset.from_pandas(df, ...)
+        >>> tsdata.roll(lookback=10, horizon=1, ...)
+        >>> forecaster.from_dataset(tsdata, **kwargs)
         >>> forecaster.fit((x_train, y_train))
         >>> forecaster.to_local()  # if you set distributed=True
         >>> test_pred = forecaster.predict(x_test)
@@ -140,3 +145,20 @@ class LSTMForecaster(BasePytorchForecaster):
         self.use_hpo = False
 
         super().__init__()
+
+    @staticmethod
+    def from_dataset(tsdata, **kwargs):
+        '''
+        Build a LSTM Forecaster Model.
+
+        :params tsdata: A tsdataset that has called the `tsdataset.roll` method.
+        :params kwargs: Specify parameters of Forecaster,
+                e.g. loss and optimizer, etc.
+
+        return: A LSTM Forecaster Model.
+        '''
+        x_shape, y_shape = tsdata.numpy_x.shape, tsdata.numpy_y.shape
+        return LSTMForecaster(past_seq_len=x_shape[1],
+                              input_feature_num=x_shape[-1],
+                              output_feature_num=y_shape[-1],
+                              **kwargs)

@@ -60,6 +60,25 @@ def create_data(loader=False):
         return train_data, val_data, test_data
 
 
+def create_tsdataset():
+    from bigdl.chronos.data import TSDataset
+    import pandas as pd
+    timeserious = pd.date_range(start='2020-01-01', freq='D', periods=1000)
+    df = pd.DataFrame(np.random.rand(1000, 2),
+                      columns=['value1', 'value2'],
+                      index=timeserious,
+                      dtype=np.float32)
+    df.reset_index(inplace=True)
+    df.rename(columns={'index': 'timeserious'}, inplace=True)
+    train, _, test = TSDataset.from_pandas(df=df,
+                                           dt_col='timeserious',
+                                           target_col=['value1', 'value2'],
+                                           with_split=True)
+    for tsdata in [train, test]:
+        tsdata.roll(lookback=24, horizon=5)
+    return train, test
+
+
 class TestChronosModelSeq2SeqForecaster(TestCase):
 
     def setUp(self):
@@ -340,3 +359,16 @@ class TestChronosModelSeq2SeqForecaster(TestCase):
                                        loss="mae",
                                        lr=0.01)
         val_loss = forecaster.fit(train_loader, val_loarder, epochs=10)
+
+    def test_forecaster_from_dataset(self):
+        train, test = create_tsdataset()
+        x_train, y_train = train.to_numpy()
+        x_test, y_test = test.to_numpy()
+        s2s = Seq2SeqForecaster.from_dataset(train,
+                                             lstm_hidden_dim=16,
+                                             lstm_layer_num=1)
+        s2s.fit((x_train, y_train),
+                epochs=2,
+                batch_size=32)
+        yhat = s2s.predict(x_test, batch_size=None)
+        assert yhat.shape == y_test.shape

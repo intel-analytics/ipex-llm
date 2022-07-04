@@ -23,11 +23,16 @@ class TCNForecaster(BasePytorchForecaster):
     """
         Example:
             >>> #The dataset is split into x_train, x_val, x_test, y_train, y_val, y_test
+            >>> # 1. Initialize Forecaster directly
             >>> forecaster = TCNForecaster(past_seq_len=24,
                                            future_seq_len=5,
                                            input_feature_num=1,
                                            output_feature_num=1,
                                            ...)
+            >>> # 2. The from_dataset method can also initialize a TCNForecaster.
+            >>> tsdata = TSDataset.from_pandas(df, ...)
+            >>> tsdata.roll(lookback=10, horizon=1, ...)
+            >>> forecaster.from_dataset(tsdata, **kwargs)
             >>> forecaster.fit((x_train, y_train))
             >>> forecaster.to_local()  # if you set distributed=True
             >>> test_pred = forecaster.predict(x_test)
@@ -151,3 +156,21 @@ class TCNForecaster(BasePytorchForecaster):
         self.use_hpo = True
 
         super().__init__()
+
+    @staticmethod
+    def from_dataset(tsdata, **kwargs):
+        '''
+        Build a TCN Forecaster Model.
+
+        :params tsdata: A tsdataset that has called the `tsdataset.roll` method.
+        :params kwargs: Specify parameters of Forecaster,
+                e.g. loss and optimizer, etc.
+
+        return: A TCN Forecaster Model.
+        '''
+        x_shape, y_shape = tsdata.numpy_x.shape, tsdata.numpy_y.shape
+        return TCNForecaster(past_seq_len=x_shape[1],
+                             future_seq_len=y_shape[1],
+                             input_feature_num=x_shape[-1],
+                             output_feature_num=y_shape[-1],
+                             **kwargs)

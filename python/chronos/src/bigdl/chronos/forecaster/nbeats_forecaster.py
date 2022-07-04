@@ -22,11 +22,15 @@ from bigdl.chronos.model.nbeats_pytorch import model_creator, loss_creator, opti
 class NBeatsForecaster(BasePytorchForecaster):
     """
     Example:
-        >>> # NBeatsForecaster test.
+        >>> # 1. Initialize Forecaster directly
         >>> forecaster = NBeatForecaster(paste_seq_len=10,
                                          future_seq_len=1,
                                          stack_types=("generic", "generic"),
                                          ...)
+        >>> # 2. The from_dataset method can also initialize a NBeatForecaster.
+        >>> tsdata = TSDataset.from_pandas(df, ...)
+        >>> tsdata.roll(lookback=10, horizon=1, ...)
+        >>> forecaster.from_dataset(tsdata, **kwargs)
         >>> forecaster.fit((x_train, y_train))
         >>> forecaster.to_local() # if you set distributed=True
     """
@@ -163,3 +167,19 @@ class NBeatsForecaster(BasePytorchForecaster):
         self.use_hpo = False
 
         super().__init__()
+    
+    @staticmethod
+    def from_dataset(tsdata, **kwargs):
+        """
+        Build a NBeats Forecaster Model.
+
+        :params tsdata: A tsdataset that has called the `tsdataset.roll` method.
+        :params kwargs: Specify parameters of Forecaster,
+                e.g. loss and optimizer, etc.
+
+        return: A Nbeats Forecaster Model.
+        """
+        x_shape, y_shape = tsdata.numpy_x.shape, tsdata.numpy_y.shape
+        return NBeatsForecaster(past_seq_len=x_shape[1],
+                                future_seq_len=y_shape[1],
+                                **kwargs)

@@ -39,6 +39,7 @@ def create_data(loader=False):
     tsdata_train, tsdata_val, tsdata_test =\
         TSDataset.from_pandas(df, dt_col="datetime", target_col=target,
                               with_split=True, test_ratio=0.1, val_ratio=0.1)
+
     if loader:
         train_loader = tsdata_train.to_torch_data_loader(roll=True, lookback=24, horizon=5,
                                                         time_enc=True, label_len=12)
@@ -56,6 +57,29 @@ def create_data(loader=False):
         val_data = tuple(map(lambda x: x.astype(np.float32), val_data))
         test_data = tuple(map(lambda x: x.astype(np.float32), test_data))
         return train_data, val_data, test_data
+
+
+def create_tsdataset():
+    from bigdl.chronos.data import TSDataset
+    import pandas as pd
+    timeserious = pd.date_range(start='2020-01-01', freq='s', periods=1000)
+    df = pd.DataFrame(np.random.rand(1000, 2),
+                      columns=['value1', 'value2'],
+                      index=timeserious,
+                      dtype=np.float32)
+    df.reset_index(inplace=True)
+    df.rename(columns={'index': 'timeserious'}, inplace=True)
+    train, _, test = TSDataset.from_pandas(df=df,
+                                           dt_col='timeserious',
+                                           target_col=['value1', 'value2'],
+                                           with_split=True)
+    for tsdata in [train, test]:
+        tsdata.roll(lookback=24,
+                    horizon=5,
+                    time_enc=True,
+                    label_len=12)
+    return train, test
+
 
 class TestChronosModelAutoformerForecaster(TestCase):
     
@@ -156,3 +180,16 @@ class TestChronosModelAutoformerForecaster(TestCase):
             forecaster.load(ckpt_name)
             evaluate2 = forecaster.evaluate(val_loader)
         assert evaluate[0]['val_loss'] == evaluate2[0]['val_loss']
+
+    def test_forecaster_from_dataset(self):
+        train, test = create_tsdataset()
+        _, y_test, _, _ = test.to_numpy()
+        autoformer = AutoformerForecaster.from_dataset(train,
+                                                       label_len=12,
+                                                       freq='s')
+        autoformer.fit(train.to_numpy(),
+                       epochs=2,
+                       batch_size=32)
+        yhat = autoformer.predict(test.to_numpy(),
+                                  batch_size=32)
+        assert yhat.shape == y_test.shape

@@ -60,6 +60,24 @@ def create_data(loader=False):
         return train_data, val_data, test_data
 
 
+def create_tsdataset():
+    from bigdl.chronos.data import TSDataset
+    import pandas as pd
+    timeserious = pd.date_range(start='2020-01-01', freq='D', periods=1000)
+    df = pd.DataFrame(np.random.rand(1000, 1),
+                      columns=['value1'],
+                      index=timeserious,
+                      dtype=np.float32)
+    df.reset_index(inplace=True)
+    df.rename(columns={'index': 'timeserious'}, inplace=True)
+    train, _, test = TSDataset.from_pandas(df=df,
+                                           dt_col='timeserious',
+                                           target_col=['value1'],
+                                           with_split=True)
+    for tsdata in [train, test]:
+        tsdata.roll(lookback=24, horizon=5)
+    return train, test
+
 class TestChronosNBeatsForecaster(TestCase):
     def setUp(self):
         pass
@@ -382,3 +400,17 @@ class TestChronosNBeatsForecaster(TestCase):
                                      loss='mae',
                                      lr=0.01)
         val_loss = forecater.fit(train_loader, val_loader, epochs=10)
+
+    def test_forecaster_from_dataset(self):
+        train, test = create_tsdataset()
+        x_train, y_train = train.to_numpy()
+        x_test, y_test = test.to_numpy()
+        nbeats = NBeatsForecaster.from_dataset(train,
+                                               stack_types=("generic", "seasnoality"),
+                                               share_weights_in_stack=True,
+                                               hidden_layer_units=32)
+        nbeats.fit((x_train, y_train),
+                   epochs=2,
+                   batch_size=32)
+        yhat = nbeats.predict(x_test, batch_size=None)
+        assert yhat.shape == y_test.shape
