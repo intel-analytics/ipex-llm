@@ -20,10 +20,10 @@ import com.intel.analytics.bigdl.dllib.utils.Log4Error
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.io.compress.Compressor
 
-class BigDLEncryptCompressor extends Compressor{
-  val bigdlEncrypt = Crypto(AES_CBC_PKCS5PADDING)
+class BigDLEncryptCompressor(cryptoMode: CryptoMode, dataKeyPlaintext: String) extends Compressor{
+  val bigdlEncrypt = Crypto(cryptoMode)
   // TODO
-  bigdlEncrypt.init(AES_CBC_PKCS5PADDING, ENCRYPT, "1234567890123456")
+  bigdlEncrypt.init(cryptoMode, ENCRYPT, dataKeyPlaintext)
   var isFinished = false
   var b: Array[Byte] = null
   var off = 0
@@ -66,7 +66,7 @@ class BigDLEncryptCompressor extends Compressor{
   override def compress(b: Array[Byte], off: Int, len: Int): Int = {
     // lazy encrypt, in order to doFinal in the right time.
     if (tryFinished) {
-      val o = bigdlEncrypt.doFinal(this.b, this.off, this.len)
+      val o = bigdlEncrypt.doFinal(this.lv2Buffer, this.lv2Off, this.lv2Len)
       isFinished = true
       o._1 ++ o._2
       o._1.copyToArray(b, 0)
@@ -75,14 +75,15 @@ class BigDLEncryptCompressor extends Compressor{
     } else {
       val o = if (hasHeader) {
         val o = bigdlEncrypt.update(this.lv2Buffer, this.lv2Off, this.lv2Len)
-        lv2Buffer = this.b
+        // create a buffer to cache undecrypted data.
+        this.b.copyToArray(this.lv2Buffer)
         lv2Off = this.off
         lv2Len = this.len
         this.len = 0
         o
       } else {
         hasHeader = true
-        lv2Buffer = this.b
+        lv2Buffer = this.b.clone()
         lv2Off = this.off
         lv2Len = this.len
         this.len = 0
@@ -124,6 +125,7 @@ object BigDLEncryptCompressor {
 
   def apply(conf: Configuration): BigDLEncryptCompressor = {
     // TODO read parameter
-    new BigDLEncryptCompressor()
+    val dataKey = conf.get("bigdl.kms.data.key")
+    new BigDLEncryptCompressor(AES_CBC_PKCS5PADDING, dataKey)
   }
 }

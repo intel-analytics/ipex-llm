@@ -220,15 +220,25 @@ class BigDLEncrypt extends Crypto {
     val header = read(inputStream, 25)
     verifyHeader(header)
     while (inputStream.available() < outOfSize ||
-      inputStream.available() > blockSize) {
+      inputStream.available() > 0) {
       val readLen = inputStream.read(byteBuffer)
-      outputStream.write(update(byteBuffer, 0, readLen))
+      if (inputStream.available() <= hmacSize) {
+        val last = if (inputStream.available() != 0) {
+          val l = new Array[Byte](inputStream.available())
+          inputStream.read(l)
+          l
+        } else {
+          new Array[Byte](0)
+        }
+        val inputHmac = byteBuffer.slice(readLen - hmacSize + last.length, readLen) ++ last
+        val (lastSlice, streamHmac) = doFinal(byteBuffer, 0, readLen - hmacSize + last.length)
+        Log4Error.invalidInputError(!inputHmac.sameElements(streamHmac),
+          "hmac not match")
+        outputStream.write(lastSlice)
+      } else {
+        outputStream.write(update(byteBuffer, 0, readLen))
+      }
     }
-    val last = inputStream.read(byteBuffer)
-    val inputHmac = byteBuffer.slice(last - hmacSize, last)
-    val (lastSlice, streamHmac) = doFinal(byteBuffer, 0, last - hmacSize)
-    Log4Error.invalidInputError(!inputHmac.sameElements(streamHmac), "hmac not match")
-    outputStream.write(lastSlice)
     outputStream.flush()
   }
 
@@ -303,7 +313,7 @@ class BigDLEncrypt extends Crypto {
               cachedArray = splitDecryptStringArray.dropRight(1)
             } else {
               // do last, read all
-              val last = if (inputStream.available() < hmacSize) {
+              val last = if (inputStream.available() > 0) {
                 val l = new Array[Byte](inputStream.available())
                 inputStream.read(l)
                 l

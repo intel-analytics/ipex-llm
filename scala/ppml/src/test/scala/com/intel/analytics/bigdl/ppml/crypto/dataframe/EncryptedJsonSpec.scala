@@ -16,11 +16,13 @@
 package com.intel.analytics.bigdl.ppml.crypto.dataframe
 
 import com.intel.analytics.bigdl.ppml.PPMLContext
-import com.intel.analytics.bigdl.ppml.crypto.PLAIN_TEXT
+import com.intel.analytics.bigdl.ppml.crypto.{AES_CBC_PKCS5PADDING, Crypto, DECRYPT, PLAIN_TEXT}
 import org.apache.spark.SparkConf
 
+import java.io.File
+
 class EncryptedJsonSpec extends DataFrameHelper {
-  override val repeatedNum = 2000
+  override val repeatedNum = 160
 
   val ppmlArgs = Map(
     "spark.bigdl.kms.simple.id" -> appid,
@@ -36,8 +38,8 @@ class EncryptedJsonSpec extends DataFrameHelper {
   val sparkSession = sc.getSparkSession()
   import sparkSession.implicits._
 
-  "json" should "work" in {
-    val plainJsonPath = dir + "/plain-json"
+  "json read/write" should "work" in {
+    val plainJsonPath = dir + "/plain-csv"
     val df = sc.read(cryptoMode = PLAIN_TEXT)
       .option("header", "true").csv(plainFileName)
     df.write
@@ -45,20 +47,25 @@ class EncryptedJsonSpec extends DataFrameHelper {
       .json(plainJsonPath)
     val jsonDf = sparkSession.read.json(plainJsonPath)
     jsonDf.count()
-
+    val d = "name,age,job\n" +
+      df.collect().map(v => s"${v.get(0)},${v.get(1)},${v.get(2)}").mkString("\n")
+    d + "\n" should be (data)
   }
 
-  "csv" should "work" in {
+  "csv read/write" should "work" in {
     val plainJsonPath = dir + "/plain-csv"
+//    val plainJsonPath = "/tmp/3/e1"
     val df = sc.read(cryptoMode = PLAIN_TEXT)
       .option("header", "true").csv(plainFileName)
     df.write
       .option("compression", "com.intel.analytics.bigdl.ppml.crypto.CryptoCodec")
-//      .option("compression", "deflate")
+      //      .option("compression", "deflate")
       .csv(plainJsonPath)
-    val jsonDf = sparkSession.read.csv(plainJsonPath)
-    jsonDf.count()
-
+    val jsonDf = sc.read(AES_CBC_PKCS5PADDING).csv(plainJsonPath)
+    jsonDf.count() should be (repeatedNum * 3)
+    val d = "name,age,job\n" +
+      jsonDf.collect().map(v => s"${v.get(0)},${v.get(1)},${v.get(2)}").mkString("\n")
+    d + "\n" should be (data)
   }
 
 }

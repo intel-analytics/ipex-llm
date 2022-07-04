@@ -51,6 +51,7 @@ class PPMLContext protected(kms: KeyManagementService, sparkSession: SparkSessio
   def loadKeys(primaryKeyPath: String, dataKeyPath: String): this.type = {
     dataKeyPlainText = kms.retrieveDataKeyPlainText(
       Paths.get(primaryKeyPath).toString, Paths.get(dataKeyPath).toString)
+    sparkSession.sparkContext.hadoopConfiguration.set("bigdl.kms.data.key", dataKeyPlainText)
     this
   }
 
