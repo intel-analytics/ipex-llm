@@ -20,9 +20,11 @@ Even if data are fully encrypted in transit and storage, we still need to decryp
 
 ## Example: Spark on Kubernetes with data stored on HDFS
 
+WARNING: This example lists minimum security features that should be enabled for your applications. In production, please confirm with your cluster admin or security reviewer.
+
 ### [HDFS Security](https://hadoop.apache.org/docs/stable/hadoop-project-dist/hadoop-common/SecureMode.html)
 
-Please ensure authentication and access control is correctly configured. Note that HDFS authentication relay on [Kerberos](http://web.mit.edu/kerberos/krb5-1.12/doc/user/user_commands/kinit.html).
+Please ensure authentication and [access control](https://hadoop.apache.org/docs/stable/hadoop-project-dist/hadoop-hdfs/HdfsPermissionsGuide.html) is correctly configured. Note that HDFS authentication relay on [Kerberos](http://web.mit.edu/kerberos/krb5-1.12/doc/user/user_commands/kinit.html).
 
 Enable [Data_confidentiality](https://hadoop.apache.org/docs/stable/hadoop-project-dist/hadoop-common/SecureMode.html#Data_confidentiality) for network. This will protect PRC, block transfer and http.
 
@@ -34,10 +36,16 @@ Please ensure [network crypto](https://spark.apache.org/docs/latest/security.htm
 
 Enable [Local Storage Encryption](https://spark.apache.org/docs/latest/security.html#local-storage-encryption) to protect local temp data.
 
-Enable [SSL](https://spark.apache.org/docs/latest/security.html#ssl-configuration) to secure Spark webui.
+Enable [SSL](https://spark.apache.org/docs/latest/security.html#ssl-configuration) to secure Spark Webui.
 
 You can enable [Kerberos related settings](https://spark.apache.org/docs/latest/security.html#kerberos) if your have Kerberos service.
 
 ### [Kubernetes Security](https://kubernetes.io/docs/concepts/security/)
 
 As a huge resource management service, Kubernetes has lots of security features.
+
+Enable [RBAC](https://kubernetes.io/docs/concepts/security/rbac-good-practices/) to ensure that cluster users and workloads have only the access to resources required to execute their roles.
+
+Enable [Encrypting Secret Data at Rest](https://kubernetes.io/docs/tasks/administer-cluster/encrypt-data/) to protect data in rest API.
+
+When mount key & sensitive configurations into pod, use [Kubernetes Secret](https://kubernetes.io/docs/concepts/configuration/secret/).
