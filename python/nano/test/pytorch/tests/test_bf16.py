@@ -13,75 +13,110 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-import subprocess
+import os
 from unittest import TestCase
 import pytest
 import torch
-from torch import nn
 from torch.utils.data import DataLoader, TensorDataset
 from bigdl.nano.pytorch import Trainer
 from torchvision.models.resnet import resnet18
+from unittest.mock import MagicMock, PropertyMock, patch
+from bigdl.nano.pytorch import utils
 
 
 class TestBF16(TestCase):
-    def test_bf16_common(self):
+    @patch.object(utils, 'TORCH_VERSION_LESS_1_12', True)
+    def test_bf16_pytorch_less_1_12(self):
         trainer = Trainer(max_epochs=1)
         model = resnet18(num_classes=10)
-        loss = nn.CrossEntropyLoss()
-        optimizer = torch.optim.Adam(model.parameters(), lr=0.01)
+
+        with pytest.raises(
+            RuntimeError,
+            match="Require torch>=1.12 and pytorch-lightning>=1.6.0."
+        ):
+            trainer.quantize(model, precision='bf16')
+
+    @patch.object(utils, 'TORCH_VERSION_LESS_1_12', False)
+    def test_bf16_with_amx_bf16(self):
+        trainer = Trainer(max_epochs=1)
+        model = resnet18(num_classes=10)
 
         x = torch.rand((10, 3, 256, 256))
         y = torch.ones((10,), dtype=torch.long)
 
-        ds = TensorDataset(x, y)
-        dataloader = DataLoader(ds, batch_size=2)
-
-        pl_model = Trainer.compile(model, loss, optimizer)
-        try:
-            bf16_model = trainer.quantize(pl_model, precision='bf16')
-        except RuntimeError as e:
-            possible_errors = [
-                "Require torch>=1.10 and pytorch-lightning>=1.6.0."
-            ]
-            if str(e) in possible_errors:
-                return
-            else:
-                raise e
-        try:
+        if utils.TORCH_VERSION_LESS_1_10:
+            with pytest.raises(
+                RuntimeError,
+                match="Require torch>=1.12 and pytorch-lightning>=1.6.0."):
+                bf16_model = trainer.quantize(model, precision='bf16')
+            return
+        bf16_model = trainer.quantize(model, precision='bf16')
+        with patch.object(type(bf16_model), "_has_bf16_isa", PropertyMock(return_value=True)):
+            bf16_model._max_bf16_isa = MagicMock("AMX")
             y_hat = bf16_model(x)
-        except RuntimeError as e:
-            possible_errors = [
-                "Your machine or OS doesn't support BF16 instructions.",
-                "BF16 ISA support is not enabled under current context."
-            ]
-            if str(e) in possible_errors:
-                return
-            else:
-                raise e
         assert y_hat.shape == (10, 10) and y_hat.dtype == torch.bfloat16
 
-    def test_bf16_with_bf_isa_support(self):
-        msg = subprocess.check_output(["lscpu"]).decode("utf-8")
-        if not "avx512_core_bf16" in msg or "amx_bf16" in msg:
-            print("BF16 instructions are not available in this machine. Exit testing...")
-            return
-
+    @patch.object(utils, 'TORCH_VERSION_LESS_1_12', False)
+    def test_bf16_with_avx512_bf16(self):
         trainer = Trainer(max_epochs=1)
         model = resnet18(num_classes=10)
-        loss = nn.CrossEntropyLoss()
-        optimizer = torch.optim.Adam(model.parameters(), lr=0.01)
 
         x = torch.rand((10, 3, 256, 256))
         y = torch.ones((10,), dtype=torch.long)
 
-        ds = TensorDataset(x, y)
-        dataloader = DataLoader(ds, batch_size=2)
+        if utils.TORCH_VERSION_LESS_1_10:
+            with pytest.raises(
+                RuntimeError,
+                match="Require torch>=1.12 and pytorch-lightning>=1.6.0."):
+                bf16_model = trainer.quantize(model, precision='bf16')
+            return
+        bf16_model = trainer.quantize(model, precision='bf16')
+        with patch.object(type(bf16_model), "_has_bf16_isa", PropertyMock(return_value=True)):
+            bf16_model._max_bf16_isa = MagicMock("AVX512")
+            y_hat = bf16_model(x)
+        assert y_hat.shape == (10, 10) and y_hat.dtype == torch.bfloat16
 
-        pl_model = Trainer.compile(model, loss, optimizer)
-        bf16_model = trainer.quantize(pl_model, precision='bf16')
+    @patch.object(utils, 'TORCH_VERSION_LESS_1_12', False)
+    def test_non_bf16(self):
+        trainer = Trainer(max_epochs=1)
+        model = resnet18(num_classes=10)
+
+        x = torch.rand((10, 3, 256, 256))
+        y = torch.ones((10,), dtype=torch.long)
+
+        if utils.TORCH_VERSION_LESS_1_10:
+            with pytest.raises(
+                RuntimeError,
+                match="Require torch>=1.12 and pytorch-lightning>=1.6.0."):
+                bf16_model = trainer.quantize(model, precision='bf16')
+            return
+        bf16_model = trainer.quantize(model, precision='bf16')
+        with patch.object(type(bf16_model), "_has_bf16_isa", PropertyMock(return_value=True)):
+            bf16_model._max_bf16_isa = MagicMock(None)
+            with pytest.raises(
+                RuntimeError,
+                match="BF16 ISA support is not enabled under current context."):
+                y_hat = bf16_model(x)
+        assert y_hat.shape == (10, 10) and y_hat.dtype == torch.bfloat16
+
+    def test_non_bf16(self):
+        trainer = Trainer(max_epochs=1)
+        model = resnet18(num_classes=10)
+
+        x = torch.rand((10, 3, 256, 256))
+        y = torch.ones((10,), dtype=torch.long)
+
+        if utils.TORCH_VERSION_LESS_1_10:
+            with pytest.raises(
+                RuntimeError,
+                match="Require torch>=1.12 and pytorch-lightning>=1.6.0."):
+                bf16_model = trainer.quantize(model, precision='bf16')
+            return
+        bf16_model = trainer.quantize(model, precision='bf16')
+        # Debug mode to test functionality, make sure forward is called sucessfully
+        os.environ["ALLOW_NON_BF16_ISA"] = "1"
         y_hat = bf16_model(x)
         assert y_hat.shape == (10, 10) and y_hat.dtype == torch.bfloat16
-
 
 if __name__ == '__main__':
     pytest.main([__file__])
