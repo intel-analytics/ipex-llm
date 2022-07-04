@@ -17,22 +17,12 @@ HPO for Tensorflow
 ---------------------------
 
 .. autoclass:: bigdl.nano.automl.tf.keras.Model.Model
-    :autoclass_content: class
+    :members: fit, compile
+    :inherited-members: search, search_summary
 
-HPO for Tensorflow 2
-----------------------
-
-.. autoclass:: bigdl.nano.automl.tf.keras.Model.Model
-    .. automethod:: __init__
-
-HPO for Tensorflow 3
---------------------
-
-.. autoclass:: bigdl.nano.automl.tf.keras.Model.Model
-    :class-doc-from: "init"
 
 .. autoclass:: bigdl.nano.automl.tf.keras.Sequential.Sequential
-    :class-doc-from: "class"
+    :members: fit, compile
 
 
 HPO for PyTorch
