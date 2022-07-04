@@ -17,10 +17,12 @@ HPO for Tensorflow
 ---------------------------
 
 .. automodule:: bigdl.nano.automl.tf.keras.Model
+    :members: search, search_summary
     :inherited-members: search, search_summary
 
 
 .. automodule:: bigdl.nano.automl.tf.keras.Sequential
+    :members: search, search_summary
     :inherited-members: search, search_summary
 
 
