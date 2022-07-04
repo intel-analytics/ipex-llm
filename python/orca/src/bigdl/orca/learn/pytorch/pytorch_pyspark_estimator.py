@@ -132,11 +132,11 @@ class PyTorchPySparkEstimator(BaseEstimator):
 
         self.ip = get_node_ip()
         self.port = find_free_port()
-        self.tcp_port = find_free_port()
         is_local = sc.master.startswith("local")
         self.need_to_log_to_driver = (not is_local) and log_to_driver
         if self.need_to_log_to_driver:
             start_log_server(self.ip, self.port)
+        self.tcp_port = find_free_port()
 
         self.worker_init_params = dict(
             model_creator=self.model_creator,
