@@ -22,7 +22,7 @@ elif [ "$action" = "generatekeys" ]; then
 	if [ "$KMS_TYPE" = "ehsm" ]; then
 	    appid=$2
 	    appkey=$3
-		java -cp /home/spark-encrypt-io.jar \
+		java -cp $BIGDL_HOME/jars/bigdl-ppml-spark_3.1.2-2.1.0-SNAPSHOT.jar:$SPARK_HOME/jars/*:$SPARK_HOME/examples/jars/*:$BIGDL_HOME/jars/* \
 		com.intel.analytics.bigdl.ppml.examples.GenerateKeys \
 		--primaryKeyPath /home/key/ehsm_encrypted_primary_key \
 		--dataKeyPath /home/key/ehsm_encrypted_data_key \
@@ -34,7 +34,7 @@ elif [ "$action" = "generatekeys" ]; then
 	elif [ "$KMS_TYPE" = "simple" ]; then
 	    appid=$2
 	    appkey=$3
-		java -cp /home/spark-encrypt-io.jar \
+		java -cp $BIGDL_HOME/jars/bigdl-ppml-spark_3.1.2-2.1.0-SNAPSHOT.jar:$SPARK_HOME/jars/*:$SPARK_HOME/examples/jars/*:$BIGDL_HOME/jars/* \
 		com.intel.analytics.bigdl.ppml.examples.GenerateKeys \
 		--primaryKeyPath /home/key/simple_encrypted_primary_key \
 		--dataKeyPath /home/key/simple_encrypted_data_key \
@@ -43,7 +43,7 @@ elif [ "$action" = "generatekeys" ]; then
 		--simpleAPPKEY $appkey
 	elif [ "$KMS_TYPE" = "azure" ]; then
 	    keyVaultName=$2
-		java -cp /home/spark-encrypt-io.jar \
+		java -cp $BIGDL_HOME/jars/bigdl-ppml-spark_3.1.2-2.1.0-SNAPSHOT.jar:$SPARK_HOME/jars/*:$SPARK_HOME/examples/jars/*:$BIGDL_HOME/jars/* \
 		com.intel.analytics.bigdl.ppml.examples.GenerateKeys \
 		--primaryKeyPath /home/key/simple_encrypted_primary_key \
 		--dataKeyPath /home/key/simple_encrypted_data_key \
@@ -60,7 +60,7 @@ elif [ "$action" = "encrypt" ]; then
 	if [ "$KMS_TYPE" = "ehsm" ]; then
 	    appid=$2
 	    appkey=$3
-		java -cp /home/spark-encrypt-io.jar \
+		java -cp $BIGDL_HOME/jars/bigdl-ppml-spark_3.1.2-2.1.0-SNAPSHOT.jar:$SPARK_HOME/jars/*:$SPARK_HOME/examples/jars/*:$BIGDL_HOME/jars/* \
 		com.intel.analytics.bigdl.ppml.examples.Encrypt \
 		--inputPath $input_path \
 		--primaryKeyPath /home/key/ehsm_encrypted_primary_key \
@@ -73,7 +73,7 @@ elif [ "$action" = "encrypt" ]; then
 	elif [ "$KMS_TYPE" = "simple" ]; then
 	    appid=$2
 	    appkey=$3
-		java -cp /home/spark-encrypt-io.jar \
+		java -cp $BIGDL_HOME/jars/bigdl-ppml-spark_3.1.2-2.1.0-SNAPSHOT.jar:$SPARK_HOME/jars/*:$SPARK_HOME/examples/jars/*:$BIGDL_HOME/jars/* \
 		com.intel.analytics.bigdl.ppml.examples.Encrypt \
                 --inputPath $input_path \
                 --primaryKeyPath /home/key/simple_encrypted_primary_key \
@@ -83,68 +83,15 @@ elif [ "$action" = "encrypt" ]; then
                 --simpleAPPKEY $appkey
     elif [ "$KMS_TYPE" = "azure" ]; then
         keyVaultName=$2
-		java -cp /home/spark-encrypt-io.jar \
+		java -cp $BIGDL_HOME/jars/bigdl-ppml-spark_3.1.2-2.1.0-SNAPSHOT.jar:$SPARK_HOME/jars/*:$SPARK_HOME/examples/jars/*:$BIGDL_HOME/jars/* \
 		com.intel.analytics.bigdl.ppml.examples.Encrypt \
                 --inputPath $input_path \
                 --primaryKeyPath /home/key/simple_encrypted_primary_key \
                 --dataKeyPath /home/key/simple_encrypted_data_key \
                 --kmsType AzureKeyManagementService \
-		        --vaultName $keyVaultName
+		--vaultName $keyVaultName
 	else
 		echo "Wrong KMS_TYPE! KMS_TYPE can be (1) ehsm, (2) simple, (3) azure"
-                return -1
-        fi
-elif [ "$action" = "splitandencrypt" ]; then
-	if [ "$KMS_TYPE" = "ehsm" ]; then
-	    appid=$2
-            appkey=$3
-	    input_path=$4
-	    output_path=$input_path.encrypted
-		java -cp /home/spark-encrypt-io.jar \
-		com.intel.analytics.bigdl.ppml.examples.SplitAndEncrypt   \
-		--inputPath $input_path \
-		--outputPath $output_path \
-		--outputPartitionNum 4 \
-		--outputCryptoModeValue AES/CBC/PKCS5Padding \
-		--primaryKeyPath /home/key/ehsm_encrypted_primary_key \
-		--dataKeyPath /home/key/ehsm_encrypted_data_key \
-		--kmsType EHSMKeyManagementService \
-		--kmsServerIP $EHSM_KMS_IP \
-                --kmsServerPort $EHSM_KMS_PORT \
-                --ehsmAPPID $appid \
-                --ehsmAPPKEY $appkey
-	elif [ "$KMS_TYPE" = "simple" ]; then
-	    appid=$2
-        appkey=$3
-	    input_path=$4
-	    output_path=$input_path.encrypted
-		java -cp /home/spark-encrypt-io.jar \
-		com.intel.analytics.bigdl.ppml.examples.SplitAndEncrypt   \
-		--inputPath $input_path \
-                --outputPath $output_path \
-                --outputPartitionNum 4 \
-                --outputCryptoModeValue AES/CBC/PKCS5Padding \
-                --primaryKeyPath /home/key/simple_encrypted_primary_key \
-                --dataKeyPath /home/key/simple_encrypted_data_key \
-		--kmsType SimpleKeyManagementService \
-                --simpleAPPID $appid \
-                --simpleAPPKEY $appkey
-    elif [ "$KMS_TYPE" = "azure" ]; then
-        keyVaultName=$2
-        input_path=$3
-	    output_path=$input_path.encrypted
-		java -cp /home/spark-encrypt-io.jar \
-		com.intel.analytics.bigdl.ppml.examples.SplitAndEncrypt   \
-		--inputPath $input_path \
-                --outputPath $output_path \
-                --outputPartitionNum 4 \
-                --outputCryptoModeValue AES/CBC/PKCS5Padding \
-                --primaryKeyPath /home/key/simple_encrypted_primary_key \
-                --dataKeyPath /home/key/simple_encrypted_data_key \
-		--kmsType AzureKeyManagementService \
-                --vaultName $keyVaultName
-	else
-                echo "Wrong KMS_TYPE! KMS_TYPE can be (1) ehsm, (2) simple, (3) azure"
                 return -1
         fi
 elif [ "$action" = "decrypt" ]; then
@@ -152,13 +99,13 @@ elif [ "$action" = "decrypt" ]; then
 	appid=$2
         appkey=$3
         input_path=$4
-		java -cp /home/spark-encrypt-io.jar \
+		java -cp $BIGDL_HOME/jars/bigdl-ppml-spark_3.1.2-2.1.0-SNAPSHOT.jar:$SPARK_HOME/jars/*:$SPARK_HOME/examples/jars/*:$BIGDL_HOME/jars/* \
 		com.intel.analytics.bigdl.ppml.examples.Decrypt \
 		--inputPath $input_path \
 		--inputPartitionNum 8 \
 		--outputPartitionNum 8 \
-		--inputCryptoModeValue AES/CBC/PKCS5Padding \
-		--outputCryptoModeValue plain_text \
+		--inputEncryptModeValue AES/CBC/PKCS5Padding \
+		--outputEncryptModeValue plain_text \
 		--primaryKeyPath /home/key/ehsm_encrypted_primary_key \
 		--dataKeyPath /home/key/ehsm_encrypted_data_key \
 		--kmsType EHSMKeyManagementService \
@@ -170,13 +117,13 @@ elif [ "$action" = "decrypt" ]; then
 	appid=$2
         appkey=$3
         input_path=$4
-		java -cp /home/spark-encrypt-io.jar \
+		java -cp $BIGDL_HOME/jars/bigdl-ppml-spark_3.1.2-2.1.0-SNAPSHOT.jar:$SPARK_HOME/jars/*:$SPARK_HOME/examples/jars/*:$BIGDL_HOME/jars/* \
 		com.intel.analytics.bigdl.ppml.examples.Decrypt \
                 --inputPath $input_path \
                 --inputPartitionNum 8 \
                 --outputPartitionNum 8 \
-                --inputCryptoModeValue AES/CBC/PKCS5Padding \
-                --outputCryptoModeValue plain_text \
+                --inputEncryptModeValue AES/CBC/PKCS5Padding \
+                --outputEncryptModeValue plain_text \
                 --primaryKeyPath /home/key/simple_encrypted_primary_key \
                 --dataKeyPath /home/key/simple_encrypted_data_key \
                 --kmsType SimpleKeyManagementService \
@@ -185,13 +132,13 @@ elif [ "$action" = "decrypt" ]; then
     elif [ "$KMS_TYPE" = "azure" ]; then
         keyVaultName=$2
         input_path=$3
-		java -cp /home/spark-encrypt-io.jar \
+		java -cp $BIGDL_HOME/jars/bigdl-ppml-spark_3.1.2-2.1.0-SNAPSHOT.jar:$SPARK_HOME/jars/*:$SPARK_HOME/examples/jars/*:$BIGDL_HOME/jars/* \
 		com.intel.analytics.bigdl.ppml.examples.Decrypt \
                 --inputPath $input_path \
                 --inputPartitionNum 8 \
                 --outputPartitionNum 8 \
-                --inputCryptoModeValue AES/CBC/PKCS5Padding \
-                --outputCryptoModeValue plain_text \
+                --inputEncryptModeValue AES/CBC/PKCS5Padding \
+                --outputEncryptModeValue plain_text \
                 --primaryKeyPath /home/key/simple_encrypted_primary_key \
                 --dataKeyPath /home/key/simple_encrypted_data_key \
                 --kmsType AzureKeyManagementService \
@@ -201,5 +148,5 @@ elif [ "$action" = "decrypt" ]; then
                 return -1
         fi
 else
-	echo "Wrong action! Action can be (1) enroll, (2) generatekeys, (3) encrypt, (4) decrypt, and (5) splitandencrypt."
+	echo "Wrong action! Action can be (1) enroll, (2) generatekeys, (3) encrypt, (4) decrypt."
 fi
