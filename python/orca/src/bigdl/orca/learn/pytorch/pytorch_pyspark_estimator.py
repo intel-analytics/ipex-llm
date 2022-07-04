@@ -172,7 +172,7 @@ class PyTorchPySparkEstimator(BaseEstimator):
         from torch._C._distributed_c10d import _DEFAULT_PG_TIMEOUT
         server_store = dist.TCPStore(self.ip, self.tcp_port, -1, True, _DEFAULT_PG_TIMEOUT)
         return server_store
-    
+
     def _get_cluster_info(self, sc):
         cluster_info = self.workerRDD.barrier().mapPartitions(find_ip_and_free_port).collect()
         return cluster_info
