@@ -88,7 +88,7 @@ BigDL Documentation
    :caption: PPML Overview
 
    doc/PPML/Overview/ppml.md
-   doc/PPML/Overview/trusted_big_bata_analytics_and_ml.md
+   doc/PPML/Overview/trusted_big_data_analytics_and_ml.md
    doc/PPML/Overview/trusted_fl.md
    doc/PPML/QuickStart/secure_your_services.md
    doc/PPML/QuickStart/build_kernel_with_sgx.md
