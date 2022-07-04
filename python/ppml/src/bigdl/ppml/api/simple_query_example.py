@@ -19,14 +19,18 @@ import argparse
 from bigdl.ppml.ppml_context import *
 
 parser = argparse.ArgumentParser()
-parser.add_argument("--simple_app_id", type=str, required=True, help="simple app id")
-parser.add_argument("--simple_app_key", type=str, required=True, help="simple app key")
+parser.add_argument("--simple_app_id", type=str, help="simple app id")
+parser.add_argument("--simple_app_key", type=str, help="simple app key")
 parser.add_argument("--primary_key_path", type=str, required=True, help="primary key path")
 parser.add_argument("--data_key_path", type=str, required=True, help="data key path")
 parser.add_argument("--input_encrypt_mode", type=str, required=True, help="input encrypt mode")
 parser.add_argument("--output_encrypt_mode", type=str, required=True, help="output encrypt mode")
 parser.add_argument("--input_path", type=str, required=True, help="input path")
 parser.add_argument("--output_path", type=str, required=True, help="output path")
+parser.add_argument("--kms_server_ip", type=str, help="ehsm kms server ip")
+parser.add_argument("--kms_server_port", type=str, help="ehsm kms server port")
+parser.add_argument("--ehsm_app_id", type=str, help="ehsm app id")
+parser.add_argument("--ehsm_app_key", type=str, help="ehsm app key")
 parser.add_argument("--kms_type", type=str, default="SimpleKeyManagementService",
                     help="SimpleKeyManagementService or EHSMKeyManagementService")
 args = parser.parse_args()
