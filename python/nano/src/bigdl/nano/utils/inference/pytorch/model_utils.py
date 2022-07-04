@@ -63,6 +63,8 @@ def export_to_onnx(model, input_sample=None, onnx_path="model.onnx", dynamic_axe
     :param file_path: The path to save onnx model file.
     :param dynamic_axes: If we set the first dim of each input as a dynamic batch_size
     :param **kwargs: will be passed to torch.onnx.export function.
+    
+    :return: model's forward args
     '''
     input_sample = get_input_example(model, input_sample)
     invalidInputError(input_sample is not None,
@@ -82,3 +84,4 @@ def export_to_onnx(model, input_sample=None, onnx_path="model.onnx", dynamic_axe
                                 }
     default_onnx_export_args.update(kwargs)
     torch.onnx.export(model, input_sample, onnx_path, **default_onnx_export_args)
+    return forward_args

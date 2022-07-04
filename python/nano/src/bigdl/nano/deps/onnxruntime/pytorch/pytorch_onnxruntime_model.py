@@ -47,10 +47,11 @@ class PytorchONNXRuntimeModel(ONNXRuntimeModel, AcceleratedLightningModule):
         if isinstance(model, torch.nn.Module):
             # Typically, when model is fp32, we use this path
             # TODO: expose ONNX export parameters to users
-            export_to_onnx(model, input_sample=input_sample, onnx_path='tmp.onnx')
+            model_forward_args = export_to_onnx(model, input_sample=input_sample, onnx_path='tmp.onnx')
             onnx_path = 'tmp.onnx'
         AcceleratedLightningModule.__init__(self, None)
-        ONNXRuntimeModel.__init__(self, onnx_path, session_options=onnxruntime_session_options)
+        ONNXRuntimeModel.__init__(self, onnx_path, session_options=onnxruntime_session_options,
+                                  model_forward_args = model_forward_args)
         if os.path.exists('tmp.onnx'):
             os.remove('tmp.onnx')
 
