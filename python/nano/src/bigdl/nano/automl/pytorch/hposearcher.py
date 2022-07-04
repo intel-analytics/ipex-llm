@@ -19,6 +19,7 @@ import pytorch_lightning as pl
 import copy
 import math
 from pytorch_lightning.trainer.states import TrainerFn, TrainerStatus
+from pytorch_lightning.loops.fit_loop import FitLoop
 from bigdl.nano.utils.log4Error import invalidInputError
 from bigdl.nano.automl.hpo.backend import create_hpo_backend
 from .objective import Objective
@@ -189,4 +190,5 @@ class HPOSearcher:
         self.trainer.state.status = TrainerStatus.RUNNING
         self.trainer.training = True
         self.trainer._run(*args, **kwargs)
+        self.trainer.fit_loop = FitLoop(self.trainer.min_epochs, self.trainer.max_epochs)
         self.trainer.tuning = True
