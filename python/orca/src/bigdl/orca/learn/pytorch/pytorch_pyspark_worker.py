@@ -72,6 +72,7 @@ class PytorchPysparkWorker(TorchRunner):
                  log_to_driver=True,
                  driver_ip=None,
                  driver_port=None,
+                 tcp_port=None
                  ):
         super().__init__(model_creator, optimizer_creator, loss_creator, metrics, scheduler_creator,
                          training_operator_cls, config, use_tqdm, scheduler_step_freq, sync_stats,
@@ -91,7 +92,7 @@ class PytorchPysparkWorker(TorchRunner):
             self.log_path, self.logger_thread, self.thread_stop = \
                 PytorchPysparkWorker._start_log_monitor(driver_ip, driver_port)
         if self.backend == "torch-distributed":
-            self.setup_distributed(self.mode, cluster_info)
+            self.setup_distributed(self.mode, cluster_info, driver_ip, tcp_port)
 
     @staticmethod
     def _start_log_monitor(driver_ip, driver_port):
@@ -109,11 +110,11 @@ class PytorchPysparkWorker(TorchRunner):
                                          partition_id=partition_id)
         return log_path, logger_thread, thread_stop
 
-    def setup_distributed(self, mode, cluster_info):
+    def setup_distributed(self, mode, cluster_info, driver_ip, tcp_port):
         if mode == "fit":
             self.rank = get_rank(cluster_info)
             logger.info(f"cluster is: {cluster_info}")
-            address = f"tcp://{cluster_info[0]}"
+            address = f"tcp://{driver_ip}:{tcp_port}"
             self.setup_torch_distribute(url=address,
                                         world_rank=self.rank,
                                         world_size=self.size)

@@ -132,6 +132,7 @@ class PyTorchPySparkEstimator(BaseEstimator):
 
         self.ip = get_node_ip()
         self.port = find_free_port()
+        self.tcp_port = find_free_port()
         is_local = sc.master.startswith("local")
         self.need_to_log_to_driver = (not is_local) and log_to_driver
         if self.need_to_log_to_driver:
@@ -154,12 +155,11 @@ class PyTorchPySparkEstimator(BaseEstimator):
             model_dir=self.model_dir,
             log_to_driver=self.need_to_log_to_driver,
             driver_ip=self.ip,
-            driver_port=self.port)
+            driver_port=self.port,
+            tcp_port=self.tcp_port)
 
         local_init_params = self.worker_init_params.copy()
         local_init_params["log_to_driver"] = False
-        self.tcp_port = find_free_port()
-        self.num_executors = int(sc.getConf().get("spark.executor.instances"))
         self.driver_runner = PytorchPysparkWorker(
             mode='predict',
             cluster_info=self._get_cluster_info(sc),
@@ -172,11 +172,9 @@ class PyTorchPySparkEstimator(BaseEstimator):
         from torch._C._distributed_c10d import _DEFAULT_PG_TIMEOUT
         server_store = dist.TCPStore(self.ip, self.tcp_port, -1, True, _DEFAULT_PG_TIMEOUT)
         return server_store
-
-    def _get_cluster_info(self):
-        cluster_info = []
-        for i in range(self.num_executors):
-            cluster_info.append(f"{self.ip}:{self.tcp_port}")
+    
+    def _get_cluster_info(self, sc):
+        cluster_info = self.workerRDD.barrier().mapPartitions(find_ip_and_free_port).collect()
         return cluster_info
 
     def fit(self,
@@ -232,7 +230,7 @@ class PyTorchPySparkEstimator(BaseEstimator):
                                                            num_workers=self.num_workers)
 
         sc = OrcaContext.get_spark_context()
-        server_store = self.create_tcpstore_server()
+        self.create_tcpstore_server()
         cluster_info = self._get_cluster_info(sc)
         state_dict = self._get_broadcasted_state_dict(sc)
         init_params = dict(
@@ -371,7 +369,7 @@ class PyTorchPySparkEstimator(BaseEstimator):
         from pyspark.sql import DataFrame
 
         sc = OrcaContext.get_spark_context()
-        server_store = self.create_tcpstore_server()
+        self.create_tcpstore_server()
         cluster_info = self._get_cluster_info(sc)
         state_dict = self._get_broadcasted_state_dict(sc)
 
@@ -442,7 +440,7 @@ class PyTorchPySparkEstimator(BaseEstimator):
                 when creating the Estimator.
         """
         sc = OrcaContext.get_spark_context()
-        server_store = self.create_tcpstore_server()
+        self.create_tcpstore_server()
         cluster_info = self._get_cluster_info(sc)
         state_dict = self._get_broadcasted_state_dict(sc)
         init_params = dict(
