@@ -17,16 +17,11 @@ HPO for Tensorflow
 ---------------------------
 
 .. automodule:: bigdl.nano.automl.tf.keras.Model
-    :members:
-    :inherited-members:
-    :undoc-members:
-
-
-
-.. automodule:: bigdl.nano.automl.tf.keras.Sequantial
-    :members:
     :inherited-members: search, search_summary
-    :undoc-members:
+
+
+.. automodule:: bigdl.nano.automl.tf.keras.Sequential
+    :inherited-members: search, search_summary
 
 
 
