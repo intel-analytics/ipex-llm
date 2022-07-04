@@ -133,7 +133,6 @@ def schedule_processors(num_workers: int,
                 "PROCESS_IDX": str(i),
             })
             envs.append(env)
-        print("enter error")
     else:
         for i in range(num_workers):
             env = deepcopy(os.environ)

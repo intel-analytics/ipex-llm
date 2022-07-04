@@ -104,7 +104,7 @@ def distributed_train_keras(backend, model, nprocs, fit_kwargs=None):
     with TemporaryDirectory() as temp_dir:
         model.save(os.path.join(temp_dir, 'temp_model'))
 
-        for env in envs:
+        for i, env in enumerate(envs):
             env.update({
                 "TF_CONFIG": json.dumps(
                     {
