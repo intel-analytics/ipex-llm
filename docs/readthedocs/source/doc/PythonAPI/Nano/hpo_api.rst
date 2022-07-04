@@ -16,15 +16,14 @@ Search Space
 HPO for Tensorflow
 ---------------------------
 
-.. automodule:: bigdl.nano.automl.tf.keras.Model
+.. autoclass:: bigdl.nano.automl.tf.keras.Model.Model
     :members: search, search_summary
     :inherited-members: search, search_summary
 
 
-.. automodule:: bigdl.nano.automl.tf.keras.Sequential
+.. autoclass:: bigdl.nano.automl.tf.keras.Sequential.Sequential
     :members: search, search_summary
     :inherited-members: search, search_summary
-
 
 
 HPO for PyTorch
