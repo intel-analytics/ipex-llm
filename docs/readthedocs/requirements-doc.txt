@@ -32,3 +32,5 @@ torchmetrics==0.7.2
 pickle5==0.0.12
 protobuf~=3.19.0
 sphinx-tabs==3.4
+optuna==2.10.0
+ConfigSpace==0.5.0
