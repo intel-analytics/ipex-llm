@@ -124,7 +124,7 @@ def schedule_processors(num_workers: int,
     envs = []
     if cpu_procs[0]:
         for i in range(num_workers):
-            env = deepcopy(os.environ)
+            env = os.environ.copy()
 
             env.update({
                 "KMP_AFFINITY": f"granularity=fine,proclist"
@@ -135,7 +135,7 @@ def schedule_processors(num_workers: int,
             envs.append(env)
     else:
         for i in range(num_workers):
-            env = deepcopy(os.environ)
+            env = os.environ.copy()
 
             env.update({
                 "KMP_AFFINITY": "disable",
