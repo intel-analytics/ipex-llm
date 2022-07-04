@@ -17,6 +17,8 @@ if [ ${openvino} == true ]; then
     python -m pytest -s --nbmake --nbmake-timeout=180 --nbmake-kernel=python3 ${NANO_TUTORIAL_TEST_DIR} -k 'openvino'
 else
     python -m pytest -s --nbmake --nbmake-timeout=180 --nbmake-kernel=python3 ${NANO_TUTORIAL_TEST_DIR} -k 'not openvino'
+fi 
+
 now=$(date "+%s")
 time=$((now-start))
 
