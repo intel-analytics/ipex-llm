@@ -113,7 +113,7 @@ def distributed_train_keras(backend, model, nprocs, fit_kwargs=None):
                         },
                         'task': {'type': 'worker', 'index': i}
                     }),
-                'no_proxy': "localhost",
+                'no_proxy': "localhost"
             })
 
         train_args = (temp_dir, train_ds_def, train_elem_spec,
