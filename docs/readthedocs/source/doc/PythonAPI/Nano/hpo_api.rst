@@ -16,9 +16,9 @@ Search Space
 HPO for Tensorflow
 ---------------------------
 
-.. automodule:: bigdl.nano.automl.hpo.tf.keras.Model
+.. automodule:: bigdl.nano.automl.hpo.tf.keras
     :members:
-    :inherited-members: search, search_summary
+    :inherited-members:
     :undoc-members:
 
 
