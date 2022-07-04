@@ -230,7 +230,7 @@ class TestXShardsTSDataset(TestCase):
                 collected_df = tsdata.shards.collect()
                 collected_df = pd.concat(collected_df, axis=0)
                 collected_df.reset_index(inplace=True)
-                collected_df["datetime"] = collected_df["datetime"].astype(type(df["datetime"][0]))
+                collected_df["datetime"] = df["datetime"]
                 del collected_df["index"]
                 return collected_df
 
