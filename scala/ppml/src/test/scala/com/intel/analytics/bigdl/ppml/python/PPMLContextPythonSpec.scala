@@ -22,6 +22,7 @@ import org.apache.spark.SparkConf
 import org.apache.spark.sql.SparkSession
 
 import java.io.File
+import java.util
 import scala.collection.JavaConverters._
 
 class PPMLContextPythonSpec extends DataFrameHelper{
@@ -54,6 +55,17 @@ class PPMLContextPythonSpec extends DataFrameHelper{
 
   "init PPMLContext with app name & args" should "work" in {
     ppmlContextPython.createPPMLContext("testApp", pyPPMLArgs.asJava)
+  }
+
+  "init PPMLContext with app name & args & sparkConf" should "work" in {
+    val confs: util.List[util.List[String]] = new util.ArrayList[util.List[String]]()
+    conf.getAll.foreach(tuple => {
+      val conf = new util.ArrayList[String]()
+      conf.add(tuple._1)
+      conf.add(tuple._2)
+      confs.add(conf)
+    })
+    ppmlContextPython.createPPMLContext("testApp", pyPPMLArgs.asJava, confs)
   }
 
   "read plain csv file" should "work" in {
@@ -180,6 +192,24 @@ class PPMLContextPythonSpec extends DataFrameHelper{
       .map(v => s"${v.get(0)},${v.get(1)}").mkString("\n")
 
     parquetContent should be (dataContent)
+  }
+
+  "textFile method with plain csv file" should "work" in {
+    val minPartitions = sc.getSparkSession().sparkContext.defaultMinPartitions
+    val cryptoMode = "plain_text"
+    val rdd = ppmlContextPython.textFile(sc, plainFileName, minPartitions, cryptoMode)
+    val rddContent = rdd.collect().mkString("\n")
+
+    rddContent + "\n" should be (data)
+  }
+
+  "textFile method with encrypted csv file" should "work" in {
+    val minPartitions = sc.getSparkSession().sparkContext.defaultMinPartitions
+    val cryptoMode = "AES/CBC/PKCS5Padding"
+    val rdd = ppmlContextPython.textFile(sc, encryptFileName, minPartitions, cryptoMode)
+    val rddContent = rdd.collect().mkString("\n")
+
+    rddContent + "\n" should be (data)
   }
 
 }

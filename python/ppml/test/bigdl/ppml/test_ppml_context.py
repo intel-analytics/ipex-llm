@@ -33,6 +33,7 @@ class TestPPMLContext(unittest.TestCase):
 
     df = None
     data_content = None
+    csv_content = None
     sc = None
 
     @classmethod
@@ -40,18 +41,19 @@ class TestPPMLContext(unittest.TestCase):
         if not os.path.exists(resource_path):
             os.mkdir(resource_path)
 
+        cls.csv_content = "name,age,job\n" + \
+                          "jack,18,Developer\n" + \
+                          "alex,20,Researcher\n" + \
+                          "xuoui,25,Developer\n" + \
+                          "hlsgu,29,Researcher\n" + \
+                          "xvehlbm,45,Developer\n" + \
+                          "ehhxoni,23,Developer\n" + \
+                          "capom,60,Developer\n" + \
+                          "pjt,24,Developer"
+
         # create a tmp csv file
-        with open(os.path.join(resource_path, "people.csv"), "w", encoding="utf-8", newline="") as f:
-            csv_writer = csv.writer(f)
-            csv_writer.writerow(["name", "age", "job"])
-            csv_writer.writerow(["jack", "18", "Developer"])
-            csv_writer.writerow(["alex", "20", "Researcher"])
-            csv_writer.writerow(["xuoui", "25", "Developer"])
-            csv_writer.writerow(["hlsgu", "29", "Researcher"])
-            csv_writer.writerow(["xvehlbm", "45", "Developer"])
-            csv_writer.writerow(["ehhxoni", "23", "Developer"])
-            csv_writer.writerow(["capom", "60", "Developer"])
-            csv_writer.writerow(["pjt", "24", "Developer"])
+        with open(os.path.join(resource_path, "people.csv"), "w") as file:
+            file.write(cls.csv_content)
 
         # generate primaryKey and dataKey
         primary_key_path = os.path.join(resource_path, "primaryKey")
@@ -78,7 +80,10 @@ class TestPPMLContext(unittest.TestCase):
         cls.data_content = '\n'.join([str(v['language']) + "," + str(v['user'])
                                       for v in cls.df.orderBy('language').collect()])
 
-        cls.sc = PPMLContext("testApp", args)
+        from pyspark import SparkConf
+        spark_conf = SparkConf()
+        spark_conf.setMaster("local[4]")
+        cls.sc = PPMLContext("testApp", args, spark_conf)
 
     @classmethod
     def tearDownClass(cls) -> None:
@@ -140,6 +145,19 @@ class TestPPMLContext(unittest.TestCase):
         content = '\n'.join([str(v['language']) + "," + str(v['user'])
                              for v in df_from_parquet.orderBy('language').collect()])
         self.assertEqual(content, self.data_content)
+
+    def test_plain_text_file(self):
+        path = os.path.join(resource_path, "people.csv")
+        rdd = self.sc.textfile(path)
+        rdd_content = '\n'.join([line for line in rdd.collect()])
+
+        self.assertEqual(rdd_content, self.csv_content)
+
+    def test_encrypted_text_file(self):
+        path = os.path.join(resource_path, "encrypted/people.csv")
+        rdd = self.sc.textfile(path=path, crypto_mode=CryptoMode.AES_CBC_PKCS5PADDING)
+        rdd_content = '\n'.join([line for line in rdd.collect()])
+        self.assertEqual(rdd_content, self.csv_content)
 
 
 if __name__ == "__main__":

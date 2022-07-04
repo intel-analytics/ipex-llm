@@ -20,12 +20,15 @@ from enum import Enum
 
 
 class PPMLContext(JavaValue):
-    def __init__(self, app_name, conf=None):
+    def __init__(self, app_name, ppml_args=None, spark_conf=None):
         self.bigdl_type = "float"
         args = [app_name]
-        if conf:
-            args.append(conf)
+        if ppml_args:
+            args.append(ppml_args)
+            if spark_conf:
+                args.append(spark_conf.getAll())
         super().__init__(None, self.bigdl_type, *args)
+        self.sparkSession = callBigDlFunc(self.bigdl_type, "getSparkSession", self.value)
 
     def load_keys(self, primary_key_path, data_key_path):
         callBigDlFunc(self.bigdl_type, "loadKeys", self.value, primary_key_path, data_key_path)
@@ -41,6 +44,13 @@ class PPMLContext(JavaValue):
             crypto_mode = crypto_mode.value
         df_writer = callBigDlFunc(self.bigdl_type, "write", self.value, dataframe, crypto_mode)
         return EncryptedDataFrameWriter(self.bigdl_type, df_writer)
+
+    def textfile(self, path, min_partitions=None, crypto_mode="plain_text"):
+        if min_partitions is None:
+            min_partitions = callBigDlFunc(self.bigdl_type, "getDefaultMinPartitions", self.sparkSession)
+        if isinstance(crypto_mode, CryptoMode):
+            crypto_mode = crypto_mode.value
+        return callBigDlFunc(self.bigdl_type, "textFile", self.value, path, min_partitions, crypto_mode)
 
 
 class EncryptedDataFrameReader:
