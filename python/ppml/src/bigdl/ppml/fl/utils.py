@@ -38,6 +38,10 @@ class FLTest(unittest.TestCase):
         self.port = self.get_available_port(self.port, self.port + 10)
         self.target = f"localhost:{self.port}"
 
+    def update_available_port(self):
+        self.port = self.get_available_port(self.port, self.port + 10)
+        self.target = f"localhost:{self.port}"
+
     def get_available_port(self, port_start, port_end):
         def is_available(p):            
             sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)

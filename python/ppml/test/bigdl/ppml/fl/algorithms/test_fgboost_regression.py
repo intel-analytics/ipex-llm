@@ -59,6 +59,7 @@ class TestFGBoostRegression(FLTest):
         multiprocessing.set_start_method('spawn') 
 
     def setUp(self) -> None:
+        self.update_available_port()
         self.fl_server = FLServer()
         self.fl_server.set_port(self.port)
         init_fl_context("1", self.target)
