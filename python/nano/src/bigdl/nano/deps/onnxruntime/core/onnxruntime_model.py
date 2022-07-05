@@ -35,8 +35,8 @@ class ONNXRuntimeModel:
         if len(self._forward_args) < len(inputs):
             redundant_input = set(self._model_forward_args).difference(set(self._forward_args))
             redundant_names = ", ".join(list(redundant_input))
-            errMsg = "The length of inputs is inconsistent with the length of ONNX Runtime session's inputs," + \
-            f"there may be some redundant input: {redundant_names}."
+            errMsg = "The length of inputs is inconsistent with the length of ONNX Runtime " \
+                    f"session's inputs, there may be some redundant input: {redundant_names}."
             fixMsg = "You should remove {} from your model manually.".format(redundant_names)
             invalidInputError(False, errMsg, fixMsg=fixMsg)
         inputs = dict(zip(self._forward_args, inputs))
