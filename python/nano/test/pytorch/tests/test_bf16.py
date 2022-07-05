@@ -37,7 +37,7 @@ class TestBF16Version(TestCase):
             trainer.quantize(model, precision='bf16')
 
     @patch.object(utils, 'TORCH_VERSION_LESS_1_10', True)
-    def test_bf16_pytorch_less_1_12(self):
+    def test_bf16_pytorch_less_1_10(self):
         trainer = Trainer(max_epochs=1)
         model = resnet18(num_classes=10)
 
