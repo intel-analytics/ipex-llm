@@ -23,12 +23,11 @@ import torch
 import subprocess
 import os
 from bigdl.nano.utils.log4Error import invalidOperationError, invalidInputError
-from bigdl.nano.pytorch.utils import TORCH_VERSION_LESS_1_10, TORCH_VERSION_LESS_1_12,\
-    LIGHTNING_VERSION_LESS_1_6
+from bigdl.nano.pytorch.utils import TORCH_VERSION_LESS_1_10, TORCH_VERSION_LESS_1_12
 
 invalidInputError(
-    not TORCH_VERSION_LESS_1_10 and not TORCH_VERSION_LESS_1_12 and not LIGHTNING_VERSION_LESS_1_6,
-    errMsg="Require torch>=1.12 and pytorch-lightning>=1.6.0."
+    not TORCH_VERSION_LESS_1_10,
+    errMsg="Require torch>=1.10 to convert type as bfloat16."
 )
 
 
@@ -98,12 +97,17 @@ class BF16Model(LightningModule):
         if getattr(self, "_is_bf16", None) is not None:
             return
 
+        invalidInputError(
+            not TORCH_VERSION_LESS_1_12,
+            errMsg="Require torch>=1.12 to obtain bfloat16 acceleration."
+        )
+
         # ALLOW_NON_BF16_ISA indicates if we restrict bf16 instructions support to be available.
         # ALLOW_NON_BF16_ISA='1' sometimes helps debug and test cases without AVX512 or AMX
         if self._has_bf16_isa:
             max_bf16_isa = self._max_bf16_isa(*args, **kwargs)
             if max_bf16_isa:
-                info("{} BF16 support is enabled in this run.".format(max_bf16_isa))
+                info("{} BF16 support is enabled in this model.".format(max_bf16_isa))
                 self._is_bf16 = True
             else:
                 if self._allow_non_bf16:
