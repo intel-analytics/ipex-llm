@@ -44,13 +44,13 @@ object EncryptWithRepartition extends Supportive {
     timing("processing") {
       // load csv file to data frame with ppmlcontext.
       val df = timing("1/2 load Inputs and Repartition") {
-        sc.read(cryptoMode = arguments.inputEncryptModeValue).option("header", "true")
+        sc.read(cryptoMode = arguments.inputEncryptMode).option("header", "true")
           .csv(arguments.inputPath).repartition(arguments.outputPartitionNum)
       }
 
       timing("2/2 encryptAndSaveOutputs") {
         // save data frame using spark kms context
-        sc.write(df, cryptoMode = arguments.outputEncryptModeValue).mode("overwrite")
+        sc.write(df, cryptoMode = arguments.outputEncryptMode).mode("overwrite")
           .option("header", true).csv(arguments.outputPath)
       }
     }
