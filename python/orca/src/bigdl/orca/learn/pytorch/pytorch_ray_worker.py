@@ -80,14 +80,14 @@ class PytorchRayWorker(TorchRunner):
         ip = self.get_node_ip()
         port = find_free_port()
         return f"tcp://{ip}:{port}"
-    
+
     def get_free_port(self):
         return find_free_port()
 
     def get_node_ip(self):
         """Returns the IP address of the current node."""
         return ray._private.services.get_node_ip_address()
-    
+
     def setup_distribute(self, rank, size, driver_ip, tcp_port):
         import torch.distributed as dist
         client_store = dist.TCPStore(driver_ip, tcp_port, rank, False)

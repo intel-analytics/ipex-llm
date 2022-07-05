@@ -176,8 +176,8 @@ class PyTorchRayEstimator(OrcaRayEstimator):
             dist.TCPStore(driver_ip, tcp_port, -1, True, dist.constants.default_pg_timeout)
 
             ray.get([
-               worker.setup_distribute.remote(i, num_nodes, driver_ip, tcp_port)
-               for i, worker in enumerate(self.remote_workers)
+                worker.setup_distribute.remote(i, num_nodes, driver_ip, tcp_port)
+                for i, worker in enumerate(self.remote_workers)
             ])
 
         elif backend == "horovod":
