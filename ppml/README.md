@@ -11,7 +11,7 @@ Encryption technology can provide solid protection for data at rest and data tha
 
 
 ### Confidential Computing
-[Confidential computing](https://www.intel.com/content/www/us/en/security/confidential-computing.html) is an emerging industry initiative focused on helping to secure data in use. Confidential Computing is the protection of data in use by performing computation in a hardware-based Trusted Execution Environment(TEE).
+[Confidential computing](https://www.intel.com/content/www/us/en/security/confidential-computing.html) is an emerging industry initiative focused on helping to secure data in use. Confidential Computing protects data in use by performing computation in a hardware-based Trusted Execution Environment (TEE).
 
 The efforts can enable encrypted data to be processed in memory while lowering the risk of exposing it to the rest of the system, thereby reducing the potential for sensitive data to be exposed while providing a higher degree of control and transparency for users. In multi-tenant cloud environments, where sensitive data is meant to be kept isolated from other privileged portions of the system stack, Intel® Software Guard Extensions (Intel® SGX) plays a large role in making this capability a reality.
 
