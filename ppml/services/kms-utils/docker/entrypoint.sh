@@ -204,5 +204,5 @@ elif [ "$action" = "decrypt" ]; then
                 return -1
         fi
 else
-	echo "Wrong action! Action can be (1) enroll, (2) generatekeys, (3) encrypt, (4) decrypt , and (5) encryptwithrepartition."
+	echo "Wrong action! Action can be (1) enroll, (2) generatekeys, (3) encrypt, (4) decrypt, and (5) encryptwithrepartition."
 fi
