@@ -52,7 +52,7 @@ class MinMaxScaler:
         self.__createScaler__()
 
     def fit_transform(self, shard):
-        df = shard.to_sparkdf()
+        df = shard.to_spark_df()
         self.scalerModel = self.scaler.fit(df)
         scaledData = self.scalerModel.transform(df)
         data_shards = SparkXShards.from_sparkdf(scaledData)
@@ -60,11 +60,10 @@ class MinMaxScaler:
 
     def transform(self, shard):
         invalidInputError(self.scalerModel, "Please call fit_transform first")
-        df = shard.to_sparkdf()
+        df = shard.to_spark_df()
         scaledData = self.scalerModel.transform(df)
         data_shards = SparkXShards.from_sparkdf(scaledData)
         return data_shards
-
 
 class LabelEncode:
     def __init__(self, inputCol=None, outputCol=None):
@@ -86,7 +85,7 @@ class LabelEncode:
         self.indexer = SparkStringIndexer(inputCol=self.inputCol, outputCol=self.outputCol)
 
     def fit_transform(self, shard):
-        df = shard.to_sparkdf()
+        df = shard.to_spark_df()
         self.indexModel = self.indexer.fit(df)
         indexedData = self.indexModel.transform(df)
         data_shards = SparkXShards.from_sparkdf(indexedData)
@@ -94,7 +93,7 @@ class LabelEncode:
 
     def transform(self, shard):
         invalidInputError(self.indexModel, "Please call fit_transform first")
-        df = shard.to_sparkdf()
+        df = shard.to_spark_df()
         scaledData = self.indexModel.transform(df)
         data_shards = SparkXShards.from_sparkdf(scaledData)
         return data_shards
