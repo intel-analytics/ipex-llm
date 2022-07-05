@@ -39,7 +39,7 @@ object EncryptWithRepartition extends Supportive {
       }
 
     val sparkConf = new SparkConf().setMaster("local[4]")
-    val sc = PPMLContext.initPPMLContext(sparkConf, "SplitAndEncrypt", arguments.ppmlArgs())
+    val sc = PPMLContext.initPPMLContext(sparkConf, "EncryptWithRepartition", arguments.ppmlArgs())
 
     timing("processing") {
       // load csv file to data frame with ppmlcontext.
