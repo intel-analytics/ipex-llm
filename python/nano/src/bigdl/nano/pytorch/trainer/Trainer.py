@@ -326,7 +326,9 @@ class Trainer(pl.Trainer):
                             input_sample = calib_dataloader
                         model = Trainer.trace(model,
                                               input_sample=input_sample,
-                                              accelerator='onnxruntime')
+                                              accelerator='onnxruntime',
+                                              onnxruntime_session_options=onnxruntime_session_options,
+                                              **export_kwargs)
                 """
                 If accelerator==None, quantized model returned should be an object of PytorchModel
                 which is defined by neural-compressor containing a `GraphModule` for inference.
