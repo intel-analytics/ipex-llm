@@ -24,9 +24,11 @@ from unittest.mock import MagicMock, PropertyMock, patch
 from bigdl.nano.pytorch import utils
 
 
-class TestBF16Version(TestCase):
-    @patch.object(utils, 'TORCH_VERSION_LESS_1_12', True)
-    def test_bf16_pytorch_less_1_12(self):
+class TestLightningLess1_6(TestCase):
+    @patch.object(utils, 'LIGHTNING_VERSION_LESS_1_6', True)
+    @patch.object(utils, 'TORCH_VERSION_LESS_1_10', False)
+    @patch.object(utils, 'TORCH_VERSION_LESS_1_12', False)
+    def test_bf16_lightning_less_1_6(self):
         trainer = Trainer(max_epochs=1)
         model = resnet18(num_classes=10)
 
@@ -36,8 +38,24 @@ class TestBF16Version(TestCase):
         ):
             trainer.quantize(model, precision='bf16')
 
+
+class TestPytorchLess1_10(TestCase):
     @patch.object(utils, 'TORCH_VERSION_LESS_1_10', True)
     def test_bf16_pytorch_less_1_10(self):
+        trainer = Trainer(max_epochs=1)
+        model = resnet18(num_classes=10)
+
+        with pytest.raises(
+            RuntimeError,
+            match="Require torch>=1.12 and pytorch-lightning>=1.6.0."
+        ):
+            trainer.quantize(model, precision='bf16')
+
+
+class TestPytorchLess1_12(TestCase):
+    @patch.object(utils, 'TORCH_VERSION_LESS_1_12', True)
+    @patch.object(utils, 'TORCH_VERSION_LESS_1_10', False)
+    def test_bf16_pytorch_less_1_12(self):
         trainer = Trainer(max_epochs=1)
         model = resnet18(num_classes=10)
 
@@ -77,7 +95,7 @@ class TestBF16(TestCase):
         x = torch.rand((10, 3, 256, 256))
         y = torch.ones((10,), dtype=torch.long)
 
-        if utils.TORCH_VERSION_LESS_1_10:
+        if utils.TORCH_VERSION_LESS_1_10 or utils.LIGHTNING_VERSION_LESS_1_6:
             with pytest.raises(
                 RuntimeError,
                 match="Require torch>=1.12 and pytorch-lightning>=1.6.0."):
@@ -97,7 +115,7 @@ class TestBF16(TestCase):
         x = torch.rand((10, 3, 256, 256))
         y = torch.ones((10,), dtype=torch.long)
 
-        if utils.TORCH_VERSION_LESS_1_10:
+        if utils.TORCH_VERSION_LESS_1_10 or utils.LIGHTNING_VERSION_LESS_1_6:
             with pytest.raises(
                 RuntimeError,
                 match="Require torch>=1.12 and pytorch-lightning>=1.6.0."):
@@ -120,7 +138,7 @@ class TestBF16(TestCase):
         x = torch.rand((10, 3, 256, 256))
         y = torch.ones((10,), dtype=torch.long)
 
-        if utils.TORCH_VERSION_LESS_1_10:
+        if utils.TORCH_VERSION_LESS_1_10 or utils.LIGHTNING_VERSION_LESS_1_6:
             with pytest.raises(
                 RuntimeError,
                 match="Require torch>=1.12 and pytorch-lightning>=1.6.0."):
