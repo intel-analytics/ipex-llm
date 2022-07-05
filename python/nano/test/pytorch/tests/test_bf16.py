@@ -75,7 +75,7 @@ class TestBF16(TestCase):
         x = torch.rand((10, 3, 256, 256))
         y = torch.ones((10,), dtype=torch.long)
 
-        if utils.TORCH_VERSION_LESS_1_10:
+        if utils.TORCH_VERSION_LESS_1_10 or utils.LIGHTNING_VERSION_LESS_1_6:
             with pytest.raises(
                 RuntimeError,
                 match="Require torch>=1.12 and pytorch-lightning>=1.6.0."):
