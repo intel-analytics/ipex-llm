@@ -5,7 +5,7 @@ Protecting data privacy and confidentiality is critical in a world where we are 
 
 To better protect sensitive data, it’s helpful to think about it in all dimensions of data lifecycle: data at rest, data in transit, and data in use. Data being transferred on a network is “in transit”, data in storage is “at rest”, and data being processed is “in use”. 
 
-（图，tee处修改，自己画一个把tee技术放进去）
+<img width="430" alt="image" src="https://user-images.githubusercontent.com/61072813/177228389-f4bba090-d7b1-4413-bab6-c98f2217dac8.png">
 
 Encryption technology can provide solid protection for data at rest and data that is in transit. For protecting data in transit, enterprises often choose to encrypt sensitive data prior to moving or use encrypted connections (HTTPS, SSL, TLS, FTPS, etc) to protect the contents of data in transit. For protecting data at rest, enterprises can simply encrypt sensitive files prior to storing them or choose to encrypt the storage drive itself. However, the third state, when data is in use, is overlooked because of inadequate safeguard mechanisms. With several severe malware attacks have happened at the in-use state, securing data in use has become critical.
 
