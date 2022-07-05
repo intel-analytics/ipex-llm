@@ -1,12 +1,19 @@
 ## What changes were proposed in this pull request?
 
-(Please fill in changes proposed in this patch)
+## Why are the changes needed?
+
+## Please briefly describe the changes such as API changes and code design.
+
+(This section is needed unless a github issue describing the design is provide below)
+
+## Design Link
+
+(Please provide the issue containing the design discussions of this pr.)
+
+(This section is not needed if the design is small enough to be described in the previous section.)
 
 ## How was this patch tested?
 
 (Please explain how this patch was tested. E.g. unit tests, integration tests, manual tests)
 (If it is possible, please attach a screenshot; otherwise, remove this)
-
-## Related links or issues (optional)
-fixed https://github.com/intel-analytics/BigDL/issues/XXX
 
