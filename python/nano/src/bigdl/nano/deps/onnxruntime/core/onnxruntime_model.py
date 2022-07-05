@@ -20,24 +20,16 @@ from bigdl.nano.utils.log4Error import invalidInputError
 
 
 class ONNXRuntimeModel:
-    def __init__(self, onnx_filepath, session_options=None, model_forward_args=None):
+    def __init__(self, onnx_filepath, session_options=None):
         self.onnx_filepath = onnx_filepath  # onnx filepath
         self.onnx_model = None  # onnx model
         self.ortsess = None  # onnxruntime session
-        self._model_forward_args = model_forward_args
         self._build_ortsess(session_options)
 
     def forward_step(self, *inputs):
         '''
         This function run through the onnxruntime forwarding step
         '''
-        if len(self._forward_args) < len(inputs):
-            redundant_input = set(self._model_forward_args).difference(set(self._forward_args))
-            redundant_names = ", ".join(list(redundant_input))
-            errMsg = "The length of inputs is inconsistent with the length of ONNX Runtime " + \
-                     f"session's inputs, there may be some redundant input: {redundant_names}."
-            fixMsg = "You should remove {} from your model manually.".format(redundant_names)
-            invalidInputError(False, errMsg, fixMsg=fixMsg)
         inputs = dict(zip(self._forward_args, inputs))
         ort_outs = self.ortsess.run(None, inputs)
         return ort_outs
