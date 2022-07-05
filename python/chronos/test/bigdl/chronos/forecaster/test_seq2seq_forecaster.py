@@ -360,15 +360,16 @@ class TestChronosModelSeq2SeqForecaster(TestCase):
                                        lr=0.01)
         val_loss = forecaster.fit(train_loader, val_loarder, epochs=10)
 
-    def test_forecaster_from_dataset(self):
+    def test_forecaster_from_tsdataset(self):
         train, test = create_tsdataset()
-        x_train, y_train = train.to_numpy()
-        x_test, y_test = test.to_numpy()
-        s2s = Seq2SeqForecaster.from_dataset(train,
-                                             lstm_hidden_dim=16,
-                                             lstm_layer_num=1)
-        s2s.fit((x_train, y_train),
+        s2s = Seq2SeqForecaster.from_tsdataset(train,
+                                               lstm_hidden_dim=16,
+                                               lstm_layer_num=1)
+        s2s.fit(train,
                 epochs=2,
                 batch_size=32)
-        yhat = s2s.predict(x_test, batch_size=None)
+        yhat = s2s.predict(test, batch_size=32)
+        test.roll(lookback=s2s.data_config['past_seq_len'],
+                  horizon=s2s.data_config['future_seq_len'])
+        _, y_test = test.to_numpy()
         assert yhat.shape == y_test.shape

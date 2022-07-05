@@ -14,6 +14,7 @@
 # limitations under the License.
 #
 
+from bigdl.chronos.data.tsdataset import TSDataset
 from bigdl.chronos.forecaster.abstract import Forecaster
 from bigdl.chronos.forecaster.utils import *
 from bigdl.chronos.metric.forecast_metrics import Evaluator
@@ -218,6 +219,9 @@ class BasePytorchForecaster(Forecaster):
                | should be the same as past_seq_len and input_feature_num.
                | y's shape is (num_samples, horizon, target_dim), where horizon and target_dim
                | should be the same as future_seq_len and output_feature_num.
+               |
+               | 4. a tsdataset:
+               | pass
 
         :param validation_data: Validation sample for validation loop. Defaults to 'None'.
                If you do not input data for 'validation_data', the validation_step will be skipped.
@@ -245,6 +249,11 @@ class BasePytorchForecaster(Forecaster):
         :return: A dict that records the average validation loss of each epoch.
         """
         # input transform
+        if isinstance(data, TSDataset):
+            data = data.to_torch_data_loader(batch_size=batch_size,
+                                             roll=True,
+                                             lookback=self.data_config['past_seq_len'],
+                                             horizon=self.data_config['future_seq_len'])
         if isinstance(data, DataLoader) and self.distributed:
             data = loader_to_creator(data)
         if isinstance(data, tuple) and self.distributed:
@@ -338,6 +347,8 @@ class BasePytorchForecaster(Forecaster):
                | x's shape is (num_samples, lookback, feature_dim) where lookback and feature_dim
                | should be the same as past_seq_len and input_feature_num.
                | If returns x and y only get x.
+               | 4. a tsdataset
+               | pass
 
         :param batch_size: predict batch size. The value will not affect predict
                result but will affect resources cost(e.g. memory and time).
@@ -351,6 +362,12 @@ class BasePytorchForecaster(Forecaster):
         """
         from bigdl.chronos.pytorch.utils import _pytorch_fashion_inference
 
+        if isinstance(data, TSDataset):
+            data = data.to_torch_data_loader(batch_size=batch_size,
+                                             roll=True,
+                                             lookback=self.data_config['past_seq_len'],
+                                             horizon=self.data_config['future_seq_len'],
+                                             shuffle=False)
         # data transform
         is_local_data = isinstance(data, (np.ndarray, DataLoader))
         if is_local_data and self.distributed:
@@ -409,6 +426,8 @@ class BasePytorchForecaster(Forecaster):
                | x's shape is (num_samples, lookback, feature_dim) where lookback and feature_dim
                | should be the same as past_seq_len and input_feature_num.
                | If returns x and y only get x.
+               | 3. a tsdataset
+               | pass
 
         :param batch_size: predict batch size. The value will not affect predict
                result but will affect resources cost(e.g. memory and time). Defaults
@@ -427,6 +446,12 @@ class BasePytorchForecaster(Forecaster):
         if not self.fitted:
             invalidInputError(False,
                               "You must call fit or restore first before calling predict!")
+        if isinstance(data, TSDataset):
+            data = data.to_torch_data_loader(batch_size=batch_size,
+                                             roll=True,
+                                             lookback=self.data_config['past_seq_len'],
+                                             horizon=self.data_config['future_seq_len'],
+                                             shuffle=False)
         if quantize:
             return _pytorch_fashion_inference(model=self.onnxruntime_int8,
                                               input_data=data,
@@ -451,6 +476,8 @@ class BasePytorchForecaster(Forecaster):
                | 1. a numpy ndarray x:
                | x's shape is (num_samples, lookback, feature_dim) where lookback and feature_dim
                | should be the same as past_seq_len and input_feature_num.
+               | 2. a tsdataset
+               | pass
 
         :param batch_size: predict batch size. The value will not affect predict
                result but will affect resources cost(e.g. memory and time). Defaults
@@ -508,6 +535,8 @@ class BasePytorchForecaster(Forecaster):
                | should be the same as past_seq_len and input_feature_num.
                | y's shape is (num_samples, horizon, target_dim), where horizon and target_dim
                | should be the same as future_seq_len and output_feature_num.
+               | 4. a tsdataset
+               | pass
 
         :param batch_size: evaluate batch size. The value will not affect evaluate
                result but will affect resources cost(e.g. memory and time).
@@ -522,6 +551,12 @@ class BasePytorchForecaster(Forecaster):
         from bigdl.chronos.pytorch.utils import _pytorch_fashion_inference
 
         # data transform
+        if isinstance(data, TSDataset):
+            data = data.to_torch_data_loader(batch_size=batch_size,
+                                             roll=True,
+                                             lookback=self.data_config['past_seq_len'],
+                                             horizon=self.data_config['future_seq_len'],
+                                             shuffle=False)
         is_local_data = isinstance(data, (tuple, DataLoader))
         if not is_local_data and not self.distributed:
             data = xshard_to_np(data, mode="fit")
@@ -587,6 +622,8 @@ class BasePytorchForecaster(Forecaster):
                | x's shape is (num_samples, lookback, feature_dim) where lookback and feature_dim
                | should be the same as past_seq_len and input_feature_num.
                | y's shape is (num_samples, horizon, target_dim), where horizon and target_dim
+               | 3. a tsdataset
+               | pass
 
         :param batch_size: evaluate batch size. The value will not affect evaluate
                result but will affect resources cost(e.g. memory and time).
@@ -607,6 +644,12 @@ class BasePytorchForecaster(Forecaster):
         if not self.fitted:
             invalidInputError(False,
                               "You must call fit or restore first before calling evaluate!")
+        if isinstance(data, TSDataset):
+            data = data.to_torch_data_loader(batch_size=batch_size,
+                                             roll=True,
+                                             lookback=self.data_config['past_seq_len'],
+                                             horizon=self.data_config['future_seq_len'],
+                                             shuffle=False)
         if isinstance(data, DataLoader):
             input_data = data
             target = np.concatenate(tuple(val[1] for val in data), axis=0)

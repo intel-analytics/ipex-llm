@@ -418,15 +418,16 @@ class TestChronosModelLSTMForecaster(TestCase):
                                     lr=0.01)
         val_loss = forecaster.fit(train_loader, val_loader, epochs=10)
 
-    def test_forecaster_from_dataset(self):
+    def test_forecaster_from_tsdataset(self):
         train, test = create_tsdataset()
-        x_train, y_train = train.to_numpy()
-        x_test, y_test = test.to_numpy()
-        lstm = LSTMForecaster.from_dataset(train,
-                                           hidden_dim=16,
-                                           layer_num=2)
-        lstm.fit((x_train, y_train),
+        lstm = LSTMForecaster.from_tsdataset(train,
+                                             hidden_dim=16,
+                                             layer_num=2)
+        lstm.fit(train,
                  epochs=2,
                  batch_size=32)
-        yhat = lstm.predict(x_test, batch_size=None)
+        yhat = lstm.predict(test, batch_size=32)
+        test.roll(lookback=lstm.data_config['past_seq_len'],
+                  horizon=lstm.data_config['future_seq_len'])
+        _, y_test = test.to_numpy()
         assert yhat.shape == y_test.shape

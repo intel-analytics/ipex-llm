@@ -287,26 +287,6 @@ class AutoformerForecaster(Forecaster):
         invalidOperationError(self.use_hpo, "No search summary when HPO is disabled.")
         return self.trainer.search_summary()
 
-    @staticmethod
-    def from_dataset(tsdata, label_len, freq, **kwargs):
-        '''
-        Build a AutoformerForecaster Forecast Model.
-
-        :param tsdata: A tsdataset that has called the `tsdataset.roll` method.
-        :params kwargs: Specify parameters of Forecaster,
-        e.g. loss and optimizer, etc.
-        
-        return: A AutoformerForecaster Forecast Model.
-        '''
-        x_shape, y_shape = tsdata.numpy_x.shape, tsdata.numpy_y.shape
-        return AutoformerForecaster(past_seq_len=x_shape[1],
-                                    future_seq_len=y_shape[1],
-                                    input_feature_num=x_shape[-1],
-                                    output_feature_num=y_shape[-1],
-                                    label_len=label_len,
-                                    freq=freq,
-                                    **kwargs)
-
     def fit(self, data, epochs=1, batch_size=32):
         """
         Fit(Train) the forecaster.

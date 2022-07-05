@@ -60,6 +60,25 @@ def create_data(loader=False):
         return train_data, val_data, test_data
 
 
+def create_tsdataset():
+    from bigdl.chronos.data import TSDataset
+    import pandas as pd
+    timeserious = pd.date_range(start='2020-01-01', freq='D', periods=1000)
+    df = pd.DataFrame(np.random.rand(1000, 2),
+                      columns=['value1', 'value2'],
+                      index=timeserious,
+                      dtype=np.float32)
+    df.reset_index(inplace=True)
+    df.rename(columns={'index': 'timeserious'}, inplace=True)
+    train, _, test = TSDataset.from_pandas(df=df,
+                                           dt_col='timeserious',
+                                           target_col=['value1', 'value2'],
+                                           with_split=True)
+    for tsdata in [train, test]:
+        tsdata.roll(lookback=24, horizon=5)
+    return train, test
+
+
 class TestChronosModelTCNForecaster(TestCase):
 
     def setUp(self):
@@ -456,3 +475,16 @@ class TestChronosModelTCNForecaster(TestCase):
                                    loss="mae",
                                    lr=0.01)
         val_loss = forecaster.fit(train_loader, val_loader, epochs=10)
+
+    def test_forecaster_from_tsdataset(self):
+        train, test = create_tsdataset()
+        tcn = TCNForecaster.from_tsdataset(train,
+                                           num_channels=[16]*3)
+        tcn.fit(train,
+                epochs=2,
+                batch_size=32)
+        yhat = tcn.predict(test, batch_size=32)
+        test.roll(lookback=tcn.data_config['past_seq_len'],
+                  horizon=tcn.data_config['future_seq_len'])
+        _, y_test = test.to_numpy()
+        assert yhat.shape == y_test.shape

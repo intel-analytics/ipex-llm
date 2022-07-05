@@ -158,19 +158,33 @@ class TCNForecaster(BasePytorchForecaster):
         super().__init__()
 
     @staticmethod
-    def from_dataset(tsdata, **kwargs):
+    def from_tsdataset(tsdataset, past_seq_len=None, future_seq_len=None, **kwargs):
         '''
         Build a TCN Forecaster Model.
 
-        :params tsdata: A tsdataset that has called the `tsdataset.roll` method.
-        :params kwargs: Specify parameters of Forecaster,
+        :param tsdataset: A bigdl.chronos.data.tsdataset.TSDataset instance.
+        :param past_seq_len: Specify the history time steps (i.e. lookback).
+               if tsdataset called 'roll' method, then no need to specify past_seq_len.
+        :param future_seq_len: Specify the output time steps (i.e. horizon).
+               if tsdataset called 'roll' method, then no need to specify future_seq_len.
+        :param kwargs: Specify parameters of Forecaster,
                 e.g. loss and optimizer, etc.
 
         return: A TCN Forecaster Model.
         '''
-        x_shape, y_shape = tsdata.numpy_x.shape, tsdata.numpy_y.shape
-        return TCNForecaster(past_seq_len=x_shape[1],
-                             future_seq_len=y_shape[1],
-                             input_feature_num=x_shape[-1],
-                             output_feature_num=y_shape[-1],
+        if tsdataset.numpy_x is not None:
+            past_seq_len = tsdataset.numpy_x.shape[1]
+            future_seq_len = tsdataset.numpy_y.shape[1]
+        # TODO Support specifying 'auto' as past_seq_len.
+        if past_seq_len is None and future_seq_len is None and tsdataset.numpy_x is None:
+            from bigdl.nano.utils.log4Error import invalidInputError
+            invalidInputError(False,
+                              "Need to specify history time step for from_dataset or"
+                              "call the 'roll' method of dataset.")
+        output_feature_num = len(tsdataset.target_col)
+        input_feature_num = output_feature_num + len(tsdataset.feature_col)
+        return TCNForecaster(past_seq_len=past_seq_len,
+                             future_seq_len=future_seq_len,
+                             input_feature_num=input_feature_num,
+                             output_feature_num=output_feature_num,
                              **kwargs)

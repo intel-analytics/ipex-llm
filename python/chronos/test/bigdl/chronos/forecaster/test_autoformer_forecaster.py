@@ -180,16 +180,3 @@ class TestChronosModelAutoformerForecaster(TestCase):
             forecaster.load(ckpt_name)
             evaluate2 = forecaster.evaluate(val_loader)
         assert evaluate[0]['val_loss'] == evaluate2[0]['val_loss']
-
-    def test_forecaster_from_dataset(self):
-        train, test = create_tsdataset()
-        _, y_test, _, _ = test.to_numpy()
-        autoformer = AutoformerForecaster.from_dataset(train,
-                                                       label_len=12,
-                                                       freq='s')
-        autoformer.fit(train.to_numpy(),
-                       epochs=2,
-                       batch_size=32)
-        yhat = autoformer.predict(test.to_numpy(),
-                                  batch_size=32)
-        assert yhat.shape == y_test.shape

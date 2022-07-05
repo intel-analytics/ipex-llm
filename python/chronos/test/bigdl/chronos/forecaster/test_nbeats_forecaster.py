@@ -401,16 +401,17 @@ class TestChronosNBeatsForecaster(TestCase):
                                      lr=0.01)
         val_loss = forecater.fit(train_loader, val_loader, epochs=10)
 
-    def test_forecaster_from_dataset(self):
+    def test_forecaster_from_tsdataset(self):
         train, test = create_tsdataset()
-        x_train, y_train = train.to_numpy()
-        x_test, y_test = test.to_numpy()
-        nbeats = NBeatsForecaster.from_dataset(train,
-                                               stack_types=("generic", "seasnoality"),
-                                               share_weights_in_stack=True,
-                                               hidden_layer_units=32)
-        nbeats.fit((x_train, y_train),
+        nbeats = NBeatsForecaster.from_tsdataset(train,
+                                                 stack_types=("generic", "seasnoality"),
+                                                 share_weights_in_stack=True,
+                                                 hidden_layer_units=32)
+        nbeats.fit(train,
                    epochs=2,
                    batch_size=32)
-        yhat = nbeats.predict(x_test, batch_size=None)
+        yhat = nbeats.predict(test, batch_size=32)
+        test.roll(lookback=nbeats.data_config['past_seq_len'],
+                  horizon=nbeats.data_config['future_seq_len'])
+        _, y_test = test.to_numpy()
         assert yhat.shape == y_test.shape

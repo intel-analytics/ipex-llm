@@ -767,18 +767,18 @@ class TSDataset:
 
             if lookback == 'auto':
                 lookback = self.get_cycle_length('mode', top_k=3)
-            torch_dataset = RollDataset(self.df,
-                                        dt_col=self.dt_col,
-                                        freq=self._freq,
-                                        lookback=lookback,
-                                        horizon=horizon,
-                                        feature_col=feature_col,
-                                        target_col=target_col,
-                                        id_col=self.id_col,
-                                        time_enc=time_enc,
-                                        label_len=label_len,
-                                        is_predict=is_predict)
-            return DataLoader(torch_dataset,
+            self.torch_dataset = RollDataset(self.df,
+                                             dt_col=self.dt_col,
+                                             freq=self._freq,
+                                             lookback=lookback,
+                                             horizon=horizon,
+                                             feature_col=feature_col,
+                                             target_col=target_col,
+                                             id_col=self.id_col,
+                                             time_enc=time_enc,
+                                             label_len=label_len,
+                                             is_predict=is_predict)
+            return DataLoader(self.torch_dataset,
                               batch_size=batch_size,
                               shuffle=shuffle)
         else:
