@@ -24,7 +24,7 @@ from unittest.mock import MagicMock, PropertyMock, patch
 from bigdl.nano.pytorch import utils
 
 
-class TestBF16(TestCase):
+class TestBF16Version(TestCase):
     @patch.object(utils, 'TORCH_VERSION_LESS_1_12', True)
     def test_bf16_pytorch_less_1_12(self):
         trainer = Trainer(max_epochs=1)
@@ -36,6 +36,19 @@ class TestBF16(TestCase):
         ):
             trainer.quantize(model, precision='bf16')
 
+    @patch.object(utils, 'TORCH_VERSION_LESS_1_10', True)
+    def test_bf16_pytorch_less_1_12(self):
+        trainer = Trainer(max_epochs=1)
+        model = resnet18(num_classes=10)
+
+        with pytest.raises(
+            RuntimeError,
+            match="Require torch>=1.12 and pytorch-lightning>=1.6.0."
+        ):
+            trainer.quantize(model, precision='bf16')
+
+
+class TestBF16(TestCase):
     @patch.object(utils, 'TORCH_VERSION_LESS_1_12', False)
     def test_bf16_with_amx_bf16(self):
         trainer = Trainer(max_epochs=1)
@@ -52,7 +65,7 @@ class TestBF16(TestCase):
             return
         bf16_model = trainer.quantize(model, precision='bf16')
         with patch.object(type(bf16_model), "_has_bf16_isa", PropertyMock(return_value=True)):
-            bf16_model._max_bf16_isa = MagicMock("AMX")
+            bf16_model._max_bf16_isa = MagicMock(return_value="AMX")
             y_hat = bf16_model(x)
         assert y_hat.shape == (10, 10) and y_hat.dtype == torch.bfloat16
 
@@ -72,7 +85,7 @@ class TestBF16(TestCase):
             return
         bf16_model = trainer.quantize(model, precision='bf16')
         with patch.object(type(bf16_model), "_has_bf16_isa", PropertyMock(return_value=True)):
-            bf16_model._max_bf16_isa = MagicMock("AVX512")
+            bf16_model._max_bf16_isa = MagicMock(return_value="AVX512")
             y_hat = bf16_model(x)
         assert y_hat.shape == (10, 10) and y_hat.dtype == torch.bfloat16
 
@@ -92,14 +105,15 @@ class TestBF16(TestCase):
             return
         bf16_model = trainer.quantize(model, precision='bf16')
         with patch.object(type(bf16_model), "_has_bf16_isa", PropertyMock(return_value=True)):
-            bf16_model._max_bf16_isa = MagicMock(None)
+            bf16_model._max_bf16_isa = MagicMock(return_value=None)
             with pytest.raises(
                 RuntimeError,
-                match="BF16 ISA support is not enabled under current context."):
+                match="BF16 ISA support is not enabled under current context."
+            ):
                 y_hat = bf16_model(x)
-        assert y_hat.shape == (10, 10) and y_hat.dtype == torch.bfloat16
 
-    def test_non_bf16(self):
+    @patch.object(utils, 'TORCH_VERSION_LESS_1_12', False)
+    def test_bf16_common(self):
         trainer = Trainer(max_epochs=1)
         model = resnet18(num_classes=10)
 
@@ -117,6 +131,7 @@ class TestBF16(TestCase):
         os.environ["ALLOW_NON_BF16_ISA"] = "1"
         y_hat = bf16_model(x)
         assert y_hat.shape == (10, 10) and y_hat.dtype == torch.bfloat16
+        os.environ["ALLOW_NON_BF16_ISA"] = "0"
 
 if __name__ == '__main__':
     pytest.main([__file__])
