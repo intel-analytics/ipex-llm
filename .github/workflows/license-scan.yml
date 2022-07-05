@@ -1,10 +1,12 @@
 name: license-scan
 
 on:
-  push:
-    branches: [ "main" ]
-  pull_request:
-    branches: [ "main" ]
+  # push:
+    # branches: [ "main" ]
+  # pull_request:
+    # branches: [ "main" ]
+  schedule:
+    - cron: '0 3 * * *'
 
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:
