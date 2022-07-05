@@ -250,7 +250,7 @@ class CorrectnessSpec extends FLSpec {
       flServer.setClientNum(3)
       flServer.build()
       flServer.start()
-      FLContext.initFLContext(target)
+      FLContext.initFLContext("1", target)
       val mockClient2 = new MockClient(
         clientId = "2",
         dataPath = getClass.getClassLoader
