@@ -45,7 +45,7 @@ object EncryptWithRepartition extends Supportive {
       // load csv file to data frame with ppmlcontext.
       val df = timing("1/2 load Inputs and Repartition") {
         sc.read(cryptoMode = arguments.inputEncryptModeValue).option("header", "true")
-          .csv(arguments.inputPath).repartition(4)
+          .csv(arguments.inputPath).repartition(arguments.outputPartitionNum)
       }
 
       timing("2/2 encryptAndSaveOutputs") {
