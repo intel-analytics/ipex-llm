@@ -45,9 +45,35 @@
 
     In this guide we will describe how to obtain a quantized model with the APIs delivered by BigDL-Nano
 
+
+---------------------------
+
+
+- [**BigDL-Nano Hyperparameter Tuning (Tensorflow Sequential/Functional API) Quickstart**](./pytorch_quantization_openvino.html)
+
+
+    > ![](../../../../image/colab_logo_32px.png)[Run in Google Colab][Nano_hpo_tf_seq_func_colab] &nbsp;![](../../../../image/GitHub-Mark-32px.png)[View source on GitHub][Nano_hpo_tf_seq_func]
+
+
+    In this guide we will describe how to use Nano's built-in HPO utils to do hyperparameter tuning for models defined using Tensorflow Sequential or Functional API.
+
+
+---------------------------
+
+- [**BigDL-Nano Hyperparameter Tuning (Tensorflow Subclassing Model) Quickstart**](./pytorch_quantization_openvino.html)
+
+    > ![](../../../../image/colab_logo_32px.png)[Run in Google Colab][Nano_hpo_tf_subclassing_colab] &nbsp;![](../../../../image/GitHub-Mark-32px.png)[View source on GitHub][Nano_hpo_tf_subclassing]
+
+    In this guide we will describe how to use Nano's built-in HPO utils to do hyperparameter tuning for models defined by subclassing tf.keras.Model.
+
+
 [Nano_pytorch_training]: <https://github.com/intel-analytics/BigDL/blob/main/python/nano/notebooks/pytorch/tutorial/pytorch_train.ipynb>
 [Nano_pytorch_onnxruntime]: <https://github.com/intel-analytics/BigDL/blob/main/python/nano/notebooks/pytorch/tutorial/pytorch_inference_onnx.ipynb>
 [Nano_pytorch_openvino]: <https://github.com/intel-analytics/BigDL/blob/main/python/nano/notebooks/pytorch/tutorial/pytorch_inference_openvino.ipynb>
 [Nano_pytorch_Quantization_inc]: <https://github.com/intel-analytics/BigDL/blob/main/python/nano/notebooks/pytorch/tutorial/pytorch_quantization_inc.ipynb>
 [Nano_pytorch_quantization_inc_onnx]: <https://github.com/intel-analytics/BigDL/blob/main/python/nano/notebooks/pytorch/tutorial/pytorch_quantization_inc.ipynb>
 [Nano_pytorch_quantization_openvino]: <https://github.com/intel-analytics/BigDL/blob/main/python/nano/notebooks/pytorch/tutorial/pytorch_quantization_openvino.ipynb>
+[Nano_hpo_tf_seq_func]: <https://github.com/intel-analytics/BigDL/blob/main/python/nano/notebooks/hpo/seq_and_func.ipynb>
+[Nano_hpo_tf_seq_func_colab]: <https://colab.research.google.com/github/intel-analytics/BigDL/blob/main/python/nano/notebooks/hpo/seq_and_func.ipynb>
+[Nano_hpo_tf_subclassing]: <https://github.com/intel-analytics/BigDL/blob/main/python/nano/notebooks/hpo/custom.ipynb>
+[Nano_hpo_tf_subclassing_colab]: <https://colab.research.google.com/github/intel-analytics/BigDL/blob/main/python/nano/notebooks/hpo/custom.ipynb>
