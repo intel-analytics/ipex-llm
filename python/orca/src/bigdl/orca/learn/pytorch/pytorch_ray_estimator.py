@@ -169,7 +169,7 @@ class PyTorchRayEstimator(OrcaRayEstimator):
             head_worker = self.remote_workers[0]
             address = ray.get(head_worker.setup_address.remote())
             driver_ip = ray.get(head_worker.get_node_ip.remote())
-            tcp_port = ray.get(head_worker.find_free_port.remote())
+            tcp_port = ray.get(head_worker.get_free_port.remote())
 
             logger.info(f"initializing pytorch process group on {address}")
 
