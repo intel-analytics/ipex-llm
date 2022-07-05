@@ -252,6 +252,11 @@ class GenericTSTransformerLightningModule(LightningModule):
                    for i, metric in enumerate(self.metrics)}
             self.log_dict(acc, on_epoch=True, prog_bar=True, logger=True)
 
+    # def predict_step(self, batch, batch_idx):
+    #     """Define a single test step."""
+    #     y_hat = self(*batch)
+    #     return y_hat
+
     def train_dataloader(self):
         """Create the train data loader."""
         return DataLoader(TensorDataset(torch.from_numpy(self.data[0]).float(),

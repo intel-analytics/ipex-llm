@@ -264,12 +264,12 @@ class AutoformerForecaster(Forecaster):
         self.tune_internal = self._build_automodel(data, validation_data, batch_size, epochs)
 
         # shall we use the same trainier
-        self.tune_trainer = Trainer(logger=False, max_epochs=epochs,
+        self.trainer = Trainer(logger=False, max_epochs=epochs,
                                     checkpoint_callback=self.checkpoint_callback,
                                     num_processes=self.num_processes, use_ipex=self.use_ipex,
                                     use_hpo=True)
         # run hyper parameter search
-        self.internal = self.tune_trainer.search(
+        self.internal = self.trainer.search(
             self.tune_internal,
             n_trials=n_trials,
             target_metric=formated_target_metric,
@@ -278,7 +278,14 @@ class AutoformerForecaster(Forecaster):
             **kwargs)
 
         # reset train and validation datasets
-        self.tune_trainer.reset_train_val_dataloaders(self.internal)
+        self.trainer.reset_train_val_dataloaders(self.internal)
+    
+    
+    def search_summary(self):
+        # add tuning check
+        invalidOperationError(self.use_hpo, "No search summary when HPO is disabled.")
+        return self.trainer.search_summary()
+        
 
     def fit(self, data, epochs=1, batch_size=32):
         """
@@ -314,9 +321,10 @@ class AutoformerForecaster(Forecaster):
                               shuffle=True)
 
         # Trainer init and fitting
-        self.trainer = Trainer(logger=False, max_epochs=epochs,
-                               checkpoint_callback=self.checkpoint_callback, num_processes=1,
-                               use_ipex=self.use_ipex, distributed_backend="spawn")
+        if not self.use_hpo:
+            self.trainer = Trainer(logger=False, max_epochs=epochs,
+                                checkpoint_callback=self.checkpoint_callback, num_processes=1,
+                                use_ipex=self.use_ipex, distributed_backend="spawn")
         self.trainer.fit(self.internal, data)
 
     def predict(self, data, batch_size=32):
