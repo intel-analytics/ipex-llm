@@ -53,7 +53,6 @@ def run_parallel(func, kwargs, n_procs):
 def _run_subprocess(tmpdir, num_processes):
     from bigdl.nano.common.cpu_schedule import schedule_processors
 
-    # cpu_procs = schedule_workers(num_processes)
     envs = schedule_processors(num_processes)
 
     processes = []

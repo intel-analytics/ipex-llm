@@ -76,7 +76,6 @@ class DDPSubprocessPlugin(DDPSpawnPlugin):
     def _run_subprocess(self, tmpdir):
         from bigdl.nano.common.cpu_schedule import schedule_processors
 
-        # cpu_procs = schedule_workers(self.num_processes)
         envs = schedule_processors(self.num_processes)
 
         processes = []

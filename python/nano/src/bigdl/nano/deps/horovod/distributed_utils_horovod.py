@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 
-from bigdl.nano.common.cpu_schedule import schedule_workers, schedule_processors
+from bigdl.nano.common.cpu_schedule import schedule_processors
 import os
 import json
 import shutil
@@ -111,7 +111,6 @@ def distributed_train_keras(backend, model, nprocs, fit_kwargs=None):
     if fit_kwargs is None:
         fit_kwargs = {}
 
-    # cpu_procs = schedule_workers(nprocs)
     envs = schedule_processors(nprocs)
 
     from tensorflow.python.distribute.coordinator.values import serialize_dataset_to_graph

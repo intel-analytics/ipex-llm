@@ -159,7 +159,6 @@ class RayPlugin(DDPSpawnPlugin):
         """Creates Ray actor."""
         from bigdl.nano.common.cpu_schedule import schedule_processors
 
-        # cpu_procs = schedule_workers(self.num_workers)
         envs = schedule_processors(self.num_workers)
 
         workers = []

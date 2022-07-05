@@ -73,7 +73,6 @@ def distributed_train_keras(backend, model, nprocs, fit_kwargs=None):
     if fit_kwargs is None:
         fit_kwargs = {}
 
-    # cpu_procs = schedule_workers(nprocs)
     envs = schedule_processors(nprocs)
 
     from tensorflow.python.distribute.coordinator.values import serialize_dataset_to_graph
