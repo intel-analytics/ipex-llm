@@ -351,11 +351,11 @@ class Trainer(pl.Trainer):
                         input_sample = calib_dataloader
                     model = Trainer.trace(model,
                                           input_sample=input_sample,
-                                        accelerator='openvino',
-                                        **export_kwargs)
+                                          accelerator='openvino',
+                                          **export_kwargs)
                 invalidInputError(type(model).__name__ == 'PytorchOpenVINOModel',
-                                "Invalid model to quantize. Please use a nn.Module or a model "
-                                "from trainer.trance(accelerator=='openvino')")
+                                  "Invalid model to quantize. Please use a nn.Module or a model "
+                                  "from trainer.trance(accelerator=='openvino')")
                 drop_type = None
                 higher_is_better = None
                 maximal_drop = None
@@ -380,7 +380,7 @@ class Trainer(pl.Trainer):
                 return model.pot(calib_dataloader, **kwargs)
             else:
                 invalidInputError(False,
-                                "Accelerator {} is invalid.".format(accelerator))
+                                  "Accelerator {} is invalid.".format(accelerator))
         invalidInputError(False,
                           "Precision {} is invalid.".format(precision))
 
