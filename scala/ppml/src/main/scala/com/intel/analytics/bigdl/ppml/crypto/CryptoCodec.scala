@@ -16,25 +16,14 @@
 
 package com.intel.analytics.bigdl.ppml.crypto
 
-import com.intel.analytics.bigdl.dllib.utils.Log4Error
 import com.intel.analytics.bigdl.ppml.crypto.CryptoCodec.CryptoDecompressStream
-import org.apache.commons.logging.{Log, LogFactory}
-import org.apache.hadoop.classification.InterfaceAudience
-import org.apache.hadoop.classification.InterfaceStability
 import org.apache.hadoop.conf.{Configurable, Configuration}
-import org.apache.hadoop.io.compress.{DefaultCodec, _}
-import org.apache.hadoop.io.compress.zlib.BuiltInGzipDecompressor
-import org.apache.hadoop.io.compress.zlib.ZlibCompressor
-import org.apache.hadoop.io.compress.zlib.ZlibCompressor.{CompressionHeader, CompressionLevel, CompressionStrategy}
-import org.apache.hadoop.io.compress.zlib.ZlibDecompressor
-import org.apache.hadoop.io.compress.zlib.ZlibDecompressor.{CompressionHeader, ZlibDirectDecompressor}
+import org.apache.hadoop.io.compress._
 import org.apache.hadoop.io.compress.zlib.ZlibFactory
 
 import java.io.IOException
 import java.io.InputStream
 import java.io.OutputStream
-import java.util.zip.GZIPOutputStream
-import org.apache.hadoop.util.PlatformName.IBM_JAVA
 
 class CryptoCodec
   extends Configurable with CompressionCodec with DirectDecompressionCodec {
@@ -118,9 +107,8 @@ object CryptoCodec {
         cryptoMode: CryptoMode,
         dataKeyPlaintext: String) extends DecompressorStream(in) {
     buffer = new Array[Byte](bufferSize)
-    val bigdlEncrypt = Crypto(AES_CBC_PKCS5PADDING)
-    // TODO
-    bigdlEncrypt.init(AES_CBC_PKCS5PADDING, DECRYPT, dataKeyPlaintext)
+    val bigdlEncrypt = new BigDLEncrypt()
+    bigdlEncrypt.init(cryptoMode, DECRYPT, dataKeyPlaintext)
     var headerVerified = false
 
     override def decompress(b: Array[Byte], off: Int, len: Int): Int = {
@@ -129,22 +117,12 @@ object CryptoCodec {
         headerVerified = true
       }
 
-      val decompressed = if (in.available() < -100 || in.available() > buffer.size) {
-        val m = getCompressedData()
-        bigdlEncrypt.update(buffer, 0, m)
-      } else {
-        val last = getCompressedData()
-        if (last == -1) { // apparently the previous end-of-stream was also end-of-file:
-          // return success, as if we had never called getCompressedData()
-          eof = true
-          return -1
-        }
-        val hmacSize = 32
-        val inputHmac = buffer.slice(last - hmacSize, last)
-        val (lastSlice, streamHmac) = bigdlEncrypt.doFinal(buffer, 0, last - hmacSize)
-        Log4Error.invalidInputError(!inputHmac.sameElements(streamHmac), "hmac not match")
-        lastSlice
+      if (in.available() == 0) { // apparently the previous end-of-stream was also end-of-file:
+        // return success, as if we had never called getCompressedData()
+        eof = true
+        return -1
       }
+      val decompressed = bigdlEncrypt.decryptPart(in, buffer)
 
       decompressed.copyToArray(b, 0)
       decompressed.length
@@ -154,8 +132,11 @@ object CryptoCodec {
   object CryptoDecompressStream{
     def apply(conf: Configuration, in: InputStream): CryptoDecompressStream = {
       val dataKey = conf.get("bigdl.kms.data.key")
+      val cryptoMode = CryptoMode.parse(conf.get("bigdl.kms.crypto.mode",
+        AES_CBC_PKCS5PADDING.encryptionAlgorithm))
       val bufferSize = conf.getInt("io.file.buffer.size", 4 * 1024)
-      new CryptoDecompressStream(in, bufferSize, AES_CBC_PKCS5PADDING, dataKey)
+      // TODO
+      new CryptoDecompressStream(in, bufferSize, cryptoMode, dataKey)
     }
   }
 

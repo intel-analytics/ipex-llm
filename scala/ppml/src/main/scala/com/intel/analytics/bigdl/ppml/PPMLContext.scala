@@ -130,9 +130,12 @@ object PPMLContext{
     }
     data.mapPartitions { iterator => {
       Supportive.logger.info("Decrypting bytes with JavaAESCBC...")
-      val crypto = Crypto(cryptoMode)
-      crypto.init(cryptoMode, DECRYPT, dataKeyPlaintext)
-      crypto.decryptBigContent(iterator)
+      iterator.flatMap{dataStream =>
+        val inputDataStream = dataStream._2.open()
+        val crypto = Crypto(cryptoMode)
+        crypto.init(cryptoMode, DECRYPT, dataKeyPlaintext)
+        crypto.decryptBigContent(inputDataStream)
+      }
     }} // .flatMap(_.split("\n")).flatMap(_.split("\r"))
   }
 

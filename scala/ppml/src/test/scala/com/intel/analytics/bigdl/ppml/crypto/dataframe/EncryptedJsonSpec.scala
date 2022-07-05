@@ -51,17 +51,5 @@ class EncryptedJsonSpec extends DataFrameHelper {
     d + "\n" should be (data)
   }
 
-  "csv read/write" should "work" in {
-    val plainJsonPath = dir + "/plain-csv"
-    val df = sc.read(cryptoMode = PLAIN_TEXT)
-      .option("header", "true").csv(plainFileName)
-    df.count() should be (repeatedNum * 3)
-    sc.write(df, AES_CBC_PKCS5PADDING).csv(plainJsonPath)
-    val jsonDf = sc.read(AES_CBC_PKCS5PADDING).csv(plainJsonPath)
-    jsonDf.count() should be (repeatedNum * 3)
-    val d = "name,age,job\n" +
-      jsonDf.collect().map(v => s"${v.get(0)},${v.get(1)},${v.get(2)}").mkString("\n")
-    d + "\n" should be (data)
-  }
 
 }

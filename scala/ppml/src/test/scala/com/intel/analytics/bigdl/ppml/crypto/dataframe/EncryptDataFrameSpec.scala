@@ -63,7 +63,6 @@ class EncryptDataFrameSpec extends DataFrameHelper {
   "read from encrypted csv with header" should "work" in {
     val df = sc.read(cryptoMode = AES_CBC_PKCS5PADDING)
       .option("header", "true").csv(encryptFileName)
-    val b = df.collect()
     val d = df.schema.map(_.name).mkString(",") + "\n" +
       df.collect().map(v => s"${v.get(0)},${v.get(1)},${v.get(2)}").mkString("\n")
     d + "\n" should be (data)

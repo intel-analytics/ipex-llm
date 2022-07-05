@@ -41,7 +41,7 @@ trait Crypto extends Supportive with Serializable {
    * @param ite stream iterator.
    * @return iterator of String.
    */
-  def decryptBigContent(ite: Iterator[(String, PortableDataStream)]): Iterator[String]
+  def decryptBigContent(in: InputStream): Iterator[String]
 
   /**
    * If encrypt data, should generate header and put return value to the head.
