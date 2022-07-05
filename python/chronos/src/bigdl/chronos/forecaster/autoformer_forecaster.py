@@ -143,6 +143,10 @@ class AutoformerForecaster(Forecaster):
         self.quantize_available = False
         self.use_amp = False
 
+        # seed setting
+        from pytorch_lightning import seed_everything
+        seed_everything(seed=self.seed)
+
         self.model_creator = model_creator
         self.internal = model_creator(self.model_config)
 
@@ -162,10 +166,6 @@ class AutoformerForecaster(Forecaster):
                if you input a pytorch dataloader for `data`, the batch_size will follow the
                batch_size setted in `data`.
         """
-        # seed setting
-        from pytorch_lightning import seed_everything
-        seed_everything(seed=self.seed)
-
         # distributed is not supported.
         if self.distributed:
             invalidInputError(False, "distributed is not support in Autoformer")
