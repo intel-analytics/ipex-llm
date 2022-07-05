@@ -25,7 +25,7 @@ import org.apache.spark.sql.types.{StringType, StructField, StructType}
 import org.apache.spark.sql.{DataFrame, Row, SparkSession}
 import org.slf4j.LoggerFactory
 
-object SimpleQuerySparkExample extends Supportive {
+object EncryptWithPartition extends Supportive {
 
   def main(args: Array[String]): Unit = {
     val logger = LoggerFactory.getLogger(getClass)
