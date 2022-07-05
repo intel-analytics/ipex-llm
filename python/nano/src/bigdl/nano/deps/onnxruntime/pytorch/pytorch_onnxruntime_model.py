@@ -60,7 +60,7 @@ class PytorchONNXRuntimeModel(ONNXRuntimeModel, AcceleratedLightningModule):
                 redundant_input = set(forward_args).difference(set(input_names_of_onnx))
                 redundant_names = ", ".join(list(redundant_input))
                 errMsg = "The length of model inputs is inconsistent with the length of ONNX's " + \
-                        f"inputs, there may be some redundant input: {redundant_names}."
+                         f"inputs, there may be some redundant input: {redundant_names}."
                 fixMsg = "You should remove {} from your model manually.".format(redundant_names)
                 invalidInputError(False, errMsg, fixMsg=fixMsg)
         AcceleratedLightningModule.__init__(self, None)

@@ -94,4 +94,3 @@ def export_to_onnx(model, input_sample=None, onnx_path="model.onnx", dynamic_axe
                                 }
     default_onnx_export_args.update(kwargs)
     torch.onnx.export(model, input_sample, onnx_path, **default_onnx_export_args)
-
