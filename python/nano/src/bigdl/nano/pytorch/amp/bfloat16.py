@@ -100,7 +100,6 @@ class BF16Model(LightningModule):
 
         # ALLOW_NON_BF16_ISA indicates if we restrict bf16 instructions support to be available.
         # ALLOW_NON_BF16_ISA='1' sometimes helps debug and test cases without AVX512 or AMX
-        allow_non_bf16 = os.environ.get("ALLOW_NON_BF16_ISA", None)
         if self._has_bf16_isa:
             max_bf16_isa = self._max_bf16_isa(*args, **kwargs)
             if max_bf16_isa:
