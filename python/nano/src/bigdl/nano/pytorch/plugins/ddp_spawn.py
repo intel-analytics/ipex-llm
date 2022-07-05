@@ -48,7 +48,7 @@ from pytorch_lightning.plugins.environments import LightningEnvironment
 from pytorch_lightning.utilities.distributed import rank_zero_only
 from pytorch_lightning.utilities.seed import reset_seed
 
-from bigdl.nano.common.cpu_schedule import schedule_workers
+from bigdl.nano.common.cpu_schedule import schedule_processors
 from bigdl.nano.deps.ipex.ipex_api import ipex_device, ipex_optimize
 import logging
 
@@ -63,17 +63,26 @@ def start_processes_new(fn, args=(), nprocs=1, join=True, daemon=False,
     mp = multiprocessing.get_context(start_method)
     error_queues = []
     processes = []
+    envs = []
 
     if cpu_procs is None:
-        cpu_procs = schedule_workers(nprocs)
+        envs = schedule_processors(nprocs)
+    else:
+        for i in range(nprocs):
+            env = {
+                "KMP_AFFINITY": f"granularity=fine,proclist"
+                                f"=[{','.join([str(i) for i in cpu_procs[i]])}],explicit",
+                "OMP_NUM_THREADS": str(len(cpu_procs[i]))
+            }
+
+            envs.append(env)
 
     init_KMP_AFFINITY = os.environ.get("KMP_AFFINITY", "")
     init_OMP_NUM_THREADS = os.environ.get("OMP_NUM_THREADS", "")
 
     for i in range(nprocs):
-        os.environ["KMP_AFFINITY"] = f"granularity=fine,proclist"\
-                                     f"=[{','.join([str(i) for i in cpu_procs[i]])}],explicit"
-        os.environ["OMP_NUM_THREADS"] = str(len(cpu_procs[i]))
+        os.environ["KMP_AFFINITY"] = envs[i]['KMP_AFFINITY']
+        os.environ["OMP_NUM_THREADS"] = envs[i]['OMP_NUM_THREADS']
         log.debug(f"[Process {i}]: using KMP_AFFINITY: {os.environ['KMP_AFFINITY']}")
         log.debug(f"[Process {i}]: using OMP_NUM_THREADS: {os.environ['OMP_NUM_THREADS']}")
         error_queue = mp.SimpleQueue()
