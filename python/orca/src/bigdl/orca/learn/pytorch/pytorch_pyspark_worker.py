@@ -112,10 +112,11 @@ class PytorchPysparkWorker(TorchRunner):
 
     def setup_distributed(self, mode, cluster_info, driver_ip, tcp_port):
         if mode == "fit":
+            import torch.distributed as dist
             self.rank = get_rank(cluster_info)
             logger.info(f"cluster is: {cluster_info}")
-            address = f"tcp://{driver_ip}:{tcp_port}"
-            self.setup_torch_distribute(url=address,
+            client_store = dist.TCPStore(driver_ip, tcp_port, self.rank, False)
+            self.setup_torch_distribute(tcp_store=client_store,
                                         world_rank=self.rank,
                                         world_size=self.size)
         else:

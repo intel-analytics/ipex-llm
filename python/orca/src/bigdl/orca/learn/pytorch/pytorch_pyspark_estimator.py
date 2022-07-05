@@ -169,8 +169,8 @@ class PyTorchPySparkEstimator(BaseEstimator):
 
     def create_tcpstore_server(self):
         import torch.distributed as dist
-        from torch._C._distributed_c10d import _DEFAULT_PG_TIMEOUT
-        server_store = dist.TCPStore(self.ip, self.tcp_port, -1, True, _DEFAULT_PG_TIMEOUT)
+        server_store = dist.TCPStore(self.ip, self.tcp_port, -1, True,
+                                     dist.constants.default_pg_timeout)
         return server_store
 
     def _get_cluster_info(self, sc):
@@ -369,7 +369,6 @@ class PyTorchPySparkEstimator(BaseEstimator):
         from pyspark.sql import DataFrame
 
         sc = OrcaContext.get_spark_context()
-        self.create_tcpstore_server()
         cluster_info = self._get_cluster_info(sc)
         state_dict = self._get_broadcasted_state_dict(sc)
 
@@ -440,7 +439,6 @@ class PyTorchPySparkEstimator(BaseEstimator):
                 when creating the Estimator.
         """
         sc = OrcaContext.get_spark_context()
-        self.create_tcpstore_server()
         cluster_info = self._get_cluster_info(sc)
         state_dict = self._get_broadcasted_state_dict(sc)
         init_params = dict(
