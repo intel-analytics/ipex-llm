@@ -82,7 +82,6 @@ def create_tsdataset():
 
 
 class TestChronosModelAutoformerForecaster(TestCase):
-    
     def setUp(self):
         pass
 

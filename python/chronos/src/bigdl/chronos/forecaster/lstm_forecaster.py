@@ -29,10 +29,10 @@ class LSTMForecaster(BasePytorchForecaster):
                                         output_feature_num=2,
                                         ...)
         >>> # 2. The from_dataset method can also initialize a LSTMForecaster.
-        >>> tsdata = TSDataset.from_pandas(df, ...)
-        >>> tsdata.roll(lookback=10, horizon=1, ...)
-        >>> forecaster.from_dataset(tsdata, **kwargs)
-        >>> forecaster.fit((x_train, y_train))
+        >>> tsdata = TSDataset.from_pandas(df, with_split=True, ...)\
+        >>> tsdata.roll(lookback=24, horizon=1)
+        >>> forecaster.from_tsdataset(tsdata, **kwargs)
+        >>> forecaster.fit(tsdata, epochs=2, ...)
         >>> forecaster.to_local()  # if you set distributed=True
         >>> test_pred = forecaster.predict(x_test)
         >>> test_eval = forecaster.evaluate((x_test, y_test))
@@ -153,20 +153,21 @@ class LSTMForecaster(BasePytorchForecaster):
 
         :param tsdataset: A bigdl.chronos.data.tsdataset.TSDataset instance.
         :param past_seq_len: Specify the history time steps (i.e. lookback).
-               if tsdataset called 'roll' method, then no need to specify past_seq_len.
+               No need to specify past_seq_len if tsdataset has called
+               the 'roll' method.
         :param kwargs: Specify parameters of Forecaster,
-                e.g. loss and optimizer, etc.
+               e.g. loss and optimizer, etc.
 
         return: A LSTM Forecaster Model.
         '''
         if tsdataset.numpy_x is not None:
             past_seq_len = tsdataset.numpy_x.shape[1]
         # TODO Support specifying 'auto' as past_seq_len.
-        if past_seq_len is None and tsdataset.numpy_x is None:
+        if all([past_seq_len is None, tsdataset.numpy_x is None]):
             from bigdl.nano.utils.log4Error import invalidInputError
             invalidInputError(False,
-                              "Need to specify history time step for from_dataset or"
-                              "call the 'roll' method of dataset.")
+                              "Need to specify 'past_seq_len' for"
+                              " from_dataset or call the 'roll' method of dataset.")
 
         output_feature_num = len(tsdataset.target_col)
         input_feature_num = output_feature_num + len(tsdataset.feature_col)

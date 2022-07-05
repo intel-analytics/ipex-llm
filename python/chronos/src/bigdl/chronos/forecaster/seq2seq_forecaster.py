@@ -31,9 +31,9 @@ class Seq2SeqForecaster(BasePytorchForecaster):
                                                ...)
             >>> # 2. The from_dataset method can also initialize a Seq2SeqForecaster.
             >>> tsdata = TSDataset.from_pandas(df, ...)
-            >>> tsdata.roll(lookback=10, horizon=1, ...)
-            >>> forecaster.from_dataset(tsdata, **kwargs)
-            >>> forecaster.fit((x_train, y_train))
+            >>> tsdata.roll(lookback=24, horizon=2, ...)
+            >>> forecaster.from_tsdataset(tsdata, **kwargs)
+            >>> forecaster.fit(tsdata, ...)
             >>> forecaster.to_local()  # if you set distributed=True
             >>> test_pred = forecaster.predict(x_test)
             >>> test_eval = forecaster.evaluate((x_test, y_test))
@@ -159,9 +159,11 @@ class Seq2SeqForecaster(BasePytorchForecaster):
 
         :param tsdataset: A tsdataset that has called the `tsdataset.roll` method.
         :param past_seq_len: Specify the history time steps (i.e. lookback).
-               if tsdataset called 'roll' method, then no need to specify past_seq_len.
-        :param future_seq_len: Specify the output time steps (i.e. horizon).
-               if tsdataset called 'roll' method, then no need to specify future_seq_len.
+               No need to specify past_seq_len if tsdataset has called
+               the 'roll' method.
+        :param future_seq_len: Specify the history time steps (i.e. lookback).
+               Same as past_seq_len if tsdataset has called
+               the 'roll' method.
         :param kwargs: Specify parameters of Forecaster,
                e.g. loss and optimizer, etc.
 
@@ -170,11 +172,11 @@ class Seq2SeqForecaster(BasePytorchForecaster):
         if tsdataset.numpy_x is not None:
             past_seq_len = tsdataset.numpy_x.shape[1]
             future_seq_len = tsdataset.numpy_y.shape[1]
-        if past_seq_len is None and future_seq_len is None and tsdataset.numpy_x is None:
+        if all([past_seq_len is None, future_seq_len is None, tsdataset.numpy_x is None]):
             from bigdl.nano.utils.log4Error import invalidInputError
             invalidInputError(False,
-                              "Need to specify history time step for from_dataset or"
-                              "call the 'roll' method of dataset.")
+                              "Need to specify 'past_seq_len' and 'future_seq_len' for"
+                              " from_dataset or call the 'roll' method of dataset.")
         output_feature_num = len(tsdataset.target_col)
         input_feature_num = output_feature_num + len(tsdataset.feature_col)
         return Seq2SeqForecaster(past_seq_len=past_seq_len,
