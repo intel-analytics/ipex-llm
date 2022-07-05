@@ -101,7 +101,7 @@ elif [ "$action" = "encryptwithrepartition" ]; then
 	    input_path=$4
 	    output_path=$input_path.encrypted
 		java -cp $BIGDL_HOME/jars/bigdl-ppml-spark_3.1.2-2.1.0-SNAPSHOT.jar:$SPARK_HOME/jars/*:$SPARK_HOME/examples/jars/*:$BIGDL_HOME/jars/* \
-		com.intel.analytics.bigdl.ppml.examples.SplitAndEncrypt   \
+		com.intel.analytics.bigdl.ppml.examples.EncryptWithRepartition   \
 		--inputPath $input_path \
 		--outputPath $output_path \
 		--outputPartitionNum 4 \
@@ -119,7 +119,7 @@ elif [ "$action" = "encryptwithrepartition" ]; then
 	    input_path=$4
 	    output_path=$input_path.encrypted
 		java -cp $BIGDL_HOME/jars/bigdl-ppml-spark_3.1.2-2.1.0-SNAPSHOT.jar:$SPARK_HOME/jars/*:$SPARK_HOME/examples/jars/*:$BIGDL_HOME/jars/* \
-		com.intel.analytics.bigdl.ppml.examples.SplitAndEncrypt   \
+		com.intel.analytics.bigdl.ppml.examples.EncryptWithRepartition   \
 		--inputPath $input_path \
                 --outputPath $output_path \
                 --outputPartitionNum 4 \
@@ -134,7 +134,7 @@ elif [ "$action" = "encryptwithrepartition" ]; then
         input_path=$3
 	    output_path=$input_path.encrypted
 		java -cp $BIGDL_HOME/jars/bigdl-ppml-spark_3.1.2-2.1.0-SNAPSHOT.jar:$SPARK_HOME/jars/*:$SPARK_HOME/examples/jars/*:$BIGDL_HOME/jars/* \
-		com.intel.analytics.bigdl.ppml.examples.SplitAndEncrypt   \
+		com.intel.analytics.bigdl.ppml.examples.EncryptWithRepartition   \
 		--inputPath $input_path \
                 --outputPath $output_path \
                 --outputPartitionNum 4 \
