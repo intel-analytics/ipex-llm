@@ -176,7 +176,7 @@ class TestTable(TestCase):
             hash_value.append(hash_int(row[0]))
         tbl_hash = []
         for record in tbl.hash_encode(["A"], 100).to_spark_df().collect():
-            tbl_hash.append(int(record[0]))
+            tbl_hash.append(record[0])
         invalidInputError(operator.eq(hash_value, tbl_hash),
                           "the hash encoded value should be equal")
 
