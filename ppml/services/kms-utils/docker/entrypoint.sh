@@ -104,8 +104,9 @@ elif [ "$action" = "encryptwithrepartition" ]; then
 		com.intel.analytics.bigdl.ppml.examples.EncryptWithRepartition   \
 		--inputPath $input_path \
 		--outputPath $output_path \
+		--inputEncryptModeValue plain_text \
+                --outputEncryptModeValue AES/CBC/PKCS5Padding \
 		--outputPartitionNum 4 \
-		--outputCryptoModeValue AES/CBC/PKCS5Padding \
 		--primaryKeyPath /home/key/ehsm_encrypted_primary_key \
 		--dataKeyPath /home/key/ehsm_encrypted_data_key \
 		--kmsType EHSMKeyManagementService \
@@ -121,9 +122,10 @@ elif [ "$action" = "encryptwithrepartition" ]; then
 		java -cp $BIGDL_HOME/jars/bigdl-ppml-spark_3.1.2-2.1.0-SNAPSHOT.jar:$SPARK_HOME/jars/*:$SPARK_HOME/examples/jars/*:$BIGDL_HOME/jars/* \
 		com.intel.analytics.bigdl.ppml.examples.EncryptWithRepartition   \
 		--inputPath $input_path \
-                --outputPath $output_path \
-                --outputPartitionNum 4 \
-                --outputCryptoModeValue AES/CBC/PKCS5Padding \
+		--outputPath $output_path \
+		--inputEncryptModeValue plain_text \
+                --outputEncryptModeValue AES/CBC/PKCS5Padding \
+		--outputPartitionNum 4 \
                 --primaryKeyPath /home/key/simple_encrypted_primary_key \
                 --dataKeyPath /home/key/simple_encrypted_data_key \
 		--kmsType SimpleKeyManagementService \
@@ -136,9 +138,10 @@ elif [ "$action" = "encryptwithrepartition" ]; then
 		java -cp $BIGDL_HOME/jars/bigdl-ppml-spark_3.1.2-2.1.0-SNAPSHOT.jar:$SPARK_HOME/jars/*:$SPARK_HOME/examples/jars/*:$BIGDL_HOME/jars/* \
 		com.intel.analytics.bigdl.ppml.examples.EncryptWithRepartition   \
 		--inputPath $input_path \
-                --outputPath $output_path \
-                --outputPartitionNum 4 \
-                --outputCryptoModeValue AES/CBC/PKCS5Padding \
+		--outputPath $output_path \
+		--inputEncryptModeValue plain_text \
+                --outputEncryptModeValue AES/CBC/PKCS5Padding \
+		--outputPartitionNum 4 \
                 --primaryKeyPath /home/key/simple_encrypted_primary_key \
                 --dataKeyPath /home/key/simple_encrypted_data_key \
 		--kmsType AzureKeyManagementService \
