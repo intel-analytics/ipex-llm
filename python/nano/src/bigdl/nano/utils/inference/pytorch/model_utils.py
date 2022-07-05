@@ -82,13 +82,4 @@ def export_to_onnx(model, input_sample=None, onnx_path="model.onnx", dynamic_axe
                                 }
     default_onnx_export_args.update(kwargs)
     torch.onnx.export(model, input_sample, onnx_path, **default_onnx_export_args)
-    import onnx
-    onnx_model = onnx.load(onnx_path)
-    input_names_of_onnx = [node.name for node in onnx_model.graph.input]
-    if len(forward_args) > len(input_names_of_onnx):
-        redundant_input = set(forward_args).difference(set(input_names_of_onnx))
-        redundant_names = ", ".join(list(redundant_input))
-        errMsg = "The length of model inputs is inconsistent with the length of ONNX's " + \
-                 f"inputs, there may be some redundant input: {redundant_names}."
-        fixMsg = "You should remove {} from your model manually.".format(redundant_names)
-        invalidInputError(False, errMsg, fixMsg=fixMsg)
+

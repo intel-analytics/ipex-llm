@@ -46,9 +46,20 @@ class PytorchONNXRuntimeModel(ONNXRuntimeModel, AcceleratedLightningModule):
         onnx_path = model
         if isinstance(model, torch.nn.Module):
             # Typically, when model is fp32, we use this path
-            # TODO: expose ONNX export parameters to users
             export_to_onnx(model, input_sample=input_sample, onnx_path='tmp.onnx')
             onnx_path = 'tmp.onnx'
+            # add forward args check to detect redundant input
+            import onnx
+            onnx_model = onnx.load(onnx_path)
+            input_names_of_onnx = [node.name for node in onnx_model.graph.input]
+            forward_args = get_forward_args(model)
+            if len(forward_args) > len(input_names_of_onnx):
+                redundant_input = set(forward_args).difference(set(input_names_of_onnx))
+                redundant_names = ", ".join(list(redundant_input))
+                errMsg = "The length of model inputs is inconsistent with the length of ONNX's " + \
+                        f"inputs, there may be some redundant input: {redundant_names}."
+                fixMsg = "You should remove {} from your model manually.".format(redundant_names)
+                invalidInputError(False, errMsg, fixMsg=fixMsg)
         AcceleratedLightningModule.__init__(self, None)
         ONNXRuntimeModel.__init__(self, onnx_path, session_options=onnxruntime_session_options)
         if os.path.exists('tmp.onnx'):
