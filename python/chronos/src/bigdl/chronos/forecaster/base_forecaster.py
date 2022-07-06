@@ -220,7 +220,7 @@ class BasePytorchForecaster(Forecaster):
                | y's shape is (num_samples, horizon, target_dim), where horizon and target_dim
                | should be the same as future_seq_len and output_feature_num.
                |
-               | 4. A bigdl.chronos.data.tsdataset.TSDataset instance.
+               | 4. A bigdl.chronos.data.tsdataset.TSDataset instance:
                | We provide built-in time series classes,
                | you only need a few operations to complete the data preprocessing.
                | For more information please refer to
@@ -350,7 +350,7 @@ class BasePytorchForecaster(Forecaster):
                | x's shape is (num_samples, lookback, feature_dim) where lookback and feature_dim
                | should be the same as past_seq_len and input_feature_num.
                | If returns x and y only get x.
-               | 4. A bigdl.chronos.data.tsdataset.TSDataset instance.
+               | 4. A bigdl.chronos.data.tsdataset.TSDataset instance:
                | We provide built-in time series classes,
                | you only need a few operations to complete the data preprocessing.
                | For more information please refer to
@@ -432,7 +432,7 @@ class BasePytorchForecaster(Forecaster):
                | x's shape is (num_samples, lookback, feature_dim) where lookback and feature_dim
                | should be the same as past_seq_len and input_feature_num.
                | If returns x and y only get x.
-               | 3. A bigdl.chronos.data.tsdataset.TSDataset instance.
+               | 3. A bigdl.chronos.data.tsdataset.TSDataset instance:
                | We provide built-in time series classes,
                | you only need a few operations to complete the data preprocessing.
                | For more information please refer to
@@ -542,7 +542,7 @@ class BasePytorchForecaster(Forecaster):
                | should be the same as past_seq_len and input_feature_num.
                | y's shape is (num_samples, horizon, target_dim), where horizon and target_dim
                | should be the same as future_seq_len and output_feature_num.
-               | 4. A bigdl.chronos.data.tsdataset.TSDataset instance.
+               | 4. A bigdl.chronos.data.tsdataset.TSDataset instance:
                | We provide built-in time series classes,
                | you only need a few operations to complete the data preprocessing.
                | For more information please refer to
@@ -632,7 +632,7 @@ class BasePytorchForecaster(Forecaster):
                | x's shape is (num_samples, lookback, feature_dim) where lookback and feature_dim
                | should be the same as past_seq_len and input_feature_num.
                | y's shape is (num_samples, horizon, target_dim), where horizon and target_dim
-               | 3. A bigdl.chronos.data.tsdataset.TSDataset instance.
+               | 3. A bigdl.chronos.data.tsdataset.TSDataset instance:
                | We provide built-in time series classes,
                | you only need a few operations to complete the data preprocessing.
                | For more information please refer to
@@ -1004,7 +1004,7 @@ class BasePytorchForecaster(Forecaster):
         :param kwargs: Specify parameters of Forecaster,
                e.g. loss and optimizer, etc.
 
-        return: A Forecaster Model.
+        :return: A Forecaster Model.
         """
         if tsdataset.numpy_x is not None:
             past_seq_len = tsdataset.numpy_x.shape[1]

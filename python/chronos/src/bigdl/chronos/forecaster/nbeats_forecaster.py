@@ -183,7 +183,7 @@ class NBeatsForecaster(BasePytorchForecaster):
         :param kwargs: Specify parameters of Forecaster,
                e.g. loss and optimizer, etc.
 
-        return: A Nbeats Forecaster Model.
+        :return: A Nbeats Forecaster Model.
         """
         if tsdataset.numpy_x is not None:
             past_seq_len = tsdataset.numpy_x.shape[1]
