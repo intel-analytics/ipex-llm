@@ -166,7 +166,7 @@ class TorchRunner:
                                world_size):
         import torch.distributed as dist
         from torch.nn.parallel import DistributedDataParallel
-        client_store = dist.TCPStore(tcp_store_host, tcp_store_port, world_size, False)
+        client_store = dist.TCPStore(tcp_store_host, tcp_store_port, -1, False)
         dist.init_process_group(
             backend="gloo",
             store=client_store,
