@@ -22,7 +22,6 @@ import org.apache.spark.SparkConf
 import java.io.File
 
 class EncryptedJsonSpec extends DataFrameHelper {
-  override val repeatedNum = 160
 
   val ppmlArgs = Map(
     "spark.bigdl.kms.simple.id" -> appid,
@@ -37,18 +36,53 @@ class EncryptedJsonSpec extends DataFrameHelper {
 
   val sparkSession = sc.getSparkSession()
 
-  "json read/write" should "work" in {
-    val plainJsonPath = dir + "/plain-csv"
+  "spark session read/write json" should "work" in {
+    val encryptJsonPath = dir + "/en-json"
     val df = sc.read(cryptoMode = PLAIN_TEXT)
       .option("header", "true").csv(plainFileName)
     df.write
       .option("compression", "com.intel.analytics.bigdl.ppml.crypto.CryptoCodec")
-      .json(plainJsonPath)
-    val jsonDf = sparkSession.read.json(plainJsonPath)
+      .json(encryptJsonPath)
+    val jsonDf = sparkSession.read.json(encryptJsonPath)
     jsonDf.count()
     val d = "name,age,job\n" +
       df.collect().map(v => s"${v.get(0)},${v.get(1)},${v.get(2)}").mkString("\n")
     d + "\n" should be (data)
+  }
+
+  "PPMLContext read/write json" should "work" in {
+    val encryptJsonPath = dir + "/en-json"
+    val df = sc.read(cryptoMode = PLAIN_TEXT)
+      .option("header", "true").csv(plainFileName)
+    df.write
+      .option("compression", "com.intel.analytics.bigdl.ppml.crypto.CryptoCodec")
+      .json(encryptJsonPath)
+    val jsonDf = sparkSession.read.json(encryptJsonPath)
+    jsonDf.count()
+    val d = "name,age,job\n" +
+      df.collect().map(v => s"${v.get(0)},${v.get(1)},${v.get(2)}").mkString("\n")
+    d + "\n" should be (data)
+  }
+
+
+  "ppml context json read/write different size" should "work" in {
+    val filteredPath = dir + "/filtered-json"
+    val df = sc.read(cryptoMode = PLAIN_TEXT)
+      .option("header", "true").csv(plainFileName)
+    df.count() should be (repeatedNum * 3)
+    (1 to 10).foreach{ i =>
+      val step = 1000
+      val filtered = df.filter(_.getString(1).toInt < i * step)
+      val filteredData = df.collect()
+      sc.write(filtered, AES_CBC_PKCS5PADDING).mode("overwrite").json(filteredPath)
+      val readed = sc.read(AES_CBC_PKCS5PADDING).json(filteredPath)
+      readed.count() should be (i * step * 3)
+      readed.collect().zip(filteredData).foreach{v =>
+        v._1.getAs[String]("age") should be (v._2.getAs[String]("age"))
+        v._1.getAs[String]("job") should be (v._2.getAs[String]("job"))
+        v._1.getAs[String]("name") should be (v._2.getAs[String]("name"))
+      }
+    }
   }
 
 

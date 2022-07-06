@@ -174,5 +174,27 @@ class EncryptDataFrameSpec extends DataFrameHelper {
     read.count() should be (genNum * 3)
   }
 
+  "csv read/write different size" should "work" in {
+    val filteredPath = dir + "/filtered-csv"
+    val df = sc.read(cryptoMode = PLAIN_TEXT)
+      .option("header", "true").csv(plainFileName)
+    df.count() should be (repeatedNum * 3)
+    (1 to 10).foreach{ i =>
+      val step = 1000
+      val filtered = df.filter(_.getString(1).toInt < i * step)
+      val filteredData = df.collect()
+      sc.write(filtered, AES_CBC_PKCS5PADDING).mode("overwrite")
+        .option("header", "true").csv(filteredPath)
+      val readed = sc.read(AES_CBC_PKCS5PADDING).option("header", "true").csv(filteredPath)
+      readed.count() should be (i * step * 3)
+      val a = readed.collect()
+      readed.collect().zip(filteredData).foreach{v =>
+        v._1.getAs[String]("age") should be (v._2.getAs[String]("age"))
+        v._1.getAs[String]("job") should be (v._2.getAs[String]("job"))
+        v._1.getAs[String]("name") should be (v._2.getAs[String]("name"))
+      }
+    }
+  }
+
 }
 
