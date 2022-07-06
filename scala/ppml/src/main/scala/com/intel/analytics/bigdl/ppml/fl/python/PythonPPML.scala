@@ -40,8 +40,8 @@ object PythonPPML {
 }
 class PythonPPML[T: ClassTag](implicit ev: TensorNumeric[T])
   extends PythonBigDL with TimingSupportive {
-  def initFLContext(target: String): Unit = {
-    FLContext.initFLContext(target)
+  def initFLContext(id: String, target: String): Unit = {
+    FLContext.initFLContext(id, target)
   }
   def createFLServer(): FLServer = {
     new FLServer()
@@ -115,6 +115,10 @@ class PythonPPML[T: ClassTag](implicit ev: TensorNumeric[T])
   def psiDownloadIntersection(psi: PSI,
                               maxtry: Int = 100, retry: Int = 3000): java.util.List[String] = {
     psi.downloadIntersection(maxtry, retry)
+  }
+  def psiGetIntersection(psi: PSI, ids: JList[String],
+                         maxtry: Int = 100, retry: Int = 3000): java.util.List[String] = {
+    psi.getIntersection(ids, maxtry, retry)
   }
   def jTensorToTensorArray(jTensor: JTensor): Array[Tensor[Float]] = {
     Log4Error.invalidOperationError(jTensor.shape.length == 2,

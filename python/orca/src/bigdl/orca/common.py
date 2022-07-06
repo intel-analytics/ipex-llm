@@ -320,15 +320,15 @@ def init_orca_context(cluster_mode=None, runtime="spark", cores=2, memory="2g", 
                                   "cluster_mode can only be local, yarn-client, yarn-cluster,"
                                   "k8s-client or standalone, "
                                   "but got: %s".format(cluster_mode))
-            ray_args = {}
-            for key in ["redis_port", "password", "object_store_memory", "verbose", "env",
-                        "extra_params", "num_ray_nodes", "ray_node_cpu_cores", "include_webui",
-                        "system_config"]:
-                if key in kwargs:
-                    ray_args[key] = kwargs[key]
-            from bigdl.orca.ray import OrcaRayContext
-            ray_ctx = OrcaRayContext(runtime="spark", cores=cores, num_nodes=num_nodes,
-                                     sc=sc, **ray_args)
+        ray_args = {}
+        for key in ["redis_port", "password", "object_store_memory", "verbose", "env",
+                    "extra_params", "num_ray_nodes", "ray_node_cpu_cores", "include_webui",
+                    "system_config"]:
+            if key in kwargs:
+                ray_args[key] = kwargs[key]
+        from bigdl.orca.ray import OrcaRayContext
+        ray_ctx = OrcaRayContext(runtime="spark", cores=cores, num_nodes=num_nodes,
+                                 sc=sc, **ray_args)
         if init_ray_on_spark:
             driver_cores = 0  # This is the default value.
             ray_ctx.init(driver_cores=driver_cores)

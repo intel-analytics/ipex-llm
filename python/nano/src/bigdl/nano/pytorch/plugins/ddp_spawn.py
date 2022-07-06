@@ -48,12 +48,12 @@ from pytorch_lightning.plugins.environments import LightningEnvironment
 from pytorch_lightning.utilities.distributed import rank_zero_only
 from pytorch_lightning.utilities.seed import reset_seed
 
-from bigdl.nano.common.cpu_schedule import schedule_workers
+from bigdl.nano.common.cpu_schedule import schedule_processors
 from bigdl.nano.deps.ipex.ipex_api import ipex_device, ipex_optimize
 import logging
 
 import warnings
-
+import copy
 log = logging.getLogger(__name__)
 
 
@@ -63,17 +63,26 @@ def start_processes_new(fn, args=(), nprocs=1, join=True, daemon=False,
     mp = multiprocessing.get_context(start_method)
     error_queues = []
     processes = []
+    envs = []
 
     if cpu_procs is None:
-        cpu_procs = schedule_workers(nprocs)
+        envs = schedule_processors(nprocs)
+    else:
+        for i in range(nprocs):
+            env = {
+                "KMP_AFFINITY": f"granularity=fine,proclist"
+                                f"=[{','.join([str(i) for i in cpu_procs[i]])}],explicit",
+                "OMP_NUM_THREADS": str(len(cpu_procs[i]))
+            }
+
+            envs.append(env)
 
     init_KMP_AFFINITY = os.environ.get("KMP_AFFINITY", "")
     init_OMP_NUM_THREADS = os.environ.get("OMP_NUM_THREADS", "")
 
     for i in range(nprocs):
-        os.environ["KMP_AFFINITY"] = f"granularity=fine,proclist"\
-                                     f"=[{','.join([str(i) for i in cpu_procs[i]])}],explicit"
-        os.environ["OMP_NUM_THREADS"] = str(len(cpu_procs[i]))
+        os.environ["KMP_AFFINITY"] = envs[i]['KMP_AFFINITY']
+        os.environ["OMP_NUM_THREADS"] = envs[i]['OMP_NUM_THREADS']
         log.debug(f"[Process {i}]: using KMP_AFFINITY: {os.environ['KMP_AFFINITY']}")
         log.debug(f"[Process {i}]: using OMP_NUM_THREADS: {os.environ['OMP_NUM_THREADS']}")
         error_queue = mp.SimpleQueue()
@@ -152,6 +161,7 @@ class DDPSpawnPlugin(pl.plugins.DDPSpawnPlugin):
 
     def new_process(self, process_idx, trainer, mp_queue):
         """The fucntion to run in each new process."""
+        self = copy.deepcopy(self)
         self.mp_queue = mp_queue
 
         reset_seed()
@@ -205,7 +215,7 @@ class DDPSpawnPlugin(pl.plugins.DDPSpawnPlugin):
         self.model_to_device()
 
         self.barrier()
-        results = trainer.run_stage()
+        results = self.lightning_module.trainer.run_stage()
 
         # persist info in ddp_spawn
         self.transfer_distrib_spawn_state_on_fit_end(results)

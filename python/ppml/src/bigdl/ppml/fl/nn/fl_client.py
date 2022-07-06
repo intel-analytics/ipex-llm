@@ -22,22 +22,28 @@ from bigdl.ppml.fl.nn.generated.nn_service_pb2 import TrainRequest, UploadModelR
 from bigdl.ppml.fl.nn.generated.nn_service_pb2_grpc import *
 from bigdl.ppml.fl.nn.utils import ndarray_map_to_tensor_map
 import uuid
+import threading
 from torch.utils.data import DataLoader
 from bigdl.dllib.utils.log4Error import invalidInputError
 
 from bigdl.ppml.fl.nn.utils import ClassAndArgsWrapper
 
 class FLClient(object):
-    def __init__(self, target="localhost:8980") -> None:
-        self.channel = grpc.insecure_channel(target)
-        self.nn_stub = NNServiceStub(self.channel)
-        self.client_uuid = str(uuid.uuid4())
-
+    channel = None
+    _lock = threading.Lock()
+    def __init__(self, client_id, aggregator, target="localhost:8980") -> None: 
+        with FLClient._lock:
+            if FLClient.channel == None:                
+                FLClient.channel = grpc.insecure_channel(target)
+        self.nn_stub = NNServiceStub(FLClient.channel)
+        self.client_uuid = client_id
+        self.aggregator = aggregator
     
     def train(self, x):
         tensor_map = ndarray_map_to_tensor_map(x)
         train_request = TrainRequest(clientuuid=self.client_uuid,
-                                     data=tensor_map)
+                                     data=tensor_map,
+                                     algorithm=self.aggregator)
         
         response = self.nn_stub.train(train_request)
         if response.code == 1:
@@ -53,7 +59,8 @@ class FLClient(object):
         request = UploadModelRequest(client_uuid=self.client_uuid,
                                      model_bytes=model,
                                      loss_fn=loss_fn,
-                                     optimizer=optimizer)
+                                     optimizer=optimizer,
+                                     aggregator=self.aggregator)
         return self.nn_stub.upload_model(request)
 
 

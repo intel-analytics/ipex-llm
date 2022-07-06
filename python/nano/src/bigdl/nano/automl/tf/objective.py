@@ -38,6 +38,7 @@ class Objective(object):
                  target_metric=None,
                  pruning=False,
                  backend=None,
+                 report_method=None,
                  **kwargs
                  ):
         """
@@ -49,6 +50,9 @@ class Objective(object):
             Defaults to None.
         :param: pruning: bool (optional): whether to enable pruning.
             Defaults to False.
+        :param: backend: the HPO backend
+        :param: report_method: a function to decide which score to report
+            from the result of all epochs if there's more than one epoch
         throw: ValueError: _description_
         """
         if not _is_creator(model) and not isinstance(model, tf.keras.Model):
@@ -61,6 +65,10 @@ class Objective(object):
         self.pruning = pruning
         self.backend = backend
         self.kwargs = kwargs
+
+        if report_method is None:
+            report_method = max
+        self.report_method = report_method
 
     @property
     def target_metric(self):
@@ -120,5 +128,5 @@ class Objective(object):
         if score is not None:
             if isinstance(score, list):
                 # score = score[-1]
-                score = max(score)
+                score = self.report_method(score)
             return score

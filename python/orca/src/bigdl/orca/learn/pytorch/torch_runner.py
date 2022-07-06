@@ -42,6 +42,7 @@ import torch.nn as nn
 from torch.utils.data import DataLoader, IterableDataset
 from torch.utils.data.distributed import DistributedSampler
 from bigdl.orca import OrcaContext
+from bigdl.orca.learn.pytorch.callbacks.model_checkpoint import ModelCheckpoint
 from bigdl.orca.learn.pytorch.constants import SCHEDULER_STEP, NUM_STEPS
 from bigdl.orca.learn.pytorch.training_operator import TrainingOperator
 from bigdl.orca.learn.pytorch import utils
@@ -88,10 +89,12 @@ class TorchDistBackend(DistBackend):
         import torch.distributed as dist
         return dist.is_initialized()
 
-    def all_reduce_min(self, tensor, group=None, async_op=False):
+    def all_reduce_min(self, tensor, *args, **kwargs):
         import torch.distributed as dist
-        return dist.all_reduce(tensor, op=dist.ReduceOp.MIN,
-                               group=group, async_op=async_op)
+        all_reduce_min_kwargs = dict(op=dist.ReduceOp.MIN)
+        all_reduce_min_kwargs.update(kwargs)
+        return dist.all_reduce(tensor, *args,
+                               **all_reduce_min_kwargs)
 
 
 class TorchRunner:
@@ -299,7 +302,9 @@ class TorchRunner:
 
         if callbacks is not None:
             for callback in callbacks:
-                callback.set_trainer(self)
+                callback.set_model(self.given_models)
+                if hasattr(callback, "set_trainer"):
+                    callback.set_trainer(self)
                 callback.on_train_begin()
         stats_list = list()
         for i in range(epochs):
@@ -319,10 +324,10 @@ class TorchRunner:
             self.epochs_stats = stats
             if callbacks is not None:
                 for callback in callbacks:
-                    callback.on_epoch_end(epoch=self.epochs)
+                    callback.on_epoch_end(epoch=self.epochs, logs=self.epochs_stats)
         if callbacks is not None:
             for callback in callbacks:
-                callback.on_train_end()
+                callback.on_train_end(logs=self.epochs_stats)
         return stats_list
 
     def train_epoch(self,
