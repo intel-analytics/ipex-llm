@@ -30,7 +30,7 @@ from bigdl.nano.pytorch.utils import TORCH_VERSION_LESS_1_10, TORCH_VERSION_LESS
     LIGHTNING_VERSION_LESS_1_6
 from bigdl.nano.pytorch.utils import ChannelsLastCallback
 from bigdl.nano.pytorch.amp import BF16Model
-from bigdl.nano.pytorch.lightning import LightningModuleFromTorch
+from bigdl.nano.pytorch.lightning import LightningModule
 from bigdl.nano.pytorch.plugins.ddp_spawn import DDPSpawnPlugin
 from bigdl.nano.pytorch.plugins.ddp_subprocess import DDPSubprocessPlugin
 
@@ -211,7 +211,7 @@ class Trainer(pl.Trainer):
                               " is a pytorch-lightning model.")
             pl_model = model
         else:
-            pl_model = LightningModuleFromTorch(model, loss, optimizer, scheduler, metrics)
+            pl_model = LightningModule(model, loss, optimizer, scheduler, metrics)
 
         return pl_model
 

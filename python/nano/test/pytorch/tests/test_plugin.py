@@ -23,7 +23,7 @@ import torchmetrics
 from torch.utils.data import DataLoader, TensorDataset
 from torch import nn
 
-from bigdl.nano.pytorch.lightning import LightningModuleFromTorch
+from bigdl.nano.pytorch.lightning import LightningModule
 from bigdl.nano.pytorch import Trainer
 
 from test.pytorch.utils._train_torch_lightning import create_data_loader, data_transform
@@ -66,7 +66,7 @@ class TestPlugin(TestCase):
         os.environ['PYTHONPATH'] = project_test_dir
 
     def test_trainer_subprocess_plugin(self):
-        pl_model = LightningModuleFromTorch(
+        pl_model = LightningModule(
             self.model, self.loss, self.optimizer,
             metrics=[torchmetrics.F1(num_classes), torchmetrics.Accuracy(num_classes=10)]
         )
@@ -88,7 +88,7 @@ class TestPlugin(TestCase):
         #    weight = 0.5 - 0.5 * avg_grad = 0.25
 
         linear = LinearModel()
-        pl_model = LightningModuleFromTorch(
+        pl_model = LightningModule(
             model = linear,
             optimizer = torch.optim.SGD(linear.parameters(), lr=0.5),
             loss=torch.nn.MSELoss(),
@@ -109,7 +109,7 @@ class TestPlugin(TestCase):
         # same as subprocess test
 
         linear = LinearModel()
-        pl_model = LightningModuleFromTorch(
+        pl_model = LightningModule(
             model = linear,
             optimizer = torch.optim.SGD(linear.parameters(), lr=0.5),
             loss=torch.nn.MSELoss(),

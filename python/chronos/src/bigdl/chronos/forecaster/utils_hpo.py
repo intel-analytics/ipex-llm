@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 
-from bigdl.nano.pytorch.lightning import LightningModuleFromTorch
+from bigdl.nano.pytorch.lightning import LightningModule
 from bigdl.nano.utils.log4Error import invalidInputError
 from typing import List
 import pytorch_lightning as pl
@@ -32,7 +32,7 @@ from bigdl.nano.automl.hpo.space import Space
 
 
 @hpo.plmodel()
-class GenericLightningModule(LightningModuleFromTorch):
+class GenericLightningModule(LightningModule):
     """A generic LightningMoudle for light-weight HPO."""
 
     def __init__(self,
