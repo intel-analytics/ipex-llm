@@ -19,6 +19,10 @@ from bigdl.orca.data import SparkXShards
 class TF2Dataset(object):
     def __init__(self, dataset):
         self.rdd = dataset.as_tf_dataset_rdd()
+        self.dataset = dataset
+
+    def get_origin_xshards(self):
+        return self.dataset.get_xshards()
 
     def get_xshards(self):
         return SparkXShards(self.rdd)

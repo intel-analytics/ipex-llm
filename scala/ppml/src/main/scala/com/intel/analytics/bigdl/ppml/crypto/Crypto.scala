@@ -181,6 +181,10 @@ object CryptoMode {
          AES_CBC_PKCS5PADDING
        case "plain_text" =>
          PLAIN_TEXT
+       case "aes_gcm_v1" =>
+         AES_GCM_V1
+       case "aes_gcm_ctr_v1" =>
+         AES_GCM_CTR_V1
      }
    }
 }
@@ -207,6 +211,39 @@ case object AES_CBC_PKCS5PADDING extends CryptoMode {
    */
   override def secretKeyAlgorithm: String = "AES"
 }
+
+/**
+ * CryptoMode AES_GCM_V1 for parquet only
+ */
+case object AES_GCM_V1 extends CryptoMode {
+  /**
+   * encryption algorithm of crypto
+   *
+   * @return AES/CBC/PKCS5Padding
+   */
+  override def encryptionAlgorithm: String = "AES_GCM_V1"
+
+  override def signingAlgorithm: String = ""
+
+  override def secretKeyAlgorithm: String = "AES"
+}
+
+/**
+ * CryptoMode AES_GCM_CTR_V1 for parquet only
+ */
+case object AES_GCM_CTR_V1 extends CryptoMode {
+  /**
+   * encryption algorithm of crypto
+   *
+   * @return AES/CBC/PKCS5Padding
+   */
+  override def encryptionAlgorithm: String = "AES_GCM_CTR_V1"
+
+  override def signingAlgorithm: String = ""
+
+  override def secretKeyAlgorithm: String = "AES"
+}
+
 
 /**
  * CryptoMode PLAIN_TEXT.

@@ -47,7 +47,7 @@ class LSTMForecaster(BaseTF2Forecaster):
                  seed=None,
                  distributed=False,
                  workers_per_node=1,
-                 distributed_backend="tf2"):
+                 distributed_backend="ray"):
         """
         Build a LSTM Forecast Model.
 
@@ -62,14 +62,18 @@ class LSTMForecaster(BaseTF2Forecaster):
                (i.e. the close possibility to a neuron). This value defaults to 0.1.
         :param optimizer: Specify the optimizer used for training. This value
                defaults to "Adam".
-        :param loss: Specify the loss function used for training. This value
-               defaults to "mse". You can choose from "mse", "mae" and
-               "huber_loss".
+        :param loss: Str or a tf.keras.losses.Loss instance, specify the loss function
+               used for training. This value defaults to "mse". You can choose
+               from "mse", "mae" and "huber_loss" or any customized loss instance
+               you want to use.
         :param lr: Specify the learning rate. This value defaults to 0.001.
         :param metrics: A list contains metrics for evaluating the quality of
                forecasting. You may only choose from "mse" and "mae" for a
                distributed forecaster. You may choose from "mse", "mae",
-               "rmse", "r2", "mape", "smape", for a non-distributed forecaster.
+               "rmse", "r2", "mape", "smape" or a callable function for a
+               non-distributed forecaster. If callable function, it signature
+               should be func(y_true, y_pred), where y_true and y_pred are numpy
+               ndarray.
         :param seed: int, random seed for training. This value defaults to None.
         :param distributed: bool, if init the forecaster in a distributed
                fashion. If True, the internal model will use an Orca Estimator.
@@ -78,8 +82,8 @@ class LSTMForecaster(BaseTF2Forecaster):
         :param workers_per_node: int, the number of worker you want to use.
                The value defaults to 1. The param is only effective when
                distributed is set to True.
-        :param distributed_backend: str, select from "tf2" or
-               "horovod". The value defaults to "tf2".
+        :param distributed_backend: str, select from "ray" or
+               "horovod". The value defaults to "ray".
         """
         self.model_config = {
             "past_seq_len": past_seq_len,

@@ -12,15 +12,15 @@ ray==1.9.2
 torch==1.9.0
 Pygments==2.3.1
 setuptools==41.0.1
-docutils==0.14
+docutils==0.17
 mock==1.0.1
 pillow==5.4.1
-sphinx==4.0.2
+sphinx==5.0.2
 alabaster>=0.7,<0.8,!=0.7.5
 commonmark==0.8.1
 recommonmark==0.5.0
 readthedocs-sphinx-ext<2.2
-sphinx_rtd_theme==0.5.2
+sphinx_rtd_theme==1.0.0
 scikit-learn==1.0.2
 pystan==2.19.1.1
 prophet
@@ -31,3 +31,6 @@ xgboost
 torchmetrics==0.7.2
 pickle5==0.0.12
 protobuf~=3.19.0
+sphinx-tabs==3.4
+optuna==2.10.0
+ConfigSpace==0.5.0

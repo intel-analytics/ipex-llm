@@ -14,7 +14,7 @@
 # limitations under the License.
 #
 
-from bigdl.nano.common.cpu_schedule import schedule_workers
+from bigdl.nano.common.cpu_schedule import schedule_processors
 import os
 import json
 import shutil
@@ -73,7 +73,7 @@ def distributed_train_keras(backend, model, nprocs, fit_kwargs=None):
     if fit_kwargs is None:
         fit_kwargs = {}
 
-    cpu_procs = schedule_workers(nprocs)
+    envs = schedule_processors(nprocs)
 
     from tensorflow.python.distribute.coordinator.values import serialize_dataset_to_graph
 
@@ -103,12 +103,8 @@ def distributed_train_keras(backend, model, nprocs, fit_kwargs=None):
     with TemporaryDirectory() as temp_dir:
         model.save(os.path.join(temp_dir, 'temp_model'))
 
-        envs = []
-        for i in range(nprocs):
-            env = {
-                "KMP_AFFINITY": f"granularity=fine,proclist"
-                                f"=[{','.join([str(i) for i in cpu_procs[i]])}],explicit",
-                "OMP_NUM_THREADS": str(len(cpu_procs[i])),
+        for i, env in enumerate(envs):
+            env.update({
                 "TF_CONFIG": json.dumps(
                     {
                         'cluster': {
@@ -116,9 +112,8 @@ def distributed_train_keras(backend, model, nprocs, fit_kwargs=None):
                         },
                         'task': {'type': 'worker', 'index': i}
                     }),
-                'no_proxy': "localhost",
-            }
-            envs.append(env)
+                'no_proxy': "localhost"
+            })
 
         train_args = (temp_dir, train_ds_def, train_elem_spec,
                       val_ds_def, val_elem_spec, fit_kwargs)
