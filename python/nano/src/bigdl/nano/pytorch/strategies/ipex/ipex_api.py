@@ -47,7 +47,5 @@ def ipex_device():
     return ipex.DEVICE
 
 
-def to_cpu(*args, **kwargs):
-    """Recursively move the tensor in the output to the cpu inplace."""
-    from .version_1_9.ipex_torchfunctional import to_cpu
-    return to_cpu(*args, **kwargs)
+# import `to_cpu` to replace `torch.save` when using ipex 1.9
+from .version_1_9.ipex_torchfunctional import to_cpu
