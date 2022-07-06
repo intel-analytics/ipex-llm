@@ -86,8 +86,10 @@ extensions = [
     'sphinxemoji.sphinxemoji',
     'sphinx_copybutton',
     'sphinx.ext.mathjax',
+    'sphinx.ext.autosectionlabel',
     'recommonmark',
-    'sphinx_markdown_tables'
+    'sphinx_markdown_tables',
+    'sphinx_tabs.tabs',
 ]
 
 

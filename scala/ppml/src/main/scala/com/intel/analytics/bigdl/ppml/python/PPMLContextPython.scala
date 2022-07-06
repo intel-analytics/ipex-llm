@@ -20,8 +20,11 @@ import com.intel.analytics.bigdl.ppml.PPMLContext
 import com.intel.analytics.bigdl.ppml.crypto.{AES_CBC_PKCS5PADDING, BigDLEncrypt, CryptoMode, ENCRYPT, EncryptRuntimeException}
 import com.intel.analytics.bigdl.ppml.crypto.dataframe.{EncryptedDataFrameReader, EncryptedDataFrameWriter}
 import com.intel.analytics.bigdl.ppml.kms.{KMS_CONVENTION, SimpleKeyManagementService}
-import org.apache.spark.sql.{DataFrame, DataFrameWriter, Row}
+import org.apache.spark.SparkConf
+import org.apache.spark.rdd.RDD
+import org.apache.spark.sql.{DataFrame, DataFrameWriter, Row, SparkSession}
 import org.slf4j.{Logger, LoggerFactory}
+import scala.collection.JavaConverters._
 
 import java.io.File
 import java.util
@@ -42,26 +45,18 @@ class PPMLContextPython[T]() {
 
   def createPPMLContext(appName: String, ppmlArgs: util.Map[String, String]): PPMLContext = {
     logger.debug("create PPMLContextWrapper with appName & ppmlArgs")
+    val args = parseArgs(ppmlArgs)
+    PPMLContext.initPPMLContext(appName, args)
+  }
 
-    val kmsArgs = scala.collection.mutable.Map[String, String]()
-    val kmsType = ppmlArgs.get("kms_type")
-    kmsArgs("spark.bigdl.kms.type") = kmsType
-    kmsType match {
-      case KMS_CONVENTION.MODE_EHSM_KMS =>
-        throw new EncryptRuntimeException("not support yet")
-      case KMS_CONVENTION.MODE_SIMPLE_KMS =>
-        kmsArgs("spark.bigdl.kms.simple.id") = ppmlArgs.get("simple_app_id")
-        kmsArgs("spark.bigdl.kms.simple.key") = ppmlArgs.get("simple_app_key")
-      case _ =>
-        throw new EncryptRuntimeException("Wrong kms type")
-    }
-    if (new File(ppmlArgs.get("primary_key_path")).exists()) {
-      kmsArgs("spark.bigdl.kms.key.primary") = ppmlArgs.get("primary_key_path")
-    }
-    if (new File(ppmlArgs.get("data_key_path")).exists()) {
-      kmsArgs("spark.bigdl.kms.key.data") = ppmlArgs.get("data_key_path")
-    }
-    PPMLContext.initPPMLContext(appName, kmsArgs.toMap)
+  def createPPMLContext(appName: String, ppmlArgs: util.Map[String, String],
+                        confs: util.List[util.List[String]]): PPMLContext = {
+    logger.debug("create PPMLContextWrapper with appName & ppmlArgs & sparkConf")
+    val args = parseArgs(ppmlArgs)
+    val sparkConf = new SparkConf()
+    confs.asScala.foreach(conf => sparkConf.set(conf.get(0), conf.get(1)))
+
+    PPMLContext.initPPMLContext(sparkConf, appName, args)
   }
 
   def read(sc: PPMLContext, cryptoModeStr: String): EncryptedDataFrameReader = {
@@ -82,6 +77,43 @@ class PPMLContextPython[T]() {
     sc.loadKeys(primaryKeyPath, dataKeyPath)
   }
 
+  def textFile(sc: PPMLContext, path: String,
+               minPartitions: Int, cryptoModeStr: String): RDD[String] = {
+    val cryptoMode = CryptoMode.parse(cryptoModeStr)
+    sc.textFile(path, minPartitions, cryptoMode)
+  }
+
+  def getSparkSession(sc: PPMLContext): SparkSession = {
+    sc.getSparkSession()
+  }
+
+  def getDefaultMinPartitions(sparkSession: SparkSession): Int = {
+    sparkSession.sparkContext.defaultMinPartitions
+  }
+
+  private def parseArgs(ppmlArgs: util.Map[String, String]): Map[String, String] = {
+    val kmsArgs = scala.collection.mutable.Map[String, String]()
+    val kmsType = ppmlArgs.get("kms_type")
+    kmsArgs("spark.bigdl.kms.type") = kmsType
+    kmsType match {
+      case KMS_CONVENTION.MODE_EHSM_KMS =>
+        throw new EncryptRuntimeException("not support yet")
+      case KMS_CONVENTION.MODE_SIMPLE_KMS =>
+        kmsArgs("spark.bigdl.kms.simple.id") = ppmlArgs.get("simple_app_id")
+        kmsArgs("spark.bigdl.kms.simple.key") = ppmlArgs.get("simple_app_key")
+      case _ =>
+        throw new EncryptRuntimeException("Wrong kms type")
+    }
+    if (new File(ppmlArgs.get("primary_key_path")).exists()) {
+      kmsArgs("spark.bigdl.kms.key.primary") = ppmlArgs.get("primary_key_path")
+    }
+    if (new File(ppmlArgs.get("data_key_path")).exists()) {
+      kmsArgs("spark.bigdl.kms.key.data") = ppmlArgs.get("data_key_path")
+    }
+    kmsArgs.toMap
+  }
+
+
   /**
    * EncryptedDataFrameReader method
    */
@@ -94,6 +126,11 @@ class PPMLContextPython[T]() {
   def csv(encryptedDataFrameReader: EncryptedDataFrameReader, path: String): DataFrame = {
     logger.debug("read csv file from path: " + path)
     encryptedDataFrameReader.csv(path)
+  }
+
+  def parquet(encryptedDataFrameReader: EncryptedDataFrameReader, path: String): DataFrame = {
+    logger.debug("read parquet file from path: " + path)
+    encryptedDataFrameReader.parquet(path)
   }
 
   /**
@@ -117,6 +154,10 @@ class PPMLContextPython[T]() {
 
   def csv(encryptedDataFrameWriter: EncryptedDataFrameWriter, path: String): Unit = {
     encryptedDataFrameWriter.csv(path)
+  }
+
+  def parquet(encryptedDataFrameWriter: EncryptedDataFrameWriter, path: String): Unit = {
+    encryptedDataFrameWriter.parquet(path)
   }
 
   /**

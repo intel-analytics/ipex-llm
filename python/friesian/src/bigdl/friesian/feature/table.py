@@ -1000,7 +1000,7 @@ class FeatureTable(Table):
         for i in range(len(columns)):
             col_name = columns[i]
             hash_str = lambda x: getattr(hashlib, method)(str(x).encode('utf_8')).hexdigest()
-            hash_int = udf(lambda x: int(hash_str(x), 16) % bins)
+            hash_int = udf(lambda x: int(hash_str(x), 16) % bins, returnType=IntegerType())
             hash_df = hash_df.withColumn(col_name, hash_int(pyspark_col(col_name)))
         return FeatureTable(hash_df)
 

@@ -25,11 +25,10 @@ import tensorflow as tf
 import tensorflow_ranking as tfr
 import tensorflow_recommenders as tfrs
 from bigdl.orca import init_orca_context, stop_orca_context
-from bigdl.orca import OrcaContext
 from bigdl.friesian.feature import FeatureTable
 from bigdl.orca.learn.tf2 import Estimator
 from bigdl.orca.data.tf.data import Dataset
-import numpy as np
+from bigdl.dllib.utils.log4Error import invalidInputError
 
 conf = {"spark.driver.maxResultSize": "10G"}
 
@@ -143,7 +142,8 @@ if __name__ == "__main__":
                           driver_cores=options.driver_cores, driver_memory=options.driver_memory,
                           init_ray_on_spark=True, conf=conf)
     else:
-        raise ValueError("cluster_mode should be 'local' or 'yarn', but got " + args.cluster_mode)
+        invalidInputError(False,
+                          "cluster_mode should be 'local' or 'yarn', but got " + args.cluster_mode)
 
     (options, args) = parser.parse_args(sys.argv)
     data_dir = options.data_dir
@@ -171,7 +171,6 @@ if __name__ == "__main__":
     full_tbl = full_tbl.cast(["userid"], "string")
     train_tbl, test_tbl = full_tbl.random_split([0.85, 0.15], seed=1)
 
-
     def preprocess(tbl, feature_cols):
         col_dict = {"collect_list(" + c + ")": c + "s" for c in feature_cols}
         tbl = tbl.group_by("userid", agg="collect_list")
@@ -183,7 +182,6 @@ if __name__ == "__main__":
         tbl = tbl.pad(["ratings"], max_len, mask_token=-1)
         tbl = tbl.pad(["titles"], max_len, mask_token="<MSK>")
         return tbl
-
 
     train_tbl = preprocess(train_tbl, ["title", "rating"])
     test_tbl = preprocess(test_tbl, ["title", "rating"])

@@ -15,8 +15,7 @@
 #
 
 from bigdl.chronos.forecaster.abstract import Forecaster
-from bigdl.chronos.forecaster.utils import\
-    np_to_creator, set_pytorch_seed, check_data, xshard_to_np, np_to_xshard, loader_to_creator
+from bigdl.chronos.forecaster.utils import *
 from bigdl.chronos.metric.forecast_metrics import Evaluator
 
 import numpy as np
@@ -314,21 +313,32 @@ class BasePytorchForecaster(Forecaster):
                | 2. a xshard item:
                | each partition can be a dictionary of {'x': x}, where x's shape
                | should follow the shape stated before.
+               | 3. pytorch dataloader:
+               | the dataloader needs to return at least x in each iteration
+               | with the shape as following:
+               | x's shape is (num_samples, lookback, feature_dim) where lookback and feature_dim
+               | should be the same as past_seq_len and input_feature_num.
+               | If returns x and y only get x.
 
         :param batch_size: predict batch size. The value will not affect predict
                result but will affect resources cost(e.g. memory and time).
         :param quantize: if use the quantized model to predict.
 
         :return: A numpy array with shape (num_samples, horizon, target_dim)
-                 if data is a numpy ndarray. A xshard item with format {‘prediction’: result},
+                 if data is a numpy ndarray or a dataloader.
+                 A xshard item with format {'prediction': result},
                  where result is a numpy array with shape (num_samples, horizon, target_dim)
                  if data is a xshard item.
         """
         from bigdl.chronos.pytorch.utils import _pytorch_fashion_inference
 
         # data transform
-        is_local_data = isinstance(data, np.ndarray)
+        is_local_data = isinstance(data, (np.ndarray, DataLoader))
         if is_local_data and self.distributed:
+            if isinstance(data, DataLoader):
+                from bigdl.nano.utils.log4Error import invalidInputError
+                invalidInputError(False,
+                                  "We will be support input dataloader later.")
             data = np_to_xshard(data)
         if not is_local_data and not self.distributed:
             data = xshard_to_np(data, mode="predict")
@@ -374,6 +384,12 @@ class BasePytorchForecaster(Forecaster):
                | 1. a numpy ndarray x:
                | x's shape is (num_samples, lookback, feature_dim) where lookback and feature_dim
                | should be the same as past_seq_len and input_feature_num.
+               | 2. pytorch dataloader:
+               | the dataloader needs to return at least x in each iteration
+               | with the shape as following:
+               | x's shape is (num_samples, lookback, feature_dim) where lookback and feature_dim
+               | should be the same as past_seq_len and input_feature_num.
+               | If returns x and y only get x.
 
         :param batch_size: predict batch size. The value will not affect predict
                result but will affect resources cost(e.g. memory and time). Defaults
@@ -467,6 +483,12 @@ class BasePytorchForecaster(Forecaster):
                | 2. a xshard item:
                | each partition can be a dictionary of {'x': x, 'y': y}, where x and y's shape
                | should follow the shape stated before.
+               | 3. pytorch dataloader:
+               | the dataloader should return x, y in each iteration with the shape as following:
+               | x's shape is (num_samples, lookback, feature_dim) where lookback and feature_dim
+               | should be the same as past_seq_len and input_feature_num.
+               | y's shape is (num_samples, horizon, target_dim), where horizon and target_dim
+               | should be the same as future_seq_len and output_feature_num.
 
         :param batch_size: evaluate batch size. The value will not affect evaluate
                result but will affect resources cost(e.g. memory and time).
@@ -481,33 +503,35 @@ class BasePytorchForecaster(Forecaster):
         from bigdl.chronos.pytorch.utils import _pytorch_fashion_inference
 
         # data transform
-        is_local_data = isinstance(data, tuple)
+        is_local_data = isinstance(data, (tuple, DataLoader))
         if not is_local_data and not self.distributed:
             data = xshard_to_np(data, mode="fit")
         if self.distributed:
-            if is_local_data:
-                return self.internal.evaluate(data=np_to_creator(data),
-                                              batch_size=batch_size)
-            else:
-                return self.internal.evaluate(data=data,
-                                              batch_size=batch_size)
+            data = np_to_creator(data) if is_local_data else data
+            return self.internal.evaluate(data=data,
+                                          batch_size=batch_size)
         else:
             if not self.fitted:
                 from bigdl.nano.utils.log4Error import invalidInputError
                 invalidInputError(False,
                                   "You must call fit or restore first before calling evaluate!")
+            if isinstance(data, DataLoader):
+                input_data = data
+                target = np.concatenate(tuple(val[1] for val in data), axis=0)
+            else:
+                input_data, target = data
             if quantize:
                 yhat = _pytorch_fashion_inference(model=self.pytorch_int8,
-                                                  input_data=data[0],
+                                                  input_data=input_data,
                                                   batch_size=batch_size)
             else:
                 self.internal.eval()
                 yhat = _pytorch_fashion_inference(model=self.internal,
-                                                  input_data=data[0],
+                                                  input_data=input_data,
                                                   batch_size=batch_size)
 
             aggregate = 'mean' if multioutput == 'uniform_average' else None
-            return Evaluator.evaluate(self.metrics, data[1],
+            return Evaluator.evaluate(self.metrics, target,
                                       yhat, aggregate=aggregate)
 
     def evaluate_with_onnx(self, data,
@@ -538,6 +562,12 @@ class BasePytorchForecaster(Forecaster):
                | should be the same as past_seq_len and input_feature_num.
                | y's shape is (num_samples, horizon, target_dim), where horizon and target_dim
                | should be the same as future_seq_len and output_feature_num.
+               | 2. pytorch dataloader:
+               | should be the same as future_seq_len and output_feature_num.
+               | the dataloader should return x, y in each iteration with the shape as following:
+               | x's shape is (num_samples, lookback, feature_dim) where lookback and feature_dim
+               | should be the same as past_seq_len and input_feature_num.
+               | y's shape is (num_samples, horizon, target_dim), where horizon and target_dim
 
         :param batch_size: evaluate batch size. The value will not affect evaluate
                result but will affect resources cost(e.g. memory and time).
@@ -558,19 +588,24 @@ class BasePytorchForecaster(Forecaster):
         if not self.fitted:
             invalidInputError(False,
                               "You must call fit or restore first before calling evaluate!")
+        if isinstance(data, DataLoader):
+            input_data = data
+            target = np.concatenate(tuple(val[1] for val in data), axis=0)
+        else:
+            input_data, target = data
         if quantize:
             yhat = _pytorch_fashion_inference(model=self.onnxruntime_int8,
-                                              input_data=data[0],
+                                              input_data=input_data,
                                               batch_size=batch_size)
         else:
             if self.onnxruntime_fp32 is None:
                 self.build_onnx()
             yhat = _pytorch_fashion_inference(model=self.onnxruntime_fp32,
-                                              input_data=data[0],
+                                              input_data=input_data,
                                               batch_size=batch_size)
 
         aggregate = 'mean' if multioutput == 'uniform_average' else None
-        return Evaluator.evaluate(self.metrics, data[1], yhat, aggregate=aggregate)
+        return Evaluator.evaluate(self.metrics, target, yhat, aggregate=aggregate)
 
     def save(self, checkpoint_file, quantize_checkpoint_file=None):
         """
