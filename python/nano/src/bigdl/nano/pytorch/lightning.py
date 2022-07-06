@@ -16,10 +16,9 @@
 from collections import OrderedDict
 import inspect
 from typing import List
-import torch
 
 from torchmetrics.metric import Metric
-from pytorch_lightning import LightningModule
+import pytorch_lightning as pl
 from torch import nn, Tensor, fx
 from torch.nn.modules.loss import _Loss
 from torch.optim import Optimizer
@@ -27,7 +26,7 @@ from torch.optim.lr_scheduler import _LRScheduler
 from bigdl.nano.utils.log4Error import invalidInputError
 
 
-class LightningModuleFromTorch(LightningModule):
+class LightningModule(pl.LightningModule):
     """
     A wrapper LightningMoudle for common PyTorch models.
 
@@ -54,6 +53,12 @@ class LightningModuleFromTorch(LightningModule):
         self.optimizer = optimizer
         self.scheduler = scheduler
         self.metrics = metrics
+        model_cls = type(model)
+        for func in ["train_step", "val_step", "test_step", "predict_step"]:
+            model_func = getattr(model_cls, func)
+            pl_func = getattr(pl.LightningModule, func)
+            if not model_func == pl_func:
+                setattr(self, func, model_func)
 
     def forward(self, *args):
         """Same as torch.nn.Module.forward()."""
