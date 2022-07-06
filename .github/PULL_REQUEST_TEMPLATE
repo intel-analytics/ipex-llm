@@ -1,21 +1,20 @@
-## What changes were proposed in this pull request?
+## Description
 
-## Why are the changes needed?
+## Motivation and Context
 
-## Please briefly describe the API changes or code design.
+## API or Code Design.
 
 <!-- Optional if a github issue describing the design is provide below -->
 
-## Design Link or Related Issue
+## Related Link or Issue
 
 <!-- Optional if the design is described in previous section and there is no related issue. -->
 
-## How was this patch tested?
+## How was this PR tested?
 
-<!-- Please explain how this patch was tested. E.g. unit tests, integration tests, manual tests -->
+<!-- Please explain how this PR was tested. E.g. unit tests, integration tests, manual tests -->
 <!-- If it is possible, please attach a screenshot; otherwise, remove this -->
 
-- [ ] jenkins link:
+- [ ] jenkins passed (please provide link):
 
-- [ ] read the docs link:
-
+- [ ] documentation build passed (please provide link): <!-- Optional if no documentation changes -->
