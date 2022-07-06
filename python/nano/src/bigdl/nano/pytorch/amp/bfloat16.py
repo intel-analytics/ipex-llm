@@ -90,7 +90,7 @@ class BF16Model(LightningModule):
 
     @autocast()
     def forward(self, *args, **kwargs):  # noqa
-        self._bf16_check()
+        self._bf16_check(*args, **kwargs)
         return self.bf16_model(*args, **kwargs)
 
     def _bf16_check(self, *args, **kwargs):
