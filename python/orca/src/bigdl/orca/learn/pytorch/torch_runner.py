@@ -162,11 +162,11 @@ class TorchRunner:
         import torch
         torch.set_num_threads(cores_per_node)
 
-    def setup_torch_distribute(self, tcp_store_host, driver_tcp_store_port, world_rank,
+    def setup_torch_distribute(self, tcp_store_host, tcp_store_port, world_rank,
                                world_size):
         import torch.distributed as dist
         from torch.nn.parallel import DistributedDataParallel
-        client_store = dist.TCPStore(tcp_store_host, driver_tcp_store_port, world_size, False)
+        client_store = dist.TCPStore(tcp_store_host, tcp_store_port, world_size, False)
         dist.init_process_group(
             backend="gloo",
             store=client_store,
