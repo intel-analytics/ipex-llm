@@ -136,7 +136,7 @@ class PyTorchPySparkEstimator(BaseEstimator):
         self.need_to_log_to_driver = (not is_local) and log_to_driver
         if self.need_to_log_to_driver:
             start_log_server(self.ip, self.port)
-        self.tcp_port = find_free_port()
+        self.tcp_store_port = find_free_port()
 
         self.worker_init_params = dict(
             model_creator=self.model_creator,
@@ -155,8 +155,8 @@ class PyTorchPySparkEstimator(BaseEstimator):
             model_dir=self.model_dir,
             log_to_driver=self.need_to_log_to_driver,
             driver_ip=self.ip,
-            driver_port=self.port,
-            tcp_port=self.tcp_port)
+            driver_log_port=self.port,
+            driver_tcp_store_port=self.tcp_store_port)
 
         local_init_params = self.worker_init_params.copy()
         local_init_params["log_to_driver"] = False
@@ -169,7 +169,7 @@ class PyTorchPySparkEstimator(BaseEstimator):
 
     def create_tcpstore_server(self):
         import torch.distributed as dist
-        server_store = dist.TCPStore(self.ip, self.tcp_port, -1, True,
+        server_store = dist.TCPStore(self.ip, self.tcp_store_port, -1, True,
                                      dist.constants.default_pg_timeout)
         return server_store
 
