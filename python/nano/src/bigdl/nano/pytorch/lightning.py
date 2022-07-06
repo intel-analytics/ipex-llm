@@ -53,12 +53,13 @@ class LightningModule(pl.LightningModule):
         self.optimizer = optimizer
         self.scheduler = scheduler
         self.metrics = metrics
-        model_cls = type(model)
-        for func in ["train_step", "val_step", "test_step", "predict_step"]:
-            model_func = getattr(model_cls, func)
-            pl_func = getattr(pl.LightningModule, func)
-            if not model_func == pl_func:
-                setattr(self, func, model_func)
+        if isinstance(model, pl.LightningModule):
+            model_cls = type(model)
+            for func in ["train_step", "val_step", "test_step", "predict_step"]:
+                model_func = getattr(model_cls, func)
+                pl_func = getattr(pl.LightningModule, func)
+                if not model_func == pl_func:
+                    setattr(self, func, model_func)
 
     def compile(self,
                 loss: _Loss = None, optimizer: Optimizer = None,
