@@ -244,7 +244,7 @@ jobs:
           if [ ! -z "${{matrix.tf-version}}" ]; then
             pip install ${{matrix.tf-version}}
           fi
-          HOROVOD_WITH_MPI=1 HOROVOD_WITHOUT_TENSORFLOW=1 pip install --no-cache-dir horovod[tensorflow]==0.25.0
+          HOROVOD_WITH_MPI=1 HOROVOD_WITH_TENSORFLOW=1 pip install --no-cache-dir horovod==0.25.0
           horovodrun --check-build
           pip install pytest
           source bigdl-nano-init
