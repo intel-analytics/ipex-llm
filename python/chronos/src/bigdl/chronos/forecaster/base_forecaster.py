@@ -220,8 +220,11 @@ class BasePytorchForecaster(Forecaster):
                | y's shape is (num_samples, horizon, target_dim), where horizon and target_dim
                | should be the same as future_seq_len and output_feature_num.
                |
-               | 4. a tsdataset:
-               | pass
+               | 4. A bigdl.chronos.data.tsdataset.TSDataset instance.
+               | We provide built-in time series classes,
+               | you only need a few operations to complete the data preprocessing.
+               | For more information please refer to
+               | https://bigdl.readthedocs.io/en/latest/doc/PythonAPI/Chronos/tsdataset.html
 
         :param validation_data: Validation sample for validation loop. Defaults to 'None'.
                If you do not input data for 'validation_data', the validation_step will be skipped.
@@ -347,8 +350,11 @@ class BasePytorchForecaster(Forecaster):
                | x's shape is (num_samples, lookback, feature_dim) where lookback and feature_dim
                | should be the same as past_seq_len and input_feature_num.
                | If returns x and y only get x.
-               | 4. a tsdataset
-               | pass
+               | 4. A bigdl.chronos.data.tsdataset.TSDataset instance.
+               | We provide built-in time series classes,
+               | you only need a few operations to complete the data preprocessing.
+               | For more information please refer to
+               | https://bigdl.readthedocs.io/en/latest/doc/PythonAPI/Chronos/tsdataset.html
 
         :param batch_size: predict batch size. The value will not affect predict
                result but will affect resources cost(e.g. memory and time).
@@ -426,8 +432,11 @@ class BasePytorchForecaster(Forecaster):
                | x's shape is (num_samples, lookback, feature_dim) where lookback and feature_dim
                | should be the same as past_seq_len and input_feature_num.
                | If returns x and y only get x.
-               | 3. a tsdataset
-               | pass
+               | 3. A bigdl.chronos.data.tsdataset.TSDataset instance.
+               | We provide built-in time series classes,
+               | you only need a few operations to complete the data preprocessing.
+               | For more information please refer to
+               | https://bigdl.readthedocs.io/en/latest/doc/PythonAPI/Chronos/tsdataset.html
 
         :param batch_size: predict batch size. The value will not affect predict
                result but will affect resources cost(e.g. memory and time). Defaults
@@ -533,8 +542,11 @@ class BasePytorchForecaster(Forecaster):
                | should be the same as past_seq_len and input_feature_num.
                | y's shape is (num_samples, horizon, target_dim), where horizon and target_dim
                | should be the same as future_seq_len and output_feature_num.
-               | 4. a tsdataset
-               | pass
+               | 4. A bigdl.chronos.data.tsdataset.TSDataset instance.
+               | We provide built-in time series classes,
+               | you only need a few operations to complete the data preprocessing.
+               | For more information please refer to
+               | https://bigdl.readthedocs.io/en/latest/doc/PythonAPI/Chronos/tsdataset.html
 
         :param batch_size: evaluate batch size. The value will not affect evaluate
                result but will affect resources cost(e.g. memory and time).
@@ -620,8 +632,11 @@ class BasePytorchForecaster(Forecaster):
                | x's shape is (num_samples, lookback, feature_dim) where lookback and feature_dim
                | should be the same as past_seq_len and input_feature_num.
                | y's shape is (num_samples, horizon, target_dim), where horizon and target_dim
-               | 3. a tsdataset
-               | pass
+               | 3. A bigdl.chronos.data.tsdataset.TSDataset instance.
+               | We provide built-in time series classes,
+               | you only need a few operations to complete the data preprocessing.
+               | For more information please refer to
+               | https://bigdl.readthedocs.io/en/latest/doc/PythonAPI/Chronos/tsdataset.html
 
         :param batch_size: evaluate batch size. The value will not affect evaluate
                result but will affect resources cost(e.g. memory and time).
@@ -981,11 +996,11 @@ class BasePytorchForecaster(Forecaster):
 
         :param tsdataset: A bigdl.chronos.data.tsdataset.TSDataset instance.
         :param past_seq_len: Specify the history time steps (i.e. lookback).
-               No need to specify past_seq_len if tsdataset has called
-               the 'roll' method.
+               Do not specify the 'past_seq_len' if your tsdataset has called
+               the 'TSDataset.roll' method.
         :param future_seq_len: Specify the output time steps (i.e. horizon).
-               Same as past_seq_len if tsdataset has called
-               the 'roll' method.
+               Do not specify the 'future_seq_len' if your tsdataset has called
+               the 'TSDataset.roll' method.
         :param kwargs: Specify parameters of Forecaster,
                e.g. loss and optimizer, etc.
 
@@ -994,12 +1009,12 @@ class BasePytorchForecaster(Forecaster):
         if tsdataset.numpy_x is not None:
             past_seq_len = tsdataset.numpy_x.shape[1]
             future_seq_len = tsdataset.numpy_y.shape[1]
-        # TODO Support specifying 'auto' as past_seq_len.
+        # TODO Support specify 'auto' as past_seq_len.
         if all([past_seq_len is None, future_seq_len is None, tsdataset.numpy_x is None]):
             from bigdl.nano.utils.log4Error import invalidInputError
             invalidInputError(False,
-                              "Need to specify 'past_seq_len' and 'future_seq_len' for"
-                              " from_dataset or call the 'roll' method of dataset.")
+                              "Forecaster requires 'past_seq_len' and 'future_seq_len' to specify "
+                              "the history time step and output time step.")
         output_feature_num = len(tsdataset.target_col)
         input_feature_num = output_feature_num + len(tsdataset.feature_col)
         return cls(past_seq_len=past_seq_len,

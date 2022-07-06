@@ -60,7 +60,7 @@ def create_data(loader=False):
         return train_data, val_data, test_data
 
 
-def create_tsdataset():
+def create_tsdataset(roll=True):
     from bigdl.chronos.data import TSDataset
     import pandas as pd
     timeserious = pd.date_range(start='2020-01-01', freq='D', periods=1000)
@@ -74,8 +74,9 @@ def create_tsdataset():
                                            dt_col='timeserious',
                                            target_col=['value1', 'value2'],
                                            with_split=True)
-    for tsdata in [train, test]:
-        tsdata.roll(lookback=24, horizon=5)
+    if roll:
+        for tsdata in [train, test]:
+            tsdata.roll(lookback=24, horizon=5)
     return train, test
 
 
@@ -369,6 +370,22 @@ class TestChronosModelSeq2SeqForecaster(TestCase):
                 epochs=2,
                 batch_size=32)
         yhat = s2s.predict(test, batch_size=32)
+        test.roll(lookback=s2s.data_config['past_seq_len'],
+                  horizon=s2s.data_config['future_seq_len'])
+        _, y_test = test.to_numpy()
+        assert yhat.shape == y_test.shape
+
+        del s2s
+        train, test = create_tsdataset(roll=False)
+        s2s = Seq2SeqForecaster.from_tsdataset(train,
+                                               past_seq_len=24,
+                                               future_seq_len=2,
+                                               lstm_hidden_dim=16,
+                                               lstm_layer_num=1)
+        s2s.fit(train,
+                epochs=2,
+                batch_size=32)
+        yhat = s2s.predict(test, batch_size=None)
         test.roll(lookback=s2s.data_config['past_seq_len'],
                   horizon=s2s.data_config['future_seq_len'])
         _, y_test = test.to_numpy()

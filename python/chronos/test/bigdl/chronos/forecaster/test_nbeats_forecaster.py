@@ -60,7 +60,7 @@ def create_data(loader=False):
         return train_data, val_data, test_data
 
 
-def create_tsdataset():
+def create_tsdataset(roll=True):
     from bigdl.chronos.data import TSDataset
     import pandas as pd
     timeserious = pd.date_range(start='2020-01-01', freq='D', periods=1000)
@@ -74,8 +74,9 @@ def create_tsdataset():
                                            dt_col='timeserious',
                                            target_col=['value1'],
                                            with_split=True)
-    for tsdata in [train, test]:
-        tsdata.roll(lookback=24, horizon=5)
+    if roll:
+        for tsdata in [train, test]:
+            tsdata.roll(lookback=24, horizon=5)
     return train, test
 
 class TestChronosNBeatsForecaster(TestCase):
@@ -411,6 +412,23 @@ class TestChronosNBeatsForecaster(TestCase):
                    epochs=2,
                    batch_size=32)
         yhat = nbeats.predict(test, batch_size=32)
+        test.roll(lookback=nbeats.data_config['past_seq_len'],
+                  horizon=nbeats.data_config['future_seq_len'])
+        _, y_test = test.to_numpy()
+        assert yhat.shape == y_test.shape
+
+        del nbeats
+        train, test = create_tsdataset(roll=False)
+        nbeats = NBeatsForecaster.from_tsdataset(train,
+                                                 past_seq_len=24,
+                                                 future_seq_len=2,
+                                                 stack_types=("generic", "seasnoality"),
+                                                 share_weights_in_stack=True,
+                                                 hidden_layer_units=32)
+        nbeats.fit(train,
+                   epochs=2,
+                   batch_size=32)
+        yhat = nbeats.predict(test, batch_size=None)
         test.roll(lookback=nbeats.data_config['past_seq_len'],
                   horizon=nbeats.data_config['future_seq_len'])
         _, y_test = test.to_numpy()

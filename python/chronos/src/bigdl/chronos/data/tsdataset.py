@@ -778,6 +778,8 @@ class TSDataset:
                                         time_enc=time_enc,
                                         label_len=label_len,
                                         is_predict=is_predict)
+
+            batch_size = 32 if batch_size is None else batch_size  # _pytorch_fashion_inference
             return DataLoader(torch_dataset,
                               batch_size=batch_size,
                               shuffle=shuffle)

@@ -29,13 +29,13 @@ class TCNForecaster(BasePytorchForecaster):
                                            input_feature_num=1,
                                            output_feature_num=1,
                                            ...)
-            >>> # 2. The from_dataset method can also initialize a TCNForecaster.
+            >>> # 2. Initialize Forecaster from from_tsdataset
             >>> tsdata = TSDataset.from_pandas(df, ...)
             >>> tsdata.roll(lookback=24, horizon=5, ...)
-            >>> forecaster.from_tsdataset(tsdata, past_seq_len=None, **kwargs)
+            >>> forecaster = TCNForecaster.from_tsdataset(tsdata, ...)
             >>> forecaster.fit(tsdata, ...)
             >>> forecaster.to_local()  # if you set distributed=True
-            >>> test_pred = forecaster.predict(x_test)
+            >>> test_pred = forecaster.predict(x_test) # x_test also can be tsdata
             >>> test_eval = forecaster.evaluate((x_test, y_test))
             >>> forecaster.save({ckpt_name})
             >>> forecaster.load({ckpt_name})

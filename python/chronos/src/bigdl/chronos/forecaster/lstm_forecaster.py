@@ -28,13 +28,13 @@ class LSTMForecaster(BasePytorchForecaster):
                                         input_feature_num=2,
                                         output_feature_num=2,
                                         ...)
-        >>> # 2. The from_dataset method can also initialize a LSTMForecaster.
-        >>> tsdata = TSDataset.from_pandas(df, with_split=True, ...)\
+        >>> # 2. Initialize Forecaster from from_tsdataset
+        >>> tsdata = TSDataset.from_pandas(df, ...)
         >>> tsdata.roll(lookback=24, horizon=1)
-        >>> forecaster.from_tsdataset(tsdata, **kwargs)
+        >>> forecaster = LSTMForecaster.from_tsdataset(tsdata, **kwargs)
         >>> forecaster.fit(tsdata, epochs=2, ...)
         >>> forecaster.to_local()  # if you set distributed=True
-        >>> test_pred = forecaster.predict(x_test)
+        >>> test_pred = forecaster.predict(x_test) # x_test also can be tsdata
         >>> test_eval = forecaster.evaluate((x_test, y_test))
         >>> forecaster.save({ckpt_name})
         >>> forecaster.load({ckpt_name})
@@ -153,8 +153,8 @@ class LSTMForecaster(BasePytorchForecaster):
 
         :param tsdataset: A bigdl.chronos.data.tsdataset.TSDataset instance.
         :param past_seq_len: Specify the history time steps (i.e. lookback).
-               No need to specify past_seq_len if tsdataset has called
-               the 'roll' method.
+               Do not specify the 'past_seq_len' if your tsdataset has called
+               the 'TSDataset.roll' method.
         :param kwargs: Specify parameters of Forecaster,
                e.g. loss and optimizer, etc.
 
@@ -166,8 +166,8 @@ class LSTMForecaster(BasePytorchForecaster):
         if all([past_seq_len is None, tsdataset.numpy_x is None]):
             from bigdl.nano.utils.log4Error import invalidInputError
             invalidInputError(False,
-                              "Need to specify 'past_seq_len' for"
-                              " from_dataset or call the 'roll' method of dataset.")
+                              "Forecaster needs 'past_seq_len' to specify "
+                              "the history time step of training.")
 
         output_feature_num = len(tsdataset.target_col)
         input_feature_num = output_feature_num + len(tsdataset.feature_col)

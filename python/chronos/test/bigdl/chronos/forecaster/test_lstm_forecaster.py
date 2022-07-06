@@ -60,7 +60,7 @@ def create_data(loader=False):
         return train_data, val_data, test_data
 
 
-def create_tsdataset():
+def create_tsdataset(roll=True):
     from bigdl.chronos.data import TSDataset
     import pandas as pd
     timeserious = pd.date_range(start='2020-01-01', freq='D', periods=1000)
@@ -74,8 +74,9 @@ def create_tsdataset():
                                            dt_col='timeserious',
                                            target_col=['value1', 'value2'],
                                            with_split=True)
-    for tsdata in [train, test]:
-        tsdata.roll(lookback=24, horizon=1)
+    if roll:
+        for tsdata in [train, test]:
+            tsdata.roll(lookback=24, horizon=1)
     return train, test
 
 
@@ -427,6 +428,21 @@ class TestChronosModelLSTMForecaster(TestCase):
                  epochs=2,
                  batch_size=32)
         yhat = lstm.predict(test, batch_size=32)
+        test.roll(lookback=lstm.data_config['past_seq_len'],
+                  horizon=lstm.data_config['future_seq_len'])
+        _, y_test = test.to_numpy()
+        assert yhat.shape == y_test.shape
+
+        del lstm
+        train, test = create_tsdataset(roll=False)
+        lstm = LSTMForecaster.from_tsdataset(train,
+                                             past_seq_len=24,
+                                             hidden_dim=16,
+                                             layer_num=2)
+        lstm.fit(train,
+                 epochs=2,
+                 batch_size=32)
+        yhat = lstm.predict(test, batch_size=None)
         test.roll(lookback=lstm.data_config['past_seq_len'],
                   horizon=lstm.data_config['future_seq_len'])
         _, y_test = test.to_numpy()

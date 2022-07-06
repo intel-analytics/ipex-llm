@@ -175,10 +175,11 @@ class NBeatsForecaster(BasePytorchForecaster):
 
         :param tsdataset: A bigdl.chronos.data.tsdataset.TSDataset instance.
         :param past_seq_len: Specify the history time steps (i.e. lookback).
-               No need to specify past_seq_len if tsdataset has called
-               the 'roll' method.
+               Do not specify the 'past_seq_len' if your tsdataset has called
+               the 'TSDataset.roll' method.
         :param future_seq_len: Specify the output time steps (i.e. horizon).
-               Same as past_seq_len if tsdataset has called the 'roll' method.
+               Do not specify the 'future_seq_len' if your tsdataset has called
+               the 'TSDataset.roll' method.
         :param kwargs: Specify parameters of Forecaster,
                e.g. loss and optimizer, etc.
 
@@ -187,12 +188,12 @@ class NBeatsForecaster(BasePytorchForecaster):
         if tsdataset.numpy_x is not None:
             past_seq_len = tsdataset.numpy_x.shape[1]
             future_seq_len = tsdataset.numpy_y.shape[1]
-        # TODO Support specifying 'auto' as past_seq_len.
+        # TODO Support specify 'auto' as past_seq_len.
         if all([past_seq_len is None, future_seq_len is None, tsdataset.numpy_x is None]):
             from bigdl.nano.utils.log4Error import invalidInputError
             invalidInputError(False,
-                              "Need to specify 'past_seq_len' and 'future_seq_len' for"
-                              " from_dataset or call the 'roll' method of dataset.")
+                              "Forecaster requires 'past_seq_len' and 'future_seq_len' to specify "
+                              "the history time step and output time step.")
 
         return cls(past_seq_len=past_seq_len,
                    future_seq_len=future_seq_len,
