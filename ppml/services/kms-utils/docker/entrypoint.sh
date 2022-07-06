@@ -94,6 +94,62 @@ elif [ "$action" = "encrypt" ]; then
 		echo "Wrong KMS_TYPE! KMS_TYPE can be (1) ehsm, (2) simple, (3) azure"
                 return -1
         fi
+elif [ "$action" = "encryptwithrepartition" ]; then
+	if [ "$KMS_TYPE" = "ehsm" ]; then
+	    appid=$2
+            appkey=$3
+	    input_path=$4
+	    output_path=$input_path.encrypted
+		java -cp $BIGDL_HOME/jars/bigdl-ppml-spark_3.1.2-2.1.0-SNAPSHOT.jar:$SPARK_HOME/jars/*:$SPARK_HOME/examples/jars/*:$BIGDL_HOME/jars/* \
+		com.intel.analytics.bigdl.ppml.examples.EncryptWithRepartition   \
+		--inputPath $input_path \
+		--outputPath $output_path \
+		--inputEncryptModeValue plain_text \
+                --outputEncryptModeValue AES/CBC/PKCS5Padding \
+		--outputPartitionNum 4 \
+		--primaryKeyPath /home/key/ehsm_encrypted_primary_key \
+		--dataKeyPath /home/key/ehsm_encrypted_data_key \
+		--kmsType EHSMKeyManagementService \
+		--kmsServerIP $EHSM_KMS_IP \
+                --kmsServerPort $EHSM_KMS_PORT \
+                --ehsmAPPID $appid \
+                --ehsmAPPKEY $appkey
+	elif [ "$KMS_TYPE" = "simple" ]; then
+	    appid=$2
+            appkey=$3
+	    input_path=$4
+	    output_path=$input_path.encrypted
+		java -cp $BIGDL_HOME/jars/bigdl-ppml-spark_3.1.2-2.1.0-SNAPSHOT.jar:$SPARK_HOME/jars/*:$SPARK_HOME/examples/jars/*:$BIGDL_HOME/jars/* \
+		com.intel.analytics.bigdl.ppml.examples.EncryptWithRepartition   \
+		--inputPath $input_path \
+		--outputPath $output_path \
+		--inputEncryptModeValue plain_text \
+                --outputEncryptModeValue AES/CBC/PKCS5Padding \
+		--outputPartitionNum 4 \
+                --primaryKeyPath /home/key/simple_encrypted_primary_key \
+                --dataKeyPath /home/key/simple_encrypted_data_key \
+		--kmsType SimpleKeyManagementService \
+                --simpleAPPID $appid \
+                --simpleAPPKEY $appkey
+    elif [ "$KMS_TYPE" = "azure" ]; then
+        keyVaultName=$2
+        input_path=$3
+	    output_path=$input_path.encrypted
+		java -cp $BIGDL_HOME/jars/bigdl-ppml-spark_3.1.2-2.1.0-SNAPSHOT.jar:$SPARK_HOME/jars/*:$SPARK_HOME/examples/jars/*:$BIGDL_HOME/jars/* \
+		com.intel.analytics.bigdl.ppml.examples.EncryptWithRepartition   \
+		--inputPath $input_path \
+		--outputPath $output_path \
+		--inputEncryptModeValue plain_text \
+                --outputEncryptModeValue AES/CBC/PKCS5Padding \
+		--outputPartitionNum 4 \
+                --primaryKeyPath /home/key/simple_encrypted_primary_key \
+                --dataKeyPath /home/key/simple_encrypted_data_key \
+		--kmsType AzureKeyManagementService \
+                --vaultName $keyVaultName
+	else
+                echo "Wrong KMS_TYPE! KMS_TYPE can be (1) ehsm, (2) simple, (3) azure"
+                return -1
+        fi
 elif [ "$action" = "decrypt" ]; then
 	if [ "$KMS_TYPE" = "ehsm" ]; then
 	appid=$2
@@ -148,5 +204,5 @@ elif [ "$action" = "decrypt" ]; then
                 return -1
         fi
 else
-	echo "Wrong action! Action can be (1) enroll, (2) generatekeys, (3) encrypt, (4) decrypt."
+	echo "Wrong action! Action can be (1) enroll, (2) generatekeys, (3) encrypt, (4) decrypt, and (5) encryptwithrepartition."
 fi
