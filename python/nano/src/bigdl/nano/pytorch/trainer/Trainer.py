@@ -302,6 +302,9 @@ class Trainer(pl.Trainer):
             if accelerator is None:
                 bf16_model = BF16Model(model)
                 return bf16_model
+            else:
+                invalidInputError(False,
+                                  "Accelerator {} is invalid for BF16.".format(accelerator))
         if precision == 'int8':
             if not accelerator or accelerator == 'onnxruntime':
                 method_map = {
