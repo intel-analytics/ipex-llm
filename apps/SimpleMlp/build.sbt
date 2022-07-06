@@ -24,8 +24,7 @@ lazy val commonSettings = Seq(
 lazy val app = (project in file(".")).
   settings(commonSettings: _*)
 
-mergeStrategy in assembly := {
-  case PathList("META-INF", xs @ _*) => MergeStrategy.discard
-  case x => MergeStrategy.first
+assemblyMergeStrategy in assembly := {
+ case PathList("META-INF", xs @ _*) => MergeStrategy.discard
+ case x => MergeStrategy.first
 }
-
