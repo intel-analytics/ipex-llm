@@ -16,7 +16,6 @@
 
 
 ARG SPARK_VERSION=2.4.6
-ARG SPARK_HOME=/opt/spark
 ARG BIGDL_VERSION=2.1.0-SNAPSHOT
 
 # stage.1 spark
