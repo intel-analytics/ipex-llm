@@ -52,15 +52,15 @@ if __name__ == "__main__":
     data2 = trans_data_shard.collect()
 
     trans_data_shard = trans_data_shard.deduplicates()
-    data2 = trans_data_shard.collect()
 
     from bigdl.orca.data.transform import *
     scale = MinMaxScaler(inputCol=["hours", "awake"], outputCol="x_scaled")
     data_shard = scale.fit_transform(trans_data_shard)
-    data_shard.compute()
+
+    scale = MinMaxScaler(inputCol=["hours"], outputCol="x_scaled")
+    data_shard = scale.fit_transform(trans_data_shard)
 
     encode = LabelEncode(inputCol="value", outputCol="encoded_value")
     encoded_data_shard = encode.fit_transform(trans_data_shard)
-    data_shard.compute()
 
     stop_orca_context()

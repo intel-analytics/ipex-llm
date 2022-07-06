@@ -36,15 +36,12 @@ class MinMaxScaler:
     def __createScaler__(self):
         invalidInputError(self.inputCol, "inputColumn cannot be empty")
         invalidInputError(self.outputCol, "outputColumn cannot be empty")
-        if len(self.inputCol) > 1:
-            vecOutputCol = str(uuid.uuid1()) + "x_vec"
-            assembler = SparkVectorAssembler(inputCols=self.inputCol, outputCol=vecOutputCol)
-            scaler = SparkMinMaxScaler(min=self.min, max=self.max,
-                                       inputCol=vecOutputCol, outputCol=self.outputCol)
-            self.scaler = SparkPipeline(stages=[assembler, scaler])
-        else:
-            self.scaler = SparkMinMaxScaler(min=self.min, max=self.max,
-                                            inputCol=self.inputCol, outputCol=self.outputCol)
+
+        vecOutputCol = str(uuid.uuid1()) + "x_vec"
+        assembler = SparkVectorAssembler(inputCols=self.inputCol, outputCol=vecOutputCol)
+        scaler = SparkMinMaxScaler(min=self.min, max=self.max,
+                                   inputCol=vecOutputCol, outputCol=self.outputCol)
+        self.scaler = SparkPipeline(stages=[assembler, scaler])
 
     def setInputOutputCol(self, inputCol, outputCol):
         self.inputCol = inputCol
@@ -55,15 +52,16 @@ class MinMaxScaler:
         df = shard.to_spark_df()
         self.scalerModel = self.scaler.fit(df)
         scaledData = self.scalerModel.transform(df)
-        data_shards = SparkXShards.from_sparkdf(scaledData)
+        data_shards = SparkXShards.from_spark_df(scaledData)
         return data_shards
 
     def transform(self, shard):
         invalidInputError(self.scalerModel, "Please call fit_transform first")
         df = shard.to_spark_df()
         scaledData = self.scalerModel.transform(df)
-        data_shards = SparkXShards.from_sparkdf(scaledData)
+        data_shards = SparkXShards.from_spark_df(scaledData)
         return data_shards
+
 
 class LabelEncode:
     def __init__(self, inputCol=None, outputCol=None):
@@ -88,12 +86,12 @@ class LabelEncode:
         df = shard.to_spark_df()
         self.indexModel = self.indexer.fit(df)
         indexedData = self.indexModel.transform(df)
-        data_shards = SparkXShards.from_sparkdf(indexedData)
+        data_shards = SparkXShards.from_spark_df(indexedData)
         return data_shards
 
     def transform(self, shard):
         invalidInputError(self.indexModel, "Please call fit_transform first")
         df = shard.to_spark_df()
         scaledData = self.indexModel.transform(df)
-        data_shards = SparkXShards.from_sparkdf(scaledData)
+        data_shards = SparkXShards.from_spark_df(scaledData)
         return data_shards
