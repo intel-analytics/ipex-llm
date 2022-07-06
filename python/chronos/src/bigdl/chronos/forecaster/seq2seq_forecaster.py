@@ -151,36 +151,3 @@ class Seq2SeqForecaster(BasePytorchForecaster):
         self.use_hpo = False
 
         super().__init__()
-
-    @staticmethod
-    def from_tsdataset(tsdataset, past_seq_len=None, future_seq_len=None, **kwargs):
-        '''
-        Build a Seq2Seq Forecaster Model.
-
-        :param tsdataset: A tsdataset that has called the `tsdataset.roll` method.
-        :param past_seq_len: Specify the history time steps (i.e. lookback).
-               No need to specify past_seq_len if tsdataset has called
-               the 'roll' method.
-        :param future_seq_len: Specify the history time steps (i.e. lookback).
-               Same as past_seq_len if tsdataset has called
-               the 'roll' method.
-        :param kwargs: Specify parameters of Forecaster,
-               e.g. loss and optimizer, etc.
-
-        return: A Seq2Seq Forecaster Model.
-        '''
-        if tsdataset.numpy_x is not None:
-            past_seq_len = tsdataset.numpy_x.shape[1]
-            future_seq_len = tsdataset.numpy_y.shape[1]
-        if all([past_seq_len is None, future_seq_len is None, tsdataset.numpy_x is None]):
-            from bigdl.nano.utils.log4Error import invalidInputError
-            invalidInputError(False,
-                              "Need to specify 'past_seq_len' and 'future_seq_len' for"
-                              " from_dataset or call the 'roll' method of dataset.")
-        output_feature_num = len(tsdataset.target_col)
-        input_feature_num = output_feature_num + len(tsdataset.feature_col)
-        return Seq2SeqForecaster(past_seq_len=past_seq_len,
-                                 future_seq_len=future_seq_len,
-                                 input_feature_num=input_feature_num,
-                                 output_feature_num=output_feature_num,
-                                 **kwargs)

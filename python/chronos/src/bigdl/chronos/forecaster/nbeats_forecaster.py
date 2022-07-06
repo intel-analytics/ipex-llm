@@ -168,8 +168,8 @@ class NBeatsForecaster(BasePytorchForecaster):
 
         super().__init__()
 
-    @staticmethod
-    def from_tsdataset(tsdataset, past_seq_len=None, future_seq_len=None, **kwargs):
+    @classmethod
+    def from_tsdataset(cls, tsdataset, past_seq_len=None, future_seq_len=None, **kwargs):
         """
         Build a NBeats Forecaster Model.
 
@@ -194,6 +194,6 @@ class NBeatsForecaster(BasePytorchForecaster):
                               "Need to specify 'past_seq_len' and 'future_seq_len' for"
                               " from_dataset or call the 'roll' method of dataset.")
 
-        return NBeatsForecaster(past_seq_len=past_seq_len,
-                                future_seq_len=future_seq_len,
-                                **kwargs)
+        return cls(past_seq_len=past_seq_len,
+                   future_seq_len=future_seq_len,
+                   **kwargs)

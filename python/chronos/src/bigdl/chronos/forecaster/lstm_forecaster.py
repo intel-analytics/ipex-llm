@@ -146,8 +146,8 @@ class LSTMForecaster(BasePytorchForecaster):
 
         super().__init__()
 
-    @staticmethod
-    def from_tsdataset(tsdataset, past_seq_len=None, **kwargs):
+    @classmethod
+    def from_tsdataset(cls, tsdataset, past_seq_len=None, **kwargs):
         '''
         Build a LSTM Forecaster Model.
 
@@ -171,7 +171,7 @@ class LSTMForecaster(BasePytorchForecaster):
 
         output_feature_num = len(tsdataset.target_col)
         input_feature_num = output_feature_num + len(tsdataset.feature_col)
-        return LSTMForecaster(past_seq_len=past_seq_len,
-                              input_feature_num=input_feature_num,
-                              output_feature_num=output_feature_num,
-                              **kwargs)
+        return cls(past_seq_len=past_seq_len,
+                   input_feature_num=input_feature_num,
+                   output_feature_num=output_feature_num,
+                   **kwargs)
