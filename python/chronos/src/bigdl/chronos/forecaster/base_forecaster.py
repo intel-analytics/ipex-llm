@@ -223,8 +223,6 @@ class BasePytorchForecaster(Forecaster):
                | 4. A bigdl.chronos.data.tsdataset.TSDataset instance:
                | We provide built-in time series classes,
                | you only need a few operations to complete the data preprocessing.
-               | For more information please refer to
-               | https://bigdl.readthedocs.io/en/latest/doc/PythonAPI/Chronos/tsdataset.html
 
         :param validation_data: Validation sample for validation loop. Defaults to 'None'.
                If you do not input data for 'validation_data', the validation_step will be skipped.
@@ -353,8 +351,6 @@ class BasePytorchForecaster(Forecaster):
                | 4. A bigdl.chronos.data.tsdataset.TSDataset instance:
                | We provide built-in time series classes,
                | you only need a few operations to complete the data preprocessing.
-               | For more information please refer to
-               | https://bigdl.readthedocs.io/en/latest/doc/PythonAPI/Chronos/tsdataset.html
 
         :param batch_size: predict batch size. The value will not affect predict
                result but will affect resources cost(e.g. memory and time).
@@ -435,8 +431,6 @@ class BasePytorchForecaster(Forecaster):
                | 3. A bigdl.chronos.data.tsdataset.TSDataset instance:
                | We provide built-in time series classes,
                | you only need a few operations to complete the data preprocessing.
-               | For more information please refer to
-               | https://bigdl.readthedocs.io/en/latest/doc/PythonAPI/Chronos/tsdataset.html
 
         :param batch_size: predict batch size. The value will not affect predict
                result but will affect resources cost(e.g. memory and time). Defaults
@@ -545,8 +539,6 @@ class BasePytorchForecaster(Forecaster):
                | 4. A bigdl.chronos.data.tsdataset.TSDataset instance:
                | We provide built-in time series classes,
                | you only need a few operations to complete the data preprocessing.
-               | For more information please refer to
-               | https://bigdl.readthedocs.io/en/latest/doc/PythonAPI/Chronos/tsdataset.html
 
         :param batch_size: evaluate batch size. The value will not affect evaluate
                result but will affect resources cost(e.g. memory and time).
@@ -635,8 +627,6 @@ class BasePytorchForecaster(Forecaster):
                | 3. A bigdl.chronos.data.tsdataset.TSDataset instance:
                | We provide built-in time series classes,
                | you only need a few operations to complete the data preprocessing.
-               | For more information please refer to
-               | https://bigdl.readthedocs.io/en/latest/doc/PythonAPI/Chronos/tsdataset.html
 
         :param batch_size: evaluate batch size. The value will not affect evaluate
                result but will affect resources cost(e.g. memory and time).
