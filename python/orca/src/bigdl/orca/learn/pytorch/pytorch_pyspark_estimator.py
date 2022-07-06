@@ -230,7 +230,7 @@ class PyTorchPySparkEstimator(BaseEstimator):
                                                            num_workers=self.num_workers)
 
         sc = OrcaContext.get_spark_context()
-        self.create_tcpstore_server()
+        _ = self.create_tcpstore_server()
         cluster_info = self._get_cluster_info(sc)
         state_dict = self._get_broadcasted_state_dict(sc)
         init_params = dict(
