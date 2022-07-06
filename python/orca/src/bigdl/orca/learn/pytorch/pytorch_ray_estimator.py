@@ -173,7 +173,7 @@ class PyTorchRayEstimator(OrcaRayEstimator):
 
             logger.info(f"initializing pytorch process group on {address}")
 
-            dist.TCPStore(driver_ip, tcp_port, -1, True, dist.constants.default_pg_timeout)
+            _ = dist.TCPStore(driver_ip, tcp_port, -1, True, dist.constants.default_pg_timeout)
 
             ray.get([
                 worker.setup_distribute.remote(i, num_nodes, driver_ip, tcp_port)
