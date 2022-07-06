@@ -60,6 +60,19 @@ class LightningModule(pl.LightningModule):
             if not model_func == pl_func:
                 setattr(self, func, model_func)
 
+    def compile(self,
+                loss: _Loss = None, optimizer: Optimizer = None,
+                scheduler: _LRScheduler = None,
+                metrics: List[Metric] = None):
+        if loss is not None:
+            self.loss = loss
+        if optimizer is not None:
+            self.optimizer = optimizer
+        if scheduler is not None:
+            self.scheduler = scheduler
+        if metrics is not None:
+            self.metrics = metrics
+
     def forward(self, *args):
         """Same as torch.nn.Module.forward()."""
         nargs = len(inspect.getfullargspec(self.model.forward).args[1:])
