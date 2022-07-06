@@ -143,14 +143,10 @@ class Trainer(pl.Trainer):
                     plugin = distributed_ray(num_workers=num_processes,  # type: ignore
                                              use_ipex=self.use_ipex,
                                              enable_bf16=enable_bf16)
-                if self.use_ipex:
-                    if TORCH_VERSION_LESS_1_10:
-                        accelerator = create_IPEXAccelerator_1_9(training_type_plugin=plugin,
-                                                                 enable_bf16=enable_bf16)
-                    else:
-                        accelerator = None
-                super().__init__(accelerator=accelerator,
-                                 plugins=[plugin], *args, **kwargs)
+                if self.use_ipex and TORCH_VERSION_LESS_1_10:
+                    accelerator = create_IPEXAccelerator_1_9(training_type_plugin=plugin,
+                                                             enable_bf16=enable_bf16)
+                super().__init__(accelerator=accelerator, plugins=[plugin], *args, **kwargs)
             else:
                 if distributed_backend == "spawn":
                     from bigdl.nano.pytorch.strategies import DDPSpawnStrategy
