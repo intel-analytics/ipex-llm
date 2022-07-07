@@ -22,7 +22,7 @@ from ..model import AcceleratedModel
 
 class AcceleratedLightningModule(AcceleratedModel, LightningModule):
     def __init__(self, model):
-        super().__init__()
+        super().__init__(model)
         self.model = model
         self.train(False)
 
@@ -32,7 +32,7 @@ class AcceleratedLightningModule(AcceleratedModel, LightningModule):
         return self.on_forward_end(outputs)
 
     @property
-    def _forward_args(self):
+    def forward_args(self):
         invalidInputError(False,
                           errMsg="{}._forward_args is not implemented.".format(str(type(self))))
         return

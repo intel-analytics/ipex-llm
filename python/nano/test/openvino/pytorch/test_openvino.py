@@ -50,6 +50,9 @@ class TestOpenVINO(TestCase):
         y_hat = openvino_model(x)
         assert y_hat.shape == (10, 10)
 
+        trainer.validate(openvino_model, dataloader)
+        trainer.test(openvino_model, dataloader)
+
     def test_trainer_save_openvino(self):
         trainer = Trainer(max_epochs=1)
         model = mobilenet_v3_small(num_classes=10)

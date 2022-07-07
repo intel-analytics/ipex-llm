@@ -55,12 +55,12 @@ class LightningModule(pl.LightningModule):
         self.metrics = metrics
 
     @property
-    def _forward_args(self):
+    def forward_args(self):
         return inspect.getfullargspec(self.model.forward).args[1:]
 
     @property
     def _nargs(self):
-        return len(self._forward_args)
+        return len(self.forward_args)
 
     def compile(self,
                 loss: _Loss = None, optimizer: Optimizer = None,
