@@ -23,6 +23,8 @@ The code is available in projects, including [Client 1 code](fgboost_regression_
 ### 2.1 FL Context
 First, import the package.
 ```python
+import numpy as np
+import pandas as pd
 import torch
 from torch import nn
 from bigdl.ppml.fl.estimator import Estimator
