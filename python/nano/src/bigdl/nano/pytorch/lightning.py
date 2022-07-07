@@ -53,13 +53,14 @@ class LightningModule(pl.LightningModule):
         self.optimizer = optimizer
         self.scheduler = scheduler
         self.metrics = metrics
-        if isinstance(model, pl.LightningModule):
-            model_cls = type(model)
-            for func in ["train_step", "val_step", "test_step", "predict_step"]:
-                model_func = getattr(model_cls, func)
-                pl_func = getattr(pl.LightningModule, func)
-                if not model_func == pl_func:
-                    setattr(self, func, model_func)
+
+    @property
+    def _forward_args(self):
+        return inspect.getfullargspec(self.model.forward).args[1:]
+
+    @property
+    def _nargs(self):
+        return len(self._forward_args)
 
     def compile(self,
                 loss: _Loss = None, optimizer: Optimizer = None,
@@ -76,11 +77,10 @@ class LightningModule(pl.LightningModule):
 
     def forward(self, *args):
         """Same as torch.nn.Module.forward()."""
-        nargs = len(inspect.getfullargspec(self.model.forward).args[1:])
         if isinstance(args, fx.Proxy):
-            args = [args[i] for i in range(nargs)]
+            args = [args[i] for i in range(self._nargs)]
         else:
-            args = args[:nargs]
+            args = args[:self._nargs]
         return self.model(*args)
 
     def on_train_start(self) -> None:
@@ -90,14 +90,14 @@ class LightningModule(pl.LightningModule):
 
     def training_step(self, batch, batch_idx):
         """Define a single training step, return a loss tensor."""
-        y_hat = self(*batch)
+        y_hat = self(*batch[:self._nargs])
         loss = self.loss(y_hat, batch[-1])  # use last output as target
         self.log("train/loss", loss, on_step=True, logger=True)
         return loss
 
     def validation_step(self, batch, batch_idx):
         """Define a single validation step."""
-        y_hat = self(*batch)
+        y_hat = self(*batch[:self._nargs])
         if self.loss:
             loss = self.loss(y_hat, batch[-1])  # use last output as target
             self.log("val/loss", loss, on_epoch=True,
@@ -109,15 +109,15 @@ class LightningModule(pl.LightningModule):
 
     def test_step(self, batch, batch_idx):
         """Define a single test step."""
-        y_hat = self(*batch)
+        y_hat = self(*batch[:self._nargs])
         if self.metrics:
             acc = {"test/{}_{}".format(type(metric).__name__, i): metric(y_hat, batch[-1])
                    for i, metric in enumerate(self.metrics)}
             self.log_dict(acc, on_epoch=True, prog_bar=True, logger=True)
 
-    def predict_step(self, batch, batch_idx):
+    def predict_step(self, batch, batch_idx, dataloader_idx=0):
         """Define a single predict step."""
-        return self(*batch)
+        return self(*batch[:self._nargs])
 
     def configure_optimizers(self):
         """Setup the optimizers for this module, and return optimizers and schedulers."""

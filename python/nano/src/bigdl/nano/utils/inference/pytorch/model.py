@@ -13,12 +13,11 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-from pytorch_lightning import LightningModule
-from ..model import AcceleratedModel
 import torch
-from pathlib import Path
-from .model_utils import get_forward_args
+
+from bigdl.nano.pytorch.lightning import LightningModule
 from bigdl.nano.utils.log4Error import invalidInputError
+from ..model import AcceleratedModel
 
 
 class AcceleratedLightningModule(AcceleratedModel, LightningModule):
@@ -32,7 +31,16 @@ class AcceleratedLightningModule(AcceleratedModel, LightningModule):
         outputs = self.forward_step(*inputs)
         return self.on_forward_end(outputs)
 
-    def train(self, mode=True):
+    @property
+    def _forward_args(self):
+        invalidInputError(False,
+                          errMsg="{}._forward_args is not implemented.".format(str(type(self))))
+        return
+
+    def on_train_start(self) -> None:
+        invalidInputError(False, errMsg="This model is not trainable!")
+
+    def train(self, mode=False):
         if mode:
             invalidInputError(False, "This model is not trainable!")
         super().train(mode)
