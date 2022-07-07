@@ -4,7 +4,7 @@ name: Nano Unit Tests For INC
 on:
   # Triggers the workflow on push or pull request events but only for the main branch
   push:
-    branches: [ upgrade-nano-tf ]
+    branches: [ main ]
   pull_request:
     branches: [ main ]
     paths:
