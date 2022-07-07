@@ -21,12 +21,11 @@ PPML allows organizations to explore powerful AI techniques while working to min
 TODO: replace this image
 ![image](https://user-images.githubusercontent.com/61072813/177718320-6f05137a-2f09-4d02-b173-ac3b0dfd45ff.png)
 
-With BigDL PPML, you can run
-- Trusted Spark SQL & Dataframe: used for big data analytics, can run Spark SQL, Dataframe, Spark MLlib
-- Trusted ML: MLlib, XGBoost
-- Trusted DL: BigDL, Orca, Nano, DLlib
-- Trusted FL (Federated Learning): 
-
+With BigDL PPML, you can run trusted Big Data & AI applications
+- Trusted Spark SQL & Dataframe: you can do trusted big data analytics, such as Spark SQL, Dataframe, Spark MLlib
+- Trusted ML: you can run trusted machine learning programs, such as MLlib, XGBoost
+- Trusted DL: you can run trusted deep learning programs, such as BigDL, Orca, Nano, DLlib
+- Trusted FL (Federated Learning): TODO
 
 ## Getting Started with PPML
 
