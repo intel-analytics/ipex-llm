@@ -20,7 +20,7 @@ We use [Diabetes](https://www.kaggle.com/competitions/house-prices-advanced-regr
 
 The code is available in projects, including [Client 1 code](fgboost_regression_party_1.py) and [Client 2 code](fgboost_regression_party_2.py). You could directly start two different terminals are run them respectively to start a federated learning, and the order of start does not matter. Following is the detailed step-by-step tutorial to introduce how the code works.
 
-### 2.1 FL Context
+### 2.1 Package Import
 First, import the package.
 ```python
 import numpy as np
