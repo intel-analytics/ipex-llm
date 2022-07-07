@@ -4,7 +4,7 @@ name: Nano Unit Tests PyTorch
 on:
   # Triggers the workflow on push or pull request events but only for the main branch
   push:
-    branches: [ main ]
+    branches: [ upgrade-nano-tf ]
   pull_request:
     branches: [ main ]
     paths:
@@ -147,6 +147,45 @@ jobs:
           bash python/nano/test/run-nano-automl-pytorch-tests.sh
           source $CONDA/bin/deactivate
           $CONDA/bin/conda remove -n nano-automl-pytorch --all
+        env:
+          ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
+
+      - name: Run inc PyTorch unit tests
+        shell: bash
+        run: |
+          $CONDA/bin/conda create -n inc-pytorch -y python==3.7.10 setuptools=58.0.4
+          source $CONDA/bin/activate inc-pytorch
+          $CONDA/bin/conda info
+          bash python/nano/dev/build_and_install.sh linux default false pytorch
+          pip install pytest
+          if [ ! -z "${{matrix.pytorch-version}}" ]; then
+            pip install ${{matrix.pytorch-version}} -f https://download.pytorch.org/whl/torch_stable.html
+          fi
+          pip install neural-compressor==1.11
+          source bigdl-nano-init
+          bash python/nano/test/run-nano-pytorch-inc-tests.sh
+          source $CONDA/bin/deactivate
+          $CONDA/bin/conda remove -n inc-pytorch --all
+        env:
+          ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
+
+      - name: Run onnx PyTorch unit tests
+        shell: bash
+        run: |
+          $CONDA/bin/conda create -n onnx-pytorch -y python==3.7.10 setuptools=58.0.4
+          source $CONDA/bin/activate onnx-pytorch
+          $CONDA/bin/conda info
+          bash python/nano/dev/build_and_install.sh linux default false pytorch
+          if [ ! -z "${{matrix.pytorch-version}}" ]; then
+            pip install ${{matrix.pytorch-version}} -f https://download.pytorch.org/whl/torch_stable.html
+          fi
+          pip install pytest
+          pip install neural-compressor==1.11
+          pip install onnxruntime onnxruntime-extensions onnx
+          source bigdl-nano-init
+          bash python/nano/test/run-nano-pytorch-onnx-tests.sh
+          source $CONDA/bin/deactivate
+          $CONDA/bin/conda remove -n onnx-pytorch --all
         env:
           ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
 

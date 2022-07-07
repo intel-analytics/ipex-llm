@@ -4,7 +4,7 @@ name: Nano Unit Tests Tensorflow
 on:
   # Triggers the workflow on push or pull request events but only for the main branch
   push:
-    branches: [ main ]
+    branches: [ upgrade-nano-tf ]
   pull_request:
     branches: [ main ]
     paths:
@@ -137,5 +137,24 @@ jobs:
           bash python/nano/test/run-nano-tf-openvino-tests.sh
           source $CONDA/bin/deactivate
           $CONDA/bin/conda remove -n openvino-tensorflow --all
+        env:
+          ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
+
+      - name: Run inc TF unit tests
+        shell: bash
+        run: |
+          $CONDA/bin/conda create -n inc-tf -y python==3.7.10 setuptools=58.0.4
+          source $CONDA/bin/activate inc-tf
+          $CONDA/bin/conda info
+          bash python/nano/dev/build_and_install.sh linux default false tensorflow
+          if [ ! -z "${{matrix.tf-version}}" ]; then
+            pip install ${{matrix.tf-version}}
+          fi
+          pip install pytest
+          pip install neural-compressor==1.11
+          source bigdl-nano-init
+          bash python/nano/test/run-nano-tf-inc-tests.sh
+          source $CONDA/bin/deactivate
+          $CONDA/bin/conda remove -n inc-tf --all
         env:
           ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
