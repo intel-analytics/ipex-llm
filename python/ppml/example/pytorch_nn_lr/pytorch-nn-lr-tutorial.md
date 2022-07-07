@@ -128,6 +128,11 @@ Then call `fit` method to train
 ```python
 response = ppl.fit(x, y)
 ```
+### 2.7 Predict
+```python
+result = ppl.predict(x)
+```
+
 ## 3 Run FGBoost
 FL Server is required before running any federated applications. Check [Start FL Server]() section for details.
 ### 3.1 Start FL Server in SGX

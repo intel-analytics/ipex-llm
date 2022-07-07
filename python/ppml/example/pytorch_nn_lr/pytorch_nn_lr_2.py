@@ -38,3 +38,4 @@ if __name__ == '__main__':
                                optimizer_args={'lr':1e-3},
                                target='localhost:8980')
     response = ppl.fit(x, y)
+    result = ppl.predict(x)

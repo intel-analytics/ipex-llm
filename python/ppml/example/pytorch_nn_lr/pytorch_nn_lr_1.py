@@ -54,3 +54,4 @@ if __name__ == '__main__':
                                target='localhost:8980',
                                server_model=server_model)
     response = ppl.fit(x, y)
+    result = ppl.predict(x)
