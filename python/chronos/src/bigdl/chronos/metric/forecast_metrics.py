@@ -15,10 +15,23 @@
 #
 
 import torch
+from torch import Tensor
 from numpy import ndarray
 from functools import partial
 from torchmetrics.functional import mean_squared_error, mean_absolute_error,\
-    mean_absolute_percentage_error, r2_score, symmetric_mean_absolute_percentage_error
+    mean_absolute_percentage_error, r2_score
+
+
+EPSILON = 1e-10
+
+
+# implemented this metric to keep up with orca.automl
+def symmetric_mean_absolute_percentage_error(preds: Tensor, target: Tensor) -> Tensor:
+    abs_diff = torch.abs(preds - target)
+    abs_per_error = abs_diff / (torch.abs(preds) + torch.abs(target) + EPSILON)
+    sum_abs_per_error = 100 * torch.sum(abs_per_error)
+    num_obs = target.numel()
+    return sum_abs_per_error / num_obs
 
 
 TORCHMETRICS_REGRESSION_MAP = {

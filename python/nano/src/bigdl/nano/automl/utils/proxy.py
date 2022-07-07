@@ -21,7 +21,8 @@ from bigdl.nano.utils.log4Error import invalidInputError
 def proxy_method(cls, name):
     # This unbound method will be pulled from the superclass.
     invalidInputError(hasattr(cls, name),
-                      "cls should have name attribute")
+                      f"%s should have %s attribute" %
+                      (str(cls.__name__), name))
     proxyed = getattr(cls, name)
 
     @functools.wraps(proxyed)
@@ -32,5 +33,6 @@ def proxy_method(cls, name):
 
 def proxy_methods(cls):
     for name in cls.PROXYED_METHODS:
-        setattr(cls, name, proxy_method(cls, name))
+        if hasattr(cls, name):
+            setattr(cls, name, proxy_method(cls, name))
     return cls

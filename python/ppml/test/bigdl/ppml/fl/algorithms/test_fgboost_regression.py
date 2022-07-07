@@ -31,10 +31,10 @@ from bigdl.ppml.fl.utils import FLTest
 
 resource_path = os.path.join(os.path.dirname(__file__), "../resources")
 
-def mock_process(data_train, data_test, target="localhost:8980"):
+def mock_process(client_id, data_train, data_test, target="localhost:8980"):
     # FLContext is a singleton in JVM, so another process initialization is needed
     # prepare_env()
-    init_fl_context(target)
+    init_fl_context(client_id, target)
 
     df_train = pd.read_csv(os.path.join(resource_path, data_train))
 
@@ -59,9 +59,10 @@ class TestFGBoostRegression(FLTest):
         multiprocessing.set_start_method('spawn') 
 
     def setUp(self) -> None:
+        self.update_available_port()
         self.fl_server = FLServer()
         self.fl_server.set_port(self.port)
-        init_fl_context(self.target)
+        init_fl_context("1", self.target)
         # this explicit set is needed, default value is 'fork' on Unix
         # if 'fork', the resources would be inherited and thread crash would occur
         # (to be verified)
@@ -105,10 +106,10 @@ class TestFGBoostRegression(FLTest):
         self.fl_server.build()
         self.fl_server.start()
         mock_party1 = Process(target=mock_process, 
-        args=('house-prices-train-preprocessed-1.csv', 'house-prices-test-preprocessed-1.csv', self.target))
+        args=('2', 'house-prices-train-preprocessed-1.csv', 'house-prices-test-preprocessed-1.csv', self.target))
         mock_party1.start()
         mock_party2 = Process(target=mock_process, 
-        args=('house-prices-train-preprocessed-2.csv', 'house-prices-test-preprocessed-2.csv', self.target))
+        args=('3', 'house-prices-train-preprocessed-2.csv', 'house-prices-test-preprocessed-2.csv', self.target))
         mock_party2.start()        
 
         df_train = pd.read_csv(
@@ -125,7 +126,8 @@ class TestFGBoostRegression(FLTest):
         df_test = pd.read_csv(os.path.join(resource_path, "house-prices-test-preprocessed-0.csv"))
         result = fgboost_regression.predict(df_test, feature_columns=df_test.columns)
         result = np.exp(result)
-        assert np.allclose(result, TestFGBoostRegression.xgboost_result, rtol=100, atol=100)
+        assert len(result) == len(TestFGBoostRegression.xgboost_result)
+        assert np.allclose(result, TestFGBoostRegression.xgboost_result, rtol=10, atol=10)
 
 if __name__ == '__main__':
     unittest.main()

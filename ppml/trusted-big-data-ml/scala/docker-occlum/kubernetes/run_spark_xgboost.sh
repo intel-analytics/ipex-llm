@@ -10,7 +10,7 @@ ${SPARK_HOME}/bin/spark-submit \
     --conf spark.kubernetes.container.image=intelanalytics/bigdl-ppml-trusted-big-data-ml-scala-occlum:2.1.0-SNAPSHOT \
     --conf spark.kubernetes.authenticate.driver.serviceAccountName=spark \
     --conf spark.kubernetes.executor.deleteOnTermination=false \
-    --conf spark.kubernetes.driver.podTemplateFile=./executor.yaml \
+    --conf spark.kubernetes.driver.podTemplateFile=./driver.yaml \
     --conf spark.kubernetes.executor.podTemplateFile=./executor.yaml \
     --conf spark.kubernetes.file.upload.path=file:///tmp \
     --conf spark.kubernetes.sgx.log.level=off \

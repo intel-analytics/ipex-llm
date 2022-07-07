@@ -51,24 +51,14 @@ def run_parallel(func, kwargs, n_procs):
 
 
 def _run_subprocess(tmpdir, num_processes):
-    from bigdl.nano.common.cpu_schedule import schedule_workers
+    from bigdl.nano.common.cpu_schedule import schedule_processors
 
-    cpu_procs = schedule_workers(num_processes)
+    envs = schedule_processors(num_processes)
 
     processes = []
     cwd_path = os.path.split(os.path.realpath(__file__))[0]
     for i in range(num_processes):
-
-        env = copy.deepcopy(os.environ)
-
-        env.update({
-            "KMP_AFFINITY": f"granularity=fine,proclist"
-                            f"=[{','.join([str(i) for i in cpu_procs[i]])}],explicit",
-            "OMP_NUM_THREADS": str(len(cpu_procs[i])),
-            # "PROCESS_IDX": str(i),
-        })
-
         processes.append(subprocess.Popen([sys.executable, f"{cwd_path}/parallel_worker.py",
-                                           tmpdir], env=env))
+                                           tmpdir], env=envs[i]))
 
     return processes

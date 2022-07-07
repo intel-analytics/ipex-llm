@@ -10,7 +10,7 @@ BigDL Documentation
 * `RayOnSpark <doc/Ray/Overview/ray.html>`_: run Ray programs directly on Big Data clusters
 * `Chronos <doc/Chronos/Overview/chronos.html>`_: scalable time series analysis using AutoML
 * `PPML <doc/PPML/Overview/ppml.html>`_: privacy preserving big data analysis and machine learning (*experimental*)
-* `Nano <doc/Nano/Overview/nano.html>`_: automatically accelerate TensorFlow and PyTorch pipelines by applying model CPU optimizations
+* `Nano <doc/Nano/Overview/nano.html>`_: automatically accelerate TensorFlow and PyTorch pipelines by applying modern CPU optimizations
 -------
 
 
@@ -50,8 +50,9 @@ BigDL Documentation
    doc/Nano/QuickStart/pytorch_inference.md
    doc/Nano/QuickStart/tensorflow_train.md
    doc/Nano/QuickStart/tensorflow_inference.md
-   doc/Nano/QuickStart/hpo.md
+   doc/Nano/QuickStart/hpo.rst
    doc/Nano/Overview/known_issues.md
+   doc/Nano/QuickStart/index.md
 
 .. toctree::
    :maxdepth: 1
@@ -71,6 +72,7 @@ BigDL Documentation
    doc/Orca/Overview/distributed-training-inference.md
    doc/Orca/Overview/distributed-tuning.md
    doc/Ray/Overview/ray.md
+   doc/Orca/Overview/known_issues.md
 
 .. toctree::
    :maxdepth: 1
@@ -86,8 +88,9 @@ BigDL Documentation
    :caption: PPML Overview
 
    doc/PPML/Overview/ppml.md
-   doc/PPML/Overview/trusted_big_bata_analytics_and_ml.md
+   doc/PPML/Overview/trusted_big_data_analytics_and_ml.md
    doc/PPML/Overview/trusted_fl.md
+   doc/PPML/QuickStart/secure_your_services.md
    doc/PPML/QuickStart/build_kernel_with_sgx.md
    doc/PPML/QuickStart/deploy_intel_sgx_device_plugin_for_kubernetes.md
    doc/PPML/QuickStart/trusted-serving-on-k8s-guide.md

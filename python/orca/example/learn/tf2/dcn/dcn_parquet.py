@@ -182,7 +182,7 @@ if __name__ == "__main__":
     estimator = Estimator.from_keras(model_creator=model_creator,
                                      verbose=True,
                                      config=config,
-                                     backend="tf2")
+                                     backend="ray")
 
     estimator.fit(train_dataset, 8, batch_size=8192, steps_per_epoch=steps,
                   validation_data=val_dataset, validation_steps=val_steps)

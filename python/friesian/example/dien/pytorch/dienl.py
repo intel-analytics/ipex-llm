@@ -151,11 +151,6 @@ def build_input_features(feature_columns):
     return features
 
 
-def get_feature_names(feature_columns):
-    features = build_input_features(feature_columns)
-    return list(features.keys())
-
-
 def get_dense_input(X, features, feature_columns):
     dense_feature_columns = list(filter(lambda x: isinstance(
         x, DenseFeat), feature_columns)) if feature_columns else []
@@ -278,35 +273,7 @@ def create_embedding_matrix(feature_columns, init_std=0.0001, linear=False,
     return embedding_dict.to(device)
 
 
-def build_input_features(feature_columns):
-    # Return OrderedDict: {feature_name:(start, start+dimension)}
-
-    features = OrderedDict()
-
-    start = 0
-    for feat in feature_columns:
-        feat_name = feat.name
-        if feat_name in features:
-            continue
-        if isinstance(feat, SparseFeat):
-            features[feat_name] = (start, start + 1)
-            start += 1
-        elif isinstance(feat, DenseFeat):
-            features[feat_name] = (start, start + feat.dimension)
-            start += feat.dimension
-        elif isinstance(feat, VarLenSparseFeat):
-            features[feat_name] = (start, start + feat.maxlen)
-            start += feat.maxlen
-            if feat.length_name is not None and feat.length_name not in features:
-                features[feat.length_name] = (start, start + 1)
-                start += 1
-        else:
-            raise TypeError("Invalid feature column type,got", type(feat))
-    return features
-
 # DeepCTR.utils
-
-
 def concat_fun(inputs, axis=-1):
     if len(inputs) == 1:
         return inputs[0]
