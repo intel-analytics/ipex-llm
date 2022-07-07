@@ -201,10 +201,10 @@ class DDPSpawnStrategy(_DDPSpawnStrategy):
         if trainer_fn == TrainerFn.FITTING:
             self.configure_ddp()
         else:
-            # when calling `trainer.test()`, the `model.training` won't be set to `False`,
+            # `trainer.test()` won't set `model.training` to `False` automatically in pl 1.6,
             # then the following `ipex_optimize()` call will report an error,
             # so we need to set it to `False` manuallay
-            self.model.training = False
+            self.model.eval()
 
         if self.use_ipex and not TORCH_VERSION_LESS_1_10:
             dtype = torch.bfloat16 if self.enable_bf16 else None
