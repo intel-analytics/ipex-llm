@@ -23,7 +23,7 @@ jobs:
         python-version: ["3.7"]
         tf-version: [
           "intel-tensorflow==2.8.0 keras==2.8.0 tensorflow-estimator==2.8.0",
-          "intel-tensorflow==2.7.0 keras==2.7.0 tensorflow-estimator==2.7.0",
+          "intel-tensorflow==2.9.1 keras==2.9.0 tensorflow-estimator==2.9.0",
           ""
           ]
 
