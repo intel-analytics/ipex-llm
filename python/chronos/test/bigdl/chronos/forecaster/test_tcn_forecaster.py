@@ -63,15 +63,15 @@ def create_data(loader=False):
 def create_tsdataset(roll=True):
     from bigdl.chronos.data import TSDataset
     import pandas as pd
-    timeserious = pd.date_range(start='2020-01-01', freq='D', periods=1000)
+    timeseries = pd.date_range(start='2020-01-01', freq='D', periods=1000)
     df = pd.DataFrame(np.random.rand(1000, 2),
                       columns=['value1', 'value2'],
-                      index=timeserious,
+                      index=timeseries,
                       dtype=np.float32)
     df.reset_index(inplace=True)
-    df.rename(columns={'index': 'timeserious'}, inplace=True)
+    df.rename(columns={'index': 'timeseries'}, inplace=True)
     train, _, test = TSDataset.from_pandas(df=df,
-                                           dt_col='timeserious',
+                                           dt_col='timeseries',
                                            target_col=['value1', 'value2'],
                                            with_split=True)
     if roll:
