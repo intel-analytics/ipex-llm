@@ -21,8 +21,7 @@ import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.io.compress.Compressor
 
 class BigDLEncryptCompressor(cryptoMode: CryptoMode, dataKeyPlaintext: String) extends Compressor{
-  val bigdlEncrypt = Crypto(cryptoMode)
-  // TODO
+  val bigdlEncrypt = new BigDLEncrypt()
   bigdlEncrypt.init(cryptoMode, ENCRYPT, dataKeyPlaintext)
   var isFinished = false
   var b: Array[Byte] = null
@@ -47,9 +46,13 @@ class BigDLEncryptCompressor(cryptoMode: CryptoMode, dataKeyPlaintext: String) e
     Log4Error.invalidOperationError(false, "Unsupported setDictionary.")
   }
 
-  override def getBytesRead: Long = ???
+  override def getBytesRead: Long = {
+    bytesRead
+  }
 
-  override def getBytesWritten: Long = ???
+  override def getBytesWritten: Long = {
+    bytesWritten
+  }
 
   override def finish(): Unit = {
     tryFinished = true
@@ -67,6 +70,7 @@ class BigDLEncryptCompressor(cryptoMode: CryptoMode, dataKeyPlaintext: String) e
     // lazy encrypt, in order to doFinal in the right time.
     if (tryFinished) {
       val o = bigdlEncrypt.doFinal(this.lv2Buffer, this.lv2Off, this.lv2Len)
+      bytesRead += this.lv2Len
       isFinished = true
       o._1 ++ o._2
       o._1.copyToArray(b, 0)
@@ -75,6 +79,7 @@ class BigDLEncryptCompressor(cryptoMode: CryptoMode, dataKeyPlaintext: String) e
     } else {
       val o = if (hasHeader) {
         val o = bigdlEncrypt.update(this.lv2Buffer, this.lv2Off, this.lv2Len)
+        bytesRead += this.lv2Len
         // create a buffer to cache undecrypted data.
         this.b.copyToArray(this.lv2Buffer)
         lv2Off = this.off
@@ -90,26 +95,25 @@ class BigDLEncryptCompressor(cryptoMode: CryptoMode, dataKeyPlaintext: String) e
         bigdlEncrypt.genHeader()
       }
       o.copyToArray(b, 0)
+      bytesWritten += o.length
       o.length
     }
   }
 
-//  def output(): Array[Byte] = {
-//    compressed
-//  }
-
   override def reset(): Unit = {
     isFinished = false
-    tryFinished = false
-    hasHeader = false
     b = null
-    len = 0
     off = 0
+    len = 0
+    hasHeader = false
+    tryFinished = false
     bytesRead = 0L
     bytesWritten = 0L
   }
 
-  override def end(): Unit = ???
+  override def end(): Unit = {
+    Log4Error.invalidOperationError(false, "Unsupported operation end.")
+  }
 
   override def reinit(conf: Configuration): Unit = {
     reset()
