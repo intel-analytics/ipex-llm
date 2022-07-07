@@ -99,7 +99,7 @@ BigDL Documentation
    :maxdepth: 1
    :caption: Friesian Overview
 
-   doc/Friesian/QuickStart/Feature_engineering.md
+   doc/Friesian/QuickStart/Train_wnd.md
 
 .. toctree::
    :maxdepth: 1

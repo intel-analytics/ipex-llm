@@ -21,15 +21,15 @@ from bigdl.orca import init_orca_context, stop_orca_context
 from bigdl.friesian.feature import FeatureTable
 from bigdl.dllib.feature.dataset import movielens
 from bigdl.orca.learn.tf2.estimator import Estimator
-from friesian.example.wnd.train.wnd_train_recsys import ColumnFeatureInfo, model_creator
+from friesian.example.wnd.train.wnd_train_recsys import ColumnFeatureInfo, build_model
 from bigdl.orca.data.file import exists, makedirs
-
+import tensorflow as tf
 
 data_dir = "./movielens"
 model_dir = "./wnd"
-wide_cols = ["gender", "age", "occupation", "zipcode", "genres"]
-wide_cross_cols = ["gender_age", "age_zipcode"]
-indicator_cols = ["gender", "age", "occupation", "genres"]
+wide_cols = ["gender", "age", "occupation", "zip"]
+wide_cross_cols = ["gender_age", "age_zip"]
+indicator_cols = ["gender", "age", "occupation"]
 embed_cols = ["user", "item"]
 num_cols = ["user_visits", "user_mean_rate", "item_visits", "item_mean_rate"]
 cat_cols = wide_cols + wide_cross_cols + embed_cols
@@ -45,17 +45,13 @@ if __name__ == '__main__':
         .cast(["user", "item", "rate"], "int")
     ratings_tbl.cache()
 
-    user_df = pd.read_csv(data_dir + "/ml-1m/users.dat", delimiter="::",
-                          names=["user", "gender", "age", "occupation", "zipcode"])
-    user_tbl = FeatureTable.from_pandas(user_df).cast(["user"], "int")
+    user_tbl = FeatureTable.read_csv(data_dir + "/ml-1m/users.dat", delimiter=":")\
+        .select("_c0", "_c2", "_c4", "_c6", "_c8")\
+        .rename({"_c0": "user", "_c2": "gender", "_c4": "age", "_c6": "occupation", "_c8": "zip"})\
+        .cast(["user"], "int")
     user_tbl.cache()
 
-    item_df = pd.read_csv(data_dir + "/ml-1m/movies.dat", encoding="ISO-8859-1",
-                          delimiter="::", names=["item", "title", "genres"])
-    item_tbl = FeatureTable.from_pandas(item_df).cast("item", "int")
-    item_tbl.cache()
-
-    user_tbl = user_tbl.fillna('0', "zipcode")
+    user_tbl = user_tbl.fillna("0", "zip")
 
     user_stats = ratings_tbl.group_by("user", agg={"item": "count", "rate": "mean"}) \
         .rename({"count(item)": "user_visits", "avg(rate)": "user_mean_rate"})
@@ -63,25 +59,18 @@ if __name__ == '__main__':
 
     item_stats = ratings_tbl.group_by("item", agg={"user": "count", "rate": "mean"}) \
         .rename({"count(user)": "item_visits", "avg(rate)": "item_mean_rate"})
-    item_stats, user_min_max = item_stats.min_max_scale(["item_visits", "item_mean_rate"])
+    item_stats, item_min_max = item_stats.min_max_scale(["item_visits", "item_mean_rate"])
 
-    user_tbl, inx_list = user_tbl.category_encode(["gender", "age", "zipcode", "occupation"])
-    item_tbl, item_list = item_tbl.category_encode(["genres"])
+    user_tbl, inx_list = user_tbl.category_encode(["gender", "age", "zip", "occupation"])
 
     item_size = item_stats.select("item").distinct().size()
     ratings_tbl = ratings_tbl.add_negative_samples(item_size=item_size, item_col="item",
                                                    label_col="label", neg_num=1)
 
-    user_tbl = user_tbl.cross_columns([["gender", "age"], ["age", "zipcode"]], [50, 200])
+    user_tbl = user_tbl.cross_columns([["gender", "age"], ["age", "zip"]], [50, 200])
 
     user_tbl = user_tbl.join(user_stats, on="user")
-    item_tbl = item_tbl.join(item_stats, on="item")
-    full = ratings_tbl.join(user_tbl, on="user") \
-        .join(item_tbl, on="item")
-
-    train_tbl, test_tbl = full.random_split([0.8, 0.2], seed=1)
-    train_count, test_count = train_tbl.size(), test_tbl.size()
-
+    full = ratings_tbl.join(user_tbl, on="user").join(item_stats, on="item")
     stats = full.get_stats(cat_cols, "max")
     wide_dims = [stats[key] for key in wide_cols]
     wide_cross_dims = [stats[key] for key in wide_cross_cols]
@@ -98,9 +87,20 @@ if __name__ == '__main__':
                                     embed_out_dims=[8] * len(embed_dims),
                                     continuous_cols=num_cols,
                                     label="label")
-    conf = {"column_info": column_info, "hidden_units": [20, 10], "lr": 0.001}
 
-    est = Estimator.from_keras(model_creator=model_creator, config=conf)
+    train_tbl, test_tbl = full.select("label", *column_info.feature_cols).random_split([0.8, 0.2], seed=1)
+    train_count, test_count = train_tbl.size(), test_tbl.size()
+
+    def model_creator(conf):
+        model = build_model(column_info=column_info,
+                            hidden_units=[20, 10])
+        optimizer = tf.keras.optimizers.Adam()
+        model.compile(optimizer=optimizer,
+                      loss='binary_crossentropy',
+                      metrics=['binary_accuracy', 'binary_crossentropy', 'AUC', 'Precision',
+                               'Recall'])
+        return model
+    est = Estimator.from_keras(model_creator=model_creator)
 
     est.fit(data=train_tbl.df,
             epochs=1,
@@ -109,7 +109,7 @@ if __name__ == '__main__':
             validation_data=test_tbl.df,
             validation_steps=test_count // batch_size,
             feature_cols=column_info.feature_cols,
-            label_cols=['label'])
+            label_cols=["label"])
 
     end = time.time()
     print("Training time is: ", end - start)
