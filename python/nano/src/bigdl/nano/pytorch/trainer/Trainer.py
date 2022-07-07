@@ -160,6 +160,11 @@ class Trainer(pl.Trainer):
                                                      cpu_for_each_process=cpu_for_each_process,
                                                      use_ipex=self.use_ipex,
                                                      enable_bf16=enable_bf16)
+                elif distributed_backend == "ray":
+                    from bigdl.nano.pytorch.strategies import RayStrategy
+                    strategy = RayStrategy(num_workers=num_processes,
+                                           use_ipex=self.use_ipex,
+                                           enable_bf16=enable_bf16)
                 super().__init__(strategy=strategy, *args, **kwargs)
 
     @staticmethod
