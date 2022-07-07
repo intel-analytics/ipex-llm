@@ -15,6 +15,7 @@
     <properties>
         <maven.compiler.source>8</maven.compiler.source>
         <maven.compiler.target>8</maven.compiler.target>
+        <grpc.version>1.47.0</grpc.version>
         <bigdl.basedir>${project.parent.basedir}</bigdl.basedir>
     </properties>
 
@@ -22,7 +23,7 @@
         <dependency>
             <groupId>io.grpc</groupId>
             <artifactId>grpc-api</artifactId>
-            <version>1.37.0</version>
+            <version>${grpc.version}</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
@@ -46,7 +47,7 @@
         <dependency>
             <groupId>io.grpc</groupId>
             <artifactId>grpc-netty-shaded</artifactId>
-            <version>1.37.0</version>
+            <version>${grpc.version}</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
