@@ -21,13 +21,11 @@ We use [Diabetes](https://www.kaggle.com/competitions/house-prices-advanced-regr
 The code is available in projects, including [Client 1 code](fgboost_regression_party_1.py) and [Client 2 code](fgboost_regression_party_2.py). You could directly start two different terminals are run them respectively to start a federated learning, and the order of start does not matter. Following is the detailed step-by-step tutorial to introduce how the code works.
 
 ### 2.1 FL Context
-First, import the package and initilize FL Context.
+First, import the package.
 ```python
-from bigdl.ppml.fl import *
-from bigdl.ppml.fl.algorithms.fgboost_regression import FGBoostRegression
-import pandas as pd
-
-init_fl_context()
+import torch
+from torch import nn
+from bigdl.ppml.fl.estimator import Estimator
 ```
 
 ### 2.2 Private Set Intersection
