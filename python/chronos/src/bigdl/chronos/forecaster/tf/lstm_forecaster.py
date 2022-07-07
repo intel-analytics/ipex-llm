@@ -126,3 +126,29 @@ class LSTMForecaster(BaseTF2Forecaster):
         # self.quantize_available = True
         # self.checkpoint_callback = False
         super(LSTMForecaster, self).__init__()
+
+    @classmethod
+    def from_tsdataset(cls, tsdataset, past_seq_len=None, **kwargs):
+        """
+        Build a LSTMForecaster Model
+
+        :param tsdataset: A bigdl.chronos.data.tsdataset.TSDataset instance.
+        :param past_seq_len: past_seq_len: Specify the history time steps (i.e. lookback).
+               Do not specify the 'past_seq_len' if your tsdataset has called
+               the 'TSDataset.roll' method.
+
+        :return: A LSTMForecaster Model
+        """
+        from bigdl.nano.utils.log4Error import invalidInputError
+        if tsdataset.numpy_x is not None:
+            past_seq_len = tsdataset.numpy_x.shape[1]
+        if all([tsdataset.numpy_x is None, past_seq_len is None]):
+            invalidInputError(False,
+                              "Forecaster needs 'past_seq_len' to specify "
+                              "the history time step of training.")
+        output_feature_num = len(tsdataset.target_col)
+        input_feature_num = output_feature_num + len(tsdataset.feature_col)
+        return cls(past_seq_len=past_seq_len,
+                   input_feature_num=input_feature_num,
+                   output_feature_num=output_feature_num,
+                   **kwargs)

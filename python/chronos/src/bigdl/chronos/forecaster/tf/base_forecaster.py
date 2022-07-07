@@ -15,8 +15,11 @@
 #
 
 from bigdl.chronos.forecaster.abstract import Forecaster
+from bigdl.chronos.data import TSDataset
 from bigdl.chronos.metric.forecast_metrics import Evaluator
 import keras
+import tensorflow as tf
+import numpy as np
 
 
 class BaseTF2Forecaster(Forecaster):
@@ -44,11 +47,18 @@ class BaseTF2Forecaster(Forecaster):
                | A TFDataset instance which contains x and y with same shape as the tuple.
                | x's shape is (num_samples, lookback, feature_dim),
                | y's shape is (num_samples, horizon, target_dim).
+               |
+               | 3. A bigdl.chronos.data.tsdataset.TSDataset instance.
+               | pass
 
         :params epochs: Number of epochs you want to train. The value defaults to 1.
         :params batch_size: Number of batch size you want to train. The value defaults to 32.
                 Do not specify the batch_size, if your data in the form of tf.data datasets.
         """
+        if isinstance(data, TSDataset):
+            data = data.roll(lookback=self.model_config['past_seq_len'],
+                             horizon=self.model_config['future_seq_len'])\
+                       .to_tf_dataset(shuffle=True)
         if isinstance(data, tuple):
             self.internal.fit(x=data[0], y=data[1], epochs=epochs, batch_size=batch_size)
         else:
@@ -62,6 +72,10 @@ class BaseTF2Forecaster(Forecaster):
                 | 1. a numpy ndarray x:
                 | x's shape is (num_samples, lookback, feature_dim) where lookback and feature_dim
                 | should be the same as past_seq_len and input_feature_num.
+                | 2. a tfdataset
+                | pass
+                | 3. A bigdl.chronos.data.tsdataset.TSDataset instance
+                | pass
 
         :params batch_size: predict batch size. The value will not affect evaluate
                 result but will affect resources cost(e.g. memory and time).
@@ -74,7 +88,12 @@ class BaseTF2Forecaster(Forecaster):
         if not self.fitted:
             invalidInputError(False,
                               "You must call fit or restore first before calling predict!")
-        if batch_size:
+        if isinstance(data, TSDataset):
+            data = data.roll(lookback=self.model_config['past_seq_len'],
+                             horizon=self.model_config['future_seq_len'])\
+                       .to_tf_dataset(shuffle=False)
+
+        if batch_size or isinstance(data, tf.data.Dataset):
             yhat = self.internal.predict(data, batch_size=batch_size)
         else:
             yhat = self.internal(data, training=False).numpy()
@@ -99,6 +118,10 @@ class BaseTF2Forecaster(Forecaster):
                 | should be the same as past_seq_len and input_feature_num.
                 | y's shape is (num_samples, horizon, target_dim), where horizon and target_dim
                 | should be the same as future_seq_len and output_feature_num.
+                | 2. a tfdataset
+                | pass
+                | 3. A bigdl.chronos.data.tsdataset.TSDataset instance
+                | pass
 
         :params batch_size: evaluate batch size. The value will not affect evaluate
                 result but will affect resources cost(e.g. memory and time).
@@ -113,10 +136,20 @@ class BaseTF2Forecaster(Forecaster):
         if not self.fitted:
             invalidInputError(False,
                               "You must call fit or restore first before calling evaluate!")
-        yhat = self.internal.predict(data[0], batch_size=batch_size)
+        if isinstance(data, TSDataset):
+            data = data.roll(lookback=self.model_config['past_seq_len'],
+                             horizon=self.model_config['future_seq_len'])\
+                       .to_tf_dataset(shuffle=False)
+
+        if isinstance(data, tuple):
+            input_data, target = data
+        else:
+            input_data = data
+            target = np.asarray(tuple(map(lambda x: x[1], data.as_numpy_iterator())))
+        yhat = self.internal.predict(input_data, batch_size=batch_size)
 
         aggregate = 'mean' if multioutput == 'uniform_average' else None
-        return Evaluator.evaluate(self.metrics, y_true=data[1], y_pred=yhat, aggregate=aggregate)
+        return Evaluator.evaluate(self.metrics, y_true=target, y_pred=yhat, aggregate=aggregate)
 
     def save(self, checkpoint_file):
         """
@@ -139,3 +172,34 @@ class BaseTF2Forecaster(Forecaster):
         self.internal = keras.models.load_model(checkpoint_file,
                                                 custom_objects=self.custom_objects_config)
         self.fitted = True
+
+    @classmethod
+    def from_tsdataset(cls, tsdataset, past_seq_len=None, future_seq_len=None, **kwargs):
+        """
+        Build a Forecaster Model
+
+        :param tsdataset: A bigdl.chronos.data.tsdataset.TSDataset
+        :param past_seq_len:  Specify history time step (i.e. lookback)
+               Do not specify the 'past_seq_len' if your tsdataset has called
+               the 'TSDataset.roll' method.
+        :param future_seq_len: Specify output time step (i.e. horizon)
+               Do not specify the 'future_seq_len' if your tsdataset has called
+               the 'TSDataset.roll' method.
+
+        :return: A Forecaster Model
+        """
+        from bigdl.nano.utils.log4Error import invalidInputError
+        if tsdataset.numpy_x is not None:
+            past_seq_len = tsdataset.numpy_x.shape[1]
+            future_seq_len = tsdataset.numpy_y.shape[1]
+        if all([tsdataset.numpy_x is None, past_seq_len is None, future_seq_len is None]):
+            invalidInputError(False,
+                              "Forecaster needs 'past_seq_len' to specify "
+                              "the history time step of training.")
+        output_feature_num = len(tsdataset.target_col)
+        input_feature_num = len(tsdataset.feature_col) + output_feature_num
+        return cls(past_seq_len=past_seq_len,
+                   future_seq_len=future_seq_len,
+                   input_feature_num=input_feature_num,
+                   output_feature_num=output_feature_num,
+                   **kwargs)
