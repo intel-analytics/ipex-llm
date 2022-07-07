@@ -88,7 +88,7 @@ if __name__ == '__main__':
                                     continuous_cols=num_cols,
                                     label="label")
 
-    train_tbl, test_tbl = full.select("label", *column_info.feature_cols).random_split([0.8, 0.2], seed=1)
+    train_tbl, test_tbl = full.select("label", *column_info.feature_cols).random_split([0.8, 0.2])
     train_count, test_count = train_tbl.size(), test_tbl.size()
 
     def model_creator(conf):

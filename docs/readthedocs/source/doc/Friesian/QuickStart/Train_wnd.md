@@ -1,5 +1,5 @@
-# **Feature Engineering for W&D (Wide and Deep Learning) using Friesian**
-With Friesian FeatureTable APIs, data scientists and machine learning engineers are able to quickly process datasets of all sizes to generate features for recommender models. This tutorial showcases how to extract features for [Wide and Deep Learning](https://arxiv.org/abs/1606.07792) using [movielens dataset](http://files.grouplens.org/datasets/movielens/).
+# Feature Engineering for W&D (Wide and Deep Learning) using Friesian
+With Friesian FeatureTable APIs, data scientists and machine learning engineers are able to quickly process datasets of all sizes to generate features for recommender models. This tutorial showcases how to extract features for [Wide and Deep Learning](https://arxiv.org/abs/1606.07792) (W&D) using [movielens dataset](http://files.grouplens.org/datasets/movielens/).
 
 ## **1. Key Concepts**
 A **FeatureTable** provides distributed table for processing recsys feature, common tabular operations, as well as high-level recsys feature transformation. e.g.
@@ -10,7 +10,7 @@ A **FeatureTable** provides distributed table for processing recsys feature, com
 **Wide and Deep Learning** is a noval recommender model proposed by Google. Specifically, A W&D model is jointly trained wide linear models and deep neural networks to combine the benefits of memorization and generalization for recommender systems.
 Know more about W&D and it's implementation [here](https://github.com/intel-analytics/BigDL/tree/main/python/friesian/example/wnd)
 
-An [**Orca Estimator**](../../Orca/Overview/distributed-training-inference.md) provides sklearn-style Estimator APIs to perform distributed TensorFlow, PyTorch, Keras and BigDL training and inference.
+An [**Orca Estimator**](../../Orca/Overview/distributed-training-inference.md) provides sklearn-style Estimator APIs to perform distributed [TensorFlow](https://github.com/tensorflow/tensorflow), [PyTorch](https://github.com/pytorch/pytorch), [Keras](https://github.com/keras-team/keras) and [BigDL](https://github.com/intel-analytics/BigDL) training and inference.
 
 ## **2. W&D implemendation on Friesian**
 See the full demo code [here](https://github.com/intel-analytics/BigDL/tree/main/python/friesian/democode/train_wnd.py)
@@ -23,7 +23,7 @@ sc = init_orca_context("local",  cores=8, memory="8g", init_ray_on_spark=True)
 
 ### **2.2. Load data into FeatureTable**
 Data can be loaded into Friesian FeatureTables from spark dataframe, pandas dataframe, parquet file, jason files, csv files and text files.
-FeatureTable provides `FeatureTable.read_csv("file_name", delimiter=",", header=False, names=None, dtype=None)` to read a file or directory of files in CSV format into Friesian FeatureTable, and `feature_tble.write_csv("paths")` to write to a csv file.  Arguments like  `delimiter`, `header`, `names`, `dtype` is used to control the behavior of reading or writing when needed.
+FeatureTable provides `FeatureTable.read_csv("file_name", delimiter=",", header=False, names=None, dtype=None)` to read a file or directory of files in CSV format into Friesian FeatureTable, and `feature_tble.write_csv("paths")` to write to a CSV file.  Arguments like  `delimiter`, `header`, `names`, `dtype` are used to control reading or writing behavior when needed.
 ```python
 from bigdl.friesian.feature import FeatureTable
 from bigdl.dllib.feature.dataset import movielens
@@ -62,12 +62,12 @@ user_tbl.show(3, False)
 ```
 
 ### **2.3. Data processing using FeatureTable**
-FeatureTable can replace null values with a specified value or just simply drop the records with null values. For numerical columns, `feature_tbl.fill_median(columns)` updates missing values with medians .
+For missing values, FeatureTable can replace them with a specified value or just simply drop the records with null values. For numerical columns, `feature_tbl.fill_median(columns)` can fill missing values with medians.
 ```python
 user_tbl = user_tbl.fillna('0', "zipcode")
 ```
 
-Generate continuous features and normalize them using min max scale, you can call `feature_tbl.transform_min_max_scale(user_min_max_dict)` to transform another feature table.
+Generate continuous features and normalize them using min max scale, you can call `feature_tbl.transform_min_max_scale(user_min_max_dict)` to scale another feature table.
 ```python
 user_stats = ratings_tbl.group_by("user", agg={"item": "count", "rate": "mean"}) \
         .rename({"count(item)": "user_visits", "avg(rate)": "user_mean_rate"})
@@ -84,7 +84,7 @@ user_stats.show(3, False)
 # +----+-----------+--------------+
 ```
 
-Encode categorical features into integers.
+Encode categorical features into integers. FeatureTable provides different ways to encode categorical features, instead of using `feature_tbl.category_encode("column_name")` you can also use `feature_tbl.gen_string_idx("column_name")` and `encode_string("column_name", cat_indx)`, to transform categorical strings to integer values.
 ```python
 user_tbl, inx_list = user_tbl.category_encode(["gender", "age", "zip", "occupation"])
 user_tbl.show(3, False)
@@ -96,7 +96,6 @@ user_tbl.show(3, False)
 # |2   |2     |3  |2775 |21        |
 # |3   |2     |2  |1971 |19        |
 # +----+------+---+-------+--------+
-#
 ```
 
 Add negative samples into the data, Friesian FeatureTable randomly choose one item as negative sample for each positive record when `neg_num=1`, `neg_num` should be larger than 1 if more negative records are needed.
@@ -126,9 +125,8 @@ user_tbl.show(3, False)
 # |2   |2     |3  |2775|21        |46        |159    |
 # |3   |2     |2  |1971|19        |45        |135    |
 # +----+------+---+-------+----------+----------+-------+
-# 
 ```
-FeatureTable can cross multiple categorical columns hash into a number of buckets by calling `cross_hash_encode`
+FeatureTable can cross multiple categorical columns hash into a number of buckets by calling `feature_tbl.cross_hash_encode(columns, bins)`
 
 Join all features together and split into train and test.
 ```python
@@ -145,11 +143,10 @@ full.show(3, False)
 # |148 |5156|3   |0    |2     |6  |2261|18        |49        |172    |0.13077594 |0.81147605    |0.4456522     |0.006419609|
 # |148 |897 |5   |0    |2     |2  |1257|4         |45        |152    |0.07977332 |0.64375305    |0.4456522     |0.006419609|
 # +----+----+----+-----+------+---+-------+----------+----------+-----------+-----------+--------------+------+--------------+-----------+
-
 ```
 
 ### **2.4. Define W&D model**
-Define a wide and deep model using tensorflow APIs, specify feature information  using `ColumnFeatureInfo`
+Define a W&D model using tensorflow APIs, specify feature information  using `ColumnFeatureInfo`
 ```python
 from friesian.example.wnd.train.wnd_train_recsys import ColumnFeatureInfo
 import tensorflow as tf
@@ -247,7 +244,7 @@ def build_model(column_info, hidden_units=[100, 50, 25]):
     return model
 ```
 ### **2.4. Distributed Training using Orca Estimator**
-FeatureTable.df is then feed into [Orca Estimator](../../Orca/Overview/distributed-training-inference.md) for training purpose.
+Build an [Orca Estimator](../../Orca/Overview/distributed-training-inference.md), and `train_tbl.df` is then feed `train_tbl.df` and train the model.
 ```python
 from bigdl.orca.learn.tf2.estimator import Estimator
 def model_creator(conf):
