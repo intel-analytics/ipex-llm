@@ -133,7 +133,7 @@ Join all features together and split into train and test.
 user_tbl = user_tbl.join(user_stats, on="user")
 full = ratings_tbl.join(user_tbl, on="user").join(item_stats, on="item")
 
-train_tbl, test_tbl = full.random_split([0.8, 0.2], seed=1)
+train_tbl, test_tbl = full.random_split([0.8, 0.2])
 full.show(3, False)
 #
 # +----+----+----+-----+------+---+----+----------+----------+-------+-----------+--------------+--------------+-----------+
@@ -244,7 +244,7 @@ def build_model(column_info, hidden_units=[100, 50, 25]):
     return model
 ```
 ### **2.4. Distributed Training using Orca Estimator**
-Build an [Orca Estimator](../../Orca/Overview/distributed-training-inference.md), and `train_tbl.df` is then feed `train_tbl.df` and train the model.
+Build an [Orca Estimator](../../Orca/Overview/distributed-training-inference.md), and `train_tbl.df` is then feed into the estimator to train the model.
 ```python
 from bigdl.orca.learn.tf2.estimator import Estimator
 def model_creator(conf):
