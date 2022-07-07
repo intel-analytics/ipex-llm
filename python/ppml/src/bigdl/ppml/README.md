@@ -19,12 +19,19 @@ sc = PPMLContext("MyApp")
 
 - `kms_type`: the `KeyManagementService` you use, it can be `SimpleKeyManagementService` or `EHSMKeyManagementService`
 
-- `simple_app_id`: the appId your KMS generated(this parameter is needed when your kms_type is `SimpleKeyManagementService`)
-- `simple_app_key`: the appKey  your KMS generated(this parameter is needed when your kms_type is `SimpleKeyManagementService`)
-- `kms_server_ip`: the server ip of your KMS(this parameter is needed when your kms_type is `EHSMKeyManagementService`)
-- `kms_server_port`: the server port of your KMS(this parameter is needed when your kms_type is `EHSMKeyManagementService`)
-- `ehsm_app_id`: the appId your KMS generated(this parameter is needed when your kms_type is `EHSMKeyManagementService`)
-- `ehsm_app_key`:  the appKey  your KMS generated(this parameter is needed when your kms_type is `EHSMKeyManagementService`)
+if the `kms_type` is `SimpleKeyManagementService`, then need
+
+- `simple_app_id`: the appId your KMS generated
+- `simple_app_key`: the appKey  your KMS generated
+- `primary_key_path`: the path of your primaryKey
+- `data_key_path`:  the path of your dataKey
+
+if the `kms_type` is `EHSMKeyManagementService`, then need
+
+- `kms_server_ip`: the server ip of your KMS
+- `kms_server_port`: the server port of your KMS
+- `ehsm_app_id`: the appId your KMS generated
+- `ehsm_app_key`:  the appKey  your KMS generated
 - `primary_key_path`: the path of your primaryKey
 - `data_key_path`:  the path of your dataKey
 
@@ -72,7 +79,7 @@ sc = PPMLContext("MyApp", args, spark_conf)
 you can read from a plain file or encrypted file. so you need to specify the `CryptoMode`:
 
 - `plain_text`: no encryption
-- `AES/CBC/PKCS5Padding`
+- `AES/CBC/PKCS5Padding`: for csv, json and text file
 - `AES_GCM_V1`: for parquet only
 - `AES_GCM_CTR_V1`: for parquet only
 
