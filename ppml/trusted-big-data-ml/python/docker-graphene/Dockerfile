@@ -261,7 +261,6 @@ ADD ./standalone/check-status.sh /ppml/trusted-big-data-ml/standalone/check-stat
 ADD ./standalone/start-spark-standalone-master-sgx.sh /ppml/trusted-big-data-ml/standalone/start-spark-standalone-master-sgx.sh
 ADD ./standalone/start-spark-standalone-worker-sgx.sh /ppml/trusted-big-data-ml/standalone/start-spark-standalone-worker-sgx.sh
 ADD ./standalone/start-spark-standalone-driver-sgx.sh /ppml/trusted-big-data-ml/standalone/start-spark-standalone-driver-sgx.sh
-ADD ./ppml-spark-submit.sh /ppml/trusted-big-data-ml/ppml-spark-submit.sh
 ADD ./bigdl-ppml-submit.sh /ppml/trusted-big-data-ml/bigdl-ppml-submit.sh
 ADD ./tracker.py ./tracker.py
 ADD ./start-scripts /ppml/trusted-big-data-ml/work/start-scripts
@@ -282,7 +281,6 @@ RUN zip -u ${BIGDL_HOME}/jars/bigdl-dllib-spark_${SPARK_VERSION}-${BIGDL_VERSION
     chmod a+x /ppml/trusted-big-data-ml/init.sh && \
     chmod a+x /ppml/trusted-big-data-ml/clean.sh && \
     chmod a+x /ppml/trusted-big-data-ml/standalone/* && \
-    chmod a+x /ppml/trusted-big-data-ml/ppml-spark-submit.sh && \
     chmod a+x /ppml/trusted-big-data-ml/bigdl-ppml-submit.sh && \
     chmod a+x /ppml/trusted-big-data-ml/work/start-scripts/* && \
     chmod a+x /ppml/trusted-big-data-ml/work/test-suites/pyspark-e2e-example.sh && \
