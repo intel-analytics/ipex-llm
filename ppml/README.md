@@ -15,9 +15,9 @@ There are three emerging solutions seek to reduce the data-in-use attack surface
 [PPML](https://bigdl.readthedocs.io/en/latest/doc/PPML/Overview/ppml.html) (Privacy Preserving Machine Learning) in [BigDL 2.0](https://github.com/intel-analytics/BigDL) provides a Trusted Cluster Environment for secure Big Data & AI applications, even on untrusted cloud environment. By combining Intel Software Guard Extensions (SGX) with several other security technologies (e.g., attestation, key management service, private set intersection, federated learning, homomorphic encryption, etc.), BigDL PPML ensures end-to-end security enabled for the entire distributed workflows, such as Apache Spark, Apache Flink, XGBoost, TensorFlow, PyTorch, etc.
 
 ## Why BigDL PPML?
+![PPML](https://user-images.githubusercontent.com/61072813/177922914-f670111c-e174-40d2-b95a-aafe92485024.png)
 
 PPML allows organizations to explore powerful AI techniques while working to minimize the security risks associated with handling large amounts of sensitive data. PPML protects data at rest, in transit and in use: compute and memory protected by SGX Enclaves, storage (e.g., data and model) protected by encryption, network communication protected by remote attestation and Transport Layer Security (TLS), and optional Federated Learning support. 
-![ppml](https://user-images.githubusercontent.com/61072813/177908265-f33afc00-0133-4ebd-ae0d-e319c7a5901b.png)
 
 With BigDL PPML, you can run trusted Big Data & AI applications
 - Trusted Spark SQL & Dataframe: you can do trusted big data analytics, such as Spark SQL, Dataframe, Spark MLlib
