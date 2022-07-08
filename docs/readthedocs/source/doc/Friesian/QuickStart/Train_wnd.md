@@ -5,7 +5,7 @@ With Friesian FeatureTable APIs, data scientists and machine learning engineers 
 - A **FeatureTable** is a distributed table for processing RecSys features; it provides both common tabular operations (such as join) and RecSys feature transformations (such as negative sampling, category encoding).
 
 - **Wide and Deep Learning** is a noval recommender model proposed by Google, it includes a wide linear model and a deep neural network. One can combine the benefits of memorization and generalization by jointly training a wide linear model and a deep neural network.
-Know more about W&D and it's implementation [here](https://github.com/intel-analytics/BigDL/tree/main/python/friesian/example/wnd)
+Know more about W&D and it's implementation [here](https://github.com/intel-analytics/BigDL/blob/main/python/friesian/example/wnd/train/wnd_train_recsys.py)
 
 - An [**Orca Estimator**](../../Orca/Overview/distributed-training-inference.md) provides sklearn-style Estimator APIs to perform distributed [TensorFlow](https://github.com/tensorflow/tensorflow), [PyTorch](https://github.com/pytorch/pytorch), [Keras](https://github.com/keras-team/keras) and [BigDL](https://github.com/intel-analytics/BigDL) training and inference.
 
@@ -144,73 +144,9 @@ full.show(3, False)
 ```
 
 ### **2.4. Define W&D model**
-Define a W&D model using tensorflow APIs
+Define a W&D model using tensorflow APIs, see full model definition [here](https://github.com/intel-analytics/BigDL/blob/main/python/friesian/example/wnd/train/wnd_train_recsys.py)
 ```python
-import tensorflow as tf
-
-def build_model(column_info, hidden_units=[40, 20]):
-    """Build an W&D model."""
-    # wide model 
-    wide_base_input_layers = []
-    wide_base_layers = []
-    for i in range(len(column_info.wide_base_cols)):
-        wide_base_input_layers.append(tf.keras.layers.Input(shape=[], dtype="int32"))
-        wide_base_layers.append(tf.keras.backend.one_hot(wide_base_input_layers[i], column_info.wide_base_dims[i] + 1))
-
-    wide_cross_input_layers = []
-    wide_cross_layers = []
-    for i in range(len(column_info.wide_cross_cols)):
-        wide_cross_input_layers.append(tf.keras.layers.Input(shape=[], dtype="int32"))
-        wide_cross_layers.append(tf.keras.backend.one_hot(wide_cross_input_layers[i], column_info.wide_cross_dims[i]))
-    if len(wide_base_layers + wide_cross_layers) > 1:
-        wide_input = tf.keras.layers.concatenate(wide_base_layers + wide_cross_layers, axis=1)
-    else:
-        wide_input = (wide_base_layers + wide_cross_layers)[0]
-    wide_out = tf.keras.layers.Dense(1)(wide_input)
-    
-    # deep model
-    indicator_input_layers = []
-    indicator_layers = []
-    for i in range(len(column_info.indicator_cols)):
-        indicator_input_layers.append(tf.keras.layers.Input(shape=[], dtype="int32"))
-        indicator_layers.append(tf.keras.backend.one_hot(indicator_input_layers[i], column_info.indicator_dims[i] + 1))
-
-    embed_input_layers = []
-    embed_layers = []
-    for i in range(len(column_info.embed_in_dims)):
-        embed_input_layers.append(tf.keras.layers.Input(shape=[], dtype="int32"))
-        embedding_layer = tf.keras.layers.Embedding(column_info.embed_in_dims[i] + 1, output_dim=column_info.embed_out_dims[i])
-        iembed = embedding_layer(embed_input_layers[i])
-        flat_embed = tf.keras.layers.Flatten()(iembed)
-        embed_layers.append(flat_embed)
-    
-    continuous_input_layers = []
-    continuous_layers = []
-    for i in range(len(column_info.continuous_cols)):
-        continuous_input_layers.append(tf.keras.layers.Input(shape=[]))
-        continuous_layers.append(tf.keras.layers.Reshape(target_shape=(1,))(continuous_input_layers[i]))
-
-    if len(indicator_layers + embed_layers + continuous_layers) > 1:
-        deep_concat = tf.keras.layers.concatenate(indicator_layers + embed_layers + continuous_layers, axis=1)
-    else:
-        deep_concat = (indicator_layers + embed_layers + continuous_layers)[0]
-    linear = deep_concat
-    for ilayer in range(0, len(hidden_units)):
-        linear_mid = tf.keras.layers.Dense(hidden_units[ilayer])(linear)
-        bn = tf.keras.layers.BatchNormalization()(linear_mid)
-        relu = tf.keras.layers.ReLU()(bn)
-        dropout = tf.keras.layers.Dropout(0.1)(relu)
-        linear = dropout
-    deep_out = tf.keras.layers.Dense(1)(linear)
-    added = tf.keras.layers.add([wide_out, deep_out])
-    out = tf.keras.layers.Activation("sigmoid")(added)
-    model = tf.keras.models.Model(wide_base_input_layers +
-                                  wide_cross_input_layers +
-                                  indicator_input_layers +
-                                  embed_input_layers +
-                                  continuous_input_layers,
-                                  out)
-    return model
+from friesian.example.wnd.train.wnd_train_recsys import build_model
 
 def model_creator(conf):
     model = build_model(column_info)
