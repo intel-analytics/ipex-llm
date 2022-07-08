@@ -27,12 +27,13 @@ With BigDL PPML, you can run trusted Big Data & AI applications
 
 ## Getting Started with PPML
 
-### 0. Prerequisite
+### 0. Preparation
 * Set up K8s cluster: placeholder
 * Set up K8s-SGX plugin: [deploy_intel_sgx_device_plugin_for_k8s](https://bigdl.readthedocs.io/en/latest/doc/PPML/QuickStart/deploy_intel_sgx_device_plugin_for_kubernetes.html)
 * Set up Attestation service: placeholder
 * Set up KMS (key management service): [ehsm-kms](https://github.com/intel-analytics/BigDL/blob/main/ppml/services/pccs-ehsm/kubernetes/README.md)
 * (Optional) Set up K8s Monitioring: [bigdl-ppml-sgx-k8s-prometheus/README.md](https://github.com/analytics-zoo/ppml-e2e-examples/blob/main/bigdl-ppml-sgx-k8s-prometheus/README.md)
+* key/secret
 * Prepare BigDL PPML Docker Image
 
     * Pull Docker image from Dockerhub
@@ -74,6 +75,6 @@ We should have the following videos:
 6. runtime (check the state of driver and executor, whether it runs in sgx, and k8s monitioring)
 ```
 
-## Run your application on PPML
+## Develop your own Big Data & AI applications with BigDL PPML
 
 xxxx
