@@ -18,8 +18,7 @@ There are three emerging solutions seek to reduce the data-in-use attack surface
 
 PPML allows organizations to explore powerful AI techniques while working to minimize the security risks associated with handling large amounts of sensitive data. PPML protects data at rest, in transit and in use: compute and memory protected by SGX Enclaves, storage (e.g., data and model) protected by encryption, network communication protected by remote attestation and Transport Layer Security (TLS), and optional Federated Learning support. 
 
-TODO: replace this image
-![image](https://user-images.githubusercontent.com/61072813/177718320-6f05137a-2f09-4d02-b173-ac3b0dfd45ff.png)
+![image](https://user-images.githubusercontent.com/61072813/177907214-2cc629d7-374b-4b51-8f23-e8514678f032.png)
 
 With BigDL PPML, you can run trusted Big Data & AI applications
 - Trusted Spark SQL & Dataframe: you can do trusted big data analytics, such as Spark SQL, Dataframe, Spark MLlib
