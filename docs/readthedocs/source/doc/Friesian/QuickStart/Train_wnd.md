@@ -59,16 +59,16 @@ user_tbl.show(3, False)
 
 ### **2.3. Data processing using FeatureTable**
 #### 2.3.1. Deal with missing data
-For missing values, FeatureTable can replace them with a specified value or just simply drop the records with null values. For numerical columns, `feature_tbl.fill_median(columns)` can fill missing values with medians.
+For missing values, one can replace them with a specified value or just simply drop the records with null values. For numerical columns, `feature_tbl.fill_median(columns)` can fill missing values with medians.
 ```python
 user_tbl = user_tbl.fillna('0', "zipcode")
 ```
 #### 2.3.2. Scale numerical features
-Generate continuous features like user stats and normalize them using min max scale, one can call `feature_tbl.transform_min_max_scale(user_min_max_dict)` to apply scaler to a feature table.
+Generate continuous features like user stats and rescale these features within a range of min and max, one can also use `feature_tbl.transform_min_max_scale(min_max_dict)` to apply the scale of `min_max_dict` to data while preparing new feature table to make predictions.
 ```python
 user_stats = ratings_tbl.group_by("user", agg={"item": "count", "rate": "mean"}) \
         .rename({"count(item)": "user_visits", "avg(rate)": "user_mean_rate"})
-user_stats, user_min_max_dict = user_stats.min_max_scale(["user_visits", "user_mean_rate"])
+user_stats, min_max_dict = user_stats.min_max_scale(["user_visits", "user_mean_rate"])
 
 user_stats.show(3, False)
 # 
@@ -125,7 +125,7 @@ ratings_tbl.show(3, False)
 # |1   |3   |785 |0    |
 # +----+----+----+-----+
 ```
-#### 2.3.5. Join features and train test split
+#### 2.3.5. Join features and train-test split
 Join user features, item features with ratings to create a full feature table, and randomly split into train and test tables.
 ```python
 user_tbl = user_tbl.join(user_stats, on="user")
