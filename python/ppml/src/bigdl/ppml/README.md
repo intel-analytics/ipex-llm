@@ -1,5 +1,7 @@
 # PPMLContext For PySpark
 
+This is a tutorial about how to use `PPMLContext` in python to read/write files in multiple formats(csv, parquet etc.). `PPMLContext` provide the ability to save DataFrame as encrypted files and read encrypted files as a plain DataFrame or RDD.
+
 ### 1.Create a PPMLContext
 
 `PPMLContext` who wraps a `SparkSession` and provides read functions to read encrypted data files to plain-text RDD or DataFrame, also provides write functions to save DataFrame to encrypted data files. 
