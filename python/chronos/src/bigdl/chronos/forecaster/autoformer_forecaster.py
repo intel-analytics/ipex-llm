@@ -123,7 +123,8 @@ class AutoformerForecaster(Forecaster):
             "activation": activation,
             "e_layer": e_layer,
             "c_out": output_feature_num,
-            "d_layers": d_layers
+            "d_layers": d_layers,
+            "seed": seed,
         }
         self.loss_config = {
             "loss": loss
@@ -139,7 +140,10 @@ class AutoformerForecaster(Forecaster):
         self.metrics = metrics
 
         self.distributed = distributed
-        self.seed = seed
+        self.seed = seed if seed is not None else 42
+         # seed setting
+        from pytorch_lightning import seed_everything
+        seed_everything(seed=self.seed, workers=True)
         self.checkpoint_callback = True
 
         # disable multi-process training for now.
@@ -236,7 +240,6 @@ class AutoformerForecaster(Forecaster):
         invalidOperationError(self.use_hpo,
                               "HPO is disabled for this forecaster."
                               "You may specify search space in hyper parameters to enable it.")
-
         # prepare data
         from bigdl.chronos.pytorch import TSTrainer as Trainer
 
@@ -287,7 +290,7 @@ class AutoformerForecaster(Forecaster):
         return self.trainer.search_summary()
         
 
-    def fit(self, data, epochs=1, batch_size=32):
+    def fit(self, data, epochs=1, batch_size=32, val_data=None):
         """
         Fit(Train) the forecaster.
 
@@ -303,9 +306,6 @@ class AutoformerForecaster(Forecaster):
                if you input a pytorch dataloader for `data`, the batch_size will follow the
                batch_size setted in `data`.
         """
-        # seed setting
-        from pytorch_lightning import seed_everything
-        seed_everything(seed=self.seed)
 
         # distributed is not supported.
         if self.distributed:
@@ -324,8 +324,8 @@ class AutoformerForecaster(Forecaster):
         if not self.use_hpo:
             self.trainer = Trainer(logger=False, max_epochs=epochs,
                                 checkpoint_callback=self.checkpoint_callback, num_processes=1,
-                                use_ipex=self.use_ipex, distributed_backend="spawn")
-        self.trainer.fit(self.internal, data)
+                                use_ipex=self.use_ipex, distributed_backend="spawn", deterministic=True)
+        self.trainer.fit(self.internal, data, val_dataloaders=val_data)
 
     def predict(self, data, batch_size=32):
         """
