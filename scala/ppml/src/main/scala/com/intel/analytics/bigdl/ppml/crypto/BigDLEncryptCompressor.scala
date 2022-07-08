@@ -20,7 +20,7 @@ import com.intel.analytics.bigdl.dllib.utils.Log4Error
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.io.compress.Compressor
 
-class BigDLEncryptCompressor(cryptoMode: CryptoMode, dataKeyPlaintext: String) extends Compressor{
+class BigDLEncryptCompressor(cryptoMode: CryptoMode, dataKeyPlaintext: String) extends Compressor {
   val bigdlEncrypt = new BigDLEncrypt()
   bigdlEncrypt.init(cryptoMode, ENCRYPT, dataKeyPlaintext)
   var isFinished = false
@@ -117,7 +117,7 @@ class BigDLEncryptCompressor(cryptoMode: CryptoMode, dataKeyPlaintext: String) e
 
   override def reinit(conf: Configuration): Unit = {
     reset()
-    //TODO reinit bigdl encrypt
+    // TODO reinit bigdl encrypt
   }
 }
 
