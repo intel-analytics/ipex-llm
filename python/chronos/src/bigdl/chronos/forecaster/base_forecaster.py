@@ -20,8 +20,11 @@ from bigdl.chronos.metric.forecast_metrics import Evaluator
 
 import numpy as np
 import warnings
+warnings.filterwarnings('ignore', category=UserWarning, module='pytorch_lightning')
+warnings.filterwarnings('ignore', category=UserWarning, module='torch')
 import torch
-import math
+import logging
+
 from functools import partial
 from torch.utils.data import TensorDataset, DataLoader
 from bigdl.nano.automl.hpo.space import Space
@@ -319,7 +322,7 @@ class BasePytorchForecaster(Forecaster):
                                    checkpoint_callback=self.checkpoint_callback,
                                    num_processes=self.num_processes, use_ipex=self.use_ipex,
                                    flush_logs_every_n_steps=10, log_every_n_steps=10,
-                                   distributed_backend="spawn")
+                                   distributed_backend="subprocess")
             # fitting
             if not validation_data:
                 self.trainer.fit(self.internal, data)
@@ -333,6 +336,15 @@ class BasePytorchForecaster(Forecaster):
                 fit_out = read_csv('./forecaster_tmp_log/version_0/metrics.csv')
                 delete_folder("./forecaster_tmp_log")
                 return fit_out
+
+            main_process = is_main_process()
+            if not main_process:
+                logging.warning("Make sure new Python interpreters can "
+                                "safely import the main module, "
+                                "you should use if __name__ == '__main__':")
+
+            self.trainer.fit(self.internal, data)
+            self.fitted = True
 
     def predict(self, data, batch_size=32, quantize=False):
         """
