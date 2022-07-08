@@ -140,11 +140,11 @@ class AutoformerForecaster(Forecaster):
         self.metrics = metrics
 
         self.distributed = distributed
+        self.checkpoint_callback = True
         self.seed = seed if seed is not None else 42
-         # seed setting
+        # seed setting
         from pytorch_lightning import seed_everything
         seed_everything(seed=self.seed, workers=True)
-        self.checkpoint_callback = True
 
         # disable multi-process training for now.
         # TODO: enable it in future.

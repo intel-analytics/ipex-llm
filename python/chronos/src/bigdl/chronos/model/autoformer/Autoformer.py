@@ -224,5 +224,5 @@ def _transform_config_to_namedtuple(config):
     args.loss = config.get("loss", "mse")
     args.optim = config.get("optim", "Adam")
     args.lr = config.get("lr", 0.0001)
-    
+
     return args
