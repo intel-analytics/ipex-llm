@@ -201,6 +201,10 @@
                 <exclusion>
                     <groupId>com.github.fommil.netlib</groupId>
                     <artifactId>core</artifactId>
+	    	</exclusion>
+                <exclusion>
+                    <groupId>com.github.rwl</groupId>
+                    <artifactId>jtransforms</artifactId>
                 </exclusion>
             </exclusions>
         </dependency>
