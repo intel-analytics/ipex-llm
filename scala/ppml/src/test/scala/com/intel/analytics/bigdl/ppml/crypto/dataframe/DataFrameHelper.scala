@@ -18,7 +18,7 @@ package com.intel.analytics.bigdl.ppml.crypto.dataframe
 
 import com.intel.analytics.bigdl.dllib.common.zooUtils
 import com.intel.analytics.bigdl.ppml.BigDLSpecHelper
-import com.intel.analytics.bigdl.ppml.crypto.{AES_CBC_PKCS5PADDING, BigDLEncrypt, ENCRYPT}
+import com.intel.analytics.bigdl.ppml.crypto.{AES_CBC_PKCS5PADDING, BigDLEncrypt, CryptoCodec, ENCRYPT}
 import com.intel.analytics.bigdl.ppml.kms.SimpleKeyManagementService
 import org.scalatest.{BeforeAndAfter, FlatSpec, Matchers}
 
@@ -48,7 +48,7 @@ class DataFrameHelper extends BigDLSpecHelper {
 
   def generateCsvData(): (String, String, String) = {
     val fileName = dir + "/people.csv"
-    val encryptFileName = dir + "/en_people.csv"
+    val encryptFileName = dir + "/en_people.csv" + CryptoCodec.getDefaultExtension()
     val fw = new FileWriter(fileName)
     val data = new StringBuilder()
     data.append(header)

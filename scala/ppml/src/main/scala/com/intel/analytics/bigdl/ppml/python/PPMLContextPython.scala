@@ -97,7 +97,10 @@ class PPMLContextPython[T]() {
     kmsArgs("spark.bigdl.kms.type") = kmsType
     kmsType match {
       case KMS_CONVENTION.MODE_EHSM_KMS =>
-        throw new EncryptRuntimeException("not support yet")
+        kmsArgs("spark.bigdl.kms.ehs.ip") = ppmlArgs.get("kms_server_ip")
+        kmsArgs("spark.bigdl.kms.ehs.port") = ppmlArgs.get("kms_server_port")
+        kmsArgs("spark.bigdl.kms.ehs.id") = ppmlArgs.get("ehsm_app_id")
+        kmsArgs("spark.bigdl.kms.ehs.key") = ppmlArgs.get("ehsm_app_key")
       case KMS_CONVENTION.MODE_SIMPLE_KMS =>
         kmsArgs("spark.bigdl.kms.simple.id") = ppmlArgs.get("simple_app_id")
         kmsArgs("spark.bigdl.kms.simple.key") = ppmlArgs.get("simple_app_key")

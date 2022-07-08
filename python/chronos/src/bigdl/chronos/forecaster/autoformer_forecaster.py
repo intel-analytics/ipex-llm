@@ -62,6 +62,9 @@ class AutoformerForecaster(Forecaster):
         :param future_seq_len: Specify the output time steps (i.e. horizon).
         :param input_feature_num: Specify the feature dimension.
         :param output_feature_num: Specify the output dimension.
+        :param label_len: Start token length of AutoFormer decoder.
+        :param freq: Freq for time features encoding. You may choose from "s",
+               "t","h","d","w","m" for second, minute, hour, day, week or month.
         :param optimizer: Specify the optimizer used for training. This value
                defaults to "Adam".
         :param loss: str or pytorch loss instance, Specify the loss function

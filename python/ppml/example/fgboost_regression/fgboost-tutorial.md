@@ -2,17 +2,16 @@
 This example provides a step-by-step tutorial of running a FGBoost Regression task with 2 parties.
 ## 1. Key Concepts
 ### 1.1 FGBoost 
-**FGBoost** stands for Federated Gradient Boosted Tree algorithm. It allows multiple parties to run a federated gradient boosted decision tree application.
+**FGBoost** implements a Vertical Federated Learning algorithm for XGBoost. It allows multiple parties to run a federated gradient boosted decision tree application.
 ### 1.2 PSI
-**PSI** stands for Private Set Intersection algorithm. It compute the intersection of data from different parties and return the result so that parties know which data they could collaborate with.
+**PSI** stands for Private Set Intersection algorithm. It compute the intersection of data from different parties and return the common data IDs that all the parties holds so that parties know which data they could collaborate with.
 ### 1.3 SGX
 **SGX** stands for [Software Guard Extensions](https://www.intel.com/content/www/us/en/developer/tools/software-guard-extensions/overview.html). It helps protect data in use via unique application isolation technology. The data of application running in SGX would be protected.
 
 ### 1.4 FL Server and Client
-A **FL Server** is a gRPC server to handle requests from FL Client. A **FL Client** is a gRPC client to send requests to FL Server. These requests include:
-* serialized model to use in training at FL Server
-* some model related instance, e.g. loss function, optimizer
-* the Tensor which FL Server and FL Client interact, e.g. predict output, label, gradient
+**FL Server** and **FL CLient** are parts of BigDL PPML using gRPC to communicate with each other.
+* A centralized FL Server runs in SGX, aggregates intermediate results of clients, and return aggregated results (loss, gradients)
+* A FL Client runs on each party, computes intermediate result on local data, and updates partial model based on aggregated results from the FL Server
 
 
 ## 2. Build FGBoost Client Applications
@@ -35,26 +34,44 @@ init_fl_context()
 ### 2.2 Private Set Intersection
 Then, read the data,
 
-Party 1:
+Party 1
 ```python
 df_train = pd.read_csv('house-prices-train-1.csv')
 ```
 
-Party 2:
+Party 2
 ```python
 df_train = pd.read_csv('house-prices-train-2.csv')
 ```
 
 To get the data intersection which the 2 parties can do federated learning, we have to the Private Set Intersection (PSI) algorithm first.
+
+Party 1
 ```python
 from bigdl.ppml.fl.algorithms.psi import PSI
-ids = df_train['Id']
+df_train = pd.read_csv('./python/ppml/example/fgboost_regression/data/house-prices-train-1.csv')
+df_train['Id'] = df_train['Id'].astype(str)
+
+df_test = pd.read_csv('./python/ppml/example/fgboost_regression/data/house-prices-test-1.csv')
+df_test['Id'] = df_test['Id'].astype(str)
 psi = PSI()
-salt = psi.get_salt()
-psi.upload_set(ids, salt)
-intersection = psi.download_intersection()
-df_train = df_train.ix(intersection) # select the intersection part of training data
+intersection = psi.get_intersection(list(df_train['Id']))
+df_train = df_train[df_train['Id'].isin(intersection)]
 ```
+Party 2
+```python
+from bigdl.ppml.fl.algorithms.psi import PSI
+df_train = pd.read_csv('./python/ppml/example/fgboost_regression/data/house-prices-train-2.csv')
+df_train['Id'] = df_train['Id'].astype(str)
+
+df_test = pd.read_csv('./python/ppml/example/fgboost_regression/data/house-prices-test-2.csv')
+df_test['Id'] = df_test['Id'].astype(str)
+
+psi = PSI()
+intersection = psi.get_intersection(list(df_train['Id']))
+df_train = df_train[df_train['Id'].isin(intersection)]
+```
+
 ### 2.3 Data Preprocessing
 We provide a `preprocess` method in the code, including normalization and one-hot. The output is a DataFrame with all numerical features. You can check the detail in the [code]()
 
@@ -96,28 +113,21 @@ loaded = FGBoostRegression.load_model('/tmp/fgboost_model_2.json')
 Party 1:
 ```python
 df_test = pd.read_csv('house-prices-test-1')
-result = fgboost_regression.predict(df_test, feature_columns=df_test.columns)
+result = loaded.predict(df_test, feature_columns=df_test.columns)
 ```
 
 Party 2:
 ```python
 df_test = pd.read_csv('house-prices-test-2')
-result = fgboost_regression.predict(df_test, feature_columns=df_test.columns)
+result = loaded.predict(df_test, feature_columns=df_test.columns)
 ```
 ## 3 Run FGBoost
 FL Server is required before running any federated applications. Check [Start FL Server]() section for details.
-### 3.1 Start FL Server in SGX
-To run server in SGX, pull image from dockerhub
-```
-docker pull intelanalytics/bigdl-ppml-trusted-fl-graphene:2.1.0-SNAPSHOT
-```
-prepare the enclave key
-```
-openssl genrsa -3 -out enclave-key.pem 3072
-```
-// TODO: CHECK
 
-Modify the config file `ppml-conf.yaml`
+### 3.1 Start FL Server in SGX
+// TODO: Add SGX section
+
+Copy the configuration file `ppml/scripts/ppml-conf.yaml` to the directory where the server starts, and modify the config
 ```yaml
 # the port server gRPC uses
 serverPort: 8980
@@ -130,7 +140,7 @@ Then start the FL Server
 ./ppml/scripts/start-fl-server.sh 
 ```
 ### 3.2 Start FGBoost Clients
-Modify the config file `ppml-conf.yaml`
+Copy the configuration file `ppml/scripts/ppml-conf.yaml` to the directory where the client runs, and modify the config
 ```yaml
 # the URL of server
 clientTarget: localhost:8980
@@ -146,27 +156,11 @@ Start Client 2:
 python fgboost_regression_party_2.py
 ```
 ### 3.3 Get Results
-The first 5 batches of results are printed
+The first 5 prediction results are printed
 ```
-0-th result of FGBoost predict: [[9.74606]
- [9.74606]
- [9.74606]
- [9.74606]]
-1-th result of FGBoost predict: [[9.74606]
- [9.74606]
- [9.74606]
- [9.74606]]
-2-th result of FGBoost predict: [[9.74606]
- [9.74606]
- [9.74606]
- [9.74606]]
-3-th result of FGBoost predict: [[9.74606]
- [9.74606]
- [9.74606]
- [9.74606]]
-4-th result of FGBoost predict: [[9.74606]
- [9.74606]
- [9.74606]
- [9.74606]]
-
+0-th result of FGBoost predict: 9.793853759765625
+1-th result of FGBoost predict: 9.793853759765625
+2-th result of FGBoost predict: 9.793853759765625
+3-th result of FGBoost predict: 9.793853759765625
+4-th result of FGBoost predict: 9.793853759765625
 ```

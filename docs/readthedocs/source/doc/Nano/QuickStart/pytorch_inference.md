@@ -98,7 +98,7 @@ pip install neural-compressor==1.11.0
 
 Without extra accelerator, `Trainer.quantize()` returns a pytorch module with desired precision and accuracy. Following the example in [Runtime Acceleration](#runtime-acceleration), you can add quantization as below:
 ```python
-q_model = trainer.quanize(model, calib_dataloader=dataloader)
+q_model = trainer.quantize(model, calib_dataloader=dataloader)
 # run simple prediction with transparent acceleration
 y_hat = q_model(x)
 
@@ -117,7 +117,7 @@ pip install onnx onnxruntime onnxruntime-extensions
 ```
 Still taking the example in [Runtime Acceleration](pytorch_inference.md#runtime-acceleration), you can add quantization as below:
 ```python
-ort_q_model = trainer.quanize(model, accelerator='onnxruntime', calib_dataloader=dataloader)
+ort_q_model = trainer.quantize(model, accelerator='onnxruntime', calib_dataloader=dataloader)
 # run simple prediction with transparent acceleration
 y_hat = ort_q_model(x)
 
@@ -129,7 +129,7 @@ trainer.predict(ort_q_model, dataloader)
 Using accelerator='onnxruntime' actually equals to converting the model from Pytorch to ONNX firstly and then do quantization on the converted ONNX model:
 ```python
 ort_model = Trainer.trace(model, accelerator='onnruntime', input_sample=x):
-ort_q_model = trainer.quanize(ort_model, accelerator='onnxruntime', calib_dataloader=dataloader)
+ort_q_model = trainer.quantize(ort_model, accelerator='onnxruntime', calib_dataloader=dataloader)
 
 # run inference with transparent acceleration 
 y_hat = ort_q_model(x)
@@ -145,7 +145,7 @@ pip install openvino-dev
 ```
 Take the example in [Runtime Acceleration](#runtime-acceleration), and add quantization:
 ```python
-ov_q_model = trainer.quanize(model, accelerator='openvino', calib_dataloader=dataloader)
+ov_q_model = trainer.quantize(model, accelerator='openvino', calib_dataloader=dataloader)
 # run simple prediction with transparent acceleration
 y_hat = ov_q_model(x)
 
@@ -157,7 +157,7 @@ trainer.predict(ov_q_model, dataloader)
 Same as ONNXRuntime, it equals to converting the model from Pytorch to OpenVINO firstly and then doing quantization on the converted OpenVINO model:
 ```python
 ov_model = Trainer.trace(model, accelerator='openvino', input_sample=x):
-ov_q_model = trainer.quanize(ov_model, accelerator='onnxruntime', calib_dataloader=dataloader)
+ov_q_model = trainer.quantize(ov_model, accelerator='onnxruntime', calib_dataloader=dataloader)
 
 # run inference with transparent acceleration 
 y_hat = ov_q_model(x)

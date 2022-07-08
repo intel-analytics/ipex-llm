@@ -26,7 +26,8 @@ from torch.utils.data import DataLoader
 from torchmetrics.metric import Metric
 from torch.optim.lr_scheduler import _LRScheduler
 import yaml
-from bigdl.nano.pytorch.utils import TORCH_VERSION_LESS_1_10, TORCH_VERSION_LESS_1_11
+from bigdl.nano.pytorch.utils import TORCH_VERSION_LESS_1_10, TORCH_VERSION_LESS_1_11, \
+    LIGHTNING_VERSION_LESS_1_6
 from bigdl.nano.pytorch.lightning import LightningModuleFromTorch
 from bigdl.nano.pytorch.plugins.ddp_spawn import DDPSpawnPlugin
 from bigdl.nano.pytorch.plugins.ddp_subprocess import DDPSubprocessPlugin
@@ -102,13 +103,17 @@ class Trainer(pl.Trainer):
         self.use_ipex = use_ipex
 
         if num_processes == 1:
-            if self.use_ipex:
-                if TORCH_VERSION_LESS_1_10:
-                    accelerator = create_IPEXAccelerator_1_9(enable_bf16=enable_bf16)
-                else:
-                    accelerator = create_IPEXAccelerator(enable_bf16=enable_bf16)
-
-            super().__init__(accelerator=accelerator, *args, **kwargs)
+            if LIGHTNING_VERSION_LESS_1_6:
+                if self.use_ipex:
+                    if TORCH_VERSION_LESS_1_10:
+                        accelerator = create_IPEXAccelerator_1_9(enable_bf16=enable_bf16)
+                    else:
+                        accelerator = create_IPEXAccelerator(enable_bf16=enable_bf16)
+                super().__init__(accelerator=accelerator, *args, **kwargs)
+            else:
+                from bigdl.nano.pytorch.strategies.ipex.ipex_api import create_IPEXStrategy
+                strategy = create_IPEXStrategy(enable_bf16=enable_bf16) if self.use_ipex else None
+                super().__init__(strategy=strategy, *args, **kwargs)
         else:
             plugin = None
             invalidInputError(distributed_backend in distributed_backends,
@@ -232,8 +237,9 @@ class Trainer(pl.Trainer):
                  tuning_strategy: str = None,
                  timeout: int = None,
                  max_trials: int = None,
-                 input_sample=None
-                 ):
+                 input_sample=None,
+                 onnxruntime_session_options=None,
+                 **export_kwargs):
         """
         Calibrate a Pytorch-Lightning model for post-training quantization.
 
@@ -275,7 +281,9 @@ class Trainer(pl.Trainer):
                             "timeout=0, max_trials=1" means it will try quantization only once and
                             return satisfying best model.
         :param input_sample:      An input example to convert pytorch model into ONNX/OpenVINO.
-
+        :param onnxruntime_session_options: The session option for onnxruntime, only valid when
+                                            accelerator='onnxruntime', otherwise will be ignored.
+        :param **export_kwargs: will be passed to torch.onnx.export function.
         :return:            A accelerated Pytorch-Lightning Model if quantization is sucessful.
         """
         if not accelerator or accelerator == 'onnxruntime':
@@ -301,7 +309,9 @@ class Trainer(pl.Trainer):
                         input_sample = calib_dataloader
                     model = Trainer.trace(model,
                                           input_sample=input_sample,
-                                          accelerator='onnxruntime')
+                                          accelerator='onnxruntime',
+                                          onnxruntime_session_options=onnxruntime_session_options,
+                                          **export_kwargs)
             """
             If accelerator==None, quantized model returned should be an object of PytorchModel
             which is defined by neural-compressor containing a `GraphModule` for inference.
@@ -326,7 +336,8 @@ class Trainer(pl.Trainer):
                     input_sample = calib_dataloader
                 model = Trainer.trace(model,
                                       input_sample=input_sample,
-                                      accelerator='openvino')
+                                      accelerator='openvino',
+                                      **export_kwargs)
             invalidInputError(type(model).__name__ == 'PytorchOpenVINOModel',
                               "Invalid model to quantize. Please use a nn.Module or a model "
                               "from trainer.trance(accelerator=='openvino')")
@@ -360,7 +371,8 @@ class Trainer(pl.Trainer):
     def trace(model: nn.Module,
               input_sample=None,
               accelerator=None,
-              onnxruntime_session_options=None):
+              onnxruntime_session_options=None,
+              **export_kwargs):
         """
         Trace a pytorch model and convert it into an accelerated module for inference.
 
@@ -373,6 +385,7 @@ class Trainer(pl.Trainer):
                             backend. 'openvino' and 'onnxruntime' are supported for now.
         :param onnxruntime_session_options: The session option for onnxruntime, only valid when
                                             accelerator='onnxruntime', otherwise will be ignored.
+        :param **export_kwargs: will be passed to torch.onnx.export function.
         :return: Model with different acceleration(OpenVINO/ONNX Runtime).
         """
         invalidInputError(
@@ -381,9 +394,10 @@ class Trainer(pl.Trainer):
             "but got type {}".format(type(model))
         )
         if accelerator == 'openvino':
-            return PytorchOpenVINOModel(model, input_sample)
+            return PytorchOpenVINOModel(model, input_sample, **export_kwargs)
         if accelerator == 'onnxruntime':
-            return PytorchONNXRuntimeModel(model, input_sample, onnxruntime_session_options)
+            return PytorchONNXRuntimeModel(model, input_sample, onnxruntime_session_options,
+                                           **export_kwargs)
         invalidInputError(False, "Accelerator {} is invalid.".format(accelerator))
 
     @staticmethod
@@ -455,3 +469,24 @@ class Trainer(pl.Trainer):
             invalidInputError(False,
                               "ModelType {} or argument 'model={}' is not acceptable for pytorch"
                               " loading.".format(model_type, type(model)))
+
+    def save_checkpoint(    # type: ignore[override]
+        self, filepath, weights_only: bool = False, storage_options: Optional[Any] = None
+    ) -> None:
+        """Save checkpoint after one train epoch."""
+        # When using ipex==1.9 and custom lr_schedulers for training, if set `weights_only` to
+        # False,`save_checkpoint` method will report an error of 'Unsupport storage type'
+        # because the model is in 'xpu', so we temporarily move it to 'cpu',
+        # then move it back after `save_checkpoint`.
+        if self.use_ipex and TORCH_VERSION_LESS_1_10 and not weights_only:
+            self.model.to('cpu')
+
+        if LIGHTNING_VERSION_LESS_1_6:
+            super().save_checkpoint(filepath, weights_only)
+        else:
+            super().save_checkpoint(filepath, weights_only, storage_options)    # type: ignore
+        if self.use_ipex and TORCH_VERSION_LESS_1_10 and not weights_only:
+            if LIGHTNING_VERSION_LESS_1_6:
+                self.model.to(self.training_type_plugin.root_device)
+            else:
+                self.model.to(self.strategy.root_device)    # type: ignore
