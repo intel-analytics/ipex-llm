@@ -268,9 +268,9 @@ class AutoformerForecaster(Forecaster):
 
         # shall we use the same trainier
         self.trainer = Trainer(logger=False, max_epochs=epochs,
-                                    checkpoint_callback=self.checkpoint_callback,
-                                    num_processes=self.num_processes, use_ipex=self.use_ipex,
-                                    use_hpo=True)
+                               checkpoint_callback=self.checkpoint_callback,
+                               num_processes=self.num_processes, use_ipex=self.use_ipex,
+                               use_hpo=True)
         # run hyper parameter search
         self.internal = self.trainer.search(
             self.tune_internal,
@@ -282,13 +282,11 @@ class AutoformerForecaster(Forecaster):
 
         # reset train and validation datasets
         self.trainer.reset_train_val_dataloaders(self.internal)
-    
-    
+
     def search_summary(self):
         # add tuning check
         invalidOperationError(self.use_hpo, "No search summary when HPO is disabled.")
         return self.trainer.search_summary()
-        
 
     def fit(self, data, epochs=1, batch_size=32, val_data=None):
         """
@@ -323,8 +321,8 @@ class AutoformerForecaster(Forecaster):
         # Trainer init and fitting
         if not self.use_hpo:
             self.trainer = Trainer(logger=False, max_epochs=epochs,
-                                checkpoint_callback=self.checkpoint_callback, num_processes=1,
-                                use_ipex=self.use_ipex, distributed_backend="spawn", deterministic=True)
+                                   checkpoint_callback=self.checkpoint_callback, num_processes=1,
+                                   use_ipex=self.use_ipex, distributed_backend="spawn")
         self.trainer.fit(self.internal, data, val_dataloaders=val_data)
 
     def predict(self, data, batch_size=32):
