@@ -27,8 +27,15 @@ First, import the package and initilize FL Context.
 from bigdl.ppml.fl import *
 from bigdl.ppml.fl.algorithms.fgboost_regression import FGBoostRegression
 import pandas as pd
+```
 
-init_fl_context()
+Party 1:
+```python
+init_fl_context('1')
+```
+Party 2:
+```python
+init_fl_context('2')
 ```
 
 ### 2.2 Private Set Intersection
@@ -89,12 +96,12 @@ Then call `fit` method to train
 Party 1:
 ```python
 # party 1 does not own label, so directly pass all the features
-fgboost_regression.fit(df_train, feature_columns=df_train.columns, num_round=100)
+fgboost_regression.fit(df_train, feature_columns=df_train.columns, num_round=10)
 ```
 Party 2:
 ```python
 # party 2 owns label, so pass the features and the labels
-fgboost_regression.fit(df_x, df_y, feature_columns=df_x.columns, label_columns=['SalePrice'], num_round=100)
+fgboost_regression.fit(df_x, df_y, feature_columns=df_x.columns, label_columns=['SalePrice'], num_round=10)
 ```
 ### 2.6 Save & Load
 Save the model and load it back
