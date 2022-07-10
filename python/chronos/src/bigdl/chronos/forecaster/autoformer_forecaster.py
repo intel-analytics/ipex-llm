@@ -24,14 +24,9 @@ from bigdl.chronos.forecaster.utils import check_transformer_data
 from bigdl.chronos.pytorch import TSTrainer as Trainer
 from bigdl.nano.automl.hpo.space import Space
 from bigdl.chronos.forecaster.utils_hpo import GenericTSTransformerLightningModule
-import bigdl.nano.automl.hpo as hpo
 
 from .utils_hpo import _format_metric_str
-import torch.nn as nn
-import numpy as np
-import os
 import warnings
-from collections import namedtuple
 
 
 class AutoformerForecaster(Forecaster):
@@ -143,8 +138,9 @@ class AutoformerForecaster(Forecaster):
         self.checkpoint_callback = True
         self.seed = seed if seed is not None else 42
         # seed setting
-        from pytorch_lightning import seed_everything
-        seed_everything(seed=self.seed, workers=True)
+        if not isinstance(self.seed, Space):
+            from pytorch_lightning import seed_everything
+            seed_everything(seed=self.seed, workers=True)
 
         # disable multi-process training for now.
         # TODO: enable it in future.
@@ -318,6 +314,7 @@ class AutoformerForecaster(Forecaster):
                               batch_size=batch_size,
                               shuffle=True)
 
+        from bigdl.chronos.pytorch import TSTrainer as Trainer
         # Trainer init and fitting
         if not self.use_hpo:
             self.trainer = Trainer(logger=False, max_epochs=epochs,
@@ -350,7 +347,6 @@ class AutoformerForecaster(Forecaster):
                                             torch.from_numpy(data[3]),),
                               batch_size=batch_size,
                               shuffle=False)
-
         return self.trainer.predict(self.internal, data)
 
     def evaluate(self, data, batch_size=32):

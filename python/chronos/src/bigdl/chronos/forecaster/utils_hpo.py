@@ -17,6 +17,7 @@
 from bigdl.nano.pytorch.lightning import LightningModuleFromTorch
 from bigdl.nano.utils.log4Error import invalidInputError
 from typing import List
+import pytorch_lightning as pl
 from torchmetrics.metric import Metric
 from torch.optim.lr_scheduler import _LRScheduler
 from torch import nn
@@ -190,7 +191,8 @@ class GenericTSTransformerLightningModule(LightningModule):
         data_config = self._get_config_by_keys(data_config_keys, all_config)
         optim_config = self._get_config_by_keys(optim_config_keys, all_config)
         loss_config = self._get_config_by_keys(loss_config_keys, all_config)
-
+        pl.seed_everything(model_config["seed"], workers=True)
+        print("general model pl seed {}".format(model_config["seed"]))
         self.model = model_creator({**model_config, **optim_config, **loss_config})
         self.loss = loss_creator(loss_config['loss'])
 
@@ -205,7 +207,7 @@ class GenericTSTransformerLightningModule(LightningModule):
             ignore=["model_creator", "optim_creator", "loss_creator",
                     "model_config_keys", "data_config_keys",
                     "optim_config_keys", "loss_config_keys",
-                    "data", "validation_data", "metrics"])
+                    "data", "validation_data", "metrics", "model"])
 
     @staticmethod
     def _get_config_by_keys(keys, config):
@@ -264,7 +266,7 @@ class GenericTSTransformerLightningModule(LightningModule):
                                         torch.from_numpy(self.data[2]).float(),
                                         torch.from_numpy(self.data[3]).float()),
                           batch_size=self.batch_size,
-                          shuffle=True)
+                          shuffle=False)
 
     def val_dataloader(self):
         """Create the validation data loader."""

@@ -61,6 +61,8 @@ class AutoFormer(pl.LightningModule):
     """
     def __init__(self, configs):
         super().__init__()
+        print("autoformer model pl seed {}".format(configs.seed))
+        pl.seed_everything(configs.seed, workers=True)
         self.seq_len = configs.seq_len
         self.label_len = configs.label_len
         self.pred_len = configs.pred_len
@@ -202,7 +204,7 @@ def _transform_config_to_namedtuple(config):
                                  'n_heads', 'd_ff',
                                  'activation', 'e_layers',
                                  'c_out', 'loss',
-                                 'optim', 'lr'])
+                                 'optim', 'lr', 'seed'])
     args.seq_len = config['seq_len']
     args.label_len = config['label_len']
     args.pred_len = config['pred_len']
@@ -224,5 +226,6 @@ def _transform_config_to_namedtuple(config):
     args.loss = config.get("loss", "mse")
     args.optim = config.get("optim", "Adam")
     args.lr = config.get("lr", 0.0001)
+    args.seed = config.get("seed", 1024)
 
     return args
