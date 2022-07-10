@@ -508,7 +508,7 @@ class SparkXShards(XShards):
 
             import pyspark.sql.functions as F
             import pyspark.sql.types as T
-            to_array = F.udf(lambda v: v.toArray(), T.ArrayType(T.FloatType()))
+            to_array = F.udf(lambda v: v.toArray().tolist(), T.ArrayType(T.FloatType()))
             for colName, colType in df.dtypes:
                 if colType == 'vector':
                     df = df.withColumn(colName, to_array(colName))

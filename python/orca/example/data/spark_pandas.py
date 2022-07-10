@@ -60,7 +60,7 @@ if __name__ == "__main__":
     scale = MinMaxScaler(inputCol=["hours"], outputCol="x_scaled")
     data_shard = scale.fit_transform(trans_data_shard)
 
-    encode = LabelEncode(inputCol="value", outputCol="encoded_value")
+    encode = StringIndexer(inputCol="value")
     encoded_data_shard = encode.fit_transform(trans_data_shard)
 
     stop_orca_context()

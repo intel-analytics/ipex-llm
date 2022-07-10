@@ -31,8 +31,8 @@ def log_with_clip(df, columns, clip=True):
     return callZooFunc("float", "log", df, columns, clip)
 
 
-def generate_string_idx(df, columns, freq_limit, order_by_freq):
-    return callZooFunc("float", "generateStringIdx", df, columns, freq_limit, order_by_freq)
+# def generate_string_idx(df, columns, freq_limit, order_by_freq):
+#     return callZooFunc("float", "generateStringIdx", df, columns, freq_limit, order_by_freq)
 
 
 def fill_na(df, fill_val, columns):
