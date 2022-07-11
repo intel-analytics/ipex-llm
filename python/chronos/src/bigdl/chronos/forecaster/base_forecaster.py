@@ -654,9 +654,9 @@ class BasePytorchForecaster(Forecaster):
             loss = self.loss_creator(self.loss_config)
             optimizer = self.optimizer_creator(model, self.optim_config)
             self.internal = LightningModule.load_from_checkpoint(checkpoint_file,
-                                                                          model=model,
-                                                                          loss=loss,
-                                                                          optimizer=optimizer)
+                                                                 model=model,
+                                                                 loss=loss,
+                                                                 optimizer=optimizer)
             self.internal = Trainer.compile(self.internal)
             self.fitted = True
             if quantize_checkpoint_file:
