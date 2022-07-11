@@ -90,7 +90,7 @@ FL Server is required before running any federated applications. Check [Start FL
 ### 3.1 Start FL Server in SGX
 // TODO: Add SGX section
 
-Copy the configuration file `ppml/scripts/ppml-conf.yaml` to the directory where the server starts, and modify the config
+Copy the configuration file `ppml/scripts/ppml-conf.yaml` to the current directory, and modify the config
 ```yaml
 # the port server gRPC uses
 serverPort: 8980
@@ -103,7 +103,7 @@ Then start the FL Server
 ./ppml/scripts/start-fl-server.sh 
 ```
 ### 3.2 Start FGBoost Clients
-Copy the configuration file `ppml/scripts/ppml-conf.yaml` to the directory where the client runs, and modify the config
+Copy the configuration file `ppml/scripts/ppml-conf.yaml` to the current directory, and modify the config
 ```yaml
 # the URL of server
 clientTarget: localhost:8980
