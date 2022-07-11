@@ -110,8 +110,8 @@ def search(args):
                                  "'yarn', but got " + args.cluster_mode)
         sys.exit()
 
+    spark = OrcaContext.get_spark_session()
     with StopWatch("do_search spark >>>>>>") as sw:
-        spark = OrcaContext.get_spark_session()
         df = spark.read.parquet(args.parquet_path)
         print('Total number of items: ', df.count())
         rdd = df.rdd.repartition(num_executors)  # Each node runs one faiss task
