@@ -36,21 +36,21 @@ With BigDL PPML, you can run trusted Big Data & AI applications
 
 ## Getting Started with PPML
 
-### 0. Preparation your environment
+#### 0. Preparation your environment
 To get started with BigDL PPML, you should prepare your environment first, including K8s cluster setup, K8s-SGX plugin setup, key/secret preparation, KMS and attestation service setup, BigDL PPML Docker Image preparation. More details in [Prepare Environment](https://github.com/liu-shaojun/BigDL/blob/ppml_doc/ppml/docs/prepare_environment.md).
 
-### 1. Encrypt and Upload Data
+#### 1. Encrypt and Upload Data
 Upload encrypted data to be used by your application to the nfs server. More details in [Encrypt Your Data](https://github.com/liu-shaojun/BigDL/blob/ppml_doc/ppml/docs/encrypt_and_decrypt.md).
 
-### 2. Prepare Big Data & AI applications
+#### 2. Prepare Big Data & AI applications
 Build standard Big Data & AI applications, here we give several existing examples: [examples](#develop-your-own-big-data--ai-applications-with-bigdl-ppml).
 
 To build your own Big Data & AI applications, refer to [develop your own Big Data & AI applications with BigDL PPML](#develop-your-own-big-data--ai-applications-with-bigdl-ppml).
 
-### 3. Submit Job
+#### 3. Submit Job
 You have two options to submit BigDL PPML jobs: use CLI or use helm chart. More details in [Submit BigDL PPML Job](https://github.com/liu-shaojun/BigDL/blob/ppml_doc/ppml/docs/submit_job.md).
 
-### 4. Decrypt and Read Result
+#### 4. Decrypt and Read Result
 When the job is done, you can decrypt and read result of the job. More details in [Decrypt Job Result](https://github.com/liu-shaojun/BigDL/blob/ppml_doc/ppml/docs/encrypt_and_decrypt.md).
 
 
