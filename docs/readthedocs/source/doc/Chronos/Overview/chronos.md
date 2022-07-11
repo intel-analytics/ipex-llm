@@ -48,7 +48,7 @@ pip install pyarrow=6.0.1
 .. note:: 
     **Supported Python Version**:
 
-     Chronos is thoroughly tested on Python3.6/3.7. Still, it is highly recommended to use python3.7.
+     Chronos only supports Python 3.7.2 ~ latest 3.7.x.
 ```
 ---
 ### **3. Run**
