@@ -192,7 +192,6 @@ class GenericTSTransformerLightningModule(LightningModule):
         optim_config = self._get_config_by_keys(optim_config_keys, all_config)
         loss_config = self._get_config_by_keys(loss_config_keys, all_config)
         pl.seed_everything(model_config["seed"], workers=True)
-        print("general model pl seed {}".format(model_config["seed"]))
         self.model = model_creator({**model_config, **optim_config, **loss_config})
         self.loss = loss_creator(loss_config['loss'])
 
@@ -266,7 +265,7 @@ class GenericTSTransformerLightningModule(LightningModule):
                                         torch.from_numpy(self.data[2]).float(),
                                         torch.from_numpy(self.data[3]).float()),
                           batch_size=self.batch_size,
-                          shuffle=False)
+                          shuffle=True)
 
     def val_dataloader(self):
         """Create the validation data loader."""

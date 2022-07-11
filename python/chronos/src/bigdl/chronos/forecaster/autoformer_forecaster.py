@@ -23,6 +23,9 @@ from bigdl.nano.utils.log4Error import invalidInputError, invalidOperationError
 from bigdl.chronos.forecaster.utils import check_transformer_data
 from bigdl.chronos.pytorch import TSTrainer as Trainer
 from bigdl.nano.automl.hpo.space import Space
+from pytorch_lightning.loops import TrainingBatchLoop, TrainingEpochLoop
+from pytorch_lightning.loops.dataloader.evaluation_loop import EvaluationLoop
+from pytorch_lightning.loops.dataloader.prediction_loop import PredictionLoop
 from bigdl.chronos.forecaster.utils_hpo import GenericTSTransformerLightningModule
 
 from .utils_hpo import _format_metric_str
@@ -267,6 +270,41 @@ class AutoformerForecaster(Forecaster):
                                checkpoint_callback=self.checkpoint_callback,
                                num_processes=self.num_processes, use_ipex=self.use_ipex,
                                use_hpo=True)
+        # add custom fitloop
+        from pytorch_lightning.loops import FitLoop
+        class CustomFitLoop(FitLoop):
+            def on_run_end(self) -> None:
+                """Calls the ``on_train_end`` hook"""
+                # NOTE: the iteration_count/current_epoch is already incremented
+                # Lightning today does not increment the current epoch at the last epoch run in Trainer.fit
+                # To simulate that current behavior, we decrement here.
+                # TODO: must be fixed by https://github.com/PyTorchLightning/pytorch-lightning/issues/5007
+                # self.current_epoch -= 1
+                self.current_epoch = 0
+
+                # hook
+                self.trainer.call_hook("on_train_end")
+
+                # todo: TPU 8 cores hangs in flush with TensorBoard. Might do for all loggers.
+                # It might be related to xla tensors blocked when moving the cpu
+                # kill loggers
+                if self.trainer.logger is not None:
+                    self.trainer.logger.finalize("success")
+
+                # summarize profile results
+                self.trainer.profiler.describe()
+
+                # give accelerators a chance to finish
+                self.trainer.accelerator.on_train_end()
+        
+        fit_loop = CustomFitLoop(max_epochs=epochs)
+        training_epoch_loop = TrainingEpochLoop(None, None)
+        training_batch_loop = TrainingBatchLoop()
+        training_validation_loop = EvaluationLoop()
+        training_epoch_loop.connect(batch_loop=training_batch_loop, val_loop=training_validation_loop)
+        fit_loop.connect(epoch_loop=training_epoch_loop)
+        self.trainer.fit_loop = fit_loop
+
         # run hyper parameter search
         self.internal = self.trainer.search(
             self.tune_internal,
@@ -284,7 +322,7 @@ class AutoformerForecaster(Forecaster):
         invalidOperationError(self.use_hpo, "No search summary when HPO is disabled.")
         return self.trainer.search_summary()
 
-    def fit(self, data, epochs=1, batch_size=32, val_data=None):
+    def fit(self, data, epochs=1, batch_size=32):
         """
         Fit(Train) the forecaster.
 
@@ -320,7 +358,8 @@ class AutoformerForecaster(Forecaster):
             self.trainer = Trainer(logger=False, max_epochs=epochs,
                                    checkpoint_callback=self.checkpoint_callback, num_processes=1,
                                    use_ipex=self.use_ipex, distributed_backend="spawn")
-        self.trainer.fit(self.internal, data, val_dataloaders=val_data)
+
+        self.trainer.fit(self.internal, data)
 
     def predict(self, data, batch_size=32):
         """
