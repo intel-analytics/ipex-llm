@@ -1,4 +1,4 @@
-Prior to run your with BigDL PPML, please make sure the following is setup
+Prior to run your Big Data & AI applications with BigDL PPML, please make sure the following is setup
 
 * Hardware that supports SGX
 * A fully configured Kubernetes cluster
@@ -11,7 +11,7 @@ Prior to run your with BigDL PPML, please make sure the following is setup
 
 ### Prepare data, key and password
 ##### Prepare the Data
-To train a model with ppml in BigDL, you need to prepare the data first. 
+To run Big Data & AI applications with ppml in BigDL, you need to prepare the data first. 
 
 ##### Prepare the Key
 
