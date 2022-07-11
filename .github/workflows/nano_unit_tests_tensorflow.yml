@@ -41,86 +41,64 @@ jobs:
           python -m pip install --upgrade setuptools==58.0.4
           python -m pip install --upgrade wheel
           sudo apt-get install openmpi-bin openmpi-doc libopenmpi-dev
-
-      - name: Run horovod unit tests
-        shell: bash
-        run: |
-          $CONDA/bin/conda create -n horovod-tf -y python==3.7.10 setuptools=58.0.4
-          source $CONDA/bin/activate horovod-tf
+          $CONDA/bin/conda create -n nano-tensorflow -y python==3.7.10 setuptools=58.0.4
+          source $CONDA/bin/activate tensorflow
           $CONDA/bin/conda info
           bash python/nano/dev/build_and_install.sh linux default false tensorflow
           if [ ! -z "${{matrix.tf-version}}" ]; then
             pip install ${{matrix.tf-version}}
           fi
+          pip install pytest
           HOROVOD_WITH_MPI=1 HOROVOD_WITH_TENSORFLOW=1 pip install --no-cache-dir horovod==0.25.0
           horovodrun --check-build
-          pip install pytest
-          source bigdl-nano-init
-          bash python/nano/test/run-nano-tf-horovod-tests.sh
-          source $CONDA/bin/deactivate
-          $CONDA/bin/conda remove -n horovod-tf --all
-        env:
-          ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
+          pip install ray[default]==1.11.0 prometheus_client==0.13.0
+          pip install ConfigSpace
+          pip install optuna
+          pip install neural-compressor==1.11
 
       - name: Run tensorflow unit tests
         shell: bash
         run: |
-          $CONDA/bin/conda create -n nano-tensorflow -y python==3.7.10 setuptools=58.0.4
-          source $CONDA/bin/activate nano-tensorflow
-          $CONDA/bin/conda info
-          bash python/nano/dev/build_and_install.sh linux default false tensorflow
-          if [ ! -z "${{matrix.tf-version}}" ]; then
-            pip install ${{matrix.tf-version}}
-          fi
-          pip install pytest
-          source bigdl-nano-init
           bash python/nano/test/run-nano-tf-tests.sh
-          source $CONDA/bin/deactivate
-          $CONDA/bin/conda remove -n nano-tensorflow --all
+          bash python/nano/test/run-nano-tf-horovod-tests.sh
+          bash python/nano/test/run-nano-tf-ray-tests.sh
+          bash python/nano/test/run-nano-automl-common-tests.sh
+          bash python/nano/test/run-nano-automl-tf-tests.sh
+          bash python/nano/test/run-nano-tf-inc-tests.sh
         env:
           ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
 
-      - name: Run ray TF unit tests
+      - name: Post tensorflow unit tests
         shell: bash
         run: |
-          $CONDA/bin/conda create -n ray-tf -y python==3.7.10 setuptools=58.0.4
-          source $CONDA/bin/activate ray-tf
-          $CONDA/bin/conda info
-          bash python/nano/dev/build_and_install.sh linux default false tensorflow
-          if [ ! -z "${{matrix.tf-version}}" ]; then
-            pip install ${{matrix.tf-version}}
-          fi
-          pip install pytest
-          pip install ray[default]==1.11.0 prometheus_client==0.13.0
-          source bigdl-nano-init
-          bash python/nano/test/run-nano-tf-ray-tests.sh
           source $CONDA/bin/deactivate
-          $CONDA/bin/conda remove -n ray-tf --all
-        env:
-          ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
-          
-      - name: Run tensorflow AutoML unit tests
-        shell: bash
+          $CONDA/bin/conda remove -n horovod-tf --all
+
+  nano-unit-test-tensorflow-openvino:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: ["ubuntu-20.04"]
+        python-version: ["3.7"]
+        tf-version: [
+          "intel-tensorflow==2.8.0 keras==2.8.0 tensorflow-estimator==2.8.0",
+          "intel-tensorflow==2.9.1 keras==2.9.0 tensorflow-estimator==2.9.0",
+          ""
+          ]
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v2
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install dependencies
         run: |
-          $CONDA/bin/conda create -n nano-automl-tf -y python==3.7.10 setuptools=58.0.4
-          source $CONDA/bin/activate nano-automl-tf
-          $CONDA/bin/conda info
-          bash python/nano/dev/build_and_install.sh linux default false tensorflow
-          if [ ! -z "${{matrix.tf-version}}" ]; then
-            pip install ${{matrix.tf-version}}
-          fi
-          pip install pytest
-          pip install ConfigSpace
-          pip install optuna
-          source bigdl-nano-init
-          bash python/nano/test/run-nano-automl-common-tests.sh
-          bash python/nano/test/run-nano-automl-tf-tests.sh
-          source $CONDA/bin/deactivate
-          $CONDA/bin/conda remove -n nano-automl-tf --all
-        env:
-          ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
-          
-      - name: Run Tensorflow unit tests (OpenVINO)
+          python -m pip install --upgrade pip
+          python -m pip install --upgrade setuptools==58.0.4
+          python -m pip install --upgrade wheel
+          sudo apt-get install openmpi-bin openmpi-doc libopenmpi-dev
+      - name: Run tensorflow unit tests (OpenVINO)
         shell: bash
         run: |
           $CONDA/bin/conda create -n openvino-tensorflow -y python==3.7.10 setuptools=58.0.4
@@ -137,24 +115,5 @@ jobs:
           bash python/nano/test/run-nano-tf-openvino-tests.sh
           source $CONDA/bin/deactivate
           $CONDA/bin/conda remove -n openvino-tensorflow --all
-        env:
-          ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
-
-      - name: Run inc TF unit tests
-        shell: bash
-        run: |
-          $CONDA/bin/conda create -n inc-tf -y python==3.7.10 setuptools=58.0.4
-          source $CONDA/bin/activate inc-tf
-          $CONDA/bin/conda info
-          bash python/nano/dev/build_and_install.sh linux default false tensorflow
-          if [ ! -z "${{matrix.tf-version}}" ]; then
-            pip install ${{matrix.tf-version}}
-          fi
-          pip install pytest
-          pip install neural-compressor==1.11
-          source bigdl-nano-init
-          bash python/nano/test/run-nano-tf-inc-tests.sh
-          source $CONDA/bin/deactivate
-          $CONDA/bin/conda remove -n inc-tf --all
         env:
           ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
