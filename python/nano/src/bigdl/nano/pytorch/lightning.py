@@ -66,6 +66,14 @@ class LightningModule(pl.LightningModule):
                 loss: _Loss = None, optimizer: Optimizer = None,
                 scheduler: _LRScheduler = None,
                 metrics: List[Metric] = None):
+        """
+        Compile a LightningMoudle withloss, optimizer, metrics, schedulers.
+
+        :param loss:        A torch loss function.
+        :param optimizer:   A torch optimizer.
+        :param scheduler:   A torch scheduler.
+        :param metrics:     A list of metrics to calculate accuracy of the model.
+        """
         if loss is not None:
             self.loss = loss
         if optimizer is not None:
