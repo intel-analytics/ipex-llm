@@ -1,3 +1,10 @@
+#### Table of Contents  
+[What is BigDL PPML?](#what-is-bigdl-ppml)  
+[Why BigDL PPML?](#why-bigdl-ppml)  
+[Getting Started with PPML](#getting-started-with-ppml)  
+[Develop your own Big Data & AI applications with BigDL PPML](#develop-your-own-big-data--ai-applications-with-bigdl-ppml)
+
+
 ## What is BigDL PPML?
 
 Protecting data privacy and confidentiality is critical in a world where data is everywhere. In recent years, more and more countries have enacted data privacy legislation or are expected to pass comprehensive legislation to protect data privacy, the importance of privacy and data protection is increasingly recognized.
@@ -15,9 +22,11 @@ There are three emerging solutions seek to reduce the data-in-use attack surface
 [PPML](https://bigdl.readthedocs.io/en/latest/doc/PPML/Overview/ppml.html) (Privacy Preserving Machine Learning) in [BigDL 2.0](https://github.com/intel-analytics/BigDL) provides a Trusted Cluster Environment for secure Big Data & AI applications, even on untrusted cloud environment. By combining Intel Software Guard Extensions (SGX) with several other security technologies (e.g., attestation, key management service, private set intersection, federated learning, homomorphic encryption, etc.), BigDL PPML ensures end-to-end security enabled for the entire distributed workflows, such as Apache Spark, Apache Flink, XGBoost, TensorFlow, PyTorch, etc.
 
 ## Why BigDL PPML?
-![PPML](https://user-images.githubusercontent.com/61072813/177922914-f670111c-e174-40d2-b95a-aafe92485024.png)
-
 PPML allows organizations to explore powerful AI techniques while working to minimize the security risks associated with handling large amounts of sensitive data. PPML protects data at rest, in transit and in use: compute and memory protected by SGX Enclaves, storage (e.g., data and model) protected by encryption, network communication protected by remote attestation and Transport Layer Security (TLS), and optional Federated Learning support. 
+
+<p align="left">
+  <img src="https://user-images.githubusercontent.com/61072813/177922914-f670111c-e174-40d2-b95a-aafe92485024.png" alt="data lifecycle" width='600px' />
+</p>
 
 With BigDL PPML, you can run trusted Big Data & AI applications
 - Trusted Spark SQL & Dataframe: you can do trusted big data analytics, such as Spark SQL, Dataframe, Spark MLlib
