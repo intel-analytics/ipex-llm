@@ -119,12 +119,14 @@ jobs:
       - name: Run PyTorch unit tests
         shell: bash
         run: |
+          source $CONDA/bin/activate nano-pytorch
           bash python/nano/test/run-nano-pytorch-tests.sh
           bash python/nano/test/run-nano-pytorch-ray-tests.sh
           bash python/nano/test/run-nano-automl-pytorch-tests.sh
           bash python/nano/test/run-nano-pytorch-inc-tests.sh
           bash python/nano/test/run-nano-pytorch-onnx-tests.sh
           bash python/nano/benchmark/start_benchmark.sh
+          source $CONDA/bin/deactivate
         env:
           ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
           SANITY_CHECK: "1"
@@ -132,7 +134,6 @@ jobs:
       - name: Post PyTorch Unit Tests
         shell: bash
         run: |
-          source $CONDA/bin/deactivate
           $CONDA/bin/conda remove -n nano-pytorch --all
 
   nano-unit-test-pytorch-openvino:

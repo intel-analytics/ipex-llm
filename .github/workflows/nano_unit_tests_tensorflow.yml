@@ -42,7 +42,7 @@ jobs:
           python -m pip install --upgrade wheel
           sudo apt-get install openmpi-bin openmpi-doc libopenmpi-dev
           $CONDA/bin/conda create -n nano-tensorflow -y python==3.7.10 setuptools=58.0.4
-          source $CONDA/bin/activate tensorflow
+          source $CONDA/bin/activate nano-tensorflow
           $CONDA/bin/conda info
           bash python/nano/dev/build_and_install.sh linux default false tensorflow
           if [ ! -z "${{matrix.tf-version}}" ]; then
@@ -59,20 +59,21 @@ jobs:
       - name: Run tensorflow unit tests
         shell: bash
         run: |
+          source $CONDA/bin/activate nano-tensorflow
           bash python/nano/test/run-nano-tf-tests.sh
           bash python/nano/test/run-nano-tf-horovod-tests.sh
           bash python/nano/test/run-nano-tf-ray-tests.sh
           bash python/nano/test/run-nano-automl-common-tests.sh
           bash python/nano/test/run-nano-automl-tf-tests.sh
           bash python/nano/test/run-nano-tf-inc-tests.sh
+          source $CONDA/bin/deactivate
         env:
           ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
 
       - name: Post tensorflow unit tests
         shell: bash
         run: |
-          source $CONDA/bin/deactivate
-          $CONDA/bin/conda remove -n horovod-tf --all
+          $CONDA/bin/conda remove -n nano-tensorflow --all
 
   nano-unit-test-tensorflow-openvino:
     runs-on: ${{ matrix.os }}
