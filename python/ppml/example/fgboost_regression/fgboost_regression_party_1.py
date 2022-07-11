@@ -79,7 +79,8 @@ def preprocess(train_dataset, test_dataset):
 
 
 if __name__ == '__main__':
-    init_fl_context('1')
+    client_id = '1'
+    init_fl_context(client_id)
 
     df_train = pd.read_csv('./python/ppml/example/fgboost_regression/data/house-prices-train-1.csv')
     df_train['Id'] = df_train['Id'].astype(str)
