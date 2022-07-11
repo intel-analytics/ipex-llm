@@ -106,8 +106,13 @@ class _RayLauncher(_SpawnLauncher):
 
         strategy = self._strategy
 
-        # fix bug
-        # args[1] is dataloader, args[3] and args[4] is datamodule
+        # reset datamodule to fix bug:
+        # in pytorch lightning 1.6, `datamodule` has a `trainer` member,
+        # if this datamodule has been used for training, its `trainer` member will refers
+        # to the previous trainer, which will causes errors when creating child processes.
+        # pytorch lightning 1.4 resets datamodule automatically before creating child processes,
+        # so we do not need to do this, but 1.6 resets datamodule after creating child processes,
+        # so we must reset datamodule here.
         if strategy.use_ipex and TORCH_VERSION_LESS_1_10:
             if isinstance(args[1], LightningDataModule):
                 args[1].trainer = None
@@ -304,10 +309,10 @@ class RayStrategy(DDPSpawnStrategy):
         if trainer_fn == TrainerFn.FITTING:
             self.configure_ddp()
         else:
-            # when calling `trainer.test()`, the `model.training` won't be set to `False`,
-            # then the following `ipex_optimize()` will report an error,
+            # `trainer.test()` won't set `model.training` to `False` automatically in pl 1.6,
+            # then the following `ipex_optimize()` call will report an error,
             # so we need to set it to `False` manuallay
-            self.model.training = False
+            self.model.eval()
 
         if self.use_ipex and not TORCH_VERSION_LESS_1_10:
             dtype = torch.bfloat16 if self.enable_bf16 else None
