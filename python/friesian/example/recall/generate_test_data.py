@@ -70,8 +70,6 @@ def gen_vector(x, vec_dim):
 
 def generate_data(args):
     print("create emb_vecs and item_dict data >>>>>>")
-    vec_dim = args.vec_dim
-    print(vec_dim)
     if args.use_spark:
         print('>>>>>> using spark >>>>>>')
         sc = init_orca_context(cores="*", memory="125g", conf={"spark.driver.maxResultSize": "10g"})
