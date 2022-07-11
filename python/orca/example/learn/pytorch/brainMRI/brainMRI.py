@@ -211,7 +211,7 @@ if args.backend in ["ray", "spark"]:
     orca_estimator.fit(data=train_loader_creator, epochs=args.epochs, batch_size=batch_size,
                        validation_data=val_loader_creator)
     res = orca_estimator.evaluate(data=test_loader_creator, batch_size=batch_size)
-    for r, value in res:
+    for r, value in res.items():
         print(r, ":", value)
 else:
     raise NotImplementedError("Only ray and spark are supported as the backend,"
