@@ -4,6 +4,7 @@ Prior to run your Big Data & AI applications with BigDL PPML, please make sure t
 * A fully configured Kubernetes cluster
 * [Intel SGX Device Plugin](https://bigdl.readthedocs.io/en/latest/doc/PPML/QuickStart/deploy_intel_sgx_device_plugin_for_kubernetes.html) to use SGX in K8S cluster
 * [Data, Key and Password Preparation](#prepare-data-key-and-password)
+* [Configure the Environment](#configure-the-environment)
 * [KMS Service Setup](kms-key-management-service-setup)
 * [Attestation Service Setup](#attestation-service-setup)
 * [BigDL PPML Docker Image](#prepare-bigdl-ppml-docker-image)
@@ -36,6 +37,34 @@ To run Big Data & AI applications with ppml in BigDL, you need to prepare the da
   ```bash
   sudo bash ../../../scripts/generate-password.sh used_password_when_generate_keys
   ```
+
+### Configure the Environment
+
+1. Enter `BigDL/ppml/trusted-big-data-ml/python/docker-graphene` dir. Refer to the previous section about [preparing data, key and password](#prepare-data-key-and-password). Then run the following commands to generate your enclave key and add it to your Kubernetes cluster as a secret. 
+
+    ```bash
+    kubectl apply -f keys/keys.yaml
+    kubectl apply -f password/password.yaml
+    cd kubernetes
+    bash enclave-key-to-secret.sh
+    ```
+2. Create the [RBAC(Role-based access control)](https://spark.apache.org/docs/latest/running-on-kubernetes.html#rbac) :
+
+    ```bash
+    kubectl create serviceaccount spark
+    kubectl create clusterrolebinding spark-role --clusterrole=edit --serviceaccount=default:spark --namespace=default
+    ```
+
+3. Generate k8s config file, modify `YOUR_DIR` to the location you want to store the config:
+
+    ```bash
+    kubectl config view --flatten --minify > /YOUR_DIR/kubeconfig
+    ```
+4. Create k8s secret, the secret created `YOUR_SECRET` should be the same as the password you specified in step 1:
+
+    ```bash
+    kubectl create secret generic spark-secret --from-literal secret=YOUR_SECRET
+    ```
 
 ### KMS (key management service) Setup
 You can choose to use the KMS service which PPML provides or you own one.
