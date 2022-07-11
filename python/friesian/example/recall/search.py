@@ -92,7 +92,8 @@ def search(args):
         driver_memory = "4g"
         sc = init_orca_context("yarn", cores=executor_cores,
                                num_nodes=num_executors, memory=executor_memory,
-                               driver_cores=driver_cores, driver_memory=driver_memory, extra_python_lib="utils.py")
+                               driver_cores=driver_cores, driver_memory=driver_memory,
+                               extra_python_lib="utils.py")
 
         print('add files to spark >>>>>>')
         sc.addFile(args.dict_path)
@@ -105,7 +106,8 @@ def search(args):
         sc = init_orca_context("local", cores=8)
         num_executors = 4
     else:
-        invalidInputError(False, "cluster_mode should be one of 'local', 'yarn', but got " + args.cluster_mode)
+        invalidInputError(False, "cluster_mode should be one of 'local', "
+                                 "'yarn', but got " + args.cluster_mode)
         sys.exit()
 
     with StopWatch("do_search spark >>>>>>") as sw:
@@ -114,7 +116,8 @@ def search(args):
         print('Total number of items: ', df.count())
         rdd = df.rdd.repartition(num_executors)  # Each node runs one faiss task
         res_rdd = rdd.mapPartitions(
-            faiss_search(args.faiss_index_path, args.dict_path, args.cluster_mode, batch_size=args.batch_size,
+            faiss_search(args.faiss_index_path, args.dict_path,
+                         args.cluster_mode, batch_size=args.batch_size,
                          k=args.top_k))
         schema = StructType([
             StructField('seed_item', StringType(), False),

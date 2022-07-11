@@ -64,7 +64,8 @@ def search_sample(index, sample_vec):
 
 def gen_vector(x, vec_dim):
     np.random.seed(x)  # make sure get same vectors for each specific index
-    return (x, np.random.rand(vec_dim).astype(np.float32) + random.randint(0, 1000) * random.random())
+    return (x, np.random.rand(vec_dim).astype(np.float32) + \
+            random.randint(0, 1000) * random.random())
 
 
 def generate_data(args):
@@ -93,7 +94,8 @@ def generate_data(args):
         item_dict = create_dummy_data(args.row_nums, args.vec_dim, args.verbose, rnd_seed=42,
                                       HEADER_LEN=args.header_len, only_item=True)
     else:
-        emb_vecs, item_dict = create_dummy_data(args.row_num, args.vec_dim, args.verbose, rnd_seed=42,
+        emb_vecs, item_dict = create_dummy_data(args.row_num, args.vec_dim,
+                                                args.verbose, rnd_seed=42,
                                                 HEADER_LEN=args.header_len)
     print("create index for faiss >>>>>>")
     if args.index_type == 'FlatL2':
@@ -105,8 +107,8 @@ def generate_data(args):
         print('index_faiss.ntotal: ', index_faiss.ntotal)
     elif args.index_type == 'IVFFlatL2':
         print('index_type: ', "# IVFFlatL2")
-        # ad hoc settings
-        NLIST = int(math.sqrt(args.row_nums))  # The number of cells (space partition). Typical value is sqrt(N)
+        # The number of cells (space partition). Typical value is sqrt(N)
+        NLIST = int(math.sqrt(args.row_nums))
         print('NLIST: ', NLIST)
         quantizer = faiss.IndexFlatL2(args.vec_dim)
         index_faiss = faiss.IndexIVFFlat(quantizer, args.vec_dim, NLIST)
@@ -130,7 +132,8 @@ def generate_data(args):
 
     with open(args.index_save_path, "wb") as f:
         print('saving to: {}'.format(args.index_save_path))
-        # serialize the index into binary array (np.array). You can save/load it via numpy IO functions.
+        # serialize the index into binary array (np.array).
+        # You can save/load it via numpy IO functions.
         chunk = faiss.serialize_index(index_faiss)
         pickle.dump(chunk, f)
 
@@ -184,7 +187,8 @@ if __name__ == '__main__':
     parser.add_argument('--index_save_path', type=str, default='./index_FlatL2.pkl',
                         help='the path to save faiss index data')
     parser.add_argument('--parquet_path', type=str, default='./data.parquet/',
-                        help='the path to save vector embeddings with spark, only work when use_spark is True')
+                        help='the path to save vector embeddings with spark, '
+                             'only work when use_spark is True')
 
     parser.add_argument('--index_type', type=str, default='FlatL2',
                         help='index_type: FlatL2 or IVFFlatL2')
