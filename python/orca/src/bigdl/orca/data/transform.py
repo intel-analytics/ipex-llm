@@ -223,7 +223,8 @@ class StringIndexer:
         :return: A tuple of a new FeatureTable which transforms categorical features into unique
                  integer values, and a list of StringIndex for the mapping.
         """
-        indices = self.gen_string_idx(df, columns, freq_limit=freq_limit, order_by_freq=order_by_freq,
+        indices = self.gen_string_idx(df, columns, freq_limit=freq_limit,
+                                      order_by_freq=order_by_freq,
                                       do_split=do_split, sep=sep)
         return self.encode_string(df, columns, indices, do_split=do_split, sep=sep,
                                   sort_for_array=sort_for_array,
@@ -355,4 +356,3 @@ class StringIndex():
         for row in rows:
             res_dict[row[col_id]] = row[index_id]
         return res_dict
-
