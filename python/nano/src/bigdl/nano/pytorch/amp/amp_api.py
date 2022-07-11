@@ -14,11 +14,6 @@
 # limitations under the License.
 #
 
-import operator
-from pytorch_lightning.utilities.imports import _compare_version
-
-TORCH_VERSION_LESS_1_10 = _compare_version("torch", operator.lt, "1.10")
-TORCH_VERSION_LESS_1_11 = _compare_version("torch", operator.lt, "1.11")
-TORCH_VERSION_LESS_1_12 = _compare_version("torch", operator.lt, "1.12")
-
-LIGHTNING_VERSION_LESS_1_6 = _compare_version("pytorch_lightning", operator.lt, "1.6")
+def BF16Model(*args, **kwargs):
+    from .bfloat16 import BF16Model
+    return BF16Model(*args, **kwargs)

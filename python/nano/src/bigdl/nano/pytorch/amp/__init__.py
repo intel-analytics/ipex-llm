@@ -13,12 +13,4 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 #
-
-import operator
-from pytorch_lightning.utilities.imports import _compare_version
-
-TORCH_VERSION_LESS_1_10 = _compare_version("torch", operator.lt, "1.10")
-TORCH_VERSION_LESS_1_11 = _compare_version("torch", operator.lt, "1.11")
-TORCH_VERSION_LESS_1_12 = _compare_version("torch", operator.lt, "1.12")
-
-LIGHTNING_VERSION_LESS_1_6 = _compare_version("pytorch_lightning", operator.lt, "1.6")
+from .amp_api import *
