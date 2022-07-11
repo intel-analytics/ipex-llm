@@ -52,12 +52,13 @@ jobs:
             pip install ${{matrix.tf-version}}
           fi
           pip install pytest
-          HOROVOD_WITH_MPI=1 HOROVOD_WITH_TENSORFLOW=1 pip install --no-cache-dir horovod==0.25.0
+          HOROVOD_WITH_MPI=1 HOROVOD_WITH_TENSORFLOW=1 HOROVOD_WITHOUT_PYTORCH=1 pip install --no-cache-dir horovod==0.25.0
           horovodrun --check-build
           pip install ray[default]==1.11.0 prometheus_client==0.13.0
           pip install ConfigSpace
           pip install optuna
           pip install neural-compressor==1.11
+          source bigdl-nano-init
 
       - name: Run tensorflow unit tests
         shell: bash

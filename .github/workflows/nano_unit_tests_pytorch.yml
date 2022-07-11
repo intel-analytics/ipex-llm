@@ -73,6 +73,8 @@ jobs:
           ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
       
       - name: Init conda environment
+        shell: bash
+        run: |
           $CONDA/bin/conda create -n nano-pytorch -y python==3.7.10 setuptools=58.0.4
           source $CONDA/bin/activate nano-pytorch
           $CONDA/bin/conda info
