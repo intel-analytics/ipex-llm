@@ -20,7 +20,7 @@ from bigdl.nano.pytorch.utils import TORCH_VERSION_LESS_1_10
 def create_IPEXAccelerator(*args, **kwargs):
     """Create IPEX accelerator."""
     if TORCH_VERSION_LESS_1_10:
-        from .version_1_9.ipex_accelerator_1_9 import IPEXAccelerator
+        from .version_1_9 import IPEXAccelerator
     else:
         from .ipex_accelerator import IPEXAccelerator
     return IPEXAccelerator(*args, **kwargs)
@@ -29,7 +29,7 @@ def create_IPEXAccelerator(*args, **kwargs):
 def create_IPEXStrategy(*args, **kwargs):
     """Create IPEX strategy."""
     if TORCH_VERSION_LESS_1_10:
-        from .version_1_9.ipex_strategy_1_9 import IPEXStrategy
+        from .version_1_9 import IPEXStrategy
     else:
         from .ipex_strategy import IPEXStrategy
     return IPEXStrategy(*args, **kwargs)
@@ -49,5 +49,5 @@ def ipex_device():
 
 def to_cpu(*args, **kwargs):
     """Recursively move the tensor in the output to the cpu inplace."""
-    from .version_1_9.ipex_torchfunctional import to_cpu
+    from .version_1_9 import to_cpu
     return to_cpu(*args, **kwargs)

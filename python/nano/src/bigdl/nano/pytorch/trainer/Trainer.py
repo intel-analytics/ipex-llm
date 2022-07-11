@@ -111,7 +111,7 @@ class Trainer(pl.Trainer):
                         accelerator = create_IPEXAccelerator(enable_bf16=enable_bf16)
                 super().__init__(accelerator=accelerator, *args, **kwargs)
             else:
-                from bigdl.nano.pytorch.strategies.ipex.ipex_api import create_IPEXStrategy
+                from bigdl.nano.pytorch.strategies import create_IPEXStrategy
                 strategy = create_IPEXStrategy(enable_bf16=enable_bf16) if self.use_ipex else None
                 super().__init__(strategy=strategy, *args, **kwargs)
         else:
@@ -125,31 +125,42 @@ class Trainer(pl.Trainer):
                                       f"`checkpoint_callback` set to False. "
                                       f"Currently, disable checkpoint callback make "
                                       f"distributed training backend work incorrect")
-            if distributed_backend == "spawn":
-                plugin = DDPSpawnPlugin(num_processes=num_processes,
-                                        cpu_for_each_process=cpu_for_each_process,
-                                        use_ipex=self.use_ipex,
-                                        enable_bf16=enable_bf16)
-            elif distributed_backend == "subprocess":
-                plugin = DDPSubprocessPlugin(num_processes=num_processes,
-                                             cpu_for_each_process=cpu_for_each_process,
+            if LIGHTNING_VERSION_LESS_1_6:
+                if distributed_backend == "spawn":
+                    plugin = DDPSpawnPlugin(num_processes=num_processes,
+                                            cpu_for_each_process=cpu_for_each_process,
+                                            use_ipex=self.use_ipex,
+                                            enable_bf16=enable_bf16)
+                elif distributed_backend == "subprocess":
+                    plugin = DDPSubprocessPlugin(num_processes=num_processes,
+                                                 cpu_for_each_process=cpu_for_each_process,
+                                                 use_ipex=self.use_ipex,
+                                                 enable_bf16=enable_bf16)
+                elif distributed_backend == "ray":
+                    # Import RayPlugins may entangle with openmp even if it has not been used,
+                    # which leads to an unacceptably low performance.
+                    # So we import when we need.
+                    plugin = distributed_ray(num_workers=num_processes,  # type: ignore
                                              use_ipex=self.use_ipex,
                                              enable_bf16=enable_bf16)
-            elif distributed_backend == "ray":
-                # Import RayPlugins may entangle with openmp even if it has not been used,
-                # which leads to an unacceptably low performance.
-                # So we import when we need.
-                plugin = distributed_ray(num_workers=num_processes,  # type: ignore
-                                         use_ipex=self.use_ipex,
-                                         enable_bf16=enable_bf16)
-            if self.use_ipex:
-                if TORCH_VERSION_LESS_1_10:
+                if self.use_ipex and TORCH_VERSION_LESS_1_10:
                     accelerator = create_IPEXAccelerator_1_9(training_type_plugin=plugin,
                                                              enable_bf16=enable_bf16)
-                else:
-                    accelerator = None
-            super().__init__(accelerator=accelerator,
-                             plugins=[plugin], *args, **kwargs)
+                super().__init__(accelerator=accelerator, plugins=[plugin], *args, **kwargs)
+            else:
+                if distributed_backend == "spawn":
+                    from bigdl.nano.pytorch.strategies import DDPSpawnStrategy
+                    strategy = DDPSpawnStrategy(num_processes=num_processes,
+                                                cpu_for_each_process=cpu_for_each_process,
+                                                use_ipex=self.use_ipex,
+                                                enable_bf16=enable_bf16)
+                elif distributed_backend == "subprocess":
+                    from bigdl.nano.pytorch.strategies import DDPSubprocessStrategy
+                    strategy = DDPSubprocessStrategy(num_processes=num_processes,
+                                                     cpu_for_each_process=cpu_for_each_process,
+                                                     use_ipex=self.use_ipex,
+                                                     enable_bf16=enable_bf16)
+                super().__init__(strategy=strategy, *args, **kwargs)
 
     @staticmethod
     def compile(model: nn.Module,
