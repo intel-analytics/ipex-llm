@@ -15,12 +15,12 @@
 #
 
 import sys
+import argparse
 import numpy as np
+from bigdl.dllib.utils.log4Error import *
 from bigdl.orca import init_orca_context, OrcaContext, stop_orca_context
 from pyspark.sql.types import StructType, StructField, IntegerType, FloatType, StringType
-from bigdl.dllib.utils.log4Error import *
 from utils import *
-import argparse
 
 
 def faiss_search(faiss_index_pkl, item_dict_pkl, cluster_mode, batch_size=65536, k=200):
