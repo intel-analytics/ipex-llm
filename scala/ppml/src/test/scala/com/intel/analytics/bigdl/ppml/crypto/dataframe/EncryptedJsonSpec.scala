@@ -84,6 +84,4 @@ class EncryptedJsonSpec extends DataFrameHelper {
       }
     }
   }
-
-
 }
