@@ -36,53 +36,23 @@ With BigDL PPML, you can run trusted Big Data & AI applications
 
 ## Getting Started with PPML
 
-### 0. Preparation
-* Set up K8s cluster: placeholder
-* Set up K8s-SGX plugin: [deploy_intel_sgx_device_plugin_for_k8s](https://bigdl.readthedocs.io/en/latest/doc/PPML/QuickStart/deploy_intel_sgx_device_plugin_for_kubernetes.html)
-* Set up Attestation service: placeholder
-* Set up KMS (key management service): [ehsm-kms](https://github.com/intel-analytics/BigDL/blob/main/ppml/services/pccs-ehsm/kubernetes/README.md)
-* (Optional) Set up K8s Monitioring: [bigdl-ppml-sgx-k8s-prometheus/README.md](https://github.com/analytics-zoo/ppml-e2e-examples/blob/main/bigdl-ppml-sgx-k8s-prometheus/README.md)
-* key/secret
-* Prepare BigDL PPML Docker Image
+### 0. Preparation your environment
+To get started with BigDL PPML, you should prepare your environment first, including K8s cluster setup, K8s-SGX plugin setup, key/secret preparation, KMS and attestation service setup, BigDL PPML Docker Image preparation. More details in [Prepare Environment](https://github.com/liu-shaojun/BigDL/blob/ppml_doc/ppml/docs/prepare_environment.md).
 
-    * Pull Docker image from Dockerhub
-        ```
-        docker pull intelanalytics/bigdl-ppml-trusted-big-data-ml-scala-graphene:2.1.0-SNAPSHOT
-        ```
-    * Alternatively, you can build Docker image from Dockerfile (this will take some time):
-        ```
-        cd trusted-big-data-ml/python/docker-graphene
-        ./build-docker-image.sh
-        ```
 ### 1. Encrypt and Upload Data
-* Generate input file
-* Encrypt file
-* Upload to nfs server
+Upload encrypted data to be used by your application to the nfs server. More details in [Encrypt Your Data](https://github.com/liu-shaojun/BigDL/blob/ppml_doc/ppml/docs/encrypt_and_decrypt.md).
 
-### 2. Build App
-* Buid standard Big Data and ML applications (Spark, Flink, XGBoost, Tensorflow, PyTorch, OpenVINO, Ray). Optionally use BigDL PPML APIs (ctypto, VFL, etc.)
+### 2. Prepare Big Data & AI applications
+Build standard Big Data & AI applications, here we give several existing examples: [examples](#develop-your-own-big-data--ai-applications-with-bigdl-ppml).
+
+To build your own Big Data & AI applications, refer to [develop your own Big Data & AI applications with BigDL PPML](#develop-your-own-big-data--ai-applications-with-bigdl-ppml).
 
 ### 3. Submit Job
-* Start BigDL PPML container
-* CLI to submit job to K8s (only demo one mode here, put a video and doc link here to refer all 4 modes)
-* Check the the state of driver and executor, whether it runs in sgx
-* Check k8s monitioring
+You have two options to submit BigDL PPML jobs: use CLI or use helm chart. More details in [Submit BigDL PPML Job](https://github.com/liu-shaojun/BigDL/blob/ppml_doc/ppml/docs/submit_job.md).
 
 ### 4. Decrypt and Read Result
-* check the output, which is encrypted
-* decrypt the output
-* show the decrypted content
+When the job is done, you can decrypt and read result of the job. More details in [Decrypt Job Result](https://github.com/liu-shaojun/BigDL/blob/ppml_doc/ppml/docs/encrypt_and_decrypt.md).
 
-```
-#### This is just a note about videos, will remove this section when videos are ready
-We should have the following videos:
-1. how to deploy kms and encrypt/decrypt
-2. how to deploy attestation and use it
-3. how to deploy k8s monitoring
-4. unmodified application (PPMLContext)
-5. how to submit job (start ppml container, ppml cli introduction, 4 modes)
-6. runtime (check the state of driver and executor, whether it runs in sgx, and k8s monitioring)
-```
 
 ## Develop your own Big Data & AI applications with BigDL PPML
 
