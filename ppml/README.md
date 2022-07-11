@@ -48,7 +48,7 @@ We provided several existing Big Data & AI applications as examples, including d
 To build your own Big Data & AI applications, refer to [develop your own Big Data & AI applications with BigDL PPML](#develop-your-own-big-data--ai-applications-with-bigdl-ppml).
 
 #### 3. Submit Job
-When the Big Data & AI application and its input data is prepared, you are ready to submit BigDL PPML jobs. You have two options to submit jobs: use PPML CLI or use helm chart. More details in [Submit BigDL PPML Job](https://github.com/liu-shaojun/BigDL/blob/ppml_doc/ppml/docs/submit_job.md).
+When the Big Data & AI application and its input data is prepared, you are ready to submit BigDL PPML jobs. You have two options to submit jobs: use PPML CLI to run jobs on Kubernetes manually, or use Helm to set everything up automatically. More details in [Submit BigDL PPML Job](https://github.com/liu-shaojun/BigDL/blob/ppml_doc/ppml/docs/submit_job.md).
 
 #### 4. Decrypt and Read Result
 When the job is done, you can decrypt and read result of the job. More details in [Decrypt Job Result](https://github.com/liu-shaojun/BigDL/blob/ppml_doc/ppml/docs/encrypt_and_decrypt.md).
