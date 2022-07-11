@@ -122,7 +122,7 @@ if __name__ == '__main__':
     parser.add_argument('--dict_path', type=str, default='./item_dict.pkl',
                         help='Path to item_dict.pkl')
     parser.add_argument('--faiss_index_path', type=str,
-                        default='./index_flatL2.pkl',
+                        default='./index_FlatL2.pkl',
                         help='Path to faiss index data path')
     parser.add_argument('--parquet_path', type=str, default='./data.parquet',
                         help='Path to input parquet data (query items)')
