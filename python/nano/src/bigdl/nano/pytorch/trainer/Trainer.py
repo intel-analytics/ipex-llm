@@ -19,7 +19,6 @@ from pathlib import Path
 from typing import Any, List, Optional
 import pytorch_lightning as pl
 import torch
-from pytorch_lightning import LightningModule
 from torch import nn
 from torch.nn.modules.loss import _Loss
 from torch.utils.data import DataLoader
@@ -441,7 +440,7 @@ class Trainer(pl.Trainer):
         invalidInputError(False, "Accelerator {} is invalid.".format(accelerator))
 
     @staticmethod
-    def save(model: LightningModule, path):
+    def save(model: pl.LightningModule, path):
         """
         Save the model to local file.
 
@@ -454,7 +453,7 @@ class Trainer(pl.Trainer):
         if hasattr(model, '_save'):
             model._save(path)
         else:
-            # typically for models of nn.Module, LightningModule and LightningModuleFromTorch type
+            # typically for models of nn.Module, pl.LightningModule type
             meta_path = Path(path) / "nano_model_meta.yml"
             with open(meta_path, 'w+') as f:
                 metadata = {
@@ -466,7 +465,7 @@ class Trainer(pl.Trainer):
             torch.save(model.state_dict(), checkpoint_path)
 
     @staticmethod
-    def load(path, model: LightningModule = None):
+    def load(path, model: pl.LightningModule = None):
         """
         Load a model from local.
 
@@ -495,7 +494,7 @@ class Trainer(pl.Trainer):
         if model_type == 'PytorchQuantizedModel':
             return load_inc_model(path, model, 'pytorch')
         if isinstance(model, nn.Module):
-            # typically for models of nn.Module, LightningModule and LightningModuleFromTorch type
+            # typically for models of nn.Module, pl.LightningModule type
             model = copy.deepcopy(model)
             checkpoint_path = metadata.get('checkpoint', None)
             if checkpoint_path:
