@@ -30,6 +30,8 @@ import org.apache.spark.{SparkConf, SparkContext, SparkException}
 import scala.collection.JavaConverters._
 import scala.collection.mutable
 
+import com.intel.analytics.bigdl.orca.utils._
+
 class OrcaSpec extends ZooSpecHelper {
   var sqlContext: SQLContext = _
   var sc: SparkContext = _
