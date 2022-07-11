@@ -21,6 +21,16 @@ To run Big Data & AI applications with ppml in BigDL, you need to prepare the da
       ```bash
       sudo bash ../../../scripts/generate-keys.sh
       ```
+      This script will generate 7 files in ./ppml/scripts/keys dir.
+      ```
+      keystore.jks
+      keystore.pkcs12
+      server.crt
+      server.csr
+      server.key
+      server.pem
+      keys.yaml
+      ```
 
   * You also need to generate your **enclave key** using the command below, and keep it safely for future remote attestations and to start SGX enclaves more securely.
 
@@ -37,7 +47,12 @@ To run Big Data & AI applications with ppml in BigDL, you need to prepare the da
   ```bash
   sudo bash ../../../scripts/generate-password.sh used_password_when_generate_keys
   ```
-
+  This script will generate 3 files in ./ppml/scripts/password dir.
+  ```
+  key.txt
+  output.bin
+  password.yaml
+  ```
 ### Configure the Environment
 
 1. Enter `BigDL/ppml/trusted-big-data-ml/python/docker-graphene` dir. Refer to the previous section about [preparing data, key and password](#prepare-data-key-and-password). Then run the following commands to generate your enclave key and add it to your Kubernetes cluster as a secret. 
