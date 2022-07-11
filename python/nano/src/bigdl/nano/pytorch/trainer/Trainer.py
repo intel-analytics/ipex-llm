@@ -28,6 +28,7 @@ from torch.optim.lr_scheduler import _LRScheduler
 import yaml
 from bigdl.nano.pytorch.utils import TORCH_VERSION_LESS_1_10, TORCH_VERSION_LESS_1_11, \
     LIGHTNING_VERSION_LESS_1_6
+from bigdl.nano.pytorch.amp import BF16Model
 from bigdl.nano.pytorch.lightning import LightningModuleFromTorch
 from bigdl.nano.pytorch.plugins.ddp_spawn import DDPSpawnPlugin
 from bigdl.nano.pytorch.plugins.ddp_subprocess import DDPSubprocessPlugin
@@ -297,86 +298,97 @@ class Trainer(pl.Trainer):
         :param **export_kwargs: will be passed to torch.onnx.export function.
         :return:            A accelerated Pytorch-Lightning Model if quantization is sucessful.
         """
-        if not accelerator or accelerator == 'onnxruntime':
-            method_map = {
-                None: {
-                    'fx': 'pytorch_fx',
-                    'eager': 'pytorch',
-                    'ipex': 'pytorch_ipex',
-                    None: 'pytorch_fx'  # default
-                },
-                'onnxruntime': {
-                    'qlinear': 'onnxrt_qlinearops',
-                    'integer': 'onnxrt_integerops',
-                    None: 'onnxrt_qlinearops'   # default
+        if precision == 'bf16':
+            if accelerator is None:
+                bf16_model = BF16Model(model)
+                return bf16_model
+            else:
+                invalidInputError(False,
+                                  "Accelerator {} is invalid for BF16.".format(accelerator))
+        if precision == 'int8':
+            if not accelerator or accelerator == 'onnxruntime':
+                method_map = {
+                    None: {
+                        'fx': 'pytorch_fx',
+                        'eager': 'pytorch',
+                        'ipex': 'pytorch_ipex',
+                        None: 'pytorch_fx'  # default
+                    },
+                    'onnxruntime': {
+                        'qlinear': 'onnxrt_qlinearops',
+                        'integer': 'onnxrt_integerops',
+                        None: 'onnxrt_qlinearops'  # default
+                    }
                 }
-            }
-            framework = method_map[accelerator].get(method, None)
-            if accelerator == "onnxruntime":
-                if not type(model).__name__ == 'PytorchONNXRuntimeModel':
-                    # try to establish onnx model
+                framework = method_map[accelerator].get(method, None)
+                if accelerator == "onnxruntime":
+                    if not type(model).__name__ == 'PytorchONNXRuntimeModel':
+                        # try to establish onnx model
+                        if input_sample is None:
+                            # input_sample can be a dataloader
+                            input_sample = calib_dataloader
+                        model = Trainer.trace(
+                            model,
+                            input_sample=input_sample,
+                            accelerator='onnxruntime',
+                            onnxruntime_session_options=onnxruntime_session_options,
+                            **export_kwargs)
+                """
+                If accelerator==None, quantized model returned should be an object of PytorchModel
+                which is defined by neural-compressor containing a `GraphModule` for inference.
+                Otherwise accelerator=='onnxruntime', it returns an ONNXModel object. A supported
+                model which is able to run on Pytorch or ONNXRuntime can be fetched by
+                `quantized_model.model`.
+                """
+                return inc_quantize(model, calib_dataloader, metric,
+                                    framework=framework,
+                                    conf=conf,
+                                    approach=approach,
+                                    tuning_strategy=tuning_strategy,
+                                    accuracy_criterion=accuracy_criterion,
+                                    timeout=timeout,
+                                    max_trials=max_trials)
+
+            elif accelerator == 'openvino':
+                model_type = type(model).__name__
+                if not model_type == 'PytorchOpenVINOModel':
                     if input_sample is None:
                         # input_sample can be a dataloader
                         input_sample = calib_dataloader
                     model = Trainer.trace(model,
                                           input_sample=input_sample,
-                                          accelerator='onnxruntime',
-                                          onnxruntime_session_options=onnxruntime_session_options,
+                                          accelerator='openvino',
                                           **export_kwargs)
-            """
-            If accelerator==None, quantized model returned should be an object of PytorchModel
-            which is defined by neural-compressor containing a `GraphModule` for inference.
-            Otherwise accelerator=='onnxruntime', it returns an ONNXModel object. A supported
-            model which is able to run on Pytorch or ONNXRuntime can be fetched by
-            `quantized_model.model`.
-            """
-            return inc_quantize(model, calib_dataloader, metric,
-                                framework=framework,
-                                conf=conf,
-                                approach=approach,
-                                tuning_strategy=tuning_strategy,
-                                accuracy_criterion=accuracy_criterion,
-                                timeout=timeout,
-                                max_trials=max_trials)
+                invalidInputError(type(model).__name__ == 'PytorchOpenVINOModel',
+                                  "Invalid model to quantize. Please use a nn.Module or a model "
+                                  "from trainer.trance(accelerator=='openvino')")
+                drop_type = None
+                higher_is_better = None
+                maximal_drop = None
+                if metric:
+                    if not isinstance(accuracy_criterion, dict):
+                        accuracy_criterion = {'relative': 0.99, 'higher_is_better': True}
 
-        elif accelerator == 'openvino':
-            model_type = type(model).__name__
-            if not model_type == 'PytorchOpenVINOModel':
-                if input_sample is None:
-                    # input_sample can be a dataloader
-                    input_sample = calib_dataloader
-                model = Trainer.trace(model,
-                                      input_sample=input_sample,
-                                      accelerator='openvino',
-                                      **export_kwargs)
-            invalidInputError(type(model).__name__ == 'PytorchOpenVINOModel',
-                              "Invalid model to quantize. Please use a nn.Module or a model "
-                              "from trainer.trance(accelerator=='openvino')")
-            drop_type = None
-            higher_is_better = None
-            maximal_drop = None
-            if metric:
-                if not isinstance(accuracy_criterion, dict):
-                    accuracy_criterion = {'relative': 0.99, 'higher_is_better': True}
+                    drop_type = 'relative' if 'relative' in accuracy_criterion else 'absolute'
+                    higher_is_better = accuracy_criterion.get('higher_is_better', None)
+                    maximal_drop = accuracy_criterion.get(drop_type, None)
 
-                drop_type = 'relative' if 'relative' in accuracy_criterion else 'absolute'
-                higher_is_better = accuracy_criterion.get('higher_is_better', None)
-                maximal_drop = accuracy_criterion.get(drop_type, None)
-
-            kwargs = {
-                "metric": metric,
-                "higher_better": higher_is_better,
-                "drop_type": drop_type,
-                "maximal_drop": maximal_drop,
-                "max_iter_num": max_trials,
-                # TODO following two keys are optional, if there is need, we can add them
-                # "n_requests": None,
-                # "sample_size": 300
-            }
-            return model.pot(calib_dataloader, **kwargs)
-        else:
-            invalidInputError(False,
-                              "Accelerator {} is invalid.".format(accelerator))
+                kwargs = {
+                    "metric": metric,
+                    "higher_better": higher_is_better,
+                    "drop_type": drop_type,
+                    "maximal_drop": maximal_drop,
+                    "max_iter_num": max_trials,
+                    # TODO following two keys are optional, if there is need, we can add them
+                    # "n_requests": None,
+                    # "sample_size": 300
+                }
+                return model.pot(calib_dataloader, **kwargs)
+            else:
+                invalidInputError(False,
+                                  "Accelerator {} is invalid.".format(accelerator))
+        invalidInputError(False,
+                          "Precision {} is invalid.".format(precision))
 
     @staticmethod
     def trace(model: nn.Module,

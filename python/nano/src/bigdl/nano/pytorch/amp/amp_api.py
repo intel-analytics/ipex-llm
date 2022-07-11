@@ -14,7 +14,6 @@
 # limitations under the License.
 #
 
-from .lstm_forecaster import LSTMForecaster
-from .mtnet_forecaster import MTNetForecaster
-from .seq2seq_forecaster import Seq2SeqForecaster
-from .tcn_forecaster import TCNForecaster
+def BF16Model(*args, **kwargs):
+    from .bfloat16 import BF16Model
+    return BF16Model(*args, **kwargs)
