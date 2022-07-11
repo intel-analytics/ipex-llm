@@ -55,7 +55,7 @@ class LightningModule(pl.LightningModule):
         self.metrics = metrics
 
     @property
-    def forward_args(self):
+    def forward_args(self):  # noqa
         return inspect.getfullargspec(self.model.forward).args[1:]
 
     @property
