@@ -31,12 +31,6 @@ class AcceleratedLightningModule(AcceleratedModel, LightningModule):
         outputs = self.forward_step(*inputs)
         return self.on_forward_end(outputs)
 
-    @property
-    def forward_args(self):
-        invalidInputError(False,
-                          errMsg="{}._forward_args is not implemented.".format(str(type(self))))
-        return
-
     def on_train_start(self) -> None:
         invalidInputError(False, errMsg="This model is not trainable!")
 
