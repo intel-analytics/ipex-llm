@@ -64,7 +64,7 @@ def search_sample(index, sample_vec):
 
 def gen_vector(x, vec_dim):
     np.random.seed(x)  # make sure get same vectors for each specific index
-    return (x, np.random.rand(vec_dim).astype(np.float32) +\
+    return (x, np.random.rand(vec_dim).astype(np.float32) +
             random.randint(0, 1000) * random.random())
 
 
