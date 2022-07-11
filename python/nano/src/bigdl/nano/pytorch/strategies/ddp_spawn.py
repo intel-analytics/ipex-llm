@@ -181,6 +181,9 @@ class DDPSpawnStrategy(_DDPSpawnStrategy):
         # when using spawn, multiple child processes may update the weights of
         # the same model, so we should copy the model to avoid it
         if self.strategy_name == "ddp_spawn":
+            # in pl 1.6, a trainer holds a  a strategy holds a model, a model holds a trainer,
+            # `trainer.model` equals to `trainer.strategy.model`, so after assigning to
+            # `self.model`, the trainer's model will refer to new model automatically
             self.model = copy.deepcopy(self.model)
             # `copy.deepcopy(self.model)` can't copy `self.model.trainer` correctly sometimes,
             # so we reuse the original trainer
