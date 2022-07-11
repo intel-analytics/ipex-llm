@@ -13,8 +13,7 @@ on:
 
 # A workflow run is made up of one or more jobs that can run sequentially or in parallel
 jobs:
-  nano-init-test-pytorch:
-    # The type of runner that the job will run on
+  nano-unit-test-pytorch:
     runs-on: ${{ matrix.os }}
     strategy:
       fail-fast: false
@@ -27,10 +26,7 @@ jobs:
           "torch==1.12.0+cpu torchvision==0.13.0+cpu",
           ""
           ]
-
-    # Steps represent a sequence of tasks that will be executed as part of the job
     steps:
-      # Checks-out your repository under $GITHUB_WORKSPACE, so your job can access it
       - uses: actions/checkout@v2
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v2
@@ -75,32 +71,8 @@ jobs:
           $CONDA/bin/conda remove -n bigdl-init --all
         env:
           ANALYTICS_ZOO_ROOT: ${{ github.workspace }}
-
-
-  nano-unit-test-pytorch:
-    runs-on: ${{ matrix.os }}
-    strategy:
-      fail-fast: false
-      matrix:
-        os: ["ubuntu-20.04"]
-        python-version: ["3.7"]
-        pytorch-version: [
-          "torch==1.9.0+cpu torchvision==0.10.0+cpu",
-          "torch==1.10.1+cpu torchvision==0.11.2+cpu",
-          "torch==1.12.0+cpu torchvision==0.13.0+cpu",
-          ""
-          ]
-    steps:
-      - uses: actions/checkout@v2
-      - name: Set up Python ${{ matrix.python-version }}
-        uses: actions/setup-python@v2
-        with:
-          python-version: ${{ matrix.python-version }}
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          python -m pip install --upgrade setuptools==58.0.4
-          python -m pip install --upgrade wheel
+      
+      - name: Init conda environment
           $CONDA/bin/conda create -n nano-pytorch -y python==3.7.10 setuptools=58.0.4
           source $CONDA/bin/activate nano-pytorch
           $CONDA/bin/conda info
@@ -190,7 +162,6 @@ jobs:
         python-version: ["3.7"]
         pytorch-version: [
           "torch==1.9.0+cpu torchvision==0.10.0+cpu torch_ipex==1.9.0",
-          "torch==1.12.0+cpu torchvision==0.13.0+cpu intel_extension_for_pytorch==1.12.0",
           ""
           ]
 
