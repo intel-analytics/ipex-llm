@@ -2240,6 +2240,68 @@ class FeatureTable(Table):
 
         return FeatureTable(df)
 
+    def string_embed(self, columns, bert_model='bert-base-uncased', reduce_dim=None, replace=True):
+        df = self.df
+        from transformers import BertTokenizer, BertModel
+        import torch
+
+        cols = str_to_list(columns, "cols")
+
+        model = BertModel.from_pretrained(bert_model,
+                                          output_hidden_states=True)
+        model.eval()
+        tokenizer = BertTokenizer.from_pretrained(bert_model)
+
+        sc = OrcaContext.get_spark_context()
+        tokenizer_br = sc.broadcast(tokenizer)
+        model_br = sc.broadcast(model)
+
+        def str2id(string, tokenizer):
+            marked = "[CLS] " + string + " [SEP]"
+            tokenized = tokenizer.tokenize(marked)
+            ids = tokenizer.convert_tokens_to_ids(tokenized)
+            return ids
+
+        def ids2emb(ids, model):
+            segments_ids = [1] * len(ids)
+            tokens_tensor = torch.tensor([ids])
+            segments_tensors = torch.tensor([segments_ids])
+
+            with torch.no_grad():
+                outputs = model(tokens_tensor, segments_tensors)
+                hidden_states = outputs[2]
+
+            token_vecs = hidden_states[-2][0]
+            embedding = torch.mean(token_vecs, dim=0)
+            out = embedding.detach().numpy().tolist()
+            return out
+
+        str2id_udf = udf(lambda x: str2id(x, tokenizer_br.value), ArrayType(IntegerType()))
+        ids2embd_udf = udf(lambda x: ids2emb(x, model_br.value), ArrayType(DoubleType()))
+        for c in cols:
+            df = df.withColumn(c + "_ids", str2id_udf(pyspark_col(c))) \
+                .withColumn(c + "_embds", ids2embd_udf(pyspark_col(c + "_ids")))\
+                .drop(c + "_ids")
+
+        if reduce_dim:
+            from pyspark.ml.feature import PCA
+            from pyspark.ml.linalg import Vectors, VectorUDT
+            tolist = udf(lambda x: x.toArray().tolist(), ArrayType(DoubleType()))
+            tovec = udf(lambda x: Vectors.dense(x), VectorUDT())
+            for c in cols:
+                df = df.withColumn(c + "_embds", tovec(c + "_embds"))
+                pca = PCA(k=reduce_dim, inputCol=c + "_embds", outputCol=c + "_pcaFeatures")
+                pca_model = pca.fit(df)
+                result = pca_model.transform(df)
+                df = result.drop(c +"_embds")\
+                    .withColumnRenamed(c + "_pcaFeatures", c + "_embds")\
+                    .withColumn(c + "_embds", tolist(c + "_embds"))
+
+        if replace:
+            df = df.drop(c).withColumnRenamed(c + "_embds", c)
+
+        return FeatureTable(df)
+
 
 class StringIndex(Table):
     def __init__(self, df, col_name):
