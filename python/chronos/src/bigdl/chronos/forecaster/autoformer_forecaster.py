@@ -14,7 +14,6 @@
 # limitations under the License.
 #
 
-from gc import callbacks
 import torch
 from bigdl.chronos.forecaster.abstract import Forecaster
 from bigdl.chronos.model.autoformer import model_creator, loss_creator
@@ -146,7 +145,6 @@ class AutoformerForecaster(Forecaster):
 
         self.distributed = distributed
         self.checkpoint_callback = True
-        self.seed = seed if seed is not None else 42
         # seed setting
         if not isinstance(self.seed, Space):
             from pytorch_lightning import seed_everything
@@ -272,8 +270,9 @@ class AutoformerForecaster(Forecaster):
 
         # build auto model
         self.tune_internal = self._build_automodel(data, validation_data, batch_size, epochs)
-        
+
         from pytorch_lightning.callbacks import Callback
+        
         # reset current epoch = 0 after each run
         class ResetCallback(Callback):
             def on_train_end(self, trainer, pl_module):
@@ -282,7 +281,7 @@ class AutoformerForecaster(Forecaster):
         self.trainer = Trainer(logger=False, max_epochs=epochs,
                                checkpoint_callback=self.checkpoint_callback,
                                num_processes=self.num_processes, use_ipex=self.use_ipex,
-                               use_hpo=True, 
+                               use_hpo=True,
                                callbacks=[ResetCallback()] if self.num_processes == 1 else None)
 
         # run hyper parameter search
