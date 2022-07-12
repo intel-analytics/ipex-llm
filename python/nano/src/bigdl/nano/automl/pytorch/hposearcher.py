@@ -23,7 +23,7 @@ from pytorch_lightning.loops.epoch import TrainingEpochLoop
 from pytorch_lightning.loops.fit_loop import FitLoop
 from bigdl.nano.utils.log4Error import invalidInputError
 from bigdl.nano.pytorch.utils import LIGHTNING_VERSION_LESS_1_6
-from bigdl.nano.automl.hpo.backend import create_hpo_backend
+from bigdl.nano.automl.hpo.backend import create_hpo_backend, SamplerType
 from .objective import Objective
 from bigdl.nano.automl.utils.parallel import run_parallel
 from bigdl.nano.automl.hpo.search import (
@@ -132,7 +132,8 @@ class HPOSearcher:
         _sampler_kwargs = model._lazyobj.sampler_kwargs
         user_sampler_kwargs = kwargs.get("sampler_kwargs", {})
         _sampler_kwargs.update(user_sampler_kwargs)
-        search_kwargs["sampler_kwargs"] = _sampler_kwargs
+        if "sampler" in  kwargs and kwargs["sampler"] in [SamplerType.Grid]:
+            search_kwargs["sampler_kwargs"] = _sampler_kwargs
 
         (self.create_kwargs, self.run_kwargs, self.fit_kwargs) \
             = _prepare_args(search_kwargs,

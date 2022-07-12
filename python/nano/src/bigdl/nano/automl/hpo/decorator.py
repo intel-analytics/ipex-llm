@@ -386,7 +386,6 @@ def obj(**kwvars):
                             # further add the sub_cs prefix onto the param
                             name = new_parameter.name
                             if hasattr(new_parameter, "choices"):
-                                print("enter choices")
                                 choices = tuple(new_parameter.choices)
                                 self.sampler_kwargs[name] = choices
                     elif isinstance(v, Space):
