@@ -1,4 +1,6 @@
-There are two ways to submit PPML jobs: use [PPML CLI](#ppml-cli) to submit jobs manually, or use [helm](#helm-chart) to submit jobs automatically.
+There are two ways to submit PPML jobs: 
+* use [PPML CLI](#ppml-cli) to submit jobs manually
+* use [helm chart](#helm-chart) to submit jobs automatically
 
 ## PPML CLI
 ### Description
@@ -52,7 +54,11 @@ Once a user application is bundled, it can be launched using the bigdl-ppml-subm
 
 ### Usage Examples
 #### Submit Spark-Pi job (spark native mode)
-![image2022-6-6_16-18-10](https://user-images.githubusercontent.com/61072813/174703141-63209559-05e1-4c4d-b096-6b862a9bed8a.png)
+
+<p align="left">
+  <img src="https://user-images.githubusercontent.com/61072813/174703141-63209559-05e1-4c4d-b096-6b862a9bed8a.png" alt="data lifecycle" width='250px' />
+</p>
+
 ```
 #!/bin/bash
 bash bigdl-ppml-submit.sh \
@@ -69,7 +75,10 @@ bash bigdl-ppml-submit.sh \
         local:///ppml/trusted-big-data-ml/work/spark-3.1.2/examples/jars/spark-examples_2.12-3.1.2.jar 3000
 ```
 #### Submit Spark-Pi job (spark native mode, sgx enabled)
-![image2022-6-6_16-18-57](https://user-images.githubusercontent.com/61072813/174703165-2afc280d-6a3d-431d-9856-dd5b3659214a.png)
+<p align="left">
+  <img src="https://user-images.githubusercontent.com/61072813/174703165-2afc280d-6a3d-431d-9856-dd5b3659214a.png" alt="data lifecycle" width='250px' />
+</p>
+
 ```
 #!/bin/bash
 bash bigdl-ppml-submit.sh \
@@ -91,7 +100,10 @@ bash bigdl-ppml-submit.sh \
         local:///ppml/trusted-big-data-ml/work/spark-3.1.2/examples/jars/spark-examples_2.12-3.1.2.jar 3000
 ```
 #### Submit Spark-Pi job (k8s client mode, sgx enabled)
-![image2022-6-6_16-19-43](https://user-images.githubusercontent.com/61072813/174703216-70588315-7479-4b6c-9133-095104efc07d.png)
+<p align="left">
+  <img src="https://user-images.githubusercontent.com/61072813/174703216-70588315-7479-4b6c-9133-095104efc07d.png" alt="data lifecycle" width='500px' />
+</p>
+
 ```
 #!/bin/bash
  
@@ -123,7 +135,10 @@ export secure_password=`openssl rsautl -inkey /ppml/trusted-big-data-ml/work/pas
 ```
 
 #### Submit Spark-Pi job (k8s cluster mode, sgx enabled)
-![image2022-6-6_16-20-0](https://user-images.githubusercontent.com/61072813/174703234-e45b8fe5-9c61-4d17-93ef-6b0c961a2f95.png)
+<p align="left">
+  <img src="https://user-images.githubusercontent.com/61072813/174703234-e45b8fe5-9c61-4d17-93ef-6b0c961a2f95.png" alt="data lifecycle" width='500px' />
+</p>
+
 ```
 #!/bin/bash
 
